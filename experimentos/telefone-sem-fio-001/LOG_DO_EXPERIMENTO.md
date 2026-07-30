@@ -3,9 +3,11 @@
 **Experimento:** MACF-EXP.1  
 **Issue:** GitHub #11  
 **Branch:** `experiment/telephone-game-v0.1`  
-**Estado atual:** `IN_REVIEW`  
+**Estado atual:** `PASS_RELEASED_FOR_WORK`  
 **Orquestrador:** Léo  
-**Nível de isolamento:** `SIMULADO_DOCUMENTAL`
+**Nível de isolamento:** `SIMULADO_DOCUMENTAL`  
+**PR integrado:** GitHub #12  
+**Merge:** `71938d2b2a3c702f2e8d935721283347498c04a0`
 
 ## 1. Registro de abertura
 
@@ -30,7 +32,7 @@
 | 6 | Emily | cadeia completa e solicitação | `AUDITORIA_EMILY.md` | `a6bb0df04a18e48d488909966b0b06969ee43c55` | `COMPLETED` |
 | 7 | Mestre | cadeia, solicitação e auditoria | `PARECER_MESTRE.md` | `0604c7bceddec792ac77961c42432b54e4de9536` | `COMPLETED` |
 | 8 | Retrospectiva | evidências finais | `RETROSPECTIVA.md` | `80358f59ae34c4d4902a10d96b6d1a70a9e58f91` | `COMPLETED` |
-| 9 | Resultado | cadeia e pareceres | `RESULTADO_FINAL.md` | `10d2d9771c7c5e14714a64d298298a4f74a62da7` | `COMPLETED` |
+| 9 | Resultado | cadeia e pareceres | `RESULTADO_FINAL.md` | `8d0b1ecdf3afd2e24e54e2d6429d71aeac3c6de7` | `COMPLETED` |
 
 ## 3. Eventos
 
@@ -96,6 +98,14 @@
 - não conformidades altas: 0 no escopo de simulação documental;
 - exigência futura: repetir com contextos tecnicamente isolados.
 
+### EVT-009 — Publicação
+
+- PR #12 marcado como pronto;
+- PR #12 integrado em `main`;
+- merge: `71938d2b2a3c702f2e8d935721283347498c04a0`;
+- estado final promovido para `PASS_RELEASED_FOR_WORK`;
+- ressalva metodológica preservada.
+
 ## 4. Resultado
 
 O protocolo final preservou integralmente as cinco restrições obrigatórias, respeitou o limite de oito regras e permaneceu executável.
@@ -106,9 +116,9 @@ A conclusão válida é restrita a uma cadeia documental simulada. O experimento
 
 `MANTER_COM_CORRECAO`
 
-O protocolo pode ser publicado para uso operacional controlado. O próximo experimento deve registrar nível de isolamento e utilizar sessões, contextos ou instâncias tecnicamente separados.
+O protocolo foi publicado para uso operacional controlado. O próximo experimento deve registrar nível de isolamento e utilizar sessões, contextos ou instâncias tecnicamente separados.
 
-## 6. Gate de liberação
+## 6. Fechamento
 
 - cadeia executora: concluída;
 - auditoria: concluída;
@@ -116,5 +126,5 @@ O protocolo pode ser publicado para uso operacional controlado. O próximo exper
 - retrospectiva: concluída;
 - não conformidades críticas abertas: 0;
 - não conformidades altas abertas no escopo: 0;
-- PR #12: pronto para integração;
-- estado solicitado após merge: `PASS_RELEASED_FOR_WORK`.
+- PR #12: integrado;
+- estado final: `PASS_RELEASED_FOR_WORK`.
