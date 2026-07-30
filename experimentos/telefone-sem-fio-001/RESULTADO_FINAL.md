@@ -4,7 +4,7 @@
 **Issue:** GitHub #11  
 **PR:** GitHub #12  
 **Classificação:** RESULTADO EXPERIMENTAL  
-**Estado solicitado:** `PASS_RELEASED_FOR_WORK`
+**Estado solicitado após integração:** `PASS_RELEASED_FOR_WORK`
 
 ## Resultado quantitativo
 
@@ -34,3 +34,7 @@ O isolamento foi documental e simulado. Os papéis foram executados pelo mesmo C
 ## Condição de uso
 
 O protocolo pode orientar trabalho operacional controlado. Uma afirmação de validação multiagente independente exige novo experimento com sessões, contextos ou instâncias tecnicamente separados.
+
+## Gate final
+
+A cadeia, a auditoria, o parecer e a retrospectiva foram concluídos. O PR #12 pode ser integrado; após o merge, a issue #11 deve ser encerrada em `PASS_RELEASED_FOR_WORK` com a ressalva metodológica preservada.
