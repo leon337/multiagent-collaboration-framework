@@ -37,4 +37,4 @@ O protocolo pode orientar trabalho operacional controlado. Uma afirmação de va
 
 ## Gate final
 
-A cadeia, a auditoria, o parecer e a retrospectiva foram concluídos. O PR #12 pode ser integrado; após o merge, a issue #11 deve ser encerrada em `PASS_RELEASED_FOR_WORK` com a ressalva metodológica preservada.
+A cadeia, a auditoria, o parecer e a retrospectiva foram concluídos. O PR #12 está pronto para integração; após o merge, a issue #11 deve ser encerrada em `PASS_RELEASED_FOR_WORK` com a ressalva metodológica preservada.
