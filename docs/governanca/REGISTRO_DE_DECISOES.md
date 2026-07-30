@@ -51,7 +51,7 @@ O repositório `leon337/multiagent-collaboration-framework` passa a ser a fonte 
 
 **Data:** 2026-07-30  
 **Autoridade:** Leandro  
-**Origem:** LEA-274, issue GitHub #10 e declaração direta registrada durante a execução  
+**Origem:** LEA-274 e declaração direta registrada durante a execução  
 **Estado:** vigente
 
 Leandro autorizou antecipadamente a liberação da fundação v1.0. A equipe não deverá interromper novamente o fluxo para solicitar uma segunda autorização humana ao final.
