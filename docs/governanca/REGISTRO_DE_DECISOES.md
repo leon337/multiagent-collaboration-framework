@@ -68,3 +68,16 @@ A autorização deverá ser executada automaticamente por Léo e Gabriel quando 
 Nesse ponto, Léo pode promover o objetivo para `PASS_RELEASED_FOR_WORK` e Gabriel pode concluir o processo de integração do PR #1 sem solicitar nova autorização a Leandro.
 
 A autorização não elimina critérios de qualidade, revisão, evidência ou rastreabilidade. Caso qualquer condição falhe, o estado permanece `REMEDIATION` ou `BLOCKED`; não é necessária nova autorização para corrigir e retestar.
+
+## DF-009 — Autonomia operacional contínua de Léo
+
+**Data:** 2026-07-30  
+**Autoridade:** Leandro  
+**Origem:** declaração direta após a liberação da fundação v1.0  
+**Estado:** vigente
+
+Léo está autorizado a selecionar e iniciar o próximo objetivo do backlog, coordenar os agentes, executar remediações e concluir a liberação quando todos os gates objetivos forem atendidos.
+
+Leandro será consultado somente nas exceções estratégicas e críticas previstas na governança, incluindo mudança relevante de escopo, conflito de prioridades, risco crítico novo, ação irreversível, necessidade de credenciais ou custos externos e conflito com a Constituição.
+
+Esta decisão autoriza a abertura e a execução do primeiro experimento controlado de telefone sem fio sem nova aprovação intermediária. O objetivo operacional correspondente é a issue GitHub #11.
