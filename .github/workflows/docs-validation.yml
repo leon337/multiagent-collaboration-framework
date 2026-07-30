@@ -54,7 +54,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for file in docs/governanca/*.md docs/agentes/*.md; do
+          normative=(
+            docs/governanca/CONSTITUICAO_DO_FRAMEWORK.md
+            docs/governanca/FLUXO_OPERACIONAL.md
+            docs/governanca/LOOP_ORIENTADO_A_OBJETIVO.md
+            docs/governanca/MATRIZ_DE_AUTORIDADE.md
+            docs/governanca/GOVERNANCA_GITHUB_LINEAR.md
+            docs/governanca/GLOSSARIO.md
+            docs/governanca/POLITICA_DE_VERSOES.md
+            docs/governanca/PROCESSO_DE_PUBLICACAO.md
+            docs/agentes/LEO.md
+            docs/agentes/LEONARDO.md
+            docs/agentes/SOFIA.md
+            docs/agentes/EMILY.md
+            docs/agentes/CARMEM.md
+            docs/agentes/GABRIEL.md
+            docs/agentes/MESTRE.md
+            docs/agentes/MATRIZ_RACI.md
+          )
+          for file in "${normative[@]}"; do
             grep -Eq '\*\*(Versão|Classificação):\*\*' "$file" || {
               echo "Missing metadata in $file"
               exit 1
