@@ -1,0 +1,110 @@
+name: Documentation validation
+
+on:
+  push:
+    branches:
+      - foundation/framework-v1
+      - main
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'templates/**'
+      - '.github/workflows/docs-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check required foundation files
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            docs/README.md
+            docs/governanca/CONSTITUICAO_DO_FRAMEWORK.md
+            docs/governanca/FLUXO_OPERACIONAL.md
+            docs/governanca/LOOP_ORIENTADO_A_OBJETIVO.md
+            docs/governanca/MATRIZ_DE_AUTORIDADE.md
+            docs/governanca/GOVERNANCA_GITHUB_LINEAR.md
+            docs/governanca/GLOSSARIO.md
+            docs/governanca/POLITICA_DE_VERSOES.md
+            docs/governanca/PROCESSO_DE_PUBLICACAO.md
+            docs/agentes/LEO.md
+            docs/agentes/LEONARDO.md
+            docs/agentes/SOFIA.md
+            docs/agentes/EMILY.md
+            docs/agentes/CARMEM.md
+            docs/agentes/GABRIEL.md
+            docs/agentes/MESTRE.md
+            docs/agentes/MATRIZ_RACI.md
+            templates/CHECKLIST_DE_PUBLICACAO.md
+            templates/CHECKLIST_DE_RECONCILIACAO.md
+          )
+          for file in "${required[@]}"; do
+            test -s "$file" || { echo "Missing or empty: $file"; exit 1; }
+          done
+
+      - name: Check required metadata in normative documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          normative=(
+            docs/governanca/CONSTITUICAO_DO_FRAMEWORK.md
+            docs/governanca/FLUXO_OPERACIONAL.md
+            docs/governanca/LOOP_ORIENTADO_A_OBJETIVO.md
+            docs/governanca/MATRIZ_DE_AUTORIDADE.md
+            docs/governanca/GOVERNANCA_GITHUB_LINEAR.md
+            docs/governanca/GLOSSARIO.md
+            docs/governanca/POLITICA_DE_VERSOES.md
+            docs/governanca/PROCESSO_DE_PUBLICACAO.md
+            docs/agentes/LEO.md
+            docs/agentes/LEONARDO.md
+            docs/agentes/SOFIA.md
+            docs/agentes/EMILY.md
+            docs/agentes/CARMEM.md
+            docs/agentes/GABRIEL.md
+            docs/agentes/MESTRE.md
+            docs/agentes/MATRIZ_RACI.md
+          )
+          for file in "${normative[@]}"; do
+            grep -Eq '\*\*(Versão|Classificação):\*\*' "$file" || {
+              echo "Missing metadata in $file"
+              exit 1
+            }
+          done
+
+      - name: Check local Markdown links
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          roots = [Path('docs'), Path('templates')]
+          failures = []
+          pattern = re.compile(r'\[[^\]]*\]\(([^)]+)\)')
+
+          for root in roots:
+              if not root.exists():
+                  continue
+              for path in root.rglob('*.md'):
+                  text = path.read_text(encoding='utf-8')
+                  for target in pattern.findall(text):
+                      target = target.strip().split('#', 1)[0]
+                      if not target or '://' in target or target.startswith('mailto:'):
+                          continue
+                      resolved = (path.parent / target).resolve()
+                      if not resolved.exists():
+                          failures.append(f'{path}: broken link {target}')
+
+          if failures:
+              print('\n'.join(failures))
+              sys.exit(1)
+          PY
