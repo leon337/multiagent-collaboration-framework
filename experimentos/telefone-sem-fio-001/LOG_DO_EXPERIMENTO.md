@@ -30,6 +30,7 @@
 | 6 | Emily | cadeia completa e solicitação | `AUDITORIA_EMILY.md` | `a6bb0df04a18e48d488909966b0b06969ee43c55` | `COMPLETED` |
 | 7 | Mestre | cadeia, solicitação e auditoria | `PARECER_MESTRE.md` | `0604c7bceddec792ac77961c42432b54e4de9536` | `COMPLETED` |
 | 8 | Retrospectiva | evidências finais | `RETROSPECTIVA.md` | `80358f59ae34c4d4902a10d96b6d1a70a9e58f91` | `COMPLETED` |
+| 9 | Resultado | cadeia e pareceres | `RESULTADO_FINAL.md` | `7f1f64f5ffc76a80e940c6bd409447ea7d398574` | `COMPLETED` |
 
 ## 3. Eventos
 
@@ -107,10 +108,13 @@ A conclusão válida é restrita a uma cadeia documental simulada. O experimento
 
 O protocolo pode ser publicado para uso operacional controlado. O próximo experimento deve registrar nível de isolamento e utilizar sessões, contextos ou instâncias tecnicamente separados.
 
-## 6. Próximo gate
+## 6. Gate de liberação
 
-- atualizar o PR #12 com as evidências finais;
-- marcar o PR como pronto;
-- integrar em `main`;
-- reconciliar GitHub e Linear;
-- encerrar GitHub #11 em `PASS_RELEASED_FOR_WORK`.
+- cadeia executora: concluída;
+- auditoria: concluída;
+- parecer metodológico: concluído;
+- retrospectiva: concluída;
+- não conformidades críticas abertas: 0;
+- não conformidades altas abertas no escopo: 0;
+- PR #12: pronto para integração;
+- estado solicitado após merge: `PASS_RELEASED_FOR_WORK`.
