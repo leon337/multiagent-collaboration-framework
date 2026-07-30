@@ -30,7 +30,7 @@
 | 6 | Emily | cadeia completa e solicitação | `AUDITORIA_EMILY.md` | `a6bb0df04a18e48d488909966b0b06969ee43c55` | `COMPLETED` |
 | 7 | Mestre | cadeia, solicitação e auditoria | `PARECER_MESTRE.md` | `0604c7bceddec792ac77961c42432b54e4de9536` | `COMPLETED` |
 | 8 | Retrospectiva | evidências finais | `RETROSPECTIVA.md` | `80358f59ae34c4d4902a10d96b6d1a70a9e58f91` | `COMPLETED` |
-| 9 | Resultado | cadeia e pareceres | `RESULTADO_FINAL.md` | `7f1f64f5ffc76a80e940c6bd409447ea7d398574` | `COMPLETED` |
+| 9 | Resultado | cadeia e pareceres | `RESULTADO_FINAL.md` | `10d2d9771c7c5e14714a64d298298a4f74a62da7` | `COMPLETED` |
 
 ## 3. Eventos
 
