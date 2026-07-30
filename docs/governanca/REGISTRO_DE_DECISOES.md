@@ -56,7 +56,7 @@ O repositório `leon337/multiagent-collaboration-framework` passa a ser a fonte 
 
 Leandro autorizou antecipadamente a liberação da fundação v1.0. A equipe não deverá interromper novamente o fluxo para solicitar uma segunda autorização humana ao final.
 
-Esta autorização permite que Léo promova automaticamente o objetivo para `PASS_RELEASED_FOR_WORK` e que Gabriel prepare a conclusão do PR #1 quando todas as condições objetivas abaixo estiverem satisfeitas:
+A autorização deverá ser executada automaticamente por Léo e Gabriel quando todas as condições objetivas abaixo estiverem satisfeitas:
 
 1. remediações obrigatórias concluídas e versionadas;
 2. nenhuma não conformidade crítica ou alta aberta;
@@ -64,5 +64,7 @@ Esta autorização permite que Léo promova automaticamente o objetivo para `PAS
 4. parecer metodológico final sem bloqueio;
 5. critérios de aceite de LEA-274 reconciliados com o GitHub;
 6. PR #1 tecnicamente pronto para revisão e integração.
+
+Nesse ponto, Léo pode promover o objetivo para `PASS_RELEASED_FOR_WORK` e Gabriel pode concluir o processo de integração do PR #1 sem solicitar nova autorização a Leandro.
 
 A autorização não elimina critérios de qualidade, revisão, evidência ou rastreabilidade. Caso qualquer condição falhe, o estado permanece `REMEDIATION` ou `BLOCKED`; não é necessária nova autorização para corrigir e retestar.
