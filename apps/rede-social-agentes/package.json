@@ -21,10 +21,10 @@
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
-    "@eslint/js": "10.8.0",
+    "@eslint/js": "10.0.1",
     "@playwright/test": "1.62.0",
     "@types/node": "24.13.3",
-    "eslint": "10.8.0",
+    "eslint": "10.0.1",
     "prettier": "3.9.6",
     "typescript": "6.0.3",
     "typescript-eslint": "8.65.0",
