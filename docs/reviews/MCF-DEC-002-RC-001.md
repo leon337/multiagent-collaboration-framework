@@ -2,9 +2,10 @@
 
 **Data:** 2 de agosto de 2026  
 **Revisora:** Emily  
-**Objeto:** `MCF-DEC-002 — Política de Trabalho Visível por Agente e Artefato por Ciclo`  
+**Objeto:** `MCF-DEC-002 — Política de Trabalho Visível por Agente e Artefato por Mensagem`  
 **PR:** #15  
-**HEAD inicial revisado:** `e198f9cb5e6f1cc0b74c4bd04d572030348a1d01`  
+**HEAD originalmente revisado:** `e198f9cb5e6f1cc0b74c4bd04d572030348a1d01`  
+**HEAD corrigido revisado:** `e897d6856de1c3de2c2b62adb3f33f4d21bdde58`  
 **Natureza da independência:** documental e procedimental; os papéis são executados pelo mesmo ChatGPT e não representam instâncias cognitivamente independentes.
 
 ## 1. Escopo da revisão
@@ -14,8 +15,9 @@ A RC verificou:
 - compatibilidade com `MCF-DEC-001`;
 - seleção dinâmica por competência;
 - exposição do trabalho dos agentes selecionados;
+- artefato obrigatório em toda mensagem;
+- gradação entre mensagens A, B e C;
 - conteúdo mínimo obrigatório por agente;
-- artefato e evidência por ciclo;
 - execução silenciosa;
 - papel do Mestre;
 - papel de Carmem;
@@ -32,16 +34,33 @@ A RC verificou:
 - `docs/decisions/MCF-DEC-001-ARQUITETURA-LOOP-E-EQUIPE-AMPLIADA.md`;
 - `docs/decisions/MCF-DEC-002-TRABALHO-VISIVEL-E-ARTEFATO-POR-CICLO.md`;
 - PR Draft #15;
-- commit `e198f9cb5e6f1cc0b74c4bd04d572030348a1d01`;
+- commits `e198f9cb5e6f1cc0b74c4bd04d572030348a1d01` e `e897d6856de1c3de2c2b62adb3f33f4d21bdde58`;
+- decisão explícita de Léo pela Opção A;
 - histórico metodológico do experimento `MACF-EXP.1`.
 
 ## 3. Achados positivos
 
-### 3.1 Compatibilidade metodológica
+### 3.1 Decisão da autoridade final incorporada
 
-A nova decisão complementa `MCF-DEC-001` e preserva a seleção dinâmica. Ela não determina participação artificial de toda a equipe.
+Léo escolheu expressamente a Opção A:
 
-### 3.2 Rastreabilidade
+> artefato em absolutamente toda mensagem, inclusive saudação e confirmação curta.
+
+A versão corrigida incorpora essa decisão sem ambiguidade.
+
+### 3.2 Compatibilidade metodológica
+
+A nova decisão complementa `MCF-DEC-001` e preserva a seleção dinâmica. Artefato obrigatório em toda mensagem não significa participação obrigatória de todos os agentes.
+
+### 3.3 Gradação proporcional
+
+A divisão em Classes A, B e C evita que uma saudação exija o mesmo volume documental de uma implementação crítica:
+
+- Classe A: registro mínimo;
+- Classe B: contrato, trabalho visível e evidências;
+- Classe C: evidência técnica reforçada e RC quando aplicável.
+
+### 3.4 Rastreabilidade
 
 Cada agente selecionado deve expor:
 
@@ -54,25 +73,19 @@ Cada agente selecionado deve expor:
 - evidência;
 - passagem de bastão.
 
-A estrutura reduz consolidação silenciosa e melhora auditoria.
+### 3.5 Artefato por mensagem
 
-### 3.3 Artefatos e evidências
+Toda mensagem deve criar, atualizar ou registrar uma entrada em artefato verificável. A ausência de artefato é não conformidade, mesmo em mensagem casual.
 
-A decisão exige artefato próprio ou atualização de artefato existente em cada ciclo operacional e impede conclusão sem evidência.
+### 3.6 Governança
 
-### 3.4 Governança
+O Mestre deve classificar a mensagem, selecionar agentes, impedir atribuição fictícia, exigir evidência, informar o artefato e declarar o estado final.
 
-O Mestre recebe obrigações claras de seleção, justificação, controle do estado, preservação de divergências, exigência de evidência e classificação do ciclo.
+### 3.7 Manoel
 
-### 3.5 Não conformidade
+Manoel está formalmente reconhecido como Especialista em Banco de Dados, com responsabilidades e fronteira inicial com Sofia.
 
-A decisão define um fluxo de correção e proíbe reconstrução retroativa inventada.
-
-### 3.6 Manoel
-
-Manoel é formalmente reconhecido como Especialista em Banco de Dados, com responsabilidades e fronteira inicial com Sofia.
-
-### 3.7 Limites
+### 3.8 Limites
 
 A decisão não autoriza:
 
@@ -87,27 +100,20 @@ A decisão não autoriza:
 **Severidade:** média  
 **Estado:** aberto  
 
-O README ainda apresenta o fluxo fixo histórico. Após aprovação e eventual merge da decisão, a página inicial continuará oferecendo uma visão incompleta do funcionamento atual.
+O README ainda apresenta o fluxo fixo histórico. Após eventual merge, a página inicial continuará oferecendo visão incompleta do funcionamento atual.
 
-**Recomendação:** abrir uma tarefa posterior para atualizar o README com referência a `MCF-DEC-001` e `MCF-DEC-002`, sem duplicar integralmente as decisões.
+**Recomendação:** atualizar o README em tarefa posterior, referenciando `MCF-DEC-001` e `MCF-DEC-002`.
 
 **Bloqueia o PR atual:** não.
 
-### M-02 — “Mensagem” versus “ciclo operacional”
+### M-02 — Mensagem versus ciclo operacional
 
-**Severidade:** média  
-**Estado:** aguardando confirmação do Léo  
+**Severidade original:** média  
+**Estado:** resolvido  
 
-A solicitação verbal mencionou artefato “a cada mensagem”. A decisão formaliza artefato por ciclo operacional e exclui mensagens casuais do ciclo completo.
+Léo escolheu explicitamente a Opção A. A decisão foi corrigida para exigir artefato em toda mensagem, inclusive saudação e confirmação curta.
 
-A escolha é operacionalmente coerente e evita artefatos inúteis para saudações ou confirmações simples, mas deve ser confirmada pela autoridade final.
-
-**Recomendação:** Léo confirmar uma das interpretações:
-
-1. artefato em toda mensagem, inclusive casual; ou
-2. artefato em toda mensagem operacional/ciclo de trabalho.
-
-**Bloqueia o PR atual:** não, desde que a confirmação ocorra antes do merge.
+**Evidência da resolução:** commit `e897d6856de1c3de2c2b62adb3f33f4d21bdde58`.
 
 ### L-01 — Independência documental
 
@@ -116,30 +122,32 @@ A escolha é operacionalmente coerente e evita artefatos inúteis para saudaçõ
 
 A revisão é independente por papel, checklist e separação documental, mas não por instância técnica separada.
 
-**Recomendação:** manter essa limitação explicitamente registrada em RCs futuras.
+**Recomendação:** manter essa limitação registrada em RCs futuras.
 
-## 5. Contagem de achados
+## 5. Contagem de achados abertos
 
 ```yaml
 critical: 0
 high: 0
-medium: 2
+medium: 1
 low: 1
+resolved_medium: 1
 ```
 
-## 6. Veredito
+## 6. Veredito atualizado
 
 ```text
 PASS_WITH_RESERVATIONS
 ```
 
-A `MCF-DEC-002` está metodologicamente consistente e apta para decisão do Léo.
+A `MCF-DEC-002` corrigida está metodologicamente consistente e representa a decisão expressa de Léo.
+
+A ressalva média restante é documental e não bloqueia o PR atual.
 
 O parecer não autoriza merge.
 
 ## 7. Gates restantes
 
-- confirmação do Léo sobre “mensagem” versus “ciclo operacional”;
-- decisão do Léo sobre aprovação da metodologia;
+- decisão explícita de Léo sobre aprovação final e merge;
 - atualização futura do README;
-- merge somente mediante autorização explícita.
+- merge somente mediante autorização expressa.
