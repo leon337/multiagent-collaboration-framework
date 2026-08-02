@@ -38,29 +38,17 @@ Regra preservada:
 
 A obrigação de artefato em toda mensagem não significa que todos os agentes devam participar de toda mensagem.
 
-O Mestre deve:
-
-- selecionar somente os agentes necessários;
-- justificar a seleção quando houver missão operacional;
-- não atribuir pesquisa, análise, implementação ou decisão que não tenha ocorrido;
-- expor o trabalho real dos agentes selecionados;
-- gerar o artefato adequado ao nível da mensagem.
+O Mestre deve selecionar somente os agentes necessários, justificar a seleção em missões operacionais, impedir atribuições fictícias e garantir o artefato adequado à classe da mensagem.
 
 ## 4. Classes de mensagem e artefato
 
-Toda mensagem exige artefato. A classe da mensagem define apenas a profundidade do registro.
+Toda mensagem exige artefato. A classe define apenas a profundidade do registro.
 
 ### 4.1 Classe A — mensagem simples
 
-Inclui:
+Inclui saudação, confirmação curta, resposta breve, correção nominal simples e informação sem pesquisa ou decisão ampla.
 
-- saudação;
-- confirmação curta;
-- resposta “sim”, “não”, “A” ou equivalente;
-- correção nominal simples;
-- informação breve sem pesquisa ou decisão ampla.
-
-Artefato mínimo obrigatório:
+Artefato mínimo:
 
 ```yaml
 mensagem_id: identificador
@@ -72,54 +60,21 @@ decisao: decisao_registrada_ou_nenhuma
 estado: concluido
 ```
 
-Esse artefato pode ser um registro Markdown curto, atualização de log ou arquivo de ciclo.
-
 ### 4.2 Classe B — mensagem operacional
 
-Inclui:
+Inclui pesquisa, análise, requisito, decisão de produto, arquitetura, design, dados, segurança, planejamento ou recomendação com impacto.
 
-- pesquisa;
-- análise de repositório, documento, imagem, issue, PR, commit ou log;
-- definição de requisito;
-- decisão de produto, arquitetura, design, dados ou segurança;
-- planejamento;
-- recomendação com impacto no projeto.
-
-Artefato obrigatório:
-
-- contrato da missão;
-- agentes selecionados e justificativa;
-- trabalho visível por agente;
-- achados, decisões, evidências e passagem de bastão;
-- estado final do ciclo.
+Exige contrato, seleção justificada, trabalho visível, achados, decisões, evidências e passagem de bastão.
 
 ### 4.3 Classe C — execução técnica ou crítica
 
-Inclui:
+Inclui implementação, alteração de repositório, teste, auditoria, publicação, deploy, migração, autenticação, alteração de dados ou gate humano.
 
-- implementação;
-- alteração de repositório;
-- teste;
-- auditoria;
-- publicação;
-- deploy;
-- migração;
-- autenticação;
-- alteração de dados;
-- decisão que dependa de gate humano.
-
-Artefato obrigatório:
-
-- todos os itens da Classe B;
-- evidência técnica verificável;
-- commit, PR, log, teste, relatório, captura ou equivalente;
-- RC independente quando aplicável;
-- registro de autorizações e proibições;
-- condição explícita de parada.
+Exige todos os itens da Classe B, evidência técnica reforçada, autorizações, condição de parada e RC quando aplicável.
 
 ## 5. Contrato da missão
 
-Mensagens das classes B e C devem começar com contrato contendo, no mínimo:
+Mensagens B e C devem começar com:
 
 ```yaml
 objetivo_id: identificador_unico
@@ -139,87 +94,28 @@ agentes_selecionados:
     justificativa: competencia_necessaria
 ```
 
-Mensagens Classe A não exigem contrato completo, mas continuam exigindo artefato mínimo.
+Mensagens A não exigem contrato completo, mas continuam exigindo artefato mínimo.
 
 ## 6. Conteúdo obrigatório por agente
 
 Cada agente participante de mensagens B ou C deve apresentar:
 
-### 6.1 Entrada recebida
+1. entrada recebida;
+2. pesquisa ou consulta realizada;
+3. achados;
+4. análise;
+5. decisão ou recomendação;
+6. entrega;
+7. evidência;
+8. passagem de bastão.
 
-- pedido, artefato, problema ou decisão recebida;
-- estado do trabalho no momento da passagem.
-
-### 6.2 Pesquisa ou consulta realizada
-
-- arquivos, repositórios, issues, PRs, commits, logs, testes, imagens ou documentos analisados;
-- ferramentas utilizadas;
-- limitações e lacunas.
-
-Quando não houver pesquisa, o agente deve declarar expressamente:
+Quando não houver pesquisa, o agente deve declarar:
 
 ```text
 Pesquisa/consulta realizada: nenhuma; atuação baseada apenas na entrada recebida.
 ```
 
-### 6.3 Achados
-
-- fatos;
-- inconsistências;
-- riscos;
-- lacunas;
-- conflitos;
-- evidências.
-
-### 6.4 Análise
-
-- interpretação dentro da especialidade;
-- alternativas consideradas;
-- critérios;
-- impactos;
-- limites.
-
-### 6.5 Decisão ou recomendação
-
-- posição adotada;
-- justificativa;
-- efeito esperado;
-- dependências;
-- autorização necessária.
-
-### 6.6 Entrega
-
-- documento;
-- código;
-- comentário;
-- teste;
-- relatório;
-- decisão;
-- commit;
-- PR;
-- parecer;
-- outro resultado verificável.
-
-### 6.7 Evidência
-
-- arquivo;
-- link;
-- commit;
-- PR;
-- captura;
-- log;
-- teste;
-- referência oficial.
-
-### 6.8 Passagem de bastão
-
-- próximo agente;
-- material entregue;
-- tarefa esperada;
-- pendências;
-- bloqueios.
-
-## 7. Formato padrão de exposição
+## 7. Formato padrão
 
 ```text
 NOME DO AGENTE
@@ -249,7 +145,7 @@ Passagem para:
 ...
 ```
 
-O formato pode ser reduzido para mensagens Classe A, desde que o artefato mínimo seja produzido.
+O formato pode ser reduzido na Classe A, desde que o artefato mínimo exista.
 
 ## 8. Obrigações do Mestre
 
@@ -260,38 +156,18 @@ O Mestre deve:
 - abrir contrato nas classes B e C;
 - selecionar agentes por competência;
 - justificar a seleção;
-- controlar o estado;
 - garantir exposição individual completa;
 - impedir atribuições fictícias;
 - preservar divergências;
-- impedir consolidação prematura;
-- exigir evidência antes de concluir;
-- classificar o ciclo como `CONTINUAR`, `CORRIGIR`, `BLOQUEAR` ou `CONCLUIR`;
-- informar onde está o artefato gerado ou atualizado.
+- exigir evidência;
+- declarar `CONTINUAR`, `CORRIGIR`, `BLOQUEAR` ou `CONCLUIR`;
+- informar onde está o artefato.
 
 ## 9. Artefato obrigatório por mensagem
 
-Toda mensagem deve:
+Toda mensagem deve criar artefato, atualizar artefato existente ou registrar nova entrada em log verificável.
 
-- criar um artefato próprio; ou
-- atualizar um artefato existente; ou
-- registrar uma nova entrada em log versionado ou verificável.
-
-Artefatos aceitos:
-
-- arquivo Markdown;
-- log de conversa;
-- registro de decisão;
-- especificação;
-- relatório;
-- checklist;
-- issue;
-- comentário em PR;
-- commit;
-- pull request;
-- resultado de teste;
-- captura;
-- pacote de evidências.
+Artefatos aceitos incluem arquivo Markdown, log, decisão, especificação, relatório, checklist, issue, comentário em PR, commit, pull request, teste, captura ou pacote de evidências.
 
 Estrutura recomendada:
 
@@ -309,70 +185,40 @@ bloqueios: []
 proximo_passo: descricao
 ```
 
-Sem artefato, a resposta está em não conformidade, mesmo quando o conteúdo for casual ou curto.
+Sem artefato, a resposta está em não conformidade, mesmo quando casual ou curta.
 
 ## 10. Execução silenciosa
 
-A execução silenciosa é proibida por padrão.
-
-Somente Léo pode autorizá-la explicitamente, por exemplo:
+A execução silenciosa é proibida por padrão. Somente Léo pode autorizá-la explicitamente, por exemplo:
 
 ```text
 EXECUTAR EM SILÊNCIO
 ```
 
-A autorização vale apenas para a missão ou ciclo em que foi declarada, salvo indicação expressa em contrário.
-
-Mesmo em execução silenciosa:
-
-- toda mensagem continua exigindo artefato;
-- ações críticas devem gerar evidência;
-- alterações em repositório devem gerar commit ou PR;
-- o resultado final deve informar o que foi alterado;
-- Emily pode exigir exposição posterior para auditoria.
+Mesmo em execução silenciosa, toda mensagem continua exigindo artefato e ações críticas continuam exigindo evidência.
 
 ## 11. Proibições
 
 Não é permitido:
 
-- responder sem gerar ou atualizar artefato;
-- substituir o trabalho real de um agente por frase genérica;
+- responder sem artefato;
+- atribuir trabalho não realizado;
 - afirmar pesquisa sem consulta real;
 - afirmar implementação sem alteração verificável;
 - incluir agentes sem necessidade;
 - ocultar divergências;
 - reescrever silenciosamente contribuição anterior;
-- avançar sem passagem de bastão nas classes B e C;
 - concluir sem evidência;
-- usar apenas a memória da conversa como fonte oficial;
+- usar apenas memória da conversa como fonte oficial;
 - confundir hipótese, proposta, decisão e fato.
 
-## 12. Papel de Carmem
+## 12. Carmem
 
-Carmem deve:
+Carmem deve consolidar ou atualizar o artefato de cada mensagem, preservar contribuições individuais, registrar decisões aprovadas, separar original, revisão e correção e preparar versionamento quando autorizado.
 
-- consolidar ou atualizar o artefato de cada mensagem;
-- preservar contribuições individuais;
-- registrar decisões aprovadas;
-- separar original, revisão e correção;
-- manter terminologia consistente;
-- preparar material para versionamento quando autorizado.
+## 13. Emily
 
-Carmem não pode apagar divergências nem transformar proposta em decisão aprovada.
-
-## 13. Papel de Emily
-
-Emily deve auditar, quando aplicável:
-
-- classificação da mensagem;
-- existência do artefato;
-- agentes realmente selecionados;
-- pesquisas realmente realizadas;
-- evidências;
-- aderência ao contrato;
-- distinção entre fato, hipótese, proposta e decisão;
-- passagem de bastão;
-- ausência de trabalho silencioso não autorizado.
+Emily deve auditar, quando aplicável, classificação, existência do artefato, agentes selecionados, pesquisas reais, evidências, aderência ao contrato, distinção entre fato e proposta, passagem de bastão e ausência de trabalho silencioso não autorizado.
 
 Pareceres:
 
@@ -388,31 +234,17 @@ Fica formalmente reconhecido:
 
 - **Manoel — Especialista em Banco de Dados**.
 
-Responsabilidades:
+Responsabilidades: modelagem, esquemas, persistência, integridade, consultas, desempenho, migrações, autenticação, dados de usuários, histórico, auditoria, métricas, sincronização, arquivos, relatórios, backup e recuperação.
 
-- modelagem de dados;
-- esquemas;
-- persistência;
-- integridade e consistência;
-- consultas e desempenho;
-- migrações;
-- autenticação e dados de usuários;
-- histórico e auditoria;
-- métricas;
-- sincronização;
-- arquivos e metadados;
-- relatórios;
-- backup e recuperação.
-
-Fronteira inicial:
+Fronteira:
 
 - Sofia responde pela arquitetura geral;
 - Manoel responde pela arquitetura de dados e ciclo de vida das informações;
-- decisões que afetem arquitetura geral e dados devem ser revisadas por ambos.
+- decisões que afetem ambos devem ser revisadas pelos dois.
 
-## 15. Estado operacional compartilhado
+## 15. Estado compartilhado
 
-Mensagens B e C devem registrar:
+Mensagens B e C registram:
 
 ```yaml
 estado: em_execucao
@@ -426,48 +258,32 @@ evidencias: []
 artefato_atual: caminho_ou_link
 ```
 
-Mensagens A usam o registro mínimo definido na seção 4.1.
+Mensagens A usam o registro mínimo da seção 4.1.
 
-## 16. Critérios de conformidade
+## 16. Conformidade
 
-Toda mensagem está conforme quando:
+Toda mensagem está conforme quando foi classificada, gerou ou atualizou artefato, informou esse artefato e não atribuiu trabalho fictício.
 
-- foi classificada;
-- gerou ou atualizou artefato;
-- informou o artefato;
-- não atribuiu trabalho fictício.
+Mensagens B e C exigem ainda contrato, agentes selecionados, justificativa, contribuição exposta, pesquisas informadas, achados separados, passagem, evidências, auditoria quando exigida e estado final.
 
-Mensagens B e C exigem adicionalmente:
+## 17. Não conformidade
 
-- contrato da missão;
-- agentes selecionados por competência;
-- seleção justificada;
-- contribuição real exposta;
-- pesquisas e ferramentas informadas;
-- achados e decisões separados;
-- passagem de bastão;
-- evidências;
-- auditoria quando exigida;
-- estado final declarado pelo Mestre.
+Quando a política falhar:
 
-## 17. Tratamento de não conformidade
-
-Quando a política não for seguida:
-
-1. o Mestre reconhece a falha;
-2. o estado muda para `CORRECAO`;
+1. Mestre reconhece a falha;
+2. estado muda para `CORRECAO`;
 3. contribuições omitidas são reconstruídas apenas com evidências reais;
 4. trabalho retroativo não pode ser inventado;
 5. Carmem corrige o artefato;
-6. Emily revisa novamente quando aplicável;
+6. Emily revisa quando aplicável;
 7. o ciclo só termina após correção.
 
-## 18. Decisões ao final do ciclo
+## 18. Estados finais
 
-- **CONTINUAR** — houve progresso, mas o objetivo não foi atendido;
-- **CORRIGIR** — a entrega não está conforme;
-- **BLOQUEAR** — falta autorização, informação ou evidência;
-- **CONCLUIR** — critérios atendidos, artefato gerado e evidências auditadas.
+- `CONTINUAR`;
+- `CORRIGIR`;
+- `BLOQUEAR`;
+- `CONCLUIR`.
 
 ## 19. Autorizações
 
@@ -497,12 +313,7 @@ ESPECIALISTA_BANCO_DE_DADOS=MANOEL
 ## 21. Próximo gate
 
 ```text
-Carmem — correção da redação
-→ Sofia — revisão metodológica
-→ Manoel — revisão de registros
-→ Gabriel — versionamento
-→ Emily — nova RC independente
-→ Léo — decisão sobre merge
+Carmem → Sofia → Manoel → Gabriel → Emily → Léo
 ```
 
 Esta decisão não autoriza merge na `main`.
