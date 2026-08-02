@@ -1,10 +1,10 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
 import * as schema from './schema.js';
 
 export interface DatabaseHandle {
-  db: ReturnType<typeof drizzle<typeof schema>>;
+  db: NodePgDatabase<typeof schema>;
   pool: Pool;
 }
 
