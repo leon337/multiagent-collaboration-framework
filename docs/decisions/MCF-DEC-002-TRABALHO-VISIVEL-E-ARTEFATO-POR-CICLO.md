@@ -1,4 +1,4 @@
-# MCF-DEC-002 — Política de Trabalho Visível por Agente e Artefato por Ciclo
+# MCF-DEC-002 — Política de Trabalho Visível por Agente e Artefato por Mensagem
 
 **Data:** 2 de agosto de 2026  
 **Autoridade da decisão:** Léo  
@@ -8,71 +8,118 @@
 
 ## 1. Contexto
 
-Durante a execução operacional do framework, foi identificado que parte do trabalho dos agentes estava sendo consolidada de forma excessiva pelo Mestre. Em algumas respostas, os agentes eram citados apenas por uma linha resumida, sem exposição do que receberam, pesquisaram, encontraram, decidiram, entregaram ou encaminharam.
+Durante a execução operacional do framework, parte do trabalho dos agentes foi consolidada de forma excessiva pelo Mestre. Em algumas respostas, agentes foram citados por frases resumidas sem exposição do que receberam, consultaram, encontraram, decidiram, entregaram ou encaminharam.
 
-Essa prática reduz a rastreabilidade, dificulta a auditoria, oculta divergências e impede distinguir trabalho efetivamente realizado de simples atribuição nominal.
+Também houve ambiguidade sobre a frequência de geração de artefatos. Léo decidiu expressamente pela regra mais rigorosa:
 
-Esta decisão formaliza a política de trabalho visível por agente e de artefato obrigatório por ciclo operacional.
+> Toda mensagem deve produzir ou atualizar um artefato, inclusive saudação, confirmação curta e resposta casual.
+
+Esta decisão formaliza o trabalho visível por agente e o artefato obrigatório por mensagem.
 
 ## 2. Decisão aprovada
 
-Fica estabelecido que o trabalho dos agentes não pode ocorrer de forma silenciosa, salvo quando Léo autorizar explicitamente a execução silenciosa.
+Fica estabelecido que:
 
-Sempre que um agente participar de uma missão, sua contribuição deve aparecer de forma identificada e verificável na mensagem operacional entregue ao Léo.
+1. o trabalho dos agentes não pode ocorrer silenciosamente, salvo autorização expressa de Léo;
+2. todo agente efetivamente selecionado deve expor sua contribuição real;
+3. toda mensagem deve produzir ou atualizar um artefato verificável;
+4. a complexidade do artefato deve ser proporcional ao conteúdo da mensagem;
+5. a seleção dinâmica por competência permanece válida;
+6. não é permitido incluir agentes apenas para simular um fluxo;
+7. nenhuma mensagem pode ser encerrada sem identificar o artefato gerado ou atualizado.
 
-Cada ciclo operacional deve produzir ou atualizar um artefato verificável.
+## 3. Relação com MCF-DEC-001
 
-## 3. Relação com a seleção dinâmica por competência
+Esta decisão complementa `MCF-DEC-001` e não substitui a seleção dinâmica por competência.
 
-Esta política não obriga todos os agentes a participar de toda missão.
-
-Permanece válida a regra de `MCF-DEC-001`:
+Regra preservada:
 
 > Um agente participa porque existe uma ação necessária, compatível com sua função e vinculada a um objetivo mensurável.
 
+A obrigação de artefato em toda mensagem não significa que todos os agentes devam participar de toda mensagem.
+
 O Mestre deve:
 
-1. selecionar os agentes necessários;
-2. justificar a seleção;
-3. não incluir agentes apenas para preencher uma sequência;
-4. não atribuir pesquisa, análise ou decisão que não tenha ocorrido;
-5. expor integralmente o trabalho dos agentes efetivamente selecionados.
+- selecionar somente os agentes necessários;
+- justificar a seleção quando houver missão operacional;
+- não atribuir pesquisa, análise, implementação ou decisão que não tenha ocorrido;
+- expor o trabalho real dos agentes selecionados;
+- gerar o artefato adequado ao nível da mensagem.
 
-## 4. Mensagem casual e mensagem operacional
+## 4. Classes de mensagem e artefato
 
-### 4.1 Mensagem casual
+Toda mensagem exige artefato. A classe da mensagem define apenas a profundidade do registro.
 
-É uma interação sem missão formal, sem análise técnica, sem pesquisa, sem decisão operacional e sem alteração de artefatos.
+### 4.1 Classe A — mensagem simples
 
-Exemplos:
+Inclui:
 
 - saudação;
 - confirmação curta;
-- pergunta simples sem execução;
-- correção de nome sem impacto metodológico amplo.
+- resposta “sim”, “não”, “A” ou equivalente;
+- correção nominal simples;
+- informação breve sem pesquisa ou decisão ampla.
 
-Mensagens casuais não exigem ciclo multiagente completo.
+Artefato mínimo obrigatório:
 
-### 4.2 Mensagem operacional
+```yaml
+mensagem_id: identificador
+classe: A
+entrada: resumo_da_mensagem_do_leo
+resposta: resumo_da_resposta
+agentes_participantes: []
+decisao: decisao_registrada_ou_nenhuma
+estado: concluido
+```
 
-É qualquer mensagem que envolva um ou mais dos seguintes itens:
+Esse artefato pode ser um registro Markdown curto, atualização de log ou arquivo de ciclo.
+
+### 4.2 Classe B — mensagem operacional
+
+Inclui:
 
 - pesquisa;
 - análise de repositório, documento, imagem, issue, PR, commit ou log;
 - definição de requisito;
 - decisão de produto, arquitetura, design, dados ou segurança;
+- planejamento;
+- recomendação com impacto no projeto.
+
+Artefato obrigatório:
+
+- contrato da missão;
+- agentes selecionados e justificativa;
+- trabalho visível por agente;
+- achados, decisões, evidências e passagem de bastão;
+- estado final do ciclo.
+
+### 4.3 Classe C — execução técnica ou crítica
+
+Inclui:
+
 - implementação;
+- alteração de repositório;
 - teste;
 - auditoria;
 - publicação;
-- criação ou alteração de artefato;
-- recomendação que altere o estado de um projeto.
+- deploy;
+- migração;
+- autenticação;
+- alteração de dados;
+- decisão que dependa de gate humano.
 
-Mensagens operacionais devem seguir integralmente esta política.
+Artefato obrigatório:
 
-## 5. Contrato obrigatório da missão
+- todos os itens da Classe B;
+- evidência técnica verificável;
+- commit, PR, log, teste, relatório, captura ou equivalente;
+- RC independente quando aplicável;
+- registro de autorizações e proibições;
+- condição explícita de parada.
 
-Toda missão operacional deve começar com contrato contendo, no mínimo:
+## 5. Contrato da missão
+
+Mensagens das classes B e C devem começar com contrato contendo, no mínimo:
 
 ```yaml
 objetivo_id: identificador_unico
@@ -92,42 +139,45 @@ agentes_selecionados:
     justificativa: competencia_necessaria
 ```
 
-## 6. Conteúdo mínimo obrigatório por agente
+Mensagens Classe A não exigem contrato completo, mas continuam exigindo artefato mínimo.
 
-Cada agente participante deve apresentar:
+## 6. Conteúdo obrigatório por agente
+
+Cada agente participante de mensagens B ou C deve apresentar:
 
 ### 6.1 Entrada recebida
 
-- pedido recebido;
-- artefato recebido;
-- problema recebido;
-- decisão anterior relevante;
+- pedido, artefato, problema ou decisão recebida;
 - estado do trabalho no momento da passagem.
 
 ### 6.2 Pesquisa ou consulta realizada
 
-- arquivos lidos;
-- repositórios consultados;
-- issues, PRs, commits, logs, testes, imagens ou documentos analisados;
+- arquivos, repositórios, issues, PRs, commits, logs, testes, imagens ou documentos analisados;
 - ferramentas utilizadas;
-- limitações de acesso ou lacunas encontradas.
+- limitações e lacunas.
+
+Quando não houver pesquisa, o agente deve declarar expressamente:
+
+```text
+Pesquisa/consulta realizada: nenhuma; atuação baseada apenas na entrada recebida.
+```
 
 ### 6.3 Achados
 
-- fatos encontrados;
+- fatos;
 - inconsistências;
 - riscos;
 - lacunas;
 - conflitos;
-- evidências verificáveis.
+- evidências.
 
 ### 6.4 Análise
 
-- interpretação dentro da especialidade do agente;
+- interpretação dentro da especialidade;
 - alternativas consideradas;
-- critérios usados;
+- critérios;
 - impactos;
-- limites da conclusão.
+- limites.
 
 ### 6.5 Decisão ou recomendação
 
@@ -135,7 +185,7 @@ Cada agente participante deve apresentar:
 - justificativa;
 - efeito esperado;
 - dependências;
-- necessidade de autorização humana, quando aplicável.
+- autorização necessária.
 
 ### 6.6 Entrega
 
@@ -146,19 +196,19 @@ Cada agente participante deve apresentar:
 - relatório;
 - decisão;
 - commit;
-- pull request;
+- PR;
 - parecer;
-- outra saída verificável.
+- outro resultado verificável.
 
 ### 6.7 Evidência
 
-- link;
 - arquivo;
+- link;
 - commit;
 - PR;
 - captura;
 - log;
-- resultado de teste;
+- teste;
 - referência oficial.
 
 ### 6.8 Passagem de bastão
@@ -199,33 +249,39 @@ Passagem para:
 ...
 ```
 
-O formato pode ser adaptado ao contexto, desde que todos os campos relevantes permaneçam explícitos.
+O formato pode ser reduzido para mensagens Classe A, desde que o artefato mínimo seja produzido.
 
 ## 8. Obrigações do Mestre
 
 O Mestre deve:
 
-- abrir o contrato da missão;
+- classificar a mensagem como A, B ou C;
+- garantir artefato em toda mensagem;
+- abrir contrato nas classes B e C;
 - selecionar agentes por competência;
 - justificar a seleção;
-- controlar o estado do ciclo;
+- controlar o estado;
 - garantir exposição individual completa;
 - impedir atribuições fictícias;
-- preservar divergências relevantes;
+- preservar divergências;
 - impedir consolidação prematura;
 - exigir evidência antes de concluir;
-- produzir o resumo final somente após as contribuições individuais;
 - classificar o ciclo como `CONTINUAR`, `CORRIGIR`, `BLOQUEAR` ou `CONCLUIR`;
-- garantir a criação ou atualização do artefato do ciclo.
+- informar onde está o artefato gerado ou atualizado.
 
-## 9. Artefato obrigatório por ciclo
+## 9. Artefato obrigatório por mensagem
 
-Cada ciclo operacional deve produzir um artefato próprio ou atualizar um artefato existente.
+Toda mensagem deve:
 
-Artefatos aceitos incluem:
+- criar um artefato próprio; ou
+- atualizar um artefato existente; ou
+- registrar uma nova entrada em log versionado ou verificável.
+
+Artefatos aceitos:
 
 - arquivo Markdown;
-- decisão arquitetural;
+- log de conversa;
+- registro de decisão;
 - especificação;
 - relatório;
 - checklist;
@@ -233,16 +289,16 @@ Artefatos aceitos incluem:
 - comentário em PR;
 - commit;
 - pull request;
-- log;
 - resultado de teste;
 - captura;
 - pacote de evidências.
 
-O artefato deve possuir, quando aplicável:
+Estrutura recomendada:
 
 ```yaml
-objetivo_id: identificador
-ciclo: numero
+mensagem_id: identificador
+classe: A_B_ou_C
+objetivo_id: identificador_ou_nao_aplicavel
 estado: estado_atual
 agentes_participantes: []
 entregas: []
@@ -253,24 +309,23 @@ bloqueios: []
 proximo_passo: descricao
 ```
 
-Sem artefato ou evidência equivalente, o ciclo não pode ser classificado como concluído.
+Sem artefato, a resposta está em não conformidade, mesmo quando o conteúdo for casual ou curto.
 
 ## 10. Execução silenciosa
 
 A execução silenciosa é proibida por padrão.
 
-Somente Léo pode autorizá-la explicitamente.
-
-Exemplo de autorização válida:
+Somente Léo pode autorizá-la explicitamente, por exemplo:
 
 ```text
 EXECUTAR EM SILÊNCIO
 ```
 
-A autorização deve valer apenas para a missão ou ciclo em que foi declarada, salvo indicação explícita em contrário.
+A autorização vale apenas para a missão ou ciclo em que foi declarada, salvo indicação expressa em contrário.
 
 Mesmo em execução silenciosa:
 
+- toda mensagem continua exigindo artefato;
 - ações críticas devem gerar evidência;
 - alterações em repositório devem gerar commit ou PR;
 - o resultado final deve informar o que foi alterado;
@@ -280,44 +335,46 @@ Mesmo em execução silenciosa:
 
 Não é permitido:
 
+- responder sem gerar ou atualizar artefato;
 - substituir o trabalho real de um agente por frase genérica;
-- afirmar que um agente pesquisou sem evidência da consulta;
-- afirmar que um agente implementou sem indicar alteração ou artefato;
-- incluir todos os agentes sem necessidade;
-- ocultar divergências por meio de consolidação única;
-- reescrever silenciosamente a contribuição anterior;
-- avançar sem passagem de bastão identificada;
+- afirmar pesquisa sem consulta real;
+- afirmar implementação sem alteração verificável;
+- incluir agentes sem necessidade;
+- ocultar divergências;
+- reescrever silenciosamente contribuição anterior;
+- avançar sem passagem de bastão nas classes B e C;
 - concluir sem evidência;
-- usar a memória da conversa como única fonte oficial de verdade;
-- confundir opinião, hipótese, proposta, decisão aprovada e fato comprovado.
+- usar apenas a memória da conversa como fonte oficial;
+- confundir hipótese, proposta, decisão e fato.
 
 ## 12. Papel de Carmem
 
 Carmem deve:
 
-- consolidar o artefato do ciclo;
-- preservar a contribuição de cada agente;
+- consolidar ou atualizar o artefato de cada mensagem;
+- preservar contribuições individuais;
 - registrar decisões aprovadas;
-- separar conteúdo original, revisão e correção;
+- separar original, revisão e correção;
 - manter terminologia consistente;
-- preparar o material para versionamento quando autorizado.
+- preparar material para versionamento quando autorizado.
 
-Carmem não pode apagar divergências relevantes nem transformar proposta em decisão aprovada.
+Carmem não pode apagar divergências nem transformar proposta em decisão aprovada.
 
 ## 13. Papel de Emily
 
-Emily deve auditar:
+Emily deve auditar, quando aplicável:
 
+- classificação da mensagem;
+- existência do artefato;
 - agentes realmente selecionados;
 - pesquisas realmente realizadas;
-- evidências apresentadas;
-- aderência ao contrato da missão;
+- evidências;
+- aderência ao contrato;
 - distinção entre fato, hipótese, proposta e decisão;
-- existência do artefato do ciclo;
-- integridade da passagem de bastão;
+- passagem de bastão;
 - ausência de trabalho silencioso não autorizado.
 
-Pareceres possíveis:
+Pareceres:
 
 - `PASS`;
 - `PASS_WITH_RESERVATIONS`;
@@ -334,7 +391,7 @@ Fica formalmente reconhecido:
 Responsabilidades:
 
 - modelagem de dados;
-- definição de esquemas;
+- esquemas;
 - persistência;
 - integridade e consistência;
 - consultas e desempenho;
@@ -349,13 +406,13 @@ Responsabilidades:
 
 Fronteira inicial:
 
-- Sofia responde pela arquitetura geral do sistema;
-- Manoel responde pela arquitetura de dados e pelo ciclo de vida das informações;
-- decisões que afetem simultaneamente arquitetura geral e dados devem ser revisadas pelos dois agentes antes da implementação.
+- Sofia responde pela arquitetura geral;
+- Manoel responde pela arquitetura de dados e ciclo de vida das informações;
+- decisões que afetem arquitetura geral e dados devem ser revisadas por ambos.
 
 ## 15. Estado operacional compartilhado
 
-Cada ciclo deve registrar:
+Mensagens B e C devem registrar:
 
 ```yaml
 estado: em_execucao
@@ -369,42 +426,50 @@ evidencias: []
 artefato_atual: caminho_ou_link
 ```
 
+Mensagens A usam o registro mínimo definido na seção 4.1.
+
 ## 16. Critérios de conformidade
 
-Uma mensagem operacional está conforme quando:
+Toda mensagem está conforme quando:
 
-- existe contrato da missão;
-- agentes foram selecionados por competência;
-- a seleção foi justificada;
-- cada agente expôs sua contribuição real;
-- pesquisas e ferramentas foram informadas;
-- achados e decisões foram separados;
-- existe passagem de bastão;
-- existe artefato;
-- existem evidências;
-- Emily auditou quando a missão exigia revisão independente;
-- Mestre declarou o estado final.
+- foi classificada;
+- gerou ou atualizou artefato;
+- informou o artefato;
+- não atribuiu trabalho fictício.
+
+Mensagens B e C exigem adicionalmente:
+
+- contrato da missão;
+- agentes selecionados por competência;
+- seleção justificada;
+- contribuição real exposta;
+- pesquisas e ferramentas informadas;
+- achados e decisões separados;
+- passagem de bastão;
+- evidências;
+- auditoria quando exigida;
+- estado final declarado pelo Mestre.
 
 ## 17. Tratamento de não conformidade
 
 Quando a política não for seguida:
 
-1. o Mestre deve reconhecer a falha;
-2. o estado deve mudar para `CORRECAO`;
-3. as contribuições omitidas devem ser reconstruídas apenas com base em evidências reais;
-4. não é permitido inventar trabalho retroativo;
-5. Carmem deve corrigir o artefato;
-6. Emily deve revisar novamente;
-7. o ciclo somente pode ser concluído após correção.
+1. o Mestre reconhece a falha;
+2. o estado muda para `CORRECAO`;
+3. contribuições omitidas são reconstruídas apenas com evidências reais;
+4. trabalho retroativo não pode ser inventado;
+5. Carmem corrige o artefato;
+6. Emily revisa novamente quando aplicável;
+7. o ciclo só termina após correção.
 
 ## 18. Decisões ao final do ciclo
 
-- **CONTINUAR** — houve progresso, mas o objetivo ainda não foi atendido;
+- **CONTINUAR** — houve progresso, mas o objetivo não foi atendido;
 - **CORRIGIR** — a entrega não está conforme;
 - **BLOQUEAR** — falta autorização, informação ou evidência;
 - **CONCLUIR** — critérios atendidos, artefato gerado e evidências auditadas.
 
-## 19. Autorizações desta decisão
+## 19. Autorizações
 
 ```yaml
 registro_metodologico: autorizado
@@ -421,7 +486,8 @@ publicacao_automatica: nao_autorizada
 ```text
 TRABALHO_SILENCIOSO=PROIBIDO
 EXPOSICAO_POR_AGENTE=OBRIGATORIA_PARA_AGENTES_SELECIONADOS
-ARTEFATO_POR_CICLO=OBRIGATORIO
+ARTEFATO_POR_MENSAGEM=OBRIGATORIO
+ARTEFATO_INCLUSIVE_EM_SAUDACAO_E_CONFIRMACAO_CURTA=SIM
 SELECAO_DINAMICA=ATIVA
 ATRIBUICAO_FICTICIA=PROIBIDA
 EXECUCAO_SILENCIOSA=SOMENTE_COM_AUTORIZACAO_EXPRESSA_DO_LEO
@@ -431,12 +497,12 @@ ESPECIALISTA_BANCO_DE_DADOS=MANOEL
 ## 21. Próximo gate
 
 ```text
-Carmem — redação
+Carmem — correção da redação
 → Sofia — revisão metodológica
-→ Manoel — revisão de dados e registros
-→ Gabriel — versionamento em branch
-→ Emily — RC independente
-→ Léo — decisão sobre aprovação e merge
+→ Manoel — revisão de registros
+→ Gabriel — versionamento
+→ Emily — nova RC independente
+→ Léo — decisão sobre merge
 ```
 
 Esta decisão não autoriza merge na `main`.
