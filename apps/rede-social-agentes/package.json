@@ -9,14 +9,15 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
+    "build:packages": "pnpm --filter @rsa/contracts build && pnpm --filter @rsa/database build",
     "dev:server": "pnpm --filter @rsa/server dev",
     "dev:web": "pnpm --filter @rsa/web dev",
     "dev:worker": "pnpm --filter @rsa/worker dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "test": "pnpm -r --if-present test",
-    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm build:packages && pnpm -r --if-present test",
+    "typecheck": "pnpm build:packages && pnpm -r --if-present typecheck",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
