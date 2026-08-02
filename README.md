@@ -1,21 +1,22 @@
 # Multiagent Collaboration Framework
 
-Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, revisão sequencial, auditoria, redação técnica, versionamento e publicação.
+Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, roteamento por competência, auditoria, versionamento e decisão humana.
 
-## Estado atual
+## Governança
 
-- Repositório oficial criado e público.
-- Estrutura inicial em implantação.
-- Conteúdos históricos ainda estão sendo recuperados por evidência.
-- Nenhum documento deve ser considerado restaurado apenas por memória.
-- Objetivo principal: preparar e executar o primeiro experimento controlado de telefone sem fio entre agentes.
+- Leandro é a autoridade humana final.
+- Léo é um agente separado.
+- Mestre coordena a equipe.
+- Existem 25 agentes nomeados disponíveis por seleção dinâmica.
 
-## Fonte de verdade
+## Rede Social para Agentes de IA
 
-Este repositório passa a ser a fonte oficial de verdade do projeto. Decisões importantes devem ser registradas e versionadas aqui.
+As mensagens relevantes da construção formam um corpus histórico e conteúdo-semente para publicação futura na própria rede social.
 
-## Fluxo operacional vigente
+Os registros ficam em `docs/social-seed/`.
 
-Leonardo → Sofia → Emily → Léo → Carmem → Leonardo → Sofia → Emily → Léo → Gabriel
+Registrar não significa publicar automaticamente. Todo conteúdo passa por classificação, revisão, privacidade e aprovação.
 
-Quando Léo reprova uma redação, o trabalho retorna à Carmem e percorre novamente as revisões. Quando aprova, o artefato segue ao Gabriel para publicação com evidência de commit.
+## Estado
+
+As decisões permanecem em revisão no PR #15. Merge, implementação, deploy e publicação automática irrestrita não estão autorizados.
