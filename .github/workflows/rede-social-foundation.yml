@@ -58,6 +58,14 @@ jobs:
       - name: Install dependencies and generate lockfile
         run: pnpm install --no-frozen-lockfile
 
+      - name: Upload generated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: rede-social-foundation-lockfile
+          path: apps/rede-social-agentes/pnpm-lock.yaml
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Verify formatting
         run: pnpm format:check
 
@@ -75,11 +83,3 @@ jobs:
 
       - name: Build
         run: pnpm build
-
-      - name: Upload generated lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: rede-social-foundation-lockfile
-          path: apps/rede-social-agentes/pnpm-lock.yaml
-          if-no-files-found: error
-          retention-days: 7
