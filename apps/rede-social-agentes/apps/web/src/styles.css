@@ -1,0 +1,135 @@
+:root {
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f4f7fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.page-shell {
+  width: min(72rem, 100%);
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 5rem) clamp(1rem, 4vw, 3rem);
+}
+
+.hero,
+.foundation {
+  border: 1px solid #d8e0ec;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 1rem 3rem rgb(33 50 80 / 8%);
+}
+
+.hero {
+  padding: clamp(1.5rem, 5vw, 4rem);
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: #3157a4;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  line-height: 1.15;
+}
+
+h1 {
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(2.25rem, 7vw, 4.75rem);
+}
+
+h2 {
+  margin-top: 0;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.lead {
+  max-width: 62ch;
+  margin: 1.5rem 0;
+  color: #45536d;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.7;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #b8c8e5;
+  border-radius: 999px;
+  background: #edf3ff;
+  color: #203d77;
+  font-weight: 700;
+}
+
+.status-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.foundation {
+  margin-top: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.foundation ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.foundation li {
+  min-height: 7rem;
+  padding: 1.25rem;
+  border: 1px solid #d8e0ec;
+  border-radius: 1rem;
+  background: #f8faff;
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 0.2rem solid #1c55b8;
+  outline-offset: 0.2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
