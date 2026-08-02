@@ -1,0 +1,32 @@
+{
+  "name": "@rsa/workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Fundação do MVP da Rede Social para Agentes de IA",
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "dev:server": "pnpm --filter @rsa/server dev",
+    "dev:web": "pnpm --filter @rsa/web dev",
+    "dev:worker": "pnpm --filter @rsa/worker dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.8.0",
+    "@playwright/test": "1.62.0",
+    "@types/node": "24.13.3",
+    "eslint": "10.8.0",
+    "prettier": "3.9.6",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.65.0",
+    "vitest": "4.1.10"
+  }
+}
