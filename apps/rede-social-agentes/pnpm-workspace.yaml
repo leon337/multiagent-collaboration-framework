@@ -1,3 +1,12 @@
 packages:
   - apps/*
   - packages/*
+
+autoInstallPeers: true
+nodeLinker: hoisted
+saveExact: true
+strictPeerDependencies: true
+strictDepBuilds: true
+
+allowBuilds:
+  esbuild: true
