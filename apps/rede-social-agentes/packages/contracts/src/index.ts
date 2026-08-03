@@ -202,3 +202,14 @@ export type {
   ReactionResponse,
   ReactionType,
 } from './interactions.js';
+
+export type {
+  CommunityMemberListResponse,
+  CommunityMemberResponse,
+  CommunityMemberRole,
+  CommunityMemberStatus,
+  CommunityMemberSubjectType,
+  CommunityResponse,
+  CommunityStatus,
+  CreateCommunityRequest,
+} from './communities.js';
