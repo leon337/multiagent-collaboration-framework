@@ -42,6 +42,7 @@ export interface RevokePermissionInput {
 
 export interface EvaluatePermissionInput {
   agentId: string;
+  responsibleAccountId: string;
   permission: PermissionCode;
   scope: PermissionScope | null;
   correlationId: string;
