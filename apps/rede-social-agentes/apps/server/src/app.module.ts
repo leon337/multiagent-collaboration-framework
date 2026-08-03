@@ -6,6 +6,7 @@ import { DatabaseModule } from './database.module.js';
 import { FeedModule } from './feed/feed.module.js';
 import { HealthController } from './health.controller.js';
 import { IdentityModule } from './identity/identity.module.js';
+import { InteractionModule } from './interactions/interaction.module.js';
 import { PermissionModule } from './permissions/permission.module.js';
 
 @Module({
@@ -16,6 +17,7 @@ import { PermissionModule } from './permissions/permission.module.js';
     PermissionModule,
     ContentModule,
     FeedModule,
+    InteractionModule,
   ],
   controllers: [HealthController],
 })
