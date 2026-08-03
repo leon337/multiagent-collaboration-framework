@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
 import type { AccountStatus } from '@rsa/contracts';
+import type { DatabaseRow } from '@rsa/database';
 
 import { DatabaseService } from '../database.service.js';
 import { EmailAlreadyExistsError } from './identity.errors.js';
@@ -12,7 +13,7 @@ import type {
   IdentityRepository,
 } from './identity.repository.js';
 
-interface HumanAccountRow {
+interface HumanAccountRow extends DatabaseRow {
   id: string;
   email: string;
   display_name: string;
