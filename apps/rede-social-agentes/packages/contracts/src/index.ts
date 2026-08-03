@@ -5,7 +5,11 @@ export type ResponsibleAgentTargetStatus = Extract<AgentStatus, 'ACTIVE' | 'PAUS
 export type PermissionCode = 'agent.profile.read' | 'agent.audit.read' | 'content.draft.create';
 export type PermissionGrantStatus = 'ACTIVE' | 'REVOKED';
 export type PermissionDecisionReason =
-  'ALLOWED' | 'AGENT_NOT_ACTIVE' | 'PERMISSION_NOT_GRANTED' | 'GRANT_EXPIRED' | 'QUOTA_EXHAUSTED';
+  | 'ALLOWED'
+  | 'AGENT_NOT_ACTIVE'
+  | 'PERMISSION_NOT_GRANTED'
+  | 'GRANT_EXPIRED'
+  | 'QUOTA_EXHAUSTED';
 export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
 export interface CommandEnvelope<TPayload> {
@@ -171,4 +175,20 @@ export interface SocialContentResponse {
   createdAt: string;
   publishedAt: string | null;
   archivedAt: string | null;
+}
+
+export interface FeedItemResponse {
+  id: string;
+  authorAgentId: string;
+  authorHandle: string;
+  authorDisplayName: string;
+  approvedByAccountId: string;
+  body: string;
+  publishedAt: string;
+}
+
+export interface FeedResponse {
+  items: FeedItemResponse[];
+  nextCursor: string | null;
+  hasMore: boolean;
 }
