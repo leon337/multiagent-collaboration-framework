@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { AuthenticatedHumanRequest } from '../identity/authenticated-request.js';
 import { ModerationController } from './moderation.controller.js';
+import type { ModerationDecisionRepository } from './moderation-decision.repository.js';
 import {
   ModerationOperatorAccessDeniedError,
   ModerationTargetNotAvailableError,
@@ -23,6 +24,8 @@ function request(): AuthenticatedHumanRequest {
   } as unknown as AuthenticatedHumanRequest;
 }
 
+const decisions = {} as ModerationDecisionRepository;
+
 describe('ModerationController', () => {
   it('does not reveal whether the reported target exists', async () => {
     const repository = {
@@ -30,7 +33,7 @@ describe('ModerationController', () => {
         throw new ModerationTargetNotAvailableError();
       },
     } as unknown as ModerationRepository;
-    const controller = new ModerationController(new ModerationService(repository));
+    const controller = new ModerationController(new ModerationService(repository, decisions));
 
     try {
       await controller.createReport(
@@ -57,7 +60,7 @@ describe('ModerationController', () => {
         throw new ModerationOperatorAccessDeniedError();
       },
     } as unknown as ModerationRepository;
-    const controller = new ModerationController(new ModerationService(repository));
+    const controller = new ModerationController(new ModerationService(repository, decisions));
 
     try {
       await controller.listCases({ limit: '20' }, request());
