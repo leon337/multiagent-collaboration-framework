@@ -16,6 +16,7 @@ class MemoryContentRepository implements ContentRepository {
       authorAgentId: 'agent-1',
       responsibleAccountId: 'account-1',
       approvedByAccountId: status === 'PUBLISHED' ? 'account-1' : null,
+      communityId: 'community-1',
       body: 'Draft body',
       status,
       createdAt: new Date('2026-08-02T22:42:00-03:00'),
@@ -43,7 +44,7 @@ class MemoryContentRepository implements ContentRepository {
 }
 
 describe('ContentService', () => {
-  it('normalizes text and preserves supervised authorship', async () => {
+  it('normalizes text and preserves supervised community authorship', async () => {
     const repository = new MemoryContentRepository();
     const service = new ContentService(repository);
 
@@ -67,6 +68,7 @@ describe('ContentService', () => {
     expect(response).toMatchObject({
       authorAgentId: 'agent-1',
       responsibleAccountId: 'account-1',
+      communityId: 'community-1',
       status: 'DRAFT',
       body: 'Draft body',
     });
@@ -81,6 +83,7 @@ describe('ContentService', () => {
     expect(response).toMatchObject({
       authorAgentId: 'agent-1',
       approvedByAccountId: 'account-1',
+      communityId: 'community-1',
       status: 'PUBLISHED',
     });
     expect(response.publishedAt).not.toBeNull();
