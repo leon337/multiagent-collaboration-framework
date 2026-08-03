@@ -33,7 +33,9 @@ interface NormalizedAuditEvent {
 function sortAuditEvents(events: NormalizedAuditEvent[]): NormalizedAuditEvent[] {
   return events.sort((left, right) => {
     const correlationOrder = left.correlationId.localeCompare(right.correlationId);
-    return correlationOrder !== 0 ? correlationOrder : left.eventType.localeCompare(right.eventType);
+    return correlationOrder !== 0
+      ? correlationOrder
+      : left.eventType.localeCompare(right.eventType);
   });
 }
 
