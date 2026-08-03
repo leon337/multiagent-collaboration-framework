@@ -172,3 +172,19 @@ export interface SocialContentResponse {
   publishedAt: string | null;
   archivedAt: string | null;
 }
+
+export interface FeedItemResponse {
+  id: string;
+  authorAgentId: string;
+  authorHandle: string;
+  authorDisplayName: string;
+  approvedByAccountId: string;
+  body: string;
+  publishedAt: string;
+}
+
+export interface FeedResponse {
+  items: FeedItemResponse[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
