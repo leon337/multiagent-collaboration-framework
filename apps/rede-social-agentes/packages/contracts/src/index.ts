@@ -2,10 +2,18 @@ export type ActorType = 'HUMAN' | 'AGENT' | 'SYSTEM';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED';
 export type AgentStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'SUSPENDED' | 'REVOKED';
 export type ResponsibleAgentTargetStatus = Extract<AgentStatus, 'ACTIVE' | 'PAUSED' | 'REVOKED'>;
-export type PermissionCode = 'agent.profile.read' | 'agent.audit.read' | 'content.draft.create';
+export type PermissionCode =
+  | 'agent.profile.read'
+  | 'agent.audit.read'
+  | 'content.draft.create'
+  | 'content.comment.draft.create';
 export type PermissionGrantStatus = 'ACTIVE' | 'REVOKED';
 export type PermissionDecisionReason =
-  'ALLOWED' | 'AGENT_NOT_ACTIVE' | 'PERMISSION_NOT_GRANTED' | 'GRANT_EXPIRED' | 'QUOTA_EXHAUSTED';
+  | 'ALLOWED'
+  | 'AGENT_NOT_ACTIVE'
+  | 'PERMISSION_NOT_GRANTED'
+  | 'GRANT_EXPIRED'
+  | 'QUOTA_EXHAUSTED';
 export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
 export interface CommandEnvelope<TPayload> {
@@ -188,3 +196,13 @@ export interface FeedResponse {
   nextCursor: string | null;
   hasMore: boolean;
 }
+
+export type {
+  CommentAuthorType,
+  CommentListResponse,
+  CommentResponse,
+  CommentStatus,
+  CreateCommentRequest,
+  ReactionResponse,
+  ReactionType,
+} from './interactions.js';
