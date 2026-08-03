@@ -6,13 +6,13 @@ on:
       - "apps/rede-social-agentes/**"
       - ".github/workflows/rede-social-foundation.yml"
       - "docs/projects/rede-social-agentes/**"
-      - "docs/decisions/MCF-DEC-021-*.md"
-      - "docs/reviews/MCF-DEC-021-*.md"
+      - "docs/decisions/MCF-DEC-*.md"
+      - "docs/reviews/MCF-DEC-*.md"
       - "docs/social-seed/**"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   foundation:
@@ -46,10 +46,8 @@ jobs:
       LOG_LEVEL: error
 
     steps:
-      - name: Checkout branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -63,25 +61,6 @@ jobs:
 
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
-
-      - name: Format hardened identity files
-        run: |
-          pnpm exec prettier --write \
-            apps/server/src/identity/identity.controller.ts \
-            apps/server/src/identity/identity.controller.test.ts
-
-      - name: Commit formatted identity files
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            apps/server/src/identity/identity.controller.ts \
-            apps/server/src/identity/identity.controller.test.ts
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(identity): formatar arquivos endurecidos"
-            git push origin HEAD:${{ github.event.pull_request.head.ref }}
-          fi
 
       - name: Verify formatting
         run: pnpm format:check
