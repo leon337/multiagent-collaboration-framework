@@ -136,10 +136,7 @@ async function getRole(
   return role;
 }
 
-async function lockCase(
-  client: DatabaseTransaction,
-  caseId: string,
-): Promise<CaseRow> {
+async function lockCase(client: DatabaseTransaction, caseId: string): Promise<CaseRow> {
   const result = await client.query<CaseRow>(
     `select ${caseColumns} from "moderation_cases" where "id" = $1 for update`,
     [caseId],
@@ -151,10 +148,7 @@ async function lockCase(
   return row;
 }
 
-function ensureAssignedReview(
-  moderationCase: CaseRow,
-  operatorAccountId: string,
-): void {
+function ensureAssignedReview(moderationCase: CaseRow, operatorAccountId: string): void {
   if (
     moderationCase.status !== 'IN_REVIEW' ||
     moderationCase.assigned_to_account_id !== operatorAccountId
@@ -178,10 +172,7 @@ function ensureActionAllowed(
   if (expected && expected !== targetType) {
     throw new ModerationStateConflictError();
   }
-  if (
-    role !== 'SUPERVISOR' &&
-    (action === 'PAUSE_AGENT' || action === 'ARCHIVE_COMMUNITY')
-  ) {
+  if (role !== 'SUPERVISOR' && (action === 'PAUSE_AGENT' || action === 'ARCHIVE_COMMUNITY')) {
     throw new ModerationOperatorAccessDeniedError();
   }
 }
@@ -196,7 +187,10 @@ async function applyRestrictiveAction(
     return { previousState: {}, newState: {} };
   }
 
-  const tableByAction: Record<Exclude<ModerationActionType, 'NO_ACTION' | 'REVERSE_ACTION'>, string> = {
+  const tableByAction: Record<
+    Exclude<ModerationActionType, 'NO_ACTION' | 'REVERSE_ACTION'>,
+    string
+  > = {
     HIDE_CONTENT: 'social_content',
     ARCHIVE_COMMENT: 'social_comments',
     PAUSE_AGENT: 'agent_profiles',

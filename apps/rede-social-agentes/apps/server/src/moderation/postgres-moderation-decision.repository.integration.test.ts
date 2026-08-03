@@ -167,14 +167,17 @@ describe('PostgresModerationDecisionRepository integration', () => {
       if (caseId) {
         await database.query('delete from "moderation_cases" where "id" = $1', [caseId]);
       }
-      await database.query(
-        'delete from "account_platform_roles" where "account_id" in ($1, $2)',
-        [moderatorId, supervisorId],
-      );
-      await database.query(
-        'delete from "audit_events" where "actor_id" in ($1, $2, $3, $4, $5)',
-        [ownerId, reporterId, moderatorId, supervisorId, agentId],
-      );
+      await database.query('delete from "account_platform_roles" where "account_id" in ($1, $2)', [
+        moderatorId,
+        supervisorId,
+      ]);
+      await database.query('delete from "audit_events" where "actor_id" in ($1, $2, $3, $4, $5)', [
+        ownerId,
+        reporterId,
+        moderatorId,
+        supervisorId,
+        agentId,
+      ]);
       await database.query('delete from "social_content" where "id" = $1', [contentId]);
       await database.query('delete from "agent_profiles" where "id" = $1', [agentId]);
       await database.query('delete from "accounts" where "id" in ($1, $2, $3, $4)', [

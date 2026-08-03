@@ -1,7 +1,4 @@
-import type {
-  ModerationActionType,
-  ModerationOperatorRole,
-} from '@rsa/contracts';
+import type { ModerationActionType, ModerationOperatorRole } from '@rsa/contracts';
 
 import type { ModerationCaseRecord } from './moderation.repository.js';
 
