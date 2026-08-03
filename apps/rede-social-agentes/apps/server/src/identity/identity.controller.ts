@@ -4,6 +4,7 @@ import {
   ConflictException,
   Controller,
   HttpCode,
+  Inject,
   Post,
   Req,
   UnauthorizedException,
@@ -52,7 +53,7 @@ function parseBody<TValue>(schema: ZodType<TValue>, body: unknown): TValue {
 
 @Controller('v1')
 export class IdentityController {
-  constructor(private readonly identity: IdentityService) {}
+  constructor(@Inject(IdentityService) private readonly identity: IdentityService) {}
 
   @Post('accounts')
   @HttpCode(201)
