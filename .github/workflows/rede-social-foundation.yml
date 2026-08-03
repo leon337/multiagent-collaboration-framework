@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   foundation:
@@ -46,10 +46,8 @@ jobs:
       LOG_LEVEL: error
 
     steps:
-      - name: Checkout privacy branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: implementation/rede-social-privacy-rights
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -63,30 +61,6 @@ jobs:
 
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
-
-      - name: Format privacy files
-        run: |
-          pnpm exec prettier --write \
-            apps/server/src/privacy/postgres-privacy.repository.integration.test.ts \
-            apps/server/src/privacy/postgres-privacy.repository.ts \
-            apps/server/src/privacy/privacy.controller.ts \
-            apps/server/src/privacy/privacy.service.test.ts \
-            apps/server/src/privacy/privacy.service.ts
-
-      - name: Commit formatted privacy files
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            apps/server/src/privacy/postgres-privacy.repository.integration.test.ts \
-            apps/server/src/privacy/postgres-privacy.repository.ts \
-            apps/server/src/privacy/privacy.controller.ts \
-            apps/server/src/privacy/privacy.service.test.ts \
-            apps/server/src/privacy/privacy.service.ts
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(privacy): formatar direitos e anonimização"
-            git push origin HEAD:implementation/rede-social-privacy-rights
-          fi
 
       - name: Verify formatting
         run: pnpm format:check
