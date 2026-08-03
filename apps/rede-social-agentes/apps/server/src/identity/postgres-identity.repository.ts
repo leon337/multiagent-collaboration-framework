@@ -7,10 +7,12 @@ import type { DatabaseRow } from '@rsa/database';
 import { DatabaseService } from '../database.service.js';
 import { EmailAlreadyExistsError } from './identity.errors.js';
 import type {
+  AuthenticatedHumanRecord,
   CreateHumanAccountInput,
   CreateSessionInput,
   HumanAccountRecord,
   IdentityRepository,
+  RevokeSessionInput,
 } from './identity.repository.js';
 
 interface HumanAccountRow extends DatabaseRow {
@@ -20,6 +22,14 @@ interface HumanAccountRow extends DatabaseRow {
   status: AccountStatus;
   password_hash: string;
   created_at: Date;
+}
+
+interface AuthenticatedHumanRow extends DatabaseRow {
+  account_id: string;
+  email: string;
+  display_name: string;
+  session_id: string;
+  expires_at: Date;
 }
 
 function isUniqueViolation(error: unknown): boolean {
@@ -138,6 +148,72 @@ export class PostgresIdentityRepository implements IdentityRepository {
           { expiresAt: input.expiresAt.toISOString() },
         ],
       );
+    });
+  }
+
+  async findActiveSessionByTokenHash(tokenHash: string): Promise<AuthenticatedHumanRecord | null> {
+    const result = await this.database.query<AuthenticatedHumanRow>(
+      `
+        select
+          a."id" as "account_id",
+          a."email",
+          p."display_name",
+          s."id" as "session_id",
+          s."expires_at"
+        from "sessions" s
+        inner join "accounts" a on a."id" = s."account_id"
+        inner join "human_profiles" p on p."account_id" = a."id"
+        where s."token_hash" = $1
+          and s."revoked_at" is null
+          and s."expires_at" > now()
+          and a."status" = 'ACTIVE'
+        limit 1
+      `,
+      [tokenHash],
+    );
+
+    const row = result.rows[0];
+    if (!row) {
+      return null;
+    }
+
+    return {
+      accountId: row.account_id,
+      email: row.email,
+      displayName: row.display_name,
+      sessionId: row.session_id,
+      sessionExpiresAt: row.expires_at,
+    };
+  }
+
+  async revokeSession(input: RevokeSessionInput): Promise<boolean> {
+    return this.database.transaction(async (client) => {
+      const result = await client.query(
+        `
+          update "sessions"
+          set "revoked_at" = now()
+          where "id" = $1
+            and "account_id" = $2
+            and "revoked_at" is null
+        `,
+        [input.sessionId, input.accountId],
+      );
+
+      if (result.rowCount !== 1) {
+        return false;
+      }
+
+      await client.query(
+        `
+          insert into "audit_events" (
+            "id", "actor_id", "actor_type", "event_type", "aggregate_type",
+            "aggregate_id", "correlation_id", "payload"
+          ) values ($1, $2, 'HUMAN', 'SESSION_REVOKED', 'SESSION', $3, $4, $5)
+        `,
+        [randomUUID(), input.accountId, input.sessionId, input.correlationId, {}],
+      );
+
+      return true;
     });
   }
 }
