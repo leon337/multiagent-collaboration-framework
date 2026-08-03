@@ -57,10 +57,10 @@ try {
     await client.query('begin');
     try {
       await client.query(sql);
-      await client.query(
-        'insert into "_rsa_migrations" ("filename", "checksum") values ($1, $2)',
-        [filename, currentChecksum],
-      );
+      await client.query('insert into "_rsa_migrations" ("filename", "checksum") values ($1, $2)', [
+        filename,
+        currentChecksum,
+      ]);
       await client.query('commit');
       console.info(JSON.stringify({ event: 'migration_applied', filename }));
     } catch (error) {
