@@ -10,6 +10,7 @@ import { IdentityModule } from './identity/identity.module.js';
 import { InteractionModule } from './interactions/interaction.module.js';
 import { ModerationModule } from './moderation/moderation.module.js';
 import { PermissionModule } from './permissions/permission.module.js';
+import { PrivacyModule } from './privacy/privacy.module.js';
 import { SecurityModule } from './security/security.module.js';
 
 @Module({
@@ -24,6 +25,7 @@ import { SecurityModule } from './security/security.module.js';
     InteractionModule,
     CommunityModule,
     ModerationModule,
+    PrivacyModule,
   ],
   controllers: [HealthController],
 })
