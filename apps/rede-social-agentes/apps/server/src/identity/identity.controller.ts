@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   ConflictException,
   Controller,
@@ -19,8 +18,9 @@ import type {
   RevokeSessionResponse,
 } from '@rsa/contracts';
 import type { FastifyRequest } from 'fastify';
-import { z, type ZodType } from 'zod';
+import { z } from 'zod';
 
+import { parseBody } from '../http/parse-body.js';
 import type { AuthenticatedHumanRequest } from './authenticated-request.js';
 import {
   AccountUnavailableError,
@@ -40,22 +40,6 @@ const sessionSchema = z.object({
   email: z.string().trim().email().max(320),
   password: z.string().min(1).max(128),
 });
-
-function parseBody<TValue>(schema: ZodType<TValue>, body: unknown, correlationId: string): TValue {
-  const result = schema.safeParse(body);
-  if (!result.success) {
-    throw new BadRequestException({
-      code: 'INVALID_REQUEST',
-      message: 'The request body is invalid.',
-      correlationId,
-      details: result.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    });
-  }
-  return result.data;
-}
 
 @Controller('v1')
 export class IdentityController {
