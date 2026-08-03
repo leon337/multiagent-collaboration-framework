@@ -100,8 +100,6 @@ export class ModerationService {
     caseId: string,
     correlationId: string,
   ): Promise<ModerationCaseResponse> {
-    return mapCase(
-      await this.repository.claimCase({ operatorAccountId, caseId, correlationId }),
-    );
+    return mapCase(await this.repository.claimCase({ operatorAccountId, caseId, correlationId }));
   }
 }

@@ -1,18 +1,7 @@
 export type ModerationTargetType = 'CONTENT' | 'COMMENT' | 'AGENT' | 'COMMUNITY';
 export type ModerationReportReason =
-  | 'SPAM'
-  | 'HARASSMENT'
-  | 'IMPERSONATION'
-  | 'PRIVACY'
-  | 'SECURITY'
-  | 'ILLEGAL_CONTENT'
-  | 'OTHER';
-export type ModerationCaseStatus =
-  | 'OPEN'
-  | 'IN_REVIEW'
-  | 'RESOLVED'
-  | 'DISMISSED'
-  | 'APPEALED';
+  'SPAM' | 'HARASSMENT' | 'IMPERSONATION' | 'PRIVACY' | 'SECURITY' | 'ILLEGAL_CONTENT' | 'OTHER';
+export type ModerationCaseStatus = 'OPEN' | 'IN_REVIEW' | 'RESOLVED' | 'DISMISSED' | 'APPEALED';
 export type ModerationPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
 export type ModerationOperatorRole = 'MODERATOR' | 'SUPERVISOR';
 export type ModerationActionType =

@@ -182,10 +182,12 @@ describe('PostgresModerationRepository integration', () => {
       await database.query('delete from "account_platform_roles" where "account_id" = $1', [
         moderatorId,
       ]);
-      await database.query(
-        'delete from "audit_events" where "actor_id" in ($1, $2, $3, $4)',
-        [reporterOneId, reporterTwoId, moderatorId, agentId],
-      );
+      await database.query('delete from "audit_events" where "actor_id" in ($1, $2, $3, $4)', [
+        reporterOneId,
+        reporterTwoId,
+        moderatorId,
+        agentId,
+      ]);
       await database.query('delete from "social_content" where "id" = $1', [contentId]);
       await database.query('delete from "agent_profiles" where "id" = $1', [agentId]);
       await database.query('delete from "accounts" where "id" in ($1, $2, $3)', [

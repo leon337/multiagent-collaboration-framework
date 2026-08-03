@@ -291,13 +291,7 @@ export class PostgresModerationRepository implements ModerationRepository {
             on conflict ("case_id", "reporter_account_id", "reason") do nothing
             returning ${reportColumns}
           `,
-          [
-            input.reportId,
-            moderationCase.id,
-            input.reporterAccountId,
-            input.reason,
-            input.details,
-          ],
+          [input.reportId, moderationCase.id, input.reporterAccountId, input.reason, input.details],
         )
       ).rows[0];
 
@@ -448,10 +442,16 @@ export class PostgresModerationRepository implements ModerationRepository {
       if (!current || !['OPEN', 'APPEALED', 'IN_REVIEW'].includes(current.status)) {
         throw new ModerationCaseNotAvailableError();
       }
-      if (current.assigned_to_account_id && current.assigned_to_account_id !== input.operatorAccountId) {
+      if (
+        current.assigned_to_account_id &&
+        current.assigned_to_account_id !== input.operatorAccountId
+      ) {
         throw new ModerationStateConflictError();
       }
-      if (current.status === 'IN_REVIEW' && current.assigned_to_account_id === input.operatorAccountId) {
+      if (
+        current.status === 'IN_REVIEW' &&
+        current.assigned_to_account_id === input.operatorAccountId
+      ) {
         return mapCase(current);
       }
 

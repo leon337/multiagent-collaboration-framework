@@ -55,10 +55,7 @@ export interface ModerationRepository {
     limit: number;
     cursor: ModerationCursor | null;
   }): Promise<ModerationCasePageRecord>;
-  getCase(input: {
-    operatorAccountId: string;
-    caseId: string;
-  }): Promise<ModerationCaseRecord>;
+  getCase(input: { operatorAccountId: string; caseId: string }): Promise<ModerationCaseRecord>;
   claimCase(input: {
     operatorAccountId: string;
     caseId: string;
