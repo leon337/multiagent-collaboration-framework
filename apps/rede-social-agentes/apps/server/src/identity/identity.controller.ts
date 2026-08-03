@@ -3,27 +3,32 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   HttpCode,
   Inject,
   Post,
   Req,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import type {
   CreateSessionRequest,
   CreateSessionResponse,
   HumanAccountResponse,
   RegisterHumanAccountRequest,
+  RevokeSessionResponse,
 } from '@rsa/contracts';
 import type { FastifyRequest } from 'fastify';
 import { z, type ZodType } from 'zod';
 
+import type { AuthenticatedHumanRequest } from './authenticated-request.js';
 import {
   AccountUnavailableError,
   EmailAlreadyExistsError,
   InvalidCredentialsError,
 } from './identity.errors.js';
 import { IdentityService } from './identity.service.js';
+import { SessionAuthGuard } from './session-auth.guard.js';
 
 const registerSchema = z.object({
   email: z.string().trim().email().max(320),
@@ -98,5 +103,18 @@ export class IdentityController {
       }
       throw error;
     }
+  }
+
+  @Delete('sessions/current')
+  @UseGuards(SessionAuthGuard)
+  @HttpCode(200)
+  async revokeCurrentSession(
+    @Req() request: AuthenticatedHumanRequest,
+  ): Promise<RevokeSessionResponse> {
+    return this.identity.revokeSession(
+      request.authenticatedHuman.sessionId,
+      request.authenticatedHuman.accountId,
+      request.id,
+    );
   }
 }
