@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: rsa-api-free
+    runtime: docker
+    plan: free
+    region: virginia
+    repo: https://github.com/leon337/multiagent-collaboration-framework
+    branch: main
+    dockerfilePath: ./apps/rede-social-agentes/deploy/server.Dockerfile
+    dockerContext: ./apps/rede-social-agentes
+    dockerCommand: node apps/server/dist/main.js
+    preDeployCommand: node packages/database/scripts/migrate.mjs
+    healthCheckPath: /health/ready
+    autoDeployTrigger: checksPass
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: LOG_LEVEL
+        value: info
+      - key: TRUST_PROXY
+        value: "true"
+      - key: BODY_LIMIT_BYTES
+        value: "262144"
+      - key: RATE_LIMIT_KEY_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
