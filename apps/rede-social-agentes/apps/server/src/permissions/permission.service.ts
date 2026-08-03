@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import type {
   CreatePermissionGrantRequest,
   EvaluatePermissionRequest,
@@ -8,6 +8,7 @@ import type {
   PermissionGrantResponse,
 } from '@rsa/contracts';
 
+import { DatabaseService } from '../database.service.js';
 import {
   PERMISSION_REPOSITORY,
   type PermissionGrantRecord,
@@ -33,7 +34,10 @@ function toGrantResponse(grant: PermissionGrantRecord): PermissionGrantResponse 
 
 @Injectable()
 export class PermissionService {
-  constructor(@Inject(PERMISSION_REPOSITORY) private readonly repository: PermissionRepository) {}
+  constructor(
+    @Inject(PERMISSION_REPOSITORY) private readonly repository: PermissionRepository,
+    @Optional() @Inject(DatabaseService) _legacyDatabase?: DatabaseService,
+  ) {}
 
   async grant(
     agentId: string,
