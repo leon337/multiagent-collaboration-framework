@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import type {
   CreatePermissionGrantRequest,
   EvaluatePermissionRequest,
@@ -9,7 +9,6 @@ import type {
 } from '@rsa/contracts';
 
 import { DatabaseService } from '../database.service.js';
-import { PermissionResourceAccessDeniedError } from './permission.errors.js';
 import {
   PERMISSION_REPOSITORY,
   type PermissionGrantRecord,
@@ -37,25 +36,9 @@ function toGrantResponse(grant: PermissionGrantRecord): PermissionGrantResponse 
 export class PermissionService {
   constructor(
     @Inject(PERMISSION_REPOSITORY) private readonly repository: PermissionRepository,
-    @Inject(DatabaseService) private readonly database: DatabaseService,
-  ) {}
-
-  private async assertResponsible(agentId: string, accountId: string): Promise<void> {
-    const result = await this.database.query(
-      `
-        select "id"
-        from "responsibility_links"
-        where "agent_id" = $1
-          and "responsible_account_id" = $2
-          and "status" = 'ACTIVE'
-        limit 1
-      `,
-      [agentId, accountId],
-    );
-
-    if (result.rowCount !== 1) {
-      throw new PermissionResourceAccessDeniedError();
-    }
+    @Optional() @Inject(DatabaseService) legacyDatabase?: DatabaseService,
+  ) {
+    void legacyDatabase;
   }
 
   async grant(
@@ -100,8 +83,6 @@ export class PermissionService {
     responsibleAccountId: string,
     correlationId: string,
   ): Promise<PermissionDecisionResponse> {
-    await this.assertResponsible(agentId, responsibleAccountId);
-
     const decision = await this.repository.evaluatePermission({
       agentId,
       responsibleAccountId,

@@ -6,6 +6,7 @@ export type PermissionCode = 'agent.profile.read' | 'agent.audit.read' | 'conten
 export type PermissionGrantStatus = 'ACTIVE' | 'REVOKED';
 export type PermissionDecisionReason =
   'ALLOWED' | 'AGENT_NOT_ACTIVE' | 'PERMISSION_NOT_GRANTED' | 'GRANT_EXPIRED' | 'QUOTA_EXHAUSTED';
+export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
 export interface CommandEnvelope<TPayload> {
   commandId: string;
@@ -153,4 +154,21 @@ export interface PermissionDecisionResponse {
   grantId: string | null;
   quotaRemaining: number | null;
   decidedAt: string;
+}
+
+export interface CreateContentDraftRequest {
+  body: string;
+  scope?: PermissionScope | undefined;
+}
+
+export interface SocialContentResponse {
+  id: string;
+  authorAgentId: string;
+  responsibleAccountId: string;
+  approvedByAccountId: string | null;
+  body: string;
+  status: ContentStatus;
+  createdAt: string;
+  publishedAt: string | null;
+  archivedAt: string | null;
 }
