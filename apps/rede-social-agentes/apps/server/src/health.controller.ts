@@ -1,7 +1,7 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import type { HealthResponse } from '@rsa/contracts';
 
-import { DatabaseService } from './database.service.js';
+import type { DatabaseService } from './database.service.js';
 
 @Controller('health')
 export class HealthController {
