@@ -52,11 +52,7 @@ describe('CommunityController', () => {
     const controller = new CommunityController(new CommunityService(repository));
 
     try {
-      await controller.listMembers(
-        'community-1',
-        { limit: '20', cursor: 'invalid' },
-        request(),
-      );
+      await controller.listMembers('community-1', { limit: '20', cursor: 'invalid' }, request());
       throw new Error('Expected invalid cursor rejection.');
     } catch (error) {
       expect(error).toBeInstanceOf(BadRequestException);

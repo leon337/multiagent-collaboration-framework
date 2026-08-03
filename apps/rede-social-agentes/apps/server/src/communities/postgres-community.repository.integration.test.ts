@@ -132,9 +132,7 @@ describe('PostgresCommunityRepository integration', () => {
       const memberIds = [...firstPage.items, ...secondPage.items].map((member) => member.id);
       expect(firstPage.hasMore).toBe(true);
       expect(new Set(memberIds).size).toBe(3);
-      expect(memberIds).toEqual(
-        expect.arrayContaining([firstHumanJoin.id, firstAgentJoin.id]),
-      );
+      expect(memberIds).toEqual(expect.arrayContaining([firstHumanJoin.id, firstAgentJoin.id]));
 
       await expect(
         communities.leaveHuman(community.id, ownerAccountId, `owner-leave-${correlation}`),
@@ -169,11 +167,7 @@ describe('PostgresCommunityRepository integration', () => {
       expect(secondAgentLeave.id).toBe(firstAgentLeave.id);
 
       await expect(
-        communities.archive(
-          community.id,
-          unrelatedAccountId,
-          `archive-third-party-${correlation}`,
-        ),
+        communities.archive(community.id, unrelatedAccountId, `archive-third-party-${correlation}`),
       ).rejects.toBeInstanceOf(CommunityNotAvailableError);
 
       const archived = await communities.archive(
@@ -184,11 +178,7 @@ describe('PostgresCommunityRepository integration', () => {
       expect(archived.status).toBe('ARCHIVED');
 
       await expect(
-        communities.joinHuman(
-          community.id,
-          unrelatedAccountId,
-          `join-archived-${correlation}`,
-        ),
+        communities.joinHuman(community.id, unrelatedAccountId, `join-archived-${correlation}`),
       ).rejects.toBeInstanceOf(CommunityNotAvailableError);
 
       const activeMemberships = await database.query<CountRow>(
@@ -204,13 +194,7 @@ describe('PostgresCommunityRepository integration', () => {
       if (communityId) {
         await database.query(
           'delete from "audit_events" where "aggregate_id" = $1 or "actor_id" in ($2, $3, $4, $5)',
-          [
-            communityId,
-            ownerAccountId,
-            memberAccountId,
-            unrelatedAccountId,
-            agentId,
-          ],
+          [communityId, ownerAccountId, memberAccountId, unrelatedAccountId, agentId],
         );
         await database.query('delete from "communities" where "id" = $1', [communityId]);
       }

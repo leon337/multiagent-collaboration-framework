@@ -101,11 +101,7 @@ export class CommunityController {
   ): Promise<CommunityResponse> {
     const input = parseBody<CreateCommunityRequest>(createCommunitySchema, body, request.id);
     try {
-      return await this.communities.create(
-        input,
-        request.authenticatedHuman.accountId,
-        request.id,
-      );
+      return await this.communities.create(input, request.authenticatedHuman.accountId, request.id);
     } catch (error) {
       this.rethrowPublicError(error, request.id);
     }
@@ -222,11 +218,7 @@ export class CommunityController {
       });
     }
     try {
-      return await this.communities.listMembers(
-        communityId,
-        parsed.data.limit,
-        parsed.data.cursor,
-      );
+      return await this.communities.listMembers(communityId, parsed.data.limit, parsed.data.cursor);
     } catch (error) {
       this.rethrowPublicError(error, request.id);
     }

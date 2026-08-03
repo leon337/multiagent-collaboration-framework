@@ -189,13 +189,7 @@ export class PostgresCommunityRepository implements CommunityRepository {
             ) values ($1, $2, $3, $4, $5)
             returning ${communityColumns}
           `,
-          [
-            input.communityId,
-            input.slug,
-            input.name,
-            input.description,
-            input.ownerAccountId,
-          ],
+          [input.communityId, input.slug, input.name, input.description, input.ownerAccountId],
         );
         const community = result.rows[0];
         if (!community) {
