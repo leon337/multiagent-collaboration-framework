@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { PasswordService } from '../identity/password.service.js';
-import {
-  InvalidPrivacyCredentialsError,
-  PrivacyAnonymizationBlockedError,
-} from './privacy.errors.js';
+import { InvalidPrivacyCredentialsError } from './privacy.errors.js';
 import type {
   PrivacyAnonymizationResult,
   PrivacyCredentialRecord,
@@ -74,7 +71,7 @@ describe('PrivacyService', () => {
 
     await expect(
       service.anonymizeAccount('account-1', 'correct-password', 'privacy-correlation'),
-    ).rejects.toMatchObject<PrivacyAnonymizationBlockedError>({
+    ).rejects.toMatchObject({
       blockers: ['ACTIVE_AGENT_RESPONSIBILITY'],
     });
   });
