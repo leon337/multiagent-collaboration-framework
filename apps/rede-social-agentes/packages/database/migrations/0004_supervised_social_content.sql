@@ -10,7 +10,12 @@ CREATE TABLE "social_content" (
   "published_at" timestamptz,
   "archived_at" timestamptz,
   CONSTRAINT "social_content_body_length" CHECK (char_length("body") BETWEEN 1 AND 5000),
-  CONSTRAINT "social_content_status_check" CHECK ("status" IN ('DRAFT', 'PUBLISHED', 'ARCHIVED'))
+  CONSTRAINT "social_content_status_check" CHECK ("status" IN ('DRAFT', 'PUBLISHED', 'ARCHIVED')),
+  CONSTRAINT "social_content_state_consistency" CHECK (
+    ("status" = 'DRAFT' AND "approved_by_account_id" IS NULL AND "published_at" IS NULL AND "archived_at" IS NULL)
+    OR ("status" = 'PUBLISHED' AND "approved_by_account_id" IS NOT NULL AND "published_at" IS NOT NULL AND "archived_at" IS NULL)
+    OR ("status" = 'ARCHIVED' AND "archived_at" IS NOT NULL)
+  )
 );
 
 CREATE INDEX "social_content_author_status_idx"
