@@ -72,11 +72,7 @@ describe('PostgresPrivacyRepository integration', () => {
       expect(serialized).not.toContain('token_hash');
       expect(serialized).not.toContain(tokenHash);
 
-      const anonymized = await service.anonymizeAccount(
-        accountId,
-        password,
-        'privacy-anonymize',
-      );
+      const anonymized = await service.anonymizeAccount(accountId, password, 'privacy-anonymize');
       expect(anonymized).toMatchObject({
         accountId,
         status: 'ANONYMIZED',

@@ -1,8 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type {
-  AnonymizeAccountResponse,
-  PrivacyExportResponse,
-} from '@rsa/contracts/privacy';
+import type { AnonymizeAccountResponse, PrivacyExportResponse } from '@rsa/contracts/privacy';
 
 import { PasswordService } from '../identity/password.service.js';
 import {

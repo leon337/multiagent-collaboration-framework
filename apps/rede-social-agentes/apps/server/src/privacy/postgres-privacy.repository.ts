@@ -258,7 +258,13 @@ export class PostgresPrivacyRepository implements PrivacyRepository {
             "aggregate_id", "correlation_id", "payload"
           ) values ($1, $2, 'HUMAN', 'ACCOUNT_DATA_EXPORTED', 'PRIVACY_REQUEST', $3, $4, $5::jsonb)
         `,
-        [randomUUID(), accountId, requestId, correlationId, JSON.stringify({ sections: sections.length })],
+        [
+          randomUUID(),
+          accountId,
+          requestId,
+          correlationId,
+          JSON.stringify({ sections: sections.length }),
+        ],
       );
 
       return {
@@ -443,8 +449,7 @@ export class PostgresPrivacyRepository implements PrivacyRepository {
         anonymizedAt: anonymizedAt.toISOString(),
         sessionsRevoked: revokedSessions.rows[0]?.count ?? 0,
         membershipsEnded:
-          (endedHumanMemberships.rows[0]?.count ?? 0) +
-          (endedAgentMemberships.rows[0]?.count ?? 0),
+          (endedHumanMemberships.rows[0]?.count ?? 0) + (endedAgentMemberships.rows[0]?.count ?? 0),
       };
       return { status: 'COMPLETED', response };
     });

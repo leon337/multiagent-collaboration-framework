@@ -89,7 +89,9 @@ describe('PrivacyService', () => {
     };
     const service = new PrivacyService(repository, passwords);
 
-    await expect(service.exportAccountData('account-1', 'export-correlation')).resolves.toMatchObject({
+    await expect(
+      service.exportAccountData('account-1', 'export-correlation'),
+    ).resolves.toMatchObject({
       accountId: 'account-1',
       sections: [{ name: 'account' }],
     });

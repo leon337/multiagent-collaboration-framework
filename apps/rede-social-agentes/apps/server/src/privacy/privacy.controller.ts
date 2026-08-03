@@ -41,10 +41,7 @@ export class PrivacyController {
     @Req() request: AuthenticatedHumanRequest,
   ): Promise<PrivacyExportResponse> {
     try {
-      return await this.privacy.exportAccountData(
-        request.authenticatedHuman.accountId,
-        request.id,
-      );
+      return await this.privacy.exportAccountData(request.authenticatedHuman.accountId, request.id);
     } catch (error) {
       if (error instanceof PrivacyAccountUnavailableError) {
         throw new ConflictException({
