@@ -4,9 +4,10 @@ import {
   query,
   withTransaction,
   type DatabaseHandle,
+  type DatabaseQueryResult,
+  type DatabaseRow,
   type DatabaseTransaction,
 } from '@rsa/database';
-import type { QueryResult, QueryResultRow } from 'pg';
 
 import { loadRuntimeConfig } from './config.js';
 
@@ -23,10 +24,10 @@ export class DatabaseService implements OnModuleDestroy {
     await this.handle.pool.query('select 1');
   }
 
-  async query<TRow extends QueryResultRow>(
+  async query<TRow extends DatabaseRow>(
     text: string,
     values: readonly unknown[] = [],
-  ): Promise<QueryResult<TRow>> {
+  ): Promise<DatabaseQueryResult<TRow>> {
     return query<TRow>(this.handle, text, values);
   }
 
