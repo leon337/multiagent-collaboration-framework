@@ -5,10 +5,10 @@ MVP supervisionado com aplicação web, API modular, worker assíncrono e pacote
 ## Estado
 
 ```yaml
-fase: 1_9c_prontidao_operacional
+fase: 1_9d_infraestrutura_e_rollout
 ambiente_publico: NAO_IMPLANTADO
 producao: AUTORIZADA_SOB_GATE
-deploy_publico: PENDENTE_DE_PRONTIDAO
+deploy_publico: PENDENTE_DE_RECURSOS_EXTERNOS_E_CANARIO
 usuarios_reais: NAO_ATIVADOS
 ```
 
@@ -17,7 +17,7 @@ usuarios_reais: NAO_ATIVADOS
 - Node.js `24.18.0`;
 - Corepack;
 - pnpm `11.17.0`;
-- Docker com Compose para o PostgreSQL local;
+- Docker com Compose para o PostgreSQL local e smoke de contêiner;
 - `pg_dump`, `pg_restore` e `psql` compatíveis para operações de backup e restauração.
 
 ## Instalação
@@ -57,6 +57,43 @@ pnpm verify
 
 A verificação executa formatação, lint, typecheck, testes operacionais, testes dos pacotes e build.
 
+## Smoke completo em contêiner
+
+```bash
+docker compose -f deploy/compose.smoke.yaml up -d --build
+curl --fail http://127.0.0.1:18080/health/ready
+docker compose -f deploy/compose.smoke.yaml down -v --remove-orphans
+```
+
+O smoke usa PostgreSQL limpo, executa migrações como processo separado, inicia o servidor como usuário `node` e a web como usuário `nginx`, e expõe a stack apenas em `127.0.0.1:18080`.
+
+## Gate de release
+
+Copie `deploy/rollout.env.example` para um arquivo fora do Git, preencha somente com recursos reais e execute:
+
+```bash
+set -a
+. /caminho/seguro/rollout.env
+set +a
+pnpm release:gate
+```
+
+O gate exige imagens por digest, PostgreSQL externo com TLS, URL HTTPS, backup externo, alertas, restore recente, commit de release, commit de rollback e confirmação de canário entre 1% e 10%.
+
+## Stack de rollout
+
+Somente após o gate aprovado:
+
+```bash
+docker compose --env-file /caminho/seguro/rollout.env \
+  -f deploy/compose.rollout.yaml up -d migrate
+
+docker compose --env-file /caminho/seguro/rollout.env \
+  -f deploy/compose.rollout.yaml up -d server web
+```
+
+O servidor não é publicado diretamente. A web atua como proxy interno para `/v1` e `/health`; TLS e entrada pública devem ser fornecidos pela infraestrutura externa.
+
 ## Backup local verificável
 
 ```bash
@@ -87,7 +124,8 @@ apps/
   server/   API NestJS/Fastify
   web/      React/Vite
   worker/   processamento assíncrono
-ops/        ferramentas e testes operacionais
+deploy/     imagens, proxy e stacks de smoke/rollout
+ops/        ferramentas, gates e testes operacionais
 packages/
   contracts/ contratos públicos
   database/  schema, cliente e migrações PostgreSQL
@@ -101,6 +139,7 @@ packages/
 - não inserir dados reais de terceiros em desenvolvimento;
 - não executar restore diretamente sobre produção para testar um arquivo;
 - logs HTTP não incluem corpo, query, token, IP ou URL concreta;
+- rollout usa imagens por digest, nunca `latest`;
 - agentes não recebem acesso irrestrito à infraestrutura.
 
 ## Regra de desenvolvimento
