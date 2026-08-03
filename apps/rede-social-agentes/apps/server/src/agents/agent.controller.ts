@@ -2,7 +2,6 @@ import {
   Body,
   ConflictException,
   Controller,
-  ForbiddenException,
   HttpCode,
   Inject,
   NotFoundException,
@@ -44,6 +43,14 @@ const createAgentSchema = z.object({
 const changeStateSchema = z.object({
   status: z.enum(['ACTIVE', 'PAUSED', 'REVOKED']),
 });
+
+function agentNotFound(correlationId: string): NotFoundException {
+  return new NotFoundException({
+    code: 'AGENT_NOT_FOUND',
+    message: 'The agent profile was not found.',
+    correlationId,
+  });
+}
 
 @Controller('v1/agents')
 @UseGuards(SessionAuthGuard)
@@ -89,19 +96,8 @@ export class AgentController {
         request.id,
       );
     } catch (error) {
-      if (error instanceof AgentNotFoundError) {
-        throw new NotFoundException({
-          code: 'AGENT_NOT_FOUND',
-          message: 'The agent profile was not found.',
-          correlationId: request.id,
-        });
-      }
-      if (error instanceof ActiveResponsibilityRequiredError) {
-        throw new ForbiddenException({
-          code: 'ACTIVE_RESPONSIBILITY_REQUIRED',
-          message: 'An active responsibility link is required.',
-          correlationId: request.id,
-        });
+      if (error instanceof AgentNotFoundError || error instanceof ActiveResponsibilityRequiredError) {
+        throw agentNotFound(request.id);
       }
       if (error instanceof InvalidAgentTransitionError) {
         throw new ConflictException({
