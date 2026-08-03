@@ -77,10 +77,11 @@ A verificação executa formatação, lint, typecheck, testes operacionais, test
 
 O `render.yaml` da raiz cria somente um Web Service Docker no plano `free`. Durante o Blueprint, informar fora do Git:
 
-- `DATABASE_URL`: conexão pooled do Neon com TLS;
+- `DATABASE_URL`: conexão pooled do Neon com TLS, usada pela API;
+- `MIGRATION_DATABASE_URL`: conexão direta do Neon com TLS, usada pelo migrador;
 - `ALLOWED_ORIGINS`: origem HTTPS exata do Cloudflare Pages.
 
-`RATE_LIMIT_KEY_SECRET` é gerado pelo próprio Blueprint. O pre-deploy executa as migrações e o health check usa `/health/ready`.
+`RATE_LIMIT_KEY_SECRET` é gerado pelo próprio Blueprint. Como o Render Free não oferece `preDeployCommand`, o comando de inicialização executa o migrador e só inicia a API se as migrações forem concluídas. O health check usa `/health/ready`.
 
 ### Cloudflare Pages
 
@@ -98,7 +99,7 @@ Os arquivos `apps/web/public/_headers` e `apps/web/public/_redirects` são copia
 
 ### Neon
 
-Usar um projeto Free dedicado, conexão pooled e TLS. Não reutilizar bancos de outros produtos. A URL do banco permanece apenas nos segredos do Render e no cofre operacional local.
+Usar um projeto Free dedicado e TLS. Copiar a conexão pooled para a API e a conexão direta para o migrador. Não reutilizar bancos de outros produtos. As URLs permanecem apenas nos segredos do Render e no cofre operacional local.
 
 ## Smoke completo em contêiner
 
