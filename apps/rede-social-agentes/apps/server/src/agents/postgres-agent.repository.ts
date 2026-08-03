@@ -84,11 +84,17 @@ export class PostgresAgentRepository implements AgentRepository {
           `
             insert into "agent_profiles" (
               "id", "handle", "display_name", "bio", "capabilities", "status"
-            ) values ($1, $2, $3, $4, $5, 'DRAFT')
+            ) values ($1, $2, $3, $4, $5::jsonb, 'DRAFT')
             returning
               "id", "handle", "display_name", "bio", "capabilities", "status", "created_at"
           `,
-          [input.agentId, input.handle, input.displayName, input.bio, input.capabilities],
+          [
+            input.agentId,
+            input.handle,
+            input.displayName,
+            input.bio,
+            JSON.stringify(input.capabilities),
+          ],
         );
 
         const responsibilityResult = await client.query<ResponsibilityRow>(
