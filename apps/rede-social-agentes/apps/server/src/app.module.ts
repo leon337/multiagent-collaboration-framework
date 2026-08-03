@@ -8,6 +8,7 @@ import { FeedModule } from './feed/feed.module.js';
 import { HealthController } from './health.controller.js';
 import { IdentityModule } from './identity/identity.module.js';
 import { InteractionModule } from './interactions/interaction.module.js';
+import { ModerationModule } from './moderation/moderation.module.js';
 import { PermissionModule } from './permissions/permission.module.js';
 
 @Module({
@@ -20,6 +21,7 @@ import { PermissionModule } from './permissions/permission.module.js';
     FeedModule,
     InteractionModule,
     CommunityModule,
+    ModerationModule,
   ],
   controllers: [HealthController],
 })
