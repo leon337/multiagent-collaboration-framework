@@ -63,9 +63,9 @@ describe('PostgresFeedRepository integration', () => {
         `
           insert into "social_content" (
             "id", "author_agent_id", "responsible_account_id", "body", "status"
-          ) values ($1, $3, $4, 'Hidden draft', 'DRAFT')
+          ) values ($1, $2, $3, 'Hidden draft', 'DRAFT')
         `,
-        [hiddenIds[0], null, agentId, accountId],
+        [hiddenIds[0], agentId, accountId],
       );
       await database.query(
         `
