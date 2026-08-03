@@ -2,13 +2,22 @@ import { randomUUID } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
 import type {
+  CreateModerationAppealRequest,
   CreateReportRequest,
   CreateReportResponse,
+  ModerationAppealResponse,
   ModerationCaseListResponse,
   ModerationCaseResponse,
   ModerationReportResponse,
+  ResolveModerationCaseRequest,
+  SupervisionOverviewResponse,
 } from '@rsa/contracts';
 
+import {
+  MODERATION_DECISION_REPOSITORY,
+  type ModerationAppealRecord,
+  type ModerationDecisionRepository,
+} from './moderation-decision.repository.js';
 import { decodeModerationCursor, encodeModerationCursor } from './moderation.cursor.js';
 import {
   MODERATION_REPOSITORY,
@@ -44,9 +53,25 @@ function mapReport(report: ModerationReportRecord): ModerationReportResponse {
   };
 }
 
+function mapAppeal(appeal: ModerationAppealRecord): ModerationAppealResponse {
+  return {
+    id: appeal.id,
+    caseId: appeal.caseId,
+    appellantAccountId: appeal.appellantAccountId,
+    reason: appeal.reason,
+    status: appeal.status,
+    createdAt: appeal.createdAt.toISOString(),
+    resolvedAt: appeal.resolvedAt?.toISOString() ?? null,
+  };
+}
+
 @Injectable()
 export class ModerationService {
-  constructor(@Inject(MODERATION_REPOSITORY) private readonly repository: ModerationRepository) {}
+  constructor(
+    @Inject(MODERATION_REPOSITORY) private readonly repository: ModerationRepository,
+    @Inject(MODERATION_DECISION_REPOSITORY)
+    private readonly decisions: ModerationDecisionRepository,
+  ) {}
 
   async createReport(
     request: CreateReportRequest,
@@ -101,5 +126,86 @@ export class ModerationService {
     correlationId: string,
   ): Promise<ModerationCaseResponse> {
     return mapCase(await this.repository.claimCase({ operatorAccountId, caseId, correlationId }));
+  }
+
+  async resolveCase(
+    operatorAccountId: string,
+    caseId: string,
+    request: ResolveModerationCaseRequest,
+    correlationId: string,
+  ): Promise<ModerationCaseResponse> {
+    return mapCase(
+      await this.decisions.resolveCase({
+        actionId: randomUUID(),
+        operatorAccountId,
+        caseId,
+        action: request.action,
+        reason: request.reason.trim(),
+        evidence: request.evidence ?? {},
+        correlationId,
+      }),
+    );
+  }
+
+  async dismissCase(
+    operatorAccountId: string,
+    caseId: string,
+    reason: string,
+    correlationId: string,
+  ): Promise<ModerationCaseResponse> {
+    return mapCase(
+      await this.decisions.dismissCase({
+        operatorAccountId,
+        caseId,
+        reason: reason.trim(),
+        correlationId,
+      }),
+    );
+  }
+
+  async createAppeal(
+    appellantAccountId: string,
+    caseId: string,
+    request: CreateModerationAppealRequest,
+    correlationId: string,
+  ): Promise<ModerationAppealResponse> {
+    const result = await this.decisions.createAppeal({
+      appealId: randomUUID(),
+      appellantAccountId,
+      caseId,
+      reason: request.reason.trim(),
+      correlationId,
+    });
+    return mapAppeal(result.appeal);
+  }
+
+  async reverseCase(
+    supervisorAccountId: string,
+    caseId: string,
+    reason: string,
+    evidence: Record<string, unknown>,
+    correlationId: string,
+  ): Promise<ModerationAppealResponse> {
+    const result = await this.decisions.reverseCase({
+      actionId: randomUUID(),
+      supervisorAccountId,
+      caseId,
+      reason: reason.trim(),
+      evidence,
+      correlationId,
+    });
+    return mapAppeal(result.appeal);
+  }
+
+  async getOverview(operatorAccountId: string): Promise<SupervisionOverviewResponse> {
+    const overview = await this.decisions.getOverview(operatorAccountId);
+    return {
+      openCases: overview.openCases,
+      urgentCases: overview.urgentCases,
+      inReviewCases: overview.inReviewCases,
+      appealedCases: overview.appealedCases,
+      oldestOpenCaseAt: overview.oldestOpenCaseAt?.toISOString() ?? null,
+      generatedAt: overview.generatedAt.toISOString(),
+    };
   }
 }
