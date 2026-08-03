@@ -1,0 +1,13 @@
+exit_code=2
+packages/contracts typecheck$ tsc -p tsconfig.json --noEmit
+packages/database typecheck$ tsc -p tsconfig.json --noEmit
+packages/contracts typecheck: Done
+packages/database typecheck: Done
+apps/server typecheck$ tsc -p tsconfig.json --noEmit
+apps/web typecheck$ tsc -b --pretty false
+apps/worker typecheck$ tsc -p tsconfig.json --noEmit
+apps/worker typecheck: Done
+apps/web typecheck: Done
+apps/server typecheck: src/security/abuse-protection.guard.ts(2,3): error TS1484: 'CanActivate' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+apps/server typecheck: src/security/abuse-protection.guard.ts(3,3): error TS1484: 'ExecutionContext' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+apps/server typecheck: Failed
