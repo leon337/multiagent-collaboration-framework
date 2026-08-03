@@ -73,7 +73,7 @@ export class PostgresIdentityRepository implements IdentityRepository {
               "aggregate_id", "correlation_id", "payload"
             ) values ($1, $2, 'HUMAN', 'HUMAN_ACCOUNT_REGISTERED', 'ACCOUNT', $2, $3, $4)
           `,
-          [randomUUID(), input.id, input.correlationId, { email: input.email }],
+          [randomUUID(), input.id, input.correlationId, { accountType: 'HUMAN' }],
         );
 
         const row = accountResult.rows[0];
