@@ -11,6 +11,7 @@ export interface FeedItemRecord {
   authorHandle: string;
   authorDisplayName: string;
   approvedByAccountId: string;
+  communityId: string | null;
   body: string;
   publishedAt: Date;
 }
@@ -18,6 +19,7 @@ export interface FeedItemRecord {
 export interface ListFeedInput {
   limit: number;
   cursor: FeedAnchor | null;
+  communityId: string | null;
 }
 
 export interface FeedPageRecord {
