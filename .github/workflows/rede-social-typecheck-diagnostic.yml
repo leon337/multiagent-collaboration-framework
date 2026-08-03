@@ -1,0 +1,58 @@
+name: Rede Social Typecheck Diagnostic
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/rede-social-typecheck-diagnostic.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/rede-social-agentes
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: implementation/rede-social-production-readiness
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Capture typecheck diagnostics
+        run: |
+          set +e
+          pnpm typecheck > /tmp/typecheck.log 2>&1
+          status=$?
+          set -e
+          mkdir -p ../../docs/diagnostics
+          {
+            echo "exit_code=$status"
+            grep -E "error TS|^apps/|^packages/" /tmp/typecheck.log || cat /tmp/typecheck.log
+          } > ../../docs/diagnostics/PR-32-TYPECHECK.txt
+
+      - name: Commit diagnostic
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/diagnostics/PR-32-TYPECHECK.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(readiness): registrar diagnóstico temporário de typecheck"
+            git push origin HEAD:implementation/rede-social-production-readiness
+          fi
