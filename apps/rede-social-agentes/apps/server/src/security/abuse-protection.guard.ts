@@ -1,10 +1,5 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
 import { selectAbusePolicy } from './abuse-policy.js';
