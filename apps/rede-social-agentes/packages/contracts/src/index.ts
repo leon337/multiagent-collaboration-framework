@@ -1,6 +1,10 @@
 export type ActorType = 'HUMAN' | 'AGENT' | 'SYSTEM';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED';
 export type AgentStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'SUSPENDED' | 'REVOKED';
+export type ResponsibleAgentTargetStatus = Extract<
+  AgentStatus,
+  'ACTIVE' | 'PAUSED' | 'REVOKED'
+>;
 
 export interface CommandEnvelope<TPayload> {
   commandId: string;
@@ -101,5 +105,5 @@ export interface CreateAgentResponse {
 }
 
 export interface ChangeAgentStateRequest {
-  status: Extract<AgentStatus, 'ACTIVE' | 'PAUSED' | 'REVOKED'>;
+  status: ResponsibleAgentTargetStatus;
 }
