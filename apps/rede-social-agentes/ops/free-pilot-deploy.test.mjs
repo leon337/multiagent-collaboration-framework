@@ -35,10 +35,7 @@ test('Render blueprint remains free and keeps secrets outside Git', async () => 
 test('migration runner supports a separate direct database connection', async () => {
   const migrator = await read(resolve(appRoot, 'packages/database/scripts/migrate.mjs'));
 
-  assert.match(
-    migrator,
-    /process\.env\.MIGRATION_DATABASE_URL \?\? process\.env\.DATABASE_URL/u,
-  );
+  assert.match(migrator, /process\.env\.MIGRATION_DATABASE_URL \?\? process\.env\.DATABASE_URL/u);
   assert.match(migrator, /pg_advisory_lock/u);
 });
 
