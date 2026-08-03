@@ -10,16 +10,22 @@ import type { FastifyInstance } from 'fastify';
 import { AppModule } from './app.module.js';
 import { loadRuntimeConfig } from './config.js';
 
+const correlationIdPattern = /^[A-Za-z0-9._:-]{1,128}$/u;
+
+function correlationIdFor(request: IncomingMessage): string {
+  const suppliedId = request.headers['x-correlation-id'];
+  return typeof suppliedId === 'string' && correlationIdPattern.test(suppliedId)
+    ? suppliedId
+    : randomUUID();
+}
+
 async function bootstrap(): Promise<void> {
   const config = loadRuntimeConfig();
   const adapter = new FastifyAdapter({
     logger: false,
-    genReqId(request: IncomingMessage) {
-      const suppliedId = request.headers['x-correlation-id'];
-      return typeof suppliedId === 'string' && suppliedId.trim().length > 0
-        ? suppliedId
-        : randomUUID();
-    },
+    bodyLimit: config.BODY_LIMIT_BYTES,
+    trustProxy: config.TRUST_PROXY,
+    genReqId: correlationIdFor,
   });
 
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, adapter, {
@@ -29,6 +35,18 @@ async function bootstrap(): Promise<void> {
   const fastify = app.getHttpAdapter().getInstance() as FastifyInstance;
   fastify.addHook('onRequest', (request, reply, done) => {
     reply.header('x-correlation-id', request.id);
+    reply.header('x-content-type-options', 'nosniff');
+    reply.header('x-frame-options', 'DENY');
+    reply.header('referrer-policy', 'no-referrer');
+    reply.header('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+    reply.header('cross-origin-opener-policy', 'same-origin');
+    reply.header('cross-origin-resource-policy', 'same-site');
+    reply.header('content-security-policy', "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+    reply.header('x-dns-prefetch-control', 'off');
+    reply.header('cache-control', 'no-store');
+    if (config.NODE_ENV === 'production') {
+      reply.header('strict-transport-security', 'max-age=31536000; includeSubDomains');
+    }
     done();
   });
 
@@ -44,6 +62,8 @@ async function bootstrap(): Promise<void> {
       environment: config.NODE_ENV,
       host: config.HOST,
       port: config.PORT,
+      trustProxy: config.TRUST_PROXY,
+      bodyLimitBytes: config.BODY_LIMIT_BYTES,
     }),
   );
 }
