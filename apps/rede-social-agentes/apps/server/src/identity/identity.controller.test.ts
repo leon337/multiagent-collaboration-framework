@@ -11,7 +11,16 @@ import { IdentityController } from './identity.controller.js';
 import type { IdentityService } from './identity.service.js';
 
 function requestWithId(id: string): FastifyRequest {
-  return { id } as FastifyRequest;
+  return { id } as unknown as FastifyRequest;
+}
+
+async function captureRejection(promise: Promise<unknown>): Promise<unknown> {
+  try {
+    await promise;
+    return new Error('Expected the promise to reject.');
+  } catch (error) {
+    return error;
+  }
 }
 
 describe('IdentityController', () => {
@@ -19,19 +28,20 @@ describe('IdentityController', () => {
     const identity = {} as IdentityService;
     const controller = new IdentityController(identity);
 
-    await expect(
+    const error = await captureRejection(
       controller.register(
         { email: 'invalid', password: 'short', displayName: '' },
         requestWithId('correlation-invalid'),
       ),
-    ).rejects.toSatisfy((error: unknown) => {
-      if (!(error instanceof BadRequestException)) {
-        return false;
-      }
-      return expect(error.getResponse()).toMatchObject({
-        code: 'INVALID_REQUEST',
-        correlationId: 'correlation-invalid',
-      });
+    );
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    if (!(error instanceof BadRequestException)) {
+      throw error;
+    }
+    expect(error.getResponse()).toMatchObject({
+      code: 'INVALID_REQUEST',
+      correlationId: 'correlation-invalid',
     });
   });
 
@@ -41,7 +51,7 @@ describe('IdentityController', () => {
     } as unknown as IdentityService;
     const controller = new IdentityController(identity);
 
-    await expect(
+    const error = await captureRejection(
       controller.register(
         {
           email: 'human@example.test',
@@ -50,14 +60,15 @@ describe('IdentityController', () => {
         },
         requestWithId('correlation-duplicate'),
       ),
-    ).rejects.toSatisfy((error: unknown) => {
-      if (!(error instanceof ConflictException)) {
-        return false;
-      }
-      return expect(error.getResponse()).toMatchObject({
-        code: 'EMAIL_ALREADY_REGISTERED',
-        correlationId: 'correlation-duplicate',
-      });
+    );
+
+    expect(error).toBeInstanceOf(ConflictException);
+    if (!(error instanceof ConflictException)) {
+      throw error;
+    }
+    expect(error.getResponse()).toMatchObject({
+      code: 'EMAIL_ALREADY_REGISTERED',
+      correlationId: 'correlation-duplicate',
     });
   });
 
@@ -67,19 +78,20 @@ describe('IdentityController', () => {
     } as unknown as IdentityService;
     const controller = new IdentityController(identity);
 
-    await expect(
+    const error = await captureRejection(
       controller.createSession(
         { email: 'human@example.test', password: 'wrong-password' },
         requestWithId('correlation-auth'),
       ),
-    ).rejects.toSatisfy((error: unknown) => {
-      if (!(error instanceof UnauthorizedException)) {
-        return false;
-      }
-      return expect(error.getResponse()).toMatchObject({
-        code: 'INVALID_CREDENTIALS',
-        correlationId: 'correlation-auth',
-      });
+    );
+
+    expect(error).toBeInstanceOf(UnauthorizedException);
+    if (!(error instanceof UnauthorizedException)) {
+      throw error;
+    }
+    expect(error.getResponse()).toMatchObject({
+      code: 'INVALID_CREDENTIALS',
+      correlationId: 'correlation-auth',
     });
   });
 });
