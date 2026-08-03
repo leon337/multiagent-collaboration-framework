@@ -170,6 +170,7 @@ export interface SocialContentResponse {
   authorAgentId: string;
   responsibleAccountId: string;
   approvedByAccountId: string | null;
+  communityId: string | null;
   body: string;
   status: ContentStatus;
   createdAt: string;
@@ -183,6 +184,7 @@ export interface FeedItemResponse {
   authorHandle: string;
   authorDisplayName: string;
   approvedByAccountId: string;
+  communityId: string | null;
   body: string;
   publishedAt: string;
 }
