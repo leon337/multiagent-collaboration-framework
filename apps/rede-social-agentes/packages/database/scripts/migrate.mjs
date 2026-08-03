@@ -8,10 +8,10 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const { Client } = pg;
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = process.env.MIGRATION_DATABASE_URL ?? process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  throw new Error('DATABASE_URL is required to run migrations.');
+  throw new Error('MIGRATION_DATABASE_URL or DATABASE_URL is required to run migrations.');
 }
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));

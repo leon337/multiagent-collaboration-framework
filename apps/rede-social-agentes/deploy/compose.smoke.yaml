@@ -38,6 +38,7 @@ services:
       RATE_LIMIT_KEY_SECRET: smoke-only-secret-with-at-least-32-characters
       TRUST_PROXY: 'true'
       MAX_BODY_BYTES: 262144
+      ALLOWED_ORIGINS: https://smoke.invalid
     depends_on:
       migrate:
         condition: service_completed_successfully

@@ -38,7 +38,8 @@ select {
 }
 
 .hero,
-.foundation {
+.foundation,
+.pilot-limits {
   border: 1px solid #d8e0ec;
   border-radius: 1.25rem;
   background: #ffffff;
@@ -94,14 +95,57 @@ h2 {
   font-weight: 700;
 }
 
-.status-dot {
+.status-dot,
+.api-state__dot {
   width: 0.75rem;
   height: 0.75rem;
+  flex: 0 0 auto;
   border-radius: 50%;
   background: currentColor;
 }
 
-.foundation {
+.api-state {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  max-width: 44rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #d8e0ec;
+  border-radius: 1rem;
+  background: #f8faff;
+  color: #45536d;
+}
+
+.api-state strong,
+.api-state small {
+  display: block;
+}
+
+.api-state strong {
+  color: #172033;
+}
+
+.api-state small {
+  margin-top: 0.25rem;
+  line-height: 1.5;
+}
+
+.api-state--ready {
+  border-color: #9ac9ac;
+  background: #f0faf4;
+  color: #1e6b3a;
+}
+
+.api-state--warming,
+.api-state--checking {
+  border-color: #e7c77d;
+  background: #fff9eb;
+  color: #8a5a00;
+}
+
+.foundation,
+.pilot-limits {
   margin-top: 1.5rem;
   padding: clamp(1.5rem, 4vw, 2.5rem);
 }
@@ -122,6 +166,17 @@ h2 {
   border-radius: 1rem;
   background: #f8faff;
   line-height: 1.55;
+}
+
+.pilot-limits ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #45536d;
+  line-height: 1.7;
+}
+
+.pilot-limits li + li {
+  margin-top: 0.5rem;
 }
 
 :focus-visible {

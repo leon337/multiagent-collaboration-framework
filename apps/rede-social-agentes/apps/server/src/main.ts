@@ -33,7 +33,37 @@ async function bootstrap(): Promise<void> {
   });
 
   const fastify = app.getHttpAdapter().getInstance() as FastifyInstance;
-  fastify.addHook('onRequest', (request, reply, done) => {
+  fastify.addHook('onRequest', async (request, reply) => {
+    const requestOrigin = request.headers.origin;
+    const originIsAllowed =
+      typeof requestOrigin === 'string' && config.ALLOWED_ORIGINS.includes(requestOrigin);
+
+    if (requestOrigin) {
+      reply.header('vary', 'Origin');
+      if (!originIsAllowed) {
+        await reply.code(403).send({
+          code: 'ORIGIN_NOT_ALLOWED',
+          message: 'The request origin is not allowed.',
+          correlationId: request.id,
+        });
+        return;
+      }
+
+      reply.header('access-control-allow-origin', requestOrigin);
+      reply.header('access-control-allow-methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      reply.header('access-control-allow-headers', 'authorization, content-type, x-correlation-id');
+      reply.header(
+        'access-control-expose-headers',
+        'x-correlation-id, x-ratelimit-limit, x-ratelimit-remaining, retry-after',
+      );
+      reply.header('access-control-max-age', '86400');
+    }
+
+    if (request.method === 'OPTIONS') {
+      await reply.code(originIsAllowed ? 204 : 403).send();
+      return;
+    }
+
     reply.header('x-correlation-id', request.id);
     reply.header('x-content-type-options', 'nosniff');
     reply.header('x-frame-options', 'DENY');
@@ -50,7 +80,6 @@ async function bootstrap(): Promise<void> {
     if (config.NODE_ENV === 'production') {
       reply.header('strict-transport-security', 'max-age=31536000; includeSubDomains');
     }
-    done();
   });
 
   app.enableShutdownHooks();
@@ -67,6 +96,7 @@ async function bootstrap(): Promise<void> {
       port: config.PORT,
       trustProxy: config.TRUST_PROXY,
       bodyLimitBytes: config.BODY_LIMIT_BYTES,
+      allowedOriginCount: config.ALLOWED_ORIGINS.length,
     }),
   );
 }
