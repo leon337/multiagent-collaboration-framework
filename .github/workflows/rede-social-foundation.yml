@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   foundation:
@@ -46,8 +46,10 @@ jobs:
       LOG_LEVEL: error
 
     steps:
-      - name: Checkout
+      - name: Checkout operations branch
         uses: actions/checkout@v4
+        with:
+          ref: implementation/rede-social-operations-readiness
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -61,6 +63,26 @@ jobs:
 
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
+
+      - name: Format operations files
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/operations/request-telemetry.interceptor.ts \
+            ops/database-backup.mjs \
+            ops/database-backup.test.mjs
+
+      - name: Commit formatted operations files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/server/src/operations/request-telemetry.interceptor.ts \
+            ops/database-backup.mjs \
+            ops/database-backup.test.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(operations): formatar backup e telemetria"
+            git push origin HEAD:implementation/rede-social-operations-readiness
+          fi
 
       - name: Verify formatting
         run: pnpm format:check
