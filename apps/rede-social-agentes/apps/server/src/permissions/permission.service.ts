@@ -36,8 +36,10 @@ function toGrantResponse(grant: PermissionGrantRecord): PermissionGrantResponse 
 export class PermissionService {
   constructor(
     @Inject(PERMISSION_REPOSITORY) private readonly repository: PermissionRepository,
-    @Optional() @Inject(DatabaseService) _legacyDatabase?: DatabaseService,
-  ) {}
+    @Optional() @Inject(DatabaseService) legacyDatabase?: DatabaseService,
+  ) {
+    void legacyDatabase;
+  }
 
   async grant(
     agentId: string,
