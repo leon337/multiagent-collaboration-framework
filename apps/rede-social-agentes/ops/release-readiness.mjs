@@ -1,6 +1,6 @@
 /* global console, process */
 
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, URL } from 'node:url';
 
 const immutableImagePattern = /^[a-z0-9][a-z0-9._/:@-]*@sha256:[a-f0-9]{64}$/u;
 const commitPattern = /^[a-f0-9]{40}$/u;
