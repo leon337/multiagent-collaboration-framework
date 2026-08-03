@@ -5,6 +5,17 @@ export type ResponsibleAgentTargetStatus = Extract<
   AgentStatus,
   'ACTIVE' | 'PAUSED' | 'REVOKED'
 >;
+export type PermissionCode =
+  | 'agent.profile.read'
+  | 'agent.audit.read'
+  | 'content.draft.create';
+export type PermissionGrantStatus = 'ACTIVE' | 'REVOKED';
+export type PermissionDecisionReason =
+  | 'ALLOWED'
+  | 'AGENT_NOT_ACTIVE'
+  | 'PERMISSION_NOT_GRANTED'
+  | 'GRANT_EXPIRED'
+  | 'QUOTA_EXHAUSTED';
 
 export interface CommandEnvelope<TPayload> {
   commandId: string;
@@ -106,4 +117,50 @@ export interface CreateAgentResponse {
 
 export interface ChangeAgentStateRequest {
   status: ResponsibleAgentTargetStatus;
+}
+
+export interface PermissionScope {
+  resourceType: string;
+  resourceId: string;
+}
+
+export interface CreatePermissionGrantRequest {
+  permission: PermissionCode;
+  scope?: PermissionScope | undefined;
+  quotaLimit?: number | undefined;
+  validUntil?: string | undefined;
+}
+
+export interface PermissionGrantResponse {
+  id: string;
+  agentId: string;
+  grantedByAccountId: string;
+  permission: PermissionCode;
+  scope: PermissionScope | null;
+  quotaLimit: number | null;
+  quotaUsed: number;
+  validFrom: string;
+  validUntil: string | null;
+  status: PermissionGrantStatus;
+  revokedAt: string | null;
+  createdAt: string;
+}
+
+export interface RevokePermissionGrantResponse {
+  revoked: true;
+  grant: PermissionGrantResponse;
+}
+
+export interface EvaluatePermissionRequest {
+  permission: PermissionCode;
+  scope?: PermissionScope | undefined;
+}
+
+export interface PermissionDecisionResponse {
+  allowed: boolean;
+  reason: PermissionDecisionReason;
+  permission: PermissionCode;
+  grantId: string | null;
+  quotaRemaining: number | null;
+  decidedAt: string;
 }
