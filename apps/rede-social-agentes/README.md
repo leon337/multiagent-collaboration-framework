@@ -5,12 +5,25 @@ MVP supervisionado com aplicação web, API modular, worker assíncrono e pacote
 ## Estado
 
 ```yaml
-fase: 1_9d_infraestrutura_e_rollout
-ambiente_publico: NAO_IMPLANTADO
-producao: AUTORIZADA_SOB_GATE
-deploy_publico: PENDENTE_DE_RECURSOS_EXTERNOS_E_CANARIO
-usuarios_reais: NAO_ATIVADOS
+fase: 1_9f_adaptacao_do_piloto_publico_gratuito
+ambiente_publico: EM_PREPARACAO
+classificacao: PILOTO_PUBLICO_GRATUITO
+custo_mensal_obrigatorio: USD_0
+usuarios_reais: AUTORIZADOS_EM_ROLLOUT_CONTROLADO
+sla: NAO_OFERECIDO
 ```
+
+## Arquitetura gratuita
+
+```yaml
+web: Cloudflare_Pages_Free
+api: Render_Free_Web_Service_Docker
+database: Neon_Free_Postgres
+worker_dedicado: ADIADO
+ci_cd: GitHub_Actions
+```
+
+A API gratuita pode hibernar após inatividade e levar até aproximadamente um minuto para responder ao primeiro acesso. O piloto deve falhar por suspensão ao atingir limites, nunca por cobrança automática.
 
 ## Requisitos
 
@@ -28,6 +41,7 @@ corepack enable
 corepack prepare pnpm@11.17.0 --activate
 pnpm install --frozen-lockfile
 cp .env.example .env
+cp apps/web/.env.example apps/web/.env
 docker compose up -d postgres
 pnpm --filter @rsa/database db:migrate
 ```
@@ -55,7 +69,36 @@ Endereços locais:
 pnpm verify
 ```
 
-A verificação executa formatação, lint, typecheck, testes operacionais, testes dos pacotes e build.
+A verificação executa formatação, lint, typecheck, testes operacionais, testes dos pacotes e build. Os testes operacionais também protegem o plano gratuito do Render e os arquivos de segurança do Cloudflare Pages.
+
+## Configuração gratuita de deploy
+
+### Render
+
+O `render.yaml` da raiz cria somente um Web Service Docker no plano `free`. Durante o Blueprint, informar fora do Git:
+
+- `DATABASE_URL`: conexão pooled do Neon com TLS;
+- `ALLOWED_ORIGINS`: origem HTTPS exata do Cloudflare Pages.
+
+`RATE_LIMIT_KEY_SECRET` é gerado pelo próprio Blueprint. O pre-deploy executa as migrações e o health check usa `/health/ready`.
+
+### Cloudflare Pages
+
+Configuração do monorepo:
+
+```yaml
+root_directory: apps/rede-social-agentes
+build_command: corepack enable && corepack prepare pnpm@11.17.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @rsa/contracts build && pnpm --filter @rsa/web build
+build_output_directory: apps/web/dist
+NODE_VERSION: 24.18.0
+VITE_API_BASE_URL: https://<servico>.onrender.com
+```
+
+Os arquivos `apps/web/public/_headers` e `apps/web/public/_redirects` são copiados para o build e aplicam CSP, cache, bloqueio de indexação temporário e fallback SPA.
+
+### Neon
+
+Usar um projeto Free dedicado, conexão pooled e TLS. Não reutilizar bancos de outros produtos. A URL do banco permanece apenas nos segredos do Render e no cofre operacional local.
 
 ## Smoke completo em contêiner
 
@@ -78,21 +121,7 @@ set +a
 pnpm release:gate
 ```
 
-O gate exige imagens por digest, PostgreSQL externo com TLS, URL HTTPS, backup externo, alertas, restore recente, commit de release, commit de rollback e confirmação de canário entre 1% e 10%.
-
-## Stack de rollout
-
-Somente após o gate aprovado:
-
-```bash
-docker compose --env-file /caminho/seguro/rollout.env \
-  -f deploy/compose.rollout.yaml up -d migrate
-
-docker compose --env-file /caminho/seguro/rollout.env \
-  -f deploy/compose.rollout.yaml up -d server web
-```
-
-O servidor não é publicado diretamente. A web atua como proxy interno para `/v1` e `/health`; TLS e entrada pública devem ser fornecidos pela infraestrutura externa.
+O gate completo exige imagens por digest, PostgreSQL externo com TLS, URL HTTPS, backup externo, alertas, restore recente, commit de release, commit de rollback e confirmação de canário entre 1% e 10%. O piloto gratuito inicial pode ser criado antes desse gate completo, mas não pode ser descrito como produção com SLA.
 
 ## Backup local verificável
 
@@ -135,11 +164,12 @@ packages/
 
 - não commitar `.env`, dumps ou manifestos locais;
 - não imprimir URLs completas de banco;
-- não usar credenciais pessoais;
+- não adicionar método de pagamento aos provedores do piloto;
+- não usar wildcard em `ALLOWED_ORIGINS`;
 - não inserir dados reais de terceiros em desenvolvimento;
 - não executar restore diretamente sobre produção para testar um arquivo;
 - logs HTTP não incluem corpo, query, token, IP ou URL concreta;
-- rollout usa imagens por digest, nunca `latest`;
+- rollout completo usa imagens por digest, nunca `latest`;
 - agentes não recebem acesso irrestrito à infraestrutura.
 
 ## Regra de desenvolvimento
