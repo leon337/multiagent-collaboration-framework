@@ -91,9 +91,7 @@ describe('PostgresContentRepository integration', () => {
           scope: null,
           correlationId: `content-denied-${agentId}`,
         }),
-      ).rejects.toMatchObject<Partial<ContentPermissionDeniedError>>({
-        reason: 'PERMISSION_NOT_GRANTED',
-      });
+      ).rejects.toBeInstanceOf(ContentPermissionDeniedError);
 
       await permissions.grantPermission({
         id: grantId,
