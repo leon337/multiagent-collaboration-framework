@@ -72,7 +72,7 @@ export interface RevokeSessionResponse {
 export interface CreateAgentRequest {
   handle: string;
   displayName: string;
-  bio?: string;
+  bio?: string | undefined;
   capabilities: string[];
 }
 
