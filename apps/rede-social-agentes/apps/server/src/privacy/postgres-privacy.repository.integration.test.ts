@@ -6,7 +6,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DatabaseService } from '../database.service.js';
 import { PasswordService } from '../identity/password.service.js';
 import { PostgresIdentityRepository } from '../identity/postgres-identity.repository.js';
-import { PrivacyAnonymizationBlockedError } from './privacy.errors.js';
 import { PostgresPrivacyRepository } from './postgres-privacy.repository.js';
 import { PrivacyService } from './privacy.service.js';
 
@@ -136,7 +135,7 @@ describe('PostgresPrivacyRepository integration', () => {
 
       await expect(
         service.anonymizeAccount(accountId, password, 'blocked-anonymize'),
-      ).rejects.toMatchObject<PrivacyAnonymizationBlockedError>({
+      ).rejects.toMatchObject({
         blockers: ['ACTIVE_AGENT_RESPONSIBILITY'],
       });
 
