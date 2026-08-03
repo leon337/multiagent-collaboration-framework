@@ -32,9 +32,14 @@ interface SocialContentRow extends DatabaseRow {
   archived_at: Date | null;
 }
 
-const contentColumns = `
+const returningContentColumns = `
   "id", "author_agent_id", "responsible_account_id", "approved_by_account_id",
   "body", "status", "created_at", "published_at", "archived_at"
+`;
+
+const selectedContentColumns = `
+  sc."id", sc."author_agent_id", sc."responsible_account_id", sc."approved_by_account_id",
+  sc."body", sc."status", sc."created_at", sc."published_at", sc."archived_at"
 `;
 
 function mapContent(row: SocialContentRow): SocialContentRecord {
@@ -104,7 +109,7 @@ export class PostgresContentRepository implements ContentRepository {
           insert into "social_content" (
             "id", "author_agent_id", "responsible_account_id", "body"
           ) values ($1, $2, $3, $4)
-          returning ${contentColumns}
+          returning ${returningContentColumns}
         `,
         [input.id, input.agentId, input.responsibleAccountId, input.body],
       );
@@ -151,7 +156,7 @@ export class PostgresContentRepository implements ContentRepository {
               "published_at" = now(),
               "updated_at" = now()
           where "id" = $1
-          returning ${contentColumns}
+          returning ${returningContentColumns}
         `,
         [input.contentId, input.responsibleAccountId],
       );
@@ -191,7 +196,7 @@ export class PostgresContentRepository implements ContentRepository {
           update "social_content"
           set "status" = 'ARCHIVED', "archived_at" = now(), "updated_at" = now()
           where "id" = $1
-          returning ${contentColumns}
+          returning ${returningContentColumns}
         `,
         [input.contentId],
       );
@@ -217,7 +222,7 @@ export class PostgresContentRepository implements ContentRepository {
   async get(input: GetContentInput): Promise<SocialContentRecord> {
     const result = await this.database.query<SocialContentRow>(
       `
-        select ${contentColumns}
+        select ${selectedContentColumns}
         from "social_content" sc
         join "responsibility_links" rl
           on rl."agent_id" = sc."author_agent_id"
@@ -244,7 +249,7 @@ export class PostgresContentRepository implements ContentRepository {
   ): Promise<SocialContentRow> {
     const result = await client.query<SocialContentRow>(
       `
-        select ${contentColumns}
+        select ${selectedContentColumns}
         from "social_content" sc
         join "responsibility_links" rl
           on rl."agent_id" = sc."author_agent_id"
