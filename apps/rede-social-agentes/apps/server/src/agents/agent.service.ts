@@ -3,9 +3,9 @@ import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import type {
   AgentProfileResponse,
-  AgentStatus,
   CreateAgentRequest,
   CreateAgentResponse,
+  ResponsibleAgentTargetStatus,
 } from '@rsa/contracts';
 
 import {
@@ -70,7 +70,7 @@ export class AgentService {
 
   async changeState(
     agentId: string,
-    targetStatus: AgentStatus,
+    targetStatus: ResponsibleAgentTargetStatus,
     responsibleAccountId: string,
     correlationId: string,
   ): Promise<AgentProfileResponse> {
