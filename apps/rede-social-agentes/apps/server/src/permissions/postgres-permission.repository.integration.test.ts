@@ -206,15 +206,15 @@ describe('PostgresPermissionRepository integration', () => {
         `
           select count(*)::text as "count"
           from "audit_events"
-          where "actor_id" = $1
+          where "actor_id" in ($1, $2)
             and "event_type" in (
               'PERMISSION_GRANTED', 'PERMISSION_REVOKED',
               'PERMISSION_ALLOWED', 'PERMISSION_DENIED'
             )
         `,
-        [agentId],
+        [agentId, responsibleAccountId],
       );
-      expect(Number(auditCount.rows[0]?.count ?? '0')).toBeGreaterThanOrEqual(7);
+      expect(Number(auditCount.rows[0]?.count ?? '0')).toBe(9);
     } finally {
       await database.query(
         `
