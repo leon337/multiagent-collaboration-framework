@@ -36,11 +36,7 @@ const sessionSchema = z.object({
   password: z.string().min(1).max(128),
 });
 
-function parseBody<TValue>(
-  schema: ZodType<TValue>,
-  body: unknown,
-  correlationId: string,
-): TValue {
+function parseBody<TValue>(schema: ZodType<TValue>, body: unknown, correlationId: string): TValue {
   const result = schema.safeParse(body);
   if (!result.success) {
     throw new BadRequestException({

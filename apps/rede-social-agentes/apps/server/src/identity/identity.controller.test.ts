@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import { describe, expect, it, vi } from 'vitest';
 
