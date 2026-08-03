@@ -11,6 +11,14 @@ export interface HumanAccountRecord {
   createdAt: Date;
 }
 
+export interface AuthenticatedHumanRecord {
+  accountId: string;
+  email: string;
+  displayName: string;
+  sessionId: string;
+  sessionExpiresAt: Date;
+}
+
 export interface CreateHumanAccountInput {
   id: string;
   email: string;
@@ -27,8 +35,16 @@ export interface CreateSessionInput {
   correlationId: string;
 }
 
+export interface RevokeSessionInput {
+  sessionId: string;
+  accountId: string;
+  correlationId: string;
+}
+
 export interface IdentityRepository {
   createHumanAccount(input: CreateHumanAccountInput): Promise<HumanAccountRecord>;
   findHumanAccountByEmail(email: string): Promise<HumanAccountRecord | null>;
   createSession(input: CreateSessionInput): Promise<void>;
+  findActiveSessionByTokenHash(tokenHash: string): Promise<AuthenticatedHumanRecord | null>;
+  revokeSession(input: RevokeSessionInput): Promise<boolean>;
 }
