@@ -1,10 +1,11 @@
 import 'reflect-metadata';
 
 import { randomUUID } from 'node:crypto';
+import type { IncomingMessage } from 'node:http';
 
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { AppModule } from './app.module.js';
 import { loadRuntimeConfig } from './config.js';
@@ -13,7 +14,7 @@ async function bootstrap(): Promise<void> {
   const config = loadRuntimeConfig();
   const adapter = new FastifyAdapter({
     logger: false,
-    genReqId(request: FastifyRequest) {
+    genReqId(request: IncomingMessage) {
       const suppliedId = request.headers['x-correlation-id'];
       return typeof suppliedId === 'string' && suppliedId.trim().length > 0
         ? suppliedId
