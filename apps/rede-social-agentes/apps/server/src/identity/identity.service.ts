@@ -61,15 +61,17 @@ export class IdentityService {
     const account = await this.repository.findHumanAccountByEmail(normalizeEmail(email));
 
     if (!account) {
+      await this.passwords.consumeVerificationCost(password);
+      throw new InvalidCredentialsError();
+    }
+
+    const passwordIsValid = await this.passwords.verify(password, account.passwordHash);
+    if (!passwordIsValid) {
       throw new InvalidCredentialsError();
     }
 
     if (account.status !== 'ACTIVE') {
       throw new AccountUnavailableError();
-    }
-
-    if (!(await this.passwords.verify(password, account.passwordHash))) {
-      throw new InvalidCredentialsError();
     }
 
     const issued = this.sessionTokens.issue();
