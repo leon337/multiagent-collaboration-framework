@@ -1,8 +1,4 @@
-import type {
-  CommentAuthorType,
-  CommentStatus,
-  ReactionType,
-} from '@rsa/contracts';
+import type { CommentAuthorType, CommentStatus, ReactionType } from '@rsa/contracts';
 
 import type { CommentCursor } from './comment.cursor.js';
 

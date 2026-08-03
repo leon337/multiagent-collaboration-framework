@@ -46,9 +46,7 @@ function mapReaction(reaction: ReactionRecord): ReactionResponse {
 
 @Injectable()
 export class InteractionService {
-  constructor(
-    @Inject(INTERACTION_REPOSITORY) private readonly repository: InteractionRepository,
-  ) {}
+  constructor(@Inject(INTERACTION_REPOSITORY) private readonly repository: InteractionRepository) {}
 
   async createHumanComment(
     contentId: string,
@@ -105,7 +103,9 @@ export class InteractionService {
     accountId: string,
     correlationId: string,
   ): Promise<CommentResponse> {
-    return mapComment(await this.repository.archiveComment({ commentId, accountId, correlationId }));
+    return mapComment(
+      await this.repository.archiveComment({ commentId, accountId, correlationId }),
+    );
   }
 
   async listComments(

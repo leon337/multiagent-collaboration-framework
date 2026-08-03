@@ -9,11 +9,7 @@ export type PermissionCode =
   | 'content.comment.draft.create';
 export type PermissionGrantStatus = 'ACTIVE' | 'REVOKED';
 export type PermissionDecisionReason =
-  | 'ALLOWED'
-  | 'AGENT_NOT_ACTIVE'
-  | 'PERMISSION_NOT_GRANTED'
-  | 'GRANT_EXPIRED'
-  | 'QUOTA_EXHAUSTED';
+  'ALLOWED' | 'AGENT_NOT_ACTIVE' | 'PERMISSION_NOT_GRANTED' | 'GRANT_EXPIRED' | 'QUOTA_EXHAUSTED';
 export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
 export interface CommandEnvelope<TPayload> {

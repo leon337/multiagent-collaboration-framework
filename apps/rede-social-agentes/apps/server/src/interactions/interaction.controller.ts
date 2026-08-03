@@ -174,11 +174,7 @@ export class InteractionController {
       });
     }
     try {
-      return await this.interactions.listComments(
-        contentId,
-        parsed.data.limit,
-        parsed.data.cursor,
-      );
+      return await this.interactions.listComments(contentId, parsed.data.limit, parsed.data.cursor);
     } catch (error) {
       this.rethrowPublicError(error, request.id);
     }
