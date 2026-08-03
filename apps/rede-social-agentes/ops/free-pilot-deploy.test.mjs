@@ -11,10 +11,10 @@ async function read(path) {
   return readFile(path, 'utf8');
 }
 
-test('Render blueprint remains free and keeps secrets outside Git', async () => {
+test('Render blueprint provisions a free API and static web without secrets in Git', async () => {
   const blueprint = await read(resolve(repositoryRoot, 'render.yaml'));
 
-  assert.match(blueprint, /runtime: docker/u);
+  assert.match(blueprint, /name: rsa-api-free\s+runtime: docker/u);
   assert.match(blueprint, /plan: free/u);
   assert.match(blueprint, /region: virginia/u);
   assert.match(blueprint, /healthCheckPath: \/health\/ready/u);
@@ -28,8 +28,16 @@ test('Render blueprint remains free and keeps secrets outside Git', async () => 
   assert.match(blueprint, /key: DATABASE_URL\s+sync: false/u);
   assert.match(blueprint, /key: MIGRATION_DATABASE_URL\s+sync: false/u);
   assert.match(blueprint, /key: ALLOWED_ORIGINS\s+sync: false/u);
+
+  assert.match(blueprint, /name: rsa-web-free\s+runtime: static/u);
+  assert.match(blueprint, /staticPublishPath: \.\/apps\/rede-social-agentes\/apps\/web\/dist/u);
+  assert.match(blueprint, /key: VITE_API_BASE_URL\s+sync: false/u);
+  assert.match(blueprint, /type: rewrite\s+source: \/\*\s+destination: \/index\.html/u);
+
+  assert.doesNotMatch(blueprint, /npx wrangler deploy/u);
   assert.doesNotMatch(blueprint, /plan: (starter|standard|pro)/u);
   assert.doesNotMatch(blueprint, /postgresql:\/\//u);
+  assert.doesNotMatch(blueprint, /\.onrender\.com/u);
 });
 
 test('migration runner supports a separate direct database connection', async () => {
@@ -39,7 +47,7 @@ test('migration runner supports a separate direct database connection', async ()
   assert.match(migrator, /pg_advisory_lock/u);
 });
 
-test('Cloudflare Pages assets enforce SPA routing and security headers', async () => {
+test('Cloudflare Pages assets remain available as an optional fallback', async () => {
   const publicRoot = resolve(appRoot, 'apps/web/public');
   const headers = await read(resolve(publicRoot, '_headers'));
   const redirects = await read(resolve(publicRoot, '_redirects'));
