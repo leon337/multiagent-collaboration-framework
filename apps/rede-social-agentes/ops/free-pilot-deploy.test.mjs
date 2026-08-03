@@ -58,3 +58,15 @@ test('Cloudflare Pages assets remain available as an optional fallback', async (
   assert.match(headers, /X-Robots-Tag: noindex, nofollow/u);
   assert.equal(redirects.trim(), '/* /index.html 200');
 });
+
+test('Cloudflare Worker publishes the built React application as a SPA', async () => {
+  const wrangler = JSON.parse(await read(resolve(repositoryRoot, 'wrangler.jsonc')));
+
+  assert.equal(wrangler.name, 'multiagent-collaboration-framework');
+  assert.equal(
+    wrangler.assets.directory,
+    './apps/rede-social-agentes/apps/web/dist',
+  );
+  assert.equal(wrangler.assets.not_found_handling, 'single-page-application');
+  assert.equal('main' in wrangler, false);
+});
