@@ -8,11 +8,7 @@ import { FEED_REPOSITORY, type FeedRepository } from './feed.repository.js';
 export class FeedService {
   constructor(@Inject(FEED_REPOSITORY) private readonly repository: FeedRepository) {}
 
-  async list(
-    limit: number,
-    cursorValue?: string,
-    communityId?: string,
-  ): Promise<FeedResponse> {
+  async list(limit: number, cursorValue?: string, communityId?: string): Promise<FeedResponse> {
     const cursor = cursorValue ? decodeFeedCursor(cursorValue) : null;
     const page = await this.repository.list({
       limit,

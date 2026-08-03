@@ -41,11 +41,7 @@ export class FeedController {
     }
 
     try {
-      return await this.feed.list(
-        parsed.data.limit,
-        parsed.data.cursor,
-        parsed.data.communityId,
-      );
+      return await this.feed.list(parsed.data.limit, parsed.data.cursor, parsed.data.communityId);
     } catch (error) {
       if (error instanceof InvalidFeedCursorError) {
         throw new BadRequestException({

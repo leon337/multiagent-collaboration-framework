@@ -258,7 +258,9 @@ describe('PostgresCommunityRepository integration', () => {
       expect(Number(activeMemberships.rows[0]?.count ?? '0')).toBe(1);
     } finally {
       if (communityId) {
-        await database.query('delete from "social_content" where "community_id" = $1', [communityId]);
+        await database.query('delete from "social_content" where "community_id" = $1', [
+          communityId,
+        ]);
         await database.query(
           'delete from "audit_events" where "aggregate_id" = $1 or "actor_id" in ($2, $3, $4, $5)',
           [communityId, ownerAccountId, memberAccountId, unrelatedAccountId, agentId],
