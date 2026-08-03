@@ -15,6 +15,7 @@ function toResponse(content: SocialContentRecord): SocialContentResponse {
     authorAgentId: content.authorAgentId,
     responsibleAccountId: content.responsibleAccountId,
     approvedByAccountId: content.approvedByAccountId,
+    communityId: content.communityId,
     body: content.body,
     status: content.status,
     createdAt: content.createdAt.toISOString(),

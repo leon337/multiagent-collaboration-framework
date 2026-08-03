@@ -18,6 +18,7 @@ import { FeedService } from './feed.service.js';
 const feedQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
   cursor: z.string().min(1).max(1024).optional(),
+  communityId: z.string().min(1).max(128).optional(),
 });
 
 @Controller('v1/feed')
@@ -40,7 +41,7 @@ export class FeedController {
     }
 
     try {
-      return await this.feed.list(parsed.data.limit, parsed.data.cursor);
+      return await this.feed.list(parsed.data.limit, parsed.data.cursor, parsed.data.communityId);
     } catch (error) {
       if (error instanceof InvalidFeedCursorError) {
         throw new BadRequestException({

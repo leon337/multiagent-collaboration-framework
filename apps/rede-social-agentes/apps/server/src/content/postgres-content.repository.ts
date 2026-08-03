@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
-import type { ContentStatus } from '@rsa/contracts';
+import type { ContentStatus, PermissionScope } from '@rsa/contracts';
 import type { DatabaseRow, DatabaseTransaction } from '@rsa/database';
 
 import { DatabaseService } from '../database.service.js';
@@ -25,6 +25,7 @@ interface SocialContentRow extends DatabaseRow {
   author_agent_id: string;
   responsible_account_id: string;
   approved_by_account_id: string | null;
+  community_id: string | null;
   body: string;
   status: ContentStatus;
   created_at: Date;
@@ -34,12 +35,13 @@ interface SocialContentRow extends DatabaseRow {
 
 const returningContentColumns = `
   "id", "author_agent_id", "responsible_account_id", "approved_by_account_id",
-  "body", "status", "created_at", "published_at", "archived_at"
+  "community_id", "body", "status", "created_at", "published_at", "archived_at"
 `;
 
 const selectedContentColumns = `
   sc."id", sc."author_agent_id", sc."responsible_account_id", sc."approved_by_account_id",
-  sc."body", sc."status", sc."created_at", sc."published_at", sc."archived_at"
+  sc."community_id", sc."body", sc."status", sc."created_at", sc."published_at",
+  sc."archived_at"
 `;
 
 function mapContent(row: SocialContentRow): SocialContentRecord {
@@ -48,12 +50,51 @@ function mapContent(row: SocialContentRow): SocialContentRecord {
     authorAgentId: row.author_agent_id,
     responsibleAccountId: row.responsible_account_id,
     approvedByAccountId: row.approved_by_account_id,
+    communityId: row.community_id,
     body: row.body,
     status: row.status,
     createdAt: row.created_at,
     publishedAt: row.published_at,
     archivedAt: row.archived_at,
   };
+}
+
+function communityIdFromScope(scope: PermissionScope | null): string | null {
+  return scope?.resourceType === 'community' ? scope.resourceId : null;
+}
+
+async function ensureCommunityMemberships(
+  client: DatabaseTransaction,
+  input: {
+    communityId: string;
+    agentId: string;
+    responsibleAccountId: string;
+  },
+): Promise<void> {
+  const result = await client.query(
+    `
+      select c."id"
+      from "communities" c
+      join "community_members" agent_member
+        on agent_member."community_id" = c."id"
+       and agent_member."subject_type" = 'AGENT'
+       and agent_member."agent_id" = $2
+       and agent_member."responsible_account_id" = $3
+       and agent_member."status" = 'ACTIVE'
+      join "community_members" human_member
+        on human_member."community_id" = c."id"
+       and human_member."subject_type" = 'HUMAN'
+       and human_member."account_id" = $3
+       and human_member."status" = 'ACTIVE'
+      where c."id" = $1 and c."status" = 'ACTIVE'
+      limit 1
+    `,
+    [input.communityId, input.agentId, input.responsibleAccountId],
+  );
+
+  if (result.rowCount !== 1) {
+    throw new ContentResourceAccessDeniedError();
+  }
 }
 
 async function writeContentAudit(
@@ -92,6 +133,7 @@ export class PostgresContentRepository implements ContentRepository {
 
   async createDraft(input: CreateDraftInput): Promise<SocialContentRecord> {
     return this.database.transaction(async (client) => {
+      const communityId = communityIdFromScope(input.scope);
       const decision = await evaluatePermissionWithClient(client, {
         agentId: input.agentId,
         responsibleAccountId: input.responsibleAccountId,
@@ -104,14 +146,22 @@ export class PostgresContentRepository implements ContentRepository {
         throw new ContentPermissionDeniedError(decision.reason);
       }
 
+      if (communityId) {
+        await ensureCommunityMemberships(client, {
+          communityId,
+          agentId: input.agentId,
+          responsibleAccountId: input.responsibleAccountId,
+        });
+      }
+
       const result = await client.query<SocialContentRow>(
         `
           insert into "social_content" (
-            "id", "author_agent_id", "responsible_account_id", "body"
-          ) values ($1, $2, $3, $4)
+            "id", "author_agent_id", "responsible_account_id", "community_id", "body"
+          ) values ($1, $2, $3, $4, $5)
           returning ${returningContentColumns}
         `,
-        [input.id, input.agentId, input.responsibleAccountId, input.body],
+        [input.id, input.agentId, input.responsibleAccountId, communityId, input.body],
       );
 
       const row = result.rows[0];
@@ -129,6 +179,7 @@ export class PostgresContentRepository implements ContentRepository {
           responsibleAccountId: input.responsibleAccountId,
           permissionGrantId: decision.grantId,
           scope: input.scope,
+          communityId,
         },
       });
 
@@ -146,6 +197,14 @@ export class PostgresContentRepository implements ContentRepository {
 
       if (current.status !== 'DRAFT') {
         throw new ContentStateConflictError();
+      }
+
+      if (current.community_id) {
+        await ensureCommunityMemberships(client, {
+          communityId: current.community_id,
+          agentId: current.author_agent_id,
+          responsibleAccountId: input.responsibleAccountId,
+        });
       }
 
       const result = await client.query<SocialContentRow>(
@@ -172,7 +231,7 @@ export class PostgresContentRepository implements ContentRepository {
         eventType: 'CONTENT_PUBLISHED',
         contentId: input.contentId,
         correlationId: input.correlationId,
-        payload: { authorAgentId: row.author_agent_id },
+        payload: { authorAgentId: row.author_agent_id, communityId: row.community_id },
       });
 
       return mapContent(row);
@@ -212,7 +271,11 @@ export class PostgresContentRepository implements ContentRepository {
         eventType: 'CONTENT_ARCHIVED',
         contentId: input.contentId,
         correlationId: input.correlationId,
-        payload: { previousStatus: current.status, authorAgentId: row.author_agent_id },
+        payload: {
+          previousStatus: current.status,
+          authorAgentId: row.author_agent_id,
+          communityId: row.community_id,
+        },
       });
 
       return mapContent(row);
