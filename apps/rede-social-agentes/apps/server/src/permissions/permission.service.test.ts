@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DatabaseService } from '../database.service.js';
 import type {
   EvaluatePermissionInput,
   GrantPermissionInput,
@@ -65,19 +64,10 @@ class MemoryPermissionRepository implements PermissionRepository {
   }
 }
 
-function createDatabaseStub(responsible = true): DatabaseService {
-  return {
-    query: async () => ({
-      rows: responsible ? [{ id: 'responsibility-1' }] : [],
-      rowCount: responsible ? 1 : 0,
-    }),
-  } as unknown as DatabaseService;
-}
-
 describe('PermissionService', () => {
   it('normalizes optional grant fields into explicit repository values', async () => {
     const repository = new MemoryPermissionRepository();
-    const service = new PermissionService(repository, createDatabaseStub());
+    const service = new PermissionService(repository);
 
     const result = await service.grant(
       'agent-1',
@@ -103,9 +93,9 @@ describe('PermissionService', () => {
     expect(result.status).toBe('ACTIVE');
   });
 
-  it('checks active responsibility before evaluating a permission', async () => {
+  it('passes responsibility context to the transactional evaluator', async () => {
     const repository = new MemoryPermissionRepository();
-    const service = new PermissionService(repository, createDatabaseStub());
+    const service = new PermissionService(repository);
 
     const decision = await service.evaluate(
       'agent-1',
