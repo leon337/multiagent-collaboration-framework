@@ -5,10 +5,14 @@ on:
     paths:
       - "apps/rede-social-agentes/**"
       - ".github/workflows/rede-social-foundation.yml"
+      - "docs/projects/rede-social-agentes/**"
+      - "docs/decisions/MCF-DEC-021-*.md"
+      - "docs/reviews/MCF-DEC-021-*.md"
+      - "docs/social-seed/**"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   foundation:
@@ -42,10 +46,8 @@ jobs:
       LOG_LEVEL: error
 
     steps:
-      - name: Checkout branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -59,20 +61,6 @@ jobs:
 
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
-
-      - name: Format migration runner
-        run: pnpm exec prettier --write packages/database/scripts/migrate.mjs
-
-      - name: Commit formatted migration runner
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/database/scripts/migrate.mjs
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(database): formatar migrador SQL"
-            git push origin HEAD:${{ github.event.pull_request.head.ref }}
-          fi
 
       - name: Verify formatting
         run: pnpm format:check
