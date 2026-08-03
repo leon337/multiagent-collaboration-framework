@@ -60,7 +60,9 @@ test('Cloudflare Pages assets remain available as an optional fallback', async (
 });
 
 test('Cloudflare Worker publishes the built React application as a SPA', async () => {
-  const wrangler = JSON.parse(await read(resolve(repositoryRoot, 'wrangler.jsonc')));
+  const wrangler = JSON.parse(
+    await read(resolve(repositoryRoot, 'wrangler.jsonc')),
+  );
 
   assert.equal(wrangler.name, 'multiagent-collaboration-framework');
   assert.equal(
