@@ -252,11 +252,10 @@ export class ModerationController {
     @Body() body: unknown,
     @Req() request: AuthenticatedHumanRequest,
   ): Promise<ModerationAppealResponse> {
-    const input = parseBody<{ reason: string; evidence?: Record<string, unknown> }>(
-      reverseSchema,
-      body,
-      request.id,
-    );
+    const input = parseBody<{
+      reason: string;
+      evidence?: Record<string, unknown> | undefined;
+    }>(reverseSchema, body, request.id);
     try {
       return await this.moderation.reverseCase(
         request.authenticatedHuman.accountId,
