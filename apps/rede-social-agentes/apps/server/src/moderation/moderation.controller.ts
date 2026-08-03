@@ -15,10 +15,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type {
+  CreateModerationAppealRequest,
   CreateReportRequest,
   CreateReportResponse,
+  ModerationAppealResponse,
   ModerationCaseListResponse,
   ModerationCaseResponse,
+  ResolveModerationCaseRequest,
+  SupervisionOverviewResponse,
 } from '@rsa/contracts';
 import { z } from 'zod';
 
@@ -52,6 +56,26 @@ const createReportSchema = z.object({
 const queueQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
   cursor: z.string().min(1).max(1024).optional(),
+});
+
+const resolveSchema = z.object({
+  action: z.enum([
+    'NO_ACTION',
+    'HIDE_CONTENT',
+    'ARCHIVE_COMMENT',
+    'PAUSE_AGENT',
+    'ARCHIVE_COMMUNITY',
+  ]),
+  reason: z.string().trim().min(1).max(4000),
+  evidence: z.record(z.string(), z.unknown()).optional(),
+});
+
+const reasonSchema = z.object({
+  reason: z.string().trim().min(1).max(4000),
+});
+
+const reverseSchema = reasonSchema.extend({
+  evidence: z.record(z.string(), z.unknown()).optional(),
 });
 
 @Controller('v1')
@@ -159,6 +183,99 @@ export class ModerationController {
         caseId,
         request.id,
       );
+    } catch (error) {
+      this.rethrowPublicError(error, request.id);
+    }
+  }
+
+  @Post('moderation/cases/:caseId/resolve')
+  async resolveCase(
+    @Param('caseId') caseId: string,
+    @Body() body: unknown,
+    @Req() request: AuthenticatedHumanRequest,
+  ): Promise<ModerationCaseResponse> {
+    const input = parseBody<ResolveModerationCaseRequest>(resolveSchema, body, request.id);
+    try {
+      return await this.moderation.resolveCase(
+        request.authenticatedHuman.accountId,
+        caseId,
+        input,
+        request.id,
+      );
+    } catch (error) {
+      this.rethrowPublicError(error, request.id);
+    }
+  }
+
+  @Post('moderation/cases/:caseId/dismiss')
+  async dismissCase(
+    @Param('caseId') caseId: string,
+    @Body() body: unknown,
+    @Req() request: AuthenticatedHumanRequest,
+  ): Promise<ModerationCaseResponse> {
+    const input = parseBody<{ reason: string }>(reasonSchema, body, request.id);
+    try {
+      return await this.moderation.dismissCase(
+        request.authenticatedHuman.accountId,
+        caseId,
+        input.reason,
+        request.id,
+      );
+    } catch (error) {
+      this.rethrowPublicError(error, request.id);
+    }
+  }
+
+  @Post('moderation/cases/:caseId/appeal')
+  @HttpCode(201)
+  async createAppeal(
+    @Param('caseId') caseId: string,
+    @Body() body: unknown,
+    @Req() request: AuthenticatedHumanRequest,
+  ): Promise<ModerationAppealResponse> {
+    const input = parseBody<CreateModerationAppealRequest>(reasonSchema, body, request.id);
+    try {
+      return await this.moderation.createAppeal(
+        request.authenticatedHuman.accountId,
+        caseId,
+        input,
+        request.id,
+      );
+    } catch (error) {
+      this.rethrowPublicError(error, request.id);
+    }
+  }
+
+  @Post('moderation/cases/:caseId/reverse')
+  async reverseCase(
+    @Param('caseId') caseId: string,
+    @Body() body: unknown,
+    @Req() request: AuthenticatedHumanRequest,
+  ): Promise<ModerationAppealResponse> {
+    const input = parseBody<{ reason: string; evidence?: Record<string, unknown> }>(
+      reverseSchema,
+      body,
+      request.id,
+    );
+    try {
+      return await this.moderation.reverseCase(
+        request.authenticatedHuman.accountId,
+        caseId,
+        input.reason,
+        input.evidence ?? {},
+        request.id,
+      );
+    } catch (error) {
+      this.rethrowPublicError(error, request.id);
+    }
+  }
+
+  @Get('supervision/overview')
+  async getOverview(
+    @Req() request: AuthenticatedHumanRequest,
+  ): Promise<SupervisionOverviewResponse> {
+    try {
+      return await this.moderation.getOverview(request.authenticatedHuman.accountId);
     } catch (error) {
       this.rethrowPublicError(error, request.id);
     }
