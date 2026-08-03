@@ -23,6 +23,6 @@ import { SessionTokenService } from './session-token.service.js';
       useExisting: PostgresIdentityRepository,
     },
   ],
-  exports: [IDENTITY_REPOSITORY, SessionAuthGuard, SessionTokenService],
+  exports: [IDENTITY_REPOSITORY, PasswordService, SessionAuthGuard, SessionTokenService],
 })
 export class IdentityModule {}
