@@ -10,10 +10,12 @@ import { IdentityModule } from './identity/identity.module.js';
 import { InteractionModule } from './interactions/interaction.module.js';
 import { ModerationModule } from './moderation/moderation.module.js';
 import { PermissionModule } from './permissions/permission.module.js';
+import { SecurityModule } from './security/security.module.js';
 
 @Module({
   imports: [
     DatabaseModule,
+    SecurityModule,
     IdentityModule,
     AgentModule,
     PermissionModule,
