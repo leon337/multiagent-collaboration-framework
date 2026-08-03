@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const repositoryRoot = resolve(appRoot, '../..');
+
+async function read(path) {
+  return readFile(path, 'utf8');
+}
+
+test('Render blueprint remains free and keeps secrets outside Git', async () => {
+  const blueprint = await read(resolve(repositoryRoot, 'render.yaml'));
+
+  assert.match(blueprint, /runtime: docker/u);
+  assert.match(blueprint, /plan: free/u);
+  assert.match(blueprint, /region: virginia/u);
+  assert.match(blueprint, /healthCheckPath: \/health\/ready/u);
+  assert.match(blueprint, /autoDeployTrigger: checksPass/u);
+  assert.match(blueprint, /preDeployCommand: node packages\/database\/scripts\/migrate\.mjs/u);
+  assert.match(blueprint, /key: RATE_LIMIT_KEY_SECRET\s+generateValue: true/u);
+  assert.match(blueprint, /key: DATABASE_URL\s+sync: false/u);
+  assert.match(blueprint, /key: ALLOWED_ORIGINS\s+sync: false/u);
+  assert.doesNotMatch(blueprint, /plan: (starter|standard|pro)/u);
+  assert.doesNotMatch(blueprint, /postgresql:\/\//u);
+});
+
+test('Cloudflare Pages assets enforce SPA routing and security headers', async () => {
+  const publicRoot = resolve(appRoot, 'apps/web/public');
+  const headers = await read(resolve(publicRoot, '_headers'));
+  const redirects = await read(resolve(publicRoot, '_redirects'));
+
+  assert.match(headers, /Content-Security-Policy:/u);
+  assert.match(headers, /connect-src 'self' https:\/\/\*\.onrender\.com/u);
+  assert.match(headers, /X-Frame-Options: DENY/u);
+  assert.match(headers, /X-Robots-Tag: noindex, nofollow/u);
+  assert.equal(redirects.trim(), '/* /index.html 200');
+});
