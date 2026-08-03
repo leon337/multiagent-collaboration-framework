@@ -23,6 +23,20 @@ interface AuditRow extends DatabaseRow {
   correlation_id: string;
 }
 
+interface NormalizedAuditEvent {
+  eventType: string;
+  aggregateType: string;
+  aggregateId: string;
+  correlationId: string;
+}
+
+function sortAuditEvents(events: NormalizedAuditEvent[]): NormalizedAuditEvent[] {
+  return events.sort((left, right) => {
+    const correlationOrder = left.correlationId.localeCompare(right.correlationId);
+    return correlationOrder !== 0 ? correlationOrder : left.eventType.localeCompare(right.eventType);
+  });
+}
+
 describe('PostgresAgentRepository integration', () => {
   let database: DatabaseService;
   let identities: PostgresIdentityRepository;
@@ -44,6 +58,15 @@ describe('PostgresAgentRepository integration', () => {
     const agentId = randomUUID();
     const responsibilityId = randomUUID();
     const handle = `agent_${randomUUID().replaceAll('-', '').slice(0, 20)}`;
+    const correlations = {
+      create: `agent-create-${agentId}`,
+      unrelated: `agent-unrelated-${agentId}`,
+      activate: `agent-activate-${agentId}`,
+      pause: `agent-pause-${agentId}`,
+      revoke: `agent-revoke-${agentId}`,
+      reactivate: `agent-reactivate-${agentId}`,
+      duplicate: `agent-duplicate-${agentId}`,
+    } as const;
 
     try {
       await identities.createHumanAccount({
@@ -51,14 +74,14 @@ describe('PostgresAgentRepository integration', () => {
         email: `responsible-${responsibleAccountId}@example.test`,
         displayName: 'Responsible Human',
         passwordHash: 'scrypt$integration$responsible',
-        correlationId: 'integration-responsible',
+        correlationId: `responsible-create-${responsibleAccountId}`,
       });
       await identities.createHumanAccount({
         id: unrelatedAccountId,
         email: `unrelated-${unrelatedAccountId}@example.test`,
         displayName: 'Unrelated Human',
         passwordHash: 'scrypt$integration$unrelated',
-        correlationId: 'integration-unrelated',
+        correlationId: `unrelated-create-${unrelatedAccountId}`,
       });
 
       const created = await agents.createAgentWithResponsibility({
@@ -69,7 +92,7 @@ describe('PostgresAgentRepository integration', () => {
         displayName: 'Integration Agent',
         bio: 'A supervised integration agent.',
         capabilities: ['analysis', 'planning'],
-        correlationId: 'integration-agent-create',
+        correlationId: correlations.create,
       });
 
       expect(created.agent).toMatchObject({ id: agentId, handle, status: 'DRAFT' });
@@ -84,7 +107,7 @@ describe('PostgresAgentRepository integration', () => {
           agentId,
           responsibleAccountId: unrelatedAccountId,
           targetStatus: 'ACTIVE',
-          correlationId: 'integration-unrelated-transition',
+          correlationId: correlations.unrelated,
         }),
       ).rejects.toBeInstanceOf(ActiveResponsibilityRequiredError);
 
@@ -93,7 +116,7 @@ describe('PostgresAgentRepository integration', () => {
           agentId,
           responsibleAccountId,
           targetStatus: 'ACTIVE',
-          correlationId: 'integration-activate',
+          correlationId: correlations.activate,
         }),
       ).resolves.toMatchObject({ status: 'ACTIVE' });
 
@@ -102,7 +125,7 @@ describe('PostgresAgentRepository integration', () => {
           agentId,
           responsibleAccountId,
           targetStatus: 'PAUSED',
-          correlationId: 'integration-pause',
+          correlationId: correlations.pause,
         }),
       ).resolves.toMatchObject({ status: 'PAUSED' });
 
@@ -111,7 +134,7 @@ describe('PostgresAgentRepository integration', () => {
           agentId,
           responsibleAccountId,
           targetStatus: 'REVOKED',
-          correlationId: 'integration-revoke-agent',
+          correlationId: correlations.revoke,
         }),
       ).resolves.toMatchObject({ status: 'REVOKED' });
 
@@ -120,7 +143,7 @@ describe('PostgresAgentRepository integration', () => {
           agentId,
           responsibleAccountId,
           targetStatus: 'ACTIVE',
-          correlationId: 'integration-reactivate-revoked',
+          correlationId: correlations.reactivate,
         }),
       ).rejects.toBeInstanceOf(InvalidAgentTransitionError);
 
@@ -133,7 +156,7 @@ describe('PostgresAgentRepository integration', () => {
           displayName: 'Duplicate Agent',
           bio: null,
           capabilities: [],
-          correlationId: 'integration-duplicate-handle',
+          correlationId: correlations.duplicate,
         }),
       ).rejects.toBeInstanceOf(AgentHandleAlreadyExistsError);
 
@@ -148,55 +171,53 @@ describe('PostgresAgentRepository integration', () => {
           select "event_type", "aggregate_type", "aggregate_id", "correlation_id"
           from "audit_events"
           where "correlation_id" in ($1, $2, $3, $4)
-          order by "occurred_at", "event_type"
         `,
-        [
-          'integration-agent-create',
-          'integration-activate',
-          'integration-pause',
-          'integration-revoke-agent',
-        ],
+        [correlations.create, correlations.activate, correlations.pause, correlations.revoke],
       );
 
-      expect(
+      const actualEvents = sortAuditEvents(
         auditResult.rows.map((row) => ({
           eventType: row.event_type,
           aggregateType: row.aggregate_type,
           aggregateId: row.aggregate_id,
           correlationId: row.correlation_id,
         })),
-      ).toEqual([
+      );
+      const expectedEvents = sortAuditEvents([
         {
           eventType: 'AGENT_PROFILE_CREATED',
           aggregateType: 'AGENT',
           aggregateId: agentId,
-          correlationId: 'integration-agent-create',
+          correlationId: correlations.create,
         },
         {
           eventType: 'RESPONSIBILITY_LINK_ACTIVATED',
           aggregateType: 'RESPONSIBILITY_LINK',
           aggregateId: responsibilityId,
-          correlationId: 'integration-agent-create',
+          correlationId: correlations.create,
         },
         {
           eventType: 'AGENT_STATE_CHANGED',
           aggregateType: 'AGENT',
           aggregateId: agentId,
-          correlationId: 'integration-activate',
+          correlationId: correlations.activate,
         },
         {
           eventType: 'AGENT_STATE_CHANGED',
           aggregateType: 'AGENT',
           aggregateId: agentId,
-          correlationId: 'integration-pause',
+          correlationId: correlations.pause,
         },
         {
           eventType: 'AGENT_STATE_CHANGED',
           aggregateType: 'AGENT',
           aggregateId: agentId,
-          correlationId: 'integration-revoke-agent',
+          correlationId: correlations.revoke,
         },
       ]);
+
+      expect(actualEvents).toHaveLength(5);
+      expect(actualEvents).toEqual(expectedEvents);
     } finally {
       await database.query(
         `
