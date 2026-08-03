@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   foundation:
@@ -42,8 +42,10 @@ jobs:
       LOG_LEVEL: error
 
     steps:
-      - name: Checkout
+      - name: Checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -58,28 +60,19 @@ jobs:
       - name: Install dependencies and generate lockfile
         run: pnpm install --no-frozen-lockfile
 
-      - name: Upload generated lockfile
-        uses: actions/upload-artifact@v4
-        with:
-          name: rede-social-foundation-lockfile
-          path: apps/rede-social-agentes/pnpm-lock.yaml
-          if-no-files-found: error
-          retention-days: 7
-
       - name: Apply official formatting
         run: pnpm format
 
-      - name: Upload formatted source
-        uses: actions/upload-artifact@v4
-        with:
-          name: rede-social-foundation-formatted-source
-          path: |
-            apps/rede-social-agentes/apps/web/src/App.tsx
-            apps/rede-social-agentes/apps/web/src/styles.css
-            apps/rede-social-agentes/apps/web/tsconfig.json
-            apps/rede-social-agentes/compose.yaml
-          if-no-files-found: error
-          retention-days: 7
+      - name: Commit generated artifacts
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml apps/web/src/App.tsx apps/web/src/styles.css apps/web/tsconfig.json compose.yaml
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(rede-social): fixar lockfile e formatação"
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
 
       - name: Lint
         run: pnpm lint
