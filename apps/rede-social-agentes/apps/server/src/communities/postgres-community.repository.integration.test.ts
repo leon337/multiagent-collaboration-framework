@@ -4,8 +4,14 @@ import type { DatabaseRow } from '@rsa/database';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { PostgresAgentRepository } from '../agents/postgres-agent.repository.js';
+import { ContentResourceAccessDeniedError } from '../content/content.errors.js';
+import { ContentService } from '../content/content.service.js';
+import { PostgresContentRepository } from '../content/postgres-content.repository.js';
 import { DatabaseService } from '../database.service.js';
+import { FeedService } from '../feed/feed.service.js';
+import { PostgresFeedRepository } from '../feed/postgres-feed.repository.js';
 import { PostgresIdentityRepository } from '../identity/postgres-identity.repository.js';
+import { PostgresPermissionRepository } from '../permissions/postgres-permission.repository.js';
 import {
   CommunityAgentNotAvailableError,
   CommunityNotAvailableError,
@@ -16,6 +22,10 @@ import { PostgresCommunityRepository } from './postgres-community.repository.js'
 
 interface CountRow extends DatabaseRow {
   count: string;
+}
+
+interface QuotaRow extends DatabaseRow {
+  quota_used: number;
 }
 
 describe('PostgresCommunityRepository integration', () => {
@@ -29,14 +39,18 @@ describe('PostgresCommunityRepository integration', () => {
     await database.onModuleDestroy();
   });
 
-  it('keeps human and agent memberships supervised, idempotent and auditable', async () => {
+  it('keeps memberships and contextual content supervised, idempotent and auditable', async () => {
     const identities = new PostgresIdentityRepository(database);
     const agents = new PostgresAgentRepository(database);
+    const permissions = new PostgresPermissionRepository(database);
     const communities = new CommunityService(new PostgresCommunityRepository(database));
+    const content = new ContentService(new PostgresContentRepository(database));
+    const feed = new FeedService(new PostgresFeedRepository(database));
     const ownerAccountId = randomUUID();
     const memberAccountId = randomUUID();
     const unrelatedAccountId = randomUUID();
     const agentId = randomUUID();
+    const grantId = randomUUID();
     const correlation = randomUUID();
     let communityId: string | null = null;
 
@@ -82,10 +96,7 @@ describe('PostgresCommunityRepository integration', () => {
         `create-${correlation}`,
       );
       communityId = community.id;
-      expect(community).toMatchObject({
-        ownerAccountId,
-        status: 'ACTIVE',
-      });
+      expect(community).toMatchObject({ ownerAccountId, status: 'ACTIVE' });
       expect(community.slug).toMatch(/^agentes-recife-/);
 
       const firstHumanJoin = await communities.joinHuman(
@@ -134,6 +145,43 @@ describe('PostgresCommunityRepository integration', () => {
       expect(new Set(memberIds).size).toBe(3);
       expect(memberIds).toEqual(expect.arrayContaining([firstHumanJoin.id, firstAgentJoin.id]));
 
+      await permissions.grantPermission({
+        id: grantId,
+        agentId,
+        responsibleAccountId: ownerAccountId,
+        permission: 'content.draft.create',
+        scope: { resourceType: 'community', resourceId: community.id },
+        quotaLimit: 2,
+        validUntil: new Date(Date.now() + 60 * 60 * 1000),
+        correlationId: `grant-${correlation}`,
+      });
+
+      const draft = await content.createDraft(
+        agentId,
+        {
+          body: 'Community-scoped content',
+          scope: { resourceType: 'community', resourceId: community.id },
+        },
+        ownerAccountId,
+        `content-draft-${correlation}`,
+      );
+      expect(draft).toMatchObject({
+        authorAgentId: agentId,
+        communityId: community.id,
+        status: 'DRAFT',
+      });
+
+      const published = await content.publish(
+        draft.id,
+        ownerAccountId,
+        `content-publish-${correlation}`,
+      );
+      expect(published).toMatchObject({ communityId: community.id, status: 'PUBLISHED' });
+
+      const communityFeed = await feed.list(20, undefined, community.id);
+      expect(communityFeed.items.map((item) => item.id)).toContain(published.id);
+      expect(communityFeed.items.every((item) => item.communityId === community.id)).toBe(true);
+
       await expect(
         communities.leaveHuman(community.id, ownerAccountId, `owner-leave-${correlation}`),
       ).rejects.toBeInstanceOf(CommunityStateConflictError);
@@ -167,6 +215,24 @@ describe('PostgresCommunityRepository integration', () => {
       expect(secondAgentLeave.id).toBe(firstAgentLeave.id);
 
       await expect(
+        content.createDraft(
+          agentId,
+          {
+            body: 'Must fail after membership ended',
+            scope: { resourceType: 'community', resourceId: community.id },
+          },
+          ownerAccountId,
+          `content-after-leave-${correlation}`,
+        ),
+      ).rejects.toBeInstanceOf(ContentResourceAccessDeniedError);
+
+      const quota = await database.query<QuotaRow>(
+        'select "quota_used" from "permission_grants" where "id" = $1',
+        [grantId],
+      );
+      expect(quota.rows[0]?.quota_used).toBe(1);
+
+      await expect(
         communities.archive(community.id, unrelatedAccountId, `archive-third-party-${correlation}`),
       ).rejects.toBeInstanceOf(CommunityNotAvailableError);
 
@@ -192,12 +258,14 @@ describe('PostgresCommunityRepository integration', () => {
       expect(Number(activeMemberships.rows[0]?.count ?? '0')).toBe(1);
     } finally {
       if (communityId) {
+        await database.query('delete from "social_content" where "community_id" = $1', [communityId]);
         await database.query(
           'delete from "audit_events" where "aggregate_id" = $1 or "actor_id" in ($2, $3, $4, $5)',
           [communityId, ownerAccountId, memberAccountId, unrelatedAccountId, agentId],
         );
         await database.query('delete from "communities" where "id" = $1', [communityId]);
       }
+      await database.query('delete from "permission_grants" where "agent_id" = $1', [agentId]);
       await database.query('delete from "agent_profiles" where "id" = $1', [agentId]);
       await database.query('delete from "accounts" where "id" in ($1, $2, $3)', [
         ownerAccountId,
