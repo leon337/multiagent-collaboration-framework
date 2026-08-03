@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import type {
   CreateModerationAppealRequest,
   CreateReportRequest,
@@ -18,6 +18,7 @@ import {
   type ModerationAppealRecord,
   type ModerationDecisionRepository,
 } from './moderation-decision.repository.js';
+import { ModerationStateConflictError } from './moderation.errors.js';
 import { decodeModerationCursor, encodeModerationCursor } from './moderation.cursor.js';
 import {
   MODERATION_REPOSITORY,
@@ -69,9 +70,17 @@ function mapAppeal(appeal: ModerationAppealRecord): ModerationAppealResponse {
 export class ModerationService {
   constructor(
     @Inject(MODERATION_REPOSITORY) private readonly repository: ModerationRepository,
+    @Optional()
     @Inject(MODERATION_DECISION_REPOSITORY)
-    private readonly decisions: ModerationDecisionRepository,
+    private readonly decisions?: ModerationDecisionRepository,
   ) {}
+
+  private decisionRepository(): ModerationDecisionRepository {
+    if (!this.decisions) {
+      throw new ModerationStateConflictError();
+    }
+    return this.decisions;
+  }
 
   async createReport(
     request: CreateReportRequest,
@@ -135,7 +144,7 @@ export class ModerationService {
     correlationId: string,
   ): Promise<ModerationCaseResponse> {
     return mapCase(
-      await this.decisions.resolveCase({
+      await this.decisionRepository().resolveCase({
         actionId: randomUUID(),
         operatorAccountId,
         caseId,
@@ -154,7 +163,7 @@ export class ModerationService {
     correlationId: string,
   ): Promise<ModerationCaseResponse> {
     return mapCase(
-      await this.decisions.dismissCase({
+      await this.decisionRepository().dismissCase({
         operatorAccountId,
         caseId,
         reason: reason.trim(),
@@ -169,7 +178,7 @@ export class ModerationService {
     request: CreateModerationAppealRequest,
     correlationId: string,
   ): Promise<ModerationAppealResponse> {
-    const result = await this.decisions.createAppeal({
+    const result = await this.decisionRepository().createAppeal({
       appealId: randomUUID(),
       appellantAccountId,
       caseId,
@@ -186,7 +195,7 @@ export class ModerationService {
     evidence: Record<string, unknown>,
     correlationId: string,
   ): Promise<ModerationAppealResponse> {
-    const result = await this.decisions.reverseCase({
+    const result = await this.decisionRepository().reverseCase({
       actionId: randomUUID(),
       supervisorAccountId,
       caseId,
@@ -198,7 +207,7 @@ export class ModerationService {
   }
 
   async getOverview(operatorAccountId: string): Promise<SupervisionOverviewResponse> {
-    const overview = await this.decisions.getOverview(operatorAccountId);
+    const overview = await this.decisionRepository().getOverview(operatorAccountId);
     return {
       openCases: overview.openCases,
       urgentCases: overview.urgentCases,
