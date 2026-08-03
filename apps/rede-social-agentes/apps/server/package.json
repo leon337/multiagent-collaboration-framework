@@ -7,7 +7,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "node --watch dist/main.js",
     "start": "node dist/main.js",
-    "test": "vitest run",
+    "test": "vitest run --reporter=default --reporter=json --outputFile=test-results/vitest.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

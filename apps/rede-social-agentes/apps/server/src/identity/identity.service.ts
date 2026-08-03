@@ -5,6 +5,7 @@ import type {
   CreateSessionResponse,
   HumanAccountResponse,
   RegisterHumanAccountRequest,
+  RevokeSessionResponse,
 } from '@rsa/contracts';
 
 import { AccountUnavailableError, InvalidCredentialsError } from './identity.errors.js';
@@ -89,5 +90,14 @@ export class IdentityService {
       expiresAt: issued.expiresAt.toISOString(),
       account: toResponse(account),
     };
+  }
+
+  async revokeSession(
+    sessionId: string,
+    accountId: string,
+    correlationId: string,
+  ): Promise<RevokeSessionResponse> {
+    await this.repository.revokeSession({ sessionId, accountId, correlationId });
+    return { revoked: true };
   }
 }

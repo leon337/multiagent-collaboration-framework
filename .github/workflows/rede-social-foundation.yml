@@ -79,5 +79,14 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Upload Vitest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rede-social-vitest-report
+          path: apps/rede-social-agentes/apps/server/test-results/vitest.json
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Build
         run: pnpm build

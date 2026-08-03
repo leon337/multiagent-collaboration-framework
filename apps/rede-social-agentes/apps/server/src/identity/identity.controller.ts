@@ -1,29 +1,34 @@
 import {
-  BadRequestException,
   Body,
   ConflictException,
   Controller,
+  Delete,
   HttpCode,
   Inject,
   Post,
   Req,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import type {
   CreateSessionRequest,
   CreateSessionResponse,
   HumanAccountResponse,
   RegisterHumanAccountRequest,
+  RevokeSessionResponse,
 } from '@rsa/contracts';
 import type { FastifyRequest } from 'fastify';
-import { z, type ZodType } from 'zod';
+import { z } from 'zod';
 
+import { parseBody } from '../http/parse-body.js';
+import type { AuthenticatedHumanRequest } from './authenticated-request.js';
 import {
   AccountUnavailableError,
   EmailAlreadyExistsError,
   InvalidCredentialsError,
 } from './identity.errors.js';
 import { IdentityService } from './identity.service.js';
+import { SessionAuthGuard } from './session-auth.guard.js';
 
 const registerSchema = z.object({
   email: z.string().trim().email().max(320),
@@ -35,22 +40,6 @@ const sessionSchema = z.object({
   email: z.string().trim().email().max(320),
   password: z.string().min(1).max(128),
 });
-
-function parseBody<TValue>(schema: ZodType<TValue>, body: unknown, correlationId: string): TValue {
-  const result = schema.safeParse(body);
-  if (!result.success) {
-    throw new BadRequestException({
-      code: 'INVALID_REQUEST',
-      message: 'The request body is invalid.',
-      correlationId,
-      details: result.error.issues.map((issue) => ({
-        path: issue.path.join('.'),
-        message: issue.message,
-      })),
-    });
-  }
-  return result.data;
-}
 
 @Controller('v1')
 export class IdentityController {
@@ -98,5 +87,18 @@ export class IdentityController {
       }
       throw error;
     }
+  }
+
+  @Delete('sessions/current')
+  @UseGuards(SessionAuthGuard)
+  @HttpCode(200)
+  async revokeCurrentSession(
+    @Req() request: AuthenticatedHumanRequest,
+  ): Promise<RevokeSessionResponse> {
+    return this.identity.revokeSession(
+      request.authenticatedHuman.sessionId,
+      request.authenticatedHuman.accountId,
+      request.id,
+    );
   }
 }

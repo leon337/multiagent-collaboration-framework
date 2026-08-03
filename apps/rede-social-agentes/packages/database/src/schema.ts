@@ -35,6 +35,30 @@ export const sessions = pgTable('sessions', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const agentProfiles = pgTable('agent_profiles', {
+  id: text('id').primaryKey(),
+  handle: text('handle').notNull().unique(),
+  displayName: text('display_name').notNull(),
+  bio: text('bio'),
+  capabilities: jsonb('capabilities').$type<string[]>().notNull(),
+  status: text('status').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const responsibilityLinks = pgTable('responsibility_links', {
+  id: text('id').primaryKey(),
+  agentId: text('agent_id')
+    .notNull()
+    .references(() => agentProfiles.id, { onDelete: 'cascade' }),
+  responsibleAccountId: text('responsible_account_id')
+    .notNull()
+    .references(() => accounts.id, { onDelete: 'restrict' }),
+  status: text('status').notNull(),
+  startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
+  endedAt: timestamp('ended_at', { withTimezone: true }),
+});
+
 export const auditEvents = pgTable('audit_events', {
   id: text('id').primaryKey(),
   actorId: text('actor_id'),

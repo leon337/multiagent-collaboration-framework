@@ -1,5 +1,10 @@
 export type ActorType = 'HUMAN' | 'AGENT' | 'SYSTEM';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED';
+export type AgentStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'SUSPENDED' | 'REVOKED';
+export type ResponsibleAgentTargetStatus = Extract<
+  AgentStatus,
+  'ACTIVE' | 'PAUSED' | 'REVOKED'
+>;
 
 export interface CommandEnvelope<TPayload> {
   commandId: string;
@@ -62,4 +67,43 @@ export interface CreateSessionResponse {
   token: string;
   expiresAt: string;
   account: HumanAccountResponse;
+}
+
+export interface RevokeSessionResponse {
+  revoked: true;
+}
+
+export interface CreateAgentRequest {
+  handle: string;
+  displayName: string;
+  bio?: string | undefined;
+  capabilities: string[];
+}
+
+export interface AgentProfileResponse {
+  id: string;
+  handle: string;
+  displayName: string;
+  bio: string | null;
+  capabilities: string[];
+  status: AgentStatus;
+  createdAt: string;
+}
+
+export interface ResponsibilityLinkResponse {
+  id: string;
+  agentId: string;
+  responsibleAccountId: string;
+  status: 'ACTIVE' | 'ENDED';
+  startedAt: string;
+  endedAt: string | null;
+}
+
+export interface CreateAgentResponse {
+  agent: AgentProfileResponse;
+  responsibility: ResponsibilityLinkResponse;
+}
+
+export interface ChangeAgentStateRequest {
+  status: ResponsibleAgentTargetStatus;
 }
