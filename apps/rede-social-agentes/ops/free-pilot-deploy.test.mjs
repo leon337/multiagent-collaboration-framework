@@ -30,10 +30,7 @@ test('Render blueprint provisions a free API and static web without secrets in G
   assert.match(blueprint, /key: ALLOWED_ORIGINS\s+sync: false/u);
 
   assert.match(blueprint, /name: rsa-web-free\s+runtime: static/u);
-  assert.match(
-    blueprint,
-    /staticPublishPath: \.\/apps\/rede-social-agentes\/apps\/web\/dist/u,
-  );
+  assert.match(blueprint, /staticPublishPath: \.\/apps\/rede-social-agentes\/apps\/web\/dist/u);
   assert.match(blueprint, /key: VITE_API_BASE_URL\s+sync: false/u);
   assert.match(blueprint, /type: rewrite\s+source: \/\*\s+destination: \/index\.html/u);
 
