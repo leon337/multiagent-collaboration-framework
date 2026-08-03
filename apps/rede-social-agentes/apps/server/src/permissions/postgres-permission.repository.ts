@@ -300,7 +300,8 @@ export class PostgresPermissionRepository implements PermissionRepository {
           reason: 'GRANT_EXPIRED',
           permission: input.permission,
           grantId: grant.id,
-          quotaRemaining: grant.quota_limit === null ? null : Math.max(0, grant.quota_limit - grant.quota_used),
+          quotaRemaining:
+            grant.quota_limit === null ? null : Math.max(0, grant.quota_limit - grant.quota_used),
           decidedAt,
         };
         await writeDecisionAudit(client, input, decision);
@@ -348,7 +349,8 @@ export class PostgresPermissionRepository implements PermissionRepository {
           await writeDecisionAudit(client, input, denied);
           return denied;
         }
-        quotaRemaining = updated.quota_limit === null ? null : updated.quota_limit - updated.quota_used;
+        quotaRemaining =
+          updated.quota_limit === null ? null : updated.quota_limit - updated.quota_used;
       }
 
       const decision: PermissionDecisionRecord = {

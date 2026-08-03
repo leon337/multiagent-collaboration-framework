@@ -67,7 +67,10 @@ class MemoryPermissionRepository implements PermissionRepository {
 
 function createDatabaseStub(responsible = true): DatabaseService {
   return {
-    query: async () => ({ rows: responsible ? [{ id: 'responsibility-1' }] : [], rowCount: responsible ? 1 : 0 }),
+    query: async () => ({
+      rows: responsible ? [{ id: 'responsibility-1' }] : [],
+      rowCount: responsible ? 1 : 0,
+    }),
   } as unknown as DatabaseService;
 }
 
