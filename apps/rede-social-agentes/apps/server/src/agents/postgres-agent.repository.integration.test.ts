@@ -16,6 +16,13 @@ interface CountRow extends DatabaseRow {
   count: string;
 }
 
+interface AuditRow extends DatabaseRow {
+  event_type: string;
+  aggregate_type: string;
+  aggregate_id: string;
+  correlation_id: string;
+}
+
 describe('PostgresAgentRepository integration', () => {
   let database: DatabaseService;
   let identities: PostgresIdentityRepository;
@@ -136,15 +143,60 @@ describe('PostgresAgentRepository integration', () => {
       );
       expect(handleCount.rows[0]?.count).toBe('1');
 
-      const auditCount = await database.query<CountRow>(
+      const auditResult = await database.query<AuditRow>(
         `
-          select count(*)::text as "count"
+          select "event_type", "aggregate_type", "aggregate_id", "correlation_id"
           from "audit_events"
-          where "aggregate_id" in ($1, $2)
+          where "correlation_id" in ($1, $2, $3, $4)
+          order by "occurred_at", "event_type"
         `,
-        [agentId, responsibilityId],
+        [
+          'integration-agent-create',
+          'integration-activate',
+          'integration-pause',
+          'integration-revoke-agent',
+        ],
       );
-      expect(auditCount.rows[0]?.count).toBe('5');
+
+      expect(
+        auditResult.rows.map((row) => ({
+          eventType: row.event_type,
+          aggregateType: row.aggregate_type,
+          aggregateId: row.aggregate_id,
+          correlationId: row.correlation_id,
+        })),
+      ).toEqual([
+        {
+          eventType: 'AGENT_PROFILE_CREATED',
+          aggregateType: 'AGENT',
+          aggregateId: agentId,
+          correlationId: 'integration-agent-create',
+        },
+        {
+          eventType: 'RESPONSIBILITY_LINK_ACTIVATED',
+          aggregateType: 'RESPONSIBILITY_LINK',
+          aggregateId: responsibilityId,
+          correlationId: 'integration-agent-create',
+        },
+        {
+          eventType: 'AGENT_STATE_CHANGED',
+          aggregateType: 'AGENT',
+          aggregateId: agentId,
+          correlationId: 'integration-activate',
+        },
+        {
+          eventType: 'AGENT_STATE_CHANGED',
+          aggregateType: 'AGENT',
+          aggregateId: agentId,
+          correlationId: 'integration-pause',
+        },
+        {
+          eventType: 'AGENT_STATE_CHANGED',
+          aggregateType: 'AGENT',
+          aggregateId: agentId,
+          correlationId: 'integration-revoke-agent',
+        },
+      ]);
     } finally {
       await database.query(
         `
