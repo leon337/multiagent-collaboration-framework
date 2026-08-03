@@ -8,8 +8,7 @@ services:
     branch: main
     dockerfilePath: ./apps/rede-social-agentes/deploy/server.Dockerfile
     dockerContext: ./apps/rede-social-agentes
-    dockerCommand: node apps/server/dist/main.js
-    preDeployCommand: node packages/database/scripts/migrate.mjs
+    dockerCommand: sh -c 'node packages/database/scripts/migrate.mjs && exec node apps/server/dist/main.js'
     healthCheckPath: /health/ready
     autoDeployTrigger: checksPass
     maxShutdownDelaySeconds: 30
@@ -27,6 +26,8 @@ services:
       - key: RATE_LIMIT_KEY_SECRET
         generateValue: true
       - key: DATABASE_URL
+        sync: false
+      - key: MIGRATION_DATABASE_URL
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
