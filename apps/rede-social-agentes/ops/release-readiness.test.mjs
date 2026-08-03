@@ -23,10 +23,7 @@ const validEnvironment = {
 };
 
 test('accepts a complete immutable canary configuration', () => {
-  const result = validateReleaseEnvironment(
-    validEnvironment,
-    new Date('2026-08-03T12:00:00.000Z'),
-  );
+  const result = validateReleaseEnvironment(validEnvironment, new Date('2026-08-03T12:00:00.000Z'));
 
   assert.deepEqual(result, {
     ready: true,

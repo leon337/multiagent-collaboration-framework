@@ -5,7 +5,13 @@ import { pathToFileURL } from 'node:url';
 const immutableImagePattern = /^[a-z0-9][a-z0-9._/:@-]*@sha256:[a-f0-9]{64}$/u;
 const commitPattern = /^[a-f0-9]{40}$/u;
 const externalBackupPattern = /^(?:s3|gs|az|https):\/\//u;
-const forbiddenSecretFragments = ['change-me', 'example', 'placeholder', 'smoke-only', 'local-only'];
+const forbiddenSecretFragments = [
+  'change-me',
+  'example',
+  'placeholder',
+  'smoke-only',
+  'local-only',
+];
 const maximumRestoreAgeMs = 8 * 24 * 60 * 60 * 1000;
 
 function addError(errors, code, condition) {
@@ -100,11 +106,7 @@ export function validateReleaseEnvironment(env, now = new Date()) {
     !commitPattern.test(rollbackReleaseSha) || rollbackReleaseSha === releaseSha,
   );
   addError(errors, 'CANARY_CONFIRMATION_MISSING', env.ROLLOUT_CONFIRMATION !== 'CANARY_ONLY');
-  addError(
-    errors,
-    'ROLLBACK_PLAN_MISSING',
-    (env.ROLLBACK_PLAN_REFERENCE ?? '').trim().length < 8,
-  );
+  addError(errors, 'ROLLBACK_PLAN_MISSING', (env.ROLLBACK_PLAN_REFERENCE ?? '').trim().length < 8);
 
   return {
     ready: errors.length === 0,
