@@ -19,12 +19,27 @@ test('Render blueprint remains free and keeps secrets outside Git', async () => 
   assert.match(blueprint, /region: virginia/u);
   assert.match(blueprint, /healthCheckPath: \/health\/ready/u);
   assert.match(blueprint, /autoDeployTrigger: checksPass/u);
-  assert.match(blueprint, /preDeployCommand: node packages\/database\/scripts\/migrate\.mjs/u);
+  assert.match(
+    blueprint,
+    /dockerCommand: sh -c 'node packages\/database\/scripts\/migrate\.mjs && exec node apps\/server\/dist\/main\.js'/u,
+  );
+  assert.doesNotMatch(blueprint, /preDeployCommand:/u);
   assert.match(blueprint, /key: RATE_LIMIT_KEY_SECRET\s+generateValue: true/u);
   assert.match(blueprint, /key: DATABASE_URL\s+sync: false/u);
+  assert.match(blueprint, /key: MIGRATION_DATABASE_URL\s+sync: false/u);
   assert.match(blueprint, /key: ALLOWED_ORIGINS\s+sync: false/u);
   assert.doesNotMatch(blueprint, /plan: (starter|standard|pro)/u);
   assert.doesNotMatch(blueprint, /postgresql:\/\//u);
+});
+
+test('migration runner supports a separate direct database connection', async () => {
+  const migrator = await read(resolve(appRoot, 'packages/database/scripts/migrate.mjs'));
+
+  assert.match(
+    migrator,
+    /process\.env\.MIGRATION_DATABASE_URL \?\? process\.env\.DATABASE_URL/u,
+  );
+  assert.match(migrator, /pg_advisory_lock/u);
 });
 
 test('Cloudflare Pages assets enforce SPA routing and security headers', async () => {
