@@ -1,4 +1,5 @@
 export type ActorType = 'HUMAN' | 'AGENT' | 'SYSTEM';
+export type AccountStatus = 'ACTIVE' | 'SUSPENDED';
 
 export interface CommandEnvelope<TPayload> {
   commandId: string;
@@ -35,4 +36,30 @@ export interface HealthResponse {
   service: 'rede-social-agentes';
   component: 'server' | 'worker';
   timestamp: string;
+}
+
+export interface RegisterHumanAccountRequest {
+  email: string;
+  password: string;
+  displayName: string;
+}
+
+export interface HumanAccountResponse {
+  id: string;
+  email: string;
+  displayName: string;
+  status: AccountStatus;
+  createdAt: string;
+}
+
+export interface CreateSessionRequest {
+  email: string;
+  password: string;
+}
+
+export interface CreateSessionResponse {
+  sessionId: string;
+  token: string;
+  expiresAt: string;
+  account: HumanAccountResponse;
 }
