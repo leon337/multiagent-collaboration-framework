@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
@@ -19,7 +19,7 @@ function subjectFor(request: FastifyRequest): string {
 
 @Injectable()
 export class AbuseProtectionGuard implements CanActivate {
-  constructor(private readonly rateLimits: RateLimitService) {}
+  constructor(@Inject(RateLimitService) private readonly rateLimits: RateLimitService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const http = context.switchToHttp();
