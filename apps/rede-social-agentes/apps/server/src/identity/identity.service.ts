@@ -34,8 +34,8 @@ function toResponse(account: HumanAccountRecord): HumanAccountResponse {
 export class IdentityService {
   constructor(
     @Inject(IDENTITY_REPOSITORY) private readonly repository: IdentityRepository,
-    private readonly passwords: PasswordService,
-    private readonly sessionTokens: SessionTokenService,
+    @Inject(PasswordService) private readonly passwords: PasswordService,
+    @Inject(SessionTokenService) private readonly sessionTokens: SessionTokenService,
   ) {}
 
   async registerHumanAccount(
