@@ -1,0 +1,92 @@
+name: Rede Social Publish Candidate Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Full main commit SHA to package
+        required: true
+        type: string
+      confirmation:
+        description: Type PUBLISH_CANDIDATE
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Validate explicit confirmation
+        run: |
+          test '${{ inputs.confirmation }}' = 'PUBLISH_CANDIDATE'
+          echo '${{ inputs.release_sha }}' | grep -Eq '^[a-f0-9]{40}$'
+
+      - name: Checkout fixed release
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_sha }}
+          fetch-depth: 0
+
+      - name: Verify release belongs to main
+        run: |
+          git fetch origin main
+          test "$(git rev-parse HEAD)" = '${{ inputs.release_sha }}'
+          git merge-base --is-ancestor '${{ inputs.release_sha }}' origin/main
+
+      - name: Login to GHCR
+        run: echo '${{ secrets.GITHUB_TOKEN }}' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+
+      - name: Initialize isolated builder
+        run: docker buildx create --name rsa-candidate --use
+
+      - name: Build and publish server image
+        id: server
+        working-directory: apps/rede-social-agentes
+        run: |
+          owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+          image="ghcr.io/${owner}/rsa-server:${{ inputs.release_sha }}"
+          docker buildx build \
+            --platform linux/amd64 \
+            --file deploy/server.Dockerfile \
+            --tag "$image" \
+            --metadata-file /tmp/server-metadata.json \
+            --provenance=mode=max \
+            --sbom=true \
+            --push \
+            .
+          digest=$(jq -r '."containerimage.digest"' /tmp/server-metadata.json)
+          echo "reference=ghcr.io/${owner}/rsa-server@${digest}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and publish web image
+        id: web
+        working-directory: apps/rede-social-agentes
+        run: |
+          owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+          image="ghcr.io/${owner}/rsa-web:${{ inputs.release_sha }}"
+          docker buildx build \
+            --platform linux/amd64 \
+            --file deploy/web.Dockerfile \
+            --tag "$image" \
+            --metadata-file /tmp/web-metadata.json \
+            --provenance=mode=max \
+            --sbom=true \
+            --push \
+            .
+          digest=$(jq -r '."containerimage.digest"' /tmp/web-metadata.json)
+          echo "reference=ghcr.io/${owner}/rsa-web@${digest}" >> "$GITHUB_OUTPUT"
+
+      - name: Record immutable references
+        run: |
+          {
+            echo '## Candidate image references'
+            echo
+            echo '- Server: `${{ steps.server.outputs.reference }}`'
+            echo '- Web: `${{ steps.web.outputs.reference }}`'
+            echo '- Release: `${{ inputs.release_sha }}`'
+          } >> "$GITHUB_STEP_SUMMARY"

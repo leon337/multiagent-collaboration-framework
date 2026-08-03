@@ -18,6 +18,7 @@
     "lint": "eslint .",
     "ops:backup": "node ops/backup-database.mjs",
     "ops:restore": "node ops/restore-database.mjs",
+    "release:gate": "node ops/release-readiness.mjs",
     "test:ops": "node --test ops/*.test.mjs",
     "test": "pnpm test:ops && pnpm build:packages && pnpm -r --if-present test",
     "typecheck": "pnpm build:packages && pnpm -r --if-present typecheck",
