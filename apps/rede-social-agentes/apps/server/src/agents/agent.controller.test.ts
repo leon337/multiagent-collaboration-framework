@@ -2,10 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { AuthenticatedHumanRequest } from '../identity/authenticated-request.js';
-import {
-  ActiveResponsibilityRequiredError,
-  AgentNotFoundError,
-} from './agent.errors.js';
+import { ActiveResponsibilityRequiredError, AgentNotFoundError } from './agent.errors.js';
 import { AgentController } from './agent.controller.js';
 import type { AgentService } from './agent.service.js';
 

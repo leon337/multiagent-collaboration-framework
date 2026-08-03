@@ -96,7 +96,10 @@ export class AgentController {
         request.id,
       );
     } catch (error) {
-      if (error instanceof AgentNotFoundError || error instanceof ActiveResponsibilityRequiredError) {
+      if (
+        error instanceof AgentNotFoundError ||
+        error instanceof ActiveResponsibilityRequiredError
+      ) {
         throw agentNotFound(request.id);
       }
       if (error instanceof InvalidAgentTransitionError) {
