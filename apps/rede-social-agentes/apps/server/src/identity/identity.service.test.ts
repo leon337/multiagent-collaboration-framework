@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { InvalidCredentialsError } from './identity.errors.js';
 import type {
+  AuthenticatedHumanRecord,
   CreateHumanAccountInput,
   CreateSessionInput,
   HumanAccountRecord,
   IdentityRepository,
+  RevokeSessionInput,
 } from './identity.repository.js';
 import { IdentityService } from './identity.service.js';
 import { PasswordService } from './password.service.js';
@@ -34,6 +36,21 @@ class MemoryIdentityRepository implements IdentityRepository {
 
   async createSession(input: CreateSessionInput): Promise<void> {
     this.sessions.push(input);
+  }
+
+  async findActiveSessionByTokenHash(): Promise<AuthenticatedHumanRecord | null> {
+    return null;
+  }
+
+  async revokeSession(input: RevokeSessionInput): Promise<boolean> {
+    const index = this.sessions.findIndex(
+      (session) => session.sessionId === input.sessionId && session.accountId === input.accountId,
+    );
+    if (index < 0) {
+      return false;
+    }
+    this.sessions.splice(index, 1);
+    return true;
   }
 }
 
@@ -69,6 +86,11 @@ describe('IdentityService', () => {
     expect(session.account.id).toBe(account.id);
     expect(repository.sessions).toHaveLength(1);
     expect(repository.sessions[0]?.tokenHash).not.toBe(session.token);
+
+    await expect(
+      service.revokeSession(session.sessionId, account.id, 'correlation-revoke'),
+    ).resolves.toEqual({ revoked: true });
+    expect(repository.sessions).toHaveLength(0);
   });
 
   it('rejects unknown accounts and incorrect passwords with the same domain error', async () => {
