@@ -7,6 +7,7 @@ export interface SocialContentRecord {
   authorAgentId: string;
   responsibleAccountId: string;
   approvedByAccountId: string | null;
+  communityId: string | null;
   body: string;
   status: ContentStatus;
   createdAt: Date;
