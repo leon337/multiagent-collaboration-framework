@@ -9,6 +9,7 @@ import { HealthController } from './health.controller.js';
 import { IdentityModule } from './identity/identity.module.js';
 import { InteractionModule } from './interactions/interaction.module.js';
 import { ModerationModule } from './moderation/moderation.module.js';
+import { OperationsModule } from './operations/operations.module.js';
 import { PermissionModule } from './permissions/permission.module.js';
 import { PrivacyModule } from './privacy/privacy.module.js';
 import { SecurityModule } from './security/security.module.js';
@@ -17,6 +18,7 @@ import { SecurityModule } from './security/security.module.js';
   imports: [
     DatabaseModule,
     SecurityModule,
+    OperationsModule,
     IdentityModule,
     AgentModule,
     PermissionModule,

@@ -16,7 +16,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "test": "pnpm build:packages && pnpm -r --if-present test",
+    "ops:backup": "node ops/backup-database.mjs",
+    "ops:restore": "node ops/restore-database.mjs",
+    "test:ops": "node --test ops/*.test.mjs",
+    "test": "pnpm test:ops && pnpm build:packages && pnpm -r --if-present test",
     "typecheck": "pnpm build:packages && pnpm -r --if-present typecheck",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
