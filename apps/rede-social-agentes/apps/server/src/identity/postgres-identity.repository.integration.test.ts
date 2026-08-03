@@ -24,9 +24,10 @@ describe('PostgresIdentityRepository integration', () => {
     await database.onModuleDestroy();
   });
 
-  it('persists account, profile, session and audit events atomically', async () => {
+  it('persists, authenticates and revokes a session atomically', async () => {
     const accountId = randomUUID();
     const sessionId = randomUUID();
+    const tokenHash = randomUUID().replaceAll('-', '');
     const email = `human-${accountId}@example.test`;
 
     try {
@@ -48,16 +49,22 @@ describe('PostgresIdentityRepository integration', () => {
       await repository.createSession({
         sessionId,
         accountId,
-        tokenHash: randomUUID().replaceAll('-', ''),
+        tokenHash,
         expiresAt: new Date(Date.now() + 60_000),
         correlationId: 'integration-session',
       });
 
-      const sessionCount = await database.query<CountRow>(
-        'select count(*)::text as "count" from "sessions" where "id" = $1',
-        [sessionId],
-      );
-      expect(sessionCount.rows[0]?.count).toBe('1');
+      const authenticated = await repository.findActiveSessionByTokenHash(tokenHash);
+      expect(authenticated).toMatchObject({ accountId, sessionId, email });
+
+      await expect(
+        repository.revokeSession({
+          sessionId,
+          accountId,
+          correlationId: 'integration-revoke',
+        }),
+      ).resolves.toBe(true);
+      await expect(repository.findActiveSessionByTokenHash(tokenHash)).resolves.toBeNull();
 
       const auditCount = await database.query<CountRow>(
         `
@@ -67,7 +74,7 @@ describe('PostgresIdentityRepository integration', () => {
         `,
         [accountId, sessionId],
       );
-      expect(auditCount.rows[0]?.count).toBe('2');
+      expect(auditCount.rows[0]?.count).toBe('3');
 
       await expect(
         repository.createHumanAccount({
