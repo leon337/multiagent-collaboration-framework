@@ -36,12 +36,17 @@ const sessionSchema = z.object({
   password: z.string().min(1).max(128),
 });
 
-function parseBody<TValue>(schema: ZodType<TValue>, body: unknown): TValue {
+function parseBody<TValue>(
+  schema: ZodType<TValue>,
+  body: unknown,
+  correlationId: string,
+): TValue {
   const result = schema.safeParse(body);
   if (!result.success) {
     throw new BadRequestException({
       code: 'INVALID_REQUEST',
       message: 'The request body is invalid.',
+      correlationId,
       details: result.error.issues.map((issue) => ({
         path: issue.path.join('.'),
         message: issue.message,
@@ -61,7 +66,7 @@ export class IdentityController {
     @Body() body: unknown,
     @Req() request: FastifyRequest,
   ): Promise<HumanAccountResponse> {
-    const input = parseBody<RegisterHumanAccountRequest>(registerSchema, body);
+    const input = parseBody<RegisterHumanAccountRequest>(registerSchema, body, request.id);
 
     try {
       return await this.identity.registerHumanAccount(input, request.id);
@@ -70,6 +75,7 @@ export class IdentityController {
         throw new ConflictException({
           code: 'EMAIL_ALREADY_REGISTERED',
           message: 'A human account already exists for this email.',
+          correlationId: request.id,
         });
       }
       throw error;
@@ -82,7 +88,7 @@ export class IdentityController {
     @Body() body: unknown,
     @Req() request: FastifyRequest,
   ): Promise<CreateSessionResponse> {
-    const input = parseBody<CreateSessionRequest>(sessionSchema, body);
+    const input = parseBody<CreateSessionRequest>(sessionSchema, body, request.id);
 
     try {
       return await this.identity.createSession(input.email, input.password, request.id);
@@ -91,6 +97,7 @@ export class IdentityController {
         throw new UnauthorizedException({
           code: 'INVALID_CREDENTIALS',
           message: 'The email or password is invalid.',
+          correlationId: request.id,
         });
       }
       throw error;
