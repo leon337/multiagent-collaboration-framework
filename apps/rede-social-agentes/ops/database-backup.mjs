@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { basename } from 'node:path';
+import { URL } from 'node:url';
 
 const supportedProtocols = new Set(['postgres:', 'postgresql:']);
 
