@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   foundation:
@@ -46,8 +46,10 @@ jobs:
       LOG_LEVEL: error
 
     steps:
-      - name: Checkout
+      - name: Checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: implementation/rede-social-production-readiness
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -61,6 +63,38 @@ jobs:
 
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
+
+      - name: Format readiness files
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/config.ts \
+            apps/server/src/config.test.ts \
+            apps/server/src/main.ts \
+            apps/server/src/security/abuse-policy.ts \
+            apps/server/src/security/abuse-policy.test.ts \
+            apps/server/src/security/abuse-protection.guard.ts \
+            apps/server/src/security/rate-limit.service.ts \
+            apps/server/src/security/rate-limit.service.integration.test.ts \
+            apps/server/src/security/security.module.ts
+
+      - name: Commit formatted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/server/src/config.ts \
+            apps/server/src/config.test.ts \
+            apps/server/src/main.ts \
+            apps/server/src/security/abuse-policy.ts \
+            apps/server/src/security/abuse-policy.test.ts \
+            apps/server/src/security/abuse-protection.guard.ts \
+            apps/server/src/security/rate-limit.service.ts \
+            apps/server/src/security/rate-limit.service.integration.test.ts \
+            apps/server/src/security/security.module.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(readiness): formatar baseline de segurança"
+            git push origin HEAD:implementation/rede-social-production-readiness
+          fi
 
       - name: Verify formatting
         run: pnpm format:check
