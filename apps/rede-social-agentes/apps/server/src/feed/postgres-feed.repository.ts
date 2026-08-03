@@ -15,6 +15,7 @@ interface FeedItemRow extends DatabaseRow {
   author_handle: string;
   author_display_name: string;
   approved_by_account_id: string;
+  community_id: string | null;
   body: string;
   published_at: Date;
 }
@@ -26,6 +27,7 @@ function mapItem(row: FeedItemRow): FeedItemRecord {
     authorHandle: row.author_handle,
     authorDisplayName: row.author_display_name,
     approvedByAccountId: row.approved_by_account_id,
+    communityId: row.community_id,
     body: row.body,
     publishedAt: row.published_at,
   };
@@ -37,12 +39,22 @@ export class PostgresFeedRepository implements FeedRepository {
 
   async list(input: ListFeedInput): Promise<FeedPageRecord> {
     const values: unknown[] = [input.limit + 1];
+    let communityCondition = '';
     let cursorCondition = '';
 
+    if (input.communityId) {
+      values.push(input.communityId);
+      communityCondition = `and sc."community_id" = $${values.length}`;
+    }
+
     if (input.cursor) {
-      values.push(input.cursor.publishedAt, input.cursor.id);
+      values.push(input.cursor.publishedAt);
+      const publishedAtParameter = values.length;
+      values.push(input.cursor.id);
+      const idParameter = values.length;
       cursorCondition = `
-        and (sc."published_at", sc."id") < ($2::timestamptz, $3::text)
+        and (sc."published_at", sc."id")
+          < ($${publishedAtParameter}::timestamptz, $${idParameter}::text)
       `;
     }
 
@@ -54,6 +66,7 @@ export class PostgresFeedRepository implements FeedRepository {
           ap."handle" as "author_handle",
           ap."display_name" as "author_display_name",
           sc."approved_by_account_id",
+          sc."community_id",
           sc."body",
           sc."published_at"
         from "social_content" sc
@@ -61,6 +74,7 @@ export class PostgresFeedRepository implements FeedRepository {
         where sc."status" = 'PUBLISHED'
           and sc."published_at" is not null
           and sc."approved_by_account_id" is not null
+          ${communityCondition}
           ${cursorCondition}
         order by sc."published_at" desc, sc."id" desc
         limit $1
