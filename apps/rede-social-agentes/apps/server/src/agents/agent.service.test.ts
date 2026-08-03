@@ -80,12 +80,7 @@ describe('AgentService', () => {
     const repository = new MemoryAgentRepository();
     const service = new AgentService(repository);
 
-    const agent = await service.changeState(
-      'agent-1',
-      'ACTIVE',
-      'account-1',
-      'correlation-state',
-    );
+    const agent = await service.changeState('agent-1', 'ACTIVE', 'account-1', 'correlation-state');
 
     expect(repository.transitionInput).toEqual({
       agentId: 'agent-1',
