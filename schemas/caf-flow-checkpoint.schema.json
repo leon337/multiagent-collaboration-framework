@@ -17,9 +17,21 @@
     "artefatos"
   ],
   "properties": {
-    "objetivo": {
-      "type": "string",
-      "minLength": 1
+    "objetivo": { "type": "string", "minLength": 1 },
+    "parent_mission_id": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "minLength": 1 }
+      ]
+    },
+    "return_to": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "minLength": 1, "not": { "const": "ENCERRADO" } }
+      ]
+    },
+    "return_status": {
+      "enum": ["NOT_APPLICABLE", "PENDING", "COMPLETED"]
     },
     "estado": {
       "enum": [
@@ -34,14 +46,8 @@
         "ENCERRADO"
       ]
     },
-    "ultimo_sucesso": {
-      "type": "string",
-      "minLength": 1
-    },
-    "falha_atual": {
-      "type": "string",
-      "minLength": 1
-    },
+    "ultimo_sucesso": { "type": "string", "minLength": 1 },
+    "falha_atual": { "type": "string", "minLength": 1 },
     "classe_da_falha": {
       "enum": [
         "NENHUMA",
@@ -51,24 +57,13 @@
         "IRREVERSIVEL_OU_RISCO"
       ]
     },
-    "efeito_confirmado": {
-      "type": "string",
-      "minLength": 1
-    },
-    "recuperacao_escolhida": {
-      "type": "string",
-      "minLength": 1
-    },
-    "proxima_acao": {
-      "type": "string",
-      "minLength": 1
-    },
+    "efeito_confirmado": { "type": "string", "minLength": 1 },
+    "recuperacao_escolhida": { "type": "string", "minLength": 1 },
+    "proxima_acao": { "type": "string", "minLength": 1 },
     "destinatario": {
       "type": "string",
       "minLength": 1,
-      "not": {
-        "const": "ENCERRADO"
-      }
+      "not": { "const": "ENCERRADO" }
     },
     "artefatos": {
       "type": "array",
@@ -81,10 +76,7 @@
           "tipo": {
             "enum": ["arquivo", "commit", "pull_request", "teste", "log", "parecer", "outro"]
           },
-          "referencia": {
-            "type": "string",
-            "minLength": 1
-          }
+          "referencia": { "type": "string", "minLength": 1 }
         }
       }
     }
@@ -92,44 +84,64 @@
   "allOf": [
     {
       "if": {
-        "properties": {
-          "estado": {
-            "const": "ENCERRADO"
-          }
-        },
+        "properties": { "estado": { "const": "ENCERRADO" } },
         "required": ["estado"]
       },
       "then": {
         "properties": {
-          "proxima_acao": {
-            "const": "nenhuma"
-          },
-          "falha_atual": {
-            "const": "nenhuma"
-          },
-          "classe_da_falha": {
-            "const": "NENHUMA"
-          }
+          "proxima_acao": { "const": "nenhuma" },
+          "falha_atual": { "const": "nenhuma" },
+          "classe_da_falha": { "const": "NENHUMA" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "classe_da_falha": { "const": "NENHUMA" } },
+        "required": ["classe_da_falha"]
+      },
+      "then": {
+        "properties": {
+          "falha_atual": { "const": "nenhuma" },
+          "recuperacao_escolhida": { "const": "nenhuma" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "parent_mission_id": { "type": "string" } },
+        "required": ["parent_mission_id"]
+      },
+      "then": {
+        "required": ["return_to", "return_status"],
+        "properties": {
+          "return_to": { "type": "string", "minLength": 1, "not": { "const": "ENCERRADO" } },
+          "return_status": { "enum": ["PENDING", "COMPLETED"] }
         }
       }
     },
     {
       "if": {
         "properties": {
-          "classe_da_falha": {
-            "const": "NENHUMA"
-          }
+          "parent_mission_id": { "type": "string" },
+          "estado": { "const": "ENCERRADO" }
         },
-        "required": ["classe_da_falha"]
+        "required": ["parent_mission_id", "estado"]
+      },
+      "then": {
+        "required": ["return_to", "return_status"],
+        "properties": { "return_status": { "const": "COMPLETED" } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "parent_mission_id": { "type": "null" } },
+        "required": ["parent_mission_id"]
       },
       "then": {
         "properties": {
-          "falha_atual": {
-            "const": "nenhuma"
-          },
-          "recuperacao_escolhida": {
-            "const": "nenhuma"
-          }
+          "return_to": { "type": "null" },
+          "return_status": { "const": "NOT_APPLICABLE" }
         }
       }
     }
