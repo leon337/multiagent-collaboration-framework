@@ -1,4 +1,4 @@
-import type { AgentStatus } from '@rsa/contracts';
+import type { AgentStatus, ResponsibleAgentTargetStatus } from '@rsa/contracts';
 
 export const AGENT_REPOSITORY = Symbol('AGENT_REPOSITORY');
 
@@ -35,7 +35,7 @@ export interface CreateAgentWithResponsibilityInput {
 export interface TransitionAgentStateInput {
   agentId: string;
   responsibleAccountId: string;
-  targetStatus: AgentStatus;
+  targetStatus: ResponsibleAgentTargetStatus;
   correlationId: string;
 }
 
