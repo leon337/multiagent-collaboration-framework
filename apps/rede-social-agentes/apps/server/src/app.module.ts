@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 
-import { DatabaseService } from './database.service.js';
+import { DatabaseModule } from './database.module.js';
 import { HealthController } from './health.controller.js';
+import { IdentityModule } from './identity/identity.module.js';
 
 @Module({
+  imports: [DatabaseModule, IdentityModule],
   controllers: [HealthController],
-  providers: [DatabaseService],
 })
 export class AppModule {}

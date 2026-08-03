@@ -1,5 +1,13 @@
 import { Injectable, type OnModuleDestroy } from '@nestjs/common';
-import { createDatabase, type DatabaseHandle } from '@rsa/database';
+import {
+  createDatabase,
+  query,
+  withTransaction,
+  type DatabaseHandle,
+  type DatabaseQueryResult,
+  type DatabaseRow,
+  type DatabaseTransaction,
+} from '@rsa/database';
 
 import { loadRuntimeConfig } from './config.js';
 
@@ -14,6 +22,19 @@ export class DatabaseService implements OnModuleDestroy {
 
   async ping(): Promise<void> {
     await this.handle.pool.query('select 1');
+  }
+
+  async query<TRow extends DatabaseRow>(
+    text: string,
+    values: readonly unknown[] = [],
+  ): Promise<DatabaseQueryResult<TRow>> {
+    return query<TRow>(this.handle, text, values);
+  }
+
+  async transaction<TResult>(
+    work: (client: DatabaseTransaction) => Promise<TResult>,
+  ): Promise<TResult> {
+    return withTransaction(this.handle, work);
   }
 
   async onModuleDestroy(): Promise<void> {

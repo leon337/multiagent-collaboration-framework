@@ -6,8 +6,8 @@ on:
       - "apps/rede-social-agentes/**"
       - ".github/workflows/rede-social-foundation.yml"
       - "docs/projects/rede-social-agentes/**"
-      - "docs/decisions/MCF-DEC-021-*.md"
-      - "docs/reviews/MCF-DEC-021-*.md"
+      - "docs/decisions/MCF-DEC-*.md"
+      - "docs/reviews/MCF-DEC-*.md"
       - "docs/social-seed/**"
   workflow_dispatch:
 
