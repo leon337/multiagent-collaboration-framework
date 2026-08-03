@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { AccountStatus } from '@rsa/contracts';
 import type { DatabaseRow } from '@rsa/database';
 
@@ -44,7 +44,7 @@ function mapAccount(row: HumanAccountRow): HumanAccountRecord {
 
 @Injectable()
 export class PostgresIdentityRepository implements IdentityRepository {
-  constructor(private readonly database: DatabaseService) {}
+  constructor(@Inject(DatabaseService) private readonly database: DatabaseService) {}
 
   async createHumanAccount(input: CreateHumanAccountInput): Promise<HumanAccountRecord> {
     try {
