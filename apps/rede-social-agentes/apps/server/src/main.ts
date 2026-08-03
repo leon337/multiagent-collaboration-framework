@@ -41,7 +41,10 @@ async function bootstrap(): Promise<void> {
     reply.header('permissions-policy', 'camera=(), microphone=(), geolocation=()');
     reply.header('cross-origin-opener-policy', 'same-origin');
     reply.header('cross-origin-resource-policy', 'same-site');
-    reply.header('content-security-policy', "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+    reply.header(
+      'content-security-policy',
+      "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+    );
     reply.header('x-dns-prefetch-control', 'off');
     reply.header('cache-control', 'no-store');
     if (config.NODE_ENV === 'production') {

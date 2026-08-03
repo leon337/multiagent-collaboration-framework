@@ -15,12 +15,7 @@ const runtimeConfigSchema = z
       .regex(/^postgres(?:ql)?:\/\//u, 'DATABASE_URL must use the PostgreSQL protocol.'),
     LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
     TRUST_PROXY: booleanEnvironmentValue,
-    BODY_LIMIT_BYTES: z.coerce
-      .number()
-      .int()
-      .min(16_384)
-      .max(2_097_152)
-      .default(262_144),
+    BODY_LIMIT_BYTES: z.coerce.number().int().min(16_384).max(2_097_152).default(262_144),
     RATE_LIMIT_KEY_SECRET: z.string().min(32).default('development-only-rate-limit-secret'),
   })
   .superRefine((config, context) => {
