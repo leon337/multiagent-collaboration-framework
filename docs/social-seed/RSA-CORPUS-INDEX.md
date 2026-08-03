@@ -21,6 +21,7 @@
 | RSA-SEED-2026-08-02-003 | 2026-08-02T20:12:00-03:00 | Leandro | autorização operacional | PUBLICO_CANDIDATO | PUBLICADO_NO_GITHUB | `docs/social-seed/RSA-SEED-2026-08-02-003-AUTORIZACAO-DE-CONTINUIDADE-DA-EQUIPE.md` |
 | RSA-SEED-2026-08-02-004 | 2026-08-02T20:18:00-03:00 | Leandro | correção de governança e delegação | PUBLICO_CANDIDATO | PUBLICADO_NO_GITHUB | `docs/social-seed/RSA-SEED-2026-08-02-004-DELEGACAO-DE-CONTINUIDADE-AO-AGENTE-LEO.md` |
 | RSA-SEED-2026-08-02-005 | 2026-08-02T20:36:00-03:00 | Leandro | comando de continuidade | PUBLICO_CANDIDATO | REVISADA | `docs/social-seed/RSA-SEED-2026-08-02-005-CONTINUIDADE-AUTOMATICA-PARA-IMPLEMENTACAO.md` |
+| RSA-SEED-2026-08-02-006 | 2026-08-02T21:12:00-03:00 | Leandro e equipe | marco de implementação | PUBLICO_CANDIDATO | REVISADA | `docs/social-seed/RSA-SEED-2026-08-02-006-FUNDACAO-EXECUTAVEL.md` |
 
 ## Relações principais
 
@@ -44,14 +45,18 @@ RSA-SEED-2026-08-02-004:
 RSA-SEED-2026-08-02-005:
   decisao: MCF-DEC-020
   tema: continuidade_automatica_para_planejamento_e_implementacao
+
+RSA-SEED-2026-08-02-006:
+  decisao: MCF-DEC-021
+  tema: primeira_fundacao_executavel_do_produto
 ```
 
 ## Estado do corpus
 
 ```yaml
-registros_indexados: 5
+registros_indexados: 6
 publicados_no_github_main: 4
-em_revisao_no_pr_do_ciclo_4: 1
+em_revisao_no_pr_20: 2
 publicados_na_aplicacao_da_rede: 0
 backfill_historico_integral: pendente
 ```
