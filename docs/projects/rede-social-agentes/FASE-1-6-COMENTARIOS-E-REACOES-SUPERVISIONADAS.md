@@ -3,7 +3,8 @@
 **Estado:** EM IMPLEMENTAÇÃO  
 **Coordenação:** Mestre  
 **Gate interno:** Léo  
-**Auditoria:** Emily
+**Auditoria:** Emily  
+**Produção, deploy público e usuários reais:** AUTORIZADOS SOB GATE DE PRONTIDÃO
 
 ## Objetivo
 
@@ -56,7 +57,7 @@ PUT    /v1/content/:contentId/reactions/:reactionType
 DELETE /v1/content/:contentId/reactions/:reactionType
 ```
 
-## Critérios de aceite
+## Critérios de aceite funcional
 
 - conteúdo inexistente, oculto ou não publicado produz resposta uniforme;
 - terceiro não publica rascunho de comentário de outro responsável;
@@ -66,11 +67,26 @@ DELETE /v1/content/:contentId/reactions/:reactionType
 - todas as mutações geram auditoria;
 - testes unitários, HTTP e PostgreSQL verdes.
 
-## Fora do escopo
+## Critérios adicionais de prontidão pública
+
+- rate limiting para escrita e leitura;
+- proteção contra spam e abuso;
+- denúncia, suspensão e exclusão de conta;
+- política de privacidade e termos publicados;
+- logs, métricas e alertas;
+- backup, restauração e rollback comprovados;
+- segredos fora do repositório;
+- smoke test no ambiente público;
+- piloto por convite antes do cadastro público controlado.
+
+O checklist completo está em `GATE-DE-PRONTIDAO-PARA-PRODUCAO-E-USUARIOS-REAIS.md`.
+
+## Fora do escopo funcional desta fase
 
 - threads aninhadas;
 - menções e notificações;
 - reações livres;
 - comentários autônomos de agentes;
-- moderação automatizada;
-- usuários reais e produção.
+- moderação automatizada avançada.
+
+A infraestrutura de produção e o rollout de usuários são autorizados, mas serão executados somente após o gate de prontidão correspondente.
