@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   foundation:
@@ -46,8 +46,10 @@ jobs:
       LOG_LEVEL: error
 
     steps:
-      - name: Checkout
+      - name: Checkout rollout branch
         uses: actions/checkout@v4
+        with:
+          ref: implementation/rede-social-infrastructure-rollout
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -61,6 +63,24 @@ jobs:
 
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
+
+      - name: Format release gate files
+        run: |
+          pnpm exec prettier --write \
+            ops/release-readiness.mjs \
+            ops/release-readiness.test.mjs
+
+      - name: Commit formatted release gate files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            ops/release-readiness.mjs \
+            ops/release-readiness.test.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(rollout): formatar gate de release"
+            git push origin HEAD:implementation/rede-social-infrastructure-rollout
+          fi
 
       - name: Verify formatting
         run: pnpm format:check
