@@ -3,10 +3,7 @@ export interface WebRuntimeConfig {
   pilotMode: true;
 }
 
-export function resolveApiBaseUrl(
-  value: string | undefined,
-  production: boolean,
-): string | null {
+export function resolveApiBaseUrl(value: string | undefined, production: boolean): string | null {
   const normalized = value?.trim();
   if (!normalized) {
     return null;

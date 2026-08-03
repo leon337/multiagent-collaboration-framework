@@ -13,7 +13,9 @@ function parseAllowedOrigins(value: string): string[] {
     .map((origin) => {
       const parsed = new URL(origin);
       if (parsed.origin !== origin || parsed.username || parsed.password) {
-        throw new Error('ALLOWED_ORIGINS entries must be exact origins without paths or credentials.');
+        throw new Error(
+          'ALLOWED_ORIGINS entries must be exact origins without paths or credentials.',
+        );
       }
       return parsed.origin;
     });

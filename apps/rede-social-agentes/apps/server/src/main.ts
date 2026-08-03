@@ -51,10 +51,7 @@ async function bootstrap(): Promise<void> {
 
       reply.header('access-control-allow-origin', requestOrigin);
       reply.header('access-control-allow-methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-      reply.header(
-        'access-control-allow-headers',
-        'authorization, content-type, x-correlation-id',
-      );
+      reply.header('access-control-allow-headers', 'authorization, content-type, x-correlation-id');
       reply.header(
         'access-control-expose-headers',
         'x-correlation-id, x-ratelimit-limit, x-ratelimit-remaining, retry-after',

@@ -36,10 +36,7 @@ describe('loadRuntimeConfig', () => {
       NODE_ENV: 'production',
       TRUST_PROXY: true,
       BODY_LIMIT_BYTES: 131072,
-      ALLOWED_ORIGINS: [
-        'https://rsa-pilot.pages.dev',
-        'https://preview.rsa-pilot.pages.dev',
-      ],
+      ALLOWED_ORIGINS: ['https://rsa-pilot.pages.dev', 'https://preview.rsa-pilot.pages.dev'],
     });
   });
 

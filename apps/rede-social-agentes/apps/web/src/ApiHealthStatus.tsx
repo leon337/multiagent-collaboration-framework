@@ -19,7 +19,8 @@ const statusCopy: Record<ApiState, { label: string; detail: string }> = {
   },
   WARMING: {
     label: 'API inicializando',
-    detail: 'Aguarde alguns instantes e atualize a página. O plano gratuito hiberna por inatividade.',
+    detail:
+      'Aguarde alguns instantes e atualize a página. O plano gratuito hiberna por inatividade.',
   },
 };
 
