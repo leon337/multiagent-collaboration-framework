@@ -4,6 +4,8 @@ import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg
 import * as schema from './schema.js';
 
 export type DatabaseTransaction = PoolClient;
+export type DatabaseRow = QueryResultRow;
+export type DatabaseQueryResult<TRow extends DatabaseRow> = QueryResult<TRow>;
 
 export interface DatabaseHandle {
   db: NodePgDatabase<typeof schema>;
@@ -24,11 +26,11 @@ export function createDatabase(databaseUrl: string): DatabaseHandle {
   };
 }
 
-export async function query<TRow extends QueryResultRow>(
+export async function query<TRow extends DatabaseRow>(
   handle: DatabaseHandle,
   text: string,
   values: readonly unknown[] = [],
-): Promise<QueryResult<TRow>> {
+): Promise<DatabaseQueryResult<TRow>> {
   return handle.pool.query<TRow>(text, [...values]);
 }
 
