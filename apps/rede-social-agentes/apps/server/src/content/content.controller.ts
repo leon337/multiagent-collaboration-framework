@@ -12,10 +12,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import type {
-  CreateContentDraftRequest,
-  SocialContentResponse,
-} from '@rsa/contracts';
+import type { CreateContentDraftRequest, SocialContentResponse } from '@rsa/contracts';
 import { z } from 'zod';
 
 import { parseBody } from '../http/parse-body.js';

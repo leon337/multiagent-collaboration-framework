@@ -9,10 +9,7 @@ import type {
 import type { DatabaseRow, DatabaseTransaction } from '@rsa/database';
 
 import { PermissionResourceAccessDeniedError } from './permission.errors.js';
-import type {
-  EvaluatePermissionInput,
-  PermissionDecisionRecord,
-} from './permission.repository.js';
+import type { EvaluatePermissionInput, PermissionDecisionRecord } from './permission.repository.js';
 
 interface AgentStatusRow extends DatabaseRow {
   status: AgentStatus;
@@ -187,8 +184,7 @@ export async function evaluatePermissionWithClient(
       await writeDecisionAudit(client, input, decision);
       return decision;
     }
-    quotaRemaining =
-      updated.quota_limit === null ? null : updated.quota_limit - updated.quota_used;
+    quotaRemaining = updated.quota_limit === null ? null : updated.quota_limit - updated.quota_used;
   }
 
   const decision: PermissionDecisionRecord = {

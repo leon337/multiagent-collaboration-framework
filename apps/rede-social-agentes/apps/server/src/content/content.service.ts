@@ -1,10 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
-import type {
-  CreateContentDraftRequest,
-  SocialContentResponse,
-} from '@rsa/contracts';
+import type { CreateContentDraftRequest, SocialContentResponse } from '@rsa/contracts';
 
 import {
   CONTENT_REPOSITORY,

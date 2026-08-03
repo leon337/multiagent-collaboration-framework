@@ -1,11 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
-import type {
-  PermissionCode,
-  PermissionGrantStatus,
-  PermissionScope,
-} from '@rsa/contracts';
+import type { PermissionCode, PermissionGrantStatus, PermissionScope } from '@rsa/contracts';
 import type { DatabaseRow } from '@rsa/database';
 
 import { DatabaseService } from '../database.service.js';

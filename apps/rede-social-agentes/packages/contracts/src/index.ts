@@ -5,11 +5,7 @@ export type ResponsibleAgentTargetStatus = Extract<AgentStatus, 'ACTIVE' | 'PAUS
 export type PermissionCode = 'agent.profile.read' | 'agent.audit.read' | 'content.draft.create';
 export type PermissionGrantStatus = 'ACTIVE' | 'REVOKED';
 export type PermissionDecisionReason =
-  | 'ALLOWED'
-  | 'AGENT_NOT_ACTIVE'
-  | 'PERMISSION_NOT_GRANTED'
-  | 'GRANT_EXPIRED'
-  | 'QUOTA_EXHAUSTED';
+  'ALLOWED' | 'AGENT_NOT_ACTIVE' | 'PERMISSION_NOT_GRANTED' | 'GRANT_EXPIRED' | 'QUOTA_EXHAUSTED';
 export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
 export interface CommandEnvelope<TPayload> {

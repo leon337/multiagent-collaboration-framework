@@ -34,28 +34,28 @@ async function captureRejection(promise: Promise<unknown>): Promise<unknown> {
 }
 
 describe('ContentController', () => {
-  it.each([
-    new ContentResourceAccessDeniedError(),
-    new PermissionResourceAccessDeniedError(),
-  ])('returns one public response for unavailable resources', async (domainError) => {
-    const content = {
-      publish: vi.fn().mockRejectedValue(domainError),
-    } as unknown as ContentService;
-    const controller = new ContentController(content);
-    const request = requestWithHuman('correlation-content-missing');
+  it.each([new ContentResourceAccessDeniedError(), new PermissionResourceAccessDeniedError()])(
+    'returns one public response for unavailable resources',
+    async (domainError) => {
+      const content = {
+        publish: vi.fn().mockRejectedValue(domainError),
+      } as unknown as ContentService;
+      const controller = new ContentController(content);
+      const request = requestWithHuman('correlation-content-missing');
 
-    const error = await captureRejection(controller.publish('content-1', request));
+      const error = await captureRejection(controller.publish('content-1', request));
 
-    expect(error).toBeInstanceOf(NotFoundException);
-    if (!(error instanceof NotFoundException)) {
-      throw error;
-    }
-    expect(error.getResponse()).toEqual({
-      code: 'CONTENT_RESOURCE_NOT_AVAILABLE',
-      message: 'The content resource is not available.',
-      correlationId: 'correlation-content-missing',
-    });
-  });
+      expect(error).toBeInstanceOf(NotFoundException);
+      if (!(error instanceof NotFoundException)) {
+        throw error;
+      }
+      expect(error.getResponse()).toEqual({
+        code: 'CONTENT_RESOURCE_NOT_AVAILABLE',
+        message: 'The content resource is not available.',
+        correlationId: 'correlation-content-missing',
+      });
+    },
+  );
 
   it('preserves the permission reason without exposing grant details', async () => {
     const content = {
