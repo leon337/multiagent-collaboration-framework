@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import type {
-  ArchiveContentInput,
   ContentRepository,
   CreateDraftInput,
-  GetContentInput,
-  PublishContentInput,
   SocialContentRecord,
 } from './content.repository.js';
 import { ContentService } from './content.service.js';
@@ -32,15 +29,15 @@ class MemoryContentRepository implements ContentRepository {
     return { ...this.record(), id: input.id, body: input.body };
   }
 
-  async publish(_input: PublishContentInput): Promise<SocialContentRecord> {
+  async publish(): Promise<SocialContentRecord> {
     return this.record('PUBLISHED');
   }
 
-  async archive(_input: ArchiveContentInput): Promise<SocialContentRecord> {
+  async archive(): Promise<SocialContentRecord> {
     return this.record('ARCHIVED');
   }
 
-  async get(_input: GetContentInput): Promise<SocialContentRecord> {
+  async get(): Promise<SocialContentRecord> {
     return this.record();
   }
 }
