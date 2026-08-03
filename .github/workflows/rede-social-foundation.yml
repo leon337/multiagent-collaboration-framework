@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   foundation:
@@ -46,10 +46,8 @@ jobs:
       LOG_LEVEL: error
 
     steps:
-      - name: Checkout branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -63,35 +61,6 @@ jobs:
 
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
-
-      - name: Format phase 1.2 files
-        run: |
-          pnpm exec prettier --write \
-            apps/server/src/agents/agent.controller.ts \
-            apps/server/src/agents/agent.repository.ts \
-            apps/server/src/agents/agent.service.test.ts \
-            apps/server/src/agents/postgres-agent.repository.integration.test.ts \
-            apps/server/src/agents/postgres-agent.repository.ts \
-            apps/server/src/identity/postgres-identity.repository.integration.test.ts \
-            apps/server/src/identity/postgres-identity.repository.ts
-
-      - name: Commit formatted files
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            apps/server/src/agents/agent.controller.ts \
-            apps/server/src/agents/agent.repository.ts \
-            apps/server/src/agents/agent.service.test.ts \
-            apps/server/src/agents/postgres-agent.repository.integration.test.ts \
-            apps/server/src/agents/postgres-agent.repository.ts \
-            apps/server/src/identity/postgres-identity.repository.integration.test.ts \
-            apps/server/src/identity/postgres-identity.repository.ts
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(agents): formatar fase 1.2"
-            git push origin HEAD:${{ github.event.pull_request.head.ref }}
-          fi
 
       - name: Verify formatting
         run: pnpm format:check
@@ -109,6 +78,15 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Upload Vitest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rede-social-vitest-report
+          path: apps/rede-social-agentes/apps/server/test-results/vitest.json
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Build
         run: pnpm build
