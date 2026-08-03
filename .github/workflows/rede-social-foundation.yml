@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   foundation:
@@ -46,8 +46,10 @@ jobs:
       LOG_LEVEL: error
 
     steps:
-      - name: Checkout
+      - name: Checkout branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -61,6 +63,33 @@ jobs:
 
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
+
+      - name: Format phase 1.4 files
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/content/content.controller.test.ts \
+            apps/server/src/content/content.controller.ts \
+            apps/server/src/content/content.service.ts \
+            apps/server/src/permissions/permission-evaluator.ts \
+            apps/server/src/permissions/postgres-permission.repository.ts \
+            packages/contracts/src/index.ts
+
+      - name: Commit formatted files
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/server/src/content/content.controller.test.ts \
+            apps/server/src/content/content.controller.ts \
+            apps/server/src/content/content.service.ts \
+            apps/server/src/permissions/permission-evaluator.ts \
+            apps/server/src/permissions/postgres-permission.repository.ts \
+            packages/contracts/src/index.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(content): formatar fase 1.4"
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
 
       - name: Verify formatting
         run: pnpm format:check
