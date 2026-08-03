@@ -1,9 +1,5 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
-import type {
-  CallHandler,
-  ExecutionContext,
-  NestInterceptor,
-} from '@nestjs/common';
+import type { CallHandler, ExecutionContext, NestInterceptor } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { Observable } from 'rxjs';
 import { catchError, finalize, throwError } from 'rxjs';
@@ -12,9 +8,7 @@ import { OperationalLogService } from './operational-log.service.js';
 
 @Injectable()
 export class RequestTelemetryInterceptor implements NestInterceptor {
-  constructor(
-    @Inject(OperationalLogService) private readonly logs: OperationalLogService,
-  ) {}
+  constructor(@Inject(OperationalLogService) private readonly logs: OperationalLogService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const http = context.switchToHttp();

@@ -62,25 +62,11 @@ export function backupBaseName(now = new Date()) {
 }
 
 export function pgDumpArguments(outputPath) {
-  return [
-    '--format=custom',
-    '--compress=6',
-    '--no-owner',
-    '--no-privileges',
-    '--file',
-    outputPath,
-  ];
+  return ['--format=custom', '--compress=6', '--no-owner', '--no-privileges', '--file', outputPath];
 }
 
 export function pgRestoreArguments(inputPath) {
-  return [
-    '--clean',
-    '--if-exists',
-    '--no-owner',
-    '--no-privileges',
-    '--exit-on-error',
-    inputPath,
-  ];
+  return ['--clean', '--if-exists', '--no-owner', '--no-privileges', '--exit-on-error', inputPath];
 }
 
 export async function sha256File(path) {
@@ -91,12 +77,7 @@ export async function sha256File(path) {
   return hash.digest('hex');
 }
 
-export async function createBackupManifest({
-  dumpPath,
-  createdAt,
-  connection,
-  toolVersion,
-}) {
+export async function createBackupManifest({ dumpPath, createdAt, connection, toolVersion }) {
   const metadata = await stat(dumpPath);
   return {
     schemaVersion: 1,

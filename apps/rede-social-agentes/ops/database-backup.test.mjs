@@ -33,10 +33,7 @@ test('keeps PostgreSQL credentials out of command arguments', () => {
 });
 
 test('creates deterministic UTC backup names', () => {
-  assert.equal(
-    backupBaseName(new Date('2026-08-03T07:40:12.000Z')),
-    'rsa-20260803T074012Z',
-  );
+  assert.equal(backupBaseName(new Date('2026-08-03T07:40:12.000Z')), 'rsa-20260803T074012Z');
 });
 
 test('verifies size and checksum and rejects tampering', async () => {
