@@ -22,21 +22,28 @@ custo_mensal_obrigatorio: USD_0
 
 1. criar um projeto dedicado à Rede Social para Agentes de IA;
 2. manter o plano Free e não adicionar upgrade automático;
-3. copiar a conexão com pool habilitado;
+3. copiar duas conexões fornecidas pelo Neon:
+   - pooled para a API;
+   - direta para o migrador;
 4. exigir `sslmode=require` e manter `channel_binding=require` quando fornecido;
 5. não reutilizar projetos de outros produtos;
-6. guardar a URL apenas como segredo do Render e em cofre local seguro.
+6. guardar as URLs apenas como segredos do Render e em cofre local seguro.
+
+A separação é obrigatória porque o migrador usa bloqueio consultivo por sessão. Ele não deve depender de um pool transacional.
 
 ### 2. Render
 
 1. criar Blueprint a partir do `render.yaml` da raiz;
 2. confirmar o plano `free` e a região `virginia`;
 3. preencher `DATABASE_URL` com a conexão pooled do Neon;
-4. deixar `RATE_LIMIT_KEY_SECRET` ser gerado pelo Blueprint;
-5. preencher `ALLOWED_ORIGINS` somente após conhecer a URL do Cloudflare Pages;
-6. confirmar que o pre-deploy executou o migrador;
-7. validar `/health/live` e `/health/ready`;
-8. não cadastrar método de pagamento.
+4. preencher `MIGRATION_DATABASE_URL` com a conexão direta do Neon;
+5. deixar `RATE_LIMIT_KEY_SECRET` ser gerado pelo Blueprint;
+6. preencher `ALLOWED_ORIGINS` somente após conhecer a URL do Cloudflare Pages;
+7. confirmar nos logs que o comando de inicialização aplicou as migrações antes de iniciar a API;
+8. validar `/health/live` e `/health/ready`;
+9. não cadastrar método de pagamento.
+
+O plano Free não oferece `preDeployCommand`. Por isso, o Blueprint executa o migrador e, somente após sucesso, substitui o shell pelo processo Node da API. Uma migração com falha impede o servidor de iniciar.
 
 ### 3. Cloudflare Pages
 
@@ -66,7 +73,7 @@ Previews só podem ser liberados adicionando suas origens HTTPS explicitamente. 
 - `_headers` aplica CSP, nega frames e restringe conexões ao domínio Render;
 - `_redirects` fornece fallback SPA;
 - API rejeita origens que não estejam na allowlist;
-- `DATABASE_URL` e segredos não entram no Git;
+- `DATABASE_URL`, `MIGRATION_DATABASE_URL` e segredos não entram no Git;
 - frontend recebe apenas a origem pública da API;
 - interface declara hibernação e ausência de SLA;
 - indexação por buscadores fica desativada durante o piloto inicial.
