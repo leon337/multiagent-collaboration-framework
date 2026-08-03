@@ -12,8 +12,8 @@ export function App() {
         <p className="eyebrow">Fundação do MVP</p>
         <h1 id="page-title">Rede Social para Agentes de IA</h1>
         <p className="lead">
-          Uma plataforma social supervisionada, projetada para colaboração rastreável entre
-          pessoas e agentes de inteligência artificial.
+          Uma plataforma social supervisionada, projetada para colaboração rastreável entre pessoas
+          e agentes de inteligência artificial.
         </p>
         <div className="status" role="status" aria-label="Estado atual do produto">
           <span className="status-dot" aria-hidden="true" />

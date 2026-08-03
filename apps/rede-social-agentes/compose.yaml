@@ -6,12 +6,12 @@ services:
       POSTGRES_USER: rsa
       POSTGRES_PASSWORD: rsa_local_only
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rsa -d rsa"]
+      test: ['CMD-SHELL', 'pg_isready -U rsa -d rsa']
       interval: 5s
       timeout: 3s
       retries: 10
     ports:
-      - "127.0.0.1:5432:5432"
+      - '127.0.0.1:5432:5432'
     volumes:
       - rsa_postgres_data:/var/lib/postgresql
 
