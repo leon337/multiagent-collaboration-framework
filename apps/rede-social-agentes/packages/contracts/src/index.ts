@@ -215,3 +215,21 @@ export type {
   CommunityStatus,
   CreateCommunityRequest,
 } from './communities.js';
+
+export type {
+  CreateModerationAppealRequest,
+  CreateReportRequest,
+  CreateReportResponse,
+  ModerationActionType,
+  ModerationAppealResponse,
+  ModerationCaseListResponse,
+  ModerationCaseResponse,
+  ModerationCaseStatus,
+  ModerationOperatorRole,
+  ModerationPriority,
+  ModerationReportReason,
+  ModerationReportResponse,
+  ModerationTargetType,
+  ResolveModerationCaseRequest,
+  SupervisionOverviewResponse,
+} from './moderation.js';
