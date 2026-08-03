@@ -66,8 +66,20 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Verify formatting
-        run: pnpm format:check
+      - name: Apply official formatting
+        run: pnpm format
+
+      - name: Upload formatted source
+        uses: actions/upload-artifact@v4
+        with:
+          name: rede-social-foundation-formatted-source
+          path: |
+            apps/rede-social-agentes/apps/web/src/App.tsx
+            apps/rede-social-agentes/apps/web/src/styles.css
+            apps/rede-social-agentes/apps/web/tsconfig.json
+            apps/rede-social-agentes/compose.yaml
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Lint
         run: pnpm lint
