@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./privacy": {
+      "types": "./dist/privacy.d.ts",
+      "default": "./dist/privacy.js"
     }
   },
   "scripts": {
