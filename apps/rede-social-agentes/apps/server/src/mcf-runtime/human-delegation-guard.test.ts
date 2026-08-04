@@ -23,6 +23,10 @@ function validRequest(): Record<string, unknown> {
   };
 }
 
+function intervention(inputs: Record<string, unknown>): Record<string, unknown> {
+  return inputs.humanInterventionRequest as Record<string, unknown>;
+}
+
 describe('HumanDelegationGuard', () => {
   const guard = new HumanDelegationGuard();
 
@@ -50,12 +54,25 @@ describe('HumanDelegationGuard', () => {
 
   it('blocks delegation while an executable fallback remains', () => {
     const inputs = validRequest();
-    const request = inputs.humanInterventionRequest as Record<string, unknown>;
-    request.fallbackExhausted = false;
+    intervention(inputs).fallbackExhausted = false;
 
     expect(() => guard.assertAllowed('Mestre', inputs)).toThrow(
       /while an executable fallback remains/u,
     );
+  });
+
+  it('blocks a non-reserved human trigger', () => {
+    const inputs = validRequest();
+    intervention(inputs).trigger = 'ROUTINE_TECHNICAL_TASK';
+
+    expect(() => guard.assertAllowed('Mestre', inputs)).toThrow(/not reserved/u);
+  });
+
+  it('blocks delegation of more than one human action', () => {
+    const inputs = validRequest();
+    intervention(inputs).actionCount = 2;
+
+    expect(() => guard.assertAllowed('Mestre', inputs)).toThrow(/exactly one action/u);
   });
 
   it('allows one reserved, evidenced and Léo-approved human action', () => {
