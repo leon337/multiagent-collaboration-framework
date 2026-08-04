@@ -5,7 +5,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DatabaseService } from '../database.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { McfMissionVersionConflictError } from './mcf-runtime.errors.js';
-import type { McfEventInput, McfMissionRecord, McfPhaseRecord } from './mcf-runtime.repository.js';
+import type {
+  McfEventInput,
+  McfMissionRecord,
+  McfPhaseRecord,
+  McfRuntimeRepository,
+} from './mcf-runtime.repository.js';
+import { OrderedMcfRuntimeRepository } from './ordered-mcf-runtime.repository.js';
 import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
 
 function missionEvent(
@@ -28,11 +34,12 @@ function missionEvent(
 
 describe('PostgresMcfRuntimeRepository integration', () => {
   let database: DatabaseService;
-  let repository: PostgresMcfRuntimeRepository;
+  let repository: McfRuntimeRepository;
 
   beforeAll(() => {
     database = new DatabaseService();
-    repository = new PostgresMcfRuntimeRepository(database);
+    const postgresRepository = new PostgresMcfRuntimeRepository(database);
+    repository = new OrderedMcfRuntimeRepository(database, postgresRepository);
   });
 
   afterAll(async () => {
