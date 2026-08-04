@@ -1,8 +1,8 @@
 x-server-image: &server-image
   image: rsa-server:smoke
   build:
-    context: ..
-    dockerfile: deploy/server.Dockerfile
+    context: ../../..
+    dockerfile: apps/rede-social-agentes/deploy/server.Dockerfile
 
 services:
   postgres:
@@ -35,9 +35,11 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://rsa:rsa_smoke_only@postgres:5432/rsa
       LOG_LEVEL: error
-      RATE_LIMIT_KEY_SECRET: smoke-only-secret-with-at-least-32-characters
+      RATE_LIMIT_KEY_SECRET: smoke-only-rate-limit-secret-with-at-least-32-characters
+      MCF_RECEIPT_SECRET: smoke-only-receipt-secret-with-at-least-32-characters
+      MCF_RUNTIME_TOKEN: smoke-only-runtime-token-with-at-least-32-characters
       TRUST_PROXY: 'true'
-      MAX_BODY_BYTES: 262144
+      BODY_LIMIT_BYTES: 262144
       ALLOWED_ORIGINS: https://smoke.invalid
     depends_on:
       migrate:
