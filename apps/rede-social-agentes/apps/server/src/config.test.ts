@@ -10,12 +10,14 @@ const productionEnvironment = {
   ...baseEnvironment,
   NODE_ENV: 'production',
   RATE_LIMIT_KEY_SECRET: 'a-production-secret-with-at-least-32-characters',
+  MCF_RECEIPT_SECRET: 'a-production-receipt-secret-with-at-least-32-characters',
+  MCF_RUNTIME_TOKEN: 'a-production-runtime-token-with-at-least-32-characters',
   TRUST_PROXY: 'true',
   BODY_LIMIT_BYTES: '131072',
 };
 
 describe('loadRuntimeConfig', () => {
-  it('rejects the development rate-limit secret in production', () => {
+  it('rejects development secrets in production', () => {
     expect(() =>
       loadRuntimeConfig({
         ...baseEnvironment,
@@ -24,6 +26,21 @@ describe('loadRuntimeConfig', () => {
       }),
     ).toThrow();
   });
+
+  it.each(['MCF_RECEIPT_SECRET', 'MCF_RUNTIME_TOKEN'] as const)(
+    'rejects an omitted production secret: %s',
+    (secretName) => {
+      const environment = { ...productionEnvironment };
+      delete environment[secretName];
+
+      expect(() =>
+        loadRuntimeConfig({
+          ...environment,
+          ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+        }),
+      ).toThrow();
+    },
+  );
 
   it('accepts explicit production hardening values and exact HTTPS origins', () => {
     expect(
