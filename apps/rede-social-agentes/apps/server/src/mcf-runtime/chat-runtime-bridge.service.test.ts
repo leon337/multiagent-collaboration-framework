@@ -86,16 +86,17 @@ function runtimeMock(created: McfMissionResponse): MissionRuntimeService {
         input.skillId === 'MCF-SELECT-AGENTS'
           ? String(input.inputs.selected_domain_agent)
           : 'Miriam';
+      const phaseId = `22222222-2222-4222-8222-22222222222${sequence}`;
       current = {
         ...current,
         state: 'EXECUTING',
-        currentPhaseId: `22222222-2222-4222-8222-22222222222${sequence}`,
+        currentPhaseId: phaseId,
         currentAgentId: dynamicHandoff,
         version: current.version + 1,
       };
       return {
         mission: current,
-        phaseId: current.currentPhaseId,
+        phaseId,
         phaseState: 'COMPLETED',
         selectedSkill: skill(input.skillId, dynamicHandoff),
         receipt: null,
