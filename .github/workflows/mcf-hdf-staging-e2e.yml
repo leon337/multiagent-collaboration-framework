@@ -1,6 +1,11 @@
 name: MCF HDF Staging E2E
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/mcf-hdf-staging-e2e.yml
   workflow_dispatch:
 
 permissions:
