@@ -45,7 +45,7 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     agentId: 'Vinicius',
     handoffTo: 'Rafael',
     toolProvider: 'github',
-    toolOperation: 'review-code',
+    toolOperation: 'inspect-code',
     internal: false,
     requiredEvidence: ['reviewed_commit_sha', 'reviewed_files', 'findings', 'verdict'],
   },
