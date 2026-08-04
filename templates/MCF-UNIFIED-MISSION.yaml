@@ -21,6 +21,20 @@ mission_contract:
   human_escalation_triggers: []
   phase_artifact_directory: artifacts/phases/PHASE-XX-SLUG
 
+human_delegation_firewall:
+  mode: TEAM_FIRST
+  human_as_executing_agent: false
+  team_execution_attempted: false
+  attempted_actions: []
+  evidence: []
+  tool_limitation: ""
+  fallback_exhausted: false
+  intervention_required: false
+  intervention_contract: templates/MCF-HUMAN-INTERVENTION-REQUEST.yaml
+  leo_approved: false
+  human_action_count: 0
+  return_to_team_defined: false
+
 selection:
   available_agents: 29
   selected: []
@@ -135,6 +149,8 @@ observability:
   handoff_failures: []
   recoveries: []
   loop_efficiency_findings: []
+  human_operator_actions: 0
+  team_attempt_before_human_verified: false
   alerts: []
 
 agent_evaluation:
@@ -163,6 +179,7 @@ governance:
   responsibilities: []
   permissions_and_limits: []
   supervision_requirements: []
+  hdf_compliance: PENDENTE
   compliance_findings: []
   verdict: NAO_APLICAVEL
 
@@ -172,6 +189,7 @@ audit:
   evidence_reviewed: []
   execution_sequence_verified: false
   phase_pack_verified: false
+  hdf_verified: false
   findings: []
   verdict: NAO_APLICAVEL
 
@@ -180,6 +198,7 @@ leo_gate:
   justification: ""
   execution_sequence_accepted: false
   phase_traceability_pack_accepted: false
+  hdf_accepted: false
   next_state: ""
   next_action: ""
   responsible: Mestre
@@ -198,5 +217,6 @@ mission_closeout:
   blockers: []
   leo_decision: ""
   human_action_required: false
+  human_action_count: 0
   next_action: nenhuma
   checkpoint_recipient: ""
