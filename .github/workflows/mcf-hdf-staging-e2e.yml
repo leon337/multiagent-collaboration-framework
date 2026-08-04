@@ -48,7 +48,7 @@ jobs:
             const response = await fetch(`${baseUrl}${path}`, {
               method,
               headers: {
-                'content-type': 'application/json',
+                ...(body === undefined ? {} : { 'content-type': 'application/json' }),
                 ...(token ? { authorization: `Bearer ${token}` } : {}),
               },
               body: body === undefined ? undefined : JSON.stringify(body),
@@ -201,7 +201,7 @@ jobs:
                   sessionToken,
                 );
                 if (!revoked.response.ok) {
-                  console.error(
+                  throw new Error(
                     `Session revocation failed (${revoked.response.status}): ${JSON.stringify(revoked.data)}`,
                   );
                 }
