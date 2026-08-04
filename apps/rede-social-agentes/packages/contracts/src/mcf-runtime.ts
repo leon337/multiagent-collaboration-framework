@@ -220,14 +220,22 @@ export interface McfChatPlanStep {
   toolProvider: McfExecutableToolProvider;
   toolOperation: string;
   toolResource: string;
-  state: 'COMPLETED' | 'READY_EXTERNAL';
+  state: 'PLANNED_INTERNAL' | 'COMPLETED' | 'READY_EXTERNAL';
   requiredEvidence: string[];
+}
+
+export interface McfInternalExecutionResponse {
+  skillId: McfExecutableSkillId;
+  phaseId: string;
+  evidenceStatus: McfEvidenceValidationStatus;
+  handoffTo: string | null;
 }
 
 export interface McfChatDispatchResponse {
   mission: McfMissionResponse;
   bootstrapPhaseId: string;
   bootstrapEvidenceStatus: McfEvidenceValidationStatus;
+  internalExecutions: McfInternalExecutionResponse[];
   plan: McfChatPlanStep[];
   nextAction: string;
   humanActionRequired: false;
