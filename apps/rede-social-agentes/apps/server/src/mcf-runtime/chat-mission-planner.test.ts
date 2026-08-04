@@ -12,9 +12,9 @@ describe('ChatMissionPlanner', () => {
 
     expect(plan.contract.riskClass).toBe('A');
     expect(plan.contract.selectedSkills).toEqual(['MCF-START-MISSION']);
-    expect(plan.contract.selectedAgents).toEqual(['Mestre']);
+    expect(plan.contract.selectedAgents).toEqual(['Mestre', 'Miriam']);
     expect(plan.steps).toHaveLength(1);
-    expect(plan.steps[0]?.state).toBe('COMPLETED');
+    expect(plan.steps[0]).toMatchObject({ state: 'COMPLETED', handoffTo: 'Miriam' });
   });
 
   it('selects implementation and validation for repository changes', () => {
@@ -29,9 +29,17 @@ describe('ChatMissionPlanner', () => {
       'MCF-IMPLEMENT-CHANGE',
       'MCF-RUN-TESTS',
     ]);
-    expect(plan.contract.selectedAgents).toEqual(['Mestre', 'Rafael', 'Renato']);
+    expect(plan.contract.selectedAgents).toEqual([
+      'Mestre',
+      'Miriam',
+      'Rafael',
+      'Vinicius',
+      'Renato',
+      'Emily',
+    ]);
     expect(plan.steps[1]).toMatchObject({
       agentId: 'Rafael',
+      handoffTo: 'Vinicius',
       state: 'READY_EXTERNAL',
       toolProvider: 'github',
     });
@@ -43,7 +51,7 @@ describe('ChatMissionPlanner', () => {
     });
 
     expect(plan.contract.selectedSkills).toEqual(['MCF-START-MISSION', 'MCF-RUN-TESTS']);
-    expect(plan.contract.selectedAgents).toEqual(['Mestre', 'Renato']);
+    expect(plan.contract.selectedAgents).toEqual(['Mestre', 'Miriam', 'Renato', 'Emily']);
   });
 
   it('classifies public or destructive work as risk class C', () => {
@@ -54,7 +62,7 @@ describe('ChatMissionPlanner', () => {
     expect(plan.contract.riskClass).toBe('C');
   });
 
-  it('never selects Leandro as an executing agent', () => {
+  it('never selects Leandro as an executing or handoff agent', () => {
     const plan = planner.plan({
       objective: 'Implementar, testar e validar uma alteração no repositório.',
       repository: 'leon337/multiagent-collaboration-framework',
