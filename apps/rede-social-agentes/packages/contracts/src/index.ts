@@ -251,6 +251,8 @@ export type {
   McfPhaseState,
   McfRiskClass,
   McfSkillDefinition,
+  McfSocialCandidateResponse,
+  McfSocialTimelineResponse,
   McfToolReceipt,
   McfToolReceiptStatus,
 } from './mcf-runtime.js';
