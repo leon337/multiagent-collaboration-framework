@@ -10,8 +10,12 @@ export interface McfToolRequest {
   resource: string;
 }
 
+function fold(value: string): string {
+  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
 function normalize(value: string): string {
-  return value.trim().toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
+  return fold(value).trim().toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
 }
 
 function normalizeProvider(value: string): string {
