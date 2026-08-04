@@ -245,6 +245,8 @@ export type {
   McfEventType,
   McfEvidenceValidationStatus,
   McfExecutableSkillId,
+  McfExecutableToolProvider,
+  McfInternalExecutionResponse,
   McfMissionContract,
   McfMissionEventResponse,
   McfMissionResponse,
