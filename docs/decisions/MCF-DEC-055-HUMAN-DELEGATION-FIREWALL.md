@@ -2,7 +2,7 @@
 
 ```yaml
 decision_id: MCF-DEC-055
-status: PROPOSED_FOR_MERGE
+status: APPROVED_ACTIVE_ON_MERGE
 date: 2026-08-04
 authority_human: Leandro
 authority_operational: Leo
@@ -73,12 +73,15 @@ tests:
   leandro_as_agent_blocked: required
   incomplete_request_blocked: required
   fallback_remaining_blocked: required
+  unreserved_trigger_blocked: required
+  multiple_human_actions_blocked: required
   reserved_single_action_allowed: required
 
 project_bootstrap:
   canonical_policy: project-instructions/MCF-HUMAN-DELEGATION-FIREWALL.md
-  template: templates/MCF-HUMAN-INTERVENTION-REQUEST.yaml
-  short_instructions_updated: required
+  intervention_template: templates/MCF-HUMAN-INTERVENTION-REQUEST.yaml
+  unified_mission_template_updated: true
+  short_instructions_updated: true
 ```
 
 ## 6. Tratamento do incidente atual
@@ -112,6 +115,24 @@ A decisão complementa MCF-DEC-050 a MCF-DEC-054. Em conflito operacional sobre 
 - política canônica criada;
 - instruções curtas atualizadas;
 - template de intervenção criado;
+- contrato unificado atualizado;
 - PR revisado por Renato e Emily;
 - merge somente após CI verde;
 - nenhuma ação técnica adicional transferida a Leandro durante esta missão.
+
+## 10. Gate de Léo
+
+```yaml
+leo_gate: APPROVED
+merge_authorized: true
+audit: PASS_WITH_MINOR_RESERVATIONS
+critical_findings: 0
+high_findings: 0
+medium_findings: 0
+low_findings: 2
+validated_workflows:
+  documentation_validation: 30955470237
+  foundation: 30955470207
+  container_smoke: 30955470185
+activation: ON_MERGE_TO_MAIN
+```
