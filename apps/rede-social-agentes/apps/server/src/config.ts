@@ -35,18 +35,45 @@ const runtimeConfigSchema = z
     TRUST_PROXY: booleanEnvironmentValue,
     BODY_LIMIT_BYTES: z.coerce.number().int().min(16_384).max(2_097_152).default(262_144),
     RATE_LIMIT_KEY_SECRET: z.string().min(32).default('development-only-rate-limit-secret'),
+    MCF_RECEIPT_SECRET: z
+      .string()
+      .min(32)
+      .default('development-only-mcf-receipt-secret-0001'),
+    MCF_RUNTIME_TOKEN: z
+      .string()
+      .min(32)
+      .default('development-only-mcf-runtime-token-0001'),
     ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:5173'),
   })
   .superRefine((config, context) => {
-    if (
-      config.NODE_ENV === 'production' &&
-      config.RATE_LIMIT_KEY_SECRET === 'development-only-rate-limit-secret'
-    ) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['RATE_LIMIT_KEY_SECRET'],
-        message: 'RATE_LIMIT_KEY_SECRET must be explicitly configured in production.',
-      });
+    const insecureProductionSecrets: Array<[string, string, string]> = [
+      [
+        'RATE_LIMIT_KEY_SECRET',
+        config.RATE_LIMIT_KEY_SECRET,
+        'development-only-rate-limit-secret',
+      ],
+      [
+        'MCF_RECEIPT_SECRET',
+        config.MCF_RECEIPT_SECRET,
+        'development-only-mcf-receipt-secret-0001',
+      ],
+      [
+        'MCF_RUNTIME_TOKEN',
+        config.MCF_RUNTIME_TOKEN,
+        'development-only-mcf-runtime-token-0001',
+      ],
+    ];
+
+    if (config.NODE_ENV === 'production') {
+      for (const [name, value, insecureDefault] of insecureProductionSecrets) {
+        if (value === insecureDefault) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [name],
+            message: `${name} must be explicitly configured in production.`,
+          });
+        }
+      }
     }
 
     try {
