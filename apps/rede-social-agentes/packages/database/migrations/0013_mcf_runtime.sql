@@ -79,6 +79,7 @@ create table if not exists "mcf_handoffs" (
 
 create table if not exists "mcf_events" (
   "id" text primary key,
+  "sequence" bigint generated always as identity unique,
   "mission_id" text not null references "mcf_missions"("id") on delete cascade,
   "phase_id" text,
   "agent_id" text,
@@ -91,5 +92,5 @@ create table if not exists "mcf_events" (
 create index if not exists "mcf_phases_mission_idx" on "mcf_phases" ("mission_id", "created_at");
 create index if not exists "mcf_receipts_mission_phase_idx" on "mcf_tool_receipts" ("mission_id", "phase_id");
 create index if not exists "mcf_handoffs_mission_idx" on "mcf_handoffs" ("mission_id", "created_at");
-create index if not exists "mcf_events_mission_idx" on "mcf_events" ("mission_id", "occurred_at");
-create index if not exists "mcf_events_phase_idx" on "mcf_events" ("phase_id", "occurred_at");
+create index if not exists "mcf_events_mission_idx" on "mcf_events" ("mission_id", "sequence");
+create index if not exists "mcf_events_phase_idx" on "mcf_events" ("phase_id", "sequence");
