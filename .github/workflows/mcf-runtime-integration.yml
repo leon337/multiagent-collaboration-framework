@@ -53,11 +53,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24.18.0
-          cache: pnpm
-          cache-dependency-path: apps/rede-social-agentes/pnpm-lock.yaml
 
       - name: Enable pnpm
-        run: corepack enable
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+          pnpm --version
 
       - name: Install dependencies
         working-directory: apps/rede-social-agentes
