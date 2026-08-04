@@ -18,7 +18,22 @@ import type { PermissionEngine } from './permission-engine.js';
 import { type McfToolRequest } from './permission-engine.js';
 import type { SkillRegistryLoader } from './skill-registry.loader.js';
 
-const executableSkills = new Set(['MCF-START-MISSION', 'MCF-IMPLEMENT-CHANGE', 'MCF-RUN-TESTS']);
+const executableSkills = new Set([
+  'MCF-START-MISSION',
+  'MCF-SELECT-AGENTS',
+  'MCF-IMPLEMENT-CHANGE',
+  'MCF-REVIEW-CODE',
+  'MCF-RUN-TESTS',
+  'MCF-GIT-PR-RELEASE',
+  'MCF-DEPLOY-VALIDATE',
+  'MCF-TRACE-MISSION',
+]);
+
+const internalSkills = new Set([
+  'MCF-START-MISSION',
+  'MCF-SELECT-AGENTS',
+  'MCF-TRACE-MISSION',
+]);
 
 export interface ExecuteSkillInput {
   skillId: string;
@@ -62,9 +77,9 @@ export class SkillExecutor {
       throw new McfSkillInputError(skill.skillId, missingInputs);
     }
 
-    if (input.tool.provider === 'internal' && skill.skillId !== 'MCF-START-MISSION') {
+    if (input.tool.provider === 'internal' && !internalSkills.has(skill.skillId)) {
       throw new McfPermissionDeniedError(
-        'internal execution is restricted to MCF-START-MISSION in the MVP runtime',
+        'internal execution is restricted to planning and observability skills',
       );
     }
 
@@ -77,8 +92,9 @@ export class SkillExecutor {
         agentId: input.agentId,
         requiredInputs: skill.requiredInputs,
         executionSteps: skill.executionSteps,
+        inputKeys: Object.keys(input.inputs).sort(),
       });
-      this.evidence.verify(receipt, input.tool);
+      this.evidence.verifyForSkill(receipt, input.tool, skill);
       return {
         skill,
         receipt,
@@ -103,7 +119,7 @@ export class SkillExecutor {
     }
 
     try {
-      this.evidence.verify(input.tool.externalReceipt, input.tool);
+      this.evidence.verifyForSkill(input.tool.externalReceipt, input.tool, skill);
       if (input.tool.externalReceipt.status !== 'SUCCEEDED') {
         return {
           skill,
