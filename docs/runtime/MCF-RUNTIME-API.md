@@ -4,9 +4,67 @@
 
 ## Autenticação
 
-- endpoints de missão: sessão humana existente (`SessionAuthGuard`);
+- endpoints de missão e bridge conversacional: sessão humana existente (`SessionAuthGuard`);
 - callback de CI: header `x-mcf-runtime-token`;
 - publicação social: não existe neste recorte.
+
+## Despachar objetivo conversacional
+
+```http
+POST /v1/mcf/chat/dispatch
+```
+
+```json
+{
+  "objective": "Implementar uma ponte segura entre o chat e o runtime.",
+  "repository": "leon337/multiagent-collaboration-framework",
+  "sourceOfTruth": ["docs/runtime/MCF-RUNTIME-SPECIFICATION.md"]
+}
+```
+
+O endpoint:
+
+1. transforma o objetivo em contrato determinístico;
+2. persiste a missão;
+3. executa somente `MCF-START-MISSION` com provedor `internal`;
+4. retorna o plano das fases externas e seus handoffs;
+5. mantém `humanActionRequired: false`.
+
+Ele não executa GitHub, Render ou CI sem recibo externo verificável. Objetivos Classe C são abertos, mas a próxima ação é direcionada ao gate interno de Léo antes de qualquer fase externa.
+
+Resposta resumida:
+
+```json
+{
+  "mission": {
+    "id": "uuid",
+    "state": "EXECUTING",
+    "currentAgentId": "Miriam",
+    "version": 2
+  },
+  "bootstrapPhaseId": "uuid",
+  "bootstrapEvidenceStatus": "VALID",
+  "plan": [
+    {
+      "order": 1,
+      "skillId": "MCF-START-MISSION",
+      "agentId": "Mestre",
+      "handoffTo": "Miriam",
+      "toolProvider": "internal",
+      "state": "COMPLETED"
+    },
+    {
+      "order": 2,
+      "skillId": "MCF-IMPLEMENT-CHANGE",
+      "agentId": "Rafael",
+      "handoffTo": "Vinicius",
+      "toolProvider": "github",
+      "state": "READY_EXTERNAL"
+    }
+  ],
+  "humanActionRequired": false
+}
+```
 
 ## Criar missão
 
