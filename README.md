@@ -26,6 +26,7 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - toda ação externa deve produzir evidência verificável;
 - confirmações humanas rotineiras são proibidas dentro do escopo já autorizado;
 - Léo decide gates internos e escala para Leandro somente matérias reservadas;
+- Leandro não pode ser usado como agente executor ou operador técnico padrão;
 - falhas recuperáveis seguem o Protocolo CAF e não encerram a missão.
 
 ## Runtime executável
@@ -33,8 +34,11 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 O recorte vertical do MCF transforma parte do protocolo em controles de software:
 
 ```text
-MissionRuntime
+objetivo conversacional
+→ Chat-to-Runtime Bridge
+→ MissionRuntime
 → SkillRegistryLoader
+→ Human Delegation Firewall
 → PermissionEngine
 → SkillExecutor
 → EvidenceValidator
@@ -51,6 +55,11 @@ skills_executaveis:
   - MCF-START-MISSION
   - MCF-IMPLEMENT-CHANGE
   - MCF-RUN-TESTS
+chat_to_runtime_bridge: true
+endpoint_de_dispatch: POST_/v1/mcf/chat/dispatch
+human_delegation_firewall: true
+leandro_como_executor: bloqueado
+risk_downgrade: bloqueado
 estado_persistente: true
 retomada_por_mission_id: true
 recibos_assinados: true
@@ -59,8 +68,12 @@ callback_de_CI: true
 publicacao_social_automatica: false
 ```
 
+O bridge executa automaticamente apenas a abertura interna da missão. GitHub, CI, Render ou outro provedor externo continuam exigindo recibos reais; o runtime não transforma afirmação textual em evidência.
+
 ### Documentação do runtime
 
+- `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
+- `docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md`;
 - `docs/decisions/MCF-DEC-054-RUNTIME-EXECUTAVEL-E-EVIDENCIA-CONFIAVEL.md`;
 - `docs/runtime/MCF-RUNTIME-SPECIFICATION.md`;
 - `docs/runtime/MCF-RUNTIME-API.md`;
@@ -100,6 +113,8 @@ A integração do pacote ao GitHub não modifica automaticamente as configuraç�
 
 ## Documentos principais
 
+- `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
+- `docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md`;
 - `docs/decisions/MCF-DEC-054-RUNTIME-EXECUTAVEL-E-EVIDENCIA-CONFIAVEL.md`;
 - `docs/decisions/MCF-DEC-053-INICIALIZACAO-AUTOMATICA-DE-CHATS-DO-PROJETO.md`;
 - `docs/decisions/MCF-DEC-052-SKILLS-E-INSTRUMENTALIZACAO-DOS-AGENTES.md`;
@@ -128,4 +143,4 @@ O runtime apenas projeta conclusões verificadas como candidatos `DRAFT_REVIEW`.
 
 ## Estado
 
-A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-054 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime e a validação de evidências no recorte executável.
+A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-056 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano e a abertura persistente de missões a partir de objetivos conversacionais.

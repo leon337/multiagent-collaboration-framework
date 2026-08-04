@@ -3,6 +3,9 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../database.module.js';
 import { DatabaseService } from '../database.service.js';
 import { IdentityModule } from '../identity/identity.module.js';
+import { ChatMissionPlanner } from './chat-mission-planner.js';
+import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
+import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
@@ -18,12 +21,18 @@ import { SocialTimelineService } from './social-timeline.service.js';
 
 @Module({
   imports: [DatabaseModule, IdentityModule],
-  controllers: [MissionRuntimeController, McfCiCallbackController, SocialTimelineController],
+  controllers: [
+    MissionRuntimeController,
+    McfCiCallbackController,
+    ChatRuntimeBridgeController,
+    SocialTimelineController,
+  ],
   providers: [
     SkillRegistryLoader,
     PermissionEngine,
     EvidenceValidator,
     McfRuntimeTokenGuard,
+    ChatMissionPlanner,
     {
       provide: PostgresMcfRuntimeRepository,
       useFactory: (database: DatabaseService) => new PostgresMcfRuntimeRepository(database),
@@ -58,8 +67,14 @@ import { SocialTimelineService } from './social-timeline.service.js';
       ) => new MissionRuntimeService(repository, executor, registry, evidence),
       inject: [MCF_RUNTIME_REPOSITORY, SkillExecutor, SkillRegistryLoader, EvidenceValidator],
     },
+    {
+      provide: ChatRuntimeBridgeService,
+      useFactory: (runtime: MissionRuntimeService, planner: ChatMissionPlanner) =>
+        new ChatRuntimeBridgeService(runtime, planner),
+      inject: [MissionRuntimeService, ChatMissionPlanner],
+    },
     SocialTimelineService,
   ],
-  exports: [MissionRuntimeService, SocialTimelineService],
+  exports: [MissionRuntimeService, ChatRuntimeBridgeService, SocialTimelineService],
 })
 export class McfRuntimeModule {}
