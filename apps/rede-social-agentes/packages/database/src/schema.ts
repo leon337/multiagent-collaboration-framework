@@ -1,4 +1,4 @@
-import { integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigint, integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const systemHealthEvents = pgTable('system_health_events', {
   id: text('id').primaryKey(),
@@ -142,6 +142,7 @@ export const mcfHandoffs = pgTable('mcf_handoffs', {
 
 export const mcfEvents = pgTable('mcf_events', {
   id: text('id').primaryKey(),
+  sequence: bigint('sequence', { mode: 'number' }).notNull().unique(),
   missionId: text('mission_id')
     .notNull()
     .references(() => mcfMissions.id, { onDelete: 'cascade' }),
