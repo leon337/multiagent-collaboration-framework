@@ -1,0 +1,209 @@
+name: MCF HDF Staging E2E
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcf-hdf-staging-e2e
+  cancel-in-progress: false
+
+jobs:
+  validate-human-delegation-firewall:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      MCF_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
+
+    steps:
+      - name: Validate staging configuration
+        run: test -n "$MCF_RUNTIME_URL"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Verify HDF rejection and zero phase side effects
+        env:
+          TECHNICAL_EMAIL: mcf-hdf-e2e-${{ github.run_id }}-${{ github.run_attempt }}@example.test
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          node <<'NODE'
+          const crypto = require('node:crypto');
+          const fs = require('node:fs');
+
+          const baseUrl = process.env.MCF_RUNTIME_URL.replace(/\/$/u, '');
+          let sessionToken = '';
+
+          async function request(path, method, body, token) {
+            const response = await fetch(`${baseUrl}${path}`, {
+              method,
+              headers: {
+                'content-type': 'application/json',
+                ...(token ? { authorization: `Bearer ${token}` } : {}),
+              },
+              body: body === undefined ? undefined : JSON.stringify(body),
+            });
+            const text = await response.text();
+            let data;
+            try {
+              data = text ? JSON.parse(text) : {};
+            } catch {
+              data = { raw: text };
+            }
+            return { response, data };
+          }
+
+          async function requireSuccess(path, method, body, token) {
+            const result = await request(path, method, body, token);
+            if (!result.response.ok) {
+              throw new Error(
+                `${method} ${path} failed (${result.response.status}): ${JSON.stringify(result.data)}`,
+              );
+            }
+            return result.data;
+          }
+
+          (async () => {
+            const password = `${crypto.randomBytes(36).toString('base64url')}Aa1!`;
+
+            try {
+              await requireSuccess('/v1/accounts', 'POST', {
+                email: process.env.TECHNICAL_EMAIL,
+                password,
+                displayName: 'MCF HDF Staging E2E',
+              });
+
+              const session = await requireSuccess('/v1/sessions', 'POST', {
+                email: process.env.TECHNICAL_EMAIL,
+                password,
+              });
+              if (!session.token) {
+                throw new Error('Session response did not contain a token.');
+              }
+              sessionToken = session.token;
+              console.log(`::add-mask::${sessionToken}`);
+
+              const mission = await requireSuccess(
+                '/v1/mcf/missions',
+                'POST',
+                {
+                  contract: {
+                    title: 'MCF HDF Staging E2E',
+                    objective: 'Comprovar que Leandro não pode ser usado como agente executor técnico.',
+                    expectedOutcome: 'Runtime rejeita a execução antes de iniciar ou persistir uma fase.',
+                    scope: ['staging', 'human-delegation-firewall'],
+                    outOfScope: ['production', 'public-release', 'financial-action'],
+                    acceptanceCriteria: [
+                      'execução com agentId Leandro recebe HTTP 403',
+                      'erro MCF_PERMISSION_DENIED é retornado',
+                      'nenhum evento de fase ou ferramenta é persistido',
+                    ],
+                    riskClass: 'B',
+                    selectedAgents: ['Leandro'],
+                    selectedSkills: ['MCF-RUN-TESTS'],
+                    sourceOfTruth: [
+                      'docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md',
+                      'apps/rede-social-agentes/apps/server/src/mcf-runtime/human-delegation-guard.ts',
+                    ],
+                  },
+                },
+                sessionToken,
+              );
+
+              const blocked = await request(
+                `/v1/mcf/missions/${mission.id}/phases/execute`,
+                'POST',
+                {
+                  skillId: 'MCF-RUN-TESTS',
+                  agentId: 'Leandro',
+                  inputs: {
+                    acceptance_criteria: ['HDF bloqueia Leandro como executor'],
+                    test_target: `main@${process.env.TARGET_SHA}`,
+                    authorizedScope: true,
+                  },
+                  tool: {
+                    provider: 'github-actions',
+                    operation: 'workflow-result',
+                    resource: process.env.GITHUB_REPOSITORY,
+                  },
+                  expectedMissionVersion: mission.version,
+                },
+                sessionToken,
+              );
+
+              if (blocked.response.status !== 403) {
+                throw new Error(
+                  `Expected HTTP 403, received ${blocked.response.status}: ${JSON.stringify(blocked.data)}`,
+                );
+              }
+              if (blocked.data.code !== 'MCF_PERMISSION_DENIED') {
+                throw new Error(`Unexpected error code: ${JSON.stringify(blocked.data)}`);
+              }
+              if (
+                typeof blocked.data.message !== 'string' ||
+                !blocked.data.message.includes('Leandro cannot be used as an executing agent')
+              ) {
+                throw new Error(`Unexpected HDF message: ${JSON.stringify(blocked.data)}`);
+              }
+
+              const timeline = await requireSuccess(
+                `/v1/mcf/missions/${mission.id}/timeline`,
+                'GET',
+                undefined,
+                sessionToken,
+              );
+              const forbiddenEvents = new Set([
+                'PHASE_STARTED',
+                'PERMISSION_GRANTED',
+                'TOOL_REQUESTED',
+                'TOOL_RECEIPT_RECORDED',
+              ]);
+              const sideEffects = timeline.events.filter((event) =>
+                forbiddenEvents.has(event.eventType),
+              );
+              if (sideEffects.length !== 0) {
+                throw new Error(
+                  `HDF rejection persisted forbidden side effects: ${JSON.stringify(sideEffects)}`,
+                );
+              }
+
+              fs.appendFileSync(
+                process.env.GITHUB_STEP_SUMMARY,
+                [
+                  '## Human Delegation Firewall — staging',
+                  '',
+                  `- Mission: \`${mission.id}\``,
+                  '- HTTP status: `403`',
+                  '- Error code: `MCF_PERMISSION_DENIED`',
+                  '- Executing agent blocked: `Leandro`',
+                  `- Timeline events after rejection: \`${timeline.events.length}\``,
+                  '- Forbidden phase/tool side effects: `0`',
+                  '- Verdict: `PASS`',
+                  '',
+                ].join('\n'),
+              );
+            } finally {
+              if (sessionToken) {
+                const revoked = await request(
+                  '/v1/sessions/current',
+                  'DELETE',
+                  undefined,
+                  sessionToken,
+                );
+                if (!revoked.response.ok) {
+                  console.error(
+                    `Session revocation failed (${revoked.response.status}): ${JSON.stringify(revoked.data)}`,
+                  );
+                }
+              }
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
