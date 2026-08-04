@@ -1,6 +1,6 @@
 # Multiagent Collaboration Framework
 
-Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, documentação por fase, auditoria, versionamento e decisão humana delegada.
+Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, skills versionadas, instrumentalização controlada, documentação por fase, auditoria, versionamento e decisão humana delegada.
 
 ## Governança
 
@@ -21,6 +21,9 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - falhas e recuperações devem permanecer visíveis e retornar ao fluxo original;
 - o fluxo continua em uma única resposta cronológica sempre que tecnicamente possível;
 - toda fase Classe B ou C gera pacote documental próprio com plano, relatório, validação, smoke, checkpoint, decisões, manifesto SHA-256 e README;
+- skills formais definem entradas, ferramentas, permissões, evidências, aceite e fallback;
+- agentes não podem escolher ferramentas por preferência ou apenas porque estão instaladas;
+- toda ação externa deve produzir evidência verificável;
 - confirmações humanas rotineiras são proibidas dentro do escopo já autorizado;
 - Léo decide gates internos e escala para Leandro somente matérias reservadas;
 - falhas recuperáveis seguem o Protocolo CAF e não encerram a missão.
@@ -32,8 +35,20 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - **Miriam** — Memória e Gestão do Conhecimento;
 - **Júlia** — Governança e Compliance de IA.
 
+## Skills e ferramentas
+
+- `skills/registry.yaml` — registro oficial de skills;
+- `skills/README.md` — regras de utilização;
+- `templates/MCF-SKILL-CONTRACT.yaml` — modelo para novas skills;
+- `docs/tools/MCF-AGENT-TOOL-MATRIX.md` — matriz dos 29 agentes;
+- `docs/tools/MCF-PLUGIN-PERMISSIONS.yaml` — perfis e limites de permissão;
+- `docs/tools/MCF-PLUGIN-EVALUATION.md` — avaliação antes da aprovação;
+- `docs/tools/MCF-AVAILABLE-CAPABILITIES.md` — inventário de capacidades;
+- `docs/tests/MCF-SKILLS-AND-TOOLING-TESTS.md` — testes de conformidade.
+
 ## Documentos principais
 
+- `docs/decisions/MCF-DEC-052-SKILLS-E-INSTRUMENTALIZACAO-DOS-AGENTES.md`;
 - `docs/decisions/MCF-DEC-051-EXECUCAO-SEQUENCIAL-VISIVEL-E-RASTREABILIDADE-POR-FASE.md`;
 - `docs/decisions/MCF-DEC-050-QUATRO-AGENTES-DE-CONTROLE-E-PADRAO-OPERACIONAL-UNIFICADO.md`;
 - `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`;
@@ -42,6 +57,10 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - `templates/phase-traceability/`;
 - `docs/decisions/MCF-DEC-016-FLUXO-RESILIENTE-E-CONTINUIDADE-AUTOMATICA.md`;
 - `docs/decisions/MCF-DEC-017-DELEGACAO-DE-GATES-INTERNOS-AO-AGENTE-LEO.md`.
+
+## Auditorias externas
+
+Relatórios de Claude ou outro avaliador externo devem ser preservados e respondidos por achado. O estado experimental do framework contextualiza lacunas ainda em definição, mas não invalida automaticamente defeitos, inconsistências ou riscos encontrados.
 
 ## Rede Social para Agentes de IA
 
@@ -53,4 +72,4 @@ Registrar não significa publicar automaticamente. Todo conteúdo passa por clas
 
 ## Estado
 
-A composição oficial possui 29 agentes. A MCF-DEC-051 corrige a interpretação do trabalho visível e torna obrigatórias a execução sequencial exposta, as passagens intercaladas e a rastreabilidade documental por fase.
+A composição oficial possui 29 agentes. As decisões MCF-DEC-051 e MCF-DEC-052 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas e a seleção controlada de ferramentas.
