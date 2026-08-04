@@ -1,6 +1,6 @@
 # Multiagent Collaboration Framework
 
-Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, skills versionadas, instrumentalização controlada, documentação por fase, auditoria, versionamento e decisão humana delegada.
+Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, skills versionadas, instrumentalização controlada, inicialização de chats, documentação por fase, auditoria, versionamento e decisão humana delegada.
 
 ## Governança
 
@@ -28,6 +28,18 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - Léo decide gates internos e escala para Leandro somente matérias reservadas;
 - falhas recuperáveis seguem o Protocolo CAF e não encerram a missão.
 
+## Inicialização de chats do projeto
+
+O pacote `project-instructions/` evita que chats novos dependam do histórico de uma conversa anterior.
+
+- `MCF-CHATGPT-PROJECT-INSTRUCTIONS.txt` — texto curto para o campo Instruções do projeto;
+- `MCF-PROJECT-OPERATING-INSTRUCTIONS.md` — fonte canônica;
+- `MCF-STARTUP-CHECKLIST.yaml` — checklist de início de missão;
+- `MCF-CHAT-BOOTSTRAP-TESTS.md` — testes em chat totalmente novo;
+- `README.md` — instalação e atualização.
+
+A integração do pacote ao GitHub não modifica automaticamente as configurações do projeto ChatGPT. O texto e os arquivos precisam ser adicionados ao projeto e depois testados em chat novo.
+
 ## Quatro agentes de controle multiagente
 
 - **Augusto** — Observabilidade Multiagente;
@@ -48,6 +60,7 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 
 ## Documentos principais
 
+- `docs/decisions/MCF-DEC-053-INICIALIZACAO-AUTOMATICA-DE-CHATS-DO-PROJETO.md`;
 - `docs/decisions/MCF-DEC-052-SKILLS-E-INSTRUMENTALIZACAO-DOS-AGENTES.md`;
 - `docs/decisions/MCF-DEC-051-EXECUCAO-SEQUENCIAL-VISIVEL-E-RASTREABILIDADE-POR-FASE.md`;
 - `docs/decisions/MCF-DEC-050-QUATRO-AGENTES-DE-CONTROLE-E-PADRAO-OPERACIONAL-UNIFICADO.md`;
@@ -72,4 +85,4 @@ Registrar não significa publicar automaticamente. Todo conteúdo passa por clas
 
 ## Estado
 
-A composição oficial possui 29 agentes. As decisões MCF-DEC-051 e MCF-DEC-052 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas e a seleção controlada de ferramentas.
+A composição oficial possui 29 agentes. As decisões MCF-DEC-051, MCF-DEC-052 e MCF-DEC-053 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas e o bootstrap de chats do projeto.
