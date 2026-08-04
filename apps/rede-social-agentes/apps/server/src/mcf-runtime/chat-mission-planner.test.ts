@@ -5,19 +5,26 @@ import { ChatMissionPlanner } from './chat-mission-planner.js';
 describe('ChatMissionPlanner', () => {
   const planner = new ChatMissionPlanner();
 
-  it('creates a planning-only mission for a neutral objective', () => {
+  it('creates an internal startup and selection block for a neutral objective', () => {
     const plan = planner.plan({
       objective: 'Definir o escopo da próxima evolução controlada do framework.',
     });
 
     expect(plan.contract.riskClass).toBe('A');
-    expect(plan.contract.selectedSkills).toEqual(['MCF-START-MISSION']);
+    expect(plan.contract.selectedSkills).toEqual([
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+    ]);
     expect(plan.contract.selectedAgents).toEqual(['Mestre', 'Miriam']);
-    expect(plan.steps).toHaveLength(1);
-    expect(plan.steps[0]).toMatchObject({ state: 'COMPLETED', handoffTo: 'Miriam' });
+    expect(plan.steps).toHaveLength(2);
+    expect(plan.steps.every((step) => step.state === 'PLANNED_INTERNAL')).toBe(true);
+    expect(plan.steps[1]).toMatchObject({
+      skillId: 'MCF-SELECT-AGENTS',
+      handoffTo: 'Mestre',
+    });
   });
 
-  it('selects implementation and validation for repository changes', () => {
+  it('selects implementation, review, validation, PR control and trace for repository changes', () => {
     const plan = planner.plan({
       objective: 'Implementar uma ponte segura entre o chat e o runtime.',
       repository: 'leon337/multiagent-collaboration-framework',
@@ -26,8 +33,12 @@ describe('ChatMissionPlanner', () => {
     expect(plan.contract.riskClass).toBe('B');
     expect(plan.contract.selectedSkills).toEqual([
       'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
       'MCF-IMPLEMENT-CHANGE',
+      'MCF-REVIEW-CODE',
       'MCF-RUN-TESTS',
+      'MCF-GIT-PR-RELEASE',
+      'MCF-TRACE-MISSION',
     ]);
     expect(plan.contract.selectedAgents).toEqual([
       'Mestre',
@@ -36,22 +47,68 @@ describe('ChatMissionPlanner', () => {
       'Vinicius',
       'Renato',
       'Emily',
+      'Gabriel',
+      'Augusto',
+      'Beatriz',
     ]);
     expect(plan.steps[1]).toMatchObject({
+      agentId: 'Mestre',
+      handoffTo: 'Rafael',
+      state: 'PLANNED_INTERNAL',
+      toolProvider: 'internal',
+    });
+    expect(plan.steps[2]).toMatchObject({
       agentId: 'Rafael',
       handoffTo: 'Vinicius',
       state: 'READY_EXTERNAL',
       toolProvider: 'github',
     });
+    expect(plan.steps.at(-1)).toMatchObject({
+      skillId: 'MCF-TRACE-MISSION',
+      state: 'PLANNED_INTERNAL',
+    });
   });
 
-  it('selects validation without implementation for a test-only objective', () => {
+  it('selects validation and a deferred trace without implementation', () => {
     const plan = planner.plan({
       objective: 'Validar o runtime e executar um smoke test autenticado.',
     });
 
-    expect(plan.contract.selectedSkills).toEqual(['MCF-START-MISSION', 'MCF-RUN-TESTS']);
-    expect(plan.contract.selectedAgents).toEqual(['Mestre', 'Miriam', 'Renato', 'Emily']);
+    expect(plan.contract.selectedSkills).toEqual([
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-RUN-TESTS',
+      'MCF-TRACE-MISSION',
+    ]);
+    expect(plan.contract.selectedAgents).toEqual([
+      'Mestre',
+      'Miriam',
+      'Renato',
+      'Emily',
+      'Augusto',
+      'Beatriz',
+    ]);
+  });
+
+  it('selects deployment validation only when the objective requires an environment action', () => {
+    const plan = planner.plan({
+      objective: 'Executar deploy no ambiente de staging e validar rollback.',
+      repository: 'leon337/multiagent-collaboration-framework',
+    });
+
+    expect(plan.contract.selectedSkills).toEqual([
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-DEPLOY-VALIDATE',
+      'MCF-TRACE-MISSION',
+    ]);
+    expect(plan.steps[2]).toMatchObject({
+      skillId: 'MCF-DEPLOY-VALIDATE',
+      agentId: 'Bruno',
+      handoffTo: 'Augusto',
+      toolProvider: 'render',
+      state: 'READY_EXTERNAL',
+    });
   });
 
   it('classifies public or destructive work as risk class C', () => {
@@ -81,11 +138,26 @@ describe('ChatMissionPlanner', () => {
     expect(elevated.contract.riskClass).toBe('C');
   });
 
+  it('accepts explicit executable skills while preserving mandatory startup and selection', () => {
+    const plan = planner.plan({
+      objective: 'Revisar uma alteração e preparar o pull request.',
+      repository: 'leon337/multiagent-collaboration-framework',
+      requestedSkills: ['MCF-REVIEW-CODE', 'MCF-GIT-PR-RELEASE'],
+    });
+
+    expect(plan.contract.selectedSkills).toEqual([
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-REVIEW-CODE',
+      'MCF-GIT-PR-RELEASE',
+    ]);
+    expect(plan.steps[1]?.handoffTo).toBe('Vinicius');
+  });
+
   it('never selects Leandro as an executing or handoff agent', () => {
     const plan = planner.plan({
       objective: 'Implementar, testar e validar uma alteração no repositório.',
       repository: 'leon337/multiagent-collaboration-framework',
-      requestedSkills: ['MCF-IMPLEMENT-CHANGE', 'MCF-RUN-TESTS'],
     });
 
     expect(plan.contract.selectedAgents).not.toContain('Leandro');
