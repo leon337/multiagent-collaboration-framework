@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { McfChatDispatchRequest, McfChatDispatchResponse } from '@rsa/contracts';
 
 import { ChatMissionPlanner } from './chat-mission-planner.js';
@@ -7,8 +7,8 @@ import { MissionRuntimeService } from './mission-runtime.service.js';
 @Injectable()
 export class ChatRuntimeBridgeService {
   constructor(
-    private readonly runtime: MissionRuntimeService,
-    private readonly planner: ChatMissionPlanner,
+    @Inject(MissionRuntimeService) private readonly runtime: MissionRuntimeService,
+    @Inject(ChatMissionPlanner) private readonly planner: ChatMissionPlanner,
   ) {}
 
   async dispatch(request: McfChatDispatchRequest): Promise<McfChatDispatchResponse> {
