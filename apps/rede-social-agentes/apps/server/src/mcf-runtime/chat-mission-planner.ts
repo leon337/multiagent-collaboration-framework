@@ -141,12 +141,7 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
 
   const normalized = request.objective.toLowerCase();
   if (includesAny(normalized, deploymentTerms)) {
-    return [
-      'MCF-START-MISSION',
-      'MCF-SELECT-AGENTS',
-      'MCF-DEPLOY-VALIDATE',
-      'MCF-TRACE-MISSION',
-    ];
+    return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-DEPLOY-VALIDATE', 'MCF-TRACE-MISSION'];
   }
   if (request.repository || includesAny(normalized, implementationTerms)) {
     return [
@@ -160,20 +155,12 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
     ];
   }
   if (includesAny(normalized, validationTerms)) {
-    return [
-      'MCF-START-MISSION',
-      'MCF-SELECT-AGENTS',
-      'MCF-RUN-TESTS',
-      'MCF-TRACE-MISSION',
-    ];
+    return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-RUN-TESTS', 'MCF-TRACE-MISSION'];
   }
   return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS'];
 }
 
-function resourceFor(
-  skillId: McfExecutableSkillId,
-  repository: string | undefined,
-): string {
+function resourceFor(skillId: McfExecutableSkillId, repository: string | undefined): string {
   if (skillConfig[skillId].internal) {
     return skillId === 'MCF-TRACE-MISSION' ? 'mcf-mission-timeline' : 'mcf-chat-bridge';
   }

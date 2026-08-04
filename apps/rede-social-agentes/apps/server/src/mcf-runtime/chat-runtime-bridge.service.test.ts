@@ -76,7 +76,10 @@ function runtimeMock(created: McfMissionResponse): MissionRuntimeService {
   let current = created;
   let sequence = 0;
   const executePhase = vi.fn(
-    async (_missionId: string, input: ExecuteMcfPhaseRequest): Promise<McfPhaseExecutionResponse> => {
+    async (
+      _missionId: string,
+      input: ExecuteMcfPhaseRequest,
+    ): Promise<McfPhaseExecutionResponse> => {
       sequence += 1;
       expect(input.expectedMissionVersion).toBe(current.version);
       const dynamicHandoff =

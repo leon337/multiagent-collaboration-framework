@@ -12,9 +12,8 @@ import { MissionRuntimeService } from './mission-runtime.service.js';
 
 function selectedDomainAgent(plan: McfChatPlanStep[], currentOrder: number): string {
   return (
-    plan.find(
-      (step) => step.order > currentOrder && step.skillId !== 'MCF-TRACE-MISSION',
-    )?.agentId ??
+    plan.find((step) => step.order > currentOrder && step.skillId !== 'MCF-TRACE-MISSION')
+      ?.agentId ??
     plan.find((step) => step.order > currentOrder)?.agentId ??
     'Mestre'
   );

@@ -11,10 +11,7 @@ describe('ChatMissionPlanner', () => {
     });
 
     expect(plan.contract.riskClass).toBe('A');
-    expect(plan.contract.selectedSkills).toEqual([
-      'MCF-START-MISSION',
-      'MCF-SELECT-AGENTS',
-    ]);
+    expect(plan.contract.selectedSkills).toEqual(['MCF-START-MISSION', 'MCF-SELECT-AGENTS']);
     expect(plan.contract.selectedAgents).toEqual(['Mestre', 'Miriam']);
     expect(plan.steps).toHaveLength(2);
     expect(plan.steps.every((step) => step.state === 'PLANNED_INTERNAL')).toBe(true);

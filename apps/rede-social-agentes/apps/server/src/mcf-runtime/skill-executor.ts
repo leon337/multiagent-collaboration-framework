@@ -29,11 +29,7 @@ const executableSkills = new Set([
   'MCF-TRACE-MISSION',
 ]);
 
-const internalSkills = new Set([
-  'MCF-START-MISSION',
-  'MCF-SELECT-AGENTS',
-  'MCF-TRACE-MISSION',
-]);
+const internalSkills = new Set(['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-TRACE-MISSION']);
 
 export interface ExecuteSkillInput {
   skillId: string;

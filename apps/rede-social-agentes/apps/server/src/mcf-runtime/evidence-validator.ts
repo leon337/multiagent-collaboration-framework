@@ -1,11 +1,7 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
-import type {
-  McfSkillDefinition,
-  McfToolReceipt,
-  McfToolReceiptStatus,
-} from '@rsa/contracts';
+import type { McfSkillDefinition, McfToolReceipt, McfToolReceiptStatus } from '@rsa/contracts';
 
 import { loadRuntimeConfig } from '../config.js';
 import { McfEvidenceRejectedError } from './mcf-runtime.errors.js';
@@ -68,11 +64,7 @@ function equalSignature(actualHex: string, expectedHex: string): boolean {
   return timingSafeEqual(Buffer.from(actualHex, 'hex'), Buffer.from(expectedHex, 'hex'));
 }
 
-function requireString(
-  metadata: Record<string, unknown>,
-  key: string,
-  message: string,
-): string {
+function requireString(metadata: Record<string, unknown>, key: string, message: string): string {
   const value = metadata[key];
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new McfEvidenceRejectedError(message);
@@ -80,11 +72,7 @@ function requireString(
   return value;
 }
 
-function requireBoolean(
-  metadata: Record<string, unknown>,
-  key: string,
-  message: string,
-): boolean {
+function requireBoolean(metadata: Record<string, unknown>, key: string, message: string): boolean {
   const value = metadata[key];
   if (typeof value !== 'boolean') {
     throw new McfEvidenceRejectedError(message);
@@ -118,7 +106,9 @@ function requireNonEmptyArray(
 
 function validateReviewReceipt(receipt: McfToolReceipt): void {
   if (receipt.provider !== 'github' || !receipt.commitSha) {
-    throw new McfEvidenceRejectedError('code review evidence requires GitHub and reviewed commit SHA');
+    throw new McfEvidenceRejectedError(
+      'code review evidence requires GitHub and reviewed commit SHA',
+    );
   }
   requireNonNegativeInteger(
     receipt.metadata,
