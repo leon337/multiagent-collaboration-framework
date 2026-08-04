@@ -12,7 +12,11 @@ const allowedTriggers = new Set([
 ]);
 
 function normalize(value: string): string {
-  return value.trim().toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
+  return value
+    .trim()
+    .toLowerCase()
+    .replaceAll('_', '-')
+    .replaceAll(' ', '-');
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
