@@ -56,6 +56,18 @@ function hasInput(inputs: Record<string, unknown>, key: string): boolean {
   return Object.hasOwn(inputs, key) && inputs[key] !== undefined && inputs[key] !== null;
 }
 
+function resolveHandoff(skill: McfSkillDefinition, inputs: Record<string, unknown>): string {
+  if (skill.handoffTo !== 'selected_domain_agent') {
+    return skill.handoffTo;
+  }
+
+  const selected = inputs.selected_domain_agent;
+  if (typeof selected !== 'string' || selected.trim().length === 0) {
+    throw new McfSkillInputError(skill.skillId, ['selected_domain_agent']);
+  }
+  return selected.trim();
+}
+
 @Injectable()
 export class SkillExecutor {
   constructor(
@@ -84,12 +96,14 @@ export class SkillExecutor {
     }
 
     this.permissions.assertAllowed(skill, input.agentId, input.tool, input.inputs);
+    const handoffTo = resolveHandoff(skill, input.inputs);
 
     if (input.tool.provider === 'internal') {
       const receipt = this.evidence.createInternalReceipt(input.tool, {
         skillId: skill.skillId,
         skillVersion: skill.version,
         agentId: input.agentId,
+        handoffTo,
         requiredInputs: skill.requiredInputs,
         executionSteps: skill.executionSteps,
         inputKeys: Object.keys(input.inputs).sort(),
@@ -101,7 +115,7 @@ export class SkillExecutor {
         evidenceStatus: 'VALID',
         phaseState: 'COMPLETED',
         missionState: 'EXECUTING',
-        handoffTo: skill.handoffTo,
+        handoffTo,
         rejectionReason: null,
       };
     }
@@ -138,7 +152,7 @@ export class SkillExecutor {
         evidenceStatus: 'VALID',
         phaseState: 'COMPLETED',
         missionState: skill.skillId === 'MCF-RUN-TESTS' ? 'COMPLETED' : 'EXECUTING',
-        handoffTo: skill.handoffTo,
+        handoffTo,
         rejectionReason: null,
       };
     } catch (error) {
