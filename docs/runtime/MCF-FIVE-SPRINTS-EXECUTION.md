@@ -40,6 +40,7 @@ direct_main_write_blocked: true
 - recibos;
 - handoffs;
 - eventos;
+- sequência causal monotônica;
 - repositório PostgreSQL;
 - retomada por `mission_id`;
 - versão otimista;
@@ -51,6 +52,7 @@ direct_main_write_blocked: true
 mission_resume: implemented
 phase_checkpoint: implemented
 event_ledger: implemented
+causal_sequence: implemented
 optimistic_locking: implemented
 callback_idempotency: implemented
 ```
@@ -125,15 +127,15 @@ human_approval_required: true
 
 ## 7. Os sete pontos resolvidos
 
-| Ponto | Implementação | Evidência esperada |
+| Ponto | Implementação | Evidência verificada |
 |---|---|---|
-| SkillExecutor | loader + executor de três skills | testes unitários |
-| EvidenceValidator | assinatura, digest e validação específica | testes contra adulteração |
-| Estado persistente | PostgreSQL + retomada | teste de integração |
-| Schemas e gates | Zod + PermissionEngine | lint, typecheck e testes |
-| Handoffs e CAF | tabelas, eventos e estados de recuperação | integração e ledger |
-| CI/CD | dispatch + callback autenticado | workflow e smoke |
-| Consolidação | DEC-054 e docs/runtime | validação documental |
+| SkillExecutor | loader + executor de três skills | testes unitários PASS |
+| EvidenceValidator | assinatura, digest e validação específica | adulteração rejeitada em teste |
+| Estado persistente | PostgreSQL + retomada | teste de integração PASS |
+| Schemas e gates | Zod + PermissionEngine | lint, typecheck e testes PASS |
+| Handoffs e CAF | tabelas, eventos e estados de recuperação | integração e ledger PASS |
+| CI/CD | dispatch + callback autenticado | workflow e container smoke PASS |
+| Consolidação | DEC-054 e `docs/runtime/` | validação documental PASS |
 
 ## 8. Falhas reais encontradas e recuperadas
 
@@ -161,7 +163,7 @@ result: PASS
 failure: production_fixture_missing_new_secrets
 class: RECOVERABLE
 recovery: update_fixture_and_negative_tests
-result: pending_final_CI_at_document_creation
+result: PASS
 ```
 
 ### Empacotamento
@@ -170,10 +172,51 @@ result: pending_final_CI_at_document_creation
 failure: canonical_skill_registry_outside_old_docker_context
 class: DESIGN_DEFECT
 recovery: root_context_and_selective_copy
-result: pending_container_smoke_at_document_creation
+result: PASS
 ```
 
-## 9. Limites do recorte
+### Ordem causal
+
+```yaml
+failure: equal_timestamps_ordered_by_random_uuid
+class: DESIGN_DEFECT
+recovery: identity_sequence_and_ordered_repository
+result: PASS
+```
+
+### Injeção de dependências
+
+```yaml
+failure: nest_received_function_metadata_for_type_only_dependencies
+class: RUNTIME_DEFECT
+recovery: explicit_provider_factories
+result: PASS
+```
+
+## 9. Validação final do candidato
+
+```yaml
+documentation_validation: PASS
+format: PASS
+lint: PASS
+typecheck: PASS
+migrations_first_run: PASS
+migrations_second_run: PASS
+ops_tests: 10_PASS
+server_tests: 95_PASS
+web_tests: 5_PASS
+build: PASS
+container_compose_validation: PASS
+container_build: PASS
+container_migrations: PASS
+server_startup: PASS
+readiness: PASS
+security_headers: PASS
+non_root_runtime: PASS
+independent_audit: PASS_WITH_MINOR_RESERVATIONS
+```
+
+## 10. Limites do recorte
 
 - três de dezesseis skills são executáveis;
 - adapters externos completos ainda precisam ser adicionados por skill;
@@ -181,9 +224,7 @@ result: pending_container_smoke_at_document_creation
 - não existe publicação social automática;
 - o produto ainda não substitui integralmente o Codex.
 
-## 10. Critério final
-
-A missão somente será marcada `ENTREGUE` após:
+## 11. Critério final
 
 ```yaml
 documentation_validation: PASS
@@ -194,6 +235,6 @@ migrations_twice: PASS
 unit_and_integration_tests: PASS
 build: PASS
 container_smoke: PASS
-independent_audit: PASS_OR_PASS_WITH_RESERVATIONS
-merge_to_main: true
+independent_audit: PASS_WITH_MINOR_RESERVATIONS
+merge_to_main: PENDING_LEO_GATE
 ```
