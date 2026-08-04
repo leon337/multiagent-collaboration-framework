@@ -123,7 +123,7 @@ export function parseMcfSkillRegistry(content: string): McfSkillDefinition[] {
       continue;
     }
 
-    const skillStart = /^  - skill_id:\s*(.+)$/u.exec(rawLine);
+    const skillStart = /^ {2}- skill_id:\s*(.+)$/u.exec(rawLine);
     if (skillStart) {
       pushCurrent();
       current = { skillId: unquote(skillStart[1] ?? '') };
@@ -134,7 +134,7 @@ export function parseMcfSkillRegistry(content: string): McfSkillDefinition[] {
       continue;
     }
 
-    const field = /^    ([a-z_]+):\s*(.*)$/u.exec(rawLine);
+    const field = /^ {4}([a-z_]+):\s*(.*)$/u.exec(rawLine);
     if (!field) {
       continue;
     }

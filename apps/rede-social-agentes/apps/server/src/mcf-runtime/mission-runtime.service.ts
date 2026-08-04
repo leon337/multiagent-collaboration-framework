@@ -13,7 +13,7 @@ import type {
   McfPhaseExecutionResponse,
 } from '@rsa/contracts';
 
-import { EvidenceValidator } from './evidence-validator.js';
+import type { EvidenceValidator } from './evidence-validator.js';
 import {
   McfMissionNotFoundError,
   McfPermissionDeniedError,
@@ -27,8 +27,8 @@ import {
   type McfPhaseRecord,
   type McfRuntimeRepository,
 } from './mcf-runtime.repository.js';
-import { SkillExecutor } from './skill-executor.js';
-import { SkillRegistryLoader } from './skill-registry.loader.js';
+import type { SkillExecutor } from './skill-executor.js';
+import type { SkillRegistryLoader } from './skill-registry.loader.js';
 
 function toMissionResponse(mission: McfMissionRecord): McfMissionResponse {
   return {

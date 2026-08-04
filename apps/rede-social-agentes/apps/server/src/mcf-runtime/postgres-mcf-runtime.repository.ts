@@ -7,7 +7,7 @@ import type {
 } from '@rsa/contracts';
 import type { DatabaseRow, DatabaseTransaction } from '@rsa/database';
 
-import { DatabaseService } from '../database.service.js';
+import type { DatabaseService } from '../database.service.js';
 import {
   McfMissionNotFoundError,
   McfMissionVersionConflictError,

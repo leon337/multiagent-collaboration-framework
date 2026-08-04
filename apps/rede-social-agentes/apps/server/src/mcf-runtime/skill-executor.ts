@@ -13,9 +13,10 @@ import {
   McfSkillInputError,
   McfSkillNotExecutableError,
 } from './mcf-runtime.errors.js';
-import { EvidenceValidator } from './evidence-validator.js';
-import { PermissionEngine, type McfToolRequest } from './permission-engine.js';
-import { SkillRegistryLoader } from './skill-registry.loader.js';
+import type { EvidenceValidator } from './evidence-validator.js';
+import type { PermissionEngine } from './permission-engine.js';
+import { type McfToolRequest } from './permission-engine.js';
+import type { SkillRegistryLoader } from './skill-registry.loader.js';
 
 const executableSkills = new Set(['MCF-START-MISSION', 'MCF-IMPLEMENT-CHANGE', 'MCF-RUN-TESTS']);
 
