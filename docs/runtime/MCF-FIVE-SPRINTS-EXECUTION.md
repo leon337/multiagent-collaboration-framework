@@ -3,7 +3,8 @@
 **Missão:** MCF-RUNTIME-001  
 **Data:** 4 de agosto de 2026  
 **Branch:** `feat/mcf-runtime-five-sprints`  
-**PR:** #46
+**PR:** #46  
+**Merge SHA:** `645ab03ed2db64da6240461b7249ead06e9c48dc`
 
 ## 1. Objetivo
 
@@ -224,7 +225,7 @@ independent_audit: PASS_WITH_MINOR_RESERVATIONS
 - não existe publicação social automática;
 - o produto ainda não substitui integralmente o Codex.
 
-## 11. Critério final
+## 11. Estado final
 
 ```yaml
 documentation_validation: PASS
@@ -236,5 +237,8 @@ unit_and_integration_tests: PASS
 build: PASS
 container_smoke: PASS
 independent_audit: PASS_WITH_MINOR_RESERVATIONS
-merge_to_main: PENDING_LEO_GATE
+leo_gate: APPROVED
+merge_to_main: true
+merge_sha: 645ab03ed2db64da6240461b7249ead06e9c48dc
+mission_state: ENTREGUE
 ```
