@@ -1,0 +1,142 @@
+mission_contract:
+  mission_id: MCF-YYYYMMDD-SLUG
+  parent_mission_id: null
+  title: ""
+  objective: ""
+  expected_outcome: ""
+  scope: []
+  out_of_scope: []
+  inputs: []
+  source_of_truth: []
+  assumptions: []
+  acceptance_criteria: []
+  authorizations: []
+  prohibitions: []
+  risk_class: B
+  current_state: PLANEJADO
+  cycle: 1
+  selected_agents: []
+  decision_authority: Leo
+  human_escalation_triggers: []
+
+selection:
+  available_agents: 29
+  selected: []
+  justifications: []
+  control_agents:
+    Augusto:
+      required: false
+      reason: ""
+    Beatriz:
+      required: false
+      reason: ""
+    Miriam:
+      required: false
+      reason: ""
+    Julia:
+      required: false
+      reason: ""
+
+agent_contributions:
+  - agent: ""
+    official_role: ""
+    input_received: ""
+    action_executed: ""
+    evidence: []
+    findings: []
+    analysis_summary: ""
+    decision_or_recommendation: ""
+    delivery: []
+    handoff_id: ""
+
+handoffs:
+  - handoff_id: H-001
+    mission_id: MCF-YYYYMMDD-SLUG
+    parent_mission_id: null
+    cycle: 1
+    from: ""
+    to: ""
+    objective_state: EM_EXECUCAO
+    delivered: []
+    evidence: []
+    decisions: []
+    open_findings: []
+    blockers: []
+    next_action: "Executar ação objetiva"
+    acceptance_for_next_action: ""
+    return_to: Mestre
+    continue_in_same_response: true
+
+objective_cycles:
+  - cycle: 1
+    hypothesis_or_task: ""
+    action: ""
+    evidence: []
+    result: ""
+    progress_against_acceptance: []
+    remaining_gaps: []
+    next_decision: ""
+
+observability:
+  agent: Augusto
+  mission_trace: []
+  handoff_failures: []
+  recoveries: []
+  loop_efficiency_findings: []
+  alerts: []
+
+agent_evaluation:
+  agent: Beatriz
+  applicable: false
+  criteria: []
+  scenarios: []
+  scorecard: []
+  regressions: []
+  verdict: NAO_APLICAVEL
+
+knowledge_management:
+  agent: Miriam
+  applicable: false
+  source_of_truth_map: []
+  provenance: []
+  contradictions: []
+  precedence_decisions: []
+  context_package: []
+
+governance:
+  agent: Julia
+  applicable: false
+  risk_classification: ""
+  responsibilities: []
+  permissions_and_limits: []
+  supervision_requirements: []
+  compliance_findings: []
+  verdict: NAO_APLICAVEL
+
+audit:
+  agent: Emily
+  applicable: false
+  evidence_reviewed: []
+  findings: []
+  verdict: NAO_APLICAVEL
+
+leo_gate:
+  decision: APROVAR
+  justification: ""
+  next_state: ""
+  next_action: ""
+  responsible: Mestre
+  escalate_to_leandro: false
+
+mission_closeout:
+  mission_id: MCF-YYYYMMDD-SLUG
+  final_state: ENTREGUE
+  objective_met: false
+  acceptance_results: []
+  artifacts: []
+  evidence: []
+  unresolved_findings: []
+  blockers: []
+  leo_decision: ""
+  human_action_required: false
+  next_action: nenhuma
