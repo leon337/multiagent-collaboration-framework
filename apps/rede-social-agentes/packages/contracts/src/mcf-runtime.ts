@@ -194,6 +194,7 @@ export interface McfChatPlanStep {
   order: number;
   skillId: McfExecutableSkillId;
   agentId: string;
+  handoffTo: string;
   toolProvider: 'internal' | 'github';
   toolOperation: string;
   toolResource: string;
