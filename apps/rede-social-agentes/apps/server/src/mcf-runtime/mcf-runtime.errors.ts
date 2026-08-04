@@ -26,6 +26,13 @@ export class McfSkillNotFoundError extends Error {
   }
 }
 
+export class McfSkillNotExecutableError extends Error {
+  constructor(skillId: string) {
+    super(`MCF skill is registered but not executable in the MVP runtime: ${skillId}`);
+    this.name = 'McfSkillNotExecutableError';
+  }
+}
+
 export class McfSkillInputError extends Error {
   constructor(skillId: string, missingInputs: string[]) {
     super(`MCF skill ${skillId} is missing required inputs: ${missingInputs.join(', ')}`);
