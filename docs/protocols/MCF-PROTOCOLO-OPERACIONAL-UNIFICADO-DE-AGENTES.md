@@ -1,14 +1,14 @@
 # Protocolo Operacional Unificado de Agentes — MCF
 
-**Versão:** 1.0  
-**Origem:** MCF-DEC-050  
+**Versão:** 1.1  
+**Origens:** MCF-DEC-050 e MCF-DEC-051  
 **Aplicação:** todas as missões do Multiagent Collaboration Framework
 
 ## 1. Finalidade
 
-Estabelecer um método único para seleção, execução, exposição do trabalho, passagem de bastão, recuperação de falhas, decisão operacional e encerramento de missões.
+Estabelecer um método único para seleção, execução, exposição cronológica do trabalho, passagem de bastão, recuperação de falhas, documentação por fase, decisão operacional e encerramento de missões.
 
-Nenhum agente pode substituir este protocolo por um método próprio sem decisão formal de alteração do MCF.
+Nenhum agente pode substituir este protocolo por método próprio sem decisão formal do MCF.
 
 ## 2. Autoridades
 
@@ -19,14 +19,15 @@ coordenador_do_fluxo: Mestre
 auditoria_independente: Emily
 ```
 
-Léo decide gates internos dentro do escopo aprovado. Leandro somente é acionado nos gatilhos reservados da MCF-DEC-017 e da MCF-DEC-050.
+Léo decide gates internos dentro do escopo aprovado. Leandro somente é acionado nos gatilhos reservados das decisões vigentes.
 
-## 3. Contrato obrigatório da missão
+## 3. Contrato obrigatório da missão e da fase
 
 ```yaml
 mission_contract:
   mission_id:
   parent_mission_id: null
+  phase_id:
   title:
   objective:
   expected_outcome:
@@ -44,6 +45,7 @@ mission_contract:
   selected_agents: []
   decision_authority: Leo
   human_escalation_triggers: []
+  phase_artifact_directory:
 ```
 
 Sem objetivo e critérios de aceite, o Mestre pode executar apenas descoberta e definição do contrato.
@@ -55,49 +57,92 @@ O Mestre deve:
 1. identificar competências necessárias;
 2. selecionar somente agentes com entrega real;
 3. justificar cada seleção;
-4. registrar não selecionados quando Leandro solicitar a composição completa;
+4. registrar não selecionados quando Leandro solicitar composição completa;
 5. impedir participação decorativa;
-6. incluir os agentes de controle conforme os gatilhos da MCF-DEC-050.
+6. incluir agentes de controle conforme os gatilhos vigentes;
+7. definir a ordem inicial de atuação, sem impedir retornos e correções necessários.
 
-## 5. Formato visível de cada agente
+## 5. ESEV — Execução Sequencial Exposta e Verificável
+
+A execução deve ser apresentada na ordem em que ocorre. Não é suficiente relatar no final que cada agente trabalhou.
+
+### 5.1 Fluxo visual obrigatório
 
 ```text
-## [Nome] — [Função oficial]
-
-Entrada recebida:
-[objetivo, artefato e estado recebidos]
-
-Consulta ou ação executada:
-[ação real, ferramenta, documento ou teste]
-
-Evidência:
-[referência verificável ou declaração de ausência]
-
-Achados:
-[resultados observados]
-
-Análise:
-[critérios aplicados e relação com o objetivo]
-
-Decisão ou recomendação:
-[resultado objetivo]
-
-Entrega:
-[artefato, decisão, teste, mapa ou parecer]
-
-Passagem de bastão:
-[bloco handoff obrigatório]
+Mestre abre contrato e fase
+→ agente recebe entrada
+→ agente executa ação real
+→ evidência aparece
+→ agente analisa e entrega
+→ passagem interna aparece
+→ próximo agente continua do checkpoint
+→ correções e novos ciclos aparecem
+→ validação
+→ auditoria
+→ decisão de Léo
+→ fechamento do Mestre com documentos da fase
 ```
 
-É proibido afirmar apenas que o agente “analisou internamente”.
+### 5.2 Formato no ponto da atuação
 
-## 6. Passagem de bastão
+```text
+## [Nome] — [atividade atual]
+
+Entrada recebida:
+[estado, objetivo, artefatos e decisões recebidos]
+
+Ação executada:
+[consulta, alteração, teste, pesquisa, ferramenta ou decisão real]
+
+Evidência observada:
+[arquivo, commit, PR, teste, log, status, saída ou ausência confirmada]
+
+Resultado e análise:
+[efeito da evidência sobre o objetivo]
+
+Decisão e entrega:
+[resultado ou artefato produzido]
+
+Passagem interna: [Agente atual] → [Próximo agente]
+[checkpoint, próxima ação e critério de conclusão]
+```
+
+O título deve nomear a atividade atual, como `Renato — falha de CI capturada`, e não apenas a função genérica.
+
+### 5.3 Evidência de ferramenta
+
+Quando houver uso real de ferramenta, registrar no ponto da execução:
+
+- ação solicitada;
+- recurso consultado ou alterado;
+- resultado retornado;
+- identificador verificável disponível;
+- efeito confirmado;
+- falha e recuperação, quando ocorrerem.
+
+Quando nenhuma ferramenta tiver sido usada, é proibido simular uma atividade instrumental.
+
+### 5.4 Formato retrospectivo insuficiente
+
+O padrão abaixo não comprova execução e não pode ser o formato principal:
+
+```text
+Mestre: coordenou.
+Sofia: revisou.
+Carmem: documentou.
+Gabriel: publicou.
+```
+
+Uma síntese assim pode existir somente depois da execução sequencial completa, como índice opcional.
+
+## 6. Passagem de bastão intercalada
 
 ```yaml
 handoff:
   handoff_id:
   mission_id:
   parent_mission_id: null
+  phase_id:
   cycle:
   from:
   to:
@@ -120,8 +165,10 @@ handoff:
 - estado não pode ser destinatário;
 - `next_action` deve começar com verbo;
 - `return_to` é obrigatório em submisões;
+- a passagem aparece antes do bloco do próximo agente;
 - passagem interna não encerra a resposta;
-- o próximo agente continua do checkpoint, sem reiniciar.
+- o próximo agente continua do checkpoint, sem reiniciar;
+- toda submisão retorna à missão-pai.
 
 ## 7. Loop orientado a objetivo
 
@@ -137,8 +184,6 @@ objective_loop:
   next_decision:
 ```
 
-Ciclo:
-
 ```text
 CONTRATAR
 → RECUPERAR CONTEXTO
@@ -149,24 +194,26 @@ CONTRATAR
 → REPETIR
 ```
 
-O loop continua automaticamente enquanto existir ação segura e autorizada.
+O loop continua automaticamente enquanto existir ação segura e autorizada. Cada falha, recuperação e nova validação deve aparecer no ponto cronológico correto.
 
-## 8. Resposta única
+## 8. Resposta única cronológica
 
 O Mestre apresenta na mesma resposta:
 
 1. cabeçalho e contrato;
 2. seleção e justificativas;
-3. contribuições dos agentes na ordem real;
-4. passagens internas;
-5. ciclos de correção necessários;
-6. artefatos e evidências;
-7. observabilidade;
-8. avaliação;
-9. governança;
-10. auditoria, quando aplicável;
+3. contribuições na ordem real;
+4. passagens internas intercaladas;
+5. ciclos de correção;
+6. geração dos documentos da fase;
+7. validações e smoke;
+8. observabilidade;
+9. avaliação e governança quando aplicáveis;
+10. auditoria quando aplicável;
 11. decisão de Léo;
-12. estado final do Mestre.
+12. fechamento do Mestre e transferência do checkpoint.
+
+Resposta única não significa condensar tudo numa lista retrospectiva.
 
 A resposta somente pode terminar em:
 
@@ -186,6 +233,7 @@ silent_work:
     - credenciais
     - dados_sensiveis_desnecessarios
   visible_items_required:
+    - entradas
     - acoes
     - consultas
     - evidencias
@@ -198,7 +246,7 @@ silent_work:
     - passagens
 ```
 
-Transparência não exige exposição de raciocínio privado. Exige exposição do trabalho verificável.
+Transparência exige exposição do trabalho verificável, não de raciocínio privado.
 
 ## 10. Recuperação de falhas
 
@@ -221,11 +269,63 @@ Tentativas máximas:
 - fallback seguro: uma tentativa;
 - depois: dependência externa ou bloqueio real.
 
-## 11. Agentes de controle
+Cada etapa relevante da recuperação deve aparecer na sequência da resposta.
+
+## 11. PRF — Pacote de Rastreabilidade da Fase
+
+Toda fase Classe B ou C deve gerar:
+
+```text
+artifacts/phases/PHASE-XX-SLUG/
+├── PHASE-XX-PLAN.md
+├── PHASE-XX-REPORT.md
+├── PHASE-XX-VALIDATION.txt
+├── PHASE-XX-VALIDATION-FULL.txt
+├── PHASE-XX-SMOKE.txt
+├── PHASE-XX-CHECKPOINT.yaml
+├── PHASE-XX-DECISIONS.md
+├── PHASE-XX-ARTIFACT-MANIFEST.sha256
+└── README.md
+```
+
+Itens não aplicáveis devem registrar `NAO_APLICAVEL` com justificativa.
+
+### Conteúdo mínimo
+
+- **PLAN:** objetivo, escopo, aceite, riscos, agentes, fluxo, autorizações e validação;
+- **REPORT:** execução, mudanças, decisões, desvios, falhas, recuperações e estado;
+- **VALIDATION:** resumo dos testes e resultados;
+- **VALIDATION-FULL:** evidência expandida ou referência segura;
+- **SMOKE:** teste mínimo ponta a ponta ou justificativa;
+- **CHECKPOINT:** estado transferível para retomada e fase seguinte;
+- **DECISIONS:** decisões cronológicas dos agentes, Emily, Léo e Leandro quando aplicável;
+- **MANIFEST:** checksums dos artefatos;
+- **README:** índice, ordem de leitura, instruções e resultado.
+
+Documentos de domínio são acrescentados quando aplicáveis, como arquitetura, ameaça, privacidade, banco, API, acessibilidade, deploy, rollback, incidente, avaliação e `mission-trace`.
+
+## 12. Fluxo obrigatório da fase
+
+```text
+INICIAR
+→ PLANEJAR
+→ APROVAR O PLANO INTERNAMENTE
+→ EXECUTAR
+→ DOCUMENTAR
+→ VALIDAR
+→ AUDITAR
+→ DECIDIR O GATE
+→ FECHAR A FASE
+→ TRANSFERIR CHECKPOINT
+```
+
+A fase não recebe `ENTREGUE` sem PRF ou justificativa formal de não aplicabilidade.
+
+## 13. Agentes de controle e documentação
 
 ### Augusto
 
-Obrigatório em Classes B e C para `MISSION-TRACE`, passagens, falhas, recuperação e eficiência do loop.
+Obrigatório em Classes B e C para `MISSION-TRACE`, passagens, falhas, recuperação, eficiência do loop e detecção de síntese retrospectiva indevida.
 
 ### Beatriz
 
@@ -233,19 +333,33 @@ Obrigatória quando houver comportamento de agentes, prompts, modelos, memória 
 
 ### Miriam
 
-Obrigatória em retomadas, múltiplas fontes, histórico institucional, conflito de decisões, RAG, memória ou mudança de fonte de verdade.
+Obrigatória em retomadas, múltiplas fontes, histórico institucional, conflito de decisões, RAG, memória ou mudança de fonte de verdade. Valida a capacidade de retomada do checkpoint.
 
 ### Júlia
 
 Obrigatória em Classe C e em autonomia, identidade, reputação, dados pessoais, moderação, publicação, responsabilidade e políticas de IA.
 
-## 12. Gate de Léo
+### Carmem
+
+Coordena a consistência documental do PRF, sem inventar evidência técnica.
+
+### Renato e especialistas de validação
+
+Produzem evidências de teste, validação e smoke aplicáveis.
+
+### Gabriel
+
+Relaciona os documentos da fase a branch, commit, PR, release ou publicação autorizada.
+
+## 14. Gate de Léo
 
 ```yaml
 leo_gate:
   inputs:
+    - execucao_sequencial
     - entregas
     - evidencias
+    - phase_traceability_pack
     - avaliacao
     - governanca
     - auditoria
@@ -265,9 +379,9 @@ leo_gate:
     responsible:
 ```
 
-Léo não pode aprovar ação fora da delegação humana existente.
+Léo não aprova fase B ou C cuja síntese retrospectiva substitua a execução ou cujo PRF esteja ausente sem justificativa.
 
-## 13. Escalonamento para Leandro
+## 15. Escalonamento para Leandro
 
 Escalar somente quando houver:
 
@@ -281,21 +395,24 @@ Escalar somente quando houver:
 - cancelamento;
 - solicitação explícita de Leandro.
 
-## 14. Encerramento
+## 16. Encerramento
 
 ```yaml
 mission_closeout:
   mission_id:
+  phase_id:
   final_state:
   objective_met: true_or_false
   acceptance_results: []
   artifacts: []
+  phase_traceability_pack: []
   evidence: []
   unresolved_findings: []
   blockers: []
   leo_decision:
   human_action_required: true_or_false
   next_action: nenhuma_or_action
+  checkpoint_recipient:
 ```
 
-`final_state: ENTREGUE` exige `objective_met: true` e ausência de ação pendente no ciclo atual.
+`final_state: ENTREGUE` exige objetivo atendido, ausência de ação pendente no ciclo e rastreabilidade da fase disponível.

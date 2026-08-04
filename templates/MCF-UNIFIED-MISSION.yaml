@@ -1,6 +1,7 @@
 mission_contract:
   mission_id: MCF-YYYYMMDD-SLUG
   parent_mission_id: null
+  phase_id: PHASE-XX-SLUG
   title: ""
   objective: ""
   expected_outcome: ""
@@ -18,11 +19,13 @@ mission_contract:
   selected_agents: []
   decision_authority: Leo
   human_escalation_triggers: []
+  phase_artifact_directory: artifacts/phases/PHASE-XX-SLUG
 
 selection:
   available_agents: 29
   selected: []
   justifications: []
+  initial_execution_order: []
   control_agents:
     Augusto:
       required: false
@@ -37,24 +40,37 @@ selection:
       required: false
       reason: ""
 
-agent_contributions:
-  - agent: ""
-    official_role: ""
+chronological_execution:
+  - sequence: 1
+    cycle: 1
+    agent: Mestre
+    activity_title: Abrir contrato e fase
     input_received: ""
     action_executed: ""
-    evidence: []
-    findings: []
-    analysis_summary: ""
-    decision_or_recommendation: ""
-    delivery: []
+    tool_or_resource: ""
+    evidence_observed: []
+    result_and_analysis: ""
+    decision_and_delivery: []
+    handoff_id: H-001
+  - sequence: 2
+    cycle: 1
+    agent: ""
+    activity_title: ""
+    input_received: ""
+    action_executed: ""
+    tool_or_resource: ""
+    evidence_observed: []
+    result_and_analysis: ""
+    decision_and_delivery: []
     handoff_id: ""
 
 handoffs:
   - handoff_id: H-001
     mission_id: MCF-YYYYMMDD-SLUG
     parent_mission_id: null
+    phase_id: PHASE-XX-SLUG
     cycle: 1
-    from: ""
+    from: Mestre
     to: ""
     objective_state: EM_EXECUCAO
     delivered: []
@@ -77,9 +93,45 @@ objective_cycles:
     remaining_gaps: []
     next_decision: ""
 
+phase_traceability_pack:
+  directory: artifacts/phases/PHASE-XX-SLUG
+  required_files:
+    plan:
+      path: PHASE-XX-PLAN.md
+      status: PENDENTE
+    report:
+      path: PHASE-XX-REPORT.md
+      status: PENDENTE
+    validation:
+      path: PHASE-XX-VALIDATION.txt
+      status: PENDENTE
+    validation_full:
+      path: PHASE-XX-VALIDATION-FULL.txt
+      status: PENDENTE
+    smoke:
+      path: PHASE-XX-SMOKE.txt
+      status: PENDENTE
+    checkpoint:
+      path: PHASE-XX-CHECKPOINT.yaml
+      status: PENDENTE
+    decisions:
+      path: PHASE-XX-DECISIONS.md
+      status: PENDENTE
+    manifest:
+      path: PHASE-XX-ARTIFACT-MANIFEST.sha256
+      status: PENDENTE
+    readme:
+      path: README.md
+      status: PENDENTE
+  conditional_files: []
+  integrity_verified: false
+  package_delivery_reference: ""
+
 observability:
   agent: Augusto
   mission_trace: []
+  chronological_order_verified: false
+  retrospective_summary_used_as_execution: false
   handoff_failures: []
   recoveries: []
   loop_efficiency_findings: []
@@ -102,6 +154,7 @@ knowledge_management:
   contradictions: []
   precedence_decisions: []
   context_package: []
+  checkpoint_recoverability_verified: false
 
 governance:
   agent: Julia
@@ -117,12 +170,16 @@ audit:
   agent: Emily
   applicable: false
   evidence_reviewed: []
+  execution_sequence_verified: false
+  phase_pack_verified: false
   findings: []
   verdict: NAO_APLICAVEL
 
 leo_gate:
   decision: APROVAR
   justification: ""
+  execution_sequence_accepted: false
+  phase_traceability_pack_accepted: false
   next_state: ""
   next_action: ""
   responsible: Mestre
@@ -130,13 +187,16 @@ leo_gate:
 
 mission_closeout:
   mission_id: MCF-YYYYMMDD-SLUG
+  phase_id: PHASE-XX-SLUG
   final_state: ENTREGUE
   objective_met: false
   acceptance_results: []
   artifacts: []
+  phase_traceability_pack: []
   evidence: []
   unresolved_findings: []
   blockers: []
   leo_decision: ""
   human_action_required: false
   next_action: nenhuma
+  checkpoint_recipient: ""
