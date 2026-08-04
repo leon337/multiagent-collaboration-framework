@@ -6,10 +6,7 @@ import { IdentityModule } from '../identity/identity.module.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
-import {
-  MCF_RUNTIME_REPOSITORY,
-  type McfRuntimeRepository,
-} from './mcf-runtime.repository.js';
+import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
 import { OrderedMcfRuntimeRepository } from './ordered-mcf-runtime.repository.js';
 import { PermissionEngine } from './permission-engine.js';
 import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
@@ -34,10 +31,8 @@ import { SocialTimelineService } from './social-timeline.service.js';
     },
     {
       provide: OrderedMcfRuntimeRepository,
-      useFactory: (
-        database: DatabaseService,
-        delegate: PostgresMcfRuntimeRepository,
-      ) => new OrderedMcfRuntimeRepository(database, delegate),
+      useFactory: (database: DatabaseService, delegate: PostgresMcfRuntimeRepository) =>
+        new OrderedMcfRuntimeRepository(database, delegate),
       inject: [DatabaseService, PostgresMcfRuntimeRepository],
     },
     {
