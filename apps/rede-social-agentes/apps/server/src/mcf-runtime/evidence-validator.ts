@@ -181,11 +181,14 @@ function validateDeploymentReceipt(receipt: McfToolReceipt): void {
   if (!['pass', 'success'].includes(smokeStatus)) {
     throw new McfEvidenceRejectedError('deployment evidence requires a passing smoke test');
   }
-  requireBoolean(
+  const rollbackAvailable = requireBoolean(
     receipt.metadata,
     'rollbackAvailable',
     'deployment evidence requires rollbackAvailable',
   );
+  if (!rollbackAvailable) {
+    throw new McfEvidenceRejectedError('deployment evidence requires rollbackAvailable=true');
+  }
 }
 
 @Injectable()
