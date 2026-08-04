@@ -4,7 +4,9 @@
 **Autoridade humana:** Leandro  
 **Autoridade operacional:** Léo  
 **Coordenação:** Mestre  
-**Estado:** implementado em candidato de release  
+**Estado:** implementado e integrado à `main`  
+**PR:** #46  
+**Merge SHA:** `645ab03ed2db64da6240461b7249ead06e9c48dc`  
 **Relacionadas:** MCF-DEC-016, MCF-DEC-017, MCF-DEC-050, MCF-DEC-051, MCF-DEC-052 e MCF-DEC-053
 
 ## 1. Problema
@@ -111,13 +113,15 @@ Este recorte não é um substituto integral do Codex. Ele é um runtime de orque
 
 A expansão para as demais skills exige adapters confiáveis e novos testes. A ativação do callback requer configurar `MCF_RUNTIME_URL` e `MCF_RUNTIME_TOKEN` no GitHub.
 
-## 11. Gate
+## 11. Gate concluído
 
-A integração na `main` depende de:
+A integração na `main` foi executada após:
 
 - migrations idempotentes;
 - format, lint e typecheck aprovados;
 - testes aprovados;
 - build aprovado;
-- auditoria independente;
-- nenhuma alegação de execução sem recibo.
+- container smoke aprovado;
+- auditoria independente `PASS_WITH_MINOR_RESERVATIONS`;
+- gate de Léo;
+- confirmação de que nenhuma alegação de execução ficou sem recibo.
