@@ -13,6 +13,11 @@ function normalize(value: string): string {
   return value.trim().toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
 }
 
+function normalizeProvider(value: string): string {
+  const normalized = normalize(value);
+  return normalized === 'github-actions' ? 'github' : normalized;
+}
+
 function operationMatches(operation: string, allowedPrefixes: string[]): boolean {
   const normalized = normalize(operation);
   return allowedPrefixes.some(
@@ -47,8 +52,8 @@ export class PermissionEngine {
       throw new McfPermissionDeniedError(`agent ${agentId} is not an owner of ${skill.skillId}`);
     }
 
-    const provider = normalize(tool.provider);
-    const allowedProviders = new Set(skill.allowedTools.map(normalize));
+    const provider = normalizeProvider(tool.provider);
+    const allowedProviders = new Set(skill.allowedTools.map(normalizeProvider));
     const forbidden = new Set(skill.forbiddenTools.map(normalize));
     const operation = normalize(tool.operation);
     const resource = normalize(tool.resource);
