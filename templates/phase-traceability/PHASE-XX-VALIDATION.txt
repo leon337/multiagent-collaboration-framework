@@ -1,0 +1,17 @@
+PHASE_ID=PHASE-XX-SLUG
+VALIDATION_STATE=PENDING
+
+COMMANDS_AND_CHECKS:
+- [comando ou verificação]: [PASS/FAIL/NAO_APLICAVEL]
+
+SUMMARY:
+- total_checks: 0
+- passed: 0
+- failed: 0
+- not_applicable: 0
+
+EVIDENCE_REFERENCES:
+- [workflow, job, arquivo, log, commit ou URL interna]
+
+NOTES:
+- [observação]
