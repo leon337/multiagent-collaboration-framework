@@ -175,3 +175,37 @@ export interface McfCiCallbackResponse {
   evidenceStatus: McfEvidenceValidationStatus;
   missionState: McfMissionState;
 }
+
+export type McfExecutableSkillId =
+  | 'MCF-START-MISSION'
+  | 'MCF-IMPLEMENT-CHANGE'
+  | 'MCF-RUN-TESTS';
+
+export interface McfChatDispatchRequest {
+  objective: string;
+  expectedOutcome?: string | undefined;
+  repository?: string | undefined;
+  sourceOfTruth?: string[] | undefined;
+  requestedRiskClass?: McfRiskClass | undefined;
+  requestedSkills?: McfExecutableSkillId[] | undefined;
+}
+
+export interface McfChatPlanStep {
+  order: number;
+  skillId: McfExecutableSkillId;
+  agentId: string;
+  toolProvider: 'internal' | 'github';
+  toolOperation: string;
+  toolResource: string;
+  state: 'COMPLETED' | 'READY_EXTERNAL';
+  requiredEvidence: string[];
+}
+
+export interface McfChatDispatchResponse {
+  mission: McfMissionResponse;
+  bootstrapPhaseId: string;
+  bootstrapEvidenceStatus: McfEvidenceValidationStatus;
+  plan: McfChatPlanStep[];
+  nextAction: string;
+  humanActionRequired: false;
+}
