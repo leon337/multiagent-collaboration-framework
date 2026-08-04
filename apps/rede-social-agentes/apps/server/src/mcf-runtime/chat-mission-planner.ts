@@ -19,6 +19,8 @@ const skillHandoff: Record<McfExecutableSkillId, string> = {
   'MCF-RUN-TESTS': 'Emily',
 };
 
+const riskRank: Record<McfRiskClass, number> = { A: 1, B: 2, C: 3 };
+
 const implementationTerms = [
   'implementar',
   'corrigir',
@@ -57,11 +59,15 @@ function titleFromObjective(objective: string): string {
 }
 
 function inferRisk(objective: string, requested?: McfRiskClass): McfRiskClass {
-  if (requested) return requested;
   const normalized = objective.toLowerCase();
-  if (includesAny(normalized, highRiskTerms)) return 'C';
-  if (includesAny(normalized, implementationTerms)) return 'B';
-  return 'A';
+  const inferred = includesAny(normalized, highRiskTerms)
+    ? 'C'
+    : includesAny(normalized, implementationTerms)
+      ? 'B'
+      : 'A';
+
+  if (!requested || riskRank[requested] <= riskRank[inferred]) return inferred;
+  return requested;
 }
 
 function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
@@ -153,6 +159,7 @@ export class ChatMissionPlanner {
         'fase inicial executada pelo Mestre com recibo interno válido',
         'próximas fases exigem recibos externos verificáveis',
         'Leandro não é selecionado como agente executor',
+        'risco solicitado nunca reduz o risco inferido',
       ],
       riskClass: inferRisk(request.objective, request.requestedRiskClass),
       selectedAgents,
