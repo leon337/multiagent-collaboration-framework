@@ -5,11 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { DatabaseService } from '../database.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { McfMissionVersionConflictError } from './mcf-runtime.errors.js';
-import type {
-  McfEventInput,
-  McfMissionRecord,
-  McfPhaseRecord,
-} from './mcf-runtime.repository.js';
+import type { McfEventInput, McfMissionRecord, McfPhaseRecord } from './mcf-runtime.repository.js';
 import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
 
 function missionEvent(
@@ -104,14 +100,7 @@ describe('PostgresMcfRuntimeRepository integration', () => {
         receipt: null,
         evidenceStatus: 'PENDING',
         handoff: null,
-        events: [
-          missionEvent(
-            missionId,
-            'PHASE_STARTED',
-            `phase:${phaseId}:started`,
-            phaseId,
-          ),
-        ],
+        events: [missionEvent(missionId, 'PHASE_STARTED', `phase:${phaseId}:started`, phaseId)],
       });
       expect(pending.mission).toMatchObject({
         id: missionId,
@@ -173,24 +162,9 @@ describe('PostgresMcfRuntimeRepository integration', () => {
         callbackIdempotencyKey: callbackKey,
         events: [
           missionEvent(missionId, 'CI_CALLBACK_RECEIVED', callbackKey, phaseId),
-          missionEvent(
-            missionId,
-            'EVIDENCE_VALIDATED',
-            `phase:${phaseId}:evidence-valid`,
-            phaseId,
-          ),
-          missionEvent(
-            missionId,
-            'PHASE_COMPLETED',
-            `phase:${phaseId}:completed`,
-            phaseId,
-          ),
-          missionEvent(
-            missionId,
-            'MISSION_COMPLETED',
-            `mission:${missionId}:completed`,
-            phaseId,
-          ),
+          missionEvent(missionId, 'EVIDENCE_VALIDATED', `phase:${phaseId}:evidence-valid`, phaseId),
+          missionEvent(missionId, 'PHASE_COMPLETED', `phase:${phaseId}:completed`, phaseId),
+          missionEvent(missionId, 'MISSION_COMPLETED', `mission:${missionId}:completed`, phaseId),
         ],
       };
 
