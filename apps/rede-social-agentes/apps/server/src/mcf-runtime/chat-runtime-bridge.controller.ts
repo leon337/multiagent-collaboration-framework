@@ -10,7 +10,10 @@ import {
   UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
-import type { McfChatDispatchRequest, McfChatDispatchResponse } from '@rsa/contracts';
+import type {
+  McfChatDispatchRequest,
+  McfChatDispatchResponse,
+} from '@rsa/contracts';
 import { z } from 'zod';
 
 import { parseBody } from '../http/parse-body.js';
