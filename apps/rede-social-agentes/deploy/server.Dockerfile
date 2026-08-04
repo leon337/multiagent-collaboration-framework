@@ -1,11 +1,12 @@
 FROM node:24.18.0-alpine AS build
 
-WORKDIR /workspace
+WORKDIR /workspace/apps/rede-social-agentes
 
 RUN corepack enable \
   && corepack prepare pnpm@11.17.0 --activate
 
-COPY . .
+COPY apps/rede-social-agentes /workspace/apps/rede-social-agentes
+COPY skills /workspace/skills
 
 RUN pnpm install --frozen-lockfile \
   && pnpm build:packages \
@@ -17,7 +18,7 @@ ENV NODE_ENV=production \
   HOST=0.0.0.0 \
   PORT=3000
 
-WORKDIR /workspace
+WORKDIR /workspace/apps/rede-social-agentes
 
 COPY --from=build --chown=node:node /workspace /workspace
 
