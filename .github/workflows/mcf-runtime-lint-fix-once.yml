@@ -1,0 +1,59 @@
+name: MCF Runtime Lint Fix Once
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mcf-runtime-lint-fix-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  lint-fix:
+    if: ${{ github.head_ref == 'feat/mcf-runtime-five-sprints' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply ESLint autofix
+        working-directory: apps/rede-social-agentes
+        run: pnpm exec eslint . --fix
+
+      - name: Preserve Prettier formatting
+        working-directory: apps/rede-social-agentes
+        run: pnpm format
+
+      - name: Commit deterministic lint fixes
+        run: |
+          if git diff --quiet; then
+            echo "No lint fixes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/rede-social-agentes
+          git commit -m "chore(mcf): apply eslint autofix"
+          git push origin HEAD:${{ github.head_ref }}
