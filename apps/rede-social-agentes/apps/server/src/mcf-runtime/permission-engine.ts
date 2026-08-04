@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { McfSkillDefinition } from '@rsa/contracts';
 
+import { HumanDelegationGuard } from './human-delegation-guard.js';
 import { McfPermissionDeniedError } from './mcf-runtime.errors.js';
 
 export interface McfToolRequest {
@@ -42,12 +43,16 @@ const destructiveOperations = [
 
 @Injectable()
 export class PermissionEngine {
+  private readonly humanDelegation = new HumanDelegationGuard();
+
   assertAllowed(
     skill: McfSkillDefinition,
     agentId: string,
     tool: McfToolRequest,
     inputs: Record<string, unknown>,
   ): void {
+    this.humanDelegation.assertAllowed(agentId, inputs);
+
     if (!skill.ownerAgents.includes(agentId)) {
       throw new McfPermissionDeniedError(`agent ${agentId} is not an owner of ${skill.skillId}`);
     }
