@@ -47,6 +47,26 @@ const skills = new Map<string, McfSkillDefinition>([
       handoffTo: 'Vinicius',
     },
   ],
+  [
+    'MCF-RUN-TESTS',
+    {
+      skillId: 'MCF-RUN-TESTS',
+      name: 'Executar testes',
+      version: '1.0.0',
+      purpose: 'Validar critérios e regressões.',
+      ownerAgents: ['Renato'],
+      requiredInputs: ['acceptance_criteria', 'test_target'],
+      allowedTools: ['GitHub'],
+      forbiddenTools: ['fabricated_pass'],
+      permissionProfile: 'SCOPED_WRITE',
+      executionSteps: ['executar', 'coletar_evidencia'],
+      requiredEvidence: ['workflow_run_id', 'commit_sha'],
+      acceptanceCriteria: ['all_critical_tests_pass'],
+      failureModes: ['flaky_test'],
+      fallback: 'Registrar bloqueio verificável.',
+      handoffTo: 'Emily',
+    },
+  ],
 ]);
 
 function executor(): SkillExecutor {
@@ -107,6 +127,29 @@ describe('SkillExecutor', () => {
 
     expect(result).toMatchObject({
       receipt: null,
+      evidenceStatus: 'PENDING',
+      phaseState: 'WAITING_EVIDENCE',
+      missionState: 'WAITING_EXTERNAL',
+    });
+  });
+
+  it('accepts GitHub Actions through the GitHub capability declared by the skill', async () => {
+    const result = await executor().execute({
+      skillId: 'MCF-RUN-TESTS',
+      agentId: 'Renato',
+      inputs: {
+        acceptance_criteria: ['pnpm verify passes'],
+        test_target: 'pull request',
+        authorizedScope: true,
+      },
+      tool: {
+        provider: 'github-actions',
+        operation: 'workflow-result',
+        resource: 'leon337/multiagent-collaboration-framework',
+      },
+    });
+
+    expect(result).toMatchObject({
       evidenceStatus: 'PENDING',
       phaseState: 'WAITING_EVIDENCE',
       missionState: 'WAITING_EXTERNAL',
