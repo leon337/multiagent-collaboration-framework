@@ -1,6 +1,6 @@
 # Multiagent Collaboration Framework
 
-Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, trabalho visível, loop orientado a objetivo, passagem de bastão contínua, auditoria, versionamento e decisão humana delegada.
+Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, documentação por fase, auditoria, versionamento e decisão humana delegada.
 
 ## Governança
 
@@ -12,11 +12,15 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 ## Regras operacionais centrais
 
 - trabalho silencioso de agentes é proibido;
-- cada agente selecionado deve apresentar ação, evidência, análise, decisão, entrega e passagem;
+- a execução deve ser apresentada na ordem real em que ocorre;
+- cada agente selecionado deve mostrar entrada, ação, evidência, resultado, decisão, entrega e passagem no ponto da atuação;
+- uma lista retrospectiva dizendo apenas o que cada agente fez não substitui a execução;
 - agentes sem entrega real não podem ser listados como participantes;
 - toda missão operacional trabalha em loop orientado a objetivo;
-- passagens internas devem manter destinatário, estado, entrega, próxima ação e critério de conclusão;
-- o fluxo deve continuar em uma única resposta sempre que tecnicamente possível;
+- passagens internas aparecem entre os blocos dos agentes e mantêm checkpoint, destinatário, estado, próxima ação e critério de conclusão;
+- falhas e recuperações devem permanecer visíveis e retornar ao fluxo original;
+- o fluxo continua em uma única resposta cronológica sempre que tecnicamente possível;
+- toda fase Classe B ou C gera pacote documental próprio com plano, relatório, validação, smoke, checkpoint, decisões, manifesto SHA-256 e README;
 - confirmações humanas rotineiras são proibidas dentro do escopo já autorizado;
 - Léo decide gates internos e escala para Leandro somente matérias reservadas;
 - falhas recuperáveis seguem o Protocolo CAF e não encerram a missão.
@@ -30,9 +34,12 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 
 ## Documentos principais
 
+- `docs/decisions/MCF-DEC-051-EXECUCAO-SEQUENCIAL-VISIVEL-E-RASTREABILIDADE-POR-FASE.md`;
 - `docs/decisions/MCF-DEC-050-QUATRO-AGENTES-DE-CONTROLE-E-PADRAO-OPERACIONAL-UNIFICADO.md`;
 - `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`;
 - `docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md`;
+- `templates/MCF-UNIFIED-MISSION.yaml`;
+- `templates/phase-traceability/`;
 - `docs/decisions/MCF-DEC-016-FLUXO-RESILIENTE-E-CONTINUIDADE-AUTOMATICA.md`;
 - `docs/decisions/MCF-DEC-017-DELEGACAO-DE-GATES-INTERNOS-AO-AGENTE-LEO.md`.
 
@@ -46,4 +53,4 @@ Registrar não significa publicar automaticamente. Todo conteúdo passa por clas
 
 ## Estado
 
-A metodologia oficial publicada anteriormente possuía 25 agentes. A MCF-DEC-050 amplia a composição para 29 agentes e consolida o padrão operacional unificado em branch e pull request próprios.
+A composição oficial possui 29 agentes. A MCF-DEC-051 corrige a interpretação do trabalho visível e torna obrigatórias a execução sequencial exposta, as passagens intercaladas e a rastreabilidade documental por fase.
