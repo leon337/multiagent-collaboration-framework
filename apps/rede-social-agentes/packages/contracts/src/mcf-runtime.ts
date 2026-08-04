@@ -149,6 +149,24 @@ export interface McfMissionTimelineResponse {
   events: McfMissionEventResponse[];
 }
 
+export interface McfSocialCandidateResponse {
+  id: string;
+  missionId: string;
+  phaseId: string | null;
+  kind: 'PHASE_COMPLETION' | 'MISSION_COMPLETION';
+  title: string;
+  summary: string;
+  sourceEventId: string;
+  status: 'DRAFT_REVIEW';
+  createdAt: string;
+}
+
+export interface McfSocialTimelineResponse {
+  candidates: McfSocialCandidateResponse[];
+  automaticPublication: false;
+  humanApprovalRequired: true;
+}
+
 export interface McfCiCallbackRequest {
   missionId: string;
   phaseId: string;
