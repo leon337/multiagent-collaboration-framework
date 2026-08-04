@@ -1,0 +1,111 @@
+name: MCF Runtime Integration
+
+on:
+  workflow_dispatch:
+    inputs:
+      mission_id:
+        description: MCF mission UUID
+        required: true
+        type: string
+      phase_id:
+        description: MCF phase UUID
+        required: true
+        type: string
+      commit_sha:
+        description: Commit to validate; defaults to the dispatch SHA
+        required: false
+        type: string
+  repository_dispatch:
+    types: [mcf-run-tests]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcf-runtime-${{ github.event.inputs.mission_id || github.event.client_payload.mission_id }}-${{ github.event.inputs.phase_id || github.event.client_payload.phase_id }}
+  cancel-in-progress: false
+
+jobs:
+  validate-and-notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MCF_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
+      MCF_RUNTIME_TOKEN: ${{ secrets.MCF_RUNTIME_TOKEN }}
+      MISSION_ID: ${{ github.event.inputs.mission_id || github.event.client_payload.mission_id }}
+      PHASE_ID: ${{ github.event.inputs.phase_id || github.event.client_payload.phase_id }}
+      TARGET_SHA: ${{ github.event.inputs.commit_sha || github.event.client_payload.commit_sha || github.sha }}
+
+    steps:
+      - name: Validate callback configuration
+        run: |
+          test -n "$MCF_RUNTIME_URL"
+          test -n "$MCF_RUNTIME_TOKEN"
+          test -n "$MISSION_ID"
+          test -n "$PHASE_ID"
+
+      - name: Checkout requested commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+          cache: pnpm
+          cache-dependency-path: apps/rede-social-agentes/pnpm-lock.yaml
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Execute complete MCF validation
+        id: verify
+        continue-on-error: true
+        working-directory: apps/rede-social-agentes
+        run: pnpm verify
+
+      - name: Notify MissionRuntime
+        if: always()
+        env:
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          REPOSITORY: ${{ github.repository }}
+          COMPLETED_AT: ${{ github.event.repository.updated_at }}
+        run: |
+          node <<'NODE'
+          const conclusion = process.env.VERIFY_OUTCOME === 'success' ? 'success' : 'failure';
+          const completedAt = new Date().toISOString();
+          const response = await fetch(`${process.env.MCF_RUNTIME_URL}/v1/mcf/callbacks/github-actions`, {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'x-mcf-runtime-token': process.env.MCF_RUNTIME_TOKEN,
+              'x-correlation-id': `github-actions-${process.env.WORKFLOW_RUN_ID}`,
+            },
+            body: JSON.stringify({
+              missionId: process.env.MISSION_ID,
+              phaseId: process.env.PHASE_ID,
+              workflowName: process.env.WORKFLOW_NAME,
+              workflowRunId: process.env.WORKFLOW_RUN_ID,
+              repository: process.env.REPOSITORY,
+              commitSha: process.env.TARGET_SHA,
+              conclusion,
+              completedAt,
+            }),
+          });
+          const body = await response.text();
+          if (!response.ok) {
+            throw new Error(`MissionRuntime callback failed (${response.status}): ${body}`);
+          }
+          console.log(body);
+          NODE
+
+      - name: Preserve validation failure
+        if: steps.verify.outcome != 'success'
+        run: exit 1

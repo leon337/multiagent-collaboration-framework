@@ -7,7 +7,7 @@ services:
     repo: https://github.com/leon337/multiagent-collaboration-framework
     branch: main
     dockerfilePath: ./apps/rede-social-agentes/deploy/server.Dockerfile
-    dockerContext: ./apps/rede-social-agentes
+    dockerContext: .
     dockerCommand: sh -c 'node packages/database/scripts/migrate.mjs && exec node apps/server/dist/main.js'
     healthCheckPath: /health/ready
     autoDeployTrigger: checksPass
@@ -24,6 +24,10 @@ services:
       - key: BODY_LIMIT_BYTES
         value: "262144"
       - key: RATE_LIMIT_KEY_SECRET
+        generateValue: true
+      - key: MCF_RECEIPT_SECRET
+        generateValue: true
+      - key: MCF_RUNTIME_TOKEN
         generateValue: true
       - key: DATABASE_URL
         sync: false

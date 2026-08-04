@@ -8,6 +8,7 @@ import { FeedModule } from './feed/feed.module.js';
 import { HealthController } from './health.controller.js';
 import { IdentityModule } from './identity/identity.module.js';
 import { InteractionModule } from './interactions/interaction.module.js';
+import { McfRuntimeModule } from './mcf-runtime/mcf-runtime.module.js';
 import { ModerationModule } from './moderation/moderation.module.js';
 import { OperationsModule } from './operations/operations.module.js';
 import { PermissionModule } from './permissions/permission.module.js';
@@ -28,6 +29,7 @@ import { SecurityModule } from './security/security.module.js';
     CommunityModule,
     ModerationModule,
     PrivacyModule,
+    McfRuntimeModule,
   ],
   controllers: [HealthController],
 })

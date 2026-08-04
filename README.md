@@ -1,6 +1,6 @@
 # Multiagent Collaboration Framework
 
-Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, skills versionadas, instrumentalização controlada, inicialização de chats, documentação por fase, auditoria, versionamento e decisão humana delegada.
+Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, skills versionadas, instrumentalização controlada, runtime persistente, evidência verificável, inicialização de chats, documentação por fase, auditoria, versionamento e decisão humana delegada.
 
 ## Governança
 
@@ -27,6 +27,46 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - confirmações humanas rotineiras são proibidas dentro do escopo já autorizado;
 - Léo decide gates internos e escala para Leandro somente matérias reservadas;
 - falhas recuperáveis seguem o Protocolo CAF e não encerram a missão.
+
+## Runtime executável
+
+O recorte vertical do MCF transforma parte do protocolo em controles de software:
+
+```text
+MissionRuntime
+→ SkillRegistryLoader
+→ PermissionEngine
+→ SkillExecutor
+→ EvidenceValidator
+→ PostgreSQL e Event Ledger
+→ Handoff e recuperação CAF
+→ callback de CI
+```
+
+### Estado do MVP
+
+```yaml
+skills_registradas: 16
+skills_executaveis:
+  - MCF-START-MISSION
+  - MCF-IMPLEMENT-CHANGE
+  - MCF-RUN-TESTS
+estado_persistente: true
+retomada_por_mission_id: true
+recibos_assinados: true
+controle_otimista: true
+callback_de_CI: true
+publicacao_social_automatica: false
+```
+
+### Documentação do runtime
+
+- `docs/decisions/MCF-DEC-054-RUNTIME-EXECUTAVEL-E-EVIDENCIA-CONFIAVEL.md`;
+- `docs/runtime/MCF-RUNTIME-SPECIFICATION.md`;
+- `docs/runtime/MCF-RUNTIME-API.md`;
+- `docs/runtime/MCF-RUNTIME-RECOVERY.md`;
+- `docs/runtime/MCF-FIVE-SPRINTS-EXECUTION.md`;
+- `docs/runtime/README.md`.
 
 ## Inicialização de chats do projeto
 
@@ -60,6 +100,7 @@ A integração do pacote ao GitHub não modifica automaticamente as configuraç�
 
 ## Documentos principais
 
+- `docs/decisions/MCF-DEC-054-RUNTIME-EXECUTAVEL-E-EVIDENCIA-CONFIAVEL.md`;
 - `docs/decisions/MCF-DEC-053-INICIALIZACAO-AUTOMATICA-DE-CHATS-DO-PROJETO.md`;
 - `docs/decisions/MCF-DEC-052-SKILLS-E-INSTRUMENTALIZACAO-DOS-AGENTES.md`;
 - `docs/decisions/MCF-DEC-051-EXECUCAO-SEQUENCIAL-VISIVEL-E-RASTREABILIDADE-POR-FASE.md`;
@@ -83,6 +124,8 @@ Os registros ficam em `docs/social-seed/`.
 
 Registrar não significa publicar automaticamente. Todo conteúdo passa por classificação, revisão, privacidade e aprovação.
 
+O runtime apenas projeta conclusões verificadas como candidatos `DRAFT_REVIEW`. Nenhum candidato é publicado sem aprovação humana.
+
 ## Estado
 
-A composição oficial possui 29 agentes. As decisões MCF-DEC-051, MCF-DEC-052 e MCF-DEC-053 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas e o bootstrap de chats do projeto.
+A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-054 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime e a validação de evidências no recorte executável.
