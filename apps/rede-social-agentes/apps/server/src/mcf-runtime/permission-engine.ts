@@ -26,6 +26,12 @@ function operationMatches(operation: string, allowedPrefixes: string[]): boolean
   );
 }
 
+function isProductionTarget(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  const normalized = normalize(value);
+  return normalized.includes('production') || normalized.includes('producao');
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
@@ -80,6 +86,14 @@ export class PermissionEngine {
       destructiveOperations.some((candidate) => resource.includes(candidate))
     ) {
       throw new McfPermissionDeniedError('destructive or public action requires a human gate');
+    }
+
+    if (
+      skill.skillId === 'MCF-DEPLOY-VALIDATE' &&
+      (isProductionTarget(inputs.target_environment) || resource.includes('production')) &&
+      inputs.humanGateApproved !== true
+    ) {
+      throw new McfPermissionDeniedError('production deployment requires humanGateApproved=true');
     }
 
     if (
