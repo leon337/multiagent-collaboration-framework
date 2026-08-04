@@ -10,10 +10,19 @@ export type McfMissionState =
   | 'CANCELLED';
 
 export type McfPhaseState =
-  'PLANNED' | 'EXECUTING' | 'WAITING_EVIDENCE' | 'RECOVERING' | 'FAILED' | 'COMPLETED';
+  | 'PLANNED'
+  | 'EXECUTING'
+  | 'WAITING_EVIDENCE'
+  | 'RECOVERING'
+  | 'FAILED'
+  | 'COMPLETED';
 
 export type McfPermissionProfile =
-  'READ_ONLY' | 'READ_AND_PROPOSE' | 'SCOPED_WRITE' | 'SENSITIVE_CONTROLLED' | 'HUMAN_GATE';
+  | 'READ_ONLY'
+  | 'READ_AND_PROPOSE'
+  | 'SCOPED_WRITE'
+  | 'SENSITIVE_CONTROLLED'
+  | 'HUMAN_GATE';
 
 export type McfToolReceiptStatus = 'SUCCEEDED' | 'FAILED' | 'PARTIAL';
 
@@ -176,7 +185,23 @@ export interface McfCiCallbackResponse {
   missionState: McfMissionState;
 }
 
-export type McfExecutableSkillId = 'MCF-START-MISSION' | 'MCF-IMPLEMENT-CHANGE' | 'MCF-RUN-TESTS';
+export type McfExecutableSkillId =
+  | 'MCF-START-MISSION'
+  | 'MCF-SELECT-AGENTS'
+  | 'MCF-IMPLEMENT-CHANGE'
+  | 'MCF-REVIEW-CODE'
+  | 'MCF-RUN-TESTS'
+  | 'MCF-GIT-PR-RELEASE'
+  | 'MCF-DEPLOY-VALIDATE'
+  | 'MCF-TRACE-MISSION';
+
+export type McfExecutableToolProvider =
+  | 'internal'
+  | 'github'
+  | 'github-actions'
+  | 'render'
+  | 'vercel'
+  | 'cloudflare';
 
 export interface McfChatDispatchRequest {
   objective: string;
@@ -192,7 +217,7 @@ export interface McfChatPlanStep {
   skillId: McfExecutableSkillId;
   agentId: string;
   handoffTo: string;
-  toolProvider: 'internal' | 'github';
+  toolProvider: McfExecutableToolProvider;
   toolOperation: string;
   toolResource: string;
   state: 'COMPLETED' | 'READY_EXTERNAL';
