@@ -29,7 +29,28 @@ jobs:
   validate-and-notify:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_DB: rsa
+          POSTGRES_USER: rsa
+          POSTGRES_PASSWORD: rsa_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rsa -d rsa"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
     env:
+      NODE_ENV: test
+      HOST: 127.0.0.1
+      PORT: 3000
+      DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+      LOG_LEVEL: error
       MCF_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
       MCF_RUNTIME_TOKEN: ${{ secrets.MCF_RUNTIME_TOKEN }}
       MISSION_ID: ${{ github.event.inputs.mission_id || github.event.client_payload.mission_id }}
@@ -63,6 +84,12 @@ jobs:
       - name: Install dependencies
         working-directory: apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
+
+      - name: Apply database migrations twice
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm --filter @rsa/database db:migrate
+          pnpm --filter @rsa/database db:migrate
 
       - name: Execute complete MCF validation
         id: verify
