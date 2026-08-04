@@ -4,6 +4,7 @@ import {
   Controller,
   ForbiddenException,
   HttpCode,
+  Inject,
   NotFoundException,
   Post,
   Req,
@@ -84,7 +85,9 @@ function rethrowBridgeError(error: unknown, correlationId: string): never {
 @Controller('v1/mcf/chat')
 @UseGuards(SessionAuthGuard)
 export class ChatRuntimeBridgeController {
-  constructor(private readonly bridge: ChatRuntimeBridgeService) {}
+  constructor(
+    @Inject(ChatRuntimeBridgeService) private readonly bridge: ChatRuntimeBridgeService,
+  ) {}
 
   @Post('dispatch')
   @HttpCode(201)
