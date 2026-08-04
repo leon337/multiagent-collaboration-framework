@@ -62,6 +62,25 @@ describe('ChatMissionPlanner', () => {
     expect(plan.contract.riskClass).toBe('C');
   });
 
+  it('does not allow a requested class to reduce inferred risk', () => {
+    const destructive = planner.plan({
+      objective: 'Excluir dados de produção e rotacionar um segredo.',
+      requestedRiskClass: 'A',
+    });
+    const implementation = planner.plan({
+      objective: 'Implementar uma alteração controlada no repositório.',
+      requestedRiskClass: 'A',
+    });
+    const elevated = planner.plan({
+      objective: 'Documentar a próxima fase do framework.',
+      requestedRiskClass: 'C',
+    });
+
+    expect(destructive.contract.riskClass).toBe('C');
+    expect(implementation.contract.riskClass).toBe('B');
+    expect(elevated.contract.riskClass).toBe('C');
+  });
+
   it('never selects Leandro as an executing or handoff agent', () => {
     const plan = planner.plan({
       objective: 'Implementar, testar e validar uma alteração no repositório.',
