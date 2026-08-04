@@ -128,9 +128,9 @@ export interface McfPhaseExecutionResponse {
   phaseId: string;
   phaseState: McfPhaseState;
   selectedSkill: McfSkillDefinition;
-  receipt: McfToolReceipt;
+  receipt: McfToolReceipt | null;
   evidenceStatus: McfEvidenceValidationStatus;
-  handoffTo: string;
+  handoffTo: string | null;
 }
 
 export interface McfMissionEventResponse {
