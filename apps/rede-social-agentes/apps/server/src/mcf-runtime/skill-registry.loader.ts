@@ -73,9 +73,7 @@ function finalizeSkill(skill: MutableSkill): McfSkillDefinition {
     ['handoffTo', skill.handoffTo],
   ];
 
-  const missing = requiredScalars
-    .filter(([, value]) => !value)
-    .map(([key]) => String(key));
+  const missing = requiredScalars.filter(([, value]) => !value).map(([key]) => String(key));
   if (missing.length > 0) {
     throw new Error(`Invalid MCF skill entry. Missing fields: ${missing.join(', ')}`);
   }
@@ -213,7 +211,11 @@ function registryCandidates(): string[] {
     resolve(process.cwd(), '../../../skills/registry.yaml'),
   ].filter((candidate): candidate is string => Boolean(candidate));
 
-  return [...new Set(candidates.map((candidate) => (isAbsolute(candidate) ? candidate : resolve(candidate))))];
+  return [
+    ...new Set(
+      candidates.map((candidate) => (isAbsolute(candidate) ? candidate : resolve(candidate))),
+    ),
+  ];
 }
 
 @Injectable()

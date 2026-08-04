@@ -1,20 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type {
-  McfSocialCandidateResponse,
-  McfSocialTimelineResponse,
-} from '@rsa/contracts';
+import type { McfSocialCandidateResponse, McfSocialTimelineResponse } from '@rsa/contracts';
 
 import { McfMissionNotFoundError } from './mcf-runtime.errors.js';
-import {
-  MCF_RUNTIME_REPOSITORY,
-  type McfRuntimeRepository,
-} from './mcf-runtime.repository.js';
+import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
 
 @Injectable()
 export class SocialTimelineService {
-  constructor(
-    @Inject(MCF_RUNTIME_REPOSITORY) private readonly repository: McfRuntimeRepository,
-  ) {}
+  constructor(@Inject(MCF_RUNTIME_REPOSITORY) private readonly repository: McfRuntimeRepository) {}
 
   async candidates(missionId: string): Promise<McfSocialTimelineResponse> {
     const mission = await this.repository.findMission(missionId);
@@ -25,8 +17,7 @@ export class SocialTimelineService {
     const events = await this.repository.listEvents(missionId);
     const candidates: McfSocialCandidateResponse[] = events
       .filter(
-        (event) =>
-          event.eventType === 'PHASE_COMPLETED' || event.eventType === 'MISSION_COMPLETED',
+        (event) => event.eventType === 'PHASE_COMPLETED' || event.eventType === 'MISSION_COMPLETED',
       )
       .map((event) => {
         const missionCompleted = event.eventType === 'MISSION_COMPLETED';

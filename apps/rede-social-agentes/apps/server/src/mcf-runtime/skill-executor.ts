@@ -17,11 +17,7 @@ import { EvidenceValidator } from './evidence-validator.js';
 import { PermissionEngine, type McfToolRequest } from './permission-engine.js';
 import { SkillRegistryLoader } from './skill-registry.loader.js';
 
-const executableSkills = new Set([
-  'MCF-START-MISSION',
-  'MCF-IMPLEMENT-CHANGE',
-  'MCF-RUN-TESTS',
-]);
+const executableSkills = new Set(['MCF-START-MISSION', 'MCF-IMPLEMENT-CHANGE', 'MCF-RUN-TESTS']);
 
 export interface ExecuteSkillInput {
   skillId: string;
@@ -58,7 +54,9 @@ export class SkillExecutor {
       throw new McfSkillNotExecutableError(skill.skillId);
     }
 
-    const missingInputs = skill.requiredInputs.filter((required) => !hasInput(input.inputs, required));
+    const missingInputs = skill.requiredInputs.filter(
+      (required) => !hasInput(input.inputs, required),
+    );
     if (missingInputs.length > 0) {
       throw new McfSkillInputError(skill.skillId, missingInputs);
     }

@@ -54,8 +54,8 @@ describe('parseMcfSkillRegistry', () => {
   });
 
   it('rejects duplicate skill identifiers', () => {
-    expect(() => parseMcfSkillRegistry(`${registry}\n${registry.split('skills:')[1] ?? ''}`)).toThrow(
-      /Duplicate MCF skill id/u,
-    );
+    expect(() =>
+      parseMcfSkillRegistry(`${registry}\n${registry.split('skills:')[1] ?? ''}`),
+    ).toThrow(/Duplicate MCF skill id/u);
   });
 });

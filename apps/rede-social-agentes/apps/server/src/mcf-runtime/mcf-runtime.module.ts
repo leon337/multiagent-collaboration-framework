@@ -3,10 +3,7 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../database.module.js';
 import { IdentityModule } from '../identity/identity.module.js';
 import { EvidenceValidator } from './evidence-validator.js';
-import {
-  McfCiCallbackController,
-  MissionRuntimeController,
-} from './mission-runtime.controller.js';
+import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
 import { MCF_RUNTIME_REPOSITORY } from './mcf-runtime.repository.js';
 import { PermissionEngine } from './permission-engine.js';
@@ -19,11 +16,7 @@ import { SocialTimelineService } from './social-timeline.service.js';
 
 @Module({
   imports: [DatabaseModule, IdentityModule],
-  controllers: [
-    MissionRuntimeController,
-    McfCiCallbackController,
-    SocialTimelineController,
-  ],
+  controllers: [MissionRuntimeController, McfCiCallbackController, SocialTimelineController],
   providers: [
     MissionRuntimeService,
     SocialTimelineService,

@@ -15,7 +15,9 @@ function normalize(value: string): string {
 
 function operationMatches(operation: string, allowedPrefixes: string[]): boolean {
   const normalized = normalize(operation);
-  return allowedPrefixes.some((prefix) => normalized === prefix || normalized.startsWith(`${prefix}-`));
+  return allowedPrefixes.some(
+    (prefix) => normalized === prefix || normalized.startsWith(`${prefix}-`),
+  );
 }
 
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
@@ -42,9 +44,7 @@ export class PermissionEngine {
     inputs: Record<string, unknown>,
   ): void {
     if (!skill.ownerAgents.includes(agentId)) {
-      throw new McfPermissionDeniedError(
-        `agent ${agentId} is not an owner of ${skill.skillId}`,
-      );
+      throw new McfPermissionDeniedError(`agent ${agentId} is not an owner of ${skill.skillId}`);
     }
 
     const provider = normalize(tool.provider);
@@ -95,9 +95,7 @@ export class PermissionEngine {
         break;
       case 'SCOPED_WRITE':
         if (inputs.authorizedScope !== true && provider !== 'internal') {
-          throw new McfPermissionDeniedError(
-            'SCOPED_WRITE requires inputs.authorizedScope=true',
-          );
+          throw new McfPermissionDeniedError('SCOPED_WRITE requires inputs.authorizedScope=true');
         }
         break;
       case 'SENSITIVE_CONTROLLED':

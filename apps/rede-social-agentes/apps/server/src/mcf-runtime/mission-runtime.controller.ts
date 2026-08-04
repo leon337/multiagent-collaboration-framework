@@ -63,7 +63,10 @@ const receiptSchema = z.object({
   operation: z.string().trim().min(1).max(128),
   resource: z.string().trim().min(1).max(512),
   externalId: z.string().trim().min(1).max(256).nullable(),
-  commitSha: z.string().regex(/^[a-f0-9]{7,64}$/u).nullable(),
+  commitSha: z
+    .string()
+    .regex(/^[a-f0-9]{7,64}$/u)
+    .nullable(),
   status: z.enum(['SUCCEEDED', 'FAILED', 'PARTIAL']),
   observedAt: z.string().datetime({ offset: true }),
   payloadDigest: z.string().regex(/^[a-f0-9]{64}$/u),
@@ -90,7 +93,10 @@ const ciCallbackSchema = z.object({
   phaseId: z.string().uuid(),
   workflowName: z.string().trim().min(1).max(256),
   workflowRunId: z.string().trim().min(1).max(128),
-  repository: z.string().trim().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u),
+  repository: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u),
   commitSha: z.string().regex(/^[a-f0-9]{40,64}$/u),
   conclusion: z.enum(['success', 'failure', 'cancelled', 'timed_out', 'skipped']),
   completedAt: z.string().datetime({ offset: true }),

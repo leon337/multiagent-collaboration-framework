@@ -95,7 +95,9 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 function asStringArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
 }
 
 function mapMission(row: MissionRow): McfMissionRecord {
@@ -271,10 +273,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         if (exists.rowCount === 0) {
           throw new McfMissionNotFoundError(input.missionId);
         }
-        throw new McfMissionVersionConflictError(
-          input.missionId,
-          input.expectedMissionVersion,
-        );
+        throw new McfMissionVersionConflictError(input.missionId, input.expectedMissionVersion);
       }
 
       const insertedPhase = await client.query<PhaseRow>(

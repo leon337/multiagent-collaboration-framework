@@ -155,9 +155,7 @@ export class EvidenceValidator {
     }
 
     if (receipt.provider === 'github' && !receipt.externalId && !receipt.commitSha) {
-      throw new McfEvidenceRejectedError(
-        'GitHub evidence requires an external id or commit SHA',
-      );
+      throw new McfEvidenceRejectedError('GitHub evidence requires an external id or commit SHA');
     }
 
     if (receipt.provider === 'github-actions') {

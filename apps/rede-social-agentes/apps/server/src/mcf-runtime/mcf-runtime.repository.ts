@@ -72,20 +72,18 @@ export interface PersistMcfExecutionInput {
   nextAgentId: string | null;
   receipt: McfToolReceipt | null;
   evidenceStatus: McfEvidenceValidationStatus;
-  handoff:
-    | {
-        id: string;
-        fromAgentId: string;
-        toAgentId: string;
-        objectiveState: Record<string, unknown>;
-        delivered: string[];
-        evidenceReceiptIds: string[];
-        openFindings: string[];
-        nextAction: string;
-        acceptanceForNextAction: string;
-        createdAt: Date;
-      }
-    | null;
+  handoff: {
+    id: string;
+    fromAgentId: string;
+    toAgentId: string;
+    objectiveState: Record<string, unknown>;
+    delivered: string[];
+    evidenceReceiptIds: string[];
+    openFindings: string[];
+    nextAction: string;
+    acceptanceForNextAction: string;
+    createdAt: Date;
+  } | null;
   events: McfEventInput[];
 }
 
@@ -97,20 +95,18 @@ export interface CompleteMcfPendingPhaseInput {
   missionState: McfMissionState;
   phaseState: McfPhaseState;
   nextAgentId: string | null;
-  handoff:
-    | {
-        id: string;
-        fromAgentId: string;
-        toAgentId: string;
-        objectiveState: Record<string, unknown>;
-        delivered: string[];
-        evidenceReceiptIds: string[];
-        openFindings: string[];
-        nextAction: string;
-        acceptanceForNextAction: string;
-        createdAt: Date;
-      }
-    | null;
+  handoff: {
+    id: string;
+    fromAgentId: string;
+    toAgentId: string;
+    objectiveState: Record<string, unknown>;
+    delivered: string[];
+    evidenceReceiptIds: string[];
+    openFindings: string[];
+    nextAction: string;
+    acceptanceForNextAction: string;
+    createdAt: Date;
+  } | null;
   callbackIdempotencyKey: string;
   events: McfEventInput[];
 }
@@ -128,8 +124,6 @@ export interface McfRuntimeRepository {
   persistExecution(
     input: PersistMcfExecutionInput,
   ): Promise<{ mission: McfMissionRecord; phase: McfPhaseRecord }>;
-  completePendingPhase(
-    input: CompleteMcfPendingPhaseInput,
-  ): Promise<CompleteMcfPendingPhaseResult>;
+  completePendingPhase(input: CompleteMcfPendingPhaseInput): Promise<CompleteMcfPendingPhaseResult>;
   listEvents(missionId: string): Promise<McfEventRecord[]>;
 }
