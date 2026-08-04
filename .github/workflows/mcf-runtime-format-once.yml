@@ -1,27 +1,27 @@
 name: MCF Runtime Format Once
 
 on:
-  push:
+  pull_request:
     branches:
-      - feat/mcf-runtime-five-sprints
+      - main
 
 permissions:
   contents: write
 
 concurrency:
-  group: mcf-runtime-format-once
+  group: mcf-runtime-format-once-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   format:
-    if: ${{ !contains(github.event.head_commit.message, 'chore(mcf): apply prettier formatting') }}
+    if: ${{ github.head_ref == 'feat/mcf-runtime-five-sprints' && !contains(github.event.pull_request.title, '[formatted]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout branch
+      - name: Checkout source branch
         uses: actions/checkout@v4
         with:
-          ref: feat/mcf-runtime-five-sprints
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -52,4 +52,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add apps/rede-social-agentes
           git commit -m "chore(mcf): apply prettier formatting"
-          git push origin HEAD:feat/mcf-runtime-five-sprints
+          git push origin HEAD:${{ github.head_ref }}
