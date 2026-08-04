@@ -7,16 +7,80 @@ import type {
   McfRiskClass,
 } from '@rsa/contracts';
 
-const skillAgent: Record<McfExecutableSkillId, string> = {
-  'MCF-START-MISSION': 'Mestre',
-  'MCF-IMPLEMENT-CHANGE': 'Rafael',
-  'MCF-RUN-TESTS': 'Renato',
-};
+interface SkillPlanConfig {
+  agentId: string;
+  handoffTo: string;
+  toolProvider: McfChatPlanStep['toolProvider'];
+  toolOperation: string;
+  internal: boolean;
+  requiredEvidence: string[];
+}
 
-const skillHandoff: Record<McfExecutableSkillId, string> = {
-  'MCF-START-MISSION': 'Miriam',
-  'MCF-IMPLEMENT-CHANGE': 'Vinicius',
-  'MCF-RUN-TESTS': 'Emily',
+const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
+  'MCF-START-MISSION': {
+    agentId: 'Mestre',
+    handoffTo: 'Miriam',
+    toolProvider: 'internal',
+    toolOperation: 'create-contract',
+    internal: true,
+    requiredEvidence: ['mission_id', 'phase_id', 'selected_agents', 'acceptance_criteria'],
+  },
+  'MCF-SELECT-AGENTS': {
+    agentId: 'Mestre',
+    handoffTo: 'selected_domain_agent',
+    toolProvider: 'internal',
+    toolOperation: 'inspect-selection',
+    internal: true,
+    requiredEvidence: ['selection_justifications'],
+  },
+  'MCF-IMPLEMENT-CHANGE': {
+    agentId: 'Rafael',
+    handoffTo: 'Vinicius',
+    toolProvider: 'github',
+    toolOperation: 'code-change',
+    internal: false,
+    requiredEvidence: ['changed_files', 'commit_sha', 'test_results'],
+  },
+  'MCF-REVIEW-CODE': {
+    agentId: 'Vinicius',
+    handoffTo: 'Rafael',
+    toolProvider: 'github',
+    toolOperation: 'review-code',
+    internal: false,
+    requiredEvidence: ['reviewed_commit_sha', 'reviewed_files', 'findings', 'verdict'],
+  },
+  'MCF-RUN-TESTS': {
+    agentId: 'Renato',
+    handoffTo: 'Emily',
+    toolProvider: 'github-actions',
+    toolOperation: 'workflow-result',
+    internal: false,
+    requiredEvidence: ['commands_or_workflows', 'passed', 'failed', 'logs'],
+  },
+  'MCF-GIT-PR-RELEASE': {
+    agentId: 'Gabriel',
+    handoffTo: 'Mestre',
+    toolProvider: 'github',
+    toolOperation: 'pull-request',
+    internal: false,
+    requiredEvidence: ['branch', 'head_sha', 'pr_number', 'ci_status', 'gate_decision'],
+  },
+  'MCF-DEPLOY-VALIDATE': {
+    agentId: 'Bruno',
+    handoffTo: 'Augusto',
+    toolProvider: 'render',
+    toolOperation: 'deploy-validate',
+    internal: false,
+    requiredEvidence: ['deployment_id', 'commit_sha', 'smoke_result', 'rollback_state'],
+  },
+  'MCF-TRACE-MISSION': {
+    agentId: 'Augusto',
+    handoffTo: 'Beatriz',
+    toolProvider: 'internal',
+    toolOperation: 'inspect-mission',
+    internal: true,
+    requiredEvidence: ['chronological_trace', 'handoff_status', 'recovery_status'],
+  },
 };
 
 const riskRank: Record<McfRiskClass, number> = { A: 1, B: 2, C: 3 };
@@ -29,9 +93,9 @@ const implementationTerms = [
   'adicionar',
   'alterar',
   'refatorar',
-  'deploy',
 ];
 const validationTerms = ['testar', 'validar', 'auditar', 'verificar', 'smoke', 'ci'];
+const deploymentTerms = ['deploy', 'publicar', 'ambiente', 'rollback', 'produção', 'production'];
 const highRiskTerms = [
   'produção',
   'production',
@@ -72,52 +136,77 @@ function inferRisk(objective: string, requested?: McfRiskClass): McfRiskClass {
 
 function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
   if (request.requestedSkills?.length) {
-    return unique(['MCF-START-MISSION', ...request.requestedSkills]);
+    return unique(['MCF-START-MISSION', 'MCF-SELECT-AGENTS', ...request.requestedSkills]);
   }
 
   const normalized = request.objective.toLowerCase();
+  if (includesAny(normalized, deploymentTerms)) {
+    return [
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-DEPLOY-VALIDATE',
+      'MCF-TRACE-MISSION',
+    ];
+  }
   if (request.repository || includesAny(normalized, implementationTerms)) {
-    return ['MCF-START-MISSION', 'MCF-IMPLEMENT-CHANGE', 'MCF-RUN-TESTS'];
+    return [
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-IMPLEMENT-CHANGE',
+      'MCF-REVIEW-CODE',
+      'MCF-RUN-TESTS',
+      'MCF-GIT-PR-RELEASE',
+      'MCF-TRACE-MISSION',
+    ];
   }
   if (includesAny(normalized, validationTerms)) {
-    return ['MCF-START-MISSION', 'MCF-RUN-TESTS'];
+    return [
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-RUN-TESTS',
+      'MCF-TRACE-MISSION',
+    ];
   }
-  return ['MCF-START-MISSION'];
+  return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS'];
 }
 
-function stepFor(
+function resourceFor(
   skillId: McfExecutableSkillId,
-  order: number,
   repository: string | undefined,
-): McfChatPlanStep {
-  if (skillId === 'MCF-START-MISSION') {
-    return {
-      order,
-      skillId,
-      agentId: skillAgent[skillId],
-      handoffTo: skillHandoff[skillId],
-      toolProvider: 'internal',
-      toolOperation: 'create-contract',
-      toolResource: 'mcf-chat-bridge',
-      state: 'COMPLETED',
-      requiredEvidence: ['mission_id', 'phase_id', 'selected_agents', 'acceptance_criteria'],
-    };
+): string {
+  if (skillConfig[skillId].internal) {
+    return skillId === 'MCF-TRACE-MISSION' ? 'mcf-mission-timeline' : 'mcf-chat-bridge';
   }
+  if (skillId === 'MCF-DEPLOY-VALIDATE') {
+    return repository ?? 'deployment-target-not-resolved';
+  }
+  return repository ?? 'repository-not-resolved';
+}
 
-  return {
-    order,
-    skillId,
-    agentId: skillAgent[skillId],
-    handoffTo: skillHandoff[skillId],
-    toolProvider: 'github',
-    toolOperation: skillId === 'MCF-IMPLEMENT-CHANGE' ? 'code-change' : 'workflow-result',
-    toolResource: repository ?? 'repository-not-resolved',
-    state: 'READY_EXTERNAL',
-    requiredEvidence:
-      skillId === 'MCF-IMPLEMENT-CHANGE'
-        ? ['changed_files', 'commit_sha', 'test_results']
-        : ['commands_or_workflows', 'passed', 'failed', 'logs'],
-  };
+function buildSteps(
+  selectedSkills: McfExecutableSkillId[],
+  repository: string | undefined,
+): McfChatPlanStep[] {
+  return selectedSkills.map((skillId, index) => {
+    const config = skillConfig[skillId];
+    const nextSkill = selectedSkills[index + 1];
+    const handoffTo =
+      config.handoffTo === 'selected_domain_agent' && nextSkill
+        ? skillConfig[nextSkill].agentId
+        : config.handoffTo;
+
+    return {
+      order: index + 1,
+      skillId,
+      agentId: config.agentId,
+      handoffTo,
+      toolProvider: config.toolProvider,
+      toolOperation: config.toolOperation,
+      toolResource: resourceFor(skillId, repository),
+      state: config.internal ? 'PLANNED_INTERNAL' : 'READY_EXTERNAL',
+      requiredEvidence: config.requiredEvidence,
+    };
+  });
 }
 
 export interface ChatMissionPlan {
@@ -129,9 +218,8 @@ export interface ChatMissionPlan {
 export class ChatMissionPlanner {
   plan(request: McfChatDispatchRequest): ChatMissionPlan {
     const selectedSkills = inferSkills(request);
-    const selectedAgents = unique(
-      selectedSkills.flatMap((skill) => [skillAgent[skill], skillHandoff[skill]]),
-    );
+    const steps = buildSteps(selectedSkills, request.repository);
+    const selectedAgents = unique(steps.flatMap((step) => [step.agentId, step.handoffTo]));
     const sourceOfTruth = unique([
       'chat-objective',
       ...(request.repository ? [request.repository] : []),
@@ -156,8 +244,8 @@ export class ChatMissionPlanner {
       ],
       acceptanceCriteria: [
         'missão persistida com identificador recuperável',
-        'fase inicial executada pelo Mestre com recibo interno válido',
-        'próximas fases exigem recibos externos verificáveis',
+        'bloco interno inicial executado com recibos válidos',
+        'fases externas exigem recibos específicos por skill',
         'Leandro não é selecionado como agente executor',
         'risco solicitado nunca reduz o risco inferido',
       ],
@@ -167,9 +255,6 @@ export class ChatMissionPlanner {
       sourceOfTruth,
     };
 
-    return {
-      contract,
-      steps: selectedSkills.map((skill, index) => stepFor(skill, index + 1, request.repository)),
-    };
+    return { contract, steps };
   }
 }
