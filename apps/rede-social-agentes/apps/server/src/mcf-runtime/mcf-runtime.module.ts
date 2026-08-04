@@ -14,12 +14,19 @@ import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.
 import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 import { SkillExecutor } from './skill-executor.js';
 import { SkillRegistryLoader } from './skill-registry.loader.js';
+import { SocialTimelineController } from './social-timeline.controller.js';
+import { SocialTimelineService } from './social-timeline.service.js';
 
 @Module({
   imports: [DatabaseModule, IdentityModule],
-  controllers: [MissionRuntimeController, McfCiCallbackController],
+  controllers: [
+    MissionRuntimeController,
+    McfCiCallbackController,
+    SocialTimelineController,
+  ],
   providers: [
     MissionRuntimeService,
+    SocialTimelineService,
     SkillRegistryLoader,
     PermissionEngine,
     EvidenceValidator,
@@ -31,6 +38,6 @@ import { SkillRegistryLoader } from './skill-registry.loader.js';
       useExisting: PostgresMcfRuntimeRepository,
     },
   ],
-  exports: [MissionRuntimeService],
+  exports: [MissionRuntimeService, SocialTimelineService],
 })
 export class McfRuntimeModule {}
