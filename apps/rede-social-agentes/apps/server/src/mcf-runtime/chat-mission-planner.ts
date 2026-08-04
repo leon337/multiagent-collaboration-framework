@@ -13,6 +13,12 @@ const skillAgent: Record<McfExecutableSkillId, string> = {
   'MCF-RUN-TESTS': 'Renato',
 };
 
+const skillHandoff: Record<McfExecutableSkillId, string> = {
+  'MCF-START-MISSION': 'Miriam',
+  'MCF-IMPLEMENT-CHANGE': 'Vinicius',
+  'MCF-RUN-TESTS': 'Emily',
+};
+
 const implementationTerms = [
   'implementar',
   'corrigir',
@@ -83,6 +89,7 @@ function stepFor(
       order,
       skillId,
       agentId: skillAgent[skillId],
+      handoffTo: skillHandoff[skillId],
       toolProvider: 'internal',
       toolOperation: 'create-contract',
       toolResource: 'mcf-chat-bridge',
@@ -95,6 +102,7 @@ function stepFor(
     order,
     skillId,
     agentId: skillAgent[skillId],
+    handoffTo: skillHandoff[skillId],
     toolProvider: 'github',
     toolOperation: skillId === 'MCF-IMPLEMENT-CHANGE' ? 'code-change' : 'workflow-result',
     toolResource: repository ?? 'repository-not-resolved',
@@ -115,7 +123,9 @@ export interface ChatMissionPlan {
 export class ChatMissionPlanner {
   plan(request: McfChatDispatchRequest): ChatMissionPlan {
     const selectedSkills = inferSkills(request);
-    const selectedAgents = unique(selectedSkills.map((skill) => skillAgent[skill]));
+    const selectedAgents = unique(
+      selectedSkills.flatMap((skill) => [skillAgent[skill], skillHandoff[skill]]),
+    );
     const sourceOfTruth = unique([
       'chat-objective',
       ...(request.repository ? [request.repository] : []),
