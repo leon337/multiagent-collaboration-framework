@@ -10,10 +10,7 @@ import {
   UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
-import type {
-  McfChatDispatchRequest,
-  McfChatDispatchResponse,
-} from '@rsa/contracts';
+import type { McfChatDispatchRequest, McfChatDispatchResponse } from '@rsa/contracts';
 import { z } from 'zod';
 
 import { parseBody } from '../http/parse-body.js';
@@ -32,11 +29,7 @@ import {
 } from './mcf-runtime.errors.js';
 
 const sourceList = z.array(z.string().trim().min(1).max(512)).max(100);
-const executableSkill = z.enum([
-  'MCF-START-MISSION',
-  'MCF-IMPLEMENT-CHANGE',
-  'MCF-RUN-TESTS',
-]);
+const executableSkill = z.enum(['MCF-START-MISSION', 'MCF-IMPLEMENT-CHANGE', 'MCF-RUN-TESTS']);
 
 const chatDispatchSchema = z.object({
   objective: z.string().trim().min(10).max(4_000),
