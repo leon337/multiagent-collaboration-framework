@@ -1,0 +1,212 @@
+name: MCF Chat Runtime Bridge Staging E2E
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/mcf-chat-runtime-bridge-staging.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcf-chat-runtime-bridge-staging
+  cancel-in-progress: false
+
+jobs:
+  validate-chat-runtime-bridge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      MCF_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
+
+    steps:
+      - name: Validate staging configuration
+        run: test -n "$MCF_RUNTIME_URL"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Validate authenticated bridge and persisted timeline
+        env:
+          TECHNICAL_EMAIL: mcf-chat-bridge-${{ github.run_id }}-${{ github.run_attempt }}@example.test
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          node <<'NODE'
+          const crypto = require('node:crypto');
+          const fs = require('node:fs');
+
+          const baseUrl = process.env.MCF_RUNTIME_URL.replace(/\/$/u, '');
+          let sessionToken = '';
+
+          function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+          }
+
+          async function request(path, method, body, token) {
+            const response = await fetch(`${baseUrl}${path}`, {
+              method,
+              headers: {
+                ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+                ...(token ? { authorization: `Bearer ${token}` } : {}),
+              },
+              body: body === undefined ? undefined : JSON.stringify(body),
+            });
+            const text = await response.text();
+            let data;
+            try {
+              data = text ? JSON.parse(text) : {};
+            } catch {
+              data = { raw: text };
+            }
+            return { response, data };
+          }
+
+          async function requireSuccess(path, method, body, token, expectedStatus) {
+            const result = await request(path, method, body, token);
+            if (!result.response.ok || (expectedStatus && result.response.status !== expectedStatus)) {
+              throw new Error(
+                `${method} ${path} failed (${result.response.status}): ${JSON.stringify(result.data)}`,
+              );
+            }
+            return result.data;
+          }
+
+          async function waitForBridge() {
+            for (let attempt = 1; attempt <= 48; attempt += 1) {
+              try {
+                const probe = await request('/v1/mcf/chat/dispatch', 'POST', {}, undefined);
+                if (probe.response.status !== 404 && probe.response.status < 500) {
+                  return;
+                }
+                console.log(`Bridge not ready yet (attempt ${attempt}, status ${probe.response.status}).`);
+              } catch (error) {
+                console.log(`Bridge probe failed on attempt ${attempt}: ${error.message}`);
+              }
+              await sleep(10_000);
+            }
+            throw new Error('Chat-to-Runtime Bridge did not become ready within 8 minutes.');
+          }
+
+          function assert(condition, message) {
+            if (!condition) throw new Error(message);
+          }
+
+          (async () => {
+            await waitForBridge();
+            const password = `${crypto.randomBytes(36).toString('base64url')}Aa1!`;
+
+            try {
+              await requireSuccess('/v1/accounts', 'POST', {
+                email: process.env.TECHNICAL_EMAIL,
+                password,
+                displayName: 'MCF Chat Bridge Staging E2E',
+              });
+
+              const session = await requireSuccess('/v1/sessions', 'POST', {
+                email: process.env.TECHNICAL_EMAIL,
+                password,
+              });
+              assert(session.token, 'Session response did not contain a token.');
+              sessionToken = session.token;
+              console.log(`::add-mask::${sessionToken}`);
+
+              const normal = await requireSuccess(
+                '/v1/mcf/chat/dispatch',
+                'POST',
+                {
+                  objective: 'Implementar e testar uma alteração controlada no framework.',
+                  expectedOutcome: 'Missão persistida com bootstrap válido e plano externo verificável.',
+                  repository: 'leon337/multiagent-collaboration-framework',
+                  sourceOfTruth: ['docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md'],
+                },
+                sessionToken,
+                201,
+              );
+
+              assert(normal.bootstrapEvidenceStatus === 'VALID', 'Bootstrap evidence is not VALID.');
+              assert(normal.humanActionRequired === false, 'Bridge requested a human technical action.');
+              assert(normal.mission.state === 'EXECUTING', `Unexpected mission state: ${normal.mission.state}`);
+              assert(normal.mission.currentAgentId === 'Miriam', 'Bootstrap did not hand off to Miriam.');
+              assert(normal.mission.contract.riskClass === 'B', 'Implementation mission is not class B.');
+              assert(normal.plan.length === 3, `Expected three plan steps, received ${normal.plan.length}.`);
+              assert(normal.plan[0].state === 'COMPLETED', 'Internal bootstrap step is not completed.');
+              assert(
+                normal.plan.slice(1).every((step) => step.state === 'READY_EXTERNAL'),
+                'External steps were not left pending verified execution.',
+              );
+              assert(
+                !normal.mission.contract.selectedAgents.includes('Leandro'),
+                'Leandro was selected as an executing agent.',
+              );
+
+              const normalTimeline = await requireSuccess(
+                `/v1/mcf/missions/${normal.mission.id}/timeline`,
+                'GET',
+                undefined,
+                sessionToken,
+              );
+              const eventTypes = new Set(normalTimeline.events.map((event) => event.eventType));
+              for (const required of [
+                'MISSION_CREATED',
+                'PHASE_STARTED',
+                'SKILL_SELECTED',
+                'EVIDENCE_VALIDATED',
+                'HANDOFF_CREATED',
+                'PHASE_COMPLETED',
+              ]) {
+                assert(eventTypes.has(required), `Timeline is missing ${required}.`);
+              }
+
+              const highRisk = await requireSuccess(
+                '/v1/mcf/chat/dispatch',
+                'POST',
+                {
+                  objective: 'Publicar em produção, excluir dados e rotacionar um segredo.',
+                  requestedRiskClass: 'A',
+                },
+                sessionToken,
+                201,
+              );
+              assert(highRisk.mission.contract.riskClass === 'C', 'Risk downgrade to A was accepted.');
+              assert(highRisk.nextAction.includes('Léo'), 'Class C mission was not routed to Léo.');
+              assert(highRisk.humanActionRequired === false, 'Class C bridge delegated technical work to human.');
+
+              fs.appendFileSync(
+                process.env.GITHUB_STEP_SUMMARY,
+                [
+                  '## MCF Chat-to-Runtime Bridge — staging',
+                  '',
+                  `- Commit: \`${process.env.TARGET_SHA}\``,
+                  `- Class B mission: \`${normal.mission.id}\``,
+                  `- Bootstrap phase: \`${normal.bootstrapPhaseId}\``,
+                  '- Bootstrap evidence: `VALID`',
+                  '- Current agent after handoff: `Miriam`',
+                  '- External steps executed without receipt: `0`',
+                  '- Leandro selected as executor: `false`',
+                  `- Class C mission: \`${highRisk.mission.id}\``,
+                  '- Requested downgrade A → final risk: `C`',
+                  '- Class C next gate: `Léo`',
+                  '- Verdict: `PASS`',
+                  '',
+                ].join('\n'),
+              );
+            } finally {
+              if (sessionToken) {
+                await requireSuccess(
+                  '/v1/sessions/current',
+                  'DELETE',
+                  undefined,
+                  sessionToken,
+                );
+              }
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
