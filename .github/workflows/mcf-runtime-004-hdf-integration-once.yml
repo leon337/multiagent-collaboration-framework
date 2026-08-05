@@ -1,0 +1,67 @@
+name: MCF Runtime 004 HDF Integration Once
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-executable-skills-batch-1
+    paths:
+      - .github/workflows/mcf-runtime-004-hdf-integration-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/mcf-runtime-executable-skills-batch-1
+
+      - name: Apply exact runtime barriers
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          path = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.service.ts')
+          text = path.read_text()
+
+          def replace_once(old: str, new: str) -> None:
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one match, found {count}: {old[:100]!r}')
+              text = text.replace(old, new, 1)
+
+          replace_once(
+              "import { resolveMissionState } from './mission-completion-policy.js';",
+              "import { HumanDelegationGuard } from './human-delegation-guard.js';\nimport { resolveMissionState } from './mission-completion-policy.js';",
+          )
+          replace_once(
+              "export class MissionRuntimeService {\n  constructor(",
+              "export class MissionRuntimeService {\n  private readonly humanDelegation = new HumanDelegationGuard();\n\n  constructor(",
+          )
+          replace_once(
+              "  async createMission(request: CreateMcfMissionRequest): Promise<McfMissionResponse> {\n    const now = new Date();",
+              "  async createMission(request: CreateMcfMissionRequest): Promise<McfMissionResponse> {\n    this.humanDelegation.assertMissionAgents(request.contract.selectedAgents);\n\n    const now = new Date();",
+          )
+          replace_once(
+              "    const existingEvents =\n      outcome.skill.skillId === 'MCF-TRACE-MISSION'",
+              "    if (outcome.handoffTo) {\n      this.humanDelegation.assertHandoffTarget(\n        outcome.handoffTo,\n        mission.contract.selectedAgents,\n      );\n    }\n\n    const existingEvents =\n      outcome.skill.skillId === 'MCF-TRACE-MISSION'",
+          )
+          replace_once(
+              "          nextAction: `Audit CI evidence and close mission ${request.missionId}` ,".replace("}` ,", "}`,"),
+              "          nextAction: `Audit CI evidence and continue mission ${request.missionId}` ,".replace("}` ,", "}`,"),
+          )
+
+          path.write_text(text)
+          PY
+
+      - name: Commit runtime barriers
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.service.ts
+          git commit -m "fix(mcf): enforce HDF on contracts and handoffs"
+          git push origin HEAD:feat/mcf-runtime-executable-skills-batch-1
