@@ -1,0 +1,88 @@
+name: MCF Runtime Staging Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Exact 40-character commit SHA to deploy. Defaults to the selected main revision.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcf-runtime-staging-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_DB: rsa
+          POSTGRES_USER: rsa
+          POSTGRES_PASSWORD: rsa_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rsa -d rsa"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      HOST: 127.0.0.1
+      PORT: 3000
+      DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+      LOG_LEVEL: error
+      MCF_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      RELEASE_SHA: ${{ inputs.release_sha || github.sha }}
+      DEPLOY_TIMEOUT_MS: 1200000
+      DEPLOY_POLL_INTERVAL_MS: 10000
+
+    steps:
+      - name: Validate protected configuration
+        run: |
+          test -n "$MCF_RUNTIME_URL"
+          test -n "$RENDER_DEPLOY_HOOK_URL"
+          [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+
+      - name: Checkout release revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+          pnpm --version
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Run release gates
+        working-directory: apps/rede-social-agentes
+        run: pnpm verify
+
+      - name: Apply migrations twice in CI database
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm --filter @rsa/database db:migrate
+          pnpm --filter @rsa/database db:migrate
+
+      - name: Deploy exact revision and verify or recover
+        run: node apps/rede-social-agentes/ops/render-staging-deploy.mjs
