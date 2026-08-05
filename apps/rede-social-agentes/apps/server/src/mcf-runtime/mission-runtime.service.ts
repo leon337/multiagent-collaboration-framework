@@ -154,10 +154,7 @@ export class MissionRuntimeService {
     });
 
     if (outcome.handoffTo) {
-      this.humanDelegation.assertHandoffTarget(
-        outcome.handoffTo,
-        mission.contract.selectedAgents,
-      );
+      this.humanDelegation.assertHandoffTarget(outcome.handoffTo, mission.contract.selectedAgents);
     }
 
     const existingEvents =
