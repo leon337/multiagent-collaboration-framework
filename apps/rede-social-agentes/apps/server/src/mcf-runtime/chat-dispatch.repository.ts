@@ -21,11 +21,17 @@ export interface ChatDispatchRepository {
     dispatchId: string,
     requestDigest: string,
   ): Promise<ReserveChatDispatchResult>;
+  attachMission(
+    accountId: string,
+    dispatchId: string,
+    requestDigest: string,
+    missionId: string,
+  ): Promise<void>;
   complete(
     accountId: string,
     dispatchId: string,
     requestDigest: string,
     response: McfChatDispatchResponse,
   ): Promise<void>;
-  release(accountId: string, dispatchId: string, requestDigest: string): Promise<void>;
+  releaseUnattached(accountId: string, dispatchId: string, requestDigest: string): Promise<void>;
 }
