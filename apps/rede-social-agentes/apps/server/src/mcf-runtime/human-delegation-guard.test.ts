@@ -40,6 +40,28 @@ describe('HumanDelegationGuard', () => {
     );
   });
 
+  it('blocks Leandro from mission agent selection', () => {
+    expect(() => guard.assertMissionAgents(['Mestre', 'Leandro'])).toThrow(
+      /cannot be selected as a mission agent/u,
+    );
+  });
+
+  it('blocks Leandro from receiving a technical handoff', () => {
+    expect(() => guard.assertHandoffTarget('Leandro', ['Mestre', 'Leandro'])).toThrow(
+      /cannot receive a technical handoff/u,
+    );
+  });
+
+  it('blocks a handoff to an agent outside the mission contract', () => {
+    expect(() => guard.assertHandoffTarget('Renato', ['Mestre', 'Rafael'])).toThrow(
+      /was not selected by mission contract/u,
+    );
+  });
+
+  it('allows a handoff to a selected non-human agent', () => {
+    expect(() => guard.assertHandoffTarget('Renato', ['Mestre', 'Renato'])).not.toThrow();
+  });
+
   it('blocks incomplete human delegation requests', () => {
     expect(() =>
       guard.assertAllowed('Mestre', {
