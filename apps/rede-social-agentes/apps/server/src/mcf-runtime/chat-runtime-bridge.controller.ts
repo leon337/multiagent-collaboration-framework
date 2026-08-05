@@ -19,6 +19,8 @@ import type { AuthenticatedHumanRequest } from '../identity/authenticated-reques
 import { SessionAuthGuard } from '../identity/session-auth.guard.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
 import {
+  McfDispatchInProgressError,
+  McfDispatchPayloadConflictError,
   McfEvidenceRejectedError,
   McfMissionNotFoundError,
   McfMissionVersionConflictError,
@@ -42,6 +44,7 @@ const executableSkill = z.enum([
 ]);
 
 const chatDispatchSchema = z.object({
+  dispatchId: z.string().trim().min(8).max(128).regex(/^[A-Za-z0-9._:-]+$/u),
   objective: z.string().trim().min(10).max(4_000),
   expectedOutcome: z.string().trim().min(5).max(4_000).optional(),
   repository: z
@@ -62,11 +65,19 @@ function rethrowBridgeError(error: unknown, correlationId: string): never {
       correlationId,
     });
   }
-  if (error instanceof McfMissionVersionConflictError) {
+  if (
+    error instanceof McfMissionVersionConflictError ||
+    error instanceof McfDispatchPayloadConflictError ||
+    error instanceof McfDispatchInProgressError
+  ) {
     throw new ConflictException({
-      code: 'MCF_VERSION_CONFLICT',
+      code:
+        error instanceof McfDispatchInProgressError
+          ? 'MCF_DISPATCH_IN_PROGRESS'
+          : 'MCF_IDEMPOTENCY_CONFLICT',
       message: error.message,
       correlationId,
+      retryable: error instanceof McfDispatchInProgressError,
     });
   }
   if (error instanceof McfPermissionDeniedError) {
@@ -106,7 +117,7 @@ export class ChatRuntimeBridgeController {
   ): Promise<McfChatDispatchResponse> {
     const input = parseBody<McfChatDispatchRequest>(chatDispatchSchema, body, request.id);
     try {
-      return await this.bridge.dispatch(input);
+      return await this.bridge.dispatch(request.authenticatedHuman.accountId, input);
     } catch (error) {
       rethrowBridgeError(error, request.id);
     }
