@@ -1,6 +1,12 @@
 name: MCF Runtime V2 E2E
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/mcf-runtime-v2-e2e.yml
+      - apps/rede-social-agentes/ops/mcf-runtime-v2-e2e.mjs
   workflow_dispatch:
 
 permissions:
