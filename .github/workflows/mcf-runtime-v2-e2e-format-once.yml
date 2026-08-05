@@ -1,0 +1,51 @@
+name: MCF Runtime V2 E2E Format Once
+
+on:
+  push:
+    branches:
+      - test/mcf-runtime-004-eight-skills-e2e
+    paths:
+      - .github/workflows/mcf-runtime-v2-e2e-format-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: test/mcf-runtime-004-eight-skills-e2e
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply canonical formatting
+        working-directory: apps/rede-social-agentes
+        run: pnpm exec prettier --write ops/mcf-runtime-v2-e2e.mjs
+
+      - name: Commit formatting result
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/rede-social-agentes/ops/mcf-runtime-v2-e2e.mjs
+          git commit -m "style(mcf): format runtime v2 staging E2E"
+          git push origin HEAD:test/mcf-runtime-004-eight-skills-e2e
