@@ -3,7 +3,7 @@
 ## Estado
 
 ```yaml
-status: CANDIDATA_PARA_GATE
+status: GATE_A_VALIDADO_EM_STAGING_GATE_B_AGUARDANDO_SECRET_ENTRY
 mission: MCF-RUNTIME-005
 owner: Leo
 human_final_authority: Leandro
@@ -23,7 +23,7 @@ Os gates de CI, migrations, health e E2E já existem, mas ainda não formam um p
 
 ## Decisão
 
-O primeiro recorte de deploy controlado terá duas etapas.
+O primeiro recorte de deploy controlado possui duas etapas.
 
 ### Gate A — implementação e prova manual
 
@@ -42,6 +42,7 @@ post_deploy_evidence:
   - health_ready_200
 failure_recovery: redeploy_previous_stable_sha
 workflow_trigger: workflow_dispatch
+status: VALIDADO_EM_STAGING
 ```
 
 ### Gate B — ativação automática
@@ -54,6 +55,7 @@ credential: repository_secret_RENDER_DEPLOY_HOOK_URL
 overlapping_deploys: serialized
 failed_release: workflow_failure_even_when_recovered
 automatic_publication: false
+status: BLOQUEADO_APENAS_POR_SECRET_ENTRY
 ```
 
 ## Endpoint de versão
@@ -124,25 +126,60 @@ action_count: 1
 action: cadastrar o deploy hook restrito como RENDER_DEPLOY_HOOK_URL
 ```
 
-Essa ação só será solicitada depois que código, testes, documentação e deploy do endpoint de versão estiverem aprovados.
+Código, testes, documentação, deploy do endpoint de versão e sonda de staging já foram aprovados. Portanto, a entrada do secret é agora o único bloqueio material do Gate B.
 
 ## Critérios de aceite
 
 ```yaml
-safe_version_endpoint: required
-orchestrator_unit_tests: required
-successful_deploy_test: required
-failed_smoke_recovery_test: required
-hook_secret_not_logged: required
-workflow_manual_gate: required
-format_lint_typecheck: required
-migrations_twice: required
-tests_build: required
-container_smoke: required
-staging_version_probe: required
-real_deploy_hook_proof: required_before_gate_B
+safe_version_endpoint: passed
+orchestrator_unit_tests: passed
+successful_deploy_test: passed
+failed_smoke_recovery_test: passed
+hook_secret_not_logged: passed
+workflow_manual_gate: passed
+format_lint_typecheck: passed
+migrations_twice: passed
+tests_build: passed
+container_smoke: passed
+staging_version_probe: passed
+real_deploy_hook_proof: pending_secret_entry
 automatic_trigger: forbidden_before_gate_B
 ```
+
+## Evidências do Gate A
+
+```yaml
+integration:
+  pull_request: 63
+  merge_sha: dbc3ab1ceebc9426fada530f5d91d59b440f3029
+render_deploy:
+  service: mcf-runtime-staging-api
+  deploy_id: dep-d9padonlk1mc73dm2j90
+  commit: dbc3ab1ceebc9426fada530f5d91d59b440f3029
+  status: live
+staging_probe:
+  workflow: MCF Runtime 005 Staging Version Probe
+  workflow_run_id: 30971073274
+  job_id: 92195305148
+  conclusion: success
+  verified:
+    - health_ready_http_200
+    - health_ready_payload_ok
+    - exact_deployed_commit
+    - branch_main
+    - runtime_render
+quality_gates:
+  documentation_validation: passed
+  format: passed
+  lint: passed
+  typecheck: passed
+  migrations_twice: passed
+  tests: passed
+  build: passed
+  container_smoke: passed
+```
+
+A sonda efêmera foi removida após a coleta da evidência. O workflow permanente de deploy continua manual e não executa enquanto `RENDER_DEPLOY_HOOK_URL` não existir no repositório.
 
 ## Limites
 
