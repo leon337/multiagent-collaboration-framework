@@ -16,12 +16,7 @@ describe('ChatMissionPlanner', () => {
       'MCF-SELECT-AGENTS',
       'MCF-TRACE-MISSION',
     ]);
-    expect(plan.contract.selectedAgents).toEqual([
-      'Mestre',
-      'Miriam',
-      'Augusto',
-      'Beatriz',
-    ]);
+    expect(plan.contract.selectedAgents).toEqual(['Mestre', 'Miriam', 'Augusto', 'Beatriz']);
     expect(plan.steps).toHaveLength(3);
     expect(plan.steps.every((step) => step.state === 'PLANNED_INTERNAL')).toBe(true);
     expect(plan.steps[1]).toMatchObject({
