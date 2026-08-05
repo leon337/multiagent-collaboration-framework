@@ -212,7 +212,10 @@ async function proveExternalWaitingStates(dispatch) {
       expectedMissionVersion: version,
     },
   });
-  assert(blockedProduction.response.status === 403, 'Production deploy without gate must return 403');
+  assert(
+    blockedProduction.response.status === 403,
+    'Production deploy without gate must return 403',
+  );
   assert(
     blockedProduction.data?.code === 'MCF_PERMISSION_DENIED',
     'Production deploy returned an unexpected error code',
@@ -308,7 +311,10 @@ async function proveIncompleteMissionCannotClose(state) {
   assert(completedSkills.has('MCF-SELECT-AGENTS'), 'Selection phase completion missing');
   assert(completedSkills.has('MCF-RUN-TESTS'), 'Run-tests phase completion missing');
   assert(completedSkills.has('MCF-TRACE-MISSION'), 'Trace phase completion missing');
-  assert(!completedSkills.has('MCF-IMPLEMENT-CHANGE'), 'Pending implementation was marked complete');
+  assert(
+    !completedSkills.has('MCF-IMPLEMENT-CHANGE'),
+    'Pending implementation was marked complete',
+  );
   assert(!completedSkills.has('MCF-REVIEW-CODE'), 'Pending review was marked complete');
   assert(!completedSkills.has('MCF-GIT-PR-RELEASE'), 'Pending PR was marked complete');
   assert(!completedSkills.has('MCF-DEPLOY-VALIDATE'), 'Pending deploy was marked complete');
@@ -323,11 +329,7 @@ async function proveInternalOnlyMissionCanClose() {
       objective: 'Planejar e registrar um checkpoint interno verificável.',
       expectedOutcome: 'Missão interna concluída somente após trace final.',
       requestedRiskClass: 'A',
-      requestedSkills: [
-        'MCF-START-MISSION',
-        'MCF-SELECT-AGENTS',
-        'MCF-TRACE-MISSION',
-      ],
+      requestedSkills: ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-TRACE-MISSION'],
     },
   });
   assert(dispatch.internalExecutions.length === 2, 'Internal mission bootstrap is incomplete');
@@ -346,7 +348,10 @@ async function proveInternalOnlyMissionCanClose() {
     },
   });
   assert(trace.evidenceStatus === 'VALID', 'Internal final trace evidence must be VALID');
-  assert(trace.mission.state === 'COMPLETED', 'Internal-only mission did not complete at final trace');
+  assert(
+    trace.mission.state === 'COMPLETED',
+    'Internal-only mission did not complete at final trace',
+  );
   return trace.mission;
 }
 
