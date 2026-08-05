@@ -145,6 +145,8 @@ POST /v1/mcf/missions
 }
 ```
 
+O runtime rejeita o contrato com `MCF_PERMISSION_DENIED` quando `selectedAgents` contém `Leandro`. A autoridade humana final não pode ser transformada em integrante técnico da missão.
+
 ## Consultar missão
 
 ```http
@@ -180,6 +182,15 @@ POST /v1/mcf/missions/{missionId}/phases/execute
 ```
 
 O `handoffTo` retornado será o valor validado de `selected_domain_agent`, nunca o marcador textual do registro.
+
+Antes de persistir a fase, o runtime exige:
+
+```yaml
+handoff_target_in_selectedAgents: true
+handoff_target_is_Leandro: false
+```
+
+A violação recebe `MCF_PERMISSION_DENIED` e não gera eventos de fase, ferramenta ou handoff.
 
 ### Fase externa pendente
 
@@ -278,6 +289,31 @@ x-mcf-runtime-token: <secret>
 ```
 
 Callbacks repetidos retornam `duplicate: true` e não duplicam eventos.
+
+Um callback com `conclusion: success` conclui a fase de testes e mantém a missão em `EXECUTING`. Ele não grava `MISSION_COMPLETED`.
+
+## Concluir missão
+
+A conclusão é controlada pelo ledger. A última fase deve executar:
+
+```json
+{
+  "skillId": "MCF-TRACE-MISSION",
+  "agentId": "Augusto",
+  "inputs": {
+    "mission_execution": {},
+    "final_checkpoint": true
+  },
+  "tool": {
+    "provider": "internal",
+    "operation": "inspect-mission",
+    "resource": "mcf-mission-timeline"
+  },
+  "expectedMissionVersion": 8
+}
+```
+
+A missão recebe `COMPLETED` somente quando o ledger já contém `PHASE_COMPLETED` para todas as skills declaradas em `selectedSkills`. Se alguma estiver ausente, o trace conclui a própria fase, mas a missão permanece `EXECUTING`.
 
 ## Timeline técnica
 
