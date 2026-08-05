@@ -10,8 +10,12 @@ export interface McfToolRequest {
   resource: string;
 }
 
+function fold(value: string): string {
+  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
 function normalize(value: string): string {
-  return value.trim().toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
+  return fold(value).trim().toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
 }
 
 function normalizeProvider(value: string): string {
@@ -24,6 +28,12 @@ function operationMatches(operation: string, allowedPrefixes: string[]): boolean
   return allowedPrefixes.some(
     (prefix) => normalized === prefix || normalized.startsWith(`${prefix}-`),
   );
+}
+
+function isProductionTarget(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  const normalized = normalize(value);
+  return normalized.includes('production') || normalized.includes('producao');
 }
 
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
@@ -80,6 +90,14 @@ export class PermissionEngine {
       destructiveOperations.some((candidate) => resource.includes(candidate))
     ) {
       throw new McfPermissionDeniedError('destructive or public action requires a human gate');
+    }
+
+    if (
+      skill.skillId === 'MCF-DEPLOY-VALIDATE' &&
+      (isProductionTarget(inputs.target_environment) || resource.includes('production')) &&
+      inputs.humanGateApproved !== true
+    ) {
+      throw new McfPermissionDeniedError('production deployment requires humanGateApproved=true');
     }
 
     if (

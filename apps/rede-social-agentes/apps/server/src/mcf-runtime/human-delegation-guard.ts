@@ -12,7 +12,13 @@ const allowedTriggers = new Set([
 ]);
 
 function normalize(value: string): string {
-  return value.trim().toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
+  return value
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .trim()
+    .toLowerCase()
+    .replaceAll('_', '-')
+    .replaceAll(' ', '-');
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -31,14 +37,33 @@ function deny(message: string): never {
   throw new McfPermissionDeniedError(message);
 }
 
+export function isHumanAuthorityAgent(agentId: string): boolean {
+  return normalize(agentId) === 'leandro';
+}
+
 /**
  * Prevents the human authority from becoming the default technical operator.
  * A request is accepted only after a real team attempt, evidenced limitation,
  * exhausted fallback, one unavoidable action and Léo's approval.
  */
 export class HumanDelegationGuard {
+  assertMissionAgents(agentIds: string[]): void {
+    if (agentIds.some(isHumanAuthorityAgent)) {
+      deny('Leandro cannot be selected as a mission agent');
+    }
+  }
+
+  assertHandoffTarget(agentId: string, selectedAgents: string[]): void {
+    if (isHumanAuthorityAgent(agentId)) {
+      deny('Leandro cannot receive a technical handoff');
+    }
+    if (!selectedAgents.includes(agentId)) {
+      deny(`handoff target ${agentId} was not selected by mission contract`);
+    }
+  }
+
   assertAllowed(agentId: string, inputs: Record<string, unknown>): void {
-    if (normalize(agentId) === 'leandro') {
+    if (isHumanAuthorityAgent(agentId)) {
       deny('Leandro cannot be used as an executing agent');
     }
 

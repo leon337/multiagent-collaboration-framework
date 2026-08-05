@@ -19,6 +19,8 @@ import {
   McfPermissionDeniedError,
   McfPhaseNotFoundError,
 } from './mcf-runtime.errors.js';
+import { HumanDelegationGuard } from './human-delegation-guard.js';
+import { resolveMissionState } from './mission-completion-policy.js';
 import {
   MCF_RUNTIME_REPOSITORY,
   type McfEventInput,
@@ -70,6 +72,8 @@ function event(input: {
 
 @Injectable()
 export class MissionRuntimeService {
+  private readonly humanDelegation = new HumanDelegationGuard();
+
   constructor(
     @Inject(MCF_RUNTIME_REPOSITORY) private readonly repository: McfRuntimeRepository,
     private readonly executor: SkillExecutor,
@@ -78,6 +82,8 @@ export class MissionRuntimeService {
   ) {}
 
   async createMission(request: CreateMcfMissionRequest): Promise<McfMissionResponse> {
+    this.humanDelegation.assertMissionAgents(request.contract.selectedAgents);
+
     const now = new Date();
     const missionId = randomUUID();
     const mission: McfMissionRecord = {
@@ -145,6 +151,23 @@ export class MissionRuntimeService {
       agentId: request.agentId,
       inputs: request.inputs,
       tool: request.tool,
+    });
+
+    if (outcome.handoffTo) {
+      this.humanDelegation.assertHandoffTarget(outcome.handoffTo, mission.contract.selectedAgents);
+    }
+
+    const existingEvents =
+      outcome.skill.skillId === 'MCF-TRACE-MISSION' && request.inputs.final_checkpoint === true
+        ? await this.repository.listEvents(missionId)
+        : [];
+    const missionState = resolveMissionState({
+      selectedSkills: mission.contract.selectedSkills,
+      currentSkillId: outcome.skill.skillId,
+      currentPhaseCompleted: outcome.phaseState === 'COMPLETED',
+      finalCheckpointRequested: request.inputs.final_checkpoint === true,
+      defaultState: outcome.missionState,
+      existingEvents,
     });
 
     const now = new Date();
@@ -266,7 +289,7 @@ export class MissionRuntimeService {
           fromAgentId: request.agentId,
           toAgentId: outcome.handoffTo,
           objectiveState: {
-            missionState: outcome.missionState,
+            missionState,
             phaseState: outcome.phaseState,
             acceptanceCriteria: outcome.skill.acceptanceCriteria,
           },
@@ -307,7 +330,7 @@ export class MissionRuntimeService {
         }),
       );
     }
-    if (outcome.missionState === 'COMPLETED') {
+    if (missionState === 'COMPLETED') {
       events.push(
         event({
           missionId,
@@ -326,7 +349,7 @@ export class MissionRuntimeService {
       expectedMissionVersion: request.expectedMissionVersion,
       phase,
       permissionProfile: outcome.skill.permissionProfile,
-      missionState: outcome.missionState,
+      missionState,
       nextAgentId: outcome.handoffTo,
       receipt: outcome.receipt,
       evidenceStatus: outcome.evidenceStatus,
@@ -394,7 +417,7 @@ export class MissionRuntimeService {
 
     const now = new Date();
     const evidenceStatus = succeeded ? 'VALID' : 'INVALID';
-    const missionState = succeeded ? 'COMPLETED' : 'RECOVERING';
+    const missionState = succeeded ? 'EXECUTING' : 'RECOVERING';
     const phaseState = succeeded ? 'COMPLETED' : 'RECOVERING';
     const handoff = succeeded
       ? {
@@ -405,7 +428,7 @@ export class MissionRuntimeService {
           delivered: skill.requiredEvidence,
           evidenceReceiptIds: [receipt.receiptId],
           openFindings: [],
-          nextAction: `Audit CI evidence and close mission ${request.missionId}`,
+          nextAction: `Audit CI evidence and continue mission ${request.missionId}`,
           acceptanceForNextAction:
             skill.acceptanceCriteria[0] ?? 'Confirm all critical tests passed',
           createdAt: now,
@@ -464,17 +487,11 @@ export class MissionRuntimeService {
           phaseId: request.phaseId,
           agentId: phase.agentId,
           eventType: 'PHASE_COMPLETED',
-          payload: { workflowRunId: request.workflowRunId },
+          payload: {
+            workflowRunId: request.workflowRunId,
+            skillId: phase.skillId,
+          },
           idempotencyKey: `phase:${request.phaseId}:ci-completed:${request.workflowRunId}`,
-          occurredAt: now,
-        }),
-        event({
-          missionId: request.missionId,
-          phaseId: request.phaseId,
-          agentId: phase.agentId,
-          eventType: 'MISSION_COMPLETED',
-          payload: { workflowRunId: request.workflowRunId },
-          idempotencyKey: `mission:${request.missionId}:ci-completed:${request.workflowRunId}`,
           occurredAt: now,
         }),
       );

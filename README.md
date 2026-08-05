@@ -26,7 +26,7 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - toda ação externa deve produzir evidência verificável;
 - confirmações humanas rotineiras são proibidas dentro do escopo já autorizado;
 - Léo decide gates internos e escala para Leandro somente matérias reservadas;
-- Leandro não pode ser usado como agente executor ou operador técnico padrão;
+- Leandro não pode integrar o contrato técnico, executar fases ou receber handoff técnico;
 - falhas recuperáveis seguem o Protocolo CAF e não encerram a missão.
 
 ## Runtime executável
@@ -45,6 +45,7 @@ objetivo conversacional
 → PostgreSQL e Event Ledger
 → Handoff e recuperação CAF
 → callback de CI
+→ trace final verificado
 ```
 
 ### Estado do MVP
@@ -53,13 +54,30 @@ objetivo conversacional
 skills_registradas: 16
 skills_executaveis:
   - MCF-START-MISSION
+  - MCF-SELECT-AGENTS
   - MCF-IMPLEMENT-CHANGE
+  - MCF-REVIEW-CODE
   - MCF-RUN-TESTS
+  - MCF-GIT-PR-RELEASE
+  - MCF-DEPLOY-VALIDATE
+  - MCF-TRACE-MISSION
+skills_ainda_documentais: 8
 chat_to_runtime_bridge: true
 endpoint_de_dispatch: POST_/v1/mcf/chat/dispatch
+bloco_interno_inicial: causal_e_persistido
+recibos_semanticos:
+  - code_review
+  - pull_request_and_gate
+  - deployment_and_rollback
 human_delegation_firewall: true
+leandro_em_selectedAgents: bloqueado
 leandro_como_executor: bloqueado
+leandro_como_handoff: bloqueado
+handoff_para_agente_nao_selecionado: bloqueado
 risk_downgrade: bloqueado
+production_deploy_without_material_gate: bloqueado
+mission_completion: final_trace_plus_complete_ledger
+ci_callback_closes_mission: false
 estado_persistente: true
 retomada_por_mission_id: true
 recibos_assinados: true
@@ -68,10 +86,13 @@ callback_de_CI: true
 publicacao_social_automatica: false
 ```
 
-O bridge executa automaticamente apenas a abertura interna da missão. GitHub, CI, Render ou outro provedor externo continuam exigindo recibos reais; o runtime não transforma afirmação textual em evidência.
+O bridge executa somente o bloco interno consecutivo no início do plano. GitHub, CI, Render, Vercel ou Cloudflare continuam exigindo recibos reais. Uma skill interna posicionada depois de uma fase externa permanece planejada até que o fluxo chegue a ela.
+
+A missão só é encerrada por `MCF-TRACE-MISSION` com `final_checkpoint=true` quando o ledger comprova `PHASE_COMPLETED` para todas as skills selecionadas. CI verde conclui a fase de testes, não a missão inteira.
 
 ### Documentação do runtime
 
+- `docs/decisions/MCF-DEC-057-EXPANSAO-DE-SKILLS-EXECUTAVEIS-E-RECIBOS-SEMANTICOS.md`;
 - `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
 - `docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md`;
 - `docs/decisions/MCF-DEC-054-RUNTIME-EXECUTAVEL-E-EVIDENCIA-CONFIAVEL.md`;
@@ -113,6 +134,7 @@ A integração do pacote ao GitHub não modifica automaticamente as configuraç�
 
 ## Documentos principais
 
+- `docs/decisions/MCF-DEC-057-EXPANSAO-DE-SKILLS-EXECUTAVEIS-E-RECIBOS-SEMANTICOS.md`;
 - `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
 - `docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md`;
 - `docs/decisions/MCF-DEC-054-RUNTIME-EXECUTAVEL-E-EVIDENCIA-CONFIAVEL.md`;
@@ -143,4 +165,4 @@ O runtime apenas projeta conclusões verificadas como candidatos `DRAFT_REVIEW`.
 
 ## Estado
 
-A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-056 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano e a abertura persistente de missões a partir de objetivos conversacionais.
+A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-057 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos e a conclusão apenas por trace final comprovado no ledger.

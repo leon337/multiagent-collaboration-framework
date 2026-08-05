@@ -18,7 +18,18 @@ import type { PermissionEngine } from './permission-engine.js';
 import { type McfToolRequest } from './permission-engine.js';
 import type { SkillRegistryLoader } from './skill-registry.loader.js';
 
-const executableSkills = new Set(['MCF-START-MISSION', 'MCF-IMPLEMENT-CHANGE', 'MCF-RUN-TESTS']);
+const executableSkills = new Set([
+  'MCF-START-MISSION',
+  'MCF-SELECT-AGENTS',
+  'MCF-IMPLEMENT-CHANGE',
+  'MCF-REVIEW-CODE',
+  'MCF-RUN-TESTS',
+  'MCF-GIT-PR-RELEASE',
+  'MCF-DEPLOY-VALIDATE',
+  'MCF-TRACE-MISSION',
+]);
+
+const internalSkills = new Set(['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-TRACE-MISSION']);
 
 export interface ExecuteSkillInput {
   skillId: string;
@@ -39,6 +50,18 @@ export interface ExecuteSkillOutcome {
 
 function hasInput(inputs: Record<string, unknown>, key: string): boolean {
   return Object.hasOwn(inputs, key) && inputs[key] !== undefined && inputs[key] !== null;
+}
+
+function resolveHandoff(skill: McfSkillDefinition, inputs: Record<string, unknown>): string {
+  if (skill.handoffTo !== 'selected_domain_agent') {
+    return skill.handoffTo;
+  }
+
+  const selected = inputs.selected_domain_agent;
+  if (typeof selected !== 'string' || selected.trim().length === 0) {
+    throw new McfSkillInputError(skill.skillId, ['selected_domain_agent']);
+  }
+  return selected.trim();
 }
 
 @Injectable()
@@ -62,30 +85,33 @@ export class SkillExecutor {
       throw new McfSkillInputError(skill.skillId, missingInputs);
     }
 
-    if (input.tool.provider === 'internal' && skill.skillId !== 'MCF-START-MISSION') {
+    if (input.tool.provider === 'internal' && !internalSkills.has(skill.skillId)) {
       throw new McfPermissionDeniedError(
-        'internal execution is restricted to MCF-START-MISSION in the MVP runtime',
+        'internal execution is restricted to planning and observability skills',
       );
     }
 
     this.permissions.assertAllowed(skill, input.agentId, input.tool, input.inputs);
+    const handoffTo = resolveHandoff(skill, input.inputs);
 
     if (input.tool.provider === 'internal') {
       const receipt = this.evidence.createInternalReceipt(input.tool, {
         skillId: skill.skillId,
         skillVersion: skill.version,
         agentId: input.agentId,
+        handoffTo,
         requiredInputs: skill.requiredInputs,
         executionSteps: skill.executionSteps,
+        inputKeys: Object.keys(input.inputs).sort(),
       });
-      this.evidence.verify(receipt, input.tool);
+      this.evidence.verifyForSkill(receipt, input.tool, skill);
       return {
         skill,
         receipt,
         evidenceStatus: 'VALID',
         phaseState: 'COMPLETED',
         missionState: 'EXECUTING',
-        handoffTo: skill.handoffTo,
+        handoffTo,
         rejectionReason: null,
       };
     }
@@ -103,7 +129,7 @@ export class SkillExecutor {
     }
 
     try {
-      this.evidence.verify(input.tool.externalReceipt, input.tool);
+      this.evidence.verifyForSkill(input.tool.externalReceipt, input.tool, skill);
       if (input.tool.externalReceipt.status !== 'SUCCEEDED') {
         return {
           skill,
@@ -121,8 +147,8 @@ export class SkillExecutor {
         receipt: input.tool.externalReceipt,
         evidenceStatus: 'VALID',
         phaseState: 'COMPLETED',
-        missionState: skill.skillId === 'MCF-RUN-TESTS' ? 'COMPLETED' : 'EXECUTING',
-        handoffTo: skill.handoffTo,
+        missionState: 'EXECUTING',
+        handoffTo,
         rejectionReason: null,
       };
     } catch (error) {

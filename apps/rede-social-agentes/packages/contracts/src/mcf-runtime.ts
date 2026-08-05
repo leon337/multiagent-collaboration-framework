@@ -176,7 +176,18 @@ export interface McfCiCallbackResponse {
   missionState: McfMissionState;
 }
 
-export type McfExecutableSkillId = 'MCF-START-MISSION' | 'MCF-IMPLEMENT-CHANGE' | 'MCF-RUN-TESTS';
+export type McfExecutableSkillId =
+  | 'MCF-START-MISSION'
+  | 'MCF-SELECT-AGENTS'
+  | 'MCF-IMPLEMENT-CHANGE'
+  | 'MCF-REVIEW-CODE'
+  | 'MCF-RUN-TESTS'
+  | 'MCF-GIT-PR-RELEASE'
+  | 'MCF-DEPLOY-VALIDATE'
+  | 'MCF-TRACE-MISSION';
+
+export type McfExecutableToolProvider =
+  'internal' | 'github' | 'github-actions' | 'render' | 'vercel' | 'cloudflare';
 
 export interface McfChatDispatchRequest {
   objective: string;
@@ -192,17 +203,25 @@ export interface McfChatPlanStep {
   skillId: McfExecutableSkillId;
   agentId: string;
   handoffTo: string;
-  toolProvider: 'internal' | 'github';
+  toolProvider: McfExecutableToolProvider;
   toolOperation: string;
   toolResource: string;
-  state: 'COMPLETED' | 'READY_EXTERNAL';
+  state: 'PLANNED_INTERNAL' | 'COMPLETED' | 'READY_EXTERNAL';
   requiredEvidence: string[];
+}
+
+export interface McfInternalExecutionResponse {
+  skillId: McfExecutableSkillId;
+  phaseId: string;
+  evidenceStatus: McfEvidenceValidationStatus;
+  handoffTo: string | null;
 }
 
 export interface McfChatDispatchResponse {
   mission: McfMissionResponse;
   bootstrapPhaseId: string;
   bootstrapEvidenceStatus: McfEvidenceValidationStatus;
+  internalExecutions: McfInternalExecutionResponse[];
   plan: McfChatPlanStep[];
   nextAction: string;
   humanActionRequired: false;

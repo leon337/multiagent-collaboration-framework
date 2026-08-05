@@ -30,7 +30,16 @@ import {
 } from './mcf-runtime.errors.js';
 
 const sourceList = z.array(z.string().trim().min(1).max(512)).max(100);
-const executableSkill = z.enum(['MCF-START-MISSION', 'MCF-IMPLEMENT-CHANGE', 'MCF-RUN-TESTS']);
+const executableSkill = z.enum([
+  'MCF-START-MISSION',
+  'MCF-SELECT-AGENTS',
+  'MCF-IMPLEMENT-CHANGE',
+  'MCF-REVIEW-CODE',
+  'MCF-RUN-TESTS',
+  'MCF-GIT-PR-RELEASE',
+  'MCF-DEPLOY-VALIDATE',
+  'MCF-TRACE-MISSION',
+]);
 
 const chatDispatchSchema = z.object({
   objective: z.string().trim().min(10).max(4_000),
@@ -42,7 +51,7 @@ const chatDispatchSchema = z.object({
     .optional(),
   sourceOfTruth: sourceList.optional(),
   requestedRiskClass: z.enum(['A', 'B', 'C']).optional(),
-  requestedSkills: z.array(executableSkill).min(1).max(3).optional(),
+  requestedSkills: z.array(executableSkill).min(1).max(8).optional(),
 });
 
 function rethrowBridgeError(error: unknown, correlationId: string): never {

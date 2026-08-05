@@ -1,4 +1,9 @@
-import type { McfMissionResponse, McfPhaseExecutionResponse } from '@rsa/contracts';
+import type {
+  ExecuteMcfPhaseRequest,
+  McfMissionResponse,
+  McfPhaseExecutionResponse,
+  McfSkillDefinition,
+} from '@rsa/contracts';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ChatMissionPlanner } from './chat-mission-planner.js';
@@ -16,8 +21,26 @@ function mission(): McfMissionResponse {
       outOfScope: ['human-as-technical-operator'],
       acceptanceCriteria: ['missão persistida'],
       riskClass: 'B',
-      selectedAgents: ['Mestre', 'Miriam', 'Rafael', 'Vinicius', 'Renato', 'Emily'],
-      selectedSkills: ['MCF-START-MISSION', 'MCF-IMPLEMENT-CHANGE', 'MCF-RUN-TESTS'],
+      selectedAgents: [
+        'Mestre',
+        'Miriam',
+        'Rafael',
+        'Vinicius',
+        'Renato',
+        'Emily',
+        'Gabriel',
+        'Augusto',
+        'Beatriz',
+      ],
+      selectedSkills: [
+        'MCF-START-MISSION',
+        'MCF-SELECT-AGENTS',
+        'MCF-IMPLEMENT-CHANGE',
+        'MCF-REVIEW-CODE',
+        'MCF-RUN-TESTS',
+        'MCF-GIT-PR-RELEASE',
+        'MCF-TRACE-MISSION',
+      ],
       sourceOfTruth: ['chat-objective'],
     },
     state: 'PLANNED',
@@ -29,47 +52,70 @@ function mission(): McfMissionResponse {
   };
 }
 
-function bootstrap(created: McfMissionResponse): McfPhaseExecutionResponse {
+function skill(skillId: string, handoffTo: string): McfSkillDefinition {
   return {
-    mission: {
-      ...created,
-      state: 'EXECUTING',
-      currentPhaseId: '22222222-2222-4222-8222-222222222222',
-      currentAgentId: 'Miriam',
-      version: 2,
-    },
-    phaseId: '22222222-2222-4222-8222-222222222222',
-    phaseState: 'COMPLETED',
-    selectedSkill: {
-      skillId: 'MCF-START-MISSION',
-      name: 'Iniciar missão',
-      version: '1.0.0',
-      purpose: 'Definir contrato.',
-      ownerAgents: ['Mestre'],
-      requiredInputs: ['objective'],
-      allowedTools: ['GitHub'],
-      forbiddenTools: ['destructive_write'],
-      permissionProfile: 'READ_AND_PROPOSE',
-      executionSteps: ['definir_contrato'],
-      requiredEvidence: ['mission_id'],
-      acceptanceCriteria: ['objective_verifiable'],
-      failureModes: ['objective_ambiguous'],
-      fallback: 'Descoberta.',
-      handoffTo: 'Miriam',
-    },
-    receipt: null,
-    evidenceStatus: 'VALID',
-    handoffTo: 'Miriam',
+    skillId,
+    name: skillId,
+    version: '1.0.0',
+    purpose: 'Testar bridge.',
+    ownerAgents: ['Mestre'],
+    requiredInputs: ['objective'],
+    allowedTools: ['GitHub'],
+    forbiddenTools: ['destructive_write'],
+    permissionProfile: 'READ_AND_PROPOSE',
+    executionSteps: ['execute'],
+    requiredEvidence: ['phase_id'],
+    acceptanceCriteria: ['valid'],
+    failureModes: ['invalid'],
+    fallback: 'Registrar bloqueio.',
+    handoffTo,
   };
 }
 
+function runtimeMock(created: McfMissionResponse): MissionRuntimeService {
+  let current = created;
+  let sequence = 0;
+  const executePhase = vi.fn(
+    async (
+      _missionId: string,
+      input: ExecuteMcfPhaseRequest,
+    ): Promise<McfPhaseExecutionResponse> => {
+      sequence += 1;
+      expect(input.expectedMissionVersion).toBe(current.version);
+      const dynamicHandoff =
+        input.skillId === 'MCF-SELECT-AGENTS'
+          ? String(input.inputs.selected_domain_agent)
+          : 'Miriam';
+      const phaseId = `22222222-2222-4222-8222-22222222222${sequence}`;
+      current = {
+        ...current,
+        state: 'EXECUTING',
+        currentPhaseId: phaseId,
+        currentAgentId: dynamicHandoff,
+        version: current.version + 1,
+      };
+      return {
+        mission: current,
+        phaseId,
+        phaseState: 'COMPLETED',
+        selectedSkill: skill(input.skillId, dynamicHandoff),
+        receipt: null,
+        evidenceStatus: 'VALID',
+        handoffTo: dynamicHandoff,
+      };
+    },
+  );
+
+  return {
+    createMission: vi.fn().mockResolvedValue(created),
+    executePhase,
+  } as unknown as MissionRuntimeService;
+}
+
 describe('ChatRuntimeBridgeService', () => {
-  it('persists the mission and executes only the internal bootstrap phase', async () => {
+  it('persists the mission and executes the consecutive internal startup block', async () => {
     const created = mission();
-    const runtime = {
-      createMission: vi.fn().mockResolvedValue(created),
-      executePhase: vi.fn().mockResolvedValue(bootstrap(created)),
-    } as unknown as MissionRuntimeService;
+    const runtime = runtimeMock(created);
     const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner());
 
     const result = await service.dispatch({
@@ -78,7 +124,9 @@ describe('ChatRuntimeBridgeService', () => {
     });
 
     expect(runtime.createMission).toHaveBeenCalledOnce();
-    expect(runtime.executePhase).toHaveBeenCalledWith(
+    expect(runtime.executePhase).toHaveBeenCalledTimes(2);
+    expect(runtime.executePhase).toHaveBeenNthCalledWith(
+      1,
       created.id,
       expect.objectContaining({
         skillId: 'MCF-START-MISSION',
@@ -86,17 +134,51 @@ describe('ChatRuntimeBridgeService', () => {
         tool: expect.objectContaining({ provider: 'internal', operation: 'create-contract' }),
       }),
     );
+    expect(runtime.executePhase).toHaveBeenNthCalledWith(
+      2,
+      created.id,
+      expect.objectContaining({
+        skillId: 'MCF-SELECT-AGENTS',
+        inputs: expect.objectContaining({ selected_domain_agent: 'Rafael' }),
+        tool: expect.objectContaining({ provider: 'internal', operation: 'inspect-selection' }),
+      }),
+    );
     expect(result.bootstrapEvidenceStatus).toBe('VALID');
-    expect(result.plan.filter((step) => step.state === 'READY_EXTERNAL')).toHaveLength(2);
+    expect(result.internalExecutions).toHaveLength(2);
+    expect(result.internalExecutions[1]).toMatchObject({
+      skillId: 'MCF-SELECT-AGENTS',
+      handoffTo: 'Rafael',
+    });
+    expect(result.mission.currentAgentId).toBe('Rafael');
+    expect(result.plan.filter((step) => step.state === 'READY_EXTERNAL')).toHaveLength(4);
+    expect(result.plan.at(-1)?.state).toBe('PLANNED_INTERNAL');
+    expect(result.nextAction).toMatch(/Rafael executa MCF-IMPLEMENT-CHANGE/u);
     expect(result.humanActionRequired).toBe(false);
+  });
+
+  it('executes an all-internal trace request without claiming an external action', async () => {
+    const created = mission();
+    const runtime = runtimeMock(created);
+    const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner());
+
+    const result = await service.dispatch({
+      objective: 'Verificar o fluxo interno e produzir o trace da missão.',
+      requestedSkills: ['MCF-TRACE-MISSION'],
+    });
+
+    expect(runtime.executePhase).toHaveBeenCalledTimes(3);
+    expect(result.internalExecutions.map((execution) => execution.skillId)).toEqual([
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-TRACE-MISSION',
+    ]);
+    expect(result.plan.every((step) => step.state === 'COMPLETED')).toBe(true);
+    expect(result.nextAction).toMatch(/checkpoint retorna ao Mestre/u);
   });
 
   it('routes class C work to Léo instead of Leandro', async () => {
     const created = mission();
-    const runtime = {
-      createMission: vi.fn().mockResolvedValue(created),
-      executePhase: vi.fn().mockResolvedValue(bootstrap(created)),
-    } as unknown as MissionRuntimeService;
+    const runtime = runtimeMock(created);
     const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner());
 
     const result = await service.dispatch({

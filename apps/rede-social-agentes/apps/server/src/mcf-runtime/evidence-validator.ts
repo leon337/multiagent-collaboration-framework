@@ -1,7 +1,7 @@
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
-import type { McfToolReceipt, McfToolReceiptStatus } from '@rsa/contracts';
+import type { McfSkillDefinition, McfToolReceipt, McfToolReceiptStatus } from '@rsa/contracts';
 
 import { loadRuntimeConfig } from '../config.js';
 import { McfEvidenceRejectedError } from './mcf-runtime.errors.js';
@@ -62,6 +62,123 @@ function equalSignature(actualHex: string, expectedHex: string): boolean {
     return false;
   }
   return timingSafeEqual(Buffer.from(actualHex, 'hex'), Buffer.from(expectedHex, 'hex'));
+}
+
+function requireString(metadata: Record<string, unknown>, key: string, message: string): string {
+  const value = metadata[key];
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new McfEvidenceRejectedError(message);
+  }
+  return value;
+}
+
+function requireBoolean(metadata: Record<string, unknown>, key: string, message: string): boolean {
+  const value = metadata[key];
+  if (typeof value !== 'boolean') {
+    throw new McfEvidenceRejectedError(message);
+  }
+  return value;
+}
+
+function requireNonNegativeInteger(
+  metadata: Record<string, unknown>,
+  key: string,
+  message: string,
+): number {
+  const value = metadata[key];
+  if (!Number.isInteger(value) || (value as number) < 0) {
+    throw new McfEvidenceRejectedError(message);
+  }
+  return value as number;
+}
+
+function requireNonEmptyArray(
+  metadata: Record<string, unknown>,
+  key: string,
+  message: string,
+): unknown[] {
+  const value = metadata[key];
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new McfEvidenceRejectedError(message);
+  }
+  return value;
+}
+
+function validateReviewReceipt(receipt: McfToolReceipt): void {
+  if (receipt.provider !== 'github' || !receipt.commitSha) {
+    throw new McfEvidenceRejectedError(
+      'code review evidence requires GitHub and reviewed commit SHA',
+    );
+  }
+  requireNonNegativeInteger(
+    receipt.metadata,
+    'findingsCount',
+    'code review evidence requires findingsCount',
+  );
+  requireString(receipt.metadata, 'verdict', 'code review evidence requires verdict');
+  requireNonEmptyArray(
+    receipt.metadata,
+    'reviewedFiles',
+    'code review evidence requires reviewedFiles',
+  );
+}
+
+function validatePullRequestReceipt(receipt: McfToolReceipt): void {
+  if (receipt.provider !== 'github' || !receipt.externalId || !receipt.commitSha) {
+    throw new McfEvidenceRejectedError(
+      'pull request evidence requires GitHub PR id and commit SHA',
+    );
+  }
+  const ciStatus = requireString(
+    receipt.metadata,
+    'ciStatus',
+    'pull request evidence requires ciStatus',
+  );
+  if (ciStatus !== 'success') {
+    throw new McfEvidenceRejectedError('pull request evidence requires successful CI');
+  }
+  const gateDecision = requireString(
+    receipt.metadata,
+    'gateDecision',
+    'pull request evidence requires gateDecision',
+  );
+  if (gateDecision !== 'approved') {
+    throw new McfEvidenceRejectedError('pull request evidence requires approved gate');
+  }
+  requireString(receipt.metadata, 'prState', 'pull request evidence requires prState');
+}
+
+function validateDeploymentReceipt(receipt: McfToolReceipt): void {
+  const deployProviders = new Set(['render', 'vercel', 'cloudflare']);
+  if (!deployProviders.has(receipt.provider) || !receipt.externalId || !receipt.commitSha) {
+    throw new McfEvidenceRejectedError(
+      'deployment evidence requires supported provider, deployment id and commit SHA',
+    );
+  }
+  const deploymentStatus = requireString(
+    receipt.metadata,
+    'deploymentStatus',
+    'deployment evidence requires deploymentStatus',
+  );
+  if (!['live', 'ready', 'success'].includes(deploymentStatus)) {
+    throw new McfEvidenceRejectedError('deployment evidence does not prove a healthy deployment');
+  }
+  const smokeStatus = requireString(
+    receipt.metadata,
+    'smokeStatus',
+    'deployment evidence requires smokeStatus',
+  );
+  if (!['pass', 'success'].includes(smokeStatus)) {
+    throw new McfEvidenceRejectedError('deployment evidence requires a passing smoke test');
+  }
+  const rollbackAvailable = requireBoolean(
+    receipt.metadata,
+    'rollbackAvailable',
+    'deployment evidence requires rollbackAvailable',
+  );
+  if (!rollbackAvailable) {
+    throw new McfEvidenceRejectedError('deployment evidence requires rollbackAvailable=true');
+  }
 }
 
 @Injectable()
@@ -167,6 +284,28 @@ export class EvidenceValidator {
       if (typeof receipt.metadata.conclusion !== 'string') {
         throw new McfEvidenceRejectedError('GitHub Actions evidence requires conclusion');
       }
+    }
+  }
+
+  verifyForSkill(
+    receipt: McfToolReceipt,
+    expected: McfToolRequest,
+    skill: McfSkillDefinition,
+  ): void {
+    this.verify(receipt, expected);
+
+    switch (skill.skillId) {
+      case 'MCF-REVIEW-CODE':
+        validateReviewReceipt(receipt);
+        break;
+      case 'MCF-GIT-PR-RELEASE':
+        validatePullRequestReceipt(receipt);
+        break;
+      case 'MCF-DEPLOY-VALIDATE':
+        validateDeploymentReceipt(receipt);
+        break;
+      default:
+        break;
     }
   }
 }

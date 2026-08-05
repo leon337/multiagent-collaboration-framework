@@ -32,10 +32,9 @@ jobs:
         with:
           node-version: 24.18.0
 
-      - name: Verify HDF rejection and zero phase side effects
+      - name: Verify HDF contract and handoff barriers
         env:
           TECHNICAL_EMAIL: mcf-hdf-e2e-${{ github.run_id }}-${{ github.run_attempt }}@example.test
-          TARGET_SHA: ${{ github.sha }}
         run: |
           node <<'NODE'
           const crypto = require('node:crypto');
@@ -73,6 +72,23 @@ jobs:
             return result.data;
           }
 
+          function assertBlocked(result, messageFragment) {
+            if (result.response.status !== 403) {
+              throw new Error(
+                `Expected HTTP 403, received ${result.response.status}: ${JSON.stringify(result.data)}`,
+              );
+            }
+            if (result.data.code !== 'MCF_PERMISSION_DENIED') {
+              throw new Error(`Unexpected error code: ${JSON.stringify(result.data)}`);
+            }
+            if (
+              typeof result.data.message !== 'string' ||
+              !result.data.message.includes(messageFragment)
+            ) {
+              throw new Error(`Unexpected HDF message: ${JSON.stringify(result.data)}`);
+            }
+          }
+
           (async () => {
             const password = `${crypto.randomBytes(36).toString('base64url')}Aa1!`;
 
@@ -93,24 +109,47 @@ jobs:
               sessionToken = session.token;
               console.log(`::add-mask::${sessionToken}`);
 
+              const invalidContract = await request(
+                '/v1/mcf/missions',
+                'POST',
+                {
+                  contract: {
+                    title: 'MCF HDF Invalid Contract E2E',
+                    objective: 'Comprovar que Leandro não entra no conjunto de agentes técnicos.',
+                    expectedOutcome: 'Contrato rejeitado antes da persistência.',
+                    scope: ['staging', 'human-delegation-firewall'],
+                    outOfScope: ['production', 'public-release', 'financial-action'],
+                    acceptanceCriteria: ['contrato recebe HTTP 403'],
+                    riskClass: 'B',
+                    selectedAgents: ['Mestre', 'Leandro'],
+                    selectedSkills: ['MCF-SELECT-AGENTS'],
+                    sourceOfTruth: [
+                      'docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md',
+                      'apps/rede-social-agentes/apps/server/src/mcf-runtime/human-delegation-guard.ts',
+                    ],
+                  },
+                },
+                sessionToken,
+              );
+              assertBlocked(invalidContract, 'cannot be selected as a mission agent');
+
               const mission = await requireSuccess(
                 '/v1/mcf/missions',
                 'POST',
                 {
                   contract: {
-                    title: 'MCF HDF Staging E2E',
-                    objective: 'Comprovar que Leandro não pode ser usado como agente executor técnico.',
-                    expectedOutcome: 'Runtime rejeita a execução antes de iniciar ou persistir uma fase.',
+                    title: 'MCF HDF Handoff E2E',
+                    objective: 'Comprovar que Leandro não recebe handoff técnico.',
+                    expectedOutcome: 'Handoff rejeitado sem efeitos de fase ou ferramenta.',
                     scope: ['staging', 'human-delegation-firewall'],
                     outOfScope: ['production', 'public-release', 'financial-action'],
                     acceptanceCriteria: [
-                      'execução com agentId Leandro recebe HTTP 403',
-                      'erro MCF_PERMISSION_DENIED é retornado',
+                      'handoff para Leandro recebe HTTP 403',
                       'nenhum evento de fase ou ferramenta é persistido',
                     ],
                     riskClass: 'B',
-                    selectedAgents: ['Leandro'],
-                    selectedSkills: ['MCF-RUN-TESTS'],
+                    selectedAgents: ['Mestre', 'Rafael'],
+                    selectedSkills: ['MCF-SELECT-AGENTS'],
                     sourceOfTruth: [
                       'docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md',
                       'apps/rede-social-agentes/apps/server/src/mcf-runtime/human-delegation-guard.ts',
@@ -120,41 +159,27 @@ jobs:
                 sessionToken,
               );
 
-              const blocked = await request(
+              const blockedHandoff = await request(
                 `/v1/mcf/missions/${mission.id}/phases/execute`,
                 'POST',
                 {
-                  skillId: 'MCF-RUN-TESTS',
-                  agentId: 'Leandro',
+                  skillId: 'MCF-SELECT-AGENTS',
+                  agentId: 'Mestre',
                   inputs: {
-                    acceptance_criteria: ['HDF bloqueia Leandro como executor'],
-                    test_target: `main@${process.env.TARGET_SHA}`,
-                    authorizedScope: true,
+                    mission_contract: mission.contract,
+                    risk_class: 'B',
+                    selected_domain_agent: 'Leandro',
                   },
                   tool: {
-                    provider: 'github-actions',
-                    operation: 'workflow-result',
-                    resource: process.env.GITHUB_REPOSITORY,
+                    provider: 'internal',
+                    operation: 'inspect-selection',
+                    resource: 'mcf-chat-bridge',
                   },
                   expectedMissionVersion: mission.version,
                 },
                 sessionToken,
               );
-
-              if (blocked.response.status !== 403) {
-                throw new Error(
-                  `Expected HTTP 403, received ${blocked.response.status}: ${JSON.stringify(blocked.data)}`,
-                );
-              }
-              if (blocked.data.code !== 'MCF_PERMISSION_DENIED') {
-                throw new Error(`Unexpected error code: ${JSON.stringify(blocked.data)}`);
-              }
-              if (
-                typeof blocked.data.message !== 'string' ||
-                !blocked.data.message.includes('Leandro cannot be used as an executing agent')
-              ) {
-                throw new Error(`Unexpected HDF message: ${JSON.stringify(blocked.data)}`);
-              }
+              assertBlocked(blockedHandoff, 'cannot receive a technical handoff');
 
               const timeline = await requireSuccess(
                 `/v1/mcf/missions/${mission.id}/timeline`,
@@ -167,6 +192,7 @@ jobs:
                 'PERMISSION_GRANTED',
                 'TOOL_REQUESTED',
                 'TOOL_RECEIPT_RECORDED',
+                'HANDOFF_CREATED',
               ]);
               const sideEffects = timeline.events.filter((event) =>
                 forbiddenEvents.has(event.eventType),
@@ -182,12 +208,12 @@ jobs:
                 [
                   '## Human Delegation Firewall — staging',
                   '',
-                  `- Mission: \`${mission.id}\``,
-                  '- HTTP status: `403`',
-                  '- Error code: `MCF_PERMISSION_DENIED`',
-                  '- Executing agent blocked: `Leandro`',
-                  `- Timeline events after rejection: \`${timeline.events.length}\``,
+                  '- Contract containing Leandro: `HTTP 403`',
+                  '- Technical handoff to Leandro: `HTTP 403`',
+                  `- Valid control mission: \`${mission.id}\``,
+                  `- Timeline events after rejected handoff: \`${timeline.events.length}\``,
                   '- Forbidden phase/tool side effects: `0`',
+                  '- Session revoked: `true`',
                   '- Verdict: `PASS`',
                   '',
                 ].join('\n'),
