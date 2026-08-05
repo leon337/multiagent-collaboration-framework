@@ -43,6 +43,7 @@ function internalInputs(
       };
     case 'MCF-TRACE-MISSION':
       return {
+        final_checkpoint: true,
         mission_execution: {
           missionId,
           objective: contract.objective,

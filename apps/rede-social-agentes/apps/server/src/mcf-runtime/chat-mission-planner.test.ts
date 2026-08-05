@@ -11,9 +11,13 @@ describe('ChatMissionPlanner', () => {
     });
 
     expect(plan.contract.riskClass).toBe('A');
-    expect(plan.contract.selectedSkills).toEqual(['MCF-START-MISSION', 'MCF-SELECT-AGENTS']);
+    expect(plan.contract.selectedSkills).toEqual([
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-TRACE-MISSION',
+    ]);
     expect(plan.contract.selectedAgents).toEqual(['Mestre', 'Miriam']);
-    expect(plan.steps).toHaveLength(2);
+    expect(plan.steps).toHaveLength(3);
     expect(plan.steps.every((step) => step.state === 'PLANNED_INTERNAL')).toBe(true);
     expect(plan.steps[1]).toMatchObject({
       skillId: 'MCF-SELECT-AGENTS',
@@ -147,6 +151,7 @@ describe('ChatMissionPlanner', () => {
       'MCF-SELECT-AGENTS',
       'MCF-REVIEW-CODE',
       'MCF-GIT-PR-RELEASE',
+      'MCF-TRACE-MISSION',
     ]);
     expect(plan.steps[1]?.handoffTo).toBe('Vinicius');
   });

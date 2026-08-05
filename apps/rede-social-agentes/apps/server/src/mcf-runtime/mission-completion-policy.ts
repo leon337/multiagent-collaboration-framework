@@ -1,7 +1,4 @@
-import type {
-  McfEventType,
-  McfMissionState,
-} from '@rsa/contracts';
+import type { McfEventType, McfMissionState } from '@rsa/contracts';
 
 interface CompletionEvent {
   eventType: McfEventType;

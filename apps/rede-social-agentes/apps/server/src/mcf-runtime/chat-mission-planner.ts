@@ -136,7 +136,12 @@ function inferRisk(objective: string, requested?: McfRiskClass): McfRiskClass {
 
 function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
   if (request.requestedSkills?.length) {
-    return unique(['MCF-START-MISSION', 'MCF-SELECT-AGENTS', ...request.requestedSkills]);
+    return unique([
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      ...request.requestedSkills,
+      'MCF-TRACE-MISSION',
+    ]);
   }
 
   const normalized = request.objective.toLowerCase();
@@ -157,7 +162,7 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
   if (includesAny(normalized, validationTerms)) {
     return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-RUN-TESTS', 'MCF-TRACE-MISSION'];
   }
-  return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS'];
+  return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-TRACE-MISSION'];
 }
 
 function resourceFor(skillId: McfExecutableSkillId, repository: string | undefined): string {

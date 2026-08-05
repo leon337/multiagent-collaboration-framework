@@ -147,7 +147,7 @@ export class SkillExecutor {
         receipt: input.tool.externalReceipt,
         evidenceStatus: 'VALID',
         phaseState: 'COMPLETED',
-        missionState: skill.skillId === 'MCF-RUN-TESTS' ? 'COMPLETED' : 'EXECUTING',
+        missionState: 'EXECUTING',
         handoffTo,
         rejectionReason: null,
       };

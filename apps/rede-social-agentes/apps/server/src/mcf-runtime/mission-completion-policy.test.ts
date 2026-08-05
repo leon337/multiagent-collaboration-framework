@@ -31,10 +31,7 @@ describe('resolveMissionState', () => {
         currentPhaseCompleted: true,
         finalCheckpointRequested: true,
         defaultState: 'EXECUTING',
-        existingEvents: [
-          completed('MCF-START-MISSION'),
-          completed('MCF-SELECT-AGENTS'),
-        ],
+        existingEvents: [completed('MCF-START-MISSION'), completed('MCF-SELECT-AGENTS')],
       }),
     ).toBe('COMPLETED');
   });
@@ -42,11 +39,7 @@ describe('resolveMissionState', () => {
   it('keeps the mission executing when the final trace detects a missing skill', () => {
     expect(
       resolveMissionState({
-        selectedSkills: [
-          'MCF-START-MISSION',
-          'MCF-IMPLEMENT-CHANGE',
-          'MCF-TRACE-MISSION',
-        ],
+        selectedSkills: ['MCF-START-MISSION', 'MCF-IMPLEMENT-CHANGE', 'MCF-TRACE-MISSION'],
         currentSkillId: 'MCF-TRACE-MISSION',
         currentPhaseCompleted: true,
         finalCheckpointRequested: true,
