@@ -190,6 +190,7 @@ export type McfExecutableToolProvider =
   'internal' | 'github' | 'github-actions' | 'render' | 'vercel' | 'cloudflare';
 
 export interface McfChatDispatchRequest {
+  dispatchId: string;
   objective: string;
   expectedOutcome?: string | undefined;
   repository?: string | undefined;
@@ -218,6 +219,8 @@ export interface McfInternalExecutionResponse {
 }
 
 export interface McfChatDispatchResponse {
+  dispatchId: string;
+  duplicate: boolean;
   mission: McfMissionResponse;
   bootstrapPhaseId: string;
   bootstrapEvidenceStatus: McfEvidenceValidationStatus;
