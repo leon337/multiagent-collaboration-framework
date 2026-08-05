@@ -45,7 +45,7 @@ Mestre inicia missão
 → Vinicius revisa
 → Renato valida
 → Gabriel controla PR e gate
-→ Augusto registra trace
+→ Augusto registra trace final
 ```
 
 `MCF-DEPLOY-VALIDATE` é incluída somente quando o objetivo exigir ambiente, deploy, publicação ou rollback.
@@ -67,6 +67,37 @@ Uma skill interna posicionada depois de uma fase externa não é antecipada. Por
 ## Handoff dinâmico
 
 `MCF-SELECT-AGENTS` usa `selected_domain_agent` no registro. O runtime exige uma entrada explícita e persiste o destinatário real. O marcador textual não pode ser gravado como agente.
+
+As seguintes barreiras são aplicadas pelo runtime, independentemente do planejador:
+
+```yaml
+mission_contract:
+  Leandro_in_selectedAgents: forbidden
+handoff:
+  target_not_in_selectedAgents: forbidden
+  target_Leandro: forbidden
+execution:
+  agentId_Leandro: forbidden
+```
+
+A rejeição ocorre antes da persistência de eventos da fase ou da ferramenta.
+
+## Política de conclusão da missão
+
+`MCF-RUN-TESTS` e o callback de CI concluem somente a fase correspondente. Eles não encerram mais a missão.
+
+A missão só pode chegar a `COMPLETED` quando:
+
+```text
+MCF-TRACE-MISSION
++ final_checkpoint=true
++ ledger possui PHASE_COMPLETED para todas as skills selecionadas
+→ MISSION_COMPLETED
+```
+
+Se qualquer skill selecionada estiver ausente no ledger, o trace permanece válido, mas a missão continua `EXECUTING`.
+
+Essa política impede que CI verde encerre prematuramente um fluxo que ainda possui PR, deploy, auditoria ou trace pendente.
 
 ## Recibos semânticos
 
@@ -115,8 +146,9 @@ required:
 - deploy de staging exige escopo autorizado;
 - deploy para `production` ou `produção` exige `humanGateApproved: true`;
 - escrita direta na `main` continua proibida;
-- Leandro continua bloqueado como agente executor pelo HDF;
-- ferramentas externas sem recibo permanecem `WAITING_EVIDENCE`.
+- Leandro é bloqueado no contrato, na execução e no handoff técnico pelo HDF;
+- ferramentas externas sem recibo permanecem `WAITING_EVIDENCE`;
+- callback de CI não produz `MISSION_COMPLETED`.
 
 ## Limites
 
@@ -135,8 +167,12 @@ review_receipt_semantics: verified
 pr_receipt_semantics: verified
 deploy_receipt_semantics: verified
 production_gate: verified
+mission_completion_by_final_trace: verified
+ci_callback_closes_phase_only: verified
 risk_downgrade: blocked
+leandro_in_contract: blocked
 leandro_as_executor: blocked
+leandro_as_handoff: blocked
 format_lint_typecheck: required
 migrations_twice: required
 tests_build: required
