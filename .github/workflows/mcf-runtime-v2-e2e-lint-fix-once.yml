@@ -1,0 +1,155 @@
+name: MCF Runtime V2 E2E Lint Fix Once
+
+on:
+  push:
+    branches:
+      - test/mcf-runtime-004-eight-skills-e2e
+    paths:
+      - .github/workflows/mcf-runtime-v2-e2e-lint-fix-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: test/mcf-runtime-004-eight-skills-e2e
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply exact lint corrections
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          path = Path('apps/rede-social-agentes/ops/mcf-runtime-v2-e2e.mjs')
+          text = path.read_text()
+
+          if not text.startswith('/* global console, fetch */'):
+              text = '/* global console, fetch */\n\n' + text
+
+          old_import = "import { appendFileSync } from 'node:fs';\n"
+          new_import = old_import + "import process from 'node:process';\n"
+          if "import process from 'node:process';" not in text:
+              if text.count(old_import) != 1:
+                  raise SystemExit('appendFileSync import did not match exactly once')
+              text = text.replace(old_import, new_import, 1)
+
+          old_tail = """  try {
+            const dispatch = await dispatchFullMission();
+            const pendingState = await proveExternalWaitingStates(dispatch);
+            const verifySucceeded = runFoundationVerification();
+            await completeRunTestsPhase(pendingState, verifySucceeded);
+            const incompleteProof = await proveIncompleteMissionCannotClose(pendingState);
+            const completedInternalMission = await proveInternalOnlyMissionCanClose();
+
+            summarize([
+              '## MCF Runtime 004 — eight-skill staging E2E',
+              '',
+              `- Full mission: \\`${pendingState.missionId}\\``,
+              `- Full mission state after final trace: \\`${incompleteProof.traceMission.state}\\``,
+              '- Executable skills recognized: `8`',
+              '- Initial internal executions: `2`',
+              '- External skills left pending without fabricated receipts: `4`',
+              '- CI callback completed only `MCF-RUN-TESTS`: `PASS`',
+              '- Duplicate callback idempotency: `PASS`',
+              '- Production deployment without material gate: `BLOCKED`',
+              `- Internal-only mission: \\`${completedInternalMission.id}\\``,
+              `- Internal-only final state: \\`${completedInternalMission.state}\\``,
+              '- Technical session revoked: pending finalizer',
+              '- Verdict: `PASS`',
+              '',
+            ]);
+          } finally {
+            if (sessionToken) {
+              const revoked = await request('/v1/sessions/current', { method: 'DELETE' });
+              if (!revoked.response.ok) {
+                throw new Error(`Session revocation failed (${revoked.response.status}): ${revoked.text}`);
+              }
+              summarize(['- Technical session revoked: `PASS`', '']);
+            }
+          }
+          """
+
+          new_tail = """  let executionError = null;
+          try {
+            const dispatch = await dispatchFullMission();
+            const pendingState = await proveExternalWaitingStates(dispatch);
+            const verifySucceeded = runFoundationVerification();
+            await completeRunTestsPhase(pendingState, verifySucceeded);
+            const incompleteProof = await proveIncompleteMissionCannotClose(pendingState);
+            const completedInternalMission = await proveInternalOnlyMissionCanClose();
+
+            summarize([
+              '## MCF Runtime 004 — eight-skill staging E2E',
+              '',
+              `- Full mission: \\`${pendingState.missionId}\\``,
+              `- Full mission state after final trace: \\`${incompleteProof.traceMission.state}\\``,
+              '- Executable skills recognized: `8`',
+              '- Initial internal executions: `2`',
+              '- External skills left pending without fabricated receipts: `4`',
+              '- CI callback completed only `MCF-RUN-TESTS`: `PASS`',
+              '- Duplicate callback idempotency: `PASS`',
+              '- Production deployment without material gate: `BLOCKED`',
+              `- Internal-only mission: \\`${completedInternalMission.id}\\``,
+              `- Internal-only final state: \\`${completedInternalMission.state}\\``,
+              '- Technical session revoked: pending finalizer',
+              '- Verdict: `PASS`',
+              '',
+            ]);
+          } catch (error) {
+            executionError = error;
+          }
+
+          let revocationError = null;
+          if (sessionToken) {
+            const revoked = await request('/v1/sessions/current', { method: 'DELETE' });
+            if (!revoked.response.ok) {
+              revocationError = new Error(
+                `Session revocation failed (${revoked.response.status}): ${revoked.text}`,
+              );
+            } else {
+              summarize(['- Technical session revoked: `PASS`', '']);
+            }
+          }
+
+          if (executionError) throw executionError;
+          if (revocationError) throw revocationError;
+          """
+
+          if text.count(old_tail) != 1:
+              raise SystemExit(f'expected one finalization block, found {text.count(old_tail)}')
+          text = text.replace(old_tail, new_tail, 1)
+          path.write_text(text)
+          PY
+
+      - name: Format and lint corrected script
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write ops/mcf-runtime-v2-e2e.mjs
+          pnpm exec eslint ops/mcf-runtime-v2-e2e.mjs
+
+      - name: Commit correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/rede-social-agentes/ops/mcf-runtime-v2-e2e.mjs
+          git commit -m "fix(mcf): satisfy E2E lint and safe session cleanup"
+          git push origin HEAD:test/mcf-runtime-004-eight-skills-e2e
