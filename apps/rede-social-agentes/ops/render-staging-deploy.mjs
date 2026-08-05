@@ -180,14 +180,13 @@ export async function orchestrateStagingDeployment({
       rollbackDeployId: null,
     };
   } catch (deploymentError) {
-    let rollbackDeployId = null;
+    let rollback;
     try {
-      const rollback = await triggerDeploy({
+      rollback = await triggerDeploy({
         hookUrl: deployHookUrl,
         commitSha: before.commitSha,
         fetchImpl,
       });
-      rollbackDeployId = rollback.deployId;
       await waitForRuntimeCommit({
         baseUrl,
         expectedCommitSha: before.commitSha,
@@ -203,6 +202,7 @@ export async function orchestrateStagingDeployment({
         rollbackError instanceof Error ? rollbackError.message : 'unknown rollback error';
       throw new Error(
         `Deployment failed and recovery failed. deployment=${deploymentMessage}; recovery=${rollbackMessage}`,
+        { cause: rollbackError },
       );
     }
 
@@ -211,7 +211,7 @@ export async function orchestrateStagingDeployment({
       releaseSha: release,
       previousSha: before.commitSha,
       deployId,
-      rollbackDeployId,
+      rollbackDeployId: rollback.deployId,
       failure:
         deploymentError instanceof Error ? deploymentError.message : 'unknown deployment error',
     };

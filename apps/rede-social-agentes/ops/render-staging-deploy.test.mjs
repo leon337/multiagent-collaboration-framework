@@ -1,4 +1,4 @@
-/* global Response, setTimeout */
+/* global Response, setTimeout, URL */
 
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
