@@ -1,5 +1,6 @@
 /* global console, fetch, process, setTimeout */
 
+import { appendFileSync } from 'node:fs';
 import { pathToFileURL, URL } from 'node:url';
 
 const commitPattern = /^[a-f0-9]{40}$/u;
@@ -231,7 +232,7 @@ function appendSummary(result) {
     `- Recovery deploy ID: \`${result.rollbackDeployId ?? 'not-required'}\``,
     '',
   ];
-  process.stdout.write(`::notice::${lines.join(' ')}\n`);
+  appendFileSync(path, `${lines.join('\n')}\n`, 'utf8');
 }
 
 async function main() {
