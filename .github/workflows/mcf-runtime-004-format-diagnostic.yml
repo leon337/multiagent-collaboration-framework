@@ -1,0 +1,58 @@
+name: MCF Runtime 004 Format Diagnostic
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-executable-skills-batch-1
+    paths:
+      - .github/workflows/mcf-runtime-004-format-diagnostic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/mcf-runtime-executable-skills-batch-1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Show Prettier version and config
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --version
+          pnpm exec prettier --find-config-path apps/server/src/mcf-runtime/human-delegation-guard.test.ts || true
+
+      - name: Check target explicitly
+        working-directory: apps/rede-social-agentes
+        continue-on-error: true
+        run: pnpm exec prettier --check apps/server/src/mcf-runtime/human-delegation-guard.test.ts
+
+      - name: Write target and show diff
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write apps/server/src/mcf-runtime/human-delegation-guard.test.ts
+          git diff -- apps/server/src/mcf-runtime/human-delegation-guard.test.ts || true
+
+      - name: Check workspace after write
+        working-directory: apps/rede-social-agentes
+        continue-on-error: true
+        run: pnpm format:check
+
+      - name: Show final working tree
+        run: git status --short
