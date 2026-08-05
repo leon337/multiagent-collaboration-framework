@@ -44,7 +44,8 @@ jobs:
           ref: ci/mcf-runtime-005-gate-b-auto-deploy
 
       - name: Parse workflow YAML
-        run: ruby -e "require 'yaml'; YAML.safe_load(File.read('.github/workflows/mcf-runtime-staging-deploy.yml'), aliases: true)"
+        run: |
+          ruby -e "require 'yaml'; YAML.safe_load(File.read('.github/workflows/mcf-runtime-staging-deploy.yml'), aliases: true)"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
