@@ -80,6 +80,27 @@ export class PostgresChatDispatchRepository implements ChatDispatchRepository {
     });
   }
 
+  async attachMission(
+    accountId: string,
+    dispatchId: string,
+    requestDigest: string,
+    missionId: string,
+  ): Promise<void> {
+    const result = await this.database.query(
+      `update "mcf_chat_dispatches"
+       set "mission_id" = $1, "updated_at" = now()
+       where "account_id" = $2
+         and "dispatch_id" = $3
+         and "request_digest" = $4
+         and "state" = 'IN_PROGRESS'
+         and "mission_id" is null`,
+      [missionId, accountId, dispatchId, requestDigest],
+    );
+    if (result.rowCount !== 1) {
+      throw new Error('MCF mission could not be attached to the dispatch reservation.');
+    }
+  }
+
   async complete(
     accountId: string,
     dispatchId: string,
@@ -89,27 +110,32 @@ export class PostgresChatDispatchRepository implements ChatDispatchRepository {
     const result = await this.database.query(
       `update "mcf_chat_dispatches"
        set "state" = 'COMPLETED',
-           "mission_id" = $1,
-           "response" = $2::jsonb,
+           "response" = $1::jsonb,
            "updated_at" = now()
-       where "account_id" = $3
-         and "dispatch_id" = $4
-         and "request_digest" = $5
+       where "account_id" = $2
+         and "dispatch_id" = $3
+         and "request_digest" = $4
+         and "mission_id" = $5
          and "state" = 'IN_PROGRESS'`,
-      [response.mission.id, JSON.stringify(response), accountId, dispatchId, requestDigest],
+      [JSON.stringify(response), accountId, dispatchId, requestDigest, response.mission.id],
     );
     if (result.rowCount !== 1) {
       throw new Error('MCF chat dispatch could not be completed from its reserved state.');
     }
   }
 
-  async release(accountId: string, dispatchId: string, requestDigest: string): Promise<void> {
+  async releaseUnattached(
+    accountId: string,
+    dispatchId: string,
+    requestDigest: string,
+  ): Promise<void> {
     await this.database.query(
       `delete from "mcf_chat_dispatches"
        where "account_id" = $1
          and "dispatch_id" = $2
          and "request_digest" = $3
-         and "state" = 'IN_PROGRESS'`,
+         and "state" = 'IN_PROGRESS'
+         and "mission_id" is null`,
       [accountId, dispatchId, requestDigest],
     );
   }
