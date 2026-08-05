@@ -21,7 +21,7 @@ describe('ChatMissionPlanner', () => {
     expect(plan.steps.every((step) => step.state === 'PLANNED_INTERNAL')).toBe(true);
     expect(plan.steps[1]).toMatchObject({
       skillId: 'MCF-SELECT-AGENTS',
-      handoffTo: 'Mestre',
+      handoffTo: 'Augusto',
     });
   });
 
