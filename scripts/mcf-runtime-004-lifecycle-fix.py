@@ -73,18 +73,9 @@ replace_once(
 )
 replace_once(
     service,
-    "          payload: { workflowRunId: request.workflowRunId },\n          idempotencyKey: `phase:${request.phaseId}:ci-completed:${request.workflowRunId}` ,",
-    "          payload: {\n            workflowRunId: request.workflowRunId,\n            skillId: phase.skillId,\n          },\n          idempotencyKey: `phase:${request.phaseId}:ci-completed:${request.workflowRunId}` ,",
+    "          payload: { workflowRunId: request.workflowRunId },\n          idempotencyKey: `phase:${request.phaseId}:ci-completed:${request.workflowRunId}`,",
+    "          payload: {\n            workflowRunId: request.workflowRunId,\n            skillId: phase.skillId,\n          },\n          idempotencyKey: `phase:${request.phaseId}:ci-completed:${request.workflowRunId}`,",
 )
-
-# The formatter may remove the space before the comma in the template above, so support the canonical form.
-text = Path(service).read_text()
-if "skillId: phase.skillId" not in text:
-    replace_once(
-        service,
-        "          payload: { workflowRunId: request.workflowRunId },\n          idempotencyKey: `phase:${request.phaseId}:ci-completed:${request.workflowRunId}` ,".replace("}` ,", "}`,"),
-        "          payload: {\n            workflowRunId: request.workflowRunId,\n            skillId: phase.skillId,\n          },\n          idempotencyKey: `phase:${request.phaseId}:ci-completed:${request.workflowRunId}` ,".replace("}` ,", "}`,"),
-    )
 
 mission_completed_block = """        event({
           missionId: request.missionId,
