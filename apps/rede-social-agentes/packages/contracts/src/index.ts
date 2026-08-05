@@ -49,6 +49,14 @@ export interface HealthResponse {
   timestamp: string;
 }
 
+export interface VersionResponse {
+  service: 'rede-social-agentes';
+  component: 'server';
+  commitSha: string | null;
+  branch: string | null;
+  runtime: 'render' | 'local';
+}
+
 export interface RegisterHumanAccountRequest {
   email: string;
   password: string;
