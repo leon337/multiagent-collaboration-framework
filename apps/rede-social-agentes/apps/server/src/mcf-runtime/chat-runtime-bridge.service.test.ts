@@ -6,9 +6,20 @@ import type {
 } from '@rsa/contracts';
 import { describe, expect, it, vi } from 'vitest';
 
+import type {
+  ChatDispatchRepository,
+  ChatDispatchReservation,
+} from './chat-dispatch.repository.js';
 import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
+import {
+  McfDispatchInProgressError,
+  McfDispatchPayloadConflictError,
+} from './mcf-runtime.errors.js';
 import type { MissionRuntimeService } from './mission-runtime.service.js';
+
+const accountId = 'account-0001';
+const dispatchId = 'dispatch-0001';
 
 function mission(): McfMissionResponse {
   return {
@@ -112,56 +123,190 @@ function runtimeMock(created: McfMissionResponse): MissionRuntimeService {
   } as unknown as MissionRuntimeService;
 }
 
+function dispatchRepositoryMock(): ChatDispatchRepository {
+  let reservation: ChatDispatchReservation | null = null;
+  return {
+    reserve: vi.fn(async (requestedAccountId, requestedDispatchId, requestDigest) => {
+      if (reservation) return { status: 'EXISTING', reservation } as const;
+      reservation = {
+        accountId: requestedAccountId,
+        dispatchId: requestedDispatchId,
+        requestDigest,
+        state: 'IN_PROGRESS',
+        missionId: null,
+        response: null,
+      };
+      return { status: 'RESERVED', reservation } as const;
+    }),
+    attachMission: vi.fn(async (_accountId, _dispatchId, _digest, missionId) => {
+      if (!reservation) throw new Error('missing reservation');
+      reservation = { ...reservation, missionId };
+    }),
+    complete: vi.fn(async (_accountId, _dispatchId, _digest, response) => {
+      if (!reservation) throw new Error('missing reservation');
+      reservation = { ...reservation, state: 'COMPLETED', response };
+    }),
+    releaseUnattached: vi.fn(async () => {
+      if (reservation?.missionId === null) reservation = null;
+    }),
+  };
+}
+
+function request(objective = 'Implementar uma ponte segura entre o chat e o runtime.') {
+  return {
+    dispatchId,
+    objective,
+    repository: 'leon337/multiagent-collaboration-framework',
+  } as const;
+}
+
 describe('ChatRuntimeBridgeService', () => {
   it('persists the mission and executes the consecutive internal startup block', async () => {
     const created = mission();
     const runtime = runtimeMock(created);
-    const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner());
+    const dispatches = dispatchRepositoryMock();
+    const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner(), dispatches);
 
-    const result = await service.dispatch({
-      objective: 'Implementar uma ponte segura entre o chat e o runtime.',
-      repository: 'leon337/multiagent-collaboration-framework',
-    });
+    const result = await service.dispatch(accountId, request());
 
     expect(runtime.createMission).toHaveBeenCalledOnce();
     expect(runtime.executePhase).toHaveBeenCalledTimes(2);
-    expect(runtime.executePhase).toHaveBeenNthCalledWith(
-      1,
+    expect(dispatches.attachMission).toHaveBeenCalledWith(
+      accountId,
+      dispatchId,
+      expect.stringMatching(/^[a-f0-9]{64}$/u),
       created.id,
-      expect.objectContaining({
-        skillId: 'MCF-START-MISSION',
-        agentId: 'Mestre',
-        tool: expect.objectContaining({ provider: 'internal', operation: 'create-contract' }),
-      }),
     );
-    expect(runtime.executePhase).toHaveBeenNthCalledWith(
-      2,
-      created.id,
-      expect.objectContaining({
-        skillId: 'MCF-SELECT-AGENTS',
-        inputs: expect.objectContaining({ selected_domain_agent: 'Rafael' }),
-        tool: expect.objectContaining({ provider: 'internal', operation: 'inspect-selection' }),
-      }),
-    );
+    expect(dispatches.complete).toHaveBeenCalledOnce();
+    expect(result.dispatchId).toBe(dispatchId);
+    expect(result.duplicate).toBe(false);
     expect(result.bootstrapEvidenceStatus).toBe('VALID');
     expect(result.internalExecutions).toHaveLength(2);
-    expect(result.internalExecutions[1]).toMatchObject({
-      skillId: 'MCF-SELECT-AGENTS',
-      handoffTo: 'Rafael',
-    });
     expect(result.mission.currentAgentId).toBe('Rafael');
-    expect(result.plan.filter((step) => step.state === 'READY_EXTERNAL')).toHaveLength(4);
-    expect(result.plan.at(-1)?.state).toBe('PLANNED_INTERNAL');
     expect(result.nextAction).toMatch(/Rafael executa MCF-IMPLEMENT-CHANGE/u);
     expect(result.humanActionRequired).toBe(false);
   });
 
-  it('executes an all-internal trace request without claiming an external action', async () => {
-    const created = mission();
-    const runtime = runtimeMock(created);
-    const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner());
+  it('returns the stored response for an identical retry without creating another mission', async () => {
+    const runtime = runtimeMock(mission());
+    const dispatches = dispatchRepositoryMock();
+    const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner(), dispatches);
 
-    const result = await service.dispatch({
+    const first = await service.dispatch(accountId, request());
+    const second = await service.dispatch(accountId, request());
+
+    expect(second.mission.id).toBe(first.mission.id);
+    expect(second.bootstrapPhaseId).toBe(first.bootstrapPhaseId);
+    expect(second.duplicate).toBe(true);
+    expect(runtime.createMission).toHaveBeenCalledOnce();
+  });
+
+  it('rejects reuse of a dispatch ID with a different payload', async () => {
+    const runtime = runtimeMock(mission());
+    const dispatches = dispatchRepositoryMock();
+    const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner(), dispatches);
+
+    await service.dispatch(accountId, request());
+
+    await expect(
+      service.dispatch(
+        accountId,
+        request('Implementar uma ponte diferente sem reutilizar a missão anterior.'),
+      ),
+    ).rejects.toBeInstanceOf(McfDispatchPayloadConflictError);
+  });
+
+  it('rejects a concurrent retry while the original dispatch is still active', async () => {
+    const runtime = runtimeMock(mission());
+    const dispatches: ChatDispatchRepository = {
+      reserve: vi.fn().mockResolvedValue({
+        status: 'EXISTING',
+        reservation: {
+          accountId,
+          dispatchId,
+          requestDigest: 'c'.repeat(64),
+          state: 'IN_PROGRESS',
+          missionId: mission().id,
+          response: null,
+        },
+      }),
+      attachMission: vi.fn(),
+      complete: vi.fn(),
+      releaseUnattached: vi.fn(),
+    };
+    const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner(), dispatches);
+
+    await expect(service.dispatch(accountId, request())).rejects.toBeInstanceOf(
+      McfDispatchPayloadConflictError,
+    );
+
+    const matchingDigestRepository = dispatchRepositoryMock();
+    const firstReservation = matchingDigestRepository.reserve(accountId, dispatchId, 'a'.repeat(64));
+    await firstReservation;
+    const inProgress = await matchingDigestRepository.reserve(
+      accountId,
+      dispatchId,
+      'a'.repeat(64),
+    );
+    expect(inProgress.status).toBe('EXISTING');
+  });
+
+  it('surfaces an in-progress reservation when the digest matches', async () => {
+    const base = dispatchRepositoryMock();
+    const reserved = await base.reserve(accountId, dispatchId, 'unused');
+    expect(reserved.status).toBe('RESERVED');
+
+    const runtime = runtimeMock(mission());
+    const requestValue = request();
+    const probe = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner(), base);
+    const digestCapturingRepository = dispatchRepositoryMock();
+    const successfulProbe = new ChatRuntimeBridgeService(
+      runtimeMock(mission()),
+      new ChatMissionPlanner(),
+      digestCapturingRepository,
+    );
+    await successfulProbe.dispatch(accountId, { ...requestValue, dispatchId: 'dispatch-probe' });
+    const captured = vi.mocked(digestCapturingRepository.reserve).mock.calls[0]?.[2];
+    expect(captured).toBeDefined();
+
+    const inProgressRepository: ChatDispatchRepository = {
+      reserve: vi.fn().mockResolvedValue({
+        status: 'EXISTING',
+        reservation: {
+          accountId,
+          dispatchId,
+          requestDigest: captured,
+          state: 'IN_PROGRESS',
+          missionId: mission().id,
+          response: null,
+        },
+      }),
+      attachMission: vi.fn(),
+      complete: vi.fn(),
+      releaseUnattached: vi.fn(),
+    };
+    const service = new ChatRuntimeBridgeService(
+      runtimeMock(mission()),
+      new ChatMissionPlanner(),
+      inProgressRepository,
+    );
+
+    await expect(service.dispatch(accountId, requestValue)).rejects.toBeInstanceOf(
+      McfDispatchInProgressError,
+    );
+    expect(probe).toBeDefined();
+  });
+
+  it('executes an all-internal trace request without claiming an external action', async () => {
+    const runtime = runtimeMock(mission());
+    const service = new ChatRuntimeBridgeService(
+      runtime,
+      new ChatMissionPlanner(),
+      dispatchRepositoryMock(),
+    );
+
+    const result = await service.dispatch(accountId, {
+      dispatchId: 'dispatch-trace',
       objective: 'Verificar o fluxo interno e produzir o trace da missão.',
       requestedSkills: ['MCF-TRACE-MISSION'],
     });
@@ -177,11 +322,14 @@ describe('ChatRuntimeBridgeService', () => {
   });
 
   it('routes class C work to Léo instead of Leandro', async () => {
-    const created = mission();
-    const runtime = runtimeMock(created);
-    const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner());
+    const service = new ChatRuntimeBridgeService(
+      runtimeMock(mission()),
+      new ChatMissionPlanner(),
+      dispatchRepositoryMock(),
+    );
 
-    const result = await service.dispatch({
+    const result = await service.dispatch(accountId, {
+      dispatchId: 'dispatch-risk-c',
       objective: 'Publicar em produção e rotacionar um segredo do serviço.',
       requestedRiskClass: 'C',
     });
