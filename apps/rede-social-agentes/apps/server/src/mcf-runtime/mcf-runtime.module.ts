@@ -3,6 +3,10 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../database.module.js';
 import { DatabaseService } from '../database.service.js';
 import { IdentityModule } from '../identity/identity.module.js';
+import {
+  CHAT_DISPATCH_REPOSITORY,
+  type ChatDispatchRepository,
+} from './chat-dispatch.repository.js';
 import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
@@ -12,6 +16,7 @@ import { MissionRuntimeService } from './mission-runtime.service.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
 import { OrderedMcfRuntimeRepository } from './ordered-mcf-runtime.repository.js';
 import { PermissionEngine } from './permission-engine.js';
+import { PostgresChatDispatchRepository } from './postgres-chat-dispatch.repository.js';
 import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
 import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 import { SkillExecutor } from './skill-executor.js';
@@ -37,6 +42,15 @@ import { SocialTimelineService } from './social-timeline.service.js';
       provide: PostgresMcfRuntimeRepository,
       useFactory: (database: DatabaseService) => new PostgresMcfRuntimeRepository(database),
       inject: [DatabaseService],
+    },
+    {
+      provide: PostgresChatDispatchRepository,
+      useFactory: (database: DatabaseService) => new PostgresChatDispatchRepository(database),
+      inject: [DatabaseService],
+    },
+    {
+      provide: CHAT_DISPATCH_REPOSITORY,
+      useExisting: PostgresChatDispatchRepository,
     },
     {
       provide: OrderedMcfRuntimeRepository,
@@ -69,9 +83,12 @@ import { SocialTimelineService } from './social-timeline.service.js';
     },
     {
       provide: ChatRuntimeBridgeService,
-      useFactory: (runtime: MissionRuntimeService, planner: ChatMissionPlanner) =>
-        new ChatRuntimeBridgeService(runtime, planner),
-      inject: [MissionRuntimeService, ChatMissionPlanner],
+      useFactory: (
+        runtime: MissionRuntimeService,
+        planner: ChatMissionPlanner,
+        dispatches: ChatDispatchRepository,
+      ) => new ChatRuntimeBridgeService(runtime, planner, dispatches),
+      inject: [MissionRuntimeService, ChatMissionPlanner, CHAT_DISPATCH_REPOSITORY],
     },
     SocialTimelineService,
   ],
