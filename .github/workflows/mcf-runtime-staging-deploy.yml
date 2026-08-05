@@ -80,15 +80,31 @@ jobs:
         working-directory: apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
 
-      - name: Run release gates
+      - name: Verify formatting
         working-directory: apps/rede-social-agentes
-        run: pnpm verify
+        run: pnpm format:check
+
+      - name: Lint
+        working-directory: apps/rede-social-agentes
+        run: pnpm lint
+
+      - name: Typecheck
+        working-directory: apps/rede-social-agentes
+        run: pnpm typecheck
 
       - name: Apply migrations twice in CI database
         working-directory: apps/rede-social-agentes
         run: |
           pnpm --filter @rsa/database db:migrate
           pnpm --filter @rsa/database db:migrate
+
+      - name: Test
+        working-directory: apps/rede-social-agentes
+        run: pnpm test
+
+      - name: Build
+        working-directory: apps/rede-social-agentes
+        run: pnpm build
 
       - name: Validate rollout Compose configuration
         working-directory: apps/rede-social-agentes
