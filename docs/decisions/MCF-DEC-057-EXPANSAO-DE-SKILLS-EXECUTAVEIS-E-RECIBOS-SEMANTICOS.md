@@ -3,7 +3,7 @@
 ## Estado
 
 ```yaml
-status: CANDIDATA_PARA_GATE
+status: APROVADA_E_VALIDADA_EM_STAGING
 mission: MCF-RUNTIME-004
 owner: Leo
 human_final_authority: Leandro
@@ -63,6 +63,8 @@ READY_EXTERNAL: ferramenta externa e recibo ainda necessários
 ```
 
 Uma skill interna posicionada depois de uma fase externa não é antecipada. Por exemplo, `MCF-TRACE-MISSION` permanece `PLANNED_INTERNAL` até que as fases anteriores sejam concluídas.
+
+Quando a missão contém apenas skills internas, não existe fase externa para interromper o bloco. Nesse caso, o bridge executa `MCF-START-MISSION`, `MCF-SELECT-AGENTS` e `MCF-TRACE-MISSION` em sequência; o trace final pode concluir a missão no próprio dispatch.
 
 ## Handoff dinâmico
 
@@ -173,9 +175,41 @@ risk_downgrade: blocked
 leandro_in_contract: blocked
 leandro_as_executor: blocked
 leandro_as_handoff: blocked
-format_lint_typecheck: required
-migrations_twice: required
-tests_build: required
-container_smoke: required
-staging_e2e: required_before_final_closure
+format_lint_typecheck: passed
+migrations_twice: passed
+tests_build: passed
+container_smoke: passed
+staging_e2e: passed
 ```
+
+## Evidências de validação
+
+```yaml
+runtime_deploy:
+  service: mcf-runtime-staging-api
+  commit: 1b874745fff03e6a11311dd0f2e6e2fcbdb78644
+  deploy_id: dep-d9p8ann10e5c73cns5ng
+  status: live
+hdf_staging_e2e:
+  workflow_run_id: 30963759073
+  job_id: 92181398156
+  conclusion: success
+eight_skill_staging_e2e:
+  workflow: MCF Runtime V2 E2E
+  workflow_run_id: 30968396598
+  job_id: 92187240740
+  tested_commit: cbf6d2b738b8f7010c73e57e27fcd0dc1b61b2c7
+  conclusion: success
+  verified:
+    - eight_executable_skills_recognized
+    - initial_internal_block_persisted
+    - external_phases_wait_for_real_receipts
+    - ci_callback_completes_phase_only
+    - duplicate_callback_is_idempotent
+    - production_deploy_without_gate_is_blocked
+    - incomplete_external_mission_does_not_close
+    - internal_only_mission_closes_on_bridge_final_trace
+    - technical_session_revoked
+```
+
+A execução E2E não fabricou recibos de GitHub, Render, Vercel ou Cloudflare. Revisão, PR/release e deploy permaneceram pendentes quando não havia recibo externo confiável, preservando o limite declarado nesta decisão.
