@@ -19,6 +19,20 @@ export class McfMissionVersionConflictError extends Error {
   }
 }
 
+export class McfDispatchPayloadConflictError extends Error {
+  constructor(dispatchId: string) {
+    super(`MCF dispatch ID was already used with a different payload: ${dispatchId}`);
+    this.name = 'McfDispatchPayloadConflictError';
+  }
+}
+
+export class McfDispatchInProgressError extends Error {
+  constructor(dispatchId: string) {
+    super(`MCF dispatch is still in progress: ${dispatchId}`);
+    this.name = 'McfDispatchInProgressError';
+  }
+}
+
 export class McfSkillNotFoundError extends Error {
   constructor(skillId: string) {
     super(`MCF skill not found: ${skillId}`);
