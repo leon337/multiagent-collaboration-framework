@@ -1,0 +1,73 @@
+name: MCF Runtime 005 Staging Version Probe
+
+on:
+  push:
+    branches:
+      - test/mcf-runtime-005-staging-version-probe
+    paths:
+      - .github/workflows/mcf-runtime-005-staging-version-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUNTIME_URL: https://mcf-runtime-staging-api.onrender.com
+      EXPECTED_SHA: dbc3ab1ceebc9426fada530f5d91d59b440f3029
+    steps:
+      - name: Probe readiness and exact deployed version
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready_file="$(mktemp)"
+          version_file="$(mktemp)"
+
+          ready_status="$(curl --silent --show-error --location --max-time 30 \
+            --output "$ready_file" --write-out '%{http_code}' \
+            "$RUNTIME_URL/health/ready")"
+          test "$ready_status" = "200"
+
+          version_status="$(curl --silent --show-error --location --max-time 30 \
+            --output "$version_file" --write-out '%{http_code}' \
+            "$RUNTIME_URL/health/version")"
+          test "$version_status" = "200"
+
+          node - "$ready_file" "$version_file" "$EXPECTED_SHA" "$GITHUB_STEP_SUMMARY" <<'NODE'
+          const fs = require('node:fs');
+          const [readyPath, versionPath, expectedSha, summaryPath] = process.argv.slice(2);
+          const ready = JSON.parse(fs.readFileSync(readyPath, 'utf8'));
+          const version = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+
+          if (ready.status !== 'ok') {
+            throw new Error(`Unexpected readiness payload: ${JSON.stringify(ready)}`);
+          }
+          if (version.commitSha !== expectedSha) {
+            throw new Error(
+              `Expected commit ${expectedSha}, received ${JSON.stringify(version.commitSha)}`,
+            );
+          }
+          if (version.branch !== 'main') {
+            throw new Error(`Expected main branch, received ${JSON.stringify(version.branch)}`);
+          }
+          if (version.runtime !== 'render') {
+            throw new Error(`Expected render runtime, received ${JSON.stringify(version.runtime)}`);
+          }
+
+          fs.appendFileSync(
+            summaryPath,
+            [
+              '## MCF Runtime 005 — staging probe',
+              '',
+              '- Readiness HTTP: `200`',
+              '- Readiness payload: `ok`',
+              `- Deployed commit: \`${version.commitSha}\``,
+              `- Branch: \`${version.branch}\``,
+              `- Runtime: \`${version.runtime}\``,
+              '- Verdict: `PASS`',
+              '',
+            ].join('\n'),
+          );
+          NODE
