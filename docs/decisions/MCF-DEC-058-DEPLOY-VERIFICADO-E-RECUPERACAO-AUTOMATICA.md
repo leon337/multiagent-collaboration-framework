@@ -3,7 +3,7 @@
 ## Estado
 
 ```yaml
-status: GATE_A_VALIDADO_EM_STAGING_GATE_B_AGUARDANDO_SECRET_ENTRY
+status: APROVADA_E_VALIDADA_EM_STAGING
 mission: MCF-RUNTIME-005
 owner: Leo
 human_final_authority: Leandro
@@ -11,19 +11,17 @@ human_final_authority: Leandro
 
 ## Contexto
 
-O serviço `mcf-runtime-staging-api` usa a branch `main`, possui health check em `/health/ready` e está com auto-deploy desativado. A implantação atual depende de uma chamada explícita ao Render.
+O serviço `mcf-runtime-staging-api` usa a branch `main`, possui health check em `/health/ready` e mantém o auto-deploy nativo do Render desativado. A implantação é coordenada pelo GitHub Actions por meio de um deploy hook restrito.
 
-Os gates de CI, migrations, health e E2E já existem, mas ainda não formam um pipeline único que:
+O pipeline precisava:
 
-1. identifique a versão atualmente saudável;
-2. implante um SHA exato;
-3. confirme que o novo SHA está atendendo tráfego;
-4. execute smoke pós-deploy;
-5. recupere a versão anterior em caso de falha.
+1. identificar a versão atualmente saudável;
+2. implantar um SHA exato;
+3. confirmar que o novo SHA atende tráfego;
+4. executar smoke antes e depois do deploy;
+5. recuperar o SHA saudável anterior em caso de falha.
 
 ## Decisão
-
-O primeiro recorte de deploy controlado possui duas etapas.
 
 ### Gate A — implementação e prova manual
 
@@ -31,12 +29,13 @@ O primeiro recorte de deploy controlado possui duas etapas.
 version_endpoint: GET /health/version
 deploy_trigger: Render deploy hook with ref=release_sha
 pre_deploy_gates:
+  - container_smoke
   - format
   - lint
   - typecheck
+  - migrations_twice
   - tests
   - build
-  - migrations_twice
 post_deploy_evidence:
   - exact_commit_sha
   - health_ready_200
@@ -47,15 +46,17 @@ status: VALIDADO_EM_STAGING
 
 ### Gate B — ativação automática
 
-Após a prova real do Gate A:
-
 ```yaml
 trigger: eligible_push_to_main
+eligible_paths:
+  - apps/rede-social-agentes/**
+  - skills/**
+  - .github/workflows/mcf-runtime-staging-deploy.yml
 credential: repository_secret_RENDER_DEPLOY_HOOK_URL
 overlapping_deploys: serialized
 failed_release: workflow_failure_even_when_recovered
 automatic_publication: false
-status: BLOQUEADO_APENAS_POR_SECRET_ENTRY
+status: VALIDADO_EM_STAGING
 ```
 
 ## Endpoint de versão
@@ -77,6 +78,7 @@ A resposta não inclui banco, tokens, deploy hook, variáveis arbitrárias ou ou
 ```text
 consultar /health/version e /health/ready
 → preservar SHA saudável anterior
+→ executar container smoke e gates de código/banco
 → acionar deploy hook com ref=release_sha
 → aguardar /health/version == release_sha
 → exigir /health/ready HTTP 200
@@ -97,36 +99,32 @@ Manter o workflow vermelho após uma recuperação evita tratar uma versão reje
 
 ## Terminologia
 
-O mecanismo inicial é **recuperação por redeploy do SHA anterior**. Ele não deve ser chamado de rollback nativo por artefato.
+O mecanismo implementado é **recuperação por redeploy do SHA saudável anterior**. Ele não é rollback nativo por artefato ou por `deployId`.
 
-O Render possui uma API própria para rollback de um `deployId` anterior, mas essa operação não está disponível no conector operacional atual. A integração futura poderá substituir o redeploy por rollback nativo sem alterar os contratos de health e evidência.
+Uma futura integração poderá usar o rollback nativo do Render sem alterar os contratos de health, versão e evidência.
 
 ## Segurança
 
-- o deploy hook deve permanecer em `RENDER_DEPLOY_HOOK_URL` no GitHub Actions;
-- o valor do hook nunca pode aparecer nos logs;
+- o deploy hook permanece em `RENDER_DEPLOY_HOOK_URL` no GitHub Actions;
+- o valor do hook nunca aparece nos logs;
 - somente HTTPS é aceito;
 - o SHA deve possuir exatamente 40 caracteres hexadecimais;
 - nenhum deploy começa se a versão atual não estiver saudável;
-- o SHA anterior é observado diretamente no runtime antes da implantação;
+- o SHA anterior é observado diretamente no runtime;
 - deploys concorrentes usam um grupo de concorrência serializado;
-- a configuração inicial não dispara automaticamente em pushes;
-- ativação automática exige prova real e decisão de gate.
+- alterações apenas em documentação não disparam deploy;
+- alterações no runtime, no registro de skills ou no próprio workflow disparam o pipeline completo.
 
 ## Human Delegation Firewall
 
-O agente não consegue ler ou transferir a credencial privada do Render para o GitHub.
-
-A única intervenção humana admissível é:
+A única intervenção humana usada foi o cadastro protegido do deploy hook como `RENDER_DEPLOY_HOOK_URL`. O valor não foi exibido à equipe nem registrado em logs.
 
 ```yaml
 trigger: SECRET_ENTRY
 mode: TEAM_FIRST
 action_count: 1
-action: cadastrar o deploy hook restrito como RENDER_DEPLOY_HOOK_URL
+result: COMPLETED
 ```
-
-Código, testes, documentação, deploy do endpoint de versão e sonda de staging já foram aprovados. Portanto, a entrada do secret é agora o único bloqueio material do Gate B.
 
 ## Critérios de aceite
 
@@ -137,13 +135,15 @@ successful_deploy_test: passed
 failed_smoke_recovery_test: passed
 hook_secret_not_logged: passed
 workflow_manual_gate: passed
+workflow_automatic_gate: passed
 format_lint_typecheck: passed
 migrations_twice: passed
 tests_build: passed
 container_smoke: passed
 staging_version_probe: passed
-real_deploy_hook_proof: pending_secret_entry
-automatic_trigger: forbidden_before_gate_B
+real_deploy_hook_proof: passed
+controlled_recovery_proof: passed
+skills_registry_trigger: passed
 ```
 
 ## Evidências do Gate A
@@ -158,34 +158,74 @@ render_deploy:
   commit: dbc3ab1ceebc9426fada530f5d91d59b440f3029
   status: live
 staging_probe:
-  workflow: MCF Runtime 005 Staging Version Probe
   workflow_run_id: 30971073274
   job_id: 92195305148
   conclusion: success
   verified:
     - health_ready_http_200
-    - health_ready_payload_ok
     - exact_deployed_commit
     - branch_main
     - runtime_render
-quality_gates:
-  documentation_validation: passed
-  format: passed
-  lint: passed
-  typecheck: passed
-  migrations_twice: passed
-  tests: passed
-  build: passed
-  container_smoke: passed
 ```
 
-A sonda efêmera foi removida após a coleta da evidência. O workflow permanente de deploy continua manual e não executa enquanto `RENDER_DEPLOY_HOOK_URL` não existir no repositório.
+## Evidências do Gate B
+
+### Primeira execução automática
+
+```yaml
+integration:
+  pull_request: 65
+  merge_sha: 33393e38b081c61e346550de3a5efc1fdb3b902a
+workflow:
+  workflow_run_id: 31018375874
+  job_id: 92348364078
+  conclusion: success
+render_deploy:
+  deploy_id: dep-d9pl2re417fc73e5jk5g
+  commit: 33393e38b081c61e346550de3a5efc1fdb3b902a
+  status: live
+```
+
+### Cobertura do registro de skills
+
+```yaml
+integration:
+  pull_request: 66
+  merge_sha: 73bf566bd71211e071fc20d3380c7e4c088e694c
+workflow:
+  workflow_run_id: 31019039045
+  job_id: 92350650534
+  conclusion: success
+render_deploy:
+  deploy_id: dep-d9pl691t0dsc73dth65g
+  commit: 73bf566bd71211e071fc20d3380c7e4c088e694c
+  status: live
+```
+
+### Prova controlada de recuperação
+
+```yaml
+workflow:
+  workflow_run_id: 31019457962
+  job_id: 92352078914
+  conclusion: success
+failure_target: ffffffffffffffffffffffffffffffffffffffff
+orchestrator_status: RECOVERED
+healthy_sha_before: 73bf566bd71211e071fc20d3380c7e4c088e694c
+healthy_sha_after: 73bf566bd71211e071fc20d3380c7e4c088e694c
+recovery_deploy_id: dep-d9pl98nukhjdid0ivm1g
+readiness_after_recovery: passed
+database_change: none
+secret_exposure: none
+```
+
+A sonda efêmera de recuperação foi removida após a coleta das evidências.
 
 ## Limites
 
-- o pipeline inicial cobre somente staging;
-- o banco não é revertido por um rollback de aplicação;
-- migrations incompatíveis ou destrutivas exigem uma estratégia própria de compatibilidade e restore;
+- o pipeline cobre somente staging;
+- o banco não é revertido por uma recuperação da aplicação;
+- migrations incompatíveis ou destrutivas exigem compatibilidade ou restore próprio;
 - o filesystem do serviço permanece efêmero;
-- recovery por commit depende de o commit continuar acessível no repositório vinculado;
-- o Gate B não é considerado concluído enquanto o secret restrito não estiver configurado e testado.
+- recovery por commit depende de o commit continuar acessível no repositório;
+- rollback nativo por artefato do Render permanece fora do escopo desta decisão.
