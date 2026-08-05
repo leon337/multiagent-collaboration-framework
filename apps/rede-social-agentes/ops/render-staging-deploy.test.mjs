@@ -3,10 +3,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import {
-  deploymentHookForCommit,
-  orchestrateStagingDeployment,
-} from './render-staging-deploy.mjs';
+import { deploymentHookForCommit, orchestrateStagingDeployment } from './render-staging-deploy.mjs';
 
 const previousSha = 'a'.repeat(40);
 const releaseSha = 'b'.repeat(40);
