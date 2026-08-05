@@ -1,6 +1,9 @@
+/* global console, fetch */
+
 import { randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
+import process from 'node:process';
 
 const requiredEnvironment = [
   'MCF_RUNTIME_URL',
@@ -373,6 +376,7 @@ async function main() {
   sessionToken = session.token;
   console.log(`::add-mask::${sessionToken}`);
 
+  let executionError = null;
   try {
     const dispatch = await dispatchFullMission();
     const pendingState = await proveExternalWaitingStates(dispatch);
@@ -398,15 +402,24 @@ async function main() {
       '- Verdict: `PASS`',
       '',
     ]);
-  } finally {
-    if (sessionToken) {
-      const revoked = await request('/v1/sessions/current', { method: 'DELETE' });
-      if (!revoked.response.ok) {
-        throw new Error(`Session revocation failed (${revoked.response.status}): ${revoked.text}`);
-      }
+  } catch (error) {
+    executionError = error;
+  }
+
+  let revocationError = null;
+  if (sessionToken) {
+    const revoked = await request('/v1/sessions/current', { method: 'DELETE' });
+    if (!revoked.response.ok) {
+      revocationError = new Error(
+        `Session revocation failed (${revoked.response.status}): ${revoked.text}`,
+      );
+    } else {
       summarize(['- Technical session revoked: `PASS`', '']);
     }
   }
+
+  if (executionError) throw executionError;
+  if (revocationError) throw revocationError;
 }
 
 main().catch((error) => {
