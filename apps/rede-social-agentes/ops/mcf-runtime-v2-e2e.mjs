@@ -330,32 +330,27 @@ async function proveInternalOnlyMissionCanClose() {
     method: 'POST',
     body: {
       objective: 'Planejar e registrar um checkpoint interno verificável.',
-      expectedOutcome: 'Missão interna concluída somente após trace final.',
+      expectedOutcome: 'Missão interna concluída pelo trace final do próprio bridge.',
       requestedRiskClass: 'A',
       requestedSkills: ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-TRACE-MISSION'],
     },
   });
-  assert(dispatch.internalExecutions.length === 2, 'Internal mission bootstrap is incomplete');
 
-  const trace = await executePhase(dispatch.mission.id, dispatch.mission.version, {
-    skillId: 'MCF-TRACE-MISSION',
-    agentId: 'Augusto',
-    inputs: {
-      mission_execution: { missionId: dispatch.mission.id, checkpoint: 'final' },
-      final_checkpoint: true,
-    },
-    tool: {
-      provider: 'internal',
-      operation: 'inspect-mission',
-      resource: dispatch.mission.id,
-    },
-  });
-  assert(trace.evidenceStatus === 'VALID', 'Internal final trace evidence must be VALID');
+  assert(dispatch.internalExecutions.length === 3, 'Expected three internal executions');
   assert(
-    trace.mission.state === 'COMPLETED',
-    'Internal-only mission did not complete at final trace',
+    dispatch.internalExecutions.every((entry) => entry.evidenceStatus === 'VALID'),
+    'Internal-only mission contains invalid evidence',
   );
-  return trace.mission;
+  assert(
+    dispatch.internalExecutions.map((entry) => entry.skillId).join(',') ===
+      'MCF-START-MISSION,MCF-SELECT-AGENTS,MCF-TRACE-MISSION',
+    'Internal-only mission executed an unexpected skill order',
+  );
+  assert(
+    dispatch.mission.state === 'COMPLETED',
+    'Internal-only mission did not complete in the bridge final trace',
+  );
+  return dispatch.mission;
 }
 
 async function main() {
