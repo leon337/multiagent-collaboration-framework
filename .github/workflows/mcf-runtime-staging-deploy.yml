@@ -49,7 +49,7 @@ jobs:
       LOG_LEVEL: error
       MCF_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
       RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-      RELEASE_SHA: ${{ inputs.release_sha || github.sha }}
+      RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
       DEPLOY_TIMEOUT_MS: 1200000
       DEPLOY_POLL_INTERVAL_MS: 10000
 
@@ -63,7 +63,7 @@ jobs:
       - name: Checkout release revision
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_sha || github.sha }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
