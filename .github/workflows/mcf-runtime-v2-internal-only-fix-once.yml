@@ -1,0 +1,98 @@
+name: MCF Runtime V2 Internal Lifecycle Fix Once
+
+on:
+  push:
+    branches:
+      - test/mcf-runtime-v2-internal-only-lifecycle
+    paths:
+      - .github/workflows/mcf-runtime-v2-internal-only-fix-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: test/mcf-runtime-v2-internal-only-lifecycle
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Correct internal-only lifecycle assertion
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          path = Path('apps/rede-social-agentes/ops/mcf-runtime-v2-e2e.mjs')
+          text = path.read_text()
+          start_marker = 'async function proveInternalOnlyMissionCanClose() {'
+          end_marker = '\n}\n\nasync function main()'
+          start = text.index(start_marker)
+          end = text.index(end_marker, start) + 2
+
+          replacement = '''async function proveInternalOnlyMissionCanClose() {
+            const dispatch = await requireSuccess('/v1/mcf/chat/dispatch', {
+              method: 'POST',
+              body: {
+                objective: 'Planejar e registrar um checkpoint interno verificável.',
+                expectedOutcome: 'Missão interna concluída pelo trace final do próprio bridge.',
+                requestedRiskClass: 'A',
+                requestedSkills: [
+                  'MCF-START-MISSION',
+                  'MCF-SELECT-AGENTS',
+                  'MCF-TRACE-MISSION',
+                ],
+              },
+            });
+
+            assert(dispatch.internalExecutions.length === 3, 'Expected three internal executions');
+            assert(
+              dispatch.internalExecutions.every((entry) => entry.evidenceStatus === 'VALID'),
+              'Internal-only mission contains invalid evidence',
+            );
+            assert(
+              dispatch.internalExecutions.map((entry) => entry.skillId).join(',') ===
+                'MCF-START-MISSION,MCF-SELECT-AGENTS,MCF-TRACE-MISSION',
+              'Internal-only mission executed an unexpected skill order',
+            );
+            assert(
+              dispatch.mission.state === 'COMPLETED',
+              'Internal-only mission did not complete in the bridge final trace',
+            );
+            return dispatch.mission;
+          }'''
+
+          text = text[:start] + replacement + text[end:]
+          path.write_text(text)
+          PY
+
+      - name: Format and lint corrected script
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write ops/mcf-runtime-v2-e2e.mjs
+          pnpm exec eslint ops/mcf-runtime-v2-e2e.mjs
+          node --check ops/mcf-runtime-v2-e2e.mjs
+
+      - name: Commit correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/rede-social-agentes/ops/mcf-runtime-v2-e2e.mjs
+          git commit -m "fix(mcf): align internal-only E2E with bridge lifecycle"
+          git push origin HEAD:test/mcf-runtime-v2-internal-only-lifecycle
