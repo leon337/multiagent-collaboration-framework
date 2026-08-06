@@ -134,7 +134,10 @@ function checkRun(input: {
 }
 
 function json(payload: unknown, status = 200, headers?: HeadersInit): Response {
-  return new Response(JSON.stringify(payload), { status, headers });
+  return new Response(JSON.stringify(payload), {
+    status,
+    ...(headers ? { headers } : {}),
+  });
 }
 
 function standardFetcher(input: {
