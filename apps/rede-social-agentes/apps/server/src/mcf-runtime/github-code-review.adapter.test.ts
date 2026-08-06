@@ -2,7 +2,11 @@ import type { McfSkillDefinition } from '@rsa/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EvidenceValidator } from './evidence-validator.js';
-import { GitHubCodeReviewAdapter, GitHubReadClient } from './github-code-review.adapter.js';
+import {
+  GITHUB_CODE_REVIEW_TIMEOUT_MS,
+  GitHubCodeReviewAdapter,
+  GitHubReadClient,
+} from './github-code-review.adapter.js';
 
 const skill: McfSkillDefinition = {
   skillId: 'MCF-REVIEW-CODE',
@@ -381,5 +385,71 @@ describe('GitHubCodeReviewAdapter', () => {
       operation: 'inspect-code',
       commitSha,
     });
+  });
+
+  it('rejects a repository input that differs from the declared tool resource before fetching', async () => {
+    const fetcher = vi.fn(async () => new Response('{}', { status: 500 }));
+    const adapter = new GitHubCodeReviewAdapter(
+      new EvidenceValidator(),
+      new GitHubReadClient(fetcher, undefined),
+    );
+
+    await expect(
+      adapter.execute({
+        skill,
+        agentId: 'Vinicius',
+        inputs: {
+          repository: 'leon337/other-private-repository',
+          diff_or_commit: 'PR #70',
+        },
+        tool: {
+          provider: 'github',
+          operation: 'inspect-code',
+          resource: 'leon337/multiagent-collaboration-framework',
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_CONTEXT', retryable: false });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('aborts a review at the global deadline before the external action lease can expire', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher = vi.fn(
+        async (_url: string, init?: RequestInit) =>
+          await new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener(
+              'abort',
+              () => reject(new DOMException('Aborted', 'AbortError')),
+              { once: true },
+            );
+          }),
+      );
+      const adapter = new GitHubCodeReviewAdapter(
+        new EvidenceValidator(),
+        new GitHubReadClient(fetcher, undefined),
+      );
+      const rejection = expect(
+        adapter.execute({
+          skill,
+          agentId: 'Vinicius',
+          inputs: {
+            repository: 'leon337/multiagent-collaboration-framework',
+            diff_or_commit: 'PR #70',
+          },
+          tool: {
+            provider: 'github',
+            operation: 'inspect-code',
+            resource: 'leon337/multiagent-collaboration-framework',
+          },
+        }),
+      ).rejects.toMatchObject({ code: 'ADAPTER_TIMEOUT', retryable: true });
+
+      await vi.advanceTimersByTimeAsync(GITHUB_CODE_REVIEW_TIMEOUT_MS);
+      await rejection;
+      expect(fetcher).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

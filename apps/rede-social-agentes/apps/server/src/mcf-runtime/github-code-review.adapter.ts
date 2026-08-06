@@ -6,6 +6,7 @@ import {
   type ExternalActionAdapter,
   type ExternalActionRequest,
 } from './external-action.contracts.js';
+import { EXTERNAL_ACTION_LEASE_MS } from './external-action-reservation.js';
 import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';
 
 interface GitHubPullResponse {
@@ -48,6 +49,12 @@ interface ReviewTarget {
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
+export const GITHUB_CODE_REVIEW_TIMEOUT_MS = 5 * 60_000;
+
+if (GITHUB_CODE_REVIEW_TIMEOUT_MS >= EXTERNAL_ACTION_LEASE_MS) {
+  throw new Error('GitHub code review timeout must remain shorter than the external action lease');
+}
+
 function repositoryFromValue(value: string): string | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
@@ -82,17 +89,41 @@ function repositoryFromValue(value: string): string | null {
 }
 
 function resolveTarget(request: ExternalActionRequest): ReviewTarget {
-  const repositoryInput = request.inputs.repository;
-  const repository = repositoryFromValue(
-    typeof repositoryInput === 'string' ? repositoryInput : request.tool.resource,
-  );
-  if (!repository) {
+  const declaredRepository = repositoryFromValue(request.tool.resource);
+  if (!declaredRepository) {
     throw new ExternalActionAdapterError(
       'UNSUPPORTED_TARGET',
-      'GitHub code review requires repository in owner/name format',
+      'GitHub code review requires tool.resource in owner/name format',
       false,
     );
   }
+
+  const repositoryInput = request.inputs.repository;
+  if (repositoryInput !== undefined) {
+    if (typeof repositoryInput !== 'string') {
+      throw new ExternalActionAdapterError(
+        'INVALID_CONTEXT',
+        'GitHub repository input must be a string when provided',
+        false,
+      );
+    }
+    const inputRepository = repositoryFromValue(repositoryInput);
+    if (!inputRepository) {
+      throw new ExternalActionAdapterError(
+        'UNSUPPORTED_TARGET',
+        'GitHub code review requires repository in owner/name format',
+        false,
+      );
+    }
+    if (inputRepository.toLowerCase() !== declaredRepository.toLowerCase()) {
+      throw new ExternalActionAdapterError(
+        'INVALID_CONTEXT',
+        'GitHub repository input must match the declared tool resource',
+        false,
+      );
+    }
+  }
+  const repository = declaredRepository;
 
   const target = request.inputs.diff_or_commit;
   if (typeof target === 'number' && Number.isInteger(target) && target > 0) {
@@ -257,69 +288,102 @@ export class GitHubReadClient {
       process.env.GITHUB_TOKEN,
   ) {}
 
-  async getJson<T>(path: string): Promise<T> {
-    let response: Response;
-    try {
-      response = await this.fetcher(`https://api.github.com${path}`, {
-        method: 'GET',
-        headers: {
-          Accept: 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28',
-          'User-Agent': 'mcf-runtime-code-review-adapter',
-          ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
-        },
-      });
-    } catch (error) {
+  async getJson<T>(
+    path: string,
+    deadlineAt: number = Date.now() + GITHUB_CODE_REVIEW_TIMEOUT_MS,
+  ): Promise<T> {
+    const remainingMilliseconds = deadlineAt - Date.now();
+    if (remainingMilliseconds <= 0) {
       throw new ExternalActionAdapterError(
-        'NETWORK_FAILURE',
-        error instanceof Error ? error.message : 'GitHub network request failed',
+        'ADAPTER_TIMEOUT',
+        'GitHub code review exceeded its execution deadline',
         true,
       );
     }
 
-    if (!response.ok) {
-      const remaining = response.headers.get('x-ratelimit-remaining');
-      if (response.status === 429 || (response.status === 403 && remaining === '0')) {
-        throw new ExternalActionAdapterError(
-          'RATE_LIMITED',
-          'GitHub API rate limit was reached',
-          true,
-          response.status,
-        );
-      }
-      if (response.status === 401 || response.status === 403) {
-        throw new ExternalActionAdapterError(
-          'AUTHENTICATION_REQUIRED',
-          'GitHub authentication or repository permission is required',
-          false,
-          response.status,
-        );
-      }
-      if (response.status === 404) {
-        throw new ExternalActionAdapterError(
-          'TARGET_NOT_FOUND',
-          'GitHub review target was not found',
-          false,
-          response.status,
-        );
-      }
-      throw new ExternalActionAdapterError(
-        'INVALID_RESPONSE',
-        `GitHub API returned HTTP ${response.status}`,
-        response.status >= 500,
-        response.status,
-      );
-    }
-
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), remainingMilliseconds);
     try {
-      return (await response.json()) as T;
-    } catch {
-      throw new ExternalActionAdapterError(
-        'INVALID_RESPONSE',
-        'GitHub API returned invalid JSON',
-        false,
-        response.status,
-      );
+      let response: Response;
+      try {
+        response = await this.fetcher(`https://api.github.com${path}`, {
+          method: 'GET',
+          signal: controller.signal,
+          headers: {
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'User-Agent': 'mcf-runtime-code-review-adapter',
+            ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+          },
+        });
+      } catch (error) {
+        if (controller.signal.aborted) {
+          throw new ExternalActionAdapterError(
+            'ADAPTER_TIMEOUT',
+            'GitHub code review exceeded its execution deadline',
+            true,
+          );
+        }
+        throw new ExternalActionAdapterError(
+          'NETWORK_FAILURE',
+          error instanceof Error ? error.message : 'GitHub network request failed',
+          true,
+        );
+      }
+
+      if (!response.ok) {
+        const remaining = response.headers.get('x-ratelimit-remaining');
+        if (response.status === 429 || (response.status === 403 && remaining === '0')) {
+          throw new ExternalActionAdapterError(
+            'RATE_LIMITED',
+            'GitHub API rate limit was reached',
+            true,
+            response.status,
+          );
+        }
+        if (response.status === 401 || response.status === 403) {
+          throw new ExternalActionAdapterError(
+            'AUTHENTICATION_REQUIRED',
+            'GitHub authentication or repository permission is required',
+            false,
+            response.status,
+          );
+        }
+        if (response.status === 404) {
+          throw new ExternalActionAdapterError(
+            'TARGET_NOT_FOUND',
+            'GitHub review target was not found',
+            false,
+            response.status,
+          );
+        }
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          `GitHub API returned HTTP ${response.status}`,
+          response.status >= 500,
+          response.status,
+        );
+      }
+
+      try {
+        return (await response.json()) as T;
+      } catch {
+        if (controller.signal.aborted) {
+          throw new ExternalActionAdapterError(
+            'ADAPTER_TIMEOUT',
+            'GitHub code review exceeded its execution deadline',
+            true,
+          );
+        }
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'GitHub API returned invalid JSON',
+          false,
+          response.status,
+        );
+      }
+    } finally {
+      clearTimeout(timeout);
     }
   }
 }
@@ -341,6 +405,7 @@ export class GitHubCodeReviewAdapter implements ExternalActionAdapter {
   }
 
   async execute(request: ExternalActionRequest): Promise<McfToolReceipt> {
+    const deadlineAt = Date.now() + GITHUB_CODE_REVIEW_TIMEOUT_MS;
     const target = resolveTarget(request);
     let commitSha: string;
     let externalId: string;
@@ -351,15 +416,18 @@ export class GitHubCodeReviewAdapter implements ExternalActionAdapter {
       const pullNumber = target.value as number;
       const pull = await this.client.getJson<GitHubPullResponse>(
         `/repos/${target.repository}/pulls/${pullNumber}`,
+        deadlineAt,
       );
       const changedFiles: GitHubChangedFile[] = [];
       for (let page = 1; page <= 10; page += 1) {
         const batch = await this.client.getJson<GitHubChangedFile[]>(
           `/repos/${target.repository}/pulls/${pullNumber}/files?per_page=100&page=${page}`,
+          deadlineAt,
         );
         changedFiles.push(...batch);
         const observedPull = await this.client.getJson<GitHubPullResponse>(
           `/repos/${target.repository}/pulls/${pullNumber}`,
+          deadlineAt,
         );
         if (observedPull.head?.sha !== pull.head?.sha) {
           throw new ExternalActionAdapterError(
@@ -387,6 +455,7 @@ export class GitHubCodeReviewAdapter implements ExternalActionAdapter {
       for (let page = 1; page <= 10; page += 1) {
         const pageResult = await this.client.getJson<GitHubCommitResponse>(
           `/repos/${target.repository}/commits/${target.value}?per_page=100&page=${page}`,
+          deadlineAt,
         );
         commit ??= pageResult;
         const batch = pageResult.files ?? [];
