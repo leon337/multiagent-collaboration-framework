@@ -79,6 +79,7 @@ declare
   parent_state text;
   parent_phase_id text;
   parent_agent_id text;
+  has_pending_children boolean;
 begin
   if tg_op = 'INSERT' then
     new."parent_mission_id" := nullif(new."contract" ->> 'parentMissionId', '');
@@ -149,19 +150,29 @@ begin
     end if;
   end if;
 
-  if tg_op = 'UPDATE'
-     and new."state" = 'COMPLETED'
-     and new."parent_mission_id" is null
-     and exists (
-       select 1
-       from "mcf_missions" child
-       where child."parent_mission_id" = new."id"
-         and child."return_status" = 'PENDING'
-         and child."state" <> 'CANCELLED'
-     ) then
-    new."state" := old."state";
-    new."current_phase_id" := old."current_phase_id";
-    new."current_agent_id" := old."current_agent_id";
+  if tg_op = 'UPDATE' and new."parent_mission_id" is null then
+    select exists (
+      select 1
+      from "mcf_missions" child
+      where child."parent_mission_id" = new."id"
+        and child."return_status" = 'PENDING'
+        and child."state" <> 'CANCELLED'
+    ) into has_pending_children;
+
+    if has_pending_children then
+      if new."state" = 'COMPLETED' then
+        new."state" := old."state";
+        new."current_phase_id" := old."current_phase_id";
+        new."current_agent_id" := old."current_agent_id";
+      elsif new."state" in ('BLOCKED_RISK', 'RECOVERING', 'WAITING_EXTERNAL', 'CANCELLED') then
+        null;
+      elsif new."state" is distinct from old."state"
+         or new."current_phase_id" is distinct from old."current_phase_id"
+         or new."current_agent_id" is distinct from old."current_agent_id" then
+        raise exception 'MCF parent mission % is suspended while a submission is pending', new."id"
+          using errcode = '55000';
+      end if;
+    end if;
   end if;
 
   new."contract" := coalesce(new."contract", '{}'::jsonb)
@@ -179,6 +190,43 @@ drop trigger if exists "mcf_mission_hierarchy_before_write" on "mcf_missions";
 create trigger "mcf_mission_hierarchy_before_write"
 before insert or update on "mcf_missions"
 for each row execute function "mcf_apply_mission_hierarchy"();
+
+create or replace function "mcf_record_submission_opened"()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new."parent_mission_id" is null then
+    return new;
+  end if;
+
+  insert into "mcf_events" (
+    "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
+    "idempotency_key", "occurred_at"
+  ) values (
+    'hierarchy:submission:' || new."id",
+    new."parent_mission_id",
+    new."parent_checkpoint_phase_id",
+    new."return_to_agent_id",
+    'SUBMISSION_OPENED',
+    jsonb_build_object(
+      'childMissionId', new."id",
+      'returnToAgentId', new."return_to_agent_id",
+      'checkpointState', new."parent_checkpoint_state",
+      'checkpointPhaseId', new."parent_checkpoint_phase_id"
+    ),
+    'hierarchy:parent:' || new."parent_mission_id" || ':submission:' || new."id",
+    now()
+  ) on conflict ("idempotency_key") do nothing;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists "mcf_record_submission_opened" on "mcf_missions";
+create trigger "mcf_record_submission_opened"
+after insert on "mcf_missions"
+for each row execute function "mcf_record_submission_opened"();
 
 create or replace function "mcf_resume_parent_after_child_completion"()
 returns trigger
