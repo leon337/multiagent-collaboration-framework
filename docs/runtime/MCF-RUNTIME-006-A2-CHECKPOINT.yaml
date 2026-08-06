@@ -1,8 +1,10 @@
 mission: MCF-RUNTIME-006-A2
 issue: 72
+pull_request: 73
 branch: feat/mcf-runtime-006-a2-ci-query-adapter
 base_sha: 01c0182b9c9837c0dd22306c9bd8918020ecc38b
-state: IMPLEMENTED_PENDING_CI
+validated_code_sha: cd8f6c06a1c053873889f8274fa85cfb4c408902
+state: IMPLEMENTED_CI_PASS_PENDING_INDEPENDENT_REVIEW
 objective: Consultar CI do GitHub por SHA exato sem capacidade de execução ou escrita.
 
 adapter:
@@ -35,6 +37,9 @@ controls:
   no_ci_dispatch: true
   no_repository_mutation: true
   scoped_write_required_for_future_execution: true
+  temporary_workflow_persisted: false
+  diagnostic_package_script_restored: true
+  merge_authorized: false
 
 changed_files:
   - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.adapter.ts
@@ -45,9 +50,21 @@ changed_files:
   - docs/runtime/MCF-RUNTIME-006-A2-CHECKPOINT.yaml
 
 validation:
-  local_isolated_typecheck: PASS
-  repository_typecheck: PENDING_CI
-  unit_tests: PENDING_CI
-  integration_tests: PENDING_CI
+  foundation:
+    run_id: 31100599755
+    conclusion: PASS
+    formatting: PASS
+    lint: PASS
+    repository_typecheck: PASS
+    migration_twice: PASS
+    repository_test_suite: PASS
+    build: PASS
+  documentation:
+    run_id: 31100599680
+    conclusion: PASS
+  container_smoke:
+    run_id: 31100599463
+    conclusion: PASS
   independent_review: PENDING
-  pull_request: PENDING
+  pull_request_state: DRAFT
+  merge: NOT_AUTHORIZED
