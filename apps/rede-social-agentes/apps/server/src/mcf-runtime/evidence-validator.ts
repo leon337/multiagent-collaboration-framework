@@ -127,6 +127,87 @@ function validateReviewReceipt(receipt: McfToolReceipt): void {
   );
 }
 
+function validateCiQueryReceipt(receipt: McfToolReceipt): void {
+  if (
+    receipt.provider !== 'github-actions' ||
+    !receipt.commitSha ||
+    !/^[a-f0-9]{40}$/u.test(receipt.commitSha)
+  ) {
+    throw new McfEvidenceRejectedError(
+      'CI query evidence requires GitHub Actions and an exact 40-character commit SHA',
+    );
+  }
+  if (canonicalizeToolValue(receipt.operation) !== 'query-ci') {
+    throw new McfEvidenceRejectedError('CI query evidence requires query-ci operation');
+  }
+  const readOnly = requireBoolean(
+    receipt.metadata,
+    'readOnly',
+    'CI query evidence requires readOnly',
+  );
+  if (!readOnly) {
+    throw new McfEvidenceRejectedError('CI query evidence requires readOnly=true');
+  }
+
+  const requestedSha = requireString(
+    receipt.metadata,
+    'requestedSha',
+    'CI query evidence requires requestedSha',
+  ).toLowerCase();
+  const verifiedSha = requireString(
+    receipt.metadata,
+    'verifiedSha',
+    'CI query evidence requires verifiedSha',
+  ).toLowerCase();
+  if (requestedSha !== receipt.commitSha || verifiedSha !== receipt.commitSha) {
+    throw new McfEvidenceRejectedError(
+      'CI query evidence must bind requestedSha and verifiedSha to receipt commitSha',
+    );
+  }
+
+  const conclusion = requireString(
+    receipt.metadata,
+    'conclusion',
+    'CI query evidence requires conclusion',
+  );
+  if (!['SUCCESS', 'FAILURE', 'CANCELLED', 'IN_PROGRESS'].includes(conclusion)) {
+    throw new McfEvidenceRejectedError('CI query evidence has an unsupported conclusion');
+  }
+
+  const workflowRunCount = requireNonNegativeInteger(
+    receipt.metadata,
+    'workflowRunCount',
+    'CI query evidence requires workflowRunCount',
+  );
+  const jobCount = requireNonNegativeInteger(
+    receipt.metadata,
+    'jobCount',
+    'CI query evidence requires jobCount',
+  );
+  const checkRunCount = requireNonNegativeInteger(
+    receipt.metadata,
+    'checkRunCount',
+    'CI query evidence requires checkRunCount',
+  );
+  if (workflowRunCount + jobCount + checkRunCount === 0) {
+    throw new McfEvidenceRejectedError('CI query evidence requires at least one observed CI item');
+  }
+
+  requireNonEmptyArray(
+    receipt.metadata,
+    'evidenceUrls',
+    'CI query evidence requires evidenceUrls',
+  );
+  const permissions = requireNonEmptyArray(
+    receipt.metadata,
+    'requiredPermissions',
+    'CI query evidence requires requiredPermissions',
+  );
+  if (!permissions.includes('actions:read')) {
+    throw new McfEvidenceRejectedError('CI query evidence requires actions:read permission metadata');
+  }
+}
+
 function validatePullRequestReceipt(receipt: McfToolReceipt): void {
   if (
     canonicalizeProvider(receipt.provider) !== 'github' ||
@@ -305,6 +386,11 @@ export class EvidenceValidator {
     switch (skill.skillId) {
       case 'MCF-REVIEW-CODE':
         validateReviewReceipt(receipt);
+        break;
+      case 'MCF-RUN-TESTS':
+        if (canonicalizeToolValue(expected.operation) === 'query-ci') {
+          validateCiQueryReceipt(receipt);
+        }
         break;
       case 'MCF-GIT-PR-RELEASE':
         validatePullRequestReceipt(receipt);
