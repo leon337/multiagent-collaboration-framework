@@ -1,118 +1,102 @@
-# MCF-STAB-001 — Relatório de estabilização
+# MCF-STAB-001 — Relatório consolidado de estabilização
 
-**Estado:** CONCLUÍDA TECNICAMENTE; AGUARDANDO GATE DE INTEGRAÇÃO  
+**Estado:** HARDENING TÉCNICO APROVADO; HEAD CANÔNICO EM VALIDAÇÃO  
 **Tracking:** issue #68  
 **Pull request:** #69  
 **Branch:** `chore/mcf-stab-001-runtime-006`
 
 ## 1. Objetivo
 
-Eliminar ambiguidades de backlog, documentação e governança antes da expansão técnica do MCF-RUNTIME-006.
+Eliminar ambiguidades de backlog, documentação, governança e execução hierárquica antes do MCF-RUNTIME-006.
 
-## 2. Backlog legado
+## 2. Backlog e PRs legados
 
-As issues #13 e #14 foram identificadas como escopo do Screen Assistant. O conteúdo foi preservado e as issues foram encerradas como `not_planned` no backlog do MCF.
+- issues #13 e #14: classificadas como escopo legado do Screen Assistant e encerradas com histórico;
+- PR #22: documentos canônicos incorporados ao PR #69; branch antiga encerrada sem merge;
+- PR #29: origem conceitual preservada; restauração manual substituída pela MCF-DEC-059 e por enforcement transacional.
 
-## 3. PRs históricos
+## 3. Entregas do runtime
 
-### PR #22
+- hierarquia persistente;
+- checkpoint de estado, fase e agente;
+- retorno automático e auditável;
+- preservação de estados protegidos;
+- uma submissão ativa por pai;
+- suspensão de qualquer missão com filho pendente;
+- suporte testado a pai → filho → neto;
+- lock concorrente do pai;
+- validação do destinatário de retorno;
+- proteção da autoridade humana Leandro;
+- ordem causal do ledger;
+- suporte dos campos hierárquicos pela API HTTP.
 
-Os documentos canônicos sobre trabalho visível foram portados para o PR #69. O PR #22 foi encerrado sem merge e classificado como incorporado.
-
-### PR #29
-
-A lacuna de retorno à missão-pai foi confirmada. O PR #29 foi encerrado sem merge e substituído pela MCF-DEC-059 e pelas migrações `0014` e `0015`.
-
-## 4. Controles implementados
-
-- contrato público de hierarquia;
-- snapshot interno do checkpoint do pai;
-- evento `SUBMISSION_OPENED`;
-- suspensão do avanço normal do pai;
-- bloqueio de conclusão prematura;
-- restauração de estado, fase e agente;
-- preservação de `BLOCKED_RISK`, `RECOVERING` e `WAITING_EXTERNAL`;
-- evento `PARENT_RETURN_DEFERRED` quando a retomada não é segura;
-- limite de uma submissão ativa por pai;
-- supressão de `MISSION_COMPLETED` inválido;
-- eventos idempotentes;
-- migrações repetíveis;
-- testes de integração e regressão.
-
-## 5. README e planejamento
-
-O README foi sincronizado com MCF-DEC-058, encerramento do MCF-RUNTIME-005, MCF-STAB-001, MCF-RUNTIME-006 e MCF-DEC-059.
-
-O plano do primeiro adapter externo permanece:
+## 4. Migrações
 
 ```yaml
-mission_id: MCF-RUNTIME-006-A1
-adapter: CODE_REVIEW_READ_ONLY
-external_effect: NONE
-risk: LOW
-dependency: PR_69_INTEGRATED_IN_MAIN
+0014_mcf_mission_hierarchy: PASS
+0015_mcf_single_active_submission: PASS
+0016_mcf_hierarchy_gate_hardening: PASS
+migration_twice: PASS
 ```
 
-## 6. Revisões e correções
+## 5. Revisão iterativa
 
-A revisão final identificou e corrigiu:
+A revisão encontrou e resolveu achados relacionados a:
 
-```yaml
-HIGH_001: downgrade_de_estado_protegido
-MEDIUM_001: checkpoint_de_fase_nao_restaurado
-HIGH_002: progresso_concorrente_do_pai
-MEDIUM_002: abertura_de_submissao_sem_evento
-MEDIUM_003: multiplos_filhos_pendentes
-```
+- restauração do checkpoint;
+- estados protegidos;
+- progresso concorrente;
+- emissão de `SUBMISSION_OPENED`;
+- múltiplos filhos pendentes;
+- schema HTTP;
+- missão intermediária;
+- lock do pai;
+- firewall humano;
+- ordem causal do ledger.
 
-Estado dos achados:
+Resultado:
 
 ```yaml
 critical_open: 0
 high_open: 0
 medium_open: 0
-low_open: 1
+low_open: 0
+review_threads_open: 0
 ```
 
-A reserva baixa restante é a ausência de um teste explícito pai → filho → neto, destinado ao endurecimento do MCF-RUNTIME-006.
-
-## 7. Evidência técnica
+## 6. Evidência técnica final
 
 ```yaml
-head_validado: 5256ef1392d0da55a6c5d47fd3f64eb4b2526bfd
-documentation_validation:
-  run_id: 31065590519
-  conclusion: success
-foundation:
-  run_id: 31065590521
-  conclusion: success
-container_smoke:
-  run_id: 31065590524
-  conclusion: success
+head_tecnico: 970a72addbd573e3415826774b4808cfffd9dbfe
+documentation_validation: 31066918107_PASS
+foundation: 31066918081_PASS
+container_smoke: 31066918082_PASS
 format: PASS
 lint: PASS
 typecheck: PASS
-migration_twice: PASS
-test: PASS
+migrations_twice: PASS
+tests: PASS
 build: PASS
 ```
 
-## 8. Estado consolidado
+## 7. Estado do PR #69
+
+O PR permanece draft enquanto este head documental canônico é validado.
 
 ```yaml
-backlog_legado: CLASSIFICADO
-issues_13_14: ENCERRADAS_COM_HISTORICO
-pr_22: INCORPORADO_E_ENCERRADO_SEM_MERGE
-pr_29: SUBSTITUIDO_E_ENCERRADO_SEM_MERGE
-readme: SINCRONIZADO
-hierarquia_persistente: PASS
-retorno_automatico: PASS
-estados_protegidos: PASS
-checkpoint_restoration: PASS
-parent_suspension: PASS
-single_active_submission: PASS
-runtime_006: PLANEJADO
+mergeable: true
+merge_executado: false
 production: BLOQUEADA
 cost: NAO_AUTORIZADO
-merge_pr_69: PENDENTE_DE_GATE
+publication: false
 ```
+
+## 8. Próxima ação
+
+1. validar os workflows do commit canônico que contém este relatório;
+2. confirmar que não surgiram novas threads;
+3. tornar o PR #69 pronto para revisão;
+4. executar o merge protegido por `expected_head_sha`;
+5. verificar a `main` e os checks pós-merge;
+6. encerrar a issue #68;
+7. abrir o MCF-RUNTIME-006-A1.

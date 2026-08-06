@@ -1,83 +1,61 @@
-# MCF-STAB-001 — Gate final
+# MCF-STAB-001 — Gate final de integração
 
 ## Estado
 
-`APROVADO_TECNICAMENTE_AGUARDANDO_GATE_DE_INTEGRACAO`
+`AGUARDANDO_CI_DO_HEAD_CANONICO`
 
-## Head técnico aprovado
-
-`5256ef1392d0da55a6c5d47fd3f64eb4b2526bfd`
-
-## Evidências
+## Evidência técnica aprovada
 
 ```yaml
-documentation_validation:
-  run_id: 31065590519
-  conclusion: PASS
-foundation:
-  run_id: 31065590521
-  conclusion: PASS
-container_smoke:
-  run_id: 31065590524
-  conclusion: PASS
-```
-
-## Controles confirmados
-
-```yaml
-format: PASS
-lint: PASS
-typecheck: PASS
-migrations_twice: PASS
-tests: PASS
-build: PASS
-container_smoke: PASS
-parent_checkpoint_snapshot: PASS
-parent_normal_progress_suspended: PASS
-protected_states_preserved: PASS
-premature_completion_blocked: PASS
-submission_opened_event: PASS
-parent_return_completed_event: PASS
-parent_resumed_event: PASS
-parent_return_deferred_event: PASS
-single_active_submission: PASS
-invalid_mission_completed_event_suppressed: PASS
-```
-
-## Achados
-
-```yaml
+head_tecnico: 970a72addbd573e3415826774b4808cfffd9dbfe
+documentation_validation: 31066918107_PASS
+foundation: 31066918081_PASS
+container_smoke: 31066918082_PASS
+review_threads_resolved: 6
 critical_open: 0
 high_open: 0
 medium_open: 0
-low_open: 1
+low_open: 0
 ```
 
-Reserva baixa: testar explicitamente uma cadeia pai → filho → neto durante o endurecimento do MCF-RUNTIME-006.
+## Condições obrigatórias
 
-## Reconciliação
-
-- PR #22 encerrado sem merge como incorporado pelo PR #69;
-- PR #29 encerrado sem merge como substituído pela MCF-DEC-059;
-- issues #13 e #14 encerradas com histórico como escopo externo ao núcleo do MCF;
-- issue #68 permanece aberta somente para o gate de integração do PR #69.
-
-## Próxima missão
+O commit canônico que contém este documento deve repetir:
 
 ```yaml
-mission_id: MCF-RUNTIME-006-A1
-adapter: CODE_REVIEW_READ_ONLY
-risk: LOW
-external_effect: NONE
-dependency: PR_69_IN_MAIN
+documentation_validation: PASS
+foundation: PASS
+container_smoke: PASS
 ```
+
+Também deve permanecer:
+
+```yaml
+unresolved_review_threads: 0
+mergeable: true
+expected_head_sha: HEAD_CANONICO_EXATO
+```
+
+## Procedimento autorizado
+
+Após o cumprimento das condições:
+
+1. marcar o PR #69 como pronto para revisão;
+2. confirmar novamente head, mergeabilidade e threads;
+3. integrar por squash usando `expected_head_sha`;
+4. verificar o commit resultante na `main`;
+5. verificar os checks pós-merge;
+6. atualizar e encerrar a issue #68;
+7. iniciar o MCF-RUNTIME-006-A1 em branch separada.
 
 ## Restrições
 
 ```yaml
 merge_automatico: false
-merge_executado: false
 production: BLOQUEADA
 cost: NAO_AUTORIZADO
 publication: false
+adapter_A1_antes_do_merge: BLOQUEADO
 ```
+
+A aprovação deste gate autoriza somente a integração do código validado à `main`. Ela não autoriza deploy em produção, gasto externo ou publicação automática.
