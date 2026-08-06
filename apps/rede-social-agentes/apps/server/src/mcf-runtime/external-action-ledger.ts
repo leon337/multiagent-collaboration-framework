@@ -12,6 +12,7 @@ import {
 
 interface MissionVersionRow {
   version: number;
+  activeExternalAttemptId: string | null;
 }
 
 interface AttemptRow {
@@ -64,24 +65,54 @@ export class ExternalActionLedger {
     try {
       await this.database.transaction(async (client) => {
         const mission = await client.query<MissionVersionRow>(
-          `select "version"
+          `select
+             "version",
+             "active_external_attempt_id" as "activeExternalAttemptId"
            from "mcf_missions"
            where "id" = $1
            for update`,
           [request.context?.missionId],
         );
-        const persistedVersion = mission.rows[0]?.version;
-        if (persistedVersion === undefined) {
+        const persistedMission = mission.rows[0];
+        if (!persistedMission) {
           throw new ExternalActionAdapterError(
             'TARGET_NOT_FOUND',
             `Mission ${request.context?.missionId ?? 'unknown'} was not found for external action`,
             false,
           );
         }
-        if (persistedVersion !== request.context?.expectedMissionVersion) {
+        if (persistedMission.version !== request.context?.expectedMissionVersion) {
           throw new ExternalActionAdapterError(
             'RESERVATION_CONFLICT',
-            `Mission version conflict: expected ${request.context?.expectedMissionVersion}, actual ${persistedVersion}`,
+            `Mission version conflict: expected ${request.context?.expectedMissionVersion}, actual ${persistedMission.version}`,
+            true,
+          );
+        }
+        if (persistedMission.activeExternalAttemptId) {
+          throw new ExternalActionAdapterError(
+            'RESERVATION_CONFLICT',
+            `Mission ${request.context.missionId} already has active external attempt ${persistedMission.activeExternalAttemptId}`,
+            true,
+          );
+        }
+
+        const reservedMission = await client.query<{ id: string }>(
+          `update "mcf_missions"
+           set "active_external_attempt_id" = $1
+           where "id" = $2
+             and "version" = $3
+             and "active_external_attempt_id" is null
+           returning "id"`,
+          [
+            attemptId,
+            request.context.missionId,
+            request.context.expectedMissionVersion,
+          ],
+        );
+        if (!reservedMission.rows[0]) {
+          throw new ExternalActionAdapterError(
+            'RESERVATION_CONFLICT',
+            `Mission ${request.context.missionId} changed while reserving external execution`,
             true,
           );
         }

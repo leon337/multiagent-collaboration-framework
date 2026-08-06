@@ -34,3 +34,10 @@ create index if not exists "mcf_external_action_attempts_mission_idx"
 
 create index if not exists "mcf_external_action_attempts_status_idx"
   on "mcf_external_action_attempts" ("status", "updated_at");
+
+alter table "mcf_missions"
+  add column if not exists "active_external_attempt_id" text;
+
+create unique index if not exists "mcf_missions_active_external_attempt_idx"
+  on "mcf_missions" ("active_external_attempt_id")
+  where "active_external_attempt_id" is not null;

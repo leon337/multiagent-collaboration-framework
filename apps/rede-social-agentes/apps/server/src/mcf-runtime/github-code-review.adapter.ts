@@ -6,6 +6,7 @@ import {
   type ExternalActionAdapter,
   type ExternalActionRequest,
 } from './external-action.contracts.js';
+import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';
 
 interface GitHubPullResponse {
   number: number;
@@ -46,10 +47,6 @@ interface ReviewTarget {
 }
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
-
-function normalizeProvider(value: string): string {
-  return value.trim().toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
-}
 
 function repositoryFromValue(value: string): string | null {
   const trimmed = value.trim();
@@ -338,8 +335,8 @@ export class GitHubCodeReviewAdapter implements ExternalActionAdapter {
   supports(request: ExternalActionRequest): boolean {
     return (
       request.skill.skillId === 'MCF-REVIEW-CODE' &&
-      normalizeProvider(request.tool.provider) === 'github' &&
-      normalizeProvider(request.tool.operation) === 'inspect-code'
+      canonicalizeProvider(request.tool.provider) === 'github' &&
+      canonicalizeToolValue(request.tool.operation) === 'inspect-code'
     );
   }
 
@@ -361,6 +358,16 @@ export class GitHubCodeReviewAdapter implements ExternalActionAdapter {
           `/repos/${target.repository}/pulls/${pullNumber}/files?per_page=100&page=${page}`,
         );
         changedFiles.push(...batch);
+        const observedPull = await this.client.getJson<GitHubPullResponse>(
+          `/repos/${target.repository}/pulls/${pullNumber}`,
+        );
+        if (observedPull.head?.sha !== pull.head?.sha) {
+          throw new ExternalActionAdapterError(
+            'RESERVATION_CONFLICT',
+            'GitHub pull request head changed during review collection',
+            true,
+          );
+        }
         if (batch.length < 100) break;
         if (page === 10) {
           throw new ExternalActionAdapterError(
@@ -450,8 +457,8 @@ export class GitHubCodeReviewAdapter implements ExternalActionAdapter {
     };
 
     return this.evidence.createTrustedReceipt({
-      provider: request.tool.provider,
-      operation: request.tool.operation,
+      provider: canonicalizeProvider(request.tool.provider),
+      operation: canonicalizeToolValue(request.tool.operation),
       resource: request.tool.resource,
       externalId,
       commitSha,

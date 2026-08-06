@@ -101,7 +101,7 @@ describe('GitHubCodeReviewAdapter', () => {
     });
     expect(receipt.metadata.findingsCount).toBe(3);
     expect(receipt.signature).toMatch(/^[a-f0-9]{64}$/u);
-    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher).toHaveBeenCalledTimes(3);
   });
 
   it('classifies a rate-limited GitHub response', async () => {
@@ -268,6 +268,122 @@ describe('GitHubCodeReviewAdapter', () => {
         },
       }),
     ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
-    expect(fetcher).toHaveBeenCalledTimes(11);
+    expect(fetcher).toHaveBeenCalledTimes(21);
+  });
+
+
+  it('rejects a pull request when its head changes during paginated collection', async () => {
+    const initialSha = 'a'.repeat(40);
+    const changedSha = 'b'.repeat(40);
+    let metadataCalls = 0;
+    const fetcher = vi.fn(async (url: string) => {
+      if (url.endsWith('/pulls/70')) {
+        metadataCalls += 1;
+        return new Response(
+          JSON.stringify({
+            number: 70,
+            html_url: 'https://github.com/leon337/multiagent-collaboration-framework/pull/70',
+            head: { sha: metadataCalls === 1 ? initialSha : changedSha },
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.includes('/pulls/70/files')) {
+        return new Response(
+          JSON.stringify([
+            {
+              filename: 'src/runtime.ts',
+              status: 'modified',
+              additions: 1,
+              deletions: 0,
+              changes: 1,
+              patch: '@@ -1,1 +1,2 @@\n export const safe = true;\n+export const ready = true;',
+            },
+          ]),
+          { status: 200 },
+        );
+      }
+      return new Response('{}', { status: 404 });
+    });
+    const adapter = new GitHubCodeReviewAdapter(
+      new EvidenceValidator(),
+      new GitHubReadClient(fetcher, undefined),
+    );
+
+    await expect(
+      adapter.execute({
+        skill,
+        agentId: 'Vinicius',
+        inputs: {
+          repository: 'leon337/multiagent-collaboration-framework',
+          diff_or_commit: 'PR #70',
+        },
+        tool: {
+          provider: 'github',
+          operation: 'inspect-code',
+          resource: 'leon337/multiagent-collaboration-framework',
+        },
+      }),
+    ).rejects.toMatchObject({ code: 'RESERVATION_CONFLICT', retryable: true });
+    expect(fetcher).toHaveBeenCalledTimes(3);
+  });
+
+  it('canonicalizes accepted provider and operation aliases in signed evidence', async () => {
+    const commitSha = 'c'.repeat(40);
+    const fetcher = vi.fn(async (url: string) => {
+      if (url.endsWith('/pulls/70')) {
+        return new Response(
+          JSON.stringify({
+            number: 70,
+            html_url: 'https://github.com/leon337/multiagent-collaboration-framework/pull/70',
+            head: { sha: commitSha },
+          }),
+          { status: 200 },
+        );
+      }
+      if (url.includes('/pulls/70/files')) {
+        return new Response(
+          JSON.stringify([
+            {
+              filename: 'src/runtime.ts',
+              status: 'modified',
+              additions: 1,
+              deletions: 0,
+              changes: 1,
+              patch: '@@ -1,1 +1,2 @@\n export const safe = true;\n+export const ready = true;',
+            },
+          ]),
+          { status: 200 },
+        );
+      }
+      return new Response('{}', { status: 404 });
+    });
+    const evidence = new EvidenceValidator();
+    const adapter = new GitHubCodeReviewAdapter(
+      evidence,
+      new GitHubReadClient(fetcher, undefined),
+    );
+    const request = {
+      skill,
+      agentId: 'Vinicius',
+      inputs: {
+        repository: 'leon337/multiagent-collaboration-framework',
+        diff_or_commit: 'PR #70',
+      },
+      tool: {
+        provider: ' GitHub ',
+        operation: ' INSPECT_CODE ',
+        resource: 'leon337/multiagent-collaboration-framework',
+      },
+    };
+
+    expect(adapter.supports(request)).toBe(true);
+    const receipt = await adapter.execute(request);
+    evidence.verifyForSkill(receipt, request.tool, skill);
+    expect(receipt).toMatchObject({
+      provider: 'github',
+      operation: 'inspect-code',
+      commitSha,
+    });
   });
 });

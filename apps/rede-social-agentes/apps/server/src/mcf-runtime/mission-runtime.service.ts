@@ -355,6 +355,7 @@ export class MissionRuntimeService {
     const persisted = await this.repository.persistExecution({
       missionId,
       expectedMissionVersion: request.expectedMissionVersion,
+      externalAttemptId: outcome.externalAction?.attemptId ?? null,
       phase,
       permissionProfile: outcome.skill.permissionProfile,
       missionState,

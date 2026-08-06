@@ -66,6 +66,7 @@ export interface CreateMcfMissionInput {
 export interface PersistMcfExecutionInput {
   missionId: string;
   expectedMissionVersion: number;
+  externalAttemptId?: string | null;
   phase: McfPhaseRecord;
   permissionProfile: McfPermissionProfile;
   missionState: McfMissionState;
