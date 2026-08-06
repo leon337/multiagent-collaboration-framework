@@ -13,6 +13,7 @@ import {
   McfMissionVersionConflictError,
   McfPhaseNotFoundError,
 } from './mcf-runtime.errors.js';
+import { reconcileExpiredExternalReservation } from './external-action-reservation.js';
 import type {
   CompleteMcfPendingPhaseInput,
   CompleteMcfPendingPhaseResult,
@@ -246,6 +247,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
     input: PersistMcfExecutionInput,
   ): Promise<{ mission: McfMissionRecord; phase: McfPhaseRecord }> {
     return this.database.transaction(async (client) => {
+      await reconcileExpiredExternalReservation(client, input.missionId);
       const updatedMission = await client.query<MissionRow>(
         `update "mcf_missions"
          set "state" = $1,
@@ -399,6 +401,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         };
       }
 
+      await reconcileExpiredExternalReservation(client, input.missionId);
       const lockedMission = await client.query<MissionRow>(
         `select ${missionColumns} from "mcf_missions" where "id" = $1 for update`,
         [input.missionId],

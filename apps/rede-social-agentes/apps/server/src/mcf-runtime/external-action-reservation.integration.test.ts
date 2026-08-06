@@ -12,6 +12,10 @@ interface ReservationRow {
   version: number;
 }
 
+interface AttemptStatusRow {
+  status: string;
+}
+
 const skill: McfSkillDefinition = {
   skillId: 'MCF-REVIEW-CODE',
   name: 'Revisar código',
@@ -171,6 +175,133 @@ describe('MCF external action mission reservation', () => {
       expect(released.rows[0]).toEqual({
         activeExternalAttemptId: null,
         version: 2,
+      });
+    } finally {
+      await database.query('delete from "mcf_tool_receipts" where "mission_id" = $1', [missionId]);
+      await database.query('delete from "mcf_handoffs" where "mission_id" = $1', [missionId]);
+      await database.query('delete from "mcf_phases" where "mission_id" = $1', [missionId]);
+      await database.query('delete from "mcf_external_action_attempts" where "mission_id" = $1', [
+        missionId,
+      ]);
+      await database.query('delete from "mcf_events" where "mission_id" = $1', [missionId]);
+      await database.query('delete from "mcf_missions" where "id" = $1', [missionId]);
+    }
+  });
+
+  it('abandons an expired orphan reservation and allows mission progress with an audit event', async () => {
+    const missionId = randomUUID();
+    const orphanPhaseId = randomUUID();
+    const recoveryPhaseId = randomUUID();
+    const createdAt = new Date();
+
+    try {
+      await database.query(
+        `insert into "mcf_missions" (
+          "id", "contract", "state", "current_phase_id", "current_agent_id",
+          "version", "created_at", "updated_at"
+        ) values ($1, $2::jsonb, 'EXECUTING', null, 'Vinicius', 1, $3, $3)`,
+        [
+          missionId,
+          JSON.stringify({
+            title: 'Expired external reservation recovery',
+            objective: 'Recover a mission after an external worker interruption.',
+            expectedOutcome: 'Expired reservation is abandoned and mission progress resumes.',
+            scope: ['runtime reservation lease'],
+            outOfScope: ['external write'],
+            acceptanceCriteria: ['orphan reservation is auditable and released'],
+            riskClass: 'A',
+            selectedAgents: ['Vinicius'],
+            selectedSkills: ['MCF-REVIEW-CODE'],
+            sourceOfTruth: ['MCF-RUNTIME-006-A1'],
+          }),
+          createdAt,
+        ],
+      );
+
+      const attemptId = await ledger.reserve(
+        {
+          skill,
+          agentId: 'Vinicius',
+          inputs: { diff_or_commit: 'PR #71' },
+          tool: {
+            provider: 'github',
+            operation: 'inspect-code',
+            resource: 'leon337/multiagent-collaboration-framework',
+          },
+          context: {
+            missionId,
+            phaseId: orphanPhaseId,
+            expectedMissionVersion: 1,
+          },
+        },
+        'github-code-review-read-only-v1',
+      );
+
+      await database.query(
+        `update "mcf_external_action_attempts"
+         set "lease_expires_at" = now() - interval '1 minute'
+         where "attempt_id" = $1`,
+        [attemptId],
+      );
+
+      const phase = {
+        id: recoveryPhaseId,
+        missionId,
+        skillId: skill.skillId,
+        agentId: 'Vinicius',
+        state: 'COMPLETED' as const,
+        cycle: 1,
+        inputs: { diff_or_commit: 'PR #71' },
+        expectedEvidence: skill.requiredEvidence,
+        startedAt: createdAt,
+        completedAt: createdAt,
+        createdAt,
+        updatedAt: createdAt,
+      };
+      const persisted = await repository.persistExecution({
+        missionId,
+        expectedMissionVersion: 1,
+        externalAttemptId: null,
+        phase,
+        permissionProfile: 'READ_AND_PROPOSE',
+        missionState: 'EXECUTING',
+        nextAgentId: null,
+        receipt: null,
+        evidenceStatus: 'PENDING',
+        handoff: null,
+        events: [],
+      });
+      expect(persisted.mission.version).toBe(2);
+
+      const attempt = await database.query<AttemptStatusRow>(
+        `select "status" from "mcf_external_action_attempts" where "attempt_id" = $1`,
+        [attemptId],
+      );
+      expect(attempt.rows[0]?.status).toBe('ABANDONED');
+
+      const mission = await database.query<ReservationRow>(
+        `select
+           "active_external_attempt_id" as "activeExternalAttemptId",
+           "version"
+         from "mcf_missions"
+         where "id" = $1`,
+        [missionId],
+      );
+      expect(mission.rows[0]).toEqual({ activeExternalAttemptId: null, version: 2 });
+
+      const event = await database.query<{ eventType: string; payload: unknown }>(
+        `select "event_type" as "eventType", "payload"
+         from "mcf_events"
+         where "idempotency_key" = $1`,
+        [`external-action:${attemptId}:abandoned`],
+      );
+      expect(event.rows[0]).toMatchObject({
+        eventType: 'EXTERNAL_ACTION_ABANDONED',
+        payload: {
+          attemptId,
+          previousStatus: 'ALLOWED',
+          reason: 'RESERVATION_EXPIRED',
+        },
       });
     } finally {
       await database.query('delete from "mcf_tool_receipts" where "mission_id" = $1', [missionId]);

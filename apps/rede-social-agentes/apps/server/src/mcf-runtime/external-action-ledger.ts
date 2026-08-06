@@ -9,6 +9,10 @@ import {
   type ExternalActionFailure,
   type ExternalActionRequest,
 } from './external-action.contracts.js';
+import {
+  EXTERNAL_ACTION_LEASE_MS,
+  reconcileExpiredExternalReservation,
+} from './external-action-reservation.js';
 
 interface MissionVersionRow {
   version: number;
@@ -20,7 +24,7 @@ interface AttemptRow {
 }
 
 type ExternalAttemptStatus =
-  'ALLOWED' | 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
+  'ALLOWED' | 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED' | 'ABANDONED';
 
 interface AttemptStateRow extends AttemptRow {
   status: ExternalAttemptStatus;
@@ -32,6 +36,7 @@ const allowedTransitions: Record<ExternalAttemptStatus, ExternalAttemptStatus[]>
   FAILED: [],
   EVIDENCE_VALIDATED: [],
   EVIDENCE_REJECTED: [],
+  ABANDONED: [],
 };
 
 function databaseErrorCode(error: unknown): string | null {
@@ -61,9 +66,11 @@ export class ExternalActionLedger {
 
     const attemptId = randomUUID();
     const occurredAt = new Date();
+    const leaseExpiresAt = new Date(occurredAt.getTime() + EXTERNAL_ACTION_LEASE_MS);
 
     try {
       await this.database.transaction(async (client) => {
+        await reconcileExpiredExternalReservation(client, request.context!.missionId, occurredAt);
         const mission = await client.query<MissionVersionRow>(
           `select
              "version",
@@ -117,8 +124,8 @@ export class ExternalActionLedger {
           `insert into "mcf_external_action_attempts" (
             "attempt_id", "mission_id", "phase_id", "agent_id", "skill_id",
             "adapter_id", "provider", "operation", "resource",
-            "expected_mission_version", "status", "created_at", "updated_at"
-          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ALLOWED', $11, $11)`,
+            "expected_mission_version", "status", "lease_expires_at", "created_at", "updated_at"
+          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ALLOWED', $11, $12, $12)`,
           [
             attemptId,
             request.context.missionId,
@@ -130,6 +137,7 @@ export class ExternalActionLedger {
             request.tool.operation,
             request.tool.resource,
             request.context.expectedMissionVersion,
+            leaseExpiresAt,
             occurredAt,
           ],
         );
@@ -305,6 +313,7 @@ export class ExternalActionLedger {
     payload: Record<string, unknown>;
   }): Promise<void> {
     const occurredAt = new Date();
+    const leaseExpiresAt = new Date(occurredAt.getTime() + EXTERNAL_ACTION_LEASE_MS);
 
     try {
       await this.database.transaction(async (client) => {
@@ -340,14 +349,16 @@ export class ExternalActionLedger {
                "receipt_id" = coalesce($2, "receipt_id"),
                "failure_code" = $3,
                "failure_message" = $4,
-               "updated_at" = $5
-           where "attempt_id" = $6 and "status" = $7
+               "lease_expires_at" = $5,
+               "updated_at" = $6
+           where "attempt_id" = $7 and "status" = $8
            returning "attempt_id" as "attemptId"`,
           [
             input.status,
             input.receiptId,
             input.failure?.code ?? null,
             input.failure?.message ?? null,
+            leaseExpiresAt,
             occurredAt,
             input.attemptId,
             attempt.status,
