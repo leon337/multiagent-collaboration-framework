@@ -63,12 +63,7 @@ describe('SkillExecutor external action dispatch', () => {
         }),
     };
     const dispatcher = new ExternalActionDispatcher(new AdapterRegistry([adapter]));
-    const executor = new SkillExecutor(
-      registry(),
-      new PermissionEngine(),
-      evidence,
-      dispatcher,
-    );
+    const executor = new SkillExecutor(registry(), new PermissionEngine(), evidence, dispatcher);
 
     const result = await executor.execute({
       skillId: 'MCF-REVIEW-CODE',

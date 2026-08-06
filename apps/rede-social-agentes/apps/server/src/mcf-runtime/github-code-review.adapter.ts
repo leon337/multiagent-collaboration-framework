@@ -71,7 +71,12 @@ function repositoryFromValue(value: string): string | null {
   if (parts.length < 2) return null;
   const owner = parts[0];
   const repository = parts[1]?.replace(/\.git$/u, '');
-  if (!owner || !repository || !/^[A-Za-z0-9_.-]+$/u.test(owner) || !/^[A-Za-z0-9_.-]+$/u.test(repository)) {
+  if (
+    !owner ||
+    !repository ||
+    !/^[A-Za-z0-9_.-]+$/u.test(owner) ||
+    !/^[A-Za-z0-9_.-]+$/u.test(repository)
+  ) {
     return null;
   }
   return `${owner}/${repository}`;
@@ -147,9 +152,7 @@ function addedLines(patch: string | undefined): Array<{ line: number; content: s
 function findingsForFile(file: GitHubChangedFile): ReviewFinding[] {
   const findings: ReviewFinding[] = [];
   for (const added of addedLines(file.patch)) {
-    if (
-      /(?:password|api[_-]?key|secret|token)\s*[:=]\s*['"`][^'"`]{8,}/iu.test(added.content)
-    ) {
+    if (/(?:password|api[_-]?key|secret|token)\s*[:=]\s*['"`][^'"`]{8,}/iu.test(added.content)) {
       findings.push({
         severity: 'HIGH',
         file: file.filename,
@@ -166,7 +169,8 @@ function findingsForFile(file: GitHubChangedFile): ReviewFinding[] {
         line: added.line,
         rule: 'dynamic-code-execution',
         message: 'Dynamic code execution was added.',
-        recommendation: 'Replace dynamic evaluation with explicit parsing or a constrained dispatch table.',
+        recommendation:
+          'Replace dynamic evaluation with explicit parsing or a constrained dispatch table.',
       });
     }
     if (/dangerouslySetInnerHTML|\.innerHTML\s*=/u.test(added.content)) {
@@ -198,7 +202,8 @@ function findingsForFile(file: GitHubChangedFile): ReviewFinding[] {
       line: null,
       rule: 'large-change-surface',
       message: `The file changes ${file.changes} lines, increasing review risk.`,
-      recommendation: 'Split the change or document why the large atomic modification is necessary.',
+      recommendation:
+        'Split the change or document why the large atomic modification is necessary.',
     });
   }
 
@@ -238,8 +243,8 @@ function buildReview(files: GitHubChangedFile[]): {
 export class GitHubReadClient {
   constructor(
     private readonly fetcher: FetchLike = globalThis.fetch,
-    private readonly token: string | undefined =
-      process.env.MCF_GITHUB_TOKEN ?? process.env.GITHUB_TOKEN,
+    private readonly token: string | undefined = process.env.MCF_GITHUB_TOKEN ??
+      process.env.GITHUB_TOKEN,
   ) {}
 
   async getJson<T>(path: string): Promise<T> {

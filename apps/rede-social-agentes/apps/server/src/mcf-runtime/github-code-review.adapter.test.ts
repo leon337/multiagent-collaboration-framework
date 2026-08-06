@@ -51,7 +51,8 @@ describe('GitHubCodeReviewAdapter', () => {
               additions: 2,
               deletions: 0,
               changes: 2,
-              patch: "@@ -1,1 +1,3 @@\n export const safe = true;\n+const apiKey = 'hardcoded-value-123';\n+// TODO remove temporary fallback",
+              patch:
+                "@@ -1,1 +1,3 @@\n export const safe = true;\n+const apiKey = 'hardcoded-value-123';\n+// TODO remove temporary fallback",
             },
           ]),
           { status: 200 },
@@ -60,10 +61,7 @@ describe('GitHubCodeReviewAdapter', () => {
       return new Response('{}', { status: 404 });
     });
     const evidence = new EvidenceValidator();
-    const adapter = new GitHubCodeReviewAdapter(
-      evidence,
-      new GitHubReadClient(fetcher, undefined),
-    );
+    const adapter = new GitHubCodeReviewAdapter(evidence, new GitHubReadClient(fetcher, undefined));
 
     const receipt = await adapter.execute({
       skill,

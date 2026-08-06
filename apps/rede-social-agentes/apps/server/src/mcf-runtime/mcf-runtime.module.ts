@@ -43,8 +43,7 @@ import { SocialTimelineService } from './social-timeline.service.js';
     },
     {
       provide: AdapterRegistry,
-      useFactory: (githubReview: GitHubCodeReviewAdapter) =>
-        new AdapterRegistry([githubReview]),
+      useFactory: (githubReview: GitHubCodeReviewAdapter) => new AdapterRegistry([githubReview]),
       inject: [GitHubCodeReviewAdapter],
     },
     {
@@ -75,12 +74,7 @@ import { SocialTimelineService } from './social-timeline.service.js';
         evidence: EvidenceValidator,
         externalActions: ExternalActionDispatcher,
       ) => new SkillExecutor(registry, permissions, evidence, externalActions),
-      inject: [
-        SkillRegistryLoader,
-        PermissionEngine,
-        EvidenceValidator,
-        ExternalActionDispatcher,
-      ],
+      inject: [SkillRegistryLoader, PermissionEngine, EvidenceValidator, ExternalActionDispatcher],
     },
     {
       provide: MissionRuntimeService,
