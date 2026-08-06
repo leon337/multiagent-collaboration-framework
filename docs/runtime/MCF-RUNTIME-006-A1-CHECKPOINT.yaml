@@ -1,0 +1,115 @@
+mission_id: MCF-RUNTIME-006-A1
+tracking_issue: 70
+state: APPROVED_FOR_MERGE_AWAITING_HUMAN_AUTHORIZATION
+objective: executar_code_review_real_read_only_com_evidencia_assinada
+branch: feat/mcf-runtime-006-a1-code-review-adapter
+base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
+final_review_fix_head: da9a48449e509bd446197f22b1490d783f3f8729
+validated_head: f626216e9941c58357a1772f908d1606dd8917d9
+pull_request: 71
+changed_files: 23
+adapter:
+  id: github-code-review-read-only-v1
+  skill: MCF-REVIEW-CODE
+  provider: github
+  operation: inspect-code
+  external_write: false
+foundation:
+  external_action_dispatcher: IMPLEMENTED
+  adapter_registry: IMPLEMENTED
+  normalized_contract: IMPLEMENTED
+  permission_gate: REUSED_BEFORE_DISPATCH
+  signed_receipt: IMPLEMENTED
+  evidence_validation: REUSED
+  external_action_ledger: DURABLE_PRE_EXECUTION_RESERVATION
+hardening:
+  github_url_host_validation: IMPLEMENTED
+  repository_resource_binding: IMPLEMENTED
+  repository_input_mismatch: FAIL_CLOSED_BEFORE_NETWORK
+  missing_patch_coverage: DECLARED_PARTIAL
+  all_patches_missing: FAIL_CLOSED
+  pagination_limit: FAIL_CLOSED_AT_1000_FILES
+  phase_preflight_before_provider_call: IMPLEMENTED
+  requested_allowed_before_provider_call: IMPLEMENTED
+  duplicate_preflight_in_service: SUPPRESSED
+  stale_mission_version: BLOCKED_BEFORE_PROVIDER_CALL
+  active_external_attempt_reservation: IMPLEMENTED
+  concurrent_mission_advancement: BLOCKED_WHILE_ATTEMPT_ACTIVE
+  reservation_release: TERMINAL_OWNER_ONLY
+  reservation_lease: TEN_MINUTES
+  adapter_execution_timeout: FIVE_MINUTES
+  timeout_before_lease_expiry: ENFORCED
+  timed_out_network_request: ABORTED
+  timeout_failure_code: ADAPTER_TIMEOUT
+  expired_reservation_reconciliation: IMPLEMENTED
+  orphan_attempt_state: ABANDONED
+  orphan_attempt_event: EXTERNAL_ACTION_ABANDONED
+  pull_request_head_recheck_per_page: IMPLEMENTED
+  mutable_pr_diff_mismatch: RETRYABLE_RESERVATION_CONFLICT
+  provider_operation_canonicalization: IMPLEMENTED
+  ledger_state_machine: EXPLICIT_AND_IDEMPOTENT
+  timeline_order: DATABASE_SEQUENCE
+  real_permission_profile: READ_AND_PROPOSE
+failure_classification: IMPLEMENTED
+tests:
+  adapter_unit: PASS
+  repository_resource_binding: PASS
+  repository_mismatch_before_network: PASS
+  adapter_timeout_before_lease: PASS
+  timed_out_request_abort: PASS
+  executor_dispatch: PASS
+  permission_block: PASS
+  failure_recovery: PASS
+  ledger_integration: PASS
+  durable_mission_reservation: PASS
+  concurrent_mission_persistence_block: PASS
+  terminal_owner_release: PASS
+  expired_orphan_reconciliation: PASS
+  abandoned_event_audit: PASS
+  pull_request_head_mutation: PASS
+  provider_alias_canonicalization: PASS
+  stale_version_reservation: PASS
+  partial_coverage: PASS
+  pagination_limit: PASS
+  causal_preflight_order: PASS
+  invalid_state_transition: PASS
+  idempotent_transition: PASS
+ci:
+  documentation_validation:
+    run: 31075440687
+    conclusion: success
+  foundation:
+    run: 31075440813
+    formatting: success
+    lint: success
+    typecheck: success
+    migration_twice: success
+    tests: success
+    build: success
+  container_smoke:
+    run: 31075440824
+    conclusion: success
+review:
+  review_id: 4871466719
+  decision: PASS
+  blocking_threads_open: 0
+  critical_open: 0
+  high_open: 0
+  medium_open: 0
+  low_open: 0
+integration_gate:
+  decision: APPROVED_FOR_MERGE
+  main_divergence: false
+  mergeable: true
+  draft: false
+  configured_checks: 3_success
+  unresolved_threads: 0
+  merge_authorized: false
+restrictions:
+  production: BLOQUEADA
+  cost: NAO_AUTORIZADO
+  publication: false
+  merge_automatico: false
+  merge_autorizado: false
+next_action: await_explicit_human_merge_authorization
+human_authority: Leandro

@@ -14,17 +14,17 @@ function fold(value: string): string {
   return value.normalize('NFD').replace(/\p{Diacritic}/gu, '');
 }
 
-function normalize(value: string): string {
+export function canonicalizeToolValue(value: string): string {
   return fold(value).trim().toLowerCase().replaceAll('_', '-').replaceAll(' ', '-');
 }
 
-function normalizeProvider(value: string): string {
-  const normalized = normalize(value);
+export function canonicalizeProvider(value: string): string {
+  const normalized = canonicalizeToolValue(value);
   return normalized === 'github-actions' ? 'github' : normalized;
 }
 
 function operationMatches(operation: string, allowedPrefixes: string[]): boolean {
-  const normalized = normalize(operation);
+  const normalized = canonicalizeToolValue(operation);
   return allowedPrefixes.some(
     (prefix) => normalized === prefix || normalized.startsWith(`${prefix}-`),
   );
@@ -32,7 +32,7 @@ function operationMatches(operation: string, allowedPrefixes: string[]): boolean
 
 function isProductionTarget(value: unknown): boolean {
   if (typeof value !== 'string') return false;
-  const normalized = normalize(value);
+  const normalized = canonicalizeToolValue(value);
   return normalized.includes('production') || normalized.includes('producao');
 }
 
@@ -67,11 +67,11 @@ export class PermissionEngine {
       throw new McfPermissionDeniedError(`agent ${agentId} is not an owner of ${skill.skillId}`);
     }
 
-    const provider = normalizeProvider(tool.provider);
-    const allowedProviders = new Set(skill.allowedTools.map(normalizeProvider));
-    const forbidden = new Set(skill.forbiddenTools.map(normalize));
-    const operation = normalize(tool.operation);
-    const resource = normalize(tool.resource);
+    const provider = canonicalizeProvider(tool.provider);
+    const allowedProviders = new Set(skill.allowedTools.map(canonicalizeProvider));
+    const forbidden = new Set(skill.forbiddenTools.map(canonicalizeToolValue));
+    const operation = canonicalizeToolValue(tool.operation);
+    const resource = canonicalizeToolValue(tool.resource);
 
     if (provider !== 'internal' && !allowedProviders.has(provider)) {
       throw new McfPermissionDeniedError(

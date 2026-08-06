@@ -5,7 +5,11 @@ import type { McfSkillDefinition, McfToolReceipt, McfToolReceiptStatus } from '@
 
 import { loadRuntimeConfig } from '../config.js';
 import { McfEvidenceRejectedError } from './mcf-runtime.errors.js';
-import type { McfToolRequest } from './permission-engine.js';
+import {
+  canonicalizeProvider,
+  canonicalizeToolValue,
+  type McfToolRequest,
+} from './permission-engine.js';
 
 interface ReceiptPayload {
   receiptId: string;
@@ -105,7 +109,7 @@ function requireNonEmptyArray(
 }
 
 function validateReviewReceipt(receipt: McfToolReceipt): void {
-  if (receipt.provider !== 'github' || !receipt.commitSha) {
+  if (canonicalizeProvider(receipt.provider) !== 'github' || !receipt.commitSha) {
     throw new McfEvidenceRejectedError(
       'code review evidence requires GitHub and reviewed commit SHA',
     );
@@ -124,7 +128,11 @@ function validateReviewReceipt(receipt: McfToolReceipt): void {
 }
 
 function validatePullRequestReceipt(receipt: McfToolReceipt): void {
-  if (receipt.provider !== 'github' || !receipt.externalId || !receipt.commitSha) {
+  if (
+    canonicalizeProvider(receipt.provider) !== 'github' ||
+    !receipt.externalId ||
+    !receipt.commitSha
+  ) {
     throw new McfEvidenceRejectedError(
       'pull request evidence requires GitHub PR id and commit SHA',
     );
@@ -254,8 +262,8 @@ export class EvidenceValidator {
     }
 
     if (
-      receipt.provider !== expected.provider ||
-      receipt.operation !== expected.operation ||
+      canonicalizeProvider(receipt.provider) !== canonicalizeProvider(expected.provider) ||
+      canonicalizeToolValue(receipt.operation) !== canonicalizeToolValue(expected.operation) ||
       receipt.resource !== expected.resource
     ) {
       throw new McfEvidenceRejectedError('receipt does not match the requested tool operation');

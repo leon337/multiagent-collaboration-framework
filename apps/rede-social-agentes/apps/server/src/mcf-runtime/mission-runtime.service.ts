@@ -146,11 +146,17 @@ export class MissionRuntimeService {
       );
     }
 
+    const phaseId = request.phaseId ?? randomUUID();
     const outcome = await this.executor.execute({
       skillId: request.skillId,
       agentId: request.agentId,
       inputs: request.inputs,
       tool: request.tool,
+      executionContext: {
+        missionId,
+        phaseId,
+        expectedMissionVersion: request.expectedMissionVersion,
+      },
     });
 
     if (outcome.handoffTo) {
@@ -171,7 +177,6 @@ export class MissionRuntimeService {
     });
 
     const now = new Date();
-    const phaseId = request.phaseId ?? randomUUID();
     const phase: McfPhaseRecord = {
       id: phaseId,
       missionId,
@@ -187,48 +192,51 @@ export class MissionRuntimeService {
       updatedAt: now,
     };
 
-    const events: McfEventInput[] = [
-      event({
-        missionId,
-        phaseId,
-        agentId: request.agentId,
-        eventType: 'PHASE_STARTED',
-        payload: { skillId: outcome.skill.skillId, cycle: 1 },
-        idempotencyKey: `phase:${phaseId}:started`,
-        occurredAt: now,
-      }),
-      event({
-        missionId,
-        phaseId,
-        agentId: request.agentId,
-        eventType: 'SKILL_SELECTED',
-        payload: { skillId: outcome.skill.skillId, version: outcome.skill.version },
-        idempotencyKey: `phase:${phaseId}:skill-selected`,
-        occurredAt: now,
-      }),
-      event({
-        missionId,
-        phaseId,
-        agentId: request.agentId,
-        eventType: 'PERMISSION_GRANTED',
-        payload: { profile: outcome.skill.permissionProfile, provider: request.tool.provider },
-        idempotencyKey: `phase:${phaseId}:permission-granted`,
-        occurredAt: now,
-      }),
-      event({
-        missionId,
-        phaseId,
-        agentId: request.agentId,
-        eventType: 'TOOL_REQUESTED',
-        payload: {
-          provider: request.tool.provider,
-          operation: request.tool.operation,
-          resource: request.tool.resource,
-        },
-        idempotencyKey: `phase:${phaseId}:tool-requested`,
-        occurredAt: now,
-      }),
-    ];
+    const events: McfEventInput[] = [];
+    if (!outcome.externalAction?.attemptId) {
+      events.push(
+        event({
+          missionId,
+          phaseId,
+          agentId: request.agentId,
+          eventType: 'PHASE_STARTED',
+          payload: { skillId: outcome.skill.skillId, cycle: 1 },
+          idempotencyKey: `phase:${phaseId}:started`,
+          occurredAt: now,
+        }),
+        event({
+          missionId,
+          phaseId,
+          agentId: request.agentId,
+          eventType: 'SKILL_SELECTED',
+          payload: { skillId: outcome.skill.skillId, version: outcome.skill.version },
+          idempotencyKey: `phase:${phaseId}:skill-selected`,
+          occurredAt: now,
+        }),
+        event({
+          missionId,
+          phaseId,
+          agentId: request.agentId,
+          eventType: 'PERMISSION_GRANTED',
+          payload: { profile: outcome.skill.permissionProfile, provider: request.tool.provider },
+          idempotencyKey: `phase:${phaseId}:permission-granted`,
+          occurredAt: now,
+        }),
+        event({
+          missionId,
+          phaseId,
+          agentId: request.agentId,
+          eventType: 'TOOL_REQUESTED',
+          payload: {
+            provider: request.tool.provider,
+            operation: request.tool.operation,
+            resource: request.tool.resource,
+          },
+          idempotencyKey: `phase:${phaseId}:tool-requested`,
+          occurredAt: now,
+        }),
+      );
+    }
 
     if (outcome.receipt) {
       events.push(
@@ -347,6 +355,7 @@ export class MissionRuntimeService {
     const persisted = await this.repository.persistExecution({
       missionId,
       expectedMissionVersion: request.expectedMissionVersion,
+      externalAttemptId: outcome.externalAction?.attemptId ?? null,
       phase,
       permissionProfile: outcome.skill.permissionProfile,
       missionState,

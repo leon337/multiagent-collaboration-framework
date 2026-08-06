@@ -3,10 +3,14 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../database.module.js';
 import { DatabaseService } from '../database.service.js';
 import { IdentityModule } from '../identity/identity.module.js';
+import { AdapterRegistry } from './adapter-registry.js';
 import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
+import { ExternalActionDispatcher } from './external-action-dispatcher.js';
+import { ExternalActionLedger } from './external-action-ledger.js';
+import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
@@ -34,6 +38,27 @@ import { SocialTimelineService } from './social-timeline.service.js';
     McfRuntimeTokenGuard,
     ChatMissionPlanner,
     {
+      provide: GitHubCodeReviewAdapter,
+      useFactory: (evidence: EvidenceValidator) => new GitHubCodeReviewAdapter(evidence),
+      inject: [EvidenceValidator],
+    },
+    {
+      provide: AdapterRegistry,
+      useFactory: (githubReview: GitHubCodeReviewAdapter) => new AdapterRegistry([githubReview]),
+      inject: [GitHubCodeReviewAdapter],
+    },
+    {
+      provide: ExternalActionLedger,
+      useFactory: (database: DatabaseService) => new ExternalActionLedger(database),
+      inject: [DatabaseService],
+    },
+    {
+      provide: ExternalActionDispatcher,
+      useFactory: (registry: AdapterRegistry, ledger: ExternalActionLedger) =>
+        new ExternalActionDispatcher(registry, ledger),
+      inject: [AdapterRegistry, ExternalActionLedger],
+    },
+    {
       provide: PostgresMcfRuntimeRepository,
       useFactory: (database: DatabaseService) => new PostgresMcfRuntimeRepository(database),
       inject: [DatabaseService],
@@ -54,8 +79,9 @@ import { SocialTimelineService } from './social-timeline.service.js';
         registry: SkillRegistryLoader,
         permissions: PermissionEngine,
         evidence: EvidenceValidator,
-      ) => new SkillExecutor(registry, permissions, evidence),
-      inject: [SkillRegistryLoader, PermissionEngine, EvidenceValidator],
+        externalActions: ExternalActionDispatcher,
+      ) => new SkillExecutor(registry, permissions, evidence, externalActions),
+      inject: [SkillRegistryLoader, PermissionEngine, EvidenceValidator, ExternalActionDispatcher],
     },
     {
       provide: MissionRuntimeService,

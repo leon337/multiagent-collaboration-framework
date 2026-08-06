@@ -13,6 +13,7 @@ import {
   McfMissionVersionConflictError,
   McfPhaseNotFoundError,
 } from './mcf-runtime.errors.js';
+import { reconcileExpiredExternalReservation } from './external-action-reservation.js';
 import type {
   CompleteMcfPendingPhaseInput,
   CompleteMcfPendingPhaseResult,
@@ -246,14 +247,35 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
     input: PersistMcfExecutionInput,
   ): Promise<{ mission: McfMissionRecord; phase: McfPhaseRecord }> {
     return this.database.transaction(async (client) => {
+      await reconcileExpiredExternalReservation(client, input.missionId);
       const updatedMission = await client.query<MissionRow>(
         `update "mcf_missions"
          set "state" = $1,
              "current_phase_id" = $2,
              "current_agent_id" = $3,
              "version" = "version" + 1,
+             "active_external_attempt_id" = null,
              "updated_at" = $4
-         where "id" = $5 and "version" = $6
+         where "id" = $5
+           and "version" = $6
+           and (
+             ($7::text is null and "active_external_attempt_id" is null)
+             or (
+               "active_external_attempt_id" = $7
+               and exists (
+                 select 1
+                 from "mcf_external_action_attempts" as "attempt"
+                 where "attempt"."attempt_id" = $7
+                   and "attempt"."mission_id" = "mcf_missions"."id"
+                   and "attempt"."phase_id" = $2
+                   and "attempt"."status" in (
+                     'FAILED',
+                     'EVIDENCE_VALIDATED',
+                     'EVIDENCE_REJECTED'
+                   )
+               )
+             )
+           )
          returning ${missionColumns}`,
         [
           input.missionState,
@@ -262,6 +284,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
           input.phase.updatedAt,
           input.missionId,
           input.expectedMissionVersion,
+          input.externalAttemptId ?? null,
         ],
       );
 
@@ -378,6 +401,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         };
       }
 
+      await reconcileExpiredExternalReservation(client, input.missionId);
       const lockedMission = await client.query<MissionRow>(
         `select ${missionColumns} from "mcf_missions" where "id" = $1 for update`,
         [input.missionId],
@@ -455,9 +479,13 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
              "version" = "version" + 1,
              "updated_at" = now()
          where "id" = $3
+           and "active_external_attempt_id" is null
          returning ${missionColumns}`,
         [input.missionState, input.nextAgentId, input.missionId],
       );
+      if (!updatedMission.rows[0]) {
+        throw new McfMissionVersionConflictError(input.missionId, lockedMission.rows[0].version);
+      }
 
       for (const event of input.events) {
         await insertEvent(client, event);
@@ -496,7 +524,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         "occurred_at" as "occurredAt"
        from "mcf_events"
        where "mission_id" = $1
-       order by "occurred_at" asc, "id" asc`,
+       order by "sequence" asc`,
       [missionId],
     );
 
