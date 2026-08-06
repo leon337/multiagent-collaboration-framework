@@ -24,11 +24,7 @@ function createdEvent(missionId: string): McfEventInput {
   };
 }
 
-function mission(input: {
-  id: string;
-  now: Date;
-  parentMissionId?: string;
-}): McfMissionRecord {
+function mission(input: { id: string; now: Date; parentMissionId?: string }): McfMissionRecord {
   const child = input.parentMissionId !== undefined;
 
   return {
