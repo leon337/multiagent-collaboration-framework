@@ -1,6 +1,6 @@
 # MCF-STAB-001 — Relatório de estabilização
 
-**Estado:** GATES TÉCNICOS APROVADOS  
+**Estado:** GATES TÉCNICOS APROVADOS; HEAD DOCUMENTAL EM VALIDAÇÃO  
 **Tracking:** issue #68  
 **Pull request:** #69  
 **Branch:** `chore/mcf-stab-001-runtime-006`
@@ -83,7 +83,7 @@ O workflow Foundation comprovou:
 - test: PASS;
 - build: PASS.
 
-A documentação final adicionada depois desse head deverá permanecer verde no head definitivo do PR #69 antes do gate de integração.
+O head documental definitivo deverá repetir os gates antes da decisão de integração.
 
 ## 7. Auditoria
 
