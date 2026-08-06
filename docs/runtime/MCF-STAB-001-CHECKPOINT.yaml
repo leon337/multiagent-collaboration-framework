@@ -3,10 +3,10 @@ parent_mission_id: MCF-CONCLUSAO-V1
 return_to: Mestre
 return_status: PENDING
 estado: ENTREGUE
-ultimo_sucesso: gates_tecnicos_aprovados_e_documentacao_reconciliada
-falha_atual: nenhuma
+ultimo_sucesso: estabilizacao_tecnica_concluida_com_revisao_final
+afalha_atual: nenhuma
 classe_da_falha: NENHUMA
-efeito_confirmado: hierarquia_persistente_e_retorno_automatico_validados
+efeito_confirmado: hierarquia_persistente_retorno_seguro_e_pilha_deterministica_validados
 recuperacao_escolhida: nenhuma
 proxima_acao: executar_gate_de_integracao_do_PR_69
 destinatario: Léo
@@ -16,12 +16,16 @@ artefatos:
   - tipo: issue
     referencia: ISSUE_68
   - tipo: commit
-    referencia: 5c420693133c6bec218172089b0d1f14b88d149c
+    referencia: 5256ef1392d0da55a6c5d47fd3f64eb4b2526bfd
   - tipo: teste
-    referencia: WORKFLOW_31063763483_PASS
+    referencia: WORKFLOW_31065590521_PASS
   - tipo: teste
-    referencia: WORKFLOW_31063763463_PASS
+    referencia: WORKFLOW_31065590524_PASS
   - tipo: teste
-    referencia: WORKFLOW_31063763465_PASS
+    referencia: WORKFLOW_31065590519_PASS
   - tipo: parecer
     referencia: docs/reviews/MCF-DEC-059-RC-001-HIERARQUIA-PERSISTENTE.md
+  - tipo: arquivo
+    referencia: apps/rede-social-agentes/packages/database/migrations/0014_mcf_mission_hierarchy.sql
+  - tipo: arquivo
+    referencia: apps/rede-social-agentes/packages/database/migrations/0015_mcf_single_active_submission.sql
