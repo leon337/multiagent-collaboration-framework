@@ -4,122 +4,96 @@
 **Gate de integração:** APPROVED_FOR_MERGE  
 **Missão:** MCF-RUNTIME-006-A1  
 **PR:** #71  
-**Head de código revisado:** `c4c30242da35e348181e926192c185ff1ebce6e1`  
-**Head documental validado:** `fdadc5e3e87f8c69449c03fc2302c9f87284c0ec`
+**Head técnico final:** `da9a48449e509bd446197f22b1490d783f3f8729`  
+**Head validado:** `f626216e9941c58357a1772f908d1606dd8917d9`
 
 ## 1. Escopo revisado
 
-- `ExternalActionDispatcher` e `AdapterRegistry`;
+- dispatcher, registry e contratos de ações externas;
 - `GitHubCodeReviewAdapter` somente leitura;
-- cobertura de arquivos, patches e paginação;
-- reserva durável anterior ao provider;
-- ordem causal completa do preflight;
-- máquina de estados e lease do ledger;
-- recibo assinado e validação de evidência;
-- integração com `SkillExecutor` e `MissionRuntimeService`;
-- migrações `0017_mcf_external_action_ledger.sql` e `0018_mcf_external_action_reservation_lease.sql`;
-- testes unitários, integração, build e container smoke.
+- vínculo entre recurso autorizado e repositório consultado;
+- cobertura de patches, paginação e mutação do head do PR;
+- reserva durável, lease, timeout e reconciliação;
+- recibo assinado, validação de evidência e timeline;
+- migrações `0017` e `0018`;
+- testes unitários, integração, regressão e recuperação.
 
 ## 2. Achados resolvidos
 
 ```yaml
 HIGH_A1_001:
-  problema: veredito_poderia_parecer_completo_com_patch_ausente_ou_lista_truncada
+  problema: cobertura_incompleta_poderia_parecer_PASS
   estado: RESOLVIDO
-  evidencia:
-    - cobertura_COMPLETE_ou_PARTIAL_explicita
-    - falha_quando_nenhum_patch_textual_existe
-    - paginacao_limitada_e_falha_explicita_acima_de_1000_arquivos
 
 HIGH_A1_002:
-  problema: tentativa_externa_nao_possuia_rastro_duravel_antes_do_provider
+  problema: tentativa_sem_rastro_duravel_antes_do_provider
   estado: RESOLVIDO
-  evidencia:
-    - tentativa_reservada_em_transacao
-    - EXTERNAL_ACTION_REQUESTED_persistido_antes_do_GET
-    - EXTERNAL_ACTION_ALLOWED_persistido_antes_do_GET
 
 MEDIUM_A1_003:
   problema: testes_nao_reproduziam_READ_AND_PROPOSE
   estado: RESOLVIDO
 
 MEDIUM_A1_004:
-  problema: URL_nao_validava_hostname_github.com
+  problema: hostname_github_nao_validado
   estado: RESOLVIDO
 
 HIGH_A1_005:
-  problema: timeline_externa_precedia_abertura_e_autorizacao_da_fase
+  problema: ordem_causal_global_incorreta
   estado: RESOLVIDO
-  ordem:
-    - PHASE_STARTED
-    - SKILL_SELECTED
-    - PERMISSION_GRANTED
-    - TOOL_REQUESTED
-    - EXTERNAL_ACTION_REQUESTED
-    - EXTERNAL_ACTION_ALLOWED
-    - EXTERNAL_ACTION_EXECUTED_ou_FAILED
-    - EXTERNAL_ACTION_EVIDENCE_VALIDATED_ou_rejeicao
 
 MEDIUM_A1_006:
-  problema: ledger_aceitava_saltos_e_reescrita_de_estado_terminal
+  problema: transicoes_invalidas_no_ledger
   estado: RESOLVIDO
-  transicoes:
-    ALLOWED:
-      - EXECUTED
-      - FAILED
-    EXECUTED:
-      - EVIDENCE_VALIDATED
-      - EVIDENCE_REJECTED
-    terminais:
-      - FAILED
-      - EVIDENCE_VALIDATED
-      - EVIDENCE_REJECTED
-      - ABANDONED
-  idempotencia: repeticao_do_mesmo_estado_nao_gera_evento_duplicado
 
 HIGH_A1_007:
-  problema: reserva_da_missao_nao_permanecia_ativa_ate_a_persistencia_final
+  problema: reserva_da_missao_nao_permanecia_ate_persistencia_final
   estado: RESOLVIDO
-  evidencia:
-    - active_external_attempt_id_duravel
-    - persistencia_final_restrita_a_tentativa_terminal_proprietaria
-    - execucao_concorrente_bloqueada_enquanto_reserva_ativa
 
 HIGH_A1_008:
-  problema: arquivos_do_PR_poderiam_ser_associados_a_um_head_SHA_antigo
+  problema: arquivos_do_PR_podiam_ser_associados_a_SHA_antigo
   estado: RESOLVIDO
-  evidencia:
-    - head_do_PR_relido_apos_cada_pagina
-    - mudanca_do_SHA_gera_RESERVATION_CONFLICT_retryable
 
 MEDIUM_A1_009:
-  problema: aliases_de_provider_e_operation_geravam_recibo_nao_canonico
+  problema: aliases_de_provider_e_operation_geravam_recibo_inconsistente
   estado: RESOLVIDO
-  evidencia:
-    - canonicalizacao_na_permissao
-    - canonicalizacao_no_adapter
-    - canonicalizacao_no_recibo
-    - canonicalizacao_na_validacao
 
 HIGH_A1_010:
-  problema: interrupcao_apos_reserva_poderia_bloquear_a_missao_indefinidamente
+  problema: interrupcao_apos_reserva_podia_bloquear_missao_indefinidamente
   estado: RESOLVIDO
   evidencia:
-    - lease_duravel_de_10_minutos
-    - reconciliacao_transacional_na_proxima_reserva_ou_persistencia
+    - lease_de_10_minutos
     - estado_ABANDONED
-    - evento_EXTERNAL_ACTION_ABANDONED_auditavel
-    - liberacao_atomica_da_missao
+    - evento_EXTERNAL_ACTION_ABANDONED
+    - reconciliacao_transacional
+
+HIGH_A1_011:
+  problema: inputs_repository_podia_divergir_do_tool_resource
+  estado: RESOLVIDO
+  evidencia:
+    - consulta_derivada_do_tool_resource
+    - input_opcional_normalizado
+    - divergencia_rejeitada_com_INVALID_CONTEXT
+    - falha_antes_de_qualquer_chamada_de_rede
+
+MEDIUM_A1_012:
+  problema: lease_podia_expirar_durante_adapter_ainda_ativo
+  estado: RESOLVIDO
+  evidencia:
+    - deadline_global_de_5_minutos
+    - lease_de_10_minutos
+    - AbortSignal_compartilhado_por_deadline
+    - falha_ADAPTER_TIMEOUT_retryable
+    - chamada_de_rede_abortada_antes_da_expiracao
 ```
 
 ## 3. Evidência final de CI
 
 ```yaml
 documentation_validation:
-  run: 31074496530
+  run: 31075440687
   conclusion: success
 foundation:
-  run: 31074496533
+  run: 31075440813
   formatting: success
   lint: success
   typecheck: success
@@ -127,13 +101,16 @@ foundation:
   tests: success
   build: success
 container_smoke:
-  run: 31074496557
+  run: 31075440824
   conclusion: success
 ```
 
 ## 4. Testes de hardening
 
 ```yaml
+repository_resource_mismatch_before_network: PASS
+adapter_timeout_before_lease_expiry: PASS
+timed_out_request_abort: PASS
 durable_mission_reservation: PASS
 concurrent_mission_persistence_block: PASS
 terminal_owner_release: PASS
@@ -149,9 +126,11 @@ invalid_state_transition: PASS
 idempotent_transition: PASS
 ```
 
-## 5. Estado da revisão e integração
+## 5. Estado da revisão
 
 ```yaml
+review_id: 4871466719
+decision: PASS
 critical_open: 0
 high_open: 0
 medium_open: 0
@@ -159,8 +138,6 @@ low_open: 0
 unresolved_threads: 0
 main_divergence: false
 mergeable: true
-configured_checks: 3_success
-integration_decision: APPROVED_FOR_MERGE
 merge_authorized: false
 ```
 
