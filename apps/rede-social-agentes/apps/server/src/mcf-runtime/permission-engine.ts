@@ -36,6 +36,10 @@ function isProductionTarget(value: unknown): boolean {
   return normalized.includes('production') || normalized.includes('producao');
 }
 
+function isExplicitReadOnlyScopedOperation(skillId: string, operation: string): boolean {
+  return skillId === 'MCF-RUN-TESTS' && canonicalizeToolValue(operation) === 'query-ci';
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch', 'query'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
@@ -123,7 +127,7 @@ export class PermissionEngine {
         break;
       case 'SCOPED_WRITE':
         if (
-          !operationMatches(operation, readOperations) &&
+          !isExplicitReadOnlyScopedOperation(skill.skillId, operation) &&
           inputs.authorizedScope !== true &&
           provider !== 'internal'
         ) {
