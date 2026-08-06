@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import type { McfMissionState } from '@rsa/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { DatabaseService } from '../database.service.js';
@@ -53,6 +54,127 @@ function phase(input: {
   };
 }
 
+function parentMission(input: {
+  id: string;
+  now: Date;
+  currentPhaseId: string | null;
+}): McfMissionRecord {
+  return {
+    id: input.id,
+    contract: {
+      title: 'Parent mission',
+      objective: 'Remain active until every child mission returns.',
+      expectedOutcome: 'The validated parent checkpoint is restored safely.',
+      scope: ['mission hierarchy'],
+      outOfScope: ['production deployment'],
+      acceptanceCriteria: ['child return is persisted'],
+      riskClass: 'B',
+      selectedAgents: ['Leonardo', 'Emily', 'Júlia'],
+      selectedSkills: ['MCF-TRACE-MISSION'],
+      sourceOfTruth: ['MCF-DEC-059'],
+    },
+    state: 'EXECUTING',
+    currentPhaseId: input.currentPhaseId,
+    currentAgentId: 'Leonardo',
+    version: 1,
+    createdAt: input.now,
+    updatedAt: input.now,
+  };
+}
+
+function childMission(input: {
+  id: string;
+  parentMissionId: string;
+  now: Date;
+}): McfMissionRecord {
+  return {
+    id: input.id,
+    contract: {
+      title: 'Child mission',
+      objective: 'Complete a controlled subflow and return to the parent.',
+      expectedOutcome: 'Return to Leonardo after completion.',
+      scope: ['controlled subflow'],
+      outOfScope: ['closing the parent mission'],
+      acceptanceCriteria: ['parent checkpoint is restored'],
+      riskClass: 'B',
+      selectedAgents: ['Emily', 'Leonardo'],
+      selectedSkills: ['MCF-TRACE-MISSION'],
+      sourceOfTruth: ['MCF-DEC-059'],
+      parentMissionId: input.parentMissionId,
+      returnToAgentId: 'Leonardo',
+      returnStatus: 'PENDING',
+    },
+    state: 'PLANNED',
+    currentPhaseId: null,
+    currentAgentId: null,
+    version: 1,
+    createdAt: input.now,
+    updatedAt: input.now,
+  };
+}
+
+async function createHierarchy(input: {
+  repository: McfRuntimeRepository;
+  parent: McfMissionRecord;
+  child: McfMissionRecord;
+}): Promise<void> {
+  await input.repository.createMission({
+    mission: input.parent,
+    event: missionEvent(
+      input.parent.id,
+      'MISSION_CREATED',
+      `mission:${input.parent.id}:created`,
+    ),
+  });
+  await input.repository.createMission({
+    mission: input.child,
+    event: missionEvent(
+      input.child.id,
+      'MISSION_CREATED',
+      `mission:${input.child.id}:created`,
+    ),
+  });
+}
+
+async function completeChild(input: {
+  repository: McfRuntimeRepository;
+  childMissionId: string;
+  phaseId: string;
+  now: Date;
+}): Promise<void> {
+  await input.repository.persistExecution({
+    missionId: input.childMissionId,
+    expectedMissionVersion: 1,
+    phase: phase({
+      id: input.phaseId,
+      missionId: input.childMissionId,
+      agentId: 'Emily',
+      skillId: 'MCF-TRACE-MISSION',
+      now: input.now,
+    }),
+    permissionProfile: 'READ_ONLY',
+    missionState: 'COMPLETED',
+    nextAgentId: null,
+    receipt: null,
+    evidenceStatus: 'VALID',
+    handoff: null,
+    events: [
+      missionEvent(
+        input.childMissionId,
+        'PHASE_COMPLETED',
+        `phase:${input.phaseId}:completed`,
+        input.phaseId,
+      ),
+      missionEvent(
+        input.childMissionId,
+        'MISSION_COMPLETED',
+        `mission:${input.childMissionId}:completed`,
+        input.phaseId,
+      ),
+    ],
+  });
+}
+
 describe('MCF mission hierarchy integration', () => {
   let database: DatabaseService;
   let repository: McfRuntimeRepository;
@@ -67,75 +189,23 @@ describe('MCF mission hierarchy integration', () => {
     await database.onModuleDestroy();
   });
 
-  it('blocks premature parent completion and resumes it after child completion', async () => {
+  it('restores the parent checkpoint after blocking premature completion', async () => {
     const parentMissionId = randomUUID();
     const childMissionId = randomUUID();
-    const parentPhaseId = randomUUID();
+    const checkpointPhaseId = randomUUID();
+    const prematurePhaseId = randomUUID();
     const childPhaseId = randomUUID();
     const now = new Date();
 
-    const parentMission: McfMissionRecord = {
-      id: parentMissionId,
-      contract: {
-        title: 'Parent mission',
-        objective: 'Remain active until the child mission returns.',
-        expectedOutcome: 'Parent resumes with the configured agent.',
-        scope: ['mission hierarchy'],
-        outOfScope: ['production deployment'],
-        acceptanceCriteria: ['child return is persisted'],
-        riskClass: 'B',
-        selectedAgents: ['Leonardo', 'Emily'],
-        selectedSkills: ['MCF-TRACE-MISSION'],
-        sourceOfTruth: ['MCF-DEC-016-A1'],
-      },
-      state: 'PLANNED',
-      currentPhaseId: null,
-      currentAgentId: null,
-      version: 1,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    const childMission: McfMissionRecord = {
-      id: childMissionId,
-      contract: {
-        title: 'Child mission',
-        objective: 'Complete a controlled subflow and return to the parent.',
-        expectedOutcome: 'Return to Leonardo after completion.',
-        scope: ['controlled subflow'],
-        outOfScope: ['closing the parent mission'],
-        acceptanceCriteria: ['parent is resumed'],
-        riskClass: 'B',
-        selectedAgents: ['Emily', 'Leonardo'],
-        selectedSkills: ['MCF-TRACE-MISSION'],
-        sourceOfTruth: ['MCF-DEC-016-A1'],
-        parentMissionId,
-        returnToAgentId: 'Leonardo',
-        returnStatus: 'PENDING',
-      },
-      state: 'PLANNED',
-      currentPhaseId: null,
-      currentAgentId: null,
-      version: 1,
-      createdAt: now,
-      updatedAt: now,
-    };
-
     try {
-      await repository.createMission({
-        mission: parentMission,
-        event: missionEvent(
-          parentMissionId,
-          'MISSION_CREATED',
-          `mission:${parentMissionId}:created`,
-        ),
+      await createHierarchy({
+        repository,
+        parent: parentMission({ id: parentMissionId, now, currentPhaseId: checkpointPhaseId }),
+        child: childMission({ id: childMissionId, parentMissionId, now }),
       });
 
-      const createdChild = await repository.createMission({
-        mission: childMission,
-        event: missionEvent(childMissionId, 'MISSION_CREATED', `mission:${childMissionId}:created`),
-      });
-      expect(createdChild.contract).toMatchObject({
+      const createdChild = await repository.findMission(childMissionId);
+      expect(createdChild?.contract).toMatchObject({
         parentMissionId,
         returnToAgentId: 'Leonardo',
         returnStatus: 'PENDING',
@@ -145,7 +215,7 @@ describe('MCF mission hierarchy integration', () => {
         missionId: parentMissionId,
         expectedMissionVersion: 1,
         phase: phase({
-          id: parentPhaseId,
+          id: prematurePhaseId,
           missionId: parentMissionId,
           agentId: 'Emily',
           skillId: 'MCF-TRACE-MISSION',
@@ -161,59 +231,32 @@ describe('MCF mission hierarchy integration', () => {
           missionEvent(
             parentMissionId,
             'PHASE_COMPLETED',
-            `phase:${parentPhaseId}:completed`,
-            parentPhaseId,
+            `phase:${prematurePhaseId}:completed`,
+            prematurePhaseId,
           ),
           missionEvent(
             parentMissionId,
             'MISSION_COMPLETED',
             `mission:${parentMissionId}:completed`,
-            parentPhaseId,
+            prematurePhaseId,
           ),
         ],
       });
 
       expect(prematureCompletion.mission).toMatchObject({
         state: 'EXECUTING',
+        currentPhaseId: checkpointPhaseId,
+        currentAgentId: 'Leonardo',
         version: 2,
       });
       expect(
         (await repository.listEvents(parentMissionId)).map((event) => event.eventType),
       ).not.toContain('MISSION_COMPLETED');
 
-      const completedChild = await repository.persistExecution({
-        missionId: childMissionId,
-        expectedMissionVersion: 1,
-        phase: phase({
-          id: childPhaseId,
-          missionId: childMissionId,
-          agentId: 'Emily',
-          skillId: 'MCF-TRACE-MISSION',
-          now,
-        }),
-        permissionProfile: 'READ_ONLY',
-        missionState: 'COMPLETED',
-        nextAgentId: null,
-        receipt: null,
-        evidenceStatus: 'VALID',
-        handoff: null,
-        events: [
-          missionEvent(
-            childMissionId,
-            'PHASE_COMPLETED',
-            `phase:${childPhaseId}:completed`,
-            childPhaseId,
-          ),
-          missionEvent(
-            childMissionId,
-            'MISSION_COMPLETED',
-            `mission:${childMissionId}:completed`,
-            childPhaseId,
-          ),
-        ],
-      });
+      await completeChild({ repository, childMissionId, phaseId: childPhaseId, now });
 
-      expect(completedChild.mission).toMatchObject({
+      const completedChild = await repository.findMission(childMissionId);
+      expect(completedChild).toMatchObject({
         state: 'COMPLETED',
         contract: {
           parentMissionId,
@@ -225,6 +268,7 @@ describe('MCF mission hierarchy integration', () => {
       const resumedParent = await repository.findMission(parentMissionId);
       expect(resumedParent).toMatchObject({
         state: 'EXECUTING',
+        currentPhaseId: checkpointPhaseId,
         currentAgentId: 'Leonardo',
         version: 3,
       });
@@ -240,4 +284,46 @@ describe('MCF mission hierarchy integration', () => {
       await database.query('delete from "mcf_missions" where "id" = $1', [parentMissionId]);
     }
   });
+
+  it.each<McfMissionState>(['BLOCKED_RISK', 'RECOVERING', 'WAITING_EXTERNAL'])(
+    'preserves protected parent state %s when the child returns',
+    async (protectedState) => {
+      const parentMissionId = randomUUID();
+      const childMissionId = randomUUID();
+      const childPhaseId = randomUUID();
+      const now = new Date();
+
+      try {
+        await createHierarchy({
+          repository,
+          parent: parentMission({ id: parentMissionId, now, currentPhaseId: null }),
+          child: childMission({ id: childMissionId, parentMissionId, now }),
+        });
+
+        await database.query(
+          `update "mcf_missions"
+           set "state" = $1, "current_agent_id" = $2, "version" = "version" + 1
+           where "id" = $3`,
+          [protectedState, 'Júlia', parentMissionId],
+        );
+
+        await completeChild({ repository, childMissionId, phaseId: childPhaseId, now });
+
+        const protectedParent = await repository.findMission(parentMissionId);
+        expect(protectedParent).toMatchObject({
+          state: protectedState,
+          currentAgentId: 'Júlia',
+        });
+
+        const parentEvents = (await repository.listEvents(parentMissionId)).map(
+          (event) => event.eventType,
+        );
+        expect(parentEvents).toContain('PARENT_RETURN_DEFERRED');
+        expect(parentEvents).not.toContain('PARENT_MISSION_RESUMED');
+      } finally {
+        await database.query('delete from "mcf_missions" where "id" = $1', [childMissionId]);
+        await database.query('delete from "mcf_missions" where "id" = $1', [parentMissionId]);
+      }
+    },
+  );
 });
