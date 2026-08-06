@@ -496,7 +496,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         "occurred_at" as "occurredAt"
        from "mcf_events"
        where "mission_id" = $1
-       order by "occurred_at" asc, "id" asc`,
+       order by "sequence" asc`,
       [missionId],
     );
 

@@ -98,9 +98,20 @@ describe('MCF external action durable ledger integration', () => {
         [missionId, phaseId],
       );
       expect(reserved.rows.map((row) => row.eventType)).toEqual([
+        'PHASE_STARTED',
+        'SKILL_SELECTED',
+        'PERMISSION_GRANTED',
+        'TOOL_REQUESTED',
         'EXTERNAL_ACTION_REQUESTED',
         'EXTERNAL_ACTION_ALLOWED',
       ]);
+
+      await expect(
+        ledger.recordEvidenceValidated(attemptId, 'receipt-before-execution'),
+      ).rejects.toMatchObject({
+        code: 'LEDGER_FAILURE',
+        retryable: false,
+      });
 
       const evidence = new EvidenceValidator();
       const receipt = evidence.createTrustedReceipt({
@@ -120,6 +131,8 @@ describe('MCF external action durable ledger integration', () => {
         },
       });
       await ledger.recordExecuted(attemptId, receipt);
+      await ledger.recordExecuted(attemptId, receipt);
+      await ledger.recordEvidenceValidated(attemptId, receipt.receiptId);
       await ledger.recordEvidenceValidated(attemptId, receipt.receiptId);
 
       const completed = await database.query<EventTypeRow>(
@@ -130,6 +143,10 @@ describe('MCF external action durable ledger integration', () => {
         [missionId, phaseId],
       );
       expect(completed.rows.map((row) => row.eventType)).toEqual([
+        'PHASE_STARTED',
+        'SKILL_SELECTED',
+        'PERMISSION_GRANTED',
+        'TOOL_REQUESTED',
         'EXTERNAL_ACTION_REQUESTED',
         'EXTERNAL_ACTION_ALLOWED',
         'EXTERNAL_ACTION_EXECUTED',

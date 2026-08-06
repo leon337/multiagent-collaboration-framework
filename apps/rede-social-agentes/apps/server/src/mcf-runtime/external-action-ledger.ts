@@ -18,6 +18,21 @@ interface AttemptRow {
   attemptId: string;
 }
 
+type ExternalAttemptStatus =
+  'ALLOWED' | 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
+
+interface AttemptStateRow extends AttemptRow {
+  status: ExternalAttemptStatus;
+}
+
+const allowedTransitions: Record<ExternalAttemptStatus, ExternalAttemptStatus[]> = {
+  ALLOWED: ['EXECUTED', 'FAILED'],
+  EXECUTED: ['EVIDENCE_VALIDATED', 'EVIDENCE_REJECTED'],
+  FAILED: [],
+  EVIDENCE_VALIDATED: [],
+  EVIDENCE_REJECTED: [],
+};
+
 function databaseErrorCode(error: unknown): string | null {
   if (
     typeof error === 'object' &&
@@ -92,19 +107,37 @@ export class ExternalActionLedger {
           ],
         );
 
-        await client.query(
-          `insert into "mcf_events" (
-            "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
-            "idempotency_key", "occurred_at"
-          ) values
-          ($1, $2, $3, $4, 'EXTERNAL_ACTION_REQUESTED', $5::jsonb, $6, $7),
-          ($8, $2, $3, $4, 'EXTERNAL_ACTION_ALLOWED', $9::jsonb, $10, $7)`,
-          [
-            randomUUID(),
-            request.context.missionId,
-            request.context.phaseId,
-            request.agentId,
-            JSON.stringify({
+        const preflightEvents = [
+          {
+            eventType: 'PHASE_STARTED',
+            payload: { skillId: request.skill.skillId, cycle: 1 },
+            idempotencyKey: `phase:${request.context.phaseId}:started`,
+          },
+          {
+            eventType: 'SKILL_SELECTED',
+            payload: { skillId: request.skill.skillId, version: request.skill.version },
+            idempotencyKey: `phase:${request.context.phaseId}:skill-selected`,
+          },
+          {
+            eventType: 'PERMISSION_GRANTED',
+            payload: {
+              profile: request.skill.permissionProfile,
+              provider: request.tool.provider,
+            },
+            idempotencyKey: `phase:${request.context.phaseId}:permission-granted`,
+          },
+          {
+            eventType: 'TOOL_REQUESTED',
+            payload: {
+              provider: request.tool.provider,
+              operation: request.tool.operation,
+              resource: request.tool.resource,
+            },
+            idempotencyKey: `phase:${request.context.phaseId}:tool-requested`,
+          },
+          {
+            eventType: 'EXTERNAL_ACTION_REQUESTED',
+            payload: {
               attemptId,
               adapterId,
               skillId: request.skill.skillId,
@@ -112,21 +145,41 @@ export class ExternalActionLedger {
               operation: request.tool.operation,
               resource: request.tool.resource,
               expectedMissionVersion: request.context.expectedMissionVersion,
-            }),
-            `external-action:${attemptId}:requested`,
-            occurredAt,
-            randomUUID(),
-            JSON.stringify({
+            },
+            idempotencyKey: `external-action:${attemptId}:requested`,
+          },
+          {
+            eventType: 'EXTERNAL_ACTION_ALLOWED',
+            payload: {
               attemptId,
               adapterId,
               permissionProfile: request.skill.permissionProfile,
               provider: request.tool.provider,
               operation: request.tool.operation,
               resource: request.tool.resource,
-            }),
-            `external-action:${attemptId}:allowed`,
-          ],
-        );
+            },
+            idempotencyKey: `external-action:${attemptId}:allowed`,
+          },
+        ];
+
+        for (const item of preflightEvents) {
+          await client.query(
+            `insert into "mcf_events" (
+              "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
+              "idempotency_key", "occurred_at"
+            ) values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)`,
+            [
+              randomUUID(),
+              request.context.missionId,
+              request.context.phaseId,
+              request.agentId,
+              item.eventType,
+              JSON.stringify(item.payload),
+              item.idempotencyKey,
+              occurredAt,
+            ],
+          );
+        }
       });
     } catch (error) {
       if (error instanceof ExternalActionAdapterError) {
@@ -228,6 +281,32 @@ export class ExternalActionLedger {
 
     try {
       await this.database.transaction(async (client) => {
+        const current = await client.query<AttemptStateRow>(
+          `select "attempt_id" as "attemptId", "status"
+           from "mcf_external_action_attempts"
+           where "attempt_id" = $1
+           for update`,
+          [input.attemptId],
+        );
+        const attempt = current.rows[0];
+        if (!attempt) {
+          throw new ExternalActionAdapterError(
+            'LEDGER_FAILURE',
+            `External action attempt ${input.attemptId} was not found`,
+            false,
+          );
+        }
+        if (attempt.status === input.status) {
+          return;
+        }
+        if (!allowedTransitions[attempt.status].includes(input.status)) {
+          throw new ExternalActionAdapterError(
+            'LEDGER_FAILURE',
+            `Invalid external action transition ${attempt.status} -> ${input.status}`,
+            false,
+          );
+        }
+
         const updated = await client.query<AttemptRow>(
           `update "mcf_external_action_attempts"
            set "status" = $1,
@@ -235,7 +314,7 @@ export class ExternalActionLedger {
                "failure_code" = $3,
                "failure_message" = $4,
                "updated_at" = $5
-           where "attempt_id" = $6
+           where "attempt_id" = $6 and "status" = $7
            returning "attempt_id" as "attemptId"`,
           [
             input.status,
@@ -244,10 +323,15 @@ export class ExternalActionLedger {
             input.failure?.message ?? null,
             occurredAt,
             input.attemptId,
+            attempt.status,
           ],
         );
         if (!updated.rows[0]) {
-          throw new Error(`External action attempt ${input.attemptId} was not found`);
+          throw new ExternalActionAdapterError(
+            'LEDGER_FAILURE',
+            `External action attempt ${input.attemptId} changed during transition`,
+            true,
+          );
         }
 
         await client.query(
@@ -270,6 +354,9 @@ export class ExternalActionLedger {
         );
       });
     } catch (error) {
+      if (error instanceof ExternalActionAdapterError) {
+        throw error;
+      }
       throw new ExternalActionAdapterError(
         'LEDGER_FAILURE',
         error instanceof Error ? error.message : 'Failed to persist external action transition',
