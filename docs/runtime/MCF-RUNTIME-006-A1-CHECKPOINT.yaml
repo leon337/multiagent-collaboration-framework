@@ -1,9 +1,11 @@
 mission_id: MCF-RUNTIME-006-A1
 tracking_issue: 70
-state: IMPLEMENTED_AWAITING_CI
+state: HARDENING_IMPLEMENTED_AWAITING_CI
 objective: executar_code_review_real_read_only_com_evidencia_assinada
 branch: feat/mcf-runtime-006-a1-code-review-adapter
 base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
+technical_head: 2c118c0d6143edc2f629447557f3d8625feb46ac
+pull_request: 71
 adapter:
   id: github-code-review-read-only-v1
   skill: MCF-REVIEW-CODE
@@ -17,19 +19,33 @@ foundation:
   permission_gate: REUSED_BEFORE_DISPATCH
   signed_receipt: IMPLEMENTED
   evidence_validation: REUSED
-  external_action_ledger: IMPLEMENTED
+  external_action_ledger: DURABLE_PRE_EXECUTION_RESERVATION
+hardening:
+  github_url_host_validation: IMPLEMENTED
+  missing_patch_coverage: DECLARED_PARTIAL
+  all_patches_missing: FAIL_CLOSED
+  pagination_limit: FAIL_CLOSED_AT_1000_FILES
+  requested_allowed_before_provider_call: IMPLEMENTED
+  stale_mission_version: BLOCKED_BEFORE_PROVIDER_CALL
+  real_permission_profile: READ_AND_PROPOSE
 failure_classification: IMPLEMENTED
 tests:
-  adapter_unit: CREATED
-  executor_dispatch: CREATED
-  permission_block: CREATED
-  failure_recovery: CREATED
-  ledger_integration: CREATED
-ci: PENDING
-review: PENDING
+  adapter_unit: UPDATED
+  executor_dispatch: UPDATED
+  permission_block: UPDATED
+  failure_recovery: UPDATED
+  ledger_integration: UPDATED
+  stale_version_reservation: CREATED
+  partial_coverage: CREATED
+  pagination_limit: CREATED
+ci:
+  prior_head_0c3b993e: PASS
+  technical_head_2c118c0d: ACTION_REQUIRED_NO_JOBS_BOT_AUTHORED
+  canonical_validation_head: PENDING
+review: BLOCKED_UNTIL_CANONICAL_CI
 restrictions:
   production: BLOQUEADA
   cost: NAO_AUTORIZADO
   publication: false
   merge_automatico: false
-next_action: criar_commit_atomico_abrir_PR_draft_e_executar_CI
+next_action: executar_documentation_foundation_e_container_smoke_no_head_canonico
