@@ -14,7 +14,7 @@
     "dev:web": "pnpm --filter @rsa/web dev",
     "dev:worker": "pnpm --filter @rsa/worker dev",
     "format": "prettier --write .",
-    "format:check": "prettier --write apps/server/src/mcf-runtime/evidence-validator.ts apps/server/src/mcf-runtime/github-ci-query.adapter.test.ts apps/server/src/mcf-runtime/github-ci-query.adapter.ts apps/server/src/mcf-runtime/mcf-runtime.module.ts && mkdir -p apps/server/test-results && tar -czf apps/server/test-results/vitest.json apps/server/src/mcf-runtime/evidence-validator.ts apps/server/src/mcf-runtime/github-ci-query.adapter.test.ts apps/server/src/mcf-runtime/github-ci-query.adapter.ts apps/server/src/mcf-runtime/mcf-runtime.module.ts && exit 1",
+    "format:check": "prettier --check .",
     "lint": "eslint .",
     "ops:backup": "node ops/backup-database.mjs",
     "ops:restore": "node ops/restore-database.mjs",
