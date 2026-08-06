@@ -181,9 +181,9 @@ describe('MCF mission hierarchy integration', () => {
         state: 'EXECUTING',
         version: 2,
       });
-      expect((await repository.listEvents(parentMissionId)).map((event) => event.eventType)).not.toContain(
-        'MISSION_COMPLETED',
-      );
+      expect(
+        (await repository.listEvents(parentMissionId)).map((event) => event.eventType),
+      ).not.toContain('MISSION_COMPLETED');
 
       const completedChild = await repository.persistExecution({
         missionId: childMissionId,
@@ -233,15 +233,19 @@ describe('MCF mission hierarchy integration', () => {
         version: 3,
       });
 
-      expect((await repository.listEvents(childMissionId)).map((event) => event.eventType)).toContain(
-        'PARENT_RETURN_COMPLETED',
-      );
-      expect((await repository.listEvents(parentMissionId)).map((event) => event.eventType)).toContain(
-        'PARENT_MISSION_RESUMED',
-      );
+      expect(
+        (await repository.listEvents(childMissionId)).map((event) => event.eventType),
+      ).toContain('PARENT_RETURN_COMPLETED');
+      expect(
+        (await repository.listEvents(parentMissionId)).map((event) => event.eventType),
+      ).toContain('PARENT_MISSION_RESUMED');
     } finally {
-      await database.query('delete from "mcf_missions" where "id" = $1', [childMissionId]);
-      await database.query('delete from "mcf_missions" where "id" = $1', [parentMissionId]);
+      await database.query('delete from "mcf_missions" where "id" = $1', [
+        childMissionId,
+      ]);
+      await database.query('delete from "mcf_missions" where "id" = $1', [
+        parentMissionId,
+      ]);
     }
   });
 });
