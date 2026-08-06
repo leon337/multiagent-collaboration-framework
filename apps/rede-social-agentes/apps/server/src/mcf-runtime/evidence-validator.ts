@@ -193,18 +193,16 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
     throw new McfEvidenceRejectedError('CI query evidence requires at least one observed CI item');
   }
 
-  requireNonEmptyArray(
-    receipt.metadata,
-    'evidenceUrls',
-    'CI query evidence requires evidenceUrls',
-  );
+  requireNonEmptyArray(receipt.metadata, 'evidenceUrls', 'CI query evidence requires evidenceUrls');
   const permissions = requireNonEmptyArray(
     receipt.metadata,
     'requiredPermissions',
     'CI query evidence requires requiredPermissions',
   );
   if (!permissions.includes('actions:read')) {
-    throw new McfEvidenceRejectedError('CI query evidence requires actions:read permission metadata');
+    throw new McfEvidenceRejectedError(
+      'CI query evidence requires actions:read permission metadata',
+    );
   }
 }
 
