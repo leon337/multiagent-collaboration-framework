@@ -12,57 +12,93 @@ cost: NAO_AUTORIZADO
 
 ## Linha de execução
 
-1. issue #68 aberta para rastrear a estabilização;
+1. issue #68 aberta;
 2. issues #13 e #14 classificadas como Screen Assistant e encerradas com histórico;
 3. branch `chore/mcf-stab-001-runtime-006` criada;
-4. PR draft #69 aberto;
+4. PR #69 aberto como draft;
 5. PR #22 auditado e documentos canônicos portados;
 6. PR #29 confirmado como lacuna técnica real;
-7. migração `0014_mcf_mission_hierarchy.sql` criada;
-8. contrato TypeScript ampliado com hierarquia de missões;
-9. teste de integração de retorno à missão-pai criado;
+7. contrato TypeScript ampliado;
+8. migração `0014_mcf_mission_hierarchy.sql` criada;
+9. teste inicial de retorno à missão-pai criado;
 10. README sincronizado com DEC-058, RUNTIME-005, RUNTIME-006 e DEC-059;
-11. MCF-DEC-059 registrada;
-12. RC independente registrada;
-13. workflow auxiliar de formatação criado, utilizado e removido;
-14. pipeline técnico aprovado no head `5c420693133c6bec218172089b0d1f14b88d149c`.
+11. MCF-DEC-059 e RC inicial registradas;
+12. gates técnicos iniciais aprovados;
+13. revisão final identificou HIGH-001 e MEDIUM-001;
+14. PR #69 retornou a draft;
+15. snapshot do checkpoint e preservação de estados protegidos implementados;
+16. teste de `BLOCKED_RISK`, `RECOVERING` e `WAITING_EXTERNAL` adicionado;
+17. segunda revisão identificou HIGH-002 e MEDIUM-002;
+18. suspensão operacional do pai e `SUBMISSION_OPENED` implementados;
+19. revisão de pilha identificou ambiguidade de filhos paralelos;
+20. migração `0015_mcf_single_active_submission.sql` criada;
+21. teste de uma submissão ativa por pai adicionado;
+22. format, lint, typecheck, migração repetida, testes, build, documentação e smoke aprovados no head `5256ef1392d0da55a6c5d47fd3f64eb4b2526bfd`;
+23. PRs #22 e #29 permaneceram encerrados sem merge;
+24. documentação canônica atualizada com os achados resolvidos;
+25. PR #69 permanece draft e sem merge até o gate de governança.
 
 ## Incidentes recuperados
 
 ### Formatação
 
-O workflow Foundation falhou inicialmente no Prettier do novo teste.
+Novos testes divergiram do Prettier em ciclos distintos.
 
 Recuperação:
 
-- log do job inspecionado;
-- workflow temporário imprimiu a saída exata do Prettier;
-- arquivo corrigido;
-- workflow temporário removido;
-- pipeline repetido com sucesso.
+- logs do Foundation inspecionados;
+- workflows temporários somente leitura imprimiram a saída exata;
+- arquivos corrigidos;
+- workflows temporários removidos;
+- gates completos repetidos.
 
 ### Conflito otimista de arquivo
 
-A atualização do checkpoint encontrou SHA divergente.
+Atualizações documentais encontraram SHA divergente.
 
 Recuperação:
 
 - arquivo relido no head;
-- alteração reaplicada sobre o blob atual;
-- atualização concluída sem sobrescrever conteúdo externo.
+- mudança reaplicada sobre o blob atual;
+- nenhuma alteração externa foi sobrescrita.
+
+### Revisão bloqueante
+
+O GitHub não permitiu `REQUEST_CHANGES` porque o usuário autenticado também era o autor do PR.
+
+Recuperação:
+
+- parecer bloqueante registrado como review `COMMENT`;
+- PR convertido novamente para draft;
+- achados corrigidos antes de novo gate.
 
 ## Evidências do gate técnico
 
 ```yaml
+head: 5256ef1392d0da55a6c5d47fd3f64eb4b2526bfd
 documentation_validation:
-  id: 31063763465
+  id: 31065590519
   conclusion: success
 foundation:
-  id: 31063763483
+  id: 31065590521
   conclusion: success
 container_smoke:
-  id: 31063763463
+  id: 31065590524
   conclusion: success
+```
+
+## Achados
+
+```yaml
+HIGH_001: RESOLVIDO
+MEDIUM_001: RESOLVIDO
+HIGH_002: RESOLVIDO
+MEDIUM_002: RESOLVIDO
+MEDIUM_003: RESOLVIDO
+critical_open: 0
+high_open: 0
+medium_open: 0
+low_open: 1
 ```
 
 ## Estado
@@ -70,15 +106,17 @@ container_smoke:
 ```yaml
 backlog_legado: CLASSIFICADO
 readme: SINCRONIZADO
-pr_22: INCORPORADO_NO_PR_69
-pr_29: SUBSTITUIDO_PELA_DEC_059
-hierarquia_persistente: IMPLEMENTADA
-retorno_automatico: IMPLEMENTADO
-critical_findings: 0
-high_findings: 0
-low_findings: 1
+pr_22: INCORPORADO_E_ENCERRADO_SEM_MERGE
+pr_29: SUBSTITUIDO_E_ENCERRADO_SEM_MERGE
+hierarquia_persistente: PASS
+retorno_automatico: PASS
+parent_suspension: PASS
+protected_states: PASS
+checkpoint_restoration: PASS
+single_active_submission: PASS
 pr_69: DRAFT
 merge: NAO_EXECUTADO
 production: BLOQUEADA
+cost: NAO_AUTORIZADO
 proxima_missao: MCF_RUNTIME_006_A1
 ```
