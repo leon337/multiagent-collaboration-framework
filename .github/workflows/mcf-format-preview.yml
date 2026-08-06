@@ -1,0 +1,29 @@
+name: MCF Format Preview
+
+on:
+  pull_request:
+    paths:
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-hierarchy.integration.test.ts'
+      - '.github/workflows/mcf-format-preview.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Print formatted file
+        working-directory: apps/rede-social-agentes
+        run: pnpm exec prettier apps/server/src/mcf-runtime/mission-hierarchy.integration.test.ts
