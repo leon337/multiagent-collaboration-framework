@@ -4,7 +4,7 @@ return_to: Mestre
 return_status: PENDING
 estado: ENTREGUE
 ultimo_sucesso: estabilizacao_tecnica_concluida_com_revisao_final
-afalha_atual: nenhuma
+falha_atual: nenhuma
 classe_da_falha: NENHUMA
 efeito_confirmado: hierarquia_persistente_retorno_seguro_e_pilha_deterministica_validados
 recuperacao_escolhida: nenhuma
