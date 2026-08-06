@@ -22,6 +22,36 @@ jobs:
 
       - name: Apply controlled hardening patch
         run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/scripts/apply-mcf-a1-hardening.py')
+          content = path.read_text(encoding='utf-8')
+          helper_marker = '''    write(path, content.replace(old, new, 1))
+
+
+MIGRATION'''
+          helper_replacement = '''    write(path, content.replace(old, new, 1))
+
+
+def replace_first(path: str, old: str, new: str) -> None:
+    content = read(path)
+    count = content.count(old)
+    if count < 1:
+        raise RuntimeError(f"{path}: expected at least one occurrence: {old[:80]!r}")
+    write(path, content.replace(old, new, 1))
+
+
+MIGRATION'''
+          if content.count(helper_marker) != 1:
+              raise RuntimeError('replace_first insertion marker mismatch')
+          content = content.replace(helper_marker, helper_replacement, 1)
+          call_marker = "replace_once(\n    ADAPTER,\n    '''        changedFiles.push(...batch);"
+          if content.count(call_marker) != 1:
+              raise RuntimeError('PR mutation replacement call marker mismatch')
+          content = content.replace(call_marker, "replace_first(\n    ADAPTER,\n    '''        changedFiles.push(...batch);", 1)
+          path.write_text(content, encoding='utf-8')
+          PY
           sed -i 's/if "normalize(" in permissions or "normalizeProvider" in permissions:/if "function normalize(" in permissions or "function normalizeProvider(" in permissions:/' .github/scripts/apply-mcf-a1-hardening.py
           python3 .github/scripts/apply-mcf-a1-hardening.py
 
