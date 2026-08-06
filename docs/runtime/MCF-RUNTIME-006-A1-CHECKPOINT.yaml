@@ -1,10 +1,10 @@
 mission_id: MCF-RUNTIME-006-A1
 tracking_issue: 70
-state: TECHNICALLY_APPROVED_AWAITING_INTEGRATION_GATE
+state: HARDENING_APPLIED_AWAITING_CI
 objective: executar_code_review_real_read_only_com_evidencia_assinada
 branch: feat/mcf-runtime-006-a1-code-review-adapter
 base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
-technical_head: 24b45615115b95cd2de75777b5123c23fc3dddb1
+technical_head: bbf802af8650af96d9249068a7a4ea002a2af751
 pull_request: 71
 adapter:
   id: github-code-review-read-only-v1
@@ -29,48 +29,53 @@ hardening:
   requested_allowed_before_provider_call: IMPLEMENTED
   duplicate_preflight_in_service: SUPPRESSED
   stale_mission_version: BLOCKED_BEFORE_PROVIDER_CALL
+  active_external_attempt_reservation: IMPLEMENTED
+  concurrent_mission_advancement: BLOCKED_WHILE_ATTEMPT_ACTIVE
+  reservation_release: TERMINAL_OWNER_ONLY
+  pull_request_head_recheck_per_page: IMPLEMENTED
+  mutable_pr_diff_mismatch: RETRYABLE_RESERVATION_CONFLICT
+  provider_operation_canonicalization: IMPLEMENTED
   ledger_state_machine: EXPLICIT_AND_IDEMPOTENT
   timeline_order: DATABASE_SEQUENCE
   real_permission_profile: READ_AND_PROPOSE
 failure_classification: IMPLEMENTED
 tests:
-  adapter_unit: PASS
-  executor_dispatch: PASS
-  permission_block: PASS
-  failure_recovery: PASS
-  ledger_integration: PASS
-  stale_version_reservation: PASS
-  partial_coverage: PASS
-  pagination_limit: PASS
-  causal_preflight_order: PASS
-  invalid_state_transition: PASS
-  idempotent_transition: PASS
+  adapter_unit: PENDING_CI
+  executor_dispatch: PENDING_CI
+  permission_block: PENDING_CI
+  failure_recovery: PENDING_CI
+  ledger_integration: PENDING_CI
+  durable_mission_reservation: PENDING_CI
+  concurrent_mission_persistence_block: PENDING_CI
+  terminal_owner_release: PENDING_CI
+  pull_request_head_mutation: PENDING_CI
+  provider_alias_canonicalization: PENDING_CI
+  stale_version_reservation: PENDING_CI
+  partial_coverage: PENDING_CI
+  pagination_limit: PENDING_CI
+  causal_preflight_order: PENDING_CI
+  invalid_state_transition: PENDING_CI
+  idempotent_transition: PENDING_CI
 ci:
-  documentation_validation:
-    run: 31071793017
-    conclusion: success
-  foundation:
-    run: 31071793043
-    formatting: success
-    lint: success
-    typecheck: success
-    migration_twice: success
-    tests: success
-    build: success
-  container_smoke:
-    run: 31071793033
-    conclusion: success
+  documentation_validation: PENDING
+  formatting: PENDING
+  lint: PENDING
+  typecheck: PENDING
+  migration_twice: PENDING
+  tests: PENDING
+  build: PENDING
+  container_smoke: PENDING
 review:
-  decision: PASS_WITH_MINOR_RESERVATION
-  critical_open: 0
-  high_open: 0
-  medium_open: 0
-  low_open: 1
-  residual: phase_reconciler_after_interruption
-  rc: docs/reviews/MCF-DEC-060-RC-001-EXTERNAL-ACTION-DISPATCHER.md
+  decision: PENDING_AFTER_CI
+  blocking_threads_open: 3
+  critical_open: UNKNOWN
+  high_open: UNKNOWN
+  medium_open: UNKNOWN
+  low_open: UNKNOWN
 restrictions:
   production: BLOQUEADA
   cost: NAO_AUTORIZADO
   publication: false
   merge_automatico: false
-next_action: governance_integration_gate
+  merge_autorizado: false
+next_action: execute_canonical_ci_then_independent_review
