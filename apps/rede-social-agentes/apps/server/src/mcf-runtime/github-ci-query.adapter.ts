@@ -12,7 +12,6 @@ import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 type CiConclusion = 'SUCCESS' | 'FAILURE' | 'CANCELLED' | 'IN_PROGRESS';
-type McfReceiptStatus = 'SUCCEEDED' | 'FAILED' | 'PARTIAL';
 
 interface GitHubCommitResponse {
   sha: string;
@@ -241,11 +240,6 @@ function aggregateConclusion(observations: CiObservation[]): CiConclusion {
   if (conclusions.some((conclusion) => conclusion === 'success')) return 'SUCCESS';
 
   return 'CANCELLED';
-}
-
-function receiptStatusForConclusion(_conclusion: CiConclusion): McfReceiptStatus {
-  // The receipt proves that the read-only query completed. CI state is carried separately in metadata.
-  return 'SUCCEEDED';
 }
 
 function compactRun(run: GitHubWorkflowRun) {
@@ -557,7 +551,7 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
       resource: request.tool.resource,
       externalId,
       commitSha: target.commitSha,
-      status: receiptStatusForConclusion(conclusion),
+      status: 'SUCCEEDED',
       observedAt: new Date().toISOString(),
       metadata,
     });
