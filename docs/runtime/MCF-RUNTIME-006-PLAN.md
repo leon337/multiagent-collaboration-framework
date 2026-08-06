@@ -2,7 +2,7 @@
 
 ## Estado
 
-`PLANEJADO`
+`PLANEJADO_PARA_EXECUCAO_APOS_MCF_STAB_001`
 
 ## Autorização
 
@@ -102,6 +102,76 @@ final_state: object
 12. executar testes com agentes em contextos separados;
 13. auditoria independente;
 14. preparar MCF v1.0.0-RC1.
+
+## MCF-RUNTIME-006-A1 — Code Review Read Only
+
+### Objetivo
+
+Permitir que o runtime revise uma alteração em um repositório sem realizar escrita externa.
+
+### Entrada
+
+```yaml
+repository:
+base_sha:
+head_sha:
+pull_request_number:
+review_scope:
+expected_files:
+```
+
+### Operações permitidas
+
+- obter metadados do repositório;
+- validar base e head;
+- listar arquivos alterados;
+- obter diff ou patches;
+- classificar achados;
+- produzir recibo de revisão;
+- persistir evidência no ledger.
+
+### Operações proibidas
+
+- comentar no PR;
+- aprovar ou solicitar mudanças;
+- alterar branch;
+- criar commit;
+- fazer merge;
+- iniciar deploy;
+- modificar configuração externa.
+
+### Recibo
+
+```yaml
+receipt_type: code_review
+adapter_id: github_code_review_read_only
+repository:
+base_sha:
+head_sha:
+pull_request_number:
+changed_files:
+reviewed_files:
+findings:
+verdict:
+provider_observed_at:
+payload_digest:
+idempotency_key:
+```
+
+### Critérios de aceite
+
+```yaml
+sha_verified: true
+changed_files_listed: true
+review_scope_respected: true
+findings_classified: true
+verdict_explicit: true
+receipt_persisted: true
+external_write: false
+unit_tests: PASS
+integration_tests: PASS
+security_review: PASS
+```
 
 ## Critérios de aceite por adapter
 
