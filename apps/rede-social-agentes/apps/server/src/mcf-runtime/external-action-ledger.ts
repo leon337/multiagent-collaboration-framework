@@ -103,11 +103,7 @@ export class ExternalActionLedger {
              and "version" = $3
              and "active_external_attempt_id" is null
            returning "id"`,
-          [
-            attemptId,
-            request.context.missionId,
-            request.context.expectedMissionVersion,
-          ],
+          [attemptId, request.context.missionId, request.context.expectedMissionVersion],
         );
         if (!reservedMission.rows[0]) {
           throw new ExternalActionAdapterError(

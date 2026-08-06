@@ -173,15 +173,12 @@ describe('MCF external action mission reservation', () => {
         version: 2,
       });
     } finally {
-      await database.query('delete from "mcf_tool_receipts" where "mission_id" = $1', [
-        missionId,
-      ]);
+      await database.query('delete from "mcf_tool_receipts" where "mission_id" = $1', [missionId]);
       await database.query('delete from "mcf_handoffs" where "mission_id" = $1', [missionId]);
       await database.query('delete from "mcf_phases" where "mission_id" = $1', [missionId]);
-      await database.query(
-        'delete from "mcf_external_action_attempts" where "mission_id" = $1',
-        [missionId],
-      );
+      await database.query('delete from "mcf_external_action_attempts" where "mission_id" = $1', [
+        missionId,
+      ]);
       await database.query('delete from "mcf_events" where "mission_id" = $1', [missionId]);
       await database.query('delete from "mcf_missions" where "id" = $1', [missionId]);
     }

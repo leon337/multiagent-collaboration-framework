@@ -263,8 +263,7 @@ export class EvidenceValidator {
 
     if (
       canonicalizeProvider(receipt.provider) !== canonicalizeProvider(expected.provider) ||
-      canonicalizeToolValue(receipt.operation) !==
-        canonicalizeToolValue(expected.operation) ||
+      canonicalizeToolValue(receipt.operation) !== canonicalizeToolValue(expected.operation) ||
       receipt.resource !== expected.resource
     ) {
       throw new McfEvidenceRejectedError('receipt does not match the requested tool operation');

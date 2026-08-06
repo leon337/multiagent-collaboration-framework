@@ -481,10 +481,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         [input.missionState, input.nextAgentId, input.missionId],
       );
       if (!updatedMission.rows[0]) {
-        throw new McfMissionVersionConflictError(
-          input.missionId,
-          lockedMission.rows[0].version,
-        );
+        throw new McfMissionVersionConflictError(input.missionId, lockedMission.rows[0].version);
       }
 
       for (const event of input.events) {

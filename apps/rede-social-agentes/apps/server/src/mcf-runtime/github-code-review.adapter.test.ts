@@ -271,7 +271,6 @@ describe('GitHubCodeReviewAdapter', () => {
     expect(fetcher).toHaveBeenCalledTimes(21);
   });
 
-
   it('rejects a pull request when its head changes during paginated collection', async () => {
     const initialSha = 'a'.repeat(40);
     const changedSha = 'b'.repeat(40);
@@ -359,10 +358,7 @@ describe('GitHubCodeReviewAdapter', () => {
       return new Response('{}', { status: 404 });
     });
     const evidence = new EvidenceValidator();
-    const adapter = new GitHubCodeReviewAdapter(
-      evidence,
-      new GitHubReadClient(fetcher, undefined),
-    );
+    const adapter = new GitHubCodeReviewAdapter(evidence, new GitHubReadClient(fetcher, undefined));
     const request = {
       skill,
       agentId: 'Vinicius',
