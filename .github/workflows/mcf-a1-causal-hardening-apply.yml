@@ -1,0 +1,56 @@
+name: MCF A1 Causal Hardening Apply
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-a1-code-review-adapter
+    paths:
+      - '.github/workflows/mcf-a1-causal-hardening-apply.yml'
+      - '.github/scripts/apply_mcf_a1_causal_hardening.py'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/mcf-runtime-006-a1-code-review-adapter
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - run: corepack enable && corepack prepare pnpm@11.17.0 --activate
+      - working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Apply causal hardening patch
+        run: python .github/scripts/apply_mcf_a1_causal_hardening.py
+      - name: Remove temporary patch machinery
+        run: |
+          rm .github/scripts/apply_mcf_a1_causal_hardening.py
+          rm .github/workflows/mcf-a1-causal-hardening-apply.yml
+      - name: Format changed files
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/server/src/mcf-runtime/external-action-ledger.integration.test.ts \
+            apps/server/src/mcf-runtime/mission-runtime.service.ts \
+            apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.ts
+      - name: Verify focused typecheck and tests
+        working-directory: apps/rede-social-agentes
+        env:
+          DATABASE_URL: postgresql://rsa:rsa@127.0.0.1:5432/rsa
+          MCF_RECEIPT_SECRET: test-only-mcf-receipt-secret-0000000001
+        run: |
+          pnpm typecheck
+      - name: Commit causal hardening
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(mcf): enforce causal external action lifecycle"
+          git push origin HEAD:feat/mcf-runtime-006-a1-code-review-adapter
