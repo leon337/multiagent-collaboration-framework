@@ -9,13 +9,23 @@ export type ExternalActionFailureCode =
   | 'UNSUPPORTED_TARGET'
   | 'INVALID_RESPONSE'
   | 'NETWORK_FAILURE'
+  | 'INVALID_CONTEXT'
+  | 'RESERVATION_CONFLICT'
+  | 'LEDGER_FAILURE'
   | 'ADAPTER_FAILURE';
+
+export interface ExternalActionExecutionContext {
+  missionId: string;
+  phaseId: string;
+  expectedMissionVersion: number;
+}
 
 export interface ExternalActionRequest {
   skill: McfSkillDefinition;
   agentId: string;
   inputs: Record<string, unknown>;
   tool: McfToolRequest;
+  context?: ExternalActionExecutionContext | undefined;
 }
 
 export interface ExternalActionFailure {
@@ -35,21 +45,25 @@ export type ExternalActionDispatchResult =
   | {
       status: 'NOT_HANDLED';
       adapterId: null;
+      attemptId: null;
     }
   | {
       status: 'EXECUTED';
       adapterId: string;
+      attemptId: string;
       receipt: McfToolReceipt;
     }
   | {
       status: 'FAILED';
       adapterId: string;
+      attemptId: string | null;
       failure: ExternalActionFailure;
     };
 
 export interface ExternalActionTrace {
   status: ExternalActionDispatchResult['status'] | 'EXTERNAL_RECEIPT';
   adapterId: string | null;
+  attemptId: string | null;
   failureCode: ExternalActionFailureCode | null;
   retryable: boolean | null;
 }

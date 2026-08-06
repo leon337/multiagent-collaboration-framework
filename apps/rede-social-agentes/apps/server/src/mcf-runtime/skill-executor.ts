@@ -9,7 +9,10 @@ import type {
 
 import type { EvidenceValidator } from './evidence-validator.js';
 import type { ExternalActionDispatcher } from './external-action-dispatcher.js';
-import type { ExternalActionTrace } from './external-action.contracts.js';
+import type {
+  ExternalActionExecutionContext,
+  ExternalActionTrace,
+} from './external-action.contracts.js';
 import {
   McfEvidenceRejectedError,
   McfPermissionDeniedError,
@@ -38,6 +41,7 @@ export interface ExecuteSkillInput {
   agentId: string;
   inputs: Record<string, unknown>;
   tool: McfToolRequest & { externalReceipt?: McfToolReceipt | undefined };
+  executionContext?: ExternalActionExecutionContext | undefined;
 }
 
 export interface ExecuteSkillOutcome {
@@ -126,6 +130,7 @@ export class SkillExecutor {
       ? {
           status: 'EXTERNAL_RECEIPT',
           adapterId: null,
+          attemptId: null,
           failureCode: null,
           retryable: null,
         }
@@ -137,6 +142,7 @@ export class SkillExecutor {
         agentId: input.agentId,
         inputs: input.inputs,
         tool: input.tool,
+        context: input.executionContext,
       });
 
       if (dispatched.status === 'FAILED') {
@@ -151,6 +157,7 @@ export class SkillExecutor {
           externalAction: {
             status: 'FAILED',
             adapterId: dispatched.adapterId,
+            attemptId: dispatched.attemptId,
             failureCode: dispatched.failure.code,
             retryable: dispatched.failure.retryable,
           },
@@ -162,6 +169,7 @@ export class SkillExecutor {
         externalAction = {
           status: 'EXECUTED',
           adapterId: dispatched.adapterId,
+          attemptId: dispatched.attemptId,
           failureCode: null,
           retryable: null,
         };
@@ -169,6 +177,7 @@ export class SkillExecutor {
         externalAction = {
           status: 'NOT_HANDLED',
           adapterId: null,
+          attemptId: null,
           failureCode: null,
           retryable: null,
         };
@@ -191,6 +200,12 @@ export class SkillExecutor {
     try {
       this.evidence.verifyForSkill(receipt, input.tool, skill);
       if (receipt.status !== 'SUCCEEDED') {
+        const reason = `tool receipt status is ${receipt.status}`;
+        const ledgerFailure = await this.recordEvidenceRejected(
+          externalAction,
+          receipt.receiptId,
+          reason,
+        );
         return {
           skill,
           receipt,
@@ -198,8 +213,37 @@ export class SkillExecutor {
           phaseState: 'RECOVERING',
           missionState: 'RECOVERING',
           handoffTo: null,
-          rejectionReason: `tool receipt status is ${receipt.status}`,
-          externalAction,
+          rejectionReason: ledgerFailure ?? reason,
+          externalAction: ledgerFailure
+            ? {
+                ...externalAction,
+                status: 'FAILED',
+                failureCode: 'LEDGER_FAILURE',
+                retryable: true,
+              }
+            : externalAction,
+        };
+      }
+
+      const ledgerFailure = await this.recordEvidenceValidated(
+        externalAction,
+        receipt.receiptId,
+      );
+      if (ledgerFailure) {
+        return {
+          skill,
+          receipt,
+          evidenceStatus: 'INVALID',
+          phaseState: 'RECOVERING',
+          missionState: 'RECOVERING',
+          handoffTo: null,
+          rejectionReason: ledgerFailure,
+          externalAction: {
+            ...externalAction,
+            status: 'FAILED',
+            failureCode: 'LEDGER_FAILURE',
+            retryable: true,
+          },
         };
       }
 
@@ -217,6 +261,12 @@ export class SkillExecutor {
       if (!(error instanceof McfEvidenceRejectedError)) {
         throw error;
       }
+
+      const ledgerFailure = await this.recordEvidenceRejected(
+        externalAction,
+        receipt.receiptId,
+        error.message,
+      );
       return {
         skill,
         receipt,
@@ -224,9 +274,47 @@ export class SkillExecutor {
         phaseState: 'RECOVERING',
         missionState: 'RECOVERING',
         handoffTo: null,
-        rejectionReason: error.message,
-        externalAction,
+        rejectionReason: ledgerFailure ?? error.message,
+        externalAction: ledgerFailure
+          ? {
+              ...externalAction,
+              status: 'FAILED',
+              failureCode: 'LEDGER_FAILURE',
+              retryable: true,
+            }
+          : externalAction,
       };
+    }
+  }
+
+  private async recordEvidenceValidated(
+    trace: ExternalActionTrace | null,
+    receiptId: string,
+  ): Promise<string | null> {
+    if (!this.externalActions || trace?.status !== 'EXECUTED' || !trace.attemptId) {
+      return null;
+    }
+    try {
+      await this.externalActions.recordEvidenceValidated(trace.attemptId, receiptId);
+      return null;
+    } catch (error) {
+      return `LEDGER_FAILURE: ${error instanceof Error ? error.message : 'failed to persist evidence validation'}`;
+    }
+  }
+
+  private async recordEvidenceRejected(
+    trace: ExternalActionTrace | null,
+    receiptId: string | null,
+    reason: string,
+  ): Promise<string | null> {
+    if (!this.externalActions || trace?.status !== 'EXECUTED' || !trace.attemptId) {
+      return null;
+    }
+    try {
+      await this.externalActions.recordEvidenceRejected(trace.attemptId, receiptId, reason);
+      return null;
+    } catch (error) {
+      return `LEDGER_FAILURE: ${error instanceof Error ? error.message : 'failed to persist evidence rejection'}`;
     }
   }
 }
