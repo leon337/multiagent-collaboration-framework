@@ -40,7 +40,7 @@ function isExplicitReadOnlyScopedOperation(skillId: string, operation: string): 
   return skillId === 'MCF-RUN-TESTS' && canonicalizeToolValue(operation) === 'query-ci';
 }
 
-const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch', 'query'];
+const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
   'delete',
