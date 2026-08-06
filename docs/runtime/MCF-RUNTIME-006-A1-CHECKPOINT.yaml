@@ -1,6 +1,6 @@
 mission_id: MCF-RUNTIME-006-A1
 tracking_issue: 70
-state: APPROVED_FOR_MERGE_AWAITING_HUMAN_AUTHORIZATION
+state: FINAL_REVIEW_FIXES_AWAITING_CI
 objective: executar_code_review_real_read_only_com_evidencia_assinada
 branch: feat/mcf-runtime-006-a1-code-review-adapter
 base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
@@ -8,7 +8,8 @@ technical_head: bbf802af8650af96d9249068a7a4ea002a2af751
 formatted_head: bec1cbce7f77c9de68e4296db06eb3d9f7000362
 reconciliation_head: b193e1fcc1a68730d684e4c184d357baf1aa10ed
 validated_code_head: c4c30242da35e348181e926192c185ff1ebce6e1
-validated_documentation_head: fdadc5e3e87f8c69449c03fc2302c9f87284c0ec
+previous_governance_head: c09e4a40949d347dcb88e743fa7d1df2ad2e3038
+final_review_fix_head: da9a48449e509bd446197f22b1490d783f3f8729
 pull_request: 71
 changed_files: 23
 adapter:
@@ -27,6 +28,8 @@ foundation:
   external_action_ledger: DURABLE_PRE_EXECUTION_RESERVATION
 hardening:
   github_url_host_validation: IMPLEMENTED
+  repository_resource_binding: IMPLEMENTED
+  repository_input_mismatch: FAIL_CLOSED_BEFORE_NETWORK
   missing_patch_coverage: DECLARED_PARTIAL
   all_patches_missing: FAIL_CLOSED
   pagination_limit: FAIL_CLOSED_AT_1000_FILES
@@ -38,6 +41,10 @@ hardening:
   concurrent_mission_advancement: BLOCKED_WHILE_ATTEMPT_ACTIVE
   reservation_release: TERMINAL_OWNER_ONLY
   reservation_lease: TEN_MINUTES
+  adapter_execution_timeout: FIVE_MINUTES
+  timeout_before_lease_expiry: ENFORCED
+  timed_out_network_request: ABORTED
+  timeout_failure_code: ADAPTER_TIMEOUT
   expired_reservation_reconciliation: IMPLEMENTED
   orphan_attempt_state: ABANDONED
   orphan_attempt_event: EXTERNAL_ACTION_ABANDONED
@@ -49,54 +56,46 @@ hardening:
   real_permission_profile: READ_AND_PROPOSE
 failure_classification: IMPLEMENTED
 tests:
-  adapter_unit: PASS
-  executor_dispatch: PASS
-  permission_block: PASS
-  failure_recovery: PASS
-  ledger_integration: PASS
-  durable_mission_reservation: PASS
-  concurrent_mission_persistence_block: PASS
-  terminal_owner_release: PASS
-  expired_orphan_reconciliation: PASS
-  abandoned_event_audit: PASS
-  pull_request_head_mutation: PASS
-  provider_alias_canonicalization: PASS
-  stale_version_reservation: PASS
-  partial_coverage: PASS
-  pagination_limit: PASS
-  causal_preflight_order: PASS
-  invalid_state_transition: PASS
-  idempotent_transition: PASS
+  adapter_unit: PENDING_CI
+  repository_resource_binding: PENDING_CI
+  repository_mismatch_before_network: PENDING_CI
+  adapter_timeout_before_lease: PENDING_CI
+  timed_out_request_abort: PENDING_CI
+  executor_dispatch: PENDING_CI
+  permission_block: PENDING_CI
+  failure_recovery: PENDING_CI
+  ledger_integration: PENDING_CI
+  durable_mission_reservation: PENDING_CI
+  concurrent_mission_persistence_block: PENDING_CI
+  terminal_owner_release: PENDING_CI
+  expired_orphan_reconciliation: PENDING_CI
+  abandoned_event_audit: PENDING_CI
+  pull_request_head_mutation: PENDING_CI
+  provider_alias_canonicalization: PENDING_CI
+  stale_version_reservation: PENDING_CI
+  partial_coverage: PENDING_CI
+  pagination_limit: PENDING_CI
+  causal_preflight_order: PENDING_CI
+  invalid_state_transition: PENDING_CI
+  idempotent_transition: PENDING_CI
 ci:
-  documentation_validation:
-    run: 31074496530
-    conclusion: success
-  foundation:
-    run: 31074496533
-    formatting: success
-    lint: success
-    typecheck: success
-    migration_twice: success
-    tests: success
-    build: success
-  container_smoke:
-    run: 31074496557
-    conclusion: success
+  documentation_validation: PENDING
+  formatting: PENDING
+  lint: PENDING
+  typecheck: PENDING
+  migration_twice: PENDING
+  tests: PENDING
+  build: PENDING
+  container_smoke: PENDING
 review:
-  review_id: 4871355389
-  decision: PASS
-  blocking_threads_open: 0
+  decision: BLOCKED_AWAITING_CI_AND_REREVIEW
+  blocking_threads_open: 2
   critical_open: 0
-  high_open: 0
-  medium_open: 0
+  high_open: 1
+  medium_open: 1
   low_open: 0
 integration_gate:
-  decision: APPROVED_FOR_MERGE
-  main_divergence: false
-  mergeable: true
-  draft: false
-  configured_checks: 3_success
-  unresolved_threads: 0
+  decision: BLOCKED
   merge_authorized: false
 restrictions:
   production: BLOQUEADA
@@ -104,5 +103,5 @@ restrictions:
   publication: false
   merge_automatico: false
   merge_autorizado: false
-next_action: await_explicit_human_merge_authorization
+next_action: execute_full_ci_then_independent_rereview
 human_authority: Leandro
