@@ -99,9 +99,7 @@ describe('GitHubCiQueryAdapter', () => {
                 html_url: `https://github.com/${repository}/actions/runs/44/job/55`,
                 started_at: '2026-08-06T11:00:10Z',
                 completed_at: '2026-08-06T11:01:50Z',
-                steps: [
-                  { number: 1, name: 'test', status: 'completed', conclusion: 'success' },
-                ],
+                steps: [{ number: 1, name: 'test', status: 'completed', conclusion: 'success' }],
               },
             ],
           }),
@@ -131,10 +129,7 @@ describe('GitHubCiQueryAdapter', () => {
       return new Response('{}', { status: 404 });
     });
     const evidence = new EvidenceValidator();
-    const adapter = new GitHubCiQueryAdapter(
-      evidence,
-      new GitHubCiReadClient(fetcher, undefined),
-    );
+    const adapter = new GitHubCiQueryAdapter(evidence, new GitHubCiReadClient(fetcher, undefined));
 
     const receipt = await adapter.execute(request());
 
@@ -224,9 +219,9 @@ describe('GitHubCiQueryAdapter', () => {
     await expect(adapter.execute(request({ test_target: 'main' }))).rejects.toMatchObject({
       code: 'UNSUPPORTED_TARGET',
     });
-    await expect(adapter.execute(request({ test_target: commitSha.slice(0, 12) }))).rejects.toMatchObject(
-      { code: 'UNSUPPORTED_TARGET' },
-    );
+    await expect(
+      adapter.execute(request({ test_target: commitSha.slice(0, 12) })),
+    ).rejects.toMatchObject({ code: 'UNSUPPORTED_TARGET' });
     expect(fetcher).not.toHaveBeenCalled();
   });
 
@@ -264,7 +259,9 @@ describe('GitHubCiQueryAdapter', () => {
   it('keeps CI query read-only while future execution still requires scoped authorization', () => {
     const permissions = new PermissionEngine();
 
-    expect(() => permissions.assertAllowed(skill, 'Renato', request().tool, request().inputs)).not.toThrow();
+    expect(() =>
+      permissions.assertAllowed(skill, 'Renato', request().tool, request().inputs),
+    ).not.toThrow();
     expect(() =>
       permissions.assertAllowed(
         skill,
