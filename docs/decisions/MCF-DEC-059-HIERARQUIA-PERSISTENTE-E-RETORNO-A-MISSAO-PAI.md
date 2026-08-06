@@ -1,6 +1,6 @@
 # MCF-DEC-059 — Hierarquia persistente e retorno automático à missão-pai
 
-**Estado:** EM VALIDAÇÃO NO PR #69  
+**Estado:** APROVADA PARA INTEGRAÇÃO  
 **Data:** 5 de agosto de 2026  
 **Origem:** reconciliação do PR #29 e da MCF-DEC-016-A1
 
@@ -108,21 +108,32 @@ return_status: NOT_APPLICABLE
 
 O contrato existente continua válido porque os campos TypeScript são opcionais.
 
-## 8. Critério de aprovação
+## 8. Evidência de aprovação
 
 ```yaml
+head_validado: 5c420693133c6bec218172089b0d1f14b88d149c
 format: PASS
+lint: PASS
 typecheck: PASS
 migration_twice: PASS
 integration_test: PASS
+build: PASS
 container_smoke: PASS
 documentation_validation: PASS
 critical_findings: 0
 high_findings: 0
 ```
 
-Até todos os critérios passarem, a decisão permanece `EM VALIDAÇÃO` e o PR #69 continua draft.
+Workflows:
+
+- Documentation validation — run `31063763465` — PASS;
+- Rede Social Foundation — run `31063763483` — PASS;
+- Rede Social Container Smoke — run `31063763463` — PASS.
 
 ## 9. Relação com o PR #29
 
-O PR #29 preserva a origem conceitual da correção. A implementação atual substitui a dependência de restauração manual por controles persistentes e transacionais.
+O PR #29 preserva a origem conceitual da correção. A implementação do PR #69 substitui a dependência de restauração manual por controles persistentes e transacionais.
+
+## 10. Limite da aprovação
+
+Esta decisão aprova a implementação para integração no ramo principal após o gate aplicável ao PR #69. Ela não autoriza produção, custo externo ou publicação automática.
