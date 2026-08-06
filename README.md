@@ -83,12 +83,17 @@ retomada_por_mission_id: true
 recibos_assinados: true
 controle_otimista: true
 callback_de_CI: true
+hierarquia_persistente_de_missoes: true
+retorno_automatico_a_missao_pai: true
+conclusao_pai_com_submissao_pendente: bloqueada
 publicacao_social_automatica: false
 ```
 
 O bridge executa somente o bloco interno consecutivo no início do plano. GitHub, CI, Render, Vercel ou Cloudflare continuam exigindo recibos reais. Uma skill interna posicionada depois de uma fase externa permanece planejada até que o fluxo chegue a ela.
 
 A missão só é encerrada por `MCF-TRACE-MISSION` com `final_checkpoint=true` quando o ledger comprova `PHASE_COMPLETED` para todas as skills selecionadas. CI verde conclui a fase de testes, não a missão inteira.
+
+A hierarquia persistente impede que uma missão-pai seja concluída enquanto existir submissão com retorno pendente. Quando a submissão termina, o runtime devolve o bastão ao agente configurado e restaura a missão-pai em execução.
 
 ### MCF-RUNTIME-005 — deploy verificado
 
@@ -106,7 +111,7 @@ A recuperação atual **não é rollback nativo de artefato do Render**. O mecan
 
 A estabilização anterior ao RUNTIME-006 possui rastreamento na issue `#68` e no PR draft `#69`.
 
-O primeiro controle técnico em implementação é a hierarquia persistente de missões:
+O primeiro controle técnico implementado é a hierarquia persistente de missões:
 
 ```text
 missão-pai
@@ -120,6 +125,8 @@ O MCF-RUNTIME-006 expandirá a autonomia externa por meio de adapters confiávei
 
 ### Documentação do runtime
 
+- `docs/decisions/MCF-DEC-059-HIERARQUIA-PERSISTENTE-E-RETORNO-A-MISSAO-PAI.md`;
+- `docs/reviews/MCF-DEC-059-RC-001-HIERARQUIA-PERSISTENTE.md`;
 - `docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md`;
 - `docs/decisions/MCF-DEC-057-EXPANSAO-DE-SKILLS-EXECUTAVEIS-E-RECIBOS-SEMANTICOS.md`;
 - `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
@@ -165,6 +172,7 @@ A integração do pacote ao GitHub não modifica automaticamente as configuraç�
 
 ## Documentos principais
 
+- `docs/decisions/MCF-DEC-059-HIERARQUIA-PERSISTENTE-E-RETORNO-A-MISSAO-PAI.md`;
 - `docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md`;
 - `docs/decisions/MCF-DEC-057-EXPANSAO-DE-SKILLS-EXECUTAVEIS-E-RECIBOS-SEMANTICOS.md`;
 - `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
@@ -197,6 +205,6 @@ O runtime apenas projeta conclusões verificadas como candidatos `DRAFT_REVIEW`.
 
 ## Estado
 
-A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-058 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos, a conclusão apenas por trace final comprovado no ledger e o deploy verificado com recuperação controlada em staging.
+A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-059 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos, a conclusão apenas por trace final comprovado no ledger, o deploy verificado com recuperação controlada em staging e o retorno transacional à missão-pai.
 
 O estado atual é um MVP técnico avançado em staging. A produção irrestrita continua bloqueada até a conclusão dos adapters externos confiáveis, das oito skills ainda documentais, dos testes multiagente independentes e da auditoria de segurança da release candidate.
