@@ -4,7 +4,7 @@ pull_request: 73
 branch: feat/mcf-runtime-006-a2-ci-query-adapter
 base_sha: 01c0182b9c9837c0dd22306c9bd8918020ecc38b
 previous_audited_head_sha: 5869774393e49450359dbf85889dd0362d5c041e
-remediation_code_sha: 4b72e8d0e6ac908ffb27374cc779b05222586d47
+remediation_code_sha: c7c0f5de2048c843fc4b6227cbbead7c202d84e4
 state: REMEDIATION_IMPLEMENTED_PENDING_CI
 objective: Consultar CI do GitHub por SHA exato sem capacidade de execução ou escrita.
 
