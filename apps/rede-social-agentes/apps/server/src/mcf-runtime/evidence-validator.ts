@@ -24,6 +24,18 @@ interface ReceiptPayload {
   metadata: Record<string, unknown>;
 }
 
+type NormalizedCiConclusion = 'SUCCESS' | 'FAILURE' | 'CANCELLED' | 'IN_PROGRESS';
+
+const ACTIVE_CI_STATUSES = new Set(['queued', 'in_progress', 'pending', 'waiting', 'requested']);
+const FAILURE_CI_CONCLUSIONS = new Set([
+  'failure',
+  'timed_out',
+  'action_required',
+  'startup_failure',
+  'stale',
+]);
+const NON_PASSING_CI_CONCLUSIONS = new Set(['cancelled', 'neutral', 'skipped']);
+
 function sortValue(value: unknown): unknown {
   if (Array.isArray(value)) {
     return value.map(sortValue);
@@ -68,10 +80,14 @@ function equalSignature(actualHex: string, expectedHex: string): boolean {
   return timingSafeEqual(Buffer.from(actualHex, 'hex'), Buffer.from(expectedHex, 'hex'));
 }
 
+function reject(message: string): never {
+  throw new McfEvidenceRejectedError(message);
+}
+
 function requireString(metadata: Record<string, unknown>, key: string, message: string): string {
   const value = metadata[key];
   if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new McfEvidenceRejectedError(message);
+    return reject(message);
   }
   return value;
 }
@@ -79,7 +95,7 @@ function requireString(metadata: Record<string, unknown>, key: string, message: 
 function requireBoolean(metadata: Record<string, unknown>, key: string, message: string): boolean {
   const value = metadata[key];
   if (typeof value !== 'boolean') {
-    throw new McfEvidenceRejectedError(message);
+    return reject(message);
   }
   return value;
 }
@@ -91,9 +107,21 @@ function requireNonNegativeInteger(
 ): number {
   const value = metadata[key];
   if (!Number.isInteger(value) || (value as number) < 0) {
-    throw new McfEvidenceRejectedError(message);
+    return reject(message);
   }
   return value as number;
+}
+
+function requireArray(
+  metadata: Record<string, unknown>,
+  key: string,
+  message: string,
+): unknown[] {
+  const value = metadata[key];
+  if (!Array.isArray(value)) {
+    return reject(message);
+  }
+  return value;
 }
 
 function requireNonEmptyArray(
@@ -101,18 +129,143 @@ function requireNonEmptyArray(
   key: string,
   message: string,
 ): unknown[] {
-  const value = metadata[key];
-  if (!Array.isArray(value) || value.length === 0) {
-    throw new McfEvidenceRejectedError(message);
+  const value = requireArray(metadata, key, message);
+  if (value.length === 0) {
+    return reject(message);
   }
   return value;
 }
 
+function requireRecord(value: unknown, message: string): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return reject(message);
+  }
+  return value as Record<string, unknown>;
+}
+
+function recordString(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): string {
+  const value = record[key];
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return reject(message);
+  }
+  return value;
+}
+
+function recordNullableString(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): string | null {
+  const value = record[key];
+  if (value === null) return null;
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return reject(message);
+  }
+  return value;
+}
+
+function repositoryFromValue(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  let path = trimmed;
+  if (/^https?:\/\//u.test(trimmed)) {
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol !== 'https:' || parsed.hostname.toLowerCase() !== 'github.com') return null;
+      path = parsed.pathname;
+    } catch {
+      return null;
+    }
+  }
+
+  const parts = path
+    .replace(/^github:/u, '')
+    .replace(/^\/+|\/+$/gu, '')
+    .split('/');
+  if (parts.length !== 2) return null;
+  const owner = parts[0];
+  const repository = parts[1]?.replace(/\.git$/u, '');
+  if (
+    !owner ||
+    !repository ||
+    !/^[A-Za-z0-9_.-]+$/u.test(owner) ||
+    !/^[A-Za-z0-9_.-]+$/u.test(repository)
+  ) {
+    return null;
+  }
+  return `${owner}/${repository}`;
+}
+
+function verifiedGitHubUrl(value: unknown, repository: string, message: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return reject(message);
+  }
+  try {
+    const parsed = new URL(value);
+    const repositoryPrefix = `/${repository.toLowerCase()}`;
+    if (
+      parsed.protocol !== 'https:' ||
+      parsed.hostname.toLowerCase() !== 'github.com' ||
+      !parsed.pathname.toLowerCase().startsWith(repositoryPrefix)
+    ) {
+      return reject(message);
+    }
+  } catch {
+    return reject(message);
+  }
+  return value;
+}
+
+function normalizeCiObservation(
+  statusValue: string,
+  conclusionValue: string | null,
+): NormalizedCiConclusion {
+  const status = statusValue.trim().toLowerCase();
+  const conclusion = (conclusionValue ?? '').trim().toLowerCase();
+
+  if (status === 'completed') {
+    if (!conclusion) {
+      return reject('CI query evidence contains a completed item without conclusion');
+    }
+    if (conclusion === 'success') return 'SUCCESS';
+    if (FAILURE_CI_CONCLUSIONS.has(conclusion)) return 'FAILURE';
+    if (NON_PASSING_CI_CONCLUSIONS.has(conclusion)) return 'CANCELLED';
+    return reject(`CI query evidence contains unsupported conclusion ${conclusion}`);
+  }
+
+  if (!ACTIVE_CI_STATUSES.has(status)) {
+    return reject(`CI query evidence contains unsupported status ${status}`);
+  }
+  if (conclusion) {
+    return reject('CI query evidence contains an active item with terminal conclusion');
+  }
+  return 'IN_PROGRESS';
+}
+
+function aggregateCiConclusion(
+  observations: Array<{ status: string; conclusion: string | null }>,
+): NormalizedCiConclusion {
+  if (observations.length === 0) {
+    return reject('CI query evidence requires at least one observed CI item');
+  }
+  const normalized = observations.map((item) =>
+    normalizeCiObservation(item.status, item.conclusion),
+  );
+  if (normalized.includes('FAILURE')) return 'FAILURE';
+  if (normalized.includes('CANCELLED')) return 'CANCELLED';
+  if (normalized.includes('IN_PROGRESS')) return 'IN_PROGRESS';
+  if (normalized.every((item) => item === 'SUCCESS')) return 'SUCCESS';
+  return reject('CI query evidence has inconsistent normalized conclusions');
+}
+
 function validateReviewReceipt(receipt: McfToolReceipt): void {
   if (canonicalizeProvider(receipt.provider) !== 'github' || !receipt.commitSha) {
-    throw new McfEvidenceRejectedError(
-      'code review evidence requires GitHub and reviewed commit SHA',
-    );
+    reject('code review evidence requires GitHub and reviewed commit SHA');
   }
   requireNonNegativeInteger(
     receipt.metadata,
@@ -133,20 +286,22 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
     !receipt.commitSha ||
     !/^[a-f0-9]{40}$/u.test(receipt.commitSha)
   ) {
-    throw new McfEvidenceRejectedError(
-      'CI query evidence requires GitHub Actions and an exact 40-character commit SHA',
-    );
+    reject('CI query evidence requires GitHub Actions and an exact 40-character commit SHA');
+  }
+  if (receipt.status !== 'SUCCEEDED') {
+    reject('CI query evidence requires a successfully executed read-only query');
   }
   if (canonicalizeToolValue(receipt.operation) !== 'query-ci') {
-    throw new McfEvidenceRejectedError('CI query evidence requires query-ci operation');
+    reject('CI query evidence requires query-ci operation');
   }
+
   const readOnly = requireBoolean(
     receipt.metadata,
     'readOnly',
     'CI query evidence requires readOnly',
   );
   if (!readOnly) {
-    throw new McfEvidenceRejectedError('CI query evidence requires readOnly=true');
+    reject('CI query evidence requires readOnly=true');
   }
 
   const requestedSha = requireString(
@@ -159,20 +314,35 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
     'verifiedSha',
     'CI query evidence requires verifiedSha',
   ).toLowerCase();
-  if (requestedSha !== receipt.commitSha || verifiedSha !== receipt.commitSha) {
-    throw new McfEvidenceRejectedError(
-      'CI query evidence must bind requestedSha and verifiedSha to receipt commitSha',
-    );
+  if (
+    !/^[a-f0-9]{40}$/u.test(requestedSha) ||
+    requestedSha !== receipt.commitSha ||
+    verifiedSha !== receipt.commitSha
+  ) {
+    reject('CI query evidence must bind requestedSha and verifiedSha to receipt commitSha');
   }
 
-  const conclusion = requireString(
+  const repository = requireString(
     receipt.metadata,
-    'conclusion',
-    'CI query evidence requires conclusion',
+    'repository',
+    'CI query evidence requires repository',
   );
-  if (!['SUCCESS', 'FAILURE', 'CANCELLED', 'IN_PROGRESS'].includes(conclusion)) {
-    throw new McfEvidenceRejectedError('CI query evidence has an unsupported conclusion');
+  const resourceRepository = repositoryFromValue(receipt.resource);
+  if (!resourceRepository || repository.toLowerCase() !== resourceRepository.toLowerCase()) {
+    reject('CI query evidence repository must match the receipt resource');
   }
+
+  const workflowRuns = requireArray(
+    receipt.metadata,
+    'workflowRuns',
+    'CI query evidence requires workflowRuns array',
+  );
+  const jobs = requireArray(receipt.metadata, 'jobs', 'CI query evidence requires jobs array');
+  const checkRuns = requireArray(
+    receipt.metadata,
+    'checkRuns',
+    'CI query evidence requires checkRuns array',
+  );
 
   const workflowRunCount = requireNonNegativeInteger(
     receipt.metadata,
@@ -189,20 +359,147 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
     'checkRunCount',
     'CI query evidence requires checkRunCount',
   );
+  if (
+    workflowRunCount !== workflowRuns.length ||
+    jobCount !== jobs.length ||
+    checkRunCount !== checkRuns.length
+  ) {
+    reject('CI query evidence counts must match their evidence arrays');
+  }
   if (workflowRunCount + jobCount + checkRunCount === 0) {
-    throw new McfEvidenceRejectedError('CI query evidence requires at least one observed CI item');
+    reject('CI query evidence requires at least one observed CI item');
   }
 
-  requireNonEmptyArray(receipt.metadata, 'evidenceUrls', 'CI query evidence requires evidenceUrls');
+  const evidenceUrls = requireNonEmptyArray(
+    receipt.metadata,
+    'evidenceUrls',
+    'CI query evidence requires evidenceUrls',
+  ).map((value) =>
+    verifiedGitHubUrl(value, repository, 'CI query evidence contains invalid evidence URL'),
+  );
+  if (evidenceUrls.length > 7_000 || new Set(evidenceUrls).size !== evidenceUrls.length) {
+    reject('CI query evidence URLs must be unique and within the supported budget');
+  }
+  const evidenceUrlSet = new Set(evidenceUrls);
+  const commitUrlSuffix = `/commit/${receipt.commitSha}`;
+  if (!evidenceUrls.some((url) => new URL(url).pathname.toLowerCase().endsWith(commitUrlSuffix))) {
+    reject('CI query evidence requires the exact commit URL');
+  }
+
+  const workflowIds = new Set<string>();
+  const observations: Array<{ status: string; conclusion: string | null }> = [];
+
+  for (const value of workflowRuns) {
+    const item = requireRecord(value, 'CI query evidence contains invalid workflow run');
+    const id = recordString(item, 'id', 'CI query workflow run requires id');
+    const headSha = recordString(item, 'headSha', 'CI query workflow run requires headSha');
+    const url = verifiedGitHubUrl(
+      item.url,
+      repository,
+      'CI query workflow run requires a valid GitHub URL',
+    );
+    const status = recordString(item, 'status', 'CI query workflow run requires status');
+    const conclusion = recordNullableString(
+      item,
+      'conclusion',
+      'CI query workflow run requires conclusion',
+    );
+    if (headSha.toLowerCase() !== receipt.commitSha) {
+      reject('CI query workflow run must be bound to receipt commitSha');
+    }
+    if (workflowIds.has(id)) {
+      reject('CI query evidence contains duplicate workflow run id');
+    }
+    workflowIds.add(id);
+    if (!evidenceUrlSet.has(url)) {
+      reject('CI query workflow run URL must be present in evidenceUrls');
+    }
+    observations.push({ status, conclusion });
+  }
+
+  const jobIds = new Set<string>();
+  for (const value of jobs) {
+    const item = requireRecord(value, 'CI query evidence contains invalid workflow job');
+    const id = recordString(item, 'id', 'CI query workflow job requires id');
+    const workflowRunId = recordString(
+      item,
+      'workflowRunId',
+      'CI query workflow job requires workflowRunId',
+    );
+    const url = verifiedGitHubUrl(
+      item.url,
+      repository,
+      'CI query workflow job requires a valid GitHub URL',
+    );
+    const status = recordString(item, 'status', 'CI query workflow job requires status');
+    const conclusion = recordNullableString(
+      item,
+      'conclusion',
+      'CI query workflow job requires conclusion',
+    );
+    if (!workflowIds.has(workflowRunId)) {
+      reject('CI query workflow job must reference an observed workflow run');
+    }
+    if (jobIds.has(id)) {
+      reject('CI query evidence contains duplicate workflow job id');
+    }
+    jobIds.add(id);
+    if (!evidenceUrlSet.has(url)) {
+      reject('CI query workflow job URL must be present in evidenceUrls');
+    }
+    observations.push({ status, conclusion });
+  }
+
+  const checkIds = new Set<string>();
+  for (const value of checkRuns) {
+    const item = requireRecord(value, 'CI query evidence contains invalid check run');
+    const id = recordString(item, 'id', 'CI query check run requires id');
+    const urlValue = item.url;
+    if (urlValue !== null) {
+      const url = verifiedGitHubUrl(
+        urlValue,
+        repository,
+        'CI query check run requires a valid GitHub URL',
+      );
+      if (!evidenceUrlSet.has(url)) {
+        reject('CI query check run URL must be present in evidenceUrls');
+      }
+    }
+    const status = recordString(item, 'status', 'CI query check run requires status');
+    const conclusion = recordNullableString(
+      item,
+      'conclusion',
+      'CI query check run requires conclusion',
+    );
+    if (checkIds.has(id)) {
+      reject('CI query evidence contains duplicate check run id');
+    }
+    checkIds.add(id);
+    observations.push({ status, conclusion });
+  }
+
+  const declaredConclusion = requireString(
+    receipt.metadata,
+    'conclusion',
+    'CI query evidence requires conclusion',
+  ) as NormalizedCiConclusion;
+  if (!['SUCCESS', 'FAILURE', 'CANCELLED', 'IN_PROGRESS'].includes(declaredConclusion)) {
+    reject('CI query evidence has an unsupported conclusion');
+  }
+  const observedConclusion = aggregateCiConclusion(observations);
+  if (declaredConclusion !== observedConclusion) {
+    reject('CI query evidence conclusion is inconsistent with observed CI items');
+  }
+
   const permissions = requireNonEmptyArray(
     receipt.metadata,
     'requiredPermissions',
     'CI query evidence requires requiredPermissions',
   );
-  if (!permissions.includes('actions:read')) {
-    throw new McfEvidenceRejectedError(
-      'CI query evidence requires actions:read permission metadata',
-    );
+  for (const permission of ['metadata:read', 'actions:read', 'checks:read']) {
+    if (!permissions.includes(permission)) {
+      reject(`CI query evidence requires ${permission} permission metadata`);
+    }
   }
 }
 
@@ -212,9 +509,7 @@ function validatePullRequestReceipt(receipt: McfToolReceipt): void {
     !receipt.externalId ||
     !receipt.commitSha
   ) {
-    throw new McfEvidenceRejectedError(
-      'pull request evidence requires GitHub PR id and commit SHA',
-    );
+    reject('pull request evidence requires GitHub PR id and commit SHA');
   }
   const ciStatus = requireString(
     receipt.metadata,
@@ -222,7 +517,7 @@ function validatePullRequestReceipt(receipt: McfToolReceipt): void {
     'pull request evidence requires ciStatus',
   );
   if (ciStatus !== 'success') {
-    throw new McfEvidenceRejectedError('pull request evidence requires successful CI');
+    reject('pull request evidence requires successful CI');
   }
   const gateDecision = requireString(
     receipt.metadata,
@@ -230,7 +525,7 @@ function validatePullRequestReceipt(receipt: McfToolReceipt): void {
     'pull request evidence requires gateDecision',
   );
   if (gateDecision !== 'approved') {
-    throw new McfEvidenceRejectedError('pull request evidence requires approved gate');
+    reject('pull request evidence requires approved gate');
   }
   requireString(receipt.metadata, 'prState', 'pull request evidence requires prState');
 }
@@ -238,9 +533,7 @@ function validatePullRequestReceipt(receipt: McfToolReceipt): void {
 function validateDeploymentReceipt(receipt: McfToolReceipt): void {
   const deployProviders = new Set(['render', 'vercel', 'cloudflare']);
   if (!deployProviders.has(receipt.provider) || !receipt.externalId || !receipt.commitSha) {
-    throw new McfEvidenceRejectedError(
-      'deployment evidence requires supported provider, deployment id and commit SHA',
-    );
+    reject('deployment evidence requires supported provider, deployment id and commit SHA');
   }
   const deploymentStatus = requireString(
     receipt.metadata,
@@ -248,7 +541,7 @@ function validateDeploymentReceipt(receipt: McfToolReceipt): void {
     'deployment evidence requires deploymentStatus',
   );
   if (!['live', 'ready', 'success'].includes(deploymentStatus)) {
-    throw new McfEvidenceRejectedError('deployment evidence does not prove a healthy deployment');
+    reject('deployment evidence does not prove a healthy deployment');
   }
   const smokeStatus = requireString(
     receipt.metadata,
@@ -256,7 +549,7 @@ function validateDeploymentReceipt(receipt: McfToolReceipt): void {
     'deployment evidence requires smokeStatus',
   );
   if (!['pass', 'success'].includes(smokeStatus)) {
-    throw new McfEvidenceRejectedError('deployment evidence requires a passing smoke test');
+    reject('deployment evidence requires a passing smoke test');
   }
   const rollbackAvailable = requireBoolean(
     receipt.metadata,
@@ -264,7 +557,7 @@ function validateDeploymentReceipt(receipt: McfToolReceipt): void {
     'deployment evidence requires rollbackAvailable',
   );
   if (!rollbackAvailable) {
-    throw new McfEvidenceRejectedError('deployment evidence requires rollbackAvailable=true');
+    reject('deployment evidence requires rollbackAvailable=true');
   }
 }
 
@@ -333,11 +626,11 @@ export class EvidenceValidator {
       .digest('hex');
 
     if (!equalSignature(receipt.signature, expectedSignature)) {
-      throw new McfEvidenceRejectedError('receipt signature is invalid');
+      reject('receipt signature is invalid');
     }
 
     if (receipt.payloadDigest !== digest(receipt.metadata)) {
-      throw new McfEvidenceRejectedError('receipt payload digest does not match metadata');
+      reject('receipt payload digest does not match metadata');
     }
 
     if (
@@ -345,31 +638,29 @@ export class EvidenceValidator {
       canonicalizeToolValue(receipt.operation) !== canonicalizeToolValue(expected.operation) ||
       receipt.resource !== expected.resource
     ) {
-      throw new McfEvidenceRejectedError('receipt does not match the requested tool operation');
+      reject('receipt does not match the requested tool operation');
     }
 
     const observedAt = new Date(receipt.observedAt);
     if (Number.isNaN(observedAt.getTime())) {
-      throw new McfEvidenceRejectedError('receipt observedAt is invalid');
+      reject('receipt observedAt is invalid');
     }
 
     const ageMilliseconds = Date.now() - observedAt.getTime();
     if (ageMilliseconds < -300_000 || ageMilliseconds > 604_800_000) {
-      throw new McfEvidenceRejectedError('receipt is outside the accepted time window');
+      reject('receipt is outside the accepted time window');
     }
 
     if (receipt.provider === 'github' && !receipt.externalId && !receipt.commitSha) {
-      throw new McfEvidenceRejectedError('GitHub evidence requires an external id or commit SHA');
+      reject('GitHub evidence requires an external id or commit SHA');
     }
 
     if (receipt.provider === 'github-actions') {
       if (!receipt.externalId || !receipt.commitSha) {
-        throw new McfEvidenceRejectedError(
-          'GitHub Actions evidence requires workflow run id and commit SHA',
-        );
+        reject('GitHub Actions evidence requires workflow run id and commit SHA');
       }
       if (typeof receipt.metadata.conclusion !== 'string') {
-        throw new McfEvidenceRejectedError('GitHub Actions evidence requires conclusion');
+        reject('GitHub Actions evidence requires conclusion');
       }
     }
   }
