@@ -1,9 +1,11 @@
 # MCF-DEC-060-RC-001 — Revisão independente do adapter externo A1
 
 **Decisão:** PASS  
+**Gate de integração:** APPROVED_FOR_MERGE  
 **Missão:** MCF-RUNTIME-006-A1  
 **PR:** #71  
-**Head revisado:** `c4c30242da35e348181e926192c185ff1ebce6e1`
+**Head de código revisado:** `c4c30242da35e348181e926192c185ff1ebce6e1`  
+**Head documental validado:** `fdadc5e3e87f8c69449c03fc2302c9f87284c0ec`
 
 ## 1. Escopo revisado
 
@@ -106,18 +108,18 @@ HIGH_A1_010:
     - lease_duravel_de_10_minutos
     - reconciliacao_transacional_na_proxima_reserva_ou_persistencia
     - estado_ABANDONED
-    - evento_EXTERTERNAL_ACTION_ABANDONED_auditavel
+    - evento_EXTERNAL_ACTION_ABANDONED_auditavel
     - liberacao_atomica_da_missao
 ```
 
-## 3. Evidência de CI
+## 3. Evidência final de CI
 
 ```yaml
 documentation_validation:
-  run: 31074255296
+  run: 31074496530
   conclusion: success
 foundation:
-  run: 31074255306
+  run: 31074496533
   formatting: success
   lint: success
   typecheck: success
@@ -125,7 +127,7 @@ foundation:
   tests: success
   build: success
 container_smoke:
-  run: 31074255294
+  run: 31074496557
   conclusion: success
 ```
 
@@ -147,7 +149,7 @@ invalid_state_transition: PASS
 idempotent_transition: PASS
 ```
 
-## 5. Estado da revisão
+## 5. Estado da revisão e integração
 
 ```yaml
 critical_open: 0
@@ -155,6 +157,11 @@ high_open: 0
 medium_open: 0
 low_open: 0
 unresolved_threads: 0
+main_divergence: false
+mergeable: true
+configured_checks: 3_success
+integration_decision: APPROVED_FOR_MERGE
+merge_authorized: false
 ```
 
 ## 6. Restrições preservadas
@@ -170,4 +177,4 @@ merge_autorizado: false
 
 ## 7. Veredito
 
-O A1 atende aos critérios técnicos para o novo gate de integração. Este RC não autoriza merge, produção, publicação ou custo externo.
+O A1 atende aos critérios técnicos e governamentais para merge. Este RC não executa nem autoriza merge, produção, publicação ou custo externo. A integração depende de autorização humana explícita de Leandro.

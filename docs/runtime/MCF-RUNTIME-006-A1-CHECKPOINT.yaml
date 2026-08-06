@@ -1,13 +1,14 @@
 mission_id: MCF-RUNTIME-006-A1
 tracking_issue: 70
-state: TECHNICALLY_APPROVED_AWAITING_FINAL_DOCUMENTATION_CI
+state: APPROVED_FOR_MERGE_AWAITING_HUMAN_AUTHORIZATION
 objective: executar_code_review_real_read_only_com_evidencia_assinada
 branch: feat/mcf-runtime-006-a1-code-review-adapter
 base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
 technical_head: bbf802af8650af96d9249068a7a4ea002a2af751
 formatted_head: bec1cbce7f77c9de68e4296db06eb3d9f7000362
 reconciliation_head: b193e1fcc1a68730d684e4c184d357baf1aa10ed
-validated_head: c4c30242da35e348181e926192c185ff1ebce6e1
+validated_code_head: c4c30242da35e348181e926192c185ff1ebce6e1
+validated_documentation_head: fdadc5e3e87f8c69449c03fc2302c9f87284c0ec
 pull_request: 71
 changed_files: 23
 adapter:
@@ -68,10 +69,10 @@ tests:
   idempotent_transition: PASS
 ci:
   documentation_validation:
-    run: 31074255296
+    run: 31074496530
     conclusion: success
   foundation:
-    run: 31074255306
+    run: 31074496533
     formatting: success
     lint: success
     typecheck: success
@@ -79,7 +80,7 @@ ci:
     tests: success
     build: success
   container_smoke:
-    run: 31074255294
+    run: 31074496557
     conclusion: success
 review:
   review_id: 4871355389
@@ -89,10 +90,19 @@ review:
   high_open: 0
   medium_open: 0
   low_open: 0
+integration_gate:
+  decision: APPROVED_FOR_MERGE
+  main_divergence: false
+  mergeable: true
+  draft: false
+  configured_checks: 3_success
+  unresolved_threads: 0
+  merge_authorized: false
 restrictions:
   production: BLOQUEADA
   cost: NAO_AUTORIZADO
   publication: false
   merge_automatico: false
   merge_autorizado: false
-next_action: execute_final_documentation_ci_then_governance_integration_gate
+next_action: await_explicit_human_merge_authorization
+human_authority: Leandro
