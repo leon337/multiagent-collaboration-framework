@@ -133,11 +133,7 @@ describe('MCF mission hierarchy integration', () => {
 
       const createdChild = await repository.createMission({
         mission: childMission,
-        event: missionEvent(
-          childMissionId,
-          'MISSION_CREATED',
-          `mission:${childMissionId}:created`,
-        ),
+        event: missionEvent(childMissionId, 'MISSION_CREATED', `mission:${childMissionId}:created`),
       });
       expect(createdChild.contract).toMatchObject({
         parentMissionId,
@@ -240,12 +236,8 @@ describe('MCF mission hierarchy integration', () => {
         (await repository.listEvents(parentMissionId)).map((event) => event.eventType),
       ).toContain('PARENT_MISSION_RESUMED');
     } finally {
-      await database.query('delete from "mcf_missions" where "id" = $1', [
-        childMissionId,
-      ]);
-      await database.query('delete from "mcf_missions" where "id" = $1', [
-        parentMissionId,
-      ]);
+      await database.query('delete from "mcf_missions" where "id" = $1', [childMissionId]);
+      await database.query('delete from "mcf_missions" where "id" = $1', [parentMissionId]);
     }
   });
 });
