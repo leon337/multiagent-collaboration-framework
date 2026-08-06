@@ -2,42 +2,81 @@
 
 ## Estado
 
-`AGUARDANDO_CI_DO_HEAD_DEFINITIVO`
+`APROVADO_TECNICAMENTE_AGUARDANDO_GATE_DE_INTEGRACAO`
 
 ## Head técnico aprovado
 
-`5c420693133c6bec218172089b0d1f14b88d149c`
+`5256ef1392d0da55a6c5d47fd3f64eb4b2526bfd`
 
-## Evidências já aprovadas
+## Evidências
 
 ```yaml
-documentation_validation: 31063763465
-foundation: 31063763483
-container_smoke: 31063763463
+documentation_validation:
+  run_id: 31065590519
+  conclusion: PASS
+foundation:
+  run_id: 31065590521
+  conclusion: PASS
+container_smoke:
+  run_id: 31065590524
+  conclusion: PASS
 ```
 
-## Condição do gate final
-
-O head definitivo do PR #69 deve repetir:
+## Controles confirmados
 
 ```yaml
-documentation_validation: PASS
-foundation: PASS
+format: PASS
+lint: PASS
+typecheck: PASS
+migrations_twice: PASS
+tests: PASS
+build: PASS
 container_smoke: PASS
+parent_checkpoint_snapshot: PASS
+parent_normal_progress_suspended: PASS
+protected_states_preserved: PASS
+premature_completion_blocked: PASS
+submission_opened_event: PASS
+parent_return_completed_event: PASS
+parent_resumed_event: PASS
+parent_return_deferred_event: PASS
+single_active_submission: PASS
+invalid_mission_completed_event_suppressed: PASS
 ```
 
-Depois desse resultado:
+## Achados
 
-1. encerrar PR #22 como incorporado pelo PR #69;
-2. encerrar PR #29 como substituído pela MCF-DEC-059;
-3. atualizar a issue #68;
-4. manter o PR #69 sem merge até decisão do gate de governança;
-5. preparar `MCF-RUNTIME-006-A1`.
+```yaml
+critical_open: 0
+high_open: 0
+medium_open: 0
+low_open: 1
+```
+
+Reserva baixa: testar explicitamente uma cadeia pai → filho → neto durante o endurecimento do MCF-RUNTIME-006.
+
+## Reconciliação
+
+- PR #22 encerrado sem merge como incorporado pelo PR #69;
+- PR #29 encerrado sem merge como substituído pela MCF-DEC-059;
+- issues #13 e #14 encerradas com histórico como escopo externo ao núcleo do MCF;
+- issue #68 permanece aberta somente para o gate de integração do PR #69.
+
+## Próxima missão
+
+```yaml
+mission_id: MCF-RUNTIME-006-A1
+adapter: CODE_REVIEW_READ_ONLY
+risk: LOW
+external_effect: NONE
+dependency: PR_69_IN_MAIN
+```
 
 ## Restrições
 
 ```yaml
 merge_automatico: false
+merge_executado: false
 production: BLOQUEADA
 cost: NAO_AUTORIZADO
 publication: false
