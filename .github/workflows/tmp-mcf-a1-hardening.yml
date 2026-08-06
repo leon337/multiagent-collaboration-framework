@@ -21,7 +21,9 @@ jobs:
           fetch-depth: 0
 
       - name: Apply controlled hardening patch
-        run: python3 .github/scripts/apply-mcf-a1-hardening.py
+        run: |
+          sed -i 's/if "normalize(" in permissions or "normalizeProvider" in permissions:/if "function normalize(" in permissions or "function normalizeProvider(" in permissions:/' .github/scripts/apply-mcf-a1-hardening.py
+          python3 .github/scripts/apply-mcf-a1-hardening.py
 
       - name: Remove temporary patch mechanism
         run: |
