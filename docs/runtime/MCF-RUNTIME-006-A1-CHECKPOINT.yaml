@@ -1,13 +1,15 @@
 mission_id: MCF-RUNTIME-006-A1
 tracking_issue: 70
-state: RECONCILIATION_HARDENING_AWAITING_CI
+state: TECHNICALLY_APPROVED_AWAITING_FINAL_DOCUMENTATION_CI
 objective: executar_code_review_real_read_only_com_evidencia_assinada
 branch: feat/mcf-runtime-006-a1-code-review-adapter
 base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
 technical_head: bbf802af8650af96d9249068a7a4ea002a2af751
 formatted_head: bec1cbce7f77c9de68e4296db06eb3d9f7000362
 reconciliation_head: b193e1fcc1a68730d684e4c184d357baf1aa10ed
+validated_head: c4c30242da35e348181e926192c185ff1ebce6e1
 pull_request: 71
+changed_files: 23
 adapter:
   id: github-code-review-read-only-v1
   skill: MCF-REVIEW-CODE
@@ -46,44 +48,51 @@ hardening:
   real_permission_profile: READ_AND_PROPOSE
 failure_classification: IMPLEMENTED
 tests:
-  adapter_unit: PENDING_CI
-  executor_dispatch: PENDING_CI
-  permission_block: PENDING_CI
-  failure_recovery: PENDING_CI
-  ledger_integration: PENDING_CI
-  durable_mission_reservation: PENDING_CI
-  concurrent_mission_persistence_block: PENDING_CI
-  terminal_owner_release: PENDING_CI
-  expired_orphan_reconciliation: PENDING_CI
-  abandoned_event_audit: PENDING_CI
-  pull_request_head_mutation: PENDING_CI
-  provider_alias_canonicalization: PENDING_CI
-  stale_version_reservation: PENDING_CI
-  partial_coverage: PENDING_CI
-  pagination_limit: PENDING_CI
-  causal_preflight_order: PENDING_CI
-  invalid_state_transition: PENDING_CI
-  idempotent_transition: PENDING_CI
+  adapter_unit: PASS
+  executor_dispatch: PASS
+  permission_block: PASS
+  failure_recovery: PASS
+  ledger_integration: PASS
+  durable_mission_reservation: PASS
+  concurrent_mission_persistence_block: PASS
+  terminal_owner_release: PASS
+  expired_orphan_reconciliation: PASS
+  abandoned_event_audit: PASS
+  pull_request_head_mutation: PASS
+  provider_alias_canonicalization: PASS
+  stale_version_reservation: PASS
+  partial_coverage: PASS
+  pagination_limit: PASS
+  causal_preflight_order: PASS
+  invalid_state_transition: PASS
+  idempotent_transition: PASS
 ci:
-  documentation_validation: PENDING
-  formatting: PENDING
-  lint: PENDING
-  typecheck: PENDING
-  migration_twice: PENDING
-  tests: PENDING
-  build: PENDING
-  container_smoke: PENDING
+  documentation_validation:
+    run: 31074255296
+    conclusion: success
+  foundation:
+    run: 31074255306
+    formatting: success
+    lint: success
+    typecheck: success
+    migration_twice: success
+    tests: success
+    build: success
+  container_smoke:
+    run: 31074255294
+    conclusion: success
 review:
-  decision: PENDING_AFTER_CI
-  blocking_threads_open: 3
-  critical_open: UNKNOWN
-  high_open: UNKNOWN
-  medium_open: UNKNOWN
-  low_open: UNKNOWN
+  review_id: 4871355389
+  decision: PASS
+  blocking_threads_open: 0
+  critical_open: 0
+  high_open: 0
+  medium_open: 0
+  low_open: 0
 restrictions:
   production: BLOQUEADA
   cost: NAO_AUTORIZADO
   publication: false
   merge_automatico: false
   merge_autorizado: false
-next_action: execute_canonical_ci_then_independent_review
+next_action: execute_final_documentation_ci_then_governance_integration_gate
