@@ -1,9 +1,9 @@
 # MCF-DEC-060-RC-001 — Revisão independente do adapter externo A1
 
-**Decisão:** PASS_WITH_MINOR_RESERVATION  
+**Decisão:** PASS  
 **Missão:** MCF-RUNTIME-006-A1  
 **PR:** #71  
-**Head técnico:** `24b45615115b95cd2de75777b5123c23fc3dddb1`
+**Head revisado:** `c4c30242da35e348181e926192c185ff1ebce6e1`
 
 ## 1. Escopo revisado
 
@@ -12,10 +12,10 @@
 - cobertura de arquivos, patches e paginação;
 - reserva durável anterior ao provider;
 - ordem causal completa do preflight;
-- máquina de estados do ledger;
+- máquina de estados e lease do ledger;
 - recibo assinado e validação de evidência;
 - integração com `SkillExecutor` e `MissionRuntimeService`;
-- migração `0017_mcf_external_action_ledger.sql`;
+- migrações `0017_mcf_external_action_ledger.sql` e `0018_mcf_external_action_reservation_lease.sql`;
 - testes unitários, integração, build e container smoke.
 
 ## 2. Achados resolvidos
@@ -72,17 +72,52 @@ MEDIUM_A1_006:
       - FAILED
       - EVIDENCE_VALIDATED
       - EVIDENCE_REJECTED
+      - ABANDONED
   idempotencia: repeticao_do_mesmo_estado_nao_gera_evento_duplicado
+
+HIGH_A1_007:
+  problema: reserva_da_missao_nao_permanecia_ativa_ate_a_persistencia_final
+  estado: RESOLVIDO
+  evidencia:
+    - active_external_attempt_id_duravel
+    - persistencia_final_restrita_a_tentativa_terminal_proprietaria
+    - execucao_concorrente_bloqueada_enquanto_reserva_ativa
+
+HIGH_A1_008:
+  problema: arquivos_do_PR_poderiam_ser_associados_a_um_head_SHA_antigo
+  estado: RESOLVIDO
+  evidencia:
+    - head_do_PR_relido_apos_cada_pagina
+    - mudanca_do_SHA_gera_RESERVATION_CONFLICT_retryable
+
+MEDIUM_A1_009:
+  problema: aliases_de_provider_e_operation_geravam_recibo_nao_canonico
+  estado: RESOLVIDO
+  evidencia:
+    - canonicalizacao_na_permissao
+    - canonicalizacao_no_adapter
+    - canonicalizacao_no_recibo
+    - canonicalizacao_na_validacao
+
+HIGH_A1_010:
+  problema: interrupcao_apos_reserva_poderia_bloquear_a_missao_indefinidamente
+  estado: RESOLVIDO
+  evidencia:
+    - lease_duravel_de_10_minutos
+    - reconciliacao_transacional_na_proxima_reserva_ou_persistencia
+    - estado_ABANDONED
+    - evento_EXTERTERNAL_ACTION_ABANDONED_auditavel
+    - liberacao_atomica_da_missao
 ```
 
 ## 3. Evidência de CI
 
 ```yaml
 documentation_validation:
-  run: 31071793017
+  run: 31074255296
   conclusion: success
 foundation:
-  run: 31071793043
+  run: 31074255306
   formatting: success
   lint: success
   typecheck: success
@@ -90,24 +125,39 @@ foundation:
   tests: success
   build: success
 container_smoke:
-  run: 31071793033
+  run: 31074255294
   conclusion: success
 ```
 
-## 4. Reserva residual
+## 4. Testes de hardening
 
 ```yaml
-LOW_A1_007:
-  descricao: >-
-    O preflight, a reserva e o resultado externo são duráveis antes e durante a leitura,
-    mas a linha final da fase continua sendo materializada por persistExecution após o provider.
-    Uma interrupção nesse intervalo deixa evidência suficiente para reconciliação, porém ainda
-    exige um reconciliador de fases em hardening posterior.
-  impacto: baixo_no_A1_por_ser_operacao_somente_leitura
-  tratamento: MCF_RUNTIME_006_HARDENING
+durable_mission_reservation: PASS
+concurrent_mission_persistence_block: PASS
+terminal_owner_release: PASS
+expired_orphan_reconciliation: PASS
+abandoned_event_audit: PASS
+pull_request_head_mutation: PASS
+provider_alias_canonicalization: PASS
+stale_version_reservation: PASS
+partial_coverage: PASS
+pagination_limit: PASS
+causal_preflight_order: PASS
+invalid_state_transition: PASS
+idempotent_transition: PASS
 ```
 
-## 5. Restrições preservadas
+## 5. Estado da revisão
+
+```yaml
+critical_open: 0
+high_open: 0
+medium_open: 0
+low_open: 0
+unresolved_threads: 0
+```
+
+## 6. Restrições preservadas
 
 ```yaml
 external_write: false
@@ -115,8 +165,9 @@ production: BLOQUEADA
 cost: NAO_AUTORIZADO
 publication: false
 merge_automatico: false
+merge_autorizado: false
 ```
 
-## 6. Veredito
+## 7. Veredito
 
-O A1 atende aos critérios técnicos para sair do modo draft e seguir ao gate de integração. Este RC não autoriza merge, produção, publicação ou custo externo.
+O A1 atende aos critérios técnicos para o novo gate de integração. Este RC não autoriza merge, produção, publicação ou custo externo.
