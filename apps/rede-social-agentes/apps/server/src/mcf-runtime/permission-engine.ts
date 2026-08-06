@@ -36,7 +36,7 @@ function isProductionTarget(value: unknown): boolean {
   return normalized.includes('production') || normalized.includes('producao');
 }
 
-const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
+const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch', 'query'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
   'delete',
@@ -122,7 +122,11 @@ export class PermissionEngine {
         }
         break;
       case 'SCOPED_WRITE':
-        if (inputs.authorizedScope !== true && provider !== 'internal') {
+        if (
+          !operationMatches(operation, readOperations) &&
+          inputs.authorizedScope !== true &&
+          provider !== 'internal'
+        ) {
           throw new McfPermissionDeniedError('SCOPED_WRITE requires inputs.authorizedScope=true');
         }
         break;
