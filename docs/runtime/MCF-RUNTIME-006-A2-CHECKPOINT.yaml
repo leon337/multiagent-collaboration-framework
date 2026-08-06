@@ -3,8 +3,9 @@ issue: 72
 pull_request: 73
 branch: feat/mcf-runtime-006-a2-ci-query-adapter
 base_sha: 01c0182b9c9837c0dd22306c9bd8918020ecc38b
-validated_code_sha: cd8f6c06a1c053873889f8274fa85cfb4c408902
-state: IMPLEMENTED_CI_PASS_PENDING_INDEPENDENT_REVIEW
+previous_audited_head_sha: 5869774393e49450359dbf85889dd0362d5c041e
+remediation_code_sha: 4b72e8d0e6ac908ffb27374cc779b05222586d47
+state: REMEDIATION_IMPLEMENTED_PENDING_CI
 objective: Consultar CI do GitHub por SHA exato sem capacidade de execução ou escrita.
 
 adapter:
@@ -19,11 +20,19 @@ adapter:
     - actions:read
     - checks:read
 
-conclusions:
-  - SUCCESS
-  - FAILURE
-  - CANCELLED
-  - IN_PROGRESS
+remediation:
+  source: independent_review_FAIL_2026-08-06
+  high_findings:
+    MCF-A2-H-001: REMEDIATED_PENDING_CI
+    MCF-A2-H-002: REMEDIATED_PENDING_CI
+  medium_findings:
+    MCF-A2-M-001: REMEDIATED_PENDING_CI
+    MCF-A2-M-002: REMEDIATED_PENDING_CI
+    MCF-A2-M-003: REMEDIATED_PENDING_CI
+    MCF-A2-M-004: REMEDIATED_PENDING_CI
+    MCF-A2-M-005: REMEDIATED_PENDING_CI
+  low_findings:
+    MCF-A2-L-001: REMEDIATED_PENDING_FINAL_EVIDENCE
 
 controls:
   read_only: true
@@ -32,13 +41,21 @@ controls:
   workflow_runs_collected: true
   jobs_collected: true
   check_runs_collected: true
+  workflow_conclusion_always_aggregated: true
+  unknown_conclusion_fail_closed: true
+  runtime_response_schema_validation: true
+  global_request_budget: true
+  global_job_budget: true
+  global_step_budget: true
+  global_check_run_budget: true
+  receipt_array_count_consistency: true
+  receipt_conclusion_recomputed: true
   no_success_from_text: true
   no_branch_or_tag_resolution: true
   no_ci_dispatch: true
   no_repository_mutation: true
   scoped_write_required_for_future_execution: true
   temporary_workflow_persisted: false
-  diagnostic_package_script_restored: true
   merge_authorized: false
 
 changed_files:
@@ -50,21 +67,13 @@ changed_files:
   - docs/runtime/MCF-RUNTIME-006-A2-CHECKPOINT.yaml
 
 validation:
-  foundation:
-    run_id: 31100599755
-    conclusion: PASS
-    formatting: PASS
-    lint: PASS
-    repository_typecheck: PASS
-    migration_twice: PASS
-    repository_test_suite: PASS
-    build: PASS
-  documentation:
-    run_id: 31100599680
-    conclusion: PASS
-  container_smoke:
-    run_id: 31100599463
-    conclusion: PASS
-  independent_review: PENDING
+  local_isolated_typecheck: PASS
+  local_behavior_probe:
+    workflow_failure_with_successful_jobs: PASS
+    workflow_cancelled_with_successful_jobs: PASS
+    unknown_conclusion_fail_closed: PASS
+  github_actions:
+    status: PENDING
+  independent_re_review: PENDING
   pull_request_state: DRAFT
   merge: NOT_AUTHORIZED
