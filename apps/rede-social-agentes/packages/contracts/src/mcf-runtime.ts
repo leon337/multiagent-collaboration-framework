@@ -9,6 +9,8 @@ export type McfMissionState =
   | 'COMPLETED'
   | 'CANCELLED';
 
+export type McfMissionReturnStatus = 'NOT_APPLICABLE' | 'PENDING' | 'COMPLETED';
+
 export type McfPhaseState =
   'PLANNED' | 'EXECUTING' | 'WAITING_EVIDENCE' | 'RECOVERING' | 'FAILED' | 'COMPLETED';
 
@@ -22,6 +24,10 @@ export type McfEvidenceValidationStatus = 'VALID' | 'INVALID' | 'PENDING';
 export type McfEventType =
   | 'MISSION_CREATED'
   | 'MISSION_STATE_CHANGED'
+  | 'SUBMISSION_OPENED'
+  | 'PARENT_RETURN_COMPLETED'
+  | 'PARENT_RETURN_DEFERRED'
+  | 'PARENT_MISSION_RESUMED'
   | 'PHASE_STARTED'
   | 'SKILL_SELECTED'
   | 'PERMISSION_GRANTED'
@@ -51,6 +57,9 @@ export interface McfMissionContract {
   selectedAgents: string[];
   selectedSkills: string[];
   sourceOfTruth: string[];
+  parentMissionId?: string | null | undefined;
+  returnToAgentId?: string | null | undefined;
+  returnStatus?: McfMissionReturnStatus | undefined;
 }
 
 export interface McfSkillDefinition {
