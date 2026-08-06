@@ -1,8 +1,9 @@
 # MCF-DEC-060 — External Action Dispatcher e adapter GitHub de code review
 
-**Estado:** IMPLEMENTADA; AGUARDANDO CI E RC  
+**Estado:** TECNICAMENTE APROVADA; AGUARDANDO GATE DE INTEGRAÇÃO  
 **Missão:** MCF-RUNTIME-006-A1  
-**Tracking:** issue #70
+**Tracking:** issue #70  
+**RC:** `docs/reviews/MCF-DEC-060-RC-001-EXTERNAL-ACTION-DISPATCHER.md`
 
 ## 1. Problema
 
@@ -32,6 +33,10 @@ request:
   agentId:
   inputs:
   tool:
+  context:
+    missionId:
+    phaseId:
+    expectedMissionVersion:
 response:
   signed_receipt:
   metadata:
@@ -39,6 +44,8 @@ response:
     repository:
     targetType:
     reviewedFiles:
+    coverage:
+    unavailablePatchFiles:
     findings:
     findingsCount:
     verdict:
@@ -61,14 +68,14 @@ external_write: false
 O adapter usa somente requisições HTTP `GET` para:
 
 - metadados de pull request;
-- arquivos alterados no pull request;
-- metadados e arquivos de commit.
+- páginas de arquivos alterados no pull request;
+- metadados e páginas de arquivos de commit.
 
 Não existem métodos de comentário, review submission, merge, atualização de branch ou alteração de arquivo.
 
-## 5. Revisão produzida
+## 5. Cobertura e revisão produzida
 
-A primeira versão é determinística e procura evidências verificáveis, incluindo:
+A revisão determinística procura evidências verificáveis, incluindo:
 
 - possível credencial literal;
 - execução dinâmica de código;
@@ -76,6 +83,15 @@ A primeira versão é determinística e procura evidências verificáveis, inclu
 - marcadores `TODO`/`FIXME` em linhas adicionadas;
 - arquivo com superfície de mudança muito grande;
 - código-fonte alterado sem arquivo de teste correspondente.
+
+A cobertura é sempre declarada:
+
+```yaml
+COMPLETE: todos_os_arquivos_possuem_patch_textual
+PARTIAL: pelo_menos_um_patch_esta_indisponivel
+INVALID_RESPONSE: nenhum_patch_textual_foi_fornecido
+pagination_limit: 1000_arquivos
+```
 
 Vereditos:
 
@@ -87,7 +103,7 @@ BLOCK: pelo_menos_um_achado_high
 
 ## 6. Evidência
 
-O adapter cria recibo com `EvidenceValidator.createTrustedReceipt`. A validação específica de `MCF-REVIEW-CODE` continua exigindo:
+O adapter cria recibo com `EvidenceValidator.createTrustedReceipt`. A validação específica de `MCF-REVIEW-CODE` exige:
 
 - provider GitHub;
 - SHA revisado;
@@ -105,6 +121,9 @@ TARGET_NOT_FOUND:
 UNSUPPORTED_TARGET:
 INVALID_RESPONSE:
 NETWORK_FAILURE:
+INVALID_CONTEXT:
+RESERVATION_CONFLICT:
+LEDGER_FAILURE:
 ADAPTER_FAILURE:
 ```
 
@@ -122,20 +141,53 @@ missionState: WAITING_EXTERNAL
 
 Adapters posteriores podem ser registrados sem modificar o `SkillExecutor`.
 
-## 9. Ledger
+## 9. Reserva durável e ordem causal
 
-A migração `0017_mcf_external_action_ledger.sql` espelha o fluxo existente nos eventos:
+Antes de qualquer chamada ao provider, o ledger valida a versão da missão e persiste, em uma única transação:
 
 ```text
+PHASE_STARTED
+SKILL_SELECTED
+PERMISSION_GRANTED
+TOOL_REQUESTED
 EXTERNAL_ACTION_REQUESTED
 EXTERNAL_ACTION_ALLOWED
-EXTERNAL_ACTION_EXECUTED | EXTERNAL_ACTION_FAILED
-EXTERNAL_ACTION_EVIDENCE_VALIDATED
 ```
 
-O trigger ignora provider `internal` e usa chaves idempotentes derivadas do evento original.
+Depois da leitura externa, a tentativa só pode seguir por transições explícitas:
 
-## 10. Restrições
+```text
+ALLOWED → EXECUTED → EVIDENCE_VALIDATED
+ALLOWED → EXECUTED → EVIDENCE_REJECTED
+ALLOWED → FAILED
+```
+
+Estados terminais não podem ser reescritos. Repetir a mesma transição é idempotente e não cria evento duplicado. A timeline usa a sequência persistida do ledger como ordem canônica.
+
+## 10. Evidência de validação
+
+```yaml
+technical_head: 24b45615115b95cd2de75777b5123c23fc3dddb1
+documentation_validation:
+  run: 31071793017
+  conclusion: success
+foundation:
+  run: 31071793043
+  formatting: success
+  lint: success
+  typecheck: success
+  migration_twice: success
+  tests: success
+  build: success
+container_smoke:
+  run: 31071793033
+  conclusion: success
+review: PASS_WITH_MINOR_RESERVATION
+```
+
+A reserva baixa restante é o reconciliador posterior de fases quando houver interrupção entre o provider somente leitura e a materialização final da fase.
+
+## 11. Restrições
 
 ```yaml
 production: BLOQUEADA
