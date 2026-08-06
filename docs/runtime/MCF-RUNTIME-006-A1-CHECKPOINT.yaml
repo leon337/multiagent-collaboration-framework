@@ -1,0 +1,35 @@
+mission_id: MCF-RUNTIME-006-A1
+tracking_issue: 70
+state: IMPLEMENTED_AWAITING_CI
+objective: executar_code_review_real_read_only_com_evidencia_assinada
+branch: feat/mcf-runtime-006-a1-code-review-adapter
+base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
+adapter:
+  id: github-code-review-read-only-v1
+  skill: MCF-REVIEW-CODE
+  provider: github
+  operation: inspect-code
+  external_write: false
+foundation:
+  external_action_dispatcher: IMPLEMENTED
+  adapter_registry: IMPLEMENTED
+  normalized_contract: IMPLEMENTED
+  permission_gate: REUSED_BEFORE_DISPATCH
+  signed_receipt: IMPLEMENTED
+  evidence_validation: REUSED
+  external_action_ledger: IMPLEMENTED
+failure_classification: IMPLEMENTED
+tests:
+  adapter_unit: CREATED
+  executor_dispatch: CREATED
+  permission_block: CREATED
+  failure_recovery: CREATED
+  ledger_integration: CREATED
+ci: PENDING
+review: PENDING
+restrictions:
+  production: BLOQUEADA
+  cost: NAO_AUTORIZADO
+  publication: false
+  merge_automatico: false
+next_action: criar_commit_atomico_abrir_PR_draft_e_executar_CI

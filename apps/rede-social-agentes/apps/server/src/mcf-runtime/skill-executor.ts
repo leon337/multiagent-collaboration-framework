@@ -7,13 +7,15 @@ import type {
   McfToolReceipt,
 } from '@rsa/contracts';
 
+import type { EvidenceValidator } from './evidence-validator.js';
+import type { ExternalActionDispatcher } from './external-action-dispatcher.js';
+import type { ExternalActionTrace } from './external-action.contracts.js';
 import {
   McfEvidenceRejectedError,
   McfPermissionDeniedError,
   McfSkillInputError,
   McfSkillNotExecutableError,
 } from './mcf-runtime.errors.js';
-import type { EvidenceValidator } from './evidence-validator.js';
 import type { PermissionEngine } from './permission-engine.js';
 import { type McfToolRequest } from './permission-engine.js';
 import type { SkillRegistryLoader } from './skill-registry.loader.js';
@@ -46,6 +48,7 @@ export interface ExecuteSkillOutcome {
   missionState: McfMissionState;
   handoffTo: string | null;
   rejectionReason: string | null;
+  externalAction: ExternalActionTrace | null;
 }
 
 function hasInput(inputs: Record<string, unknown>, key: string): boolean {
@@ -70,6 +73,7 @@ export class SkillExecutor {
     private readonly registry: SkillRegistryLoader,
     private readonly permissions: PermissionEngine,
     private readonly evidence: EvidenceValidator,
+    private readonly externalActions?: ExternalActionDispatcher,
   ) {}
 
   async execute(input: ExecuteSkillInput): Promise<ExecuteSkillOutcome> {
@@ -113,10 +117,65 @@ export class SkillExecutor {
         missionState: 'EXECUTING',
         handoffTo,
         rejectionReason: null,
+        externalAction: null,
       };
     }
 
-    if (!input.tool.externalReceipt) {
+    let receipt = input.tool.externalReceipt;
+    let externalAction: ExternalActionTrace | null = receipt
+      ? {
+          status: 'EXTERNAL_RECEIPT',
+          adapterId: null,
+          failureCode: null,
+          retryable: null,
+        }
+      : null;
+
+    if (!receipt && this.externalActions) {
+      const dispatched = await this.externalActions.dispatch({
+        skill,
+        agentId: input.agentId,
+        inputs: input.inputs,
+        tool: input.tool,
+      });
+
+      if (dispatched.status === 'FAILED') {
+        return {
+          skill,
+          receipt: null,
+          evidenceStatus: 'INVALID',
+          phaseState: 'RECOVERING',
+          missionState: 'RECOVERING',
+          handoffTo: null,
+          rejectionReason: `${dispatched.failure.code}: ${dispatched.failure.message}`,
+          externalAction: {
+            status: 'FAILED',
+            adapterId: dispatched.adapterId,
+            failureCode: dispatched.failure.code,
+            retryable: dispatched.failure.retryable,
+          },
+        };
+      }
+
+      if (dispatched.status === 'EXECUTED') {
+        receipt = dispatched.receipt;
+        externalAction = {
+          status: 'EXECUTED',
+          adapterId: dispatched.adapterId,
+          failureCode: null,
+          retryable: null,
+        };
+      } else {
+        externalAction = {
+          status: 'NOT_HANDLED',
+          adapterId: null,
+          failureCode: null,
+          retryable: null,
+        };
+      }
+    }
+
+    if (!receipt) {
       return {
         skill,
         receipt: null,
@@ -125,31 +184,34 @@ export class SkillExecutor {
         missionState: 'WAITING_EXTERNAL',
         handoffTo: null,
         rejectionReason: null,
+        externalAction,
       };
     }
 
     try {
-      this.evidence.verifyForSkill(input.tool.externalReceipt, input.tool, skill);
-      if (input.tool.externalReceipt.status !== 'SUCCEEDED') {
+      this.evidence.verifyForSkill(receipt, input.tool, skill);
+      if (receipt.status !== 'SUCCEEDED') {
         return {
           skill,
-          receipt: input.tool.externalReceipt,
+          receipt,
           evidenceStatus: 'INVALID',
           phaseState: 'RECOVERING',
           missionState: 'RECOVERING',
           handoffTo: null,
-          rejectionReason: `tool receipt status is ${input.tool.externalReceipt.status}`,
+          rejectionReason: `tool receipt status is ${receipt.status}`,
+          externalAction,
         };
       }
 
       return {
         skill,
-        receipt: input.tool.externalReceipt,
+        receipt,
         evidenceStatus: 'VALID',
         phaseState: 'COMPLETED',
         missionState: 'EXECUTING',
         handoffTo,
         rejectionReason: null,
+        externalAction,
       };
     } catch (error) {
       if (!(error instanceof McfEvidenceRejectedError)) {
@@ -157,12 +219,13 @@ export class SkillExecutor {
       }
       return {
         skill,
-        receipt: input.tool.externalReceipt,
+        receipt,
         evidenceStatus: 'INVALID',
         phaseState: 'RECOVERING',
         missionState: 'RECOVERING',
         handoffTo: null,
         rejectionReason: error.message,
+        externalAction,
       };
     }
   }
