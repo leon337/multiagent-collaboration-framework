@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { AdapterRegistry } from './adapter-registry.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
+import type { ExternalActionLedger } from './external-action-ledger.js';
 import type { ExternalActionAdapter } from './external-action.contracts.js';
 import { PermissionEngine } from './permission-engine.js';
 import { SkillExecutor } from './skill-executor.js';
@@ -18,7 +19,7 @@ const reviewSkill: McfSkillDefinition = {
   requiredInputs: ['diff_or_commit'],
   allowedTools: ['GitHub'],
   forbiddenTools: ['merge_without_gate'],
-  permissionProfile: 'READ_ONLY',
+  permissionProfile: 'READ_AND_PROPOSE',
   executionSteps: ['inspecionar_diff'],
   requiredEvidence: ['file_and_line_references', 'severity', 'recommendation'],
   acceptanceCriteria: ['findings_actionable'],
@@ -36,6 +37,31 @@ function registry(): SkillRegistryLoader {
   return {
     load: async () => reviewSkill,
   } as unknown as SkillRegistryLoader;
+}
+
+function dispatcher(
+  adapters: ExternalActionAdapter[],
+  order: string[] = [],
+): ExternalActionDispatcher {
+  const ledger = {
+    reserve: async () => {
+      order.push('reserve');
+      return 'attempt-1';
+    },
+    recordExecuted: async () => {
+      order.push('record-executed');
+    },
+    recordFailed: async () => {
+      order.push('record-failed');
+    },
+    recordEvidenceValidated: async () => {
+      order.push('evidence-valid');
+    },
+    recordEvidenceRejected: async () => {
+      order.push('evidence-rejected');
+    },
+  } as unknown as ExternalActionLedger;
+  return new ExternalActionDispatcher(new AdapterRegistry(adapters), ledger);
 }
 
 describe('SkillExecutor external action dispatch', () => {
@@ -62,7 +88,7 @@ describe('SkillExecutor external action dispatch', () => {
           },
         }),
     };
-    const dispatcher = new ExternalActionDispatcher(new AdapterRegistry([adapter]));
+    const dispatcher = dispatcher([adapter]);
     const executor = new SkillExecutor(registry(), new PermissionEngine(), evidence, dispatcher);
 
     const result = await executor.execute({
@@ -104,7 +130,7 @@ describe('SkillExecutor external action dispatch', () => {
       registry(),
       new PermissionEngine(),
       new EvidenceValidator(),
-      new ExternalActionDispatcher(new AdapterRegistry([adapter])),
+      dispatcher([adapter]),
     );
 
     const result = await executor.execute({
@@ -139,7 +165,7 @@ describe('SkillExecutor external action dispatch', () => {
       registry(),
       new PermissionEngine(),
       new EvidenceValidator(),
-      new ExternalActionDispatcher(new AdapterRegistry([])),
+      dispatcher([]),
     );
 
     const result = await executor.execute({
@@ -176,7 +202,7 @@ describe('SkillExecutor external action dispatch', () => {
       registry(),
       new PermissionEngine(),
       new EvidenceValidator(),
-      new ExternalActionDispatcher(new AdapterRegistry([adapter])),
+      dispatcher([adapter]),
     );
 
     await expect(
@@ -192,5 +218,57 @@ describe('SkillExecutor external action dispatch', () => {
       }),
     ).rejects.toThrow(/READ_ONLY permits only read operations/u);
     expect(executed).toBe(false);
+  });
+
+  it('reserves the durable attempt before the adapter executes', async () => {
+    const order: string[] = [];
+    const evidence = new EvidenceValidator();
+    const adapter: ExternalActionAdapter = {
+      adapterId: 'ordered-review-adapter',
+      supports: () => true,
+      execute: async (request) => {
+        order.push('execute');
+        return evidence.createTrustedReceipt({
+          provider: request.tool.provider,
+          operation: request.tool.operation,
+          resource: request.tool.resource,
+          externalId: '71',
+          commitSha: 'c'.repeat(40),
+          status: 'SUCCEEDED',
+          observedAt: new Date().toISOString(),
+          metadata: {
+            reviewedFiles: ['src/runtime.ts'],
+            findingsCount: 0,
+            findings: [],
+            verdict: 'PASS',
+            readOnly: true,
+          },
+        });
+      },
+    };
+    const executor = new SkillExecutor(
+      registry(),
+      new PermissionEngine(),
+      evidence,
+      dispatcher([adapter], order),
+    );
+
+    await executor.execute({
+      skillId: 'MCF-REVIEW-CODE',
+      agentId: 'Vinicius',
+      inputs: { diff_or_commit: 'PR #71' },
+      tool: {
+        provider: 'github',
+        operation: 'inspect-code',
+        resource: 'leon337/multiagent-collaboration-framework',
+      },
+      executionContext: {
+        missionId: 'mission-1',
+        phaseId: 'phase-1',
+        expectedMissionVersion: 1,
+      },
+    });
+
+    expect(order.slice(0, 2)).toEqual(['reserve', 'execute']);
   });
 });

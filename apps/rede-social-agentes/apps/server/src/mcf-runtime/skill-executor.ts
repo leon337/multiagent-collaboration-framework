@@ -225,10 +225,7 @@ export class SkillExecutor {
         };
       }
 
-      const ledgerFailure = await this.recordEvidenceValidated(
-        externalAction,
-        receipt.receiptId,
-      );
+      const ledgerFailure = await this.recordEvidenceValidated(externalAction, receipt.receiptId);
       if (ledgerFailure) {
         return {
           skill,

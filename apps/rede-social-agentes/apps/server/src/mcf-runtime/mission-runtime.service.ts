@@ -146,11 +146,17 @@ export class MissionRuntimeService {
       );
     }
 
+    const phaseId = request.phaseId ?? randomUUID();
     const outcome = await this.executor.execute({
       skillId: request.skillId,
       agentId: request.agentId,
       inputs: request.inputs,
       tool: request.tool,
+      executionContext: {
+        missionId,
+        phaseId,
+        expectedMissionVersion: request.expectedMissionVersion,
+      },
     });
 
     if (outcome.handoffTo) {
@@ -171,7 +177,6 @@ export class MissionRuntimeService {
     });
 
     const now = new Date();
-    const phaseId = request.phaseId ?? randomUUID();
     const phase: McfPhaseRecord = {
       id: phaseId,
       missionId,

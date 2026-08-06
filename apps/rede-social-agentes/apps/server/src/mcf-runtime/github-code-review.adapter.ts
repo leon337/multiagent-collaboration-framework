@@ -58,7 +58,9 @@ function repositoryFromValue(value: string): string | null {
   let path = trimmed;
   if (/^https?:\/\//u.test(trimmed)) {
     try {
-      path = new URL(trimmed).pathname;
+      const parsed = new URL(trimmed);
+      if (parsed.hostname.toLowerCase() !== 'github.com') return null;
+      path = parsed.pathname;
     } catch {
       return null;
     }
@@ -151,6 +153,17 @@ function addedLines(patch: string | undefined): Array<{ line: number; content: s
 
 function findingsForFile(file: GitHubChangedFile): ReviewFinding[] {
   const findings: ReviewFinding[] = [];
+  if (!file.patch) {
+    findings.push({
+      severity: 'MEDIUM',
+      file: file.filename,
+      line: null,
+      rule: 'patch-unavailable',
+      message: 'GitHub did not provide a textual patch for this changed file.',
+      recommendation:
+        'Treat the review as partial and inspect the file through an approved secondary source.',
+    });
+  }
   for (const added of addedLines(file.patch)) {
     if (/(?:password|api[_-]?key|secret|token)\s*[:=]\s*['"`][^'"`]{8,}/iu.test(added.content)) {
       findings.push({
@@ -349,19 +362,48 @@ export class GitHubCodeReviewAdapter implements ExternalActionAdapter {
         );
         changedFiles.push(...batch);
         if (batch.length < 100) break;
+        if (page === 10) {
+          throw new ExternalActionAdapterError(
+            'INVALID_RESPONSE',
+            'GitHub pull request file list exceeds the supported 1000-file review limit',
+            false,
+          );
+        }
       }
       commitSha = pull.head?.sha;
       externalId = String(pull.number);
       targetUrl = pull.html_url;
       files = changedFiles;
     } else {
-      const commit = await this.client.getJson<GitHubCommitResponse>(
-        `/repos/${target.repository}/commits/${target.value}?per_page=100`,
-      );
+      let commit: GitHubCommitResponse | null = null;
+      const changedFiles: GitHubChangedFile[] = [];
+      for (let page = 1; page <= 10; page += 1) {
+        const pageResult = await this.client.getJson<GitHubCommitResponse>(
+          `/repos/${target.repository}/commits/${target.value}?per_page=100&page=${page}`,
+        );
+        commit ??= pageResult;
+        const batch = pageResult.files ?? [];
+        changedFiles.push(...batch);
+        if (batch.length < 100) break;
+        if (page === 10) {
+          throw new ExternalActionAdapterError(
+            'INVALID_RESPONSE',
+            'GitHub commit file list exceeds the supported 1000-file review limit',
+            false,
+          );
+        }
+      }
+      if (!commit) {
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'GitHub did not return commit metadata',
+          false,
+        );
+      }
       commitSha = commit.sha;
       externalId = commit.sha;
       targetUrl = commit.html_url;
-      files = commit.files ?? [];
+      files = changedFiles;
     }
 
     if (!/^[a-f0-9]{7,64}$/u.test(commitSha) || files.length === 0) {
@@ -373,6 +415,14 @@ export class GitHubCodeReviewAdapter implements ExternalActionAdapter {
     }
 
     const reviewedFiles = files.map((file) => file.filename);
+    const unavailablePatchFiles = files.filter((file) => !file.patch).map((file) => file.filename);
+    if (unavailablePatchFiles.length === files.length) {
+      throw new ExternalActionAdapterError(
+        'INVALID_RESPONSE',
+        'GitHub did not provide any textual patch for the reviewed change',
+        false,
+      );
+    }
     if (reviewedFiles.some((file) => typeof file !== 'string' || file.length === 0)) {
       throw new ExternalActionAdapterError(
         'INVALID_RESPONSE',
@@ -388,6 +438,8 @@ export class GitHubCodeReviewAdapter implements ExternalActionAdapter {
       targetUrl,
       repository: target.repository,
       reviewedFiles,
+      coverage: unavailablePatchFiles.length > 0 ? 'PARTIAL' : 'COMPLETE',
+      unavailablePatchFiles,
       findingsCount: review.findings.length,
       findings: review.findings,
       verdict: review.verdict,

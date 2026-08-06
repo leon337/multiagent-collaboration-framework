@@ -9,6 +9,7 @@ import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
+import { ExternalActionLedger } from './external-action-ledger.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
@@ -47,9 +48,15 @@ import { SocialTimelineService } from './social-timeline.service.js';
       inject: [GitHubCodeReviewAdapter],
     },
     {
+      provide: ExternalActionLedger,
+      useFactory: (database: DatabaseService) => new ExternalActionLedger(database),
+      inject: [DatabaseService],
+    },
+    {
       provide: ExternalActionDispatcher,
-      useFactory: (registry: AdapterRegistry) => new ExternalActionDispatcher(registry),
-      inject: [AdapterRegistry],
+      useFactory: (registry: AdapterRegistry, ledger: ExternalActionLedger) =>
+        new ExternalActionDispatcher(registry, ledger),
+      inject: [AdapterRegistry, ExternalActionLedger],
     },
     {
       provide: PostgresMcfRuntimeRepository,
