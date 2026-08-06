@@ -1,10 +1,10 @@
 mission_id: MCF-RUNTIME-006-A1
 tracking_issue: 70
-state: HARDENING_IMPLEMENTED_AWAITING_CI
+state: TECHNICALLY_APPROVED_AWAITING_INTEGRATION_GATE
 objective: executar_code_review_real_read_only_com_evidencia_assinada
 branch: feat/mcf-runtime-006-a1-code-review-adapter
 base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
-technical_head: 2c118c0d6143edc2f629447557f3d8625feb46ac
+technical_head: 24b45615115b95cd2de75777b5123c23fc3dddb1
 pull_request: 71
 adapter:
   id: github-code-review-read-only-v1
@@ -25,27 +25,52 @@ hardening:
   missing_patch_coverage: DECLARED_PARTIAL
   all_patches_missing: FAIL_CLOSED
   pagination_limit: FAIL_CLOSED_AT_1000_FILES
+  phase_preflight_before_provider_call: IMPLEMENTED
   requested_allowed_before_provider_call: IMPLEMENTED
+  duplicate_preflight_in_service: SUPPRESSED
   stale_mission_version: BLOCKED_BEFORE_PROVIDER_CALL
+  ledger_state_machine: EXPLICIT_AND_IDEMPOTENT
+  timeline_order: DATABASE_SEQUENCE
   real_permission_profile: READ_AND_PROPOSE
 failure_classification: IMPLEMENTED
 tests:
-  adapter_unit: UPDATED
-  executor_dispatch: UPDATED
-  permission_block: UPDATED
-  failure_recovery: UPDATED
-  ledger_integration: UPDATED
-  stale_version_reservation: CREATED
-  partial_coverage: CREATED
-  pagination_limit: CREATED
+  adapter_unit: PASS
+  executor_dispatch: PASS
+  permission_block: PASS
+  failure_recovery: PASS
+  ledger_integration: PASS
+  stale_version_reservation: PASS
+  partial_coverage: PASS
+  pagination_limit: PASS
+  causal_preflight_order: PASS
+  invalid_state_transition: PASS
+  idempotent_transition: PASS
 ci:
-  prior_head_0c3b993e: PASS
-  technical_head_2c118c0d: ACTION_REQUIRED_NO_JOBS_BOT_AUTHORED
-  canonical_validation_head: PENDING
-review: BLOCKED_UNTIL_CANONICAL_CI
+  documentation_validation:
+    run: 31071793017
+    conclusion: success
+  foundation:
+    run: 31071793043
+    formatting: success
+    lint: success
+    typecheck: success
+    migration_twice: success
+    tests: success
+    build: success
+  container_smoke:
+    run: 31071793033
+    conclusion: success
+review:
+  decision: PASS_WITH_MINOR_RESERVATION
+  critical_open: 0
+  high_open: 0
+  medium_open: 0
+  low_open: 1
+  residual: phase_reconciler_after_interruption
+  rc: docs/reviews/MCF-DEC-060-RC-001-EXTERNAL-ACTION-DISPATCHER.md
 restrictions:
   production: BLOQUEADA
   cost: NAO_AUTORIZADO
   publication: false
   merge_automatico: false
-next_action: executar_documentation_foundation_e_container_smoke_no_head_canonico
+next_action: governance_integration_gate
