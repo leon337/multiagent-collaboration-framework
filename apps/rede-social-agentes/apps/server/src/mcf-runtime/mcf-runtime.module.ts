@@ -50,10 +50,8 @@ import { SocialTimelineService } from './social-timeline.service.js';
     },
     {
       provide: AdapterRegistry,
-      useFactory: (
-        githubReview: GitHubCodeReviewAdapter,
-        githubCiQuery: GitHubCiQueryAdapter,
-      ) => new AdapterRegistry([githubReview, githubCiQuery]),
+      useFactory: (githubReview: GitHubCodeReviewAdapter, githubCiQuery: GitHubCiQueryAdapter) =>
+        new AdapterRegistry([githubReview, githubCiQuery]),
       inject: [GitHubCodeReviewAdapter, GitHubCiQueryAdapter],
     },
     {
