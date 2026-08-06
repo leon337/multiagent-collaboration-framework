@@ -432,7 +432,9 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
         deadlineAt,
       );
       const batch = result.workflow_runs.filter(
-        (run) => run.head_sha.toLowerCase() === target.commitSha && workflowMatches(run, target.workflowFilter),
+        (run) =>
+          run.head_sha.toLowerCase() === target.commitSha &&
+          workflowMatches(run, target.workflowFilter),
       );
       workflowRuns.push(...batch);
       if (result.workflow_runs.length < 100) break;
