@@ -35,7 +35,7 @@ beforeEach(() => {
 function registry(): SkillRegistryLoader {
   return {
     load: async () => reviewSkill,
-  } as SkillRegistryLoader;
+  } as unknown as SkillRegistryLoader;
 }
 
 describe('SkillExecutor external action dispatch', () => {
