@@ -177,10 +177,11 @@ describe('MCF mission hierarchy integration', () => {
     await database.onModuleDestroy();
   });
 
-  it('restores the parent checkpoint after blocking premature completion', async () => {
+  it('freezes normal parent progress and restores its checkpoint after the child returns', async () => {
     const parentMissionId = randomUUID();
     const childMissionId = randomUUID();
     const checkpointPhaseId = randomUUID();
+    const concurrentPhaseId = randomUUID();
     const prematurePhaseId = randomUUID();
     const childPhaseId = randomUUID();
     const now = new Date();
@@ -197,6 +198,44 @@ describe('MCF mission hierarchy integration', () => {
         parentMissionId,
         returnToAgentId: 'Leonardo',
         returnStatus: 'PENDING',
+      });
+      expect(
+        (await repository.listEvents(parentMissionId)).map((event) => event.eventType),
+      ).toContain('SUBMISSION_OPENED');
+
+      await expect(
+        repository.persistExecution({
+          missionId: parentMissionId,
+          expectedMissionVersion: 1,
+          phase: phase({
+            id: concurrentPhaseId,
+            missionId: parentMissionId,
+            agentId: 'Emily',
+            skillId: 'MCF-TRACE-MISSION',
+            now,
+          }),
+          permissionProfile: 'READ_ONLY',
+          missionState: 'EXECUTING',
+          nextAgentId: 'Emily',
+          receipt: null,
+          evidenceStatus: 'VALID',
+          handoff: null,
+          events: [
+            missionEvent(
+              parentMissionId,
+              'PHASE_COMPLETED',
+              `phase:${concurrentPhaseId}:completed`,
+              concurrentPhaseId,
+            ),
+          ],
+        }),
+      ).rejects.toThrow('suspended while a submission is pending');
+
+      expect(await repository.findMission(parentMissionId)).toMatchObject({
+        state: 'EXECUTING',
+        currentPhaseId: checkpointPhaseId,
+        currentAgentId: 'Leonardo',
+        version: 1,
       });
 
       const prematureCompletion = await repository.persistExecution({
