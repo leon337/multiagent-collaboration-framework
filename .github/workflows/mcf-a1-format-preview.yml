@@ -23,15 +23,20 @@ jobs:
       - run: corepack enable && corepack prepare pnpm@11.17.0 --activate
       - working-directory: apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
-      - name: Print formatted files
+      - name: Format files
         working-directory: apps/rede-social-agentes
         run: |
-          for file in \
+          pnpm exec prettier --write \
             apps/server/src/mcf-runtime/github-code-review.adapter.ts \
             apps/server/src/mcf-runtime/github-code-review.adapter.test.ts \
             apps/server/src/mcf-runtime/mcf-runtime.module.ts \
             apps/server/src/mcf-runtime/skill-executor.external-action.test.ts
-          do
-            echo "===== ${file} ====="
-            pnpm exec prettier "${file}"
-          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcf-a1-formatted-files
+          path: |
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-code-review.adapter.ts
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-code-review.adapter.test.ts
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor.external-action.test.ts
+          retention-days: 1
