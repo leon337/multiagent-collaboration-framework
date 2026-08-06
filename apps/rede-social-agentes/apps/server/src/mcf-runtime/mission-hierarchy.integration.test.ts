@@ -82,11 +82,7 @@ function parentMission(input: {
   };
 }
 
-function childMission(input: {
-  id: string;
-  parentMissionId: string;
-  now: Date;
-}): McfMissionRecord {
+function childMission(input: { id: string; parentMissionId: string; now: Date }): McfMissionRecord {
   return {
     id: input.id,
     contract: {
@@ -120,19 +116,11 @@ async function createHierarchy(input: {
 }): Promise<void> {
   await input.repository.createMission({
     mission: input.parent,
-    event: missionEvent(
-      input.parent.id,
-      'MISSION_CREATED',
-      `mission:${input.parent.id}:created`,
-    ),
+    event: missionEvent(input.parent.id, 'MISSION_CREATED', `mission:${input.parent.id}:created`),
   });
   await input.repository.createMission({
     mission: input.child,
-    event: missionEvent(
-      input.child.id,
-      'MISSION_CREATED',
-      `mission:${input.child.id}:created`,
-    ),
+    event: missionEvent(input.child.id, 'MISSION_CREATED', `mission:${input.child.id}:created`),
   });
 }
 
