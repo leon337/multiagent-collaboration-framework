@@ -90,12 +90,43 @@ O bridge executa somente o bloco interno consecutivo no início do plano. GitHub
 
 A missão só é encerrada por `MCF-TRACE-MISSION` com `final_checkpoint=true` quando o ledger comprova `PHASE_COMPLETED` para todas as skills selecionadas. CI verde conclui a fase de testes, não a missão inteira.
 
+### MCF-RUNTIME-005 — deploy verificado
+
+O MCF-RUNTIME-005 foi encerrado após validar em staging:
+
+- deploy automático condicionado aos gates técnicos;
+- verificação do SHA exato implantado;
+- sondas de saúde e versão;
+- smoke pós-deploy;
+- recuperação controlada pelo redeploy do último SHA saudável.
+
+A recuperação atual **não é rollback nativo de artefato do Render**. O mecanismo comprovado republica o commit saudável anterior e verifica novamente saúde e versão.
+
+### MCF-STAB-001 e MCF-RUNTIME-006
+
+A estabilização anterior ao RUNTIME-006 possui rastreamento na issue `#68` e no PR draft `#69`.
+
+O primeiro controle técnico em implementação é a hierarquia persistente de missões:
+
+```text
+missão-pai
+→ submissão
+→ conclusão da submissão
+→ retorno obrigatório
+→ restauração da missão-pai
+```
+
+O MCF-RUNTIME-006 expandirá a autonomia externa por meio de adapters confiáveis, recibos verificáveis, menor privilégio, idempotência, timeout, retry limitado e recuperação controlada.
+
 ### Documentação do runtime
 
+- `docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md`;
 - `docs/decisions/MCF-DEC-057-EXPANSAO-DE-SKILLS-EXECUTAVEIS-E-RECIBOS-SEMANTICOS.md`;
 - `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
 - `docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md`;
 - `docs/decisions/MCF-DEC-054-RUNTIME-EXECUTAVEL-E-EVIDENCIA-CONFIAVEL.md`;
+- `docs/runtime/MCF-RUNTIME-006-PLAN.md`;
+- `docs/runtime/MCF-STAB-001-REPORT.md`;
 - `docs/runtime/MCF-RUNTIME-SPECIFICATION.md`;
 - `docs/runtime/MCF-RUNTIME-API.md`;
 - `docs/runtime/MCF-RUNTIME-RECOVERY.md`;
@@ -134,6 +165,7 @@ A integração do pacote ao GitHub não modifica automaticamente as configuraç�
 
 ## Documentos principais
 
+- `docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md`;
 - `docs/decisions/MCF-DEC-057-EXPANSAO-DE-SKILLS-EXECUTAVEIS-E-RECIBOS-SEMANTICOS.md`;
 - `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
 - `docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md`;
@@ -165,4 +197,6 @@ O runtime apenas projeta conclusões verificadas como candidatos `DRAFT_REVIEW`.
 
 ## Estado
 
-A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-057 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos e a conclusão apenas por trace final comprovado no ledger.
+A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-058 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos, a conclusão apenas por trace final comprovado no ledger e o deploy verificado com recuperação controlada em staging.
+
+O estado atual é um MVP técnico avançado em staging. A produção irrestrita continua bloqueada até a conclusão dos adapters externos confiáveis, das oito skills ainda documentais, dos testes multiagente independentes e da auditoria de segurança da release candidate.
