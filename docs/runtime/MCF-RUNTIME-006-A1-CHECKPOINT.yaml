@@ -5,6 +5,7 @@ objective: executar_code_review_real_read_only_com_evidencia_assinada
 branch: feat/mcf-runtime-006-a1-code-review-adapter
 base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
 technical_head: bbf802af8650af96d9249068a7a4ea002a2af751
+formatted_head: bec1cbce7f77c9de68e4296db06eb3d9f7000362
 pull_request: 71
 adapter:
   id: github-code-review-read-only-v1
