@@ -1,0 +1,53 @@
+mission: MCF-RUNTIME-006-A2
+issue: 72
+branch: feat/mcf-runtime-006-a2-ci-query-adapter
+base_sha: 01c0182b9c9837c0dd22306c9bd8918020ecc38b
+state: IMPLEMENTED_PENDING_CI
+objective: Consultar CI do GitHub por SHA exato sem capacidade de execução ou escrita.
+
+adapter:
+  id: github-ci-query-read-only-v1
+  skill: MCF-RUN-TESTS
+  provider: github-actions
+  operation: query-ci
+  exact_sha_required: true
+  http_methods_allowed: [GET]
+  required_permissions:
+    - metadata:read
+    - actions:read
+    - checks:read
+
+conclusions:
+  - SUCCESS
+  - FAILURE
+  - CANCELLED
+  - IN_PROGRESS
+
+controls:
+  read_only: true
+  receipt_signed: true
+  receipt_persisted_by_external_action_ledger: true
+  workflow_runs_collected: true
+  jobs_collected: true
+  check_runs_collected: true
+  no_success_from_text: true
+  no_branch_or_tag_resolution: true
+  no_ci_dispatch: true
+  no_repository_mutation: true
+  scoped_write_required_for_future_execution: true
+
+changed_files:
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.adapter.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.adapter.test.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/permission-engine.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
+  - docs/runtime/MCF-RUNTIME-006-A2-CHECKPOINT.yaml
+
+validation:
+  local_isolated_typecheck: PASS
+  repository_typecheck: PENDING_CI
+  unit_tests: PENDING_CI
+  integration_tests: PENDING_CI
+  independent_review: PENDING
+  pull_request: PENDING
