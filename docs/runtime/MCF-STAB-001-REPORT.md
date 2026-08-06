@@ -1,6 +1,6 @@
 # MCF-STAB-001 — Relatório de estabilização
 
-**Estado:** GATES TÉCNICOS APROVADOS; HEAD DOCUMENTAL EM VALIDAÇÃO  
+**Estado:** CONCLUÍDA TECNICAMENTE; AGUARDANDO GATE DE INTEGRAÇÃO  
 **Tracking:** issue #68  
 **Pull request:** #69  
 **Branch:** `chore/mcf-stab-001-runtime-006`
@@ -13,106 +13,106 @@ Eliminar ambiguidades de backlog, documentação e governança antes da expansã
 
 As issues #13 e #14 foram identificadas como escopo do Screen Assistant. O conteúdo foi preservado e as issues foram encerradas como `not_planned` no backlog do MCF.
 
-## 3. PR #22
+## 3. PRs históricos
 
-A regra de trabalho visível já estava refletida operacionalmente na documentação atual, mas os artefatos canônicos não existiam na `main`.
+### PR #22
 
-Os documentos foram portados para o PR #69:
+Os documentos canônicos sobre trabalho visível foram portados para o PR #69. O PR #22 foi encerrado sem merge e classificado como incorporado.
 
-- `docs/decisions/MCF-DEC-015-TRABALHO-VISIVEL-AUDITAVEL-POR-AGENTE.md`;
-- `docs/reviews/MCF-DEC-015-RC-001-TRABALHO-VISIVEL-AUDITAVEL.md`.
+### PR #29
 
-O PR #22 pode ser encerrado como incorporado pelo PR #69, sem merge direto da branch antiga.
+A lacuna de retorno à missão-pai foi confirmada. O PR #29 foi encerrado sem merge e substituído pela MCF-DEC-059 e pelas migrações `0014` e `0015`.
 
-## 4. PR #29
+## 4. Controles implementados
 
-A auditoria confirmou que a lacuna era real: o runtime não possuía hierarquia persistente nem retorno automático à missão-pai.
-
-A solução atual implementa enforcement transacional por meio de:
-
-- migração `0014_mcf_mission_hierarchy.sql`;
-- campos de contrato TypeScript;
-- constraints e triggers no PostgreSQL;
+- contrato público de hierarquia;
+- snapshot interno do checkpoint do pai;
+- evento `SUBMISSION_OPENED`;
+- suspensão do avanço normal do pai;
 - bloqueio de conclusão prematura;
-- restauração automática da missão-pai;
-- eventos auditáveis de retorno;
-- teste de integração.
+- restauração de estado, fase e agente;
+- preservação de `BLOCKED_RISK`, `RECOVERING` e `WAITING_EXTERNAL`;
+- evento `PARENT_RETURN_DEFERRED` quando a retomada não é segura;
+- limite de uma submissão ativa por pai;
+- supressão de `MISSION_COMPLETED` inválido;
+- eventos idempotentes;
+- migrações repetíveis;
+- testes de integração e regressão.
 
-A MCF-DEC-059 substitui a restauração apenas processual do PR #29.
+## 5. README e planejamento
 
-## 5. README
+O README foi sincronizado com MCF-DEC-058, encerramento do MCF-RUNTIME-005, MCF-STAB-001, MCF-RUNTIME-006 e MCF-DEC-059.
 
-O README foi sincronizado com:
-
-- MCF-DEC-058;
-- encerramento do MCF-RUNTIME-005;
-- distinção entre recovery por redeploy e rollback nativo;
-- MCF-STAB-001;
-- plano do MCF-RUNTIME-006;
-- MCF-DEC-059;
-- estado da hierarquia persistente.
-
-## 6. Evidências técnicas
-
-Head técnico validado:
-
-```text
-5c420693133c6bec218172089b0d1f14b88d149c
-```
-
-Workflows:
+O plano do primeiro adapter externo permanece:
 
 ```yaml
+mission_id: MCF-RUNTIME-006-A1
+adapter: CODE_REVIEW_READ_ONLY
+external_effect: NONE
+risk: LOW
+dependency: PR_69_INTEGRATED_IN_MAIN
+```
+
+## 6. Revisões e correções
+
+A revisão final identificou e corrigiu:
+
+```yaml
+HIGH_001: downgrade_de_estado_protegido
+MEDIUM_001: checkpoint_de_fase_nao_restaurado
+HIGH_002: progresso_concorrente_do_pai
+MEDIUM_002: abertura_de_submissao_sem_evento
+MEDIUM_003: multiplos_filhos_pendentes
+```
+
+Estado dos achados:
+
+```yaml
+critical_open: 0
+high_open: 0
+medium_open: 0
+low_open: 1
+```
+
+A reserva baixa restante é a ausência de um teste explícito pai → filho → neto, destinado ao endurecimento do MCF-RUNTIME-006.
+
+## 7. Evidência técnica
+
+```yaml
+head_validado: 5256ef1392d0da55a6c5d47fd3f64eb4b2526bfd
 documentation_validation:
-  run_id: 31063763465
+  run_id: 31065590519
   conclusion: success
 foundation:
-  run_id: 31063763483
+  run_id: 31065590521
   conclusion: success
 container_smoke:
-  run_id: 31063763463
+  run_id: 31065590524
   conclusion: success
+format: PASS
+lint: PASS
+typecheck: PASS
+migration_twice: PASS
+test: PASS
+build: PASS
 ```
-
-O workflow Foundation comprovou:
-
-- format: PASS;
-- lint: PASS;
-- typecheck: PASS;
-- migration_twice: PASS;
-- test: PASS;
-- build: PASS.
-
-O head documental definitivo deverá repetir os gates antes da decisão de integração.
-
-## 7. Auditoria
-
-A RC da MCF-DEC-059 registrou:
-
-```yaml
-critical: 0
-high: 0
-medium: 0
-low: 1
-veredito: PASS_WITH_MINOR_RESERVATION
-```
-
-Reserva baixa: cadeias hierárquicas com mais de dois níveis serão testadas durante o endurecimento do MCF-RUNTIME-006.
 
 ## 8. Estado consolidado
 
 ```yaml
 backlog_legado: CLASSIFICADO
 issues_13_14: ENCERRADAS_COM_HISTORICO
-pr_22: INCORPORADO_PELO_PR_69
-pr_29: SUBSTITUIDO_PELA_MCF_DEC_059
+pr_22: INCORPORADO_E_ENCERRADO_SEM_MERGE
+pr_29: SUBSTITUIDO_E_ENCERRADO_SEM_MERGE
 readme: SINCRONIZADO
-hierarquia_persistente: IMPLEMENTADA
-retorno_automatico: IMPLEMENTADO
+hierarquia_persistente: PASS
+retorno_automatico: PASS
+estados_protegidos: PASS
+checkpoint_restoration: PASS
+parent_suspension: PASS
+single_active_submission: PASS
 runtime_006: PLANEJADO
-critical_findings: 0
-high_findings: 0
 production: BLOQUEADA
 cost: NAO_AUTORIZADO
-merge_pr_69: SUJEITO_A_GATE
+merge_pr_69: PENDENTE_DE_GATE
 ```
