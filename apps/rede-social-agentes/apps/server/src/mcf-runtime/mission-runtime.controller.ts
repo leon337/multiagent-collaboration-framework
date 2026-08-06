@@ -53,6 +53,9 @@ const missionContractSchema = z.object({
   selectedAgents: stringList.min(1),
   selectedSkills: stringList.min(1),
   sourceOfTruth: stringList,
+  parentMissionId: z.string().uuid().nullable().optional(),
+  returnToAgentId: z.string().trim().min(1).max(128).nullable().optional(),
+  returnStatus: z.enum(['NOT_APPLICABLE', 'PENDING', 'COMPLETED']).optional(),
 });
 
 const createMissionSchema = z.object({ contract: missionContractSchema });
