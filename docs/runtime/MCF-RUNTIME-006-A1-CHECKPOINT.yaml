@@ -1,11 +1,12 @@
 mission_id: MCF-RUNTIME-006-A1
 tracking_issue: 70
-state: HARDENING_APPLIED_AWAITING_CI
+state: RECONCILIATION_HARDENING_AWAITING_CI
 objective: executar_code_review_real_read_only_com_evidencia_assinada
 branch: feat/mcf-runtime-006-a1-code-review-adapter
 base_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
 technical_head: bbf802af8650af96d9249068a7a4ea002a2af751
 formatted_head: bec1cbce7f77c9de68e4296db06eb3d9f7000362
+reconciliation_head: b193e1fcc1a68730d684e4c184d357baf1aa10ed
 pull_request: 71
 adapter:
   id: github-code-review-read-only-v1
@@ -33,6 +34,10 @@ hardening:
   active_external_attempt_reservation: IMPLEMENTED
   concurrent_mission_advancement: BLOCKED_WHILE_ATTEMPT_ACTIVE
   reservation_release: TERMINAL_OWNER_ONLY
+  reservation_lease: TEN_MINUTES
+  expired_reservation_reconciliation: IMPLEMENTED
+  orphan_attempt_state: ABANDONED
+  orphan_attempt_event: EXTERNAL_ACTION_ABANDONED
   pull_request_head_recheck_per_page: IMPLEMENTED
   mutable_pr_diff_mismatch: RETRYABLE_RESERVATION_CONFLICT
   provider_operation_canonicalization: IMPLEMENTED
@@ -49,6 +54,8 @@ tests:
   durable_mission_reservation: PENDING_CI
   concurrent_mission_persistence_block: PENDING_CI
   terminal_owner_release: PENDING_CI
+  expired_orphan_reconciliation: PENDING_CI
+  abandoned_event_audit: PENDING_CI
   pull_request_head_mutation: PENDING_CI
   provider_alias_canonicalization: PENDING_CI
   stale_version_reservation: PENDING_CI
