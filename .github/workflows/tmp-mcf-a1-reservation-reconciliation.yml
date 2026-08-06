@@ -1,0 +1,62 @@
+name: Temporary MCF A1 reservation reconciliation
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-a1-code-review-adapter
+    paths:
+      - ".github/workflows/tmp-mcf-a1-reservation-reconciliation.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply reservation reconciliation patch
+        run: python3 .github/scripts/apply-mcf-a1-reservation-reconciliation.py
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Format changed source files
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/server/src/mcf-runtime/external-action-reservation.ts \
+            apps/server/src/mcf-runtime/external-action-reservation.integration.test.ts \
+            apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.ts \
+            packages/contracts/src/mcf-runtime.ts
+
+      - name: Remove temporary patch mechanism
+        run: |
+          rm .github/scripts/apply-mcf-a1-reservation-reconciliation.py
+          rm .github/workflows/tmp-mcf-a1-reservation-reconciliation.yml
+
+      - name: Commit reconciliation hardening
+        run: |
+          git config user.name "Leandro Carlos"
+          git config user.email "leonpcsn@gmail.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(mcf): reconcile expired external reservations"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
