@@ -71,6 +71,16 @@ function resolveHandoff(skill: McfSkillDefinition, inputs: Record<string, unknow
   return selected.trim();
 }
 
+function ledgerFailureTrace(trace: ExternalActionTrace | null): ExternalActionTrace {
+  return {
+    status: 'FAILED',
+    adapterId: trace?.adapterId ?? null,
+    attemptId: trace?.attemptId ?? null,
+    failureCode: 'LEDGER_FAILURE',
+    retryable: true,
+  };
+}
+
 @Injectable()
 export class SkillExecutor {
   constructor(
@@ -214,14 +224,7 @@ export class SkillExecutor {
           missionState: 'RECOVERING',
           handoffTo: null,
           rejectionReason: ledgerFailure ?? reason,
-          externalAction: ledgerFailure
-            ? {
-                ...externalAction,
-                status: 'FAILED',
-                failureCode: 'LEDGER_FAILURE',
-                retryable: true,
-              }
-            : externalAction,
+          externalAction: ledgerFailure ? ledgerFailureTrace(externalAction) : externalAction,
         };
       }
 
@@ -235,12 +238,7 @@ export class SkillExecutor {
           missionState: 'RECOVERING',
           handoffTo: null,
           rejectionReason: ledgerFailure,
-          externalAction: {
-            ...externalAction,
-            status: 'FAILED',
-            failureCode: 'LEDGER_FAILURE',
-            retryable: true,
-          },
+          externalAction: ledgerFailureTrace(externalAction),
         };
       }
 
@@ -272,14 +270,7 @@ export class SkillExecutor {
         missionState: 'RECOVERING',
         handoffTo: null,
         rejectionReason: ledgerFailure ?? error.message,
-        externalAction: ledgerFailure
-          ? {
-              ...externalAction,
-              status: 'FAILED',
-              failureCode: 'LEDGER_FAILURE',
-              retryable: true,
-            }
-          : externalAction,
+        externalAction: ledgerFailure ? ledgerFailureTrace(externalAction) : externalAction,
       };
     }
   }

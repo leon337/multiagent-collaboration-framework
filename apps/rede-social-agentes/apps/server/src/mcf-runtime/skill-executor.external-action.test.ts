@@ -64,6 +64,14 @@ function dispatcher(
   return new ExternalActionDispatcher(new AdapterRegistry(adapters), ledger);
 }
 
+function executionContext() {
+  return {
+    missionId: 'mission-1',
+    phaseId: 'phase-1',
+    expectedMissionVersion: 1,
+  };
+}
+
 describe('SkillExecutor external action dispatch', () => {
   it('executes the registered read-only adapter and validates its receipt', async () => {
     const evidence = new EvidenceValidator();
@@ -88,8 +96,13 @@ describe('SkillExecutor external action dispatch', () => {
           },
         }),
     };
-    const dispatcher = dispatcher([adapter]);
-    const executor = new SkillExecutor(registry(), new PermissionEngine(), evidence, dispatcher);
+    const externalDispatcher = dispatcher([adapter]);
+    const executor = new SkillExecutor(
+      registry(),
+      new PermissionEngine(),
+      evidence,
+      externalDispatcher,
+    );
 
     const result = await executor.execute({
       skillId: 'MCF-REVIEW-CODE',
@@ -100,6 +113,7 @@ describe('SkillExecutor external action dispatch', () => {
         operation: 'inspect-code',
         resource: 'leon337/multiagent-collaboration-framework',
       },
+      executionContext: executionContext(),
     });
 
     expect(result).toMatchObject({
@@ -142,6 +156,7 @@ describe('SkillExecutor external action dispatch', () => {
         operation: 'inspect-code',
         resource: 'leon337/multiagent-collaboration-framework',
       },
+      executionContext: executionContext(),
     });
 
     expect(result).toMatchObject({
@@ -188,7 +203,7 @@ describe('SkillExecutor external action dispatch', () => {
     });
   });
 
-  it('rejects write operations before an adapter can execute', async () => {
+  it('rejects persistent write operations before an adapter can execute', async () => {
     let executed = false;
     const adapter: ExternalActionAdapter = {
       adapterId: 'must-not-run',
@@ -216,7 +231,7 @@ describe('SkillExecutor external action dispatch', () => {
           resource: 'leon337/multiagent-collaboration-framework',
         },
       }),
-    ).rejects.toThrow(/READ_ONLY permits only read operations/u);
+    ).rejects.toThrow(/READ_AND_PROPOSE permits reads/u);
     expect(executed).toBe(false);
   });
 
@@ -262,11 +277,7 @@ describe('SkillExecutor external action dispatch', () => {
         operation: 'inspect-code',
         resource: 'leon337/multiagent-collaboration-framework',
       },
-      executionContext: {
-        missionId: 'mission-1',
-        phaseId: 'phase-1',
-        expectedMissionVersion: 1,
-      },
+      executionContext: executionContext(),
     });
 
     expect(order.slice(0, 2)).toEqual(['reserve', 'execute']);
