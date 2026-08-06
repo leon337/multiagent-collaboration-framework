@@ -57,7 +57,9 @@ function mission(input: {
       objective: child
         ? 'Execute one controlled child flow and return safely.'
         : 'Coordinate one controlled hierarchy flow.',
-      expectedOutcome: child ? 'Return to the validated parent checkpoint.' : 'Preserve order.',
+      expectedOutcome: child
+        ? 'Return to the validated parent checkpoint.'
+        : 'Preserve order.',
       scope: ['mission hierarchy hardening'],
       outOfScope: ['production deployment'],
       acceptanceCriteria: ['hierarchy remains deterministic'],
@@ -75,7 +77,7 @@ function mission(input: {
     },
     state: child ? 'PLANNED' : 'EXECUTING',
     currentPhaseId: null,
-    currentAgentId: child ? null : input.selectedAgents[0] ?? null,
+    currentAgentId: child ? null : (input.selectedAgents[0] ?? null),
     version: 1,
     createdAt: input.now,
     updatedAt: input.now,
@@ -352,7 +354,9 @@ describe('MCF mission hierarchy gate hardening', () => {
 
       releaseChildTransaction?.();
       await childTransaction;
-      await expect(parentUpdate).rejects.toThrow(/is suspended while a submission is pending/u);
+      await expect(parentUpdate).rejects.toThrow(
+        /is suspended while a submission is pending/u,
+      );
     } finally {
       releaseChildTransaction?.();
       await database.query('delete from "mcf_missions" where "id" = any($1::text[])', [
