@@ -1,0 +1,64 @@
+name: Temporary MCF A1 final review fixes
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-a1-code-review-adapter
+    paths:
+      - ".github/workflows/tmp-mcf-a1-final-review-fixes.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply controlled final review fixes
+        run: python3 .github/scripts/apply-mcf-a1-final-review-fixes.py
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Format changed files
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/external-action.contracts.ts \
+            apps/server/src/mcf-runtime/github-code-review.adapter.ts \
+            apps/server/src/mcf-runtime/github-code-review.adapter.test.ts
+
+      - name: Run targeted adapter tests
+        working-directory: apps/rede-social-agentes
+        run: pnpm exec vitest run apps/server/src/mcf-runtime/github-code-review.adapter.test.ts
+
+      - name: Remove temporary patch mechanism
+        run: |
+          rm .github/scripts/apply-mcf-a1-final-review-fixes.py
+          rm .github/workflows/tmp-mcf-a1-final-review-fixes.yml
+
+      - name: Commit final review fixes
+        run: |
+          git config user.name "Leandro Carlos"
+          git config user.email "leonpcsn@gmail.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "fix(mcf): bind review target and bound execution time"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
