@@ -161,28 +161,14 @@ function recordNullableString(
 }
 
 function repositoryFromValue(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-
-  let path = trimmed;
-  if (/^https?:\/\//u.test(trimmed)) {
-    try {
-      const parsed = new URL(trimmed);
-      if (parsed.protocol !== 'https:' || parsed.hostname.toLowerCase() !== 'github.com')
-        return null;
-      path = parsed.pathname;
-    } catch {
-      return null;
-    }
+  if (value !== value.trim() || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(value)) {
+    return null;
   }
 
-  const parts = path
-    .replace(/^github:/u, '')
-    .replace(/^\/+|\/+$/gu, '')
-    .split('/');
+  const parts = value.split('/');
   if (parts.length !== 2) return null;
   const owner = parts[0];
-  const repository = parts[1]?.replace(/\.git$/u, '');
+  const repository = parts[1];
   if (
     !owner ||
     !repository ||
@@ -194,17 +180,51 @@ function repositoryFromValue(value: string): string | null {
   return `${owner}/${repository}`;
 }
 
-function verifiedGitHubUrl(value: unknown, repository: string, message: string): string {
-  if (typeof value !== 'string' || value.trim().length === 0) {
+function exactCommitSha(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  if (value !== value.trim()) return null;
+  const normalized = value.toLowerCase();
+  return /^[a-f0-9]{40}$/u.test(normalized) ? normalized : null;
+}
+
+function containsAsciiControlOrSpace(value: string): boolean {
+  return [...value].some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x20 || codePoint === 0x7f;
+  });
+}
+
+function verifiedGitHubUrl(
+  value: unknown,
+  repository: string,
+  message: string,
+  expectedPath?: string,
+): string {
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    value !== value.trim() ||
+    containsAsciiControlOrSpace(value) ||
+    !value.startsWith('https://github.com/') ||
+    value.includes('?') ||
+    value.includes('#')
+  ) {
     return reject(message);
   }
   try {
     const parsed = new URL(value);
     const repositoryPrefix = `/${repository.toLowerCase()}`;
+    const pathname = parsed.pathname.toLowerCase();
     if (
       parsed.protocol !== 'https:' ||
       parsed.hostname.toLowerCase() !== 'github.com' ||
-      !parsed.pathname.toLowerCase().startsWith(repositoryPrefix)
+      parsed.username.length > 0 ||
+      parsed.password.length > 0 ||
+      parsed.port.length > 0 ||
+      parsed.search.length > 0 ||
+      parsed.hash.length > 0 ||
+      (pathname !== repositoryPrefix && !pathname.startsWith(`${repositoryPrefix}/`)) ||
+      (expectedPath !== undefined && pathname !== expectedPath.toLowerCase())
     ) {
       return reject(message);
     }
@@ -212,6 +232,74 @@ function verifiedGitHubUrl(value: unknown, repository: string, message: string):
     return reject(message);
   }
   return value;
+}
+
+function receiptWorkflowFilter(metadata: Record<string, unknown>): string | null {
+  const value = metadata.workflowFilter;
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return reject('CI query evidence contains invalid workflowFilter');
+  }
+  return value.trim();
+}
+
+function validateCiQueryExecutionContext(
+  receipt: McfToolReceipt,
+  expected: McfToolRequest,
+  inputs: Readonly<Record<string, unknown>>,
+): void {
+  const testTarget = exactCommitSha(inputs.test_target);
+  const requestedSha = exactCommitSha(receipt.metadata.requestedSha);
+  const verifiedSha = exactCommitSha(receipt.metadata.verifiedSha);
+  if (
+    !testTarget ||
+    !receipt.commitSha ||
+    testTarget !== receipt.commitSha ||
+    requestedSha !== testTarget ||
+    verifiedSha !== testTarget
+  ) {
+    reject('CI query evidence must match the current exact test_target commit SHA');
+  }
+
+  const resourceRepository = repositoryFromValue(expected.resource);
+  const metadataRepositoryValue = receipt.metadata.repository;
+  const metadataRepository =
+    typeof metadataRepositoryValue === 'string'
+      ? repositoryFromValue(metadataRepositoryValue)
+      : null;
+  if (
+    !resourceRepository ||
+    !metadataRepository ||
+    metadataRepository.toLowerCase() !== resourceRepository.toLowerCase()
+  ) {
+    reject('CI query evidence repository must match the current tool resource');
+  }
+
+  if (inputs.repository !== undefined) {
+    const inputRepository =
+      typeof inputs.repository === 'string' ? repositoryFromValue(inputs.repository) : null;
+    if (
+      !inputRepository ||
+      inputRepository.toLowerCase() !== resourceRepository.toLowerCase() ||
+      inputRepository.toLowerCase() !== metadataRepository.toLowerCase()
+    ) {
+      reject('CI query evidence repository must match the current repository input');
+    }
+  }
+
+  const workflowInput = inputs.workflow;
+  let currentWorkflowFilter: string | null;
+  if (workflowInput === undefined) {
+    currentWorkflowFilter = null;
+  } else if (typeof workflowInput === 'string') {
+    currentWorkflowFilter = workflowInput.trim() || null;
+  } else {
+    return reject('CI query workflow input must be a string when provided');
+  }
+
+  if (receiptWorkflowFilter(receipt.metadata) !== currentWorkflowFilter) {
+    reject('CI query evidence workflowFilter must match the current workflow input');
+  }
 }
 
 function normalizeCiObservation(
@@ -273,7 +361,11 @@ function validateReviewReceipt(receipt: McfToolReceipt): void {
   );
 }
 
-function validateCiQueryReceipt(receipt: McfToolReceipt): void {
+function validateCiQueryReceipt(
+  receipt: McfToolReceipt,
+  expected: McfToolRequest,
+  inputs?: Readonly<Record<string, unknown>>,
+): void {
   if (
     receipt.provider !== 'github-actions' ||
     !receipt.commitSha ||
@@ -324,6 +416,11 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
   if (!resourceRepository || repository.toLowerCase() !== resourceRepository.toLowerCase()) {
     reject('CI query evidence repository must match the receipt resource');
   }
+  receiptWorkflowFilter(receipt.metadata);
+  if (!inputs) {
+    reject('CI query evidence validation requires current execution inputs');
+  }
+  validateCiQueryExecutionContext(receipt, expected, inputs);
 
   const workflowRuns = requireArray(
     receipt.metadata,
@@ -374,8 +471,10 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
     reject('CI query evidence URLs must be unique and within the supported budget');
   }
   const evidenceUrlSet = new Set(evidenceUrls);
-  const commitUrlSuffix = `/commit/${receipt.commitSha}`;
-  if (!evidenceUrls.some((url) => new URL(url).pathname.toLowerCase().endsWith(commitUrlSuffix))) {
+  const commitPath = `/${repository}/commit/${receipt.commitSha}`;
+  if (
+    !evidenceUrls.some((url) => new URL(url).pathname.toLowerCase() === commitPath.toLowerCase())
+  ) {
     reject('CI query evidence requires the exact commit URL');
   }
 
@@ -390,6 +489,7 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
       item.url,
       repository,
       'CI query workflow run requires a valid GitHub URL',
+      `/${repository}/actions/runs/${id}`,
     );
     const status = recordString(item, 'status', 'CI query workflow run requires status');
     const conclusion = recordNullableString(
@@ -423,6 +523,7 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
       item.url,
       repository,
       'CI query workflow job requires a valid GitHub URL',
+      `/${repository}/actions/runs/${workflowRunId}/job/${id}`,
     );
     const status = recordString(item, 'status', 'CI query workflow job requires status');
     const conclusion = recordNullableString(
@@ -453,6 +554,7 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
         urlValue,
         repository,
         'CI query check run requires a valid GitHub URL',
+        `/${repository}/runs/${id}`,
       );
       if (!evidenceUrlSet.has(url)) {
         reject('CI query check run URL must be present in evidenceUrls');
@@ -489,10 +591,24 @@ function validateCiQueryReceipt(receipt: McfToolReceipt): void {
     'requiredPermissions',
     'CI query evidence requires requiredPermissions',
   );
-  for (const permission of ['metadata:read', 'actions:read', 'checks:read']) {
-    if (!permissions.includes(permission)) {
-      reject(`CI query evidence requires ${permission} permission metadata`);
+  const expectedPermissions = ['metadata:read', 'contents:read', 'actions:read', 'checks:read'];
+  const observedPermissions = new Set<string>();
+  for (let index = 0; index < permissions.length; index += 1) {
+    const permission = permissions[index];
+    if (
+      typeof permission !== 'string' ||
+      !expectedPermissions.includes(permission) ||
+      observedPermissions.has(permission)
+    ) {
+      reject('CI query evidence requires exactly the supported read-only permission metadata');
     }
+    observedPermissions.add(permission);
+  }
+  if (
+    permissions.length !== expectedPermissions.length ||
+    expectedPermissions.some((permission) => !observedPermissions.has(permission))
+  ) {
+    reject('CI query evidence requires exactly the supported read-only permission metadata');
   }
 }
 
@@ -662,6 +778,7 @@ export class EvidenceValidator {
     receipt: McfToolReceipt,
     expected: McfToolRequest,
     skill: McfSkillDefinition,
+    inputs?: Readonly<Record<string, unknown>>,
   ): void {
     this.verify(receipt, expected);
 
@@ -671,7 +788,7 @@ export class EvidenceValidator {
         break;
       case 'MCF-RUN-TESTS':
         if (canonicalizeToolValue(expected.operation) === 'query-ci') {
-          validateCiQueryReceipt(receipt);
+          validateCiQueryReceipt(receipt, expected, inputs);
         }
         break;
       case 'MCF-GIT-PR-RELEASE':

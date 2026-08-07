@@ -40,6 +40,25 @@ function isExplicitReadOnlyScopedOperation(skillId: string, operation: string): 
   return skillId === 'MCF-RUN-TESTS' && canonicalizeToolValue(operation) === 'query-ci';
 }
 
+const canonicalGitHubRepositoryResource =
+  /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/u;
+
+function isCanonicalGitHubRepositoryResource(value: string): boolean {
+  return value === value.trim() && canonicalGitHubRepositoryResource.test(value);
+}
+
+function requiresCanonicalGitHubRepository(
+  skillId: string,
+  provider: string,
+  operation: string,
+): boolean {
+  return (
+    skillId === 'MCF-RUN-TESTS' &&
+    provider === 'github' &&
+    canonicalizeToolValue(operation) === 'query-ci'
+  );
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
@@ -86,6 +105,15 @@ export class PermissionEngine {
     if (forbidden.has(provider) || forbidden.has(operation)) {
       throw new McfPermissionDeniedError(
         `tool or operation is explicitly forbidden by ${skill.skillId}`,
+      );
+    }
+
+    if (
+      requiresCanonicalGitHubRepository(skill.skillId, provider, operation) &&
+      !isCanonicalGitHubRepositoryResource(tool.resource)
+    ) {
+      throw new McfPermissionDeniedError(
+        'GitHub CI query requires a canonical owner/repository resource',
       );
     }
 

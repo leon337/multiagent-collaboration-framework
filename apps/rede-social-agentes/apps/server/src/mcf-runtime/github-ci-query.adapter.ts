@@ -112,6 +112,7 @@ export const GITHUB_CI_QUERY_MAX_EVIDENCE_URLS = 7_000;
 const MAX_PAGES = 10;
 const MAX_WORKFLOW_RUNS_WITH_JOBS = 100;
 const PAGE_SIZE = 100;
+const MAX_PAGINATED_ITEMS = MAX_PAGES * PAGE_SIZE;
 
 const ACTIVE_STATUSES = new Set(['queued', 'in_progress', 'pending', 'waiting', 'requested']);
 const FAILURE_CONCLUSIONS = new Set([
@@ -195,6 +196,13 @@ function requireNullableTimestamp(value: unknown, label: string): string | null 
   return requireTimestamp(value, label);
 }
 
+function containsAsciiControlOrSpace(value: string): boolean {
+  return [...value].some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x20 || codePoint === 0x7f;
+  });
+}
+
 function requireExactSha(value: unknown, label: string): string {
   const sha = requireString(value, label).toLowerCase();
   if (!/^[a-f0-9]{40}$/u.test(sha)) {
@@ -205,9 +213,24 @@ function requireExactSha(value: unknown, label: string): string {
 
 function requireGitHubHtmlUrl(value: unknown, label: string): string {
   const url = requireString(value, label);
+  if (
+    url !== url.trim() ||
+    containsAsciiControlOrSpace(url) ||
+    !url.startsWith('https://github.com/') ||
+    url.includes('?') ||
+    url.includes('#')
+  ) {
+    return invalidResponse(`GitHub API returned invalid ${label}`);
+  }
   try {
     const parsed = new URL(url);
-    if (parsed.protocol !== 'https:' || parsed.hostname.toLowerCase() !== 'github.com') {
+    if (
+      parsed.protocol !== 'https:' ||
+      parsed.hostname !== 'github.com' ||
+      parsed.username.length > 0 ||
+      parsed.password.length > 0 ||
+      parsed.port.length > 0
+    ) {
       return invalidResponse(`GitHub API returned invalid ${label}`);
     }
   } catch {
@@ -330,28 +353,14 @@ function parseCheckRunsResponse(value: unknown): GitHubCheckRunsResponse {
 }
 
 function repositoryFromValue(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-
-  let path = trimmed;
-  if (/^https?:\/\//u.test(trimmed)) {
-    try {
-      const parsed = new URL(trimmed);
-      if (parsed.protocol !== 'https:' || parsed.hostname.toLowerCase() !== 'github.com')
-        return null;
-      path = parsed.pathname;
-    } catch {
-      return null;
-    }
+  if (value !== value.trim() || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(value)) {
+    return null;
   }
 
-  const parts = path
-    .replace(/^github:/u, '')
-    .replace(/^\/+|\/+$/gu, '')
-    .split('/');
+  const parts = value.split('/');
   if (parts.length !== 2) return null;
   const owner = parts[0];
-  const repository = parts[1]?.replace(/\.git$/u, '');
+  const repository = parts[1];
   if (
     !owner ||
     !repository ||
@@ -365,7 +374,8 @@ function repositoryFromValue(value: string): string | null {
 
 function exactCommitSha(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  const normalized = value.trim().toLowerCase();
+  if (value !== value.trim()) return null;
+  const normalized = value.toLowerCase();
   return /^[a-f0-9]{40}$/u.test(normalized) ? normalized : null;
 }
 
@@ -521,7 +531,7 @@ function compactCheck(run: GitHubCheckRun) {
   };
 }
 
-class QueryBudget {
+export class QueryBudget {
   private apiRequestCount = 0;
   private jobCount = 0;
   private stepCount = 0;
@@ -583,10 +593,61 @@ class QueryBudget {
   }
 }
 
-async function responseErrorText(response: Response): Promise<string> {
+interface PaginationState {
+  expectedTotal: number | null;
+  rawCollected: number;
+}
+
+function consumePaginationPage(
+  state: PaginationState,
+  totalCount: number,
+  pageItemCount: number,
+  page: number,
+  label: string,
+): boolean {
+  if (pageItemCount > PAGE_SIZE) {
+    return invalidResponse(`GitHub ${label} page exceeds the requested ${PAGE_SIZE}-item size`);
+  }
+
+  if (state.expectedTotal === null) {
+    state.expectedTotal = totalCount;
+    if (totalCount > MAX_PAGINATED_ITEMS) {
+      return invalidResponse(
+        `GitHub ${label} list exceeds the supported ${MAX_PAGINATED_ITEMS}-item query limit`,
+      );
+    }
+  } else if (totalCount !== state.expectedTotal) {
+    return invalidResponse(`GitHub ${label} total_count changed during pagination`);
+  }
+
+  state.rawCollected += pageItemCount;
+  if (state.rawCollected > state.expectedTotal) {
+    return invalidResponse(`GitHub ${label} item count exceeds total_count`);
+  }
+  if (state.rawCollected === state.expectedTotal) return true;
+
+  if (pageItemCount < PAGE_SIZE) {
+    return invalidResponse(`GitHub ${label} pagination ended before total_count was collected`);
+  }
+  if (page === MAX_PAGES) {
+    return invalidResponse(
+      `GitHub ${label} list exceeds the supported ${MAX_PAGINATED_ITEMS}-item query limit`,
+    );
+  }
+  return false;
+}
+
+function adapterTimeout(): never {
+  return adapterError('ADAPTER_TIMEOUT', 'GitHub CI query exceeded its execution deadline', true);
+}
+
+async function responseErrorText(response: Response, signal: AbortSignal): Promise<string> {
   try {
-    return (await response.text()).slice(0, 1_024).toLowerCase();
+    const body = (await response.text()).slice(0, 1_024).toLowerCase();
+    if (signal.aborted) return adapterTimeout();
+    return body;
   } catch {
+    if (signal.aborted) return adapterTimeout();
     return '';
   }
 }
@@ -605,11 +666,7 @@ export class GitHubCiReadClient {
 
     const remainingMilliseconds = deadlineAt - Date.now();
     if (remainingMilliseconds <= 0) {
-      return adapterError(
-        'ADAPTER_TIMEOUT',
-        'GitHub CI query exceeded its execution deadline',
-        true,
-      );
+      return adapterTimeout();
     }
 
     const controller = new AbortController();
@@ -629,11 +686,7 @@ export class GitHubCiReadClient {
         });
       } catch (error) {
         if (controller.signal.aborted) {
-          return adapterError(
-            'ADAPTER_TIMEOUT',
-            'GitHub CI query exceeded its execution deadline',
-            true,
-          );
+          return adapterTimeout();
         }
         return adapterError(
           'NETWORK_FAILURE',
@@ -645,8 +698,7 @@ export class GitHubCiReadClient {
       if (!response.ok) {
         const remaining = response.headers.get('x-ratelimit-remaining');
         const retryAfter = response.headers.get('retry-after');
-        const resetAt = response.headers.get('x-ratelimit-reset');
-        const body = await responseErrorText(response);
+        const body = await responseErrorText(response, controller.signal);
         const bodySignalsRateLimit =
           body.includes('rate limit') ||
           body.includes('secondary rate') ||
@@ -654,10 +706,7 @@ export class GitHubCiReadClient {
         const rateLimited =
           response.status === 429 ||
           (response.status === 403 &&
-            (remaining === '0' ||
-              retryAfter !== null ||
-              (resetAt !== null && remaining !== null) ||
-              bodySignalsRateLimit));
+            (remaining === '0' || retryAfter !== null || bodySignalsRateLimit));
 
         if (rateLimited) {
           return adapterError(
@@ -693,8 +742,10 @@ export class GitHubCiReadClient {
 
       try {
         const payload: unknown = await response.json();
+        if (controller.signal.aborted) return adapterTimeout();
         return payload;
       } catch {
+        if (controller.signal.aborted) return adapterTimeout();
         return adapterError(
           'INVALID_RESPONSE',
           'GitHub API returned invalid JSON',
@@ -746,16 +797,34 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
     }
 
     const workflowRunMap = new Map<number, GitHubWorkflowRun>();
+    const rawWorkflowRunIds = new Set<number>();
+    const workflowPagination: PaginationState = { expectedTotal: null, rawCollected: 0 };
     for (let page = 1; page <= MAX_PAGES; page += 1) {
       const result = await queryJson(
         `/repos/${target.repository}/actions/runs?head_sha=${target.commitSha}&per_page=${PAGE_SIZE}&page=${page}`,
         parseWorkflowRunsResponse,
+      );
+      const paginationComplete = consumePaginationPage(
+        workflowPagination,
+        result.total_count,
+        result.workflow_runs.length,
+        page,
+        'workflow run',
       );
       if (result.workflow_runs.some((run) => run.head_sha !== target.commitSha)) {
         return adapterError(
           'INVALID_RESPONSE',
           'GitHub returned a workflow run not bound to the exact requested SHA',
         );
+      }
+      for (const run of result.workflow_runs) {
+        if (rawWorkflowRunIds.has(run.id)) {
+          return adapterError(
+            'INVALID_RESPONSE',
+            `GitHub returned duplicate workflow run ${run.id}`,
+          );
+        }
+        rawWorkflowRunIds.add(run.id);
       }
       for (const run of result.workflow_runs.filter((item) =>
         workflowMatches(item, target.workflowFilter),
@@ -769,13 +838,7 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
         }
         workflowRunMap.set(run.id, run);
       }
-      if (result.workflow_runs.length < PAGE_SIZE) break;
-      if (page === MAX_PAGES) {
-        return adapterError(
-          'INVALID_RESPONSE',
-          'GitHub workflow run list exceeds the supported 1000-run query limit',
-        );
-      }
+      if (paginationComplete) break;
     }
     const workflowRuns = [...workflowRunMap.values()];
 
@@ -795,10 +858,18 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
     const jobs: Array<{ workflowRunId: number; job: GitHubWorkflowJob }> = [];
     const jobIds = new Set<number>();
     for (const run of workflowRuns) {
+      const jobPagination: PaginationState = { expectedTotal: null, rawCollected: 0 };
       for (let page = 1; page <= MAX_PAGES; page += 1) {
         const result = await queryJson(
           `/repos/${target.repository}/actions/runs/${run.id}/jobs?filter=latest&per_page=${PAGE_SIZE}&page=${page}`,
           parseWorkflowJobsResponse,
+        );
+        const paginationComplete = consumePaginationPage(
+          jobPagination,
+          result.total_count,
+          result.jobs.length,
+          page,
+          `job for workflow run ${run.id}`,
         );
         budget.consumeJobs(result.jobs);
         for (const job of result.jobs) {
@@ -811,40 +882,36 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
           jobIds.add(job.id);
           jobs.push({ workflowRunId: run.id, job });
         }
-        if (result.jobs.length < PAGE_SIZE) break;
-        if (page === MAX_PAGES) {
-          return adapterError(
-            'INVALID_RESPONSE',
-            `GitHub job list for workflow run ${run.id} exceeds the supported 1000-job limit`,
-          );
-        }
+        if (paginationComplete) break;
       }
     }
 
     const checkRunMap = new Map<number, GitHubCheckRun>();
+    const checkRunPagination: PaginationState = { expectedTotal: null, rawCollected: 0 };
     for (let page = 1; page <= MAX_PAGES; page += 1) {
       const result = await queryJson(
         `/repos/${target.repository}/commits/${target.commitSha}/check-runs?per_page=${PAGE_SIZE}&page=${page}`,
         parseCheckRunsResponse,
       );
+      const paginationComplete = consumePaginationPage(
+        checkRunPagination,
+        result.total_count,
+        result.check_runs.length,
+        page,
+        'check run',
+      );
       budget.consumeCheckRuns(result.check_runs);
       for (const checkRun of result.check_runs) {
         const existing = checkRunMap.get(checkRun.id);
-        if (existing && JSON.stringify(existing) !== JSON.stringify(checkRun)) {
+        if (existing) {
           return adapterError(
             'INVALID_RESPONSE',
-            `GitHub returned conflicting data for check run ${checkRun.id}`,
+            `GitHub returned duplicate check run ${checkRun.id}`,
           );
         }
         checkRunMap.set(checkRun.id, checkRun);
       }
-      if (result.check_runs.length < PAGE_SIZE) break;
-      if (page === MAX_PAGES) {
-        return adapterError(
-          'INVALID_RESPONSE',
-          'GitHub check run list exceeds the supported 1000-check query limit',
-        );
-      }
+      if (paginationComplete) break;
     }
     const checkRuns = [...checkRunMap.values()];
 
@@ -891,7 +958,7 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
       verifiedSha: commit.sha,
       conclusion,
       readOnly: true,
-      requiredPermissions: ['metadata:read', 'actions:read', 'checks:read'],
+      requiredPermissions: ['metadata:read', 'contents:read', 'actions:read', 'checks:read'],
       workflowFilter: target.workflowFilter,
       workflowRunCount: workflowRuns.length,
       jobCount: jobs.length,
@@ -906,7 +973,7 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
     return this.evidence.createTrustedReceipt({
       provider: 'github-actions',
       operation: canonicalizeToolValue(request.tool.operation),
-      resource: request.tool.resource,
+      resource: target.repository,
       externalId,
       commitSha: target.commitSha,
       status: 'SUCCEEDED',

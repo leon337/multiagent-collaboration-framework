@@ -122,7 +122,7 @@ export class SkillExecutor {
         executionSteps: skill.executionSteps,
         inputKeys: Object.keys(input.inputs).sort(),
       });
-      this.evidence.verifyForSkill(receipt, input.tool, skill);
+      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs);
       return {
         skill,
         receipt,
@@ -208,7 +208,7 @@ export class SkillExecutor {
     }
 
     try {
-      this.evidence.verifyForSkill(receipt, input.tool, skill);
+      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs);
       if (receipt.status !== 'SUCCEEDED') {
         const reason = `tool receipt status is ${receipt.status}`;
         const ledgerFailure = await this.recordEvidenceRejected(

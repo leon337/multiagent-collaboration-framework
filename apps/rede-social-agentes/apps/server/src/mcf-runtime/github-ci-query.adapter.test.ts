@@ -5,7 +5,16 @@ import { AdapterRegistry } from './adapter-registry.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import type { ExternalActionLedger } from './external-action-ledger.js';
-import { GitHubCiQueryAdapter, GitHubCiReadClient } from './github-ci-query.adapter.js';
+import {
+  GITHUB_CI_QUERY_MAX_API_REQUESTS,
+  GITHUB_CI_QUERY_MAX_EVIDENCE_URLS,
+  GITHUB_CI_QUERY_MAX_TOTAL_CHECK_RUNS,
+  GITHUB_CI_QUERY_MAX_TOTAL_JOBS,
+  GITHUB_CI_QUERY_MAX_TOTAL_STEPS,
+  GitHubCiQueryAdapter,
+  GitHubCiReadClient,
+  QueryBudget,
+} from './github-ci-query.adapter.js';
 import { PermissionEngine } from './permission-engine.js';
 
 const skill: McfSkillDefinition = {
@@ -204,7 +213,7 @@ describe('GitHubCiQueryAdapter', () => {
 
     const receipt = await adapter.execute(request());
 
-    evidence.verifyForSkill(receipt, request().tool, skill);
+    evidence.verifyForSkill(receipt, request().tool, skill, request().inputs);
     expect(receipt).toMatchObject({
       provider: 'github-actions',
       operation: 'query-ci',
@@ -218,6 +227,7 @@ describe('GitHubCiQueryAdapter', () => {
         verifiedSha: commitSha,
         conclusion: 'SUCCESS',
         readOnly: true,
+        requiredPermissions: ['metadata:read', 'contents:read', 'actions:read', 'checks:read'],
         workflowRunCount: 1,
         jobCount: 1,
         checkRunCount: 1,
@@ -321,6 +331,9 @@ describe('GitHubCiQueryAdapter', () => {
     await expect(
       adapter.execute(request({ test_target: commitSha.slice(0, 12) })),
     ).rejects.toMatchObject({ code: 'UNSUPPORTED_TARGET' });
+    await expect(adapter.execute(request({ test_target: ` ${commitSha} ` }))).rejects.toMatchObject(
+      { code: 'UNSUPPORTED_TARGET' },
+    );
     await expect(adapter.execute(request({ test_target: undefined }))).rejects.toMatchObject({
       code: 'UNSUPPORTED_TARGET',
     });
@@ -333,6 +346,17 @@ describe('GitHubCiQueryAdapter', () => {
     await expect(
       adapterFrom(fetcher).execute(request({ repository: 'another/repository' })),
     ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('accepts only canonical owner/name resources and rejects credential-bearing URLs', async () => {
+    const fetcher = vi.fn(async () => json({}, 500));
+    const credentialRequest = request();
+    credentialRequest.tool.resource = `https://TOKEN@github.com/${repository}`;
+
+    await expect(adapterFrom(fetcher).execute(credentialRequest)).rejects.toMatchObject({
+      code: 'UNSUPPORTED_TARGET',
+    });
     expect(fetcher).not.toHaveBeenCalled();
   });
 
@@ -379,6 +403,12 @@ describe('GitHubCiQueryAdapter', () => {
   it.each([
     [401, {}, 'AUTHENTICATION_REQUIRED', false],
     [403, {}, 'AUTHENTICATION_REQUIRED', false],
+    [
+      403,
+      { 'x-ratelimit-remaining': '4999', 'x-ratelimit-reset': '1786104000' },
+      'AUTHENTICATION_REQUIRED',
+      false,
+    ],
     [403, { 'retry-after': '60' }, 'RATE_LIMITED', true],
     [404, {}, 'TARGET_NOT_FOUND', false],
     [422, {}, 'TARGET_NOT_FOUND', false],
@@ -424,6 +454,68 @@ describe('GitHubCiQueryAdapter', () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
+  it('classifies an abort during successful body parsing as a retryable timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher = vi.fn(async (_url: string, init?: RequestInit) => {
+        const response = json({});
+        vi.spyOn(response, 'json').mockImplementation(
+          () =>
+            new Promise<unknown>((_resolve, reject) => {
+              init?.signal?.addEventListener('abort', () => reject(new Error('aborted')), {
+                once: true,
+              });
+            }),
+        );
+        return response;
+      });
+      const pending = new GitHubCiReadClient(fetcher, undefined).getJson(
+        `/repos/${repository}/commits/${commitSha}`,
+        Date.now() + 1_000,
+      );
+      const assertion = expect(pending).rejects.toMatchObject({
+        code: 'ADAPTER_TIMEOUT',
+        retryable: true,
+      });
+
+      await vi.advanceTimersByTimeAsync(1_001);
+      await assertion;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('classifies an abort while reading an error body as a retryable timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher = vi.fn(async (_url: string, init?: RequestInit) => {
+        const response = json({ message: 'forbidden' }, 403);
+        vi.spyOn(response, 'text').mockImplementation(
+          () =>
+            new Promise<string>((_resolve, reject) => {
+              init?.signal?.addEventListener('abort', () => reject(new Error('aborted')), {
+                once: true,
+              });
+            }),
+        );
+        return response;
+      });
+      const pending = new GitHubCiReadClient(fetcher, undefined).getJson(
+        `/repos/${repository}/commits/${commitSha}`,
+        Date.now() + 1_000,
+      );
+      const assertion = expect(pending).rejects.toMatchObject({
+        code: 'ADAPTER_TIMEOUT',
+        retryable: true,
+      });
+
+      await vi.advanceTimersByTimeAsync(1_001);
+      await assertion;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('paginates workflow runs and applies the filter without resolving refs', async () => {
     const firstPage = Array.from({ length: 100 }, (_, index) =>
       workflowRun({
@@ -437,10 +529,19 @@ describe('GitHubCiQueryAdapter', () => {
       const page = new URL(url).searchParams.get('page');
       if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
       if (url.includes('/actions/runs?') && page === '1') {
-        return json({ total_count: 100, workflow_runs: firstPage });
+        return json({ total_count: 101, workflow_runs: firstPage });
       }
       if (url.includes('/actions/runs?') && page === '2') {
-        return json({ total_count: 100, workflow_runs: [] });
+        return json({
+          total_count: 101,
+          workflow_runs: [
+            workflowRun({
+              id: 101,
+              name: 'other-101',
+              path: '.github/workflows/other-101.yml',
+            }),
+          ],
+        });
       }
       if (url.includes('/actions/runs/44/jobs')) {
         return json({ total_count: 1, jobs: [workflowJob()] });
@@ -459,10 +560,277 @@ describe('GitHubCiQueryAdapter', () => {
     expect(fetcher.mock.calls.some(([url]) => String(url).includes('page=2'))).toBe(true);
   });
 
+  it('rejects a short workflow page before the advertised total is collected', async () => {
+    const fetcher = vi.fn(async (url: string) => {
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?')) {
+        return json({ total_count: 2, workflow_runs: [workflowRun()] });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects an empty workflow page before the advertised total is collected', async () => {
+    const fetcher = vi.fn(async (url: string) => {
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?')) {
+        return json({ total_count: 1, workflow_runs: [] });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects workflow total_count changes between pages', async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => workflowRun({ id: index + 1 }));
+    const fetcher = vi.fn(async (url: string) => {
+      const page = new URL(url).searchParams.get('page');
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?') && page === '1') {
+        return json({ total_count: 101, workflow_runs: firstPage });
+      }
+      if (url.includes('/actions/runs?') && page === '2') {
+        return json({ total_count: 102, workflow_runs: [workflowRun({ id: 101 })] });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects duplicate raw workflow IDs across pages before applying the local filter', async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) =>
+      workflowRun({
+        id: index + 1,
+        name: index === 43 ? 'CI' : `other-${index + 1}`,
+      }),
+    );
+    const fetcher = vi.fn(async (url: string) => {
+      const page = new URL(url).searchParams.get('page');
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?') && page === '1') {
+        return json({ total_count: 101, workflow_runs: firstPage });
+      }
+      if (url.includes('/actions/runs?') && page === '2') {
+        return json({ total_count: 101, workflow_runs: [workflowRun({ id: 1 })] });
+      }
+      if (url.includes('/actions/runs/44/jobs')) {
+        return json({ total_count: 1, jobs: [workflowJob()] });
+      }
+      if (url.includes('/check-runs?')) {
+        return json({ total_count: 1, check_runs: [checkRun()] });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request({ workflow: 'CI' }))).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects workflow pagination that collects more items than total_count', async () => {
+    const fetcher = vi.fn(async (url: string) => {
+      const page = new URL(url).searchParams.get('page');
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?') && page === '1') {
+        return json({
+          total_count: 150,
+          workflow_runs: Array.from({ length: 100 }, (_, index) => workflowRun({ id: index + 1 })),
+        });
+      }
+      if (url.includes('/actions/runs?') && page === '2') {
+        return json({
+          total_count: 150,
+          workflow_runs: Array.from({ length: 51 }, (_, index) => workflowRun({ id: index + 101 })),
+        });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects advertised workflow totals above the supported pagination limit', async () => {
+    const fetcher = vi.fn(async (url: string) => {
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?')) {
+        return json({
+          total_count: 1_001,
+          workflow_runs: Array.from({ length: 100 }, (_, index) => workflowRun({ id: index + 1 })),
+        });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects truncated job pagination', async () => {
+    const fetcher = vi.fn(async (url: string) => {
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?')) {
+        return json({ total_count: 1, workflow_runs: [workflowRun()] });
+      }
+      if (url.includes('/actions/runs/44/jobs')) {
+        return json({ total_count: 2, jobs: [workflowJob()] });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects job total_count changes between pages', async () => {
+    const fetcher = vi.fn(async (url: string) => {
+      const page = new URL(url).searchParams.get('page');
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?')) {
+        return json({ total_count: 1, workflow_runs: [workflowRun()] });
+      }
+      if (url.includes('/actions/runs/44/jobs') && page === '1') {
+        return json({
+          total_count: 101,
+          jobs: Array.from({ length: 100 }, (_, index) => workflowJob({ id: index + 1_000 })),
+        });
+      }
+      if (url.includes('/actions/runs/44/jobs') && page === '2') {
+        return json({ total_count: 102, jobs: [workflowJob({ id: 1_100 })] });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects truncated check-run pagination', async () => {
+    const fetcher = vi.fn(async (url: string) => {
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?')) {
+        return json({ total_count: 0, workflow_runs: [] });
+      }
+      if (url.includes('/check-runs?')) {
+        return json({ total_count: 2, check_runs: [checkRun()] });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects check-run total_count changes between pages', async () => {
+    const fetcher = vi.fn(async (url: string) => {
+      const page = new URL(url).searchParams.get('page');
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?')) {
+        return json({ total_count: 0, workflow_runs: [] });
+      }
+      if (url.includes('/check-runs?') && page === '1') {
+        return json({
+          total_count: 101,
+          check_runs: Array.from({ length: 100 }, (_, index) => checkRun({ id: index + 1_000 })),
+        });
+      }
+      if (url.includes('/check-runs?') && page === '2') {
+        return json({ total_count: 102, check_runs: [checkRun({ id: 1_100 })] });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects duplicate check-run IDs across pages', async () => {
+    const fetcher = vi.fn(async (url: string) => {
+      const page = new URL(url).searchParams.get('page');
+      if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+      if (url.includes('/actions/runs?')) {
+        return json({ total_count: 0, workflow_runs: [] });
+      }
+      if (url.includes('/check-runs?') && page === '1') {
+        return json({
+          total_count: 101,
+          check_runs: Array.from({ length: 100 }, (_, index) => checkRun({ id: index + 1 })),
+        });
+      }
+      if (url.includes('/check-runs?') && page === '2') {
+        return json({ total_count: 101, check_runs: [checkRun({ id: 1 })] });
+      }
+      return json({}, 404);
+    });
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
   it('fails when a workflow filter has no exact match', async () => {
     await expect(
       adapterFrom(standardFetcher()).execute(request({ workflow: 'missing.yml' })),
     ).rejects.toMatchObject({ code: 'TARGET_NOT_FOUND' });
+  });
+
+  it('enforces the API request budget directly', () => {
+    const budget = new QueryBudget();
+    for (let count = 0; count < GITHUB_CI_QUERY_MAX_API_REQUESTS; count += 1) {
+      budget.consumeRequest();
+    }
+
+    expect(() => budget.consumeRequest()).toThrow(/request budget/u);
+  });
+
+  it('enforces the global job budget directly', () => {
+    const budget = new QueryBudget();
+    const jobs = Array.from({ length: GITHUB_CI_QUERY_MAX_TOTAL_JOBS + 1 }, (_, index) =>
+      workflowJob({ id: index + 1, steps: 0 }),
+    );
+
+    expect(() => budget.consumeJobs(jobs)).toThrow(/job budget/u);
+  });
+
+  it('enforces the global step budget directly', () => {
+    const budget = new QueryBudget();
+
+    expect(() =>
+      budget.consumeJobs([workflowJob({ id: 1, steps: GITHUB_CI_QUERY_MAX_TOTAL_STEPS + 1 })]),
+    ).toThrow(/step budget/u);
+  });
+
+  it('enforces the global check-run budget directly', () => {
+    const budget = new QueryBudget();
+    const checks = Array.from({ length: GITHUB_CI_QUERY_MAX_TOTAL_CHECK_RUNS + 1 }, (_, index) =>
+      checkRun({ id: index + 1 }),
+    );
+
+    expect(() => budget.consumeCheckRuns(checks)).toThrow(/check budget/u);
+  });
+
+  it('enforces the evidence URL budget directly', () => {
+    const budget = new QueryBudget();
+
+    expect(() => budget.assertEvidenceUrlCount(GITHUB_CI_QUERY_MAX_EVIDENCE_URLS + 1)).toThrow(
+      /URL evidence budget/u,
+    );
   });
 
   it('keeps CI query read-only while future execution still requires scoped authorization', () => {
@@ -492,25 +860,25 @@ describe('GitHubCiQueryAdapter', () => {
       ...receipt.metadata,
       workflowRunCount: 2,
     });
-    expect(() => evidence.verifyForSkill(wrongCount, request().tool, skill)).toThrow(
-      /counts must match/u,
-    );
+    expect(() =>
+      evidence.verifyForSkill(wrongCount, request().tool, skill, request().inputs),
+    ).toThrow(/counts must match/u);
 
     const wrongUrl = resign(evidence, receipt, {
       ...receipt.metadata,
       evidenceUrls: ['https://example.com/fake'],
     });
-    expect(() => evidence.verifyForSkill(wrongUrl, request().tool, skill)).toThrow(
-      /invalid evidence URL/u,
-    );
+    expect(() =>
+      evidence.verifyForSkill(wrongUrl, request().tool, skill, request().inputs),
+    ).toThrow(/invalid evidence URL/u);
 
     const wrongConclusion = resign(evidence, receipt, {
       ...receipt.metadata,
       conclusion: 'FAILURE',
     });
-    expect(() => evidence.verifyForSkill(wrongConclusion, request().tool, skill)).toThrow(
-      /inconsistent/u,
-    );
+    expect(() =>
+      evidence.verifyForSkill(wrongConclusion, request().tool, skill, request().inputs),
+    ).toThrow(/inconsistent/u);
   });
 
   it('dispatches the A2 adapter and records its receipt through the ledger boundary', async () => {
