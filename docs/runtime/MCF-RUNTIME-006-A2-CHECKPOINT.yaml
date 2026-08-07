@@ -4,8 +4,8 @@ pull_request: 73
 branch: feat/mcf-runtime-006-a2-ci-query-adapter
 base_sha: 01c0182b9c9837c0dd22306c9bd8918020ecc38b
 previous_audited_head_sha: 5869774393e49450359dbf85889dd0362d5c041e
-remediation_code_sha: c7c0f5de2048c843fc4b6227cbbead7c202d84e4
-state: REMEDIATION_IMPLEMENTED_PENDING_CI
+validated_remediation_code_sha: 73402d99ef2658e6b6831d099e870e02848b728d
+state: READY_FOR_INDEPENDENT_RE_REVIEW
 objective: Consultar CI do GitHub por SHA exato sem capacidade de execução ou escrita.
 
 adapter:
@@ -23,16 +23,16 @@ adapter:
 remediation:
   source: independent_review_FAIL_2026-08-06
   high_findings:
-    MCF-A2-H-001: REMEDIATED_PENDING_CI
-    MCF-A2-H-002: REMEDIATED_PENDING_CI
+    MCF-A2-H-001: REMEDIATED_CI_PASS
+    MCF-A2-H-002: REMEDIATED_CI_PASS
   medium_findings:
-    MCF-A2-M-001: REMEDIATED_PENDING_CI
-    MCF-A2-M-002: REMEDIATED_PENDING_CI
-    MCF-A2-M-003: REMEDIATED_PENDING_CI
-    MCF-A2-M-004: REMEDIATED_PENDING_CI
-    MCF-A2-M-005: REMEDIATED_PENDING_CI
+    MCF-A2-M-001: REMEDIATED_CI_PASS
+    MCF-A2-M-002: REMEDIATED_CI_PASS
+    MCF-A2-M-003: REMEDIATED_CI_PASS
+    MCF-A2-M-004: REMEDIATED_CI_PASS
+    MCF-A2-M-005: REMEDIATED_CI_PASS
   low_findings:
-    MCF-A2-L-001: REMEDIATED_PENDING_FINAL_EVIDENCE
+    MCF-A2-L-001: REMEDIATED_CI_PASS
 
 controls:
   read_only: true
@@ -54,6 +54,7 @@ controls:
   no_branch_or_tag_resolution: true
   no_ci_dispatch: true
   no_repository_mutation: true
+  production: BLOCKED
   scoped_write_required_for_future_execution: true
   temporary_workflow_persisted: false
   merge_authorized: false
@@ -66,14 +67,41 @@ changed_files:
   - apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
   - docs/runtime/MCF-RUNTIME-006-A2-CHECKPOINT.yaml
 
+github_actions:
+  validated_code_sha: 73402d99ef2658e6b6831d099e870e02848b728d
+  documentation:
+    run_id: 31215450093
+    conclusion: SUCCESS
+  foundation:
+    run_id: 31215449535
+    conclusion: SUCCESS
+    install_frozen_lockfile: PASS
+    format: PASS
+    lint: PASS
+    typecheck: PASS
+    migrations_twice: PASS
+    tests: PASS
+    build: PASS
+  container_smoke:
+    run_id: 31215449086
+    conclusion: SUCCESS
+
 validation:
-  local_isolated_typecheck: PASS
-  local_behavior_probe:
-    workflow_failure_with_successful_jobs: PASS
-    workflow_cancelled_with_successful_jobs: PASS
-    unknown_conclusion_fail_closed: PASS
-  github_actions:
-    status: PENDING
+  local:
+    format: PASS
+    lint: PASS
+    typecheck: PASS
+  targeted_tests:
+    github_ci_query_adapter: 28/28_PASS
+    evidence_validator: 3/3_PASS
+  full_tests:
+    ops: 15/15_PASS
+    server: 187/187_PASS
+    web: 5/5_PASS
+  build: PASS
+  migrations_twice: PASS
+  container_smoke: PASS
+  github_actions: PASS
   independent_re_review: PENDING
   pull_request_state: DRAFT
   merge: NOT_AUTHORIZED
