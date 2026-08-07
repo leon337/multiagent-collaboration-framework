@@ -5,7 +5,10 @@ branch: feat/mcf-runtime-006-a2-ci-query-adapter
 base_sha: 01c0182b9c9837c0dd22306c9bd8918020ecc38b
 previous_audited_head_sha: 5869774393e49450359dbf85889dd0362d5c041e
 validated_remediation_code_sha: 73402d99ef2658e6b6831d099e870e02848b728d
-state: READY_FOR_INDEPENDENT_RE_REVIEW
+previous_initial_audited_head_sha: 5869774393e49450359dbf85889dd0362d5c041e
+previous_rr1_final_head_sha: 1d1289190932b57729d695c6e525647e983c5e2e
+validated_rr2_code_sha: 77c54a21e3492190348a8d206f65b9823c1042ae
+state: RR2_READY_FOR_INDEPENDENT_RE_REVIEW
 objective: Consultar CI do GitHub por SHA exato sem capacidade de execução ou escrita.
 
 adapter:
@@ -17,6 +20,7 @@ adapter:
   http_methods_allowed: [GET]
   required_permissions:
     - metadata:read
+    - contents:read
     - actions:read
     - checks:read
 
@@ -34,7 +38,46 @@ remediation:
   low_findings:
     MCF-A2-L-001: REMEDIATED_CI_PASS
 
+independent_re_review_2:
+  result: FAIL
+  findings:
+    critical: 0
+    high: 1
+    medium: 4
+    low: 2
+  MCF-A2-RR-H-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-M-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-M-002:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-M-003:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-M-004:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-L-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-L-002:
+    status: REMEDIATED_CI_PASS
+
 controls:
+  external_receipt_bound_to_current_inputs: true
+  exact_test_target_required_on_external_receipt: true
+  repository_bound_to_current_context: true
+  workflow_filter_bound_to_current_context: true
+  pagination_total_count_fail_closed: true
+  pagination_stable_total_required: true
+  primary_rate_limit_requires_remaining_zero: true
+  secondary_rate_limit_signals_supported: true
+  evidence_repository_segment_boundary: true
+  canonical_repository_resource_only: true
+  credential_bearing_resource_rejected: true
+  abort_body_read_timeout_normalized: true
+  required_permissions:
+    - metadata:read
+    - contents:read
+    - actions:read
+    - checks:read
   read_only: true
   receipt_signed: true
   receipt_persisted_by_external_action_ledger: true
@@ -66,14 +109,24 @@ changed_files:
   - apps/rede-social-agentes/apps/server/src/mcf-runtime/permission-engine.ts
   - apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
   - docs/runtime/MCF-RUNTIME-006-A2-CHECKPOINT.yaml
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.external-receipt.test.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.resource-boundary.test.ts
+
+scope_expansion:
+  source: independent_re_review_2_FAIL
+  added_files:
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.external-receipt.test.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.resource-boundary.test.ts
 
 github_actions:
-  validated_code_sha: 73402d99ef2658e6b6831d099e870e02848b728d
+  validated_code_sha: 77c54a21e3492190348a8d206f65b9823c1042ae
   documentation:
-    run_id: 31215450093
+    run_id: 31220561928
     conclusion: SUCCESS
   foundation:
-    run_id: 31215449535
+    run_id: 31220561962
     conclusion: SUCCESS
     install_frozen_lockfile: PASS
     format: PASS
@@ -83,25 +136,35 @@ github_actions:
     tests: PASS
     build: PASS
   container_smoke:
-    run_id: 31215449086
+    run_id: 31220562687
     conclusion: SUCCESS
 
 validation:
+  master_review: PASS
   local:
     format: PASS
     lint: PASS
     typecheck: PASS
   targeted_tests:
-    github_ci_query_adapter: 28/28_PASS
+    external_receipt_context: 19/19_PASS
+    github_ci_query_adapter: 48/48_PASS
     evidence_validator: 3/3_PASS
+  security_regressions:
+    pagination: PASS
+    rate_limit: PASS
+    url_binding: PASS
+    credential_resource: PASS
+    abort: 2/2_PASS
+    budgets: 5/5_PASS
   full_tests:
     ops: 15/15_PASS
-    server: 187/187_PASS
+    server: 423/423_PASS
     web: 5/5_PASS
-  build: PASS
   migrations_twice: PASS
+  build: PASS
   container_smoke: PASS
   github_actions: PASS
-  independent_re_review: PENDING
+  independent_rr2_re_review: PENDING
   pull_request_state: DRAFT
   merge: NOT_AUTHORIZED
+  production: BLOCKED
