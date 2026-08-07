@@ -108,6 +108,10 @@ export class PermissionEngine {
       );
     }
 
+    if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
+      throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');
+    }
+
     if (
       requiresCanonicalGitHubRepository(skill.skillId, provider, operation) &&
       !isCanonicalGitHubRepositoryResource(tool.resource)

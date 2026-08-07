@@ -122,7 +122,10 @@ export class SkillExecutor {
         executionSteps: skill.executionSteps,
         inputKeys: Object.keys(input.inputs).sort(),
       });
-      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs);
+      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
+        agentId: input.agentId,
+        executionContext: input.executionContext,
+      });
       return {
         skill,
         receipt,
@@ -208,7 +211,10 @@ export class SkillExecutor {
     }
 
     try {
-      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs);
+      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
+        agentId: input.agentId,
+        executionContext: input.executionContext,
+      });
       if (receipt.status !== 'SUCCEEDED') {
         const reason = `tool receipt status is ${receipt.status}`;
         const ledgerFailure = await this.recordEvidenceRejected(

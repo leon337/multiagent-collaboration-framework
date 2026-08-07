@@ -9,6 +9,7 @@ import {
   GITHUB_CI_QUERY_MAX_API_REQUESTS,
   GITHUB_CI_QUERY_MAX_EVIDENCE_URLS,
   GITHUB_CI_QUERY_MAX_TOTAL_CHECK_RUNS,
+  GITHUB_CI_QUERY_MAX_TOTAL_CHECK_SUITES,
   GITHUB_CI_QUERY_MAX_TOTAL_JOBS,
   GITHUB_CI_QUERY_MAX_TOTAL_STEPS,
   GitHubCiQueryAdapter,
@@ -59,6 +60,19 @@ function request(inputs: Record<string, unknown> = {}) {
       operation: 'query-ci',
       resource: repository,
     },
+    context: {
+      missionId: 'mission-a2',
+      phaseId: 'phase-run-tests',
+      expectedMissionVersion: 5,
+    },
+  };
+}
+
+function verificationContext() {
+  const currentRequest = request();
+  return {
+    agentId: currentRequest.agentId,
+    executionContext: currentRequest.context,
   };
 }
 
@@ -143,6 +157,32 @@ function checkRun(
   };
 }
 
+function checkSuite(
+  input: {
+    id?: number;
+    status?: string;
+    conclusion?: string | null;
+    headSha?: string;
+    latestCheckRunsCount?: number;
+    url?: string;
+  } = {},
+) {
+  const id = input.id ?? 77;
+  return {
+    id,
+    head_sha: input.headSha ?? commitSha,
+    status: input.status ?? 'completed',
+    conclusion: input.conclusion === undefined ? 'success' : input.conclusion,
+    url: input.url ?? `https://api.github.com/repos/${repository}/check-suites/${id}`,
+    app: {
+      id: 1,
+      name: 'GitHub Actions',
+      slug: 'github-actions',
+    },
+    latest_check_runs_count: input.latestCheckRunsCount ?? 1,
+  };
+}
+
 function json(payload: unknown, status = 200, headers?: HeadersInit): Response {
   return new Response(JSON.stringify(payload), {
     status,
@@ -155,12 +195,14 @@ function standardFetcher(
     workflowRuns?: ReturnType<typeof workflowRun>[];
     jobs?: ReturnType<typeof workflowJob>[];
     checkRuns?: ReturnType<typeof checkRun>[];
+    checkSuites?: ReturnType<typeof checkSuite>[];
     commit?: ReturnType<typeof commitPayload>;
   } = {},
 ) {
   const runs = input.workflowRuns ?? [workflowRun()];
   const jobs = input.jobs ?? [workflowJob()];
   const checks = input.checkRuns ?? [checkRun()];
+  const suites = input.checkSuites ?? [checkSuite()];
   return vi.fn(async (url: string, init?: RequestInit) => {
     expect(init?.method).toBe('GET');
     if (url.endsWith(`/commits/${commitSha}`)) {
@@ -174,6 +216,29 @@ function standardFetcher(
     }
     if (url.includes('/check-runs?')) {
       return json({ total_count: checks.length, check_runs: checks });
+    }
+    if (url.includes('/check-suites?')) {
+      return json({ total_count: suites.length, check_suites: suites });
+    }
+    return json({}, 404);
+  });
+}
+
+function checkSuitePaginationFetcher(payloadForPage: (page: number) => unknown) {
+  return vi.fn(async (url: string) => {
+    if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
+    if (url.includes('/actions/runs?')) {
+      return json({ total_count: 1, workflow_runs: [workflowRun()] });
+    }
+    if (url.includes('/actions/runs/44/jobs')) {
+      return json({ total_count: 1, jobs: [workflowJob()] });
+    }
+    if (url.includes('/check-runs?')) {
+      return json({ total_count: 0, check_runs: [] });
+    }
+    if (url.includes('/check-suites?')) {
+      const page = Number(new URL(url).searchParams.get('page'));
+      return json(payloadForPage(page));
     }
     return json({}, 404);
   });
@@ -206,14 +271,20 @@ function resign(
 }
 
 describe('GitHubCiQueryAdapter', () => {
-  it('queries workflow runs, jobs and checks by exact SHA using GET only', async () => {
+  it('queries workflow runs, jobs, check runs and check suites by exact SHA using GET only', async () => {
     const fetcher = standardFetcher();
     const evidence = new EvidenceValidator();
     const adapter = new GitHubCiQueryAdapter(evidence, new GitHubCiReadClient(fetcher, undefined));
 
     const receipt = await adapter.execute(request());
 
-    evidence.verifyForSkill(receipt, request().tool, skill, request().inputs);
+    evidence.verifyForSkill(
+      receipt,
+      request().tool,
+      skill,
+      request().inputs,
+      verificationContext(),
+    );
     expect(receipt).toMatchObject({
       provider: 'github-actions',
       operation: 'query-ci',
@@ -227,14 +298,44 @@ describe('GitHubCiQueryAdapter', () => {
         verifiedSha: commitSha,
         conclusion: 'SUCCESS',
         readOnly: true,
+        skillId: 'MCF-RUN-TESTS',
+        skillVersion: '1.0.0',
+        agentId: 'Renato',
+        missionId: 'mission-a2',
+        phaseId: 'phase-run-tests',
+        expectedMissionVersion: 5,
         requiredPermissions: ['metadata:read', 'contents:read', 'actions:read', 'checks:read'],
         workflowRunCount: 1,
         jobCount: 1,
+        checkSuiteCount: 1,
         checkRunCount: 1,
+        checkSuites: [
+          {
+            id: '77',
+            headSha: commitSha,
+            url: `https://api.github.com/repos/${repository}/check-suites/77`,
+            app: { id: '1', name: 'GitHub Actions', slug: 'github-actions' },
+            latestCheckRunsCount: 1,
+          },
+        ],
+        queryBudget: {
+          checkSuiteCount: 1,
+          limits: { checkSuites: GITHUB_CI_QUERY_MAX_TOTAL_CHECK_SUITES },
+        },
       },
     });
     expect(receipt.signature).toMatch(/^[a-f0-9]{64}$/u);
-    expect(fetcher).toHaveBeenCalledTimes(4);
+    expect(fetcher).toHaveBeenCalledTimes(5);
+  });
+
+  it('rejects a query without governed mission context before any request', async () => {
+    const fetcher = standardFetcher();
+    const contextlessRequest = { ...request(), context: undefined };
+
+    await expect(adapterFrom(fetcher).execute(contextlessRequest)).rejects.toMatchObject({
+      code: 'INVALID_CONTEXT',
+    });
+    expect(fetcher).not.toHaveBeenCalled();
   });
 
   it('keeps workflow failure authoritative when jobs and checks report success', async () => {
@@ -321,6 +422,103 @@ describe('GitHubCiQueryAdapter', () => {
     expect(receipt.metadata.conclusion).toBe('FAILURE');
   });
 
+  it('returns IN_PROGRESS for a queued check suite even when all other evidence succeeds', async () => {
+    const receipt = await adapterFrom(
+      standardFetcher({
+        checkRuns: [],
+        checkSuites: [checkSuite({ status: 'queued', conclusion: null, latestCheckRunsCount: 0 })],
+      }),
+    ).execute(request());
+
+    expect(receipt.metadata.conclusion).toBe('IN_PROGRESS');
+  });
+
+  it('keeps a failed check suite authoritative when all other evidence succeeds', async () => {
+    const receipt = await adapterFrom(
+      standardFetcher({
+        checkSuites: [checkSuite({ conclusion: 'failure' })],
+      }),
+    ).execute(request());
+
+    expect(receipt.metadata.conclusion).toBe('FAILURE');
+  });
+
+  it('rejects a check suite bound to a different head SHA', async () => {
+    await expect(
+      adapterFrom(standardFetcher({ checkSuites: [checkSuite({ headSha: otherSha })] })).execute(
+        request(),
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
+  it('fails closed for an unknown check-suite conclusion', async () => {
+    await expect(
+      adapterFrom(
+        standardFetcher({ checkSuites: [checkSuite({ conclusion: 'mystery' })] }),
+      ).execute(request()),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
+  it('rejects truncated check-suite pagination', async () => {
+    const fetcher = checkSuitePaginationFetcher(() => ({
+      total_count: 2,
+      check_suites: [checkSuite()],
+    }));
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects check-suite total_count changes between pages', async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => checkSuite({ id: index + 1 }));
+    const fetcher = checkSuitePaginationFetcher((page) =>
+      page === 1
+        ? { total_count: 101, check_suites: firstPage }
+        : { total_count: 102, check_suites: [checkSuite({ id: 101 })] },
+    );
+
+    await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects duplicate or conflicting check-suite IDs across pages', async () => {
+    const firstPage = Array.from({ length: 100 }, (_, index) => checkSuite({ id: index + 1 }));
+    const duplicateFetcher = checkSuitePaginationFetcher((page) =>
+      page === 1
+        ? { total_count: 101, check_suites: firstPage }
+        : { total_count: 101, check_suites: [checkSuite({ id: 1 })] },
+    );
+    const conflictingFetcher = checkSuitePaginationFetcher((page) =>
+      page === 1
+        ? { total_count: 101, check_suites: firstPage }
+        : {
+            total_count: 101,
+            check_suites: [checkSuite({ id: 1, conclusion: 'failure' })],
+          },
+    );
+
+    await expect(adapterFrom(duplicateFetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+    await expect(adapterFrom(conflictingFetcher).execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects a non-canonical check-suite API URL', async () => {
+    await expect(
+      adapterFrom(
+        standardFetcher({
+          checkSuites: [
+            checkSuite({ url: `https://api.github.com/repos/${repository}/check-suites/999` }),
+          ],
+        }),
+      ).execute(request()),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
   it('rejects short, symbolic or missing commit references before any request', async () => {
     const fetcher = vi.fn(async () => json({}, 500));
     const adapter = adapterFrom(fetcher);
@@ -373,6 +571,7 @@ describe('GitHubCiQueryAdapter', () => {
           workflowRuns: [],
           jobs: [],
           checkRuns: [],
+          checkSuites: [],
         }),
       ).execute(request()),
     ).rejects.toMatchObject({ code: 'TARGET_NOT_FOUND' });
@@ -548,6 +747,9 @@ describe('GitHubCiQueryAdapter', () => {
       }
       if (url.includes('/check-runs?')) {
         return json({ total_count: 1, check_runs: [checkRun()] });
+      }
+      if (url.includes('/check-suites?')) {
+        return json({ total_count: 1, check_suites: [checkSuite()] });
       }
       return json({}, 404);
     });
@@ -825,6 +1027,15 @@ describe('GitHubCiQueryAdapter', () => {
     expect(() => budget.consumeCheckRuns(checks)).toThrow(/check budget/u);
   });
 
+  it('enforces the global check-suite budget directly', () => {
+    const budget = new QueryBudget();
+    const suites = Array.from({ length: GITHUB_CI_QUERY_MAX_TOTAL_CHECK_SUITES + 1 }, (_, index) =>
+      checkSuite({ id: index + 1 }),
+    );
+
+    expect(() => budget.consumeCheckSuites(suites)).toThrow(/check-suite budget/u);
+  });
+
   it('enforces the evidence URL budget directly', () => {
     const budget = new QueryBudget();
 
@@ -861,7 +1072,13 @@ describe('GitHubCiQueryAdapter', () => {
       workflowRunCount: 2,
     });
     expect(() =>
-      evidence.verifyForSkill(wrongCount, request().tool, skill, request().inputs),
+      evidence.verifyForSkill(
+        wrongCount,
+        request().tool,
+        skill,
+        request().inputs,
+        verificationContext(),
+      ),
     ).toThrow(/counts must match/u);
 
     const wrongUrl = resign(evidence, receipt, {
@@ -869,7 +1086,13 @@ describe('GitHubCiQueryAdapter', () => {
       evidenceUrls: ['https://example.com/fake'],
     });
     expect(() =>
-      evidence.verifyForSkill(wrongUrl, request().tool, skill, request().inputs),
+      evidence.verifyForSkill(
+        wrongUrl,
+        request().tool,
+        skill,
+        request().inputs,
+        verificationContext(),
+      ),
     ).toThrow(/invalid evidence URL/u);
 
     const wrongConclusion = resign(evidence, receipt, {
@@ -877,7 +1100,13 @@ describe('GitHubCiQueryAdapter', () => {
       conclusion: 'FAILURE',
     });
     expect(() =>
-      evidence.verifyForSkill(wrongConclusion, request().tool, skill, request().inputs),
+      evidence.verifyForSkill(
+        wrongConclusion,
+        request().tool,
+        skill,
+        request().inputs,
+        verificationContext(),
+      ),
     ).toThrow(/inconsistent/u);
   });
 

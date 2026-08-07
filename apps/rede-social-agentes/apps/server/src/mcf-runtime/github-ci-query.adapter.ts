@@ -77,6 +77,28 @@ interface GitHubCheckRunsResponse {
   check_runs: GitHubCheckRun[];
 }
 
+interface GitHubCheckSuite {
+  id: number;
+  head_sha: string;
+  status: string;
+  conclusion: string | null;
+  url: string;
+  app?:
+    | {
+        id: number;
+        name: string;
+        slug: string | null;
+      }
+    | null
+    | undefined;
+  latest_check_runs_count?: number | undefined;
+}
+
+interface GitHubCheckSuitesResponse {
+  total_count: number;
+  check_suites: GitHubCheckSuite[];
+}
+
 interface CiObservation {
   status: string;
   conclusion: string | null;
@@ -92,11 +114,13 @@ interface QueryBudgetSnapshot {
   apiRequestCount: number;
   jobCount: number;
   stepCount: number;
+  checkSuiteCount: number;
   checkRunCount: number;
   limits: {
     apiRequests: number;
     jobs: number;
     steps: number;
+    checkSuites: number;
     checkRuns: number;
     evidenceUrls: number;
   };
@@ -106,6 +130,7 @@ export const GITHUB_CI_QUERY_TIMEOUT_MS = 5 * 60_000;
 export const GITHUB_CI_QUERY_MAX_API_REQUESTS = 250;
 export const GITHUB_CI_QUERY_MAX_TOTAL_JOBS = 5_000;
 export const GITHUB_CI_QUERY_MAX_TOTAL_STEPS = 20_000;
+export const GITHUB_CI_QUERY_MAX_TOTAL_CHECK_SUITES = 1_000;
 export const GITHUB_CI_QUERY_MAX_TOTAL_CHECK_RUNS = 1_000;
 export const GITHUB_CI_QUERY_MAX_EVIDENCE_URLS = 7_000;
 
@@ -244,6 +269,34 @@ function requireNullableGitHubHtmlUrl(value: unknown, label: string): string | n
   return requireGitHubHtmlUrl(value, label);
 }
 
+function requireGitHubApiUrl(value: unknown, label: string): string {
+  const url = requireString(value, label);
+  if (
+    url !== url.trim() ||
+    containsAsciiControlOrSpace(url) ||
+    !url.startsWith('https://api.github.com/repos/') ||
+    url.includes('?') ||
+    url.includes('#')
+  ) {
+    return invalidResponse(`GitHub API returned invalid ${label}`);
+  }
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.protocol !== 'https:' ||
+      parsed.hostname !== 'api.github.com' ||
+      parsed.username.length > 0 ||
+      parsed.password.length > 0 ||
+      parsed.port.length > 0
+    ) {
+      return invalidResponse(`GitHub API returned invalid ${label}`);
+    }
+  } catch {
+    return invalidResponse(`GitHub API returned invalid ${label}`);
+  }
+  return url;
+}
+
 function parseCommitResponse(value: unknown): GitHubCommitResponse {
   const record = requireRecord(value, 'commit response');
   return {
@@ -352,6 +405,46 @@ function parseCheckRunsResponse(value: unknown): GitHubCheckRunsResponse {
   return { total_count: totalCount, check_runs: checkRuns };
 }
 
+function parseCheckSuite(value: unknown): GitHubCheckSuite {
+  const record = requireRecord(value, 'check suite');
+  let app: GitHubCheckSuite['app'];
+  if (record.app === undefined) {
+    app = undefined;
+  } else if (record.app === null) {
+    app = null;
+  } else {
+    const appRecord = requireRecord(record.app, 'check suite app');
+    app = {
+      id: requireInteger(appRecord.id, 'check suite app id', 1),
+      name: requireString(appRecord.name, 'check suite app name'),
+      slug: requireOptionalNullableString(appRecord.slug, 'check suite app slug') ?? null,
+    };
+  }
+
+  return {
+    id: requireInteger(record.id, 'check suite id', 1),
+    head_sha: requireExactSha(record.head_sha, 'check suite head_sha'),
+    status: requireString(record.status, 'check suite status'),
+    conclusion: requireNullableString(record.conclusion, 'check suite conclusion'),
+    url: requireGitHubApiUrl(record.url, 'check suite url'),
+    app,
+    latest_check_runs_count:
+      record.latest_check_runs_count === undefined
+        ? undefined
+        : requireInteger(record.latest_check_runs_count, 'check suite latest_check_runs_count'),
+  };
+}
+
+function parseCheckSuitesResponse(value: unknown): GitHubCheckSuitesResponse {
+  const record = requireRecord(value, 'check suites response');
+  const checkSuites = requireArray(record.check_suites, 'check_suites').map(parseCheckSuite);
+  const totalCount = requireInteger(record.total_count, 'check suites total_count');
+  if (totalCount < checkSuites.length) {
+    return invalidResponse('GitHub check-suites total_count is smaller than check_suites length');
+  }
+  return { total_count: totalCount, check_suites: checkSuites };
+}
+
 function repositoryFromValue(value: string): string | null {
   if (value !== value.trim() || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(value)) {
     return null;
@@ -431,6 +524,42 @@ function resolveTarget(request: ExternalActionRequest): QueryTarget {
   return { repository: declaredRepository, commitSha, workflowFilter };
 }
 
+function resolveReceiptDomain(request: ExternalActionRequest) {
+  const context = request.context;
+  if (!context) {
+    return adapterError(
+      'INVALID_CONTEXT',
+      'GitHub CI query requires a governed mission execution context',
+    );
+  }
+
+  const stringFields: Array<[string, unknown]> = [
+    ['skillId', request.skill.skillId],
+    ['skillVersion', request.skill.version],
+    ['agentId', request.agentId],
+    ['missionId', context.missionId],
+    ['phaseId', context.phaseId],
+  ];
+  if (
+    stringFields.some(
+      ([, value]) => typeof value !== 'string' || value.length === 0 || value !== value.trim(),
+    ) ||
+    !Number.isInteger(context.expectedMissionVersion) ||
+    context.expectedMissionVersion < 1
+  ) {
+    return adapterError('INVALID_CONTEXT', 'GitHub CI query received an invalid receipt domain');
+  }
+
+  return {
+    skillId: request.skill.skillId,
+    skillVersion: request.skill.version,
+    agentId: request.agentId,
+    missionId: context.missionId,
+    phaseId: context.phaseId,
+    expectedMissionVersion: context.expectedMissionVersion,
+  };
+}
+
 function workflowMatches(run: GitHubWorkflowRun, filter: string | null): boolean {
   if (!filter) return true;
   const normalized = filter.trim().toLowerCase();
@@ -469,7 +598,7 @@ function aggregateConclusion(observations: CiObservation[]): CiConclusion {
   if (observations.length === 0) {
     return adapterError(
       'TARGET_NOT_FOUND',
-      'No CI workflow, job, or check evidence was found for the exact commit SHA',
+      'No CI workflow, job, check suite, or check run evidence was found for the exact commit SHA',
     );
   }
 
@@ -531,10 +660,29 @@ function compactCheck(run: GitHubCheckRun) {
   };
 }
 
+function compactCheckSuite(suite: GitHubCheckSuite) {
+  return {
+    id: String(suite.id),
+    headSha: suite.head_sha,
+    status: suite.status,
+    conclusion: suite.conclusion,
+    url: suite.url,
+    app: suite.app
+      ? {
+          id: String(suite.app.id),
+          name: suite.app.name,
+          slug: suite.app.slug,
+        }
+      : null,
+    latestCheckRunsCount: suite.latest_check_runs_count ?? null,
+  };
+}
+
 export class QueryBudget {
   private apiRequestCount = 0;
   private jobCount = 0;
   private stepCount = 0;
+  private checkSuiteCount = 0;
   private checkRunCount = 0;
 
   consumeRequest(): void {
@@ -568,6 +716,15 @@ export class QueryBudget {
     }
   }
 
+  consumeCheckSuites(checkSuites: GitHubCheckSuite[]): void {
+    this.checkSuiteCount += checkSuites.length;
+    if (this.checkSuiteCount > GITHUB_CI_QUERY_MAX_TOTAL_CHECK_SUITES) {
+      invalidResponse(
+        `GitHub CI query exceeded the ${GITHUB_CI_QUERY_MAX_TOTAL_CHECK_SUITES}-check-suite budget`,
+      );
+    }
+  }
+
   assertEvidenceUrlCount(count: number): void {
     if (count > GITHUB_CI_QUERY_MAX_EVIDENCE_URLS) {
       invalidResponse(
@@ -581,11 +738,13 @@ export class QueryBudget {
       apiRequestCount: this.apiRequestCount,
       jobCount: this.jobCount,
       stepCount: this.stepCount,
+      checkSuiteCount: this.checkSuiteCount,
       checkRunCount: this.checkRunCount,
       limits: {
         apiRequests: GITHUB_CI_QUERY_MAX_API_REQUESTS,
         jobs: GITHUB_CI_QUERY_MAX_TOTAL_JOBS,
         steps: GITHUB_CI_QUERY_MAX_TOTAL_STEPS,
+        checkSuites: GITHUB_CI_QUERY_MAX_TOTAL_CHECK_SUITES,
         checkRuns: GITHUB_CI_QUERY_MAX_TOTAL_CHECK_RUNS,
         evidenceUrls: GITHUB_CI_QUERY_MAX_EVIDENCE_URLS,
       },
@@ -777,6 +936,7 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
 
   async execute(request: ExternalActionRequest): Promise<McfToolReceipt> {
     const deadlineAt = Date.now() + GITHUB_CI_QUERY_TIMEOUT_MS;
+    const receiptDomain = resolveReceiptDomain(request);
     const target = resolveTarget(request);
     const budget = new QueryBudget();
 
@@ -915,6 +1075,54 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
     }
     const checkRuns = [...checkRunMap.values()];
 
+    const checkSuiteMap = new Map<number, GitHubCheckSuite>();
+    const checkSuitePagination: PaginationState = { expectedTotal: null, rawCollected: 0 };
+    for (let page = 1; page <= MAX_PAGES; page += 1) {
+      const result = await queryJson(
+        `/repos/${target.repository}/commits/${target.commitSha}/check-suites?per_page=${PAGE_SIZE}&page=${page}`,
+        parseCheckSuitesResponse,
+      );
+      const paginationComplete = consumePaginationPage(
+        checkSuitePagination,
+        result.total_count,
+        result.check_suites.length,
+        page,
+        'check suite',
+      );
+      budget.consumeCheckSuites(result.check_suites);
+      for (const checkSuite of result.check_suites) {
+        if (checkSuite.head_sha !== target.commitSha) {
+          return adapterError(
+            'INVALID_RESPONSE',
+            'GitHub returned a check suite not bound to the exact requested SHA',
+          );
+        }
+        const expectedPath = `/repos/${target.repository}/check-suites/${checkSuite.id}`;
+        if (new URL(checkSuite.url).pathname.toLowerCase() !== expectedPath.toLowerCase()) {
+          return adapterError(
+            'INVALID_RESPONSE',
+            `GitHub returned an invalid URL for check suite ${checkSuite.id}`,
+          );
+        }
+        const existing = checkSuiteMap.get(checkSuite.id);
+        if (existing) {
+          if (JSON.stringify(existing) !== JSON.stringify(checkSuite)) {
+            return adapterError(
+              'INVALID_RESPONSE',
+              `GitHub returned conflicting data for check suite ${checkSuite.id}`,
+            );
+          }
+          return adapterError(
+            'INVALID_RESPONSE',
+            `GitHub returned duplicate check suite ${checkSuite.id}`,
+          );
+        }
+        checkSuiteMap.set(checkSuite.id, checkSuite);
+      }
+      if (paginationComplete) break;
+    }
+    const checkSuites = [...checkSuiteMap.values()];
+
     const workflowObservations = workflowRuns.map((run) => ({
       status: run.status,
       conclusion: run.conclusion,
@@ -927,9 +1135,14 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
       status: run.status,
       conclusion: run.conclusion,
     }));
+    const checkSuiteObservations = checkSuites.map((suite) => ({
+      status: suite.status,
+      conclusion: suite.conclusion,
+    }));
     const conclusion = aggregateConclusion([
       ...workflowObservations,
       ...jobObservations,
+      ...checkSuiteObservations,
       ...checkObservations,
     ]);
 
@@ -938,9 +1151,11 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
     )[0];
     const externalId = latestRun
       ? String(latestRun.id)
-      : checkRuns[0]
-        ? `check:${checkRuns[0].id}`
-        : target.commitSha;
+      : checkSuites[0]
+        ? `suite:${checkSuites[0].id}`
+        : checkRuns[0]
+          ? `check:${checkRuns[0].id}`
+          : target.commitSha;
     const evidenceUrls = Array.from(
       new Set([
         commit.html_url,
@@ -958,13 +1173,16 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
       verifiedSha: commit.sha,
       conclusion,
       readOnly: true,
+      ...receiptDomain,
       requiredPermissions: ['metadata:read', 'contents:read', 'actions:read', 'checks:read'],
       workflowFilter: target.workflowFilter,
       workflowRunCount: workflowRuns.length,
       jobCount: jobs.length,
+      checkSuiteCount: checkSuites.length,
       checkRunCount: checkRuns.length,
       workflowRuns: workflowRuns.map(compactRun),
       jobs: jobs.map(({ workflowRunId, job }) => compactJob(job, workflowRunId)),
+      checkSuites: checkSuites.map(compactCheckSuite),
       checkRuns: checkRuns.map(compactCheck),
       evidenceUrls,
       queryBudget: budget.snapshot(),

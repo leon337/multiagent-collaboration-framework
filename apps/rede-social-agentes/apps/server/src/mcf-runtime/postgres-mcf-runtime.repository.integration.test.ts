@@ -187,6 +187,11 @@ describe('PostgresMcfRuntimeRepository integration', () => {
         duplicate: true,
         mission: { state: 'COMPLETED', version: 3 },
       });
+      const storedReceipt = await database.query<{ count: number }>(
+        'select count(*)::int as "count" from "mcf_tool_receipts" where "receipt_id" = $1',
+        [receipt.receiptId],
+      );
+      expect(storedReceipt.rows[0]?.count).toBe(1);
 
       const events = await repository.listEvents(missionId);
       expect(events.map((entry) => entry.eventType)).toEqual([

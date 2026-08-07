@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import type { McfSkillDefinition, McfToolReceipt, McfToolReceiptStatus } from '@rsa/contracts';
 
 import { loadRuntimeConfig } from '../config.js';
+import type { ExternalActionExecutionContext } from './external-action.contracts.js';
 import { McfEvidenceRejectedError } from './mcf-runtime.errors.js';
 import {
   canonicalizeProvider,
@@ -26,6 +27,11 @@ interface ReceiptPayload {
 
 type NormalizedCiConclusion = 'SUCCESS' | 'FAILURE' | 'CANCELLED' | 'IN_PROGRESS';
 
+export interface EvidenceVerificationContext {
+  agentId: string;
+  executionContext?: ExternalActionExecutionContext | undefined;
+}
+
 const ACTIVE_CI_STATUSES = new Set(['queued', 'in_progress', 'pending', 'waiting', 'requested']);
 const FAILURE_CI_CONCLUSIONS = new Set([
   'failure',
@@ -35,6 +41,7 @@ const FAILURE_CI_CONCLUSIONS = new Set([
   'stale',
 ]);
 const NON_PASSING_CI_CONCLUSIONS = new Set(['cancelled', 'neutral', 'skipped']);
+const MAX_CI_CHECK_SUITES = 1_000;
 
 function sortValue(value: unknown): unknown {
   if (Array.isArray(value)) {
@@ -160,6 +167,19 @@ function recordNullableString(
   return value;
 }
 
+function recordNullableNonNegativeInteger(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): number | null {
+  const value = record[key];
+  if (value === null) return null;
+  if (!Number.isInteger(value) || (value as number) < 0) {
+    return reject(message);
+  }
+  return value as number;
+}
+
 function repositoryFromValue(value: string): string | null {
   if (value !== value.trim() || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(value)) {
     return null;
@@ -234,6 +254,44 @@ function verifiedGitHubUrl(
   return value;
 }
 
+function verifiedGitHubApiUrl(
+  value: unknown,
+  repository: string,
+  message: string,
+  expectedPath: string,
+): string {
+  if (
+    typeof value !== 'string' ||
+    value.length === 0 ||
+    value !== value.trim() ||
+    containsAsciiControlOrSpace(value) ||
+    !value.startsWith('https://api.github.com/') ||
+    value.includes('?') ||
+    value.includes('#')
+  ) {
+    return reject(message);
+  }
+  try {
+    const parsed = new URL(value);
+    if (
+      parsed.protocol !== 'https:' ||
+      parsed.hostname.toLowerCase() !== 'api.github.com' ||
+      parsed.username.length > 0 ||
+      parsed.password.length > 0 ||
+      parsed.port.length > 0 ||
+      parsed.search.length > 0 ||
+      parsed.hash.length > 0 ||
+      parsed.pathname.toLowerCase() !== expectedPath.toLowerCase() ||
+      !parsed.pathname.toLowerCase().startsWith(`/repos/${repository.toLowerCase()}/`)
+    ) {
+      return reject(message);
+    }
+  } catch {
+    return reject(message);
+  }
+  return value;
+}
+
 function receiptWorkflowFilter(metadata: Record<string, unknown>): string | null {
   const value = metadata.workflowFilter;
   if (value === undefined || value === null) return null;
@@ -299,6 +357,88 @@ function validateCiQueryExecutionContext(
 
   if (receiptWorkflowFilter(receipt.metadata) !== currentWorkflowFilter) {
     reject('CI query evidence workflowFilter must match the current workflow input');
+  }
+}
+
+function validateCiQueryReceiptDomain(
+  receipt: McfToolReceipt,
+  skill: McfSkillDefinition,
+  current?: EvidenceVerificationContext,
+): void {
+  const executionContext = current?.executionContext;
+  if (
+    !current ||
+    typeof current.agentId !== 'string' ||
+    current.agentId.length === 0 ||
+    current.agentId !== current.agentId.trim() ||
+    !executionContext ||
+    typeof executionContext.missionId !== 'string' ||
+    executionContext.missionId.length === 0 ||
+    executionContext.missionId !== executionContext.missionId.trim() ||
+    typeof executionContext.phaseId !== 'string' ||
+    executionContext.phaseId.length === 0 ||
+    executionContext.phaseId !== executionContext.phaseId.trim() ||
+    !Number.isInteger(executionContext.expectedMissionVersion) ||
+    executionContext.expectedMissionVersion < 1
+  ) {
+    reject('CI query evidence validation requires the current governed execution context');
+  }
+
+  const receiptSkillId = requireString(
+    receipt.metadata,
+    'skillId',
+    'CI query evidence requires signed skillId',
+  );
+  if (receiptSkillId !== skill.skillId) {
+    reject('CI query evidence skillId must match the current skill');
+  }
+
+  const receiptSkillVersion = requireString(
+    receipt.metadata,
+    'skillVersion',
+    'CI query evidence requires signed skillVersion',
+  );
+  if (receiptSkillVersion !== skill.version) {
+    reject('CI query evidence skillVersion must match the current skill version');
+  }
+
+  const receiptAgentId = requireString(
+    receipt.metadata,
+    'agentId',
+    'CI query evidence requires signed agentId',
+  );
+  if (receiptAgentId !== current.agentId) {
+    reject('CI query evidence agentId must match the current agent');
+  }
+
+  const receiptMissionId = requireString(
+    receipt.metadata,
+    'missionId',
+    'CI query evidence requires signed missionId',
+  );
+  if (receiptMissionId !== executionContext.missionId) {
+    reject('CI query evidence missionId must match the current mission');
+  }
+
+  const receiptPhaseId = requireString(
+    receipt.metadata,
+    'phaseId',
+    'CI query evidence requires signed phaseId',
+  );
+  if (receiptPhaseId !== executionContext.phaseId) {
+    reject('CI query evidence phaseId must match the current phase');
+  }
+
+  const receiptMissionVersion = requireNonNegativeInteger(
+    receipt.metadata,
+    'expectedMissionVersion',
+    'CI query evidence requires signed expectedMissionVersion',
+  );
+  if (
+    receiptMissionVersion < 1 ||
+    receiptMissionVersion !== executionContext.expectedMissionVersion
+  ) {
+    reject('CI query evidence mission version must match the current expected mission version');
   }
 }
 
@@ -428,6 +568,11 @@ function validateCiQueryReceipt(
     'CI query evidence requires workflowRuns array',
   );
   const jobs = requireArray(receipt.metadata, 'jobs', 'CI query evidence requires jobs array');
+  const checkSuites = requireArray(
+    receipt.metadata,
+    'checkSuites',
+    'CI query evidence requires checkSuites array',
+  );
   const checkRuns = requireArray(
     receipt.metadata,
     'checkRuns',
@@ -444,6 +589,11 @@ function validateCiQueryReceipt(
     'jobCount',
     'CI query evidence requires jobCount',
   );
+  const checkSuiteCount = requireNonNegativeInteger(
+    receipt.metadata,
+    'checkSuiteCount',
+    'CI query evidence requires checkSuiteCount',
+  );
   const checkRunCount = requireNonNegativeInteger(
     receipt.metadata,
     'checkRunCount',
@@ -452,12 +602,39 @@ function validateCiQueryReceipt(
   if (
     workflowRunCount !== workflowRuns.length ||
     jobCount !== jobs.length ||
+    checkSuiteCount !== checkSuites.length ||
     checkRunCount !== checkRuns.length
   ) {
     reject('CI query evidence counts must match their evidence arrays');
   }
-  if (workflowRunCount + jobCount + checkRunCount === 0) {
+  if (workflowRunCount + jobCount + checkSuiteCount + checkRunCount === 0) {
     reject('CI query evidence requires at least one observed CI item');
+  }
+
+  const queryBudget = requireRecord(
+    receipt.metadata.queryBudget,
+    'CI query evidence requires queryBudget',
+  );
+  const budgetCheckSuiteCount = requireNonNegativeInteger(
+    queryBudget,
+    'checkSuiteCount',
+    'CI query evidence queryBudget requires checkSuiteCount',
+  );
+  const queryLimits = requireRecord(
+    queryBudget.limits,
+    'CI query evidence queryBudget requires limits',
+  );
+  const checkSuiteLimit = requireNonNegativeInteger(
+    queryLimits,
+    'checkSuites',
+    'CI query evidence queryBudget requires checkSuites limit',
+  );
+  if (
+    budgetCheckSuiteCount !== checkSuiteCount ||
+    checkSuiteLimit !== MAX_CI_CHECK_SUITES ||
+    checkSuiteCount > checkSuiteLimit
+  ) {
+    reject('CI query evidence check-suite budget is inconsistent');
   }
 
   const evidenceUrls = requireNonEmptyArray(
@@ -541,6 +718,46 @@ function validateCiQueryReceipt(
     if (!evidenceUrlSet.has(url)) {
       reject('CI query workflow job URL must be present in evidenceUrls');
     }
+    observations.push({ status, conclusion });
+  }
+
+  const checkSuiteIds = new Set<string>();
+  for (const value of checkSuites) {
+    const item = requireRecord(value, 'CI query evidence contains invalid check suite');
+    const id = recordString(item, 'id', 'CI query check suite requires id');
+    const headSha = recordString(item, 'headSha', 'CI query check suite requires headSha');
+    verifiedGitHubApiUrl(
+      item.url,
+      repository,
+      'CI query check suite requires a valid GitHub API URL',
+      `/repos/${repository}/check-suites/${id}`,
+    );
+    const status = recordString(item, 'status', 'CI query check suite requires status');
+    const conclusion = recordNullableString(
+      item,
+      'conclusion',
+      'CI query check suite requires conclusion',
+    );
+    recordNullableNonNegativeInteger(
+      item,
+      'latestCheckRunsCount',
+      'CI query check suite requires valid latestCheckRunsCount',
+    );
+
+    if (item.app !== null) {
+      const app = requireRecord(item.app, 'CI query check suite contains invalid app');
+      recordString(app, 'id', 'CI query check suite app requires id');
+      recordString(app, 'name', 'CI query check suite app requires name');
+      recordNullableString(app, 'slug', 'CI query check suite app requires slug');
+    }
+
+    if (headSha.toLowerCase() !== receipt.commitSha) {
+      reject('CI query check suite must be bound to receipt commitSha');
+    }
+    if (checkSuiteIds.has(id)) {
+      reject('CI query evidence contains duplicate check suite id');
+    }
+    checkSuiteIds.add(id);
     observations.push({ status, conclusion });
   }
 
@@ -779,15 +996,24 @@ export class EvidenceValidator {
     expected: McfToolRequest,
     skill: McfSkillDefinition,
     inputs?: Readonly<Record<string, unknown>>,
+    current?: EvidenceVerificationContext,
   ): void {
     this.verify(receipt, expected);
+
+    const operation = canonicalizeToolValue(expected.operation);
+    if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
+      reject('query-ci evidence is restricted to MCF-RUN-TESTS');
+    }
+    if (operation === 'query-ci') {
+      validateCiQueryReceiptDomain(receipt, skill, current);
+    }
 
     switch (skill.skillId) {
       case 'MCF-REVIEW-CODE':
         validateReviewReceipt(receipt);
         break;
       case 'MCF-RUN-TESTS':
-        if (canonicalizeToolValue(expected.operation) === 'query-ci') {
+        if (operation === 'query-ci') {
           validateCiQueryReceipt(receipt, expected, inputs);
         }
         break;

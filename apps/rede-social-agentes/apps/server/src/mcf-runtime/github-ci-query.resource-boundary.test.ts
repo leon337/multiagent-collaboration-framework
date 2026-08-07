@@ -104,6 +104,29 @@ describe('GitHub CI query resource permission boundary', () => {
     ).not.toThrow();
   });
 
+  it('rejects query-ci for MCF-IMPLEMENT-CHANGE even with an authorized scope', () => {
+    const implementationSkill: McfSkillDefinition = {
+      ...skill,
+      skillId: 'MCF-IMPLEMENT-CHANGE',
+      name: 'Implementar mudanca',
+      ownerAgents: ['Rafael'],
+      purpose: 'Implementar uma mudanca aprovada.',
+    };
+
+    expect(() =>
+      new PermissionEngine().assertAllowed(
+        implementationSkill,
+        'Rafael',
+        {
+          provider: 'github-actions',
+          operation: 'query-ci',
+          resource: 'leon337/multiagent-collaboration-framework',
+        },
+        { authorizedScope: true },
+      ),
+    ).toThrow(/query-ci is restricted to MCF-RUN-TESTS/u);
+  });
+
   it.each([
     'https://github.com/owner/repo',
     'owner/repo:443',

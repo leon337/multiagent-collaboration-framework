@@ -10,6 +10,9 @@ const repository = 'leon337/multiagent-collaboration-framework';
 const otherRepository = 'leon337/other-repository';
 const commitSha = 'a'.repeat(40);
 const otherSha = 'b'.repeat(40);
+const missionId = '11111111-1111-4111-8111-111111111111';
+const phaseId = '22222222-2222-4222-8222-222222222222';
+const executionContext = { missionId, phaseId, expectedMissionVersion: 5 };
 
 const skill: McfSkillDefinition = {
   skillId: 'MCF-RUN-TESTS',
@@ -36,9 +39,12 @@ beforeEach(() => {
   process.env.MCF_RECEIPT_SECRET = 'test-only-mcf-receipt-secret-external-context-0001';
 });
 
-function createExecutor(): { evidence: EvidenceValidator; executor: SkillExecutor } {
+function createExecutor(selectedSkill: McfSkillDefinition = skill): {
+  evidence: EvidenceValidator;
+  executor: SkillExecutor;
+} {
   const registry = {
-    load: async () => skill,
+    load: async () => selectedSkill,
   } as unknown as SkillRegistryLoader;
   const evidence = new EvidenceValidator();
   return {
@@ -57,8 +63,15 @@ function createReceipt(
   const workflowUrl = `https://github.com/${repository}/actions/runs/44`;
   const jobUrl = `${workflowUrl}/job/55`;
   const checkUrl = `https://github.com/${repository}/runs/66`;
+  const checkSuiteUrl = `https://api.github.com/repos/${repository}/check-suites/77`;
   const metadata: Record<string, unknown> = {
     adapterId: 'github-ci-query-read-only-v1',
+    skillId: skill.skillId,
+    skillVersion: skill.version,
+    agentId: 'Renato',
+    missionId,
+    phaseId,
+    expectedMissionVersion: 5,
     requestedSha: commitSha,
     verifiedSha: commitSha,
     repository,
@@ -67,6 +80,7 @@ function createReceipt(
     conclusion: 'SUCCESS',
     workflowRunCount: 1,
     jobCount: 1,
+    checkSuiteCount: 1,
     checkRunCount: 1,
     workflowRuns: [
       {
@@ -89,6 +103,17 @@ function createReceipt(
         url: jobUrl,
       },
     ],
+    checkSuites: [
+      {
+        id: '77',
+        headSha: commitSha,
+        status: 'completed',
+        conclusion: 'success',
+        url: checkSuiteUrl,
+        app: { id: '1', name: 'GitHub Actions', slug: 'github-actions' },
+        latestCheckRunsCount: 1,
+      },
+    ],
     checkRuns: [
       {
         id: '66',
@@ -105,6 +130,21 @@ function createReceipt(
       checkUrl,
     ],
     requiredPermissions: ['metadata:read', 'contents:read', 'actions:read', 'checks:read'],
+    queryBudget: {
+      apiRequestCount: 5,
+      jobCount: 1,
+      stepCount: 1,
+      checkSuiteCount: 1,
+      checkRunCount: 1,
+      limits: {
+        apiRequests: 250,
+        jobs: 5_000,
+        steps: 20_000,
+        checkSuites: 1_000,
+        checkRuns: 1_000,
+        evidenceUrls: 7_000,
+      },
+    },
   };
   if (input.workflowFilter === undefined && Object.hasOwn(input, 'workflowFilter')) {
     delete metadata.workflowFilter;
@@ -127,10 +167,16 @@ async function executeReceipt(
   executor: SkillExecutor,
   receipt: McfToolReceipt,
   inputs: Record<string, unknown> = {},
+  current: {
+    skillId?: string | undefined;
+    agentId?: string | undefined;
+    executionContext?: typeof executionContext | undefined;
+    omitExecutionContext?: boolean | undefined;
+  } = {},
 ) {
   return executor.execute({
-    skillId: skill.skillId,
-    agentId: 'Renato',
+    skillId: current.skillId ?? skill.skillId,
+    agentId: current.agentId ?? 'Renato',
     inputs: {
       acceptance_criteria: ['all_critical_tests_pass'],
       test_target: commitSha,
@@ -143,6 +189,9 @@ async function executeReceipt(
       resource: repository,
       externalReceipt: receipt,
     },
+    ...(current.omitExecutionContext
+      ? {}
+      : { executionContext: current.executionContext ?? executionContext }),
   });
 }
 
@@ -151,8 +200,9 @@ async function expectRejected(
   receipt: McfToolReceipt,
   inputs: Record<string, unknown>,
   message: RegExp,
+  current: Parameters<typeof executeReceipt>[3] = {},
 ): Promise<void> {
-  const result = await executeReceipt(executor, receipt, inputs);
+  const result = await executeReceipt(executor, receipt, inputs, current);
   expect(result).toMatchObject({
     evidenceStatus: 'INVALID',
     phaseState: 'RECOVERING',
@@ -347,6 +397,112 @@ describe('GitHub CI external receipt execution binding', () => {
     );
   });
 
+  it('denies a CI receipt used for MCF-IMPLEMENT-CHANGE and rejects it in the validator', async () => {
+    const implementationSkill: McfSkillDefinition = {
+      ...skill,
+      skillId: 'MCF-IMPLEMENT-CHANGE',
+      name: 'Implementar mudança autorizada',
+      ownerAgents: ['Rafael'],
+      requiredInputs: ['approved_scope', 'acceptance_criteria', 'repository'],
+      permissionProfile: 'SCOPED_WRITE',
+      requiredEvidence: ['changed_files', 'commit_sha', 'test_results'],
+    };
+    const { evidence, executor } = createExecutor(implementationSkill);
+    const receipt = createReceipt(evidence);
+
+    await expect(
+      executeReceipt(
+        executor,
+        receipt,
+        { approved_scope: ['adapter'] },
+        { skillId: implementationSkill.skillId, agentId: 'Rafael' },
+      ),
+    ).rejects.toThrow(/query-ci is restricted to MCF-RUN-TESTS/u);
+
+    expect(() =>
+      evidence.verifyForSkill(
+        receipt,
+        { provider: 'github-actions', operation: 'query-ci', resource: repository },
+        implementationSkill,
+        {
+          approved_scope: ['adapter'],
+          acceptance_criteria: ['all_critical_tests_pass'],
+          repository,
+          test_target: commitSha,
+        },
+        { agentId: 'Rafael', executionContext },
+      ),
+    ).toThrow(/query-ci evidence is restricted to MCF-RUN-TESTS/u);
+  });
+
+  it('rejects a receipt issued for a different skill version', async () => {
+    const currentSkill = { ...skill, version: '2.0.0' };
+    const { evidence, executor } = createExecutor(currentSkill);
+    await expectRejected(executor, createReceipt(evidence), {}, /skillVersion must match/u);
+  });
+
+  it('rejects a receipt issued for a different agent', async () => {
+    const currentSkill = { ...skill, ownerAgents: ['Renato', 'Emily'] };
+    const { evidence, executor } = createExecutor(currentSkill);
+    await expectRejected(executor, createReceipt(evidence), {}, /agentId must match/u, {
+      agentId: 'Emily',
+    });
+  });
+
+  it.each([
+    [
+      'mission',
+      { ...executionContext, missionId: '33333333-3333-4333-8333-333333333333' },
+      /missionId must match/u,
+    ],
+    [
+      'phase',
+      { ...executionContext, phaseId: '44444444-4444-4444-8444-444444444444' },
+      /phaseId must match/u,
+    ],
+    [
+      'mission version',
+      { ...executionContext, expectedMissionVersion: 6 },
+      /mission version must match/u,
+    ],
+  ] as const)('rejects a receipt issued for a different %s', async (_label, context, message) => {
+    const { evidence, executor } = createExecutor();
+    await expectRejected(executor, createReceipt(evidence), {}, message, {
+      executionContext: context,
+    });
+  });
+
+  it('rejects query-ci when the governed execution context is omitted', async () => {
+    const { evidence, executor } = createExecutor();
+    await expectRejected(
+      executor,
+      createReceipt(evidence),
+      {},
+      /current governed execution context/u,
+      { omitExecutionContext: true },
+    );
+  });
+
+  it('rejects a signed receipt with an inconsistent checkSuiteCount', async () => {
+    const { evidence, executor } = createExecutor();
+    const receipt = createReceipt(evidence, {
+      mutate: (metadata) => {
+        metadata.checkSuiteCount = 2;
+      },
+    });
+    await expectRejected(executor, receipt, {}, /counts must match/u);
+  });
+
+  it('rejects a signed receipt with a check suite removed from metadata', async () => {
+    const { evidence, executor } = createExecutor();
+    const receipt = createReceipt(evidence, {
+      mutate: (metadata) => {
+        metadata.checkSuites = [];
+      },
+    });
+    await expectRejected(executor, receipt, {}, /counts must match/u);
+  });
+
   it('requires current execution inputs for direct query-ci receipt validation', () => {
     const { evidence } = createExecutor();
     const receipt = createReceipt(evidence);
@@ -356,6 +512,8 @@ describe('GitHub CI external receipt execution binding', () => {
         receipt,
         { provider: 'github-actions', operation: 'query-ci', resource: repository },
         skill,
+        undefined,
+        { agentId: 'Renato', executionContext },
       ),
     ).toThrow(/current execution inputs/u);
   });
