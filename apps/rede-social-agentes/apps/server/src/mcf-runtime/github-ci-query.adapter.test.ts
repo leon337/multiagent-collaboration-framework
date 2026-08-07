@@ -5,10 +5,7 @@ import { AdapterRegistry } from './adapter-registry.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import type { ExternalActionLedger } from './external-action-ledger.js';
-import {
-  GitHubCiQueryAdapter,
-  GitHubCiReadClient,
-} from './github-ci-query.adapter.js';
+import { GitHubCiQueryAdapter, GitHubCiReadClient } from './github-ci-query.adapter.js';
 import { PermissionEngine } from './permission-engine.js';
 
 const skill: McfSkillDefinition = {
@@ -63,14 +60,16 @@ function commitPayload(sha = commitSha) {
   };
 }
 
-function workflowRun(input: {
-  id?: number;
-  status?: string;
-  conclusion?: string | null;
-  headSha?: string;
-  name?: string;
-  path?: string;
-} = {}) {
+function workflowRun(
+  input: {
+    id?: number;
+    status?: string;
+    conclusion?: string | null;
+    headSha?: string;
+    name?: string;
+    path?: string;
+  } = {},
+) {
   const id = input.id ?? 44;
   return {
     id,
@@ -88,12 +87,14 @@ function workflowRun(input: {
   };
 }
 
-function workflowJob(input: {
-  id?: number;
-  status?: string;
-  conclusion?: string | null;
-  steps?: number;
-} = {}) {
+function workflowJob(
+  input: {
+    id?: number;
+    status?: string;
+    conclusion?: string | null;
+    steps?: number;
+  } = {},
+) {
   const id = input.id ?? 55;
   const steps = input.steps ?? 1;
   return {
@@ -103,8 +104,7 @@ function workflowJob(input: {
     conclusion: input.conclusion === undefined ? 'success' : input.conclusion,
     html_url: `https://github.com/${repository}/actions/runs/44/job/${id}`,
     started_at: '2026-08-06T11:00:10Z',
-    completed_at:
-      (input.status ?? 'completed') === 'completed' ? '2026-08-06T11:01:50Z' : null,
+    completed_at: (input.status ?? 'completed') === 'completed' ? '2026-08-06T11:01:50Z' : null,
     steps: Array.from({ length: steps }, (_, index) => ({
       number: index + 1,
       name: `step-${index + 1}`,
@@ -114,11 +114,13 @@ function workflowJob(input: {
   };
 }
 
-function checkRun(input: {
-  id?: number;
-  status?: string;
-  conclusion?: string | null;
-} = {}) {
+function checkRun(
+  input: {
+    id?: number;
+    status?: string;
+    conclusion?: string | null;
+  } = {},
+) {
   const id = input.id ?? 66;
   return {
     id,
@@ -127,8 +129,7 @@ function checkRun(input: {
     conclusion: input.conclusion === undefined ? 'success' : input.conclusion,
     html_url: `https://github.com/${repository}/runs/${id}`,
     started_at: '2026-08-06T11:00:10Z',
-    completed_at:
-      (input.status ?? 'completed') === 'completed' ? '2026-08-06T11:01:50Z' : null,
+    completed_at: (input.status ?? 'completed') === 'completed' ? '2026-08-06T11:01:50Z' : null,
     app: { name: 'GitHub Actions' },
   };
 }
@@ -140,12 +141,14 @@ function json(payload: unknown, status = 200, headers?: HeadersInit): Response {
   });
 }
 
-function standardFetcher(input: {
-  workflowRuns?: ReturnType<typeof workflowRun>[];
-  jobs?: ReturnType<typeof workflowJob>[];
-  checkRuns?: ReturnType<typeof checkRun>[];
-  commit?: ReturnType<typeof commitPayload>;
-} = {}) {
+function standardFetcher(
+  input: {
+    workflowRuns?: ReturnType<typeof workflowRun>[];
+    jobs?: ReturnType<typeof workflowJob>[];
+    checkRuns?: ReturnType<typeof checkRun>[];
+    commit?: ReturnType<typeof commitPayload>;
+  } = {},
+) {
   const runs = input.workflowRuns ?? [workflowRun()];
   const jobs = input.jobs ?? [workflowJob()];
   const checks = input.checkRuns ?? [checkRun()];
@@ -167,7 +170,9 @@ function standardFetcher(input: {
   });
 }
 
-function adapterFrom(fetcher: ReturnType<typeof vi.fn>): GitHubCiQueryAdapter {
+function adapterFrom(
+  fetcher: NonNullable<ConstructorParameters<typeof GitHubCiReadClient>[0]>,
+): GitHubCiQueryAdapter {
   return new GitHubCiQueryAdapter(
     new EvidenceValidator(),
     new GitHubCiReadClient(fetcher, undefined),
@@ -195,10 +200,7 @@ describe('GitHubCiQueryAdapter', () => {
   it('queries workflow runs, jobs and checks by exact SHA using GET only', async () => {
     const fetcher = standardFetcher();
     const evidence = new EvidenceValidator();
-    const adapter = new GitHubCiQueryAdapter(
-      evidence,
-      new GitHubCiReadClient(fetcher, undefined),
-    );
+    const adapter = new GitHubCiQueryAdapter(evidence, new GitHubCiReadClient(fetcher, undefined));
 
     const receipt = await adapter.execute(request());
 
@@ -385,11 +387,12 @@ describe('GitHubCiQueryAdapter', () => {
   ] as const)(
     'normalizes HTTP %s to %s',
     async (status, headers, expectedCode, expectedRetryable) => {
-      const fetcher = vi.fn(async () =>
-        new Response(JSON.stringify({ message: 'provider error' }), {
-          status,
-          headers,
-        }),
+      const fetcher = vi.fn(
+        async () =>
+          new Response(JSON.stringify({ message: 'provider error' }), {
+            status,
+            headers,
+          }),
       );
 
       await expect(adapterFrom(fetcher).execute(request())).rejects.toMatchObject({
@@ -427,17 +430,16 @@ describe('GitHubCiQueryAdapter', () => {
         id: index + 1,
         name: index === 43 ? 'CI' : `other-${index + 1}`,
         path:
-          index === 43
-            ? '.github/workflows/ci.yml'
-            : `.github/workflows/other-${index + 1}.yml`,
+          index === 43 ? '.github/workflows/ci.yml' : `.github/workflows/other-${index + 1}.yml`,
       }),
     );
     const fetcher = vi.fn(async (url: string) => {
+      const page = new URL(url).searchParams.get('page');
       if (url.endsWith(`/commits/${commitSha}`)) return json(commitPayload());
-      if (url.includes('/actions/runs?') && url.includes('page=1')) {
+      if (url.includes('/actions/runs?') && page === '1') {
         return json({ total_count: 100, workflow_runs: firstPage });
       }
-      if (url.includes('/actions/runs?') && url.includes('page=2')) {
+      if (url.includes('/actions/runs?') && page === '2') {
         return json({ total_count: 100, workflow_runs: [] });
       }
       if (url.includes('/actions/runs/44/jobs')) {

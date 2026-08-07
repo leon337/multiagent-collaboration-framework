@@ -170,10 +170,7 @@ function requireNullableString(value: unknown, label: string): string | null {
   return requireString(value, label);
 }
 
-function requireOptionalNullableString(
-  value: unknown,
-  label: string,
-): string | null | undefined {
+function requireOptionalNullableString(value: unknown, label: string): string | null | undefined {
   if (value === undefined) return undefined;
   return requireNullableString(value, label);
 }
@@ -340,7 +337,8 @@ function repositoryFromValue(value: string): string | null {
   if (/^https?:\/\//u.test(trimmed)) {
     try {
       const parsed = new URL(trimmed);
-      if (parsed.protocol !== 'https:' || parsed.hostname.toLowerCase() !== 'github.com') return null;
+      if (parsed.protocol !== 'https:' || parsed.hostname.toLowerCase() !== 'github.com')
+        return null;
       path = parsed.pathname;
     } catch {
       return null;
@@ -413,10 +411,7 @@ function resolveTarget(request: ExternalActionRequest): QueryTarget {
 
   const workflowInput = request.inputs.workflow;
   if (workflowInput !== undefined && typeof workflowInput !== 'string') {
-    return adapterError(
-      'INVALID_CONTEXT',
-      'GitHub workflow filter must be a string when provided',
-    );
+    return adapterError('INVALID_CONTEXT', 'GitHub workflow filter must be a string when provided');
   }
   const workflowFilter =
     typeof workflowInput === 'string' && workflowInput.trim().length > 0
@@ -545,9 +540,7 @@ class QueryBudget {
     this.jobCount += jobs.length;
     this.stepCount += jobs.reduce((total, job) => total + (job.steps?.length ?? 0), 0);
     if (this.jobCount > GITHUB_CI_QUERY_MAX_TOTAL_JOBS) {
-      invalidResponse(
-        `GitHub CI query exceeded the ${GITHUB_CI_QUERY_MAX_TOTAL_JOBS}-job budget`,
-      );
+      invalidResponse(`GitHub CI query exceeded the ${GITHUB_CI_QUERY_MAX_TOTAL_JOBS}-job budget`);
     }
     if (this.stepCount > GITHUB_CI_QUERY_MAX_TOTAL_STEPS) {
       invalidResponse(
@@ -736,10 +729,7 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
     const target = resolveTarget(request);
     const budget = new QueryBudget();
 
-    const queryJson = async <T>(
-      path: string,
-      parser: (value: unknown) => T,
-    ): Promise<T> => {
+    const queryJson = async <T>(path: string, parser: (value: unknown) => T): Promise<T> => {
       budget.consumeRequest();
       return parser(await this.client.getJson(path, deadlineAt));
     };

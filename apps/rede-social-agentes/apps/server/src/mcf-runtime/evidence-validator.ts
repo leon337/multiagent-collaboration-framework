@@ -112,11 +112,7 @@ function requireNonNegativeInteger(
   return value as number;
 }
 
-function requireArray(
-  metadata: Record<string, unknown>,
-  key: string,
-  message: string,
-): unknown[] {
+function requireArray(metadata: Record<string, unknown>, key: string, message: string): unknown[] {
   const value = metadata[key];
   if (!Array.isArray(value)) {
     return reject(message);
@@ -143,11 +139,7 @@ function requireRecord(value: unknown, message: string): Record<string, unknown>
   return value as Record<string, unknown>;
 }
 
-function recordString(
-  record: Record<string, unknown>,
-  key: string,
-  message: string,
-): string {
+function recordString(record: Record<string, unknown>, key: string, message: string): string {
   const value = record[key];
   if (typeof value !== 'string' || value.trim().length === 0) {
     return reject(message);
@@ -176,7 +168,8 @@ function repositoryFromValue(value: string): string | null {
   if (/^https?:\/\//u.test(trimmed)) {
     try {
       const parsed = new URL(trimmed);
-      if (parsed.protocol !== 'https:' || parsed.hostname.toLowerCase() !== 'github.com') return null;
+      if (parsed.protocol !== 'https:' || parsed.hostname.toLowerCase() !== 'github.com')
+        return null;
       path = parsed.pathname;
     } catch {
       return null;
