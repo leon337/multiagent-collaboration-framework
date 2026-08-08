@@ -54,6 +54,10 @@ function request() {
   };
 }
 
+function branch() {
+  return { ref: 'refs/heads/feat/mcf-c1-timeout', object: { sha: HEAD_SHA } };
+}
+
 function pull() {
   return {
     number: 88,
@@ -65,6 +69,16 @@ function pull() {
   };
 }
 
+function baseAndCommit(url: string): Response | null {
+  if (url.includes('/git/ref/heads/main')) {
+    return response({ ref: 'refs/heads/main', object: { sha: BASE_SHA } });
+  }
+  if (url.includes(`/commits/${HEAD_SHA}`)) {
+    return response({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
+  }
+  return null;
+}
+
 describe('GitHub branch/PR timeout reconciliation', () => {
   beforeEach(() => {
     process.env.MCF_RECEIPT_SECRET = 'test-secret-that-is-long-enough-for-mcf-runtime';
@@ -74,15 +88,10 @@ describe('GitHub branch/PR timeout reconciliation', () => {
     let branchExists = false;
     const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET';
-      if (url.includes('/git/ref/heads/main')) {
-        return response({ ref: 'refs/heads/main', object: { sha: BASE_SHA } });
-      }
-      if (url.includes(`/commits/${HEAD_SHA}`))
-        return response({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
+      const common = baseAndCommit(url);
+      if (common) return common;
       if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) {
-        return branchExists
-          ? response({ ref: 'refs/heads/feat/mcf-c1-timeout', object: { sha: HEAD_SHA } })
-          : response({}, 404);
+        return branchExists ? response(branch()) : response({}, 404);
       }
       if (url.endsWith('/git/refs') && method === 'POST') {
         branchExists = true;
@@ -98,6 +107,77 @@ describe('GitHub branch/PR timeout reconciliation', () => {
 
     const receipt = await adapter.execute(request());
     expect(receipt.status).toBe('SUCCEEDED');
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+  });
+
+  it('records UNKNOWN when an ambiguous branch creation cannot be proven by read-back', async () => {
+    let branchLookupCount = 0;
+    const evidence = new EvidenceValidator();
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      const common = baseAndCommit(url);
+      if (common) return common;
+      if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) {
+        branchLookupCount += 1;
+        if (branchLookupCount === 1) return response({}, 404);
+        throw new Error('read-back unavailable after ambiguous branch POST');
+      }
+      if (url.endsWith('/git/refs') && method === 'POST') {
+        throw new Error('connection reset after provider may have accepted branch');
+      }
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+    const adapter = new GitHubBranchPullRequestAdapter(
+      evidence,
+      new GitHubBranchPrClient(fetcher),
+    );
+
+    const input = request();
+    const receipt = await adapter.execute(input);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata).toMatchObject({
+      resultStatus: 'UNKNOWN',
+      readBackVerified: false,
+      unknownStage: 'CREATE_BRANCH',
+      idempotencyKey: KEY,
+    });
+    expect(() => evidence.verify(receipt, input.tool)).not.toThrow();
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+  });
+
+  it('records UNKNOWN when an ambiguous PR creation cannot be proven by read-back', async () => {
+    let pullLookupCount = 0;
+    const evidence = new EvidenceValidator();
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      const common = baseAndCommit(url);
+      if (common) return common;
+      if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) return response(branch());
+      if (url.includes('/pulls?')) {
+        pullLookupCount += 1;
+        if (pullLookupCount === 1) return response([]);
+        throw new Error('read-back unavailable after ambiguous pull POST');
+      }
+      if (url.endsWith('/pulls') && method === 'POST') {
+        throw new Error('connection reset after provider may have accepted pull request');
+      }
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+    const adapter = new GitHubBranchPullRequestAdapter(
+      evidence,
+      new GitHubBranchPrClient(fetcher),
+    );
+
+    const input = request();
+    const receipt = await adapter.execute(input);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata).toMatchObject({
+      resultStatus: 'UNKNOWN',
+      readBackVerified: false,
+      unknownStage: 'CREATE_PULL_REQUEST',
+      idempotencyKey: KEY,
+    });
+    expect(() => evidence.verify(receipt, input.tool)).not.toThrow();
     expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
   });
 });
