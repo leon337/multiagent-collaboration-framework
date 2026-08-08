@@ -195,7 +195,7 @@ export class PermissionEngine {
         if (inputs.sensitiveAuthorization !== true) {
           throw new McfPermissionDeniedError(
             'SENSITIVE_CONTROLLED requires explicit sensitive authorization',
-         );
+          );
         }
         break;
       case 'HUMAN_GATE':
