@@ -19,7 +19,9 @@ Um teste de retomada em chat novo consultou `docs/agentes/README.md` e os contra
 6. o checkpoint C1 ainda indicava gate de merge pendente apesar do PR #76 já estar mesclado;
 7. a primeira tentativa de sincronização de estado resumiu detalhes probatórios do plano/checkpoint, detectados e restaurados antes do merge;
 8. a primeira versão da validação contava 29 contratos, mas não comparava semanticamente o campo `Papel` com a matriz;
-9. o filtro `pull_request.paths` não incluía o `README.md` raiz, embora sua declaração de 29 agentes fosse tratada como invariante.
+9. o filtro `pull_request.paths` não incluía o `README.md` raiz, embora sua declaração de 29 agentes fosse tratada como invariante;
+10. a validação semântica posterior comparava matriz e contratos, mas ainda não validava o índice `docs/agentes/README.md` contra a matriz;
+11. o checkpoint C1 ainda apontava `MCF-DOC-SYNC-001` como próxima ação, o que faria uma retomada futura repetir uma sincronização já concluída após o merge deste pacote.
 
 ## Correção
 
@@ -28,12 +30,17 @@ Um teste de retomada em chat novo consultou `docs/agentes/README.md` e os contra
 - `docs/agentes/README.md` transformado em índice dos 29 agentes;
 - validação documental reforçada para exigir exatamente 29 contratos individuais;
 - CI passou a comparar automaticamente o `Papel` de cada contrato com a matriz canônica;
+- CI passou também a comparar número, nome e função do índice `docs/agentes/README.md` com as 29 linhas canônicas da matriz;
 - `README.md` raiz adicionado ao filtro de caminhos da validação documental;
 - estado do RUNTIME-006 reconciliado com os commits integrados;
 - checkpoint C1 reconciliado com o merge observado sem inventar autorização ausente no checkpoint anterior;
+- a ação de sincronização documental foi movida para histórico no checkpoint e a próxima ação passou a ser `MCF-RUNTIME-006_LOTE_2_POS_C1`, com `GITHUB_COMMENTS_REVIEWS_METADATA` como próxima capacidade;
+- o checkpoint proíbe explicitamente repetir DOC-SYNC, A1, A2 ou C1;
 - detalhes históricos de entrada, receipt, critérios, runs, artefatos e digests foram preservados.
 
 ## Revisão Codex e remediação
+
+### Primeira revisão
 
 A revisão automatizada independente do Codex sobre o primeiro HEAD do PR #78 identificou:
 
@@ -51,7 +58,28 @@ P2:
     - README.md_adicionado_ao_filtro_do_workflow
 ```
 
-Como o HEAD mudou após essas correções, uma nova revisão Codex deve ser executada sobre o HEAD final antes do gate de integração.
+### Segunda revisão — HEAD `c57ed3e5436c5a53ac87d0f4720f9cde63c9d3c6`
+
+O Codex identificou dois achados P2 adicionais:
+
+```yaml
+P2_index:
+  finding: indice_de_agentes_nao_validado_semanticamente_contra_matriz
+  state: REMEDIATED
+  remediation:
+    - matriz_indice_contratos_comparados_no_mesmo_job
+    - numero_nome_e_funcao_do_indice_validados
+P2_checkpoint:
+  finding: checkpoint_C1_apontava_para_repetir_DOC_SYNC_apos_integracao
+  state: REMEDIATED
+  remediation:
+    - DOC_SYNC_movido_para_historico
+    - proxima_acao_RUNTIME_006_LOTE_2_POS_C1
+    - proxima_capacidade_GITHUB_COMMENTS_REVIEWS_METADATA
+    - repeticao_DOC_SYNC_A1_A2_C1_proibida_no_checkpoint
+```
+
+Como o HEAD mudou após essas remediações, uma nova revisão Codex deve apontar explicitamente para o HEAD remediado antes do gate de integração.
 
 ## Invariantes preservados
 
@@ -63,10 +91,12 @@ official_agents: 29
 competence_source: MCF_29_AGENT_MATRIX
 contracts_individual: 29
 contract_role_matrix_validation: REQUIRED
+agent_index_matrix_validation: REQUIRED
 root_readme_triggers_documentation_validation: true
 production: BLOCKED
 c1_real_provider_write: NOT_AUTHORIZED
 new_agent_authority_created: false
+runtime_resume_after_doc_sync: MCF_RUNTIME_006_LOTE_2_POS_C1
 ```
 
 ## Resultado esperado
@@ -79,10 +109,12 @@ Um chat novo que use a documentação do repositório deve encontrar a mesma com
 4. conjunto dos 29 contratos individuais;
 5. CI de documentação.
 
+A retomada operacional depois deste pacote deve apontar para o RUNTIME-006 Lote 2 pós-C1, sem repetir trabalho já integrado.
+
 ## Limitação de auditoria desta execução
 
 A revisão executada durante esta correção no mesmo ambiente cognitivo que produziu as alterações não será rotulada como auditoria independente quando o gate exigir independência real. A independência é fornecida pelo revisor externo configurado no GitHub e deve apontar explicitamente para o HEAD final revisado.
 
 ## Próximo passo
 
-Após CI verde e nova revisão independente do HEAD final, integrar este pacote e retomar o RUNTIME-006 a partir do estado real pós-C1.
+Após CI verde e nova revisão independente do HEAD remediado, integrar este pacote e retomar o RUNTIME-006 a partir do estado real pós-C1.
