@@ -12,6 +12,8 @@ const KEY = 'mcf-c2-fragment-case-0001';
 const REPOSITORY = 'leon337/multiagent-collaboration-framework';
 const PR_NUMBER = 79;
 
+type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
+
 function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status: 200,
@@ -88,7 +90,7 @@ function review(body: string, fragment: string) {
   };
 }
 
-function adapter(fetcher: ReturnType<typeof vi.fn>) {
+function adapter(fetcher: FetchLike) {
   return new GitHubPullCollaborationAdapter(
     new EvidenceValidator(),
     new GitHubPullCollaborationClient(fetcher),
