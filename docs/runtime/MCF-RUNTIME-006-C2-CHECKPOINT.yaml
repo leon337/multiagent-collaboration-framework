@@ -1,6 +1,6 @@
 mission: MCF-RUNTIME-006-C2
 issue: 79
-pull_request: 80
+pr: 80
 base_main_sha: cd29bedef1b3ad08d88ecad21a6b66b7c6117ddf
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
 final_review_head: 517f0827e7fc4564cf6fed83d5d6e1fd1a72cf62
@@ -36,7 +36,7 @@ security:
   metadata_evidence_patch_validation: PASS
   approve_review: FORBIDDEN
   request_changes_review: FORBIDDEN
-  runtime_merge_operation: FORBIDDEN
+  merge: FORBIDDEN
   close_reopen_pr: FORBIDDEN
   base_branch_change: FORBIDDEN
   force_push: FORBIDDEN
@@ -141,8 +141,46 @@ independent_review_remediation:
     historical_threads_resolved_after_evidence: true
 
 validation:
+  round_8_implementation:
+    adapter_fix: 398ec5c833d54f5db49f6a724568f1b11b3ed267
+    head: 65ed8e1722c3f616ab7f010baaa6dd6b3ea0c1bb
+    documentation_run: 31278735695
+    documentation: PASS
+    container_smoke_run: 31278735714
+    container_smoke: PASS
+    foundation_run: 31278735727
+    foundation: PASS
+    format: PASS
+    lint: PASS
+    typecheck: PASS
+    migrations_twice: PASS
+    server_test_files: 90
+    server_tests: 378
+    web_tests: 5
+    ops_tests: 15
+    adapter_fragment_case_tests: 4
+    postwrite_persistence_tests: 9
+    evidence_url_binding_tests: 5
+    evidence_metadata_input_tests: 6
+    build: PASS
+    artifact_id: 9027787068
+    artifact_digest: sha256:6732dc654d7ee5c175523abe9dba9b96e400c4c645bcb7fefdc647c92720d4ff
+  exact_head_gate_contract:
+    checkpoint_binding_mode: SELF
+    pr_head_requirement: MUST_EQUAL_CHECKPOINT_HEAD
+    ci_status_source: GITHUB_ACTIONS_FOR_CHECKPOINT_HEAD
+    required_workflows:
+      - Documentation validation
+      - Rede Social Container Smoke
+      - Rede Social Foundation
+    required_conclusion: SUCCESS
+    independent_review_source: CODEX_PR_REVIEW_FOR_CHECKPOINT_HEAD
+    max_blocking_p0: 0
+    max_blocking_p1: 0
+    max_blocking_p2: 0
   final_exact_head_gate:
-    checkpoint_head: 517f0827e7fc4564cf6fed83d5d6e1fd1a72cf62
+    resolved_checkpoint_head: 517f0827e7fc4564cf6fed83d5d6e1fd1a72cf62
+    checkpoint_self_binding_at_gate: CONSISTENT
     pr_head_equals_reviewed_commit: true
     documentation:
       run_id: 31278942858
@@ -168,13 +206,12 @@ validation:
     active_p0: 0
     active_p1: 0
     active_p2: 0
-    checkpoint_self_binding: CONSISTENT
   leo_gate:
     result: PASS
     integration_authorized: true
     expected_head_sha: 517f0827e7fc4564cf6fed83d5d6e1fd1a72cf62
     human_gate_invoked: false
-  merge:
+  integration:
     pr_state: MERGED
     strategy: SQUASH
     merge_commit: 0a7909b71e1944d1062e8ea1ab13a4bee4abbf88
@@ -221,6 +258,7 @@ traceability:
   conformance_recovery_issue: 81
   conformance_recovery_prf: artifacts/phases/PHASE-006-C2-CONFORMANCE-RECOVERY
   postwrite_remediation_prf: artifacts/phases/PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
+  latest_review_thread: PRRT_kwDOTnz-ks6XgvtO
   final_review_head: 517f0827e7fc4564cf6fed83d5d6e1fd1a72cf62
   merge_commit: 0a7909b71e1944d1062e8ea1ab13a4bee4abbf88
 
