@@ -1,0 +1,52 @@
+mission: MCF-RUNTIME-006-C2
+issue: 79
+base_main_sha: cd29bedef1b3ad08d88ecad21a6b66b7c6117ddf
+branch: feat/mcf-runtime-006-c2-pr-collaboration-write
+state: IMPLEMENTING
+external_effect: REVERSIBLE_TEXTUAL
+production: BLOCKED
+real_github_write_test: NOT_AUTHORIZED
+
+adapter:
+  id: github-pr-collaboration-write-v1
+  skill: MCF-GIT-PR-RELEASE
+  operations:
+    - comment-pr
+    - review-pr-comment
+    - update-pr-text-metadata
+  permission_profile: SCOPED_WRITE
+
+security:
+  authorized_scope_required: true
+  exact_pr_head_sha_required: true
+  approve_review: FORBIDDEN
+  request_changes_review: FORBIDDEN
+  merge: FORBIDDEN
+  close_reopen_pr: FORBIDDEN
+  base_branch_change: FORBIDDEN
+  force_push: FORBIDDEN
+  branch_protection_change: FORBIDDEN
+  production: FORBIDDEN
+  token_source: ENVIRONMENT_ONLY
+
+idempotency:
+  ledger_key: REQUIRED
+  fingerprint: SHA256
+  comments_provider_marker: REQUIRED
+  reviews_provider_marker: REQUIRED
+  metadata_strategy: EXACT_FINAL_STATE_READBACK
+  ambiguous_effect: UNKNOWN
+
+validation:
+  unit_tests: PENDING
+  integration_tests: PENDING
+  permission_tests: PENDING
+  evidence_tests: PENDING
+  no_real_write_boundary: PENDING
+  ci: PENDING
+  independent_review: PENDING
+
+next_action:
+  current: COMPLETE_IMPLEMENTATION_AND_OPEN_PR
+  after_ci: INDEPENDENT_CODE_REVIEW_EXACT_HEAD
+  repeat_A1_A2_C1: FORBIDDEN
