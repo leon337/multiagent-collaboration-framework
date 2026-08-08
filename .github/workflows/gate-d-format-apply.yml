@@ -1,0 +1,82 @@
+name: Gate D Formatting Apply
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-gate-d-staging-deploy-adapter
+    paths:
+      - ".github/workflows/gate-d-format-apply.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Apply exact Prettier formatting
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/external-action-dispatcher.staging-deploy.test.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.evidence.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.permission.test.ts \
+            apps/server/src/mcf-runtime/permission-engine.ts
+          pnpm exec prettier --check \
+            apps/server/src/mcf-runtime/external-action-dispatcher.staging-deploy.test.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.evidence.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.permission.test.ts \
+            apps/server/src/mcf-runtime/permission-engine.ts
+      - name: Remove temporary formatting workflows
+        run: |
+          git rm .github/workflows/gate-d-format-preview.yml
+          git rm .github/workflows/gate-d-format-apply.yml
+      - name: Enforce exact changed path set
+        run: |
+          expected=$(mktemp)
+          actual=$(mktemp)
+          cat >"$expected" <<'EOF'
+          .github/workflows/gate-d-format-apply.yml
+          .github/workflows/gate-d-format-preview.yml
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-dispatcher.staging-deploy.test.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.evidence.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.permission.test.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/permission-engine.ts
+          EOF
+          git diff --name-only | sort >"$actual"
+          sort -o "$expected" "$expected"
+          diff -u "$expected" "$actual"
+          git diff --check
+      - name: Commit deterministic formatting
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-dispatcher.staging-deploy.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.evidence.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.permission.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/permission-engine.ts
+          git commit -m 'style(gate-d): apply deterministic Prettier formatting'
+          git push origin HEAD:feat/mcf-runtime-006-gate-d-staging-deploy-adapter
