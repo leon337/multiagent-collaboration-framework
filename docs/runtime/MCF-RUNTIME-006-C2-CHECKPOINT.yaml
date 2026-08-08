@@ -38,6 +38,12 @@ security:
 idempotency:
   ledger_key: REQUIRED
   fingerprint: SHA256
+  fingerprint_canonicalization:
+    status: PASS
+    provider: CANONICALIZED
+    operation: CANONICALIZED
+    repository: CASE_INSENSITIVE_CANONICALIZED
+    expected_head_sha: LOWERCASE_CANONICALIZED
   comments_provider_marker: REQUIRED
   reviews_provider_marker: REQUIRED
   metadata_strategy: EXACT_FINAL_STATE_READBACK
@@ -80,7 +86,7 @@ idempotency:
 
 independent_review_remediation:
   p1_findings_total: 11
-  p2_findings_total: 3
+  p2_findings_total: 5
   reviews:
     - reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
       findings:
@@ -111,6 +117,10 @@ independent_review_remediation:
     - reviewed_head: 236410f83e1444d4780877a7d988a03ae0351774
       findings:
         - metadata_body_clear_not_representable
+    - reviewed_head: latest_pre_fd33227f_review
+      findings:
+        - repository_url_case_sensitive_comparison
+        - expired_recovery_fingerprint_raw_alias_mismatch
   live_registry_real_write_exposure: REMEDIATED
   post_write_reconciliation_definite_failure: REMEDIATED
   comment_head_race_before_success_receipt: REMEDIATED
@@ -125,6 +135,8 @@ independent_review_remediation:
   duplicate_reconciliation_after_ambiguous_comment_or_review: REMEDIATED
   checkpoint_provenance_missing_0025_and_exact_validated_head: REMEDIATED
   metadata_body_clear_not_representable: REMEDIATED
+  repository_url_case_sensitive_comparison: REMEDIATED
+  expired_recovery_fingerprint_raw_alias_mismatch: REMEDIATED
   dedicated_regression_tests:
     p1_regression_tests: 4
     review_head_race_tests: 1
@@ -136,20 +148,22 @@ independent_review_remediation:
     global_recovery_deadlock_tests: 1
     reconciliation_request_budget_tests: 2
     metadata_body_clear_tests: 1
+    repository_case_tests: 1
+    fingerprint_canonicalization_integration_tests: 1
   status: PASS_PENDING_FINAL_EXACT_HEAD_REVIEW
 
 validation:
-  implementation_head_validated: 94c03b6feeaa56313e1cbf7c4aacf2f47d5cd61e
-  implementation_head_note: This is the exact code-and-test HEAD validated before this checkpoint-only provenance commit; the resulting checkpoint commit must be validated separately and reviewed by exact final PR HEAD.
+  implementation_head_validated: fd33227f1f3c32855d701a9d7113915236c50472
+  implementation_head_note: This is the exact clean code-and-test HEAD validated before this checkpoint-only provenance commit; the temporary Prettier probe was removed before these runs. The resulting checkpoint commit must be validated separately and reviewed by exact final PR HEAD.
   documentation_validation:
     status: PASS
-    workflow_run: 31254126720
+    workflow_run: 31255227421
   container_smoke:
     status: PASS
-    workflow_run: 31254126724
+    workflow_run: 31255227447
   foundation:
     status: PASS
-    workflow_run: 31254126742
+    workflow_run: 31255227418
     formatting: PASS
     lint: PASS
     typecheck: PASS
@@ -160,11 +174,11 @@ validation:
     migration_0023: PASS
     migration_0024: PASS
     migration_0025: PASS
-    server_test_files: 80
-    server_tests: 347
+    server_test_files: 82
+    server_tests: 349
     build: PASS
-    artifact_id: 9020888578
-    artifact_digest: sha256:1251578af37a8f95e5faa8b3c6ec5eee72f011d1ee0eaca247c736734c2f37e8
+    artifact_id: 9021201335
+    artifact_digest: sha256:8b50fb90d490b5d0fb39811edd8fc589c5bc23e0c1aa306a60b55c2cf19f6b7d
   unit_tests: PASS
   integration_tests: PASS
   permission_tests: PASS
@@ -181,6 +195,8 @@ validation:
   accepted_invalid_json_reconciliation: PASS
   high_pagination_ambiguous_reconciliation: PASS
   metadata_body_clear: PASS
+  repository_case_insensitive_validation: PASS
+  canonical_fingerprint_alias_recovery: PASS
   implementation_ci: PASS
   checkpoint_commit_ci: PENDING
   independent_review: PENDING_EXACT_FINAL_HEAD
