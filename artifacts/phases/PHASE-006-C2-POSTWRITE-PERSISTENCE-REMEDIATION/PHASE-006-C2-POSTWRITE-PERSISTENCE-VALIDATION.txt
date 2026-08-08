@@ -1,0 +1,30 @@
+PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
+VALIDATION SUMMARY
+
+implementation_head=3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
+documentation_run=31263689993 PASS
+container_smoke_run=31263690012 PASS
+foundation_run=31263689966 PASS
+
+format=PASS
+lint=PASS
+typecheck=PASS
+migrations_twice=PASS
+migration_0027=PASS
+server_test_files=85/85 PASS
+server_tests=356/356 PASS
+build=PASS
+
+dispatcher_postwrite_regressions=4/4 PASS
+expired_executing_binding_integration=1/1 PASS
+github_ci_query_compatibility=PASS
+skill_executor_external_action_compatibility=PASS
+no_real_provider_write_test=PASS
+
+vitest_artifact_id=9023511453
+vitest_artifact_digest=sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a
+
+real_github_write_test=NOT_AUTHORIZED
+production=BLOCKED
+final_document_head_ci=PENDING
+independent_exact_head_review=PENDING
