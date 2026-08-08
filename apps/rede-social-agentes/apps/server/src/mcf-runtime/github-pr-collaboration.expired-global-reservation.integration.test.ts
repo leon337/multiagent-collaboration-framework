@@ -139,9 +139,9 @@ describe('C2 expired global reservation recovery', () => {
       expect(attempts.rows.find((row) => row.attemptId === contenderAttempt)).toMatchObject({
         status: 'ALLOWED',
       });
-      expect(
-        attempts.rows.find((row) => row.attemptId === contenderAttempt)?.scopeKey,
-      ).toEqual(expect.any(String));
+      expect(attempts.rows.find((row) => row.attemptId === contenderAttempt)?.scopeKey).toEqual(
+        expect.any(String),
+      );
 
       const holderState = await database.query<{ activeAttemptId: string | null }>(
         `select "active_external_attempt_id" as "activeAttemptId"
@@ -172,10 +172,7 @@ describe('C2 expired global reservation recovery', () => {
       });
 
       await expect(
-        ledger.reserve(
-          request(holderMission, randomUUID()),
-          'github-pr-collaboration-write-v1',
-        ),
+        ledger.reserve(request(holderMission, randomUUID()), 'github-pr-collaboration-write-v1'),
       ).rejects.toMatchObject({
         code: 'RESERVATION_CONFLICT',
         retryable: false,
