@@ -10,7 +10,10 @@ import {
 } from './external-action.contracts.js';
 import type { ExternalActionLedger } from './external-action-ledger.js';
 
-const durableExecutionBoundaryAdapters = new Set(['github-pr-collaboration-write-v1']);
+const durableExecutionBoundaryAdapters = new Set([
+  'github-pr-collaboration-write-v1',
+  'github-actions-staging-deploy-v1',
+]);
 const unknownPersistenceAttempts = 3;
 
 function failureFromError(error: unknown): ExternalActionFailure {
@@ -98,9 +101,9 @@ export class ExternalActionDispatcher {
     }
 
     if (durableExecutionBoundaryAdapters.has(adapter.adapterId)) {
-      // Establish a durable boundary before the C2 adapter is allowed to perform
-      // any external mutation. An expired EXECUTING attempt is recovered as
-      // UNKNOWN, never as retryable/abandoned, so its idempotency binding survives.
+      // Establish a durable boundary before adapters that can trigger an
+      // externally mutating workflow are allowed to execute. An expired
+      // EXECUTING attempt is reconciled as UNKNOWN, never blindly retried.
       try {
         await this.ledger.recordExecuting(attemptId);
       } catch (error) {

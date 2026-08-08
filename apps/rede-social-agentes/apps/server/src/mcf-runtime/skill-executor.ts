@@ -16,6 +16,10 @@ import type {
 import { verifyGitHubBranchPrEvidence } from './github-branch-pr.evidence.js';
 import { verifyGitHubPrCollaborationEvidence } from './github-pr-collaboration.evidence.js';
 import {
+  stagingDeploymentOutcome,
+  verifyGitHubStagingDeployEvidence,
+} from './github-staging-deploy.evidence.js';
+import {
   McfEvidenceRejectedError,
   McfPermissionDeniedError,
   McfSkillInputError,
@@ -114,6 +118,17 @@ function isGitHubPrCollaborationReceipt(
     skill.skillId === 'MCF-GIT-PR-RELEASE' &&
     canonicalizeProvider(receipt.provider) === 'github' &&
     ['comment-pr', 'review-pr-comment', 'update-pr-text-metadata'].includes(operation)
+  );
+}
+
+function isGitHubStagingDeployReceipt(
+  receipt: McfToolReceipt,
+  skill: McfSkillDefinition,
+): boolean {
+  return (
+    skill.skillId === 'MCF-DEPLOY-VALIDATE' &&
+    receipt.provider === 'github-actions' &&
+    canonicalizeToolValue(receipt.operation) === 'deploy-staging'
   );
 }
 
@@ -288,6 +303,12 @@ export class SkillExecutor {
           agentId: input.agentId,
           executionContext: input.executionContext,
         });
+      } else if (isGitHubStagingDeployReceipt(receipt, skill)) {
+        this.evidence.verify(receipt, input.tool);
+        verifyGitHubStagingDeployEvidence(receipt, input.tool, skill, input.inputs, {
+          agentId: input.agentId,
+          executionContext: input.executionContext,
+        });
       } else {
         this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
           agentId: input.agentId,
@@ -348,6 +369,28 @@ export class SkillExecutor {
             externalAction: ledgerFailure ? ledgerFailureTrace(externalAction) : externalAction,
           };
         }
+      }
+
+      if (
+        isGitHubStagingDeployReceipt(receipt, skill) &&
+        stagingDeploymentOutcome(receipt) === 'RECOVERED'
+      ) {
+        const reason = 'staging release was rejected and the previous healthy SHA was restored';
+        const ledgerFailure = await this.recordEvidenceRejected(
+          externalAction,
+          receipt.receiptId,
+          reason,
+        );
+        return {
+          skill,
+          receipt,
+          evidenceStatus: 'INVALID',
+          phaseState: 'RECOVERING',
+          missionState: 'RECOVERING',
+          handoffTo: null,
+          rejectionReason: ledgerFailure ?? reason,
+          externalAction: ledgerFailure ? ledgerFailureTrace(externalAction) : externalAction,
+        };
       }
 
       const ledgerFailure = await this.recordEvidenceValidated(externalAction, receipt.receiptId);
