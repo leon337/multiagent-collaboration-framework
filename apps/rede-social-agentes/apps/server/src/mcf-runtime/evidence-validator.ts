@@ -691,16 +691,26 @@ function validateCiQueryReceipt(
   for (const value of jobs) {
     const item = requireRecord(value, 'CI query evidence contains invalid workflow job');
     const id = recordString(item, 'id', 'CI query workflow job requires id');
-    const workflowRunId = recordString(
-      item,
-      'workflowRunId',
-      'CI query workflow job requires workflowRunId',
+    const runId = recordString(item, 'runId', 'CI query workflow job requires runId');
+    const headSha = exactCommitSha(
+      recordString(item, 'headSha', 'CI query workflow job requires headSha'),
     );
+    const workflowRunId =
+      item.workflowRunId === undefined
+        ? undefined
+        : recordString(
+            item,
+            'workflowRunId',
+            'CI query workflow job requires valid workflowRunId when present',
+          );
+    if (workflowRunId !== undefined && workflowRunId !== runId) {
+      reject('CI query workflow job runId and workflowRunId must match');
+    }
     const url = verifiedGitHubUrl(
       item.url,
       repository,
       'CI query workflow job requires a valid GitHub URL',
-      `/${repository}/actions/runs/${workflowRunId}/job/${id}`,
+      `/${repository}/actions/runs/${runId}/job/${id}`,
     );
     const status = recordString(item, 'status', 'CI query workflow job requires status');
     const conclusion = recordNullableString(
@@ -708,8 +718,18 @@ function validateCiQueryReceipt(
       'conclusion',
       'CI query workflow job requires conclusion',
     );
-    if (!workflowIds.has(workflowRunId)) {
+    if (!workflowIds.has(runId)) {
       reject('CI query workflow job must reference an observed workflow run');
+    }
+    if (
+      headSha === null ||
+      headSha !== receipt.commitSha ||
+      headSha !== requestedSha ||
+      headSha !== verifiedSha
+    ) {
+      reject(
+        'CI query workflow job headSha must match the exact requested and verified commit SHA',
+      );
     }
     if (jobIds.has(id)) {
       reject('CI query evidence contains duplicate workflow job id');
@@ -765,6 +785,9 @@ function validateCiQueryReceipt(
   for (const value of checkRuns) {
     const item = requireRecord(value, 'CI query evidence contains invalid check run');
     const id = recordString(item, 'id', 'CI query check run requires id');
+    const headSha = exactCommitSha(
+      recordString(item, 'headSha', 'CI query check run requires headSha'),
+    );
     const urlValue = item.url;
     if (urlValue !== null) {
       const url = verifiedGitHubUrl(
@@ -783,6 +806,14 @@ function validateCiQueryReceipt(
       'conclusion',
       'CI query check run requires conclusion',
     );
+    if (
+      headSha === null ||
+      headSha !== receipt.commitSha ||
+      headSha !== requestedSha ||
+      headSha !== verifiedSha
+    ) {
+      reject('CI query check run headSha must match the exact requested and verified commit SHA');
+    }
     if (checkIds.has(id)) {
       reject('CI query evidence contains duplicate check run id');
     }

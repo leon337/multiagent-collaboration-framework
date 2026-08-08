@@ -47,6 +47,8 @@ interface GitHubJobStep {
 
 interface GitHubWorkflowJob {
   id: number;
+  run_id: number;
+  head_sha: string;
   name: string;
   status: string;
   conclusion: string | null;
@@ -63,6 +65,7 @@ interface GitHubWorkflowJobsResponse {
 
 interface GitHubCheckRun {
   id: number;
+  head_sha: string;
   name: string;
   status: string;
   conclusion: string | null;
@@ -351,6 +354,8 @@ function parseWorkflowJob(value: unknown): GitHubWorkflowJob {
       : requireArray(record.steps, 'workflow job steps').map(parseJobStep);
   return {
     id: requireInteger(record.id, 'workflow job id', 1),
+    run_id: requireInteger(record.run_id, 'workflow job run_id', 1),
+    head_sha: requireExactSha(record.head_sha, 'workflow job head_sha'),
     name: requireString(record.name, 'workflow job name'),
     status: requireString(record.status, 'workflow job status'),
     conclusion: requireNullableString(record.conclusion, 'workflow job conclusion'),
@@ -385,6 +390,7 @@ function parseCheckRun(value: unknown): GitHubCheckRun {
   }
   return {
     id: requireInteger(record.id, 'check run id', 1),
+    head_sha: requireExactSha(record.head_sha, 'check run head_sha'),
     name: requireString(record.name, 'check run name'),
     status: requireString(record.status, 'check run status'),
     conclusion: requireNullableString(record.conclusion, 'check run conclusion'),
@@ -631,7 +637,9 @@ function compactRun(run: GitHubWorkflowRun) {
 function compactJob(job: GitHubWorkflowJob, workflowRunId: number) {
   return {
     id: String(job.id),
+    runId: String(job.run_id),
     workflowRunId: String(workflowRunId),
+    headSha: job.head_sha,
     name: job.name,
     status: job.status,
     conclusion: job.conclusion,
@@ -650,6 +658,7 @@ function compactJob(job: GitHubWorkflowJob, workflowRunId: number) {
 function compactCheck(run: GitHubCheckRun) {
   return {
     id: String(run.id),
+    headSha: run.head_sha,
     name: run.name,
     app: run.app?.name ?? null,
     status: run.status,
@@ -1033,6 +1042,18 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
         );
         budget.consumeJobs(result.jobs);
         for (const job of result.jobs) {
+          if (job.run_id !== run.id) {
+            return adapterError(
+              'INVALID_RESPONSE',
+              `GitHub returned workflow job ${job.id} for a different workflow run`,
+            );
+          }
+          if (job.head_sha !== target.commitSha) {
+            return adapterError(
+              'INVALID_RESPONSE',
+              `GitHub returned workflow job ${job.id} not bound to the exact requested SHA`,
+            );
+          }
           if (jobIds.has(job.id)) {
             return adapterError(
               'INVALID_RESPONSE',
@@ -1062,6 +1083,12 @@ export class GitHubCiQueryAdapter implements ExternalActionAdapter {
       );
       budget.consumeCheckRuns(result.check_runs);
       for (const checkRun of result.check_runs) {
+        if (checkRun.head_sha !== target.commitSha) {
+          return adapterError(
+            'INVALID_RESPONSE',
+            `GitHub returned check run ${checkRun.id} not bound to the exact requested SHA`,
+          );
+        }
         const existing = checkRunMap.get(checkRun.id);
         if (existing) {
           return adapterError(

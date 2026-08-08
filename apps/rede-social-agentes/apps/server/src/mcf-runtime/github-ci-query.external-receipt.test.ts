@@ -96,7 +96,9 @@ function createReceipt(
     jobs: [
       {
         id: '55',
+        runId: '44',
         workflowRunId: '44',
+        headSha: commitSha,
         name: 'foundation',
         status: 'completed',
         conclusion: 'success',
@@ -117,6 +119,7 @@ function createReceipt(
     checkRuns: [
       {
         id: '66',
+        headSha: commitSha,
         name: 'foundation',
         status: 'completed',
         conclusion: 'success',
@@ -271,6 +274,105 @@ describe('GitHub CI external receipt execution binding', () => {
       });
     },
   );
+
+  it.each([
+    [
+      'missing runId',
+      (metadata: Record<string, unknown>) => {
+        const [job] = metadata.jobs as Array<Record<string, unknown>>;
+        if (!job) throw new Error('expected workflow-job fixture');
+        delete job.runId;
+      },
+      /workflow job requires runId/u,
+    ],
+    [
+      'a runId inconsistent with workflowRunId',
+      (metadata: Record<string, unknown>) => {
+        const [job] = metadata.jobs as Array<Record<string, unknown>>;
+        if (!job) throw new Error('expected workflow-job fixture');
+        job.runId = '45';
+      },
+      /runId and workflowRunId must match/u,
+    ],
+    [
+      'a runId that does not identify an observed workflow run',
+      (metadata: Record<string, unknown>) => {
+        const [job] = metadata.jobs as Array<Record<string, unknown>>;
+        if (!job) throw new Error('expected workflow-job fixture');
+        job.runId = '45';
+        job.workflowRunId = '45';
+        const jobUrl = `https://github.com/${repository}/actions/runs/45/job/55`;
+        job.url = jobUrl;
+        const urls = metadata.evidenceUrls as string[];
+        urls[2] = jobUrl;
+      },
+      /must reference an observed workflow run/u,
+    ],
+    [
+      'missing headSha',
+      (metadata: Record<string, unknown>) => {
+        const [job] = metadata.jobs as Array<Record<string, unknown>>;
+        if (!job) throw new Error('expected workflow-job fixture');
+        delete job.headSha;
+      },
+      /workflow job requires headSha/u,
+    ],
+    [
+      'a headSha for a different commit',
+      (metadata: Record<string, unknown>) => {
+        const [job] = metadata.jobs as Array<Record<string, unknown>>;
+        if (!job) throw new Error('expected workflow-job fixture');
+        job.headSha = otherSha;
+      },
+      /workflow job headSha must match/u,
+    ],
+  ] as const)('rejects a signed workflow-job receipt with %s', async (_label, mutate, message) => {
+    const { evidence, executor } = createExecutor();
+    const receipt = createReceipt(evidence, { mutate });
+    await expectRejected(executor, receipt, {}, message);
+  });
+
+  it.each([
+    [
+      'missing headSha',
+      (metadata: Record<string, unknown>) => {
+        const [checkRun] = metadata.checkRuns as Array<Record<string, unknown>>;
+        if (!checkRun) throw new Error('expected check-run fixture');
+        delete checkRun.headSha;
+      },
+      /check run requires headSha/u,
+    ],
+    [
+      'a headSha for a different commit',
+      (metadata: Record<string, unknown>) => {
+        const [checkRun] = metadata.checkRuns as Array<Record<string, unknown>>;
+        if (!checkRun) throw new Error('expected check-run fixture');
+        checkRun.headSha = otherSha;
+      },
+      /check run headSha must match/u,
+    ],
+  ] as const)('rejects a signed check-run receipt with %s', async (_label, mutate, message) => {
+    const { evidence, executor } = createExecutor();
+    const receipt = createReceipt(evidence, { mutate });
+    await expectRejected(executor, receipt, {}, message);
+  });
+
+  it('accepts provider-native job and check-run provenance without workflowRunId compatibility metadata', async () => {
+    const { evidence, executor } = createExecutor();
+    const receipt = createReceipt(evidence, {
+      mutate: (metadata) => {
+        const jobs = metadata.jobs as Array<Record<string, unknown>>;
+        delete (jobs[0] as Record<string, unknown>).workflowRunId;
+      },
+    });
+
+    const result = await executeReceipt(executor, receipt);
+    expect(result).toMatchObject({
+      evidenceStatus: 'VALID',
+      phaseState: 'COMPLETED',
+      missionState: 'EXECUTING',
+    });
+  });
 
   it('rejects evidence URLs that use a sibling repository prefix', async () => {
     const { evidence, executor } = createExecutor();

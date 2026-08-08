@@ -113,6 +113,8 @@ function workflowRun(
 function workflowJob(
   input: {
     id?: number;
+    runId?: number;
+    headSha?: string;
     status?: string;
     conclusion?: string | null;
     steps?: number;
@@ -122,6 +124,8 @@ function workflowJob(
   const steps = input.steps ?? 1;
   return {
     id,
+    run_id: input.runId ?? 44,
+    head_sha: input.headSha ?? commitSha,
     name: `job-${id}`,
     status: input.status ?? 'completed',
     conclusion: input.conclusion === undefined ? 'success' : input.conclusion,
@@ -140,6 +144,7 @@ function workflowJob(
 function checkRun(
   input: {
     id?: number;
+    headSha?: string;
     status?: string;
     conclusion?: string | null;
   } = {},
@@ -147,6 +152,7 @@ function checkRun(
   const id = input.id ?? 66;
   return {
     id,
+    head_sha: input.headSha ?? commitSha,
     name: `check-${id}`,
     status: input.status ?? 'completed',
     conclusion: input.conclusion === undefined ? 'success' : input.conclusion,
@@ -193,8 +199,8 @@ function json(payload: unknown, status = 200, headers?: HeadersInit): Response {
 function standardFetcher(
   input: {
     workflowRuns?: ReturnType<typeof workflowRun>[];
-    jobs?: ReturnType<typeof workflowJob>[];
-    checkRuns?: ReturnType<typeof checkRun>[];
+    jobs?: unknown[];
+    checkRuns?: unknown[];
     checkSuites?: ReturnType<typeof checkSuite>[];
     commit?: ReturnType<typeof commitPayload>;
   } = {},
@@ -318,6 +324,20 @@ describe('GitHubCiQueryAdapter', () => {
             latestCheckRunsCount: 1,
           },
         ],
+        jobs: [
+          {
+            id: '55',
+            runId: '44',
+            workflowRunId: '44',
+            headSha: commitSha,
+          },
+        ],
+        checkRuns: [
+          {
+            id: '66',
+            headSha: commitSha,
+          },
+        ],
         queryBudget: {
           checkSuiteCount: 1,
           limits: { checkSuites: GITHUB_CI_QUERY_MAX_TOTAL_CHECK_SUITES },
@@ -348,6 +368,68 @@ describe('GitHubCiQueryAdapter', () => {
     ).execute(request());
 
     expect(receipt.metadata.conclusion).toBe('FAILURE');
+  });
+
+  it('rejects a workflow job without provider-native run_id', async () => {
+    const jobWithoutRunId: Record<string, unknown> = { ...workflowJob() };
+    delete jobWithoutRunId.run_id;
+
+    await expect(
+      adapterFrom(standardFetcher({ jobs: [jobWithoutRunId] })).execute(request()),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
+  it('rejects a workflow job whose provider-native run_id differs from its workflow run', async () => {
+    await expect(
+      adapterFrom(standardFetcher({ jobs: [workflowJob({ runId: 45 })] })).execute(request()),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
+  it('rejects a workflow job without provider-native head_sha', async () => {
+    const jobWithoutHeadSha: Record<string, unknown> = { ...workflowJob() };
+    delete jobWithoutHeadSha.head_sha;
+
+    await expect(
+      adapterFrom(standardFetcher({ jobs: [jobWithoutHeadSha] })).execute(request()),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
+  it('rejects a workflow job whose provider-native head_sha differs from the target', async () => {
+    await expect(
+      adapterFrom(standardFetcher({ jobs: [workflowJob({ headSha: otherSha })] })).execute(
+        request(),
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
+  it('rejects a check run without provider-native head_sha', async () => {
+    const checkRunWithoutHeadSha: Record<string, unknown> = { ...checkRun() };
+    delete checkRunWithoutHeadSha.head_sha;
+
+    await expect(
+      adapterFrom(standardFetcher({ checkRuns: [checkRunWithoutHeadSha] })).execute(request()),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
+  it('rejects a check run whose provider-native head_sha differs from the target', async () => {
+    await expect(
+      adapterFrom(standardFetcher({ checkRuns: [checkRun({ headSha: otherSha })] })).execute(
+        request(),
+      ),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+
+  it('rejects a successful check-run-only response bound to a different SHA', async () => {
+    await expect(
+      adapterFrom(
+        standardFetcher({
+          workflowRuns: [],
+          jobs: [],
+          checkSuites: [],
+          checkRuns: [checkRun({ headSha: otherSha, conclusion: 'success' })],
+        }),
+      ).execute(request()),
+    ).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
   });
 
   it('keeps workflow cancellation authoritative when jobs and checks report success', async () => {
