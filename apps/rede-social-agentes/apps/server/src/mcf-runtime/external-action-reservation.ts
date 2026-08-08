@@ -52,39 +52,47 @@ export async function reconcileExpiredExternalReservation(
     return null;
   }
 
-  if (attempt) {
+  const abandonedReservation = attempt?.status === 'ALLOWED';
+  if (abandonedReservation) {
     await client.query(
       `update "mcf_external_action_attempts"
        set "status" = 'ABANDONED',
            "failure_code" = 'RESERVATION_EXPIRED',
            "failure_message" = 'External action reservation lease expired before mission persistence',
            "updated_at" = $1
-       where "attempt_id" = $2`,
+       where "attempt_id" = $2 and "status" = 'ALLOWED'`,
       [now, activeAttemptId],
     );
   }
 
-  await client.query(
-    `insert into "mcf_events" (
-      "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
-      "idempotency_key", "occurred_at"
-    ) values ($1, $2, $3, $4, 'EXTERNAL_ACTION_ABANDONED', $5::jsonb, $6, $7)
-    on conflict ("idempotency_key") do nothing`,
-    [
-      randomUUID(),
-      missionId,
-      attempt?.phaseId ?? null,
-      attempt?.agentId ?? null,
-      JSON.stringify({
-        attemptId: activeAttemptId,
-        previousStatus: attempt?.status ?? 'MISSING',
-        reason: attempt ? 'RESERVATION_EXPIRED' : 'MISSING_LEDGER_ATTEMPT',
-      }),
-      `external-action:${activeAttemptId}:abandoned`,
-      now,
-    ],
-  );
+  if (abandonedReservation || !attempt) {
+    await client.query(
+      `insert into "mcf_events" (
+        "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
+        "idempotency_key", "occurred_at"
+      ) values ($1, $2, $3, $4, 'EXTERNAL_ACTION_ABANDONED', $5::jsonb, $6, $7)
+      on conflict ("idempotency_key") do nothing`,
+      [
+        randomUUID(),
+        missionId,
+        attempt?.phaseId ?? null,
+        attempt?.agentId ?? null,
+        JSON.stringify({
+          attemptId: activeAttemptId,
+          previousStatus: attempt?.status ?? 'MISSING',
+          reason: attempt ? 'RESERVATION_EXPIRED' : 'MISSING_LEDGER_ATTEMPT',
+        }),
+        `external-action:${activeAttemptId}:abandoned`,
+        now,
+      ],
+    );
+  }
 
+  // A stale mission pointer may survive after the attempt has already reached a
+  // terminal ledger state (EXECUTED/EVIDENCE_* / FAILED). Clear only the stale
+  // pointer in that case. Never rewrite the terminal attempt to ABANDONED: its
+  // persistent idempotency_scope_key is a consumed-key binding and must remain
+  // intact so retries cannot repeat an already-completed external mutation.
   await client.query(
     `update "mcf_missions"
      set "active_external_attempt_id" = null
