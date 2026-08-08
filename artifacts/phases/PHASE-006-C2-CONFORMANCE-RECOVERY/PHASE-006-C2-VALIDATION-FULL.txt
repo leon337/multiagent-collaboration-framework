@@ -1,0 +1,52 @@
+PHASE_ID=PHASE-006-C2-CONFORMANCE-RECOVERY
+GENERATED_AT=2026-08-08T13:43:00Z
+SOURCE_COMMIT=e9250b7967f6dcba45b270e4887a495f34145755
+PRF_VALIDATED_COMMIT=c6b2325c4bccea6656bfaf0591fee40ad4d8d04f
+
+EXPANDED_EVIDENCE:
+1. Protocolo Operacional Unificado exige passagem interna sem encerrar resposta, loop automático enquanto houver ação segura/autorizada e PRF para fases Classe B/C.
+2. Issue #79 congela o C2 em comment-pr, review-pr-comment COMMENT-only e update-pr-text-metadata title/body, sem provider real.
+3. PR #80 foi convertido novamente para DRAFT antes desta recuperação.
+4. O diretório artifacts/phases não existia na branch antes da recuperação.
+5. HEAD fonte e9250b7967f6dcba45b270e4887a495f34145755:
+   - Documentation validation 31258225885: PASS;
+   - Container Smoke 31258225898: PASS;
+   - Foundation 31258225908: PASS.
+6. PRF inicial em c6b2325c4bccea6656bfaf0591fee40ad4d8d04f alterou exclusivamente 9 arquivos sob artifacts/phases/PHASE-006-C2-CONFORMANCE-RECOVERY/.
+7. CI do PRF inicial:
+   - Documentation validation 31260117220: PASS;
+   - Container Smoke 31260117225: PASS;
+   - Foundation 31260117227: PASS.
+8. Foundation job 93109515986 comprovou:
+   - format: PASS;
+   - lint: PASS;
+   - typecheck: PASS;
+   - migrations executadas duas vezes: PASS;
+   - migrations 0020, 0021, 0022, 0023, 0024, 0025 aplicadas;
+   - ops: 15/15 PASS;
+   - apps/server: 83/83 test files PASS, 351/351 tests PASS;
+   - web: 5/5 PASS;
+   - build: PASS.
+9. Artefato Vitest do PRF inicial:
+   - id: 9022542399;
+   - digest: sha256:de734fcb3e6039a182636f59cd15b927b82f9df59ade3cf76e1f19d235a48c00.
+10. Todos os review threads existentes no PR #80 estão resolvidos.
+11. Issue #81 registra formalmente a recuperação CAF.
+12. A automação de continuidade do PR #80 está desativada durante a recuperação.
+
+KNOWN_NEGATIVE_TEST_LOGS:
+- mensagens PostgreSQL de constraints e guards aparecem no Foundation como comportamento esperado de testes negativos;
+- a suíte completa e o job encerraram PASS.
+
+SECURITY_AND_SCOPE:
+- production: BLOCKED;
+- C2 live registry: DISABLED conforme checkpoint atual;
+- real GitHub provider write: NOT_AUTHORIZED;
+- nenhum segredo, token ou credencial é reproduzido neste pacote;
+- nenhuma nova operação C2 é adicionada pela recuperação.
+
+PENDING_AFTER_FINAL_DOCUMENT_COMMIT:
+- CI do HEAD documental final;
+- auditoria exata desse HEAD;
+- decisão operacional de Léo;
+- retorno ao gate original do C2.

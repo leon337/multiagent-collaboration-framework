@@ -13,6 +13,7 @@ import {
   EXTERNAL_ACTION_LEASE_MS,
   reconcileExpiredExternalReservation,
 } from './external-action-reservation.js';
+import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';
 
 interface MissionVersionRow {
   version: number;
@@ -28,20 +29,36 @@ interface IdempotencyRow extends AttemptRow {
 }
 
 type ExternalAttemptStatus =
-  'ALLOWED' | 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED' | 'ABANDONED';
+  | 'ALLOWED'
+  | 'EXECUTING'
+  | 'EXECUTED'
+  | 'UNKNOWN'
+  | 'FAILED'
+  | 'EVIDENCE_VALIDATED'
+  | 'EVIDENCE_REJECTED'
+  | 'ABANDONED';
 
 interface AttemptStateRow extends AttemptRow {
   status: ExternalAttemptStatus;
 }
 
 const allowedTransitions: Record<ExternalAttemptStatus, ExternalAttemptStatus[]> = {
-  ALLOWED: ['EXECUTED', 'FAILED'],
-  EXECUTED: ['EVIDENCE_VALIDATED', 'EVIDENCE_REJECTED'],
+  ALLOWED: ['EXECUTING', 'EXECUTED', 'UNKNOWN', 'FAILED'],
+  EXECUTING: ['EXECUTED', 'UNKNOWN', 'FAILED'],
+  EXECUTED: ['UNKNOWN', 'EVIDENCE_VALIDATED', 'EVIDENCE_REJECTED'],
+  UNKNOWN: ['EVIDENCE_VALIDATED', 'EVIDENCE_REJECTED'],
   FAILED: [],
   EVIDENCE_VALIDATED: [],
   EVIDENCE_REJECTED: [],
   ABANDONED: [],
 };
+
+const globallySerializedAdapter = 'github-pr-collaboration-write-v1';
+const globallySerializedOperations = new Set([
+  'comment-pr',
+  'review-pr-comment',
+  'update-pr-text-metadata',
+]);
 
 function databaseErrorCode(error: unknown): string | null {
   if (
@@ -88,22 +105,66 @@ function canonicalizeForDigest(value: unknown): unknown {
   return value;
 }
 
+function isGloballySerializedC2Request(request: ExternalActionRequest, adapterId: string): boolean {
+  return (
+    adapterId === globallySerializedAdapter &&
+    globallySerializedOperations.has(canonicalizeToolValue(request.tool.operation))
+  );
+}
+
+function canonicalizeC2FingerprintInputs(inputs: Record<string, unknown>): Record<string, unknown> {
+  const canonical = { ...inputs };
+  if (typeof canonical.repository === 'string') {
+    canonical.repository = canonical.repository.trim().toLowerCase();
+  }
+  if (typeof canonical.expected_head_sha === 'string') {
+    canonical.expected_head_sha = canonical.expected_head_sha.trim().toLowerCase();
+  }
+  return canonical;
+}
+
 function requestIdempotencyFingerprint(
   request: ExternalActionRequest,
   adapterId: string,
   idempotencyKey: string | null,
 ): string | null {
   if (!idempotencyKey) return null;
+
+  const canonicalC2 = isGloballySerializedC2Request(request, adapterId);
   const payload = canonicalizeForDigest({
     adapterId,
     agentId: request.agentId,
     skillId: request.skill.skillId,
     skillVersion: request.skill.version,
-    provider: request.tool.provider,
-    operation: request.tool.operation,
-    resource: request.tool.resource,
-    inputs: request.inputs,
+    provider: canonicalC2 ? canonicalizeProvider(request.tool.provider) : request.tool.provider,
+    operation: canonicalC2 ? canonicalizeToolValue(request.tool.operation) : request.tool.operation,
+    resource: canonicalC2 ? request.tool.resource.trim().toLowerCase() : request.tool.resource,
+    inputs: canonicalC2 ? canonicalizeC2FingerprintInputs(request.inputs) : request.inputs,
   });
+  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+}
+
+function requestGlobalIdempotencyScopeKey(
+  request: ExternalActionRequest,
+  adapterId: string,
+  idempotencyKey: string | null,
+): string | null {
+  if (!idempotencyKey || adapterId !== globallySerializedAdapter) return null;
+
+  const operation = canonicalizeToolValue(request.tool.operation);
+  if (!globallySerializedOperations.has(operation)) return null;
+
+  const pullRequestNumber = request.inputs.pull_request_number;
+  if (!Number.isInteger(pullRequestNumber) || (pullRequestNumber as number) < 1) return null;
+
+  const payload = {
+    adapterId,
+    provider: canonicalizeProvider(request.tool.provider),
+    operation,
+    resource: request.tool.resource.trim().toLowerCase(),
+    pullRequestNumber,
+    idempotencyKey,
+  };
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
 
@@ -122,6 +183,11 @@ export class ExternalActionLedger {
 
     const idempotencyKey = requestIdempotencyKey(request);
     const idempotencyFingerprint = requestIdempotencyFingerprint(
+      request,
+      adapterId,
+      idempotencyKey,
+    );
+    const idempotencyScopeKey = requestGlobalIdempotencyScopeKey(
       request,
       adapterId,
       idempotencyKey,
@@ -212,8 +278,8 @@ export class ExternalActionLedger {
             "attempt_id", "mission_id", "phase_id", "agent_id", "skill_id",
             "adapter_id", "provider", "operation", "resource", "idempotency_key",
             "idempotency_fingerprint", "expected_mission_version", "status",
-            "lease_expires_at", "created_at", "updated_at"
-          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14)`,
+            "lease_expires_at", "created_at", "updated_at", "idempotency_scope_key"
+          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14, $15)`,
           [
             attemptId,
             request.context.missionId,
@@ -229,6 +295,7 @@ export class ExternalActionLedger {
             request.context.expectedMissionVersion,
             leaseExpiresAt,
             occurredAt,
+            idempotencyScopeKey,
           ],
         );
 
@@ -271,6 +338,7 @@ export class ExternalActionLedger {
               resource: request.tool.resource,
               idempotencyKey,
               idempotencyFingerprint,
+              idempotencyScopeKey,
               expectedMissionVersion: request.context.expectedMissionVersion,
             },
             idempotencyKey: `external-action:${attemptId}:requested`,
@@ -286,6 +354,7 @@ export class ExternalActionLedger {
               resource: request.tool.resource,
               idempotencyKey,
               idempotencyFingerprint,
+              idempotencyScopeKey,
             },
             idempotencyKey: `external-action:${attemptId}:allowed`,
           },
@@ -316,6 +385,13 @@ export class ExternalActionLedger {
         throw error;
       }
       if (databaseErrorCode(error) === '23505') {
+        if (idempotencyScopeKey) {
+          throw new ExternalActionAdapterError(
+            'RESERVATION_CONFLICT',
+            `Global idempotency scope for ${request.tool.resource}/${request.tool.operation} is already durably bound to a prior or active attempt`,
+            false,
+          );
+        }
         throw new ExternalActionAdapterError(
           'RESERVATION_CONFLICT',
           `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,
@@ -330,6 +406,20 @@ export class ExternalActionLedger {
     }
 
     return attemptId;
+  }
+
+  async recordExecuting(attemptId: string): Promise<void> {
+    await this.transition({
+      attemptId,
+      status: 'EXECUTING',
+      eventType: 'EXTERNAL_ACTION_EXECUTING',
+      receiptId: null,
+      failure: null,
+      payload: {
+        externalEffectState: 'MUTATION_MAY_START',
+        retryWithoutReconciliation: false,
+      },
+    });
   }
 
   async recordExecuted(attemptId: string, receipt: McfToolReceipt): Promise<void> {
@@ -351,6 +441,37 @@ export class ExternalActionLedger {
           typeof receipt.metadata.idempotencyKey === 'string'
             ? receipt.metadata.idempotencyKey
             : null,
+      },
+    });
+  }
+
+  async recordUnknown(
+    attemptId: string,
+    receipt: McfToolReceipt,
+    failure: ExternalActionFailure,
+  ): Promise<void> {
+    await this.transition({
+      attemptId,
+      status: 'UNKNOWN',
+      eventType: 'EXTERNAL_ACTION_UNKNOWN',
+      receiptId: receipt.receiptId,
+      failure: { ...failure, retryable: false },
+      payload: {
+        receiptId: receipt.receiptId,
+        provider: receipt.provider,
+        operation: receipt.operation,
+        resource: receipt.resource,
+        externalId: receipt.externalId,
+        commitSha: receipt.commitSha,
+        receiptStatus: receipt.status,
+        externalEffectState: 'POSSIBLY_APPLIED',
+        retryWithoutReconciliation: false,
+        idempotencyKey:
+          typeof receipt.metadata.idempotencyKey === 'string'
+            ? receipt.metadata.idempotencyKey
+            : null,
+        failureCode: failure.code,
+        message: failure.message,
       },
     });
   }
@@ -404,9 +525,14 @@ export class ExternalActionLedger {
 
   private async transition(input: {
     attemptId: string;
-    status: 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
+    status:
+      'EXECUTING' | 'EXECUTED' | 'UNKNOWN' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
     eventType:
-      'EXTERNAL_ACTION_EXECUTED' | 'EXTERNAL_ACTION_FAILED' | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
+      | 'EXTERNAL_ACTION_EXECUTING'
+      | 'EXTERNAL_ACTION_EXECUTED'
+      | 'EXTERNAL_ACTION_UNKNOWN'
+      | 'EXTERNAL_ACTION_FAILED'
+      | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
     receiptId: string | null;
     failure: ExternalActionFailure | null;
     payload: Record<string, unknown>;
