@@ -72,11 +72,11 @@ function branchRef(sha = HEAD_SHA) {
   return { ref: 'refs/heads/feat/mcf-c1-test', object: { sha, type: 'commit' } };
 }
 
-function pull(body = `<!-- mcf-idempotency:${KEY} -->`) {
+function pull(body = `<!-- mcf-idempotency:${KEY} -->`, state = 'open') {
   return {
     number: 76,
     html_url: 'https://github.com/leon337/multiagent-collaboration-framework/pull/76',
-    state: 'open',
+    state,
     body,
     head: { ref: 'feat/mcf-c1-test', sha: HEAD_SHA },
     base: { ref: 'main', sha: BASE_SHA },
@@ -178,6 +178,23 @@ describe('GitHubBranchPullRequestAdapter', () => {
       if (input.includes('/git/ref/heads/feat/mcf-c1-test')) return jsonResponse(branchRef());
       if (input.includes('/pulls?'))
         return jsonResponse([pull('human-created pull without MCF marker')]);
+      throw new Error(`unexpected request ${input}`);
+    });
+    const adapter = new GitHubBranchPullRequestAdapter(
+      new EvidenceValidator(),
+      new GitHubBranchPrClient(fetcher),
+    );
+
+    await expect(adapter.execute(request())).rejects.toThrow(/incompatible pull request/u);
+  });
+
+  it('fails closed when the matching PR is already closed', async () => {
+    const fetcher = vi.fn(async (input: string) => {
+      if (input.includes('/git/ref/heads/main')) return jsonResponse(baseRef());
+      if (input.includes(`/commits/${HEAD_SHA}`))
+        return jsonResponse({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
+      if (input.includes('/git/ref/heads/feat/mcf-c1-test')) return jsonResponse(branchRef());
+      if (input.includes('/pulls?')) return jsonResponse([pull(undefined, 'closed')]);
       throw new Error(`unexpected request ${input}`);
     });
     const adapter = new GitHubBranchPullRequestAdapter(
