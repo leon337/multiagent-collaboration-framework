@@ -40,8 +40,8 @@ Restaurar a conformidade operacional do C2 com o Protocolo Operacional Unificado
 
 - [x] PR #80 em DRAFT antes da recuperação;
 - [x] automação de continuidade do PR #80 desativada durante a recuperação;
-- [ ] PRF completo materializado;
-- [ ] CI do HEAD de recuperação em PASS;
+- [x] PRF completo materializado;
+- [x] CI do HEAD do PRF em PASS;
 - [ ] auditoria sem CRITICAL/HIGH aberto;
 - [ ] gate de Léo registrado;
 - [ ] retorno explícito ao fluxo original do C2.
@@ -86,4 +86,4 @@ CAPTURAR → CLASSIFICAR → VERIFICAR EFEITO → RECUPERAR RASTREABILIDADE → 
 
 ## Próximo gate
 
-Léo decide somente após PRF, CI do HEAD exato e auditoria aplicável.
+Emily audita o HEAD documental final exato; Léo decide após essa auditoria.

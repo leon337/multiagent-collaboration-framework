@@ -1,5 +1,5 @@
 PHASE_ID=PHASE-006-C2-CONFORMANCE-RECOVERY
-VALIDATION_STATE=PENDING_POST_COMMIT_CI
+VALIDATION_STATE=PASS_INITIAL_PRF_HEAD
 
 COMMANDS_AND_CHECKS:
 - PR #80 converted to DRAFT: PASS
@@ -8,34 +8,38 @@ COMMANDS_AND_CHECKS:
 - source HEAD e9250b7967f6dcba45b270e4887a495f34145755 Documentation validation: PASS
 - source HEAD e9250b7967f6dcba45b270e4887a495f34145755 Container Smoke: PASS
 - source HEAD e9250b7967f6dcba45b270e4887a495f34145755 Foundation: PASS
-- source HEAD Foundation formatting: PASS
-- source HEAD Foundation lint: PASS
-- source HEAD Foundation typecheck: PASS
-- source HEAD migrations twice including 0020-0025: PASS
-- source HEAD server tests 83/83 files and 351/351 tests: PASS
-- source HEAD build: PASS
-- PRF commit CI: PENDING
+- recovery PRF HEAD c6b2325c4bccea6656bfaf0591fee40ad4d8d04f Documentation validation: PASS
+- recovery PRF HEAD c6b2325c4bccea6656bfaf0591fee40ad4d8d04f Container Smoke: PASS
+- recovery PRF HEAD c6b2325c4bccea6656bfaf0591fee40ad4d8d04f Foundation: PASS
+- Foundation formatting: PASS
+- Foundation lint: PASS
+- Foundation typecheck: PASS
+- migrations twice including 0020-0025: PASS
+- server tests 83/83 files and 351/351 tests: PASS
+- build: PASS
+- open review threads: 0
+- final documentary HEAD CI: PENDING_AFTER_THIS_CONSOLIDATION
 - recovery audit: PENDING
 - Léo gate: PENDING
 
 SUMMARY:
-- total_checks: 15
-- passed: 12
+- verified_checks_before_final_document_commit: 16
+- passed: 16
 - failed: 0
-- pending: 3
-- not_applicable: 0
+- pending_final_gates: 3
 
 EVIDENCE_REFERENCES:
 - source HEAD: e9250b7967f6dcba45b270e4887a495f34145755
-- Documentation validation run: 31258225885
-- Container Smoke run: 31258225898
-- Foundation run: 31258225908
-- Foundation job: 93104839876
-- Vitest artifact: 9022023258
-- artifact digest: sha256:a2311885a28cecf1b36bea95d42db94169f87f0f89421a44d1a232694612bbf3
+- PRF validated HEAD: c6b2325c4bccea6656bfaf0591fee40ad4d8d04f
+- Documentation validation run: 31260117220
+- Container Smoke run: 31260117225
+- Foundation run: 31260117227
+- Foundation job: 93109515986
+- Vitest artifact: 9022542399
+- artifact digest: sha256:de734fcb3e6039a182636f59cd15b927b82f9df59ade3cf76e1f19d235a48c00
 - issue: #81
 - PR: #80
 
 NOTES:
-- This validation file records the pre-PRF source evidence. The commit containing this package must receive its own CI before the recovery can advance to audit.
+- The next commit only reconciles this PRF with evidence from c6b2325c; it must receive its own CI and exact-head audit.
 - No real C2 GitHub provider write is authorized or claimed.

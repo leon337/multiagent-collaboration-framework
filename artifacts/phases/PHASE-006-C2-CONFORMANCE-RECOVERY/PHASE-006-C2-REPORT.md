@@ -10,12 +10,15 @@ Foi confirmada uma falha de conformidade operacional no desenvolvimento/comunica
 |---:|---:|---|---|---|---|---|
 | 1 | 1 | Mestre | comparou execução com protocolo | docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md | falha confirmada | Mestre → Miriam |
 | 2 | 1 | Miriam | recuperou contrato original | issue #79 | escopo original congelado | Miriam → Sofia |
-| 3 | 1 | Sofia | classificou diff/hardening | PR #80, 31 arquivos | hardening ligado ao aceite preservado; nova expansão bloqueada | Sofia → Carmem |
+| 3 | 1 | Sofia | classificou diff/hardening | PR #80 | hardening ligado ao aceite preservado; nova expansão bloqueada | Sofia → Carmem |
 | 4 | 1 | Carmem | verificou PRF | artifacts/phases ausente | não conformidade documental confirmada | Carmem → Augusto |
 | 5 | 1 | Augusto | verificou HEAD e workflows | e9250b79; runs 31258225885/31258225898/31258225908 | três workflows PASS | Augusto → Renato |
 | 6 | 1 | Renato | inspecionou logs de Foundation | job 93104839876 | 83/83 arquivos, 351/351 testes, migrations 0020-0025 e build PASS | Renato → Carmem |
 | 7 | 1 | Mestre | aplicou CAF | protocolo seção Recuperação de falhas | fase de recuperação criada | Mestre → Gabriel |
-| 8 | 1 | Gabriel | abriu rastreamento da recuperação | issue #81 | recuperação formalizada | Gabriel → Carmem |
+| 8 | 1 | Gabriel | materializou PRF inicial | c6b2325c4bccea6656bfaf0591fee40ad4d8d04f | diff exclusivamente documental | Gabriel → Augusto |
+| 9 | 1 | Augusto | comparou e9250b79..c6b2325c | GitHub compare | 9 arquivos somente em artifacts/phases | Augusto → Renato |
+| 10 | 1 | Renato | validou PRF inicial | runs 31260117220/225/227 | Documentation/Smoke/Foundation PASS; 83/351 PASS | Renato → Carmem |
+| 11 | 1 | Emily | pré-auditou threads existentes | review threads PR #80 | zero thread aberto; todos resolvidos | Emily → Carmem |
 
 ## Mudanças produzidas
 
@@ -29,7 +32,8 @@ Foi confirmada uma falha de conformidade operacional no desenvolvimento/comunica
 
 - preservar o código/hardening já validado quando ligado aos critérios originais de idempotência, reconciliação e fail-closed;
 - não alegar retroativamente conformidade ESEV da execução anterior;
-- tratar a falha pelo CAF e retornar ao fluxo original após validação/auditoria.
+- tratar a falha pelo CAF e retornar ao fluxo original após validação/auditoria;
+- congelar o HEAD funcional e não adicionar nova implementação durante a recuperação.
 
 ## Desvios do plano
 
@@ -46,22 +50,22 @@ Foi confirmada uma falha de conformidade operacional no desenvolvimento/comunica
 
 | Critério | Resultado | Evidência |
 |---|---|---|
-| PR #80 em DRAFT | PASS | estado GitHub após conversão |
-| automação de continuidade pausada | PASS | automação `MCF PR 80 Gate` desativada |
-| nenhuma nova funcionalidade na recuperação | PASS | este commit contém apenas artifacts/phases |
-| PRF completo | PENDING | manifesto gerado no mesmo commit |
-| CI do HEAD de recuperação | PENDING | executar após commit |
-| auditoria sem CRITICAL/HIGH | PENDING | Emily após CI |
+| PR #80 em DRAFT | PASS | estado GitHub |
+| automação de continuidade pausada | PASS | `MCF PR 80 Gate` desativada |
+| nenhuma nova funcionalidade na recuperação | PASS | compare e9250b79..c6b2325c |
+| PRF completo | PASS | artifacts/phases/PHASE-006-C2-CONFORMANCE-RECOVERY |
+| CI do PRF inicial | PASS | 31260117220 / 31260117225 / 31260117227 |
+| 83/83 arquivos e 351/351 testes | PASS | Foundation 31260117227 |
+| auditoria sem CRITICAL/HIGH | PENDING | HEAD documental final |
 | gate de Léo | PENDING | após auditoria |
 
 ## Estado atual
 
 ```yaml
 objective_met: false
-state: AGUARDANDO_VALIDACAO_DO_PRF
+state: AGUARDANDO_AUDITORIA_DO_HEAD_FINAL
 open_findings:
-  - CI do HEAD do PRF ainda não executada
-  - auditoria da recuperação pendente
+  - auditoria do HEAD documental final pendente
   - gate de Léo pendente
-next_action: validar o commit único do PRF no GitHub Actions
+next_action: congelar o HEAD após esta consolidação, validar sua CI e executar auditoria exata
 ```

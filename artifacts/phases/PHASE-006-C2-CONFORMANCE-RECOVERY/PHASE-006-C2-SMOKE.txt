@@ -1,21 +1,22 @@
 PHASE_ID=PHASE-006-C2-CONFORMANCE-RECOVERY
-SMOKE_STATE=PASS_PRE_PRF_SOURCE_HEAD
+SMOKE_STATE=PASS_INITIAL_PRF_HEAD
 
 SCENARIO:
-- preconditions: PR #80 aberto; C2 fora do live registry; provider real NOT_AUTHORIZED; branch em e9250b7967f6dcba45b270e4887a495f34145755
-- action: executar workflow Rede Social Container Smoke no HEAD fonte
+- preconditions: PR #80 DRAFT; C2 fora do live registry; provider real NOT_AUTHORIZED
+- action: executar Rede Social Container Smoke no PRF HEAD c6b2325c4bccea6656bfaf0591fee40ad4d8d04f
 - expected: validar Compose/build/start smoke stack sem habilitar escrita real do C2
-- actual: workflow 31258225898 concluído com SUCCESS; job smoke PASS
+- actual: workflow 31260117225 concluído com SUCCESS
 - result: PASS
 
 EVIDENCE:
-- workflow: 31258225898
-- source HEAD: e9250b7967f6dcba45b270e4887a495f34145755
+- workflow: 31260117225
+- PRF validated HEAD: c6b2325c4bccea6656bfaf0591fee40ad4d8d04f
 
 RECOVERY_SPECIFIC_SMOKE:
 - PR #80 remains DRAFT: PASS
-- no functional C2 mutation in recovery package: PASS by construction; verify again in PR diff after commit
-- post-PRF CI: PENDING
+- PRF initial diff contains only artifacts/phases files: PASS
+- functional C2 mutation in recovery package: NONE
+- final documentary HEAD smoke: PENDING_AFTER_THIS_CONSOLIDATION
 
 NOT_APPLICABLE_JUSTIFICATION:
-- real provider smoke is NAO_APLICAVEL in this recovery because C2 real GitHub writes remain explicitly NOT_AUTHORIZED.
+- real provider smoke is NAO_APLICAVEL because C2 real GitHub writes remain explicitly NOT_AUTHORIZED.
