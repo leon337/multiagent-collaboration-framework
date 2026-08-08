@@ -29,12 +29,7 @@ interface IdempotencyRow extends AttemptRow {
 }
 
 type ExternalAttemptStatus =
-  | 'ALLOWED'
-  | 'EXECUTED'
-  | 'FAILED'
-  | 'EVIDENCE_VALIDATED'
-  | 'EVIDENCE_REJECTED'
-  | 'ABANDONED';
+  'ALLOWED' | 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED' | 'ABANDONED';
 
 interface AttemptStateRow extends AttemptRow {
   status: ExternalAttemptStatus;
@@ -113,22 +108,25 @@ function requestIdempotencyFingerprint(
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
 
+const globallySerializedAdapter = 'github-pr-collaboration-write-v1';
+const globallySerializedOperations = new Set([
+  'comment-pr',
+  'review-pr-comment',
+  'update-pr-text-metadata',
+]);
+
 function requestGlobalIdempotencyScopeKey(
   request: ExternalActionRequest,
   adapterId: string,
   idempotencyKey: string | null,
 ): string | null {
-  if (!idempotencyKey || adapterId !== 'github-pr-collaboration-write-v1') return null;
+  if (!idempotencyKey || adapterId !== globallySerializedAdapter) return null;
 
   const operation = canonicalizeToolValue(request.tool.operation);
-  if (!['comment-pr', 'review-pr-comment', 'update-pr-text-metadata'].includes(operation)) {
-    return null;
-  }
+  if (!globallySerializedOperations.has(operation)) return null;
 
   const pullRequestNumber = request.inputs.pull_request_number;
-  if (!Number.isInteger(pullRequestNumber) || (pullRequestNumber as number) < 1) {
-    return null;
-  }
+  if (!Number.isInteger(pullRequestNumber) || (pullRequestNumber as number) < 1) return null;
 
   const payload = {
     adapterId,
@@ -171,15 +169,6 @@ export class ExternalActionLedger {
 
     try {
       await this.database.transaction(async (client) => {
-        if (idempotencyScopeKey) {
-          // Serialize C2 global-idempotency reservation/recovery before taking any
-          // mission or attempt row locks. This establishes one total order for
-          // cross-mission expired-holder recovery and prevents A->B/B->A cycles.
-          await client.query(
-            `select pg_advisory_xact_lock(hashtextextended('mcf:external-action:global-idempotency', 0))`,
-          );
-        }
-
         await reconcileExpiredExternalReservation(client, request.context!.missionId, occurredAt);
         const mission = await client.query<MissionVersionRow>(
           `select
@@ -309,9 +298,40 @@ export class ExternalActionLedger {
             },
             idempotencyKey: `phase:${request.context.phaseId}:tool-requested`,
           },
+          {
+            eventType: 'EXTERNAL_ACTION_REQUESTED',
+            payload: {
+              attemptId,
+              adapterId,
+              skillId: request.skill.skillId,
+              provider: request.tool.provider,
+              operation: request.tool.operation,
+              resource: request.tool.resource,
+              idempotencyKey,
+              idempotencyFingerprint,
+              idempotencyScopeKey,
+              expectedMissionVersion: request.context.expectedMissionVersion,
+            },
+            idempotencyKey: `external-action:${attemptId}:requested`,
+          },
+          {
+            eventType: 'EXTERNAL_ACTION_ALLOWED',
+            payload: {
+              attemptId,
+              adapterId,
+              permissionProfile: request.skill.permissionProfile,
+              provider: request.tool.provider,
+              operation: request.tool.operation,
+              resource: request.tool.resource,
+              idempotencyKey,
+              idempotencyFingerprint,
+              idempotencyScopeKey,
+            },
+            idempotencyKey: `external-action:${attemptId}:allowed`,
+          },
         ];
 
-        for (const event of preflightEvents) {
+        for (const item of preflightEvents) {
           await client.query(
             `insert into "mcf_events" (
               "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
@@ -323,118 +343,90 @@ export class ExternalActionLedger {
               request.context.missionId,
               request.context.phaseId,
               request.agentId,
-              event.eventType,
-              JSON.stringify(event.payload),
-              event.idempotencyKey,
+              item.eventType,
+              JSON.stringify(item.payload),
+              item.idempotencyKey,
               occurredAt,
             ],
           );
         }
       });
-      return attemptId;
     } catch (error) {
-      if (error instanceof ExternalActionAdapterError) throw error;
+      if (error instanceof ExternalActionAdapterError) {
+        throw error;
+      }
       if (databaseErrorCode(error) === '23505') {
+        if (idempotencyScopeKey) {
+          throw new ExternalActionAdapterError(
+            'RESERVATION_CONFLICT',
+            `Global idempotency scope for ${request.tool.resource}/${request.tool.operation} is already durably bound to a prior or active attempt`,
+            false,
+          );
+        }
         throw new ExternalActionAdapterError(
           'RESERVATION_CONFLICT',
-          idempotencyScopeKey
-            ? 'Global external action idempotency key is already reserved or bound'
-            : 'External action reservation conflicts with an existing idempotency key',
-          idempotencyScopeKey === null,
+          `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,
+          true,
         );
       }
       throw new ExternalActionAdapterError(
         'LEDGER_FAILURE',
-        error instanceof Error ? error.message : 'Failed to reserve external action execution',
+        error instanceof Error ? error.message : 'Failed to reserve external action in ledger',
         true,
       );
     }
-  }
 
-  private async transition(
-    attemptId: string,
-    toStatus: ExternalAttemptStatus,
-    patch: {
-      receipt?: McfToolReceipt | undefined;
-      failure?: ExternalActionFailure | undefined;
-      receiptId?: string | null | undefined;
-      rejectionReason?: string | null | undefined;
-    } = {},
-  ): Promise<void> {
-    const occurredAt = new Date();
-    try {
-      await this.database.transaction(async (client) => {
-        const attempt = await client.query<AttemptStateRow>(
-          `select "attempt_id" as "attemptId", "status"
-           from "mcf_external_action_attempts"
-           where "attempt_id" = $1
-           for update`,
-          [attemptId],
-        );
-        const persisted = attempt.rows[0];
-        if (!persisted) {
-          throw new ExternalActionAdapterError(
-            'TARGET_NOT_FOUND',
-            `External action attempt ${attemptId} was not found`,
-            false,
-          );
-        }
-        if (!allowedTransitions[persisted.status].includes(toStatus)) {
-          throw new ExternalActionAdapterError(
-            'RESERVATION_CONFLICT',
-            `External action attempt ${attemptId} cannot transition from ${persisted.status} to ${toStatus}`,
-            false,
-          );
-        }
-
-        const receipt = patch.receipt;
-        const failure = patch.failure;
-        await client.query(
-          `update "mcf_external_action_attempts"
-           set "status" = $2,
-               "receipt_id" = coalesce($3, "receipt_id"),
-               "failure_code" = coalesce($4, "failure_code"),
-               "failure_message" = coalesce($5, "failure_message"),
-               "updated_at" = $6
-           where "attempt_id" = $1`,
-          [
-            attemptId,
-            toStatus,
-            receipt?.receiptId ?? patch.receiptId ?? null,
-            failure?.code ?? null,
-            failure?.message ?? patch.rejectionReason ?? null,
-            occurredAt,
-          ],
-        );
-
-        await client.query(
-          `update "mcf_missions"
-           set "active_external_attempt_id" = null,
-               "updated_at" = $2
-           where "active_external_attempt_id" = $1`,
-          [attemptId, occurredAt],
-        );
-      });
-    } catch (error) {
-      if (error instanceof ExternalActionAdapterError) throw error;
-      throw new ExternalActionAdapterError(
-        'LEDGER_FAILURE',
-        error instanceof Error ? error.message : 'Failed to transition external action attempt',
-        true,
-      );
-    }
+    return attemptId;
   }
 
   async recordExecuted(attemptId: string, receipt: McfToolReceipt): Promise<void> {
-    await this.transition(attemptId, 'EXECUTED', { receipt });
+    await this.transition({
+      attemptId,
+      status: 'EXECUTED',
+      eventType: 'EXTERNAL_ACTION_EXECUTED',
+      receiptId: receipt.receiptId,
+      failure: null,
+      payload: {
+        receiptId: receipt.receiptId,
+        provider: receipt.provider,
+        operation: receipt.operation,
+        resource: receipt.resource,
+        externalId: receipt.externalId,
+        commitSha: receipt.commitSha,
+        status: receipt.status,
+        idempotencyKey:
+          typeof receipt.metadata.idempotencyKey === 'string'
+            ? receipt.metadata.idempotencyKey
+            : null,
+      },
+    });
   }
 
   async recordFailed(attemptId: string, failure: ExternalActionFailure): Promise<void> {
-    await this.transition(attemptId, 'FAILED', { failure });
+    await this.transition({
+      attemptId,
+      status: 'FAILED',
+      eventType: 'EXTERNAL_ACTION_FAILED',
+      receiptId: null,
+      failure,
+      payload: {
+        failureCode: failure.code,
+        message: failure.message,
+        retryable: failure.retryable,
+        statusCode: failure.statusCode,
+      },
+    });
   }
 
   async recordEvidenceValidated(attemptId: string, receiptId: string): Promise<void> {
-    await this.transition(attemptId, 'EVIDENCE_VALIDATED', { receiptId });
+    await this.transition({
+      attemptId,
+      status: 'EVIDENCE_VALIDATED',
+      eventType: 'EXTERNAL_ACTION_EVIDENCE_VALIDATED',
+      receiptId,
+      failure: null,
+      payload: { receiptId },
+    });
   }
 
   async recordEvidenceRejected(
@@ -442,9 +434,118 @@ export class ExternalActionLedger {
     receiptId: string | null,
     reason: string,
   ): Promise<void> {
-    await this.transition(attemptId, 'EVIDENCE_REJECTED', {
+    await this.transition({
+      attemptId,
+      status: 'EVIDENCE_REJECTED',
+      eventType: 'EXTERNAL_ACTION_FAILED',
       receiptId,
-      rejectionReason: reason,
+      failure: {
+        code: 'INVALID_RESPONSE',
+        message: reason,
+        retryable: false,
+        statusCode: null,
+      },
+      payload: { receiptId, failureCode: 'EVIDENCE_REJECTED', reason },
     });
+  }
+
+  private async transition(input: {
+    attemptId: string;
+    status: 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
+    eventType:
+      'EXTERNAL_ACTION_EXECUTED' | 'EXTERNAL_ACTION_FAILED' | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
+    receiptId: string | null;
+    failure: ExternalActionFailure | null;
+    payload: Record<string, unknown>;
+  }): Promise<void> {
+    const occurredAt = new Date();
+    const leaseExpiresAt = new Date(occurredAt.getTime() + EXTERNAL_ACTION_LEASE_MS);
+
+    try {
+      await this.database.transaction(async (client) => {
+        const current = await client.query<AttemptStateRow>(
+          `select "attempt_id" as "attemptId", "status"
+           from "mcf_external_action_attempts"
+           where "attempt_id" = $1
+           for update`,
+          [input.attemptId],
+        );
+        const attempt = current.rows[0];
+        if (!attempt) {
+          throw new ExternalActionAdapterError(
+            'LEDGER_FAILURE',
+            `External action attempt ${input.attemptId} was not found`,
+            false,
+          );
+        }
+        if (attempt.status === input.status) {
+          return;
+        }
+        if (!allowedTransitions[attempt.status].includes(input.status)) {
+          throw new ExternalActionAdapterError(
+            'LEDGER_FAILURE',
+            `Invalid external action transition ${attempt.status} -> ${input.status}`,
+            false,
+          );
+        }
+
+        const updated = await client.query<AttemptRow>(
+          `update "mcf_external_action_attempts"
+           set "status" = $1,
+               "receipt_id" = coalesce($2, "receipt_id"),
+               "failure_code" = $3,
+               "failure_message" = $4,
+               "lease_expires_at" = $5,
+               "updated_at" = $6
+           where "attempt_id" = $7 and "status" = $8
+           returning "attempt_id" as "attemptId"`,
+          [
+            input.status,
+            input.receiptId,
+            input.failure?.code ?? null,
+            input.failure?.message ?? null,
+            leaseExpiresAt,
+            occurredAt,
+            input.attemptId,
+            attempt.status,
+          ],
+        );
+        if (!updated.rows[0]) {
+          throw new ExternalActionAdapterError(
+            'LEDGER_FAILURE',
+            `External action attempt ${input.attemptId} changed during transition`,
+            true,
+          );
+        }
+
+        await client.query(
+          `insert into "mcf_events" (
+            "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
+            "idempotency_key", "occurred_at"
+          )
+          select $1, "mission_id", "phase_id", "agent_id", $2, $3::jsonb, $4, $5
+          from "mcf_external_action_attempts"
+          where "attempt_id" = $6
+          on conflict ("idempotency_key") do nothing`,
+          [
+            randomUUID(),
+            input.eventType,
+            JSON.stringify({ attemptId: input.attemptId, ...input.payload }),
+            `external-action:${input.attemptId}:${input.status.toLowerCase()}`,
+            occurredAt,
+            input.attemptId,
+          ],
+        );
+      });
+    } catch (error) {
+      if (error instanceof ExternalActionAdapterError) {
+        throw error;
+      }
+      throw new ExternalActionAdapterError(
+        'LEDGER_FAILURE',
+        error instanceof Error ? error.message : 'Failed to persist external action transition',
+        true,
+      );
+    }
   }
 }
