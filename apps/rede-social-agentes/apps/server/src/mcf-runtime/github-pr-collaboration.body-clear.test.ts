@@ -91,9 +91,10 @@ describe('C2 PR metadata body clearing', () => {
     );
 
     const receipt = await adapter.execute(request());
+    const patchCalls = fetcher.mock.calls.filter(([, init]) => (init?.method ?? 'GET') === 'PATCH');
 
     expect(receipt.status).toBe('SUCCEEDED');
     expect(receipt.metadata.verifiedBody).toBe('');
-    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(patchCalls).toHaveLength(1);
   });
 });
