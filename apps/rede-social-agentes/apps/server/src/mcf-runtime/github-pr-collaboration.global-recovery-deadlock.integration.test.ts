@@ -111,7 +111,7 @@ describe('C2 global recovery lock ordering', () => {
     await database.query(`delete from "mcf_missions" where "id" = any($1::text[])`, [missionIds]);
   }
 
-  it('serializes two missions that concurrently cross-recover each other expired compatible holder', async () => {
+  it('serializes concurrent cross-mission expired recovery', async () => {
     const missionA = randomUUID();
     const missionB = randomUUID();
     const keyA = 'mcf-c2-deadlock-key-a-0001';
@@ -149,7 +149,9 @@ describe('C2 global recovery lock ordering', () => {
          group by "status"`,
         [[missionA, missionB]],
       );
-      const counts = Object.fromEntries(attempts.rows.map((row) => [row.status, Number(row.count)]));
+      const counts = Object.fromEntries(
+        attempts.rows.map((row) => [row.status, Number(row.count)]),
+      );
       expect(counts.ABANDONED).toBe(2);
       expect(counts.ALLOWED).toBe(2);
     } finally {
