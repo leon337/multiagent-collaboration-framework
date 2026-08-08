@@ -53,7 +53,7 @@ const SHA_40 = /^[a-f0-9]{40}$/u;
 const REPOSITORY =
   /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/u;
 const SAFE_REF =
-  /^(?!\/)(?!.*\.\.)(?!.*(?:^|\/)\.)(?!.*[~^:?*\[\\\s])(?!.*\/$)(?!.*\.lock$)[A-Za-z0-9._\/-]{1,200}$/u;
+  /^(?!\/)(?!.*\.\.)(?!.*(?:^|\/)\.)(?!.*[~^:?*[\\\s])(?!.*\/$)(?!.*\.lock$)[A-Za-z0-9._/-]{1,200}$/u;
 const IDEMPOTENCY_KEY = /^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$/u;
 
 if (GITHUB_BRANCH_PR_TIMEOUT_MS >= EXTERNAL_ACTION_LEASE_MS) {
