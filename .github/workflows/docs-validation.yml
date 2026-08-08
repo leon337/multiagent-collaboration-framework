@@ -129,7 +129,7 @@ jobs:
             exit 1
           }
 
-      - name: Check agent roles against canonical matrix
+      - name: Check agent contracts and index against canonical matrix
         shell: bash
         run: |
           python - <<'PY'
@@ -139,26 +139,46 @@ jobs:
           import unicodedata
 
           matrix_path = Path('docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md')
+          index_path = Path('docs/agentes/README.md')
           row_pattern = re.compile(r'^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|')
-          rows = []
-          for line in matrix_path.read_text(encoding='utf-8').splitlines():
-              match = row_pattern.match(line)
-              if not match:
-                  continue
-              number = int(match.group(1))
-              if 1 <= number <= 29:
-                  rows.append((number, match.group(2).strip(), match.group(3).strip()))
 
-          if len(rows) != 29 or [number for number, _, _ in rows] != list(range(1, 30)):
-              print(f'Canonical matrix must expose agents 1..29 exactly once; got {len(rows)} rows')
+          def parse_rows(path: Path):
+              rows = []
+              for line in path.read_text(encoding='utf-8').splitlines():
+                  match = row_pattern.match(line)
+                  if not match:
+                      continue
+                  number = int(match.group(1))
+                  if 1 <= number <= 29:
+                      rows.append((number, match.group(2).strip(), match.group(3).strip()))
+              return rows
+
+          matrix_rows = parse_rows(matrix_path)
+          if len(matrix_rows) != 29 or [number for number, _, _ in matrix_rows] != list(range(1, 30)):
+              print(f'Canonical matrix must expose agents 1..29 exactly once; got {len(matrix_rows)} rows')
               sys.exit(1)
+
+          index_rows = parse_rows(index_path)
+          if len(index_rows) != 29 or [number for number, _, _ in index_rows] != list(range(1, 30)):
+              print(f'Agent index must expose agents 1..29 exactly once; got {len(index_rows)} rows')
+              sys.exit(1)
+
+          failures = []
+          for matrix_row, index_row in zip(matrix_rows, index_rows):
+              number, matrix_name, matrix_role = matrix_row
+              index_number, index_name, index_role = index_row
+              if index_number != number or index_name != matrix_name or index_role != matrix_role:
+                  failures.append(
+                      f'#{number}: index mismatch; '
+                      f'matrix=({matrix_name!r}, {matrix_role!r}), '
+                      f'index=({index_name!r}, {index_role!r})'
+                  )
 
           def slug(name: str) -> str:
               normalized = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('ascii')
               return re.sub(r'[^A-Za-z0-9]+', '_', normalized).strip('_').upper()
 
-          failures = []
-          for number, name, expected_role in rows:
+          for number, name, expected_role in matrix_rows:
               path = Path('docs/agentes') / f'{slug(name)}.md'
               if not path.exists():
                   failures.append(f'#{number} {name}: missing {path}')
@@ -180,7 +200,7 @@ jobs:
               print('\n'.join(failures))
               sys.exit(1)
 
-          print('29 agent contracts match canonical matrix names and roles')
+          print('29-agent matrix, index and individual contract roles are consistent')
           PY
 
       - name: Check required metadata in normative documents
