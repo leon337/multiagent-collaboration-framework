@@ -526,12 +526,7 @@ export class ExternalActionLedger {
   private async transition(input: {
     attemptId: string;
     status:
-      | 'EXECUTING'
-      | 'EXECUTED'
-      | 'UNKNOWN'
-      | 'FAILED'
-      | 'EVIDENCE_VALIDATED'
-      | 'EVIDENCE_REJECTED';
+      'EXECUTING' | 'EXECUTED' | 'UNKNOWN' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
     eventType:
       | 'EXTERNAL_ACTION_EXECUTING'
       | 'EXTERNAL_ACTION_EXECUTED'
