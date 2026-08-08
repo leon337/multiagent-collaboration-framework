@@ -138,9 +138,11 @@ describe('C2 global idempotency serialization', () => {
 
       const loser =
         outcomes[0]?.status === 'rejected' ? request(missionA, phaseA) : request(missionB, phaseB);
-      await expect(ledger.reserve(loser, 'github-pr-collaboration-write-v1')).rejects.toMatchObject({
-        code: 'RESERVATION_CONFLICT',
-      });
+      await expect(ledger.reserve(loser, 'github-pr-collaboration-write-v1')).rejects.toMatchObject(
+        {
+          code: 'RESERVATION_CONFLICT',
+        },
+      );
 
       const changedPayload =
         outcomes[0]?.status === 'rejected'
