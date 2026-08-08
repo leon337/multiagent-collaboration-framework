@@ -111,9 +111,11 @@ describe('C1 idempotency reservation integration', () => {
       const firstRequest = request(missionId, phaseOne, 1);
       const firstAttempt = await ledger.reserve(firstRequest, 'github-branch-pr-write-v1');
 
-      await expect(ledger.reserve(firstRequest, 'github-branch-pr-write-v1')).rejects.toMatchObject({
-        code: 'RESERVATION_CONFLICT',
-      });
+      await expect(ledger.reserve(firstRequest, 'github-branch-pr-write-v1')).rejects.toMatchObject(
+        {
+          code: 'RESERVATION_CONFLICT',
+        },
+      );
 
       await ledger.recordFailed(firstAttempt, {
         code: 'ADAPTER_FAILURE',
