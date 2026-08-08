@@ -959,7 +959,6 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
 
     let run = await this.findRun(target, deadlineAt, budget);
     const runWasExisting = run !== null;
-    let externalEffectPossible = runWasExisting;
 
     if (!run) {
       try {
@@ -976,16 +975,13 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
             },
           },
         );
-        externalEffectPossible = true;
       } catch (error) {
         if (!(error instanceof ExternalActionAdapterError) || !error.retryable) throw error;
-        externalEffectPossible = true;
       }
 
       try {
         run = await this.waitForRun(target, deadlineAt, budget);
       } catch (error) {
-        if (!externalEffectPossible) throw error;
         return this.unknownReceipt(
           request,
           target,
