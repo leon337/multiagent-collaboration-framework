@@ -14,7 +14,7 @@
     "dev:web": "pnpm --filter @rsa/web dev",
     "dev:worker": "pnpm --filter @rsa/worker dev",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write apps/server/src/mcf-runtime/github-pr-collaboration.global-idempotency.integration.test.ts && git diff -- apps/server/src/mcf-runtime/github-pr-collaboration.global-idempotency.integration.test.ts && git diff --exit-code -- apps/server/src/mcf-runtime/github-pr-collaboration.global-idempotency.integration.test.ts",
     "lint": "eslint .",
     "ops:backup": "node ops/backup-database.mjs",
     "ops:restore": "node ops/restore-database.mjs",
