@@ -312,15 +312,26 @@ function assertReview(
   }
 }
 
+function isAcceptedInvalidJson(error: ExternalActionAdapterError): boolean {
+  return (
+    error.code === 'INVALID_RESPONSE' &&
+    error.statusCode !== null &&
+    error.statusCode >= 200 &&
+    error.statusCode < 300
+  );
+}
+
 function shouldReconcileMutationError(error: unknown): error is ExternalActionAdapterError {
   return (
     error instanceof ExternalActionAdapterError &&
-    (error.retryable || error.code === 'RESERVATION_CONFLICT')
+    (error.retryable || error.code === 'RESERVATION_CONFLICT' || isAcceptedInvalidJson(error))
   );
 }
 
 function isAmbiguousMutationError(error: unknown): error is ExternalActionAdapterError {
-  return error instanceof ExternalActionAdapterError && error.retryable;
+  return (
+    error instanceof ExternalActionAdapterError && (error.retryable || isAcceptedInvalidJson(error))
+  );
 }
 
 export class GitHubPullCollaborationClient {
