@@ -8,30 +8,40 @@ on:
       - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/github-pr-collaboration.fingerprint-canonicalization.integration.test.ts'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   format-probe:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: feat/mcf-runtime-006-c2-pr-collaboration-write
       - uses: actions/setup-node@v4
         with:
           node-version: 24.18.0
       - run: corepack enable && corepack prepare pnpm@11.17.0 --activate
       - working-directory: apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
-      - name: Format exact target files
+      - name: Apply exact Prettier output
         working-directory: apps/rede-social-agentes
         run: >-
           pnpm exec prettier --write
           apps/server/src/mcf-runtime/external-action-ledger.ts
           apps/server/src/mcf-runtime/github-pr-collaboration.fingerprint-canonicalization.integration.test.ts
-      - uses: actions/upload-artifact@v4
-        with:
-          name: mcf-c2-prettier-output
-          path: |
-            apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts
+      - name: Commit formatting only when needed
+        shell: bash
+        run: |
+          if git diff --quiet -- \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-pr-collaboration.fingerprint-canonicalization.integration.test.ts; then
+            echo 'No formatting changes needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts \
             apps/rede-social-agentes/apps/server/src/mcf-runtime/github-pr-collaboration.fingerprint-canonicalization.integration.test.ts
-          if-no-files-found: error
-          retention-days: 1
+          git commit -m 'style(runtime): apply exact Prettier formatting'
+          git push origin HEAD:feat/mcf-runtime-006-c2-pr-collaboration-write
