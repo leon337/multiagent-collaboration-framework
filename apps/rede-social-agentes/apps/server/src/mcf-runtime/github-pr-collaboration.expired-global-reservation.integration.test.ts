@@ -181,7 +181,7 @@ describe('C2 expired global reservation recovery', () => {
         retryable: false,
       });
 
-      const holderStateAfterReconciliation = await database.query<{
+      const holderStateAfterTerminalConflict = await database.query<{
         activeAttemptId: string | null;
       }>(
         `select "active_external_attempt_id" as "activeAttemptId"
@@ -189,7 +189,7 @@ describe('C2 expired global reservation recovery', () => {
          where "id" = $1`,
         [holderMission],
       );
-      expect(holderStateAfterReconciliation.rows[0]?.activeAttemptId).toBeNull();
+      expect(holderStateAfterTerminalConflict.rows[0]?.activeAttemptId).toBe(holderAttempt);
     } finally {
       await database.query(
         `delete from "mcf_external_action_attempts" where "mission_id" = any($1::text[])`,
