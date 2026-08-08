@@ -1,66 +1,60 @@
 # PHASE-006-C2 — Decisões da remediação pós-write
 
-## D1 — Aceitar o P1 como bloqueante
+## D1 — P1 original bloqueante
 
-**Entrada:** revisão independente do HEAD `edaef62866aa1ff0af2985bfad20d1fe640c36cd`.
+A revisão de `edaef628...` foi aceita como `REMEDIATION_REQUIRED`. `recordExecuted()` após receipt não pode cair em `recordFailed()`.
 
-**Decisão:** `REMEDIATION_REQUIRED`. O PR #80 permanece draft e sem merge.
+## D2 — Estados de execução
 
-## D2 — Separar falhas pré-write e pós-write
+O C2 usa `ALLOWED → EXECUTING → EXECUTED|UNKNOWN|FAILED`, com `UNKNOWN` para efeito possivelmente aplicado e `FAILED` somente para efeito definitivamente não aplicado.
 
-`adapter.execute()` e `ledger.recordExecuted()` não podem compartilhar um catch que converta ambos em `FAILED`.
+## D3 — Expiração pós-início
 
-Quando o adapter já retornou receipt, uma falha posterior de persistência é `UNKNOWN`, não `FAILED`.
+`EXECUTING` expirado vira `UNKNOWN` e mantém o binding. `ALLOWED` expirado pode seguir recovery pré-write.
 
-## D3 — Criar fronteira durável antes da mutação C2
+## D4 — Compatibilidade de adapters
 
-O adapter `github-pr-collaboration-write-v1` persiste `EXECUTING` antes de poder iniciar mutação externa.
+A barreira `EXECUTING` é exigida no adapter mutante C2; adapters somente-leitura preservam o fluxo anterior.
 
-Se essa persistência falhar, o adapter não é chamado.
+## D5 — Proveniência self-bound
 
-## D4 — Preservar binding na ambiguidade
+Após o P2 do HEAD `74fd45a...`, o checkpoint não hardcoda um “HEAD final” futuro. `SELF` significa o Git commit que contém o checkpoint; CI e review são avaliados externamente para esse mesmo SHA.
 
-`PARTIAL`, falha de `recordExecuted()` após receipt e expiração de `EXECUTING` usam semântica `UNKNOWN`. O binding não pode ser liberado por retry automático.
+## D6 — Aceitar segunda auditoria como FAIL
 
-## D5 — Preservar recuperação pré-write
+A revisão `PRR_kwDOTnz-ks8AAAABI2moFA` do HEAD `60f069ee...` encontrou:
+- P1: `UNKNOWN` não passava por `persistExecution()`;
+- P2: `FAILED` liberava a chave global e perdia proteção de fingerprint entre missões.
 
-Falha definitivamente não aplicada continua em `FAILED`, permitindo a recuperação prevista para falha pré-write.
+O gate permaneceu fechado.
 
-## D6 — Limitar impacto da nova barreira
+## D7 — Persistir UNKNOWN no runtime
 
-Após a primeira rodada de testes revelar regressão de compatibilidade, a barreira `EXECUTING` foi limitada ao adapter C2 mutante. Adapters anteriores somente-leitura mantêm seu fluxo original.
+`PostgresMcfRuntimeRepository.persistExecution()` passa a aceitar `UNKNOWN` como attempt compatível com a persistência de missão/fase `RECOVERING`. O ponteiro ativo da missão é limpo, mas o binding global do attempt permanece.
 
-## D7 — Migration 0027
+## D8 — Tombstone de fingerprint para falha pré-write
 
-A migration `0027_mcf_external_action_unknown_state.sql` formaliza `EXECUTING` e `UNKNOWN` e atualiza o índice de lease/trigger compatível com a nova máquina de estados.
+A migration `0028_mcf_external_action_prewrite_fingerprint_tombstone.sql` remove a liberação imediata de binding em `FAILED`.
 
-## D8 — Provider real continua proibido
+O holder `FAILED` preserva `idempotency_scope_key` + `idempotency_fingerprint`. Somente uma nova inserção com fingerprint compatível pode liberar o tombstone imediatamente antes de assumir o mesmo scope. Payload incompatível permanece bloqueado pelo índice único.
 
-Nenhuma prova de escrita GitHub real foi realizada. `real_github_write_test=NOT_AUTHORIZED` e `production=BLOCKED` permanecem vigentes.
+## D9 — Recovery legítimo continua permitido
 
-## D9 — Não reescrever o PRF de conformidade
+A correção não converte falha pré-write em binding eterno: retry canonicamente idêntico pode substituir o tombstone. O teste global cobre explicitamente essa transição.
 
-O pacote `PHASE-006-C2-CONFORMANCE-RECOVERY` documenta uma fase anterior e permanece histórico. Esta remediação posterior recebe PRF próprio.
+## D10 — Evidência da rodada 2
 
-## D10 — Gate de auditoria funcional
+HEAD `3f68a97c25af742566e618ae6838d7d3cf4224fd`:
+- três workflows PASS;
+- migration 0028 aplicada duas vezes;
+- 86/86 arquivos e 357/357 testes PASS;
+- build PASS;
+- artifact `9024011616`, digest `sha256:bbce94334711e2a8d1519c41181e5592d57a4fe777dcbf68d3ac2c1becf21e1b`.
 
-A implementação `3fede0da1e5d50b2a339b5c2dc88bd5036753b6e` passou CI completa. O candidato documental `74fd45a57067eab5d0a61bfc91d1869249eee262` também passou CI completa, mas a revisão independente `PRR_kwDOTnz-ks8AAAABI2lSrg` retornou `FAIL` por P2 de proveniência do checkpoint.
+## D11 — Limites
 
-## D11 — Eliminar autorreferência estática do checkpoint
-
-Não será gravado no checkpoint um SHA “final” ou IDs de workflows que só passam a existir depois que o próprio commit é criado. Isso gera uma cadeia autorreferente em que toda atualização de proveniência muda o HEAD.
-
-O checkpoint passa a usar:
-
-- `checkpoint_head: SELF`;
-- `SELF = Git commit que contém o checkpoint`;
-- PR HEAD deve ser exatamente esse commit no gate;
-- CI é consultada no GitHub Actions para esse mesmo SHA;
-- revisão independente deve declarar esse mesmo SHA;
-- nenhum P0/P1 novo é aceito.
-
-O snapshot `74fd45a...` permanece como evidência histórica auditada, com CI PASS e review FAIL/P2.
+Real provider write, production e merge permanecem bloqueados. O PR permanece draft até o gate independente.
 
 ## D12 — Próxima decisão
 
-Após CI e revisão independente do novo HEAD self-bound, Léo aplica o gate. Merge, provider real e produção permanecem bloqueados até essa decisão.
+Após CI e revisão independente do novo HEAD self-bound, Léo aplica o gate. Nenhum PASS é presumido antes disso.

@@ -21,10 +21,7 @@ adapter:
 security:
   authorized_scope_required: true
   exact_pr_head_sha_required: true
-  post_comment_head_revalidation: PASS
-  post_review_head_revalidation: PASS
   post_write_unknown_semantics: PASS
-  accepted_2xx_invalid_json_reconciliation: PASS
   approve_review: FORBIDDEN
   request_changes_review: FORBIDDEN
   merge: FORBIDDEN
@@ -47,6 +44,11 @@ idempotency:
     success_persisted: EXECUTED
     effect_ambiguous: UNKNOWN
     definitely_not_applied: FAILED
+  failed_prewrite_binding:
+    strategy: FINGERPRINT_TOMBSTONE
+    scope_key_retained_until_compatible_retry: true
+    incompatible_cross_mission_rebind: BLOCKED
+    compatible_retry: RELEASE_AND_REPLACE_AT_INSERT
   expired_execution:
     ALLOWED: ABANDONED_IF_EXPIRED
     EXECUTING: UNKNOWN_IF_EXPIRED
@@ -60,64 +62,54 @@ idempotency:
     - 0025_mcf_external_action_global_recovery_no_cross_mission_lock.sql
     - 0026_mcf_release_c2_prewrite_failed_binding.sql
     - 0027_mcf_external_action_unknown_state.sql
+    - 0028_mcf_external_action_prewrite_fingerprint_tombstone.sql
 
 independent_review_remediation:
-  source_p1_review:
+  source_review:
     reviewed_head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
     severity: P1
-    decision: REMEDIATION_REQUIRED
-    finding: recordExecuted_failure_after_adapter_receipt_could_release_consumed_binding
-  remediation:
-    dispatcher_prewrite_postwrite_split: IMPLEMENTED
-    explicit_unknown_dispatch_result: IMPLEMENTED
-    executing_state_before_c2_mutation: IMPLEMENTED
-    partial_receipt_to_unknown: IMPLEMENTED
-    recordExecuted_failure_to_unknown: IMPLEMENTED
-    expired_executing_to_unknown: IMPLEMENTED
-    expired_executing_binding_preserved: IMPLEMENTED
-    read_only_adapter_compatibility: PRESERVED
-    migration_0027: IMPLEMENTED
-    dispatcher_regression_tests: 4_PASS
-    expired_executing_integration_tests: 1_PASS
-  reviewed_candidate:
-    head: 74fd45a57067eab5d0a61bfc91d1869249eee262
+    finding: POSTWRITE_RECORD_EXECUTED_FAILURE_COULD_RELEASE_BINDING
+    status: REMEDIATED
+  provenance_review:
+    reviewed_head: 74fd45a57067eab5d0a61bfc91d1869249eee262
     review_id: PRR_kwDOTnz-ks8AAAABI2lSrg
-    submitted_at: 2026-08-08T15:26:16Z
     verdict: FAIL
-    blocking_p0: 0
-    blocking_p1_new: 0
-    p2:
-      - checkpoint_provenance_not_bound_to_final_reviewed_tree
-    remediation_decision: USE_SELF_RESOLVING_EXACT_HEAD_GATE_BINDING
+    finding: P2_CHECKPOINT_PROVENANCE
+    status: REMEDIATED_BY_SELF_BOUND_GATE
+  round_2_review:
+    reviewed_head: 60f069ee829b03cab93e484ef2782e00333c9377
+    review_id: PRR_kwDOTnz-ks8AAAABI2moFA
+    verdict: FAIL
+    findings:
+      - P1_UNKNOWN_NOT_PERSISTABLE
+      - P2_PREWRITE_FINGERPRINT_TOMBSTONE_MISSING
+    remediation:
+      unknown_persistable: IMPLEMENTED
+      failed_prewrite_tombstone: IMPLEMENTED
+      migration_0028: IMPLEMENTED
+      dedicated_regressions: PASS
+    status: REMEDIATED_PENDING_EXACT_HEAD_REVIEW
 
 validation:
-  implementation_snapshot:
-    head: 3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
-    documentation_run: 31263689993
-    container_smoke_run: 31263690012
-    foundation_run: 31263689966
-    foundation_job: 93118298584
+  round_2_implementation:
+    head: 3f68a97c25af742566e618ae6838d7d3cf4224fd
+    documentation_run: 31265446519
+    documentation: PASS
+    container_smoke_run: 31265446518
+    container_smoke: PASS
+    foundation_run: 31265446526
+    foundation_job: 93122714877
+    foundation: PASS
     formatting: PASS
     lint: PASS
     typecheck: PASS
     migrations_twice: PASS
-    migration_0027: PASS
-    server_test_files: 85
-    server_tests: 356
+    migration_0028: PASS
+    server_test_files: 86
+    server_tests: 357
     build: PASS
-    artifact_id: 9023511453
-    artifact_digest: sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a
-  reviewed_candidate_snapshot:
-    head: 74fd45a57067eab5d0a61bfc91d1869249eee262
-    documentation_run: 31264072381
-    documentation: PASS
-    container_smoke_run: 31264072373
-    container_smoke: PASS
-    foundation_run: 31264072380
-    foundation: PASS
-    artifact_id: 9023622705
-    artifact_digest: sha256:28f5e954dfb7cfc032f9e8231fb606173ceb546b5e824c1cfcdfaecea9ae89aa
-    independent_review: FAIL_P2_CHECKPOINT_PROVENANCE
+    artifact_id: 9024011616
+    artifact_digest: sha256:bbce94334711e2a8d1519c41181e5592d57a4fe777dcbf68d3ac2c1becf21e1b
   exact_head_gate:
     checkpoint_head: SELF
     checkpoint_head_resolution: GIT_COMMIT_CONTAINING_THIS_FILE
@@ -133,19 +125,13 @@ validation:
     max_blocking_p1: 0
     checkpoint_consistency_rule: NO_STALE_STATIC_FINAL_HEAD_OR_RUN_BINDING
     evaluation: EXTERNAL_AT_GATE
-  unit_tests: PASS_AT_IMPLEMENTATION_SNAPSHOT
-  integration_tests: PASS_AT_IMPLEMENTATION_SNAPSHOT
-  permission_tests: PASS_AT_IMPLEMENTATION_SNAPSHOT
-  evidence_tests: PASS_AT_IMPLEMENTATION_SNAPSHOT
-  no_real_write_boundary: PASS_AT_IMPLEMENTATION_SNAPSHOT
-  postwrite_persistence_regression: PASS_AT_IMPLEMENTATION_SNAPSHOT
-  expired_executing_binding_regression: PASS_AT_IMPLEMENTATION_SNAPSHOT
 
 traceability:
   conformance_recovery_prf: artifacts/phases/PHASE-006-C2-CONFORMANCE-RECOVERY
   postwrite_remediation_prf: artifacts/phases/PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-  reviewed_candidate_trigger_comment: 5226744163
-  reviewed_candidate_finding_thread: PRRT_kwDOTnz-ks6Xe6eu
+  open_review_findings_from_60f:
+    - PRRT_kwDOTnz-ks6Xe-lH
+    - PRRT_kwDOTnz-ks6Xe-lI
 
 next_action:
   current: VALIDATE_SELF_BOUND_CHECKPOINT_HEAD_THEN_REQUEST_EXACT_HEAD_REVIEW

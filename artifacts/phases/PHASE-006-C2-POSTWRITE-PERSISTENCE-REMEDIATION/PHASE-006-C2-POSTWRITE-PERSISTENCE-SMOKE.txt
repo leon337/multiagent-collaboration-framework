@@ -1,13 +1,16 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-SMOKE
+SMOKE — ROUND 2
 
-implementation_head=3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
-container_smoke_run=31263690012
+implementation_head=3f68a97c25af742566e618ae6838d7d3cf4224fd
+container_smoke_run=31265446518
 result=PASS
 
 foundation_runtime_regression=PASS
+migration_0028=PASS
+unknown_persistence_regression=PASS
+fingerprint_tombstone_regression=PASS
 no_real_provider_write_test=PASS
 real_external_mutation=NOT_EXECUTED
 
 Justificativa:
-O incremento C2 mantém escrita real do provider como NOT_AUTHORIZED. O smoke permitido valida container/runtime e a fronteira que impede provider real; não é permitido transformar esta fase de implementação em prova real de mutação GitHub.
+O incremento C2 mantém escrita real do provider como NOT_AUTHORIZED. O smoke valida container/runtime e a fronteira que impede provider real; não transforma esta fase em prova de mutação GitHub.

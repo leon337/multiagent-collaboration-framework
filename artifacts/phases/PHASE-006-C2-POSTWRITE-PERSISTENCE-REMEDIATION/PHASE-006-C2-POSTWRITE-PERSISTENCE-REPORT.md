@@ -1,90 +1,76 @@
 # PHASE-006-C2 — Relatório de remediação pós-write
 
-## Resultado técnico
+## Resultado técnico acumulado
 
-O P1 identificado no HEAD `edaef62866aa1ff0af2985bfad20d1fe640c36cd` foi remediado no branch do PR #80. A implementação validada está em `3fede0da1e5d50b2a339b5c2dc88bd5036753b6e`.
+O C2 permanece em loop de remediação independente. O P1 original do HEAD `edaef62866aa1ff0af2985bfad20d1fe640c36cd` foi corrigido com estados `EXECUTING`/`UNKNOWN`, separação pré-write/pós-write e preservação de binding em ambiguidade.
 
-A correção impede que um receipt já retornado pelo adapter seja reclassificado como falha pré-write quando `recordExecuted()` falha. O dispatcher retorna `UNKNOWN`, tenta persistir `recordUnknown()` e nunca chama `recordFailed()` nesse caminho.
+A auditoria exata posterior do HEAD `60f069ee829b03cab93e484ef2782e00333c9377` (`PRR_kwDOTnz-ks8AAAABI2moFA`) encontrou dois defeitos adicionais:
 
-## Mudanças funcionais
+1. **P1 — persistência UNKNOWN:** `persistExecution()` não aceitava attempts `UNKNOWN`, impedindo a gravação do estado `RECOVERING`.
+2. **P2 — tombstone de fingerprint:** a liberação imediata do binding em `FAILED` permitia que outra missão reutilizasse a mesma chave global com payload incompatível.
 
-1. `ExternalActionDispatchResult` ganhou estado `UNKNOWN`.
-2. O ledger ganhou estados `EXECUTING` e `UNKNOWN`.
-3. O adapter C2 mutante persiste `EXECUTING` antes de `adapter.execute()`.
-4. Receipt `PARTIAL` é persistido como `UNKNOWN`.
-5. Falha de `recordExecuted()` após receipt retorna `UNKNOWN`, com retry automático bloqueado.
-6. Expiração de `EXECUTING` converte o attempt para `UNKNOWN` e preserva `idempotency_scope_key`.
-7. Migration `0027_mcf_external_action_unknown_state.sql` formaliza os novos estados.
-8. `SkillExecutor` propaga `UNKNOWN` como recuperação com evidência pendente.
-9. A barreira `EXECUTING` foi restringida ao adapter `github-pr-collaboration-write-v1`, preservando compatibilidade com adapters somente-leitura.
+## Remediação da rodada 2
 
-## Testes adicionados
+### Persistência UNKNOWN
 
-- `external-action-dispatcher.postwrite-persistence.test.ts`: 4 regressões.
-- `external-action-postwrite-unknown.integration.test.ts`: 1 integração de expiração/binding.
+`PostgresMcfRuntimeRepository.persistExecution()` agora aceita `UNKNOWN` entre os estados do attempt que autorizam a persistência governada da missão/fase. O ponteiro `active_external_attempt_id` é limpo quando o estado `RECOVERING` é persistido, enquanto o `idempotency_scope_key` do attempt `UNKNOWN` permanece intacto.
 
-## Ciclos CAF observados
+Regressão:
+- `postgres-mcf-runtime.unknown-persistence.integration.test.ts`: PASS.
 
-### Ciclo 1 — P1 capturado
+### Tombstone global de fingerprint
 
-Entrada: revisão independente do HEAD `edaef628...`.
+A migration `0028_mcf_external_action_prewrite_fingerprint_tombstone.sql` remove a liberação automática do binding no momento de `FAILED`.
 
-Efeito verificado: `adapter.execute()` e `recordExecuted()` compartilhavam o mesmo `try/catch`; uma falha local posterior ao receipt podia seguir para `recordFailed()`.
+O row `FAILED` passa a atuar como tombstone durável de:
+- `idempotency_scope_key`;
+- `idempotency_fingerprint`.
 
-Decisão: `REMEDIATION_REQUIRED`; merge permaneceu bloqueado.
+No trigger de reserva global:
+- retry com fingerprint compatível pode liberar o holder `FAILED` imediatamente antes da nova inserção;
+- retry incompatível não libera o holder e falha no índice único persistente;
+- recovery anterior de `ALLOWED`/`ABANDONED` expirados continua preservado.
 
-### Ciclo 2 — primeira remediação e falha de formatação
+Regressão:
+- `github-pr-collaboration.global-idempotency.integration.test.ts`: PASS para conflito concorrente, tombstone após `FAILED`, rejeição cross-mission incompatível, retry compatível e novo bloqueio incompatível.
 
-Foram introduzidos `EXECUTING`, `UNKNOWN`, migration 0027 e testes. A Foundation `31263130473` falhou no gate de formatação antes de lint/typecheck/testes.
+## Implementação validada desta rodada
 
-Recuperação: capturado o diff exato do Prettier sem alterar semântica.
+HEAD: `3f68a97c25af742566e618ae6838d7d3cf4224fd`
 
-### Ciclo 3 — formatação corrigida e regressão de compatibilidade
-
-No HEAD `777f012f8dbd6702b420ad41909beeac41637d00`, formatação, lint, typecheck e migrations passaram, mas a Foundation `31263571041` encontrou três falhas em testes antigos porque `recordExecuting()` havia sido aplicado também a adapters somente-leitura.
-
-Recuperação: a barreira durável foi limitada ao adapter C2 mutante, sem remover a proteção pós-write genérica.
-
-### Ciclo 4 — implementação validada
-
-HEAD: `3fede0da1e5d50b2a339b5c2dc88bd5036753b6e`.
-
-- Documentation validation `31263689993`: PASS.
-- Rede Social Container Smoke `31263690012`: PASS.
-- Rede Social Foundation `31263689966`: PASS.
-- 85/85 arquivos e 356/356 testes: PASS.
-- migration 0027 duas vezes: PASS.
+CI:
+- Documentation validation `31265446519`: PASS.
+- Rede Social Container Smoke `31265446518`: PASS.
+- Rede Social Foundation `31265446526`: PASS.
+- format: PASS.
+- lint: PASS.
+- typecheck: PASS.
+- migrations duas vezes: PASS.
+- migration `0028`: PASS.
+- 86/86 arquivos de teste: PASS.
+- 357/357 testes server: PASS.
 - build: PASS.
-- Vitest artifact `9023511453`.
-- digest `sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a`.
+- Vitest artifact `9024011616`.
+- digest `sha256:bbce94334711e2a8d1519c41181e5592d57a4fe777dcbf68d3ac2c1becf21e1b`.
 
-### Ciclo 5 — candidato documental auditado e P2 de proveniência
+## Histórico de ciclos
 
-HEAD auditado: `74fd45a57067eab5d0a61bfc91d1869249eee262`.
-
-CI do mesmo HEAD:
-- Documentation validation `31264072381`: PASS.
-- Rede Social Container Smoke `31264072373`: PASS.
-- Rede Social Foundation `31264072380`: PASS.
-- Vitest artifact `9023622705`.
-- digest `sha256:28f5e954dfb7cfc032f9e8231fb606173ceb546b5e824c1cfcdfaecea9ae89aa`.
-
-Revisão independente `PRR_kwDOTnz-ks8AAAABI2lSrg`: `FAIL` por um P2 de consistência documental. O checkpoint ainda apontava para os runs da implementação e marcava o gate final como pendente.
-
-Remediação: a proveniência final deixa de hardcodar um “HEAD final” que muda ao editar o próprio checkpoint. O gate passa a se vincular ao `SELF`, definido como o Git commit que contém o checkpoint, e exige externamente os três workflows e a revisão independente para esse mesmo SHA.
+1. `edaef628...`: revisão FAIL/P1 pós-write.
+2. primeira remediação: falha de formatação.
+3. `777f012...`: testes revelaram regressão em adapters somente-leitura.
+4. `3fede0da...`: implementação da primeira remediação verde.
+5. `74fd45a...`: CI verde, revisão FAIL/P2 de proveniência do checkpoint.
+6. `60f069ee...`: checkpoint self-bound + CI verde, revisão FAIL com P1 UNKNOWN persistence e P2 fingerprint tombstone.
+7. `3f68a97c...`: segunda remediação funcional verde; checkpoint self-bound a ser revalidado no commit documental seguinte.
 
 ## Limites preservados
 
-- provider real C2: NOT_AUTHORIZED;
+- real provider write: NOT_AUTHORIZED;
 - production: BLOCKED;
-- PR #80: DRAFT;
-- merge: não executado;
-- operações proibidas do C2: inalteradas.
+- PR #80: deve permanecer DRAFT até gate;
+- merge: BLOCKED;
+- APPROVE/REQUEST_CHANGES/base/state/force-push/branch-protection: FORBIDDEN.
 
-## Relação com a recuperação de conformidade
+## Próximo gate
 
-O PRF em `PHASE-006-C2-CONFORMANCE-RECOVERY` permanece histórico e não é reescrito. Ele documenta a recuperação de processo até o retorno ao gate. Esta fase posterior documenta a correção funcional exigida pelo P1 e a remediação documental exigida pelo P2 subsequente.
-
-## Estado
-
-A implementação funcional está tecnicamente validada. O próximo gate é avaliar CI e revisão independente no próprio Git HEAD que contém o checkpoint self-bound; somente depois cabe decisão de Léo.
+O commit que contiver este PRF será resolvido como `SELF`. Os três workflows e a revisão independente devem apontar para esse mesmo SHA. Somente depois cabe decisão operacional de Léo.

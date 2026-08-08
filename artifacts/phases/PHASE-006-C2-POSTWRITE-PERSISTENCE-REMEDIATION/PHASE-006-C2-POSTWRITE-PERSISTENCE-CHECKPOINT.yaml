@@ -5,39 +5,56 @@ parent_issue: 79
 pull_request: 80
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
 source_reviewed_head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
-implementation_head_validated: 3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
+round_1_implementation_head: 3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
+round_2_implementation_head: 3f68a97c25af742566e618ae6838d7d3cf4224fd
 risk_class: B
-objective: preservar idempotencia quando efeito externo pode ter ocorrido mas persistencia local do sucesso falha
-objective_state: REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
-cycle: 5
+objective: preservar idempotencia e persistencia governada quando o efeito externo pode ser ambiguo
+objective_state: ROUND_2_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
+cycle: 7
 
-completed_acceptance_criteria:
-  - P1_CONFIRMED
-  - DISPATCH_PREWRITE_POSTWRITE_SEPARATED
-  - UNKNOWN_DISPATCH_STATE_IMPLEMENTED
-  - EXECUTING_C2_BOUNDARY_IMPLEMENTED
-  - EXPIRED_EXECUTING_TO_UNKNOWN
-  - UNKNOWN_BINDING_PRESERVED
-  - PREWRITE_FAILED_PATH_PRESERVED
-  - READ_ONLY_ADAPTER_COMPATIBILITY_PRESERVED
-  - MIGRATION_0027_TWICE_PASS
-  - DEDICATED_REGRESSION_TESTS_PASS
-  - SERVER_85_FILES_356_TESTS_PASS
-  - IMPLEMENTATION_CI_PASS
-  - REVIEWED_CANDIDATE_74FD_CI_PASS
-  - REVIEWED_CANDIDATE_74FD_AUDITED
-  - P2_CHECKPOINT_PROVENANCE_CAPTURED
+review_history:
+  - head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
+    verdict: FAIL
+    blocking: P1_POSTWRITE_RECORDFAILED
+  - head: 74fd45a57067eab5d0a61bfc91d1869249eee262
+    review_id: PRR_kwDOTnz-ks8AAAABI2lSrg
+    verdict: FAIL
+    blocking: P2_CHECKPOINT_PROVENANCE
+  - head: 60f069ee829b03cab93e484ef2782e00333c9377
+    review_id: PRR_kwDOTnz-ks8AAAABI2moFA
+    verdict: FAIL
+    findings:
+      - P1_UNKNOWN_NOT_PERSISTABLE
+      - P2_PREWRITE_FINGERPRINT_TOMBSTONE_MISSING
 
-reviewed_candidate:
-  head: 74fd45a57067eab5d0a61bfc91d1869249eee262
-  documentation_run: 31264072381
-  container_smoke_run: 31264072373
-  foundation_run: 31264072380
-  vitest_artifact_id: 9023622705
-  vitest_artifact_digest: sha256:28f5e954dfb7cfc032f9e8231fb606173ceb546b5e824c1cfcdfaecea9ae89aa
-  independent_review_id: PRR_kwDOTnz-ks8AAAABI2lSrg
-  independent_review: FAIL
-  finding: P2_CHECKPOINT_PROVENANCE
+round_2_remediation:
+  unknown_persistable: IMPLEMENTED
+  unknown_mission_pointer_cleanup: IMPLEMENTED
+  unknown_global_binding_preserved: IMPLEMENTED
+  migration_0028: IMPLEMENTED
+  failed_prewrite_tombstone: IMPLEMENTED
+  incompatible_cross_mission_retry: BLOCKED
+  compatible_prewrite_retry: RECOVERABLE
+  dedicated_tests:
+    unknown_persistence: PASS
+    fingerprint_tombstone: PASS
+
+round_2_validation:
+  head: 3f68a97c25af742566e618ae6838d7d3cf4224fd
+  documentation_run: 31265446519
+  container_smoke_run: 31265446518
+  foundation_run: 31265446526
+  foundation_job: 93122714877
+  format: PASS
+  lint: PASS
+  typecheck: PASS
+  migrations_twice: PASS
+  migration_0028: PASS
+  server_test_files: 86
+  server_tests: 357
+  build: PASS
+  artifact_id: 9024011616
+  artifact_digest: sha256:bbce94334711e2a8d1519c41181e5592d57a4fe777dcbf68d3ac2c1becf21e1b
 
 current_exact_head_gate:
   checkpoint_head: SELF
@@ -59,15 +76,6 @@ security:
   production: BLOCKED
   merge: BLOCKED_PENDING_GATE
   retry_unknown_without_reconciliation: FORBIDDEN
-
-decisions:
-  - keep_failed_for_definitively_not_applied_outcomes
-  - use_unknown_for_receipt_or_postwrite_persistence_ambiguity
-  - persist_executing_before_c2_mutation
-  - preserve_binding_for_expired_executing
-  - scope_executing_barrier_to_c2_mutating_adapter
-  - keep_conformance_recovery_prf_immutable_as_history
-  - bind_final_gate_to_commit_containing_checkpoint_instead_of_stale_static_run_ids
 
 remaining_gaps:
   - CURRENT_SELF_BOUND_HEAD_CI

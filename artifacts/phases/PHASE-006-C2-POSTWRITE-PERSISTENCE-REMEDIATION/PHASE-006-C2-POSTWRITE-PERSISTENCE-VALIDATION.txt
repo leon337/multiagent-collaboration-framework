@@ -6,35 +6,32 @@ reviewed_head=edaef62866aa1ff0af2985bfad20d1fe640c36cd
 verdict=FAIL
 severity=P1
 
-IMPLEMENTATION SNAPSHOT
-head=3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
-documentation_run=31263689993 PASS
-container_smoke_run=31263690012 PASS
-foundation_run=31263689966 PASS
+PRIOR SELF-BOUND REVIEW
+head=60f069ee829b03cab93e484ef2782e00333c9377
+review_id=PRR_kwDOTnz-ks8AAAABI2moFA
+review=FAIL
+finding_p1=UNKNOWN_NOT_PERSISTABLE_BY_MISSION_REPOSITORY
+finding_p2=PREWRITE_FAILED_BINDING_LOST_CROSS_MISSION_FINGERPRINT
+
+ROUND_2_IMPLEMENTATION
+head=3f68a97c25af742566e618ae6838d7d3cf4224fd
+documentation_run=31265446519 PASS
+container_smoke_run=31265446518 PASS
+foundation_run=31265446526 PASS
 format=PASS
 lint=PASS
 typecheck=PASS
 migrations_twice=PASS
-migration_0027=PASS
-server_test_files=85/85 PASS
-server_tests=356/356 PASS
+migration_0028=PASS
+server_test_files=86/86 PASS
+server_tests=357/357 PASS
 build=PASS
-dispatcher_postwrite_regressions=4/4 PASS
-expired_executing_binding_integration=1/1 PASS
+unknown_persistence_integration=PASS
+prewrite_fingerprint_tombstone_integration=PASS
+postwrite_dispatcher_regressions=PASS
 no_real_provider_write_test=PASS
-vitest_artifact_id=9023511453
-vitest_artifact_digest=sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a
-
-REVIEWED DOCUMENT CANDIDATE
-head=74fd45a57067eab5d0a61bfc91d1869249eee262
-documentation_run=31264072381 PASS
-container_smoke_run=31264072373 PASS
-foundation_run=31264072380 PASS
-vitest_artifact_id=9023622705
-vitest_artifact_digest=sha256:28f5e954dfb7cfc032f9e8231fb606173ceb546b5e824c1cfcdfaecea9ae89aa
-independent_review_id=PRR_kwDOTnz-ks8AAAABI2lSrg
-independent_review=FAIL
-finding=P2_CHECKPOINT_PROVENANCE
+vitest_artifact_id=9024011616
+vitest_artifact_digest=sha256:bbce94334711e2a8d1519c41181e5592d57a4fe777dcbf68d3ac2c1becf21e1b
 
 CURRENT GATE BINDING
 checkpoint_head=SELF

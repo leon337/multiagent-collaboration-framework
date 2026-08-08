@@ -1,10 +1,10 @@
 # PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
 
-Pacote de Rastreabilidade da Fase para o P1 encontrado na revisão independente do PR #80 no HEAD `edaef62866aa1ff0af2985bfad20d1fe640c36cd`.
+Pacote de Rastreabilidade da Fase para as remediações independentes do PR #80.
 
 ## Objetivo
 
-Garantir que uma mutação externa possivelmente aplicada nunca seja reclassificada como falha pré-write apenas porque a persistência local de `EXECUTED` falhou.
+Impedir duplicidade ou perda de estado quando uma mutação externa pode ter ocorrido e preservar compatibilidade global da chave de idempotência em retries pré-write.
 
 ## Ordem de leitura
 
@@ -20,28 +20,32 @@ Garantir que uma mutação externa possivelmente aplicada nunca seja reclassific
 ## Estado técnico
 
 ```yaml
-source_reviewed_head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
-implementation_head_validated: 3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
-reviewed_document_candidate:
-  head: 74fd45a57067eab5d0a61bfc91d1869249eee262
+source_p1_head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
+prior_self_bound_review:
+  head: 60f069ee829b03cab93e484ef2782e00333c9377
+  verdict: FAIL
+  findings:
+    - P1_UNKNOWN_NOT_PERSISTABLE
+    - P2_PREWRITE_FINGERPRINT_TOMBSTONE_MISSING
+round_2_implementation:
+  head: 3f68a97c25af742566e618ae6838d7d3cf4224fd
   ci: PASS
-  independent_review: FAIL_P2_CHECKPOINT_PROVENANCE
+  migration_0028: PASS
+  server_test_files: 86_PASS
+  server_tests: 357_PASS
 current_gate:
   checkpoint_head: SELF
   resolution: GIT_COMMIT_CONTAINING_CHECKPOINT
   ci_source: GITHUB_ACTIONS_FOR_SAME_SHA
   review_source: CODEX_REVIEW_FOR_SAME_SHA
-migration_0027_twice: PASS
-server_test_files: 85_PASS
-server_tests: 356_PASS
 real_provider_write: NOT_AUTHORIZED
 production: BLOCKED
 ```
 
-## Relação com a issue #81
+## Relação com fases anteriores
 
-O PRF da recuperação de conformidade permanece imutável como registro da fase anterior. Este pacote registra a remediação funcional que se tornou necessária depois da revisão independente subsequente e a correção de proveniência exigida no ciclo seguinte.
+`PHASE-006-C2-CONFORMANCE-RECOVERY` permanece histórico. Este pacote registra as remediações posteriores encontradas pelas revisões independentes.
 
 ## Próximo gate
 
-Resolver `SELF` para o Git HEAD que contém estes artefatos → validar os três workflows nesse mesmo SHA → revisão independente nesse mesmo SHA → decisão de Léo → retorno ao gate original do C2.
+Resolver `SELF` para o Git HEAD que contém este pacote → validar os três workflows nesse SHA → revisão independente nesse SHA → decisão de Léo.

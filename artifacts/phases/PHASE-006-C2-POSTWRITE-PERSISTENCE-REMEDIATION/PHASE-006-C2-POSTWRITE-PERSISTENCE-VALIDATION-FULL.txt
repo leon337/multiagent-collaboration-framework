@@ -1,26 +1,29 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-VALIDATION FULL EVIDENCE
+VALIDATION FULL EVIDENCE — ROUND 2
 
-SOURCE FINDING
-reviewed_head=edaef62866aa1ff0af2985bfad20d1fe640c36cd
-severity=P1
-finding=recordExecuted persistence failure after adapter receipt could enter recordFailed and release a consumed idempotency binding
+REVIEW INPUT
+reviewed_head=60f069ee829b03cab93e484ef2782e00333c9377
+review_id=PRR_kwDOTnz-ks8AAAABI2moFA
+submitted_at=2026-08-08T15:38:40Z
+verdict=FAIL
+p1=UNKNOWN attempt rejected by PostgresMcfRuntimeRepository.persistExecution
+p2=FAILED pre-write binding release loses global fingerprint protection
 
 IMPLEMENTATION HEAD
-sha=3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
+sha=3f68a97c25af742566e618ae6838d7d3cf4224fd
 pr=80
 branch=feat/mcf-runtime-006-c2-pr-collaboration-write
 
 CI
 documentation_validation:
-  run=31263689993
+  run=31265446519
   conclusion=PASS
 container_smoke:
-  run=31263690012
+  run=31265446518
   conclusion=PASS
 foundation:
-  run=31263689966
-  job=93118298584
+  run=31265446526
+  job=93122714877
   conclusion=PASS
   formatting=PASS
   lint=PASS
@@ -38,42 +41,50 @@ MIGRATIONS
 0025=PASS
 0026=PASS
 0027=PASS
+0028=PASS
 second_migration_run=PASS
 
 TEST COUNTS
 ops_tests=15/15 PASS
-server_test_files=85/85 PASS
-server_tests=356/356 PASS
+server_test_files=86/86 PASS
+server_tests=357/357 PASS
 web_tests=5/5 PASS
 
-DEDICATED REMEDIATION TESTS
+DEDICATED ROUND_2 TESTS
+postgres-mcf-runtime.unknown-persistence.integration.test.ts=1/1 PASS
+github-pr-collaboration.global-idempotency.integration.test.ts=1/1 PASS
+
+RELEVANT REGRESSIONS
 external-action-dispatcher.postwrite-persistence.test.ts=4/4 PASS
 external-action-postwrite-unknown.integration.test.ts=1/1 PASS
-
-REGRESSION EVIDENCE
-github-ci-query.adapter.test.ts=65/65 PASS
-skill-executor.external-action.test.ts=5/5 PASS
 github-pr-collaboration.p1-regression.test.ts=4/4 PASS
 external-action-terminal-binding.integration.test.ts=2/2 PASS
+github-pr-collaboration.expired-recovery-compatibility.integration.test.ts=2/2 PASS
+github-pr-collaboration.fingerprint-canonicalization.integration.test.ts=1/1 PASS
+github-pr-collaboration.global-recovery-deadlock.integration.test.ts=1/1 PASS
 github-pr-collaboration.no-real-write.test.ts=1/1 PASS
 
 ARTIFACT
-id=9023511453
+id=9024011616
 name=rede-social-vitest-report
-digest=sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a
+digest=sha256:bbce94334711e2a8d1519c41181e5592d57a4fe777dcbf68d3ac2c1becf21e1b
+head_sha=3f68a97c25af742566e618ae6838d7d3cf4224fd
 
 SEMANTIC ASSERTIONS
+UNKNOWN_attempt=>MISSION_RECOVERING_PERSISTABLE
+UNKNOWN_attempt=>ACTIVE_MISSION_POINTER_CLEARED
+UNKNOWN_attempt=>GLOBAL_BINDING_PRESERVED
+FAILED_prewrite=>GLOBAL_SCOPE_TOMBSTONE_RETAINED
+FAILED_prewrite_incompatible_cross_mission_retry=>BLOCKED
+FAILED_prewrite_compatible_retry=>ALLOWED_TO_REPLACE_TOMBSTONE
+replacement_attempt=>GLOBAL_BINDING_PERSISTENT
 recordExecuted_after_receipt_failure=>UNKNOWN
 recordFailed_on_postwrite_persistence_failure=>FORBIDDEN
-partial_receipt=>UNKNOWN
-c2_before_adapter_execute=>EXECUTING
 expired_EXECUTING=>UNKNOWN
 expired_EXECUTING_scope_key=>PRESERVED
-definitive_not_applied_adapter_error=>FAILED
-read_only_adapters=>NO_EXECUTING_BARRIER_REQUIRED
 
 BOUNDARIES
 real_provider_write=NOT_AUTHORIZED
 production=BLOCKED
 merge=NOT_EXECUTED
-final_exact_head_review=PENDING
+final_exact_head_review=PENDING_SELF_BOUND_HEAD
