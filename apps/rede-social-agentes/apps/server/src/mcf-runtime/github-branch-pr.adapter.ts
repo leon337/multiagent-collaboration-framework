@@ -218,8 +218,8 @@ function shouldReconcileMutationError(error: unknown): error is ExternalActionAd
 export class GitHubBranchPrClient {
   constructor(
     private readonly fetcher: FetchLike = globalThis.fetch,
-    private readonly token: string | undefined =
-      process.env.MCF_GITHUB_TOKEN ?? process.env.GITHUB_TOKEN,
+    private readonly token: string | undefined = process.env.MCF_GITHUB_TOKEN ??
+      process.env.GITHUB_TOKEN,
   ) {}
 
   async requestJson<T>(
