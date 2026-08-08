@@ -1,0 +1,56 @@
+phase_id: PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
+mission_id: MCF-RUNTIME-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
+parent_mission_id: MCF-RUNTIME-006-C2
+parent_issue: 79
+pull_request: 80
+branch: feat/mcf-runtime-006-c2-pr-collaboration-write
+source_reviewed_head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
+implementation_head_validated: 3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
+final_document_head: PENDING_GIT_COMMIT
+risk_class: B
+objective: preservar idempotencia quando efeito externo pode ter ocorrido mas persistencia local do sucesso falha
+objective_state: VALIDACAO_TECNICA_CONCLUIDA
+cycle: 4
+completed_acceptance_criteria:
+  - P1_CONFIRMED
+  - DISPATCH_PREWRITE_POSTWRITE_SEPARATED
+  - UNKNOWN_DISPATCH_STATE_IMPLEMENTED
+  - EXECUTING_C2_BOUNDARY_IMPLEMENTED
+  - EXPIRED_EXECUTING_TO_UNKNOWN
+  - UNKNOWN_BINDING_PRESERVED
+  - PREWRITE_FAILED_PATH_PRESERVED
+  - READ_ONLY_ADAPTER_COMPATIBILITY_PRESERVED
+  - MIGRATION_0027_TWICE_PASS
+  - DEDICATED_REGRESSION_TESTS_PASS
+  - SERVER_85_FILES_356_TESTS_PASS
+  - IMPLEMENTATION_CI_PASS
+remaining_gaps:
+  - FINAL_DOCUMENT_HEAD_CI
+  - EXACT_FINAL_HEAD_INDEPENDENT_REVIEW
+  - LEO_GATE
+  - C2_INTEGRATION_DECISION
+evidence:
+  documentation_run: 31263689993
+  container_smoke_run: 31263690012
+  foundation_run: 31263689966
+  foundation_job: 93118298584
+  vitest_artifact_id: 9023511453
+  vitest_artifact_digest: sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a
+  server_test_files: 85
+  server_tests: 356
+security:
+  real_github_write_test: NOT_AUTHORIZED
+  production: BLOCKED
+  merge: BLOCKED_PENDING_GATE
+  retry_unknown_without_reconciliation: FORBIDDEN
+decisions:
+  - keep_failed_for_definitively_not_applied_outcomes
+  - use_unknown_for_receipt_or_postwrite_persistence_ambiguity
+  - persist_executing_before_c2_mutation
+  - preserve_binding_for_expired_executing
+  - scope_executing_barrier_to_c2_mutating_adapter
+  - keep_conformance_recovery_prf_immutable_as_history
+next_action: validar CI do HEAD documental final e solicitar revisao independente nesse SHA exato
+recipient: Emily
+return_to: MCF-RUNTIME-006-C2
+human_action_required: false
