@@ -34,118 +34,110 @@ jobs:
                   raise SystemExit(f'expected one match, found {count}: {old[:120]!r}')
               text = text.replace(old, new, 1)
 
-          if "requestGlobalIdempotencyScopeKey" not in text:
+          if 'requestGlobalIdempotencyScopeKey' not in text:
               replace_once(
                   "} from './external-action-reservation.js';\n",
                   "} from './external-action-reservation.js';\nimport { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';\n",
               )
 
-              marker = "@Injectable()\nexport class ExternalActionLedger"
-              helper = r'''const globallySerializedAdapter = 'github-pr-collaboration-write-v1';
-const globallySerializedOperations = new Set([
-  'comment-pr',
-  'review-pr-comment',
-  'update-pr-text-metadata',
-]);
-
-function requestGlobalIdempotencyScopeKey(
-  request: ExternalActionRequest,
-  adapterId: string,
-  idempotencyKey: string | null,
-): string | null {
-  if (!idempotencyKey || adapterId !== globallySerializedAdapter) return null;
-
-  const operation = canonicalizeToolValue(request.tool.operation);
-  if (!globallySerializedOperations.has(operation)) return null;
-
-  const pullRequestNumber = request.inputs.pull_request_number;
-  if (!Number.isInteger(pullRequestNumber) || (pullRequestNumber as number) < 1) return null;
-
-  const payload = {
-    adapterId,
-    provider: canonicalizeProvider(request.tool.provider),
-    operation,
-    resource: request.tool.resource.trim().toLowerCase(),
-    pullRequestNumber,
-    idempotencyKey,
-  };
-  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
-}
-
-'''
+              marker = '@Injectable()\nexport class ExternalActionLedger'
+              helper_lines = [
+                  "const globallySerializedAdapter = 'github-pr-collaboration-write-v1';",
+                  'const globallySerializedOperations = new Set([',
+                  "  'comment-pr',",
+                  "  'review-pr-comment',",
+                  "  'update-pr-text-metadata',",
+                  ']);',
+                  '',
+                  'function requestGlobalIdempotencyScopeKey(',
+                  '  request: ExternalActionRequest,',
+                  '  adapterId: string,',
+                  '  idempotencyKey: string | null,',
+                  '): string | null {',
+                  '  if (!idempotencyKey || adapterId !== globallySerializedAdapter) return null;',
+                  '',
+                  '  const operation = canonicalizeToolValue(request.tool.operation);',
+                  '  if (!globallySerializedOperations.has(operation)) return null;',
+                  '',
+                  '  const pullRequestNumber = request.inputs.pull_request_number;',
+                  '  if (!Number.isInteger(pullRequestNumber) || (pullRequestNumber as number) < 1) return null;',
+                  '',
+                  '  const payload = {',
+                  '    adapterId,',
+                  '    provider: canonicalizeProvider(request.tool.provider),',
+                  '    operation,',
+                  '    resource: request.tool.resource.trim().toLowerCase(),',
+                  '    pullRequestNumber,',
+                  '    idempotencyKey,',
+                  '  };',
+                  "  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');",
+                  '}',
+                  '',
+                  '',
+              ]
+              helper = '\n'.join(helper_lines)
               if marker not in text:
                   raise SystemExit('ledger class marker not found')
               text = text.replace(marker, helper + marker, 1)
 
               replace_once(
-                  "    const attemptId = randomUUID();\n",
-                  "    const idempotencyScopeKey = requestGlobalIdempotencyScopeKey(\n      request,\n      adapterId,\n      idempotencyKey,\n    );\n    const attemptId = randomUUID();\n",
+                  '    const attemptId = randomUUID();\n',
+                  '    const idempotencyScopeKey = requestGlobalIdempotencyScopeKey(\n      request,\n      adapterId,\n      idempotencyKey,\n    );\n    const attemptId = randomUUID();\n',
+              )
+
+              old_columns = '\n'.join([
+                  '            "idempotency_fingerprint", "expected_mission_version", "status",',
+                  '            "lease_expires_at", "created_at", "updated_at"',
+                  "          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14)`,",
+              ])
+              new_columns = '\n'.join([
+                  '            "idempotency_fingerprint", "expected_mission_version", "status",',
+                  '            "lease_expires_at", "created_at", "updated_at", "idempotency_scope_key"',
+                  "          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14, $15)`,",
+              ])
+              replace_once(old_columns, new_columns)
+
+              replace_once(
+                  '            leaseExpiresAt,\n            occurredAt,\n          ],',
+                  '            leaseExpiresAt,\n            occurredAt,\n            idempotencyScopeKey,\n          ],',
               )
 
               replace_once(
-                  '''            "idempotency_fingerprint", "expected_mission_version", "status",
-            "lease_expires_at", "created_at", "updated_at"
-          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14)`,''',
-                  '''            "idempotency_fingerprint", "expected_mission_version", "status",
-            "lease_expires_at", "created_at", "updated_at", "idempotency_scope_key"
-          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14, $15)`,''',
+                  '              idempotencyKey,\n              idempotencyFingerprint,\n              expectedMissionVersion: request.context.expectedMissionVersion,',
+                  '              idempotencyKey,\n              idempotencyFingerprint,\n              idempotencyScopeKey,\n              expectedMissionVersion: request.context.expectedMissionVersion,',
               )
 
               replace_once(
-                  '''            leaseExpiresAt,
-            occurredAt,
-          ],''',
-                  '''            leaseExpiresAt,
-            occurredAt,
-            idempotencyScopeKey,
-          ],''',
+                  '              idempotencyKey,\n              idempotencyFingerprint,\n            },\n            idempotencyKey: `external-action:${attemptId}:allowed`,',
+                  '              idempotencyKey,\n              idempotencyFingerprint,\n              idempotencyScopeKey,\n            },\n            idempotencyKey: `external-action:${attemptId}:allowed`,',
               )
 
-              replace_once(
-                  '''              idempotencyKey,
-              idempotencyFingerprint,
-              expectedMissionVersion: request.context.expectedMissionVersion,''',
-                  '''              idempotencyKey,
-              idempotencyFingerprint,
-              idempotencyScopeKey,
-              expectedMissionVersion: request.context.expectedMissionVersion,''',
-              )
-
-              replace_once(
-                  '''              idempotencyKey,
-              idempotencyFingerprint,
-            },
-            idempotencyKey: `external-action:${attemptId}:allowed`,''',
-                  '''              idempotencyKey,
-              idempotencyFingerprint,
-              idempotencyScopeKey,
-            },
-            idempotencyKey: `external-action:${attemptId}:allowed`,''',
-              )
-
-              replace_once(
-                  '''      if (databaseErrorCode(error) === '23505') {
-        throw new ExternalActionAdapterError(
-          'RESERVATION_CONFLICT',
-          `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,
-          true,
-        );
-      }''',
-                  '''      if (databaseErrorCode(error) === '23505') {
-        if (idempotencyScopeKey) {
-          throw new ExternalActionAdapterError(
-            'RESERVATION_CONFLICT',
-            `Global idempotency scope for ${request.tool.resource}/${request.tool.operation} already has an active attempt`,
-            true,
-          );
-        }
-        throw new ExternalActionAdapterError(
-          'RESERVATION_CONFLICT',
-          `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,
-          true,
-        );
-      }''',
-              )
+              old_conflict = '\n'.join([
+                  "      if (databaseErrorCode(error) === '23505') {",
+                  '        throw new ExternalActionAdapterError(',
+                  "          'RESERVATION_CONFLICT',",
+                  '          `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,',
+                  '          true,',
+                  '        );',
+                  '      }',
+              ])
+              new_conflict = '\n'.join([
+                  "      if (databaseErrorCode(error) === '23505') {",
+                  '        if (idempotencyScopeKey) {',
+                  '          throw new ExternalActionAdapterError(',
+                  "            'RESERVATION_CONFLICT',",
+                  '            `Global idempotency scope for ${request.tool.resource}/${request.tool.operation} already has an active attempt`,',
+                  '            true,',
+                  '          );',
+                  '        }',
+                  '        throw new ExternalActionAdapterError(',
+                  "          'RESERVATION_CONFLICT',",
+                  '          `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,',
+                  '          true,',
+                  '        );',
+                  '      }',
+              ])
+              replace_once(old_conflict, new_conflict)
 
           path.write_text(text)
           PY
