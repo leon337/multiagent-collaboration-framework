@@ -23,10 +23,14 @@ security:
   authorized_scope_required: true
   direct_main_write: FORBIDDEN
   force_push: FORBIDDEN
-  merge_by_adapter: FORBIDDEN
+  merge: FORBIDDEN
   delete_human_branch: FORBIDDEN
   token_source: ENVIRONMENT_ONLY
   secret_scan: PASS
+  secret_scan_method:
+    - PR_PATCH_TARGETED_SEARCH_GHP
+    - PR_PATCH_TARGETED_SEARCH_GITHUB_PAT
+    - PR_PATCH_TARGETED_SEARCH_SK_PROJ
 
 idempotency:
   persisted_before_effect: true
@@ -40,17 +44,36 @@ idempotency:
   unknown_on_unverified_effect: true
 
 validation:
-  documentation: PASS
-  container_smoke: PASS
-  foundation: PASS
-  server_test_files: 66
-  server_tests: 305
-  server_tests_passed: 305
+  documentation:
+    run_id: 31238532740
+    result: PASS
+  container_smoke:
+    run_id: 31238532736
+    result: PASS
+  foundation:
+    run_id: 31238532748
+    job_id: 93055410830
+    result: PASS
+    lockfile: PASS
+    format: PASS
+    lint: PASS
+    typecheck: PASS
+    migrations_twice: PASS
+    tests: PASS
+    build: PASS
+    server_test_files: 66
+    server_tests: 305
+    server_tests_passed: 305
+    web_tests: 5
+    ops_tests: 15
+    vitest_artifact_id: 9016253640
+    vitest_artifact_sha256: 1e3343903eec68c807065023e283b8a819a211472edf39fa3714ac10eb26c8f9
   independent_review:
     result: PASS
     critical: 0
     high: 0
     medium: 0
+    review_mode: READ_ONLY_FINAL_CODE_REVIEW
 
 acceptance:
   contract_validation: PASS
@@ -80,7 +103,8 @@ merge_reconciliation:
   observed_pr_state: MERGED
   observed_merge_commit: ed67f0459c956146bdb9020a7ef37dfb59137512
   checkpoint_was_stale: true
-  authorization_record_in_previous_checkpoint: false
+  previous_checkpoint_merge_authorized: false
+  note: Repository state is authoritative for the observed merge; this reconciliation does not invent a missing prior authorization record.
 
 next_action:
   documentation_sync: MCF-DOC-SYNC-001
