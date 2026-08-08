@@ -11,6 +11,7 @@ import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 type HttpMethod = 'GET' | 'POST';
+type UnknownWriteStage = 'CREATE_BRANCH' | 'CREATE_PULL_REQUEST';
 
 interface RequestBudget {
   requests: number;
@@ -193,6 +194,7 @@ function assertPull(pull: GitHubPullResponse, target: BranchPrTarget): void {
     pull.number < 1 ||
     typeof pull.html_url !== 'string' ||
     !pull.html_url.startsWith(`https://github.com/${target.repository}/pull/`) ||
+    pull.state !== 'open' ||
     pull.head?.ref !== target.branchRef ||
     exactSha(pull.head?.sha ?? '', 'provider PR head SHA') !== target.headSha ||
     pull.base?.ref !== target.baseRef ||
@@ -213,6 +215,10 @@ function shouldReconcileMutationError(error: unknown): error is ExternalActionAd
     error instanceof ExternalActionAdapterError &&
     (error.retryable || error.code === 'RESERVATION_CONFLICT')
   );
+}
+
+function isAmbiguousMutationError(error: unknown): error is ExternalActionAdapterError {
+  return error instanceof ExternalActionAdapterError && error.retryable;
 }
 
 export class GitHubBranchPrClient {
@@ -374,6 +380,46 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
     );
   }
 
+  private unknownReceipt(
+    request: ExternalActionRequest,
+    target: BranchPrTarget,
+    stage: UnknownWriteStage,
+    budget: RequestBudget,
+  ): McfToolReceipt {
+    const context = request.context!;
+    return this.evidence.createTrustedReceipt({
+      provider: 'github',
+      operation: request.tool.operation,
+      resource: request.tool.resource,
+      externalId: null,
+      commitSha: target.headSha,
+      status: 'PARTIAL',
+      observedAt: new Date().toISOString(),
+      metadata: {
+        adapterId: this.adapterId,
+        adapterVersion: '1.0.0',
+        repository: target.repository,
+        baseRef: target.baseRef,
+        baseSha: target.baseSha,
+        branchRef: target.branchRef,
+        branchSha: target.headSha,
+        idempotencyKey: target.idempotencyKey,
+        externalEffect: 'REVERSIBLE',
+        resultStatus: 'UNKNOWN',
+        readBackVerified: false,
+        unknownStage: stage,
+        requestBudget: { requests: budget.requests, limit: MAX_REQUESTS },
+        requiredPermissions: ['metadata:read', 'contents:write', 'pull_requests:write'],
+        skillId: request.skill.skillId,
+        skillVersion: request.skill.version,
+        agentId: request.agentId,
+        missionId: context.missionId,
+        phaseId: context.phaseId,
+        expectedMissionVersion: context.expectedMissionVersion,
+      },
+    });
+  }
+
   private async getBranch(
     target: BranchPrTarget,
     deadlineAt: number,
@@ -522,6 +568,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
     if (branch) {
       assertRef(branch, target.branchRef, target.headSha);
     } else {
+      let branchMutationWasAmbiguous = false;
       try {
         await this.client.requestJson<GitHubRefResponse>(
           'POST',
@@ -532,23 +579,35 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
         );
       } catch (error) {
         if (!shouldReconcileMutationError(error)) throw error;
-        branch = await this.getBranch(target, deadlineAt, budget);
+        branchMutationWasAmbiguous = isAmbiguousMutationError(error);
+        try {
+          branch = await this.getBranch(target, deadlineAt, budget);
+        } catch (reconciliationError) {
+          if (branchMutationWasAmbiguous && isAmbiguousMutationError(reconciliationError)) {
+            return this.unknownReceipt(request, target, 'CREATE_BRANCH', budget);
+          }
+          throw reconciliationError;
+        }
         if (!branch) throw error;
       }
 
-      branch = await this.getBranch(target, deadlineAt, budget);
+      try {
+        branch = await this.getBranch(target, deadlineAt, budget);
+      } catch (error) {
+        if (isAmbiguousMutationError(error)) {
+          return this.unknownReceipt(request, target, 'CREATE_BRANCH', budget);
+        }
+        throw error;
+      }
       if (!branch) {
-        throw new ExternalActionAdapterError(
-          'INVALID_RESPONSE',
-          'GitHub branch creation could not be verified by read-back',
-          true,
-        );
+        return this.unknownReceipt(request, target, 'CREATE_BRANCH', budget);
       }
       assertRef(branch, target.branchRef, target.headSha);
     }
 
     let pull = await this.findPull(target, deadlineAt, budget);
     if (!pull) {
+      let pullMutationWasAmbiguous = false;
       try {
         await this.client.requestJson<GitHubPullResponse>(
           'POST',
@@ -564,17 +623,28 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
         );
       } catch (error) {
         if (!shouldReconcileMutationError(error)) throw error;
-        pull = await this.findPull(target, deadlineAt, budget);
+        pullMutationWasAmbiguous = isAmbiguousMutationError(error);
+        try {
+          pull = await this.findPull(target, deadlineAt, budget);
+        } catch (reconciliationError) {
+          if (pullMutationWasAmbiguous && isAmbiguousMutationError(reconciliationError)) {
+            return this.unknownReceipt(request, target, 'CREATE_PULL_REQUEST', budget);
+          }
+          throw reconciliationError;
+        }
         if (!pull) throw error;
       }
 
-      pull = await this.findPull(target, deadlineAt, budget);
+      try {
+        pull = await this.findPull(target, deadlineAt, budget);
+      } catch (error) {
+        if (isAmbiguousMutationError(error)) {
+          return this.unknownReceipt(request, target, 'CREATE_PULL_REQUEST', budget);
+        }
+        throw error;
+      }
       if (!pull) {
-        throw new ExternalActionAdapterError(
-          'INVALID_RESPONSE',
-          'GitHub pull request creation could not be verified by read-back',
-          true,
-        );
+        return this.unknownReceipt(request, target, 'CREATE_PULL_REQUEST', budget);
       }
     }
 
