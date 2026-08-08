@@ -66,9 +66,7 @@ function trustedReceipt(
 ) {
   const pullUrl = `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}`;
   const fragment =
-    operation === 'comment-pr'
-      ? `#issuecomment-${fragmentId}`
-      : `#pullrequestreview-${fragmentId}`;
+    operation === 'comment-pr' ? `#issuecomment-${fragmentId}` : `#pullrequestreview-${fragmentId}`;
   const mutationUrl = `${pullUrl}${fragment}`;
   const body = operation === 'comment-pr' ? 'Comment body' : 'Review body';
 
