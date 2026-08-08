@@ -20,6 +20,10 @@ export async function reconcileExpiredExternalReservation(
   missionId: string,
   now: Date = new Date(),
 ): Promise<string | null> {
+  await client.query(
+    `select pg_advisory_xact_lock(hashtextextended('mcf:external-action:reservation-order', 0))`,
+  );
+
   const mission = await client.query<MissionReservationRow>(
     `select "active_external_attempt_id" as "activeExternalAttemptId"
      from "mcf_missions"
