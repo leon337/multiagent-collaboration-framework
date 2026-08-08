@@ -1,0 +1,14 @@
+mission: MCF-RUNTIME-006-C1
+issue: 75
+team:
+  Mestre: orchestration_and_gates
+  Leonardo: contract_and_risk
+  Sofia: architecture_and_integration
+  Gabriel: adapter_and_idempotency
+  Carlos: permissions_and_security
+  Evelyn: evidence_and_tests
+  Renato: persistence_and_replay
+current_state: IMPLEMENTED_AWAITING_CI
+real_external_write: NOT_AUTHORIZED
+merge: NOT_AUTHORIZED
+production: BLOCKED
