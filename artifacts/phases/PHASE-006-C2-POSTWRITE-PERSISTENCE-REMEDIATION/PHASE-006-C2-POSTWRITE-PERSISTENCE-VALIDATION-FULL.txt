@@ -1,0 +1,79 @@
+PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
+VALIDATION FULL EVIDENCE
+
+SOURCE FINDING
+reviewed_head=edaef62866aa1ff0af2985bfad20d1fe640c36cd
+severity=P1
+finding=recordExecuted persistence failure after adapter receipt could enter recordFailed and release a consumed idempotency binding
+
+IMPLEMENTATION HEAD
+sha=3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
+pr=80
+branch=feat/mcf-runtime-006-c2-pr-collaboration-write
+
+CI
+documentation_validation:
+  run=31263689993
+  conclusion=PASS
+container_smoke:
+  run=31263690012
+  conclusion=PASS
+foundation:
+  run=31263689966
+  job=93118298584
+  conclusion=PASS
+  formatting=PASS
+  lint=PASS
+  typecheck=PASS
+  migrations_twice=PASS
+  tests=PASS
+  build=PASS
+
+MIGRATIONS
+0020=PASS
+0021=PASS
+0022=PASS
+0023=PASS
+0024=PASS
+0025=PASS
+0026=PASS
+0027=PASS
+second_migration_run=PASS
+
+TEST COUNTS
+ops_tests=15/15 PASS
+server_test_files=85/85 PASS
+server_tests=356/356 PASS
+web_tests=5/5 PASS
+
+DEDICATED REMEDIATION TESTS
+external-action-dispatcher.postwrite-persistence.test.ts=4/4 PASS
+external-action-postwrite-unknown.integration.test.ts=1/1 PASS
+
+REGRESSION EVIDENCE
+github-ci-query.adapter.test.ts=65/65 PASS
+skill-executor.external-action.test.ts=5/5 PASS
+github-pr-collaboration.p1-regression.test.ts=4/4 PASS
+external-action-terminal-binding.integration.test.ts=2/2 PASS
+github-pr-collaboration.no-real-write.test.ts=1/1 PASS
+
+ARTIFACT
+id=9023511453
+name=rede-social-vitest-report
+digest=sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a
+
+SEMANTIC ASSERTIONS
+recordExecuted_after_receipt_failure=>UNKNOWN
+recordFailed_on_postwrite_persistence_failure=>FORBIDDEN
+partial_receipt=>UNKNOWN
+c2_before_adapter_execute=>EXECUTING
+expired_EXECUTING=>UNKNOWN
+expired_EXECUTING_scope_key=>PRESERVED
+definitive_not_applied_adapter_error=>FAILED
+read_only_adapters=>NO_EXECUTING_BARRIER_REQUIRED
+
+BOUNDARIES
+real_provider_write=NOT_AUTHORIZED
+production=BLOCKED
+merge=NOT_EXECUTED
+final_exact_head_review=PENDING
