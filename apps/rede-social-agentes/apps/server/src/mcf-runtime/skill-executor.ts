@@ -223,6 +223,25 @@ export class SkillExecutor {
         };
       }
 
+      if (dispatched.status === 'UNKNOWN') {
+        return {
+          skill,
+          receipt: dispatched.receipt,
+          evidenceStatus: 'PENDING',
+          phaseState: 'RECOVERING',
+          missionState: 'RECOVERING',
+          handoffTo: null,
+          rejectionReason: `${dispatched.failure.code}: ${dispatched.failure.message}`,
+          externalAction: {
+            status: 'UNKNOWN',
+            adapterId: dispatched.adapterId,
+            attemptId: dispatched.attemptId,
+            failureCode: dispatched.failure.code,
+            retryable: false,
+          },
+        };
+      }
+
       if (dispatched.status === 'EXECUTED') {
         receipt = dispatched.receipt;
         externalAction = {
