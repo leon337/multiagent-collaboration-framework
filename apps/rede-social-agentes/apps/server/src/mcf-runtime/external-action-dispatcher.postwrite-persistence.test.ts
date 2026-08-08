@@ -151,7 +151,11 @@ describe('ExternalActionDispatcher post-write persistence semantics', () => {
     );
     vi.mocked(ledger.recordUnknown)
       .mockRejectedValueOnce(
-        new ExternalActionAdapterError('LEDGER_FAILURE', 'temporary unknown transition failure', true),
+        new ExternalActionAdapterError(
+          'LEDGER_FAILURE',
+          'temporary unknown transition failure',
+          true,
+        ),
       )
       .mockResolvedValueOnce(undefined);
 

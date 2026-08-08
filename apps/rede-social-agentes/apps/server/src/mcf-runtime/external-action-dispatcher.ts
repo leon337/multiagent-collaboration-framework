@@ -57,7 +57,11 @@ export class ExternalActionDispatcher {
     receipt: McfToolReceipt,
     failure: ExternalActionFailure,
   ): Promise<void> {
-    for (let persistenceAttempt = 1; persistenceAttempt <= unknownPersistenceAttempts; persistenceAttempt += 1) {
+    for (
+      let persistenceAttempt = 1;
+      persistenceAttempt <= unknownPersistenceAttempts;
+      persistenceAttempt += 1
+    ) {
       try {
         await this.ledger.recordUnknown(attemptId, receipt, failure);
         return;
