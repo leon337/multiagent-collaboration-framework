@@ -117,7 +117,7 @@ independent_review_remediation:
     - reviewed_head: 236410f83e1444d4780877a7d988a03ae0351774
       findings:
         - metadata_body_clear_not_representable
-    - reviewed_head: latest_pre_fd33227f_review
+    - reviewed_head: 022ea0d6a70d669f1cd673d0b9b545097170160f
       findings:
         - repository_url_case_sensitive_comparison
         - expired_recovery_fingerprint_raw_alias_mismatch
