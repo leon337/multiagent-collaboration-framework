@@ -108,7 +108,9 @@ describe('C2 global recovery lock ordering', () => {
     await database.query(`delete from "mcf_events" where "mission_id" = any($1::text[])`, [
       missionIds,
     ]);
-    await database.query(`delete from "mcf_missions" where "id" = any($1::text[])`, [missionIds]);
+    await database.query(`delete from "mcf_missions" where "id" = any($1::text[])`, [
+      missionIds,
+    ]);
   }
 
   it('serializes concurrent cross-mission expired recovery', async () => {
