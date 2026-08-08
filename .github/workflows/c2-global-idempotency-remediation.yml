@@ -1,0 +1,191 @@
+name: C2 Global Idempotency Remediation
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-c2-pr-collaboration-write
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/mcf-runtime-006-c2-pr-collaboration-write
+          fetch-depth: 0
+
+      - name: Patch durable ledger idempotently
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts')
+          text = path.read_text()
+
+          def replace_once(old: str, new: str) -> None:
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one match, found {count}: {old[:120]!r}')
+              text = text.replace(old, new, 1)
+
+          if "requestGlobalIdempotencyScopeKey" not in text:
+              replace_once(
+                  "} from './external-action-reservation.js';\n",
+                  "} from './external-action-reservation.js';\nimport { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';\n",
+              )
+
+              marker = "@Injectable()\nexport class ExternalActionLedger"
+              helper = r'''const globallySerializedAdapter = 'github-pr-collaboration-write-v1';
+const globallySerializedOperations = new Set([
+  'comment-pr',
+  'review-pr-comment',
+  'update-pr-text-metadata',
+]);
+
+function requestGlobalIdempotencyScopeKey(
+  request: ExternalActionRequest,
+  adapterId: string,
+  idempotencyKey: string | null,
+): string | null {
+  if (!idempotencyKey || adapterId !== globallySerializedAdapter) return null;
+
+  const operation = canonicalizeToolValue(request.tool.operation);
+  if (!globallySerializedOperations.has(operation)) return null;
+
+  const pullRequestNumber = request.inputs.pull_request_number;
+  if (!Number.isInteger(pullRequestNumber) || (pullRequestNumber as number) < 1) return null;
+
+  const payload = {
+    adapterId,
+    provider: canonicalizeProvider(request.tool.provider),
+    operation,
+    resource: request.tool.resource.trim().toLowerCase(),
+    pullRequestNumber,
+    idempotencyKey,
+  };
+  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+}
+
+'''
+              if marker not in text:
+                  raise SystemExit('ledger class marker not found')
+              text = text.replace(marker, helper + marker, 1)
+
+              replace_once(
+                  "    const attemptId = randomUUID();\n",
+                  "    const idempotencyScopeKey = requestGlobalIdempotencyScopeKey(\n      request,\n      adapterId,\n      idempotencyKey,\n    );\n    const attemptId = randomUUID();\n",
+              )
+
+              replace_once(
+                  '''            "idempotency_fingerprint", "expected_mission_version", "status",
+            "lease_expires_at", "created_at", "updated_at"
+          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14)`,''',
+                  '''            "idempotency_fingerprint", "expected_mission_version", "status",
+            "lease_expires_at", "created_at", "updated_at", "idempotency_scope_key"
+          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14, $15)`,''',
+              )
+
+              replace_once(
+                  '''            leaseExpiresAt,
+            occurredAt,
+          ],''',
+                  '''            leaseExpiresAt,
+            occurredAt,
+            idempotencyScopeKey,
+          ],''',
+              )
+
+              replace_once(
+                  '''              idempotencyKey,
+              idempotencyFingerprint,
+              expectedMissionVersion: request.context.expectedMissionVersion,''',
+                  '''              idempotencyKey,
+              idempotencyFingerprint,
+              idempotencyScopeKey,
+              expectedMissionVersion: request.context.expectedMissionVersion,''',
+              )
+
+              replace_once(
+                  '''              idempotencyKey,
+              idempotencyFingerprint,
+            },
+            idempotencyKey: `external-action:${attemptId}:allowed`,''',
+                  '''              idempotencyKey,
+              idempotencyFingerprint,
+              idempotencyScopeKey,
+            },
+            idempotencyKey: `external-action:${attemptId}:allowed`,''',
+              )
+
+              replace_once(
+                  '''      if (databaseErrorCode(error) === '23505') {
+        throw new ExternalActionAdapterError(
+          'RESERVATION_CONFLICT',
+          `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,
+          true,
+        );
+      }''',
+                  '''      if (databaseErrorCode(error) === '23505') {
+        if (idempotencyScopeKey) {
+          throw new ExternalActionAdapterError(
+            'RESERVATION_CONFLICT',
+            `Global idempotency scope for ${request.tool.resource}/${request.tool.operation} already has an active attempt`,
+            true,
+          );
+        }
+        throw new ExternalActionAdapterError(
+          'RESERVATION_CONFLICT',
+          `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,
+          true,
+        );
+      }''',
+              )
+
+          path.write_text(text)
+          PY
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        working-directory: apps/rede-social-agentes
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Format C2 remediation files
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/server/src/mcf-runtime/github-pr-collaboration.global-idempotency.integration.test.ts \
+            apps/server/src/mcf-runtime/github-pr-collaboration.review-head-race.test.ts \
+            packages/database/migrations/0020_mcf_external_action_global_idempotency_scope.sql
+
+      - name: Commit remediation if needed
+        run: |
+          if git diff --quiet; then
+            echo "Global idempotency remediation already applied"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-pr-collaboration.global-idempotency.integration.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-pr-collaboration.review-head-race.test.ts \
+            apps/rede-social-agentes/packages/database/migrations/0020_mcf_external_action_global_idempotency_scope.sql
+          git commit -m "fix(mcf): serialize C2 idempotency across missions"
+          git push origin HEAD:feat/mcf-runtime-006-c2-pr-collaboration-write
