@@ -165,8 +165,9 @@ validation:
     build: PASS
     artifact_id: 9027787068
     artifact_digest: sha256:6732dc654d7ee5c175523abe9dba9b96e400c4c645bcb7fefdc647c92720d4ff
-  exact_head_gate_contract:
-    checkpoint_binding_mode: SELF
+  exact_head_gate:
+    checkpoint_head: SELF
+    checkpoint_head_resolution: GIT_COMMIT_CONTAINING_THIS_FILE
     pr_head_requirement: MUST_EQUAL_CHECKPOINT_HEAD
     ci_status_source: GITHUB_ACTIONS_FOR_CHECKPOINT_HEAD
     required_workflows:
@@ -178,6 +179,7 @@ validation:
     max_blocking_p0: 0
     max_blocking_p1: 0
     max_blocking_p2: 0
+    evaluation: EXTERNAL_AT_GATE
   final_exact_head_gate:
     resolved_checkpoint_head: 517f0827e7fc4564cf6fed83d5d6e1fd1a72cf62
     checkpoint_self_binding_at_gate: CONSISTENT
