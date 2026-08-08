@@ -6,8 +6,8 @@ pull_request: 80
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
 risk_class: B
 objective: preservar idempotencia, persistencia governada e vinculo exato de evidencia para efeitos externos
-objective_state: ROUND_3_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
-cycle: 8
+objective_state: ROUND_4_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
+cycle: 9
 
 review_history:
   - head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
@@ -28,28 +28,35 @@ review_history:
     verdict: FAIL
     findings:
       - P2_REVIEW_URL_NOT_BOUND_TO_REVIEW_ID
+  - head: fe227c6cf5e980d8017fb5b27b59de9e44d1a0e3
+    review_id: PRR_kwDOTnz-ks8AAAABI2sLLA
+    verdict: FAIL
+    findings:
+      - P2_EXTERNAL_RECEIPT_URL_FRAGMENT_NOT_BOUND_TO_EXTERNAL_ID
 
-round_3_remediation:
-  review_url_exact_id_binding: IMPLEMENTED
-  canonical_fragment: "#pullrequestreview-${review.id}"
+round_4_remediation:
+  external_receipt_url_exact_id_binding: IMPLEMENTED
+  comment_fragment: "#issuecomment-${mutationExternalId}"
+  review_fragment: "#pullrequestreview-${mutationExternalId}"
+  metadata_url: EXACT_PULL_REQUEST_URL
   mismatched_fragment: REJECTED
-  mismatch_mutation: NOT_REACHED
-  dedicated_test: PASS
+  dedicated_test_file: github-pr-collaboration.evidence-url-binding.test.ts
+  dedicated_tests: 3_PASS
 
-round_3_validation:
-  head: 67aa26331f3621ebb8e9149dbda1340f1828a1f7
-  documentation_run: 31266313990
-  container_smoke_run: 31266314074
-  foundation_run: 31266313994
+round_4_validation:
+  head: 527a6e5d65cfea03a55f625cd28d84cdc641db62
+  documentation_run: 31272787242
+  container_smoke_run: 31272787240
+  foundation_run: 31272787241
   format: PASS
   lint: PASS
   typecheck: PASS
   migrations_twice: PASS
-  server_test_files: 87
-  server_tests: 358
+  server_test_files: 88
+  server_tests: 361
   build: PASS
-  artifact_id: 9024261045
-  artifact_digest: sha256:c1f50cef818aba69b5230f3263b42e68e1e4448549e950c533377dccd830d4a7
+  artifact_id: 9026128255
+  artifact_digest: sha256:b3172d23577b2b8fb72fa8328741bd6c7ca826163145dc8264aabe321279e4a3
 
 current_exact_head_gate:
   checkpoint_head: SELF

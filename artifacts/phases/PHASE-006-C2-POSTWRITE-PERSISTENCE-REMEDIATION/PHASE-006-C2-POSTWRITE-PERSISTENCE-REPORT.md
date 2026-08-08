@@ -9,39 +9,41 @@ O PR #80 permanece em loop de remediação independente. Nenhum gate anterior fo
 - `edaef62866aa1ff0af2985bfad20d1fe640c36cd`: FAIL/P1 — falha de `recordExecuted()` após receipt podia seguir para `recordFailed()` e liberar binding.
 - `74fd45a57067eab5d0a61bfc91d1869249eee262`: FAIL/P2 — checkpoint não estava ligado ao próprio HEAD auditado.
 - `60f069ee829b03cab93e484ef2782e00333c9377`, review `PRR_kwDOTnz-ks8AAAABI2moFA`: FAIL — `UNKNOWN` não persistível e ausência de tombstone global de fingerprint em falha pré-write.
-- `17201725ad137dd3fd53542bd297708679556980`, review `PRR_kwDOTnz-ks8AAAABI2peDw`: FAIL/P2 — `assertReview()` aceitava qualquer fragmento da URL do PR, sem vincular `html_url` ao `review.id`.
+- `17201725ad137dd3fd53542bd297708679556980`, review `PRR_kwDOTnz-ks8AAAABI2peDw`: FAIL/P2 — `assertReview()` não vinculava `html_url` ao `review.id`.
+- `fe227c6cf5e980d8017fb5b27b59de9e44d1a0e3`, review `PRR_kwDOTnz-ks8AAAABI2sLLA`: FAIL/P2 — o validador independente de receipts externos aceitava fragmentos de comment/review divergentes de `mutationExternalId`.
 
-## Remediação da rodada 3
+## Remediação da rodada 4
 
-`assertReview()` agora exige a URL canônica exata:
+`verifyGitHubPrCollaborationEvidence()` agora exige vínculo exato entre `mutationExternalId` e o fragmento da URL de mutação:
 
-`https://github.com/<owner>/<repo>/pull/<pr>#pullrequestreview-<review.id>`
+- `comment-pr` → `#issuecomment-${mutationExternalId}`;
+- `review-pr-comment` → `#pullrequestreview-${mutationExternalId}`;
+- `update-pr-text-metadata` → URL exata do próprio Pull Request.
 
-Além de manter as validações de:
-- `review.id` inteiro positivo;
-- body exato com marcador de idempotência;
-- state `COMMENTED`;
-- `commit_id` igual ao HEAD SHA esperado.
-
-Uma resposta com `id=202` e URL `#pullrequestreview-999` é rejeitada antes de qualquer nova mutação.
+Assim, receipts assinados com ID e URL divergentes são rejeitados durante validação de evidência, mesmo que tenham sido construídos fora do adapter.
 
 Regressão dedicada:
-`github-pr-collaboration.review-url-binding.test.ts`.
+`github-pr-collaboration.evidence-url-binding.test.ts`.
 
-## Implementação validada da rodada 3
+Ela cobre:
+1. comment e review válidos com URL/ID exatos;
+2. comment com `mutationExternalId=202` e fragmento `#issuecomment-999`;
+3. review com `mutationExternalId=202` e fragmento `#pullrequestreview-999`.
 
-HEAD funcional: `67aa26331f3621ebb8e9149dbda1340f1828a1f7`.
+## Implementação validada da rodada 4
+
+HEAD funcional: `527a6e5d65cfea03a55f625cd28d84cdc641db62`.
 
 CI do mesmo SHA:
-- Documentation validation `31266313990`: PASS.
-- Rede Social Container Smoke `31266314074`: PASS.
-- Rede Social Foundation `31266313994`: PASS.
+- Documentation validation `31272787242`: PASS.
+- Rede Social Container Smoke `31272787240`: PASS.
+- Rede Social Foundation `31272787241`: PASS.
 - format, lint, typecheck, migrations duas vezes, testes e build: PASS.
-- server test files: 87/87 PASS.
-- server tests: 358/358 PASS.
-- regressão `review-url-binding`: 1/1 PASS.
-- artifact `9024261045`.
-- digest `sha256:c1f50cef818aba69b5230f3263b42e68e1e4448549e950c533377dccd830d4a7`.
+- server test files: 88/88 PASS.
+- server tests: 361/361 PASS.
+- regressão `evidence-url-binding`: 3/3 PASS.
+- artifact `9026128255`.
+- digest `sha256:b3172d23577b2b8fb72fa8328741bd6c7ca826163145dc8264aabe321279e4a3`.
 
 ## Limites preservados
 

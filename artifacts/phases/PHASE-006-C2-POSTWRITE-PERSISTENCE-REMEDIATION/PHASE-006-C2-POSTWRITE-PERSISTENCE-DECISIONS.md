@@ -20,29 +20,30 @@ A missão/fase pode entrar em `RECOVERING` a partir de attempt `UNKNOWN`; o pont
 
 `SELF` significa o Git commit contendo o checkpoint. CI e revisão independente são avaliadas externamente nesse mesmo SHA.
 
-## D6 — Aceitar revisão de 17201725 como FAIL
+## D6 — Revisões de URL em duas fronteiras
 
-A review `PRR_kwDOTnz-ks8AAAABI2peDw` encontrou P2 em `assertReview()`: URL de evidência não estava vinculada ao `review.id`.
+A validação de URL não pode existir apenas no adapter. Tanto o read-back do adapter quanto o validador de receipt externo devem vincular o ID da mutação à URL canônica.
 
-## D7 — Vincular review.id à URL canônica
+## D7 — Vincular receipts externos ao mutationExternalId
 
-`assertReview()` exige:
-`https://github.com/<repository>/pull/<pr>#pullrequestreview-<review.id>`.
+`verifyGitHubPrCollaborationEvidence()` exige:
 
-A igualdade é feita sobre a URL canônica completa. Body, state `COMMENTED` e `commit_id` continuam obrigatórios.
+- comment: `#issuecomment-${mutationExternalId}`;
+- review: `#pullrequestreview-${mutationExternalId}`;
+- metadata: URL exata do PR.
 
-## D8 — Regressão dedicada
+## D8 — Regressões dedicadas
 
-`github-pr-collaboration.review-url-binding.test.ts` injeta `id=202` com URL `#pullrequestreview-999` e exige rejeição antes de qualquer POST.
+`github-pr-collaboration.evidence-url-binding.test.ts` cobre 3 casos e rejeita fragmentos divergentes para comment e review.
 
-## D9 — Evidência da rodada 3
+## D9 — Evidência da rodada 4
 
-HEAD `67aa26331f3621ebb8e9149dbda1340f1828a1f7`:
+HEAD `527a6e5d65cfea03a55f625cd28d84cdc641db62`:
 - três workflows PASS;
-- 87/87 arquivos e 358/358 testes server PASS;
+- 88/88 arquivos e 361/361 testes server PASS;
 - build PASS;
-- regressão review-url-binding 1/1 PASS;
-- artifact `9024261045`, digest `sha256:c1f50cef818aba69b5230f3263b42e68e1e4448549e950c533377dccd830d4a7`.
+- regressões evidence-url-binding 3/3 PASS;
+- artifact `9026128255`, digest `sha256:b3172d23577b2b8fb72fa8328741bd6c7ca826163145dc8264aabe321279e4a3`.
 
 ## D10 — Gate
 

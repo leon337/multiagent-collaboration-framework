@@ -1,34 +1,36 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-VALIDATION SUMMARY — ROUND 3
+VALIDATION SUMMARY — ROUND 4
 
 PRIOR_EXACT_REVIEW
-head=17201725ad137dd3fd53542bd297708679556980
-review_id=PRR_kwDOTnz-ks8AAAABI2peDw
+head=fe227c6cf5e980d8017fb5b27b59de9e44d1a0e3
+review_id=PRR_kwDOTnz-ks8AAAABI2sLLA
 review=FAIL
-finding_p2=REVIEW_URL_NOT_BOUND_TO_REVIEW_ID
-thread=PRRT_kwDOTnz-ks6XfG2E
+finding_p2=EXTERNAL_RECEIPT_URL_FRAGMENT_NOT_BOUND_TO_EXTERNAL_ID
+thread=PRRT_kwDOTnz-ks6XfO9O
 
-ROUND_3_IMPLEMENTATION
-head=67aa26331f3621ebb8e9149dbda1340f1828a1f7
-documentation_run=31266313990 PASS
-container_smoke_run=31266314074 PASS
-foundation_run=31266313994 PASS
+ROUND_4_IMPLEMENTATION
+head=527a6e5d65cfea03a55f625cd28d84cdc641db62
+documentation_run=31272787242 PASS
+container_smoke_run=31272787240 PASS
+foundation_run=31272787241 PASS
 format=PASS
 lint=PASS
 typecheck=PASS
 migrations_twice=PASS
-server_test_files=87/87 PASS
-server_tests=358/358 PASS
+server_test_files=88/88 PASS
+server_tests=361/361 PASS
 build=PASS
-review_url_binding_regression=1/1 PASS
+evidence_url_binding_regressions=3/3 PASS
 no_real_provider_write_test=PASS
-vitest_artifact_id=9024261045
-vitest_artifact_digest=sha256:c1f50cef818aba69b5230f3263b42e68e1e4448549e950c533377dccd830d4a7
+vitest_artifact_id=9026128255
+vitest_artifact_digest=sha256:b3172d23577b2b8fb72fa8328741bd6c7ca826163145dc8264aabe321279e4a3
 
 SEMANTIC_BINDING
-review_external_id=String(review.id)
-review_mutation_url=https://github.com/<repository>/pull/<pr>#pullrequestreview-<review.id>
-mismatched_review_url_fragment=REJECTED_BEFORE_MUTATION
+comment_mutation_url=https://github.com/<repository>/pull/<pr>#issuecomment-<mutationExternalId>
+review_mutation_url=https://github.com/<repository>/pull/<pr>#pullrequestreview-<mutationExternalId>
+metadata_mutation_url=EXACT_PULL_REQUEST_URL
+mismatched_comment_fragment=REJECTED
+mismatched_review_fragment=REJECTED
 
 CURRENT_GATE_BINDING
 checkpoint_head=SELF

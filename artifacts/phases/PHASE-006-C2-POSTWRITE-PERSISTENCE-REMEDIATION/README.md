@@ -20,15 +20,15 @@ Impedir duplicidade, perda de estado ou evidência cruzada quando o MCF executa 
 ## Estado técnico
 
 ```yaml
-latest_reviewed_head: 17201725ad137dd3fd53542bd297708679556980
-latest_review_id: PRR_kwDOTnz-ks8AAAABI2peDw
-latest_review_verdict: FAIL_P2_REVIEW_URL_BINDING
-round_3_implementation:
-  head: 67aa26331f3621ebb8e9149dbda1340f1828a1f7
+latest_reviewed_head: fe227c6cf5e980d8017fb5b27b59de9e44d1a0e3
+latest_review_id: PRR_kwDOTnz-ks8AAAABI2sLLA
+latest_review_verdict: FAIL_P2_EXTERNAL_RECEIPT_URL_BINDING
+round_4_implementation:
+  head: 527a6e5d65cfea03a55f625cd28d84cdc641db62
   ci: PASS
-  server_test_files: 87_PASS
-  server_tests: 358_PASS
-  review_url_binding_regression: PASS
+  server_test_files: 88_PASS
+  server_tests: 361_PASS
+  evidence_url_binding_regressions: 3_PASS
 current_gate:
   checkpoint_head: SELF
   resolution: GIT_COMMIT_CONTAINING_CHECKPOINT

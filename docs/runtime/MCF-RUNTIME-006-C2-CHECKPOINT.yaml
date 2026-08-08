@@ -23,6 +23,7 @@ security:
   exact_pr_head_sha_required: true
   post_write_unknown_semantics: PASS
   review_receipt_url_exact_id_binding: PASS
+  external_receipt_url_exact_id_binding: PASS
   approve_review: FORBIDDEN
   request_changes_review: FORBIDDEN
   merge: FORBIDDEN
@@ -76,26 +77,37 @@ independent_review_remediation:
     review_id: PRR_kwDOTnz-ks8AAAABI2peDw
     verdict: FAIL
     finding: P2_REVIEW_URL_NOT_BOUND_TO_REVIEW_ID
-    thread: PRRT_kwDOTnz-ks6XfG2E
+    status: REMEDIATED
+  round_4_review:
+    reviewed_head: fe227c6cf5e980d8017fb5b27b59de9e44d1a0e3
+    review_id: PRR_kwDOTnz-ks8AAAABI2sLLA
+    verdict: FAIL
+    finding: P2_EXTERNAL_RECEIPT_URL_FRAGMENT_NOT_BOUND_TO_EXTERNAL_ID
+    thread: PRRT_kwDOTnz-ks6XfO9O
     remediation:
-      exact_review_url_binding: IMPLEMENTED
-      dedicated_regression: PASS
+      comment_fragment_exact_binding: IMPLEMENTED
+      review_fragment_exact_binding: IMPLEMENTED
+      dedicated_regressions: PASS
     status: REMEDIATED_PENDING_EXACT_HEAD_REVIEW
 
 validation:
-  round_3_implementation:
-    head: 67aa26331f3621ebb8e9149dbda1340f1828a1f7
-    documentation_run: 31266313990
+  round_4_implementation:
+    head: 527a6e5d65cfea03a55f625cd28d84cdc641db62
+    documentation_run: 31272787242
     documentation: PASS
-    container_smoke_run: 31266314074
+    container_smoke_run: 31272787240
     container_smoke: PASS
-    foundation_run: 31266313994
+    foundation_run: 31272787241
     foundation: PASS
-    server_test_files: 87
-    server_tests: 358
+    format: PASS
+    lint: PASS
+    typecheck: PASS
+    migrations_twice: PASS
+    server_test_files: 88
+    server_tests: 361
     build: PASS
-    artifact_id: 9024261045
-    artifact_digest: sha256:c1f50cef818aba69b5230f3263b42e68e1e4448549e950c533377dccd830d4a7
+    artifact_id: 9026128255
+    artifact_digest: sha256:b3172d23577b2b8fb72fa8328741bd6c7ca826163145dc8264aabe321279e4a3
   exact_head_gate:
     checkpoint_head: SELF
     checkpoint_head_resolution: GIT_COMMIT_CONTAINING_THIS_FILE
@@ -115,7 +127,7 @@ validation:
 traceability:
   conformance_recovery_prf: artifacts/phases/PHASE-006-C2-CONFORMANCE-RECOVERY
   postwrite_remediation_prf: artifacts/phases/PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-  latest_review_thread: PRRT_kwDOTnz-ks6XfG2E
+  latest_review_thread: PRRT_kwDOTnz-ks6XfO9O
 
 next_action:
   current: VALIDATE_SELF_BOUND_CHECKPOINT_HEAD_THEN_REQUEST_EXACT_HEAD_REVIEW
