@@ -1,27 +1,27 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-VALIDATION FULL EVIDENCE — ROUND 4
+VALIDATION FULL EVIDENCE — ROUND 5
 
 REVIEW INPUT
-reviewed_head=fe227c6cf5e980d8017fb5b27b59de9e44d1a0e3
-review_id=PRR_kwDOTnz-ks8AAAABI2sLLA
+reviewed_head=fa2705981bf3438568e13696fe44d0af3dbcf1c8
+review_id=PRR_kwDOTnz-ks8AAAABI29_-Q
 verdict=FAIL
-finding=P2_EXTERNAL_RECEIPT_URL_FRAGMENT_NOT_BOUND_TO_EXTERNAL_ID
-thread=PRRT_kwDOTnz-ks6XfO9O
+finding=P2_MUTATION_FRAGMENT_CASE_INSENSITIVE
+thread=PRRT_kwDOTnz-ks6XgECQ
 
 IMPLEMENTATION HEAD
-sha=527a6e5d65cfea03a55f625cd28d84cdc641db62
+sha=2323f7f0a0ea8900451313facbaa17c2bf35a4f1
 pr=80
 branch=feat/mcf-runtime-006-c2-pr-collaboration-write
 
 CI
 documentation_validation:
-  run=31272787242
+  run=31273552368
   conclusion=PASS
 container_smoke:
-  run=31272787240
+  run=31273552168
   conclusion=PASS
 foundation:
-  run=31272787241
+  run=31273552189
   conclusion=PASS
   formatting=PASS
   lint=PASS
@@ -32,38 +32,30 @@ foundation:
 
 TEST COUNTS
 server_test_files=88/88 PASS
-server_tests=361/361 PASS
+server_tests=363/363 PASS
 web_tests=5/5 PASS
 
-DEDICATED ROUND_4 TEST
-github-pr-collaboration.evidence-url-binding.test.ts=3/3 PASS
+DEDICATED ROUND_5 TEST
+github-pr-collaboration.evidence-url-binding.test.ts=5/5 PASS
 valid_comment_and_review_binding=PASS
-mismatched_issuecomment_fragment=REJECTED
-mismatched_pullrequestreview_fragment=REJECTED
-
-RELEVANT REGRESSIONS
-github-pr-collaboration.review-url-binding.test.ts=PASS
-external-action-dispatcher.postwrite-persistence.test.ts=PASS
-external-action-postwrite-unknown.integration.test.ts=PASS
-postgres-mcf-runtime.unknown-persistence.integration.test.ts=PASS
-github-pr-collaboration.global-idempotency.integration.test.ts=PASS
-github-pr-collaboration.p1-regression.test.ts=PASS
-external-action-terminal-binding.integration.test.ts=PASS
-github-pr-collaboration.no-real-write.test.ts=PASS
+mismatched_issuecomment_id=REJECTED
+mismatched_pullrequestreview_id=REJECTED
+uppercase_issuecomment_fragment=REJECTED
+uppercase_pullrequestreview_fragment=REJECTED
 
 ARTIFACT
-id=9026128255
+id=9026344880
 name=rede-social-vitest-report
-digest=sha256:b3172d23577b2b8fb72fa8328741bd6c7ca826163145dc8264aabe321279e4a3
-head_sha=527a6e5d65cfea03a55f625cd28d84cdc641db62
+digest=sha256:3823b747b9829b001e2f16cd38934d0cadf756e535c77ca18a310b4187c90bf7
+head_sha=2323f7f0a0ea8900451313facbaa17c2bf35a4f1
 
 SEMANTIC ASSERTIONS
 receipt_external_id=>MUST_EQUAL_MUTATION_EXTERNAL_ID
-comment_mutation_url_fragment=>ISSUECOMMENT_PLUS_MUTATION_EXTERNAL_ID
-review_mutation_url_fragment=>PULLREQUESTREVIEW_PLUS_MUTATION_EXTERNAL_ID
+comment_mutation_hash=>EXACT_LOWERCASE_ISSUECOMMENT_PLUS_MUTATION_EXTERNAL_ID
+review_mutation_hash=>EXACT_LOWERCASE_PULLREQUESTREVIEW_PLUS_MUTATION_EXTERNAL_ID
+hash_case_sensitivity=>ENFORCED
+repository_path_case_tolerance=>PRESERVED
 metadata_mutation_url=>EXACT_PULL_REQUEST_URL
-comment_fragment_mismatch=>REJECTED
-review_fragment_mismatch=>REJECTED
 UNKNOWN_attempt=>MISSION_RECOVERING_PERSISTABLE
 UNKNOWN_attempt=>GLOBAL_BINDING_PRESERVED
 FAILED_prewrite_incompatible_cross_mission_retry=>BLOCKED

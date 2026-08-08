@@ -1,13 +1,14 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-SMOKE — ROUND 4
+SMOKE — ROUND 5
 
-implementation_head=527a6e5d65cfea03a55f625cd28d84cdc641db62
-container_smoke_run=31272787240
+implementation_head=2323f7f0a0ea8900451313facbaa17c2bf35a4f1
+container_smoke_run=31273552168
 result=PASS
 
 foundation_runtime_regression=PASS
-adapter_review_url_binding_regression=PASS
-external_receipt_url_binding_regressions=PASS
+external_receipt_url_exact_id_binding=PASS
+external_receipt_fragment_case_sensitive_binding=PASS
+evidence_url_binding_regressions=5/5_PASS
 unknown_persistence_regression=PASS
 fingerprint_tombstone_regression=PASS
 no_real_provider_write_test=PASS

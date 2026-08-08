@@ -4,7 +4,7 @@ Pacote de Rastreabilidade da Fase para as remediações independentes do PR #80.
 
 ## Objetivo
 
-Impedir duplicidade, perda de estado ou evidência cruzada quando o MCF executa colaboração controlada em Pull Requests.
+Impedir duplicidade, perda de estado ou evidência incorreta quando o MCF executa colaboração controlada em Pull Requests.
 
 ## Ordem de leitura
 
@@ -20,15 +20,15 @@ Impedir duplicidade, perda de estado ou evidência cruzada quando o MCF executa 
 ## Estado técnico
 
 ```yaml
-latest_reviewed_head: fe227c6cf5e980d8017fb5b27b59de9e44d1a0e3
-latest_review_id: PRR_kwDOTnz-ks8AAAABI2sLLA
-latest_review_verdict: FAIL_P2_EXTERNAL_RECEIPT_URL_BINDING
-round_4_implementation:
-  head: 527a6e5d65cfea03a55f625cd28d84cdc641db62
+latest_reviewed_head: fa2705981bf3438568e13696fe44d0af3dbcf1c8
+latest_review_id: PRR_kwDOTnz-ks8AAAABI29_-Q
+latest_review_verdict: FAIL_P2_MUTATION_FRAGMENT_CASE_INSENSITIVE
+round_5_implementation:
+  head: 2323f7f0a0ea8900451313facbaa17c2bf35a4f1
   ci: PASS
   server_test_files: 88_PASS
-  server_tests: 361_PASS
-  evidence_url_binding_regressions: 3_PASS
+  server_tests: 363_PASS
+  evidence_url_binding_regressions: 5_PASS
 current_gate:
   checkpoint_head: SELF
   resolution: GIT_COMMIT_CONTAINING_CHECKPOINT
@@ -37,10 +37,6 @@ current_gate:
 real_provider_write: NOT_AUTHORIZED
 production: BLOCKED
 ```
-
-## Relação com fases anteriores
-
-`PHASE-006-C2-CONFORMANCE-RECOVERY` permanece histórico. Este pacote registra todas as remediações posteriores encontradas pelas revisões independentes.
 
 ## Próximo gate
 

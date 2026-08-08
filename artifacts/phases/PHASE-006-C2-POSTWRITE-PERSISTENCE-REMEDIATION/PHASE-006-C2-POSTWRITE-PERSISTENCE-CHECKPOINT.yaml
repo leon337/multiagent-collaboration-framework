@@ -6,8 +6,8 @@ pull_request: 80
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
 risk_class: B
 objective: preservar idempotencia, persistencia governada e vinculo exato de evidencia para efeitos externos
-objective_state: ROUND_4_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
-cycle: 9
+objective_state: ROUND_5_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
+cycle: 10
 
 review_history:
   - head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
@@ -33,30 +33,39 @@ review_history:
     verdict: FAIL
     findings:
       - P2_EXTERNAL_RECEIPT_URL_FRAGMENT_NOT_BOUND_TO_EXTERNAL_ID
+  - head: fa2705981bf3438568e13696fe44d0af3dbcf1c8
+    review_id: PRR_kwDOTnz-ks8AAAABI29_-Q
+    verdict: FAIL
+    findings:
+      - P2_MUTATION_FRAGMENT_CASE_INSENSITIVE
 
-round_4_remediation:
-  external_receipt_url_exact_id_binding: IMPLEMENTED
-  comment_fragment: "#issuecomment-${mutationExternalId}"
-  review_fragment: "#pullrequestreview-${mutationExternalId}"
-  metadata_url: EXACT_PULL_REQUEST_URL
-  mismatched_fragment: REJECTED
+round_5_remediation:
+  external_receipt_fragment_case_sensitive_binding: IMPLEMENTED
+  expected_hash:
+    comment: "#issuecomment-${mutationExternalId}"
+    review: "#pullrequestreview-${mutationExternalId}"
+  comparison:
+    hash: EXACT_CASE_SENSITIVE
+    repository_path: CASE_INSENSITIVE
+  uppercase_fragment: REJECTED
   dedicated_test_file: github-pr-collaboration.evidence-url-binding.test.ts
-  dedicated_tests: 3_PASS
+  dedicated_tests: 5_PASS
 
-round_4_validation:
-  head: 527a6e5d65cfea03a55f625cd28d84cdc641db62
-  documentation_run: 31272787242
-  container_smoke_run: 31272787240
-  foundation_run: 31272787241
+round_5_validation:
+  head: 2323f7f0a0ea8900451313facbaa17c2bf35a4f1
+  documentation_run: 31273552368
+  container_smoke_run: 31273552168
+  foundation_run: 31273552189
   format: PASS
   lint: PASS
   typecheck: PASS
   migrations_twice: PASS
   server_test_files: 88
-  server_tests: 361
+  server_tests: 363
+  evidence_url_binding_tests: 5
   build: PASS
-  artifact_id: 9026128255
-  artifact_digest: sha256:b3172d23577b2b8fb72fa8328741bd6c7ca826163145dc8264aabe321279e4a3
+  artifact_id: 9026344880
+  artifact_digest: sha256:3823b747b9829b001e2f16cd38934d0cadf756e535c77ca18a310b4187c90bf7
 
 current_exact_head_gate:
   checkpoint_head: SELF

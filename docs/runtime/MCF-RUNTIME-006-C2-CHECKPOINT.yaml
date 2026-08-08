@@ -24,6 +24,7 @@ security:
   post_write_unknown_semantics: PASS
   review_receipt_url_exact_id_binding: PASS
   external_receipt_url_exact_id_binding: PASS
+  external_receipt_fragment_case_sensitive_binding: PASS
   approve_review: FORBIDDEN
   request_changes_review: FORBIDDEN
   merge: FORBIDDEN
@@ -84,30 +85,40 @@ independent_review_remediation:
     verdict: FAIL
     finding: P2_EXTERNAL_RECEIPT_URL_FRAGMENT_NOT_BOUND_TO_EXTERNAL_ID
     thread: PRRT_kwDOTnz-ks6XfO9O
+    status: REMEDIATED
+  round_5_review:
+    reviewed_head: fa2705981bf3438568e13696fe44d0af3dbcf1c8
+    review_id: PRR_kwDOTnz-ks8AAAABI29_-Q
+    verdict: FAIL
+    finding: P2_MUTATION_FRAGMENT_CASE_INSENSITIVE
+    thread: PRRT_kwDOTnz-ks6XgECQ
     remediation:
-      comment_fragment_exact_binding: IMPLEMENTED
-      review_fragment_exact_binding: IMPLEMENTED
+      exact_hash_case_sensitive: IMPLEMENTED
+      repository_path_case_tolerance: PRESERVED
+      uppercase_issuecomment_rejected: PASS
+      uppercase_pullrequestreview_rejected: PASS
       dedicated_regressions: PASS
     status: REMEDIATED_PENDING_EXACT_HEAD_REVIEW
 
 validation:
-  round_4_implementation:
-    head: 527a6e5d65cfea03a55f625cd28d84cdc641db62
-    documentation_run: 31272787242
+  round_5_implementation:
+    head: 2323f7f0a0ea8900451313facbaa17c2bf35a4f1
+    documentation_run: 31273552368
     documentation: PASS
-    container_smoke_run: 31272787240
+    container_smoke_run: 31273552168
     container_smoke: PASS
-    foundation_run: 31272787241
+    foundation_run: 31273552189
     foundation: PASS
     format: PASS
     lint: PASS
     typecheck: PASS
     migrations_twice: PASS
     server_test_files: 88
-    server_tests: 361
+    server_tests: 363
+    evidence_url_binding_tests: 5
     build: PASS
-    artifact_id: 9026128255
-    artifact_digest: sha256:b3172d23577b2b8fb72fa8328741bd6c7ca826163145dc8264aabe321279e4a3
+    artifact_id: 9026344880
+    artifact_digest: sha256:3823b747b9829b001e2f16cd38934d0cadf756e535c77ca18a310b4187c90bf7
   exact_head_gate:
     checkpoint_head: SELF
     checkpoint_head_resolution: GIT_COMMIT_CONTAINING_THIS_FILE
@@ -127,7 +138,7 @@ validation:
 traceability:
   conformance_recovery_prf: artifacts/phases/PHASE-006-C2-CONFORMANCE-RECOVERY
   postwrite_remediation_prf: artifacts/phases/PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-  latest_review_thread: PRRT_kwDOTnz-ks6XfO9O
+  latest_review_thread: PRRT_kwDOTnz-ks6XgECQ
 
 next_action:
   current: VALIDATE_SELF_BOUND_CHECKPOINT_HEAD_THEN_REQUEST_EXACT_HEAD_REVIEW
