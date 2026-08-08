@@ -7,8 +7,10 @@ on:
       - main
   pull_request:
     paths:
+      - 'README.md'
       - 'docs/**'
       - 'templates/**'
+      - 'skills/registry.yaml'
       - '.github/workflows/docs-validation.yml'
 
 permissions:
@@ -35,20 +37,198 @@ jobs:
             docs/governanca/GLOSSARIO.md
             docs/governanca/POLITICA_DE_VERSOES.md
             docs/governanca/PROCESSO_DE_PUBLICACAO.md
+            docs/agentes/README.md
             docs/agentes/LEO.md
-            docs/agentes/LEONARDO.md
-            docs/agentes/SOFIA.md
-            docs/agentes/EMILY.md
-            docs/agentes/CARMEM.md
-            docs/agentes/GABRIEL.md
             docs/agentes/MESTRE.md
+            docs/agentes/LEONARDO.md
+            docs/agentes/CARLOS.md
+            docs/agentes/EVELYN.md
+            docs/agentes/LAURA.md
+            docs/agentes/ISABELA.md
+            docs/agentes/MARINA.md
+            docs/agentes/SOFIA.md
+            docs/agentes/RAFAEL.md
+            docs/agentes/MANOEL.md
+            docs/agentes/RENATO.md
+            docs/agentes/BRUNO.md
+            docs/agentes/RICARDO.md
+            docs/agentes/GABRIEL.md
+            docs/agentes/CARMEM.md
+            docs/agentes/EMILY.md
+            docs/agentes/EDUARDO.md
+            docs/agentes/HELENA.md
+            docs/agentes/ANDRE.md
+            docs/agentes/TIAGO.md
+            docs/agentes/DANIELA.md
+            docs/agentes/VINICIUS.md
+            docs/agentes/PATRICIA.md
+            docs/agentes/LUCAS.md
+            docs/agentes/AUGUSTO.md
+            docs/agentes/BEATRIZ.md
+            docs/agentes/MIRIAM.md
+            docs/agentes/JULIA.md
             docs/agentes/MATRIZ_RACI.md
+            docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md
             templates/CHECKLIST_DE_PUBLICACAO.md
             templates/CHECKLIST_DE_RECONCILIACAO.md
           )
           for file in "${required[@]}"; do
             test -s "$file" || { echo "Missing or empty: $file"; exit 1; }
           done
+
+      - name: Check official 29-agent contract set
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=(
+            LEO.md
+            MESTRE.md
+            LEONARDO.md
+            CARLOS.md
+            EVELYN.md
+            LAURA.md
+            ISABELA.md
+            MARINA.md
+            SOFIA.md
+            RAFAEL.md
+            MANOEL.md
+            RENATO.md
+            BRUNO.md
+            RICARDO.md
+            GABRIEL.md
+            CARMEM.md
+            EMILY.md
+            EDUARDO.md
+            HELENA.md
+            ANDRE.md
+            TIAGO.md
+            DANIELA.md
+            VINICIUS.md
+            PATRICIA.md
+            LUCAS.md
+            AUGUSTO.md
+            BEATRIZ.md
+            MIRIAM.md
+            JULIA.md
+          )
+          test "${#expected[@]}" -eq 29
+          for file in "${expected[@]}"; do
+            test -s "docs/agentes/$file" || { echo "Missing official agent contract: $file"; exit 1; }
+          done
+          actual="$(find docs/agentes -maxdepth 1 -type f -name '*.md' ! -name 'README.md' ! -name 'MATRIZ_RACI.md' | wc -l | tr -d ' ')"
+          test "$actual" -eq 29 || {
+            echo "Expected exactly 29 individual agent contracts, found $actual"
+            exit 1
+          }
+          grep -Fq 'Existem **29 agentes nomeados**' README.md || {
+            echo 'Root README no longer declares 29 named agents'
+            exit 1
+          }
+          grep -Fq 'Matriz Consolidada de Competências — 29 Agentes do MCF' docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md || {
+            echo 'Canonical 29-agent matrix title not found'
+            exit 1
+          }
+
+      - name: Check agent contracts and index against canonical matrix
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+          import unicodedata
+
+          matrix_path = Path('docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md')
+          index_path = Path('docs/agentes/README.md')
+          matrix_row_pattern = re.compile(r'^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|')
+          index_row_pattern = re.compile(
+              r'^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*\[[^\]]+\]\(\./([^)]+)\)\s*\|'
+          )
+
+          def parse_matrix_rows(path: Path):
+              rows = []
+              for line in path.read_text(encoding='utf-8').splitlines():
+                  match = matrix_row_pattern.match(line)
+                  if not match:
+                      continue
+                  number = int(match.group(1))
+                  if 1 <= number <= 29:
+                      rows.append((number, match.group(2).strip(), match.group(3).strip()))
+              return rows
+
+          def parse_index_rows(path: Path):
+              rows = []
+              for line in path.read_text(encoding='utf-8').splitlines():
+                  match = index_row_pattern.match(line)
+                  if not match:
+                      continue
+                  number = int(match.group(1))
+                  if 1 <= number <= 29:
+                      rows.append(
+                          (
+                              number,
+                              match.group(2).strip(),
+                              match.group(3).strip(),
+                              match.group(4).strip(),
+                          )
+                      )
+              return rows
+
+          def slug(name: str) -> str:
+              normalized = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('ascii')
+              return re.sub(r'[^A-Za-z0-9]+', '_', normalized).strip('_').upper()
+
+          matrix_rows = parse_matrix_rows(matrix_path)
+          if len(matrix_rows) != 29 or [number for number, _, _ in matrix_rows] != list(range(1, 30)):
+              print(f'Canonical matrix must expose agents 1..29 exactly once; got {len(matrix_rows)} rows')
+              sys.exit(1)
+
+          index_rows = parse_index_rows(index_path)
+          if len(index_rows) != 29 or [number for number, _, _, _ in index_rows] != list(range(1, 30)):
+              print(f'Agent index must expose agents 1..29 exactly once with contract targets; got {len(index_rows)} rows')
+              sys.exit(1)
+
+          failures = []
+          for matrix_row, index_row in zip(matrix_rows, index_rows):
+              number, matrix_name, matrix_role = matrix_row
+              index_number, index_name, index_role, index_target = index_row
+              expected_target = f'{slug(matrix_name)}.md'
+              if index_number != number or index_name != matrix_name or index_role != matrix_role:
+                  failures.append(
+                      f'#{number}: index mismatch; '
+                      f'matrix=({matrix_name!r}, {matrix_role!r}), '
+                      f'index=({index_name!r}, {index_role!r})'
+                  )
+              if index_target != expected_target:
+                  failures.append(
+                      f'#{number} {matrix_name}: contract target mismatch; '
+                      f'expected={expected_target!r}, index={index_target!r}'
+                  )
+
+          for number, name, expected_role in matrix_rows:
+              path = Path('docs/agentes') / f'{slug(name)}.md'
+              if not path.exists():
+                  failures.append(f'#{number} {name}: missing {path}')
+                  continue
+              role_lines = [
+                  line for line in path.read_text(encoding='utf-8').splitlines()
+                  if line.startswith('**Papel:**')
+              ]
+              if len(role_lines) != 1:
+                  failures.append(f'#{number} {name}: expected one **Papel:** line, got {len(role_lines)}')
+                  continue
+              actual_role = role_lines[0].split('**Papel:**', 1)[1].strip()
+              if actual_role != expected_role:
+                  failures.append(
+                      f'#{number} {name}: role mismatch; matrix={expected_role!r}, contract={actual_role!r}'
+                  )
+
+          if failures:
+              print('\n'.join(failures))
+              sys.exit(1)
+
+          print('29-agent matrix, index targets and individual contract roles are consistent')
+          PY
 
       - name: Check required metadata in normative documents
         shell: bash
@@ -64,12 +244,34 @@ jobs:
             docs/governanca/POLITICA_DE_VERSOES.md
             docs/governanca/PROCESSO_DE_PUBLICACAO.md
             docs/agentes/LEO.md
-            docs/agentes/LEONARDO.md
-            docs/agentes/SOFIA.md
-            docs/agentes/EMILY.md
-            docs/agentes/CARMEM.md
-            docs/agentes/GABRIEL.md
             docs/agentes/MESTRE.md
+            docs/agentes/LEONARDO.md
+            docs/agentes/CARLOS.md
+            docs/agentes/EVELYN.md
+            docs/agentes/LAURA.md
+            docs/agentes/ISABELA.md
+            docs/agentes/MARINA.md
+            docs/agentes/SOFIA.md
+            docs/agentes/RAFAEL.md
+            docs/agentes/MANOEL.md
+            docs/agentes/RENATO.md
+            docs/agentes/BRUNO.md
+            docs/agentes/RICARDO.md
+            docs/agentes/GABRIEL.md
+            docs/agentes/CARMEM.md
+            docs/agentes/EMILY.md
+            docs/agentes/EDUARDO.md
+            docs/agentes/HELENA.md
+            docs/agentes/ANDRE.md
+            docs/agentes/TIAGO.md
+            docs/agentes/DANIELA.md
+            docs/agentes/VINICIUS.md
+            docs/agentes/PATRICIA.md
+            docs/agentes/LUCAS.md
+            docs/agentes/AUGUSTO.md
+            docs/agentes/BEATRIZ.md
+            docs/agentes/MIRIAM.md
+            docs/agentes/JULIA.md
             docs/agentes/MATRIZ_RACI.md
           )
           for file in "${normative[@]}"; do
