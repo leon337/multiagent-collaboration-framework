@@ -211,7 +211,12 @@ export function verifyGitHubBranchPrEvidence(
     (value) =>
       githubUrl(value, repository, 'branch/PR evidence contains invalid evidence URL').pathname,
   );
-  if (!paths.includes(`/${repository}/commit/${commitSha}`) || !paths.includes(pullUrl.pathname)) {
-    reject('branch/PR evidence must include exact commit and pull request URLs');
+  const expectedBranchPath = `/${repository}/tree/${encodeURIComponent(branchRef)}`;
+  if (
+    !paths.includes(`/${repository}/commit/${commitSha}`) ||
+    !paths.includes(expectedBranchPath) ||
+    !paths.includes(pullUrl.pathname)
+  ) {
+    reject('branch/PR evidence must include exact commit, branch and pull request URLs');
   }
 }
