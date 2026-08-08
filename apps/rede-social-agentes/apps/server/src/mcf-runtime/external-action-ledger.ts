@@ -28,12 +28,7 @@ interface IdempotencyRow extends AttemptRow {
 }
 
 type ExternalAttemptStatus =
-  | 'ALLOWED'
-  | 'EXECUTED'
-  | 'FAILED'
-  | 'EVIDENCE_VALIDATED'
-  | 'EVIDENCE_REJECTED'
-  | 'ABANDONED';
+  'ALLOWED' | 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED' | 'ABANDONED';
 
 interface AttemptStateRow extends AttemptRow {
   status: ExternalAttemptStatus;
@@ -411,9 +406,7 @@ export class ExternalActionLedger {
     attemptId: string;
     status: 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
     eventType:
-      | 'EXTERNAL_ACTION_EXECUTED'
-      | 'EXTERNAL_ACTION_FAILED'
-      | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
+      'EXTERNAL_ACTION_EXECUTED' | 'EXTERNAL_ACTION_FAILED' | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
     receiptId: string | null;
     failure: ExternalActionFailure | null;
     payload: Record<string, unknown>;
