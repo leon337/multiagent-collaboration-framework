@@ -51,6 +51,25 @@ function databaseErrorCode(error: unknown): string | null {
   return null;
 }
 
+function requestIdempotencyKey(request: ExternalActionRequest): string | null {
+  const value = request.inputs.idempotency_key;
+  if (value === undefined) return null;
+  if (
+    typeof value !== 'string' ||
+    value.length < 16 ||
+    value.length > 128 ||
+    value !== value.trim() ||
+    !/^[A-Za-z0-9][A-Za-z0-9._:-]+$/u.test(value)
+  ) {
+    throw new ExternalActionAdapterError(
+      'INVALID_CONTEXT',
+      'External action idempotency_key must be 16-128 safe characters',
+      false,
+    );
+  }
+  return value;
+}
+
 @Injectable()
 export class ExternalActionLedger {
   constructor(private readonly database: DatabaseService) {}
@@ -64,6 +83,7 @@ export class ExternalActionLedger {
       );
     }
 
+    const idempotencyKey = requestIdempotencyKey(request);
     const attemptId = randomUUID();
     const occurredAt = new Date();
     const leaseExpiresAt = new Date(occurredAt.getTime() + EXTERNAL_ACTION_LEASE_MS);
@@ -123,9 +143,9 @@ export class ExternalActionLedger {
         await client.query(
           `insert into "mcf_external_action_attempts" (
             "attempt_id", "mission_id", "phase_id", "agent_id", "skill_id",
-            "adapter_id", "provider", "operation", "resource",
+            "adapter_id", "provider", "operation", "resource", "idempotency_key",
             "expected_mission_version", "status", "lease_expires_at", "created_at", "updated_at"
-          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ALLOWED', $11, $12, $12)`,
+          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'ALLOWED', $12, $13, $13)`,
           [
             attemptId,
             request.context.missionId,
@@ -136,6 +156,7 @@ export class ExternalActionLedger {
             request.tool.provider,
             request.tool.operation,
             request.tool.resource,
+            idempotencyKey,
             request.context.expectedMissionVersion,
             leaseExpiresAt,
             occurredAt,
@@ -179,6 +200,7 @@ export class ExternalActionLedger {
               provider: request.tool.provider,
               operation: request.tool.operation,
               resource: request.tool.resource,
+              idempotencyKey,
               expectedMissionVersion: request.context.expectedMissionVersion,
             },
             idempotencyKey: `external-action:${attemptId}:requested`,
@@ -192,6 +214,7 @@ export class ExternalActionLedger {
               provider: request.tool.provider,
               operation: request.tool.operation,
               resource: request.tool.resource,
+              idempotencyKey,
             },
             idempotencyKey: `external-action:${attemptId}:allowed`,
           },
@@ -202,7 +225,8 @@ export class ExternalActionLedger {
             `insert into "mcf_events" (
               "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
               "idempotency_key", "occurred_at"
-            ) values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)`,
+            ) values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)
+            on conflict ("idempotency_key") do nothing`,
             [
               randomUUID(),
               request.context.missionId,
@@ -223,7 +247,7 @@ export class ExternalActionLedger {
       if (databaseErrorCode(error) === '23505') {
         throw new ExternalActionAdapterError(
           'RESERVATION_CONFLICT',
-          `External action phase ${request.context.phaseId} already has a reserved attempt`,
+          `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,
           true,
         );
       }
@@ -252,6 +276,8 @@ export class ExternalActionLedger {
         externalId: receipt.externalId,
         commitSha: receipt.commitSha,
         status: receipt.status,
+        idempotencyKey:
+          typeof receipt.metadata.idempotencyKey === 'string' ? receipt.metadata.idempotencyKey : null,
       },
     });
   }
