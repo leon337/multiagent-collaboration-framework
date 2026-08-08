@@ -95,11 +95,7 @@ function metadataPatchInputs(inputs: Readonly<Record<string, unknown>>): Metadat
   }
 
   if (rawBody !== undefined && rawBody !== null) {
-    if (
-      typeof rawBody !== 'string' ||
-      rawBody !== rawBody.trim() ||
-      rawBody.length > BODY_LIMIT
-    ) {
+    if (typeof rawBody !== 'string' || rawBody !== rawBody.trim() || rawBody.length > BODY_LIMIT) {
       return reject(
         `PR collaboration metadata evidence body must be a trimmed string within ${BODY_LIMIT} characters`,
       );
