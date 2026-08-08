@@ -20,7 +20,11 @@ import {
   McfSkillNotExecutableError,
 } from './mcf-runtime.errors.js';
 import type { PermissionEngine } from './permission-engine.js';
-import { type McfToolRequest } from './permission-engine.js';
+import {
+  canonicalizeProvider,
+  canonicalizeToolValue,
+  type McfToolRequest,
+} from './permission-engine.js';
 import type { SkillRegistryLoader } from './skill-registry.loader.js';
 
 const executableSkills = new Set([
@@ -35,6 +39,8 @@ const executableSkills = new Set([
 ]);
 
 const internalSkills = new Set(['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-TRACE-MISSION']);
+
+type CiQueryConclusion = 'SUCCESS' | 'FAILURE' | 'CANCELLED' | 'IN_PROGRESS';
 
 export interface ExecuteSkillInput {
   skillId: string;
@@ -81,6 +87,24 @@ function ledgerFailureTrace(trace: ExternalActionTrace | null): ExternalActionTr
   };
 }
 
+function isRunTestsCiQueryReceipt(receipt: McfToolReceipt, skill: McfSkillDefinition): boolean {
+  return (
+    skill.skillId === 'MCF-RUN-TESTS' &&
+    canonicalizeProvider(receipt.provider) === 'github' &&
+    canonicalizeToolValue(receipt.operation) === 'query-ci'
+  );
+}
+
+function readCiQueryConclusion(receipt: McfToolReceipt): CiQueryConclusion | null {
+  const conclusion = receipt.metadata.conclusion;
+  return conclusion === 'SUCCESS' ||
+    conclusion === 'FAILURE' ||
+    conclusion === 'CANCELLED' ||
+    conclusion === 'IN_PROGRESS'
+    ? conclusion
+    : null;
+}
+
 @Injectable()
 export class SkillExecutor {
   constructor(
@@ -122,7 +146,10 @@ export class SkillExecutor {
         executionSteps: skill.executionSteps,
         inputKeys: Object.keys(input.inputs).sort(),
       });
-      this.evidence.verifyForSkill(receipt, input.tool, skill);
+      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
+        agentId: input.agentId,
+        executionContext: input.executionContext,
+      });
       return {
         skill,
         receipt,
@@ -208,7 +235,10 @@ export class SkillExecutor {
     }
 
     try {
-      this.evidence.verifyForSkill(receipt, input.tool, skill);
+      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
+        agentId: input.agentId,
+        executionContext: input.executionContext,
+      });
       if (receipt.status !== 'SUCCEEDED') {
         const reason = `tool receipt status is ${receipt.status}`;
         const ledgerFailure = await this.recordEvidenceRejected(
@@ -226,6 +256,42 @@ export class SkillExecutor {
           rejectionReason: ledgerFailure ?? reason,
           externalAction: ledgerFailure ? ledgerFailureTrace(externalAction) : externalAction,
         };
+      }
+
+      if (isRunTestsCiQueryReceipt(receipt, skill)) {
+        const conclusion = readCiQueryConclusion(receipt);
+        if (conclusion === 'IN_PROGRESS') {
+          return {
+            skill,
+            receipt,
+            evidenceStatus: 'PENDING',
+            phaseState: 'WAITING_EVIDENCE',
+            missionState: 'WAITING_EXTERNAL',
+            handoffTo: null,
+            rejectionReason: null,
+            externalAction,
+          };
+        }
+        if (conclusion !== 'SUCCESS') {
+          const reason = conclusion
+            ? `CI conclusion ${conclusion} does not satisfy all_critical_tests_pass`
+            : 'CI query receipt is missing a supported conclusion';
+          const ledgerFailure = await this.recordEvidenceRejected(
+            externalAction,
+            receipt.receiptId,
+            reason,
+          );
+          return {
+            skill,
+            receipt,
+            evidenceStatus: 'INVALID',
+            phaseState: 'RECOVERING',
+            missionState: 'RECOVERING',
+            handoffTo: null,
+            rejectionReason: ledgerFailure ?? reason,
+            externalAction: ledgerFailure ? ledgerFailureTrace(externalAction) : externalAction,
+          };
+        }
       }
 
       const ledgerFailure = await this.recordEvidenceValidated(externalAction, receipt.receiptId);

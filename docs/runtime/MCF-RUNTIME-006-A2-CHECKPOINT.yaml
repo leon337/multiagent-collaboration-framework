@@ -1,0 +1,320 @@
+mission: MCF-RUNTIME-006-A2
+issue: 72
+pull_request: 73
+branch: feat/mcf-runtime-006-a2-ci-query-adapter
+base_sha: 01c0182b9c9837c0dd22306c9bd8918020ecc38b
+previous_audited_head_sha: 5869774393e49450359dbf85889dd0362d5c041e
+validated_remediation_code_sha: 73402d99ef2658e6b6831d099e870e02848b728d
+previous_initial_audited_head_sha: 5869774393e49450359dbf85889dd0362d5c041e
+previous_rr1_final_head_sha: 1d1289190932b57729d695c6e525647e983c5e2e
+validated_rr2_code_sha: 77c54a21e3492190348a8d206f65b9823c1042ae
+previous_rr2_final_head_sha: 45d6c13129ece2b335fdf3a14d3578815bed424d
+validated_rr4_code_sha: ac8f1eac219b7f031c744804f338912b867072f4
+previous_rr4_final_head_sha: 5e6bd6ce38d0c38678c4f1de83a4cbe08c5bf1a3
+validated_rr5_code_sha: bd31df46276f48edb7985484634f7909df61ca34
+previous_rr5_final_head_sha: f37f5084350a2eeb7bc94eae471dd1485a964be9
+validated_rr6_code_sha: db19b0640ec69480f54a98bd898db7cb1799147c
+state: RR6_READY_FOR_INDEPENDENT_RE_REVIEW
+objective: Consultar CI do GitHub por SHA exato sem capacidade de execução ou escrita.
+
+adapter:
+  id: github-ci-query-read-only-v1
+  skill: MCF-RUN-TESTS
+  provider: github-actions
+  operation: query-ci
+  exact_sha_required: true
+  http_methods_allowed: [GET]
+  required_permissions:
+    - metadata:read
+    - contents:read
+    - actions:read
+    - checks:read
+
+remediation:
+  source: independent_review_FAIL_2026-08-06
+  high_findings:
+    MCF-A2-H-001: REMEDIATED_CI_PASS
+    MCF-A2-H-002: REMEDIATED_CI_PASS
+  medium_findings:
+    MCF-A2-M-001: REMEDIATED_CI_PASS
+    MCF-A2-M-002: REMEDIATED_CI_PASS
+    MCF-A2-M-003: REMEDIATED_CI_PASS
+    MCF-A2-M-004: REMEDIATED_CI_PASS
+    MCF-A2-M-005: REMEDIATED_CI_PASS
+  low_findings:
+    MCF-A2-L-001: REMEDIATED_CI_PASS
+
+independent_re_review_2:
+  result: FAIL
+  findings:
+    critical: 0
+    high: 1
+    medium: 4
+    low: 2
+  MCF-A2-RR-H-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-M-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-M-002:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-M-003:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-M-004:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-L-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR-L-002:
+    status: REMEDIATED_CI_PASS
+
+independent_re_review_3:
+  result: FAIL
+  findings:
+    critical: 0
+    high: 2
+    medium: 1
+    low: 1
+  MCF-A2-RR3-H-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR3-H-002:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR3-M-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-RR3-L-001:
+    status: REMEDIATED_CI_PASS
+
+independent_post_rr4_review:
+  result: FAIL
+  findings:
+    critical: 0
+    high: 1
+    medium: 0
+    low: 1
+  MCF-A2-POST-RR4-H-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-POST-RR4-L-001:
+    status: REMEDIATED_CI_PASS
+
+independent_rr5_review:
+  result: FAIL
+  findings:
+    critical: 0
+    high: 1
+    medium: 0
+    low: 0
+  MCF-A2-RR5-H-001:
+    status: REMEDIATED_CI_PASS
+    summary: CI query execution success is separated from MCF-RUN-TESTS semantic acceptance.
+
+controls:
+  external_receipt_bound_to_current_inputs: true
+  exact_test_target_required_on_external_receipt: true
+  repository_bound_to_current_context: true
+  workflow_filter_bound_to_current_context: true
+  pagination_total_count_fail_closed: true
+  pagination_stable_total_required: true
+  primary_rate_limit_requires_remaining_zero: true
+  secondary_rate_limit_signals_supported: true
+  evidence_repository_segment_boundary: true
+  canonical_repository_resource_only: true
+  credential_bearing_resource_rejected: true
+  abort_body_read_timeout_normalized: true
+  required_permissions:
+    - metadata:read
+    - contents:read
+    - actions:read
+    - checks:read
+  read_only: true
+  receipt_signed: true
+  receipt_domain_signed:
+    skill_id: true
+    skill_version: true
+    agent_id: true
+    mission_id: true
+    phase_id: true
+    expected_mission_version: true
+  external_receipt_context_validation: true
+  cross_skill_replay_rejected: true
+  cross_agent_replay_rejected: true
+  cross_mission_replay_rejected: true
+  cross_phase_replay_rejected: true
+  cross_version_replay_rejected: true
+  query_ci_skill_restriction:
+    skill: MCF-RUN-TESTS
+    exclusive: true
+  receipt_persisted_by_external_action_ledger: true
+  workflow_runs_collected: true
+  jobs_collected: true
+  jobs_provider_run_id_required: true
+  jobs_provider_head_sha_required: true
+  jobs_enclosing_run_bound: true
+  jobs_exact_sha_bound: true
+  jobs_provenance_preserved_in_receipt: true
+  jobs_provenance_revalidated: true
+  check_suites_collected: true
+  check_suites_sha_bound: true
+  check_suites_schema_validated: true
+  check_suites_pagination_fail_closed: true
+  check_suites_duplicate_detection: true
+  check_suites_budget: true
+  check_suites_aggregated: true
+  check_suites_receipt_validated: true
+  check_runs_collected: true
+  check_runs_provider_head_sha_required: true
+  check_runs_exact_sha_bound: true
+  check_runs_provenance_preserved_in_receipt: true
+  check_runs_provenance_revalidated: true
+  check_run_only_sha_mismatch_fail_closed: true
+  persistence_replay_runtime_path_tested: true
+  persistence_replay_duplicate_rejected: true
+  persistence_replay_concurrent_loser_rejected: true
+  persistence_replay_single_valid_receipt_row: true
+  persistence_replay_single_evidence_validated_event: true
+  query_execution_status_separated_from_ci_conclusion: true
+  mcf_run_tests_semantic_acceptance:
+    SUCCESS: VALID_COMPLETED
+    FAILURE: INVALID_RECOVERING
+    CANCELLED: INVALID_RECOVERING
+    IN_PROGRESS: PENDING_WAITING_EVIDENCE
+  non_success_never_emits_evidence_validated: true
+  non_success_never_completes_phase: true
+  in_progress_never_emits_evidence_rejected: true
+  in_progress_never_starts_recovery: true
+  in_progress_dispatcher_reservation_released: true
+  in_progress_receipt_persisted_as_pending: true
+  workflow_conclusion_always_aggregated: true
+  unknown_conclusion_fail_closed: true
+  runtime_response_schema_validation: true
+  global_request_budget: true
+  global_job_budget: true
+  global_step_budget: true
+  global_check_run_budget: true
+  receipt_array_count_consistency: true
+  receipt_conclusion_recomputed: true
+  no_success_from_text: true
+  no_branch_or_tag_resolution: true
+  vitest_dist_excluded: true
+  no_ci_dispatch: true
+  no_repository_mutation: true
+  production: BLOCKED
+  scoped_write_required_for_future_execution: true
+  temporary_workflow_persisted: false
+  merge_authorized: false
+
+changed_files:
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.adapter.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.adapter.test.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/permission-engine.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
+  - docs/runtime/MCF-RUNTIME-006-A2-CHECKPOINT.yaml
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.external-receipt.test.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.resource-boundary.test.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.integration.test.ts
+  - apps/rede-social-agentes/apps/server/vitest.config.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.semantic-outcome.test.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.mission-outcome.test.ts
+  - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.pending-reservation.integration.test.ts
+
+scope_expansion:
+  source: independent_re_review_2_FAIL
+  added_files:
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.external-receipt.test.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.resource-boundary.test.ts
+
+scope_expansion_rr4:
+  source: independent_re_review_3_FAIL
+  added_files:
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.integration.test.ts
+    - apps/rede-social-agentes/apps/server/vitest.config.ts
+
+scope_remediation_rr5:
+  source: independent_post_rr4_review_FAIL
+  modified_existing_files:
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.adapter.test.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.adapter.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.external-receipt.test.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.integration.test.ts
+
+scope_remediation_rr6:
+  source: independent_rr5_review_FAIL
+  modified_existing_files:
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.ts
+  added_files:
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.semantic-outcome.test.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.mission-outcome.test.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.pending-reservation.integration.test.ts
+
+github_actions:
+  validated_code_sha: db19b0640ec69480f54a98bd898db7cb1799147c
+  documentation:
+    run_id: 31232875496
+    conclusion: SUCCESS
+  foundation:
+    run_id: 31232875472
+    conclusion: SUCCESS
+    install_frozen_lockfile: PASS
+    format: PASS
+    lint: PASS
+    typecheck: PASS
+    migrations_twice: PASS
+    tests: PASS
+    build: PASS
+    server_test_files: 58
+    server_tests: 282
+    server_tests_passed: 282
+    artifact_id: 9014411802
+    artifact_sha256: 96fa4765397f3bfdf4842e704d2a91d1328e7089950f027a5b117063832a5b9f
+  container_smoke:
+    run_id: 31232875489
+    conclusion: SUCCESS
+
+validation:
+  master_review_rr6: PASS
+  targeted_tests:
+    semantic_outcome: 4/4_PASS
+    mission_runtime_outcome_events: 5/5_PASS
+    pending_reservation_postgres: 1/1_PASS
+    github_ci_query_adapter: 65/65_PASS
+    external_receipt_context: 36/36_PASS
+    evidence_validator: 3/3_PASS
+    resource_boundary: 11/11_PASS
+    persistence_replay: 2/2_PASS
+  security_regressions:
+    ci_failure_false_success: CLOSED
+    ci_cancelled_false_success: CLOSED
+    ci_in_progress_false_completion: CLOSED
+    in_progress_false_recovery: CLOSED
+    in_progress_dispatcher_reservation_deadlock: CLOSED
+    job_provenance: PASS
+    check_run_provenance: PASS
+    check_run_only_sha_mismatch: PASS
+    receipt_tampering: PASS
+    persistence_replay_duplicate: PASS
+    persistence_replay_concurrent: PASS
+    pagination: PASS
+    rate_limit: PASS
+    url_binding: PASS
+    credential_resource: PASS
+    abort: PASS
+    budgets: PASS
+  full_tests:
+    ops: 15/15_PASS
+    server: 282/282_PASS
+    web: 5/5_PASS
+  source_only:
+    server_test_files: 58
+    server_tests: 282
+    server_passed: 282
+  migrations_twice: PASS
+  build: PASS
+  container_smoke: PASS
+  github_actions_rr6: PASS
+  independent_rr6_re_review: PENDING
+  pull_request_state: DRAFT
+  merge: NOT_AUTHORIZED
+  production: BLOCKED

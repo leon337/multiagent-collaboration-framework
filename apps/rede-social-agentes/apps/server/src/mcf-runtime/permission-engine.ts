@@ -36,6 +36,29 @@ function isProductionTarget(value: unknown): boolean {
   return normalized.includes('production') || normalized.includes('producao');
 }
 
+function isExplicitReadOnlyScopedOperation(skillId: string, operation: string): boolean {
+  return skillId === 'MCF-RUN-TESTS' && canonicalizeToolValue(operation) === 'query-ci';
+}
+
+const canonicalGitHubRepositoryResource =
+  /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/u;
+
+function isCanonicalGitHubRepositoryResource(value: string): boolean {
+  return value === value.trim() && canonicalGitHubRepositoryResource.test(value);
+}
+
+function requiresCanonicalGitHubRepository(
+  skillId: string,
+  provider: string,
+  operation: string,
+): boolean {
+  return (
+    skillId === 'MCF-RUN-TESTS' &&
+    provider === 'github' &&
+    canonicalizeToolValue(operation) === 'query-ci'
+  );
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
@@ -85,6 +108,19 @@ export class PermissionEngine {
       );
     }
 
+    if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
+      throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');
+    }
+
+    if (
+      requiresCanonicalGitHubRepository(skill.skillId, provider, operation) &&
+      !isCanonicalGitHubRepositoryResource(tool.resource)
+    ) {
+      throw new McfPermissionDeniedError(
+        'GitHub CI query requires a canonical owner/repository resource',
+      );
+    }
+
     if (
       operationMatches(operation, destructiveOperations) ||
       destructiveOperations.some((candidate) => resource.includes(candidate))
@@ -122,7 +158,11 @@ export class PermissionEngine {
         }
         break;
       case 'SCOPED_WRITE':
-        if (inputs.authorizedScope !== true && provider !== 'internal') {
+        if (
+          !isExplicitReadOnlyScopedOperation(skill.skillId, operation) &&
+          inputs.authorizedScope !== true &&
+          provider !== 'internal'
+        ) {
           throw new McfPermissionDeniedError('SCOPED_WRITE requires inputs.authorizedScope=true');
         }
         break;
