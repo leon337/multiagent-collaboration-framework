@@ -2,7 +2,7 @@
 
 ## Estado
 
-`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — GATE_C_PARCIAL`
+`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL`
 
 ## Autorização
 
@@ -28,10 +28,28 @@ runtime_006_c1:
   merge_commit: ed67f0459c956146bdb9020a7ef37dfb59137512
   real_provider_write_test: NOT_AUTHORIZED
   gate_c: PARCIAL
+runtime_006_c2:
+  capability: GITHUB_PR_COLLABORATION_WRITE
+  operations:
+    - comment-pr
+    - review-pr-comment
+    - update-pr-text-metadata
+  implementation_state: INTEGRADO
+  pull_request: 80
+  final_review_head: 517f0827e7fc4564cf6fed83d5d6e1fd1a72cf62
+  merge_commit: 0a7909b71e1944d1062e8ea1ab13a4bee4abbf88
+  independent_review: PASS
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
+  post_merge_staging_run: 31279570577
+  post_merge_staging: PASS
+  real_provider_write_test: NOT_AUTHORIZED
+  gate_c: PARCIAL
 production: BLOCKED
 ```
 
-A implementação C1 está integrada à `main`, mas a escrita real pelo provider GitHub ainda não foi autorizada nem comprovada. Portanto o Gate C não deve ser declarado integralmente concluído.
+As implementações C1 e C2 estão integradas à `main`. O C2 passou CI no HEAD exato, revisão independente sem P0/P1/P2 ativos, gate operacional de Léo, merge protegido por HEAD e validação pós-merge em staging. A escrita real pelo provider GitHub do adapter C2 continua não autorizada. Portanto o Gate C permanece parcial e não deve ser declarado integralmente concluído.
 
 ## Objetivo
 
@@ -112,13 +130,13 @@ final_state: object
 
 4. adapter de branch e pull request — **IMPLEMENTAÇÃO INTEGRADA / C1**;
 5. escrita real controlada pelo provider GitHub — **PENDENTE DE AUTORIZAÇÃO/PROVA**;
-6. comentários, reviews e atualização de metadados — **PENDENTE**;
-7. prevenção de duplicidade por idempotency key — **IMPLEMENTADA em C1; ampliar conforme novas operações**.
+6. comentários, reviews informativos e atualização de metadados textuais — **IMPLEMENTAÇÃO INTEGRADA / C2**;
+7. prevenção de duplicidade por idempotency key — **IMPLEMENTADA e ampliada em C1/C2**, incluindo escopo global persistente, recuperação controlada e tombstone de fingerprint.
 
 ### Lote 3 — efeito operacional
 
 8. adapter de deploy para staging — **PENDENTE como adapter formal do runtime**;
-9. verificação de SHA por health/version — **já comprovada no RUNTIME-005; integrar ao adapter**;
+9. verificação de SHA por health/version — **já comprovada no RUNTIME-005 e novamente observada no staging pós-merge do C2; integrar ao adapter formal**;
 10. recovery por redeploy do SHA saudável anterior — **já comprovado no RUNTIME-005; integrar ao adapter**;
 11. observabilidade e alertas de missão bloqueada — **PENDENTE**.
 
@@ -238,14 +256,18 @@ Os critérios acima devem ser avaliados por adapter. Um `PASS` de uma capacidade
 
 **PARCIAL.**
 
-- implementação de branch/PR integrada;
-- base, head, SHA, idempotência e read-back cobertos por testes;
-- merge automático permanece proibido;
-- prova de escrita real pelo provider GitHub ainda pendente de autorização.
+- implementação de branch/PR integrada em C1;
+- implementação de comentários, review `COMMENT` e metadados `title`/`body` integrada em C2;
+- C2 validado no HEAD exato `517f0827e7fc4564cf6fed83d5d6e1fd1a72cf62` com Documentation, Container Smoke e Foundation PASS;
+- revisão independente final do C2 sem P0/P1/P2 ativos;
+- merge C2 observado em `0a7909b71e1944d1062e8ea1ab13a4bee4abbf88`;
+- staging pós-merge `31279570577` PASS e revisão exata implantada;
+- escrita real pelo provider GitHub do C2 permanece `NOT_AUTHORIZED`;
+- produção permanece bloqueada.
 
 ### Gate D — staging
 
-**PENDENTE como capacidade formal do RUNTIME-006.** O RUNTIME-005 já forneceu evidência de deploy, health/version e recovery por redeploy que deve ser reutilizada sem declarar rollback nativo inexistente.
+**PENDENTE como capacidade formal do RUNTIME-006.** O RUNTIME-005 já forneceu evidência de deploy, health/version e recovery por redeploy. O workflow pós-merge do C2 também validou e implantou exatamente `0a7909b71e1944d1062e8ea1ab13a4bee4abbf88` em staging, mas isso não substitui a implementação do adapter formal do Gate D.
 
 ### Gate E — RC
 
@@ -278,7 +300,7 @@ Os critérios acima devem ser avaliados por adapter. Um `PASS` de uma capacidade
 
 ## Próxima ação
 
-Após a sincronização documental `MCF-DOC-SYNC-001`, retomar o Lote 2 a partir do estado real pós-C1, sem repetir A1/A2/C1.
+Retomar o RUNTIME-006 a partir do estado real pós-C2 e iniciar o Lote 3 pela implementação do adapter formal de deploy para staging, reutilizando as evidências já comprovadas no RUNTIME-005 e no staging pós-merge do C2. Não repetir A1, A2, C1, MCF-DOC-SYNC-001 ou C2. A autorização de escrita real pelo provider GitHub continua sendo um gate separado.
 
 ## Critério de conclusão da missão
 
