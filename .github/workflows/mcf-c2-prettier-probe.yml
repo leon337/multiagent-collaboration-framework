@@ -1,0 +1,35 @@
+name: MCF C2 Prettier Probe
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/mcf-c2-prettier-probe.yml'
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts'
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/github-pr-collaboration.fingerprint-canonicalization.integration.test.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  format-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - run: corepack enable && corepack prepare pnpm@11.17.0 --activate
+      - working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Emit exact Prettier outputs
+        working-directory: apps/rede-social-agentes
+        shell: bash
+        run: |
+          echo '===LEDGER_B64_BEGIN==='
+          pnpm exec prettier apps/server/src/mcf-runtime/external-action-ledger.ts | base64 -w0
+          echo
+          echo '===LEDGER_B64_END==='
+          echo '===FINGERPRINT_TEST_B64_BEGIN==='
+          pnpm exec prettier apps/server/src/mcf-runtime/github-pr-collaboration.fingerprint-canonicalization.integration.test.ts | base64 -w0
+          echo
+          echo '===FINGERPRINT_TEST_B64_END==='
