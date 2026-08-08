@@ -135,6 +135,17 @@ final_state: object
 
 Permitir que o runtime revise uma alteração em um repositório sem realizar escrita externa.
 
+### Entrada
+
+```yaml
+repository:
+base_sha:
+head_sha:
+pull_request_number:
+review_scope:
+expected_files:
+```
+
 ### Operações permitidas
 
 - obter metadados do repositório;
@@ -154,6 +165,39 @@ Permitir que o runtime revise uma alteração em um repositório sem realizar es
 - fazer merge;
 - iniciar deploy;
 - modificar configuração externa.
+
+### Recibo
+
+```yaml
+receipt_type: code_review
+adapter_id: github_code_review_read_only
+repository:
+base_sha:
+head_sha:
+pull_request_number:
+changed_files:
+reviewed_files:
+findings:
+verdict:
+provider_observed_at:
+payload_digest:
+idempotency_key:
+```
+
+### Critérios de aceite
+
+```yaml
+sha_verified: true
+changed_files_listed: true
+review_scope_respected: true
+findings_classified: true
+verdict_explicit: true
+receipt_persisted: true
+external_write: false
+unit_tests: PASS
+integration_tests: PASS
+security_review: PASS
+```
 
 ### Estado
 
