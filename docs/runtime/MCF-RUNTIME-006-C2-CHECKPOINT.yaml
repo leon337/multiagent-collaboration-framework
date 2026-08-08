@@ -24,6 +24,7 @@ security:
   post_comment_head_revalidation: PASS
   post_review_head_revalidation: PASS
   post_write_unknown_semantics: PASS
+  accepted_2xx_invalid_json_reconciliation: PASS
   approve_review: FORBIDDEN
   request_changes_review: FORBIDDEN
   merge: FORBIDDEN
@@ -56,7 +57,7 @@ idempotency:
   ambiguous_effect: UNKNOWN
 
 independent_review_remediation:
-  p1_findings_total: 5
+  p1_findings_total: 6
   reviews:
     - reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
       findings:
@@ -67,44 +68,50 @@ independent_review_remediation:
       findings:
         - review_head_race_before_success_receipt
         - cross_mission_idempotency_race
+    - reviewed_head: ae601621055addf766da6cea29db67dd0fef7dfa
+      findings:
+        - accepted_mutation_invalid_json_response
   live_registry_real_write_exposure: REMEDIATED
   post_write_reconciliation_definite_failure: REMEDIATED
   comment_head_race_before_success_receipt: REMEDIATED
   review_head_race_before_success_receipt: REMEDIATED
   cross_mission_idempotency_race: REMEDIATED
+  accepted_mutation_invalid_json_response: REMEDIATED
   dedicated_regression_tests:
     p1_regression_tests: 4
     review_head_race_tests: 1
     global_idempotency_integration_tests: 1
+    accepted_invalid_json_tests: 3
   status: PASS_PENDING_FINAL_EXACT_HEAD_REVIEW
 
 validation:
-  implementation_head_validated: 2c659e4bb7c9099433d8170cbd0319bb192ef0e7
+  implementation_head_validated: 1cdcb02c61f455d68acc452cfb5a2de715c35aac
   documentation_validation:
     status: PASS
-    workflow_run: 31244001652
+    workflow_run: 31244280514
   container_smoke:
     status: PASS
-    workflow_run: 31244001671
+    workflow_run: 31244280515
   foundation:
     status: PASS
-    workflow_run: 31244001664
+    workflow_run: 31244280507
     formatting: PASS
     lint: PASS
     typecheck: PASS
     migrations_twice: PASS
     migration_0020: PASS
-    server_test_files: 74
-    server_tests: 337
+    server_test_files: 75
+    server_tests: 340
     build: PASS
-    artifact_id: 9017916747
-    artifact_digest: sha256:6734f73824bfaadbe8dacd70feecb5221dc71836f909a5995d9ebe30728c8ad4
+    artifact_id: 9017998659
+    artifact_digest: sha256:ea789d012da071b1cfcd7ee993f5828914dc661b716a1f71901a6f7b3be74395
   unit_tests: PASS
   integration_tests: PASS
   permission_tests: PASS
   evidence_tests: PASS
   no_real_write_boundary: PASS
   global_idempotency_serialization: PASS
+  accepted_invalid_json_reconciliation: PASS
   ci: PASS
   independent_review: PENDING_EXACT_FINAL_HEAD
 
