@@ -42,12 +42,7 @@ function missionContract(title: string) {
   });
 }
 
-function request(
-  missionId: string,
-  phaseId: string,
-  idempotencyKey: string,
-  commentBody: string,
-) {
+function request(missionId: string, phaseId: string, idempotencyKey: string, commentBody: string) {
   return {
     skill,
     agentId: 'Gabriel',
@@ -108,9 +103,7 @@ describe('C2 global recovery lock ordering', () => {
     await database.query(`delete from "mcf_events" where "mission_id" = any($1::text[])`, [
       missionIds,
     ]);
-    await database.query(`delete from "mcf_missions" where "id" = any($1::text[])`, [
-      missionIds,
-    ]);
+    await database.query(`delete from "mcf_missions" where "id" = any($1::text[])`, [missionIds]);
   }
 
   it('serializes concurrent cross-mission expired recovery', async () => {
@@ -126,14 +119,8 @@ describe('C2 global recovery lock ordering', () => {
       await insertMission(missionA, 'C2 deadlock mission A', now);
       await insertMission(missionB, 'C2 deadlock mission B', now);
 
-      const holderA = await ledger.reserve(
-        request(missionA, randomUUID(), keyA, bodyA),
-        ADAPTER,
-      );
-      const holderB = await ledger.reserve(
-        request(missionB, randomUUID(), keyB, bodyB),
-        ADAPTER,
-      );
+      const holderA = await ledger.reserve(request(missionA, randomUUID(), keyA, bodyA), ADAPTER);
+      const holderB = await ledger.reserve(request(missionB, randomUUID(), keyB, bodyB), ADAPTER);
       await expire(holderA);
       await expire(holderB);
 
