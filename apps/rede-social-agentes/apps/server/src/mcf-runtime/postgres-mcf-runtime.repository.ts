@@ -268,10 +268,18 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
                  where "attempt"."attempt_id" = $7
                    and "attempt"."mission_id" = "mcf_missions"."id"
                    and "attempt"."phase_id" = $2
-                   and "attempt"."status" in (
-                     'FAILED',
-                     'EVIDENCE_VALIDATED',
-                     'EVIDENCE_REJECTED'
+                   and (
+                     "attempt"."status" in (
+                       'FAILED',
+                       'EVIDENCE_VALIDATED',
+                       'EVIDENCE_REJECTED'
+                     )
+                     or (
+                       "attempt"."status" = 'EXECUTED'
+                       and "attempt"."skill_id" = 'MCF-RUN-TESTS'
+                       and "attempt"."operation" = 'query-ci'
+                       and $8::text = 'PENDING'
+                     )
                    )
                )
              )
@@ -285,6 +293,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
           input.missionId,
           input.expectedMissionVersion,
           input.externalAttemptId ?? null,
+          input.evidenceStatus,
         ],
       );
 
