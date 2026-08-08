@@ -106,7 +106,18 @@ merge_reconciliation:
   previous_checkpoint_merge_authorized: false
   note: Repository state is authoritative for the observed merge; this reconciliation does not invent a missing prior authorization record.
 
-next_action:
+historical_reconciliation:
   documentation_sync: MCF-DOC-SYNC-001
+  reason: Required after a new-chat consistency test exposed stale agent and runtime documentation.
+  status_at_checkpoint_update: INTEGRATION_GATE
+
+next_action:
+  resume: MCF-RUNTIME-006_LOTE_2_POS_C1
+  next_capability: GITHUB_COMMENTS_REVIEWS_METADATA
+  do_not_repeat:
+    - MCF-DOC-SYNC-001
+    - MCF-RUNTIME-006-A1
+    - MCF-RUNTIME-006-A2
+    - MCF-RUNTIME-006-C1
   gate_c_status: PARTIAL
   real_provider_write: REQUIRES_SEPARATE_AUTHORIZATION_AND_EVIDENCE
