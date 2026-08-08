@@ -13,6 +13,7 @@ export type ExternalActionFailureCode =
   | 'INVALID_CONTEXT'
   | 'RESERVATION_CONFLICT'
   | 'LEDGER_FAILURE'
+  | 'EXTERNAL_EFFECT_UNKNOWN'
   | 'ADAPTER_FAILURE';
 
 export interface ExternalActionExecutionContext {
@@ -53,6 +54,13 @@ export type ExternalActionDispatchResult =
       adapterId: string;
       attemptId: string;
       receipt: McfToolReceipt;
+    }
+  | {
+      status: 'UNKNOWN';
+      adapterId: string;
+      attemptId: string;
+      receipt: McfToolReceipt;
+      failure: ExternalActionFailure;
     }
   | {
       status: 'FAILED';
