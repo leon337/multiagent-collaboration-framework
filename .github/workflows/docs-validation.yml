@@ -128,6 +128,60 @@ jobs:
             exit 1
           }
 
+      - name: Check agent roles against canonical matrix
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+          import unicodedata
+
+          matrix_path = Path('docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md')
+          row_pattern = re.compile(r'^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|')
+          rows = []
+          for line in matrix_path.read_text(encoding='utf-8').splitlines():
+              match = row_pattern.match(line)
+              if not match:
+                  continue
+              number = int(match.group(1))
+              if 1 <= number <= 29:
+                  rows.append((number, match.group(2).strip(), match.group(3).strip()))
+
+          if len(rows) != 29 or [number for number, _, _ in rows] != list(range(1, 30)):
+              print(f'Canonical matrix must expose agents 1..29 exactly once; got {len(rows)} rows')
+              sys.exit(1)
+
+          def slug(name: str) -> str:
+              normalized = unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('ascii')
+              return re.sub(r'[^A-Za-z0-9]+', '_', normalized).strip('_').upper()
+
+          failures = []
+          for number, name, expected_role in rows:
+              path = Path('docs/agentes') / f'{slug(name)}.md'
+              if not path.exists():
+                  failures.append(f'#{number} {name}: missing {path}')
+                  continue
+              role_lines = [
+                  line for line in path.read_text(encoding='utf-8').splitlines()
+                  if line.startswith('**Papel:**')
+              ]
+              if len(role_lines) != 1:
+                  failures.append(f'#{number} {name}: expected one **Papel:** line, got {len(role_lines)}')
+                  continue
+              actual_role = role_lines[0].split('**Papel:**', 1)[1].strip()
+              if actual_role != expected_role:
+                  failures.append(
+                      f'#{number} {name}: role mismatch; matrix={expected_role!r}, contract={actual_role!r}'
+                  )
+
+          if failures:
+              print('\n'.join(failures))
+              sys.exit(1)
+
+          print('29 agent contracts match canonical matrix names and roles')
+          PY
+
       - name: Check required metadata in normative documents
         shell: bash
         run: |
