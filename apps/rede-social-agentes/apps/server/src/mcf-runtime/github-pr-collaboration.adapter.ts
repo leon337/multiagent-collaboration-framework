@@ -57,6 +57,8 @@ interface PullCollaborationTarget {
 
 export const GITHUB_PR_COLLABORATION_TIMEOUT_MS = 5 * 60_000;
 const MAX_REQUESTS = 30;
+const MAX_LOOKUP_PAGES = 10;
+const PAGE_SIZE = 100;
 const SHA_40 = /^[a-f0-9]{40}$/u;
 const REPOSITORY =
   /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/u;
@@ -273,7 +275,7 @@ function assertComment(
     !Number.isInteger(comment.id) ||
     comment.id < 1 ||
     comment.html_url !==
-      `https://github.com/${target.repository}/issues/${target.pullNumber}#issuecomment-${comment.id}` ||
+      `https://github.com/${target.repository}/pull/${target.pullNumber}#issuecomment-${comment.id}` ||
     comment.body !== expectedBody
   ) {
     throw new ExternalActionAdapterError(
@@ -539,21 +541,36 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
     deadlineAt: number,
     budget: RequestBudget,
   ): Promise<GitHubIssueCommentResponse | null> {
-    const comments = await this.client.requestJson<GitHubIssueCommentResponse[]>(
-      'GET',
-      `/repos/${target.repository}/issues/${target.pullNumber}/comments?per_page=100`,
-      deadlineAt,
-      budget,
-    );
-    if (!Array.isArray(comments)) {
+    const marker = idempotencyMarker(target.idempotencyKey);
+    const matches: GitHubIssueCommentResponse[] = [];
+    let complete = false;
+    for (let page = 1; page <= MAX_LOOKUP_PAGES; page += 1) {
+      const comments = await this.client.requestJson<GitHubIssueCommentResponse[]>(
+        'GET',
+        `/repos/${target.repository}/issues/${target.pullNumber}/comments?per_page=${PAGE_SIZE}&page=${page}`,
+        deadlineAt,
+        budget,
+      );
+      if (!Array.isArray(comments)) {
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'GitHub PR comment lookup did not return an array',
+          false,
+        );
+      }
+      matches.push(...comments.filter((comment) => comment.body?.includes(marker)));
+      if (comments.length < PAGE_SIZE) {
+        complete = true;
+        break;
+      }
+    }
+    if (!complete) {
       throw new ExternalActionAdapterError(
         'INVALID_RESPONSE',
-        'GitHub PR comment lookup did not return an array',
+        'GitHub PR comment lookup exceeded the bounded reconciliation window',
         false,
       );
     }
-    const marker = idempotencyMarker(target.idempotencyKey);
-    const matches = comments.filter((comment) => comment.body?.includes(marker));
     if (matches.length > 1) {
       throw new ExternalActionAdapterError(
         'RESERVATION_CONFLICT',
@@ -572,21 +589,36 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
     deadlineAt: number,
     budget: RequestBudget,
   ): Promise<GitHubReviewResponse | null> {
-    const reviews = await this.client.requestJson<GitHubReviewResponse[]>(
-      'GET',
-      `/repos/${target.repository}/pulls/${target.pullNumber}/reviews?per_page=100`,
-      deadlineAt,
-      budget,
-    );
-    if (!Array.isArray(reviews)) {
+    const marker = idempotencyMarker(target.idempotencyKey);
+    const matches: GitHubReviewResponse[] = [];
+    let complete = false;
+    for (let page = 1; page <= MAX_LOOKUP_PAGES; page += 1) {
+      const reviews = await this.client.requestJson<GitHubReviewResponse[]>(
+        'GET',
+        `/repos/${target.repository}/pulls/${target.pullNumber}/reviews?per_page=${PAGE_SIZE}&page=${page}`,
+        deadlineAt,
+        budget,
+      );
+      if (!Array.isArray(reviews)) {
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'GitHub PR review lookup did not return an array',
+          false,
+        );
+      }
+      matches.push(...reviews.filter((review) => review.body?.includes(marker)));
+      if (reviews.length < PAGE_SIZE) {
+        complete = true;
+        break;
+      }
+    }
+    if (!complete) {
       throw new ExternalActionAdapterError(
         'INVALID_RESPONSE',
-        'GitHub PR review lookup did not return an array',
+        'GitHub PR review lookup exceeded the bounded reconciliation window',
         false,
       );
     }
-    const marker = idempotencyMarker(target.idempotencyKey);
-    const matches = reviews.filter((review) => review.body?.includes(marker));
     if (matches.length > 1) {
       throw new ExternalActionAdapterError(
         'RESERVATION_CONFLICT',
