@@ -20,17 +20,17 @@ Impedir duplicidade, perda de estado ou evidência incorreta quando o MCF execut
 ## Estado técnico
 
 ```yaml
-latest_reviewed_head: 90bed0814f62fc3bfcf1875f626241e007ff031d
-latest_review_id: PRR_kwDOTnz-ks8AAAABI2_6VA
-latest_review_verdict: FAIL_P2_METADATA_EVIDENCE_INVALID_TEXT_PATCH
-latest_review_thread: PRRT_kwDOTnz-ks6XgJb2
-round_6_implementation:
-  head: 43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d
+latest_reviewed_head: 887e1f808c937c21ef7218217518f44b28226922
+latest_review_id: PRR_kwDOTnz-ks8AAAABI3JczA
+latest_review_verdict: FAIL_P1_UNKNOWN_NOT_DURABLY_PERSISTED_BEFORE_RETURN
+latest_review_thread: PRRT_kwDOTnz-ks6XgjKS
+round_7_implementation:
+  functional_fix: 473082d7fd0af6f3a058a262adae20326abff960
+  formatted_head: dbd949aacc99911db0cbc7e7dab30cf92a91d560
   ci: PASS
   server_test_files: 89_PASS
-  server_tests: 369_PASS
-  evidence_url_binding_regressions: 5_PASS
-  evidence_metadata_input_regressions: 6_PASS
+  server_tests: 374_PASS
+  postwrite_persistence_regressions: 9_PASS
 current_gate:
   checkpoint_head: SELF
   resolution: GIT_COMMIT_CONTAINING_CHECKPOINT
@@ -42,4 +42,4 @@ production: BLOCKED
 
 ## Próximo gate
 
-Resolver `SELF` para o Git HEAD que contém este pacote → validar os três workflows nesse SHA → revisão independente nesse SHA → decisão de Léo.
+Resolver `SELF` para o Git HEAD que contém este pacote → validar os três workflows nesse SHA → revisão independente nesse SHA → decisão de LÉO.

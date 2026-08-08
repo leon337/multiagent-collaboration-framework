@@ -6,8 +6,8 @@ pull_request: 80
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
 risk_class: B
 objective: preservar idempotencia, persistencia governada e vinculo exato de evidencia para efeitos externos
-objective_state: ROUND_6_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
-cycle: 11
+objective_state: ROUND_7_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
+cycle: 12
 
 review_history:
   - head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
@@ -46,44 +46,45 @@ review_history:
     findings:
       - P2_METADATA_EVIDENCE_INVALID_TEXT_PATCH
     thread: PRRT_kwDOTnz-ks6XgJb2
+  - head: 887e1f808c937c21ef7218217518f44b28226922
+    review_id: PRR_kwDOTnz-ks8AAAABI3JczA
+    verdict: FAIL
+    findings:
+      - P1_UNKNOWN_RETURNED_BEFORE_DURABLE_LEDGER_TRANSITION
+    thread: PRRT_kwDOTnz-ks6XgjKS
 
-round_6_remediation:
-  external_receipt_exact_id_binding: IMPLEMENTED
-  external_receipt_fragment_case_sensitive_binding: IMPLEMENTED
-  metadata_evidence_patch_validation: IMPLEMENTED
-  expected_hash:
-    comment: "#issuecomment-${mutationExternalId}"
-    review: "#pullrequestreview-${mutationExternalId}"
-  comparison:
-    hash: EXACT_CASE_SENSITIVE
-    repository_path: CASE_INSENSITIVE
-  metadata_rules:
-    patch_requires_title_or_body: true
-    title: NONEMPTY_TRIMMED_STRING_MAX_256
-    body: TRIMMED_STRING_MAX_65000_EMPTY_ALLOWED
-    non_string_fields: REJECT
-  dedicated_url_test_file: github-pr-collaboration.evidence-url-binding.test.ts
-  dedicated_url_tests: 5_PASS
-  dedicated_metadata_test_file: github-pr-collaboration.evidence-metadata-input.test.ts
-  dedicated_metadata_tests: 6_PASS
+round_7_remediation:
+  unknown_return_requires_durable_ledger_state: IMPLEMENTED
+  record_unknown_retry_limit: 3
+  record_unknown_retry_scope: LOCAL_LEDGER_ONLY
+  adapter_reexecution_during_unknown_retry: FORBIDDEN
+  persistent_unknown_persistence_failure: FAIL_CLOSED_NONRETRYABLE
+  postwrite_failed_transition: FORBIDDEN
+  dedicated_test_file: external-action-dispatcher.postwrite-persistence.test.ts
+  dedicated_tests: 9_PASS
 
-round_6_validation:
-  head: 43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d
-  documentation_run: 31276497591
-  container_smoke_run: 31276497605
-  foundation_run: 31276497601
+round_7_validation:
+  functional_fix: 473082d7fd0af6f3a058a262adae20326abff960
+  functional_fix_foundation_run: 31277318139
+  functional_fix_foundation: FAIL_FORMATTING_ONLY
+  head: dbd949aacc99911db0cbc7e7dab30cf92a91d560
+  documentation_run: 31277467325
+  container_smoke_run: 31277467328
+  foundation_run: 31277467360
   format: PASS
   lint: PASS
   typecheck: PASS
   migrations_twice: PASS
   server_test_files: 89
-  server_tests: 369
+  server_tests: 374
   web_tests: 5
+  ops_tests: 15
+  postwrite_persistence_tests: 9
   evidence_url_binding_tests: 5
   evidence_metadata_input_tests: 6
   build: PASS
-  artifact_id: 9027160954
-  artifact_digest: sha256:87ae7f9d3c9d7f4c73c7f333f0eea490e4ec0451b4a6fde341a6007e709f309a
+  artifact_id: 9027431031
+  artifact_digest: sha256:e5d12a743445ed83006306fd9748b667be4ce4d3ca083438d82072d2749e1d8f
 
 current_exact_head_gate:
   checkpoint_head: SELF

@@ -1,33 +1,37 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-VALIDATION FULL EVIDENCE — ROUND 6
+VALIDATION FULL EVIDENCE — ROUND 7
 
 REVIEW INPUT
-reviewed_head=90bed0814f62fc3bfcf1875f626241e007ff031d
-review_id=PRR_kwDOTnz-ks8AAAABI2_6VA
+reviewed_head=887e1f808c937c21ef7218217518f44b28226922
+review_id=PRR_kwDOTnz-ks8AAAABI3JczA
 verdict=FAIL
-finding=P2_METADATA_EVIDENCE_INVALID_TEXT_PATCH
-thread=PRRT_kwDOTnz-ks6XgJb2
+finding=P1_UNKNOWN_RETURNED_BEFORE_DURABLE_LEDGER_TRANSITION
+thread=PRRT_kwDOTnz-ks6XgjKS
 
 PRIOR FINDINGS RETAINED
 external_receipt_id_binding_thread=PRRT_kwDOTnz-ks6XfO9O
 external_receipt_id_binding_status=REMEDIATED
 fragment_case_thread=PRRT_kwDOTnz-ks6XgECQ
 fragment_case_status=REMEDIATED
+metadata_input_thread=PRRT_kwDOTnz-ks6XgJb2
+metadata_input_status=REMEDIATED
 
-IMPLEMENTATION HEAD
-sha=43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d
-pr=80
-branch=feat/mcf-runtime-006-c2-pr-collaboration-write
+ROUND_7 COMMITS
+functional_fix=473082d7fd0af6f3a058a262adae20326abff960
+functional_fix_documentation_run=31277318116 PASS
+functional_fix_container_smoke_run=31277318146 PASS
+functional_fix_foundation_run=31277318139 FAIL_FORMATTING_ONLY
+formatted_functional_head=dbd949aacc99911db0cbc7e7dab30cf92a91d560
 
-CI
+CI ON FORMATTED FUNCTIONAL HEAD
 documentation_validation:
-  run=31276497591
+  run=31277467325
   conclusion=PASS
 container_smoke:
-  run=31276497605
+  run=31277467328
   conclusion=PASS
 foundation:
-  run=31276497601
+  run=31277467360
   conclusion=PASS
   formatting=PASS
   lint=PASS
@@ -37,48 +41,43 @@ foundation:
   build=PASS
 
 TEST COUNTS
-server_test_files=89/89 PASS
-server_tests=369/369 PASS
-web_tests=5/5 PASS
 ops_tests=15/15 PASS
+server_test_files=89/89 PASS
+server_tests=374/374 PASS
+web_tests=5/5 PASS
 
-DEDICATED URL BINDING TEST
+DEDICATED POSTWRITE PERSISTENCE TEST
+external-action-dispatcher.postwrite-persistence.test.ts=9/9 PASS
+unknown_retry_partial_without_adapter_reexecution=PASS
+unknown_retry_postexecuted_failure_without_adapter_reexecution=PASS
+persistent_unknown_failure_partial=FAIL_CLOSED
+persistent_unknown_failure_postwrite=FAIL_CLOSED
+nonretryable_unknown_failure=no_retry
+prewrite_failed_semantics=PRESERVED
+
+DEDICATED URL AND METADATA TESTS
 github-pr-collaboration.evidence-url-binding.test.ts=5/5 PASS
-valid_comment_and_review_binding=PASS
-mismatched_issuecomment_id=REJECTED
-mismatched_pullrequestreview_id=REJECTED
-uppercase_issuecomment_fragment=REJECTED
-uppercase_pullrequestreview_fragment=REJECTED
-
-DEDICATED METADATA INPUT TEST
 github-pr-collaboration.evidence-metadata-input.test.ts=6/6 PASS
-valid_title_only_patch=PASS
-explicit_empty_body_patch=PASS
-missing_title_and_body=REJECTED
-non_string_title_or_body=REJECTED
-invalid_title_shape_or_limit=REJECTED
-invalid_body_shape_or_limit=REJECTED
 
 ARTIFACT
-id=9027160954
+id=9027431031
 name=rede-social-vitest-report
-digest=sha256:87ae7f9d3c9d7f4c73c7f333f0eea490e4ec0451b4a6fde341a6007e709f309a
-head_sha=43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d
+digest=sha256:e5d12a743445ed83006306fd9748b667be4ce4d3ca083438d82072d2749e1d8f
+head_sha=dbd949aacc99911db0cbc7e7dab30cf92a91d560
 
 SEMANTIC ASSERTIONS
+unknown_dispatch_result=>ONLY_AFTER_DURABLE_UNKNOWN
+record_unknown_retry=>MAX_3_LOCAL_LEDGER_ATTEMPTS
+adapter_execute=>MAX_ONCE_PER_DISPATCH
+record_unknown_persistent_failure=>THROW_LEDGER_FAILURE_NONRETRYABLE
+record_unknown_persistent_failure=>DO_NOT_RETURN_UNKNOWN
+record_unknown_persistent_failure=>DO_NOT_RECORD_FAILED
+active_reservation=>PRESERVED_FOR_RECONCILIATION_ON_FAIL_CLOSED
 receipt_external_id=>MUST_EQUAL_MUTATION_EXTERNAL_ID
 comment_mutation_hash=>EXACT_LOWERCASE_ISSUECOMMENT_PLUS_MUTATION_EXTERNAL_ID
 review_mutation_hash=>EXACT_LOWERCASE_PULLREQUESTREVIEW_PLUS_MUTATION_EXTERNAL_ID
-hash_case_sensitivity=>ENFORCED
-repository_path_case_tolerance=>PRESERVED
 metadata_mutation_url=>EXACT_PULL_REQUEST_URL
 metadata_patch=>REQUIRES_AT_LEAST_ONE_VALID_TEXT_FIELD
-metadata_title=>NONEMPTY_TRIMMED_STRING_MAX_256
-metadata_body=>TRIMMED_STRING_MAX_65000_EMPTY_ALLOWED
-UNKNOWN_attempt=>MISSION_RECOVERING_PERSISTABLE
-UNKNOWN_attempt=>GLOBAL_BINDING_PRESERVED
-FAILED_prewrite_incompatible_cross_mission_retry=>BLOCKED
-FAILED_prewrite_compatible_retry=>RECOVERABLE
 
 BOUNDARIES
 real_provider_write=NOT_AUTHORIZED

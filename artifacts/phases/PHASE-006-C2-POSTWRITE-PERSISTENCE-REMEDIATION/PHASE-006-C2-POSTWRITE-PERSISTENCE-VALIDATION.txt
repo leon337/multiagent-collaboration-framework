@@ -1,46 +1,48 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-VALIDATION SUMMARY — ROUND 6
+VALIDATION SUMMARY — ROUND 7
 
 PRIOR_EXACT_REVIEW
-head=90bed0814f62fc3bfcf1875f626241e007ff031d
-review_id=PRR_kwDOTnz-ks8AAAABI2_6VA
+head=887e1f808c937c21ef7218217518f44b28226922
+review_id=PRR_kwDOTnz-ks8AAAABI3JczA
 review=FAIL
-finding_p2=METADATA_EVIDENCE_INVALID_TEXT_PATCH
-thread=PRRT_kwDOTnz-ks6XgJb2
+finding_p1=UNKNOWN_RETURNED_BEFORE_DURABLE_LEDGER_TRANSITION
+thread=PRRT_kwDOTnz-ks6XgjKS
 
-HISTORICAL_BINDING_FINDINGS
+HISTORICAL_FINDINGS
 external_id_binding_thread=PRRT_kwDOTnz-ks6XfO9O REMEDIATED
 fragment_case_thread=PRRT_kwDOTnz-ks6XgECQ REMEDIATED
+metadata_input_thread=PRRT_kwDOTnz-ks6XgJb2 REMEDIATED
 
-ROUND_6_IMPLEMENTATION
-head=43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d
-documentation_run=31276497591 PASS
-container_smoke_run=31276497605 PASS
-foundation_run=31276497601 PASS
+ROUND_7_IMPLEMENTATION
+functional_commit=473082d7fd0af6f3a058a262adae20326abff960
+functional_commit_foundation_run=31277318139 FAIL_FORMATTING_ONLY
+formatted_head=dbd949aacc99911db0cbc7e7dab30cf92a91d560
+documentation_run=31277467325 PASS
+container_smoke_run=31277467328 PASS
+foundation_run=31277467360 PASS
 format=PASS
 lint=PASS
 typecheck=PASS
 migrations_twice=PASS
 server_test_files=89/89 PASS
-server_tests=369/369 PASS
+server_tests=374/374 PASS
 web_tests=5/5 PASS
-build=PASS
+ops_tests=15/15 PASS
+postwrite_persistence_regressions=9/9 PASS
 evidence_url_binding_regressions=5/5 PASS
 evidence_metadata_input_regressions=6/6 PASS
-no_real_provider_write_test=PASS
-vitest_artifact_id=9027160954
-vitest_artifact_digest=sha256:87ae7f9d3c9d7f4c73c7f333f0eea490e4ec0451b4a6fde341a6007e709f309a
+build=PASS
+vitest_artifact_id=9027431031
+vitest_artifact_digest=sha256:e5d12a743445ed83006306fd9748b667be4ce4d3ca083438d82072d2749e1d8f
 
-SEMANTIC_BINDING
-comment_hash=#issuecomment-<mutationExternalId>
-review_hash=#pullrequestreview-<mutationExternalId>
-hash_comparison=EXACT_CASE_SENSITIVE
-repository_path_comparison=CASE_INSENSITIVE
-metadata_url=EXACT_PULL_REQUEST_URL
-metadata_patch_requires_title_or_body=PASS
-metadata_title_rules=NONEMPTY_TRIMMED_STRING_MAX_256
-metadata_body_rules=TRIMMED_STRING_MAX_65000_EMPTY_ALLOWED
-metadata_non_string_rejected=PASS
+UNKNOWN_DURABILITY
+unknown_return_requires_durable_ledger_state=PASS
+record_unknown_retry_limit=3
+record_unknown_retry_scope=LOCAL_LEDGER_ONLY
+external_adapter_reexecution_during_retry=FORBIDDEN
+persistent_record_unknown_failure=FAIL_CLOSED_EXCEPTION
+persistent_record_unknown_failure_retryable=false
+postwrite_failed_transition=FORBIDDEN
 
 CURRENT_GATE_BINDING
 checkpoint_head=SELF

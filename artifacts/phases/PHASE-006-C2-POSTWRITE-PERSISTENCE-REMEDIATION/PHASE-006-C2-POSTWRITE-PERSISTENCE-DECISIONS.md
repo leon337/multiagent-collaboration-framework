@@ -19,35 +19,39 @@ A missão/fase pode entrar em `RECOVERING` a partir de attempt `UNKNOWN`; o pont
 Comment e review exigem os fragmentos canônicos derivados do `mutationExternalId`; metadata exige a URL exata do PR.
 
 ## D7 — Fragmentos são case-sensitive
-A tolerância de casing do repositório não pode atingir o fragmento. `mutationUrl.hash` deve ser exatamente:
-- `#issuecomment-${mutationExternalId}`; ou
-- `#pullrequestreview-${mutationExternalId}`.
+A tolerância de casing do repositório não pode atingir o fragmento.
 
 ## D8 — Regressões dedicadas de URL
 `github-pr-collaboration.evidence-url-binding.test.ts` cobre 5 casos, incluindo IDs divergentes e fragmentos em maiúsculas rejeitados.
 
 ## D9 — Evidência da rodada 5
-HEAD `2323f7f0a0ea8900451313facbaa17c2bf35a4f1`:
-- três workflows PASS;
-- 88/88 arquivos e 363/363 testes server PASS;
-- build PASS;
-- regressões evidence-url-binding 5/5 PASS;
-- artifact `9026344880`, digest `sha256:3823b747b9829b001e2f16cd38934d0cadf756e535c77ca18a310b4187c90bf7`.
+HEAD `2323f7f0a0ea8900451313facbaa17c2bf35a4f1`: três workflows PASS; 88/88 arquivos e 363/363 testes server PASS; artifact `9026344880`.
 
 ## D10 — Metadata evidence deve validar o patch atual
-A validação independente não pode transformar campos ausentes ou não-string em `null` e aceitar uma receipt sem mutação textual válida. As regras devem espelhar o adapter: ao menos um campo presente, título não vazio/trimado/<=256, body trimado/<=65000 e `body: ""` permitido.
+Ao menos um campo deve estar presente; título e body devem respeitar as mesmas regras do adapter; `body: ""` continua válido.
 
 ## D11 — Regressões dedicadas de metadata
-`github-pr-collaboration.evidence-metadata-input.test.ts` cobre 6 casos e passou 6/6 no HEAD funcional da rodada 6.
+`github-pr-collaboration.evidence-metadata-input.test.ts` cobre 6 casos.
 
 ## D12 — Evidência da rodada 6
-HEAD `43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d`:
-- Documentation `31276497591`, Container Smoke `31276497605` e Foundation `31276497601` PASS;
-- format, lint, typecheck, migrations duas vezes e build PASS;
-- 89/89 arquivos e 369/369 testes server PASS;
-- 5/5 regressões evidence-url-binding PASS;
-- 6/6 regressões evidence-metadata-input PASS;
-- artifact `9027160954`, digest `sha256:87ae7f9d3c9d7f4c73c7f333f0eea490e4ec0451b4a6fde341a6007e709f309a`.
+HEAD `43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d`: três workflows PASS; 89/89 arquivos e 369/369 testes server PASS; artifact `9027160954`.
 
-## D13 — Gate
-Real provider write, production e merge permanecem bloqueados. O próximo HEAD deve passar CI e revisão independente exata com zero P0/P1/P2 ativos antes da decisão de Léo.
+## D13 — UNKNOWN só pode ser devolvido após persistência durável
+A revisão `PRR_kwDOTnz-ks8AAAABI3JczA` encontrou P1 no thread `PRRT_kwDOTnz-ks6XgjKS`: o dispatcher podia retornar `UNKNOWN` mesmo se `recordUnknown` falhasse.
+
+## D14 — Retry local de UNKNOWN não reexecuta o provider
+`recordUnknown` pode ser repetido localmente até 3 vezes. `adapter.execute` não participa desse retry e permanece no máximo uma vez por dispatch.
+
+## D15 — Falha persistente de UNKNOWN é fail-closed
+Se a transição `UNKNOWN` não puder ser persistida, o dispatcher lança `LEDGER_FAILURE` não-retryable. Ele não devolve `UNKNOWN`, não converte pós-write para `FAILED` e preserva a reserva para reconciliação.
+
+## D16 — Evidência da rodada 7
+HEAD funcional formatado `dbd949aacc99911db0cbc7e7dab30cf92a91d560`:
+- Documentation `31277467325`, Container Smoke `31277467328` e Foundation `31277467360` PASS;
+- format, lint, typecheck, migrations duas vezes e build PASS;
+- 89/89 arquivos e 374/374 testes server PASS;
+- 9/9 regressões postwrite persistence PASS;
+- artifact `9027431031`, digest `sha256:e5d12a743445ed83006306fd9748b667be4ce4d3ca083438d82072d2749e1d8f`.
+
+## D17 — Gate
+Real provider write, produção e merge permanecem bloqueados. O próximo HEAD documental deve passar CI e revisão independente exata com zero P0/P1/P2 ativos antes da decisão de LÉO.
