@@ -148,9 +148,7 @@ describe('C2 global idempotency serialization', () => {
       expect(failed.rows[0]?.fingerprint).not.toBeNull();
 
       const loserRequest =
-        outcomes[0]?.status === 'rejected'
-          ? request(missionA, phaseA)
-          : request(missionB, phaseB);
+        outcomes[0]?.status === 'rejected' ? request(missionA, phaseA) : request(missionB, phaseB);
       const incompatibleLoserRequest = {
         ...loserRequest,
         inputs: {
