@@ -101,7 +101,10 @@ function canonicalizeForDigest(value: unknown): unknown {
   return value;
 }
 
-function isGloballySerializedC2Request(request: ExternalActionRequest, adapterId: string): boolean {
+function isGloballySerializedC2Request(
+  request: ExternalActionRequest,
+  adapterId: string,
+): boolean {
   return (
     adapterId === globallySerializedAdapter &&
     globallySerializedOperations.has(canonicalizeToolValue(request.tool.operation))
