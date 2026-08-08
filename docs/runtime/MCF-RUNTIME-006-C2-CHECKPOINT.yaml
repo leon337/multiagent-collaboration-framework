@@ -51,13 +51,18 @@ idempotency:
       - operation
       - idempotency_key
     persistence: POSTGRESQL
-    migration: 0020_mcf_external_action_global_idempotency_scope.sql
-    active_unique_index: mcf_external_action_attempts_active_global_idempotency_idx
+    initial_migration: 0020_mcf_external_action_global_idempotency_scope.sql
+    persistent_binding_migration: 0021_mcf_external_action_persistent_global_idempotency.sql
+    persistent_unique_index: mcf_external_action_attempts_global_idempotency_idx
+    active_only_index_removed: true
     cross_mission_concurrency_test: PASS
+    reuse_after_terminal_state: BLOCKED
+    reused_key_with_changed_payload: BLOCKED
+    conflict_retryable: false
   ambiguous_effect: UNKNOWN
 
 independent_review_remediation:
-  p1_findings_total: 6
+  p1_findings_total: 7
   reviews:
     - reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
       findings:
@@ -71,46 +76,53 @@ independent_review_remediation:
     - reviewed_head: ae601621055addf766da6cea29db67dd0fef7dfa
       findings:
         - accepted_mutation_invalid_json_response
+    - reviewed_head: 24bd78214e5813b9e943b18e18bf6fdd5b2a1747
+      findings:
+        - terminal_or_unknown_idempotency_binding_released
   live_registry_real_write_exposure: REMEDIATED
   post_write_reconciliation_definite_failure: REMEDIATED
   comment_head_race_before_success_receipt: REMEDIATED
   review_head_race_before_success_receipt: REMEDIATED
   cross_mission_idempotency_race: REMEDIATED
   accepted_mutation_invalid_json_response: REMEDIATED
+  terminal_or_unknown_idempotency_binding_released: REMEDIATED
   dedicated_regression_tests:
     p1_regression_tests: 4
     review_head_race_tests: 1
     global_idempotency_integration_tests: 1
     accepted_invalid_json_tests: 3
+    persistent_terminal_binding_assertions: 2
   status: PASS_PENDING_FINAL_EXACT_HEAD_REVIEW
 
 validation:
-  implementation_head_validated: 1cdcb02c61f455d68acc452cfb5a2de715c35aac
+  implementation_head_validated: 22bd6dc77406a049300b55150836f30b0eaf055f
   documentation_validation:
     status: PASS
-    workflow_run: 31244280514
+    workflow_run: 31244662068
   container_smoke:
     status: PASS
-    workflow_run: 31244280515
+    workflow_run: 31244662062
   foundation:
     status: PASS
-    workflow_run: 31244280507
+    workflow_run: 31244662067
     formatting: PASS
     lint: PASS
     typecheck: PASS
     migrations_twice: PASS
     migration_0020: PASS
+    migration_0021: PASS
     server_test_files: 75
     server_tests: 340
     build: PASS
-    artifact_id: 9017998659
-    artifact_digest: sha256:ea789d012da071b1cfcd7ee993f5828914dc661b716a1f71901a6f7b3be74395
+    artifact_id: 9018109337
+    artifact_digest: sha256:4c6ca88fae8e8265544272c0c59d744684af13c1f6964adad2cc91f9892723a3
   unit_tests: PASS
   integration_tests: PASS
   permission_tests: PASS
   evidence_tests: PASS
   no_real_write_boundary: PASS
   global_idempotency_serialization: PASS
+  persistent_global_idempotency_binding: PASS
   accepted_invalid_json_reconciliation: PASS
   ci: PASS
   independent_review: PENDING_EXACT_FINAL_HEAD
