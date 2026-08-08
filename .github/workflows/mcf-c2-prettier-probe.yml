@@ -21,15 +21,17 @@ jobs:
       - run: corepack enable && corepack prepare pnpm@11.17.0 --activate
       - working-directory: apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
-      - name: Emit exact Prettier outputs
+      - name: Format exact target files
         working-directory: apps/rede-social-agentes
-        shell: bash
-        run: |
-          echo '===LEDGER_B64_BEGIN==='
-          pnpm exec prettier apps/server/src/mcf-runtime/external-action-ledger.ts | base64 -w0
-          echo
-          echo '===LEDGER_B64_END==='
-          echo '===FINGERPRINT_TEST_B64_BEGIN==='
-          pnpm exec prettier apps/server/src/mcf-runtime/github-pr-collaboration.fingerprint-canonicalization.integration.test.ts | base64 -w0
-          echo
-          echo '===FINGERPRINT_TEST_B64_END==='
+        run: >-
+          pnpm exec prettier --write
+          apps/server/src/mcf-runtime/external-action-ledger.ts
+          apps/server/src/mcf-runtime/github-pr-collaboration.fingerprint-canonicalization.integration.test.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcf-c2-prettier-output
+          path: |
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-pr-collaboration.fingerprint-canonicalization.integration.test.ts
+          if-no-files-found: error
+          retention-days: 1
