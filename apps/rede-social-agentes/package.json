@@ -14,7 +14,7 @@
     "dev:web": "pnpm --filter @rsa/web dev",
     "dev:worker": "pnpm --filter @rsa/worker dev",
     "format": "prettier --write .",
-    "format:check": "prettier --write apps/server/src/mcf-runtime/external-action-ledger.ts apps/server/src/mcf-runtime/github-branch-pr.idempotency.integration.test.ts && git diff -- apps/server/src/mcf-runtime/external-action-ledger.ts apps/server/src/mcf-runtime/github-branch-pr.idempotency.integration.test.ts && exit 1",
+    "format:check": "prettier --check .",
     "lint": "eslint .",
     "ops:backup": "node ops/backup-database.mjs",
     "ops:restore": "node ops/restore-database.mjs",
