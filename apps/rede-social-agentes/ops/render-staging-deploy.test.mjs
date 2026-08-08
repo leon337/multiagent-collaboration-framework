@@ -1,9 +1,16 @@
 /* global Response, setTimeout, URL */
 
 import assert from 'node:assert/strict';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
 
-import { deploymentHookForCommit, orchestrateStagingDeployment } from './render-staging-deploy.mjs';
+import {
+  appendGitHubOutputs,
+  deploymentHookForCommit,
+  orchestrateStagingDeployment,
+} from './render-staging-deploy.mjs';
 
 const previousSha = 'a'.repeat(40);
 const releaseSha = 'b'.repeat(40);
@@ -118,4 +125,28 @@ test('recovers the previous commit after a failed post-deploy readiness check', 
   assert.match(result.failure, /did not converge/u);
   assert.deepEqual(render.triggered, [releaseSha, previousSha]);
   assert.deepEqual(render.observation(), { currentSha: previousSha, ready: true });
+});
+
+test('writes only non-secret deterministic GitHub outputs', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'mcf-staging-output-'));
+  const outputPath = join(directory, 'github-output.txt');
+  try {
+    appendGitHubOutputs(
+      {
+        status: 'DEPLOYED',
+        releaseSha,
+        previousSha,
+        deployId: 'secret-provider-id-not-exported',
+        rollbackDeployId: null,
+      },
+      outputPath,
+    );
+
+    assert.equal(
+      await readFile(outputPath, 'utf8'),
+      `status=DEPLOYED\nrelease_sha=${releaseSha}\nprevious_sha=${previousSha}\n`,
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });

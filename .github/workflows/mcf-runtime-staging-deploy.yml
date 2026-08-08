@@ -1,4 +1,5 @@
 name: MCF Runtime Staging Deploy
+run-name: MCF staging deploy ${{ inputs.request_id || 'push' }} ${{ inputs.release_sha || github.sha }}
 
 on:
   push:
@@ -12,6 +13,10 @@ on:
     inputs:
       release_sha:
         description: Exact 40-character commit SHA to deploy. Defaults to the selected main revision.
+        required: false
+        type: string
+      request_id:
+        description: Non-secret MCF idempotency/correlation key for runtime-controlled staging dispatch.
         required: false
         type: string
 
@@ -51,6 +56,7 @@ jobs:
       MCF_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
       RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
       RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
+      REQUEST_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.request_id || 'push' }}
       DEPLOY_TIMEOUT_MS: 1200000
       DEPLOY_POLL_INTERVAL_MS: 10000
 
@@ -60,6 +66,9 @@ jobs:
           test -n "$MCF_RUNTIME_URL"
           test -n "$RENDER_DEPLOY_HOOK_URL"
           [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            [[ "$REQUEST_ID" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$ ]]
+          fi
 
       - name: Checkout release revision
         uses: actions/checkout@v4
@@ -153,4 +162,23 @@ jobs:
         run: pnpm build
 
       - name: Deploy exact revision and verify or recover
+        id: deploy
         run: node apps/rede-social-agentes/ops/render-staging-deploy.mjs
+
+      - name: Deployment result DEPLOYED
+        if: ${{ always() && steps.deploy.outputs.status == 'DEPLOYED' }}
+        run: |
+          test "${{ steps.deploy.outputs.release_sha }}" = "$RELEASE_SHA"
+          echo 'Exact staging release was deployed and verified.'
+
+      - name: Deployment result NOOP
+        if: ${{ always() && steps.deploy.outputs.status == 'NOOP' }}
+        run: |
+          test "${{ steps.deploy.outputs.release_sha }}" = "$RELEASE_SHA"
+          echo 'Requested staging release was already healthy.'
+
+      - name: Deployment result RECOVERED
+        if: ${{ always() && steps.deploy.outputs.status == 'RECOVERED' }}
+        run: |
+          test -n "${{ steps.deploy.outputs.previous_sha }}"
+          echo 'Rejected release recovered by redeploying the previous healthy SHA.'
