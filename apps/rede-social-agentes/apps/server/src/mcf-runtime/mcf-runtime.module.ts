@@ -68,12 +68,7 @@ import { SocialTimelineService } from './social-timeline.service.js';
         githubBranchPr: GitHubBranchPullRequestAdapter,
         githubPrCollaboration: GitHubPullCollaborationAdapter,
       ) =>
-        new AdapterRegistry([
-          githubReview,
-          githubCiQuery,
-          githubBranchPr,
-          githubPrCollaboration,
-        ]),
+        new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration]),
       inject: [
         GitHubCodeReviewAdapter,
         GitHubCiQueryAdapter,

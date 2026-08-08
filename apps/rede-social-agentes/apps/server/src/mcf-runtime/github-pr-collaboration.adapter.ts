@@ -78,7 +78,9 @@ const FORBIDDEN_INPUT_KEYS = [
 ];
 
 if (GITHUB_PR_COLLABORATION_TIMEOUT_MS >= EXTERNAL_ACTION_LEASE_MS) {
-  throw new Error('GitHub PR collaboration timeout must remain shorter than the external action lease');
+  throw new Error(
+    'GitHub PR collaboration timeout must remain shorter than the external action lease',
+  );
 }
 
 function requireString(inputs: Record<string, unknown>, key: string, limit?: number): string {
@@ -295,7 +297,9 @@ function assertReview(
     !Number.isInteger(review.id) ||
     review.id < 1 ||
     typeof review.html_url !== 'string' ||
-    !review.html_url.startsWith(`https://github.com/${target.repository}/pull/${target.pullNumber}#`) ||
+    !review.html_url.startsWith(
+      `https://github.com/${target.repository}/pull/${target.pullNumber}#`,
+    ) ||
     review.body !== expectedBody ||
     review.state !== 'COMMENTED' ||
     exactSha(review.commit_id ?? '', 'provider review commit SHA') !== target.expectedHeadSha

@@ -45,7 +45,9 @@ describe('PermissionEngine PR collaboration writes', () => {
 
   for (const operation of ['comment-pr', 'review-pr-comment', 'update-pr-text-metadata']) {
     it(`allows ${operation} only inside the scoped release skill`, () => {
-      expect(() => permissions.assertAllowed(skill, 'Gabriel', tool(operation), inputs())).not.toThrow();
+      expect(() =>
+        permissions.assertAllowed(skill, 'Gabriel', tool(operation), inputs()),
+      ).not.toThrow();
       expect(() =>
         permissions.assertAllowed(
           { ...skill, skillId: 'MCF-IMPLEMENT-CHANGE' },

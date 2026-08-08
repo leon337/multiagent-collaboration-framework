@@ -221,14 +221,10 @@ describe('GitHubPullCollaborationAdapter', () => {
       ),
     ).rejects.toThrow(/review_event is forbidden/u);
     await expect(
-      adapter.execute(
-        request('update-pr-text-metadata', { title: 'safe', state: 'closed' }),
-      ),
+      adapter.execute(request('update-pr-text-metadata', { title: 'safe', state: 'closed' })),
     ).rejects.toThrow(/state is forbidden/u);
     await expect(
-      adapter.execute(
-        request('update-pr-text-metadata', { title: 'safe', base: 'release' }),
-      ),
+      adapter.execute(request('update-pr-text-metadata', { title: 'safe', base: 'release' })),
     ).rejects.toThrow(/base is forbidden/u);
     expect(fetcher).not.toHaveBeenCalled();
   });
