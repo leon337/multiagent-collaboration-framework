@@ -2,11 +2,36 @@
 
 ## Estado
 
-`PLANEJADO_PARA_EXECUCAO_APOS_MCF_STAB_001`
+`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — GATE_C_PARCIAL`
 
 ## Autorização
 
 Leandro autorizou o início da conclusão do MCF em 5 de agosto de 2026.
+
+## Progresso comprovado
+
+```yaml
+mcf_stab_001:
+  state: CONCLUIDO
+  merge_commit: 893cd03c3157e3b13fd98ad3afcf532efcde6af3
+runtime_006_a1:
+  capability: CODE_REVIEW_READ_ONLY
+  state: INTEGRADO
+  merge_commit: 01c0182b9c9837c0dd22306c9bd8918020ecc38b
+runtime_006_a2:
+  capability: CI_QUERY_READ_ONLY
+  state: INTEGRADO
+  merge_commit: 9424e024eb62eb9f9dddd30e01d7f14cc58094a3
+runtime_006_c1:
+  capability: GITHUB_BRANCH_PR_WRITE
+  implementation_state: INTEGRADO
+  merge_commit: ed67f0459c956146bdb9020a7ef37dfb59137512
+  real_provider_write_test: NOT_AUTHORIZED
+  gate_c: PARCIAL
+production: BLOCKED
+```
+
+A implementação C1 está integrada à `main`, mas a escrita real pelo provider GitHub ainda não foi autorizada nem comprovada. Portanto o Gate C não deve ser declarado integralmente concluído.
 
 ## Objetivo
 
@@ -14,11 +39,11 @@ Eliminar a autonomia externa parcial do runtime por meio de adapters versionados
 
 ## Dependências
 
-1. concluir MCF-STAB-001;
-2. reconciliar PR #22 e PR #29;
-3. manter o Human Delegation Firewall;
-4. preservar o ledger persistente e os recibos assinados;
-5. executar somente em staging até gate posterior.
+1. MCF-STAB-001: **concluído**;
+2. PR #22 e PR #29: **reconciliados pela estabilização**;
+3. Human Delegation Firewall: **preservar**;
+4. ledger persistente e recibos assinados: **preservar**;
+5. staging somente até gate posterior: **vigente**.
 
 ## Arquitetura-alvo
 
@@ -75,50 +100,40 @@ final_state: object
 - Leandro não pode ser executor ou destinatário técnico;
 - produção permanece bloqueada nesta missão.
 
-## Ordem técnica
+## Ordem técnica e estado
 
 ### Lote 1 — menor risco
 
-1. adapter de revisão de código;
-2. adapter de consulta de CI;
-3. recibos e validação semântica desses adapters.
+1. adapter de revisão de código — **CONCLUÍDO / A1**;
+2. adapter de consulta de CI — **CONCLUÍDO / A2**;
+3. recibos e validação semântica — **CONCLUÍDOS para A1/A2**.
 
 ### Lote 2 — escrita reversível
 
-4. adapter de branch e pull request;
-5. comentários, reviews e atualização de metadados;
-6. prevenção de duplicidade por idempotency key.
+4. adapter de branch e pull request — **IMPLEMENTAÇÃO INTEGRADA / C1**;
+5. escrita real controlada pelo provider GitHub — **PENDENTE DE AUTORIZAÇÃO/PROVA**;
+6. comentários, reviews e atualização de metadados — **PENDENTE**;
+7. prevenção de duplicidade por idempotency key — **IMPLEMENTADA em C1; ampliar conforme novas operações**.
 
 ### Lote 3 — efeito operacional
 
-7. adapter de deploy para staging;
-8. verificação de SHA por health/version;
-9. recovery por redeploy do SHA saudável anterior;
-10. observabilidade e alertas de missão bloqueada.
+8. adapter de deploy para staging — **PENDENTE como adapter formal do runtime**;
+9. verificação de SHA por health/version — **já comprovada no RUNTIME-005; integrar ao adapter**;
+10. recovery por redeploy do SHA saudável anterior — **já comprovado no RUNTIME-005; integrar ao adapter**;
+11. observabilidade e alertas de missão bloqueada — **PENDENTE**.
 
 ### Lote 4 — cobertura total
 
-11. converter as oito skills documentais;
-12. executar testes com agentes em contextos separados;
-13. auditoria independente;
-14. preparar MCF v1.0.0-RC1.
+12. converter as oito skills documentais — **PENDENTE**;
+13. executar testes com agentes em contextos separados — **PENDENTE**;
+14. auditoria independente final — **PENDENTE**;
+15. preparar MCF v1.0.0-RC1 — **PENDENTE**.
 
 ## MCF-RUNTIME-006-A1 — Code Review Read Only
 
 ### Objetivo
 
 Permitir que o runtime revise uma alteração em um repositório sem realizar escrita externa.
-
-### Entrada
-
-```yaml
-repository:
-base_sha:
-head_sha:
-pull_request_number:
-review_scope:
-expected_files:
-```
 
 ### Operações permitidas
 
@@ -140,37 +155,12 @@ expected_files:
 - iniciar deploy;
 - modificar configuração externa.
 
-### Recibo
+### Estado
 
 ```yaml
-receipt_type: code_review
-adapter_id: github_code_review_read_only
-repository:
-base_sha:
-head_sha:
-pull_request_number:
-changed_files:
-reviewed_files:
-findings:
-verdict:
-provider_observed_at:
-payload_digest:
-idempotency_key:
-```
-
-### Critérios de aceite
-
-```yaml
-sha_verified: true
-changed_files_listed: true
-review_scope_respected: true
-findings_classified: true
-verdict_explicit: true
-receipt_persisted: true
+state: INTEGRADO
+merge_commit: 01c0182b9c9837c0dd22306c9bd8918020ecc38b
 external_write: false
-unit_tests: PASS
-integration_tests: PASS
-security_review: PASS
 ```
 
 ## Critérios de aceite por adapter
@@ -188,35 +178,34 @@ integration_staging: PASS
 secret_scan: PASS
 ```
 
+Os critérios acima devem ser avaliados por adapter. Um `PASS` de uma capacidade anterior não transfere automaticamente o resultado para um novo adapter.
+
 ## Gates
 
 ### Gate A — contrato comum
 
-- dispatcher definido;
-- registry definido;
-- schema de recibo aprovado;
-- testes de permissão e idempotência verdes.
+**CONCLUÍDO no recorte já integrado.**
 
 ### Gate B — leitura externa
 
-- revisão de código executável;
-- CI consultável por SHA exato;
-- evidência persistida no ledger.
+**CONCLUÍDO** com A1 e A2 integrados.
 
 ### Gate C — escrita externa
 
-- PR criado sem duplicidade;
-- base, head e SHA confirmados;
-- merge não executado automaticamente.
+**PARCIAL.**
+
+- implementação de branch/PR integrada;
+- base, head, SHA, idempotência e read-back cobertos por testes;
+- merge automático permanece proibido;
+- prova de escrita real pelo provider GitHub ainda pendente de autorização.
 
 ### Gate D — staging
 
-- deploy por SHA aprovado;
-- health/version confirmados;
-- recovery controlado comprovado;
-- nenhuma operação em produção.
+**PENDENTE como capacidade formal do RUNTIME-006.** O RUNTIME-005 já forneceu evidência de deploy, health/version e recovery por redeploy que deve ser reutilizada sem declarar rollback nativo inexistente.
 
 ### Gate E — RC
+
+**PENDENTE.**
 
 - 16 skills executáveis;
 - zero skill apenas documental;
@@ -232,7 +221,8 @@ secret_scan: PASS
 - divergência entre SHA solicitado e SHA implantado;
 - missão-pai ser encerrada após subfluxo;
 - recibo sintético ser aceito como evidência externa;
-- segredo aparecer em log.
+- segredo aparecer em log;
+- documentação de estado ficar atrás da implementação e induzir retomada incorreta.
 
 ## Fora do escopo
 
@@ -241,6 +231,10 @@ secret_scan: PASS
 - postagem social automática;
 - merge automático sem política específica;
 - rollback nativo do Render enquanto não houver comprovação técnica.
+
+## Próxima ação
+
+Após a sincronização documental `MCF-DOC-SYNC-001`, retomar o Lote 2 a partir do estado real pós-C1, sem repetir A1/A2/C1.
 
 ## Critério de conclusão da missão
 

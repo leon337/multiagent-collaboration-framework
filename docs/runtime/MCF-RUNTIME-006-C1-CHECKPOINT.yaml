@@ -4,7 +4,10 @@ pull_request: 76
 base_main_sha: 9424e024eb62eb9f9dddd30e01d7f14cc58094a3
 branch: feat/mcf-runtime-006-c1-github-branch-pr-adapter
 code_sha: b0cdc6acf1f94c3c7e6f9647dc9caa68ebe2ccd7
-state: READY_FOR_HUMAN_MERGE_GATE
+final_review_head: eee9951aa70d0e2f2b1ac9fb202cb0e8a3e0ad01
+merge_commit: ed67f0459c956146bdb9020a7ef37dfb59137512
+merged_at: 2026-08-08T04:10:35Z
+state: INTEGRATED_MAIN
 external_effect: REVERSIBLE
 production: BLOCKED
 merge_automatic: false
@@ -20,14 +23,10 @@ security:
   authorized_scope_required: true
   direct_main_write: FORBIDDEN
   force_push: FORBIDDEN
-  merge: FORBIDDEN
+  merge_by_adapter: FORBIDDEN
   delete_human_branch: FORBIDDEN
   token_source: ENVIRONMENT_ONLY
   secret_scan: PASS
-  secret_scan_method:
-    - PR_PATCH_TARGETED_SEARCH_GHP
-    - PR_PATCH_TARGETED_SEARCH_GITHUB_PAT
-    - PR_PATCH_TARGETED_SEARCH_SK_PROJ
 
 idempotency:
   persisted_before_effect: true
@@ -41,36 +40,17 @@ idempotency:
   unknown_on_unverified_effect: true
 
 validation:
-  documentation:
-    run_id: 31238532740
-    result: PASS
-  container_smoke:
-    run_id: 31238532736
-    result: PASS
-  foundation:
-    run_id: 31238532748
-    job_id: 93055410830
-    result: PASS
-    lockfile: PASS
-    format: PASS
-    lint: PASS
-    typecheck: PASS
-    migrations_twice: PASS
-    tests: PASS
-    build: PASS
-    server_test_files: 66
-    server_tests: 305
-    server_tests_passed: 305
-    web_tests: 5
-    ops_tests: 15
-    vitest_artifact_id: 9016253640
-    vitest_artifact_sha256: 1e3343903eec68c807065023e283b8a819a211472edf39fa3714ac10eb26c8f9
+  documentation: PASS
+  container_smoke: PASS
+  foundation: PASS
+  server_test_files: 66
+  server_tests: 305
+  server_tests_passed: 305
   independent_review:
     result: PASS
     critical: 0
     high: 0
     medium: 0
-    review_mode: READ_ONLY_FINAL_CODE_REVIEW
 
 acceptance:
   contract_validation: PASS
@@ -95,7 +75,14 @@ acceptance:
   container_smoke: PASS
   independent_review: PASS
 
-human_gate:
-  merge_authorization: REQUIRED
-  merge_authorized: false
-  next_action: HUMAN_DECISION
+merge_reconciliation:
+  previous_checkpoint_state: READY_FOR_HUMAN_MERGE_GATE
+  observed_pr_state: MERGED
+  observed_merge_commit: ed67f0459c956146bdb9020a7ef37dfb59137512
+  checkpoint_was_stale: true
+  authorization_record_in_previous_checkpoint: false
+
+next_action:
+  documentation_sync: MCF-DOC-SYNC-001
+  gate_c_status: PARTIAL
+  real_provider_write: REQUIRES_SEPARATE_AUTHORIZATION_AND_EVIDENCE

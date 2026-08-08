@@ -9,6 +9,7 @@ on:
     paths:
       - 'docs/**'
       - 'templates/**'
+      - 'skills/registry.yaml'
       - '.github/workflows/docs-validation.yml'
 
 permissions:
@@ -35,20 +36,97 @@ jobs:
             docs/governanca/GLOSSARIO.md
             docs/governanca/POLITICA_DE_VERSOES.md
             docs/governanca/PROCESSO_DE_PUBLICACAO.md
+            docs/agentes/README.md
             docs/agentes/LEO.md
-            docs/agentes/LEONARDO.md
-            docs/agentes/SOFIA.md
-            docs/agentes/EMILY.md
-            docs/agentes/CARMEM.md
-            docs/agentes/GABRIEL.md
             docs/agentes/MESTRE.md
+            docs/agentes/LEONARDO.md
+            docs/agentes/CARLOS.md
+            docs/agentes/EVELYN.md
+            docs/agentes/LAURA.md
+            docs/agentes/ISABELA.md
+            docs/agentes/MARINA.md
+            docs/agentes/SOFIA.md
+            docs/agentes/RAFAEL.md
+            docs/agentes/MANOEL.md
+            docs/agentes/RENATO.md
+            docs/agentes/BRUNO.md
+            docs/agentes/RICARDO.md
+            docs/agentes/GABRIEL.md
+            docs/agentes/CARMEM.md
+            docs/agentes/EMILY.md
+            docs/agentes/EDUARDO.md
+            docs/agentes/HELENA.md
+            docs/agentes/ANDRE.md
+            docs/agentes/TIAGO.md
+            docs/agentes/DANIELA.md
+            docs/agentes/VINICIUS.md
+            docs/agentes/PATRICIA.md
+            docs/agentes/LUCAS.md
+            docs/agentes/AUGUSTO.md
+            docs/agentes/BEATRIZ.md
+            docs/agentes/MIRIAM.md
+            docs/agentes/JULIA.md
             docs/agentes/MATRIZ_RACI.md
+            docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md
             templates/CHECKLIST_DE_PUBLICACAO.md
             templates/CHECKLIST_DE_RECONCILIACAO.md
           )
           for file in "${required[@]}"; do
             test -s "$file" || { echo "Missing or empty: $file"; exit 1; }
           done
+
+      - name: Check official 29-agent contract set
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=(
+            LEO.md
+            MESTRE.md
+            LEONARDO.md
+            CARLOS.md
+            EVELYN.md
+            LAURA.md
+            ISABELA.md
+            MARINA.md
+            SOFIA.md
+            RAFAEL.md
+            MANOEL.md
+            RENATO.md
+            BRUNO.md
+            RICARDO.md
+            GABRIEL.md
+            CARMEM.md
+            EMILY.md
+            EDUARDO.md
+            HELENA.md
+            ANDRE.md
+            TIAGO.md
+            DANIELA.md
+            VINICIUS.md
+            PATRICIA.md
+            LUCAS.md
+            AUGUSTO.md
+            BEATRIZ.md
+            MIRIAM.md
+            JULIA.md
+          )
+          test "${#expected[@]}" -eq 29
+          for file in "${expected[@]}"; do
+            test -s "docs/agentes/$file" || { echo "Missing official agent contract: $file"; exit 1; }
+          done
+          actual="$(find docs/agentes -maxdepth 1 -type f -name '*.md' ! -name 'README.md' ! -name 'MATRIZ_RACI.md' | wc -l | tr -d ' ')"
+          test "$actual" -eq 29 || {
+            echo "Expected exactly 29 individual agent contracts, found $actual"
+            exit 1
+          }
+          grep -Fq 'Existem **29 agentes nomeados**' README.md || {
+            echo 'Root README no longer declares 29 named agents'
+            exit 1
+          }
+          grep -Fq 'Matriz Consolidada de Competências — 29 Agentes do MCF' docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md || {
+            echo 'Canonical 29-agent matrix title not found'
+            exit 1
+          }
 
       - name: Check required metadata in normative documents
         shell: bash
@@ -64,12 +142,34 @@ jobs:
             docs/governanca/POLITICA_DE_VERSOES.md
             docs/governanca/PROCESSO_DE_PUBLICACAO.md
             docs/agentes/LEO.md
-            docs/agentes/LEONARDO.md
-            docs/agentes/SOFIA.md
-            docs/agentes/EMILY.md
-            docs/agentes/CARMEM.md
-            docs/agentes/GABRIEL.md
             docs/agentes/MESTRE.md
+            docs/agentes/LEONARDO.md
+            docs/agentes/CARLOS.md
+            docs/agentes/EVELYN.md
+            docs/agentes/LAURA.md
+            docs/agentes/ISABELA.md
+            docs/agentes/MARINA.md
+            docs/agentes/SOFIA.md
+            docs/agentes/RAFAEL.md
+            docs/agentes/MANOEL.md
+            docs/agentes/RENATO.md
+            docs/agentes/BRUNO.md
+            docs/agentes/RICARDO.md
+            docs/agentes/GABRIEL.md
+            docs/agentes/CARMEM.md
+            docs/agentes/EMILY.md
+            docs/agentes/EDUARDO.md
+            docs/agentes/HELENA.md
+            docs/agentes/ANDRE.md
+            docs/agentes/TIAGO.md
+            docs/agentes/DANIELA.md
+            docs/agentes/VINICIUS.md
+            docs/agentes/PATRICIA.md
+            docs/agentes/LUCAS.md
+            docs/agentes/AUGUSTO.md
+            docs/agentes/BEATRIZ.md
+            docs/agentes/MIRIAM.md
+            docs/agentes/JULIA.md
             docs/agentes/MATRIZ_RACI.md
           )
           for file in "${normative[@]}"; do
