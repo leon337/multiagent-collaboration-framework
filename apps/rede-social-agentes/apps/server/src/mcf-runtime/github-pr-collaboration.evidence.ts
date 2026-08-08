@@ -14,7 +14,14 @@ const SHA_40 = /^[a-f0-9]{40}$/u;
 const REPOSITORY =
   /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/u;
 const IDEMPOTENCY_KEY = /^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$/u;
+const TITLE_LIMIT = 256;
+const BODY_LIMIT = 65_000;
 const OPERATIONS = new Set(['comment-pr', 'review-pr-comment', 'update-pr-text-metadata']);
+
+interface MetadataPatchInputs {
+  title: string | null;
+  body: string | null;
+}
 
 export interface GitHubPrCollaborationEvidenceContext {
   agentId: string;
@@ -67,10 +74,48 @@ function textDigest(value: string): string {
   return createHash('sha256').update(value).digest('hex');
 }
 
-function metadataPatchDigest(inputs: Readonly<Record<string, unknown>>): string {
-  const title = typeof inputs.title === 'string' ? inputs.title : null;
-  const body = typeof inputs.body === 'string' ? inputs.body : null;
-  return createHash('sha256').update(JSON.stringify({ title, body })).digest('hex');
+function metadataPatchInputs(inputs: Readonly<Record<string, unknown>>): MetadataPatchInputs {
+  const rawTitle = inputs.title;
+  const rawBody = inputs.body;
+  let title: string | null = null;
+  let body: string | null = null;
+
+  if (rawTitle !== undefined && rawTitle !== null) {
+    if (
+      typeof rawTitle !== 'string' ||
+      rawTitle.length === 0 ||
+      rawTitle !== rawTitle.trim() ||
+      rawTitle.length > TITLE_LIMIT
+    ) {
+      return reject(
+        `PR collaboration metadata evidence title must be a non-empty trimmed string within ${TITLE_LIMIT} characters`,
+      );
+    }
+    title = rawTitle;
+  }
+
+  if (rawBody !== undefined && rawBody !== null) {
+    if (
+      typeof rawBody !== 'string' ||
+      rawBody !== rawBody.trim() ||
+      rawBody.length > BODY_LIMIT
+    ) {
+      return reject(
+        `PR collaboration metadata evidence body must be a trimmed string within ${BODY_LIMIT} characters`,
+      );
+    }
+    body = rawBody;
+  }
+
+  if (title === null && body === null) {
+    return reject('PR collaboration metadata evidence requires current title and/or body');
+  }
+
+  return { title, body };
+}
+
+function metadataPatchDigest(patch: MetadataPatchInputs): string {
+  return createHash('sha256').update(JSON.stringify(patch)).digest('hex');
 }
 
 function githubUrl(value: unknown, repository: string, label: string): URL {
@@ -224,12 +269,14 @@ export function verifyGitHubPrCollaborationEvidence(
       reject('PR collaboration review evidence digest must match current input');
     }
   } else {
-    if (digest !== metadataPatchDigest(inputs)) {
+    const patch = metadataPatchInputs(inputs);
+    if (digest !== metadataPatchDigest(patch)) {
       reject('PR collaboration metadata evidence digest must match current title/body patch');
     }
-    const title = typeof inputs.title === 'string' ? inputs.title : null;
-    const body = typeof inputs.body === 'string' ? inputs.body : null;
-    if (receipt.metadata.verifiedTitle !== title || receipt.metadata.verifiedBody !== body) {
+    if (
+      receipt.metadata.verifiedTitle !== patch.title ||
+      receipt.metadata.verifiedBody !== patch.body
+    ) {
       reject('PR collaboration metadata evidence must bind verified title/body values');
     }
   }
