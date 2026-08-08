@@ -9,7 +9,8 @@ import {
 } from './permission-engine.js';
 
 const SHA_40 = /^[a-f0-9]{40}$/u;
-const REPOSITORY = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/u;
+const REPOSITORY =
+  /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/u;
 const IDEMPOTENCY_KEY = /^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$/u;
 
 export interface GitHubBranchPrEvidenceContext {
@@ -206,7 +207,10 @@ export function verifyGitHubBranchPrEvidence(
   if (!Array.isArray(evidenceUrls) || evidenceUrls.length !== 3) {
     reject('branch/PR evidence requires commit, branch and pull request URLs');
   }
-  const paths = evidenceUrls.map((value) => githubUrl(value, repository, 'branch/PR evidence contains invalid evidence URL').pathname);
+  const paths = evidenceUrls.map(
+    (value) =>
+      githubUrl(value, repository, 'branch/PR evidence contains invalid evidence URL').pathname,
+  );
   if (!paths.includes(`/${repository}/commit/${commitSha}`) || !paths.includes(pullUrl.pathname)) {
     reject('branch/PR evidence must include exact commit and pull request URLs');
   }

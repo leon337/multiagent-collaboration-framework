@@ -54,7 +54,9 @@ function requiresCanonicalGitHubRepository(
 ): boolean {
   if (provider !== 'github') return false;
   if (skillId === 'MCF-RUN-TESTS' && canonicalizeToolValue(operation) === 'query-ci') return true;
-  return skillId === 'MCF-GIT-PR-RELEASE' && canonicalizeToolValue(operation) === 'create-branch-pr';
+  return (
+    skillId === 'MCF-GIT-PR-RELEASE' && canonicalizeToolValue(operation) === 'create-branch-pr'
+  );
 }
 
 function isProtectedBranchWrite(operation: string, inputs: Record<string, unknown>): boolean {
@@ -127,7 +129,9 @@ export class PermissionEngine {
         );
       }
       if (isProtectedBranchWrite(operation, inputs)) {
-        throw new McfPermissionDeniedError('create-branch-pr cannot target main or master as branch_ref');
+        throw new McfPermissionDeniedError(
+          'create-branch-pr cannot target main or master as branch_ref',
+        );
       }
     }
 
@@ -191,7 +195,7 @@ export class PermissionEngine {
         if (inputs.sensitiveAuthorization !== true) {
           throw new McfPermissionDeniedError(
             'SENSITIVE_CONTROLLED requires explicit sensitive authorization',
-          );
+         );
         }
         break;
       case 'HUMAN_GATE':

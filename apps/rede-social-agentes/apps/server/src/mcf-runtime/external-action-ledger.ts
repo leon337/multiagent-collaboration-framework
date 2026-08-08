@@ -277,7 +277,9 @@ export class ExternalActionLedger {
         commitSha: receipt.commitSha,
         status: receipt.status,
         idempotencyKey:
-          typeof receipt.metadata.idempotencyKey === 'string' ? receipt.metadata.idempotencyKey : null,
+          typeof receipt.metadata.idempotencyKey === 'string'
+            ? receipt.metadata.idempotencyKey
+            : null,
       },
     });
   }

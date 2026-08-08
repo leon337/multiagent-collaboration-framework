@@ -97,7 +97,10 @@ describe('GitHubBranchPullRequestAdapter', () => {
       calls.push({ method, url: input });
       if (input.includes('/git/ref/heads/main')) return jsonResponse(baseRef());
       if (input.includes(`/commits/${HEAD_SHA}`)) {
-        return jsonResponse({ sha: HEAD_SHA, html_url: `https://github.com/leon337/multiagent-collaboration-framework/commit/${HEAD_SHA}` });
+        return jsonResponse({
+          sha: HEAD_SHA,
+          html_url: `https://github.com/leon337/multiagent-collaboration-framework/commit/${HEAD_SHA}`,
+        });
       }
       if (input.includes('/git/ref/heads/feat/mcf-c1-test')) {
         return branchExists ? jsonResponse(branchRef()) : jsonResponse({}, 404);
@@ -133,7 +136,8 @@ describe('GitHubBranchPullRequestAdapter', () => {
       const method = init?.method ?? 'GET';
       methods.push(method);
       if (input.includes('/git/ref/heads/main')) return jsonResponse(baseRef());
-      if (input.includes(`/commits/${HEAD_SHA}`)) return jsonResponse({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
+      if (input.includes(`/commits/${HEAD_SHA}`))
+        return jsonResponse({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
       if (input.includes('/git/ref/heads/feat/mcf-c1-test')) return jsonResponse(branchRef());
       if (input.includes('/pulls?')) return jsonResponse([pull()]);
       throw new Error(`unexpected request ${method} ${input}`);
@@ -152,8 +156,10 @@ describe('GitHubBranchPullRequestAdapter', () => {
   it('fails closed when an existing branch points to another SHA', async () => {
     const fetcher = vi.fn(async (input: string) => {
       if (input.includes('/git/ref/heads/main')) return jsonResponse(baseRef());
-      if (input.includes(`/commits/${HEAD_SHA}`)) return jsonResponse({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
-      if (input.includes('/git/ref/heads/feat/mcf-c1-test')) return jsonResponse(branchRef(OTHER_SHA));
+      if (input.includes(`/commits/${HEAD_SHA}`))
+        return jsonResponse({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
+      if (input.includes('/git/ref/heads/feat/mcf-c1-test'))
+        return jsonResponse(branchRef(OTHER_SHA));
       throw new Error(`unexpected request ${input}`);
     });
     const adapter = new GitHubBranchPullRequestAdapter(
@@ -167,9 +173,11 @@ describe('GitHubBranchPullRequestAdapter', () => {
   it('fails closed when a PR for the branch/base has incompatible provenance', async () => {
     const fetcher = vi.fn(async (input: string) => {
       if (input.includes('/git/ref/heads/main')) return jsonResponse(baseRef());
-      if (input.includes(`/commits/${HEAD_SHA}`)) return jsonResponse({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
+      if (input.includes(`/commits/${HEAD_SHA}`))
+        return jsonResponse({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
       if (input.includes('/git/ref/heads/feat/mcf-c1-test')) return jsonResponse(branchRef());
-      if (input.includes('/pulls?')) return jsonResponse([pull('human-created pull without MCF marker')]);
+      if (input.includes('/pulls?'))
+        return jsonResponse([pull('human-created pull without MCF marker')]);
       throw new Error(`unexpected request ${input}`);
     });
     const adapter = new GitHubBranchPullRequestAdapter(
@@ -187,7 +195,9 @@ describe('GitHubBranchPullRequestAdapter', () => {
       new GitHubBranchPrClient(fetcher),
     );
 
-    await expect(adapter.execute(request({ branch_ref: 'main' }))).rejects.toThrow(/new non-main branch/u);
+    await expect(adapter.execute(request({ branch_ref: 'main' }))).rejects.toThrow(
+      /new non-protected branch/u,
+    );
     expect(fetcher).not.toHaveBeenCalled();
   });
 });

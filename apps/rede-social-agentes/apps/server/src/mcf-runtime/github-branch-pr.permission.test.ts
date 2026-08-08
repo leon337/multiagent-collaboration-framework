@@ -51,8 +51,12 @@ describe('PermissionEngine create-branch-pr', () => {
   });
 
   it('rejects main and master as branch_ref', () => {
-    expect(() => permissions.assertAllowed(skill, 'Gabriel', tool, inputs({ branch_ref: 'main' }))).toThrow(/main or master/u);
-    expect(() => permissions.assertAllowed(skill, 'Gabriel', tool, inputs({ branch_ref: 'master' }))).toThrow(/main or master/u);
+    expect(() =>
+      permissions.assertAllowed(skill, 'Gabriel', tool, inputs({ branch_ref: 'main' })),
+    ).toThrow(/main or master/u);
+    expect(() =>
+      permissions.assertAllowed(skill, 'Gabriel', tool, inputs({ branch_ref: 'master' })),
+    ).toThrow(/main or master/u);
   });
 
   it('rejects the operation for another skill even with SCOPED_WRITE', () => {
@@ -71,7 +75,10 @@ describe('PermissionEngine create-branch-pr', () => {
       permissions.assertAllowed(
         skill,
         'Gabriel',
-        { ...tool, resource: 'https://token@github.com/leon337/multiagent-collaboration-framework' },
+        {
+          ...tool,
+          resource: 'https://token@github.com/leon337/multiagent-collaboration-framework',
+        },
         inputs(),
       ),
     ).toThrow(McfPermissionDeniedError);

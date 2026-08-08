@@ -77,7 +77,8 @@ describe('GitHub branch/PR timeout reconciliation', () => {
       if (url.includes('/git/ref/heads/main')) {
         return response({ ref: 'refs/heads/main', object: { sha: BASE_SHA } });
       }
-      if (url.includes(`/commits/${HEAD_SHA}`)) return response({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
+      if (url.includes(`/commits/${HEAD_SHA}`))
+        return response({ sha: HEAD_SHA, html_url: 'https://github.com/x' });
       if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) {
         return branchExists
           ? response({ ref: 'refs/heads/feat/mcf-c1-timeout', object: { sha: HEAD_SHA } })

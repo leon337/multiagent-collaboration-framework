@@ -174,11 +174,7 @@ function encodeRef(ref: string): string {
   return ref.split('/').map(encodeURIComponent).join('/');
 }
 
-function assertRef(
-  response: GitHubRefResponse,
-  expectedRef: string,
-  expectedSha: string,
-): void {
+function assertRef(response: GitHubRefResponse, expectedRef: string, expectedSha: string): void {
   if (
     response.ref !== `refs/heads/${expectedRef}` ||
     exactSha(response.object?.sha ?? '', 'provider ref SHA') !== expectedSha
@@ -222,8 +218,8 @@ function shouldReconcileMutationError(error: unknown): error is ExternalActionAd
 export class GitHubBranchPrClient {
   constructor(
     private readonly fetcher: FetchLike = globalThis.fetch,
-    private readonly token: string | undefined =
-      process.env.MCF_GITHUB_TOKEN ?? process.env.GITHUB_TOKEN,
+    private readonly token: string | undefined = process.env.MCF_GITHUB_TOKEN ??
+      process.env.GITHUB_TOKEN,
   ) {}
 
   async requestJson<T>(
@@ -234,11 +230,7 @@ export class GitHubBranchPrClient {
     body?: Record<string, unknown>,
     allowNotFound = false,
   ): Promise<T | null> {
-    if (
-      !path.startsWith('/repos/') ||
-      path.includes('://') ||
-      !['GET', 'POST'].includes(method)
-    ) {
+    if (!path.startsWith('/repos/') || path.includes('://') || !['GET', 'POST'].includes(method)) {
       throw new ExternalActionAdapterError(
         'UNSUPPORTED_TARGET',
         'GitHub branch/PR client rejected an unsupported request path or method',
@@ -257,7 +249,7 @@ export class GitHubBranchPrClient {
 
     const remaining = deadlineAt - Date.now();
     if (remaining <= 0) {
-      throw new ExternalActionAdapterError(
+    throw new ExternalActionAdapterError(
         'ADAPTER_TIMEOUT',
         'GitHub branch/PR adapter exceeded its execution deadline',
         true,
@@ -372,7 +364,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
   constructor(
     private readonly evidence: EvidenceValidator,
     private readonly client: GitHubBranchPrClient = new GitHubBranchPrClient(),
-  ) {}
+ ) {}
 
   supports(request: ExternalActionRequest): boolean {
     return (
@@ -508,11 +500,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
       budget,
     );
     if (!base) {
-      throw new ExternalActionAdapterError(
-        'TARGET_NOT_FOUND',
-        'Base branch was not found',
-        false,
-      );
+      throw new ExternalActionAdapterError('TARGET_NOT_FOUND', 'Base branch was not found', false);
     }
     assertRef(base, target.baseRef, target.baseSha);
 
