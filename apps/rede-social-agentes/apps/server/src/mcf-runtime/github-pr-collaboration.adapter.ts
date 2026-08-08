@@ -286,19 +286,30 @@ function assertPull(pull: GitHubPullResponse, target: PullCollaborationTarget): 
   }
 }
 
+function matchesMutationUrl(
+  value: unknown,
+  target: PullCollaborationTarget,
+  expectedFragment: string,
+): boolean {
+  if (typeof value !== 'string') return false;
+  const fragmentIndex = value.indexOf('#');
+  if (fragmentIndex < 0) return false;
+  const baseUrl = value.slice(0, fragmentIndex);
+  const fragment = value.slice(fragmentIndex);
+  const expectedBaseUrl = `https://github.com/${target.repository}/pull/${target.pullNumber}`;
+  return baseUrl.toLowerCase() === expectedBaseUrl.toLowerCase() && fragment === expectedFragment;
+}
+
 function assertComment(
   comment: GitHubIssueCommentResponse,
   target: PullCollaborationTarget,
   expectedBody: string,
 ): void {
-  const expectedUrl =
-    `https://github.com/${target.repository}/pull/${target.pullNumber}` +
-    `#issuecomment-${comment.id}`;
+  const expectedFragment = `#issuecomment-${comment.id}`;
   if (
     !Number.isInteger(comment.id) ||
     comment.id < 1 ||
-    typeof comment.html_url !== 'string' ||
-    comment.html_url.toLowerCase() !== expectedUrl.toLowerCase() ||
+    !matchesMutationUrl(comment.html_url, target, expectedFragment) ||
     comment.body !== expectedBody
   ) {
     throw new ExternalActionAdapterError(
@@ -314,14 +325,11 @@ function assertReview(
   target: PullCollaborationTarget,
   expectedBody: string,
 ): void {
-  const expectedUrl =
-    `https://github.com/${target.repository}/pull/${target.pullNumber}` +
-    `#pullrequestreview-${review.id}`;
+  const expectedFragment = `#pullrequestreview-${review.id}`;
   if (
     !Number.isInteger(review.id) ||
     review.id < 1 ||
-    typeof review.html_url !== 'string' ||
-    review.html_url.toLowerCase() !== expectedUrl.toLowerCase() ||
+    !matchesMutationUrl(review.html_url, target, expectedFragment) ||
     review.body !== expectedBody ||
     review.state !== 'COMMENTED' ||
     exactSha(review.commit_id ?? '', 'provider review commit SHA') !== target.expectedHeadSha
