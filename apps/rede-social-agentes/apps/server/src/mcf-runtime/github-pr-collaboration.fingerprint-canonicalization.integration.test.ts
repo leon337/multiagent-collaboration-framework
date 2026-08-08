@@ -42,12 +42,7 @@ function contract(title: string) {
   });
 }
 
-function request(
-  missionId: string,
-  phaseId: string,
-  key: string,
-  aliases = false,
-) {
+function request(missionId: string, phaseId: string, key: string, aliases = false) {
   return {
     skill,
     agentId: 'Gabriel',
@@ -81,84 +76,81 @@ describe('C2 canonical idempotency fingerprint recovery', () => {
     await database.onModuleDestroy();
   });
 
-  it(
-    'treats accepted provider/operation/repository/SHA aliases as the same expired request',
-    async () => {
-      const holderMission = randomUUID();
-      const retryMission = randomUUID();
-      const holderPhase = randomUUID();
-      const retryPhase = randomUUID();
-      const key = 'mcf-c2-canonical-fingerprint-0001';
-      const now = new Date();
+  it('treats accepted provider/operation/repository/SHA aliases as the same expired request', async () => {
+    const holderMission = randomUUID();
+    const retryMission = randomUUID();
+    const holderPhase = randomUUID();
+    const retryPhase = randomUUID();
+    const key = 'mcf-c2-canonical-fingerprint-0001';
+    const now = new Date();
 
-      try {
-        for (const [missionId, title] of [
-          [holderMission, 'C2 canonical holder'],
-          [retryMission, 'C2 canonical retry'],
-        ] as const) {
-          await database.query(
-            `insert into "mcf_missions" (
+    try {
+      for (const [missionId, title] of [
+        [holderMission, 'C2 canonical holder'],
+        [retryMission, 'C2 canonical retry'],
+      ] as const) {
+        await database.query(
+          `insert into "mcf_missions" (
               "id", "contract", "state", "current_phase_id", "current_agent_id",
               "version", "created_at", "updated_at"
             ) values ($1, $2::jsonb, 'EXECUTING', null, 'Gabriel', 1, $3, $3)`,
-            [missionId, contract(title), now],
-          );
-        }
-
-        const holderAttempt = await ledger.reserve(
-          request(holderMission, holderPhase, key),
-          ADAPTER_ID,
+          [missionId, contract(title), now],
         );
-        await database.query(
-          `update "mcf_external_action_attempts"
+      }
+
+      const holderAttempt = await ledger.reserve(
+        request(holderMission, holderPhase, key),
+        ADAPTER_ID,
+      );
+      await database.query(
+        `update "mcf_external_action_attempts"
            set "lease_expires_at" = now() - interval '1 minute'
            where "attempt_id" = $1`,
-          [holderAttempt],
-        );
+        [holderAttempt],
+      );
 
-        const retryAttempt = await ledger.reserve(
-          request(retryMission, retryPhase, key, true),
-          ADAPTER_ID,
-        );
+      const retryAttempt = await ledger.reserve(
+        request(retryMission, retryPhase, key, true),
+        ADAPTER_ID,
+      );
 
-        expect(retryAttempt).not.toBe(holderAttempt);
-        const attempts = await database.query<{
-          attemptId: string;
-          status: string;
-          scopeKey: string | null;
-        }>(
-          `select
+      expect(retryAttempt).not.toBe(holderAttempt);
+      const attempts = await database.query<{
+        attemptId: string;
+        status: string;
+        scopeKey: string | null;
+      }>(
+        `select
              "attempt_id" as "attemptId",
              "status",
              "idempotency_scope_key" as "scopeKey"
            from "mcf_external_action_attempts"
            where "mission_id" = any($1::text[])
            order by "created_at"`,
-          [[holderMission, retryMission]],
-        );
+        [[holderMission, retryMission]],
+      );
 
-        expect(attempts.rows.find((row) => row.attemptId === holderAttempt)).toMatchObject({
-          status: 'ABANDONED',
-          scopeKey: null,
-        });
-        expect(attempts.rows.find((row) => row.attemptId === retryAttempt)).toMatchObject({
-          status: 'ALLOWED',
-        });
-        expect(attempts.rows.find((row) => row.attemptId === retryAttempt)?.scopeKey).toEqual(
-          expect.any(String),
-        );
-      } finally {
-        await database.query(
-          `delete from "mcf_external_action_attempts" where "mission_id" = any($1::text[])`,
-          [[holderMission, retryMission]],
-        );
-        await database.query(`delete from "mcf_events" where "mission_id" = any($1::text[])`, [
-          [holderMission, retryMission],
-        ]);
-        await database.query(`delete from "mcf_missions" where "id" = any($1::text[])`, [
-          [holderMission, retryMission],
-        ]);
-      }
-    },
-  );
+      expect(attempts.rows.find((row) => row.attemptId === holderAttempt)).toMatchObject({
+        status: 'ABANDONED',
+        scopeKey: null,
+      });
+      expect(attempts.rows.find((row) => row.attemptId === retryAttempt)).toMatchObject({
+        status: 'ALLOWED',
+      });
+      expect(attempts.rows.find((row) => row.attemptId === retryAttempt)?.scopeKey).toEqual(
+        expect.any(String),
+      );
+    } finally {
+      await database.query(
+        `delete from "mcf_external_action_attempts" where "mission_id" = any($1::text[])`,
+        [[holderMission, retryMission]],
+      );
+      await database.query(`delete from "mcf_events" where "mission_id" = any($1::text[])`, [
+        [holderMission, retryMission],
+      ]);
+      await database.query(`delete from "mcf_missions" where "id" = any($1::text[])`, [
+        [holderMission, retryMission],
+      ]);
+    }
+  });
 });

@@ -29,12 +29,7 @@ interface IdempotencyRow extends AttemptRow {
 }
 
 type ExternalAttemptStatus =
-  | 'ALLOWED'
-  | 'EXECUTED'
-  | 'FAILED'
-  | 'EVIDENCE_VALIDATED'
-  | 'EVIDENCE_REJECTED'
-  | 'ABANDONED';
+  'ALLOWED' | 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED' | 'ABANDONED';
 
 interface AttemptStateRow extends AttemptRow {
   status: ExternalAttemptStatus;
@@ -101,19 +96,14 @@ function canonicalizeForDigest(value: unknown): unknown {
   return value;
 }
 
-function isGloballySerializedC2Request(
-  request: ExternalActionRequest,
-  adapterId: string,
-): boolean {
+function isGloballySerializedC2Request(request: ExternalActionRequest, adapterId: string): boolean {
   return (
     adapterId === globallySerializedAdapter &&
     globallySerializedOperations.has(canonicalizeToolValue(request.tool.operation))
   );
 }
 
-function canonicalizeC2FingerprintInputs(
-  inputs: Record<string, unknown>,
-): Record<string, unknown> {
+function canonicalizeC2FingerprintInputs(inputs: Record<string, unknown>): Record<string, unknown> {
   const canonical = { ...inputs };
   if (typeof canonical.repository === 'string') {
     canonical.repository = canonical.repository.trim().toLowerCase();
@@ -138,12 +128,8 @@ function requestIdempotencyFingerprint(
     skillId: request.skill.skillId,
     skillVersion: request.skill.version,
     provider: canonicalC2 ? canonicalizeProvider(request.tool.provider) : request.tool.provider,
-    operation: canonicalC2
-      ? canonicalizeToolValue(request.tool.operation)
-      : request.tool.operation,
-    resource: canonicalC2
-      ? request.tool.resource.trim().toLowerCase()
-      : request.tool.resource,
+    operation: canonicalC2 ? canonicalizeToolValue(request.tool.operation) : request.tool.operation,
+    resource: canonicalC2 ? request.tool.resource.trim().toLowerCase() : request.tool.resource,
     inputs: canonicalC2 ? canonicalizeC2FingerprintInputs(request.inputs) : request.inputs,
   });
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
@@ -487,9 +473,7 @@ export class ExternalActionLedger {
     attemptId: string;
     status: 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
     eventType:
-      | 'EXTERNAL_ACTION_EXECUTED'
-      | 'EXTERNAL_ACTION_FAILED'
-      | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
+      'EXTERNAL_ACTION_EXECUTED' | 'EXTERNAL_ACTION_FAILED' | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
     receiptId: string | null;
     failure: ExternalActionFailure | null;
     payload: Record<string, unknown>;
