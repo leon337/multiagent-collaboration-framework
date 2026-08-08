@@ -336,15 +336,14 @@ function markerOutcome(jobs: GitHubWorkflowJob[]): DeploymentOutcome | null {
     ['NOOP', 'Deployment result NOOP'],
     ['RECOVERED', 'Deployment result RECOVERED'],
   ];
-  const successful = markers.filter(([, name]) =>
-    job.steps.some(
-      (step) =>
-        step.name === name &&
-        step.status.toLowerCase() === 'completed' &&
-        step.conclusion?.toLowerCase() === 'success',
-    ),
-  );
-  return successful.length === 1 ? successful[0]![0] : null;
+  const successful = job.steps.flatMap((step) => {
+    if (step.status.toLowerCase() !== 'completed' || step.conclusion?.toLowerCase() !== 'success') {
+      return [];
+    }
+    const marker = markers.find(([, name]) => step.name === name);
+    return marker ? [marker[0]] : [];
+  });
+  return successful.length === 1 ? successful[0]! : null;
 }
 
 export class GitHubStagingDeployClient {

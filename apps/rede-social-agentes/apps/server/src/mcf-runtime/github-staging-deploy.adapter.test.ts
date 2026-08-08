@@ -85,8 +85,32 @@ function workflowRun({
   };
 }
 
-function jobs(outcome: 'DEPLOYED' | 'NOOP' | 'RECOVERED') {
+function jobs(
+  outcome: 'DEPLOYED' | 'NOOP' | 'RECOVERED',
+  options: {
+    duplicateOutcomeMarker?: boolean;
+    additionalSuccessfulOutcome?: 'DEPLOYED' | 'NOOP' | 'RECOVERED';
+  } = {},
+) {
   const names = ['DEPLOYED', 'NOOP', 'RECOVERED'];
+  const steps = names.map((name, index) => ({
+    number: index + 1,
+    name: `Deployment result ${name}`,
+    status: 'completed',
+    conclusion: name === outcome ? 'success' : 'skipped',
+  }));
+  if (options.duplicateOutcomeMarker) {
+    const source = steps.find((step) => step.name === `Deployment result ${outcome}`);
+    if (!source) throw new Error('missing source outcome marker');
+    steps.push({ ...source, number: steps.length + 1 });
+  }
+  if (options.additionalSuccessfulOutcome) {
+    const additional = steps.find(
+      (step) => step.name === `Deployment result ${options.additionalSuccessfulOutcome}`,
+    );
+    if (!additional) throw new Error('missing additional outcome marker');
+    additional.conclusion = 'success';
+  }
   return {
     total_count: 1,
     jobs: [
@@ -96,12 +120,7 @@ function jobs(outcome: 'DEPLOYED' | 'NOOP' | 'RECOVERED') {
         name: 'deploy-and-verify',
         status: 'completed',
         conclusion: outcome === 'RECOVERED' ? 'failure' : 'success',
-        steps: names.map((name, index) => ({
-          number: index + 1,
-          name: `Deployment result ${name}`,
-          status: 'completed',
-          conclusion: name === outcome ? 'success' : 'skipped',
-        })),
+        steps,
       },
     ],
   };
@@ -116,6 +135,8 @@ function fakeProvider(
     unhealthyBefore?: boolean;
     inconsistentFinal?: boolean;
     malformedJobs?: boolean;
+    duplicateOutcomeMarker?: boolean;
+    additionalSuccessfulOutcome?: 'DEPLOYED' | 'NOOP' | 'RECOVERED';
   } = {},
 ) {
   const outcome = options.outcome ?? 'DEPLOYED';
@@ -192,7 +213,12 @@ function fakeProvider(
       if (options.malformedJobs) {
         return jsonResponse({ total_count: 1, jobs: [{ id: 99, run_id: RUN_ID, steps: 'bad' }] });
       }
-      return jsonResponse(jobs(outcome));
+      return jsonResponse(
+        jobs(outcome, {
+          duplicateOutcomeMarker: options.duplicateOutcomeMarker,
+          additionalSuccessfulOutcome: options.additionalSuccessfulOutcome,
+        }),
+      );
     }
 
     throw new Error(`unexpected request ${method} ${input}`);
@@ -301,6 +327,26 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     expect(receipt.status).toBe('PARTIAL');
     expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
     expect(receipt.metadata.unknownReason).toMatch(/workflow result marker could not be verified/u);
+  });
+
+  it('rejects duplicate successful copies of the same deployment marker', async () => {
+    const provider = fakeProvider({ duplicateOutcomeMarker: true });
+    const receipt = await adapter(provider).execute(request());
+
+    expect(provider.dispatches).toBe(1);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(receipt.metadata.unknownReason).toMatch(/exactly one trusted deployment result marker/u);
+  });
+
+  it('rejects multiple successful deployment outcomes in one job', async () => {
+    const provider = fakeProvider({ additionalSuccessfulOutcome: 'NOOP' });
+    const receipt = await adapter(provider).execute(request());
+
+    expect(provider.dispatches).toBe(1);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(receipt.metadata.unknownReason).toMatch(/exactly one trusted deployment result marker/u);
   });
 
   it('returns PARTIAL when the correlated workflow remains active past the adapter deadline', async () => {
