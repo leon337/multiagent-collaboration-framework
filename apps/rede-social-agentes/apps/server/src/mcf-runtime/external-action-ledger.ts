@@ -29,7 +29,12 @@ interface IdempotencyRow extends AttemptRow {
 }
 
 type ExternalAttemptStatus =
-  'ALLOWED' | 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED' | 'ABANDONED';
+  | 'ALLOWED'
+  | 'EXECUTED'
+  | 'FAILED'
+  | 'EVIDENCE_VALIDATED'
+  | 'EVIDENCE_REJECTED'
+  | 'ABANDONED';
 
 interface AttemptStateRow extends AttemptRow {
   status: ExternalAttemptStatus;
@@ -43,6 +48,13 @@ const allowedTransitions: Record<ExternalAttemptStatus, ExternalAttemptStatus[]>
   EVIDENCE_REJECTED: [],
   ABANDONED: [],
 };
+
+const globallySerializedAdapter = 'github-pr-collaboration-write-v1';
+const globallySerializedOperations = new Set([
+  'comment-pr',
+  'review-pr-comment',
+  'update-pr-text-metadata',
+]);
 
 function databaseErrorCode(error: unknown): string | null {
   if (
@@ -89,31 +101,50 @@ function canonicalizeForDigest(value: unknown): unknown {
   return value;
 }
 
+function isGloballySerializedC2Request(request: ExternalActionRequest, adapterId: string): boolean {
+  return (
+    adapterId === globallySerializedAdapter &&
+    globallySerializedOperations.has(canonicalizeToolValue(request.tool.operation))
+  );
+}
+
+function canonicalizeC2FingerprintInputs(
+  inputs: Record<string, unknown>,
+): Record<string, unknown> {
+  const canonical = { ...inputs };
+  if (typeof canonical.repository === 'string') {
+    canonical.repository = canonical.repository.trim().toLowerCase();
+  }
+  if (typeof canonical.expected_head_sha === 'string') {
+    canonical.expected_head_sha = canonical.expected_head_sha.trim().toLowerCase();
+  }
+  return canonical;
+}
+
 function requestIdempotencyFingerprint(
   request: ExternalActionRequest,
   adapterId: string,
   idempotencyKey: string | null,
 ): string | null {
   if (!idempotencyKey) return null;
+
+  const canonicalC2 = isGloballySerializedC2Request(request, adapterId);
   const payload = canonicalizeForDigest({
     adapterId,
     agentId: request.agentId,
     skillId: request.skill.skillId,
     skillVersion: request.skill.version,
-    provider: request.tool.provider,
-    operation: request.tool.operation,
-    resource: request.tool.resource,
-    inputs: request.inputs,
+    provider: canonicalC2 ? canonicalizeProvider(request.tool.provider) : request.tool.provider,
+    operation: canonicalC2
+      ? canonicalizeToolValue(request.tool.operation)
+      : request.tool.operation,
+    resource: canonicalC2
+      ? request.tool.resource.trim().toLowerCase()
+      : request.tool.resource,
+    inputs: canonicalC2 ? canonicalizeC2FingerprintInputs(request.inputs) : request.inputs,
   });
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
-
-const globallySerializedAdapter = 'github-pr-collaboration-write-v1';
-const globallySerializedOperations = new Set([
-  'comment-pr',
-  'review-pr-comment',
-  'update-pr-text-metadata',
-]);
 
 function requestGlobalIdempotencyScopeKey(
   request: ExternalActionRequest,
@@ -453,7 +484,9 @@ export class ExternalActionLedger {
     attemptId: string;
     status: 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
     eventType:
-      'EXTERNAL_ACTION_EXECUTED' | 'EXTERNAL_ACTION_FAILED' | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
+      | 'EXTERNAL_ACTION_EXECUTED'
+      | 'EXTERNAL_ACTION_FAILED'
+      | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
     receiptId: string | null;
     failure: ExternalActionFailure | null;
     payload: Record<string, unknown>;
