@@ -218,8 +218,8 @@ function shouldReconcileMutationError(error: unknown): error is ExternalActionAd
 export class GitHubBranchPrClient {
   constructor(
     private readonly fetcher: FetchLike = globalThis.fetch,
-    private readonly token: string | undefined = process.env.MCF_GITHUB_TOKEN ??
-      process.env.GITHUB_TOKEN,
+    private readonly token: string | undefined =
+      process.env.MCF_GITHUB_TOKEN ?? process.env.GITHUB_TOKEN,
   ) {}
 
   async requestJson<T>(
@@ -249,7 +249,7 @@ export class GitHubBranchPrClient {
 
     const remaining = deadlineAt - Date.now();
     if (remaining <= 0) {
-    throw new ExternalActionAdapterError(
+      throw new ExternalActionAdapterError(
         'ADAPTER_TIMEOUT',
         'GitHub branch/PR adapter exceeded its execution deadline',
         true,
@@ -364,7 +364,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
   constructor(
     private readonly evidence: EvidenceValidator,
     private readonly client: GitHubBranchPrClient = new GitHubBranchPrClient(),
- ) {}
+  ) {}
 
   supports(request: ExternalActionRequest): boolean {
     return (
