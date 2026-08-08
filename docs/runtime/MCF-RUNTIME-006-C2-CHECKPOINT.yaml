@@ -3,7 +3,7 @@ issue: 79
 pr: 80
 base_main_sha: cd29bedef1b3ad08d88ecad21a6b66b7c6117ddf
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
-state: WAITING_FINAL_INDEPENDENT_REVIEW
+state: WAITING_FINAL_CHECKPOINT_CI
 external_effect: REVERSIBLE_TEXTUAL
 production: BLOCKED
 real_github_write_test: NOT_AUTHORIZED
@@ -56,6 +56,7 @@ idempotency:
     expired_holder_recovery_migration: 0022_mcf_external_action_expired_global_idempotency_recovery.sql
     lock_order_hardening_migration: 0023_mcf_external_action_global_recovery_lock_order.sql
     compatible_expired_recovery_migration: 0024_mcf_external_action_compatible_expired_recovery.sql
+    no_cross_mission_holder_lock_migration: 0025_mcf_external_action_global_recovery_no_cross_mission_lock.sql
     persistent_unique_index: mcf_external_action_attempts_global_idempotency_idx
     active_only_index_removed: true
     cross_mission_concurrency_test: PASS
@@ -69,15 +70,17 @@ idempotency:
     incompatible_fingerprint_binding: PRESERVED
     original_holder_compatible_retry_after_incompatible_contender: PASS
     terminal_scope_key: PERSISTENT
-    recovered_holder_mission_active_attempt: CLEARED
+    holder_mission_pointer_cleanup: DEFERRED_TO_MISSION_RECONCILIATION
     replacement_reservation: PASS
     replacement_terminal_binding: PERSISTENT
     conflict_retryable_for_consumed_or_incompatible_key: false
-    lock_order: MISSION_THEN_ATTEMPT
+    lock_order: NO_CROSS_MISSION_HOLDER_MISSION_LOCK
+    deadlock_regression_test: PASS
   ambiguous_effect: UNKNOWN
 
 independent_review_remediation:
-  p1_findings_total: 10
+  p1_findings_total: 11
+  p2_findings_total: 2
   reviews:
     - reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
       findings:
@@ -101,6 +104,10 @@ independent_review_remediation:
       findings:
         - same_mission_expired_abandoned_scope_not_recoverable
         - incompatible_expired_cross_mission_fingerprint_not_enforced
+    - reviewed_head: 097dfc2f5eec19f6795eb7fcf2c6b6fae0af68c6
+      findings:
+        - duplicate_reconciliation_after_ambiguous_comment_or_review
+        - checkpoint_provenance_missing_0025_and_exact_validated_head
   live_registry_real_write_exposure: REMEDIATED
   post_write_reconciliation_definite_failure: REMEDIATED
   comment_head_race_before_success_receipt: REMEDIATED
@@ -111,6 +118,9 @@ independent_review_remediation:
   expired_global_allowed_holder_not_reaped_cross_mission: REMEDIATED
   same_mission_expired_abandoned_scope_not_recoverable: REMEDIATED
   incompatible_expired_cross_mission_fingerprint_not_enforced: REMEDIATED
+  global_recovery_lock_order_deadlock_risk: REMEDIATED
+  duplicate_reconciliation_after_ambiguous_comment_or_review: REMEDIATED
+  checkpoint_provenance_missing_0025_and_exact_validated_head: REMEDIATED_BY_THIS_CHECKPOINT
   dedicated_regression_tests:
     p1_regression_tests: 4
     review_head_race_tests: 1
@@ -119,21 +129,22 @@ independent_review_remediation:
     persistent_terminal_binding_assertions: 2
     expired_global_reservation_integration_tests: 1
     expired_recovery_compatibility_tests: 2
-  preventive_hardening:
-    global_recovery_lock_order_deadlock_risk: REMEDIATED
+    global_recovery_deadlock_tests: 1
+    reconciliation_request_budget_tests: 2
   status: PASS_PENDING_FINAL_EXACT_HEAD_REVIEW
 
 validation:
-  implementation_head_validated: bf18f71b711081e97c095e7737b03a401f4f4f5c
+  implementation_head_validated: 71d73c6f5ec971eb8e5e4835f450b35c57a642bf
+  implementation_head_note: This is the exact code-and-test HEAD validated before this checkpoint-only provenance commit; the resulting checkpoint commit must be validated separately and reviewed by exact final PR HEAD.
   documentation_validation:
     status: PASS
-    workflow_run: 31245563336
+    workflow_run: 31251869379
   container_smoke:
     status: PASS
-    workflow_run: 31245563333
+    workflow_run: 31251869384
   foundation:
     status: PASS
-    workflow_run: 31245563341
+    workflow_run: 31251869381
     formatting: PASS
     lint: PASS
     typecheck: PASS
@@ -143,11 +154,12 @@ validation:
     migration_0022: PASS
     migration_0023: PASS
     migration_0024: PASS
-    server_test_files: 77
-    server_tests: 343
+    migration_0025: PASS
+    server_test_files: 79
+    server_tests: 346
     build: PASS
-    artifact_id: 9018374817
-    artifact_digest: sha256:cb17bc3b3e1e32c5c3f3d5cd589cc0a83eece056de144d8ebe7aacb7c92a3282
+    artifact_id: 9020246462
+    artifact_digest: sha256:a3dc92714f29a7baf4774c56c340b36f59a90470c504ec28fdc3b5cb9343f47e
   unit_tests: PASS
   integration_tests: PASS
   permission_tests: PASS
@@ -162,7 +174,9 @@ validation:
   original_holder_compatible_retry_after_incompatible_contender: PASS
   global_recovery_lock_order: PASS
   accepted_invalid_json_reconciliation: PASS
-  ci: PASS
+  high_pagination_ambiguous_reconciliation: PASS
+  implementation_ci: PASS
+  checkpoint_commit_ci: PENDING
   independent_review: PENDING_EXACT_FINAL_HEAD
 
 next_action:
