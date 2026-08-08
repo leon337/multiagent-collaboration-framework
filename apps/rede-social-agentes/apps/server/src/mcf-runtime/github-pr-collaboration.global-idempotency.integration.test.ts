@@ -8,6 +8,7 @@ import { ExternalActionLedger } from './external-action-ledger.js';
 
 const REPOSITORY = 'leon337/multiagent-collaboration-framework';
 const IDEMPOTENCY_KEY = 'mcf-c2-global-idempotency-0001';
+const ADAPTER_ID = 'github-pr-collaboration-write-v1';
 
 const skill: McfSkillDefinition = {
   skillId: 'MCF-GIT-PR-RELEASE',
@@ -30,11 +31,15 @@ const skill: McfSkillDefinition = {
 function missionContract(title: string) {
   return JSON.stringify({
     title,
-    objective: 'Persistently bind the same C2 provider mutation key across missions.',
-    expectedOutcome: 'One global idempotency scope remains bound after terminal state.',
+    objective: 'Serialize C2 mutations globally while allowing safe retry after definite pre-write failure.',
+    expectedOutcome: 'Only active or externally-consumed logical mutations keep the global binding.',
     scope: ['C2 persistent global idempotency'],
     outOfScope: ['real provider write'],
-    acceptanceCriteria: ['cross-mission duplicate creation and key reuse blocked'],
+    acceptanceCriteria: [
+      'cross-mission duplicate creation blocked while reserved',
+      'definite pre-write failure releases the binding',
+      'incompatible reuse remains blocked after a compatible retry reserves the key',
+    ],
     riskClass: 'B',
     selectedAgents: ['Gabriel', 'Mestre'],
     selectedSkills: ['MCF-GIT-PR-RELEASE'],
@@ -55,7 +60,7 @@ describe('C2 global idempotency serialization', () => {
     await database.onModuleDestroy();
   });
 
-  it('persists one repository/PR/operation/key binding across missions after terminal state', async () => {
+  it('releases a definite pre-write FAILED binding so the same logical operation can retry', async () => {
     const missionA = randomUUID();
     const missionB = randomUUID();
     const phaseA = randomUUID();
@@ -96,16 +101,16 @@ describe('C2 global idempotency serialization', () => {
           ($3, $4::jsonb, 'EXECUTING', null, 'Gabriel', 1, $5, $5)`,
         [
           missionA,
-          missionContract('C2 persistent binding A'),
+          missionContract('C2 global idempotency A'),
           missionB,
-          missionContract('C2 persistent binding B'),
+          missionContract('C2 global idempotency B'),
           now,
         ],
       );
 
       const outcomes = await Promise.allSettled([
-        ledger.reserve(request(missionA, phaseA), 'github-pr-collaboration-write-v1'),
-        ledger.reserve(request(missionB, phaseB), 'github-pr-collaboration-write-v1'),
+        ledger.reserve(request(missionA, phaseA), ADAPTER_ID),
+        ledger.reserve(request(missionB, phaseB), ADAPTER_ID),
       ]);
 
       const fulfilled = outcomes.filter(
@@ -119,40 +124,29 @@ describe('C2 global idempotency serialization', () => {
       expect(rejected).toHaveLength(1);
       expect(rejected[0]?.reason).toMatchObject({ code: 'RESERVATION_CONFLICT' });
 
-      const bound = await database.query<{ count: string }>(
-        `select count(*)::text as "count"
-         from "mcf_external_action_attempts"
-         where "idempotency_scope_key" is not null
-           and "operation" = 'comment-pr'
-           and "resource" = $1`,
-        [REPOSITORY],
-      );
-      expect(bound.rows[0]?.count).toBe('1');
-
-      await ledger.recordFailed(fulfilled[0]!.value, {
+      const firstAttemptId = fulfilled[0]!.value;
+      await ledger.recordFailed(firstAttemptId, {
         code: 'TARGET_NOT_FOUND',
-        message: 'definite pre-provider failure while preserving consumed idempotency key',
+        message: 'definite pre-write target lookup failure',
         retryable: false,
         statusCode: 404,
       });
 
-      const loser =
-        outcomes[0]?.status === 'rejected' ? request(missionA, phaseA) : request(missionB, phaseB);
-      await expect(ledger.reserve(loser, 'github-pr-collaboration-write-v1')).rejects.toMatchObject(
-        {
-          code: 'RESERVATION_CONFLICT',
-        },
+      const failed = await database.query<{ status: string; scopeKey: string | null }>(
+        `select "status", "idempotency_scope_key" as "scopeKey"
+         from "mcf_external_action_attempts"
+         where "attempt_id" = $1`,
+        [firstAttemptId],
       );
+      expect(failed.rows[0]).toEqual({ status: 'FAILED', scopeKey: null });
 
-      const changedPayload =
-        outcomes[0]?.status === 'rejected'
-          ? request(missionA, phaseA, { comment_body: 'different payload with reused key' })
-          : request(missionB, phaseB, { comment_body: 'different payload with reused key' });
-      await expect(
-        ledger.reserve(changedPayload, 'github-pr-collaboration-write-v1'),
-      ).rejects.toMatchObject({ code: 'RESERVATION_CONFLICT' });
+      const loserRequest =
+        outcomes[0]?.status === 'rejected' ? request(missionA, phaseA) : request(missionB, phaseB);
+      const retryAttemptId = await ledger.reserve(loserRequest, ADAPTER_ID);
+      expect(retryAttemptId).toEqual(expect.any(String));
+      expect(retryAttemptId).not.toBe(firstAttemptId);
 
-      const persisted = await database.query<{ status: string; count: string }>(
+      const rebound = await database.query<{ status: string; count: string }>(
         `select min("status") as "status", count(*)::text as "count"
          from "mcf_external_action_attempts"
          where "idempotency_scope_key" is not null
@@ -160,8 +154,15 @@ describe('C2 global idempotency serialization', () => {
            and "resource" = $1`,
         [REPOSITORY],
       );
-      expect(persisted.rows[0]?.count).toBe('1');
-      expect(persisted.rows[0]?.status).toBe('FAILED');
+      expect(rebound.rows[0]).toEqual({ status: 'ALLOWED', count: '1' });
+
+      const changedPayload =
+        outcomes[0]?.status === 'fulfilled'
+          ? request(missionA, randomUUID(), { comment_body: 'different payload with reused key' })
+          : request(missionB, randomUUID(), { comment_body: 'different payload with reused key' });
+      await expect(ledger.reserve(changedPayload, ADAPTER_ID)).rejects.toMatchObject({
+        code: 'RESERVATION_CONFLICT',
+      });
     } finally {
       await database.query(
         `delete from "mcf_external_action_attempts" where "mission_id" = any($1::text[])`,
