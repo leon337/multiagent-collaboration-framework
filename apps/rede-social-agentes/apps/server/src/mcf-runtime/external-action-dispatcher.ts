@@ -10,6 +10,8 @@ import {
 } from './external-action.contracts.js';
 import type { ExternalActionLedger } from './external-action-ledger.js';
 
+const durableExecutionBoundaryAdapters = new Set(['github-pr-collaboration-write-v1']);
+
 function failureFromError(error: unknown): ExternalActionFailure {
   if (error instanceof ExternalActionAdapterError) {
     return {
@@ -67,25 +69,27 @@ export class ExternalActionDispatcher {
       };
     }
 
-    // Establish a durable boundary before the adapter is allowed to perform any
-    // external mutation. An expired EXECUTING attempt is recovered as UNKNOWN,
-    // never as retryable/abandoned, so its global idempotency binding survives.
-    try {
-      await this.ledger.recordExecuting(attemptId);
-    } catch (error) {
-      const failure = failureFromError(error);
+    if (durableExecutionBoundaryAdapters.has(adapter.adapterId)) {
+      // Establish a durable boundary before the C2 adapter is allowed to perform
+      // any external mutation. An expired EXECUTING attempt is recovered as
+      // UNKNOWN, never as retryable/abandoned, so its idempotency binding survives.
       try {
-        // No adapter call has occurred yet, so this is definitively pre-write.
-        await this.ledger.recordFailed(attemptId, failure);
-      } catch (ledgerError) {
-        return {
-          status: 'FAILED',
-          adapterId: adapter.adapterId,
-          attemptId,
-          failure: failureFromError(ledgerError),
-        };
+        await this.ledger.recordExecuting(attemptId);
+      } catch (error) {
+        const failure = failureFromError(error);
+        try {
+          // No adapter call has occurred yet, so this is definitively pre-write.
+          await this.ledger.recordFailed(attemptId, failure);
+        } catch (ledgerError) {
+          return {
+            status: 'FAILED',
+            adapterId: adapter.adapterId,
+            attemptId,
+            failure: failureFromError(ledgerError),
+          };
+        }
+        return { status: 'FAILED', adapterId: adapter.adapterId, attemptId, failure };
       }
-      return { status: 'FAILED', adapterId: adapter.adapterId, attemptId, failure };
     }
 
     let receipt: McfToolReceipt;
