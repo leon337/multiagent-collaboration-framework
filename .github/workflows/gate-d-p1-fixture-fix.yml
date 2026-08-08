@@ -47,6 +47,7 @@ jobs:
         run: |
           pnpm exec prettier --write apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
           pnpm exec prettier --check apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          pnpm build:packages
           pnpm --filter @rsa/server typecheck
           pnpm --filter @rsa/server exec vitest run src/mcf-runtime/github-staging-deploy.adapter.test.ts
       - name: Remove temporary workflow
