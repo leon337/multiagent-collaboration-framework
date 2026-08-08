@@ -775,12 +775,14 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         }
       }
 
-      try {
-        comment = await this.findComment(target, expectedBody, deadlineAt, budget);
-      } catch {
-        return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
+      if (!comment) {
+        try {
+          comment = await this.findComment(target, expectedBody, deadlineAt, budget);
+        } catch {
+          return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
+        }
+        if (!comment) return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
       }
-      if (!comment) return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
     }
 
     assertComment(comment, target, expectedBody);
@@ -834,12 +836,14 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         }
       }
 
-      try {
-        review = await this.findReview(target, expectedBody, deadlineAt, budget);
-      } catch {
-        return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
+      if (!review) {
+        try {
+          review = await this.findReview(target, expectedBody, deadlineAt, budget);
+        } catch {
+          return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
+        }
+        if (!review) return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
       }
-      if (!review) return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
     }
 
     assertReview(review, target, expectedBody);
