@@ -213,12 +213,7 @@ function fakeProvider(
       if (options.malformedJobs) {
         return jsonResponse({ total_count: 1, jobs: [{ id: 99, run_id: RUN_ID, steps: 'bad' }] });
       }
-      return jsonResponse(
-        jobs(outcome, {
-          duplicateOutcomeMarker: options.duplicateOutcomeMarker,
-          additionalSuccessfulOutcome: options.additionalSuccessfulOutcome,
-        }),
-      );
+      return jsonResponse(jobs(outcome, options));
     }
 
     throw new Error(`unexpected request ${method} ${input}`);
