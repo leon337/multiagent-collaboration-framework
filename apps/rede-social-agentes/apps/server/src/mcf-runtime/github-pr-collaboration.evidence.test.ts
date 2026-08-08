@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { EvidenceValidator } from './evidence-validator.js';
@@ -50,12 +52,10 @@ function commonInputs(overrides: Record<string, unknown>) {
 }
 
 function digest(value: string): string {
-  const { createHash } = require('node:crypto') as typeof import('node:crypto');
   return createHash('sha256').update(value).digest('hex');
 }
 
 function metadataDigest(title: string | null, body: string | null): string {
-  const { createHash } = require('node:crypto') as typeof import('node:crypto');
   return createHash('sha256').update(JSON.stringify({ title, body })).digest('hex');
 }
 
