@@ -22,6 +22,7 @@ security:
   authorized_scope_required: true
   exact_pr_head_sha_required: true
   post_comment_head_revalidation: PASS
+  post_review_head_revalidation: PASS
   post_write_unknown_semantics: PASS
   approve_review: FORBIDDEN
   request_changes_review: FORBIDDEN
@@ -39,47 +40,75 @@ idempotency:
   comments_provider_marker: REQUIRED
   reviews_provider_marker: REQUIRED
   metadata_strategy: EXACT_FINAL_STATE_READBACK
+  global_scope_serialization:
+    status: PASS
+    adapter: github-pr-collaboration-write-v1
+    scope_components:
+      - provider
+      - repository
+      - pull_request_number
+      - operation
+      - idempotency_key
+    persistence: POSTGRESQL
+    migration: 0020_mcf_external_action_global_idempotency_scope.sql
+    active_unique_index: mcf_external_action_attempts_active_global_idempotency_idx
+    cross_mission_concurrency_test: PASS
   ambiguous_effect: UNKNOWN
 
 independent_review_remediation:
-  reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
-  p1_findings: 3
+  p1_findings_total: 5
+  reviews:
+    - reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
+      findings:
+        - live_registry_real_write_exposure
+        - post_write_reconciliation_definite_failure
+        - comment_head_race_before_success_receipt
+    - reviewed_head: c1eb9941b0128cbe606d22daa21f927b4db89b6d
+      findings:
+        - review_head_race_before_success_receipt
+        - cross_mission_idempotency_race
   live_registry_real_write_exposure: REMEDIATED
   post_write_reconciliation_definite_failure: REMEDIATED
   comment_head_race_before_success_receipt: REMEDIATED
-  regression_tests_added: 4
+  review_head_race_before_success_receipt: REMEDIATED
+  cross_mission_idempotency_race: REMEDIATED
+  dedicated_regression_tests:
+    p1_regression_tests: 4
+    review_head_race_tests: 1
+    global_idempotency_integration_tests: 1
   status: PASS_PENDING_FINAL_EXACT_HEAD_REVIEW
 
 validation:
-  remediated_head_validated: 0b2b91a8987f6ef06eb43d7b69222c644a2eb5b2
+  implementation_head_validated: 2c659e4bb7c9099433d8170cbd0319bb192ef0e7
   documentation_validation:
     status: PASS
-    workflow_run: 31243340692
+    workflow_run: 31244001652
   container_smoke:
     status: PASS
-    workflow_run: 31243340698
+    workflow_run: 31244001671
   foundation:
     status: PASS
-    workflow_run: 31243340677
+    workflow_run: 31244001664
     formatting: PASS
     lint: PASS
     typecheck: PASS
     migrations_twice: PASS
-    server_test_files: 72
-    server_tests: 335
-    p1_regression_tests: 4
+    migration_0020: PASS
+    server_test_files: 74
+    server_tests: 337
     build: PASS
-    artifact_id: 9017700522
-    artifact_digest: sha256:4fadeb821f69c9e1d2e37199deb966bb2ecf1b32f24635148be3156c73a97414
+    artifact_id: 9017916747
+    artifact_digest: sha256:6734f73824bfaadbe8dacd70feecb5221dc71836f909a5995d9ebe30728c8ad4
   unit_tests: PASS
   integration_tests: PASS
   permission_tests: PASS
   evidence_tests: PASS
   no_real_write_boundary: PASS
+  global_idempotency_serialization: PASS
   ci: PASS
   independent_review: PENDING_EXACT_FINAL_HEAD
 
 next_action:
-  current: VALIDATE_FINAL_CHECKPOINT_HEAD_THEN_REQUEST_CODEX_REVIEW_EXACT_SHA
+  current: VALIDATE_CHECKPOINT_COMMIT_THEN_REQUEST_CODEX_REVIEW_EXACT_FINAL_SHA
   after_review_pass: INTEGRATE_C2_AND_RECONCILE_ISSUE_79
   repeat_A1_A2_C1: FORBIDDEN
