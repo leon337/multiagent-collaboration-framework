@@ -1,0 +1,7 @@
+mission: MCF-RUNTIME-006-C1
+issue: 75
+base_sha: 9424e024eb62eb9f9dddd30e01d7f14cc58094a3
+state: READY_FOR_DRAFT_PR_CI
+merge_authorized: false
+real_external_write_authorized: false
+production: BLOCKED
