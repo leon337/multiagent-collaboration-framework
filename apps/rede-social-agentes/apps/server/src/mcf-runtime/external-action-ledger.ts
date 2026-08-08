@@ -359,8 +359,8 @@ export class ExternalActionLedger {
         if (idempotencyScopeKey) {
           throw new ExternalActionAdapterError(
             'RESERVATION_CONFLICT',
-            `Global idempotency scope for ${request.tool.resource}/${request.tool.operation} already has an active attempt`,
-            true,
+            `Global idempotency scope for ${request.tool.resource}/${request.tool.operation} is already durably bound to a prior or active attempt`,
+            false,
           );
         }
         throw new ExternalActionAdapterError(
