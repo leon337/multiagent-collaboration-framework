@@ -11,6 +11,7 @@ import {
 import type { ExternalActionLedger } from './external-action-ledger.js';
 
 const durableExecutionBoundaryAdapters = new Set(['github-pr-collaboration-write-v1']);
+const unknownPersistenceAttempts = 3;
 
 function failureFromError(error: unknown): ExternalActionFailure {
   if (error instanceof ExternalActionAdapterError) {
@@ -50,6 +51,29 @@ export class ExternalActionDispatcher {
     private readonly registry: AdapterRegistry,
     private readonly ledger: ExternalActionLedger,
   ) {}
+
+  private async recordUnknownDurably(
+    attemptId: string,
+    receipt: McfToolReceipt,
+    failure: ExternalActionFailure,
+  ): Promise<void> {
+    for (let persistenceAttempt = 1; persistenceAttempt <= unknownPersistenceAttempts; persistenceAttempt += 1) {
+      try {
+        await this.ledger.recordUnknown(attemptId, receipt, failure);
+        return;
+      } catch (error) {
+        const ledgerFailure = failureFromError(error);
+        if (!ledgerFailure.retryable || persistenceAttempt === unknownPersistenceAttempts) {
+          throw new ExternalActionAdapterError(
+            'LEDGER_FAILURE',
+            `Unable to durably persist UNKNOWN external action state; reconciliation is required before retry: ${ledgerFailure.message}`,
+            false,
+            ledgerFailure.statusCode,
+          );
+        }
+      }
+    }
+  }
 
   async dispatch(request: ExternalActionRequest): Promise<ExternalActionDispatchResult> {
     const adapter = this.registry.resolve(request);
@@ -114,17 +138,7 @@ export class ExternalActionDispatcher {
 
     if (receipt.status !== 'SUCCEEDED') {
       const failure = partialReceiptFailure(receipt);
-      try {
-        await this.ledger.recordUnknown(attemptId, receipt, failure);
-      } catch (ledgerError) {
-        return {
-          status: 'UNKNOWN',
-          adapterId: adapter.adapterId,
-          attemptId,
-          receipt,
-          failure: unknownFailure(ledgerError),
-        };
-      }
+      await this.recordUnknownDurably(attemptId, receipt, failure);
       return { status: 'UNKNOWN', adapterId: adapter.adapterId, attemptId, receipt, failure };
     }
 
@@ -134,18 +148,9 @@ export class ExternalActionDispatcher {
     } catch (error) {
       // The adapter already returned a receipt. Never convert a persistence
       // failure here into FAILED: the provider mutation may be fully applied.
+      // UNKNOWN is returned only after that ambiguity is durable in the ledger.
       const failure = unknownFailure(error);
-      try {
-        await this.ledger.recordUnknown(attemptId, receipt, failure);
-      } catch (ledgerError) {
-        return {
-          status: 'UNKNOWN',
-          adapterId: adapter.adapterId,
-          attemptId,
-          receipt,
-          failure: unknownFailure(ledgerError),
-        };
-      }
+      await this.recordUnknownDurably(attemptId, receipt, failure);
       return { status: 'UNKNOWN', adapterId: adapter.adapterId, attemptId, receipt, failure };
     }
   }

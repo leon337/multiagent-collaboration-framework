@@ -126,6 +126,96 @@ describe('ExternalActionDispatcher post-write persistence semantics', () => {
     expect(ledger.recordFailed).not.toHaveBeenCalled();
   });
 
+  it('retries UNKNOWN persistence after a PARTIAL receipt without re-executing the adapter', async () => {
+    const partialReceipt = receipt('PARTIAL');
+    const { adapter, dispatcher, ledger } = harness(partialReceipt);
+    vi.mocked(ledger.recordUnknown)
+      .mockRejectedValueOnce(
+        new ExternalActionAdapterError('LEDGER_FAILURE', 'temporary ledger outage', true),
+      )
+      .mockResolvedValueOnce(undefined);
+
+    const result = await dispatcher.dispatch(request);
+
+    expect(result.status).toBe('UNKNOWN');
+    expect(adapter.execute).toHaveBeenCalledTimes(1);
+    expect(ledger.recordUnknown).toHaveBeenCalledTimes(2);
+    expect(ledger.recordFailed).not.toHaveBeenCalled();
+  });
+
+  it('retries UNKNOWN persistence after recordExecuted fails without re-executing the adapter', async () => {
+    const successfulReceipt = receipt();
+    const { adapter, dispatcher, ledger } = harness(successfulReceipt);
+    vi.mocked(ledger.recordExecuted).mockRejectedValueOnce(
+      new ExternalActionAdapterError('LEDGER_FAILURE', 'executed transition failed', true),
+    );
+    vi.mocked(ledger.recordUnknown)
+      .mockRejectedValueOnce(
+        new ExternalActionAdapterError('LEDGER_FAILURE', 'temporary unknown transition failure', true),
+      )
+      .mockResolvedValueOnce(undefined);
+
+    const result = await dispatcher.dispatch(request);
+
+    expect(result.status).toBe('UNKNOWN');
+    expect(adapter.execute).toHaveBeenCalledTimes(1);
+    expect(ledger.recordExecuted).toHaveBeenCalledTimes(1);
+    expect(ledger.recordUnknown).toHaveBeenCalledTimes(2);
+    expect(ledger.recordFailed).not.toHaveBeenCalled();
+  });
+
+  it('does not return UNKNOWN when a PARTIAL receipt cannot be durably persisted', async () => {
+    const partialReceipt = receipt('PARTIAL');
+    const { adapter, dispatcher, ledger } = harness(partialReceipt);
+    vi.mocked(ledger.recordUnknown).mockRejectedValue(
+      new ExternalActionAdapterError('LEDGER_FAILURE', 'ledger unavailable', true),
+    );
+
+    await expect(dispatcher.dispatch(request)).rejects.toMatchObject({
+      code: 'LEDGER_FAILURE',
+      retryable: false,
+    });
+    expect(adapter.execute).toHaveBeenCalledTimes(1);
+    expect(ledger.recordUnknown).toHaveBeenCalledTimes(3);
+    expect(ledger.recordFailed).not.toHaveBeenCalled();
+  });
+
+  it('does not return UNKNOWN when the post-write fallback cannot be durably persisted', async () => {
+    const successfulReceipt = receipt();
+    const { adapter, dispatcher, ledger } = harness(successfulReceipt);
+    vi.mocked(ledger.recordExecuted).mockRejectedValueOnce(
+      new ExternalActionAdapterError('LEDGER_FAILURE', 'executed transition failed', true),
+    );
+    vi.mocked(ledger.recordUnknown).mockRejectedValue(
+      new ExternalActionAdapterError('LEDGER_FAILURE', 'ledger unavailable', true),
+    );
+
+    await expect(dispatcher.dispatch(request)).rejects.toMatchObject({
+      code: 'LEDGER_FAILURE',
+      retryable: false,
+    });
+    expect(adapter.execute).toHaveBeenCalledTimes(1);
+    expect(ledger.recordExecuted).toHaveBeenCalledTimes(1);
+    expect(ledger.recordUnknown).toHaveBeenCalledTimes(3);
+    expect(ledger.recordFailed).not.toHaveBeenCalled();
+  });
+
+  it('does not retry a non-retryable UNKNOWN persistence failure', async () => {
+    const partialReceipt = receipt('PARTIAL');
+    const { adapter, dispatcher, ledger } = harness(partialReceipt);
+    vi.mocked(ledger.recordUnknown).mockRejectedValueOnce(
+      new ExternalActionAdapterError('LEDGER_FAILURE', 'invalid ledger transition', false),
+    );
+
+    await expect(dispatcher.dispatch(request)).rejects.toMatchObject({
+      code: 'LEDGER_FAILURE',
+      retryable: false,
+    });
+    expect(adapter.execute).toHaveBeenCalledTimes(1);
+    expect(ledger.recordUnknown).toHaveBeenCalledTimes(1);
+    expect(ledger.recordFailed).not.toHaveBeenCalled();
+  });
+
   it('keeps definitive adapter failure on the pre-write FAILED path', async () => {
     const { dispatcher, ledger } = harness(
       new ExternalActionAdapterError(
