@@ -3,7 +3,7 @@ issue: 79
 pr: 80
 base_main_sha: cd29bedef1b3ad08d88ecad21a6b66b7c6117ddf
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
-state: WAITING_FINAL_CHECKPOINT_CI
+state: WAITING_FINAL_CHECKPOINT_CI_AND_EXACT_HEAD_REVIEW
 external_effect: REVERSIBLE_TEXTUAL
 production: BLOCKED
 real_github_write_test: NOT_AUTHORIZED
@@ -38,177 +38,93 @@ security:
 idempotency:
   ledger_key: REQUIRED
   fingerprint: SHA256
-  fingerprint_canonicalization:
-    status: PASS
-    provider: CANONICALIZED
-    operation: CANONICALIZED
-    repository: CASE_INSENSITIVE_CANONICALIZED
-    expected_head_sha: LOWERCASE_CANONICALIZED
-  comments_provider_marker: REQUIRED
-  reviews_provider_marker: REQUIRED
-  metadata_strategy: EXACT_FINAL_STATE_READBACK
-  global_scope_serialization:
-    status: PASS
-    adapter: github-pr-collaboration-write-v1
-    scope_components:
-      - provider
-      - repository
-      - pull_request_number
-      - operation
-      - idempotency_key
-    persistence: POSTGRESQL
-    initial_migration: 0020_mcf_external_action_global_idempotency_scope.sql
-    persistent_binding_migration: 0021_mcf_external_action_persistent_global_idempotency.sql
-    expired_holder_recovery_migration: 0022_mcf_external_action_expired_global_idempotency_recovery.sql
-    lock_order_hardening_migration: 0023_mcf_external_action_global_recovery_lock_order.sql
-    compatible_expired_recovery_migration: 0024_mcf_external_action_compatible_expired_recovery.sql
-    no_cross_mission_holder_lock_migration: 0025_mcf_external_action_global_recovery_no_cross_mission_lock.sql
-    persistent_unique_index: mcf_external_action_attempts_global_idempotency_idx
-    active_only_index_removed: true
-    cross_mission_concurrency_test: PASS
-    reuse_after_terminal_state: BLOCKED
-    reused_key_with_changed_payload: BLOCKED
-    expired_allowed_cross_mission_holder: RECOVERED_IF_COMPATIBLE
-    same_mission_locally_abandoned_expired_holder: RECOVERED_IF_COMPATIBLE
-    expired_holder_status: ABANDONED_ONLY_IF_PREVIOUSLY_ALLOWED
-    expired_holder_scope_key: RELEASED_ONLY_FOR_EXPIRED_COMPATIBLE_ALLOWED_REQUEST
-    terminal_attempt_status: PRESERVED
-    terminal_scope_key: PERSISTENT
-    terminal_stale_mission_pointer_cleanup: PASS
-    incompatible_expired_replacement: BLOCKED
-    incompatible_fingerprint_binding: PRESERVED
-    original_holder_compatible_retry_after_incompatible_contender: PASS
-    holder_mission_pointer_cleanup: DEFERRED_TO_MISSION_RECONCILIATION
-    replacement_reservation: PASS
-    replacement_terminal_binding: PERSISTENT
-    conflict_retryable_for_consumed_or_incompatible_key: false
-    lock_order: NO_CROSS_MISSION_HOLDER_MISSION_LOCK
-    deadlock_regression_test: PASS
+  global_scope_binding: PERSISTENT
   ambiguous_effect: UNKNOWN
+  retry_unknown_without_reconciliation: FORBIDDEN
+  execution_state_machine:
+    reserved: ALLOWED
+    mutation_may_start: EXECUTING
+    success_persisted: EXECUTED
+    effect_ambiguous: UNKNOWN
+    definitely_not_applied: FAILED
+  expired_execution:
+    ALLOWED: ABANDONED_IF_EXPIRED
+    EXECUTING: UNKNOWN_IF_EXPIRED
+    UNKNOWN_BINDING: PRESERVED
+  migrations:
+    - 0020_mcf_external_action_global_idempotency_scope.sql
+    - 0021_mcf_external_action_persistent_global_idempotency.sql
+    - 0022_mcf_external_action_expired_global_idempotency_recovery.sql
+    - 0023_mcf_external_action_global_recovery_lock_order.sql
+    - 0024_mcf_external_action_compatible_expired_recovery.sql
+    - 0025_mcf_external_action_global_recovery_no_cross_mission_lock.sql
+    - 0026_mcf_release_c2_prewrite_failed_binding.sql
+    - 0027_mcf_external_action_unknown_state.sql
 
 independent_review_remediation:
-  p1_findings_total: 12
-  p2_findings_total: 5
-  reviews:
-    - reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
-      findings:
-        - live_registry_real_write_exposure
-        - post_write_reconciliation_definite_failure
-        - comment_head_race_before_success_receipt
-    - reviewed_head: c1eb9941b0128cbe606d22daa21f927b4db89b6d
-      findings:
-        - review_head_race_before_success_receipt
-        - cross_mission_idempotency_race
-    - reviewed_head: ae601621055addf766da6cea29db67dd0fef7dfa
-      findings:
-        - accepted_mutation_invalid_json_response
-    - reviewed_head: 24bd78214e5813b9e943b18e18bf6fdd5b2a1747
-      findings:
-        - terminal_or_unknown_idempotency_binding_released
-    - reviewed_head: 3d23e8999061af9b49572df5540fc9158dabb27d
-      findings:
-        - expired_global_allowed_holder_not_reaped_cross_mission
-    - reviewed_head: 0505239c341472239c7535b51dbff8b865cbb34f
-      findings:
-        - same_mission_expired_abandoned_scope_not_recoverable
-        - incompatible_expired_cross_mission_fingerprint_not_enforced
-    - reviewed_head: 097dfc2f5eec19f6795eb7fcf2c6b6fae0af68c6
-      findings:
-        - duplicate_reconciliation_after_ambiguous_comment_or_review
-        - checkpoint_provenance_missing_0025_and_exact_validated_head
-    - reviewed_head: 236410f83e1444d4780877a7d988a03ae0351774
-      findings:
-        - metadata_body_clear_not_representable
-    - reviewed_head: 022ea0d6a70d669f1cd673d0b9b545097170160f
-      findings:
-        - repository_url_case_sensitive_comparison
-        - expired_recovery_fingerprint_raw_alias_mismatch
-    - reviewed_head: c691d7bd7d5442d21c1000769f5a2bbf017982db
-      findings:
-        - terminal_binding_lost_during_expired_recovery
-  live_registry_real_write_exposure: REMEDIATED
-  post_write_reconciliation_definite_failure: REMEDIATED
-  comment_head_race_before_success_receipt: REMEDIATED
-  review_head_race_before_success_receipt: REMEDIATED
-  cross_mission_idempotency_race: REMEDIATED
-  accepted_mutation_invalid_json_response: REMEDIATED
-  terminal_or_unknown_idempotency_binding_released: REMEDIATED
-  expired_global_allowed_holder_not_reaped_cross_mission: REMEDIATED
-  same_mission_expired_abandoned_scope_not_recoverable: REMEDIATED
-  incompatible_expired_cross_mission_fingerprint_not_enforced: REMEDIATED
-  global_recovery_lock_order_deadlock_risk: REMEDIATED
-  duplicate_reconciliation_after_ambiguous_comment_or_review: REMEDIATED
-  checkpoint_provenance_missing_0025_and_exact_validated_head: REMEDIATED
-  metadata_body_clear_not_representable: REMEDIATED
-  repository_url_case_sensitive_comparison: REMEDIATED
-  expired_recovery_fingerprint_raw_alias_mismatch: REMEDIATED
-  terminal_binding_lost_during_expired_recovery: REMEDIATED
-  dedicated_regression_tests:
-    p1_regression_tests: 4
-    review_head_race_tests: 1
-    global_idempotency_integration_tests: 1
-    accepted_invalid_json_tests: 3
-    persistent_terminal_binding_assertions: 4
-    expired_global_reservation_integration_tests: 1
-    expired_recovery_compatibility_tests: 2
-    global_recovery_deadlock_tests: 1
-    reconciliation_request_budget_tests: 2
-    metadata_body_clear_tests: 1
-    repository_case_tests: 1
-    fingerprint_canonicalization_integration_tests: 1
-  status: PASS_PENDING_FINAL_EXACT_HEAD_REVIEW
+  prior_p1_findings_total: 12
+  prior_p2_findings_total: 5
+  prior_history: PRESERVED_IN_PR_80_TIMELINE_AND_PHASE_ARTIFACTS
+  latest_review:
+    reviewed_head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
+    severity: P1
+    finding: recordExecuted_failure_after_adapter_receipt_could_release_consumed_binding
+    decision: REMEDIATION_REQUIRED
+  latest_remediation:
+    dispatcher_prewrite_postwrite_split: IMPLEMENTED
+    explicit_unknown_dispatch_result: IMPLEMENTED
+    executing_state_before_c2_mutation: IMPLEMENTED
+    partial_receipt_to_unknown: IMPLEMENTED
+    recordExecuted_failure_to_unknown: IMPLEMENTED
+    expired_executing_to_unknown: IMPLEMENTED
+    expired_executing_binding_preserved: IMPLEMENTED
+    read_only_adapter_compatibility: PRESERVED
+    migration_0027: IMPLEMENTED
+    dispatcher_regression_tests: 4_PASS
+    expired_executing_integration_tests: 1_PASS
+  status: REMEDIATED_PENDING_FINAL_EXACT_HEAD_REVIEW
 
 validation:
-  implementation_head_validated: fe833746235b25166638f56d2446b81514baf907
-  implementation_head_note: This is the exact code-and-test HEAD containing the terminal-binding recovery remediation. The checkpoint-only commit created after these validated runs must be validated separately and independently reviewed by exact final PR HEAD.
+  implementation_head_validated: 3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
+  implementation_head_note: Exact code-and-test HEAD after the post-write persistence remediation. The documentation commit created from this checkpoint must be validated and independently reviewed as the final exact PR HEAD.
   documentation_validation:
     status: PASS
-    workflow_run: 31256153585
+    workflow_run: 31263689993
   container_smoke:
     status: PASS
-    workflow_run: 31256153587
+    workflow_run: 31263690012
   foundation:
     status: PASS
-    workflow_run: 31256153589
+    workflow_run: 31263689966
+    job: 93118298584
     formatting: PASS
     lint: PASS
     typecheck: PASS
     migrations_twice: PASS
-    migration_0020: PASS
-    migration_0021: PASS
-    migration_0022: PASS
-    migration_0023: PASS
-    migration_0024: PASS
-    migration_0025: PASS
-    server_test_files: 83
-    server_tests: 351
+    migration_0027: PASS
+    server_test_files: 85
+    server_tests: 356
     build: PASS
-    artifact_id: 9021444799
-    artifact_digest: sha256:cba0851d7c9356350fa73fa04b71e1fc18db69ad1e58614a75f364e1a84c0a17
+    artifact_id: 9023511453
+    artifact_digest: sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a
   unit_tests: PASS
   integration_tests: PASS
   permission_tests: PASS
   evidence_tests: PASS
   no_real_write_boundary: PASS
-  global_idempotency_serialization: PASS
-  persistent_global_idempotency_binding: PASS
-  expired_global_reservation_recovery: PASS
-  compatible_expired_global_recovery: PASS
-  same_mission_expired_retry: PASS
-  incompatible_expired_cross_mission_replacement: BLOCKED
-  original_holder_compatible_retry_after_incompatible_contender: PASS
-  global_recovery_lock_order: PASS
-  terminal_binding_expired_recovery: PASS
-  accepted_invalid_json_reconciliation: PASS
-  high_pagination_ambiguous_reconciliation: PASS
-  metadata_body_clear: PASS
-  repository_case_insensitive_validation: PASS
-  canonical_fingerprint_alias_recovery: PASS
+  postwrite_persistence_regression: PASS
+  expired_executing_binding_regression: PASS
   implementation_ci: PASS
-  checkpoint_commit_ci: PENDING
+  final_checkpoint_ci: PENDING
   independent_review: PENDING_EXACT_FINAL_HEAD
 
+traceability:
+  conformance_recovery_prf: artifacts/phases/PHASE-006-C2-CONFORMANCE-RECOVERY
+  postwrite_remediation_prf: artifacts/phases/PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
+  source_review_comment: PR_80_CODEX_REVIEW_ON_EDAEF628
+  source_finding_status: REMEDIATED_PENDING_REVIEW
+
 next_action:
-  current: VALIDATE_CHECKPOINT_COMMIT_THEN_REQUEST_CODEX_REVIEW_EXACT_FINAL_SHA
-  after_review_pass: INTEGRATE_C2_RECONCILE_ISSUE_79_VERIFY_MAIN_AND_ADVANCE_RUNTIME_006
+  current: VALIDATE_FINAL_DOCUMENT_HEAD_THEN_REQUEST_CODEX_REVIEW_EXACT_SHA
+  after_review_pass: LEO_GATE_THEN_INTEGRATE_C2_RECONCILE_ISSUES_VERIFY_MAIN
   repeat_A1_A2_C1: FORBIDDEN
