@@ -29,24 +29,16 @@ jobs:
         working-directory: apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
       - name: Apply exact fixture type fix
+        env:
+          PATCH_B64: "ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnBhdGggPSBQYXRoKCdhcHBzL3JlZGUtc29jaWFsLWFnZW50ZXMvYXBwcy9zZXJ2ZXIvc3JjL21jZi1ydW50aW1lL2dpdGh1Yi1zdGFnaW5nLWRlcGxveS5hZGFwdGVyLnRlc3QudHMnKQp0ZXh0ID0gcGF0aC5yZWFkX3RleHQoKQpvbGQgPSAiIiIgICAgICByZXR1cm4ganNvblJlc3BvbnNlKAogICAgICAgIGpvYnMob3V0Y29tZSwgewogICAgICAgICAgZHVwbGljYXRlT3V0Y29tZU1hcmtlcjogb3B0aW9ucy5kdXBsaWNhdGVPdXRjb21lTWFya2VyLAogICAgICAgICAgYWRkaXRpb25hbFN1Y2Nlc3NmdWxPdXRjb21lOiBvcHRpb25zLmFkZGl0aW9uYWxTdWNjZXNzZnVsT3V0Y29tZSwKICAgICAgICB9KSwKICAgICAgKTsKIiIiCm5ldyA9ICIiIiAgICAgIHJldHVybiBqc29uUmVzcG9uc2Uoam9icyhvdXRjb21lLCBvcHRpb25zKSk7CiIiIgppZiB0ZXh0LmNvdW50KG9sZCkgIT0gMToKICAgIHJhaXNlIFN5c3RlbUV4aXQoJ2ZpeHR1cmUgam9icyBjYWxsIGRpZCBub3QgbWF0Y2ggZXhhY3RseSBvbmNlJykKcGF0aC53cml0ZV90ZXh0KHRleHQucmVwbGFjZShvbGQsIG5ldykpCg=="
         run: |
           python - <<'PY'
+          import base64, os
           from pathlib import Path
-          path = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts')
-          text = path.read_text()
-          old = """      return jsonResponse(
-        jobs(outcome, {
-          duplicateOutcomeMarker: options.duplicateOutcomeMarker,
-          additionalSuccessfulOutcome: options.additionalSuccessfulOutcome,
-        }),
-      );
-"""
-          new = """      return jsonResponse(jobs(outcome, options));
-"""
-          if text.count(old) != 1:
-              raise SystemExit('fixture jobs call did not match exactly once')
-          path.write_text(text.replace(old, new))
+          script = base64.b64decode(os.environ['PATCH_B64'], validate=True)
+          Path('/tmp/gate-d-p1-fixture.py').write_bytes(script)
           PY
+          python /tmp/gate-d-p1-fixture.py
       - name: Format, typecheck and run targeted regression
         working-directory: apps/rede-social-agentes
         env:
