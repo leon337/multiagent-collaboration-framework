@@ -30,11 +30,11 @@ const skill: McfSkillDefinition = {
 function missionContract(title: string) {
   return JSON.stringify({
     title,
-    objective: 'Serialize the same C2 provider mutation across missions.',
-    expectedOutcome: 'Only one active global idempotency scope exists.',
-    scope: ['C2 global idempotency'],
+    objective: 'Persistently bind the same C2 provider mutation key across missions.',
+    expectedOutcome: 'One global idempotency scope remains bound after terminal state.',
+    scope: ['C2 persistent global idempotency'],
     outOfScope: ['real provider write'],
-    acceptanceCriteria: ['cross-mission duplicate creation blocked'],
+    acceptanceCriteria: ['cross-mission duplicate creation and key reuse blocked'],
     riskClass: 'B',
     selectedAgents: ['Gabriel', 'Mestre'],
     selectedSkills: ['MCF-GIT-PR-RELEASE'],
@@ -55,14 +55,18 @@ describe('C2 global idempotency serialization', () => {
     await database.onModuleDestroy();
   });
 
-  it('allows only one ALLOWED attempt for the same repository/PR/operation/key across missions', async () => {
+  it('persists one repository/PR/operation/key binding across missions after terminal state', async () => {
     const missionA = randomUUID();
     const missionB = randomUUID();
     const phaseA = randomUUID();
     const phaseB = randomUUID();
     const now = new Date();
 
-    const request = (missionId: string, phaseId: string) => ({
+    const request = (
+      missionId: string,
+      phaseId: string,
+      overrides: Record<string, unknown> = {},
+    ) => ({
       skill,
       agentId: 'Gabriel',
       inputs: {
@@ -72,6 +76,7 @@ describe('C2 global idempotency serialization', () => {
         expected_head_sha: 'a'.repeat(40),
         idempotency_key: IDEMPOTENCY_KEY,
         comment_body: 'same logical checkpoint',
+        ...overrides,
       },
       tool: {
         provider: 'github',
@@ -91,9 +96,9 @@ describe('C2 global idempotency serialization', () => {
           ($3, $4::jsonb, 'EXECUTING', null, 'Gabriel', 1, $5, $5)`,
         [
           missionA,
-          missionContract('C2 global lock A'),
+          missionContract('C2 persistent binding A'),
           missionB,
-          missionContract('C2 global lock B'),
+          missionContract('C2 persistent binding B'),
           now,
         ],
       );
@@ -112,34 +117,49 @@ describe('C2 global idempotency serialization', () => {
 
       expect(fulfilled).toHaveLength(1);
       expect(rejected).toHaveLength(1);
-      expect(rejected[0]?.reason).toMatchObject({
-        code: 'RESERVATION_CONFLICT',
-        retryable: true,
-      });
+      expect(rejected[0]?.reason).toMatchObject({ code: 'RESERVATION_CONFLICT' });
 
-      const active = await database.query<{ count: string }>(
+      const bound = await database.query<{ count: string }>(
         `select count(*)::text as "count"
          from "mcf_external_action_attempts"
          where "idempotency_scope_key" is not null
-           and "status" = 'ALLOWED'
            and "operation" = 'comment-pr'
            and "resource" = $1`,
         [REPOSITORY],
       );
-      expect(active.rows[0]?.count).toBe('1');
+      expect(bound.rows[0]?.count).toBe('1');
 
       await ledger.recordFailed(fulfilled[0]!.value, {
         code: 'TARGET_NOT_FOUND',
-        message: 'definite pre-provider failure for lock release test',
+        message: 'definite pre-provider failure while preserving consumed idempotency key',
         retryable: false,
         statusCode: 404,
       });
 
       const loser =
         outcomes[0]?.status === 'rejected' ? request(missionA, phaseA) : request(missionB, phaseB);
-      await expect(ledger.reserve(loser, 'github-pr-collaboration-write-v1')).resolves.toEqual(
-        expect.any(String),
+      await expect(ledger.reserve(loser, 'github-pr-collaboration-write-v1')).rejects.toMatchObject({
+        code: 'RESERVATION_CONFLICT',
+      });
+
+      const changedPayload =
+        outcomes[0]?.status === 'rejected'
+          ? request(missionA, phaseA, { comment_body: 'different payload with reused key' })
+          : request(missionB, phaseB, { comment_body: 'different payload with reused key' });
+      await expect(
+        ledger.reserve(changedPayload, 'github-pr-collaboration-write-v1'),
+      ).rejects.toMatchObject({ code: 'RESERVATION_CONFLICT' });
+
+      const persisted = await database.query<{ status: string; count: string }>(
+        `select min("status") as "status", count(*)::text as "count"
+         from "mcf_external_action_attempts"
+         where "idempotency_scope_key" is not null
+           and "operation" = 'comment-pr'
+           and "resource" = $1`,
+        [REPOSITORY],
       );
+      expect(persisted.rows[0]?.count).toBe('1');
+      expect(persisted.rows[0]?.status).toBe('FAILED');
     } finally {
       await database.query(
         `delete from "mcf_external_action_attempts" where "mission_id" = any($1::text[])`,
