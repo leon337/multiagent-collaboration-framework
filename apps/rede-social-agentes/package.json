@@ -14,7 +14,7 @@
     "dev:web": "pnpm --filter @rsa/web dev",
     "dev:worker": "pnpm --filter @rsa/worker dev",
     "format": "prettier --write .",
-    "format:check": "prettier --write apps/server/src/mcf-runtime/external-action-dispatcher.postwrite-persistence.test.ts apps/server/src/mcf-runtime/external-action-ledger.ts && git diff -- apps/server/src/mcf-runtime/external-action-dispatcher.postwrite-persistence.test.ts apps/server/src/mcf-runtime/external-action-ledger.ts && git diff --exit-code -- apps/server/src/mcf-runtime/external-action-dispatcher.postwrite-persistence.test.ts apps/server/src/mcf-runtime/external-action-ledger.ts",
+    "format:check": "prettier --check .",
     "lint": "eslint .",
     "ops:backup": "node ops/backup-database.mjs",
     "ops:restore": "node ops/restore-database.mjs",
