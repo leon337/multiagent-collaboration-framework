@@ -1,37 +1,46 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-VALIDATION SUMMARY — ROUND 5
+VALIDATION SUMMARY — ROUND 6
 
 PRIOR_EXACT_REVIEW
-head=fa2705981bf3438568e13696fe44d0af3dbcf1c8
-review_id=PRR_kwDOTnz-ks8AAAABI29_-Q
+head=90bed0814f62fc3bfcf1875f626241e007ff031d
+review_id=PRR_kwDOTnz-ks8AAAABI2_6VA
 review=FAIL
-finding_p2=MUTATION_FRAGMENT_CASE_INSENSITIVE
-thread=PRRT_kwDOTnz-ks6XgECQ
+finding_p2=METADATA_EVIDENCE_INVALID_TEXT_PATCH
+thread=PRRT_kwDOTnz-ks6XgJb2
 
-ROUND_5_IMPLEMENTATION
-head=2323f7f0a0ea8900451313facbaa17c2bf35a4f1
-documentation_run=31273552368 PASS
-container_smoke_run=31273552168 PASS
-foundation_run=31273552189 PASS
+HISTORICAL_BINDING_FINDINGS
+external_id_binding_thread=PRRT_kwDOTnz-ks6XfO9O REMEDIATED
+fragment_case_thread=PRRT_kwDOTnz-ks6XgECQ REMEDIATED
+
+ROUND_6_IMPLEMENTATION
+head=43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d
+documentation_run=31276497591 PASS
+container_smoke_run=31276497605 PASS
+foundation_run=31276497601 PASS
 format=PASS
 lint=PASS
 typecheck=PASS
 migrations_twice=PASS
-server_test_files=88/88 PASS
-server_tests=363/363 PASS
+server_test_files=89/89 PASS
+server_tests=369/369 PASS
+web_tests=5/5 PASS
 build=PASS
 evidence_url_binding_regressions=5/5 PASS
+evidence_metadata_input_regressions=6/6 PASS
 no_real_provider_write_test=PASS
-vitest_artifact_id=9026344880
-vitest_artifact_digest=sha256:3823b747b9829b001e2f16cd38934d0cadf756e535c77ca18a310b4187c90bf7
+vitest_artifact_id=9027160954
+vitest_artifact_digest=sha256:87ae7f9d3c9d7f4c73c7f333f0eea490e4ec0451b4a6fde341a6007e709f309a
 
 SEMANTIC_BINDING
 comment_hash=#issuecomment-<mutationExternalId>
 review_hash=#pullrequestreview-<mutationExternalId>
 hash_comparison=EXACT_CASE_SENSITIVE
 repository_path_comparison=CASE_INSENSITIVE
-uppercase_issuecomment=REJECTED
-uppercase_pullrequestreview=REJECTED
+metadata_url=EXACT_PULL_REQUEST_URL
+metadata_patch_requires_title_or_body=PASS
+metadata_title_rules=NONEMPTY_TRIMMED_STRING_MAX_256
+metadata_body_rules=TRIMMED_STRING_MAX_65000_EMPTY_ALLOWED
+metadata_non_string_rejected=PASS
 
 CURRENT_GATE_BINDING
 checkpoint_head=SELF

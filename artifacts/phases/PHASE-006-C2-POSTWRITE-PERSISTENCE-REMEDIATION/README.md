@@ -20,15 +20,17 @@ Impedir duplicidade, perda de estado ou evidência incorreta quando o MCF execut
 ## Estado técnico
 
 ```yaml
-latest_reviewed_head: fa2705981bf3438568e13696fe44d0af3dbcf1c8
-latest_review_id: PRR_kwDOTnz-ks8AAAABI29_-Q
-latest_review_verdict: FAIL_P2_MUTATION_FRAGMENT_CASE_INSENSITIVE
-round_5_implementation:
-  head: 2323f7f0a0ea8900451313facbaa17c2bf35a4f1
+latest_reviewed_head: 90bed0814f62fc3bfcf1875f626241e007ff031d
+latest_review_id: PRR_kwDOTnz-ks8AAAABI2_6VA
+latest_review_verdict: FAIL_P2_METADATA_EVIDENCE_INVALID_TEXT_PATCH
+latest_review_thread: PRRT_kwDOTnz-ks6XgJb2
+round_6_implementation:
+  head: 43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d
   ci: PASS
-  server_test_files: 88_PASS
-  server_tests: 363_PASS
+  server_test_files: 89_PASS
+  server_tests: 369_PASS
   evidence_url_binding_regressions: 5_PASS
+  evidence_metadata_input_regressions: 6_PASS
 current_gate:
   checkpoint_head: SELF
   resolution: GIT_COMMIT_CONTAINING_CHECKPOINT

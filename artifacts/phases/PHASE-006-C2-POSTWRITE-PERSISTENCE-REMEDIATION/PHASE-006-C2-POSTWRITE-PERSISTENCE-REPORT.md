@@ -10,10 +10,11 @@ O PR #80 permanece em loop de remediação independente. Nenhum gate anterior fo
 - `74fd45a57067eab5d0a61bfc91d1869249eee262`: FAIL/P2 — checkpoint sem proveniência do próprio HEAD.
 - `60f069ee829b03cab93e484ef2782e00333c9377`, review `PRR_kwDOTnz-ks8AAAABI2moFA`: FAIL — `UNKNOWN` não persistível e tombstone ausente.
 - `17201725ad137dd3fd53542bd297708679556980`, review `PRR_kwDOTnz-ks8AAAABI2peDw`: FAIL/P2 — URL de review não vinculada ao `review.id`.
-- `fe227c6cf5e980d8017fb5b27b59de9e44d1a0e3`, review `PRR_kwDOTnz-ks8AAAABI2sLLA`: FAIL/P2 — receipt externo aceitava fragmento divergente do `mutationExternalId`.
-- `fa2705981bf3438568e13696fe44d0af3dbcf1c8`, review `PRR_kwDOTnz-ks8AAAABI29_-Q`: FAIL/P2 — o fragmento era comparado de forma case-insensitive.
+- `fe227c6cf5e980d8017fb5b27b59de9e44d1a0e3`, review `PRR_kwDOTnz-ks8AAAABI2sLLA`: FAIL/P2 — receipt externo aceitava fragmento divergente do `mutationExternalId` (`PRRT_kwDOTnz-ks6XfO9O`).
+- `fa2705981bf3438568e13696fe44d0af3dbcf1c8`, review `PRR_kwDOTnz-ks8AAAABI29_-Q`: FAIL/P2 — o fragmento era comparado de forma case-insensitive (`PRRT_kwDOTnz-ks6XgECQ`).
+- `90bed0814f62fc3bfcf1875f626241e007ff031d`, review `PRR_kwDOTnz-ks8AAAABI2_6VA`: FAIL/P2 — a validação independente de metadata aceitava ausência de patch válido ou campos não-string normalizados para `null` (`PRRT_kwDOTnz-ks6XgJb2`).
 
-## Remediação da rodada 5
+## Remediação das rodadas 5 e 6
 
 O validador de evidência mantém tolerância de casing no caminho do repositório, mas exige o fragmento (`URL.hash`) exatamente canônico e case-sensitive:
 
@@ -21,27 +22,34 @@ O validador de evidência mantém tolerância de casing no caminho do repositór
 - `review-pr-comment` → `#pullrequestreview-${mutationExternalId}`;
 - `update-pr-text-metadata` → URL exata do Pull Request.
 
-A regressão `github-pr-collaboration.evidence-url-binding.test.ts` possui 5 casos:
-1. comment/review canônicos válidos;
-2. ID divergente em issue-comment rejeitado;
-3. ID divergente em review rejeitado;
-4. `#ISSUECOMMENT-${id}` rejeitado;
-5. `#PULLREQUESTREVIEW-${id}` rejeitado.
+A regressão `github-pr-collaboration.evidence-url-binding.test.ts` possui 5 casos, cobrindo bindings válidos, IDs divergentes e fragmentos em maiúsculas rejeitados.
 
-## Implementação validada da rodada 5
+A rodada 6 também alinhou a validação independente de metadata às regras do adapter:
 
-HEAD funcional: `2323f7f0a0ea8900451313facbaa17c2bf35a4f1`.
+- ao menos `title` ou `body` deve estar realmente presente;
+- `title`, quando presente, deve ser string não vazia, trimada e ter no máximo 256 caracteres;
+- `body`, quando presente, deve ser string trimada e ter no máximo 65.000 caracteres;
+- `body: ""` permanece válido para limpar a descrição;
+- valores não-string não são normalizados silenciosamente para `null`.
+
+A regressão `github-pr-collaboration.evidence-metadata-input.test.ts` possui 6 casos e passou integralmente.
+
+## Implementação validada da rodada 6
+
+HEAD funcional: `43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d`.
 
 CI desse SHA:
-- Documentation validation `31273552368`: PASS.
-- Rede Social Container Smoke `31273552168`: PASS.
-- Rede Social Foundation `31273552189`: PASS.
+- Documentation validation `31276497591`: PASS.
+- Rede Social Container Smoke `31276497605`: PASS.
+- Rede Social Foundation `31276497601`: PASS.
 - format, lint, typecheck, migrations duas vezes, testes e build: PASS.
-- server test files: 88/88 PASS.
-- server tests: 363/363 PASS.
+- server test files: 89/89 PASS.
+- server tests: 369/369 PASS.
+- web tests: 5/5 PASS.
 - regressão `evidence-url-binding`: 5/5 PASS.
-- artifact `9026344880`.
-- digest `sha256:3823b747b9829b001e2f16cd38934d0cadf756e535c77ca18a310b4187c90bf7`.
+- regressão `evidence-metadata-input`: 6/6 PASS.
+- artifact `9027160954`.
+- digest `sha256:87ae7f9d3c9d7f4c73c7f333f0eea490e4ec0451b4a6fde341a6007e709f309a`.
 
 ## Limites preservados
 

@@ -1,27 +1,33 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-VALIDATION FULL EVIDENCE — ROUND 5
+VALIDATION FULL EVIDENCE — ROUND 6
 
 REVIEW INPUT
-reviewed_head=fa2705981bf3438568e13696fe44d0af3dbcf1c8
-review_id=PRR_kwDOTnz-ks8AAAABI29_-Q
+reviewed_head=90bed0814f62fc3bfcf1875f626241e007ff031d
+review_id=PRR_kwDOTnz-ks8AAAABI2_6VA
 verdict=FAIL
-finding=P2_MUTATION_FRAGMENT_CASE_INSENSITIVE
-thread=PRRT_kwDOTnz-ks6XgECQ
+finding=P2_METADATA_EVIDENCE_INVALID_TEXT_PATCH
+thread=PRRT_kwDOTnz-ks6XgJb2
+
+PRIOR FINDINGS RETAINED
+external_receipt_id_binding_thread=PRRT_kwDOTnz-ks6XfO9O
+external_receipt_id_binding_status=REMEDIATED
+fragment_case_thread=PRRT_kwDOTnz-ks6XgECQ
+fragment_case_status=REMEDIATED
 
 IMPLEMENTATION HEAD
-sha=2323f7f0a0ea8900451313facbaa17c2bf35a4f1
+sha=43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d
 pr=80
 branch=feat/mcf-runtime-006-c2-pr-collaboration-write
 
 CI
 documentation_validation:
-  run=31273552368
+  run=31276497591
   conclusion=PASS
 container_smoke:
-  run=31273552168
+  run=31276497605
   conclusion=PASS
 foundation:
-  run=31273552189
+  run=31276497601
   conclusion=PASS
   formatting=PASS
   lint=PASS
@@ -31,11 +37,12 @@ foundation:
   build=PASS
 
 TEST COUNTS
-server_test_files=88/88 PASS
-server_tests=363/363 PASS
+server_test_files=89/89 PASS
+server_tests=369/369 PASS
 web_tests=5/5 PASS
+ops_tests=15/15 PASS
 
-DEDICATED ROUND_5 TEST
+DEDICATED URL BINDING TEST
 github-pr-collaboration.evidence-url-binding.test.ts=5/5 PASS
 valid_comment_and_review_binding=PASS
 mismatched_issuecomment_id=REJECTED
@@ -43,11 +50,20 @@ mismatched_pullrequestreview_id=REJECTED
 uppercase_issuecomment_fragment=REJECTED
 uppercase_pullrequestreview_fragment=REJECTED
 
+DEDICATED METADATA INPUT TEST
+github-pr-collaboration.evidence-metadata-input.test.ts=6/6 PASS
+valid_title_only_patch=PASS
+explicit_empty_body_patch=PASS
+missing_title_and_body=REJECTED
+non_string_title_or_body=REJECTED
+invalid_title_shape_or_limit=REJECTED
+invalid_body_shape_or_limit=REJECTED
+
 ARTIFACT
-id=9026344880
+id=9027160954
 name=rede-social-vitest-report
-digest=sha256:3823b747b9829b001e2f16cd38934d0cadf756e535c77ca18a310b4187c90bf7
-head_sha=2323f7f0a0ea8900451313facbaa17c2bf35a4f1
+digest=sha256:87ae7f9d3c9d7f4c73c7f333f0eea490e4ec0451b4a6fde341a6007e709f309a
+head_sha=43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d
 
 SEMANTIC ASSERTIONS
 receipt_external_id=>MUST_EQUAL_MUTATION_EXTERNAL_ID
@@ -56,6 +72,9 @@ review_mutation_hash=>EXACT_LOWERCASE_PULLREQUESTREVIEW_PLUS_MUTATION_EXTERNAL_I
 hash_case_sensitivity=>ENFORCED
 repository_path_case_tolerance=>PRESERVED
 metadata_mutation_url=>EXACT_PULL_REQUEST_URL
+metadata_patch=>REQUIRES_AT_LEAST_ONE_VALID_TEXT_FIELD
+metadata_title=>NONEMPTY_TRIMMED_STRING_MAX_256
+metadata_body=>TRIMMED_STRING_MAX_65000_EMPTY_ALLOWED
 UNKNOWN_attempt=>MISSION_RECOVERING_PERSISTABLE
 UNKNOWN_attempt=>GLOBAL_BINDING_PRESERVED
 FAILED_prewrite_incompatible_cross_mission_retry=>BLOCKED
