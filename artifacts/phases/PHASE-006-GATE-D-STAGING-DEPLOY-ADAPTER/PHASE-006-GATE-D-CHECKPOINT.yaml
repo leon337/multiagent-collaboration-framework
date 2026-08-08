@@ -1,0 +1,43 @@
+phase_id: PHASE-006-GATE-D-STAGING-DEPLOY-ADAPTER
+mission_id: MCF-RUNTIME-006-GATE-D
+issue: 83
+base_commit: 1c58b4ba280bd32f587c2f042e35a2dba1a123a9
+branch: feat/mcf-runtime-006-gate-d-staging-deploy-adapter
+objective: implementar adapter formal de deploy verificado para staging reutilizando RUNTIME-005
+objective_state: EM_EXECUCAO
+cycle: 1
+selected_agents:
+  - Mestre
+  - Sofia
+  - Rafael
+  - Gabriel
+  - Renato
+  - Ricardo
+  - Emily
+  - Augusto
+  - Leo
+completed_acceptance_criteria: []
+remaining_gaps:
+  - IMPLEMENTATION
+  - TESTS
+  - CI
+  - INDEPENDENT_REVIEW
+  - LEO_GATE
+decisions:
+  - GITHUB_ACTIONS_CONTROL_PLANE
+  - RENDER_SECRET_ACTIONS_ONLY
+  - LIVE_REGISTRY_DISABLED
+  - STAGING_ONLY
+  - RECOVERY_BY_PREVIOUS_HEALTHY_SHA
+  - UNKNOWN_FAIL_CLOSED
+live_registry: DISABLED
+real_provider_dispatch_test: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE
+production: BLOCKED
+next_action: implementar contrato e testes do adapter
+recipient: Rafael
+human_action_required: false
+source_of_truth:
+  - issue_83
+  - docs/runtime/MCF-RUNTIME-006-PLAN.md
+  - docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md
+  - skills/registry.yaml

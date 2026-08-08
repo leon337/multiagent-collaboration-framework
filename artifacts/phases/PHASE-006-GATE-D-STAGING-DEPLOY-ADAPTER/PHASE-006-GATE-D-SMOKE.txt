@@ -1,0 +1,7 @@
+PHASE-006-GATE-D SMOKE
+
+STATE: NOT_RUN
+
+No functional implementation exists at the initial checkpoint.
+Production remains BLOCKED.
+Real provider dispatch remains NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE.

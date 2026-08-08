@@ -1,0 +1,15 @@
+PHASE-006-GATE-D FULL VALIDATION
+
+Initial phase package created before functional implementation.
+
+Required evidence still pending:
+- exact changed files;
+- unit/integration/security tests;
+- workflow correlation tests;
+- idempotency and timeout tests;
+- semantic receipt/evidence tests;
+- full CI runs on exact HEAD;
+- independent review on exact HEAD;
+- LEO gate after clean review.
+
+No pass is claimed by this file at phase start.
