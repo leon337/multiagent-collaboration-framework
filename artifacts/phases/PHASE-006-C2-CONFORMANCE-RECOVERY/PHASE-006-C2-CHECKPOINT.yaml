@@ -1,0 +1,69 @@
+phase_id: PHASE-006-C2-CONFORMANCE-RECOVERY
+mission_id: MCF-C2-CONFORMANCE-RECOVERY-001
+parent_mission_id: MCF-RUNTIME-006-C2
+project: multiagent-collaboration-framework
+issue: 81
+base_commit: e9250b7967f6dcba45b270e4887a495f34145755
+head_commit: PENDING_PRF_COMMIT
+branch: feat/mcf-runtime-006-c2-pr-collaboration-write
+pull_request: 80
+objective: restaurar conformidade ESEV/loop/PRF sem reescrever a execução passada nem ampliar o C2
+objective_state: EM_EXECUCAO
+cycle: 1
+completed_acceptance_criteria:
+  - PR_80_DRAFT
+  - AUTOMATION_PAUSED
+  - ORIGINAL_C2_SCOPE_RECOVERED
+  - SOURCE_HEAD_CI_PASS
+  - NO_NEW_FUNCTIONAL_SCOPE_IN_RECOVERY
+remaining_gaps:
+  - PRF_COMMIT_CI
+  - EMILY_AUDIT_EXACT_HEAD
+  - LEO_GATE
+  - RETURN_TO_ORIGINAL_C2_GATE
+artifacts:
+  - PHASE-006-C2-PLAN.md
+  - PHASE-006-C2-DECISIONS.md
+  - PHASE-006-C2-REPORT.md
+  - PHASE-006-C2-VALIDATION.txt
+  - PHASE-006-C2-VALIDATION-FULL.txt
+  - PHASE-006-C2-SMOKE.txt
+  - PHASE-006-C2-CHECKPOINT.yaml
+  - PHASE-006-C2-ARTIFACT-MANIFEST.sha256
+  - README.md
+evidence:
+  - issue_79_original_contract
+  - issue_81_recovery
+  - pr_80_draft
+  - source_head_e9250b7967f6dcba45b270e4887a495f34145755
+  - documentation_run_31258225885
+  - container_smoke_run_31258225898
+  - foundation_run_31258225908
+  - foundation_job_93104839876
+  - vitest_artifact_9022023258
+  - vitest_digest_sha256_a2311885a28cecf1b36bea95d42db94169f87f0f89421a44d1a232694612bbf3
+decisions:
+  - preserve_validated_c2_hardening_within_original_acceptance
+  - freeze_new_functional_changes
+  - do_not_retroactively_claim_esev
+  - recover_via_caf
+open_findings:
+  - recovery_head_not_yet_validated
+  - recovery_audit_pending
+  - leo_gate_pending
+blockers: []
+recoveries:
+  - PR_80_RETURNED_TO_DRAFT
+  - AUTOMATION_DISABLED_DURING_RECOVERY
+  - PRF_CREATED_FROM_REAL_EVIDENCE
+next_phase: MCF-RUNTIME-006-C2-GATE
+next_action: validar o HEAD exato que contém este PRF e então auditar a recuperação
+recipient: Emily
+return_to: MCF-RUNTIME-006-C2
+human_action_required: false
+source_of_truth:
+  - docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md
+  - issue_79
+  - issue_81
+  - PR_80
+  - GitHub_Actions

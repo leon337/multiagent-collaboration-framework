@@ -1,0 +1,41 @@
+PHASE_ID=PHASE-006-C2-CONFORMANCE-RECOVERY
+VALIDATION_STATE=PENDING_POST_COMMIT_CI
+
+COMMANDS_AND_CHECKS:
+- PR #80 converted to DRAFT: PASS
+- automation MCF PR 80 Gate disabled: PASS
+- issue #81 created: PASS
+- source HEAD e9250b7967f6dcba45b270e4887a495f34145755 Documentation validation: PASS
+- source HEAD e9250b7967f6dcba45b270e4887a495f34145755 Container Smoke: PASS
+- source HEAD e9250b7967f6dcba45b270e4887a495f34145755 Foundation: PASS
+- source HEAD Foundation formatting: PASS
+- source HEAD Foundation lint: PASS
+- source HEAD Foundation typecheck: PASS
+- source HEAD migrations twice including 0020-0025: PASS
+- source HEAD server tests 83/83 files and 351/351 tests: PASS
+- source HEAD build: PASS
+- PRF commit CI: PENDING
+- recovery audit: PENDING
+- Léo gate: PENDING
+
+SUMMARY:
+- total_checks: 15
+- passed: 12
+- failed: 0
+- pending: 3
+- not_applicable: 0
+
+EVIDENCE_REFERENCES:
+- source HEAD: e9250b7967f6dcba45b270e4887a495f34145755
+- Documentation validation run: 31258225885
+- Container Smoke run: 31258225898
+- Foundation run: 31258225908
+- Foundation job: 93104839876
+- Vitest artifact: 9022023258
+- artifact digest: sha256:a2311885a28cecf1b36bea95d42db94169f87f0f89421a44d1a232694612bbf3
+- issue: #81
+- PR: #80
+
+NOTES:
+- This validation file records the pre-PRF source evidence. The commit containing this package must receive its own CI before the recovery can advance to audit.
+- No real C2 GitHub provider write is authorized or claimed.
