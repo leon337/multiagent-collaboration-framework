@@ -251,11 +251,15 @@ export function verifyGitHubPrCollaborationEvidence(
     if (mutationUrl.href.toLowerCase() !== pullUrl.href.toLowerCase()) {
       reject('PR collaboration metadata mutation URL must equal the pull request URL');
     }
-  } else if (
-    mutationUrl.pathname.toLowerCase() !== `/${repository}/pull/${pullNumber}`.toLowerCase() ||
-    !mutationUrl.hash
-  ) {
-    reject('PR collaboration comment/review URL must belong to the target pull request');
+  } else {
+    const expectedFragment =
+      operation === 'comment-pr'
+        ? `#issuecomment-${mutationExternalId}`
+        : `#pullrequestreview-${mutationExternalId}`;
+    const expectedMutationUrl = `${pullUrl.href}${expectedFragment}`;
+    if (mutationUrl.href.toLowerCase() !== expectedMutationUrl.toLowerCase()) {
+      reject('PR collaboration comment/review URL must bind the exact mutation external ID');
+    }
   }
 
   const evidenceUrls = receipt.metadata.evidenceUrls;
