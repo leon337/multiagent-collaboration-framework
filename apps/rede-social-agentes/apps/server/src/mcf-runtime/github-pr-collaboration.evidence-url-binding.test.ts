@@ -63,11 +63,12 @@ function trustedReceipt(
   operation: 'comment-pr' | 'review-pr-comment',
   mutationId = MUTATION_ID,
   fragmentId = mutationId,
+  fragmentOverride?: string,
 ) {
   const pullUrl = `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}`;
-  const fragment =
+  const canonicalFragment =
     operation === 'comment-pr' ? `#issuecomment-${fragmentId}` : `#pullrequestreview-${fragmentId}`;
-  const mutationUrl = `${pullUrl}${fragment}`;
+  const mutationUrl = `${pullUrl}${fragmentOverride ?? canonicalFragment}`;
   const body = operation === 'comment-pr' ? 'Comment body' : 'Review body';
 
   return evidence.createTrustedReceipt({
@@ -146,6 +147,48 @@ describe('GitHub PR collaboration evidence URL binding', () => {
   it('rejects a review URL whose pull-request-review fragment references another mutation ID', () => {
     const evidence = new EvidenceValidator();
     const current = trustedReceipt(evidence, 'review-pr-comment', MUTATION_ID, 999);
+
+    expect(() =>
+      verifyGitHubPrCollaborationEvidence(
+        current,
+        tool('review-pr-comment'),
+        skill,
+        inputs('review-pr-comment'),
+        context,
+      ),
+    ).toThrow(/exact mutation external ID/u);
+  });
+
+  it('rejects an uppercase issue-comment fragment even when the mutation ID matches', () => {
+    const evidence = new EvidenceValidator();
+    const current = trustedReceipt(
+      evidence,
+      'comment-pr',
+      MUTATION_ID,
+      MUTATION_ID,
+      `#ISSUECOMMENT-${MUTATION_ID}`,
+    );
+
+    expect(() =>
+      verifyGitHubPrCollaborationEvidence(
+        current,
+        tool('comment-pr'),
+        skill,
+        inputs('comment-pr'),
+        context,
+      ),
+    ).toThrow(/exact mutation external ID/u);
+  });
+
+  it('rejects an uppercase pull-request-review fragment even when the mutation ID matches', () => {
+    const evidence = new EvidenceValidator();
+    const current = trustedReceipt(
+      evidence,
+      'review-pr-comment',
+      MUTATION_ID,
+      MUTATION_ID,
+      `#PULLREQUESTREVIEW-${MUTATION_ID}`,
+    );
 
     expect(() =>
       verifyGitHubPrCollaborationEvidence(

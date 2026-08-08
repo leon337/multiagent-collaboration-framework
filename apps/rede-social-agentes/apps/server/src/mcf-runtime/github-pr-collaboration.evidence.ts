@@ -257,7 +257,10 @@ export function verifyGitHubPrCollaborationEvidence(
         ? `#issuecomment-${mutationExternalId}`
         : `#pullrequestreview-${mutationExternalId}`;
     const expectedMutationUrl = `${pullUrl.href}${expectedFragment}`;
-    if (mutationUrl.href.toLowerCase() !== expectedMutationUrl.toLowerCase()) {
+    if (
+      mutationUrl.hash !== expectedFragment ||
+      mutationUrl.href.toLowerCase() !== expectedMutationUrl.toLowerCase()
+    ) {
       reject('PR collaboration comment/review URL must bind the exact mutation external ID');
     }
   }
