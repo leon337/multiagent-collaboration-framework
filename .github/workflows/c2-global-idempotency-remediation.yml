@@ -160,7 +160,7 @@ jobs:
       - name: Format C2 remediation files
         working-directory: apps/rede-social-agentes
         run: |
-          pnpm exec prettier --write \
+          pnpm exec prettier --ignore-unknown --write \
             apps/server/src/mcf-runtime/external-action-ledger.ts \
             apps/server/src/mcf-runtime/github-pr-collaboration.global-idempotency.integration.test.ts \
             apps/server/src/mcf-runtime/github-pr-collaboration.review-head-race.test.ts \
