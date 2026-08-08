@@ -80,7 +80,7 @@ idempotency:
 
 independent_review_remediation:
   p1_findings_total: 11
-  p2_findings_total: 2
+  p2_findings_total: 3
   reviews:
     - reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
       findings:
@@ -108,6 +108,9 @@ independent_review_remediation:
       findings:
         - duplicate_reconciliation_after_ambiguous_comment_or_review
         - checkpoint_provenance_missing_0025_and_exact_validated_head
+    - reviewed_head: 236410f83e1444d4780877a7d988a03ae0351774
+      findings:
+        - metadata_body_clear_not_representable
   live_registry_real_write_exposure: REMEDIATED
   post_write_reconciliation_definite_failure: REMEDIATED
   comment_head_race_before_success_receipt: REMEDIATED
@@ -120,7 +123,8 @@ independent_review_remediation:
   incompatible_expired_cross_mission_fingerprint_not_enforced: REMEDIATED
   global_recovery_lock_order_deadlock_risk: REMEDIATED
   duplicate_reconciliation_after_ambiguous_comment_or_review: REMEDIATED
-  checkpoint_provenance_missing_0025_and_exact_validated_head: REMEDIATED_BY_THIS_CHECKPOINT
+  checkpoint_provenance_missing_0025_and_exact_validated_head: REMEDIATED
+  metadata_body_clear_not_representable: REMEDIATED
   dedicated_regression_tests:
     p1_regression_tests: 4
     review_head_race_tests: 1
@@ -131,20 +135,21 @@ independent_review_remediation:
     expired_recovery_compatibility_tests: 2
     global_recovery_deadlock_tests: 1
     reconciliation_request_budget_tests: 2
+    metadata_body_clear_tests: 1
   status: PASS_PENDING_FINAL_EXACT_HEAD_REVIEW
 
 validation:
-  implementation_head_validated: 71d73c6f5ec971eb8e5e4835f450b35c57a642bf
+  implementation_head_validated: 94c03b6feeaa56313e1cbf7c4aacf2f47d5cd61e
   implementation_head_note: This is the exact code-and-test HEAD validated before this checkpoint-only provenance commit; the resulting checkpoint commit must be validated separately and reviewed by exact final PR HEAD.
   documentation_validation:
     status: PASS
-    workflow_run: 31251869379
+    workflow_run: 31254126720
   container_smoke:
     status: PASS
-    workflow_run: 31251869384
+    workflow_run: 31254126724
   foundation:
     status: PASS
-    workflow_run: 31251869381
+    workflow_run: 31254126742
     formatting: PASS
     lint: PASS
     typecheck: PASS
@@ -155,11 +160,11 @@ validation:
     migration_0023: PASS
     migration_0024: PASS
     migration_0025: PASS
-    server_test_files: 79
-    server_tests: 346
+    server_test_files: 80
+    server_tests: 347
     build: PASS
-    artifact_id: 9020246462
-    artifact_digest: sha256:a3dc92714f29a7baf4774c56c340b36f59a90470c504ec28fdc3b5cb9343f47e
+    artifact_id: 9020888578
+    artifact_digest: sha256:1251578af37a8f95e5faa8b3c6ec5eee72f011d1ee0eaca247c736734c2f37e8
   unit_tests: PASS
   integration_tests: PASS
   permission_tests: PASS
@@ -175,6 +180,7 @@ validation:
   global_recovery_lock_order: PASS
   accepted_invalid_json_reconciliation: PASS
   high_pagination_ambiguous_reconciliation: PASS
+  metadata_body_clear: PASS
   implementation_ci: PASS
   checkpoint_commit_ci: PENDING
   independent_review: PENDING_EXACT_FINAL_HEAD
