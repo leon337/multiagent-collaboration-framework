@@ -53,16 +53,26 @@ idempotency:
     persistence: POSTGRESQL
     initial_migration: 0020_mcf_external_action_global_idempotency_scope.sql
     persistent_binding_migration: 0021_mcf_external_action_persistent_global_idempotency.sql
+    expired_holder_recovery_migration: 0022_mcf_external_action_expired_global_idempotency_recovery.sql
+    lock_order_hardening_migration: 0023_mcf_external_action_global_recovery_lock_order.sql
     persistent_unique_index: mcf_external_action_attempts_global_idempotency_idx
     active_only_index_removed: true
     cross_mission_concurrency_test: PASS
     reuse_after_terminal_state: BLOCKED
     reused_key_with_changed_payload: BLOCKED
-    conflict_retryable: false
+    expired_allowed_cross_mission_holder: RECOVERED
+    expired_holder_status: ABANDONED
+    expired_holder_scope_key: RELEASED_ONLY_FOR_EXPIRED_ALLOWED
+    terminal_scope_key: PERSISTENT
+    recovered_holder_mission_active_attempt: CLEARED
+    replacement_reservation: PASS
+    replacement_terminal_binding: PERSISTENT
+    conflict_retryable_for_consumed_key: false
+    lock_order: MISSION_THEN_ATTEMPT
   ambiguous_effect: UNKNOWN
 
 independent_review_remediation:
-  p1_findings_total: 7
+  p1_findings_total: 8
   reviews:
     - reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
       findings:
@@ -79,6 +89,9 @@ independent_review_remediation:
     - reviewed_head: 24bd78214e5813b9e943b18e18bf6fdd5b2a1747
       findings:
         - terminal_or_unknown_idempotency_binding_released
+    - reviewed_head: 3d23e8999061af9b49572df5540fc9158dabb27d
+      findings:
+        - expired_global_allowed_holder_not_reaped_cross_mission
   live_registry_real_write_exposure: REMEDIATED
   post_write_reconciliation_definite_failure: REMEDIATED
   comment_head_race_before_success_receipt: REMEDIATED
@@ -86,36 +99,42 @@ independent_review_remediation:
   cross_mission_idempotency_race: REMEDIATED
   accepted_mutation_invalid_json_response: REMEDIATED
   terminal_or_unknown_idempotency_binding_released: REMEDIATED
+  expired_global_allowed_holder_not_reaped_cross_mission: REMEDIATED
   dedicated_regression_tests:
     p1_regression_tests: 4
     review_head_race_tests: 1
     global_idempotency_integration_tests: 1
     accepted_invalid_json_tests: 3
     persistent_terminal_binding_assertions: 2
+    expired_global_reservation_integration_tests: 1
+  preventive_hardening:
+    global_recovery_lock_order_deadlock_risk: REMEDIATED
   status: PASS_PENDING_FINAL_EXACT_HEAD_REVIEW
 
 validation:
-  implementation_head_validated: 22bd6dc77406a049300b55150836f30b0eaf055f
+  implementation_head_validated: ab2e42cb1d4d0e99a179a1414afaada64828cdd4
   documentation_validation:
     status: PASS
-    workflow_run: 31244662068
+    workflow_run: 31245104119
   container_smoke:
     status: PASS
-    workflow_run: 31244662062
+    workflow_run: 31245104103
   foundation:
     status: PASS
-    workflow_run: 31244662067
+    workflow_run: 31245104122
     formatting: PASS
     lint: PASS
     typecheck: PASS
     migrations_twice: PASS
     migration_0020: PASS
     migration_0021: PASS
-    server_test_files: 75
-    server_tests: 340
+    migration_0022: PASS
+    migration_0023: PASS
+    server_test_files: 76
+    server_tests: 341
     build: PASS
-    artifact_id: 9018109337
-    artifact_digest: sha256:4c6ca88fae8e8265544272c0c59d744684af13c1f6964adad2cc91f9892723a3
+    artifact_id: 9018236922
+    artifact_digest: sha256:7667854efb8c5aa9f8d3a3b49a629134188e8d1a9c44e1aad072321d484ada1c
   unit_tests: PASS
   integration_tests: PASS
   permission_tests: PASS
@@ -123,11 +142,13 @@ validation:
   no_real_write_boundary: PASS
   global_idempotency_serialization: PASS
   persistent_global_idempotency_binding: PASS
+  expired_global_reservation_recovery: PASS
+  global_recovery_lock_order: PASS
   accepted_invalid_json_reconciliation: PASS
   ci: PASS
   independent_review: PENDING_EXACT_FINAL_HEAD
 
 next_action:
   current: VALIDATE_CHECKPOINT_COMMIT_THEN_REQUEST_CODEX_REVIEW_EXACT_FINAL_SHA
-  after_review_pass: INTEGRATE_C2_AND_RECONCILE_ISSUE_79
+  after_review_pass: RESOLVE_REMEDIATED_THREADS_INTEGRATE_C2_AND_RECONCILE_ISSUE_79
   repeat_A1_A2_C1: FORBIDDEN
