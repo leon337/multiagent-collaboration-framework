@@ -3,7 +3,7 @@ issue: 79
 pr: 80
 base_main_sha: cd29bedef1b3ad08d88ecad21a6b66b7c6117ddf
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
-state: WAITING_INDEPENDENT_REVIEW
+state: WAITING_FINAL_INDEPENDENT_REVIEW
 external_effect: REVERSIBLE_TEXTUAL
 production: BLOCKED
 real_github_write_test: NOT_AUTHORIZED
@@ -16,10 +16,13 @@ adapter:
     - review-pr-comment
     - update-pr-text-metadata
   permission_profile: SCOPED_WRITE
+  live_registry: DISABLED
 
 security:
   authorized_scope_required: true
   exact_pr_head_sha_required: true
+  post_comment_head_revalidation: PASS
+  post_write_unknown_semantics: PASS
   approve_review: FORBIDDEN
   request_changes_review: FORBIDDEN
   merge: FORBIDDEN
@@ -38,35 +41,45 @@ idempotency:
   metadata_strategy: EXACT_FINAL_STATE_READBACK
   ambiguous_effect: UNKNOWN
 
+independent_review_remediation:
+  reviewed_head: 281a7389538fdf98da0709c3633b9ae50cea8a93
+  p1_findings: 3
+  live_registry_real_write_exposure: REMEDIATED
+  post_write_reconciliation_definite_failure: REMEDIATED
+  comment_head_race_before_success_receipt: REMEDIATED
+  regression_tests_added: 4
+  status: PASS_PENDING_FINAL_EXACT_HEAD_REVIEW
+
 validation:
-  implementation_head_validated: b1227e20924a8fc43108e931e73679a907651570
+  remediated_head_validated: 0b2b91a8987f6ef06eb43d7b69222c644a2eb5b2
   documentation_validation:
     status: PASS
-    workflow_run: 31242986458
+    workflow_run: 31243340692
   container_smoke:
     status: PASS
-    workflow_run: 31242986455
+    workflow_run: 31243340698
   foundation:
     status: PASS
-    workflow_run: 31242986454
+    workflow_run: 31243340677
     formatting: PASS
     lint: PASS
     typecheck: PASS
     migrations_twice: PASS
-    server_test_files: 71
-    server_tests: 331
+    server_test_files: 72
+    server_tests: 335
+    p1_regression_tests: 4
     build: PASS
-    artifact_id: 9017606645
-    artifact_digest: sha256:fb3398745cc3502ddd1c6f791445b6ba5bbe3f968edad7e29eefea3bed930e37
+    artifact_id: 9017700522
+    artifact_digest: sha256:4fadeb821f69c9e1d2e37199deb966bb2ecf1b32f24635148be3156c73a97414
   unit_tests: PASS
   integration_tests: PASS
   permission_tests: PASS
   evidence_tests: PASS
   no_real_write_boundary: PASS
   ci: PASS
-  independent_review: PENDING_EXACT_CURRENT_HEAD
+  independent_review: PENDING_EXACT_FINAL_HEAD
 
 next_action:
-  current: VALIDATE_CHECKPOINT_COMMIT_THEN_REQUEST_INDEPENDENT_CODE_REVIEW_EXACT_HEAD
+  current: VALIDATE_FINAL_CHECKPOINT_HEAD_THEN_REQUEST_CODEX_REVIEW_EXACT_SHA
   after_review_pass: INTEGRATE_C2_AND_RECONCILE_ISSUE_79
   repeat_A1_A2_C1: FORBIDDEN
