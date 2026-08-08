@@ -41,12 +41,7 @@ function missionContract(title: string) {
   });
 }
 
-function request(
-  missionId: string,
-  phaseId: string,
-  idempotencyKey: string,
-  commentBody: string,
-) {
+function request(missionId: string, phaseId: string, idempotencyKey: string, commentBody: string) {
   return {
     skill,
     agentId: 'Gabriel',
