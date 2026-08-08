@@ -128,7 +128,12 @@ describe('ExternalActionDispatcher post-write persistence semantics', () => {
 
   it('keeps definitive adapter failure on the pre-write FAILED path', async () => {
     const { dispatcher, ledger } = harness(
-      new ExternalActionAdapterError('TARGET_NOT_FOUND', 'target absent before mutation', false, 404),
+      new ExternalActionAdapterError(
+        'TARGET_NOT_FOUND',
+        'target absent before mutation',
+        false,
+        404,
+      ),
     );
 
     const result = await dispatcher.dispatch(request);
