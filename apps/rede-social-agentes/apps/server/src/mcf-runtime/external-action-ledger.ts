@@ -13,6 +13,7 @@ import {
   EXTERNAL_ACTION_LEASE_MS,
   reconcileExpiredExternalReservation,
 } from './external-action-reservation.js';
+import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';
 
 interface MissionVersionRow {
   version: number;
@@ -107,6 +108,37 @@ function requestIdempotencyFingerprint(
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
 
+const globallySerializedAdapter = 'github-pr-collaboration-write-v1';
+const globallySerializedOperations = new Set([
+  'comment-pr',
+  'review-pr-comment',
+  'update-pr-text-metadata',
+]);
+
+function requestGlobalIdempotencyScopeKey(
+  request: ExternalActionRequest,
+  adapterId: string,
+  idempotencyKey: string | null,
+): string | null {
+  if (!idempotencyKey || adapterId !== globallySerializedAdapter) return null;
+
+  const operation = canonicalizeToolValue(request.tool.operation);
+  if (!globallySerializedOperations.has(operation)) return null;
+
+  const pullRequestNumber = request.inputs.pull_request_number;
+  if (!Number.isInteger(pullRequestNumber) || (pullRequestNumber as number) < 1) return null;
+
+  const payload = {
+    adapterId,
+    provider: canonicalizeProvider(request.tool.provider),
+    operation,
+    resource: request.tool.resource.trim().toLowerCase(),
+    pullRequestNumber,
+    idempotencyKey,
+  };
+  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+}
+
 @Injectable()
 export class ExternalActionLedger {
   constructor(private readonly database: DatabaseService) {}
@@ -122,6 +154,11 @@ export class ExternalActionLedger {
 
     const idempotencyKey = requestIdempotencyKey(request);
     const idempotencyFingerprint = requestIdempotencyFingerprint(
+      request,
+      adapterId,
+      idempotencyKey,
+    );
+    const idempotencyScopeKey = requestGlobalIdempotencyScopeKey(
       request,
       adapterId,
       idempotencyKey,
@@ -212,8 +249,8 @@ export class ExternalActionLedger {
             "attempt_id", "mission_id", "phase_id", "agent_id", "skill_id",
             "adapter_id", "provider", "operation", "resource", "idempotency_key",
             "idempotency_fingerprint", "expected_mission_version", "status",
-            "lease_expires_at", "created_at", "updated_at"
-          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14)`,
+            "lease_expires_at", "created_at", "updated_at", "idempotency_scope_key"
+          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14, $15)`,
           [
             attemptId,
             request.context.missionId,
@@ -229,6 +266,7 @@ export class ExternalActionLedger {
             request.context.expectedMissionVersion,
             leaseExpiresAt,
             occurredAt,
+            idempotencyScopeKey,
           ],
         );
 
@@ -271,6 +309,7 @@ export class ExternalActionLedger {
               resource: request.tool.resource,
               idempotencyKey,
               idempotencyFingerprint,
+              idempotencyScopeKey,
               expectedMissionVersion: request.context.expectedMissionVersion,
             },
             idempotencyKey: `external-action:${attemptId}:requested`,
@@ -286,6 +325,7 @@ export class ExternalActionLedger {
               resource: request.tool.resource,
               idempotencyKey,
               idempotencyFingerprint,
+              idempotencyScopeKey,
             },
             idempotencyKey: `external-action:${attemptId}:allowed`,
           },
@@ -316,6 +356,13 @@ export class ExternalActionLedger {
         throw error;
       }
       if (databaseErrorCode(error) === '23505') {
+        if (idempotencyScopeKey) {
+          throw new ExternalActionAdapterError(
+            'RESERVATION_CONFLICT',
+            `Global idempotency scope for ${request.tool.resource}/${request.tool.operation} already has an active attempt`,
+            true,
+          );
+        }
         throw new ExternalActionAdapterError(
           'RESERVATION_CONFLICT',
           `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,

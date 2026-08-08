@@ -89,18 +89,18 @@ describe('C2 global idempotency serialization', () => {
         ) values
           ($1, $2::jsonb, 'EXECUTING', null, 'Gabriel', 1, $5, $5),
           ($3, $4::jsonb, 'EXECUTING', null, 'Gabriel', 1, $5, $5)`,
-        [missionA, missionContract('C2 global lock A'), missionB, missionContract('C2 global lock B'), now],
+        [
+          missionA,
+          missionContract('C2 global lock A'),
+          missionB,
+          missionContract('C2 global lock B'),
+          now,
+        ],
       );
 
       const outcomes = await Promise.allSettled([
-        ledger.reserve(
-          request(missionA, phaseA),
-          'github-pr-collaboration-write-v1',
-        ),
-        ledger.reserve(
-          request(missionB, phaseB),
-          'github-pr-collaboration-write-v1',
-        ),
+        ledger.reserve(request(missionA, phaseA), 'github-pr-collaboration-write-v1'),
+        ledger.reserve(request(missionB, phaseB), 'github-pr-collaboration-write-v1'),
       ]);
 
       const fulfilled = outcomes.filter(
@@ -135,25 +135,22 @@ describe('C2 global idempotency serialization', () => {
         statusCode: 404,
       });
 
-      const loser = outcomes[0]?.status === 'rejected'
-        ? request(missionA, phaseA)
-        : request(missionB, phaseB);
-      await expect(
-        ledger.reserve(loser, 'github-pr-collaboration-write-v1'),
-      ).resolves.toEqual(expect.any(String));
+      const loser =
+        outcomes[0]?.status === 'rejected' ? request(missionA, phaseA) : request(missionB, phaseB);
+      await expect(ledger.reserve(loser, 'github-pr-collaboration-write-v1')).resolves.toEqual(
+        expect.any(String),
+      );
     } finally {
       await database.query(
         `delete from "mcf_external_action_attempts" where "mission_id" = any($1::uuid[])`,
         [[missionA, missionB]],
       );
-      await database.query(
-        `delete from "mcf_events" where "mission_id" = any($1::uuid[])`,
-        [[missionA, missionB]],
-      );
-      await database.query(
-        `delete from "mcf_missions" where "id" = any($1::uuid[])`,
-        [[missionA, missionB]],
-      );
+      await database.query(`delete from "mcf_events" where "mission_id" = any($1::uuid[])`, [
+        [missionA, missionB],
+      ]);
+      await database.query(`delete from "mcf_missions" where "id" = any($1::uuid[])`, [
+        [missionA, missionB],
+      ]);
     }
   });
 });
