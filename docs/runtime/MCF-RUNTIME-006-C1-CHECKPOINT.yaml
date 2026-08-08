@@ -1,0 +1,28 @@
+mission: MCF-RUNTIME-006-C1
+issue: 75
+base_main_sha: 9424e024eb62eb9f9dddd30e01d7f14cc58094a3
+branch: feat/mcf-runtime-006-c1-github-branch-pr-adapter
+state: IMPLEMENTING
+external_effect: REVERSIBLE
+production: BLOCKED
+merge_automatic: false
+real_github_write_test: NOT_AUTHORIZED
+adapter:
+  id: github-branch-pr-write-v1
+  skill: MCF-GIT-PR-RELEASE
+  operation: create-branch-pr
+  permission_profile: SCOPED_WRITE
+security:
+  authorized_scope_required: true
+  direct_main_write: FORBIDDEN
+  force_push: FORBIDDEN
+  merge: FORBIDDEN
+  delete_human_branch: FORBIDDEN
+idempotency:
+  persisted_before_effect: true
+  provider_marker: true
+  read_back_required: true
+  replay_strategy: RECONCILE_AND_RESIGN_CURRENT_CONTEXT
+validation:
+  ci: PENDING
+  independent_review: PENDING
