@@ -109,6 +109,23 @@ function optionalString(
   return requireString(inputs, key, limit);
 }
 
+function optionalBodyString(
+  inputs: Record<string, unknown>,
+  key: string,
+  limit: number,
+): string | null {
+  if (inputs[key] === undefined || inputs[key] === null) return null;
+  const value = inputs[key];
+  if (typeof value !== 'string' || value !== value.trim() || value.length > limit) {
+    throw new ExternalActionAdapterError(
+      'INVALID_CONTEXT',
+      `${key} must be a trimmed string within ${limit} characters`,
+      false,
+    );
+  }
+  return value;
+}
+
 function positiveInteger(inputs: Record<string, unknown>, key: string): number {
   const value = inputs[key];
   if (!Number.isInteger(value) || (value as number) < 1) {
@@ -228,7 +245,7 @@ function resolveTarget(request: ExternalActionRequest): PullCollaborationTarget 
     rejectSpoofedMarker(text, 'review_body');
   } else {
     title = optionalString(request.inputs, 'title', TITLE_LIMIT);
-    body = optionalString(request.inputs, 'body', BODY_LIMIT);
+    body = optionalBodyString(request.inputs, 'body', BODY_LIMIT);
     if (title === null && body === null) {
       throw new ExternalActionAdapterError(
         'INVALID_CONTEXT',
