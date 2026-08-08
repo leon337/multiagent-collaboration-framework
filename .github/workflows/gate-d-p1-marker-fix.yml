@@ -1,0 +1,218 @@
+name: Gate D P1 Marker Fix
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-gate-d-staging-deploy-adapter
+    paths:
+      - ".github/workflows/gate-d-p1-marker-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Apply P1 marker uniqueness fix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          adapter = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts')
+          text = adapter.read_text()
+          old = """  const successful = markers.filter(([, name]) =>
+    job.steps.some(
+      (step) =>
+        step.name === name &&
+        step.status.toLowerCase() === 'completed' &&
+        step.conclusion?.toLowerCase() === 'success',
+    ),
+  );
+  return successful.length === 1 ? successful[0]![0] : null;
+"""
+          new = """  const successful = job.steps.flatMap((step) => {
+    if (
+      step.status.toLowerCase() !== 'completed' ||
+      step.conclusion?.toLowerCase() !== 'success'
+    ) {
+      return [];
+    }
+    const marker = markers.find(([, name]) => step.name === name);
+    return marker ? [marker[0]] : [];
+  });
+  return successful.length === 1 ? successful[0]! : null;
+"""
+          if text.count(old) != 1:
+              raise SystemExit('markerOutcome block did not match exactly once')
+          adapter.write_text(text.replace(old, new))
+
+          test = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts')
+          text = test.read_text()
+          old_jobs = """function jobs(outcome: 'DEPLOYED' | 'NOOP' | 'RECOVERED') {
+  const names = ['DEPLOYED', 'NOOP', 'RECOVERED'];
+  return {
+    total_count: 1,
+    jobs: [
+      {
+        id: 99,
+        run_id: RUN_ID,
+        name: 'deploy-and-verify',
+        status: 'completed',
+        conclusion: outcome === 'RECOVERED' ? 'failure' : 'success',
+        steps: names.map((name, index) => ({
+          number: index + 1,
+          name: `Deployment result ${name}`,
+          status: 'completed',
+          conclusion: name === outcome ? 'success' : 'skipped',
+        })),
+      },
+    ],
+  };
+}
+"""
+          new_jobs = """function jobs(
+  outcome: 'DEPLOYED' | 'NOOP' | 'RECOVERED',
+  options: {
+    duplicateOutcomeMarker?: boolean;
+    additionalSuccessfulOutcome?: 'DEPLOYED' | 'NOOP' | 'RECOVERED';
+  } = {},
+) {
+  const names = ['DEPLOYED', 'NOOP', 'RECOVERED'];
+  const steps = names.map((name, index) => ({
+    number: index + 1,
+    name: `Deployment result ${name}`,
+    status: 'completed',
+    conclusion: name === outcome ? 'success' : 'skipped',
+  }));
+  if (options.duplicateOutcomeMarker) {
+    const source = steps.find((step) => step.name === `Deployment result ${outcome}`);
+    if (!source) throw new Error('missing source outcome marker');
+    steps.push({ ...source, number: steps.length + 1 });
+  }
+  if (options.additionalSuccessfulOutcome) {
+    const additional = steps.find(
+      (step) => step.name === `Deployment result ${options.additionalSuccessfulOutcome}`,
+    );
+    if (!additional) throw new Error('missing additional outcome marker');
+    additional.conclusion = 'success';
+  }
+  return {
+    total_count: 1,
+    jobs: [
+      {
+        id: 99,
+        run_id: RUN_ID,
+        name: 'deploy-and-verify',
+        status: 'completed',
+        conclusion: outcome === 'RECOVERED' ? 'failure' : 'success',
+        steps,
+      },
+    ],
+  };
+}
+"""
+          if text.count(old_jobs) != 1:
+              raise SystemExit('jobs helper did not match exactly once')
+          text = text.replace(old_jobs, new_jobs)
+
+          old_options = """    malformedJobs?: boolean;
+  } = {},
+"""
+          new_options = """    malformedJobs?: boolean;
+    duplicateOutcomeMarker?: boolean;
+    additionalSuccessfulOutcome?: 'DEPLOYED' | 'NOOP' | 'RECOVERED';
+  } = {},
+"""
+          if text.count(old_options) != 1:
+              raise SystemExit('fakeProvider options did not match exactly once')
+          text = text.replace(old_options, new_options)
+
+          old_return = """      return jsonResponse(jobs(outcome));
+"""
+          new_return = """      return jsonResponse(
+        jobs(outcome, {
+          duplicateOutcomeMarker: options.duplicateOutcomeMarker,
+          additionalSuccessfulOutcome: options.additionalSuccessfulOutcome,
+        }),
+      );
+"""
+          if text.count(old_return) != 1:
+              raise SystemExit('jobs response did not match exactly once')
+          text = text.replace(old_return, new_return)
+
+          anchor = """  it('returns PARTIAL when the correlated workflow remains active past the adapter deadline', async () => {
+"""
+          tests = """  it('rejects duplicate successful copies of the same deployment marker', async () => {
+    const provider = fakeProvider({ duplicateOutcomeMarker: true });
+    const receipt = await adapter(provider).execute(request());
+
+    expect(provider.dispatches).toBe(1);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(receipt.metadata.unknownReason).toMatch(/exactly one trusted deployment result marker/u);
+  });
+
+  it('rejects multiple successful deployment outcomes in one job', async () => {
+    const provider = fakeProvider({ additionalSuccessfulOutcome: 'NOOP' });
+    const receipt = await adapter(provider).execute(request());
+
+    expect(provider.dispatches).toBe(1);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(receipt.metadata.unknownReason).toMatch(/exactly one trusted deployment result marker/u);
+  });
+
+"""
+          if text.count(anchor) != 1:
+              raise SystemExit('test insertion anchor did not match exactly once')
+          test.write_text(text.replace(anchor, tests + anchor))
+          PY
+      - name: Format and run targeted regression
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          pnpm exec prettier --check \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          pnpm --filter @rsa/server exec vitest run src/mcf-runtime/github-staging-deploy.adapter.test.ts
+      - name: Remove temporary workflow
+        run: git rm .github/workflows/gate-d-p1-marker-fix.yml
+      - name: Enforce exact changed path set
+        run: |
+          expected=$(mktemp)
+          actual=$(mktemp)
+          cat >"$expected" <<'EOF'
+          .github/workflows/gate-d-p1-marker-fix.yml
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts
+          EOF
+          git diff HEAD --name-only | sort >"$actual"
+          sort -o "$expected" "$expected"
+          diff -u "$expected" "$actual"
+          git diff HEAD --check
+      - name: Commit P1 remediation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          git commit -m 'fix(gate-d): reject duplicate deployment markers'
+          git push origin HEAD:feat/mcf-runtime-006-gate-d-staging-deploy-adapter
