@@ -58,8 +58,12 @@ describe('PermissionEngine PR collaboration writes', () => {
   }
 
   it('requires authorizedScope for persistent collaboration writes', () => {
-    const value = inputs();
-    delete value.authorizedScope;
+    const value = {
+      repository: resource,
+      pull_request_number: 79,
+      expected_head_sha: '2'.repeat(40),
+      idempotency_key: 'mcf-c2-idempotency-0001',
+    };
     expect(() => permissions.assertAllowed(skill, 'Gabriel', tool('comment-pr'), value)).toThrow(
       McfPermissionDeniedError,
     );
