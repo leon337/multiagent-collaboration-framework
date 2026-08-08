@@ -143,13 +143,15 @@ describe('C2 expired global reservation recovery', () => {
         expect.any(String),
       );
 
-      const holderState = await database.query<{ activeAttemptId: string | null }>(
+      const holderStateBeforeReconciliation = await database.query<{
+        activeAttemptId: string | null;
+      }>(
         `select "active_external_attempt_id" as "activeAttemptId"
          from "mcf_missions"
          where "id" = $1`,
         [holderMission],
       );
-      expect(holderState.rows[0]?.activeAttemptId).toBeNull();
+      expect(holderStateBeforeReconciliation.rows[0]?.activeAttemptId).toBe(holderAttempt);
 
       const event = await database.query<{ payload: Record<string, unknown> }>(
         `select "payload"
@@ -162,6 +164,7 @@ describe('C2 expired global reservation recovery', () => {
         previousStatus: 'ALLOWED',
         reason: 'RESERVATION_EXPIRED',
         scope: 'GLOBAL_IDEMPOTENCY',
+        holderMissionPointerCleanup: 'DEFERRED_TO_MISSION_RECONCILIATION',
       });
 
       await ledger.recordFailed(contenderAttempt, {
@@ -177,6 +180,16 @@ describe('C2 expired global reservation recovery', () => {
         code: 'RESERVATION_CONFLICT',
         retryable: false,
       });
+
+      const holderStateAfterReconciliation = await database.query<{
+        activeAttemptId: string | null;
+      }>(
+        `select "active_external_attempt_id" as "activeAttemptId"
+         from "mcf_missions"
+         where "id" = $1`,
+        [holderMission],
+      );
+      expect(holderStateAfterReconciliation.rows[0]?.activeAttemptId).toBeNull();
     } finally {
       await database.query(
         `delete from "mcf_external_action_attempts" where "mission_id" = any($1::text[])`,
