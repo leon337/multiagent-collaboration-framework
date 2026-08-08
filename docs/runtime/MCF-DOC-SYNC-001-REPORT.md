@@ -14,16 +14,21 @@ Um teste de retomada em chat novo consultou `docs/agentes/README.md` e os contra
 1. a matriz consolidada e o README raiz registravam 29 agentes;
 2. `docs/agentes/` possuía somente sete contratos individuais;
 3. o workflow de documentação exigia somente esses sete contratos;
-4. `MCF-RUNTIME-006-PLAN.md` ainda estava marcado como planejado apesar de A1, A2 e C1 já terem avançado;
-5. o checkpoint C1 ainda indicava gate de merge pendente apesar do PR #76 já estar mesclado.
+4. os sete contratos legados usavam, em alguns casos, papéis anteriores ou mais estreitos que a matriz vigente;
+5. `MCF-RUNTIME-006-PLAN.md` ainda estava marcado como planejado apesar de A1, A2 e C1 já terem avançado;
+6. o checkpoint C1 ainda indicava gate de merge pendente apesar do PR #76 já estar mesclado;
+7. a primeira tentativa de sincronização de estado resumiu detalhes probatórios do plano/checkpoint, detectados e restaurados antes do merge.
 
 ## Correção
 
 - adicionados os 22 contratos individuais faltantes sem ampliar competências;
+- alinhados os sete contratos legados às funções oficiais da matriz, preservando responsabilidades históricas compatíveis;
 - `docs/agentes/README.md` transformado em índice dos 29 agentes;
 - validação documental reforçada para exigir exatamente 29 contratos individuais;
+- CI passou a comparar automaticamente nome e `Papel` de cada contrato com a matriz canônica;
 - estado do RUNTIME-006 reconciliado com os commits integrados;
-- checkpoint C1 reconciliado com o merge observado.
+- checkpoint C1 reconciliado com o merge observado sem inventar autorização ausente no checkpoint anterior;
+- detalhes históricos de entrada, receipt, critérios, runs, artefatos e digests foram preservados.
 
 ## Invariantes preservados
 
@@ -33,6 +38,8 @@ leandro:
   counted_as_agent: false
 official_agents: 29
 competence_source: MCF_29_AGENT_MATRIX
+contracts_individual: 29
+contract_role_matrix_validation: REQUIRED
 production: BLOCKED
 c1_real_provider_write: NOT_AUTHORIZED
 new_agent_authority_created: false
@@ -40,14 +47,18 @@ new_agent_authority_created: false
 
 ## Resultado esperado
 
-Um chat novo que use a documentação do repositório deve encontrar a mesma composição oficial em:
+Um chat novo que use a documentação do repositório deve encontrar a mesma composição e funções oficiais em:
 
 1. `README.md`;
 2. matriz consolidada;
 3. `docs/agentes/README.md`;
-4. conjunto de contratos individuais;
+4. conjunto dos 29 contratos individuais;
 5. CI de documentação.
+
+## Limitação de auditoria desta execução
+
+A revisão executada durante esta correção ocorreu no mesmo ambiente cognitivo que produziu as alterações. Ela pode detectar e remediar inconsistências, mas não será rotulada como auditoria independente quando o gate exigir independência real.
 
 ## Próximo passo
 
-Após CI e revisão independente deste pacote, retomar o RUNTIME-006 a partir do estado real pós-C1.
+Após CI verde e revisão independente exigida pelo gate, integrar este pacote e retomar o RUNTIME-006 a partir do estado real pós-C1.
