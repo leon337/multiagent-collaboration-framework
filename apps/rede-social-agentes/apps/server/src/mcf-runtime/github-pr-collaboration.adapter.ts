@@ -314,12 +314,14 @@ function assertReview(
   target: PullCollaborationTarget,
   expectedBody: string,
 ): void {
-  const expectedPrefix = `https://github.com/${target.repository}/pull/${target.pullNumber}#`;
+  const expectedUrl =
+    `https://github.com/${target.repository}/pull/${target.pullNumber}` +
+    `#pullrequestreview-${review.id}`;
   if (
     !Number.isInteger(review.id) ||
     review.id < 1 ||
     typeof review.html_url !== 'string' ||
-    !review.html_url.toLowerCase().startsWith(expectedPrefix.toLowerCase()) ||
+    review.html_url.toLowerCase() !== expectedUrl.toLowerCase() ||
     review.body !== expectedBody ||
     review.state !== 'COMMENTED' ||
     exactSha(review.commit_id ?? '', 'provider review commit SHA') !== target.expectedHeadSha
