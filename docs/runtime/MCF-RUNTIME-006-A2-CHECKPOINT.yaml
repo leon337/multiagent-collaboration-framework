@@ -10,7 +10,9 @@ previous_rr1_final_head_sha: 1d1289190932b57729d695c6e525647e983c5e2e
 validated_rr2_code_sha: 77c54a21e3492190348a8d206f65b9823c1042ae
 previous_rr2_final_head_sha: 45d6c13129ece2b335fdf3a14d3578815bed424d
 validated_rr4_code_sha: ac8f1eac219b7f031c744804f338912b867072f4
-state: RR4_READY_FOR_INDEPENDENT_RE_REVIEW
+previous_rr4_final_head_sha: 5e6bd6ce38d0c38678c4f1de83a4cbe08c5bf1a3
+validated_rr5_code_sha: bd31df46276f48edb7985484634f7909df61ca34
+state: RR5_READY_FOR_INDEPENDENT_RE_REVIEW
 objective: Consultar CI do GitHub por SHA exato sem capacidade de execução ou escrita.
 
 adapter:
@@ -78,6 +80,18 @@ independent_re_review_3:
   MCF-A2-RR3-L-001:
     status: REMEDIATED_CI_PASS
 
+independent_post_rr4_review:
+  result: FAIL
+  findings:
+    critical: 0
+    high: 1
+    medium: 0
+    low: 1
+  MCF-A2-POST-RR4-H-001:
+    status: REMEDIATED_CI_PASS
+  MCF-A2-POST-RR4-L-001:
+    status: REMEDIATED_CI_PASS
+
 controls:
   external_receipt_bound_to_current_inputs: true
   exact_test_target_required_on_external_receipt: true
@@ -117,6 +131,12 @@ controls:
   receipt_persisted_by_external_action_ledger: true
   workflow_runs_collected: true
   jobs_collected: true
+  jobs_provider_run_id_required: true
+  jobs_provider_head_sha_required: true
+  jobs_enclosing_run_bound: true
+  jobs_exact_sha_bound: true
+  jobs_provenance_preserved_in_receipt: true
+  jobs_provenance_revalidated: true
   check_suites_collected: true
   check_suites_sha_bound: true
   check_suites_schema_validated: true
@@ -126,6 +146,16 @@ controls:
   check_suites_aggregated: true
   check_suites_receipt_validated: true
   check_runs_collected: true
+  check_runs_provider_head_sha_required: true
+  check_runs_exact_sha_bound: true
+  check_runs_provenance_preserved_in_receipt: true
+  check_runs_provenance_revalidated: true
+  check_run_only_sha_mismatch_fail_closed: true
+  persistence_replay_runtime_path_tested: true
+  persistence_replay_duplicate_rejected: true
+  persistence_replay_concurrent_loser_rejected: true
+  persistence_replay_single_valid_receipt_row: true
+  persistence_replay_single_evidence_validated_event: true
   workflow_conclusion_always_aggregated: true
   unknown_conclusion_fail_closed: true
   runtime_response_schema_validation: true
@@ -171,13 +201,22 @@ scope_expansion_rr4:
     - apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.integration.test.ts
     - apps/rede-social-agentes/apps/server/vitest.config.ts
 
+scope_remediation_rr5:
+  source: independent_post_rr4_review_FAIL
+  modified_existing_files:
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.adapter.test.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.adapter.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/github-ci-query.external-receipt.test.ts
+    - apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.integration.test.ts
+
 github_actions:
-  validated_code_sha: ac8f1eac219b7f031c744804f338912b867072f4
+  validated_code_sha: bd31df46276f48edb7985484634f7909df61ca34
   documentation:
-    run_id: 31225014415
+    run_id: 31229243859
     conclusion: SUCCESS
   foundation:
-    run_id: 31225014360
+    run_id: 31229243827
     conclusion: SUCCESS
     install_frozen_lockfile: PASS
     format: PASS
@@ -187,43 +226,50 @@ github_actions:
     tests: PASS
     build: PASS
     server_test_files: 55
-    server_tests: 256
-    server_tests_passed: 256
+    server_tests: 272
+    server_tests_passed: 272
   container_smoke:
-    run_id: 31225014382
+    run_id: 31229243875
     conclusion: SUCCESS
 
 validation:
-  master_review_rr4: PASS
+  master_review_rr5: PASS
   local:
     format: PASS
     lint: PASS
     typecheck: PASS
   targeted_tests:
-    external_receipt_context: 28/28_PASS
-    github_ci_query_adapter: 58/58_PASS
+    github_ci_query_adapter: 65/65_PASS
+    external_receipt_context: 36/36_PASS
     evidence_validator: 3/3_PASS
-    permission_engine: 11/11_PASS
+    resource_boundary: 11/11_PASS
+    persistence_replay: 2/2_PASS
   security_regressions:
+    job_provenance: PASS
+    check_run_provenance: PASS
+    check_run_only_sha_mismatch: PASS
+    receipt_tampering: PASS
+    persistence_replay_duplicate: PASS
+    persistence_replay_concurrent: PASS
     pagination: PASS
     rate_limit: PASS
     url_binding: PASS
     credential_resource: PASS
-    abort: 2/2_PASS
+    abort: PASS
     budgets: PASS
   full_tests:
     ops: 15/15_PASS
-    server: 256/256_PASS
+    server: 272/272_PASS
     web: 5/5_PASS
   source_only:
     server_test_files: 55
-    server_tests: 256
-    server_passed: 256
+    server_tests: 272
+    server_passed: 272
   migrations_twice: PASS
   build: PASS
   container_smoke: PASS
-  github_actions_rr4: PASS
-  independent_rr4_re_review: PENDING
+  github_actions_rr5: PASS
+  independent_rr5_re_review: PENDING
   pull_request_state: DRAFT
   merge: NOT_AUTHORIZED
   production: BLOCKED
