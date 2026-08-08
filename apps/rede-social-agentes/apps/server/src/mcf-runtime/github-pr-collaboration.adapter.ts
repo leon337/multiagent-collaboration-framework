@@ -751,26 +751,33 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         try {
           comment = await this.findComment(target, expectedBody, deadlineAt, budget);
         } catch (reconciliationError) {
-          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {
+          if (isAmbiguousMutationError(error)) {
             return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
           }
           throw reconciliationError;
         }
-        if (!comment) throw error;
+        if (!comment) {
+          if (isAmbiguousMutationError(error)) {
+            return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
+          }
+          throw error;
+        }
       }
 
       try {
         comment = await this.findComment(target, expectedBody, deadlineAt, budget);
-      } catch (error) {
-        if (isAmbiguousMutationError(error)) {
-          return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
-        }
-        throw error;
+      } catch {
+        return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
       }
       if (!comment) return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
     }
 
     assertComment(comment, target, expectedBody);
+    try {
+      await this.readPull(target, deadlineAt, budget);
+    } catch {
+      return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
+    }
     return this.receipt(
       request,
       target,
@@ -803,26 +810,33 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         try {
           review = await this.findReview(target, expectedBody, deadlineAt, budget);
         } catch (reconciliationError) {
-          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {
+          if (isAmbiguousMutationError(error)) {
             return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
           }
           throw reconciliationError;
         }
-        if (!review) throw error;
+        if (!review) {
+          if (isAmbiguousMutationError(error)) {
+            return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
+          }
+          throw error;
+        }
       }
 
       try {
         review = await this.findReview(target, expectedBody, deadlineAt, budget);
-      } catch (error) {
-        if (isAmbiguousMutationError(error)) {
-          return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
-        }
-        throw error;
+      } catch {
+        return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
       }
       if (!review) return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
     }
 
     assertReview(review, target, expectedBody);
+    try {
+      await this.readPull(target, deadlineAt, budget);
+    } catch {
+      return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
+    }
     return this.receipt(
       request,
       target,
@@ -864,28 +878,26 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         try {
           pull = await this.readPull(target, deadlineAt, budget);
         } catch (reconciliationError) {
-          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {
+          if (isAmbiguousMutationError(error)) {
             return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);
           }
           throw reconciliationError;
         }
-        if (!this.metadataMatches(pull, target)) throw error;
+        if (!this.metadataMatches(pull, target)) {
+          if (isAmbiguousMutationError(error)) {
+            return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);
+          }
+          throw error;
+        }
       }
 
       try {
         pull = await this.readPull(target, deadlineAt, budget);
-      } catch (error) {
-        if (isAmbiguousMutationError(error)) {
-          return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);
-        }
-        throw error;
+      } catch {
+        return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);
       }
       if (!this.metadataMatches(pull, target)) {
-        throw new ExternalActionAdapterError(
-          'RESERVATION_CONFLICT',
-          'GitHub PR metadata read-back does not match the requested title/body patch',
-          false,
-        );
+        return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);
       }
     }
 

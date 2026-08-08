@@ -13,7 +13,6 @@ import { ExternalActionLedger } from './external-action-ledger.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
-import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
@@ -56,25 +55,13 @@ import { SocialTimelineService } from './social-timeline.service.js';
       inject: [EvidenceValidator],
     },
     {
-      provide: GitHubPullCollaborationAdapter,
-      useFactory: (evidence: EvidenceValidator) => new GitHubPullCollaborationAdapter(evidence),
-      inject: [EvidenceValidator],
-    },
-    {
       provide: AdapterRegistry,
       useFactory: (
         githubReview: GitHubCodeReviewAdapter,
         githubCiQuery: GitHubCiQueryAdapter,
         githubBranchPr: GitHubBranchPullRequestAdapter,
-        githubPrCollaboration: GitHubPullCollaborationAdapter,
-      ) =>
-        new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration]),
-      inject: [
-        GitHubCodeReviewAdapter,
-        GitHubCiQueryAdapter,
-        GitHubBranchPullRequestAdapter,
-        GitHubPullCollaborationAdapter,
-      ],
+      ) => new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr]),
+      inject: [GitHubCodeReviewAdapter, GitHubCiQueryAdapter, GitHubBranchPullRequestAdapter],
     },
     {
       provide: ExternalActionLedger,
