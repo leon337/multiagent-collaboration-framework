@@ -568,7 +568,6 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
     if (branch) {
       assertRef(branch, target.branchRef, target.headSha);
     } else {
-      let branchMutationWasAmbiguous = false;
       try {
         await this.client.requestJson<GitHubRefResponse>(
           'POST',
@@ -579,11 +578,10 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
         );
       } catch (error) {
         if (!shouldReconcileMutationError(error)) throw error;
-        branchMutationWasAmbiguous = isAmbiguousMutationError(error);
         try {
           branch = await this.getBranch(target, deadlineAt, budget);
         } catch (reconciliationError) {
-          if (branchMutationWasAmbiguous && isAmbiguousMutationError(reconciliationError)) {
+          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {
             return this.unknownReceipt(request, target, 'CREATE_BRANCH', budget);
           }
           throw reconciliationError;
@@ -607,7 +605,6 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
 
     let pull = await this.findPull(target, deadlineAt, budget);
     if (!pull) {
-      let pullMutationWasAmbiguous = false;
       try {
         await this.client.requestJson<GitHubPullResponse>(
           'POST',
@@ -623,11 +620,10 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
         );
       } catch (error) {
         if (!shouldReconcileMutationError(error)) throw error;
-        pullMutationWasAmbiguous = isAmbiguousMutationError(error);
         try {
           pull = await this.findPull(target, deadlineAt, budget);
         } catch (reconciliationError) {
-          if (pullMutationWasAmbiguous && isAmbiguousMutationError(reconciliationError)) {
+          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {
             return this.unknownReceipt(request, target, 'CREATE_PULL_REQUEST', budget);
           }
           throw reconciliationError;
