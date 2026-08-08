@@ -142,13 +142,13 @@ describe('C2 global idempotency serialization', () => {
       );
     } finally {
       await database.query(
-        `delete from "mcf_external_action_attempts" where "mission_id" = any($1::uuid[])`,
+        `delete from "mcf_external_action_attempts" where "mission_id" = any($1::text[])`,
         [[missionA, missionB]],
       );
-      await database.query(`delete from "mcf_events" where "mission_id" = any($1::uuid[])`, [
+      await database.query(`delete from "mcf_events" where "mission_id" = any($1::text[])`, [
         [missionA, missionB],
       ]);
-      await database.query(`delete from "mcf_missions" where "id" = any($1::uuid[])`, [
+      await database.query(`delete from "mcf_missions" where "id" = any($1::text[])`, [
         [missionA, missionB],
       ]);
     }
