@@ -139,4 +139,31 @@ describe('verifyGitHubBranchPrEvidence', () => {
       ),
     ).toThrow(/bind base, branch and exact SHAs/u);
   });
+
+  it('rejects a signed receipt that substitutes the branch evidence URL', () => {
+    const evidence = new EvidenceValidator();
+    const original = makeReceipt(evidence);
+    const receipt = evidence.createTrustedReceipt({
+      provider: original.provider,
+      operation: original.operation,
+      resource: original.resource,
+      externalId: original.externalId,
+      commitSha: original.commitSha,
+      status: original.status,
+      observedAt: original.observedAt,
+      metadata: {
+        ...original.metadata,
+        evidenceUrls: [
+          `https://github.com/leon337/multiagent-collaboration-framework/commit/${HEAD_SHA}`,
+          'https://github.com/leon337/multiagent-collaboration-framework/tree/feat%2Fwrong-branch',
+          'https://github.com/leon337/multiagent-collaboration-framework/pull/76',
+        ],
+      },
+    });
+
+    evidence.verify(receipt, tool);
+    expect(() => verifyGitHubBranchPrEvidence(receipt, tool, skill, inputs, context)).toThrow(
+      /exact commit, branch and pull request URLs/u,
+    );
+  });
 });
