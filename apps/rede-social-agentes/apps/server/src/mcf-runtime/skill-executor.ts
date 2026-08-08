@@ -121,10 +121,7 @@ function isGitHubPrCollaborationReceipt(
   );
 }
 
-function isGitHubStagingDeployReceipt(
-  receipt: McfToolReceipt,
-  skill: McfSkillDefinition,
-): boolean {
+function isGitHubStagingDeployReceipt(receipt: McfToolReceipt, skill: McfSkillDefinition): boolean {
   return (
     skill.skillId === 'MCF-DEPLOY-VALIDATE' &&
     receipt.provider === 'github-actions' &&

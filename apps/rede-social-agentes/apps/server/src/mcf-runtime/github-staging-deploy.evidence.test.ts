@@ -114,13 +114,7 @@ function receipt(
 function verify(value: McfToolReceipt, inputOverrides: Record<string, unknown> = {}) {
   const evidence = new EvidenceValidator();
   evidence.verify(value, tool);
-  verifyGitHubStagingDeployEvidence(
-    value,
-    tool,
-    skill,
-    { ...inputs, ...inputOverrides },
-    context,
-  );
+  verifyGitHubStagingDeployEvidence(value, tool, skill, { ...inputs, ...inputOverrides }, context);
 }
 
 describe('GitHub staging deploy evidence', () => {

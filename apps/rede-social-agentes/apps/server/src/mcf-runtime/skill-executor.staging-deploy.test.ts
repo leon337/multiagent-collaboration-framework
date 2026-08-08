@@ -130,11 +130,7 @@ describe('SkillExecutor Gate D staging semantics', () => {
   });
 
   it('accepts exact healthy DEPLOYED evidence', async () => {
-    const executor = new SkillExecutor(
-      registry(),
-      new PermissionEngine(),
-      new EvidenceValidator(),
-    );
+    const executor = new SkillExecutor(registry(), new PermissionEngine(), new EvidenceValidator());
 
     const result = await executor.execute(executeInput(receipt('DEPLOYED')));
 
@@ -189,11 +185,7 @@ describe('SkillExecutor Gate D staging semantics', () => {
   });
 
   it('rejects signed but semantically inconsistent staging evidence', async () => {
-    const executor = new SkillExecutor(
-      registry(),
-      new PermissionEngine(),
-      new EvidenceValidator(),
-    );
+    const executor = new SkillExecutor(registry(), new PermissionEngine(), new EvidenceValidator());
     const invalid = receipt('DEPLOYED', {
       workflowRunUrl: `https://github.com/${REPOSITORY}/actions/runs/9999`,
     });
