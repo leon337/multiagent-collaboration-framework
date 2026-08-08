@@ -107,18 +107,19 @@ function jobs(outcome: 'DEPLOYED' | 'NOOP' | 'RECOVERED') {
   };
 }
 
-function fakeProvider(options: {
-  existing?: boolean;
-  conflictingSha?: string | null;
-  outcome?: 'DEPLOYED' | 'NOOP' | 'RECOVERED';
-  hang?: boolean;
-  unhealthyBefore?: boolean;
-  inconsistentFinal?: boolean;
-  malformedJobs?: boolean;
-} = {}) {
+function fakeProvider(
+  options: {
+    existing?: boolean;
+    conflictingSha?: string | null;
+    outcome?: 'DEPLOYED' | 'NOOP' | 'RECOVERED';
+    hang?: boolean;
+    unhealthyBefore?: boolean;
+    inconsistentFinal?: boolean;
+    malformedJobs?: boolean;
+  } = {},
+) {
   const outcome = options.outcome ?? 'DEPLOYED';
-  let currentSha =
-    options.existing && outcome !== 'RECOVERED' ? RELEASE_SHA : PREVIOUS_SHA;
+  let currentSha = options.existing && outcome !== 'RECOVERED' ? RELEASE_SHA : PREVIOUS_SHA;
   let ready = !options.unhealthyBefore;
   let runExists = options.existing ?? false;
   let dispatches = 0;
@@ -181,7 +182,8 @@ function fakeProvider(options: {
       });
     }
     if (url.pathname.endsWith(`/actions/runs/${RUN_ID}`)) {
-      if (options.hang) return jsonResponse(workflowRun({ status: 'in_progress', conclusion: null }));
+      if (options.hang)
+        return jsonResponse(workflowRun({ status: 'in_progress', conclusion: null }));
       return jsonResponse(
         workflowRun({ conclusion: outcome === 'RECOVERED' ? 'failure' : 'success' }),
       );
@@ -255,7 +257,9 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     expect(provider.dispatches).toBe(0);
     expect(receipt.status).toBe('PARTIAL');
     expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
-    expect(receipt.metadata.unknownReason).toMatch(/without durable proof of its original pre-deploy SHA/u);
+    expect(receipt.metadata.unknownReason).toMatch(
+      /without durable proof of its original pre-deploy SHA/u,
+    );
   });
 
   it('fails closed when the idempotency key is bound to another release SHA', async () => {

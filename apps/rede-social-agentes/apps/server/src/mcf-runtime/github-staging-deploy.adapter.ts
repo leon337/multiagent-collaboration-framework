@@ -114,7 +114,9 @@ const TERMINAL_CONCLUSIONS = new Set<WorkflowConclusion>([
 ]);
 
 if (GITHUB_STAGING_DEPLOY_TIMEOUT_MS >= EXTERNAL_ACTION_LEASE_MS) {
-  throw new Error('GitHub staging deploy timeout must remain shorter than the external action lease');
+  throw new Error(
+    'GitHub staging deploy timeout must remain shorter than the external action lease',
+  );
 }
 
 function sleep(milliseconds: number): Promise<void> {
@@ -237,7 +239,11 @@ function resolveTarget(request: ExternalActionRequest): DeployTarget {
 
 function requireWorkflowRun(value: unknown): GitHubWorkflowRun {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new ExternalActionAdapterError('INVALID_RESPONSE', 'invalid workflow run response', false);
+    throw new ExternalActionAdapterError(
+      'INVALID_RESPONSE',
+      'invalid workflow run response',
+      false,
+    );
   }
   const record = value as Record<string, unknown>;
   if (
@@ -262,7 +268,11 @@ function requireWorkflowRun(value: unknown): GitHubWorkflowRun {
 
 function requireWorkflowStep(value: unknown): GitHubJobStep {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new ExternalActionAdapterError('INVALID_RESPONSE', 'invalid workflow step response', false);
+    throw new ExternalActionAdapterError(
+      'INVALID_RESPONSE',
+      'invalid workflow step response',
+      false,
+    );
   }
   const record = value as Record<string, unknown>;
   if (
@@ -279,7 +289,11 @@ function requireWorkflowStep(value: unknown): GitHubJobStep {
 
 function requireWorkflowJob(value: unknown): GitHubWorkflowJob {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new ExternalActionAdapterError('INVALID_RESPONSE', 'invalid workflow job response', false);
+    throw new ExternalActionAdapterError(
+      'INVALID_RESPONSE',
+      'invalid workflow job response',
+      false,
+    );
   }
   const record = value as Record<string, unknown>;
   if (
@@ -336,8 +350,8 @@ function markerOutcome(jobs: GitHubWorkflowJob[]): DeploymentOutcome | null {
 export class GitHubStagingDeployClient {
   constructor(
     private readonly fetcher: FetchLike = globalThis.fetch,
-    private readonly token: string | undefined =
-      process.env.MCF_GITHUB_TOKEN ?? process.env.GITHUB_TOKEN,
+    private readonly token: string | undefined = process.env.MCF_GITHUB_TOKEN ??
+      process.env.GITHUB_TOKEN,
   ) {}
 
   private async fetchWithDeadline(

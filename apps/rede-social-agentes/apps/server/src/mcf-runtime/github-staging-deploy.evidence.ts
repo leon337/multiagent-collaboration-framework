@@ -70,7 +70,11 @@ function verifyEvidenceUrls(
   releaseSha: string,
 ): void {
   const value = metadata.evidenceUrls;
-  if (!Array.isArray(value) || value.length !== 2 || value.some((item) => typeof item !== 'string')) {
+  if (
+    !Array.isArray(value) ||
+    value.length !== 2 ||
+    value.some((item) => typeof item !== 'string')
+  ) {
     reject('staging deployment evidenceUrls must contain exactly run and commit URLs');
   }
   const expected = new Set([
@@ -289,8 +293,11 @@ export function verifyGitHubStagingDeployEvidence(
     'staging deployment evidence requires workflowConclusion',
   );
   if (
-    stringValue(receipt.metadata, 'conclusion', 'staging deployment evidence requires conclusion') !==
-    workflowConclusion
+    stringValue(
+      receipt.metadata,
+      'conclusion',
+      'staging deployment evidence requires conclusion',
+    ) !== workflowConclusion
   ) {
     reject('staging deployment conclusion aliases do not match');
   }
@@ -326,8 +333,11 @@ export function verifyGitHubStagingDeployEvidence(
       'stagingReadyStatus',
       'staging deployment evidence requires stagingReadyStatus',
     ) !== 200 ||
-    stringValue(receipt.metadata, 'smokeStatus', 'staging deployment evidence requires smokeStatus') !==
-      'pass'
+    stringValue(
+      receipt.metadata,
+      'smokeStatus',
+      'staging deployment evidence requires smokeStatus',
+    ) !== 'pass'
   ) {
     reject('staging deployment recovery/smoke metadata is invalid');
   }
