@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import type { McfSkillDefinition } from '@rsa/contracts';
+import type { McfSkillDefinition, McfToolReceipt } from '@rsa/contracts';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { DatabaseService } from '../database.service.js';
@@ -167,12 +167,20 @@ describe('C2 expired global reservation recovery', () => {
         holderMissionPointerCleanup: 'DEFERRED_TO_MISSION_RECONCILIATION',
       });
 
-      await ledger.recordFailed(contenderAttempt, {
-        code: 'TARGET_NOT_FOUND',
-        message: 'terminal contender result keeps the consumed global key bound',
-        retryable: false,
-        statusCode: 404,
-      });
+      const consumedReceipt: McfToolReceipt = {
+        receiptId: randomUUID(),
+        provider: 'github',
+        operation: 'comment-pr',
+        resource: REPOSITORY,
+        externalId: '123456',
+        commitSha: 'a'.repeat(40),
+        status: 'SUCCEEDED',
+        observedAt: new Date().toISOString(),
+        payloadDigest: 'f'.repeat(64),
+        metadata: { idempotencyKey: IDEMPOTENCY_KEY },
+        signature: 'f'.repeat(64),
+      };
+      await ledger.recordExecuted(contenderAttempt, consumedReceipt);
 
       await expect(
         ledger.reserve(request(holderMission, randomUUID()), 'github-pr-collaboration-write-v1'),
