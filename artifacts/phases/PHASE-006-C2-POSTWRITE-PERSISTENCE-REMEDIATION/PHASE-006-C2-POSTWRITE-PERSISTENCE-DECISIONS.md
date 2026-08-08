@@ -42,10 +42,25 @@ Nenhuma prova de escrita GitHub real foi realizada. `real_github_write_test=NOT_
 
 O pacote `PHASE-006-C2-CONFORMANCE-RECOVERY` documenta uma fase anterior e permanece histórico. Esta remediação posterior recebe PRF próprio.
 
-## D10 — Gate final
+## D10 — Gate de auditoria funcional
 
-A implementação em `3fede0da1e5d50b2a339b5c2dc88bd5036753b6e` está tecnicamente verde, mas a fase só poderá avançar após:
+A implementação `3fede0da1e5d50b2a339b5c2dc88bd5036753b6e` passou CI completa. O candidato documental `74fd45a57067eab5d0a61bfc91d1869249eee262` também passou CI completa, mas a revisão independente `PRR_kwDOTnz-ks8AAAABI2lSrg` retornou `FAIL` por P2 de proveniência do checkpoint.
 
-1. CI do commit documental final;
-2. revisão independente no HEAD final exato;
-3. decisão de Léo.
+## D11 — Eliminar autorreferência estática do checkpoint
+
+Não será gravado no checkpoint um SHA “final” ou IDs de workflows que só passam a existir depois que o próprio commit é criado. Isso gera uma cadeia autorreferente em que toda atualização de proveniência muda o HEAD.
+
+O checkpoint passa a usar:
+
+- `checkpoint_head: SELF`;
+- `SELF = Git commit que contém o checkpoint`;
+- PR HEAD deve ser exatamente esse commit no gate;
+- CI é consultada no GitHub Actions para esse mesmo SHA;
+- revisão independente deve declarar esse mesmo SHA;
+- nenhum P0/P1 novo é aceito.
+
+O snapshot `74fd45a...` permanece como evidência histórica auditada, com CI PASS e review FAIL/P2.
+
+## D12 — Próxima decisão
+
+Após CI e revisão independente do novo HEAD self-bound, Léo aplica o gate. Merge, provider real e produção permanecem bloqueados até essa decisão.

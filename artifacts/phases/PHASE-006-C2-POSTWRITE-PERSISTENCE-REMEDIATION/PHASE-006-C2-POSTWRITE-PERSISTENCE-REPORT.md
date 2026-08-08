@@ -52,16 +52,26 @@ HEAD: `3fede0da1e5d50b2a339b5c2dc88bd5036753b6e`.
 - Documentation validation `31263689993`: PASS.
 - Rede Social Container Smoke `31263690012`: PASS.
 - Rede Social Foundation `31263689966`: PASS.
-- format: PASS.
-- lint: PASS.
-- typecheck: PASS.
-- migrations duas vezes: PASS.
-- migration 0027: PASS.
-- server test files: 85/85 PASS.
-- server tests: 356/356 PASS.
+- 85/85 arquivos e 356/356 testes: PASS.
+- migration 0027 duas vezes: PASS.
 - build: PASS.
-- Vitest artifact: `9023511453`.
-- digest: `sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a`.
+- Vitest artifact `9023511453`.
+- digest `sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a`.
+
+### Ciclo 5 — candidato documental auditado e P2 de proveniência
+
+HEAD auditado: `74fd45a57067eab5d0a61bfc91d1869249eee262`.
+
+CI do mesmo HEAD:
+- Documentation validation `31264072381`: PASS.
+- Rede Social Container Smoke `31264072373`: PASS.
+- Rede Social Foundation `31264072380`: PASS.
+- Vitest artifact `9023622705`.
+- digest `sha256:28f5e954dfb7cfc032f9e8231fb606173ceb546b5e824c1cfcdfaecea9ae89aa`.
+
+Revisão independente `PRR_kwDOTnz-ks8AAAABI2lSrg`: `FAIL` por um P2 de consistência documental. O checkpoint ainda apontava para os runs da implementação e marcava o gate final como pendente.
+
+Remediação: a proveniência final deixa de hardcodar um “HEAD final” que muda ao editar o próprio checkpoint. O gate passa a se vincular ao `SELF`, definido como o Git commit que contém o checkpoint, e exige externamente os três workflows e a revisão independente para esse mesmo SHA.
 
 ## Limites preservados
 
@@ -73,8 +83,8 @@ HEAD: `3fede0da1e5d50b2a339b5c2dc88bd5036753b6e`.
 
 ## Relação com a recuperação de conformidade
 
-O PRF em `PHASE-006-C2-CONFORMANCE-RECOVERY` permanece histórico e não é reescrito. Ele documenta a recuperação de processo até o retorno ao gate. Esta fase posterior documenta a correção funcional exigida por um P1 encontrado na revisão independente subsequente.
+O PRF em `PHASE-006-C2-CONFORMANCE-RECOVERY` permanece histórico e não é reescrito. Ele documenta a recuperação de processo até o retorno ao gate. Esta fase posterior documenta a correção funcional exigida pelo P1 e a remediação documental exigida pelo P2 subsequente.
 
 ## Estado
 
-A implementação está tecnicamente validada. A fase ainda não está entregue porque o commit documental final precisa de CI e de revisão independente no HEAD exato antes do gate de Léo.
+A implementação funcional está tecnicamente validada. O próximo gate é avaliar CI e revisão independente no próprio Git HEAD que contém o checkpoint self-bound; somente depois cabe decisão de Léo.

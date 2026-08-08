@@ -6,11 +6,11 @@ pull_request: 80
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
 source_reviewed_head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
 implementation_head_validated: 3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
-final_document_head: PENDING_GIT_COMMIT
 risk_class: B
 objective: preservar idempotencia quando efeito externo pode ter ocorrido mas persistencia local do sucesso falha
-objective_state: VALIDACAO_TECNICA_CONCLUIDA
-cycle: 4
+objective_state: REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
+cycle: 5
+
 completed_acceptance_criteria:
   - P1_CONFIRMED
   - DISPATCH_PREWRITE_POSTWRITE_SEPARATED
@@ -24,25 +24,42 @@ completed_acceptance_criteria:
   - DEDICATED_REGRESSION_TESTS_PASS
   - SERVER_85_FILES_356_TESTS_PASS
   - IMPLEMENTATION_CI_PASS
-remaining_gaps:
-  - FINAL_DOCUMENT_HEAD_CI
-  - EXACT_FINAL_HEAD_INDEPENDENT_REVIEW
-  - LEO_GATE
-  - C2_INTEGRATION_DECISION
-evidence:
-  documentation_run: 31263689993
-  container_smoke_run: 31263690012
-  foundation_run: 31263689966
-  foundation_job: 93118298584
-  vitest_artifact_id: 9023511453
-  vitest_artifact_digest: sha256:1d5c3d85e2d607f2cabb217b8cc7c85c920afb0391dd9976209efb13638d772a
-  server_test_files: 85
-  server_tests: 356
+  - REVIEWED_CANDIDATE_74FD_CI_PASS
+  - REVIEWED_CANDIDATE_74FD_AUDITED
+  - P2_CHECKPOINT_PROVENANCE_CAPTURED
+
+reviewed_candidate:
+  head: 74fd45a57067eab5d0a61bfc91d1869249eee262
+  documentation_run: 31264072381
+  container_smoke_run: 31264072373
+  foundation_run: 31264072380
+  vitest_artifact_id: 9023622705
+  vitest_artifact_digest: sha256:28f5e954dfb7cfc032f9e8231fb606173ceb546b5e824c1cfcdfaecea9ae89aa
+  independent_review_id: PRR_kwDOTnz-ks8AAAABI2lSrg
+  independent_review: FAIL
+  finding: P2_CHECKPOINT_PROVENANCE
+
+current_exact_head_gate:
+  checkpoint_head: SELF
+  checkpoint_head_resolution: GIT_COMMIT_CONTAINING_THIS_FILE
+  pr_head_requirement: MUST_EQUAL_CHECKPOINT_HEAD
+  ci_source: GITHUB_ACTIONS_FOR_CHECKPOINT_HEAD
+  required_workflows:
+    - Documentation validation
+    - Rede Social Container Smoke
+    - Rede Social Foundation
+  required_conclusion: SUCCESS
+  review_source: CODEX_PR_REVIEW_FOR_CHECKPOINT_HEAD
+  blocking_p0_allowed: 0
+  blocking_p1_allowed: 0
+  evaluation: EXTERNAL_AT_GATE
+
 security:
   real_github_write_test: NOT_AUTHORIZED
   production: BLOCKED
   merge: BLOCKED_PENDING_GATE
   retry_unknown_without_reconciliation: FORBIDDEN
+
 decisions:
   - keep_failed_for_definitively_not_applied_outcomes
   - use_unknown_for_receipt_or_postwrite_persistence_ambiguity
@@ -50,7 +67,15 @@ decisions:
   - preserve_binding_for_expired_executing
   - scope_executing_barrier_to_c2_mutating_adapter
   - keep_conformance_recovery_prf_immutable_as_history
-next_action: validar CI do HEAD documental final e solicitar revisao independente nesse SHA exato
+  - bind_final_gate_to_commit_containing_checkpoint_instead_of_stale_static_run_ids
+
+remaining_gaps:
+  - CURRENT_SELF_BOUND_HEAD_CI
+  - CURRENT_SELF_BOUND_HEAD_INDEPENDENT_REVIEW
+  - LEO_GATE
+  - C2_INTEGRATION_DECISION
+
+next_action: validar o Git HEAD que contem este checkpoint e solicitar revisao independente do mesmo SHA
 recipient: Emily
 return_to: MCF-RUNTIME-006-C2
 human_action_required: false
