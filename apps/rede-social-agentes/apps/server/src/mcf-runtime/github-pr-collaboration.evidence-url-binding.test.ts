@@ -52,7 +52,9 @@ function inputs(operation: 'comment-pr' | 'review-pr-comment') {
     pull_request_number: PR_NUMBER,
     expected_head_sha: HEAD_SHA,
     idempotency_key: KEY,
-    ...(operation === 'comment-pr' ? { comment_body: 'Comment body' } : { review_body: 'Review body' }),
+    ...(operation === 'comment-pr'
+      ? { comment_body: 'Comment body' }
+      : { review_body: 'Review body' }),
   };
 }
 
@@ -64,7 +66,9 @@ function trustedReceipt(
 ) {
   const pullUrl = `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}`;
   const fragment =
-    operation === 'comment-pr' ? `#issuecomment-${fragmentId}` : `#pullrequestreview-${fragmentId}`;
+    operation === 'comment-pr'
+      ? `#issuecomment-${fragmentId}`
+      : `#pullrequestreview-${fragmentId}`;
   const mutationUrl = `${pullUrl}${fragment}`;
   const body = operation === 'comment-pr' ? 'Comment body' : 'Review body';
 
@@ -115,7 +119,13 @@ describe('GitHub PR collaboration evidence URL binding', () => {
       const current = trustedReceipt(evidence, operation);
       evidence.verify(current, tool(operation));
       expect(() =>
-        verifyGitHubPrCollaborationEvidence(current, tool(operation), skill, inputs(operation), context),
+        verifyGitHubPrCollaborationEvidence(
+          current,
+          tool(operation),
+          skill,
+          inputs(operation),
+          context,
+        ),
       ).not.toThrow();
     }
   });
@@ -125,7 +135,13 @@ describe('GitHub PR collaboration evidence URL binding', () => {
     const current = trustedReceipt(evidence, 'comment-pr', MUTATION_ID, 999);
 
     expect(() =>
-      verifyGitHubPrCollaborationEvidence(current, tool('comment-pr'), skill, inputs('comment-pr'), context),
+      verifyGitHubPrCollaborationEvidence(
+        current,
+        tool('comment-pr'),
+        skill,
+        inputs('comment-pr'),
+        context,
+      ),
     ).toThrow(/exact mutation external ID/u);
   });
 
