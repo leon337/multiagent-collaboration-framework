@@ -206,7 +206,11 @@ export function verifyGitHubPrCollaborationEvidence(
     repository,
     'PR collaboration evidence requires a valid pull request URL',
   );
-  if (pullUrl.pathname !== `/${repository}/pull/${pullNumber}` || pullUrl.search || pullUrl.hash) {
+  if (
+    pullUrl.pathname.toLowerCase() !== `/${repository}/pull/${pullNumber}`.toLowerCase() ||
+    pullUrl.search ||
+    pullUrl.hash
+  ) {
     reject('PR collaboration evidence pull request URL must match the target PR');
   }
 
@@ -244,10 +248,13 @@ export function verifyGitHubPrCollaborationEvidence(
     'PR collaboration evidence requires a valid mutation URL',
   );
   if (operation === 'update-pr-text-metadata') {
-    if (mutationUrl.href !== pullUrl.href) {
+    if (mutationUrl.href.toLowerCase() !== pullUrl.href.toLowerCase()) {
       reject('PR collaboration metadata mutation URL must equal the pull request URL');
     }
-  } else if (mutationUrl.pathname !== `/${repository}/pull/${pullNumber}` || !mutationUrl.hash) {
+  } else if (
+    mutationUrl.pathname.toLowerCase() !== `/${repository}/pull/${pullNumber}`.toLowerCase() ||
+    !mutationUrl.hash
+  ) {
     reject('PR collaboration comment/review URL must belong to the target pull request');
   }
 
