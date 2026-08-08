@@ -29,15 +29,24 @@ interface IdempotencyRow extends AttemptRow {
 }
 
 type ExternalAttemptStatus =
-  'ALLOWED' | 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED' | 'ABANDONED';
+  | 'ALLOWED'
+  | 'EXECUTING'
+  | 'EXECUTED'
+  | 'UNKNOWN'
+  | 'FAILED'
+  | 'EVIDENCE_VALIDATED'
+  | 'EVIDENCE_REJECTED'
+  | 'ABANDONED';
 
 interface AttemptStateRow extends AttemptRow {
   status: ExternalAttemptStatus;
 }
 
 const allowedTransitions: Record<ExternalAttemptStatus, ExternalAttemptStatus[]> = {
-  ALLOWED: ['EXECUTED', 'FAILED'],
-  EXECUTED: ['EVIDENCE_VALIDATED', 'EVIDENCE_REJECTED'],
+  ALLOWED: ['EXECUTING', 'EXECUTED', 'UNKNOWN', 'FAILED'],
+  EXECUTING: ['EXECUTED', 'UNKNOWN', 'FAILED'],
+  EXECUTED: ['UNKNOWN', 'EVIDENCE_VALIDATED', 'EVIDENCE_REJECTED'],
+  UNKNOWN: ['EVIDENCE_VALIDATED', 'EVIDENCE_REJECTED'],
   FAILED: [],
   EVIDENCE_VALIDATED: [],
   EVIDENCE_REJECTED: [],
@@ -399,6 +408,20 @@ export class ExternalActionLedger {
     return attemptId;
   }
 
+  async recordExecuting(attemptId: string): Promise<void> {
+    await this.transition({
+      attemptId,
+      status: 'EXECUTING',
+      eventType: 'EXTERNAL_ACTION_EXECUTING',
+      receiptId: null,
+      failure: null,
+      payload: {
+        externalEffectState: 'MUTATION_MAY_START',
+        retryWithoutReconciliation: false,
+      },
+    });
+  }
+
   async recordExecuted(attemptId: string, receipt: McfToolReceipt): Promise<void> {
     await this.transition({
       attemptId,
@@ -418,6 +441,37 @@ export class ExternalActionLedger {
           typeof receipt.metadata.idempotencyKey === 'string'
             ? receipt.metadata.idempotencyKey
             : null,
+      },
+    });
+  }
+
+  async recordUnknown(
+    attemptId: string,
+    receipt: McfToolReceipt,
+    failure: ExternalActionFailure,
+  ): Promise<void> {
+    await this.transition({
+      attemptId,
+      status: 'UNKNOWN',
+      eventType: 'EXTERNAL_ACTION_UNKNOWN',
+      receiptId: receipt.receiptId,
+      failure: { ...failure, retryable: false },
+      payload: {
+        receiptId: receipt.receiptId,
+        provider: receipt.provider,
+        operation: receipt.operation,
+        resource: receipt.resource,
+        externalId: receipt.externalId,
+        commitSha: receipt.commitSha,
+        receiptStatus: receipt.status,
+        externalEffectState: 'POSSIBLY_APPLIED',
+        retryWithoutReconciliation: false,
+        idempotencyKey:
+          typeof receipt.metadata.idempotencyKey === 'string'
+            ? receipt.metadata.idempotencyKey
+            : null,
+        failureCode: failure.code,
+        message: failure.message,
       },
     });
   }
@@ -471,9 +525,19 @@ export class ExternalActionLedger {
 
   private async transition(input: {
     attemptId: string;
-    status: 'EXECUTED' | 'FAILED' | 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED';
+    status:
+      | 'EXECUTING'
+      | 'EXECUTED'
+      | 'UNKNOWN'
+      | 'FAILED'
+      | 'EVIDENCE_VALIDATED'
+      | 'EVIDENCE_REJECTED';
     eventType:
-      'EXTERNAL_ACTION_EXECUTED' | 'EXTERNAL_ACTION_FAILED' | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
+      | 'EXTERNAL_ACTION_EXECUTING'
+      | 'EXTERNAL_ACTION_EXECUTED'
+      | 'EXTERNAL_ACTION_UNKNOWN'
+      | 'EXTERNAL_ACTION_FAILED'
+      | 'EXTERNAL_ACTION_EVIDENCE_VALIDATED';
     receiptId: string | null;
     failure: ExternalActionFailure | null;
     payload: Record<string, unknown>;
