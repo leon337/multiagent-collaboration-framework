@@ -52,11 +52,19 @@ function requiresCanonicalGitHubRepository(
   provider: string,
   operation: string,
 ): boolean {
+  if (provider !== 'github') return false;
+  if (skillId === 'MCF-RUN-TESTS' && canonicalizeToolValue(operation) === 'query-ci') return true;
   return (
-    skillId === 'MCF-RUN-TESTS' &&
-    provider === 'github' &&
-    canonicalizeToolValue(operation) === 'query-ci'
+    skillId === 'MCF-GIT-PR-RELEASE' && canonicalizeToolValue(operation) === 'create-branch-pr'
   );
+}
+
+function isProtectedBranchWrite(operation: string, inputs: Record<string, unknown>): boolean {
+  if (canonicalizeToolValue(operation) !== 'create-branch-pr') return false;
+  const branchRef = inputs.branch_ref;
+  if (typeof branchRef !== 'string') return false;
+  const normalized = canonicalizeToolValue(branchRef.replace(/^refs\/heads\//u, ''));
+  return normalized === 'main' || normalized === 'master';
 }
 
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
@@ -72,6 +80,8 @@ const destructiveOperations = [
   'deploy-production',
   'rotate-secret',
   'expose-secret',
+  'force-push',
+  'merge',
 ];
 
 @Injectable()
@@ -112,12 +122,27 @@ export class PermissionEngine {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');
     }
 
+    if (operation === 'create-branch-pr') {
+      if (skill.skillId !== 'MCF-GIT-PR-RELEASE' || provider !== 'github') {
+        throw new McfPermissionDeniedError(
+          'create-branch-pr is restricted to MCF-GIT-PR-RELEASE using GitHub',
+        );
+      }
+      if (isProtectedBranchWrite(operation, inputs)) {
+        throw new McfPermissionDeniedError(
+          'create-branch-pr cannot target main or master as branch_ref',
+        );
+      }
+    }
+
     if (
       requiresCanonicalGitHubRepository(skill.skillId, provider, operation) &&
       !isCanonicalGitHubRepositoryResource(tool.resource)
     ) {
       throw new McfPermissionDeniedError(
-        'GitHub CI query requires a canonical owner/repository resource',
+        operation === 'query-ci'
+          ? 'GitHub CI query requires a canonical owner/repository resource'
+          : 'GitHub branch/PR write requires a canonical owner/repository resource',
       );
     }
 

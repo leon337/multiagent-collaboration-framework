@@ -13,6 +13,7 @@ import type {
   ExternalActionExecutionContext,
   ExternalActionTrace,
 } from './external-action.contracts.js';
+import { verifyGitHubBranchPrEvidence } from './github-branch-pr.evidence.js';
 import {
   McfEvidenceRejectedError,
   McfPermissionDeniedError,
@@ -92,6 +93,14 @@ function isRunTestsCiQueryReceipt(receipt: McfToolReceipt, skill: McfSkillDefini
     skill.skillId === 'MCF-RUN-TESTS' &&
     canonicalizeProvider(receipt.provider) === 'github' &&
     canonicalizeToolValue(receipt.operation) === 'query-ci'
+  );
+}
+
+function isGitHubBranchPrReceipt(receipt: McfToolReceipt, skill: McfSkillDefinition): boolean {
+  return (
+    skill.skillId === 'MCF-GIT-PR-RELEASE' &&
+    canonicalizeProvider(receipt.provider) === 'github' &&
+    canonicalizeToolValue(receipt.operation) === 'create-branch-pr'
   );
 }
 
@@ -235,10 +244,19 @@ export class SkillExecutor {
     }
 
     try {
-      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
-        agentId: input.agentId,
-        executionContext: input.executionContext,
-      });
+      if (isGitHubBranchPrReceipt(receipt, skill)) {
+        this.evidence.verify(receipt, input.tool);
+        verifyGitHubBranchPrEvidence(receipt, input.tool, skill, input.inputs, {
+          agentId: input.agentId,
+          executionContext: input.executionContext,
+        });
+      } else {
+        this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
+          agentId: input.agentId,
+          executionContext: input.executionContext,
+        });
+      }
+
       if (receipt.status !== 'SUCCEEDED') {
         const reason = `tool receipt status is ${receipt.status}`;
         const ledgerFailure = await this.recordEvidenceRejected(

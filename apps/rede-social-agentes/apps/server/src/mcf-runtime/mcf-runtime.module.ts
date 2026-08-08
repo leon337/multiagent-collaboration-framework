@@ -10,6 +10,7 @@ import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import { ExternalActionLedger } from './external-action-ledger.js';
+import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
@@ -49,10 +50,18 @@ import { SocialTimelineService } from './social-timeline.service.js';
       inject: [EvidenceValidator],
     },
     {
+      provide: GitHubBranchPullRequestAdapter,
+      useFactory: (evidence: EvidenceValidator) => new GitHubBranchPullRequestAdapter(evidence),
+      inject: [EvidenceValidator],
+    },
+    {
       provide: AdapterRegistry,
-      useFactory: (githubReview: GitHubCodeReviewAdapter, githubCiQuery: GitHubCiQueryAdapter) =>
-        new AdapterRegistry([githubReview, githubCiQuery]),
-      inject: [GitHubCodeReviewAdapter, GitHubCiQueryAdapter],
+      useFactory: (
+        githubReview: GitHubCodeReviewAdapter,
+        githubCiQuery: GitHubCiQueryAdapter,
+        githubBranchPr: GitHubBranchPullRequestAdapter,
+      ) => new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr]),
+      inject: [GitHubCodeReviewAdapter, GitHubCiQueryAdapter, GitHubBranchPullRequestAdapter],
     },
     {
       provide: ExternalActionLedger,

@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
 import type { McfToolReceipt } from '@rsa/contracts';
@@ -21,6 +21,10 @@ interface MissionVersionRow {
 
 interface AttemptRow {
   attemptId: string;
+}
+
+interface IdempotencyRow extends AttemptRow {
+  idempotencyFingerprint: string | null;
 }
 
 type ExternalAttemptStatus =
@@ -51,6 +55,58 @@ function databaseErrorCode(error: unknown): string | null {
   return null;
 }
 
+function requestIdempotencyKey(request: ExternalActionRequest): string | null {
+  const value = request.inputs.idempotency_key;
+  if (value === undefined) return null;
+  if (
+    typeof value !== 'string' ||
+    value.length < 16 ||
+    value.length > 128 ||
+    value !== value.trim() ||
+    !/^[A-Za-z0-9][A-Za-z0-9._:-]+$/u.test(value)
+  ) {
+    throw new ExternalActionAdapterError(
+      'INVALID_CONTEXT',
+      'External action idempotency_key must be 16-128 safe characters',
+      false,
+    );
+  }
+  return value;
+}
+
+function canonicalizeForDigest(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => canonicalizeForDigest(item));
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, item]) => [key, canonicalizeForDigest(item)]),
+    );
+  }
+  return value;
+}
+
+function requestIdempotencyFingerprint(
+  request: ExternalActionRequest,
+  adapterId: string,
+  idempotencyKey: string | null,
+): string | null {
+  if (!idempotencyKey) return null;
+  const payload = canonicalizeForDigest({
+    adapterId,
+    agentId: request.agentId,
+    skillId: request.skill.skillId,
+    skillVersion: request.skill.version,
+    provider: request.tool.provider,
+    operation: request.tool.operation,
+    resource: request.tool.resource,
+    inputs: request.inputs,
+  });
+  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+}
+
 @Injectable()
 export class ExternalActionLedger {
   constructor(private readonly database: DatabaseService) {}
@@ -64,6 +120,12 @@ export class ExternalActionLedger {
       );
     }
 
+    const idempotencyKey = requestIdempotencyKey(request);
+    const idempotencyFingerprint = requestIdempotencyFingerprint(
+      request,
+      adapterId,
+      idempotencyKey,
+    );
     const attemptId = randomUUID();
     const occurredAt = new Date();
     const leaseExpiresAt = new Date(occurredAt.getTime() + EXTERNAL_ACTION_LEASE_MS);
@@ -103,6 +165,31 @@ export class ExternalActionLedger {
           );
         }
 
+        if (idempotencyKey && idempotencyFingerprint) {
+          const existing = await client.query<IdempotencyRow>(
+            `select
+               "attempt_id" as "attemptId",
+               "idempotency_fingerprint" as "idempotencyFingerprint"
+             from "mcf_external_action_attempts"
+             where "mission_id" = $1
+               and "skill_id" = $2
+               and "adapter_id" = $3
+               and "idempotency_key" = $4
+             order by "created_at" desc`,
+            [request.context.missionId, request.skill.skillId, adapterId, idempotencyKey],
+          );
+          const incompatible = existing.rows.find(
+            (row) => row.idempotencyFingerprint !== idempotencyFingerprint,
+          );
+          if (incompatible) {
+            throw new ExternalActionAdapterError(
+              'RESERVATION_CONFLICT',
+              `Idempotency key ${idempotencyKey} is already bound to a different external request`,
+              false,
+            );
+          }
+        }
+
         const reservedMission = await client.query<{ id: string }>(
           `update "mcf_missions"
            set "active_external_attempt_id" = $1
@@ -123,9 +210,10 @@ export class ExternalActionLedger {
         await client.query(
           `insert into "mcf_external_action_attempts" (
             "attempt_id", "mission_id", "phase_id", "agent_id", "skill_id",
-            "adapter_id", "provider", "operation", "resource",
-            "expected_mission_version", "status", "lease_expires_at", "created_at", "updated_at"
-          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'ALLOWED', $11, $12, $12)`,
+            "adapter_id", "provider", "operation", "resource", "idempotency_key",
+            "idempotency_fingerprint", "expected_mission_version", "status",
+            "lease_expires_at", "created_at", "updated_at"
+          ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ALLOWED', $13, $14, $14)`,
           [
             attemptId,
             request.context.missionId,
@@ -136,6 +224,8 @@ export class ExternalActionLedger {
             request.tool.provider,
             request.tool.operation,
             request.tool.resource,
+            idempotencyKey,
+            idempotencyFingerprint,
             request.context.expectedMissionVersion,
             leaseExpiresAt,
             occurredAt,
@@ -179,6 +269,8 @@ export class ExternalActionLedger {
               provider: request.tool.provider,
               operation: request.tool.operation,
               resource: request.tool.resource,
+              idempotencyKey,
+              idempotencyFingerprint,
               expectedMissionVersion: request.context.expectedMissionVersion,
             },
             idempotencyKey: `external-action:${attemptId}:requested`,
@@ -192,6 +284,8 @@ export class ExternalActionLedger {
               provider: request.tool.provider,
               operation: request.tool.operation,
               resource: request.tool.resource,
+              idempotencyKey,
+              idempotencyFingerprint,
             },
             idempotencyKey: `external-action:${attemptId}:allowed`,
           },
@@ -202,7 +296,8 @@ export class ExternalActionLedger {
             `insert into "mcf_events" (
               "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
               "idempotency_key", "occurred_at"
-            ) values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)`,
+            ) values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)
+            on conflict ("idempotency_key") do nothing`,
             [
               randomUUID(),
               request.context.missionId,
@@ -223,7 +318,7 @@ export class ExternalActionLedger {
       if (databaseErrorCode(error) === '23505') {
         throw new ExternalActionAdapterError(
           'RESERVATION_CONFLICT',
-          `External action phase ${request.context.phaseId} already has a reserved attempt`,
+          `External action phase ${request.context.phaseId} already has a conflicting reserved attempt`,
           true,
         );
       }
@@ -252,6 +347,10 @@ export class ExternalActionLedger {
         externalId: receipt.externalId,
         commitSha: receipt.commitSha,
         status: receipt.status,
+        idempotencyKey:
+          typeof receipt.metadata.idempotencyKey === 'string'
+            ? receipt.metadata.idempotencyKey
+            : null,
       },
     });
   }
