@@ -28,6 +28,8 @@ security:
   review_receipt_url_exact_id_binding: PASS
   external_receipt_url_exact_id_binding: PASS
   external_receipt_fragment_case_sensitive_binding: PASS
+  adapter_comment_fragment_case_sensitive_binding: PASS
+  adapter_review_fragment_case_sensitive_binding: PASS
   metadata_evidence_patch_validation: PASS
   approve_review: FORBIDDEN
   request_changes_review: FORBIDDEN
@@ -110,38 +112,45 @@ independent_review_remediation:
     verdict: FAIL
     finding: P1_UNKNOWN_RETURNED_BEFORE_DURABLE_LEDGER_TRANSITION
     thread: PRRT_kwDOTnz-ks6XgjKS
+    status: REMEDIATED
+  round_8_review:
+    reviewed_head: 6d35b8ffd21cd183f48e2d5c4abc4d75113b04a4
+    review_id: PRR_kwDOTnz-ks8AAAABI3PZYg
+    verdict: FAIL
+    finding: P2_ADAPTER_MUTATION_FRAGMENT_CASE_INSENSITIVE
+    thread: PRRT_kwDOTnz-ks6XgvtO
     remediation:
-      unknown_return_requires_durable_ledger_state: PASS
-      local_record_unknown_retry: PASS
-      adapter_reexecution_during_retry: FORBIDDEN
-      persistent_failure_fail_closed: PASS
+      comment_fragment_case_sensitive: PASS
+      review_fragment_case_sensitive: PASS
+      repository_path_case_tolerance_preserved: PASS
       dedicated_regressions: PASS
     status: REMEDIATED_PENDING_EXACT_HEAD_REVIEW
 
 validation:
-  round_7_implementation:
-    functional_fix: 473082d7fd0af6f3a058a262adae20326abff960
-    formatted_head: dbd949aacc99911db0cbc7e7dab30cf92a91d560
-    documentation_run: 31277467325
+  round_8_implementation:
+    adapter_fix: 398ec5c833d54f5db49f6a724568f1b11b3ed267
+    head: 65ed8e1722c3f616ab7f010baaa6dd6b3ea0c1bb
+    documentation_run: 31278735695
     documentation: PASS
-    container_smoke_run: 31277467328
+    container_smoke_run: 31278735714
     container_smoke: PASS
-    foundation_run: 31277467360
+    foundation_run: 31278735727
     foundation: PASS
     format: PASS
     lint: PASS
     typecheck: PASS
     migrations_twice: PASS
-    server_test_files: 89
-    server_tests: 374
+    server_test_files: 90
+    server_tests: 378
     web_tests: 5
     ops_tests: 15
+    adapter_fragment_case_tests: 4
     postwrite_persistence_tests: 9
     evidence_url_binding_tests: 5
     evidence_metadata_input_tests: 6
     build: PASS
-    artifact_id: 9027431031
-    artifact_digest: sha256:e5d12a743445ed83006306fd9748b667be4ce4d3ca083438d82072d2749e1d8f
+    artifact_id: 9027787068
+    artifact_digest: sha256:6732dc654d7ee5c175523abe9dba9b96e400c4c645bcb7fefdc647c92720d4ff
   exact_head_gate:
     checkpoint_head: SELF
     checkpoint_head_resolution: GIT_COMMIT_CONTAINING_THIS_FILE
@@ -161,7 +170,7 @@ validation:
 traceability:
   conformance_recovery_prf: artifacts/phases/PHASE-006-C2-CONFORMANCE-RECOVERY
   postwrite_remediation_prf: artifacts/phases/PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-  latest_review_thread: PRRT_kwDOTnz-ks6XgjKS
+  latest_review_thread: PRRT_kwDOTnz-ks6XgvtO
 
 next_action:
   current: VALIDATE_SELF_BOUND_CHECKPOINT_HEAD_THEN_REQUEST_EXACT_HEAD_REVIEW

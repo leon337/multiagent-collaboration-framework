@@ -16,42 +16,45 @@ A missão/fase pode entrar em `RECOVERING` a partir de attempt `UNKNOWN`; o pont
 `SELF` significa o Git commit contendo o checkpoint. CI e revisão independente são avaliadas externamente nesse mesmo SHA.
 
 ## D6 — URL de evidência deve vincular ID e tipo
-Comment e review exigem os fragmentos canônicos derivados do `mutationExternalId`; metadata exige a URL exata do PR.
+Comment e review exigem fragmentos canônicos derivados do `mutationExternalId`; metadata exige a URL exata do PR.
 
-## D7 — Fragmentos são case-sensitive
+## D7 — Fragmentos do validador de evidência são case-sensitive
 A tolerância de casing do repositório não pode atingir o fragmento.
 
-## D8 — Regressões dedicadas de URL
-`github-pr-collaboration.evidence-url-binding.test.ts` cobre 5 casos, incluindo IDs divergentes e fragmentos em maiúsculas rejeitados.
+## D8 — Regressões de evidência
+`github-pr-collaboration.evidence-url-binding.test.ts` cobre 5 casos e `github-pr-collaboration.evidence-metadata-input.test.ts` cobre 6 casos.
 
-## D9 — Evidência da rodada 5
-HEAD `2323f7f0a0ea8900451313facbaa17c2bf35a4f1`: três workflows PASS; 88/88 arquivos e 363/363 testes server PASS; artifact `9026344880`.
+## D9 — Metadata evidence deve validar o patch atual
+Ao menos um campo deve estar presente; título e body respeitam as mesmas regras do adapter; `body: ""` continua válido.
 
-## D10 — Metadata evidence deve validar o patch atual
-Ao menos um campo deve estar presente; título e body devem respeitar as mesmas regras do adapter; `body: ""` continua válido.
+## D10 — UNKNOWN só pode ser devolvido após persistência durável
+A revisão `PRR_kwDOTnz-ks8AAAABI3JczA` encontrou P1 no thread `PRRT_kwDOTnz-ks6XgjKS`; a rodada 7 passou a exigir persistência durável antes do retorno `UNKNOWN`.
 
-## D11 — Regressões dedicadas de metadata
-`github-pr-collaboration.evidence-metadata-input.test.ts` cobre 6 casos.
+## D11 — Retry local de UNKNOWN não reexecuta o provider
+`recordUnknown` pode ser repetido localmente até 3 vezes. `adapter.execute` não participa desse retry.
 
-## D12 — Evidência da rodada 6
-HEAD `43961f78eadac6f33ddd96dbaf23df0f3f6e1d5d`: três workflows PASS; 89/89 arquivos e 369/369 testes server PASS; artifact `9027160954`.
+## D12 — Falha persistente de UNKNOWN é fail-closed
+Se a transição `UNKNOWN` não puder ser persistida, o dispatcher lança `LEDGER_FAILURE` não-retryable, sem pós-write `FAILED`.
 
-## D13 — UNKNOWN só pode ser devolvido após persistência durável
-A revisão `PRR_kwDOTnz-ks8AAAABI3JczA` encontrou P1 no thread `PRRT_kwDOTnz-ks6XgjKS`: o dispatcher podia retornar `UNKNOWN` mesmo se `recordUnknown` falhasse.
+## D13 — O adapter deve aplicar a mesma case-sensitivity do validador
+A revisão `PRR_kwDOTnz-ks8AAAABI3PZYg` encontrou P2 no thread `PRRT_kwDOTnz-ks6XgvtO`: `assertComment` e `assertReview` ainda comparavam a URL inteira em lowercase.
 
-## D14 — Retry local de UNKNOWN não reexecuta o provider
-`recordUnknown` pode ser repetido localmente até 3 vezes. `adapter.execute` não participa desse retry e permanece no máximo uma vez por dispatch.
+## D14 — Base e fragmento são validados separadamente
+A base esperada do PR continua case-insensitive para preservar compatibilidade de owner/repository; o fragmento é exato e case-sensitive:
+- `#issuecomment-${comment.id}`;
+- `#pullrequestreview-${review.id}`.
 
-## D15 — Falha persistente de UNKNOWN é fail-closed
-Se a transição `UNKNOWN` não puder ser persistida, o dispatcher lança `LEDGER_FAILURE` não-retryable. Ele não devolve `UNKNOWN`, não converte pós-write para `FAILED` e preserva a reserva para reconciliação.
+## D15 — Regressão dedicada do adapter
+`github-pr-collaboration.adapter-url-fragment-case.test.ts` cobre 4 casos: dois canônicos aceitos e dois fragmentos em maiúsculas rejeitados.
 
-## D16 — Evidência da rodada 7
-HEAD funcional formatado `dbd949aacc99911db0cbc7e7dab30cf92a91d560`:
-- Documentation `31277467325`, Container Smoke `31277467328` e Foundation `31277467360` PASS;
+## D16 — Evidência funcional da rodada 8
+HEAD `65ed8e1722c3f616ab7f010baaa6dd6b3ea0c1bb`:
+- Documentation `31278735695`, Container Smoke `31278735714` e Foundation `31278735727` PASS;
 - format, lint, typecheck, migrations duas vezes e build PASS;
-- 89/89 arquivos e 374/374 testes server PASS;
-- 9/9 regressões postwrite persistence PASS;
-- artifact `9027431031`, digest `sha256:e5d12a743445ed83006306fd9748b667be4ce4d3ca083438d82072d2749e1d8f`.
+- 90/90 arquivos e 378/378 testes server PASS;
+- regressão adapter fragment case 4/4 PASS;
+- artifact `9027787068`;
+- digest `sha256:6732dc654d7ee5c175523abe9dba9b96e400c4c645bcb7fefdc647c92720d4ff`.
 
 ## D17 — Gate
 Real provider write, produção e merge permanecem bloqueados. O próximo HEAD documental deve passar CI e revisão independente exata com zero P0/P1/P2 ativos antes da decisão de LÉO.

@@ -6,8 +6,8 @@ pull_request: 80
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
 risk_class: B
 objective: preservar idempotencia, persistencia governada e vinculo exato de evidencia para efeitos externos
-objective_state: ROUND_7_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
-cycle: 12
+objective_state: ROUND_8_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
+cycle: 13
 
 review_history:
   - head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
@@ -52,39 +52,44 @@ review_history:
     findings:
       - P1_UNKNOWN_RETURNED_BEFORE_DURABLE_LEDGER_TRANSITION
     thread: PRRT_kwDOTnz-ks6XgjKS
+  - head: 6d35b8ffd21cd183f48e2d5c4abc4d75113b04a4
+    review_id: PRR_kwDOTnz-ks8AAAABI3PZYg
+    verdict: FAIL
+    findings:
+      - P2_ADAPTER_MUTATION_FRAGMENT_CASE_INSENSITIVE
+    thread: PRRT_kwDOTnz-ks6XgvtO
 
-round_7_remediation:
-  unknown_return_requires_durable_ledger_state: IMPLEMENTED
-  record_unknown_retry_limit: 3
-  record_unknown_retry_scope: LOCAL_LEDGER_ONLY
-  adapter_reexecution_during_unknown_retry: FORBIDDEN
-  persistent_unknown_persistence_failure: FAIL_CLOSED_NONRETRYABLE
-  postwrite_failed_transition: FORBIDDEN
-  dedicated_test_file: external-action-dispatcher.postwrite-persistence.test.ts
-  dedicated_tests: 9_PASS
+round_8_remediation:
+  adapter_comment_base_url_comparison: CASE_INSENSITIVE
+  adapter_review_base_url_comparison: CASE_INSENSITIVE
+  adapter_comment_fragment: EXACT_CASE_SENSITIVE
+  adapter_review_fragment: EXACT_CASE_SENSITIVE
+  comment_fragment_template: "#issuecomment-${comment.id}"
+  review_fragment_template: "#pullrequestreview-${review.id}"
+  dedicated_test_file: github-pr-collaboration.adapter-url-fragment-case.test.ts
+  dedicated_tests: 4_PASS
 
-round_7_validation:
-  functional_fix: 473082d7fd0af6f3a058a262adae20326abff960
-  functional_fix_foundation_run: 31277318139
-  functional_fix_foundation: FAIL_FORMATTING_ONLY
-  head: dbd949aacc99911db0cbc7e7dab30cf92a91d560
-  documentation_run: 31277467325
-  container_smoke_run: 31277467328
-  foundation_run: 31277467360
+round_8_validation:
+  adapter_fix: 398ec5c833d54f5db49f6a724568f1b11b3ed267
+  head: 65ed8e1722c3f616ab7f010baaa6dd6b3ea0c1bb
+  documentation_run: 31278735695
+  container_smoke_run: 31278735714
+  foundation_run: 31278735727
   format: PASS
   lint: PASS
   typecheck: PASS
   migrations_twice: PASS
-  server_test_files: 89
-  server_tests: 374
+  server_test_files: 90
+  server_tests: 378
   web_tests: 5
   ops_tests: 15
+  adapter_url_fragment_case_tests: 4
   postwrite_persistence_tests: 9
   evidence_url_binding_tests: 5
   evidence_metadata_input_tests: 6
   build: PASS
-  artifact_id: 9027431031
-  artifact_digest: sha256:e5d12a743445ed83006306fd9748b667be4ce4d3ca083438d82072d2749e1d8f
+  artifact_id: 9027787068
+  artifact_digest: sha256:6732dc654d7ee5c175523abe9dba9b96e400c4c645bcb7fefdc647c92720d4ff
 
 current_exact_head_gate:
   checkpoint_head: SELF

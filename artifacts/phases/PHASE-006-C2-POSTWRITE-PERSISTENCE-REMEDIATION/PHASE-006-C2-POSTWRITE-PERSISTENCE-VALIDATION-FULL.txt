@@ -1,37 +1,37 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-VALIDATION FULL EVIDENCE — ROUND 7
+VALIDATION FULL EVIDENCE — ROUND 8
 
 REVIEW INPUT
-reviewed_head=887e1f808c937c21ef7218217518f44b28226922
-review_id=PRR_kwDOTnz-ks8AAAABI3JczA
+reviewed_head=6d35b8ffd21cd183f48e2d5c4abc4d75113b04a4
+review_id=PRR_kwDOTnz-ks8AAAABI3PZYg
 verdict=FAIL
-finding=P1_UNKNOWN_RETURNED_BEFORE_DURABLE_LEDGER_TRANSITION
-thread=PRRT_kwDOTnz-ks6XgjKS
+finding=P2_ADAPTER_MUTATION_FRAGMENT_CASE_INSENSITIVE
+thread=PRRT_kwDOTnz-ks6XgvtO
 
 PRIOR FINDINGS RETAINED
 external_receipt_id_binding_thread=PRRT_kwDOTnz-ks6XfO9O
 external_receipt_id_binding_status=REMEDIATED
-fragment_case_thread=PRRT_kwDOTnz-ks6XgECQ
-fragment_case_status=REMEDIATED
+evidence_fragment_case_thread=PRRT_kwDOTnz-ks6XgECQ
+evidence_fragment_case_status=REMEDIATED
 metadata_input_thread=PRRT_kwDOTnz-ks6XgJb2
 metadata_input_status=REMEDIATED
+durable_unknown_thread=PRRT_kwDOTnz-ks6XgjKS
+durable_unknown_status=REMEDIATED
 
-ROUND_7 COMMITS
-functional_fix=473082d7fd0af6f3a058a262adae20326abff960
-functional_fix_documentation_run=31277318116 PASS
-functional_fix_container_smoke_run=31277318146 PASS
-functional_fix_foundation_run=31277318139 FAIL_FORMATTING_ONLY
-formatted_functional_head=dbd949aacc99911db0cbc7e7dab30cf92a91d560
+ROUND_8 COMMITS
+adapter_fragment_fix=398ec5c833d54f5db49f6a724568f1b11b3ed267
+adapter_fragment_fix_foundation=FAIL_TYPECHECK_TEST_MOCK_TYPING_ONLY
+test_typing_fix=65ed8e1722c3f616ab7f010baaa6dd6b3ea0c1bb
 
-CI ON FORMATTED FUNCTIONAL HEAD
+CI ON FUNCTIONAL HEAD
 documentation_validation:
-  run=31277467325
+  run=31278735695
   conclusion=PASS
 container_smoke:
-  run=31277467328
+  run=31278735714
   conclusion=PASS
 foundation:
-  run=31277467360
+  run=31278735727
   conclusion=PASS
   formatting=PASS
   lint=PASS
@@ -42,41 +42,37 @@ foundation:
 
 TEST COUNTS
 ops_tests=15/15 PASS
-server_test_files=89/89 PASS
-server_tests=374/374 PASS
+server_test_files=90/90 PASS
+server_tests=378/378 PASS
 web_tests=5/5 PASS
 
-DEDICATED POSTWRITE PERSISTENCE TEST
-external-action-dispatcher.postwrite-persistence.test.ts=9/9 PASS
-unknown_retry_partial_without_adapter_reexecution=PASS
-unknown_retry_postexecuted_failure_without_adapter_reexecution=PASS
-persistent_unknown_failure_partial=FAIL_CLOSED
-persistent_unknown_failure_postwrite=FAIL_CLOSED
-nonretryable_unknown_failure=no_retry
-prewrite_failed_semantics=PRESERVED
+DEDICATED ADAPTER FRAGMENT TEST
+github-pr-collaboration.adapter-url-fragment-case.test.ts=4/4 PASS
+canonical_comment_fragment=ACCEPTED
+uppercase_comment_fragment=REJECTED
+canonical_review_fragment=ACCEPTED
+uppercase_review_fragment=REJECTED
 
-DEDICATED URL AND METADATA TESTS
+HISTORICAL REGRESSIONS
+external-action-dispatcher.postwrite-persistence.test.ts=9/9 PASS
 github-pr-collaboration.evidence-url-binding.test.ts=5/5 PASS
 github-pr-collaboration.evidence-metadata-input.test.ts=6/6 PASS
 
 ARTIFACT
-id=9027431031
+id=9027787068
 name=rede-social-vitest-report
-digest=sha256:e5d12a743445ed83006306fd9748b667be4ce4d3ca083438d82072d2749e1d8f
-head_sha=dbd949aacc99911db0cbc7e7dab30cf92a91d560
+digest=sha256:6732dc654d7ee5c175523abe9dba9b96e400c4c645bcb7fefdc647c92720d4ff
+head_sha=65ed8e1722c3f616ab7f010baaa6dd6b3ea0c1bb
 
 SEMANTIC ASSERTIONS
+adapter_comment_base_url=>CASE_INSENSITIVE_EXPECTED_PR_URL
+adapter_review_base_url=>CASE_INSENSITIVE_EXPECTED_PR_URL
+adapter_comment_fragment=>EXACT_CASE_SENSITIVE_ISSUECOMMENT_PLUS_ID
+adapter_review_fragment=>EXACT_CASE_SENSITIVE_PULLREQUESTREVIEW_PLUS_ID
+evidence_comment_fragment=>EXACT_CASE_SENSITIVE_ISSUECOMMENT_PLUS_MUTATION_EXTERNAL_ID
+evidence_review_fragment=>EXACT_CASE_SENSITIVE_PULLREQUESTREVIEW_PLUS_MUTATION_EXTERNAL_ID
 unknown_dispatch_result=>ONLY_AFTER_DURABLE_UNKNOWN
-record_unknown_retry=>MAX_3_LOCAL_LEDGER_ATTEMPTS
-adapter_execute=>MAX_ONCE_PER_DISPATCH
-record_unknown_persistent_failure=>THROW_LEDGER_FAILURE_NONRETRYABLE
-record_unknown_persistent_failure=>DO_NOT_RETURN_UNKNOWN
-record_unknown_persistent_failure=>DO_NOT_RECORD_FAILED
-active_reservation=>PRESERVED_FOR_RECONCILIATION_ON_FAIL_CLOSED
-receipt_external_id=>MUST_EQUAL_MUTATION_EXTERNAL_ID
-comment_mutation_hash=>EXACT_LOWERCASE_ISSUECOMMENT_PLUS_MUTATION_EXTERNAL_ID
-review_mutation_hash=>EXACT_LOWERCASE_PULLREQUESTREVIEW_PLUS_MUTATION_EXTERNAL_ID
-metadata_mutation_url=>EXACT_PULL_REQUEST_URL
+adapter_execute_during_unknown_retry=>MAX_ONCE_PER_DISPATCH
 metadata_patch=>REQUIRES_AT_LEAST_ONE_VALID_TEXT_FIELD
 
 BOUNDARIES

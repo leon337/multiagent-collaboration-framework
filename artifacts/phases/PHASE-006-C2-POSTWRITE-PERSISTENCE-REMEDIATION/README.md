@@ -20,17 +20,17 @@ Impedir duplicidade, perda de estado ou evidência incorreta quando o MCF execut
 ## Estado técnico
 
 ```yaml
-latest_reviewed_head: 887e1f808c937c21ef7218217518f44b28226922
-latest_review_id: PRR_kwDOTnz-ks8AAAABI3JczA
-latest_review_verdict: FAIL_P1_UNKNOWN_NOT_DURABLY_PERSISTED_BEFORE_RETURN
-latest_review_thread: PRRT_kwDOTnz-ks6XgjKS
-round_7_implementation:
-  functional_fix: 473082d7fd0af6f3a058a262adae20326abff960
-  formatted_head: dbd949aacc99911db0cbc7e7dab30cf92a91d560
+latest_reviewed_head: 6d35b8ffd21cd183f48e2d5c4abc4d75113b04a4
+latest_review_id: PRR_kwDOTnz-ks8AAAABI3PZYg
+latest_review_verdict: FAIL_P2_ADAPTER_MUTATION_FRAGMENT_CASE_INSENSITIVE
+latest_review_thread: PRRT_kwDOTnz-ks6XgvtO
+round_8_implementation:
+  adapter_fix: 398ec5c833d54f5db49f6a724568f1b11b3ed267
+  functional_head: 65ed8e1722c3f616ab7f010baaa6dd6b3ea0c1bb
   ci: PASS
-  server_test_files: 89_PASS
-  server_tests: 374_PASS
-  postwrite_persistence_regressions: 9_PASS
+  server_test_files: 90_PASS
+  server_tests: 378_PASS
+  adapter_fragment_case_regressions: 4_PASS
 current_gate:
   checkpoint_head: SELF
   resolution: GIT_COMMIT_CONTAINING_CHECKPOINT

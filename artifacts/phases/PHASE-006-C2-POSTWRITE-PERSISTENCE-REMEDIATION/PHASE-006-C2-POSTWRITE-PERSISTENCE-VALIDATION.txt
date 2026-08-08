@@ -1,48 +1,51 @@
 PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
-VALIDATION SUMMARY — ROUND 7
+VALIDATION SUMMARY — ROUND 8
 
 PRIOR_EXACT_REVIEW
-head=887e1f808c937c21ef7218217518f44b28226922
-review_id=PRR_kwDOTnz-ks8AAAABI3JczA
+head=6d35b8ffd21cd183f48e2d5c4abc4d75113b04a4
+review_id=PRR_kwDOTnz-ks8AAAABI3PZYg
 review=FAIL
-finding_p1=UNKNOWN_RETURNED_BEFORE_DURABLE_LEDGER_TRANSITION
-thread=PRRT_kwDOTnz-ks6XgjKS
+finding_p2=ADAPTER_MUTATION_FRAGMENT_CASE_INSENSITIVE
+thread=PRRT_kwDOTnz-ks6XgvtO
 
 HISTORICAL_FINDINGS
 external_id_binding_thread=PRRT_kwDOTnz-ks6XfO9O REMEDIATED
-fragment_case_thread=PRRT_kwDOTnz-ks6XgECQ REMEDIATED
+evidence_fragment_case_thread=PRRT_kwDOTnz-ks6XgECQ REMEDIATED
 metadata_input_thread=PRRT_kwDOTnz-ks6XgJb2 REMEDIATED
+durable_unknown_thread=PRRT_kwDOTnz-ks6XgjKS REMEDIATED
 
-ROUND_7_IMPLEMENTATION
-functional_commit=473082d7fd0af6f3a058a262adae20326abff960
-functional_commit_foundation_run=31277318139 FAIL_FORMATTING_ONLY
-formatted_head=dbd949aacc99911db0cbc7e7dab30cf92a91d560
-documentation_run=31277467325 PASS
-container_smoke_run=31277467328 PASS
-foundation_run=31277467360 PASS
+ROUND_8_IMPLEMENTATION
+functional_commit=398ec5c833d54f5db49f6a724568f1b11b3ed267
+functional_commit_typecheck=FAIL_TEST_MOCK_TYPING_ONLY
+functional_head=65ed8e1722c3f616ab7f010baaa6dd6b3ea0c1bb
+documentation_run=31278735695 PASS
+container_smoke_run=31278735714 PASS
+foundation_run=31278735727 PASS
 format=PASS
 lint=PASS
 typecheck=PASS
 migrations_twice=PASS
-server_test_files=89/89 PASS
-server_tests=374/374 PASS
+server_test_files=90/90 PASS
+server_tests=378/378 PASS
 web_tests=5/5 PASS
 ops_tests=15/15 PASS
+adapter_url_fragment_case_regressions=4/4 PASS
 postwrite_persistence_regressions=9/9 PASS
 evidence_url_binding_regressions=5/5 PASS
 evidence_metadata_input_regressions=6/6 PASS
 build=PASS
-vitest_artifact_id=9027431031
-vitest_artifact_digest=sha256:e5d12a743445ed83006306fd9748b667be4ce4d3ca083438d82072d2749e1d8f
+vitest_artifact_id=9027787068
+vitest_artifact_digest=sha256:6732dc654d7ee5c175523abe9dba9b96e400c4c645bcb7fefdc647c92720d4ff
 
-UNKNOWN_DURABILITY
-unknown_return_requires_durable_ledger_state=PASS
-record_unknown_retry_limit=3
-record_unknown_retry_scope=LOCAL_LEDGER_ONLY
-external_adapter_reexecution_during_retry=FORBIDDEN
-persistent_record_unknown_failure=FAIL_CLOSED_EXCEPTION
-persistent_record_unknown_failure_retryable=false
-postwrite_failed_transition=FORBIDDEN
+ADAPTER_URL_BINDING
+base_url_comparison=CASE_INSENSITIVE
+comment_fragment=#issuecomment-<comment.id>
+review_fragment=#pullrequestreview-<review.id>
+fragment_comparison=EXACT_CASE_SENSITIVE
+uppercase_comment_fragment=REJECTED
+uppercase_review_fragment=REJECTED
+canonical_comment_fragment=ACCEPTED
+canonical_review_fragment=ACCEPTED
 
 CURRENT_GATE_BINDING
 checkpoint_head=SELF
