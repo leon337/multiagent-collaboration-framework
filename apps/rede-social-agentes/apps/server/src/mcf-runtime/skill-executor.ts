@@ -14,6 +14,7 @@ import type {
   ExternalActionTrace,
 } from './external-action.contracts.js';
 import { verifyGitHubBranchPrEvidence } from './github-branch-pr.evidence.js';
+import { verifyGitHubPrCollaborationEvidence } from './github-pr-collaboration.evidence.js';
 import {
   McfEvidenceRejectedError,
   McfPermissionDeniedError,
@@ -101,6 +102,18 @@ function isGitHubBranchPrReceipt(receipt: McfToolReceipt, skill: McfSkillDefinit
     skill.skillId === 'MCF-GIT-PR-RELEASE' &&
     canonicalizeProvider(receipt.provider) === 'github' &&
     canonicalizeToolValue(receipt.operation) === 'create-branch-pr'
+  );
+}
+
+function isGitHubPrCollaborationReceipt(
+  receipt: McfToolReceipt,
+  skill: McfSkillDefinition,
+): boolean {
+  const operation = canonicalizeToolValue(receipt.operation);
+  return (
+    skill.skillId === 'MCF-GIT-PR-RELEASE' &&
+    canonicalizeProvider(receipt.provider) === 'github' &&
+    ['comment-pr', 'review-pr-comment', 'update-pr-text-metadata'].includes(operation)
   );
 }
 
@@ -210,6 +223,25 @@ export class SkillExecutor {
         };
       }
 
+      if (dispatched.status === 'UNKNOWN') {
+        return {
+          skill,
+          receipt: dispatched.receipt,
+          evidenceStatus: 'PENDING',
+          phaseState: 'RECOVERING',
+          missionState: 'RECOVERING',
+          handoffTo: null,
+          rejectionReason: `${dispatched.failure.code}: ${dispatched.failure.message}`,
+          externalAction: {
+            status: 'UNKNOWN',
+            adapterId: dispatched.adapterId,
+            attemptId: dispatched.attemptId,
+            failureCode: dispatched.failure.code,
+            retryable: false,
+          },
+        };
+      }
+
       if (dispatched.status === 'EXECUTED') {
         receipt = dispatched.receipt;
         externalAction = {
@@ -247,6 +279,12 @@ export class SkillExecutor {
       if (isGitHubBranchPrReceipt(receipt, skill)) {
         this.evidence.verify(receipt, input.tool);
         verifyGitHubBranchPrEvidence(receipt, input.tool, skill, input.inputs, {
+          agentId: input.agentId,
+          executionContext: input.executionContext,
+        });
+      } else if (isGitHubPrCollaborationReceipt(receipt, skill)) {
+        this.evidence.verify(receipt, input.tool);
+        verifyGitHubPrCollaborationEvidence(receipt, input.tool, skill, input.inputs, {
           agentId: input.agentId,
           executionContext: input.executionContext,
         });

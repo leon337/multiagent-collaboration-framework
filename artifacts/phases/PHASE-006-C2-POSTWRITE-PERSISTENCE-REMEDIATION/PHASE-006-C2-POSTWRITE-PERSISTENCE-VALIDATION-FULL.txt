@@ -1,0 +1,73 @@
+PHASE-006-C2-POSTWRITE-PERSISTENCE-REMEDIATION
+VALIDATION FULL EVIDENCE — ROUND 3
+
+REVIEW INPUT
+reviewed_head=17201725ad137dd3fd53542bd297708679556980
+review_id=PRR_kwDOTnz-ks8AAAABI2peDw
+verdict=FAIL
+finding=P2_REVIEW_URL_NOT_BOUND_TO_REVIEW_ID
+thread=PRRT_kwDOTnz-ks6XfG2E
+
+IMPLEMENTATION HEAD
+sha=67aa26331f3621ebb8e9149dbda1340f1828a1f7
+pr=80
+branch=feat/mcf-runtime-006-c2-pr-collaboration-write
+
+CI
+documentation_validation:
+  run=31266313990
+  conclusion=PASS
+container_smoke:
+  run=31266314074
+  conclusion=PASS
+foundation:
+  run=31266313994
+  conclusion=PASS
+  formatting=PASS
+  lint=PASS
+  typecheck=PASS
+  migrations_twice=PASS
+  tests=PASS
+  build=PASS
+
+TEST COUNTS
+server_test_files=87/87 PASS
+server_tests=358/358 PASS
+web_tests=5/5 PASS
+
+DEDICATED ROUND_3 TEST
+github-pr-collaboration.review-url-binding.test.ts=1/1 PASS
+
+RELEVANT REGRESSIONS
+external-action-dispatcher.postwrite-persistence.test.ts=PASS
+external-action-postwrite-unknown.integration.test.ts=PASS
+postgres-mcf-runtime.unknown-persistence.integration.test.ts=PASS
+github-pr-collaboration.global-idempotency.integration.test.ts=PASS
+github-pr-collaboration.p1-regression.test.ts=PASS
+external-action-terminal-binding.integration.test.ts=PASS
+github-pr-collaboration.no-real-write.test.ts=PASS
+
+ARTIFACT
+id=9024261045
+name=rede-social-vitest-report
+digest=sha256:c1f50cef818aba69b5230f3263b42e68e1e4448549e950c533377dccd830d4a7
+head_sha=67aa26331f3621ebb8e9149dbda1340f1828a1f7
+
+SEMANTIC ASSERTIONS
+review_id=>POSITIVE_INTEGER
+review_url=>CANONICAL_PR_URL_PLUS_PULLREQUESTREVIEW_ID
+review_url_fragment_mismatch=>REJECTED
+mismatch_rejection=>NO_POST_MUTATION
+review_body=>EXACT
+review_state=>COMMENTED
+review_commit_id=>EXPECTED_HEAD_SHA
+UNKNOWN_attempt=>MISSION_RECOVERING_PERSISTABLE
+UNKNOWN_attempt=>GLOBAL_BINDING_PRESERVED
+FAILED_prewrite_incompatible_cross_mission_retry=>BLOCKED
+FAILED_prewrite_compatible_retry=>RECOVERABLE
+
+BOUNDARIES
+real_provider_write=NOT_AUTHORIZED
+production=BLOCKED
+merge=NOT_EXECUTED
+final_exact_head_review=PENDING_SELF_BOUND_HEAD

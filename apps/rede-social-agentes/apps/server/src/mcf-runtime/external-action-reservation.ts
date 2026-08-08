@@ -20,6 +20,10 @@ export async function reconcileExpiredExternalReservation(
   missionId: string,
   now: Date = new Date(),
 ): Promise<string | null> {
+  await client.query(
+    `select pg_advisory_xact_lock(hashtextextended('mcf:external-action:reservation-order', 0))`,
+  );
+
   const mission = await client.query<MissionReservationRow>(
     `select "active_external_attempt_id" as "activeExternalAttemptId"
      from "mcf_missions"
@@ -48,39 +52,73 @@ export async function reconcileExpiredExternalReservation(
     return null;
   }
 
-  if (attempt) {
+  const abandonedReservation = attempt?.status === 'ALLOWED';
+  const ambiguousExecutingReservation = attempt?.status === 'EXECUTING';
+
+  if (abandonedReservation) {
     await client.query(
       `update "mcf_external_action_attempts"
        set "status" = 'ABANDONED',
            "failure_code" = 'RESERVATION_EXPIRED',
-           "failure_message" = 'External action reservation lease expired before mission persistence',
+           "failure_message" = 'External action reservation lease expired before mutation execution started',
            "updated_at" = $1
-       where "attempt_id" = $2`,
+       where "attempt_id" = $2 and "status" = 'ALLOWED'`,
       [now, activeAttemptId],
     );
   }
 
-  await client.query(
-    `insert into "mcf_events" (
-      "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
-      "idempotency_key", "occurred_at"
-    ) values ($1, $2, $3, $4, 'EXTERNAL_ACTION_ABANDONED', $5::jsonb, $6, $7)
-    on conflict ("idempotency_key") do nothing`,
-    [
-      randomUUID(),
-      missionId,
-      attempt?.phaseId ?? null,
-      attempt?.agentId ?? null,
-      JSON.stringify({
-        attemptId: activeAttemptId,
-        previousStatus: attempt?.status ?? 'MISSING',
-        reason: attempt ? 'RESERVATION_EXPIRED' : 'MISSING_LEDGER_ATTEMPT',
-      }),
-      `external-action:${activeAttemptId}:abandoned`,
-      now,
-    ],
-  );
+  if (ambiguousExecutingReservation) {
+    await client.query(
+      `update "mcf_external_action_attempts"
+       set "status" = 'UNKNOWN',
+           "failure_code" = 'EXTERNAL_EFFECT_UNKNOWN',
+           "failure_message" = 'External action execution lease expired after mutation execution was allowed to start; reconciliation is required before retry',
+           "updated_at" = $1
+       where "attempt_id" = $2 and "status" = 'EXECUTING'`,
+      [now, activeAttemptId],
+    );
+  }
 
+  if (abandonedReservation || ambiguousExecutingReservation || !attempt) {
+    const eventType = ambiguousExecutingReservation
+      ? 'EXTERNAL_ACTION_UNKNOWN'
+      : 'EXTERNAL_ACTION_ABANDONED';
+    const reason = ambiguousExecutingReservation
+      ? 'EXECUTION_LEASE_EXPIRED_EFFECT_UNKNOWN'
+      : attempt
+        ? 'RESERVATION_EXPIRED'
+        : 'MISSING_LEDGER_ATTEMPT';
+
+    await client.query(
+      `insert into "mcf_events" (
+        "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
+        "idempotency_key", "occurred_at"
+      ) values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8)
+      on conflict ("idempotency_key") do nothing`,
+      [
+        randomUUID(),
+        missionId,
+        attempt?.phaseId ?? null,
+        attempt?.agentId ?? null,
+        eventType,
+        JSON.stringify({
+          attemptId: activeAttemptId,
+          previousStatus: attempt?.status ?? 'MISSING',
+          reason,
+          retryWithoutReconciliation: false,
+        }),
+        ambiguousExecutingReservation
+          ? `external-action:${activeAttemptId}:unknown`
+          : `external-action:${activeAttemptId}:abandoned`,
+        now,
+      ],
+    );
+  }
+
+  // A stale mission pointer may survive after the attempt reaches a terminal or
+  // recoverable ledger state. ALLOWED can be abandoned because no external
+  // execution started. EXECUTING is first converted to UNKNOWN so its durable
+  // idempotency_scope_key remains consumed until explicit reconciliation.
   await client.query(
     `update "mcf_missions"
      set "active_external_attempt_id" = null

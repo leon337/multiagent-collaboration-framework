@@ -47,6 +47,16 @@ function isCanonicalGitHubRepositoryResource(value: string): boolean {
   return value === value.trim() && canonicalGitHubRepositoryResource.test(value);
 }
 
+const githubPrCollaborationOperations = new Set([
+  'comment-pr',
+  'review-pr-comment',
+  'update-pr-text-metadata',
+]);
+
+function isGitHubPrCollaborationOperation(operation: string): boolean {
+  return githubPrCollaborationOperations.has(canonicalizeToolValue(operation));
+}
+
 function requiresCanonicalGitHubRepository(
   skillId: string,
   provider: string,
@@ -54,8 +64,10 @@ function requiresCanonicalGitHubRepository(
 ): boolean {
   if (provider !== 'github') return false;
   if (skillId === 'MCF-RUN-TESTS' && canonicalizeToolValue(operation) === 'query-ci') return true;
+  if (skillId !== 'MCF-GIT-PR-RELEASE') return false;
   return (
-    skillId === 'MCF-GIT-PR-RELEASE' && canonicalizeToolValue(operation) === 'create-branch-pr'
+    canonicalizeToolValue(operation) === 'create-branch-pr' ||
+    isGitHubPrCollaborationOperation(operation)
   );
 }
 
@@ -65,6 +77,26 @@ function isProtectedBranchWrite(operation: string, inputs: Record<string, unknow
   if (typeof branchRef !== 'string') return false;
   const normalized = canonicalizeToolValue(branchRef.replace(/^refs\/heads\//u, ''));
   return normalized === 'main' || normalized === 'master';
+}
+
+function assertPrCollaborationInputs(operation: string, inputs: Record<string, unknown>): void {
+  if (!isGitHubPrCollaborationOperation(operation)) return;
+  const forbiddenKeys = [
+    'state',
+    'base',
+    'base_branch',
+    'maintainer_can_modify',
+    'merge',
+    'merge_method',
+    'review_event',
+    'event',
+  ];
+  const forbidden = forbiddenKeys.find((key) => inputs[key] !== undefined);
+  if (forbidden) {
+    throw new McfPermissionDeniedError(
+      `${forbidden} is forbidden for controlled PR collaboration writes`,
+    );
+  }
 }
 
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
@@ -135,6 +167,15 @@ export class PermissionEngine {
       }
     }
 
+    if (isGitHubPrCollaborationOperation(operation)) {
+      if (skill.skillId !== 'MCF-GIT-PR-RELEASE' || provider !== 'github') {
+        throw new McfPermissionDeniedError(
+          'PR collaboration writes are restricted to MCF-GIT-PR-RELEASE using GitHub',
+        );
+      }
+      assertPrCollaborationInputs(operation, inputs);
+    }
+
     if (
       requiresCanonicalGitHubRepository(skill.skillId, provider, operation) &&
       !isCanonicalGitHubRepositoryResource(tool.resource)
@@ -142,7 +183,7 @@ export class PermissionEngine {
       throw new McfPermissionDeniedError(
         operation === 'query-ci'
           ? 'GitHub CI query requires a canonical owner/repository resource'
-          : 'GitHub branch/PR write requires a canonical owner/repository resource',
+          : 'GitHub write requires a canonical owner/repository resource',
       );
     }
 

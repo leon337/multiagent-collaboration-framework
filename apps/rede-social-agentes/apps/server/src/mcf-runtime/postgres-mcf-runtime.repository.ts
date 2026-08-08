@@ -270,6 +270,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
                    and "attempt"."phase_id" = $2
                    and (
                      "attempt"."status" in (
+                       'UNKNOWN',
                        'FAILED',
                        'EVIDENCE_VALIDATED',
                        'EVIDENCE_REJECTED'
