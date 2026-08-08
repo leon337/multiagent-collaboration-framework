@@ -4,13 +4,10 @@ parent_mission_id: MCF-RUNTIME-006-C2
 parent_issue: 79
 pull_request: 80
 branch: feat/mcf-runtime-006-c2-pr-collaboration-write
-source_reviewed_head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
-round_1_implementation_head: 3fede0da1e5d50b2a339b5c2dc88bd5036753b6e
-round_2_implementation_head: 3f68a97c25af742566e618ae6838d7d3cf4224fd
 risk_class: B
-objective: preservar idempotencia e persistencia governada quando o efeito externo pode ser ambiguo
-objective_state: ROUND_2_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
-cycle: 7
+objective: preservar idempotencia, persistencia governada e vinculo exato de evidencia para efeitos externos
+objective_state: ROUND_3_REMEDIATED_AWAITING_SELF_BOUND_EXACT_HEAD_GATE
+cycle: 8
 
 review_history:
   - head: edaef62866aa1ff0af2985bfad20d1fe640c36cd
@@ -26,35 +23,33 @@ review_history:
     findings:
       - P1_UNKNOWN_NOT_PERSISTABLE
       - P2_PREWRITE_FINGERPRINT_TOMBSTONE_MISSING
+  - head: 17201725ad137dd3fd53542bd297708679556980
+    review_id: PRR_kwDOTnz-ks8AAAABI2peDw
+    verdict: FAIL
+    findings:
+      - P2_REVIEW_URL_NOT_BOUND_TO_REVIEW_ID
 
-round_2_remediation:
-  unknown_persistable: IMPLEMENTED
-  unknown_mission_pointer_cleanup: IMPLEMENTED
-  unknown_global_binding_preserved: IMPLEMENTED
-  migration_0028: IMPLEMENTED
-  failed_prewrite_tombstone: IMPLEMENTED
-  incompatible_cross_mission_retry: BLOCKED
-  compatible_prewrite_retry: RECOVERABLE
-  dedicated_tests:
-    unknown_persistence: PASS
-    fingerprint_tombstone: PASS
+round_3_remediation:
+  review_url_exact_id_binding: IMPLEMENTED
+  canonical_fragment: "#pullrequestreview-${review.id}"
+  mismatched_fragment: REJECTED
+  mismatch_mutation: NOT_REACHED
+  dedicated_test: PASS
 
-round_2_validation:
-  head: 3f68a97c25af742566e618ae6838d7d3cf4224fd
-  documentation_run: 31265446519
-  container_smoke_run: 31265446518
-  foundation_run: 31265446526
-  foundation_job: 93122714877
+round_3_validation:
+  head: 67aa26331f3621ebb8e9149dbda1340f1828a1f7
+  documentation_run: 31266313990
+  container_smoke_run: 31266314074
+  foundation_run: 31266313994
   format: PASS
   lint: PASS
   typecheck: PASS
   migrations_twice: PASS
-  migration_0028: PASS
-  server_test_files: 86
-  server_tests: 357
+  server_test_files: 87
+  server_tests: 358
   build: PASS
-  artifact_id: 9024011616
-  artifact_digest: sha256:bbce94334711e2a8d1519c41181e5592d57a4fe777dcbf68d3ac2c1becf21e1b
+  artifact_id: 9024261045
+  artifact_digest: sha256:c1f50cef818aba69b5230f3263b42e68e1e4448549e950c533377dccd830d4a7
 
 current_exact_head_gate:
   checkpoint_head: SELF
@@ -69,13 +64,13 @@ current_exact_head_gate:
   review_source: CODEX_PR_REVIEW_FOR_CHECKPOINT_HEAD
   blocking_p0_allowed: 0
   blocking_p1_allowed: 0
+  blocking_p2_allowed: 0
   evaluation: EXTERNAL_AT_GATE
 
 security:
   real_github_write_test: NOT_AUTHORIZED
   production: BLOCKED
   merge: BLOCKED_PENDING_GATE
-  retry_unknown_without_reconciliation: FORBIDDEN
 
 remaining_gaps:
   - CURRENT_SELF_BOUND_HEAD_CI

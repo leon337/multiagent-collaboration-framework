@@ -1,60 +1,49 @@
 # PHASE-006-C2 — Decisões da remediação pós-write
 
-## D1 — P1 original bloqueante
+## D1 — Falha pós-write não é FAILED
 
-A revisão de `edaef628...` foi aceita como `REMEDIATION_REQUIRED`. `recordExecuted()` após receipt não pode cair em `recordFailed()`.
+Após receipt do adapter, erro de persistência local é `UNKNOWN`, nunca `FAILED`.
 
-## D2 — Estados de execução
+## D2 — Fronteira EXECUTING e recuperação
 
-O C2 usa `ALLOWED → EXECUTING → EXECUTED|UNKNOWN|FAILED`, com `UNKNOWN` para efeito possivelmente aplicado e `FAILED` somente para efeito definitivamente não aplicado.
+O adapter C2 persiste `EXECUTING` antes da mutação. `EXECUTING` expirado vira `UNKNOWN` com binding preservado.
 
-## D3 — Expiração pós-início
+## D3 — UNKNOWN deve ser persistível
 
-`EXECUTING` expirado vira `UNKNOWN` e mantém o binding. `ALLOWED` expirado pode seguir recovery pré-write.
+A missão/fase pode entrar em `RECOVERING` a partir de attempt `UNKNOWN`; o ponteiro ativo é limpo sem liberar o binding global.
 
-## D4 — Compatibilidade de adapters
+## D4 — Tombstone de fingerprint pré-write
 
-A barreira `EXECUTING` é exigida no adapter mutante C2; adapters somente-leitura preservam o fluxo anterior.
+`FAILED` preserva scope+fingerprint. Retry compatível pode substituir o tombstone no BEFORE INSERT; payload incompatível permanece bloqueado.
 
 ## D5 — Proveniência self-bound
 
-Após o P2 do HEAD `74fd45a...`, o checkpoint não hardcoda um “HEAD final” futuro. `SELF` significa o Git commit que contém o checkpoint; CI e review são avaliados externamente para esse mesmo SHA.
+`SELF` significa o Git commit contendo o checkpoint. CI e revisão independente são avaliadas externamente nesse mesmo SHA.
 
-## D6 — Aceitar segunda auditoria como FAIL
+## D6 — Aceitar revisão de 17201725 como FAIL
 
-A revisão `PRR_kwDOTnz-ks8AAAABI2moFA` do HEAD `60f069ee...` encontrou:
-- P1: `UNKNOWN` não passava por `persistExecution()`;
-- P2: `FAILED` liberava a chave global e perdia proteção de fingerprint entre missões.
+A review `PRR_kwDOTnz-ks8AAAABI2peDw` encontrou P2 em `assertReview()`: URL de evidência não estava vinculada ao `review.id`.
 
-O gate permaneceu fechado.
+## D7 — Vincular review.id à URL canônica
 
-## D7 — Persistir UNKNOWN no runtime
+`assertReview()` exige:
+`https://github.com/<repository>/pull/<pr>#pullrequestreview-<review.id>`.
 
-`PostgresMcfRuntimeRepository.persistExecution()` passa a aceitar `UNKNOWN` como attempt compatível com a persistência de missão/fase `RECOVERING`. O ponteiro ativo da missão é limpo, mas o binding global do attempt permanece.
+A igualdade é feita sobre a URL canônica completa. Body, state `COMMENTED` e `commit_id` continuam obrigatórios.
 
-## D8 — Tombstone de fingerprint para falha pré-write
+## D8 — Regressão dedicada
 
-A migration `0028_mcf_external_action_prewrite_fingerprint_tombstone.sql` remove a liberação imediata de binding em `FAILED`.
+`github-pr-collaboration.review-url-binding.test.ts` injeta `id=202` com URL `#pullrequestreview-999` e exige rejeição antes de qualquer POST.
 
-O holder `FAILED` preserva `idempotency_scope_key` + `idempotency_fingerprint`. Somente uma nova inserção com fingerprint compatível pode liberar o tombstone imediatamente antes de assumir o mesmo scope. Payload incompatível permanece bloqueado pelo índice único.
+## D9 — Evidência da rodada 3
 
-## D9 — Recovery legítimo continua permitido
-
-A correção não converte falha pré-write em binding eterno: retry canonicamente idêntico pode substituir o tombstone. O teste global cobre explicitamente essa transição.
-
-## D10 — Evidência da rodada 2
-
-HEAD `3f68a97c25af742566e618ae6838d7d3cf4224fd`:
+HEAD `67aa26331f3621ebb8e9149dbda1340f1828a1f7`:
 - três workflows PASS;
-- migration 0028 aplicada duas vezes;
-- 86/86 arquivos e 357/357 testes PASS;
+- 87/87 arquivos e 358/358 testes server PASS;
 - build PASS;
-- artifact `9024011616`, digest `sha256:bbce94334711e2a8d1519c41181e5592d57a4fe777dcbf68d3ac2c1becf21e1b`.
+- regressão review-url-binding 1/1 PASS;
+- artifact `9024261045`, digest `sha256:c1f50cef818aba69b5230f3263b42e68e1e4448549e950c533377dccd830d4a7`.
 
-## D11 — Limites
+## D10 — Gate
 
-Real provider write, production e merge permanecem bloqueados. O PR permanece draft até o gate independente.
-
-## D12 — Próxima decisão
-
-Após CI e revisão independente do novo HEAD self-bound, Léo aplica o gate. Nenhum PASS é presumido antes disso.
+Real provider write, production e merge permanecem bloqueados. O próximo HEAD deve passar CI e revisão independente exata com zero P0/P1/P2 novos antes da decisão de Léo.
