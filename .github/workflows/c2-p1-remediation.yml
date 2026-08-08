@@ -1,0 +1,133 @@
+name: C2 P1 Remediation
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-c2-pr-collaboration-write
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/mcf-runtime-006-c2-pr-collaboration-write
+          fetch-depth: 0
+
+      - name: Apply exact P1 remediations
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"expected exactly one match in {path}, found {count}: {old[:80]!r}")
+              p.write_text(text.replace(old, new, 1))
+
+          module = 'apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts'
+          replace_once(
+              module,
+              "import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';\n",
+              '',
+          )
+          replace_once(
+              module,
+              "    {\n      provide: GitHubPullCollaborationAdapter,\n      useFactory: (evidence: EvidenceValidator) => new GitHubPullCollaborationAdapter(evidence),\n      inject: [EvidenceValidator],\n    },\n",
+              '',
+          )
+          replace_once(
+              module,
+              "        githubBranchPr: GitHubBranchPullRequestAdapter,\n        githubPrCollaboration: GitHubPullCollaborationAdapter,\n      ) =>\n        new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration]),",
+              "        githubBranchPr: GitHubBranchPullRequestAdapter,\n      ) => new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr]),",
+          )
+          replace_once(module, "        GitHubPullCollaborationAdapter,\n", '')
+
+          adapter = 'apps/rede-social-agentes/apps/server/src/mcf-runtime/github-pr-collaboration.adapter.ts'
+
+          replace_once(
+              adapter,
+              "        } catch (reconciliationError) {\n          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {\n            return this.unknownReceipt(request, target, 'COMMENT_PR', budget);\n          }\n          throw reconciliationError;\n        }\n        if (!comment) throw error;",
+              "        } catch (reconciliationError) {\n          if (isAmbiguousMutationError(error)) {\n            return this.unknownReceipt(request, target, 'COMMENT_PR', budget);\n          }\n          throw reconciliationError;\n        }\n        if (!comment) {\n          if (isAmbiguousMutationError(error)) {\n            return this.unknownReceipt(request, target, 'COMMENT_PR', budget);\n          }\n          throw error;\n        }",
+          )
+          replace_once(
+              adapter,
+              "      } catch (error) {\n        if (isAmbiguousMutationError(error)) {\n          return this.unknownReceipt(request, target, 'COMMENT_PR', budget);\n        }\n        throw error;\n      }\n      if (!comment) return this.unknownReceipt(request, target, 'COMMENT_PR', budget);",
+              "      } catch {\n        return this.unknownReceipt(request, target, 'COMMENT_PR', budget);\n      }\n      if (!comment) return this.unknownReceipt(request, target, 'COMMENT_PR', budget);",
+          )
+          replace_once(
+              adapter,
+              "    assertComment(comment, target, expectedBody);\n    return this.receipt(",
+              "    assertComment(comment, target, expectedBody);\n    try {\n      await this.readPull(target, deadlineAt, budget);\n    } catch {\n      return this.unknownReceipt(request, target, 'COMMENT_PR', budget);\n    }\n    return this.receipt(",
+          )
+
+          replace_once(
+              adapter,
+              "        } catch (reconciliationError) {\n          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {\n            return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);\n          }\n          throw reconciliationError;\n        }\n        if (!review) throw error;",
+              "        } catch (reconciliationError) {\n          if (isAmbiguousMutationError(error)) {\n            return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);\n          }\n          throw reconciliationError;\n        }\n        if (!review) {\n          if (isAmbiguousMutationError(error)) {\n            return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);\n          }\n          throw error;\n        }",
+          )
+          replace_once(
+              adapter,
+              "      } catch (error) {\n        if (isAmbiguousMutationError(error)) {\n          return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);\n        }\n        throw error;\n      }\n      if (!review) return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);",
+              "      } catch {\n        return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);\n      }\n      if (!review) return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);",
+          )
+          replace_once(
+              adapter,
+              "    assertReview(review, target, expectedBody);\n    return this.receipt(",
+              "    assertReview(review, target, expectedBody);\n    try {\n      await this.readPull(target, deadlineAt, budget);\n    } catch {\n      return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);\n    }\n    return this.receipt(",
+          )
+
+          replace_once(
+              adapter,
+              "        } catch (reconciliationError) {\n          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {\n            return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);\n          }\n          throw reconciliationError;\n        }\n        if (!this.metadataMatches(pull, target)) throw error;",
+              "        } catch (reconciliationError) {\n          if (isAmbiguousMutationError(error)) {\n            return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);\n          }\n          throw reconciliationError;\n        }\n        if (!this.metadataMatches(pull, target)) {\n          if (isAmbiguousMutationError(error)) {\n            return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);\n          }\n          throw error;\n        }",
+          )
+          replace_once(
+              adapter,
+              "      } catch (error) {\n        if (isAmbiguousMutationError(error)) {\n          return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);\n        }\n        throw error;\n      }\n      if (!this.metadataMatches(pull, target)) {\n        throw new ExternalActionAdapterError(\n          'RESERVATION_CONFLICT',\n          'GitHub PR metadata read-back does not match the requested title/body patch',\n          false,\n        );\n      }",
+              "      } catch {\n        return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);\n      }\n      if (!this.metadataMatches(pull, target)) {\n        return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);\n      }",
+          )
+          PY
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        working-directory: apps/rede-social-agentes
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Format changed files
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/github-pr-collaboration.adapter.ts \
+            apps/server/src/mcf-runtime/mcf-runtime.module.ts
+
+      - name: Commit remediation if needed
+        run: |
+          if git diff --quiet; then
+            echo "No P1 remediation changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-pr-collaboration.adapter.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
+          git commit -m "fix(mcf): remediate C2 independent review P1 findings"
+          git push origin HEAD:feat/mcf-runtime-006-c2-pr-collaboration-write
