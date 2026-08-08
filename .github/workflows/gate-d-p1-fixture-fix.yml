@@ -1,0 +1,80 @@
+name: Gate D P1 Fixture Type Fix
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-gate-d-staging-deploy-adapter
+    paths:
+      - ".github/workflows/gate-d-p1-fixture-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Apply exact fixture type fix
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts')
+          text = path.read_text()
+          old = """      return jsonResponse(
+        jobs(outcome, {
+          duplicateOutcomeMarker: options.duplicateOutcomeMarker,
+          additionalSuccessfulOutcome: options.additionalSuccessfulOutcome,
+        }),
+      );
+"""
+          new = """      return jsonResponse(jobs(outcome, options));
+"""
+          if text.count(old) != 1:
+              raise SystemExit('fixture jobs call did not match exactly once')
+          path.write_text(text.replace(old, new))
+          PY
+      - name: Format, typecheck and run targeted regression
+        working-directory: apps/rede-social-agentes
+        env:
+          DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+          NODE_ENV: test
+        run: |
+          pnpm exec prettier --write apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          pnpm exec prettier --check apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          pnpm --filter @rsa/server typecheck
+          pnpm --filter @rsa/server exec vitest run src/mcf-runtime/github-staging-deploy.adapter.test.ts
+      - name: Remove temporary workflow
+        run: git rm .github/workflows/gate-d-p1-fixture-fix.yml
+      - name: Enforce exact changed path set
+        run: |
+          expected=$(mktemp)
+          actual=$(mktemp)
+          cat >"$expected" <<'EOF'
+          .github/workflows/gate-d-p1-fixture-fix.yml
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          EOF
+          git diff HEAD --name-only | sort >"$actual"
+          sort -o "$expected" "$expected"
+          diff -u "$expected" "$actual"
+          git diff HEAD --check
+      - name: Commit fixture type fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          git commit -m 'test(gate-d): fix P1 regression fixture typing'
+          git push origin HEAD:feat/mcf-runtime-006-gate-d-staging-deploy-adapter
