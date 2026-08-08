@@ -1,28 +1,101 @@
 mission: MCF-RUNTIME-006-C1
 issue: 75
+pull_request: 76
 base_main_sha: 9424e024eb62eb9f9dddd30e01d7f14cc58094a3
 branch: feat/mcf-runtime-006-c1-github-branch-pr-adapter
-state: IMPLEMENTING
+code_sha: b0cdc6acf1f94c3c7e6f9647dc9caa68ebe2ccd7
+state: READY_FOR_HUMAN_MERGE_GATE
 external_effect: REVERSIBLE
 production: BLOCKED
 merge_automatic: false
 real_github_write_test: NOT_AUTHORIZED
+
 adapter:
   id: github-branch-pr-write-v1
   skill: MCF-GIT-PR-RELEASE
   operation: create-branch-pr
   permission_profile: SCOPED_WRITE
+
 security:
   authorized_scope_required: true
   direct_main_write: FORBIDDEN
   force_push: FORBIDDEN
   merge: FORBIDDEN
   delete_human_branch: FORBIDDEN
+  token_source: ENVIRONMENT_ONLY
+  secret_scan: PASS
+  secret_scan_method:
+    - PR_PATCH_TARGETED_SEARCH_GHP
+    - PR_PATCH_TARGETED_SEARCH_GITHUB_PAT
+    - PR_PATCH_TARGETED_SEARCH_SK_PROJ
+
 idempotency:
   persisted_before_effect: true
   provider_marker: true
+  request_fingerprint: SHA256
+  request_fingerprint_persisted: true
+  request_fingerprint_conflict_fail_closed: true
+  concurrent_reservation_guard: true
   read_back_required: true
   replay_strategy: RECONCILE_AND_RESIGN_CURRENT_CONTEXT
+  unknown_on_unverified_effect: true
+
 validation:
-  ci: PENDING
-  independent_review: PENDING
+  documentation:
+    run_id: 31238532740
+    result: PASS
+  container_smoke:
+    run_id: 31238532736
+    result: PASS
+  foundation:
+    run_id: 31238532748
+    job_id: 93055410830
+    result: PASS
+    lockfile: PASS
+    format: PASS
+    lint: PASS
+    typecheck: PASS
+    migrations_twice: PASS
+    tests: PASS
+    build: PASS
+    server_test_files: 66
+    server_tests: 305
+    server_tests_passed: 305
+    web_tests: 5
+    ops_tests: 15
+    vitest_artifact_id: 9016253640
+    vitest_artifact_sha256: 1e3343903eec68c807065023e283b8a819a211472edf39fa3714ac10eb26c8f9
+  independent_review:
+    result: PASS
+    critical: 0
+    high: 0
+    medium: 0
+    review_mode: READ_ONLY_FINAL_CODE_REVIEW
+
+acceptance:
+  contract_validation: PASS
+  permission_tests: PASS
+  branch_creation_exact_sha: PASS
+  pr_creation: PASS
+  pr_no_duplicate: PASS
+  concurrent_idempotency: PASS
+  timeout_reconciliation: PASS
+  conflict_fail_closed: PASS
+  receipt_signature: PASS
+  evidence_validation: PASS
+  ledger_persisted: PASS
+  external_state_re_read: PASS
+  secret_scan: PASS
+  format: PASS
+  lint: PASS
+  typecheck: PASS
+  migrations_twice: PASS
+  tests: PASS
+  build: PASS
+  container_smoke: PASS
+  independent_review: PASS
+
+human_gate:
+  merge_authorization: REQUIRED
+  merge_authorized: false
+  next_action: HUMAN_DECISION
