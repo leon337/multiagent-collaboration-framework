@@ -90,7 +90,7 @@ function ledgerFailureTrace(trace: ExternalActionTrace | null): ExternalActionTr
 function isRunTestsCiQueryReceipt(receipt: McfToolReceipt, skill: McfSkillDefinition): boolean {
   return (
     skill.skillId === 'MCF-RUN-TESTS' &&
-    canonicalizeProvider(receipt.provider) === 'github-actions' &&
+    canonicalizeProvider(receipt.provider) === 'github' &&
     canonicalizeToolValue(receipt.operation) === 'query-ci'
   );
 }
