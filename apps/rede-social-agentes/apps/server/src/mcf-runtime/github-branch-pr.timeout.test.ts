@@ -127,10 +127,7 @@ describe('GitHub branch/PR timeout reconciliation', () => {
       }
       throw new Error(`unexpected ${method} ${url}`);
     });
-    const adapter = new GitHubBranchPullRequestAdapter(
-      evidence,
-      new GitHubBranchPrClient(fetcher),
-    );
+    const adapter = new GitHubBranchPullRequestAdapter(evidence, new GitHubBranchPrClient(fetcher));
 
     const input = request();
     const receipt = await adapter.execute(input);
@@ -163,10 +160,7 @@ describe('GitHub branch/PR timeout reconciliation', () => {
       }
       throw new Error(`unexpected ${method} ${url}`);
     });
-    const adapter = new GitHubBranchPullRequestAdapter(
-      evidence,
-      new GitHubBranchPrClient(fetcher),
-    );
+    const adapter = new GitHubBranchPullRequestAdapter(evidence, new GitHubBranchPrClient(fetcher));
 
     const input = request();
     const receipt = await adapter.execute(input);
