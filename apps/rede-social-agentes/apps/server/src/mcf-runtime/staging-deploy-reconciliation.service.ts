@@ -178,16 +178,6 @@ export class StagingDeployReconciliationService {
       this.humanDelegation.assertHandoffTarget(outcome.handoffTo, mission.contract.selectedAgents);
     }
 
-    if (outcome.evidenceStatus === 'VALID') {
-      await this.ledger.recordEvidenceValidated(attempt.attemptId, outcome.receipt.receiptId);
-    } else {
-      await this.ledger.recordEvidenceRejected(
-        attempt.attemptId,
-        outcome.receipt.receiptId,
-        outcome.rejectionReason ?? 'staging deployment evidence rejected',
-      );
-    }
-
     const missionState = resolveMissionState({
       selectedSkills: mission.contract.selectedSkills,
       currentSkillId: outcome.skill.skillId,
@@ -300,6 +290,16 @@ export class StagingDeployReconciliationService {
       callbackIdempotencyKey: callbackKey,
       events,
     });
+
+    if (outcome.evidenceStatus === 'VALID') {
+      await this.ledger.recordEvidenceValidated(attempt.attemptId, outcome.receipt.receiptId);
+    } else {
+      await this.ledger.recordEvidenceRejected(
+        attempt.attemptId,
+        outcome.receipt.receiptId,
+        outcome.rejectionReason ?? 'staging deployment evidence rejected',
+      );
+    }
 
     return {
       accepted: true,
