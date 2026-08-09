@@ -1,5 +1,5 @@
 name: MCF Runtime Staging Deploy
-run-name: MCF staging deploy ${{ inputs.request_id || 'push' }} ${{ inputs.release_sha || github.sha }}
+run-name: MCF staging deploy ${{ inputs.request_id || 'push' }} ${{ inputs.release_sha || github.sha }} ${{ inputs.mission_id || 'push' }} ${{ inputs.phase_id || 'push' }}
 
 on:
   push:
@@ -17,6 +17,14 @@ on:
         type: string
       request_id:
         description: Non-secret MCF idempotency/correlation key for runtime-controlled staging dispatch.
+        required: false
+        type: string
+      mission_id:
+        description: Non-secret MCF mission UUID used only for callback correlation.
+        required: false
+        type: string
+      phase_id:
+        description: Non-secret MCF phase UUID used only for callback correlation.
         required: false
         type: string
 
@@ -57,6 +65,8 @@ jobs:
       RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
       RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
       REQUEST_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.request_id || 'push' }}
+      MISSION_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.mission_id || 'push' }}
+      PHASE_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.phase_id || 'push' }}
       DEPLOY_TIMEOUT_MS: 1200000
       DEPLOY_POLL_INTERVAL_MS: 10000
 
@@ -68,6 +78,8 @@ jobs:
           [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             [[ "$REQUEST_ID" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$ ]]
+            [[ "$MISSION_ID" =~ ^[0-9a-fA-F-]{36}$ ]]
+            [[ "$PHASE_ID" =~ ^[0-9a-fA-F-]{36}$ ]]
           fi
 
       - name: Checkout release revision
