@@ -13,6 +13,9 @@ const requestId = 'mcf-gate-d-ordering-0001';
 const repositoryName = 'leon337/multiagent-collaboration-framework';
 const releaseSha = 'b'.repeat(40);
 const previousSha = 'a'.repeat(40);
+const attemptId = 'attempt-ordering';
+const persistedReceiptId = 'receipt-gate-d-ordering-4242-a';
+const retryReceiptId = 'receipt-gate-d-ordering-4242-b';
 
 function callbackRequest() {
   return {
@@ -61,6 +64,8 @@ function createScenario() {
     duplicate: false,
     mission: completedMission,
     phase: completedPhase,
+    receiptId: persistedReceiptId,
+    evidenceStatus: 'VALID' as const,
   };
   const completePendingPhase = vi.fn(async () => completion);
   const repository = {
@@ -69,8 +74,13 @@ function createScenario() {
     completePendingPhase,
   } as unknown as McfRuntimeRepository;
 
-  const receipt = {
-    receiptId: 'receipt-gate-d-ordering-4242',
+  const firstReceipt = {
+    receiptId: persistedReceiptId,
+    provider: 'github-actions',
+    status: 'SUCCEEDED' as const,
+  };
+  const retryReceipt = {
+    receiptId: retryReceiptId,
     provider: 'github-actions',
     status: 'SUCCEEDED' as const,
   };
@@ -80,13 +90,13 @@ function createScenario() {
     acceptanceCriteria: ['healthy_deployment'],
     fallback: 'Mestre',
   };
-  const reconcile = vi.fn(async () => receipt);
+  const reconcile = vi.fn().mockResolvedValueOnce(firstReceipt).mockResolvedValueOnce(retryReceipt);
   const adapter = {
     reconcile,
   } as unknown as GitHubActionsStagingDeployAdapter;
-  const execute = vi.fn(async () => ({
+  const execute = vi.fn(async (input: { tool: { externalReceipt?: typeof firstReceipt } }) => ({
     skill,
-    receipt,
+    receipt: input.tool.externalReceipt!,
     evidenceStatus: 'VALID' as const,
     phaseState: 'COMPLETED' as const,
     missionState: 'EXECUTING' as const,
@@ -105,7 +115,7 @@ function createScenario() {
   const recordEvidenceRejected = vi.fn(async () => {});
   const ledger = {
     loadStagingDeployReconciliationAttempt: vi.fn(async () => ({
-      attemptId: 'attempt-ordering',
+      attemptId,
       status: 'UNKNOWN' as const,
       expectedMissionVersion: 7,
       agentId: 'Gabriel',
@@ -130,6 +140,7 @@ function createScenario() {
     service,
     completion,
     completePendingPhase,
+    reconcile,
     recordEvidenceValidated,
     recordEvidenceRejected,
   };
@@ -144,11 +155,14 @@ describe('staging reconciliation completion ordering', () => {
     await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(failure);
 
     expect(scenario.completePendingPhase).toHaveBeenCalledTimes(1);
+    expect(scenario.completePendingPhase).toHaveBeenCalledWith(
+      expect.objectContaining({ externalAttemptId: attemptId }),
+    );
     expect(scenario.recordEvidenceValidated).not.toHaveBeenCalled();
     expect(scenario.recordEvidenceRejected).not.toHaveBeenCalled();
   });
 
-  it('retries ledger settlement after phase commit', async () => {
+  it('reuses the persisted receipt when retrying ledger settlement', async () => {
     const scenario = createScenario();
     const duplicate = {
       ...scenario.completion,
@@ -168,8 +182,26 @@ describe('staging reconciliation completion ordering', () => {
       missionState: 'EXECUTING',
     });
 
+    expect(scenario.reconcile).toHaveBeenCalledTimes(2);
     expect(scenario.completePendingPhase).toHaveBeenCalledTimes(2);
+    expect(scenario.completePendingPhase).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        externalAttemptId: attemptId,
+        receipt: expect.objectContaining({ receiptId: retryReceiptId }),
+      }),
+    );
     expect(scenario.recordEvidenceValidated).toHaveBeenCalledTimes(2);
+    expect(scenario.recordEvidenceValidated).toHaveBeenNthCalledWith(
+      1,
+      attemptId,
+      persistedReceiptId,
+    );
+    expect(scenario.recordEvidenceValidated).toHaveBeenNthCalledWith(
+      2,
+      attemptId,
+      persistedReceiptId,
+    );
     expect(scenario.recordEvidenceRejected).not.toHaveBeenCalled();
   });
 });
