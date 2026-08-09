@@ -1,0 +1,175 @@
+name: Gate D P1 Duplicate Runs UNKNOWN Fix V2
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-gate-d-staging-deploy-adapter
+    paths:
+      - ".github/workflows/gate-d-p1-duplicate-runs-unknown-fix-v2.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+      LOG_LEVEL: error
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Apply exact duplicate-runs UNKNOWN remediation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          adapter = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts')
+          text = adapter.read_text()
+          old = """    let run = await this.findRun(target, deadlineAt, budget);
+              const runWasExisting = run !== null;
+          """
+          new = """    let run: GitHubWorkflowRun | null;
+              try {
+                run = await this.findRun(target, deadlineAt, budget);
+              } catch (error) {
+                if (
+                  error instanceof ExternalActionAdapterError &&
+                  error.code === 'RESERVATION_CONFLICT' &&
+                  error.message === 'multiple workflow runs match the same staging deploy idempotency key'
+                ) {
+                  return this.unknownReceipt(
+                    request,
+                    target,
+                    before,
+                    null,
+                    'multiple correlated workflow runs make the staging deployment state ambiguous',
+                    budget,
+                  );
+                }
+                throw error;
+              }
+              const runWasExisting = run !== null;
+          """
+          if text.count(old) != 1:
+              raise SystemExit(f'initial findRun block expected once, found {text.count(old)}')
+          adapter.write_text(text.replace(old, new, 1))
+
+          test = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts')
+          text = test.read_text()
+          old_option = """    existing?: boolean;
+              conflictingSha?: string | null;
+          """
+          new_option = """    existing?: boolean;
+              duplicateRuns?: boolean;
+              conflictingSha?: string | null;
+          """
+          if text.count(old_option) != 1:
+              raise SystemExit(f'provider options anchor expected once, found {text.count(old_option)}')
+          text = text.replace(old_option, new_option, 1)
+
+          old_runs = """      if (!runExists) return jsonResponse({ total_count: 0, workflow_runs: [] });
+              const status = options.hang ? 'in_progress' : 'completed';
+              const conclusion = options.hang ? null : outcome === 'RECOVERED' ? 'failure' : 'success';
+              if (!options.hang && !options.inconsistentFinal) {
+                currentSha = outcome === 'RECOVERED' ? PREVIOUS_SHA : RELEASE_SHA;
+                ready = true;
+              }
+              return jsonResponse({
+                total_count: 1,
+                workflow_runs: [workflowRun({ status, conclusion })],
+              });
+          """
+          new_runs = """      if (!runExists) return jsonResponse({ total_count: 0, workflow_runs: [] });
+              const status = options.hang ? 'in_progress' : 'completed';
+              const conclusion = options.hang ? null : outcome === 'RECOVERED' ? 'failure' : 'success';
+              if (!options.hang && !options.inconsistentFinal) {
+                currentSha = outcome === 'RECOVERED' ? PREVIOUS_SHA : RELEASE_SHA;
+                ready = true;
+              }
+              const workflowRuns = options.duplicateRuns
+                ? [
+                    workflowRun({ status, conclusion }),
+                    workflowRun({ id: RUN_ID + 1, status, conclusion }),
+                  ]
+                : [workflowRun({ status, conclusion })];
+              return jsonResponse({
+                total_count: workflowRuns.length,
+                workflow_runs: workflowRuns,
+              });
+          """
+          if text.count(old_runs) != 1:
+              raise SystemExit(f'workflow runs response anchor expected once, found {text.count(old_runs)}')
+          text = text.replace(old_runs, new_runs, 1)
+
+          anchor = """  it('proves recovery only when the previous healthy SHA is restored', async () => {
+          """
+          regression = """  it('returns PARTIAL when multiple existing runs match the same key and release SHA', async () => {
+              const provider = fakeProvider({ existing: true, duplicateRuns: true });
+              const receipt = await adapter(provider).execute(request());
+
+              expect(provider.dispatches).toBe(0);
+              expect(receipt.status).toBe('PARTIAL');
+              expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+              expect(receipt.metadata.unknownReason).toMatch(/multiple correlated workflow runs/u);
+            });
+
+          """
+          if text.count(anchor) != 1:
+              raise SystemExit(f'regression anchor expected once, found {text.count(anchor)}')
+          test.write_text(text.replace(anchor, regression + anchor, 1))
+          PY
+      - name: Format and validate duplicate-runs semantics
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          pnpm exec prettier --check \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          pnpm build:packages
+          pnpm --filter @rsa/server typecheck
+          pnpm --filter @rsa/server exec vitest run \
+            src/mcf-runtime/github-staging-deploy.adapter.test.ts \
+            src/mcf-runtime/external-action-dispatcher.staging-deploy.test.ts
+      - name: Remove temporary workflows
+        run: |
+          git rm .github/workflows/gate-d-p1-duplicate-runs-unknown-fix.yml
+          git rm .github/workflows/gate-d-p1-duplicate-runs-unknown-fix-v2.yml
+      - name: Enforce exact changed path set
+        run: |
+          expected=$(mktemp)
+          actual=$(mktemp)
+          cat >"$expected" <<'EOF'
+          .github/workflows/gate-d-p1-duplicate-runs-unknown-fix-v2.yml
+          .github/workflows/gate-d-p1-duplicate-runs-unknown-fix.yml
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts
+          EOF
+          git diff HEAD --name-only | sort >"$actual"
+          sort -o "$expected" "$expected"
+          diff -u "$expected" "$actual"
+          git diff HEAD --check
+      - name: Commit P1 duplicate-runs remediation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          git commit -m 'fix(gate-d): persist unknown for duplicate correlated runs'
+          git push origin HEAD:feat/mcf-runtime-006-gate-d-staging-deploy-adapter
