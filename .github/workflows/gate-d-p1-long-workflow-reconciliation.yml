@@ -139,8 +139,8 @@ jobs:
           node ops/staging-workflow-correlation.test.mjs
       - name: Remove disposable remediation helpers
         run: |
-          git rm apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
-          git rm .github/workflows/gate-d-p1-long-workflow-reconciliation.yml
+          git rm -f apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
+          git rm -f .github/workflows/gate-d-p1-long-workflow-reconciliation.yml
       - name: Audit changed paths
         run: |
           set -euo pipefail
