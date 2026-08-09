@@ -130,6 +130,7 @@ function fakeProvider(
   options: {
     existing?: boolean;
     duplicateRuns?: boolean;
+    nonAncestor?: boolean;
     conflictingSha?: string | null;
     outcome?: 'DEPLOYED' | 'NOOP' | 'RECOVERED';
     hang?: boolean;
@@ -172,7 +173,11 @@ function fakeProvider(
       });
     }
     if (url.pathname.includes(`/compare/${RELEASE_SHA}...${MAIN_SHA}`)) {
-      return jsonResponse({ status: 'ahead', merge_base_commit: { sha: RELEASE_SHA } });
+      return jsonResponse(
+        options.nonAncestor
+          ? { status: 'diverged', merge_base_commit: { sha: MAIN_SHA } }
+          : { status: 'ahead', merge_base_commit: { sha: RELEASE_SHA } },
+      );
     }
     if (url.pathname.endsWith('/actions/workflows/mcf-runtime-staging-deploy.yml/dispatches')) {
       dispatches += 1;
@@ -307,6 +312,27 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     expect(receipt.metadata.unknownReason).toMatch(/multiple correlated workflow runs/u);
   });
 
+  it('returns PARTIAL for duplicate existing runs before an unhealthy staging preflight can reject', async () => {
+    const provider = fakeProvider({ existing: true, duplicateRuns: true, unhealthyBefore: true });
+    const receipt = await adapter(provider).execute(request());
+
+    expect(provider.dispatches).toBe(0);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(receipt.metadata.previousSha).toBeNull();
+    expect(provider.requests.some((entry) => entry.includes('staging.example'))).toBe(false);
+  });
+
+  it('returns PARTIAL for duplicate existing runs before a non-ancestor release preflight can reject', async () => {
+    const provider = fakeProvider({ existing: true, duplicateRuns: true, nonAncestor: true });
+    const receipt = await adapter(provider).execute(request());
+
+    expect(provider.dispatches).toBe(0);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(provider.requests.some((entry) => entry.includes('/compare/'))).toBe(false);
+  });
+
   it('proves recovery only when the previous healthy SHA is restored', async () => {
     const provider = fakeProvider({ outcome: 'RECOVERED' });
     const receipt = await adapter(provider).execute(request());
@@ -376,7 +402,7 @@ describe('GitHubActionsStagingDeployAdapter', () => {
       retryable: false,
     });
     expect(provider.dispatches).toBe(0);
-    expect(provider.requests.some((entry) => entry.includes('api.github.com'))).toBe(false);
+    expect(provider.requests.some((entry) => entry.startsWith('POST '))).toBe(false);
   });
 
   it('rejects production even when the caller supplies a human gate flag', async () => {

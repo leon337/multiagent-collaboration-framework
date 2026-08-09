@@ -621,7 +621,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
   private unknownReceipt(
     request: ExternalActionRequest,
     target: DeployTarget,
-    before: StagingObservation,
+    before: StagingObservation | null,
     run: GitHubWorkflowRun | null,
     reason: string,
     budget: RequestBudget,
@@ -643,7 +643,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         requestId: target.idempotencyKey,
         idempotencyKey: target.idempotencyKey,
         requestedSha: target.releaseSha,
-        previousSha: before.commitSha,
+        previousSha: before?.commitSha ?? null,
         workflowRunId: run?.id ?? null,
         workflowRunUrl: run?.html_url ?? null,
         workflowStatus: run?.status ?? null,
@@ -899,6 +899,27 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
 
     const deadlineAt = Date.now() + this.timeoutMs;
     const budget: RequestBudget = { requests: 0 };
+    let run: GitHubWorkflowRun | null;
+    try {
+      run = await this.findRun(target, deadlineAt, budget);
+    } catch (error) {
+      if (
+        error instanceof ExternalActionAdapterError &&
+        error.code === 'RESERVATION_CONFLICT' &&
+        error.message === 'multiple workflow runs match the same staging deploy idempotency key'
+      ) {
+        return this.unknownReceipt(
+          request,
+          target,
+          null,
+          null,
+          'multiple correlated workflow runs make the staging deployment state ambiguous',
+          budget,
+        );
+      }
+      throw error;
+    }
+    const runWasExisting = run !== null;
     const before = await this.client.observeStaging(this.stagingRuntimeUrl, deadlineAt, budget);
     if (!before.ready) {
       throw new ExternalActionAdapterError(
@@ -955,28 +976,6 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         false,
       );
     }
-
-    let run: GitHubWorkflowRun | null;
-    try {
-      run = await this.findRun(target, deadlineAt, budget);
-    } catch (error) {
-      if (
-        error instanceof ExternalActionAdapterError &&
-        error.code === 'RESERVATION_CONFLICT' &&
-        error.message === 'multiple workflow runs match the same staging deploy idempotency key'
-      ) {
-        return this.unknownReceipt(
-          request,
-          target,
-          before,
-          null,
-          'multiple correlated workflow runs make the staging deployment state ambiguous',
-          budget,
-        );
-      }
-      throw error;
-    }
-    const runWasExisting = run !== null;
 
     if (!run) {
       try {
