@@ -91,6 +91,7 @@ export interface PersistMcfExecutionInput {
 export interface CompleteMcfPendingPhaseInput {
   missionId: string;
   phaseId: string;
+  externalAttemptId: string;
   receipt: McfToolReceipt;
   evidenceStatus: McfEvidenceValidationStatus;
   missionState: McfMissionState;
@@ -116,6 +117,8 @@ export interface CompleteMcfPendingPhaseResult {
   duplicate: boolean;
   mission: McfMissionRecord;
   phase: McfPhaseRecord;
+  receiptId: string;
+  evidenceStatus: McfEvidenceValidationStatus;
 }
 
 export interface McfRuntimeRepository {
