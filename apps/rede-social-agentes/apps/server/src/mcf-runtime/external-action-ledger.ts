@@ -59,6 +59,8 @@ const globallySerializedOperations = new Set([
   'review-pr-comment',
   'update-pr-text-metadata',
 ]);
+const globallySerializedStagingDeployAdapter = 'github-actions-staging-deploy-v1';
+const globallySerializedStagingDeployOperation = 'deploy-staging';
 
 function databaseErrorCode(error: unknown): string | null {
   if (
@@ -149,10 +151,30 @@ function requestGlobalIdempotencyScopeKey(
   adapterId: string,
   idempotencyKey: string | null,
 ): string | null {
-  if (!idempotencyKey || adapterId !== globallySerializedAdapter) return null;
+  if (!idempotencyKey) return null;
 
   const operation = canonicalizeToolValue(request.tool.operation);
-  if (!globallySerializedOperations.has(operation)) return null;
+  if (
+    adapterId === globallySerializedStagingDeployAdapter &&
+    operation === globallySerializedStagingDeployOperation
+  ) {
+    const repository = request.inputs.repository;
+    if (typeof repository !== 'string' || repository.trim().length === 0) return null;
+
+    const payload = {
+      adapterId,
+      provider: canonicalizeProvider(request.tool.provider),
+      operation,
+      resource: request.tool.resource.trim().toLowerCase(),
+      repository: repository.trim().toLowerCase(),
+      idempotencyKey,
+    };
+    return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+  }
+
+  if (adapterId !== globallySerializedAdapter || !globallySerializedOperations.has(operation)) {
+    return null;
+  }
 
   const pullRequestNumber = request.inputs.pull_request_number;
   if (!Number.isInteger(pullRequestNumber) || (pullRequestNumber as number) < 1) return null;
