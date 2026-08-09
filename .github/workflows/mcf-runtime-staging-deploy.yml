@@ -82,13 +82,20 @@ jobs:
             [[ "$PHASE_ID" =~ ^[0-9a-fA-F-]{36}$ ]]
           fi
 
-      - name: Checkout release revision
+      - name: Checkout trusted deploy control plane
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .mcf-control-plane
+
+      - name: Checkout exact release revision
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
+          path: .mcf-release
 
       - name: Validate rollout Compose configuration
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: |
           docker compose -f deploy/compose.smoke.yaml config --quiet
           RSA_SERVER_IMAGE='registry.invalid/rsa-server@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' \
@@ -101,7 +108,7 @@ jobs:
           docker compose -f deploy/compose.rollout.yaml config --quiet
 
       - name: Run container smoke
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: |
           set -euo pipefail
           trap 'docker compose -f deploy/compose.smoke.yaml logs --no-color; docker compose -f deploy/compose.smoke.yaml down -v --remove-orphans' EXIT
@@ -144,38 +151,38 @@ jobs:
           pnpm --version
 
       - name: Install dependencies
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
 
       - name: Verify formatting
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm format:check
 
       - name: Lint
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm lint
 
       - name: Typecheck
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm typecheck
 
       - name: Apply migrations twice in CI database
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: |
           pnpm --filter @rsa/database db:migrate
           pnpm --filter @rsa/database db:migrate
 
       - name: Test
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm test
 
       - name: Build
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm build
 
       - name: Deploy exact revision and verify or recover
         id: deploy
-        run: node apps/rede-social-agentes/ops/render-staging-deploy.mjs
+        run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs
 
       - name: Deployment result DEPLOYED
         if: ${{ always() && steps.deploy.outputs.status == 'DEPLOYED' }}
