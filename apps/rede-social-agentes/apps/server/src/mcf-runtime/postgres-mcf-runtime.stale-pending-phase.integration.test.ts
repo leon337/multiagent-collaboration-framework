@@ -143,9 +143,7 @@ describe('PostgresMcfRuntimeRepository stale pending staging completion', () => 
         receipt: null,
         evidenceStatus: 'PENDING',
         handoff: null,
-        events: [
-          event(missionId, newerPhaseId, 'PHASE_STARTED', `phase:${newerPhaseId}:started`),
-        ],
+        events: [event(missionId, newerPhaseId, 'PHASE_STARTED', `phase:${newerPhaseId}:started`)],
       });
       expect(advanced.mission).toMatchObject({
         version: 3,
