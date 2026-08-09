@@ -32,18 +32,23 @@ jobs:
       - name: Install dependencies
         working-directory: apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
-      - name: Align disposable patcher
+
+      - name: Align patcher for non-workflow handoff
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py')
           text = p.read_text().replace('parents[2]', 'parents[3]', 1)
-          start = text.index('# Static workflow test covers async callback')
-          end = text.index("print('Gate D long-workflow reconciliation patch applied')", start)
-          text = text[:start] + '# Static workflow test is patched structurally by the validation runner.\n\n' + text[end:]
+          start = text.index('# ---------------------------------------------------------------------------\n# Primary workflow correlation:')
+          end = text.index('# ---------------------------------------------------------------------------\n# Adapter: bind title/dispatch', start)
+          text = text[:start] + '# Workflow changes were materialized by the authorized GitHub connector.\n\n' + text[end:]
+          static_start = text.index('# Static workflow test covers async callback')
+          static_end = text.index("print('Gate D long-workflow reconciliation patch applied')", static_start)
+          text = text[:static_start] + '# Static workflow test is patched structurally by this validation runner.\n\n' + text[static_end:]
           p.write_text(text)
           PY
-      - name: Apply validated P1 remediation
+
+      - name: Apply validated non-workflow P1 remediation
         run: |
           python apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
           python - <<'PY'
@@ -82,21 +87,26 @@ jobs:
           marker = '$' + '{' + '{'
           mission = marker + " inputs.mission_id || 'push' }}"
           phase = marker + " inputs.phase_id || 'push' }}"
-          if '",\n' not in lines[i]:
-              raise SystemExit('static run-name assertion line terminator not found')
-          lines[i] = lines[i].replace('",\n', f' {mission} {phase}",\n', 1)
+          if mission not in lines[i]:
+              if '",\n' not in lines[i]:
+                  raise SystemExit('static run-name assertion line terminator not found')
+              lines[i] = lines[i].replace('",\n', f' {mission} {phase}",\n', 1)
           static = ''.join(lines)
           request_anchor = "  assert.ok(workflow.includes('request_id:'));\n"
-          if static.count(request_anchor) != 1:
-              raise SystemExit('static request_id anchor mismatch')
-          static = static.replace(
-              request_anchor,
-              request_anchor + "  assert.ok(workflow.includes('mission_id:'));\n  assert.ok(workflow.includes('phase_id:'));\n",
-              1,
-          )
-          static += """\n\ntest('staging workflow completion triggers authenticated runtime reconciliation', async () => {\n  const callbackPath = resolve(process.cwd(), '../../.github/workflows/mcf-runtime-staging-deploy-callback.yml');\n  const callback = await readFile(callbackPath, 'utf8');\n  assert.ok(callback.includes('workflow_run:'));\n  assert.ok(callback.includes('MCF Runtime Staging Deploy'));\n  assert.ok(callback.includes('MCF_RUNTIME_TOKEN'));\n  assert.ok(callback.includes('/v1/mcf/callbacks/staging-deploy'));\n  assert.ok(!callback.includes('RENDER_DEPLOY_HOOK_URL'));\n});\n"""
+          if "workflow.includes('mission_id:')" not in static:
+              if static.count(request_anchor) != 1:
+                  raise SystemExit('static request_id anchor mismatch')
+              static = static.replace(
+                  request_anchor,
+                  request_anchor + "  assert.ok(workflow.includes('mission_id:'));\n  assert.ok(workflow.includes('phase_id:'));\n",
+                  1,
+              )
+          callback_test = "test('staging workflow completion triggers authenticated runtime reconciliation'"
+          if callback_test not in static:
+              static += """\n\ntest('staging workflow completion triggers authenticated runtime reconciliation', async () => {\n  const callbackPath = resolve(process.cwd(), '../../.github/workflows/mcf-runtime-staging-deploy-callback.yml');\n  const callback = await readFile(callbackPath, 'utf8');\n  assert.ok(callback.includes('workflow_run:'));\n  assert.ok(callback.includes('MCF Runtime Staging Deploy'));\n  assert.ok(callback.includes('MCF_RUNTIME_TOKEN'));\n  assert.ok(callback.includes('/v1/mcf/callbacks/staging-deploy'));\n  assert.ok(!callback.includes('RENDER_DEPLOY_HOOK_URL'));\n});\n"""
           static_path.write_text(static)
           PY
+
       - name: Format targeted files
         working-directory: apps/rede-social-agentes
         run: |
@@ -112,6 +122,8 @@ jobs:
             apps/server/src/mcf-runtime/staging-deploy-callback.controller.ts \
             apps/server/src/mcf-runtime/staging-deploy-reconciliation.service.ts \
             ops/staging-workflow-correlation.test.mjs
+          git diff --exit-code -- ../../.github/workflows/mcf-runtime-staging-deploy.yml ../../.github/workflows/mcf-runtime-staging-deploy-callback.yml
+
       - name: Build, typecheck and regressions
         working-directory: apps/rede-social-agentes
         run: |
@@ -122,19 +134,16 @@ jobs:
             src/mcf-runtime/github-staging-deploy.evidence.test.ts \
             src/mcf-runtime/external-action-dispatcher.staging-deploy.test.ts
           node --test ops/staging-workflow-correlation.test.mjs
-      - name: Remove disposable helpers
-        run: |
-          git rm -f apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
-          git rm -f .github/workflows/gate-d-p1-long-workflow-reconciliation-final.yml
-      - name: Audit changed paths
+
+      - name: Remove non-workflow disposable helper
+        run: git rm -f apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
+
+      - name: Audit non-workflow snapshot
         run: |
           set -euo pipefail
           expected=$(mktemp)
           actual=$(mktemp)
           cat >"$expected" <<'EOF'
-          .github/workflows/gate-d-p1-long-workflow-reconciliation-final.yml
-          .github/workflows/mcf-runtime-staging-deploy-callback.yml
-          .github/workflows/mcf-runtime-staging-deploy.yml
           apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts
           apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
           apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts
@@ -147,20 +156,18 @@ jobs:
           apps/rede-social-agentes/ops/staging-workflow-correlation.test.mjs
           EOF
           git add -N \
-            .github/workflows/mcf-runtime-staging-deploy-callback.yml \
             apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-callback.controller.ts \
             apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-reconciliation.service.ts
           git diff HEAD --name-only | sort >"$actual"
           sort -o "$expected" "$expected"
           diff -u "$expected" "$actual"
           git diff HEAD --check
-      - name: Commit validated remediation
+
+      - name: Commit validated non-workflow remediation
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add \
-            .github/workflows/mcf-runtime-staging-deploy-callback.yml \
-            .github/workflows/mcf-runtime-staging-deploy.yml \
             apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts \
             apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts \
             apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
