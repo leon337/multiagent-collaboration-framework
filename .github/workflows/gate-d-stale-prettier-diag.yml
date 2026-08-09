@@ -1,0 +1,30 @@
+name: Gate D Stale Prettier Diagnostic
+
+on:
+  push:
+    branches:
+      - diag/gate-d-stale-prettier
+
+permissions:
+  contents: read
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Show exact Prettier diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd apps/rede-social-agentes
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec prettier --write apps/server/src/mcf-runtime/postgres-mcf-runtime.stale-pending-phase.integration.test.ts
+          git diff -- apps/server/src/mcf-runtime/postgres-mcf-runtime.stale-pending-phase.integration.test.ts
+          exit 1
