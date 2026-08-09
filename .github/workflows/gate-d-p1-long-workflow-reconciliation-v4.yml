@@ -1,0 +1,181 @@
+name: Gate D P1 Long Workflow Reconciliation V4
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-gate-d-staging-deploy-adapter
+    paths:
+      - ".github/workflows/gate-d-p1-long-workflow-reconciliation-v4.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+      LOG_LEVEL: error
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Align disposable patcher without Actions interpolation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py')
+          text = p.read_text().replace('parents[2]', 'parents[3]', 1)
+          start = text.index('# Static workflow test covers async callback')
+          end = text.index("print('Gate D long-workflow reconciliation patch applied')", start)
+          text = text[:start] + '# Static workflow test is patched structurally by the validation runner.\n\n' + text[end:]
+          p.write_text(text)
+          PY
+      - name: Apply P1 long-workflow reconciliation
+        run: |
+          python apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              if text.count(old) != 1:
+                  raise SystemExit(f'{path}: supplemental anchor count={text.count(old)}')
+              p.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              'apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts',
+              'type ExternalAttemptStatus =\n',
+              'export type ExternalAttemptStatus =\n',
+          )
+          replace_once(
+              'apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts',
+              '  title = `MCF staging deploy ${KEY} ${RELEASE_SHA}`,\n',
+              '  title = `MCF staging deploy ${KEY} ${RELEASE_SHA} mission-gate-d phase-gate-d`,\n',
+          )
+          replace_once(
+              'apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.evidence.test.ts',
+              '      workflowDisplayTitle: `MCF staging deploy ${KEY} ${RELEASE_SHA}`,\n',
+              '      workflowDisplayTitle: `MCF staging deploy ${KEY} ${RELEASE_SHA} ${context.executionContext.missionId} ${context.executionContext.phaseId}`,\n',
+          )
+
+          static_path = Path('apps/rede-social-agentes/ops/staging-workflow-correlation.test.mjs')
+          static = static_path.read_text()
+          lines = static.splitlines(keepends=True)
+          indices = [i for i, line in enumerate(lines) if 'run-name: MCF staging deploy ' in line]
+          if len(indices) != 1:
+              raise SystemExit(f'static run-name assertion count={len(indices)}')
+          i = indices[0]
+          line = lines[i]
+          marker = '$' + '{' + '{'
+          mission = marker + " inputs.mission_id || 'push' }}"
+          phase = marker + " inputs.phase_id || 'push' }}"
+          if '",\n' not in line:
+              raise SystemExit('static run-name assertion line terminator not found')
+          lines[i] = line.replace('",\n', f' {mission} {phase}",\n', 1)
+          static = ''.join(lines)
+          request_anchor = "  assert.ok(workflow.includes('request_id:'));\n"
+          if static.count(request_anchor) != 1:
+              raise SystemExit('static request_id anchor mismatch')
+          static = static.replace(
+              request_anchor,
+              request_anchor + "  assert.ok(workflow.includes('mission_id:'));\n  assert.ok(workflow.includes('phase_id:'));\n",
+              1,
+          )
+          static += """\n\ntest('staging workflow completion triggers authenticated runtime reconciliation', async () => {\n  const callbackPath = resolve(process.cwd(), '../../.github/workflows/mcf-runtime-staging-deploy-callback.yml');\n  const callback = await readFile(callbackPath, 'utf8');\n  assert.ok(callback.includes('workflow_run:'));\n  assert.ok(callback.includes('MCF Runtime Staging Deploy'));\n  assert.ok(callback.includes('MCF_RUNTIME_TOKEN'));\n  assert.ok(callback.includes('/v1/mcf/callbacks/staging-deploy'));\n  assert.ok(!callback.includes('RENDER_DEPLOY_HOOK_URL'));\n});\n"""
+          static_path.write_text(static)
+          PY
+      - name: Format targeted files
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            ../../.github/workflows/mcf-runtime-staging-deploy.yml \
+            ../../.github/workflows/mcf-runtime-staging-deploy-callback.yml \
+            apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.evidence.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.evidence.test.ts \
+            apps/server/src/mcf-runtime/mcf-runtime.module.ts \
+            apps/server/src/mcf-runtime/staging-deploy-callback.controller.ts \
+            apps/server/src/mcf-runtime/staging-deploy-reconciliation.service.ts \
+            ops/staging-workflow-correlation.test.mjs
+      - name: Build, typecheck and run Gate D regressions
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm build:packages
+          pnpm --filter @rsa/server typecheck
+          pnpm --filter @rsa/server exec vitest run \
+            src/mcf-runtime/github-staging-deploy.adapter.test.ts \
+            src/mcf-runtime/github-staging-deploy.evidence.test.ts \
+            src/mcf-runtime/external-action-dispatcher.staging-deploy.test.ts
+          node --test ops/staging-workflow-correlation.test.mjs
+      - name: Remove disposable remediation helpers
+        run: |
+          git rm -f apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
+          git rm -f .github/workflows/gate-d-p1-long-workflow-reconciliation.yml
+          git rm -f .github/workflows/gate-d-p1-long-workflow-reconciliation-v2.yml
+          git rm -f .github/workflows/gate-d-p1-long-workflow-reconciliation-v3.yml
+          git rm -f .github/workflows/gate-d-p1-long-workflow-reconciliation-v4.yml
+      - name: Audit changed paths
+        run: |
+          set -euo pipefail
+          expected=$(mktemp)
+          actual=$(mktemp)
+          cat >"$expected" <<'EOF'
+          .github/workflows/gate-d-p1-long-workflow-reconciliation-v2.yml
+          .github/workflows/gate-d-p1-long-workflow-reconciliation-v3.yml
+          .github/workflows/gate-d-p1-long-workflow-reconciliation-v4.yml
+          .github/workflows/gate-d-p1-long-workflow-reconciliation.yml
+          .github/workflows/mcf-runtime-staging-deploy-callback.yml
+          .github/workflows/mcf-runtime-staging-deploy.yml
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.evidence.test.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.evidence.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-callback.controller.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-reconciliation.service.ts
+          apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
+          apps/rede-social-agentes/ops/staging-workflow-correlation.test.mjs
+          EOF
+          git add -N \
+            .github/workflows/mcf-runtime-staging-deploy-callback.yml \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-callback.controller.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-reconciliation.service.ts
+          git diff HEAD --name-only | sort >"$actual"
+          sort -o "$expected" "$expected"
+          diff -u "$expected" "$actual"
+          git diff HEAD --check
+      - name: Commit validated P1 remediation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            .github/workflows/mcf-runtime-staging-deploy-callback.yml \
+            .github/workflows/mcf-runtime-staging-deploy.yml \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.evidence.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.evidence.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-callback.controller.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-reconciliation.service.ts \
+            apps/rede-social-agentes/ops/staging-workflow-correlation.test.mjs
+          git commit -m 'fix(gate-d): reconcile long staging workflows asynchronously'
+          git push origin HEAD:feat/mcf-runtime-006-gate-d-staging-deploy-adapter
