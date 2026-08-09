@@ -15,7 +15,13 @@ describe('Gate D provider boundary', () => {
     const modulePath = fileURLToPath(new URL('./mcf-runtime.module.ts', import.meta.url));
     const source = await readFile(modulePath, 'utf8');
 
-    expect(source).not.toContain('GitHubActionsStagingDeployAdapter');
+    expect(source).toContain('provide: GitHubActionsStagingDeployAdapter');
+    expect(source).toContain(
+      'new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr])',
+    );
+    expect(source).not.toContain(
+      'new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubStagingDeploy])',
+    );
     expect(source).not.toContain('github-actions-staging-deploy-v1');
   });
 });
