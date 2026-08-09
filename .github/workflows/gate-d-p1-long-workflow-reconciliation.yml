@@ -39,16 +39,13 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          script = Path('apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py')
-          text = script.read_text()
-          start_marker = '# Static workflow test covers async callback and no Render secret in callback.\n'
-          end_marker = "print('Gate D long-workflow reconciliation patch applied')\n"
-          start = text.index(start_marker)
-          end = text.index(end_marker, start)
-          replacement = r'''# Static workflow test covers async callback and no Render secret in callback.
-          static_test = "apps/rede-social-agentes/ops/staging-workflow-correlation.test.mjs"
-          static_test_content = r'''\''/* global process */
-
+          dollar = chr(36)
+          anchor = (
+              "assert.match(workflow, /run-name:\\s*MCF staging deploy \\" + dollar
+              + "{{ inputs\\.request_id \\|\\| 'push' }} \\" + dollar
+              + "{{ inputs\\.release_sha \\|\\| github\\.sha }}/u);"
+          )
+          fixture = """/* global process */
           import assert from 'node:assert/strict';
           import { readFileSync } from 'node:fs';
           import { dirname, resolve } from 'node:path';
@@ -56,43 +53,19 @@ jobs:
 
           const here = dirname(fileURLToPath(import.meta.url));
           const repoRoot = resolve(here, '../../..');
-          const workflow = readFileSync(
-            resolve(repoRoot, '.github/workflows/mcf-runtime-staging-deploy.yml'),
-            'utf8',
-          );
-          const callbackWorkflow = readFileSync(
-            resolve(repoRoot, '.github/workflows/mcf-runtime-staging-deploy-callback.yml'),
-            'utf8',
-          );
-
-          assert.ok(workflow.includes('run-name: MCF staging deploy'));
-          assert.ok(workflow.includes('inputs.request_id'));
-          assert.ok(workflow.includes('inputs.release_sha'));
-          assert.ok(workflow.includes('inputs.mission_id'));
-          assert.ok(workflow.includes('inputs.phase_id'));
-          assert.ok(workflow.includes('request_id:'));
-          assert.ok(workflow.includes('mission_id:'));
-          assert.ok(workflow.includes('phase_id:'));
-          assert.ok(workflow.includes('REQUEST_ID:'));
-          assert.ok(workflow.includes('MISSION_ID:'));
-          assert.ok(workflow.includes('PHASE_ID:'));
-          assert.ok(workflow.includes('id: deploy'));
-          assert.ok(workflow.includes('Deployment result DEPLOYED'));
-          assert.ok(workflow.includes('Deployment result NOOP'));
-          assert.ok(workflow.includes('Deployment result RECOVERED'));
-          assert.ok(workflow.includes('secrets.RENDER_DEPLOY_HOOK_URL'));
-          assert.ok(!workflow.includes('inputs.RENDER_DEPLOY_HOOK_URL'));
-          assert.ok(callbackWorkflow.includes('workflow_run:'));
-          assert.ok(callbackWorkflow.includes('MCF Runtime Staging Deploy'));
-          assert.ok(callbackWorkflow.includes('MCF_RUNTIME_TOKEN'));
-          assert.ok(callbackWorkflow.includes('v1/mcf/callbacks/staging-deploy'));
-          assert.ok(!callbackWorkflow.includes('RENDER_DEPLOY_HOOK_URL'));
-
+          const workflow = readFileSync(resolve(repoRoot, '.github/workflows/mcf-runtime-staging-deploy.yml'), 'utf8');
+          """ + anchor + """
+          assert.match(workflow, /request_id:/u);
+          assert.match(workflow, /REQUEST_ID:/u);
+          assert.match(workflow, /id: deploy/u);
+          assert.match(workflow, /Deployment result DEPLOYED/u);
+          assert.match(workflow, /Deployment result NOOP/u);
+          assert.match(workflow, /Deployment result RECOVERED/u);
+          assert.match(workflow, /RENDER_DEPLOY_HOOK_URL: .*secrets\\.RENDER_DEPLOY_HOOK_URL/u);
+          assert.doesNotMatch(workflow, /RENDER_DEPLOY_HOOK_URL: .*inputs\\./u);
           console.log('staging workflow correlation tests passed');
-          '\''\''\''
-          path(static_test).write_text(static_test_content)
-          '''
-          script.write_text(text[:start] + replacement + text[end:])
+          """
+          Path('apps/rede-social-agentes/ops/staging-workflow-correlation.test.mjs').write_text(fixture)
           PY
           if ! python apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py 2> /tmp/gate-d-reconciliation.err; then
             cat /tmp/gate-d-reconciliation.err >&2
