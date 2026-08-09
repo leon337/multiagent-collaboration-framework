@@ -448,7 +448,9 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
           ],
         );
         if (persistedReceipt.rows.length !== 1) {
-          throw new Error('MCF duplicate pending phase completion has no unique persisted receipt.');
+          throw new Error(
+            'MCF duplicate pending phase completion has no unique persisted receipt.',
+          );
         }
         const receiptRow = persistedReceipt.rows[0]!;
         return {
