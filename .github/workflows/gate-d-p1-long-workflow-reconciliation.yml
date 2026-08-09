@@ -36,33 +36,13 @@ jobs:
         run: |
           set -euo pipefail
           sed -i 's/parents\[2\]/parents[3]/' apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
-          python apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
-          python - <<'PY'
-          from pathlib import Path
-
-          def replace_once(path, old, new):
-              p = Path(path)
-              text = p.read_text()
-              if text.count(old) != 1:
-                  raise SystemExit(f'{path}: expected one supplemental anchor, found {text.count(old)}')
-              p.write_text(text.replace(old, new, 1))
-
-          replace_once(
-              'apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts',
-              "type ExternalAttemptStatus =\n",
-              "export type ExternalAttemptStatus =\n",
-          )
-          replace_once(
-              'apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts',
-              "  title = `MCF staging deploy ${KEY} ${RELEASE_SHA}`,\n",
-              "  title = `MCF staging deploy ${KEY} ${RELEASE_SHA} mission-gate-d phase-gate-d`,\n",
-          )
-          replace_once(
-              'apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.evidence.test.ts',
-              "      workflowDisplayTitle: `MCF staging deploy ${KEY} ${RELEASE_SHA}`,\n",
-              "      workflowDisplayTitle: `MCF staging deploy ${KEY} ${RELEASE_SHA} ${context.executionContext.missionId} ${context.executionContext.phaseId}`,\n",
-          )
-          PY
+          if ! python apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py 2> /tmp/gate-d-reconciliation.err; then
+            cat /tmp/gate-d-reconciliation.err >&2
+            message=$(tail -n 1 /tmp/gate-d-reconciliation.err | tr '\n' ' ')
+            echo "::error title=Gate D reconciliation script failed::${message}"
+            exit 1
+          fi
+          cat /tmp/gate-d-reconciliation.err >&2 || true
       - name: Format targeted files
         working-directory: apps/rede-social-agentes
         run: |
