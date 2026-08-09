@@ -30,6 +30,23 @@ test('staging workflow exposes deterministic non-secret runtime correlation', as
   assert.ok(!workflow.includes('RENDER_DEPLOY_HOOK_URL: ${{ inputs.'));
 });
 
+test('staging workflow executes the deploy protocol from its trusted control-plane revision', async () => {
+  const workflow = await readFile(workflowPath, 'utf8');
+
+  assert.ok(workflow.includes('Checkout trusted deploy control plane'));
+  assert.ok(workflow.includes('ref: ${{ github.workflow_sha }}'));
+  assert.ok(workflow.includes('path: .mcf-control-plane'));
+  assert.ok(workflow.includes('Checkout exact release revision'));
+  assert.ok(workflow.includes('path: .mcf-release'));
+  assert.ok(workflow.includes('working-directory: .mcf-release/apps/rede-social-agentes'));
+  assert.ok(
+    workflow.includes(
+      'run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs',
+    ),
+  );
+  assert.ok(!workflow.includes('run: node apps/rede-social-agentes/ops/render-staging-deploy.mjs'));
+});
+
 test('staging workflow completion triggers authenticated runtime reconciliation', async () => {
   const callbackPath = resolve(
     process.cwd(),
