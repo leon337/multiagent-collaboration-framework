@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
-import type { McfCiCallbackResponse, McfEventType } from '@rsa/contracts';
+import type {
+  McfCiCallbackResponse,
+  McfEventType,
+  McfEvidenceValidationStatus,
+} from '@rsa/contracts';
 
 import type { ExternalActionRequest } from './external-action.contracts.js';
 import { ExternalActionLedger } from './external-action-ledger.js';
@@ -39,6 +43,12 @@ function requiredInput(inputs: Record<string, unknown>, key: string): string {
     throw new McfEvidenceRejectedError(`staging callback requires persisted ${key}`);
   }
   return value;
+}
+
+function settledEvidenceStatus(
+  status: 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED',
+): McfEvidenceValidationStatus {
+  return status === 'EVIDENCE_VALIDATED' ? 'VALID' : 'INVALID';
 }
 
 function callbackEvent(input: {
@@ -96,19 +106,30 @@ export class StagingDeployReconciliationService {
       request.phaseId,
       request.requestId,
     );
-    if (!attempt || !attempt.reconciliationEligible || !attempt.previousSha) {
-      throw new McfEvidenceRejectedError(
-        'durable staging UNKNOWN attempt is not yet eligible for automatic reconciliation',
-      );
+    if (!attempt) {
+      throw new McfEvidenceRejectedError('staging callback has no durable deployment attempt');
     }
     if (attempt.skillId !== phase.skillId || attempt.agentId !== phase.agentId) {
       throw new McfEvidenceRejectedError(
         'staging callback attempt does not match persisted phase identity',
       );
     }
-    if (!['UNKNOWN', 'EVIDENCE_VALIDATED', 'EVIDENCE_REJECTED'].includes(attempt.status)) {
+    if (attempt.status === 'EVIDENCE_VALIDATED' || attempt.status === 'EVIDENCE_REJECTED') {
+      return {
+        accepted: true,
+        duplicate: true,
+        evidenceStatus: settledEvidenceStatus(attempt.status),
+        missionState: mission.state,
+      };
+    }
+    if (attempt.status !== 'UNKNOWN') {
       throw new McfEvidenceRejectedError(
         `staging callback cannot reconcile attempt status ${attempt.status}`,
+      );
+    }
+    if (!attempt.reconciliationEligible || !attempt.previousSha) {
+      throw new McfEvidenceRejectedError(
+        'durable staging UNKNOWN attempt is not yet eligible for automatic reconciliation',
       );
     }
 
@@ -157,16 +178,14 @@ export class StagingDeployReconciliationService {
       this.humanDelegation.assertHandoffTarget(outcome.handoffTo, mission.contract.selectedAgents);
     }
 
-    if (attempt.status === 'UNKNOWN') {
-      if (outcome.evidenceStatus === 'VALID') {
-        await this.ledger.recordEvidenceValidated(attempt.attemptId, outcome.receipt.receiptId);
-      } else {
-        await this.ledger.recordEvidenceRejected(
-          attempt.attemptId,
-          outcome.receipt.receiptId,
-          outcome.rejectionReason ?? 'staging deployment evidence rejected',
-        );
-      }
+    if (outcome.evidenceStatus === 'VALID') {
+      await this.ledger.recordEvidenceValidated(attempt.attemptId, outcome.receipt.receiptId);
+    } else {
+      await this.ledger.recordEvidenceRejected(
+        attempt.attemptId,
+        outcome.receipt.receiptId,
+        outcome.rejectionReason ?? 'staging deployment evidence rejected',
+      );
     }
 
     const missionState = resolveMissionState({
