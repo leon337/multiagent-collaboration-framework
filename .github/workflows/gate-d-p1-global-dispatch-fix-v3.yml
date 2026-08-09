@@ -1,0 +1,111 @@
+name: Gate D P1 Global Dispatch Fix V3
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-gate-d-staging-deploy-adapter
+    paths:
+      - ".github/workflows/gate-d-p1-global-dispatch-fix-v3.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_DB: rsa
+          POSTGRES_USER: rsa
+          POSTGRES_PASSWORD: rsa_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rsa -d rsa"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+      LOG_LEVEL: error
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Apply guarded global claim patch
+        env:
+          PATCH_B64: "ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCmltcG9ydCByZQoKcGF0aCA9IFBhdGgoImFwcHMvcmVkZS1zb2NpYWwtYWdlbnRlcy9hcHAvc2VydmVyL3NyYy9tY2YtcnVudGltZS9leHRlcm5hbC1hY3Rpb24tbGVkZ2VyLnRzIikKdGV4dCA9IHBhdGgucmVhZF90ZXh0KCkKCmNvbnN0YW50c19wYXR0ZXJuID0gcmUuY29tcGlsZSgKICAgIHIiY29uc3QgZ2xvYmFsbHlTZXJpYWxpemVkT3BlcmF0aW9ucyA9IG5ldyBTZXQoXFtcbig/OlxzeDJgeydbXiddKycsXG4pK1xdXCk7XG4iCikKbWF0Y2hlcyA9IGxpc3QoY29uc3RhbnRzX3BhdHRlcm4uZmluZGl0ZXIodGV4dCkpCmlmIGxlbihtYXRjaGVzKSAhPSAxOgogICAgcmFpc2UgU3lzdGVtRXhpdChmImV4cGVjdGVkIG9uZSBnbG9iYWxseVNlcmlhbGl6ZWRPcGVyYXRpb25zIGJsb2NrLCBmb3VuZCB7bGVuKG1hdGNoZXMpfSIpCmlmICJnbG9iYWxseVNlcmlhbGl6ZWRTdGFnaW5nRGVwbG95QWRhcHRlciIgaW4gdGV4dDoKICAgIHJhaXNlIFN5c3RlbUV4aXQoInN0YWdpbmcgZGVwbG95IGdsb2JhbCBzZXJpYWxpemF0aW9uIGNvbnN0YW50cyBhbHJlYWR5IGV4aXN0IHVuZXhwZWN0ZWRseSIpCmNvbnN0YW50c19zdWZmaXggPSAoCiAgICAiY29uc3QgZ2xvYmFsbHlTZXJpYWxpemVkU3RhZ2luZ0RlcGxveUFkYXB0ZXIgPSAnZ2l0aHViLWFjdGlvbnMtc3RhZ2luZy1kZXBsb3ktdjEnO1xuIgogICAgImNvbnN0IGdsb2JhbGx5U2VyaWFsaXplZFN0YWdpbmdEZXBsb3lPcGVyYXRpb24gPSAnZGVwbG95LXN0YWdpbmcnO1xuIgopCm1hdGNoID0gbWF0Y2hlc1swXQp0ZXh0ID0gdGV4dFtcIDogbWF0Y2guZW5kKCldICsgY29uc3RhbnRzX3N1ZmZpeCArIHRleHRbbWF0Y2guZW5kKCkgOl0KCnNjb3BlX3BhdHRlcm4gPSByZS5jb21waWxlKAogICAgciJmdW5jdGlvbiByZXF1ZXN0R2xvYmFsSWRlbXBvdGVuY3lTY29wZUtleVwoXG4iCiAgICByIiAgcmVxdWVzdDogRXh0ZXJuYWxBY3Rpb25SZXF1ZXN0LFxuIgogICAgciIgIGFkYXB0ZXJJZDogc3RyaW5nLFxuIgogICAgciIgIGlkZW1wb3RlbmN5S2V5OiBzdHJpbmcgXHwgbnVsbCxcbiIKICAgIHIiXCk6IHN0cmluZyBcfCBudWxsIFx7XG4iCiAgICByIi4qPyIKICAgIHIiXG5cfVxuXG5ASW5qZWN0YWJsZVwoXCkiLAogICAgcmUuUywKKQpzY29wZV9tYXRjaGVzID0gbGlzdChzY29wZV9wYXR0ZXJuLmZpbmRpdGVyKHRleHQpKQppZiBsZW4oc2NvcGVfbWF0Y2hlcykgIT0gMToKICAgIHJhaXNlIFN5c3RlbUV4aXQoZiJleHBlY3RlZCBvbmUgZ2xvYmFsIHNjb3BlIGZ1bmN0aW9uLCBmb3VuZCB7bGVuKHNjb3BlX21hdGNoZXMpfSIpCgpuZXdfc2NvcGUgPSAiIiJmdW5jdGlvbiByZXF1ZXN0R2xvYmFsSWRlbXBvdGVuY3lTY29wZUtleSgKICByZXF1ZXN0OiBFeHRlcm5hbEFjdGlvblJlcXVlc3QsCiAgYWRhcHRlcklkOiBzdHJpbmcsCiAgaWRlbXBvdGVuY3lLZXk6IHN0cmluZyB8IG51bGwsCik6IHN0cmluZyB8IG51bGwgewogIGlmICghaWRlbXBvdGVuY3lLZXkpIHJldHVybiBudWxsOwoKICBjb25zdCBvcGVyYXRpb24gPSBjYW5vbmljYWxpemVUb29sVmFsdWUocmVxdWVzdC50b29sLm9wZXJhdGlvbik7CiAgaWYgKGFkYXB0ZXJJZCA9PT0gZ2xvYmFsbHlTZXJpYWxpemVkQWRhcHRlcikgewogICAgaWYgKCFnbG9iYWxseVNlcmlhbGl6ZWRPcGVyYXRpb25zLmhhcyhvcGVyYXRpb24pKSByZXR1cm4gbnVsbDsKCiAgICBjb25zdCBwdWxsUmVxdWVzdE51bWJlciA9IHJlcXVlc3QuaW5wdXRzLnB1bGxfcmVxdWVzdF9udW1iZXI7CiAgICBpZiAoIU51bWJlci5pc0ludGVnZXIocHVsbFJlcXVlc3ROdW1iZXIpIHx8IChwdWxsUmVxdWVzdE51bWJlciBhcyBudW1iZXIpIDwgMSkgcmV0dXJuIG51bGw7CgogICAgY29uc3QgcGF5bG9hZCA9IHsKICAgICAgYWRhcHRlcklkLAogICAgICBwcm92aWRlcjogY2Fub25pY2FsaXplUHJvdmlkZXIocmVxdWVzdC50b29sLnByb3ZpZGVyKSwKICAgICAgb3BlcmF0aW9uLAogICAgICByZXNvdXJjZTogcmVxdWVzdC50b29sLnJlc291cmNlLnRyaW0oKS50b0xvd2VyQ2FzZSgpLAogICAgICBwdWxsUmVxdWVzdE51bWJlciwKICAgICAgaWRlbXBvdGVuY3lLZXksCiAgICB9OwogICAgcmV0dXJuIGNyZWF0ZUhhc2goJ3NoYTI1NicpLnVwZGF0ZShKU09OLnN0cmluZ2lmeShwYXlsb2FkKSkuZGlnZXN0KCdoZXgnKTsKICB9CgogIGlmICgKICAgIGFkYXB0ZXJJZCA9PT0gZ2xvYmFsbHlTZXJpYWxpemVkU3RhZ2luZ0RlcGxveUFkYXB0ZXIgJiYKICAgIG9wZXJhdGlvbiA9PT0gZ2xvYmFsbHlTZXJpYWxpemVkU3RhZ2luZ0RlcGxveU9wZXJhdGlvbgogICkgewogICAgY29uc3QgcmVwb3NpdG9yeSA9IHJlcXVlc3QuaW5wdXRzLnJlcG9zaXRvcnk7CiAgICBpZiAodHlwZW9mIHJlcG9zaXRvcnkgIT09ICdzdHJpbmcnIHx8IHJlcG9zaXRvcnkudHJpbSgpLmxlbmd0aCA9PT0gMCkgcmV0dXJuIG51bGw7CgogICAgY29uc3QgcGF5bG9hZCA9IHsKICAgICAgYWRhcHRlcklkLAogICAgICBwcm92aWRlcjogY2Fub25pY2FsaXplUHJvdmlkZXIocmVxdWVzdC50b29sLnByb3ZpZGVyKSwKICAgICAgb3BlcmF0aW9uLAogICAgICByZXNvdXJjZTogcmVxdWVzdC50b29sLnJlc291cmNlLnRyaW0oKS50b0xvd2VyQ2FzZSgpLAogICAgICByZXBvc2l0b3J5OiByZXBvc2l0b3J5LnRyaW0oKS50b0xvd2VyQ2FzZSgpLAogICAgICBpZGVtcG90ZW5jeUtleSwKICAgIH07CiAgICByZXR1cm4gY3JlYXRlSGFzaCgnc2hhMjU2JykudXBkYXRlKEpTT04uc3RyaW5naWZ5KHBheWxvYWQpKS5kaWdlc3QoJ2hleCcpOwogIH0KCiAgcmV0dXJuIG51bGw7Cn0KCkBJbmplY3RhYmxlKCkiIiIKdGV4dCA9IHNjb3BlX3BhdHRlcm4uc3ViKG5ld19zY29wZSwgdGV4dCwgY291bnQ9MSkKcGF0aC53cml0ZV90ZXh0KHRleHQpCg=="
+          TEST_B64: "aW1wb3J0IHsgcmFuZG9tVVVJRCB9IGZyb20gJ25vZGU6Y3J5cHRvJzsKCmltcG9ydCB0eXBlIHsgTWNmU2tpbGxEZWZpbml0aW9uLCBNY2ZUb29sUmVjZWlwdCB9IGZyb20gJ0Byc2EvY29udHJhY3RzJzsKaW1wb3J0IHsgYWZ0ZXJBbGwsIGJlZm9yZUFsbCwgZGVzY3JpYmUsIGV4cGVjdCwgaXQgfSBmcm9tICd2aXRlc3QnOwoKaW1wb3J0IHsgRGF0YWJhc2VTZXJ2aWNlIH0gZnJvbSAnLi4vZGF0YWJhc2Uuc2VydmljZS5qcyc7CmltcG9ydCB7IEFkYXB0ZXJSZWdpc3RyeSB9IGZyb20gJy4vYWRhcHRlci1yZWdpc3RyeS5qcyc7CmltcG9ydCB7IEV2aWRlbmNlVmFsaWRhdG9yIH0gZnJvbSAnLi9ldmlkZW5jZS12YWxpZGF0b3IuanMnOwppbXBvcnQgeyBFeHRlcm5hbEFjdGlvbkRpc3BhdGNoZXIgfSBmcm9tICcuL2V4dGVybmFsLWFjdGlvbi1kaXNwYXRjaGVyLmpzJzsKaW1wb3J0IHsgRXh0ZXJuYWxBY3Rpb25MZWRnZXIgfSBmcm9tICcuL2V4dGVybmFsLWFjdGlvbi1sZWRnZXIuanMnOwppbXBvcnQgdHlwZSB7IEV4dGVybmFsQWN0aW9uQWRhcHRlciwgRXh0ZXJuYWxBY3Rpb25SZXF1ZXN0IH0gZnJvbSAnLi9leHRlcm5hbC1hY3Rpb24uY29udHJhY3RzLmpzJzsKCmNvbnN0IFJFUE9TSVRPUlkgPSAnbGVvbjMzNy9tdWx0aWFnZW50LWNvbGxhYm9yYXRpb24tZnJhbWV3b3JrJzsKY29uc3QgUkVMRUFTRV9TSEEgPSAnYicucmVwZWF0KDQwKTsKY29uc3QgSURFTVBPVEVOQ1lfS0VZID0gJ21jZi1nYXRlLWQtZ2xvYmFsLWlkZW1wb3RlbmN5LTAwMDEnOwoKY29uc3Qgc2tpbGw6IE1jZlNraWxsRGVmaW5pdGlvbiA9IHsKICBza2lsbElkOiAnTUNGLURFUExPWS1WQUxJREFURScsCiAgbmFtZTogJ0RlcGxveSBWYWxpZGF0ZScsCiAgdmVyc2lvbjogJzEuMC4wJywKICBwdXJwb3NlOiAndmVyaWZpZWQgc3RhZ2luZyBkZXBsb3ltZW50JywKICBvd25lckFnZW50czogWydHYWJyaWwnXSwKICByZXF1aXJlZElucHV0czogWydhcnRpZmFjdF9vcl9jb21taXQnLCAndGFyZ2V0X2Vudmlyb25tZW50J10sCiAgYWxsb3dlZFRvb2xzOiBbJ0dpdEh1YicsICdSZW5kZXInXSwKICBmb3JiaWRkZW5Ub29sczogWydwdWJsaWNfcHJvZHVjdGlvbl93aXRob3V0X2dhdGUnXSwKICBwZXJtaXNzaW9uUHJvZmlsZTogJ1NDT1BFRF9XUklURScsCiAgZXhlY3V0aW9uU3RlcHM6IFtdLAogIHJlcXVpcmVkRXZpZGVuY2U6IFtdLAogIGFjY2VwdGFuY2VDcml0ZXJpYTogW10sCiAgZmFpbHVyZU1vZGVzOiBbXSwKICBmYWxsYmFjazogJ01lc3RyZScsCiAgaGFuZG9mZlRvOiAnTWVzdHJlJywKfTsKCmZ1bmN0aW9uIG1pc3Npb25Db250cmFjdCh0aXRsZTogc3RyaW5nKSB7CiAgcmV0dXJuIEpTT04uc3RyaW5naWZ5KHsKICAgIHRpdGxlLAogICAgb2JqZWN0aXZlOiAnU2VyaWFsaXplIHRoZSBzYW1lIEdhdGUgRCBzdGFnaW5nIGRlcGxveSBhY3Jvc3MgY29uY3VycmVudCBtaXNzaW9ucy4nLAogICAgZXhwZWN0ZWRPdXRjb21lOiAnT25seSBvbmUgZ2xvYmFsbHkgY2xhaW1lZCBkaXNwYXRjaCBtYXkgcmVhY2ggdGhlIHN0YWdpbmcgYWRhcHRlci4nLAogICAgc2NvcGU6IFsnR2F0ZSBEIHBlcnNpc3RlbnQgZ2xvYmFsIGlkZW1wb3RlbmN5J10sCiAgICBvdXRPZlNjb3BlOiBbJ3JlYWwgcHJvdmlkZXIgd3JpdGUnXSwKICAgIGFjY2VwdGFuY2VDcml0ZXJpYTogWydvbmUgYWRhcHRlciBleGVjdXRpb24gZm9yIHRoZSBnbG9iYWxseSBib3VuZCBpZGVtcG90ZW5jeSBrZXknXSwKICAgIHJpc2tDbGFzczogJ0MnLAogICAgc2VsZWN0ZWRBZ2VudHM6IFsnR2FicmllbCcsICdNZXN0cmUnXSwKICAgIHNlbGVjdGVkU2tpbGxzOiBbJ01DRi1ERVBMT1ktVkFMSURBVEUnXSwKICAgIHNvdXJjZU9mVHJ1dGg6IFsnTUNGUlVOVElNRS0wMDYtR0FURS1EJ10sCiAgfSk7Cn0KCmZ1bmN0aW9uIHJlcXVlc3QobWlzc2lvbklkOiBzdHJpbmcsIHBoYXNlSWQ6IHN0cmluZyk6IEV4dGVybmFsQWN0aW9uUmVxdWVzdCB7CiAgcmV0dXJuIHsKICAgIHNraWxsLAogICAgYWdlbnRJZDogJ0dhYnJpZWwnLAogICAgaW5wdXRzOiB7CiAgICAgIHJlcG9zaXRvcnk6IFJFUE9TSVRPUlksCiAgICAgIGFydGlmYWN0X29yX2NvbW1pdDogUkVMRUFTRV9TSEEsCiAgICAgIHRhcmdldF9lbnZpcm9ubWVudDogJ3N0YWdpbmcnLAogICAgICBpZGVtcG90ZW5jeV9rZXk6IElERU1QT1RFTkNZX0tFWSwKICAgICAgYXV0aG9yaXplZFNjb3BlOiB0cnVlLAogICAgfSwKICAgIHRvb2w6IHsKICAgICAgcHJvdmlkZXI6ICdnaXRodWInLAogICAgICBvcGVyYXRpb246ICdkZXBsb3ktc3RhZ2luZycsCiAgICAgIHJlc291cmNlOiBSRVBPU0lUT1JZLAogICAgfSwKICAgIGNvbnRleHQ6IHsgbWlzc2lvbklkLCBwaGFzZUlkLCBleHBlY3RlZE1pc3Npb25WZXJzaW9uOiAxIH0sCiAgfTsKfQoKZnVuY3Rpb24gcmVjZWlwdChyZXNvdXJjZTogc3RyaW5nKTogTWNmVG9vbFJlY2VpcHQgewogIHJldHVybiBuZXcgRXZpZGVuY2VWYWxpZGF0b3IoKS5jcmVhdGVUcnVzdGVkUmVjZWlwdCh7CiAgICBwcm92aWRlcjogJ2dpdGh1Yi1hY3Rpb25zJywKICAgIG9wZXJhdGlvbjogJ2RlcGxveS1zdGFnaW5nJywKICAgIHJlc291cmNlLAogICAgZXh0ZXJuYWxJZDogJ2dhdGUtZC1jb25jdXJyZW5jeS1ydW4nLAogICAgY29tbWl0U2hhOiBSRUxFQVNFX1NIQSwKICAgIHN0YXR1czogJ1NVQ0NFRURFRCcsCiAgICBvYnNlcnZlZEF0OiBuZXcgRGF0ZSgpLnRvSVNPU3RyaW5nKCksCiAgICBtZXRhZGF0YTogeyBkZXBsb3ltZW50T3V0Y29tZTogJ0RFUExPWUVEJyB9LAogIH0pOwp9CgpkZXNjcmliZSgnR2F0ZSBEIGdsb2JhbCBzdGFnaW5nIGRpc3BhdGNoIHNlcmlhbGl6YXRpb24nLCAoKSA9PiB7CiAgbGV0IGRhdGFiYXNlOiBEYXRhYmFzZVNlcnZpY2U7CgogIGJlZm9yZUFsbCgoKSA9PiB7CiAgICBwcm9jZXNzLmVudi5NQ0ZfUkVDRUlQVF9TRUNSRVQgPSAndGVzdC1zZWNyZXQtdGhhdC1pcy1sb25nLWVub3VnaC1mb3ItbWNmLXJ1bnRpbWUnOwogICAgZGF0YWJhc2UgPSBuZXcgRGF0YWJhc2VTZXJ2aWNlKCk7CiAgfSk7CgogIGFmdGVyQWxsKGFzeW5jICgpID0+IHsKICAgIGF3YWl0IGRhdGFiYXNlLm9uTW9kdWxlRGVzdHJveSgpOwogIH0pOwoKICBpdCgnYWxsb3dzIG9ubHkgb25lIGFkYXB0ZXIgZXhlY3V0aW9uIGFjcm9zcyB0d28gY29uY3VycmVudCBtaXNzaW9ucyB3aXRoIHRoZSBzYW1lIGRlcGxveSBrZXknLCBhc3luYyAoKSA9PiB7CiAgICBjb25zdCBtaXNzaW9uQSA9IHJhbmRvbVVVSUQoKTsKICAgIGNvbnN0IG1pc3Npb25CID0gcmFuZG9tVVVJRCgpOwogICAgY29uc3QgcGhhc2VBID0gcmFuZG9tVVVJRCgpOwogICAgY29uc3QgcGhhc2VCID0gcmFuZG9tVVVJRCgpOwogICAgY29uc3Qgbm93ID0gbmV3IERhdGUoKTsKCiAgICBsZXQgYWRhcHRlckV4ZWN1dGlvbnMgPSAwOwogICAgbGV0IHJlbGVhc2VGaXJzdCA9ICgpID0+IHt9OwogICAgbGV0IG1hcmtGaXJzdFN0YXJ0ZWQgPSAoKSA9PiB7fTsKICAgIGNvbnN0IGZpcnN0TWF5RmluaXNoID0gbmV3IFByb21pc2U8dm9pZD4oKHJlc29sdmUpID0+IHsKICAgICAgcmVsZWFzZUZpcnN0ID0gKCkgPT4gcmVzb2x2ZSgpOwogICAgfSk7CiAgICBjb25zdCBmaXJzdEV4ZWN1dGlvblN0YXJ0ZWQgPSBuZXcgUHJvbWlzZTx2b2lkPigocmVzb2x2ZSkgPT4gewogICAgICBtYXJrRmlyc3RTdGFydGVkID0gKCkgPT4gcmVzb2x2ZSgpOwogICAgfSk7CgogICAgZnVuY3Rpb24gYWRhcHRlcigpOiBFeHRlcm5hbEFjdGlvbkFkYXB0ZXIgewogICAgICByZXR1cm4gewogICAgICAgIGFkYXB0ZXJJZDogJ2dpdGh1Yi1hY3Rpb25zLXN0YWdpbmctZGVwbG95LXYxJywKICAgICAgICBzdXBwb3J0czogKCkgPT4gdHJ1ZSwKICAgICAgICBleGVjdXRlOiBhc3luYyAoY3VycmVudFJlcXVlc3QpID0+IHsKICAgICAgICAgIGFkYXB0ZXJFeGVjdXRpb25zICs9IDE7CiAgICAgICAgICBpZiAoYWRhcHRlckV4ZWN1dGlvbnMgPT09IDEpIHsKICAgICAgICAgICAgbWFya0ZpcnN0U3RhcnRlZCgpOwogICAgICAgICAgICBhd2FpdCBmaXJzdE1heUZpbmlzaDsKICAgICAgICAgIH0KICAgICAgICAgIHJldHVybiByZWNlaXB0KGN1cnJlbnRSZXF1ZXN0LnRvb2wucmVzb3VyY2UpOwogICAgICAgIH0sCiAgICAgIH07CiAgICB9CgogICAgY29uc3QgZGlzcGF0Y2hlckEgPSBuZXcgRXh0ZXJuYWxBY3Rpb25EaXNwYXRjaGVyKAogICAgICBuZXcgQWRhcHRlclJlZ2lzdHJ5KFthZGFwdGVyKCldKSwKICAgICAgbmV3IEV4dGVybmFsQWN0aW9uTGVkZ2VyKGRhdGFiYXNlKSwKICAgICApOwogICAgY29uc3QgZGlzcGF0Y2hlckIgPSBuZXcgRXh0ZXJuYWxBY3Rpb25EaXNwYXRjaGVyKAogICAgICBuZXcgQWRhcHRlclJlZ2lzdHJ5KFthZGFwdGVyKCldKSwKICAgICAgbmV3IEV4dGVybmFsQWN0aW9uTGVkZ2VyKGRhdGFiYXNlKSwKICAgICApOwoKICAgIHRyeSB7CiAgICAgIGF3YWl0IGRhdGFiYXNlLnF1ZXJ5KAogICAgICAgIGAgaW5zZXJ0IGludG8gIm1jZl9taXNzaW9ucyIgKAogICAgICAgICAgImlkIiwgImNvbnRyYWN0IiwgInN0YXRlIiwgImN1cnJlbnRfcGhhc2VfaWQiLCAiY3VycmVudF9hZ2VudF9pZCIsCiAgICAgICAgICAidmVyc2lvbiIsICJjcmVhdGVkX2F0IiwgInVwZGF0ZWRfYXQiCiAgICAgICAgKSB2YWx1ZXMKICAgICAgICAgICgkMSwgJDI6Ompzb25iLCAnRVhFQ1VUSU5HJywgbnVsbCwgJ0dhYnJpZWwnLCAxLCAkNSwgJDUpLAogICAgICAgICAgKCQzLCAkNDo6anNvbmIsICdFWEVDVVRJTkcnLCBudWxsLCAnR2FicmllbCcsIDEsICQ1LCAkNSlgLAogICAgICAgIFsKICAgICAgICAgIG1pc3Npb25BLAogICAgICAgICAgbWlzc2lvbkNvbnRyYWN0KCdHYXRlIEQgZ2xvYmFsIGRpc3BhdGNoIEEnKSwKICAgICAgICAgIG1pc3Npb25CLAogICAgICAgICAgbWlzc2lvbkNvbnRyYWN0KCdHYXRlIEQgZ2xvYmFsIGRpc3BhdGNoIEInKSwKICAgICAgICAgIG5vdywKICAgICAgICBdLAogICAgICApOwoKICAgICAgY29uc3QgZmlyc3REaXNwYXRjaCA9IGRpc3BhdGNoZXJBLmRpc3BhdGNoKHJlcXVlc3QobWlzc2lvbkEsIHBoYXNlQSkpOwogICAgICBhd2FpdCBmaXJzdEV4ZWN1dGlvblN0YXJ0ZWQ7CgogICAgICBjb25zdCBzZWNvbmRSZXN1bHQgPSBhd2FpdCBkaXNwYXRjaGVyQi5kaXNwYXRjaChyZXF1ZXN0KG1pc3Npb25CLCBwaGFzZUIpKTsKICAgICAgcmVsZWFzZUZpcnN0KCk7CiAgICAgIGNvbnN0IGZpcnN0UmVzdWx0ID0gYXdhaXQgZmlyc3REaXNwYXRjaDsKCiAgICAgIGV4cGVjdChmaXJzdFJlc3VsdC5zdGF0dXMpLnRvQmUoJ0VYRUNVVEVEJyk7CiAgICAgIGV4cGVjdChzZWNvbmRSZXN1bHQuc3RhdHVzKS50b0JlKCdGQUlMRUQnKTsKICAgICAgaWYgKHNlY29uZFJlc3VsdC5zdGF0dXMgPT09ICdGQUlMRUQnKSB7CiAgICAgICAgZXhwZWN0KHNlY29uZFJlc3VsdC5mYWlsdXJlLmNvZGUpLnRvQmUoJ1JFU0VSVkFUSU9OX0NPTkZMSUNUJyk7CiAgICAgICAgZXhwZWN0KHNlY29uZFJlc3VsdC5mYWlsdXJlLnJldHJ5YWJsZSkudG9CZShmYWxzZSk7CiAgICAgIH0KICAgICAgZXhwZWN0KGFkYXB0ZXJFeGVjdXRpb25zKS50b0JlKDEpOwoKICAgICAgY29uc3QgYXR0ZW1wdHMgPSBhd2FpdCBkYXRhYmFzZS5xdWVyeTx7CiAgICAgICAgbWlzc2lvbklkOiBzdHJpbmc7CiAgICAgICAgc3RhdHVzOiBzdHJpbmc7CiAgICAgICAgc2NvcGVLZXk6IHN0cmluZyB8IG51bGw7CiAgICAgIH0+KAogICAgICAgIGBzZWxlY3QgIm1pc3Npb25faWQiIGFzICJtaXNzaW9uSWQiLCAic3RhdHVzIiwKICAgICAgICAgICAgICAgICJpZGVtcG90ZW5jeV9zY29wZV9rZXkiIGFzICJzY29wZUtleSIKICAgICAgICAgZnJvbSAibWNmX2V4dGVybmFsX2FjdGlvbl9hdHRlbXB0cyIKICAgICAgICAgd2hlcmUgIm1pc3Npb25faWQiID0gYW55KCQxOjp0ZXh0W10pCiAgICAgICAgIG9yZGVyIGJ5ICJjcmVhdGVkX2F0ImAsCiAgICAgICAgW1ttaXNzaW9uQSwgbWlzc2lvbkJdXSwKICAgICAgKTsKICAgICAgZXhwZWN0KGF0dGVtcHRzLnJvd3MpLnRvSGF2ZUxlbmd0aCgxKTsKICAgICAgZXhwZWN0KGF0dGVtcHRzLnJvd3NbMF0/Lm1pc3Npb25JZCkudG9CZShtaXNzaW9uQSk7CiAgICAgIGV4cGVjdChhdHRlbXB0cy5yb3dzWzBdPy5zdGF0dXMpLnRvQmUoJ0VYRUNVVEVEJyk7CiAgICAgIGV4cGVjdChhdHRlbXB0cy5yb3dzWzBdPy5zY29wZUtleSkubm90LnRvQmVOdWxsKCk7CiAgICB9IGZpbmFsbHkgewogICAgICByZWxlYXNlRmlyc3QoKTsKICAgICAgYXdhaXQgZGF0YWJhc2UucXVlcnkoCiAgICAgICAgYGRlbGV0ZSBmcm9tICJtY2ZfZXh0ZXJuYWxfYWN0aW9uX2F0dGVtcHRzIiB3aGVyZSAibWlzc2lvbl9pZCIgPSBhbnkoJDE6OnRleHRbXSlgLAogICAgICAgIFtbbWlzc2lvbkEsIG1pc3Npb25CXSksCiAgICAgICk7CiAgICAgIGF3YWl0IGRhdGFiYXNlLnF1ZXJ5KGBkZWxldGUgZnJvbSAibWNmX2V2ZW50cyIgd2hlcmUgIm1pc3Npb25faWQiID0gYW55KCQxOjp0ZXh0W10pYCwgWwogICAgICAgIFttaXNzaW9uQSwgbWlzc2lvbkJdLAogICAgICBdKTsKICAgICAgYXdhaXQgZGF0YWJhc2UucXVlcnkoYGRlbGV0ZSBmcm9tICJtY2ZfbWlzc2lvbnMiIHdoZXJlICJpZCIgPSBhbnkoJDE6OnRleHRbXSlgLCBbCiAgICAgICAgW21pc3Npb25BLCBtaXNzaW9uQl0sCiAgICAgIF0pOwogICAgfQogIH0pOwp9KTsK"
+        run: |
+          python - <<'PY'
+          import base64, os
+          from pathlib import Path
+          Path('/tmp/gate-d-global-claim.py').write_bytes(
+              base64.b64decode(os.environ['PATCH_B64'], validate=True)
+          )
+          target = Path(
+              'apps/rede-social-agentes/apps/server/src/mcf-runtime/'
+              'github-staging-deploy.global-idempotency.integration.test.ts'
+          )
+          target.write_bytes(base64.b64decode(os.environ['TEST_B64'], validate=True))
+          PY
+          python /tmp/gate-d-global-claim.py
+      - name: Format and validate targeted concurrency boundary
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.global-idempotency.integration.test.ts
+          pnpm exec prettier --check \
+            apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.global-idempotency.integration.test.ts
+          pnpm build:packages
+          pnpm --filter @rsa/database db:migrate
+          pnpm --filter @rsa/database db:migrate
+          pnpm --filter @rsa/server typecheck
+          pnpm --filter @rsa/server exec vitest run \
+            src/mcf-runtime/github-staging-deploy.global-idempotency.integration.test.ts \
+            src/mcf-runtime/external-action-dispatcher.staging-deploy.test.ts
+      - name: Remove temporary workflows
+        run: |
+          git rm .github/workflows/gate-d-p1-global-dispatch-fix.yml
+          git rm .github/workflows/gate-d-p1-global-dispatch-fix-v2.yml
+          git rm .github/workflows/gate-d-p1-global-dispatch-fix-v3.yml
+      - name: Enforce exact changed path set
+        run: |
+          expected=$(mktemp)
+          actual=$(mktemp)
+          cat >"$expected" <<'EOF'
+          .github/workflows/gate-d-p1-global-dispatch-fix-v2.yml
+          .github/workflows/gate-d-p1-global-dispatch-fix-v3.yml
+          .github/workflows/gate-d-p1-global-dispatch-fix.yml
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.global-idempotency.integration.test.ts
+          EOF
+          git diff HEAD --name-only | sort >"$actual"
+          sort -o "$expected" "$expected"
+          diff -u "$expected" "$actual"
+          git diff HEAD --check
+      - name: Commit P1 global dispatch remediation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.global-idempotency.integration.test.ts
+          git commit -m 'fix(gate-d): serialize concurrent staging dispatches'
+          git push origin HEAD:feat/mcf-runtime-006-gate-d-staging-deploy-adapter
