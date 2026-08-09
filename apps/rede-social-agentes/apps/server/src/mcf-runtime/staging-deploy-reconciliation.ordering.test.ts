@@ -141,9 +141,7 @@ describe('staging reconciliation completion ordering', () => {
     const failure = new Error('transient completion failure');
     scenario.completePendingPhase.mockRejectedValueOnce(failure);
 
-    await expect(
-      scenario.service.accept(callbackRequest()),
-    ).rejects.toThrow(failure);
+    await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(failure);
 
     expect(scenario.completePendingPhase).toHaveBeenCalledTimes(1);
     expect(scenario.recordEvidenceValidated).not.toHaveBeenCalled();
@@ -162,9 +160,7 @@ describe('staging reconciliation completion ordering', () => {
     const failure = new Error('ledger temporarily unavailable');
     scenario.recordEvidenceValidated.mockRejectedValueOnce(failure);
 
-    await expect(
-      scenario.service.accept(callbackRequest()),
-    ).rejects.toThrow(failure);
+    await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(failure);
     await expect(scenario.service.accept(callbackRequest())).resolves.toEqual({
       accepted: true,
       duplicate: true,
