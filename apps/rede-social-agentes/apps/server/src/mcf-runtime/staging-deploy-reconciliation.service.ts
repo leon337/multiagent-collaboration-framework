@@ -281,6 +281,7 @@ export class StagingDeployReconciliationService {
     const completed = await this.repository.completePendingPhase({
       missionId: request.missionId,
       phaseId: request.phaseId,
+      externalAttemptId: attempt.attemptId,
       receipt: outcome.receipt,
       evidenceStatus: outcome.evidenceStatus,
       missionState,
@@ -291,12 +292,12 @@ export class StagingDeployReconciliationService {
       events,
     });
 
-    if (outcome.evidenceStatus === 'VALID') {
-      await this.ledger.recordEvidenceValidated(attempt.attemptId, outcome.receipt.receiptId);
+    if (completed.evidenceStatus === 'VALID') {
+      await this.ledger.recordEvidenceValidated(attempt.attemptId, completed.receiptId);
     } else {
       await this.ledger.recordEvidenceRejected(
         attempt.attemptId,
-        outcome.receipt.receiptId,
+        completed.receiptId,
         outcome.rejectionReason ?? 'staging deployment evidence rejected',
       );
     }
@@ -304,7 +305,7 @@ export class StagingDeployReconciliationService {
     return {
       accepted: true,
       duplicate: completed.duplicate,
-      evidenceStatus: outcome.evidenceStatus,
+      evidenceStatus: completed.evidenceStatus,
       missionState: completed.mission.state,
     };
   }
