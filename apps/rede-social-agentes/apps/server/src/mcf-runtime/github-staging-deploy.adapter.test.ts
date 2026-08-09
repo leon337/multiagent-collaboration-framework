@@ -201,7 +201,7 @@ function fakeProvider(
       const conclusion = options.hang ? null : outcome === 'RECOVERED' ? 'failure' : 'success';
       if (!options.hang && !options.inconsistentFinal) {
         currentSha = outcome === 'RECOVERED' ? PREVIOUS_SHA : RELEASE_SHA;
-        ready = true;
+        ready = !options.unhealthyBefore;
       }
       const workflowRuns = options.duplicateRuns
         ? [workflowRun({ status, conclusion }), workflowRun({ id: RUN_ID + 1, status, conclusion })]
@@ -331,6 +331,30 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     expect(receipt.status).toBe('PARTIAL');
     expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
     expect(provider.requests.some((entry) => entry.includes('/compare/'))).toBe(false);
+  });
+
+  it('returns PARTIAL when one existing correlated run is present and staging preflight is unhealthy', async () => {
+    const provider = fakeProvider({ existing: true, unhealthyBefore: true });
+    const receipt = await adapter(provider).execute(request());
+
+    expect(provider.dispatches).toBe(0);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(receipt.metadata.previousSha).toBeNull();
+    expect(receipt.metadata.unknownReason).toMatch(/existing correlated workflow run.*preflight/u);
+    expect(provider.requests.some((entry) => entry.startsWith('POST '))).toBe(false);
+  });
+
+  it('returns PARTIAL when one existing correlated run is present and ancestry preflight rejects', async () => {
+    const provider = fakeProvider({ existing: true, nonAncestor: true });
+    const receipt = await adapter(provider).execute(request());
+
+    expect(provider.dispatches).toBe(0);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(receipt.metadata.previousSha).toBeNull();
+    expect(receipt.metadata.unknownReason).toMatch(/existing correlated workflow run.*preflight/u);
+    expect(provider.requests.some((entry) => entry.startsWith('POST '))).toBe(false);
   });
 
   it('proves recovery only when the previous healthy SHA is restored', async () => {

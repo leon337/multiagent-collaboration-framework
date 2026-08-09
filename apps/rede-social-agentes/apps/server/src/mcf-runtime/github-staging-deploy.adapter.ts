@@ -920,63 +920,77 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
       throw error;
     }
     const runWasExisting = run !== null;
-    const before = await this.client.observeStaging(this.stagingRuntimeUrl, deadlineAt, budget);
-    if (!before.ready) {
-      throw new ExternalActionAdapterError(
-        'RESERVATION_CONFLICT',
-        `staging runtime is not healthy before deploy; HTTP ${before.readyStatus}`,
-        false,
-      );
-    }
+    let before: StagingObservation;
+    try {
+      before = await this.client.observeStaging(this.stagingRuntimeUrl, deadlineAt, budget);
+      if (!before.ready) {
+        throw new ExternalActionAdapterError(
+          'RESERVATION_CONFLICT',
+          `staging runtime is not healthy before deploy; HTTP ${before.readyStatus}`,
+          false,
+        );
+      }
 
-    const mainRef = await this.client.githubJson<GitHubRefResponse>(
-      'GET',
-      `/repos/${target.repository}/git/ref/heads/main`,
-      deadlineAt,
-      budget,
-    );
-    if (mainRef.ref !== 'refs/heads/main') {
-      throw new ExternalActionAdapterError(
-        'INVALID_RESPONSE',
-        'GitHub main ref response is invalid',
-        false,
+      const mainRef = await this.client.githubJson<GitHubRefResponse>(
+        'GET',
+        `/repos/${target.repository}/git/ref/heads/main`,
+        deadlineAt,
+        budget,
       );
-    }
-    const mainSha = exactSha(mainRef.object?.sha ?? '', 'provider main SHA');
+      if (mainRef.ref !== 'refs/heads/main') {
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'GitHub main ref response is invalid',
+          false,
+        );
+      }
+      const mainSha = exactSha(mainRef.object?.sha ?? '', 'provider main SHA');
 
-    const commit = await this.client.githubJson<GitHubCommitResponse>(
-      'GET',
-      `/repos/${target.repository}/commits/${target.releaseSha}`,
-      deadlineAt,
-      budget,
-    );
-    if (
-      exactSha(commit.sha, 'provider release SHA') !== target.releaseSha ||
-      commit.html_url.toLowerCase() !==
-        `https://github.com/${target.repository}/commit/${target.releaseSha}`.toLowerCase()
-    ) {
-      throw new ExternalActionAdapterError(
-        'INVALID_RESPONSE',
-        'GitHub did not verify the exact staging release commit',
-        false,
+      const commit = await this.client.githubJson<GitHubCommitResponse>(
+        'GET',
+        `/repos/${target.repository}/commits/${target.releaseSha}`,
+        deadlineAt,
+        budget,
       );
-    }
+      if (
+        exactSha(commit.sha, 'provider release SHA') !== target.releaseSha ||
+        commit.html_url.toLowerCase() !==
+          `https://github.com/${target.repository}/commit/${target.releaseSha}`.toLowerCase()
+      ) {
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'GitHub did not verify the exact staging release commit',
+          false,
+        );
+      }
 
-    const compare = await this.client.githubJson<GitHubCompareResponse>(
-      'GET',
-      `/repos/${target.repository}/compare/${target.releaseSha}...${mainSha}`,
-      deadlineAt,
-      budget,
-    );
-    const mergeBase = exactSha(compare.merge_base_commit?.sha ?? '', 'provider merge-base SHA');
-    if (!['ahead', 'identical'].includes(compare.status) || mergeBase !== target.releaseSha) {
-      throw new ExternalActionAdapterError(
-        'RESERVATION_CONFLICT',
-        'staging release must be the current main commit or an ancestor of main',
-        false,
+      const compare = await this.client.githubJson<GitHubCompareResponse>(
+        'GET',
+        `/repos/${target.repository}/compare/${target.releaseSha}...${mainSha}`,
+        deadlineAt,
+        budget,
       );
+      const mergeBase = exactSha(compare.merge_base_commit?.sha ?? '', 'provider merge-base SHA');
+      if (!['ahead', 'identical'].includes(compare.status) || mergeBase !== target.releaseSha) {
+        throw new ExternalActionAdapterError(
+          'RESERVATION_CONFLICT',
+          'staging release must be the current main commit or an ancestor of main',
+          false,
+        );
+      }
+    } catch (error) {
+      if (runWasExisting) {
+        return this.unknownReceipt(
+          request,
+          target,
+          null,
+          run,
+          `existing correlated workflow run could not be safely reconciled during preflight: ${error instanceof Error ? error.message : 'unknown preflight error'}`,
+          budget,
+        );
+      }
+      throw error;
     }
-
     if (!run) {
       try {
         await this.client.githubVoid(
