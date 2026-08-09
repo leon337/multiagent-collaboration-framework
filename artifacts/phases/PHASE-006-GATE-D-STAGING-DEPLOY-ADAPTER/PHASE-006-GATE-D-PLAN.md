@@ -26,16 +26,18 @@ Objetivo: implementar o adapter formal de deploy verificado para **staging** no 
 
 1. GitHub Actions como control plane do deploy;
 2. Render permanece atrás do deploy hook protegido no Actions;
-3. correlação determinística `request_id + release_sha`;
+3. correlação determinística `request_id + release_sha + mission_id + phase_id`;
 4. SHA exato e staging-only;
 5. precondition `/health/version` + `/health/ready`;
 6. reconciliação idempotente antes de retry;
 7. timeout inferior ao lease externo de 10 minutos;
-8. verificação pós-workflow do SHA e readiness;
-9. recuperação somente como redeploy do SHA saudável anterior;
-10. receipt assinado, evidence binding e ledger;
-11. testes unitários/integrados/segurança;
-12. provider live permanece desativado.
+8. reconciliação assíncrona durável quando o workflow ultrapassa o deadline do adapter;
+9. verificação pós-workflow do SHA e readiness;
+10. recuperação somente como redeploy do SHA saudável anterior;
+11. driver de deploy executado a partir da revisão confiável do control plane, separado do release alvo;
+12. receipt assinado, evidence binding e ledger;
+13. testes unitários/integrados/segurança;
+14. provider live permanece desativado.
 
 ## Fora do escopo
 
@@ -43,6 +45,7 @@ Objetivo: implementar o adapter formal de deploy verificado para **staging** no 
 - inserir `RENDER_DEPLOY_HOOK_URL` no runtime;
 - rollback nativo do Render;
 - deploy real disparado pelo novo adapter durante implementação;
+- adicionar o staging adapter ao `AdapterRegistry` live;
 - mudanças destrutivas de banco;
 - repetir A1/A2/C1/C2.
 
@@ -65,12 +68,15 @@ Mestre
 
 Handoffs podem retornar a agentes anteriores quando um achado exigir remediação.
 
-## Estado inicial
+## Estado atual pré-gate
 
 ```yaml
-objective_state: EM_EXECUCAO
-implementation: NOT_STARTED
+objective_state: CANDIDATE_UNDER_VALIDATION
+implementation: APPLIED
 live_registry: DISABLED
 real_provider_dispatch_test: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE
 production: BLOCKED
+final_exact_head_ci: PENDING
+independent_review_exact_head: PENDING
+leo_gate: PENDING
 ```

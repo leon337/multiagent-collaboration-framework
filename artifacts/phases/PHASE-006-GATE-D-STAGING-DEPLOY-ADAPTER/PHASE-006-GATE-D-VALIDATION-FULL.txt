@@ -1,15 +1,38 @@
 PHASE-006-GATE-D FULL VALIDATION
 
-Initial phase package created before functional implementation.
+STATE: CANDIDATE_UNDER_VALIDATION
 
-Required evidence still pending:
-- exact changed files;
-- unit/integration/security tests;
-- workflow correlation tests;
-- idempotency and timeout tests;
-- semantic receipt/evidence tests;
-- full CI runs on exact HEAD;
-- independent review on exact HEAD;
-- LEO gate after clean review.
+Implemented evidence:
+- exact SHA validation and staging-only permission boundary;
+- deterministic request/release/mission/phase correlation;
+- durable UNKNOWN semantics and global idempotency reconciliation;
+- async workflow_run callback for workflows exceeding the synchronous adapter deadline;
+- authenticated runtime callback without exposing RENDER_DEPLOY_HOOK_URL;
+- trusted control-plane checkout pinned to github.workflow_sha;
+- exact release checkout isolated under .mcf-release;
+- deploy driver executed from .mcf-control-plane;
+- pre/post health validation and recovery-by-previous-healthy-SHA semantics;
+- signed receipt plus semantic evidence binding;
+- ledger persistence/reconciliation paths;
+- provider-only DI for callback reconciliation while live AdapterRegistry remains disabled;
+- targeted remediation validation: 31/31 Vitest cases and 2/2 workflow-correlation cases passed before materialization.
 
-No pass is claimed by this file at phase start.
+Recent canonical CI:
+- Rede Social Foundation run 31292069913 on cc68fc87660674bc35ccd90089323c9241efe63f: PASS through format, lint, typecheck, migrations twice, tests and build.
+- Rede Social Container Smoke run 31292069908 on the same SHA: FAIL because the reconciliation service could not resolve GitHubActionsStagingDeployAdapter.
+- The DI defect was remediated after that run by registering the staging adapter as an internal provider only, while keeping it out of AdapterRegistry.
+- Because the remediation changed HEAD, previous CI cannot close the final gate.
+
+Required evidence still pending on the final PRF-synchronized HEAD:
+- full Foundation PASS;
+- Container Smoke PASS;
+- independent Codex review anchored to the exact HEAD;
+- zero active P0/P1/P2;
+- LÉO gate decision.
+
+Operational constraints remain:
+- live registry: DISABLED;
+- real provider dispatch: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE;
+- production: BLOCKED;
+- no claim of native Render rollback;
+- no real staging proof has been authorized by this PRF.

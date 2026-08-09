@@ -1,17 +1,33 @@
 PHASE-006-GATE-D VALIDATION
 
-STATE: PENDING_IMPLEMENTATION
+STATE: CANDIDATE_PENDING_EXACT_HEAD_GATE
 
-Checks:
-- documentation: PENDING
-- format: PENDING
-- lint: PENDING
-- typecheck: PENDING
-- migrations_twice: PENDING
-- tests: PENDING
-- build: PENDING
-- container_smoke: PENDING
-- independent_review: PENDING
+Implementation:
+- adapter contract/runtime: APPLIED
+- async workflow reconciliation: APPLIED
+- trusted control-plane deploy driver: APPLIED
+- receipt/evidence/ledger binding: APPLIED
+- provider available for callback: APPLIED
+- live AdapterRegistry activation: DISABLED
+
+Latest completed CI evidence before final PRF sync:
+- Foundation 31292069913 @ cc68fc87660674bc35ccd90089323c9241efe63f: PASS
+- Container Smoke 31292069908 @ cc68fc87660674bc35ccd90089323c9241efe63f: FAIL
+  reason: GitHubActionsStagingDeployAdapter unavailable to StagingDeployReconciliationService
+  remediation: provider-only registration added; adapter remains outside live AdapterRegistry
+
+Final exact-HEAD checks:
+- documentation: UPDATED_CANDIDATE
+- format: PENDING_EXACT_HEAD
+- lint: PENDING_EXACT_HEAD
+- typecheck: PENDING_EXACT_HEAD
+- migrations_twice: PENDING_EXACT_HEAD
+- tests: PENDING_EXACT_HEAD
+- build: PENDING_EXACT_HEAD
+- container_smoke: PENDING_EXACT_HEAD
+- independent_review: PENDING_EXACT_HEAD
+- active_p0_p1_p2: PENDING_REVIEW
+- leo_gate: PENDING
 
 Provider live: DISABLED
 Real provider dispatch: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE

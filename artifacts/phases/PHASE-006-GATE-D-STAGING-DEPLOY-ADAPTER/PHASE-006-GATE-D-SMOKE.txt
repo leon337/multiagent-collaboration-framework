@@ -1,7 +1,20 @@
 PHASE-006-GATE-D SMOKE
 
-STATE: NOT_RUN
+STATE: REMEDIATED_PENDING_EXACT_HEAD_REVALIDATION
 
-No functional implementation exists at the initial checkpoint.
+Canonical evidence:
+- run: 31292069908
+- head: cc68fc87660674bc35ccd90089323c9241efe63f
+- result: FAIL
+- failing stage: Build and start smoke stack
+- root cause: Nest could not resolve GitHubActionsStagingDeployAdapter for StagingDeployReconciliationService.
+
+Remediation applied after the failed run:
+- GitHubActionsStagingDeployAdapter registered as an internal Nest provider;
+- staging adapter remains excluded from the live AdapterRegistry;
+- provider-boundary regression updated to distinguish DI availability from live activation.
+
+A new Container Smoke PASS on the final exact HEAD is still mandatory.
+
 Production remains BLOCKED.
 Real provider dispatch remains NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE.

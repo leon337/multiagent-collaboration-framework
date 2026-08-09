@@ -4,7 +4,7 @@ issue: 83
 base_commit: 1c58b4ba280bd32f587c2f042e35a2dba1a123a9
 branch: feat/mcf-runtime-006-gate-d-staging-deploy-adapter
 objective: implementar adapter formal de deploy verificado para staging reutilizando RUNTIME-005
-objective_state: EM_EXECUCAO
+objective_state: CANDIDATE_UNDER_VALIDATION
 cycle: 1
 selected_agents:
   - Mestre
@@ -16,12 +16,23 @@ selected_agents:
   - Emily
   - Augusto
   - Leo
-completed_acceptance_criteria: []
+completed_acceptance_criteria:
+  - ARCHITECTURE_REUSES_RUNTIME_005
+  - RENDER_SECRET_ACTIONS_ONLY
+  - STAGING_ONLY
+  - PRODUCTION_BLOCKED
+  - EXACT_SHA
+  - IDEMPOTENT_RECONCILIATION_IMPLEMENTED
+  - UNKNOWN_FAIL_CLOSED
+  - ASYNC_LONG_WORKFLOW_RECONCILIATION_IMPLEMENTED
+  - TRUSTED_CONTROL_PLANE_DRIVER_IMPLEMENTED
+  - RECEIPT_EVIDENCE_LEDGER_BINDING_IMPLEMENTED
+  - LIVE_REGISTRY_DISABLED
 remaining_gaps:
-  - IMPLEMENTATION
-  - TESTS
-  - CI
-  - INDEPENDENT_REVIEW
+  - FINAL_EXACT_HEAD_CI
+  - CONTAINER_SMOKE_EXACT_HEAD
+  - INDEPENDENT_REVIEW_EXACT_HEAD
+  - ZERO_P0_P1_P2
   - LEO_GATE
 decisions:
   - GITHUB_ACTIONS_CONTROL_PLANE
@@ -30,11 +41,14 @@ decisions:
   - STAGING_ONLY
   - RECOVERY_BY_PREVIOUS_HEALTHY_SHA
   - UNKNOWN_FAIL_CLOSED
+  - ASYNC_WORKFLOW_RUN_RECONCILIATION
+  - TRUSTED_CONTROL_PLANE_DRIVER
+  - PROVIDER_AVAILABLE_BUT_NOT_LIVE
 live_registry: DISABLED
 real_provider_dispatch_test: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE
 production: BLOCKED
-next_action: implementar contrato e testes do adapter
-recipient: Rafael
+next_action: executar CI completa e revisão independente no HEAD final sincronizado
+recipient: Renato
 human_action_required: false
 source_of_truth:
   - issue_83
