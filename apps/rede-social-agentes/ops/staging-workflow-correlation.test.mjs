@@ -56,13 +56,13 @@ test('staging workflow completion reconciles through a stable control plane', as
   assert.ok(callback.includes('workflow_run:'));
   assert.ok(callback.includes('MCF Runtime Staging Deploy'));
   assert.ok(callback.includes('MCF_RUNTIME_TOKEN'));
-  assert.ok(callback.includes('MCF_CONTROL_PLANE_URL: ${{ secrets.MCF_CONTROL_PLANE_URL }}'));
+  assert.ok(
+    callback.includes('MCF_CONTROL_PLANE_URL: ${{ secrets.MCF_CONTROL_PLANE_URL }}'),
+  );
   assert.ok(callback.includes('MCF_STAGING_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}'));
   assert.ok(callback.includes('test "$MCF_CONTROL_PLANE_URL" != "$MCF_STAGING_RUNTIME_URL"'));
   assert.ok(
-    callback.includes(
-      'endpoint="${MCF_CONTROL_PLANE_URL%/}/v1/mcf/callbacks/staging-deploy"',
-    ),
+    callback.includes('endpoint="${MCF_CONTROL_PLANE_URL%/}/v1/mcf/callbacks/staging-deploy"'),
   );
   assert.ok(callback.includes('--arg stagingRuntimeUrl "$MCF_STAGING_RUNTIME_URL"'));
   assert.ok(!callback.includes('endpoint="${MCF_STAGING_RUNTIME_URL%/}/'));
