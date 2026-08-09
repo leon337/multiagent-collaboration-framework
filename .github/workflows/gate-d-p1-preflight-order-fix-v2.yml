@@ -1,0 +1,195 @@
+name: Gate D P1 Preflight Order Fix V2
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-gate-d-staging-deploy-adapter
+    paths:
+      - ".github/workflows/gate-d-p1-preflight-order-fix-v2.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+      LOG_LEVEL: error
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Apply exact preflight ordering remediation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          adapter = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts')
+          text = adapter.read_text()
+
+          old = "    before: StagingObservation,\n    run: GitHubWorkflowRun | null,\n"
+          new = "    before: StagingObservation | null,\n    run: GitHubWorkflowRun | null,\n"
+          if text.count(old) != 1:
+              raise SystemExit(f'unknownReceipt signature expected once, found {text.count(old)}')
+          text = text.replace(old, new, 1)
+
+          old = '        previousSha: before.commitSha,\n'
+          new = '        previousSha: before?.commitSha ?? null,\n'
+          if text.count(old) != 1:
+              raise SystemExit(f'unknown previousSha expected once, found {text.count(old)}')
+          text = text.replace(old, new, 1)
+
+          late = """    let run: GitHubWorkflowRun | null;
+          try {
+            run = await this.findRun(target, deadlineAt, budget);
+          } catch (error) {
+            if (
+              error instanceof ExternalActionAdapterError &&
+              error.code === 'RESERVATION_CONFLICT' &&
+              error.message === 'multiple workflow runs match the same staging deploy idempotency key'
+            ) {
+              return this.unknownReceipt(
+                request,
+                target,
+                before,
+                null,
+                'multiple correlated workflow runs make the staging deployment state ambiguous',
+                budget,
+              );
+            }
+            throw error;
+          }
+          """
+          if text.count(late) != 1:
+              raise SystemExit(f'late findRun block expected once, found {text.count(late)}')
+          text = text.replace(late, '', 1)
+
+          budget = '    const budget: RequestBudget = { requests: 0 };\n'
+          early = """    const budget: RequestBudget = { requests: 0 };
+          let run: GitHubWorkflowRun | null;
+          try {
+            run = await this.findRun(target, deadlineAt, budget);
+          } catch (error) {
+            if (
+              error instanceof ExternalActionAdapterError &&
+              error.code === 'RESERVATION_CONFLICT' &&
+              error.message === 'multiple workflow runs match the same staging deploy idempotency key'
+            ) {
+              return this.unknownReceipt(
+                request,
+                target,
+                null,
+                null,
+                'multiple correlated workflow runs make the staging deployment state ambiguous',
+                budget,
+              );
+            }
+            throw error;
+          }
+          """
+          if text.count(budget) != 1:
+              raise SystemExit(f'budget anchor expected once, found {text.count(budget)}')
+          text = text.replace(budget, early, 1)
+          adapter.write_text(text)
+
+          test = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts')
+          text = test.read_text()
+
+          old = '    duplicateRuns?: boolean;\n    conflictingSha?: string | null;\n'
+          new = '    duplicateRuns?: boolean;\n    nonAncestor?: boolean;\n    conflictingSha?: string | null;\n'
+          if text.count(old) != 1:
+              raise SystemExit(f'provider options expected once, found {text.count(old)}')
+          text = text.replace(old, new, 1)
+
+          old = "      return jsonResponse({ status: 'ahead', merge_base_commit: { sha: RELEASE_SHA } });\n"
+          new = """      return jsonResponse(
+            options.nonAncestor
+              ? { status: 'diverged', merge_base_commit: { sha: MAIN_SHA } }
+              : { status: 'ahead', merge_base_commit: { sha: RELEASE_SHA } },
+          );
+          """
+          if text.count(old) != 1:
+              raise SystemExit(f'compare line expected once, found {text.count(old)}')
+          text = text.replace(old, new, 1)
+
+          anchor = "  it('proves recovery only when the previous healthy SHA is restored', async () => {\n"
+          regressions = """  it('returns PARTIAL for duplicate existing runs before an unhealthy staging preflight can reject', async () => {
+            const provider = fakeProvider({ existing: true, duplicateRuns: true, unhealthyBefore: true });
+            const receipt = await adapter(provider).execute(request());
+
+            expect(provider.dispatches).toBe(0);
+            expect(receipt.status).toBe('PARTIAL');
+            expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+            expect(receipt.metadata.previousSha).toBeNull();
+            expect(provider.requests.some((entry) => entry.includes('staging.example'))).toBe(false);
+          });
+
+          it('returns PARTIAL for duplicate existing runs before a non-ancestor release preflight can reject', async () => {
+            const provider = fakeProvider({ existing: true, duplicateRuns: true, nonAncestor: true });
+            const receipt = await adapter(provider).execute(request());
+
+            expect(provider.dispatches).toBe(0);
+            expect(receipt.status).toBe('PARTIAL');
+            expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+            expect(provider.requests.some((entry) => entry.includes('/compare/'))).toBe(false);
+          });
+
+          """
+          if text.count(anchor) != 1:
+              raise SystemExit(f'regression anchor expected once, found {text.count(anchor)}')
+          test.write_text(text.replace(anchor, regressions + anchor, 1))
+          PY
+      - name: Format and validate preflight ordering
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          pnpm exec prettier --check \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          pnpm build:packages
+          pnpm --filter @rsa/server typecheck
+          pnpm --filter @rsa/server exec vitest run \
+            src/mcf-runtime/github-staging-deploy.adapter.test.ts \
+            src/mcf-runtime/external-action-dispatcher.staging-deploy.test.ts
+      - name: Remove temporary workflows
+        run: |
+          git rm .github/workflows/gate-d-p1-preflight-order-fix.yml
+          git rm .github/workflows/gate-d-p1-preflight-order-fix-v2.yml
+      - name: Enforce exact changed path set
+        run: |
+          expected=$(mktemp)
+          actual=$(mktemp)
+          cat >"$expected" <<'EOF'
+          .github/workflows/gate-d-p1-preflight-order-fix-v2.yml
+          .github/workflows/gate-d-p1-preflight-order-fix.yml
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts
+          EOF
+          git diff HEAD --name-only | sort >"$actual"
+          sort -o "$expected" "$expected"
+          diff -u "$expected" "$actual"
+          git diff HEAD --check
+      - name: Commit P1 preflight-order remediation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts
+          git commit -m 'fix(gate-d): detect duplicate runs before preflight rejection'
+          git push origin HEAD:feat/mcf-runtime-006-gate-d-staging-deploy-adapter
