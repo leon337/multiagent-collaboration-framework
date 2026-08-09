@@ -1,0 +1,382 @@
+name: Gate D Remediation Patcher
+
+on:
+  push:
+    branches:
+      - remediate/gate-d-d15-review
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Apply exact review remediations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path: str, old: str, new: str, expected: int = 1) -> None:
+              file = Path(path)
+              text = file.read_text()
+              count = text.count(old)
+              if count != expected:
+                  raise SystemExit(f"{path}: expected {expected} matches, found {count}")
+              file.write_text(text.replace(old, new, expected))
+
+          service = 'apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-reconciliation.service.ts'
+          replace_exact(
+              service,
+              """  MCF_RUNTIME_REPOSITORY,\n  type McfEventInput,\n  type McfRuntimeRepository,\n""",
+              """  MCF_RUNTIME_REPOSITORY,\n  type McfEventInput,\n  type McfEventRecord,\n  type McfRuntimeRepository,\n""",
+          )
+          replace_exact(
+              service,
+              """function callbackEvent(input: {\n  missionId: string;\n  phaseId: string;\n  agentId: string;\n  eventType: McfEventType;\n  payload: Record<string, unknown>;\n  idempotencyKey: string;\n  occurredAt: Date;\n}): McfEventInput {\n  return { id: randomUUID(), ...input };\n}\n\n@Injectable()\n""",
+              """function callbackEvent(input: {\n  missionId: string;\n  phaseId: string;\n  agentId: string;\n  eventType: McfEventType;\n  payload: Record<string, unknown>;\n  idempotencyKey: string;\n  occurredAt: Date;\n}): McfEventInput {\n  return { id: randomUUID(), ...input };\n}\n\nfunction persistedCompletionFromEvents(\n  events: McfEventRecord[],\n  callbackKey: string,\n  evidenceKey: string,\n): { receiptId: string; evidenceStatus: McfEvidenceValidationStatus } | null {\n  const callback = events.find(\n    (item) => item.idempotencyKey === callbackKey && item.eventType === 'CI_CALLBACK_RECEIVED',\n  );\n  if (!callback) return null;\n\n  const evidence = events.find(\n    (item) =>\n      item.idempotencyKey === evidenceKey &&\n      (item.eventType === 'EVIDENCE_VALIDATED' || item.eventType === 'EVIDENCE_REJECTED'),\n  );\n  const receiptId = evidence?.payload.receiptId;\n  if (!evidence || typeof receiptId !== 'string' || receiptId.length === 0) {\n    throw new McfEvidenceRejectedError(\n      'persisted staging callback completion has invalid receipt evidence',\n    );\n  }\n\n  return {\n    receiptId,\n    evidenceStatus: evidence.eventType === 'EVIDENCE_VALIDATED' ? 'VALID' : 'INVALID',\n  };\n}\n\n@Injectable()\n""",
+          )
+          replace_exact(
+              service,
+              """    if (attempt.status !== 'UNKNOWN') {\n      throw new McfEvidenceRejectedError(\n        `staging callback cannot reconcile attempt status ${attempt.status}`,\n      );\n    }\n    if (!attempt.reconciliationEligible || !attempt.previousSha) {\n      throw new McfEvidenceRejectedError(\n        'durable staging UNKNOWN attempt is not yet eligible for automatic reconciliation',\n      );\n    }\n\n    const skill = await this.registry.load(phase.skillId);\n""",
+              """    if (attempt.status !== 'UNKNOWN') {\n      throw new McfEvidenceRejectedError(\n        `staging callback cannot reconcile attempt status ${attempt.status}`,\n      );\n    }\n\n    const workflowRunId = Number(request.workflowRunId);\n    if (!Number.isSafeInteger(workflowRunId) || workflowRunId < 1) {\n      throw new McfEvidenceRejectedError(\n        'staging callback workflowRunId must be a positive integer',\n      );\n    }\n    const callbackKey = `staging-deploy:${request.workflowRunId}:${request.requestId}`;\n    const evidenceKey = `phase:${request.phaseId}:staging-evidence:${request.workflowRunId}`;\n    const persistedCompletion = persistedCompletionFromEvents(\n      await this.repository.listEvents(request.missionId),\n      callbackKey,\n      evidenceKey,\n    );\n    if (persistedCompletion) {\n      if (persistedCompletion.evidenceStatus === 'VALID') {\n        await this.ledger.recordEvidenceValidated(\n          attempt.attemptId,\n          persistedCompletion.receiptId,\n        );\n      } else {\n        await this.ledger.recordEvidenceRejected(\n          attempt.attemptId,\n          persistedCompletion.receiptId,\n          'staging deployment evidence rejected',\n        );\n      }\n      return {\n        accepted: true,\n        duplicate: true,\n        evidenceStatus: persistedCompletion.evidenceStatus,\n        missionState: mission.state,\n      };\n    }\n\n    const expectedPendingMissionVersion = attempt.expectedMissionVersion + 1;\n    if (\n      mission.version !== expectedPendingMissionVersion ||\n      mission.currentPhaseId !== request.phaseId\n    ) {\n      throw new McfEvidenceRejectedError(\n        'staging callback is stale for the current mission version or phase',\n      );\n    }\n    if (!attempt.reconciliationEligible || !attempt.previousSha) {\n      throw new McfEvidenceRejectedError(\n        'durable staging UNKNOWN attempt is not yet eligible for automatic reconciliation',\n      );\n    }\n\n    const skill = await this.registry.load(phase.skillId);\n""",
+          )
+          replace_exact(
+              service,
+              """    const workflowRunId = Number(request.workflowRunId);\n    const receipt = await this.adapter.reconcile(externalRequest, {\n""",
+              """    const receipt = await this.adapter.reconcile(externalRequest, {\n""",
+          )
+          replace_exact(
+              service,
+              """    const callbackKey = `staging-deploy:${request.workflowRunId}:${request.requestId}`;\n    const handoff = outcome.handoffTo\n""",
+              """    const handoff = outcome.handoffTo\n""",
+          )
+          replace_exact(
+              service,
+              """        idempotencyKey: `phase:${request.phaseId}:staging-evidence:${request.workflowRunId}`,\n""",
+              """        idempotencyKey: evidenceKey,\n""",
+          )
+
+          repository = 'apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.ts'
+          replace_exact(
+              repository,
+              """interface CompletionAttemptRow extends DatabaseRow {\n  missionId: string;\n  phaseId: string;\n  status: string;\n}\n""",
+              """interface CompletionAttemptRow extends DatabaseRow {\n  missionId: string;\n  phaseId: string;\n  status: string;\n  expectedMissionVersion: number;\n}\n""",
+          )
+          replace_exact(
+              repository,
+              """             \"mission_id\" as \"missionId\",\n             \"phase_id\" as \"phaseId\",\n             \"status\"\n""",
+              """             \"mission_id\" as \"missionId\",\n             \"phase_id\" as \"phaseId\",\n             \"status\",\n             \"expected_mission_version\" as \"expectedMissionVersion\"\n""",
+          )
+          replace_exact(
+              repository,
+              """        if (\n          mission.activeExternalAttemptId !== null &&\n          mission.activeExternalAttemptId !== externalAttemptId\n        ) {\n""",
+              """        if (\n          mission.version !== persistedAttempt.expectedMissionVersion + 1 ||\n          mission.currentPhaseId !== input.phaseId\n        ) {\n          throw new McfMissionVersionConflictError(\n            input.missionId,\n            persistedAttempt.expectedMissionVersion + 1,\n          );\n        }\n\n        if (\n          mission.activeExternalAttemptId !== null &&\n          mission.activeExternalAttemptId !== externalAttemptId\n        ) {\n""",
+          )
+
+          ordering = 'apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-reconciliation.ordering.test.ts'
+          replace_exact(
+              ordering,
+              """import type { McfRuntimeRepository } from './mcf-runtime.repository.js';\n""",
+              """import type { McfEventRecord, McfRuntimeRepository } from './mcf-runtime.repository.js';\n""",
+          )
+          replace_exact(
+              ordering,
+              """    id: missionId,\n    state: 'RECOVERING' as const,\n    contract: {\n""",
+              """    id: missionId,\n    state: 'RECOVERING' as const,\n    currentPhaseId: phaseId,\n    currentAgentId: 'Gabriel',\n    version: 8,\n    createdAt: new Date('2026-08-09T00:00:00Z'),\n    updatedAt: new Date('2026-08-09T00:00:00Z'),\n    contract: {\n""",
+          )
+          replace_exact(
+              ordering,
+              """  const completedMission = {\n    ...mission,\n    state: 'EXECUTING' as const,\n  };\n""",
+              """  const completedMission = {\n    ...mission,\n    state: 'EXECUTING' as const,\n    currentAgentId: 'Mestre',\n    version: 9,\n  };\n""",
+          )
+          replace_exact(
+              ordering,
+              """  const completePendingPhase = vi.fn(async () => completion);\n  const repository = {\n    findMission: vi.fn(async () => mission),\n    findPhase: vi.fn(async () => phase),\n    completePendingPhase,\n  } as unknown as McfRuntimeRepository;\n""",
+              """  const completePendingPhase = vi.fn(async () => completion);\n  const findMission = vi.fn(async () => mission);\n  const listEvents = vi.fn(async (): Promise<McfEventRecord[]> => []);\n  const repository = {\n    findMission,\n    findPhase: vi.fn(async () => phase),\n    listEvents,\n    completePendingPhase,\n  } as unknown as McfRuntimeRepository;\n""",
+          )
+          replace_exact(
+              ordering,
+              """    service,\n    completion,\n    completePendingPhase,\n    reconcile,\n""",
+              """    service,\n    mission,\n    completion,\n    findMission,\n    listEvents,\n    completePendingPhase,\n    reconcile,\n""",
+          )
+          replace_exact(
+              ordering,
+              """    scenario.completePendingPhase\n      .mockResolvedValueOnce(scenario.completion)\n      .mockResolvedValueOnce(duplicate);\n    const failure = new Error('ledger temporarily unavailable');\n    scenario.recordEvidenceValidated.mockRejectedValueOnce(failure);\n\n    await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(failure);\n    await expect(scenario.service.accept(callbackRequest())).resolves.toEqual({\n""",
+              """    scenario.completePendingPhase.mockResolvedValueOnce(scenario.completion);\n    scenario.findMission\n      .mockResolvedValueOnce(scenario.mission)\n      .mockResolvedValueOnce(scenario.completion.mission);\n    scenario.listEvents\n      .mockResolvedValueOnce([])\n      .mockResolvedValueOnce([\n        {\n          id: 'event-callback',\n          missionId,\n          phaseId,\n          agentId: 'Gabriel',\n          eventType: 'CI_CALLBACK_RECEIVED',\n          payload: {},\n          idempotencyKey: `staging-deploy:4242:${requestId}`,\n          occurredAt: new Date('2026-08-09T00:02:00Z'),\n        },\n        {\n          id: 'event-evidence',\n          missionId,\n          phaseId,\n          agentId: 'Gabriel',\n          eventType: 'EVIDENCE_VALIDATED',\n          payload: { receiptId: persistedReceiptId },\n          idempotencyKey: `phase:${phaseId}:staging-evidence:4242`,\n          occurredAt: new Date('2026-08-09T00:02:00Z'),\n        },\n      ]);\n    const failure = new Error('ledger temporarily unavailable');\n    scenario.recordEvidenceValidated.mockRejectedValueOnce(failure);\n\n    await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(failure);\n    await expect(scenario.service.accept(callbackRequest())).resolves.toEqual({\n""",
+          )
+          replace_exact(
+              ordering,
+              """    expect(scenario.reconcile).toHaveBeenCalledTimes(2);\n    expect(scenario.completePendingPhase).toHaveBeenCalledTimes(2);\n    expect(scenario.completePendingPhase).toHaveBeenNthCalledWith(\n      2,\n      expect.objectContaining({\n        externalAttemptId: attemptId,\n        receipt: expect.objectContaining({ receiptId: retryReceiptId }),\n      }),\n    );\n""",
+              """    expect(scenario.reconcile).toHaveBeenCalledTimes(1);\n    expect(scenario.completePendingPhase).toHaveBeenCalledTimes(1);\n    expect(scenario.listEvents).toHaveBeenCalledTimes(2);\n""",
+          )
+          ordering_path = Path(ordering)
+          ordering_text = ordering_path.read_text()
+          ordering_marker = "\n});\n"
+          ordering_index = ordering_text.rfind(ordering_marker)
+          if ordering_index < 0:
+              raise SystemExit('ordering test: closing marker not found')
+          stale_test = """
+
+  it('rejects a callback after the mission advanced beyond the pending staging phase', async () => {
+    const scenario = createScenario();
+    scenario.findMission.mockResolvedValueOnce({
+      ...scenario.mission,
+      version: 9,
+      currentPhaseId: '33333333-3333-4333-8333-333333333333',
+      currentAgentId: 'Mestre',
+    });
+
+    await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(
+      'staging callback is stale for the current mission version or phase',
+    );
+
+    expect(scenario.listEvents).toHaveBeenCalledTimes(1);
+    expect(scenario.reconcile).not.toHaveBeenCalled();
+    expect(scenario.completePendingPhase).not.toHaveBeenCalled();
+    expect(scenario.recordEvidenceValidated).not.toHaveBeenCalled();
+    expect(scenario.recordEvidenceRejected).not.toHaveBeenCalled();
+  });
+"""
+          ordering_path.write_text(
+              ordering_text[:ordering_index] + stale_test + ordering_text[ordering_index:]
+          )
+
+          integration = 'apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.pending-phase.integration.test.ts'
+          replace_exact(
+              integration,
+              """          repositoryName,\n          2,\n          leaseExpiresAt,\n""",
+              """          repositoryName,\n          1,\n          leaseExpiresAt,\n""",
+          )
+          integration_path = Path(integration)
+          integration_text = integration_path.read_text()
+          integration_marker = "\n});\n"
+          integration_index = integration_text.rfind(integration_marker)
+          if integration_index < 0:
+              raise SystemExit('integration test: closing marker not found')
+          stale_integration = r'''
+
+  it('rejects a stale UNKNOWN completion after another phase advances the mission', async () => {
+    const missionId = randomUUID();
+    const phaseId = randomUUID();
+    const nextPhaseId = randomUUID();
+    const attemptId = randomUUID();
+    const now = new Date();
+    const mission: McfMissionRecord = {
+      id: missionId,
+      contract: {
+        title: 'Gate D stale callback integration',
+        objective: 'Reject stale asynchronous staging completion.',
+        expectedOutcome: 'Newer mission state is preserved.',
+        scope: ['staging'],
+        outOfScope: ['production'],
+        acceptanceCriteria: ['stale callback rejected'],
+        riskClass: 'B',
+        selectedAgents: ['Gabriel', 'Mestre'],
+        selectedSkills: ['MCF-DEPLOY-VALIDATE'],
+        sourceOfTruth: ['issue-83'],
+      },
+      state: 'PLANNED',
+      currentPhaseId: null,
+      currentAgentId: null,
+      version: 1,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const phase: McfPhaseRecord = {
+      id: phaseId,
+      missionId,
+      skillId: 'MCF-DEPLOY-VALIDATE',
+      agentId: 'Gabriel',
+      state: 'RECOVERING',
+      cycle: 1,
+      inputs: {
+        repository: repositoryName,
+        artifact_or_commit: releaseSha,
+        target_environment: 'staging',
+      },
+      expectedEvidence: ['deployment_id'],
+      startedAt: now,
+      completedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const nextPhase: McfPhaseRecord = {
+      ...phase,
+      id: nextPhaseId,
+      skillId: 'MCF-TRACE-MISSION',
+      agentId: 'Mestre',
+      inputs: { final_checkpoint: false },
+    };
+
+    try {
+      await repository.createMission({
+        mission,
+        event: event(missionId, null, 'MISSION_CREATED', `mission:${missionId}:created`),
+      });
+      const pending = await repository.persistExecution({
+        missionId,
+        expectedMissionVersion: 1,
+        phase,
+        permissionProfile: 'SCOPED_WRITE',
+        missionState: 'RECOVERING',
+        nextAgentId: null,
+        receipt: null,
+        evidenceStatus: 'PENDING',
+        handoff: null,
+        events: [event(missionId, phaseId, 'PHASE_STARTED', `phase:${phaseId}:started`)],
+      });
+      expect(pending.mission.version).toBe(2);
+
+      await database.query(
+        `insert into "mcf_external_action_attempts" (
+          "attempt_id", "mission_id", "phase_id", "agent_id", "skill_id",
+          "adapter_id", "provider", "operation", "resource",
+          "expected_mission_version", "status", "lease_expires_at"
+        ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'UNKNOWN', $11)`,
+        [
+          attemptId,
+          missionId,
+          phaseId,
+          'Gabriel',
+          'MCF-DEPLOY-VALIDATE',
+          'github-actions-staging-deploy-v1',
+          'github',
+          'deploy-staging',
+          repositoryName,
+          1,
+          new Date(Date.now() + 10 * 60_000),
+        ],
+      );
+
+      const advanced = await repository.persistExecution({
+        missionId,
+        expectedMissionVersion: 2,
+        phase: nextPhase,
+        permissionProfile: 'READ_ONLY',
+        missionState: 'EXECUTING',
+        nextAgentId: 'Mestre',
+        receipt: null,
+        evidenceStatus: 'PENDING',
+        handoff: null,
+        events: [
+          event(missionId, nextPhaseId, 'PHASE_STARTED', `phase:${nextPhaseId}:started`),
+        ],
+      });
+      expect(advanced.mission).toMatchObject({ version: 3, currentPhaseId: nextPhaseId });
+
+      const receipt = new EvidenceValidator().createTrustedReceipt({
+        provider: 'github-actions',
+        operation: 'deploy-staging',
+        resource: repositoryName,
+        externalId: '5252',
+        commitSha: releaseSha,
+        status: 'SUCCEEDED',
+        observedAt: new Date().toISOString(),
+        metadata: { deploymentOutcome: 'DEPLOYED' },
+      });
+      await expect(
+        repository.completePendingPhase({
+          missionId,
+          phaseId,
+          externalAttemptId: attemptId,
+          receipt,
+          evidenceStatus: 'VALID',
+          missionState: 'EXECUTING',
+          phaseState: 'COMPLETED',
+          nextAgentId: 'Mestre',
+          handoff: null,
+          callbackIdempotencyKey: `staging-deploy:5252:${randomUUID()}`,
+          events: [],
+        }),
+      ).rejects.toThrow(/version conflict/u);
+
+      const preserved = await repository.findMission(missionId);
+      const pendingPhase = await repository.findPhase(missionId, phaseId);
+      expect(preserved).toMatchObject({
+        version: 3,
+        currentPhaseId: nextPhaseId,
+        currentAgentId: 'Mestre',
+      });
+      expect(pendingPhase?.state).toBe('RECOVERING');
+      const receipts = await database.query<{ count: string }>(
+        `select count(*)::text as "count"
+         from "mcf_tool_receipts"
+         where "mission_id" = $1 and "phase_id" = $2`,
+        [missionId, phaseId],
+      );
+      expect(receipts.rows[0]?.count).toBe('0');
+    } finally {
+      await database.query('delete from "mcf_missions" where "id" = $1', [missionId]);
+    }
+  });
+'''
+          integration_path.write_text(
+              integration_text[:integration_index]
+              + stale_integration
+              + integration_text[integration_index:]
+          )
+
+          callback = '.github/workflows/mcf-runtime-staging-deploy-callback.yml'
+          replace_exact(callback, '    timeout-minutes: 7\n', '    timeout-minutes: 20\n')
+          replace_exact(
+              callback,
+              """            status=$(curl --silent --show-error --output \"$response\" --write-out '%{http_code}' \\\n              --request POST \\\n""",
+              """            status=$(curl --silent --show-error --output \"$response\" --write-out '%{http_code}' \\\n              --connect-timeout 10 \\\n              --max-time 540 \\\n              --request POST \\\n""",
+          )
+
+          correlation = 'apps/rede-social-agentes/ops/staging-workflow-correlation.test.mjs'
+          replace_exact(
+              correlation,
+              """  assert.ok(callback.includes('--arg stagingRuntimeUrl \"$staging_runtime_url\"'));\n  assert.ok(!callback.includes('endpoint=\"${staging_runtime_url}/'));\n""",
+              """  assert.ok(callback.includes('--arg stagingRuntimeUrl \"$staging_runtime_url\"'));\n  assert.ok(callback.includes('timeout-minutes: 20'));\n  assert.ok(callback.includes('--connect-timeout 10'));\n  assert.ok(callback.includes('--max-time 540'));\n  assert.ok(!callback.includes('endpoint=\"${staging_runtime_url}/'));\n""",
+          )
+          PY
+
+      - name: Format affected files with repository-pinned Prettier
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd apps/rede-social-agentes
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+          pnpm install --frozen-lockfile
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/staging-deploy-reconciliation.service.ts \
+            apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.ts \
+            apps/server/src/mcf-runtime/staging-deploy-reconciliation.ordering.test.ts \
+            apps/server/src/mcf-runtime/postgres-mcf-runtime.pending-phase.integration.test.ts \
+            ops/staging-workflow-correlation.test.mjs \
+            ../../.github/workflows/mcf-runtime-staging-deploy-callback.yml
+
+      - name: Commit only remediation output
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/gate-d-remediation-patcher.yml
+          git diff --check
+          git status --short
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            .github/workflows/mcf-runtime-staging-deploy-callback.yml \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-reconciliation.service.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/staging-deploy-reconciliation.ordering.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.pending-phase.integration.test.ts \
+            apps/rede-social-agentes/ops/staging-workflow-correlation.test.mjs \
+            .github/workflows/gate-d-remediation-patcher.yml
+          git commit -m 'fix(gate-d): harden durable callback reconciliation'
+          git push origin HEAD:remediate/gate-d-d15-review
