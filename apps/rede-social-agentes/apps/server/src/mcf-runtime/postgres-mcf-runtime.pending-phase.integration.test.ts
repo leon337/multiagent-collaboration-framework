@@ -4,11 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { DatabaseService } from '../database.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
-import type {
-  McfEventInput,
-  McfMissionRecord,
-  McfPhaseRecord,
-} from './mcf-runtime.repository.js';
+import type { McfEventInput, McfMissionRecord, McfPhaseRecord } from './mcf-runtime.repository.js';
 import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
 
 const repositoryName = 'leon337/multiagent-collaboration-framework';
