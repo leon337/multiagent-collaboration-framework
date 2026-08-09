@@ -28,7 +28,7 @@ function event(
   };
 }
 
-describe('PostgresMcfRuntimeRepository pending staging completion', () => {
+describe('PostgresMcfRuntimeRepository stale pending staging completion', () => {
   let database: DatabaseService;
   let repository: PostgresMcfRuntimeRepository;
 
@@ -41,21 +41,21 @@ describe('PostgresMcfRuntimeRepository pending staging completion', () => {
     await database.onModuleDestroy();
   });
 
-  it('atomically releases UNKNOWN reservation and reuses the persisted receipt on replay', async () => {
+  it('rejects an old UNKNOWN callback after a newer phase advances the mission', async () => {
     const missionId = randomUUID();
     const phaseId = randomUUID();
+    const newerPhaseId = randomUUID();
     const attemptId = randomUUID();
-    const callbackKey = `staging-deploy:4242:${randomUUID()}`;
     const now = new Date();
     const mission: McfMissionRecord = {
       id: missionId,
       contract: {
-        title: 'Gate D pending completion integration',
-        objective: 'Complete a reconciled staging UNKNOWN attempt atomically.',
-        expectedOutcome: 'Reservation is released and one durable receipt remains.',
+        title: 'Gate D stale callback integration',
+        objective: 'Reject stale asynchronous staging completion.',
+        expectedOutcome: 'Newer mission state is preserved.',
         scope: ['staging'],
         outOfScope: ['production'],
-        acceptanceCriteria: ['atomic reservation release', 'durable receipt reuse'],
+        acceptanceCriteria: ['stale callback rejected'],
         riskClass: 'B',
         selectedAgents: ['Gabriel', 'Mestre'],
         selectedSkills: ['MCF-DEPLOY-VALIDATE'],
@@ -86,6 +86,12 @@ describe('PostgresMcfRuntimeRepository pending staging completion', () => {
       createdAt: now,
       updatedAt: now,
     };
+    const newerPhase: McfPhaseRecord = {
+      ...phase,
+      id: newerPhaseId,
+      createdAt: new Date(now.getTime() + 1_000),
+      updatedAt: new Date(now.getTime() + 1_000),
+    };
 
     try {
       await repository.createMission({
@@ -104,9 +110,8 @@ describe('PostgresMcfRuntimeRepository pending staging completion', () => {
         handoff: null,
         events: [event(missionId, phaseId, 'PHASE_STARTED', `phase:${phaseId}:started`)],
       });
-      expect(pending.mission.version).toBe(2);
+      expect(pending.mission).toMatchObject({ version: 2, currentPhaseId: phaseId });
 
-      const leaseExpiresAt = new Date(Date.now() + 10 * 60_000);
       await database.query(
         `insert into "mcf_external_action_attempts" (
           "attempt_id", "mission_id", "phase_id", "agent_id", "skill_id",
@@ -124,94 +129,73 @@ describe('PostgresMcfRuntimeRepository pending staging completion', () => {
           'deploy-staging',
           repositoryName,
           1,
-          leaseExpiresAt,
+          new Date(Date.now() + 10 * 60_000),
         ],
       );
-      await database.query(
-        `update "mcf_missions"
-         set "active_external_attempt_id" = $1
-         where "id" = $2`,
-        [attemptId, missionId],
-      );
 
-      const evidence = new EvidenceValidator();
-      const firstReceipt = evidence.createTrustedReceipt({
+      const advanced = await repository.persistExecution({
+        missionId,
+        expectedMissionVersion: 2,
+        phase: newerPhase,
+        permissionProfile: 'SCOPED_WRITE',
+        missionState: 'EXECUTING',
+        nextAgentId: 'Mestre',
+        receipt: null,
+        evidenceStatus: 'PENDING',
+        handoff: null,
+        events: [
+          event(missionId, newerPhaseId, 'PHASE_STARTED', `phase:${newerPhaseId}:started`),
+        ],
+      });
+      expect(advanced.mission).toMatchObject({
+        version: 3,
+        currentPhaseId: newerPhaseId,
+        currentAgentId: 'Mestre',
+      });
+
+      const receipt = new EvidenceValidator().createTrustedReceipt({
         provider: 'github-actions',
         operation: 'deploy-staging',
         resource: repositoryName,
-        externalId: '4242',
+        externalId: '5252',
         commitSha: releaseSha,
         status: 'SUCCEEDED',
         observedAt: new Date().toISOString(),
         metadata: { deploymentOutcome: 'DEPLOYED' },
       });
-      const first = await repository.completePendingPhase({
-        missionId,
-        phaseId,
-        externalAttemptId: attemptId,
-        receipt: firstReceipt,
-        evidenceStatus: 'VALID',
-        missionState: 'EXECUTING',
-        phaseState: 'COMPLETED',
-        nextAgentId: 'Mestre',
-        handoff: null,
-        callbackIdempotencyKey: callbackKey,
-        events: [event(missionId, phaseId, 'CI_CALLBACK_RECEIVED', callbackKey)],
-      });
 
-      expect(first).toMatchObject({
-        duplicate: false,
-        receiptId: firstReceipt.receiptId,
-        evidenceStatus: 'VALID',
-        mission: { state: 'EXECUTING', currentAgentId: 'Mestre' },
-        phase: { state: 'COMPLETED' },
-      });
-      const reservation = await database.query<{ activeExternalAttemptId: string | null }>(
-        `select "active_external_attempt_id" as "activeExternalAttemptId"
-         from "mcf_missions"
-         where "id" = $1`,
-        [missionId],
-      );
-      expect(reservation.rows[0]?.activeExternalAttemptId).toBeNull();
+      await expect(
+        repository.completePendingPhase({
+          missionId,
+          phaseId,
+          externalAttemptId: attemptId,
+          receipt,
+          evidenceStatus: 'VALID',
+          missionState: 'EXECUTING',
+          phaseState: 'COMPLETED',
+          nextAgentId: 'Mestre',
+          handoff: null,
+          callbackIdempotencyKey: `staging-deploy:5252:${randomUUID()}`,
+          events: [],
+        }),
+      ).rejects.toThrow(/version conflict/u);
 
-      const replayReceipt = evidence.createTrustedReceipt({
-        provider: 'github-actions',
-        operation: 'deploy-staging',
-        resource: repositoryName,
-        externalId: '4242',
-        commitSha: releaseSha,
-        status: 'SUCCEEDED',
-        observedAt: new Date().toISOString(),
-        metadata: { deploymentOutcome: 'DEPLOYED', replay: true },
+      const preserved = await repository.findMission(missionId);
+      const oldPhase = await repository.findPhase(missionId, phaseId);
+      expect(preserved).toMatchObject({
+        version: 3,
+        currentPhaseId: newerPhaseId,
+        currentAgentId: 'Mestre',
       });
-      expect(replayReceipt.receiptId).not.toBe(firstReceipt.receiptId);
+      expect(oldPhase?.state).toBe('RECOVERING');
 
-      const replay = await repository.completePendingPhase({
-        missionId,
-        phaseId,
-        externalAttemptId: attemptId,
-        receipt: replayReceipt,
-        evidenceStatus: 'VALID',
-        missionState: 'EXECUTING',
-        phaseState: 'COMPLETED',
-        nextAgentId: 'Mestre',
-        handoff: null,
-        callbackIdempotencyKey: callbackKey,
-        events: [],
-      });
-      expect(replay).toMatchObject({
-        duplicate: true,
-        receiptId: firstReceipt.receiptId,
-        evidenceStatus: 'VALID',
-      });
-
-      const receipts = await database.query<{ receiptId: string }>(
-        `select "receipt_id" as "receiptId"
+      const receipts = await database.query<{ count: string }>(
+        `select count(*)::text as "count"
          from "mcf_tool_receipts"
          where "mission_id" = $1 and "phase_id" = $2`,
         [missionId, phaseId],
       );
-      expect(receipts.rows).toEqual([{ receiptId: firstReceipt.receiptId }]);
+      expect(receipts.rows[0]?.count).toBe('0');
     } finally {
       await database.query('delete from "mcf_missions" where "id" = $1', [missionId]);
     }
