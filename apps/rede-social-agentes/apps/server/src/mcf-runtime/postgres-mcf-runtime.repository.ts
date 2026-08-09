@@ -9,12 +9,12 @@ import type {
 import type { DatabaseRow, DatabaseTransaction } from '@rsa/database';
 
 import type { DatabaseService } from '../database.service.js';
+import { reconcileExpiredExternalReservation } from './external-action-reservation.js';
 import {
   McfMissionNotFoundError,
   McfMissionVersionConflictError,
   McfPhaseNotFoundError,
 } from './mcf-runtime.errors.js';
-import { reconcileExpiredExternalReservation } from './external-action-reservation.js';
 import type {
   CompleteMcfPendingPhaseInput,
   CompleteMcfPendingPhaseResult,
@@ -475,46 +475,51 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         throw new McfMissionNotFoundError(input.missionId);
       }
 
-      const attempt = await client.query<CompletionAttemptRow>(
-        `select
-           "mission_id" as "missionId",
-           "phase_id" as "phaseId",
-           "status"
-         from "mcf_external_action_attempts"
-         where "attempt_id" = $1
-         for update`,
-        [input.externalAttemptId],
-      );
-      const persistedAttempt = attempt.rows[0];
-      if (
-        !persistedAttempt ||
-        persistedAttempt.missionId !== input.missionId ||
-        persistedAttempt.phaseId !== input.phaseId ||
-        persistedAttempt.status !== 'UNKNOWN'
-      ) {
-        throw new McfMissionVersionConflictError(input.missionId, mission.version);
-      }
-
-      if (
-        mission.activeExternalAttemptId !== null &&
-        mission.activeExternalAttemptId !== input.externalAttemptId
-      ) {
-        throw new McfMissionVersionConflictError(input.missionId, mission.version);
-      }
-      if (mission.activeExternalAttemptId === input.externalAttemptId) {
-        const released = await client.query<{ id: string }>(
-          `update "mcf_missions"
-           set "active_external_attempt_id" = null
-           where "id" = $1 and "active_external_attempt_id" = $2
-           returning "id"`,
-          [input.missionId, input.externalAttemptId],
+      const externalAttemptId = input.externalAttemptId ?? null;
+      if (externalAttemptId) {
+        const attempt = await client.query<CompletionAttemptRow>(
+          `select
+             "mission_id" as "missionId",
+             "phase_id" as "phaseId",
+             "status"
+           from "mcf_external_action_attempts"
+           where "attempt_id" = $1
+           for update`,
+          [externalAttemptId],
         );
-        if (!released.rows[0]) {
+        const persistedAttempt = attempt.rows[0];
+        if (
+          !persistedAttempt ||
+          persistedAttempt.missionId !== input.missionId ||
+          persistedAttempt.phaseId !== input.phaseId ||
+          persistedAttempt.status !== 'UNKNOWN'
+        ) {
           throw new McfMissionVersionConflictError(input.missionId, mission.version);
         }
+
+        if (
+          mission.activeExternalAttemptId !== null &&
+          mission.activeExternalAttemptId !== externalAttemptId
+        ) {
+          throw new McfMissionVersionConflictError(input.missionId, mission.version);
+        }
+        if (mission.activeExternalAttemptId === externalAttemptId) {
+          const released = await client.query<{ id: string }>(
+            `update "mcf_missions"
+             set "active_external_attempt_id" = null
+             where "id" = $1 and "active_external_attempt_id" = $2
+             returning "id"`,
+            [input.missionId, externalAttemptId],
+          );
+          if (!released.rows[0]) {
+            throw new McfMissionVersionConflictError(input.missionId, mission.version);
+          }
+        }
+      } else if (mission.activeExternalAttemptId !== null) {
+        throw new McfMissionVersionConflictError(input.missionId, mission.version);
       }
 
-      const existingPhase = await loadPhaseWithClient(client, input.missionId, input.phaseId);
+      await loadPhaseWithClient(client, input.missionId, input.phaseId);
 
       await client.query(
         `insert into "mcf_tool_receipts" (
@@ -601,7 +606,6 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         throw new Error('MCF pending phase completion did not return state.');
       }
 
-      void existingPhase;
       return {
         duplicate: false,
         mission: mapMission(missionRow),
