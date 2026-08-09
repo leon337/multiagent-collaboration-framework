@@ -123,7 +123,7 @@ describe('PostgresMcfRuntimeRepository pending staging completion', () => {
           'github',
           'deploy-staging',
           repositoryName,
-          2,
+          1,
           leaseExpiresAt,
         ],
       );

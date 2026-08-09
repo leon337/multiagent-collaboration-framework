@@ -72,6 +72,7 @@ interface CompletionAttemptRow extends DatabaseRow {
   missionId: string;
   phaseId: string;
   status: string;
+  expectedMissionVersion: number;
 }
 
 interface CompletionReceiptRow extends DatabaseRow {
@@ -483,7 +484,8 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
           `select
              "mission_id" as "missionId",
              "phase_id" as "phaseId",
-             "status"
+             "status",
+             "expected_mission_version" as "expectedMissionVersion"
            from "mcf_external_action_attempts"
            where "attempt_id" = $1
            for update`,
@@ -497,6 +499,16 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
           persistedAttempt.status !== 'UNKNOWN'
         ) {
           throw new McfMissionVersionConflictError(input.missionId, mission.version);
+        }
+
+        if (
+          mission.version !== persistedAttempt.expectedMissionVersion + 1 ||
+          mission.currentPhaseId !== input.phaseId
+        ) {
+          throw new McfMissionVersionConflictError(
+            input.missionId,
+            persistedAttempt.expectedMissionVersion + 1,
+          );
         }
 
         if (

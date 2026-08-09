@@ -99,6 +99,9 @@ test('staging workflow completion reconciles through a canonical stable control 
   assert.ok(callback.includes('test "$control_plane_url" != "$staging_runtime_url"'));
   assert.ok(callback.includes('endpoint="${control_plane_url}/v1/mcf/callbacks/staging-deploy"'));
   assert.ok(callback.includes('--arg stagingRuntimeUrl "$staging_runtime_url"'));
+  assert.ok(callback.includes('timeout-minutes: 20'));
+  assert.ok(callback.includes('--connect-timeout 10'));
+  assert.ok(callback.includes('--max-time 540'));
   assert.ok(!callback.includes('endpoint="${staging_runtime_url}/'));
   assert.ok(!callback.includes('RENDER_DEPLOY_HOOK_URL'));
 });

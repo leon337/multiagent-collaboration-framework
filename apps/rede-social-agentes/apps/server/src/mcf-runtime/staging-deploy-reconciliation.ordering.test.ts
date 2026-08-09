@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { ExternalActionLedger } from './external-action-ledger.js';
 import type { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
-import type { McfRuntimeRepository } from './mcf-runtime.repository.js';
+import type { McfEventRecord, McfRuntimeRepository } from './mcf-runtime.repository.js';
 import type { SkillExecutor } from './skill-executor.js';
 import type { SkillRegistryLoader } from './skill-registry.loader.js';
 import { StagingDeployReconciliationService } from './staging-deploy-reconciliation.service.js';
@@ -34,6 +34,11 @@ function createScenario() {
   const mission = {
     id: missionId,
     state: 'RECOVERING' as const,
+    currentPhaseId: phaseId,
+    currentAgentId: 'Gabriel',
+    version: 8,
+    createdAt: new Date('2026-08-09T00:00:00Z'),
+    updatedAt: new Date('2026-08-09T00:00:00Z'),
     contract: {
       selectedAgents: ['Gabriel', 'Mestre'],
       selectedSkills: ['MCF-DEPLOY-VALIDATE'],
@@ -55,6 +60,8 @@ function createScenario() {
   const completedMission = {
     ...mission,
     state: 'EXECUTING' as const,
+    currentAgentId: 'Mestre',
+    version: 9,
   };
   const completedPhase = {
     ...phase,
@@ -68,9 +75,12 @@ function createScenario() {
     evidenceStatus: 'VALID' as const,
   };
   const completePendingPhase = vi.fn(async () => completion);
+  const findMission = vi.fn(async () => mission);
+  const listEvents = vi.fn(async (): Promise<McfEventRecord[]> => []);
   const repository = {
-    findMission: vi.fn(async () => mission),
+    findMission,
     findPhase: vi.fn(async () => phase),
+    listEvents,
     completePendingPhase,
   } as unknown as McfRuntimeRepository;
 
@@ -138,7 +148,10 @@ function createScenario() {
 
   return {
     service,
+    mission,
     completion,
+    findMission,
+    listEvents,
     completePendingPhase,
     reconcile,
     recordEvidenceValidated,
@@ -164,13 +177,32 @@ describe('staging reconciliation completion ordering', () => {
 
   it('reuses the persisted receipt when retrying ledger settlement', async () => {
     const scenario = createScenario();
-    const duplicate = {
-      ...scenario.completion,
-      duplicate: true,
-    };
-    scenario.completePendingPhase
-      .mockResolvedValueOnce(scenario.completion)
-      .mockResolvedValueOnce(duplicate);
+    scenario.completePendingPhase.mockResolvedValueOnce(scenario.completion);
+    scenario.findMission
+      .mockResolvedValueOnce(scenario.mission)
+      .mockResolvedValueOnce(scenario.completion.mission);
+    scenario.listEvents.mockResolvedValueOnce([]).mockResolvedValueOnce([
+      {
+        id: 'event-callback',
+        missionId,
+        phaseId,
+        agentId: 'Gabriel',
+        eventType: 'CI_CALLBACK_RECEIVED',
+        payload: {},
+        idempotencyKey: `staging-deploy:4242:${requestId}`,
+        occurredAt: new Date('2026-08-09T00:02:00Z'),
+      },
+      {
+        id: 'event-evidence',
+        missionId,
+        phaseId,
+        agentId: 'Gabriel',
+        eventType: 'EVIDENCE_VALIDATED',
+        payload: { receiptId: persistedReceiptId },
+        idempotencyKey: `phase:${phaseId}:staging-evidence:4242`,
+        occurredAt: new Date('2026-08-09T00:02:00Z'),
+      },
+    ]);
     const failure = new Error('ledger temporarily unavailable');
     scenario.recordEvidenceValidated.mockRejectedValueOnce(failure);
 
@@ -182,15 +214,9 @@ describe('staging reconciliation completion ordering', () => {
       missionState: 'EXECUTING',
     });
 
-    expect(scenario.reconcile).toHaveBeenCalledTimes(2);
-    expect(scenario.completePendingPhase).toHaveBeenCalledTimes(2);
-    expect(scenario.completePendingPhase).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
-        externalAttemptId: attemptId,
-        receipt: expect.objectContaining({ receiptId: retryReceiptId }),
-      }),
-    );
+    expect(scenario.reconcile).toHaveBeenCalledTimes(1);
+    expect(scenario.completePendingPhase).toHaveBeenCalledTimes(1);
+    expect(scenario.listEvents).toHaveBeenCalledTimes(2);
     expect(scenario.recordEvidenceValidated).toHaveBeenCalledTimes(2);
     expect(scenario.recordEvidenceValidated).toHaveBeenNthCalledWith(
       1,

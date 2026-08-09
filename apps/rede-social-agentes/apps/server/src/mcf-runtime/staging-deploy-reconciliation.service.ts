@@ -21,6 +21,7 @@ import { resolveMissionState } from './mission-completion-policy.js';
 import {
   MCF_RUNTIME_REPOSITORY,
   type McfEventInput,
+  type McfEventRecord,
   type McfRuntimeRepository,
 } from './mcf-runtime.repository.js';
 import { SkillExecutor } from './skill-executor.js';
@@ -61,6 +62,32 @@ function callbackEvent(input: {
   occurredAt: Date;
 }): McfEventInput {
   return { id: randomUUID(), ...input };
+}
+
+function persistedCompletionFromEvents(
+  events: McfEventRecord[],
+  callbackKey: string,
+  evidenceKey: string,
+): { receiptId: string; evidenceStatus: McfEvidenceValidationStatus } | null {
+  const callback = events.find(
+    (item) => item.idempotencyKey === callbackKey && item.eventType === 'CI_CALLBACK_RECEIVED',
+  );
+  if (!callback) return null;
+  const evidence = events.find(
+    (item) =>
+      item.idempotencyKey === evidenceKey &&
+      (item.eventType === 'EVIDENCE_VALIDATED' || item.eventType === 'EVIDENCE_REJECTED'),
+  );
+  const receiptId = evidence?.payload.receiptId;
+  if (!evidence || typeof receiptId !== 'string' || receiptId.length === 0) {
+    throw new McfEvidenceRejectedError(
+      'persisted staging callback completion has invalid receipt evidence',
+    );
+  }
+  return {
+    receiptId,
+    evidenceStatus: evidence.eventType === 'EVIDENCE_VALIDATED' ? 'VALID' : 'INVALID',
+  };
 }
 
 @Injectable()
@@ -127,6 +154,47 @@ export class StagingDeployReconciliationService {
         `staging callback cannot reconcile attempt status ${attempt.status}`,
       );
     }
+
+    const workflowRunId = Number(request.workflowRunId);
+    if (!Number.isSafeInteger(workflowRunId) || workflowRunId < 1) {
+      throw new McfEvidenceRejectedError(
+        'staging callback workflowRunId must be a positive integer',
+      );
+    }
+    const callbackKey = `staging-deploy:${request.workflowRunId}:${request.requestId}`;
+    const evidenceKey = `phase:${request.phaseId}:staging-evidence:${request.workflowRunId}`;
+    const persistedCompletion = persistedCompletionFromEvents(
+      await this.repository.listEvents(request.missionId),
+      callbackKey,
+      evidenceKey,
+    );
+    if (persistedCompletion) {
+      if (persistedCompletion.evidenceStatus === 'VALID') {
+        await this.ledger.recordEvidenceValidated(attempt.attemptId, persistedCompletion.receiptId);
+      } else {
+        await this.ledger.recordEvidenceRejected(
+          attempt.attemptId,
+          persistedCompletion.receiptId,
+          'staging deployment evidence rejected',
+        );
+      }
+      return {
+        accepted: true,
+        duplicate: true,
+        evidenceStatus: persistedCompletion.evidenceStatus,
+        missionState: mission.state,
+      };
+    }
+
+    const expectedPendingMissionVersion = attempt.expectedMissionVersion + 1;
+    if (
+      mission.version !== expectedPendingMissionVersion ||
+      mission.currentPhaseId !== request.phaseId
+    ) {
+      throw new McfEvidenceRejectedError(
+        'staging callback is stale for the current mission version or phase',
+      );
+    }
     if (!attempt.reconciliationEligible || !attempt.previousSha) {
       throw new McfEvidenceRejectedError(
         'durable staging UNKNOWN attempt is not yet eligible for automatic reconciliation',
@@ -145,7 +213,6 @@ export class StagingDeployReconciliationService {
         expectedMissionVersion: attempt.expectedMissionVersion,
       },
     };
-    const workflowRunId = Number(request.workflowRunId);
     const receipt = await this.adapter.reconcile(externalRequest, {
       expectedRunId: workflowRunId,
       previousSha: attempt.previousSha,
@@ -187,7 +254,6 @@ export class StagingDeployReconciliationService {
       existingEvents: [],
     });
     const now = new Date();
-    const callbackKey = `staging-deploy:${request.workflowRunId}:${request.requestId}`;
     const handoff = outcome.handoffTo
       ? {
           id: randomUUID(),
@@ -239,7 +305,7 @@ export class StagingDeployReconciliationService {
         agentId: phase.agentId,
         eventType: outcome.evidenceStatus === 'VALID' ? 'EVIDENCE_VALIDATED' : 'EVIDENCE_REJECTED',
         payload: { receiptId: outcome.receipt.receiptId, reason: outcome.rejectionReason },
-        idempotencyKey: `phase:${request.phaseId}:staging-evidence:${request.workflowRunId}`,
+        idempotencyKey: evidenceKey,
         occurredAt: now,
       }),
     ];
