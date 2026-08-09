@@ -36,6 +36,37 @@ jobs:
         run: |
           set -euo pipefail
           sed -i 's/parents\[2\]/parents[3]/' apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py
+          python - <<'PY'
+          from pathlib import Path
+
+          static_test = Path('apps/rede-social-agentes/ops/staging-workflow-correlation.test.mjs')
+          static_test.write_text(r'''/* global process */
+
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          import { dirname, resolve } from 'node:path';
+          import { fileURLToPath } from 'node:url';
+
+          const here = dirname(fileURLToPath(import.meta.url));
+          const repoRoot = resolve(here, '../../..');
+          const workflow = readFileSync(
+            resolve(repoRoot, '.github/workflows/mcf-runtime-staging-deploy.yml'),
+            'utf8',
+          );
+
+          assert.match(workflow, /run-name:\s*MCF staging deploy \${{ inputs\.request_id \|\| 'push' }} \${{ inputs\.release_sha \|\| github\.sha }}/u);
+          assert.match(workflow, /request_id:/u);
+          assert.match(workflow, /REQUEST_ID:/u);
+          assert.match(workflow, /id: deploy/u);
+          assert.match(workflow, /Deployment result DEPLOYED/u);
+          assert.match(workflow, /Deployment result NOOP/u);
+          assert.match(workflow, /Deployment result RECOVERED/u);
+          assert.match(workflow, /RENDER_DEPLOY_HOOK_URL: \${{ secrets\.RENDER_DEPLOY_HOOK_URL }}/u);
+          assert.doesNotMatch(workflow, /RENDER_DEPLOY_HOOK_URL: \${{ inputs\./u);
+
+          console.log('staging workflow correlation tests passed');
+          ''')
+          PY
           if ! python apps/rede-social-agentes/ops/gate-d-p1-long-workflow-reconciliation.py 2> /tmp/gate-d-reconciliation.err; then
             cat /tmp/gate-d-reconciliation.err >&2
             message=$(tail -n 1 /tmp/gate-d-reconciliation.err | tr '\n' ' ')
@@ -43,6 +74,32 @@ jobs:
             exit 1
           fi
           cat /tmp/gate-d-reconciliation.err >&2 || true
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              if text.count(old) != 1:
+                  raise SystemExit(f'{path}: expected one supplemental anchor, found {text.count(old)}')
+              p.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              'apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-ledger.ts',
+              "type ExternalAttemptStatus =\n",
+              "export type ExternalAttemptStatus =\n",
+          )
+          replace_once(
+              'apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.adapter.test.ts',
+              "  title = `MCF staging deploy ${KEY} ${RELEASE_SHA}`,\n",
+              "  title = `MCF staging deploy ${KEY} ${RELEASE_SHA} mission-gate-d phase-gate-d`,\n",
+          )
+          replace_once(
+              'apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.evidence.test.ts',
+              "      workflowDisplayTitle: `MCF staging deploy ${KEY} ${RELEASE_SHA}`,\n",
+              "      workflowDisplayTitle: `MCF staging deploy ${KEY} ${RELEASE_SHA} ${context.executionContext.missionId} ${context.executionContext.phaseId}`,\n",
+          )
+          PY
       - name: Format targeted files
         working-directory: apps/rede-social-agentes
         run: |
