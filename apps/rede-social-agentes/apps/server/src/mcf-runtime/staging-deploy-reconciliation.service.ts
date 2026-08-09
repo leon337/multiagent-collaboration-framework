@@ -59,9 +59,10 @@ export class StagingDeployReconciliationService {
 
   constructor(
     @Inject(MCF_RUNTIME_REPOSITORY) private readonly repository: McfRuntimeRepository,
-    private readonly executor: SkillExecutor,
-    private readonly registry: SkillRegistryLoader,
-    private readonly ledger: ExternalActionLedger,
+    @Inject(SkillExecutor) private readonly executor: SkillExecutor,
+    @Inject(SkillRegistryLoader) private readonly registry: SkillRegistryLoader,
+    @Inject(ExternalActionLedger) private readonly ledger: ExternalActionLedger,
+    @Inject(GitHubActionsStagingDeployAdapter)
     private readonly adapter: GitHubActionsStagingDeployAdapter,
   ) {}
 
