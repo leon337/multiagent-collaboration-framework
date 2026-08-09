@@ -33,8 +33,44 @@ jobs:
           test -n "$MCF_CONTROL_PLANE_URL"
           test -n "$MCF_STAGING_RUNTIME_URL"
           test -n "$MCF_RUNTIME_TOKEN"
-          control_plane_url="${MCF_CONTROL_PLANE_URL%/}"
-          staging_runtime_url="${MCF_STAGING_RUNTIME_URL%/}"
+          cat >"$RUNNER_TEMP/canonicalize-runtime-origin.py" <<'PY'
+          import ipaddress
+          import sys
+          from urllib.parse import urlsplit
+
+          raw = sys.argv[1].strip()
+          parsed = urlsplit(raw)
+          scheme = parsed.scheme.lower()
+          if scheme not in {"http", "https"} or parsed.hostname is None:
+              raise SystemExit("runtime URL must be an absolute HTTP(S) origin")
+          if parsed.username is not None or parsed.password is not None:
+              raise SystemExit("runtime URL must not contain credentials")
+          if parsed.path not in {"", "/"} or parsed.query or parsed.fragment:
+              raise SystemExit("runtime URL must not contain path, query, or fragment")
+
+          try:
+              port = parsed.port
+          except ValueError as error:
+              raise SystemExit(str(error)) from error
+
+          host = parsed.hostname
+          try:
+              address = ipaddress.ip_address(host)
+              host = address.compressed
+              if address.version == 6:
+                  host = f"[{host}]"
+          except ValueError:
+              host = host.rstrip(".").encode("idna").decode("ascii").lower()
+              if not host:
+                  raise SystemExit("runtime URL hostname must not be empty")
+
+          if (scheme == "http" and port == 80) or (scheme == "https" and port == 443):
+              port = None
+          authority = host if port is None else f"{host}:{port}"
+          print(f"{scheme}://{authority}")
+          PY
+          control_plane_url="$(python3 "$RUNNER_TEMP/canonicalize-runtime-origin.py" "$MCF_CONTROL_PLANE_URL")"
+          staging_runtime_url="$(python3 "$RUNNER_TEMP/canonicalize-runtime-origin.py" "$MCF_STAGING_RUNTIME_URL")"
           test "$control_plane_url" != "$staging_runtime_url"
           read -r word1 word2 word3 request_id release_sha mission_id phase_id extra <<<"$SOURCE_TITLE"
           test "$word1 $word2 $word3" = "MCF staging deploy"
@@ -57,8 +93,8 @@ jobs:
           PHASE_ID: ${{ steps.correlation.outputs.phase_id }}
         run: |
           set -euo pipefail
-          control_plane_url="${MCF_CONTROL_PLANE_URL%/}"
-          staging_runtime_url="${MCF_STAGING_RUNTIME_URL%/}"
+          control_plane_url="$(python3 "$RUNNER_TEMP/canonicalize-runtime-origin.py" "$MCF_CONTROL_PLANE_URL")"
+          staging_runtime_url="$(python3 "$RUNNER_TEMP/canonicalize-runtime-origin.py" "$MCF_STAGING_RUNTIME_URL")"
           test "$control_plane_url" != "$staging_runtime_url"
           endpoint="${control_plane_url}/v1/mcf/callbacks/staging-deploy"
           payload=$(jq -cn \
