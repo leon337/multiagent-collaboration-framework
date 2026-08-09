@@ -13,7 +13,6 @@ import { ExternalActionLedger } from './external-action-ledger.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
-import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
@@ -59,24 +58,13 @@ import { SocialTimelineService } from './social-timeline.service.js';
       inject: [EvidenceValidator],
     },
     {
-      provide: GitHubActionsStagingDeployAdapter,
-      useFactory: (evidence: EvidenceValidator) => new GitHubActionsStagingDeployAdapter(evidence),
-      inject: [EvidenceValidator],
-    },
-    {
       provide: AdapterRegistry,
       useFactory: (
         githubReview: GitHubCodeReviewAdapter,
         githubCiQuery: GitHubCiQueryAdapter,
         githubBranchPr: GitHubBranchPullRequestAdapter,
-        githubStagingDeploy: GitHubActionsStagingDeployAdapter,
-      ) => new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubStagingDeploy]),
-      inject: [
-        GitHubCodeReviewAdapter,
-        GitHubCiQueryAdapter,
-        GitHubBranchPullRequestAdapter,
-        GitHubActionsStagingDeployAdapter,
-      ],
+      ) => new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr]),
+      inject: [GitHubCodeReviewAdapter, GitHubCiQueryAdapter, GitHubBranchPullRequestAdapter],
     },
     {
       provide: ExternalActionLedger,
