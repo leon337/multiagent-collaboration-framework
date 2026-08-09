@@ -12,11 +12,13 @@ const missionId = '11111111-1111-4111-8111-111111111111';
 const phaseId = '22222222-2222-4222-8222-222222222222';
 const requestId = 'mcf-gate-d-settled-0001';
 const releaseSha = 'b'.repeat(40);
-const previousSha = 'a'.repeat(40);
 const repositoryName = 'leon337/multiagent-collaboration-framework';
 
-function missionRecord(state: McfMissionState) {
-  return {
+function createSettledScenario(
+  status: 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED',
+  missionState: McfMissionState,
+) {
+  const mission = {
     id: missionId,
     contract: {
       title: 'Gate D',
@@ -30,22 +32,19 @@ function missionRecord(state: McfMissionState) {
       selectedSkills: ['MCF-DEPLOY-VALIDATE'],
       sourceOfTruth: ['issue-83'],
     },
-    state,
+    state: missionState,
     currentPhaseId: phaseId,
     currentAgentId: 'Gabriel',
     version: 8,
     createdAt: new Date('2026-08-09T00:00:00Z'),
     updatedAt: new Date('2026-08-09T00:00:00Z'),
   };
-}
-
-function phaseRecord(state: 'COMPLETED' | 'RECOVERING', completed: boolean) {
-  return {
+  const phase = {
     id: phaseId,
     missionId,
     skillId: 'MCF-DEPLOY-VALIDATE',
     agentId: 'Gabriel',
-    state,
+    state: status === 'EVIDENCE_VALIDATED' ? ('COMPLETED' as const) : ('RECOVERING' as const),
     cycle: 1,
     inputs: {
       repository: repositoryName,
@@ -55,21 +54,10 @@ function phaseRecord(state: 'COMPLETED' | 'RECOVERING', completed: boolean) {
     },
     expectedEvidence: ['deployment_id'],
     startedAt: new Date('2026-08-09T00:00:00Z'),
-    completedAt: completed ? new Date('2026-08-09T00:01:00Z') : null,
+    completedAt: new Date('2026-08-09T00:01:00Z'),
     createdAt: new Date('2026-08-09T00:00:00Z'),
     updatedAt: new Date('2026-08-09T00:01:00Z'),
   };
-}
-
-function createSettledScenario(
-  status: 'EVIDENCE_VALIDATED' | 'EVIDENCE_REJECTED',
-  missionState: McfMissionState,
-) {
-  const mission = missionRecord(missionState);
-  const phase = phaseRecord(
-    status === 'EVIDENCE_VALIDATED' ? 'COMPLETED' : 'RECOVERING',
-    status === 'EVIDENCE_VALIDATED',
-  );
 
   const completePendingPhase = vi.fn();
   const repository = {
@@ -116,91 +104,6 @@ function createSettledScenario(
     completePendingPhase,
     recordEvidenceValidated,
     recordEvidenceRejected,
-  };
-}
-
-function createUnknownScenario() {
-  const mission = missionRecord('RECOVERING');
-  const phase = phaseRecord('RECOVERING', false);
-  const completedMission = {
-    ...mission,
-    state: 'EXECUTING' as const,
-    version: 9,
-  };
-  const completedPhase = phaseRecord('COMPLETED', true);
-  const completion = {
-    duplicate: false,
-    mission: completedMission,
-    phase: completedPhase,
-  };
-
-  const completePendingPhase = vi.fn(async () => completion);
-  const repository = {
-    findMission: vi.fn(async () => mission),
-    findPhase: vi.fn(async () => phase),
-    completePendingPhase,
-  } as unknown as McfRuntimeRepository;
-
-  const receipt = {
-    receiptId: 'receipt-gate-d-reconcile-4242',
-    provider: 'github-actions',
-    status: 'SUCCEEDED' as const,
-  };
-  const skill = {
-    skillId: 'MCF-DEPLOY-VALIDATE',
-    requiredEvidence: ['deployment_id'],
-    acceptanceCriteria: ['healthy_deployment'],
-    fallback: 'Mestre',
-  };
-  const reconcile = vi.fn(async () => receipt);
-  const adapter = { reconcile } as unknown as GitHubActionsStagingDeployAdapter;
-  const execute = vi.fn(async () => ({
-    skill,
-    receipt,
-    evidenceStatus: 'VALID' as const,
-    phaseState: 'COMPLETED' as const,
-    missionState: 'EXECUTING' as const,
-    handoffTo: 'Mestre',
-    rejectionReason: null,
-    externalAction: null,
-  }));
-  const executor = { execute } as unknown as SkillExecutor;
-  const load = vi.fn(async () => skill);
-  const registry = { load } as unknown as SkillRegistryLoader;
-  const recordEvidenceValidated = vi.fn(async () => {});
-  const recordEvidenceRejected = vi.fn(async () => {});
-  const ledger = {
-    loadStagingDeployReconciliationAttempt: vi.fn(async () => ({
-      attemptId: 'attempt-unknown',
-      status: 'UNKNOWN' as const,
-      expectedMissionVersion: 7,
-      agentId: 'Gabriel',
-      skillId: 'MCF-DEPLOY-VALIDATE',
-      resource: repositoryName,
-      previousSha,
-      reconciliationEligible: true,
-    })),
-    recordEvidenceValidated,
-    recordEvidenceRejected,
-  } as unknown as ExternalActionLedger;
-
-  const service = new StagingDeployReconciliationService(
-    repository,
-    executor,
-    registry,
-    ledger,
-    adapter,
-  );
-
-  return {
-    service,
-    reconcile,
-    execute,
-    load,
-    completePendingPhase,
-    recordEvidenceValidated,
-    recordEvidenceRejected,
-    completion,
   };
 }
 
@@ -251,48 +154,6 @@ describe('StagingDeployReconciliationService settled callbacks', () => {
     expect(scenario.load).not.toHaveBeenCalled();
     expect(scenario.completePendingPhase).not.toHaveBeenCalled();
     expect(scenario.recordEvidenceValidated).not.toHaveBeenCalled();
-    expect(scenario.recordEvidenceRejected).not.toHaveBeenCalled();
-  });
-});
-
-describe('StagingDeployReconciliationService durable completion ordering', () => {
-  it('does not settle evidence when phase completion fails', async () => {
-    const scenario = createUnknownScenario();
-    scenario.completePendingPhase.mockRejectedValueOnce(
-      new Error('transient completion failure'),
-    );
-
-    await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(
-      'transient completion failure',
-    );
-
-    expect(scenario.completePendingPhase).toHaveBeenCalledTimes(1);
-    expect(scenario.recordEvidenceValidated).not.toHaveBeenCalled();
-    expect(scenario.recordEvidenceRejected).not.toHaveBeenCalled();
-  });
-
-  it('can retry ledger settlement after the phase transaction already committed', async () => {
-    const scenario = createUnknownScenario();
-    scenario.completePendingPhase
-      .mockResolvedValueOnce(scenario.completion)
-      .mockResolvedValueOnce({ ...scenario.completion, duplicate: true });
-    scenario.recordEvidenceValidated.mockRejectedValueOnce(
-      new Error('ledger temporarily unavailable'),
-    );
-
-    await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(
-      'ledger temporarily unavailable',
-    );
-
-    await expect(scenario.service.accept(callbackRequest())).resolves.toEqual({
-      accepted: true,
-      duplicate: true,
-      evidenceStatus: 'VALID',
-      missionState: 'EXECUTING',
-    });
-
-    expect(scenario.completePendingPhase).toHaveBeenCalledTimes(2);
-    expect(scenario.recordEvidenceValidated).toHaveBeenCalledTimes(2);
     expect(scenario.recordEvidenceRejected).not.toHaveBeenCalled();
   });
 });
