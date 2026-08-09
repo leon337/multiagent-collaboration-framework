@@ -16,9 +16,7 @@ describe('Gate D provider boundary', () => {
     const source = await readFile(modulePath, 'utf8');
 
     expect(source).toContain('provide: GitHubActionsStagingDeployAdapter');
-    expect(source).toContain(
-      'new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr])',
-    );
+    expect(source).toContain('new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr])');
     expect(source).not.toContain(
       'new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubStagingDeploy])',
     );
