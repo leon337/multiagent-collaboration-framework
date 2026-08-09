@@ -956,7 +956,26 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
       );
     }
 
-    let run = await this.findRun(target, deadlineAt, budget);
+    let run: GitHubWorkflowRun | null;
+    try {
+      run = await this.findRun(target, deadlineAt, budget);
+    } catch (error) {
+      if (
+        error instanceof ExternalActionAdapterError &&
+        error.code === 'RESERVATION_CONFLICT' &&
+        error.message === 'multiple workflow runs match the same staging deploy idempotency key'
+      ) {
+        return this.unknownReceipt(
+          request,
+          target,
+          before,
+          null,
+          'multiple correlated workflow runs make the staging deployment state ambiguous',
+          budget,
+        );
+      }
+      throw error;
+    }
     const runWasExisting = run !== null;
 
     if (!run) {

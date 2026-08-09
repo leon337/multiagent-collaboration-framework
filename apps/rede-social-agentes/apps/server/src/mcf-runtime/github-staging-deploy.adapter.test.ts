@@ -129,6 +129,7 @@ function jobs(
 function fakeProvider(
   options: {
     existing?: boolean;
+    duplicateRuns?: boolean;
     conflictingSha?: string | null;
     outcome?: 'DEPLOYED' | 'NOOP' | 'RECOVERED';
     hang?: boolean;
@@ -197,9 +198,12 @@ function fakeProvider(
         currentSha = outcome === 'RECOVERED' ? PREVIOUS_SHA : RELEASE_SHA;
         ready = true;
       }
+      const workflowRuns = options.duplicateRuns
+        ? [workflowRun({ status, conclusion }), workflowRun({ id: RUN_ID + 1, status, conclusion })]
+        : [workflowRun({ status, conclusion })];
       return jsonResponse({
-        total_count: 1,
-        workflow_runs: [workflowRun({ status, conclusion })],
+        total_count: workflowRuns.length,
+        workflow_runs: workflowRuns,
       });
     }
     if (url.pathname.endsWith(`/actions/runs/${RUN_ID}`)) {
@@ -291,6 +295,16 @@ describe('GitHubActionsStagingDeployAdapter', () => {
       retryable: false,
     });
     expect(provider.dispatches).toBe(0);
+  });
+
+  it('returns PARTIAL when multiple existing runs match the same key and release SHA', async () => {
+    const provider = fakeProvider({ existing: true, duplicateRuns: true });
+    const receipt = await adapter(provider).execute(request());
+
+    expect(provider.dispatches).toBe(0);
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(receipt.metadata.unknownReason).toMatch(/multiple correlated workflow runs/u);
   });
 
   it('proves recovery only when the previous healthy SHA is restored', async () => {
