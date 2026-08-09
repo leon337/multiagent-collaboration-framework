@@ -290,6 +290,7 @@ jobs:
           git rm .github/workflows/gate-d-p1-global-dispatch-fix-v6.yml
       - name: Enforce exact changed path set
         run: |
+          git add apps/rede-social-agentes/apps/server/src/mcf-runtime/github-staging-deploy.global-idempotency.integration.test.ts
           expected=$(mktemp)
           actual=$(mktemp)
           cat >"$expected" <<'EOF'
