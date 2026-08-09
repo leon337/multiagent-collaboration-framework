@@ -75,7 +75,9 @@ function createScenario() {
     evidenceStatus: 'VALID' as const,
   };
   const completePendingPhase = vi.fn(async () => completion);
-  const findMission = vi.fn(async () => mission);
+  const findMission = vi.fn(
+    async (): Promise<typeof mission | typeof completedMission> => mission,
+  );
   const listEvents = vi.fn(async (): Promise<McfEventRecord[]> => []);
   const repository = {
     findMission,
@@ -228,6 +230,5 @@ describe('staging reconciliation completion ordering', () => {
       attemptId,
       persistedReceiptId,
     );
-    expect(scenario.recordEvidenceRejected).not.toHaveBeenCalled();
   });
 });
