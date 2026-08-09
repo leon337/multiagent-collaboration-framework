@@ -61,7 +61,7 @@ function request(overrides: Record<string, unknown> = {}): ExternalActionRequest
 
 function workflowRun({
   id = RUN_ID,
-  title = `MCF staging deploy ${KEY} ${RELEASE_SHA}`,
+  title = `MCF staging deploy ${KEY} ${RELEASE_SHA} mission-gate-d phase-gate-d`,
   status = 'completed',
   conclusion = 'success',
 }: {
@@ -134,6 +134,7 @@ function fakeProvider(
     conflictingSha?: string | null;
     outcome?: 'DEPLOYED' | 'NOOP' | 'RECOVERED';
     hang?: boolean;
+    finishAfterTimeout?: boolean;
     unhealthyBefore?: boolean;
     inconsistentFinal?: boolean;
     malformedJobs?: boolean;
@@ -145,6 +146,7 @@ function fakeProvider(
   let currentSha = options.existing && outcome !== 'RECOVERED' ? RELEASE_SHA : PREVIOUS_SHA;
   let ready = !options.unhealthyBefore;
   let runExists = options.existing ?? false;
+  let hang = options.hang ?? false;
   let dispatches = 0;
   const requests: string[] = [];
 
@@ -197,9 +199,9 @@ function fakeProvider(
         });
       }
       if (!runExists) return jsonResponse({ total_count: 0, workflow_runs: [] });
-      const status = options.hang ? 'in_progress' : 'completed';
-      const conclusion = options.hang ? null : outcome === 'RECOVERED' ? 'failure' : 'success';
-      if (!options.hang && !options.inconsistentFinal) {
+      const status = hang ? 'in_progress' : 'completed';
+      const conclusion = hang ? null : outcome === 'RECOVERED' ? 'failure' : 'success';
+      if (!hang && !options.inconsistentFinal) {
         currentSha = outcome === 'RECOVERED' ? PREVIOUS_SHA : RELEASE_SHA;
         ready = !options.unhealthyBefore;
       }
@@ -212,8 +214,7 @@ function fakeProvider(
       });
     }
     if (url.pathname.endsWith(`/actions/runs/${RUN_ID}`)) {
-      if (options.hang)
-        return jsonResponse(workflowRun({ status: 'in_progress', conclusion: null }));
+      if (hang) return jsonResponse(workflowRun({ status: 'in_progress', conclusion: null }));
       return jsonResponse(
         workflowRun({ conclusion: outcome === 'RECOVERED' ? 'failure' : 'success' }),
       );
@@ -234,6 +235,11 @@ function fakeProvider(
       return dispatches;
     },
     requests,
+    finish() {
+      hang = false;
+      currentSha = outcome === 'RECOVERED' ? PREVIOUS_SHA : RELEASE_SHA;
+      ready = true;
+    },
   };
 }
 
@@ -416,6 +422,31 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     expect(receipt.status).toBe('PARTIAL');
     expect(receipt.externalId).toBe(String(RUN_ID));
     expect(receipt.metadata.deploymentOutcome).toBe('UNKNOWN');
+  });
+
+  it('automatically reconciles a workflow that finishes after the adapter deadline without redispatch', async () => {
+    const provider = fakeProvider({ hang: true });
+    const instance = adapter(provider, 25);
+    const initial = await instance.execute(request());
+
+    expect(provider.dispatches).toBe(1);
+    expect(initial.status).toBe('PARTIAL');
+    expect(initial.metadata.deploymentOutcome).toBe('UNKNOWN');
+    expect(initial.metadata.reconciliationEligible).toBe(true);
+    expect(initial.metadata.previousSha).toBe(PREVIOUS_SHA);
+
+    provider.finish();
+    const reconciled = await instance.reconcile(request(), {
+      expectedRunId: RUN_ID,
+      previousSha: PREVIOUS_SHA,
+      stagingRuntimeUrl: 'https://staging.example',
+    });
+
+    expect(provider.dispatches).toBe(1);
+    expect(reconciled.status).toBe('SUCCEEDED');
+    expect(reconciled.metadata.deploymentOutcome).toBe('DEPLOYED');
+    expect(reconciled.metadata.previousSha).toBe(PREVIOUS_SHA);
+    expect(reconciled.metadata.verifiedSha).toBe(RELEASE_SHA);
   });
 
   it('does not mutate when staging is unhealthy before dispatch', async () => {

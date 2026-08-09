@@ -73,7 +73,7 @@ function receipt(
       workflowPath: '.github/workflows/mcf-runtime-staging-deploy.yml',
       workflowRunId: RUN_ID,
       workflowRunUrl: `https://github.com/${REPOSITORY}/actions/runs/${RUN_ID}`,
-      workflowDisplayTitle: `MCF staging deploy ${KEY} ${RELEASE_SHA}`,
+      workflowDisplayTitle: `MCF staging deploy ${KEY} ${RELEASE_SHA} ${context.executionContext.missionId} ${context.executionContext.phaseId}`,
       workflowEvent: 'workflow_dispatch',
       workflowStatus: 'completed',
       workflowConclusion: conclusion,

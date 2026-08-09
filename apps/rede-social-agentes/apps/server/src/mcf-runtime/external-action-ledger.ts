@@ -28,7 +28,7 @@ interface IdempotencyRow extends AttemptRow {
   idempotencyFingerprint: string | null;
 }
 
-type ExternalAttemptStatus =
+export type ExternalAttemptStatus =
   | 'ALLOWED'
   | 'EXECUTING'
   | 'EXECUTED'
@@ -37,6 +37,27 @@ type ExternalAttemptStatus =
   | 'EVIDENCE_VALIDATED'
   | 'EVIDENCE_REJECTED'
   | 'ABANDONED';
+
+export interface StagingDeployReconciliationAttempt {
+  attemptId: string;
+  status: ExternalAttemptStatus;
+  expectedMissionVersion: number;
+  agentId: string;
+  skillId: string;
+  resource: string;
+  previousSha: string | null;
+  reconciliationEligible: boolean;
+}
+
+interface StagingDeployReconciliationRow {
+  attemptId: string;
+  status: ExternalAttemptStatus;
+  expectedMissionVersion: number;
+  agentId: string;
+  skillId: string;
+  resource: string;
+  initialMetadata: unknown;
+}
 
 interface AttemptStateRow extends AttemptRow {
   status: ExternalAttemptStatus;
@@ -428,6 +449,67 @@ export class ExternalActionLedger {
     }
 
     return attemptId;
+  }
+
+  async loadStagingDeployReconciliationAttempt(
+    missionId: string,
+    phaseId: string,
+    idempotencyKey: string,
+  ): Promise<StagingDeployReconciliationAttempt | null> {
+    const result = await this.database.query<StagingDeployReconciliationRow>(
+      `select
+         a."attempt_id" as "attemptId",
+         a."status" as "status",
+         a."expected_mission_version" as "expectedMissionVersion",
+         a."agent_id" as "agentId",
+         a."skill_id" as "skillId",
+         a."resource" as "resource",
+         (
+           select r."metadata"
+           from "mcf_tool_receipts" r
+           where r."mission_id" = a."mission_id"
+             and r."phase_id" = a."phase_id"
+             and r."status" = 'PARTIAL'
+             and r."metadata"->>'reconciliationEligible' = 'true'
+             and r."metadata"->>'idempotencyKey' = $3
+           order by r."created_at" asc
+           limit 1
+         ) as "initialMetadata"
+       from "mcf_external_action_attempts" a
+       where a."mission_id" = $1
+         and a."phase_id" = $2
+         and a."adapter_id" = 'github-actions-staging-deploy-v1'
+         and a."provider" = 'github'
+         and a."operation" = 'deploy-staging'
+       limit 2`,
+      [missionId, phaseId, idempotencyKey],
+    );
+    if (result.rows.length === 0) return null;
+    if (result.rows.length !== 1) {
+      throw new ExternalActionAdapterError(
+        'LEDGER_FAILURE',
+        'staging deploy reconciliation found multiple durable attempts',
+        false,
+      );
+    }
+    const row = result.rows[0]!;
+    const metadata =
+      typeof row.initialMetadata === 'object' &&
+      row.initialMetadata !== null &&
+      !Array.isArray(row.initialMetadata)
+        ? (row.initialMetadata as Record<string, unknown>)
+        : null;
+    const previousSha = metadata?.previousSha;
+    return {
+      attemptId: row.attemptId,
+      status: row.status,
+      expectedMissionVersion: row.expectedMissionVersion,
+      agentId: row.agentId,
+      skillId: row.skillId,
+      resource: row.resource,
+      previousSha: typeof previousSha === 'string' ? previousSha : null,
+      reconciliationEligible: metadata?.reconciliationEligible === true,
+    };
   }
 
   async recordExecuting(attemptId: string): Promise<void> {

@@ -13,6 +13,7 @@ import { ExternalActionLedger } from './external-action-ledger.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
+import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
@@ -23,6 +24,8 @@ import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 import { SkillExecutor } from './skill-executor.js';
 import { SkillRegistryLoader } from './skill-registry.loader.js';
 import { SocialTimelineController } from './social-timeline.controller.js';
+import { McfStagingDeployCallbackController } from './staging-deploy-callback.controller.js';
+import { StagingDeployReconciliationService } from './staging-deploy-reconciliation.service.js';
 import { SocialTimelineService } from './social-timeline.service.js';
 
 @Module({
@@ -30,6 +33,7 @@ import { SocialTimelineService } from './social-timeline.service.js';
   controllers: [
     MissionRuntimeController,
     McfCiCallbackController,
+    McfStagingDeployCallbackController,
     ChatRuntimeBridgeController,
     SocialTimelineController,
   ],
@@ -52,6 +56,11 @@ import { SocialTimelineService } from './social-timeline.service.js';
     {
       provide: GitHubBranchPullRequestAdapter,
       useFactory: (evidence: EvidenceValidator) => new GitHubBranchPullRequestAdapter(evidence),
+      inject: [EvidenceValidator],
+    },
+    {
+      provide: GitHubActionsStagingDeployAdapter,
+      useFactory: (evidence: EvidenceValidator) => new GitHubActionsStagingDeployAdapter(evidence),
       inject: [EvidenceValidator],
     },
     {
@@ -115,6 +124,7 @@ import { SocialTimelineService } from './social-timeline.service.js';
         new ChatRuntimeBridgeService(runtime, planner),
       inject: [MissionRuntimeService, ChatMissionPlanner],
     },
+    StagingDeployReconciliationService,
     SocialTimelineService,
   ],
   exports: [MissionRuntimeService, ChatRuntimeBridgeService, SocialTimelineService],

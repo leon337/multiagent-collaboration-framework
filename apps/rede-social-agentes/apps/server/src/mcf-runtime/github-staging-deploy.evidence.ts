@@ -261,7 +261,9 @@ export function verifyGitHubStagingDeployEvidence(
   }
   verifyRunUrl(receipt.metadata.workflowRunUrl, repository, runId);
 
-  const expectedTitle = `MCF staging deploy ${idempotencyKey} ${releaseSha}`;
+  const governed = current?.executionContext;
+  if (!governed) reject('staging deployment workflow title requires governed execution context');
+  const expectedTitle = `MCF staging deploy ${idempotencyKey} ${releaseSha} ${governed.missionId} ${governed.phaseId}`;
   if (
     stringValue(
       receipt.metadata,

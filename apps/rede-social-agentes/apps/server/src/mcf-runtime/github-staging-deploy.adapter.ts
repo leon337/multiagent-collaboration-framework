@@ -83,8 +83,16 @@ interface DeployTarget {
   repository: string;
   releaseSha: string;
   idempotencyKey: string;
+  missionId: string;
+  phaseId: string;
   expectedRunTitle: string;
   runTitlePrefix: string;
+}
+
+export interface StagingDeployReconciliationOptions {
+  expectedRunId: number;
+  previousSha: string;
+  stagingRuntimeUrl: string;
 }
 
 export interface GitHubStagingDeployAdapterOptions {
@@ -232,7 +240,9 @@ function resolveTarget(request: ExternalActionRequest): DeployTarget {
     repository,
     releaseSha,
     idempotencyKey,
-    expectedRunTitle: `MCF staging deploy ${idempotencyKey} ${releaseSha}`,
+    missionId: request.context.missionId,
+    phaseId: request.context.phaseId,
+    expectedRunTitle: `MCF staging deploy ${idempotencyKey} ${releaseSha} ${request.context.missionId} ${request.context.phaseId}`,
     runTitlePrefix: `MCF staging deploy ${idempotencyKey} `,
   };
 }
@@ -625,6 +635,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     run: GitHubWorkflowRun | null,
     reason: string,
     budget: RequestBudget,
+    reconciliationEligible = false,
   ): McfToolReceipt {
     const context = request.context!;
     return this.evidence.createTrustedReceipt({
@@ -658,6 +669,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         nativeRollbackClaimed: false,
         resultStatus: 'UNKNOWN',
         unknownReason: reason,
+        reconciliationEligible,
         requestBudget: { requests: budget.requests, limit: MAX_REQUESTS },
         requiredPermissions: ['actions:read', 'actions:write', 'contents:read'],
         skillId: request.skill.skillId,
@@ -887,6 +899,133 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     return markerOutcome(jobs);
   }
 
+  async reconcile(
+    request: ExternalActionRequest,
+    options: StagingDeployReconciliationOptions,
+  ): Promise<McfToolReceipt> {
+    const target = resolveTarget(request);
+    const previousSha = exactSha(options.previousSha, 'reconciliation previous SHA');
+    if (!Number.isSafeInteger(options.expectedRunId) || options.expectedRunId < 1) {
+      throw new ExternalActionAdapterError(
+        'INVALID_CONTEXT',
+        'reconciliation workflow run id must be a positive integer',
+        false,
+      );
+    }
+    const stagingRuntimeUrl = publicHttpsBaseUrl(options.stagingRuntimeUrl);
+    const deadlineAt = Date.now() + this.timeoutMs;
+    const budget: RequestBudget = { requests: 0 };
+    const before: StagingObservation = { commitSha: previousSha, ready: true, readyStatus: 200 };
+
+    let run: GitHubWorkflowRun | null;
+    try {
+      run = await this.findRun(target, deadlineAt, budget);
+    } catch (error) {
+      return this.unknownReceipt(
+        request,
+        target,
+        before,
+        null,
+        `automatic staging reconciliation could not identify a unique run: ${error instanceof Error ? error.message : 'unknown run lookup error'}`,
+        budget,
+        true,
+      );
+    }
+    if (!run || run.id !== options.expectedRunId || run.status.toLowerCase() !== 'completed') {
+      return this.unknownReceipt(
+        request,
+        target,
+        before,
+        run,
+        'automatic staging reconciliation did not observe the exact completed workflow run',
+        budget,
+        true,
+      );
+    }
+
+    const conclusion = normalizedConclusion(run.conclusion);
+    if (!conclusion) {
+      return this.unknownReceipt(
+        request,
+        target,
+        before,
+        run,
+        'automatic staging reconciliation observed an unsupported workflow conclusion',
+        budget,
+        true,
+      );
+    }
+
+    let outcome: DeploymentOutcome | null;
+    try {
+      outcome = await this.readMarkerOutcome(target, run.id, deadlineAt, budget);
+    } catch (error) {
+      return this.unknownReceipt(
+        request,
+        target,
+        before,
+        run,
+        `automatic staging reconciliation could not verify the deployment marker: ${error instanceof Error ? error.message : 'unknown marker error'}`,
+        budget,
+        true,
+      );
+    }
+    if (!outcome) {
+      return this.unknownReceipt(
+        request,
+        target,
+        before,
+        run,
+        'automatic staging reconciliation requires exactly one trusted deployment result marker',
+        budget,
+        true,
+      );
+    }
+
+    let after: StagingObservation;
+    try {
+      after = await this.client.observeStaging(stagingRuntimeUrl, deadlineAt, budget);
+    } catch (error) {
+      return this.unknownReceipt(
+        request,
+        target,
+        before,
+        run,
+        `automatic staging reconciliation could not verify final staging state: ${error instanceof Error ? error.message : 'unknown staging observation error'}`,
+        budget,
+        true,
+      );
+    }
+
+    if (
+      (outcome === 'DEPLOYED' || outcome === 'NOOP') &&
+      conclusion === 'success' &&
+      after.ready &&
+      after.commitSha === target.releaseSha &&
+      (outcome !== 'NOOP' || previousSha === target.releaseSha)
+    ) {
+      return this.receipt(request, target, before, after, run, outcome, budget);
+    }
+    if (
+      outcome === 'RECOVERED' &&
+      conclusion === 'failure' &&
+      after.ready &&
+      previousSha !== target.releaseSha &&
+      after.commitSha === previousSha
+    ) {
+      return this.receipt(request, target, before, after, run, outcome, budget);
+    }
+    return this.unknownReceipt(
+      request,
+      target,
+      before,
+      run,
+      'automatic staging reconciliation found workflow/staging state inconsistency',
+      budget,
+      true,
+    );
+  }
+
   async execute(request: ExternalActionRequest): Promise<McfToolReceipt> {
     const target = resolveTarget(request);
     if (!this.stagingRuntimeUrl) {
@@ -1003,6 +1142,8 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
             inputs: {
               release_sha: target.releaseSha,
               request_id: target.idempotencyKey,
+              mission_id: target.missionId,
+              phase_id: target.phaseId,
             },
           },
         );
@@ -1020,6 +1161,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
           null,
           `workflow dispatch may have occurred but reconciliation failed: ${error instanceof Error ? error.message : 'unknown reconciliation error'}`,
           budget,
+          true,
         );
       }
       if (!run) {
@@ -1030,6 +1172,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
           null,
           'workflow dispatch could not be correlated before adapter deadline',
           budget,
+          true,
         );
       }
     }
@@ -1045,6 +1188,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         run,
         `workflow run could not be reconciled after external execution became possible: ${error instanceof Error ? error.message : 'unknown reconciliation error'}`,
         budget,
+        !runWasExisting,
       );
     }
     if (!completed) {
@@ -1055,6 +1199,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         run,
         'workflow run did not reach a terminal state before adapter deadline',
         budget,
+        !runWasExisting,
       );
     }
 
@@ -1067,6 +1212,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         completed,
         'workflow completed with unsupported conclusion',
         budget,
+        !runWasExisting,
       );
     }
 
@@ -1081,6 +1227,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         completed,
         `workflow result marker could not be verified: ${error instanceof Error ? error.message : 'unknown marker error'}`,
         budget,
+        !runWasExisting,
       );
     }
     if (!outcome) {
@@ -1091,6 +1238,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         completed,
         'workflow did not expose exactly one trusted deployment result marker',
         budget,
+        !runWasExisting,
       );
     }
 
@@ -1105,6 +1253,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         completed,
         `final staging state could not be verified: ${error instanceof Error ? error.message : 'unknown staging observation error'}`,
         budget,
+        !runWasExisting,
       );
     }
 
@@ -1116,6 +1265,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         completed,
         'existing workflow run was reconciled without durable proof of its original pre-deploy SHA',
         budget,
+        !runWasExisting,
       );
     }
 
