@@ -122,7 +122,11 @@ function createSettledScenario(
 function createUnknownScenario() {
   const mission = missionRecord('RECOVERING');
   const phase = phaseRecord('RECOVERING', false);
-  const completedMission = { ...mission, state: 'EXECUTING' as const, version: 9 };
+  const completedMission = {
+    ...mission,
+    state: 'EXECUTING' as const,
+    version: 9,
+  };
   const completedPhase = phaseRecord('COMPLETED', true);
   const completion = {
     duplicate: false,
@@ -254,7 +258,9 @@ describe('StagingDeployReconciliationService settled callbacks', () => {
 describe('StagingDeployReconciliationService durable completion ordering', () => {
   it('does not settle evidence when phase completion fails', async () => {
     const scenario = createUnknownScenario();
-    scenario.completePendingPhase.mockRejectedValueOnce(new Error('transient completion failure'));
+    scenario.completePendingPhase.mockRejectedValueOnce(
+      new Error('transient completion failure'),
+    );
 
     await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(
       'transient completion failure',
@@ -270,7 +276,9 @@ describe('StagingDeployReconciliationService durable completion ordering', () =>
     scenario.completePendingPhase
       .mockResolvedValueOnce(scenario.completion)
       .mockResolvedValueOnce({ ...scenario.completion, duplicate: true });
-    scenario.recordEvidenceValidated.mockRejectedValueOnce(new Error('ledger temporarily unavailable'));
+    scenario.recordEvidenceValidated.mockRejectedValueOnce(
+      new Error('ledger temporarily unavailable'),
+    );
 
     await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(
       'ledger temporarily unavailable',
