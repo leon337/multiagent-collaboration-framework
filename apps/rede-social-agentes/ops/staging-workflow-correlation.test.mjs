@@ -47,7 +47,7 @@ test('staging workflow executes the deploy protocol from its trusted control-pla
   assert.ok(!workflow.includes('run: node apps/rede-social-agentes/ops/render-staging-deploy.mjs'));
 });
 
-test('staging workflow completion triggers authenticated runtime reconciliation', async () => {
+test('staging workflow completion reconciles through a stable control plane', async () => {
   const callbackPath = resolve(
     process.cwd(),
     '../../.github/workflows/mcf-runtime-staging-deploy-callback.yml',
@@ -56,6 +56,15 @@ test('staging workflow completion triggers authenticated runtime reconciliation'
   assert.ok(callback.includes('workflow_run:'));
   assert.ok(callback.includes('MCF Runtime Staging Deploy'));
   assert.ok(callback.includes('MCF_RUNTIME_TOKEN'));
-  assert.ok(callback.includes('/v1/mcf/callbacks/staging-deploy'));
+  assert.ok(callback.includes('MCF_CONTROL_PLANE_URL: ${{ secrets.MCF_CONTROL_PLANE_URL }}'));
+  assert.ok(callback.includes('MCF_STAGING_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}'));
+  assert.ok(callback.includes('test "$MCF_CONTROL_PLANE_URL" != "$MCF_STAGING_RUNTIME_URL"'));
+  assert.ok(
+    callback.includes(
+      'endpoint="${MCF_CONTROL_PLANE_URL%/}/v1/mcf/callbacks/staging-deploy"',
+    ),
+  );
+  assert.ok(callback.includes('--arg stagingRuntimeUrl "$MCF_STAGING_RUNTIME_URL"'));
+  assert.ok(!callback.includes('endpoint="${MCF_STAGING_RUNTIME_URL%/}/'));
   assert.ok(!callback.includes('RENDER_DEPLOY_HOOK_URL'));
 });
