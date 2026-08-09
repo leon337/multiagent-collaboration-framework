@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 7
     env:
-      MCF_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
+      MCF_CONTROL_PLANE_URL: ${{ secrets.MCF_CONTROL_PLANE_URL }}
+      MCF_STAGING_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
       MCF_RUNTIME_TOKEN: ${{ secrets.MCF_RUNTIME_TOKEN }}
       SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
       SOURCE_TITLE: ${{ github.event.workflow_run.display_title }}
@@ -29,8 +30,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$MCF_RUNTIME_URL"
+          test -n "$MCF_CONTROL_PLANE_URL"
+          test -n "$MCF_STAGING_RUNTIME_URL"
           test -n "$MCF_RUNTIME_TOKEN"
+          test "$MCF_CONTROL_PLANE_URL" != "$MCF_STAGING_RUNTIME_URL"
           read -r word1 word2 word3 request_id release_sha mission_id phase_id extra <<<"$SOURCE_TITLE"
           test "$word1 $word2 $word3" = "MCF staging deploy"
           test -z "${extra:-}"
@@ -52,7 +55,7 @@ jobs:
           PHASE_ID: ${{ steps.correlation.outputs.phase_id }}
         run: |
           set -euo pipefail
-          endpoint="${MCF_RUNTIME_URL%/}/v1/mcf/callbacks/staging-deploy"
+          endpoint="${MCF_CONTROL_PLANE_URL%/}/v1/mcf/callbacks/staging-deploy"
           payload=$(jq -cn \
             --arg missionId "$MISSION_ID" \
             --arg phaseId "$PHASE_ID" \
@@ -61,7 +64,7 @@ jobs:
             --arg workflowRunId "$SOURCE_RUN_ID" \
             --arg repository "$SOURCE_REPOSITORY" \
             --arg completedAt "$SOURCE_COMPLETED_AT" \
-            --arg stagingRuntimeUrl "$MCF_RUNTIME_URL" \
+            --arg stagingRuntimeUrl "$MCF_STAGING_RUNTIME_URL" \
             '{missionId:$missionId,phaseId:$phaseId,requestId:$requestId,releaseSha:$releaseSha,workflowRunId:$workflowRunId,repository:$repository,completedAt:$completedAt,stagingRuntimeUrl:$stagingRuntimeUrl}')
           response=$(mktemp)
           for attempt in $(seq 1 60); do
