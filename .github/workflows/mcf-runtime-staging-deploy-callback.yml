@@ -33,7 +33,9 @@ jobs:
           test -n "$MCF_CONTROL_PLANE_URL"
           test -n "$MCF_STAGING_RUNTIME_URL"
           test -n "$MCF_RUNTIME_TOKEN"
-          test "$MCF_CONTROL_PLANE_URL" != "$MCF_STAGING_RUNTIME_URL"
+          control_plane_url="${MCF_CONTROL_PLANE_URL%/}"
+          staging_runtime_url="${MCF_STAGING_RUNTIME_URL%/}"
+          test "$control_plane_url" != "$staging_runtime_url"
           read -r word1 word2 word3 request_id release_sha mission_id phase_id extra <<<"$SOURCE_TITLE"
           test "$word1 $word2 $word3" = "MCF staging deploy"
           test -z "${extra:-}"
@@ -55,7 +57,10 @@ jobs:
           PHASE_ID: ${{ steps.correlation.outputs.phase_id }}
         run: |
           set -euo pipefail
-          endpoint="${MCF_CONTROL_PLANE_URL%/}/v1/mcf/callbacks/staging-deploy"
+          control_plane_url="${MCF_CONTROL_PLANE_URL%/}"
+          staging_runtime_url="${MCF_STAGING_RUNTIME_URL%/}"
+          test "$control_plane_url" != "$staging_runtime_url"
+          endpoint="${control_plane_url}/v1/mcf/callbacks/staging-deploy"
           payload=$(jq -cn \
             --arg missionId "$MISSION_ID" \
             --arg phaseId "$PHASE_ID" \
@@ -64,7 +69,7 @@ jobs:
             --arg workflowRunId "$SOURCE_RUN_ID" \
             --arg repository "$SOURCE_REPOSITORY" \
             --arg completedAt "$SOURCE_COMPLETED_AT" \
-            --arg stagingRuntimeUrl "$MCF_STAGING_RUNTIME_URL" \
+            --arg stagingRuntimeUrl "$staging_runtime_url" \
             '{missionId:$missionId,phaseId:$phaseId,requestId:$requestId,releaseSha:$releaseSha,workflowRunId:$workflowRunId,repository:$repository,completedAt:$completedAt,stagingRuntimeUrl:$stagingRuntimeUrl}')
           response=$(mktemp)
           for attempt in $(seq 1 60); do
