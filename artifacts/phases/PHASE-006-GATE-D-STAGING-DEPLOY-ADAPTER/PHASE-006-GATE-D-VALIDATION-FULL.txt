@@ -1,6 +1,6 @@
 PHASE-006-GATE-D FULL VALIDATION
 
-STATE: CANDIDATE_UNDER_VALIDATION
+STATE: PRF_MATERIALIZATION_PENDING_FINAL_EXACT_HEAD_GATE
 
 Implemented evidence:
 - exact SHA validation and staging-only permission boundary;
@@ -15,20 +15,31 @@ Implemented evidence:
 - signed receipt plus semantic evidence binding;
 - ledger persistence/reconciliation paths;
 - provider-only DI for callback reconciliation while live AdapterRegistry remains disabled;
-- targeted remediation validation: 31/31 Vitest cases and 2/2 workflow-correlation cases passed before materialization.
+- stale callback and durable-settlement boundaries covered by regressions;
+- current MCF protocol 1.1 governance reconciliation applied without retroactive participation claims.
 
-Recent canonical CI:
-- Rede Social Foundation run 31292069913 on cc68fc87660674bc35ccd90089323c9241efe63f: PASS through format, lint, typecheck, migrations twice, tests and build.
-- Rede Social Container Smoke run 31292069908 on the same SHA: FAIL because the reconciliation service could not resolve GitHubActionsStagingDeployAdapter.
-- The DI defect was remediated after that run by registering the staging adapter as an internal provider only, while keeping it out of AdapterRegistry.
-- Because the remediation changed HEAD, previous CI cannot close the final gate.
+Latest exact-head gate completed before this PRF finalization commit:
+- head: 51e5b9b1a503221d31053a30409ae9408ef75949
+- Rede Social Foundation 31409337150: PASS complete;
+- Rede Social Container Smoke 31409326589: PASS;
+- Vitest artifact 9070945331;
+- digest sha256:606b23d7946deaae565c7a0af36c05d720b434bb433ece373b35ad15b1b479c7.
 
-Required evidence still pending on the final PRF-synchronized HEAD:
-- full Foundation PASS;
-- Container Smoke PASS;
-- independent Codex review anchored to the exact HEAD;
-- zero active P0/P1/P2;
-- LÉO gate decision.
+Provenance boundary:
+- 51e5b9b1... is evidence for the pre-finalization PRF revision only;
+- the PRF finalization itself creates a new HEAD;
+- exact-head CI/review for that new HEAD is intentionally external evidence on PR #84 / GitHub Actions because a commit cannot embed its own future CI or review identifiers without changing its SHA;
+- Gate D remains open until Foundation, Container Smoke and independent review are clean on the final materialized HEAD with zero active P0/P1/P2.
+
+Governance checks for cycle 2:
+- retake source-of-truth: reconciled by Miriam role;
+- dynamic agent selection: applied;
+- autonomy/tool-calling controls: Augusto, Beatriz and Julia applicable;
+- MCF-DEPLOY-VALIDATE owners: Bruno and Gabriel represented;
+- PRF consistency: Carmem review in progress;
+- HDF TEAM_FIRST: preserved, human_operator_actions = 0;
+- Emily audit: pending final exact-head evidence;
+- LEO gate: pending.
 
 Operational constraints remain:
 - live registry: DISABLED;
