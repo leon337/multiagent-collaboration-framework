@@ -4,6 +4,7 @@ import type { EvidenceValidator } from './evidence-validator.js';
 import {
   ExternalActionAdapterError,
   type ExternalActionAdapter,
+  type ExternalActionMutationBoundary,
   type ExternalActionRequest,
 } from './external-action.contracts.js';
 import { EXTERNAL_ACTION_LEASE_MS } from './external-action-reservation.js';
@@ -100,6 +101,7 @@ export interface GitHubStagingDeployAdapterOptions {
   timeoutMs?: number | undefined;
   pollIntervalMs?: number | undefined;
   sleepImpl?: SleepLike | undefined;
+  mutationBoundary?: ExternalActionMutationBoundary | undefined;
 }
 
 export const GITHUB_STAGING_DEPLOY_TIMEOUT_MS = 8 * 60_000;
@@ -594,6 +596,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
   private readonly timeoutMs: number;
   private readonly pollIntervalMs: number;
   private readonly sleepImpl: SleepLike;
+  private readonly defaultMutationBoundary: ExternalActionMutationBoundary | undefined;
 
   constructor(
     private readonly evidence: EvidenceValidator,
@@ -605,6 +608,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     this.timeoutMs = options.timeoutMs ?? GITHUB_STAGING_DEPLOY_TIMEOUT_MS;
     this.pollIntervalMs = options.pollIntervalMs ?? GITHUB_STAGING_DEPLOY_POLL_INTERVAL_MS;
     this.sleepImpl = options.sleepImpl ?? sleep;
+    this.defaultMutationBoundary = options.mutationBoundary;
 
     if (
       !Number.isInteger(this.timeoutMs) ||
@@ -1026,7 +1030,10 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     );
   }
 
-  async execute(request: ExternalActionRequest): Promise<McfToolReceipt> {
+  async execute(
+    request: ExternalActionRequest,
+    mutationBoundary?: ExternalActionMutationBoundary,
+  ): Promise<McfToolReceipt> {
     const target = resolveTarget(request);
     if (!this.stagingRuntimeUrl) {
       throw new ExternalActionAdapterError(
@@ -1131,6 +1138,22 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
       throw error;
     }
     if (!run) {
+      const durableBoundary = mutationBoundary ?? this.defaultMutationBoundary;
+      if (!durableBoundary) {
+        throw new ExternalActionAdapterError(
+          'LEDGER_FAILURE',
+          'staging workflow dispatch requires a durable reconciliation boundary',
+          false,
+        );
+      }
+      await durableBoundary.persistReconciliationMetadata({
+        previousSha: before.commitSha,
+        releaseSha: target.releaseSha,
+        idempotencyKey: target.idempotencyKey,
+        repository: target.repository,
+        reconciliationEligible: true,
+      });
+
       try {
         await this.client.githubVoid(
           'POST',

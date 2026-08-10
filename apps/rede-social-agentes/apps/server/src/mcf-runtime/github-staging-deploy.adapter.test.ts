@@ -252,6 +252,9 @@ function adapter(provider: ReturnType<typeof fakeProvider>, timeoutMs = 200) {
       timeoutMs,
       pollIntervalMs: 2,
       sleepImpl: async () => new Promise((resolve) => setTimeout(resolve, 1)),
+      mutationBoundary: {
+        persistReconciliationMetadata: async () => {},
+      },
     },
   );
 }
@@ -275,6 +278,64 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     expect(receipt.metadata.stagingReady).toBe(true);
     expect(receipt.metadata.nativeRollbackClaimed).toBe(false);
     expect(JSON.stringify(receipt.metadata)).not.toContain('RENDER_DEPLOY_HOOK_URL');
+  });
+
+  it('persists reconciliation metadata before workflow dispatch', async () => {
+    const provider = fakeProvider();
+    const persisted: Record<string, unknown>[] = [];
+    const gateD = new GitHubActionsStagingDeployAdapter(
+      new EvidenceValidator(),
+      new GitHubStagingDeployClient(provider.fetcher, 'test-token'),
+      {
+        stagingRuntimeUrl: 'https://staging.example',
+        timeoutMs: 200,
+        pollIntervalMs: 2,
+        sleepImpl: async () => new Promise((resolve) => setTimeout(resolve, 1)),
+      },
+    );
+
+    const receipt = await gateD.execute(request(), {
+      persistReconciliationMetadata: async (metadata) => {
+        expect(provider.dispatches).toBe(0);
+        persisted.push(metadata);
+      },
+    });
+
+    expect(provider.dispatches).toBe(1);
+    expect(receipt.status).toBe('SUCCEEDED');
+    expect(persisted).toEqual([
+      {
+        previousSha: PREVIOUS_SHA,
+        releaseSha: RELEASE_SHA,
+        idempotencyKey: KEY,
+        repository: REPOSITORY,
+        reconciliationEligible: true,
+      },
+    ]);
+  });
+
+  it('blocks workflow dispatch when reconciliation metadata cannot be persisted', async () => {
+    const provider = fakeProvider();
+    const gateD = new GitHubActionsStagingDeployAdapter(
+      new EvidenceValidator(),
+      new GitHubStagingDeployClient(provider.fetcher, 'test-token'),
+      {
+        stagingRuntimeUrl: 'https://staging.example',
+        timeoutMs: 200,
+        pollIntervalMs: 2,
+        sleepImpl: async () => new Promise((resolve) => setTimeout(resolve, 1)),
+      },
+    );
+
+    await expect(
+      gateD.execute(request(), {
+        persistReconciliationMetadata: async () => {
+          throw new Error('ledger unavailable');
+        },
+      }),
+    ).rejects.toThrow(/ledger unavailable/u);
+    expect(provider.dispatches).toBe(0);
+    expect(provider.requests.some((entry) => entry.startsWith('POST '))).toBe(false);
   });
 
   it('replays an existing correlated NOOP run without dispatching a second workflow', async () => {

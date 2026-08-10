@@ -6,6 +6,7 @@ import {
   ExternalActionAdapterError,
   type ExternalActionDispatchResult,
   type ExternalActionFailure,
+  type ExternalActionMutationBoundary,
   type ExternalActionRequest,
 } from './external-action.contracts.js';
 import type { ExternalActionLedger } from './external-action-ledger.js';
@@ -100,7 +101,8 @@ export class ExternalActionDispatcher {
       };
     }
 
-    if (durableExecutionBoundaryAdapters.has(adapter.adapterId)) {
+    const durableBoundary = durableExecutionBoundaryAdapters.has(adapter.adapterId);
+    if (durableBoundary) {
       // Establish a durable boundary before adapters that can trigger an
       // externally mutating workflow are allowed to execute. An expired
       // EXECUTING attempt is reconciled as UNKNOWN, never blindly retried.
@@ -123,9 +125,17 @@ export class ExternalActionDispatcher {
       }
     }
 
+    const mutationBoundary: ExternalActionMutationBoundary | undefined = durableBoundary
+      ? {
+          persistReconciliationMetadata: async (metadata) => {
+            await this.ledger.recordReconciliationPrepared(attemptId, metadata);
+          },
+        }
+      : undefined;
+
     let receipt: McfToolReceipt;
     try {
-      receipt = await adapter.execute(request);
+      receipt = await adapter.execute(request, mutationBoundary);
     } catch (error) {
       const failure = failureFromError(error);
       try {

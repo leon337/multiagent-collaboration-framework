@@ -37,10 +37,17 @@ export interface ExternalActionFailure {
   statusCode: number | null;
 }
 
+export interface ExternalActionMutationBoundary {
+  persistReconciliationMetadata(metadata: Record<string, unknown>): Promise<void>;
+}
+
 export interface ExternalActionAdapter {
   readonly adapterId: string;
   supports(request: ExternalActionRequest): boolean;
-  execute(request: ExternalActionRequest): Promise<McfToolReceipt>;
+  execute(
+    request: ExternalActionRequest,
+    mutationBoundary?: ExternalActionMutationBoundary,
+  ): Promise<McfToolReceipt>;
 }
 
 export type ExternalActionDispatchResult =
