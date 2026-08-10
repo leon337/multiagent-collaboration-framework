@@ -1,31 +1,38 @@
 PHASE-006-GATE-D SMOKE
 
-STATE: CYCLE_4_MATERIALIZED_HEAD_EXTERNAL_EXACT_GATE
+STATE: REAL_STAGING_PROOF_PASS_CLOSURE_HEAD_REVALIDATION_PENDING
 
-Historical defect:
-- Container Smoke 31292069908 @ cc68fc87660674bc35ccd90089323c9241efe63f: FAIL
-- root cause: Nest could not resolve GitHubActionsStagingDeployAdapter for StagingDeployReconciliationService.
+Technical candidate smoke:
+- release SHA: c787179e126a93af96dd67604cb24f91235c4320
+- Container Smoke 31431820709: PASS
+- Foundation 31431820713: PASS
 
-Remediation:
-- GitHubActionsStagingDeployAdapter registered as an internal Nest provider;
-- staging adapter remains excluded from the live AdapterRegistry;
-- provider-boundary regression distinguishes DI availability from live activation.
+Real staging proof:
+- helper run: 31438190773 PASS
+- staging workflow: 31438199266 PASS
+- exact release: c787179e126a93af96dd67604cb24f91235c4320
+- result marker: DEPLOYED
+- NOOP: skipped
+- RECOVERED: skipped
+- previous staging SHA: 0a7909b71e1944d1062e8ea1ab13a4bee4abbf88
+- human operator actions: 0
 
-Cycle 4 pre-materialization exact-head smoke:
-- head: 42eb1e44d3c4344ec42865223421dd459c9cadc3
-- Container Smoke run: 31429703721
-- result: PASS
-- same-head Foundation run: 31429703728 PASS
-- Vitest artifact: 9078625710
-- digest: sha256:df34046df550fc6334ec965283099fec96f8e41aefc6fb71545277da784b613d
+Semantic smoke:
+- protected configuration validation: PASS
+- trusted control-plane checkout: PASS
+- exact release checkout: PASS
+- rollout compose validation: PASS
+- container smoke inside real staging workflow: PASS
+- formatting/lint/typecheck/migrations/tests/build: PASS
+- deploy exact revision and verify: PASS
+- exact DEPLOYED marker: PASS
 
-Current evidence boundary:
-- 42eb1e44... is the last functional-code HEAD before Cycle 4 PRF materialization;
-- every PRF materialization changes HEAD and therefore requires a new Container Smoke PASS on that exact SHA;
-- that exact-head run is recorded externally on GitHub Actions / PR #84 and checked by Renato before the final gate;
-- no previous run is treated as proof for a different SHA.
+Closure materialization:
+- this file and the closeout docs change PR HEAD after the functional proof;
+- a new Container Smoke + Foundation run on the closure HEAD is required externally;
+- no earlier run is promoted to the new SHA.
 
-Production remains BLOCKED.
-Real provider dispatch remains NOT_AUTHORIZED.
-Live AdapterRegistry remains DISABLED.
-Human operator actions remain 0.
+Constraints:
+- live AdapterRegistry: DISABLED
+- production: BLOCKED
+- merge: separate integration gate

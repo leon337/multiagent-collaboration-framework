@@ -1,49 +1,40 @@
 PHASE-006-GATE-D VALIDATION
 
-STATE: CYCLE_4_MATERIALIZED_HEAD_EXTERNAL_EXACT_GATE
+STATE: CLOSURE_MATERIALIZATION_PENDING_EXACT_HEAD_REVALIDATION
 
-Implementation:
-- adapter contract/runtime: APPLIED
-- async workflow reconciliation: APPLIED
-- trusted control-plane deploy driver: APPLIED
-- receipt/evidence/ledger binding: APPLIED
-- provider available for callback: APPLIED
-- durable staging origin binding: APPLIED
-- staging provider/operation canonicalization: APPLIED
-- live AdapterRegistry activation: DISABLED
+Functional candidate:
+- release SHA: c787179e126a93af96dd67604cb24f91235c4320
+- Foundation 31431820713: PASS
+- Container Smoke 31431820709: PASS
+- Vitest artifact 9079437876
+- artifact digest: sha256:3cf0373f66f71bc41681d3a1bfbe6fb4d1c448c0c97c694cda01de617b31dd71
+- independent Codex review 5246038796: NO_MAJOR_ISSUES
+- active P0/P1/P2 at gate: 0/0/0
 
-Cycle 4 pre-materialization technical evidence:
-- head: 42eb1e44d3c4344ec42865223421dd459c9cadc3
-- Foundation 31429703728: PASS complete
-- Container Smoke 31429703721: PASS
-- Vitest artifact 9078625710
-- artifact digest: sha256:df34046df550fc6334ec965283099fec96f8e41aefc6fb71545277da784b613d
-- Codex external review comment 5245728332: no major issues on reviewed commit 42eb1e44d3
+Controlled real staging proof:
+- helper run 31438190773: PASS
+- staging run 31438199266: PASS
+- event: workflow_dispatch
+- outcome: DEPLOYED
+- verified release: c787179e126a93af96dd67604cb24f91235c4320
+- previous SHA: 0a7909b71e1944d1062e8ea1ab13a4bee4abbf88
+- recovery used: no
+- human operator actions: 0
 
-Cycle 4 evidence boundary:
-- 42eb1e44... is the last functional-code HEAD before Cycle 4 PRF materialization;
-- documentation materialization creates a different HEAD and never inherits gate PASS from 42eb1e44...;
-- exact-head CI, Container Smoke and independent review for the current materialized HEAD are external evidence on PR #84 / GitHub Actions;
-- this file intentionally does not embed future CI/review identifiers for the commit containing itself;
-- no PASS from an earlier SHA may be promoted to a later SHA.
+Post-proof controls:
+- Renato C4-016: PASS
+- Augusto C4-017: PASS
+- Julia C4-018: PASS
+- Emily C4-019: PASS
+- Leo C4-020: APROVAR / Gate D PASS
 
-Current materialized-HEAD checks:
-- documentation: CYCLE_4_RECONCILED
-- format: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
-- lint: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
-- typecheck: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
-- migrations_twice: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
-- tests: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
-- build: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
-- container_smoke: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
-- independent_review: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
-- active_p0_p1_p2: EXTERNAL_EXACT_HEAD_REVIEW_REQUIRED
-- Augusto_cycle4_trace_audit: PENDING
-- Julia_class_c_governance: PENDING
-- Emily_final_audit: PENDING
-- Leo_gate: PENDING
+Closure materialization:
+- MCF-DEC-061 added
+- PRF synchronized through C4-020
+- exact closure HEAD validation: EXTERNAL_EXACT_HEAD_REQUIRED
+- closure HEAD independent review: EXTERNAL_EXACT_HEAD_REQUIRED
 
-Provider live: DISABLED
-Real provider dispatch: NOT_AUTHORIZED
-Production: BLOCKED
-Human operator actions: 0
+Constraints:
+- live registry: DISABLED
+- production: BLOCKED
+- merge: requires separate integration authorization

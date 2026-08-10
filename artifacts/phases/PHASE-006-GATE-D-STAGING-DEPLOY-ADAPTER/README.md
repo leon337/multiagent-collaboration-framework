@@ -1,65 +1,66 @@
-# PHASE-006-GATE-D-STAGING-DEPLOY-ADAPTER
+# PHASE-006-GATE-D — Staging Deploy Adapter
 
-PRF do adapter formal de deploy verificado para staging do MCF-RUNTIME-006.
+## Resultado técnico
 
-## Estado
-`CYCLE_4_GOVERNANCE_RECOVERY_PRF_MATERIALIZATION`
+Gate D atingiu `PASS` no Cycle 4 após implementação, exact-head CI/review, uma prova real
+controlada em staging e os controles obrigatórios pós-prova.
 
-O código funcional está congelado neste recovery documental. O staging adapter
-permanece fora do live `AdapterRegistry`; dispatch real não está autorizado e
-produção permanece bloqueada.
+Release funcional comprovado:
+`c787179e126a93af96dd67604cb24f91235c4320`.
 
-## Ciclos e evidência
+Prova real:
+- helper one-shot `31438190773`: PASS;
+- staging `31438199266`: PASS;
+- resultado: `DEPLOYED`;
+- `human_operator_actions=0`.
 
-- **Cycle 1:** execução técnica histórica preservada.
-- **Cycle 2:** reconstrução posterior; não vale como ESEV primária.
-- **Cycle 3:** execução contemporânea real, porém Augusto C3-021 rejeitou o HDF
-  final por handoff para reviewer externo/ator composto. O histórico não é reescrito.
-- **Cycle 4:** novo boundary contemporâneo para PRF, validação e gates finais.
+Léo C4-020 decidiu `APROVAR`, `gate_d: PASS` e `real_staging_proof: PASS`.
 
-`PHASE-006-GATE-D-CYCLE-3-ESEV-RECEIPTS.md` indexa o histórico C3 e explicita
-quais registros não servem como HDF final.
+## Descoberta formalizada
 
-`PHASE-006-GATE-D-CYCLE-4-ESEV-RECEIPTS.md` indexa somente receipts C4 que já
-existiam antes de sua materialização. Comentários do PR #84 permanecem a fonte
-primária ESEV.
+A recuperação TEAM_FIRST que permitiu executar `workflow_dispatch` sem token pessoal de
+Leandro foi transformada em decisão versionada:
 
-## Pre-documentation exact-head evidence
+`docs/decisions/MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md`
 
-HEAD `42eb1e44d3c4344ec42865223421dd459c9cadc3`:
+## Ordem de leitura
 
-- Foundation `31429703728`: PASS;
-- Container Smoke `31429703721`: PASS;
-- artifact `9078625710`;
-- digest `sha256:df34046df550fc6334ec965283099fec96f8e41aefc6fb71545277da784b613d`;
-- Codex comment `5245728332`: no major issues on `42eb1e44d3`.
+1. `PHASE-006-GATE-D-PLAN.md`
+2. `PHASE-006-GATE-D-REPORT.md`
+3. `PHASE-006-GATE-D-CYCLE-2-TRACE.yaml` — histórico retrospectivo, não ESEV primária
+4. `PHASE-006-GATE-D-CYCLE-3-ESEV-RECEIPTS.md`
+5. `PHASE-006-GATE-D-CYCLE-4-ESEV-RECEIPTS.md`
+6. `PHASE-006-GATE-D-DECISIONS.md`
+7. `PHASE-006-GATE-D-VALIDATION.txt`
+8. `PHASE-006-GATE-D-VALIDATION-FULL.txt`
+9. `PHASE-006-GATE-D-SMOKE.txt`
+10. `PHASE-006-GATE-D-CHECKPOINT.yaml`
+11. `PHASE-006-GATE-D-ARTIFACT-MANIFEST.sha256`
 
-A escrita deste PRF cria novo HEAD. Essa evidência não será promovida como gate
-do novo SHA; Renato/Augusto deverão produzir evidência exata posterior.
+## Evidência primária
 
-## Regras preservadas
+A ESEV contemporânea do Cycle 4 permanece nos comentários timestamped do PR #84. Este PRF
+é a materialização transferível do estado e não substitui a cronologia primária.
 
-- staging only;
-- production blocked;
-- Render secret permanece no GitHub Actions;
-- live registry desativado para staging adapter;
-- sem prova real antes da decisão de Léo;
-- HDF TEAM_FIRST;
-- `human_operator_actions: 0`;
-- seleção dinâmica, sem participação decorativa;
-- Codex é ferramenta/evidência, nunca target de handoff;
-- CI/review vinculados ao SHA exato.
+## Boundary desta materialização
 
-## Arquivos
+O commit que contém este closeout é posterior ao release funcional `c787179e...`.
+Por isso, antes do closeout terminal, o novo HEAD deve:
 
-- `PHASE-006-GATE-D-PLAN.md`
-- `PHASE-006-GATE-D-DECISIONS.md`
-- `PHASE-006-GATE-D-REPORT.md`
-- `PHASE-006-GATE-D-CYCLE-2-TRACE.yaml`
-- `PHASE-006-GATE-D-CYCLE-3-ESEV-RECEIPTS.md`
-- `PHASE-006-GATE-D-CYCLE-4-ESEV-RECEIPTS.md`
-- `PHASE-006-GATE-D-VALIDATION.txt`
-- `PHASE-006-GATE-D-VALIDATION-FULL.txt`
-- `PHASE-006-GATE-D-SMOKE.txt`
-- `PHASE-006-GATE-D-CHECKPOINT.yaml`
-- `PHASE-006-GATE-D-ARTIFACT-MANIFEST.sha256`
+- provar delta exclusivamente documental;
+- passar Foundation;
+- passar Container Smoke;
+- receber revisão independente limpa no SHA exato.
+
+A prova real de staging continua vinculada ao release funcional que realmente foi
+implantado e verificado.
+
+## Restrições
+
+```yaml
+live_registry: DISABLED
+production: BLOCKED
+merge: REQUIRES_SEPARATE_INTEGRATION_AUTHORIZATION
+human_operator_actions: 0
+human_gate_leandro: NOT_REQUIRED
+```

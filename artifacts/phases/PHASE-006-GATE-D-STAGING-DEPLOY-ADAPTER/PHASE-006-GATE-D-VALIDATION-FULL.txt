@@ -1,55 +1,84 @@
 PHASE-006-GATE-D FULL VALIDATION
 
-STATE: CYCLE_4_MATERIALIZED_HEAD_EXTERNAL_EXACT_GATE
+STATE: CLOSURE_MATERIALIZATION_PENDING_EXACT_HEAD_REVALIDATION
 
-Implemented evidence:
-- exact SHA validation and staging-only permission boundary;
-- deterministic request/release/mission/phase correlation;
-- durable UNKNOWN semantics and global idempotency reconciliation;
-- async workflow_run callback for workflows exceeding the synchronous adapter deadline;
-- authenticated runtime callback without exposing RENDER_DEPLOY_HOOK_URL;
-- trusted control-plane checkout pinned to github.workflow_sha;
-- exact release checkout isolated under .mcf-release;
-- deploy driver executed from .mcf-control-plane;
-- pre/post health validation and recovery-by-previous-healthy-SHA semantics;
-- signed receipt plus semantic evidence binding;
-- ledger persistence/reconciliation paths;
-- provider-only DI for callback reconciliation while live AdapterRegistry remains disabled;
-- crash-window recovery from durable pre-dispatch reconciliation metadata;
-- FAILED-compatible retry without releasing UNKNOWN;
-- durable binding of the authorized staging runtime origin;
-- canonical provider/operation identity before persistence and global fingerprinting;
-- current MCF protocol 1.1 governance recovery applied without retroactive participation claims.
+1. Technical implementation
+PASS:
+- staging-only permission boundary
+- exact SHA binding
+- GitHub Actions trusted control plane
+- release/control-plane separation
+- durable reconciliation metadata
+- global idempotency protection
+- UNKNOWN fail-closed behavior
+- asynchronous callback reconciliation
+- durable staging-origin binding
+- canonical provider/operation correlation
+- signed receipt/evidence/ledger binding
+- recovery by redeploy of previous healthy SHA
+- live staging adapter excluded from AdapterRegistry
 
-Cycle 4 pre-materialization exact-head evidence:
-- head: 42eb1e44d3c4344ec42865223421dd459c9cadc3
-- Rede Social Foundation 31429703728: PASS complete;
-- Rede Social Container Smoke 31429703721: PASS;
-- Vitest artifact 9078625710;
-- digest sha256:df34046df550fc6334ec965283099fec96f8e41aefc6fb71545277da784b613d;
-- Codex external review comment 5245728332: no major issues on reviewed commit 42eb1e44d3.
+2. Exact technical candidate
+release_sha=c787179e126a93af96dd67604cb24f91235c4320
+foundation_run=31431820713
+foundation=PASS
+container_smoke_run=31431820709
+container_smoke=PASS
+vitest_artifact=9079437876
+artifact_digest=sha256:3cf0373f66f71bc41681d3a1bfbe6fb4d1c448c0c97c694cda01de617b31dd71
+codex_review_comment=5246038796
+codex_review=NO_MAJOR_ISSUES
+active_p0=0
+active_p1=0
+active_p2=0
 
-Provenance boundary:
-- 42eb1e44... is exact evidence for the functional-code revision immediately before Cycle 4 PRF materialization;
-- the Cycle 4 PRF materialization creates a new HEAD;
-- exact-head CI/review for each later materialized HEAD is intentionally external evidence on PR #84 / GitHub Actions because a commit cannot embed its own future CI or review identifiers without changing its SHA;
-- Gate D remains open until the current materialized HEAD has Foundation, Container Smoke and independent review clean with zero current P0/P1/P2.
+3. Real staging proof
+authorization=C4-013
+helper_run=31438190773
+helper_conclusion=success
+dispatch_count=1
+staging_run=31438199266
+staging_event=workflow_dispatch
+staging_conclusion=success
+deployment_outcome=DEPLOYED
+release_sha=c787179e126a93af96dd67604cb24f91235c4320
+previous_sha=0a7909b71e1944d1062e8ea1ab13a4bee4abbf88
+request_id=c4-gated-real-proof-c787-001
+recovery_used=false
+human_operator_actions=0
 
-Governance checks for Cycle 4:
-- source-of-truth/history reconciliation: Miriam C4-001 completed;
-- Git/PR boundary verification: Gabriel C4-002 completed;
-- PRF Cycle 4 materialization: Carmem C4-003 completed for the prior materialized HEAD;
-- exact-head validation: must be performed by Renato after every new PRF SHA;
-- external reviewer: tool/evidence observed by Augusto, never a handoff target;
-- Augusto MISSION-TRACE/HDF: pending final exact-head review;
-- Julia Class C governance: pending Augusto PASS;
-- Emily independent final audit: pending Julia PASS;
-- LEO gate: pending Emily PASS;
-- HDF TEAM_FIRST: preserved, human_operator_actions = 0.
+The deployment driver returns DEPLOYED only after health/version reports the requested SHA
+and health/ready is healthy. If convergence fails, it attempts redeploy of the previous
+healthy SHA and returns RECOVERED instead.
 
-Operational constraints remain:
-- live registry: DISABLED;
-- real provider dispatch: NOT_AUTHORIZED;
-- production: BLOCKED;
-- no claim of native Render rollback;
-- no real staging proof has been authorized.
+4. Governance
+renato_c4_016=PASS
+augusto_c4_017=MISSION_TRACE_HDF_PASS
+julia_c4_018=CLASS_C_GOVERNANCE_PASS
+emily_c4_019=FINAL_INDEPENDENT_AUDIT_PASS
+leo_c4_020=APROVAR
+gate_d=PASS
+real_staging_proof=PASS
+
+5. TEAM_FIRST recovery
+The connector did not expose workflow_dispatch. No HUMAN_GATE was opened. An isolated
+one-shot GitHub Actions helper used the ephemeral GitHub token with minimum actions:write,
+verified the exact ref, refused duplicates, dispatched once, confirmed correlation and was
+removed after use.
+
+The reusable governance pattern is formalized by MCF-DEC-061.
+
+6. Closure evidence boundary
+This PRF synchronization creates a documentation-only HEAD after c787. Evidence from c787
+is not relabeled as exact-head evidence for the closure commit. Before terminal closeout:
+- compare c787..closure_head must contain only PRF/decision documentation;
+- Foundation must PASS on closure_head;
+- Container Smoke must PASS on closure_head;
+- independent review must be clean on closure_head;
+- active P0/P1/P2 must remain zero.
+
+7. Constraints
+live_registry=DISABLED
+production=BLOCKED
+merge=REQUIRES_SEPARATE_INTEGRATION_AUTHORIZATION
+human_gate_leandro=NOT_REQUIRED
