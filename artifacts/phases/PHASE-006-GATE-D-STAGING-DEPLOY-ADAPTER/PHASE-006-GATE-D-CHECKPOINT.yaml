@@ -4,32 +4,47 @@ issue: 83
 base_commit: 1c58b4ba280bd32f587c2f042e35a2dba1a123a9
 branch: feat/mcf-runtime-006-gate-d-staging-deploy-adapter
 objective: implementar adapter formal de deploy verificado para staging reutilizando RUNTIME-005
-objective_state: ESEV_REMEDIATED_PENDING_EXACT_HEAD_GATE
+objective_state: CYCLE_3_CONTEMPORANEOUS_ESEV_PENDING_EXACT_HEAD_GATE
 risk_class: C
-cycle: 2
+cycle: 3
 selected_agents:
   - Mestre
   - Miriam
   - Sofia
-  - Rafael
   - Bruno
   - Gabriel
   - Renato
   - Ricardo
-  - Carmem
-  - Augusto
   - Beatriz
   - Julia
+  - Carmem
+  - Augusto
   - Emily
   - Leo
-selection_note: selecao dinamica; agentes sem entrega concreta nao participam decorativamente
-cycle_2_trace: PHASE-006-GATE-D-CYCLE-2-TRACE.yaml
-control_execution_evidence:
-  pr_comment: 5243200110
-  Beatriz: PASS_PRE_PROOF
-  Julia_Ricardo: PASS_PRE_PROOF
-  Augusto_HDF: PASS
-  human_operator_actions: 0
+selection_note: selecao dinamica; Rafael e demais agentes nao entram sem entrega concreta nesta recuperacao documental
+
+history:
+  cycle_1: TECHNICAL_EXECUTION_PRESERVED
+  cycle_2:
+    trace_file: PHASE-006-GATE-D-CYCLE-2-TRACE.yaml
+    status: RETROSPECTIVE_RECONSTRUCTION_NOT_VALID_AS_PRIMARY_ESEV
+    reviewed_head: 79006472f88e1d54f4f0647df95464b657cfd644
+  cycle_3:
+    primary_esev_source: PR_84_TIMESTAMPED_COMMENTS
+    index_file: PHASE-006-GATE-D-CYCLE-3-ESEV-RECEIPTS.md
+    kickoff_comment: 5243319721
+
+cycle_3_receipts_before_materialization:
+  Mestre: 5243319721
+  Miriam: 5243323143
+  Sofia: 5243326916
+  Bruno: 5243330533
+  Gabriel: 5243334674
+  Renato: 5243339956
+  Ricardo: 5243347738
+  Beatriz: 5243354070
+  Julia: 5243361235
+
 completed_acceptance_criteria:
   - ARCHITECTURE_REUSES_RUNTIME_005
   - RENDER_SECRET_ACTIONS_ONLY
@@ -45,59 +60,57 @@ completed_acceptance_criteria:
   - PREVIOUS_TECHNICAL_HEAD_FOUNDATION_PASS_31299684631
   - PREVIOUS_TECHNICAL_HEAD_CONTAINER_SMOKE_PASS_31299684630
   - PREVIOUS_TECHNICAL_HEAD_CODEX_NO_MAJOR_ISSUES_7B2B4184
-  - RETAKE_SOURCE_OF_TRUTH_RECONCILED
-  - CONTROL_AGENT_TRIGGERS_EXECUTED_AND_RECORDED
-  - CYCLE_2_CHRONOLOGICAL_ESEV_PERSISTED
   - VALIDATION_ARTIFACT_CONTRADICTION_REMEDIATED
+  - CYCLE_2_RECLASSIFIED_AS_HISTORICAL_RECONSTRUCTION
+  - CYCLE_3_CONTEMPORANEOUS_RECEIPTS_STARTED
   - HDF_TEAM_FIRST_ZERO_HUMAN_OPERATOR_ACTIONS
-pre_remediation_exact_head_evidence:
-  head: 844ad2bb8aa4638d358944d1638fa12ccf391c6d
-  foundation_run: 31409926300
+
+review_findings_on_79006472:
+  - id: P2_CYCLE2_POSTHOC_GROUPED_ESEV
+    state: RECOVERY_STARTED_WITH_NEW_CYCLE_3
+    rule: cycle_2_not_promoted_retroactively
+  - id: P2_CHECKPOINT_ONE_STEP_BEHIND
+    state: REMEDIATED_BY_THIS_MATERIALIZATION
+
+prior_exact_head_evidence:
+  head: 79006472f88e1d54f4f0647df95464b657cfd644
+  foundation_run: 31410778208
   foundation: PASS
-  container_smoke_run: 31409926272
+  container_smoke_run: 31410778237
   container_smoke: PASS
-  vitest_artifact: 9071171402
-  artifact_digest: sha256:da8ecefc1d93ab6f0263b9c0043134205ddf94d1de46bf19454531a5f92f8e85
-  note: evidence applies only to the pre-ESEV-remediation HEAD
-review_findings_from_51e5b9b1:
-  - id: P1_VALIDATION_CONTRADICTION
-    state: REMEDIATED
-  - id: P1_CONTROL_TRIGGER_PREMATURE_COMPLETION
-    state: REMEDIATED
-  - id: P2_RETROSPECTIVE_NOT_ESEV
-    state: REMEDIATED
+  note: evidence applies only to 79006472 and must not be promoted to the materialized head
+
 remaining_gaps:
-  - REMEDIATED_EXACT_HEAD_FOUNDATION_CI
-  - REMEDIATED_EXACT_HEAD_CONTAINER_SMOKE
-  - REMEDIATED_INDEPENDENT_REVIEW_EXACT_HEAD
-  - ZERO_ACTIVE_P0_P1_P2_ON_REMEDIATED_HEAD
-  - CARMEM_FINAL_PRF_CONSISTENCY
-  - EMILY_AUDIT
+  - MATERIALIZED_EXACT_HEAD_FOUNDATION_CI
+  - MATERIALIZED_EXACT_HEAD_CONTAINER_SMOKE
+  - MATERIALIZED_INDEPENDENT_REVIEW_EXACT_HEAD
+  - ZERO_ACTIVE_P0_P1_P2_ON_MATERIALIZED_HEAD
+  - AUGUSTO_CYCLE_3_TRACE_AUDIT
+  - EMILY_FINAL_AUDIT
   - LEO_GATE
   - REAL_STAGING_PROOF_DECISION
   - REAL_STAGING_PROOF_IF_AUTHORIZED
+
 decisions:
   - GITHUB_ACTIONS_CONTROL_PLANE
-  - RENDER_SECRET_ACTIONS_ONLY
   - LIVE_REGISTRY_DISABLED
   - STAGING_ONLY
-  - RECOVERY_BY_PREVIOUS_HEALTHY_SHA
-  - UNKNOWN_FAIL_CLOSED
-  - ASYNC_WORKFLOW_RUN_RECONCILIATION
-  - TRUSTED_CONTROL_PLANE_DRIVER
-  - PROVIDER_AVAILABLE_BUT_NOT_LIVE
-  - APPLY_PROTOCOL_1_1_TO_RETAKE
-  - NO_DECORATIVE_AGENT_PARTICIPATION
+  - PRODUCTION_BLOCKED
   - TEAM_FIRST_HDF
+  - NO_DECORATIVE_AGENT_PARTICIPATION
+  - CYCLE_2_IS_HISTORICAL_CONTEXT_NOT_PRIMARY_ESEV
+  - CYCLE_3_USES_CONTEMPORANEOUS_INDIVIDUAL_PR_RECEIPTS
   - EXTERNAL_EXACT_HEAD_GATE_EVIDENCE
-  - ACTUAL_ESEV_REQUIRED_NOT_RETROSPECTIVE_SUMMARY
+
 live_registry: DISABLED
-real_provider_dispatch_test: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE
+real_provider_dispatch_test: NOT_AUTHORIZED
 production: BLOCKED
 human_operator_actions: 0
 human_action_required: false
-next_action: materializar manifest/README do trace e executar CI + revisao independente no novo HEAD
-recipient: Carmem_Mestre_then_Renato
+
+next_action: executar Foundation e Container Smoke no HEAD materializado, obter revisao independente no mesmo SHA, depois Augusto audita receipts, Emily audita o gate e Leo decide a prova real de staging
+recipient: Renato
+
 source_of_truth:
   - main_1c58b4ba280bd32f587c2f042e35a2dba1a123a9
   - issue_83
@@ -107,6 +120,12 @@ source_of_truth:
   - docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md
   - skills/registry.yaml
   - project-instructions/MCF-HUMAN-DELEGATION-FIREWALL.md
-  - docs/runtime/MCF-RUNTIME-006-PLAN.md
-  - docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md
-  - pr_comment_5243200110
+  - pr_comment_5243319721
+  - pr_comment_5243323143
+  - pr_comment_5243326916
+  - pr_comment_5243330533
+  - pr_comment_5243334674
+  - pr_comment_5243339956
+  - pr_comment_5243347738
+  - pr_comment_5243354070
+  - pr_comment_5243361235
