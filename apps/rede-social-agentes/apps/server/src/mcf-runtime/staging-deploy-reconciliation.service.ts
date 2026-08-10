@@ -6,9 +6,14 @@ import type {
   McfEventType,
   McfEvidenceValidationStatus,
 } from '@rsa/contracts';
+import type { DatabaseRow } from '@rsa/database';
 
+import { DatabaseService } from '../database.service.js';
 import type { ExternalActionRequest } from './external-action.contracts.js';
-import { ExternalActionLedger } from './external-action-ledger.js';
+import {
+  ExternalActionLedger,
+  type StagingDeployReconciliationAttempt,
+} from './external-action-ledger.js';
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { HumanDelegationGuard } from './human-delegation-guard.js';
 import {
@@ -36,6 +41,37 @@ export interface McfStagingDeployCallbackRequest {
   repository: string;
   completedAt: string;
   stagingRuntimeUrl: string;
+}
+
+interface RecoveryAttemptRow extends DatabaseRow {
+  attemptId: string;
+  missionId: string;
+  phaseId: string;
+  agentId: string;
+  skillId: string;
+  adapterId: string;
+  provider: string;
+  operation: string;
+  resource: string;
+  idempotencyKey: string;
+  expectedMissionVersion: number;
+  status: string;
+}
+
+interface RecoveryPreparedEventRow extends DatabaseRow {
+  payload: unknown;
+}
+
+interface RecoveryMissionRow extends DatabaseRow {
+  version: number;
+  currentPhaseId: string | null;
+  activeExternalAttemptId: string | null;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
 function requiredInput(inputs: Record<string, unknown>, key: string): string {
@@ -101,12 +137,240 @@ export class StagingDeployReconciliationService {
     @Inject(ExternalActionLedger) private readonly ledger: ExternalActionLedger,
     @Inject(GitHubActionsStagingDeployAdapter)
     private readonly adapter: GitHubActionsStagingDeployAdapter,
+    @Inject(DatabaseService) private readonly database?: DatabaseService,
   ) {}
 
+  private async recoverInterruptedDispatch(
+    request: McfStagingDeployCallbackRequest,
+    attempt: StagingDeployReconciliationAttempt,
+  ): Promise<void> {
+    if (!this.database) {
+      throw new McfEvidenceRejectedError(
+        'staging callback cannot recover an interrupted dispatch without durable database access',
+      );
+    }
+    if (attempt.status !== 'EXECUTING' && attempt.status !== 'UNKNOWN') {
+      throw new McfEvidenceRejectedError(
+        `staging callback cannot materialize missing phase from attempt status ${attempt.status}`,
+      );
+    }
+    if (!attempt.reconciliationEligible || !attempt.previousSha) {
+      throw new McfEvidenceRejectedError(
+        'interrupted staging dispatch is missing durable pre-dispatch reconciliation metadata',
+      );
+    }
+
+    const skill = await this.registry.load(attempt.skillId);
+    if (skill.skillId !== 'MCF-DEPLOY-VALIDATE' || attempt.agentId.length === 0) {
+      throw new McfPermissionDeniedError(
+        'staging crash recovery may materialize only MCF-DEPLOY-VALIDATE phases',
+      );
+    }
+
+    const now = new Date();
+    await this.database.transaction(async (client) => {
+      const attemptResult = await client.query<RecoveryAttemptRow>(
+        `select
+          "attempt_id" as "attemptId",
+          "mission_id" as "missionId",
+          "phase_id" as "phaseId",
+          "agent_id" as "agentId",
+          "skill_id" as "skillId",
+          "adapter_id" as "adapterId",
+          "provider",
+          "operation",
+          "resource",
+          "idempotency_key" as "idempotencyKey",
+          "expected_mission_version" as "expectedMissionVersion",
+          "status"
+         from "mcf_external_action_attempts"
+         where "attempt_id" = $1
+         for update`,
+        [attempt.attemptId],
+      );
+      const durableAttempt = attemptResult.rows[0];
+      if (!durableAttempt) {
+        throw new McfEvidenceRejectedError('staging callback durable attempt disappeared');
+      }
+      if (
+        durableAttempt.missionId !== request.missionId ||
+        durableAttempt.phaseId !== request.phaseId ||
+        durableAttempt.agentId !== attempt.agentId ||
+        durableAttempt.skillId !== 'MCF-DEPLOY-VALIDATE' ||
+        durableAttempt.adapterId !== 'github-actions-staging-deploy-v1' ||
+        durableAttempt.provider !== 'github' ||
+        durableAttempt.operation !== 'deploy-staging' ||
+        durableAttempt.resource.toLowerCase() !== request.repository.toLowerCase() ||
+        durableAttempt.idempotencyKey !== request.requestId ||
+        durableAttempt.expectedMissionVersion !== attempt.expectedMissionVersion ||
+        (durableAttempt.status !== 'EXECUTING' && durableAttempt.status !== 'UNKNOWN')
+      ) {
+        throw new McfEvidenceRejectedError(
+          'staging callback does not match the durable interrupted deployment attempt',
+        );
+      }
+
+      const preparedResult = await client.query<RecoveryPreparedEventRow>(
+        `select "payload"
+         from "mcf_events"
+         where "mission_id" = $1
+           and "phase_id" = $2
+           and "event_type" = 'EXTERNAL_ACTION_RECONCILIATION_PREPARED'
+           and "payload" ->> 'attemptId' = $3
+         order by "occurred_at" desc
+         limit 1`,
+        [request.missionId, request.phaseId, attempt.attemptId],
+      );
+      const prepared = asRecord(preparedResult.rows[0]?.payload);
+      if (
+        prepared.reconciliationEligible !== true ||
+        typeof prepared.previousSha !== 'string' ||
+        prepared.previousSha.length === 0 ||
+        typeof prepared.releaseSha !== 'string' ||
+        prepared.releaseSha.toLowerCase() !== request.releaseSha.toLowerCase() ||
+        typeof prepared.repository !== 'string' ||
+        prepared.repository.toLowerCase() !== request.repository.toLowerCase() ||
+        prepared.idempotencyKey !== request.requestId ||
+        prepared.attemptId !== attempt.attemptId
+      ) {
+        throw new McfEvidenceRejectedError(
+          'staging callback correlation does not match durable pre-dispatch metadata',
+        );
+      }
+
+      const existingPhase = await client.query(
+        `select "id"
+         from "mcf_phases"
+         where "id" = $1 and "mission_id" = $2
+         for update`,
+        [request.phaseId, request.missionId],
+      );
+      if (existingPhase.rows.length > 0) return;
+
+      const missionResult = await client.query<RecoveryMissionRow>(
+        `select
+          "version",
+          "current_phase_id" as "currentPhaseId",
+          "active_external_attempt_id" as "activeExternalAttemptId"
+         from "mcf_missions"
+         where "id" = $1
+         for update`,
+        [request.missionId],
+      );
+      const durableMission = missionResult.rows[0];
+      if (!durableMission) throw new McfMissionNotFoundError(request.missionId);
+      if (
+        durableMission.version !== attempt.expectedMissionVersion ||
+        durableMission.currentPhaseId !== null ||
+        durableMission.activeExternalAttemptId !== attempt.attemptId
+      ) {
+        throw new McfEvidenceRejectedError(
+          'staging callback cannot safely materialize a stale or displaced mission phase',
+        );
+      }
+
+      const recoveredInputs = {
+        authorizedScope: true,
+        repository: request.repository,
+        artifact_or_commit: request.releaseSha.toLowerCase(),
+        target_environment: 'staging',
+        idempotency_key: request.requestId,
+      };
+      await client.query(
+        `insert into "mcf_phases" (
+          "id", "mission_id", "skill_id", "agent_id", "state", "cycle",
+          "inputs", "expected_evidence", "started_at", "completed_at",
+          "created_at", "updated_at"
+        ) values ($1, $2, $3, $4, 'RECOVERING', 1, $5::jsonb, $6::jsonb, $7, null, $7, $7)`,
+        [
+          request.phaseId,
+          request.missionId,
+          skill.skillId,
+          attempt.agentId,
+          JSON.stringify(recoveredInputs),
+          JSON.stringify(skill.requiredEvidence),
+          now,
+        ],
+      );
+
+      const missionUpdate = await client.query(
+        `update "mcf_missions"
+         set "state" = 'RECOVERING',
+             "current_phase_id" = $2,
+             "current_agent_id" = $3,
+             "version" = "version" + 1,
+             "updated_at" = $4
+         where "id" = $1
+           and "version" = $5
+           and "current_phase_id" is null
+           and "active_external_attempt_id" = $6
+         returning "id"`,
+        [
+          request.missionId,
+          request.phaseId,
+          attempt.agentId,
+          now,
+          attempt.expectedMissionVersion,
+          attempt.attemptId,
+        ],
+      );
+      if (missionUpdate.rows.length !== 1) {
+        throw new McfEvidenceRejectedError(
+          'staging callback lost the mission recovery race before phase materialization',
+        );
+      }
+
+      if (durableAttempt.status === 'EXECUTING') {
+        const attemptUpdate = await client.query(
+          `update "mcf_external_action_attempts"
+           set "status" = 'UNKNOWN',
+               "failure_code" = 'EXTERNAL_EFFECT_UNKNOWN',
+               "failure_message" = 'workflow callback recovered interrupted staging dispatch',
+               "updated_at" = $2
+           where "attempt_id" = $1 and "status" = 'EXECUTING'
+           returning "attempt_id"`,
+          [attempt.attemptId, now],
+        );
+        if (attemptUpdate.rows.length !== 1) {
+          throw new McfEvidenceRejectedError(
+            'staging callback lost the attempt recovery race before UNKNOWN transition',
+          );
+        }
+      }
+    });
+  }
+
   async accept(request: McfStagingDeployCallbackRequest): Promise<McfCiCallbackResponse> {
-    const mission = await this.repository.findMission(request.missionId);
+    let mission = await this.repository.findMission(request.missionId);
     if (!mission) throw new McfMissionNotFoundError(request.missionId);
-    const phase = await this.repository.findPhase(request.missionId, request.phaseId);
+
+    let attempt = await this.ledger.loadStagingDeployReconciliationAttempt(
+      request.missionId,
+      request.phaseId,
+      request.requestId,
+    );
+    if (!attempt) {
+      throw new McfEvidenceRejectedError('staging callback has no durable deployment attempt');
+    }
+
+    let phase = await this.repository.findPhase(request.missionId, request.phaseId);
+    if (!phase && (attempt.status === 'EXECUTING' || attempt.status === 'UNKNOWN')) {
+      await this.recoverInterruptedDispatch(request, attempt);
+      mission = await this.repository.findMission(request.missionId);
+      if (!mission) throw new McfMissionNotFoundError(request.missionId);
+      phase = await this.repository.findPhase(request.missionId, request.phaseId);
+      attempt = await this.ledger.loadStagingDeployReconciliationAttempt(
+        request.missionId,
+        request.phaseId,
+        request.requestId,
+      );
+      if (!attempt) {
+        throw new McfEvidenceRejectedError(
+          'staging callback durable attempt disappeared after crash recovery',
+        );
+      }
+    }
+
     if (!phase) throw new McfPhaseNotFoundError(request.missionId, request.phaseId);
     if (phase.skillId !== 'MCF-DEPLOY-VALIDATE') {
       throw new McfPermissionDeniedError(
@@ -128,14 +392,6 @@ export class StagingDeployReconciliationService {
       );
     }
 
-    const attempt = await this.ledger.loadStagingDeployReconciliationAttempt(
-      request.missionId,
-      request.phaseId,
-      request.requestId,
-    );
-    if (!attempt) {
-      throw new McfEvidenceRejectedError('staging callback has no durable deployment attempt');
-    }
     if (attempt.skillId !== phase.skillId || attempt.agentId !== phase.agentId) {
       throw new McfEvidenceRejectedError(
         'staging callback attempt does not match persisted phase identity',
