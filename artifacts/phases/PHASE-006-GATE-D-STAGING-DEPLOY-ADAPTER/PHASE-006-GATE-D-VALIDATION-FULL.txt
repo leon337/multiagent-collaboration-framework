@@ -1,6 +1,6 @@
 PHASE-006-GATE-D FULL VALIDATION
 
-STATE: PRF_MATERIALIZATION_PENDING_FINAL_EXACT_HEAD_GATE
+STATE: CYCLE_4_MATERIALIZED_HEAD_EXTERNAL_EXACT_GATE
 
 Implemented evidence:
 - exact SHA validation and staging-only permission boundary;
@@ -15,35 +15,41 @@ Implemented evidence:
 - signed receipt plus semantic evidence binding;
 - ledger persistence/reconciliation paths;
 - provider-only DI for callback reconciliation while live AdapterRegistry remains disabled;
-- stale callback and durable-settlement boundaries covered by regressions;
-- current MCF protocol 1.1 governance reconciliation applied without retroactive participation claims.
+- crash-window recovery from durable pre-dispatch reconciliation metadata;
+- FAILED-compatible retry without releasing UNKNOWN;
+- durable binding of the authorized staging runtime origin;
+- canonical provider/operation identity before persistence and global fingerprinting;
+- current MCF protocol 1.1 governance recovery applied without retroactive participation claims.
 
-Latest exact-head gate completed before this PRF finalization commit:
-- head: 51e5b9b1a503221d31053a30409ae9408ef75949
-- Rede Social Foundation 31409337150: PASS complete;
-- Rede Social Container Smoke 31409326589: PASS;
-- Vitest artifact 9070945331;
-- digest sha256:606b23d7946deaae565c7a0af36c05d720b434bb433ece373b35ad15b1b479c7.
+Cycle 4 pre-materialization exact-head evidence:
+- head: 42eb1e44d3c4344ec42865223421dd459c9cadc3
+- Rede Social Foundation 31429703728: PASS complete;
+- Rede Social Container Smoke 31429703721: PASS;
+- Vitest artifact 9078625710;
+- digest sha256:df34046df550fc6334ec965283099fec96f8e41aefc6fb71545277da784b613d;
+- Codex external review comment 5245728332: no major issues on reviewed commit 42eb1e44d3.
 
 Provenance boundary:
-- 51e5b9b1... is evidence for the pre-finalization PRF revision only;
-- the PRF finalization itself creates a new HEAD;
-- exact-head CI/review for that new HEAD is intentionally external evidence on PR #84 / GitHub Actions because a commit cannot embed its own future CI or review identifiers without changing its SHA;
-- Gate D remains open until Foundation, Container Smoke and independent review are clean on the final materialized HEAD with zero active P0/P1/P2.
+- 42eb1e44... is exact evidence for the functional-code revision immediately before Cycle 4 PRF materialization;
+- the Cycle 4 PRF materialization creates a new HEAD;
+- exact-head CI/review for each later materialized HEAD is intentionally external evidence on PR #84 / GitHub Actions because a commit cannot embed its own future CI or review identifiers without changing its SHA;
+- Gate D remains open until the current materialized HEAD has Foundation, Container Smoke and independent review clean with zero current P0/P1/P2.
 
-Governance checks for cycle 2:
-- retake source-of-truth: reconciled by Miriam role;
-- dynamic agent selection: applied;
-- autonomy/tool-calling controls: Augusto, Beatriz and Julia applicable;
-- MCF-DEPLOY-VALIDATE owners: Bruno and Gabriel represented;
-- PRF consistency: Carmem review in progress;
-- HDF TEAM_FIRST: preserved, human_operator_actions = 0;
-- Emily audit: pending final exact-head evidence;
-- LEO gate: pending.
+Governance checks for Cycle 4:
+- source-of-truth/history reconciliation: Miriam C4-001 completed;
+- Git/PR boundary verification: Gabriel C4-002 completed;
+- PRF Cycle 4 materialization: Carmem C4-003 completed for the prior materialized HEAD;
+- exact-head validation: must be performed by Renato after every new PRF SHA;
+- external reviewer: tool/evidence observed by Augusto, never a handoff target;
+- Augusto MISSION-TRACE/HDF: pending final exact-head review;
+- Julia Class C governance: pending Augusto PASS;
+- Emily independent final audit: pending Julia PASS;
+- LEO gate: pending Emily PASS;
+- HDF TEAM_FIRST: preserved, human_operator_actions = 0.
 
 Operational constraints remain:
 - live registry: DISABLED;
-- real provider dispatch: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE;
+- real provider dispatch: NOT_AUTHORIZED;
 - production: BLOCKED;
 - no claim of native Render rollback;
-- no real staging proof has been authorized by this PRF.
+- no real staging proof has been authorized.

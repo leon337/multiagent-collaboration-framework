@@ -1,6 +1,6 @@
 PHASE-006-GATE-D VALIDATION
 
-STATE: PRF_MATERIALIZATION_PENDING_FINAL_EXACT_HEAD_GATE
+STATE: CYCLE_4_MATERIALIZED_HEAD_EXTERNAL_EXACT_GATE
 
 Implementation:
 - adapter contract/runtime: APPLIED
@@ -8,24 +8,27 @@ Implementation:
 - trusted control-plane deploy driver: APPLIED
 - receipt/evidence/ledger binding: APPLIED
 - provider available for callback: APPLIED
+- durable staging origin binding: APPLIED
+- staging provider/operation canonicalization: APPLIED
 - live AdapterRegistry activation: DISABLED
 
-Latest exact-head evidence before this PRF finalization commit:
-- head: 51e5b9b1a503221d31053a30409ae9408ef75949
-- Foundation 31409337150: PASS complete
-- Container Smoke 31409326589: PASS
-- Vitest artifact 9070945331
-- artifact digest: sha256:606b23d7946deaae565c7a0af36c05d720b434bb433ece373b35ad15b1b479c7
-- delta from previous clean technical head 7b2b4184d3475fd741e4951f0373897a78b12030: PRF/documentation only
+Cycle 4 pre-materialization technical evidence:
+- head: 42eb1e44d3c4344ec42865223421dd459c9cadc3
+- Foundation 31429703728: PASS complete
+- Container Smoke 31429703721: PASS
+- Vitest artifact 9078625710
+- artifact digest: sha256:df34046df550fc6334ec965283099fec96f8e41aefc6fb71545277da784b613d
+- Codex external review comment 5245728332: no major issues on reviewed commit 42eb1e44d3
 
-Final gate evidence policy:
-- this file records evidence available before PRF materialization;
-- embedding CI/review identifiers from the commit that contains this file would mutate that commit and is therefore impossible as an exact self-reference;
-- CI, Container Smoke and independent review for the final materialized HEAD MUST be recorded externally on PR #84 / GitHub Actions and bound to that exact SHA;
-- no PASS from an earlier SHA may be promoted to the final materialized HEAD.
+Cycle 4 evidence boundary:
+- 42eb1e44... is the last functional-code HEAD before Cycle 4 PRF materialization;
+- documentation materialization creates a different HEAD and never inherits gate PASS from 42eb1e44...;
+- exact-head CI, Container Smoke and independent review for the current materialized HEAD are external evidence on PR #84 / GitHub Actions;
+- this file intentionally does not embed future CI/review identifiers for the commit containing itself;
+- no PASS from an earlier SHA may be promoted to a later SHA.
 
-Final materialized-HEAD checks:
-- documentation: RECONCILED
+Current materialized-HEAD checks:
+- documentation: CYCLE_4_RECONCILED
 - format: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
 - lint: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
 - typecheck: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
@@ -35,9 +38,12 @@ Final materialized-HEAD checks:
 - container_smoke: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
 - independent_review: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
 - active_p0_p1_p2: EXTERNAL_EXACT_HEAD_REVIEW_REQUIRED
-- leo_gate: PENDING
+- Augusto_cycle4_trace_audit: PENDING
+- Julia_class_c_governance: PENDING
+- Emily_final_audit: PENDING
+- Leo_gate: PENDING
 
 Provider live: DISABLED
-Real provider dispatch: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE
+Real provider dispatch: NOT_AUTHORIZED
 Production: BLOCKED
 Human operator actions: 0
