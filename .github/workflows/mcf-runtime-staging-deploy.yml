@@ -1,4 +1,5 @@
 name: MCF Runtime Staging Deploy
+run-name: MCF staging deploy ${{ inputs.request_id || 'push' }} ${{ inputs.release_sha || github.sha }} ${{ inputs.mission_id || 'push' }} ${{ inputs.phase_id || 'push' }}
 
 on:
   push:
@@ -12,6 +13,18 @@ on:
     inputs:
       release_sha:
         description: Exact 40-character commit SHA to deploy. Defaults to the selected main revision.
+        required: false
+        type: string
+      request_id:
+        description: Non-secret MCF idempotency/correlation key for runtime-controlled staging dispatch.
+        required: false
+        type: string
+      mission_id:
+        description: Non-secret MCF mission UUID used only for callback correlation.
+        required: false
+        type: string
+      phase_id:
+        description: Non-secret MCF phase UUID used only for callback correlation.
         required: false
         type: string
 
@@ -51,6 +64,9 @@ jobs:
       MCF_RUNTIME_URL: ${{ secrets.MCF_RUNTIME_URL }}
       RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
       RELEASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
+      REQUEST_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.request_id || 'push' }}
+      MISSION_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.mission_id || 'push' }}
+      PHASE_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.phase_id || 'push' }}
       DEPLOY_TIMEOUT_MS: 1200000
       DEPLOY_POLL_INTERVAL_MS: 10000
 
@@ -60,14 +76,26 @@ jobs:
           test -n "$MCF_RUNTIME_URL"
           test -n "$RENDER_DEPLOY_HOOK_URL"
           [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            [[ "$REQUEST_ID" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$ ]]
+            [[ "$MISSION_ID" =~ ^[0-9a-fA-F-]{36}$ ]]
+            [[ "$PHASE_ID" =~ ^[0-9a-fA-F-]{36}$ ]]
+          fi
 
-      - name: Checkout release revision
+      - name: Checkout trusted deploy control plane
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .mcf-control-plane
+
+      - name: Checkout exact release revision
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_sha || github.sha }}
+          path: .mcf-release
 
       - name: Validate rollout Compose configuration
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: |
           docker compose -f deploy/compose.smoke.yaml config --quiet
           RSA_SERVER_IMAGE='registry.invalid/rsa-server@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' \
@@ -80,7 +108,7 @@ jobs:
           docker compose -f deploy/compose.rollout.yaml config --quiet
 
       - name: Run container smoke
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: |
           set -euo pipefail
           trap 'docker compose -f deploy/compose.smoke.yaml logs --no-color; docker compose -f deploy/compose.smoke.yaml down -v --remove-orphans' EXIT
@@ -123,34 +151,53 @@ jobs:
           pnpm --version
 
       - name: Install dependencies
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
 
       - name: Verify formatting
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm format:check
 
       - name: Lint
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm lint
 
       - name: Typecheck
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm typecheck
 
       - name: Apply migrations twice in CI database
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: |
           pnpm --filter @rsa/database db:migrate
           pnpm --filter @rsa/database db:migrate
 
       - name: Test
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm test
 
       - name: Build
-        working-directory: apps/rede-social-agentes
+        working-directory: .mcf-release/apps/rede-social-agentes
         run: pnpm build
 
       - name: Deploy exact revision and verify or recover
-        run: node apps/rede-social-agentes/ops/render-staging-deploy.mjs
+        id: deploy
+        run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs
+
+      - name: Deployment result DEPLOYED
+        if: ${{ always() && steps.deploy.outputs.status == 'DEPLOYED' }}
+        run: |
+          test "${{ steps.deploy.outputs.release_sha }}" = "$RELEASE_SHA"
+          echo 'Exact staging release was deployed and verified.'
+
+      - name: Deployment result NOOP
+        if: ${{ always() && steps.deploy.outputs.status == 'NOOP' }}
+        run: |
+          test "${{ steps.deploy.outputs.release_sha }}" = "$RELEASE_SHA"
+          echo 'Requested staging release was already healthy.'
+
+      - name: Deployment result RECOVERED
+        if: ${{ always() && steps.deploy.outputs.status == 'RECOVERED' }}
+        run: |
+          test -n "${{ steps.deploy.outputs.previous_sha }}"
+          echo 'Rejected release recovered by redeploying the previous healthy SHA.'

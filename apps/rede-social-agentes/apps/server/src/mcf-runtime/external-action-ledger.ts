@@ -28,7 +28,7 @@ interface IdempotencyRow extends AttemptRow {
   idempotencyFingerprint: string | null;
 }
 
-type ExternalAttemptStatus =
+export type ExternalAttemptStatus =
   | 'ALLOWED'
   | 'EXECUTING'
   | 'EXECUTED'
@@ -37,6 +37,27 @@ type ExternalAttemptStatus =
   | 'EVIDENCE_VALIDATED'
   | 'EVIDENCE_REJECTED'
   | 'ABANDONED';
+
+export interface StagingDeployReconciliationAttempt {
+  attemptId: string;
+  status: ExternalAttemptStatus;
+  expectedMissionVersion: number;
+  agentId: string;
+  skillId: string;
+  resource: string;
+  previousSha: string | null;
+  reconciliationEligible: boolean;
+}
+
+interface StagingDeployReconciliationRow {
+  attemptId: string;
+  status: ExternalAttemptStatus;
+  expectedMissionVersion: number;
+  agentId: string;
+  skillId: string;
+  resource: string;
+  initialMetadata: unknown;
+}
 
 interface AttemptStateRow extends AttemptRow {
   status: ExternalAttemptStatus;
@@ -59,6 +80,8 @@ const globallySerializedOperations = new Set([
   'review-pr-comment',
   'update-pr-text-metadata',
 ]);
+const globallySerializedStagingDeployAdapter = 'github-actions-staging-deploy-v1';
+const globallySerializedStagingDeployOperation = 'deploy-staging';
 
 function databaseErrorCode(error: unknown): string | null {
   if (
@@ -149,10 +172,30 @@ function requestGlobalIdempotencyScopeKey(
   adapterId: string,
   idempotencyKey: string | null,
 ): string | null {
-  if (!idempotencyKey || adapterId !== globallySerializedAdapter) return null;
+  if (!idempotencyKey) return null;
 
   const operation = canonicalizeToolValue(request.tool.operation);
-  if (!globallySerializedOperations.has(operation)) return null;
+  if (
+    adapterId === globallySerializedStagingDeployAdapter &&
+    operation === globallySerializedStagingDeployOperation
+  ) {
+    const repository = request.inputs.repository;
+    if (typeof repository !== 'string' || repository.trim().length === 0) return null;
+
+    const payload = {
+      adapterId,
+      provider: canonicalizeProvider(request.tool.provider),
+      operation,
+      resource: request.tool.resource.trim().toLowerCase(),
+      repository: repository.trim().toLowerCase(),
+      idempotencyKey,
+    };
+    return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+  }
+
+  if (adapterId !== globallySerializedAdapter || !globallySerializedOperations.has(operation)) {
+    return null;
+  }
 
   const pullRequestNumber = request.inputs.pull_request_number;
   if (!Number.isInteger(pullRequestNumber) || (pullRequestNumber as number) < 1) return null;
@@ -406,6 +449,176 @@ export class ExternalActionLedger {
     }
 
     return attemptId;
+  }
+
+  async loadStagingDeployReconciliationAttempt(
+    missionId: string,
+    phaseId: string,
+    idempotencyKey: string,
+  ): Promise<StagingDeployReconciliationAttempt | null> {
+    const result = await this.database.query<StagingDeployReconciliationRow>(
+      `select
+         a."attempt_id" as "attemptId",
+         a."status" as "status",
+         a."expected_mission_version" as "expectedMissionVersion",
+         a."agent_id" as "agentId",
+         a."skill_id" as "skillId",
+         a."resource" as "resource",
+         coalesce(
+           (
+             select r."metadata"
+             from "mcf_tool_receipts" r
+             where r."mission_id" = a."mission_id"
+               and r."phase_id" = a."phase_id"
+               and r."status" = 'PARTIAL'
+               and r."metadata"->>'reconciliationEligible' = 'true'
+               and r."metadata"->>'idempotencyKey' = $3
+             order by r."created_at" asc
+             limit 1
+           ),
+           (
+             select e."payload"
+             from "mcf_events" e
+             where e."mission_id" = a."mission_id"
+               and e."phase_id" = a."phase_id"
+               and e."event_type" = 'EXTERNAL_ACTION_RECONCILIATION_PREPARED'
+               and e."payload"->>'attemptId' = a."attempt_id"
+               and e."payload"->>'idempotencyKey' = $3
+               and e."payload"->>'reconciliationEligible' = 'true'
+             order by e."sequence" asc
+             limit 1
+           )
+         ) as "initialMetadata"
+       from "mcf_external_action_attempts" a
+       where a."mission_id" = $1
+         and a."phase_id" = $2
+         and a."idempotency_key" = $3
+         and a."adapter_id" = 'github-actions-staging-deploy-v1'
+         and a."provider" = 'github'
+         and a."operation" = 'deploy-staging'
+       limit 2`,
+      [missionId, phaseId, idempotencyKey],
+    );
+    if (result.rows.length === 0) return null;
+    if (result.rows.length !== 1) {
+      throw new ExternalActionAdapterError(
+        'LEDGER_FAILURE',
+        'staging deploy reconciliation found multiple durable attempts',
+        false,
+      );
+    }
+    const row = result.rows[0]!;
+    const metadata =
+      typeof row.initialMetadata === 'object' &&
+      row.initialMetadata !== null &&
+      !Array.isArray(row.initialMetadata)
+        ? (row.initialMetadata as Record<string, unknown>)
+        : null;
+    const previousSha = metadata?.previousSha;
+    return {
+      attemptId: row.attemptId,
+      status: row.status,
+      expectedMissionVersion: row.expectedMissionVersion,
+      agentId: row.agentId,
+      skillId: row.skillId,
+      resource: row.resource,
+      previousSha: typeof previousSha === 'string' ? previousSha : null,
+      reconciliationEligible: metadata?.reconciliationEligible === true,
+    };
+  }
+
+  async recordReconciliationPrepared(
+    attemptId: string,
+    metadata: Record<string, unknown>,
+  ): Promise<void> {
+    const previousSha = metadata.previousSha;
+    const releaseSha = metadata.releaseSha;
+    const idempotencyKey = metadata.idempotencyKey;
+    const repository = metadata.repository;
+    if (
+      typeof previousSha !== 'string' ||
+      !/^[a-f0-9]{40}$/u.test(previousSha) ||
+      typeof releaseSha !== 'string' ||
+      !/^[a-f0-9]{40}$/u.test(releaseSha) ||
+      typeof idempotencyKey !== 'string' ||
+      !/^[A-Za-z0-9][A-Za-z0-9._:-]{15,127}$/u.test(idempotencyKey) ||
+      typeof repository !== 'string' ||
+      repository.length === 0 ||
+      metadata.reconciliationEligible !== true
+    ) {
+      throw new ExternalActionAdapterError(
+        'INVALID_CONTEXT',
+        'staging reconciliation metadata is incomplete or invalid',
+        false,
+      );
+    }
+
+    const occurredAt = new Date();
+    try {
+      await this.database.transaction(async (client) => {
+        const current = await client.query<AttemptStateRow>(
+          `select "attempt_id" as "attemptId", "status"
+           from "mcf_external_action_attempts"
+           where "attempt_id" = $1
+           for update`,
+          [attemptId],
+        );
+        const attempt = current.rows[0];
+        if (!attempt) {
+          throw new ExternalActionAdapterError(
+            'LEDGER_FAILURE',
+            `External action attempt ${attemptId} was not found`,
+            false,
+          );
+        }
+        if (attempt.status !== 'EXECUTING') {
+          throw new ExternalActionAdapterError(
+            'LEDGER_FAILURE',
+            `staging reconciliation metadata requires EXECUTING attempt, got ${attempt.status}`,
+            false,
+          );
+        }
+
+        await client.query(
+          `insert into "mcf_events" (
+            "id", "mission_id", "phase_id", "agent_id", "event_type", "payload",
+            "idempotency_key", "occurred_at"
+          )
+          select $1, "mission_id", "phase_id", "agent_id", $2, $3::jsonb, $4, $5
+          from "mcf_external_action_attempts"
+          where "attempt_id" = $6
+          on conflict ("idempotency_key") do nothing`,
+          [
+            randomUUID(),
+            'EXTERNAL_ACTION_RECONCILIATION_PREPARED',
+            JSON.stringify({
+              attemptId,
+              previousSha,
+              releaseSha,
+              idempotencyKey,
+              repository,
+              reconciliationEligible: true,
+              externalEffectState: 'MUTATION_NOT_STARTED',
+              retryWithoutReconciliation: false,
+            }),
+            `external-action:${attemptId}:reconciliation-prepared`,
+            occurredAt,
+            attemptId,
+          ],
+        );
+      });
+    } catch (error) {
+      if (error instanceof ExternalActionAdapterError) {
+        throw error;
+      }
+      throw new ExternalActionAdapterError(
+        'LEDGER_FAILURE',
+        error instanceof Error
+          ? error.message
+          : 'Failed to persist staging reconciliation metadata',
+        true,
+      );
+    }
   }
 
   async recordExecuting(attemptId: string): Promise<void> {

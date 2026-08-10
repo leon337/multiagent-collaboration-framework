@@ -1,0 +1,46 @@
+mission_id: MCF-RUNTIME-006-GATE-D
+phase_id: PHASE-006-GATE-D-STAGING-DEPLOY-ADAPTER
+cycle: 2
+record_type: RETROSPECTIVE_RECONSTRUCTION
+esev_status: NOT_VALID_AS_PRIMARY_ESEV_EVIDENCE
+retrospective_summary_used_as_execution: false
+superseded_for_gate_by_cycle: 3
+production: BLOCKED
+real_staging_dispatch: NOT_AUTHORIZED
+
+notice: >
+  Este arquivo foi criado depois dos eventos que reconstrói e contém entradas
+  agrupadas de agentes. Por isso, conforme o Protocolo Operacional 1.1 e a
+  revisão independente do HEAD 79006472f88e1d54f4f0647df95464b657cfd644,
+  ele NÃO comprova ESEV contemporânea e não pode fechar o Gate D.
+
+historical_scope:
+  purpose: preservar contexto e proveniencia da tentativa de retomada do ciclo 2
+  original_materialization_commit: f7183d9fdf5a451ee499911d6ca55d77c57b3304
+  reviewed_head: 79006472f88e1d54f4f0647df95464b657cfd644
+  review_finding:
+    severity: P2
+    title: Record ESEV contemporaneously and per individual agent
+  prior_control_comment: 5243200110
+
+preserved_facts:
+  - main_at_retake=1c58b4ba280bd32f587c2f042e35a2dba1a123a9
+  - issue_83=OPEN
+  - pr_84=DRAFT
+  - technical_head_7b2b4184_foundation=PASS
+  - technical_head_7b2b4184_container_smoke=PASS
+  - cycle2_governance_reconciliation_was_documentation_only
+  - human_operator_actions=0
+
+gate_rule:
+  primary_esev_source: PR_84_CYCLE_3_CONTEMPORANEOUS_COMMENTS
+  cycle_2_may_be_used_for: HISTORICAL_CONTEXT_ONLY
+  cycle_2_may_not_be_used_for:
+    - ESEV_ACCEPTANCE
+    - CONTROL_AGENT_EXECUTION_PROOF
+    - LEO_GATE_APPROVAL
+
+next_valid_recovery:
+  cycle: 3
+  kickoff_comment: 5243319721
+  receipt_index: PHASE-006-GATE-D-CYCLE-3-ESEV-RECEIPTS.md

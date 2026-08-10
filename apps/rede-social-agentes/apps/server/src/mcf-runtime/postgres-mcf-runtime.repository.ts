@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type {
   McfEventType,
+  McfEvidenceValidationStatus,
   McfMissionContract,
   McfMissionState,
   McfPhaseState,
@@ -8,12 +9,12 @@ import type {
 import type { DatabaseRow, DatabaseTransaction } from '@rsa/database';
 
 import type { DatabaseService } from '../database.service.js';
+import { reconcileExpiredExternalReservation } from './external-action-reservation.js';
 import {
   McfMissionNotFoundError,
   McfMissionVersionConflictError,
   McfPhaseNotFoundError,
 } from './mcf-runtime.errors.js';
-import { reconcileExpiredExternalReservation } from './external-action-reservation.js';
 import type {
   CompleteMcfPendingPhaseInput,
   CompleteMcfPendingPhaseResult,
@@ -35,6 +36,10 @@ interface MissionRow extends DatabaseRow {
   version: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+interface MissionCompletionRow extends MissionRow {
+  activeExternalAttemptId: string | null;
 }
 
 interface PhaseRow extends DatabaseRow {
@@ -61,6 +66,18 @@ interface EventRow extends DatabaseRow {
   payload: unknown;
   idempotencyKey: string;
   occurredAt: Date;
+}
+
+interface CompletionAttemptRow extends DatabaseRow {
+  missionId: string;
+  phaseId: string;
+  status: string;
+  expectedMissionVersion: number;
+}
+
+interface CompletionReceiptRow extends DatabaseRow {
+  receiptId: string;
+  evidenceStatus: string;
 }
 
 const missionColumns = `
@@ -404,23 +421,119 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         [input.callbackIdempotencyKey],
       );
       if (duplicate.rowCount && duplicate.rowCount > 0) {
+        const persistedReceipt = await client.query<CompletionReceiptRow>(
+          `select
+             "receipt_id" as "receiptId",
+             "validation_status" as "evidenceStatus"
+           from "mcf_tool_receipts"
+           where "mission_id" = $1
+             and "phase_id" = $2
+             and "provider" = $3
+             and "operation" = $4
+             and "resource" = $5
+             and "external_id" is not distinct from $6
+             and "commit_sha" is not distinct from $7
+             and "status" = $8
+             and "validation_status" in ('VALID', 'INVALID')
+           order by "created_at" asc
+           limit 2`,
+          [
+            input.missionId,
+            input.phaseId,
+            input.receipt.provider,
+            input.receipt.operation,
+            input.receipt.resource,
+            input.receipt.externalId,
+            input.receipt.commitSha,
+            input.receipt.status,
+          ],
+        );
+        if (persistedReceipt.rows.length !== 1) {
+          throw new Error(
+            'MCF duplicate pending phase completion has no unique persisted receipt.',
+          );
+        }
+        const receiptRow = persistedReceipt.rows[0]!;
         return {
           duplicate: true,
           mission: await loadMissionWithClient(client, input.missionId),
           phase: await loadPhaseWithClient(client, input.missionId, input.phaseId),
+          receiptId: receiptRow.receiptId,
+          evidenceStatus: receiptRow.evidenceStatus as McfEvidenceValidationStatus,
         };
       }
 
       await reconcileExpiredExternalReservation(client, input.missionId);
-      const lockedMission = await client.query<MissionRow>(
-        `select ${missionColumns} from "mcf_missions" where "id" = $1 for update`,
+      const lockedMission = await client.query<MissionCompletionRow>(
+        `select
+           ${missionColumns},
+           "active_external_attempt_id" as "activeExternalAttemptId"
+         from "mcf_missions"
+         where "id" = $1
+         for update`,
         [input.missionId],
       );
-      if (!lockedMission.rows[0]) {
+      const mission = lockedMission.rows[0];
+      if (!mission) {
         throw new McfMissionNotFoundError(input.missionId);
       }
 
-      const existingPhase = await loadPhaseWithClient(client, input.missionId, input.phaseId);
+      const externalAttemptId = input.externalAttemptId ?? null;
+      if (externalAttemptId) {
+        const attempt = await client.query<CompletionAttemptRow>(
+          `select
+             "mission_id" as "missionId",
+             "phase_id" as "phaseId",
+             "status",
+             "expected_mission_version" as "expectedMissionVersion"
+           from "mcf_external_action_attempts"
+           where "attempt_id" = $1
+           for update`,
+          [externalAttemptId],
+        );
+        const persistedAttempt = attempt.rows[0];
+        if (
+          !persistedAttempt ||
+          persistedAttempt.missionId !== input.missionId ||
+          persistedAttempt.phaseId !== input.phaseId ||
+          persistedAttempt.status !== 'UNKNOWN'
+        ) {
+          throw new McfMissionVersionConflictError(input.missionId, mission.version);
+        }
+
+        if (
+          mission.version !== persistedAttempt.expectedMissionVersion + 1 ||
+          mission.currentPhaseId !== input.phaseId
+        ) {
+          throw new McfMissionVersionConflictError(
+            input.missionId,
+            persistedAttempt.expectedMissionVersion + 1,
+          );
+        }
+
+        if (
+          mission.activeExternalAttemptId !== null &&
+          mission.activeExternalAttemptId !== externalAttemptId
+        ) {
+          throw new McfMissionVersionConflictError(input.missionId, mission.version);
+        }
+        if (mission.activeExternalAttemptId === externalAttemptId) {
+          const released = await client.query<{ id: string }>(
+            `update "mcf_missions"
+             set "active_external_attempt_id" = null
+             where "id" = $1 and "active_external_attempt_id" = $2
+             returning "id"`,
+            [input.missionId, externalAttemptId],
+          );
+          if (!released.rows[0]) {
+            throw new McfMissionVersionConflictError(input.missionId, mission.version);
+          }
+        }
+      } else if (mission.activeExternalAttemptId !== null) {
+        throw new McfMissionVersionConflictError(input.missionId, mission.version);
+      }
+
+      await loadPhaseWithClient(client, input.missionId, input.phaseId);
 
       await client.query(
         `insert into "mcf_tool_receipts" (
@@ -494,7 +607,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         [input.missionState, input.nextAgentId, input.missionId],
       );
       if (!updatedMission.rows[0]) {
-        throw new McfMissionVersionConflictError(input.missionId, lockedMission.rows[0].version);
+        throw new McfMissionVersionConflictError(input.missionId, mission.version);
       }
 
       for (const event of input.events) {
@@ -507,11 +620,12 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
         throw new Error('MCF pending phase completion did not return state.');
       }
 
-      void existingPhase;
       return {
         duplicate: false,
         mission: mapMission(missionRow),
         phase: mapPhase(phaseRow),
+        receiptId: input.receipt.receiptId,
+        evidenceStatus: input.evidenceStatus,
       };
     });
   }

@@ -57,6 +57,10 @@ function isGitHubPrCollaborationOperation(operation: string): boolean {
   return githubPrCollaborationOperations.has(canonicalizeToolValue(operation));
 }
 
+function isGitHubStagingDeployOperation(operation: string): boolean {
+  return canonicalizeToolValue(operation) === 'deploy-staging';
+}
+
 function requiresCanonicalGitHubRepository(
   skillId: string,
   provider: string,
@@ -64,6 +68,7 @@ function requiresCanonicalGitHubRepository(
 ): boolean {
   if (provider !== 'github') return false;
   if (skillId === 'MCF-RUN-TESTS' && canonicalizeToolValue(operation) === 'query-ci') return true;
+  if (skillId === 'MCF-DEPLOY-VALIDATE' && isGitHubStagingDeployOperation(operation)) return true;
   if (skillId !== 'MCF-GIT-PR-RELEASE') return false;
   return (
     canonicalizeToolValue(operation) === 'create-branch-pr' ||
@@ -96,6 +101,23 @@ function assertPrCollaborationInputs(operation: string, inputs: Record<string, u
     throw new McfPermissionDeniedError(
       `${forbidden} is forbidden for controlled PR collaboration writes`,
     );
+  }
+}
+
+function assertStagingDeployInputs(
+  skillId: string,
+  provider: string,
+  operation: string,
+  inputs: Record<string, unknown>,
+): void {
+  if (!isGitHubStagingDeployOperation(operation)) return;
+  if (skillId !== 'MCF-DEPLOY-VALIDATE' || provider !== 'github') {
+    throw new McfPermissionDeniedError(
+      'deploy-staging is restricted to MCF-DEPLOY-VALIDATE using GitHub Actions control plane',
+    );
+  }
+  if (canonicalizeToolValue(String(inputs.target_environment ?? '')) !== 'staging') {
+    throw new McfPermissionDeniedError('deploy-staging is restricted to staging in Gate D');
   }
 }
 
@@ -175,6 +197,8 @@ export class PermissionEngine {
       }
       assertPrCollaborationInputs(operation, inputs);
     }
+
+    assertStagingDeployInputs(skill.skillId, provider, operation, inputs);
 
     if (
       requiresCanonicalGitHubRepository(skill.skillId, provider, operation) &&

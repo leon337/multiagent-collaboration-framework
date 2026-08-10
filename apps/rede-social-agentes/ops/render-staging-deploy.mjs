@@ -235,6 +235,16 @@ function appendSummary(result) {
   appendFileSync(path, `${lines.join('\n')}\n`, 'utf8');
 }
 
+export function appendGitHubOutputs(result, path = process.env.GITHUB_OUTPUT) {
+  if (!path) return;
+  const lines = [
+    `status=${result.status}`,
+    `release_sha=${result.releaseSha}`,
+    `previous_sha=${result.previousSha}`,
+  ];
+  appendFileSync(path, `${lines.join('\n')}\n`, 'utf8');
+}
+
 async function main() {
   const result = await orchestrateStagingDeployment({
     runtimeUrl: process.env.MCF_RUNTIME_URL ?? '',
@@ -263,6 +273,7 @@ async function main() {
     }),
   );
   appendSummary(result);
+  appendGitHubOutputs(result);
 
   if (result.status === 'RECOVERED') {
     process.exitCode = 1;

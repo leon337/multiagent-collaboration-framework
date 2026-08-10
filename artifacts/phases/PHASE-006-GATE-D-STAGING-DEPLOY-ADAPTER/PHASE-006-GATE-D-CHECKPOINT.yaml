@@ -1,0 +1,116 @@
+phase_id: PHASE-006-GATE-D-STAGING-DEPLOY-ADAPTER
+mission_id: MCF-RUNTIME-006-GATE-D
+issue: 83
+pull_request: 84
+base_commit: 1c58b4ba280bd32f587c2f042e35a2dba1a123a9
+branch: feat/mcf-runtime-006-gate-d-staging-deploy-adapter
+risk_class: C
+cycle: 4
+
+objective: implementar e comprovar adapter formal de deploy verificado para staging reutilizando RUNTIME-005
+objective_state: CLOSURE_MATERIALIZATION_PENDING_EXACT_HEAD_REVALIDATION
+
+history:
+  cycle_2:
+    status: RETROSPECTIVE_RECONSTRUCTION_NOT_VALID_AS_PRIMARY_ESEV
+  cycle_3:
+    primary_evidence_source: PR_84_TIMESTAMPED_COMMENTS
+    final_hdf_gate: REJECTED_BY_AUGUSTO_C3_021
+    historical_defects_preserved: true
+  cycle_4:
+    primary_evidence_source: PR_84_TIMESTAMPED_COMMENTS
+    index_file: PHASE-006-GATE-D-CYCLE-4-ESEV-RECEIPTS.md
+    receipts: C4-000..C4-020
+
+technical_candidate:
+  sha: c787179e126a93af96dd67604cb24f91235c4320
+  foundation_run: 31431820713
+  foundation: PASS
+  container_smoke_run: 31431820709
+  container_smoke: PASS
+  vitest_artifact: 9079437876
+  artifact_digest: sha256:3cf0373f66f71bc41681d3a1bfbe6fb4d1c448c0c97c694cda01de617b31dd71
+  codex_review_comment: 5246038796
+  codex_review: NO_MAJOR_ISSUES
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
+
+real_staging_proof:
+  authorized_by: Leo_C4_013
+  release_sha: c787179e126a93af96dd67604cb24f91235c4320
+  helper_run: 31438190773
+  helper_result: PASS
+  staging_run: 31438199266
+  staging_result: PASS
+  outcome: DEPLOYED
+  previous_sha: 0a7909b71e1944d1062e8ea1ab13a4bee4abbf88
+  request_id: c4-gated-real-proof-c787-001
+  recovery_used: false
+  human_operator_actions: 0
+
+post_proof_controls:
+  renato_c4_016: PASS
+  augusto_c4_017: PASS
+  julia_c4_018: PASS
+  emily_c4_019: PASS
+  leo_c4_020:
+    decision: APROVAR
+    gate_d: PASS
+    real_staging_proof: PASS
+
+institutionalization:
+  decision: MCF-DEC-061
+  file: docs/decisions/MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md
+  state: MATERIALIZED_IN_GATE_D_CLOSURE_HEAD
+
+completed_acceptance_criteria:
+  - ARCHITECTURE_REUSES_RUNTIME_005
+  - STAGING_ONLY
+  - RENDER_SECRET_ACTIONS_ONLY
+  - EXACT_SHA_VERIFICATION
+  - READINESS_VERIFICATION
+  - RECOVERY_SEMANTICS_REDEPLOY_PREVIOUS_HEALTHY_SHA
+  - IDEMPOTENT_RECONCILIATION
+  - UNKNOWN_FAIL_CLOSED
+  - RECEIPT_EVIDENCE_LEDGER_BINDING
+  - LIVE_REGISTRY_DISABLED
+  - REAL_STAGING_PROOF_PASS
+  - CLASS_C_GOVERNANCE_PASS
+  - FINAL_INDEPENDENT_AUDIT_PASS
+  - HDF_TEAM_FIRST_ZERO_HUMAN_OPERATOR_ACTIONS
+  - LEO_GATE_PASS
+  - ONE_SHOT_FALLBACK_FORMALIZED
+
+remaining_gaps:
+  - CLOSURE_HEAD_DELTA_MUST_BE_DOCS_ONLY
+  - CLOSURE_HEAD_FOUNDATION_PASS
+  - CLOSURE_HEAD_CONTAINER_SMOKE_PASS
+  - CLOSURE_HEAD_INDEPENDENT_REVIEW_PASS
+  - CLOSURE_HEAD_ZERO_ACTIVE_P0_P1_P2
+  - MESTRE_TERMINAL_CLOSEOUT
+
+live_registry: DISABLED
+production: BLOCKED
+merge: REQUIRES_SEPARATE_INTEGRATION_AUTHORIZATION
+human_operator_actions: 0
+human_action_required: false
+human_gate_leandro: NOT_REQUIRED
+
+next_action: validar o HEAD documental de fechamento; depois Mestre registra ENTREGUE e transfere para o gate de integração
+recipient: Renato
+
+source_of_truth:
+  - issue_83
+  - pr_84
+  - pr_comment_5246507111
+  - pr_comment_5246765006
+  - pr_comment_5246767763
+  - pr_comment_5246770748
+  - pr_comment_5246773134
+  - pr_comment_5246775588
+  - pr_comment_5246778498
+  - staging_run_31438199266
+  - docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md
+  - project-instructions/MCF-HUMAN-DELEGATION-FIREWALL.md
+  - docs/decisions/MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md
