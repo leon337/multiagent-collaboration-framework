@@ -4,24 +4,42 @@ PRF da implementação do adapter formal de deploy verificado para staging do MC
 
 ## Estado atual
 
-`PRF_MATERIALIZATION_PENDING_FINAL_EXACT_HEAD_GATE`
+`ESEV_REMEDIATED_PENDING_EXACT_HEAD_GATE`
 
-A implementação está aplicada e a reconciliação metodológica do ciclo 2 foi incorporada. O gate permanece aberto até CI completa, Container Smoke e revisão independente no **HEAD final materializado**, com zero P0/P1/P2.
+A implementação está aplicada. A retomada do ciclo 2 foi reconciliada com a metodologia vigente e os findings de governança da revisão de `51e5b9b1...` foram remediados no PRF. O gate permanece aberto até CI completa, Container Smoke e revisão independente no **HEAD remediado final**, com zero P0/P1/P2 ativos.
 
 ## Ciclos
 
 - **Ciclo 1:** execução técnica histórica preservada como ocorreu, sem reescrever participação retroativamente.
 - **Ciclo 2:** retomada de 2026-08-10 alinhada ao protocolo operacional 1.1, matriz oficial de 29 agentes, seleção dinâmica, Skill Registry e HDF TEAM_FIRST.
 
-## Evidência pré-finalização
+O registro cronológico executável/auditável do ciclo 2 está em:
 
-O HEAD `51e5b9b1a503221d31053a30409ae9408ef75949` obteve:
+`PHASE-006-GATE-D-CYCLE-2-TRACE.yaml`
 
-- Foundation `31409337150`: PASS;
-- Container Smoke `31409326589`: PASS;
-- Vitest artifact `9070945331`, digest `sha256:606b23d7946deaae565c7a0af36c05d720b434bb433ece373b35ad15b1b479c7`.
+Os resumos retrospectivos anteriores não são usados como substituto da ESEV.
 
-A finalização deste PRF gera um novo HEAD. A evidência desse HEAD final deve permanecer externa no PR #84 / GitHub Actions; embuti-la neste commit alteraria novamente o próprio SHA. O Gate de Léo deve sempre verificar os IDs externos contra o HEAD atual antes de decidir.
+## Findings de governança tratados
+
+- P1 — validações/smoke contraditórios: `REMEDIATED`;
+- P1 — gatilhos de controle marcados antes da execução: `REMEDIATED` após execução read-only e registro de Beatriz, Júlia/Ricardo e Augusto;
+- P2 — ciclo 2 retrospectivo em vez de ESEV: `REMEDIATED` com trace cronológico dedicado.
+
+A evidência de execução dos controles também está registrada no PR #84, comment `5243200110`.
+
+## Evidência pré-remediação ESEV
+
+O HEAD `844ad2bb8aa4638d358944d1638fa12ccf391c6d` obteve:
+
+- Foundation `31409926300`: PASS;
+- Container Smoke `31409926272`: PASS;
+- Vitest artifact `9071171402`, digest `sha256:da8ecefc1d93ab6f0263b9c0043134205ddf94d1de46bf19454531a5f92f8e85`.
+
+Como a remediação ESEV altera o PRF, essa evidência não fecha o novo HEAD. O SHA remediado deve receber novos runs e revisão independente externa.
+
+## Evidência exata do HEAD
+
+CI/review do próprio HEAD final permanecem externas no PR #84 / GitHub Actions. Embutir aqui os IDs futuros de CI/review do commit que contém este arquivo mudaria o próprio SHA. O Gate de Léo deve verificar os IDs externos contra o HEAD corrente antes de decidir.
 
 ## Regras preservadas
 
@@ -34,13 +52,15 @@ A finalização deste PRF gera um novo HEAD. A evidência desse HEAD final deve 
 - recovery significa redeploy do SHA saudável anterior;
 - driver de deploy vem da revisão confiável do control plane, não do release histórico;
 - HDF TEAM_FIRST e `human_operator_actions: 0` enquanto houver ação executável pela equipe;
-- nenhuma evidência de SHA anterior é promovida para um SHA posterior.
+- nenhuma evidência de SHA anterior é promovida para um SHA posterior;
+- todos os agentes oficiais permanecem disponíveis, mas participação decorativa é proibida.
 
 ## Arquivos
 
 - `PHASE-006-GATE-D-PLAN.md`
 - `PHASE-006-GATE-D-DECISIONS.md`
 - `PHASE-006-GATE-D-REPORT.md`
+- `PHASE-006-GATE-D-CYCLE-2-TRACE.yaml`
 - `PHASE-006-GATE-D-VALIDATION.txt`
 - `PHASE-006-GATE-D-VALIDATION-FULL.txt`
 - `PHASE-006-GATE-D-SMOKE.txt`
