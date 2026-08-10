@@ -4,7 +4,7 @@ issue: 83
 base_commit: 1c58b4ba280bd32f587c2f042e35a2dba1a123a9
 branch: feat/mcf-runtime-006-gate-d-staging-deploy-adapter
 objective: implementar adapter formal de deploy verificado para staging reutilizando RUNTIME-005
-objective_state: GOVERNANCE_RECONCILIATION
+objective_state: ESEV_REMEDIATED_PENDING_EXACT_HEAD_GATE
 risk_class: C
 cycle: 2
 selected_agents:
@@ -23,6 +23,13 @@ selected_agents:
   - Emily
   - Leo
 selection_note: selecao dinamica; agentes sem entrega concreta nao participam decorativamente
+cycle_2_trace: PHASE-006-GATE-D-CYCLE-2-TRACE.yaml
+control_execution_evidence:
+  pr_comment: 5243200110
+  Beatriz: PASS_PRE_PROOF
+  Julia_Ricardo: PASS_PRE_PROOF
+  Augusto_HDF: PASS
+  human_operator_actions: 0
 completed_acceptance_criteria:
   - ARCHITECTURE_REUSES_RUNTIME_005
   - RENDER_SECRET_ACTIONS_ONLY
@@ -35,17 +42,36 @@ completed_acceptance_criteria:
   - TRUSTED_CONTROL_PLANE_DRIVER_IMPLEMENTED
   - RECEIPT_EVIDENCE_LEDGER_BINDING_IMPLEMENTED
   - LIVE_REGISTRY_DISABLED
-  - PREVIOUS_HEAD_FOUNDATION_PASS_31299684631
-  - PREVIOUS_HEAD_CONTAINER_SMOKE_PASS_31299684630
-  - PREVIOUS_HEAD_CODEX_NO_MAJOR_ISSUES_7B2B4184
+  - PREVIOUS_TECHNICAL_HEAD_FOUNDATION_PASS_31299684631
+  - PREVIOUS_TECHNICAL_HEAD_CONTAINER_SMOKE_PASS_31299684630
+  - PREVIOUS_TECHNICAL_HEAD_CODEX_NO_MAJOR_ISSUES_7B2B4184
   - RETAKE_SOURCE_OF_TRUTH_RECONCILED
-  - CONTROL_AGENT_TRIGGERS_RECONCILED
+  - CONTROL_AGENT_TRIGGERS_EXECUTED_AND_RECORDED
+  - CYCLE_2_CHRONOLOGICAL_ESEV_PERSISTED
+  - VALIDATION_ARTIFACT_CONTRADICTION_REMEDIATED
+  - HDF_TEAM_FIRST_ZERO_HUMAN_OPERATOR_ACTIONS
+pre_remediation_exact_head_evidence:
+  head: 844ad2bb8aa4638d358944d1638fa12ccf391c6d
+  foundation_run: 31409926300
+  foundation: PASS
+  container_smoke_run: 31409926272
+  container_smoke: PASS
+  vitest_artifact: 9071171402
+  artifact_digest: sha256:da8ecefc1d93ab6f0263b9c0043134205ddf94d1de46bf19454531a5f92f8e85
+  note: evidence applies only to the pre-ESEV-remediation HEAD
+review_findings_from_51e5b9b1:
+  - id: P1_VALIDATION_CONTRADICTION
+    state: REMEDIATED
+  - id: P1_CONTROL_TRIGGER_PREMATURE_COMPLETION
+    state: REMEDIATED
+  - id: P2_RETROSPECTIVE_NOT_ESEV
+    state: REMEDIATED
 remaining_gaps:
-  - RECONCILED_EXACT_HEAD_CI
-  - RECONCILED_CONTAINER_SMOKE_EXACT_HEAD
-  - RECONCILED_INDEPENDENT_REVIEW_EXACT_HEAD
-  - ZERO_P0_P1_P2_ON_RECONCILED_HEAD
-  - PRF_FINAL_CONSISTENCY
+  - REMEDIATED_EXACT_HEAD_FOUNDATION_CI
+  - REMEDIATED_EXACT_HEAD_CONTAINER_SMOKE
+  - REMEDIATED_INDEPENDENT_REVIEW_EXACT_HEAD
+  - ZERO_ACTIVE_P0_P1_P2_ON_REMEDIATED_HEAD
+  - CARMEM_FINAL_PRF_CONSISTENCY
   - EMILY_AUDIT
   - LEO_GATE
   - REAL_STAGING_PROOF_DECISION
@@ -63,13 +89,15 @@ decisions:
   - APPLY_PROTOCOL_1_1_TO_RETAKE
   - NO_DECORATIVE_AGENT_PARTICIPATION
   - TEAM_FIRST_HDF
+  - EXTERNAL_EXACT_HEAD_GATE_EVIDENCE
+  - ACTUAL_ESEV_REQUIRED_NOT_RETROSPECTIVE_SUMMARY
 live_registry: DISABLED
 real_provider_dispatch_test: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE
 production: BLOCKED
 human_operator_actions: 0
 human_action_required: false
-next_action: executar CI e revisao independente no novo HEAD documental reconciliado
-recipient: Renato
+next_action: materializar manifest/README do trace e executar CI + revisao independente no novo HEAD
+recipient: Carmem_Mestre_then_Renato
 source_of_truth:
   - main_1c58b4ba280bd32f587c2f042e35a2dba1a123a9
   - issue_83
@@ -78,5 +106,7 @@ source_of_truth:
   - docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md
   - docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md
   - skills/registry.yaml
+  - project-instructions/MCF-HUMAN-DELEGATION-FIREWALL.md
   - docs/runtime/MCF-RUNTIME-006-PLAN.md
   - docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md
+  - pr_comment_5243200110
