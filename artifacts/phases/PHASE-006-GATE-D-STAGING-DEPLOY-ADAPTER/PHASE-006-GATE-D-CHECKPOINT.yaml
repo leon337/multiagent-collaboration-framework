@@ -4,18 +4,25 @@ issue: 83
 base_commit: 1c58b4ba280bd32f587c2f042e35a2dba1a123a9
 branch: feat/mcf-runtime-006-gate-d-staging-deploy-adapter
 objective: implementar adapter formal de deploy verificado para staging reutilizando RUNTIME-005
-objective_state: CANDIDATE_UNDER_VALIDATION
-cycle: 1
+objective_state: GOVERNANCE_RECONCILIATION
+risk_class: C
+cycle: 2
 selected_agents:
   - Mestre
+  - Miriam
   - Sofia
   - Rafael
+  - Bruno
   - Gabriel
   - Renato
   - Ricardo
-  - Emily
+  - Carmem
   - Augusto
+  - Beatriz
+  - Julia
+  - Emily
   - Leo
+selection_note: selecao dinamica; agentes sem entrega concreta nao participam decorativamente
 completed_acceptance_criteria:
   - ARCHITECTURE_REUSES_RUNTIME_005
   - RENDER_SECRET_ACTIONS_ONLY
@@ -28,12 +35,21 @@ completed_acceptance_criteria:
   - TRUSTED_CONTROL_PLANE_DRIVER_IMPLEMENTED
   - RECEIPT_EVIDENCE_LEDGER_BINDING_IMPLEMENTED
   - LIVE_REGISTRY_DISABLED
+  - PREVIOUS_HEAD_FOUNDATION_PASS_31299684631
+  - PREVIOUS_HEAD_CONTAINER_SMOKE_PASS_31299684630
+  - PREVIOUS_HEAD_CODEX_NO_MAJOR_ISSUES_7B2B4184
+  - RETAKE_SOURCE_OF_TRUTH_RECONCILED
+  - CONTROL_AGENT_TRIGGERS_RECONCILED
 remaining_gaps:
-  - FINAL_EXACT_HEAD_CI
-  - CONTAINER_SMOKE_EXACT_HEAD
-  - INDEPENDENT_REVIEW_EXACT_HEAD
-  - ZERO_P0_P1_P2
+  - RECONCILED_EXACT_HEAD_CI
+  - RECONCILED_CONTAINER_SMOKE_EXACT_HEAD
+  - RECONCILED_INDEPENDENT_REVIEW_EXACT_HEAD
+  - ZERO_P0_P1_P2_ON_RECONCILED_HEAD
+  - PRF_FINAL_CONSISTENCY
+  - EMILY_AUDIT
   - LEO_GATE
+  - REAL_STAGING_PROOF_DECISION
+  - REAL_STAGING_PROOF_IF_AUTHORIZED
 decisions:
   - GITHUB_ACTIONS_CONTROL_PLANE
   - RENDER_SECRET_ACTIONS_ONLY
@@ -44,14 +60,23 @@ decisions:
   - ASYNC_WORKFLOW_RUN_RECONCILIATION
   - TRUSTED_CONTROL_PLANE_DRIVER
   - PROVIDER_AVAILABLE_BUT_NOT_LIVE
+  - APPLY_PROTOCOL_1_1_TO_RETAKE
+  - NO_DECORATIVE_AGENT_PARTICIPATION
+  - TEAM_FIRST_HDF
 live_registry: DISABLED
 real_provider_dispatch_test: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE
 production: BLOCKED
-next_action: executar CI completa e revisão independente no HEAD final sincronizado
-recipient: Renato
+human_operator_actions: 0
 human_action_required: false
+next_action: executar CI e revisao independente no novo HEAD documental reconciliado
+recipient: Renato
 source_of_truth:
+  - main_1c58b4ba280bd32f587c2f042e35a2dba1a123a9
   - issue_83
+  - pr_84
+  - project-instructions/MCF-PROJECT-OPERATING-INSTRUCTIONS.md
+  - docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md
+  - docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md
+  - skills/registry.yaml
   - docs/runtime/MCF-RUNTIME-006-PLAN.md
   - docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md
-  - skills/registry.yaml
