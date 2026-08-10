@@ -67,11 +67,7 @@ function request(
   };
 }
 
-async function insertMissions(
-  database: DatabaseService,
-  missionA: string,
-  missionB: string,
-) {
+async function insertMissions(database: DatabaseService, missionA: string, missionB: string) {
   const now = new Date();
   await database.query(
     `insert into "mcf_missions" (
@@ -97,12 +93,16 @@ async function cleanup(database: DatabaseService, missionIds: string[]) {
   await database.query(`delete from "mcf_handoffs" where "mission_id" = any($1::text[])`, [
     missionIds,
   ]);
-  await database.query(`delete from "mcf_phases" where "mission_id" = any($1::text[])`, [missionIds]);
+  await database.query(`delete from "mcf_phases" where "mission_id" = any($1::text[])`, [
+    missionIds,
+  ]);
   await database.query(
     `delete from "mcf_external_action_attempts" where "mission_id" = any($1::text[])`,
     [missionIds],
   );
-  await database.query(`delete from "mcf_events" where "mission_id" = any($1::text[])`, [missionIds]);
+  await database.query(`delete from "mcf_events" where "mission_id" = any($1::text[])`, [
+    missionIds,
+  ]);
   await database.query(`delete from "mcf_missions" where "id" = any($1::text[])`, [missionIds]);
 }
 
