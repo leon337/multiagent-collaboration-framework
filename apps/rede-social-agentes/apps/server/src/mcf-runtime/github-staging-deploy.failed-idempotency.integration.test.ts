@@ -67,7 +67,11 @@ function request(
   };
 }
 
-async function insertMissions(database: DatabaseService, missionA: string, missionB: string) {
+async function insertMissions(
+  database: DatabaseService,
+  missionA: string,
+  missionB: string,
+) {
   const now = new Date();
   await database.query(
     `insert into "mcf_missions" (
@@ -76,7 +80,13 @@ async function insertMissions(database: DatabaseService, missionA: string, missi
     ) values
       ($1, $2::jsonb, 'EXECUTING', null, 'Gabriel', 1, $5, $5),
       ($3, $4::jsonb, 'EXECUTING', null, 'Gabriel', 1, $5, $5)`,
-    [missionA, missionContract('Gate D failed holder'), missionB, missionContract('Gate D retry'), now],
+    [
+      missionA,
+      missionContract('Gate D failed holder'),
+      missionB,
+      missionContract('Gate D retry'),
+      now,
+    ],
   );
 }
 
