@@ -86,6 +86,11 @@ callback_de_CI: true
 hierarquia_persistente_de_missoes: true
 retorno_automatico_a_missao_pai: true
 conclusao_pai_com_submissao_pendente: bloqueada
+runtime_006_gate_d: integrado
+runtime_006_gate_d_merge: 2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a
+staging_post_merge: PASS_DEPLOYED
+live_staging_adapter: disabled
+production: blocked
 publicacao_social_automatica: false
 ```
 
@@ -109,7 +114,7 @@ A recuperação atual **não é rollback nativo de artefato do Render**. O mecan
 
 ### MCF-STAB-001 e MCF-RUNTIME-006
 
-A estabilização anterior ao RUNTIME-006 possui rastreamento na issue `#68` e no PR draft `#69`.
+A estabilização anterior ao RUNTIME-006 possui rastreamento na issue `#68` e no PR `#69`.
 
 O primeiro controle técnico implementado é a hierarquia persistente de missões:
 
@@ -121,10 +126,36 @@ missão-pai
 → restauração da missão-pai
 ```
 
-O MCF-RUNTIME-006 expandirá a autonomia externa por meio de adapters confiáveis, recibos verificáveis, menor privilégio, idempotência, timeout, retry limitado e recuperação controlada.
+O MCF-RUNTIME-006 está expandindo a autonomia externa por meio de adapters confiáveis, recibos verificáveis, menor privilégio, idempotência, timeout, retry limitado e recuperação controlada.
+
+#### Gate D — staging integrado
+
+O Gate D do RUNTIME-006 foi implementado e integrado pela issue `#83` e PR `#84`.
+
+```yaml
+functional_release_sha: c787179e126a93af96dd67604cb24f91235c4320
+closeout_head: ea63828435589a78bafcab916b51b4fc5aea1102
+merge_sha: 2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a
+post_merge_documentation_run: 31442205293
+post_merge_documentation: PASS
+post_merge_staging_run: 31442205251
+post_merge_staging: PASS
+post_merge_outcome: DEPLOYED
+health_version_exact_sha: PASS
+readiness: PASS
+live_staging_adapter: DISABLED
+production: BLOCKED
+```
+
+O workflow pós-merge implantou e verificou o próprio merge SHA. A verificação de deploy consulta `/health/version` e `/health/ready` e somente retorna `DEPLOYED` quando o SHA observado é exatamente o solicitado e o runtime está ready.
+
+A `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza um fallback temporário TEAM_FIRST via GitHub Actions: `GITHUB_TOKEN` efêmero, menor privilégio, branch/ref isolado, binding ao SHA, guard contra duplicidade, single dispatch, correlação e cleanup. A decisão não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.
+
+O item restante do Lote 3 é **observabilidade e alertas de missão bloqueada**. Depois dele, o plano segue para as oito skills ainda documentais, isolamento multiagente, auditoria final e RC.
 
 ### Documentação do runtime
 
+- `docs/decisions/MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md`;
 - `docs/decisions/MCF-DEC-059-HIERARQUIA-PERSISTENTE-E-RETORNO-A-MISSAO-PAI.md`;
 - `docs/reviews/MCF-DEC-059-RC-001-HIERARQUIA-PERSISTENTE.md`;
 - `docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md`;
@@ -172,6 +203,7 @@ A integração do pacote ao GitHub não modifica automaticamente as configuraç�
 
 ## Documentos principais
 
+- `docs/decisions/MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md`;
 - `docs/decisions/MCF-DEC-059-HIERARQUIA-PERSISTENTE-E-RETORNO-A-MISSAO-PAI.md`;
 - `docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md`;
 - `docs/decisions/MCF-DEC-057-EXPANSAO-DE-SKILLS-EXECUTAVEIS-E-RECIBOS-SEMANTICOS.md`;
@@ -205,6 +237,6 @@ O runtime apenas projeta conclusões verificadas como candidatos `DRAFT_REVIEW`.
 
 ## Estado
 
-A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-059 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos, a conclusão apenas por trace final comprovado no ledger, o deploy verificado com recuperação controlada em staging e o retorno transacional à missão-pai.
+A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-061 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos, a conclusão apenas por trace final comprovado no ledger, o deploy verificado com recuperação controlada em staging, o retorno transacional à missão-pai e o fallback TEAM_FIRST one-shot quando o executor normal estiver indisponível e a operação permanecer segura e autorizada.
 
-O estado atual é um MVP técnico avançado em staging. A produção irrestrita continua bloqueada até a conclusão dos adapters externos confiáveis, das oito skills ainda documentais, dos testes multiagente independentes e da auditoria de segurança da release candidate.
+O estado atual é um MVP técnico avançado em staging com o Gate D do RUNTIME-006 integrado. A produção irrestrita continua bloqueada até a conclusão da observabilidade do Lote 3, dos adapters/capacidades restantes, das oito skills ainda documentais, dos testes multiagente independentes e da auditoria de segurança da release candidate.
