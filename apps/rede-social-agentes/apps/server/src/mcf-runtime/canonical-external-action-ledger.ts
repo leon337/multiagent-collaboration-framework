@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import type { DatabaseRow } from '@rsa/database';
 
-import { DatabaseService } from '../database.service.js';
+import type { DatabaseService } from '../database.service.js';
 import {
   ExternalActionAdapterError,
   type ExternalActionRequest,
