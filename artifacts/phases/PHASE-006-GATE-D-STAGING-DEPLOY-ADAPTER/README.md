@@ -1,59 +1,57 @@
 # PHASE-006-GATE-D-STAGING-DEPLOY-ADAPTER
 
-PRF da implementação do adapter formal de deploy verificado para staging do MCF-RUNTIME-006.
+PRF do adapter formal de deploy verificado para staging do MCF-RUNTIME-006.
 
-## Estado atual
+## Estado
 
-`ESEV_REMEDIATED_PENDING_EXACT_HEAD_GATE`
+`CYCLE_3_CONTEMPORANEOUS_ESEV_PENDING_EXACT_HEAD_GATE`
 
-A implementação está aplicada. A retomada do ciclo 2 foi reconciliada com a metodologia vigente e os findings de governança da revisão de `51e5b9b1...` foram remediados no PRF. O gate permanece aberto até CI completa, Container Smoke e revisão independente no **HEAD remediado final**, com zero P0/P1/P2 ativos.
+A implementação técnica permanece aplicada. O Gate D continua aberto. O adapter
+de staging não está no live `AdapterRegistry`, o dispatch real ainda não foi
+autorizado e produção permanece bloqueada.
 
-## Ciclos
+## Ciclos e fonte de evidência
 
-- **Ciclo 1:** execução técnica histórica preservada como ocorreu, sem reescrever participação retroativamente.
-- **Ciclo 2:** retomada de 2026-08-10 alinhada ao protocolo operacional 1.1, matriz oficial de 29 agentes, seleção dinâmica, Skill Registry e HDF TEAM_FIRST.
+- **Ciclo 1:** execução técnica histórica preservada.
+- **Ciclo 2:** reconstrução histórica posterior; **não** vale como ESEV primária.
+- **Ciclo 3:** recuperação válida iniciada no PR #84 com receipts individuais e
+  timestampados publicados no ponto de cada atuação.
 
-O registro cronológico executável/auditável do ciclo 2 está em:
+`PHASE-006-GATE-D-CYCLE-2-TRACE.yaml` é contexto histórico somente.
 
-`PHASE-006-GATE-D-CYCLE-2-TRACE.yaml`
+`PHASE-006-GATE-D-CYCLE-3-ESEV-RECEIPTS.md` é um índice dos comentários
+contemporâneos já existentes no PR #84. O índice não cria prova retroativa.
 
-Os resumos retrospectivos anteriores não são usados como substituto da ESEV.
+## Findings que motivaram o ciclo 3
 
-## Findings de governança tratados
+Review do HEAD `79006472f88e1d54f4f0647df95464b657cfd644`:
 
-- P1 — validações/smoke contraditórios: `REMEDIATED`;
-- P1 — gatilhos de controle marcados antes da execução: `REMEDIATED` após execução read-only e registro de Beatriz, Júlia/Ricardo e Augusto;
-- P2 — ciclo 2 retrospectivo em vez de ESEV: `REMEDIATED` com trace cronológico dedicado.
+- P2 — Cycle 2 post-hoc/grouped: recuperação por **novo ciclo 3**, sem promoção retroativa;
+- P2 — checkpoint one step behind: corrigido nesta materialização.
 
-A evidência de execução dos controles também está registrada no PR #84, comment `5243200110`.
+## Evidência anterior ao novo HEAD
 
-## Evidência pré-remediação ESEV
+Em `79006472f88e1d54f4f0647df95464b657cfd644`:
 
-O HEAD `844ad2bb8aa4638d358944d1638fa12ccf391c6d` obteve:
+- Foundation `31410778208`: PASS;
+- Container Smoke `31410778237`: PASS;
+- artifact `9071498590`;
+- digest `sha256:dcd21681b07eeca09b7b684ee2548ae7c7ba3b309ba424280c788f8fb3e84bb7`.
 
-- Foundation `31409926300`: PASS;
-- Container Smoke `31409926272`: PASS;
-- Vitest artifact `9071171402`, digest `sha256:da8ecefc1d93ab6f0263b9c0043134205ddf94d1de46bf19454531a5f92f8e85`.
-
-Como a remediação ESEV altera o PRF, essa evidência não fecha o novo HEAD. O SHA remediado deve receber novos runs e revisão independente externa.
-
-## Evidência exata do HEAD
-
-CI/review do próprio HEAD final permanecem externas no PR #84 / GitHub Actions. Embutir aqui os IDs futuros de CI/review do commit que contém este arquivo mudaria o próprio SHA. O Gate de Léo deve verificar os IDs externos contra o HEAD corrente antes de decidir.
+Como este PRF muda o commit, essa evidência não será promovida. O novo HEAD exige
+CI/Smoke e revisão independente próprios.
 
 ## Regras preservadas
 
 - staging only;
 - produção bloqueada;
-- Render secret permanece no GitHub Actions;
-- live registry desativado durante implementação;
-- provider interno pode existir para reconciliação sem entrar no `AdapterRegistry`;
-- nenhuma prova real do novo adapter antes do Gate de Léo;
-- recovery significa redeploy do SHA saudável anterior;
-- driver de deploy vem da revisão confiável do control plane, não do release histórico;
-- HDF TEAM_FIRST e `human_operator_actions: 0` enquanto houver ação executável pela equipe;
-- nenhuma evidência de SHA anterior é promovida para um SHA posterior;
-- todos os agentes oficiais permanecem disponíveis, mas participação decorativa é proibida.
+- Render secret fica no GitHub Actions;
+- live registry desativado para o staging adapter;
+- nenhuma prova real antes do Gate de Léo;
+- HDF TEAM_FIRST;
+- `human_operator_actions: 0`;
+- seleção dinâmica dos 29 agentes, sem participação decorativa;
+- CI/review sempre vinculadas ao SHA exato.
 
 ## Arquivos
 
@@ -61,6 +59,7 @@ CI/review do próprio HEAD final permanecem externas no PR #84 / GitHub Actions.
 - `PHASE-006-GATE-D-DECISIONS.md`
 - `PHASE-006-GATE-D-REPORT.md`
 - `PHASE-006-GATE-D-CYCLE-2-TRACE.yaml`
+- `PHASE-006-GATE-D-CYCLE-3-ESEV-RECEIPTS.md`
 - `PHASE-006-GATE-D-VALIDATION.txt`
 - `PHASE-006-GATE-D-VALIDATION-FULL.txt`
 - `PHASE-006-GATE-D-SMOKE.txt`
