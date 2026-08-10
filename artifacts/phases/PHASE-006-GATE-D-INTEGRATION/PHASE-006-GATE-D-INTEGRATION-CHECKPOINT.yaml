@@ -1,0 +1,57 @@
+mission_id: MCF-RUNTIME-006-GATE-D-INTEGRATION
+parent_mission_id: MCF-RUNTIME-006
+state: READY_FOR_DOC_SYNC_REVIEW
+risk_class: C
+
+entry:
+  issue: 83
+  pull_request: 84
+  candidate_head: ea63828435589a78bafcab916b51b4fc5aea1102
+  main_before: 1c58b4ba280bd32f587c2f042e35a2dba1a123a9
+
+integration_gate:
+  leo_decision: APROVAR
+  leo_comment: 5247150394
+  integration_authorized: true
+  merge_authorized: true
+  merge_method: squash
+  expected_head_sha: ea63828435589a78bafcab916b51b4fc5aea1102
+
+merge:
+  result: PASS
+  merge_sha: 2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a
+  main_after: 2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a
+  pr_state: CLOSED_MERGED
+
+post_merge:
+  documentation:
+    run: 31442205293
+    result: PASS
+  staging:
+    run: 31442205251
+    job: 93629069170
+    result: PASS
+    outcome: DEPLOYED
+  health_version_exact_sha: PASS
+  readiness: PASS
+
+limits:
+  production: BLOCKED
+  live_staging_adapter: DISABLED
+  real_github_provider_write_gate: SEPARATE_NOT_AUTHORIZED_BY_THIS_PHASE
+  human_operator_actions: 0
+  human_gate_leandro: NOT_REQUIRED
+
+canonical_sync:
+  branch: docs/mcf-runtime-006-gate-d-integration-sync
+  status: IN_PROGRESS
+  required_sources:
+    - docs/runtime/MCF-RUNTIME-006-PLAN.md
+    - docs/runtime/README.md
+    - README.md
+    - artifacts/phases/PHASE-006-GATE-D-INTEGRATION/
+
+next_boundary_after_sync:
+  mission: MCF-RUNTIME-006-LOT-3-OBSERVABILITY
+  objective: observabilidade e alertas de missao bloqueada
+  production: BLOCKED
