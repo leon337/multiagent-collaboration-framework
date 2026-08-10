@@ -1,6 +1,6 @@
 mission_id: MCF-RUNTIME-006-GATE-D-INTEGRATION
 parent_mission_id: MCF-RUNTIME-006
-state: READY_FOR_DOC_SYNC_REVIEW
+state: READY_FOR_REVIEW
 risk_class: C
 
 entry:
@@ -44,7 +44,7 @@ limits:
 
 canonical_sync:
   branch: docs/mcf-runtime-006-gate-d-integration-sync
-  status: IN_PROGRESS
+  status: COMPLETE_ON_BRANCH
   required_sources:
     - docs/runtime/MCF-RUNTIME-006-PLAN.md
     - docs/runtime/README.md
