@@ -4,6 +4,8 @@ import { DatabaseModule } from '../database.module.js';
 import { DatabaseService } from '../database.service.js';
 import { IdentityModule } from '../identity/identity.module.js';
 import { AdapterRegistry } from './adapter-registry.js';
+import { BoundStagingDeployReconciliationService } from './bound-staging-deploy-reconciliation.service.js';
+import { CanonicalExternalActionLedger } from './canonical-external-action-ledger.js';
 import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
@@ -74,7 +76,7 @@ import { SocialTimelineService } from './social-timeline.service.js';
     },
     {
       provide: ExternalActionLedger,
-      useFactory: (database: DatabaseService) => new ExternalActionLedger(database),
+      useFactory: (database: DatabaseService) => new CanonicalExternalActionLedger(database),
       inject: [DatabaseService],
     },
     {
@@ -124,7 +126,33 @@ import { SocialTimelineService } from './social-timeline.service.js';
         new ChatRuntimeBridgeService(runtime, planner),
       inject: [MissionRuntimeService, ChatMissionPlanner],
     },
-    StagingDeployReconciliationService,
+    {
+      provide: StagingDeployReconciliationService,
+      useFactory: (
+        repository: McfRuntimeRepository,
+        executor: SkillExecutor,
+        registry: SkillRegistryLoader,
+        ledger: ExternalActionLedger,
+        adapter: GitHubActionsStagingDeployAdapter,
+        database: DatabaseService,
+      ) =>
+        new BoundStagingDeployReconciliationService(
+          repository,
+          executor,
+          registry,
+          ledger,
+          adapter,
+          database,
+        ),
+      inject: [
+        MCF_RUNTIME_REPOSITORY,
+        SkillExecutor,
+        SkillRegistryLoader,
+        ExternalActionLedger,
+        GitHubActionsStagingDeployAdapter,
+        DatabaseService,
+      ],
+    },
     SocialTimelineService,
   ],
   exports: [MissionRuntimeService, ChatRuntimeBridgeService, SocialTimelineService],
