@@ -1,20 +1,27 @@
 PHASE-006-GATE-D SMOKE
 
-STATE: REMEDIATED_PENDING_EXACT_HEAD_REVALIDATION
+STATE: PRE_FINALIZATION_SMOKE_PASS_FINAL_HEAD_GATE_REQUIRED
 
-Canonical evidence:
-- run: 31292069908
-- head: cc68fc87660674bc35ccd90089323c9241efe63f
-- result: FAIL
-- failing stage: Build and start smoke stack
+Historical defect:
+- Container Smoke 31292069908 @ cc68fc87660674bc35ccd90089323c9241efe63f: FAIL
 - root cause: Nest could not resolve GitHubActionsStagingDeployAdapter for StagingDeployReconciliationService.
 
-Remediation applied after the failed run:
+Remediation:
 - GitHubActionsStagingDeployAdapter registered as an internal Nest provider;
 - staging adapter remains excluded from the live AdapterRegistry;
-- provider-boundary regression updated to distinguish DI availability from live activation.
+- provider-boundary regression distinguishes DI availability from live activation.
 
-A new Container Smoke PASS on the final exact HEAD is still mandatory.
+Latest exact-head smoke completed before this PRF finalization commit:
+- head: 51e5b9b1a503221d31053a30409ae9408ef75949
+- Container Smoke run: 31409326589
+- result: PASS
+
+Final evidence boundary:
+- PRF finalization changes HEAD after the PASS above;
+- the final materialized HEAD therefore requires a new Container Smoke PASS;
+- that exact-head run is recorded externally on GitHub Actions / PR #84 and must be checked before LEO gate;
+- no previous run is treated as proof for a different SHA.
 
 Production remains BLOCKED.
 Real provider dispatch remains NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE.
+Live AdapterRegistry remains DISABLED.
