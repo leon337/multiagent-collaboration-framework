@@ -1,0 +1,28 @@
+PHASE-006-GATE-D-INTEGRATION SMOKE
+
+release_sha=2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a
+workflow_run=31442205251
+job=93629069170
+
+container_smoke=PASS
+format=PASS
+lint=PASS
+typecheck=PASS
+migrations_twice=PASS
+tests=PASS
+build=PASS
+deploy_exact_revision_and_verify_or_recover=PASS
+deployment_result_DEPLOYED=PASS
+deployment_result_NOOP=SKIPPED
+deployment_result_RECOVERED=SKIPPED
+
+verification_contract:
+- GET /health/version must return a valid commitSha
+- GET /health/ready must be successful
+- waitForRuntimeCommit returns only when observed commitSha equals expected release SHA and ready=true
+- DEPLOYED step asserts deploy output release_sha equals workflow RELEASE_SHA
+
+health_version_exact_sha=PASS
+health_readiness=PASS
+outcome=DEPLOYED
+RESULT=PASS
