@@ -1,6 +1,6 @@
 PHASE-006-GATE-D VALIDATION
 
-STATE: CANDIDATE_PENDING_EXACT_HEAD_GATE
+STATE: PRF_MATERIALIZATION_PENDING_FINAL_EXACT_HEAD_GATE
 
 Implementation:
 - adapter contract/runtime: APPLIED
@@ -10,25 +10,34 @@ Implementation:
 - provider available for callback: APPLIED
 - live AdapterRegistry activation: DISABLED
 
-Latest completed CI evidence before final PRF sync:
-- Foundation 31292069913 @ cc68fc87660674bc35ccd90089323c9241efe63f: PASS
-- Container Smoke 31292069908 @ cc68fc87660674bc35ccd90089323c9241efe63f: FAIL
-  reason: GitHubActionsStagingDeployAdapter unavailable to StagingDeployReconciliationService
-  remediation: provider-only registration added; adapter remains outside live AdapterRegistry
+Latest exact-head evidence before this PRF finalization commit:
+- head: 51e5b9b1a503221d31053a30409ae9408ef75949
+- Foundation 31409337150: PASS complete
+- Container Smoke 31409326589: PASS
+- Vitest artifact 9070945331
+- artifact digest: sha256:606b23d7946deaae565c7a0af36c05d720b434bb433ece373b35ad15b1b479c7
+- delta from previous clean technical head 7b2b4184d3475fd741e4951f0373897a78b12030: PRF/documentation only
 
-Final exact-HEAD checks:
-- documentation: UPDATED_CANDIDATE
-- format: PENDING_EXACT_HEAD
-- lint: PENDING_EXACT_HEAD
-- typecheck: PENDING_EXACT_HEAD
-- migrations_twice: PENDING_EXACT_HEAD
-- tests: PENDING_EXACT_HEAD
-- build: PENDING_EXACT_HEAD
-- container_smoke: PENDING_EXACT_HEAD
-- independent_review: PENDING_EXACT_HEAD
-- active_p0_p1_p2: PENDING_REVIEW
+Final gate evidence policy:
+- this file records evidence available before PRF materialization;
+- embedding CI/review identifiers from the commit that contains this file would mutate that commit and is therefore impossible as an exact self-reference;
+- CI, Container Smoke and independent review for the final materialized HEAD MUST be recorded externally on PR #84 / GitHub Actions and bound to that exact SHA;
+- no PASS from an earlier SHA may be promoted to the final materialized HEAD.
+
+Final materialized-HEAD checks:
+- documentation: RECONCILED
+- format: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
+- lint: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
+- typecheck: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
+- migrations_twice: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
+- tests: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
+- build: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
+- container_smoke: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
+- independent_review: EXTERNAL_EXACT_HEAD_GATE_REQUIRED
+- active_p0_p1_p2: EXTERNAL_EXACT_HEAD_REVIEW_REQUIRED
 - leo_gate: PENDING
 
 Provider live: DISABLED
 Real provider dispatch: NOT_AUTHORIZED_IN_IMPLEMENTATION_PHASE
 Production: BLOCKED
+Human operator actions: 0
