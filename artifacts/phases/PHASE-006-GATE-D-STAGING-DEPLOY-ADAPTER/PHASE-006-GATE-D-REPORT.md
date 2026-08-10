@@ -2,9 +2,11 @@
 
 ## Estado
 
-Implementação funcional aplicada e em validação de gate. O adapter continua fora do live registry; nenhum dispatch real do novo adapter foi autorizado.
+`ESEV_REMEDIATED_PENDING_EXACT_HEAD_GATE`
 
-## Ciclo 1 — execução histórica
+A implementação funcional permanece aplicada, o adapter continua fora do live registry e nenhum dispatch real do novo adapter foi autorizado. O ciclo 2 de retomada foi reconciliado com a metodologia vigente e agora possui trace cronológico persistido.
+
+## Ciclo 1 — execução histórica preservada
 
 | Seq. | Agente | Ação | Evidência | Resultado | Handoff |
 |---:|---|---|---|---|---|
@@ -20,51 +22,68 @@ Implementação funcional aplicada e em validação de gate. O adapter continua 
 | 10 | Renato | obteve validação canônica no HEAD `7b2b4184...` | Foundation `31299684631`; Container Smoke `31299684630` | PASS | Renato → Emily |
 | 11 | Emily | revisão independente externa vinculada ao HEAD exato | Codex review de `7b2b4184...` | nenhum major issue encontrado | Emily → Léo |
 
-## Evidência consolidada do último HEAD técnico antes da retomada
+O ciclo 1 não foi reescrito para atribuir participação posterior a agentes que não atuaram naquele momento.
 
-- HEAD: `7b2b4184d3475fd741e4951f0373897a78b12030`.
-- Foundation `31299684631`: PASS completo.
-- Container Smoke `31299684630`: PASS.
-- Vitest artifact `9034115025`: 204/204 suítes e 427/427 testes PASS, zero falhas.
-- revisão Codex no mesmo HEAD: `Didn't find any major issues`.
+## Ciclo 2 — ESEV cronológica real da retomada
 
-Essas evidências comprovam o estado daquele SHA, mas não são promovidas automaticamente para um HEAD posterior.
+Fonte canônica detalhada:
 
-## Ciclo 2 — retomada e reconciliação metodológica em 2026-08-10
+`PHASE-006-GATE-D-CYCLE-2-TRACE.yaml`
 
-### Miriam — contexto e fonte de verdade
+O trace registra separadamente, em ordem, `input_received`, `action_executed`, `tool_or_resource`, `evidence_observed`, `result_and_analysis`, `decision_and_delivery` e `handoff`.
 
-Entrada: pedido de Leandro para continuar o MCF alinhado ao estado atual do repositório e à metodologia vigente.
+Resumo indexado do trace real:
 
-Ação/evidência: `main` foi verificada em `1c58b4ba280bd32f587c2f042e35a2dba1a123a9`; issue #83 e PR #84 foram reconciliados com `MCF-PROJECT-OPERATING-INSTRUCTIONS`, Protocolo 1.1, matriz de 29 agentes e Skill Registry.
+| ID | Agente | Ação/ferramenta observada | Evidência principal | Resultado | Handoff |
+|---|---|---|---|---|---|
+| C2-001 | Mestre | consulta live de repo/main/issue/PR | `main=1c58b4b...`, issue #83, PR #84 | Gate D confirmado | Mestre → Miriam |
+| C2-002 | Miriam | reconciliação de protocolo, matriz, skills e HDF | protocolo 1.1; 29 agentes; gatilhos de retomada/autonomia | fonte de verdade reconciliada | Miriam → Mestre/Sofia |
+| C2-003 | Mestre/Sofia | classificação de risco e seleção dinâmica | Classe C; regra `agente_sem_entrega: proibido` | equipe do ciclo 2 definida | → Bruno/Gabriel |
+| C2-004 | Bruno/Gabriel | ownership/arquitetura de deploy | `MCF-DEPLOY-VALIDATE`; GitHub Actions control plane | nenhuma mudança técnica exigida pela retomada | → Carmem |
+| C2-005 | Carmem | leitura integral do PRF | inconsistência entre checkpoint e validation/smoke | finding documental aberto | → Mestre |
+| C2-006 | Mestre | writes de reconciliação PRF | commits até `51e5b9b...`; diff somente documental | primeiro HEAD reconciliado | → Renato |
+| C2-007 | Renato | CI no SHA exato | Foundation `31409337150`; Smoke `31409326589`; artifact `9070945331` | PASS | → revisão independente |
+| C2-008 | revisão independente | Codex no HEAD `51e5b9b...` | 2 P1 + 1 P2 de governança/trace | gate mantido aberto | → Carmem/Mestre |
+| C2-009 | Carmem/Mestre | remediação de validation/smoke/README/manifest | commits até `844ad2b...` | primeiro P1 remediado | → Renato |
+| C2-010 | Renato | CI no SHA `844ad2b...` | Foundation `31409926300`; Smoke `31409926272`; artifact `9071171402` | PASS | → controles/review |
+| C2-011 | Beatriz | compare de commits + inspeção de `AdapterRegistry` | delta só PRF; staging adapter fora do live registry | `PASS_PRE_PROOF` | → Júlia/Ricardo |
+| C2-012 | Júlia/Ricardo | inspeção de HDF/Skill Registry/PermissionEngine | staging-only; GitHub control plane; produção bloqueada; human actions 0 | `PASS_PRE_PROOF` | → Augusto |
+| C2-013 | Augusto | reconciliação da ordem, recoveries e ações humanas | `human_operator_actions=0`; comment `5243200110` | TEAM_FIRST PASS; trace persistível | → Carmem/Mestre |
 
-Resultado: o Gate D é a frente ativa; o PRF do ciclo 1 estava tecnicamente útil, porém não registrava todos os gatilhos de controle exigidos para a retomada/autonomia.
+## Findings da revisão de governança e tratamento
 
-Passagem: Miriam → Mestre/Sofia.
+### P1 — validation artifacts contraditórios
 
-### Mestre/Sofia — seleção e fronteiras
+Estado: `REMEDIATED`.
 
-Ação/evidência: aplicada seleção dinâmica. A retomada inclui Miriam e Augusto; o domínio de autonomia/tool calling inclui Beatriz e Júlia; Bruno e Gabriel representam a skill `MCF-DEPLOY-VALIDATE`; Carmem entra para consistência do PRF. Os demais agentes não são convocados sem entrega real.
+`VALIDATION`, `VALIDATION-FULL`, `SMOKE` e README agora distinguem explicitamente:
 
-Resultado: equipe do ciclo 2 reconciliada sem participação decorativa. O escopo técnico permanece staging-only, live registry desativado e produção bloqueada.
+- evidência obtida antes da materialização do PRF;
+- evidência externa de CI/review vinculada ao HEAD final;
+- impossibilidade de um commit incorporar os IDs futuros de CI/review do próprio SHA sem alterá-lo novamente.
 
-Passagem: Mestre/Sofia → Bruno/Gabriel.
+### P1 — gatilhos de controle marcados antes da execução
 
-### Bruno/Gabriel — deploy e integração
+Estado: `REMEDIATED_IN_THIS_CYCLE`.
 
-Ação/evidência: confirmado que o desenho corrente continua GitHub Actions → Render protegido, sem exposição de `RENDER_DEPLOY_HOOK_URL` ao runtime. A prova real do novo adapter continua separada da implementação e depende do Gate de Léo após novo CI/revisão no HEAD reconciliado.
+Beatriz, Júlia/Ricardo e Augusto executaram ações read-only reais, com ferramenta/evidência/veredito e handoff registrados no comment `5243200110` e no trace C2-011 a C2-013. O checkpoint só passa a considerar esse critério completo após esses registros.
 
-Resultado: nenhuma razão para alterar o adapter durante esta reconciliação; somente PRF/documentação é modificada.
+### P2 — ciclo 2 retrospectivo em vez de ESEV
 
-Passagem: Bruno/Gabriel → Renato.
+Estado: `REMEDIATED_IN_THIS_CYCLE`.
 
-### Augusto — rastreabilidade/HDF
+Os resumos agrupados anteriores não são usados como prova de execução. O arquivo `PHASE-006-GATE-D-CYCLE-2-TRACE.yaml` é o registro cronológico estruturado da sequência efetivamente executada, e este relatório apenas o indexa.
 
-Ação/evidência: a retomada não transfere operação técnica a Leandro e preserva `human_operator_actions: 0`. O HEAD será revalidado depois das mudanças documentais; não se reutiliza PASS de SHA anterior.
+## Evidência automática mais recente antes desta remediação ESEV
 
-Resultado: ESEV da retomada e TEAM_FIRST preservados.
+HEAD `844ad2bb8aa4638d358944d1638fa12ccf391c6d`:
 
-Passagem: Augusto → Renato/Emily.
+- Foundation `31409926300`: PASS completo;
+- Container Smoke `31409926272`: PASS;
+- artifact `9071171402`;
+- digest `sha256:da8ecefc1d93ab6f0263b9c0043134205ddf94d1de46bf19454531a5f92f8e85`.
+
+Como esta remediação altera o PRF, esses resultados não fecham o novo HEAD.
 
 ## Restrições preservadas
 
@@ -75,8 +94,15 @@ production: BLOCKED
 render_secret_in_runtime: false
 native_render_rollback_claimed: false
 human_operator_actions: 0
+team_first: PASS
 ```
 
-## Próxima ação
+## Próxima ação ESEV
 
-Executar CI canônica e Container Smoke no novo HEAD documental reconciliado; depois obter revisão independente no mesmo SHA. Em seguida, Beatriz, Júlia, Carmem, Augusto e Emily fecham os controles do ciclo 2 e Léo decide se existe base para autorizar a prova real controlada em staging.
+1. Carmem fecha consistência do PRF e manifest desta remediação.
+2. Renato executa/observa Foundation + Container Smoke no novo HEAD exato.
+3. revisão independente Codex deve avaliar o mesmo SHA e retornar zero P0/P1/P2 ativos.
+4. Emily audita ESEV, PRF, HDF e evidências do HEAD remediado.
+5. somente então Léo decide se autoriza uma prova real controlada em staging.
+
+Nenhum HUMAN_GATE para Leandro está aberto nesta etapa.
