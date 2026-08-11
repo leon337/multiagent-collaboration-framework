@@ -188,6 +188,36 @@ describe('SkillExecutor Lot 4E MCF-CLOSE-PHASE', () => {
       },
     ],
     [
+      'blocking audit finding disguised as delivered',
+      {
+        ...validEvidence(),
+        audit_verdict: {
+          ...(validEvidence().audit_verdict as Record<string, unknown>),
+          blocking_findings: ['P1 open'],
+        },
+      },
+    ],
+    [
+      'non-passing audit verdict disguised as delivered',
+      {
+        ...validEvidence(),
+        audit_verdict: {
+          ...(validEvidence().audit_verdict as Record<string, unknown>),
+          verdict: 'FAIL',
+        },
+      },
+    ],
+    [
+      'Leandro assigned as technical responsible without escalation',
+      {
+        ...validEvidence(),
+        leo_decision: {
+          ...(validEvidence().leo_decision as Record<string, unknown>),
+          responsible: 'Leandro',
+        },
+      },
+    ],
+    [
       'non-approving delivered decision',
       {
         ...validEvidence(),

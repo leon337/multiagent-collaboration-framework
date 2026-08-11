@@ -395,7 +395,20 @@ function requireCloseLeoDecision(
     return reject('MCF-CLOSE-PHASE leo_decision next_state must be a canonical terminal state');
   }
   requireCloseString(value, 'next_action', 'MCF-CLOSE-PHASE leo_decision requires next_action');
-  requireCloseString(value, 'responsible', 'MCF-CLOSE-PHASE leo_decision requires responsible');
+  const responsible = requireCloseString(
+    value,
+    'responsible',
+    'MCF-CLOSE-PHASE leo_decision requires responsible',
+  );
+  const responsibleIsLeandro = responsible.trim().toLowerCase() === 'leandro';
+  if (responsibleIsLeandro && decision !== 'ESCALAR_PARA_LEANDRO') {
+    return reject(
+      'MCF-CLOSE-PHASE cannot assign Leandro as technical responsible without an explicit HUMAN_GATE escalation decision',
+    );
+  }
+  if (decision === 'ESCALAR_PARA_LEANDRO' && !responsibleIsLeandro) {
+    return reject('MCF-CLOSE-PHASE ESCALAR_PARA_LEANDRO must identify Leandro as responsible');
+  }
   return value;
 }
 
@@ -622,8 +635,16 @@ function validateEvidence(
       );
       const nextState = String(leoDecision.next_state).trim().toUpperCase();
       const finalState = String(checkpoint.final_state).trim().toUpperCase();
+      const auditBlockingFindings = auditVerdict.blocking_findings as unknown[];
+      const normalizedAuditVerdict = String(auditVerdict.verdict).trim().toUpperCase();
       if (nextState !== finalState) {
         return reject('MCF-CLOSE-PHASE leo_decision.next_state must match checkpoint.final_state');
+      }
+      if (finalState === 'ENTREGUE' && auditBlockingFindings.length > 0) {
+        return reject('MCF-CLOSE-PHASE cannot mark ENTREGUE with blocking audit findings');
+      }
+      if (finalState === 'ENTREGUE' && !['PASS', 'PASSED'].includes(normalizedAuditVerdict)) {
+        return reject('MCF-CLOSE-PHASE ENTREGUE requires a passing independent audit verdict');
       }
       if (
         finalState === 'ENTREGUE' &&
