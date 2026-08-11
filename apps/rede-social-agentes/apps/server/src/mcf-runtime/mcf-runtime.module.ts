@@ -49,8 +49,19 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     EvidenceValidator,
     McfRuntimeTokenGuard,
     ChatMissionPlanner,
-    MissionObservabilityRepository,
-    MissionObservabilityService,
+    {
+      provide: MissionObservabilityRepository,
+      useFactory: (database: DatabaseService) => new MissionObservabilityRepository(database),
+      inject: [DatabaseService],
+    },
+    {
+      provide: MissionObservabilityService,
+      useFactory: (
+        repository: McfRuntimeRepository,
+        observabilityRepository: MissionObservabilityRepository,
+      ) => new MissionObservabilityService(repository, observabilityRepository),
+      inject: [MCF_RUNTIME_REPOSITORY, MissionObservabilityRepository],
+    },
     {
       provide: GitHubCodeReviewAdapter,
       useFactory: (evidence: EvidenceValidator) => new GitHubCodeReviewAdapter(evidence),
