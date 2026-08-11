@@ -128,9 +128,9 @@ describe('Mission observability persistence', () => {
       );
 
       const snapshot = await repository.listMissionsByStates(['BLOCKED_RISK']);
-      expect(snapshot.some((mission) => mission.id === missionId && mission.version === 4)).toBe(
-        true,
-      );
+      expect(
+        snapshot.some((mission) => mission.id === missionId && mission.version === 4),
+      ).toBe(true);
 
       await database.query(
         `update "mcf_missions"
