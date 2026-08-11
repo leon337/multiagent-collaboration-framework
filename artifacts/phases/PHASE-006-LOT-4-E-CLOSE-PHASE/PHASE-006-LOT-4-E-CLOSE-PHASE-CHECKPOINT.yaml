@@ -1,0 +1,37 @@
+phase: PHASE-006-LOT-4-E-CLOSE-PHASE
+mission: MCF-RUNTIME-006-LOT-4-E-CLOSE-PHASE
+issue: 107
+risk_class: C
+state: IMPLEMENTATION_CANDIDATE
+baseline: 39d2a8b3f1c323792fff9cbcc140d5f2bddc1522
+branch: feat/mcf-runtime-006-lot4-e-close-phase
+skills_registered: 16
+skills_executable_target: 16
+skills_documental_target: 0
+close_phase:
+  planner_state: READY_AGENT
+  primary_owner: Carmem
+  owners: [Carmem, Emily, Leo, Mestre]
+  handoff_to: Mestre
+  permission_profile: SCOPED_WRITE
+  provider: internal
+  operation: close-phase
+  resource: mcf-agent-runtime
+hdf:
+  active: true
+  leandro_as_executor: FORBIDDEN
+  leandro_as_technical_handoff: FORBIDDEN
+validation: PENDING
+prf_manifest: PENDING
+specialist_reviews: PENDING
+augusto_trace: PENDING
+julia_governance: PENDING
+emily_independent_audit: PENDING
+leo_gate: PENDING
+production: BLOCKED
+live_staging_adapter: DISABLED
+gate_c_real_provider_write: NOT_AUTHORIZED
+human_operator_actions: 0
+human_gate_leandro: NOT_REQUIRED
+next_action: Executar validação no HEAD exato do candidato.
+checkpoint_recipient: Mestre
