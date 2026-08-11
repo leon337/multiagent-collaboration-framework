@@ -11,7 +11,10 @@ import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
+import { MissionRuntimeService } from './mission-runtime.service.js';
+import { OrderedMcfRuntimeRepository } from './ordered-mcf-runtime.repository.js';
 import { PermissionEngine } from './permission-engine.js';
+import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
 import { SkillExecutor } from './skill-executor.js';
 import { SkillRegistryLoader } from './skill-registry.loader.js';
 
@@ -26,24 +29,24 @@ function requiredEnv(name: string): string {
 }
 
 function proofContract() {
-  return JSON.stringify({
+  return {
     title: 'MCF-RUNTIME-006 Gate C real provider write proof',
-    objective: 'Prove governed reversible GitHub writes through the MCF Runtime provider path.',
+    objective: 'Prove governed reversible GitHub writes through the complete MCF Runtime lifecycle.',
     expectedOutcome: 'C1 and C2 real writes verified with receipts, ledger and idempotency.',
     scope: ['controlled reversible GitHub branch/PR write', 'controlled PR comment'],
     outOfScope: ['production', 'direct main write', 'merge', 'destructive action'],
     acceptanceCriteria: [
       'C1 real provider write read-back verified',
-      'C1 replay does not duplicate PR',
+      'C1 compatible replay reuses the existing PR',
       'C2 real provider write read-back verified',
       'C2 durable idempotency prevents duplicate comment',
       'receipts and ledger evidence validated',
     ],
-    riskClass: 'C',
-    selectedAgents: ['Mestre', 'Gabriel', 'Renato', 'Emily', 'Leo'],
+    riskClass: 'C' as const,
+    selectedAgents: ['Gabriel', 'Mestre'],
     selectedSkills: ['MCF-GIT-PR-RELEASE'],
     sourceOfTruth: ['GitHub', 'Issue #111'],
-  });
+  };
 }
 
 async function countProofComments(pullNumber: number, idempotencyKey: string): Promise<number> {
@@ -151,7 +154,7 @@ function safeExecutionDiagnostic(execution: Awaited<ReturnType<SkillExecutor['ex
 }
 
 describe('MCF Gate C real GitHub provider proof', () => {
-  it('executes C1 and C2 through PermissionEngine -> Dispatcher -> Ledger -> real adapters', async () => {
+  it('executes C1 and C2 through MissionRuntime -> PermissionEngine -> Dispatcher -> Ledger -> real adapters', async () => {
     if (!enabled) return;
 
     const headSha = requiredEnv('MCF_GATE_C_HEAD_SHA').toLowerCase();
@@ -171,14 +174,12 @@ describe('MCF Gate C real GitHub provider proof', () => {
       new GitHubPullCollaborationAdapter(evidence),
     ]);
     const dispatcher = new ExternalActionDispatcher(adapterRegistry, ledger);
-    const executor = new SkillExecutor(
-      new SkillRegistryLoader(),
-      new PermissionEngine(),
-      evidence,
-      dispatcher,
-    );
+    const registry = new SkillRegistryLoader();
+    const executor = new SkillExecutor(registry, new PermissionEngine(), evidence, dispatcher);
+    const postgres = new PostgresMcfRuntimeRepository(database);
+    const runtimeRepository = new OrderedMcfRuntimeRepository(database, postgres);
+    const runtime = new MissionRuntimeService(runtimeRepository, executor, registry, evidence);
 
-    const missionId = randomUUID();
     const c1Phase = randomUUID();
     const c1ReplayPhase = randomUUID();
     const c2Phase = randomUUID();
@@ -186,17 +187,11 @@ describe('MCF Gate C real GitHub provider proof', () => {
     const branchRef = `mcf/gate-c-proof-${headSha.slice(0, 12)}`;
     const c1Key = `gate-c-c1-${headSha.slice(0, 24)}`;
     const c2Key = `gate-c-c2-${headSha.slice(0, 24)}`;
-    const now = new Date();
+
+    const mission = await runtime.createMission({ contract: proofContract() });
+    const missionId = mission.id;
 
     try {
-      await database.query(
-        `insert into "mcf_missions" (
-          "id", "contract", "state", "current_phase_id", "current_agent_id",
-          "version", "created_at", "updated_at"
-        ) values ($1, $2::jsonb, 'EXECUTING', null, 'Gabriel', 1, $3, $3)`,
-        [missionId, proofContract(), now],
-      );
-
       const c1Inputs = {
         authorizedScope: true,
         repository,
@@ -216,16 +211,16 @@ describe('MCF Gate C real GitHub provider proof', () => {
         resource: repository,
       };
 
-      const c1 = await executor.execute({
+      const c1 = await runtime.executePhase(missionId, {
+        phaseId: c1Phase,
         skillId: 'MCF-GIT-PR-RELEASE',
         agentId: 'Gabriel',
+        expectedMissionVersion: mission.version,
         inputs: c1Inputs,
         tool: c1Tool,
-        executionContext: { missionId, phaseId: c1Phase, expectedMissionVersion: 1 },
       });
 
       if (c1.evidenceStatus !== 'VALID') {
-        const diagnostic = safeExecutionDiagnostic(c1);
         await persistProofArtifact({
           stage: 'C1_DIAGNOSTIC',
           missionId,
@@ -234,31 +229,35 @@ describe('MCF Gate C real GitHub provider proof', () => {
           headSha,
           branchRef,
           authSource,
-          c1: diagnostic,
+          c1,
+          timeline: await runtime.timeline(missionId),
           production: 'BLOCKED',
         });
-        console.error(`MCF_GATE_C_C1_DIAGNOSTIC ${JSON.stringify(diagnostic)}`);
         throw new Error(`C1 real-provider proof did not reach VALID: ${c1.evidenceStatus}`);
       }
 
-      expect(c1.externalAction?.status).toBe('EXECUTED');
+      expect(c1.phaseState).toBe('COMPLETED');
       expect(c1.receipt?.status).toBe('SUCCEEDED');
       expect(c1.receipt?.metadata.readBackVerified).toBe(true);
       expect(c1.receipt?.commitSha).toBe(headSha);
+      expect(c1.mission.version).toBe(mission.version + 1);
       const pullNumber = Number(c1.receipt?.metadata.pullRequestNumber);
       expect(Number.isInteger(pullNumber) && pullNumber > 0).toBe(true);
 
-      const c1Replay = await executor.execute({
+      const c1Replay = await runtime.executePhase(missionId, {
+        phaseId: c1ReplayPhase,
         skillId: 'MCF-GIT-PR-RELEASE',
         agentId: 'Gabriel',
+        expectedMissionVersion: c1.mission.version,
         inputs: c1Inputs,
         tool: c1Tool,
-        executionContext: { missionId, phaseId: c1ReplayPhase, expectedMissionVersion: 1 },
       });
 
-      expect(c1Replay.evidenceStatus).toBe('INVALID');
-      expect(c1Replay.externalAction?.status).toBe('FAILED');
-      expect(c1Replay.externalAction?.failureCode).toBe('RESERVATION_CONFLICT');
+      expect(c1Replay.evidenceStatus).toBe('VALID');
+      expect(c1Replay.phaseState).toBe('COMPLETED');
+      expect(c1Replay.receipt?.externalId).toBe(c1.receipt?.externalId);
+      expect(c1Replay.receipt?.metadata.pullRequestNumber).toBe(pullNumber);
+      expect(c1Replay.receipt?.metadata.readBackVerified).toBe(true);
       expect(await countProofPullRequests(branchRef, headSha, c1Key)).toBe(1);
 
       const c2Inputs = {
@@ -278,16 +277,16 @@ describe('MCF Gate C real GitHub provider proof', () => {
         resource: repository,
       };
 
-      const c2 = await executor.execute({
+      const c2 = await runtime.executePhase(missionId, {
+        phaseId: c2Phase,
         skillId: 'MCF-GIT-PR-RELEASE',
         agentId: 'Gabriel',
+        expectedMissionVersion: c1Replay.mission.version,
         inputs: c2Inputs,
         tool: c2Tool,
-        executionContext: { missionId, phaseId: c2Phase, expectedMissionVersion: 1 },
       });
 
       if (c2.evidenceStatus !== 'VALID') {
-        const diagnostic = safeExecutionDiagnostic(c2);
         await persistProofArtifact({
           stage: 'C2_DIAGNOSTIC',
           missionId,
@@ -297,15 +296,16 @@ describe('MCF Gate C real GitHub provider proof', () => {
           branchRef,
           pullRequestNumber: pullNumber,
           authSource,
-          c1: safeExecutionDiagnostic(c1),
-          c2: diagnostic,
+          c1,
+          c1Replay,
+          c2,
+          timeline: await runtime.timeline(missionId),
           production: 'BLOCKED',
         });
-        console.error(`MCF_GATE_C_C2_DIAGNOSTIC ${JSON.stringify(diagnostic)}`);
         throw new Error(`C2 real-provider proof did not reach VALID: ${c2.evidenceStatus}`);
       }
 
-      expect(c2.externalAction?.status).toBe('EXECUTED');
+      expect(c2.phaseState).toBe('COMPLETED');
       expect(c2.receipt?.status).toBe('SUCCEEDED');
       expect(c2.receipt?.metadata.readBackVerified).toBe(true);
       expect(c2.receipt?.commitSha).toBe(headSha);
@@ -315,15 +315,21 @@ describe('MCF Gate C real GitHub provider proof', () => {
         agentId: 'Gabriel',
         inputs: c2Inputs,
         tool: c2Tool,
-        executionContext: { missionId, phaseId: c2ReplayPhase, expectedMissionVersion: 1 },
+        executionContext: {
+          missionId,
+          phaseId: c2ReplayPhase,
+          expectedMissionVersion: c2.mission.version,
+        },
       });
 
       expect(c2Replay.evidenceStatus).toBe('INVALID');
       expect(c2Replay.externalAction?.status).toBe('FAILED');
       expect(c2Replay.externalAction?.failureCode).toBe('RESERVATION_CONFLICT');
+      expect(c2Replay.externalAction?.attemptId).toBeNull();
       expect(await countProofComments(pullNumber, c2Key)).toBe(1);
 
       const attempts = await database.query<{
+        attemptId: string;
         adapterId: string;
         operation: string;
         status: string;
@@ -331,6 +337,7 @@ describe('MCF Gate C real GitHub provider proof', () => {
         receiptId: string | null;
       }>(
         `select
+          "attempt_id" as "attemptId",
           "adapter_id" as "adapterId",
           "operation",
           "status",
@@ -342,11 +349,11 @@ describe('MCF Gate C real GitHub provider proof', () => {
         [missionId],
       );
 
-      expect(attempts.rows).toHaveLength(2);
+      expect(attempts.rows).toHaveLength(3);
       expect(attempts.rows.every((attempt) => attempt.status === 'EVIDENCE_VALIDATED')).toBe(true);
       expect(
         attempts.rows.filter((attempt) => attempt.adapterId === 'github-branch-pr-write-v1'),
-      ).toHaveLength(1);
+      ).toHaveLength(2);
       expect(
         attempts.rows.filter((attempt) => attempt.adapterId === 'github-pr-collaboration-write-v1'),
       ).toHaveLength(1);
@@ -356,7 +363,11 @@ describe('MCF Gate C real GitHub provider proof', () => {
         'select count(*)::text as "count" from "mcf_tool_receipts" where "mission_id" = $1',
         [missionId],
       );
-      expect(Number(receipts.rows[0]?.count ?? 0)).toBe(2);
+      expect(Number(receipts.rows[0]?.count ?? 0)).toBe(3);
+
+      const persistedMission = await runtime.getMission(missionId);
+      expect(persistedMission.version).toBe(c2.mission.version);
+      expect(persistedMission.state).toBe('EXECUTING');
 
       await persistProofArtifact({
         stage: 'COMPLETE',
@@ -368,25 +379,36 @@ describe('MCF Gate C real GitHub provider proof', () => {
         pullRequestNumber: pullNumber,
         pullRequestUrl: c1.receipt?.metadata.pullRequestUrl ?? null,
         authSource,
+        runtimeLifecycle: {
+          createdVersion: mission.version,
+          c1Version: c1.mission.version,
+          c1ReplayVersion: c1Replay.mission.version,
+          c2Version: c2.mission.version,
+          persistedVersion: persistedMission.version,
+        },
         c1: {
-          adapterId: c1.externalAction?.adapterId ?? null,
-          attemptId: c1.externalAction?.attemptId ?? null,
+          adapterId: c1.receipt?.metadata.adapterId ?? null,
+          attemptId: attempts.rows[0]?.attemptId ?? null,
           receiptId: c1.receipt?.receiptId ?? null,
           externalId: c1.receipt?.externalId ?? null,
           readBackVerified: c1.receipt?.metadata.readBackVerified ?? null,
-          duplicateReplayStatus: c1Replay.externalAction?.status ?? null,
-          duplicateReplayFailure: c1Replay.externalAction?.failureCode ?? null,
+          replayAttemptId: attempts.rows[1]?.attemptId ?? null,
+          replayReceiptId: c1Replay.receipt?.receiptId ?? null,
+          replayExternalId: c1Replay.receipt?.externalId ?? null,
+          replayReadBackVerified: c1Replay.receipt?.metadata.readBackVerified ?? null,
+          replayDidNotDuplicatePullRequest: c1Replay.receipt?.externalId === c1.receipt?.externalId,
           proofPullRequestCount: 1,
         },
         c2: {
-          adapterId: c2.externalAction?.adapterId ?? null,
-          attemptId: c2.externalAction?.attemptId ?? null,
+          adapterId: c2.receipt?.metadata.adapterId ?? null,
+          attemptId: attempts.rows[2]?.attemptId ?? null,
           receiptId: c2.receipt?.receiptId ?? null,
           mutationExternalId: c2.receipt?.metadata.mutationExternalId ?? null,
           mutationUrl: c2.receipt?.metadata.mutationUrl ?? null,
           readBackVerified: c2.receipt?.metadata.readBackVerified ?? null,
           duplicateReplayStatus: c2Replay.externalAction?.status ?? null,
           duplicateReplayFailure: c2Replay.externalAction?.failureCode ?? null,
+          duplicateReplayAttemptId: c2Replay.externalAction?.attemptId ?? null,
           proofCommentCount: 1,
         },
         ledger: {
