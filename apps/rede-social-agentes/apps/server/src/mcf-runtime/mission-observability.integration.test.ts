@@ -96,9 +96,7 @@ describe('Mission observability persistence', () => {
       expect(firstResult).toEqual({ inserted: 1, duplicates: 0, stale: 0 });
 
       const duplicateCandidate = alertCandidate(missionId, randomUUID(), 4, now);
-      const duplicateResult = await repository.appendBlockedAlertsAtomically([
-        duplicateCandidate,
-      ]);
+      const duplicateResult = await repository.appendBlockedAlertsAtomically([duplicateCandidate]);
       expect(duplicateResult).toEqual({ inserted: 0, duplicates: 1, stale: 0 });
 
       const persisted = await database.query<CountRow>(
