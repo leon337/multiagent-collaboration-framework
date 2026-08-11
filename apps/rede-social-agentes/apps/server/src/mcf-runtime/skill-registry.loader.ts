@@ -209,6 +209,7 @@ function registryCandidates(): string[] {
     resolve(process.cwd(), 'skills/registry.yaml'),
     resolve(process.cwd(), '../../skills/registry.yaml'),
     resolve(process.cwd(), '../../../skills/registry.yaml'),
+    resolve(process.cwd(), '../../../../skills/registry.yaml'),
   ].filter((candidate): candidate is string => Boolean(candidate));
 
   return [
