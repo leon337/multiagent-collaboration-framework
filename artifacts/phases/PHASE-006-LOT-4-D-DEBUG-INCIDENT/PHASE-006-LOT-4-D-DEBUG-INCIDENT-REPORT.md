@@ -1,57 +1,34 @@
 # PHASE-006-LOT-4-D-DEBUG-INCIDENT — Report
 
-## Resultado técnico
+## Resultado
 
-`MCF-DEBUG-INCIDENT` foi promovida a capacidade executável governada e integrada por squash no PR técnico `#104`.
+`MCF-DEBUG-INCIDENT` está tecnicamente integrada e a sincronização documental canônica foi concluída.
 
 ```yaml
 technical_candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
 technical_merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
-candidate_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
-merge_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
-candidate_merge_tree_equivalence: PASS
+technical_tree_equivalence: PASS
+canonical_candidate: 41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
+canonical_merge: 59b230e8ad834b88c1dc4363bc9a28499881e1fe
+canonical_sync: COMPLETE
 ```
 
-## Comportamento integrado
+## Skill integrada
 
-- planner seleciona a skill em objetivos inequívocos de debug;
+- planner: `READY_AGENT`;
 - primary owner: Patricia;
-- owners válidos: Patricia, Bruno, Rafael;
-- state: `READY_AGENT`;
-- bridge não auto-completa a skill;
-- handoff: Renato somente após sucesso válido;
-- `SCOPED_WRITE` permanece canônico;
-- execução Lot 4-D limitada a `internal / inspect-debug-incident / mcf-agent-runtime`;
-- provider externo e efeitos proibidos são recusados;
-- evidência insuficiente produz `RECOVERING`.
+- owners: Patricia, Bruno, Rafael;
+- handoff: Renato;
+- `SCOPED_WRITE` preservado;
+- execução do Lot: `internal / inspect-debug-incident / mcf-agent-runtime`;
+- external write e demais efeitos proibidos continuam negados;
+- evidência inválida retorna `RECOVERING`.
 
 ## Evidência semântica
 
-### reproduction
+`reproduction` exige sintoma, método e referência; `root_cause` exige causa e suporte; `recovery_result` exige ação/mitigação, verificação, `blind_retry: false`, `retry_evidence` semântico independente e referência verificável do teste de regressão.
 
-Requer:
-- sintoma significativo;
-- método de reprodução ou caracterização;
-- referência verificável.
-
-### root_cause
-
-Requer:
-- causa significativa;
-- evidência de suporte.
-
-### recovery_result
-
-Requer:
-- ação, isolamento ou mitigação;
-- verificação do resultado;
-- `blind_retry: false`;
-- `retry_evidence` semântico independente;
-- referência verificável de teste de regressão.
-
-Booleanos, placeholders, vazio, whitespace e objetos vazios não substituem evidência.
-
-## Validação do candidato técnico
+## Validação técnica
 
 ```yaml
 foundation_run: 31479541126
@@ -63,56 +40,47 @@ server_tests: 527
 web_tests: 5
 ops_tests: 20
 failed_tests: 0
-vitest_artifact: 9096661981
-vitest_digest: sha256:e689b3f6453666992509676f30f63f98d49a33582ca8adcf378c732f3f36848f
-manifest_audit: PASS
-beatriz_review: PASS
-vinicius_review: PASS
-ricardo_review: PASS
-renato_validation: PASS
+technical_manifest: PASS
+specialist_reviews: PASS
 augusto_trace: PASS
 julia_governance: PASS
-carmem_prf: PASS
-emily_independent_audit: PASS
+emily_audit: PASS
 leo_technical_gate: PASS
 ```
 
-## CAFs preservados
-
-### CAF #1 — formatting
-
-O candidato `3ea30e9a...` falhou no Foundation `31476698797` em formatação. Um SHA diagnóstico foi usado apenas para emitir o diff canônico do Prettier; depois houve novo SHA e revalidação.
-
-### CAF #2 — blind retry
-
-Vinicius bloqueou o primeiro PRF porque `blind_retry: false` isolado era claim booleano. `retry_evidence` semântico passou a ser obrigatório e os testes negativos/positivos foram ampliados.
-
-### CAF #3 — routing
-
-Beatriz bloqueou uma sobreposição potencial entre o termo genérico de incidente e security review. `incidente/incident` deixaram de ser gatilhos genéricos de debug e foi adicionada regressão que mantém security review com Ricardo e Classe C.
-
-## Integração
-
-O merge técnico ocorreu somente após o gate no SHA exato e foi protegido por `expected_head_sha`. A tree Git do candidato e a tree do squash merge são idênticas.
-
-## Canonical documentation sync
-
-Estado neste PRF:
+## Validação documental
 
 ```yaml
-technical_integration: COMPLETE
-canonical_documentation_sync: CANDIDATE
-issue_103: OPEN_UNTIL_DOCUMENTARY_MERGE
+documentation_validation_run: 31481344101
+documentation_validation: PASS
+documentary_manifest: PASS
+carmem_review: PASS
+julia_governance: PASS
+emily_independent_audit: PASS
+leo_documentary_gate: PASS
+canonical_sync: COMPLETE
 ```
 
-A sincronização documental separada atualiza índices canônicos para `16 / 15 / 1`, regenera o manifesto, passa por validação/gate documental e só então permite fechar a Issue #103.
+## CAFs
 
-## Limites preservados
+1. formatação canônica corrigida e revalidada;
+2. `blind_retry: false` isolado rejeitado como claim booleano, exigindo `retry_evidence`;
+3. roteamento genérico de incidente corrigido para preservar security review Classe C;
+4. closeout pós-merge criado porque os documentos auditavelmente diziam `IN_PROGRESS/CANDIDATE` antes do merge e precisavam refletir a conclusão real depois dele.
+
+## Estado final do boundary
 
 ```yaml
+skills_registered: 16
+skills_executable: 15
+skills_documental: 1
+remaining_documental:
+  - MCF-CLOSE-PHASE
 production: BLOCKED
 live_staging_adapter: DISABLED
 gate_c_real_provider_write: NOT_AUTHORIZED
 human_operator_actions: 0
 human_gate_leandro: NOT_REQUIRED
 ```
+
+`MCF-CLOSE-PHASE` permanece fora do escopo do Lot 4-D.
