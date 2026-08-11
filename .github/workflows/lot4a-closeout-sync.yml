@@ -1,0 +1,141 @@
+name: Lot 4A Canonical Closeout Sync
+
+on:
+  push:
+    branches:
+      - docs/mcf-runtime-006-lot4-a-closeout-sync
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout closeout branch
+        uses: actions/checkout@v4
+        with:
+          ref: docs/mcf-runtime-006-lot4-a-closeout-sync
+          fetch-depth: 0
+
+      - name: Reconcile canonical runtime state
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              p = Path(path)
+              text = p.read_text()
+              if old not in text:
+                  raise SystemExit(f'expected canonical text not found in {path}: {old[:80]!r}')
+              p.write_text(text.replace(old, new, 1))
+
+          # Root README: executable skill count and Lot 4A boundary.
+          replace_once(
+              'README.md',
+              '  - MCF-SELECT-AGENTS\n  - MCF-IMPLEMENT-CHANGE',
+              '  - MCF-SELECT-AGENTS\n  - MCF-RECOVER-CONTEXT\n  - MCF-DEFINE-PRODUCT\n  - MCF-DESIGN-EXPERIENCE\n  - MCF-DESIGN-ARCHITECTURE\n  - MCF-IMPLEMENT-CHANGE',
+          )
+          replace_once('README.md', 'skills_ainda_documentais: 8', 'skills_ainda_documentais: 4')
+          replace_once(
+              'README.md',
+              'runtime_006_lote_3: concluido\nstaging_post_merge: PASS_DEPLOYED',
+              'runtime_006_lote_3: concluido\nruntime_006_lote_4a: integrado\nruntime_006_lote_4a_merge: 67d20e24fd136f6334bfd835cb775426f6514403\nruntime_006_lote_4a_executable_skills: 12\nruntime_006_lote_4a_documental_skills: 4\nstaging_post_merge: PASS_DEPLOYED',
+          )
+          replace_once(
+              'README.md',
+              'O bridge executa somente o bloco interno consecutivo no início do plano. GitHub, CI, Render, Vercel ou Cloudflare continuam exigindo recibos reais. Uma skill interna posicionada depois de uma fase externa permanece planejada até que o fluxo chegue a ela.',
+              'O bridge executa automaticamente somente o bloco de bootstrap interno consecutivo no início do plano. As skills de domínio do Lot 4-A usam `READY_AGENT`: permanecem aguardando o agente owner, exigem `execution_evidence` semântica e não podem ter sua saída fabricada pelo bridge. GitHub, CI, Render, Vercel ou Cloudflare continuam exigindo recibos reais.',
+          )
+          replace_once(
+              'README.md',
+              'Com isso, o **Lote 3 está concluído**. O próximo boundary é `MCF-RUNTIME-006-LOT-4-SKILLS`, começando pela conversão das oito skills ainda documentais. O Gate C continua parcial porque a escrita real C1/C2 pelo provider GitHub permanece separadamente não autorizada. Produção e live staging adapter continuam bloqueados.',
+              'Com isso, o **Lote 3 está concluído** e o **Lot 4-A também está integrado**. O PR `#95` promoveu `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE` e `MCF-DESIGN-ARCHITECTURE` para execução governada; o candidato `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` passou Foundation `31461319193`, Container Smoke `31461319181`, 112 arquivos/459 testes e auditoria independente sem P0/P1/P2, sendo integrado por squash em `67d20e24fd136f6334bfd835cb775426f6514403`. O runtime passa a **12 skills executáveis e 4 documentais**. O próximo boundary é `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`. O Gate C continua parcial porque a escrita real C1/C2 pelo provider GitHub permanece separadamente não autorizada. Produção e live staging adapter continuam bloqueados.',
+          )
+
+          # Runtime README.
+          replace_once('docs/runtime/README.md', 'skills_executable: 8', 'skills_executable: 12')
+          replace_once('docs/runtime/README.md', 'skills_documental: 8', 'skills_documental: 4')
+          replace_once(
+              'docs/runtime/README.md',
+              'runtime_006_lot_3: complete\nlive_staging_adapter: disabled',
+              'runtime_006_lot_3: complete\nruntime_006_lot_4a: complete\nruntime_006_lot_4a_merge: 67d20e24fd136f6334bfd835cb775426f6514403\nlive_staging_adapter: disabled',
+          )
+          replace_once(
+              'docs/runtime/README.md',
+              'A decisão `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza o fallback temporário TEAM_FIRST via GitHub Actions com `GITHUB_TOKEN` efêmero, menor privilégio, binding ao SHA, single dispatch e cleanup. Ela não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.',
+              'O Lot 4-A concluiu o primeiro incremento de cobertura total. O PR #95 integrou quatro skills internas de domínio com `READY_AGENT`, provider interno governado, evidência semântica obrigatória, fallback para `RECOVERING`, persistência pelo `MissionRuntime` e preservação do HDF. O HEAD técnico `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` passou Foundation `31461319193` e Container Smoke `31461319181`, com 112 arquivos/459 testes; o merge squash `67d20e24fd136f6334bfd835cb775426f6514403` possui a mesma tree `def5edf77be8bdc32939d2b4bd5b1fcbcca649ec` do candidato validado. O runtime passa a 12 skills executáveis e 4 documentais.\n\nA decisão `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza o fallback temporário TEAM_FIRST via GitHub Actions com `GITHUB_TOKEN` efêmero, menor privilégio, binding ao SHA, single dispatch e cleanup. Ela não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.',
+          )
+          replace_once(
+              'docs/runtime/README.md',
+              'O Lote 3 está **concluído**. A próxima etapa é `MCF-RUNTIME-006-LOT-4-SKILLS`: converter as oito skills ainda documentais em capacidades executáveis comprovadas. Depois seguem testes multiagente em contextos separados, auditoria independente final e preparação da RC.',
+              'O Lote 3 está **concluído** e o Lot 4-A está **integrado**. A próxima etapa é `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`. Restam quatro skills documentais — `MCF-EVALUATE-AGENTS`, `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE` — que continuam separadas por risco. Depois seguem testes multiagente em contextos separados, auditoria independente final e preparação da RC.',
+          )
+
+          # Runtime 006 canonical plan.
+          replace_once(
+              'docs/runtime/MCF-RUNTIME-006-PLAN.md',
+              '`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO — LOTE_3_CONCLUIDO — OBSERVABILIDADE_INTEGRADA`',
+              '`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO — LOTE_3_CONCLUIDO — OBSERVABILIDADE_INTEGRADA — LOTE_4A_INTEGRADO`',
+          )
+          replace_once(
+              'docs/runtime/MCF-RUNTIME-006-PLAN.md',
+              '  active_p2: 0\nmcf_dec_061:',
+              '  active_p2: 0\nruntime_006_lot_4a:\n  capability: EXECUTABLE_INTERNAL_CORE_SKILLS\n  state: INTEGRADO\n  issue: 94\n  pull_request: 95\n  validated_head: e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668\n  merge_commit: 67d20e24fd136f6334bfd835cb775426f6514403\n  candidate_tree: def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\n  merge_tree: def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\n  foundation_run: 31461319193\n  container_smoke_run: 31461319181\n  server_test_files: 112\n  server_tests: 459\n  vitest_artifact: 9089891091\n  artifact_digest: sha256:84dd346386005a300614558406d20cf6e6bda4943dc95f6e2d4a5e371e4ac375\n  independent_audit: PASS\n  leo_technical_gate: PASS\n  active_p0: 0\n  active_p1: 0\n  active_p2: 0\n  skills_executable: 12\n  skills_documental: 4\nmcf_dec_061:',
+          )
+          replace_once(
+              'docs/runtime/MCF-RUNTIME-006-PLAN.md',
+              '12. converter as oito skills documentais — **PRÓXIMA ETAPA / PENDENTE**;',
+              '12. converter as oito skills documentais — **EM EXECUÇÃO / LOT 4-A INTEGRADO / 4 DE 8 CONVERTIDAS**;',
+          )
+          replace_once(
+              'docs/runtime/MCF-RUNTIME-006-PLAN.md',
+              'Iniciar `MCF-RUNTIME-006-LOT-4-SKILLS`: converter as oito skills ainda documentais em capacidades executáveis comprovadas. Não repetir A1, A2, C1, C2, Gate D ou observabilidade do Lote 3. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio.',
+              'Iniciar `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`: converter `MCF-EVALUATE-AGENTS` como incremento independente, preservando o Lot 4-A já integrado. Depois permanecem `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`, cada uma em seu boundary de risco. Não repetir A1, A2, C1, C2, Gate D, observabilidade do Lote 3 ou Lot 4-A. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio.',
+          )
+
+          phase = Path('artifacts/phases/PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS')
+          prefix = 'PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS'
+
+          files = {
+              f'{prefix}-PLAN.md': '''# PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS — Plano\n\n## Identidade\n- Missão: `MCF-RUNTIME-006-LOT-4-SKILLS`\n- Fase: `MCF-RUNTIME-006-LOT-4-A-INTERNAL-CORE-SKILLS`\n- Issue: `#94`\n- Pull Request técnico: `#95`\n- Classe de risco: `C`\n- Orquestrador: `Mestre`\n- Autoridade técnica de decisão: `Léo`\n- Base técnica: `main@8a6d0673afdb4892983cb03d52d3d176b23252f9`\n- Candidato validado: `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668`\n- Merge técnico: `67d20e24fd136f6334bfd835cb775426f6514403`\n\n## Objetivo\nConverter `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE` e `MCF-DESIGN-ARCHITECTURE` em capacidades executáveis e governadas pelo runtime, com evidência semântica verificável e persistência pelo `MissionRuntime`.\n\n## Critérios de aceite finais\n1. 12 skills executáveis e 4 documentais após integração.\n2. Quatro novas skills com evidência semântica específica.\n3. Evidência ausente/inválida produz `RECOVERING`, sem handoff de sucesso.\n4. Provider interno tratado de forma canonizada.\n5. `PermissionEngine` e HDF preservados.\n6. Persistência/versionamento, recibo, eventos e handoff provados pelo `MissionRuntime`.\n7. Foundation e Container Smoke PASS no SHA candidato exato.\n8. Revisões especialistas + auditoria independente sem P0/P1/P2.\n9. Gate técnico de Léo PASS antes do merge.\n10. Produção e live staging adapter continuam bloqueados.\n\n## Resultado\nTodos os critérios técnicos foram atendidos. O candidato e o squash merge possuem a mesma tree `def5edf77be8bdc32939d2b4bd5b1fcbcca649ec`, preservando byte-equivalência do conteúdo validado. O boundary seguinte é `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`.\n''',
+              f'{prefix}-DECISIONS.md': '''# PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS — Decisões\n\n## D1 — Decompor o Lote 4\nO Lote 4 permanece dividido por risco. Lot 4-A cobre somente quatro skills internas de núcleo.\n\n## D2 — `READY_AGENT`\nTrabalho de domínio interno não é bootstrap automático: depende do agente owner e de evidência real.\n\n## D3 — Evidência semântica obrigatória\nRecibo assinado sozinho não prova contexto, produto, experiência ou arquitetura. A execução exige `execution_evidence` específica e revalidação do recibo.\n\n## D4 — Provider interno canonizado\nAutorização, despacho e verificação usam a mesma canonicalização.\n\n## D5 — Placeholders não contam como evidência\nArrays obrigatórios rejeitam strings vazias, `null`, arrays aninhados e objetos vazios.\n\n## D6 — Registry único e declarativo\n`skills/registry.yaml` continua sendo o único catálogo; a executabilidade é limitada por contrato tipado, executor, permissões e validação.\n\n## D7 — Persistência faz parte do aceite\nO teste integrado prova recibo, validação, handoff, eventos e versão 1→2 pelo `MissionRuntime`.\n\n## D8 — Resolver CWD real do servidor\n`SkillRegistryLoader` passou a alcançar o registry raiz a partir de `apps/rede-social-agentes/apps/server` sem duplicar o catálogo.\n\n## D9 — `MCF-CLOSE-PHASE` reservado ao Lot 4-E\nO conflito `handoff_to: Leandro` continua explícito e não recebeu bypass.\n\n## D10 — Gate preso ao HEAD\nFoundation, Smoke, reviews, auditoria e Léo foram vinculados a `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668`.\n\n## D11 — Squash preservou a tree validada\nO merge `67d20e24fd136f6334bfd835cb775426f6514403` e o candidato compartilham a tree `def5edf77be8bdc32939d2b4bd5b1fcbcca649ec`.\n\n## D12 — Próximo boundary\n`MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`. Produção continua bloqueada e Gate C segue parcial.\n''',
+              f'{prefix}-REPORT.md': '''# PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS — Relatório\n\n## Estado técnico\n`TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE`\n\n## Integração comprovada\n- Issue `#94`: CLOSED / COMPLETED.\n- PR técnico `#95`: MERGED.\n- Candidato validado: `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668`.\n- Squash merge: `67d20e24fd136f6334bfd835cb775426f6514403`.\n- Candidate tree = merge tree: `def5edf77be8bdc32939d2b4bd5b1fcbcca649ec`.\n\n## Capacidades integradas\n- `MCF-RECOVER-CONTEXT`;\n- `MCF-DEFINE-PRODUCT`;\n- `MCF-DESIGN-EXPERIENCE`;\n- `MCF-DESIGN-ARCHITECTURE`.\n\nO runtime agora possui 12 skills executáveis e 4 ainda documentais. As novas skills usam `READY_AGENT`, provider `internal` governado, owner obrigatório, `execution_evidence` semântica, recuperação em evidência inválida e persistência pelo `MissionRuntime`.\n\n## Validação\n- Foundation `31461319193`: PASS.\n- Container Smoke `31461319181`: PASS.\n- 112 arquivos / 459 testes do servidor: PASS.\n- Ops: 20 PASS.\n- Web: 5 PASS.\n- Artefato Vitest `9089891091`.\n- Digest `sha256:84dd346386005a300614558406d20cf6e6bda4943dc95f6e2d4a5e371e4ac375`.\n- Manifest audit `31461581567`: PASS.\n\n## Revisão e gate\n- Sofia: PASS / P0=0 P1=0 P2=0.\n- Renato: PASS / P0=0 P1=0 P2=0.\n- Júlia: PASS / P0=0 P1=0 P2=0.\n- Emily independent audit: PASS / P0=0 P1=0 P2=0.\n- Léo technical gate: PASS / merge autorizado para o HEAD exato.\n\n## Limites preservados\n- Gate C: PARCIAL.\n- produção: BLOCKED.\n- live staging adapter: DISABLED.\n- human_operator_actions: 0.\n- HUMAN_GATE LEANDRO: NOT_REQUIRED.\n\n## Próximo boundary\n`MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`.\n''',
+              f'{prefix}-CHECKPOINT.yaml': '''mission: MCF-RUNTIME-006-LOT-4-SKILLS\nphase: PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS\nstate: TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE\nrisk_class: C\nissue: 94\npull_request: 95\nbase_sha: 8a6d0673afdb4892983cb03d52d3d176b23252f9\nvalidated_head: e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668\nmerge_commit: 67d20e24fd136f6334bfd835cb775426f6514403\ncandidate_tree: def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\nmerge_tree: def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\nvalidation:\n  foundation_run: 31461319193\n  foundation: PASS\n  container_smoke_run: 31461319181\n  container_smoke: PASS\n  server_test_files: 112\n  server_tests: 459\n  ops_tests: 20\n  web_tests: 5\n  vitest_artifact: 9089891091\n  artifact_digest: sha256:84dd346386005a300614558406d20cf6e6bda4943dc95f6e2d4a5e371e4ac375\n  manifest_audit_run: 31461581567\n  manifest_audit: PASS\nreview:\n  sofia: PASS\n  renato: PASS\n  julia: PASS\n  emily_independent_audit: PASS\n  active_p0: 0\n  active_p1: 0\n  active_p2: 0\ngate:\n  leo_technical_gate: PASS\n  merge_authorized_for_exact_head: true\nresult:\n  skills_registered: 16\n  skills_executable: 12\n  skills_documental: 4\n  production: BLOCKED\n  live_staging_adapter: DISABLED\n  human_operator_actions: 0\n  human_gate_leandro: NOT_REQUIRED\ncanonical_sync: COMPLETE_ON_BRANCH\ndoc_sync_gate: PENDING\nnext_boundary: MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS\n''',
+              f'{prefix}-VALIDATION.txt': '''PHASE=PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS\nSTATE=TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE\nISSUE=94\nPR=95\nBASE_SHA=8a6d0673afdb4892983cb03d52d3d176b23252f9\nVALIDATED_HEAD=e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668\nFOUNDATION_RUN=31461319193\nFOUNDATION=PASS\nCONTAINER_SMOKE_RUN=31461319181\nCONTAINER_SMOKE=PASS\nSERVER_TEST_FILES=112\nSERVER_TESTS=459\nOPS_TESTS=20\nWEB_TESTS=5\nVITEST_ARTIFACT_ID=9089891091\nVITEST_ARTIFACT_DIGEST=sha256:84dd346386005a300614558406d20cf6e6bda4943dc95f6e2d4a5e371e4ac375\nMANIFEST_AUDIT_RUN=31461581567\nMANIFEST_AUDIT=PASS\nSOFIA_REVIEW=PASS\nRENATO_REVIEW=PASS\nJULIA_REVIEW=PASS\nEMILY_INDEPENDENT_AUDIT=PASS\nACTIVE_P0=0\nACTIVE_P1=0\nACTIVE_P2=0\nLEO_TECHNICAL_GATE=PASS\nMERGE_COMMIT=67d20e24fd136f6334bfd835cb775426f6514403\nCANDIDATE_TREE=def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\nMERGE_TREE=def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\nTREE_EQUIVALENCE=PASS\nSKILLS_EXECUTABLE=12\nSKILLS_DOCUMENTAL=4\nCANONICAL_SYNC=COMPLETE_ON_BRANCH\nDOC_SYNC_GATE=PENDING\nPRODUCTION=BLOCKED\nLIVE_STAGING_ADAPTER=DISABLED\nHUMAN_OPERATOR_ACTIONS=0\nHUMAN_GATE_LEANDRO=NOT_REQUIRED\nNEXT_BOUNDARY=MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS\n''',
+              f'{prefix}-VALIDATION-FULL.txt': '''PHASE=PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS\nRISK_CLASS=C\nISSUE=94\nPR=95\n\nTECHNICAL_CANDIDATE:\nBASE=8a6d0673afdb4892983cb03d52d3d176b23252f9\nHEAD=e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668\nTREE=def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\nFOUNDATION_RUN=31461319193\nFOUNDATION=PASS\nCONTAINER_SMOKE_RUN=31461319181\nCONTAINER_SMOKE=PASS\nSERVER_TEST_FILES=112\nSERVER_TESTS=459\nOPS_TESTS=20\nWEB_TESTS=5\nVITEST_ARTIFACT=9089891091\nARTIFACT_DIGEST=sha256:84dd346386005a300614558406d20cf6e6bda4943dc95f6e2d4a5e371e4ac375\n\nLOT4A_TESTS:\nSKILL_EXECUTOR_LOT4_CORE=10_PASS\nMISSION_RUNTIME_LOT4_CORE_INTEGRATION=1_PASS\nCHAT_MISSION_PLANNER_LOT4_CORE=1_PASS\nMISSING_EVIDENCE_RECOVERY=PASS\nINCOMPLETE_EVIDENCE_RECOVERY=PASS\nWRONG_OWNER_REJECTION=PASS\nFORBIDDEN_PROVIDER_REJECTION=PASS\nCANONICAL_INTERNAL_PROVIDER=PASS\nPLACEHOLDER_ARRAY_REJECTION=PASS\nREGISTRY_ROOT_RESOLUTION_FROM_SERVER_CWD=PASS\nMISSION_VERSION_1_TO_2=PASS\nRECEIPT_EVENT_HANDOFF_PERSISTENCE=PASS\n\nREVIEW_CHAIN:\nSOFIA_COMMENT=5249325085\nSOFIA=PASS\nRENATO_COMMENT=5249326377\nRENATO=PASS\nJULIA_COMMENT=5249327777\nJULIA=PASS\nEMILY_COMMENT=5249333505\nEMILY_INDEPENDENT_AUDIT=PASS\nP0=0\nP1=0\nP2=0\nLEO_COMMENT=5249335776\nLEO_TECHNICAL_GATE=PASS\n\nINTEGRATION:\nMERGE_METHOD=SQUASH\nMERGE_COMMIT=67d20e24fd136f6334bfd835cb775426f6514403\nMERGE_TREE=def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\nCANDIDATE_TREE_EQUALS_MERGE_TREE=PASS\nISSUE_94=CLOSED_COMPLETED\nPR_95=MERGED\nPOST_MERGE_CODE_WORKFLOW=NOT_TRIGGERED\nCONTENT_EQUIVALENCE_TO_VALIDATED_CANDIDATE=PASS\n\nPRF:\nMANIFEST_AUDIT_RUN=31461581567\nMANIFEST_AUDIT=PASS\nCANONICAL_SYNC=COMPLETE_ON_BRANCH\nDOC_SYNC_GATE=PENDING\n\nBOUNDARIES:\nGATE_C=PARCIAL\nPRODUCTION=BLOCKED\nLIVE_STAGING_ADAPTER=DISABLED\nHDF=PRESERVED\nHUMAN_OPERATOR_ACTIONS=0\nHUMAN_GATE_LEANDRO=NOT_REQUIRED\n\nNEXT=MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS\n''',
+              f'{prefix}-SMOKE.txt': '''PHASE=PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS\nVALIDATED_HEAD=e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668\nCONTAINER_SMOKE_RUN=31461319181\nCONTAINER_SMOKE=PASS\nMERGE_COMMIT=67d20e24fd136f6334bfd835cb775426f6514403\nCANDIDATE_TREE=def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\nMERGE_TREE=def5edf77be8bdc32939d2b4bd5b1fcbcca649ec\nTREE_EQUIVALENCE=PASS\nPRODUCTION=BLOCKED\nLIVE_STAGING_ADAPTER=DISABLED\nHUMAN_OPERATOR_ACTIONS=0\n''',
+              'README.md': '''# PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS\n\nPRF Classe C do primeiro incremento de cobertura total das skills documentais do MCF Runtime.\n\n## Estado\n`TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE`\n\n## Resultado técnico\nO PR #95 foi integrado por squash após Foundation/Smoke no HEAD exato, revisões especialistas, auditoria independente e gate de Léo. O candidato `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` e o merge `67d20e24fd136f6334bfd835cb775426f6514403` compartilham a tree `def5edf77be8bdc32939d2b4bd5b1fcbcca649ec`.\n\n## Capacidades\n- `MCF-RECOVER-CONTEXT`;\n- `MCF-DEFINE-PRODUCT`;\n- `MCF-DESIGN-EXPERIENCE`;\n- `MCF-DESIGN-ARCHITECTURE`.\n\nResultado: 12 skills executáveis / 4 documentais.\n\n## Próximo boundary\n`MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`.\n\n## Limites\nGate C permanece parcial; produção BLOCKED; live staging adapter DISABLED; `human_operator_actions=0`; HUMAN_GATE de LEANDRO não requerido.\n''',
+          }
+
+          for name, content in files.items():
+              (phase / name).write_text(content)
+
+          manifest_names = [
+              f'{prefix}-CHECKPOINT.yaml',
+              f'{prefix}-DECISIONS.md',
+              f'{prefix}-PLAN.md',
+              f'{prefix}-REPORT.md',
+              f'{prefix}-SMOKE.txt',
+              f'{prefix}-VALIDATION-FULL.txt',
+              f'{prefix}-VALIDATION.txt',
+              'README.md',
+          ]
+          lines = []
+          for name in manifest_names:
+              digest = hashlib.sha256((phase / name).read_bytes()).hexdigest()
+              lines.append(f'{digest}  {name}')
+          (phase / f'{prefix}-ARTIFACT-MANIFEST.sha256').write_text('\n'.join(lines) + '\n')
+          PY
+
+      - name: Remove temporary sync workflow and commit
+        run: |
+          rm .github/workflows/lot4a-closeout-sync.yml
+          git diff --check
+          git config user.name "MCF Runtime Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "docs(runtime): reconcile Lot 4A canonical closeout"
+          git push origin HEAD:docs/mcf-runtime-006-lot4-a-closeout-sync
