@@ -18,18 +18,21 @@ PATRICIA -> BRUNO: preserve operational boundary and recovery rules
 BRUNO -> RAFAEL: implement inside internal-only boundary
 RAFAEL -> RENATO: materialize acceptance and regression tests
 RENATO -> CARMEM: create Class C PRF after pre-PRF validation
+CARMEM -> BEATRIZ/VINICIUS/RICARDO: review exact PRF candidate
+VINICIUS -> CAF: boolean blind_retry claim was insufficient semantic evidence
+CAF -> RAFAEL/RENATO: require retry_evidence and add regression cases
 
 IMPLEMENTATION
 - contracts: MCF-DEBUG-INCIDENT added to executable skill id union
 - planner: Patricia primary owner, Renato handoff, READY_AGENT, internal provider
 - executor: governed internal execution enabled
 - evidence: structured semantic reproduction/root_cause/recovery_result
-- recovery: blind_retry=false plus regression-test reference required
+- recovery: blind_retry=false declaration plus semantic retry_evidence plus regression-test reference required
 - permissions: canonical SCOPED_WRITE preserved; external and prohibited effects blocked locally
 - bridge: no automatic completion of MCF-DEBUG-INCIDENT
 - MissionRuntime: positive completion and negative recovery persistence covered
 
-CAF_1
+CAF_1_FORMATTING
 captured_sha=3ea30e9aadac9600b701902f14d08a3881251692
 foundation_run=31476698797
 result=FAIL
@@ -45,29 +48,33 @@ followup=apply exact formatting and remove diagnostic hook
 
 revalidated_pre_prf_sha=933c8f72dd19219eea6112adfdd8db7c43112f2c
 foundation_run=31477171098
-foundation_result=PASS
+foundation_result=PASS_SUPERSEDED
 container_smoke_run=31477171096
-container_smoke_result=PASS
+container_smoke_result=PASS_SUPERSEDED
 
-FOUNDATION_PRE_PRF
-format=PASS
-lint=PASS
-typecheck=PASS
-database_migration_twice=PASS
-tests=PASS
-build=PASS
-ops_tests=20_passed_0_failed
-web_tests=5_passed_0_failed
-server_test_files=122_passed
-server_tests=524_passed_0_failed
-vitest_artifact=9095733417
-vitest_digest=sha256:9ae9c59a9e8824749a465d22fae1d0eebb0b2956e2235853b9aa26c99b71c69c
+FIRST_PRF_CANDIDATE
+sha=9ebedbaa85bfa92d52f199df064382e075adb1d3
+foundation_run=31477910252
+foundation_result=PASS_SUPERSEDED_BY_REVIEW_CAF
+container_smoke_run=31477910266
+container_smoke_result=PASS_SUPERSEDED_BY_REVIEW_CAF
+vitest_artifact=9096020199
+vitest_digest=sha256:e1af159fcb0c59acd403baa3dff401144dd7475b5b2225295c3e4823d6cec310
+manifest=GENERATED_AND_TRACEABLE_BUT_SUPERSEDED_BY_CODE_CHANGE
 
-LOT_4D_TARGETED_TESTS
-skill-executor-lot4-debug-incident.test.ts=33_passed
-mission-runtime-lot4-debug-incident.integration.test.ts=2_passed
-chat-runtime-bridge-lot4-debug-incident.integration.test.ts=1_passed
-chat-mission-planner-lot4-debug-incident.test.ts=3_passed
+CAF_2_SEMANTIC_BLIND_RETRY_EVIDENCE
+reviewed_sha=9ebedbaa85bfa92d52f199df064382e075adb1d3
+reviewer=Vinicius
+result=DEFECT_FOUND
+classification=SEMANTIC_EVIDENCE_GAP
+finding=blind_retry_false_was_only_a_boolean_declaration
+protocol_effect=GATE_BLOCKED
+cause=boolean claim did not independently demonstrate absence of blind retry
+correction=add mandatory semantic retry_evidence in recovery_result
+negative_tests=missing_retry_evidence,boolean_retry_evidence,placeholder_retry_evidence
+positive_persistence=receipt_contains_retry_evidence
+latest_code_head_before_prf_reconciliation=ea75e73b3520748d4a6cdbabe9197b484203d884
+revalidation_required=YES
 
 BOUNDARY
 permission_profile=SCOPED_WRITE
@@ -83,11 +90,11 @@ public_action=FORBIDDEN
 blind_retry=FORBIDDEN
 
 CURRENT_PRF_STATE
-prf_exact_head=PENDING_AFTER_MANIFEST_COMMIT
+final_prf_head=PENDING_AFTER_MANIFEST_REGENERATION
 foundation_exact_head=PENDING
 container_smoke_exact_head=PENDING
-manifest_audit=PENDING
-specialist_reviews=PENDING
+manifest_audit=PENDING_REGENERATION
+specialist_reviews=PENDING_REEXECUTION
 augusto_trace=PENDING
 julia_governance=PENDING
 emily_audit=PENDING
