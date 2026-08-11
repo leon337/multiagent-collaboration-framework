@@ -1,68 +1,47 @@
 # PHASE-006-LOT-4-D-DEBUG-INCIDENT — Decisions
 
 ## D1 — GitHub vence o checkpoint transferido
-
-O início da missão revalidou `main`, Issue `#103`, registry, protocolo, runtime plan e encerramento do Lot 4-C. Não foi encontrada divergência material, branch ou PR pré-existente do Lot 4-D.
+O início revalidou `main`, Issue `#103`, registry, protocolo, runtime plan e encerramento do Lot 4-C. Não havia branch/PR pré-existente do Lot 4-D.
 
 ## D2 — Planner usa Patricia como primary owner
-
-O contrato canônico registra Patricia, Bruno e Rafael como owners e Patricia como domínio primário. O planner, portanto, roteia a skill para Patricia e preserva handoff para Renato.
+Patricia, Bruno e Rafael são owners canônicos; Patricia é domínio primário. Handoff: Renato.
 
 ## D3 — READY_AGENT, nunca auto-completion pelo bridge
-
-`MCF-DEBUG-INCIDENT` usa provider interno, mas não é uma operação de bootstrap. O planner marca a fase como `READY_AGENT`; o bridge executa somente as capacidades internas de bootstrap já autorizadas.
+A skill usa provider interno, mas não é bootstrap. O planner marca `READY_AGENT`.
 
 ## D4 — SCOPED_WRITE permanece canônico
+O Lot 4-D não muda o perfil do registry e não relaxa o PermissionEngine global.
 
-O Lot 4-D não altera o `permission_profile` do registry. O `PermissionEngine` acrescenta um boundary específico para a skill e não torna a política global mais permissiva.
+## D5 — Internal-only
+A única combinação autorizada é `internal / inspect-debug-incident / mcf-agent-runtime`. External/GitHub write, environment mutation, deploy, produção, destructive fix, secret/public action e blind retry permanecem proibidos.
 
-## D5 — Internal-only no Lot 4-D
-
-A única combinação autorizada é:
-
-```text
-internal / inspect-debug-incident / mcf-agent-runtime
-```
-
-Qualquer provider externo, escrita GitHub, mutação de ambiente, deploy, ação de produção, destructive fix, acesso a segredo, ação pública ou blind retry permanece fora do boundary.
-
-## D6 — Evidência semântica é estruturada
-
-Foi adotada estrutura que obriga conteúdo verificável:
-
+## D6 — Evidência semântica estruturada
 - reproduction: `symptom`, `method`, `evidence_reference`;
 - root_cause: `cause`, `supporting_evidence`;
 - recovery_result: `action_or_mitigation`, `verification`, `blind_retry: false`, `retry_evidence`, `regression_test_added`.
 
-Strings vazias, whitespace, placeholders, objetos vazios e booleanos usados como evidência não autorizam sucesso.
+## D7 — Evidência insuficiente recupera
+Falha semântica retorna `RECOVERING`, `handoffTo: null`, sem `PHASE_COMPLETED` nem handoff de sucesso.
 
-## D7 — Evidência insuficiente recupera, não fabrica sucesso
+## D8 — CAF #1 preservado
+`3ea30e9a...` falhou em formatação; `81c1f1c9...` foi diagnóstico-only; a formatação exata foi aplicada e revalidada.
 
-Falha semântica retorna `RECOVERING`, `handoffTo: null` e não produz `PHASE_COMPLETED` nem handoff de sucesso.
+## D9 — Regra de SHA
+CI/review só vale para o SHA exato. Candidatos superseded ficam históricos.
 
-## D8 — CAF de formatação preservado no trace
+## D10 — Sem HUMAN_GATE
+Nenhum gatilho reservado surgiu. `human_operator_actions: 0`.
 
-O SHA `3ea30e9aadac9600b701902f14d08a3881251692` falhou no Foundation run `31476698797`. Um SHA diagnóstico temporário `81c1f1c9ad58a895db02b70b0dafec5e7ba9349d` foi usado somente para obter o diff exato do Prettier e nunca será tratado como candidato. O candidato corrigido `933c8f72dd19219eea6112adfdd8db7c43112f2c` passou Foundation e Container Smoke.
+## D11 — `blind_retry: false` não basta
+Vinicius bloqueou o primeiro candidato PRF porque o booleano isolado não demonstrava ausência de blind retry. `retry_evidence` semântico passou a ser obrigatório; ausência, booleano ou placeholder recuperam, nunca concluem.
 
-## D9 — Evidência pré-PRF não vale como gate do PRF
+## D12 — Debug não captura incidente genérico
+Beatriz encontrou sobreposição: termos genéricos `incidente`/`incident`, avaliados antes de security review, poderiam capturar um objetivo de segurança e remover seu piso Classe C.
 
-Os runs do candidato `933c8f72...` ficam registrados como pré-PRF. A criação do PRF altera o HEAD; por isso Foundation, Container Smoke, manifesto, reviews, auditoria e gate são vinculados ao SHA exato vigente.
+Decisão:
+- remover `incidente` e `incident` da inferência genérica de Debug Incident;
+- manter sinais explícitos: `debug`, `diagnosticar incidente`, `diagnose incident`, `root cause`, `causa raiz`, `reproduzir falha`, `investigar erro`;
+- provar por regressão que `revisão de segurança do incidente` continua em `MCF-SECURITY-REVIEW`, owner Ricardo, `READY_AGENT`, Classe C;
+- não alterar a precedência de security review além do necessário para eliminar a ambiguidade.
 
-## D10 — Nenhum HUMAN_GATE nesta fase
-
-Não surgiu gatilho reservado a LEANDRO. `human_operator_actions` permanece `0`; questões técnicas seguem `TEAM_FIRST`.
-
-## D11 — `blind_retry: false` não é evidência suficiente sozinho
-
-O primeiro candidato PRF `9ebedbaa85bfa92d52f199df064382e075adb1d3` passou Foundation e Container Smoke, mas o review de Vinicius encontrou uma lacuna semântica: o booleano `blind_retry: false` era somente uma declaração e não demonstrava a ausência de blind retry.
-
-O gate foi bloqueado e um novo CAF foi aberto antes de qualquer aprovação. A correção torna `retry_evidence` obrigatório e semanticamente significativo em `recovery_result`, preservando `blind_retry: false` apenas como declaração explícita complementar.
-
-Casos que agora devem recuperar, nunca concluir:
-
-- `retry_evidence` ausente;
-- `retry_evidence: true` ou outro booleano;
-- placeholder como `done`, `ok`, `unknown`;
-- `blind_retry: true`, mesmo com texto adicional.
-
-Qualquer CI ou review do SHA `9ebedbaa...` é histórico e não pode ser reutilizado no novo HEAD.
+A tentativa de substituição completa do planner foi bloqueada pelo conector antes de chegar ao GitHub. A correção foi então aplicada por blob/tree/commit Git granular e atualização fast-forward da branch, sem force-push.
