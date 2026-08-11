@@ -88,18 +88,18 @@ describe('Mission observability persistence', () => {
       );
 
       const blocked = await repository.listMissionsByStates(['BLOCKED_RISK']);
-      expect(blocked.some((mission) => mission.id === missionId)).toBe(true);
+      const found = blocked.some((mission) => mission.id === missionId);
+      expect(found).toBe(true);
 
-      await expect(
-        repository.appendBlockedAlertsAtomically([
-          alertCandidate(missionId, randomUUID(), 4, now),
-        ]),
-      ).resolves.toEqual({ inserted: 1, duplicates: 0, stale: 0 });
-      await expect(
-        repository.appendBlockedAlertsAtomically([
-          alertCandidate(missionId, randomUUID(), 4, now),
-        ]),
-      ).resolves.toEqual({ inserted: 0, duplicates: 1, stale: 0 });
+      const firstCandidate = alertCandidate(missionId, randomUUID(), 4, now);
+      const firstResult = await repository.appendBlockedAlertsAtomically([firstCandidate]);
+      expect(firstResult).toEqual({ inserted: 1, duplicates: 0, stale: 0 });
+
+      const duplicateCandidate = alertCandidate(missionId, randomUUID(), 4, now);
+      const duplicateResult = await repository.appendBlockedAlertsAtomically([
+        duplicateCandidate,
+      ]);
+      expect(duplicateResult).toEqual({ inserted: 0, duplicates: 1, stale: 0 });
 
       const persisted = await database.query<CountRow>(
         `select count(*)::text as "count"
@@ -128,9 +128,10 @@ describe('Mission observability persistence', () => {
       );
 
       const snapshot = await repository.listMissionsByStates(['BLOCKED_RISK']);
-      expect(
-        snapshot.some((mission) => mission.id === missionId && mission.version === 4),
-      ).toBe(true);
+      const snapshotFound = snapshot.some(
+        (mission) => mission.id === missionId && mission.version === 4,
+      );
+      expect(snapshotFound).toBe(true);
 
       await database.query(
         `update "mcf_missions"
@@ -139,11 +140,14 @@ describe('Mission observability persistence', () => {
         [missionId, new Date(now.getTime() + 1000)],
       );
 
-      await expect(
-        repository.appendBlockedAlertsAtomically([
-          alertCandidate(missionId, randomUUID(), 4, new Date(now.getTime() + 2000)),
-        ]),
-      ).resolves.toEqual({ inserted: 0, duplicates: 0, stale: 1 });
+      const staleCandidate = alertCandidate(
+        missionId,
+        randomUUID(),
+        4,
+        new Date(now.getTime() + 2000),
+      );
+      const staleResult = await repository.appendBlockedAlertsAtomically([staleCandidate]);
+      expect(staleResult).toEqual({ inserted: 0, duplicates: 0, stale: 1 });
 
       const persisted = await database.query<CountRow>(
         `select count(*)::text as "count"
