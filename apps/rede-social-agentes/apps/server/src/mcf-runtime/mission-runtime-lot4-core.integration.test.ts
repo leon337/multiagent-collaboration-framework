@@ -23,8 +23,17 @@ describe('MissionRuntime Lot 4 core persistence integration', () => {
     const repository = new OrderedMcfRuntimeRepository(database, postgres);
     const registry = new SkillRegistryLoader();
     const evidence = new EvidenceValidator();
-    const executor = new SkillExecutor(registry, new PermissionEngine(), evidence);
-    service = new MissionRuntimeService(repository, executor, registry, evidence);
+    const executor = new SkillExecutor(
+      registry,
+      new PermissionEngine(),
+      evidence,
+    );
+    service = new MissionRuntimeService(
+      repository,
+      executor,
+      registry,
+      evidence,
+    );
   });
 
   afterAll(async () => {
@@ -102,10 +111,14 @@ describe('MissionRuntime Lot 4 core persistence integration', () => {
           ),
         ).toBe(true);
         expect(
-          timeline.events.some((event) => event.eventType === 'HANDOFF_CREATED'),
+          timeline.events.some(
+            (event) => event.eventType === 'HANDOFF_CREATED',
+          ),
         ).toBe(true);
         expect(
-          timeline.events.some((event) => event.eventType === 'PHASE_COMPLETED'),
+          timeline.events.some(
+            (event) => event.eventType === 'PHASE_COMPLETED',
+          ),
         ).toBe(true);
       } finally {
         await database.query('delete from "mcf_missions" where "id" = $1', [
