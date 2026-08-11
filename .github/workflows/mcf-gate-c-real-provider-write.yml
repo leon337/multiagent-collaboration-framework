@@ -187,6 +187,7 @@ jobs:
           pnpm --filter @rsa/server exec vitest run
           src/mcf-runtime/gate-c-real-provider-write.integration.test.ts
           --reporter=default
+          --testTimeout=30000
 
       - name: Upload full Gate C proof artifact
         if: always()
