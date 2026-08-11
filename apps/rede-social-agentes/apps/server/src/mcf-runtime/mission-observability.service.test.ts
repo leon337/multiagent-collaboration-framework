@@ -85,12 +85,14 @@ function observabilityRepository(options?: {
   missions?: McfMissionRecord[];
   inserted?: number;
   duplicates?: number;
+  stale?: number;
 }): MissionObservabilityRepository {
   return {
     listMissionsByStates: vi.fn(async () => options?.missions ?? [mission()]),
-    appendEventsIdempotently: vi.fn(async () => ({
+    appendBlockedAlertsAtomically: vi.fn(async () => ({
       inserted: options?.inserted ?? 1,
       duplicates: options?.duplicates ?? 0,
+      stale: options?.stale ?? 0,
     })),
   } as unknown as MissionObservabilityRepository;
 }
@@ -153,17 +155,20 @@ describe('MissionObservabilityService', () => {
       externalNotification: false,
       humanActionRequired: false,
     });
-    expect(observationRepo.appendEventsIdempotently).toHaveBeenCalledWith([
+    expect(observationRepo.appendBlockedAlertsAtomically).toHaveBeenCalledWith([
       expect.objectContaining({
-        missionId: mission().id,
-        phaseId: phase().id,
-        agentId: 'Renato',
-        eventType: 'MISSION_BLOCKED_ALERT_RAISED',
-        idempotencyKey: `mission:${mission().id}:blocked-alert:v7`,
-        payload: expect.objectContaining({
-          reason: 'CI_FAILED',
-          externalNotification: false,
-          humanActionRequired: false,
+        expectedMissionVersion: 7,
+        event: expect.objectContaining({
+          missionId: mission().id,
+          phaseId: phase().id,
+          agentId: 'Renato',
+          eventType: 'MISSION_BLOCKED_ALERT_RAISED',
+          idempotencyKey: `mission:${mission().id}:blocked-alert:v7`,
+          payload: expect.objectContaining({
+            reason: 'CI_FAILED',
+            externalNotification: false,
+            humanActionRequired: false,
+          }),
         }),
       }),
     ]);
@@ -179,6 +184,20 @@ describe('MissionObservabilityService', () => {
 
     expect(result.alertsInserted).toBe(0);
     expect(result.duplicates).toBe(1);
+    expect(result.externalNotification).toBe(false);
+    expect(result.humanActionRequired).toBe(false);
+  });
+
+  it('does not misreport a stale candidate as an inserted or duplicate alert', async () => {
+    const service = new MissionObservabilityService(
+      runtimeRepository(),
+      observabilityRepository({ inserted: 0, duplicates: 0, stale: 1 }),
+    );
+
+    const result = await service.reconcileBlockedAlerts();
+
+    expect(result.alertsInserted).toBe(0);
+    expect(result.duplicates).toBe(0);
     expect(result.externalNotification).toBe(false);
     expect(result.humanActionRequired).toBe(false);
   });
