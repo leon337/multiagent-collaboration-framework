@@ -75,7 +75,7 @@ async function countProofComments(pullNumber: number, idempotencyKey: string): P
 }
 
 async function persistProofArtifact(proof: Record<string, unknown>): Promise<void> {
-  const directory = resolve(process.cwd(), 'apps/server/test-results');
+  const directory = resolve(process.cwd(), 'test-results');
   await mkdir(directory, { recursive: true });
   await writeFile(
     resolve(directory, 'gate-c-real-provider-write.json'),
