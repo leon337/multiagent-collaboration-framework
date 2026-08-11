@@ -307,7 +307,12 @@ const closeoutDecisions = new Set([
 
 function requireCloseString(record: Record<string, unknown>, key: string, message: string): string {
   const value = record[key];
-  if (!isMeaningfulDebugString(value)) return reject(message);
+  if (typeof value !== 'string' || value.trim().length === 0) return reject(message);
+  const normalized = value.trim().toLowerCase();
+  const allowedControlValue =
+    (key === 'verdict' && ['pass', 'passed'].includes(normalized)) ||
+    (key === 'next_action' && normalized === 'none');
+  if (debugEvidencePlaceholders.has(normalized) && !allowedControlValue) return reject(message);
   return value.trim();
 }
 
