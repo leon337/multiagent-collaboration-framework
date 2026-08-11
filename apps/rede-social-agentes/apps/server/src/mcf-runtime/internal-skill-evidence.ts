@@ -276,8 +276,13 @@ function requireDebugRecovery(
     'MCF-DEBUG-INCIDENT recovery_result requires semantic verification of the result',
   );
   if (value.blind_retry !== false) {
-    return reject('MCF-DEBUG-INCIDENT recovery_result must prove blind_retry=false');
+    return reject('MCF-DEBUG-INCIDENT recovery_result must declare blind_retry=false');
   }
+  requireDebugField(
+    value,
+    'retry_evidence',
+    'MCF-DEBUG-INCIDENT recovery_result requires semantic evidence proving no blind retry occurred',
+  );
   requireRegressionTestReference(value.regression_test_added);
   return value;
 }
