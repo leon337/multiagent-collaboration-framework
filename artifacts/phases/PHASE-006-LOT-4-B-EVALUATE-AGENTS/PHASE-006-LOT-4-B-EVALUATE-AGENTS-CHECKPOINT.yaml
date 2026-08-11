@@ -1,60 +1,47 @@
 mission: MCF-RUNTIME-006-LOT-4-SKILLS
 phase: PHASE-006-LOT-4-B-EVALUATE-AGENTS
+state: TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE
+risk_class: C
 issue: 97
 pull_request: 98
-risk_class: C
-state: CANDIDATE_READY_FOR_EXACT_HEAD_VALIDATION
-base_main: 5a03c443ff3e4d80755b8bd0b8c6bd3cf350f6a3
-implementation_head_before_prf: 791ed0f8114dd9d6e071fc668d4c9be2536dffa4
-implementation:
-  evaluate_agents: CANDIDATE_EXECUTABLE
-  owners: [Beatriz, Tiago]
-  primary_planner_owner: Beatriz
-  handoff: Emily
-  permission_profile: READ_ONLY
-  provider: internal
-  operation: inspect-agent-evaluation
-  planner_state: READY_AGENT
-evidence:
-  test_cases: REQUIRED_NON_EMPTY
-  scores: REQUIRED_NON_EMPTY
-  regressions: REQUIRED_ALLOW_EMPTY
-  invalid_to_recovering: IMPLEMENTED
-persistence:
-  mission_runtime_integration_test: ADDED
-  expected_version_progression: 1_TO_2
-intermediate_validation:
-  foundation_run: 31463343756
-  foundation: PASS_SUPERSEDED_BY_PRF
-  container_smoke_run: 31463343759
-  container_smoke: PASS_SUPERSEDED_BY_PRF
+base_sha: 5a03c443ff3e4d80755b8bd0b8c6bd3cf350f6a3
+validated_head: 279a4b1e3b8e8b5b948d95481ec85e5223322278
+merge_commit: 741abdad70432b9232256b7204156d96770c9b4d
+candidate_tree: a0e676152c7070381480b9c5422f103887987eab
+merge_tree: a0e676152c7070381480b9c5422f103887987eab
+validation:
+  foundation_run: 31463802089
+  foundation: PASS
+  container_smoke_run: 31463802100
+  container_smoke: PASS
   server_test_files: 115
   server_tests: 470
-  ops_tests: 20
   web_tests: 5
-  vitest_artifact: 9090619768
-  artifact_digest: sha256:ce2e9e0eb697a4891d60da8ad9e08a82513f4e9bf65c00fb8aa73f32761ad41e
-superseded_findings:
-  initial_foundation_run: 31463062323
-  initial_foundation_result: FAIL_READ_ONLY_OPERATION_MISMATCH
-  initial_smoke_run: 31463062318
-  initial_smoke_result: PASS_SUPERSEDED
-governance:
-  beatriz_review: PENDING
-  sofia_review: PENDING
-  renato_review: PENDING
-  julia_review: PENDING
-  emily_independent_audit: PENDING
-  leo_technical_gate: PENDING
-  merge_authorized: false
-  human_gate_leandro: NOT_REQUIRED
-  human_operator_actions: 0
-expected_after_merge:
+  vitest_artifact: 9090765070
+  artifact_digest: sha256:74aec951f4c26e491a406389b6b49c0de83a2d5a3af8ad5b1dab89eda1c11944
+  manifest_audit_run: 31463844963
+  manifest_audit: PASS
+review:
+  beatriz: PASS
+  sofia: PASS
+  renato: PASS
+  julia: PASS
+  emily_independent_audit: PASS
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
+gate:
+  leo_technical_gate: PASS
+  merge_authorized_for_exact_head: true
+result:
   skills_registered: 16
   skills_executable: 13
   skills_documental: 3
-external_effects:
+  read_only: PRESERVED
   production: BLOCKED
   live_staging_adapter: DISABLED
-  gate_c: PARCIAL
-next_action: RUN_EXACT_PRF_HEAD_CI_THEN_REVIEW_AUDIT_LEO_GATE
+  human_operator_actions: 0
+  human_gate_leandro: NOT_REQUIRED
+canonical_sync: COMPLETE_ON_BRANCH
+doc_sync_gate: PENDING
+next_boundary: MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW

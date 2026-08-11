@@ -4,48 +4,26 @@
 - Missão: `MCF-RUNTIME-006-LOT-4-SKILLS`
 - Fase: `PHASE-006-LOT-4-B-EVALUATE-AGENTS`
 - Issue: `#97`
-- Pull Request: `#98`
-- Classe de risco: `C`
-- Orquestrador: `Mestre`
-- Owner da skill: `Beatriz` / `Tiago`
-- Handoff esperado: `Emily`
-- Base verificada: `main@5a03c443ff3e4d80755b8bd0b8c6bd3cf350f6a3`
+- PR técnico: `#98`
+- Classe: `C`
+- Base técnica: `5a03c443ff3e4d80755b8bd0b8c6bd3cf350f6a3`
+- Candidato validado: `279a4b1e3b8e8b5b948d95481ec85e5223322278`
+- Merge técnico: `741abdad70432b9232256b7204156d96770c9b4d`
 
 ## Objetivo
-Converter `MCF-EVALUATE-AGENTS` de contrato documental em capacidade executável pelo runtime governado, preservando o perfil `READ_ONLY`, critérios reproduzíveis e proibição de autoaprovação sem evidência.
+Converter `MCF-EVALUATE-AGENTS` em capacidade executável governada preservando `READ_ONLY`, owners Beatriz/Tiago, handoff Emily e evidência reproduzível.
 
-## Escopo
-- expandir `McfExecutableSkillId`;
-- adicionar planejamento `READY_AGENT` para avaliação explícita/inferida;
-- executar via provider `internal` com operação de leitura `inspect-agent-evaluation`;
-- validar semanticamente `test_cases`, `scores` e `regressions`;
-- permitir `regressions: []` somente quando a coleção estiver explicitamente presente;
-- preservar owners Beatriz/Tiago e handoff Emily;
-- provar persistência/versionamento pelo `MissionRuntime`;
-- atualizar documentação da skill;
-- validar o SHA exato após o PRF.
+## Critérios finais
+1. `READY_AGENT`, sem autoexecução pelo bridge.
+2. `test_cases` e `scores` não vazios e significativos.
+3. `regressions` obrigatório e permitido vazio.
+4. Evidência inválida → `RECOVERING`, sem handoff.
+5. Beatriz/Tiago owners; Emily handoff.
+6. `READ_ONLY`, PermissionEngine e HDF preservados.
+7. Persistência/versionamento pelo MissionRuntime.
+8. Foundation/Smoke PASS no HEAD exato.
+9. Revisões, auditoria independente e Léo PASS antes do merge.
+10. Produção e live staging adapter bloqueados.
 
-## Fora do escopo
-- `MCF-SECURITY-REVIEW`;
-- `MCF-DEBUG-INCIDENT`;
-- `MCF-CLOSE-PHASE`;
-- produção;
-- ativação live do staging adapter;
-- escrita externa C1/C2.
-
-## Critérios de aceite
-1. O candidato passa a 13 skills executáveis e 3 documentais após integração.
-2. `MCF-EVALUATE-AGENTS` permanece `READY_AGENT`; o bridge não fabrica avaliação.
-3. `test_cases` é coleção não vazia de itens significativos.
-4. `scores` é coleção/mapa não vazio com valores significativos.
-5. `regressions` é obrigatório e pode ser vazio.
-6. Evidência ausente, incompleta ou placeholder resulta em `RECOVERING`, sem handoff.
-7. Beatriz e Tiago são owners válidos; não-owner é bloqueado.
-8. `READ_ONLY`, `PermissionEngine` e HDF permanecem intactos.
-9. `MissionRuntime` persiste recibo, evidência, handoff para Emily, eventos e versão.
-10. Foundation e Container Smoke passam no SHA exato do commit PRF.
-11. Revisões especialistas, auditoria independente e gate de Léo precedem merge.
-12. Produção continua bloqueada.
-
-## Ordem
-`IMPLEMENTAR → VALIDAR → REVISAR → AUDITAR → LÉO DECIDE → FECHAR FASE → TRANSFERIR CHECKPOINT`
+## Resultado
+Todos os critérios técnicos foram atendidos. Candidato e squash merge compartilham a tree `a0e676152c7070381480b9c5422f103887987eab`. Próximo boundary: `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`.

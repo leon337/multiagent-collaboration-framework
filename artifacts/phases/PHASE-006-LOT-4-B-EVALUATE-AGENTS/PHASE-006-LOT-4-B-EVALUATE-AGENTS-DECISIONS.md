@@ -1,31 +1,31 @@
 # PHASE-006-LOT-4-B-EVALUATE-AGENTS — Decisões
 
-## D1 — Incremento isolado
-`MCF-EVALUATE-AGENTS` permanece isolada das três skills documentais de maior sensibilidade operacional, reduzindo blast radius e permitindo gate específico.
+## D1 — Boundary isolado
+A avaliação de agentes foi convertida separadamente das skills sensíveis restantes.
 
 ## D2 — Classe C conservadora
-A skill é `READ_ONLY`, mas altera critérios de comportamento e avaliação dos agentes no runtime. Por isso a fase usa PRF Classe C, auditoria independente e gate de Léo.
+A skill é READ_ONLY, mas altera critérios de avaliação do runtime; PRF completo e auditoria independente foram exigidos.
 
-## D3 — `READY_AGENT`, não autoexecução
-O planner pode inferir ou receber explicitamente `MCF-EVALUATE-AGENTS`, mas o bridge não fabrica scorecard. A execução depende do agente owner e de evidência real.
+## D3 — READY_AGENT
+O bridge não fabrica scorecard; o agente owner produz evidência real.
 
-## D4 — Preservar `READ_ONLY`
-A tentativa inicial usou `evaluate-agents`, que foi corretamente recusada pelo `PermissionEngine`. A correção não ampliou a política: a operação foi alinhada à taxonomia de leitura como `inspect-agent-evaluation`.
+## D4 — READ_ONLY preservado
+A tentativa `evaluate-agents` foi bloqueada corretamente. A solução foi `inspect-agent-evaluation`; o PermissionEngine não foi ampliado.
 
 ## D5 — Evidência reproduzível
-`test_cases` e `scores` devem ser não vazios e significativos. `regressions` deve existir mesmo quando nenhuma regressão foi observada, caso em que `[]` é válido.
+`test_cases`/`scores` não vazios; `regressions` obrigatório e permitido vazio.
 
-## D6 — Dois owners canônicos
-Beatriz e Tiago continuam aceitos conforme `skills/registry.yaml`; o planner usa Beatriz como owner primário.
+## D6 — Owners e handoff
+Beatriz/Tiago são owners; sucesso validado entrega a Emily.
 
-## D7 — Handoff para Emily
-Sucesso validado produz handoff para Emily. Evidência inválida produz `RECOVERING` e nenhum handoff de sucesso.
+## D7 — Persistência no aceite
+MissionRuntime prova recibo, evidência, eventos, handoff e versão 1→2.
 
-## D8 — Persistência faz parte do aceite
-Foi criado teste integrado do `MissionRuntime` para provar scorecard, recibo, eventos, handoff e progressão de versão 1→2.
+## D8 — Gate preso ao HEAD
+Foundation, Smoke, reviews, auditoria e Léo foram vinculados a `279a4b1e3b8e8b5b948d95481ec85e5223322278`.
 
-## D9 — Resultados anteriores não são gate
-O Foundation `31463062323` falhou antes da correção READ_ONLY; o Smoke `31463062318` e os workflows `action_required` de SHAs intermediários são históricos/superseded. O PASS em `791ed0f8114dd9d6e071fc668d4c9be2536dffa4` é intermediário e também será superseded pelo PRF.
+## D9 — Squash preservou a tree
+Merge `741abdad70432b9232256b7204156d96770c9b4d` e candidato compartilham `a0e676152c7070381480b9c5422f103887987eab`.
 
-## D10 — Sem expansão externa
-Produção, live staging adapter, Gate C e escrita real C1/C2 permanecem inalterados.
+## D10 — Próximo boundary
+`MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`; Gate C, produção e live staging permanecem inalterados.
