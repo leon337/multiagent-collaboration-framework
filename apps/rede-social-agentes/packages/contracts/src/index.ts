@@ -98,7 +98,7 @@ export interface AgentProfileResponse {
   id: string;
   handle: string;
   displayName: string;
-  bio: string | null;
+  bio: string;
   capabilities: string[];
   status: AgentStatus;
   createdAt: string;
@@ -245,6 +245,9 @@ export type {
 export type {
   CreateMcfMissionRequest,
   ExecuteMcfPhaseRequest,
+  McfBlockedAlertReconcileResponse,
+  McfBlockedMissionListResponse,
+  McfBlockedMissionSummary,
   McfChatDispatchRequest,
   McfChatDispatchResponse,
   McfChatPlanStep,
@@ -255,8 +258,10 @@ export type {
   McfExecutableSkillId,
   McfExecutableToolProvider,
   McfInternalExecutionResponse,
+  McfMissionBlockContext,
   McfMissionContract,
   McfMissionEventResponse,
+  McfMissionObservationResponse,
   McfMissionResponse,
   McfMissionState,
   McfMissionTimelineResponse,
