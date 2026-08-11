@@ -31,7 +31,8 @@ function requiredEnv(name: string): string {
 function proofContract() {
   return {
     title: 'MCF-RUNTIME-006 Gate C real provider write proof',
-    objective: 'Prove governed reversible GitHub writes through the complete MCF Runtime lifecycle.',
+    objective:
+      'Prove governed reversible GitHub writes through the complete MCF Runtime lifecycle.',
     expectedOutcome: 'C1 and C2 real writes verified with receipts, ledger and idempotency.',
     scope: ['controlled reversible GitHub branch/PR write', 'controlled PR comment'],
     outOfScope: ['production', 'direct main write', 'merge', 'destructive action'],
