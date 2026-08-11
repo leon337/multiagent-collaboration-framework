@@ -68,7 +68,9 @@ function events(): McfEventRecord[] {
   ];
 }
 
-function runtimeRepository(state: McfMissionRecord['state'] = 'BLOCKED_RISK'): McfRuntimeRepository {
+function runtimeRepository(
+  state: McfMissionRecord['state'] = 'BLOCKED_RISK',
+): McfRuntimeRepository {
   return {
     createMission: vi.fn(),
     findMission: vi.fn(async () => mission(state)),
@@ -95,7 +97,10 @@ function observabilityRepository(options?: {
 
 describe('MissionObservabilityService', () => {
   it('exposes the current phase, latest event and concrete block context', async () => {
-    const service = new MissionObservabilityService(runtimeRepository(), observabilityRepository());
+    const service = new MissionObservabilityService(
+      runtimeRepository(),
+      observabilityRepository(),
+    );
 
     const result = await service.getMissionObservation(mission().id);
 
