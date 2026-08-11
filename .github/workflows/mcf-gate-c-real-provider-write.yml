@@ -70,16 +70,6 @@ jobs:
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
 
-      - name: Diagnose C2 canonical formatting
-        run: |
-          TARGET="apps/server/src/mcf-runtime/gate-c-c2-real-provider-write.integration.test.ts"
-          pnpm exec prettier --write "$TARGET"
-          git diff -- "$TARGET"
-          if ! git diff --quiet -- "$TARGET"; then
-            echo 'Canonical Prettier diff emitted above; stopping before C2 external write.' >&2
-            exit 1
-          fi
-
       - name: Preflight formatting
         run: pnpm format:check
 
