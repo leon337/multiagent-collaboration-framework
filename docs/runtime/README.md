@@ -31,22 +31,18 @@ Chat objective
 ```yaml
 runtime: MCF-RUNTIME-006
 skills_registered: 16
-skills_executable: 15
-skills_documental: 1
-remaining_documental:
-  - MCF-CLOSE-PHASE
+skills_executable: 16
+skills_documental: 0
+remaining_documental: []
 
-latest_completed_boundary:
-  id: MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
-  issue: 103
-  technical_pr: 104
-  technical_candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
-  technical_merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
+latest_integrated_boundary:
+  id: MCF-RUNTIME-006-LOT-4-E-CLOSE-PHASE
+  issue: 107
+  technical_pr: 108
+  technical_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
+  technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
   technical_tree_equivalence: PASS
-  canonical_pr: 105
-  canonical_candidate: 41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
-  canonical_merge: 59b230e8ad834b88c1dc4363bc9a28499881e1fe
-  canonical_sync: COMPLETE
+  canonical_sync: IN_PROGRESS
 
 production: BLOCKED
 live_staging_adapter: DISABLED
@@ -71,64 +67,77 @@ human_operator_actions: 0
 13. `MCF-EVALUATE-AGENTS`
 14. `MCF-SECURITY-REVIEW`
 15. `MCF-DEBUG-INCIDENT`
+16. `MCF-CLOSE-PHASE`
 
-Documental restante: `MCF-CLOSE-PHASE`.
+Não há skill documental remanescente no runtime integrado.
 
-## MCF-DEBUG-INCIDENT
+## MCF-CLOSE-PHASE
 
 ```yaml
-primary_owner: Patricia
-owners: [Patricia, Bruno, Rafael]
+primary_owner: Carmem
+owners: [Carmem, Emily, Leo, Mestre]
 planner_state: READY_AGENT
-handoff: Renato
+handoff: Mestre
 permission_profile: SCOPED_WRITE
 provider: internal
-operation: inspect-debug-incident
+operation: close-phase
 resource: mcf-agent-runtime
 ```
 
-O bridge não auto-completa a skill. O Lot 4-D não amplia autoridade externa: provider externo, GitHub write, environment mutation, deploy/produção, destructive fix, secret/public action e blind retry continuam negados.
+O bridge não auto-completa a skill. O boundary do Lot 4-E não amplia autoridade externa: provider externo, GitHub write, environment mutation, deploy/produção, ação destrutiva, secret/public action continuam negados.
 
-`reproduction`, `root_cause` e `recovery_result` precisam ser semanticamente significativos. Recuperação válida exige ação/mitigação, verificação, `blind_retry: false`, `retry_evidence` independente e referência verificável de regressão. Evidência insuficiente retorna `RECOVERING` sem handoff de sucesso.
+Evidência obrigatória:
 
-Objetivos explicitamente de security review continuam em `MCF-SECURITY-REVIEW`, Ricardo e Classe C; os termos genéricos `incidente/incident` não capturam automaticamente a rota de debug.
+- `phase_pack` — artefatos, manifest reference e rastreabilidade completa;
+- `audit_verdict` — verdict, referência verificável e blocking findings;
+- `leo_decision` — decisão explícita, justificativa, estado seguinte, próxima ação e responsável;
+- `checkpoint` — estado final, objetivo, findings, blockers, próxima ação, destinatário e necessidade de ação humana.
+
+`ENTREGUE` só é válido com objetivo atendido, ausência de blockers/findings pendentes ou bloqueantes, auditoria PASS/PASSED, decisão aprovadora de Léo, nenhuma próxima ação pendente, `human_action_required=false` e concordância entre decisão/checkpoint.
+
+O handoff técnico é `Mestre`. Leandro não pode ser executor nem destinatário de handoff técnico; sua participação somente ocorre por `HUMAN_GATE` explícito conforme o protocolo.
 
 ## Validação integrada
 
 ```yaml
-foundation_run: 31479541126
+final_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
+foundation_run: 31485695643
 foundation: PASS
-container_smoke_run: 31479541177
+container_smoke_run: 31485695636
 container_smoke: PASS
-server_test_files: 122
-server_tests: 527
-web_tests: 5
-ops_tests: 20
+documentation_validation_run: 31485695606
+documentation_validation: PASS
+server_test_files: 125
+server_tests: 562
 failed_tests: 0
-technical_manifest: PASS
+close_phase_executor_tests: 28
+close_phase_planner_tests: 4
+close_phase_mission_runtime_tests: 2
+hdf_regression_tests: 11
+prf_manifest_audit_run: 31485724987
+prf_manifest_audit: PASS
 specialist_reviews: PASS
 augusto_trace: PASS
+carmem_prf_review: PASS
 julia_governance: PASS
-emily_audit: PASS
+emily_independent_audit: PASS
 leo_technical_gate: PASS
-documentation_validation_run: 31481344101
-documentation_validation: PASS
-documentary_manifest: PASS
-documentary_governance: PASS
-independent_documentary_audit: PASS
-leo_documentary_gate: PASS
-canonical_sync: COMPLETE
+technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
+technical_tree_equivalence: PASS
+post_merge_documentation_run: 31486181380
+post_merge_documentation: PASS
 ```
 
-## CAFs
+## CAFs do Lot 4-E
 
-1. formatação canônica corrigida e revalidada;
-2. `blind_retry: false` isolado rejeitado como claim booleano, tornando `retry_evidence` semântico obrigatório;
-3. roteamento genérico de incidente corrigido para não sobrepor security review Classe C;
-4. closeout documental criado pós-merge para remover marcadores pré-merge `IN_PROGRESS/CANDIDATE` da fonte canônica.
+1. bootstrap inicial falhou antes de mutação e o mecanismo foi substituído, sem blind retry;
+2. formatação foi corrigida com Prettier pinado do repositório;
+3. `PASS` de audit verdict foi contextualizado sem enfraquecer a rejeição genérica de placeholders;
+4. o hardening passou a rejeitar `ENTREGUE` com finding bloqueante de auditoria;
+5. Leandro não pode tornar-se responsável técnico implícito; somente `ESCALAR_PARA_LEANDRO` representa o HUMAN_GATE sem mudar o handoff técnico para Mestre.
 
 ## Próximo boundary
 
-`MCF-CLOSE-PHASE`
+Após a sincronização documental deste Lot, o próximo boundary do RUNTIME-006 é **Release Candidate / Gate E**.
 
-Este closeout não implementa essa skill.
+Produção permanece `BLOCKED` e não é autorizada por essa transição.
