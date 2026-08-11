@@ -1,53 +1,71 @@
 # PHASE-006-LOT-4-C-SECURITY-REVIEW — Decisões
 
-## D1 — Boundary isolado
+## D1 — Boundary independente
 
-`MCF-SECURITY-REVIEW` é promovida separadamente das duas skills documentais restantes.
+`MCF-SECURITY-REVIEW` foi promovida separadamente de `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`.
 
 ## D2 — SENSITIVE_CONTROLLED preservado
 
-A implementação trabalha dentro do `PermissionEngine`; `sensitiveAuthorization=true` continua obrigatório e não foi criado bypass global.
+A implementação trabalha dentro do `PermissionEngine`. `sensitiveAuthorization=true` continua obrigatório; nenhum bypass global foi criado.
 
 ## D3 — Provider interno somente
 
-Neste incremento a skill usa exclusivamente `internal / inspect-security-review / mcf-agent-runtime`. Scanners e conectores externos ficam fora do boundary.
+O Lot 4-C usa exclusivamente `internal / inspect-security-review / mcf-agent-runtime`. Scanners e conectores externos permanecem fora do boundary.
 
 ## D4 — READY_AGENT
 
-O bridge planeja a capacidade, mas não fabrica review nem evidência; execução de domínio permanece com o owner selecionado.
+O bridge pode planejar a skill, mas não fabricar review nem evidência. A execução de domínio pertence ao owner selecionado.
 
-## D5 — Evidência semântica
+## D5 — Piso Classe C
 
-`threats`, `controls` e `residual_risk` são obrigatórios e significativos. Placeholder não conclui a fase.
+Selecionar `MCF-SECURITY-REVIEW` impõe Classe C e não aceita downgrade via `requestedRiskClass`.
 
-## D6 — Piso Classe C
+## D6 — Evidência semântica reforçada
 
-A revisão de governança identificou que a seleção de uma skill `SENSITIVE_CONTROLLED` não podia depender apenas de palavras de alto risco no objetivo. O planner agora impõe Classe C para `MCF-SECURITY-REVIEW`, inclusive contra tentativa de downgrade.
+`threats` e `controls` exigem conteúdo semântico. Objetos vazios, strings vazias e placeholders somente booleanos não satisfazem o contrato.
+
+`residual_risk` é estruturado e exige:
+- `level` não vazio;
+- `critical_unaddressed:boolean`.
 
 ## D7 — Risco crítico
 
-Risco crítico explicitamente não tratado só pode prosseguir se estiver explicitamente bloqueado. Caso contrário a fase entra em `RECOVERING` sem handoff de sucesso.
+Se `critical_unaddressed=true`, a fase só pode concluir quando `blocked=true`; caso contrário entra em `RECOVERING` e não entrega a Emily.
 
 ## D8 — Proibições comprovadas
 
-`secret_exposure`, `unrestricted_write` e provider externo possuem prova negativa no lote.
+`secret_exposure`, `unrestricted_write` e provider externo foram cobertos por provas negativas.
 
 ## D9 — Owners e handoff
 
-Ricardo e Júlia são owners canônicos; planner primário usa Ricardo; sucesso entrega a Emily.
+Ricardo e Júlia são owners aceitos. O planner usa Ricardo como primário. O sucesso entrega a Emily.
 
-## D10 — Persistência no aceite
+## D10 — Persistência
 
 MissionRuntime comprova receipt, evidência, eventos, handoff e progressão de versão.
 
-## D11 — CAF de formatação
+## D11 — CAF visível
 
-Falhas de formatting em `6827fbff...` e `958da151...` foram expostas. `2622a8ec...` foi diagnóstico temporário, não evidência de gate. O tooling original foi restaurado antes do candidato funcional.
+Falhas de formatting e findings de governança/evidência geraram novos SHAs. Nenhum PASS superseded foi reutilizado no gate final.
 
 ## D12 — Gate preso ao HEAD
 
-`772fcb71...` possui PASS pré-PRF, mas ficará superseded para gate assim que este PRF gerar um novo HEAD. Reviews finais, auditoria e decisão de Léo só podem valer para o HEAD PRF revalidado.
+Reviews, auditoria de Emily e gate de Léo foram vinculados ao HEAD final `323b69af4616cda0e4f9b1e47516a9cde37a3f0d`.
 
-## D13 — HUMAN_GATE
+## D13 — Merge protegido
 
-A autorização interna de Léo na Issue #100 cobre o boundary atual. Nenhum gatilho reservado de Leandro surgiu; `human_operator_actions=0`.
+O PR #101 foi integrado por squash com expected-head e gerou `08c3e19e1b6408a164628e1bfaa5968e2070ccf0`.
+
+Candidato e merge compartilham a tree `70f07a2c936ce166555e52b36366c810919f5b8c`.
+
+## D14 — Limites globais
+
+Gate C permanece parcial. C1/C2 real provider write continua não autorizado. Produção e live staging adapter permanecem bloqueados/desabilitados.
+
+## D15 — HUMAN_GATE
+
+Nenhum gatilho reservado exigiu LEANDRO. A autorização interna de Léo foi usada apenas dentro do boundary da Issue #100.
+
+## D16 — Próximo boundary
+
+Após o canonical sync, a próxima skill documental a formalizar é `MCF-DEBUG-INCIDENT`, conforme o registry vigente. Nenhuma Issue Lot 4-D existente foi presumida. `MCF-CLOSE-PHASE` permanece separada.

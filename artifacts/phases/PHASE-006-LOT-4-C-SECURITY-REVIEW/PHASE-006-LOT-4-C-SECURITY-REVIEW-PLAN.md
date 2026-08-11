@@ -2,86 +2,86 @@
 
 **Missão:** `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`  
 **Issue:** #100  
-**PR técnico:** #101 (draft)  
+**PR técnico:** #101  
 **Classe de risco:** C  
 **Baseline canônico:** `4345e502bff27b6fa1ede46274a93a95010b5b03`  
-**Candidato funcional pré-PRF:** `772fcb71ab5e2af21d81323109573550352a581e`
+**Candidato validado:** `323b69af4616cda0e4f9b1e47516a9cde37a3f0d`  
+**Merge técnico:** `08c3e19e1b6408a164628e1bfaa5968e2070ccf0`
 
 ## Objetivo
 
-Promover `MCF-SECURITY-REVIEW` de skill documental para executável sem ampliar o boundary sensível vigente.
+Promover `MCF-SECURITY-REVIEW` de skill documental para capacidade executável governada, preservando `SENSITIVE_CONTROLLED`, acesso mínimo necessário e o bloqueio de qualquer expansão sensível fora do boundary autorizado.
 
-## Escopo
+## Escopo integrado
 
-- tipar a skill como executável;
-- planejar `MCF-SECURITY-REVIEW` como `READY_AGENT`;
-- selecionar Ricardo como owner primário e aceitar Júlia como co-owner canônica;
-- exigir `SENSITIVE_CONTROLLED` com `sensitiveAuthorization=true`;
-- restringir execução ao provider `internal`, operação `inspect-security-review` e recurso `mcf-agent-runtime`;
-- exigir evidência semântica `threats`, `controls` e `residual_risk`;
-- bloquear sucesso quando risco crítico permanecer não tratado e não bloqueado;
-- persistir receipt, evidência, eventos, handoff e progressão de versão no MissionRuntime;
-- transferir sucesso para Emily.
+- contrato tipado como skill executável;
+- planner em `READY_AGENT`, Ricardo → Emily;
+- Júlia aceita como co-owner canônica;
+- piso de risco Classe C sem downgrade;
+- provider `internal`;
+- operação `inspect-security-review`;
+- recurso `mcf-agent-runtime`;
+- `sensitiveAuthorization=true` obrigatório;
+- `threats` e `controls` semanticamente significativos;
+- `residual_risk` estruturado com `level` e `critical_unaddressed:boolean`;
+- risco crítico não tratado somente aceito quando explicitamente bloqueado;
+- evidência inválida → `RECOVERING`, sem handoff de sucesso;
+- persistência de receipt, evidência, eventos, handoff e versão pelo MissionRuntime;
+- sucesso → Emily.
 
 ## Fora do escopo
 
-- scanners ou conectores externos de segurança;
+- scanners/conectores externos de segurança;
 - leitura ou exposição de segredos;
 - escrita externa;
 - ação destrutiva ou pública;
 - produção;
 - live staging adapter;
 - autorização de escrita real C1/C2;
-- mudança do Gate C global.
+- mudança do Gate C global;
+- `MCF-DEBUG-INCIDENT`;
+- `MCF-CLOSE-PHASE`.
 
 ## Critérios de aceite
 
-1. `skills_registered=16`, alvo após integração: `skills_executable=14`, `skills_documental=2`.
-2. Planner: `READY_AGENT`, sem auto-completion pelo bridge.
-3. Owners: Ricardo e Júlia aceitos; non-owner negado.
-4. Risk floor: uma missão que selecione `MCF-SECURITY-REVIEW` é Classe C e não pode ser rebaixada.
-5. `SENSITIVE_CONTROLLED` preservado; ausência de `sensitiveAuthorization=true` é negada.
-6. Provider interno permitido; provider externo negado neste incremento.
-7. `secret_exposure` e `unrestricted_write` negados.
-8. `threats`, `controls` e `residual_risk` devem ser semanticamente significativos.
-9. Risco crítico não tratado/não bloqueado produz `RECOVERING` e proíbe handoff de sucesso.
-10. Evidência válida conclui a fase e entrega a Emily.
-11. MissionRuntime persiste receipt, evidência, eventos, handoff e versão.
-12. Foundation, Container Smoke e PRF manifest devem passar no HEAD exato do PRF antes dos reviews finais.
+1. `skills_registered=16`, `skills_executable=14`, `skills_documental=2` após integração.
+2. `MCF-SECURITY-REVIEW=READY_AGENT`; o bridge não auto-conclui a skill.
+3. Ricardo e Júlia aceitos; non-owner negado.
+4. Selecionar a skill impõe Classe C e impede downgrade.
+5. `SENSITIVE_CONTROLLED` permanece intacto.
+6. Ausência de `sensitiveAuthorization=true` é negada.
+7. Somente provider/operação/recurso internos do Lot 4-C são aceitos.
+8. `secret_exposure` e `unrestricted_write` são negados.
+9. Evidência semântica inválida entra em `RECOVERING`, sem handoff.
+10. Risco crítico não tratado e não bloqueado impede conclusão.
+11. MissionRuntime comprova persistência e progressão de versão.
+12. Foundation, Container Smoke, manifesto, reviews, Emily e Léo passam no HEAD exato.
+13. Merge é squash protegido por expected-head.
+14. Candidato e merge possuem a mesma tree.
 
-## Autorizações e proibições
+## Agentes participantes
 
-A autorização interna sensível de Léo registrada na Issue #100 cobre somente análise/inspeção interna mínima da skill. Ela não autoriza segredo, escrita externa, ação destrutiva/pública, plugin sensível externo, produção ou mudança de finalidade.
+- Mestre — orquestração;
+- Rafael — implementação;
+- Ricardo — segurança;
+- Júlia — governança Classe C;
+- Renato — validação;
+- Vinícius — revisão técnica;
+- Augusto — observabilidade/rastreabilidade;
+- Carmem — consistência documental;
+- Gabriel — Git/PR/integração;
+- Emily — auditoria independente;
+- Léo — gate operacional.
 
-`human_gate_leandro=NOT_REQUIRED` enquanto esse boundary não for ampliado.
+## Boundary humano
 
-## Agentes selecionados
+A autorização interna sensível registrada por Léo na Issue #100 cobriu apenas análise/inspeção interna mínima. Nenhum gatilho reservado exigiu LEANDRO.
 
-- Mestre — orquestração e continuidade da missão.
-- Rafael — implementação do runtime.
-- Ricardo — revisão de segurança e critérios de ameaça/controle.
-- Júlia — governança obrigatória de Classe C.
-- Renato — validação e smoke.
-- Vinícius — revisão técnica do diff no HEAD exato do PRF.
-- Augusto — mission trace, falhas, CAF e rastreabilidade Classe C.
-- Carmem — consistência documental do PRF.
-- Gabriel — branch, PR e integração protegida.
-- Emily — auditoria independente.
-- Léo — gate operacional final.
+```yaml
+human_operator_actions: 0
+human_gate_leandro: NOT_REQUIRED
+```
 
-## Fluxo
+## Estado
 
-`IMPLEMENTAR → VALIDAR CANDIDATO → GERAR PRF → REVALIDAR HEAD PRF → REVIEWS → AUDITORIA EMILY → GATE LÉO → INTEGRAÇÃO PROTEGIDA → RECONCILIAÇÃO CANÔNICA`
-
-## Riscos principais
-
-- rebaixar a classificação de uma missão sensível;
-- transformar `sensitiveAuthorization=true` em bypass genérico;
-- aceitar evidência vazia/placeholder;
-- despachar provider externo por engano;
-- declarar sucesso com risco crítico sem tratamento;
-- reutilizar PASS de SHA superseded.
-
-## Estado deste documento
-
-`CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION`
+`TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE`
