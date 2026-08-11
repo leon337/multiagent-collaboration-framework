@@ -60,13 +60,14 @@ skills_executaveis:
   - MCF-DESIGN-EXPERIENCE
   - MCF-DESIGN-ARCHITECTURE
   - MCF-EVALUATE-AGENTS
+  - MCF-SECURITY-REVIEW
   - MCF-IMPLEMENT-CHANGE
   - MCF-REVIEW-CODE
   - MCF-RUN-TESTS
   - MCF-GIT-PR-RELEASE
   - MCF-DEPLOY-VALIDATE
   - MCF-TRACE-MISSION
-skills_ainda_documentais: 3
+skills_ainda_documentais: 2
 chat_to_runtime_bridge: true
 endpoint_de_dispatch: POST_/v1/mcf/chat/dispatch
 bloco_interno_inicial: causal_e_persistido
@@ -104,13 +105,17 @@ runtime_006_lote_4b: integrado
 runtime_006_lote_4b_merge: 741abdad70432b9232256b7204156d96770c9b4d
 runtime_006_lote_4b_executable_skills: 13
 runtime_006_lote_4b_documental_skills: 3
+runtime_006_lote_4c: integrado
+runtime_006_lote_4c_merge: 08c3e19e1b6408a164628e1bfaa5968e2070ccf0
+runtime_006_lote_4c_executable_skills: 14
+runtime_006_lote_4c_documental_skills: 2
 staging_post_merge: PASS_DEPLOYED
 live_staging_adapter: disabled
 production: blocked
 publicacao_social_automatica: false
 ```
 
-O bridge executa automaticamente somente o bloco de bootstrap interno consecutivo no início do plano. As skills de domínio dos Lots 4-A e 4-B usam `READY_AGENT`: permanecem aguardando o agente owner, exigem `execution_evidence` semântica e não podem ter sua saída fabricada pelo bridge. `MCF-EVALUATE-AGENTS` preserva `READ_ONLY`, usa `inspect-agent-evaluation` e só entrega handoff para Emily após scorecard verificável. GitHub, CI, Render, Vercel ou Cloudflare continuam exigindo recibos reais.
+O bridge executa automaticamente somente o bloco de bootstrap interno consecutivo no início do plano. As skills de domínio dos Lots 4-A, 4-B e 4-C usam `READY_AGENT`: permanecem aguardando o agente owner, exigem `execution_evidence` semântica e não podem ter sua saída fabricada pelo bridge. `MCF-EVALUATE-AGENTS` preserva `READ_ONLY`, usa `inspect-agent-evaluation` e só entrega handoff para Emily após scorecard verificável. `MCF-SECURITY-REVIEW` preserva `SENSITIVE_CONTROLLED`, usa exclusivamente o provider interno `inspect-security-review`, impõe piso Classe C e só entrega a Emily após `threats`, `controls` e `residual_risk` estruturado serem validados. GitHub, CI, Render, Vercel ou Cloudflare continuam exigindo recibos reais.
 
 A missão só é encerrada por `MCF-TRACE-MISSION` com `final_checkpoint=true` quando o ledger comprova `PHASE_COMPLETED` para todas as skills selecionadas. CI verde conclui a fase de testes, não a missão inteira.
 
@@ -196,9 +201,11 @@ active_p1: 0
 active_p2: 0
 ```
 
-Com isso, o **Lote 3 está concluído** e o **Lot 4-A também está integrado**. O PR `#95` promoveu `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE` e `MCF-DESIGN-ARCHITECTURE` para execução governada; o candidato `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` passou Foundation `31461319193`, Container Smoke `31461319181`, 112 arquivos/459 testes e auditoria independente sem P0/P1/P2, sendo integrado por squash em `67d20e24fd136f6334bfd835cb775426f6514403`. O runtime passa a **12 skills executáveis e 4 documentais**. O próximo boundary é `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`. O Gate C continua parcial porque a escrita real C1/C2 pelo provider GitHub permanece separadamente não autorizada. Produção e live staging adapter continuam bloqueados.
+Com isso, o **Lote 3 está concluído** e o **Lot 4-A também está integrado**. O PR `#95` promoveu `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE` e `MCF-DESIGN-ARCHITECTURE` para execução governada; o candidato `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` passou Foundation `31461319193`, Container Smoke `31461319181`, 112 arquivos/459 testes e auditoria independente sem P0/P1/P2, sendo integrado por squash em `67d20e24fd136f6334bfd835cb775426f6514403`. O runtime passa a **12 skills executáveis e 4 documentais**. O próximo boundary foi `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`. O Gate C continua parcial porque a escrita real C1/C2 pelo provider GitHub permanece separadamente não autorizada. Produção e live staging adapter continuam bloqueados.
 
-O **Lot 4-B está integrado**. O PR `#98` promoveu `MCF-EVALUATE-AGENTS` para execução governada `READY_AGENT`, preservando owners Beatriz/Tiago, permissão `READ_ONLY`, handoff Emily e evidências `test_cases`, `scores` e `regressions`. O candidato `279a4b1e3b8e8b5b948d95481ec85e5223322278` passou Foundation `31463802089`, Container Smoke `31463802100`, 115 arquivos/470 testes do servidor e auditoria independente sem P0/P1/P2; foi integrado por squash em `741abdad70432b9232256b7204156d96770c9b4d`. Candidato e merge compartilham a tree `a0e676152c7070381480b9c5422f103887987eab`. O runtime passa a **13 skills executáveis e 3 documentais**. O próximo boundary é `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`. Gate C permanece parcial; produção e live staging adapter continuam bloqueados.
+O **Lot 4-B está integrado**. O PR `#98` promoveu `MCF-EVALUATE-AGENTS` para execução governada `READY_AGENT`, preservando owners Beatriz/Tiago, permissão `READ_ONLY`, handoff Emily e evidências `test_cases`, `scores` e `regressions`. O candidato `279a4b1e3b8e8b5b948d95481ec85e5223322278` passou Foundation `31463802089`, Container Smoke `31463802100`, 115 arquivos/470 testes do servidor e auditoria independente sem P0/P1/P2; foi integrado por squash em `741abdad70432b9232256b7204156d96770c9b4d`. Candidato e merge compartilham a tree `a0e676152c7070381480b9c5422f103887987eab`. O runtime passa a **13 skills executáveis e 3 documentais**. O boundary seguinte foi `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`. Gate C permanece parcial; produção e live staging adapter continuam bloqueados.
+
+O **Lot 4-C está integrado tecnicamente**. A Issue `#100` e o PR `#101` promoveram `MCF-SECURITY-REVIEW` para execução governada `READY_AGENT`, com Ricardo/Júlia como owners, `SENSITIVE_CONTROLLED`, autorização sensível explícita, provider interno, piso Classe C, handoff Emily e evidências semânticas de ameaças, controles e risco residual. O candidato final `323b69af4616cda0e4f9b1e47516a9cde37a3f0d` passou Foundation `31471615150`, Container Smoke `31471615302`, 118 arquivos/485 testes do servidor, Manifest Audit R3 `31471688783`, reviews especialistas e auditoria independente de Emily sem P0/P1/P2. O merge squash `08c3e19e1b6408a164628e1bfaa5968e2070ccf0` compartilha com o candidato a tree `70f07a2c936ce166555e52b36366c810919f5b8c`. O runtime passa a **14 skills executáveis e 2 documentais**: `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`. O próximo boundary será formalizado separadamente para `MCF-DEBUG-INCIDENT`; nenhuma Issue Lot 4-D pré-existente é presumida. Gate C permanece parcial; produção e live staging adapter continuam bloqueados.
 
 A `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza um fallback temporário TEAM_FIRST via GitHub Actions: `GITHUB_TOKEN` efêmero, menor privilégio, branch/ref isolado, binding ao SHA, guard contra duplicidade, single dispatch, correlação e cleanup. A decisão não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.
 
@@ -288,4 +295,4 @@ O runtime apenas projeta conclusões verificadas como candidatos `DRAFT_REVIEW`.
 
 A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-061 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos, a conclusão apenas por trace final comprovado no ledger, o deploy verificado com recuperação controlada em staging, o retorno transacional à missão-pai e o fallback TEAM_FIRST one-shot quando o executor normal estiver indisponível e a operação permanecer segura e autorizada.
 
-O estado atual é um MVP técnico avançado em staging com o **Lote 3 do RUNTIME-006 concluído**, incluindo Gate D e observabilidade de missões bloqueadas com recuperação da condição de corrida tardia. A próxima etapa é a conversão das oito skills ainda documentais no Lote 4. A produção irrestrita continua bloqueada até os gates restantes, os testes multiagente independentes e a auditoria de segurança da release candidate.
+O estado atual é um MVP técnico avançado em staging com o **Lote 3 e os Lots 4-A, 4-B e 4-C do RUNTIME-006 integrados**. Existem **16 skills registradas, 14 executáveis e 2 ainda documentais**: `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`. O próximo boundary técnico deverá formalizar `MCF-DEBUG-INCIDENT` sem misturá-la ao fechamento de fase. Depois da cobertura total ainda permanecem testes multiagente em contextos separados, auditoria independente final, hardening de segurança e preparação da `MCF v1.0.0-RC1`. Gate C continua parcial, produção irrestrita bloqueada e live staging adapter desabilitado.
