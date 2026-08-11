@@ -244,6 +244,10 @@ export interface McfCiCallbackResponse {
 export type McfExecutableSkillId =
   | 'MCF-START-MISSION'
   | 'MCF-SELECT-AGENTS'
+  | 'MCF-RECOVER-CONTEXT'
+  | 'MCF-DEFINE-PRODUCT'
+  | 'MCF-DESIGN-EXPERIENCE'
+  | 'MCF-DESIGN-ARCHITECTURE'
   | 'MCF-IMPLEMENT-CHANGE'
   | 'MCF-REVIEW-CODE'
   | 'MCF-RUN-TESTS'
@@ -271,7 +275,7 @@ export interface McfChatPlanStep {
   toolProvider: McfExecutableToolProvider;
   toolOperation: string;
   toolResource: string;
-  state: 'PLANNED_INTERNAL' | 'COMPLETED' | 'READY_EXTERNAL';
+  state: 'PLANNED_INTERNAL' | 'COMPLETED' | 'READY_AGENT' | 'READY_EXTERNAL';
   requiredEvidence: string[];
 }
 

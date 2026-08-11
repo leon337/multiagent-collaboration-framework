@@ -33,6 +33,38 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     internal: true,
     requiredEvidence: ['selection_justifications'],
   },
+  'MCF-RECOVER-CONTEXT': {
+    agentId: 'Miriam',
+    handoffTo: 'Mestre',
+    toolProvider: 'internal',
+    toolOperation: 'inspect-context',
+    internal: false,
+    requiredEvidence: ['source_references', 'precedence_decisions', 'contradictions'],
+  },
+  'MCF-DEFINE-PRODUCT': {
+    agentId: 'Leonardo',
+    handoffTo: 'Sofia',
+    toolProvider: 'internal',
+    toolOperation: 'plan-product',
+    internal: false,
+    requiredEvidence: ['problem_statement', 'requirements', 'acceptance_criteria'],
+  },
+  'MCF-DESIGN-EXPERIENCE': {
+    agentId: 'Evelyn',
+    handoffTo: 'Sofia',
+    toolProvider: 'internal',
+    toolOperation: 'design-experience',
+    internal: false,
+    requiredEvidence: ['flow_reference', 'screen_reference', 'accessibility_findings'],
+  },
+  'MCF-DESIGN-ARCHITECTURE': {
+    agentId: 'Sofia',
+    handoffTo: 'Rafael',
+    toolProvider: 'internal',
+    toolOperation: 'design-architecture',
+    internal: false,
+    requiredEvidence: ['architecture_diagram', 'decisions', 'risks'],
+  },
   'MCF-IMPLEMENT-CHANGE': {
     agentId: 'Rafael',
     handoffTo: 'Vinicius',
@@ -166,8 +198,10 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
 }
 
 function resourceFor(skillId: McfExecutableSkillId, repository: string | undefined): string {
-  if (skillConfig[skillId].internal) {
-    return skillId === 'MCF-TRACE-MISSION' ? 'mcf-mission-timeline' : 'mcf-chat-bridge';
+  const config = skillConfig[skillId];
+  if (config.toolProvider === 'internal') {
+    if (skillId === 'MCF-TRACE-MISSION') return 'mcf-mission-timeline';
+    return config.internal ? 'mcf-chat-bridge' : 'mcf-agent-runtime';
   }
   if (skillId === 'MCF-DEPLOY-VALIDATE') {
     return repository ?? 'deployment-target-not-resolved';
@@ -186,6 +220,11 @@ function buildSteps(
       config.handoffTo === 'selected_domain_agent' && nextSkill
         ? skillConfig[nextSkill].agentId
         : config.handoffTo;
+    const state: McfChatPlanStep['state'] = config.internal
+      ? 'PLANNED_INTERNAL'
+      : config.toolProvider === 'internal'
+        ? 'READY_AGENT'
+        : 'READY_EXTERNAL';
 
     return {
       order: index + 1,
@@ -195,7 +234,7 @@ function buildSteps(
       toolProvider: config.toolProvider,
       toolOperation: config.toolOperation,
       toolResource: resourceFor(skillId, repository),
-      state: config.internal ? 'PLANNED_INTERNAL' : 'READY_EXTERNAL',
+      state,
       requiredEvidence: config.requiredEvidence,
     };
   });

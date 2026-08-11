@@ -6,12 +6,14 @@ Esta pasta contém contratos reutilizáveis para impedir execução improvisada 
 
 ## Fonte de verdade
 
-- `registry.yaml` — skills oficiais ativas;
+- `registry.yaml` — catálogo declarativo das skills oficiais ativas;
 - `../templates/MCF-SKILL-CONTRACT.yaml` — modelo para novas skills;
 - `../docs/tools/MCF-AGENT-TOOL-MATRIX.md` — agentes e ferramentas;
 - `../docs/tools/MCF-PLUGIN-PERMISSIONS.yaml` — limites de ação;
 - `../docs/tools/MCF-PLUGIN-EVALUATION.md` — aprovação de plugins;
 - `../docs/tools/MCF-AVAILABLE-CAPABILITIES.md` — inventário observado.
+
+O `registry.yaml` define contrato, owner, entradas, ferramentas, permissão, evidência, fallback e handoff. A capacidade de uma skill ser executada pelo runtime não é representada por um campo `executable` no registry: ela é limitada pelo contrato tipado `McfExecutableSkillId`, pelo `SkillExecutor`, pelas permissões e pelos validadores de evidência do runtime.
 
 ## Fluxo obrigatório
 
@@ -39,6 +41,17 @@ EXECUTAR_SKILL MCF-CLOSE-PHASE
 ```
 
 O comando explícito não substitui os requisitos da skill.
+
+## Estado de execução no runtime
+
+O conjunto executável deve ser lido no código e validado por teste no mesmo SHA do candidato. No incremento `MCF-RUNTIME-006-LOT-4-A`, as quatro capacidades abaixo passam a integrar o conjunto executável governado, sujeitas ao gate e à integração do PR correspondente:
+
+- `MCF-RECOVER-CONTEXT`;
+- `MCF-DEFINE-PRODUCT`;
+- `MCF-DESIGN-EXPERIENCE`;
+- `MCF-DESIGN-ARCHITECTURE`.
+
+Essas quatro skills usam provider `internal` governado, exigem `execution_evidence` semântica produzida pelo agente owner e não podem ser concluídas pelo chat bridge por fabricação automática de conteúdo. Evidência ausente ou inválida deve produzir recuperação, sem handoff de sucesso.
 
 ## Regras
 
