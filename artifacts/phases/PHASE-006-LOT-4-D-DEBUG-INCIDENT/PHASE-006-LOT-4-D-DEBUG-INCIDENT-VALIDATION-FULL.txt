@@ -1,0 +1,103 @@
+MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
+CLASS=C
+ISSUE=#103
+TECHNICAL_PR=#104
+
+ESEV_CONTEXT
+- main validated at 79c1a1644742cf22af60384b64685adbb1f017a3 before branch creation
+- issue #103 validated OPEN
+- registry contract validated for MCF-DEBUG-INCIDENT
+- Lot 4-C validated COMPLETE
+- no pre-existing Lot 4-D branch or PR was found
+- protocol v1.1 requires ESEV, CAF, PRF Class C, Augusto trace, Julia governance and routing evaluation by Beatriz
+
+ESEV_HANDOFFS
+MESTRE -> MIRIAM: recover and validate checkpoint against GitHub
+MIRIAM -> PATRICIA: define semantic incident contract
+PATRICIA -> BRUNO: preserve operational boundary and recovery rules
+BRUNO -> RAFAEL: implement inside internal-only boundary
+RAFAEL -> RENATO: materialize acceptance and regression tests
+RENATO -> CARMEM: create Class C PRF after pre-PRF validation
+
+IMPLEMENTATION
+- contracts: MCF-DEBUG-INCIDENT added to executable skill id union
+- planner: Patricia primary owner, Renato handoff, READY_AGENT, internal provider
+- executor: governed internal execution enabled
+- evidence: structured semantic reproduction/root_cause/recovery_result
+- recovery: blind_retry=false plus regression-test reference required
+- permissions: canonical SCOPED_WRITE preserved; external and prohibited effects blocked locally
+- bridge: no automatic completion of MCF-DEBUG-INCIDENT
+- MissionRuntime: positive completion and negative recovery persistence covered
+
+CAF_1
+captured_sha=3ea30e9aadac9600b701902f14d08a3881251692
+foundation_run=31476698797
+result=FAIL
+failed_step=Verify formatting
+classification=FORMATTING_ONLY_BEFORE_TYPECHECK_AND_TESTS
+cause=Prettier differences in four changed files
+objective_change=emit canonical Prettier diff on diagnostic-only SHA
+
+diagnostic_sha=81c1f1c9ad58a895db02b70b0dafec5e7ba9349d
+status=DIAGNOSTIC_ONLY_NOT_A_GATE_CANDIDATE
+action=temporary format hook emitted exact Prettier diff
+followup=apply exact formatting and remove diagnostic hook
+
+revalidated_pre_prf_sha=933c8f72dd19219eea6112adfdd8db7c43112f2c
+foundation_run=31477171098
+foundation_result=PASS
+container_smoke_run=31477171096
+container_smoke_result=PASS
+
+FOUNDATION_PRE_PRF
+format=PASS
+lint=PASS
+typecheck=PASS
+database_migration_twice=PASS
+tests=PASS
+build=PASS
+ops_tests=20_passed_0_failed
+web_tests=5_passed_0_failed
+server_test_files=122_passed
+server_tests=524_passed_0_failed
+vitest_artifact=9095733417
+vitest_digest=sha256:9ae9c59a9e8824749a465d22fae1d0eebb0b2956e2235853b9aa26c99b71c69c
+
+LOT_4D_TARGETED_TESTS
+skill-executor-lot4-debug-incident.test.ts=33_passed
+mission-runtime-lot4-debug-incident.integration.test.ts=2_passed
+chat-runtime-bridge-lot4-debug-incident.integration.test.ts=1_passed
+chat-mission-planner-lot4-debug-incident.test.ts=3_passed
+
+BOUNDARY
+permission_profile=SCOPED_WRITE
+provider=internal_only
+external_write=FORBIDDEN
+github_provider_write=FORBIDDEN
+environment_mutation=FORBIDDEN
+deploy=FORBIDDEN
+production_action=FORBIDDEN
+destructive_fix=FORBIDDEN
+secret_access=FORBIDDEN
+public_action=FORBIDDEN
+blind_retry=FORBIDDEN
+
+CURRENT_PRF_STATE
+prf_exact_head=PENDING_AFTER_MANIFEST_COMMIT
+foundation_exact_head=PENDING
+container_smoke_exact_head=PENDING
+manifest_audit=PENDING
+specialist_reviews=PENDING
+augusto_trace=PENDING
+julia_governance=PENDING
+emily_audit=PENDING
+leo_gate=PENDING
+technical_merge=PENDING
+canonical_sync=PENDING
+
+SAFETY_STATE
+production=BLOCKED
+live_staging_adapter=DISABLED
+gate_c_real_provider_write=NOT_AUTHORIZED
+human_operator_actions=0
+human_gate_leandro=NOT_REQUIRED
