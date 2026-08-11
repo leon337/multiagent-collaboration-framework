@@ -59,7 +59,9 @@ function toEventResponse(event: McfEventRecord): McfMissionEventResponse {
   };
 }
 
-function toPhaseResponse(phase: McfPhaseRecord | null): McfMissionObservationResponse['currentPhase'] {
+function toPhaseResponse(
+  phase: McfPhaseRecord | null,
+): McfMissionObservationResponse['currentPhase'] {
   if (!phase) return null;
   return {
     id: phase.id,
@@ -85,7 +87,8 @@ function deriveBlockContext(events: readonly McfEventRecord[]): McfMissionBlockC
     .reverse()
     .find(
       (event) =>
-        event.eventType !== 'MISSION_BLOCKED_ALERT_RAISED' && blockingEventTypes.has(event.eventType),
+        event.eventType !== 'MISSION_BLOCKED_ALERT_RAISED' &&
+        blockingEventTypes.has(event.eventType),
     );
 
   if (!source) {
@@ -112,7 +115,8 @@ function deriveBlockContext(events: readonly McfEventRecord[]): McfMissionBlockC
 @Injectable()
 export class MissionObservabilityService {
   constructor(
-    @Inject(MCF_RUNTIME_REPOSITORY) private readonly runtimeRepository: McfRuntimeRepository,
+    @Inject(MCF_RUNTIME_REPOSITORY)
+    private readonly runtimeRepository: McfRuntimeRepository,
     private readonly observabilityRepository: MissionObservabilityRepository,
   ) {}
 
