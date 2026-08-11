@@ -9,6 +9,7 @@ const governedInternalSkillIds = new Set([
   'MCF-DESIGN-EXPERIENCE',
   'MCF-DESIGN-ARCHITECTURE',
   'MCF-EVALUATE-AGENTS',
+  'MCF-SECURITY-REVIEW',
 ]);
 
 function reject(message: string): never {
@@ -98,6 +99,22 @@ function requireReference(
     if (Object.keys(reference).length > 0) return reference;
   }
   return reject(message);
+}
+
+function requireResidualRisk(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): string | Record<string, unknown> {
+  const value = requireReference(record, key, message);
+  if (typeof value === 'string') return value;
+
+  if (value.critical_unaddressed === true && value.blocked !== true) {
+    return reject(
+      'MCF-SECURITY-REVIEW requires critical residual risks to be addressed or explicitly blocked',
+    );
+  }
+  return value;
 }
 
 function validateEvidence(
@@ -197,6 +214,24 @@ function validateEvidence(
           'regressions',
           'MCF-EVALUATE-AGENTS requires regressions evidence, even when empty',
           { allowEmpty: true },
+        ),
+      };
+    case 'MCF-SECURITY-REVIEW':
+      return {
+        threats: requireArray(
+          evidence,
+          'threats',
+          'MCF-SECURITY-REVIEW requires non-empty meaningful threats evidence',
+        ),
+        controls: requireArray(
+          evidence,
+          'controls',
+          'MCF-SECURITY-REVIEW requires non-empty meaningful controls evidence',
+        ),
+        residual_risk: requireResidualRisk(
+          evidence,
+          'residual_risk',
+          'MCF-SECURITY-REVIEW requires meaningful residual_risk evidence',
         ),
       };
     default:

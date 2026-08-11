@@ -121,6 +121,30 @@ function assertStagingDeployInputs(
   }
 }
 
+function assertSecurityReviewBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  if (skillId !== 'MCF-SECURITY-REVIEW') return;
+  if (provider !== 'internal') {
+    throw new McfPermissionDeniedError(
+      'MCF-SECURITY-REVIEW is restricted to the internal provider in Lot 4C',
+    );
+  }
+  if (operation !== 'inspect-security-review') {
+    throw new McfPermissionDeniedError(
+      'MCF-SECURITY-REVIEW permits only inspect-security-review in Lot 4C',
+    );
+  }
+  if (resource !== 'mcf-agent-runtime') {
+    throw new McfPermissionDeniedError(
+      'MCF-SECURITY-REVIEW is restricted to mcf-agent-runtime in Lot 4C',
+    );
+  }
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
@@ -171,6 +195,8 @@ export class PermissionEngine {
         `tool or operation is explicitly forbidden by ${skill.skillId}`,
       );
     }
+
+    assertSecurityReviewBoundary(skill.skillId, provider, operation, resource);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');
