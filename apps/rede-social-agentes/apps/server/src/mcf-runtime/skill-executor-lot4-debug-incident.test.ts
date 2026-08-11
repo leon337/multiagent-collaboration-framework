@@ -26,8 +26,10 @@ function validEvidence(): Record<string, unknown> {
       supporting_evidence: 'event-ledger:mission-42:version-transition-7-to-8',
     },
     recovery_result: {
-      action_or_mitigation: 'Isolated the stale-version path and recomputed the expected version from persistence.',
-      verification: 'The deterministic reproduction now completes exactly once and emits the expected handoff.',
+      action_or_mitigation:
+        'Isolated the stale-version path and recomputed the expected version from persistence.',
+      verification:
+        'The deterministic reproduction now completes exactly once and emits the expected handoff.',
       blind_retry: false,
       regression_test_added: {
         reference: 'mission-runtime-lot4-debug-incident.integration.test.ts#stale-version-recovery',
@@ -81,15 +83,32 @@ describe('SkillExecutor Lot 4D MCF-DEBUG-INCIDENT', () => {
   });
 
   it('rejects a non-owner', async () => {
-    await expect(execute(validInputs(), 'Ricardo')).rejects.toBeInstanceOf(McfPermissionDeniedError);
+    await expect(execute(validInputs(), 'Ricardo')).rejects.toBeInstanceOf(
+      McfPermissionDeniedError,
+    );
   });
 
   it.each([
-    ['external provider', { provider: 'github', operation: 'inspect-debug-incident', resource: 'repo' }],
-    ['GitHub write', { provider: 'internal', operation: 'github-write', resource: 'mcf-agent-runtime' }],
-    ['environment mutation', { provider: 'internal', operation: 'environment-mutation', resource: 'mcf-agent-runtime' }],
-    ['destructive fix', { provider: 'internal', operation: 'destructive-fix', resource: 'mcf-agent-runtime' }],
-    ['blind retry', { provider: 'internal', operation: 'blind-retry', resource: 'mcf-agent-runtime' }],
+    [
+      'external provider',
+      { provider: 'github', operation: 'inspect-debug-incident', resource: 'repo' },
+    ],
+    [
+      'GitHub write',
+      { provider: 'internal', operation: 'github-write', resource: 'mcf-agent-runtime' },
+    ],
+    [
+      'environment mutation',
+      { provider: 'internal', operation: 'environment-mutation', resource: 'mcf-agent-runtime' },
+    ],
+    [
+      'destructive fix',
+      { provider: 'internal', operation: 'destructive-fix', resource: 'mcf-agent-runtime' },
+    ],
+    [
+      'blind retry',
+      { provider: 'internal', operation: 'blind-retry', resource: 'mcf-agent-runtime' },
+    ],
   ])('rejects forbidden boundary operation: %s', async (_label, tool) => {
     await expect(
       createExecutor().execute({
@@ -128,19 +147,97 @@ describe('SkillExecutor Lot 4D MCF-DEBUG-INCIDENT', () => {
   });
 
   it.each([
-    ['empty reproduction', { reproduction: {}, root_cause: (validEvidence().root_cause), recovery_result: (validEvidence().recovery_result) }],
-    ['whitespace reproduction field', { ...validEvidence(), reproduction: { symptom: '   ', method: 'replay request', evidence_reference: 'trace:1' } }],
-    ['placeholder reproduction field', { ...validEvidence(), reproduction: { symptom: 'TODO', method: 'replay request', evidence_reference: 'trace:1' } }],
+    [
+      'empty reproduction',
+      {
+        reproduction: {},
+        root_cause: validEvidence().root_cause,
+        recovery_result: validEvidence().recovery_result,
+      },
+    ],
+    [
+      'whitespace reproduction field',
+      {
+        ...validEvidence(),
+        reproduction: { symptom: '   ', method: 'replay request', evidence_reference: 'trace:1' },
+      },
+    ],
+    [
+      'placeholder reproduction field',
+      {
+        ...validEvidence(),
+        reproduction: { symptom: 'TODO', method: 'replay request', evidence_reference: 'trace:1' },
+      },
+    ],
     ['boolean reproduction', { ...validEvidence(), reproduction: true }],
     ['empty root cause', { ...validEvidence(), root_cause: {} }],
-    ['placeholder root cause', { ...validEvidence(), root_cause: { cause: 'unknown', supporting_evidence: 'trace:2' } }],
-    ['boolean root cause evidence', { ...validEvidence(), root_cause: { cause: 'race condition', supporting_evidence: true } }],
+    [
+      'placeholder root cause',
+      { ...validEvidence(), root_cause: { cause: 'unknown', supporting_evidence: 'trace:2' } },
+    ],
+    [
+      'boolean root cause evidence',
+      { ...validEvidence(), root_cause: { cause: 'race condition', supporting_evidence: true } },
+    ],
     ['empty recovery', { ...validEvidence(), recovery_result: {} }],
-    ['recovery without verification', { ...validEvidence(), recovery_result: { action_or_mitigation: 'isolated stale state', blind_retry: false, regression_test_added: 'debug.test.ts' } }],
-    ['recovery without regression test', { ...validEvidence(), recovery_result: { action_or_mitigation: 'isolated stale state', verification: 'reproduction stopped under deterministic test', blind_retry: false } }],
-    ['blind retry masked as recovery', { ...validEvidence(), recovery_result: { action_or_mitigation: 'retry request', verification: 'second attempt returned 200', blind_retry: true, regression_test_added: 'debug.test.ts' } }],
-    ['boolean regression evidence', { ...validEvidence(), recovery_result: { action_or_mitigation: 'isolated stale state', verification: 'verified by deterministic test', blind_retry: false, regression_test_added: true } }],
-    ['placeholder regression evidence', { ...validEvidence(), recovery_result: { action_or_mitigation: 'isolated stale state', verification: 'verified by deterministic test', blind_retry: false, regression_test_added: 'done' } }],
+    [
+      'recovery without verification',
+      {
+        ...validEvidence(),
+        recovery_result: {
+          action_or_mitigation: 'isolated stale state',
+          blind_retry: false,
+          regression_test_added: 'debug.test.ts',
+        },
+      },
+    ],
+    [
+      'recovery without regression test',
+      {
+        ...validEvidence(),
+        recovery_result: {
+          action_or_mitigation: 'isolated stale state',
+          verification: 'reproduction stopped under deterministic test',
+          blind_retry: false,
+        },
+      },
+    ],
+    [
+      'blind retry masked as recovery',
+      {
+        ...validEvidence(),
+        recovery_result: {
+          action_or_mitigation: 'retry request',
+          verification: 'second attempt returned 200',
+          blind_retry: true,
+          regression_test_added: 'debug.test.ts',
+        },
+      },
+    ],
+    [
+      'boolean regression evidence',
+      {
+        ...validEvidence(),
+        recovery_result: {
+          action_or_mitigation: 'isolated stale state',
+          verification: 'verified by deterministic test',
+          blind_retry: false,
+          regression_test_added: true,
+        },
+      },
+    ],
+    [
+      'placeholder regression evidence',
+      {
+        ...validEvidence(),
+        recovery_result: {
+          action_or_mitigation: 'isolated stale state',
+          verification: 'verified by deterministic test',
+          blind_retry: false,
+          regression_test_added: 'done',
+        },
+      },
+    ],
   ])('rejects insufficient semantic evidence: %s', async (_label, execution_evidence) => {
     const result = await execute({
       symptom_or_evidence: 'runtime incident',
