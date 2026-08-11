@@ -1,26 +1,31 @@
 phase: PHASE-006-LOT-4-D-DEBUG-INCIDENT
 mission: MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
 issue: 103
-technical_pr: 104
 risk_class: C
-state: CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION
+state: TECHNICAL_MERGED_CANONICAL_SYNC_CANDIDATE
 
-baseline:
-  main_sha: 79c1a1644742cf22af60384b64685adbb1f017a3
-  lot_4c: COMPLETE
-
-historical_candidates:
-  pre_prf_sha: 933c8f72dd19219eea6112adfdd8db7c43112f2c
-  pre_prf_foundation_run: 31477171098
-  pre_prf_container_smoke_run: 31477171096
-  first_prf_sha: 9ebedbaa85bfa92d52f199df064382e075adb1d3
-  first_prf_foundation_run: 31477910252
-  first_prf_container_smoke_run: 31477910266
-  first_prf_state: SUPERSEDED_BY_REVIEW_CAF
+technical:
+  pr: 104
+  baseline: 79c1a1644742cf22af60384b64685adbb1f017a3
+  candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
+  foundation_run: 31479541126
+  foundation: PASS
+  container_smoke_run: 31479541177
+  container_smoke: PASS
+  manifest_audit: PASS
+  specialist_reviews: PASS
+  augusto_trace: PASS
+  julia_governance: PASS
+  emily_audit: PASS
+  leo_gate: PASS
+  merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
+  candidate_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
+  merge_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
+  tree_equivalence: PASS
 
 skill:
   id: MCF-DEBUG-INCIDENT
-  executable_target: true
+  executable: true
   planner_state: READY_AGENT
   primary_owner: Patricia
   owners: [Patricia, Bruno, Rafael]
@@ -29,69 +34,30 @@ skill:
   provider: internal
   operation: inspect-debug-incident
   resource: mcf-agent-runtime
-
-boundary:
   external_write: false
-  github_provider_write: false
-  environment_mutation: false
-  deploy: false
-  production_action: false
-  destructive_fix: false
-  secret_access: false
-  public_action: false
-  blind_retry: false
+  semantic_evidence: PASS
+  blind_retry_protection: PASS
+  destructive_fix_protection: PASS
+  regression_test_evidence: PASS
 
-semantic_evidence:
-  reproduction: REQUIRED
-  root_cause: REQUIRED
-  recovery_result: REQUIRED
-  blind_retry_declaration: false
-  retry_evidence: SEMANTIC_REQUIRED
-  regression_test_added: VERIFIABLE_REFERENCE_REQUIRED
-  insufficient_evidence: RECOVERING
+runtime_target:
+  skills_registered: 16
+  skills_executable: 15
+  skills_documental: 1
+  remaining_documental:
+    - MCF-CLOSE-PHASE
 
-routing:
-  debug_generic_incidente_term: REMOVED
-  debug_generic_incident_term: REMOVED
-  security_incident_regression: REQUIRED_PASS
-  expected_security_owner: Ricardo
-  expected_security_skill: MCF-SECURITY-REVIEW
-  expected_security_risk: C
+canonical_sync:
+  branch: mcf-runtime-006-lot-4-d-canonical-sync
+  base: 94d8944c25ac26df3facb4f343a7a75c2489d704
+  state: CANDIDATE
+  documentation_validation: PENDING
+  documentary_gate: PENDING
+  documentary_merge: PENDING
+  tree_equivalence: PENDING
 
-caf:
-  formatting:
-    failed_candidate: 3ea30e9aadac9600b701902f14d08a3881251692
-    diagnostic_only_sha: 81c1f1c9ad58a895db02b70b0dafec5e7ba9349d
-    recovery: APPLIED_AND_REVALIDATED
-  semantic_blind_retry:
-    reviewed_candidate: 9ebedbaa85bfa92d52f199df064382e075adb1d3
-    reviewer: Vinicius
-    finding: BOOLEAN_DECLARATION_WITHOUT_SEMANTIC_RETRY_EVIDENCE
-    recovery: RETRY_EVIDENCE_REQUIRED_AND_TESTED
-  routing_overlap:
-    reviewer: Beatriz
-    finding: GENERIC_INCIDENT_TERM_COULD_STEAL_SECURITY_REVIEW
-    recovery: GENERIC_TERMS_REMOVED_AND_CLASS_C_REGRESSION_ADDED
-    planner_commit: ae5a27743cbaa97e3668bb1b45a670866abb5e08
-    test_commit: abc60191f7a56b6012db630d8b4a22fb25d886c5
-
-candidate:
-  final_prf_head: PENDING_AFTER_MANIFEST_REGENERATION
-
-pending:
-  final_exact_head_foundation: true
-  final_exact_head_container_smoke: true
-  manifest_audit: true
-  specialist_reviews: true
-  augusto_trace: true
-  julia_governance: true
-  emily_audit: true
-  leo_gate: true
-  technical_merge: true
-  candidate_merge_tree_equivalence: true
-  canonical_sync: true
-  documentation_validation: true
-  documentary_gate: true
+issue_103:
+  state: OPEN_UNTIL_DOCUMENTARY_MERGE
 
 safety:
   production: BLOCKED

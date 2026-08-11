@@ -1,66 +1,113 @@
 # PHASE-006-LOT-4-D-DEBUG-INCIDENT — Report
 
-## Estado
+## Resultado técnico
 
-`CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION`
-
-O incremento técnico está no PR `#104`. Este relatório registra somente evidência observada; nenhum review final, auditoria, gate ou merge é antecipado.
-
-## Baseline e candidatos superseded
-
-- baseline `main`: `79c1a1644742cf22af60384b64685adbb1f017a3`
-- pré-PRF `933c8f72dd19219eea6112adfdd8db7c43112f2c`: Foundation `31477171098` PASS e Container Smoke `31477171096` PASS, depois superseded pelo PRF;
-- primeiro PRF `9ebedbaa85bfa92d52f199df064382e075adb1d3`: Foundation `31477910252` PASS e Container Smoke `31477910266` PASS, depois `SUPERSEDED_BY_REVIEW_CAF`;
-- artifact do primeiro PRF: `9096020199`, digest `sha256:e1af159fcb0c59acd403baa3dff401144dd7475b5b2225295c3e4823d6cec310`.
-
-## Implementação
-
-1. `McfExecutableSkillId` inclui `MCF-DEBUG-INCIDENT`.
-2. Planner: `Patricia → Renato`, provider `internal`, `inspect-debug-incident`, `mcf-agent-runtime`, estado `READY_AGENT`.
-3. Bridge não auto-completa a skill.
-4. `PermissionEngine` preserva `SCOPED_WRITE` e aplica boundary local do Lot 4-D, sem relaxamento global.
-5. Evidência semântica exige `reproduction`, `root_cause` e `recovery_result` estruturados.
-6. Recuperação válida exige `blind_retry: false`, `retry_evidence` semântico e referência verificável de teste de regressão.
-7. Evidência insuficiente retorna `RECOVERING` sem handoff de sucesso.
-
-## CAF #1 — formatação
-
-O SHA `3ea30e9aadac9600b701902f14d08a3881251692` falhou no Foundation `31476698797` em `Verify formatting`. O SHA diagnóstico `81c1f1c9ad58a895db02b70b0dafec5e7ba9349d` apenas revelou o diff canônico do Prettier. A correção foi aplicada e revalidada; nenhum PASS foi fabricado.
-
-## CAF #2 — evidência de blind retry
-
-Vinicius identificou no SHA `9ebedbaa85bfa92d52f199df064382e075adb1d3` que `blind_retry: false` era apenas declaração booleana. O gate foi bloqueado. A correção tornou `retry_evidence` obrigatório e semântico, com testes negativos para ausência, booleano e placeholder e persistência positiva no receipt.
-
-## CAF #3 — sobreposição de roteamento
-
-Beatriz identificou que os gatilhos genéricos `incidente` e `incident`, avaliados antes dos termos de segurança, poderiam capturar um objetivo explicitamente de security review e retirar o piso Classe C do `MCF-SECURITY-REVIEW`.
-
-Correção aplicada:
-
-- removidos os gatilhos genéricos `incidente` e `incident` da inferência de debug;
-- mantidos somente sinais inequívocos como `debug`, `diagnosticar incidente`, `diagnose incident`, `root cause`, `causa raiz`, `reproduzir falha` e `investigar erro`;
-- adicionado teste de regressão provando que `revisão de segurança do incidente` continua roteando para `Ricardo`, `MCF-SECURITY-REVIEW`, `READY_AGENT`, risco Classe C;
-- a alteração do planner foi aplicada por commit Git granular após o conector bloquear uma substituição completa do arquivo; não houve force-push.
-
-Como código e PRF mudaram novamente, qualquer CI/manifesta anterior é apenas histórico. O manifesto será regenerado e Foundation + Container Smoke serão refeitos no novo HEAD exato.
-
-## Boundary preservado
+`MCF-DEBUG-INCIDENT` foi promovida a capacidade executável governada e integrada por squash no PR técnico `#104`.
 
 ```yaml
-provider: internal_only
-permission: SCOPED_WRITE
-external_write: FORBIDDEN
-github_provider_write: FORBIDDEN
-environment_mutation: FORBIDDEN
-deploy: FORBIDDEN
-production_action: FORBIDDEN
-destructive_fix: FORBIDDEN
-secret_access: FORBIDDEN
-public_action: FORBIDDEN
-blind_retry: FORBIDDEN
+technical_candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
+technical_merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
+candidate_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
+merge_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
+candidate_merge_tree_equivalence: PASS
 ```
 
-## Estado operacional
+## Comportamento integrado
+
+- planner seleciona a skill em objetivos inequívocos de debug;
+- primary owner: Patricia;
+- owners válidos: Patricia, Bruno, Rafael;
+- state: `READY_AGENT`;
+- bridge não auto-completa a skill;
+- handoff: Renato somente após sucesso válido;
+- `SCOPED_WRITE` permanece canônico;
+- execução Lot 4-D limitada a `internal / inspect-debug-incident / mcf-agent-runtime`;
+- provider externo e efeitos proibidos são recusados;
+- evidência insuficiente produz `RECOVERING`.
+
+## Evidência semântica
+
+### reproduction
+
+Requer:
+- sintoma significativo;
+- método de reprodução ou caracterização;
+- referência verificável.
+
+### root_cause
+
+Requer:
+- causa significativa;
+- evidência de suporte.
+
+### recovery_result
+
+Requer:
+- ação, isolamento ou mitigação;
+- verificação do resultado;
+- `blind_retry: false`;
+- `retry_evidence` semântico independente;
+- referência verificável de teste de regressão.
+
+Booleanos, placeholders, vazio, whitespace e objetos vazios não substituem evidência.
+
+## Validação do candidato técnico
+
+```yaml
+foundation_run: 31479541126
+foundation: PASS
+container_smoke_run: 31479541177
+container_smoke: PASS
+server_test_files: 122
+server_tests: 527
+web_tests: 5
+ops_tests: 20
+failed_tests: 0
+vitest_artifact: 9096661981
+vitest_digest: sha256:e689b3f6453666992509676f30f63f98d49a33582ca8adcf378c732f3f36848f
+manifest_audit: PASS
+beatriz_review: PASS
+vinicius_review: PASS
+ricardo_review: PASS
+renato_validation: PASS
+augusto_trace: PASS
+julia_governance: PASS
+carmem_prf: PASS
+emily_independent_audit: PASS
+leo_technical_gate: PASS
+```
+
+## CAFs preservados
+
+### CAF #1 — formatting
+
+O candidato `3ea30e9a...` falhou no Foundation `31476698797` em formatação. Um SHA diagnóstico foi usado apenas para emitir o diff canônico do Prettier; depois houve novo SHA e revalidação.
+
+### CAF #2 — blind retry
+
+Vinicius bloqueou o primeiro PRF porque `blind_retry: false` isolado era claim booleano. `retry_evidence` semântico passou a ser obrigatório e os testes negativos/positivos foram ampliados.
+
+### CAF #3 — routing
+
+Beatriz bloqueou uma sobreposição potencial entre o termo genérico de incidente e security review. `incidente/incident` deixaram de ser gatilhos genéricos de debug e foi adicionada regressão que mantém security review com Ricardo e Classe C.
+
+## Integração
+
+O merge técnico ocorreu somente após o gate no SHA exato e foi protegido por `expected_head_sha`. A tree Git do candidato e a tree do squash merge são idênticas.
+
+## Canonical documentation sync
+
+Estado neste PRF:
+
+```yaml
+technical_integration: COMPLETE
+canonical_documentation_sync: CANDIDATE
+issue_103: OPEN_UNTIL_DOCUMENTARY_MERGE
+```
+
+A sincronização documental separada atualiza índices canônicos para `16 / 15 / 1`, regenera o manifesto, passa por validação/gate documental e só então permite fechar a Issue #103.
+
+## Limites preservados
 
 ```yaml
 production: BLOCKED
