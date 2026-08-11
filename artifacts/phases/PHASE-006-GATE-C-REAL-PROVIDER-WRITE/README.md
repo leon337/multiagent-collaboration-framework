@@ -30,8 +30,25 @@ blocking_findings: 0
 leo_technical_gate: APPROVE_TECHNICAL_GATE_C
 technical_post_merge_documentation: PASS
 technical_post_merge_staging: PASS_DEPLOYED
-state: CANONICAL_SYNC_CANDIDATE
+state: ENTREGUE
 production: BLOCKED
 ```
 
-This pack no longer treats the real GitHub provider proof as unauthorized or partial. Final `ENTREGUE` status is intentionally deferred until this docs-only canonical sync is merged and a final closeout is bound to the resulting `main` SHA.
+This pack records Gate C as `COMPLETE/ENTREGUE`. The real-provider proof, canonical sync and post-merge validations are complete. Temporary closeout workflows are removed by the final cleanup. Production remains `BLOCKED`.
+
+## Canonical closeout
+
+```yaml
+gate_c: COMPLETE
+canonical_pr: 118
+canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+canonical_post_merge_documentation_run: 31539238013
+canonical_post_merge_documentation: PASS
+closeout_pr: 119
+closeout_merge: 303a4385aed51c531993613ca9d664d1599f538e
+closeout_post_merge_documentation_run: 31540925137
+closeout_post_merge_documentation: PASS
+canonical_sync: COMPLETE
+next_boundary: RELEASE_CANDIDATE_GATE_E
+production: BLOCKED
+```
