@@ -1,0 +1,89 @@
+phase: PHASE-006-LOT-4-D-DEBUG-INCIDENT
+mission: MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
+issue: 103
+technical_pr: 104
+risk_class: C
+state: CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION
+
+baseline:
+  main_sha: 79c1a1644742cf22af60384b64685adbb1f017a3
+  lot_4c: COMPLETE
+
+candidate:
+  pre_prf_sha: 933c8f72dd19219eea6112adfdd8db7c43112f2c
+  prf_head: PENDING_AFTER_MANIFEST_COMMIT
+
+pre_prf_validation:
+  foundation_run: 31477171098
+  foundation: PASS
+  container_smoke_run: 31477171096
+  container_smoke: PASS
+  server_test_files: 122
+  server_tests: 524
+  web_tests: 5
+  ops_tests: 20
+  failed_tests: 0
+  vitest_artifact: 9095733417
+  vitest_digest: sha256:9ae9c59a9e8824749a465d22fae1d0eebb0b2956e2235853b9aa26c99b71c69c
+
+skill:
+  id: MCF-DEBUG-INCIDENT
+  executable_target: true
+  planner_state: READY_AGENT
+  primary_owner: Patricia
+  owners:
+    - Patricia
+    - Bruno
+    - Rafael
+  handoff: Renato
+  permission_profile: SCOPED_WRITE
+  provider: internal
+  operation: inspect-debug-incident
+  resource: mcf-agent-runtime
+
+boundary:
+  external_write: false
+  github_provider_write: false
+  environment_mutation: false
+  deploy: false
+  production_action: false
+  destructive_fix: false
+  secret_access: false
+  public_action: false
+  blind_retry: false
+
+semantic_evidence:
+  reproduction: REQUIRED
+  root_cause: REQUIRED
+  recovery_result: REQUIRED
+  regression_test_added: VERIFIABLE_REFERENCE_REQUIRED
+  insufficient_evidence: RECOVERING
+
+caf:
+  failed_candidate: 3ea30e9aadac9600b701902f14d08a3881251692
+  failed_foundation_run: 31476698797
+  failed_step: Verify formatting
+  diagnostic_only_sha: 81c1f1c9ad58a895db02b70b0dafec5e7ba9349d
+  recovery: APPLIED_AND_REVALIDATED
+
+pending:
+  exact_head_foundation: true
+  exact_head_container_smoke: true
+  manifest_audit: true
+  specialist_reviews: true
+  augusto_trace: true
+  julia_governance: true
+  emily_audit: true
+  leo_gate: true
+  technical_merge: true
+  candidate_merge_tree_equivalence: true
+  canonical_sync: true
+  documentation_validation: true
+  documentary_gate: true
+
+safety:
+  production: BLOCKED
+  live_staging_adapter: DISABLED
+  gate_c_real_provider_write: NOT_AUTHORIZED
+  human_operator_actions: 0
+  human_gate_leandro: NOT_REQUIRED
