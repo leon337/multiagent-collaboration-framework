@@ -253,7 +253,8 @@ export type McfExecutableSkillId =
   | 'MCF-RUN-TESTS'
   | 'MCF-GIT-PR-RELEASE'
   | 'MCF-DEPLOY-VALIDATE'
-  | 'MCF-TRACE-MISSION';
+  | 'MCF-TRACE-MISSION'
+  | 'MCF-EVALUATE-AGENTS';
 
 export type McfExecutableToolProvider =
   'internal' | 'github' | 'github-actions' | 'render' | 'vercel' | 'cloudflare';

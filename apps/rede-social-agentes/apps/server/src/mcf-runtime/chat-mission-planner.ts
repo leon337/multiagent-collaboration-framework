@@ -113,6 +113,14 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     internal: true,
     requiredEvidence: ['chronological_trace', 'handoff_status', 'recovery_status'],
   },
+  'MCF-EVALUATE-AGENTS': {
+    agentId: 'Beatriz',
+    handoffTo: 'Emily',
+    toolProvider: 'internal',
+    toolOperation: 'inspect-agent-evaluation',
+    internal: false,
+    requiredEvidence: ['test_cases', 'scores', 'regressions'],
+  },
 };
 
 const riskRank: Record<McfRiskClass, number> = { A: 1, B: 2, C: 3 };
@@ -127,6 +135,14 @@ const implementationTerms = [
   'refatorar',
 ];
 const validationTerms = ['testar', 'validar', 'auditar', 'verificar', 'smoke', 'ci'];
+const evaluationTerms = [
+  'avaliar agentes',
+  'avaliar agente',
+  'benchmark',
+  'regressão de prompt',
+  'regressao de prompt',
+  'scorecard',
+];
 const deploymentTerms = ['deploy', 'publicar', 'ambiente', 'rollback', 'produção', 'production'];
 const highRiskTerms = [
   'produção',
@@ -177,6 +193,9 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
   }
 
   const normalized = request.objective.toLowerCase();
+  if (includesAny(normalized, evaluationTerms)) {
+    return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-EVALUATE-AGENTS', 'MCF-TRACE-MISSION'];
+  }
   if (includesAny(normalized, deploymentTerms)) {
     return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-DEPLOY-VALIDATE', 'MCF-TRACE-MISSION'];
   }

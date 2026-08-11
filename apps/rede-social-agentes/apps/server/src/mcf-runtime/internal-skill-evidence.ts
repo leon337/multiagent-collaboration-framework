@@ -8,6 +8,7 @@ const governedInternalSkillIds = new Set([
   'MCF-DEFINE-PRODUCT',
   'MCF-DESIGN-EXPERIENCE',
   'MCF-DESIGN-ARCHITECTURE',
+  'MCF-EVALUATE-AGENTS',
 ]);
 
 function reject(message: string): never {
@@ -52,6 +53,35 @@ function requireArray(
     return reject(message);
   }
   return value;
+}
+
+function isMeaningfulScoreValue(value: unknown): boolean {
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    return Object.keys(value as Record<string, unknown>).length > 0;
+  }
+  return false;
+}
+
+function requireScores(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): unknown[] | Record<string, unknown> {
+  const value = record[key];
+  if (Array.isArray(value)) {
+    if (value.length > 0 && value.every(isMeaningfulScoreValue)) return value;
+    return reject(message);
+  }
+  if (typeof value === 'object' && value !== null) {
+    const scores = value as Record<string, unknown>;
+    const entries = Object.entries(scores);
+    if (entries.length > 0 && entries.every(([, score]) => isMeaningfulScoreValue(score))) {
+      return scores;
+    }
+  }
+  return reject(message);
 }
 
 function requireReference(
@@ -150,6 +180,25 @@ function validateEvidence(
           { allowEmpty: true },
         ),
       };
+    case 'MCF-EVALUATE-AGENTS':
+      return {
+        test_cases: requireArray(
+          evidence,
+          'test_cases',
+          'MCF-EVALUATE-AGENTS requires non-empty test_cases evidence',
+        ),
+        scores: requireScores(
+          evidence,
+          'scores',
+          'MCF-EVALUATE-AGENTS requires non-empty scores evidence',
+        ),
+        regressions: requireArray(
+          evidence,
+          'regressions',
+          'MCF-EVALUATE-AGENTS requires regressions evidence, even when empty',
+          { allowEmpty: true },
+        ),
+      };
     default:
       return evidence;
   }
@@ -177,7 +226,7 @@ export function verifyInternalExecutionReceipt(
 ): void {
   if (!isGovernedAgentInternalSkill(skill.skillId)) return;
   if (canonicalizeProvider(receipt.provider) !== 'internal') {
-    reject(`${skill.skillId} Lot 4A execution requires the governed internal provider`);
+    reject(`${skill.skillId} governed execution requires the internal provider`);
   }
   const evidence = asRecord(
     receipt.metadata.executionEvidence,

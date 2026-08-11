@@ -245,7 +245,7 @@ describe('SkillExecutor Lot 4 core internal skills', () => {
           resource: 'leon337/multiagent-collaboration-framework',
         },
       }),
-    ).rejects.toThrow(/governed internal provider/u);
+    ).rejects.toThrow(/internal provider/u);
   });
 
   it('normalizes the governed internal provider before selecting the internal execution path', async () => {
