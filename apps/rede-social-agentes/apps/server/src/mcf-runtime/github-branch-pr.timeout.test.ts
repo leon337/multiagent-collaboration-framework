@@ -110,6 +110,72 @@ describe('GitHub branch/PR timeout reconciliation', () => {
     expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
   });
 
+  it('retries only branch read-back after a successful branch POST', async () => {
+    let branchExists = false;
+    let branchLookupCount = 0;
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      const common = baseAndCommit(url);
+      if (common) return common;
+      if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) {
+        branchLookupCount += 1;
+        if (!branchExists) return response({}, 404);
+        if (branchLookupCount === 2) throw new Error('transient branch read-back failure');
+        return response(branch());
+      }
+      if (url.endsWith('/git/refs') && method === 'POST') {
+        branchExists = true;
+        return response(branch(), 201);
+      }
+      if (url.includes('/pulls?')) return response([pull()]);
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+    const adapter = new GitHubBranchPullRequestAdapter(
+      new EvidenceValidator(),
+      new GitHubBranchPrClient(fetcher),
+    );
+
+    const receipt = await adapter.execute(request());
+
+    expect(receipt.status).toBe('SUCCEEDED');
+    expect(receipt.metadata.readBackVerified).toBe(true);
+    expect(branchLookupCount).toBe(3);
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+  });
+
+  it('retries only pull request read-back after a successful PR POST', async () => {
+    let pullExists = false;
+    let pullLookupCount = 0;
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      const common = baseAndCommit(url);
+      if (common) return common;
+      if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) return response(branch());
+      if (url.includes('/pulls?')) {
+        pullLookupCount += 1;
+        if (!pullExists) return response([]);
+        if (pullLookupCount === 2) throw new Error('transient pull read-back failure');
+        return response([pull()]);
+      }
+      if (url.endsWith('/pulls') && method === 'POST') {
+        pullExists = true;
+        return response(pull(), 201);
+      }
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+    const adapter = new GitHubBranchPullRequestAdapter(
+      new EvidenceValidator(),
+      new GitHubBranchPrClient(fetcher),
+    );
+
+    const receipt = await adapter.execute(request());
+
+    expect(receipt.status).toBe('SUCCEEDED');
+    expect(receipt.metadata.readBackVerified).toBe(true);
+    expect(pullLookupCount).toBe(3);
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+  });
+
   it('records UNKNOWN when an ambiguous branch creation cannot be proven by read-back', async () => {
     let branchLookupCount = 0;
     const evidence = new EvidenceValidator();
