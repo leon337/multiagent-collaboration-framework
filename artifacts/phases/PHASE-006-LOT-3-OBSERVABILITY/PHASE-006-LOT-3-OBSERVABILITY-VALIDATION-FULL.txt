@@ -1,0 +1,50 @@
+PHASE-006-LOT-3-OBSERVABILITY FULL VALIDATION
+
+State: TECHNICAL_CANDIDATE_VALIDATED_CLOSEOUT_HEAD_PENDING
+
+Technical candidate:
+- head: d08ce837b01daccb7ab708c26ca5c5f4186080df
+- initial base: 807637a75115b067359b5282f888cee2e6b05683
+- PR integration ref tested by GitHub Actions: 043afba81ddab295b3063ab83fbd469f5e711e79
+- Documentation validation: run 31448933446 PASS
+- Container Smoke: run 31448933434 PASS
+- Rede Social Foundation: run 31448933496 PASS
+- format: PASS
+- lint: PASS
+- typecheck: PASS
+- migrations executed twice: PASS
+- full test suite: PASS
+- build: PASS
+- server test files: 109 passed
+- server tests: 444 passed
+- vitest artifact id: 9085601719
+- vitest artifact digest: sha256:b9307a79440187b5b16767375fb2ed2f2abf30a5e7e8d830a23394421cfc6b3b
+
+Observability-specific proof inside the Foundation run:
+- MissionObservabilityService: 5 tests PASS
+- MissionObservabilityRepository: 3 tests PASS
+- PostgreSQL persistence/idempotency integration: 1 test PASS
+- canonical BLOCKED_RISK query: PASS
+- current phase/agent visibility: PASS
+- latest event visibility: PASS
+- concrete block context without fabricated cause: PASS
+- duplicate alert suppression by idempotency key: PASS
+- persisted alert cardinality after duplicate reconciliation: exactly 1
+
+Invariant checks:
+- canonical blocked state = BLOCKED_RISK: PASS
+- state source = mcf_missions: PASS
+- phase source = mcf_phases: PASS
+- event/alert source = mcf_events: PASS
+- no parallel alert table: PASS
+- no database migration introduced: PASS
+- no notification transport introduced: PASS
+- no new credential introduced: PASS
+- externalNotification=false: PASS
+- humanActionRequired=false: PASS
+- production remains BLOCKED: PASS
+- live staging adapter remains DISABLED: PASS
+- human_operator_actions remains 0: PASS
+
+Evidence boundary:
+The technical-candidate evidence above is bound to d08ce837b01daccb7ab708c26ca5c5f4186080df in PR #89 context. PRF finalization changes the branch HEAD. The resulting closeout HEAD must independently pass Documentation validation, Container Smoke and Rede Social Foundation before Renato/Emily/Léo closeout receipts. No PASS is promoted to that future SHA.

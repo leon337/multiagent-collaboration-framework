@@ -1,0 +1,46 @@
+mission: MCF-RUNTIME-006-LOT-3-OBSERVABILITY
+phase: PHASE-006-LOT-3-OBSERVABILITY
+issue: 88
+pull_request: 89
+risk_class: B
+state: READY_FOR_CLOSEOUT_VALIDATION
+base_initial: 807637a75115b067359b5282f888cee2e6b05683
+technical_candidate_head: d08ce837b01daccb7ab708c26ca5c5f4186080df
+closeout_head: RESOLVE_AFTER_PRF_FINALIZATION
+implementation:
+  blocked_mission_observation: TECHNICALLY_VALIDATED
+  blocked_mission_query: TECHNICALLY_VALIDATED
+  internal_alert_reconciliation: TECHNICALLY_VALIDATED
+  idempotency: TECHNICALLY_VALIDATED
+persistence:
+  source_of_truth: EXISTING_MCF_TABLES_AND_EVENT_LEDGER
+  new_table: false
+  new_migration: false
+external_effects:
+  notification_channel: false
+  new_credentials: false
+  production: BLOCKED
+  live_staging_adapter: DISABLED
+technical_validation:
+  documentation_run: 31448933446
+  documentation: PASS
+  container_smoke_run: 31448933434
+  container_smoke: PASS
+  foundation_run: 31448933496
+  foundation: PASS
+  server_test_files: 109
+  server_tests: 444
+  observability_tests: 9
+  vitest_artifact_id: 9085601719
+  vitest_artifact_digest: sha256:b9307a79440187b5b16767375fb2ed2f2abf30a5e7e8d830a23394421cfc6b3b
+closeout_validation:
+  documentation: PENDING_EXACT_CLOSEOUT_HEAD
+  container_smoke: PENDING_EXACT_CLOSEOUT_HEAD
+  foundation: PENDING_EXACT_CLOSEOUT_HEAD
+  independent_audit: PENDING
+governance:
+  leo_gate: PENDING
+  human_gate_leandro: NOT_REQUIRED
+  human_operator_actions: 0
+next_action: FINALIZE_MANIFEST_THEN_VALIDATE_EXACT_CLOSEOUT_HEAD
+next_boundary_after_delivery: MCF-RUNTIME-006-LOT-4-SKILLS

@@ -50,6 +50,7 @@ export type McfEventType =
   | 'GATE_REJECTED'
   | 'PHASE_COMPLETED'
   | 'MISSION_COMPLETED'
+  | 'MISSION_BLOCKED_ALERT_RAISED'
   | 'CI_CALLBACK_RECEIVED';
 
 export interface McfMissionContract {
@@ -153,6 +154,55 @@ export interface McfMissionEventResponse {
 export interface McfMissionTimelineResponse {
   mission: McfMissionResponse;
   events: McfMissionEventResponse[];
+}
+
+export interface McfMissionBlockContext {
+  reason: string;
+  eventType: McfEventType | null;
+  eventId: string | null;
+  occurredAt: string | null;
+  payload: Record<string, unknown>;
+}
+
+export interface McfMissionObservationResponse {
+  mission: McfMissionResponse;
+  currentPhase: {
+    id: string;
+    skillId: string;
+    agentId: string;
+    state: McfPhaseState;
+    cycle: number;
+    startedAt: string | null;
+    updatedAt: string;
+  } | null;
+  latestEvent: McfMissionEventResponse | null;
+  blocked: boolean;
+  blockContext: McfMissionBlockContext | null;
+}
+
+export interface McfBlockedMissionSummary {
+  missionId: string;
+  title: string;
+  state: 'BLOCKED_RISK';
+  currentPhaseId: string | null;
+  currentAgentId: string | null;
+  version: number;
+  updatedAt: string;
+  blockContext: McfMissionBlockContext;
+}
+
+export interface McfBlockedMissionListResponse {
+  missions: McfBlockedMissionSummary[];
+  count: number;
+  sourceOfTruth: 'MCF_PERSISTENCE_AND_EVENT_LEDGER';
+}
+
+export interface McfBlockedAlertReconcileResponse {
+  blockedMissionsObserved: number;
+  alertsInserted: number;
+  duplicates: number;
+  externalNotification: false;
+  humanActionRequired: false;
 }
 
 export interface McfSocialCandidateResponse {
