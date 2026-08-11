@@ -86,7 +86,16 @@ gate_c_real_provider_write:
   leo_technical_gate: PASS
   technical_post_merge_documentation: PASS
   technical_post_merge_staging: PASS_DEPLOYED
-  canonical_state: CANONICAL_SYNC_CANDIDATE
+  canonical_pr: 118
+  canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+  canonical_post_merge_documentation_run: 31539238013
+  canonical_post_merge_documentation: PASS
+  closeout_pr: 119
+  closeout_merge: 303a4385aed51c531993613ca9d664d1599f538e
+  closeout_post_merge_documentation_run: 31540925137
+  closeout_post_merge_documentation: PASS
+  canonical_state: COMPLETE
+  mission_state: ENTREGUE
 
 production: BLOCKED
 live_staging_adapter: DISABLED
@@ -116,7 +125,7 @@ Não há skill documental remanescente no runtime integrado.
 
 ## Gate C — real provider write
 
-A capacidade de escrita GitHub do runtime foi comprovada em provider real e integrada tecnicamente.
+A capacidade de escrita GitHub do runtime foi comprovada em provider real, integrada tecnicamente e reconciliada canonicamente.
 
 ### Evidência final
 
@@ -141,12 +150,27 @@ post_merge_documentation_run: 31538142320
 post_merge_documentation: PASS
 post_merge_staging_run: 31538142312
 post_merge_staging: PASS_DEPLOYED
-canonical_state: CANONICAL_SYNC_CANDIDATE
+canonical_pr: 118
+canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+canonical_post_merge_documentation_run: 31539238013
+canonical_post_merge_documentation: PASS
+closeout_pr: 119
+closeout_merge: 303a4385aed51c531993613ca9d664d1599f538e
+closeout_post_merge_documentation_run: 31540925137
+closeout_post_merge_documentation: PASS
+canonical_state: COMPLETE
+mission_state: ENTREGUE
+objective_met: true
+blocking_findings: 0
+pending_actions: 0
+human_action_required: false
+next_boundary: RELEASE_CANDIDATE_GATE_E
+production: BLOCKED
 ```
 
 As mutações permanecem single-shot: o runtime nunca repete `POST` para tentar adivinhar o estado externo. A reconciliação pós-write é limitada a leituras `GET`; quando o efeito não pode ser provado, o estado permanece `PARTIAL/UNKNOWN`.
 
-A infraestrutura temporária usada apenas para a prova real foi removida antes do merge. Permanecem o runtime corrigido e os testes permanentes de regressão.
+Os três workflows temporários de closeout que entraram indevidamente pelo PR #119 são removidos por esta correção final. Permanecem apenas o runtime corrigido, os testes permanentes de regressão e o PRF canônico.
 
 ## Lot 4-E — Close Phase
 
@@ -211,6 +235,4 @@ canonical_sync: COMPLETE
 
 **Release Candidate / Gate E**.
 
-O Lot 4-E permanece tecnicamente integrado e documentalmente reconciliado. O Gate C está tecnicamente integrado e esta branch representa sua sincronização documental canônica. O estado `ENTREGUE` do Gate C será registrado somente após o merge desta sincronização e um closeout final vinculado ao novo SHA de `main`.
-
-Produção continua fora desse boundary e permanece `BLOCKED`.
+O Lot 4-E permanece tecnicamente integrado e documentalmente reconciliado. O Gate C está `COMPLETE/ENTREGUE`, sem dívida técnica conhecida pendente para carregar ao Gate E. Produção continua fora desse boundary e permanece `BLOCKED`.
