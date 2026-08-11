@@ -7,15 +7,106 @@ on:
     paths:
       - ".github/mcf-gate-c-proof-trigger"
 
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+permissions: {}
 
 jobs:
-  real-provider-proof:
+  c2-existing-pr-proof:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_DB: rsa
+          POSTGRES_USER: rsa
+          POSTGRES_PASSWORD: rsa_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rsa -d rsa"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: apps/rede-social-agentes
+
+    env:
+      NODE_ENV: test
+      HOST: 127.0.0.1
+      PORT: 3000
+      DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+      LOG_LEVEL: error
+      MCF_GATE_C_C2_REAL_WRITE: "1"
+      MCF_GATE_C_HEAD_SHA: ${{ github.sha }}
+      MCF_GATE_C_EXISTING_PR_NUMBER: "112"
+      MCF_GATE_C_AUTH_SOURCE: ${{ secrets.MCF_GITHUB_TOKEN != '' && 'MCF_GITHUB_TOKEN' || 'GITHUB_TOKEN' }}
+      MCF_GITHUB_TOKEN: ${{ secrets.MCF_GITHUB_TOKEN || github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+
+    steps:
+      - name: Checkout exact proof candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies from lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Preflight formatting
+        run: pnpm format:check
+
+      - name: Preflight lint
+        run: pnpm lint
+
+      - name: Preflight typecheck
+        run: pnpm typecheck
+
+      - name: Run database migration twice
+        run: |
+          pnpm --filter @rsa/database db:migrate
+          pnpm --filter @rsa/database db:migrate
+
+      - name: Execute governed C2 real-provider proof
+        run: >-
+          pnpm --filter @rsa/server exec vitest run
+          src/mcf-runtime/gate-c-c2-real-provider-write.integration.test.ts
+          --reporter=default
+
+      - name: Upload C2 proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-gate-c-c2-real-provider-write-proof
+          path: apps/rede-social-agentes/apps/server/test-results/gate-c-c2-real-provider-write.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  full-c1-c2-provider-proof:
+    if: contains(github.event.head_commit.message, '[gate-c-full]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
 
     services:
       postgres:
@@ -91,13 +182,13 @@ jobs:
           fi
           echo "MCF_GATE_C_BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
 
-      - name: Execute governed real-provider proof
+      - name: Execute governed full real-provider proof
         run: >-
           pnpm --filter @rsa/server exec vitest run
           src/mcf-runtime/gate-c-real-provider-write.integration.test.ts
           --reporter=default
 
-      - name: Upload Gate C proof artifact
+      - name: Upload full Gate C proof artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
