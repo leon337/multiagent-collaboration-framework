@@ -1,0 +1,306 @@
+name: MCF Gate C Final Closeout v2
+
+on:
+  push:
+    branches:
+      - docs/mcf-runtime-006-gate-c-canonical-closeout
+    paths:
+      - ".github/workflows/mcf-gate-c-final-closeout-v2.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  closeout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout exact closeout branch
+        uses: actions/checkout@v4
+        with:
+          ref: docs/mcf-runtime-006-gate-c-canonical-closeout
+          fetch-depth: 0
+
+      - name: Apply final canonical closeout
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+
+          root = Path('.')
+          pack = root / 'artifacts/phases/PHASE-006-GATE-C-REAL-PROVIDER-WRITE'
+
+          def load(path):
+              return path.read_text(encoding='utf-8')
+
+          def save(path, text):
+              path.write_text(text, encoding='utf-8')
+
+          def replace_required(path, old, new):
+              text = load(path)
+              if old not in text:
+                  raise SystemExit(f'required closeout marker missing in {path}: {old!r}')
+              save(path, text.replace(old, new))
+
+          def append_once(path, marker, block):
+              text = load(path)
+              if marker in text:
+                  return
+              if not text.endswith('\n'):
+                  text += '\n'
+              save(path, text + '\n' + block.strip() + '\n')
+
+          readme = root / 'README.md'
+          replace_required(readme, 'canonical_state: CANONICAL_SYNC_CANDIDATE', 'canonical_state: COMPLETE')
+          append_once(readme, 'canonical_closeout_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11', '''
+          ## Gate C — closeout canônico final
+
+          ```yaml
+          mission: MCF-RUNTIME-006-GATE-C-REAL-PROVIDER-WRITE
+          state: ENTREGUE
+          gate_c: COMPLETE
+          technical_merge: 0b060539eb152f0cf92bd146b853562407ab0a64
+          canonical_pr: 118
+          canonical_closeout_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+          canonical_post_merge_documentation_run: 31539238013
+          canonical_post_merge_documentation: PASS
+          objective_met: true
+          blocking_findings: 0
+          pending_actions: 0
+          human_action_required: false
+          next_boundary: RELEASE_CANDIDATE_GATE_E
+          production: BLOCKED
+          ```
+
+          Gate C está tecnicamente integrado, sincronizado nas fontes canônicas e **ENTREGUE**. Não há dívida técnica conhecida do Gate C pendente para carregar ao Gate E. Produção permanece `BLOCKED`.
+          ''')
+
+          plan = root / 'docs/runtime/MCF-RUNTIME-006-PLAN.md'
+          replace_required(plan, 'gate_c_canonical_state: CANONICAL_SYNC_CANDIDATE', 'gate_c_canonical_state: COMPLETE')
+          replace_required(plan, '| Gate C — real provider write | TECHNICAL COMPLETE / CANONICAL SYNC CANDIDATE |', '| Gate C — real provider write | COMPLETE |')
+          replace_required(plan, 'canonical_state: CANONICAL_SYNC_CANDIDATE', 'canonical_state: COMPLETE')
+          append_once(plan, 'mission_state: ENTREGUE', '''
+          ## 12. Closeout canônico final do Gate C
+
+          ```yaml
+          documentary_pr: 118
+          documentary_candidate: 9ba3bee76ca6572848b3d95a71d109f4be10ff31
+          documentation_validation_run: 31539053960
+          documentation_validation: PASS
+          carmem_documentary_review: PASS
+          emily_documentary_audit: PASS
+          leo_documentary_gate: APPROVE_CANONICAL_SYNC
+          documentary_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+          post_merge_documentation_run: 31539238013
+          post_merge_documentation: PASS
+          canonical_sync: COMPLETE
+          mission_state: ENTREGUE
+          gate_c: COMPLETE
+          production: BLOCKED
+          next_boundary: RELEASE_CANDIDATE_GATE_E
+          ```
+
+          O Gate C está `COMPLETE/ENTREGUE`. Release Candidate / Gate E é a próxima fronteira. Isso não autoriza produção.
+          ''')
+
+          prf_plan = pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-PLAN.md'
+          replace_required(prf_plan, 'current_state: APPROVED_AWAITING_MERGE', 'current_state: ENTREGUE')
+          append_once(prf_plan, 'Final canonical closeout', '''
+          ## Final canonical closeout
+
+          ```yaml
+          canonical_pr: 118
+          canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+          canonical_post_merge_documentation_run: 31539238013
+          canonical_post_merge_documentation: PASS
+          state: ENTREGUE
+          gate_c: COMPLETE
+          next_boundary: RELEASE_CANDIDATE_GATE_E
+          production: BLOCKED
+          ```
+          ''')
+
+          report = pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-REPORT.md'
+          text = load(report)
+          if '## Canonical sync candidate' not in text:
+              raise SystemExit('canonical report candidate marker missing')
+          text = text.replace('## Canonical sync candidate', '## Final closeout')
+          old = 'The technical Gate C closure is integrated in `main` at `0b060539eb152f0cf92bd146b853562407ab0a64`. The real-provider proof, permanent fail-safe regressions, independent audit and Léo technical gate all passed before merge.\n\nThis document is now a **canonical synchronization candidate**. Gate C is not yet labeled `ENTREGUE` here because the documentation PR and its final closeout still need to be bound to the resulting canonical `main` SHA.'
+          new = 'Gate C is **COMPLETE / ENTREGUE**. The technical change is integrated, the real-provider proof passed, permanent fail-safe regressions passed, independent audit passed, Léo approved, and the canonical synchronization was merged and validated on `main`.'
+          if old not in text:
+              raise SystemExit('canonical report introductory block missing')
+          save(report, text.replace(old, new))
+          append_once(report, 'mission_state: ENTREGUE', '''
+          ## Canonical completion
+
+          ```yaml
+          canonical_pr: 118
+          canonical_candidate: 9ba3bee76ca6572848b3d95a71d109f4be10ff31
+          canonical_documentation_run: 31539053960
+          canonical_documentation: PASS
+          canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+          canonical_post_merge_documentation_run: 31539238013
+          canonical_post_merge_documentation: PASS
+          canonical_sync: COMPLETE
+          mission_state: ENTREGUE
+          gate_c: COMPLETE
+          objective_met: true
+          blocking_findings: 0
+          pending_actions: 0
+          human_action_required: false
+          next_boundary: RELEASE_CANDIDATE_GATE_E
+          production: BLOCKED
+          ```
+          ''')
+
+          for name in [
+              'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-VALIDATION.txt',
+              'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-VALIDATION-FULL.txt',
+          ]:
+              path = pack / name
+              text = load(path)
+              if 'state=APPROVED_AWAITING_MERGE' in text:
+                  text = text.replace('state=APPROVED_AWAITING_MERGE', 'state=ENTREGUE')
+              save(path, text)
+              append_once(path, 'CANONICAL_CLOSEOUT', '''
+          CANONICAL_CLOSEOUT
+          canonical_pr=118
+          canonical_candidate=9ba3bee76ca6572848b3d95a71d109f4be10ff31
+          canonical_documentation_run=31539053960
+          canonical_documentation=PASS
+          canonical_merge=3feff116a3bf66427cfdfcb10894c0f76f79ee11
+          canonical_post_merge_documentation_run=31539238013
+          canonical_post_merge_documentation=PASS
+          canonical_sync=COMPLETE
+          gate_c=COMPLETE
+          mission_state=ENTREGUE
+          objective_met=true
+          blocking_findings=0
+          pending_actions=0
+          human_action_required=false
+          next_boundary=RELEASE_CANDIDATE_GATE_E
+          production=BLOCKED
+          ''')
+
+          smoke = pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-SMOKE.txt'
+          append_once(smoke, 'CANONICAL_POST_MERGE', '''
+          CANONICAL_POST_MERGE
+          documentation_run=31539238013
+          documentation=PASS
+          canonical_merge=3feff116a3bf66427cfdfcb10894c0f76f79ee11
+          canonical_sync=COMPLETE
+
+          production=BLOCKED
+          ''')
+
+          checkpoint = pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-CHECKPOINT.yaml'
+          replace_required(checkpoint, 'state: CANONICAL_SYNC_CANDIDATE', 'state: ENTREGUE')
+          replace_required(checkpoint, 'next_state: CANONICAL_SYNC_CANDIDATE', 'next_state: ENTREGUE')
+          text = load(checkpoint)
+          pending_start = text.find('pending:\n')
+          next_action_start = text.find('next_action:', pending_start)
+          return_start = text.find('return_to:', next_action_start)
+          if pending_start == -1 or next_action_start == -1 or return_start == -1:
+              raise SystemExit('checkpoint pending/next_action block not found')
+          replacement = '''pending: []\n\ncloseout:\n  objective_met: true\n  blockers: []\n  unresolved_findings: 0\n  blocking_findings: 0\n  pending_actions: []\n  human_action_required: false\n  next_action: null\n\ncanonical_closeout:\n  canonical_pr: 118\n  canonical_candidate: 9ba3bee76ca6572848b3d95a71d109f4be10ff31\n  documentation_validation_run: 31539053960\n  documentation_validation: PASS\n  canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11\n  post_merge_documentation_run: 31539238013\n  post_merge_documentation: PASS\n  canonical_sync: COMPLETE\n\nnext_action: null\n'''
+          save(checkpoint, text[:pending_start] + replacement + text[return_start:])
+
+          decisions = pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-DECISIONS.md'
+          append_once(decisions, '## D-013 — Final closeout', '''
+          ## D-011 — Canonical sync validated
+
+          PR #118 was validated on exact head `9ba3bee76ca6572848b3d95a71d109f4be10ff31`.
+
+          ```yaml
+          documentation_validation_run: 31539053960
+          documentation_validation: PASS
+          carmem_documentary_review: PASS
+          emily_documentary_audit: PASS
+          blocking_findings: 0
+          leo_documentary_gate: APPROVE_CANONICAL_SYNC
+          ```
+
+          ## D-012 — Canonical sync merged
+
+          PR #118 was squash-merged as `3feff116a3bf66427cfdfcb10894c0f76f79ee11`.
+
+          Post-merge Documentation validation `31539238013`: PASS.
+
+          ## D-013 — Final closeout
+
+          Gate C is `COMPLETE/ENTREGUE`.
+
+          ```yaml
+          objective_met: true
+          blocking_findings: 0
+          pending_actions: 0
+          human_action_required: false
+          leo_final_decision: APPROVE
+          next_state: ENTREGUE
+          next_boundary: RELEASE_CANDIDATE_GATE_E
+          production: BLOCKED
+          ```
+          ''')
+
+          prf_readme = pack / 'README.md'
+          replace_required(prf_readme, 'state: CANONICAL_SYNC_CANDIDATE', 'state: ENTREGUE')
+          append_once(prf_readme, 'gate_c: COMPLETE', '''
+          ## Canonical closeout
+
+          ```yaml
+          gate_c: COMPLETE
+          canonical_pr: 118
+          canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+          canonical_post_merge_documentation_run: 31539238013
+          canonical_post_merge_documentation: PASS
+          canonical_sync: COMPLETE
+          next_boundary: RELEASE_CANDIDATE_GATE_E
+          production: BLOCKED
+          ```
+          ''')
+
+          manifest = pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-ARTIFACT-MANIFEST.sha256'
+          files = [
+              pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-CHECKPOINT.yaml',
+              pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-DECISIONS.md',
+              pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-PLAN.md',
+              pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-REPORT.md',
+              pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-SMOKE.txt',
+              pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-VALIDATION-FULL.txt',
+              pack / 'PHASE-006-GATE-C-REAL-PROVIDER-WRITE-VALIDATION.txt',
+              pack / 'README.md',
+          ]
+          lines = [f'{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}' for path in files]
+          manifest.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+          for workflow_name in [
+              'mcf-gate-c-final-closeout.yml',
+              'mcf-gate-c-final-closeout-v2.yml',
+          ]:
+              workflow = root / '.github/workflows' / workflow_name
+              if workflow.exists():
+                  workflow.unlink()
+          PY
+
+      - name: Verify docs-only diff and terminal markers
+        shell: bash
+        run: |
+          git diff --check
+          test "$(git diff --name-only | grep -Ev '^(README\.md|docs/runtime/MCF-RUNTIME-006-PLAN\.md|artifacts/phases/PHASE-006-GATE-C-REAL-PROVIDER-WRITE/|\.github/workflows/mcf-gate-c-final-closeout(-v2)?\.yml$)' | wc -l)" -eq 0
+          grep -q 'canonical_state: COMPLETE' README.md
+          grep -q 'gate_c_canonical_state: COMPLETE' docs/runtime/MCF-RUNTIME-006-PLAN.md
+          grep -q '^state: ENTREGUE$' artifacts/phases/PHASE-006-GATE-C-REAL-PROVIDER-WRITE/PHASE-006-GATE-C-REAL-PROVIDER-WRITE-CHECKPOINT.yaml
+          ! git grep -n 'CANONICAL_SYNC_CANDIDATE' -- README.md docs/runtime/MCF-RUNTIME-006-PLAN.md artifacts/phases/PHASE-006-GATE-C-REAL-PROVIDER-WRITE/
+          test ! -e .github/workflows/mcf-gate-c-final-closeout.yml
+          test ! -e .github/workflows/mcf-gate-c-final-closeout-v2.yml
+
+      - name: Commit final closeout and remove temporary workflows
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'docs(runtime): finalize Gate C canonical closeout'
+          git push origin HEAD:docs/mcf-runtime-006-gate-c-canonical-closeout
