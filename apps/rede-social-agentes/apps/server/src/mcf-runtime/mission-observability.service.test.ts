@@ -97,19 +97,12 @@ function observabilityRepository(options?: {
 
 describe('MissionObservabilityService', () => {
   it('exposes the current phase, latest event and concrete block context', async () => {
-    const service = new MissionObservabilityService(
-      runtimeRepository(),
-      observabilityRepository(),
-    );
+    const service = new MissionObservabilityService(runtimeRepository(), observabilityRepository());
 
     const result = await service.getMissionObservation(mission().id);
 
     expect(result.blocked).toBe(true);
-    expect(result.currentPhase).toMatchObject({
-      agentId: 'Renato',
-      state: 'FAILED',
-      cycle: 2,
-    });
+    expect(result.currentPhase).toMatchObject({ agentId: 'Renato', state: 'FAILED', cycle: 2 });
     expect(result.latestEvent?.eventType).toBe('EXTERNAL_ACTION_FAILED');
     expect(result.blockContext).toMatchObject({
       reason: 'CI_FAILED',
