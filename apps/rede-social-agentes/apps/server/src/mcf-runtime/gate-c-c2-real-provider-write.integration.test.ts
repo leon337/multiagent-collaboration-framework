@@ -38,7 +38,8 @@ async function countProofComments(pullNumber: number, idempotencyKey: string): P
       },
     },
   );
-  if (!response.ok) throw new Error(`GitHub C2 proof read-back failed with HTTP ${response.status}`);
+  if (!response.ok)
+    throw new Error(`GitHub C2 proof read-back failed with HTTP ${response.status}`);
   const comments = (await response.json()) as Array<{ body?: string | null }>;
   return comments.filter((comment) => comment.body?.includes(marker)).length;
 }
