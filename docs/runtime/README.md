@@ -49,12 +49,17 @@ github_staging_deploy_adapter: integrated
 staging_exact_sha_health_version: pass
 staging_readiness: pass
 staging_recovery_strategy: redeploy_previous_healthy_sha
+blocked_mission_observability: integrated
+blocked_alert_atomic_state_version_recheck: pass
+runtime_006_lot_3: complete
 live_staging_adapter: disabled
 production: blocked
 social_auto_publish: false
 ```
 
 O Gate D do `MCF-RUNTIME-006` foi integrado no merge `2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a`. O workflow pós-merge `31442205251` implantou o próprio merge SHA em staging e concluiu `PASS/DEPLOYED`, verificando `/health/version` e `/health/ready` pelo contrato do deploy. O live registry continua desativado e produção continua bloqueada.
+
+A observabilidade de missões bloqueadas concluiu o Lote 3. O PR #89 integrou a capacidade inicial; um P2 tardio revelou uma corrida de snapshot e a recuperação no PR #92 passou Foundation `31453781013`, Container Smoke `31453781061`, 109 arquivos/447 testes e auditoria independente sem P0/P1/P2 ativos. O merge de recuperação `7418fff6e30f6107313a632284266caf04e8b33a` passou Documentation `31454187271` e staging `31454187273` com `PASS/DEPLOYED` no SHA exato. A persistência do alerta agora revalida `BLOCKED_RISK` e a versão da missão sob lock transacional antes do insert.
 
 A decisão `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza o fallback temporário TEAM_FIRST via GitHub Actions com `GITHUB_TOKEN` efêmero, menor privilégio, binding ao SHA, single dispatch e cleanup. Ela não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.
 
@@ -84,4 +89,4 @@ Leandro não é executor técnico do runtime. `human_operator_actions=0` permane
 
 ## Próxima etapa do RUNTIME-006
 
-O item restante do Lote 3 é **observabilidade e alertas de missão bloqueada**. Depois dele, o plano segue para a conversão das oito skills ainda documentais, testes multiagente em contextos separados, auditoria independente final e preparação da RC.
+O Lote 3 está **concluído**. A próxima etapa é `MCF-RUNTIME-006-LOT-4-SKILLS`: converter as oito skills ainda documentais em capacidades executáveis comprovadas. Depois seguem testes multiagente em contextos separados, auditoria independente final e preparação da RC.
