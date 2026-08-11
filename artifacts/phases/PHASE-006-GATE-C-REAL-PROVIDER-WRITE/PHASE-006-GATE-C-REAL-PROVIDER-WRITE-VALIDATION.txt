@@ -1,35 +1,29 @@
 PHASE-006-GATE-C-REAL-PROVIDER-WRITE
 VALIDATION SUMMARY
 
-TECHNICAL CANDIDATE
-head=10f56d5a61f4e5c2d94d99bc42971b965eea3c6a
-base_main=9c6bd49173af31b36200208c009d6952403b4d71
+TECHNICAL PR
 issue=111
 technical_pr=112
+base_main=9c6bd49173af31b36200208c009d6952403b4d71
 
-NORMAL CI
-foundation_run=31535827252
-foundation_result=PASS
-container_smoke_run=31535827335
-container_smoke_result=PASS
-
-REAL PROVIDER PROOF
-workflow_run=31535822880
+FINAL REAL PROVIDER PROOF
+proof_head=f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
+workflow_run=31537057206
 full_c1_c2_job=PASS
 isolated_c2_job=PASS
-artifact_id=9118718153
-artifact_digest=sha256:648875d2c18bf2bc974943ec9e9a5861ec6306968a0386a2df122b18e3c819a8
+artifact_id=9119190464
+artifact_digest=sha256:6122eb9398ae0c1420e9257667f42d60badc995fe928459f3672815bf5ab84c2
 artifact_stage=COMPLETE
 
 C1
-proof_pr=116
+proof_pr=117
 read_back_verified=true
 proof_pr_count=1
 compatible_replay_same_external_id=true
 duplicate_pr=false
 
 C2
-proof_comment_id=5258813162
+proof_comment_id=5258957980
 read_back_verified=true
 proof_comment_count=1
 duplicate_replay_status=FAILED
@@ -41,10 +35,35 @@ attempts=3
 evidence_validated_attempts=3
 receipts=3
 
+PERMANENT REGRESSIONS
+runtime_test_head=77395ee5e82c7d454dcc4cf5bd3156cb8395ff56
+foundation_run=31536874745
+foundation=PASS
+container_smoke_run=31536874735
+container_smoke=PASS
+postwrite_auth_loss_branch=PASS
+postwrite_auth_loss_pr=PASS
+mutation_post_retry=FORBIDDEN
+
+POST-PROOF HYGIENE
+hygiene_candidate=18f30d47daa3cfabfb0d0e93fbb735d9032cf505
+foundation_run=31537421860
+foundation=PASS
+container_smoke_run=31537421887
+container_smoke=PASS
+temporary_proof_infrastructure=REMOVED
+proof_to_hygiene_runtime_changes=NONE
+
+AUDIT
+julia_governance=PASS
+emily_independent_audit=PASS
+blocking_findings=0
+
+LEO_GATE
+decision=APPROVE_TECHNICAL_GATE_C
+state=APPROVED_AWAITING_MERGE
+
 BOUNDARY
 production=BLOCKED
 public_release=BLOCKED
 direct_main_write=FORBIDDEN
-
-AUDIT=PENDING
-LEO_GATE=PENDING

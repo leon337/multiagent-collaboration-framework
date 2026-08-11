@@ -9,7 +9,7 @@ technical_pr: 112
 risk_class: C
 objective: Close Gate C with a governed, reversible real GitHub provider write proof.
 expected_outcome: C1 and C2 real writes proven through the MCF Runtime with read-back, receipts, ledger and idempotency.
-current_state: VALIDATED_AWAITING_AUDIT
+current_state: APPROVED_AWAITING_MERGE
 decision_authority: Leo
 human_authority: Leandro
 production: BLOCKED
@@ -24,12 +24,13 @@ production: BLOCKED
 - Verify C2 duplicate replay is blocked before a second mutation.
 - Preserve canonical external-action ledger and trusted receipts.
 - Correct defects discovered by the real-provider proof.
+- Remove temporary real-write proof infrastructure before merge.
 
 ## Out of scope
 
 - Production enablement.
 - Public release.
-- Merge of the proof PR.
+- Merge of any proof PR.
 - Direct write to `main`.
 - Destructive external actions.
 - Expansion of GitHub permissions beyond the controlled proof boundary.
@@ -43,9 +44,12 @@ production: BLOCKED
 5. C2 read-back is verified.
 6. Duplicate C2 replay is rejected before a second external attempt.
 7. Ledger attempts and receipts are persisted and evidence-validated.
-8. Foundation, complete test suite, build and Container Smoke pass on the technical candidate.
-9. Production remains blocked.
-10. Independent audit and Léo gate complete before phase closeout.
+8. Successful writes followed by unprovable read-back remain `PARTIAL/UNKNOWN`.
+9. Foundation, complete test suite, build and Container Smoke pass.
+10. Temporary proof workflow/trigger/harnesses do not enter `main`.
+11. Independent audit passes with zero blocking finding.
+12. Léo approves the technical gate before merge.
+13. Production remains blocked.
 
 ## Selected agents and control roles
 
@@ -64,10 +68,12 @@ Leandro authorized a controlled, reversible real-provider write specifically to 
 
 ## Validation plan
 
-- Normal PR Foundation CI on exact candidate SHA.
-- Normal Container Smoke on exact candidate SHA.
-- Dedicated governed provider-proof workflow with bounded permissions.
+- Normal Foundation CI and Container Smoke on each promoted technical candidate.
+- Dedicated governed provider proof with bounded permissions while the proof harness exists.
 - External GitHub read-back of branch, proof PR and proof comment.
 - Artifact digest and exact attempt/receipt identifiers.
-- Independent audit of PR #112 and this PRF.
-- Léo gate after audit.
+- Regression tests for transient read-back and post-write auth loss.
+- Independent audit of permanent runtime changes.
+- Removal of temporary proof infrastructure.
+- Léo gate.
+- Technical merge followed by separate canonical documentation sync on the resulting `main`.

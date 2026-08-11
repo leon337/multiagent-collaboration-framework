@@ -5,26 +5,19 @@ SOURCE OF TRUTH
 repository=leon337/multiagent-collaboration-framework
 issue=111
 technical_pr=112
-validated_head=10f56d5a61f4e5c2d94d99bc42971b965eea3c6a
-bound_main=9c6bd49173af31b36200208c009d6952403b4d71
+base_main=9c6bd49173af31b36200208c009d6952403b4d71
 
-NORMAL CI
-foundation_run=31535827252
-foundation=SUCCESS
-foundation_scope=format+lint+typecheck+migrations_twice+tests+artifact+build
-container_smoke_run=31535827335
-container_smoke=SUCCESS
-
-DEDICATED REAL-PROVIDER WORKFLOW
-run=31535822880
-c2_existing_pr_proof=SUCCESS
+FINAL REAL PROVIDER PROOF
+proof_head=f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
+run=31537057206
 full_c1_c2_provider_proof=SUCCESS
-proof_artifact_id=9118718153
-proof_artifact_digest=sha256:648875d2c18bf2bc974943ec9e9a5861ec6306968a0386a2df122b18e3c819a8
+c2_existing_pr_proof=SUCCESS
+proof_artifact_id=9119190464
+proof_artifact_digest=sha256:6122eb9398ae0c1420e9257667f42d60badc995fe928459f3672815bf5ab84c2
 proof_artifact_stage=COMPLETE
 
 PROOF MISSION
-runtime_mission_id=75cbdb2c-c5ef-4c94-b8a6-b00731fec5ad
+runtime_mission_id=4c773aaa-9c39-4e21-9ab1-c2507968171f
 runtime_created_version=1
 runtime_c1_version=2
 runtime_c1_replay_version=3
@@ -33,26 +26,26 @@ runtime_persisted_version=4
 
 C1 ORIGINAL
 adapter_id=github-branch-pr-write-v1
-attempt_id=35e89d1b-33ff-4f4d-91e0-47a55d4c06bd
-receipt_id=8a484a68-dbac-4503-aab1-3d61fc8aa9d1
-external_id=116
-branch=mcf/gate-c-proof-10f56d5a61f4
-pull_request=116
+attempt_id=9fb65780-1d39-45f9-a997-3be5f428dc58
+receipt_id=2d07c34b-5dba-4283-97ef-e9bc906ca730
+external_id=117
+branch=mcf/gate-c-proof-f50365eae53c
+pull_request=117
 read_back_verified=true
 
 C1 COMPATIBLE REPLAY
-attempt_id=d041b1d4-df73-4be2-a24c-789ea45c2788
-receipt_id=2a196171-65b6-4f1b-9a46-79ff8656ce26
-external_id=116
+attempt_id=8e6159b1-1988-4e90-9977-fd34a74b4315
+receipt_id=c7659cb5-69bc-4f24-a26f-20577b2b7b8b
+external_id=117
 read_back_verified=true
 replay_did_not_duplicate_pull_request=true
 proof_pull_request_count=1
 
 C2 ORIGINAL
 adapter_id=github-pr-collaboration-write-v1
-attempt_id=ed0dba56-f762-4c6f-9cc6-aa37e38595fd
-receipt_id=a8bf72a8-8297-4234-9dbb-46e7c6226da0
-mutation_external_id=5258813162
+attempt_id=6b43dec4-8abd-4d01-809a-6153c49ea10a
+receipt_id=4cfec60f-641e-4408-8a04-e331f168470e
+mutation_external_id=5258957980
 read_back_verified=true
 proof_comment_count=1
 
@@ -63,32 +56,57 @@ attempt_id=null
 effect=no_second_mutation_reserved
 
 CANONICAL LEDGER
-attempt_1=35e89d1b-33ff-4f4d-91e0-47a55d4c06bd|github-branch-pr-write-v1|create-branch-pr|EVIDENCE_VALIDATED|8a484a68-dbac-4503-aab1-3d61fc8aa9d1
-attempt_2=d041b1d4-df73-4be2-a24c-789ea45c2788|github-branch-pr-write-v1|create-branch-pr|EVIDENCE_VALIDATED|2a196171-65b6-4f1b-9a46-79ff8656ce26
-attempt_3=ed0dba56-f762-4c6f-9cc6-aa37e38595fd|github-pr-collaboration-write-v1|comment-pr|EVIDENCE_VALIDATED|a8bf72a8-8297-4234-9dbb-46e7c6226da0
+attempt_1=9fb65780-1d39-45f9-a997-3be5f428dc58|github-branch-pr-write-v1|create-branch-pr|EVIDENCE_VALIDATED|2d07c34b-5dba-4283-97ef-e9bc906ca730
+attempt_2=8e6159b1-1988-4e90-9977-fd34a74b4315|github-branch-pr-write-v1|create-branch-pr|EVIDENCE_VALIDATED|c7659cb5-69bc-4f24-a26f-20577b2b7b8b
+attempt_3=6b43dec4-8abd-4d01-809a-6153c49ea10a|github-pr-collaboration-write-v1|comment-pr|EVIDENCE_VALIDATED|4cfec60f-641e-4408-8a04-e331f168470e
 receipt_count=3
 
 EXTERNAL READ-BACK
 proof_pr_creator=github-actions[bot]
-proof_pr_head=10f56d5a61f4e5c2d94d99bc42971b965eea3c6a
+proof_pr_head=f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
 proof_pr_base=9c6bd49173af31b36200208c009d6952403b4d71
 proof_comment_creator=github-actions[bot]
-proof_comment_id=5258813162
+proof_comment_id=5258957980
 proof_comment_count=1
 
-CAF DEFECT FIX PROVEN
-incident=successful branch POST followed by transient/ambiguous GET read-back
-old_behavior=PARTIAL_UNKNOWN_after_single_read_back_failure
-new_behavior=bounded_GET_only_reconciliation
+FAIL-SAFE HARDENING
+runtime_test_head=77395ee5e82c7d454dcc4cf5bd3156cb8395ff56
 mutation_retry=NEVER
-regression_branch_transient_read_back=PASS
-regression_pr_transient_read_back=PASS
+read_back_reconciliation=BOUNDED_GET_ONLY
+transient_branch_read_back=PASS
+transient_pr_read_back=PASS
+postwrite_branch_auth_loss=PARTIAL_UNKNOWN
+postwrite_pr_auth_loss=PARTIAL_UNKNOWN
 unknown_when_unprovable=PRESERVED
+foundation_run=31536874745
+foundation=SUCCESS
+container_smoke_run=31536874735
+container_smoke=SUCCESS
 
-GITHUB ACTION_REQUIRED CONTEXT
-runs=31535899175,31535899214
-reason=checks triggered by bot-created proof PR #116 require contributor approval
-classification=NOT_A_FAILED_TECHNICAL_CHECK_ON_PR_112
+POST-PROOF HYGIENE
+candidate=18f30d47daa3cfabfb0d0e93fbb735d9032cf505
+foundation_run=31537421860
+foundation=SUCCESS
+container_smoke_run=31537421887
+container_smoke=SUCCESS
+proof_to_hygiene_ahead_by=4
+proof_to_hygiene_changed_files=4
+proof_to_hygiene_changes=REMOVALS_ONLY
+removed_1=.github/mcf-gate-c-proof-trigger
+removed_2=.github/workflows/mcf-gate-c-real-provider-write.yml
+removed_3=apps/rede-social-agentes/apps/server/src/mcf-runtime/gate-c-c2-real-provider-write.integration.test.ts
+removed_4=apps/rede-social-agentes/apps/server/src/mcf-runtime/gate-c-real-provider-write.integration.test.ts
+permanent_runtime_change_after_proof=false
+
+AUDIT
+julia_governance=PASS
+emily_independent_audit=PASS
+blocking_findings=0
+
+LEO_GATE
+decision=APPROVE_TECHNICAL_GATE_C
+next_state=APPROVED_AWAITING_MERGE
+return_to=Mestre
 
 SECURITY BOUNDARY
 production=BLOCKED
@@ -96,6 +114,3 @@ public_release=BLOCKED
 proof_pr_merge=NOT_AUTHORIZED
 direct_main_write=FORBIDDEN
 credentials=NOT_RECORDED
-
-AUDIT=PENDING
-LEO_GATE=PENDING

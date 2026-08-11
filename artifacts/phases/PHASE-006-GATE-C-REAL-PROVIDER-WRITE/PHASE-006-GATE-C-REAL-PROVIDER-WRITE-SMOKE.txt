@@ -1,16 +1,27 @@
 PHASE-006-GATE-C-REAL-PROVIDER-WRITE
 SMOKE
 
-normal_container_smoke_run=31535827335
-result=PASS
-validated_head=10f56d5a61f4e5c2d94d99bc42971b965eea3c6a
-
-real_provider_smoke_run=31535822880
+REAL PROVIDER
+proof_run=31537057206
+proof_head=f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
 full_c1_c2_provider_proof=PASS
-external_provider=GitHub
-proof_pr=116
-proof_comment_id=5258813162
+proof_pr=117
+proof_comment_id=5258957980
 read_back=PASS
 idempotency=PASS
+
+PERMANENT RUNTIME
+head=77395ee5e82c7d454dcc4cf5bd3156cb8395ff56
+foundation_run=31536874745
+foundation=PASS
+container_smoke_run=31536874735
+container_smoke=PASS
+
+POST-PROOF HYGIENE
+head=18f30d47daa3cfabfb0d0e93fbb735d9032cf505
+foundation_run=31537421860
+foundation=PASS
+container_smoke_run=31537421887
+container_smoke=PASS
 
 production=BLOCKED

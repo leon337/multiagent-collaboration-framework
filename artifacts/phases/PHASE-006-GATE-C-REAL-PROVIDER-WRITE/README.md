@@ -22,11 +22,16 @@ real_provider_c2: PASS
 read_back: PASS
 idempotency: PASS
 ledger_and_receipts: PASS
+postwrite_unknown_fail_safe: PASS
+temporary_proof_infrastructure: REMOVED
 foundation: PASS
 container_smoke: PASS
-independent_audit: PENDING
-leo_gate: PENDING
+julia_governance: PASS
+emily_independent_audit: PASS
+blocking_findings: 0
+leo_gate: APPROVE_TECHNICAL_GATE_C
+state: APPROVED_AWAITING_MERGE
 production: BLOCKED
 ```
 
-The phase is not yet marked `ENTREGUE`; independent audit and Léo gate remain mandatory under Protocol 1.1.
+Gate C is not yet marked `ENTREGUE` in the canonical repository state. PR #112 must first be integrated, followed by a documentation-only canonical sync bound to the resulting `main` SHA.
