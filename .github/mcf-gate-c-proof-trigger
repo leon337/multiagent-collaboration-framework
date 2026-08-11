@@ -1,0 +1,5 @@
+mission: MCF-RUNTIME-006-GATE-C-REAL-PROVIDER-WRITE
+issue: 111
+cycle: 2
+reason: CAF_AFTER_PARTIAL_C1_WRITE
+production: BLOCKED
