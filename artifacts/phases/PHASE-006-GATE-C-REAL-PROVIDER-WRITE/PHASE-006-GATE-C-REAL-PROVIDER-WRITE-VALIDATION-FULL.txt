@@ -105,7 +105,7 @@ blocking_findings=0
 
 LEO_GATE
 decision=APPROVE_TECHNICAL_GATE_C
-next_state=APPROVED_AWAITING_MERGE
+next_state=ENTREGUE
 return_to=Mestre
 
 SECURITY BOUNDARY
@@ -114,3 +114,24 @@ public_release=BLOCKED
 proof_pr_merge=NOT_AUTHORIZED
 direct_main_write=FORBIDDEN
 credentials=NOT_RECORDED
+
+CANONICAL_CLOSEOUT
+canonical_pr=118
+canonical_candidate=9ba3bee76ca6572848b3d95a71d109f4be10ff31
+canonical_documentation_run=31539053960
+canonical_documentation=PASS
+canonical_merge=3feff116a3bf66427cfdfcb10894c0f76f79ee11
+canonical_post_merge_documentation_run=31539238013
+canonical_post_merge_documentation=PASS
+closeout_pr=119
+closeout_merge=303a4385aed51c531993613ca9d664d1599f538e
+closeout_post_merge_documentation_run=31540925137
+closeout_post_merge_documentation=PASS
+gate_c=COMPLETE
+mission_state=ENTREGUE
+objective_met=true
+blocking_findings=0
+pending_actions=0
+human_action_required=false
+next_boundary=RELEASE_CANDIDATE_GATE_E
+production=BLOCKED
