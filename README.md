@@ -55,13 +55,17 @@ skills_registradas: 16
 skills_executaveis:
   - MCF-START-MISSION
   - MCF-SELECT-AGENTS
+  - MCF-RECOVER-CONTEXT
+  - MCF-DEFINE-PRODUCT
+  - MCF-DESIGN-EXPERIENCE
+  - MCF-DESIGN-ARCHITECTURE
   - MCF-IMPLEMENT-CHANGE
   - MCF-REVIEW-CODE
   - MCF-RUN-TESTS
   - MCF-GIT-PR-RELEASE
   - MCF-DEPLOY-VALIDATE
   - MCF-TRACE-MISSION
-skills_ainda_documentais: 8
+skills_ainda_documentais: 4
 chat_to_runtime_bridge: true
 endpoint_de_dispatch: POST_/v1/mcf/chat/dispatch
 bloco_interno_inicial: causal_e_persistido
@@ -91,13 +95,17 @@ runtime_006_gate_d_merge: 2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a
 runtime_006_observability: integrado
 runtime_006_observability_recovery_merge: 7418fff6e30f6107313a632284266caf04e8b33a
 runtime_006_lote_3: concluido
+runtime_006_lote_4a: integrado
+runtime_006_lote_4a_merge: 67d20e24fd136f6334bfd835cb775426f6514403
+runtime_006_lote_4a_executable_skills: 12
+runtime_006_lote_4a_documental_skills: 4
 staging_post_merge: PASS_DEPLOYED
 live_staging_adapter: disabled
 production: blocked
 publicacao_social_automatica: false
 ```
 
-O bridge executa somente o bloco interno consecutivo no início do plano. GitHub, CI, Render, Vercel ou Cloudflare continuam exigindo recibos reais. Uma skill interna posicionada depois de uma fase externa permanece planejada até que o fluxo chegue a ela.
+O bridge executa automaticamente somente o bloco de bootstrap interno consecutivo no início do plano. As skills de domínio do Lot 4-A usam `READY_AGENT`: permanecem aguardando o agente owner, exigem `execution_evidence` semântica e não podem ter sua saída fabricada pelo bridge. GitHub, CI, Render, Vercel ou Cloudflare continuam exigindo recibos reais.
 
 A missão só é encerrada por `MCF-TRACE-MISSION` com `final_checkpoint=true` quando o ledger comprova `PHASE_COMPLETED` para todas as skills selecionadas. CI verde conclui a fase de testes, não a missão inteira.
 
@@ -183,7 +191,7 @@ active_p1: 0
 active_p2: 0
 ```
 
-Com isso, o **Lote 3 está concluído**. O próximo boundary é `MCF-RUNTIME-006-LOT-4-SKILLS`, começando pela conversão das oito skills ainda documentais. O Gate C continua parcial porque a escrita real C1/C2 pelo provider GitHub permanece separadamente não autorizada. Produção e live staging adapter continuam bloqueados.
+Com isso, o **Lote 3 está concluído** e o **Lot 4-A também está integrado**. O PR `#95` promoveu `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE` e `MCF-DESIGN-ARCHITECTURE` para execução governada; o candidato `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` passou Foundation `31461319193`, Container Smoke `31461319181`, 112 arquivos/459 testes e auditoria independente sem P0/P1/P2, sendo integrado por squash em `67d20e24fd136f6334bfd835cb775426f6514403`. O runtime passa a **12 skills executáveis e 4 documentais**. O próximo boundary é `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`. O Gate C continua parcial porque a escrita real C1/C2 pelo provider GitHub permanece separadamente não autorizada. Produção e live staging adapter continuam bloqueados.
 
 A `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza um fallback temporário TEAM_FIRST via GitHub Actions: `GITHUB_TOKEN` efêmero, menor privilégio, branch/ref isolado, binding ao SHA, guard contra duplicidade, single dispatch, correlação e cleanup. A decisão não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.
 

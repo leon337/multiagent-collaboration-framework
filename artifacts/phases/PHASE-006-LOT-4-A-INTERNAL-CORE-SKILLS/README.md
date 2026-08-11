@@ -1,28 +1,23 @@
 # PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS
 
-PRF de Classe C para o primeiro incremento de conversão das skills documentais do MCF Runtime.
+PRF Classe C do primeiro incremento de cobertura total das skills documentais do MCF Runtime.
 
 ## Estado
-`CANDIDATE_READY_FOR_EXACT_HEAD_VALIDATION`
+`TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE`
 
-Este diretório é pré-gate. A presença destes artefatos não significa PASS, aprovação de Léo, merge ou conclusão da fase.
+## Resultado técnico
+O PR #95 foi integrado por squash após Foundation/Smoke no HEAD exato, revisões especialistas, auditoria independente e gate de Léo. O candidato `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` e o merge `67d20e24fd136f6334bfd835cb775426f6514403` compartilham a tree `def5edf77be8bdc32939d2b4bd5b1fcbcca649ec`.
 
-## Escopo
-- `MCF-RECOVER-CONTEXT`
-- `MCF-DEFINE-PRODUCT`
-- `MCF-DESIGN-EXPERIENCE`
-- `MCF-DESIGN-ARCHITECTURE`
+## Capacidades
+- `MCF-RECOVER-CONTEXT`;
+- `MCF-DEFINE-PRODUCT`;
+- `MCF-DESIGN-EXPERIENCE`;
+- `MCF-DESIGN-ARCHITECTURE`.
 
-## Artefatos
-1. `PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS-PLAN.md`
-2. `PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS-DECISIONS.md`
-3. `PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS-REPORT.md`
-4. `PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS-CHECKPOINT.yaml`
-5. `PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS-VALIDATION.txt`
-6. `PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS-VALIDATION-FULL.txt`
-7. `PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS-SMOKE.txt`
-8. `PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS-ARTIFACT-MANIFEST.sha256`
-9. `README.md`
+Resultado: 12 skills executáveis / 4 documentais.
 
-## Regra de fechamento
-O SHA exato que contém este PRF deve passar Foundation e Container Smoke. Depois disso, o mesmo candidato passa por revisão técnica, auditoria independente e gate de Léo. O merge permanece proibido antes dessa sequência.
+## Próximo boundary
+`MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`.
+
+## Limites
+Gate C permanece parcial; produção BLOCKED; live staging adapter DISABLED; `human_operator_actions=0`; HUMAN_GATE de LEANDRO não requerido.

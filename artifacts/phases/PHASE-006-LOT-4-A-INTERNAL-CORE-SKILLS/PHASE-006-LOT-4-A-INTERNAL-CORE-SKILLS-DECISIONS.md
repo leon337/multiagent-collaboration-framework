@@ -1,31 +1,37 @@
 # PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS — Decisões
 
 ## D1 — Decompor o Lote 4
-O Lote 4 foi dividido em incrementos menores. O Lot 4-A contém apenas quatro skills internas de núcleo, reduzindo blast radius e permitindo evidência específica por capacidade.
+O Lote 4 permanece dividido por risco. Lot 4-A cobre somente quatro skills internas de núcleo.
 
-## D2 — Introduzir `READY_AGENT`
-`READY_AGENT` representa trabalho que deve ser executado pelo agente responsável dentro do runtime governado. Ele não é bootstrap automático e não é ação externa.
+## D2 — `READY_AGENT`
+Trabalho de domínio interno não é bootstrap automático: depende do agente owner e de evidência real.
 
-## D3 — Recibo assinado não basta
-Uma assinatura interna prova integridade do recibo, mas não prova que produto, arquitetura, UX ou contexto foram realmente produzidos. Por isso o runtime exige `execution_evidence` semântica e a revalida antes do sucesso.
+## D3 — Evidência semântica obrigatória
+Recibo assinado sozinho não prova contexto, produto, experiência ou arquitetura. A execução exige `execution_evidence` específica e revalidação do recibo.
 
-## D4 — Canonizar o provider interno
-O caminho de execução, a política de permissão e a validação do recibo usam a mesma canonicalização de provider para impedir divergência entre autorização e despacho.
+## D4 — Provider interno canonizado
+Autorização, despacho e verificação usam a mesma canonicalização.
 
-## D5 — Rejeitar placeholders semânticos
-Arrays obrigatórios devem conter itens com conteúdo real. Valores como string vazia, `null`, arrays aninhados ou objetos vazios não satisfazem evidência obrigatória.
+## D5 — Placeholders não contam como evidência
+Arrays obrigatórios rejeitam strings vazias, `null`, arrays aninhados e objetos vazios.
 
-## D6 — Registry continua declarativo
-`skills/registry.yaml` continua definindo contrato, owner, entradas, ferramentas, permissão, evidência, fallback e handoff. A executabilidade é limitada pelo contrato tipado, `SkillExecutor`, permissões e validação de evidência; não foi criado campo `executable` artificial no registry.
+## D6 — Registry único e declarativo
+`skills/registry.yaml` continua sendo o único catálogo; a executabilidade é limitada por contrato tipado, executor, permissões e validação.
 
-## D7 — Persistência é parte do aceite
-Foi adicionado teste integrado do `MissionRuntime` para provar que execução validada, recibo, eventos, handoff e incremento de versão atravessam a fronteira de persistência.
+## D7 — Persistência faz parte do aceite
+O teste integrado prova recibo, validação, handoff, eventos e versão 1→2 pelo `MissionRuntime`.
 
-## D8 — `MCF-CLOSE-PHASE` fica para Lot 4-E
-O conflito documental `handoff_to: Leandro` é incompatível com o HDF e será reconciliado no incremento dedicado. Nenhum bypass foi introduzido nesta fase.
+## D8 — Resolver CWD real do servidor
+`SkillRegistryLoader` passou a alcançar o registry raiz a partir de `apps/rede-social-agentes/apps/server` sem duplicar o catálogo.
 
-## D9 — Sem ampliação de efeitos externos
-Produção permanece bloqueada, o live staging adapter permanece desabilitado e nenhuma nova escrita externa foi autorizada pelo Lot 4-A.
+## D9 — `MCF-CLOSE-PHASE` reservado ao Lot 4-E
+O conflito `handoff_to: Leandro` continua explícito e não recebeu bypass.
 
-## D10 — Resolver o registry a partir do CWD real do servidor
-A validação integrada mostrou que `SkillRegistryLoader` não alcançava o registry raiz quando o pacote server executava com CWD em `apps/rede-social-agentes/apps/server`. Foi adicionado o candidato `../../../../skills/registry.yaml`, preservando `MCF_SKILL_REGISTRY_PATH` como precedência configurável e mantendo um único registry canônico.
+## D10 — Gate preso ao HEAD
+Foundation, Smoke, reviews, auditoria e Léo foram vinculados a `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668`.
+
+## D11 — Squash preservou a tree validada
+O merge `67d20e24fd136f6334bfd835cb775426f6514403` e o candidato compartilham a tree `def5edf77be8bdc32939d2b4bd5b1fcbcca649ec`.
+
+## D12 — Próximo boundary
+`MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`. Produção continua bloqueada e Gate C segue parcial.

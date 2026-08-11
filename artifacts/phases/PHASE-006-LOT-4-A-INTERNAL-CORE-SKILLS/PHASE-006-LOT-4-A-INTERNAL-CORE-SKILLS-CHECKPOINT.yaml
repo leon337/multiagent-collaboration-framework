@@ -1,42 +1,46 @@
 mission: MCF-RUNTIME-006-LOT-4-SKILLS
 phase: PHASE-006-LOT-4-A-INTERNAL-CORE-SKILLS
+state: TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE
+risk_class: C
 issue: 94
 pull_request: 95
-risk_class: C
-state: CANDIDATE_READY_FOR_EXACT_HEAD_VALIDATION
-base_main: 8a6d0673afdb4892983cb03d52d3d176b23252f9
-implementation_head_before_prf: 404f0bc294f5a0f92c5847e443d58491fb4b1af5
-implementation:
-  recover_context: CANDIDATE_EXECUTABLE
-  define_product: CANDIDATE_EXECUTABLE
-  design_experience: CANDIDATE_EXECUTABLE
-  design_architecture: CANDIDATE_EXECUTABLE
-  ready_agent: IMPLEMENTED
-  bridge_fabricates_domain_evidence: false
-  registry_resolution_from_server_cwd: IMPLEMENTED
-evidence:
-  semantic_validation: IMPLEMENTED
-  invalid_to_recovering: IMPLEMENTED
-  provider_canonicalization: IMPLEMENTED
-  placeholder_array_rejection: IMPLEMENTED
-persistence:
-  mission_runtime_integration_test: ADDED
-  expected_version_progression: 1_TO_2
-  receipt_event_handoff_timeline_assertions: ADDED
-validation_history:
-  superseded_foundation_run: 31460923993
-  superseded_head: 47a627011e85c0933104a932930dc7e3fe4fd841
-  superseded_result: FAIL_REGISTRY_PATH_DISCOVERY
-governance:
-  technical_review: PENDING
-  independent_audit: PENDING
-  technical_leo_gate: PENDING
-  merge_authorized: false
-  human_gate_leandro: NOT_REQUIRED
-  human_operator_actions: 0
-external_effects:
+base_sha: 8a6d0673afdb4892983cb03d52d3d176b23252f9
+validated_head: e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668
+merge_commit: 67d20e24fd136f6334bfd835cb775426f6514403
+candidate_tree: def5edf77be8bdc32939d2b4bd5b1fcbcca649ec
+merge_tree: def5edf77be8bdc32939d2b4bd5b1fcbcca649ec
+validation:
+  foundation_run: 31461319193
+  foundation: PASS
+  container_smoke_run: 31461319181
+  container_smoke: PASS
+  server_test_files: 112
+  server_tests: 459
+  ops_tests: 20
+  web_tests: 5
+  vitest_artifact: 9089891091
+  artifact_digest: sha256:84dd346386005a300614558406d20cf6e6bda4943dc95f6e2d4a5e371e4ac375
+  manifest_audit_run: 31461581567
+  manifest_audit: PASS
+review:
+  sofia: PASS
+  renato: PASS
+  julia: PASS
+  emily_independent_audit: PASS
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
+gate:
+  leo_technical_gate: PASS
+  merge_authorized_for_exact_head: true
+result:
+  skills_registered: 16
+  skills_executable: 12
+  skills_documental: 4
   production: BLOCKED
   live_staging_adapter: DISABLED
-  destructive_action: false
-  new_credentials: false
-next_action: RUN_EXACT_HEAD_CI_THEN_REVIEW_AUDIT_LEO_GATE
+  human_operator_actions: 0
+  human_gate_leandro: NOT_REQUIRED
+canonical_sync: COMPLETE_ON_BRANCH
+doc_sync_gate: PENDING
+next_boundary: MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS
