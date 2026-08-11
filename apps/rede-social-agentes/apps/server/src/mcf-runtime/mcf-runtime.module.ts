@@ -80,7 +80,8 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     },
     {
       provide: GitHubPullCollaborationAdapter,
-      useFactory: (evidence: EvidenceValidator) => new GitHubPullCollaborationAdapter(evidence),
+      useFactory: (evidence: EvidenceValidator) =>
+        new GitHubPullCollaborationAdapter(evidence),
       inject: [EvidenceValidator],
     },
     {
