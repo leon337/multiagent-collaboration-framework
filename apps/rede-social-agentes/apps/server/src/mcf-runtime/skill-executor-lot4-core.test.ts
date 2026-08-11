@@ -248,6 +248,51 @@ describe('SkillExecutor Lot 4 core internal skills', () => {
     ).rejects.toThrow(/governed internal provider/u);
   });
 
+  it('normalizes the governed internal provider before selecting the internal execution path', async () => {
+    const result = await createExecutor().execute({
+      skillId: 'MCF-DEFINE-PRODUCT',
+      agentId: 'Leonardo',
+      inputs: {
+        idea_or_problem: 'Normalize the governed provider boundary.',
+        execution_evidence: {
+          problem_statement: 'Provider normalization must not change the governed execution path.',
+          requirements: ['Keep internal execution governed'],
+          acceptance_criteria: ['Canonical internal provider completes with validated evidence'],
+        },
+      },
+      tool: { provider: ' Internal ', operation: 'plan-product', resource: 'mcf-agent-runtime' },
+    });
+
+    expect(result).toMatchObject({
+      evidenceStatus: 'VALID',
+      phaseState: 'COMPLETED',
+      handoffTo: 'Sofia',
+    });
+  });
+
+  it('rejects non-semantic array items instead of accepting placeholder evidence', async () => {
+    const result = await createExecutor().execute({
+      skillId: 'MCF-DEFINE-PRODUCT',
+      agentId: 'Leonardo',
+      inputs: {
+        idea_or_problem: 'Reject placeholder evidence.',
+        execution_evidence: {
+          problem_statement: 'Array evidence must contain meaningful items.',
+          requirements: [''],
+          acceptance_criteria: ['Criterion'],
+        },
+      },
+      tool: { provider: 'internal', operation: 'plan-product', resource: 'mcf-agent-runtime' },
+    });
+
+    expect(result).toMatchObject({
+      evidenceStatus: 'INVALID',
+      phaseState: 'RECOVERING',
+      handoffTo: null,
+    });
+    expect(result.rejectionReason).toMatch(/requirements/u);
+  });
+
   it('preserves owner-agent permission enforcement', async () => {
     await expect(
       createExecutor().execute({

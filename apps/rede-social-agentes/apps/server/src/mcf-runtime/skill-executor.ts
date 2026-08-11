@@ -178,7 +178,10 @@ export class SkillExecutor {
       throw new McfSkillInputError(skill.skillId, missingInputs);
     }
 
-    if (input.tool.provider === 'internal' && !internalSkills.has(skill.skillId)) {
+    if (
+      canonicalizeProvider(input.tool.provider) === 'internal' &&
+      !internalSkills.has(skill.skillId)
+    ) {
       throw new McfPermissionDeniedError(
         'internal execution is restricted to planning and observability skills',
       );
@@ -195,7 +198,7 @@ export class SkillExecutor {
     this.permissions.assertAllowed(skill, input.agentId, input.tool, input.inputs);
     const handoffTo = resolveHandoff(skill, input.inputs);
 
-    if (input.tool.provider === 'internal') {
+    if (canonicalizeProvider(input.tool.provider) === 'internal') {
       let executionEvidence: Record<string, unknown> | null;
       try {
         executionEvidence = collectInternalExecutionEvidence(skill, input.inputs);

@@ -1,6 +1,7 @@
 import type { McfSkillDefinition, McfToolReceipt } from '@rsa/contracts';
 
 import { McfEvidenceRejectedError } from './mcf-runtime.errors.js';
+import { canonicalizeProvider } from './permission-engine.js';
 
 const governedInternalSkillIds = new Set([
   'MCF-RECOVER-CONTEXT',
@@ -28,6 +29,14 @@ function requireString(record: Record<string, unknown>, key: string, message: st
   return value.trim();
 }
 
+function isMeaningfulEvidenceItem(value: unknown): boolean {
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    return Object.keys(value as Record<string, unknown>).length > 0;
+  }
+  return false;
+}
+
 function requireArray(
   record: Record<string, unknown>,
   key: string,
@@ -35,7 +44,11 @@ function requireArray(
   options: { allowEmpty?: boolean } = {},
 ): unknown[] {
   const value = record[key];
-  if (!Array.isArray(value) || (!options.allowEmpty && value.length === 0)) {
+  if (
+    !Array.isArray(value) ||
+    (!options.allowEmpty && value.length === 0) ||
+    value.some((item) => !isMeaningfulEvidenceItem(item))
+  ) {
     return reject(message);
   }
   return value;
@@ -163,7 +176,7 @@ export function verifyInternalExecutionReceipt(
   skill: McfSkillDefinition,
 ): void {
   if (!isGovernedAgentInternalSkill(skill.skillId)) return;
-  if (receipt.provider !== 'internal') {
+  if (canonicalizeProvider(receipt.provider) !== 'internal') {
     reject(`${skill.skillId} Lot 4A execution requires the governed internal provider`);
   }
   const evidence = asRecord(
