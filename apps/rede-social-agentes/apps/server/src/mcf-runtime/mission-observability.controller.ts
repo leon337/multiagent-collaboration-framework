@@ -5,7 +5,7 @@ import type {
   McfMissionObservationResponse,
 } from '@rsa/contracts';
 
-import { SessionAuthGuard } from '../auth/session-auth.guard.js';
+import { SessionAuthGuard } from '../identity/session-auth.guard.js';
 import { MissionObservabilityService } from './mission-observability.service.js';
 
 @Controller('mcf/observability')
