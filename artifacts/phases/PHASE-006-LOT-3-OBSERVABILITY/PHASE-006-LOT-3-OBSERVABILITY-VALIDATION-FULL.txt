@@ -1,0 +1,30 @@
+PHASE-006-LOT-3-OBSERVABILITY FULL VALIDATION
+
+State: PENDING_FINAL_HEAD
+
+Required final evidence:
+- exact closeout HEAD
+- Documentation validation run/result
+- Container Smoke run/result
+- Rede Social Foundation run/result
+- unit tests for MissionObservabilityService
+- persistence/idempotency tests for MissionObservabilityRepository
+- exact changed-file review
+- independent Emily audit
+- active P0/P1/P2 counts
+- Léo integration decision
+
+Invariant checks:
+- canonical blocked state = BLOCKED_RISK
+- state source = mcf_missions
+- phase source = mcf_phases
+- event/alert source = mcf_events
+- duplicate alerts suppressed by existing idempotency unique key
+- no notification transport introduced
+- no database migration introduced
+- no new credential introduced
+- production remains BLOCKED
+- live staging adapter remains DISABLED
+- human_operator_actions remains 0
+
+No PASS is claimed in this file until evidence is observed on the exact closeout HEAD.
