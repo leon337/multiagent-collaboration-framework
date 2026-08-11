@@ -255,7 +255,8 @@ export type McfExecutableSkillId =
   | 'MCF-DEPLOY-VALIDATE'
   | 'MCF-TRACE-MISSION'
   | 'MCF-EVALUATE-AGENTS'
-  | 'MCF-SECURITY-REVIEW';
+  | 'MCF-SECURITY-REVIEW'
+  | 'MCF-DEBUG-INCIDENT';
 
 export type McfExecutableToolProvider =
   'internal' | 'github' | 'github-actions' | 'render' | 'vercel' | 'cloudflare';
