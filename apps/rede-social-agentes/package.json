@@ -14,7 +14,7 @@
     "dev:web": "pnpm --filter @rsa/web dev",
     "dev:worker": "pnpm --filter @rsa/worker dev",
     "format": "prettier --write .",
-    "format:check": "prettier --write . && git diff -- apps/server/src/mcf-runtime/internal-skill-evidence.ts apps/server/src/mcf-runtime/mission-runtime-lot4-debug-incident.integration.test.ts apps/server/src/mcf-runtime/skill-executor-lot4-debug-incident.test.ts packages/contracts/src/mcf-runtime.ts && exit 1",
+    "format:check": "prettier --check .",
     "lint": "eslint .",
     "ops:backup": "node ops/backup-database.mjs",
     "ops:restore": "node ops/restore-database.mjs",
