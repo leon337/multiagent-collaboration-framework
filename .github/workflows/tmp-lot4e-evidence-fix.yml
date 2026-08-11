@@ -1,0 +1,51 @@
+name: TEMP Lot 4E evidence fix
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-lot4-e-close-phase
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply targeted closeout evidence correction
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          p = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/internal-skill-evidence.ts')
+          text = p.read_text()
+          old = """function requireCloseString(record: Record<string, unknown>, key: string, message: string): string {\n  const value = record[key];\n  if (!isMeaningfulDebugString(value)) return reject(message);\n  return value.trim();\n}\n"""
+          new = """function requireCloseString(record: Record<string, unknown>, key: string, message: string): string {\n  const value = record[key];\n  if (typeof value !== 'string' || value.trim().length === 0) return reject(message);\n  const normalized = value.trim().toLowerCase();\n  const allowedControlValue =\n    (key === 'verdict' && ['pass', 'passed'].includes(normalized)) ||\n    (key === 'next_action' && normalized === 'none');\n  if (debugEvidencePlaceholders.has(normalized) && !allowedControlValue) return reject(message);\n  return value.trim();\n}\n"""
+          if text.count(old) != 1:
+              raise SystemExit('target requireCloseString block not found exactly once')
+          p.write_text(text.replace(old, new, 1))
+          PY
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Format targeted file
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec prettier --write apps/server/src/mcf-runtime/internal-skill-evidence.ts
+      - name: Commit correction
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/rede-social-agentes/apps/server/src/mcf-runtime/internal-skill-evidence.ts
+          git diff --cached --check
+          git commit -m 'fix(runtime): accept canonical closeout control values'
+          git push origin HEAD:${GITHUB_REF_NAME}
