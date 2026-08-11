@@ -16,9 +16,11 @@ describe('Gate D provider boundary', () => {
     const source = await readFile(modulePath, 'utf8');
 
     expect(source).toContain('provide: GitHubActionsStagingDeployAdapter');
-    expect(source).toContain('new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr])');
+    expect(source).toContain(
+      'new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration])',
+    );
     expect(source).not.toContain(
-      'new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubStagingDeploy])',
+      'new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration, githubStagingDeploy])',
     );
     expect(source).not.toContain('github-actions-staging-deploy-v1');
   });
