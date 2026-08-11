@@ -1,6 +1,6 @@
 # PHASE-006-LOT-3-OBSERVABILITY
 
-PRF da missão `MCF-RUNTIME-006-LOT-3-OBSERVABILITY` (issue #88 / PR #89).
+PRF da missão `MCF-RUNTIME-006-LOT-3-OBSERVABILITY` (issue #88, PR original #89 e recuperação pós-merge #92).
 
 ## Artefatos
 
@@ -12,6 +12,10 @@ PRF da missão `MCF-RUNTIME-006-LOT-3-OBSERVABILITY` (issue #88 / PR #89).
 - `PHASE-006-LOT-3-OBSERVABILITY-CHECKPOINT.yaml`
 - `PHASE-006-LOT-3-OBSERVABILITY-DECISIONS.md`
 - `PHASE-006-LOT-3-OBSERVABILITY-ARTIFACT-MANIFEST.sha256`
+
+## Recuperação registrada
+
+Um P2 assíncrono chegou após o merge do PR #89 e demonstrou risco de persistir alerta baseado em snapshot obsoleto. A issue #88 foi reaberta e o PR #92 adiciona rechecagem atômica de estado+versão e regressão PostgreSQL.
 
 ## Limites
 

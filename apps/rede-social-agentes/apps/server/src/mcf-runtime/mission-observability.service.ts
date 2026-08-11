@@ -14,13 +14,15 @@ import { randomUUID } from 'node:crypto';
 import { McfMissionNotFoundError } from './mcf-runtime.errors.js';
 import {
   MCF_RUNTIME_REPOSITORY,
-  type McfEventInput,
   type McfEventRecord,
   type McfMissionRecord,
   type McfPhaseRecord,
   type McfRuntimeRepository,
 } from './mcf-runtime.repository.js';
-import type { MissionObservabilityRepository } from './mission-observability.repository.js';
+import type {
+  BlockedAlertCandidate,
+  MissionObservabilityRepository,
+} from './mission-observability.repository.js';
 
 const blockingEventTypes = new Set<McfEventType>([
   'MISSION_STATE_CHANGED',
@@ -156,32 +158,35 @@ export class MissionObservabilityService {
 
   async reconcileBlockedAlerts(): Promise<McfBlockedAlertReconcileResponse> {
     const missions = await this.observabilityRepository.listMissionsByStates(['BLOCKED_RISK']);
-    const events: McfEventInput[] = [];
+    const candidates: BlockedAlertCandidate[] = [];
 
     for (const mission of missions) {
       const timeline = await this.runtimeRepository.listEvents(mission.id);
       const context = deriveBlockContext(timeline);
-      events.push({
-        id: randomUUID(),
-        missionId: mission.id,
-        phaseId: mission.currentPhaseId,
-        agentId: mission.currentAgentId,
-        eventType: 'MISSION_BLOCKED_ALERT_RAISED',
-        payload: {
-          missionState: mission.state,
-          missionVersion: mission.version,
-          reason: context.reason,
-          sourceEventType: context.eventType,
-          sourceEventId: context.eventId,
-          externalNotification: false,
-          humanActionRequired: false,
+      candidates.push({
+        expectedMissionVersion: mission.version,
+        event: {
+          id: randomUUID(),
+          missionId: mission.id,
+          phaseId: mission.currentPhaseId,
+          agentId: mission.currentAgentId,
+          eventType: 'MISSION_BLOCKED_ALERT_RAISED',
+          payload: {
+            missionState: mission.state,
+            missionVersion: mission.version,
+            reason: context.reason,
+            sourceEventType: context.eventType,
+            sourceEventId: context.eventId,
+            externalNotification: false,
+            humanActionRequired: false,
+          },
+          idempotencyKey: `mission:${mission.id}:blocked-alert:v${mission.version}`,
+          occurredAt: new Date(),
         },
-        idempotencyKey: `mission:${mission.id}:blocked-alert:v${mission.version}`,
-        occurredAt: new Date(),
       });
     }
 
-    const result = await this.observabilityRepository.appendEventsIdempotently(events);
+    const result = await this.observabilityRepository.appendBlockedAlertsAtomically(candidates);
     return {
       blockedMissionsObserved: missions.length,
       alertsInserted: result.inserted,

@@ -1,50 +1,50 @@
-PHASE-006-LOT-3-OBSERVABILITY FULL VALIDATION
-
-State: TECHNICAL_CANDIDATE_VALIDATED_CLOSEOUT_HEAD_PENDING
-
-Technical candidate:
-- head: d08ce837b01daccb7ab708c26ca5c5f4186080df
-- initial base: 807637a75115b067359b5282f888cee2e6b05683
-- PR integration ref tested by GitHub Actions: 043afba81ddab295b3063ab83fbd469f5e711e79
-- Documentation validation: run 31448933446 PASS
-- Container Smoke: run 31448933434 PASS
-- Rede Social Foundation: run 31448933496 PASS
-- format: PASS
-- lint: PASS
-- typecheck: PASS
-- migrations executed twice: PASS
-- full test suite: PASS
-- build: PASS
-- server test files: 109 passed
-- server tests: 444 passed
-- vitest artifact id: 9085601719
-- vitest artifact digest: sha256:b9307a79440187b5b16767375fb2ed2f2abf30a5e7e8d830a23394421cfc6b3b
-
-Observability-specific proof inside the Foundation run:
-- MissionObservabilityService: 5 tests PASS
-- MissionObservabilityRepository: 3 tests PASS
-- PostgreSQL persistence/idempotency integration: 1 test PASS
-- canonical BLOCKED_RISK query: PASS
-- current phase/agent visibility: PASS
-- latest event visibility: PASS
-- concrete block context without fabricated cause: PASS
-- duplicate alert suppression by idempotency key: PASS
-- persisted alert cardinality after duplicate reconciliation: exactly 1
-
-Invariant checks:
-- canonical blocked state = BLOCKED_RISK: PASS
-- state source = mcf_missions: PASS
-- phase source = mcf_phases: PASS
-- event/alert source = mcf_events: PASS
-- no parallel alert table: PASS
-- no database migration introduced: PASS
-- no notification transport introduced: PASS
-- no new credential introduced: PASS
-- externalNotification=false: PASS
-- humanActionRequired=false: PASS
-- production remains BLOCKED: PASS
-- live staging adapter remains DISABLED: PASS
-- human_operator_actions remains 0: PASS
-
-Evidence boundary:
-The technical-candidate evidence above is bound to d08ce837b01daccb7ab708c26ca5c5f4186080df in PR #89 context. PRF finalization changes the branch HEAD. The resulting closeout HEAD must independently pass Documentation validation, Container Smoke and Rede Social Foundation before Renato/Emily/Léo closeout receipts. No PASS is promoted to that future SHA.
+PHASE=PHASE-006-LOT-3-OBSERVABILITY
+MODE=FULL
+RECOVERY_REASON=LATE_P2_STALE_BLOCKED_ALERT_RACE
+ORIGINAL_PR=89
+ORIGINAL_CLOSEOUT_HEAD=7a96b120b08a4bc91aa48c83b69e587cd4d3cf21
+ORIGINAL_MERGE_COMMIT=16442d9a7baf2ecbc91fb4b297ba21efa4829b38
+ORIGINAL_POST_MERGE_STAGING_RUN=31449518300
+ORIGINAL_POST_MERGE_STAGING=PASS
+RECOVERY_PR=92
+RECOVERY_BASE=16442d9a7baf2ecbc91fb4b297ba21efa4829b38
+RECOVERY_TECHNICAL_CANDIDATE_HEAD=6f7c314df71f2a7f8a4efce94ece0051eabf7841
+ATOMIC_STATE_VERSION_RECHECK=PASS
+ROW_LOCK=SELECT_FOR_UPDATE
+STALE_CANDIDATE_EFFECT=NO_EVENT
+IDEMPOTENCY_CONFLICT_EFFECT=NO_SECOND_EVENT
+FOUNDATION_RUN=31453432602
+FOUNDATION=PASS
+CONTAINER_SMOKE_RUN=31453432608
+CONTAINER_SMOKE=PASS
+FORMAT=PASS
+LINT=PASS
+TYPECHECK=PASS
+MIGRATIONS_TWICE=PASS
+TESTS=PASS
+BUILD=PASS
+SERVER_TEST_FILES=109
+SERVER_TESTS=447
+OBSERVABILITY_SERVICE_TESTS=6
+OBSERVABILITY_REPOSITORY_TESTS=4
+OBSERVABILITY_POSTGRES_TESTS=2
+OBSERVABILITY_TESTS_TOTAL=12
+VITEST_ARTIFACT_ID=9087159560
+VITEST_ARTIFACT_DIGEST=sha256:e1f030d7f17704cdea71da6866e5c3a785dd0bacb41d2cec5c885d47a78398f8
+EVIDENCE_PROMOTION=false
+FINAL_CLOSEOUT_HEAD=RESOLVE_AFTER_PRF_UPDATE
+FINAL_CLOSEOUT_DOCUMENTATION=PENDING
+FINAL_CLOSEOUT_CONTAINER_SMOKE=PENDING
+FINAL_CLOSEOUT_FOUNDATION=PENDING
+RENATO_REVIEW=PENDING
+CARMEM_REVIEW=PENDING
+GABRIEL_BINDING=PENDING
+AUGUSTO_TRACE=PENDING
+MIRIAM_CONTINUITY=PENDING
+EMILY_AUDIT=PENDING
+LEO_GATE=PENDING
+PRODUCTION=BLOCKED
+LIVE_STAGING_ADAPTER=DISABLED
+EXTERNAL_NOTIFICATION=false
+HUMAN_OPERATOR_ACTIONS=0
+HUMAN_GATE_LEANDRO=NOT_REQUIRED

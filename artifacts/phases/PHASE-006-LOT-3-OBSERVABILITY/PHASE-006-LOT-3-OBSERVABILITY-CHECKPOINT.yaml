@@ -1,12 +1,19 @@
 mission: MCF-RUNTIME-006-LOT-3-OBSERVABILITY
 phase: PHASE-006-LOT-3-OBSERVABILITY
 issue: 88
-pull_request: 89
+original_pull_request: 89
+recovery_pull_request: 92
 risk_class: B
-state: READY_FOR_CLOSEOUT_VALIDATION
+state: READY_FOR_FINAL_CLOSEOUT_VALIDATION
 base_initial: 807637a75115b067359b5282f888cee2e6b05683
-technical_candidate_head: d08ce837b01daccb7ab708c26ca5c5f4186080df
-closeout_head: RESOLVE_AFTER_PRF_FINALIZATION
+original_merge_commit: 16442d9a7baf2ecbc91fb4b297ba21efa4829b38
+recovery_technical_candidate_head: 6f7c314df71f2a7f8a4efce94ece0051eabf7841
+final_closeout_head: RESOLVE_AFTER_PRF_UPDATE
+recovery:
+  trigger: LATE_P2_STALE_BLOCKED_ALERT_RACE
+  issue_reopened: true
+  atomic_state_version_recheck: TECHNICALLY_VALIDATED
+  stale_candidate_rejection: TECHNICALLY_VALIDATED
 implementation:
   blocked_mission_observation: TECHNICALLY_VALIDATED
   blocked_mission_query: TECHNICALLY_VALIDATED
@@ -21,26 +28,25 @@ external_effects:
   new_credentials: false
   production: BLOCKED
   live_staging_adapter: DISABLED
-technical_validation:
-  documentation_run: 31448933446
-  documentation: PASS
-  container_smoke_run: 31448933434
+recovery_candidate_validation:
+  container_smoke_run: 31453432608
   container_smoke: PASS
-  foundation_run: 31448933496
+  foundation_run: 31453432602
   foundation: PASS
   server_test_files: 109
-  server_tests: 444
-  observability_tests: 9
-  vitest_artifact_id: 9085601719
-  vitest_artifact_digest: sha256:b9307a79440187b5b16767375fb2ed2f2abf30a5e7e8d830a23394421cfc6b3b
-closeout_validation:
-  documentation: PENDING_EXACT_CLOSEOUT_HEAD
-  container_smoke: PENDING_EXACT_CLOSEOUT_HEAD
-  foundation: PENDING_EXACT_CLOSEOUT_HEAD
+  server_tests: 447
+  observability_tests: 12
+  stale_snapshot_postgres_regression: PASS
+  vitest_artifact_id: 9087159560
+  vitest_artifact_digest: sha256:e1f030d7f17704cdea71da6866e5c3a785dd0bacb41d2cec5c885d47a78398f8
+final_closeout_validation:
+  documentation: PENDING_EXACT_HEAD
+  container_smoke: PENDING_EXACT_HEAD
+  foundation: PENDING_EXACT_HEAD
   independent_audit: PENDING
 governance:
   leo_gate: PENDING
   human_gate_leandro: NOT_REQUIRED
   human_operator_actions: 0
-next_action: FINALIZE_MANIFEST_THEN_VALIDATE_EXACT_CLOSEOUT_HEAD
+next_action: VALIDATE_EXACT_FINAL_CLOSEOUT_HEAD_THEN_REVIEW_GATE
 next_boundary_after_delivery: MCF-RUNTIME-006-LOT-4-SKILLS

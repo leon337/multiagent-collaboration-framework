@@ -39,3 +39,18 @@ external_notification: false
 new_credentials: false
 human_operator_actions: 0
 ```
+
+## OBS-DEC-008 — Rechecagem atômica após P2 tardio
+
+O P2 assíncrono recebido depois do merge do PR #89 é aceito como defeito funcional de consistência.
+
+Antes de persistir `MISSION_BLOCKED_ALERT_RAISED`, o repositório deve bloquear a linha da missão com `SELECT ... FOR UPDATE` e confirmar simultaneamente:
+
+```yaml
+state: BLOCKED_RISK
+version: expectedMissionVersion
+```
+
+Se qualquer condição divergir, o candidato é `stale` e nenhum evento é persistido. A unicidade da idempotency key continua responsável apenas por suprimir duplicidade real.
+
+Essa decisão impede alerta obsoleto sem criar tabela, migration, notificação externa ou novo gate humano.

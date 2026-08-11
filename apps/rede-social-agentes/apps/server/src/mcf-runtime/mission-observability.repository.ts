@@ -16,6 +16,22 @@ interface MissionRow extends DatabaseRow {
   updatedAt: Date;
 }
 
+interface MissionStateVersionRow extends DatabaseRow {
+  state: string;
+  version: number;
+}
+
+export interface BlockedAlertCandidate {
+  event: McfEventInput;
+  expectedMissionVersion: number;
+}
+
+export interface BlockedAlertAppendResult {
+  inserted: number;
+  duplicates: number;
+  stale: number;
+}
+
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -64,20 +80,49 @@ export class MissionObservabilityRepository {
     return result.rows.map(mapMission);
   }
 
-  async appendEventsIdempotently(
-    events: readonly McfEventInput[],
-  ): Promise<{ inserted: number; duplicates: number }> {
-    if (events.length === 0) return { inserted: 0, duplicates: 0 };
+  async appendBlockedAlertsAtomically(
+    candidates: readonly BlockedAlertCandidate[],
+  ): Promise<BlockedAlertAppendResult> {
+    if (candidates.length === 0) return { inserted: 0, duplicates: 0, stale: 0 };
 
     return this.database.transaction(async (client) => {
       let inserted = 0;
+      let duplicates = 0;
+      let stale = 0;
 
-      for (const event of events) {
-        inserted += await this.insertEventIdempotently(client, event);
+      for (const candidate of candidates) {
+        const current = await this.lockMissionState(client, candidate.event.missionId);
+        if (
+          !current ||
+          current.state !== 'BLOCKED_RISK' ||
+          current.version !== candidate.expectedMissionVersion
+        ) {
+          stale += 1;
+          continue;
+        }
+
+        const insertedRows = await this.insertEventIdempotently(client, candidate.event);
+        if (insertedRows === 1) inserted += 1;
+        else duplicates += 1;
       }
 
-      return { inserted, duplicates: events.length - inserted };
+      return { inserted, duplicates, stale };
     });
+  }
+
+  private async lockMissionState(
+    client: DatabaseTransaction,
+    missionId: string,
+  ): Promise<MissionStateVersionRow | null> {
+    const result = await client.query<MissionStateVersionRow>(
+      `select "state", "version"
+       from "mcf_missions"
+       where "id" = $1
+       for update`,
+      [missionId],
+    );
+
+    return result.rows[0] ?? null;
   }
 
   private async insertEventIdempotently(
