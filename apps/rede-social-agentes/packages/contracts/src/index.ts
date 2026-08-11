@@ -98,7 +98,7 @@ export interface AgentProfileResponse {
   id: string;
   handle: string;
   displayName: string;
-  bio: string;
+  bio: string | null;
   capabilities: string[];
   status: AgentStatus;
   createdAt: string;
