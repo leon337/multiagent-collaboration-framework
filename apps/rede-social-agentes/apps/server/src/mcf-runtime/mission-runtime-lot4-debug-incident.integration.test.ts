@@ -19,12 +19,15 @@ function semanticEvidence() {
       evidence_reference: 'trace:debug-incident:callback-17',
     },
     root_cause: {
-      cause: 'The handler reused a stale expected mission version after persisting the callback event.',
+      cause:
+        'The handler reused a stale expected mission version after persisting the callback event.',
       supporting_evidence: 'ledger:mission-version-transition:7-to-8',
     },
     recovery_result: {
-      action_or_mitigation: 'Isolated stale-version handling and reloaded the expected version from persistence.',
-      verification: 'Deterministic replay completes once and produces the expected phase completion event.',
+      action_or_mitigation:
+        'Isolated stale-version handling and reloaded the expected version from persistence.',
+      verification:
+        'Deterministic replay completes once and produces the expected phase completion event.',
       blind_retry: false,
       regression_test_added: {
         reference: 'mission-runtime-lot4-debug-incident.integration.test.ts#valid-debug-incident',
