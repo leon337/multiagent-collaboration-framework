@@ -16,24 +16,14 @@ describe('MissionRuntime Lot 4 core persistence integration', () => {
   let service: MissionRuntimeService;
 
   beforeAll(() => {
-    process.env.MCF_RECEIPT_SECRET =
-      'test-only-mcf-receipt-secret-lot4-runtime-0001';
+    process.env.MCF_RECEIPT_SECRET = 'test-only-mcf-receipt-secret-lot4-runtime-0001';
     database = new DatabaseService();
     const postgres = new PostgresMcfRuntimeRepository(database);
     const repository = new OrderedMcfRuntimeRepository(database, postgres);
     const registry = new SkillRegistryLoader();
     const evidence = new EvidenceValidator();
-    const executor = new SkillExecutor(
-      registry,
-      new PermissionEngine(),
-      evidence,
-    );
-    service = new MissionRuntimeService(
-      repository,
-      executor,
-      registry,
-      evidence,
-    );
+    const executor = new SkillExecutor(registry, new PermissionEngine(), evidence);
+    service = new MissionRuntimeService(repository, executor, registry, evidence);
   });
 
   afterAll(async () => {
@@ -46,15 +36,12 @@ describe('MissionRuntime Lot 4 core persistence integration', () => {
       const mission = await service.createMission({
         contract: {
           title: 'Lot 4A persistence proof',
-          objective:
-            'Persist a governed product-definition execution through MissionRuntime.',
+          objective: 'Persist a governed product-definition execution through MissionRuntime.',
           expectedOutcome:
             'Validated evidence and handoff survive the runtime persistence boundary.',
           scope: ['MCF-DEFINE-PRODUCT'],
           outOfScope: ['production', 'external write'],
-          acceptanceCriteria: [
-            'mission version advances after validated execution',
-          ],
+          acceptanceCriteria: ['mission version advances after validated execution'],
           riskClass: 'C',
           selectedAgents: ['Leonardo', 'Sofia'],
           selectedSkills: ['MCF-DEFINE-PRODUCT'],
@@ -69,11 +56,9 @@ describe('MissionRuntime Lot 4 core persistence integration', () => {
           agentId: 'Leonardo',
           expectedMissionVersion: 1,
           inputs: {
-            idea_or_problem:
-              'The mission needs a bounded executable product definition.',
+            idea_or_problem: 'The mission needs a bounded executable product definition.',
             execution_evidence: {
-              problem_statement:
-                'The requested product boundary is not yet explicit or testable.',
+              problem_statement: 'The requested product boundary is not yet explicit or testable.',
               requirements: ['Define target users', 'Bound MVP scope'],
               acceptance_criteria: ['Problem is explicit', 'MVP is bounded'],
             },
@@ -94,36 +79,21 @@ describe('MissionRuntime Lot 4 core persistence integration', () => {
         expect(result.mission.state).toBe('EXECUTING');
         expect(result.mission.currentAgentId).toBe('Sofia');
         expect(result.receipt?.metadata.executionEvidence).toMatchObject({
-          problem_statement:
-            'The requested product boundary is not yet explicit or testable.',
+          problem_statement: 'The requested product boundary is not yet explicit or testable.',
         });
 
         const timeline = await service.timeline(mission.id);
         expect(timeline.mission.version).toBe(2);
         expect(
-          timeline.events.some(
-            (event) => event.eventType === 'TOOL_RECEIPT_RECORDED',
-          ),
+          timeline.events.some((event) => event.eventType === 'TOOL_RECEIPT_RECORDED'),
         ).toBe(true);
         expect(
-          timeline.events.some(
-            (event) => event.eventType === 'EVIDENCE_VALIDATED',
-          ),
+          timeline.events.some((event) => event.eventType === 'EVIDENCE_VALIDATED'),
         ).toBe(true);
-        expect(
-          timeline.events.some(
-            (event) => event.eventType === 'HANDOFF_CREATED',
-          ),
-        ).toBe(true);
-        expect(
-          timeline.events.some(
-            (event) => event.eventType === 'PHASE_COMPLETED',
-          ),
-        ).toBe(true);
+        expect(timeline.events.some((event) => event.eventType === 'HANDOFF_CREATED')).toBe(true);
+        expect(timeline.events.some((event) => event.eventType === 'PHASE_COMPLETED')).toBe(true);
       } finally {
-        await database.query('delete from "mcf_missions" where "id" = $1', [
-          mission.id,
-        ]);
+        await database.query('delete from "mcf_missions" where "id" = $1', [mission.id]);
       }
     },
   );
