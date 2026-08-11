@@ -137,6 +137,14 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     internal: false,
     requiredEvidence: ['reproduction', 'root_cause', 'recovery_result'],
   },
+  'MCF-CLOSE-PHASE': {
+    agentId: 'Carmem',
+    handoffTo: 'Mestre',
+    toolProvider: 'internal',
+    toolOperation: 'close-phase',
+    internal: false,
+    requiredEvidence: ['phase_pack', 'audit_verdict', 'leo_decision', 'checkpoint'],
+  },
 };
 
 const riskRank: Record<McfRiskClass, number> = { A: 1, B: 2, C: 3 };
@@ -158,6 +166,14 @@ const evaluationTerms = [
   'regressão de prompt',
   'regressao de prompt',
   'scorecard',
+];
+const closePhaseTerms = [
+  'fechar fase',
+  'concluir fase',
+  'encerrar fase',
+  'close phase',
+  'phase closeout',
+  'gerar rastreabilidade',
 ];
 const debugTerms = [
   'debug',
@@ -220,7 +236,9 @@ function inferRisk(
 ): McfRiskClass {
   const normalized = objective.toLowerCase();
   const inferred =
-    selectedSkills.includes('MCF-SECURITY-REVIEW') || includesAny(normalized, highRiskTerms)
+    selectedSkills.includes('MCF-SECURITY-REVIEW') ||
+    selectedSkills.includes('MCF-CLOSE-PHASE') ||
+    includesAny(normalized, highRiskTerms)
       ? 'C'
       : includesAny(normalized, implementationTerms)
         ? 'B'
@@ -241,6 +259,9 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
   }
 
   const normalized = request.objective.toLowerCase();
+  if (includesAny(normalized, closePhaseTerms)) {
+    return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-CLOSE-PHASE', 'MCF-TRACE-MISSION'];
+  }
   if (includesAny(normalized, debugTerms)) {
     return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-DEBUG-INCIDENT', 'MCF-TRACE-MISSION'];
   }

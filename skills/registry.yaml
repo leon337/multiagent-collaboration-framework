@@ -324,4 +324,4 @@ skills:
     acceptance_criteria: [traceability_complete, objective_state_truthful]
     failure_modes: [missing_evidence, incomplete_checkpoint]
     fallback: Retornar para correção ou declarar dependência externa.
-    handoff_to: Leandro
+    handoff_to: Mestre

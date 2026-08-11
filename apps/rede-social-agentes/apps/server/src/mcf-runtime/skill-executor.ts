@@ -54,6 +54,7 @@ const executableSkills = new Set([
   'MCF-EVALUATE-AGENTS',
   'MCF-SECURITY-REVIEW',
   'MCF-DEBUG-INCIDENT',
+  'MCF-CLOSE-PHASE',
 ]);
 
 const internalSkills = new Set([
@@ -67,6 +68,7 @@ const internalSkills = new Set([
   'MCF-EVALUATE-AGENTS',
   'MCF-SECURITY-REVIEW',
   'MCF-DEBUG-INCIDENT',
+  'MCF-CLOSE-PHASE',
 ]);
 
 type CiQueryConclusion = 'SUCCESS' | 'FAILURE' | 'CANCELLED' | 'IN_PROGRESS';

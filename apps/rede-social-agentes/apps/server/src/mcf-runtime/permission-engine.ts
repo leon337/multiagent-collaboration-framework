@@ -205,6 +205,64 @@ function assertDebugIncidentBoundary(
   }
 }
 
+
+const closePhaseForbiddenInputs = new Set([
+  'external-write',
+  'github-write',
+  'github-provider-write',
+  'environment-mutation',
+  'deploy',
+  'production-action',
+  'destructive-action',
+  'secret-access',
+  'public-action',
+  'human-as-technical-operator',
+]);
+
+function requestsForbiddenClosePhaseAction(inputs: Record<string, unknown>): string | null {
+  for (const [rawKey, value] of Object.entries(inputs)) {
+    const key = canonicalizeToolValue(rawKey);
+    if (!closePhaseForbiddenInputs.has(key)) continue;
+    if (value === undefined || value === null || value === false) continue;
+    return key;
+  }
+  return null;
+}
+
+function assertClosePhaseBoundary(
+  skill: McfSkillDefinition,
+  provider: string,
+  operation: string,
+  resource: string,
+  inputs: Record<string, unknown>,
+): void {
+  if (skill.skillId !== 'MCF-CLOSE-PHASE') return;
+  if (skill.permissionProfile !== 'SCOPED_WRITE') {
+    throw new McfPermissionDeniedError(
+      'MCF-CLOSE-PHASE must preserve the canonical SCOPED_WRITE permission profile',
+    );
+  }
+  if (provider !== 'internal') {
+    throw new McfPermissionDeniedError(
+      'MCF-CLOSE-PHASE is restricted to the internal provider in Lot 4E',
+    );
+  }
+  if (operation !== 'close-phase') {
+    throw new McfPermissionDeniedError('MCF-CLOSE-PHASE permits only close-phase in Lot 4E');
+  }
+  if (resource !== 'mcf-agent-runtime') {
+    throw new McfPermissionDeniedError(
+      'MCF-CLOSE-PHASE is restricted to mcf-agent-runtime in Lot 4E',
+    );
+  }
+  const forbiddenInput = requestsForbiddenClosePhaseAction(inputs);
+  if (forbiddenInput) {
+    throw new McfPermissionDeniedError(
+      `MCF-CLOSE-PHASE forbids ${forbiddenInput} in the Lot 4E internal-only boundary`,
+    );
+  }
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
@@ -258,6 +316,7 @@ export class PermissionEngine {
 
     assertSecurityReviewBoundary(skill.skillId, provider, operation, resource);
     assertDebugIncidentBoundary(skill, provider, operation, resource, inputs);
+    assertClosePhaseBoundary(skill, provider, operation, resource, inputs);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');
