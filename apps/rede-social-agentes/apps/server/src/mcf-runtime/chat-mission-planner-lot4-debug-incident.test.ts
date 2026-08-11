@@ -44,4 +44,21 @@ describe('ChatMissionPlanner Lot 4D MCF-DEBUG-INCIDENT', () => {
     expect(debug?.state).toBe('READY_AGENT');
     expect(autoExecuted.map((step) => step.skillId)).not.toContain('MCF-DEBUG-INCIDENT');
   });
+
+  it('does not steal explicit security incident routing or its Class C floor', () => {
+    const plan = new ChatMissionPlanner().plan({
+      objective: 'Executar revisão de segurança do incidente e revisar o threat model.',
+    });
+
+    expect(plan.contract.selectedSkills).toContain('MCF-SECURITY-REVIEW');
+    expect(plan.contract.selectedSkills).not.toContain('MCF-DEBUG-INCIDENT');
+    expect(plan.contract.riskClass).toBe('C');
+
+    const security = plan.steps.find((step) => step.skillId === 'MCF-SECURITY-REVIEW');
+    expect(security).toMatchObject({
+      agentId: 'Ricardo',
+      handoffTo: 'Emily',
+      state: 'READY_AGENT',
+    });
+  });
 });
