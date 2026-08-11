@@ -1,0 +1,73 @@
+phase: PHASE-006-LOT-4-C-SECURITY-REVIEW
+mission: MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW
+risk_class: C
+issue: 100
+pr: 101
+pr_state: DRAFT
+
+baseline:
+  main: 4345e502bff27b6fa1ede46274a93a95010b5b03
+
+branch:
+  name: feat/mcf-runtime-006-lot4-c-security-review
+  validated_code_head: 772fcb71ab5e2af21d81323109573550352a581e
+  prf_head: PENDING_AFTER_COMMIT
+
+state: CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION
+
+pre_prf_validation:
+  foundation:
+    run: 31470069594
+    result: PASS
+  container_smoke:
+    run: 31470069567
+    result: PASS
+  server_test_files: 118
+  server_tests: 483
+  web_tests: 5
+  ops_tests: 20
+  vitest_artifact: 9093021326
+  artifact_digest: sha256:8b9f5c3ab43597b77720a3cd9cb3d3b79c23b7ef7f615d9aa54f95ddc191717a
+
+skill:
+  id: MCF-SECURITY-REVIEW
+  planner_state: READY_AGENT
+  risk_floor: C
+  owners:
+    - Ricardo
+    - Julia
+  primary_owner: Ricardo
+  provider: internal
+  operation: inspect-security-review
+  resource: mcf-agent-runtime
+  permission_profile: SENSITIVE_CONTROLLED
+  sensitive_authorization_required: true
+  handoff: Emily
+
+evidence:
+  threats: REQUIRED_NON_EMPTY_MEANINGFUL
+  controls: REQUIRED_NON_EMPTY_MEANINGFUL
+  residual_risk: REQUIRED_MEANINGFUL
+  critical_unaddressed_and_not_blocked: RECOVERING_NO_HANDOFF
+
+boundaries:
+  gate_c: PARCIAL
+  production: BLOCKED
+  live_staging_adapter: DISABLED
+  c1_c2_real_write: NOT_AUTHORIZED
+  secret_read_or_exposure: FORBIDDEN
+  external_write: FORBIDDEN
+  destructive_action: FORBIDDEN
+  public_action: FORBIDDEN
+  external_sensitive_plugin_activation: FORBIDDEN
+  human_operator_actions: 0
+  human_gate_leandro: NOT_REQUIRED
+
+reviews:
+  vinicius: PENDING
+  ricardo_final: PENDING
+  julia_final: PENDING
+  emily_independent_audit: PENDING
+  leo_technical_gate: PENDING
+
+next_action: commit PRF, validate its exact HEAD, verify manifest, execute specialist reviews and independent audit
