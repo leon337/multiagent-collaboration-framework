@@ -1,0 +1,33 @@
+mission: MCF-RUNTIME-006-LOT-3-OBSERVABILITY
+phase: PHASE-006-LOT-3-OBSERVABILITY
+issue: 88
+pull_request: 89
+risk_class: B
+state: IMPLEMENTING
+base_initial: 807637a75115b067359b5282f888cee2e6b05683
+closeout_head: null
+implementation:
+  blocked_mission_observation: CANDIDATE
+  blocked_mission_query: CANDIDATE
+  internal_alert_reconciliation: CANDIDATE
+  idempotency: CANDIDATE
+persistence:
+  source_of_truth: EXISTING_MCF_TABLES_AND_EVENT_LEDGER
+  new_table: false
+  new_migration: false
+external_effects:
+  notification_channel: false
+  new_credentials: false
+  production: BLOCKED
+  live_staging_adapter: DISABLED
+validation:
+  documentation: PENDING
+  container_smoke: PENDING
+  foundation: PENDING
+  independent_audit: PENDING
+governance:
+  leo_gate: PENDING
+  human_gate_leandro: NOT_REQUIRED
+  human_operator_actions: 0
+next_action: COMPLETE_IMPLEMENTATION_AND_VALIDATE_EXACT_HEAD
+next_boundary_after_delivery: MCF-RUNTIME-006-LOT-4-SKILLS
