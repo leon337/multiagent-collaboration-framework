@@ -1,0 +1,59 @@
+mission: MCF-RUNTIME-006-GATE-C-REAL-PROVIDER-WRITE
+phase: PHASE-006-GATE-C-REAL-PROVIDER-WRITE
+issue: 111
+technical_pr: 112
+risk_class: C
+
+state: VALIDATED_AWAITING_AUDIT
+
+technical_evidence:
+  head: 10f56d5a61f4e5c2d94d99bc42971b965eea3c6a
+  base_main: 9c6bd49173af31b36200208c009d6952403b4d71
+  foundation_run: 31535827252
+  foundation: PASS
+  container_smoke_run: 31535827335
+  container_smoke: PASS
+  provider_proof_run: 31535822880
+  provider_proof: PASS
+  artifact_id: 9118718153
+  artifact_digest: sha256:648875d2c18bf2bc974943ec9e9a5861ec6306968a0386a2df122b18e3c819a8
+  artifact_stage: COMPLETE
+
+real_provider:
+  c1:
+    proof_pr: 116
+    proof_branch: mcf/gate-c-proof-10f56d5a61f4
+    read_back_verified: true
+    proof_pr_count: 1
+    replay_same_external_id: true
+  c2:
+    proof_comment_id: 5258813162
+    read_back_verified: true
+    proof_comment_count: 1
+    duplicate_replay_failure: RESERVATION_CONFLICT
+    duplicate_replay_attempt_id: null
+
+ledger:
+  attempts: 3
+  evidence_validated: 3
+  receipts: 3
+
+boundaries:
+  production: BLOCKED
+  public_release: BLOCKED
+  proof_pr_merge: NOT_AUTHORIZED
+  direct_main_write: FORBIDDEN
+
+human_gate:
+  authority: Leandro
+  action: enabled GitHub Actions pull-request creation policy
+  status: COMPLETE
+
+pending:
+  - Emily independent audit
+  - Léo gate decision
+  - final PRF binding
+  - canonical Gate C promotion
+
+next_action: Audit PR #112 and this PRF on the exact documentation HEAD.
+return_to: Mestre

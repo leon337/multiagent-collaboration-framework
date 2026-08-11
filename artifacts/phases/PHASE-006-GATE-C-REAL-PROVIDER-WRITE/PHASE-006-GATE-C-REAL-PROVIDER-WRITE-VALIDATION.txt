@@ -1,0 +1,50 @@
+PHASE-006-GATE-C-REAL-PROVIDER-WRITE
+VALIDATION SUMMARY
+
+TECHNICAL CANDIDATE
+head=10f56d5a61f4e5c2d94d99bc42971b965eea3c6a
+base_main=9c6bd49173af31b36200208c009d6952403b4d71
+issue=111
+technical_pr=112
+
+NORMAL CI
+foundation_run=31535827252
+foundation_result=PASS
+container_smoke_run=31535827335
+container_smoke_result=PASS
+
+REAL PROVIDER PROOF
+workflow_run=31535822880
+full_c1_c2_job=PASS
+isolated_c2_job=PASS
+artifact_id=9118718153
+artifact_digest=sha256:648875d2c18bf2bc974943ec9e9a5861ec6306968a0386a2df122b18e3c819a8
+artifact_stage=COMPLETE
+
+C1
+proof_pr=116
+read_back_verified=true
+proof_pr_count=1
+compatible_replay_same_external_id=true
+duplicate_pr=false
+
+C2
+proof_comment_id=5258813162
+read_back_verified=true
+proof_comment_count=1
+duplicate_replay_status=FAILED
+duplicate_replay_failure=RESERVATION_CONFLICT
+duplicate_replay_attempt_id=null
+
+LEDGER
+attempts=3
+evidence_validated_attempts=3
+receipts=3
+
+BOUNDARY
+production=BLOCKED
+public_release=BLOCKED
+direct_main_write=FORBIDDEN
+
+AUDIT=PENDING
+LEO_GATE=PENDING

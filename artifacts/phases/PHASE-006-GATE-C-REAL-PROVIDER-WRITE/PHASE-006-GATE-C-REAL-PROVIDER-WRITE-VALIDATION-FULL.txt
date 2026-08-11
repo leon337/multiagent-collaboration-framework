@@ -1,0 +1,101 @@
+PHASE-006-GATE-C-REAL-PROVIDER-WRITE
+VALIDATION FULL
+
+SOURCE OF TRUTH
+repository=leon337/multiagent-collaboration-framework
+issue=111
+technical_pr=112
+validated_head=10f56d5a61f4e5c2d94d99bc42971b965eea3c6a
+bound_main=9c6bd49173af31b36200208c009d6952403b4d71
+
+NORMAL CI
+foundation_run=31535827252
+foundation=SUCCESS
+foundation_scope=format+lint+typecheck+migrations_twice+tests+artifact+build
+container_smoke_run=31535827335
+container_smoke=SUCCESS
+
+DEDICATED REAL-PROVIDER WORKFLOW
+run=31535822880
+c2_existing_pr_proof=SUCCESS
+full_c1_c2_provider_proof=SUCCESS
+proof_artifact_id=9118718153
+proof_artifact_digest=sha256:648875d2c18bf2bc974943ec9e9a5861ec6306968a0386a2df122b18e3c819a8
+proof_artifact_stage=COMPLETE
+
+PROOF MISSION
+runtime_mission_id=75cbdb2c-c5ef-4c94-b8a6-b00731fec5ad
+runtime_created_version=1
+runtime_c1_version=2
+runtime_c1_replay_version=3
+runtime_c2_version=4
+runtime_persisted_version=4
+
+C1 ORIGINAL
+adapter_id=github-branch-pr-write-v1
+attempt_id=35e89d1b-33ff-4f4d-91e0-47a55d4c06bd
+receipt_id=8a484a68-dbac-4503-aab1-3d61fc8aa9d1
+external_id=116
+branch=mcf/gate-c-proof-10f56d5a61f4
+pull_request=116
+read_back_verified=true
+
+C1 COMPATIBLE REPLAY
+attempt_id=d041b1d4-df73-4be2-a24c-789ea45c2788
+receipt_id=2a196171-65b6-4f1b-9a46-79ff8656ce26
+external_id=116
+read_back_verified=true
+replay_did_not_duplicate_pull_request=true
+proof_pull_request_count=1
+
+C2 ORIGINAL
+adapter_id=github-pr-collaboration-write-v1
+attempt_id=ed0dba56-f762-4c6f-9cc6-aa37e38595fd
+receipt_id=a8bf72a8-8297-4234-9dbb-46e7c6226da0
+mutation_external_id=5258813162
+read_back_verified=true
+proof_comment_count=1
+
+C2 DUPLICATE REPLAY
+status=FAILED
+failure_code=RESERVATION_CONFLICT
+attempt_id=null
+effect=no_second_mutation_reserved
+
+CANONICAL LEDGER
+attempt_1=35e89d1b-33ff-4f4d-91e0-47a55d4c06bd|github-branch-pr-write-v1|create-branch-pr|EVIDENCE_VALIDATED|8a484a68-dbac-4503-aab1-3d61fc8aa9d1
+attempt_2=d041b1d4-df73-4be2-a24c-789ea45c2788|github-branch-pr-write-v1|create-branch-pr|EVIDENCE_VALIDATED|2a196171-65b6-4f1b-9a46-79ff8656ce26
+attempt_3=ed0dba56-f762-4c6f-9cc6-aa37e38595fd|github-pr-collaboration-write-v1|comment-pr|EVIDENCE_VALIDATED|a8bf72a8-8297-4234-9dbb-46e7c6226da0
+receipt_count=3
+
+EXTERNAL READ-BACK
+proof_pr_creator=github-actions[bot]
+proof_pr_head=10f56d5a61f4e5c2d94d99bc42971b965eea3c6a
+proof_pr_base=9c6bd49173af31b36200208c009d6952403b4d71
+proof_comment_creator=github-actions[bot]
+proof_comment_id=5258813162
+proof_comment_count=1
+
+CAF DEFECT FIX PROVEN
+incident=successful branch POST followed by transient/ambiguous GET read-back
+old_behavior=PARTIAL_UNKNOWN_after_single_read_back_failure
+new_behavior=bounded_GET_only_reconciliation
+mutation_retry=NEVER
+regression_branch_transient_read_back=PASS
+regression_pr_transient_read_back=PASS
+unknown_when_unprovable=PRESERVED
+
+GITHUB ACTION_REQUIRED CONTEXT
+runs=31535899175,31535899214
+reason=checks triggered by bot-created proof PR #116 require contributor approval
+classification=NOT_A_FAILED_TECHNICAL_CHECK_ON_PR_112
+
+SECURITY BOUNDARY
+production=BLOCKED
+public_release=BLOCKED
+proof_pr_merge=NOT_AUTHORIZED
+direct_main_write=FORBIDDEN
+credentials=NOT_RECORDED
+
+AUDIT=PENDING
+LEO_GATE=PENDING

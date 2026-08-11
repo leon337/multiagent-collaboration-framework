@@ -1,0 +1,16 @@
+PHASE-006-GATE-C-REAL-PROVIDER-WRITE
+SMOKE
+
+normal_container_smoke_run=31535827335
+result=PASS
+validated_head=10f56d5a61f4e5c2d94d99bc42971b965eea3c6a
+
+real_provider_smoke_run=31535822880
+full_c1_c2_provider_proof=PASS
+external_provider=GitHub
+proof_pr=116
+proof_comment_id=5258813162
+read_back=PASS
+idempotency=PASS
+
+production=BLOCKED
