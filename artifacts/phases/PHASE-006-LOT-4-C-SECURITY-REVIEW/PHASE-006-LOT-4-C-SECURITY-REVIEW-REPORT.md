@@ -1,90 +1,120 @@
 # PHASE-006-LOT-4-C-SECURITY-REVIEW — Relatório
 
-## Estado
+## Resultado técnico
 
-`CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION`
+`MCF-SECURITY-REVIEW` foi promovida para execução governada e integrada tecnicamente à `main` pelo PR #101.
 
-O Lot 4-C ainda não está aprovado nem concluído. Este PRF registra o candidato funcional existente antes do commit documental e prepara a revalidação do novo HEAD.
+```yaml
+issue: 100
+pull_request: 101
+base_sha: 4345e502bff27b6fa1ede46274a93a95010b5b03
+validated_head: 323b69af4616cda0e4f9b1e47516a9cde37a3f0d
+merge_commit: 08c3e19e1b6408a164628e1bfaa5968e2070ccf0
+candidate_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+merge_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+tree_equivalence: PASS
+```
 
-## Baseline e branch
+## Comportamento integrado
 
-- `main`: `4345e502bff27b6fa1ede46274a93a95010b5b03`
-- branch: `feat/mcf-runtime-006-lot4-c-security-review`
-- Issue: #100
-- PR draft: #101
-- candidato funcional pré-PRF: `772fcb71ab5e2af21d81323109573550352a581e`
-- branch pré-PRF: 8 commits à frente / 0 atrás de `main`
-- diff líquido pré-PRF: 8 arquivos do runtime/testes; nenhum `package.json` diagnóstico remanescente
+- planner: `READY_AGENT`;
+- owner primário: Ricardo;
+- co-owner: Júlia;
+- handoff: Emily;
+- risco mínimo: Classe C;
+- profile: `SENSITIVE_CONTROLLED`;
+- autorização explícita: obrigatória;
+- provider: `internal`;
+- operation: `inspect-security-review`;
+- resource: `mcf-agent-runtime`;
+- external provider: negado;
+- `secret_exposure`: negado;
+- `unrestricted_write`: negado;
+- threats/controls: não vazios e semânticos;
+- residual risk: estruturado;
+- critical risk: deve estar tratado ou explicitamente bloqueado;
+- falha de evidência: `RECOVERING`, sem handoff de sucesso;
+- persistência: receipt + evidência + eventos + handoff + progressão de versão.
 
-## Execução realizada
+## CAF executado
 
-1. O handoff inicial foi verificado contra GitHub: Issue #100 aberta, branch sem PR e HEAD inicial `7511d67cac273a17a622ddaba8bb8b80031f7d04`.
-2. Os três testes iniciais foram lidos como especificação executável.
-3. A promoção funcional foi implementada no commit `6827fbff2f54ff8fa6a48b016921343b5f565932`.
-4. PR draft #101 foi criado.
-5. Foundation `31468916512` falhou em formatting; aplicado CAF.
-6. O commit `958da15146f6deee4f321deca1e2a5b279b8871f` corrigiu parte da formatação, mas Foundation `31469404960` falhou novamente.
-7. O SHA diagnóstico `2622a8ec745d218165f1ad1ef3723ef1e6eb694d` foi usado somente para obter o diff exato do Prettier e nunca foi candidato de gate.
-8. O commit `0e4ed0da0afc4d323854d4c95262299d8a663784` restaurou o tooling original e aplicou a formatação canônica.
-9. Revisão de governança identificou sub-classificação possível: uma skill `SENSITIVE_CONTROLLED` poderia ser planejada como Classe A.
-10. O commit `772fcb71ab5e2af21d81323109573550352a581e` adicionou piso Classe C e provas explícitas de risco crítico e operações proibidas.
-11. Foundation `31470069594` passou.
-12. Container Smoke `31470069567` passou.
+A missão preservou todos os candidatos superseded:
 
-## Mudanças funcionais
+1. `6827fbff2f54ff8fa6a48b016921343b5f565932` — Foundation falhou em formatting.
+2. `958da15146f6deee4f321deca1e2a5b279b8871f` — correção de formatting incompleta.
+3. `2622a8ec745d218165f1ad1ef3723ef1e6eb694d` — SHA diagnóstico para obter o output canônico do Prettier; nunca foi evidência de gate.
+4. `0e4ed0da0afc4d323854d4c95262299d8a663784` — superseded por finding de governança: faltava piso Classe C.
+5. `772fcb71ab5e2af21d81323109573550352a581e` — candidato funcional pré-PRF.
+6. `c42a1750224af53dc1b6adab8fd759589158f502` — superseded após finding de residual risk permissivo.
+7. `3b2a2167b18316630fe628c6e4e8008aa2763c68` — superseded após finding de placeholder booleano.
+8. `323b69af4616cda0e4f9b1e47516a9cde37a3f0d` — candidato final validado.
 
-- `MCF-SECURITY-REVIEW` entrou no union type de skills executáveis.
-- Planner:
-  - reconhece objetivos de security review;
-  - produz Ricardo → Emily;
-  - provider `internal`;
-  - operação `inspect-security-review`;
-  - recurso `mcf-agent-runtime`;
-  - estado `READY_AGENT`;
-  - piso de risco Classe C.
-- Evidence:
-  - `threats` e `controls` obrigatórios, não vazios e significativos;
-  - `residual_risk` obrigatório e significativo;
-  - risco crítico explicitamente não tratado precisa estar bloqueado.
-- PermissionEngine:
-  - mantém `SENSITIVE_CONTROLLED`;
-  - restringe provider/operação/recurso do Lot 4-C;
-  - mantém proibições da registry.
-- SkillExecutor:
-  - habilita a skill apenas no provider interno governado.
-- MissionRuntime:
-  - usa o fluxo persistente já existente; não foi criado sistema paralelo.
+Nenhum PASS de SHA antigo foi reutilizado para autorizar o merge final.
 
-## Validação pré-PRF
+## Validação do HEAD final
 
-- Foundation: run `31470069594` — PASS.
-- Container Smoke: run `31470069567` — PASS.
-- Server: 118 arquivos / 483 testes — PASS.
-- Web: 5 testes — PASS.
-- Ops: 20 testes — PASS.
-- Vitest artifact: `9093021326`.
-- Artifact digest: `sha256:8b9f5c3ab43597b77720a3cd9cb3d3b79c23b7ef7f615d9aa54f95ddc191717a`.
+```yaml
+foundation_run: 31471615150
+foundation: PASS
+container_smoke_run: 31471615302
+container_smoke: PASS
+manifest_audit_run: 31471688783
+manifest_audit: PASS
+server_test_files: 118
+server_tests: 485
+web_tests: 5
+ops_tests: 20
+vitest_artifact: 9093585565
+artifact_digest: sha256:110c2bc438ac9215cbb0c12ca3f0372e3861d5f1c0a7c2965f86de5739339367
+```
 
-## Pendências obrigatórias
+## Reviews e gates
 
-- gerar o HEAD contendo este PRF;
-- executar Foundation + Container Smoke no novo HEAD;
-- auditar o manifesto SHA-256;
-- executar revisão técnica de Vinícius;
-- concluir revisão de segurança de Ricardo no HEAD final candidato;
-- concluir governança de Júlia no HEAD final candidato;
-- auditoria independente de Emily;
-- gate técnico de Léo;
-- retirar draft somente após PASS;
-- merge protegido por `expected_head_sha`;
-- provar equivalência candidato → merge;
-- reconciliar documentação canônica em mudança separada.
+```yaml
+vinicius: PASS
+ricardo: PASS
+renato: PASS
+julia: PASS
+augusto: PASS
+carmem: PASS
+emily_independent_audit: PASS
+active_p0: 0
+active_p1: 0
+active_p2: 0
+leo_technical_gate: PASS
+```
 
-## Limites preservados
+## Merge
 
-- Gate C: PARCIAL.
-- produção: BLOCKED.
-- live staging adapter: DISABLED.
-- real write C1/C2: NOT_AUTHORIZED.
-- `human_operator_actions=0`.
-- `human_gate_leandro=NOT_REQUIRED`.
+O PR #101 saiu de draft somente depois do gate. O merge foi `squash` com `expected_head_sha=323b69af4616cda0e4f9b1e47516a9cde37a3f0d`.
+
+A equivalência de árvore foi comprovada:
+
+```yaml
+candidate_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+merge_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+equivalence: PASS
+```
+
+A Issue #100 foi encerrada como `completed`.
+
+## Resultado do runtime
+
+```yaml
+skills_registered: 16
+skills_executable: 14
+skills_documental: 2
+remaining_documental:
+  - MCF-DEBUG-INCIDENT
+  - MCF-CLOSE-PHASE
+gate_c: PARCIAL
+production: BLOCKED
+live_staging_adapter: DISABLED
+c1_c2_real_write: NOT_AUTHORIZED
+human_operator_actions: 0
+human_gate_leandro: NOT_REQUIRED
+```
+
+## Próximo boundary
+
+O registry vigente deixa duas skills documentais. A próxima formalização técnica deve tratar `MCF-DEBUG-INCIDENT` em boundary próprio; nenhuma Issue Lot 4-D existia no momento deste sync. `MCF-CLOSE-PHASE` permanece separada para incremento posterior.
