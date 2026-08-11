@@ -25,3 +25,14 @@ container_smoke_run=31537421887
 container_smoke=PASS
 
 production=BLOCKED
+
+CANONICAL_POST_MERGE
+documentation_run=31539238013
+documentation=PASS
+canonical_merge=3feff116a3bf66427cfdfcb10894c0f76f79ee11
+closeout_merge=303a4385aed51c531993613ca9d664d1599f538e
+closeout_documentation_run=31540925137
+closeout_documentation=PASS
+canonical_sync=COMPLETE
+gate_c=COMPLETE
+production=BLOCKED
