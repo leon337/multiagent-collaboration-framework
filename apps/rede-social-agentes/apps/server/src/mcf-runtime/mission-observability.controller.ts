@@ -8,7 +8,7 @@ import type {
 import { SessionAuthGuard } from '../identity/session-auth.guard.js';
 import { MissionObservabilityService } from './mission-observability.service.js';
 
-@Controller('mcf/observability')
+@Controller('v1/mcf/observability')
 @UseGuards(SessionAuthGuard)
 export class MissionObservabilityController {
   constructor(
