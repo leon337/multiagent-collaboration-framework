@@ -1,6 +1,6 @@
 # PHASE-006-GATE-C-REAL-PROVIDER-WRITE
 
-Phase Traceability Pack for the controlled real GitHub provider proof that closes the technical acceptance gap of Gate C.
+Phase Traceability Pack for the controlled real GitHub provider proof that closes Gate C.
 
 ## Reading order
 
@@ -16,7 +16,7 @@ Phase Traceability Pack for the controlled real GitHub provider proof that close
 ## Current result
 
 ```yaml
-technical_acceptance: PASS
+technical_merge: 0b060539eb152f0cf92bd146b853562407ab0a64
 real_provider_c1: PASS
 real_provider_c2: PASS
 read_back: PASS
@@ -24,14 +24,14 @@ idempotency: PASS
 ledger_and_receipts: PASS
 postwrite_unknown_fail_safe: PASS
 temporary_proof_infrastructure: REMOVED
-foundation: PASS
-container_smoke: PASS
 julia_governance: PASS
 emily_independent_audit: PASS
 blocking_findings: 0
-leo_gate: APPROVE_TECHNICAL_GATE_C
-state: APPROVED_AWAITING_MERGE
+leo_technical_gate: APPROVE_TECHNICAL_GATE_C
+technical_post_merge_documentation: PASS
+technical_post_merge_staging: PASS_DEPLOYED
+state: CANONICAL_SYNC_CANDIDATE
 production: BLOCKED
 ```
 
-Gate C is not yet marked `ENTREGUE` in the canonical repository state. PR #112 must first be integrated, followed by a documentation-only canonical sync bound to the resulting `main` SHA.
+This pack no longer treats the real GitHub provider proof as unauthorized or partial. Final `ENTREGUE` status is intentionally deferred until this docs-only canonical sync is merged and a final closeout is bound to the resulting `main` SHA.
