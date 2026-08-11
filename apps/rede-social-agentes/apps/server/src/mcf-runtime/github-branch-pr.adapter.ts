@@ -506,9 +506,12 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
         const value = await readBack();
         if (value) return { value, ambiguous };
       } catch (error) {
-        if (!isAmbiguousMutationError(error)) throw error;
+        if (!(error instanceof ExternalActionAdapterError)) throw error;
+        if (error.code === 'RESERVATION_CONFLICT') throw error;
         ambiguous = true;
-        if (error.code === 'ADAPTER_TIMEOUT' || error.code === 'RATE_LIMITED') break;
+        if (!error.retryable || error.code === 'ADAPTER_TIMEOUT' || error.code === 'RATE_LIMITED') {
+          break;
+        }
       }
     }
 
