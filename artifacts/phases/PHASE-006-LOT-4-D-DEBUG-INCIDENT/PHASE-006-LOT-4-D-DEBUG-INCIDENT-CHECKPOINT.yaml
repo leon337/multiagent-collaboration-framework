@@ -1,0 +1,101 @@
+phase: PHASE-006-LOT-4-D-DEBUG-INCIDENT
+mission: MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
+issue: 103
+technical_pr: 104
+risk_class: C
+state: CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION
+
+baseline:
+  main_sha: 79c1a1644742cf22af60384b64685adbb1f017a3
+  lot_4c: COMPLETE
+
+historical_candidates:
+  pre_prf_sha: 933c8f72dd19219eea6112adfdd8db7c43112f2c
+  pre_prf_foundation_run: 31477171098
+  pre_prf_container_smoke_run: 31477171096
+  first_prf_sha: 9ebedbaa85bfa92d52f199df064382e075adb1d3
+  first_prf_foundation_run: 31477910252
+  first_prf_container_smoke_run: 31477910266
+  first_prf_state: SUPERSEDED_BY_REVIEW_CAF
+
+skill:
+  id: MCF-DEBUG-INCIDENT
+  executable_target: true
+  planner_state: READY_AGENT
+  primary_owner: Patricia
+  owners: [Patricia, Bruno, Rafael]
+  handoff: Renato
+  permission_profile: SCOPED_WRITE
+  provider: internal
+  operation: inspect-debug-incident
+  resource: mcf-agent-runtime
+
+boundary:
+  external_write: false
+  github_provider_write: false
+  environment_mutation: false
+  deploy: false
+  production_action: false
+  destructive_fix: false
+  secret_access: false
+  public_action: false
+  blind_retry: false
+
+semantic_evidence:
+  reproduction: REQUIRED
+  root_cause: REQUIRED
+  recovery_result: REQUIRED
+  blind_retry_declaration: false
+  retry_evidence: SEMANTIC_REQUIRED
+  regression_test_added: VERIFIABLE_REFERENCE_REQUIRED
+  insufficient_evidence: RECOVERING
+
+routing:
+  debug_generic_incidente_term: REMOVED
+  debug_generic_incident_term: REMOVED
+  security_incident_regression: REQUIRED_PASS
+  expected_security_owner: Ricardo
+  expected_security_skill: MCF-SECURITY-REVIEW
+  expected_security_risk: C
+
+caf:
+  formatting:
+    failed_candidate: 3ea30e9aadac9600b701902f14d08a3881251692
+    diagnostic_only_sha: 81c1f1c9ad58a895db02b70b0dafec5e7ba9349d
+    recovery: APPLIED_AND_REVALIDATED
+  semantic_blind_retry:
+    reviewed_candidate: 9ebedbaa85bfa92d52f199df064382e075adb1d3
+    reviewer: Vinicius
+    finding: BOOLEAN_DECLARATION_WITHOUT_SEMANTIC_RETRY_EVIDENCE
+    recovery: RETRY_EVIDENCE_REQUIRED_AND_TESTED
+  routing_overlap:
+    reviewer: Beatriz
+    finding: GENERIC_INCIDENT_TERM_COULD_STEAL_SECURITY_REVIEW
+    recovery: GENERIC_TERMS_REMOVED_AND_CLASS_C_REGRESSION_ADDED
+    planner_commit: ae5a27743cbaa97e3668bb1b45a670866abb5e08
+    test_commit: abc60191f7a56b6012db630d8b4a22fb25d886c5
+
+candidate:
+  final_prf_head: PENDING_AFTER_MANIFEST_REGENERATION
+
+pending:
+  final_exact_head_foundation: true
+  final_exact_head_container_smoke: true
+  manifest_audit: true
+  specialist_reviews: true
+  augusto_trace: true
+  julia_governance: true
+  emily_audit: true
+  leo_gate: true
+  technical_merge: true
+  candidate_merge_tree_equivalence: true
+  canonical_sync: true
+  documentation_validation: true
+  documentary_gate: true
+
+safety:
+  production: BLOCKED
+  live_staging_adapter: DISABLED
+  gate_c_real_provider_write: NOT_AUTHORIZED
+  human_operator_actions: 0
+  human_gate_leandro: NOT_REQUIRED

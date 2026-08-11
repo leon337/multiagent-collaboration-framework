@@ -129,6 +129,14 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     internal: false,
     requiredEvidence: ['threats', 'controls', 'residual_risk'],
   },
+  'MCF-DEBUG-INCIDENT': {
+    agentId: 'Patricia',
+    handoffTo: 'Renato',
+    toolProvider: 'internal',
+    toolOperation: 'inspect-debug-incident',
+    internal: false,
+    requiredEvidence: ['reproduction', 'root_cause', 'recovery_result'],
+  },
 };
 
 const riskRank: Record<McfRiskClass, number> = { A: 1, B: 2, C: 3 };
@@ -150,6 +158,19 @@ const evaluationTerms = [
   'regressão de prompt',
   'regressao de prompt',
   'scorecard',
+];
+const debugTerms = [
+  'debug',
+  'debugar',
+  'debugue',
+  'diagnosticar incidente',
+  'diagnostico de incidente',
+  'diagnóstico de incidente',
+  'diagnose incident',
+  'root cause',
+  'causa raiz',
+  'reproduzir falha',
+  'investigar erro',
 ];
 const securityTerms = [
   'revisão de segurança',
@@ -220,6 +241,9 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
   }
 
   const normalized = request.objective.toLowerCase();
+  if (includesAny(normalized, debugTerms)) {
+    return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-DEBUG-INCIDENT', 'MCF-TRACE-MISSION'];
+  }
   if (includesAny(normalized, securityTerms)) {
     return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-SECURITY-REVIEW', 'MCF-TRACE-MISSION'];
   }

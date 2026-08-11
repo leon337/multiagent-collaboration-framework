@@ -10,6 +10,24 @@ const governedInternalSkillIds = new Set([
   'MCF-DESIGN-ARCHITECTURE',
   'MCF-EVALUATE-AGENTS',
   'MCF-SECURITY-REVIEW',
+  'MCF-DEBUG-INCIDENT',
+]);
+
+const debugEvidencePlaceholders = new Set([
+  'todo',
+  'tbd',
+  'unknown',
+  'n/a',
+  'na',
+  'none',
+  'null',
+  'ok',
+  'done',
+  'pass',
+  'passed',
+  'success',
+  'true',
+  'false',
 ]);
 
 function reject(message: string): never {
@@ -48,6 +66,30 @@ function hasMeaningfulSecurityValue(value: unknown): boolean {
     return Object.values(value as Record<string, unknown>).some(hasMeaningfulSecurityValue);
   }
   return false;
+}
+
+function isMeaningfulDebugString(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim().toLowerCase();
+  return normalized.length > 0 && !debugEvidencePlaceholders.has(normalized);
+}
+
+function hasMeaningfulDebugValue(value: unknown): boolean {
+  if (isMeaningfulDebugString(value)) return true;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value === 'boolean') return false;
+  if (Array.isArray(value)) return value.length > 0 && value.every(hasMeaningfulDebugValue);
+  if (typeof value === 'object' && value !== null) {
+    const entries = Object.entries(value as Record<string, unknown>);
+    return entries.length > 0 && entries.every(([, item]) => hasMeaningfulDebugValue(item));
+  }
+  return false;
+}
+
+function requireDebugField(record: Record<string, unknown>, key: string, message: string): unknown {
+  const value = record[key];
+  if (!hasMeaningfulDebugValue(value)) return reject(message);
+  return value;
 }
 
 function requireArray(
@@ -148,6 +190,100 @@ function requireResidualRisk(
       'MCF-SECURITY-REVIEW requires critical residual risks to be addressed or explicitly blocked',
     );
   }
+  return value;
+}
+
+function requireDebugReproduction(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  if (Object.keys(value).length === 0) return reject(message);
+  requireDebugField(
+    value,
+    'symptom',
+    'MCF-DEBUG-INCIDENT reproduction requires a meaningful symptom',
+  );
+  requireDebugField(
+    value,
+    'method',
+    'MCF-DEBUG-INCIDENT reproduction requires a meaningful reproduction or characterization method',
+  );
+  requireDebugField(
+    value,
+    'evidence_reference',
+    'MCF-DEBUG-INCIDENT reproduction requires a verifiable evidence_reference',
+  );
+  return value;
+}
+
+function requireDebugRootCause(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  if (Object.keys(value).length === 0) return reject(message);
+  requireDebugField(value, 'cause', 'MCF-DEBUG-INCIDENT root_cause requires a meaningful cause');
+  requireDebugField(
+    value,
+    'supporting_evidence',
+    'MCF-DEBUG-INCIDENT root_cause requires meaningful supporting_evidence',
+  );
+  return value;
+}
+
+function requireRegressionTestReference(value: unknown): unknown {
+  if (isMeaningfulDebugString(value)) return value.trim();
+  const record = asRecord(
+    value,
+    'MCF-DEBUG-INCIDENT recovery_result requires regression_test_added evidence',
+  );
+  if (Object.keys(record).length === 0) {
+    return reject('MCF-DEBUG-INCIDENT regression_test_added cannot be empty');
+  }
+  requireDebugField(
+    record,
+    'reference',
+    'MCF-DEBUG-INCIDENT regression_test_added requires a verifiable reference',
+  );
+  if (Object.hasOwn(record, 'result')) {
+    requireDebugField(
+      record,
+      'result',
+      'MCF-DEBUG-INCIDENT regression_test_added result must contain semantic evidence',
+    );
+  }
+  return record;
+}
+
+function requireDebugRecovery(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  if (Object.keys(value).length === 0) return reject(message);
+  requireDebugField(
+    value,
+    'action_or_mitigation',
+    'MCF-DEBUG-INCIDENT recovery_result requires the action, isolation or mitigation performed',
+  );
+  requireDebugField(
+    value,
+    'verification',
+    'MCF-DEBUG-INCIDENT recovery_result requires semantic verification of the result',
+  );
+  if (value.blind_retry !== false) {
+    return reject('MCF-DEBUG-INCIDENT recovery_result must declare blind_retry=false');
+  }
+  requireDebugField(
+    value,
+    'retry_evidence',
+    'MCF-DEBUG-INCIDENT recovery_result requires semantic evidence proving no blind retry occurred',
+  );
+  requireRegressionTestReference(value.regression_test_added);
   return value;
 }
 
@@ -266,6 +402,24 @@ function validateEvidence(
           evidence,
           'residual_risk',
           'MCF-SECURITY-REVIEW requires structured meaningful residual_risk evidence',
+        ),
+      };
+    case 'MCF-DEBUG-INCIDENT':
+      return {
+        reproduction: requireDebugReproduction(
+          evidence,
+          'reproduction',
+          'MCF-DEBUG-INCIDENT requires structured meaningful reproduction evidence',
+        ),
+        root_cause: requireDebugRootCause(
+          evidence,
+          'root_cause',
+          'MCF-DEBUG-INCIDENT requires structured meaningful root_cause evidence',
+        ),
+        recovery_result: requireDebugRecovery(
+          evidence,
+          'recovery_result',
+          'MCF-DEBUG-INCIDENT requires structured meaningful recovery_result evidence',
         ),
       };
     default:
