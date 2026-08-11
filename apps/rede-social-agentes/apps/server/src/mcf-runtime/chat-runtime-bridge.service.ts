@@ -57,7 +57,7 @@ function internalInputs(
         },
       };
     default:
-      throw new Error(`skill ${skillId} is not eligible for internal bridge execution`);
+      throw new Error(`skill ${skillId} is not eligible for automatic internal bridge execution`);
   }
 }
 
@@ -111,13 +111,17 @@ export class ChatRuntimeBridgeService {
       throw new Error('chat bridge did not execute the mandatory mission bootstrap');
     }
 
-    const nextStep = plan.find((step) => step.state === 'READY_EXTERNAL');
+    const nextStep = plan.find(
+      (step) => step.state === 'READY_AGENT' || step.state === 'READY_EXTERNAL',
+    );
     const nextAction =
       planned.contract.riskClass === 'C'
-        ? 'Léo deve avaliar o gate de risco antes de qualquer fase externa; nenhuma ação técnica foi delegada a Leandro.'
-        : nextStep
-          ? `${nextStep.agentId} executa ${nextStep.skillId} com a ferramenta indicada e entrega recibo externo verificável para ${nextStep.handoffTo}.`
-          : 'O bloco interno foi concluído e o checkpoint retorna ao Mestre; nenhuma ação humana é necessária.';
+        ? 'Léo deve avaliar o gate de risco antes de qualquer fase posterior ao bootstrap; nenhuma ação técnica foi delegada a Leandro.'
+        : nextStep?.state === 'READY_AGENT'
+          ? `${nextStep.agentId} executa ${nextStep.skillId} pelo runtime interno governado, entrega execution_evidence verificável e passa o checkpoint para ${nextStep.handoffTo}.`
+          : nextStep
+            ? `${nextStep.agentId} executa ${nextStep.skillId} com a ferramenta indicada e entrega recibo externo verificável para ${nextStep.handoffTo}.`
+            : 'O bloco interno foi concluído e o checkpoint retorna ao Mestre; nenhuma ação humana é necessária.';
 
     return {
       mission: currentMission,
