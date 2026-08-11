@@ -30,7 +30,8 @@ skills_documental: 0
 remaining_documental: []
 canonical_sync_lot_4e: COMPLETE
 gate_c_technical_merge: 0b060539eb152f0cf92bd146b853562407ab0a64
-gate_c_canonical_state: CANONICAL_SYNC_CANDIDATE
+gate_c_canonical_state: COMPLETE
+gate_c_mission_state: ENTREGUE
 ```
 
 ## 4. Roadmap
@@ -43,7 +44,7 @@ gate_c_canonical_state: CANONICAL_SYNC_CANDIDATE
 | A1 — Code Review Read Only | COMPLETE |
 | A2 — CI Query Read Only | COMPLETE |
 | C1/C2 — escrita reversível | COMPLETE |
-| Gate C — real provider write | TECHNICAL COMPLETE / CANONICAL SYNC CANDIDATE |
+| Gate C — real provider write | COMPLETE |
 | Gate D — staging | COMPLETE |
 | Observabilidade | COMPLETE |
 | Lot 4-A — Recover/Product/UX/Architecture | COMPLETE |
@@ -213,7 +214,19 @@ technical_post_merge_documentation_run: 31538142320
 technical_post_merge_documentation: PASS
 technical_post_merge_staging_run: 31538142312
 technical_post_merge_staging: PASS_DEPLOYED
-canonical_state: CANONICAL_SYNC_CANDIDATE
+canonical_pr: 118
+canonical_candidate: 9ba3bee76ca6572848b3d95a71d109f4be10ff31
+canonical_documentation_run: 31539053960
+canonical_documentation: PASS
+canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+canonical_post_merge_documentation_run: 31539238013
+canonical_post_merge_documentation: PASS
+closeout_pr: 119
+closeout_merge: 303a4385aed51c531993613ca9d664d1599f538e
+closeout_post_merge_documentation_run: 31540925137
+closeout_post_merge_documentation: PASS
+canonical_state: COMPLETE
+mission_state: ENTREGUE
 production: BLOCKED
 ```
 
@@ -231,26 +244,25 @@ unknown_when_unprovable: PRESERVED
 
 C2 está conectado ao `AdapterRegistry` vivo. O adapter de staging continua fora desse registry, preservando o boundary do Gate D.
 
-A infraestrutura temporária do teste real foi removida antes do merge; apenas implementação permanente, regressões e PRF foram integrados.
+A infraestrutura temporária do teste real foi removida antes do merge técnico. Os três workflows temporários de closeout introduzidos pelo PR #119 são removidos pela correção final antes do encerramento da Issue #111.
 
-## 10. Sincronização canônica do Gate C
+## 10. Sincronização canônica e closeout do Gate C
 
-Esta branch é uma sincronização **somente documental** baseada no `main@0b060539eb152f0cf92bd146b853562407ab0a64`.
+```yaml
+canonical_sync: COMPLETE
+objective_met: true
+blocking_findings: 0
+pending_actions: 0
+human_action_required: false
+next_action: null
+next_boundary: RELEASE_CANDIDATE_GATE_E
+production: BLOCKED
+```
 
-Critérios antes do merge:
-
-- diff limitado a README/plano/PRF;
-- Documentation validation PASS no SHA exato;
-- consistência do manifest do PRF;
-- revisão documental de Carmem;
-- auditoria independente de Emily;
-- decisão documental de Léo;
-- produção permanece bloqueada.
-
-Após o merge será feito um closeout documental final vinculado ao novo SHA de `main`, removendo o marcador `CANONICAL_SYNC_CANDIDATE` e registrando Gate C como `COMPLETE/ENTREGUE`.
+Gate C está `COMPLETE/ENTREGUE`. A confirmação final pertence ao SHA exato do merge desta correção e ao respectivo Documentation validation pós-merge.
 
 ## 11. Próximo boundary
 
 **Release Candidate / Gate E**.
 
-O Lot 4-E permanece concluído. O Gate C está tecnicamente concluído e em sincronização canônica. Isso não autoriza produção. Produção permanece `BLOCKED` até gate material próprio.
+O Lot 4-E permanece concluído. Gate C está concluído. Isso não autoriza produção. Produção permanece `BLOCKED` até gate material próprio.
