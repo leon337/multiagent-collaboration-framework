@@ -54,3 +54,9 @@ version: expectedMissionVersion
 Se qualquer condição divergir, o candidato é `stale` e nenhum evento é persistido. A unicidade da idempotency key continua responsável apenas por suprimir duplicidade real.
 
 Essa decisão impede alerta obsoleto sem criar tabela, migration, notificação externa ou novo gate humano.
+
+## OBS-DEC-009 — Fechamento técnico e sincronização canônica
+
+A recuperação foi aprovada por Léo no HEAD `e2aace417295ee33c84826a1b782c7a6fc42f62f` e integrada por squash em `7418fff6e30f6107313a632284266caf04e8b33a`. O merge passou Documentation validation e staging `PASS/DEPLOYED` no próprio SHA.
+
+A fase só deve assumir `ENTREGUE` depois do merge da reconciliação documental pós-merge. Até lá, o checkpoint é `READY_FOR_CANONICAL_SYNC_GATE`. O próximo boundary após a entrega é `MCF-RUNTIME-006-LOT-4-SKILLS`.
