@@ -1,73 +1,79 @@
-phase: PHASE-006-LOT-4-C-SECURITY-REVIEW
 mission: MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW
+phase: PHASE-006-LOT-4-C-SECURITY-REVIEW
+state: TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE
 risk_class: C
 issue: 100
-pr: 101
-pr_state: DRAFT
+pull_request: 101
+base_sha: 4345e502bff27b6fa1ede46274a93a95010b5b03
+validated_head: 323b69af4616cda0e4f9b1e47516a9cde37a3f0d
+merge_commit: 08c3e19e1b6408a164628e1bfaa5968e2070ccf0
+candidate_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+merge_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+tree_equivalence: PASS
 
-baseline:
-  main: 4345e502bff27b6fa1ede46274a93a95010b5b03
-
-branch:
-  name: feat/mcf-runtime-006-lot4-c-security-review
-  validated_code_head: 772fcb71ab5e2af21d81323109573550352a581e
-  prf_head: PENDING_AFTER_COMMIT
-
-state: CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION
-
-pre_prf_validation:
-  foundation:
-    run: 31470069594
-    result: PASS
-  container_smoke:
-    run: 31470069567
-    result: PASS
+validation:
+  foundation_run: 31471615150
+  foundation: PASS
+  container_smoke_run: 31471615302
+  container_smoke: PASS
+  manifest_audit_run: 31471688783
+  manifest_audit: PASS
   server_test_files: 118
-  server_tests: 483
+  server_tests: 485
   web_tests: 5
   ops_tests: 20
-  vitest_artifact: 9093021326
-  artifact_digest: sha256:8b9f5c3ab43597b77720a3cd9cb3d3b79c23b7ef7f615d9aa54f95ddc191717a
+  vitest_artifact: 9093585565
+  artifact_digest: sha256:110c2bc438ac9215cbb0c12ca3f0372e3861d5f1c0a7c2965f86de5739339367
 
 skill:
   id: MCF-SECURITY-REVIEW
   planner_state: READY_AGENT
   risk_floor: C
-  owners:
-    - Ricardo
-    - Julia
+  owners: [Ricardo, Julia]
   primary_owner: Ricardo
+  handoff: Emily
+  permission_profile: SENSITIVE_CONTROLLED
+  sensitive_authorization_required: true
   provider: internal
   operation: inspect-security-review
   resource: mcf-agent-runtime
-  permission_profile: SENSITIVE_CONTROLLED
-  sensitive_authorization_required: true
-  handoff: Emily
+  external_provider: DENIED
 
 evidence:
   threats: REQUIRED_NON_EMPTY_MEANINGFUL
   controls: REQUIRED_NON_EMPTY_MEANINGFUL
-  residual_risk: REQUIRED_MEANINGFUL
-  critical_unaddressed_and_not_blocked: RECOVERING_NO_HANDOFF
-
-boundaries:
-  gate_c: PARCIAL
-  production: BLOCKED
-  live_staging_adapter: DISABLED
-  c1_c2_real_write: NOT_AUTHORIZED
-  secret_read_or_exposure: FORBIDDEN
-  external_write: FORBIDDEN
-  destructive_action: FORBIDDEN
-  public_action: FORBIDDEN
-  external_sensitive_plugin_activation: FORBIDDEN
-  human_operator_actions: 0
-  human_gate_leandro: NOT_REQUIRED
+  residual_risk: STRUCTURED_LEVEL_AND_CRITICAL_UNADDRESSED
+  critical_unaddressed_not_blocked: RECOVERING_NO_HANDOFF
 
 reviews:
-  vinicius: PENDING
-  ricardo_final: PENDING
-  julia_final: PENDING
-  emily_independent_audit: PENDING
-  leo_technical_gate: PENDING
+  vinicius: PASS
+  ricardo: PASS
+  renato: PASS
+  julia: PASS
+  augusto: PASS
+  carmem: PASS
+  emily_independent_audit: PASS
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
 
-next_action: commit PRF, validate its exact HEAD, verify manifest, execute specialist reviews and independent audit
+gate:
+  leo_technical_gate: PASS
+  expected_head_protection: PASS
+  human_gate_leandro: NOT_REQUIRED
+  human_operator_actions: 0
+
+result:
+  skills_registered: 16
+  skills_executable: 14
+  skills_documental: 2
+  remaining_documental: [MCF-DEBUG-INCIDENT, MCF-CLOSE-PHASE]
+  gate_c: PARCIAL
+  c1_c2_real_write: NOT_AUTHORIZED
+  production: BLOCKED
+  live_staging_adapter: DISABLED
+
+canonical_sync: COMPLETE_ON_BRANCH
+doc_sync_gate: PENDING
+next_skill: MCF-DEBUG-INCIDENT
+next_boundary_formalization: PENDING_AFTER_CANONICAL_SYNC
