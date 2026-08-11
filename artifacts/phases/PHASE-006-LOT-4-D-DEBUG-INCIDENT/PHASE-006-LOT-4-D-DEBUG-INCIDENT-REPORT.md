@@ -4,56 +4,45 @@
 
 `CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION`
 
-O incremento técnico foi implementado no PR `#104`. Este relatório registra somente evidência já observada. Reviews, auditoria, gate e merge ainda não são declarados como concluídos neste candidato PRF.
+O incremento técnico está no PR `#104`. Este relatório registra somente evidência observada; nenhum review final, auditoria, gate ou merge é antecipado.
 
 ## Baseline e candidatos superseded
 
 - baseline `main`: `79c1a1644742cf22af60384b64685adbb1f017a3`
-- candidato pré-PRF: `933c8f72dd19219eea6112adfdd8db7c43112f2c`
-  - Foundation `31477171098`: `PASS`
-  - Container Smoke `31477171096`: `PASS`
-- primeiro candidato PRF: `9ebedbaa85bfa92d52f199df064382e075adb1d3`
-  - Foundation `31477910252`: `PASS`
-  - Container Smoke `31477910266`: `PASS`
-  - estado posterior: `SUPERSEDED_BY_REVIEW_CAF`
-- Vitest artifact do primeiro candidato PRF: `9096020199`
-- Vitest artifact digest: `sha256:e1af159fcb0c59acd403baa3dff401144dd7475b5b2225295c3e4823d6cec310`
+- pré-PRF `933c8f72dd19219eea6112adfdd8db7c43112f2c`: Foundation `31477171098` PASS e Container Smoke `31477171096` PASS, depois superseded pelo PRF;
+- primeiro PRF `9ebedbaa85bfa92d52f199df064382e075adb1d3`: Foundation `31477910252` PASS e Container Smoke `31477910266` PASS, depois `SUPERSEDED_BY_REVIEW_CAF`;
+- artifact do primeiro PRF: `9096020199`, digest `sha256:e1af159fcb0c59acd403baa3dff401144dd7475b5b2225295c3e4823d6cec310`.
 
-## Implementação observada
+## Implementação
 
-1. `McfExecutableSkillId` passou a incluir `MCF-DEBUG-INCIDENT`.
-2. O planner possui configuração explícita `Patricia → Renato`, provider `internal`, operação `inspect-debug-incident`, recurso `mcf-agent-runtime` e estado `READY_AGENT`.
-3. A skill foi incluída no executor governado, sem permitir auto-completion pelo `ChatRuntimeBridge`.
-4. O `PermissionEngine` preserva `SCOPED_WRITE` e adiciona boundary local ao Lot 4-D, sem relaxamento global.
-5. A validação interna exige evidência semântica estruturada para reprodução, causa raiz e recuperação.
-6. Recuperação válida exige declaração `blind_retry: false`, evidência semântica separada em `retry_evidence` e referência concreta de teste de regressão.
-7. Evidência inválida retorna `RECOVERING` e não cria handoff de sucesso.
-
-## Testes observados antes do CAF #2
-
-No candidato `9ebedbaa85bfa92d52f199df064382e075adb1d3`, o Foundation registrou format, lint, typecheck, dupla migração, testes e build como `PASS`; o Container Smoke também concluiu `PASS`.
-
-Esses resultados foram invalidados para gate quando o review especialista encontrou um defeito semântico e o código mudou. Eles permanecem somente como histórico do trace.
+1. `McfExecutableSkillId` inclui `MCF-DEBUG-INCIDENT`.
+2. Planner: `Patricia → Renato`, provider `internal`, `inspect-debug-incident`, `mcf-agent-runtime`, estado `READY_AGENT`.
+3. Bridge não auto-completa a skill.
+4. `PermissionEngine` preserva `SCOPED_WRITE` e aplica boundary local do Lot 4-D, sem relaxamento global.
+5. Evidência semântica exige `reproduction`, `root_cause` e `recovery_result` estruturados.
+6. Recuperação válida exige `blind_retry: false`, `retry_evidence` semântico e referência verificável de teste de regressão.
+7. Evidência insuficiente retorna `RECOVERING` sem handoff de sucesso.
 
 ## CAF #1 — formatação
 
-O primeiro candidato funcional `3ea30e9aadac9600b701902f14d08a3881251692` falhou no Foundation run `31476698797` na etapa `Verify formatting`. Nenhum PASS funcional foi fabricado.
-
-Foi criado o SHA diagnóstico `81c1f1c9ad58a895db02b70b0dafec5e7ba9349d` exclusivamente para obter o diff canônico do Prettier. Ele não é candidato de gate. Após aplicação objetiva da formatação e remoção do hook diagnóstico, surgiu o candidato pré-PRF `933c8f72dd19219eea6112adfdd8db7c43112f2c`, que passou Foundation e Container Smoke.
+O SHA `3ea30e9aadac9600b701902f14d08a3881251692` falhou no Foundation `31476698797` em `Verify formatting`. O SHA diagnóstico `81c1f1c9ad58a895db02b70b0dafec5e7ba9349d` apenas revelou o diff canônico do Prettier. A correção foi aplicada e revalidada; nenhum PASS foi fabricado.
 
 ## CAF #2 — evidência de blind retry
 
-Durante o review de Vinicius no SHA `9ebedbaa85bfa92d52f199df064382e075adb1d3`, foi identificado que `blind_retry: false` ainda era somente uma afirmação booleana. Isso conflitava com a exigência do Lot 4-D de não aceitar evidência meramente booleana e de demonstrar que não ocorreu blind retry.
+Vinicius identificou no SHA `9ebedbaa85bfa92d52f199df064382e075adb1d3` que `blind_retry: false` era apenas declaração booleana. O gate foi bloqueado. A correção tornou `retry_evidence` obrigatório e semântico, com testes negativos para ausência, booleano e placeholder e persistência positiva no receipt.
+
+## CAF #3 — sobreposição de roteamento
+
+Beatriz identificou que os gatilhos genéricos `incidente` e `incident`, avaliados antes dos termos de segurança, poderiam capturar um objetivo explicitamente de security review e retirar o piso Classe C do `MCF-SECURITY-REVIEW`.
 
 Correção aplicada:
 
-- `recovery_result` continua exigindo `blind_retry: false`;
-- passou a exigir também `retry_evidence` semanticamente significativo;
-- ausência, booleano ou placeholder em `retry_evidence` são rejeitados;
-- os testes positivos persistem a evidência de tentativas no receipt;
-- os testes negativos provam que o booleano isolado não autoriza sucesso.
+- removidos os gatilhos genéricos `incidente` e `incident` da inferência de debug;
+- mantidos somente sinais inequívocos como `debug`, `diagnosticar incidente`, `diagnose incident`, `root cause`, `causa raiz`, `reproduzir falha` e `investigar erro`;
+- adicionado teste de regressão provando que `revisão de segurança do incidente` continua roteando para `Ricardo`, `MCF-SECURITY-REVIEW`, `READY_AGENT`, risco Classe C;
+- a alteração do planner foi aplicada por commit Git granular após o conector bloquear uma substituição completa do arquivo; não houve force-push.
 
-Como houve alteração após CI/review, todas as evidências de gate do SHA `9ebedbaa...` foram invalidadas e serão refeitas no novo HEAD após a reconciliação do PRF e do manifesto.
+Como código e PRF mudaram novamente, qualquer CI/manifesta anterior é apenas histórico. O manifesto será regenerado e Foundation + Container Smoke serão refeitos no novo HEAD exato.
 
 ## Boundary preservado
 
@@ -71,6 +60,12 @@ public_action: FORBIDDEN
 blind_retry: FORBIDDEN
 ```
 
-## Próximo passo obrigatório
+## Estado operacional
 
-Regerar o manifesto SHA-256 do PRF e reexecutar Foundation + Container Smoke no HEAD exato resultante. Nenhum review ou gate anterior ao novo HEAD poderá ser usado como evidência final.
+```yaml
+production: BLOCKED
+live_staging_adapter: DISABLED
+gate_c_real_provider_write: NOT_AUTHORIZED
+human_operator_actions: 0
+human_gate_leandro: NOT_REQUIRED
+```
