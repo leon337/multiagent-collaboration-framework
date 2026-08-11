@@ -3,9 +3,9 @@ mission: MCF-RUNTIME-006-LOT-4-E-CLOSE-PHASE
 issue: 107
 pr: 108
 risk_class: C
-state: TECHNICAL_VALIDATION_PASS_REVIEW_CANDIDATE
+state: TECHNICAL_VALIDATION_PASS_PRF_FINALIZATION
 baseline: 39d2a8b3f1c323792fff9cbcc140d5f2bddc1522
-technical_candidate: 4615d4c443460aea890bc19477b2ec86dce46280
+technical_candidate: fe96cfc74f268d7e548a5c57bdc401b7d269f618
 branch: feat/mcf-runtime-006-lot4-e-close-phase
 skills_registered: 16
 skills_executable_target: 16
@@ -23,21 +23,26 @@ hdf:
   active: true
   leandro_as_executor: FORBIDDEN
   leandro_as_technical_handoff: FORBIDDEN
+  leandro_as_responsible_without_escalation: FORBIDDEN
 validation:
-  foundation_run: 31484613487
+  foundation_run: 31485353192
   foundation: PASS
-  container_smoke_run: 31484613494
+  container_smoke_run: 31485353179
   container_smoke: PASS
-  documentation_validation_run: 31484613523
+  documentation_validation_run: 31485353200
   documentation_validation: PASS
   server_test_files: 125
-  server_tests: 559
+  server_tests: 562
   failed_tests: 0
   ops_tests: 20
   web_tests: 5
-  artifact: 9098618775
-  artifact_digest: sha256:3033b5a295b92e11eed3308537062c370c327370b0f1455367189d3892ecd966
-prf_manifest: PENDING_FINAL_ARTIFACT_STABILIZATION
+  close_phase_executor_tests: 28
+  close_phase_planner_tests: 4
+  close_phase_mission_runtime_tests: 2
+  hdf_tests: 11
+  artifact: 9098898498
+  artifact_digest: sha256:c13a06b40a99fe1add2aa5557a06753e8f2a0b6dc6b89a0ddf87bae699479b5d
+prf_manifest: REGENERATION_REQUIRED
 specialist_reviews: PENDING
 augusto_trace: PENDING
 carmem_prf_review: PENDING
@@ -49,5 +54,5 @@ live_staging_adapter: DISABLED
 gate_c_real_provider_write: NOT_AUTHORIZED
 human_operator_actions: 0
 human_gate_leandro: NOT_REQUIRED
-next_action: Finalizar manifesto PRF, revalidar HEAD limpo e executar reviews/auditoria/gate.
+next_action: Regenerar manifesto PRF, auditar hashes e revalidar o HEAD final limpo.
 checkpoint_recipient: Mestre
