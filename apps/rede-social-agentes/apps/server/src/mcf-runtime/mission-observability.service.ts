@@ -191,7 +191,6 @@ export class MissionObservabilityService {
       blockedMissionsObserved: missions.length,
       alertsInserted: result.inserted,
       duplicates: result.duplicates,
-      staleSkipped: result.stale,
       externalNotification: false,
       humanActionRequired: false,
     };
