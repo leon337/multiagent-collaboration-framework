@@ -13,7 +13,7 @@ describe('ChatMissionPlanner Lot 4B MCF-EVALUATE-AGENTS', () => {
       agentId: 'Beatriz',
       handoffTo: 'Emily',
       toolProvider: 'internal',
-      toolOperation: 'evaluate-agents',
+      toolOperation: 'inspect-agent-evaluation',
       toolResource: 'mcf-agent-runtime',
       state: 'READY_AGENT',
       requiredEvidence: ['test_cases', 'scores', 'regressions'],

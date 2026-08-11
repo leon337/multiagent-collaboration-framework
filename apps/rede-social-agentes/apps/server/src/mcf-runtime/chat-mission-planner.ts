@@ -117,7 +117,7 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     agentId: 'Beatriz',
     handoffTo: 'Emily',
     toolProvider: 'internal',
-    toolOperation: 'evaluate-agents',
+    toolOperation: 'inspect-agent-evaluation',
     internal: false,
     requiredEvidence: ['test_cases', 'scores', 'regressions'],
   },

@@ -35,7 +35,11 @@ describe('SkillExecutor Lot 4B MCF-EVALUATE-AGENTS', () => {
       skillId: 'MCF-EVALUATE-AGENTS',
       agentId: 'Beatriz',
       inputs: validInputs(),
-      tool: { provider: 'internal', operation: 'evaluate-agents', resource: 'mcf-agent-runtime' },
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-agent-evaluation',
+        resource: 'mcf-agent-runtime',
+      },
     });
 
     expect(result).toMatchObject({
@@ -56,7 +60,11 @@ describe('SkillExecutor Lot 4B MCF-EVALUATE-AGENTS', () => {
       skillId: 'MCF-EVALUATE-AGENTS',
       agentId: 'Tiago',
       inputs: validInputs(),
-      tool: { provider: 'internal', operation: 'evaluate-agents', resource: 'mcf-agent-runtime' },
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-agent-evaluation',
+        resource: 'mcf-agent-runtime',
+      },
     });
 
     expect(result.evidenceStatus).toBe('VALID');
@@ -70,7 +78,11 @@ describe('SkillExecutor Lot 4B MCF-EVALUATE-AGENTS', () => {
         behavior_or_configuration: 'Evaluate behavior.',
         criteria: ['reproducible'],
       },
-      tool: { provider: 'internal', operation: 'evaluate-agents', resource: 'mcf-agent-runtime' },
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-agent-evaluation',
+        resource: 'mcf-agent-runtime',
+      },
     });
 
     expect(result).toMatchObject({
@@ -93,7 +105,11 @@ describe('SkillExecutor Lot 4B MCF-EVALUATE-AGENTS', () => {
       skillId: 'MCF-EVALUATE-AGENTS',
       agentId: 'Beatriz',
       inputs,
-      tool: { provider: 'internal', operation: 'evaluate-agents', resource: 'mcf-agent-runtime' },
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-agent-evaluation',
+        resource: 'mcf-agent-runtime',
+      },
     });
 
     expect(result.phaseState).toBe('RECOVERING');
@@ -112,7 +128,11 @@ describe('SkillExecutor Lot 4B MCF-EVALUATE-AGENTS', () => {
       skillId: 'MCF-EVALUATE-AGENTS',
       agentId: 'Beatriz',
       inputs,
-      tool: { provider: 'internal', operation: 'evaluate-agents', resource: 'mcf-agent-runtime' },
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-agent-evaluation',
+        resource: 'mcf-agent-runtime',
+      },
     });
 
     expect(result.phaseState).toBe('RECOVERING');
@@ -130,7 +150,11 @@ describe('SkillExecutor Lot 4B MCF-EVALUATE-AGENTS', () => {
       skillId: 'MCF-EVALUATE-AGENTS',
       agentId: 'Beatriz',
       inputs,
-      tool: { provider: 'internal', operation: 'evaluate-agents', resource: 'mcf-agent-runtime' },
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-agent-evaluation',
+        resource: 'mcf-agent-runtime',
+      },
     });
 
     expect(result.phaseState).toBe('RECOVERING');
@@ -143,7 +167,11 @@ describe('SkillExecutor Lot 4B MCF-EVALUATE-AGENTS', () => {
         skillId: 'MCF-EVALUATE-AGENTS',
         agentId: 'Rafael',
         inputs: validInputs(),
-        tool: { provider: 'internal', operation: 'evaluate-agents', resource: 'mcf-agent-runtime' },
+        tool: {
+          provider: 'internal',
+          operation: 'inspect-agent-evaluation',
+          resource: 'mcf-agent-runtime',
+        },
       }),
     ).rejects.toBeInstanceOf(McfPermissionDeniedError);
   });

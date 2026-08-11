@@ -63,7 +63,7 @@ describe('MissionRuntime Lot 4B agent evaluation persistence', () => {
         },
         tool: {
           provider: 'internal',
-          operation: 'evaluate-agents',
+          operation: 'inspect-agent-evaluation',
           resource: 'mcf-agent-runtime',
         },
       });
