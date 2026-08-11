@@ -11,20 +11,22 @@ baseline:
 
 candidate:
   pre_prf_sha: 933c8f72dd19219eea6112adfdd8db7c43112f2c
-  prf_head: PENDING_AFTER_MANIFEST_COMMIT
+  first_prf_sha: 9ebedbaa85bfa92d52f199df064382e075adb1d3
+  first_prf_state: SUPERSEDED_BY_REVIEW_CAF
+  latest_code_head_before_prf_reconciliation: ea75e73b3520748d4a6cdbabe9197b484203d884
+  final_prf_head: PENDING_AFTER_MANIFEST_REGENERATION
 
-pre_prf_validation:
-  foundation_run: 31477171098
-  foundation: PASS
-  container_smoke_run: 31477171096
-  container_smoke: PASS
-  server_test_files: 122
-  server_tests: 524
-  web_tests: 5
-  ops_tests: 20
-  failed_tests: 0
-  vitest_artifact: 9095733417
-  vitest_digest: sha256:9ae9c59a9e8824749a465d22fae1d0eebb0b2956e2235853b9aa26c99b71c69c
+historical_validation:
+  pre_prf_foundation_run: 31477171098
+  pre_prf_foundation: PASS_SUPERSEDED
+  pre_prf_container_smoke_run: 31477171096
+  pre_prf_container_smoke: PASS_SUPERSEDED
+  first_prf_foundation_run: 31477910252
+  first_prf_foundation: PASS_SUPERSEDED_BY_REVIEW_CAF
+  first_prf_container_smoke_run: 31477910266
+  first_prf_container_smoke: PASS_SUPERSEDED_BY_REVIEW_CAF
+  first_prf_vitest_artifact: 9096020199
+  first_prf_vitest_digest: sha256:e1af159fcb0c59acd403baa3dff401144dd7475b5b2225295c3e4823d6cec310
 
 skill:
   id: MCF-DEBUG-INCIDENT
@@ -56,19 +58,28 @@ semantic_evidence:
   reproduction: REQUIRED
   root_cause: REQUIRED
   recovery_result: REQUIRED
+  blind_retry_declaration: false
+  retry_evidence: SEMANTIC_REQUIRED
   regression_test_added: VERIFIABLE_REFERENCE_REQUIRED
   insufficient_evidence: RECOVERING
 
 caf:
-  failed_candidate: 3ea30e9aadac9600b701902f14d08a3881251692
-  failed_foundation_run: 31476698797
-  failed_step: Verify formatting
-  diagnostic_only_sha: 81c1f1c9ad58a895db02b70b0dafec5e7ba9349d
-  recovery: APPLIED_AND_REVALIDATED
+  formatting:
+    failed_candidate: 3ea30e9aadac9600b701902f14d08a3881251692
+    failed_foundation_run: 31476698797
+    failed_step: Verify formatting
+    diagnostic_only_sha: 81c1f1c9ad58a895db02b70b0dafec5e7ba9349d
+    recovery: APPLIED_AND_REVALIDATED
+  semantic_blind_retry:
+    reviewed_candidate: 9ebedbaa85bfa92d52f199df064382e075adb1d3
+    reviewer: Vinicius
+    finding: BOOLEAN_DECLARATION_WITHOUT_SEMANTIC_RETRY_EVIDENCE
+    recovery: RETRY_EVIDENCE_REQUIRED_AND_TESTED
+    revalidation: REQUIRED
 
 pending:
-  exact_head_foundation: true
-  exact_head_container_smoke: true
+  final_exact_head_foundation: true
+  final_exact_head_container_smoke: true
   manifest_audit: true
   specialist_reviews: true
   augusto_trace: true
