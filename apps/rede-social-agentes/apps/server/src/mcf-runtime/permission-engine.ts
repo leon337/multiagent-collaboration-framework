@@ -145,6 +145,66 @@ function assertSecurityReviewBoundary(
   }
 }
 
+const debugIncidentForbiddenInputs = new Set([
+  'external-write',
+  'github-write',
+  'github-provider-write',
+  'environment-mutation',
+  'deploy',
+  'production-action',
+  'destructive-fix',
+  'destructive-fix-without-backup',
+  'secret-access',
+  'public-action',
+  'blind-retry',
+]);
+
+function requestsForbiddenDebugAction(inputs: Record<string, unknown>): string | null {
+  for (const [rawKey, value] of Object.entries(inputs)) {
+    const key = canonicalizeToolValue(rawKey);
+    if (!debugIncidentForbiddenInputs.has(key)) continue;
+    if (value === undefined || value === null || value === false) continue;
+    return key;
+  }
+  return null;
+}
+
+function assertDebugIncidentBoundary(
+  skill: McfSkillDefinition,
+  provider: string,
+  operation: string,
+  resource: string,
+  inputs: Record<string, unknown>,
+): void {
+  if (skill.skillId !== 'MCF-DEBUG-INCIDENT') return;
+  if (skill.permissionProfile !== 'SCOPED_WRITE') {
+    throw new McfPermissionDeniedError(
+      'MCF-DEBUG-INCIDENT must preserve the canonical SCOPED_WRITE permission profile',
+    );
+  }
+  if (provider !== 'internal') {
+    throw new McfPermissionDeniedError(
+      'MCF-DEBUG-INCIDENT is restricted to the internal provider in Lot 4D',
+    );
+  }
+  if (operation !== 'inspect-debug-incident') {
+    throw new McfPermissionDeniedError(
+      'MCF-DEBUG-INCIDENT permits only inspect-debug-incident in Lot 4D',
+    );
+  }
+  if (resource !== 'mcf-agent-runtime') {
+    throw new McfPermissionDeniedError(
+      'MCF-DEBUG-INCIDENT is restricted to mcf-agent-runtime in Lot 4D',
+    );
+  }
+  const forbiddenInput = requestsForbiddenDebugAction(inputs);
+  if (forbiddenInput) {
+    throw new McfPermissionDeniedError(
+      `MCF-DEBUG-INCIDENT forbids ${forbiddenInput} in the Lot 4D internal-only boundary`,
+    );
+  }
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
@@ -197,6 +257,7 @@ export class PermissionEngine {
     }
 
     assertSecurityReviewBoundary(skill.skillId, provider, operation, resource);
+    assertDebugIncidentBoundary(skill, provider, operation, resource, inputs);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');
