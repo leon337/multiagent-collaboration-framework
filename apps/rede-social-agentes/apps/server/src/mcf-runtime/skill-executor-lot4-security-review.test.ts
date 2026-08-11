@@ -120,9 +120,12 @@ describe('SkillExecutor Lot 4C MCF-SECURITY-REVIEW', () => {
   it('rejects placeholder threats or controls', async () => {
     const inputs = validInputs();
     inputs.execution_evidence = {
-      threats: [''],
-      controls: ['control'],
-      residual_risk: 'low',
+      threats: [{ threat: '   ' }],
+      controls: [{ control: 'permission enforcement' }],
+      residual_risk: {
+        level: 'low',
+        critical_unaddressed: false,
+      },
     };
 
     const result = await createExecutor().execute({
@@ -161,6 +164,54 @@ describe('SkillExecutor Lot 4C MCF-SECURITY-REVIEW', () => {
 
     expect(result.phaseState).toBe('RECOVERING');
     expect(result.rejectionReason).toMatch(/residual_risk/u);
+  });
+
+  it('rejects unstructured residual risk that cannot prove critical-risk disposition', async () => {
+    const inputs = validInputs();
+    inputs.execution_evidence = {
+      threats: ['authorization bypass'],
+      controls: ['permission enforcement'],
+      residual_risk: 'critical risk remains unaddressed',
+    };
+
+    const result = await createExecutor().execute({
+      skillId: 'MCF-SECURITY-REVIEW',
+      agentId: 'Ricardo',
+      inputs,
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-security-review',
+        resource: 'mcf-agent-runtime',
+      },
+    });
+
+    expect(result.phaseState).toBe('RECOVERING');
+    expect(result.handoffTo).toBeNull();
+    expect(result.rejectionReason).toMatch(/structured meaningful residual_risk/u);
+  });
+
+  it('requires explicit critical_unaddressed boolean evidence', async () => {
+    const inputs = validInputs();
+    inputs.execution_evidence = {
+      threats: ['authorization bypass'],
+      controls: ['permission enforcement'],
+      residual_risk: { level: 'low' },
+    };
+
+    const result = await createExecutor().execute({
+      skillId: 'MCF-SECURITY-REVIEW',
+      agentId: 'Ricardo',
+      inputs,
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-security-review',
+        resource: 'mcf-agent-runtime',
+      },
+    });
+
+    expect(result.phaseState).toBe('RECOVERING');
+    expect(result.handoffTo).toBeNull();
+    expect(result.rejectionReason).toMatch(/critical_unaddressed boolean/u);
   });
 
   it('requires critical residual risk to be addressed or explicitly blocked', async () => {
