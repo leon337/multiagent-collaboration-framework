@@ -110,6 +110,139 @@ describe('GitHub branch/PR timeout reconciliation', () => {
     expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
   });
 
+  it('retries only branch read-back after a successful branch POST', async () => {
+    let branchExists = false;
+    let branchLookupCount = 0;
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      const common = baseAndCommit(url);
+      if (common) return common;
+      if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) {
+        branchLookupCount += 1;
+        if (!branchExists) return response({}, 404);
+        if (branchLookupCount === 2) throw new Error('transient branch read-back failure');
+        return response(branch());
+      }
+      if (url.endsWith('/git/refs') && method === 'POST') {
+        branchExists = true;
+        return response(branch(), 201);
+      }
+      if (url.includes('/pulls?')) return response([pull()]);
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+    const adapter = new GitHubBranchPullRequestAdapter(
+      new EvidenceValidator(),
+      new GitHubBranchPrClient(fetcher),
+    );
+
+    const receipt = await adapter.execute(request());
+
+    expect(receipt.status).toBe('SUCCEEDED');
+    expect(receipt.metadata.readBackVerified).toBe(true);
+    expect(branchLookupCount).toBe(3);
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+  });
+
+  it('retries only pull request read-back after a successful PR POST', async () => {
+    let pullExists = false;
+    let pullLookupCount = 0;
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      const common = baseAndCommit(url);
+      if (common) return common;
+      if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) return response(branch());
+      if (url.includes('/pulls?')) {
+        pullLookupCount += 1;
+        if (!pullExists) return response([]);
+        if (pullLookupCount === 2) throw new Error('transient pull read-back failure');
+        return response([pull()]);
+      }
+      if (url.endsWith('/pulls') && method === 'POST') {
+        pullExists = true;
+        return response(pull(), 201);
+      }
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+    const adapter = new GitHubBranchPullRequestAdapter(
+      new EvidenceValidator(),
+      new GitHubBranchPrClient(fetcher),
+    );
+
+    const receipt = await adapter.execute(request());
+
+    expect(receipt.status).toBe('SUCCEEDED');
+    expect(receipt.metadata.readBackVerified).toBe(true);
+    expect(pullLookupCount).toBe(3);
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+  });
+
+  it('records UNKNOWN when authentication is lost after a successful branch POST', async () => {
+    let branchCreated = false;
+    const evidence = new EvidenceValidator();
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      const common = baseAndCommit(url);
+      if (common) return common;
+      if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) {
+        if (!branchCreated) return response({}, 404);
+        return response({ message: 'credential revoked after branch write' }, 401);
+      }
+      if (url.endsWith('/git/refs') && method === 'POST') {
+        branchCreated = true;
+        return response(branch(), 201);
+      }
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+    const adapter = new GitHubBranchPullRequestAdapter(evidence, new GitHubBranchPrClient(fetcher));
+
+    const input = request();
+    const receipt = await adapter.execute(input);
+
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata).toMatchObject({
+      resultStatus: 'UNKNOWN',
+      readBackVerified: false,
+      unknownStage: 'CREATE_BRANCH',
+      idempotencyKey: KEY,
+    });
+    expect(() => evidence.verify(receipt, input.tool)).not.toThrow();
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+  });
+
+  it('records UNKNOWN when authentication is lost after a successful PR POST', async () => {
+    let pullCreated = false;
+    const evidence = new EvidenceValidator();
+    const fetcher = vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET';
+      const common = baseAndCommit(url);
+      if (common) return common;
+      if (url.includes('/git/ref/heads/feat/mcf-c1-timeout')) return response(branch());
+      if (url.includes('/pulls?')) {
+        if (!pullCreated) return response([]);
+        return response({ message: 'credential revoked after pull write' }, 401);
+      }
+      if (url.endsWith('/pulls') && method === 'POST') {
+        pullCreated = true;
+        return response(pull(), 201);
+      }
+      throw new Error(`unexpected ${method} ${url}`);
+    });
+    const adapter = new GitHubBranchPullRequestAdapter(evidence, new GitHubBranchPrClient(fetcher));
+
+    const input = request();
+    const receipt = await adapter.execute(input);
+
+    expect(receipt.status).toBe('PARTIAL');
+    expect(receipt.metadata).toMatchObject({
+      resultStatus: 'UNKNOWN',
+      readBackVerified: false,
+      unknownStage: 'CREATE_PULL_REQUEST',
+      idempotencyKey: KEY,
+    });
+    expect(() => evidence.verify(receipt, input.tool)).not.toThrow();
+    expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+  });
+
   it('records UNKNOWN when an ambiguous branch creation cannot be proven by read-back', async () => {
     let branchLookupCount = 0;
     const evidence = new EvidenceValidator();

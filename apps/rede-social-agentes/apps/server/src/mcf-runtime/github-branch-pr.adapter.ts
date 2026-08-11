@@ -48,8 +48,14 @@ interface BranchPrTarget {
   idempotencyKey: string;
 }
 
+interface ReadBackReconciliation<T> {
+  value: T | null;
+  ambiguous: boolean;
+}
+
 export const GITHUB_BRANCH_PR_TIMEOUT_MS = 5 * 60_000;
 const MAX_REQUESTS = 30;
+const READ_BACK_RECONCILIATION_DELAYS_MS = [0, 100, 250, 500] as const;
 const SHA_40 = /^[a-f0-9]{40}$/u;
 const REPOSITORY =
   /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/u;
@@ -483,6 +489,35 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
     return null;
   }
 
+  private async reconcileReadBack<T>(
+    readBack: () => Promise<T | null>,
+    deadlineAt: number,
+  ): Promise<ReadBackReconciliation<T>> {
+    let ambiguous = false;
+
+    for (const delayMs of READ_BACK_RECONCILIATION_DELAYS_MS) {
+      if (delayMs > 0) {
+        const remaining = deadlineAt - Date.now();
+        if (remaining <= 0) return { value: null, ambiguous: true };
+        await new Promise<void>((resolve) => setTimeout(resolve, Math.min(delayMs, remaining)));
+      }
+
+      try {
+        const value = await readBack();
+        if (value) return { value, ambiguous };
+      } catch (error) {
+        if (!(error instanceof ExternalActionAdapterError)) throw error;
+        if (error.code === 'RESERVATION_CONFLICT') throw error;
+        ambiguous = true;
+        if (!error.retryable || error.code === 'ADAPTER_TIMEOUT' || error.code === 'RATE_LIMITED') {
+          break;
+        }
+      }
+    }
+
+    return { value: null, ambiguous };
+  }
+
   private receipt(
     request: ExternalActionRequest,
     target: BranchPrTarget,
@@ -568,6 +603,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
     if (branch) {
       assertRef(branch, target.branchRef, target.headSha);
     } else {
+      let mutationError: ExternalActionAdapterError | null = null;
       try {
         await this.client.requestJson<GitHubRefResponse>(
           'POST',
@@ -578,26 +614,22 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
         );
       } catch (error) {
         if (!shouldReconcileMutationError(error)) throw error;
-        try {
-          branch = await this.getBranch(target, deadlineAt, budget);
-        } catch (reconciliationError) {
-          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {
-            return this.unknownReceipt(request, target, 'CREATE_BRANCH', budget);
-          }
-          throw reconciliationError;
-        }
-        if (!branch) throw error;
+        mutationError = error;
       }
 
-      try {
-        branch = await this.getBranch(target, deadlineAt, budget);
-      } catch (error) {
-        if (isAmbiguousMutationError(error)) {
-          return this.unknownReceipt(request, target, 'CREATE_BRANCH', budget);
-        }
-        throw error;
-      }
+      const reconciliation = await this.reconcileReadBack(
+        () => this.getBranch(target, deadlineAt, budget),
+        deadlineAt,
+      );
+      branch = reconciliation.value;
       if (!branch) {
+        if (
+          mutationError &&
+          !isAmbiguousMutationError(mutationError) &&
+          !reconciliation.ambiguous
+        ) {
+          throw mutationError;
+        }
         return this.unknownReceipt(request, target, 'CREATE_BRANCH', budget);
       }
       assertRef(branch, target.branchRef, target.headSha);
@@ -605,6 +637,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
 
     let pull = await this.findPull(target, deadlineAt, budget);
     if (!pull) {
+      let mutationError: ExternalActionAdapterError | null = null;
       try {
         await this.client.requestJson<GitHubPullResponse>(
           'POST',
@@ -620,26 +653,22 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
         );
       } catch (error) {
         if (!shouldReconcileMutationError(error)) throw error;
-        try {
-          pull = await this.findPull(target, deadlineAt, budget);
-        } catch (reconciliationError) {
-          if (isAmbiguousMutationError(error) && isAmbiguousMutationError(reconciliationError)) {
-            return this.unknownReceipt(request, target, 'CREATE_PULL_REQUEST', budget);
-          }
-          throw reconciliationError;
-        }
-        if (!pull) throw error;
+        mutationError = error;
       }
 
-      try {
-        pull = await this.findPull(target, deadlineAt, budget);
-      } catch (error) {
-        if (isAmbiguousMutationError(error)) {
-          return this.unknownReceipt(request, target, 'CREATE_PULL_REQUEST', budget);
-        }
-        throw error;
-      }
+      const reconciliation = await this.reconcileReadBack(
+        () => this.findPull(target, deadlineAt, budget),
+        deadlineAt,
+      );
+      pull = reconciliation.value;
       if (!pull) {
+        if (
+          mutationError &&
+          !isAmbiguousMutationError(mutationError) &&
+          !reconciliation.ambiguous
+        ) {
+          throw mutationError;
+        }
         return this.unknownReceipt(request, target, 'CREATE_PULL_REQUEST', budget);
       }
     }

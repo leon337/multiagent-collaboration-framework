@@ -1,0 +1,81 @@
+mission: MCF-RUNTIME-006-GATE-C-REAL-PROVIDER-WRITE
+phase: PHASE-006-GATE-C-REAL-PROVIDER-WRITE
+issue: 111
+technical_pr: 112
+risk_class: C
+
+state: APPROVED_AWAITING_MERGE
+
+technical_evidence:
+  real_provider_proof_head: f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
+  base_main: 9c6bd49173af31b36200208c009d6952403b4d71
+  provider_proof_run: 31537057206
+  provider_proof: PASS
+  artifact_id: 9119190464
+  artifact_digest: sha256:6122eb9398ae0c1420e9257667f42d60badc995fe928459f3672815bf5ab84c2
+  artifact_stage: COMPLETE
+  runtime_test_head: 77395ee5e82c7d454dcc4cf5bd3156cb8395ff56
+  runtime_foundation_run: 31536874745
+  runtime_foundation: PASS
+  runtime_container_smoke_run: 31536874735
+  runtime_container_smoke: PASS
+  hygiene_candidate: 18f30d47daa3cfabfb0d0e93fbb735d9032cf505
+  hygiene_foundation_run: 31537421860
+  hygiene_foundation: PASS
+  hygiene_container_smoke_run: 31537421887
+  hygiene_container_smoke: PASS
+
+real_provider:
+  c1:
+    proof_pr: 117
+    proof_branch: mcf/gate-c-proof-f50365eae53c
+    read_back_verified: true
+    proof_pr_count: 1
+    replay_same_external_id: true
+  c2:
+    proof_comment_id: 5258957980
+    read_back_verified: true
+    proof_comment_count: 1
+    duplicate_replay_failure: RESERVATION_CONFLICT
+    duplicate_replay_attempt_id: null
+
+fail_safe:
+  mutation_retry: NEVER
+  read_back_reconciliation: BOUNDED_GET_ONLY
+  postwrite_branch_auth_loss: PARTIAL_UNKNOWN
+  postwrite_pr_auth_loss: PARTIAL_UNKNOWN
+  unknown_when_unprovable: PRESERVED
+
+ledger:
+  attempts: 3
+  evidence_validated: 3
+  receipts: 3
+
+audit:
+  julia_governance: PASS
+  emily_independent_audit: PASS
+  blocking_findings: 0
+
+leo_decision:
+  decision: APPROVE_TECHNICAL_GATE_C
+  next_state: APPROVED_AWAITING_MERGE
+  responsible: Mestre
+
+human_gate:
+  authority: Leandro
+  action: enabled GitHub Actions pull-request creation policy
+  status: COMPLETE
+
+boundaries:
+  production: BLOCKED
+  public_release: BLOCKED
+  proof_pr_merge: NOT_AUTHORIZED
+  direct_main_write: FORBIDDEN
+
+pending:
+  - final PRF manifest validation
+  - technical PR merge
+  - canonical documentation sync on merged main
+
+next_action: Validate final PRF, merge PR #112, then perform canonical sync and mark Gate C ENTREGUE.
+return_to: Mestre

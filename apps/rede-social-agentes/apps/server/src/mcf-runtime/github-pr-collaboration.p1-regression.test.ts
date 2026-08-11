@@ -88,11 +88,12 @@ describe('C2 independent-review P1 regressions', () => {
     process.env.MCF_RECEIPT_SECRET = 'test-secret-that-is-long-enough-for-mcf-runtime';
   });
 
-  it('keeps the C2 mutating adapter out of the live runtime registry', async () => {
+  it('wires the C2 mutating adapter into the live runtime registry after Gate C authorization', async () => {
     const moduleSource = await readFile(modulePath, 'utf8');
 
-    expect(moduleSource).not.toContain('GitHubPullCollaborationAdapter');
-    expect(moduleSource).not.toContain("'./github-pr-collaboration.adapter.js'");
+    expect(moduleSource).toContain('GitHubPullCollaborationAdapter');
+    expect(moduleSource).toContain("'./github-pr-collaboration.adapter.js'");
+    expect(moduleSource).toContain('githubPrCollaboration: GitHubPullCollaborationAdapter');
   });
 
   it('returns PARTIAL/UNKNOWN when a successful comment write cannot be reconciled after auth loss', async () => {
