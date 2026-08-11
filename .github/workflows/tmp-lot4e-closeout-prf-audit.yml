@@ -1,0 +1,16 @@
+name: Lot 4E Final Closeout PRF Audit
+on:
+  push:
+    branches: [audit/mcf-runtime-006-lot4e-closeout-63b2a7a]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify final closeout PRF manifest
+        run: |
+          set -euo pipefail
+          cd artifacts/phases/PHASE-006-LOT-4-E-CLOSE-PHASE
+          sha256sum -c PHASE-006-LOT-4-E-CLOSE-PHASE-ARTIFACT-MANIFEST.sha256
