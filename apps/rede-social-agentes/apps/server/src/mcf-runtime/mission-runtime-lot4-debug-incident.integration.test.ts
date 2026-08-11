@@ -29,6 +29,8 @@ function semanticEvidence() {
       verification:
         'Deterministic replay completes once and produces the expected phase completion event.',
       blind_retry: false,
+      retry_evidence:
+        'attempt-ledger:debug-incident records one governed diagnostic attempt and no ungoverned retry.',
       regression_test_added: {
         reference: 'mission-runtime-lot4-debug-incident.integration.test.ts#valid-debug-incident',
       },
@@ -96,7 +98,11 @@ describe('MissionRuntime Lot 4D debug incident persistence', () => {
       expect(result.mission.version).toBe(2);
       expect(result.mission.currentAgentId).toBe('Renato');
       expect(result.receipt?.metadata.executionEvidence).toMatchObject({
-        recovery_result: { blind_retry: false },
+        recovery_result: {
+          blind_retry: false,
+          retry_evidence:
+            'attempt-ledger:debug-incident records one governed diagnostic attempt and no ungoverned retry.',
+        },
       });
 
       const timeline = await service.timeline(mission.id);
@@ -142,6 +148,7 @@ describe('MissionRuntime Lot 4D debug incident persistence', () => {
               action_or_mitigation: 'retry',
               verification: 'ok',
               blind_retry: true,
+              retry_evidence: 'attempt-ledger:uncontrolled-second-attempt',
               regression_test_added: true,
             },
           },
