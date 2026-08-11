@@ -20,7 +20,7 @@ import {
   type McfPhaseRecord,
   type McfRuntimeRepository,
 } from './mcf-runtime.repository.js';
-import { MissionObservabilityRepository } from './mission-observability.repository.js';
+import type { MissionObservabilityRepository } from './mission-observability.repository.js';
 
 const blockingEventTypes = new Set<McfEventType>([
   'MISSION_STATE_CHANGED',
