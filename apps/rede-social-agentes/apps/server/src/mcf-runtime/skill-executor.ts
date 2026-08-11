@@ -20,6 +20,11 @@ import {
   verifyGitHubStagingDeployEvidence,
 } from './github-staging-deploy.evidence.js';
 import {
+  collectInternalExecutionEvidence,
+  isGovernedAgentInternalSkill,
+  verifyInternalExecutionReceipt,
+} from './internal-skill-evidence.js';
+import {
   McfEvidenceRejectedError,
   McfPermissionDeniedError,
   McfSkillInputError,
@@ -36,6 +41,10 @@ import type { SkillRegistryLoader } from './skill-registry.loader.js';
 const executableSkills = new Set([
   'MCF-START-MISSION',
   'MCF-SELECT-AGENTS',
+  'MCF-RECOVER-CONTEXT',
+  'MCF-DEFINE-PRODUCT',
+  'MCF-DESIGN-EXPERIENCE',
+  'MCF-DESIGN-ARCHITECTURE',
   'MCF-IMPLEMENT-CHANGE',
   'MCF-REVIEW-CODE',
   'MCF-RUN-TESTS',
@@ -44,7 +53,15 @@ const executableSkills = new Set([
   'MCF-TRACE-MISSION',
 ]);
 
-const internalSkills = new Set(['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-TRACE-MISSION']);
+const internalSkills = new Set([
+  'MCF-START-MISSION',
+  'MCF-SELECT-AGENTS',
+  'MCF-RECOVER-CONTEXT',
+  'MCF-DEFINE-PRODUCT',
+  'MCF-DESIGN-EXPERIENCE',
+  'MCF-DESIGN-ARCHITECTURE',
+  'MCF-TRACE-MISSION',
+]);
 
 type CiQueryConclusion = 'SUCCESS' | 'FAILURE' | 'CANCELLED' | 'IN_PROGRESS';
 
@@ -166,11 +183,36 @@ export class SkillExecutor {
         'internal execution is restricted to planning and observability skills',
       );
     }
+    if (
+      isGovernedAgentInternalSkill(skill.skillId) &&
+      canonicalizeProvider(input.tool.provider) !== 'internal'
+    ) {
+      throw new McfPermissionDeniedError(
+        `${skill.skillId} Lot 4A execution is restricted to the governed internal provider`,
+      );
+    }
 
     this.permissions.assertAllowed(skill, input.agentId, input.tool, input.inputs);
     const handoffTo = resolveHandoff(skill, input.inputs);
 
     if (input.tool.provider === 'internal') {
+      let executionEvidence: Record<string, unknown> | null;
+      try {
+        executionEvidence = collectInternalExecutionEvidence(skill, input.inputs);
+      } catch (error) {
+        if (!(error instanceof McfEvidenceRejectedError)) throw error;
+        return {
+          skill,
+          receipt: null,
+          evidenceStatus: 'INVALID',
+          phaseState: 'RECOVERING',
+          missionState: 'RECOVERING',
+          handoffTo: null,
+          rejectionReason: error.message,
+          externalAction: null,
+        };
+      }
+
       const receipt = this.evidence.createInternalReceipt(input.tool, {
         skillId: skill.skillId,
         skillVersion: skill.version,
@@ -179,11 +221,27 @@ export class SkillExecutor {
         requiredInputs: skill.requiredInputs,
         executionSteps: skill.executionSteps,
         inputKeys: Object.keys(input.inputs).sort(),
+        ...(executionEvidence ? { executionEvidence } : {}),
       });
-      this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
-        agentId: input.agentId,
-        executionContext: input.executionContext,
-      });
+      try {
+        this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
+          agentId: input.agentId,
+          executionContext: input.executionContext,
+        });
+        verifyInternalExecutionReceipt(receipt, skill);
+      } catch (error) {
+        if (!(error instanceof McfEvidenceRejectedError)) throw error;
+        return {
+          skill,
+          receipt,
+          evidenceStatus: 'INVALID',
+          phaseState: 'RECOVERING',
+          missionState: 'RECOVERING',
+          handoffTo: null,
+          rejectionReason: error.message,
+          externalAction: null,
+        };
+      }
       return {
         skill,
         receipt,
