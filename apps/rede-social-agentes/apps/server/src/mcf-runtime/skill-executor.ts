@@ -51,6 +51,7 @@ const executableSkills = new Set([
   'MCF-GIT-PR-RELEASE',
   'MCF-DEPLOY-VALIDATE',
   'MCF-TRACE-MISSION',
+  'MCF-EVALUATE-AGENTS',
 ]);
 
 const internalSkills = new Set([
@@ -61,6 +62,7 @@ const internalSkills = new Set([
   'MCF-DESIGN-EXPERIENCE',
   'MCF-DESIGN-ARCHITECTURE',
   'MCF-TRACE-MISSION',
+  'MCF-EVALUATE-AGENTS',
 ]);
 
 type CiQueryConclusion = 'SUCCESS' | 'FAILURE' | 'CANCELLED' | 'IN_PROGRESS';
@@ -191,7 +193,7 @@ export class SkillExecutor {
       canonicalizeProvider(input.tool.provider) !== 'internal'
     ) {
       throw new McfPermissionDeniedError(
-        `${skill.skillId} Lot 4A execution is restricted to the governed internal provider`,
+        `${skill.skillId} governed execution is restricted to the internal provider`,
       );
     }
 
