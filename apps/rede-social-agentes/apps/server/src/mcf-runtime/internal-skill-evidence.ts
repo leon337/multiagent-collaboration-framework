@@ -9,6 +9,7 @@ const governedInternalSkillIds = new Set([
   'MCF-DESIGN-EXPERIENCE',
   'MCF-DESIGN-ARCHITECTURE',
   'MCF-EVALUATE-AGENTS',
+  'MCF-SECURITY-REVIEW',
 ]);
 
 function reject(message: string): never {
@@ -38,6 +39,17 @@ function isMeaningfulEvidenceItem(value: unknown): boolean {
   return false;
 }
 
+function hasMeaningfulSecurityValue(value: unknown): boolean {
+  if (typeof value === 'string') return value.trim().length > 0;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (typeof value === 'boolean') return false;
+  if (Array.isArray(value)) return value.some(hasMeaningfulSecurityValue);
+  if (typeof value === 'object' && value !== null) {
+    return Object.values(value as Record<string, unknown>).some(hasMeaningfulSecurityValue);
+  }
+  return false;
+}
+
 function requireArray(
   record: Record<string, unknown>,
   key: string,
@@ -49,6 +61,22 @@ function requireArray(
     !Array.isArray(value) ||
     (!options.allowEmpty && value.length === 0) ||
     value.some((item) => !isMeaningfulEvidenceItem(item))
+  ) {
+    return reject(message);
+  }
+  return value;
+}
+
+function requireSecurityArray(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): unknown[] {
+  const value = record[key];
+  if (
+    !Array.isArray(value) ||
+    value.length === 0 ||
+    value.some((item) => !hasMeaningfulSecurityValue(item))
   ) {
     return reject(message);
   }
@@ -98,6 +126,29 @@ function requireReference(
     if (Object.keys(reference).length > 0) return reference;
   }
   return reject(message);
+}
+
+function requireResidualRisk(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  const level = value.level;
+  if (typeof level !== 'string' || level.trim().length === 0) {
+    return reject('MCF-SECURITY-REVIEW residual_risk requires a non-empty level');
+  }
+  if (typeof value.critical_unaddressed !== 'boolean') {
+    return reject(
+      'MCF-SECURITY-REVIEW residual_risk requires critical_unaddressed boolean evidence',
+    );
+  }
+  if (value.critical_unaddressed === true && value.blocked !== true) {
+    return reject(
+      'MCF-SECURITY-REVIEW requires critical residual risks to be addressed or explicitly blocked',
+    );
+  }
+  return value;
 }
 
 function validateEvidence(
@@ -197,6 +248,24 @@ function validateEvidence(
           'regressions',
           'MCF-EVALUATE-AGENTS requires regressions evidence, even when empty',
           { allowEmpty: true },
+        ),
+      };
+    case 'MCF-SECURITY-REVIEW':
+      return {
+        threats: requireSecurityArray(
+          evidence,
+          'threats',
+          'MCF-SECURITY-REVIEW requires non-empty meaningful threats evidence',
+        ),
+        controls: requireSecurityArray(
+          evidence,
+          'controls',
+          'MCF-SECURITY-REVIEW requires non-empty meaningful controls evidence',
+        ),
+        residual_risk: requireResidualRisk(
+          evidence,
+          'residual_risk',
+          'MCF-SECURITY-REVIEW requires structured meaningful residual_risk evidence',
         ),
       };
     default:

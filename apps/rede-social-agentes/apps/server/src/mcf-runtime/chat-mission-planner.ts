@@ -121,6 +121,14 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     internal: false,
     requiredEvidence: ['test_cases', 'scores', 'regressions'],
   },
+  'MCF-SECURITY-REVIEW': {
+    agentId: 'Ricardo',
+    handoffTo: 'Emily',
+    toolProvider: 'internal',
+    toolOperation: 'inspect-security-review',
+    internal: false,
+    requiredEvidence: ['threats', 'controls', 'residual_risk'],
+  },
 };
 
 const riskRank: Record<McfRiskClass, number> = { A: 1, B: 2, C: 3 };
@@ -142,6 +150,20 @@ const evaluationTerms = [
   'regressão de prompt',
   'regressao de prompt',
   'scorecard',
+];
+const securityTerms = [
+  'revisão de segurança',
+  'revisao de seguranca',
+  'security review',
+  'threat model',
+  'ameaça',
+  'ameaca',
+  'ameaças',
+  'ameacas',
+  'permissões',
+  'permissoes',
+  'privacidade',
+  'compliance',
 ];
 const deploymentTerms = ['deploy', 'publicar', 'ambiente', 'rollback', 'produção', 'production'];
 const highRiskTerms = [
@@ -170,13 +192,18 @@ function titleFromObjective(objective: string): string {
   return compact.length <= 120 ? compact : `${compact.slice(0, 117)}...`;
 }
 
-function inferRisk(objective: string, requested?: McfRiskClass): McfRiskClass {
+function inferRisk(
+  objective: string,
+  selectedSkills: McfExecutableSkillId[],
+  requested?: McfRiskClass,
+): McfRiskClass {
   const normalized = objective.toLowerCase();
-  const inferred = includesAny(normalized, highRiskTerms)
-    ? 'C'
-    : includesAny(normalized, implementationTerms)
-      ? 'B'
-      : 'A';
+  const inferred =
+    selectedSkills.includes('MCF-SECURITY-REVIEW') || includesAny(normalized, highRiskTerms)
+      ? 'C'
+      : includesAny(normalized, implementationTerms)
+        ? 'B'
+        : 'A';
 
   if (!requested || riskRank[requested] <= riskRank[inferred]) return inferred;
   return requested;
@@ -193,6 +220,9 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
   }
 
   const normalized = request.objective.toLowerCase();
+  if (includesAny(normalized, securityTerms)) {
+    return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-SECURITY-REVIEW', 'MCF-TRACE-MISSION'];
+  }
   if (includesAny(normalized, evaluationTerms)) {
     return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-EVALUATE-AGENTS', 'MCF-TRACE-MISSION'];
   }
@@ -299,7 +329,7 @@ export class ChatMissionPlanner {
         'Leandro não é selecionado como agente executor',
         'risco solicitado nunca reduz o risco inferido',
       ],
-      riskClass: inferRisk(request.objective, request.requestedRiskClass),
+      riskClass: inferRisk(request.objective, selectedSkills, request.requestedRiskClass),
       selectedAgents,
       selectedSkills,
       sourceOfTruth,
