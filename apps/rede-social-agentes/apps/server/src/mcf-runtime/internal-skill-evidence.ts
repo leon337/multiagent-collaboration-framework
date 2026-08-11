@@ -42,7 +42,7 @@ function isMeaningfulEvidenceItem(value: unknown): boolean {
 function hasMeaningfulSecurityValue(value: unknown): boolean {
   if (typeof value === 'string') return value.trim().length > 0;
   if (typeof value === 'number') return Number.isFinite(value);
-  if (typeof value === 'boolean') return true;
+  if (typeof value === 'boolean') return false;
   if (Array.isArray(value)) return value.some(hasMeaningfulSecurityValue);
   if (typeof value === 'object' && value !== null) {
     return Object.values(value as Record<string, unknown>).some(hasMeaningfulSecurityValue);
