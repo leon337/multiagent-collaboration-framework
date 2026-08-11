@@ -1,6 +1,6 @@
 # Multiagent Collaboration Framework
 
-Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, skills versionadas, instrumentalização controlada, runtime persistente, evidência verificável, inicialização de chats, documentação por fase, auditoria, versionamento e decisão humana delegada.
+Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, skills versionadas, instrumentalização controlada, runtime persistente, evidência verificável, auditoria e gates governados.
 
 ## Governança
 
@@ -8,30 +8,22 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - **Léo** é a autoridade delegada de continuidade operacional e gates internos.
 - **Mestre** coordena a equipe, mantém o mapa da missão e apresenta o fluxo completo.
 - Existem **29 agentes nomeados**, selecionados dinamicamente por competência.
+- O protocolo operacional vigente está em `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`.
 
 ## Regras operacionais centrais
 
-- trabalho silencioso de agentes é proibido;
-- a execução deve ser apresentada na ordem real em que ocorre;
-- cada agente selecionado deve mostrar entrada, ação, evidência, resultado, decisão, entrega e passagem no ponto da atuação;
-- uma lista retrospectiva dizendo apenas o que cada agente fez não substitui a execução;
+- execução silenciosa de agentes é proibida;
+- toda atuação deve ser exposta cronologicamente pelo padrão ESEV;
 - agentes sem entrega real não podem ser listados como participantes;
-- toda missão operacional trabalha em loop orientado a objetivo;
-- passagens internas aparecem entre os blocos dos agentes e mantêm checkpoint, destinatário, estado, próxima ação e critério de conclusão;
-- falhas e recuperações devem permanecer visíveis e retornar ao fluxo original;
-- o fluxo continua em uma única resposta cronológica sempre que tecnicamente possível;
-- toda fase Classe B ou C gera pacote documental próprio com plano, relatório, validação, smoke, checkpoint, decisões, manifesto SHA-256 e README;
-- skills formais definem entradas, ferramentas, permissões, evidências, aceite e fallback;
-- agentes não podem escolher ferramentas por preferência ou apenas porque estão instaladas;
-- toda ação externa deve produzir evidência verificável;
-- confirmações humanas rotineiras são proibidas dentro do escopo já autorizado;
-- Léo decide gates internos e escala para Leandro somente matérias reservadas;
-- Leandro não pode integrar o contrato técnico, executar fases ou receber handoff técnico;
-- falhas recuperáveis seguem o Protocolo CAF e não encerram a missão.
+- falhas recuperáveis seguem CAF e retornam ao fluxo original;
+- fases Classe B/C exigem PRF próprio e rastreável;
+- ações externas exigem autorização, menor privilégio e evidência verificável;
+- sucesso não pode ser fabricado por texto, booleano ou ausência de evidência;
+- CI verde conclui a fase que ele prova, não a missão inteira;
+- Leandro não é executor técnico padrão e só recebe `HUMAN_GATE` em matérias reservadas;
+- produção permanece bloqueada até gate material próprio.
 
 ## Runtime executável
-
-O recorte vertical do MCF transforma parte do protocolo em controles de software:
 
 ```text
 objetivo conversacional
@@ -42,257 +34,153 @@ objetivo conversacional
 → PermissionEngine
 → SkillExecutor
 → EvidenceValidator
-→ PostgreSQL e Event Ledger
-→ Handoff e recuperação CAF
-→ callback de CI
+→ PostgreSQL / Event Ledger
+→ Handoff / CAF
 → trace final verificado
 ```
 
-### Estado do MVP
+### Estado canônico após o Lot 4-D
 
 ```yaml
 skills_registradas: 16
-skills_executaveis:
-  - MCF-START-MISSION
-  - MCF-SELECT-AGENTS
-  - MCF-RECOVER-CONTEXT
-  - MCF-DEFINE-PRODUCT
-  - MCF-DESIGN-EXPERIENCE
-  - MCF-DESIGN-ARCHITECTURE
-  - MCF-EVALUATE-AGENTS
-  - MCF-SECURITY-REVIEW
-  - MCF-IMPLEMENT-CHANGE
-  - MCF-REVIEW-CODE
-  - MCF-RUN-TESTS
-  - MCF-GIT-PR-RELEASE
-  - MCF-DEPLOY-VALIDATE
-  - MCF-TRACE-MISSION
-skills_ainda_documentais: 2
-chat_to_runtime_bridge: true
-endpoint_de_dispatch: POST_/v1/mcf/chat/dispatch
-bloco_interno_inicial: causal_e_persistido
-recibos_semanticos:
-  - code_review
-  - pull_request_and_gate
-  - deployment_and_rollback
-human_delegation_firewall: true
-leandro_em_selectedAgents: bloqueado
-leandro_como_executor: bloqueado
-leandro_como_handoff: bloqueado
-handoff_para_agente_nao_selecionado: bloqueado
-risk_downgrade: bloqueado
-production_deploy_without_material_gate: bloqueado
-mission_completion: final_trace_plus_complete_ledger
-ci_callback_closes_mission: false
-estado_persistente: true
-retomada_por_mission_id: true
-recibos_assinados: true
-controle_otimista: true
-callback_de_CI: true
-hierarquia_persistente_de_missoes: true
-retorno_automatico_a_missao_pai: true
-conclusao_pai_com_submissao_pendente: bloqueada
-runtime_006_gate_d: integrado
-runtime_006_gate_d_merge: 2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a
-runtime_006_observability: integrado
-runtime_006_observability_recovery_merge: 7418fff6e30f6107313a632284266caf04e8b33a
-runtime_006_lote_3: concluido
-runtime_006_lote_4a: integrado
-runtime_006_lote_4a_merge: 67d20e24fd136f6334bfd835cb775426f6514403
-runtime_006_lote_4a_executable_skills: 12
-runtime_006_lote_4a_documental_skills: 4
-runtime_006_lote_4b: integrado
-runtime_006_lote_4b_merge: 741abdad70432b9232256b7204156d96770c9b4d
-runtime_006_lote_4b_executable_skills: 13
-runtime_006_lote_4b_documental_skills: 3
-runtime_006_lote_4c: integrado
-runtime_006_lote_4c_merge: 08c3e19e1b6408a164628e1bfaa5968e2070ccf0
-runtime_006_lote_4c_executable_skills: 14
-runtime_006_lote_4c_documental_skills: 2
-staging_post_merge: PASS_DEPLOYED
-live_staging_adapter: disabled
-production: blocked
+skills_executaveis: 15
+skills_documentais: 1
+remaining_documental:
+  - MCF-CLOSE-PHASE
+
+mcf_debug_incident:
+  executable: true
+  planner_state: READY_AGENT
+  primary_owner: Patricia
+  owners:
+    - Patricia
+    - Bruno
+    - Rafael
+  handoff: Renato
+  permission_profile: SCOPED_WRITE
+  provider: internal
+  operation: inspect-debug-incident
+  resource: mcf-agent-runtime
+  external_write: false
+  semantic_evidence: PASS
+  blind_retry_protection: PASS
+  destructive_fix_protection: PASS
+  regression_test_evidence: PASS
+
+runtime_006_lote_4d:
+  issue: 103
+  technical_pr: 104
+  technical_candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
+  technical_merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
+  candidate_merge_tree_equivalence: PASS
+  foundation_run: 31479541126
+  container_smoke_run: 31479541177
+  specialist_reviews: PASS
+  independent_audit_emily: PASS
+  leo_gate: PASS
+  canonical_sync: IN_PROGRESS
+
+production: BLOCKED
+live_staging_adapter: DISABLED
+gate_c_real_provider_write: NOT_AUTHORIZED
+human_operator_actions: 0
+```
+
+### Skills executáveis
+
+- `MCF-START-MISSION`
+- `MCF-SELECT-AGENTS`
+- `MCF-RECOVER-CONTEXT`
+- `MCF-DEFINE-PRODUCT`
+- `MCF-DESIGN-EXPERIENCE`
+- `MCF-DESIGN-ARCHITECTURE`
+- `MCF-EVALUATE-AGENTS`
+- `MCF-SECURITY-REVIEW`
+- `MCF-DEBUG-INCIDENT`
+- `MCF-IMPLEMENT-CHANGE`
+- `MCF-REVIEW-CODE`
+- `MCF-RUN-TESTS`
+- `MCF-GIT-PR-RELEASE`
+- `MCF-DEPLOY-VALIDATE`
+- `MCF-TRACE-MISSION`
+
+`MCF-CLOSE-PHASE` permanece documental e é o próximo boundary separado do RUNTIME-006.
+
+## RUNTIME-006 — progresso
+
+| Boundary | Estado |
+|---|---|
+| Fundação / estabilização | Integrado |
+| Gate A — contrato comum | Integrado |
+| Gate B — leitura externa | Integrado |
+| C1/C2 — escrita reversível | Integrado tecnicamente; Gate C real-write continua parcial |
+| Gate D — staging | Integrado |
+| Observabilidade / recuperação | Integrado |
+| Lot 4-A — quatro skills de domínio | Integrado |
+| Lot 4-B — `MCF-EVALUATE-AGENTS` | Integrado |
+| Lot 4-C — `MCF-SECURITY-REVIEW` | Integrado |
+| Lot 4-D — `MCF-DEBUG-INCIDENT` | Integrado tecnicamente; canonical sync em fechamento |
+| `MCF-CLOSE-PHASE` | Próximo boundary; não implementado neste Lot |
+| Release Candidate | Pendente |
+| Produção | Bloqueada |
+
+### Lot 4-D — Debug Incident
+
+A Issue `#103` e o PR técnico `#104` promovem `MCF-DEBUG-INCIDENT` para execução governada `READY_AGENT`.
+
+O boundary técnico é deliberadamente restrito:
+
+```text
+internal / inspect-debug-incident / mcf-agent-runtime
+```
+
+O perfil canônico continua `SCOPED_WRITE`, mas não concede escrita externa neste Lot. GitHub write, mutação de ambiente, deploy, produção, destructive fix, secret/public action e blind retry permanecem proibidos.
+
+A recuperação válida precisa demonstrar:
+
+- reprodução ou caracterização significativa;
+- causa raiz sustentada;
+- ação, isolamento ou mitigação;
+- verificação do resultado;
+- `blind_retry: false` **mais** `retry_evidence` semântico independente;
+- referência verificável de teste de regressão.
+
+Evidência insuficiente leva a `RECOVERING`, sem handoff de sucesso para Renato.
+
+O candidato técnico `dccb41f146f5701f75d8762df89160bf2f1695a7` passou Foundation `31479541126`, Container Smoke `31479541177`, reviews especialistas, trace de Augusto, governança de Júlia, PRF/manifesto de Carmem, auditoria independente de Emily e gate técnico de Léo. O squash merge `94d8944c25ac26df3facb4f343a7a75c2489d704` compartilha com o candidato a mesma tree `39d2cd29b5990d4261e23655c272691c8a60b4e7`.
+
+Três CAFs ficaram registrados no PRF:
+
+1. correção de formatação canônica;
+2. rejeição de `blind_retry: false` como prova isolada, tornando `retry_evidence` obrigatório;
+3. remoção de termos genéricos `incidente/incident` que poderiam capturar uma rota explícita de security review e remover seu piso Classe C.
+
+## Estado dos limites externos
+
+O MCF não deve inferir autoridade externa a partir da existência de uma skill ou adapter.
+
+```yaml
+gate_c_real_provider_write: NOT_AUTHORIZED
+live_staging_adapter: DISABLED
+production: BLOCKED
 publicacao_social_automatica: false
 ```
 
-O bridge executa automaticamente somente o bloco de bootstrap interno consecutivo no início do plano. As skills de domínio dos Lots 4-A, 4-B e 4-C usam `READY_AGENT`: permanecem aguardando o agente owner, exigem `execution_evidence` semântica e não podem ter sua saída fabricada pelo bridge. `MCF-EVALUATE-AGENTS` preserva `READ_ONLY`, usa `inspect-agent-evaluation` e só entrega handoff para Emily após scorecard verificável. `MCF-SECURITY-REVIEW` preserva `SENSITIVE_CONTROLLED`, usa exclusivamente o provider interno `inspect-security-review`, impõe piso Classe C e só entrega a Emily após `threats`, `controls` e `residual_risk` estruturado serem validados. GitHub, CI, Render, Vercel ou Cloudflare continuam exigindo recibos reais.
+## Documentação canônica
 
-A missão só é encerrada por `MCF-TRACE-MISSION` com `final_checkpoint=true` quando o ledger comprova `PHASE_COMPLETED` para todas as skills selecionadas. CI verde conclui a fase de testes, não a missão inteira.
+- `docs/runtime/README.md`
+- `docs/runtime/MCF-RUNTIME-006-PLAN.md`
+- `skills/registry.yaml`
+- `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`
+- `docs/decisions/MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md`
+- `artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/`
 
-A hierarquia persistente impede que uma missão-pai seja concluída enquanto existir submissão com retorno pendente. Quando a submissão termina, o runtime devolve o bastão ao agente configurado e restaura a missão-pai em execução.
+O detalhe histórico dos Lots anteriores permanece nos respectivos PRFs, Issues, PRs e decisões. Este README apresenta somente o estado canônico atual.
 
-### MCF-RUNTIME-005 — deploy verificado
+## Próximo boundary
 
-O MCF-RUNTIME-005 foi encerrado após validar em staging:
+Após concluir e integrar o canonical documentation sync do Lot 4-D, o próximo boundary do RUNTIME-006 será formalizado separadamente para:
 
-- deploy automático condicionado aos gates técnicos;
-- verificação do SHA exato implantado;
-- sondas de saúde e versão;
-- smoke pós-deploy;
-- recuperação controlada pelo redeploy do último SHA saudável.
+`MCF-CLOSE-PHASE`
 
-A recuperação atual **não é rollback nativo de artefato do Render**. O mecanismo comprovado republica o commit saudável anterior e verifica novamente saúde e versão.
-
-### MCF-STAB-001 e MCF-RUNTIME-006
-
-A estabilização anterior ao RUNTIME-006 possui rastreamento na issue `#68` e no PR `#69`.
-
-O primeiro controle técnico implementado é a hierarquia persistente de missões:
-
-```text
-missão-pai
-→ submissão
-→ conclusão da submissão
-→ retorno obrigatório
-→ restauração da missão-pai
-```
-
-O MCF-RUNTIME-006 está expandindo a autonomia externa por meio de adapters confiáveis, recibos verificáveis, menor privilégio, idempotência, timeout, retry limitado e recuperação controlada.
-
-#### Gate D — staging integrado
-
-O Gate D do RUNTIME-006 foi implementado e integrado pela issue `#83` e PR `#84`.
-
-```yaml
-functional_release_sha: c787179e126a93af96dd67604cb24f91235c4320
-closeout_head: ea63828435589a78bafcab916b51b4fc5aea1102
-merge_sha: 2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a
-post_merge_documentation_run: 31442205293
-post_merge_documentation: PASS
-post_merge_staging_run: 31442205251
-post_merge_staging: PASS
-post_merge_outcome: DEPLOYED
-health_version_exact_sha: PASS
-readiness: PASS
-live_staging_adapter: DISABLED
-production: BLOCKED
-```
-
-O workflow pós-merge implantou e verificou o próprio merge SHA. A verificação de deploy consulta `/health/version` e `/health/ready` e somente retorna `DEPLOYED` quando o SHA observado é exatamente o solicitado e o runtime está ready.
-
-#### Lote 3 — observabilidade concluída
-
-A observabilidade de missões bloqueadas foi implementada na issue `#88` e PR `#89`. Um review assíncrono posterior ao merge encontrou um P2 válido: uma corrida podia persistir `MISSION_BLOCKED_ALERT_RAISED` com base em um snapshot obsoleto.
-
-A issue foi reaberta e o PR `#92` corrigiu o problema com `SELECT ... FOR UPDATE` e rechecagem atômica de `BLOCKED_RISK + mission_version` na mesma transação do insert. Candidato stale não gera evento; duplicidade real continua sendo suprimida pela idempotency key.
-
-```yaml
-original_pr: 89
-original_merge: 16442d9a7baf2ecbc91fb4b297ba21efa4829b38
-late_p2: STALE_BLOCKED_ALERT_RACE
-recovery_pr: 92
-recovery_closeout_head: e2aace417295ee33c84826a1b782c7a6fc42f62f
-recovery_foundation_run: 31453781013
-recovery_container_smoke_run: 31453781061
-recovery_test_files: 109
-recovery_tests: 447
-recovery_observability_tests: 12
-recovery_artifact: 9087290657
-recovery_merge: 7418fff6e30f6107313a632284266caf04e8b33a
-post_merge_documentation_run: 31454187271
-post_merge_documentation: PASS
-post_merge_staging_run: 31454187273
-post_merge_staging: PASS
-post_merge_outcome: DEPLOYED
-health_version_exact_sha: PASS
-readiness: PASS
-active_p0: 0
-active_p1: 0
-active_p2: 0
-```
-
-Com isso, o **Lote 3 está concluído** e o **Lot 4-A também está integrado**. O PR `#95` promoveu `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE` e `MCF-DESIGN-ARCHITECTURE` para execução governada; o candidato `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` passou Foundation `31461319193`, Container Smoke `31461319181`, 112 arquivos/459 testes e auditoria independente sem P0/P1/P2, sendo integrado por squash em `67d20e24fd136f6334bfd835cb775426f6514403`. O runtime passa a **12 skills executáveis e 4 documentais**. O próximo boundary foi `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`. O Gate C continua parcial porque a escrita real C1/C2 pelo provider GitHub permanece separadamente não autorizada. Produção e live staging adapter continuam bloqueados.
-
-O **Lot 4-B está integrado**. O PR `#98` promoveu `MCF-EVALUATE-AGENTS` para execução governada `READY_AGENT`, preservando owners Beatriz/Tiago, permissão `READ_ONLY`, handoff Emily e evidências `test_cases`, `scores` e `regressions`. O candidato `279a4b1e3b8e8b5b948d95481ec85e5223322278` passou Foundation `31463802089`, Container Smoke `31463802100`, 115 arquivos/470 testes do servidor e auditoria independente sem P0/P1/P2; foi integrado por squash em `741abdad70432b9232256b7204156d96770c9b4d`. Candidato e merge compartilham a tree `a0e676152c7070381480b9c5422f103887987eab`. O runtime passa a **13 skills executáveis e 3 documentais**. O boundary seguinte foi `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`. Gate C permanece parcial; produção e live staging adapter continuam bloqueados.
-
-O **Lot 4-C está integrado tecnicamente**. A Issue `#100` e o PR `#101` promoveram `MCF-SECURITY-REVIEW` para execução governada `READY_AGENT`, com Ricardo/Júlia como owners, `SENSITIVE_CONTROLLED`, autorização sensível explícita, provider interno, piso Classe C, handoff Emily e evidências semânticas de ameaças, controles e risco residual. O candidato final `323b69af4616cda0e4f9b1e47516a9cde37a3f0d` passou Foundation `31471615150`, Container Smoke `31471615302`, 118 arquivos/485 testes do servidor, Manifest Audit R3 `31471688783`, reviews especialistas e auditoria independente de Emily sem P0/P1/P2. O merge squash `08c3e19e1b6408a164628e1bfaa5968e2070ccf0` compartilha com o candidato a tree `70f07a2c936ce166555e52b36366c810919f5b8c`. O runtime passa a **14 skills executáveis e 2 documentais**: `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`. O próximo boundary será formalizado separadamente para `MCF-DEBUG-INCIDENT`; nenhuma Issue Lot 4-D pré-existente é presumida. Gate C permanece parcial; produção e live staging adapter continuam bloqueados.
-
-A `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza um fallback temporário TEAM_FIRST via GitHub Actions: `GITHUB_TOKEN` efêmero, menor privilégio, branch/ref isolado, binding ao SHA, guard contra duplicidade, single dispatch, correlação e cleanup. A decisão não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.
-
-### Documentação do runtime
-
-- `docs/decisions/MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md`;
-- `docs/decisions/MCF-DEC-059-HIERARQUIA-PERSISTENTE-E-RETORNO-A-MISSAO-PAI.md`;
-- `docs/reviews/MCF-DEC-059-RC-001-HIERARQUIA-PERSISTENTE.md`;
-- `docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md`;
-- `docs/decisions/MCF-DEC-057-EXPANSAO-DE-SKILLS-EXECUTAVEIS-E-RECIBOS-SEMANTICOS.md`;
-- `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
-- `docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md`;
-- `docs/decisions/MCF-DEC-054-RUNTIME-EXECUTAVEL-E-EVIDENCIA-CONFIAVEL.md`;
-- `docs/runtime/MCF-RUNTIME-006-PLAN.md`;
-- `docs/runtime/MCF-STAB-001-REPORT.md`;
-- `docs/runtime/MCF-RUNTIME-SPECIFICATION.md`;
-- `docs/runtime/MCF-RUNTIME-API.md`;
-- `docs/runtime/MCF-RUNTIME-RECOVERY.md`;
-- `docs/runtime/MCF-FIVE-SPRINTS-EXECUTION.md`;
-- `docs/runtime/README.md`.
-
-## Inicialização de chats do projeto
-
-O pacote `project-instructions/` evita que chats novos dependam do histórico de uma conversa anterior.
-
-- `MCF-CHATGPT-PROJECT-INSTRUCTIONS.txt` — texto curto para o campo Instruções do projeto;
-- `MCF-PROJECT-OPERATING-INSTRUCTIONS.md` — fonte canônica;
-- `MCF-STARTUP-CHECKLIST.yaml` — checklist de início de missão;
-- `MCF-CHAT-BOOTSTRAP-TESTS.md` — testes em chat totalmente novo;
-- `README.md` — instalação e atualização.
-
-A integração do pacote ao GitHub não modifica automaticamente as configurações do projeto ChatGPT. O texto e os arquivos precisam ser adicionados ao projeto e depois testados em chat novo.
-
-## Quatro agentes de controle multiagente
-
-- **Augusto** — Observabilidade Multiagente;
-- **Beatriz** — Avaliação de Agentes;
-- **Miriam** — Memória e Gestão do Conhecimento;
-- **Júlia** — Governança e Compliance de IA.
-
-## Skills e ferramentas
-
-- `skills/registry.yaml` — registro oficial de skills;
-- `skills/README.md` — regras de utilização;
-- `templates/MCF-SKILL-CONTRACT.yaml` — modelo para novas skills;
-- `docs/tools/MCF-AGENT-TOOL-MATRIX.md` — matriz dos 29 agentes;
-- `docs/tools/MCF-PLUGIN-PERMISSIONS.yaml` — perfis e limites de permissão;
-- `docs/tools/MCF-PLUGIN-EVALUATION.md` — avaliação antes da aprovação;
-- `docs/tools/MCF-AVAILABLE-CAPABILITIES.md` — inventário de capacidades;
-- `docs/tests/MCF-SKILLS-AND-TOOLING-TESTS.md` — testes de conformidade.
-
-## Documentos principais
-
-- `docs/decisions/MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md`;
-- `docs/decisions/MCF-DEC-059-HIERARQUIA-PERSISTENTE-E-RETORNO-A-MISSAO-PAI.md`;
-- `docs/decisions/MCF-DEC-058-DEPLOY-VERIFICADO-E-RECUPERACAO-AUTOMATICA.md`;
-- `docs/decisions/MCF-DEC-057-EXPANSAO-DE-SKILLS-EXECUTAVEIS-E-RECIBOS-SEMANTICOS.md`;
-- `docs/decisions/MCF-DEC-056-CHAT-TO-RUNTIME-BRIDGE.md`;
-- `docs/decisions/MCF-DEC-055-HUMAN-DELEGATION-FIREWALL.md`;
-- `docs/decisions/MCF-DEC-054-RUNTIME-EXECUTAVEL-E-EVIDENCIA-CONFIAVEL.md`;
-- `docs/decisions/MCF-DEC-053-INICIALIZACAO-AUTOMATICA-DE-CHATS-DO-PROJETO.md`;
-- `docs/decisions/MCF-DEC-052-SKILLS-E-INSTRUMENTALIZACAO-DOS-AGENTES.md`;
-- `docs/decisions/MCF-DEC-051-EXECUCAO-SEQUENCIAL-VISIVEL-E-RASTREABILIDADE-POR-FASE.md`;
-- `docs/decisions/MCF-DEC-050-QUATRO-AGENTES-DE-CONTROLE-E-PADRAO-OPERACIONAL-UNIFICADO.md`;
-- `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`;
-- `docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md`;
-- `templates/MCF-UNIFIED-MISSION.yaml`;
-- `templates/phase-traceability/`;
-- `docs/decisions/MCF-DEC-016-FLUXO-RESILIENTE-E-CONTINUIDADE-AUTOMATICA.md`;
-- `docs/decisions/MCF-DEC-017-DELEGACAO-DE-GATES-INTERNOS-AO-AGENTE-LEO.md`.
-
-## Auditorias externas
-
-Relatórios de Claude ou outro avaliador externo devem ser preservados e respondidos por achado. O estado experimental do framework contextualiza lacunas ainda em definição, mas não invalida automaticamente defeitos, inconsistências ou riscos encontrados.
-
-## Rede Social para Agentes de IA
-
-As mensagens relevantes da construção formam um corpus histórico e conteúdo-semente para publicação futura na própria rede social.
-
-Os registros ficam em `docs/social-seed/`.
-
-Registrar não significa publicar automaticamente. Todo conteúdo passa por classificação, revisão, privacidade e aprovação.
-
-O runtime apenas projeta conclusões verificadas como candidatos `DRAFT_REVIEW`. Nenhum candidato é publicado sem aprovação humana.
-
-## Estado
-
-A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-061 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos, a conclusão apenas por trace final comprovado no ledger, o deploy verificado com recuperação controlada em staging, o retorno transacional à missão-pai e o fallback TEAM_FIRST one-shot quando o executor normal estiver indisponível e a operação permanecer segura e autorizada.
-
-O estado atual é um MVP técnico avançado em staging com o **Lote 3 e os Lots 4-A, 4-B e 4-C do RUNTIME-006 integrados**. Existem **16 skills registradas, 14 executáveis e 2 ainda documentais**: `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`. O próximo boundary técnico deverá formalizar `MCF-DEBUG-INCIDENT` sem misturá-la ao fechamento de fase. Depois da cobertura total ainda permanecem testes multiagente em contextos separados, auditoria independente final, hardening de segurança e preparação da `MCF v1.0.0-RC1`. Gate C continua parcial, produção irrestrita bloqueada e live staging adapter desabilitado.
+Ele **não** faz parte da implementação do Lot 4-D.
