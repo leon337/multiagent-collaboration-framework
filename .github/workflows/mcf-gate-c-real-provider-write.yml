@@ -70,16 +70,6 @@ jobs:
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
 
-      - name: Diagnose full proof canonical formatting
-        run: |
-          TARGET="apps/server/src/mcf-runtime/gate-c-real-provider-write.integration.test.ts"
-          pnpm exec prettier --write "$TARGET"
-          git diff -- "$TARGET"
-          if ! git diff --quiet -- "$TARGET"; then
-            echo 'Canonical Prettier diff emitted above; stopping before external write.' >&2
-            exit 1
-          fi
-
       - name: Preflight formatting
         run: pnpm format:check
 
