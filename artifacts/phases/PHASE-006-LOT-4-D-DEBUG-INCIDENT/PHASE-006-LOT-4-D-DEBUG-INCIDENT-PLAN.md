@@ -1,19 +1,19 @@
 # PHASE-006-LOT-4-D-DEBUG-INCIDENT — Plan
 
-## Estado da fase
-
 ```yaml
 mission: MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
 issue: 103
 risk_class: C
 technical_pr: 104
 technical_state: MERGED
-canonical_sync_state: CANDIDATE
+canonical_pr: 105
+canonical_sync: COMPLETE
+closeout_recording: IN_PROGRESS
 ```
 
 ## Objetivo
 
-Promover `MCF-DEBUG-INCIDENT` para capacidade executável governada pelo runtime, sem conceder nova autoridade externa, e reconciliar a documentação canônica após a integração técnica.
+Promover `MCF-DEBUG-INCIDENT` para capacidade executável governada, sem nova autoridade externa, e reconciliar canonicamente o estado após integração técnica e documental.
 
 ## Contrato
 
@@ -21,7 +21,6 @@ Promover `MCF-DEBUG-INCIDENT` para capacidade executável governada pelo runtime
 skill_id: MCF-DEBUG-INCIDENT
 primary_owner: Patricia
 owners: [Patricia, Bruno, Rafael]
-required_input: symptom_or_evidence
 permission_profile: SCOPED_WRITE
 planner_state: READY_AGENT
 provider: internal
@@ -29,65 +28,47 @@ operation: inspect-debug-incident
 resource: mcf-agent-runtime
 handoff: Renato
 required_evidence: [reproduction, root_cause, recovery_result]
-acceptance: [cause_supported, regression_test_added]
 ```
+
+Recuperação válida exige ação/mitigação, verificação, `blind_retry: false`, `retry_evidence` semântico e referência verificável de regressão. Evidência insuficiente leva a `RECOVERING` sem handoff de sucesso.
 
 ## Boundary
 
-```yaml
-external_write: FORBIDDEN
-github_provider_write: FORBIDDEN
-environment_mutation: FORBIDDEN
-deploy: FORBIDDEN
-production_action: FORBIDDEN
-destructive_fix: FORBIDDEN
-secret_access: FORBIDDEN
-public_action: FORBIDDEN
-blind_retry: FORBIDDEN
-```
+External/GitHub write, mutação de ambiente, deploy/produção, destructive fix, secret/public action e blind retry continuam proibidos.
 
-`SCOPED_WRITE` permanece canônico, mas não é autorização genérica para efeito externo neste Lot.
-
-## Evidência
-
-`reproduction`, `root_cause` e `recovery_result` precisam conter conteúdo semântico. `recovery_result` exige ação/mitigação, verificação, `blind_retry: false`, `retry_evidence` semântico independente e referência verificável de teste de regressão.
-
-Evidência insuficiente deve produzir `RECOVERING` e nunca handoff de sucesso.
-
-## Validação técnica concluída
+## Integração técnica
 
 ```yaml
-candidate_sha: dccb41f146f5701f75d8762df89160bf2f1695a7
+candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
 foundation_run: 31479541126
 container_smoke_run: 31479541177
-foundation: PASS
-container_smoke: PASS
-manifest_audit: PASS
-specialist_reviews: PASS
-augusto_trace: PASS
-julia_governance: PASS
-emily_audit: PASS
-leo_gate: PASS
 technical_merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
-candidate_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
-merge_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
-tree_equivalence: PASS
+technical_tree_equivalence: PASS
+reviews_and_gates: PASS
 ```
 
-## Canonical sync
+## Integração documental
 
-O sync separado deve:
+```yaml
+candidate: 41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
+documentation_validation_run: 31481344101
+documentary_gate: PASS
+documentary_merge: 59b230e8ad834b88c1dc4363bc9a28499881e1fe
+canonical_sync: COMPLETE
+```
 
-1. atualizar os índices canônicos para 16 registradas / 15 executáveis / 1 documental;
-2. registrar somente `MCF-CLOSE-PHASE` como documental restante;
-3. preservar produção bloqueada, live staging desabilitado e Gate C real-write não autorizado;
-4. atualizar este PRF para o estado técnico integrado;
-5. gerar novo manifesto SHA-256;
-6. passar validação documental no HEAD exato;
-7. receber gate documental;
-8. fazer squash merge protegido e prova de equivalência de tree;
-9. somente então permitir o encerramento da Issue #103.
+O micro-closeout pós-merge existe apenas para gravar a conclusão verdadeira na fonte canônica e no PRF. Não altera runtime e não implementa `MCF-CLOSE-PHASE`.
 
-## Próximo boundary
+## Estado alvo final
 
-`MCF-CLOSE-PHASE` permanece fora do escopo deste Lot e deverá ser formalizado separadamente.
+```yaml
+skills_registered: 16
+skills_executable: 15
+skills_documental: 1
+remaining_documental:
+  - MCF-CLOSE-PHASE
+production: BLOCKED
+live_staging_adapter: DISABLED
+gate_c_real_provider_write: NOT_AUTHORIZED
+human_operator_actions: 0
+```

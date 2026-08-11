@@ -1,87 +1,61 @@
 # PHASE-006-LOT-4-D-DEBUG-INCIDENT — Decisions
 
-## D1 — GitHub como fonte de verdade
+## D1 — GitHub vence checkpoints transferidos
+Estado real foi verificado antes de cada gate/merge.
 
-A retomada validou `main`, Issue #103, registry, protocolo e encerramento do Lot 4-C antes de criar trabalho novo.
-
-## D2 — Ownership canônico
-
-Patricia é primary owner; Bruno e Rafael também são owners válidos; Renato recebe handoff somente após sucesso válido.
+## D2 — Ownership
+Patricia é primary owner; Bruno e Rafael também são owners; Renato recebe handoff após sucesso válido.
 
 ## D3 — READY_AGENT
-
-`MCF-DEBUG-INCIDENT` usa provider interno, mas não é bootstrap. O bridge não a auto-completa.
+A skill não é auto-completada pelo bridge.
 
 ## D4 — SCOPED_WRITE preservado
-
-O perfil canônico não foi reduzido nem ampliado. O Lot 4-D aplica boundary internal-only específico e não relaxa o `PermissionEngine` global.
+O Lot permanece internal-only sem relaxar o PermissionEngine global.
 
 ## D5 — Evidência semântica
+Booleano, placeholder, vazio, whitespace ou objeto vazio não substituem evidência.
 
-Reprodução, causa raiz e recuperação precisam de conteúdo significativo. Booleano, placeholder, vazio, whitespace e objeto vazio não substituem evidência.
-
-## D6 — Ausência de blind retry precisa ser demonstrada
-
-`blind_retry: false` é declaração complementar. `retry_evidence` semântico independente é obrigatório.
+## D6 — No-blind-retry demonstrável
+`blind_retry: false` exige também `retry_evidence` semântico independente.
 
 ## D7 — Evidência insuficiente recupera
+Retorna `RECOVERING` sem handoff de sucesso.
 
-Falha semântica leva a `RECOVERING`, sem `PHASE_COMPLETED` e sem handoff de sucesso.
+## D8 — CAF #1
+Falha de formatação foi capturada, corrigida e revalidada.
 
-## D8 — CAF #1 visível
+## D9 — CAF #2
+CI verde não impediu review de encontrar lacuna semântica; gate foi bloqueado e evidência antiga superseded.
 
-Falha de formatação foi capturada, diagnosticada com SHA não-candidato, corrigida e revalidada.
+## D10 — CAF #3
+Termos genéricos `incidente/incident` foram removidos para preservar security review Classe C.
 
-## D9 — CAF #2 bloqueou gate verde
+## D11 — Limitação de conector
+Recuperada por Git blob/tree/commit/ref fast-forward, sem force-push e sem HUMAN_GATE.
 
-O primeiro PRF tinha CI verde, mas Vinicius encontrou a lacuna de evidência de retry. O gate foi bloqueado, o código mudou e todo CI/review anterior virou histórico superseded.
-
-## D10 — CAF #3 protege routing de segurança
-
-Termos genéricos `incidente/incident` deixaram de disparar Debug Incident. Security review explícito continua em Ricardo e Classe C.
-
-## D11 — Limitação de conector não gera HUMAN_GATE
-
-Quando a substituição completa do planner foi bloqueada antes de chegar ao GitHub, a equipe usou blob/tree/commit/ref fast-forward, sem force-push e sem transferir trabalho técnico para Leandro.
-
-## D12 — Gate por SHA exato
-
-Foundation, Smoke, manifest audit, reviews, auditoria e gate finais pertencem ao candidato `dccb41f146f5701f75d8762df89160bf2f1695a7`.
+## D12 — SHA exato
+Gate técnico pertence a `dccb41f146f5701f75d8762df89160bf2f1695a7`.
 
 ## D13 — Merge técnico protegido
+PR #104 foi squash-merged com expected head e tree equivalence PASS.
 
-PR #104 foi mesclado por squash somente após rechecagem base/head e `expected_head_sha` exato.
+## D14 — Sync documental separado
+PR #105 partiu do merge técnico, validou documentação/manifesto e recebeu gate documental antes do merge.
 
-## D14 — Equivalência de tree obrigatória
+## D15 — Canonical sync concluído
+PR #105 foi mesclado em `59b230e8ad834b88c1dc4363bc9a28499881e1fe`. O estado canônico alvo é `16 / 15 / 1`, restando somente `MCF-CLOSE-PHASE`.
 
-Candidato e merge técnico compartilham a tree `39d2cd29b5990d4261e23655c272691c8a60b4e7`; equivalência `PASS`.
+## D16 — CAF #4 pós-merge
+Os documentos do PR #105 foram corretamente escritos como `IN_PROGRESS/CANDIDATE` antes do merge para não fabricar conclusão. Após o merge, esses marcadores ficaram defasados. Um micro-closeout documental foi aberto exclusivamente para registrar a conclusão já verdadeira.
 
-## D15 — Sync documental separado
+## D17 — Closeout não altera runtime
+O micro-closeout só modifica documentação/PRF, não implementa `MCF-CLOSE-PHASE` e não amplia permissões.
 
-A documentação canônica não foi misturada ao PR técnico. Branch dedicada parte do merge técnico `94d8944c25ac26df3facb4f343a7a75c2489d704`.
+## D18 — Issue #103
+Só deve ser fechada após validação, gate e merge do micro-closeout, para que a fonte canônica e o estado do GitHub coincidam.
 
-## D16 — Estado canônico alvo
+## D19 — Limites externos
+Produção bloqueada, live staging adapter desabilitado e Gate C real provider write não autorizado.
 
-Após o merge documental:
-
-```yaml
-skills_registered: 16
-skills_executable: 15
-skills_documental: 1
-remaining_documental:
-  - MCF-CLOSE-PHASE
-```
-
-`MCF-CLOSE-PHASE` não é implementada pelo Lot 4-D.
-
-## D17 — Issue #103 só fecha após documentação
-
-O merge técnico não encerrou a Issue. O fechamento só é autorizado depois de validação documental, gate documental, merge protegido e prova de equivalência do sync.
-
-## D18 — Limites externos continuam bloqueados
-
-Produção permanece bloqueada, live staging adapter desabilitado e Gate C real provider write não autorizado.
-
-## D19 — Sem HUMAN_GATE
-
-Nenhum gatilho reservado surgiu durante o Lot 4-D. `human_operator_actions=0`.
+## D20 — Sem HUMAN_GATE
+Nenhum gatilho reservado surgiu; `human_operator_actions=0`.

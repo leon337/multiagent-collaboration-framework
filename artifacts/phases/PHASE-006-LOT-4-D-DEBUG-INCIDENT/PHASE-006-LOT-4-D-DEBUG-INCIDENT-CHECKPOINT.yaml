@@ -2,26 +2,35 @@ phase: PHASE-006-LOT-4-D-DEBUG-INCIDENT
 mission: MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
 issue: 103
 risk_class: C
-state: TECHNICAL_MERGED_CANONICAL_SYNC_CANDIDATE
+state: CANONICAL_SYNC_COMPLETE_CLOSEOUT_RECORDING
 
 technical:
   pr: 104
-  baseline: 79c1a1644742cf22af60384b64685adbb1f017a3
   candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
   foundation_run: 31479541126
   foundation: PASS
   container_smoke_run: 31479541177
   container_smoke: PASS
-  manifest_audit: PASS
   specialist_reviews: PASS
   augusto_trace: PASS
   julia_governance: PASS
   emily_audit: PASS
   leo_gate: PASS
   merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
-  candidate_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
-  merge_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
   tree_equivalence: PASS
+
+canonical_sync:
+  pr: 105
+  candidate: 41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
+  documentation_validation_run: 31481344101
+  documentation_validation: PASS
+  manifest: PASS
+  carmem_review: PASS
+  julia_governance: PASS
+  emily_audit: PASS
+  leo_gate: PASS
+  merge: 59b230e8ad834b88c1dc4363bc9a28499881e1fe
+  state: COMPLETE
 
 skill:
   id: MCF-DEBUG-INCIDENT
@@ -32,32 +41,30 @@ skill:
   handoff: Renato
   permission_profile: SCOPED_WRITE
   provider: internal
-  operation: inspect-debug-incident
-  resource: mcf-agent-runtime
   external_write: false
   semantic_evidence: PASS
   blind_retry_protection: PASS
   destructive_fix_protection: PASS
   regression_test_evidence: PASS
 
-runtime_target:
+runtime:
   skills_registered: 16
   skills_executable: 15
   skills_documental: 1
   remaining_documental:
     - MCF-CLOSE-PHASE
 
-canonical_sync:
-  branch: mcf-runtime-006-lot-4-d-canonical-sync
-  base: 94d8944c25ac26df3facb4f343a7a75c2489d704
-  state: CANDIDATE
-  documentation_validation: PENDING
-  documentary_gate: PENDING
-  documentary_merge: PENDING
-  tree_equivalence: PENDING
+closeout_recording:
+  reason: POST_MERGE_STATE_RECONCILIATION
+  scope: DOCUMENTATION_AND_PRF_ONLY
+  runtime_code_change: false
+  next_skill_implemented: false
+  exact_head_validation: PENDING
+  gate: PENDING
+  merge: PENDING
 
 issue_103:
-  state: OPEN_UNTIL_DOCUMENTARY_MERGE
+  state: OPEN_UNTIL_CLOSEOUT_RECORDING_MERGE
 
 safety:
   production: BLOCKED

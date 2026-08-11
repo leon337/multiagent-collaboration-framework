@@ -1,7 +1,6 @@
 MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
 CLASS=C
 ISSUE=#103
-TECHNICAL_PR=#104
 
 BASELINE
 main=79c1a1644742cf22af60384b64685adbb1f017a3
@@ -11,120 +10,79 @@ protocol=V1.1_CONFIRMED
 preexisting_lot4d_work=NONE
 
 ESEV
-MESTRE->MIRIAM context recovery and precedence validation
+MESTRE->MIRIAM context recovery
 MIRIAM->PATRICIA semantic debug contract
-PATRICIA->BRUNO operational/recovery boundary
+PATRICIA->BRUNO operational boundary
 BRUNO->RAFAEL implementation
-RAFAEL->RENATO acceptance/regression tests
+RAFAEL->RENATO tests
 RENATO->CARMEM Class C PRF
-CARMEM->BEATRIZ/VINICIUS/RICARDO specialist review
-VINICIUS->CAF_2 semantic blind-retry evidence correction
+CARMEM->BEATRIZ/VINICIUS/RICARDO reviews
+VINICIUS->CAF_2 semantic retry evidence
 BEATRIZ->CAF_3 routing correction
-RENATO exact-head revalidation
-AUGUSTO mission trace
+RENATO exact-head validation
+AUGUSTO trace
 JULIA governance
-CARMEM manifest/PRF audit
+CARMEM PRF/manifest audit
 EMILY independent audit
 LEO technical gate
-LEO->GABRIEL protected squash merge
-GABRIEL->CARMEM separate canonical documentation sync
+GABRIEL protected technical merge
+CARMEM canonical sync
+EMILY independent documentary audit
+LEO documentary gate
+GABRIEL protected documentary merge
+MESTRE->CARMEM post-merge closeout recording
 
-CAF_1
-failed_sha=3ea30e9aadac9600b701902f14d08a3881251692
-foundation_run=31476698797
-failed_step=Verify formatting
-classification=FORMATTING
-recovery=EXACT_PRETTIER_DIFF_APPLIED
-revalidation=PASS
+CAF_1=formatting failure captured and corrected
+CAF_2=blind_retry_false_boolean_claim_rejected_retry_evidence_required
+CAF_3=generic_incident_routing_removed_security_class_c_regression_added
+CAF_4=post_merge_docs_still_marked_in_progress_closeout_recording_required
 
-CAF_2
-reviewed_sha=9ebedbaa85bfa92d52f199df064382e075adb1d3
-reviewer=Vinicius
-finding=blind_retry_false_was_boolean_claim_only
-correction=semantic_retry_evidence_required
-old_ci=SUPERSEDED
-revalidation=REQUIRED_AND_COMPLETED_ON_FINAL_CANDIDATE
-
-CAF_3
-reviewer=Beatriz
-finding=generic_incident_terms_could_steal_security_review_route
-correction=remove_generic_incidente_and_incident_terms
-regression=security_incident_routes_to_MCF_SECURITY_REVIEW_Ricardo_Class_C
-connector_full_update=BLOCKED_BEFORE_GITHUB
-recovery_method=git_blob_tree_commit_fast_forward
-force_push=NO
-
-FINAL_TECHNICAL_CANDIDATE
-sha=dccb41f146f5701f75d8762df89160bf2f1695a7
+TECHNICAL
+candidate=dccb41f146f5701f75d8762df89160bf2f1695a7
 foundation_run=31479541126
 foundation=PASS
 container_smoke_run=31479541177
 container_smoke=PASS
-server_test_files=122
-server_tests=527
-web_tests=5
-ops_tests=20
+server_tests=527_PASS
+web_tests=5_PASS
+ops_tests=20_PASS
 failed_tests=0
-vitest_artifact=9096661981
-vitest_digest=sha256:e689b3f6453666992509676f30f63f98d49a33582ca8adcf378c732f3f36848f
-manifest_audit=PASS
-beatriz=PASS
-vinicius=PASS
-ricardo=PASS
-renato=PASS
+specialist_reviews=PASS
 augusto=PASS
 julia=PASS
-carmem=PASS
 emily=PASS
 leo_gate=PASS
-
-TECHNICAL_MERGE
-method=SQUASH
-expected_head=dccb41f146f5701f75d8762df89160bf2f1695a7
-merge_sha=94d8944c25ac26df3facb4f343a7a75c2489d704
-candidate_tree=39d2cd29b5990d4261e23655c272691c8a60b4e7
-merge_tree=39d2cd29b5990d4261e23655c272691c8a60b4e7
+merge=94d8944c25ac26df3facb4f343a7a75c2489d704
 tree_equivalence=PASS
-main_after_merge=94d8944c25ac26df3facb4f343a7a75c2489d704
 
-SKILL_FINAL_TECHNICAL_STATE
-id=MCF-DEBUG-INCIDENT
-executable=true
-planner_state=READY_AGENT
-primary_owner=Patricia
-owners=Patricia,Bruno,Rafael
-permission_profile=SCOPED_WRITE
-provider=internal
-operation=inspect-debug-incident
-resource=mcf-agent-runtime
-external_write=false
-semantic_evidence=PASS
-blind_retry_protection=PASS
-destructive_fix_protection=PASS
-regression_test_evidence=PASS
-handoff=Renato
+CANONICAL_DOCUMENTARY_SYNC
+pr=105
+candidate=41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
+documentation_validation_run=31481344101
+documentation_validation=PASS
+manifest=PASS
+carmem=PASS
+julia=PASS
+emily=PASS
+leo_gate=PASS
+merge=59b230e8ad834b88c1dc4363bc9a28499881e1fe
+canonical_sync=COMPLETE
 
-RUNTIME_TARGET_CANONICAL_STATE
+POST_MERGE_CLOSEOUT
+reason=record_true_complete_state_after_documentary_merge
+scope=documentation_and_prf_only
+runtime_code_change=NO
+next_skill_implemented=NO
+manifest=PENDING_REGENERATION
+exact_head_documentation_validation=PENDING
+closeout_gate=PENDING
+issue_close=PENDING
+
+FINAL_TARGET
 skills_registered=16
 skills_executable=15
 skills_documental=1
 remaining_documental=MCF-CLOSE-PHASE
-
-CANONICAL_SYNC
-branch=mcf-runtime-006-lot-4-d-canonical-sync
-base=94d8944c25ac26df3facb4f343a7a75c2489d704
-state=CANDIDATE
-root_readme=UPDATED
-runtime_readme=UPDATED
-runtime_plan=UPDATED
-prf=UPDATED_TO_TECHNICAL_INTEGRATED_STATE
-manifest=PENDING_REGENERATION
-documentation_validation=PENDING_EXACT_HEAD
-documentary_gate=PENDING
-merge=PENDING
-issue_close=PENDING_AFTER_DOCUMENTARY_MERGE
-
-SAFETY
 production=BLOCKED
 live_staging_adapter=DISABLED
 gate_c_real_provider_write=NOT_AUTHORIZED
