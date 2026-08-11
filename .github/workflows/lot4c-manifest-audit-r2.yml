@@ -1,0 +1,21 @@
+name: Lot 4C Manifest Audit R2
+
+on:
+  push:
+    branches:
+      - audit/mcf-runtime-006-lot4-c-manifest-r2
+
+permissions:
+  contents: read
+
+jobs:
+  verify-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify PRF SHA-256 manifest
+        working-directory: artifacts/phases/PHASE-006-LOT-4-C-SECURITY-REVIEW
+        run: sha256sum -c PHASE-006-LOT-4-C-SECURITY-REVIEW-ARTIFACT-MANIFEST.sha256
