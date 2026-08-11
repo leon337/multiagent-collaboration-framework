@@ -31,6 +31,8 @@ function validEvidence(): Record<string, unknown> {
       verification:
         'The deterministic reproduction now completes exactly once and emits the expected handoff.',
       blind_retry: false,
+      retry_evidence:
+        'attempt-ledger:mission-42 records one governed diagnostic attempt and no ungoverned retry.',
       regression_test_added: {
         reference: 'mission-runtime-lot4-debug-incident.integration.test.ts#stale-version-recovery',
       },
@@ -72,7 +74,11 @@ describe('SkillExecutor Lot 4D MCF-DEBUG-INCIDENT', () => {
     expect(result.skill.permissionProfile).toBe('SCOPED_WRITE');
     expect(result.receipt?.provider).toBe('internal');
     expect(result.receipt?.metadata.executionEvidence).toMatchObject({
-      recovery_result: { blind_retry: false },
+      recovery_result: {
+        blind_retry: false,
+        retry_evidence:
+          'attempt-ledger:mission-42 records one governed diagnostic attempt and no ungoverned retry.',
+      },
     });
   });
 
@@ -187,6 +193,45 @@ describe('SkillExecutor Lot 4D MCF-DEBUG-INCIDENT', () => {
         recovery_result: {
           action_or_mitigation: 'isolated stale state',
           blind_retry: false,
+          retry_evidence: 'attempt-ledger:single-governed-attempt',
+          regression_test_added: 'debug.test.ts',
+        },
+      },
+    ],
+    [
+      'recovery without semantic retry evidence',
+      {
+        ...validEvidence(),
+        recovery_result: {
+          action_or_mitigation: 'isolated stale state',
+          verification: 'reproduction stopped under deterministic test',
+          blind_retry: false,
+          regression_test_added: 'debug.test.ts',
+        },
+      },
+    ],
+    [
+      'boolean retry evidence',
+      {
+        ...validEvidence(),
+        recovery_result: {
+          action_or_mitigation: 'isolated stale state',
+          verification: 'reproduction stopped under deterministic test',
+          blind_retry: false,
+          retry_evidence: true,
+          regression_test_added: 'debug.test.ts',
+        },
+      },
+    ],
+    [
+      'placeholder retry evidence',
+      {
+        ...validEvidence(),
+        recovery_result: {
+          action_or_mitigation: 'isolated stale state',
+          verification: 'reproduction stopped under deterministic test',
+          blind_retry: false,
+          retry_evidence: 'done',
           regression_test_added: 'debug.test.ts',
         },
       },
@@ -199,6 +244,7 @@ describe('SkillExecutor Lot 4D MCF-DEBUG-INCIDENT', () => {
           action_or_mitigation: 'isolated stale state',
           verification: 'reproduction stopped under deterministic test',
           blind_retry: false,
+          retry_evidence: 'attempt-ledger:single-governed-attempt',
         },
       },
     ],
@@ -210,6 +256,7 @@ describe('SkillExecutor Lot 4D MCF-DEBUG-INCIDENT', () => {
           action_or_mitigation: 'retry request',
           verification: 'second attempt returned 200',
           blind_retry: true,
+          retry_evidence: 'attempt-ledger:uncontrolled-second-attempt',
           regression_test_added: 'debug.test.ts',
         },
       },
@@ -222,6 +269,7 @@ describe('SkillExecutor Lot 4D MCF-DEBUG-INCIDENT', () => {
           action_or_mitigation: 'isolated stale state',
           verification: 'verified by deterministic test',
           blind_retry: false,
+          retry_evidence: 'attempt-ledger:single-governed-attempt',
           regression_test_added: true,
         },
       },
@@ -234,6 +282,7 @@ describe('SkillExecutor Lot 4D MCF-DEBUG-INCIDENT', () => {
           action_or_mitigation: 'isolated stale state',
           verification: 'verified by deterministic test',
           blind_retry: false,
+          retry_evidence: 'attempt-ledger:single-governed-attempt',
           regression_test_added: 'done',
         },
       },
