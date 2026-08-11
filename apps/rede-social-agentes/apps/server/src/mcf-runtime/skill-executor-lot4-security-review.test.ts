@@ -163,6 +163,67 @@ describe('SkillExecutor Lot 4C MCF-SECURITY-REVIEW', () => {
     expect(result.rejectionReason).toMatch(/residual_risk/u);
   });
 
+  it('requires critical residual risk to be addressed or explicitly blocked', async () => {
+    const executionEvidence = {
+      threats: [{ id: 'T1', threat: 'Critical authorization bypass' }],
+      controls: [{ threat_id: 'T1', control: 'Block sensitive execution' }],
+      residual_risk: {
+        level: 'critical',
+        critical_unaddressed: true,
+        blocked: false,
+      },
+    };
+    const inputs = validInputs();
+    inputs.execution_evidence = executionEvidence;
+
+    const rejected = await createExecutor().execute({
+      skillId: 'MCF-SECURITY-REVIEW',
+      agentId: 'Ricardo',
+      inputs,
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-security-review',
+        resource: 'mcf-agent-runtime',
+      },
+    });
+
+    expect(rejected.phaseState).toBe('RECOVERING');
+    expect(rejected.handoffTo).toBeNull();
+    expect(rejected.rejectionReason).toMatch(/critical residual risks/u);
+
+    executionEvidence.residual_risk.blocked = true;
+    const blocked = await createExecutor().execute({
+      skillId: 'MCF-SECURITY-REVIEW',
+      agentId: 'Ricardo',
+      inputs,
+      tool: {
+        provider: 'internal',
+        operation: 'inspect-security-review',
+        resource: 'mcf-agent-runtime',
+      },
+    });
+
+    expect(blocked.evidenceStatus).toBe('VALID');
+    expect(blocked.handoffTo).toBe('Emily');
+  });
+
+  it('rejects explicitly forbidden secret exposure and unrestricted write operations', async () => {
+    for (const operation of ['secret_exposure', 'unrestricted_write']) {
+      await expect(
+        createExecutor().execute({
+          skillId: 'MCF-SECURITY-REVIEW',
+          agentId: 'Ricardo',
+          inputs: validInputs(),
+          tool: {
+            provider: 'internal',
+            operation,
+            resource: 'mcf-agent-runtime',
+          },
+        }),
+      ).rejects.toBeInstanceOf(McfPermissionDeniedError);
+    }
+  });
+
   it('rejects a non-owner security reviewer', async () => {
     await expect(
       createExecutor().execute({

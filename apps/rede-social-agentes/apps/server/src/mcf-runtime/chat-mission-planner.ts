@@ -192,13 +192,18 @@ function titleFromObjective(objective: string): string {
   return compact.length <= 120 ? compact : `${compact.slice(0, 117)}...`;
 }
 
-function inferRisk(objective: string, requested?: McfRiskClass): McfRiskClass {
+function inferRisk(
+  objective: string,
+  selectedSkills: McfExecutableSkillId[],
+  requested?: McfRiskClass,
+): McfRiskClass {
   const normalized = objective.toLowerCase();
-  const inferred = includesAny(normalized, highRiskTerms)
-    ? 'C'
-    : includesAny(normalized, implementationTerms)
-      ? 'B'
-      : 'A';
+  const inferred =
+    selectedSkills.includes('MCF-SECURITY-REVIEW') || includesAny(normalized, highRiskTerms)
+      ? 'C'
+      : includesAny(normalized, implementationTerms)
+        ? 'B'
+        : 'A';
 
   if (!requested || riskRank[requested] <= riskRank[inferred]) return inferred;
   return requested;
@@ -324,7 +329,7 @@ export class ChatMissionPlanner {
         'Leandro não é selecionado como agente executor',
         'risco solicitado nunca reduz o risco inferido',
       ],
-      riskClass: inferRisk(request.objective, request.requestedRiskClass),
+      riskClass: inferRisk(request.objective, selectedSkills, request.requestedRiskClass),
       selectedAgents,
       selectedSkills,
       sourceOfTruth,
