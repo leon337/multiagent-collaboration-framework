@@ -47,9 +47,9 @@ Continuam proibidos:
 
 ## Evidência semântica
 
-`reproduction` deve identificar sintoma, método de reprodução ou caracterização e referência de evidência. `root_cause` deve identificar uma causa sustentada por evidência. `recovery_result` deve registrar ação ou mitigação, verificação, `blind_retry: false` e referência verificável de teste de regressão.
+`reproduction` deve identificar sintoma, método de reprodução ou caracterização e referência de evidência. `root_cause` deve identificar uma causa sustentada por evidência. `recovery_result` deve registrar ação ou mitigação, verificação, `blind_retry: false`, evidência semântica separada em `retry_evidence` demonstrando que não ocorreu blind retry e referência verificável de teste de regressão.
 
-Evidência vazia, booleana, whitespace, placeholder ou claim não verificável deve levar a `RECOVERING`, sem handoff de sucesso.
+O booleano `blind_retry: false` isolado não constitui evidência suficiente. Evidência vazia, booleana, whitespace, placeholder ou claim não verificável deve levar a `RECOVERING`, sem handoff de sucesso.
 
 ## Equipe com entrega
 
@@ -80,6 +80,7 @@ baseline
 → Foundation + Container Smoke no HEAD exato do PRF
 → manifesto
 → reviews especialistas
+→ CAF e nova validação se review encontrar defeito
 → Augusto
 → Julia
 → Emily
@@ -99,6 +100,7 @@ baseline
 - `SCOPED_WRITE` permanece canônico;
 - provider externo e ações proibidas são negados;
 - evidência semântica válida conclui a fase e cria handoff para Renato;
+- `blind_retry: false` sem `retry_evidence` semântico é rejeitado;
 - evidência insuficiente entra em `RECOVERING` sem handoff de sucesso;
 - receipt, eventos, persistência e versionamento são exercitados pelo `MissionRuntime`;
 - regressões dos Lots 4-A, 4-B e 4-C permanecem verdes.
