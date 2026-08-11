@@ -2,9 +2,7 @@
 
 ## 1. Objetivo
 
-Expandir o MCF de um runtime persistente e governado para uma plataforma capaz de executar capacidades reais com contratos de permissão, evidência verificável, recuperação, observabilidade, handoffs persistentes e gates proporcionais ao risco.
-
-Este plano é um índice canônico de estado. Evidência detalhada permanece nos PRFs, Issues, PRs e decisões correspondentes.
+Expandir o MCF para execução real governada por contratos de permissão, evidência verificável, recuperação, observabilidade, handoffs persistentes e gates proporcionais ao risco.
 
 ## 2. Invariantes
 
@@ -22,25 +20,7 @@ live_staging_adapter: DISABLED
 gate_c_real_provider_write: NOT_AUTHORIZED
 ```
 
-## 3. Arquitetura de execução
-
-```text
-Objective
-→ ChatMissionPlanner
-→ ChatRuntimeBridge
-→ MissionRuntime
-→ SkillRegistryLoader
-→ HumanDelegationGuard
-→ PermissionEngine
-→ SkillExecutor
-→ EvidenceValidator
-→ Tool / Internal governed execution
-→ Receipt + Event Ledger
-→ Handoff / Recovery
-→ Final trace
-```
-
-## 4. Estado canônico
+## 3. Estado canônico
 
 ```yaml
 skills_registered: 16
@@ -50,9 +30,7 @@ remaining_documental:
   - MCF-CLOSE-PHASE
 ```
 
-O próximo boundary ainda não implementado é `MCF-CLOSE-PHASE`.
-
-## 5. Roadmap do RUNTIME-006
+## 4. Roadmap
 
 | Boundary | Situação |
 |---|---|
@@ -61,69 +39,53 @@ O próximo boundary ainda não implementado é `MCF-CLOSE-PHASE`.
 | Gate B — leitura externa | COMPLETE |
 | A1 — Code Review Read Only | COMPLETE |
 | A2 — CI Query Read Only | COMPLETE |
-| Recibos + validação semântica | COMPLETE |
-| C1 — branch/PR | IMPLEMENTED |
-| C2 — colaboração em PR | IMPLEMENTED |
+| C1/C2 — escrita reversível | IMPLEMENTED |
 | Gate C — real provider write | PARTIAL / NOT AUTHORIZED |
 | Gate D — staging | COMPLETE |
-| Observabilidade de missão bloqueada | COMPLETE |
+| Observabilidade | COMPLETE |
 | Lot 4-A — Recover/Product/UX/Architecture | COMPLETE |
 | Lot 4-B — Evaluate Agents | COMPLETE |
 | Lot 4-C — Security Review | COMPLETE |
-| Lot 4-D — Debug Incident | TECHNICALLY INTEGRATED; CANONICAL SYNC IN PROGRESS |
-| Close Phase | PENDING / OUT OF LOT 4-D |
-| agentes isolados / validação multiagente | PENDING conforme roadmap posterior |
+| Lot 4-D — Debug Incident | COMPLETE |
+| `MCF-CLOSE-PHASE` | PENDING / NEXT BOUNDARY |
 | Release Candidate | PENDING |
 | Produção | BLOCKED |
 
-## 6. Lot 4-D — Executable Debug Incident
-
-### Identificação
+## 5. Lot 4-D — Debug Incident
 
 ```yaml
 mission: MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
 issue: 103
-technical_pr: 104
 risk_class: C
 baseline_main: 79c1a1644742cf22af60384b64685adbb1f017a3
+technical_pr: 104
 technical_candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
 technical_merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
-candidate_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
-merge_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
-candidate_merge_tree_equivalence: PASS
-canonical_sync: IN_PROGRESS
+technical_tree_equivalence: PASS
+canonical_pr: 105
+canonical_candidate: 41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
+canonical_merge: 59b230e8ad834b88c1dc4363bc9a28499881e1fe
+canonical_sync: COMPLETE
 ```
 
 ### Skill
 
 ```yaml
 skill_id: MCF-DEBUG-INCIDENT
-name: Diagnosticar incidente
 primary_owner: Patricia
-owners:
-  - Patricia
-  - Bruno
-  - Rafael
-required_inputs:
-  - symptom_or_evidence
+owners: [Patricia, Bruno, Rafael]
+required_inputs: [symptom_or_evidence]
 permission_profile: SCOPED_WRITE
 planner_state: READY_AGENT
 provider: internal
 operation: inspect-debug-incident
 resource: mcf-agent-runtime
 handoff_to: Renato
-required_evidence:
-  - reproduction
-  - root_cause
-  - recovery_result
-acceptance_criteria:
-  - cause_supported
-  - regression_test_added
+required_evidence: [reproduction, root_cause, recovery_result]
+acceptance_criteria: [cause_supported, regression_test_added]
 ```
 
-### Boundary restrito
-
-`SCOPED_WRITE` permanece no contrato canônico, mas o Lot 4-D não concede escrita externa genérica.
+### Boundary
 
 ```yaml
 external_write: FORBIDDEN
@@ -137,34 +99,23 @@ public_action: FORBIDDEN
 blind_retry: FORBIDDEN
 ```
 
-Nenhuma regra global do `PermissionEngine` é relaxada para a skill.
+### Evidência semântica
 
-### Semântica de evidência
-
-`reproduction` precisa conter sintoma, método de reprodução/caracterização e referência verificável. `root_cause` precisa conter causa e evidência de suporte.
-
-`recovery_result` só é válido quando contém:
-
-1. ação, isolamento ou mitigação;
-2. verificação semanticamente significativa;
-3. `blind_retry: false`;
-4. `retry_evidence` independente demonstrando que não ocorreu blind retry;
-5. referência verificável do teste de regressão.
+`reproduction` exige sintoma, método e referência verificável. `root_cause` exige causa e evidência de suporte. `recovery_result` exige ação/mitigação, verificação, `blind_retry: false`, `retry_evidence` semântico independente e referência verificável do teste de regressão.
 
 Ausência, vazio, whitespace, placeholder, objeto vazio ou booleano usado como substituto de evidência gera `RECOVERING`, nunca sucesso fabricado.
 
 ### Planner e ownership
 
 - objetivos inequívocos de debug selecionam `MCF-DEBUG-INCIDENT`;
-- Patricia é o primary owner do planner;
-- Bruno e Rafael também são owners válidos de execução;
+- Patricia é primary owner;
+- Bruno e Rafael também são owners válidos;
 - non-owner é negado;
-- o bridge não auto-completa a skill;
-- handoff para Renato só ocorre após evidência válida.
+- bridge não auto-completa;
+- handoff Renato somente após sucesso válido;
+- objetivo explicitamente de security review continua em Ricardo / `MCF-SECURITY-REVIEW` / Classe C.
 
-Objetivos explicitamente de security review continuam em `MCF-SECURITY-REVIEW`, Ricardo e Classe C. Os termos genéricos `incidente/incident` não capturam automaticamente a rota de debug.
-
-## 7. Validação técnica do Lot 4-D
+## 6. Evidência técnica
 
 ```yaml
 foundation_run: 31479541126
@@ -176,100 +127,43 @@ server_tests: 527
 web_tests: 5
 ops_tests: 20
 failed_tests: 0
-vitest_artifact: 9096661981
-vitest_digest: sha256:e689b3f6453666992509676f30f63f98d49a33582ca8adcf378c732f3f36848f
-manifest_audit: PASS
-beatriz_review: PASS
-vinicius_review: PASS
-ricardo_review: PASS
-renato_validation: PASS
+technical_manifest: PASS
+specialist_reviews: PASS
 augusto_trace: PASS
 julia_governance: PASS
-carmem_prf: PASS
 emily_independent_audit: PASS
 leo_technical_gate: PASS
+technical_merge: COMPLETE
+technical_tree_equivalence: PASS
 ```
 
-Todas as evidências acima pertencem ao SHA técnico exato `dccb41f146f5701f75d8762df89160bf2f1695a7`.
+## 7. Canonical documentation sync
+
+```yaml
+documentary_pr: 105
+documentary_candidate: 41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
+documentation_validation_run: 31481344101
+documentation_validation: PASS
+documentary_manifest: PASS
+carmem_review: PASS
+julia_governance: PASS
+emily_independent_audit: PASS
+leo_documentary_gate: PASS
+documentary_merge: 59b230e8ad834b88c1dc4363bc9a28499881e1fe
+canonical_sync: COMPLETE
+```
+
+Um micro-closeout documental pós-merge registra este estado `COMPLETE` de forma verdadeira, sem alterar código/runtime e sem implementar o próximo boundary.
 
 ## 8. CAFs do Lot 4-D
 
-### CAF #1 — formatação
+1. formatting corrigido e revalidado;
+2. prova de ausência de blind retry fortalecida com `retry_evidence` semântico;
+3. roteamento de incidente corrigido para não sobrepor security review;
+4. marcadores pré-merge `IN_PROGRESS/CANDIDATE` removidos da fonte canônica após o merge documental.
 
-- candidato `3ea30e9a...` falhou em `Verify formatting`;
-- SHA diagnóstico `81c1f1c9...` foi usado apenas para revelar o diff do Prettier;
-- novo SHA foi criado e revalidado;
-- o diagnóstico nunca foi candidato de gate.
-
-### CAF #2 — prova de ausência de blind retry
-
-- o primeiro PRF `9ebedbaa...` tinha CI verde;
-- Vinicius identificou que `blind_retry: false` isolado era claim booleano;
-- gate foi bloqueado;
-- `retry_evidence` semântico tornou-se obrigatório;
-- CI/reviews anteriores foram invalidados pelo novo HEAD.
-
-### CAF #3 — roteamento de incidente
-
-- Beatriz identificou que termos genéricos de incidente podiam sobrepor security review;
-- os termos genéricos foram removidos da inferência de debug;
-- regressão Classe C foi adicionada;
-- uma limitação do conector na atualização completa do planner foi recuperada por commit Git granular, fast-forward e sem force-push.
-
-## 9. Integração técnica
-
-O PR técnico `#104` foi mesclado por squash somente após:
-
-```text
-exact-head Foundation + Container Smoke
-→ manifest audit
-→ specialist reviews
-→ Augusto trace
-→ Julia governance
-→ Emily audit
-→ Leo gate
-→ final base/head check
-→ expected-head protected squash merge
-```
-
-A equivalência foi comprovada por tree Git exata:
-
-```yaml
-candidate_sha: dccb41f146f5701f75d8762df89160bf2f1695a7
-candidate_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
-merge_sha: 94d8944c25ac26df3facb4f343a7a75c2489d704
-merge_tree: 39d2cd29b5990d4261e23655c272691c8a60b4e7
-equivalence: PASS
-```
-
-## 10. Canonical documentation sync
-
-O sync documental é separado do PR técnico. Ele deve:
-
-- atualizar contagem para `16 / 15 / 1`;
-- registrar `MCF-DEBUG-INCIDENT` como integrado;
-- apontar somente `MCF-CLOSE-PHASE` como skill documental restante;
-- reconciliar este plano, `README.md`, `docs/runtime/README.md` e o PRF do Lot 4-D;
-- regenerar e auditar o manifesto SHA-256;
-- validar documentação no HEAD exato;
-- obter gate documental;
-- executar merge protegido e provar equivalência de tree;
-- somente então encerrar a Issue #103.
-
-## 11. Condições que permanecem bloqueadas
-
-```yaml
-production: BLOCKED
-live_staging_adapter: DISABLED
-gate_c_real_provider_write: NOT_AUTHORIZED
-human_operator_actions: 0
-human_gate_leandro: NOT_REQUIRED_FOR_LOT_4D
-```
-
-## 12. Próximo boundary
-
-Após o fechamento verificável do canonical sync e da Issue #103:
+## 9. Próximo boundary
 
 `MCF-CLOSE-PHASE`
 
-Esse boundary deve ser aberto e executado separadamente. O Lot 4-D não o implementa.
+Deve ser formalizado e executado separadamente. O Lot 4-D não o implementa.
