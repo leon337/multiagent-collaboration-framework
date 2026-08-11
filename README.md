@@ -88,6 +88,9 @@ retorno_automatico_a_missao_pai: true
 conclusao_pai_com_submissao_pendente: bloqueada
 runtime_006_gate_d: integrado
 runtime_006_gate_d_merge: 2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a
+runtime_006_observability: integrado
+runtime_006_observability_recovery_merge: 7418fff6e30f6107313a632284266caf04e8b33a
+runtime_006_lote_3: concluido
 staging_post_merge: PASS_DEPLOYED
 live_staging_adapter: disabled
 production: blocked
@@ -149,9 +152,40 @@ production: BLOCKED
 
 O workflow pós-merge implantou e verificou o próprio merge SHA. A verificação de deploy consulta `/health/version` e `/health/ready` e somente retorna `DEPLOYED` quando o SHA observado é exatamente o solicitado e o runtime está ready.
 
-A `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza um fallback temporário TEAM_FIRST via GitHub Actions: `GITHUB_TOKEN` efêmero, menor privilégio, branch/ref isolado, binding ao SHA, guard contra duplicidade, single dispatch, correlação e cleanup. A decisão não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.
+#### Lote 3 — observabilidade concluída
 
-O item restante do Lote 3 é **observabilidade e alertas de missão bloqueada**. Depois dele, o plano segue para as oito skills ainda documentais, isolamento multiagente, auditoria final e RC.
+A observabilidade de missões bloqueadas foi implementada na issue `#88` e PR `#89`. Um review assíncrono posterior ao merge encontrou um P2 válido: uma corrida podia persistir `MISSION_BLOCKED_ALERT_RAISED` com base em um snapshot obsoleto.
+
+A issue foi reaberta e o PR `#92` corrigiu o problema com `SELECT ... FOR UPDATE` e rechecagem atômica de `BLOCKED_RISK + mission_version` na mesma transação do insert. Candidato stale não gera evento; duplicidade real continua sendo suprimida pela idempotency key.
+
+```yaml
+original_pr: 89
+original_merge: 16442d9a7baf2ecbc91fb4b297ba21efa4829b38
+late_p2: STALE_BLOCKED_ALERT_RACE
+recovery_pr: 92
+recovery_closeout_head: e2aace417295ee33c84826a1b782c7a6fc42f62f
+recovery_foundation_run: 31453781013
+recovery_container_smoke_run: 31453781061
+recovery_test_files: 109
+recovery_tests: 447
+recovery_observability_tests: 12
+recovery_artifact: 9087290657
+recovery_merge: 7418fff6e30f6107313a632284266caf04e8b33a
+post_merge_documentation_run: 31454187271
+post_merge_documentation: PASS
+post_merge_staging_run: 31454187273
+post_merge_staging: PASS
+post_merge_outcome: DEPLOYED
+health_version_exact_sha: PASS
+readiness: PASS
+active_p0: 0
+active_p1: 0
+active_p2: 0
+```
+
+Com isso, o **Lote 3 está concluído**. O próximo boundary é `MCF-RUNTIME-006-LOT-4-SKILLS`, começando pela conversão das oito skills ainda documentais. O Gate C continua parcial porque a escrita real C1/C2 pelo provider GitHub permanece separadamente não autorizada. Produção e live staging adapter continuam bloqueados.
+
+A `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza um fallback temporário TEAM_FIRST via GitHub Actions: `GITHUB_TOKEN` efêmero, menor privilégio, branch/ref isolado, binding ao SHA, guard contra duplicidade, single dispatch, correlação e cleanup. A decisão não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.
 
 ### Documentação do runtime
 
@@ -239,4 +273,4 @@ O runtime apenas projeta conclusões verificadas como candidatos `DRAFT_REVIEW`.
 
 A composição oficial possui 29 agentes. As decisões MCF-DEC-051 a MCF-DEC-061 tornam obrigatórias a execução sequencial exposta, a rastreabilidade por fase, as skills versionadas, a seleção controlada de ferramentas, o bootstrap de chats, a persistência do runtime, a validação de evidências, o bloqueio de delegação técnica indevida ao humano, a abertura persistente de missões a partir de objetivos conversacionais, a validação semântica de recibos, a conclusão apenas por trace final comprovado no ledger, o deploy verificado com recuperação controlada em staging, o retorno transacional à missão-pai e o fallback TEAM_FIRST one-shot quando o executor normal estiver indisponível e a operação permanecer segura e autorizada.
 
-O estado atual é um MVP técnico avançado em staging com o Gate D do RUNTIME-006 integrado. A produção irrestrita continua bloqueada até a conclusão da observabilidade do Lote 3, dos adapters/capacidades restantes, das oito skills ainda documentais, dos testes multiagente independentes e da auditoria de segurança da release candidate.
+O estado atual é um MVP técnico avançado em staging com o **Lote 3 do RUNTIME-006 concluído**, incluindo Gate D e observabilidade de missões bloqueadas com recuperação da condição de corrida tardia. A próxima etapa é a conversão das oito skills ainda documentais no Lote 4. A produção irrestrita continua bloqueada até os gates restantes, os testes multiagente independentes e a auditoria de segurança da release candidate.

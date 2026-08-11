@@ -2,7 +2,7 @@
 
 ## Estado
 
-`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO`
+`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO — LOTE_3_CONCLUIDO — OBSERVABILIDADE_INTEGRADA`
 
 ## Autorização
 
@@ -65,6 +65,34 @@ runtime_006_gate_d:
   recovery_strategy: redeploy_previous_healthy_sha
   live_registry_activation: false
   gate_d: INTEGRADO
+runtime_006_observability:
+  capability: BLOCKED_MISSION_OBSERVABILITY
+  state: INTEGRADO
+  issue: 88
+  original_pull_request: 89
+  original_merge_commit: 16442d9a7baf2ecbc91fb4b297ba21efa4829b38
+  late_p2: STALE_BLOCKED_ALERT_RACE
+  recovery_pull_request: 92
+  recovery_closeout_head: e2aace417295ee33c84826a1b782c7a6fc42f62f
+  recovery_merge_commit: 7418fff6e30f6107313a632284266caf04e8b33a
+  recovery_foundation_run: 31453781013
+  recovery_container_smoke_run: 31453781061
+  recovery_server_test_files: 109
+  recovery_server_tests: 447
+  recovery_observability_tests: 12
+  recovery_artifact: 9087290657
+  recovery_artifact_digest: sha256:bd80a83aad455fbbfa907a7a8208be41f5970c8bbc64e42ee983f032c81555ce
+  recovery_documentation_run: 31454187271
+  recovery_documentation: PASS
+  recovery_staging_run: 31454187273
+  recovery_staging_job: 93664514760
+  recovery_staging: PASS
+  recovery_outcome: DEPLOYED
+  exact_sha_health_version: PASS
+  readiness: PASS
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
 mcf_dec_061:
   state: INTEGRADA_COM_GATE_D
   purpose: GITHUB_ACTIONS_ONE_SHOT_TEAM_FIRST_FALLBACK
@@ -75,7 +103,9 @@ production: BLOCKED
 
 As implementações C1 e C2 estão integradas à `main`. O C2 passou CI no HEAD exato, revisão independente sem P0/P1/P2 ativos, gate operacional de Léo, merge protegido por HEAD e validação pós-merge em staging. A escrita real pelo provider GitHub do adapter C2 continua não autorizada. Portanto o Gate C permanece parcial e não deve ser declarado integralmente concluído.
 
-O Gate D também está integrado. O candidato funcional foi provado em staging antes do closeout, fechado no HEAD `ea63828435589a78bafcab916b51b4fc5aea1102`, aprovado no gate de integração de Léo e mesclado por squash com proteção de HEAD. O novo SHA da `main`, `2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a`, passou Documentation validation e o workflow de staging, que implantou e verificou o próprio SHA por `/health/version` e `/health/ready`. A MCF-DEC-061 foi integrada junto com o Gate D. Produção e ativação do staging adapter no live registry continuam bloqueadas.
+O Gate D também está integrado. O candidato funcional foi provado em staging antes do closeout, fechado no HEAD `ea63828435589a78bafcab916b51b4fc5aea1102`, aprovado no gate de integração de Léo e mesclado por squash com proteção de HEAD. O SHA `2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a` passou Documentation validation e o workflow de staging, que implantou e verificou o próprio SHA por `/health/version` e `/health/ready`. A MCF-DEC-061 foi integrada junto com o Gate D.
+
+A observabilidade do Lote 3 também está integrada. O PR #89 entregou a capacidade inicial; um P2 assíncrono pós-merge revelou risco de alerta baseado em snapshot obsoleto, a issue #88 foi reaberta e o PR #92 corrigiu a condição de corrida com lock transacional e rechecagem atômica de estado+versão. O closeout de recuperação `e2aace417295ee33c84826a1b782c7a6fc42f62f` passou 109 arquivos/447 testes, e o merge `7418fff6e30f6107313a632284266caf04e8b33a` passou Documentation validation e staging `PASS/DEPLOYED` no próprio SHA. O Lote 3 está concluído. Produção e ativação do staging adapter no live registry continuam bloqueadas.
 
 ## Objetivo
 
@@ -159,16 +189,16 @@ final_state: object
 6. comentários, reviews informativos e atualização de metadados textuais — **IMPLEMENTAÇÃO INTEGRADA / C2**;
 7. prevenção de duplicidade por idempotency key — **IMPLEMENTADA e ampliada em C1/C2**, incluindo escopo global persistente, recuperação controlada e tombstone de fingerprint.
 
-### Lote 3 — efeito operacional
+### Lote 3 — efeito operacional — CONCLUÍDO
 
 8. adapter de deploy para staging — **IMPLEMENTADO, PROVADO E INTEGRADO / GATE D**;
-9. verificação de SHA por health/version — **INTEGRADA E REVALIDADA no merge SHA `2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a`**;
+9. verificação de SHA por health/version — **INTEGRADA E REVALIDADA**;
 10. recovery por redeploy do SHA saudável anterior — **INTEGRADO como estratégia controlada; não é rollback nativo do Render**;
-11. observabilidade e alertas de missão bloqueada — **PRÓXIMA ETAPA / PENDENTE**.
+11. observabilidade e alertas de missão bloqueada — **IMPLEMENTADA, RECUPERADA E INTEGRADA**, com rechecagem atômica de estado+versão antes do alerta.
 
 ### Lote 4 — cobertura total
 
-12. converter as oito skills documentais — **PENDENTE**;
+12. converter as oito skills documentais — **PRÓXIMA ETAPA / PENDENTE**;
 13. executar testes com agentes em contextos separados — **PENDENTE**;
 14. auditoria independente final — **PENDENTE**;
 15. preparar MCF v1.0.0-RC1 — **PENDENTE**.
@@ -284,11 +314,7 @@ Os critérios acima devem ser avaliados por adapter. Um `PASS` de uma capacidade
 
 - implementação de branch/PR integrada em C1;
 - implementação de comentários, review `COMMENT` e metadados `title`/`body` integrada em C2;
-- C2 validado no HEAD exato `517f0827e7fc4564cf6fed83d5d6e1fd1a72cf62` com Documentation, Container Smoke e Foundation PASS;
-- revisão independente final do C2 sem P0/P1/P2 ativos;
-- merge C2 observado em `0a7909b71e1944d1062e8ea1ab13a4bee4abbf88`;
-- staging pós-merge `31279570577` PASS e revisão exata implantada;
-- escrita real pelo provider GitHub do C2 permanece `NOT_AUTHORIZED`;
+- escrita real pelo provider GitHub do C1/C2 permanece `NOT_AUTHORIZED`;
 - produção permanece bloqueada.
 
 ### Gate D — staging
@@ -299,14 +325,8 @@ Os critérios acima devem ser avaliados por adapter. Um `PASS` de uma capacidade
 - release funcional provado: `c787179e126a93af96dd67604cb24f91235c4320`;
 - prova real controlada de Gate D: run `31438199266`, `PASS/DEPLOYED`;
 - closeout exact-head: `ea63828435589a78bafcab916b51b4fc5aea1102`;
-- closeout CI: Documentation `31440048460`, Container Smoke `31440048462`, Foundation `31440048472`, todos `PASS`;
-- revisão independente final sem major issues e zero P0/P1/P2 ativos;
-- Léo autorizou explicitamente o gate de integração antes do merge;
 - merge protegido por `expected_head_sha`, squash, commit `2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a`;
-- Documentation pós-merge `31442205293` PASS no merge SHA;
-- staging pós-merge `31442205251` PASS, outcome `DEPLOYED`, no merge SHA;
-- o deploy pós-merge comprovou health/version no SHA exato e readiness saudável pelo contrato executado;
-- MCF-DEC-061 integrada como fallback TEAM_FIRST one-shot, sem token pessoal de Leandro por padrão;
+- staging pós-merge `31442205251` PASS, outcome `DEPLOYED`;
 - live registry permanece `DISABLED` e produção `BLOCKED`.
 
 ### Gate E — RC
@@ -340,7 +360,7 @@ Os critérios acima devem ser avaliados por adapter. Um `PASS` de uma capacidade
 
 ## Próxima ação
 
-Continuar o RUNTIME-006 pelo item restante do Lote 3: **observabilidade e alertas de missão bloqueada**. Não repetir A1, A2, C1, C2 ou Gate D. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio.
+Iniciar `MCF-RUNTIME-006-LOT-4-SKILLS`: converter as oito skills ainda documentais em capacidades executáveis comprovadas. Não repetir A1, A2, C1, C2, Gate D ou observabilidade do Lote 3. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio.
 
 ## Critério de conclusão da missão
 

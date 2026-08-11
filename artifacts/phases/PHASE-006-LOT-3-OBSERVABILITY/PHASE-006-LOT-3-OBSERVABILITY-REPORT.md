@@ -2,7 +2,7 @@
 
 ## Estado
 
-`RECOVERY_TECHNICAL_CANDIDATE_VALIDATED / FINAL_CLOSEOUT_HEAD_PENDING`
+`TECHNICAL_OBJECTIVE_COMPLETE / CANONICAL_SYNC_COMPLETE_ON_BRANCH / READY_FOR_DOC_SYNC_GATE`
 
 ## Implementação integrada no PR #89
 
@@ -28,49 +28,64 @@ post_merge_staging_run: 31449518300
 post_merge_staging: PASS
 ```
 
-Essa evidência permanece vinculada aos SHAs acima e não é promovida para o candidato de recuperação.
+Essa evidência permanece vinculada aos SHAs acima e não foi promovida para a recuperação.
 
 ## P2 tardio e recuperação
 
 Após o merge, o review assíncrono do PR #89 identificou uma condição de corrida válida: o snapshot de `BLOCKED_RISK` podia ficar obsoleto antes da persistência de `MISSION_BLOCKED_ALERT_RAISED`.
 
-A issue #88 foi reaberta e o PR #92 criado sobre `16442d9a...`.
+A issue #88 foi reaberta e o PR #92 corrigiu o problema com:
 
-A recuperação altera o repositório para:
+1. candidato de alerta com `expectedMissionVersion`;
+2. transação única;
+3. `SELECT ... FOR UPDATE` na linha da missão;
+4. revalidação de `state == BLOCKED_RISK` e `version == expectedMissionVersion`;
+5. insert somente quando o snapshot ainda é válido;
+6. descarte de candidato stale sem evento;
+7. `ON CONFLICT(idempotency_key) DO NOTHING` restrito à duplicidade real.
 
-1. construir candidato de alerta com `expectedMissionVersion`;
-2. iniciar transação;
-3. bloquear a linha de `mcf_missions` com `SELECT ... FOR UPDATE`;
-4. revalidar `state == BLOCKED_RISK` e `version == expectedMissionVersion`;
-5. inserir somente quando o snapshot ainda é válido;
-6. descartar candidato stale sem persistir evento;
-7. manter `ON CONFLICT(idempotency_key) DO NOTHING` para duplicidade real.
-
-## Prova do candidato de recuperação
+## Closeout exato da recuperação
 
 ```yaml
-recovery_technical_candidate_head: 6f7c314df71f2a7f8a4efce94ece0051eabf7841
+recovery_pull_request: 92
 recovery_base: 16442d9a7baf2ecbc91fb4b297ba21efa4829b38
-container_smoke_run: 31453432608
-container_smoke: PASS
-foundation_run: 31453432602
+recovery_closeout_head: e2aace417295ee33c84826a1b782c7a6fc42f62f
+foundation_run: 31453781013
 foundation: PASS
+container_smoke_run: 31453781061
+container_smoke: PASS
 server_test_files: 109
 server_tests: 447
 observability_tests: 12
-vitest_artifact_id: 9087159560
-vitest_artifact_digest: sha256:e1f030d7f17704cdea71da6866e5c3a785dd0bacb41d2cec5c885d47a78398f8
+vitest_artifact_id: 9087290657
+vitest_artifact_digest: sha256:bd80a83aad455fbbfa907a7a8208be41f5970c8bbc64e42ee983f032c81555ce
 stale_snapshot_postgres_regression: PASS
-format: PASS
-lint: PASS
-typecheck: PASS
-migrations_twice: PASS
-build: PASS
+independent_audit: PASS
+active_p0: 0
+active_p1: 0
+active_p2: 0
+leo_gate: APROVAR
 ```
 
-## Boundary de evidência
+## Merge e validação pós-merge
 
-A atualização do PRF altera o HEAD do PR #92. Portanto o HEAD final de closeout deve passar novamente por Documentation, Container Smoke e Foundation antes de qualquer autorização de integração. Nenhum PASS de `6f7c314...`, `7a96b120...` ou `16442d9a...` será promovido para o novo HEAD.
+```yaml
+recovery_merge_commit: 7418fff6e30f6107313a632284266caf04e8b33a
+post_merge_documentation_run: 31454187271
+post_merge_documentation: PASS
+post_merge_staging_run: 31454187273
+post_merge_staging_job: 93664514760
+post_merge_staging: PASS
+post_merge_outcome: DEPLOYED
+exact_sha_health_version: PASS
+readiness: PASS
+```
+
+O workflow de staging fez checkout da revisão exata, executou smoke, format, lint, typecheck, migrations duas vezes, testes e build, e concluiu `DEPLOYED` somente após o contrato de deploy verificar o SHA solicitado e readiness.
+
+## Canonical sync
+
+Esta branch documental parte exatamente do merge técnico `7418fff6...` e atualiza o roadmap e os READMEs para declarar o Lote 3 concluído e transferir o checkpoint para `MCF-RUNTIME-006-LOT-4-SKILLS`. O merge desta branch ainda exige gate próprio e proteção de HEAD.
 
 ## Limites
 
