@@ -68,6 +68,15 @@ jobs:
       - name: Install dependencies from lockfile
         run: pnpm install --frozen-lockfile
 
+      - name: Diagnose canonical module formatting
+        run: |
+          pnpm exec prettier --write apps/server/src/mcf-runtime/mcf-runtime.module.ts
+          git diff -- apps/server/src/mcf-runtime/mcf-runtime.module.ts
+          if ! git diff --quiet -- apps/server/src/mcf-runtime/mcf-runtime.module.ts; then
+            echo 'Canonical Prettier diff emitted above; stopping before any external write.' >&2
+            exit 1
+          fi
+
       - name: Preflight formatting
         run: pnpm format:check
 
