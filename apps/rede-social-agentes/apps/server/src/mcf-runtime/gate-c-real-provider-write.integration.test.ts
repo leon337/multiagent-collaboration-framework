@@ -123,37 +123,6 @@ async function persistProofArtifact(proof: Record<string, unknown>): Promise<voi
   );
 }
 
-function safeExecutionDiagnostic(execution: Awaited<ReturnType<SkillExecutor['execute']>>) {
-  return {
-    evidenceStatus: execution.evidenceStatus,
-    phaseState: execution.phaseState,
-    missionState: execution.missionState,
-    rejectionReason: execution.rejectionReason,
-    externalAction: execution.externalAction,
-    receipt: execution.receipt
-      ? {
-          receiptId: execution.receipt.receiptId,
-          provider: execution.receipt.provider,
-          operation: execution.receipt.operation,
-          resource: execution.receipt.resource,
-          externalId: execution.receipt.externalId,
-          commitSha: execution.receipt.commitSha,
-          status: execution.receipt.status,
-          metadata: {
-            adapterId: execution.receipt.metadata.adapterId ?? null,
-            resultStatus: execution.receipt.metadata.resultStatus ?? null,
-            readBackVerified: execution.receipt.metadata.readBackVerified ?? null,
-            unknownStage: execution.receipt.metadata.unknownStage ?? null,
-            branchRef: execution.receipt.metadata.branchRef ?? null,
-            branchSha: execution.receipt.metadata.branchSha ?? null,
-            pullRequestNumber: execution.receipt.metadata.pullRequestNumber ?? null,
-            mutationExternalId: execution.receipt.metadata.mutationExternalId ?? null,
-          },
-        }
-      : null,
-  };
-}
-
 describe('MCF Gate C real GitHub provider proof', () => {
   it('executes C1 and C2 through MissionRuntime -> PermissionEngine -> Dispatcher -> Ledger -> real adapters', async () => {
     if (!enabled) return;
