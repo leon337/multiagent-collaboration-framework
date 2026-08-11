@@ -44,7 +44,9 @@ O comando explícito não substitui os requisitos da skill.
 
 ## Estado de execução no runtime
 
-O conjunto executável deve ser lido no código e validado por teste no mesmo SHA do candidato. No incremento `MCF-RUNTIME-006-LOT-4-A`, as quatro capacidades abaixo passam a integrar o conjunto executável governado, sujeitas ao gate e à integração do PR correspondente:
+O conjunto executável deve ser lido no código e validado por teste no mesmo SHA do candidato.
+
+O incremento `MCF-RUNTIME-006-LOT-4-A` já integrou as quatro capacidades abaixo ao runtime governado:
 
 - `MCF-RECOVER-CONTEXT`;
 - `MCF-DEFINE-PRODUCT`;
@@ -52,6 +54,8 @@ O conjunto executável deve ser lido no código e validado por teste no mesmo SH
 - `MCF-DESIGN-ARCHITECTURE`.
 
 Essas quatro skills usam provider `internal` governado, exigem `execution_evidence` semântica produzida pelo agente owner e não podem ser concluídas pelo chat bridge por fabricação automática de conteúdo. Evidência ausente ou inválida deve produzir recuperação, sem handoff de sucesso.
+
+O incremento candidato `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS` adiciona `MCF-EVALUATE-AGENTS` ao mesmo modelo governado, sujeito à validação, auditoria e gate do PR correspondente. A skill permanece `READ_ONLY`, usa operação interna de inspeção (`inspect-agent-evaluation`), fica em `READY_AGENT`, exige `test_cases`, `scores` e `regressions`, e só pode produzir handoff para Emily após evidência semântica válida. `regressions` é obrigatória como coleção de evidência, podendo ser vazia quando nenhuma regressão é observada.
 
 ## Regras
 
