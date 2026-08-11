@@ -66,7 +66,8 @@ describe('MissionRuntime Lot 4E close phase persistence', () => {
       contract: {
         title: 'Lot 4E close phase persistence proof',
         objective: 'Close the phase with truthful traceability.',
-        expectedOutcome: 'Closeout evidence survives persistence without human technical delegation.',
+        expectedOutcome:
+          'Closeout evidence survives persistence without human technical delegation.',
         scope: ['MCF-CLOSE-PHASE'],
         outOfScope: ['production', 'external write'],
         acceptanceCriteria: ['traceability_complete', 'objective_state_truthful'],
@@ -110,7 +111,9 @@ describe('MissionRuntime Lot 4E close phase persistence', () => {
       });
 
       const timeline = await service.timeline(mission.id);
-      expect(timeline.events.some((event) => event.eventType === 'TOOL_RECEIPT_RECORDED')).toBe(true);
+      expect(timeline.events.some((event) => event.eventType === 'TOOL_RECEIPT_RECORDED')).toBe(
+        true,
+      );
       expect(timeline.events.some((event) => event.eventType === 'EVIDENCE_VALIDATED')).toBe(true);
       expect(timeline.events.some((event) => event.eventType === 'HANDOFF_CREATED')).toBe(true);
       expect(timeline.events.some((event) => event.eventType === 'PHASE_COMPLETED')).toBe(true);

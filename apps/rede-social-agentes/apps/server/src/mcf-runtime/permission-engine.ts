@@ -205,7 +205,6 @@ function assertDebugIncidentBoundary(
   }
 }
 
-
 const closePhaseForbiddenInputs = new Set([
   'external-write',
   'github-write',

@@ -91,9 +91,7 @@ describe('SkillExecutor Lot 4E MCF-CLOSE-PHASE', () => {
   });
 
   it('rejects a non-owner', async () => {
-    await expect(execute(validInputs(), 'Rafael')).rejects.toBeInstanceOf(
-      McfPermissionDeniedError,
-    );
+    await expect(execute(validInputs(), 'Rafael')).rejects.toBeInstanceOf(McfPermissionDeniedError);
   });
 
   it.each([

@@ -288,7 +288,6 @@ function requireDebugRecovery(
   return value;
 }
 
-
 const closeoutFinalStates = new Set([
   'ENTREGUE',
   'AGUARDANDO_DEPENDENCIA_EXTERNA',
@@ -306,11 +305,7 @@ const closeoutDecisions = new Set([
   'ESCALAR_PARA_LEANDRO',
 ]);
 
-function requireCloseString(
-  record: Record<string, unknown>,
-  key: string,
-  message: string,
-): string {
+function requireCloseString(record: Record<string, unknown>, key: string, message: string): string {
   const value = record[key];
   if (!isMeaningfulDebugString(value)) return reject(message);
   return value.trim();
@@ -385,11 +380,7 @@ function requireCloseLeoDecision(
   if (!closeoutDecisions.has(decision)) {
     return reject('MCF-CLOSE-PHASE leo_decision is not a canonical Léo gate decision');
   }
-  requireCloseString(
-    value,
-    'justification',
-    'MCF-CLOSE-PHASE leo_decision requires justification',
-  );
+  requireCloseString(value, 'justification', 'MCF-CLOSE-PHASE leo_decision requires justification');
   const nextState = requireCloseString(
     value,
     'next_state',
@@ -456,9 +447,7 @@ function requireCloseCheckpoint(
       return reject('MCF-CLOSE-PHASE cannot mark ENTREGUE when objective_met is false');
     }
     if (unresolved.length > 0 || blockers.length > 0) {
-      return reject(
-        'MCF-CLOSE-PHASE cannot mark ENTREGUE with unresolved findings or blockers',
-      );
+      return reject('MCF-CLOSE-PHASE cannot mark ENTREGUE with unresolved findings or blockers');
     }
     if (!['nenhuma', 'none'].includes(normalizedAction)) {
       return reject('MCF-CLOSE-PHASE cannot mark ENTREGUE with a pending next_action');
@@ -629,9 +618,7 @@ function validateEvidence(
       const nextState = String(leoDecision.next_state).trim().toUpperCase();
       const finalState = String(checkpoint.final_state).trim().toUpperCase();
       if (nextState !== finalState) {
-        return reject(
-          'MCF-CLOSE-PHASE leo_decision.next_state must match checkpoint.final_state',
-        );
+        return reject('MCF-CLOSE-PHASE leo_decision.next_state must match checkpoint.final_state');
       }
       if (
         finalState === 'ENTREGUE' &&
