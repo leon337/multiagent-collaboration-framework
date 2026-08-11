@@ -95,7 +95,8 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
         githubCiQuery: GitHubCiQueryAdapter,
         githubBranchPr: GitHubBranchPullRequestAdapter,
         githubPrCollaboration: GitHubPullCollaborationAdapter,
-      ) => new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration]),
+      ) =>
+        new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration]),
       inject: [
         GitHubCodeReviewAdapter,
         GitHubCiQueryAdapter,
