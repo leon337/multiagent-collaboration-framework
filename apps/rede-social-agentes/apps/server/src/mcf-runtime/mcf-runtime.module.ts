@@ -80,8 +80,7 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     },
     {
       provide: GitHubPullCollaborationAdapter,
-      useFactory: (evidence: EvidenceValidator) =>
-        new GitHubPullCollaborationAdapter(evidence),
+      useFactory: (evidence: EvidenceValidator) => new GitHubPullCollaborationAdapter(evidence),
       inject: [EvidenceValidator],
     },
     {
@@ -96,13 +95,7 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
         githubCiQuery: GitHubCiQueryAdapter,
         githubBranchPr: GitHubBranchPullRequestAdapter,
         githubPrCollaboration: GitHubPullCollaborationAdapter,
-      ) =>
-        new AdapterRegistry([
-          githubReview,
-          githubCiQuery,
-          githubBranchPr,
-          githubPrCollaboration,
-        ]),
+      ) => new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration]),
       inject: [
         GitHubCodeReviewAdapter,
         GitHubCiQueryAdapter,
