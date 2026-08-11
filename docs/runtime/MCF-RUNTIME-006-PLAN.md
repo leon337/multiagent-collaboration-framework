@@ -2,7 +2,7 @@
 
 ## Estado
 
-`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO — LOTE_3_CONCLUIDO — OBSERVABILIDADE_INTEGRADA — LOTE_4A_INTEGRADO — LOTE_4B_INTEGRADO`
+`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO — LOTE_3_CONCLUIDO — OBSERVABILIDADE_INTEGRADA — LOTE_4A_INTEGRADO — LOTE_4B_INTEGRADO — LOTE_4C_INTEGRADO`
 
 ## Autorização
 
@@ -138,6 +138,31 @@ runtime_006_lot_4b:
   active_p2: 0
   skills_executable: 13
   skills_documental: 3
+runtime_006_lot_4c:
+  capability: EXECUTABLE_SECURITY_REVIEW
+  state: INTEGRADO
+  issue: 100
+  pull_request: 101
+  validated_head: 323b69af4616cda0e4f9b1e47516a9cde37a3f0d
+  merge_commit: 08c3e19e1b6408a164628e1bfaa5968e2070ccf0
+  candidate_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+  merge_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+  foundation_run: 31471615150
+  container_smoke_run: 31471615302
+  server_test_files: 118
+  server_tests: 485
+  vitest_artifact: 9093585565
+  artifact_digest: sha256:110c2bc438ac9215cbb0c12ca3f0372e3861d5f1c0a7c2965f86de5739339367
+  manifest_audit_run: 31471688783
+  independent_audit: PASS
+  leo_technical_gate: PASS
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
+  permission_profile: SENSITIVE_CONTROLLED
+  provider: internal
+  skills_executable: 14
+  skills_documental: 2
 mcf_dec_061:
   state: INTEGRADA_COM_GATE_D
   purpose: GITHUB_ACTIONS_ONE_SHOT_TEAM_FIRST_FALLBACK
@@ -151,6 +176,8 @@ As implementações C1 e C2 estão integradas à `main`. O C2 passou CI no HEAD 
 O Gate D também está integrado. O candidato funcional foi provado em staging antes do closeout, fechado no HEAD `ea63828435589a78bafcab916b51b4fc5aea1102`, aprovado no gate de integração de Léo e mesclado por squash com proteção de HEAD. O SHA `2dfeb0e23c5c2e19a2c21e6f2c50a1a4f466d06a` passou Documentation validation e o workflow de staging, que implantou e verificou o próprio SHA por `/health/version` e `/health/ready`. A MCF-DEC-061 foi integrada junto com o Gate D.
 
 A observabilidade do Lote 3 também está integrada. O PR #89 entregou a capacidade inicial; um P2 assíncrono pós-merge revelou risco de alerta baseado em snapshot obsoleto, a issue #88 foi reaberta e o PR #92 corrigiu a condição de corrida com lock transacional e rechecagem atômica de estado+versão. O closeout de recuperação `e2aace417295ee33c84826a1b782c7a6fc42f62f` passou 109 arquivos/447 testes, e o merge `7418fff6e30f6107313a632284266caf04e8b33a` passou Documentation validation e staging `PASS/DEPLOYED` no próprio SHA. O Lote 3 está concluído. Produção e ativação do staging adapter no live registry continuam bloqueadas.
+
+O Lot 4-A integrou quatro skills internas de domínio com `READY_AGENT`, evidência semântica e persistência pelo MissionRuntime. O Lot 4-B integrou `MCF-EVALUATE-AGENTS` preservando `READ_ONLY`. O Lot 4-C integrou `MCF-SECURITY-REVIEW` preservando `SENSITIVE_CONTROLLED`, piso Classe C, provider interno, autorização sensível explícita e evidência estruturada. O candidato final do Lot 4-C `323b69af4616cda0e4f9b1e47516a9cde37a3f0d` passou Foundation `31471615150`, Container Smoke `31471615302`, 118 arquivos/485 testes, Manifest Audit R3 `31471688783`, reviews especialistas, auditoria independente e gate de Léo. O merge `08c3e19e1b6408a164628e1bfaa5968e2070ccf0` compartilha a tree `70f07a2c936ce166555e52b36366c810919f5b8c` do candidato validado.
 
 ## Objetivo
 
@@ -243,7 +270,7 @@ final_state: object
 
 ### Lote 4 — cobertura total
 
-12. converter as oito skills documentais — **EM EXECUÇÃO / LOT 4-A + LOT 4-B INTEGRADOS / 5 DE 8 CONVERTIDAS**;
+12. converter as oito skills documentais — **EM EXECUÇÃO / LOT 4-A + LOT 4-B + LOT 4-C INTEGRADOS / 6 DE 8 CONVERTIDAS**;
 13. executar testes com agentes em contextos separados — **PENDENTE**;
 14. auditoria independente final — **PENDENTE**;
 15. preparar MCF v1.0.0-RC1 — **PENDENTE**.
@@ -405,7 +432,7 @@ Os critérios acima devem ser avaliados por adapter. Um `PASS` de uma capacidade
 
 ## Próxima ação
 
-Iniciar `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`: converter `MCF-SECURITY-REVIEW` como incremento independente e sensível, preservando Lots 4-A e 4-B já integrados. Depois permanecem `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`, cada uma em seu boundary de risco. Não repetir A1, A2, C1, C2, Gate D, observabilidade do Lote 3, Lot 4-A ou Lot 4-B. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio.
+Formalizar o próximo boundary independente para `MCF-DEBUG-INCIDENT`, a partir da `main` canônica após o closeout documental do Lot 4-C. `MCF-CLOSE-PHASE` permanece documental e deve ter incremento próprio. Não repetir A1, A2, C1, C2, Gate D, observabilidade do Lote 3, Lot 4-A, Lot 4-B ou Lot 4-C. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio. Nenhuma Issue Lot 4-D existente é presumida antes de sua formalização.
 
 ## Critério de conclusão da missão
 
