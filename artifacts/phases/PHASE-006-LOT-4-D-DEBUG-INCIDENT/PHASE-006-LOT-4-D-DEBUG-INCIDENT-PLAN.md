@@ -1,112 +1,58 @@
 # PHASE-006-LOT-4-D-DEBUG-INCIDENT — Plan
 
 ## Identificação
-
 - Missão: `MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT`
 - Issue: `#103`
 - PR técnico: `#104`
-- Classe de risco: `C`
+- Classe: `C`
 - Baseline: `79c1a1644742cf22af60384b64685adbb1f017a3`
-- Candidato pré-PRF: `933c8f72dd19219eea6112adfdd8db7c43112f2c`
-- Estado do PRF: `CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION`
+- Estado: `CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION`
 
 ## Objetivo
-
 Promover `MCF-DEBUG-INCIDENT` de contrato documental para capacidade executável governada pelo `MissionRuntime`, sem ampliar autoridade externa, de produção ou de alteração de ambiente.
 
-## Contrato canônico confirmado
-
+## Contrato canônico
 - primary owner: `Patricia`
 - owners: `Patricia`, `Bruno`, `Rafael`
 - handoff: `Renato`
 - permission profile: `SCOPED_WRITE`
 - required input: `symptom_or_evidence`
 - required evidence: `reproduction`, `root_cause`, `recovery_result`
-- acceptance criteria: `cause_supported`, `regression_test_added`
+- acceptance: `cause_supported`, `regression_test_added`
 
-## Boundary do Lot 4-D
+## Boundary
+Permitido somente `internal / inspect-debug-incident / mcf-agent-runtime`.
 
-Permitido somente:
-
-```text
-provider: internal
-operation: inspect-debug-incident
-resource: mcf-agent-runtime
-```
-
-Continuam proibidos:
-
-- external write;
-- GitHub provider write;
-- environment mutation;
-- deploy e produção;
-- destructive fix;
-- secret access;
-- public action;
-- blind retry.
+Continuam proibidos external write, GitHub provider write, environment mutation, deploy, produção, destructive fix, secret access, public action e blind retry.
 
 ## Evidência semântica
+- reproduction: sintoma, método de reprodução/caracterização, referência verificável;
+- root_cause: causa e evidência de suporte;
+- recovery_result: ação/mitigação, verificação, `blind_retry: false`, `retry_evidence` semântico e referência verificável do teste de regressão.
 
-`reproduction` deve identificar sintoma, método de reprodução ou caracterização e referência de evidência. `root_cause` deve identificar uma causa sustentada por evidência. `recovery_result` deve registrar ação ou mitigação, verificação, `blind_retry: false`, evidência semântica separada em `retry_evidence` demonstrando que não ocorreu blind retry e referência verificável de teste de regressão.
-
-O booleano `blind_retry: false` isolado não constitui evidência suficiente. Evidência vazia, booleana, whitespace, placeholder ou claim não verificável deve levar a `RECOVERING`, sem handoff de sucesso.
+O booleano `blind_retry: false` isolado não basta. Evidência vazia, whitespace, placeholder, objeto vazio ou booleano usado como evidência leva a `RECOVERING`, sem handoff de sucesso.
 
 ## Equipe com entrega
+Mestre, Miriam, Patricia, Bruno, Rafael, Renato, Beatriz, Vinicius, Ricardo, Augusto, Julia, Carmem, Emily, Leo e Gabriel.
 
-- Mestre — orquestração e closeout;
-- Miriam — recuperação e precedência do contexto;
-- Patricia — contrato de debugging e ownership primário;
-- Bruno — boundary operacional e recovery;
-- Rafael — implementação;
-- Renato — testes e validação;
-- Beatriz — comportamento do planner e seleção;
-- Vinicius — revisão de código;
-- Ricardo — revisão de segurança;
-- Augusto — mission trace Classe C;
-- Julia — governança Classe C;
-- Carmem — PRF e consistência documental;
-- Emily — auditoria independente;
-- Leo — technical gate;
-- Gabriel — PR e merge protegido por HEAD esperado.
-
-## Fluxo de validação
-
-```text
-baseline
-→ implementação
-→ CAF quando necessário
-→ pré-PRF Foundation + Container Smoke
-→ PRF Classe C
-→ Foundation + Container Smoke no HEAD exato do PRF
-→ manifesto
-→ reviews especialistas
-→ CAF e nova validação se review encontrar defeito
-→ Augusto
-→ Julia
-→ Emily
-→ Leo
-→ base/head final
-→ squash merge protegido
-→ candidate/merge tree equivalence
-→ canonical documentation sync separado
-```
+## Fluxo
+`baseline → implementação → CAF → PRF → exact-head Foundation + Smoke → manifest → reviews → Augusto → Julia → Emily → Leo → base/head → protected squash merge → tree equivalence → canonical sync separado`.
 
 ## Critérios de aceite técnico
-
-- planner seleciona `MCF-DEBUG-INCIDENT` e produz `READY_AGENT`;
+- planner seleciona `MCF-DEBUG-INCIDENT` em objetivos inequívocos de debug;
+- primary owner Patricia, `READY_AGENT`, handoff Renato;
 - bridge não auto-completa a skill;
-- Patricia, Bruno e Rafael são owners válidos;
-- non-owner é negado;
-- `SCOPED_WRITE` permanece canônico;
-- provider externo e ações proibidas são negados;
-- evidência semântica válida conclui a fase e cria handoff para Renato;
+- Patricia/Bruno/Rafael aceitos; non-owner negado;
+- `SCOPED_WRITE` preservado;
+- provider externo e ações proibidas negados;
+- evidência válida conclui a fase e cria handoff Renato;
 - `blind_retry: false` sem `retry_evidence` semântico é rejeitado;
 - evidência insuficiente entra em `RECOVERING` sem handoff de sucesso;
-- receipt, eventos, persistência e versionamento são exercitados pelo `MissionRuntime`;
-- regressões dos Lots 4-A, 4-B e 4-C permanecem verdes.
+- receipt, eventos, persistência e versionamento passam pelo MissionRuntime;
+- objetivo explicitamente de segurança contendo a palavra incidente continua em `MCF-SECURITY-REVIEW`, owner Ricardo, `READY_AGENT`, risco Classe C;
+- nenhuma capacidade dos Lots 4-A, 4-B ou 4-C regride.
 
 ## Estado operacional preservado
-
 ```yaml
 production: BLOCKED
 live_staging_adapter: DISABLED
