@@ -1,0 +1,41 @@
+name: Lot 4 Prettier Diagnostic
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-lot4-a-internal-core-skills
+
+permissions:
+  contents: read
+
+jobs:
+  prettier-diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/rede-social-agentes
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies from lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Print canonical Prettier diff
+        run: |
+          pnpm exec prettier --write apps/server/src/mcf-runtime/mission-runtime-lot4-core.integration.test.ts
+          git diff -- apps/server/src/mcf-runtime/mission-runtime-lot4-core.integration.test.ts
+          if ! git diff --quiet -- apps/server/src/mcf-runtime/mission-runtime-lot4-core.integration.test.ts; then
+            exit 1
+          fi
