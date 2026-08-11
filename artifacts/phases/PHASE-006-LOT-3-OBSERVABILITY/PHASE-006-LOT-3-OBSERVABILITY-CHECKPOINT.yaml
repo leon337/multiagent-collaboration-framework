@@ -4,21 +4,21 @@ issue: 88
 original_pull_request: 89
 recovery_pull_request: 92
 risk_class: B
-state: READY_FOR_FINAL_CLOSEOUT_VALIDATION
+state: READY_FOR_CANONICAL_SYNC_GATE
 base_initial: 807637a75115b067359b5282f888cee2e6b05683
 original_merge_commit: 16442d9a7baf2ecbc91fb4b297ba21efa4829b38
-recovery_technical_candidate_head: 6f7c314df71f2a7f8a4efce94ece0051eabf7841
-final_closeout_head: RESOLVE_AFTER_PRF_UPDATE
+recovery_closeout_head: e2aace417295ee33c84826a1b782c7a6fc42f62f
+recovery_merge_commit: 7418fff6e30f6107313a632284266caf04e8b33a
 recovery:
   trigger: LATE_P2_STALE_BLOCKED_ALERT_RACE
   issue_reopened: true
-  atomic_state_version_recheck: TECHNICALLY_VALIDATED
-  stale_candidate_rejection: TECHNICALLY_VALIDATED
+  atomic_state_version_recheck: PASS
+  stale_candidate_rejection: PASS
 implementation:
-  blocked_mission_observation: TECHNICALLY_VALIDATED
-  blocked_mission_query: TECHNICALLY_VALIDATED
-  internal_alert_reconciliation: TECHNICALLY_VALIDATED
-  idempotency: TECHNICALLY_VALIDATED
+  blocked_mission_observation: PASS
+  blocked_mission_query: PASS
+  internal_alert_reconciliation: PASS
+  idempotency: PASS
 persistence:
   source_of_truth: EXISTING_MCF_TABLES_AND_EVENT_LEDGER
   new_table: false
@@ -28,25 +28,38 @@ external_effects:
   new_credentials: false
   production: BLOCKED
   live_staging_adapter: DISABLED
-recovery_candidate_validation:
-  container_smoke_run: 31453432608
-  container_smoke: PASS
-  foundation_run: 31453432602
+closeout_validation:
+  foundation_run: 31453781013
   foundation: PASS
+  container_smoke_run: 31453781061
+  container_smoke: PASS
   server_test_files: 109
   server_tests: 447
   observability_tests: 12
   stale_snapshot_postgres_regression: PASS
-  vitest_artifact_id: 9087159560
-  vitest_artifact_digest: sha256:e1f030d7f17704cdea71da6866e5c3a785dd0bacb41d2cec5c885d47a78398f8
-final_closeout_validation:
-  documentation: PENDING_EXACT_HEAD
-  container_smoke: PENDING_EXACT_HEAD
-  foundation: PENDING_EXACT_HEAD
-  independent_audit: PENDING
+  vitest_artifact_id: 9087290657
+  vitest_artifact_digest: sha256:bd80a83aad455fbbfa907a7a8208be41f5970c8bbc64e42ee983f032c81555ce
+  independent_audit: PASS
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
+post_merge_validation:
+  documentation_run: 31454187271
+  documentation: PASS
+  staging_run: 31454187273
+  staging_job: 93664514760
+  staging: PASS
+  outcome: DEPLOYED
+  exact_sha_health_version: PASS
+  readiness: PASS
+canonical_sync:
+  state: COMPLETE_ON_BRANCH
+  base_sha: 7418fff6e30f6107313a632284266caf04e8b33a
+  final_state_after_merge: ENTREGUE
 governance:
-  leo_gate: PENDING
+  technical_leo_gate: APROVADO
+  doc_sync_gate: PENDING
   human_gate_leandro: NOT_REQUIRED
   human_operator_actions: 0
-next_action: VALIDATE_EXACT_FINAL_CLOSEOUT_HEAD_THEN_REVIEW_GATE
+next_action: VALIDATE_AND_GATE_DOC_SYNC
 next_boundary_after_delivery: MCF-RUNTIME-006-LOT-4-SKILLS
