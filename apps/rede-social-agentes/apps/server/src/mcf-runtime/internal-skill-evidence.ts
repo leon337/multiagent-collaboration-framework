@@ -1,0 +1,174 @@
+import type { McfSkillDefinition, McfToolReceipt } from '@rsa/contracts';
+
+import { McfEvidenceRejectedError } from './mcf-runtime.errors.js';
+
+const governedInternalSkillIds = new Set([
+  'MCF-RECOVER-CONTEXT',
+  'MCF-DEFINE-PRODUCT',
+  'MCF-DESIGN-EXPERIENCE',
+  'MCF-DESIGN-ARCHITECTURE',
+]);
+
+function reject(message: string): never {
+  throw new McfEvidenceRejectedError(message);
+}
+
+function asRecord(value: unknown, message: string): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return reject(message);
+  }
+  return value as Record<string, unknown>;
+}
+
+function requireString(record: Record<string, unknown>, key: string, message: string): string {
+  const value = record[key];
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return reject(message);
+  }
+  return value.trim();
+}
+
+function requireArray(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+  options: { allowEmpty?: boolean } = {},
+): unknown[] {
+  const value = record[key];
+  if (!Array.isArray(value) || (!options.allowEmpty && value.length === 0)) {
+    return reject(message);
+  }
+  return value;
+}
+
+function requireReference(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): string | Record<string, unknown> {
+  const value = record[key];
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value.trim();
+  }
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    const reference = value as Record<string, unknown>;
+    if (Object.keys(reference).length > 0) return reference;
+  }
+  return reject(message);
+}
+
+function validateEvidence(
+  skillId: string,
+  evidence: Record<string, unknown>,
+): Record<string, unknown> {
+  switch (skillId) {
+    case 'MCF-RECOVER-CONTEXT':
+      return {
+        source_references: requireArray(
+          evidence,
+          'source_references',
+          'MCF-RECOVER-CONTEXT requires non-empty source_references evidence',
+        ),
+        precedence_decisions: requireArray(
+          evidence,
+          'precedence_decisions',
+          'MCF-RECOVER-CONTEXT requires non-empty precedence_decisions evidence',
+        ),
+        contradictions: requireArray(
+          evidence,
+          'contradictions',
+          'MCF-RECOVER-CONTEXT requires contradictions evidence, even when empty',
+          { allowEmpty: true },
+        ),
+      };
+    case 'MCF-DEFINE-PRODUCT':
+      return {
+        problem_statement: requireString(
+          evidence,
+          'problem_statement',
+          'MCF-DEFINE-PRODUCT requires problem_statement evidence',
+        ),
+        requirements: requireArray(
+          evidence,
+          'requirements',
+          'MCF-DEFINE-PRODUCT requires non-empty requirements evidence',
+        ),
+        acceptance_criteria: requireArray(
+          evidence,
+          'acceptance_criteria',
+          'MCF-DEFINE-PRODUCT requires non-empty acceptance_criteria evidence',
+        ),
+      };
+    case 'MCF-DESIGN-EXPERIENCE':
+      return {
+        flow_reference: requireReference(
+          evidence,
+          'flow_reference',
+          'MCF-DESIGN-EXPERIENCE requires flow_reference evidence',
+        ),
+        screen_reference: requireReference(
+          evidence,
+          'screen_reference',
+          'MCF-DESIGN-EXPERIENCE requires screen_reference evidence',
+        ),
+        accessibility_findings: requireArray(
+          evidence,
+          'accessibility_findings',
+          'MCF-DESIGN-EXPERIENCE requires accessibility_findings evidence, even when empty',
+          { allowEmpty: true },
+        ),
+      };
+    case 'MCF-DESIGN-ARCHITECTURE':
+      return {
+        architecture_diagram: requireReference(
+          evidence,
+          'architecture_diagram',
+          'MCF-DESIGN-ARCHITECTURE requires architecture_diagram evidence',
+        ),
+        decisions: requireArray(
+          evidence,
+          'decisions',
+          'MCF-DESIGN-ARCHITECTURE requires non-empty decisions evidence',
+        ),
+        risks: requireArray(
+          evidence,
+          'risks',
+          'MCF-DESIGN-ARCHITECTURE requires risks evidence, even when empty',
+          { allowEmpty: true },
+        ),
+      };
+    default:
+      return evidence;
+  }
+}
+
+export function isGovernedAgentInternalSkill(skillId: string): boolean {
+  return governedInternalSkillIds.has(skillId);
+}
+
+export function collectInternalExecutionEvidence(
+  skill: McfSkillDefinition,
+  inputs: Record<string, unknown>,
+): Record<string, unknown> | null {
+  if (!isGovernedAgentInternalSkill(skill.skillId)) return null;
+  const evidence = asRecord(
+    inputs.execution_evidence,
+    `${skill.skillId} requires execution_evidence produced by the selected agent`,
+  );
+  return validateEvidence(skill.skillId, evidence);
+}
+
+export function verifyInternalExecutionReceipt(
+  receipt: McfToolReceipt,
+  skill: McfSkillDefinition,
+): void {
+  if (!isGovernedAgentInternalSkill(skill.skillId)) return;
+  if (receipt.provider !== 'internal') {
+    reject(`${skill.skillId} Lot 4A execution requires the governed internal provider`);
+  }
+  const evidence = asRecord(
+    receipt.metadata.executionEvidence,
+    `${skill.skillId} receipt requires executionEvidence metadata`,
+  );
+  validateEvidence(skill.skillId, evidence);
+}
