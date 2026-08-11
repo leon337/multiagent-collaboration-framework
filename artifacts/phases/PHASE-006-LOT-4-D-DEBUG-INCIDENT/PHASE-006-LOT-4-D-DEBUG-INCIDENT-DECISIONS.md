@@ -32,7 +32,7 @@ Foi adotada estrutura que obriga conteúdo verificável:
 
 - reproduction: `symptom`, `method`, `evidence_reference`;
 - root_cause: `cause`, `supporting_evidence`;
-- recovery_result: `action_or_mitigation`, `verification`, `blind_retry: false`, `regression_test_added`.
+- recovery_result: `action_or_mitigation`, `verification`, `blind_retry: false`, `retry_evidence`, `regression_test_added`.
 
 Strings vazias, whitespace, placeholders, objetos vazios e booleanos usados como evidência não autorizam sucesso.
 
@@ -46,8 +46,23 @@ O SHA `3ea30e9aadac9600b701902f14d08a3881251692` falhou no Foundation run `31476
 
 ## D9 — Evidência pré-PRF não vale como gate do PRF
 
-Os runs do candidato `933c8f72...` ficam registrados como pré-PRF. A criação do PRF altera o HEAD; por isso Foundation, Container Smoke, manifesto, reviews, auditoria e gate serão vinculados ao novo SHA exato.
+Os runs do candidato `933c8f72...` ficam registrados como pré-PRF. A criação do PRF altera o HEAD; por isso Foundation, Container Smoke, manifesto, reviews, auditoria e gate são vinculados ao SHA exato vigente.
 
 ## D10 — Nenhum HUMAN_GATE nesta fase
 
 Não surgiu gatilho reservado a LEANDRO. `human_operator_actions` permanece `0`; questões técnicas seguem `TEAM_FIRST`.
+
+## D11 — `blind_retry: false` não é evidência suficiente sozinho
+
+O primeiro candidato PRF `9ebedbaa85bfa92d52f199df064382e075adb1d3` passou Foundation e Container Smoke, mas o review de Vinicius encontrou uma lacuna semântica: o booleano `blind_retry: false` era somente uma declaração e não demonstrava a ausência de blind retry.
+
+O gate foi bloqueado e um novo CAF foi aberto antes de qualquer aprovação. A correção torna `retry_evidence` obrigatório e semanticamente significativo em `recovery_result`, preservando `blind_retry: false` apenas como declaração explícita complementar.
+
+Casos que agora devem recuperar, nunca concluir:
+
+- `retry_evidence` ausente;
+- `retry_evidence: true` ou outro booleano;
+- placeholder como `done`, `ok`, `unknown`;
+- `blind_retry: true`, mesmo com texto adicional.
+
+Qualquer CI ou review do SHA `9ebedbaa...` é histórico e não pode ser reutilizado no novo HEAD.
