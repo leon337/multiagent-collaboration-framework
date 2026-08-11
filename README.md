@@ -17,7 +17,7 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - PRF rastreável para fases Classe B/C;
 - sucesso sem evidência é proibido;
 - evidência de gate pertence ao SHA exato;
-- Leandro não é executor técnico padrão;
+- Leandro não é executor técnico padrão nem destinatário de handoff técnico;
 - produção permanece bloqueada até gate material próprio.
 
 ## Runtime executável
@@ -36,39 +36,35 @@ objetivo conversacional
 → trace final verificado
 ```
 
-## Estado canônico após o Lot 4-D
+## Estado técnico após o Lot 4-E
 
 ```yaml
 skills_registradas: 16
-skills_executaveis: 15
-skills_documentais: 1
-remaining_documental:
-  - MCF-CLOSE-PHASE
+skills_executaveis: 16
+skills_documentais: 0
+remaining_documental: []
 
-mcf_debug_incident:
+mcf_close_phase:
   executable: true
   planner_state: READY_AGENT
-  primary_owner: Patricia
-  owners: [Patricia, Bruno, Rafael]
-  handoff: Renato
+  primary_owner: Carmem
+  owners: [Carmem, Emily, Leo, Mestre]
+  handoff: Mestre
   permission_profile: SCOPED_WRITE
   provider: internal
+  operation: close-phase
+  resource: mcf-agent-runtime
   external_write: false
-  semantic_evidence: PASS
-  blind_retry_protection: PASS
-  destructive_fix_protection: PASS
-  regression_test_evidence: PASS
+  truthful_terminal_state: REQUIRED
+  hdf: ACTIVE
 
-runtime_006_lote_4d:
-  issue: 103
-  technical_pr: 104
-  technical_candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
-  technical_merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
-  technical_tree_equivalence: PASS
-  canonical_pr: 105
-  canonical_candidate: 41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
-  canonical_merge: 59b230e8ad834b88c1dc4363bc9a28499881e1fe
-  canonical_sync: COMPLETE
+runtime_006_lote_4e:
+  issue: 107
+  technical_pr: 108
+  technical_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
+  technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
+  candidate_merge_tree_equivalence: PASS
+  canonical_sync: IN_PROGRESS
 
 production: BLOCKED
 live_staging_adapter: DISABLED
@@ -78,58 +74,63 @@ human_operator_actions: 0
 
 ## Skills executáveis
 
-- `MCF-START-MISSION`
-- `MCF-SELECT-AGENTS`
-- `MCF-RECOVER-CONTEXT`
-- `MCF-DEFINE-PRODUCT`
-- `MCF-DESIGN-EXPERIENCE`
-- `MCF-DESIGN-ARCHITECTURE`
-- `MCF-EVALUATE-AGENTS`
-- `MCF-SECURITY-REVIEW`
-- `MCF-DEBUG-INCIDENT`
-- `MCF-IMPLEMENT-CHANGE`
-- `MCF-REVIEW-CODE`
-- `MCF-RUN-TESTS`
-- `MCF-GIT-PR-RELEASE`
-- `MCF-DEPLOY-VALIDATE`
-- `MCF-TRACE-MISSION`
+1. `MCF-START-MISSION`
+2. `MCF-SELECT-AGENTS`
+3. `MCF-RECOVER-CONTEXT`
+4. `MCF-DEFINE-PRODUCT`
+5. `MCF-DESIGN-EXPERIENCE`
+6. `MCF-DESIGN-ARCHITECTURE`
+7. `MCF-IMPLEMENT-CHANGE`
+8. `MCF-REVIEW-CODE`
+9. `MCF-RUN-TESTS`
+10. `MCF-GIT-PR-RELEASE`
+11. `MCF-DEPLOY-VALIDATE`
+12. `MCF-TRACE-MISSION`
+13. `MCF-EVALUATE-AGENTS`
+14. `MCF-SECURITY-REVIEW`
+15. `MCF-DEBUG-INCIDENT`
+16. `MCF-CLOSE-PHASE`
 
-Documental restante: `MCF-CLOSE-PHASE`.
+Não há skill documental remanescente no runtime integrado.
 
-## Lot 4-D — Debug Incident
+## Lot 4-E — Close Phase
 
-`MCF-DEBUG-INCIDENT` opera como `READY_AGENT`, com Patricia como primary owner e Renato como handoff. O boundary do Lot permanece:
+`MCF-CLOSE-PHASE` opera como `READY_AGENT`, com Carmem como primary owner e Mestre como handoff técnico. O boundary integrado permanece:
 
 ```text
-internal / inspect-debug-incident / mcf-agent-runtime
+internal / close-phase / mcf-agent-runtime
 ```
 
-O perfil canônico continua `SCOPED_WRITE`, mas GitHub write, mutação de ambiente, deploy, produção, destructive fix, secret/public action e blind retry continuam proibidos.
+A skill exige evidência semântica estruturada para `phase_pack`, `audit_verdict`, `leo_decision` e `checkpoint`. Um estado `ENTREGUE` é rejeitado se houver objetivo não atendido, blockers, findings não resolvidos ou bloqueantes, auditoria não-PASS, próxima ação pendente, ação humana pendente, decisão não aprovadora de Léo ou divergência entre decisão e checkpoint.
 
-A recuperação válida exige reprodução ou caracterização, causa sustentada, ação/mitigação, verificação, `blind_retry: false`, `retry_evidence` semântico independente e referência verificável de teste de regressão. Evidência insuficiente leva a `RECOVERING`, sem handoff de sucesso.
+O antigo `handoff_to: Leandro` foi reconciliado para `handoff_to: Mestre`. LEANDRO permanece autoridade humana final e só pode ser acionado por um `HUMAN_GATE` explícito; não é executor nem handoff técnico.
 
 ### Evidência técnica
 
 ```yaml
-foundation_run: 31479541126
+final_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
+foundation_run: 31485695643
 foundation: PASS
-container_smoke_run: 31479541177
+container_smoke_run: 31485695636
 container_smoke: PASS
-manifest_audit: PASS
+documentation_validation_run: 31485695606
+documentation_validation: PASS
+server_test_files: 125
+server_tests: 562
+failed_tests: 0
+prf_manifest_audit_run: 31485724987
+prf_manifest_audit: PASS
 specialist_reviews: PASS
 augusto_trace: PASS
+carmem_prf_review: PASS
 julia_governance: PASS
-emily_audit: PASS
+emily_independent_audit: PASS
 leo_gate: PASS
 technical_merge: COMPLETE
 candidate_merge_tree_equivalence: PASS
+post_merge_documentation_run: 31486181380
+post_merge_documentation: PASS
 ```
-
-Três CAFs ficaram preservados no PRF: formatação, prova semântica de ausência de blind retry e correção da sobreposição de roteamento com security review.
-
-## Canonical documentation sync
-
-O PR documental `#105` foi mesclado separadamente após validação documental, manifesto, governança, auditoria independente e gate documental. A sincronização reconciliou o estado para `16 / 15 / 1` e deixou somente `MCF-CLOSE-PHASE` como boundary documental futuro.
 
 ## Documentação canônica
 
@@ -137,10 +138,10 @@ O PR documental `#105` foi mesclado separadamente após validação documental, 
 - `docs/runtime/MCF-RUNTIME-006-PLAN.md`
 - `skills/registry.yaml`
 - `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`
-- `artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/`
+- `artifacts/phases/PHASE-006-LOT-4-E-CLOSE-PHASE/`
 
 ## Próximo boundary
 
-`MCF-CLOSE-PHASE`
+Após concluir a sincronização documental canônica do Lot 4-E, o próximo boundary separado do RUNTIME-006 é a preparação da **Release Candidate / Gate E**.
 
-Ele não foi implementado pelo Lot 4-D e deve ser formalizado separadamente.
+Produção continua fora desse boundary e permanece `BLOCKED`.

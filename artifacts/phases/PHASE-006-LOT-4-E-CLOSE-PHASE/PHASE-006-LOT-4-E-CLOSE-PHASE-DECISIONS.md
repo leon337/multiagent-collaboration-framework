@@ -6,7 +6,7 @@ A fase parte de `main@39d2a8b3f1c323792fff9cbcc140d5f2bddc1522`, estado pós-clo
 
 ## D2 — Conflito de handoff
 
-O registry documental declarava `MCF-CLOSE-PHASE -> handoff_to: Leandro`. O protocolo v1.1 e o Human Delegation Firewall proíbem Leandro como executor técnico ou destinatário de handoff técnico. O contrato candidato reconcilia o handoff para `Mestre` sem reduzir a autoridade humana final de LEANDRO.
+O registry documental declarava `MCF-CLOSE-PHASE -> handoff_to: Leandro`. O protocolo v1.1 e o Human Delegation Firewall proíbem Leandro como executor técnico ou destinatário de handoff técnico. O contrato integrado reconcilia o handoff para `Mestre` sem reduzir a autoridade humana final de LEANDRO.
 
 ## D3 — Boundary interno
 
@@ -44,8 +44,35 @@ O `checkpoint_recipient` técnico permanece obrigatoriamente `Mestre`.
 
 ## D7 — CAF sem blind retry
 
-Falhas de bootstrap/formatação/validação foram corrigidas alterando a causa antes da reexecução. O candidato endurecido `fe96cfc74f268d7e548a5c57bdc401b7d269f618` passou Foundation `31485353192`, Container Smoke `31485353179` e Documentation validation `31485353200` no mesmo estado de código.
+Falhas de bootstrap, formatação e validação foram corrigidas alterando a causa antes de cada reexecução. O candidato final limpo `3b202d26b08d8acb72538db77e0e3b86d540dc97` passou Foundation `31485695643`, Container Smoke `31485695636` e Documentation validation `31485695606`. O manifesto final foi auditado pelo run `31485724987`.
 
-## D8 — Gate humano
+## D8 — Gate técnico e integração
 
-Nenhum gatilho reservado de HUMAN_GATE surgiu neste incremento interno e reversível. `human_operator_actions=0`. Produção e real provider write permanecem bloqueados.
+Sofia, Renato, Augusto, Carmem, Julia e Emily emitiram PASS no HEAD final. Léo aprovou merge apenas para o HEAD `3b202d26...`. O PR `#108` foi squash-merged como `6cf9af35407b97d84028078ab6843570b47103fe`.
+
+A tree do candidato e a tree do merge são idênticas: `b58d7afae091bcea38132c9049a2d141da72c273`.
+
+`candidate→merge tree equivalence: PASS`.
+
+## D9 — Estado do runtime
+
+Após a integração técnica:
+
+```yaml
+skills_registered: 16
+skills_executable: 16
+skills_documental: 0
+remaining_documental: []
+```
+
+## D10 — Gate humano e limites externos
+
+Nenhum gatilho reservado de HUMAN_GATE surgiu neste incremento interno e reversível. `human_operator_actions=0`. Produção permanece `BLOCKED`, live staging adapter `DISABLED` e Gate C real provider write `NOT_AUTHORIZED`.
+
+## D11 — Sincronização documental separada
+
+O merge técnico não autoriza declarar o closeout documental como concluído. README raiz, README do runtime, plano canônico e PRF são reconciliados separadamente; essa sincronização exige validação documental, revisão, auditoria independente e gate documental antes do merge.
+
+## D12 — Próximo boundary
+
+Somente após o canonical sync do Lot 4-E o próximo boundary passa a ser `Release Candidate / Gate E`. Isso não autoriza produção.

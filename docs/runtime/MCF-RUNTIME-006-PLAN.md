@@ -20,14 +20,14 @@ live_staging_adapter: DISABLED
 gate_c_real_provider_write: NOT_AUTHORIZED
 ```
 
-## 3. Estado canônico
+## 3. Estado técnico atual
 
 ```yaml
 skills_registered: 16
-skills_executable: 15
-skills_documental: 1
-remaining_documental:
-  - MCF-CLOSE-PHASE
+skills_executable: 16
+skills_documental: 0
+remaining_documental: []
+canonical_sync_lot_4e: IN_PROGRESS
 ```
 
 ## 4. Roadmap
@@ -47,42 +47,39 @@ remaining_documental:
 | Lot 4-B — Evaluate Agents | COMPLETE |
 | Lot 4-C — Security Review | COMPLETE |
 | Lot 4-D — Debug Incident | COMPLETE |
-| `MCF-CLOSE-PHASE` | PENDING / NEXT BOUNDARY |
-| Release Candidate | PENDING |
+| Lot 4-E — `MCF-CLOSE-PHASE` | TECHNICAL COMPLETE / CANONICAL SYNC IN PROGRESS |
+| Release Candidate / Gate E | NEXT AFTER CANONICAL SYNC |
 | Produção | BLOCKED |
 
-## 5. Lot 4-D — Debug Incident
+## 5. Lot 4-E — Close Phase
 
 ```yaml
-mission: MCF-RUNTIME-006-LOT-4-D-DEBUG-INCIDENT
-issue: 103
+mission: MCF-RUNTIME-006-LOT-4-E-CLOSE-PHASE
+issue: 107
 risk_class: C
-baseline_main: 79c1a1644742cf22af60384b64685adbb1f017a3
-technical_pr: 104
-technical_candidate: dccb41f146f5701f75d8762df89160bf2f1695a7
-technical_merge: 94d8944c25ac26df3facb4f343a7a75c2489d704
+baseline_main: 39d2a8b3f1c323792fff9cbcc140d5f2bddc1522
+technical_pr: 108
+technical_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
+technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
 technical_tree_equivalence: PASS
-canonical_pr: 105
-canonical_candidate: 41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
-canonical_merge: 59b230e8ad834b88c1dc4363bc9a28499881e1fe
-canonical_sync: COMPLETE
+canonical_sync: IN_PROGRESS
 ```
 
 ### Skill
 
 ```yaml
-skill_id: MCF-DEBUG-INCIDENT
-primary_owner: Patricia
-owners: [Patricia, Bruno, Rafael]
-required_inputs: [symptom_or_evidence]
+skill_id: MCF-CLOSE-PHASE
+primary_owner: Carmem
+owners: [Carmem, Emily, Leo, Mestre]
+required_inputs: [phase_execution, acceptance_results]
 permission_profile: SCOPED_WRITE
 planner_state: READY_AGENT
 provider: internal
-operation: inspect-debug-incident
+operation: close-phase
 resource: mcf-agent-runtime
-handoff_to: Renato
-required_evidence: [reproduction, root_cause, recovery_result]
-acceptance_criteria: [cause_supported, regression_test_added]
+handoff_to: Mestre
+required_evidence: [phase_pack, audit_verdict, leo_decision, checkpoint]
+acceptance_criteria: [traceability_complete, objective_state_truthful]
 ```
 
 ### Boundary
@@ -93,77 +90,82 @@ github_provider_write: FORBIDDEN
 environment_mutation: FORBIDDEN
 deploy: FORBIDDEN
 production_action: FORBIDDEN
-destructive_fix: FORBIDDEN
+destructive_action: FORBIDDEN
 secret_access: FORBIDDEN
 public_action: FORBIDDEN
-blind_retry: FORBIDDEN
+leandro_as_technical_executor: FORBIDDEN
+leandro_as_technical_handoff: FORBIDDEN
 ```
 
-### Evidência semântica
+### Verdade do closeout
 
-`reproduction` exige sintoma, método e referência verificável. `root_cause` exige causa e evidência de suporte. `recovery_result` exige ação/mitigação, verificação, `blind_retry: false`, `retry_evidence` semântico independente e referência verificável do teste de regressão.
+`ENTREGUE` exige simultaneamente:
 
-Ausência, vazio, whitespace, placeholder, objeto vazio ou booleano usado como substituto de evidência gera `RECOVERING`, nunca sucesso fabricado.
+- objetivo atendido;
+- zero blocker no checkpoint;
+- zero finding não resolvido;
+- zero finding bloqueante da auditoria independente;
+- verdict da auditoria `PASS`/`PASSED`;
+- nenhuma próxima ação pendente;
+- `human_action_required=false`;
+- decisão explícita e aprovadora de Léo;
+- estado seguinte de Léo igual ao estado final do checkpoint.
 
-### Planner e ownership
+`leo_decision.responsible=Leandro` só é aceito quando a decisão é explicitamente `ESCALAR_PARA_LEANDRO`. Isso representa HUMAN_GATE e nunca substitui o handoff técnico, que permanece para Mestre.
 
-- objetivos inequívocos de debug selecionam `MCF-DEBUG-INCIDENT`;
-- Patricia é primary owner;
-- Bruno e Rafael também são owners válidos;
-- non-owner é negado;
-- bridge não auto-completa;
-- handoff Renato somente após sucesso válido;
-- objetivo explicitamente de security review continua em Ricardo / `MCF-SECURITY-REVIEW` / Classe C.
-
-## 6. Evidência técnica
+## 6. Evidência técnica final
 
 ```yaml
-foundation_run: 31479541126
+final_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
+foundation_run: 31485695643
 foundation: PASS
-container_smoke_run: 31479541177
+container_smoke_run: 31485695636
 container_smoke: PASS
-server_test_files: 122
-server_tests: 527
-web_tests: 5
+documentation_validation_run: 31485695606
+documentation_validation: PASS
+server_test_files: 125
+server_tests: 562
 ops_tests: 20
+web_tests: 5
 failed_tests: 0
-technical_manifest: PASS
-specialist_reviews: PASS
+close_phase_executor_tests: 28
+close_phase_planner_tests: 4
+close_phase_mission_runtime_tests: 2
+hdf_tests: 11
+vitest_artifact: 9099033106
+artifact_digest: sha256:0a7893b7f4eb7e84c2d8b85c68b94cfb9eb23edb34df4f620f354cf1d56803db
+prf_manifest_audit_run: 31485724987
+prf_manifest_audit: PASS
+sofia_architecture: PASS
+renato_validation: PASS
 augusto_trace: PASS
+carmem_prf: PASS
 julia_governance: PASS
 emily_independent_audit: PASS
 leo_technical_gate: PASS
 technical_merge: COMPLETE
 technical_tree_equivalence: PASS
+post_merge_documentation_run: 31486181380
+post_merge_documentation: PASS
 ```
 
-## 7. Canonical documentation sync
+## 7. CAFs do Lot 4-E
 
-```yaml
-documentary_pr: 105
-documentary_candidate: 41f2ed1cda3e9cb2812bb7f8e8bee9553a0140b9
-documentation_validation_run: 31481344101
-documentation_validation: PASS
-documentary_manifest: PASS
-carmem_review: PASS
-julia_governance: PASS
-emily_independent_audit: PASS
-leo_documentary_gate: PASS
-documentary_merge: 59b230e8ad834b88c1dc4363bc9a28499881e1fe
-canonical_sync: COMPLETE
-```
+1. bootstrap inicial falhou antes de mutação; o mecanismo foi substituído antes de reexecução;
+2. formatação corrigida pelo Prettier pinado do repositório;
+3. `PASS` de audit verdict foi aceito somente como valor de controle contextual, sem enfraquecer a rejeição de placeholders;
+4. hardening passou a rejeitar `ENTREGUE` com finding bloqueante ou auditoria não-PASS;
+5. hardening passou a impedir Leandro como responsável técnico implícito;
+6. nenhum resultado de SHA supersedido foi usado como gate final.
 
-Um micro-closeout documental pós-merge registra este estado `COMPLETE` de forma verdadeira, sem alterar código/runtime e sem implementar o próximo boundary.
+## 8. Canonical documentation sync
 
-## 8. CAFs do Lot 4-D
+Uma sincronização documental separada deve reconciliar README raiz, README do runtime, este plano e o PRF com o merge técnico `6cf9af35407b97d84028078ab6843570b47103fe`.
 
-1. formatting corrigido e revalidado;
-2. prova de ausência de blind retry fortalecida com `retry_evidence` semântico;
-3. roteamento de incidente corrigido para não sobrepor security review;
-4. marcadores pré-merge `IN_PROGRESS/CANDIDATE` removidos da fonte canônica após o merge documental.
+Ela não altera runtime, permissões nem autoridade externa. Enquanto esse PR documental não estiver integrado, `canonical_sync_lot_4e` permanece `IN_PROGRESS`.
 
 ## 9. Próximo boundary
 
-`MCF-CLOSE-PHASE`
+Depois da sincronização canônica do Lot 4-E, o próximo boundary separado é **Release Candidate / Gate E**.
 
-Deve ser formalizado e executado separadamente. O Lot 4-D não o implementa.
+Isso não autoriza produção. Produção permanece `BLOCKED` até gate material próprio.

@@ -2,70 +2,91 @@
 
 ## Current state
 
-`TECHNICAL_VALIDATION_PASS / PRF_FINALIZATION`
+`TECHNICAL_MERGED / CANONICAL_SYNC_CANDIDATE`
 
 ## Baseline
 
 `main@39d2a8b3f1c323792fff9cbcc140d5f2bddc1522`
 
-## Validated technical candidate
+## Final technical candidate
 
-`fe96cfc74f268d7e548a5c57bdc401b7d269f618`
+`3b202d26b08d8acb72538db77e0e3b86d540dc97`
 
-## Work performed
+## Technical integration
 
-- Issue `#107` formalized the Class C boundary.
-- PR `#108` carries the technical candidate.
-- Runtime contracts include `MCF-CLOSE-PHASE` as executable.
-- Explicit close-phase intent routes to Carmem as `READY_AGENT`, with handoff to Mestre and a Class C floor.
-- Semantic evidence validation requires `phase_pack`, `audit_verdict`, `leo_decision` and `checkpoint`.
-- False `ENTREGUE` is rejected when the objective is unmet, blockers or unresolved findings remain, a next action is pending, human action is still required, the independent audit has blocking findings, the audit verdict is not PASS/PASSED, Léo did not approve, or decision/checkpoint terminal states disagree.
-- `leo_decision.responsible=Leandro` is rejected unless the explicit decision is `ESCALAR_PARA_LEANDRO`; that escalation decision must identify Leandro as the responsible human authority. This does not change the technical checkpoint handoff, which remains Mestre.
-- The permission boundary is restricted to `internal / close-phase / mcf-agent-runtime`.
-- External/GitHub write, environment mutation, deploy, production, destructive, secret and public actions remain forbidden inside this skill.
-- The registry conflict `handoff_to: Leandro` was reconciled to `handoff_to: Mestre`.
-- Unit, planner and PostgreSQL-backed MissionRuntime tests prove success, recovery, owner enforcement, boundary denial, HDF preservation, audit truthfulness and Mestre handoff.
+PR `#108` was validated and squash-merged as:
 
-## Exact-head validation
+`6cf9af35407b97d84028078ab6843570b47103fe`
+
+Candidate tree and merge tree are identical:
+
+`b58d7afae091bcea38132c9049a2d141da72c273`
+
+Therefore `candidate→merge tree equivalence: PASS`.
+
+## Integrated behavior
+
+- `MCF-CLOSE-PHASE` is executable and `READY_AGENT`.
+- Primary owner: Carmem; valid owners: Carmem, Emily, Leo and Mestre.
+- Success technical handoff: Mestre.
+- Canonical permission remains `SCOPED_WRITE`, with this increment restricted to `internal / close-phase / mcf-agent-runtime`.
+- Required semantic evidence: `phase_pack`, `audit_verdict`, `leo_decision`, `checkpoint`.
+- False `ENTREGUE` is rejected when the objective is unmet, blockers/findings remain, independent audit is not PASS/PASSED, a next action or human action remains, Léo did not approve, or final states disagree.
+- The former registry handoff to Leandro is reconciled to Mestre. LEANDRO remains human final authority and can only be addressed by an explicit HUMAN_GATE path.
+- No external/GitHub write, environment mutation, deploy, production, destructive, secret or public authority is granted by this skill.
+
+## Final exact-head evidence
 
 ```yaml
-technical_candidate: fe96cfc74f268d7e548a5c57bdc401b7d269f618
-foundation_run: 31485353192
+candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
+foundation_run: 31485695643
 foundation: PASS
-container_smoke_run: 31485353179
+container_smoke_run: 31485695636
 container_smoke: PASS
-documentation_validation_run: 31485353200
+documentation_validation_run: 31485695606
 documentation_validation: PASS
-format: PASS
-lint: PASS
-typecheck: PASS
-migrations_twice: PASS
-ops_tests: 20/20_PASS
-web_tests: 5/5_PASS
-server_test_files: 125/125_PASS
-server_tests: 562/562_PASS
+server_test_files: 125
+server_tests: 562
 failed_tests: 0
-focused_close_phase_executor: 28/28_PASS
-focused_close_phase_planner: 4/4_PASS
-focused_close_phase_mission_runtime: 2/2_PASS
-hdf_regression: 11/11_PASS
-build: PASS
-vitest_artifact: 9098898498
-artifact_size_bytes: 25987
-artifact_digest: sha256:c13a06b40a99fe1add2aa5557a06753e8f2a0b6dc6b89a0ddf87bae699479b5d
+focused_executor_tests: 28
+focused_planner_tests: 4
+focused_mission_runtime_tests: 2
+hdf_tests: 11
+artifact: 9099033106
+artifact_digest: sha256:0a7893b7f4eb7e84c2d8b85c68b94cfb9eb23edb34df4f620f354cf1d56803db
+prf_manifest_audit_run: 31485724987
+prf_manifest_audit: PASS
+sofia_architecture: PASS
+renato_validation: PASS
+augusto_trace: PASS
+carmem_prf_review: PASS
+julia_governance: PASS
+emily_independent_audit: PASS
+leo_technical_gate: PASS
+technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
+candidate_merge_tree_equivalence: PASS
+post_merge_documentation_run: 31486181380
+post_merge_documentation: PASS
 ```
 
 ## CAF / recovery history
 
-1. The first oversized bootstrap workflow failed before source mutation. Its mechanism was replaced rather than blindly retried.
-2. The first real candidate failed formatting only. Repository-pinned Prettier was applied and its temporary formatter removed.
-3. The formatted candidate exposed a semantic validator defect: canonical audit verdict `PASS` was treated as a generic placeholder. The validator was corrected contextually while ordinary placeholder rejection remained intact.
-4. Review hardening identified two additional truth/safety conditions: a delivered state cannot coexist with blocking independent-audit findings, and Leandro cannot silently become the technical responsible. A first oversized hardening workflow failed before source mutation and was replaced with a deterministic script.
-5. The hardened exact technical candidate then passed the complete Foundation, Container Smoke and Documentation validation pipelines.
+1. Oversized bootstrap workflow failed before source mutation; its mechanism was replaced, not blindly retried.
+2. Formatting failure was corrected with repository-pinned Prettier.
+3. Canonical audit verdict `PASS` was initially rejected as a generic placeholder; control-field handling was corrected without weakening ordinary placeholder rejection.
+4. Hardening added rejection of delivered closeout with blocking independent-audit findings and prevented Leandro from becoming technical responsible implicitly.
+5. Final clean candidate received its own exact-head CI and independent PRF-manifest audit.
 
-No blind retry is accepted as evidence of recovery.
+## Runtime result
 
-## Safety state
+```yaml
+skills_registered: 16
+skills_executable: 16
+skills_documental: 0
+remaining_documental: []
+```
+
+## Safety
 
 ```yaml
 production: BLOCKED
@@ -75,6 +96,14 @@ human_operator_actions: 0
 human_gate_leandro: NOT_REQUIRED
 ```
 
-## Remaining gate work
+## Canonical sync
 
-The hardened technical candidate is validated but not merge-authorized. The Class C PRF must be regenerated and independently verified, then the final clean candidate must receive exact-head CI plus specialist review, mission trace, governance, independent audit and Léo technical gate.
+The technical integration is complete. Root/runtime documentation and this PRF are being reconciled separately on `docs/mcf-runtime-006-lot4-e-canonical-sync`.
+
+The documentary sync must pass exact-head Documentation validation, consistency/governance review, independent audit and Léo documentary gate before merge. No documentary merge is claimed yet.
+
+## Next boundary
+
+After canonical sync completes: `Release Candidate / Gate E`.
+
+Production remains separately blocked.
