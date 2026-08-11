@@ -11,6 +11,7 @@ const governedInternalSkillIds = new Set([
   'MCF-EVALUATE-AGENTS',
   'MCF-SECURITY-REVIEW',
   'MCF-DEBUG-INCIDENT',
+  'MCF-CLOSE-PHASE',
 ]);
 
 const debugEvidencePlaceholders = new Set([
@@ -287,6 +288,195 @@ function requireDebugRecovery(
   return value;
 }
 
+const closeoutFinalStates = new Set([
+  'ENTREGUE',
+  'AGUARDANDO_DEPENDENCIA_EXTERNA',
+  'BLOQUEADO_POR_RISCO',
+  'CANCELADO_PELA_AUTORIDADE',
+]);
+
+const closeoutDecisions = new Set([
+  'APROVAR',
+  'APROVAR_COM_RESSALVAS',
+  'RETORNAR_PARA_CORRECAO',
+  'AMPLIAR_EQUIPE',
+  'REDUZIR_EQUIPE',
+  'BLOQUEAR',
+  'ESCALAR_PARA_LEANDRO',
+]);
+
+function requireCloseString(record: Record<string, unknown>, key: string, message: string): string {
+  const value = record[key];
+  if (typeof value !== 'string' || value.trim().length === 0) return reject(message);
+  const normalized = value.trim().toLowerCase();
+  const allowedControlValue =
+    (key === 'verdict' && ['pass', 'passed'].includes(normalized)) ||
+    (key === 'next_action' && normalized === 'none');
+  if (debugEvidencePlaceholders.has(normalized) && !allowedControlValue) return reject(message);
+  return value.trim();
+}
+
+function requireCloseArray(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+  allowEmpty = false,
+): unknown[] {
+  const value = record[key];
+  if (!Array.isArray(value) || (!allowEmpty && value.length === 0)) return reject(message);
+  if (value.some((item) => !hasMeaningfulDebugValue(item))) return reject(message);
+  return value;
+}
+
+function requireClosePhasePack(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  requireCloseArray(
+    value,
+    'artifacts',
+    'MCF-CLOSE-PHASE phase_pack requires non-empty artifact references',
+  );
+  requireCloseString(
+    value,
+    'manifest_reference',
+    'MCF-CLOSE-PHASE phase_pack requires a manifest_reference',
+  );
+  if (value.traceability_complete !== true) {
+    return reject('MCF-CLOSE-PHASE phase_pack requires traceability_complete=true');
+  }
+  return value;
+}
+
+function requireCloseAuditVerdict(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  requireCloseString(value, 'verdict', 'MCF-CLOSE-PHASE audit_verdict requires a verdict');
+  requireCloseString(
+    value,
+    'evidence_reference',
+    'MCF-CLOSE-PHASE audit_verdict requires evidence_reference',
+  );
+  requireCloseArray(
+    value,
+    'blocking_findings',
+    'MCF-CLOSE-PHASE audit_verdict requires blocking_findings, even when empty',
+    true,
+  );
+  return value;
+}
+
+function requireCloseLeoDecision(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  const decision = requireCloseString(
+    value,
+    'decision',
+    'MCF-CLOSE-PHASE leo_decision requires an explicit decision',
+  ).toUpperCase();
+  if (!closeoutDecisions.has(decision)) {
+    return reject('MCF-CLOSE-PHASE leo_decision is not a canonical Léo gate decision');
+  }
+  requireCloseString(value, 'justification', 'MCF-CLOSE-PHASE leo_decision requires justification');
+  const nextState = requireCloseString(
+    value,
+    'next_state',
+    'MCF-CLOSE-PHASE leo_decision requires next_state',
+  ).toUpperCase();
+  if (!closeoutFinalStates.has(nextState)) {
+    return reject('MCF-CLOSE-PHASE leo_decision next_state must be a canonical terminal state');
+  }
+  requireCloseString(value, 'next_action', 'MCF-CLOSE-PHASE leo_decision requires next_action');
+  const responsible = requireCloseString(
+    value,
+    'responsible',
+    'MCF-CLOSE-PHASE leo_decision requires responsible',
+  );
+  const responsibleIsLeandro = responsible.trim().toLowerCase() === 'leandro';
+  if (responsibleIsLeandro && decision !== 'ESCALAR_PARA_LEANDRO') {
+    return reject(
+      'MCF-CLOSE-PHASE cannot assign Leandro as technical responsible without an explicit HUMAN_GATE escalation decision',
+    );
+  }
+  if (decision === 'ESCALAR_PARA_LEANDRO' && !responsibleIsLeandro) {
+    return reject('MCF-CLOSE-PHASE ESCALAR_PARA_LEANDRO must identify Leandro as responsible');
+  }
+  return value;
+}
+
+function requireCloseCheckpoint(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  const finalState = requireCloseString(
+    value,
+    'final_state',
+    'MCF-CLOSE-PHASE checkpoint requires final_state',
+  ).toUpperCase();
+  if (!closeoutFinalStates.has(finalState)) {
+    return reject('MCF-CLOSE-PHASE checkpoint final_state must be canonical');
+  }
+  if (typeof value.objective_met !== 'boolean') {
+    return reject('MCF-CLOSE-PHASE checkpoint requires objective_met boolean evidence');
+  }
+  const unresolved = requireCloseArray(
+    value,
+    'unresolved_findings',
+    'MCF-CLOSE-PHASE checkpoint requires unresolved_findings, even when empty',
+    true,
+  );
+  const blockers = requireCloseArray(
+    value,
+    'blockers',
+    'MCF-CLOSE-PHASE checkpoint requires blockers, even when empty',
+    true,
+  );
+  const nextAction = requireCloseString(
+    value,
+    'next_action',
+    'MCF-CLOSE-PHASE checkpoint requires next_action',
+  );
+  const recipient = requireCloseString(
+    value,
+    'checkpoint_recipient',
+    'MCF-CLOSE-PHASE checkpoint requires checkpoint_recipient',
+  );
+  if (recipient.trim().toLowerCase() !== 'mestre') {
+    return reject(
+      'MCF-CLOSE-PHASE checkpoint_recipient must be Mestre; Leandro is not a technical handoff target',
+    );
+  }
+  if (typeof value.human_action_required !== 'boolean') {
+    return reject('MCF-CLOSE-PHASE checkpoint requires human_action_required boolean evidence');
+  }
+  if (finalState === 'ENTREGUE') {
+    const normalizedAction = nextAction.trim().toLowerCase();
+    if (value.objective_met !== true) {
+      return reject('MCF-CLOSE-PHASE cannot mark ENTREGUE when objective_met is false');
+    }
+    if (unresolved.length > 0 || blockers.length > 0) {
+      return reject('MCF-CLOSE-PHASE cannot mark ENTREGUE with unresolved findings or blockers');
+    }
+    if (!['nenhuma', 'none'].includes(normalizedAction)) {
+      return reject('MCF-CLOSE-PHASE cannot mark ENTREGUE with a pending next_action');
+    }
+    if (value.human_action_required !== false) {
+      return reject('MCF-CLOSE-PHASE ENTREGUE requires human_action_required=false');
+    }
+  }
+  return value;
+}
+
 function validateEvidence(
   skillId: string,
   evidence: Record<string, unknown>,
@@ -422,6 +612,55 @@ function validateEvidence(
           'MCF-DEBUG-INCIDENT requires structured meaningful recovery_result evidence',
         ),
       };
+    case 'MCF-CLOSE-PHASE': {
+      const phasePack = requireClosePhasePack(
+        evidence,
+        'phase_pack',
+        'MCF-CLOSE-PHASE requires structured phase_pack evidence',
+      );
+      const auditVerdict = requireCloseAuditVerdict(
+        evidence,
+        'audit_verdict',
+        'MCF-CLOSE-PHASE requires structured audit_verdict evidence',
+      );
+      const leoDecision = requireCloseLeoDecision(
+        evidence,
+        'leo_decision',
+        'MCF-CLOSE-PHASE requires structured leo_decision evidence',
+      );
+      const checkpoint = requireCloseCheckpoint(
+        evidence,
+        'checkpoint',
+        'MCF-CLOSE-PHASE requires structured checkpoint evidence',
+      );
+      const nextState = String(leoDecision.next_state).trim().toUpperCase();
+      const finalState = String(checkpoint.final_state).trim().toUpperCase();
+      const auditBlockingFindings = auditVerdict.blocking_findings as unknown[];
+      const normalizedAuditVerdict = String(auditVerdict.verdict).trim().toUpperCase();
+      if (nextState !== finalState) {
+        return reject('MCF-CLOSE-PHASE leo_decision.next_state must match checkpoint.final_state');
+      }
+      if (finalState === 'ENTREGUE' && auditBlockingFindings.length > 0) {
+        return reject('MCF-CLOSE-PHASE cannot mark ENTREGUE with blocking audit findings');
+      }
+      if (finalState === 'ENTREGUE' && !['PASS', 'PASSED'].includes(normalizedAuditVerdict)) {
+        return reject('MCF-CLOSE-PHASE ENTREGUE requires a passing independent audit verdict');
+      }
+      if (
+        finalState === 'ENTREGUE' &&
+        !['APROVAR', 'APROVAR_COM_RESSALVAS'].includes(
+          String(leoDecision.decision).trim().toUpperCase(),
+        )
+      ) {
+        return reject('MCF-CLOSE-PHASE ENTREGUE requires an approving Léo decision');
+      }
+      return {
+        phase_pack: phasePack,
+        audit_verdict: auditVerdict,
+        leo_decision: leoDecision,
+        checkpoint,
+      };
+    }
     default:
       return evidence;
   }

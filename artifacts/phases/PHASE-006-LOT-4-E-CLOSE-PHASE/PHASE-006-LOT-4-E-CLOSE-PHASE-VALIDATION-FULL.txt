@@ -1,0 +1,46 @@
+PHASE=PHASE-006-LOT-4-E-CLOSE-PHASE
+TECHNICAL_CANDIDATE=fe96cfc74f268d7e548a5c57bdc401b7d269f618
+STATE=TECHNICAL_VALIDATION_PASS
+
+FOUNDATION_RUN=31485353192
+FOUNDATION=PASS
+FORMAT=PASS
+LINT=PASS
+TYPECHECK=PASS
+MIGRATIONS_FIRST_PASS=PASS
+MIGRATIONS_SECOND_PASS=PASS
+OPS_TESTS=20/20_PASS
+WEB_TEST_FILES=1/1_PASS
+WEB_TESTS=5/5_PASS
+SERVER_TEST_FILES=125/125_PASS
+SERVER_TESTS=562/562_PASS
+FAILED_TESTS=0
+BUILD=PASS
+VITEST_ARTIFACT=9098898498
+ARTIFACT_SIZE_BYTES=25987
+ARTIFACT_DIGEST=sha256:c13a06b40a99fe1add2aa5557a06753e8f2a0b6dc6b89a0ddf87bae699479b5d
+
+CONTAINER_SMOKE_RUN=31485353179
+CONTAINER_SMOKE=PASS
+
+DOCUMENTATION_VALIDATION_RUN=31485353200
+DOCUMENTATION_VALIDATION=PASS
+
+FOCUSED_CLOSE_PHASE_EXECUTOR_TESTS=28/28_PASS
+FOCUSED_CLOSE_PHASE_PLANNER_TESTS=4/4_PASS
+FOCUSED_CLOSE_PHASE_MISSION_RUNTIME_TESTS=2/2_PASS
+HDF_REGRESSION_TESTS=11/11_PASS
+
+SEMANTIC_HARDENING:
+- ENTREGUE rejects blocking independent-audit findings;
+- ENTREGUE requires independent audit verdict PASS/PASSED;
+- Leandro cannot be assigned as technical responsible unless the explicit decision is ESCALAR_PARA_LEANDRO;
+- ESCALAR_PARA_LEANDRO must name Leandro as the responsible human authority;
+- checkpoint technical handoff remains Mestre, never Leandro.
+
+RECOVERY_HISTORY:
+- oversized bootstrap workflow failed before source mutation and was replaced, not blindly retried;
+- initial candidate formatting failure was corrected with repository-pinned Prettier;
+- canonical audit verdict PASS was initially rejected as a generic placeholder and was corrected contextually without weakening ordinary placeholder rejection;
+- review hardening workflow bootstrap failed before source mutation and was replaced by a deterministic repository script;
+- hardened exact technical candidate fe96cfc74f268d7e548a5c57bdc401b7d269f618 passed complete Foundation, Container Smoke and Documentation validation.

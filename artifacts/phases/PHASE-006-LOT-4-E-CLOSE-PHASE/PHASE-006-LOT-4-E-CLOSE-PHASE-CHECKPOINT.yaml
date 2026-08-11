@@ -1,0 +1,58 @@
+phase: PHASE-006-LOT-4-E-CLOSE-PHASE
+mission: MCF-RUNTIME-006-LOT-4-E-CLOSE-PHASE
+issue: 107
+pr: 108
+risk_class: C
+state: TECHNICAL_VALIDATION_PASS_PRF_FINALIZATION
+baseline: 39d2a8b3f1c323792fff9cbcc140d5f2bddc1522
+technical_candidate: fe96cfc74f268d7e548a5c57bdc401b7d269f618
+branch: feat/mcf-runtime-006-lot4-e-close-phase
+skills_registered: 16
+skills_executable_target: 16
+skills_documental_target: 0
+close_phase:
+  planner_state: READY_AGENT
+  primary_owner: Carmem
+  owners: [Carmem, Emily, Leo, Mestre]
+  handoff_to: Mestre
+  permission_profile: SCOPED_WRITE
+  provider: internal
+  operation: close-phase
+  resource: mcf-agent-runtime
+hdf:
+  active: true
+  leandro_as_executor: FORBIDDEN
+  leandro_as_technical_handoff: FORBIDDEN
+  leandro_as_responsible_without_escalation: FORBIDDEN
+validation:
+  foundation_run: 31485353192
+  foundation: PASS
+  container_smoke_run: 31485353179
+  container_smoke: PASS
+  documentation_validation_run: 31485353200
+  documentation_validation: PASS
+  server_test_files: 125
+  server_tests: 562
+  failed_tests: 0
+  ops_tests: 20
+  web_tests: 5
+  close_phase_executor_tests: 28
+  close_phase_planner_tests: 4
+  close_phase_mission_runtime_tests: 2
+  hdf_tests: 11
+  artifact: 9098898498
+  artifact_digest: sha256:c13a06b40a99fe1add2aa5557a06753e8f2a0b6dc6b89a0ddf87bae699479b5d
+prf_manifest: REGENERATION_REQUIRED
+specialist_reviews: PENDING
+augusto_trace: PENDING
+carmem_prf_review: PENDING
+julia_governance: PENDING
+emily_independent_audit: PENDING
+leo_gate: PENDING
+production: BLOCKED
+live_staging_adapter: DISABLED
+gate_c_real_provider_write: NOT_AUTHORIZED
+human_operator_actions: 0
+human_gate_leandro: NOT_REQUIRED
+next_action: Regenerar manifesto PRF, auditar hashes e revalidar o HEAD final limpo.
+checkpoint_recipient: Mestre
