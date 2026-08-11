@@ -1,12 +1,32 @@
 # PHASE-006-LOT-4-C-SECURITY-REVIEW
 
-PRF Classe C do candidato que promove `MCF-SECURITY-REVIEW` para execução interna governada no MCF Runtime.
+PRF Classe C do Lot 4-C que promove `MCF-SECURITY-REVIEW` para execução interna governada no MCF Runtime.
 
 ## Estado
 
-`CANDIDATE_PRF_AWAITING_EXACT_HEAD_REVALIDATION`
+`TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE`
 
-O objetivo técnico já possui candidato funcional com Foundation e Container Smoke verdes, mas este pacote ainda precisa ser commitado e revalidado no novo HEAD antes dos reviews finais, auditoria e gate.
+## Resultado técnico
+
+```yaml
+issue: 100
+pull_request: 101
+validated_head: 323b69af4616cda0e4f9b1e47516a9cde37a3f0d
+merge_commit: 08c3e19e1b6408a164628e1bfaa5968e2070ccf0
+candidate_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+merge_tree: 70f07a2c936ce166555e52b36366c810919f5b8c
+tree_equivalence: PASS
+foundation_run: 31471615150
+container_smoke_run: 31471615302
+manifest_audit_run: 31471688783
+server_test_files: 118
+server_tests: 485
+emily_independent_audit: PASS
+leo_technical_gate: PASS
+skills_registered: 16
+skills_executable: 14
+skills_documental: 2
+```
 
 ## Ordem de leitura
 
@@ -19,19 +39,20 @@ O objetivo técnico já possui candidato funcional com Foundation e Container Sm
 7. `PHASE-006-LOT-4-C-SECURITY-REVIEW-DECISIONS.md`
 8. `PHASE-006-LOT-4-C-SECURITY-REVIEW-ARTIFACT-MANIFEST.sha256`
 
-## Candidato funcional pré-PRF
+## Boundary preservado
 
-- HEAD: `772fcb71ab5e2af21d81323109573550352a581e`
-- Foundation: `31470069594` — PASS
-- Container Smoke: `31470069567` — PASS
-- Server: 118 arquivos / 483 testes — PASS
-- Vitest artifact: `9093021326`
-- digest: `sha256:8b9f5c3ab43597b77720a3cd9cb3d3b79c23b7ef7f615d9aa54f95ddc191717a`
+- `SENSITIVE_CONTROLLED`;
+- provider interno somente;
+- segredo proibido;
+- escrita externa proibida;
+- ação destrutiva/pública proibida;
+- produção bloqueada;
+- live staging adapter desabilitado;
+- Gate C parcial;
+- C1/C2 real write não autorizado;
+- `human_operator_actions=0`;
+- `human_gate_leandro=NOT_REQUIRED`.
 
-## Boundary
+## Próxima etapa
 
-Provider externo, segredo, escrita externa, ação destrutiva/pública, produção e live staging permanecem bloqueados. Gate C continua PARCIAL. Nenhuma ação técnica foi delegada a Leandro.
-
-## Próxima ação
-
-Commitar este PRF, validar Foundation + Container Smoke no HEAD resultante, auditar o manifesto e somente então executar reviews especialistas, auditoria independente de Emily e gate de Léo.
+Depois do gate documental e do merge deste canonical sync, o Lot 4-C pode ser declarado `COMPLETE`. Permanecem documentais `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`; a próxima formalização deve tratar `MCF-DEBUG-INCIDENT` em boundary próprio.
