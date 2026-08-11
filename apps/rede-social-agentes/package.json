@@ -14,7 +14,7 @@
     "dev:web": "pnpm --filter @rsa/web dev",
     "dev:worker": "pnpm --filter @rsa/worker dev",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "sha256sum ../../artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/PHASE-006-LOT-4-D-DEBUG-INCIDENT-CHECKPOINT.yaml ../../artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/PHASE-006-LOT-4-D-DEBUG-INCIDENT-DECISIONS.md ../../artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/PHASE-006-LOT-4-D-DEBUG-INCIDENT-PLAN.md ../../artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/PHASE-006-LOT-4-D-DEBUG-INCIDENT-REPORT.md ../../artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/PHASE-006-LOT-4-D-DEBUG-INCIDENT-SMOKE.txt ../../artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/PHASE-006-LOT-4-D-DEBUG-INCIDENT-VALIDATION-FULL.txt ../../artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/PHASE-006-LOT-4-D-DEBUG-INCIDENT-VALIDATION.txt ../../artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/README.md && exit 1",
     "lint": "eslint .",
     "ops:backup": "node ops/backup-database.mjs",
     "ops:restore": "node ops/restore-database.mjs",
