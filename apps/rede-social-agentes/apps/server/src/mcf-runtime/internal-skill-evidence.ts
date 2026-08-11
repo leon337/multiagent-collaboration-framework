@@ -86,11 +86,7 @@ function hasMeaningfulDebugValue(value: unknown): boolean {
   return false;
 }
 
-function requireDebugField(
-  record: Record<string, unknown>,
-  key: string,
-  message: string,
-): unknown {
+function requireDebugField(record: Record<string, unknown>, key: string, message: string): unknown {
   const value = record[key];
   if (!hasMeaningfulDebugValue(value)) return reject(message);
   return value;
