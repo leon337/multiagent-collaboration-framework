@@ -1,0 +1,186 @@
+name: Lot 4A Hardening Fix
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-lot4-a-internal-core-skills
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/mcf-runtime-006-lot4-a-internal-core-skills
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply reviewed hardening
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          executor_path = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor.ts')
+          executor = executor_path.read_text()
+          old_guard = "if (input.tool.provider === 'internal' && !internalSkills.has(skill.skillId)) {"
+          new_guard = "if (canonicalizeProvider(input.tool.provider) === 'internal' && !internalSkills.has(skill.skillId)) {"
+          if old_guard not in executor:
+              raise SystemExit('expected literal internal guard not found')
+          executor = executor.replace(old_guard, new_guard, 1)
+          old_branch = "if (input.tool.provider === 'internal') {"
+          new_branch = "if (canonicalizeProvider(input.tool.provider) === 'internal') {"
+          if old_branch not in executor:
+              raise SystemExit('expected literal internal branch not found')
+          executor = executor.replace(old_branch, new_branch, 1)
+          executor_path.write_text(executor)
+
+          evidence_path = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/internal-skill-evidence.ts')
+          evidence = evidence_path.read_text()
+          import_anchor = "import { McfEvidenceRejectedError } from './mcf-runtime.errors.js';\n"
+          if "canonicalizeProvider" not in evidence:
+              if import_anchor not in evidence:
+                  raise SystemExit('internal evidence import anchor not found')
+              evidence = evidence.replace(
+                  import_anchor,
+                  import_anchor + "import { canonicalizeProvider } from './permission-engine.js';\n",
+                  1,
+              )
+          old_array = '''function requireArray(
+            record: Record<string, unknown>,
+            key: string,
+            message: string,
+            options: { allowEmpty?: boolean } = {},
+          ): unknown[] {
+            const value = record[key];
+            if (!Array.isArray(value) || (!options.allowEmpty && value.length === 0)) {
+              return reject(message);
+            }
+            return value;
+          }
+          '''
+          new_array = '''function isMeaningfulEvidenceItem(value: unknown): boolean {
+            if (typeof value === 'string') return value.trim().length > 0;
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              return Object.keys(value as Record<string, unknown>).length > 0;
+            }
+            return false;
+          }
+
+          function requireArray(
+            record: Record<string, unknown>,
+            key: string,
+            message: string,
+            options: { allowEmpty?: boolean } = {},
+          ): unknown[] {
+            const value = record[key];
+            if (
+              !Array.isArray(value) ||
+              (!options.allowEmpty && value.length === 0) ||
+              value.some((item) => !isMeaningfulEvidenceItem(item))
+            ) {
+              return reject(message);
+            }
+            return value;
+          }
+          '''
+          if old_array not in evidence:
+              raise SystemExit('requireArray block not found')
+          evidence = evidence.replace(old_array, new_array, 1)
+          old_receipt = "if (receipt.provider !== 'internal') {"
+          new_receipt = "if (canonicalizeProvider(receipt.provider) !== 'internal') {"
+          if old_receipt not in evidence:
+              raise SystemExit('receipt provider check not found')
+          evidence = evidence.replace(old_receipt, new_receipt, 1)
+          evidence_path.write_text(evidence)
+
+          tests_path = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor-lot4-core.test.ts')
+          tests = tests_path.read_text()
+          anchor = "  it('preserves owner-agent permission enforcement', async () => {"
+          if anchor not in tests:
+              raise SystemExit('test insertion anchor not found')
+          additions = '''  it('normalizes the governed internal provider before selecting the internal execution path', async () => {
+            const result = await createExecutor().execute({
+              skillId: 'MCF-DEFINE-PRODUCT',
+              agentId: 'Leonardo',
+              inputs: {
+                idea_or_problem: 'Normalize the governed provider boundary.',
+                execution_evidence: {
+                  problem_statement: 'Provider normalization must not change the governed execution path.',
+                  requirements: ['Keep internal execution governed'],
+                  acceptance_criteria: ['Canonical internal provider completes with validated evidence'],
+                },
+              },
+              tool: { provider: ' Internal ', operation: 'plan-product', resource: 'mcf-agent-runtime' },
+            });
+
+            expect(result).toMatchObject({
+              evidenceStatus: 'VALID',
+              phaseState: 'COMPLETED',
+              handoffTo: 'Sofia',
+            });
+          });
+
+          it('rejects non-semantic array items instead of accepting placeholder evidence', async () => {
+            const result = await createExecutor().execute({
+              skillId: 'MCF-DEFINE-PRODUCT',
+              agentId: 'Leonardo',
+              inputs: {
+                idea_or_problem: 'Reject placeholder evidence.',
+                execution_evidence: {
+                  problem_statement: 'Array evidence must contain meaningful items.',
+                  requirements: [''],
+                  acceptance_criteria: ['Criterion'],
+                },
+              },
+              tool: { provider: 'internal', operation: 'plan-product', resource: 'mcf-agent-runtime' },
+            });
+
+            expect(result).toMatchObject({
+              evidenceStatus: 'INVALID',
+              phaseState: 'RECOVERING',
+              handoffTo: null,
+            });
+            expect(result.rejectionReason).toMatch(/requirements/u);
+          });
+
+          '''
+          tests = tests.replace(anchor, additions + anchor, 1)
+          tests_path.write_text(tests)
+          PY
+
+      - name: Format reviewed files
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/skill-executor.ts \
+            apps/server/src/mcf-runtime/internal-skill-evidence.ts \
+            apps/server/src/mcf-runtime/skill-executor-lot4-core.test.ts \
+            apps/server/src/mcf-runtime/mission-runtime-lot4-core.integration.test.ts
+
+      - name: Commit scoped fix and remove temporary workflow
+        run: |
+          rm .github/workflows/lot4-hardening-fix.yml
+          git diff --check
+          git config user.name "MCF Runtime Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(runtime): harden Lot 4A evidence boundary"
+          git push origin HEAD:feat/mcf-runtime-006-lot4-a-internal-core-skills
