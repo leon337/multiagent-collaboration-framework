@@ -84,15 +84,48 @@ async function persistProofArtifact(proof: Record<string, unknown>): Promise<voi
   );
 }
 
+function safeExecutionDiagnostic(execution: Awaited<ReturnType<SkillExecutor['execute']>>) {
+  return {
+    evidenceStatus: execution.evidenceStatus,
+    phaseState: execution.phaseState,
+    missionState: execution.missionState,
+    rejectionReason: execution.rejectionReason,
+    externalAction: execution.externalAction,
+    receipt: execution.receipt
+      ? {
+          receiptId: execution.receipt.receiptId,
+          provider: execution.receipt.provider,
+          operation: execution.receipt.operation,
+          resource: execution.receipt.resource,
+          externalId: execution.receipt.externalId,
+          commitSha: execution.receipt.commitSha,
+          status: execution.receipt.status,
+          metadata: {
+            adapterId: execution.receipt.metadata.adapterId ?? null,
+            resultStatus: execution.receipt.metadata.resultStatus ?? null,
+            readBackVerified: execution.receipt.metadata.readBackVerified ?? null,
+            unknownStage: execution.receipt.metadata.unknownStage ?? null,
+            branchRef: execution.receipt.metadata.branchRef ?? null,
+            branchSha: execution.receipt.metadata.branchSha ?? null,
+            pullRequestNumber: execution.receipt.metadata.pullRequestNumber ?? null,
+            mutationExternalId: execution.receipt.metadata.mutationExternalId ?? null,
+          },
+        }
+      : null,
+  };
+}
+
 describe('MCF Gate C real GitHub provider proof', () => {
   it('executes C1 and C2 through PermissionEngine -> Dispatcher -> Ledger -> real adapters', async () => {
     if (!enabled) return;
 
     const headSha = requiredEnv('MCF_GATE_C_HEAD_SHA').toLowerCase();
     const baseSha = requiredEnv('MCF_GATE_C_BASE_SHA').toLowerCase();
+    const authSource = process.env.MCF_GATE_C_AUTH_SOURCE?.trim() || 'UNKNOWN';
     expect(headSha).toMatch(shaPattern);
     expect(baseSha).toMatch(shaPattern);
     expect(requiredEnv('GITHUB_REPOSITORY').toLowerCase()).toBe(repository);
+    requiredEnv('MCF_GITHUB_TOKEN');
     requiredEnv('GITHUB_TOKEN');
 
     const database = new DatabaseService();
@@ -156,7 +189,23 @@ describe('MCF Gate C real GitHub provider proof', () => {
         executionContext: { missionId, phaseId: c1Phase, expectedMissionVersion: 1 },
       });
 
-      expect(c1.evidenceStatus).toBe('VALID');
+      if (c1.evidenceStatus !== 'VALID') {
+        const diagnostic = safeExecutionDiagnostic(c1);
+        await persistProofArtifact({
+          stage: 'C1_DIAGNOSTIC',
+          missionId,
+          repository,
+          baseSha,
+          headSha,
+          branchRef,
+          authSource,
+          c1: diagnostic,
+          production: 'BLOCKED',
+        });
+        console.error(`MCF_GATE_C_C1_DIAGNOSTIC ${JSON.stringify(diagnostic)}`);
+        throw new Error(`C1 real-provider proof did not reach VALID: ${c1.evidenceStatus}`);
+      }
+
       expect(c1.externalAction?.status).toBe('EXECUTED');
       expect(c1.receipt?.status).toBe('SUCCEEDED');
       expect(c1.receipt?.metadata.readBackVerified).toBe(true);
@@ -202,7 +251,25 @@ describe('MCF Gate C real GitHub provider proof', () => {
         executionContext: { missionId, phaseId: c2Phase, expectedMissionVersion: 1 },
       });
 
-      expect(c2.evidenceStatus).toBe('VALID');
+      if (c2.evidenceStatus !== 'VALID') {
+        const diagnostic = safeExecutionDiagnostic(c2);
+        await persistProofArtifact({
+          stage: 'C2_DIAGNOSTIC',
+          missionId,
+          repository,
+          baseSha,
+          headSha,
+          branchRef,
+          pullRequestNumber: pullNumber,
+          authSource,
+          c1: safeExecutionDiagnostic(c1),
+          c2: diagnostic,
+          production: 'BLOCKED',
+        });
+        console.error(`MCF_GATE_C_C2_DIAGNOSTIC ${JSON.stringify(diagnostic)}`);
+        throw new Error(`C2 real-provider proof did not reach VALID: ${c2.evidenceStatus}`);
+      }
+
       expect(c2.externalAction?.status).toBe('EXECUTED');
       expect(c2.receipt?.status).toBe('SUCCEEDED');
       expect(c2.receipt?.metadata.readBackVerified).toBe(true);
@@ -257,6 +324,7 @@ describe('MCF Gate C real GitHub provider proof', () => {
       expect(Number(receipts.rows[0]?.count ?? 0)).toBe(3);
 
       await persistProofArtifact({
+        stage: 'COMPLETE',
         missionId,
         repository,
         baseSha,
@@ -264,6 +332,7 @@ describe('MCF Gate C real GitHub provider proof', () => {
         branchRef,
         pullRequestNumber: pullNumber,
         pullRequestUrl: c1.receipt?.metadata.pullRequestUrl ?? null,
+        authSource,
         c1: {
           adapterId: c1.externalAction?.adapterId ?? null,
           attemptId: c1.externalAction?.attemptId ?? null,
