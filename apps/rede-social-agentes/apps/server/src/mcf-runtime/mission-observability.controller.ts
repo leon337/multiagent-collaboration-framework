@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject, Param, Post, UseGuards } from '@nestjs/common';
 import type {
   McfBlockedAlertReconcileResponse,
   McfBlockedMissionListResponse,
@@ -6,12 +6,15 @@ import type {
 } from '@rsa/contracts';
 
 import { SessionAuthGuard } from '../identity/session-auth.guard.js';
-import type { MissionObservabilityService } from './mission-observability.service.js';
+import { MissionObservabilityService } from './mission-observability.service.js';
 
 @Controller('mcf/observability')
 @UseGuards(SessionAuthGuard)
 export class MissionObservabilityController {
-  constructor(private readonly observability: MissionObservabilityService) {}
+  constructor(
+    @Inject(MissionObservabilityService)
+    private readonly observability: MissionObservabilityService,
+  ) {}
 
   @Get('missions/:missionId')
   async getMission(@Param('missionId') missionId: string): Promise<McfMissionObservationResponse> {
