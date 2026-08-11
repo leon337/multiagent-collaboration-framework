@@ -34,9 +34,7 @@ Não há autoridade nova para GitHub write, deploy, produção, ambiente, segred
 
 ## D5 — Leandro não pode ser responsável técnico implícito
 
-`leo_decision.responsible=Leandro` só é semanticamente válido quando a decisão explícita é `ESCALAR_PARA_LEANDRO`. Essa exceção representa HUMAN_GATE dirigido ao humano final, não handoff técnico. A decisão `ESCALAR_PARA_LEANDRO` deve identificar Leandro como responsável; os demais estados não podem fazê-lo silenciosamente.
-
-O `checkpoint_recipient` técnico permanece obrigatoriamente `Mestre`.
+`leo_decision.responsible=Leandro` só é semanticamente válido quando a decisão explícita é `ESCALAR_PARA_LEANDRO`. Essa exceção representa HUMAN_GATE dirigido ao humano final, não handoff técnico. O `checkpoint_recipient` técnico permanece obrigatoriamente `Mestre`.
 
 ## D6 — Bridge não fabrica closeout
 
@@ -44,19 +42,13 @@ O `checkpoint_recipient` técnico permanece obrigatoriamente `Mestre`.
 
 ## D7 — CAF sem blind retry
 
-Falhas de bootstrap, formatação e validação foram corrigidas alterando a causa antes de cada reexecução. O candidato final limpo `3b202d26b08d8acb72538db77e0e3b86d540dc97` passou Foundation `31485695643`, Container Smoke `31485695636` e Documentation validation `31485695606`. O manifesto final foi auditado pelo run `31485724987`.
+Falhas de bootstrap, formatação e validação foram corrigidas alterando a causa antes de cada reexecução. Nenhum resultado supersedido foi promovido como gate final.
 
 ## D8 — Gate técnico e integração
 
-Sofia, Renato, Augusto, Carmem, Julia e Emily emitiram PASS no HEAD final. Léo aprovou merge apenas para o HEAD `3b202d26...`. O PR `#108` foi squash-merged como `6cf9af35407b97d84028078ab6843570b47103fe`.
-
-A tree do candidato e a tree do merge são idênticas: `b58d7afae091bcea38132c9049a2d141da72c273`.
-
-`candidate→merge tree equivalence: PASS`.
+O candidato final `3b202d26b08d8acb72538db77e0e3b86d540dc97` passou CI, manifesto, reviews, auditoria e gate de Léo. O PR `#108` foi squash-merged como `6cf9af35407b97d84028078ab6843570b47103fe` com tree equivalence PASS.
 
 ## D9 — Estado do runtime
-
-Após a integração técnica:
 
 ```yaml
 skills_registered: 16
@@ -65,14 +57,18 @@ skills_documental: 0
 remaining_documental: []
 ```
 
-## D10 — Gate humano e limites externos
+## D10 — Canonical documentation sync
 
-Nenhum gatilho reservado de HUMAN_GATE surgiu neste incremento interno e reversível. `human_operator_actions=0`. Produção permanece `BLOCKED`, live staging adapter `DISABLED` e Gate C real provider write `NOT_AUTHORIZED`.
+O PR documental `#109` foi validado no HEAD `7d571a4a19234b5e479b4e3b615e07ebb81d29a3`, teve manifesto auditado, revisões documentais PASS e gate documental de Léo PASS. Foi squash-merged como `d0f4624a1c4f4b31eb625ddadadf523a4578b972`.
 
-## D11 — Sincronização documental separada
+A validação documental pós-merge `31487031172` também passou.
 
-O merge técnico não autoriza declarar o closeout documental como concluído. README raiz, README do runtime, plano canônico e PRF são reconciliados separadamente; essa sincronização exige validação documental, revisão, auditoria independente e gate documental antes do merge.
+`canonical_sync: COMPLETE`.
+
+## D11 — Gate humano e limites externos
+
+Nenhum gatilho reservado de HUMAN_GATE surgiu neste incremento. `human_operator_actions=0`. Produção permanece `BLOCKED`, live staging adapter `DISABLED` e Gate C real provider write `NOT_AUTHORIZED`.
 
 ## D12 — Próximo boundary
 
-Somente após o canonical sync do Lot 4-E o próximo boundary passa a ser `Release Candidate / Gate E`. Isso não autoriza produção.
+O próximo boundary separado do RUNTIME-006 é `Release Candidate / Gate E`. Isso não autoriza produção.
