@@ -16,9 +16,12 @@ import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
+import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
+import { MissionObservabilityController } from './mission-observability.controller.js';
+import { MissionObservabilityRepository } from './mission-observability.repository.js';
+import { MissionObservabilityService } from './mission-observability.service.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
-import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
 import { OrderedMcfRuntimeRepository } from './ordered-mcf-runtime.repository.js';
 import { PermissionEngine } from './permission-engine.js';
 import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
@@ -26,14 +29,15 @@ import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 import { SkillExecutor } from './skill-executor.js';
 import { SkillRegistryLoader } from './skill-registry.loader.js';
 import { SocialTimelineController } from './social-timeline.controller.js';
+import { SocialTimelineService } from './social-timeline.service.js';
 import { McfStagingDeployCallbackController } from './staging-deploy-callback.controller.js';
 import { StagingDeployReconciliationService } from './staging-deploy-reconciliation.service.js';
-import { SocialTimelineService } from './social-timeline.service.js';
 
 @Module({
   imports: [DatabaseModule, IdentityModule],
   controllers: [
     MissionRuntimeController,
+    MissionObservabilityController,
     McfCiCallbackController,
     McfStagingDeployCallbackController,
     ChatRuntimeBridgeController,
@@ -45,6 +49,8 @@ import { SocialTimelineService } from './social-timeline.service.js';
     EvidenceValidator,
     McfRuntimeTokenGuard,
     ChatMissionPlanner,
+    MissionObservabilityRepository,
+    MissionObservabilityService,
     {
       provide: GitHubCodeReviewAdapter,
       useFactory: (evidence: EvidenceValidator) => new GitHubCodeReviewAdapter(evidence),
@@ -155,6 +161,11 @@ import { SocialTimelineService } from './social-timeline.service.js';
     },
     SocialTimelineService,
   ],
-  exports: [MissionRuntimeService, ChatRuntimeBridgeService, SocialTimelineService],
+  exports: [
+    MissionRuntimeService,
+    MissionObservabilityService,
+    ChatRuntimeBridgeService,
+    SocialTimelineService,
+  ],
 })
 export class McfRuntimeModule {}
