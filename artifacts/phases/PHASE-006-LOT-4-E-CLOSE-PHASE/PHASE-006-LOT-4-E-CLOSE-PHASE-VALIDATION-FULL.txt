@@ -1,0 +1,4 @@
+PHASE=PHASE-006-LOT-4-E-CLOSE-PHASE
+STATE=PENDING_EXACT_HEAD_CI
+
+No PASS is recorded yet. This file will be reconciled only from exact-head workflow/test evidence.
