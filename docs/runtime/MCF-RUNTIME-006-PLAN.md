@@ -2,7 +2,7 @@
 
 ## Estado
 
-`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO — LOTE_3_CONCLUIDO — OBSERVABILIDADE_INTEGRADA`
+`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO — LOTE_3_CONCLUIDO — OBSERVABILIDADE_INTEGRADA — LOTE_4A_INTEGRADO`
 
 ## Autorização
 
@@ -93,6 +93,28 @@ runtime_006_observability:
   active_p0: 0
   active_p1: 0
   active_p2: 0
+runtime_006_lot_4a:
+  capability: EXECUTABLE_INTERNAL_CORE_SKILLS
+  state: INTEGRADO
+  issue: 94
+  pull_request: 95
+  validated_head: e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668
+  merge_commit: 67d20e24fd136f6334bfd835cb775426f6514403
+  candidate_tree: def5edf77be8bdc32939d2b4bd5b1fcbcca649ec
+  merge_tree: def5edf77be8bdc32939d2b4bd5b1fcbcca649ec
+  foundation_run: 31461319193
+  container_smoke_run: 31461319181
+  server_test_files: 112
+  server_tests: 459
+  vitest_artifact: 9089891091
+  artifact_digest: sha256:84dd346386005a300614558406d20cf6e6bda4943dc95f6e2d4a5e371e4ac375
+  independent_audit: PASS
+  leo_technical_gate: PASS
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
+  skills_executable: 12
+  skills_documental: 4
 mcf_dec_061:
   state: INTEGRADA_COM_GATE_D
   purpose: GITHUB_ACTIONS_ONE_SHOT_TEAM_FIRST_FALLBACK
@@ -198,7 +220,7 @@ final_state: object
 
 ### Lote 4 — cobertura total
 
-12. converter as oito skills documentais — **PRÓXIMA ETAPA / PENDENTE**;
+12. converter as oito skills documentais — **EM EXECUÇÃO / LOT 4-A INTEGRADO / 4 DE 8 CONVERTIDAS**;
 13. executar testes com agentes em contextos separados — **PENDENTE**;
 14. auditoria independente final — **PENDENTE**;
 15. preparar MCF v1.0.0-RC1 — **PENDENTE**.
@@ -360,7 +382,7 @@ Os critérios acima devem ser avaliados por adapter. Um `PASS` de uma capacidade
 
 ## Próxima ação
 
-Iniciar `MCF-RUNTIME-006-LOT-4-SKILLS`: converter as oito skills ainda documentais em capacidades executáveis comprovadas. Não repetir A1, A2, C1, C2, Gate D ou observabilidade do Lote 3. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio.
+Iniciar `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`: converter `MCF-EVALUATE-AGENTS` como incremento independente, preservando o Lot 4-A já integrado. Depois permanecem `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`, cada uma em seu boundary de risco. Não repetir A1, A2, C1, C2, Gate D, observabilidade do Lote 3 ou Lot 4-A. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio.
 
 ## Critério de conclusão da missão
 
