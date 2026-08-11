@@ -36,7 +36,7 @@ objetivo conversacional
 → trace final verificado
 ```
 
-## Estado técnico após o Lot 4-E
+## Estado canônico após o Lot 4-E
 
 ```yaml
 skills_registradas: 16
@@ -64,7 +64,10 @@ runtime_006_lote_4e:
   technical_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
   technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
   candidate_merge_tree_equivalence: PASS
-  canonical_sync: IN_PROGRESS
+  canonical_pr: 109
+  canonical_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
+  canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
+  canonical_sync: COMPLETE
 
 production: BLOCKED
 live_staging_adapter: DISABLED
@@ -105,7 +108,7 @@ A skill exige evidência semântica estruturada para `phase_pack`, `audit_verdic
 
 O antigo `handoff_to: Leandro` foi reconciliado para `handoff_to: Mestre`. LEANDRO permanece autoridade humana final e só pode ser acionado por um `HUMAN_GATE` explícito; não é executor nem handoff técnico.
 
-### Evidência técnica
+### Evidência técnica e integração
 
 ```yaml
 final_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
@@ -126,10 +129,21 @@ carmem_prf_review: PASS
 julia_governance: PASS
 emily_independent_audit: PASS
 leo_gate: PASS
-technical_merge: COMPLETE
+technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
 candidate_merge_tree_equivalence: PASS
-post_merge_documentation_run: 31486181380
-post_merge_documentation: PASS
+technical_post_merge_documentation_run: 31486181380
+technical_post_merge_documentation: PASS
+technical_post_merge_staging_run: 31486181369
+technical_post_merge_staging: PASS_DEPLOYED
+canonical_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
+canonical_documentation_run: 31486782247
+canonical_documentation: PASS
+canonical_manifest_audit_run: 31486845037
+canonical_manifest_audit: PASS
+canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
+canonical_post_merge_documentation_run: 31487031172
+canonical_post_merge_documentation: PASS
+canonical_sync: COMPLETE
 ```
 
 ## Documentação canônica
@@ -142,6 +156,6 @@ post_merge_documentation: PASS
 
 ## Próximo boundary
 
-Após concluir a sincronização documental canônica do Lot 4-E, o próximo boundary separado do RUNTIME-006 é a preparação da **Release Candidate / Gate E**.
+**Release Candidate / Gate E**.
 
-Produção continua fora desse boundary e permanece `BLOCKED`.
+O Lot 4-E está tecnicamente integrado e documentalmente reconciliado. Produção continua fora desse boundary e permanece `BLOCKED`.
