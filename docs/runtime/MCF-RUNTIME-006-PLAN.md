@@ -20,14 +20,14 @@ live_staging_adapter: DISABLED
 gate_c_real_provider_write: NOT_AUTHORIZED
 ```
 
-## 3. Estado técnico atual
+## 3. Estado canônico
 
 ```yaml
 skills_registered: 16
 skills_executable: 16
 skills_documental: 0
 remaining_documental: []
-canonical_sync_lot_4e: IN_PROGRESS
+canonical_sync_lot_4e: COMPLETE
 ```
 
 ## 4. Roadmap
@@ -47,8 +47,8 @@ canonical_sync_lot_4e: IN_PROGRESS
 | Lot 4-B — Evaluate Agents | COMPLETE |
 | Lot 4-C — Security Review | COMPLETE |
 | Lot 4-D — Debug Incident | COMPLETE |
-| Lot 4-E — `MCF-CLOSE-PHASE` | TECHNICAL COMPLETE / CANONICAL SYNC IN PROGRESS |
-| Release Candidate / Gate E | NEXT AFTER CANONICAL SYNC |
+| Lot 4-E — `MCF-CLOSE-PHASE` | COMPLETE |
+| Release Candidate / Gate E | NEXT BOUNDARY |
 | Produção | BLOCKED |
 
 ## 5. Lot 4-E — Close Phase
@@ -62,7 +62,10 @@ technical_pr: 108
 technical_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
 technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
 technical_tree_equivalence: PASS
-canonical_sync: IN_PROGRESS
+canonical_pr: 109
+canonical_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
+canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
+canonical_sync: COMPLETE
 ```
 
 ### Skill
@@ -145,27 +148,43 @@ emily_independent_audit: PASS
 leo_technical_gate: PASS
 technical_merge: COMPLETE
 technical_tree_equivalence: PASS
-post_merge_documentation_run: 31486181380
-post_merge_documentation: PASS
+technical_post_merge_documentation_run: 31486181380
+technical_post_merge_documentation: PASS
+technical_post_merge_staging_run: 31486181369
+technical_post_merge_staging: PASS_DEPLOYED
 ```
 
-## 7. CAFs do Lot 4-E
+## 7. Canonical documentation sync
+
+```yaml
+documentary_pr: 109
+documentary_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
+documentation_validation_run: 31486782247
+documentation_validation: PASS
+documentary_manifest_audit_run: 31486845037
+documentary_manifest_audit: PASS
+carmem_review: PASS
+julia_governance: PASS
+emily_independent_audit: PASS
+leo_documentary_gate: PASS
+documentary_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
+post_merge_documentation_run: 31487031172
+post_merge_documentation: PASS
+canonical_sync: COMPLETE
+```
+
+## 8. CAFs do Lot 4-E
 
 1. bootstrap inicial falhou antes de mutação; o mecanismo foi substituído antes de reexecução;
 2. formatação corrigida pelo Prettier pinado do repositório;
 3. `PASS` de audit verdict foi aceito somente como valor de controle contextual, sem enfraquecer a rejeição de placeholders;
 4. hardening passou a rejeitar `ENTREGUE` com finding bloqueante ou auditoria não-PASS;
 5. hardening passou a impedir Leandro como responsável técnico implícito;
-6. nenhum resultado de SHA supersedido foi usado como gate final.
-
-## 8. Canonical documentation sync
-
-Uma sincronização documental separada deve reconciliar README raiz, README do runtime, este plano e o PRF com o merge técnico `6cf9af35407b97d84028078ab6843570b47103fe`.
-
-Ela não altera runtime, permissões nem autoridade externa. Enquanto esse PR documental não estiver integrado, `canonical_sync_lot_4e` permanece `IN_PROGRESS`.
+6. nenhum resultado de SHA supersedido foi usado como gate final;
+7. o estado documental pós-merge foi reconciliado separadamente para remover os marcadores `IN_PROGRESS/CANDIDATE`.
 
 ## 9. Próximo boundary
 
-Depois da sincronização canônica do Lot 4-E, o próximo boundary separado é **Release Candidate / Gate E**.
+**Release Candidate / Gate E**.
 
-Isso não autoriza produção. Produção permanece `BLOCKED` até gate material próprio.
+O Lot 4-E está concluído. Isso não autoriza produção. Produção permanece `BLOCKED` até gate material próprio.

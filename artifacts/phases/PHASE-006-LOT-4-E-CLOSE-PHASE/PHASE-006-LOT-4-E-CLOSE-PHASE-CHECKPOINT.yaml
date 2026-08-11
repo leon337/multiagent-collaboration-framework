@@ -2,7 +2,7 @@ phase: PHASE-006-LOT-4-E-CLOSE-PHASE
 mission: MCF-RUNTIME-006-LOT-4-E-CLOSE-PHASE
 issue: 107
 risk_class: C
-state: TECHNICAL_MERGED_CANONICAL_SYNC_CANDIDATE
+state: COMPLETE
 baseline: 39d2a8b3f1c323792fff9cbcc140d5f2bddc1522
 technical:
   pr: 108
@@ -33,6 +33,23 @@ technical:
   tree_equivalence: PASS
   post_merge_documentation_run: 31486181380
   post_merge_documentation: PASS
+  post_merge_staging_run: 31486181369
+  post_merge_staging: PASS_DEPLOYED
+canonical_sync:
+  pr: 109
+  candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
+  documentation_validation_run: 31486782247
+  documentation_validation: PASS
+  manifest_audit_run: 31486845037
+  manifest_audit: PASS
+  carmem_review: PASS
+  julia_governance: PASS
+  emily_audit: PASS
+  leo_gate: PASS
+  merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
+  post_merge_documentation_run: 31487031172
+  post_merge_documentation: PASS
+  state: COMPLETE
 runtime:
   skills_registered: 16
   skills_executable: 16
@@ -54,17 +71,10 @@ hdf:
   leandro_as_executor: FORBIDDEN
   leandro_as_technical_handoff: FORBIDDEN
   leandro_as_responsible_without_escalation: FORBIDDEN
-canonical_sync:
-  branch: docs/mcf-runtime-006-lot4-e-canonical-sync
-  state: CANDIDATE
-  documentation_validation: PENDING
-  documentary_reviews: PENDING
-  documentary_gate: PENDING
-  documentary_merge: PENDING
 production: BLOCKED
 live_staging_adapter: DISABLED
 gate_c_real_provider_write: NOT_AUTHORIZED
 human_operator_actions: 0
 human_gate_leandro: NOT_REQUIRED
-next_boundary_after_sync: RELEASE_CANDIDATE_GATE_E
+next_boundary: RELEASE_CANDIDATE_GATE_E
 checkpoint_recipient: Mestre
