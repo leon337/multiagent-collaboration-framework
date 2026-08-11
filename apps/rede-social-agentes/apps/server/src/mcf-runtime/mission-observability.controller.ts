@@ -6,7 +6,7 @@ import type {
 } from '@rsa/contracts';
 
 import { SessionAuthGuard } from '../identity/session-auth.guard.js';
-import { MissionObservabilityService } from './mission-observability.service.js';
+import type { MissionObservabilityService } from './mission-observability.service.js';
 
 @Controller('mcf/observability')
 @UseGuards(SessionAuthGuard)
