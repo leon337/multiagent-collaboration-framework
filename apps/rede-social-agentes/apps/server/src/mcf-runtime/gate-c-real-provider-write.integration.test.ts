@@ -74,6 +74,41 @@ async function countProofComments(pullNumber: number, idempotencyKey: string): P
   throw new Error('GitHub proof comment read-back exceeded bounded pagination');
 }
 
+async function countProofPullRequests(
+  branchRef: string,
+  headSha: string,
+  idempotencyKey: string,
+): Promise<number> {
+  const token = requiredEnv('GITHUB_TOKEN');
+  const marker = `<!-- mcf-idempotency:${idempotencyKey} -->`;
+  const url = new URL(`https://api.github.com/repos/${repository}/pulls`);
+  url.searchParams.set('state', 'all');
+  url.searchParams.set('head', `leon337:${branchRef}`);
+  url.searchParams.set('per_page', '100');
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      Authorization: `Bearer ${token}`,
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'mcf-gate-c-provider-proof',
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`GitHub C1 proof read-back failed with HTTP ${response.status}`);
+  }
+  const pulls = (await response.json()) as Array<{
+    body?: string | null;
+    head?: { ref?: string; sha?: string };
+  }>;
+  return pulls.filter(
+    (pull) =>
+      pull.body?.includes(marker) &&
+      pull.head?.ref === branchRef &&
+      pull.head?.sha?.toLowerCase() === headSha,
+  ).length;
+}
+
 async function persistProofArtifact(proof: Record<string, unknown>): Promise<void> {
   const directory = resolve(process.cwd(), 'test-results');
   await mkdir(directory, { recursive: true });
@@ -221,10 +256,10 @@ describe('MCF Gate C real GitHub provider proof', () => {
         executionContext: { missionId, phaseId: c1ReplayPhase, expectedMissionVersion: 1 },
       });
 
-      expect(c1Replay.evidenceStatus).toBe('VALID');
-      expect(c1Replay.receipt?.externalId).toBe(c1.receipt?.externalId);
-      expect(c1Replay.receipt?.metadata.pullRequestNumber).toBe(pullNumber);
-      expect(c1Replay.receipt?.metadata.readBackVerified).toBe(true);
+      expect(c1Replay.evidenceStatus).toBe('INVALID');
+      expect(c1Replay.externalAction?.status).toBe('FAILED');
+      expect(c1Replay.externalAction?.failureCode).toBe('RESERVATION_CONFLICT');
+      expect(await countProofPullRequests(branchRef, headSha, c1Key)).toBe(1);
 
       const c2Inputs = {
         authorizedScope: true,
@@ -307,11 +342,11 @@ describe('MCF Gate C real GitHub provider proof', () => {
         [missionId],
       );
 
-      expect(attempts.rows).toHaveLength(3);
+      expect(attempts.rows).toHaveLength(2);
       expect(attempts.rows.every((attempt) => attempt.status === 'EVIDENCE_VALIDATED')).toBe(true);
       expect(
         attempts.rows.filter((attempt) => attempt.adapterId === 'github-branch-pr-write-v1'),
-      ).toHaveLength(2);
+      ).toHaveLength(1);
       expect(
         attempts.rows.filter((attempt) => attempt.adapterId === 'github-pr-collaboration-write-v1'),
       ).toHaveLength(1);
@@ -321,7 +356,7 @@ describe('MCF Gate C real GitHub provider proof', () => {
         'select count(*)::text as "count" from "mcf_tool_receipts" where "mission_id" = $1',
         [missionId],
       );
-      expect(Number(receipts.rows[0]?.count ?? 0)).toBe(3);
+      expect(Number(receipts.rows[0]?.count ?? 0)).toBe(2);
 
       await persistProofArtifact({
         stage: 'COMPLETE',
@@ -339,8 +374,9 @@ describe('MCF Gate C real GitHub provider proof', () => {
           receiptId: c1.receipt?.receiptId ?? null,
           externalId: c1.receipt?.externalId ?? null,
           readBackVerified: c1.receipt?.metadata.readBackVerified ?? null,
-          replayExternalId: c1Replay.receipt?.externalId ?? null,
-          replayDidNotDuplicatePullRequest: c1Replay.receipt?.externalId === c1.receipt?.externalId,
+          duplicateReplayStatus: c1Replay.externalAction?.status ?? null,
+          duplicateReplayFailure: c1Replay.externalAction?.failureCode ?? null,
+          proofPullRequestCount: 1,
         },
         c2: {
           adapterId: c2.externalAction?.adapterId ?? null,
