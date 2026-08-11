@@ -26,3 +26,6 @@ O conflito documental `handoff_to: Leandro` é incompatível com o HDF e será r
 
 ## D9 — Sem ampliação de efeitos externos
 Produção permanece bloqueada, o live staging adapter permanece desabilitado e nenhuma nova escrita externa foi autorizada pelo Lot 4-A.
+
+## D10 — Resolver o registry a partir do CWD real do servidor
+A validação integrada mostrou que `SkillRegistryLoader` não alcançava o registry raiz quando o pacote server executava com CWD em `apps/rede-social-agentes/apps/server`. Foi adicionado o candidato `../../../../skills/registry.yaml`, preservando `MCF_SKILL_REGISTRY_PATH` como precedência configurável e mantendo um único registry canônico.

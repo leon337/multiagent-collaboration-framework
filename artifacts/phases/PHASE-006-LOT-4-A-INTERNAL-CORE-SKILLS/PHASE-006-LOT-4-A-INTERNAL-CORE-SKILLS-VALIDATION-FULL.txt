@@ -3,7 +3,7 @@ RISK_CLASS=C
 PR=95
 ISSUE=94
 BASE_MAIN=8a6d0673afdb4892983cb03d52d3d176b23252f9
-IMPLEMENTATION_HEAD_BEFORE_PRF=5e4cfb4af121f0f05dd531317f152c6269cdc4d4
+IMPLEMENTATION_HEAD_BEFORE_PRF=404f0bc294f5a0f92c5847e443d58491fb4b1af5
 
 REQUIRED_EXACT_HEAD_GATES:
 - Rede Social Foundation
@@ -19,6 +19,7 @@ IMPLEMENTATION_EVIDENCE:
 - internal provider path is canonicalized consistently
 - semantic arrays reject placeholder items
 - MissionRuntime persistence/version integration test added
+- SkillRegistryLoader resolves the canonical root registry from the package-server CWD
 
 TEST_CONTRACTS_ADDED:
 - valid RECOVER-CONTEXT semantic evidence
@@ -32,16 +33,18 @@ TEST_CONTRACTS_ADDED:
 - placeholder array evidence rejection
 - owner-agent permission enforcement
 - planner READY_AGENT semantics
-- MissionRuntime receipt/event/handoff/version persistence
+- MissionRuntime receipt/event/handoff/version persistence using the real SkillRegistryLoader
 
 NON_GATE_HISTORY:
 - earlier code-only candidates were superseded by formatting and hardening changes
-- no PASS from a superseded SHA may be used for this candidate
+- Foundation 31460923993 on 47a627011e85c0933104a932930dc7e3fe4fd841 failed only in the new integration test because the real registry path was not reachable from the server package CWD
+- the registry path finding was corrected in 404f0bc294f5a0f92c5847e443d58491fb4b1af5
+- no PASS or Smoke result from a superseded SHA may be used for this candidate
 - temporary diagnostic/hardening workflows were removed from the PR diff
 
 CURRENT_GATE_STATE:
-FOUNDATION=PENDING_EXACT_PRF_HEAD
-CONTAINER_SMOKE=PENDING_EXACT_PRF_HEAD
+FOUNDATION=PENDING_EXACT_PRF_SYNC_HEAD
+CONTAINER_SMOKE=PENDING_EXACT_PRF_SYNC_HEAD
 TECHNICAL_REVIEW=PENDING
 INDEPENDENT_AUDIT=PENDING
 LEO_TECHNICAL_GATE=PENDING

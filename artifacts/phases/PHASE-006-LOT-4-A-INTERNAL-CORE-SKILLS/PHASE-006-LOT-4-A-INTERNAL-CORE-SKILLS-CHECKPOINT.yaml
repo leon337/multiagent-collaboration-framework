@@ -5,7 +5,7 @@ pull_request: 95
 risk_class: C
 state: CANDIDATE_READY_FOR_EXACT_HEAD_VALIDATION
 base_main: 8a6d0673afdb4892983cb03d52d3d176b23252f9
-implementation_head_before_prf: 5e4cfb4af121f0f05dd531317f152c6269cdc4d4
+implementation_head_before_prf: 404f0bc294f5a0f92c5847e443d58491fb4b1af5
 implementation:
   recover_context: CANDIDATE_EXECUTABLE
   define_product: CANDIDATE_EXECUTABLE
@@ -13,6 +13,7 @@ implementation:
   design_architecture: CANDIDATE_EXECUTABLE
   ready_agent: IMPLEMENTED
   bridge_fabricates_domain_evidence: false
+  registry_resolution_from_server_cwd: IMPLEMENTED
 evidence:
   semantic_validation: IMPLEMENTED
   invalid_to_recovering: IMPLEMENTED
@@ -22,6 +23,10 @@ persistence:
   mission_runtime_integration_test: ADDED
   expected_version_progression: 1_TO_2
   receipt_event_handoff_timeline_assertions: ADDED
+validation_history:
+  superseded_foundation_run: 31460923993
+  superseded_head: 47a627011e85c0933104a932930dc7e3fe4fd841
+  superseded_result: FAIL_REGISTRY_PATH_DISCOVERY
 governance:
   technical_review: PENDING
   independent_audit: PENDING
