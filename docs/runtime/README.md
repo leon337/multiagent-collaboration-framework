@@ -33,8 +33,8 @@ O runtime não mantém uma cópia paralela do registro. A imagem do servidor inc
 ```yaml
 runtime: executable_vertical_slice
 skills_registered: 16
-skills_executable: 13
-skills_documental: 3
+skills_executable: 14
+skills_documental: 2
 persistent_state: true
 trusted_receipts: true
 ci_callback: true
@@ -56,6 +56,8 @@ runtime_006_lot_4a: complete
 runtime_006_lot_4a_merge: 67d20e24fd136f6334bfd835cb775426f6514403
 runtime_006_lot_4b: complete
 runtime_006_lot_4b_merge: 741abdad70432b9232256b7204156d96770c9b4d
+runtime_006_lot_4c: complete
+runtime_006_lot_4c_merge: 08c3e19e1b6408a164628e1bfaa5968e2070ccf0
 live_staging_adapter: disabled
 production: blocked
 social_auto_publish: false
@@ -68,6 +70,8 @@ A observabilidade de missões bloqueadas concluiu o Lote 3. O PR #89 integrou a 
 O Lot 4-A concluiu o primeiro incremento de cobertura total. O PR #95 integrou quatro skills internas de domínio com `READY_AGENT`, provider interno governado, evidência semântica obrigatória, fallback para `RECOVERING`, persistência pelo `MissionRuntime` e preservação do HDF. O HEAD técnico `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` passou Foundation `31461319193` e Container Smoke `31461319181`, com 112 arquivos/459 testes; o merge squash `67d20e24fd136f6334bfd835cb775426f6514403` possui a mesma tree `def5edf77be8bdc32939d2b4bd5b1fcbcca649ec` do candidato validado. O runtime passa a 12 skills executáveis e 4 documentais.
 
 O Lot 4-B integrou `MCF-EVALUATE-AGENTS` como capacidade `READY_AGENT` governada. O candidato `279a4b1e3b8e8b5b948d95481ec85e5223322278` preserva o contrato canônico Beatriz/Tiago → Emily, mantém `READ_ONLY` via `inspect-agent-evaluation`, exige `test_cases`, `scores` e `regressions` e persiste evidência pelo `MissionRuntime`. Foundation `31463802089`, Container Smoke `31463802100`, 115 arquivos/470 testes e auditoria independente passaram no HEAD exato; o merge `741abdad70432b9232256b7204156d96770c9b4d` compartilha a tree `a0e676152c7070381480b9c5422f103887987eab` do candidato. O runtime passa a 13 skills executáveis e 3 documentais.
+
+O Lot 4-C integrou `MCF-SECURITY-REVIEW` como capacidade `READY_AGENT` Classe C governada. O candidato final `323b69af4616cda0e4f9b1e47516a9cde37a3f0d` preserva `SENSITIVE_CONTROLLED`, exige `sensitiveAuthorization=true`, restringe a execução a `internal / inspect-security-review / mcf-agent-runtime`, impede downgrade do risco e valida `threats`, `controls` e `residual_risk` estruturado antes do handoff para Emily. Foundation `31471615150`, Container Smoke `31471615302`, 118 arquivos/485 testes, Manifest Audit R3 `31471688783`, reviews especialistas e auditoria independente de Emily passaram no HEAD exato. O merge squash `08c3e19e1b6408a164628e1bfaa5968e2070ccf0` possui a mesma tree `70f07a2c936ce166555e52b36366c810919f5b8c` do candidato. O runtime passa a 14 skills executáveis e 2 documentais.
 
 A decisão `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza o fallback temporário TEAM_FIRST via GitHub Actions com `GITHUB_TOKEN` efêmero, menor privilégio, binding ao SHA, single dispatch e cleanup. Ela não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.
 
@@ -97,4 +101,4 @@ Leandro não é executor técnico do runtime. `human_operator_actions=0` permane
 
 ## Próxima etapa do RUNTIME-006
 
-O Lote 3 está **concluído**, o Lot 4-A está **integrado** e o Lot 4-B está **integrado**. A próxima etapa é `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`. Restam três skills documentais — `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE` — separadas por risco. Depois seguem testes multiagente em contextos separados, auditoria independente final e preparação da RC.
+O Lote 3 e os Lots 4-A, 4-B e 4-C estão **integrados**. Permanecem duas skills documentais — `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE` — separadas por seus próprios boundaries de risco. Pelo registry vigente, a próxima formalização técnica deve tratar `MCF-DEBUG-INCIDENT`; nenhuma Issue Lot 4-D existente é presumida por este documento. Depois da cobertura das 16 skills seguem testes multiagente em contextos separados, auditoria independente final, hardening e preparação da `MCF v1.0.0-RC1`. Gate C continua parcial, produção bloqueada e live staging adapter desabilitado.
