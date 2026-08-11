@@ -1,0 +1,107 @@
+name: MCF Gate C Real Provider Write
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-gate-c-real-provider-write
+    paths:
+      - ".github/workflows/mcf-gate-c-real-provider-write.yml"
+      - "apps/rede-social-agentes/apps/server/src/mcf-runtime/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  real-provider-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_DB: rsa
+          POSTGRES_USER: rsa
+          POSTGRES_PASSWORD: rsa_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rsa -d rsa"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: apps/rede-social-agentes
+
+    env:
+      NODE_ENV: test
+      HOST: 127.0.0.1
+      PORT: 3000
+      DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+      LOG_LEVEL: error
+      MCF_GATE_C_REAL_WRITE: "1"
+      MCF_GATE_C_HEAD_SHA: ${{ github.sha }}
+      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+
+    steps:
+      - name: Checkout exact proof candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies from lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Preflight formatting
+        run: pnpm format:check
+
+      - name: Preflight lint
+        run: pnpm lint
+
+      - name: Preflight typecheck
+        run: pnpm typecheck
+
+      - name: Run database migration twice
+        run: |
+          pnpm --filter @rsa/database db:migrate
+          pnpm --filter @rsa/database db:migrate
+
+      - name: Bind current main SHA
+        run: |
+          BASE_SHA="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          if ! printf '%s' "$BASE_SHA" | grep -Eq '^[a-f0-9]{40}$'; then
+            echo 'Unable to bind exact main SHA' >&2
+            exit 1
+          fi
+          echo "MCF_GATE_C_BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
+
+      - name: Execute governed real-provider proof
+        run: >-
+          pnpm --filter @rsa/server exec vitest run
+          src/mcf-runtime/gate-c-real-provider-write.integration.test.ts
+          --reporter=default
+
+      - name: Upload Gate C proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-gate-c-real-provider-write-proof
+          path: apps/rede-social-agentes/apps/server/test-results/gate-c-real-provider-write.json
+          if-no-files-found: warn
+          retention-days: 14
