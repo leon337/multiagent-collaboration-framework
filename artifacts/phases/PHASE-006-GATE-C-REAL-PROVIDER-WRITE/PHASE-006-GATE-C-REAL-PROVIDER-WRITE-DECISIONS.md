@@ -59,3 +59,34 @@ Production remains `BLOCKED`.
 The technical merge does not by itself rewrite stale canonical markers. This docs-only phase changes Gate C from `PARTIAL / NOT AUTHORIZED` to a canonical sync candidate based on verified evidence.
 
 Gate C will be marked `COMPLETE/ENTREGUE` only after the canonical sync is merged and a final closeout is bound to the resulting `main` SHA.
+
+## D-011 — Canonical sync validated and merged
+
+PR #118 was validated on exact head `9ba3bee76ca6572848b3d95a71d109f4be10ff31` and squash-merged as `3feff116a3bf66427cfdfcb10894c0f76f79ee11`.
+
+- Documentation validation `31539053960`: PASS.
+- Post-merge Documentation validation `31539238013`: PASS.
+- Carmem documentary review: PASS.
+- Emily documentary audit: PASS.
+- Léo documentary gate: `APPROVE_CANONICAL_SYNC`.
+
+## D-012 — Closeout merge #119 required cleanup
+
+PR #119 was merged as `303a4385aed51c531993613ca9d664d1599f538e`; post-merge Documentation validation `31540925137` passed. Validation then found that three one-shot closeout workflows had entered `main` while canonical markers were still stale.
+
+This was treated as a CAF finding, not as a terminal success.
+
+## D-013 — Final cleanup and Gate C completion
+
+The cleanup removes the three temporary closeout workflows and reconciles README, plan and PRF terminal state.
+
+```yaml
+objective_met: true
+blocking_findings: 0
+pending_actions: 0
+human_action_required: false
+leo_final_decision: APPROVE
+next_state: ENTREGUE
+next_boundary: RELEASE_CANDIDATE_GATE_E
+production: BLOCKED
+```

@@ -1,10 +1,8 @@
 # PHASE-006-GATE-C-REAL-PROVIDER-WRITE — Report
 
-## Canonical sync candidate
+## Final closeout
 
-The technical Gate C closure is integrated in `main` at `0b060539eb152f0cf92bd146b853562407ab0a64`. The real-provider proof, permanent fail-safe regressions, independent audit and Léo technical gate all passed before merge.
-
-This document is now a **canonical synchronization candidate**. Gate C is not yet labeled `ENTREGUE` here because the documentation PR and its final closeout still need to be bound to the resulting canonical `main` SHA.
+Gate C is **COMPLETE / ENTREGUE** at the technical and canonical layers. The real-provider proof, permanent fail-safe regressions, independent audit and Léo technical gate passed; the canonical sync was merged and its post-merge documentation validation passed.
 
 ## Final real-provider evidence
 
@@ -59,14 +57,30 @@ blocking_findings: 0
 leo_technical_gate: APPROVE_TECHNICAL_GATE_C
 ```
 
-## Remaining closeout work
+## Canonical completion
 
-1. validate this docs-only canonical sync;
-2. Carmem/Emily verify documentary consistency;
-3. Léo approves the documentary sync;
-4. merge the canonical sync;
-5. create the final closeout bound to the new canonical `main` SHA;
-6. mark Gate C `COMPLETE/ENTREGUE` and close Issue #111;
-7. clean up proof-only PRs without merging them.
+```yaml
+canonical_pr: 118
+canonical_candidate: 9ba3bee76ca6572848b3d95a71d109f4be10ff31
+canonical_documentation_run: 31539053960
+canonical_documentation: PASS
+canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+canonical_post_merge_documentation_run: 31539238013
+canonical_post_merge_documentation: PASS
+closeout_pr: 119
+closeout_merge: 303a4385aed51c531993613ca9d664d1599f538e
+closeout_post_merge_documentation_run: 31540925137
+closeout_post_merge_documentation: PASS
+mission_state: ENTREGUE
+gate_c: COMPLETE
+objective_met: true
+blocking_findings: 0
+pending_actions: 0
+human_action_required: false
+next_boundary: RELEASE_CANDIDATE_GATE_E
+production: BLOCKED
+```
 
-Production remains `BLOCKED`. Release Candidate / Gate E remains the next boundary.
+The temporary closeout workflows introduced by PR #119 are removed in the final cleanup before Issue #111 is closed.
+
+Production remains `BLOCKED`. Release Candidate / Gate E is the next boundary.

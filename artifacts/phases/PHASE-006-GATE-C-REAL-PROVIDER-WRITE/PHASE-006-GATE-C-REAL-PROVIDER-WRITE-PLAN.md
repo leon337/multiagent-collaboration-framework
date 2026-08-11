@@ -9,7 +9,7 @@ technical_pr: 112
 risk_class: C
 objective: Close Gate C with a governed, reversible real GitHub provider write proof.
 expected_outcome: C1 and C2 real writes proven through the MCF Runtime with read-back, receipts, ledger and idempotency.
-current_state: APPROVED_AWAITING_MERGE
+current_state: ENTREGUE
 decision_authority: Leo
 human_authority: Leandro
 production: BLOCKED
@@ -77,3 +77,22 @@ Leandro authorized a controlled, reversible real-provider write specifically to 
 - Removal of temporary proof infrastructure.
 - Léo gate.
 - Technical merge followed by separate canonical documentation sync on the resulting `main`.
+
+## Final canonical closeout
+
+```yaml
+canonical_pr: 118
+canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+canonical_post_merge_documentation_run: 31539238013
+canonical_post_merge_documentation: PASS
+closeout_pr: 119
+closeout_merge: 303a4385aed51c531993613ca9d664d1599f538e
+closeout_post_merge_documentation_run: 31540925137
+closeout_post_merge_documentation: PASS
+state: ENTREGUE
+gate_c: COMPLETE
+next_boundary: RELEASE_CANDIDATE_GATE_E
+production: BLOCKED
+```
+
+The three temporary closeout workflows accidentally merged by PR #119 are removed by the final cleanup before Issue #111 is closed.

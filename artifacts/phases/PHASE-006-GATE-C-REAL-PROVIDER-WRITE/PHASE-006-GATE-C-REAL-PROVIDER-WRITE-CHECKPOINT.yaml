@@ -4,7 +4,7 @@ issue: 111
 technical_pr: 112
 risk_class: C
 
-state: CANONICAL_SYNC_CANDIDATE
+state: ENTREGUE
 
 technical_evidence:
   real_provider_proof_head: f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
@@ -65,7 +65,7 @@ audit:
 
 leo_decision:
   decision: APPROVE_TECHNICAL_GATE_C
-  next_state: CANONICAL_SYNC_CANDIDATE
+  next_state: ENTREGUE
   responsible: Mestre
 
 human_gate:
@@ -79,11 +79,30 @@ boundaries:
   proof_pr_merge: NOT_AUTHORIZED
   direct_main_write: FORBIDDEN
 
-pending:
-  - canonical documentation PR validation
-  - canonical documentation audit and Léo documentary gate
-  - canonical documentation merge
-  - final closeout bound to merged canonical SHA
+pending: []
 
-next_action: Validate and merge the canonical documentation sync, then perform the final closeout.
+closeout:
+  objective_met: true
+  blockers: []
+  unresolved_findings: 0
+  blocking_findings: 0
+  pending_actions: []
+  human_action_required: false
+  next_action: null
+
+canonical_closeout:
+  canonical_pr: 118
+  canonical_candidate: 9ba3bee76ca6572848b3d95a71d109f4be10ff31
+  documentation_validation_run: 31539053960
+  documentation_validation: PASS
+  canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
+  post_merge_documentation_run: 31539238013
+  post_merge_documentation: PASS
+  closeout_pr: 119
+  closeout_merge: 303a4385aed51c531993613ca9d664d1599f538e
+  closeout_post_merge_documentation_run: 31540925137
+  closeout_post_merge_documentation: PASS
+  canonical_sync: COMPLETE
+
+next_action: null
 return_to: Mestre
