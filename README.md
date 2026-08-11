@@ -36,7 +36,7 @@ objetivo conversacional
 → trace final verificado
 ```
 
-## Estado canônico após o Lot 4-E
+## Estado canônico
 
 ```yaml
 skills_registradas: 16
@@ -69,10 +69,28 @@ runtime_006_lote_4e:
   canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
   canonical_sync: COMPLETE
 
+gate_c_real_provider_write:
+  issue: 111
+  technical_pr: 112
+  technical_merge: 0b060539eb152f0cf92bd146b853562407ab0a64
+  proof_head: f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
+  proof_run: 31537057206
+  proof_artifact: 9119190464
+  proof_stage: COMPLETE
+  c1_real_write: PASS
+  c2_real_write: PASS
+  read_back: PASS
+  idempotency: PASS
+  ledger_receipts: PASS
+  independent_audit: PASS
+  leo_technical_gate: PASS
+  technical_post_merge_documentation: PASS
+  technical_post_merge_staging: PASS_DEPLOYED
+  canonical_state: CANONICAL_SYNC_CANDIDATE
+
 production: BLOCKED
 live_staging_adapter: DISABLED
-gate_c_real_provider_write: NOT_AUTHORIZED
-human_operator_actions: 0
+human_operator_actions: 1_HUMAN_GATE_ACTIONS_POLICY
 ```
 
 ## Skills executáveis
@@ -95,6 +113,40 @@ human_operator_actions: 0
 16. `MCF-CLOSE-PHASE`
 
 Não há skill documental remanescente no runtime integrado.
+
+## Gate C — real provider write
+
+A capacidade de escrita GitHub do runtime foi comprovada em provider real e integrada tecnicamente.
+
+### Evidência final
+
+```yaml
+technical_merge: 0b060539eb152f0cf92bd146b853562407ab0a64
+final_proof_head: f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
+proof_run: 31537057206
+artifact_id: 9119190464
+artifact_digest: sha256:6122eb9398ae0c1420e9257667f42d60badc995fe928459f3672815bf5ab84c2
+proof_pr: 117
+proof_comment_id: 5258957980
+c1_read_back: PASS
+c1_replay_no_duplicate_pr: PASS
+c2_read_back: PASS
+c2_duplicate_replay: RESERVATION_CONFLICT_BEFORE_NEW_ATTEMPT
+ledger_attempts: 3_EVIDENCE_VALIDATED
+receipts: 3
+julia_governance: PASS
+emily_independent_audit: PASS
+leo_technical_gate: PASS
+post_merge_documentation_run: 31538142320
+post_merge_documentation: PASS
+post_merge_staging_run: 31538142312
+post_merge_staging: PASS_DEPLOYED
+canonical_state: CANONICAL_SYNC_CANDIDATE
+```
+
+As mutações permanecem single-shot: o runtime nunca repete `POST` para tentar adivinhar o estado externo. A reconciliação pós-write é limitada a leituras `GET`; quando o efeito não pode ser provado, o estado permanece `PARTIAL/UNKNOWN`.
+
+A infraestrutura temporária usada apenas para a prova real foi removida antes do merge. Permanecem o runtime corrigido e os testes permanentes de regressão.
 
 ## Lot 4-E — Close Phase
 
@@ -153,9 +205,12 @@ canonical_sync: COMPLETE
 - `skills/registry.yaml`
 - `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`
 - `artifacts/phases/PHASE-006-LOT-4-E-CLOSE-PHASE/`
+- `artifacts/phases/PHASE-006-GATE-C-REAL-PROVIDER-WRITE/`
 
 ## Próximo boundary
 
 **Release Candidate / Gate E**.
 
-O Lot 4-E está tecnicamente integrado e documentalmente reconciliado. Produção continua fora desse boundary e permanece `BLOCKED`.
+O Lot 4-E permanece tecnicamente integrado e documentalmente reconciliado. O Gate C está tecnicamente integrado e esta branch representa sua sincronização documental canônica. O estado `ENTREGUE` do Gate C será registrado somente após o merge desta sincronização e um closeout final vinculado ao novo SHA de `main`.
+
+Produção continua fora desse boundary e permanece `BLOCKED`.

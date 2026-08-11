@@ -1,85 +1,61 @@
 # PHASE-006-GATE-C-REAL-PROVIDER-WRITE — Decisions
 
-## D-001 — Leandro authorizes controlled Gate C closure work
+## D-001 — Controlled real-provider proof authorized
 
-**Decision:** Execute the real, controlled and reversible GitHub provider proof needed to close Gate C before Gate E.
+Leandro authorized a controlled, reversible real GitHub provider proof to eliminate the Gate C debt before Gate E. Production and destructive actions remained out of scope.
 
-**Boundaries:** production blocked; no public release; no destructive action.
+## D-002 — C2 registry gap corrected
 
-## D-002 — Mestre isolates real-provider proof
+C2 existed in code but was absent from the live runtime registry. The adapter was wired and permanent composition regression coverage was added.
 
-**Decision:** Use a dedicated proof workflow with minimum scoped permissions and an explicit trigger rather than broad automatic real writes.
+## D-003 — GitHub Actions policy HUMAN_GATE
 
-## D-003 — C2 live registry gap is blocking debt
+C1 proved branch creation but GitHub Actions could not create a PR until the repository policy allowed Actions to create/approve pull requests. The HUMAN_GATE was directed only to Leandro, who enabled the policy.
 
-**Finding:** C2 adapter existed but was not present in the runtime live `AdapterRegistry`.
+## D-004 — Canonical mission lifecycle required
 
-**Decision:** Wire C2 and add a composition regression before accepting Gate C.
+The real-provider proof was moved to `MissionRuntimeService` so phase persistence and mission version advancement matched the operational runtime.
 
-## D-004 — HUMAN_GATE for GitHub Actions PR policy
+## D-005 — Single-shot mutations, bounded read-back only
 
-**Finding:** C1 could create a branch but `GITHUB_TOKEN` could not create the required PR.
-
-**Decision:** Escalate only the repository policy change to Leandro. Leandro enabled the policy and confirmed completion.
-
-## D-005 — Full proof must use canonical mission lifecycle
-
-**Finding:** A direct `SkillExecutor` harness omitted `persistExecution()` between phases.
-
-**Decision:** Move proof sequencing to `MissionRuntimeService` plus canonical repositories.
-
-## D-006 — External proof timeout is bounded separately
-
-**Finding:** Vitest default 5 s timeout was too short for a multi-request live provider proof.
-
-**Decision:** Use a 30 s test timeout only for the dedicated external proof. Runtime timeout and job boundary remain unchanged.
-
-## D-007 — Transient C1 read-back weakness requires hardening
-
-**Finding:** GitHub branch creation succeeded, but a transient post-write GET could produce `PARTIAL/UNKNOWN CREATE_BRANCH`.
-
-**Decision:** Preserve single-shot mutation POSTs and add bounded GET-only reconciliation.
-
-## D-008 — Post-write authentication loss must remain UNKNOWN
-
-**Emily/Júlia finding:** After a successful write, loss of credentials before read-back could otherwise surface as a common authentication failure even though the external effect might exist.
-
-**Decision:** Treat post-write read-back inability as ambiguous unless a semantic conflict is proven. Add permanent regressions for branch and PR. Never retry the mutation.
-
-## D-009 — Final real-provider acceptance
-
-**Evidence:** Run `31537057206` passed full C1+C2 and isolated C2 on `f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4`. Artifact `9119190464` is `stage: COMPLETE`.
-
-**Decision:** Real provider acceptance criteria are met.
-
-## D-010 — Remove temporary proof infrastructure
-
-**Decision:** Remove proof trigger, write-capable workflow and both live-provider harness files before merge. Permanent regression tests and PRF evidence remain.
-
-**Evidence:** Compare `f50365e...` → `18f30d47...` contains exactly four removals and no permanent runtime code change. Foundation `31537421860` and Container Smoke `31537421887` pass on the hygiene candidate.
-
-## D-011 — Emily/Júlia audit
-
-**Decision:** `PASS`.
+A real provider run exposed a post-write branch read-back weakness. The permanent rule is:
 
 ```yaml
-blocking_findings: 0
-runtime_security: PASS
-governance: PASS
-fail_safe_unknown_semantics: PASS
-temporary_write_path_cleanup: PASS
+mutation_post_retry: NEVER
+read_back_retry: BOUNDED_GET_ONLY
+unknown_when_unprovable: PRESERVED
 ```
 
-## D-012 — Léo technical gate
+Permanent regressions cover transient branch/PR read-back and authentication loss after successful writes.
 
-**Decision:** `APPROVE_TECHNICAL_GATE_C`.
+## D-006 — Final real-provider proof accepted
 
-```yaml
-next_state: APPROVED_AWAITING_MERGE
-responsible: Mestre
-production: BLOCKED
-```
+Run `31537057206` on `f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4` passed full C1+C2. Artifact `9119190464` is `stage: COMPLETE`, with PR #117 and comment `5258957980`.
 
-## D-013 — Canonical closure remains post-merge
+## D-007 — Independent audit and Léo technical gate
 
-**Decision:** Do not mark Gate C `ENTREGUE` in canonical `main` until PR #112 is merged and a separate documentation sync verifies the resulting main SHA. Gate E remains the next boundary; production remains blocked.
+Emily/Júlia: `PASS`, zero blocking findings.
+
+Léo: `APPROVE_TECHNICAL_GATE_C`.
+
+## D-008 — Temporary proof infrastructure removed
+
+The proof trigger, write-capable workflow and both live-provider harnesses were removed before technical merge. Permanent runtime code and regression tests remain.
+
+## D-009 — Technical merge accepted
+
+PR #112 was squash-merged as:
+
+`0b060539eb152f0cf92bd146b853562407ab0a64`
+
+Post-merge:
+- Documentation validation `31538142320`: PASS.
+- Governed staging `31538142312`: PASS_DEPLOYED.
+
+Production remains `BLOCKED`.
+
+## D-010 — Canonical synchronization is separate
+
+The technical merge does not by itself rewrite stale canonical markers. This docs-only phase changes Gate C from `PARTIAL / NOT AUTHORIZED` to a canonical sync candidate based on verified evidence.
+
+Gate C will be marked `COMPLETE/ENTREGUE` only after the canonical sync is merged and a final closeout is bound to the resulting `main` SHA.

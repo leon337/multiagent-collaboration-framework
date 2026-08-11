@@ -4,7 +4,7 @@ issue: 111
 technical_pr: 112
 risk_class: C
 
-state: APPROVED_AWAITING_MERGE
+state: CANONICAL_SYNC_CANDIDATE
 
 technical_evidence:
   real_provider_proof_head: f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
@@ -24,6 +24,13 @@ technical_evidence:
   hygiene_foundation: PASS
   hygiene_container_smoke_run: 31537421887
   hygiene_container_smoke: PASS
+
+integration:
+  technical_merge: 0b060539eb152f0cf92bd146b853562407ab0a64
+  technical_post_merge_documentation_run: 31538142320
+  technical_post_merge_documentation: PASS
+  technical_post_merge_staging_run: 31538142312
+  technical_post_merge_staging: PASS_DEPLOYED
 
 real_provider:
   c1:
@@ -58,7 +65,7 @@ audit:
 
 leo_decision:
   decision: APPROVE_TECHNICAL_GATE_C
-  next_state: APPROVED_AWAITING_MERGE
+  next_state: CANONICAL_SYNC_CANDIDATE
   responsible: Mestre
 
 human_gate:
@@ -73,9 +80,10 @@ boundaries:
   direct_main_write: FORBIDDEN
 
 pending:
-  - final PRF manifest validation
-  - technical PR merge
-  - canonical documentation sync on merged main
+  - canonical documentation PR validation
+  - canonical documentation audit and Léo documentary gate
+  - canonical documentation merge
+  - final closeout bound to merged canonical SHA
 
-next_action: Validate final PRF, merge PR #112, then perform canonical sync and mark Gate C ENTREGUE.
+next_action: Validate and merge the canonical documentation sync, then perform the final closeout.
 return_to: Mestre
