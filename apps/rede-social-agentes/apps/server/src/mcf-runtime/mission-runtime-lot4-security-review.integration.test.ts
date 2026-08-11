@@ -81,7 +81,9 @@ describe('MissionRuntime Lot 4C security review persistence', () => {
 
       const timeline = await service.timeline(mission.id);
       expect(timeline.mission.version).toBe(2);
-      expect(timeline.events.some((event) => event.eventType === 'TOOL_RECEIPT_RECORDED')).toBe(true);
+      expect(
+        timeline.events.some((event) => event.eventType === 'TOOL_RECEIPT_RECORDED'),
+      ).toBe(true);
       expect(timeline.events.some((event) => event.eventType === 'EVIDENCE_VALIDATED')).toBe(true);
       expect(timeline.events.some((event) => event.eventType === 'HANDOFF_CREATED')).toBe(true);
       expect(timeline.events.some((event) => event.eventType === 'PHASE_COMPLETED')).toBe(true);
