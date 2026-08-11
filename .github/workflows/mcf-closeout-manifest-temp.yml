@@ -1,0 +1,51 @@
+name: MCF Closeout Manifest Temporary
+
+on:
+  push:
+    branches:
+      - mcf-runtime-006-lot-4-d-canonical-closeout
+    paths:
+      - .github/workflows/mcf-closeout-manifest-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Generate exact PRF SHA-256 manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT
+          sha256sum \
+            PHASE-006-LOT-4-D-DEBUG-INCIDENT-CHECKPOINT.yaml \
+            PHASE-006-LOT-4-D-DEBUG-INCIDENT-DECISIONS.md \
+            PHASE-006-LOT-4-D-DEBUG-INCIDENT-PLAN.md \
+            PHASE-006-LOT-4-D-DEBUG-INCIDENT-REPORT.md \
+            PHASE-006-LOT-4-D-DEBUG-INCIDENT-SMOKE.txt \
+            PHASE-006-LOT-4-D-DEBUG-INCIDENT-VALIDATION-FULL.txt \
+            PHASE-006-LOT-4-D-DEBUG-INCIDENT-VALIDATION.txt \
+            README.md \
+            > PHASE-006-LOT-4-D-DEBUG-INCIDENT-ARTIFACT-MANIFEST.sha256
+
+      - name: Commit generated manifest only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add artifacts/phases/PHASE-006-LOT-4-D-DEBUG-INCIDENT/PHASE-006-LOT-4-D-DEBUG-INCIDENT-ARTIFACT-MANIFEST.sha256
+          if git diff --cached --quiet; then
+            echo "Manifest already exact; no commit needed."
+            exit 0
+          fi
+          git commit -m "docs(runtime): regenerate Lot 4D closeout manifest"
+          git push origin HEAD:${GITHUB_REF_NAME}
