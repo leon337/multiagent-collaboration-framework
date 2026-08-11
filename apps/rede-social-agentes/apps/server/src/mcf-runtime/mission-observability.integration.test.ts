@@ -78,12 +78,14 @@ describe('Mission observability persistence', () => {
       const blocked = await repository.listMissionsByStates(['BLOCKED_RISK']);
       expect(blocked.some((mission) => mission.id === missionId)).toBe(true);
 
-      await expect(
-        repository.appendEventsIdempotently([alert(randomUUID())]),
-      ).resolves.toEqual({ inserted: 1, duplicates: 0 });
-      await expect(
-        repository.appendEventsIdempotently([alert(randomUUID())]),
-      ).resolves.toEqual({ inserted: 0, duplicates: 1 });
+      await expect(repository.appendEventsIdempotently([alert(randomUUID())])).resolves.toEqual({
+        inserted: 1,
+        duplicates: 0,
+      });
+      await expect(repository.appendEventsIdempotently([alert(randomUUID())])).resolves.toEqual({
+        inserted: 0,
+        duplicates: 1,
+      });
 
       const persisted = await database.query<CountRow>(
         `select count(*)::text as "count"
