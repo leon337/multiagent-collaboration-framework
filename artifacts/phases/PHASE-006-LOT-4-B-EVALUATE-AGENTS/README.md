@@ -1,29 +1,18 @@
 # PHASE-006-LOT-4-B-EVALUATE-AGENTS
 
-PRF Classe C para a conversão de `MCF-EVALUATE-AGENTS` em capacidade executável do MCF Runtime.
+PRF Classe C do incremento que tornou `MCF-EVALUATE-AGENTS` executável pelo MCF Runtime.
 
 ## Estado
-`CANDIDATE_READY_FOR_EXACT_HEAD_VALIDATION`
+`TECHNICAL_OBJECTIVE_COMPLETE_CANONICAL_SYNC_READY_FOR_GATE`
 
-A presença destes artefatos não significa PASS final, aprovação de Léo, merge ou conclusão da fase.
+## Resultado técnico
+PR #98 integrado por squash após CI no HEAD exato, reviews especialistas, auditoria independente e gate de Léo. Candidato `279a4b1e3b8e8b5b948d95481ec85e5223322278` e merge `741abdad70432b9232256b7204156d96770c9b4d` compartilham a tree `a0e676152c7070381480b9c5422f103887987eab`.
 
-## Contrato
-- owners: Beatriz, Tiago;
-- permission: READ_ONLY;
-- planner: READY_AGENT;
-- provider: internal;
-- operation: `inspect-agent-evaluation`;
-- evidence: `test_cases`, `scores`, `regressions`;
-- handoff: Emily.
-
-## Resultado esperado após integração
+## Resultado canônico esperado
 13 skills executáveis / 3 documentais.
-
-## Regra de gate
-O SHA exato que contém este PRF deve passar Foundation e Container Smoke. Depois, o mesmo HEAD passa por revisão de Beatriz, Sofia, Renato e Júlia, auditoria independente de Emily e gate de Léo.
 
 ## Próximo boundary
 `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`.
 
 ## Limites
-Gate C permanece parcial; produção BLOCKED; live staging adapter DISABLED; `human_operator_actions=0`; HUMAN_GATE de LEANDRO não requerido.
+Gate C PARCIAL; produção BLOCKED; live staging adapter DISABLED; `human_operator_actions=0`; HUMAN_GATE LEANDRO não requerido.

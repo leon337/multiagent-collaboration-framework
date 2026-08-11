@@ -2,7 +2,7 @@
 
 ## Estado
 
-`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO — LOTE_3_CONCLUIDO — OBSERVABILIDADE_INTEGRADA — LOTE_4A_INTEGRADO`
+`EM_EXECUCAO — GATE_B_CONCLUIDO — C1_INTEGRADO — C2_INTEGRADO — GATE_C_PARCIAL — GATE_D_INTEGRADO — LOTE_3_CONCLUIDO — OBSERVABILIDADE_INTEGRADA — LOTE_4A_INTEGRADO — LOTE_4B_INTEGRADO`
 
 ## Autorização
 
@@ -115,6 +115,29 @@ runtime_006_lot_4a:
   active_p2: 0
   skills_executable: 12
   skills_documental: 4
+runtime_006_lot_4b:
+  capability: EXECUTABLE_AGENT_EVALUATION
+  state: INTEGRADO
+  issue: 97
+  pull_request: 98
+  validated_head: 279a4b1e3b8e8b5b948d95481ec85e5223322278
+  merge_commit: 741abdad70432b9232256b7204156d96770c9b4d
+  candidate_tree: a0e676152c7070381480b9c5422f103887987eab
+  merge_tree: a0e676152c7070381480b9c5422f103887987eab
+  foundation_run: 31463802089
+  container_smoke_run: 31463802100
+  server_test_files: 115
+  server_tests: 470
+  vitest_artifact: 9090765070
+  artifact_digest: sha256:74aec951f4c26e491a406389b6b49c0de83a2d5a3af8ad5b1dab89eda1c11944
+  manifest_audit_run: 31463844963
+  independent_audit: PASS
+  leo_technical_gate: PASS
+  active_p0: 0
+  active_p1: 0
+  active_p2: 0
+  skills_executable: 13
+  skills_documental: 3
 mcf_dec_061:
   state: INTEGRADA_COM_GATE_D
   purpose: GITHUB_ACTIONS_ONE_SHOT_TEAM_FIRST_FALLBACK
@@ -220,7 +243,7 @@ final_state: object
 
 ### Lote 4 — cobertura total
 
-12. converter as oito skills documentais — **EM EXECUÇÃO / LOT 4-A INTEGRADO / 4 DE 8 CONVERTIDAS**;
+12. converter as oito skills documentais — **EM EXECUÇÃO / LOT 4-A + LOT 4-B INTEGRADOS / 5 DE 8 CONVERTIDAS**;
 13. executar testes com agentes em contextos separados — **PENDENTE**;
 14. auditoria independente final — **PENDENTE**;
 15. preparar MCF v1.0.0-RC1 — **PENDENTE**.
@@ -382,7 +405,7 @@ Os critérios acima devem ser avaliados por adapter. Um `PASS` de uma capacidade
 
 ## Próxima ação
 
-Iniciar `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`: converter `MCF-EVALUATE-AGENTS` como incremento independente, preservando o Lot 4-A já integrado. Depois permanecem `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`, cada uma em seu boundary de risco. Não repetir A1, A2, C1, C2, Gate D, observabilidade do Lote 3 ou Lot 4-A. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio.
+Iniciar `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`: converter `MCF-SECURITY-REVIEW` como incremento independente e sensível, preservando Lots 4-A e 4-B já integrados. Depois permanecem `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`, cada uma em seu boundary de risco. Não repetir A1, A2, C1, C2, Gate D, observabilidade do Lote 3, Lot 4-A ou Lot 4-B. A autorização de escrita real pelo provider GitHub continua sendo um gate separado. Produção e ativação do staging adapter no live registry permanecem bloqueadas até gate próprio.
 
 ## Critério de conclusão da missão
 

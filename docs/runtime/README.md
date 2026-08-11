@@ -33,8 +33,8 @@ O runtime não mantém uma cópia paralela do registro. A imagem do servidor inc
 ```yaml
 runtime: executable_vertical_slice
 skills_registered: 16
-skills_executable: 12
-skills_documental: 4
+skills_executable: 13
+skills_documental: 3
 persistent_state: true
 trusted_receipts: true
 ci_callback: true
@@ -54,6 +54,8 @@ blocked_alert_atomic_state_version_recheck: pass
 runtime_006_lot_3: complete
 runtime_006_lot_4a: complete
 runtime_006_lot_4a_merge: 67d20e24fd136f6334bfd835cb775426f6514403
+runtime_006_lot_4b: complete
+runtime_006_lot_4b_merge: 741abdad70432b9232256b7204156d96770c9b4d
 live_staging_adapter: disabled
 production: blocked
 social_auto_publish: false
@@ -64,6 +66,8 @@ O Gate D do `MCF-RUNTIME-006` foi integrado no merge `2dfeb0e23c5c2e19a2c21e6f2c
 A observabilidade de missões bloqueadas concluiu o Lote 3. O PR #89 integrou a capacidade inicial; um P2 tardio revelou uma corrida de snapshot e a recuperação no PR #92 passou Foundation `31453781013`, Container Smoke `31453781061`, 109 arquivos/447 testes e auditoria independente sem P0/P1/P2 ativos. O merge de recuperação `7418fff6e30f6107313a632284266caf04e8b33a` passou Documentation `31454187271` e staging `31454187273` com `PASS/DEPLOYED` no SHA exato. A persistência do alerta agora revalida `BLOCKED_RISK` e a versão da missão sob lock transacional antes do insert.
 
 O Lot 4-A concluiu o primeiro incremento de cobertura total. O PR #95 integrou quatro skills internas de domínio com `READY_AGENT`, provider interno governado, evidência semântica obrigatória, fallback para `RECOVERING`, persistência pelo `MissionRuntime` e preservação do HDF. O HEAD técnico `e3e70fbbd2c940ee66a8de9c418e0e8d32a4c668` passou Foundation `31461319193` e Container Smoke `31461319181`, com 112 arquivos/459 testes; o merge squash `67d20e24fd136f6334bfd835cb775426f6514403` possui a mesma tree `def5edf77be8bdc32939d2b4bd5b1fcbcca649ec` do candidato validado. O runtime passa a 12 skills executáveis e 4 documentais.
+
+O Lot 4-B integrou `MCF-EVALUATE-AGENTS` como capacidade `READY_AGENT` governada. O candidato `279a4b1e3b8e8b5b948d95481ec85e5223322278` preserva o contrato canônico Beatriz/Tiago → Emily, mantém `READ_ONLY` via `inspect-agent-evaluation`, exige `test_cases`, `scores` e `regressions` e persiste evidência pelo `MissionRuntime`. Foundation `31463802089`, Container Smoke `31463802100`, 115 arquivos/470 testes e auditoria independente passaram no HEAD exato; o merge `741abdad70432b9232256b7204156d96770c9b4d` compartilha a tree `a0e676152c7070381480b9c5422f103887987eab` do candidato. O runtime passa a 13 skills executáveis e 3 documentais.
 
 A decisão `MCF-DEC-061-GITHUB-ACTIONS-ONE-SHOT-TEAM-FIRST-FALLBACK.md` formaliza o fallback temporário TEAM_FIRST via GitHub Actions com `GITHUB_TOKEN` efêmero, menor privilégio, binding ao SHA, single dispatch e cleanup. Ela não autoriza merge, produção ou ativação live por si só e não usa token pessoal de Leandro por padrão.
 
@@ -93,4 +97,4 @@ Leandro não é executor técnico do runtime. `human_operator_actions=0` permane
 
 ## Próxima etapa do RUNTIME-006
 
-O Lote 3 está **concluído** e o Lot 4-A está **integrado**. A próxima etapa é `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS`. Restam quatro skills documentais — `MCF-EVALUATE-AGENTS`, `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE` — que continuam separadas por risco. Depois seguem testes multiagente em contextos separados, auditoria independente final e preparação da RC.
+O Lote 3 está **concluído**, o Lot 4-A está **integrado** e o Lot 4-B está **integrado**. A próxima etapa é `MCF-RUNTIME-006-LOT-4-C-SECURITY-REVIEW`. Restam três skills documentais — `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE` — separadas por risco. Depois seguem testes multiagente em contextos separados, auditoria independente final e preparação da RC.
