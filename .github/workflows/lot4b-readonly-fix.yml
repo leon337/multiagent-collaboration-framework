@@ -1,0 +1,58 @@
+name: Lot 4B READ_ONLY Fix
+
+on:
+  push:
+    branches:
+      - feat/mcf-runtime-006-lot4-b-evaluate-agents
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/mcf-runtime-006-lot4-b-evaluate-agents
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply READ_ONLY correction
+        run: python scripts/lot4b_fix_readonly.py
+
+      - name: Format changed files
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/chat-mission-planner.ts \
+            apps/server/src/mcf-runtime/skill-executor-lot4-evaluate-agents.test.ts \
+            apps/server/src/mcf-runtime/chat-mission-planner-lot4-evaluate-agents.test.ts \
+            apps/server/src/mcf-runtime/mission-runtime-lot4-evaluate-agents.integration.test.ts \
+            apps/server/src/mcf-runtime/skill-executor-lot4-core.test.ts
+
+      - name: Remove temporary files and commit
+        run: |
+          rm scripts/lot4b_fix_readonly.py
+          rm .github/workflows/lot4b-readonly-fix.yml
+          git diff --check
+          git config user.name "MCF Runtime Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(runtime): align agent evaluation with READ_ONLY operations"
+          git push origin HEAD:feat/mcf-runtime-006-lot4-b-evaluate-agents
