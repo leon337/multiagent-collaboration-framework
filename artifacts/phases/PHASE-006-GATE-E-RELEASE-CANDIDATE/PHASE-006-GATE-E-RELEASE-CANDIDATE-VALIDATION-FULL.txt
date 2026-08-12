@@ -1,11 +1,12 @@
 PHASE-006-GATE-E-RELEASE-CANDIDATE — VALIDATION FULL
 
-Scope: exact technical candidate qualification for c321b01e9220d19e8ecb31ad6afcf39b6a259fcc.
+Scope: technical candidate qualification and CAF trace for Gate E.
 This artifact records observed evidence and does not by itself approve Gate E.
 
 [1] BASELINE AND CHANGE SURFACE
 baseline=c5758c2e38b599ae1673cda2691ef2ce0dc2a411
 technical_candidate=c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
+final_candidate=BOUND_EXTERNALLY_TO_PR_HEAD
 compare_surface=DOCUMENTATION_AND_PRF_ONLY
 runtime_code_changed=false
 skill_registry_changed=false
@@ -13,13 +14,14 @@ permission_contract_changed=false
 adapter_changed=false
 persistent_infrastructure_changed=false
 
-[2] GITHUB NATIVE CHECKS
+[2] GITHUB NATIVE CHECKS — TECHNICAL CANDIDATE
 Foundation run 31551841728 => PASS
 Documentation validation run 31551841725 => PASS
 Container Smoke run 31551841724 => PASS
 
-[3] COMPLETE VALIDATION ON EXACT SHA
+[3] COMPLETE VALIDATION ON EXACT TECHNICAL CANDIDATE
 Helper policy basis: MCF-DEC-061 GitHub Actions One-Shot TEAM_FIRST Fallback.
+Final read-only helper run: 31552850053 => PASS
 Exact checkout/bind => PASS
 PostgreSQL service => AVAILABLE
 Dependencies frozen install => PASS
@@ -38,6 +40,7 @@ skills_registered=16
 skills_executable=16
 skills_documental=0
 human_operator_actions=0
+duplicate_external_dispatches=0
 
 [4] OFFICIAL STAGING WORKFLOW
 run_id=31552113642
@@ -48,22 +51,21 @@ mission_id=00000000-0000-4000-8000-000000000121
 phase_id=00000000-0000-4000-8000-000000000122
 result=SUCCESS
 
-Observed successful steps:
+Observed successful structural steps:
 - Validate protected configuration => PASS
-- Checkout exact requested release => PASS
-- Validate rollout compose definition => PASS
-- Container Smoke => PASS
-- Format => PASS
+- Checkout exact release revision => PASS
+- Validate rollout Compose configuration => PASS
+- Run container smoke => PASS
+- Verify formatting => PASS
 - Lint => PASS
 - Typecheck => PASS
-- Apply migrations first time => PASS
-- Apply migrations second time => PASS
+- Apply migrations twice in CI database => PASS
 - Test => PASS
 - Build => PASS
-- Deploy exact release and verify readiness/version => PASS
-- Record DEPLOYED outcome => PASS
-- Record NOOP outcome => SKIPPED
-- Record RECOVERED outcome => SKIPPED
+- Deploy exact revision and verify or recover => PASS
+- Deployment result DEPLOYED => PASS
+- Deployment result NOOP => SKIPPED
+- Deployment result RECOVERED => SKIPPED
 
 requested_sha=c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
 observed_sha=c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
@@ -72,44 +74,61 @@ semantic_health_success=true
 outcome=DEPLOYED
 recovery_redeploy=false
 
-[5] TEST COUNTS OBSERVED IN STAGING
+[5] TEST COUNTS OBSERVED IN FINAL READ-ONLY HELPER
 server_test_files=126
 server_tests=567
-web_test_files=5
+web_test_files=1
 web_tests=5
-ops_test_files=20
 ops_tests=20
 all_observed_suites=PASS
 
-[6] CAF — AUXILIARY WRAPPER FALSE NEGATIVE
-first_helper_run=31552030117
-first_helper_result=FAILURE
-candidate_validation_before_failure=PASS
-staging_run_result=SUCCESS
+The complete suite also exercised current MCF areas including HDF, permissions, evidence validation, external action ledger, global idempotency, unknown-state handling, observability, evaluate-agents, security-review, debug-incident and close-phase paths.
 
-Verified root cause:
-- helper used `set -euo pipefail`;
-- helper piped stored workflow logs through `printf` into `grep -q`;
-- `grep -q` exited after matching success;
-- upstream `printf` received Broken pipe;
-- `pipefail` converted the successful semantic match into a false shell condition.
+[6] CAF — AUXILIARY WRAPPER FALSE NEGATIVES
+The three failed helper attempts occurred after material technical checks had already passed. They did not change the technical candidate and did not invalidate the successful official staging run.
 
+attempt_1_run=31552030117
+attempt_1_result=FAILURE
+attempt_1_root_cause=PIPEFAIL_BROKEN_PIPE_FALSE_NEGATIVE
+
+attempt_2_run=31552519850
+attempt_2_result=FAILURE
+attempt_2_root_cause=GH_RUN_LOG_RETRIEVAL_NOT_RELIABLE_BOUNDARY
+
+attempt_3_run=31552691556
+attempt_3_result=FAILURE
+attempt_3_root_cause=STALE_STAGING_STEP_NAMES
+
+attempt_4_run=31552850053
+attempt_4_result=PASS
+attempt_4_permissions=CONTENTS_READ_ACTIONS_READ
+attempt_4_external_dispatch_capability=false
+attempt_4_staging_run=31552113642
+attempt_4_staging_exact_sha=PASS
+attempt_4_staging_recovery=false
+attempt_4_duplicate_external_dispatches=0
+attempt_4_human_operator_actions=0
+
+Verified final receipt:
+validation=PASS
+migrations_twice=PASS
+skills_registered=16
+skills_executable=16
+skills_documental=0
+staging_run=31552113642
+staging_exact_sha=PASS
+staging_recovery=false
+duplicate_external_dispatches=0
+human_operator_actions=0
+production=BLOCKED
+stable_release=BLOCKED
+
+helper_cleanup_commit=ee9dadf676137ad5b7592dff5631ad9b09cd3627
 classification=TEMPORARY_CONTROL_WRAPPER_DEFECT
 candidate_impact=NONE
 staging_impact=NONE
 external_effect_duplicate=NONE
-caf_applied=true
-
-Correction:
-- removed dispatch permission/logic from retry;
-- pinned already completed official run 31552113642;
-- stored logs in a file before matching;
-- required exact requested/observed SHA;
-- required recovery not needed;
-- retry therefore has no deploy/write path.
-
-corrected_helper_run=31552519850
-corrected_helper_result=PENDING_AT_ARTIFACT_WRITE
+caf=COMPLETE
 
 [7] ARCHITECTURE / AGENT / SECURITY / TRACE — PRELIMINARY
 Miriam=PASS_PRELIMINARY
@@ -118,17 +137,23 @@ Renato=PASS_TECHNICAL_C321
 Beatriz=PASS_PRELIMINARY_NO_AGENT_REGRESSION_OBSERVED
 Ricardo=PASS_PRELIMINARY_NO_NEW_CRITICAL_OR_HIGH_FINDING
 Augusto=PASS_PRELIMINARY_TRACE_AND_CAF
-Carmem=NEEDS_WORK_PRF_INCOMPLETE_AT_CYCLE_1
-Julia=PASS_PRELIMINARY_WITH_GATE_BLOCK
+Carmem=PASS_ON_COMPLETE_MANIFEST
+Julia=PASS_PRELIMINARY_WITH_FINAL_GATE_PENDING
 Emily=PENDING
 Leo=PENDING
 
-[8] OPEN GATE CONDITIONS
+[8] PRF PROCESS FINDING
+finding=GATE_E_PRF_INCOMPLETE
+initial_status=BLOCKING_PROCESS
+recovery=REPORT_VALIDATION_VALIDATION_FULL_SMOKE_MANIFEST
+final_status=RESOLVED_WHEN_MANIFEST_PRESENT_AND_VALID
+
+[9] OPEN GATE CONDITIONS
 critical_findings_open=0
 high_findings_open=0
-blocking_process_finding=GATE_E_PRF_INCOMPLETE
-final_candidate_sha=PENDING
-final_exact_sha_retest=PENDING
+final_head_exact_retest=PENDING
+final_head_native_checks=PENDING
+final_head_staging=PENDING
 independent_audit=PENDING
 leo_gate=PENDING
 release_tag=PENDING
@@ -136,4 +161,4 @@ github_release=PENDING
 production=BLOCKED
 stable_release=BLOCKED
 
-END_OF_OBSERVED_TECHNICAL_CANDIDATE_EVIDENCE
+END_OF_GATE_E_PRE_FINAL_EVIDENCE
