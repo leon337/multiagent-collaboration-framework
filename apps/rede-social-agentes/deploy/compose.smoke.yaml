@@ -41,6 +41,7 @@ services:
       TRUST_PROXY: 'true'
       BODY_LIMIT_BYTES: 262144
       ALLOWED_ORIGINS: https://smoke.invalid
+      REGISTRATION_ALLOWLIST: invited@example.test
     depends_on:
       migrate:
         condition: service_completed_successfully
