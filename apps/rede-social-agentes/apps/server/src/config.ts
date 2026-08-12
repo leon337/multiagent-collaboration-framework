@@ -65,7 +65,8 @@ const runtimeConfigSchema = z
         context.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['REGISTRATION_ALLOWLIST'],
-          message: 'REGISTRATION_ALLOWLIST must declare at least one controlled pilot invitation in production.',
+          message:
+            'REGISTRATION_ALLOWLIST must declare at least one controlled pilot invitation in production.',
         });
       }
       for (const email of registrationAllowlist) {
