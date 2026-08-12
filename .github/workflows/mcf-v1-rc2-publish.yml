@@ -26,15 +26,11 @@ jobs:
       - name: Verify publication boundary
         env:
           RC1_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-          RC2_TAG: v1.0.0-RC2
           TARGET_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           test "$(git rev-parse HEAD)" = "$TARGET_SHA"
           test "$(git rev-list -n 1 v1.0.0-RC1)" = "$RC1_SHA"
           test -f docs/releases/MCF-v1.0.0-RC2.md
-          if git rev-parse "$RC2_TAG" >/dev/null 2>&1; then
-            test "$(git rev-list -n 1 "$RC2_TAG")" = "$TARGET_SHA"
-          fi
 
       - name: Create or verify immutable RC2 tag and prerelease
         env:
@@ -45,18 +41,24 @@ jobs:
         run: |
           existing_ref="$(gh api -H 'Accept: application/vnd.github+json' \
             "/repos/$REPOSITORY/git/ref/tags/$RC2_TAG" --jq '.object.sha' 2>/dev/null || true)"
-          if [ -z "$existing_ref" ]; then
-            gh api --method POST -H 'Accept: application/vnd.github+json' \
-              "/repos/$REPOSITORY/git/refs" \
-              -f ref="refs/tags/$RC2_TAG" \
-              -f sha="$TARGET_SHA" >/dev/null
-          else
-            test "$existing_ref" = "$TARGET_SHA"
+
+          if [ -n "$existing_ref" ]; then
+            existing_release="$(gh api -H 'Accept: application/vnd.github+json' \
+              "/repos/$REPOSITORY/releases/tags/$RC2_TAG" --jq '.target_commitish' 2>/dev/null || true)"
+            test -n "$existing_release"
+            test "$existing_release" = "$existing_ref"
+            echo "RC2 already exists at $existing_ref; refusing to retarget and completing as immutable NOOP."
+            exit 0
           fi
 
-          existing_release="$(gh api -H 'Accept: application/vnd.github+json' \
+          gh api --method POST -H 'Accept: application/vnd.github+json' \
+            "/repos/$REPOSITORY/git/refs" \
+            -f ref="refs/tags/$RC2_TAG" \
+            -f sha="$TARGET_SHA" >/dev/null
+
+          existing_release_id="$(gh api -H 'Accept: application/vnd.github+json' \
             "/repos/$REPOSITORY/releases/tags/$RC2_TAG" --jq '.id' 2>/dev/null || true)"
-          if [ -z "$existing_release" ]; then
+          if [ -z "$existing_release_id" ]; then
             gh api --method POST -H 'Accept: application/vnd.github+json' \
               "/repos/$REPOSITORY/releases" \
               -f tag_name="$RC2_TAG" \
