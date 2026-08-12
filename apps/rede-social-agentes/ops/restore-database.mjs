@@ -62,7 +62,7 @@ const connection = parsePostgresConnection(
 );
 const environment = connectionEnvironment(connection);
 
-await run('pg_restore', pgRestoreArguments(dumpPath), environment);
+await run('pg_restore', pgRestoreArguments(dumpPath, connection.database), environment);
 const migrationCount = await run(
   'psql',
   [
