@@ -13,15 +13,17 @@ async function read(path) {
 
 test('Render blueprint provisions a free API and static web without secrets in Git', async () => {
   const blueprint = await read(resolve(repositoryRoot, 'render.yaml'));
+  const dockerfile = await read(resolve(appRoot, 'deploy/server.Dockerfile'));
 
   assert.match(blueprint, /name: rsa-api-free\s+runtime: docker/u);
   assert.match(blueprint, /plan: free/u);
   assert.match(blueprint, /region: virginia/u);
   assert.match(blueprint, /healthCheckPath: \/health\/ready/u);
   assert.match(blueprint, /autoDeployTrigger: checksPass/u);
+  assert.doesNotMatch(blueprint, /dockerCommand:/u);
   assert.match(
-    blueprint,
-    /dockerCommand: sh -c 'node packages\/database\/scripts\/migrate\.mjs && exec node apps\/server\/dist\/main\.js'/u,
+    dockerfile,
+    /CMD \["sh", "-c", "node packages\/database\/scripts\/migrate\.mjs && exec node apps\/server\/dist\/main\.js"\]/u,
   );
   assert.doesNotMatch(blueprint, /preDeployCommand:/u);
   assert.match(blueprint, /key: RATE_LIMIT_KEY_SECRET\s+generateValue: true/u);
@@ -60,7 +62,7 @@ test('Cloudflare Pages assets remain available as an optional fallback', async (
 });
 
 test('Cloudflare Worker publishes the built React application as a SPA', async () => {
-  const wrangler = JSON.parse(await read(resolve(repositoryRoot, 'wrangler.jsonc')));
+  const wrangler = JSON.parse(await read(resolve(repositoryRoot, 'wrangler.jsonc'));
 
   assert.equal(wrangler.name, 'multiagent-collaboration-framework');
   assert.equal(wrangler.assets.directory, './apps/rede-social-agentes/apps/web/dist');
