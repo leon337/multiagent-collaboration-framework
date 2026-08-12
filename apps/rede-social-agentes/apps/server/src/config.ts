@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { parseRegistrationAllowlist } from './identity/registration-policy.js';
+
 const booleanEnvironmentValue = z
   .enum(['true', 'false'])
   .default('false')
@@ -38,6 +40,7 @@ const runtimeConfigSchema = z
     MCF_RECEIPT_SECRET: z.string().min(32).default('development-only-mcf-receipt-secret-0001'),
     MCF_RUNTIME_TOKEN: z.string().min(32).default('development-only-mcf-runtime-token-0001'),
     ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:5173'),
+    REGISTRATION_ALLOWLIST: z.string().default(''),
   })
   .superRefine((config, context) => {
     const insecureProductionSecrets: Array<[string, string, string]> = [
@@ -54,6 +57,26 @@ const runtimeConfigSchema = z
             path: [name],
             message: `${name} must be explicitly configured in production.`,
           });
+        }
+      }
+
+      const registrationAllowlist = parseRegistrationAllowlist(config.REGISTRATION_ALLOWLIST);
+      if (registrationAllowlist.length === 0) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['REGISTRATION_ALLOWLIST'],
+          message: 'REGISTRATION_ALLOWLIST must declare at least one controlled pilot invitation in production.',
+        });
+      }
+      for (const email of registrationAllowlist) {
+        const parsedEmail = z.string().email().max(320).safeParse(email);
+        if (!parsedEmail.success) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['REGISTRATION_ALLOWLIST'],
+            message: 'REGISTRATION_ALLOWLIST entries must be valid email addresses.',
+          });
+          break;
         }
       }
     }
@@ -88,8 +111,9 @@ const runtimeConfigSchema = z
 
 type ParsedRuntimeConfig = z.infer<typeof runtimeConfigSchema>;
 
-export type RuntimeConfig = Omit<ParsedRuntimeConfig, 'ALLOWED_ORIGINS'> & {
+export type RuntimeConfig = Omit<ParsedRuntimeConfig, 'ALLOWED_ORIGINS' | 'REGISTRATION_ALLOWLIST'> & {
   ALLOWED_ORIGINS: string[];
+  REGISTRATION_ALLOWLIST: string[];
 };
 
 export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig {
@@ -97,5 +121,6 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   return {
     ...parsed,
     ALLOWED_ORIGINS: parseAllowedOrigins(parsed.ALLOWED_ORIGINS),
+    REGISTRATION_ALLOWLIST: parseRegistrationAllowlist(parsed.REGISTRATION_ALLOWLIST),
   };
 }
