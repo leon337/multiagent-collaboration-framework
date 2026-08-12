@@ -7,16 +7,13 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - ".github/workflows/mcf-production-readiness.yml"
-      - "artifacts/phases/PHASE-PRODUCTION-READINESS-001/**"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  rc1-production-readiness:
+  production-candidate-readiness:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -41,16 +38,19 @@ jobs:
       PORT: 3000
       LOG_LEVEL: error
     steps:
-      - name: Checkout immutable RC1 candidate
+      - name: Checkout exact production candidate
         uses: actions/checkout@v4
         with:
-          ref: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
 
-      - name: Verify exact RC1 identity
+      - name: Verify candidate and preserve immutable RC1
         run: |
-          test "$(git rev-parse HEAD)" = "$RC1_SHA"
+          CANDIDATE_SHA="$(git rev-parse HEAD)"
+          test "$CANDIDATE_SHA" != "$RC1_SHA"
           test "$(git rev-list -n 1 v1.0.0-RC1)" = "$RC1_SHA"
+          echo "candidate_sha=$CANDIDATE_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "rc1_immutable_sha=$RC1_SHA" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -63,7 +63,7 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.17.0 --activate
 
-      - name: Install dependencies from lockfile
+      - name: Install dependencies from frozen lockfile
         working-directory: apps/rede-social-agentes
         run: pnpm install --frozen-lockfile
 
