@@ -1,0 +1,140 @@
+name: MCF Gate E Post-Merge Read-Only Qualification
+
+on:
+  push:
+    branches:
+      - ops/gate-e-rc1-postmerge-9b4a759
+    paths:
+      - ".github/workflows/mcf-gate-e-postmerge-readonly.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcf-gate-e-postmerge-9b4a759
+  cancel-in-progress: false
+
+env:
+  TARGET_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  CANDIDATE_SHA: 13b5cb4f6b7a8369b0493fc3a51367d64b09c705
+
+jobs:
+  qualify-postmerge-readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_DB: rsa
+          POSTGRES_USER: rsa
+          POSTGRES_PASSWORD: rsa_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rsa -d rsa"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      HOST: 127.0.0.1
+      PORT: 3000
+      DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
+      LOG_LEVEL: error
+
+    steps:
+      - name: Checkout exact post-merge main
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 0
+
+      - name: Bind to exact main SHA and candidate-equivalent tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test "$(git status --porcelain)" = ""
+          test "$(git rev-parse "$TARGET_SHA^{tree}")" = "$(git rev-parse "$CANDIDATE_SHA^{tree}")"
+          echo "postmerge_sha=$TARGET_SHA"
+          echo "candidate_tree_equivalent=PASS"
+
+      - name: Validate Class C PRF manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd artifacts/phases/PHASE-006-GATE-E-RELEASE-CANDIDATE
+          sha256sum -c PHASE-006-GATE-E-RELEASE-CANDIDATE-ARTIFACT-MANIFEST.sha256
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations twice
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm --filter @rsa/database db:migrate
+          pnpm --filter @rsa/database db:migrate
+
+      - name: Run complete post-merge validation
+        working-directory: apps/rede-social-agentes
+        run: pnpm verify
+
+      - name: Verify 16 registered equals 16 executable
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          registry = Path('skills/registry.yaml').read_text(encoding='utf-8')
+          executor = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor.ts').read_text(encoding='utf-8')
+          registered = re.findall(r'^\s+- skill_id:\s+(MCF-[A-Z0-9-]+)\s*$', registry, re.M)
+          match = re.search(r'const executableSkills = new Set\(\[(.*?)\]\);', executor, re.S)
+          if not match:
+              raise SystemExit('executableSkills set not found')
+          executable = re.findall(r"'(MCF-[A-Z0-9-]+)'", match.group(1))
+          if len(registered) != 16 or len(set(registered)) != 16:
+              raise SystemExit(f'registry count mismatch: {len(registered)} total / {len(set(registered))} unique')
+          if len(executable) != 16 or len(set(executable)) != 16:
+              raise SystemExit(f'executable count mismatch: {len(executable)} total / {len(set(executable))} unique')
+          if set(registered) != set(executable):
+              raise SystemExit(f'skill sets differ: missing={sorted(set(registered)-set(executable))} extra={sorted(set(executable)-set(registered))}')
+          print('skills_registered=16')
+          print('skills_executable=16')
+          print('skills_documental=0')
+          PY
+
+      - name: Emit post-merge read-only receipt
+        shell: bash
+        run: |
+          cat <<EOF
+          GATE_E_POSTMERGE_READONLY_RECEIPT
+          target_sha=$TARGET_SHA
+          candidate_sha=$CANDIDATE_SHA
+          candidate_tree_equivalent=PASS
+          manifest=PASS
+          validation=PASS
+          migrations_twice=PASS
+          skills_registered=16
+          skills_executable=16
+          skills_documental=0
+          external_writes=0
+          human_operator_actions=0
+          production=BLOCKED
+          stable_release=BLOCKED
+          EOF
