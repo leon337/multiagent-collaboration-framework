@@ -78,15 +78,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ref_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null || true)"
 
-          if [ -z "$ref_sha" ]; then
-            echo "Creating lightweight tag ref $TAG at $TARGET_SHA"
+          if gh api --silent "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag ref already exists; verifying exact target."
+          else
+            echo "Tag ref is absent; creating $TAG at $TARGET_SHA."
             gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
               -f ref="refs/tags/$TAG" \
               -f sha="$TARGET_SHA"
-          else
-            echo "Tag ref already exists; verifying exact target."
           fi
 
           ref_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')"
@@ -97,10 +96,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          release_json="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" 2>/dev/null || true)"
 
-          if [ -z "$release_json" ]; then
-            echo "Creating prerelease $TAG using explicit Releases API."
+          if gh api --silent "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" >/dev/null 2>&1; then
+            echo "Release already exists; verification will follow."
+          else
+            echo "Release is absent; creating prerelease $TAG."
             gh api --method POST "repos/$GITHUB_REPOSITORY/releases" \
               -f tag_name="$TAG" \
               -f target_commitish="$TARGET_SHA" \
@@ -108,8 +108,6 @@ jobs:
               -F body=@"$RUNNER_TEMP/rc1-notes.md" \
               -F draft=false \
               -F prerelease=true
-          else
-            echo "Release already exists; verifying exact identity."
           fi
 
       - name: Verify published RC1
