@@ -3,6 +3,7 @@ import {
   ConflictException,
   Controller,
   Delete,
+  ForbiddenException,
   HttpCode,
   Inject,
   Post,
@@ -28,6 +29,7 @@ import {
   InvalidCredentialsError,
 } from './identity.errors.js';
 import { IdentityService } from './identity.service.js';
+import { registrationIsAllowed } from './registration-policy.js';
 import { SessionAuthGuard } from './session-auth.guard.js';
 
 const registerSchema = z.object({
@@ -52,6 +54,14 @@ export class IdentityController {
     @Req() request: FastifyRequest,
   ): Promise<HumanAccountResponse> {
     const input = parseBody<RegisterHumanAccountRequest>(registerSchema, body, request.id);
+
+    if (!registrationIsAllowed(input.email)) {
+      throw new ForbiddenException({
+        code: 'REGISTRATION_INVITE_REQUIRED',
+        message: 'Registration is restricted to controlled pilot invitations.',
+        correlationId: request.id,
+      });
+    }
 
     try {
       return await this.identity.registerHumanAccount(input, request.id);
