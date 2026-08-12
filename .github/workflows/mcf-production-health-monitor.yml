@@ -3,6 +3,12 @@ name: MCF Production Health Monitor
 on:
   schedule:
     - cron: '*/5 * * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - ops/production-monitoring.json
+      - .github/workflows/mcf-production-health-monitor.yml
   workflow_dispatch:
 
 permissions:
