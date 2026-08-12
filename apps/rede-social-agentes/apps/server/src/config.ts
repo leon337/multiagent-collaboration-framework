@@ -111,7 +111,10 @@ const runtimeConfigSchema = z
 
 type ParsedRuntimeConfig = z.infer<typeof runtimeConfigSchema>;
 
-export type RuntimeConfig = Omit<ParsedRuntimeConfig, 'ALLOWED_ORIGINS' | 'REGISTRATION_ALLOWLIST'> & {
+export type RuntimeConfig = Omit<
+  ParsedRuntimeConfig,
+  'ALLOWED_ORIGINS' | 'REGISTRATION_ALLOWLIST'
+> & {
   ALLOWED_ORIGINS: string[];
   REGISTRATION_ALLOWLIST: string[];
 };
