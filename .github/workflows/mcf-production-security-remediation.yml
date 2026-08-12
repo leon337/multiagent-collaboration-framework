@@ -1,0 +1,42 @@
+name: MCF Production Security Remediation
+
+on:
+  push:
+    branches:
+      - mcf/production-readiness-001
+    paths:
+      - "apps/rede-social-agentes/package.json"
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate-lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: mcf/production-readiness-001
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        working-directory: apps/rede-social-agentes
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Regenerate frozen dependency graph
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --lockfile-only
+      - name: Commit lockfile remediation
+        run: |
+          git config user.name "mcf-production-readiness"
+          git config user.email "actions@users.noreply.github.com"
+          git add apps/rede-social-agentes/pnpm-lock.yaml
+          if git diff --cached --quiet; then
+            echo "No lockfile change required"
+            exit 0
+          fi
+          git commit -m "fix(security): resolve production dependency advisory"
+          git push origin HEAD:mcf/production-readiness-001
