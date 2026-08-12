@@ -1,0 +1,120 @@
+name: MCF Gate E Publish RC1 One-Shot
+
+on:
+  push:
+    branches:
+      - ops/gate-e-publish-rc1-9b4a759
+    paths:
+      - ".github/workflows/mcf-gate-e-publish-rc1.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mcf-gate-e-publish-rc1-9b4a759
+  cancel-in-progress: false
+
+env:
+  TARGET_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  TAG: v1.0.0-RC1
+
+jobs:
+  publish-release-candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Bind publication to exact verified main
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_main="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          test "$current_main" = "$TARGET_SHA"
+          echo "main_sha=$current_main"
+
+      - name: Create or verify exact RC1 tag and release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ref_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null || true)"
+          release_exists=false
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            release_exists=true
+          fi
+
+          if [ -n "$ref_sha" ] || [ "$release_exists" = true ]; then
+            test "$ref_sha" = "$TARGET_SHA"
+            test "$release_exists" = true
+            echo "Existing exact RC1 detected; publication NOOP."
+          else
+            cat > "$RUNNER_TEMP/rc1-notes.md" <<'EOF'
+          # MCF v1.0.0-RC1
+
+          Primeira Release Candidate formal do Multiagent Collaboration Framework, aprovada no **Gate E**.
+
+          ## Identidade da release
+
+          - Gate E mission: `MCF-RELEASE-CANDIDATE-GATE-E` / Issue #121
+          - Technical PR: #122
+          - Audited candidate: `13b5cb4f6b7a8369b0493fc3a51367d64b09c705`
+          - Verified merge/main target: `9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8`
+          - Candidate→merge tree equivalence: PASS
+
+          ## Evidência material
+
+          - Skills: `16 registradas / 16 executáveis / 0 documentais`
+          - Final candidate native CI: PASS
+          - Class C PRF manifest: PASS
+          - Full validation + migrations twice: PASS
+          - Final candidate staging: PASS / DEPLOYED / no recovery
+          - Emily independent audit: PASS
+          - Léo Gate E decision: PASS
+          - Post-merge documentation: PASS
+          - Post-merge read-only exact-main qualification: PASS
+          - Post-merge staging exact-main: PASS / DEPLOYED / no recovery
+          - Critical findings open: 0
+          - High findings open: 0
+
+          ## Limitações obrigatórias
+
+          - **Produção permanece BLOCKED.**
+          - **`v1.0.0` estável permanece BLOCKED.**
+          - Esta RC não concede autoridade de produção.
+          - `live_staging_adapter` permanece `DISABLED` no estado canônico de entrada.
+          - Recovery deve ser interpretado apenas nas semânticas comprovadas/documentadas; não inferir rollback nativo onde ele não foi provado.
+          EOF
+
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$TARGET_SHA" \
+              --title "MCF v1.0.0-RC1" \
+              --notes-file "$RUNNER_TEMP/rc1-notes.md" \
+              --prerelease
+          fi
+
+      - name: Verify published RC1
+        shell: bash
+        run: |
+          set -euo pipefail
+          ref_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')"
+          test "$ref_sha" = "$TARGET_SHA"
+
+          release="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json tagName,isDraft,isPrerelease,targetCommitish,url)"
+          echo "$release"
+          echo "$release" | jq -e --arg tag "$TAG" --arg sha "$TARGET_SHA" '
+            .tagName == $tag and
+            .isDraft == false and
+            .isPrerelease == true and
+            .targetCommitish == $sha
+          '
+
+          echo "GATE_E_RC1_PUBLICATION_RECEIPT"
+          echo "tag=$TAG"
+          echo "target_sha=$TARGET_SHA"
+          echo "release_candidate=PASS"
+          echo "prerelease=true"
+          echo "production=BLOCKED"
+          echo "stable_release=BLOCKED"
