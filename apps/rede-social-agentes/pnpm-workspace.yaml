@@ -8,5 +8,8 @@ saveExact: true
 strictPeerDependencies: true
 strictDepBuilds: true
 
+overrides:
+  find-my-way: 9.7.0
+
 allowBuilds:
   esbuild: true

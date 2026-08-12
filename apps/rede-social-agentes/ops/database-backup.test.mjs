@@ -21,7 +21,7 @@ test('keeps PostgreSQL credentials out of command arguments', () => {
   );
   const environment = connectionEnvironment(connection);
   const dumpArguments = pgDumpArguments('/tmp/backup.dump');
-  const restoreArguments = pgRestoreArguments('/tmp/backup.dump');
+  const restoreArguments = pgRestoreArguments('/tmp/backup.dump', connection.database);
 
   assert.equal(environment.PGPASSWORD, 'super-secret');
   assert.equal(environment.PGHOST, 'db.internal');
@@ -30,6 +30,8 @@ test('keeps PostgreSQL credentials out of command arguments', () => {
   assert.equal(environment.PGSSLMODE, 'require');
   assert.equal(dumpArguments.join(' ').includes('super-secret'), false);
   assert.equal(restoreArguments.join(' ').includes('super-secret'), false);
+  assert.deepEqual(restoreArguments.slice(-3), ['--dbname', 'rsa', '/tmp/backup.dump']);
+  assert.throws(() => pgRestoreArguments('/tmp/backup.dump'), /Restore database name is required/u);
 });
 
 test('creates deterministic UTC backup names', () => {

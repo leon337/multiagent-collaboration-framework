@@ -1,0 +1,45 @@
+name: MCF Production Health Monitor
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  readiness-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Load monitor configuration
+        id: config
+        run: |
+          enabled="$(node -p "require('./ops/production-monitoring.json').enabled")"
+          base_url="$(node -p "require('./ops/production-monitoring.json').publicBaseUrl")"
+          echo "enabled=$enabled" >> "$GITHUB_OUTPUT"
+          echo "base_url=$base_url" >> "$GITHUB_OUTPUT"
+      - name: Probe and reconcile alert issue
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_URL: ${{ steps.config.outputs.base_url }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          title='[PROD ALERT] Readiness indisponível'
+          issue="$(gh issue list --repo "$REPOSITORY" --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
+          if curl --fail --silent --show-error --max-time 20 "$BASE_URL/health/ready" >/dev/null; then
+            if [ -n "$issue" ]; then
+              gh issue comment "$issue" --repo "$REPOSITORY" --body "Recuperado automaticamente em $(date -u +%FT%TZ). Probe /health/ready voltou a responder com sucesso."
+              gh issue close "$issue" --repo "$REPOSITORY" --reason completed
+            fi
+          else
+            if [ -z "$issue" ]; then
+              gh issue create --repo "$REPOSITORY" --title "$title" --body "SEV-1 operacional: /health/ready não respondeu com sucesso em $(date -u +%FT%TZ). Verificar RSA-INCIDENT-RESPONSE.md e RSA-ROLLBACK.md. Nenhum segredo ou corpo de resposta foi registrado."
+            else
+              gh issue comment "$issue" --repo "$REPOSITORY" --body "Falha de readiness persiste em $(date -u +%FT%TZ)."
+            fi
+            exit 1
+          fi

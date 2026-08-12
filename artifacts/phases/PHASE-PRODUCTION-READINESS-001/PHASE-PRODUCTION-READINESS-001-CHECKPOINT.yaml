@@ -1,0 +1,70 @@
+mission_id: MCF-PRODUCTION-READINESS-001
+parent_mission_id: MCF-RUNTIME-006
+phase_id: PHASE-PRODUCTION-READINESS-001
+risk_class: C
+state: IN_PROGRESS_EXTERNAL_BOUNDARY
+cycle: 2
+source_of_truth: GitHub
+issue: 124
+pull_request: 125
+branch: mcf/production-readiness-001
+baseline_main_sha: e46de554f1340edc3bd842e28f17bab5aaec7e6c
+immutable_rc1:
+  tag: v1.0.0-RC1
+  sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  release_state: prerelease
+next_candidate:
+  tag: v1.0.0-RC2
+  state: PENDING_POSTMERGE_QUALIFICATION
+technical_evidence:
+  production_readiness_run: 31583249988
+  dependency_audit: PASS
+  migrations_twice: PASS
+  full_tests: PASS
+  build: PASS
+  isolated_backup_restore: PASS
+  restore_regression_fixed: true
+providers:
+  render_workspace: tea-d2u2msje5dus73eb6ehg
+  staging_api: PRESENT
+  public_web_rsa_web_free: PRESENT
+  public_api_rsa_api_free: NOT_YET_PROVISIONED
+  neon_project: silent-sun-03230384
+  neon_database: neondb
+production:
+  authorization_recorded: true
+  readiness: TECHNICAL_PRECONDITIONS_MOSTLY_PROVEN
+  deploy_executed_in_this_phase: false
+stable_release:
+  version: v1.0.0
+  state: NOT_PROMOTED
+readiness_matrix:
+  total_dimensions: 16
+  pass: 7
+  pass_pre_rollout: 4
+  partial_external: 4
+  blocked_until_rollout: 1
+blocking_findings:
+  - id: EXT-RENDER-DOCKER-BLUEPRINT
+    description: connector cannot create Docker Web Service rsa-api-free
+    owner: LEANDRO_AT_EXACT_BOUNDARY
+selected_agents:
+  - Mestre
+  - Miriam
+  - Rafael
+  - Bruno
+  - Ricardo
+  - Manoel
+  - Renato
+  - Beatriz
+  - Augusto
+  - Julia
+  - Carmem
+  - Gabriel
+  - Emily
+  - Leo
+decision_authority: Leo
+human_final_authority: Leandro
+human_action_required: false
+next_action: fechar_head_final_integrar_requalificar_publicar_rc2_e_so_entao_abrir_blueprint_material
+checkpoint_recipient: Mestre

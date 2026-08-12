@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "publicBaseUrl": "https://rsa-api-free.onrender.com",
+  "alertChannel": "github-issues",
+  "intervalMinutes": 5,
+  "runbook": "docs/runbooks/RSA-INCIDENT-RESPONSE.md"
+}

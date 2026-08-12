@@ -66,8 +66,20 @@ export function pgDumpArguments(outputPath) {
   return ['--format=custom', '--compress=6', '--no-owner', '--no-privileges', '--file', outputPath];
 }
 
-export function pgRestoreArguments(inputPath) {
-  return ['--clean', '--if-exists', '--no-owner', '--no-privileges', '--exit-on-error', inputPath];
+export function pgRestoreArguments(inputPath, database) {
+  if (!database) {
+    throw new Error('Restore database name is required.');
+  }
+  return [
+    '--clean',
+    '--if-exists',
+    '--no-owner',
+    '--no-privileges',
+    '--exit-on-error',
+    '--dbname',
+    database,
+    inputPath,
+  ];
 }
 
 export async function sha256File(path) {
