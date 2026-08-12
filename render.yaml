@@ -8,7 +8,6 @@ services:
     branch: main
     dockerfilePath: ./apps/rede-social-agentes/deploy/server.Dockerfile
     dockerContext: .
-    dockerCommand: sh -c 'node packages/database/scripts/migrate.mjs && exec node apps/server/dist/main.js'
     healthCheckPath: /health/ready
     autoDeployTrigger: checksPass
     envVars:
