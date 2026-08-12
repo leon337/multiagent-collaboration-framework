@@ -2,52 +2,70 @@ mission_id: MCF-PRODUCTION-READINESS-001
 parent_mission_id: MCF-RUNTIME-006
 phase_id: PHASE-PRODUCTION-READINESS-001
 risk_class: C
-state: IN_PROGRESS_EXTERNAL_BOUNDARY
-cycle: 2
+state: COMPLETE
+cycle: 3
 source_of_truth: GitHub
 issue: 124
-pull_request: 125
-branch: mcf/production-readiness-001
+pull_requests:
+  readiness: 125
+  convergence: 126
 baseline_main_sha: e46de554f1340edc3bd842e28f17bab5aaec7e6c
+production_head_sha: cf6cf42bdff923e44ccc7603058edc66f079f369
 immutable_rc1:
   tag: v1.0.0-RC1
   sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
   release_state: prerelease
-next_candidate:
+rc2:
   tag: v1.0.0-RC2
-  state: PENDING_POSTMERGE_QUALIFICATION
+  sha: d73d936a63cc9462a95bcf481f4b8e1d4b255719
+  release_state: prerelease
 technical_evidence:
-  production_readiness_run: 31583249988
+  production_readiness_run: 31602905916
+  staging_deploy_run: 31602905900
   dependency_audit: PASS
+  container_smoke: PASS
+  formatting: PASS
+  lint: PASS
+  typecheck: PASS
   migrations_twice: PASS
   full_tests: PASS
   build: PASS
   isolated_backup_restore: PASS
-  restore_regression_fixed: true
 providers:
   render_workspace: tea-d2u2msje5dus73eb6ehg
-  staging_api: PRESENT
-  public_web_rsa_web_free: PRESENT
-  public_api_rsa_api_free: NOT_YET_PROVISIONED
+  staging_api_deploy: dep-d9u7o3m417fc73fudeqg
+  production_api_service: srv-d9u5vnijobas73ecvlo0
+  production_api_deploy: dep-d9u7ponmnsvc73a75atg
+  production_web_service: srv-d9og08142hec739btoi0
+  production_web_deploy: dep-d9u7p7oae00c73bukn4g
   neon_project: silent-sun-03230384
   neon_database: neondb
+canary:
+  functional_sha: cce371417308b92409131c5b40bb4968d0d5ba85
+  deploy: dep-d9u6f3jncjis7385cdvg
+  observed_from: 2026-08-12T12:32:33Z
+  observed_until: 2026-08-12T14:02:38Z
+  minimum_60_minutes: PASS
+  application_error_logs: 0
 production:
   authorization_recorded: true
-  readiness: TECHNICAL_PRECONDITIONS_MOSTLY_PROVEN
-  deploy_executed_in_this_phase: false
+  readiness: PASS
+  deploy_executed: true
+  post_deploy_smoke: PASS
+  observability: PASS
+  recovery_ready: PASS
+  state: COMPLETE
 stable_release:
   version: v1.0.0
   state: NOT_PROMOTED
 readiness_matrix:
   total_dimensions: 16
-  pass: 7
-  pass_pre_rollout: 4
-  partial_external: 4
-  blocked_until_rollout: 1
-blocking_findings:
-  - id: EXT-RENDER-DOCKER-BLUEPRINT
-    description: connector cannot create Docker Web Service rsa-api-free
-    owner: LEANDRO_AT_EXACT_BOUNDARY
+  pass: 16
+  blocked: 0
+blocking_findings: []
+non_blocking_debt:
+  - id: PG-SSLMODE-FUTURE-SEMANTICS
+    description: acompanhar warning de mudança futura de semântica do cliente PostgreSQL
 selected_agents:
   - Mestre
   - Miriam
@@ -66,5 +84,5 @@ selected_agents:
 decision_authority: Leo
 human_final_authority: Leandro
 human_action_required: false
-next_action: fechar_head_final_integrar_requalificar_publicar_rc2_e_so_entao_abrir_blueprint_material
+next_action: avaliar_milestone_estavel_v1_0_0_separadamente
 checkpoint_recipient: Mestre
