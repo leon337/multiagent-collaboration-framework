@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - mcf/production-readiness-001
+      - main
   pull_request:
     branches:
       - main
