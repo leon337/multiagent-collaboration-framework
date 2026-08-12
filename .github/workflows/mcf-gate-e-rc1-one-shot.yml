@@ -141,9 +141,10 @@ jobs:
             (.displayTitle | contains($sha)) and
             any(.jobs[];
               .conclusion == "success" and
-              any(.steps[]; .name == "Deploy exact release and verify readiness/version" and .conclusion == "success") and
-              any(.steps[]; .name == "Record DEPLOYED outcome" and .conclusion == "success") and
-              any(.steps[]; .name == "Record RECOVERED outcome" and .conclusion == "skipped")
+              any(.steps[]; .name == "Deploy exact revision and verify or recover" and .conclusion == "success") and
+              any(.steps[]; .name == "Deployment result DEPLOYED" and .conclusion == "success") and
+              any(.steps[]; .name == "Deployment result NOOP" and .conclusion == "skipped") and
+              any(.steps[]; .name == "Deployment result RECOVERED" and .conclusion == "skipped")
             )
           '
 
