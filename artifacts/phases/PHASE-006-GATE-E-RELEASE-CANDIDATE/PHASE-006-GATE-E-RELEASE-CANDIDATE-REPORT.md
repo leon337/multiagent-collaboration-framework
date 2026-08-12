@@ -9,7 +9,7 @@ pull_request: 122
 risk_class: C
 baseline_sha: c5758c2e38b599ae1673cda2691ef2ce0dc2a411
 technical_candidate_sha: c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
-final_candidate_sha: PENDING
+final_candidate_sha: BOUND_EXTERNALLY_TO_PR_HEAD
 release_candidate: v1.0.0-RC1
 gate_e: IN_PROGRESS
 production: BLOCKED
@@ -66,17 +66,22 @@ container_smoke:
 
 ### Validação completa TEAM_FIRST
 
-O helper one-shot autorizado pela `MCF-DEC-061` executou sobre o SHA exato:
+O helper one-shot autorizado pela `MCF-DEC-061` produziu no run final `31552850053`:
 
-- checkout e binding do candidate: PASS;
-- migrations duas vezes: PASS;
-- `pnpm verify`: PASS;
-- igualdade entre registry e conjunto executável: `16/16/0`: PASS;
-- ação técnica humana: `0`.
+```yaml
+exact_sha_bind: PASS
+migrations_twice: PASS
+pnpm_verify: PASS
+skills_registered: 16
+skills_executable: 16
+skills_documental: 0
+staging_exact_sha: PASS
+staging_recovery: false
+duplicate_external_dispatches: 0
+human_operator_actions: 0
+```
 
 ### Staging oficial
-
-Workflow oficial:
 
 ```yaml
 run: 31552113642
@@ -87,87 +92,70 @@ outcome: DEPLOYED
 recovery: false
 ```
 
-O workflow oficial passou configuração protegida, checkout exato, rollout compose validation, container smoke, format, lint, typecheck, migrations duas vezes, testes, build e verificação de deploy/readiness/version.
+O workflow oficial passou configuração protegida, checkout exato, rollout compose validation, container smoke, format, lint, typecheck, migrations duas vezes, testes, build e verificação de deploy/readiness/version. `NOOP` e `RECOVERED` ficaram `skipped`.
 
-A prova oficial registrou `DEPLOYED`; os caminhos `NOOP` e `RECOVERED` não foram usados.
+## 5. CAF — helper auxiliar
 
-## 5. CAF — incidente do wrapper auxiliar
+O candidate não apresentou falha material. O helper temporário apresentou três falsos negativos sucessivamente diagnosticados:
 
-O primeiro one-shot `31552030117` terminou `FAILURE` após o staging oficial ter concluído com sucesso.
+| Run | Resultado | Causa comprovada |
+|---|---|---|
+| 31552030117 | FAILURE | `pipefail` + `grep -q` → `Broken pipe` |
+| 31552519850 | FAILURE | `gh run view --log` como boundary de leitura frágil |
+| 31552691556 | FAILURE | nomes antigos dos steps no verificador estruturado |
+| 31552850053 | PASS | contratos corrigidos, somente leitura |
 
-A causa foi diagnosticada no próprio helper, não no candidate:
+O quarto run usou apenas `contents: read` e `actions: read`, validou o staging já existente e emitiu recibo completo. Não houve redispatch externo.
 
-```text
-set -euo pipefail
-printf "$logs" | grep -q ...
-```
+O helper foi removido após o PASS:
 
-Depois de o `grep -q` encontrar a mensagem, ele encerrou cedo; `printf` recebeu `Broken pipe`; com `pipefail`, a condição foi interpretada como falsa.
-
-### Classificação
+`ee9dadf676137ad5b7592dff5631ad9b09cd3627`
 
 ```yaml
 finding: GATE_E_ONE_SHOT_FALSE_NEGATIVE
-component: temporary_control_wrapper
+status: RESOLVED
 candidate_impact: NONE
 staging_impact: NONE
 external_duplicate_effect: NONE
-caf: APPLIED
+caf: COMPLETE
 ```
 
-### Recuperação
-
-O helper foi alterado para:
-
-- usar somente `actions: read` no reteste;
-- fixar o `STAGING_RUN_ID=31552113642` já existente;
-- não possuir mais lógica de dispatch;
-- salvar logs em arquivo antes de `grep`;
-- exigir requested/observed SHA exatos;
-- rejeitar recovery;
-- impedir novo efeito externo.
-
-A validação do helper corrigido deve ser registrada antes do fechamento final.
-
-## 6. Pareceres preliminares
+## 6. Pareceres do ciclo antes do head final
 
 ```yaml
 miriam: PASS_PRELIMINARY
-sofia: PASS_PRELIMINARY
+sofia: PASS_PRELIMINARY_RELEASE_ONLY_BOUNDARY
 renato: PASS_TECHNICAL_C321
 beatriz: PASS_PRELIMINARY
 ricardo: PASS_PRELIMINARY
 augusto: PASS_PRELIMINARY
-carmem: NEEDS_WORK_PRF_INCOMPLETE_AT_CYCLE_1
-julia: PASS_PRELIMINARY_WITH_GATE_BLOCK
+carmem: PASS_ON_COMPLETE_MANIFEST
+julia: PASS_PRELIMINARY_WITH_FINAL_GATE_PENDING
 emily: PENDING
 leo: PENDING
 ```
-
-O finding de Carmem é de processo: o PRF Classe C estava incompleto. Este relatório integra a recuperação desse finding; os demais artefatos obrigatórios são produzidos no mesmo ciclo.
 
 ## 7. Findings
 
 ```yaml
 critical_open: 0
 high_open: 0
-blocking_process_open:
-  - GATE_E_PRF_INCOMPLETE
-resolved_or_in_retest:
+resolved:
   - GATE_E_ONE_SHOT_FALSE_NEGATIVE
+  - GATE_E_PRF_INCOMPLETE_ON_MANIFEST_PRESENT
 ```
 
-`GATE_E_PRF_INCOMPLETE` somente pode ser fechado depois que todos os artefatos obrigatórios e o manifest existirem e forem validados.
+O finding `GATE_E_PRF_INCOMPLETE` é encerrado pelo estado do pacote em que todos os arquivos obrigatórios, inclusive o manifest, estejam presentes e íntegros.
 
-## 8. Condição para próximo passo
+## 8. Condição para Gate E
 
 Este relatório não aprova Gate E.
 
-Depois da materialização do PRF completo:
+Depois da materialização integral do PRF:
 
-1. congelar novo head do PR #122;
-2. executar validação no SHA exato desse head;
-3. executar staging/readiness/version aplicável no head final;
+1. fixar o head exato do PR #122 externamente;
+2. executar validação nova nesse head;
+3. validar staging/readiness/version aplicável nesse head;
 4. obter ratificações finais de arquitetura/agentes/segurança/trace/governança;
 5. executar auditoria independente de Emily;
 6. Léo decidir Gate E;
