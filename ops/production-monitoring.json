@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "publicBaseUrl": "https://rsa-api-free.onrender.com",
   "alertChannel": "github-issues",
   "intervalMinutes": 5,
