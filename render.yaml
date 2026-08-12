@@ -33,6 +33,8 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: REGISTRATION_ALLOWLIST
+        sync: false
 
   - type: web
     name: rsa-web-free
