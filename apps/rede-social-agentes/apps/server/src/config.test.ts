@@ -14,6 +14,7 @@ const productionEnvironment = {
   MCF_RUNTIME_TOKEN: 'a-production-runtime-token-with-at-least-32-characters',
   TRUST_PROXY: 'true',
   BODY_LIMIT_BYTES: '131072',
+  REGISTRATION_ALLOWLIST: 'invited@example.test',
 };
 
 describe('loadRuntimeConfig', () => {
@@ -42,6 +43,16 @@ describe('loadRuntimeConfig', () => {
     },
   );
 
+  it('rejects production without controlled registration invitations', () => {
+    expect(() =>
+      loadRuntimeConfig({
+        ...productionEnvironment,
+        REGISTRATION_ALLOWLIST: '',
+        ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+      }),
+    ).toThrow();
+  });
+
   it('accepts explicit production hardening values and exact HTTPS origins', () => {
     expect(
       loadRuntimeConfig({
@@ -54,6 +65,7 @@ describe('loadRuntimeConfig', () => {
       TRUST_PROXY: true,
       BODY_LIMIT_BYTES: 131072,
       ALLOWED_ORIGINS: ['https://rsa-pilot.pages.dev', 'https://preview.rsa-pilot.pages.dev'],
+      REGISTRATION_ALLOWLIST: ['invited@example.test'],
     });
   });
 
