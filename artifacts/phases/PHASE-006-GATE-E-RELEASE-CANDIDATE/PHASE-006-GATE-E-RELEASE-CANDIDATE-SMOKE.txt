@@ -1,0 +1,24 @@
+PHASE-006-GATE-E-RELEASE-CANDIDATE — SMOKE
+
+MISSION=MCF-RELEASE-CANDIDATE-GATE-E
+TECHNICAL_CANDIDATE_SHA=c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
+
+CONTAINER_SMOKE_NATIVE
+run=31551841724
+result=PASS
+
+OFFICIAL_STAGING_SMOKE_AND_HEALTH
+run=31552113642
+result=SUCCESS
+container_smoke=PASS
+rollout_compose_validation=PASS
+readiness=PASS
+version=PASS
+requested_sha=c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
+observed_sha=c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
+outcome=DEPLOYED
+recovery=false
+
+FINAL_HEAD_SMOKE=PENDING
+
+This smoke record proves the technical candidate only. Gate E final requires revalidation of the final PR head after the PRF is completed.
