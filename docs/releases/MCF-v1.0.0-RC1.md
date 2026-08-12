@@ -86,7 +86,8 @@ A `v1.0.0-RC1` somente pode ser marcada como publicada quando a Issue #121 e o P
 ## Estado de gates
 
 ```yaml
-prf_structure: COMPLETE_PENDING_MANIFEST_COMMIT
+prf_structure: COMPLETE
+manifest: PRESENT
 final_candidate_exact_retest: PENDING
 security_final_ratification: PENDING
 independent_audit: PENDING
