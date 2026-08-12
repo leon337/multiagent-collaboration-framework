@@ -9,7 +9,7 @@ on:
 
 permissions:
   contents: read
-  actions: write
+  actions: read
 
 concurrency:
   group: mcf-gate-e-rc1-one-shot-c321b01
@@ -21,9 +21,10 @@ env:
   REQUEST_ID: gate-e-rc1-c321b01-001
   MISSION_UUID: 00000000-0000-4000-8000-000000000121
   PHASE_UUID: 00000000-0000-4000-8000-000000000122
+  STAGING_RUN_ID: "31552113642"
 
 jobs:
-  qualify-and-dispatch-staging:
+  qualify-and-verify-staging:
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
@@ -124,60 +125,11 @@ jobs:
           print('skills_documental=0')
           PY
 
-      - name: Dispatch official staging workflow exactly once
-        id: staging
+      - name: Verify previously dispatched official staging run
         shell: bash
         run: |
           set -euo pipefail
-
-          existing="$(gh run list \
-            --repo "$GITHUB_REPOSITORY" \
-            --workflow mcf-runtime-staging-deploy.yml \
-            --event workflow_dispatch \
-            --limit 100 \
-            --json databaseId,displayTitle \
-            --jq '.[] | select(.displayTitle | contains(env.REQUEST_ID)) | .databaseId' \
-            | head -n1)"
-
-          if [ -n "$existing" ]; then
-            echo "Duplicate dispatch prevented; reusing run $existing"
-            run_id="$existing"
-          else
-            gh workflow run mcf-runtime-staging-deploy.yml \
-              --repo "$GITHUB_REPOSITORY" \
-              --ref main \
-              -f release_sha="$TARGET_SHA" \
-              -f request_id="$REQUEST_ID" \
-              -f mission_id="$MISSION_UUID" \
-              -f phase_id="$PHASE_UUID"
-
-            run_id=""
-            for attempt in $(seq 1 30); do
-              run_id="$(gh run list \
-                --repo "$GITHUB_REPOSITORY" \
-                --workflow mcf-runtime-staging-deploy.yml \
-                --event workflow_dispatch \
-                --limit 100 \
-                --json databaseId,displayTitle \
-                --jq '.[] | select(.displayTitle | contains(env.REQUEST_ID)) | .databaseId' \
-                | head -n1)"
-              if [ -n "$run_id" ]; then
-                break
-              fi
-              sleep 2
-            done
-            test -n "$run_id"
-            echo "Created staging run $run_id"
-          fi
-
-          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
-
-      - name: Wait for official staging verification
-        shell: bash
-        run: |
-          set -euo pipefail
-          run_id='${{ steps.staging.outputs.run_id }}'
-          gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
+          run_id="$STAGING_RUN_ID"
 
           details="$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json conclusion,displayTitle,event,status,url)"
           echo "$details"
@@ -188,12 +140,19 @@ jobs:
             (.displayTitle | contains($sha))
           '
 
-          logs="$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --log)"
-          if printf '%s\n' "$logs" | grep -q 'Rejected release recovered by redeploying the previous healthy SHA'; then
+          log_file="$RUNNER_TEMP/gate-e-staging-$run_id.log"
+          gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --log > "$log_file"
+
+          if grep -Fq 'Rejected release recovered by redeploying the previous healthy SHA' "$log_file"; then
             echo 'Candidate required recovery; Gate E must not pass.' >&2
             exit 1
           fi
-          if printf '%s\n' "$logs" | grep -Eq 'Exact staging release was deployed and verified\.|Requested staging release was already healthy\.'; then
+
+          grep -Fq "Requested commit: $TARGET_SHA" "$log_file"
+          grep -Fq "Observed commit: $TARGET_SHA" "$log_file"
+          grep -Fq 'Recovery redeploy is not required.' "$log_file"
+
+          if grep -Eq 'Exact staging release was deployed and verified\.|Requested staging release was already healthy\.' "$log_file"; then
             echo "staging_exact_sha=PASS"
           else
             echo 'No acceptable exact-SHA staging outcome found in official workflow logs.' >&2
@@ -213,8 +172,10 @@ jobs:
           skills_registered=16
           skills_executable=16
           skills_documental=0
-          staging_run=${{ steps.staging.outputs.run_id }}
+          staging_run=$STAGING_RUN_ID
           staging_exact_sha=PASS
+          staging_recovery=false
+          duplicate_external_dispatches=0
           human_operator_actions=0
           production=BLOCKED
           stable_release=BLOCKED
