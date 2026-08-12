@@ -71,15 +71,31 @@ jobs:
         working-directory: apps/rede-social-agentes
         run: pnpm audit --prod --audit-level high
 
-      - name: Verify application
+      - name: Verify formatting
         working-directory: apps/rede-social-agentes
-        run: pnpm verify
+        run: pnpm format:check
+
+      - name: Lint
+        working-directory: apps/rede-social-agentes
+        run: pnpm lint
+
+      - name: Typecheck
+        working-directory: apps/rede-social-agentes
+        run: pnpm typecheck
 
       - name: Apply migrations twice
         working-directory: apps/rede-social-agentes
         run: |
           pnpm --filter @rsa/database db:migrate
           pnpm --filter @rsa/database db:migrate
+
+      - name: Test
+        working-directory: apps/rede-social-agentes
+        run: pnpm test
+
+      - name: Build
+        working-directory: apps/rede-social-agentes
+        run: pnpm build
 
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
