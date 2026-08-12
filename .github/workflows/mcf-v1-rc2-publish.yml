@@ -39,37 +39,27 @@ jobs:
           RC2_TAG: v1.0.0-RC2
           TARGET_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
-          existing_ref="$(gh api -H 'Accept: application/vnd.github+json' \
-            "/repos/$REPOSITORY/git/ref/tags/$RC2_TAG" --jq '.object.sha' 2>/dev/null || true)"
+          existing_ref="$(git ls-remote origin "refs/tags/$RC2_TAG" | cut -f1)"
 
           if [ -n "$existing_ref" ]; then
-            existing_release="$(gh api -H 'Accept: application/vnd.github+json' \
-              "/repos/$REPOSITORY/releases/tags/$RC2_TAG" --jq '.target_commitish' 2>/dev/null || true)"
-            test -n "$existing_release"
-            test "$existing_release" = "$existing_ref"
+            test "$existing_ref" != "$RC1_SHA"
+            existing_release_target="$(gh release view "$RC2_TAG" --repo "$REPOSITORY" --json targetCommitish --jq '.targetCommitish' 2>/dev/null || true)"
+            test -n "$existing_release_target"
             echo "RC2 already exists at $existing_ref; refusing to retarget and completing as immutable NOOP."
             exit 0
           fi
 
-          gh api --method POST -H 'Accept: application/vnd.github+json' \
-            "/repos/$REPOSITORY/git/refs" \
-            -f ref="refs/tags/$RC2_TAG" \
-            -f sha="$TARGET_SHA" >/dev/null
+          git tag "$RC2_TAG" "$TARGET_SHA"
+          git push origin "refs/tags/$RC2_TAG"
+          test "$(git ls-remote origin "refs/tags/$RC2_TAG" | cut -f1)" = "$TARGET_SHA"
 
-          existing_release_id="$(gh api -H 'Accept: application/vnd.github+json' \
-            "/repos/$REPOSITORY/releases/tags/$RC2_TAG" --jq '.id' 2>/dev/null || true)"
-          if [ -z "$existing_release_id" ]; then
-            gh api --method POST -H 'Accept: application/vnd.github+json' \
-              "/repos/$REPOSITORY/releases" \
-              -f tag_name="$RC2_TAG" \
-              -f target_commitish="$TARGET_SHA" \
-              -f name='MCF v1.0.0-RC2' \
-              -f body='Production candidate pós-RC1. RC1 preservada; produção e v1.0.0 estável permanecem milestones separados.' \
-              -F draft=false \
-              -F prerelease=true >/dev/null
+          if ! gh release view "$RC2_TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$RC2_TAG" \
+              --repo "$REPOSITORY" \
+              --target "$TARGET_SHA" \
+              --title 'MCF v1.0.0-RC2' \
+              --notes 'Production candidate pós-RC1. RC1 preservada; produção e v1.0.0 estável permanecem milestones separados.' \
+              --prerelease
           fi
 
-          test "$(git ls-remote origin "refs/tags/$RC2_TAG" | cut -f1)" = "$TARGET_SHA"
-          release_target="$(gh api -H 'Accept: application/vnd.github+json' \
-            "/repos/$REPOSITORY/releases/tags/$RC2_TAG" --jq '.target_commitish')"
-          test "$release_target" = "$TARGET_SHA"
+          gh release view "$RC2_TAG" --repo "$REPOSITORY" --json isPrerelease,tagName --jq 'select(.isPrerelease == true and .tagName == "v1.0.0-RC2") | .tagName' | grep -qx "$RC2_TAG"
