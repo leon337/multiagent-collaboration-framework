@@ -25,27 +25,63 @@ jobs:
         run: |
           enabled="$(node -p "require('./ops/production-monitoring.json').enabled")"
           base_url="$(node -p "require('./ops/production-monitoring.json').publicBaseUrl")"
+          initial_timeout="$(node -p "require('./ops/production-monitoring.json').probePolicy.initialTimeoutSeconds")"
+          retry_delay="$(node -p "require('./ops/production-monitoring.json').probePolicy.retryDelaySeconds")"
+          cold_start_timeout="$(node -p "require('./ops/production-monitoring.json').probePolicy.coldStartTimeoutSeconds")"
           echo "enabled=$enabled" >> "$GITHUB_OUTPUT"
           echo "base_url=$base_url" >> "$GITHUB_OUTPUT"
+          echo "initial_timeout=$initial_timeout" >> "$GITHUB_OUTPUT"
+          echo "retry_delay=$retry_delay" >> "$GITHUB_OUTPUT"
+          echo "cold_start_timeout=$cold_start_timeout" >> "$GITHUB_OUTPUT"
       - name: Probe and reconcile alert issue
         if: steps.config.outputs.enabled == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           BASE_URL: ${{ steps.config.outputs.base_url }}
           REPOSITORY: ${{ github.repository }}
+          INITIAL_TIMEOUT: ${{ steps.config.outputs.initial_timeout }}
+          RETRY_DELAY: ${{ steps.config.outputs.retry_delay }}
+          COLD_START_TIMEOUT: ${{ steps.config.outputs.cold_start_timeout }}
         run: |
           title='[PROD ALERT] Readiness indisponível'
           issue="$(gh issue list --repo "$REPOSITORY" --state open --search "$title in:title" --json number --jq '.[0].number // empty')"
-          if curl --fail --silent --show-error --max-time 20 "$BASE_URL/health/ready" >/dev/null; then
+
+          probe_readiness() {
+            local timeout="$1"
+            curl --fail --silent --show-error --max-time "$timeout" "$BASE_URL/health/ready" >/dev/null
+          }
+
+          healthy=false
+          recovered_after_retry=false
+
+          if probe_readiness "$INITIAL_TIMEOUT"; then
+            healthy=true
+          else
+            echo "::warning::Probe inicial de readiness falhou após ${INITIAL_TIMEOUT}s. Aguardando ${RETRY_DELAY}s antes da tentativa tolerante a cold start."
+            sleep "$RETRY_DELAY"
+            if probe_readiness "$COLD_START_TIMEOUT"; then
+              healthy=true
+              recovered_after_retry=true
+              echo "::notice::Readiness recuperou na segunda tentativa; evento tratado como possível cold start, sem abrir novo incidente."
+            fi
+          fi
+
+          if [ "$healthy" = true ]; then
             if [ -n "$issue" ]; then
-              gh issue comment "$issue" --repo "$REPOSITORY" --body "Recuperado automaticamente em $(date -u +%FT%TZ). Probe /health/ready voltou a responder com sucesso."
+              if [ "$recovered_after_retry" = true ]; then
+                recovery_note="Recuperado automaticamente em $(date -u +%FT%TZ). O probe inicial excedeu ${INITIAL_TIMEOUT}s, mas /health/ready respondeu na tentativa de recuperação de até ${COLD_START_TIMEOUT}s após ${RETRY_DELAY}s de espera."
+              else
+                recovery_note="Recuperado automaticamente em $(date -u +%FT%TZ). Probe /health/ready voltou a responder com sucesso na tentativa inicial."
+              fi
+              gh issue comment "$issue" --repo "$REPOSITORY" --body "$recovery_note"
               gh issue close "$issue" --repo "$REPOSITORY" --reason completed
             fi
           else
+            failure_detail="Probe inicial (${INITIAL_TIMEOUT}s) e tentativa de recuperação (${COLD_START_TIMEOUT}s após ${RETRY_DELAY}s de espera) falharam."
             if [ -z "$issue" ]; then
-              gh issue create --repo "$REPOSITORY" --title "$title" --body "SEV-1 operacional: /health/ready não respondeu com sucesso em $(date -u +%FT%TZ). Verificar RSA-INCIDENT-RESPONSE.md e RSA-ROLLBACK.md. Nenhum segredo ou corpo de resposta foi registrado."
+              gh issue create --repo "$REPOSITORY" --title "$title" --body "SEV-1 operacional: /health/ready não respondeu com sucesso em $(date -u +%FT%TZ). ${failure_detail} Verificar RSA-INCIDENT-RESPONSE.md e RSA-ROLLBACK.md. Nenhum segredo ou corpo de resposta foi registrado."
             else
-              gh issue comment "$issue" --repo "$REPOSITORY" --body "Falha de readiness persiste em $(date -u +%FT%TZ)."
+              gh issue comment "$issue" --repo "$REPOSITORY" --body "Falha de readiness persiste em $(date -u +%FT%TZ). ${failure_detail}"
             fi
             exit 1
           fi
