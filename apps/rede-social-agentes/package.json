@@ -24,11 +24,6 @@
     "typecheck": "pnpm build:packages && pnpm -r --if-present typecheck",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
-  "pnpm": {
-    "overrides": {
-      "find-my-way": "9.7.0"
-    }
-  },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.62.0",
