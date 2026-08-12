@@ -16,6 +16,7 @@ success_without_evidence: FORBIDDEN
 stale_sha_gate_evidence: FORBIDDEN
 team_first: REQUIRED
 production: BLOCKED
+stable_v1_0_0: BLOCKED
 live_staging_adapter: DISABLED
 gate_c_mutation_retry: NEVER
 gate_c_unprovable_postwrite_state: PARTIAL_UNKNOWN
@@ -32,6 +33,12 @@ canonical_sync_lot_4e: COMPLETE
 gate_c_technical_merge: 0b060539eb152f0cf92bd146b853562407ab0a64
 gate_c_canonical_state: COMPLETE
 gate_c_mission_state: ENTREGUE
+gate_e: COMPLETE
+release_candidate: v1.0.0-RC1
+release_candidate_state: PUBLISHED_PRERELEASE
+release_target: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+production: BLOCKED
+stable_v1_0_0: BLOCKED
 ```
 
 ## 4. Roadmap
@@ -52,8 +59,10 @@ gate_c_mission_state: ENTREGUE
 | Lot 4-C — Security Review | COMPLETE |
 | Lot 4-D — Debug Incident | COMPLETE |
 | Lot 4-E — `MCF-CLOSE-PHASE` | COMPLETE |
-| Release Candidate / Gate E | NEXT BOUNDARY |
+| Release Candidate / Gate E | COMPLETE |
+| `v1.0.0-RC1` | PUBLISHED_PRERELEASE |
 | Produção | BLOCKED |
+| `v1.0.0` estável | BLOCKED |
 
 ## 5. Lot 4-E — Close Phase
 
@@ -244,7 +253,7 @@ unknown_when_unprovable: PRESERVED
 
 C2 está conectado ao `AdapterRegistry` vivo. O adapter de staging continua fora desse registry, preservando o boundary do Gate D.
 
-A infraestrutura temporária do teste real foi removida antes do merge técnico. Os três workflows temporários de closeout introduzidos pelo PR #119 são removidos pela correção final antes do encerramento da Issue #111.
+A infraestrutura temporária do teste real foi removida antes do merge técnico. Os três workflows temporários de closeout introduzidos pelo PR #119 foram removidos pela correção final antes do encerramento da Issue #111.
 
 ## 10. Sincronização canônica e closeout do Gate C
 
@@ -254,15 +263,127 @@ objective_met: true
 blocking_findings: 0
 pending_actions: 0
 human_action_required: false
-next_action: null
-next_boundary: RELEASE_CANDIDATE_GATE_E
+historical_next_boundary: RELEASE_CANDIDATE_GATE_E
 production: BLOCKED
 ```
 
-Gate C está `COMPLETE/ENTREGUE`. A confirmação final pertence ao SHA exato do merge desta correção e ao respectivo Documentation validation pós-merge.
+Gate C está `COMPLETE/ENTREGUE`. O boundary que era então futuro, Gate E, foi posteriormente executado e concluído conforme a seção seguinte.
 
-## 11. Próximo boundary
+## 11. Gate E — Release Candidate
 
-**Release Candidate / Gate E**.
+```yaml
+mission: MCF-RELEASE-CANDIDATE-GATE-E
+issue: 121
+risk_class: C
+technical_pr: 122
+baseline_main: c5758c2e38b599ae1673cda2691ef2ce0dc2a411
+audited_candidate: 13b5cb4f6b7a8369b0493fc3a51367d64b09c705
+candidate_merge_tree_equivalence: PASS
+merge_release_target: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+```
 
-O Lot 4-E permanece concluído. Gate C está concluído. Isso não autoriza produção. Produção permanece `BLOCKED` até gate material próprio.
+### Qualificação final do candidate
+
+```yaml
+documentation_run: 31553244652
+documentation: PASS
+container_smoke_run: 31553244682
+container_smoke: PASS
+foundation_run: 31553244654
+foundation: PASS
+final_qualification_run: 31553369253
+final_qualification: PASS
+prf_manifest: PASS
+migrations_twice: PASS
+skills_registered: 16
+skills_executable: 16
+skills_documental: 0
+final_staging_run: 31553461208
+final_staging: PASS_DEPLOYED
+final_staging_recovery: false
+miriam: PASS
+sofia: PASS
+renato: PASS
+beatriz: PASS
+ricardo: PASS
+augusto: PASS
+carmem: PASS
+julia: PASS_PRE_PUBLICATION
+emily_independent_audit: PASS
+leo_gate: PASS
+critical_findings_open: 0
+high_findings_open: 0
+blocking_process_findings_open: 0
+```
+
+### Revalidação pós-merge
+
+```yaml
+merge_sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+candidate_merge_tree_equivalence: PASS
+post_merge_documentation_run: 31554021692
+post_merge_documentation: PASS
+post_merge_readonly_qualification_run: 31554089586
+post_merge_readonly_qualification: PASS
+post_merge_manifest: PASS
+post_merge_migrations_twice: PASS
+post_merge_skills: 16_16_0
+post_merge_external_writes_from_readonly_helper: 0
+post_merge_human_operator_actions: 0
+post_merge_staging_run: 31554021695
+post_merge_staging: PASS_DEPLOYED
+post_merge_staging_recovery: false
+```
+
+### Publicação da RC1
+
+```yaml
+publication_run: 31554462243
+publication_result: PASS
+tag: v1.0.0-RC1
+tag_target: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+github_release_id: 368946304
+release_name: MCF v1.0.0-RC1
+draft: false
+prerelease: true
+release_candidate_state: PUBLISHED_PRERELEASE
+```
+
+A tag da RC1 permanece ligada ao SHA qualificado `9b4a759...`. O closeout documental pós-publicação não deve retargetar a release.
+
+### CAFs do Gate E
+
+1. falsos negativos dos helpers de qualificação foram classificados como defeitos auxiliares sem impacto no candidate e corrigidos antes do gate final;
+2. o PRF Classe C incompleto foi tratado como blocker de processo e somente fechado após manifest íntegro;
+3. a primeira e a segunda tentativa auxiliar de publicação falharam antes de criar tag/release válida;
+4. a causa da publicação foi isolada na detecção incorreta de HTTP `404` pelo corpo da resposta;
+5. após correção por exit status, a tag e a prerelease foram criadas/verificadas no target exato;
+6. os helpers temporários foram removidos após PASS;
+7. nenhum trabalho técnico foi delegado a LEANDRO.
+
+## 12. Estado final do RUNTIME-006 e Gate E
+
+```yaml
+runtime_006: COMPLETE
+gate_a: COMPLETE
+gate_b: COMPLETE
+gate_c: COMPLETE
+gate_d: COMPLETE
+gate_e: COMPLETE
+skills_registered: 16
+skills_executable: 16
+skills_documental: 0
+release_candidate: v1.0.0-RC1
+release_candidate_state: PUBLISHED_PRERELEASE
+critical_findings_open: 0
+high_findings_open: 0
+human_action_required: false
+production: BLOCKED
+stable_v1_0_0: BLOCKED
+```
+
+## 13. Boundary posterior
+
+Nenhum boundary posterior é autorizado por este closeout.
+
+A `v1.0.0-RC1` está publicada como prerelease e o Gate E está concluído. Produção permanece `BLOCKED` e a versão estável `v1.0.0` permanece `BLOCKED`. Qualquer promoção estável, produção ou nova missão exige boundary próprio e autorização aplicável fora desta missão de Gate E.
