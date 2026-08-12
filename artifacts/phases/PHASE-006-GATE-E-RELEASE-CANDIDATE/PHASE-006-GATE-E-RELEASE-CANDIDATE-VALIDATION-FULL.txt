@@ -1,0 +1,139 @@
+PHASE-006-GATE-E-RELEASE-CANDIDATE — VALIDATION FULL
+
+Scope: exact technical candidate qualification for c321b01e9220d19e8ecb31ad6afcf39b6a259fcc.
+This artifact records observed evidence and does not by itself approve Gate E.
+
+[1] BASELINE AND CHANGE SURFACE
+baseline=c5758c2e38b599ae1673cda2691ef2ce0dc2a411
+technical_candidate=c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
+compare_surface=DOCUMENTATION_AND_PRF_ONLY
+runtime_code_changed=false
+skill_registry_changed=false
+permission_contract_changed=false
+adapter_changed=false
+persistent_infrastructure_changed=false
+
+[2] GITHUB NATIVE CHECKS
+Foundation run 31551841728 => PASS
+Documentation validation run 31551841725 => PASS
+Container Smoke run 31551841724 => PASS
+
+[3] COMPLETE VALIDATION ON EXACT SHA
+Helper policy basis: MCF-DEC-061 GitHub Actions One-Shot TEAM_FIRST Fallback.
+Exact checkout/bind => PASS
+PostgreSQL service => AVAILABLE
+Dependencies frozen install => PASS
+Migration #1 => PASS
+Migration #2 => PASS
+pnpm verify => PASS
+  format => PASS
+  lint => PASS
+  typecheck => PASS
+  server tests => PASS
+  web tests => PASS
+  ops tests => PASS
+  build => PASS
+Registry/executable equality => PASS
+skills_registered=16
+skills_executable=16
+skills_documental=0
+human_operator_actions=0
+
+[4] OFFICIAL STAGING WORKFLOW
+run_id=31552113642
+workflow=MCF Runtime Staging Deploy
+event=workflow_dispatch
+request_id=gate-e-rc1-c321b01-001
+mission_id=00000000-0000-4000-8000-000000000121
+phase_id=00000000-0000-4000-8000-000000000122
+result=SUCCESS
+
+Observed successful steps:
+- Validate protected configuration => PASS
+- Checkout exact requested release => PASS
+- Validate rollout compose definition => PASS
+- Container Smoke => PASS
+- Format => PASS
+- Lint => PASS
+- Typecheck => PASS
+- Apply migrations first time => PASS
+- Apply migrations second time => PASS
+- Test => PASS
+- Build => PASS
+- Deploy exact release and verify readiness/version => PASS
+- Record DEPLOYED outcome => PASS
+- Record NOOP outcome => SKIPPED
+- Record RECOVERED outcome => SKIPPED
+
+requested_sha=c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
+observed_sha=c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
+semantic_deploy_success=true
+semantic_health_success=true
+outcome=DEPLOYED
+recovery_redeploy=false
+
+[5] TEST COUNTS OBSERVED IN STAGING
+server_test_files=126
+server_tests=567
+web_test_files=5
+web_tests=5
+ops_test_files=20
+ops_tests=20
+all_observed_suites=PASS
+
+[6] CAF — AUXILIARY WRAPPER FALSE NEGATIVE
+first_helper_run=31552030117
+first_helper_result=FAILURE
+candidate_validation_before_failure=PASS
+staging_run_result=SUCCESS
+
+Verified root cause:
+- helper used `set -euo pipefail`;
+- helper piped stored workflow logs through `printf` into `grep -q`;
+- `grep -q` exited after matching success;
+- upstream `printf` received Broken pipe;
+- `pipefail` converted the successful semantic match into a false shell condition.
+
+classification=TEMPORARY_CONTROL_WRAPPER_DEFECT
+candidate_impact=NONE
+staging_impact=NONE
+external_effect_duplicate=NONE
+caf_applied=true
+
+Correction:
+- removed dispatch permission/logic from retry;
+- pinned already completed official run 31552113642;
+- stored logs in a file before matching;
+- required exact requested/observed SHA;
+- required recovery not needed;
+- retry therefore has no deploy/write path.
+
+corrected_helper_run=31552519850
+corrected_helper_result=PENDING_AT_ARTIFACT_WRITE
+
+[7] ARCHITECTURE / AGENT / SECURITY / TRACE — PRELIMINARY
+Miriam=PASS_PRELIMINARY
+Sofia=PASS_PRELIMINARY_RELEASE_ONLY_BOUNDARY
+Renato=PASS_TECHNICAL_C321
+Beatriz=PASS_PRELIMINARY_NO_AGENT_REGRESSION_OBSERVED
+Ricardo=PASS_PRELIMINARY_NO_NEW_CRITICAL_OR_HIGH_FINDING
+Augusto=PASS_PRELIMINARY_TRACE_AND_CAF
+Carmem=NEEDS_WORK_PRF_INCOMPLETE_AT_CYCLE_1
+Julia=PASS_PRELIMINARY_WITH_GATE_BLOCK
+Emily=PENDING
+Leo=PENDING
+
+[8] OPEN GATE CONDITIONS
+critical_findings_open=0
+high_findings_open=0
+blocking_process_finding=GATE_E_PRF_INCOMPLETE
+final_candidate_sha=PENDING
+final_exact_sha_retest=PENDING
+independent_audit=PENDING
+leo_gate=PENDING
+release_tag=PENDING
+github_release=PENDING
+production=BLOCKED
+stable_release=BLOCKED
+
+END_OF_OBSERVED_TECHNICAL_CANDIDATE_EVIDENCE
