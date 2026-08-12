@@ -1,0 +1,47 @@
+mission_id: MCF-PRODUCTION-READINESS-001
+parent_mission_id: MCF-RUNTIME-006
+phase_id: PHASE-PRODUCTION-READINESS-001
+risk_class: C
+state: IN_PROGRESS
+cycle: 1
+source_of_truth: GitHub
+issue: 124
+branch: mcf/production-readiness-001
+baseline_main_sha: e46de554f1340edc3bd842e28f17bab5aaec7e6c
+immutable_rc1:
+  tag: v1.0.0-RC1
+  sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  release_state: prerelease
+production:
+  authorization_recorded: true
+  readiness: NOT_YET_PROVEN_POST_RC1
+  deploy_executed_in_this_phase: false
+stable_release:
+  version: v1.0.0
+  state: NOT_PROMOTED
+readiness_matrix:
+  total_dimensions: 16
+  passed: 0
+  to_revalidate: 15
+  blocked_until_rollout: 1
+blocking_findings: []
+selected_agents:
+  - Mestre
+  - Miriam
+  - Rafael
+  - Bruno
+  - Ricardo
+  - Manoel
+  - Renato
+  - Beatriz
+  - Augusto
+  - Julia
+  - Carmem
+  - Gabriel
+  - Emily
+  - Leo
+decision_authority: Leo
+human_final_authority: Leandro
+human_action_required: false
+next_action: inventariar_evidencias_atuais_de_ci_staging_infraestrutura_dados_seguranca_e_operacao
+checkpoint_recipient: Mestre
