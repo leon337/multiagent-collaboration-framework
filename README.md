@@ -97,9 +97,43 @@ gate_c_real_provider_write:
   canonical_state: COMPLETE
   mission_state: ENTREGUE
 
+gate_e_release_candidate:
+  mission: MCF-RELEASE-CANDIDATE-GATE-E
+  issue: 121
+  pr: 122
+  audited_candidate: 13b5cb4f6b7a8369b0493fc3a51367d64b09c705
+  candidate_merge_tree_equivalence: PASS
+  release_target: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  final_candidate_documentation_run: 31553244652
+  final_candidate_container_smoke_run: 31553244682
+  final_candidate_foundation_run: 31553244654
+  final_candidate_qualification_run: 31553369253
+  final_candidate_staging_run: 31553461208
+  final_candidate_staging: PASS_DEPLOYED
+  final_candidate_staging_recovery: false
+  emily_independent_audit: PASS
+  leo_gate: PASS
+  merge: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  post_merge_documentation_run: 31554021692
+  post_merge_documentation: PASS
+  post_merge_readonly_qualification_run: 31554089586
+  post_merge_readonly_qualification: PASS
+  post_merge_staging_run: 31554021695
+  post_merge_staging: PASS_DEPLOYED
+  post_merge_staging_recovery: false
+  publication_run: 31554462243
+  tag: v1.0.0-RC1
+  tag_target: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  github_release_id: 368946304
+  prerelease: true
+  gate_e: COMPLETE
+  critical_findings_open: 0
+  high_findings_open: 0
+  human_action_required: false
+
 production: BLOCKED
+stable_v1_0_0: BLOCKED
 live_staging_adapter: DISABLED
-human_operator_actions: 1_HUMAN_GATE_ACTIONS_POLICY
 ```
 
 ## Skills executáveis
@@ -164,13 +198,13 @@ objective_met: true
 blocking_findings: 0
 pending_actions: 0
 human_action_required: false
-next_boundary: RELEASE_CANDIDATE_GATE_E
+historical_next_boundary_at_gate_c_closeout: RELEASE_CANDIDATE_GATE_E
 production: BLOCKED
 ```
 
 As mutações permanecem single-shot: o runtime nunca repete `POST` para tentar adivinhar o estado externo. A reconciliação pós-write é limitada a leituras `GET`; quando o efeito não pode ser provado, o estado permanece `PARTIAL/UNKNOWN`.
 
-Os três workflows temporários de closeout que entraram indevidamente pelo PR #119 são removidos por esta correção final. Permanecem apenas o runtime corrigido, os testes permanentes de regressão e o PRF canônico.
+Os três workflows temporários de closeout que entraram indevidamente pelo PR #119 foram removidos. Permanecem apenas o runtime corrigido, os testes permanentes de regressão e o PRF canônico.
 
 ## Lot 4-E — Close Phase
 
@@ -222,17 +256,54 @@ canonical_post_merge_documentation: PASS
 canonical_sync: COMPLETE
 ```
 
+## Gate E — Release Candidate
+
+O Gate E foi concluído como boundary Classe C de qualificação e publicação da primeira RC.
+
+```yaml
+mission: MCF-RELEASE-CANDIDATE-GATE-E
+issue: 121
+pr: 122
+candidate: 13b5cb4f6b7a8369b0493fc3a51367d64b09c705
+candidate_merge_tree_equivalence: PASS
+merge_release_target: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+skills: 16_16_0
+prf_manifest: PASS
+full_validation: PASS
+migrations_twice: PASS
+final_candidate_staging: PASS_DEPLOYED
+final_candidate_recovery: false
+emily_independent_audit: PASS
+leo_gate: PASS
+post_merge_qualification: PASS
+post_merge_staging: PASS_DEPLOYED
+post_merge_recovery: false
+tag: v1.0.0-RC1
+github_release_id: 368946304
+prerelease: true
+critical_findings_open: 0
+high_findings_open: 0
+human_action_required: false
+production: BLOCKED
+stable_v1_0_0: BLOCKED
+```
+
+A tag `v1.0.0-RC1` permanece ligada ao SHA qualificado `9b4a759...`; atualizações documentais posteriores da `main` não alteram a identidade da RC.
+
 ## Documentação canônica
 
 - `docs/runtime/README.md`
 - `docs/runtime/MCF-RUNTIME-006-PLAN.md`
 - `skills/registry.yaml`
 - `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`
+- `docs/decisions/MCF-DEC-062-GATE-E-RELEASE-CANDIDATE.md`
+- `docs/releases/MCF-v1.0.0-RC1.md`
 - `artifacts/phases/PHASE-006-LOT-4-E-CLOSE-PHASE/`
 - `artifacts/phases/PHASE-006-GATE-C-REAL-PROVIDER-WRITE/`
+- `artifacts/phases/PHASE-006-GATE-E-RELEASE-CANDIDATE/`
 
-## Próximo boundary
+## Boundary atual
 
-**Release Candidate / Gate E**.
+**Gate E concluído e `v1.0.0-RC1` publicada como prerelease.**
 
-O Lot 4-E permanece tecnicamente integrado e documentalmente reconciliado. O Gate C está `COMPLETE/ENTREGUE`, sem dívida técnica conhecida pendente para carregar ao Gate E. Produção continua fora desse boundary e permanece `BLOCKED`.
+Este closeout não autoriza um próximo boundary técnico. Produção continua `BLOCKED` e `v1.0.0` estável continua `BLOCKED`. Qualquer promoção estável, produção ou nova missão exige boundary posterior próprio e autorização aplicável.
