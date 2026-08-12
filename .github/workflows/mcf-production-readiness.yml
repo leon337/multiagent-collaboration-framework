@@ -72,6 +72,12 @@ jobs:
         working-directory: apps/rede-social-agentes
         run: pnpm audit --prod --audit-level high
 
+      - name: Formatter diagnostic
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier apps/server/src/config.ts > /tmp/config.prettier.ts
+          diff -u apps/server/src/config.ts /tmp/config.prettier.ts || true
+
       - name: Verify formatting
         working-directory: apps/rede-social-agentes
         run: pnpm format:check
