@@ -29,4 +29,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=6 \
   CMD node -e "fetch('http://127.0.0.1:3000/health/live').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));"
 
-CMD ["node", "apps/server/dist/main.js"]
+CMD ["sh", "-c", "node packages/database/scripts/migrate.mjs && exec node apps/server/dist/main.js"]
