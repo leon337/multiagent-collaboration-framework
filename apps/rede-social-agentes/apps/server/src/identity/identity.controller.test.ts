@@ -1,6 +1,11 @@
-import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { EmailAlreadyExistsError, InvalidCredentialsError } from './identity.errors.js';
 import { IdentityController } from './identity.controller.js';
@@ -20,6 +25,10 @@ async function captureRejection(promise: Promise<unknown>): Promise<unknown> {
 }
 
 describe('IdentityController', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('includes correlationId in validation errors', async () => {
     const identity = {} as IdentityService;
     const controller = new IdentityController(identity);
@@ -39,6 +48,57 @@ describe('IdentityController', () => {
       code: 'INVALID_REQUEST',
       correlationId: 'correlation-invalid',
     });
+  });
+
+  it('rejects production registration outside the controlled invitation allowlist', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('REGISTRATION_ALLOWLIST', 'invited@example.test');
+    const identity = {
+      registerHumanAccount: vi.fn(),
+    } as unknown as IdentityService;
+    const controller = new IdentityController(identity);
+
+    const error = await captureRejection(
+      controller.register(
+        {
+          email: 'public@example.test',
+          password: 'a-secure-password',
+          displayName: 'Public',
+        },
+        requestWithId('correlation-invite'),
+      ),
+    );
+
+    expect(error).toBeInstanceOf(ForbiddenException);
+    if (!(error instanceof ForbiddenException)) {
+      throw error;
+    }
+    expect(error.getResponse()).toMatchObject({
+      code: 'REGISTRATION_INVITE_REQUIRED',
+      correlationId: 'correlation-invite',
+    });
+    expect(identity.registerHumanAccount).not.toHaveBeenCalled();
+  });
+
+  it('allows a controlled invited account in production', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('REGISTRATION_ALLOWLIST', 'Invited@Example.Test');
+    const identity = {
+      registerHumanAccount: vi.fn().mockResolvedValue({ id: 'account-1' }),
+    } as unknown as IdentityService;
+    const controller = new IdentityController(identity);
+
+    await expect(
+      controller.register(
+        {
+          email: 'invited@example.test',
+          password: 'a-secure-password',
+          displayName: 'Invited',
+        },
+        requestWithId('correlation-allowed'),
+      ),
+    ).resolves.toMatchObject({ id: 'account-1' });
+    expect(identity.registerHumanAccount).toHaveBeenCalledOnce();
   });
 
   it('maps duplicate email to a correlated conflict', async () => {
