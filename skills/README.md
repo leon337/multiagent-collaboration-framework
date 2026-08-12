@@ -57,6 +57,12 @@ Essas quatro skills usam provider `internal` governado, exigem `execution_eviden
 
 O incremento candidato `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS` adiciona `MCF-EVALUATE-AGENTS` ao mesmo modelo governado, sujeito à validação, auditoria e gate do PR correspondente. A skill permanece `READ_ONLY`, usa operação interna de inspeção (`inspect-agent-evaluation`), fica em `READY_AGENT`, exige `test_cases`, `scores` e `regressions`, e só pode produzir handoff para Emily após evidência semântica válida. `regressions` é obrigatória como coleção de evidência, podendo ser vazia quando nenhuma regressão é observada.
 
+## Qualificação de Release Candidate
+
+O Gate E qualifica o conjunto executável existente sem alterar contratos de skill. Para um Release Candidate, a contagem `16 registradas / 16 executáveis / 0 documentais` deve ser comprovada no mesmo SHA candidato usado pelos gates finais.
+
+A qualificação não concede permissões novas, não ativa produção e não promove automaticamente a versão estável. Qualquer defeito que exija mudança de contrato durante o Gate E deve ser tratado como finding, passar por CAF, receber validação no novo SHA e retornar ao gate de release.
+
 ## Regras
 
 - uma skill não concede autorização externa;
