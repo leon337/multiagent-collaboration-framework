@@ -3,5 +3,10 @@
   "publicBaseUrl": "https://rsa-api-free.onrender.com",
   "alertChannel": "github-issues",
   "intervalMinutes": 5,
+  "probePolicy": {
+    "initialTimeoutSeconds": 20,
+    "retryDelaySeconds": 10,
+    "coldStartTimeoutSeconds": 75
+  },
   "runbook": "docs/runbooks/RSA-INCIDENT-RESPONSE.md"
 }
