@@ -125,39 +125,30 @@ jobs:
           print('skills_documental=0')
           PY
 
-      - name: Verify previously dispatched official staging run
+      - name: Verify previously dispatched official staging run structurally
         shell: bash
         run: |
           set -euo pipefail
-          run_id="$STAGING_RUN_ID"
 
-          details="$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json conclusion,displayTitle,event,status,url)"
-          echo "$details"
+          details="$(gh run view "$STAGING_RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion,displayTitle,event,status,url,jobs)"
+          echo "$details" | jq '{conclusion,displayTitle,event,status,url,jobs:[.jobs[]|{name,conclusion,steps:[.steps[]|{name,conclusion}]}]}'
+
           echo "$details" | jq -e --arg request "$REQUEST_ID" --arg sha "$TARGET_SHA" '
             .conclusion == "success" and
+            .status == "completed" and
             .event == "workflow_dispatch" and
             (.displayTitle | contains($request)) and
-            (.displayTitle | contains($sha))
+            (.displayTitle | contains($sha)) and
+            any(.jobs[];
+              .conclusion == "success" and
+              any(.steps[]; .name == "Deploy exact release and verify readiness/version" and .conclusion == "success") and
+              any(.steps[]; .name == "Record DEPLOYED outcome" and .conclusion == "success") and
+              any(.steps[]; .name == "Record RECOVERED outcome" and .conclusion == "skipped")
+            )
           '
 
-          log_file="$RUNNER_TEMP/gate-e-staging-$run_id.log"
-          gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --log > "$log_file"
-
-          if grep -Fq 'Rejected release recovered by redeploying the previous healthy SHA' "$log_file"; then
-            echo 'Candidate required recovery; Gate E must not pass.' >&2
-            exit 1
-          fi
-
-          grep -Fq "Requested commit: $TARGET_SHA" "$log_file"
-          grep -Fq "Observed commit: $TARGET_SHA" "$log_file"
-          grep -Fq 'Recovery redeploy is not required.' "$log_file"
-
-          if grep -Eq 'Exact staging release was deployed and verified\.|Requested staging release was already healthy\.' "$log_file"; then
-            echo "staging_exact_sha=PASS"
-          else
-            echo 'No acceptable exact-SHA staging outcome found in official workflow logs.' >&2
-            exit 1
-          fi
+          echo "staging_exact_sha=PASS"
+          echo "staging_recovery=false"
 
       - name: Emit Gate E one-shot receipt
         shell: bash
