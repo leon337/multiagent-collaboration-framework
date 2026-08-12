@@ -34,23 +34,10 @@ jobs:
           test "$current_main" = "$TARGET_SHA"
           echo "main_sha=$current_main"
 
-      - name: Create or verify exact RC1 tag and release
+      - name: Prepare RC1 release notes
         shell: bash
         run: |
-          set -euo pipefail
-
-          ref_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null || true)"
-          release_exists=false
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            release_exists=true
-          fi
-
-          if [ -n "$ref_sha" ] || [ "$release_exists" = true ]; then
-            test "$ref_sha" = "$TARGET_SHA"
-            test "$release_exists" = true
-            echo "Existing exact RC1 detected; publication NOOP."
-          else
-            cat > "$RUNNER_TEMP/rc1-notes.md" <<'EOF'
+          cat > "$RUNNER_TEMP/rc1-notes.md" <<'EOF'
           # MCF v1.0.0-RC1
 
           Primeira Release Candidate formal do Multiagent Collaboration Framework, aprovada no **Gate E**.
@@ -87,12 +74,42 @@ jobs:
           - Recovery deve ser interpretado apenas nas semânticas comprovadas/documentadas; não inferir rollback nativo onde ele não foi provado.
           EOF
 
-            gh release create "$TAG" \
-              --repo "$GITHUB_REPOSITORY" \
-              --target "$TARGET_SHA" \
-              --title "MCF v1.0.0-RC1" \
-              --notes-file "$RUNNER_TEMP/rc1-notes.md" \
-              --prerelease
+      - name: Create or verify exact RC1 tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          ref_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null || true)"
+
+          if [ -z "$ref_sha" ]; then
+            echo "Creating lightweight tag ref $TAG at $TARGET_SHA"
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f ref="refs/tags/$TAG" \
+              -f sha="$TARGET_SHA"
+          else
+            echo "Tag ref already exists; verifying exact target."
+          fi
+
+          ref_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')"
+          test "$ref_sha" = "$TARGET_SHA"
+          echo "tag_ref_sha=$ref_sha"
+
+      - name: Create or verify exact RC1 prerelease
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_json="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" 2>/dev/null || true)"
+
+          if [ -z "$release_json" ]; then
+            echo "Creating prerelease $TAG using explicit Releases API."
+            gh api --method POST "repos/$GITHUB_REPOSITORY/releases" \
+              -f tag_name="$TAG" \
+              -f target_commitish="$TARGET_SHA" \
+              -f name="MCF v1.0.0-RC1" \
+              -F body=@"$RUNNER_TEMP/rc1-notes.md" \
+              -F draft=false \
+              -F prerelease=true
+          else
+            echo "Release already exists; verifying exact identity."
           fi
 
       - name: Verify published RC1
@@ -102,13 +119,14 @@ jobs:
           ref_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha')"
           test "$ref_sha" = "$TARGET_SHA"
 
-          release="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json tagName,isDraft,isPrerelease,targetCommitish,url)"
-          echo "$release"
+          release="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG")"
+          echo "$release" | jq '{tag_name,target_commitish,name,draft,prerelease,html_url}'
           echo "$release" | jq -e --arg tag "$TAG" --arg sha "$TARGET_SHA" '
-            .tagName == $tag and
-            .isDraft == false and
-            .isPrerelease == true and
-            .targetCommitish == $sha
+            .tag_name == $tag and
+            .target_commitish == $sha and
+            .name == "MCF v1.0.0-RC1" and
+            .draft == false and
+            .prerelease == true
           '
 
           echo "GATE_E_RC1_PUBLICATION_RECEIPT"
