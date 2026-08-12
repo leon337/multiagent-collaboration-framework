@@ -2,6 +2,7 @@ mission: MCF-RELEASE-CANDIDATE-GATE-E
 parent_mission: MCF-RUNTIME-006
 phase: PHASE-006-GATE-E-RELEASE-CANDIDATE
 issue: 121
+pull_request: 122
 risk_class: C
 cycle: 1
 state: IN_PROGRESS
@@ -10,7 +11,8 @@ baseline:
   branch: main
   sha: c5758c2e38b599ae1673cda2691ef2ce0dc2a411
 working_branch: release/mcf-v1.0.0-rc1-gate-e
-candidate_sha: PENDING
+technical_candidate_sha: c321b01e9220d19e8ecb31ad6afcf39b6a259fcc
+final_candidate_sha: BOUND_EXTERNALLY_TO_PR_HEAD
 release_candidate: v1.0.0-RC1
 release_published: false
 skills:
@@ -23,30 +25,70 @@ gates:
   C: COMPLETE
   D: COMPLETE
   E: IN_PROGRESS
-validation:
-  documentation: PENDING
-  foundation: PENDING
-  container_smoke: PENDING
-  full_test_suite: PENDING
-  migrations_twice: PENDING
-  build: PENDING
-  staging_exact_sha: PENDING
+technical_candidate_validation:
+  documentation:
+    run: 31551841725
+    result: PASS
+  foundation:
+    run: 31551841728
+    result: PASS
+  container_smoke:
+    run: 31551841724
+    result: PASS
+  official_staging:
+    run: 31552113642
+    result: PASS_DEPLOYED
+    recovery: false
+  one_shot_final:
+    run: 31552850053
+    result: PASS
+  full_test_suite: PASS
+  migrations_twice: PASS
+  build: PASS
+  skills_16_16_0: PASS
+  human_operator_actions: 0
+  duplicate_external_dispatches: 0
+caf:
+  GATE_E_ONE_SHOT_FALSE_NEGATIVE: RESOLVED
+  helper_cleanup_commit: ee9dadf676137ad5b7592dff5631ad9b09cd3627
+prf:
+  plan: PRESENT
+  report: PRESENT
+  validation: PRESENT
+  validation_full: PRESENT
+  smoke: PRESENT
+  checkpoint: PRESENT
+  decisions: PRESENT
+  readme: PRESENT
+  manifest: PRESENT_IN_FINAL_PRF_TREE
+  completeness: PASS_IN_FINAL_PRF_TREE
 reviews:
-  architecture: PRELIMINARY_PASS_RELEASE_ONLY_BOUNDARY
-  agent_evaluation: PENDING
-  security: PENDING
-  mission_trace: PENDING
-  prf_consistency: PENDING
-  governance: PENDING
+  recovery: PASS_PRELIMINARY
+  architecture: PASS_PRELIMINARY
+  agent_evaluation: PASS_PRELIMINARY
+  security: PASS_PRELIMINARY
+  mission_trace: PASS_PRELIMINARY
+  prf_consistency: PASS_ON_MANIFEST_VALIDATION
+  governance: PASS_PRELIMINARY_WITH_FINAL_GATE_PENDING
   independent_audit: PENDING
   leo_gate: PENDING
 findings:
   critical_open: 0
   high_open: 0
-  unclassified: []
-blockers: []
+  blocking_process_open: 0_IN_FINAL_PRF_TREE
+final_head_validation:
+  native_checks: PENDING
+  exact_full_retest: PENDING
+  staging_exact_sha: PENDING
+  specialist_ratification: PENDING
+  independent_audit: PENDING
+  leo_gate: PENDING
+blockers:
+  - FINAL_HEAD_VALIDATION
+  - EMILY_INDEPENDENT_AUDIT
+  - LEO_GATE
 human_action_required: false
 production: BLOCKED
 stable_release: BLOCKED
-next_action: abrir_PR_e_gerar_evidencia_do_candidate_sha
+next_action: freeze_final_pr_head_then_retest_and_audit
 checkpoint_recipient: Mestre
