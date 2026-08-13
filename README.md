@@ -1,309 +1,174 @@
-# Multiagent Collaboration Framework
+# MCF — Multiagent Collaboration Framework
 
-Framework experimental para colaboração entre múltiplos agentes de IA com papéis definidos, seleção por competência, execução sequencial visível, loop orientado a objetivo, passagem de bastão contínua, skills versionadas, runtime persistente, evidência verificável, auditoria e gates governados.
+O **MCF** é um framework para coordenação governada de agentes de IA, com papéis explícitos, seleção por competência, execução rastreável, handoffs, skills versionadas, runtime persistente, evidência verificável, recuperação de falhas e gates de autoridade.
+
+> **Estado documental:** reconciliado contra `main`, código, workflows, releases e evidências do GitHub. Para valores voláteis, GitHub live prevalece. O snapshot canônico está em [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md).
+
+## O que existe hoje
+
+### `CURRENT_IMPLEMENTED`
+
+O MCF possui **runtime executável**, não apenas metodologia documental.
+
+Código principal:
+
+```text
+apps/rede-social-agentes/apps/server/src/mcf-runtime/
+```
+
+A aplicação hospedeira está em [`apps/rede-social-agentes/`](apps/rede-social-agentes/) e usa Node.js/pnpm, API, web, worker, PostgreSQL e workflows de validação/deploy.
+
+Fluxo técnico simplificado:
+
+```text
+objetivo / missão
+      ↓
+MissionRuntime + persistência
+      ↓
+Skill registry + planner
+      ↓
+Human Delegation Firewall / Permission Engine
+      ↓
+Skill Executor / External Action Dispatcher
+      ↓
+adapter interno ou externo
+      ↓
+Evidence Validator + receipts + event ledger
+      ↓
+handoff / CAF / gate / checkpoint
+```
+
+Capacidades comprovadas no lineage atual incluem:
+
+- missões, fases, eventos, receipts e handoffs persistentes;
+- hierarquia missão-pai/submissão;
+- Human Delegation Firewall e perfis de permissão;
+- dispatcher de ações externas e adapters com evidência verificável;
+- **16 skills registradas, 16 executáveis, 0 apenas documentais**;
+- leitura de revisão de código e CI;
+- escrita GitHub reversível e Gate C real concluído;
+- staging/deploy com verificação de SHA, readiness/version e recovery por redeploy;
+- observabilidade de missões bloqueadas;
+- Production Readiness automatizado;
+- produção pública materializada e monitorada no lineage da RC3.
+
+Fontes: [`docs/runtime/`](docs/runtime/), [`skills/registry.yaml`](skills/registry.yaml), [`artifacts/phases/`](artifacts/phases/) e [workflows](.github/workflows/).
+
+## Estado atual verificável
+
+Snapshot reconciliado em 2026-08-13:
+
+```yaml
+main: 7f741e10d0e745a90c732e084400b11e3f5e6794
+rc1: v1.0.0-RC1@9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+rc2: v1.0.0-RC2@d73d936a63cc9462a95bcf481f4b8e1d4b255719
+rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+production: COMPLETE
+stable_v1_0_0: NOT_PUBLISHED
+stable_mission: MCF-STABLE-RELEASE-001
+stable_issue: 131
+stable_pr: 133
+human_gate: NOT_APPROVED
+```
+
+A `v1.0.0-RC3` é a candidata qualificada atual. **`v1.0.0` estável não foi publicada.** A produção e a release estável são boundaries distintos; publicar stable exige a governança específica da missão ativa e HUMAN_GATE de LEANDRO.
+
+Para estado live, consulte GitHub antes de usar os SHAs acima como dado operacional.
 
 ## Governança
 
-- **Leandro** é a autoridade humana final e não entra na contagem dos agentes.
-- **Léo** é a autoridade delegada de continuidade operacional e gates internos.
-- **Mestre** coordena a equipe, mantém o mapa da missão e apresenta o fluxo completo.
-- Existem **29 agentes nomeados**, selecionados dinamicamente por competência.
-- O protocolo operacional vigente está em `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`.
+- **LEANDRO** — autoridade humana final; não é agente do MCF.
+- **LÉO** — agente com autoridade operacional delegada para continuidade e gates internos dentro do boundary vigente.
+- **MESTRE** — orquestrador responsável pela condução da missão e exposição do fluxo.
+- **Emily** — auditoria independente conforme os gatilhos aplicáveis.
+- composição oficial: **29 agentes nomeados**, selecionados por competência; isso descreve papéis/contratos, não prova 29 modelos cognitivos independentes em execução simultânea.
 
-## Regras centrais
+Protocolo operacional vigente:
+[`docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`](docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md)
 
-- ESEV obrigatório: atuação real deve ser exposta cronologicamente;
-- CAF obrigatório para falhas recuperáveis;
-- PRF rastreável para fases Classe B/C;
-- sucesso sem evidência é proibido;
-- evidência de gate pertence ao SHA exato;
-- Leandro não é executor técnico padrão nem destinatário de handoff técnico;
-- produção permanece bloqueada até gate material próprio.
+Princípios centrais:
 
-## Runtime executável
+- evidência antes de declaração de sucesso;
+- ESEV para execução visível e verificável;
+- CAF para falhas recuperáveis;
+- PRF para fases Classe B/C;
+- gate e review vinculados ao estado/SHA aplicável;
+- LEANDRO não é executor técnico padrão;
+- ação externa irreversível ou publicação pública relevante exige autoridade compatível com o boundary.
 
-```text
-objetivo conversacional
-→ Chat-to-Runtime Bridge
-→ MissionRuntime
-→ SkillRegistryLoader
-→ Human Delegation Firewall
-→ PermissionEngine
-→ SkillExecutor
-→ EvidenceValidator
-→ PostgreSQL / Event Ledger
-→ Handoff / CAF
-→ trace final verificado
-```
+## Skills
 
-## Estado canônico
+O registro canônico está em [`skills/registry.yaml`](skills/registry.yaml).
 
 ```yaml
-skills_registradas: 16
-skills_executaveis: 16
-skills_documentais: 0
-remaining_documental: []
-
-mcf_close_phase:
-  executable: true
-  planner_state: READY_AGENT
-  primary_owner: Carmem
-  owners: [Carmem, Emily, Leo, Mestre]
-  handoff: Mestre
-  permission_profile: SCOPED_WRITE
-  provider: internal
-  operation: close-phase
-  resource: mcf-agent-runtime
-  external_write: false
-  truthful_terminal_state: REQUIRED
-  hdf: ACTIVE
-
-runtime_006_lote_4e:
-  issue: 107
-  technical_pr: 108
-  technical_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
-  technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
-  candidate_merge_tree_equivalence: PASS
-  canonical_pr: 109
-  canonical_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
-  canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
-  canonical_sync: COMPLETE
-
-gate_c_real_provider_write:
-  issue: 111
-  technical_pr: 112
-  technical_merge: 0b060539eb152f0cf92bd146b853562407ab0a64
-  proof_head: f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
-  proof_run: 31537057206
-  proof_artifact: 9119190464
-  proof_stage: COMPLETE
-  c1_real_write: PASS
-  c2_real_write: PASS
-  read_back: PASS
-  idempotency: PASS
-  ledger_receipts: PASS
-  independent_audit: PASS
-  leo_technical_gate: PASS
-  technical_post_merge_documentation: PASS
-  technical_post_merge_staging: PASS_DEPLOYED
-  canonical_pr: 118
-  canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
-  canonical_post_merge_documentation_run: 31539238013
-  canonical_post_merge_documentation: PASS
-  closeout_pr: 119
-  closeout_merge: 303a4385aed51c531993613ca9d664d1599f538e
-  closeout_post_merge_documentation_run: 31540925137
-  closeout_post_merge_documentation: PASS
-  canonical_state: COMPLETE
-  mission_state: ENTREGUE
-
-gate_e_release_candidate:
-  mission: MCF-RELEASE-CANDIDATE-GATE-E
-  issue: 121
-  pr: 122
-  audited_candidate: 13b5cb4f6b7a8369b0493fc3a51367d64b09c705
-  candidate_merge_tree_equivalence: PASS
-  release_target: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-  final_candidate_documentation_run: 31553244652
-  final_candidate_container_smoke_run: 31553244682
-  final_candidate_foundation_run: 31553244654
-  final_candidate_qualification_run: 31553369253
-  final_candidate_staging_run: 31553461208
-  final_candidate_staging: PASS_DEPLOYED
-  final_candidate_staging_recovery: false
-  emily_independent_audit: PASS
-  leo_gate: PASS
-  merge: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-  post_merge_documentation_run: 31554021692
-  post_merge_documentation: PASS
-  post_merge_readonly_qualification_run: 31554089586
-  post_merge_readonly_qualification: PASS
-  post_merge_staging_run: 31554021695
-  post_merge_staging: PASS_DEPLOYED
-  post_merge_staging_recovery: false
-  publication_run: 31554462243
-  tag: v1.0.0-RC1
-  tag_target: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-  github_release_id: 368946304
-  prerelease: true
-  gate_e: COMPLETE
-  critical_findings_open: 0
-  high_findings_open: 0
-  human_action_required: false
-
-production: BLOCKED
-stable_v1_0_0: BLOCKED
-live_staging_adapter: DISABLED
+registered: 16
+executable: 16
+documental_only: 0
 ```
 
-## Skills executáveis
+Skills atuais:
 
-1. `MCF-START-MISSION`
-2. `MCF-SELECT-AGENTS`
-3. `MCF-RECOVER-CONTEXT`
-4. `MCF-DEFINE-PRODUCT`
-5. `MCF-DESIGN-EXPERIENCE`
-6. `MCF-DESIGN-ARCHITECTURE`
-7. `MCF-IMPLEMENT-CHANGE`
-8. `MCF-REVIEW-CODE`
-9. `MCF-RUN-TESTS`
-10. `MCF-GIT-PR-RELEASE`
-11. `MCF-DEPLOY-VALIDATE`
-12. `MCF-TRACE-MISSION`
-13. `MCF-EVALUATE-AGENTS`
-14. `MCF-SECURITY-REVIEW`
-15. `MCF-DEBUG-INCIDENT`
-16. `MCF-CLOSE-PHASE`
+`MCF-START-MISSION`, `MCF-SELECT-AGENTS`, `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE`, `MCF-DESIGN-ARCHITECTURE`, `MCF-IMPLEMENT-CHANGE`, `MCF-REVIEW-CODE`, `MCF-RUN-TESTS`, `MCF-GIT-PR-RELEASE`, `MCF-DEPLOY-VALIDATE`, `MCF-TRACE-MISSION`, `MCF-EVALUATE-AGENTS`, `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`.
 
-Não há skill documental remanescente no runtime integrado.
+## Releases e marcos
 
-## Gate C — real provider write
+| Marco | Classificação | Estado |
+|---|---|---|
+| Runtime persistente / evidence model | `CURRENT_IMPLEMENTED` | integrado |
+| Gate C — provider write | `HISTORICAL` + capacidade preservada | concluído |
+| Gate D — staging/deploy | `HISTORICAL` + capacidade preservada | concluído |
+| Gate E | `HISTORICAL` | concluído |
+| `v1.0.0-RC1` | `HISTORICAL` | prerelease preservada |
+| Production Readiness pós-RC1 | `HISTORICAL` + workflow atual | concluído |
+| `v1.0.0-RC2` | `HISTORICAL` | prerelease preservada |
+| produção | `CURRENT_IMPLEMENTED` | completa/live |
+| `v1.0.0-RC3` | `CURRENT_IMPLEMENTED` | prerelease candidata atual |
+| `v1.0.0` | `PLANNED` / bloqueada por governança | não publicada |
 
-A capacidade de escrita GitHub do runtime foi comprovada em provider real, integrada tecnicamente e reconciliada canonicamente.
+Detalhes: [`CHANGELOG.md`](CHANGELOG.md), [`docs/releases/`](docs/releases/) e decisões [`MCF-DEC-062`](docs/decisions/MCF-DEC-062-GATE-E-RELEASE-CANDIDATE.md), [`MCF-DEC-063`](docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md) e [`MCF-DEC-064`](docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md).
 
-### Evidência final
+## Experimentos
 
-```yaml
-technical_merge: 0b060539eb152f0cf92bd146b853562407ab0a64
-final_proof_head: f50365eae53c54c0c5b3e929b52f0fe85c1ba4f4
-proof_run: 31537057206
-artifact_id: 9119190464
-artifact_digest: sha256:6122eb9398ae0c1420e9257667f42d60badc995fe928459f3672815bf5ab84c2
-proof_pr: 117
-proof_comment_id: 5258957980
-c1_read_back: PASS
-c1_replay_no_duplicate_pr: PASS
-c2_read_back: PASS
-c2_duplicate_replay: RESERVATION_CONFLICT_BEFORE_NEW_ATTEMPT
-ledger_attempts: 3_EVIDENCE_VALIDATED
-receipts: 3
-julia_governance: PASS
-emily_independent_audit: PASS
-leo_technical_gate: PASS
-post_merge_documentation_run: 31538142320
-post_merge_documentation: PASS
-post_merge_staging_run: 31538142312
-post_merge_staging: PASS_DEPLOYED
-canonical_pr: 118
-canonical_merge: 3feff116a3bf66427cfdfcb10894c0f76f79ee11
-canonical_post_merge_documentation_run: 31539238013
-canonical_post_merge_documentation: PASS
-closeout_pr: 119
-closeout_merge: 303a4385aed51c531993613ca9d664d1599f538e
-closeout_post_merge_documentation_run: 31540925137
-closeout_post_merge_documentation: PASS
-canonical_state: COMPLETE
-mission_state: ENTREGUE
-objective_met: true
-blocking_findings: 0
-pending_actions: 0
-human_action_required: false
-historical_next_boundary_at_gate_c_closeout: RELEASE_CANDIDATE_GATE_E
-production: BLOCKED
-```
+### `telefone-sem-fio-001` — `EXPERIMENTAL`
 
-As mutações permanecem single-shot: o runtime nunca repete `POST` para tentar adivinhar o estado externo. A reconciliação pós-write é limitada a leituras `GET`; quando o efeito não pode ser provado, o estado permanece `PARTIAL/UNKNOWN`.
+O experimento encontrou evidência positiva de preservação/handoff no protocolo testado. A ressalva metodológica é obrigatória: **os papéis foram executados no mesmo ChatGPT**, portanto o resultado não comprova independência cognitiva real entre agentes.
 
-Os três workflows temporários de closeout que entraram indevidamente pelo PR #119 foram removidos. Permanecem apenas o runtime corrigido, os testes permanentes de regressão e o PRF canônico.
+Fonte: [`experimentos/telefone-sem-fio-001/RESULTADO_FINAL.md`](experimentos/telefone-sem-fio-001/RESULTADO_FINAL.md).
 
-## Lot 4-E — Close Phase
+## NextGen — `UNDER_STUDY`
 
-`MCF-CLOSE-PHASE` opera como `READY_AGENT`, com Carmem como primary owner e Mestre como handoff técnico. O boundary integrado permanece:
+Existe discovery separado na branch `planning/mcf-nextgen-discovery`.
 
-```text
-internal / close-phase / mcf-agent-runtime
-```
+O checkpoint de discovery declara explicitamente que a arquitetura não está formalmente aprovada e que implementação/protótipo não estão autorizados. Project Capsule, novas camadas de memória, model routing, DAG/paralelismo, Interaction Center, novos profiles de maturidade/delivery, gateways, caching/rate limiting, hardening adicional, VPS portátil e demais propostas **não devem ser lidos como capacidades atuais** sem evidência no runtime vigente.
 
-A skill exige evidência semântica estruturada para `phase_pack`, `audit_verdict`, `leo_decision` e `checkpoint`. Um estado `ENTREGUE` é rejeitado se houver objetivo não atendido, blockers, findings não resolvidos ou bloqueantes, auditoria não-PASS, próxima ação pendente, ação humana pendente, decisão não aprovadora de Léo ou divergência entre decisão e checkpoint.
+A missão documental atual não implementa NextGen.
 
-O antigo `handoff_to: Leandro` foi reconciliado para `handoff_to: Mestre`. LEANDRO permanece autoridade humana final e só pode ser acionado por um `HUMAN_GATE` explícito; não é executor nem handoff técnico.
+## Limitações importantes
 
-### Evidência técnica e integração
+- stable `v1.0.0` ainda não existe;
+- “imutabilidade” de identidade de release é uma regra de governança; não é alegada como impossibilidade técnica absoluta de exclusão/retarget por administrador;
+- recovery por SHA saudável não deve ser chamado de rollback nativo do provider quando isso não estiver comprovado;
+- contratos de agentes não equivalem automaticamente a isolamento cognitivo entre instâncias/modelos;
+- documentos de Gate/PRF antigos preservam o estado verdadeiro daquele momento e podem conter `BLOCKED` ou “próximo boundary” que são **históricos**, não o estado atual.
 
-```yaml
-final_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
-foundation_run: 31485695643
-foundation: PASS
-container_smoke_run: 31485695636
-container_smoke: PASS
-documentation_validation_run: 31485695606
-documentation_validation: PASS
-server_test_files: 125
-server_tests: 562
-failed_tests: 0
-prf_manifest_audit_run: 31485724987
-prf_manifest_audit: PASS
-specialist_reviews: PASS
-augusto_trace: PASS
-carmem_prf_review: PASS
-julia_governance: PASS
-emily_independent_audit: PASS
-leo_gate: PASS
-technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
-candidate_merge_tree_equivalence: PASS
-technical_post_merge_documentation_run: 31486181380
-technical_post_merge_documentation: PASS
-technical_post_merge_staging_run: 31486181369
-technical_post_merge_staging: PASS_DEPLOYED
-canonical_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
-canonical_documentation_run: 31486782247
-canonical_documentation: PASS
-canonical_manifest_audit_run: 31486845037
-canonical_manifest_audit: PASS
-canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
-canonical_post_merge_documentation_run: 31487031172
-canonical_post_merge_documentation: PASS
-canonical_sync: COMPLETE
-```
+## Mapa rápido
 
-## Gate E — Release Candidate
+| Pergunta | Fonte |
+|---|---|
+| Qual é o estado atual? | [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md) + GitHub live |
+| Onde está o runtime? | [`apps/rede-social-agentes/apps/server/src/mcf-runtime/`](apps/rede-social-agentes/apps/server/src/mcf-runtime/) |
+| Como o runtime é documentado? | [`docs/runtime/README.md`](docs/runtime/README.md) |
+| Quais skills existem? | [`skills/registry.yaml`](skills/registry.yaml) |
+| Quem são os agentes? | [`docs/agentes/README.md`](docs/agentes/README.md) |
+| Qual é o protocolo operacional? | [`docs/protocols/`](docs/protocols/) |
+| Onde estão as decisões? | [`docs/decisions/`](docs/decisions/) |
+| Onde está a governança? | [`docs/governanca/`](docs/governanca/) |
+| Onde estão PRFs/evidências? | [`artifacts/phases/`](artifacts/phases/) e [`docs/evidence/`](docs/evidence/) |
+| Qual é o histórico de releases? | [`CHANGELOG.md`](CHANGELOG.md) e [`docs/releases/`](docs/releases/) |
+| Onde estão experimentos? | [`experimentos/`](experimentos/) |
+| Onde estão propostas? | [`docs/proposals/`](docs/proposals/) e branches de planning |
+| Qual é o índice completo? | [`docs/README.md`](docs/README.md) |
 
-O Gate E foi concluído como boundary Classe C de qualificação e publicação da primeira RC.
+## Regra de fonte de verdade
 
-```yaml
-mission: MCF-RELEASE-CANDIDATE-GATE-E
-issue: 121
-pr: 122
-candidate: 13b5cb4f6b7a8369b0493fc3a51367d64b09c705
-candidate_merge_tree_equivalence: PASS
-merge_release_target: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-skills: 16_16_0
-prf_manifest: PASS
-full_validation: PASS
-migrations_twice: PASS
-final_candidate_staging: PASS_DEPLOYED
-final_candidate_recovery: false
-emily_independent_audit: PASS
-leo_gate: PASS
-post_merge_qualification: PASS
-post_merge_staging: PASS_DEPLOYED
-post_merge_recovery: false
-tag: v1.0.0-RC1
-github_release_id: 368946304
-prerelease: true
-critical_findings_open: 0
-high_findings_open: 0
-human_action_required: false
-production: BLOCKED
-stable_v1_0_0: BLOCKED
-```
-
-A tag `v1.0.0-RC1` permanece ligada ao SHA qualificado `9b4a759...`; atualizações documentais posteriores da `main` não alteram a identidade da RC.
-
-## Documentação canônica
-
-- `docs/runtime/README.md`
-- `docs/runtime/MCF-RUNTIME-006-PLAN.md`
-- `skills/registry.yaml`
-- `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`
-- `docs/decisions/MCF-DEC-062-GATE-E-RELEASE-CANDIDATE.md`
-- `docs/releases/MCF-v1.0.0-RC1.md`
-- `artifacts/phases/PHASE-006-LOT-4-E-CLOSE-PHASE/`
-- `artifacts/phases/PHASE-006-GATE-C-REAL-PROVIDER-WRITE/`
-- `artifacts/phases/PHASE-006-GATE-E-RELEASE-CANDIDATE/`
-
-## Boundary atual
-
-**Gate E concluído e `v1.0.0-RC1` publicada como prerelease.**
-
-Este closeout não autoriza um próximo boundary técnico. Produção continua `BLOCKED` e `v1.0.0` estável continua `BLOCKED`. Qualquer promoção estável, produção ou nova missão exige boundary posterior próprio e autorização aplicável.
+Antes de afirmar estado atual de branch, SHA, PR, Issue, workflow, produção, tag ou release, consulte o **GitHub live**. Documentos neste repositório são evidência e orientação; snapshots não substituem o estado real verificável.
