@@ -6,106 +6,96 @@
 mission: MCF-STABLE-RELEASE-001
 issue: 131
 pr: 133
-macrostate: REQUALIFYING
+macrostate: CORRECTING_BLOCKED_FOR_HUMAN_GATE
 main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 candidate_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+publication_P0_count: 0
+publication_P1_count: 2
+critical_findings: 0
+high_findings: 0
 stable_v1_0_0: NAO_PUBLICADA
-publication_authorized: false
 HUMAN_GATE: NAO_APROVADO
 ```
 
-RC1, RC2 e RC3 continuam preservadas. O PR #133 altera apenas o control plane da publicação; não altera o candidato RC3.
+RC1, RC2 e RC3 permanecem preservadas; PR #133 é somente control plane.
 
-## Publication boundary — resultado da requalificação
+## P1-1 — race da stable tag
 
-Os findings acumulados foram tratados em sequência:
+O caminho anterior podia observar a tag ausente e depois reutilizar uma tag concorrencial divergente durante `gh release create --target`.
 
-- substring/autor não autenticado;
-- workflow novo supostamente não executável sem merge;
-- recibo que sobrevivia a `synchronize`;
-- recovery parcial de stable exata;
-- janela TOCTOU antes da mutação;
-- comentário mediado por GitHub App com o mesmo login/id de LEANDRO.
+Correção atual:
 
-O boundary consolidado exige identidade GitHub canônica, corpo exato, release exata, `PR_HEAD` exato, ausência de `performed_via_github_app`, cancelamento de stale runs e revalidação viva no limite da mutação.
+- cria `refs/tags/v1.0.0` explicitamente no SHA RC3 pela Git Data API;
+- criação concorrencial divergente falha antes de qualquer release;
+- estado exato RC3 pode seguir somente pelo caminho controlado;
+- `gh release create` usa `--verify-tag`, sem `--target`;
+- release existente incompatível falha fechado.
 
-### Evidência do HEAD técnico requalificado
+## P1-2 — revogação do HUMAN_GATE
+
+Issue comment deixou de ser autoridade. O futuro HUMAN_GATE é representado por um único commit GitHub Web verificado, que altera somente `LEANDRO-HUMAN-GATE.yaml`, é assinado/verificado pelo GitHub, pertence a `leon337` e é vinculado ao parent control-head exato.
+
+O environment nativo foi investigado, mas não adotado: o environment existente não possui required reviewer/protection rule configurado. Nenhuma proteção inexistente foi presumida.
+
+## Testes técnicos
+
+O primeiro run `31726128230` falhou no self-test e permaneceu fail-closed (`publish-stable: SKIPPED`). CAF identificou dependência indevida de `set -e`; os predicados foram endurecidos com retornos explícitos.
+
+Reteste:
 
 ```yaml
-reviewed_head: ce3ac1d5a605793c5eba74ff76a12f92bf515449
-publication_gate_run: 31679151733
-publication_validation: PASS
-app_mediated_receipt_fixture: PASS
-qualifying_direct_human_gate_receipts: 0
-stable_state: ABSENT
+technical_head: 4d5144ce46c9c77955c732824f5225f81cf0b55d
+stable_publication_gate_run: 31726482829
+validation: PASS
+self_tests: PASS_16
+authorize_publication: PASS_WITH_APPROVED_FALSE
 publish_stable: SKIPPED
-production_readiness_run: 31679151776
-production_readiness: PASS
-documentation_validation_run: 31679151867
 documentation_validation: PASS
-independent_review_comment: 5277559034
-independent_review: NO_MAJOR_ISSUES
 ```
 
-Portanto:
+Os testes incluem tag ausente, corrida divergente, corrida exata, recovery exato, tag divergente, release incompatível, HUMAN_GATE ausente, HEAD antigo, App/API/unsigned, revogação/alteração e mudança de PR HEAD.
+
+## Revisão independente
 
 ```yaml
-publication_P0_count: 0
-publication_P1_count: 0
-critical_findings: 0
-high_findings: 0
+P1_tag_race: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+P1_human_gate_revocation: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+publication_P1_count: 2
 ```
 
-O P1 foi zerado somente após correção + teste dedicado + evidência + revisão independente, conforme a regra da missão.
+P1 só poderá retornar a zero se a revisão independente do SHA final confirmar que os cenários foram eliminados.
+
+## Threads
+
+Os threads antigos de HEAD-binding e TOCTOU permanecem abertos até que a cadeia de evidência completa seja confirmada. Nenhum thread é resolvido só por alteração de código.
 
 ## Produção / monitor
 
-- produção Render continua LIVE no SHA RC3 `7f741e10...`;
-- service: `rsa-api-free`;
-- deploy: `dep-d9ugl7gae00c73c5snv0`;
-- monitor mais recente verificado: run `31677775717`, SUCCESS;
-- primeiro probe `/health/ready`: timeout em 20 s;
-- probe de recuperação cold-start: PASS;
-- incidentes materiais abertos encontrados: 0;
-- Issue #129: CLOSED/completed.
-
-O cold start permanece registrado como risco operacional LOW/não bloqueante.
-
-## Auditoria multiagente
-
-Os comentários históricos atribuídos a Augusto/Júlia/Emily e o antigo `LEO_GATE: PASS` foram gravados via `chatgpt-codex-connector`. Eles não são tratados como renovação real da auditoria para o boundary atual.
-
-O runtime real protege os endpoints de missão com sessão Bearer válida. O canal atual não possui uma sessão válida e não contornará esse controle nem extrairá secrets.
-
 ```yaml
-AUGUSTO_TRACE: PENDING_REAL_EXECUTION
-JULIA_CLASS_C: PENDING_REAL_EXECUTION
-EMILY_AUDIT: PENDING_REAL_EXECUTION
-LEO_GATE: PENDING_REAL_EXECUTION
-AUDIT: PENDING
+production_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+render_service: rsa-api-free
+render_deploy: dep-d9ugl7gae00c73c5snv0
+production_state: LIVE
+latest_health_run_verified: 31677775717
+latest_health_result: SUCCESS
+initial_probe: TIMEOUT_20S
+cold_start_recovery: PASS
+material_incidents_open: 0
+issue_129: CLOSED_COMPLETED
 ```
 
-Esse é o motivo pelo qual a missão permanece `REQUALIFYING` e não avança para `READY_FOR_HUMAN_GATE`.
+## Auditoria terminal
 
-## Imutabilidade
+Por orientação de governança, Augusto/Júlia/Emily/LÉO não serão executados como substituição dos blockers atuais.
 
-- **governança:** RC1/RC2/RC3 e futura `v1.0.0` não devem ser retargetadas/reutilizadas;
-- **proteção técnica observada:** RC3 `immutable:false`, rulesets observados `[]`, `main` sem branch protection observada;
-- não é alegada undeletability técnica.
-
-## Efeito futuro da publicação
-
-Somente depois de auditoria real, `LEO_GATE: PASS` e HUMAN_GATE explícito de LEANDRO, um HEAD final aprovado poderá:
-
-1. criar tag `v1.0.0` no SHA exato RC3;
-2. criar GitHub Release não-prerelease;
-3. marcar `v1.0.0` como `latest`;
-4. verificar o estado final.
-
-O recibo aceito pelo workflow deve pertencer à identidade GitHub autorizada, ao HEAD exato e não pode ter sido mediado por GitHub App.
+```yaml
+AUDIT: NOT_RUN_BLOCKED_BY_PUBLICATION_P1
+LEO_GATE: NOT_RUN_BLOCKED_BY_PUBLICATION_P1
+HUMAN_GATE: NAO_APROVADO
+```
 
 ## Próxima ação
 
-Concluir a reconciliação documental e revalidar seu HEAD; depois renovar Augusto/Júlia/Emily/LÉO através do mecanismo real do MCF. Somente após esses controles a missão poderá ser reconsiderada para `READY_FOR_HUMAN_GATE`.
+Concluir reconciliação documental, validar CI no SHA final, reconfirmar RCs/stable/produção/monitor e solicitar revisão independente exata. Somente depois de P0/P1 zero poderá iniciar a auditoria multiagente terminal.
 
-Nenhum conteúdo deste relatório autoriza publicação.
+Nenhum conteúdo deste relatório autoriza merge, tag, release, `latest` ou publicação.
