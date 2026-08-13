@@ -26,102 +26,87 @@ human_gate:
   github_user_id: 25374535
   receipt_file: artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml
   receipt_state: NAO_APROVADO
-  future_mechanism: GITHUB_WEB_VERIFIED_COMMIT
+  mechanism: GITHUB_WEB_VERIFIED_COMMIT
   mutable_issue_comment_is_authority: false
-  status: IMPLEMENTED_TESTED_PENDING_INDEPENDENT_REVIEW
-
-environment_investigation:
-  repository_environment_available: true
-  observed_environment: main - rsa-api-free
-  observed_protection_rules: []
-  required_reviewer_currently_configured: false
-  environment_gate_adopted: false
 
 publication_boundary:
-  technical_head: f2c7047485beb06806be6c8a7de192314d4d1c17
-  stable_publication_gate_run: 31728317756
+  technical_head: 2129a9a555974c7c89e7a78afc00493e7901aaf5
+  stable_publication_gate_run: 31753810306
   validation_job: PASS
   receipt_predicate_tests: PASS_4
-  real_state_machine_tests: PASS_11
-  dedicated_self_tests: PASS_15
+  atomic_git_tests: PASS_2
+  real_state_machine_tests: PASS_12
+  dedicated_self_tests: PASS_18
   human_gate: NAO_APROVADO
   authorize_publication_job: PASS_WITH_APPROVED_FALSE
   publication_job: SKIPPED
-  documentation_validation_run: 31728317747
+  documentation_validation_run: 31753810224
   documentation_validation: PASS
-  production_readiness_run: 31728317685
+  production_readiness_run: 31753810228
   production_readiness: PASS
   publication_p0_count: 0
-  publication_p1_count: 2
+  publication_p1_count: 1
+  publication_p2_count: 1
   critical_findings: 0
   high_findings: 0
 
-caf:
-  - run: 31726128230
-    result: FAIL_CLOSED
-    cause: SECURITY_PREDICATE_DEPENDED_ON_SET_E_CONTEXT
-    correction: EXPLICIT_RETURN_PROPAGATION
-  - run: 31727880589
-    head: 59df5bcca86968642e6425c7a7e43ff4a07819f9
-    result: FAIL_CLOSED
-    cause: REAL_STATE_MACHINE_TEST_FOUND_REMAINING_FAIL_RETURN_PROPAGATION_GAP
-    correction_head: f2c7047485beb06806be6c8a7de192314d4d1c17
-    retest: PASS
+active_findings:
+  - id: P1_HEAD_CHANGE_WINDOW_BEFORE_STABLE_TAG
+    thread: PRRT_kwDOTnz-ks6ZCW9C
+    correction: SERVER_SIDE_GIT_ATOMIC_PUSH_WITH_EXACT_CONTROL_HEAD_FORCE_WITH_LEASE_AND_RC3_TAG_CREATE
+    dedicated_tests:
+      - ATOMIC_UNCHANGED_CONTROL_HEAD_CREATES_EXACT_TAG
+      - CONTROL_HEAD_MOVED_IMMEDIATELY_BEFORE_MUTATION_CREATES_NO_TAG
+      - VALID_APPROVAL_AND_STABLE_HEAD_PATH_ALLOWED
+      - STALE_RECEIPT_NO_MUTATION
+      - APP_MEDIATED_INVALID_RECEIPT_NO_MUTATION
+    state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+  - id: P2_EXACT_TAG_NO_RELEASE_RECOVERY
+    thread: PRRT_kwDOTnz-ks6ZCW9N
+    correction: VALIDATOR_ACCEPTS_EXACT_RC3_TAG_WITH_RELEASE_404_AS_AUTHORIZED_TAG_ONLY_RECOVERY
+    dedicated_tests:
+      - EXACT_RC3_TAG_NO_RELEASE_SAFE_RECOVERY
+      - EXACT_TAG_EXACT_RELEASE_IDEMPOTENT_NOOP
+      - INCOMPATIBLE_RELEASE_FAIL_CLOSED
+      - WRONG_SHA_TAG_FAIL_CLOSED
+    state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
 
-open_publication_p1s:
-  - id: P1_STABLE_TAG_CREATION_RACE
-    correction: EXPLICIT_ATOMIC_REF_CREATE_AT_RC3; RACE_WINNER_RECHECK_BEFORE_RELEASE; GH_RELEASE_CREATE_VERIFY_TAG_WITHOUT_TARGET
-    tests:
-      - TAG_ABSENT_CREATE_EXACT_RC3
-      - CONCURRENT_DIVERGENT_TAG_FAIL_BEFORE_RELEASE
-      - CONCURRENT_EXACT_TAG_CONTROLLED_PATH
-      - EXISTING_EXACT_TAG_RECOVERY
-      - DIVERGENT_TAG_FAIL
-      - INCOMPATIBLE_RELEASE_FAIL
-    state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
-  - id: P1_HUMAN_GATE_REVOCATION_WINDOW
-    correction: MUTABLE_COMMENT_REMOVED_FROM_AUTHORITY; WEB_VERIFIED_SINGLE_FILE_RECEIPT; GATE_HEAD_LINEAGE_RECONSUMED_IMMEDIATELY_BEFORE_ATOMIC_TAG_BOUNDARY
-    tests:
-      - HUMAN_GATE_ABSENT_NO_MUTATION
-      - APP_OR_UNSIGNED_GATE_DENIED
-      - STALE_OR_ALTERED_RECEIPT_DENIED
-      - REVOCATION_BEFORE_TAG_BOUNDARY_NO_MUTATION
-      - PR_HEAD_CHANGE_BEFORE_TAG_BOUNDARY_NO_MUTATION
-    state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+historical_threads:
+  policy: RESOLVE_ONLY_AFTER_CHAIN_ACHADO_CORRECAO_TESTE_EVIDENCIA_REVIEW_RESOLUCAO
+  state: RECHECK_AFTER_TERMINAL_INDEPENDENT_REVIEW
 
 production_monitor:
-  latest_verified_run: 31726950466
-  latest_verified_result: SUCCESS
-  sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  status: RECONFIRM_AFTER_TERMINAL_AUDIT
 
 production_render:
   service: rsa-api-free
   deploy: dep-d9ugl7gae00c73c5snv0
   sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-  state: LIVE
+  last_known_state: LIVE
 
 incident_129: CLOSED_COMPLETED
 
 audit:
-  augusto_trace: NOT_RUN_PER_GOVERNANCE_DIRECTION
-  julia_class_c: NOT_RUN_PER_GOVERNANCE_DIRECTION
-  emily_independent_audit: NOT_RUN_PER_GOVERNANCE_DIRECTION
-  leo_gate: NOT_RUN_PER_GOVERNANCE_DIRECTION
+  augusto_trace: NOT_RUN_PENDING_PUBLICATION_P1_ZERO
+  julia_class_c: NOT_RUN_PENDING_PUBLICATION_P1_ZERO
+  emily_independent_audit: NOT_RUN_PENDING_PUBLICATION_P1_ZERO
+  leo_gate: NOT_RUN_PENDING_PUBLICATION_P1_ZERO
   overall: BLOCKED_UNTIL_PUBLICATION_P0_P1_ZERO_AFTER_INDEPENDENT_REVIEW
 
 findings:
   critical: 0
   high: 0
   publication_p0: 0
-  publication_p1: 2
+  publication_p1: 1
+  publication_p2: 1
   low_postgresql_ssl: OPEN_NON_BLOCKING
   cold_start_readiness_latency: OPEN_NON_BLOCKING
 
 authorization:
-  merge_for_publication: false
+  merge_pr_133: false
   tag_v1_0_0: false
   github_release_v1_0_0: false
   latest_v1_0_0: false
   human_gate: NAO_APROVADO
 
-next_action: reconcile remaining canonical documents to technical evidence f2c704; validate final documentation head; reconfirm RCs/stable/production/monitor; request independent review of exact final SHA; keep P1=2 until review confirms elimination
+next_action: validate terminal documentation head; request independent review of exact SHA; keep P1=1 until review; only after P0=0/P1=0 renew multiagent audit and obtain LEO_GATE; stop at READY_FOR_HUMAN_GATE
