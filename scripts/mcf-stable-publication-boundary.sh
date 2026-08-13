@@ -105,12 +105,24 @@ classify_stable_sha() {
   fi
 }
 
+read_git_ref_sha() {
+  local ref_path="$1" tmp
+  tmp="$(mktemp)"
+  if gh_api "repos/$REPOSITORY/git/ref/$ref_path" >"$tmp" 2>/dev/null; then
+    jq -r '.object.sha' "$tmp"
+    rm -f "$tmp"
+    return 0
+  fi
+  rm -f "$tmp"
+  return 1
+}
+
 stable_tag_sha() {
-  gh_api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" --jq '.object.sha' 2>/dev/null
+  read_git_ref_sha "tags/$STABLE_TAG"
 }
 
 control_lock_tag_sha() {
-  gh_api "repos/$REPOSITORY/git/ref/tags/$CONTROL_LOCK_TAG" --jq '.object.sha' 2>/dev/null
+  read_git_ref_sha "tags/$CONTROL_LOCK_TAG"
 }
 
 verify_exact_stable_tag() {
