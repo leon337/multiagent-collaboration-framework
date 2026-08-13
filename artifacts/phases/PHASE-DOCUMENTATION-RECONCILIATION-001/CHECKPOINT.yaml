@@ -1,0 +1,7 @@
+mission: MCF-DOCUMENTATION-RECONCILIATION-001
+state: IN_REVIEW
+base_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+doc_branch: docs/mcf-documentation-reconciliation-001
+validation: PENDING
+independent_review: PENDING
+next_action: validate exact documentation head and request independent review
