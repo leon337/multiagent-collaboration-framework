@@ -135,6 +135,7 @@ ruleset_details_satisfy_contract() {
   local json="$1"
   test "$(jq -r '.target' <<<"$json")" = tag || return 1
   test "$(jq -r '.enforcement' <<<"$json")" = active || return 1
+  test "$(jq '(.bypass_actors // []) | length' <<<"$json")" = 0 || return 1
   jq -e --arg stable "refs/tags/$STABLE_TAG" '.conditions.ref_name.include | index($stable) != null' <<<"$json" >/dev/null || return 1
   jq -e --arg lock "refs/tags/$CONTROL_LOCK_TAG" '.conditions.ref_name.include | index($lock) != null' <<<"$json" >/dev/null || return 1
   jq -e '[.rules[].type] | index("update") != null' <<<"$json" >/dev/null || return 1
@@ -152,7 +153,7 @@ verify_server_side_tag_protection() {
       return 0
     fi
   done <<<"$ids"
-  error "no active tag ruleset protects updates/deletions for both publication refs"
+  error "no active tag ruleset with no bypass protects updates/deletions for both publication refs"
   return 1
 }
 
@@ -229,22 +230,31 @@ consume_human_gate_atomically() {
   verify_rc_lineage || { error "RC lineage changed before consumption"; return 1; }
   verify_server_side_tag_protection >/dev/null || { error "required server-side tag protection is absent"; return 1; }
 
-  if stable_tag_sha >/dev/null 2>&1 || control_lock_tag_sha >/dev/null 2>&1; then
-    error "publication refs already exist; direct consumption requires both refs absent"
+  local stable_sha="" existing_lock="" lock_sha
+  stable_sha="$(stable_tag_sha 2>/dev/null || true)"
+  existing_lock="$(control_lock_tag_sha 2>/dev/null || true)"
+
+  test -z "$existing_lock" || { error "control lock already exists; direct consumption is not allowed"; return 1; }
+  if [[ -n "$stable_sha" && "$stable_sha" != "$RC3_SHA" ]]; then
+    error "existing stable tag is divergent before authorization consumption"
     return 1
   fi
 
-  local lock_sha
   lock_sha="$(create_publication_lock_commit "$HEAD_SHA")" || return 1
 
-  if ! git_atomic_push_with_token \
-    --atomic \
-    --force-with-lease="refs/heads/$CONTROL_BRANCH:$HEAD_SHA" \
-    origin \
-    "$lock_sha:refs/heads/$CONTROL_BRANCH" \
-    "$RC3_SHA:refs/tags/$STABLE_TAG" \
-    "$lock_sha:refs/tags/$CONTROL_LOCK_TAG" \
-    >/tmp/mcf-stable-consume.out 2>/tmp/mcf-stable-consume.err; then
+  local -a push_args
+  push_args=(
+    --atomic
+    --force-with-lease="refs/heads/$CONTROL_BRANCH:$HEAD_SHA"
+    origin
+    "$lock_sha:refs/heads/$CONTROL_BRANCH"
+    "$lock_sha:refs/tags/$CONTROL_LOCK_TAG"
+  )
+  if [[ -z "$stable_sha" ]]; then
+    push_args+=("$RC3_SHA:refs/tags/$STABLE_TAG")
+  fi
+
+  if ! git_atomic_push_with_token "${push_args[@]}" >/tmp/mcf-stable-consume.out 2>/tmp/mcf-stable-consume.err; then
     cat /tmp/mcf-stable-consume.err >&2 || true
     error "atomic HUMAN_GATE consumption failed"
     return 1
@@ -255,7 +265,11 @@ consume_human_gate_atomically() {
   test "$(git ls-remote origin "refs/tags/$CONTROL_LOCK_TAG" | cut -f1)" = "$lock_sha" || return 1
 
   echo "consumed_lock_sha=$lock_sha"
-  echo "publication_state=CONSUMED_AWAITING_FRESH_RECOVERY"
+  if [[ -n "$stable_sha" ]]; then
+    echo "publication_state=EXACT_TAG_ADOPTED_AWAITING_FRESH_RECOVERY"
+  else
+    echo "publication_state=CONSUMED_AWAITING_FRESH_RECOVERY"
+  fi
 }
 
 release_json() {
@@ -277,13 +291,19 @@ publish_or_recover() {
   stable_sha="$(stable_tag_sha 2>/dev/null || true)"
   lock_sha="$(control_lock_tag_sha 2>/dev/null || true)"
 
-  if [[ -z "$stable_sha" && -z "$lock_sha" ]]; then
+  if [[ -z "$lock_sha" ]]; then
+    if [[ -n "$stable_sha" && "$stable_sha" != "$RC3_SHA" ]]; then
+      error "stable tag is divergent and no consumed authorization exists"
+      return 1
+    fi
     consume_human_gate_atomically || return 1
+    # Deliberately stop after authorization consumption/adoption. Release
+    # creation is a fresh recovery execution against protected consumed refs.
     return 0
   fi
 
-  if [[ -z "$stable_sha" || -z "$lock_sha" ]]; then
-    error "partial publication refs are inconsistent"
+  if [[ -z "$stable_sha" ]]; then
+    error "control lock exists without stable tag"
     return 1
   fi
 
@@ -333,13 +353,15 @@ self_test_receipt_predicate() {
 }
 
 self_test_ruleset_predicate() {
-  local pass=0 good missing_update wrong_ref
-  good="$(jq -n --arg stable "refs/tags/$STABLE_TAG" --arg lock "refs/tags/$CONTROL_LOCK_TAG" '{target:"tag",enforcement:"active",conditions:{ref_name:{include:[$stable,$lock],exclude:[]}},rules:[{type:"update",parameters:{update_allows_fetch_and_merge:false}},{type:"deletion"}]}')"
+  local pass=0 good missing_update wrong_ref bypassed
+  good="$(jq -n --arg stable "refs/tags/$STABLE_TAG" --arg lock "refs/tags/$CONTROL_LOCK_TAG" '{target:"tag",enforcement:"active",bypass_actors:[],conditions:{ref_name:{include:[$stable,$lock],exclude:[]}},rules:[{type:"update",parameters:{update_allows_fetch_and_merge:false}},{type:"deletion"}]}')"
   ruleset_details_satisfy_contract "$good" && pass=$((pass+1))
   missing_update="$(jq ' .rules=[{"type":"deletion"}]' <<<"$good")"
   if ! ruleset_details_satisfy_contract "$missing_update"; then pass=$((pass+1)); fi
   wrong_ref="$(jq '.conditions.ref_name.include=["refs/tags/other"]' <<<"$good")"
   if ! ruleset_details_satisfy_contract "$wrong_ref"; then pass=$((pass+1)); fi
+  bypassed="$(jq '.bypass_actors=[{"actor_id":1,"actor_type":"RepositoryRole","bypass_mode":"always"}]' <<<"$good")"
+  if ! ruleset_details_satisfy_contract "$bypassed"; then pass=$((pass+1)); fi
   echo "$pass"
 }
 
@@ -424,6 +446,26 @@ self_test_atomic_git_boundary() (
   )
   pass=$((pass+1))
   echo "PASS: control HEAD moved immediately before transaction -> no publication refs" >&2
+
+  setup_repo tag-only
+  (
+    cd "$root/tag-only-a"
+    approved="$(git rev-parse HEAD)"
+    git tag "$STABLE_TAG" "$approved"
+    git push origin "refs/tags/$STABLE_TAG" >/dev/null
+    tree="$(git rev-parse "$approved^{tree}")"
+    lock="$(git commit-tree "$tree" -p "$approved" <<<"lock")"
+    git push --atomic \
+      --force-with-lease="refs/heads/$CONTROL_BRANCH:$approved" \
+      origin \
+      "$lock:refs/heads/$CONTROL_BRANCH" \
+      "$lock:refs/tags/$CONTROL_LOCK_TAG" >/dev/null
+    test "$(git ls-remote origin "refs/tags/$STABLE_TAG" | cut -f1)" = "$approved"
+    test "$(git ls-remote origin "refs/tags/$CONTROL_LOCK_TAG" | cut -f1)" = "$lock"
+  )
+  pass=$((pass+1))
+  echo "PASS: existing exact tag can be adopted by atomic control-lock consumption" >&2
+
   echo "$pass"
 )
 
@@ -484,9 +526,11 @@ self_test_real_state_machine() (
     inc_counter consume_calls
     test "$(read_state gate)" = VALID || return 1
     test "$(read_state protection)" = VALID || return 1
+    test "$(read_state lock)" = ABSENT || return 1
+    test "$(read_state stable)" != WRONG || return 1
     case "$(read_state consume_mode)" in
       SUCCESS)
-        write_state stable RC3
+        if [[ "$(read_state stable)" = ABSENT ]]; then write_state stable RC3; fi
         write_state lock LOCK
         echo publication_state=CONSUMED_AWAITING_FRESH_RECOVERY
         return 0
@@ -524,14 +568,14 @@ self_test_real_state_machine() (
   reset_state ABSENT ABSENT ABSENT VALID VALID HEAD_CHANGED
   if ! publish_or_recover >/dev/null 2>&1 && no_release_writes && test "$(read_state stable)" = ABSENT && test "$(read_state lock)" = ABSENT; then passed "HEAD moves at consumption boundary -> no tag/release"; else failed "HEAD moves at consumption boundary"; fi
 
-  reset_state RC3 LOCK ABSENT VALID VALID SUCCESS
-  if publish_or_recover >/dev/null 2>&1 && test "$(read_state release_create_calls)" = 1; then passed "exact protected consumed refs + no Release -> safe recovery"; else failed "tag-only recovery"; fi
-
-  reset_state WRONG LOCK ABSENT VALID VALID SUCCESS
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "wrong-SHA stable tag -> fail closed"; else failed "wrong tag"; fi
-
   reset_state RC3 ABSENT ABSENT VALID VALID SUCCESS
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "stable tag without control lock -> fail closed"; else failed "missing lock"; fi
+  if publish_or_recover >/dev/null 2>&1 && test "$(read_state consume_calls)" = 1 && no_release_writes && test "$(read_state lock)" = LOCK; then passed "exact RC3 tag + no Release -> authorization is safely consumed for fresh recovery"; else failed "tag-only adoption"; fi
+
+  reset_state RC3 LOCK ABSENT VALID VALID SUCCESS
+  if publish_or_recover >/dev/null 2>&1 && test "$(read_state release_create_calls)" = 1; then passed "protected consumed refs + no Release -> safe recovery"; else failed "protected recovery"; fi
+
+  reset_state WRONG ABSENT ABSENT VALID VALID SUCCESS
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "wrong-SHA stable tag -> fail closed"; else failed "wrong tag"; fi
 
   reset_state RC3 LOCK EXACT VALID VALID SUCCESS
   if publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "exact protected refs + exact Release -> idempotent NOOP"; else failed "exact NOOP"; fi
@@ -572,10 +616,10 @@ self_test() {
   echo "publication_boundary_self_tests=$total"
 
   test "$receipt" = 4
-  test "$ruleset" = 3
-  test "$atomic_git" = 2
+  test "$ruleset" = 4
+  test "$atomic_git" = 3
   test "$real" = 12
-  test "$total" = 21
+  test "$total" = 23
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
