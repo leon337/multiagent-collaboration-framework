@@ -100,12 +100,21 @@ create_exact_stable_tag_fail_closed() {
     return 0
   fi
 
+  # Publication boundary: authorization is re-consumed immediately before the
+  # atomic create-ref request. A revocation/head change before this boundary
+  # fails before the stable identity is created.
+  verify_human_gate_commit || fail "HUMAN_GATE invalid immediately before stable-tag boundary"
+  verify_live_pr_head || fail "PR HEAD changed immediately before stable-tag boundary"
+  verify_rc_lineage || fail "RC lineage changed immediately before stable-tag boundary"
+
   if gh_api --method POST "repos/$REPOSITORY/git/refs" -f ref="refs/tags/$STABLE_TAG" -f sha="$RC3_SHA" >/tmp/mcf-stable-tag-create.json 2>/tmp/mcf-stable-tag-create.err; then
     verify_exact_stable_tag || return 1
     echo CREATED_EXACT
     return 0
   fi
 
+  # If another writer won the create race, inspect the winner before any
+  # GitHub Release operation. Divergent state is terminal/fail-closed.
   if existing_sha="$(stable_tag_sha)"; then
     test "$(classify_tag_sha "$existing_sha")" = EXACT || fail "concurrent stable tag appeared at divergent SHA: $existing_sha"
     echo CONCURRENT_EXACT
@@ -160,29 +169,7 @@ publish_or_recover() {
   echo "stable_release_state=CREATED_EXACT"
 }
 
-simulate_boundary() {
-  local gate="$1" head="$2" tag_before="$3" create_result="$4" release_state="$5"
-  [[ "$gate" == VALID && "$head" == VALID ]] || { echo DENY_NO_MUTATION; return; }
-  case "$tag_before" in
-    DIVERGENT) echo FAIL_BEFORE_RELEASE; return ;;
-    EXACT) : ;;
-    ABSENT)
-      case "$create_result" in
-        CREATED_EXACT|CONCURRENT_EXACT) : ;;
-        CONCURRENT_DIVERGENT|CREATE_FAILED) echo FAIL_BEFORE_RELEASE; return ;;
-        *) echo FAIL_BEFORE_RELEASE; return ;;
-      esac
-      ;;
-  esac
-  case "$release_state" in
-    INCOMPATIBLE) echo FAIL_BEFORE_RELEASE ;;
-    EXACT) echo RECOVERY_NOOP ;;
-    ABSENT) echo RELEASE_ALLOWED_AFTER_EXACT_TAG ;;
-    *) echo FAIL_BEFORE_RELEASE ;;
-  esac
-}
-
-self_test() {
+self_test_receipt_predicate() {
   local pass=0 parent=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   local base approved json bad stale
   base="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: %s\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n' "$STABLE_TAG")"
@@ -194,22 +181,153 @@ self_test() {
   stale="$(printf 'authority: LEANDRO\nstate: APROVADO\nrelease: %s\napproved_control_head: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\napproval_method: GITHUB_WEB_VERIFIED_COMMIT\n' "$STABLE_TAG")"
   ! validate_human_gate_commit_json "$json" "$stale" "$base" >/dev/null 2>&1 && pass=$((pass+1))
   ! validate_human_gate_commit_json "$json" "$base" "$base" >/dev/null 2>&1 && pass=$((pass+1))
+  echo "$pass"
+}
 
-  test "$(simulate_boundary VALID VALID ABSENT CREATED_EXACT ABSENT)" = RELEASE_ALLOWED_AFTER_EXACT_TAG && pass=$((pass+1))
-  test "$(simulate_boundary VALID VALID ABSENT CONCURRENT_DIVERGENT ABSENT)" = FAIL_BEFORE_RELEASE && pass=$((pass+1))
-  test "$(simulate_boundary VALID VALID EXACT CREATED_EXACT EXACT)" = RECOVERY_NOOP && pass=$((pass+1))
-  test "$(simulate_boundary VALID VALID DIVERGENT CREATED_EXACT ABSENT)" = FAIL_BEFORE_RELEASE && pass=$((pass+1))
-  test "$(simulate_boundary VALID VALID EXACT CREATED_EXACT INCOMPATIBLE)" = FAIL_BEFORE_RELEASE && pass=$((pass+1))
-  test "$(simulate_boundary ABSENT VALID ABSENT CREATED_EXACT ABSENT)" = DENY_NO_MUTATION && pass=$((pass+1))
-  test "$(simulate_boundary STALE VALID ABSENT CREATED_EXACT ABSENT)" = DENY_NO_MUTATION && pass=$((pass+1))
-  test "$(simulate_boundary APP VALID ABSENT CREATED_EXACT ABSENT)" = DENY_NO_MUTATION && pass=$((pass+1))
-  test "$(simulate_boundary REVOKED VALID ABSENT CREATED_EXACT ABSENT)" = DENY_NO_MUTATION && pass=$((pass+1))
-  test "$(simulate_boundary VALID CHANGED ABSENT CREATED_EXACT ABSENT)" = DENY_NO_MUTATION && pass=$((pass+1))
-  test "$(simulate_boundary VALID VALID ABSENT CONCURRENT_EXACT ABSENT)" = RELEASE_ALLOWED_AFTER_EXACT_TAG && pass=$((pass+1))
-  test "$(simulate_boundary VALID VALID ABSENT CREATE_FAILED ABSENT)" = FAIL_BEFORE_RELEASE && pass=$((pass+1))
+self_test_real_state_machine() (
+  set -euo pipefail
+  local tmp pass=0
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
 
-  echo "publication_boundary_self_tests=$pass"
-  test "$pass" = 16
+  write_state() { printf '%s' "$2" >"$tmp/$1"; }
+  read_state() { cat "$tmp/$1"; }
+  inc_counter() { local n; n="$(read_state "$1")"; write_state "$1" "$((n+1))"; }
+
+  reset_state() {
+    write_state tag "${1:-ABSENT}"
+    write_state race "${2:-NONE}"
+    write_state release "${3:-ABSENT}"
+    write_state gate "${4:-VALID}"
+    write_state head "${5:-VALID}"
+    write_state gate_checks 0
+    write_state head_checks 0
+    write_state tag_create_calls 0
+    write_state release_create_calls 0
+  }
+
+  require_runtime_env() { return 0; }
+  verify_rc_lineage() { return 0; }
+
+  verify_live_pr_head() {
+    inc_counter head_checks
+    local mode count
+    mode="$(read_state head)"
+    count="$(read_state head_checks)"
+    case "$mode" in
+      VALID) return 0 ;;
+      CHANGED) return 1 ;;
+      CHANGE_ON_THIRD) [[ "$count" -lt 3 ]] ;;
+      *) return 1 ;;
+    esac
+  }
+
+  verify_human_gate_commit() {
+    inc_counter gate_checks
+    local mode count
+    mode="$(read_state gate)"
+    count="$(read_state gate_checks)"
+    case "$mode" in
+      VALID) verify_live_pr_head ;;
+      REVOKE_ON_SECOND) [[ "$count" -lt 2 ]] && verify_live_pr_head ;;
+      ABSENT|STALE|APP|REVOKED) return 1 ;;
+      *) return 1 ;;
+    esac
+  }
+
+  stable_tag_sha() {
+    case "$(read_state tag)" in
+      ABSENT) return 1 ;;
+      RC3) printf '%s\n' "$RC3_SHA" ;;
+      WRONG) printf '%s\n' cccccccccccccccccccccccccccccccccccccccc ;;
+      *) return 2 ;;
+    esac
+  }
+
+  release_json() {
+    case "$(read_state release)" in
+      ABSENT) return 1 ;;
+      EXACT) jq -n --arg tag "$STABLE_TAG" --arg sha "$RC3_SHA" '{tag_name:$tag,target_commitish:$sha,draft:false,prerelease:false}' ;;
+      INCOMPATIBLE) jq -n --arg tag "$STABLE_TAG" '{tag_name:$tag,target_commitish:"dddddddddddddddddddddddddddddddddddddddd",draft:false,prerelease:false}' ;;
+      *) return 2 ;;
+    esac
+  }
+
+  gh_api() {
+    if [[ "${1:-}" == "--method" && "${2:-}" == "POST" && "${3:-}" == *"/git/refs" ]]; then
+      inc_counter tag_create_calls
+      case "$(read_state race)" in
+        NONE) write_state tag RC3; return 0 ;;
+        WRONG) write_state tag WRONG; return 1 ;;
+        EXACT) write_state tag RC3; return 1 ;;
+        FAILED) return 1 ;;
+        *) return 2 ;;
+      esac
+    fi
+    if [[ "${1:-}" == *"/releases/latest" ]]; then
+      printf '%s\n' "$STABLE_TAG"
+      return 0
+    fi
+    return 97
+  }
+
+  gh_release_create() {
+    inc_counter release_create_calls
+    test "$(read_state tag)" = RC3 || return 98
+    write_state release EXACT
+  }
+
+  expect_success() { "$@" >/dev/null 2>&1; }
+  expect_failure() { ! "$@" >/dev/null 2>&1; }
+  counter_is() { test "$(read_state "$1")" = "$2"; }
+
+  reset_state ABSENT NONE ABSENT VALID VALID
+  expect_success publish_or_recover && counter_is tag_create_calls 1 && counter_is release_create_calls 1 && pass=$((pass+1))
+
+  reset_state ABSENT WRONG ABSENT VALID VALID
+  expect_failure publish_or_recover && counter_is release_create_calls 0 && pass=$((pass+1))
+
+  reset_state ABSENT EXACT ABSENT VALID VALID
+  expect_success publish_or_recover && counter_is release_create_calls 1 && pass=$((pass+1))
+
+  reset_state RC3 NONE EXACT VALID VALID
+  expect_success publish_or_recover && counter_is tag_create_calls 0 && counter_is release_create_calls 0 && pass=$((pass+1))
+
+  reset_state WRONG NONE ABSENT VALID VALID
+  expect_failure publish_or_recover && counter_is release_create_calls 0 && pass=$((pass+1))
+
+  reset_state RC3 NONE INCOMPATIBLE VALID VALID
+  expect_failure publish_or_recover && counter_is release_create_calls 0 && pass=$((pass+1))
+
+  reset_state ABSENT NONE ABSENT ABSENT VALID
+  expect_failure publish_or_recover && counter_is tag_create_calls 0 && counter_is release_create_calls 0 && pass=$((pass+1))
+
+  reset_state ABSENT NONE ABSENT APP VALID
+  expect_failure publish_or_recover && counter_is tag_create_calls 0 && pass=$((pass+1))
+
+  reset_state ABSENT NONE ABSENT REVOKE_ON_SECOND VALID
+  expect_failure publish_or_recover && counter_is tag_create_calls 0 && counter_is release_create_calls 0 && pass=$((pass+1))
+
+  reset_state ABSENT NONE ABSENT VALID CHANGE_ON_THIRD
+  expect_failure publish_or_recover && counter_is tag_create_calls 0 && counter_is release_create_calls 0 && pass=$((pass+1))
+
+  reset_state ABSENT FAILED ABSENT VALID VALID
+  expect_failure publish_or_recover && counter_is release_create_calls 0 && pass=$((pass+1))
+
+  echo "$pass"
+)
+
+self_test() {
+  local receipt real total
+  receipt="$(self_test_receipt_predicate)"
+  real="$(self_test_real_state_machine)"
+  total=$((receipt + real))
+  echo "publication_boundary_receipt_tests=$receipt"
+  echo "publication_boundary_real_state_machine_tests=$real"
+  echo "publication_boundary_self_tests=$total"
+  test "$receipt" = 4
+  test "$real" = 11
+  test "$total" = 15
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
