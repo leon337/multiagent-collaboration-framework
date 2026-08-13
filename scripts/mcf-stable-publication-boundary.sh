@@ -4,6 +4,7 @@ set -euo pipefail
 GH_BIN="${GH_BIN:-gh}"
 REPOSITORY="${REPOSITORY:-}"
 PR_NUMBER="${PR_NUMBER:-133}"
+CONTROL_BRANCH="${CONTROL_BRANCH:-release/v1.0.0-stable-publish}"
 HEAD_SHA="${HEAD_SHA:-}"
 RC1_SHA="${RC1_SHA:-9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8}"
 RC2_SHA="${RC2_SHA:-d73d936a63cc9462a95bcf481f4b8e1d4b255719}"
@@ -100,6 +101,26 @@ verify_exact_stable_tag() {
   test "$(classify_tag_sha "$sha")" = EXACT || { error "stable tag points to divergent SHA: $sha"; return 1; }
 }
 
+git_atomic_push_with_token() {
+  test -n "${GH_TOKEN:-}" || { error "GH_TOKEN is required for atomic publication push"; return 1; }
+  local auth
+  auth="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+  git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push "$@"
+}
+
+atomic_create_exact_stable_tag_with_head_lease() {
+  # Server-side CAS boundary: the control branch must still point to the exact
+  # approved HEAD at the same remote transaction that creates v1.0.0 at RC3.
+  # Git --atomic guarantees all-or-none ref updates; explicit force-with-lease
+  # rejects the whole transaction if PR HEAD moved before the server applies it.
+  git_atomic_push_with_token \
+    --atomic \
+    --force-with-lease="refs/heads/$CONTROL_BRANCH:$HEAD_SHA" \
+    origin \
+    "$HEAD_SHA:refs/heads/$CONTROL_BRANCH" \
+    "$RC3_SHA:refs/tags/$STABLE_TAG"
+}
+
 create_exact_stable_tag_fail_closed() {
   local existing_sha=""
 
@@ -112,45 +133,34 @@ create_exact_stable_tag_fail_closed() {
     return 0
   fi
 
-  # This is the publication boundary for establishing the public stable
-  # identity. Authorization/head/lineage are re-consumed immediately before
-  # the atomic create-ref request. Any revocation before this point prevents
-  # creation of the stable tag and therefore prevents stable publication.
   verify_human_gate_commit || {
-    error "HUMAN_GATE invalid immediately before stable-tag boundary"
-    return 1
-  }
-  verify_live_pr_head || {
-    error "PR HEAD changed immediately before stable-tag boundary"
+    error "HUMAN_GATE invalid before atomic stable-tag boundary"
     return 1
   }
   verify_rc_lineage || {
-    error "RC lineage changed immediately before stable-tag boundary"
+    error "RC lineage changed before atomic stable-tag boundary"
     return 1
   }
 
-  if gh_api --method POST "repos/$REPOSITORY/git/refs" \
-    -f ref="refs/tags/$STABLE_TAG" \
-    -f sha="$RC3_SHA" \
-    >/tmp/mcf-stable-tag-create.json 2>/tmp/mcf-stable-tag-create.err; then
+  if atomic_create_exact_stable_tag_with_head_lease >/tmp/mcf-stable-atomic-push.out 2>/tmp/mcf-stable-atomic-push.err; then
     verify_exact_stable_tag || return 1
-    echo CREATED_EXACT
+    echo CREATED_EXACT_ATOMIC_HEAD_LEASE
     return 0
   fi
 
-  # If another writer won the create race, inspect that winner before any
-  # GitHub Release operation. A divergent winner is terminal/fail-closed.
+  # Any failed atomic transaction is terminal for this run. Even an exact tag
+  # created by another writer is handled only by a fresh recovery run, so an
+  # old approved run can never continue after its lease failed.
   if existing_sha="$(stable_tag_sha)"; then
-    test "$(classify_tag_sha "$existing_sha")" = EXACT || {
-      error "concurrent stable tag appeared at divergent SHA: $existing_sha"
-      return 1
-    }
-    echo CONCURRENT_EXACT
-    return 0
+    if [[ "$(classify_tag_sha "$existing_sha")" == DIVERGENT ]]; then
+      error "atomic publication push failed and stable tag is divergent: $existing_sha"
+    else
+      error "atomic publication push failed; exact stable tag now exists and requires a fresh recovery run"
+    fi
+  else
+    cat /tmp/mcf-stable-atomic-push.err >&2 || true
+    error "atomic publication push failed and stable tag remains absent"
   fi
-
-  cat /tmp/mcf-stable-tag-create.err >&2 || true
-  error "stable tag create failed and no exact ref exists"
   return 1
 }
 
@@ -176,10 +186,6 @@ publish_or_recover() {
     error "RC lineage changed"
     return 1
   }
-  verify_live_pr_head || {
-    error "PR HEAD changed"
-    return 1
-  }
 
   local tag_transition current_release
   tag_transition="$(create_exact_stable_tag_fail_closed)" || return 1
@@ -195,6 +201,9 @@ publish_or_recover() {
     return 0
   fi
 
+  # Tag-only recovery is valid only with an exact RC3 tag and a still-valid
+  # immutable HUMAN_GATE receipt. The first stable mutation itself is protected
+  # by the atomic branch-lease transaction above.
   verify_human_gate_commit || {
     error "immutable HUMAN_GATE receipt no longer matches live HEAD"
     return 1
@@ -211,8 +220,9 @@ publish_or_recover() {
   gh_release_create "$STABLE_TAG" \
     --repo "$REPOSITORY" \
     --verify-tag \
+    --target "$RC3_SHA" \
     --title 'MCF v1.0.0' \
-    --notes 'First stable MCF v1.0.0 release. Promoted from the fully qualified v1.0.0-RC3 candidate after exact-SHA production qualification, fail-closed stable-tag creation, independent review, Class C controls and explicit immutable LEANDRO HUMAN_GATE.' \
+    --notes 'First stable MCF v1.0.0 release. Promoted from the fully qualified v1.0.0-RC3 candidate after exact-SHA production qualification, server-side atomic control-head lease, independent review, Class C controls and explicit immutable LEANDRO HUMAN_GATE.' \
     --latest || return 1
 
   current_release="$(release_json)" || return 1
@@ -245,6 +255,72 @@ self_test_receipt_predicate() {
   echo "$pass"
 }
 
+self_test_atomic_git_boundary() (
+  set -euo pipefail
+  local root pass=0
+  root="$(mktemp -d)"
+  trap 'rm -rf "$root"' EXIT
+
+  setup_repo() {
+    local name="$1"
+    git init --bare "$root/$name.git" >/dev/null
+    git clone "$root/$name.git" "$root/$name-a" >/dev/null 2>&1
+    (
+      cd "$root/$name-a"
+      git config user.email test@example.invalid
+      git config user.name mcf-boundary-test
+      printf 'base\n' >state.txt
+      git add state.txt
+      git commit -m base >/dev/null
+      git branch -M "$CONTROL_BRANCH"
+      git push origin "$CONTROL_BRANCH" >/dev/null
+    )
+  }
+
+  setup_repo stable-head
+  (
+    cd "$root/stable-head-a"
+    local_head="$(git rev-parse HEAD)"
+    git push --atomic \
+      --force-with-lease="refs/heads/$CONTROL_BRANCH:$local_head" \
+      origin \
+      "$local_head:refs/heads/$CONTROL_BRANCH" \
+      "$local_head:refs/tags/$STABLE_TAG" >/dev/null
+    test "$(git ls-remote origin "refs/tags/$STABLE_TAG" | cut -f1)" = "$local_head"
+  )
+  pass=$((pass+1))
+  echo "PASS: atomic lease + unchanged control HEAD creates exact tag" >&2
+
+  setup_repo moved-head
+  git clone "$root/moved-head.git" "$root/moved-head-b" >/dev/null 2>&1
+  (
+    cd "$root/moved-head-b"
+    git config user.email test2@example.invalid
+    git config user.name mcf-boundary-racer
+    git checkout "$CONTROL_BRANCH" >/dev/null 2>&1
+    printf 'racer\n' >>state.txt
+    git commit -am racer >/dev/null
+    git push origin "$CONTROL_BRANCH" >/dev/null
+  )
+  (
+    cd "$root/moved-head-a"
+    stale_head="$(git rev-parse HEAD)"
+    if git push --atomic \
+      --force-with-lease="refs/heads/$CONTROL_BRANCH:$stale_head" \
+      origin \
+      "$stale_head:refs/heads/$CONTROL_BRANCH" \
+      "$stale_head:refs/tags/$STABLE_TAG" >/dev/null 2>&1; then
+      echo "FAIL: stale control HEAD unexpectedly passed atomic lease" >&2
+      return 1
+    fi
+    test -z "$(git ls-remote origin "refs/tags/$STABLE_TAG" | cut -f1)"
+  )
+  pass=$((pass+1))
+  echo "PASS: control HEAD moved immediately before mutation -> atomic transaction creates no tag" >&2
+
+  echo "$pass"
+)
+
 self_test_real_state_machine() (
   set -euo pipefail
   local tmp pass=0
@@ -272,28 +348,17 @@ self_test_real_state_machine() (
 
   verify_live_pr_head() {
     inc_counter head_checks
-    local mode count
-    mode="$(read_state head)"
-    count="$(read_state head_checks)"
-    case "$mode" in
+    case "$(read_state head)" in
       VALID) return 0 ;;
       CHANGED) return 1 ;;
-      CHANGE_ON_THIRD) test "$count" -lt 3 ;;
       *) return 1 ;;
     esac
   }
 
   verify_human_gate_commit() {
     inc_counter gate_checks
-    local mode count
-    mode="$(read_state gate)"
-    count="$(read_state gate_checks)"
-    case "$mode" in
+    case "$(read_state gate)" in
       VALID) verify_live_pr_head ;;
-      REVOKE_ON_SECOND)
-        test "$count" -lt 2 || return 1
-        verify_live_pr_head
-        ;;
       ABSENT|STALE|APP|REVOKED) return 1 ;;
       *) return 1 ;;
     esac
@@ -308,6 +373,18 @@ self_test_real_state_machine() (
     esac
   }
 
+  atomic_create_exact_stable_tag_with_head_lease() {
+    inc_counter tag_create_calls
+    case "$(read_state race)" in
+      NONE) write_state tag RC3; return 0 ;;
+      WRONG) write_state tag WRONG; return 1 ;;
+      EXACT) write_state tag RC3; return 1 ;;
+      HEAD_CHANGED) write_state head CHANGED; return 1 ;;
+      FAILED) return 1 ;;
+      *) return 2 ;;
+    esac
+  }
+
   release_json() {
     case "$(read_state release)" in
       ABSENT) return 1 ;;
@@ -318,16 +395,6 @@ self_test_real_state_machine() (
   }
 
   gh_api() {
-    if [[ "${1:-}" == "--method" && "${2:-}" == "POST" && "${3:-}" == *"/git/refs" ]]; then
-      inc_counter tag_create_calls
-      case "$(read_state race)" in
-        NONE) write_state tag RC3; return 0 ;;
-        WRONG) write_state tag WRONG; return 1 ;;
-        EXACT) write_state tag RC3; return 1 ;;
-        FAILED) return 1 ;;
-        *) return 2 ;;
-      esac
-    fi
     if [[ "${1:-}" == *"/releases/latest" ]]; then
       printf '%s\n' "$STABLE_TAG"
       return 0
@@ -347,54 +414,60 @@ self_test_real_state_machine() (
   no_tag_writes() { test "$(read_state tag_create_calls)" = 0; }
 
   reset_state ABSENT NONE ABSENT VALID VALID
-  if publish_or_recover >/dev/null 2>&1 && test "$(read_state tag_create_calls)" = 1 && test "$(read_state release_create_calls)" = 1; then passed "tag absent -> exact RC3 tag then release"; else failed "tag absent -> exact RC3 tag then release"; fi
+  if publish_or_recover >/dev/null 2>&1 && test "$(read_state tag_create_calls)" = 1 && test "$(read_state release_create_calls)" = 1; then passed "valid approval + stable control HEAD -> path permitted"; else failed "valid approval + stable control HEAD -> path permitted"; fi
+
+  reset_state ABSENT HEAD_CHANGED ABSENT VALID VALID
+  if ! publish_or_recover >/dev/null 2>&1 && test "$(read_state tag_create_calls)" = 1 && no_release_writes && test "$(read_state tag)" = ABSENT; then passed "HEAD changes at first stable mutation -> no tag/release"; else failed "HEAD changes at first stable mutation -> no tag/release"; fi
+
+  reset_state RC3 NONE ABSENT VALID VALID
+  if publish_or_recover >/dev/null 2>&1 && no_tag_writes && test "$(read_state release_create_calls)" = 1; then passed "exact RC3 tag + no release -> safe recovery"; else failed "exact RC3 tag + no release -> safe recovery"; fi
+
+  reset_state WRONG NONE ABSENT VALID VALID
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "wrong-SHA tag -> fail closed"; else failed "wrong-SHA tag -> fail closed"; fi
+
+  reset_state RC3 NONE EXACT VALID VALID
+  if publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "exact tag + exact release -> idempotent NOOP"; else failed "exact tag + exact release -> idempotent NOOP"; fi
+
+  reset_state RC3 NONE INCOMPATIBLE VALID VALID
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "incompatible release -> fail closed"; else failed "incompatible release -> fail closed"; fi
+
+  reset_state ABSENT NONE ABSENT ABSENT VALID
+  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "HUMAN_GATE absent -> no mutation"; else failed "HUMAN_GATE absent -> no mutation"; fi
+
+  reset_state ABSENT NONE ABSENT STALE VALID
+  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "stale receipt -> no mutation"; else failed "stale receipt -> no mutation"; fi
+
+  reset_state ABSENT NONE ABSENT APP VALID
+  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "App-mediated/invalid receipt -> no mutation"; else failed "App-mediated/invalid receipt -> no mutation"; fi
 
   reset_state ABSENT WRONG ABSENT VALID VALID
   if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "concurrent divergent tag -> fail before release"; else failed "concurrent divergent tag -> fail before release"; fi
 
   reset_state ABSENT EXACT ABSENT VALID VALID
-  if publish_or_recover >/dev/null 2>&1 && test "$(read_state release_create_calls)" = 1; then passed "concurrent exact RC3 tag -> controlled path"; else failed "concurrent exact RC3 tag -> controlled path"; fi
-
-  reset_state RC3 NONE EXACT VALID VALID
-  if publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "existing exact stable -> recovery NOOP"; else failed "existing exact stable -> recovery NOOP"; fi
-
-  reset_state WRONG NONE ABSENT VALID VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "existing divergent tag -> fail"; else failed "existing divergent tag -> fail"; fi
-
-  reset_state RC3 NONE INCOMPATIBLE VALID VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "incompatible release -> fail"; else failed "incompatible release -> fail"; fi
-
-  reset_state ABSENT NONE ABSENT ABSENT VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "HUMAN_GATE absent -> no mutation"; else failed "HUMAN_GATE absent -> no mutation"; fi
-
-  reset_state ABSENT NONE ABSENT APP VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "App/API gate -> no mutation"; else failed "App/API gate -> no mutation"; fi
-
-  reset_state ABSENT NONE ABSENT REVOKE_ON_SECOND VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "revocation before tag boundary -> no publication"; else failed "revocation before tag boundary -> no publication"; fi
-
-  reset_state ABSENT NONE ABSENT VALID CHANGE_ON_THIRD
-  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "PR HEAD changes before tag boundary -> no publication"; else failed "PR HEAD changes before tag boundary -> no publication"; fi
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "concurrent exact tag during failed transaction -> fresh recovery required"; else failed "concurrent exact tag during failed transaction -> fresh recovery required"; fi
 
   reset_state ABSENT FAILED ABSENT VALID VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "tag create failure without exact winner -> no release"; else failed "tag create failure without exact winner -> no release"; fi
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "atomic push failure without tag -> no release"; else failed "atomic push failure without tag -> no release"; fi
 
   echo "$pass"
 )
 
 self_test() {
-  local receipt real total
+  local receipt atomic_git real total
   receipt="$(self_test_receipt_predicate)"
+  atomic_git="$(self_test_atomic_git_boundary)"
   real="$(self_test_real_state_machine)"
-  total=$((receipt + real))
+  total=$((receipt + atomic_git + real))
 
   echo "publication_boundary_receipt_tests=$receipt"
+  echo "publication_boundary_atomic_git_tests=$atomic_git"
   echo "publication_boundary_real_state_machine_tests=$real"
   echo "publication_boundary_self_tests=$total"
 
   test "$receipt" = 4
-  test "$real" = 11
-  test "$total" = 15
+  test "$atomic_git" = 2
+  test "$real" = 12
+  test "$total" = 18
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
