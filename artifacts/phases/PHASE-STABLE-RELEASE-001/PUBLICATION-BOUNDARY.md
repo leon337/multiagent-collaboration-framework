@@ -9,124 +9,62 @@
 
 ## Invariantes
 
-- RC1 → `9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8`;
-- RC2 → `d73d936a63cc9462a95bcf481f4b8e1d4b255719`;
-- RC3 → `7f741e10d0e745a90c732e084400b11e3f5e6794`;
-- eventual `v1.0.0` somente pode apontar a RC3;
-- PR #133 é control plane e não altera RC3;
-- nenhuma CI/documentação constitui HUMAN_GATE.
+RC1, RC2 e RC3 permanecem preservadas. O candidato estável continua exclusivamente `v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794`. PR #133 é somente control plane e nenhuma CI ou documentação constitui aprovação humana.
 
-## P1 — criação fail-closed da stable tag
+## P1 — stable tag creation race
 
-O boundary não delega mais criação da tag a `gh release create --target`.
+A correção estabelece a identidade da tag stable explicitamente no SHA RC3 antes de qualquer GitHub Release. Se outro writer vencer a criação concorrente, a ref resultante é relida antes da release; SHA divergente falha fechado. O caminho de criação da release usa a tag já estabelecida e verificada, sem depender de criação automática por target.
 
-Sequência futura, somente se houver autorização válida:
+A autorização, o PR HEAD e a linhagem RC são reconsumidos imediatamente antes da tentativa de criação da ref. Essa tentativa é o publication boundary para estabelecer a identidade stable.
 
-```text
-validar HUMAN_GATE imutável
-→ validar RC lineage + PR HEAD
-→ ler refs/tags/v1.0.0
-→ se ausente: POST Git Data API criando a ref exatamente em RC3
-→ se o POST perder uma corrida: reler a ref
-→ aceitar somente RC3 exata; SHA divergente = FAIL
-→ validar release existente ou ausência
-→ revalidar HUMAN_GATE + RC lineage + tag RC3
-→ gh release create --verify-tag (sem --target)
-```
+## P1 — HUMAN_GATE revocation
 
-Assim, o cenário de outra writer criar `v1.0.0` em SHA errado durante a criação falha **antes** da criação de GitHub Release.
+Comentários mutáveis da Issue #131 deixaram de ser autoridade. O mecanismo futuro é um receipt em commit GitHub Web verificado, alterando exclusivamente `LEANDRO-HUMAN-GATE.yaml`, vinculado ao parent control-head e à identidade `leon337`/25374535. Commits App/API/unsigned, receipt stale/alterado ou HEAD posterior são rejeitados.
 
-Recovery só aceita tag/release já existentes quando ambos são exatamente compatíveis com RC3 e a autorização atual continua válida.
+GitHub Environment foi investigado, mas o environment observado `main - rsa-api-free` não possui required reviewer/protection rules configurados; essa proteção não é presumida.
 
-## P1 — HUMAN_GATE sem comentário mutável
-
-O comentário da Issue #131 não faz mais parte do predicado de autoridade.
-
-O environment nativo do GitHub foi investigado. O repositório possui environment `main - rsa-api-free`, porém a API observada mostra `protection_rules: []`; required reviewer não está configurado. Logo esse mecanismo não é alegado nem usado.
-
-O mecanismo implementado para futura decisão é um **GitHub Web verified commit** que modifica exclusivamente:
-
-`artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml`
-
-Estado atual do arquivo: `NAO_APROVADO`.
-
-Para qualificar futuramente, o commit deve cumprir cumulativamente:
-
-1. author login/id = `leon337` / `25374535`;
-2. committer = `web-flow` / `19864447`;
-3. `commit.verification.verified=true` e `reason=valid`;
-4. mensagem exata `HUMAN_GATE: approve MCF v1.0.0`;
-5. exatamente um parent e exatamente um arquivo modificado;
-6. arquivo modificado = receipt do HUMAN_GATE;
-7. parent contém o receipt exato `NAO_APROVADO`;
-8. conteúdo aprovado declara `approved_control_head` igual ao parent SHA.
-
-Commit produzido por App/API/connector, comentário editável ou qualquer alteração adicional não satisfaz o gate. Um push posterior muda o HEAD e invalida o receipt antigo.
-
-## Separação de privilégios
-
-- validação: read-only;
-- autorização: read-only;
-- `contents: write`: somente no job `publish-stable`;
-- `publish-stable` só é instanciado quando o job read-only `authorize-publication` emite `approved=true`;
-- no estado atual o receipt é `NAO_APROVADO`, então `publish-stable` permanece SKIPPED.
-
-## Testes dedicados
-
-O boundary contém `self-test` determinístico cobrindo:
-
-- tag ausente → criação exata RC3;
-- tag concorrencial divergente → FAIL antes de release;
-- tag concorrencial exata → caminho controlado;
-- tag já exata RC3 → recovery;
-- tag divergente → FAIL;
-- release incompatível → FAIL;
-- HUMAN_GATE ausente → nenhuma mutação;
-- HUMAN_GATE de HEAD antigo → FAIL;
-- App/API/unsigned receipt → FAIL;
-- revogação/alteração → FAIL;
-- mudança de PR HEAD → aprovação antiga inválida.
-
-Além disso, o primeiro self-test falhou por semântica de `set -e`; o CAF endureceu todos os predicados com `|| return 1`, e o reteste passou.
+## Evidência técnica
 
 ```yaml
-technical_head: 4d5144ce46c9c77955c732824f5225f81cf0b55d
-publication_gate_run: 31726482829
-validation: PASS
-self_tests: PASS_16
+technical_head: f2c7047485beb06806be6c8a7de192314d4d1c17
+publication_gate_run: 31728317756
+receipt_predicate_tests: PASS_4
+real_state_machine_tests: PASS_11
+total_self_tests: PASS_15
 authorize_publication: APPROVED_FALSE
 publish_stable: SKIPPED
+documentation_validation_run: 31728317747
 documentation_validation: PASS
+production_readiness_run: 31728317685
+production_readiness: PASS
 publication_P0_count: 0
 publication_P1_count: 2
 critical_findings: 0
 high_findings: 0
 ```
 
-Os dois P1s permanecem formalmente abertos até revisão independente do SHA final.
+Os testes reais exercitam as próprias funções do boundary com backend fake isolado, cobrindo tag ausente, corrida divergente, corrida exata, recovery exato, tag divergente, release incompatível, HUMAN_GATE ausente, App/API/unsigned, revogação antes do boundary e mudança de PR HEAD antes do boundary.
 
-## Threads antigos
+## CAF
 
-HEAD-binding e TOCTOU permanecem formalmente abertos enquanto a cadeia `ACHADO → CORREÇÃO → TESTE → EVIDÊNCIA → REVISÃO → RESOLUÇÃO` não estiver completa para o desenho atual.
+- run `31726128230`: falha segura revelou dependência de `set -e`;
+- run `31727880589`, head `59df5bcc...`: teste real revelou propagação incompleta de retorno; nenhum job de publicação executou;
+- head `f2c704748...`: guards passaram a propagar falhas explicitamente e o reteste passou.
 
-## Imutabilidade
-
-**Governança:** identidades versionadas não devem ser retargetadas/reutilizadas.
-
-**Proteção técnica observada:** RC3 `immutable:false`, rulesets observados `[]`, `main` não protegida. Não é alegada undeletability absoluta.
-
-## Estado de autorização
+## Estado de gates
 
 ```yaml
+P0: 0
+P1: 2
+CRITICAL: 0
+HIGH: 0
+P1_tag_race: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+P1_human_gate_revocation: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
 AUDIT: BLOCKED_BY_PUBLICATION_P1
 LEO_GATE: BLOCKED_BY_PUBLICATION_P1
 HUMAN_GATE: NAO_APROVADO
-publication_authorized: false
-merge_for_publication: NAO_AUTORIZADO
-tag_v1_0_0: NAO_AUTORIZADA
-github_release_v1_0_0: NAO_AUTORIZADA
-latest_v1_0_0: NAO_AUTORIZADO
 stable_v1_0_0: NAO_PUBLICADA
+publication_authorized: false
 ```
 
-Nenhum trecho deste documento constitui aprovação humana.
+Nenhum finding P1 será encerrado antes da revisão independente do SHA final. Nenhum conteúdo deste documento autoriza merge, tag, release, `latest` ou publicação.
