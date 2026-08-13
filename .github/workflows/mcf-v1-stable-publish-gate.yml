@@ -4,11 +4,7 @@ on:
   pull_request:
     branches:
       - main
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - edited
+    types: [opened, reopened, synchronize, edited]
 
 concurrency:
   group: mcf-v1-stable-publication-pr-133
@@ -30,10 +26,6 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
-      PR_TITLE: ${{ github.event.pull_request.title }}
-      EVENT_NAME: ${{ github.event_name }}
-      EVENT_REF: ${{ github.ref }}
-      WORKFLOW_REF: ${{ github.workflow_ref }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       RC1_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
@@ -45,6 +37,10 @@ jobs:
       LEANDRO_GITHUB_ID: '25374535'
     steps:
       - name: Prove pull_request workflow provenance
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REF: ${{ github.ref }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
         run: |
           set -euo pipefail
           test "$EVENT_NAME" = pull_request
@@ -95,7 +91,6 @@ jobs:
           content="$(gh api "repos/$REPOSITORY/contents/artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml?ref=$HEAD_SHA" --jq '.content' | tr -d '\n' | base64 --decode)"
           if grep -qx 'state: APROVADO' <<<"$content"; then
             bash scripts/mcf-stable-publication-boundary.sh verify-effective-gate
-            echo human_gate_state=VALID_DIRECT_OR_CONSUMED_RECEIPT
           else
             expected="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: v1.0.0\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n')"
             test "$content" = "$expected"
@@ -108,28 +103,30 @@ jobs:
           read_ref_sha() {
             local ref_path="$1" tmp
             tmp="$(mktemp)"
-            if gh api "repos/$REPOSITORY/git/ref/$ref_path" >"$tmp" 2>/dev/null; then
-              jq -r '.object.sha' "$tmp"
-            fi
+            if gh api "repos/$REPOSITORY/git/ref/$ref_path" >"$tmp" 2>/dev/null; then jq -r '.object.sha' "$tmp"; fi
             rm -f "$tmp"
           }
-
           stable_ref="$(read_ref_sha "tags/$STABLE_TAG")"
           lock_ref="$(read_ref_sha "tags/$CONTROL_LOCK_TAG")"
 
           if [[ -z "$stable_ref" && -z "$lock_ref" ]]; then
-            if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/dev/null 2>&1; then
-              echo 'ERROR: release exists without publication refs' >&2
-              exit 1
-            fi
+            if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/dev/null 2>&1; then exit 1; fi
             echo stable_state=ABSENT
+            exit 0
+          fi
+
+          if [[ -n "$stable_ref" && -z "$lock_ref" ]]; then
+            test "$stable_ref" = "$RC3_SHA"
+            if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/dev/null 2>&1; then exit 1; fi
+            bash scripts/mcf-stable-publication-boundary.sh verify-human-gate
+            bash scripts/mcf-stable-publication-boundary.sh protection-status >/dev/null
+            echo stable_state=AUTHORIZED_EXACT_TAG_PENDING_LOCK_CONSUMPTION
             exit 0
           fi
 
           test -n "$stable_ref"
           test -n "$lock_ref"
           bash scripts/mcf-stable-publication-boundary.sh verify-consumed-gate
-
           if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/tmp/stable-release.json 2>/dev/null; then
             test "$(jq -r '.tag_name' /tmp/stable-release.json)" = "$STABLE_TAG"
             test "$(jq -r '.target_commitish' /tmp/stable-release.json)" = "$RC3_SHA"
@@ -141,8 +138,7 @@ jobs:
           fi
 
   authorize-publication:
-    needs:
-      - validate-publication-boundary
+    needs: [validate-publication-boundary]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -163,13 +159,11 @@ jobs:
     outputs:
       approved: ${{ steps.gate.outputs.approved }}
     steps:
-      - name: Checkout exact control-plane head
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
-
       - name: Consume direct or protected HUMAN_GATE if present
         id: gate
         run: |
@@ -177,18 +171,14 @@ jobs:
           content="$(gh api "repos/$REPOSITORY/contents/artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml?ref=$HEAD_SHA" --jq '.content' | tr -d '\n' | base64 --decode)"
           if grep -qx 'state: NAO_APROVADO' <<<"$content"; then
             echo approved=false >> "$GITHUB_OUTPUT"
-            echo human_gate_state=NAO_APROVADO
             exit 0
           fi
           test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.title')" = '[HUMAN-APPROVED] release: publish MCF v1.0.0'
           bash scripts/mcf-stable-publication-boundary.sh verify-effective-gate
           echo approved=true >> "$GITHUB_OUTPUT"
-          echo human_gate_state=APPROVED_DIRECT_OR_CONSUMED
 
   publish-stable:
-    needs:
-      - validate-publication-boundary
-      - authorize-publication
+    needs: [validate-publication-boundary, authorize-publication]
     if: needs.authorize-publication.outputs.approved == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -208,12 +198,10 @@ jobs:
       LEANDRO_GITHUB_LOGIN: leon337
       LEANDRO_GITHUB_ID: '25374535'
     steps:
-      - name: Checkout exact approved control-plane head
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
-
       - name: Consume authorization or recover protected stable publication
         run: bash scripts/mcf-stable-publication-boundary.sh publish
