@@ -4,54 +4,50 @@
 **Issue:** #131  
 **PR:** #133  
 **Classe:** C  
-**Estado:** REQUALIFYING — correção e reteste do boundary de publicação  
+**Estado:** `REQUALIFYING` — publication boundary tecnicamente requalificado; auditoria multiagente/LÉO pendente  
 **Autoridade humana:** LEANDRO  
 **HUMAN_GATE:** NÃO APROVADO  
 **Stable `v1.0.0`:** NÃO PUBLICADA
 
-## 1. Objetivo da fase
-
-Qualificar e preparar a promoção pública de `v1.0.0` no SHA exato da RC3, sem publicar antes do HUMAN_GATE de LEANDRO e sem alterar RC1, RC2 ou RC3.
-
-## 2. Estado verificável
+## 1. Candidato preservado
 
 ```yaml
+main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 qualified_rc3_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 rc1: v1.0.0-RC1@9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
 rc2: v1.0.0-RC2@d73d936a63cc9462a95bcf481f4b8e1d4b255719
 rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
 stable_v1_0_0: NAO_PUBLICADA
-publication_target_if_authorized: 7f741e10d0e745a90c732e084400b11e3f5e6794
 publication_authorized: false
 ```
 
-Os commits do PR #133 são control plane de publicação e não modificam o SHA candidato da release.
+Os commits do PR #133 são somente control plane de publicação e não mudam o candidato RC3.
 
-## 3. Findings do boundary
+## 2. Findings do publication boundary
 
-### P1-1 — Authenticate the human-gate comment author
+### P1 — autenticação do HUMAN_GATE
 
-**Cenário reportado:** qualquer comentário contendo a substring de aprovação poderia satisfazer o gate.
+A evolução do finding encontrou quatro classes de bypass/race:
 
-**Correção:** o predicado foi substituído por identidade GitHub canônica de LEANDRO (`login=leon337`, user id `25374535`) e corpo exato; fixtures negativos rejeitam impersonação, id divergente, quoting e conteúdo adicional.
+1. substring/quote ou autor incorreto;
+2. recibo válido para HEAD anterior após `synchronize`;
+3. TOCTOU entre a última leitura de estado e a mutação;
+4. comentário mediado por GitHub App carregando o mesmo login/id de LEANDRO.
 
-**Prova:** run `31676208679`, job read-only `validate-publication-boundary` PASS. A revisão independente do head `24980e02cccf9f45041237540f9d0598bb67175e` não registrou recorrência desse P1.
+O último cenário foi comprovado pela própria API do GitHub: comentários do conector podem aparecer com `user.login=leon337`, `user.id=25374535` e `performed_via_github_app.slug=chatgpt-codex-connector`.
 
-**Estado:** `CORRIGIDO_COM_PROVA_E_REVISAO_SEM_RECORRENCIA`.
+A correção consolidada exige:
 
-### P1-2 — Seed the publication workflow before relying on it
+- login GitHub exato `leon337`;
+- user id exato `25374535`;
+- corpo inteiro exato;
+- `RELEASE: v1.0.0`;
+- `PR_HEAD` exato do PR #133;
+- `.performed_via_github_app == null`;
+- `concurrency.cancel-in-progress` por PR;
+- revalidação viva de HEAD, título, identidade, lineage e recibo dentro do job mutável, inclusive imediatamente antes de `gh release create`.
 
-**Cenário reportado:** o workflow é introduzido no PR #133 e o PR não deve ser merged para publicar; um run anterior estava apenas `SKIPPED`.
-
-**Correção/prova:** o workflow possui job read-only independente do título de aprovação. Run `31676208679`, evento real `pull_request`, executou a partir de `refs/pull/133/merge`, provou provenance/ref e terminou PASS; o job mutável permaneceu `SKIPPED`. A revisão independente do head `24980e02...` não registrou recorrência desse P1.
-
-**Estado:** `CORRIGIDO_COM_PROVA_E_REVISAO_SEM_RECORRENCIA`.
-
-### P1-3 — Bind the human approval receipt to the reviewed head
-
-**Cenário reportado na revisão independente do head `f34a58cec64b7bda23a6d0cdcfb82c3c91e3724b`:** um recibo humano válido para um HEAD anterior continuaria satisfazendo o predicado após um evento `synchronize`.
-
-**Correção implementada:** o recibo agora é específico simultaneamente para a release e para o `PR_HEAD` do evento. O corpo esperado é exatamente:
+Formato do recibo, somente após futuro pacote tecnicamente elegível:
 
 ```text
 LEANDRO_HUMAN_GATE: APPROVED
@@ -59,90 +55,104 @@ RELEASE: v1.0.0
 PR_HEAD: <SHA exato do HEAD revisado do PR #133>
 ```
 
-O workflow também reconsulta o HEAD atual do PR imediatamente antes do job mutável, impedindo um run antigo de publicar depois de um novo push. O fixture negativo inclui recibo com HEAD obsoleto.
-
-**Estado:** `CORRIGIDO_PENDENTE_DE_TESTE_DEDICADO_E_REVISAO_INDEPENDENTE_NO_NOVO_HEAD`.
-
-### P2-1 — Recovery após criação parcial da stable
-
-**Cenário:** se a tag/release correta fosse criada e a verificação final falhasse transitoriamente, o validador anterior rejeitaria qualquer rerun porque exigia ausência absoluta de `v1.0.0`.
-
-**Correção implementada:** o validador aceita estado de recovery somente quando tag e release já existem exatamente no SHA RC3, a release é não-draft/não-prerelease, o título do PR continua no valor aprovado e existe exatamente um recibo HUMAN_GATE válido para o HEAD corrente. Qualquer stable divergente continua fail-closed.
-
-**Estado:** `CORRIGIDO_PENDENTE_DE_TESTE_E_REVISAO`.
-
-### P2-2 — Reconciliação dos artefatos canônicos
-
-PRF, REPORT, README e checkpoint estavam descrevendo estados diferentes após as rodadas intermediárias de review.
-
-**Correção:** este ciclo reconcilia todos os artefatos para o mesmo estado `REQUALIFYING`, registra os findings novos e mantém a stable não autorizada.
-
-**Estado:** `CORRIGINDO_NESTE_HEAD`.
-
-## 4. Evidências técnicas preservadas
+### Teste e revisão
 
 ```yaml
-rc3_production_readiness_run: 31653194401
-rc3_production_readiness: PASS
-latest_health_run: 31671899893
-latest_health_result: PASS
-latest_health_detail: INITIAL_TIMEOUT_THEN_COLD_START_RECOVERY
-prior_boundary_execution_run: 31676208679
-prior_boundary_validation_job: PASS
-prior_publication_job: SKIPPED
-stable_created: false
+head_tested: ce3ac1d5a605793c5eba74ff76a12f92bf515449
+stable_publication_gate_run: 31679151733
+validate_publication_boundary: PASS
+app_mediated_negative_fixture: PASS
+qualifying_direct_receipts: 0
+stable_state: ABSENT
+publish_stable: SKIPPED
+production_readiness_run: 31679151776
+production_readiness: PASS
+documentation_validation_run: 31679151867
+documentation_validation: PASS
+independent_review_comment: 5277559034
+independent_review_result: NO_MAJOR_ISSUES
 ```
 
-A evidência do novo HEAD somente será adicionada depois que o workflow executar novamente. Nenhuma correção deste PR altera o runtime nem o SHA `7f741e10...` da RC3.
+A revisão independente registrou explicitamente que não encontrou issues relevantes no commit `ce3ac1d5a6`.
 
-## 5. Segurança e governança
+**Estado P1:** `RESOLVIDO_COM_CORRECAO_TESTE_EVIDENCIA_E_REVISAO_INDEPENDENTE`.
 
-- permissões padrão do workflow são read-only;
-- `contents: write` existe apenas no job `publish-stable`;
-- o job de publicação depende do job read-only PASS;
-- o título necessário para publicação é igualdade exata: `[HUMAN-APPROVED] release: publish MCF v1.0.0`;
-- o recibo HUMAN_GATE é autenticado por login + user id + corpo exato e agora é vinculado ao `PR_HEAD` corrente e à release `v1.0.0`;
-- o HEAD remoto atual do PR é revalidado antes de qualquer efeito;
-- a identidade é revalidada contra o usuário GitHub e o owner do repositório;
-- a publicação, se futuramente autorizada, continua fixada ao SHA da RC3;
-- o mecanismo de publicação marca `v1.0.0` como `latest`; esse efeito permanece proibido enquanto HUMAN_GATE não for aprovado.
+### P1 — executabilidade do workflow no próprio PR
 
-## 6. Imutabilidade
+Run `31676208679` provou execução real em evento `pull_request`, `refs/pull/133/merge`, sem merge em `main`, com validação read-only PASS e publicação SKIPPED. Reviews posteriores não reproduziram o finding.
 
-**Imutabilidade de governança:** `v1.0.0`, quando publicada, será identidade pública de versão e não deve ser retargetada.
+**Estado:** `RESOLVIDO`.
 
-**Proteção técnica observada:** não há evidência de undeletability administrativa. A RC3 expõe `immutable: false`, `main` não está marcada como branch protegida e a API de rulesets retorna lista vazia. Portanto não é feita alegação de proteção técnica absoluta.
+### P2 — recovery parcial / TOCTOU
 
-## 7. Produção e monitor
+- recovery só é aceito se tag/release existentes forem exatamente a RC3 e o gate atual ainda for válido;
+- estado divergente falha fechado;
+- stale runs são cancelados;
+- o estado vivo é rechecado no limite da mutação.
 
-- produção qualificada permanece vinculada ao SHA RC3 `7f741e10...` conforme evidência da missão;
-- monitor agendado mais recente verificado: run `31671899893`, `SUCCESS`;
-- o probe inicial expirou após 20 s, seguido de recuperação na segunda tentativa tolerante a cold start;
-- o workflow não abriu novo incidente nesse ciclo;
-- Issue operacional #129 permanece `CLOSED / completed`.
+**Estado:** `RESOLVIDO_NO_BOUNDARY_TECNICO`; sem finding novo nas revisões posteriores.
 
-Esse comportamento é reportado como sinal operacional relevante, não como incidente material aberto.
+### P2 — reconciliação documental
 
-## 8. Findings / gates atuais
+Este ciclo atualiza PRF, REPORT, README, runtime README, checkpoint e PUBLICATION-BOUNDARY para refletirem o mesmo estado: `P1=0`, boundary técnico requalificado, auditoria multiagente/LÉO ainda pendente e HUMAN_GATE não aprovado.
+
+**Estado:** `EM_RECONCILIACAO_NESTE_HEAD_DOCUMENTAL`.
+
+## 3. Produção e monitor
+
+```yaml
+production_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+render_service: rsa-api-free
+render_deploy: dep-d9ugl7gae00c73c5snv0
+production_state: LIVE
+latest_health_run_verified: 31677775717
+latest_health_result: SUCCESS
+initial_readiness_probe: TIMEOUT_20S
+cold_start_recovery_probe: PASS
+material_incidents_open: 0
+issue_129: CLOSED_COMPLETED
+```
+
+O timeout inicial continua explícito como observação operacional LOW/não bloqueante; não foi escondido por trás do resultado verde.
+
+## 4. Auditoria multiagente e LÉO
+
+Comentários históricos que declaravam Augusto/Júlia/Emily/LÉO como PASS foram gravados via `chatgpt-codex-connector`. Eles permanecem históricos, mas não são aceitos como renovação real do boundary atual.
+
+O runtime real exige sessão Bearer válida nos endpoints de missão. O canal atual não possui essa sessão e nenhum segredo será extraído/exposto para contornar o controle.
+
+```yaml
+AUDIT: PENDING_REAL_RENEWAL
+AUGUSTO_TRACE: PENDING
+JULIA_CLASS_C: PENDING
+EMILY_INDEPENDENT_AUDIT: PENDING
+LEO_GATE: PENDING
+```
+
+## 5. Findings / gates atuais
 
 ```yaml
 publication_P0_count: 0
-publication_P1_count: 1
+publication_P1_count: 0
 critical_findings: 0
 high_findings: 0
-p2_open_or_pending_review: 2
-independent_review_current_corrected_head: PENDING
-corrected_head_ci: PENDING
-production_reconfirmation: PARTIAL_PASS
-health_monitor_reconfirmation: PASS_WITH_COLD_START_RECOVERY
+p2_document_reconciliation: IN_PROGRESS
+material_incidents_open: 0
+TECHNICAL_PUBLICATION_BOUNDARY: PASS_ON_CE3AC1D5
+AUDIT: PENDING
+LEO_GATE: PENDING
 HUMAN_GATE: NAO_APROVADO
 stable_v1_0_0: NAO_PUBLICADA
 ```
 
-A contagem de P1 só poderá voltar a zero depois de teste dedicado no novo HEAD e nova revisão independente confirmarem a eliminação do cenário de aprovação obsoleta.
+## 6. Imutabilidade
 
-## 9. Próxima ação
+**Imutabilidade de governança:** identidades versionadas não devem ser movidas/reutilizadas.
 
-`finalizar reconciliação documental → validar novo HEAD em CI → provar fixture de HEAD obsoleto + recovery fail-closed → revisão independente → tratar qualquer finding → renovar auditoria multiagente Classe C/LÉO → reconfirmar produção/monitor/stable absence → somente então preparar novo pacote de decisão para LEANDRO`.
+**Proteção técnica observada:** RC3 expõe `immutable: false`, a API de rulesets retornou `[]` e `main` não está marcada como protegida. Não é alegada undeletability técnica.
+
+## 7. Próxima ação
+
+`concluir reconciliação documental → CI/revisão do HEAD documental final → renovar Augusto/Júlia/Emily/LÉO por mecanismo real do MCF → reconfirmar main/produção/monitor/stable absence → somente se todos passarem preparar novo pacote HUMAN_GATE para LEANDRO`.
 
 Nenhum conteúdo deste PRF constitui autorização humana para publicar `v1.0.0`.
