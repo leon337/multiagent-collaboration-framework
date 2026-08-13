@@ -18,14 +18,14 @@ skills_executaveis: 16
 main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 candidate: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
 production: LIVE
-
 stable_release_boundary:
   mission: MCF-STABLE-RELEASE-001
   issue: 131
   pr: 133
   macrostate: CORRECTING_BLOCKED_FOR_HUMAN_GATE
   publication_P0_count: 0
-  publication_P1_count: 2
+  publication_P1_count: 1
+  publication_P2_count: 1
   critical_findings: 0
   high_findings: 0
   audit: BLOCKED_BY_PUBLICATION_P1
@@ -39,12 +39,17 @@ RC1, RC2 e RC3 permanecem preservadas. PR #133 é somente control plane e não a
 
 ## Publication boundary
 
-Dois P1s receberam correção técnica e teste real, mas permanecem formalmente abertos até revisão independente do SHA final:
+### P1 — HEAD-change window
 
-1. **stable tag creation race** — a ref stable é estabelecida explicitamente somente no SHA RC3; corrida concorrencial divergente falha antes de qualquer GitHub Release;
-2. **HUMAN_GATE revocation** — comentário mutável deixou de ser autoridade; o mecanismo futuro é um commit GitHub Web verificado, exclusivo do receipt e vinculado ao parent control-head. Gate, HEAD e RC lineage são reconsumidos imediatamente antes do boundary de criação da stable tag.
+A primeira mutação stable usa uma transação Git remota `--atomic` com `--force-with-lease` no control-head aprovado e criação de `refs/tags/v1.0.0` em RC3 na mesma operação. Se o HEAD remoto mudou antes da transação, o lease falha e nenhuma tag é criada.
 
-O GitHub Environment foi investigado, porém o environment observado não possui required reviewer/protection rules configurados; essa proteção não é presumida.
+Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+
+### P2 — exact RC3 tag sem Release
+
+O validator aceita tag exata em RC3 + Release ausente como recovery autorizado. Tag divergente ou Release incompatível continuam fail-closed.
+
+Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
 
 Estado atual do receipt:
 
@@ -56,41 +61,28 @@ approved_control_head: null
 approval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED
 ```
 
-### Evidência técnica
+### Evidência técnica antes do review terminal
 
 ```yaml
-technical_head: f2c7047485beb06806be6c8a7de192314d4d1c17
-stable_publication_gate_run: 31728317756
+technical_head: 2129a9a555974c7c89e7a78afc00493e7901aaf5
+stable_publication_gate_run: 31753810306
 receipt_predicate_tests: PASS_4
-real_state_machine_tests: PASS_11
-total_self_tests: PASS_15
+atomic_git_tests: PASS_2
+real_state_machine_tests: PASS_12
+total_self_tests: PASS_18
 authorize_publication: APPROVED_FALSE
 publish_stable: SKIPPED
-documentation_validation_run: 31728317747
+documentation_validation_run: 31753810224
 documentation_validation: PASS
-production_readiness_run: 31728317685
+production_readiness_run: 31753810228
 production_readiness: PASS
 ```
 
-O primeiro ciclo de self-test falhou com segurança por dependência de `set -e`. Um segundo ciclo com teste das funções reais detectou propagação de retorno ainda incompleta. Ambos foram tratados por CAF; no HEAD `f2c704748...` todos os guards propagam falhas explicitamente e o teste real passou.
-
-`publication_P1_count` permanece **2** até revisão independente do HEAD final.
-
-## Produção e monitor
-
-```yaml
-production_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-render_service: rsa-api-free
-render_deploy: dep-d9ugl7gae00c73c5snv0
-production_state: LIVE
-latest_health_run: 31726950466
-latest_health_result: SUCCESS
-material_incidents_open: 0
-```
+P1 permanece aberto até revisão independente do HEAD final.
 
 ## Auditoria terminal
 
-Por orientação de governança, Augusto/Júlia/Emily/LÉO não são executados como substituição dos P1s atuais.
+Por governança, Augusto/Júlia/Emily/LÉO só serão renovados depois de `publication_P0=0` e `publication_P1=0`.
 
 ```yaml
 AUGUSTO_TRACE: NOT_RUN
@@ -102,7 +94,7 @@ AUDIT: BLOCKED_BY_PUBLICATION_P1
 
 ## Imutabilidade
 
-A imutabilidade das versões é uma regra de governança. Não é alegada proteção técnica absoluta: RC3 apresenta `immutable:false`, não há ruleset observado e `main` não está protegida no estado verificado.
+A imutabilidade das versões é uma regra de governança. Não é alegada proteção técnica absoluta sem configuração GitHub verificável correspondente.
 
 ## Skills executáveis
 
