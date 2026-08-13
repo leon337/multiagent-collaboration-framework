@@ -81,7 +81,8 @@ Para estado live, consulte GitHub antes de usar os SHAs acima como dado operacio
 - **LÉO** — agente com autoridade operacional delegada para continuidade e gates internos dentro do boundary vigente.
 - **MESTRE** — orquestrador responsável pela condução da missão e exposição do fluxo.
 - **Emily** — auditoria independente conforme os gatilhos aplicáveis.
-- composição oficial: **29 agentes nomeados**, selecionados por competência; isso descreve papéis/contratos, não prova 29 modelos cognitivos independentes em execução simultânea.
+
+Existem **29 agentes nomeados**, selecionados por competência. Essa composição descreve papéis/contratos do MCF; não prova 29 modelos cognitivos independentes em execução simultânea. LEANDRO não entra nessa contagem.
 
 Protocolo operacional vigente:
 [`docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`](docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md)
