@@ -3,66 +3,78 @@ phase: PHASE-STABLE-RELEASE-001
 issue: 131
 pr: 133
 risk_class: C
-state: REQUALIFYING
+state: CORRECTING_BLOCKED_FOR_HUMAN_GATE
 
 main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 qualified_rc3_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 production_qualified_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 
 release_lineage:
-  rc1:
-    tag: v1.0.0-RC1
-    sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-    state: PRESERVED
-  rc2:
-    tag: v1.0.0-RC2
-    sha: d73d936a63cc9462a95bcf481f4b8e1d4b255719
-    state: PRESERVED
-  rc3:
-    tag: v1.0.0-RC3
-    sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-    state: PRESERVED_PRERELEASE_QUALIFIED
+  rc1: {tag: v1.0.0-RC1, sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8, state: PRESERVED}
+  rc2: {tag: v1.0.0-RC2, sha: d73d936a63cc9462a95bcf481f4b8e1d4b255719, state: PRESERVED}
+  rc3: {tag: v1.0.0-RC3, sha: 7f741e10d0e745a90c732e084400b11e3f5e6794, state: PRESERVED_PRERELEASE_QUALIFIED}
 
 stable_v1_0_0:
   state: NAO_PUBLICADA
   authorized: false
   required_target_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-  mark_latest_if_authorized: true
 
 human_gate:
   authority: LEANDRO
   state: NAO_APROVADO
-  authorized_github_login: leon337
-  authorized_github_user_id: 25374535
-  requires_performed_via_github_app_null: true
-  receipt_template: |-
-    LEANDRO_HUMAN_GATE: APPROVED
-    RELEASE: v1.0.0
-    PR_HEAD: <SHA exato do HEAD revisado do PR #133>
+  github_login: leon337
+  github_user_id: 25374535
+  current_receipt_file: artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml
+  current_receipt_state: NAO_APROVADO
+  future_mechanism_candidate: GITHUB_WEB_VERIFIED_COMMIT
+  future_mechanism_status: IMPLEMENTED_PENDING_INDEPENDENT_REVIEW
+  mutable_issue_comment_is_authority: false
+
+environment_investigation:
+  repository_environment_available: true
+  observed_environment: main - rsa-api-free
+  observed_protection_rules: []
+  required_reviewer_currently_configured: false
+  environment_gate_adopted: false
+  reason: CURRENT_REPOSITORY_ENVIRONMENT_HAS_NO_REQUIRED_REVIEWER_AND_THIS_CHANNEL_HAS_NO_ADMINISTRATION_WRITE_ACTION_TO_CONFIGURE_ONE
 
 publication_boundary:
-  executable_workflow_proof_run: 31676208679
-  technical_reviewed_head: ce3ac1d5a605793c5eba74ff76a12f92bf515449
-  stable_publication_gate_run: 31679151733
-  stable_publication_gate_result: PASS
-  app_mediated_negative_fixture: PASS
-  qualifying_direct_receipts: 0
-  stable_state_during_test: ABSENT
+  technical_correction_head: 4d5144ce46c9c77955c732824f5225f81cf0b55d
+  stable_publication_gate_run: 31726482829
+  validation_job: PASS
+  dedicated_self_tests: PASS_16
+  human_gate_without_authorization: NAO_APROVADO
+  authorize_publication_job: PASS_WITH_APPROVED_FALSE
   publication_job: SKIPPED
-  production_readiness_run: 31679151776
-  production_readiness_result: PASS
-  documentation_validation_run: 31679151867
-  documentation_validation_result: PASS
-  independent_review_comment: 5277559034
-  independent_review_result: NO_MAJOR_ISSUES
+  documentation_validation_on_technical_head: PASS
+  production_readiness_on_technical_head: PENDING_OR_TO_BE_RECONFIRMED_ON_FINAL_DOC_HEAD
   publication_p0_count: 0
-  publication_p1_count: 0
+  publication_p1_count: 2
   critical_findings: 0
   high_findings: 0
-  recovery_fail_closed: VERIFIED_BY_BOUNDARY_AND_REVIEW
-  stale_run_cancellation: ENABLED
-  live_mutation_barrier: ENABLED
-  app_mediated_human_receipts: REJECTED
+
+open_publication_p1s:
+  - id: P1_STABLE_TAG_CREATION_RACE
+    finding: CONCURRENT_DIVERGENT_STABLE_TAG_COULD_PREVIOUSLY_BE_REUSED_BY_RELEASE_CREATE
+    correction: EXPLICIT_GIT_REF_CREATE_AT_RC3_PLUS_FAIL_CLOSED_RACE_RECHECK_PLUS_RELEASE_VERIFY_TAG_WITHOUT_TARGET
+    dedicated_tests:
+      - TAG_ABSENT_CREATE_EXACT_RC3
+      - CONCURRENT_DIVERGENT_TAG_FAIL_BEFORE_RELEASE
+      - CONCURRENT_EXACT_TAG_CONTROLLED_PATH
+      - EXISTING_EXACT_TAG_RECOVERY
+      - DIVERGENT_TAG_FAIL
+      - INCOMPATIBLE_RELEASE_FAIL
+    state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+  - id: P1_HUMAN_GATE_REVOCATION_WINDOW
+    finding: MUTABLE_ISSUE_COMMENT_COULD_CHANGE_AFTER_LAST_READ
+    correction: ISSUE_COMMENT_REMOVED_FROM_AUTHORITY_PREDICATE; FUTURE_GATE_IS_SINGLE_FILE_GITHUB_WEB_VERIFIED_COMMIT_BOUND_TO_PARENT_CONTROL_HEAD
+    dedicated_tests:
+      - HUMAN_GATE_ABSENT_NO_MUTATION
+      - STALE_HEAD_GATE_DENIED
+      - APP_OR_UNSIGNED_GATE_DENIED
+      - ALTERED_OR_REVOKED_GATE_DENIED
+      - PR_HEAD_CHANGED_DENIED
+    state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
 
 production_monitor:
   latest_verified_run: 31677775717
@@ -80,22 +92,17 @@ production_render:
 incident_129: CLOSED_COMPLETED
 
 audit:
-  historical_github_comments_via_app: true
-  historical_agent_comments_accepted_as_current_real_audit: false
-  augusto_trace: PENDING_REAL_RENEWAL
-  julia_class_c: PENDING_REAL_RENEWAL
-  emily_independent_audit: PENDING_REAL_RENEWAL
-  leo_gate: PENDING_REAL_RENEWAL
-  overall: PENDING
-  runtime_session_required: true
-  session_available_in_current_channel: false
-  secrets_bypass_allowed: false
+  augusto_trace: NOT_RUN_PER_GOVERNANCE_DIRECTION
+  julia_class_c: NOT_RUN_PER_GOVERNANCE_DIRECTION
+  emily_independent_audit: NOT_RUN_PER_GOVERNANCE_DIRECTION
+  leo_gate: NOT_RUN_PER_GOVERNANCE_DIRECTION
+  overall: BLOCKED_UNTIL_PUBLICATION_P0_P1_ZERO_AFTER_INDEPENDENT_REVIEW
 
 findings:
   critical: 0
   high: 0
   publication_p0: 0
-  publication_p1: 0
+  publication_p1: 2
   low_postgresql_ssl: OPEN_NON_BLOCKING
   cold_start_readiness_latency: OPEN_NON_BLOCKING
 
@@ -113,4 +120,4 @@ authorization:
   latest_v1_0_0: false
   human_gate: NAO_APROVADO
 
-next_action: validate the final documentation head in CI and independent review, renew Augusto/Júlia/Emily/LÉO through the real MCF runtime, then recheck main/production/monitor/stable absence before considering READY_FOR_HUMAN_GATE
+next_action: reconcile remaining canonical documents to P1=2, validate the exact final documentation head, request independent review of that exact SHA, and keep HUMAN_GATE blocked until the review confirms both P1 scenarios eliminated
