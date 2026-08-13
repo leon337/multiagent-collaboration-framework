@@ -68,18 +68,23 @@ production:
   qualified_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
   production_readiness_run: 31653194401
   production_readiness: PASS
-  latest_health_verified_before_publication_boundary_fix_run: 31671899893
-  latest_health_verified_before_publication_boundary_fix: PASS
+  latest_health_run: 31671899893
+  latest_health: PASS_WITH_COLD_START_RECOVERY
+  material_incident_open: false
 
 stable_release_boundary:
   mission: MCF-STABLE-RELEASE-001
   issue: 131
   operational_pr: 133
   required_stable_target_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  macrostate: REQUALIFYING
+  publication_P0_count: 0
+  publication_P1_count: 1
+  critical_findings: 0
+  high_findings: 0
   stable_v1_0_0: NAO_PUBLICADA
   human_gate: NAO_APROVADO
   publication_authorized: false
-  publication_boundary_correction: IN_PROGRESS
 ```
 
 Os commits do PR #133 pertencem somente ao **control plane de publicação**. Eles não mudam o SHA qualificado da RC3 nem o alvo permitido de uma eventual `v1.0.0`.
@@ -88,14 +93,23 @@ Os commits do PR #133 pertencem somente ao **control plane de publicação**. El
 
 A produção e a RC3 já foram qualificadas. A missão atual não cria um novo Gate F; ela trata a promoção estável como milestone Classe C separado, conforme `MCF-DEC-064`.
 
-O HUMAN_GATE apresentado a LEANDRO foi **não aprovado**. A publicação de `v1.0.0` permanece proibida enquanto o boundary de publicação é corrigido e reauditado.
+O HUMAN_GATE apresentado a LEANDRO foi **não aprovado**. A publicação de `v1.0.0` permanece proibida.
 
-Dois findings P1 de review do PR #133 estão em ciclo de correção:
+Os dois P1s originais do PR #133 receberam correção e prova executável. O run `31676208679` comprovou execução real do workflow em `pull_request` a partir de `refs/pull/133/merge`, com validação read-only PASS e publicação SKIPPED. Revisão independente posterior não repetiu esses dois cenários.
 
-1. autenticação inequívoca da identidade GitHub de LEANDRO para o recibo do HUMAN_GATE;
-2. prova executável de que o workflow introduzido no PR é realmente descoberto e executado pelo evento `pull_request`, sem depender de merge para `main`.
+Uma nova revisão independente do head `f34a58cec64b7bda23a6d0cdcfb82c3c91e3724b` encontrou outro P1: um recibo humano válido para um HEAD antigo poderia permanecer aceito após um novo `synchronize`. O workflow foi corrigido para exigir um recibo exato, específico para a release e para o HEAD revisado:
 
-A prova executável read-only foi introduzida no workflow e deve ser validada por run real e revisão independente antes de a contagem formal de P1 ser reduzida.
+```text
+LEANDRO_HUMAN_GATE: APPROVED
+RELEASE: v1.0.0
+PR_HEAD: <SHA exato do HEAD revisado do PR #133>
+```
+
+O job mutável também revalida o HEAD remoto atual do PR antes de qualquer efeito. Um fixture negativo rejeita HEAD obsoleto, além de impersonação, id divergente, quoting e conteúdo adicional.
+
+A mesma revisão registrou dois P2s: recuperação após criação parcial da stable e divergência entre artefatos canônicos. O recovery agora só admite NOOP quando tag e release já existentes correspondem exatamente à RC3 e continuam acompanhadas do HUMAN_GATE válido para o HEAD corrente. PRF, REPORT, README e checkpoint estão sendo reconciliados para o mesmo estado.
+
+Nenhum desses findings pode ser fechado apenas pela mudança de código. O novo HEAD precisa passar por teste dedicado e nova revisão independente antes de `publication_P1_count` retornar a zero.
 
 Documentação corrente da missão:
 
@@ -106,11 +120,28 @@ Documentação corrente da missão:
 - `artifacts/phases/PHASE-STABLE-RELEASE-001/PHASE-STABLE-RELEASE-001-PRF.md`
 - `artifacts/phases/PHASE-STABLE-RELEASE-001/PHASE-STABLE-RELEASE-001-REPORT.md`
 
+## Produção e monitor
+
+O monitor agendado mais recente verificado é o run `31671899893`, concluído com `SUCCESS` no SHA `7f741e10...`. O primeiro probe de `/health/ready` excedeu 20 segundos; após a espera configurada, a tentativa tolerante a cold start respondeu com sucesso. O workflow tratou o evento como recuperação e não abriu novo incidente. A Issue #129 permanece fechada como `completed`.
+
+Esse comportamento é explicitado porque um monitor verde não deve esconder a latência/cold start observada.
+
 ## Imutabilidade de release
 
 Para o MCF, tags/releases públicas versionadas são **identidades imutáveis por governança**: depois de publicadas, não devem ser retargetadas para outro SHA.
 
-Isso não deve ser confundido com uma alegação de proteção administrativa absoluta no GitHub. No snapshot auditado antes da correção do boundary, a release RC3 expôs `immutable: false` e o repositório não apresentou rulesets ativos. Portanto, enquanto não houver configuração técnica adicional comprovada, a imutabilidade é uma invariante de governança/versionamento reforçada por controles fail-closed, não uma garantia de undeletability fornecida pelo GitHub.
+Isso não deve ser confundido com proteção técnica absoluta. No estado verificado, a release RC3 expõe `immutable: false`, a API de rulesets do repositório retorna lista vazia e `main` não está marcada como branch protegida. Portanto, a imutabilidade é uma invariante de governança/versionamento reforçada por controles fail-closed, não uma garantia de undeletability fornecida pelo GitHub.
+
+## Mecanismo de publicação — efeito futuro somente após HUMAN_GATE
+
+Se todos os controles técnicos forem novamente aprovados e LEANDRO autorizar explicitamente o pacote final para o HEAD revisado, o workflow poderá:
+
+1. criar a tag `v1.0.0` apontando exatamente para a RC3 `7f741e10...`;
+2. criar a GitHub Release `MCF v1.0.0` como não-prerelease;
+3. marcar `v1.0.0` como `latest`;
+4. verificar tag, release, target e estado final.
+
+Esses efeitos permanecem **NÃO AUTORIZADOS** no estado atual.
 
 ## Skills executáveis
 
@@ -169,6 +200,8 @@ Evidências históricas de Gate E permanecem em:
 ```yaml
 HUMAN_GATE: NAO_APROVADO
 MERGE_PUBLICACAO_v1_0_0: NAO_AUTORIZADOS
+TAG_v1_0_0: NAO_AUTORIZADA
+GITHUB_RELEASE_v1_0_0: NAO_AUTORIZADA
 stable_v1_0_0: NAO_PUBLICADA
 ```
 
