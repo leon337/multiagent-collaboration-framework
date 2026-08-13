@@ -4,155 +4,101 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 
 ## Governança
 
-- **Leandro** é a autoridade humana final e não entra na contagem dos agentes.
+- **Leandro** é a autoridade humana final.
 - **Léo** é a autoridade delegada de continuidade operacional e gates internos.
-- **Mestre** coordena a equipe, mantém o mapa da missão e apresenta o fluxo completo.
-- Existem **29 agentes nomeados**, selecionados dinamicamente por competência.
-- O protocolo operacional vigente está em `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`.
-
-## Runtime executável
-
-```text
-objetivo conversacional
-→ Chat-to-Runtime Bridge
-→ MissionRuntime
-→ SkillRegistryLoader
-→ Human Delegation Firewall
-→ PermissionEngine
-→ SkillExecutor
-→ EvidenceValidator
-→ PostgreSQL / Event Ledger
-→ Handoff / CAF
-→ trace final verificado
-```
+- **Mestre** coordena a equipe e a missão.
+- O protocolo vigente está em `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`.
 
 ## Estado canônico atual
 
 ```yaml
-skills_registradas: 16
+runtime_006: COMPLETE
 skills_executaveis: 16
-skills_documentais: 0
-
-runtime_006:
-  gate_c_real_provider_write: COMPLETE
-  gate_d_staging: COMPLETE
-  gate_e_release_candidate: COMPLETE
-
-release_lineage:
-  rc1: v1.0.0-RC1@9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-  rc2: v1.0.0-RC2@d73d936a63cc9462a95bcf481f4b8e1d4b255719
-  rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
-
-production:
-  state: LIVE
-  qualified_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-  latest_health_run: 31677775717
-  latest_health: PASS_WITH_COLD_START_RECOVERY
-  material_incidents_open: 0
+main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+candidate: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+production: LIVE
 
 stable_release_boundary:
   mission: MCF-STABLE-RELEASE-001
   issue: 131
-  operational_pr: 133
-  macrostate: REQUALIFYING
-  required_stable_target_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-  technical_boundary_reviewed_head: ce3ac1d5a605793c5eba74ff76a12f92bf515449
+  pr: 133
+  macrostate: CORRECTING_BLOCKED_FOR_HUMAN_GATE
   publication_P0_count: 0
-  publication_P1_count: 0
+  publication_P1_count: 2
   critical_findings: 0
   high_findings: 0
-  audit: PENDING_REAL_RENEWAL
-  leo_gate: PENDING_REAL_RENEWAL
+  audit: BLOCKED_BY_PUBLICATION_P1
+  leo_gate: BLOCKED_BY_PUBLICATION_P1
   human_gate: NAO_APROVADO
   stable_v1_0_0: NAO_PUBLICADA
   publication_authorized: false
 ```
 
-Os commits do PR #133 pertencem somente ao **control plane de publicação**. Eles não mudam o SHA qualificado da RC3 nem o alvo permitido da eventual `v1.0.0`.
+RC1, RC2 e RC3 permanecem preservadas. Os commits do PR #133 pertencem somente ao control plane de publicação e não mudam o SHA qualificado da RC3.
 
-## Boundary atual — MCF-STABLE-RELEASE-001
+## Publication boundary
 
-A produção e a RC3 já foram qualificadas. A missão stable é um milestone Classe C separado, conforme `MCF-DEC-064`; não existe Gate F inventado.
+Dois P1s foram corrigidos tecnicamente e testados, mas permanecem formalmente abertos até revisão independente do SHA final:
 
-O HUMAN_GATE permanece **NÃO APROVADO**. `v1.0.0` permanece NÃO PUBLICADA.
+1. a criação da identidade `v1.0.0` agora deve estabelecer e validar primeiro a tag exata em RC3, falhando antes da criação de release se uma corrida produzir SHA divergente;
+2. comentário mutável deixou de ser autoridade de HUMAN_GATE; o mecanismo futuro exige um receipt em commit GitHub Web verificado, exclusivo do arquivo de autorização e vinculado ao control-head revisado.
 
-O publication boundary técnico foi requalificado após sucessivas rodadas de finding/correção/teste/review. O mecanismo final protege contra:
+O GitHub Environment foi investigado, porém o environment observado está sem required reviewer/protection rules configurados. Essa proteção não é alegada nem usada.
 
-- substring/quote/autor incorreto;
-- recibo de HEAD obsoleto;
-- stale run e janela TOCTOU antes da mutação;
-- recovery divergente;
-- comentário mediado por GitHub App usando o mesmo login/id de LEANDRO.
-
-O recibo futuro deve ser exatamente:
-
-```text
-LEANDRO_HUMAN_GATE: APPROVED
-RELEASE: v1.0.0
-PR_HEAD: <SHA exato do HEAD revisado do PR #133>
-```
-
-Além de login/id/corpo/release/HEAD exatos, o workflow exige `performed_via_github_app == null`. Portanto, um comentário criado via ChatGPT/Codex ou outro GitHub App não satisfaz o HUMAN_GATE.
-
-### Evidência do boundary técnico
+Estado atual do receipt:
 
 ```yaml
-head: ce3ac1d5a605793c5eba74ff76a12f92bf515449
-stable_publication_gate_run: 31679151733
+authority: LEANDRO
+state: NAO_APROVADO
+release: v1.0.0
+approved_control_head: null
+approval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED
+```
+
+Evidência técnica mais recente antes da reconciliação documental:
+
+```yaml
+technical_head: 4d5144ce46c9c77955c732824f5225f81cf0b55d
+stable_publication_gate_run: 31726482829
 validation: PASS
-app_mediated_negative_fixture: PASS
-qualifying_receipts: 0
-stable_state: ABSENT
+self_tests: PASS_16
+authorize_publication: APPROVED_FALSE
 publish_stable: SKIPPED
-production_readiness_run: 31679151776
-production_readiness: PASS
-documentation_validation_run: 31679151867
 documentation_validation: PASS
-independent_review_comment: 5277559034
-independent_review: NO_MAJOR_ISSUES
-publication_P0_count: 0
-publication_P1_count: 0
 ```
 
-O P1 foi zerado somente depois de correção, teste dedicado, evidência e revisão independente.
+O primeiro self-test desse desenho falhou de forma segura; o CAF identificou dependência indevida da semântica de `set -e`, os predicados foram endurecidos com retornos explícitos e o reteste passou.
 
-## Auditoria multiagente
-
-Os comentários históricos atribuídos a Augusto/Júlia/Emily e o antigo `LEO_GATE: PASS` foram gravados via `chatgpt-codex-connector`. São mantidos como histórico, mas não contam como renovação real do boundary atual.
-
-O runtime real possui `MCF-TRACE-MISSION`, `MCF-SECURITY-REVIEW` e `MCF-CLOSE-PHASE`, mas seus endpoints de missão exigem sessão Bearer válida. O canal atual não possui essa sessão e nenhum secret será extraído ou exposto para contornar o controle.
-
-```yaml
-AUGUSTO_TRACE: PENDING
-JULIA_CLASS_C: PENDING
-EMILY_AUDIT: PENDING
-LEO_GATE: PENDING
-```
-
-Por isso a missão continua `REQUALIFYING` e ainda não é `READY_FOR_HUMAN_GATE`.
+`publication_P1_count` somente poderá voltar a zero depois de revisão independente do HEAD documental final confirmar os dois cenários.
 
 ## Produção e monitor
 
-O monitor agendado mais recente verificado é o run `31677775717`, concluído com `SUCCESS` no SHA RC3. O primeiro probe `/health/ready` excedeu 20 segundos e a tentativa de recuperação cold-start passou. Nenhum incidente material aberto foi encontrado e a Issue #129 permanece `CLOSED/completed`.
+```yaml
+production_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+render_service: rsa-api-free
+render_deploy: dep-d9ugl7gae00c73c5snv0
+production_state: LIVE
+latest_health_run: 31677775717
+latest_health_result: SUCCESS
+cold_start_recovery: PASS
+material_incidents_open: 0
+```
 
-O cold start é explicitado como observação operacional LOW/não bloqueante.
+## Auditoria terminal
 
-## Imutabilidade de release
+Por orientação de governança, Augusto/Júlia/Emily/LÉO não são executados como substituição dos P1s atuais.
 
-**Imutabilidade de governança:** tags/releases versionadas não devem ser retargetadas/reutilizadas.
+```yaml
+AUGUSTO_TRACE: NOT_RUN
+JULIA_CLASS_C: NOT_RUN
+EMILY_AUDIT: NOT_RUN
+LEO_GATE: NOT_RUN
+AUDIT: BLOCKED_BY_PUBLICATION_P1
+```
 
-**Proteção técnica observada:** RC3 apresenta `immutable: false`; rulesets observados `[]`; `main` sem branch protection observada. Não é alegada undeletability técnica absoluta.
+## Imutabilidade
 
-## Efeito futuro da publicação
-
-Somente depois de auditoria real, `LEO_GATE: PASS` e HUMAN_GATE explícito de LEANDRO, um HEAD final aprovado poderá:
-
-1. criar `v1.0.0` apontando exatamente para `7f741e10...`;
-2. criar GitHub Release não-prerelease;
-3. marcar `v1.0.0` como `latest`;
-4. verificar tag, release, target e estado final.
-
-Esses efeitos permanecem **NÃO AUTORIZADOS**.
+A imutabilidade das versões é uma regra de governança. Não é alegada proteção técnica absoluta: RC3 apresenta `immutable:false`, não há ruleset observado e `main` não está protegida no estado verificado.
 
 ## Skills executáveis
 
@@ -176,7 +122,6 @@ Esses efeitos permanecem **NÃO AUTORIZADOS**.
 ## Documentação principal
 
 - `docs/runtime/README.md`
-- `docs/runtime/MCF-RUNTIME-006-PLAN.md`
 - `skills/registry.yaml`
 - `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`
 - `artifacts/phases/PHASE-STABLE-RELEASE-001/`
@@ -192,4 +137,4 @@ LATEST_v1_0_0: NAO_AUTORIZADO
 stable_v1_0_0: NAO_PUBLICADA
 ```
 
-Nenhum texto deste README constitui autorização para publicar `v1.0.0`.
+Nenhum texto deste README constitui autorização de publicação.
