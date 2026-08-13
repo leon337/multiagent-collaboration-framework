@@ -1,0 +1,64 @@
+name: MCF v1.0.0 Stable Publication Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: read
+
+jobs:
+  publish-stable:
+    if: >-
+      github.event.pull_request.head.ref == 'release/v1.0.0-stable-publish' &&
+      contains(github.event.pull_request.labels.*.name, 'human-approved-stable')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPOSITORY: ${{ github.repository }}
+      RC1_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+      RC2_SHA: d73d936a63cc9462a95bcf481f4b8e1d4b255719
+      RC3_SHA: 7f741e10d0e745a90c732e084400b11e3f5e6794
+      STABLE_TAG: v1.0.0
+    steps:
+      - name: Verify immutable release lineage
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC1" --jq '.object.sha')" = "$RC1_SHA"
+          test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC2" --jq '.object.sha')" = "$RC2_SHA"
+          test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC3" --jq '.object.sha')" = "$RC3_SHA"
+
+      - name: Verify LEANDRO human gate receipt
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPOSITORY/issues/131/comments" --paginate --jq '.[].body' \
+            | grep -F 'LEANDRO_HUMAN_GATE: APPROVED' >/dev/null
+
+      - name: Create or verify stable release
+        run: |
+          set -euo pipefail
+
+          if gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" >/tmp/stable-ref.json 2>/dev/null; then
+            test "$(jq -r '.object.sha' /tmp/stable-ref.json)" = "$RC3_SHA"
+            test "$(gh release view "$STABLE_TAG" --repo "$REPOSITORY" --json isPrerelease,tagName --jq 'select(.isPrerelease == false and .tagName == "v1.0.0") | .tagName')" = "$STABLE_TAG"
+            echo "Stable v1.0.0 already exists at the exact RC3 SHA; immutable NOOP."
+            exit 0
+          fi
+
+          gh release create "$STABLE_TAG" \
+            --repo "$REPOSITORY" \
+            --target "$RC3_SHA" \
+            --title 'MCF v1.0.0' \
+            --notes 'First stable MCF v1.0.0 release. Promoted from the fully qualified v1.0.0-RC3 candidate after production readiness, exact-SHA deployment, health/readiness/version binding, Class C audit, Léo internal gate and explicit LEANDRO HUMAN_GATE.' \
+            --latest
+
+          test "$(gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" --jq '.object.sha')" = "$RC3_SHA"
+          test "$(gh release view "$STABLE_TAG" --repo "$REPOSITORY" --json isPrerelease,tagName --jq 'select(.isPrerelease == false and .tagName == "v1.0.0") | .tagName')" = "$STABLE_TAG"
