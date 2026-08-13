@@ -6,7 +6,7 @@ Fontes canônicas relacionadas:
 
 - `skills/registry.yaml` — contratos das skills;
 - `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md` — protocolo operacional;
-- `docs/runtime/MCF-RUNTIME-006-PLAN.md` — plano vigente;
+- `docs/runtime/MCF-RUNTIME-006-PLAN.md` — plano e closeout histórico do RUNTIME-006;
 - `artifacts/phases/` — evidência por fase;
 - `apps/rede-social-agentes/apps/server/src/mcf-runtime/` — código e testes.
 
@@ -29,29 +29,46 @@ Chat objective
 ## Estado atual
 
 ```yaml
-runtime: MCF-RUNTIME-006
+runtime_006: COMPLETE
 skills_registered: 16
 skills_executable: 16
 skills_documental: 0
 remaining_documental: []
 
-latest_completed_boundary:
-  id: MCF-RUNTIME-006-LOT-4-E-CLOSE-PHASE
-  issue: 107
-  technical_pr: 108
-  technical_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
-  technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
-  technical_tree_equivalence: PASS
-  canonical_pr: 109
-  canonical_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
-  canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
-  canonical_sync: COMPLETE
+gate_c_real_provider_write: COMPLETE
+gate_d_staging: COMPLETE
+gate_e_release_candidate: COMPLETE
 
-production: BLOCKED
-live_staging_adapter: DISABLED
-gate_c_real_provider_write: NOT_AUTHORIZED
-human_operator_actions: 0
+release_lineage:
+  rc1: v1.0.0-RC1@9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  rc2: v1.0.0-RC2@d73d936a63cc9462a95bcf481f4b8e1d4b255719
+  rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+  rc1_rc2_rc3: PRESERVED_PRERELEASES
+
+production:
+  state: LIVE
+  qualified_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  render_service: rsa-api-free
+  production_readiness_run: 31653194401
+  production_readiness: PASS
+  latest_health_run: 31671899893
+  latest_health: PASS_WITH_COLD_START_RECOVERY
+  material_incident_open: false
+
+stable_release_boundary:
+  mission: MCF-STABLE-RELEASE-001
+  issue: 131
+  pr: 133
+  state: REQUALIFYING
+  required_target_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  publication_P0_count: 0
+  publication_P1_count: 1
+  human_gate: NAO_APROVADO
+  stable_v1_0_0: NAO_PUBLICADA
+  publication_authorized: false
 ```
+
+O RUNTIME-006 e o Gate E são históricos concluídos. A missão atual é separada: `MCF-STABLE-RELEASE-001`. Nenhuma frase antiga do closeout do Gate E que dizia `production: BLOCKED` deve ser interpretada como estado global atual; ela registra o boundary existente naquele momento.
 
 ## Skills executáveis
 
@@ -87,71 +104,61 @@ operation: close-phase
 resource: mcf-agent-runtime
 ```
 
-O bridge não auto-completa a skill. O boundary do Lot 4-E não amplia autoridade externa: provider externo, GitHub write, environment mutation, deploy/produção, ação destrutiva, secret/public action continuam negados.
-
-Evidência obrigatória:
-
-- `phase_pack` — artefatos, manifest reference e rastreabilidade completa;
-- `audit_verdict` — verdict, referência verificável e blocking findings;
-- `leo_decision` — decisão explícita, justificativa, estado seguinte, próxima ação e responsável;
-- `checkpoint` — estado final, objetivo, findings, blockers, próxima ação, destinatário e necessidade de ação humana.
+O bridge não auto-completa a skill. Evidência obrigatória continua incluindo `phase_pack`, `audit_verdict`, `leo_decision` e `checkpoint`.
 
 `ENTREGUE` só é válido com objetivo atendido, ausência de blockers/findings pendentes ou bloqueantes, auditoria PASS/PASSED, decisão aprovadora de Léo, nenhuma próxima ação pendente, `human_action_required=false` e concordância entre decisão/checkpoint.
 
-O handoff técnico é `Mestre`. Leandro não pode ser executor nem destinatário de handoff técnico; sua participação somente ocorre por `HUMAN_GATE` explícito conforme o protocolo.
+Leandro não pode ser executor nem destinatário de handoff técnico; sua participação ocorre somente por `HUMAN_GATE` explícito conforme o protocolo.
 
-## Validação e integração
+## Rastreabilidade multiagente
 
-```yaml
-final_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
-foundation_run: 31485695643
-foundation: PASS
-container_smoke_run: 31485695636
-container_smoke: PASS
-documentation_validation_run: 31485695606
-documentation_validation: PASS
-server_test_files: 125
-server_tests: 562
-failed_tests: 0
-close_phase_executor_tests: 28
-close_phase_planner_tests: 4
-close_phase_mission_runtime_tests: 2
-hdf_regression_tests: 11
-prf_manifest_audit_run: 31485724987
-prf_manifest_audit: PASS
-specialist_reviews: PASS
-augusto_trace: PASS
-carmem_prf_review: PASS
-julia_governance: PASS
-emily_independent_audit: PASS
-leo_technical_gate: PASS
-technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
-technical_tree_equivalence: PASS
-technical_post_merge_documentation: PASS
-technical_post_merge_staging_run: 31486181369
-technical_post_merge_staging: PASS_DEPLOYED
-canonical_pr: 109
-canonical_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
-canonical_documentation_run: 31486782247
-canonical_documentation: PASS
-canonical_manifest_audit_run: 31486845037
-canonical_manifest_audit: PASS
-canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
-canonical_post_merge_documentation_run: 31487031172
-canonical_post_merge_documentation: PASS
-canonical_sync: COMPLETE
+O registry vigente define:
+
+- `MCF-TRACE-MISSION` — owner `Augusto`, READ_ONLY, exige trace cronológico, handoffs e recovery;
+- `MCF-SECURITY-REVIEW` — owners `Ricardo, Julia`, com veredito de governança e risco residual;
+- `MCF-CLOSE-PHASE` — owners `Carmem, Emily, Leo, Mestre`, exige auditoria independente, decisão de Léo e checkpoint;
+- sucesso sem evidência e self-approval sem evidência permanecem proibidos.
+
+A auditoria Classe C da stable deve ser renovada no HEAD final do control plane antes de qualquer retorno ao HUMAN_GATE de LEANDRO.
+
+## Estado da publicação estável
+
+Os dois P1s originais do PR #133 receberam correção e prova executável. Uma revisão independente posterior encontrou um novo P1: recibo humano não vinculado ao HEAD revisado. A correção atual exige um recibo exato para release + PR_HEAD e revalida o HEAD remoto antes de qualquer efeito.
+
+Formato esperado somente quando um futuro pacote final tiver sido aprovado tecnicamente e LEANDRO decidir aprovar:
+
+```text
+LEANDRO_HUMAN_GATE: APPROVED
+RELEASE: v1.0.0
+PR_HEAD: <SHA exato do HEAD revisado do PR #133>
 ```
 
-## CAFs do Lot 4-E
+No estado atual não existe recibo qualificante e o job mutável permanece bloqueado.
 
-1. bootstrap inicial falhou antes de mutação e o mecanismo foi substituído, sem blind retry;
-2. formatação foi corrigida com Prettier pinado do repositório;
-3. `PASS` de audit verdict foi contextualizado sem enfraquecer a rejeição genérica de placeholders;
-4. o hardening passou a rejeitar `ENTREGUE` com finding bloqueante de auditoria;
-5. Leandro não pode tornar-se responsável técnico implícito; somente `ESCALAR_PARA_LEANDRO` representa HUMAN_GATE sem mudar o handoff técnico para Mestre.
+## Imutabilidade
 
-## Próximo boundary
+- **governança:** identidades de release não devem ser retargetadas/reutilizadas;
+- **proteção técnica observada:** não há evidência atual de undeletability absoluta; RC3 apresenta `immutable: false`, rulesets observados `[]` e `main` sem branch protection observada;
+- portanto, não se afirma proteção técnica que não esteja configurada.
 
-**Release Candidate / Gate E**.
+## Documentação da missão stable
 
-O Lot 4-E está concluído. Produção permanece `BLOCKED` e não é autorizada por essa transição.
+- `docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md`
+- `docs/releases/MCF-v1.0.0-RC3.md`
+- `artifacts/phases/PHASE-STABLE-RELEASE-001/PUBLICATION-BOUNDARY.md`
+- `artifacts/phases/PHASE-STABLE-RELEASE-001/PHASE-STABLE-RELEASE-001-CHECKPOINT.yaml`
+- `artifacts/phases/PHASE-STABLE-RELEASE-001/PHASE-STABLE-RELEASE-001-PRF.md`
+- `artifacts/phases/PHASE-STABLE-RELEASE-001/PHASE-STABLE-RELEASE-001-REPORT.md`
+
+## Autorização vigente
+
+```yaml
+HUMAN_GATE: NAO_APROVADO
+MERGE_PUBLICACAO_v1_0_0: NAO_AUTORIZADOS
+TAG_v1_0_0: NAO_AUTORIZADA
+GITHUB_RELEASE_v1_0_0: NAO_AUTORIZADA
+LATEST_v1_0_0: NAO_AUTORIZADO
+stable_v1_0_0: NAO_PUBLICADA
+```
+
+Nenhum conteúdo deste documento constitui autorização para publicar `v1.0.0`.
