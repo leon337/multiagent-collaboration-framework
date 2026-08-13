@@ -4,100 +4,113 @@ issue: 131
 pr: 133
 risk_class: C
 state: REQUALIFYING
-entry_main: 510ec5abaf14f5d11a504ff7de991887278e025c
+
+main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 qualified_rc3_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-main_at_publication_boundary_entry: 7f741e10d0e745a90c732e084400b11e3f5e6794
 production_qualified_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-rc1:
-  tag: v1.0.0-RC1
-  sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-  state: PRESERVED
-rc2:
-  tag: v1.0.0-RC2
-  sha: d73d936a63cc9462a95bcf481f4b8e1d4b255719
-  state: PRESERVED
-rc3:
-  tag: v1.0.0-RC3
-  sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-  state: PUBLISHED_PRERELEASE_PRESERVED
-  qualified: true
-  production_binding: VERIFIED
+
+release_lineage:
+  rc1:
+    tag: v1.0.0-RC1
+    sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+    state: PRESERVED
+  rc2:
+    tag: v1.0.0-RC2
+    sha: d73d936a63cc9462a95bcf481f4b8e1d4b255719
+    state: PRESERVED
+  rc3:
+    tag: v1.0.0-RC3
+    sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+    state: PRESERVED_PRERELEASE_QUALIFIED
+
 stable_v1_0_0:
   state: NAO_PUBLICADA
   authorized: false
   required_target_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
   mark_latest_if_authorized: true
+
 human_gate:
   authority: LEANDRO
   state: NAO_APROVADO
+  authorized_github_login: leon337
+  authorized_github_user_id: 25374535
+  requires_performed_via_github_app_null: true
   receipt_template: |-
     LEANDRO_HUMAN_GATE: APPROVED
     RELEASE: v1.0.0
     PR_HEAD: <SHA exato do HEAD revisado do PR #133>
-  receipt_binding:
-    release: v1.0.0
-    pr_head: REQUIRED_EXACT_CURRENT_HEAD
-  authorized_github_login: leon337
-  authorized_github_user_id: 25374535
-  identity_basis: OFFICIAL_REPOSITORY_OWNER_PROFILE_AND_VERIFIED_CANONICAL_COMMIT
+
 publication_boundary:
-  prior_executable_proof_run: 31676208679
-  prior_executable_proof_head: 24980e02cccf9f45041237540f9d0598bb67175e
-  prior_validation_job: PASS
-  prior_publication_job: SKIPPED
-  p1_original_human_gate_authentication: CORRECTED_PROVED_NO_RECURRENCE_IN_PRIOR_INDEPENDENT_REVIEW
-  p1_original_workflow_executability: CORRECTED_PROVED_NO_RECURRENCE_IN_PRIOR_INDEPENDENT_REVIEW
-  p1_current_head_bound_human_gate:
-    discovered_on_reviewed_head: f34a58cec64b7bda23a6d0cdcfb82c3c91e3724b
-    finding: VALID_RECEIPT_COULD_SURVIVE_LATER_SYNCHRONIZE
-    correction: HEAD_BOUND_RECEIPT_PLUS_REMOTE_PR_HEAD_REVALIDATION
-    dedicated_fixture: REJECTS_STALE_HEAD
-    state: CORRECTED_PENDING_FINAL_HEAD_TEST_AND_INDEPENDENT_REVIEW
-  p2_partial_publication_recovery:
-    finding: EXACT_STABLE_RECOVERY_NOOP_WAS_UNREACHABLE
-    correction: AUTHORIZED_EXACT_RECOVERY_STATE_ALLOWED_FAIL_CLOSED_OTHERWISE
-    state: CORRECTED_PENDING_FINAL_HEAD_TEST_AND_INDEPENDENT_REVIEW
-  p2_document_reconciliation:
-    finding: PRF_REPORT_README_CHECKPOINT_DIVERGED
-    correction: RECONCILED_TO_REQUALIFYING_STATE
-    state: CORRECTED_PENDING_FINAL_INDEPENDENT_REVIEW
-  publication_p1_count: 1
+  executable_workflow_proof_run: 31676208679
+  technical_reviewed_head: ce3ac1d5a605793c5eba74ff76a12f92bf515449
+  stable_publication_gate_run: 31679151733
+  stable_publication_gate_result: PASS
+  app_mediated_negative_fixture: PASS
+  qualifying_direct_receipts: 0
+  stable_state_during_test: ABSENT
+  publication_job: SKIPPED
+  production_readiness_run: 31679151776
+  production_readiness_result: PASS
+  documentation_validation_run: 31679151867
+  documentation_validation_result: PASS
+  independent_review_comment: 5277559034
+  independent_review_result: NO_MAJOR_ISSUES
   publication_p0_count: 0
-  current_final_head: TO_BE_CAPTURED_FROM_GITHUB_AFTER_THIS_CHECKPOINT_COMMIT
-  current_final_head_ci: PENDING
-  current_final_head_independent_review: PENDING
-  merge_authorized: false
-  publication_authorized: false
+  publication_p1_count: 0
+  critical_findings: 0
+  high_findings: 0
+  recovery_fail_closed: VERIFIED_BY_BOUNDARY_AND_REVIEW
+  stale_run_cancellation: ENABLED
+  live_mutation_barrier: ENABLED
+  app_mediated_human_receipts: REJECTED
+
 production_monitor:
-  immediate_post_fix_run: 31652040293
-  first_scheduled_run: 31652590093
-  latest_verified: 31671899893
-  latest_verified_result: PASS_WITH_COLD_START_RECOVERY
+  latest_verified_run: 31677775717
+  latest_verified_result: SUCCESS
   latest_initial_probe: TIMEOUT_20S
-  latest_recovery_probe: PASS
-  new_material_incident_opened: false
-production_readiness:
-  rc3_run: 31653194401
-  rc3_result: PASS
-  current_publication_control_head_run: PENDING
-  current_publication_control_head_result: PENDING
+  latest_cold_start_recovery_probe: PASS
+  material_incidents_open: 0
+
 production_render:
   service: rsa-api-free
   deploy: dep-d9ugl7gae00c73c5snv0
   sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
   state: LIVE
+
 incident_129: CLOSED_COMPLETED
+
+audit:
+  historical_github_comments_via_app: true
+  historical_agent_comments_accepted_as_current_real_audit: false
+  augusto_trace: PENDING_REAL_RENEWAL
+  julia_class_c: PENDING_REAL_RENEWAL
+  emily_independent_audit: PENDING_REAL_RENEWAL
+  leo_gate: PENDING_REAL_RENEWAL
+  overall: PENDING
+  runtime_session_required: true
+  session_available_in_current_channel: false
+  secrets_bypass_allowed: false
+
 findings:
   critical: 0
   high: 0
   publication_p0: 0
-  publication_p1: 1
-  p2_pending_review: 2
+  publication_p1: 0
   low_postgresql_ssl: OPEN_NON_BLOCKING
+  cold_start_readiness_latency: OPEN_NON_BLOCKING
+
 immutability:
   governance_invariant: IMMUTABLE_VERSION_IDENTITY
   github_release_immutable_flag_observed: false
   repository_rulesets_observed: []
   main_branch_protected_observed: false
   technical_undeletability_claimed: false
-next_action: capture final PR head, wait for its read-only CI evidence, verify stable absence and production/monitor, request independent review of that exact head, renew Augusto/Júlia/Emily and LEO gates under canonical protocol, then only if P0/P1/critical/high remain zero prepare a new HUMAN_GATE decision package for LEANDRO
+
+authorization:
+  merge_for_publication: false
+  tag_v1_0_0: false
+  github_release_v1_0_0: false
+  latest_v1_0_0: false
+  human_gate: NAO_APROVADO
+
+next_action: validate the final documentation head in CI and independent review, renew Augusto/Júlia/Emily/LÉO through the real MCF runtime, then recheck main/production/monitor/stable absence before considering READY_FOR_HUMAN_GATE
