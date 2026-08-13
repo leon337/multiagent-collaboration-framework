@@ -1,0 +1,25 @@
+mission: MCF-STABLE-RELEASE-001
+phase: PHASE-STABLE-RELEASE-001
+issue: 131
+risk_class: C
+state: IN_PROGRESS
+entry_main: 510ec5abaf14f5d11a504ff7de991887278e025c
+production_entry_sha: 510ec5abaf14f5d11a504ff7de991887278e025c
+rc1:
+  tag: v1.0.0-RC1
+  sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  state: PRESERVED
+rc2:
+  tag: v1.0.0-RC2
+  sha: d73d936a63cc9462a95bcf481f4b8e1d4b255719
+  state: PRESERVED
+rc3:
+  state: PENDING_POST_MERGE_QUALIFICATION
+stable_v1_0_0:
+  state: BLOCKED_PENDING_GATES_AND_HUMAN_GATE
+production_monitor:
+  immediate_post_fix_run: 31652040293
+  first_scheduled_run: 31652590093
+  result: PASS
+incident_129: CLOSED_COMPLETED
+next_action: validate PR, merge after gates, qualify exact main, publish RC3, verify production health, audit, Léo gate, then request LEANDRO HUMAN_GATE
