@@ -35,16 +35,16 @@ stable_release_boundary:
   publication_authorized: false
 ```
 
-RC1, RC2 e RC3 permanecem preservadas. Os commits do PR #133 pertencem somente ao control plane de publicação e não mudam o SHA qualificado da RC3.
+RC1, RC2 e RC3 permanecem preservadas. PR #133 é somente control plane e não altera o candidato RC3.
 
 ## Publication boundary
 
-Dois P1s foram corrigidos tecnicamente e testados, mas permanecem formalmente abertos até revisão independente do SHA final:
+Dois P1s receberam correção técnica e teste real, mas permanecem formalmente abertos até revisão independente do SHA final:
 
-1. a criação da identidade `v1.0.0` agora deve estabelecer e validar primeiro a tag exata em RC3, falhando antes da criação de release se uma corrida produzir SHA divergente;
-2. comentário mutável deixou de ser autoridade de HUMAN_GATE; o mecanismo futuro exige um receipt em commit GitHub Web verificado, exclusivo do arquivo de autorização e vinculado ao control-head revisado.
+1. **stable tag creation race** — a ref stable é estabelecida explicitamente somente no SHA RC3; corrida concorrencial divergente falha antes de qualquer GitHub Release;
+2. **HUMAN_GATE revocation** — comentário mutável deixou de ser autoridade; o mecanismo futuro é um commit GitHub Web verificado, exclusivo do receipt e vinculado ao parent control-head. Gate, HEAD e RC lineage são reconsumidos imediatamente antes do boundary de criação da stable tag.
 
-O GitHub Environment foi investigado, porém o environment observado está sem required reviewer/protection rules configurados. Essa proteção não é alegada nem usada.
+O GitHub Environment foi investigado, porém o environment observado não possui required reviewer/protection rules configurados; essa proteção não é presumida.
 
 Estado atual do receipt:
 
@@ -56,21 +56,25 @@ approved_control_head: null
 approval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED
 ```
 
-Evidência técnica mais recente antes da reconciliação documental:
+### Evidência técnica
 
 ```yaml
-technical_head: 4d5144ce46c9c77955c732824f5225f81cf0b55d
-stable_publication_gate_run: 31726482829
-validation: PASS
-self_tests: PASS_16
+technical_head: f2c7047485beb06806be6c8a7de192314d4d1c17
+stable_publication_gate_run: 31728317756
+receipt_predicate_tests: PASS_4
+real_state_machine_tests: PASS_11
+total_self_tests: PASS_15
 authorize_publication: APPROVED_FALSE
 publish_stable: SKIPPED
+documentation_validation_run: 31728317747
 documentation_validation: PASS
+production_readiness_run: 31728317685
+production_readiness: PASS
 ```
 
-O primeiro self-test desse desenho falhou de forma segura; o CAF identificou dependência indevida da semântica de `set -e`, os predicados foram endurecidos com retornos explícitos e o reteste passou.
+O primeiro ciclo de self-test falhou com segurança por dependência de `set -e`. Um segundo ciclo com teste das funções reais detectou propagação de retorno ainda incompleta. Ambos foram tratados por CAF; no HEAD `f2c704748...` todos os guards propagam falhas explicitamente e o teste real passou.
 
-`publication_P1_count` somente poderá voltar a zero depois de revisão independente do HEAD documental final confirmar os dois cenários.
+`publication_P1_count` permanece **2** até revisão independente do HEAD final.
 
 ## Produção e monitor
 
@@ -79,9 +83,8 @@ production_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 render_service: rsa-api-free
 render_deploy: dep-d9ugl7gae00c73c5snv0
 production_state: LIVE
-latest_health_run: 31677775717
+latest_health_run: 31726950466
 latest_health_result: SUCCESS
-cold_start_recovery: PASS
 material_incidents_open: 0
 ```
 
