@@ -2,7 +2,7 @@
 
 Este diretório documenta o recorte executável do Multiagent Collaboration Framework.
 
-Fontes canônicas:
+Fontes canônicas relacionadas:
 
 - `skills/registry.yaml`;
 - `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`;
@@ -23,7 +23,8 @@ stable_release_boundary:
   pr: 133
   state: CORRECTING_BLOCKED_FOR_HUMAN_GATE
   publication_P0_count: 0
-  publication_P1_count: 2
+  publication_P1_count: 1
+  publication_P2_count: 1
   critical_findings: 0
   high_findings: 0
   audit: BLOCKED_BY_PUBLICATION_P1
@@ -32,27 +33,32 @@ stable_release_boundary:
   stable_v1_0_0: NAO_PUBLICADA
 ```
 
-Os dois P1s atuais receberam correção técnica e teste real, mas permanecem abertos até revisão independente do SHA final: corrida na identidade da tag stable e revogação do HUMAN_GATE.
+## Boundary stable em correção
 
-O GitHub Environment foi investigado; o environment observado não possui required reviewer/protection rules configurados, portanto essa proteção não é presumida.
+**P1:** a primeira mutação stable usa `git push --atomic` com `--force-with-lease` no control-head aprovado e criação da tag RC3 na mesma transação. Se o HEAD remoto mudou, a transação inteira falha.
 
-## Evidência técnica
+**P2:** tag `v1.0.0` exata em RC3 sem GitHub Release é um estado de recovery autorizado; o `404` da Release não encerra mais o validator.
+
+Ambos estão `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+
+## Evidência técnica antes do review terminal
 
 ```yaml
-technical_head: f2c7047485beb06806be6c8a7de192314d4d1c17
-publication_gate_run: 31728317756
+technical_head: 2129a9a555974c7c89e7a78afc00493e7901aaf5
+publication_gate_run: 31753810306
 receipt_predicate_tests: PASS_4
-real_state_machine_tests: PASS_11
-total_self_tests: PASS_15
+atomic_git_tests: PASS_2
+real_state_machine_tests: PASS_12
+total_self_tests: PASS_18
 authorize_publication: APPROVED_FALSE
 publication_job: SKIPPED
-documentation_validation_run: 31728317747
+documentation_validation_run: 31753810224
 documentation_validation: PASS
-production_readiness_run: 31728317685
+production_readiness_run: 31753810228
 production_readiness: PASS
 ```
 
-Dois ciclos CAF anteriores falharam de forma segura e revelaram problemas de semântica/propagação de retorno do shell; o HEAD técnico acima corrigiu os guards e passou o reteste real.
+Os testes incluem HEAD alterado imediatamente antes da primeira mutação, recovery de exact RC3 tag sem Release, tag divergente, Release incompatível, HUMAN_GATE ausente, receipt stale e App-mediated/invalid receipt.
 
 ## Auditoria terminal
 
@@ -64,16 +70,11 @@ LEO_GATE: NOT_RUN
 AUDIT: BLOCKED_BY_PUBLICATION_P1
 ```
 
-## Produção e monitor
+A renovação multiagente só ocorre depois de `publication_P0=0` e `publication_P1=0` confirmados por revisão independente.
 
-```yaml
-production_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-render_service: rsa-api-free
-render_deploy: dep-d9ugl7gae00c73c5snv0
-latest_health_run: 31726950466
-latest_health_result: SUCCESS
-material_incidents_open: 0
-```
+## Produção
+
+Produção permanece no lineage qualificado da RC3. A reconfirmação terminal de produção, monitor, RCs, stable e incidentes ocorrerá depois do review e da auditoria multiagente.
 
 ## Autorização vigente
 
