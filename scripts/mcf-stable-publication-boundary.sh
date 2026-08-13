@@ -16,7 +16,7 @@ WEB_FLOW_ID="${WEB_FLOW_ID:-19864447}"
 APPROVAL_FILE="${APPROVAL_FILE:-artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml}"
 APPROVAL_COMMIT_MESSAGE="${APPROVAL_COMMIT_MESSAGE:-HUMAN_GATE: approve MCF v1.0.0}"
 
-fail() { echo "ERROR: $*" >&2; return 1; }
+error() { echo "ERROR: $*" >&2; }
 gh_api() { "$GH_BIN" api "$@"; }
 gh_release_create() { "$GH_BIN" release create "$@"; }
 
@@ -46,19 +46,21 @@ validate_human_gate_commit_json() {
   test "$(jq -r '.author.id' <<<"$commit_json")" = "$LEANDRO_GITHUB_ID" || return 1
   test "$(jq -r '.committer.login' <<<"$commit_json")" = "$WEB_FLOW_LOGIN" || return 1
   test "$(jq -r '.committer.id' <<<"$commit_json")" = "$WEB_FLOW_ID" || return 1
-  test "$(jq -r '.commit.verification.verified' <<<"$commit_json")" = "true" || return 1
-  test "$(jq -r '.commit.verification.reason' <<<"$commit_json")" = "valid" || return 1
+  test "$(jq -r '.commit.verification.verified' <<<"$commit_json")" = true || return 1
+  test "$(jq -r '.commit.verification.reason' <<<"$commit_json")" = valid || return 1
   test "$(jq -r '.commit.message' <<<"$commit_json")" = "$APPROVAL_COMMIT_MESSAGE" || return 1
-  test "$(jq '.parents | length' <<<"$commit_json")" = "1" || return 1
-  test "$(jq '.files | length' <<<"$commit_json")" = "1" || return 1
+  test "$(jq '.parents | length' <<<"$commit_json")" = 1 || return 1
+  test "$(jq '.files | length' <<<"$commit_json")" = 1 || return 1
   test "$(jq -r '.files[0].filename' <<<"$commit_json")" = "$APPROVAL_FILE" || return 1
-  test "$(jq -r '.files[0].status' <<<"$commit_json")" = "modified" || return 1
+  test "$(jq -r '.files[0].status' <<<"$commit_json")" = modified || return 1
 
   local parent_sha expected_approval expected_parent
-  parent_sha="$(jq -r '.parents[0].sha' <<<"$commit_json")"
+  parent_sha="$(jq -r '.parents[0].sha // empty' <<<"$commit_json")"
   test -n "$parent_sha" || return 1
+
   expected_approval="$(printf 'authority: LEANDRO\nstate: APROVADO\nrelease: %s\napproved_control_head: %s\napproval_method: GITHUB_WEB_VERIFIED_COMMIT\n' "$STABLE_TAG" "$parent_sha")"
   expected_parent="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: %s\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n' "$STABLE_TAG")"
+
   test "$approval_content" = "$expected_approval" || return 1
   test "$parent_content" = "$expected_parent" || return 1
   printf '%s' "$parent_sha"
@@ -67,6 +69,7 @@ validate_human_gate_commit_json() {
 verify_human_gate_commit() {
   require_runtime_env || return 1
   verify_live_pr_head || return 1
+
   local commit_json parent_sha approval_content parent_content
   commit_json="$(gh_api "repos/$REPOSITORY/commits/$HEAD_SHA")" || return 1
   parent_sha="$(jq -r '.parents[0].sha // empty' <<<"$commit_json")"
@@ -78,54 +81,82 @@ verify_human_gate_commit() {
 
 classify_tag_sha() {
   local observed="${1:-}"
-  if [[ -z "$observed" ]]; then echo ABSENT
-  elif [[ "$observed" == "$RC3_SHA" ]]; then echo EXACT
-  else echo DIVERGENT
+  if [[ -z "$observed" ]]; then
+    echo ABSENT
+  elif [[ "$observed" == "$RC3_SHA" ]]; then
+    echo EXACT
+  else
+    echo DIVERGENT
   fi
 }
 
-stable_tag_sha() { gh_api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" --jq '.object.sha' 2>/dev/null; }
+stable_tag_sha() {
+  gh_api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" --jq '.object.sha' 2>/dev/null
+}
 
 verify_exact_stable_tag() {
   local sha
-  sha="$(stable_tag_sha)" || fail "stable tag is absent"
-  test "$(classify_tag_sha "$sha")" = EXACT || fail "stable tag points to divergent SHA: $sha"
+  sha="$(stable_tag_sha)" || { error "stable tag is absent"; return 1; }
+  test "$(classify_tag_sha "$sha")" = EXACT || { error "stable tag points to divergent SHA: $sha"; return 1; }
 }
 
 create_exact_stable_tag_fail_closed() {
   local existing_sha=""
+
   if existing_sha="$(stable_tag_sha)"; then
-    test "$(classify_tag_sha "$existing_sha")" = EXACT || fail "stable tag already exists at divergent SHA: $existing_sha"
+    test "$(classify_tag_sha "$existing_sha")" = EXACT || {
+      error "stable tag already exists at divergent SHA: $existing_sha"
+      return 1
+    }
     echo EXISTING_EXACT
     return 0
   fi
 
-  # Publication boundary: authorization is re-consumed immediately before the
-  # atomic create-ref request. A revocation/head change before this boundary
-  # fails before the stable identity is created.
-  verify_human_gate_commit || fail "HUMAN_GATE invalid immediately before stable-tag boundary"
-  verify_live_pr_head || fail "PR HEAD changed immediately before stable-tag boundary"
-  verify_rc_lineage || fail "RC lineage changed immediately before stable-tag boundary"
+  # This is the publication boundary for establishing the public stable
+  # identity. Authorization/head/lineage are re-consumed immediately before
+  # the atomic create-ref request. Any revocation before this point prevents
+  # creation of the stable tag and therefore prevents stable publication.
+  verify_human_gate_commit || {
+    error "HUMAN_GATE invalid immediately before stable-tag boundary"
+    return 1
+  }
+  verify_live_pr_head || {
+    error "PR HEAD changed immediately before stable-tag boundary"
+    return 1
+  }
+  verify_rc_lineage || {
+    error "RC lineage changed immediately before stable-tag boundary"
+    return 1
+  }
 
-  if gh_api --method POST "repos/$REPOSITORY/git/refs" -f ref="refs/tags/$STABLE_TAG" -f sha="$RC3_SHA" >/tmp/mcf-stable-tag-create.json 2>/tmp/mcf-stable-tag-create.err; then
+  if gh_api --method POST "repos/$REPOSITORY/git/refs" \
+    -f ref="refs/tags/$STABLE_TAG" \
+    -f sha="$RC3_SHA" \
+    >/tmp/mcf-stable-tag-create.json 2>/tmp/mcf-stable-tag-create.err; then
     verify_exact_stable_tag || return 1
     echo CREATED_EXACT
     return 0
   fi
 
-  # If another writer won the create race, inspect the winner before any
-  # GitHub Release operation. Divergent state is terminal/fail-closed.
+  # If another writer won the create race, inspect that winner before any
+  # GitHub Release operation. A divergent winner is terminal/fail-closed.
   if existing_sha="$(stable_tag_sha)"; then
-    test "$(classify_tag_sha "$existing_sha")" = EXACT || fail "concurrent stable tag appeared at divergent SHA: $existing_sha"
+    test "$(classify_tag_sha "$existing_sha")" = EXACT || {
+      error "concurrent stable tag appeared at divergent SHA: $existing_sha"
+      return 1
+    }
     echo CONCURRENT_EXACT
     return 0
   fi
 
   cat /tmp/mcf-stable-tag-create.err >&2 || true
-  fail "stable tag create failed and no exact ref exists"
+  error "stable tag create failed and no exact ref exists"
+  return 1
 }
 
-release_json() { gh_api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" 2>/dev/null; }
+release_json() {
+  gh_api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" 2>/dev/null
+}
 
 validate_exact_release_json() {
   local json="$1"
@@ -137,34 +168,58 @@ validate_exact_release_json() {
 
 publish_or_recover() {
   require_runtime_env || return 1
-  verify_human_gate_commit || fail "immutable HUMAN_GATE receipt is absent or invalid"
-  verify_rc_lineage || fail "RC lineage changed"
-  verify_live_pr_head || fail "PR HEAD changed"
+  verify_human_gate_commit || {
+    error "immutable HUMAN_GATE receipt is absent or invalid"
+    return 1
+  }
+  verify_rc_lineage || {
+    error "RC lineage changed"
+    return 1
+  }
+  verify_live_pr_head || {
+    error "PR HEAD changed"
+    return 1
+  }
 
   local tag_transition current_release
   tag_transition="$(create_exact_stable_tag_fail_closed)" || return 1
   verify_exact_stable_tag || return 1
 
   if current_release="$(release_json)"; then
-    validate_exact_release_json "$current_release" || fail "existing stable release is incompatible"
+    validate_exact_release_json "$current_release" || {
+      error "existing stable release is incompatible"
+      return 1
+    }
     echo "stable_tag_transition=$tag_transition"
     echo "stable_release_state=EXISTING_EXACT_RECOVERY_NOOP"
     return 0
   fi
 
-  verify_human_gate_commit || fail "immutable HUMAN_GATE receipt no longer matches live HEAD"
-  verify_rc_lineage || fail "RC lineage changed before release"
-  verify_exact_stable_tag || fail "stable tag is not exact RC3 before release"
+  verify_human_gate_commit || {
+    error "immutable HUMAN_GATE receipt no longer matches live HEAD"
+    return 1
+  }
+  verify_rc_lineage || {
+    error "RC lineage changed before release"
+    return 1
+  }
+  verify_exact_stable_tag || {
+    error "stable tag is not exact RC3 before release"
+    return 1
+  }
 
-  gh_release_create "$STABLE_TAG" --repo "$REPOSITORY" --verify-tag \
+  gh_release_create "$STABLE_TAG" \
+    --repo "$REPOSITORY" \
+    --verify-tag \
     --title 'MCF v1.0.0' \
     --notes 'First stable MCF v1.0.0 release. Promoted from the fully qualified v1.0.0-RC3 candidate after exact-SHA production qualification, fail-closed stable-tag creation, independent review, Class C controls and explicit immutable LEANDRO HUMAN_GATE.' \
-    --latest
+    --latest || return 1
 
   current_release="$(release_json)" || return 1
   validate_exact_release_json "$current_release" || return 1
   verify_exact_stable_tag || return 1
   test "$(gh_api "repos/$REPOSITORY/releases/latest" --jq '.tag_name')" = "$STABLE_TAG" || return 1
+
   echo "stable_tag_transition=$tag_transition"
   echo "stable_release_state=CREATED_EXACT"
 }
@@ -172,15 +227,21 @@ publish_or_recover() {
 self_test_receipt_predicate() {
   local pass=0 parent=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   local base approved json bad stale
+
   base="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: %s\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n' "$STABLE_TAG")"
   approved="$(printf 'authority: LEANDRO\nstate: APROVADO\nrelease: %s\napproved_control_head: %s\napproval_method: GITHUB_WEB_VERIFIED_COMMIT\n' "$STABLE_TAG" "$parent")"
   json="$(jq -n --arg p "$parent" --arg m "$APPROVAL_COMMIT_MESSAGE" --arg f "$APPROVAL_FILE" '{author:{login:"leon337",id:25374535},committer:{login:"web-flow",id:19864447},commit:{message:$m,verification:{verified:true,reason:"valid"}},parents:[{sha:$p}],files:[{filename:$f,status:"modified"}]}')"
+
   validate_human_gate_commit_json "$json" "$approved" "$base" >/dev/null && pass=$((pass+1))
+
   bad="$(jq '.committer={login:"chatgpt-codex-connector[bot]",id:199175422}|.commit.verification={verified:false,reason:"unsigned"}' <<<"$json")"
-  ! validate_human_gate_commit_json "$bad" "$approved" "$base" >/dev/null 2>&1 && pass=$((pass+1))
+  if ! validate_human_gate_commit_json "$bad" "$approved" "$base" >/dev/null 2>&1; then pass=$((pass+1)); fi
+
   stale="$(printf 'authority: LEANDRO\nstate: APROVADO\nrelease: %s\napproved_control_head: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\napproval_method: GITHUB_WEB_VERIFIED_COMMIT\n' "$STABLE_TAG")"
-  ! validate_human_gate_commit_json "$json" "$stale" "$base" >/dev/null 2>&1 && pass=$((pass+1))
-  ! validate_human_gate_commit_json "$json" "$base" "$base" >/dev/null 2>&1 && pass=$((pass+1))
+  if ! validate_human_gate_commit_json "$json" "$stale" "$base" >/dev/null 2>&1; then pass=$((pass+1)); fi
+
+  if ! validate_human_gate_commit_json "$json" "$base" "$base" >/dev/null 2>&1; then pass=$((pass+1)); fi
+
   echo "$pass"
 }
 
@@ -217,7 +278,7 @@ self_test_real_state_machine() (
     case "$mode" in
       VALID) return 0 ;;
       CHANGED) return 1 ;;
-      CHANGE_ON_THIRD) [[ "$count" -lt 3 ]] ;;
+      CHANGE_ON_THIRD) test "$count" -lt 3 ;;
       *) return 1 ;;
     esac
   }
@@ -229,7 +290,10 @@ self_test_real_state_machine() (
     count="$(read_state gate_checks)"
     case "$mode" in
       VALID) verify_live_pr_head ;;
-      REVOKE_ON_SECOND) [[ "$count" -lt 2 ]] && verify_live_pr_head ;;
+      REVOKE_ON_SECOND)
+        test "$count" -lt 2 || return 1
+        verify_live_pr_head
+        ;;
       ABSENT|STALE|APP|REVOKED) return 1 ;;
       *) return 1 ;;
     esac
@@ -277,42 +341,43 @@ self_test_real_state_machine() (
     write_state release EXACT
   }
 
-  expect_success() { "$@" >/dev/null 2>&1; }
-  expect_failure() { ! "$@" >/dev/null 2>&1; }
-  counter_is() { test "$(read_state "$1")" = "$2"; }
+  passed() { pass=$((pass+1)); echo "PASS: $1" >&2; }
+  failed() { echo "FAIL: $1" >&2; return 1; }
+  no_release_writes() { test "$(read_state release_create_calls)" = 0; }
+  no_tag_writes() { test "$(read_state tag_create_calls)" = 0; }
 
   reset_state ABSENT NONE ABSENT VALID VALID
-  expect_success publish_or_recover && counter_is tag_create_calls 1 && counter_is release_create_calls 1 && pass=$((pass+1))
+  if publish_or_recover >/dev/null 2>&1 && test "$(read_state tag_create_calls)" = 1 && test "$(read_state release_create_calls)" = 1; then passed "tag absent -> exact RC3 tag then release"; else failed "tag absent -> exact RC3 tag then release"; fi
 
   reset_state ABSENT WRONG ABSENT VALID VALID
-  expect_failure publish_or_recover && counter_is release_create_calls 0 && pass=$((pass+1))
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "concurrent divergent tag -> fail before release"; else failed "concurrent divergent tag -> fail before release"; fi
 
   reset_state ABSENT EXACT ABSENT VALID VALID
-  expect_success publish_or_recover && counter_is release_create_calls 1 && pass=$((pass+1))
+  if publish_or_recover >/dev/null 2>&1 && test "$(read_state release_create_calls)" = 1; then passed "concurrent exact RC3 tag -> controlled path"; else failed "concurrent exact RC3 tag -> controlled path"; fi
 
   reset_state RC3 NONE EXACT VALID VALID
-  expect_success publish_or_recover && counter_is tag_create_calls 0 && counter_is release_create_calls 0 && pass=$((pass+1))
+  if publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "existing exact stable -> recovery NOOP"; else failed "existing exact stable -> recovery NOOP"; fi
 
   reset_state WRONG NONE ABSENT VALID VALID
-  expect_failure publish_or_recover && counter_is release_create_calls 0 && pass=$((pass+1))
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "existing divergent tag -> fail"; else failed "existing divergent tag -> fail"; fi
 
   reset_state RC3 NONE INCOMPATIBLE VALID VALID
-  expect_failure publish_or_recover && counter_is release_create_calls 0 && pass=$((pass+1))
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "incompatible release -> fail"; else failed "incompatible release -> fail"; fi
 
   reset_state ABSENT NONE ABSENT ABSENT VALID
-  expect_failure publish_or_recover && counter_is tag_create_calls 0 && counter_is release_create_calls 0 && pass=$((pass+1))
+  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "HUMAN_GATE absent -> no mutation"; else failed "HUMAN_GATE absent -> no mutation"; fi
 
   reset_state ABSENT NONE ABSENT APP VALID
-  expect_failure publish_or_recover && counter_is tag_create_calls 0 && pass=$((pass+1))
+  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "App/API gate -> no mutation"; else failed "App/API gate -> no mutation"; fi
 
   reset_state ABSENT NONE ABSENT REVOKE_ON_SECOND VALID
-  expect_failure publish_or_recover && counter_is tag_create_calls 0 && counter_is release_create_calls 0 && pass=$((pass+1))
+  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "revocation before tag boundary -> no publication"; else failed "revocation before tag boundary -> no publication"; fi
 
   reset_state ABSENT NONE ABSENT VALID CHANGE_ON_THIRD
-  expect_failure publish_or_recover && counter_is tag_create_calls 0 && counter_is release_create_calls 0 && pass=$((pass+1))
+  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "PR HEAD changes before tag boundary -> no publication"; else failed "PR HEAD changes before tag boundary -> no publication"; fi
 
   reset_state ABSENT FAILED ABSENT VALID VALID
-  expect_failure publish_or_recover && counter_is release_create_calls 0 && pass=$((pass+1))
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "tag create failure without exact winner -> no release"; else failed "tag create failure without exact winner -> no release"; fi
 
   echo "$pass"
 )
@@ -322,9 +387,11 @@ self_test() {
   receipt="$(self_test_receipt_predicate)"
   real="$(self_test_real_state_machine)"
   total=$((receipt + real))
+
   echo "publication_boundary_receipt_tests=$receipt"
   echo "publication_boundary_real_state_machine_tests=$real"
   echo "publication_boundary_self_tests=$total"
+
   test "$receipt" = 4
   test "$real" = 11
   test "$total" = 15
