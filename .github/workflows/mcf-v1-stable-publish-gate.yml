@@ -66,7 +66,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(gh api "users/$LEANDRO_GITHUB_LOGIN" --jq '.login')" = "$LEANDRO_GITHUB_LOGIN"
-          test "$(gh api "users/$LEPOSITORY" --jq '.id')" = "$LEANDRO_GITHUB_ID"
+          test "$(gh api "users/$LEANDRO_GITHUB_LOGIN" --jq '.id')" = "$LEANDRO_GITHUB_ID"
           test "$(gh api "repos/$REPOSITORY" --jq '.owner.login')" = "$LEANDRO_GITHUB_LOGIN"
           test "$(gh api "repos/$REPOSITORY" --jq '.owner.id')" = "$LEANDRO_GITHUB_ID"
 
