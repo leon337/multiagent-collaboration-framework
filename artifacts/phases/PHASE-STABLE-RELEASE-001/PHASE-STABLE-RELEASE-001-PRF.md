@@ -21,94 +21,81 @@ stable_v1_0_0: NAO_PUBLICADA
 publication_authorized: false
 ```
 
-PR #133 é somente control plane e não altera RC3.
+PR #133 permanece somente control plane. Nenhum commit deste PR altera RC3 ou produção.
 
-## P1-1 — stable tag creation race
+## P1 vigente — HEAD-change window antes da stable tag
 
-**Achado:** um writer concorrente poderia criar `v1.0.0` em SHA divergente entre o probe de ausência e `gh release create --target`, permitindo uma release pública incorreta antes da pós-verificação.
+**Achado:** uma aprovação ligada a um control-head podia sobreviver até a primeira mutação se o HEAD remoto mudasse depois da última verificação client-side e antes do create-ref.
 
-**Correção:**
-- `refs/tags/v1.0.0` é criada explicitamente pela Git Data API somente em RC3;
-- se o create perder corrida, a ref vencedora é relida antes de qualquer release;
-- SHA divergente falha fechado;
-- SHA exato RC3 entra apenas no caminho controlado;
-- `gh release create` usa `--verify-tag`, sem `--target`.
+**Correção:** a primeira mutação stable deixa de ser uma chamada REST precedida por um snapshot de HEAD. O boundary passa a ser uma única transação Git remota:
 
-**Testes reais:** o self-test invoca `publish_or_recover` e `create_exact_stable_tag_fail_closed` contra backend fake isolado, cobrindo tag ausente, concorrente divergente, concorrente exata, recovery exato, tag divergente, release incompatível e create sem vencedor exato.
+```text
+git push --atomic
+  --force-with-lease=refs/heads/release/v1.0.0-stable-publish:<HEAD_APROVADO>
+  <HEAD_APROVADO>:refs/heads/release/v1.0.0-stable-publish
+  <RC3_SHA>:refs/tags/v1.0.0
+```
 
-**Estado:** `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+O lease é verificado pelo servidor na mesma operação que tenta criar a tag; `--atomic` exige all-or-none. Se o control-head remoto deixou de ser o HEAD aprovado, a transação falha e a tag não é criada. Um run cuja transação falhou não continua em recovery; exige novo run.
 
-## P1-2 — revogação do HUMAN_GATE
-
-**Achado:** comentário mutável da Issue #131 poderia ser editado/apagado após leitura e antes da mutação.
-
-**Environment nativo:** investigado, mas não adotado. O environment observado `main - rsa-api-free` possui `protection_rules: []`; required reviewer não está configurado e este canal não dispõe de ação administrativa para configurá-lo. Nenhuma proteção inexistente é presumida.
-
-**Correção:** comentário deixou de ser autoridade. O futuro receipt é um commit GitHub Web verificado que altera exclusivamente `LEANDRO-HUMAN-GATE.yaml`, com author `leon337`/25374535, committer `web-flow`/19864447, verificação `valid`, mensagem e conteúdo exatos e vínculo ao parent control-head.
-
-O gate/HEAD/RC lineage são reconsumidos **imediatamente antes** da tentativa atômica de criação de `refs/tags/v1.0.0`. Esse create-ref é o publication boundary para estabelecer a identidade stable: revogação ou mudança de HEAD anterior a ele resulta em zero criação de tag e zero release.
-
-**Testes reais:** HUMAN_GATE ausente, App/API/unsigned, receipt stale/alterado, revogação no segundo consumo antes do tag boundary e mudança de PR HEAD antes do tag boundary.
+**Teste dedicado Git real isolado:**
+- control-head permanece no SHA esperado → transação atômica cria a tag no SHA exato;
+- outro clone move o control-head imediatamente antes da transação → lease falha e a tag permanece ausente.
 
 **Estado:** `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
 
-## CAF / evidência técnica
+## P2 vigente — exact RC3 tag sem Release
 
-Dois ciclos fail-closed melhoraram a prova:
+**Achado:** após criação correta da tag, uma interrupção antes da Release fazia o validator morrer no `404` sob `set -e` e bloqueava o recovery.
 
-1. run `31726128230`: fixture revelou dependência de `set -e`; predicados passaram a retornar explicitamente;
-2. run `31727880589`, head `59df5bcc...`: o self-test real detectou caminhos `|| error` que ainda não propagavam retorno sob contexto condicional; nenhum job de autorização/publicação executou. O código foi endurecido em `f2c7047485beb06806be6c8a7de192314d4d1c17`.
+**Correção:** quando `v1.0.0` existe exatamente em RC3 e HUMAN_GATE continua válido, ausência da Release é classificada como `AUTHORIZED_EXACT_TAG_ONLY_RECOVERY_STATE`; o job pode alcançar o recovery. Release incompatível continua fail-closed.
 
-Reteste técnico:
+**Estado:** `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+
+## HUMAN_GATE
+
+Comentário mutável não é autoridade. O receipt futuro continua sendo um commit GitHub Web verificado que altera exclusivamente `LEANDRO-HUMAN-GATE.yaml`, com author `leon337`/25374535, committer `web-flow`/19864447, assinatura GitHub válida, mensagem/conteúdo exatos e vínculo ao parent control-head. O receipt atual permanece `NAO_APROVADO`.
+
+## Evidência técnica atual
 
 ```yaml
-technical_head: f2c7047485beb06806be6c8a7de192314d4d1c17
-stable_publication_gate_run: 31728317756
-validation: PASS
+technical_head: 2129a9a555974c7c89e7a78afc00493e7901aaf5
+stable_publication_gate_run: 31753810306
+stable_publication_gate: PASS
 receipt_predicate_tests: PASS_4
-real_state_machine_tests: PASS_11
-self_tests_total: PASS_15
+atomic_git_tests: PASS_2
+real_state_machine_tests: PASS_12
+self_tests_total: PASS_18
 authorize_publication: PASS_WITH_APPROVED_FALSE
 publish_stable: SKIPPED
-documentation_validation_run: 31728317747
+documentation_validation_run: 31753810224
 documentation_validation: PASS
-production_readiness_run: 31728317685
+production_readiness_run: 31753810228
 production_readiness: PASS
 ```
 
-## Findings atuais
+Cenários explicitamente cobertos: aprovação/control-head válido; HEAD alterado imediatamente antes da primeira mutação; exact RC3 tag sem Release; tag divergente; exact tag + exact Release NOOP; Release incompatível; HUMAN_GATE ausente; receipt stale; App/invalid receipt; corrida divergente; falha da transação sem tag.
+
+## Findings vigentes antes do review terminal
 
 ```yaml
 publication_P0_count: 0
-publication_P1_count: 2
+publication_P1_count: 1
+publication_P2_count: 1
 critical_findings: 0
 high_findings: 0
+P1_HEAD_CHANGE_WINDOW: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+P2_EXACT_TAG_NO_RELEASE_RECOVERY: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
 AUDIT: BLOCKED_BY_PUBLICATION_P1
 LEO_GATE: BLOCKED_BY_PUBLICATION_P1
 HUMAN_GATE: NAO_APROVADO
 stable_v1_0_0: NAO_PUBLICADA
 ```
 
-P1 não será zerado antes da revisão independente do SHA final.
-
-## Threads
-
-HEAD-binding, TOCTOU, tag-race, revogação e documentação só podem ser resolvidos se a cadeia `ACHADO → CORREÇÃO → TESTE DEDICADO → EVIDÊNCIA → REVISÃO INDEPENDENTE → RESOLUÇÃO` estiver completa no desenho atual.
-
-## Produção e monitor
-
-```yaml
-production_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-render_service: rsa-api-free
-render_deploy: dep-d9ugl7gae00c73c5snv0
-production_state: LIVE
-latest_health_run: 31726950466
-latest_health_result: SUCCESS
-material_incidents_open: 0
-```
+Nenhum P1 será zerado e nenhum thread será resolvido antes de revisão independente do HEAD exato confirmar que o cenário não reaparece.
 
 ## Próxima ação
 
-Concluir reconciliação documental, executar CI no HEAD final, reconfirmar RCs/stable/produção/monitor e solicitar revisão independente desse SHA exato. Augusto/Júlia/Emily/LÉO permanecem bloqueados até P0/P1 zero.
+Revalidar o HEAD documental final, solicitar revisão independente exata e somente depois decidir resolução dos threads. Augusto/Júlia/Emily/LÉO permanecem bloqueados até `publication_P0=0` e `publication_P1=0`.
 
-Nenhum conteúdo deste PRF autoriza merge, tag, release, `latest` ou publicação.
+Nenhum conteúdo deste PRF autoriza merge, tag, Release, `latest` ou publicação.
