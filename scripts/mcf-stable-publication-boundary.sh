@@ -225,10 +225,6 @@ consume_human_gate_atomically() {
   local lock_sha
   lock_sha="$(create_publication_lock_commit "$HEAD_SHA")" || return 1
 
-  # This is the irreversible authorization-consumption boundary. The branch
-  # update is deliberately non-noop, so the expected old HEAD is transmitted
-  # to receive-pack. --atomic makes branch lock + stable tag + control-lock tag
-  # all-or-none. If the live control branch moved, no publication ref is created.
   if ! git_atomic_push_with_token \
     --atomic \
     --force-with-lease="refs/heads/$CONTROL_BRANCH:$HEAD_SHA" \
@@ -270,9 +266,7 @@ publish_or_recover() {
   lock_sha="$(control_lock_tag_sha 2>/dev/null || true)"
 
   if [[ -z "$stable_sha" && -z "$lock_sha" ]]; then
-    consume_human_gate_atomically
-    # Deliberately stop after the first irreversible mutation. Release creation
-    # is a fresh recovery execution against the protected consumed refs.
+    consume_human_gate_atomically || return 1
     return 0
   fi
 
@@ -292,10 +286,6 @@ publish_or_recover() {
     return 0
   fi
 
-  # After consumption, live PR HEAD is no longer the authority. The protected
-  # control-lock tag is the immutable receipt. A later PR commit cannot reuse or
-  # revoke the consumed approval; before consumption, any HEAD change makes the
-  # atomic branch lease fail. This explicitly closes the snapshot/revocation gap.
   verify_consumed_authorization || return 1
 
   gh_release_create "$STABLE_TAG" \
@@ -489,9 +479,7 @@ self_test_real_state_machine() (
         echo publication_state=CONSUMED_AWAITING_FRESH_RECOVERY
         return 0
         ;;
-      HEAD_CHANGED)
-        return 1
-        ;;
+      HEAD_CHANGED) return 1 ;;
       *) return 1 ;;
     esac
   }
@@ -517,7 +505,6 @@ self_test_real_state_machine() (
   passed() { pass=$((pass+1)); echo "PASS: $1" >&2; }
   failed() { echo "FAIL: $1" >&2; return 1; }
   no_release_writes() { test "$(read_state release_create_calls)" = 0; }
-  no_consumption() { test "$(read_state consume_calls)" = 0; }
 
   reset_state ABSENT ABSENT ABSENT VALID VALID SUCCESS
   if publish_or_recover >/dev/null 2>&1 && test "$(read_state consume_calls)" = 1 && no_release_writes && test "$(read_state stable)" = RC3 && test "$(read_state lock)" = LOCK; then passed "valid HUMAN_GATE consumes into refs but does not publish Release in same run"; else failed "valid HUMAN_GATE consumes into refs"; fi
