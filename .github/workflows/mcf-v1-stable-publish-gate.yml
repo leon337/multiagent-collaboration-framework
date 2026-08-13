@@ -30,6 +30,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
       EVENT_NAME: ${{ github.event_name }}
       EVENT_REF: ${{ github.ref }}
       WORKFLOW_REF: ${{ github.workflow_ref }}
@@ -39,9 +40,10 @@ jobs:
       RC2_SHA: d73d936a63cc9462a95bcf481f4b8e1d4b255719
       RC3_SHA: 7f741e10d0e745a90c732e084400b11e3f5e6794
       STABLE_TAG: v1.0.0
+      APPROVED_TITLE: '[HUMAN-APPROVED] release: publish MCF v1.0.0'
       LEANDRO_GITHUB_LOGIN: leon337
       LEANDRO_GITHUB_ID: '25374535'
-      HUMAN_GATE_RECEIPT: 'LEANDRO_HUMAN_GATE: APPROVED'
+      HUMAN_GATE_PREFIX: 'LEANDRO_HUMAN_GATE: APPROVED'
     steps:
       - name: Prove pull_request workflow provenance
         run: |
@@ -53,6 +55,7 @@ jobs:
           test "$WORKFLOW_REF" = "$expected_workflow_ref"
           test "$BASE_SHA" = "$RC3_SHA"
           gh api "repos/$REPOSITORY/contents/.github/workflows/mcf-v1-stable-publish-gate.yml?ref=$HEAD_SHA" >/dev/null
+          test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')" = "$HEAD_SHA"
           echo "event=$EVENT_NAME"
           echo "ref=$EVENT_REF"
           echo "workflow_ref=$WORKFLOW_REF"
@@ -63,43 +66,67 @@ jobs:
         run: |
           set -euo pipefail
           test "$(gh api "users/$LEANDRO_GITHUB_LOGIN" --jq '.login')" = "$LEANDRO_GITHUB_LOGIN"
-          test "$(gh api "users/$LEANDRO_GITHUB_LOGIN" --jq '.id')" = "$LEANDRO_GITHUB_ID"
+          test "$(gh api "users/$LEPOSITORY" --jq '.id')" = "$LEANDRO_GITHUB_ID"
           test "$(gh api "repos/$REPOSITORY" --jq '.owner.login')" = "$LEANDRO_GITHUB_LOGIN"
           test "$(gh api "repos/$REPOSITORY" --jq '.owner.id')" = "$LEANDRO_GITHUB_ID"
 
-      - name: Verify preserved release lineage and stable absence
+      - name: Verify preserved RC lineage
         run: |
           set -euo pipefail
           test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC1" --jq '.object.sha')" = "$RC1_SHA"
           test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC2" --jq '.object.sha')" = "$RC2_SHA"
           test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC3" --jq '.object.sha')" = "$RC3_SHA"
-          if gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" >/dev/null 2>&1; then
-            echo "ERROR: stable v1.0.0 already exists while HUMAN_GATE is not approved" >&2
-            exit 1
-          fi
 
-      - name: Prove exact HUMAN_GATE predicate rejects impersonation and quoting
+      - name: Prove exact HUMAN_GATE predicate rejects impersonation quoting and stale heads
         run: |
           set -euo pipefail
-          cat > /tmp/receipt-fixture.json <<'JSON'
-          [
-            {"user":{"login":"someone-else","id":25374535},"body":"LEANDRO_HUMAN_GATE: APPROVED"},
-            {"user":{"login":"leon337","id":99999999},"body":"LEANDRO_HUMAN_GATE: APPROVED"},
-            {"user":{"login":"leon337","id":25374535},"body":"quote: LEANDRO_HUMAN_GATE: APPROVED"},
-            {"user":{"login":"leon337","id":25374535},"body":"LEANDRO_HUMAN_GATE: APPROVED\nextra"},
-            {"user":{"login":"leon337","id":25374535},"body":"LEANDRO_HUMAN_GATE: APPROVED"}
-          ]
-          JSON
-          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$HUMAN_GATE_RECEIPT" '[.[] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/receipt-fixture.json)"
+          expected_body="$(printf '%s\nRELEASE: %s\nPR_HEAD: %s' "$HUMAN_GATE_PREFIX" "$STABLE_TAG" "$HEAD_SHA")"
+          stale_body="$(printf '%s\nRELEASE: %s\nPR_HEAD: %s' "$HUMAN_GATE_PREFIX" "$STABLE_TAG" '0000000000000000000000000000000000000000')"
+          jq -n \
+            --arg expected "$expected_body" \
+            --arg stale "$stale_body" \
+            '[
+              {user:{login:"someone-else",id:25374535},body:$expected},
+              {user:{login:"leon337",id:99999999},body:$expected},
+              {user:{login:"leon337",id:25374535},body:("quote: " + $expected)},
+              {user:{login:"leon337",id:25374535},body:($expected + "\nextra")},
+              {user:{login:"leon337",id:25374535},body:$stale},
+              {user:{login:"leon337",id:25374535},body:$expected}
+            ]' > /tmp/receipt-fixture.json
+          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/receipt-fixture.json)"
           test "$count" = "1"
 
-      - name: Inspect current HUMAN_GATE state without accepting substitutes
+      - name: Inspect current HEAD-bound HUMAN_GATE state without accepting substitutes
         run: |
           set -euo pipefail
+          expected_body="$(printf '%s\nRELEASE: %s\nPR_HEAD: %s' "$HUMAN_GATE_PREFIX" "$STABLE_TAG" "$HEAD_SHA")"
           gh api --paginate --slurp "repos/$REPOSITORY/issues/131/comments?per_page=100" > /tmp/issue-131-comments.json
-          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$HUMAN_GATE_RECEIPT" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/issue-131-comments.json)"
+          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/issue-131-comments.json)"
           test "$count" -le 1
-          echo "qualifying_exact_human_gate_receipts=$count"
+          printf '%s' "$count" > /tmp/current-human-gate-count
+          echo "qualifying_exact_head_bound_human_gate_receipts=$count"
+
+      - name: Verify stable absence or authorized exact recovery state
+        run: |
+          set -euo pipefail
+          human_gate_count="$(cat /tmp/current-human-gate-count)"
+          if gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" >/tmp/stable-ref.json 2>/dev/null; then
+            test "$(jq -r '.object.sha' /tmp/stable-ref.json)" = "$RC3_SHA"
+            test "$human_gate_count" = "1"
+            test "$PR_TITLE" = "$APPROVED_TITLE"
+            gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/tmp/stable-release.json
+            test "$(jq -r '.tag_name' /tmp/stable-release.json)" = "$STABLE_TAG"
+            test "$(jq -r '.target_commitish' /tmp/stable-release.json)" = "$RC3_SHA"
+            test "$(jq -r '.prerelease' /tmp/stable-release.json)" = "false"
+            test "$(jq -r '.draft' /tmp/stable-release.json)" = "false"
+            echo "stable_state=AUTHORIZED_EXACT_RECOVERY_STATE"
+          else
+            if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/dev/null 2>&1; then
+              echo "ERROR: stable release exists without its expected exact tag ref" >&2
+              exit 1
+            fi
+            echo "stable_state=ABSENT"
+          fi
 
   publish-stable:
     needs:
@@ -118,30 +145,36 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      APPROVED_TITLE: '[HUMAN-APPROVED] release: publish MCF v1.0.0'
       RC1_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
       RC2_SHA: d73d936a63cc9462a95bcf481f4b8e1d4b255719
       RC3_SHA: 7f741e10d0e745a90c732e084400b11e3f5e6794
       STABLE_TAG: v1.0.0
       LEANDRO_GITHUB_LOGIN: leon337
       LEANDRO_GITHUB_ID: '25374535'
-      HUMAN_GATE_RECEIPT: 'LEANDRO_HUMAN_GATE: APPROVED'
+      HUMAN_GATE_PREFIX: 'LEANDRO_HUMAN_GATE: APPROVED'
     steps:
-      - name: Re-verify immutable release lineage
+      - name: Re-verify immutable release lineage and current reviewed head
         run: |
           set -euo pipefail
           test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC1" --jq '.object.sha')" = "$RC1_SHA"
           test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC2" --jq '.object.sha')" = "$RC2_SHA"
           test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC3" --jq '.object.sha')" = "$RC3_SHA"
+          test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')" = "$HEAD_SHA"
+          test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.title')" = "$APPROVED_TITLE"
 
-      - name: Re-verify canonical LEANDRO identity and exact HUMAN_GATE receipt
+      - name: Re-verify canonical LEANDRO identity and exact HEAD-bound HUMAN_GATE receipt
         run: |
           set -euo pipefail
           test "$(gh api "users/$LEANDRO_GITHUB_LOGIN" --jq '.login')" = "$LEANDRO_GITHUB_LOGIN"
           test "$(gh api "users/$LEANDRO_GITHUB_LOGIN" --jq '.id')" = "$LEANDRO_GITHUB_ID"
           test "$(gh api "repos/$REPOSITORY" --jq '.owner.login')" = "$LEANDRO_GITHUB_LOGIN"
           test "$(gh api "repos/$REPOSITORY" --jq '.owner.id')" = "$LEANDRO_GITHUB_ID"
+          expected_body="$(printf '%s\nRELEASE: %s\nPR_HEAD: %s' "$HUMAN_GATE_PREFIX" "$STABLE_TAG" "$HEAD_SHA")"
           gh api --paginate --slurp "repos/$REPOSITORY/issues/131/comments?per_page=100" > /tmp/issue-131-comments.json
-          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$HUMAN_GATE_RECEIPT" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/issue-131-comments.json)"
+          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/issue-131-comments.json)"
           test "$count" = "1"
 
       - name: Create or verify stable release at exact RC3 SHA
@@ -150,17 +183,25 @@ jobs:
 
           if gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" >/tmp/stable-ref.json 2>/dev/null; then
             test "$(jq -r '.object.sha' /tmp/stable-ref.json)" = "$RC3_SHA"
-            test "$(gh release view "$STABLE_TAG" --repo "$REPOSITORY" --json isPrerelease,tagName --jq 'select(.isPrerelease == false and .tagName == "v1.0.0") | .tagName')" = "$STABLE_TAG"
-            echo "Stable v1.0.0 already exists at the exact RC3 SHA; governance-preserving NOOP."
-            exit 0
+            gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/tmp/stable-release.json
+            test "$(jq -r '.tag_name' /tmp/stable-release.json)" = "$STABLE_TAG"
+            test "$(jq -r '.target_commitish' /tmp/stable-release.json)" = "$RC3_SHA"
+            test "$(jq -r '.prerelease' /tmp/stable-release.json)" = "false"
+            test "$(jq -r '.draft' /tmp/stable-release.json)" = "false"
+            echo "Stable v1.0.0 already exists at the exact RC3 SHA; governance-preserving recovery NOOP."
+          else
+            gh release create "$STABLE_TAG" \
+              --repo "$REPOSITORY" \
+              --target "$RC3_SHA" \
+              --title 'MCF v1.0.0' \
+              --notes 'First stable MCF v1.0.0 release. Promoted from the fully qualified v1.0.0-RC3 candidate after production readiness, exact-SHA deployment, health/readiness/version binding, Class C audit, Léo internal gate and explicit LEANDRO HUMAN_GATE. Release immutability is a governance/version-identity invariant; GitHub administrative deletion protection is not asserted unless separately configured and evidenced.' \
+              --latest
           fi
 
-          gh release create "$STABLE_TAG" \
-            --repo "$REPOSITORY" \
-            --target "$RC3_SHA" \
-            --title 'MCF v1.0.0' \
-            --notes 'First stable MCF v1.0.0 release. Promoted from the fully qualified v1.0.0-RC3 candidate after production readiness, exact-SHA deployment, health/readiness/version binding, Class C audit, Léo internal gate and explicit LEANDRO HUMAN_GATE. Release immutability is a governance/version-identity invariant; GitHub administrative deletion protection is not asserted unless separately configured and evidenced.' \
-            --latest
-
           test "$(gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" --jq '.object.sha')" = "$RC3_SHA"
-          test "$(gh release view "$STABLE_TAG" --repo "$REPOSITORY" --json isPrerelease,tagName --jq 'select(.isPrerelease == false and .tagName == "v1.0.0") | .tagName')" = "$STABLE_TAG"
+          gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/tmp/final-stable-release.json
+          test "$(jq -r '.tag_name' /tmp/final-stable-release.json)" = "$STABLE_TAG"
+          test "$(jq -r '.target_commitish' /tmp/final-stable-release.json)" = "$RC3_SHA"
+          test "$(jq -r '.prerelease' /tmp/final-stable-release.json)" = "false"
+          test "$(jq -r '.draft' /tmp/final-stable-release.json)" = "false"
+          test "$(gh api "repos/$REPOSITORY/releases/latest" --jq '.tag_name')" = "$STABLE_TAG"
