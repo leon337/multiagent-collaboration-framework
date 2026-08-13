@@ -1,8 +1,19 @@
-# Auditoria do Framework
+# Auditoria do Framework — v0.1
 
-Esta pasta reúne a linha de base, os pareceres por agente, a consolidação da auditoria v0.1 e o plano de remediação.
+**Classificação reconciliada:** `HISTORICAL`
 
-## Ordem de leitura
+Esta pasta preserva a linha de base, os pareceres por agente, a consolidação da auditoria v0.1 e o plano de remediação da **fase de fundação**. Referências a PR #1, Issue #10, `PASS_AUDITED` e liberação daquela fase descrevem o boundary histórico e não o estado atual do MCF.
+
+Para auditorias posteriores, consulte também:
+
+- `docs/audits/`;
+- reviews independentes nos PRs aplicáveis;
+- `artifacts/phases/` e seus PRFs/checkpoints;
+- decisões/release evidence do boundary correspondente.
+
+Estado atual: `docs/MCF-CURRENT-STATE.md` + GitHub live.
+
+## Ordem de leitura histórica
 
 1. `RELATORIO_DE_AUDITORIA_INICIAL.md`
 2. `agentes/LEO_AUDITORIA_V0.1.md`
@@ -15,4 +26,4 @@ Esta pasta reúne a linha de base, os pareceres por agente, a consolidação da 
 9. `CONSOLIDACAO_AUDITORIA_V0.1.md`
 10. `PLANO_DE_REMEDIACAO_POS_AUDITORIA_V0.1.md`
 
-A auditoria v0.1 pode ser concluída como `PASS_AUDITED`, mas isso não equivale à liberação do framework. O PR #1 permanece draft até a conclusão da remediação e aprovação de Leandro.
+Naquele boundary, a auditoria v0.1 podia ser concluída como `PASS_AUDITED` sem equivaler à liberação completa do framework. A frase histórica de que “PR #1 permanece draft” não deve ser usada para inferir o estado live de 2026-08-13.
