@@ -40,6 +40,7 @@ jobs:
       RC2_SHA: d73d936a63cc9462a95bcf481f4b8e1d4b255719
       RC3_SHA: 7f741e10d0e745a90c732e084400b11e3f5e6794
       STABLE_TAG: v1.0.0
+      CONTROL_LOCK_TAG: mcf-control/v1.0.0
       LEANDRO_GITHUB_LOGIN: leon337
       LEANDRO_GITHUB_ID: '25374535'
     steps:
@@ -57,6 +58,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Verify canonical LEANDRO identity and RC lineage
@@ -76,41 +78,57 @@ jobs:
           bash -n scripts/mcf-stable-publication-boundary.sh
           bash scripts/mcf-stable-publication-boundary.sh self-test
 
+      - name: Inspect required server-side tag protection
+        run: |
+          set -euo pipefail
+          if bash scripts/mcf-stable-publication-boundary.sh protection-status >/tmp/protection-id 2>/tmp/protection-error; then
+            echo "server_side_tag_protection=READY"
+            echo "ruleset_id=$(cat /tmp/protection-id)"
+          else
+            echo "server_side_tag_protection=MISSING_BLOCKER"
+            cat /tmp/protection-error >&2 || true
+          fi
+
       - name: Confirm HUMAN_GATE is not silently inherited
         run: |
           set -euo pipefail
           content="$(gh api "repos/$REPOSITORY/contents/artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml?ref=$HEAD_SHA" --jq '.content' | tr -d '\n' | base64 --decode)"
           if grep -qx 'state: APROVADO' <<<"$content"; then
-            bash scripts/mcf-stable-publication-boundary.sh verify-human-gate
-            echo human_gate_state=VALID_IMMUTABLE_WEB_RECEIPT
+            bash scripts/mcf-stable-publication-boundary.sh verify-effective-gate
+            echo human_gate_state=VALID_DIRECT_OR_CONSUMED_RECEIPT
           else
             expected="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: v1.0.0\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n')"
             test "$content" = "$expected"
             echo human_gate_state=NAO_APROVADO
           fi
 
-      - name: Verify stable absence or exact authorized recovery state
+      - name: Verify stable absence or exact protected recovery state
         run: |
           set -euo pipefail
-          if gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" >/tmp/stable-ref.json 2>/dev/null; then
-            bash scripts/mcf-stable-publication-boundary.sh verify-human-gate
-            test "$(jq -r '.object.sha' /tmp/stable-ref.json)" = "$RC3_SHA"
+          stable_ref="$(gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" --jq '.object.sha' 2>/dev/null || true)"
+          lock_ref="$(gh api "repos/$REPOSITORY/git/ref/tags/$CONTROL_LOCK_TAG" --jq '.object.sha' 2>/dev/null || true)"
 
-            if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/tmp/stable-release.json 2>/dev/null; then
-              test "$(jq -r '.tag_name' /tmp/stable-release.json)" = "$STABLE_TAG"
-              test "$(jq -r '.target_commitish' /tmp/stable-release.json)" = "$RC3_SHA"
-              test "$(jq -r '.draft' /tmp/stable-release.json)" = false
-              test "$(jq -r '.prerelease' /tmp/stable-release.json)" = false
-              echo stable_state=AUTHORIZED_EXACT_RELEASE_RECOVERY_STATE
-            else
-              echo stable_state=AUTHORIZED_EXACT_TAG_ONLY_RECOVERY_STATE
-            fi
-          else
+          if [[ -z "$stable_ref" && -z "$lock_ref" ]]; then
             if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/dev/null 2>&1; then
-              echo 'ERROR: release exists without exact stable tag' >&2
+              echo 'ERROR: release exists without publication refs' >&2
               exit 1
             fi
             echo stable_state=ABSENT
+            exit 0
+          fi
+
+          test -n "$stable_ref"
+          test -n "$lock_ref"
+          bash scripts/mcf-stable-publication-boundary.sh verify-consumed-gate
+
+          if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/tmp/stable-release.json 2>/dev/null; then
+            test "$(jq -r '.tag_name' /tmp/stable-release.json)" = "$STABLE_TAG"
+            test "$(jq -r '.target_commitish' /tmp/stable-release.json)" = "$RC3_SHA"
+            test "$(jq -r '.draft' /tmp/stable-release.json)" = false
+            test "$(jq -r '.prerelease' /tmp/stable-release.json)" = false
+            echo stable_state=AUTHORIZED_PROTECTED_RELEASE_RECOVERY_STATE
+          else
+            echo stable_state=AUTHORIZED_PROTECTED_TAG_ONLY_RECOVERY_STATE
           fi
 
   authorize-publication:
@@ -124,11 +142,13 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
+      CONTROL_BRANCH: release/v1.0.0-stable-publish
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       RC1_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
       RC2_SHA: d73d936a63cc9462a95bcf481f4b8e1d4b255719
       RC3_SHA: 7f741e10d0e745a90c732e084400b11e3f5e6794
       STABLE_TAG: v1.0.0
+      CONTROL_LOCK_TAG: mcf-control/v1.0.0
       LEANDRO_GITHUB_LOGIN: leon337
       LEANDRO_GITHUB_ID: '25374535'
     outputs:
@@ -138,9 +158,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
           persist-credentials: false
 
-      - name: Consume immutable LEANDRO HUMAN_GATE if present
+      - name: Consume direct or protected HUMAN_GATE if present
         id: gate
         run: |
           set -euo pipefail
@@ -151,9 +172,9 @@ jobs:
             exit 0
           fi
           test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.title')" = '[HUMAN-APPROVED] release: publish MCF v1.0.0'
-          bash scripts/mcf-stable-publication-boundary.sh verify-human-gate
+          bash scripts/mcf-stable-publication-boundary.sh verify-effective-gate
           echo approved=true >> "$GITHUB_OUTPUT"
-          echo human_gate_state=APPROVED_IMMUTABLE_WEB_RECEIPT
+          echo human_gate_state=APPROVED_DIRECT_OR_CONSUMED
 
   publish-stable:
     needs:
@@ -174,6 +195,7 @@ jobs:
       RC2_SHA: d73d936a63cc9462a95bcf481f4b8e1d4b255719
       RC3_SHA: 7f741e10d0e745a90c732e084400b11e3f5e6794
       STABLE_TAG: v1.0.0
+      CONTROL_LOCK_TAG: mcf-control/v1.0.0
       LEANDRO_GITHUB_LOGIN: leon337
       LEANDRO_GITHUB_ID: '25374535'
     steps:
@@ -184,5 +206,5 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Publish or recover stable release fail closed
+      - name: Consume authorization or recover protected stable publication
         run: bash scripts/mcf-stable-publication-boundary.sh publish
