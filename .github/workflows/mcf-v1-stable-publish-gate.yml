@@ -10,6 +10,13 @@ on:
       - synchronize
       - edited
 
+# A synchronize/edited event supersedes an older run for this PR. Cancellation
+# is defense-in-depth; the mutable step also revalidates live remote state
+# immediately before any release effect.
+concurrency:
+  group: mcf-v1-stable-publication-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 # Default to read-only. The publication job receives contents:write only after
 # the independent read-only boundary validation has passed and its own exact
 # HUMAN_GATE checks pass again.
@@ -181,6 +188,27 @@ jobs:
         run: |
           set -euo pipefail
 
+          verify_live_gate() {
+            test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')" = "$HEAD_SHA"
+            test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.title')" = "$APPROVED_TITLE"
+            test "$(gh api "users/$LEANDRO_GITHUB_LOGIN" --jq '.login')" = "$LEANDRO_GITHUB_LOGIN"
+            test "$(gh api "users/$LEANDRO_GITHUB_LOGIN" --jq '.id')" = "$LEANDRO_GITHUB_ID"
+            test "$(gh api "repos/$REPOSITORY" --jq '.owner.login')" = "$LEANDRO_GITHUB_LOGIN"
+            test "$(gh api "repos/$REPOSITORY" --jq '.owner.id')" = "$LEANDRO_GITHUB_ID"
+            test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC1" --jq '.object.sha')" = "$RC1_SHA"
+            test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC2" --jq '.object.sha')" = "$RC2_SHA"
+            test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC3" --jq '.object.sha')" = "$RC3_SHA"
+            expected_body="$(printf '%s\nRELEASE: %s\nPR_HEAD: %s' "$HUMAN_GATE_PREFIX" "$STABLE_TAG" "$HEAD_SHA")"
+            gh api --paginate --slurp "repos/$REPOSITORY/issues/131/comments?per_page=100" > /tmp/live-issue-131-comments.json
+            live_count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/live-issue-131-comments.json)"
+            test "$live_count" = "1"
+          }
+
+          # Final live-state barrier immediately before either recovery acceptance
+          # or creation. A synchronize/title/comment change after earlier steps
+          # cannot be inherited silently by this run.
+          verify_live_gate
+
           if gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" >/tmp/stable-ref.json 2>/dev/null; then
             test "$(jq -r '.object.sha' /tmp/stable-ref.json)" = "$RC3_SHA"
             gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/tmp/stable-release.json
@@ -190,6 +218,10 @@ jobs:
             test "$(jq -r '.draft' /tmp/stable-release.json)" = "false"
             echo "Stable v1.0.0 already exists at the exact RC3 SHA; governance-preserving recovery NOOP."
           else
+            # Recheck once more at the mutation boundary. This intentionally
+            # duplicates the barrier to minimize TOCTOU between remote reads and
+            # the only command capable of creating the public stable identity.
+            verify_live_gate
             gh release create "$STABLE_TAG" \
               --repo "$REPOSITORY" \
               --target "$RC3_SHA" \
