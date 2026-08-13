@@ -10,12 +10,14 @@ RC1_SHA="${RC1_SHA:-9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8}"
 RC2_SHA="${RC2_SHA:-d73d936a63cc9462a95bcf481f4b8e1d4b255719}"
 RC3_SHA="${RC3_SHA:-7f741e10d0e745a90c732e084400b11e3f5e6794}"
 STABLE_TAG="${STABLE_TAG:-v1.0.0}"
+CONTROL_LOCK_TAG="${CONTROL_LOCK_TAG:-mcf-control/v1.0.0}"
 LEANDRO_GITHUB_LOGIN="${LEANDRO_GITHUB_LOGIN:-leon337}"
 LEANDRO_GITHUB_ID="${LEANDRO_GITHUB_ID:-25374535}"
 WEB_FLOW_LOGIN="${WEB_FLOW_LOGIN:-web-flow}"
 WEB_FLOW_ID="${WEB_FLOW_ID:-19864447}"
 APPROVAL_FILE="${APPROVAL_FILE:-artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml}"
 APPROVAL_COMMIT_MESSAGE="${APPROVAL_COMMIT_MESSAGE:-HUMAN_GATE: approve MCF v1.0.0}"
+LOCK_MESSAGE_TITLE="${LOCK_MESSAGE_TITLE:-MCF stable publication authorization consumed}"
 
 error() { echo "ERROR: $*" >&2; }
 gh_api() { "$GH_BIN" api "$@"; }
@@ -37,8 +39,21 @@ verify_rc_lineage() {
   test "$(gh_api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC3" --jq '.object.sha')" = "$RC3_SHA" || return 1
 }
 
+live_pr_head() {
+  gh_api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha'
+}
+
 verify_live_pr_head() {
-  test "$(gh_api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')" = "$HEAD_SHA" || return 1
+  test "$(live_pr_head)" = "$HEAD_SHA" || return 1
+}
+
+expected_approved_receipt() {
+  local parent_sha="$1"
+  printf 'authority: LEANDRO\nstate: APROVADO\nrelease: %s\napproved_control_head: %s\napproval_method: GITHUB_WEB_VERIFIED_COMMIT\n' "$STABLE_TAG" "$parent_sha"
+}
+
+expected_unapproved_receipt() {
+  printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: %s\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n' "$STABLE_TAG"
 }
 
 validate_human_gate_commit_json() {
@@ -55,32 +70,31 @@ validate_human_gate_commit_json() {
   test "$(jq -r '.files[0].filename' <<<"$commit_json")" = "$APPROVAL_FILE" || return 1
   test "$(jq -r '.files[0].status' <<<"$commit_json")" = modified || return 1
 
-  local parent_sha expected_approval expected_parent
+  local parent_sha
   parent_sha="$(jq -r '.parents[0].sha // empty' <<<"$commit_json")"
   test -n "$parent_sha" || return 1
-
-  expected_approval="$(printf 'authority: LEANDRO\nstate: APROVADO\nrelease: %s\napproved_control_head: %s\napproval_method: GITHUB_WEB_VERIFIED_COMMIT\n' "$STABLE_TAG" "$parent_sha")"
-  expected_parent="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: %s\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n' "$STABLE_TAG")"
-
-  test "$approval_content" = "$expected_approval" || return 1
-  test "$parent_content" = "$expected_parent" || return 1
+  test "$approval_content" = "$(expected_approved_receipt "$parent_sha")" || return 1
+  test "$parent_content" = "$(expected_unapproved_receipt)" || return 1
   printf '%s' "$parent_sha"
 }
 
-verify_human_gate_commit() {
-  require_runtime_env || return 1
-  verify_live_pr_head || return 1
-
-  local commit_json parent_sha approval_content parent_content
-  commit_json="$(gh_api "repos/$REPOSITORY/commits/$HEAD_SHA")" || return 1
+verify_human_gate_commit_at_ref() {
+  local ref="$1" commit_json parent_sha approval_content parent_content
+  commit_json="$(gh_api "repos/$REPOSITORY/commits/$ref")" || return 1
   parent_sha="$(jq -r '.parents[0].sha // empty' <<<"$commit_json")"
   test -n "$parent_sha" || return 1
-  approval_content="$(read_content_at_ref "$APPROVAL_FILE" "$HEAD_SHA")" || return 1
+  approval_content="$(read_content_at_ref "$APPROVAL_FILE" "$ref")" || return 1
   parent_content="$(read_content_at_ref "$APPROVAL_FILE" "$parent_sha")" || return 1
   validate_human_gate_commit_json "$commit_json" "$approval_content" "$parent_content" >/dev/null || return 1
 }
 
-classify_tag_sha() {
+verify_direct_human_gate_live() {
+  require_runtime_env || return 1
+  verify_live_pr_head || return 1
+  verify_human_gate_commit_at_ref "$HEAD_SHA"
+}
+
+classify_stable_sha() {
   local observed="${1:-}"
   if [[ -z "$observed" ]]; then
     echo ABSENT
@@ -95,10 +109,100 @@ stable_tag_sha() {
   gh_api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" --jq '.object.sha' 2>/dev/null
 }
 
+control_lock_tag_sha() {
+  gh_api "repos/$REPOSITORY/git/ref/tags/$CONTROL_LOCK_TAG" --jq '.object.sha' 2>/dev/null
+}
+
 verify_exact_stable_tag() {
   local sha
   sha="$(stable_tag_sha)" || { error "stable tag is absent"; return 1; }
-  test "$(classify_tag_sha "$sha")" = EXACT || { error "stable tag points to divergent SHA: $sha"; return 1; }
+  test "$(classify_stable_sha "$sha")" = EXACT || { error "stable tag points to divergent SHA: $sha"; return 1; }
+}
+
+ruleset_details_satisfy_contract() {
+  local json="$1"
+  test "$(jq -r '.target' <<<"$json")" = tag || return 1
+  test "$(jq -r '.enforcement' <<<"$json")" = active || return 1
+  jq -e --arg stable "refs/tags/$STABLE_TAG" '.conditions.ref_name.include | index($stable) != null' <<<"$json" >/dev/null || return 1
+  jq -e --arg lock "refs/tags/$CONTROL_LOCK_TAG" '.conditions.ref_name.include | index($lock) != null' <<<"$json" >/dev/null || return 1
+  jq -e '[.rules[].type] | index("update") != null' <<<"$json" >/dev/null || return 1
+  jq -e '[.rules[].type] | index("deletion") != null' <<<"$json" >/dev/null || return 1
+}
+
+verify_server_side_tag_protection() {
+  local ids id details
+  ids="$(gh_api "repos/$REPOSITORY/rulesets?includes_parents=true&per_page=100" --jq '.[] | select(.target == "tag" and .enforcement == "active") | .id')" || return 1
+  while IFS= read -r id; do
+    [[ -n "$id" ]] || continue
+    details="$(gh_api "repos/$REPOSITORY/rulesets/$id")" || continue
+    if ruleset_details_satisfy_contract "$details"; then
+      echo "$id"
+      return 0
+    fi
+  done <<<"$ids"
+  error "no active tag ruleset protects updates/deletions for both publication refs"
+  return 1
+}
+
+lock_commit_message() {
+  local approved_head="$1"
+  printf '%s\n\napproved_control_head: %s\ncandidate_sha: %s\nrelease: %s\n' "$LOCK_MESSAGE_TITLE" "$approved_head" "$RC3_SHA" "$STABLE_TAG"
+}
+
+create_publication_lock_commit() {
+  local approved_head="$1" tree lock_sha
+  tree="$(git rev-parse "$approved_head^{tree}")" || return 1
+  lock_sha="$(
+    GIT_AUTHOR_NAME='MCF Stable Publication Gate' \
+    GIT_AUTHOR_EMAIL='41898282+github-actions[bot]@users.noreply.github.com' \
+    GIT_COMMITTER_NAME='MCF Stable Publication Gate' \
+    GIT_COMMITTER_EMAIL='41898282+github-actions[bot]@users.noreply.github.com' \
+    git commit-tree "$tree" -p "$approved_head" <<<"$(lock_commit_message "$approved_head")"
+  )" || return 1
+  test "$lock_sha" != "$approved_head" || return 1
+  printf '%s' "$lock_sha"
+}
+
+validate_publication_lock_commit_json() {
+  local lock_json="$1" expected_lock_sha="$2" approved_head parent_json expected_message
+  test "$(jq -r '.sha' <<<"$lock_json")" = "$expected_lock_sha" || return 1
+  test "$(jq '.parents | length' <<<"$lock_json")" = 1 || return 1
+  test "$(jq '.files | length' <<<"$lock_json")" = 0 || return 1
+  approved_head="$(jq -r '.parents[0].sha // empty' <<<"$lock_json")"
+  test -n "$approved_head" || return 1
+  expected_message="$(lock_commit_message "$approved_head")"
+  test "$(jq -r '.commit.message' <<<"$lock_json")" = "$expected_message" || return 1
+  parent_json="$(gh_api "repos/$REPOSITORY/commits/$approved_head")" || return 1
+  test "$(jq -r '.commit.tree.sha' <<<"$lock_json")" = "$(jq -r '.commit.tree.sha' <<<"$parent_json")" || return 1
+  verify_human_gate_commit_at_ref "$approved_head" || return 1
+  printf '%s' "$approved_head"
+}
+
+verify_consumed_authorization() {
+  require_runtime_env || return 1
+  verify_rc_lineage || return 1
+  verify_server_side_tag_protection >/dev/null || return 1
+  verify_exact_stable_tag || return 1
+
+  local lock_sha lock_json
+  lock_sha="$(control_lock_tag_sha)" || { error "control lock tag is absent"; return 1; }
+  lock_json="$(gh_api "repos/$REPOSITORY/commits/$lock_sha")" || return 1
+  validate_publication_lock_commit_json "$lock_json" "$lock_sha" >/dev/null || {
+    error "control lock tag does not encode a valid consumed HUMAN_GATE"
+    return 1
+  }
+}
+
+verify_effective_human_gate() {
+  if verify_direct_human_gate_live; then
+    echo DIRECT_UNCONSUMED
+    return 0
+  fi
+  if verify_consumed_authorization; then
+    echo CONSUMED_PROTECTED
+    return 0
+  fi
+  return 1
 }
 
 git_atomic_push_with_token() {
@@ -108,60 +212,42 @@ git_atomic_push_with_token() {
   git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" push "$@"
 }
 
-atomic_create_exact_stable_tag_with_head_lease() {
-  # Server-side CAS boundary: the control branch must still point to the exact
-  # approved HEAD at the same remote transaction that creates v1.0.0 at RC3.
-  # Git --atomic guarantees all-or-none ref updates; explicit force-with-lease
-  # rejects the whole transaction if PR HEAD moved before the server applies it.
-  git_atomic_push_with_token \
+consume_human_gate_atomically() {
+  verify_direct_human_gate_live || { error "direct HUMAN_GATE is invalid before consumption"; return 1; }
+  verify_rc_lineage || { error "RC lineage changed before consumption"; return 1; }
+  verify_server_side_tag_protection >/dev/null || { error "required server-side tag protection is absent"; return 1; }
+
+  if stable_tag_sha >/dev/null 2>&1 || control_lock_tag_sha >/dev/null 2>&1; then
+    error "publication refs already exist; direct consumption requires both refs absent"
+    return 1
+  fi
+
+  local lock_sha
+  lock_sha="$(create_publication_lock_commit "$HEAD_SHA")" || return 1
+
+  # This is the irreversible authorization-consumption boundary. The branch
+  # update is deliberately non-noop, so the expected old HEAD is transmitted
+  # to receive-pack. --atomic makes branch lock + stable tag + control-lock tag
+  # all-or-none. If the live control branch moved, no publication ref is created.
+  if ! git_atomic_push_with_token \
     --atomic \
     --force-with-lease="refs/heads/$CONTROL_BRANCH:$HEAD_SHA" \
     origin \
-    "$HEAD_SHA:refs/heads/$CONTROL_BRANCH" \
-    "$RC3_SHA:refs/tags/$STABLE_TAG"
-}
-
-create_exact_stable_tag_fail_closed() {
-  local existing_sha=""
-
-  if existing_sha="$(stable_tag_sha)"; then
-    test "$(classify_tag_sha "$existing_sha")" = EXACT || {
-      error "stable tag already exists at divergent SHA: $existing_sha"
-      return 1
-    }
-    echo EXISTING_EXACT
-    return 0
-  fi
-
-  verify_human_gate_commit || {
-    error "HUMAN_GATE invalid before atomic stable-tag boundary"
+    "$lock_sha:refs/heads/$CONTROL_BRANCH" \
+    "$RC3_SHA:refs/tags/$STABLE_TAG" \
+    "$lock_sha:refs/tags/$CONTROL_LOCK_TAG" \
+    >/tmp/mcf-stable-consume.out 2>/tmp/mcf-stable-consume.err; then
+    cat /tmp/mcf-stable-consume.err >&2 || true
+    error "atomic HUMAN_GATE consumption failed"
     return 1
-  }
-  verify_rc_lineage || {
-    error "RC lineage changed before atomic stable-tag boundary"
-    return 1
-  }
-
-  if atomic_create_exact_stable_tag_with_head_lease >/tmp/mcf-stable-atomic-push.out 2>/tmp/mcf-stable-atomic-push.err; then
-    verify_exact_stable_tag || return 1
-    echo CREATED_EXACT_ATOMIC_HEAD_LEASE
-    return 0
   fi
 
-  # Any failed atomic transaction is terminal for this run. Even an exact tag
-  # created by another writer is handled only by a fresh recovery run, so an
-  # old approved run can never continue after its lease failed.
-  if existing_sha="$(stable_tag_sha)"; then
-    if [[ "$(classify_tag_sha "$existing_sha")" == DIVERGENT ]]; then
-      error "atomic publication push failed and stable tag is divergent: $existing_sha"
-    else
-      error "atomic publication push failed; exact stable tag now exists and requires a fresh recovery run"
-    fi
-  else
-    cat /tmp/mcf-stable-atomic-push.err >&2 || true
-    error "atomic publication push failed and stable tag remains absent"
-  fi
-  return 1
+  test "$(git ls-remote origin "refs/heads/$CONTROL_BRANCH" | cut -f1)" = "$lock_sha" || return 1
+  test "$(git ls-remote origin "refs/tags/$STABLE_TAG" | cut -f1)" = "$RC3_SHA" || return 1
+  test "$(git ls-remote origin "refs/tags/$CONTROL_LOCK_TAG" | cut -f1)" = "$lock_sha" || return 1
+
+  echo "consumed_lock_sha=$lock_sha"
+  echo "publication_state=CONSUMED_AWAITING_FRESH_RECOVERY"
 }
 
 release_json() {
@@ -178,80 +264,80 @@ validate_exact_release_json() {
 
 publish_or_recover() {
   require_runtime_env || return 1
-  verify_human_gate_commit || {
-    error "immutable HUMAN_GATE receipt is absent or invalid"
-    return 1
-  }
-  verify_rc_lineage || {
-    error "RC lineage changed"
-    return 1
-  }
 
-  local tag_transition current_release
-  tag_transition="$(create_exact_stable_tag_fail_closed)" || return 1
-  verify_exact_stable_tag || return 1
+  local stable_sha="" lock_sha="" current_release
+  stable_sha="$(stable_tag_sha 2>/dev/null || true)"
+  lock_sha="$(control_lock_tag_sha 2>/dev/null || true)"
+
+  if [[ -z "$stable_sha" && -z "$lock_sha" ]]; then
+    consume_human_gate_atomically
+    # Deliberately stop after the first irreversible mutation. Release creation
+    # is a fresh recovery execution against the protected consumed refs.
+    return 0
+  fi
+
+  if [[ -z "$stable_sha" || -z "$lock_sha" ]]; then
+    error "partial publication refs are inconsistent"
+    return 1
+  fi
+
+  verify_consumed_authorization || return 1
 
   if current_release="$(release_json)"; then
     validate_exact_release_json "$current_release" || {
       error "existing stable release is incompatible"
       return 1
     }
-    echo "stable_tag_transition=$tag_transition"
     echo "stable_release_state=EXISTING_EXACT_RECOVERY_NOOP"
     return 0
   fi
 
-  # Tag-only recovery is valid only with an exact RC3 tag and a still-valid
-  # immutable HUMAN_GATE receipt. The first stable mutation itself is protected
-  # by the atomic branch-lease transaction above.
-  verify_human_gate_commit || {
-    error "immutable HUMAN_GATE receipt no longer matches live HEAD"
-    return 1
-  }
-  verify_rc_lineage || {
-    error "RC lineage changed before release"
-    return 1
-  }
-  verify_exact_stable_tag || {
-    error "stable tag is not exact RC3 before release"
-    return 1
-  }
+  # After consumption, live PR HEAD is no longer the authority. The protected
+  # control-lock tag is the immutable receipt. A later PR commit cannot reuse or
+  # revoke the consumed approval; before consumption, any HEAD change makes the
+  # atomic branch lease fail. This explicitly closes the snapshot/revocation gap.
+  verify_consumed_authorization || return 1
 
   gh_release_create "$STABLE_TAG" \
     --repo "$REPOSITORY" \
     --verify-tag \
     --target "$RC3_SHA" \
     --title 'MCF v1.0.0' \
-    --notes 'First stable MCF v1.0.0 release. Promoted from the fully qualified v1.0.0-RC3 candidate after exact-SHA production qualification, server-side atomic control-head lease, independent review, Class C controls and explicit immutable LEANDRO HUMAN_GATE.' \
+    --notes 'First stable MCF v1.0.0 release. Promoted from the fully qualified v1.0.0-RC3 candidate after exact-SHA production qualification, protected server-side authorization consumption, independent review, Class C controls and explicit LEANDRO HUMAN_GATE.' \
     --latest || return 1
 
   current_release="$(release_json)" || return 1
   validate_exact_release_json "$current_release" || return 1
-  verify_exact_stable_tag || return 1
+  verify_consumed_authorization || return 1
   test "$(gh_api "repos/$REPOSITORY/releases/latest" --jq '.tag_name')" = "$STABLE_TAG" || return 1
 
-  echo "stable_tag_transition=$tag_transition"
   echo "stable_release_state=CREATED_EXACT"
 }
 
 self_test_receipt_predicate() {
   local pass=0 parent=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   local base approved json bad stale
-
-  base="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: %s\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n' "$STABLE_TAG")"
-  approved="$(printf 'authority: LEANDRO\nstate: APROVADO\nrelease: %s\napproved_control_head: %s\napproval_method: GITHUB_WEB_VERIFIED_COMMIT\n' "$STABLE_TAG" "$parent")"
+  base="$(expected_unapproved_receipt)"
+  approved="$(expected_approved_receipt "$parent")"
   json="$(jq -n --arg p "$parent" --arg m "$APPROVAL_COMMIT_MESSAGE" --arg f "$APPROVAL_FILE" '{author:{login:"leon337",id:25374535},committer:{login:"web-flow",id:19864447},commit:{message:$m,verification:{verified:true,reason:"valid"}},parents:[{sha:$p}],files:[{filename:$f,status:"modified"}]}')"
 
   validate_human_gate_commit_json "$json" "$approved" "$base" >/dev/null && pass=$((pass+1))
-
   bad="$(jq '.committer={login:"chatgpt-codex-connector[bot]",id:199175422}|.commit.verification={verified:false,reason:"unsigned"}' <<<"$json")"
   if ! validate_human_gate_commit_json "$bad" "$approved" "$base" >/dev/null 2>&1; then pass=$((pass+1)); fi
-
-  stale="$(printf 'authority: LEANDRO\nstate: APROVADO\nrelease: %s\napproved_control_head: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\napproval_method: GITHUB_WEB_VERIFIED_COMMIT\n' "$STABLE_TAG")"
+  stale="$(expected_approved_receipt bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb)"
   if ! validate_human_gate_commit_json "$json" "$stale" "$base" >/dev/null 2>&1; then pass=$((pass+1)); fi
-
   if ! validate_human_gate_commit_json "$json" "$base" "$base" >/dev/null 2>&1; then pass=$((pass+1)); fi
+  echo "$pass"
+}
 
+self_test_ruleset_predicate() {
+  local pass=0 good missing_update wrong_ref
+  good="$(jq -n --arg stable "refs/tags/$STABLE_TAG" --arg lock "refs/tags/$CONTROL_LOCK_TAG" '{target:"tag",enforcement:"active",conditions:{ref_name:{include:[$stable,$lock],exclude:[]}},rules:[{type:"update",parameters:{update_allows_fetch_and_merge:false}},{type:"deletion"}]}')"
+  ruleset_details_satisfy_contract "$good" && pass=$((pass+1))
+  missing_update="$(jq ' .rules=[{"type":"deletion"}]' <<<"$good")"
+  if ! ruleset_details_satisfy_contract "$missing_update"; then pass=$((pass+1)); fi
+  wrong_ref="$(jq '.conditions.ref_name.include=["refs/tags/other"]' <<<"$good")"
+  if ! ruleset_details_satisfy_contract "$wrong_ref"; then pass=$((pass+1)); fi
   echo "$pass"
 }
 
@@ -280,19 +366,34 @@ self_test_atomic_git_boundary() (
   setup_repo stable-head
   (
     cd "$root/stable-head-a"
-    local_head="$(git rev-parse HEAD)"
-    git push --atomic \
-      --force-with-lease="refs/heads/$CONTROL_BRANCH:$local_head" \
+    approved="$(git rev-parse HEAD)"
+    tree="$(git rev-parse "$approved^{tree}")"
+    lock="$(git commit-tree "$tree" -p "$approved" <<<"lock")"
+    test "$lock" != "$approved"
+    GIT_TRACE_PACKET=1 git push --atomic \
+      --force-with-lease="refs/heads/$CONTROL_BRANCH:$approved" \
       origin \
-      "$local_head:refs/heads/$CONTROL_BRANCH" \
-      "$local_head:refs/tags/$STABLE_TAG" >/dev/null
-    test "$(git ls-remote origin "refs/tags/$STABLE_TAG" | cut -f1)" = "$local_head"
+      "$lock:refs/heads/$CONTROL_BRANCH" \
+      "$approved:refs/tags/$STABLE_TAG" \
+      "$lock:refs/tags/$CONTROL_LOCK_TAG" \
+      >/dev/null 2>"$root/packet.log"
+    grep -F "refs/heads/$CONTROL_BRANCH" "$root/packet.log" >/dev/null
+    test "$(git ls-remote origin "refs/heads/$CONTROL_BRANCH" | cut -f1)" = "$lock"
+    test "$(git ls-remote origin "refs/tags/$STABLE_TAG" | cut -f1)" = "$approved"
+    test "$(git ls-remote origin "refs/tags/$CONTROL_LOCK_TAG" | cut -f1)" = "$lock"
   )
   pass=$((pass+1))
-  echo "PASS: atomic lease + unchanged control HEAD creates exact tag" >&2
+  echo "PASS: non-noop control-head CAS is transmitted with both publication refs" >&2
 
   setup_repo moved-head
   git clone "$root/moved-head.git" "$root/moved-head-b" >/dev/null 2>&1
+  (
+    cd "$root/moved-head-a"
+    approved="$(git rev-parse HEAD)"
+    tree="$(git rev-parse "$approved^{tree}")"
+    lock="$(git commit-tree "$tree" -p "$approved" <<<"lock")"
+    printf '%s\n%s\n' "$approved" "$lock" >"$root/stale-values"
+  )
   (
     cd "$root/moved-head-b"
     git config user.email test2@example.invalid
@@ -304,20 +405,23 @@ self_test_atomic_git_boundary() (
   )
   (
     cd "$root/moved-head-a"
-    stale_head="$(git rev-parse HEAD)"
+    approved="$(sed -n '1p' "$root/stale-values")"
+    lock="$(sed -n '2p' "$root/stale-values")"
     if git push --atomic \
-      --force-with-lease="refs/heads/$CONTROL_BRANCH:$stale_head" \
+      --force-with-lease="refs/heads/$CONTROL_BRANCH:$approved" \
       origin \
-      "$stale_head:refs/heads/$CONTROL_BRANCH" \
-      "$stale_head:refs/tags/$STABLE_TAG" >/dev/null 2>&1; then
-      echo "FAIL: stale control HEAD unexpectedly passed atomic lease" >&2
+      "$lock:refs/heads/$CONTROL_BRANCH" \
+      "$approved:refs/tags/$STABLE_TAG" \
+      "$lock:refs/tags/$CONTROL_LOCK_TAG" \
+      >/dev/null 2>&1; then
+      echo "FAIL: stale control HEAD unexpectedly passed server-side CAS" >&2
       return 1
     fi
     test -z "$(git ls-remote origin "refs/tags/$STABLE_TAG" | cut -f1)"
+    test -z "$(git ls-remote origin "refs/tags/$CONTROL_LOCK_TAG" | cut -f1)"
   )
   pass=$((pass+1))
-  echo "PASS: control HEAD moved immediately before mutation -> atomic transaction creates no tag" >&2
-
+  echo "PASS: control HEAD moved immediately before transaction -> no publication refs" >&2
   echo "$pass"
 )
 
@@ -332,56 +436,63 @@ self_test_real_state_machine() (
   inc_counter() { local n; n="$(read_state "$1")"; write_state "$1" "$((n+1))"; }
 
   reset_state() {
-    write_state tag "${1:-ABSENT}"
-    write_state race "${2:-NONE}"
+    write_state stable "${1:-ABSENT}"
+    write_state lock "${2:-ABSENT}"
     write_state release "${3:-ABSENT}"
     write_state gate "${4:-VALID}"
-    write_state head "${5:-VALID}"
-    write_state gate_checks 0
-    write_state head_checks 0
-    write_state tag_create_calls 0
+    write_state protection "${5:-VALID}"
+    write_state consume_mode "${6:-SUCCESS}"
     write_state release_create_calls 0
+    write_state consume_calls 0
   }
 
   require_runtime_env() { return 0; }
   verify_rc_lineage() { return 0; }
-
-  verify_live_pr_head() {
-    inc_counter head_checks
-    case "$(read_state head)" in
-      VALID) return 0 ;;
-      CHANGED) return 1 ;;
-      *) return 1 ;;
-    esac
-  }
-
-  verify_human_gate_commit() {
-    inc_counter gate_checks
-    case "$(read_state gate)" in
-      VALID) verify_live_pr_head ;;
-      ABSENT|STALE|APP|REVOKED) return 1 ;;
-      *) return 1 ;;
-    esac
-  }
+  verify_server_side_tag_protection() { test "$(read_state protection)" = VALID; }
+  verify_live_pr_head() { test "$(read_state gate)" != HEAD_CHANGED; }
+  verify_human_gate_commit_at_ref() { test "$(read_state gate)" = VALID; }
+  verify_direct_human_gate_live() { test "$(read_state gate)" = VALID; }
 
   stable_tag_sha() {
-    case "$(read_state tag)" in
+    case "$(read_state stable)" in
       ABSENT) return 1 ;;
       RC3) printf '%s\n' "$RC3_SHA" ;;
       WRONG) printf '%s\n' cccccccccccccccccccccccccccccccccccccccc ;;
-      *) return 2 ;;
+    esac
+  }
+  control_lock_tag_sha() {
+    case "$(read_state lock)" in
+      ABSENT) return 1 ;;
+      LOCK) printf '%s\n' eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee ;;
+      WRONG) printf '%s\n' ffffffffffffffffffffffffffffffffffffffff ;;
     esac
   }
 
-  atomic_create_exact_stable_tag_with_head_lease() {
-    inc_counter tag_create_calls
-    case "$(read_state race)" in
-      NONE) write_state tag RC3; return 0 ;;
-      WRONG) write_state tag WRONG; return 1 ;;
-      EXACT) write_state tag RC3; return 1 ;;
-      HEAD_CHANGED) write_state head CHANGED; return 1 ;;
-      FAILED) return 1 ;;
-      *) return 2 ;;
+  verify_consumed_authorization() {
+    test "$(read_state protection)" = VALID || return 1
+    test "$(read_state stable)" = RC3 || return 1
+    test "$(read_state lock)" = LOCK || return 1
+    case "$(read_state gate)" in
+      STALE|APP|ABSENT) return 1 ;;
+      *) return 0 ;;
+    esac
+  }
+
+  consume_human_gate_atomically() {
+    inc_counter consume_calls
+    test "$(read_state gate)" = VALID || return 1
+    test "$(read_state protection)" = VALID || return 1
+    case "$(read_state consume_mode)" in
+      SUCCESS)
+        write_state stable RC3
+        write_state lock LOCK
+        echo publication_state=CONSUMED_AWAITING_FRESH_RECOVERY
+        return 0
+        ;;
+      HEAD_CHANGED)
+        return 1
+        ;;
+      *) return 1 ;;
     esac
   }
 
@@ -390,91 +501,92 @@ self_test_real_state_machine() (
       ABSENT) return 1 ;;
       EXACT) jq -n --arg tag "$STABLE_TAG" --arg sha "$RC3_SHA" '{tag_name:$tag,target_commitish:$sha,draft:false,prerelease:false}' ;;
       INCOMPATIBLE) jq -n --arg tag "$STABLE_TAG" '{tag_name:$tag,target_commitish:"dddddddddddddddddddddddddddddddddddddddd",draft:false,prerelease:false}' ;;
-      *) return 2 ;;
     esac
   }
-
-  gh_api() {
-    if [[ "${1:-}" == *"/releases/latest" ]]; then
-      printf '%s\n' "$STABLE_TAG"
-      return 0
-    fi
-    return 97
-  }
-
   gh_release_create() {
     inc_counter release_create_calls
-    test "$(read_state tag)" = RC3 || return 98
+    test "$(read_state stable)" = RC3
+    test "$(read_state lock)" = LOCK
     write_state release EXACT
+  }
+  gh_api() {
+    if [[ "${1:-}" == *"/releases/latest" ]]; then printf '%s\n' "$STABLE_TAG"; return 0; fi
+    return 97
   }
 
   passed() { pass=$((pass+1)); echo "PASS: $1" >&2; }
   failed() { echo "FAIL: $1" >&2; return 1; }
   no_release_writes() { test "$(read_state release_create_calls)" = 0; }
-  no_tag_writes() { test "$(read_state tag_create_calls)" = 0; }
+  no_consumption() { test "$(read_state consume_calls)" = 0; }
 
-  reset_state ABSENT NONE ABSENT VALID VALID
-  if publish_or_recover >/dev/null 2>&1 && test "$(read_state tag_create_calls)" = 1 && test "$(read_state release_create_calls)" = 1; then passed "valid approval + stable control HEAD -> path permitted"; else failed "valid approval + stable control HEAD -> path permitted"; fi
+  reset_state ABSENT ABSENT ABSENT VALID VALID SUCCESS
+  if publish_or_recover >/dev/null 2>&1 && test "$(read_state consume_calls)" = 1 && no_release_writes && test "$(read_state stable)" = RC3 && test "$(read_state lock)" = LOCK; then passed "valid HUMAN_GATE consumes into refs but does not publish Release in same run"; else failed "valid HUMAN_GATE consumes into refs"; fi
 
-  reset_state ABSENT HEAD_CHANGED ABSENT VALID VALID
-  if ! publish_or_recover >/dev/null 2>&1 && test "$(read_state tag_create_calls)" = 1 && no_release_writes && test "$(read_state tag)" = ABSENT; then passed "HEAD changes at first stable mutation -> no tag/release"; else failed "HEAD changes at first stable mutation -> no tag/release"; fi
+  reset_state ABSENT ABSENT ABSENT VALID VALID HEAD_CHANGED
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes && test "$(read_state stable)" = ABSENT && test "$(read_state lock)" = ABSENT; then passed "HEAD moves at consumption boundary -> no tag/release"; else failed "HEAD moves at consumption boundary"; fi
 
-  reset_state RC3 NONE ABSENT VALID VALID
-  if publish_or_recover >/dev/null 2>&1 && no_tag_writes && test "$(read_state release_create_calls)" = 1; then passed "exact RC3 tag + no release -> safe recovery"; else failed "exact RC3 tag + no release -> safe recovery"; fi
+  reset_state RC3 LOCK ABSENT VALID VALID SUCCESS
+  if publish_or_recover >/dev/null 2>&1 && test "$(read_state release_create_calls)" = 1; then passed "exact protected consumed refs + no Release -> safe recovery"; else failed "tag-only recovery"; fi
 
-  reset_state WRONG NONE ABSENT VALID VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "wrong-SHA tag -> fail closed"; else failed "wrong-SHA tag -> fail closed"; fi
+  reset_state WRONG LOCK ABSENT VALID VALID SUCCESS
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "wrong-SHA stable tag -> fail closed"; else failed "wrong tag"; fi
 
-  reset_state RC3 NONE EXACT VALID VALID
-  if publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "exact tag + exact release -> idempotent NOOP"; else failed "exact tag + exact release -> idempotent NOOP"; fi
+  reset_state RC3 ABSENT ABSENT VALID VALID SUCCESS
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "stable tag without control lock -> fail closed"; else failed "missing lock"; fi
 
-  reset_state RC3 NONE INCOMPATIBLE VALID VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "incompatible release -> fail closed"; else failed "incompatible release -> fail closed"; fi
+  reset_state RC3 LOCK EXACT VALID VALID SUCCESS
+  if publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "exact protected refs + exact Release -> idempotent NOOP"; else failed "exact NOOP"; fi
 
-  reset_state ABSENT NONE ABSENT ABSENT VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "HUMAN_GATE absent -> no mutation"; else failed "HUMAN_GATE absent -> no mutation"; fi
+  reset_state RC3 LOCK INCOMPATIBLE VALID VALID SUCCESS
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "incompatible Release -> fail closed"; else failed "incompatible release"; fi
 
-  reset_state ABSENT NONE ABSENT STALE VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "stale receipt -> no mutation"; else failed "stale receipt -> no mutation"; fi
+  reset_state ABSENT ABSENT ABSENT ABSENT VALID SUCCESS
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes && test "$(read_state stable)" = ABSENT; then passed "HUMAN_GATE absent -> no mutation"; else failed "absent gate"; fi
 
-  reset_state ABSENT NONE ABSENT APP VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_tag_writes && no_release_writes; then passed "App-mediated/invalid receipt -> no mutation"; else failed "App-mediated/invalid receipt -> no mutation"; fi
+  reset_state ABSENT ABSENT ABSENT STALE VALID SUCCESS
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes && test "$(read_state stable)" = ABSENT; then passed "stale receipt -> no mutation"; else failed "stale receipt"; fi
 
-  reset_state ABSENT WRONG ABSENT VALID VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "concurrent divergent tag -> fail before release"; else failed "concurrent divergent tag -> fail before release"; fi
+  reset_state ABSENT ABSENT ABSENT APP VALID SUCCESS
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes && test "$(read_state stable)" = ABSENT; then passed "App/invalid receipt -> no mutation"; else failed "app receipt"; fi
 
-  reset_state ABSENT EXACT ABSENT VALID VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "concurrent exact tag during failed transaction -> fresh recovery required"; else failed "concurrent exact tag during failed transaction -> fresh recovery required"; fi
+  reset_state ABSENT ABSENT ABSENT VALID MISSING SUCCESS
+  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes && test "$(read_state stable)" = ABSENT; then passed "missing server-side tag protection -> no mutation"; else failed "missing protection"; fi
 
-  reset_state ABSENT FAILED ABSENT VALID VALID
-  if ! publish_or_recover >/dev/null 2>&1 && no_release_writes; then passed "atomic push failure without tag -> no release"; else failed "atomic push failure without tag -> no release"; fi
+  reset_state RC3 LOCK ABSENT HEAD_CHANGED VALID SUCCESS
+  if publish_or_recover >/dev/null 2>&1 && test "$(read_state release_create_calls)" = 1; then passed "after consumption, later PR HEAD movement cannot invalidate protected consumed authority"; else failed "consumed authority recovery"; fi
 
   echo "$pass"
 )
 
 self_test() {
-  local receipt atomic_git real total
+  local receipt ruleset atomic_git real total
   receipt="$(self_test_receipt_predicate)"
+  ruleset="$(self_test_ruleset_predicate)"
   atomic_git="$(self_test_atomic_git_boundary)"
   real="$(self_test_real_state_machine)"
-  total=$((receipt + atomic_git + real))
+  total=$((receipt + ruleset + atomic_git + real))
 
   echo "publication_boundary_receipt_tests=$receipt"
+  echo "publication_boundary_ruleset_tests=$ruleset"
   echo "publication_boundary_atomic_git_tests=$atomic_git"
   echo "publication_boundary_real_state_machine_tests=$real"
   echo "publication_boundary_self_tests=$total"
 
   test "$receipt" = 4
+  test "$ruleset" = 3
   test "$atomic_git" = 2
   test "$real" = 12
-  test "$total" = 18
+  test "$total" = 21
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   case "${1:-}" in
     publish) publish_or_recover ;;
-    verify-human-gate) verify_human_gate_commit ;;
+    verify-human-gate) verify_direct_human_gate_live ;;
+    verify-effective-gate) verify_effective_human_gate ;;
+    verify-consumed-gate) verify_consumed_authorization ;;
+    protection-status) verify_server_side_tag_protection ;;
     self-test) self_test ;;
-    *) echo "usage: $0 {publish|verify-human-gate|self-test}" >&2; exit 2 ;;
+    *) echo "usage: $0 {publish|verify-human-gate|verify-effective-gate|verify-consumed-gate|protection-status|self-test}" >&2; exit 2 ;;
   esac
 fi
