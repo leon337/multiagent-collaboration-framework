@@ -84,7 +84,7 @@ jobs:
           test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC2" --jq '.object.sha')" = "$RC2_SHA"
           test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC3" --jq '.object.sha')" = "$RC3_SHA"
 
-      - name: Prove exact HUMAN_GATE predicate rejects impersonation quoting and stale heads
+      - name: Prove exact HUMAN_GATE predicate rejects impersonation quoting stale heads and GitHub Apps
         run: |
           set -euo pipefail
           expected_body="$(printf '%s\nRELEASE: %s\nPR_HEAD: %s' "$HUMAN_GATE_PREFIX" "$STABLE_TAG" "$HEAD_SHA")"
@@ -93,25 +93,26 @@ jobs:
             --arg expected "$expected_body" \
             --arg stale "$stale_body" \
             '[
-              {user:{login:"someone-else",id:25374535},body:$expected},
-              {user:{login:"leon337",id:99999999},body:$expected},
-              {user:{login:"leon337",id:25374535},body:("quote: " + $expected)},
-              {user:{login:"leon337",id:25374535},body:($expected + "\nextra")},
-              {user:{login:"leon337",id:25374535},body:$stale},
-              {user:{login:"leon337",id:25374535},body:$expected}
+              {user:{login:"someone-else",id:25374535},body:$expected,performed_via_github_app:null},
+              {user:{login:"leon337",id:99999999},body:$expected,performed_via_github_app:null},
+              {user:{login:"leon337",id:25374535},body:("quote: " + $expected),performed_via_github_app:null},
+              {user:{login:"leon337",id:25374535},body:($expected + "\nextra"),performed_via_github_app:null},
+              {user:{login:"leon337",id:25374535},body:$stale,performed_via_github_app:null},
+              {user:{login:"leon337",id:25374535},body:$expected,performed_via_github_app:{slug:"chatgpt-codex-connector"}},
+              {user:{login:"leon337",id:25374535},body:$expected,performed_via_github_app:null}
             ]' > /tmp/receipt-fixture.json
-          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/receipt-fixture.json)"
+          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[] | select(.user.login == $login and .user.id == $id and .body == $body and .performed_via_github_app == null)] | length' /tmp/receipt-fixture.json)"
           test "$count" = "1"
 
-      - name: Inspect current HEAD-bound HUMAN_GATE state without accepting substitutes
+      - name: Inspect current HEAD-bound direct HUMAN_GATE state without accepting substitutes
         run: |
           set -euo pipefail
           expected_body="$(printf '%s\nRELEASE: %s\nPR_HEAD: %s' "$HUMAN_GATE_PREFIX" "$STABLE_TAG" "$HEAD_SHA")"
           gh api --paginate --slurp "repos/$REPOSITORY/issues/131/comments?per_page=100" > /tmp/issue-131-comments.json
-          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/issue-131-comments.json)"
+          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body and .performed_via_github_app == null)] | length' /tmp/issue-131-comments.json)"
           test "$count" -le 1
           printf '%s' "$count" > /tmp/current-human-gate-count
-          echo "qualifying_exact_head_bound_human_gate_receipts=$count"
+          echo "qualifying_exact_head_bound_direct_human_gate_receipts=$count"
 
       - name: Verify stable absence or authorized exact recovery state
         run: |
@@ -172,7 +173,7 @@ jobs:
           test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')" = "$HEAD_SHA"
           test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.title')" = "$APPROVED_TITLE"
 
-      - name: Re-verify canonical LEANDRO identity and exact HEAD-bound HUMAN_GATE receipt
+      - name: Re-verify canonical LEANDRO identity and exact direct HEAD-bound HUMAN_GATE receipt
         run: |
           set -euo pipefail
           test "$(gh api "users/$LEANDRO_GITHUB_LOGIN" --jq '.login')" = "$LEANDRO_GITHUB_LOGIN"
@@ -181,7 +182,7 @@ jobs:
           test "$(gh api "repos/$REPOSITORY" --jq '.owner.id')" = "$LEANDRO_GITHUB_ID"
           expected_body="$(printf '%s\nRELEASE: %s\nPR_HEAD: %s' "$HUMAN_GATE_PREFIX" "$STABLE_TAG" "$HEAD_SHA")"
           gh api --paginate --slurp "repos/$REPOSITORY/issues/131/comments?per_page=100" > /tmp/issue-131-comments.json
-          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/issue-131-comments.json)"
+          count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body and .performed_via_github_app == null)] | length' /tmp/issue-131-comments.json)"
           test "$count" = "1"
 
       - name: Create or verify stable release at exact RC3 SHA
@@ -200,7 +201,7 @@ jobs:
             test "$(gh api "repos/$REPOSITORY/git/ref/tags/v1.0.0-RC3" --jq '.object.sha')" = "$RC3_SHA"
             expected_body="$(printf '%s\nRELEASE: %s\nPR_HEAD: %s' "$HUMAN_GATE_PREFIX" "$STABLE_TAG" "$HEAD_SHA")"
             gh api --paginate --slurp "repos/$REPOSITORY/issues/131/comments?per_page=100" > /tmp/live-issue-131-comments.json
-            live_count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body)] | length' /tmp/live-issue-131-comments.json)"
+            live_count="$(jq --arg login "$LEANDRO_GITHUB_LOGIN" --argjson id "$LEANDRO_GITHUB_ID" --arg body "$expected_body" '[.[][] | select(.user.login == $login and .user.id == $id and .body == $body and .performed_via_github_app == null)] | length' /tmp/live-issue-131-comments.json)"
             test "$live_count" = "1"
           }
 
