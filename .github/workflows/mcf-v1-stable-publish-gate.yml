@@ -105,8 +105,17 @@ jobs:
       - name: Verify stable absence or exact protected recovery state
         run: |
           set -euo pipefail
-          stable_ref="$(gh api "repos/$REPOSITORY/git/ref/tags/$STABLE_TAG" --jq '.object.sha' 2>/dev/null || true)"
-          lock_ref="$(gh api "repos/$REPOSITORY/git/ref/tags/$CONTROL_LOCK_TAG" --jq '.object.sha' 2>/dev/null || true)"
+          read_ref_sha() {
+            local ref_path="$1" tmp
+            tmp="$(mktemp)"
+            if gh api "repos/$REPOSITORY/git/ref/$ref_path" >"$tmp" 2>/dev/null; then
+              jq -r '.object.sha' "$tmp"
+            fi
+            rm -f "$tmp"
+          }
+
+          stable_ref="$(read_ref_sha "tags/$STABLE_TAG")"
+          lock_ref="$(read_ref_sha "tags/$CONTROL_LOCK_TAG")"
 
           if [[ -z "$stable_ref" && -z "$lock_ref" ]]; then
             if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/dev/null 2>&1; then
