@@ -7,6 +7,7 @@ Framework experimental para colaboração entre múltiplos agentes de IA com pap
 - **Leandro** é a autoridade humana final.
 - **Léo** é a autoridade delegada de continuidade operacional e gates internos.
 - **Mestre** coordena a equipe e a missão.
+- Existem **29 agentes nomeados**, selecionados dinamicamente por competência.
 - O protocolo vigente está em `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`.
 
 ## Estado canônico atual
