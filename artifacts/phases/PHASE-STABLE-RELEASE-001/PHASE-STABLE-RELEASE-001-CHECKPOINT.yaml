@@ -1,10 +1,13 @@
 mission: MCF-STABLE-RELEASE-001
 phase: PHASE-STABLE-RELEASE-001
 issue: 131
+pr: 133
 risk_class: C
-state: IN_PROGRESS
+state: IN_PROGRESS_HUMAN_GATE_NOT_APPROVED
 entry_main: 510ec5abaf14f5d11a504ff7de991887278e025c
-production_entry_sha: 510ec5abaf14f5d11a504ff7de991887278e025c
+qualified_rc3_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+main_at_publication_boundary_entry: 7f741e10d0e745a90c732e084400b11e3f5e6794
+production_qualified_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 rc1:
   tag: v1.0.0-RC1
   sha: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
@@ -14,12 +17,42 @@ rc2:
   sha: d73d936a63cc9462a95bcf481f4b8e1d4b255719
   state: PRESERVED
 rc3:
-  state: PENDING_POST_MERGE_QUALIFICATION
+  tag: v1.0.0-RC3
+  sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  state: PUBLISHED_PRERELEASE_PRESERVED
+  qualified: true
+  production_binding: VERIFIED
 stable_v1_0_0:
-  state: BLOCKED_PENDING_GATES_AND_HUMAN_GATE
+  state: NAO_PUBLICADA
+  authorized: false
+  required_target_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+human_gate:
+  authority: LEANDRO
+  state: NAO_APROVADO
+  exact_receipt: "LEANDRO_HUMAN_GATE: APPROVED"
+  authorized_github_login: leon337
+  authorized_github_user_id: 25374535
+  identity_basis: OFFICIAL_REPOSITORY_OWNER_PROFILE_AND_VERIFIED_CANONICAL_COMMIT
+publication_boundary:
+  p1_1_human_gate_authentication: CORRECTED_PENDING_EXECUTABLE_PROOF_AND_REVIEW
+  p1_2_workflow_seed_executability: CORRECTED_PENDING_EXECUTABLE_PROOF_AND_REVIEW
+  publication_p1_count: 2
+  publication_p0_count: 0
+  merge_authorized: false
+  publication_authorized: false
 production_monitor:
   immediate_post_fix_run: 31652040293
   first_scheduled_run: 31652590093
-  result: PASS
+  latest_verified_before_boundary_correction: 31671899893
+  latest_verified_result: PASS
+production_readiness:
+  rc3_run: 31653194401
+  rc3_result: PASS
+  corrected_pr_head_run: PENDING
 incident_129: CLOSED_COMPLETED
-next_action: validate PR, merge after gates, qualify exact main, publish RC3, verify production health, audit, Léo gate, then request LEANDRO HUMAN_GATE
+immutability:
+  governance_invariant: IMMUTABLE_VERSION_IDENTITY
+  github_release_immutable_flag_observed: false
+  repository_rulesets_observed: []
+  technical_undeletability_claimed: false
+next_action: prove corrected publication workflow in a real pull_request synchronize run, rerun independent review, reconcile P1 count only after evidence, then return to LEANDRO with a new HUMAN_GATE package
