@@ -24,16 +24,18 @@
 
 ```yaml
 total_questions: 16
-last_completed_question: 1
-next_question: 2
-Q2_started: false
+last_completed_question: 2
+next_question: 3
+Q1: COMPLETED
+Q2: COMPLETED_APPROVED_BY_LEANDRO
+Q3_started: false
 ```
 
-**Não repetir Q1.**
+**Não repetir Q1 ou Q2 salvo solicitação explícita de LEANDRO.**
 
-Q2 é:
+Q3 é:
 
-> **O que exatamente significa “não perder o contexto de um projeto”?**
+> **O que é um agente de verdade no MCF?**
 
 ## Boundary terminal da Fase Zero
 
@@ -60,7 +62,6 @@ durable_release_identity:
   rc3: 7f741e10d0e745a90c732e084400b11e3f5e6794
 
 nextgen:
-  advanced_by_phase_zero_closeout: false
   stage: ACTIVE_DISCOVERY
   implementation_authorized: false
 ```
@@ -69,60 +70,96 @@ Esses valores são evidência do boundary terminal. Qualquer estado mutável pos
 
 ## Ordem de leitura
 
-1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md`
+1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`
 2. `docs/proposals/MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
 4. `docs/proposals/MCF-NEXTGEN-NOMENCLATURE-DECISION-001.md`
-5. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-002.md` para histórico anterior
-6. para capacidades implementadas, consultar explicitamente a fonte externa desta branch `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md` ou a versão live da `main`
-7. GitHub/provider live para estado mutável
+5. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md` para a transição Fase Zero → Fase 1
+6. checkpoints 001/002 somente para histórico adicional
+7. para capacidades implementadas, consultar explicitamente `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md` ou a versão live da `main`
+8. GitHub/provider live para estado mutável
 
-A referência ao `MCF-CURRENT-STATE.md` acima é intencionalmente qualificada pela ref `main`; esse arquivo não é declarado como presente nesta branch de discovery.
+## Decisões-chave consolidadas
 
-## Decisões-chave já consolidadas
+### Q1 — finalidade
 
-- MCF nasceu para permitir continuidade durável de projetos e reduzir dependência de contexto de chat/ferramentas caras.
-- ChatGPT/MESTRE é inicialmente a camada cognitiva superior.
-- `AGENTE != MODELO`.
-- modelos podem ser roteados/fallback sem perder identidade do agente.
-- GitHub permanece memória institucional forte.
-- separar Framework Memory, Project Memory e Live Operational Memory é hipótese forte.
-- Pacote de Continuidade do Projeto é hipótese forte para retomada independente.
+- foco primário: sistema pessoal de trabalho com IA para LEANDRO;
+- continuidade durável de projetos como problema central;
+- ChatGPT/MESTRE inicialmente como camada cognitiva superior;
+- equipes de agentes especializados;
+- primeiro provar no uso real de LEANDRO, depois generalizar;
+- produto comercial é possibilidade futura, não prioridade inicial.
+
+### Q2 — continuidade e memória
+
+LEANDRO aprovou uma **Arquitetura de Continuidade em Camadas**:
+
+- Framework Memory;
+- Project Memory;
+- Live Operational Memory;
+- Evidence / Raw Archive;
+- `Project Capsule` como snapshot derivado/versionado para retomada, **não** fonte de verdade;
+- progressive disclosure e consulta histórica sob demanda;
+- isolamento por projeto, controle de acesso, retenção, redaction de secrets e schema versionado;
+- `Continuity Recovery Test`/cold-start como prova empírica de continuidade.
+
+Invariantes Q2:
+
+```text
+MEMÓRIA ajuda a reconstruir.
+EVIDÊNCIA prova o que aconteceu.
+AUTORIDADE define o que vale.
+ESTADO LIVE define onde estamos agora.
+```
+
+Controle estrutural de alucinação aprovado conceitualmente:
+
+```yaml
+memory_is_evidence: false
+capsule_is_source_of_truth: false
+unknown_must_remain_unknown: true
+hypothesis_cannot_become_fact_silently: true
+live_state_requires_revalidation: true
+critical_decisions_require_verification: true
+critical_actions_require_gate: true
+provenance_required: true
+```
+
+O objetivo NÃO é presumir que modelos generativos terão zero alucinação; é impedir que uma alucinação seja promovida silenciosamente a fato oficial, decisão aprovada, estado operacional ou ação externa.
+
+Checkpoint canônico da decisão: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
+
+## Outras invariantes existentes
+
+- `AGENTE != MODELO` permanece princípio forte; sua definição completa é objeto da Q3.
 - múltiplos projetos devem ter contexto/equipe/estado isolados.
 - HUMAN_GATE não é a mesma coisa que dependência operacional humana.
-- Linha do Tempo dos Agentes + Central de Perguntas e Decisões são direções de UX em estudo.
-- MCF deve poder criar sistemas e também factories/frameworks especializados.
 - provider capability precisa ser validada antes de virar requirement.
 - complexidade só permanece se resolver problema real.
 - MCF NÃO está instalado na VPS atualmente; VPS é infraestrutura separada em preparação.
-- Codex observado no GitHub é integração de review/update do PR, não serviço hospedado na VPS.
-- a stable `v1.0.0` e a RC3 permanecem identidades duráveis no SHA qualificado `7f741e10…`.
-- o encerramento da Fase Zero não autorizou arquitetura, protótipo nem implementação do NextGen.
-
-## Classificação de artefatos anteriores
-
-- `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-001.md`: histórico de discovery preservado.
-- `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-002.md`: `DURABLE_SESSION_CHECKPOINT` preservado; seus estados live são snapshots históricos.
-- referências anteriores a stable ausente, PR #133 aberto, PR #134 pendente ou Fase Zero em fechamento devem ser lidas como **HISTORICAL**, não como estado atual.
+- stable `v1.0.0` e RC3 permanecem identidades duráveis no SHA qualificado `7f741e10…`.
+- o encerramento da Fase Zero e as aprovações Q1/Q2 NÃO autorizaram implementação NextGen.
 
 ## Próxima ação do Discovery
 
-- Q1 permanece concluída.
-- Q2 ainda não começou.
-- O próximo passo permitido é LEANDRO + MESTRE iniciarem Q2.
-- Ao concluir uma decisão material ou antes de nova pausa, persistir novo checkpoint conforme a política do questionário.
-- Não iniciar implementação NextGen antes de Q1–Q16, consolidação, arquitetura alvo, plano de migração, critérios de aceite e aprovação final de LEANDRO.
+- Q1 concluída.
+- Q2 concluída e aprovada por LEANDRO.
+- Q3 ainda não começou.
+- Próximo passo permitido: **LEANDRO + MESTRE iniciarem Q3 — “O que é um agente de verdade no MCF?”**
+- persistir decisões materiais antes de avançar novamente.
+- não iniciar implementação NextGen antes de Q1–Q16, consolidação, arquitetura alvo, plano de migração, critérios de aceite e aprovação final de LEANDRO.
 
 ## Comando mínimo de retomada por LEANDRO
 
 > `Mestre, retome o MCF pelo Resume Card e pelo checkpoint mais recente. Continue do ponto exato.`
 
-Resultado esperado da retomada:
+Resultado esperado:
 
 ```yaml
 phase_zero: COMPLETE_IN_MAIN
 phase_1: ACTIVE_DISCOVERY
 Q1: COMPLETED
-Q2: NEXT_NOT_STARTED
+Q2: COMPLETED_APPROVED
+Q3: NEXT_NOT_STARTED
 implementation_authorized: false
 ```
