@@ -10,7 +10,7 @@ Esta workspace contém web, API, worker, contratos e persistência. O runtime MC
 
 O antigo estado `ambiente_publico: EM_PREPARACAO` pertencia ao boundary de adaptação do piloto e está `SUPERSEDED`.
 
-Snapshot reconciliado em 2026-08-14:
+Fatos de lineage/release reconciliados em 2026-08-14:
 
 ```yaml
 ambiente_publico: LIVE
@@ -22,10 +22,11 @@ qualified_lineage: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
 stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
 stable_release: MCF v1.0.0
 latest: v1.0.0
+production_reported_commit: READ_PROVIDER_LIVE
 sla: NAO_OFERECIDO
 ```
 
-Produção live e publicação stable são boundaries distintos, ambos concluídos no lineage qualificado da RC3. Isso não implica SLA. Confirme provider/GitHub live antes de usar este snapshot operacionalmente.
+Produção live e publicação stable são boundaries distintos. RC3/stable em `7f741e10…` são fatos de release/lineage; não são promessa de que o commit atualmente reportado pelo deploy continuará nesse SHA. Como Render acompanha `main`, uma integração apenas documental pode avançar o commit reportado sem alterar a árvore de código da aplicação/runtime. Confirme provider/GitHub live antes de usar estado operacional.
 
 ## Arquitetura
 
@@ -95,7 +96,7 @@ Use como fontes atuais:
 - `docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md`;
 - `docs/MCF-CURRENT-STATE.md`.
 
-A API pode apresentar cold start no plano gratuito. O monitor de produção deve ser usado para distinguir latência de inicialização de incidente material.
+A API pode apresentar cold start no plano gratuito. O monitor de produção deve ser usado para distinguir latência de inicialização de incidente material. O SHA reportado por `/health/version` é estado operacional volátil e deve ser relido após integrações/deploys.
 
 ## Segurança operacional
 
