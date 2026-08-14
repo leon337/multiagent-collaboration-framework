@@ -11,6 +11,15 @@
 
 RC1, RC2 e RC3 permanecem preservadas. O candidato estável continua exclusivamente `v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794`. `main` permanece nesse mesmo SHA durante este boundary. PR #133 é somente control plane; nenhuma CI, review ou documentação constitui aprovação humana.
 
+## Modelo de evidência
+
+Este arquivo versionado define o **boundary**, não um receipt autorreferente do próprio commit. O HEAD terminal exato, seus três checks e o review independente do mesmo SHA devem ser registrados no PR #133/Issue #131 depois do congelamento do HEAD. Esse receipt externo não cria novo commit.
+
+```yaml
+terminal_head_evidence: EXTERNAL_PR_OR_ISSUE_RECEIPT_REQUIRED
+versioned_reference_snapshot_is_terminal: false
+```
+
 ## Proteção server-side obrigatória
 
 Antes de qualquer autorização/publicação o GitHub deve comprovar simultaneamente:
@@ -18,7 +27,7 @@ Antes de qualquer autorização/publicação o GitHub deve comprovar simultaneam
 1. ruleset de tags ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com `update` + `deletion`, zero bypass e zero exclusions;
 2. ruleset do control branch `refs/heads/release/v1.0.0-stable-publish`, ativo, zero bypass/exclusions e impedindo mudanças em `.github/workflows/**/*` e `scripts/**/*`.
 
-O GitHub live ainda retorna `rulesets=[]`; portanto `server_side_publication_protection=MISSING_BLOCKER` e o Stable Publication Gate deve falhar antes de `authorize-publication`/`publish-stable`.
+Enquanto essas configurações não forem comprovadas no GitHub live, o Stable Publication Gate deve falhar antes de `authorize-publication`/`publish-stable`.
 
 ## Findings materiais
 
@@ -32,38 +41,37 @@ HIGH: 0
 
 ### P1
 - `PRRT_kwDOTnz-ks6ZHcv4`: proteção real das stable/control-lock refs — `OPEN_EXTERNAL_CONFIGURATION_BLOCKER`.
-- `PRRT_kwDOTnz-ks6ZHxY7`: exclusions de ruleset rejeitadas fail-closed — `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
-- `PRRT_kwDOTnz-ks6ZJdRe`: recovery consumido deve executar somente control-plane code protegido — `CORRECTED_TESTED_PENDING_SERVER_SIDE_CONFIGURATION_AND_INDEPENDENT_REVIEW`.
+- `PRRT_kwDOTnz-ks6ZHxY7`: exclusions de ruleset rejeitadas fail-closed — `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
+- `PRRT_kwDOTnz-ks6ZJdRe`: recovery consumido deve executar somente publication code protegido — `CORRECTED_TESTED_PENDING_SERVER_SIDE_CONFIGURATION_AND_TERMINAL_REVIEW_CHAIN`.
 
 ### P2
-- `PRRT_kwDOTnz-ks6ZHxY8`: consumed authority é avaliada antes de metadados mutáveis — `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
-- `PRRT_kwDOTnz-ks6ZHxY-`: Stable Gate falha sem proteção server-side — `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
-- `PRRT_kwDOTnz-ks6ZJdRg`: NOOP/recovery valida Release completa e `latest` — `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+- `PRRT_kwDOTnz-ks6ZHxY8`: consumed authority é avaliada antes de metadados mutáveis — `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
+- `PRRT_kwDOTnz-ks6ZHxY-`: Stable Gate falha sem proteção server-side — `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
+- `PRRT_kwDOTnz-ks6ZJdRg`: NOOP/recovery valida Release completa e `latest` — `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
+
+O P2 documental `discussion_r3780758872` é tratado removendo a alegação de que runs de um SHA anterior são "evidência atual"; o receipt terminal será produzido externamente para o próximo HEAD congelado.
 
 ## Boundary de consumo
 
-A autorização direta futura é consumida por uma transação Git `--atomic` que avança o control branch para um commit-lock não-noop e estabelece as refs de publicação. A mesma transação usa `--force-with-lease` no HEAD aprovado. Após o consumo, a Release só pode ocorrer em execução posterior e depende das refs consumidas + proteções server-side reais.
+A autorização direta futura é consumida por uma transação Git `--atomic` que avança o control branch para um commit-lock não-noop e estabelece as refs de publicação, sob `--force-with-lease` do HEAD aprovado. Após o consumo, a Release só pode ocorrer em execução posterior e depende das refs consumidas + proteções server-side reais.
 
 ## Recovery
 
 Estados incompatíveis permanecem fail-closed. Exact RC3 tag sem Release pode entrar em adoção apenas sob autorização direta ainda válida e proteção server-side; refs consumidas/protegidas permitem recovery posterior. Existing Release só é NOOP se tag, target RC3, draft/prerelease, título, body e `releases/latest` forem todos exatos.
 
-## Evidência técnica atual
+## REFERENCE_TECHNICAL_SNAPSHOT — não terminal
 
 ```yaml
-technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
-stable_publication_gate_run: 31766055608
-stable_publication_gate: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
+reference_technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
 receipt_tests: PASS_4
 server_side_protection_tests: PASS_9
 atomic_git_real_tests: PASS_3
 state_machine_tests: PASS_14
 self_tests_total: PASS_30
-authorize_publication: SKIPPED
-publish_stable: SKIPPED
-documentation_validation_run: 31766055514
-documentation_validation: PASS
+expected_behavior_without_required_protection: FAIL_CLOSED_BEFORE_AUTHORIZATION
 ```
+
+Esse snapshot demonstra o desenho técnico anterior ao último commit documental e não substitui CI/review do HEAD terminal.
 
 ## Estado de gates
 
