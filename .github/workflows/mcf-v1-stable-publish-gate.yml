@@ -74,16 +74,16 @@ jobs:
           bash -n scripts/mcf-stable-publication-boundary.sh
           bash scripts/mcf-stable-publication-boundary.sh self-test
 
-      - name: Require server-side publication tag protection
+      - name: Require complete server-side publication protection
         run: |
           set -euo pipefail
-          if ! bash scripts/mcf-stable-publication-boundary.sh protection-status >/tmp/protection-id 2>/tmp/protection-error; then
-            echo "server_side_tag_protection=MISSING_BLOCKER" >&2
+          if ! bash scripts/mcf-stable-publication-boundary.sh protection-status >/tmp/protection-state 2>/tmp/protection-error; then
+            echo "server_side_publication_protection=MISSING_BLOCKER" >&2
             cat /tmp/protection-error >&2 || true
             exit 1
           fi
-          echo "server_side_tag_protection=READY"
-          echo "ruleset_id=$(cat /tmp/protection-id)"
+          echo "server_side_publication_protection=READY"
+          cat /tmp/protection-state
 
       - name: Confirm HUMAN_GATE is not silently inherited
         run: |
