@@ -10,7 +10,7 @@ Esta workspace contém web, API, worker, contratos e persistência. O runtime MC
 
 O antigo estado `ambiente_publico: EM_PREPARACAO` pertencia ao boundary de adaptação do piloto e está `SUPERSEDED`.
 
-Snapshot reconciliado em 2026-08-13:
+Snapshot reconciliado em 2026-08-14:
 
 ```yaml
 ambiente_publico: LIVE
@@ -19,11 +19,13 @@ api: Render_Web_Service_Docker
 database: Neon_Postgres
 health_monitor: ENABLED
 qualified_lineage: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
-stable_v1_0_0: NOT_PUBLISHED
+stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
+stable_release: MCF v1.0.0
+latest: v1.0.0
 sla: NAO_OFERECIDO
 ```
 
-Produção live não equivale à publicação da versão estável do MCF e não implica SLA. Confirme provider/GitHub live antes de usar este snapshot operacionalmente.
+Produção live e publicação stable são boundaries distintos, ambos concluídos no lineage qualificado da RC3. Isso não implica SLA. Confirme provider/GitHub live antes de usar este snapshot operacionalmente.
 
 ## Arquitetura
 
@@ -85,7 +87,7 @@ O projeto possui validação de formato, lint, typecheck, testes, build e checks
 
 ## Deploy e observabilidade
 
-A infraestrutura de produção evoluiu além do primeiro plano de piloto. Use como fontes atuais:
+Use como fontes atuais:
 
 - `render.yaml` e configuração do provider;
 - `.github/workflows/mcf-production-readiness.yml`;
@@ -105,7 +107,7 @@ A API pode apresentar cold start no plano gratuito. O monitor de produção deve
 
 ## Histórico do piloto
 
-A fase `1_9f_adaptacao_do_piloto_publico_gratuito` e a arquitetura gratuita inicial permanecem `HISTORICAL`. Suas decisões de custo zero, rollout controlado, Render/Neon/Cloudflare e ausência de SLA são úteis para entender a origem do ambiente, mas não substituem o estado live posterior materializado por Production Readiness/produção/RC3.
+A fase `1_9f_adaptacao_do_piloto_publico_gratuito` e a arquitetura gratuita inicial permanecem `HISTORICAL`. Suas decisões de custo zero, rollout controlado, Render/Neon/Cloudflare e ausência de SLA são úteis para entender a origem do ambiente, mas não substituem o estado live posterior materializado por Production Readiness, produção, RC3 e stable `v1.0.0`.
 
 ## Regra de desenvolvimento
 
