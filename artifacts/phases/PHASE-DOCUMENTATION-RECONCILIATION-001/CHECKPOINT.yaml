@@ -1,17 +1,31 @@
 mission: MCF-DOCUMENTATION-RECONCILIATION-001
-state: IN_REVIEW
+state: POST_STABLE_RECONCILED_PENDING_TERMINAL_EVIDENCE
 base_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 doc_branch: docs/mcf-documentation-reconciliation-001
-validation:
+post_stable_state:
+  stable_v1_0_0: PUBLISHED
+  stable_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  release: MCF v1.0.0
+  latest: v1.0.0
+  human_gate: CONSUMED_PROTECTED
+  human_approval_commit: 786d2535b70584762b45ae0512d43872d492b715
+  consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
+  stable_issue_131: CLOSED_COMPLETED
+  publisher_pr_133: CLOSED_UNMERGED
+historical_validation:
   first_run: 31749823973
   first_result: FAIL_README_29_AGENT_LITERAL_CONTRACT
   caf: CORRECTED_WITHOUT_RUNTIME_CHANGE
   retest_run: 31749946956
   retest_result: PASS
-stale_reference_scan:
-  production_blocked: REMOVED_OR_EXPLICITLY_HISTORICAL
-  stable_blocked: REMOVED_OR_EXPLICITLY_HISTORICAL
-  gate_c_not_authorized: REMOVED_OR_EXPLICITLY_HISTORICAL
-  public_environment_preparing: EXPLICITLY_SUPERSEDED
-independent_review: PENDING_EXACT_FINAL_HEAD
-next_action: revalidate terminal documentation head and request independent review of that exact SHA
+post_stable_validation:
+  documentation_validation: PENDING_FINAL_HEAD
+  stale_current_state_scan: PENDING_FINAL_HEAD
+  documentation_only_diff: PENDING_FINAL_HEAD
+  live_recheck: PENDING_FINAL_HEAD
+independent_review:
+  state: PENDING_EXACT_FINAL_HEAD
+  evidence_location: PR_134_COMMENT_EXTERNAL_RECEIPT
+nextgen: UNDER_STUDY
+merge_authorized: false
+next_action: freeze final documentation head, validate, scan, prove documentation-only diff, recheck live state, then request independent Codex review without further branch mutation
