@@ -79,7 +79,7 @@ transition:
     implementation_authorized: false
 ```
 
-`ACTIVE_DISCOVERY` descreve a posição do trabalho de planejamento. Isso continua compatível com a classificação `UNDER_STUDY` usada no mapa de estado implementado: discovery ativo não significa capacidade implementada.
+`ACTIVE_DISCOVERY` descreve a posição do trabalho de planejamento. Isso não transforma nenhuma hipótese NextGen em capacidade implementada. O mapa de capacidades implementadas permanece externo a esta branch e deve ser lido diretamente na `main`/GitHub live quando necessário.
 
 ---
 
@@ -105,7 +105,7 @@ Q2 permanece:
 
 # 5. Reconciliação de documentos
 
-Classificação realizada por Miriam/Carmem:
+Classificação realizada por Miriam/Carmem sobre os artefatos pertencentes ao boundary desta branch:
 
 | Artefato | Classificação | Ação |
 |---|---|---|
@@ -114,7 +114,10 @@ Classificação realizada por Miriam/Carmem:
 | `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-002.md` | `HISTORICAL_PRESERVE` | não reescrito |
 | `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md` | `CURRENT_CONSISTENT` | sem alteração; já registra Q1 concluída/Q2 não iniciada |
 | `MCF-NEXTGEN-NOMENCLATURE-DECISION-001.md` | `CURRENT_CONSISTENT` | sem alteração |
-| `docs/MCF-CURRENT-STATE.md` (`main`) | `CURRENT_CONSISTENT` | sem alteração nesta missão; NextGen continua `UNDER_STUDY` e live state prevalece |
+
+Fonte externa ao boundary desta branch, verificada separadamente:
+
+- `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md` — consultar explicitamente na `main`; não é tratado como arquivo presente neste HEAD de discovery.
 
 Contradições atuais resolvidas:
 
@@ -154,7 +157,7 @@ Cobertura obrigatória antes de declarar esta missão concluída:
 - GitHub live: `main`, Issue #135, PR #136;
 - diff dos documentos alterados;
 - preservação dos checkpoints históricos;
-- coerência entre `UNDER_STUDY` e `ACTIVE_DISCOVERY`;
+- coerência entre discovery ativo e ausência de implementação;
 - Q1 concluída / Q2 não iniciada;
 - ausência de autorização implícita de implementação;
 - ausência de alterações de runtime, produção, stable, RC3, tags/releases, agentes e skills.
@@ -208,7 +211,7 @@ Ordem recomendada para novo chat/agente:
 4. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 5. `MCF-MASTER-ROADMAP-001.md`;
 6. `MCF-NEXTGEN-NOMENCLATURE-DECISION-001.md`;
-7. `docs/MCF-CURRENT-STATE.md` na `main`;
+7. quando precisar do mapa implementado, ler explicitamente `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md` ou a versão live da `main`;
 8. checkpoints 001/002 somente quando histórico adicional for necessário.
 
 ---
