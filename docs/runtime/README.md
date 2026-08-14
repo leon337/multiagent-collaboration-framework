@@ -53,10 +53,13 @@ gate_e_release_candidate: COMPLETE
 production_readiness: COMPLETE
 production: COMPLETE
 rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
-stable_v1_0_0: NOT_PUBLISHED
+stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
+stable_release: MCF v1.0.0
+latest: v1.0.0
+human_gate: CONSUMED_PROTECTED
 ```
 
-Esses valores são snapshot documental de 2026-08-13. Para estado operacional, confirme GitHub live.
+Esses valores são snapshot documental de 2026-08-14. Para estado operacional, confirme GitHub live.
 
 ## Skills executáveis
 
@@ -116,10 +119,10 @@ fundação/adapters
 → Production Readiness / RC2
 → produção
 → RC3
-→ stable boundary ainda não concluído
+→ stable v1.0.0 publicada no SHA da RC3
 ```
 
-Por isso, trechos antigos como `production: BLOCKED`, `gate_c: NOT_AUTHORIZED` ou “próximo boundary: Gate E” são `HISTORICAL` quando aparecem em artifacts/decisões emitidos antes dos respectivos marcos posteriores.
+Por isso, trechos antigos como `production: BLOCKED`, `gate_c: NOT_AUTHORIZED`, `stable: NOT_PUBLISHED`, `HUMAN_GATE: NOT_APPROVED` ou “próximo boundary: Gate E” são `HISTORICAL` quando aparecem em artifacts/decisões emitidos antes dos respectivos marcos posteriores.
 
 ## Evidência principal
 
@@ -128,10 +131,11 @@ Por isso, trechos antigos como `production: BLOCKED`, `gate_c: NOT_AUTHORIZED` o
 - observabilidade: `artifacts/phases/PHASE-006-LOT-3-OBSERVABILITY/`;
 - skills restantes: `artifacts/phases/PHASE-006-LOT-4-*/`;
 - Gate E: `artifacts/phases/PHASE-006-GATE-E-RELEASE-CANDIDATE/`;
-- releases: `docs/releases/MCF-v1.0.0-RC1.md`, RC2 e RC3;
+- releases históricas: `docs/releases/MCF-v1.0.0-RC1.md`, RC2 e RC3;
+- stable atual: GitHub Release `MCF v1.0.0` / tag `v1.0.0@7f741e10...`;
 - production readiness: `docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md`;
 - stable qualification: `docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md`.
 
 ## NextGen
 
-A branch `planning/mcf-nextgen-discovery` é `UNDER_STUDY`. Ela não redefine este runtime vigente. Nenhuma hipótese de Project Capsule, novas memory layers, model routing, DAG/paralelismo ou reestruturação NextGen deve ser tratada como implementada sem código/teste/evidência no lineage atual.
+A branch `planning/mcf-nextgen-discovery` é `UNDER_STUDY`. A publicação de `v1.0.0` não redefine esse discovery nem promove propostas à implementação. Nenhuma hipótese de Project Capsule, novas memory layers, model routing, DAG/paralelismo ou reestruturação NextGen deve ser tratada como implementada sem código/teste/evidência no lineage atual.
