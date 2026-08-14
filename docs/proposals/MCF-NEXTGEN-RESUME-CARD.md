@@ -74,8 +74,10 @@ Esses valores são evidência do boundary terminal. Qualquer estado mutável pos
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
 4. `docs/proposals/MCF-NEXTGEN-NOMENCLATURE-DECISION-001.md`
 5. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-002.md` para histórico anterior
-6. `docs/MCF-CURRENT-STATE.md` na `main`
+6. para capacidades implementadas, consultar explicitamente a fonte externa desta branch `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md` ou a versão live da `main`
 7. GitHub/provider live para estado mutável
+
+A referência ao `MCF-CURRENT-STATE.md` acima é intencionalmente qualificada pela ref `main`; esse arquivo não é declarado como presente nesta branch de discovery.
 
 ## Decisões-chave já consolidadas
 
