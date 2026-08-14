@@ -1,6 +1,6 @@
 authority: LEANDRO
-state: NAO_APROVADO
+state: APROVADO
 release: v1.0.0
-approved_publisher_head: null
+approved_publisher_head: f6d3955740dec0a43172b8bd8127e208eb727bf6
 rc3: 7f741e10d0e745a90c732e084400b11e3f5e6794
-approval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED
+approval_method: GITHUB_WEB_VERIFIED_COMMIT
