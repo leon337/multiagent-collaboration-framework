@@ -1,5 +1,5 @@
 mission: MCF-DOCUMENTATION-RECONCILIATION-001
-state: POST_STABLE_RECONCILED_PENDING_TERMINAL_EVIDENCE
+state: GOV_DOC_P1_001_CORRECTED_PENDING_REVALIDATION
 base_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 doc_branch: docs/mcf-documentation-reconciliation-001
 post_stable_state:
@@ -12,20 +12,34 @@ post_stable_state:
   consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
   stable_issue_131: CLOSED_COMPLETED
   publisher_pr_133: CLOSED_UNMERGED
+governance_audit:
+  comment: 5291207799
+  audited_head: a5d05fc40799203af1a1ac1b18c1c84135dc0de8
+  verdict: BLOCKED_CORRECTION_REQUIRED
+  finding: GOV-DOC-P1-001
+  finding_class: P1
+  finding_scope: docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md
+  cause: canonical_decision_header_still_presented_EM_EXECUCAO_as_current
+  correction: terminal_classification_and_outcome_added_non_destructively
+  original_entry_state_preserved: true
 historical_validation:
   first_run: 31749823973
   first_result: FAIL_README_29_AGENT_LITERAL_CONTRACT
   caf: CORRECTED_WITHOUT_RUNTIME_CHANGE
   retest_run: 31749946956
   retest_result: PASS
-post_stable_validation:
-  documentation_validation: PENDING_FINAL_HEAD
-  stale_current_state_scan: PENDING_FINAL_HEAD
-  documentation_only_diff: PENDING_FINAL_HEAD
-  live_recheck: PENDING_FINAL_HEAD
+post_correction_validation:
+  documentation_validation: PENDING_NEW_EXACT_HEAD
+  foundation: PENDING_NEW_EXACT_HEAD
+  production_readiness: PENDING_NEW_EXACT_HEAD
+  stale_current_state_scan: PENDING_NEW_EXACT_HEAD
+  canonical_decision_status_scan: PENDING_NEW_EXACT_HEAD
+  documentation_only_diff: PENDING_NEW_EXACT_HEAD
+  live_recheck: PENDING_NEW_EXACT_HEAD
 independent_review:
-  state: PENDING_EXACT_FINAL_HEAD
+  state: PENDING_NEW_EXACT_HEAD
   evidence_location: PR_134_COMMENT_EXTERNAL_RECEIPT
 nextgen: UNDER_STUDY
 merge_authorized: false
-next_action: freeze final documentation head, validate, scan, prove documentation-only diff, recheck live state, then request independent Codex review without further branch mutation
+merge_control_note: eventual_merge_can_trigger_Render_autoDeployTrigger_checksPass_and_requires_post_merge_deploy_health_readback
+next_action: freeze corrected documentation head, rerun all required checks and scans, recheck live stable boundary, request fresh Codex review on exact head, return evidence to MESTRE
