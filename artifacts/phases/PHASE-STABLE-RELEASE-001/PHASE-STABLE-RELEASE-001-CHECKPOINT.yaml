@@ -3,7 +3,7 @@ phase: PHASE-STABLE-RELEASE-001
 issue: 131
 pr: 133
 risk_class: C
-state: CORRECTING_BLOCKED_BY_SERVER_SIDE_TAG_PROTECTION
+state: CORRECTING_BLOCKED_BY_SERVER_SIDE_PUBLICATION_PROTECTION
 
 main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 qualified_rc3_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
@@ -29,47 +29,70 @@ human_gate:
   mechanism: GITHUB_WEB_VERIFIED_COMMIT
   mutable_issue_comment_is_authority: false
 
+server_side_publication_protection:
+  state: MISSING_BLOCKER
+  live_rulesets: []
+  tag_ruleset_required:
+    refs:
+      - refs/tags/v1.0.0
+      - refs/tags/mcf-control/v1.0.0
+    enforcement: active
+    required_rules: [update, deletion]
+    bypass_actors: []
+    exclusions: []
+  control_branch_ruleset_required:
+    ref: refs/heads/release/v1.0.0-stable-publish
+    enforcement: active
+    bypass_actors: []
+    exclusions: []
+    restricted_file_paths:
+      - .github/workflows/**/*
+      - scripts/**/*
+
 publication_boundary:
-  technical_head: 18205054ae1dc517b1d7ad85867bfed64876f1f0
-  stable_publication_gate_run: 31765039114
+  technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
+  stable_publication_gate_run: 31766055608
   validation_job: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
   receipt_predicate_tests: PASS_4
-  ruleset_predicate_tests: PASS_5
+  server_side_protection_predicate_tests: PASS_9
   atomic_git_real_tests: PASS_3
-  real_state_machine_tests: PASS_12
-  dedicated_self_tests: PASS_24
+  real_state_machine_tests: PASS_14
+  dedicated_self_tests: PASS_30
   authorize_publication_job: SKIPPED
   publication_job: SKIPPED
-  documentation_validation_run: 31765039112
+  documentation_validation_run: 31766055514
   documentation_validation: PASS
-  production_readiness_run: 31765039130
-  production_readiness: PASS
-  server_side_tag_protection: MISSING_BLOCKER
+  production_readiness_run: 31766055497
+  production_readiness: SUPERSEDED_BY_TERMINAL_DOC_HEAD_REQUALIFICATION
   publication_p0_count: 0
-  publication_p1_count: 2
-  publication_p2_count: 2
+  publication_p1_count: 3
+  publication_p2_count: 3
   critical_findings: 0
   high_findings: 0
 
 active_findings:
-  - id: P1_SERVER_SIDE_PUBLICATION_REF_PROTECTION
+  - id: P1_SERVER_SIDE_STABLE_REF_PROTECTION
     thread: PRRT_kwDOTnz-ks6ZHcv4
-    requirement: ACTIVE_TAG_RULESET_UPDATE_DELETION_ZERO_BYPASS_ZERO_EXCLUSIONS_FOR_STABLE_AND_CONTROL_LOCK
     state: OPEN_EXTERNAL_CONFIGURATION_BLOCKER
   - id: P1_RULESET_EXCLUSIONS
     thread: PRRT_kwDOTnz-ks6ZHxY7
     correction: REJECT_ANY_NONEMPTY_REF_NAME_EXCLUDE
-    dedicated_tests: [RULESET_EXCLUSION_FAIL_CLOSED]
     state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+  - id: P1_CONSUMED_RECOVERY_BOUND_TO_APPROVED_CODE
+    thread: PRRT_kwDOTnz-ks6ZJdRe
+    correction: REQUIRE_SERVER_SIDE_CONTROL_BRANCH_FILE_PATH_RESTRICTION_FOR_WORKFLOW_AND_SCRIPTS
+    state: CORRECTED_TESTED_PENDING_SERVER_SIDE_CONFIGURATION_AND_INDEPENDENT_REVIEW
   - id: P2_CONSUMED_AUTHORITY_RECOVERY_METADATA_ORDER
     thread: PRRT_kwDOTnz-ks6ZHxY8
     correction: VERIFY_CONSUMED_GATE_BEFORE_CURRENT_RECEIPT_OR_PR_TITLE
-    dedicated_tests: [CONSUMED_PROTECTED_RECOVERY_SURVIVES_LATER_PR_HEAD_METADATA_CHANGE]
     state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
   - id: P2_GATE_MUST_FAIL_WITHOUT_REQUIRED_PROTECTION
     thread: PRRT_kwDOTnz-ks6ZHxY-
-    correction: REQUIRE_PROTECTION_STEP_EXITS_NONZERO_WHEN_RULESET_MISSING
-    evidence_run: 31765039114
+    correction: REQUIRE_PROTECTION_STEP_EXITS_NONZERO_WHEN_PROTECTION_MISSING
+    state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+  - id: P2_RELEASE_NOOP_COMPLETE_METADATA
+    thread: PRRT_kwDOTnz-ks6ZJdRg
+    correction: REQUIRE_EXACT_NAME_BODY_TARGET_DRAFT_PRERELEASE_AND_LATEST
     state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
 
 historical_threads:
@@ -94,14 +117,14 @@ audit:
   julia_class_c: NOT_RUN_PENDING_PUBLICATION_P1_ZERO
   emily_independent_audit: NOT_RUN_PENDING_PUBLICATION_P1_ZERO
   leo_gate: NOT_RUN_PENDING_PUBLICATION_P1_ZERO
-  overall: BLOCKED_UNTIL_PUBLICATION_P0_P1_ZERO_AFTER_INDEPENDENT_REVIEW
+  overall: BLOCKED_UNTIL_PUBLICATION_P0_P1_ZERO
 
 findings:
   critical: 0
   high: 0
   publication_p0: 0
-  publication_p1: 2
-  publication_p2: 2
+  publication_p1: 3
+  publication_p2: 3
   low_postgresql_ssl: OPEN_NON_BLOCKING
   cold_start_readiness_latency: OPEN_NON_BLOCKING
 
@@ -114,4 +137,4 @@ authorization:
   human_gate: NAO_APROVADO
 
 ready_for_human_gate: false
-next_action: validate final documentation head; obtain exact-head independent review; configure and prove live server-side tag ruleset; rerun gate; keep audit and LEO_GATE blocked until P0=0/P1=0
+next_action: revalidate terminal documentation head; obtain exact-head independent review; configure and prove live tag plus control-branch rulesets; rerun gate; keep audit and LEO_GATE blocked until P0=0/P1=0
