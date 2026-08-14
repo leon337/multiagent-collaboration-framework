@@ -1,18 +1,18 @@
 # MCF — Estado Atual e Mapa de Verdade
 
 **Classificação:** `CURRENT_IMPLEMENTED`  
-**Natureza:** snapshot documental reconciliado; GitHub live prevalece sobre valores voláteis  
-**Baseline auditada:** `main@7f741e10d0e745a90c732e084400b11e3f5e6794`  
+**Natureza:** mapa documental reconciliado; GitHub/provider live prevalece sobre valores voláteis  
+**Baseline pré-integração auditada:** `main@7f741e10d0e745a90c732e084400b11e3f5e6794`  
 **Data da reconciliação:** 2026-08-14
 
 ## 1. Como ler este repositório
 
-Este arquivo é o ponto de entrada para o **estado atual** do MCF. Ele não substitui GitHub live, decisões históricas, PRFs nem evidências de execução.
+Este arquivo é o ponto de entrada para o estado do MCF, mas não congela branch heads nem SHAs de deploy. Ele separa fatos duráveis de release de estado operacional volátil.
 
 Em caso de divergência, use esta ordem:
 
 1. instrução explícita atual de LEANDRO;
-2. estado real verificável no GitHub;
+2. estado real verificável no GitHub/provider;
 3. código, testes, workflows e evidências do SHA aplicável;
 4. decisões/protocolos vigentes;
 5. documentos históricos.
@@ -26,26 +26,34 @@ Classificações usadas nesta documentação:
 - `HISTORICAL` — verdade de um momento anterior preservada como evidência;
 - `SUPERSEDED` — afirmação/processo substituído por evidência ou decisão posterior.
 
-## 2. Estado verificável do release boundary
+## 2. Fatos duráveis de release e estado operacional volátil
 
 ```yaml
-main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-rc1: v1.0.0-RC1@9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-rc2: v1.0.0-RC2@d73d936a63cc9462a95bcf481f4b8e1d4b255719
-rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
-production: COMPLETE_LIVE_ON_RC3_LINEAGE
-stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
-stable_release: MCF v1.0.0
-latest: v1.0.0
-stable_issue_131: CLOSED_COMPLETED
-publisher_pr_133: CLOSED_UNMERGED
-publisher_head: f6d3955740dec0a43172b8bd8127e208eb727bf6
-human_gate: CONSUMED_PROTECTED
-human_approval_commit: 786d2535b70584762b45ae0512d43872d492b715
-consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
+release_facts:
+  rc1: v1.0.0-RC1@9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
+  rc2: v1.0.0-RC2@d73d936a63cc9462a95bcf481f4b8e1d4b255719
+  rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+  stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
+  stable_release: MCF v1.0.0
+  latest: v1.0.0
+  stable_issue_131: CLOSED_COMPLETED
+  publisher_pr_133: CLOSED_UNMERGED
+  publisher_head: f6d3955740dec0a43172b8bd8127e208eb727bf6
+  human_gate: CONSUMED_PROTECTED
+  human_approval_commit: 786d2535b70584762b45ae0512d43872d492b715
+  consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
+volatile_operational_state:
+  pre_merge_baseline_main: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  main_sha: READ_GITHUB_LIVE
+  production_status: COMPLETE
+  production_reported_commit: READ_PROVIDER_LIVE
 ```
 
 RC1, RC2 e RC3 permanecem prereleases históricas preservadas. A stable `v1.0.0` foi publicada no SHA exato da RC3. A Release `MCF v1.0.0` é não-draft, não-prerelease e é a `latest`. O HUMAN_GATE foi consumido/protegido pelo publication control plane; Issue #131 foi concluída e PR #133 foi fechado sem merge.
+
+O SHA `7f741e10…` é durável como identidade da RC3 e da stable. Como valor de `main`, ele é apenas o baseline pré-integração desta missão. Um merge futuro do PR #134 necessariamente pode avançar `main` sem alterar esses release facts.
+
+A produção permanece concluída no lineage qualificado. Como o provider acompanha `main`, uma integração apenas documental pode alterar o commit reportado em `/health/version` sem alterar a árvore de código da aplicação/runtime. O deployed SHA exato deve ser relido após integração.
 
 ## 3. O que o MCF é hoje
 
@@ -82,6 +90,8 @@ A aplicação hospedeira é um workspace Node/pnpm em `apps/rede-social-agentes/
 ## 5. Limitações atuais
 
 - a identidade pública de releases é protegida por governança e pelo publication boundary; isso não é apresentado como impossibilidade técnica absoluta de ação administrativa fora desse boundary;
+- `main` e SHAs reportados por providers são voláteis e devem ser lidos live;
+- uma integração documentation-only pode avançar branch/deploy commit sem alterar a árvore de aplicação/runtime;
 - recovery por deploy/redeploy de SHA saudável não deve ser descrito como rollback nativo do provider quando esse mecanismo não foi comprovado;
 - os 29 contratos de agentes representam papéis e responsabilidades do MCF; não provam que 29 processos/modelos cognitivos independentes estejam sempre executando simultaneamente;
 - a experiência `telefone-sem-fio-001` não comprova independência cognitiva real;
@@ -113,10 +123,13 @@ Estado histórico relevante:
 - Production Readiness pós-RC1 — concluído;
 - RC2 — publicada como prerelease após correção operacional;
 - produção — concluída;
-- RC3 — publicada como prerelease e qualificada no mesmo SHA atualmente em `main`;
-- stable `v1.0.0` — **publicada em 2026-08-14**, no mesmo SHA `7f741e10...`;
+- RC3 — publicada como prerelease e qualificada em `7f741e10d0e745a90c732e084400b11e3f5e6794`;
+- stable `v1.0.0` — **publicada em 2026-08-14**, no mesmo SHA da RC3;
+- `main@7f741e10…` — baseline pré-integração desta reconciliação, não current-head durável;
 - Issue #131 — `CLOSED/COMPLETED`;
 - PR #133 — `CLOSED/UNMERGED`, preservado como publication control plane histórico.
+
+Após qualquer integração, confirme separadamente o `main` atual e o SHA reportado por produção. A documentação garante apenas que este PR não altera source/runtime; ela não garante que o commit de branch/deploy permaneça igual ao SHA da RC3.
 
 Evidências principais:
 - `docs/decisions/MCF-DEC-062-GATE-E-RELEASE-CANDIDATE.md`
@@ -169,8 +182,8 @@ A publicação de `v1.0.0` não altera essa classificação. Conceitos como Proj
 
 Ao retomar o projeto:
 
-1. consulte GitHub live (`main`, PRs, Issues, releases/tags e workflows);
-2. leia este snapshot para orientação, nunca para substituir o live state;
+1. consulte GitHub/provider live (`main`, PRs, Issues, releases/tags, workflows e deploy/version quando aplicável);
+2. leia este mapa para orientação, nunca para substituir o live state;
 3. leia a decisão/PRF correspondente ao boundary ativo;
 4. use código/testes/workflows para comprovar capacidades;
 5. classifique qualquer proposta não implementada como `PLANNED` ou `UNDER_STUDY`.
