@@ -136,6 +136,7 @@ ruleset_details_satisfy_contract() {
   test "$(jq -r '.target' <<<"$json")" = tag || return 1
   test "$(jq -r '.enforcement' <<<"$json")" = active || return 1
   test "$(jq '(.bypass_actors // []) | length' <<<"$json")" = 0 || return 1
+  test "$(jq '(.conditions.ref_name.exclude // []) | length' <<<"$json")" = 0 || return 1
   jq -e --arg stable "refs/tags/$STABLE_TAG" '.conditions.ref_name.include | index($stable) != null' <<<"$json" >/dev/null || return 1
   jq -e --arg lock "refs/tags/$CONTROL_LOCK_TAG" '.conditions.ref_name.include | index($lock) != null' <<<"$json" >/dev/null || return 1
   jq -e '[.rules[].type] | index("update") != null' <<<"$json" >/dev/null || return 1
@@ -153,7 +154,7 @@ verify_server_side_tag_protection() {
       return 0
     fi
   done <<<"$ids"
-  error "no active tag ruleset with no bypass protects updates/deletions for both publication refs"
+  error "no active tag ruleset with no bypass/exclusions protects updates/deletions for both publication refs"
   return 1
 }
 
@@ -353,7 +354,7 @@ self_test_receipt_predicate() {
 }
 
 self_test_ruleset_predicate() {
-  local pass=0 good missing_update wrong_ref bypassed
+  local pass=0 good missing_update wrong_ref bypassed excluded
   good="$(jq -n --arg stable "refs/tags/$STABLE_TAG" --arg lock "refs/tags/$CONTROL_LOCK_TAG" '{target:"tag",enforcement:"active",bypass_actors:[],conditions:{ref_name:{include:[$stable,$lock],exclude:[]}},rules:[{type:"update",parameters:{update_allows_fetch_and_merge:false}},{type:"deletion"}]}')"
   ruleset_details_satisfy_contract "$good" && pass=$((pass+1))
   missing_update="$(jq ' .rules=[{"type":"deletion"}]' <<<"$good")"
@@ -362,6 +363,8 @@ self_test_ruleset_predicate() {
   if ! ruleset_details_satisfy_contract "$wrong_ref"; then pass=$((pass+1)); fi
   bypassed="$(jq '.bypass_actors=[{"actor_id":1,"actor_type":"RepositoryRole","bypass_mode":"always"}]' <<<"$good")"
   if ! ruleset_details_satisfy_contract "$bypassed"; then pass=$((pass+1)); fi
+  excluded="$(jq --arg stable "refs/tags/$STABLE_TAG" '.conditions.ref_name.exclude=[$stable]' <<<"$good")"
+  if ! ruleset_details_satisfy_contract "$excluded"; then pass=$((pass+1)); fi
   echo "$pass"
 }
 
@@ -616,10 +619,10 @@ self_test() {
   echo "publication_boundary_self_tests=$total"
 
   test "$receipt" = 4
-  test "$ruleset" = 4
+  test "$ruleset" = 5
   test "$atomic_git" = 3
   test "$real" = 12
-  test "$total" = 23
+  test "$total" = 24
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
