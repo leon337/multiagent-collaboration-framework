@@ -9,6 +9,8 @@
 **Impacto no boundary v1.0.0:** NENHUM  
 **HUMAN_GATE para publicação estável:** NÃO CONCEDIDO  
 
+> Este arquivo permanece como checkpoint histórico inicial. A continuidade atual deve usar também `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-002.md` e os roadmaps associados.
+
 ---
 
 ## 1. Por que este checkpoint existe
@@ -467,245 +469,210 @@ O MCF deve ser capaz de construir, entre outros:
 
 - sites;
 - sistemas web;
-- aplicações mobile;
-- aplicações desktop;
+- mobile;
+- desktop;
 - APIs;
 - automações;
-- SaaS;
-- ferramentas internas;
 - dashboards;
-- integrações.
+- plataformas SaaS;
+- integrações;
+- ferramentas internas;
+- frameworks especializados de agentes.
 
-Também deve poder criar sistemas/frameworks especializados de agentes, por exemplo:
+Exemplos de frameworks especializados futuros:
 
-- framework de automação de redes sociais;
-- framework de agentes para produção de vídeos;
-- outras fábricas especializadas.
+- automação de redes sociais;
+- criação de vídeos;
+- pipelines de conteúdo;
+- análise/monitoramento;
+- outras equipes especializadas.
 
-Hipótese arquitetônica:
-
-`MCF CORE` fornece capacidades universais; “fábricas”/domínios fornecem agentes, skills, workflows, critérios e ferramentas especializados.
+O MCF Core não deve incorporar toda lógica de domínio; deve permitir `factories`/perfis/workflows especializados sobre o mesmo núcleo.
 
 ---
 
-## 18. Conceitos observados nos estudos visuais anexados — NÃO são decisões automáticas
+## 18. MCF Core versus factories especializadas
 
-Os screenshots apresentados por LEANDRO mostram conceitos que devem ser estudados e comparados com o MCF atual, sem copiar ou adotar automaticamente:
+Hipótese:
 
-- Harness;
-- Context Engineering;
-- Loop Engineering;
-- Graph Engineering;
-- MCP;
-- Stateless MCP;
-- Agentic AI;
-- Multi-Agent Systems;
-- RAG 2.0;
-- Memory Layers;
-- Tool Use;
-- Fine-Tuning;
-- Evaluation Frameworks;
-- Guardrails;
-- Observability;
-- Prompt Optimization;
-- Synthetic Data;
-- Distillation;
-- AI Gateways;
-- Cost Optimization;
-- Spec-Driven Development;
-- Graphs com split/parallel workers/verifier/merge;
-- critérios de parada e número de tentativas;
-- quando pedir ajuda humana;
-- comportamento quando ferramentas falham;
-- comunicação cross-session entre agentes;
+**MCF Core** fornece:
+
+- mission engine;
+- memória;
+- registry de agentes;
+- handoff;
+- routing;
+- permissões;
+- gates;
+- evidência;
+- recovery;
+- observabilidade;
+- interação humana.
+
+Factories fornecem:
+
+- agentes do domínio;
+- skills;
+- workflows;
+- critérios de qualidade;
+- ferramentas específicas.
+
+Objetivo: evitar crescimento monolítico do core.
+
+---
+
+## 19. Rede Social de Agentes — interpretação correta
+
+A camada social é prioritariamente **observabilidade visual do trabalho da equipe**, não escopo de rede social pública por si só.
+
+Ela deve representar ações reais do runtime/event ledger, evitando feeds teatrais ou fabricados.
+
+Pergunta futura: o feed deve ser apenas read-model derivado do event store ou também canal interativo de comando?
+
+---
+
+## 20. Graph / Loop Engineering — referência de estudo
+
+Materiais apresentados por LEANDRO introduziram conceitos a confrontar com a arquitetura atual:
+
+- loops explícitos;
+- critérios de parada;
+- retries;
+- escalonamento humano;
+- execução em paralelo;
+- split/worker/verifier/merge;
+- graph/DAG em vez de pipeline apenas linear;
+- memory layers;
+- context engineering;
+- tool use;
+- evaluation frameworks;
+- guardrails;
+- observability;
+- gateways;
+- cost optimization;
+- spec-driven development;
 - sandboxing;
 - autenticação de agentes;
 - permissões granulares;
-- human-in-the-loop;
-- roteamento entre modelos;
+- model routing;
 - caching;
 - rate limiting;
-- segurança contra prompt injection.
+- prompt-injection defense.
 
-### Direção de estudo
-
-Para cada item deverá ser determinado:
-
-1. o MCF já possui equivalente?
-2. está apenas documentado ou tecnicamente enforced?
-3. funciona bem?
-4. está duplicado?
-5. deve ser melhorado?
-6. deve ser substituído?
-7. deve ser removido?
-8. qual problema real resolve?
+Esses termos não são automaticamente requisitos. Devem ser comparados ao MCF atual e adotados somente quando resolverem problemas observados.
 
 ---
 
-## 19. Graph/Loop Engineering — hipótese relevante
+## 21. Independência e auditoria
 
-Os estudos sugerem evitar uma linha rígida em que todo agente espera o anterior quando atividades poderiam ocorrer em paralelo.
+Decisão de interpretação:
 
-O próximo MCF deve avaliar explicitamente:
+- papéis diferentes executados pelo mesmo modelo/contexto = separação funcional;
+- sessões/contextos separados = maior isolamento;
+- modelos/providers diferentes = maior diversidade cognitiva;
+- auditoria externa humana/entidade fora do sistema = independência externa.
 
-- fluxo sequencial quando houver dependência real;
-- branching;
-- fan-out;
-- paralelismo;
-- fan-in/merge;
-- verificação independente;
-- loops de correção;
-- stop conditions;
-- retry budget;
-- escalation;
-- recuperação de ferramenta.
-
-O ESEV/fluxo atual não deve impedir paralelismo quando o DAG da missão permitir.
+Não chamar separação funcional de auditoria externa independente.
 
 ---
 
-## 20. Observabilidade
+## 22. Princípios emergentes
 
-A interface e o runtime devem ser capazes de responder de forma direta:
-
-- o que está acontecendo?
-- qual agente está trabalhando?
-- qual tarefa?
-- qual modelo foi usado?
-- qual ferramenta foi usada?
-- qual evidência foi produzida?
-- o que falhou?
-- por que está bloqueado?
-- qual é a próxima ação segura?
-- precisa de LEANDRO ou pode continuar sozinho?
-
-A observabilidade não deve depender exclusivamente de documentação retrospectiva.
+1. **Agente não é modelo.**
+2. **Complexidade interna; simplicidade operacional externa.**
+3. **GitHub continua como memória institucional forte.**
+4. **Estado de projeto não deve depender de chat.**
+5. **Self-host somente quando fizer sentido.**
+6. **Eliminar dependências externas desnecessárias, não buscar isolamento absoluto.**
+7. **Autonomia operacional não substitui autoridade humana.**
+8. **Não adicionar complexidade sem problema observado/evidência.**
+9. **Não confundir persona com independência cognitiva.**
+10. **Projeto deve ser retomável por executor novo.**
 
 ---
 
-## 21. Autocrítica já consolidada
+## 23. Próxima geração — estágio atual
 
-Problemas/riscos identificados na Fase Zero que precisam ser reavaliados:
+A próxima geração NÃO está autorizada para implementação neste checkpoint.
 
-- processo potencialmente desproporcional ao risco;
-- custo de governança ainda pouco medido;
-- documentação excessiva/repetitiva em alguns boundaries;
-- drift documental;
-- core pouco descobrível e acoplado à aplicação de rede social;
-- separação de papéis não equivale automaticamente a independência cognitiva;
-- provenance de agentes e ações precisa amadurecer;
-- necessidade de benchmark contra fluxos mais simples;
-- necessidade de medir tokens, tempo, custo, retrabalho e bugs;
-- necessidade de provar portabilidade entre modelos/sessões/humanos;
-- necessidade de distinguir estado durável de log bruto;
-- necessidade de reduzir chamadas humanas puramente operacionais;
-- necessidade de manter gates materiais reais;
-- necessidade de isolamento entre projetos;
-- necessidade de política consciente de self-hosting versus SaaS.
+Fluxo pretendido:
+
+1. concluir v1/Fase Zero;
+2. questionário guiado com LEANDRO;
+3. consolidar propósito, memória, agentes, autonomia, UX, runtime, governança, custos e critérios de valor;
+4. confrontar hipóteses com experiência da v1;
+5. definir arquitetura mínima robusta;
+6. produzir especificação de reestruturação;
+7. somente então entregar missão estruturada ao Codex/executor para implementação.
 
 ---
 
-## 22. Distinção de independência
+## 24. Questionário — estado
 
-Termos futuros devem distinguir pelo menos:
+### Pergunta 1 — respondida
 
-1. **separação funcional de papel** — revisor diferente do executor no workflow;
-2. **isolamento de contexto/sessão** — instâncias separadas;
-3. **diversidade de modelo/provider** — cognição tecnicamente diversa;
-4. **auditoria humana externa** — pessoa realmente independente.
+Finalidade principal do MCF.
 
-Não chamar automaticamente toda separação funcional de “auditoria externa independente”.
+Síntese atual:
 
----
+- **primário:** sistema pessoal de trabalho com IA para LEANDRO;
+- **estratégia:** provar e amadurecer no uso real antes de generalizar;
+- **dimensão experimental:** laboratório real de orquestração multiagente;
+- **framework público:** desejado posteriormente;
+- **produto comercial:** possibilidade futura, não foco inicial.
 
-## 23. Direção para a próxima geração
+O aprofundamento posterior mostrou que o núcleo do propósito é continuidade, coordenação, especialização, autonomia progressiva, rastreabilidade e interação humana simples.
 
-A próxima geração não deve ser “v1 + mais funcionalidades”.
+### Pergunta 2 — NÃO INICIADA
 
-Sequência pretendida:
-
-1. concluir/estabilizar a Fase Zero conforme governança vigente;
-2. auditar o sistema inteiro;
-3. concluir questionário guiado com LEANDRO;
-4. consolidar requisitos e princípios;
-5. comparar MCF atual versus conceitos estudados;
-6. classificar preservar / simplificar / remover / separar / substituir / adicionar;
-7. definir arquitetura-alvo;
-8. definir benchmarks;
-9. produzir especificação completa;
-10. entregar pacote estruturado ao Codex para reestruturação.
-
-Nenhuma reestruturação ampla deve ser delegada ao Codex antes da consolidação dessa etapa de discovery.
+Antes de iniciar, consolidar os checkpoints do discovery e garantir que o estado pode ser retomado em outro chat sem reconstrução manual.
 
 ---
 
-## 24. Papel do Codex
+## 25. Próximas perguntas / dimensões obrigatórias
 
-Codex deverá receber uma tarefa estruturada somente após o encerramento do questionário e conciliação final.
+O restante do questionário deve cobrir, no mínimo:
 
-O pacote futuro deverá especificar:
-
-- estado atual verificado;
-- problemas;
-- decisões de LEANDRO;
-- requisitos;
-- arquitetura-alvo;
-- invariantes;
-- itens a preservar;
-- itens a remover;
-- itens a simplificar;
-- itens a desacoplar;
-- itens novos;
-- plano de migração;
-- testes;
-- critérios de aceite;
-- benchmarks antes/depois;
-- rollback.
+- definição precisa de continuidade e memória;
+- unidade de estado durável do projeto;
+- modelo de agentes;
+- autonomia e authority boundaries;
+- roteamento de modelos;
+- isolamento e independência;
+- workflow linear vs graph/parallel;
+- documentação mínima suficiente;
+- observabilidade e UX;
+- runtime/core vs factories;
+- infraestrutura e placement;
+- segurança/permissões/gates;
+- custo-benefício e métricas;
+- validação externa/portabilidade;
+- critérios de simplificação/remoção;
+- roadmap e go/no-go.
 
 ---
 
-## 25. Estado deste discovery
+## 26. Restrições de governança durante o discovery
 
-```yaml
-phase: MCF_NEXTGEN_DISCOVERY
-stage: QUESTIONNAIRE_ALIGNMENT
-question_1: CONSOLIDATED_WITH_EXPANSIONS
-question_2: NOT_STARTED
-continuity_checkpoint: SAVED_ON_PLANNING_BRANCH
-stable_boundary_modified: false
-implementation_authorized: false
-nextgen_restructure_authorized: false
-```
-
-### Próxima ação
-
-Não avançar automaticamente para a Pergunta 2.
-
-Antes:
-
-1. verificar este checkpoint no GitHub;
-2. atualizar/reconciliar a documentação canônica desatualizada do MCF por missão separada, sem falsear estado estável e sem misturar discovery com decisão implementada;
-3. preservar este discovery como proposta/estado de estudo;
-4. somente então retomar o questionário guiado.
+- discovery não autoriza publicação stable;
+- discovery não muda RCs;
+- discovery não deve contaminar o boundary de v1.0.0;
+- ideias permanecem `UNDER_STUDY` até decisão explícita;
+- decisões aprovadas devem ganhar registro durável;
+- hipóteses devem permanecer distinguíveis de capacidades implementadas;
+- qualquer estado live deve ser verificado no GitHub antes de ser declarado.
 
 ---
 
-## 26. Regras de verdade para documentação durante o discovery
+## 27. Próxima ação deste checkpoint
 
-A documentação deve distinguir explicitamente:
+**STOP seguro.**
 
-- **CURRENT / IMPLEMENTED:** existe hoje e foi verificado;
-- **EXPERIMENTAL:** existe com limitações conhecidas;
-- **PLANNED:** decisão já aprovada para implementação futura;
-- **UNDER STUDY:** hipótese/discussão ainda não concluída;
-- **REJECTED / SUPERSEDED:** não é mais vigente.
+O próximo chat/executor deve:
 
-Não transformar automaticamente ideias desta conversa em capacidades atuais do MCF.
-
----
-
-## 27. Checkpoint humano
-
-LEANDRO determinou que esta fase é uma das mais importantes do amadurecimento do MCF e que o projeto deve preservar continuamente o conhecimento produzido antes de avançar.
-
-A intenção declarada é aprender com a Fase Zero e, após o questionário, produzir uma reestruturação ampla, documentada e baseada em evidência.
+1. ler este checkpoint integralmente;
+2. ler a decisão de nomenclatura aprovada;
+3. revalidar GitHub live;
+4. verificar estado da stable/documentação;
+5. continuar o questionário somente quando o boundary operacional permitir;
+6. iniciar exatamente na Pergunta 2, nunca repetir a Pergunta 1 salvo se LEANDRO pedir revisão.
