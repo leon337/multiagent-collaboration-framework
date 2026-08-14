@@ -74,23 +74,27 @@ jobs:
           bash -n scripts/mcf-stable-publication-boundary.sh
           bash scripts/mcf-stable-publication-boundary.sh self-test
 
-      - name: Inspect required server-side tag protection
+      - name: Require server-side publication tag protection
         run: |
           set -euo pipefail
-          if bash scripts/mcf-stable-publication-boundary.sh protection-status >/tmp/protection-id 2>/tmp/protection-error; then
-            echo "server_side_tag_protection=READY"
-            echo "ruleset_id=$(cat /tmp/protection-id)"
-          else
-            echo "server_side_tag_protection=MISSING_BLOCKER"
+          if ! bash scripts/mcf-stable-publication-boundary.sh protection-status >/tmp/protection-id 2>/tmp/protection-error; then
+            echo "server_side_tag_protection=MISSING_BLOCKER" >&2
             cat /tmp/protection-error >&2 || true
+            exit 1
           fi
+          echo "server_side_tag_protection=READY"
+          echo "ruleset_id=$(cat /tmp/protection-id)"
 
       - name: Confirm HUMAN_GATE is not silently inherited
         run: |
           set -euo pipefail
+          if bash scripts/mcf-stable-publication-boundary.sh verify-consumed-gate >/dev/null 2>&1; then
+            echo human_gate_state=CONSUMED_PROTECTED
+            exit 0
+          fi
           content="$(gh api "repos/$REPOSITORY/contents/artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml?ref=$HEAD_SHA" --jq '.content' | tr -d '\n' | base64 --decode)"
           if grep -qx 'state: APROVADO' <<<"$content"; then
-            bash scripts/mcf-stable-publication-boundary.sh verify-effective-gate
+            bash scripts/mcf-stable-publication-boundary.sh verify-human-gate
           else
             expected="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: v1.0.0\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n')"
             test "$content" = "$expected"
@@ -164,17 +168,24 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Consume direct or protected HUMAN_GATE if present
+      - name: Select consumed or direct HUMAN_GATE authority
         id: gate
         run: |
           set -euo pipefail
+          if bash scripts/mcf-stable-publication-boundary.sh verify-consumed-gate >/dev/null 2>&1; then
+            echo authority_state=CONSUMED_PROTECTED
+            echo approved=true >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           content="$(gh api "repos/$REPOSITORY/contents/artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml?ref=$HEAD_SHA" --jq '.content' | tr -d '\n' | base64 --decode)"
           if grep -qx 'state: NAO_APROVADO' <<<"$content"; then
             echo approved=false >> "$GITHUB_OUTPUT"
             exit 0
           fi
           test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.title')" = '[HUMAN-APPROVED] release: publish MCF v1.0.0'
-          bash scripts/mcf-stable-publication-boundary.sh verify-effective-gate
+          test "$(bash scripts/mcf-stable-publication-boundary.sh verify-effective-gate)" = DIRECT_UNCONSUMED
+          echo authority_state=DIRECT_UNCONSUMED
           echo approved=true >> "$GITHUB_OUTPUT"
 
   publish-stable:
