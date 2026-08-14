@@ -21,13 +21,8 @@ Boundary terminal da missão `MCF-PHASE-0-FINALIZATION-001`: `main@b91823a947715
 
 ## FASE 1 — Reestruturar com o que aprendemos
 
-Nome canônico:
-
-**MCF — Fase 1: Reestruturação e Evolução Pós-v1**
-
-Nome curto:
-
-**MCF NextGen**
+Nome canônico: **MCF — Fase 1: Reestruturação e Evolução Pós-v1**  
+Nome curto: **MCF NextGen**
 
 Objetivo: preservar o que funciona, corrigir o que funciona mal, simplificar excessos, remover complexidade sem valor comprovado e preencher lacunas descobertas na Fase Zero.
 
@@ -58,7 +53,7 @@ FASE ZERO — CONSTRUIR PARA APRENDER
 FASE 1 — REESTRUTURAR COM O QUE APRENDEMOS
 │
 ├── F1.1 Discovery guiado                       🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                    🔍 Q1 concluída / Q2 próxima
+├── F1.2 Questionário Q1–Q16                    🔍 Q1 ✅ | Q2 ✅ | Q3 próxima
 ├── F1.3 Consolidação das decisões              ⏳
 ├── F1.4 Arquitetura alvo                       ⏳
 ├── F1.5 Plano de migração                      ⏳
@@ -110,9 +105,7 @@ A Fase Zero não possui blocker material remanescente no boundary terminal. Snap
 
 ---
 
-# 4. Transição para a Fase 1
-
-A conclusão da Fase Zero permite retomar o **Discovery e Planejamento** já previsto, mas não concede autoridade técnica adicional.
+# 4. Estado atual da Fase 1
 
 ```yaml
 phase_1:
@@ -126,54 +119,75 @@ phase_1:
 questionnaire:
   total: 16
   Q1: COMPLETED
-  Q2: NEXT_NOT_STARTED
+  Q2: COMPLETED_APPROVED_BY_LEANDRO
+  Q3: NEXT_NOT_STARTED
 ```
 
-Não existe autorização implícita para reestruturar runtime, criar Project Capsule, model routing, DAG/paralelismo, Interaction Center ou qualquer outra hipótese NextGen.
+A aprovação das perguntas de Discovery não concede autorização implícita para reestruturar runtime ou implementar hipóteses NextGen.
 
 ---
 
-# 5. Reconciliação documental da transição
+# 5. Decisões de Discovery já consolidadas
 
-A transição deve preservar a diferença entre histórico e estado atual:
+## Q1 — finalidade principal
 
-- checkpoints 001/002 permanecem como evidência histórica de seus momentos;
-- `MCF-NEXTGEN-RESUME-CARD.md` é artefato atual e deve refletir o boundary terminal da Fase Zero;
-- este Master Roadmap é artefato atual e deve refletir a entrada em Fase 1 Discovery;
-- `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md` continua válido: Q1 concluída, Q2 não iniciada;
-- o mapa de capacidades implementadas fica fora desta branch de discovery e deve ser consultado explicitamente na `main`, por exemplo em `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md`, ou na versão live posterior da `main`.
+- sistema pessoal de trabalho com IA para LEANDRO como foco inicial;
+- continuidade durável de projetos como problema central;
+- ChatGPT/MESTRE inicialmente como camada cognitiva superior;
+- equipes de agentes especializados;
+- provar e amadurecer primeiro no uso real de LEANDRO;
+- generalização e produto comercial ficam posteriores à prova de valor.
 
-A referência ao arquivo da `main` é externa ao boundary deste HEAD e não implica que `docs/MCF-CURRENT-STATE.md` exista nesta branch.
+## Q2 — continuidade de contexto
 
-Checkpoint canônico desta passagem: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md`.
+LEANDRO aprovou conceitualmente a `LAYERED_CONTINUITY_ARCHITECTURE`.
+
+Componentes:
+
+- Framework Memory;
+- Project Memory;
+- Live Operational Memory;
+- Evidence / Raw Archive;
+- Continuity Builder;
+- Project Capsule derivado/versionado para retomada.
+
+Invariantes:
+
+```text
+MEMÓRIA ajuda a reconstruir.
+EVIDÊNCIA prova o que aconteceu.
+AUTORIDADE define o que vale.
+ESTADO LIVE define onde estamos agora.
+```
+
+O `Project Capsule` NÃO é fonte de verdade. Estado live deve ser revalidado. Ausência de evidência permanece `UNKNOWN`. Hipóteses não podem ser promovidas silenciosamente a fatos. Decisões e ações críticas exigem verificação/gates proporcionais ao risco. Continuidade deve ser comprovada empiricamente por `Continuity Recovery Test`/cold-start.
+
+Checkpoint canônico: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
 ---
 
 # 6. Discovery da Fase 1
 
-O discovery é separado da implementação e não altera a v1 atual.
-
 Branch de planejamento:
 
 `planning/mcf-nextgen-discovery`
-
-Objetivo:
-
-- preservar decisões estratégicas;
-- responder questionário canônico;
-- transformar erros/acertos da Fase Zero em requisitos reais;
-- impedir que o planejamento dependa de memória de chat;
-- produzir arquitetura e plano antes de Codex/executor reestruturar o MCF.
 
 Estado:
 
 ```yaml
 questionnaire_total: 16
-Q1: COMPLETED
-Q2: NEXT_NOT_STARTED
+last_completed_question: 2
+next_question: 3
+Q3_started: false
 implementation_authorized: false
 architecture_final_approved: false
 ```
+
+Próxima pergunta:
+
+> **Q3 — O que é um agente de verdade no MCF?**
+
+Ela definirá identidade do agente, papel, skills, tools, permissões, memória, critérios, relação agente ↔ modelo, persistência de identidade e diferença entre persona, agente simulado, agente isolado e executor real.
 
 ---
 
@@ -194,16 +208,16 @@ Princípios já consolidados ou fortemente aceitos:
 9. múltiplos projetos devem ter memória/equipe/estado isolados;
 10. documentação deve preservar conhecimento, não repetir conversa indefinidamente;
 11. provider capability deve ser validada antes de virar requisito de governança;
-12. nenhuma complexidade é preservada apenas porque já existe.
+12. nenhuma complexidade é preservada apenas porque já existe;
+13. memória não substitui evidência;
+14. ausência de prova não deve ser convertida em certeza operacional.
 
 ---
 
-# 8. Blocos arquitetônicos a decidir na Fase 1
+# 8. Blocos arquitetônicos ainda a decidir
 
-O questionário Q1–Q16 decidirá:
+Q3–Q16 ainda decidirão:
 
-- propósito e usuário prioritário;
-- memória e continuidade;
 - definição real de agente;
 - autonomia;
 - model routing;
@@ -223,7 +237,7 @@ O questionário Q1–Q16 decidirá:
 
 # 9. Critérios para iniciar implementação da Fase 1
 
-A reestruturação grande NÃO deve começar apenas porque a Fase Zero foi concluída.
+A reestruturação grande NÃO deve começar apenas porque Q1/Q2 foram concluídas.
 
 Pré-condições:
 
@@ -244,19 +258,9 @@ Só então gerar missão estruturada para Codex/executor.
 
 # 10. Fase 2 — prova de valor
 
-A Fase 2 deverá responder empiricamente:
+A Fase 2 deverá comparar empiricamente o MCF reestruturado com workflows mais simples.
 
-```text
-MCF reestruturado
-versus
-workflow mais simples
-
-QUAL PRODUZ MELHOR RESULTADO?
-POR QUANTO?
-A QUE CUSTO?
-```
-
-Métricas mínimas candidatas:
+Métricas candidatas:
 
 - tempo total;
 - tokens/custo;
@@ -265,11 +269,11 @@ Métricas mínimas candidatas:
 - intervenção humana;
 - contexto perdido;
 - tempo de retomada;
-- quantidade de recuperação;
+- recuperação;
 - qualidade final;
 - satisfação operacional de LEANDRO.
 
-Testes obrigatórios candidatos:
+Testes candidatos:
 
 - Continuity Recovery Test;
 - novo chat sem histórico bruto;
@@ -305,20 +309,20 @@ phase_zero:
 
 phase_one_discovery:
   state: ACTIVE_DISCOVERY
-  last_completed_question: 1
-  next_question: 2
-  Q2_started: false
+  last_completed_question: 2
+  next_question: 3
+  Q3_started: false
 
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q2
-next_operational_action: NONE_BEFORE_Q2_DECISION
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q3
+next_operational_action: NONE_BEFORE_Q3_DECISION
 ```
 
 Um novo chat deve reconstruir o estado lendo:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este `MCF-MASTER-ROADMAP-001.md`;
 5. GitHub/provider live para estado mutável;
-6. quando precisar do mapa implementado, ler explicitamente `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md` ou a versão live da `main`.
+6. checkpoints anteriores quando histórico adicional for necessário.
