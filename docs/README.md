@@ -4,14 +4,14 @@ Este diretório reúne documentação normativa, operacional, histórica, experi
 
 ## Comece por aqui
 
-1. [`MCF-CURRENT-STATE.md`](MCF-CURRENT-STATE.md) — snapshot reconciliado do estado atual e mapa de fontes.
+1. [`MCF-CURRENT-STATE.md`](MCF-CURRENT-STATE.md) — mapa reconciliado de fatos duráveis e estado operacional volátil.
 2. [`../README.md`](../README.md) — visão pública do framework e localização do runtime executável.
 3. [`runtime/README.md`](runtime/README.md) — arquitetura/runtime executável, skills, adapters e evidências.
 4. [`protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`](protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md) — protocolo operacional vigente.
 5. [`agentes/README.md`](agentes/README.md) — composição documental dos 29 agentes nomeados.
 6. [`../CHANGELOG.md`](../CHANGELOG.md) — marcos históricos verificáveis.
 
-Para valores voláteis — branch, SHA, PR, Issue, workflow, deploy, tag ou release — **GitHub live prevalece sobre qualquer snapshot documental**.
+Para valores voláteis — branch head, SHA de branch, PR, Issue, workflow e SHA reportado por deploy — **GitHub/provider live prevalece sobre qualquer snapshot documental**. Tags/releases imutáveis podem ser fatos duráveis; `main` e deploy commit não são.
 
 ## Classificação de informação
 
@@ -58,7 +58,7 @@ LEANDRO é a autoridade humana final e não é agente. LÉO é agente distinto c
 - [`decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md`](decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md) — boundary de qualificação stable (`HISTORICAL` após publicação);
 - [`../.github/workflows/mcf-production-readiness.yml`](../.github/workflows/mcf-production-readiness.yml) e health monitor — automação atual.
 
-Estado pós-stable reconciliado:
+Fatos duráveis pós-stable:
 
 ```yaml
 stable: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
@@ -69,7 +69,7 @@ issue_131: CLOSED_COMPLETED
 pr_133: CLOSED_UNMERGED
 ```
 
-RC3 permanece preservada como prerelease histórica no mesmo SHA da stable publicada.
+RC3 permanece preservada como prerelease histórica no mesmo SHA da stable publicada. Já `main` e o commit reportado por produção são voláteis: `7f741e10…` deve ser lido como baseline pré-integração quando associado a `main`, e o deployed SHA deve ser relido após qualquer merge que possa disparar Render.
 
 ## Auditorias e evidências
 
@@ -113,4 +113,4 @@ O material NextGen está `UNDER_STUDY`: arquitetura formalmente aprovada = false
 
 ## Regra de continuidade
 
-Ao retomar uma missão, não use este índice como prova de estado live. Consulte GitHub, depois o `MCF-CURRENT-STATE.md`, a decisão/PRF do boundary ativo e o código/testes/workflows pertinentes.
+Ao retomar uma missão, não use este índice como prova de estado live. Consulte GitHub/provider, depois o `MCF-CURRENT-STATE.md`, a decisão/PRF do boundary ativo e o código/testes/workflows pertinentes.
