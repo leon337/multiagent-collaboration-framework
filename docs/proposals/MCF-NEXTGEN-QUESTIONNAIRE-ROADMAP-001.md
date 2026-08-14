@@ -29,10 +29,12 @@ O questionário possui **16 perguntas canônicas**.
 ```yaml
 question_count_total: 16
 question_01: COMPLETED
-question_02: NOT_STARTED
-questions_completed: 1
-questions_remaining: 15
-current_position: BETWEEN_Q1_AND_Q2
+question_02: COMPLETED_APPROVED_BY_LEANDRO
+question_03: NOT_STARTED
+questions_completed: 2
+questions_remaining: 14
+current_position: BETWEEN_Q2_AND_Q3
+implementation_authorized: false
 ```
 
 ### Pergunta 1 — FINALIDADE PRINCIPAL DO MCF
@@ -51,6 +53,27 @@ Síntese aprovada/consolidada:
 - laboratório multiagente continua sendo dimensão relevante;
 - produto comercial é possibilidade futura, não prioridade inicial.
 
+### Pergunta 2 — CONTINUIDADE DE CONTEXTO
+
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+Síntese aprovada/consolidada:
+
+- continuidade significa permitir que outro chat, modelo, agente ou humano reconstrua fielmente o estado relevante de um projeto sem depender da memória do chat anterior;
+- arquitetura conceitual em camadas: Framework Memory, Project Memory, Live Operational Memory e Evidence/Raw Archive;
+- o `Project Capsule` é uma projeção compacta, versionada e derivada para retomada; não é fonte de verdade;
+- memória, evidência, autoridade e estado live são conceitos distintos;
+- estado volátil deve ser revalidado antes de ação material;
+- fatos e decisões devem preservar proveniência e estado semântico;
+- ausência de evidência permanece `UNKNOWN`; hipótese não pode virar fato silenciosamente;
+- ações/decisões críticas exigem verificação e gates proporcionais ao risco;
+- múltiplos projetos precisam de isolamento, controle de acesso, retenção, redaction de secrets e schema versionado;
+- contexto deve usar progressive disclosure, com histórico/evidências consultados sob demanda;
+- continuidade deve ser provada por `Continuity Recovery Test`/cold-start, sem exigir que LEANDRO reconte o projeto;
+- detalhes de agente, autonomia, routing, revisão independente, persistência concreta, segurança completa, métricas e portabilidade permanecem para Q3–Q15.
+
+Checkpoint canônico da aprovação: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
+
 ---
 
 ## 3. As 16 perguntas canônicas
@@ -63,22 +86,13 @@ Define propósito, usuário prioritário, problema central e ordem entre uso pes
 
 ### Q2 — O que exatamente significa “não perder o contexto de um projeto”?
 
-**Status:** `NEXT / NOT_STARTED`
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Definir:
-
-- o que precisa sobreviver a uma pausa;
-- o que não precisa ser persistido;
-- por quanto tempo;
-- quem pode ler;
-- fontes de verdade;
-- nível de reconstrução esperado;
-- Framework Memory, Project Memory e Live Operational Memory;
-- contrato mínimo do **Pacote de Continuidade do Projeto** (`Project Capsule`).
+Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
 ### Q3 — O que é um agente de verdade no MCF?
 
-**Status:** `PENDING`
+**Status:** `NEXT / NOT_STARTED`
 
 Definir:
 
@@ -287,28 +301,7 @@ Regra: **nenhuma complexidade é preservada apenas porque já existe**.
 
 **Status:** `PENDING`
 
-Consolidar:
-
-- propósito;
-- memória;
-- agentes;
-- modelos;
-- autonomia;
-- graph/loops;
-- UX;
-- core/factories;
-- infraestrutura;
-- segurança;
-- métricas;
-- validação;
-- simplificações;
-- dependências;
-- riscos;
-- arquitetura alvo;
-- plano de migração;
-- critérios de aceite;
-- missão estruturada para Codex/executor;
-- decisão GO / CONDITIONAL GO / NO-GO.
+Consolidar propósito, memória, agentes, modelos, autonomia, graph/loops, UX, core/factories, infraestrutura, segurança, métricas, validação, simplificações, dependências, riscos, arquitetura alvo, plano de migração, critérios de aceite, missão estruturada para Codex/executor e decisão GO / CONDITIONAL GO / NO-GO.
 
 ---
 
@@ -358,9 +351,9 @@ Ordem de retomada:
 ### Estado de retomada atual
 
 ```yaml
-last_completed_question: 1
-next_question: 2
-instruction: NÃO REPETIR Q1
+last_completed_question: 2
+next_question: 3
+instruction: NÃO REPETIR Q1 OU Q2
 ```
 
 ---
