@@ -1,57 +1,76 @@
 # MCF Runtime
 
-Este diretório documenta o recorte executável do Multiagent Collaboration Framework.
+**Classificação:** `CURRENT_IMPLEMENTED`  
+**Estado detalhado:** [`../MCF-CURRENT-STATE.md`](../MCF-CURRENT-STATE.md)
 
-Fontes canônicas relacionadas:
+Este diretório documenta o recorte executável do **Multiagent Collaboration Framework**. O runtime existe em código e testes; não é apenas especificação documental.
 
-- `skills/registry.yaml` — contratos das skills;
-- `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md` — protocolo operacional;
-- `docs/runtime/MCF-RUNTIME-006-PLAN.md` — plano vigente;
-- `artifacts/phases/` — evidência por fase;
-- `apps/rede-social-agentes/apps/server/src/mcf-runtime/` — código e testes.
-
-## Arquitetura
+## Código executável
 
 ```text
-Chat objective
+apps/rede-social-agentes/apps/server/src/mcf-runtime/
+```
+
+Fontes relacionadas:
+
+- `skills/registry.yaml` — contratos/estado das skills;
+- `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md` — protocolo operacional;
+- `docs/runtime/MCF-RUNTIME-006-PLAN.md` — plano e trilha histórica do RUNTIME-006;
+- `artifacts/phases/` — PRFs, checkpoints e evidências por boundary;
+- `.github/workflows/` — validação, staging, readiness, monitoramento e releases;
+- `apps/rede-social-agentes/apps/server/src/mcf-runtime/` — implementação e testes.
+
+## Arquitetura executável
+
+```text
+Chat objective / mission
 → ChatMissionPlanner
 → ChatRuntimeBridge
 → MissionRuntime
 → SkillRegistryLoader
 → HumanDelegationGuard
 → PermissionEngine
-→ SkillExecutor
-→ EvidenceValidator
+→ SkillExecutor / ExternalActionDispatcher
+→ Adapter
+→ EvidenceValidator / Receipt
 → Persistence / Event Ledger
-→ Handoff / Recovery
+→ Handoff / CAF / Gate / Checkpoint
 ```
 
-## Estado atual
+Componentes materiais incluem persistência de missões/fases/eventos, hierarquia e retorno à missão-pai, permissionamento/HDF, adapters externos, reservations/idempotência, evidence validation, blocked-mission observability e recovery.
+
+## Estado reconciliado: lineage durável e operação volátil
 
 ```yaml
-runtime: MCF-RUNTIME-006
+runtime_line: MCF-RUNTIME-006
 skills_registered: 16
 skills_executable: 16
-skills_documental: 0
-remaining_documental: []
-
-latest_completed_boundary:
-  id: MCF-RUNTIME-006-LOT-4-E-CLOSE-PHASE
-  issue: 107
-  technical_pr: 108
-  technical_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
-  technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
-  technical_tree_equivalence: PASS
-  canonical_pr: 109
-  canonical_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
-  canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
-  canonical_sync: COMPLETE
-
-production: BLOCKED
-live_staging_adapter: DISABLED
-gate_c_real_provider_write: NOT_AUTHORIZED
-human_operator_actions: 0
+skills_documental_only: 0
+historical_boundaries:
+  gate_c_real_provider_write: COMPLETE
+  gate_d_staging_deploy: COMPLETE
+  gate_e_release_candidate: COMPLETE
+  production_readiness: COMPLETE
+durable_release_identity:
+  rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+  stable_v1_0_0: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
+live_github_state:
+  main_sha: READ_GITHUB_LIVE
+  release_metadata: READ_GITHUB_LIVE
+  latest: READ_GITHUB_LIVE
+live_provider_state:
+  production_health: READ_PROVIDER_LIVE
+  production_reported_commit: READ_PROVIDER_LIVE
+pre_merge_snapshot_2026_08_14:
+  main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  latest: v1.0.0
+  human_gate: CONSUMED_PROTECTED
+  production_boundary: COMPLETE
 ```
+
+RC3/stable em `7f741e10…` são identidades de release duráveis dentro do publication boundary. O mesmo SHA associado a `main` é somente snapshot pré-integração.
+
+`latest`, Release metadata, branch head e provider health/commit são estados voláteis e devem ser lidos live. A árvore de código da aplicação/runtime deste PR permanece inalterada em relação ao baseline stable; ainda assim, como Render acompanha `main`, o commit reportado por produção pode avançar após merge apenas documental.
 
 ## Skills executáveis
 
@@ -72,86 +91,63 @@ human_operator_actions: 0
 15. `MCF-DEBUG-INCIDENT`
 16. `MCF-CLOSE-PHASE`
 
-Não há skill documental remanescente no runtime integrado.
+O registro atual não contém skill exclusivamente documental.
+
+## External Action Dispatcher e adapters
+
+`CURRENT_IMPLEMENTED`:
+
+- adapters read-only para revisão/CI;
+- operações GitHub reversíveis qualificadas em Gate C real;
+- reservation/idempotência para evitar efeito duplicado;
+- reconciliação pós-write por leitura quando o efeito externo é incerto;
+- deploy/staging com binding de SHA, readiness/version e recovery por redeploy;
+- receipts persistentes e validação semântica de evidência.
+
+**Limite:** recovery por redeploy de SHA saudável não deve ser descrito como rollback nativo do provider sem evidência específica.
+
+## Observabilidade
+
+O RUNTIME-006 integrou observabilidade de missões bloqueadas, com causa, fase/agente, evidência, próxima ação/recovery e persistência no ledger. Em produção, um workflow recorrente monitora `/health/ready` e mantém evidência operacional externa. O estado atual desse monitor deve ser consultado live.
 
 ## MCF-CLOSE-PHASE
 
-```yaml
-primary_owner: Carmem
-owners: [Carmem, Emily, Leo, Mestre]
-planner_state: READY_AGENT
-handoff: Mestre
-permission_profile: SCOPED_WRITE
-provider: internal
-operation: close-phase
-resource: mcf-agent-runtime
+`MCF-CLOSE-PHASE` é executável com Carmem como primary owner e Mestre como handoff técnico. Um `ENTREGUE` verdadeiro exige objetivo atendido, ausência de blockers/findings bloqueantes, auditoria suficiente, decisão aprovadora, checkpoint coerente e nenhuma ação humana/técnica pendente incompatível.
+
+LEANDRO não é executor nem handoff técnico; é autoridade humana final e entra somente nos gatilhos de HUMAN_GATE previstos pela governança.
+
+## Linha histórica do RUNTIME-006
+
+Os documentos/PRFs antigos preservam o estado real de seus respectivos boundaries:
+
+```text
+fundação/adapters
+→ Gate C real provider write
+→ Gate D staging/deploy
+→ observabilidade
+→ 16/16 skills executáveis
+→ Gate E / RC1
+→ Production Readiness / RC2
+→ produção
+→ RC3
+→ stable v1.0.0 publicada no SHA da RC3
 ```
 
-O bridge não auto-completa a skill. O boundary do Lot 4-E não amplia autoridade externa: provider externo, GitHub write, environment mutation, deploy/produção, ação destrutiva, secret/public action continuam negados.
+Por isso, trechos antigos como `production: BLOCKED`, `gate_c: NOT_AUTHORIZED`, `stable: NOT_PUBLISHED`, `HUMAN_GATE: NOT_APPROVED` ou “próximo boundary: Gate E” são `HISTORICAL` quando aparecem em artifacts/decisões emitidos antes dos respectivos marcos posteriores.
 
-Evidência obrigatória:
+## Evidência principal
 
-- `phase_pack` — artefatos, manifest reference e rastreabilidade completa;
-- `audit_verdict` — verdict, referência verificável e blocking findings;
-- `leo_decision` — decisão explícita, justificativa, estado seguinte, próxima ação e responsável;
-- `checkpoint` — estado final, objetivo, findings, blockers, próxima ação, destinatário e necessidade de ação humana.
+- Gate C: `artifacts/phases/PHASE-006-GATE-C-REAL-PROVIDER-WRITE/`;
+- Gate D: `artifacts/phases/PHASE-006-GATE-D-INTEGRATION/` e staging adapter;
+- observabilidade: `artifacts/phases/PHASE-006-LOT-3-OBSERVABILITY/`;
+- skills restantes: `artifacts/phases/PHASE-006-LOT-4-*/`;
+- Gate E: `artifacts/phases/PHASE-006-GATE-E-RELEASE-CANDIDATE/`;
+- releases históricas: `docs/releases/MCF-v1.0.0-RC1.md`, RC2 e RC3;
+- stable identity: tag `v1.0.0@7f741e10...`;
+- mutable Release/latest state: GitHub live;
+- production readiness: `docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md`;
+- stable qualification: `docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md`.
 
-`ENTREGUE` só é válido com objetivo atendido, ausência de blockers/findings pendentes ou bloqueantes, auditoria PASS/PASSED, decisão aprovadora de Léo, nenhuma próxima ação pendente, `human_action_required=false` e concordância entre decisão/checkpoint.
+## NextGen
 
-O handoff técnico é `Mestre`. Leandro não pode ser executor nem destinatário de handoff técnico; sua participação somente ocorre por `HUMAN_GATE` explícito conforme o protocolo.
-
-## Validação e integração
-
-```yaml
-final_candidate: 3b202d26b08d8acb72538db77e0e3b86d540dc97
-foundation_run: 31485695643
-foundation: PASS
-container_smoke_run: 31485695636
-container_smoke: PASS
-documentation_validation_run: 31485695606
-documentation_validation: PASS
-server_test_files: 125
-server_tests: 562
-failed_tests: 0
-close_phase_executor_tests: 28
-close_phase_planner_tests: 4
-close_phase_mission_runtime_tests: 2
-hdf_regression_tests: 11
-prf_manifest_audit_run: 31485724987
-prf_manifest_audit: PASS
-specialist_reviews: PASS
-augusto_trace: PASS
-carmem_prf_review: PASS
-julia_governance: PASS
-emily_independent_audit: PASS
-leo_technical_gate: PASS
-technical_merge: 6cf9af35407b97d84028078ab6843570b47103fe
-technical_tree_equivalence: PASS
-technical_post_merge_documentation: PASS
-technical_post_merge_staging_run: 31486181369
-technical_post_merge_staging: PASS_DEPLOYED
-canonical_pr: 109
-canonical_candidate: 7d571a4a19234b5e479b4e3b615e07ebb81d29a3
-canonical_documentation_run: 31486782247
-canonical_documentation: PASS
-canonical_manifest_audit_run: 31486845037
-canonical_manifest_audit: PASS
-canonical_merge: d0f4624a1c4f4b31eb625ddadadf523a4578b972
-canonical_post_merge_documentation_run: 31487031172
-canonical_post_merge_documentation: PASS
-canonical_sync: COMPLETE
-```
-
-## CAFs do Lot 4-E
-
-1. bootstrap inicial falhou antes de mutação e o mecanismo foi substituído, sem blind retry;
-2. formatação foi corrigida com Prettier pinado do repositório;
-3. `PASS` de audit verdict foi contextualizado sem enfraquecer a rejeição genérica de placeholders;
-4. o hardening passou a rejeitar `ENTREGUE` com finding bloqueante de auditoria;
-5. Leandro não pode tornar-se responsável técnico implícito; somente `ESCALAR_PARA_LEANDRO` representa HUMAN_GATE sem mudar o handoff técnico para Mestre.
-
-## Próximo boundary
-
-**Release Candidate / Gate E**.
-
-O Lot 4-E está concluído. Produção permanece `BLOCKED` e não é autorizada por essa transição.
+A branch `planning/mcf-nextgen-discovery` é `UNDER_STUDY`. A publicação de `v1.0.0` não redefine esse discovery nem promove propostas à implementação. Nenhuma hipótese de Project Capsule, novas memory layers, model routing, DAG/paralelismo ou reestruturação NextGen deve ser tratada como implementada sem código/teste/evidência no lineage atual.

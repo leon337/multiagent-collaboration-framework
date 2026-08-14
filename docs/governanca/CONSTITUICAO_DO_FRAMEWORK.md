@@ -1,5 +1,8 @@
 # Constituição do Framework Multiagente
 
+> **Classificação reconciliada (2026-08-13): `HISTORICAL` + baseline normativa fundacional.**  
+> Este documento registra a Constituição da fase de fundação (`0.1.0-fundação`). Partes de autoridade, composição, fonte operacional e disposição transitória foram ampliadas ou superadas por decisões posteriores, especialmente MCF-DEC-050/051 e pelo protocolo operacional unificado. Para estado/governança vigente, consulte `docs/MCF-CURRENT-STATE.md`, `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`, `docs/agentes/README.md` e as decisões posteriores. O texto histórico abaixo é preservado sem retroescrever a fundação.
+
 **Versão:** 0.1.0-fundação  
 **Status:** NORMATIVO EM REVISÃO  
 **Objetivo Linear:** LEA-274  
@@ -69,6 +72,8 @@ O GitHub é a fonte oficial para:
 
 Quando Linear e GitHub divergirem, o trabalho entra em estado de reconciliação. Nenhum agente pode declarar conclusão até que a divergência seja resolvida e registrada.
 
+> **Nota atual:** dentro do projeto MCF, a instrução vigente de LEANDRO estabelece o repositório GitHub oficial como fonte de verdade para estado atual verificável. A seção acima permanece como registro da fundação.
+
 ## 4. Hierarquia de autoridade
 
 1. **Leandro:** autoridade humana final.
@@ -132,6 +137,8 @@ Os papéis permanentes são:
 
 Os contratos detalhados serão normativos e não poderão ampliar autoridade por interpretação informal.
 
+> **Nota atual:** a composição documental do MCF foi posteriormente consolidada em 29 agentes nomeados. Esta seção preserva o conjunto permanente descrito na fundação e não deve ser usada para inferir a composição completa atual.
+
 ## 9. Regra de transferência
 
 Nenhum bastão é transferido apenas por mensagem conversacional. A transferência exige:
@@ -169,3 +176,5 @@ Toda mudança normativa deve conter:
 ## 12. Disposição transitória da fundação
 
 Durante o Objetivo LEA-274, Mestre está autorizado a executar temporariamente os papéis necessários para produzir a versão 1.0. Cada artefato deverá indicar o papel simulado, os critérios aplicados e a evidência gerada. A versão somente será estável após revisão final e aprovação de Leandro.
+
+> **Classificação atual desta disposição:** `HISTORICAL`. Ela descreve a fase LEA-274 e não autoriza, por si só, atuação ou publicação em boundaries posteriores.

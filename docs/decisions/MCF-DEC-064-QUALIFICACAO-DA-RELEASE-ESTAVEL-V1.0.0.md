@@ -1,9 +1,25 @@
 # MCF-DEC-064 — Qualificação da Release Estável v1.0.0
 
-**Status:** EM EXECUÇÃO  
+**Status:** CONCLUÍDA — `HISTORICAL AFTER STABLE PUBLICATION`  
 **Classificação:** Classe C  
 **Missão:** `MCF-STABLE-RELEASE-001`  
 **Issue:** #131
+
+> **Classificação terminal — 2026-08-14:** esta decisão foi emitida originalmente enquanto a missão estava `EM EXECUÇÃO`. O texto de decisão, regras e estado de entrada abaixo são preservados como evidência histórica do boundary pré-publicação e não representam pendência atual. `MCF-STABLE-RELEASE-001` foi concluída e a stable foi publicada.
+
+## Resultado terminal
+
+```yaml
+stable: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
+stable_state: PUBLISHED
+issue_131: CLOSED_COMPLETED
+publisher_pr_133: CLOSED_UNMERGED
+human_gate: CONSUMED_PROTECTED
+human_approval_commit: 786d2535b70584762b45ae0512d43872d492b715
+consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
+```
+
+O resultado terminal acima supersede somente a leitura **current-state** do status original `EM EXECUÇÃO`. As condições e o estado de entrada seguintes permanecem preservados como `HISTORICAL` para rastreabilidade da decisão.
 
 ## Decisão
 
@@ -23,7 +39,7 @@ O boundary exige uma última identidade candidata imutável: `v1.0.0-RC3`, criad
 - findings críticos/altos devem ser zero;
 - `v1.0.0` não será criada antes do HUMAN_GATE final de LEANDRO.
 
-## Estado de entrada
+## Estado de entrada — `HISTORICAL`
 
 ```yaml
 main: 510ec5abaf14f5d11a504ff7de991887278e025c

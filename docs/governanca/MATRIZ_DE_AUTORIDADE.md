@@ -1,7 +1,10 @@
 # Matriz de Autoridade do Framework Multiagente
 
+> **Classificação reconciliada (2026-08-13): `HISTORICAL` / parcialmente `SUPERSEDED`.**  
+> Esta matriz registra a remediação fundacional ligada a GitHub #10 / PR #1 e à autorização DF-008. Autoridades e papéis posteriores foram ampliados por decisões do MCF e pelo protocolo operacional unificado. Para o boundary atual, consulte `docs/MCF-CURRENT-STATE.md`, `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`, `docs/agentes/README.md`, a matriz consolidada de 29 agentes e as decisões vigentes. O texto abaixo é preservado como evidência histórica.
+
 **Versão:** 0.1-remediação  
-**Classificação:** REGRA NORMATIVA  
+**Classificação original:** REGRA NORMATIVA  
 **Objetivo:** LEA-274  
 **Remediação:** GitHub #10  
 **PR:** #1
@@ -92,6 +95,8 @@ A autorização de Leandro já está registrada. Léo e Gabriel podem concluir a
 5. os critérios de aceite do objetivo estiverem satisfeitos.
 
 Mudança de escopo, risco crítico novo ou conflito constitucional invalida a automação e exige escalonamento.
+
+> **Classificação atual desta seção:** `HISTORICAL`. DF-008 pertencia ao boundary fundacional e não concede autorização automática para production/stable ou boundaries Classe C posteriores. A stable `v1.0.0` permanece submetida à decisão específica vigente e ao HUMAN_GATE de LEANDRO.
 
 ## 7. Regra contra interrupção indevida
 

@@ -1,0 +1,196 @@
+# MCF — Estado Atual e Mapa de Verdade
+
+**Classificação:** `CURRENT_IMPLEMENTED`  
+**Natureza:** mapa documental reconciliado; GitHub/provider live prevalece sobre valores voláteis  
+**Baseline pré-integração auditada:** `main@7f741e10d0e745a90c732e084400b11e3f5e6794`  
+**Data da reconciliação:** 2026-08-14
+
+## 1. Como ler este repositório
+
+Este arquivo é o ponto de entrada para o estado do MCF, mas não congela branch heads, estados de PR/Issue, `latest`, metadados mutáveis de Release nem SHAs de deploy. Ele separa identidades duráveis de release de estado GitHub/provider volátil.
+
+Em caso de divergência, use esta ordem:
+
+1. instrução explícita atual de LEANDRO;
+2. estado real verificável no GitHub/provider;
+3. código, testes, workflows e evidências do SHA aplicável;
+4. decisões/protocolos vigentes;
+5. documentos históricos.
+
+Classificações usadas nesta documentação:
+
+- `CURRENT_IMPLEMENTED` — existe no código/infraestrutura e possui evidência verificável;
+- `EXPERIMENTAL` — foi experimentado, sem equivaler a capacidade geral comprovada;
+- `PLANNED` — boundary/atividade formalmente prevista, ainda não materializada;
+- `UNDER_STUDY` — hipótese/discovery, sem autorização de implementação;
+- `HISTORICAL` — verdade de um momento anterior preservada como evidência;
+- `SUPERSEDED` — afirmação/processo substituído por evidência ou decisão posterior.
+
+## 2. Identidades duráveis e estado live/snapshot
+
+```yaml
+durable_release_identity:
+  rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+  stable_v1_0_0: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
+publication_evidence:
+  publisher_head_at_publication: f6d3955740dec0a43172b8bd8127e208eb727bf6
+  human_approval_commit: 786d2535b70584762b45ae0512d43872d492b715
+  consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
+live_github_state:
+  main_sha: READ_GITHUB_LIVE
+  release_metadata: READ_GITHUB_LIVE
+  latest: READ_GITHUB_LIVE
+  issue_131_state: READ_GITHUB_LIVE
+  pr_133_state: READ_GITHUB_LIVE
+live_provider_state:
+  production_health: READ_PROVIDER_LIVE
+  production_reported_commit: READ_PROVIDER_LIVE
+pre_merge_snapshot_2026_08_14:
+  main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  release_name: MCF v1.0.0
+  release_draft: false
+  release_prerelease: false
+  latest: v1.0.0
+  issue_131: CLOSED_COMPLETED
+  pr_133: CLOSED_UNMERGED
+  human_gate: CONSUMED_PROTECTED
+  production_boundary: COMPLETE
+```
+
+RC1, RC2 e RC3 permanecem identidades históricas preservadas; RC3 e stable compartilham o SHA `7f741e10…`. Esse vínculo de release é durável dentro do publication boundary.
+
+O bloco `pre_merge_snapshot_2026_08_14` registra o que foi verificado naquele momento. `latest`, estados de Issue/PR, metadados de Release, `main` e estado/commit do provider podem mudar posteriormente e nunca devem ser inferidos desse snapshot.
+
+O SHA `7f741e10…` como valor de `main` é apenas o baseline pré-integração desta missão. Um merge futuro do PR #134 pode avançar `main` sem alterar a identidade RC3/stable. Como o provider acompanha `main`, uma integração apenas documental também pode alterar o commit reportado em `/health/version` sem alterar a árvore de código da aplicação/runtime.
+
+## 3. O que o MCF é hoje
+
+O MCF é um framework multiagente com duas camadas complementares:
+
+1. **governança/coordenação** — contratos de agentes, autoridade, gates, PRFs, handoffs, CAF, Human Delegation Firewall e evidência rastreável;
+2. **runtime executável** — persistência de missões/fases/eventos/receipts, skills executáveis, adapters externos, dispatcher, reconciliação, observabilidade e integrações de deploy/CI/GitHub.
+
+A existência do runtime não é apenas conceitual. O código está em:
+
+`apps/rede-social-agentes/apps/server/src/mcf-runtime/`
+
+A aplicação hospedeira é um workspace Node/pnpm em `apps/rede-social-agentes/`, com API, web, worker, pacotes de persistência/contratos e testes.
+
+## 4. Capacidades atuais comprovadas
+
+### `CURRENT_IMPLEMENTED`
+
+- runtime persistente de missões, fases, eventos, handoffs e receipts;
+- hierarquia missão-pai/submissão e retorno persistente;
+- External Action Dispatcher e contratos de adapters;
+- validação semântica de evidências e separação entre tentativa e sucesso;
+- Human Delegation Firewall e perfis de permissão;
+- 16 skills registradas, 16 executáveis, 0 somente documentais no boundary RC1+;
+- adapters/read paths de revisão de código e consulta de CI;
+- escrita GitHub reversível e Gate C real concluído sob boundary governado;
+- deploy de staging com verificação de SHA/readiness/version e recovery por redeploy de SHA saudável;
+- observabilidade de missões bloqueadas e recuperação orientada a evidência;
+- Production Readiness automatizado, incluindo dependency audit, lint/typecheck, migrations, testes, build e backup/restore isolado;
+- produção pública materializada no lineage qualificado da RC3;
+- health monitor recorrente de produção via GitHub Actions;
+- stable `v1.0.0` publicada no SHA qualificado da RC3 após boundary Classe C e HUMAN_GATE de LEANDRO.
+
+## 5. Limitações atuais
+
+- a identidade pública de releases é protegida por governança e pelo publication boundary; isso não é apresentado como impossibilidade técnica absoluta de ação administrativa fora desse boundary;
+- `main`, `latest`, status de PR/Issue, metadados mutáveis de Release e SHAs/status reportados por providers são voláteis e devem ser lidos live;
+- uma integração documentation-only pode avançar branch/deploy commit sem alterar a árvore de aplicação/runtime;
+- recovery por deploy/redeploy de SHA saudável não deve ser descrito como rollback nativo do provider quando esse mecanismo não foi comprovado;
+- os 29 contratos de agentes representam papéis e responsabilidades do MCF; não provam que 29 processos/modelos cognitivos independentes estejam sempre executando simultaneamente;
+- a experiência `telefone-sem-fio-001` não comprova independência cognitiva real;
+- materiais NextGen não são capacidades atuais por simples presença na branch de discovery;
+- ocorrências antigas de `NOT_PUBLISHED`, `NOT_APPROVED`, `BLOCKED` ou stable ausente permanecem válidas apenas quando explicitamente tratadas como `HISTORICAL`.
+
+## 6. Agentes e skills
+
+A composição documental oficial contém **29 agentes nomeados**; LEANDRO é autoridade humana final e não entra nessa contagem.
+
+Fonte da composição:
+- `docs/agentes/README.md`
+- `docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md`
+
+Skills:
+- registro: `skills/registry.yaml`
+- runtime/executores: `apps/rede-social-agentes/apps/server/src/mcf-runtime/`
+- evidência de qualificação: PRFs do `MCF-RUNTIME-006` e Gate E.
+
+## 7. Produção, readiness e releases
+
+Marcos históricos:
+
+- Gate C real — concluído;
+- Gate D/staging — concluído;
+- observabilidade + cobertura total de skills — concluídas no RUNTIME-006;
+- Gate E — concluído;
+- RC1 — publicada como prerelease;
+- Production Readiness pós-RC1 — concluído;
+- RC2 — publicada como prerelease após correção operacional;
+- production boundary — concluído;
+- RC3 — publicada como prerelease e qualificada em `7f741e10d0e745a90c732e084400b11e3f5e6794`;
+- stable `v1.0.0` — publicada em 2026-08-14 no mesmo SHA da RC3.
+
+Snapshot auditado em 2026-08-14: `main@7f741e10…`, Issue #131 `CLOSED/COMPLETED`, PR #133 `CLOSED/UNMERGED`, Release `MCF v1.0.0` não-draft/não-prerelease e `latest`. Esses itens são snapshot, não invariantes futuros.
+
+Após qualquer integração ou nova release, confirme separadamente `main`, `latest`, Release metadata, Issue/PR state e o SHA/health reportados por produção.
+
+Evidências principais:
+- `docs/decisions/MCF-DEC-062-GATE-E-RELEASE-CANDIDATE.md`
+- `docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md`
+- `docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md`
+- `docs/releases/MCF-v1.0.0-RC1.md`
+- `docs/releases/MCF-v1.0.0-RC2.md`
+- `docs/releases/MCF-v1.0.0-RC3.md`
+- GitHub Release/tag live
+- `.github/workflows/mcf-production-readiness.yml`
+- `.github/workflows/mcf-production-health-monitor.yml`
+- `artifacts/phases/`
+
+## 8. Experimentos
+
+`experimentos/telefone-sem-fio-001` é `EXPERIMENTAL`.
+
+Resultado preservado: houve evidência positiva de preservação de conteúdo/handoff no protocolo testado. Limitação obrigatória: os papéis foram executados dentro do mesmo ChatGPT; portanto o experimento **não demonstra independência cognitiva real entre agentes**.
+
+## 9. NextGen / discovery
+
+A branch `planning/mcf-nextgen-discovery` é `UNDER_STUDY`.
+
+O checkpoint `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-001.md` nessa branch registra explicitamente:
+
+```yaml
+state: DRAFT_DISCOVERY
+implementation_authorized: false
+architecture_formally_approved: false
+prototype_authorized: false
+```
+
+A publicação de `v1.0.0` não altera essa classificação. Conceitos como Project Capsule, novas camadas de memória, model routing, DAG/paralelismo, Interaction Center, novos maturity/delivery profiles, gateways, caching/rate limiting, hardening adicional, VPS portátil e reestruturações similares devem permanecer `UNDER_STUDY`, salvo quando houver equivalente atual comprovado no runtime vigente.
+
+## 10. Mapa documental
+
+- porta pública: `README.md`
+- estado atual: `docs/MCF-CURRENT-STATE.md`
+- índice documental: `docs/README.md`
+- histórico de marcos: `CHANGELOG.md`
+- runtime: `docs/runtime/` + `apps/rede-social-agentes/apps/server/src/mcf-runtime/`
+- governança: `docs/governanca/`, `docs/protocols/`, decisões vigentes em `docs/decisions/`
+- agentes: `docs/agentes/` e `docs/matrices/`
+- releases: `docs/releases/` + GitHub Releases
+- evidências/PRFs: `artifacts/phases/`, `docs/evidence/`, `docs/audits/`, `docs/auditoria/`
+- experimentos: `experimentos/` e `docs/experimentos/`
+- propostas/discovery: `docs/proposals/` e branches de planejamento; propostas não são implementação.
+
+## 11. Regra de continuidade
+
+Ao retomar o projeto:
+
+1. consulte GitHub/provider live (`main`, PRs, Issues, releases/tags, workflows e deploy/version quando aplicável);
+2. leia este mapa para orientação, nunca para substituir o live state;
+3. leia a decisão/PRF correspondente ao boundary ativo;
+4. use código/testes/workflows para comprovar capacidades;
+5. classifique qualquer proposta não implementada como `PLANNED` ou `UNDER_STUDY`.
