@@ -10,23 +10,29 @@ Esta workspace contém web, API, worker, contratos e persistência. O runtime MC
 
 O antigo estado `ambiente_publico: EM_PREPARACAO` pertencia ao boundary de adaptação do piloto e está `SUPERSEDED`.
 
-Fatos de lineage/release reconciliados em 2026-08-14:
+Identidade de lineage/release e estado live:
 
 ```yaml
-ambiente_publico: LIVE
-production_boundary: COMPLETE
-api: Render_Web_Service_Docker
-database: Neon_Postgres
-health_monitor: ENABLED
-qualified_lineage: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
-stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
-stable_release: MCF v1.0.0
-latest: v1.0.0
-production_reported_commit: READ_PROVIDER_LIVE
-sla: NAO_OFERECIDO
+durable_release_identity:
+  qualified_lineage: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+  stable_v1_0_0: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
+live_github_state:
+  latest: READ_GITHUB_LIVE
+live_provider_state:
+  environment_health: READ_PROVIDER_LIVE
+  production_reported_commit: READ_PROVIDER_LIVE
+  health_monitor_state: READ_GITHUB_LIVE
+historical_boundary:
+  production_boundary: COMPLETE
+infrastructure_contract:
+  api: Render_Web_Service_Docker
+  database: Neon_Postgres
+  sla: NAO_OFERECIDO
 ```
 
-Produção live e publicação stable são boundaries distintos. RC3/stable em `7f741e10…` são fatos de release/lineage; não são promessa de que o commit atualmente reportado pelo deploy continuará nesse SHA. Como Render acompanha `main`, uma integração apenas documental pode avançar o commit reportado sem alterar a árvore de código da aplicação/runtime. Confirme provider/GitHub live antes de usar estado operacional.
+RC3/stable em `7f741e10…` são identidades de release/lineage. `latest`, ambiente/health, monitor e commit reportado são estados mutáveis e devem ser consultados live.
+
+Como Render acompanha `main`, uma integração apenas documental pode avançar o commit reportado sem alterar a árvore de código da aplicação/runtime.
 
 ## Arquitetura
 
@@ -96,7 +102,7 @@ Use como fontes atuais:
 - `docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md`;
 - `docs/MCF-CURRENT-STATE.md`.
 
-A API pode apresentar cold start no plano gratuito. O monitor de produção deve ser usado para distinguir latência de inicialização de incidente material. O SHA reportado por `/health/version` é estado operacional volátil e deve ser relido após integrações/deploys.
+A API pode apresentar cold start no plano gratuito. O monitor de produção deve ser usado para distinguir latência de inicialização de incidente material. O SHA reportado por `/health/version`, a saúde atual e o estado do monitor são voláteis e devem ser relidos após integrações/deploys.
 
 ## Segurança operacional
 
@@ -108,7 +114,7 @@ A API pode apresentar cold start no plano gratuito. O monitor de produção deve
 
 ## Histórico do piloto
 
-A fase `1_9f_adaptacao_do_piloto_publico_gratuito` e a arquitetura gratuita inicial permanecem `HISTORICAL`. Suas decisões de custo zero, rollout controlado, Render/Neon/Cloudflare e ausência de SLA são úteis para entender a origem do ambiente, mas não substituem o estado live posterior materializado por Production Readiness, produção, RC3 e stable `v1.0.0`.
+A fase `1_9f_adaptacao_do_piloto_publico_gratuito` e a arquitetura gratuita inicial permanecem `HISTORICAL`. Suas decisões de custo zero, rollout controlado, Render/Neon/Cloudflare e ausência de SLA são úteis para entender a origem do ambiente, mas não substituem o estado live posterior.
 
 ## Regra de desenvolvimento
 
