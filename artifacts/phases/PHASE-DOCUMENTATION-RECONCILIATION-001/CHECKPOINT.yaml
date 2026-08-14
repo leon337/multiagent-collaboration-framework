@@ -1,10 +1,11 @@
 mission: MCF-DOCUMENTATION-RECONCILIATION-001
-state: GOV_DOC_P1_001_CORRECTED_PENDING_REVALIDATION
-base_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+state: GOV_DOC_P1_002_CORRECTED_PENDING_REVALIDATION
+base_sha_pre_merge: 7f741e10d0e745a90c732e084400b11e3f5e6794
 doc_branch: docs/mcf-documentation-reconciliation-001
-post_stable_state:
+release_facts:
   stable_v1_0_0: PUBLISHED
   stable_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  rc3_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
   release: MCF v1.0.0
   latest: v1.0.0
   human_gate: CONSUMED_PROTECTED
@@ -12,16 +13,31 @@ post_stable_state:
   consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
   stable_issue_131: CLOSED_COMPLETED
   publisher_pr_133: CLOSED_UNMERGED
-governance_audit:
-  comment: 5291207799
-  audited_head: a5d05fc40799203af1a1ac1b18c1c84135dc0de8
-  verdict: BLOCKED_CORRECTION_REQUIRED
-  finding: GOV-DOC-P1-001
-  finding_class: P1
-  finding_scope: docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md
-  cause: canonical_decision_header_still_presented_EM_EXECUCAO_as_current
-  correction: terminal_classification_and_outcome_added_non_destructively
-  original_entry_state_preserved: true
+volatile_operational_state:
+  pre_merge_baseline_main: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  main_current: READ_GITHUB_LIVE
+  production_status: COMPLETE
+  production_reported_commit: READ_PROVIDER_LIVE
+  post_merge_deploy_version_health_readback_required: true
+governance_findings:
+  GOV-DOC-P1-001:
+    state: RESOLVED
+    comment: 5291207799
+    audited_head: a5d05fc40799203af1a1ac1b18c1c84135dc0de8
+    finding_class: P1
+    cause: canonical_decision_header_still_presented_EM_EXECUCAO_as_current
+    correction: terminal_classification_and_outcome_added_non_destructively
+    original_entry_state_preserved: true
+  GOV-DOC-P1-002:
+    state: CORRECTED_PENDING_REVALIDATION
+    comment: 5291403832
+    audited_head: 1f2639935df6694cf33afe051d54f059ef4b1b15
+    finding_class: P1
+    cause: current_state_docs_bound_volatile_main_and_deploy_commit_to_pre_merge_RC3_sha
+    correction: immutable_release_facts_separated_from_volatile_branch_and_deploy_state
+    stable_identity_changed: false
+    runtime_source_changed: false
+    render_config_changed: false
 historical_validation:
   first_run: 31749823973
   first_result: FAIL_README_29_AGENT_LITERAL_CONTRACT
@@ -33,6 +49,7 @@ post_correction_validation:
   foundation: PENDING_NEW_EXACT_HEAD
   production_readiness: PENDING_NEW_EXACT_HEAD
   stale_current_state_scan: PENDING_NEW_EXACT_HEAD
+  volatile_main_and_deploy_sha_scan: PENDING_NEW_EXACT_HEAD
   canonical_decision_status_scan: PENDING_NEW_EXACT_HEAD
   documentation_only_diff: PENDING_NEW_EXACT_HEAD
   live_recheck: PENDING_NEW_EXACT_HEAD
@@ -41,5 +58,5 @@ independent_review:
   evidence_location: PR_134_COMMENT_EXTERNAL_RECEIPT
 nextgen: UNDER_STUDY
 merge_authorized: false
-merge_control_note: eventual_merge_can_trigger_Render_autoDeployTrigger_checksPass_and_requires_post_merge_deploy_health_readback
-next_action: freeze corrected documentation head, rerun all required checks and scans, recheck live stable boundary, request fresh Codex review on exact head, return evidence to MESTRE
+merge_control_note: eventual_merge_can_trigger_Render_autoDeployTrigger_checksPass_and_requires_post_merge_deploy_version_health_readback
+next_action: freeze corrected documentation head, rerun required checks and extended stale/current-state scan, prove documentation-only diff, recheck live release boundary, request fresh Codex review, return evidence to MESTRE
