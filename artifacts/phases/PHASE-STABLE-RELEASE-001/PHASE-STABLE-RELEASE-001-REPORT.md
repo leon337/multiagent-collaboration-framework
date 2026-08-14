@@ -11,7 +11,7 @@ main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 candidate_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 publication_P0_count: 0
 publication_P1_count: 2
-publication_P2_count: 0
+publication_P2_count: 2
 critical_findings: 0
 high_findings: 0
 stable_v1_0_0: NAO_PUBLICADA
@@ -19,104 +19,75 @@ HUMAN_GATE: NAO_APROVADO
 READY_FOR_HUMAN_GATE: false
 ```
 
-## Redesenho aplicado
+## Arquitetura vigente
 
-A arquitetura vigente é `IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF`.
+`IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF`
 
-### Publisher
+- publisher: `refs/heads/release/v1.0.0-stable-publish`;
+- approval ref: `refs/heads/release/v1.0.0-human-gate`;
+- approval initial commit: `ec1e2c33ee476cf03f2b698c86eae447978a07c8`, `NAO_APROVADO`;
+- stable: `refs/tags/v1.0.0`;
+- control-lock: `refs/tags/mcf-control/v1.0.0`.
 
-`refs/heads/release/v1.0.0-stable-publish` contém o publication control plane e não armazena mais o estado mutável de HUMAN_GATE. Depois de qualificado, o contrato server-side exige imutabilidade da branch inteira por ruleset de branch com `update` + `deletion`, zero bypass e zero exclusions.
+O publisher não armazena mais HUMAN_GATE mutável. O receipt futuro deve ser commit GitHub Web verificado por LEANDRO e vincular release, RC3 e SHA exato do publisher.
 
-### Approval ref
+A validação do receipt compara Base64 do conteúdo GitHub sem decodificar para command substitution, preservando a distinção entre newline terminal correto, newline ausente e linhas em branco extras.
 
-`refs/heads/release/v1.0.0-human-gate` foi criada como ref separada e mínima. Estado inicial:
+## Consumo e recovery
 
-```yaml
-initial_commit: ec1e2c33ee476cf03f2b698c86eae447978a07c8
-state: NAO_APROVADO
-approved_receipt_created: false
-file: LEANDRO-HUMAN-GATE.yaml
-```
+A autorização futura é consumida por `git push --atomic` + lease da approval ref, avançando essa ref e criando control-lock + stable RC3 sem mover o publisher. Revogação antes do consumo faz o lease falhar e nenhuma tag é criada.
 
-Um receipt aprovado futuro só é válido se for commit GitHub Web verificado por LEANDRO e vincular `v1.0.0`, o SHA exato do publisher e RC3 `7f741e10...`.
-
-## Consumo all-or-none
-
-O publisher não é mais movido durante consumo. A transação Git atômica usa a approval ref como autoridade mutável:
-
-1. `--force-with-lease` sobre o commit de aprovação em `release/v1.0.0-human-gate`;
-2. avanço dessa ref para commit-lock sem mudança de árvore;
-3. criação de `mcf-control/v1.0.0` no mesmo lock;
-4. criação de `v1.0.0` em RC3 se ausente.
-
-O lock registra `publisher_head`, `approval_commit`, `candidate_sha`, release e approval ref. Se a approval ref for alterada/revogada antes da transação, o lease falha e nenhuma tag é criada.
-
-## Recovery
-
-Recovery por autoridade consumida é permitido somente quando:
-
-- stable tag == RC3;
-- control-lock é válido;
-- rulesets obrigatórios estão ativos;
-- publisher branch live permanece exatamente no SHA codificado no lock e no workflow run.
-
-Depois do consumo, a approval ref pode mudar sem transferir autoridade a publisher posterior. Tentativa de recovery por SHA diferente do publisher aprovado falha.
-
-O modelo operacional previsto usa re-run do workflow run do mesmo publisher SHA. Nenhum HUMAN_GATE aprovado ou mutação stable foi usado nos testes reais desta correção.
+O lock vincula publisher SHA + approval commit + RC3. Recovery só é permitido para o mesmo publisher SHA e sob proteção server-side válida.
 
 ## Requirement antigo superseded
 
-O desenho anterior exigia `branch ruleset + file_path_restriction` para congelar `.github/workflows/**/*` e `scripts/**/*`. Esse requirement foi marcado **SUPERSEDED** após análise das capacidades GitHub aplicáveis ao repositório público atual: file-path restriction pertence a Push Rulesets e não é usado no desenho vigente.
-
-A propriedade de segurança não foi reduzida: o publisher inteiro será imutável server-side, enquanto o HUMAN_GATE foi separado em outra ref.
-
-Nenhum plano pago, mudança para private/internal ou organização foi introduzido como dependência.
+`branch ruleset + file_path_restriction` permanece registrado como **SUPERSEDED**. O desenho vigente usa whole-branch immutability do publisher e não depende de Push Ruleset, private/internal, plano pago ou organização.
 
 ## Rulesets mínimos ainda necessários
 
-1. Tag ruleset ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, regras `update` + `deletion`, zero bypass e zero exclusions.
-2. Branch ruleset ativo para `refs/heads/release/v1.0.0-stable-publish`, regras `update` + `deletion`, zero bypass e zero exclusions.
+1. **Tag ruleset:** `refs/tags/v1.0.0` + `refs/tags/mcf-control/v1.0.0`, active, `update` + `deletion`, **sem `creation`**, zero bypass/exclusions.
+2. **Publisher branch ruleset:** `refs/heads/release/v1.0.0-stable-publish`, active, `update` + `deletion`, zero bypass/exclusions.
 
-O repositório live continua sem rulesets. Portanto o gate deve permanecer vermelho/fail-closed antes de authorization/publication.
+A regra `creation` é explicitamente incompatível com o tag ruleset porque bloquearia a criação inicial das publication tags sem bypass.
 
-## Evidência técnica do redesenho
+GitHub live continua `repository_rulesets=[]`; o Stable Gate permanece fail-closed.
+
+## Evidência técnica após os dois P2 do review
 
 ```yaml
-reference_technical_head: 11d9b4c828e03ca49a55b1c7da0c0398b230739c
-stable_publication_gate_run: 31769606221
-receipt_tests: PASS_6
-ruleset_tests: PASS_10
+reference_technical_head: 6abb7c88e096c25c45d8457560907846affb57f6
+stable_publication_gate_run: 31770534991
+receipt_tests: PASS_10
+ruleset_tests: PASS_11
 atomic_git_real_tests: PASS_3
 state_machine_tests: PASS_20
-total_self_tests: PASS_39
+total_self_tests: PASS_44
 stable_gate_result: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
 authorize_publication: SKIPPED
 publish_stable: SKIPPED
 ```
 
-Os 39 testes incluem publisher correto/divergente, approval correto/stale/ausente/inválido, revogação antes do consumo, stable ausente/errada/exact-tag-only, control-lock parcial, falha após consumo, re-run após consumo, recovery com publisher diferente, rulesets ausentes, bypass/exclusions e Release recovery/NOOP.
-
-Esse snapshot é histórico técnico; o SHA terminal final e seus run IDs serão registrados externamente depois da reconciliação documental.
+Os novos testes rejeitam bytes finais divergentes tanto no receipt aprovado quanto no pai e rejeitam tag ruleset com `creation`.
 
 ## Findings materiais
 
 ### P1 — stable/control-lock refs
-Thread `PRRT_kwDOTnz-ks6ZHcv4`. Continua aberto até tag ruleset real e prova live.
+`PRRT_kwDOTnz-ks6ZHcv4`: aberto até tag ruleset real + prova live.
 
 ### P1 — publisher imutável
-Thread `PRRT_kwDOTnz-ks6ZJdRe`. O requirement antigo por paths foi superado. O novo desenho foi implementado/testado, mas o P1 continua aberto até review independente do HEAD exato + branch ruleset real do publisher + prova live.
+`PRRT_kwDOTnz-ks6ZJdRe`: redesigned/testado, pendente review terminal + publisher branch ruleset real/prova live.
 
-```yaml
-P0: 0
-P1: 2
-P2: 0
-```
+### P2 — exact receipt bytes
+`discussion_r3781129491`: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW`.
 
-## Evidência terminal sem autorreferência
+### P2 — tag ruleset creation
+`discussion_r3781129494`: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW`.
 
-O SHA terminal, runs e review do HEAD final serão registrados no PR #133/Issue #131 após congelamento. Este relatório não cria um commit adicional apenas para registrar seu próprio SHA.
+## Evidência terminal
 
-## Auditoria terminal
+O HEAD final, runs e review independente serão registrados externamente no PR #133/Issue #131. Após review limpo, os P2 podem ser formalmente resolvidos sem novo commit; P1 permanece diferente de zero até prova server-side real.
+
+## Auditoria
 
 ```yaml
 AUGUSTO_TRACE: NOT_RUN
@@ -126,10 +97,4 @@ LEO_GATE: NOT_RUN
 AUDIT: BLOCKED_BY_PUBLICATION_P1
 ```
 
-A auditoria multiagente só será renovada depois de `P0=0/P1=0`.
-
-## Próxima ação
-
-Concluir reconciliação documental, congelar HEAD, executar CI e re-run no mesmo SHA, obter revisão independente do HEAD exato e somente então retornar as instruções administrativas mínimas de rulesets. Nenhuma configuração humana é solicitada neste relatório.
-
-Nenhum conteúdo deste relatório autoriza merge, tag, Release, `latest` ou publicação.
+Nenhum conteúdo deste relatório autoriza merge, tag, Release, `latest`, ruleset ou publicação.
