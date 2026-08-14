@@ -5,7 +5,7 @@
 **Autoridade humana final:** LEANDRO  
 **Orquestração:** MESTRE  
 **Escopo:** visão macro do MCF desde a Fase Zero até a reestruturação e validação futura.  
-**Regra:** estados live devem sempre ser revalidados no GitHub; SHAs abaixo são referências do checkpoint, não substituem read-back live.
+**Regra:** estados live devem sempre ser revalidados no GitHub; SHAs abaixo são referências de boundaries/checkpoints e não substituem read-back live.
 
 ---
 
@@ -14,6 +14,10 @@
 ## FASE ZERO — Construir para aprender
 
 Objetivo: construir uma primeira geração suficientemente completa para descobrir empiricamente os problemas reais de desenvolvimento multiagente, memória, governança, execução, observabilidade, segurança e publicação.
+
+**Estado:** `COMPLETE_IN_MAIN`.
+
+Boundary terminal da missão `MCF-PHASE-0-FINALIZATION-001`: `main@b91823a947715e09d69c72999e2278523f2259be`, PR #136 merged, Issue #135 closed, P0/P1/P2 = 0/0/0, CI pós-merge PASS, RC3 terminal NOOP PASS e Production Health PASS.
 
 ## FASE 1 — Reestruturar com o que aprendemos
 
@@ -26,6 +30,8 @@ Nome curto:
 **MCF NextGen**
 
 Objetivo: preservar o que funciona, corrigir o que funciona mal, simplificar excessos, remover complexidade sem valor comprovado e preencher lacunas descobertas na Fase Zero.
+
+**Estado:** `ACTIVE_DISCOVERY`. Arquitetura final, protótipo e implementação continuam não autorizados.
 
 ## FASE 2 — Provar e generalizar
 
@@ -43,22 +49,22 @@ FASE ZERO — CONSTRUIR PARA APRENDER
 ├── Z0.3 Runtime executável                     ✅ implementado
 ├── Z0.4 Gates C / D / E                        ✅ concluídos
 ├── Z0.5 Production Readiness                   ✅ concluído
-├── Z0.6 Produção RC                            ✅ RC3 live
+├── Z0.6 Produção RC                            ✅ concluída
 ├── Z0.7 RC1 → RC2 → RC3                       ✅ concluído
-├── Z0.8 Boundary stable v1.0.0                 🔧 EM CORREÇÃO
-├── Z0.9 Reconciliação documental final         ⏸ preparada, aguardando stable
-└── Z0.10 Encerramento formal da Fase Zero      ⏳ pendente
+├── Z0.8 Boundary stable v1.0.0                 ✅ concluído
+├── Z0.9 Reconciliação documental final         ✅ concluída
+└── Z0.10 Encerramento formal da Fase Zero      ✅ COMPLETE_IN_MAIN
 
 FASE 1 — REESTRUTURAR COM O QUE APRENDEMOS
 │
-├── F1.1 Discovery guiado                       🔍 EM CURSO
+├── F1.1 Discovery guiado                       🔍 ACTIVE_DISCOVERY
 ├── F1.2 Questionário Q1–Q16                    🔍 Q1 concluída / Q2 próxima
 ├── F1.3 Consolidação das decisões              ⏳
 ├── F1.4 Arquitetura alvo                       ⏳
 ├── F1.5 Plano de migração                      ⏳
 ├── F1.6 Especificação executável               ⏳
 ├── F1.7 Entrega estruturada ao Codex/executor  ⏳
-├── F1.8 Implementação da reestruturação        ⏳
+├── F1.8 Implementação da reestruturação        ⏳ NÃO AUTORIZADA
 ├── F1.9 Validação técnica e regressão          ⏳
 └── F1.10 Release da geração reestruturada      ⏳
 
@@ -76,113 +82,76 @@ FASE 2 — PROVAR E GENERALIZAR
 
 ---
 
-# 3. Estado operacional live de referência no momento deste roadmap
+# 3. Boundary terminal da Fase Zero
 
-Referência temporal: 2026-08-14, sessão de discovery.
+Referência temporal: 2026-08-14. Revalidar estado mutável antes de afirmar que continua igual.
 
 ```yaml
-main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-rc3_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-main_equals_rc3: true
+phase_zero:
+  mission: MCF-PHASE-0-FINALIZATION-001
+  state: COMPLETE_IN_MAIN
+  audited_candidate: 47f083d304b989b397b9e740228817af0c588346
+  merge_main: b91823a947715e09d69c72999e2278523f2259be
+  pr_136: MERGED
+  issue_135: CLOSED
+  P0: 0
+  P1: 0
+  P2: 0
+  post_merge_ci: PASS
+  rc3_terminal_noop: PASS
+  production_health: PASS
 
-stable_v1_0_0:
-  tag: ABSENT_AT_LAST_READBACK
-  release: ABSENT_AT_LAST_READBACK
-  human_gate: NOT_APPROVED
-
-pr_133:
-  purpose: stable publication control plane
-  state: OPEN
-  merge: NOT_EXECUTED
-  observed_head: 5875c459128e849fa76b735fb33f0c45a8355b20
-  architecture: IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF
-  publication_P0: 0
-  publication_P1: 2
-  publication_P2: 0
-  ready_for_human_gate: false
-
-pr_134:
-  purpose: documentation reconciliation
-  state: OPEN
-  merge: NOT_EXECUTED
-  observed_head: c8d2696a419f0781f3417ff8fa95149f031f9654
-  dependency: wait_for_stable_boundary
-
-nextgen_planning_branch:
-  ref: planning/mcf-nextgen-discovery
-  purpose: isolated durable discovery/planning
+durable_release_identity:
+  stable_v1_0_0: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  rc3: 7f741e10d0e745a90c732e084400b11e3f5e6794
 ```
 
-### Interpretação
-
-A Fase Zero está tecnicamente madura, porém não encerrada. O ponto atual não é desenvolver novas funcionalidades no core; é fechar corretamente o boundary estável e reconciliar a documentação final sem contaminar RC3.
+A Fase Zero não possui blocker material remanescente no boundary terminal. Snapshots anteriores que mostrem stable ausente, PR #133 aberto, PR #134 pendente ou Fase Zero em fechamento são evidência histórica e não devem ser usados como estado atual.
 
 ---
 
-# 4. Boundary atual — stable v1.0.0
+# 4. Transição para a Fase 1
 
-A stable NÃO está autorizada.
-
-Invariantes:
+A conclusão da Fase Zero libera somente a continuidade do **Discovery e Planejamento** já aprovado como estágio de estudo.
 
 ```yaml
-LEANDRO: final_human_authority
-HUMAN_GATE: NOT_APPROVED
-MERGE_PR_133: NOT_AUTHORIZED
-STABLE_TAG: NOT_AUTHORIZED
-STABLE_RELEASE: NOT_AUTHORIZED
-LATEST_CHANGE: NOT_AUTHORIZED
+phase_1:
+  canonical_name: MCF — Fase 1: Reestruturação e Evolução Pós-v1
+  short_name: MCF NextGen
+  stage: ACTIVE_DISCOVERY
+  architecture_final_approved: false
+  prototype_authorized: false
+  implementation_authorized: false
+
+questionnaire:
+  total: 16
+  Q1: COMPLETED
+  Q2: NEXT_NOT_STARTED
 ```
 
-O control plane evoluiu para separar:
-
-- **publisher imutável**: código/workflow de publicação;
-- **approval ref**: receipt humano separado;
-- **stable/control-lock refs**: identidade publicada e lock de consumo.
-
-Os P1 restantes dependem de proteção server-side real e prova live. Nenhum P1 deve ser zerado por análise apenas documental.
+Não existe autorização implícita para reestruturar runtime, criar Project Capsule, model routing, DAG/paralelismo, Interaction Center ou qualquer outra hipótese NextGen.
 
 ---
 
-# 5. Reconciliação documental
+# 5. Reconciliação documental da transição
 
-Existe PR documental separado para reconciliar:
+A transição deve preservar a diferença entre histórico e estado atual:
 
-- `README.md`;
-- `CHANGELOG.md`;
-- docs/runtime;
-- governança;
-- auditorias;
-- índices;
-- histórico de releases;
-- estado atual;
-- classificação de `CURRENT_IMPLEMENTED`, `EXPERIMENTAL`, `UNDER_STUDY`, `HISTORICAL`, `SUPERSEDED`.
+- checkpoints 001/002 permanecem como evidência histórica de seus momentos;
+- `MCF-NEXTGEN-RESUME-CARD.md` é artefato atual e deve refletir o boundary terminal da Fase Zero;
+- este Master Roadmap é artefato atual e deve refletir a entrada em Fase 1 Discovery;
+- `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md` continua válido: Q1 concluída, Q2 não iniciada;
+- `docs/MCF-CURRENT-STATE.md` na `main` continua sendo mapa de capacidades implementadas e mantém NextGen como `UNDER_STUDY`; essa classificação é compatível com `ACTIVE_DISCOVERY` e não equivale a implementação.
 
-Esse PR não deve ser mergeado antes de o boundary stable ser fechado, pois sua integração moveria `main` além de RC3 e invalidaria o predicado de base atualmente qualificado.
-
-Fluxo:
-
-```text
-stable boundary
-   ↓
-fechamento/autorização quando cabível
-   ↓
-refrescar reconciliação documental contra estado final
-   ↓
-revalidar/revisar
-   ↓
-merge documental governado
-   ↓
-Fase Zero formalmente encerrada
-```
+Checkpoint canônico desta passagem: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md`.
 
 ---
 
 # 6. Discovery da Fase 1
 
-O discovery é separado da stable e não altera a v1 atual.
+O discovery é separado da implementação e não altera a v1 atual.
 
-Branch:
+Branch de planejamento:
 
 `planning/mcf-nextgen-discovery`
 
@@ -252,7 +221,7 @@ O questionário Q1–Q16 decidirá:
 
 # 9. Critérios para iniciar implementação da Fase 1
 
-A reestruturação grande NÃO deve começar apenas porque a stable foi publicada.
+A reestruturação grande NÃO deve começar apenas porque a Fase Zero foi concluída.
 
 Pré-condições:
 
@@ -327,26 +296,27 @@ Antes de encerrar qualquer sessão relevante:
 
 # 12. Ponto exato de retomada
 
-No momento de criação deste roadmap:
-
 ```yaml
 phase_zero:
-  current_boundary: STABLE_V1_0_0
-  state: CORRECTING
+  state: COMPLETE_IN_MAIN
+  terminal_main: b91823a947715e09d69c72999e2278523f2259be
 
 phase_one_discovery:
-  state: ACTIVE_BUT_PAUSED_BEFORE_Q2
+  state: ACTIVE_DISCOVERY
   last_completed_question: 1
   next_question: 2
+  Q2_started: false
 
-next_human_action_for_discovery: NONE_NOW
-next_operational_action: finish_current_stable_boundary_then_resume_questionnaire
+implementation_authorized: false
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q2
+next_operational_action: NONE_BEFORE_Q2_DECISION
 ```
 
-Um novo chat deve conseguir reconstruir o estado lendo:
+Um novo chat deve reconstruir o estado lendo:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-002.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este `MCF-MASTER-ROADMAP-001.md`;
-5. GitHub live para estado mutável.
+5. `docs/MCF-CURRENT-STATE.md` na `main`;
+6. GitHub/provider live para estado mutável.
