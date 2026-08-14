@@ -3,7 +3,7 @@
 **Missão:** `MCF-STABLE-RELEASE-001`  
 **Issue:** #131  
 **PR:** #133  
-**Macroestado:** `CORRECTING / BLOCKED_FOR_HUMAN_GATE`  
+**Macroestado:** `CORRECTING / BLOCKED_BY_SERVER_SIDE_PUBLICATION_PROTECTION`  
 **HUMAN_GATE:** NÃO APROVADO  
 **Stable `v1.0.0`:** NÃO PUBLICADA
 
@@ -11,67 +11,71 @@
 
 RC1, RC2 e RC3 permanecem preservadas. O candidato estável continua exclusivamente `v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794`. `main` permanece nesse mesmo SHA durante este boundary. PR #133 é somente control plane; nenhuma CI, review ou documentação constitui aprovação humana.
 
-## P1 vigente — HEAD-change window antes da primeira mutação
+## Proteção server-side obrigatória
 
-A fronteira de criação da identidade stable é uma transação Git remota única. O run autorizado envia, na mesma operação:
+Antes de qualquer autorização/publicação o GitHub deve comprovar simultaneamente:
 
-```text
-git push --atomic
-  --force-with-lease=refs/heads/release/v1.0.0-stable-publish:<HEAD_APROVADO>
-  <HEAD_APROVADO>:refs/heads/release/v1.0.0-stable-publish
-  <RC3_SHA>:refs/tags/v1.0.0
-```
+1. ruleset de tags ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com `update` + `deletion`, zero bypass e zero exclusions;
+2. ruleset do control branch `refs/heads/release/v1.0.0-stable-publish`, ativo, zero bypass/exclusions e impedindo mudanças em `.github/workflows/**/*` e `scripts/**/*`.
 
-O lease exige que o control-head remoto ainda seja exatamente o HEAD aprovado quando o servidor avalia a transação. A atomicidade impede resultado parcial: se o HEAD mudou, a criação da tag também falha. Um run cujo lease falhou não prossegue usando uma tag concorrente; um novo run é obrigatório.
+O GitHub live ainda retorna `rulesets=[]`; portanto `server_side_publication_protection=MISSING_BLOCKER` e o Stable Publication Gate deve falhar antes de `authorize-publication`/`publish-stable`.
 
-## P2 vigente — exact RC3 tag sem Release
-
-Se uma execução autorizada já estabeleceu a tag exata em RC3 e foi interrompida antes da Release, o validator aceita esse estado parcial como `AUTHORIZED_EXACT_TAG_ONLY_RECOVERY_STATE`. O `404` da Release é tratado como ausência esperada, não como erro de shell. Tag divergente e Release incompatível continuam fail-closed.
-
-## HUMAN_GATE
-
-Comentário mutável da Issue #131 não é autoridade. O receipt futuro é um commit GitHub Web verificado, exclusivo de `LEANDRO-HUMAN-GATE.yaml`, vinculado ao parent control-head e à identidade `leon337`/25374535. O estado atual permanece `NAO_APROVADO`.
-
-## Evidência técnica antes do review terminal
+## Findings materiais
 
 ```yaml
-technical_head: 2129a9a555974c7c89e7a78afc00493e7901aaf5
-publication_gate_run: 31753810306
-validation: PASS
-receipt_predicate_tests: PASS_4
-atomic_git_tests: PASS_2
-real_state_machine_tests: PASS_12
-total_self_tests: PASS_18
-authorize_publication: APPROVED_FALSE
-publish_stable: SKIPPED
-documentation_validation_run: 31753810224
-documentation_validation: PASS
-production_readiness_run: 31753810228
-production_readiness: PASS
-publication_P0_count: 0
-publication_P1_count: 1
-publication_P2_count: 1
-critical_findings: 0
-high_findings: 0
+P0: 0
+P1: 3
+P2: 3
+CRITICAL: 0
+HIGH: 0
 ```
 
-Os dois testes Git atômicos usam repositórios bare reais e provam: (1) HEAD inalterado permite criar a tag exata; (2) HEAD alterado imediatamente antes da transação faz o lease falhar e nenhuma tag é criada.
+### P1
+- `PRRT_kwDOTnz-ks6ZHcv4`: proteção real das stable/control-lock refs — `OPEN_EXTERNAL_CONFIGURATION_BLOCKER`.
+- `PRRT_kwDOTnz-ks6ZHxY7`: exclusions de ruleset rejeitadas fail-closed — `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+- `PRRT_kwDOTnz-ks6ZJdRe`: recovery consumido deve executar somente control-plane code protegido — `CORRECTED_TESTED_PENDING_SERVER_SIDE_CONFIGURATION_AND_INDEPENDENT_REVIEW`.
+
+### P2
+- `PRRT_kwDOTnz-ks6ZHxY8`: consumed authority é avaliada antes de metadados mutáveis — `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+- `PRRT_kwDOTnz-ks6ZHxY-`: Stable Gate falha sem proteção server-side — `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+- `PRRT_kwDOTnz-ks6ZJdRg`: NOOP/recovery valida Release completa e `latest` — `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+
+## Boundary de consumo
+
+A autorização direta futura é consumida por uma transação Git `--atomic` que avança o control branch para um commit-lock não-noop e estabelece as refs de publicação. A mesma transação usa `--force-with-lease` no HEAD aprovado. Após o consumo, a Release só pode ocorrer em execução posterior e depende das refs consumidas + proteções server-side reais.
+
+## Recovery
+
+Estados incompatíveis permanecem fail-closed. Exact RC3 tag sem Release pode entrar em adoção apenas sob autorização direta ainda válida e proteção server-side; refs consumidas/protegidas permitem recovery posterior. Existing Release só é NOOP se tag, target RC3, draft/prerelease, título, body e `releases/latest` forem todos exatos.
+
+## Evidência técnica atual
+
+```yaml
+technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
+stable_publication_gate_run: 31766055608
+stable_publication_gate: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
+receipt_tests: PASS_4
+server_side_protection_tests: PASS_9
+atomic_git_real_tests: PASS_3
+state_machine_tests: PASS_14
+self_tests_total: PASS_30
+authorize_publication: SKIPPED
+publish_stable: SKIPPED
+documentation_validation_run: 31766055514
+documentation_validation: PASS
+```
 
 ## Estado de gates
 
 ```yaml
-P0: 0
-P1: 1
-P2: 1
-CRITICAL: 0
-HIGH: 0
-P1_HEAD_CHANGE_WINDOW: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
-P2_EXACT_TAG_NO_RELEASE_RECOVERY: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
 AUDIT: BLOCKED_BY_PUBLICATION_P1
 LEO_GATE: BLOCKED_BY_PUBLICATION_P1
 HUMAN_GATE: NAO_APROVADO
+READY_FOR_HUMAN_GATE: false
 stable_v1_0_0: NAO_PUBLICADA
 publication_authorized: false
 ```
 
-Nenhum P1 será zerado e nenhum thread será resolvido antes da revisão independente do SHA final confirmar a eliminação dos cenários. Nenhum conteúdo deste documento autoriza merge, tag, Release, `latest` ou publicação.
+Nenhum P1/P2 será zerado e nenhum thread será resolvido antes da cadeia `ACHADO → CORREÇÃO → TESTE → EVIDÊNCIA → REVISÃO INDEPENDENTE DO HEAD EXATO → RESOLUÇÃO`.
+
+Nenhum conteúdo deste documento autoriza merge, tag, Release, `latest` ou publicação.
