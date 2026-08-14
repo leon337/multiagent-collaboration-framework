@@ -21,44 +21,46 @@ stable_release_boundary:
   mission: MCF-STABLE-RELEASE-001
   issue: 131
   pr: 133
-  state: CORRECTING_BLOCKED_FOR_HUMAN_GATE
+  state: CORRECTING_BLOCKED_BY_SERVER_SIDE_PUBLICATION_PROTECTION
   publication_P0_count: 0
-  publication_P1_count: 1
-  publication_P2_count: 1
+  publication_P1_count: 3
+  publication_P2_count: 3
   critical_findings: 0
   high_findings: 0
   audit: BLOCKED_BY_PUBLICATION_P1
   leo_gate: BLOCKED_BY_PUBLICATION_P1
   human_gate: NAO_APROVADO
   stable_v1_0_0: NAO_PUBLICADA
+  ready_for_human_gate: false
 ```
 
 ## Boundary stable em correção
 
-**P1:** a primeira mutação stable usa `git push --atomic` com `--force-with-lease` no control-head aprovado e criação da tag RC3 na mesma transação. Se o HEAD remoto mudou, a transação inteira falha.
+A proteção server-side atual exige simultaneamente:
 
-**P2:** tag `v1.0.0` exata em RC3 sem GitHub Release é um estado de recovery autorizado; o `404` da Release não encerra mais o validator.
+- ruleset de tags para `v1.0.0` e `mcf-control/v1.0.0`, protegendo update/deletion, sem bypass/exclusions;
+- ruleset do control branch impedindo mudanças em `.github/workflows/**/*` e `scripts/**/*`, também sem bypass/exclusions.
 
-Ambos estão `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+Sem essas configurações reais, o Stable Publication Gate falha antes dos jobs de autorização/publicação.
 
-## Evidência técnica antes do review terminal
+O fluxo técnico consome autorização futura por transação Git `--atomic` com avanço não-noop do control branch e refs de publicação. Recovery posterior só é aceito sob refs consumidas/protegidas. Existing Release só entra em NOOP quando tag, target RC3, draft/prerelease, título/body e `latest` forem exatos.
+
+## Evidência técnica atual
 
 ```yaml
-technical_head: 2129a9a555974c7c89e7a78afc00493e7901aaf5
-publication_gate_run: 31753810306
-receipt_predicate_tests: PASS_4
-atomic_git_tests: PASS_2
-real_state_machine_tests: PASS_12
-total_self_tests: PASS_18
-authorize_publication: APPROVED_FALSE
+technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
+publication_gate_run: 31766055608
+publication_gate: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
+receipt_tests: PASS_4
+server_side_protection_tests: PASS_9
+atomic_git_real_tests: PASS_3
+state_machine_tests: PASS_14
+total_self_tests: PASS_30
+authorize_publication: SKIPPED
 publication_job: SKIPPED
-documentation_validation_run: 31753810224
+documentation_validation_run: 31766055514
 documentation_validation: PASS
-production_readiness_run: 31753810228
-production_readiness: PASS
 ```
-
-Os testes incluem HEAD alterado imediatamente antes da primeira mutação, recovery de exact RC3 tag sem Release, tag divergente, Release incompatível, HUMAN_GATE ausente, receipt stale e App-mediated/invalid receipt.
 
 ## Auditoria terminal
 
@@ -70,11 +72,11 @@ LEO_GATE: NOT_RUN
 AUDIT: BLOCKED_BY_PUBLICATION_P1
 ```
 
-A renovação multiagente só ocorre depois de `publication_P0=0` e `publication_P1=0` confirmados por revisão independente.
+A renovação multiagente só ocorre depois de `publication_P0=0` e `publication_P1=0` confirmados por review independente e prova live da proteção server-side.
 
 ## Produção
 
-Produção permanece no lineage qualificado da RC3. A reconfirmação terminal de produção, monitor, RCs, stable e incidentes ocorrerá depois do review e da auditoria multiagente.
+Produção permanece no lineage qualificado da RC3. A reconfirmação terminal de produção, monitor, RCs, stable e incidentes ocorrerá somente depois de o publication boundary ficar sem P0/P1.
 
 ## Autorização vigente
 
@@ -85,6 +87,7 @@ TAG_v1_0_0: NAO_AUTORIZADA
 GITHUB_RELEASE_v1_0_0: NAO_AUTORIZADA
 LATEST_v1_0_0: NAO_AUTORIZADO
 stable_v1_0_0: NAO_PUBLICADA
+READY_FOR_HUMAN_GATE: false
 ```
 
 Nenhum conteúdo deste documento constitui autorização de publicação.
