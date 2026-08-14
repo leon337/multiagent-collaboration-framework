@@ -22,67 +22,51 @@ stable_release_boundary:
   mission: MCF-STABLE-RELEASE-001
   issue: 131
   pr: 133
-  macrostate: CORRECTING_BLOCKED_FOR_HUMAN_GATE
+  macrostate: CORRECTING_BLOCKED_BY_SERVER_SIDE_PUBLICATION_PROTECTION
   publication_P0_count: 0
-  publication_P1_count: 1
-  publication_P2_count: 1
+  publication_P1_count: 3
+  publication_P2_count: 3
   critical_findings: 0
   high_findings: 0
   audit: BLOCKED_BY_PUBLICATION_P1
   leo_gate: BLOCKED_BY_PUBLICATION_P1
   human_gate: NAO_APROVADO
   stable_v1_0_0: NAO_PUBLICADA
+  ready_for_human_gate: false
   publication_authorized: false
 ```
 
-RC1, RC2 e RC3 permanecem preservadas. PR #133 é somente control plane e não altera o candidato RC3.
+RC1, RC2 e RC3 permanecem preservadas. PR #133 é somente control plane e não altera o candidato RC3. PR #134 permanece aberto e não deve ser mergeado antes do fechamento deste boundary.
 
 ## Publication boundary
 
-### P1 — HEAD-change window
+A publicação permanece bloqueada por proteção server-side ainda ausente no GitHub live. O contrato atual exige:
 
-A primeira mutação stable usa uma transação Git remota `--atomic` com `--force-with-lease` no control-head aprovado e criação de `refs/tags/v1.0.0` em RC3 na mesma operação. Se o HEAD remoto mudou antes da transação, o lease falha e nenhuma tag é criada.
+- ruleset de tags ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com update/deletion, zero bypass e zero exclusions;
+- ruleset do control branch `refs/heads/release/v1.0.0-stable-publish`, zero bypass/exclusions e restrição de mudanças em `.github/workflows/**/*` e `scripts/**/*`.
 
-Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+O Stable Publication Gate falha fechado enquanto esse contrato não é comprovado. Os testes dedicados atuais cobrem receipt, rulesets, transação Git atômica, recovery e metadados completos da Release.
 
-### P2 — exact RC3 tag sem Release
-
-O validator aceita tag exata em RC3 + Release ausente como recovery autorizado. Tag divergente ou Release incompatível continuam fail-closed.
-
-Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
-
-Estado atual do receipt:
+### Evidência técnica atual
 
 ```yaml
-authority: LEANDRO
-state: NAO_APROVADO
-release: v1.0.0
-approved_control_head: null
-approval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED
-```
-
-### Evidência técnica antes do review terminal
-
-```yaml
-technical_head: 2129a9a555974c7c89e7a78afc00493e7901aaf5
-stable_publication_gate_run: 31753810306
-receipt_predicate_tests: PASS_4
-atomic_git_tests: PASS_2
-real_state_machine_tests: PASS_12
-total_self_tests: PASS_18
-authorize_publication: APPROVED_FALSE
+technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
+stable_publication_gate_run: 31766055608
+stable_publication_gate: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
+receipt_tests: PASS_4
+server_side_protection_tests: PASS_9
+atomic_git_real_tests: PASS_3
+state_machine_tests: PASS_14
+self_tests_total: PASS_30
+authorize_publication: SKIPPED
 publish_stable: SKIPPED
-documentation_validation_run: 31753810224
+documentation_validation_run: 31766055514
 documentation_validation: PASS
-production_readiness_run: 31753810228
-production_readiness: PASS
 ```
-
-P1 permanece aberto até revisão independente do HEAD final.
 
 ## Auditoria terminal
 
-Por governança, Augusto/Júlia/Emily/LÉO só serão renovados depois de `publication_P0=0` e `publication_P1=0`.
+Por governança, Augusto/Júlia/Emily/LÉO só serão renovados depois de `publication_P0=0` e `publication_P1=0` confirmados por revisão independente e prova live dos controles externos.
 
 ```yaml
 AUGUSTO_TRACE: NOT_RUN
@@ -94,7 +78,7 @@ AUDIT: BLOCKED_BY_PUBLICATION_P1
 
 ## Imutabilidade
 
-A imutabilidade das versões é uma regra de governança. Não é alegada proteção técnica absoluta sem configuração GitHub verificável correspondente.
+A imutabilidade das versões é uma regra de governança. Proteção técnica só é alegada quando houver configuração GitHub verificável correspondente; no boundary stable atual essa configuração ainda é blocker explícito.
 
 ## Skills executáveis
 
@@ -131,6 +115,7 @@ TAG_v1_0_0: NAO_AUTORIZADA
 GITHUB_RELEASE_v1_0_0: NAO_AUTORIZADA
 LATEST_v1_0_0: NAO_AUTORIZADO
 stable_v1_0_0: NAO_PUBLICADA
+READY_FOR_HUMAN_GATE: false
 ```
 
 Nenhum texto deste README constitui autorização de publicação.
