@@ -26,6 +26,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
+      PUBLISHER_BRANCH: release/v1.0.0-stable-publish
+      APPROVAL_BRANCH: release/v1.0.0-human-gate
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       RC1_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
@@ -35,8 +37,9 @@ jobs:
       CONTROL_LOCK_TAG: mcf-control/v1.0.0
       LEANDRO_GITHUB_LOGIN: leon337
       LEANDRO_GITHUB_ID: '25374535'
+      APPROVAL_FILE: LEANDRO-HUMAN-GATE.yaml
     steps:
-      - name: Prove pull_request workflow provenance
+      - name: Prove pull_request workflow provenance and publisher identity
         env:
           EVENT_NAME: ${{ github.event_name }}
           EVENT_REF: ${{ github.ref }}
@@ -49,8 +52,9 @@ jobs:
           test "$WORKFLOW_REF" = "$REPOSITORY/.github/workflows/mcf-v1-stable-publish-gate.yml@refs/pull/$PR_NUMBER/merge"
           test "$BASE_SHA" = "$RC3_SHA"
           test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')" = "$HEAD_SHA"
+          test "$(gh api "repos/$REPOSITORY/git/ref/heads/$PUBLISHER_BRANCH" --jq '.object.sha')" = "$HEAD_SHA"
 
-      - name: Checkout exact control-plane head
+      - name: Checkout exact immutable publisher head
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -85,18 +89,20 @@ jobs:
           echo "server_side_publication_protection=READY"
           cat /tmp/protection-state
 
-      - name: Confirm HUMAN_GATE is not silently inherited
+      - name: Confirm separate approval ref is not silently inherited
         run: |
           set -euo pipefail
           if bash scripts/mcf-stable-publication-boundary.sh verify-consumed-gate >/dev/null 2>&1; then
             echo human_gate_state=CONSUMED_PROTECTED
             exit 0
           fi
-          content="$(gh api "repos/$REPOSITORY/contents/artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml?ref=$HEAD_SHA" --jq '.content' | tr -d '\n' | base64 --decode)"
+
+          approval_sha="$(gh api "repos/$REPOSITORY/git/ref/heads/$APPROVAL_BRANCH" --jq '.object.sha')"
+          content="$(gh api "repos/$REPOSITORY/contents/$APPROVAL_FILE?ref=$approval_sha" --jq '.content' | tr -d '\n' | base64 --decode)"
           if grep -qx 'state: APROVADO' <<<"$content"; then
-            bash scripts/mcf-stable-publication-boundary.sh verify-human-gate
+            test "$(bash scripts/mcf-stable-publication-boundary.sh verify-human-gate)" = "$approval_sha"
           else
-            expected="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: v1.0.0\napproved_control_head: null\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n')"
+            expected="$(printf 'authority: LEANDRO\nstate: NAO_APROVADO\nrelease: v1.0.0\napproved_publisher_head: null\nrc3: %s\napproval_method: GITHUB_WEB_VERIFIED_COMMIT_REQUIRED\n' "$RC3_SHA")"
             test "$content" = "$expected"
             echo human_gate_state=NAO_APROVADO
           fi
@@ -122,9 +128,9 @@ jobs:
           if [[ -n "$stable_ref" && -z "$lock_ref" ]]; then
             test "$stable_ref" = "$RC3_SHA"
             if gh api "repos/$REPOSITORY/releases/tags/$STABLE_TAG" >/dev/null 2>&1; then exit 1; fi
-            bash scripts/mcf-stable-publication-boundary.sh verify-human-gate
+            bash scripts/mcf-stable-publication-boundary.sh verify-human-gate >/dev/null
             bash scripts/mcf-stable-publication-boundary.sh protection-status >/dev/null
-            echo stable_state=AUTHORIZED_EXACT_TAG_PENDING_LOCK_CONSUMPTION
+            echo stable_state=AUTHORIZED_EXACT_TAG_PENDING_APPROVAL_REF_CONSUMPTION
             exit 0
           fi
 
@@ -151,7 +157,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
-      CONTROL_BRANCH: release/v1.0.0-stable-publish
+      PUBLISHER_BRANCH: release/v1.0.0-stable-publish
+      APPROVAL_BRANCH: release/v1.0.0-human-gate
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       RC1_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
       RC2_SHA: d73d936a63cc9462a95bcf481f4b8e1d4b255719
@@ -160,6 +167,7 @@ jobs:
       CONTROL_LOCK_TAG: mcf-control/v1.0.0
       LEANDRO_GITHUB_LOGIN: leon337
       LEANDRO_GITHUB_ID: '25374535'
+      APPROVAL_FILE: LEANDRO-HUMAN-GATE.yaml
     outputs:
       approved: ${{ steps.gate.outputs.approved }}
     steps:
@@ -168,7 +176,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Select consumed or direct HUMAN_GATE authority
+      - name: Select consumed or direct authority from separate approval ref
         id: gate
         run: |
           set -euo pipefail
@@ -178,12 +186,12 @@ jobs:
             exit 0
           fi
 
-          content="$(gh api "repos/$REPOSITORY/contents/artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml?ref=$HEAD_SHA" --jq '.content' | tr -d '\n' | base64 --decode)"
+          approval_sha="$(gh api "repos/$REPOSITORY/git/ref/heads/$APPROVAL_BRANCH" --jq '.object.sha')"
+          content="$(gh api "repos/$REPOSITORY/contents/$APPROVAL_FILE?ref=$approval_sha" --jq '.content' | tr -d '\n' | base64 --decode)"
           if grep -qx 'state: NAO_APROVADO' <<<"$content"; then
             echo approved=false >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          test "$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" --jq '.title')" = '[HUMAN-APPROVED] release: publish MCF v1.0.0'
           test "$(bash scripts/mcf-stable-publication-boundary.sh verify-effective-gate)" = DIRECT_UNCONSUMED
           echo authority_state=DIRECT_UNCONSUMED
           echo approved=true >> "$GITHUB_OUTPUT"
@@ -199,7 +207,8 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
-      CONTROL_BRANCH: release/v1.0.0-stable-publish
+      PUBLISHER_BRANCH: release/v1.0.0-stable-publish
+      APPROVAL_BRANCH: release/v1.0.0-human-gate
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       RC1_SHA: 9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
       RC2_SHA: d73d936a63cc9462a95bcf481f4b8e1d4b255719
@@ -208,11 +217,12 @@ jobs:
       CONTROL_LOCK_TAG: mcf-control/v1.0.0
       LEANDRO_GITHUB_LOGIN: leon337
       LEANDRO_GITHUB_ID: '25374535'
+      APPROVAL_FILE: LEANDRO-HUMAN-GATE.yaml
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Consume authorization or recover protected stable publication
+      - name: Consume separate approval ref or recover with the same immutable publisher
         run: bash scripts/mcf-stable-publication-boundary.sh publish
