@@ -22,10 +22,10 @@ stable_release_boundary:
   mission: MCF-STABLE-RELEASE-001
   issue: 131
   pr: 133
-  macrostate: CORRECTING_BLOCKED_BY_SERVER_SIDE_PUBLICATION_PROTECTION
+  architecture: IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF
   publication_P0_count: 0
-  publication_P1_count: 3
-  publication_P2_count: 3
+  publication_P1_count: 2
+  publication_P2_count: 0
   critical_findings: 0
   high_findings: 0
   audit: BLOCKED_BY_PUBLICATION_P1
@@ -36,39 +36,45 @@ stable_release_boundary:
   publication_authorized: false
 ```
 
-RC1, RC2 e RC3 permanecem preservadas. PR #133 é somente control plane e não altera o candidato RC3. PR #134 permanece aberto e não deve ser mergeado antes do fechamento deste boundary.
+RC1, RC2 e RC3 permanecem preservadas. PR #133 é somente publication control plane e não altera o candidato RC3. PR #134 permanece aberto e não deve ser mergeado antes do fechamento deste boundary.
 
 ## Publication boundary
 
-A publicação permanece bloqueada por proteção server-side que precisa ser comprovada no GitHub live. O contrato exige:
+O desenho vigente separa o código de publicação do estado humano:
 
-- ruleset de tags ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com update/deletion, zero bypass e zero exclusions;
-- ruleset do control branch `refs/heads/release/v1.0.0-stable-publish`, zero bypass/exclusions e restrição de mudanças em `.github/workflows/**/*` e `scripts/**/*`.
+- **publisher:** `release/v1.0.0-stable-publish`;
+- **approval ref:** `release/v1.0.0-human-gate`;
+- **stable tag:** `v1.0.0`;
+- **control lock:** `mcf-control/v1.0.0`.
 
-Sem essas proteções, o Stable Publication Gate deve falhar antes de autorização/publicação.
+A approval ref foi criada com `NAO_APROVADO`; nenhum receipt aprovado foi criado.
 
-### Evidência terminal
+O publisher não recebe mais commits de HUMAN_GATE. A autorização futura será consumida all-or-none por `git push --atomic` + lease da approval ref, criando control-lock e stable tag RC3 sem mover o publisher. Recovery posterior só aceita o mesmo publisher SHA codificado no lock.
 
-O README não incorpora como “evidência atual” o SHA/runs de um commit anterior. O HEAD terminal exato, os run IDs desse SHA e o review independente devem ser registrados externamente no PR #133/Issue #131 depois que o HEAD for congelado. Isso evita o loop `commit para registrar SHA → novo SHA sem evidência`.
+### Proteção server-side ainda requerida
+
+- tag ruleset para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com `update` + `deletion`, zero bypass/exclusions;
+- branch ruleset para `refs/heads/release/v1.0.0-stable-publish`, protegendo a branch inteira com `update` + `deletion`, zero bypass/exclusions.
+
+O requirement anterior `branch ruleset + file_path_restriction` foi **SUPERSEDED** por incompatibilidade com o desenho aplicável ao repositório público atual. Não é exigido Push Ruleset, private/internal, plano pago ou organização.
+
+Sem os dois rulesets reais, o Stable Publication Gate deve falhar antes de autorização/publicação.
+
+### Evidência técnica do redesenho
 
 ```yaml
-terminal_evidence_source: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
-versioned_reference_snapshot_is_terminal: false
-```
-
-### REFERENCE_TECHNICAL_SNAPSHOT — não terminal
-
-```yaml
-reference_technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
-receipt_tests: PASS_4
-server_side_protection_tests: PASS_9
+reference_technical_head: 11d9b4c828e03ca49a55b1c7da0c0398b230739c
+stable_publication_gate_run: 31769606221
+receipt_tests: PASS_6
+ruleset_tests: PASS_10
 atomic_git_real_tests: PASS_3
-state_machine_tests: PASS_14
-self_tests_total: PASS_30
+state_machine_tests: PASS_20
+self_tests_total: PASS_39
 expected_behavior_without_required_protection: FAIL_CLOSED_BEFORE_AUTHORIZATION
+publish_stable: SKIPPED
 ```
 
-Este snapshot demonstra o desenho técnico, mas não substitui CI/review do próximo HEAD congelado.
+Esse snapshot não substitui CI/review do HEAD terminal final. O HEAD exato, run IDs e review independente são registrados externamente no PR #133/Issue #131 depois de congelar o HEAD, evitando loop autorreferente.
 
 ## Auditoria terminal
 
@@ -84,7 +90,7 @@ AUDIT: BLOCKED_BY_PUBLICATION_P1
 
 ## Imutabilidade
 
-A imutabilidade das versões é uma regra de governança. Proteção técnica só é alegada quando houver configuração GitHub verificável correspondente; no boundary stable atual essa configuração permanece um blocker explícito até prova live.
+A imutabilidade das versões e do publisher qualificado é regra de governança apoiada por proteção técnica somente quando a configuração GitHub live for comprovada. Enquanto `repository_rulesets=[]`, os P1 externos permanecem abertos.
 
 ## Skills executáveis
 
