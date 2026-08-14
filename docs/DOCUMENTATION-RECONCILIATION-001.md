@@ -84,7 +84,7 @@ Domínios auditados por árvore, índice e/ou leitura dirigida das fontes que de
 - `apps/rede-social-agentes/` e runtime em `apps/server/src/mcf-runtime/`;
 - `skills/registry.yaml`;
 - `docs/protocols/`;
-- `docs/decisions/`;
+- `docs/decisions/`, incluindo headers de status das decisões canônicas;
 - `docs/agentes/` e `docs/matrices/`;
 - `docs/governanca/`;
 - `docs/auditoria/` e `docs/audits/`;
@@ -95,7 +95,7 @@ Domínios auditados por árvore, índice e/ou leitura dirigida das fontes que de
 - `docs/proposals/` e a branch NextGen;
 - Issue #131, PR #133 e publication evidence da stable.
 
-A auditoria não reescreve cada evidência histórica: documentos de boundary permanecem preservados quando seu estado antigo era correto na data de emissão.
+A auditoria não reescreve cada evidência histórica: documentos de boundary permanecem preservados quando seu estado antigo era correto na data de emissão. Quando um documento canônico antigo contém um status que pode ser lido como atual, ele deve receber classificação terminal/histórica explícita sem destruir o estado original.
 
 ## 5. Matriz de drift principal
 
@@ -107,6 +107,7 @@ A auditoria não reescreve cada evidência histórica: documentos de boundary pe
 | `CHANGELOG.md` | stable ainda gated | publication runs + Release live | milestone `v1.0.0` adicionado | `HISTORICAL` + milestone atual |
 | `docs/README.md` | stable ainda não publicada | Release `MCF v1.0.0` latest | índice reconciliado | `SUPERSEDED` |
 | `apps/rede-social-agentes/README.md` | stable `NOT_PUBLISHED` | stable publicada | snapshot host atualizado | `SUPERSEDED` |
+| `docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md` | header canônico ainda dizia `Status: EM EXECUÇÃO` após publicação | stable publicada; Issue #131 closed/completed; PR #133 closed/unmerged; HUMAN_GATE consumido/protegido | `GOV-DOC-P1-001`: classificação terminal adicionada, resultado terminal registrado e estado de entrada preservado como histórico | `SUPERSEDED` → `HISTORICAL AFTER STABLE PUBLICATION` |
 | Issue #131 | boundary ativo | `CLOSED/COMPLETED` | referência atualizada | `HISTORICAL` |
 | PR #133 | control plane aberto | `CLOSED/UNMERGED` | referência atualizada | `HISTORICAL` |
 | HUMAN_GATE | `NOT_APPROVED` no snapshot pré-stable | approval `786d2535...`, lock `22548bed...` | estado atual = `CONSUMED_PROTECTED` | `SUPERSEDED` |
@@ -139,6 +140,10 @@ production: COMPLETE
 rc3: PRESERVED_PRERELEASE_HISTORICAL
 stable_v1_0_0: PUBLISHED_CURRENT
 ```
+
+### GOV-DOC-P1-001
+
+A auditoria de governança do MESTRE no comentário `5291207799` encontrou que DEC-064 continuava apresentando `EM EXECUÇÃO` como status atual. A correção é documental e não destrutiva: a decisão original, suas regras e seu estado de entrada permanecem preservados, enquanto o topo da decisão agora declara `CONCLUÍDA — HISTORICAL AFTER STABLE PUBLICATION` e registra o resultado terminal verificável.
 
 ## 7. CHANGELOG
 
@@ -176,11 +181,12 @@ reason: roles_executed_within_same_ChatGPT_context_family
 required_for_stronger_claim: separated_sessions_contexts_or_instances
 ```
 
-## 12. Itens deliberadamente não reescritos
+## 12. Itens deliberadamente preservados
 
 - releases/artefatos RC1/RC2/RC3: preservados como identidades/evidência histórica;
 - PRFs/checkpoints antigos: preservados para rastreabilidade;
 - decisões de entry state: preservadas quando descrevem corretamente o momento de decisão;
+- DEC-064: corpo e estado de entrada originais preservados, com classificação terminal adicionada para impedir leitura stale como estado atual;
 - contratos de agentes: não reescritos em massa quando não havia drift funcional comprovado;
 - publication workflows, rulesets, tags, Release stable e runtime: somente lidos como evidência, nunca alterados por esta missão.
 
@@ -189,10 +195,10 @@ required_for_stronger_claim: separated_sessions_contexts_or_instances
 Antes de considerar esta reconciliação pronta para auditoria de governança:
 
 1. validar o HEAD documental final em CI;
-2. executar stale-current-state scan, aceitando ocorrências pré-stable somente quando explicitamente `HISTORICAL`;
+2. executar stale-current-state scan, incluindo headers de status das decisões canônicas e aceitando ocorrências pré-stable somente quando explicitamente `HISTORICAL`;
 3. provar que o diff permanece documentation-only;
 4. reconfirmar live `main`, stable tag, Release/latest, Issue #131 e PR #133;
 5. solicitar revisão independente do SHA exato;
 6. corrigir qualquer finding material e revalidar;
-7. atualizar checkpoint/report terminal;
+7. registrar o ciclo `GOV-DOC-P1-001` no checkpoint/report;
 8. não mergear PR #134 até decisão posterior do MESTRE.
