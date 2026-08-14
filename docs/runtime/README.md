@@ -46,24 +46,31 @@ runtime_line: MCF-RUNTIME-006
 skills_registered: 16
 skills_executable: 16
 skills_documental_only: 0
-gate_c_real_provider_write: COMPLETE
-gate_d_staging_deploy: COMPLETE
-gate_e_release_candidate: COMPLETE
-production_readiness: COMPLETE
-production_status: COMPLETE
-rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
-stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
-stable_release: MCF v1.0.0
-latest: v1.0.0
-human_gate: CONSUMED_PROTECTED
-pre_merge_baseline_main: 7f741e10d0e745a90c732e084400b11e3f5e6794
-main_sha: READ_GITHUB_LIVE
-production_reported_commit: READ_PROVIDER_LIVE
+historical_boundaries:
+  gate_c_real_provider_write: COMPLETE
+  gate_d_staging_deploy: COMPLETE
+  gate_e_release_candidate: COMPLETE
+  production_readiness: COMPLETE
+durable_release_identity:
+  rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+  stable_v1_0_0: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
+live_github_state:
+  main_sha: READ_GITHUB_LIVE
+  release_metadata: READ_GITHUB_LIVE
+  latest: READ_GITHUB_LIVE
+live_provider_state:
+  production_health: READ_PROVIDER_LIVE
+  production_reported_commit: READ_PROVIDER_LIVE
+pre_merge_snapshot_2026_08_14:
+  main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  latest: v1.0.0
+  human_gate: CONSUMED_PROTECTED
+  production_boundary: COMPLETE
 ```
 
-RC3/stable em `7f741e10…` são fatos de release duráveis. O mesmo SHA associado a `main` é somente o baseline pré-integração desta missão. `main` pode avançar com a integração documental.
+RC3/stable em `7f741e10…` são identidades de release duráveis dentro do publication boundary. O mesmo SHA associado a `main` é somente snapshot pré-integração.
 
-A árvore de código da aplicação/runtime deste PR permanece inalterada em relação ao baseline stable; ainda assim, como Render acompanha `main`, o commit reportado por produção pode avançar após merge apenas documental. O deployed SHA exato deve ser relido no provider após integração.
+`latest`, Release metadata, branch head e provider health/commit são estados voláteis e devem ser lidos live. A árvore de código da aplicação/runtime deste PR permanece inalterada em relação ao baseline stable; ainda assim, como Render acompanha `main`, o commit reportado por produção pode avançar após merge apenas documental.
 
 ## Skills executáveis
 
@@ -101,7 +108,7 @@ O registro atual não contém skill exclusivamente documental.
 
 ## Observabilidade
 
-O RUNTIME-006 integrou observabilidade de missões bloqueadas, com causa, fase/agente, evidência, próxima ação/recovery e persistência no ledger. Em produção, um workflow recorrente monitora `/health/ready` e mantém evidência operacional externa.
+O RUNTIME-006 integrou observabilidade de missões bloqueadas, com causa, fase/agente, evidência, próxima ação/recovery e persistência no ledger. Em produção, um workflow recorrente monitora `/health/ready` e mantém evidência operacional externa. O estado atual desse monitor deve ser consultado live.
 
 ## MCF-CLOSE-PHASE
 
@@ -136,7 +143,8 @@ Por isso, trechos antigos como `production: BLOCKED`, `gate_c: NOT_AUTHORIZED`, 
 - skills restantes: `artifacts/phases/PHASE-006-LOT-4-*/`;
 - Gate E: `artifacts/phases/PHASE-006-GATE-E-RELEASE-CANDIDATE/`;
 - releases históricas: `docs/releases/MCF-v1.0.0-RC1.md`, RC2 e RC3;
-- stable atual: GitHub Release `MCF v1.0.0` / tag `v1.0.0@7f741e10...`;
+- stable identity: tag `v1.0.0@7f741e10...`;
+- mutable Release/latest state: GitHub live;
 - production readiness: `docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md`;
 - stable qualification: `docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md`.
 
