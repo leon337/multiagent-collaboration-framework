@@ -40,14 +40,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
           RC3_TAG: v1.0.0-RC3
+          RC3_SHA: 7f741e10d0e745a90c732e084400b11e3f5e6794
           TARGET_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           existing_ref="$(git ls-remote origin "refs/tags/$RC3_TAG" | cut -f1)"
 
           if [ -n "$existing_ref" ]; then
-            test "$existing_ref" = "$TARGET_SHA"
+            test "$existing_ref" = "$RC3_SHA"
             gh release view "$RC3_TAG" --repo "$REPOSITORY" --json isPrerelease,tagName --jq 'select(.isPrerelease == true and .tagName == "v1.0.0-RC3") | .tagName' | grep -qx "$RC3_TAG"
-            echo "RC3 already exists at the exact qualified SHA; immutable NOOP."
+            echo "RC3 already exists at its canonical qualified SHA; immutable NOOP for later main readiness runs."
             exit 0
           fi
 
