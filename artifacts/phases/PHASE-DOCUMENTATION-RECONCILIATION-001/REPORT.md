@@ -4,59 +4,76 @@ Execution report: `docs/DOCUMENTATION-RECONCILIATION-001.md`.
 
 ## Current execution state
 
-- live post-stable release facts captured;
-- PR #134 body and governance comments read before correction;
-- terminal state of `MCF-STABLE-RELEASE-001`, Issue #131 and PR #133 preserved;
-- stable `v1.0.0` verified at `7f741e10d0e745a90c732e084400b11e3f5e6794`;
-- Release `MCF v1.0.0` remains non-draft, non-prerelease and `latest`;
-- HUMAN_GATE remains `CONSUMED_PROTECTED`;
-- approval commit `786d2535b70584762b45ae0512d43872d492b715` and consumption lock `22548bed68df93819a65d26027da353eeb0f8285` remain release evidence;
-- Issue #131 remains `CLOSED/COMPLETED`;
-- PR #133 remains `CLOSED/UNMERGED`;
+- durable RC3/stable identity preserved at `7f741e10d0e745a90c732e084400b11e3f5e6794`;
+- publication approval/lock evidence preserved;
+- `main`, `latest`, Issue/PR state, mutable Release metadata and provider state are explicitly live-read values;
+- values verified during 2026-08-14 are preserved only as dated snapshots where relevant;
 - NextGen remains `UNDER_STUDY`;
 - no runtime/source/workflow/ruleset/tag/Release/Render-config mutation performed by this mission.
 
-## Governance correction cycle — GOV-DOC-P1-001
+## GOV-DOC-P1-001
 
-MESTRE governance audit comment `5291207799` reviewed exact HEAD `a5d05fc40799203af1a1ac1b18c1c84135dc0de8` and returned `BLOCKED / CORRECTION_REQUIRED` because DEC-064 still exposed `Status: EM EXECUÇÃO` after stable publication.
+MESTRE governance audit comment `5291207799` found DEC-064 still exposing `Status: EM EXECUÇÃO` after stable publication.
 
-Correction applied documentation-only:
-
+Correction:
 - DEC-064 declares `CONCLUÍDA — HISTORICAL AFTER STABLE PUBLICATION`;
 - original decision/rules/entry-state remain historical;
 - terminal stable outcome is recorded.
 
-`GOV-DOC-P1-001` is resolved.
+State: `RESOLVED`.
 
-## Governance correction cycle — GOV-DOC-P1-002
+## GOV-DOC-P1-002
 
-MESTRE governance re-audit comment `5291403832` reviewed exact HEAD `1f2639935df6694cf33afe051d54f059ef4b1b15` and found a distinct P1: current-state docs bound the volatile branch/deploy state to `7f741e10…`, causing the documentation to become stale by its own eventual integration.
+MESTRE governance re-audit comment `5291403832` found that current-state docs bound volatile branch/deploy state to `7f741e10…`, so the documentation would become stale through its own eventual integration.
 
-Correction applied documentation-only:
+Correction:
+- RC3/stable identity remains fixed at `7f741e10…`;
+- `main@7f741e10…` is only pre-merge snapshot;
+- current `main` = `READ_GITHUB_LIVE`;
+- production health/commit = `READ_PROVIDER_LIVE`;
+- documentation records that a docs-only merge may advance branch/deploy commit while application/runtime source remains unchanged.
 
-- `v1.0.0@7f741e10…` and RC3 at the same SHA remain immutable release facts;
-- `main@7f741e10…` is now explicitly `pre_merge_baseline_main`, not durable current state;
-- current `main` must be read from GitHub live;
-- production remains complete, but `production_reported_commit` must be read from provider live;
-- documentation states that a documentation-only merge may advance branch/deploy commit because Render follows `main`, while application/runtime source remains unchanged by this PR;
-- root README, current-state map, docs index, runtime README, reconciliation doc, checkpoint/report and host-application state semantics are aligned;
-- stale/current-state validation is extended to exact `main` and production SHA assertions that would self-invalidate on integration.
+## Fresh Codex P2 on corrected HEAD 85f9802066
 
-This correction does not alter runtime, application source, publication workflows, rulesets, tags, Releases, RC identities, stable identity or Render configuration.
+Fresh review of `85f980206655a7d93fc080885f737bfdd4528225` opened thread `PRRT_kwDOTnz-ks6ZOkyE`:
+
+- `latest`, Issue #131 state and PR #133 state were still grouped under “fatos duráveis” in a current-state index;
+- those values can change through normal future GitHub operations.
+
+Correction applied across current-state surfaces:
+
+```yaml
+durable_release_identity:
+  rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+  stable: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
+live_github_state:
+  main: READ_GITHUB_LIVE
+  release_metadata: READ_GITHUB_LIVE
+  latest: READ_GITHUB_LIVE
+  issue_131_state: READ_GITHUB_LIVE
+  pr_133_state: READ_GITHUB_LIVE
+live_provider_state:
+  production_health: READ_PROVIDER_LIVE
+  production_reported_commit: READ_PROVIDER_LIVE
+```
+
+The audit-time values remain only as `pre_merge_snapshot_2026_08_14` or historical evidence. The P2 thread is not to be resolved until the new exact HEAD passes CI, extended stale/mutable-state scan and a fresh independent review.
 
 ## Required post-correction evidence
 
-Before returning to MESTRE for governance re-audit, the corrected HEAD must be frozen and independently revalidated with:
+Before returning to MESTRE:
 
-1. Documentation Validation PASS;
-2. Rede Social Foundation PASS;
-3. Production Readiness PASS;
-4. stale/current-state scan including canonical decision status headers;
-5. extended scan for exact `main`/production SHA assertions that self-invalidate on merge;
-6. documentation-only diff proof;
-7. live stable-boundary read-back, treating current `main` as a momentary live fact only;
-8. fresh independent Codex review on the exact corrected HEAD;
-9. PR #134 remaining DRAFT/OPEN/UNMERGED.
+1. freeze the new exact HEAD;
+2. Documentation Validation PASS;
+3. Rede Social Foundation PASS;
+4. Production Readiness PASS;
+5. stale/current-state scan including canonical headers;
+6. scan for current fixed values of `main`, deploy commit, `latest`, Issue/PR state and mutable Release metadata;
+7. documentation-only diff proof;
+8. live read-back of stable identity and separate momentary GitHub status;
+9. fresh independent Codex review on the exact HEAD;
+10. resolve the P2 thread only after the complete correction chain;
+11. keep PR #134 DRAFT/OPEN/UNMERGED.
 
 ## Merge control
 
@@ -64,4 +81,4 @@ No merge is authorized. `render.yaml` follows `main` with `autoDeployTrigger: ch
 
 ## Evidence model
 
-The versioned checkpoint/report do not embed future self-referential terminal CI or review receipts. Those receipts are recorded in PR #134 only after the final corrected documentation HEAD is frozen, preventing a receipt-only commit from invalidating the exact reviewed SHA.
+Versioned checkpoint/report do not embed future self-referential terminal CI/review receipts. Terminal receipts are recorded in PR #134 after the final HEAD is frozen, so the reviewed SHA is not invalidated by a receipt-only commit.
