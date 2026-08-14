@@ -46,6 +46,8 @@ authority: LEANDRO_ONLY
 
 O receipt aprovado futuro deve conter literalmente release `v1.0.0`, `approved_publisher_head` igual ao SHA terminal do publisher e RC3 `7f741e10...`, em commit GitHub Web verificado de LEANDRO. Nenhum receipt aprovado foi criado nesta correção.
 
+A validação do receipt compara os bytes exatos do blob GitHub via Base64, inclusive newline terminal e linhas em branco finais; conteúdo normalizado não é aceito como equivalente.
+
 ### Consumo da autoridade
 
 A autorização direta é consumida por uma única transação Git `--atomic` que:
@@ -60,48 +62,27 @@ Revogação/alteração da approval ref antes do consumo invalida o lease e abor
 
 ### Recovery
 
-Após consumo, recovery exige simultaneamente:
-
-- stable tag exata em RC3;
-- control-lock válido;
-- publisher branch live igual ao `HEAD_SHA` codificado no lock;
-- proteção server-side real das tags e do publisher branch;
-- mesmo publisher SHA do run/re-run.
-
-Recovery não depende da approval ref continuar no mesmo estado após consumo. Publisher SHA divergente é fail-closed.
+Após consumo, recovery exige simultaneamente stable tag exata em RC3, control-lock válido, publisher branch live igual ao `HEAD_SHA` codificado no lock, proteção server-side real das tags e do publisher branch e o mesmo publisher SHA do run/re-run. Publisher SHA divergente é fail-closed.
 
 ## Redesenho de capacidade GitHub
 
-O requirement anterior `branch ruleset + file_path_restriction` foi **SUPERSEDED**. A análise de capacidade demonstrou que `Restrict file paths` pertence a Push Rulesets e não é o mecanismo aplicável ao repositório público atual.
+O requirement anterior `branch ruleset + file_path_restriction` foi **SUPERSEDED**. `Restrict file paths` pertence a Push Rulesets e não é o mecanismo aplicável ao repositório público atual.
 
-A propriedade de segurança foi preservada por separação de responsabilidades:
-
-- publisher code fica em branch inteira imutável;
-- HUMAN_GATE fica em approval ref separada e intencionalmente mutável até o consumo;
-- recovery é vinculado ao publisher SHA registrado no lock.
-
-Nenhuma mudança para private/internal, plano pago ou organização é requisito deste desenho.
+A propriedade de segurança foi preservada por separação de responsabilidades: publisher code em branch inteira imutável, HUMAN_GATE em approval ref separada e recovery vinculado ao publisher SHA registrado no lock. Nenhuma mudança para private/internal, plano pago ou organização é requisito deste desenho.
 
 ## Proteção server-side mínima ainda necessária
 
 ### 1. Tag ruleset
 
-Aplicável explicitamente a:
+Aplicável explicitamente a `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`.
 
-- `refs/tags/v1.0.0`;
-- `refs/tags/mcf-control/v1.0.0`.
-
-Contrato: `target=tag`, `enforcement=active`, regras `update` + `deletion`, `bypass_actors=[]` e `conditions.ref_name.exclude=[]`.
+Contrato: `target=tag`, `enforcement=active`, regras `update` + `deletion`, **sem regra `creation`**, `bypass_actors=[]` e `conditions.ref_name.exclude=[]`. A ausência de `creation` é necessária para permitir a criação inicial atômica das duas tags sem bypass.
 
 ### 2. Publisher branch ruleset
 
-Aplicável explicitamente a:
+Aplicável explicitamente a `refs/heads/release/v1.0.0-stable-publish`.
 
-- `refs/heads/release/v1.0.0-stable-publish`.
-
-Contrato: `target=branch`, `enforcement=active`, regras `update` + `deletion`, `bypass_actors=[]` e `conditions.ref_name.exclude=[]`.
-
-Não há requirement de `file_path_restriction`.
+Contrato: `target=branch`, `enforcement=active`, regras `update` + `deletion`, `bypass_actors=[]` e `conditions.ref_name.exclude=[]`. Não há requirement de `file_path_restriction`.
 
 O GitHub live permanece com `repository_rulesets=[]`; portanto os dois P1 materiais continuam abertos e o Stable Publication Gate deve falhar antes de authorization/publication.
 
@@ -110,37 +91,41 @@ O GitHub live permanece com `repository_rulesets=[]`; portanto os dois P1 materi
 Snapshot técnico executável anterior ao commit documental final:
 
 ```yaml
-reference_technical_head: 11d9b4c828e03ca49a55b1c7da0c0398b230739c
-stable_publication_gate_run: 31769606221
-receipt_tests: PASS_6
-ruleset_tests: PASS_10
+reference_technical_head: 6abb7c88e096c25c45d8457560907846affb57f6
+stable_publication_gate_run: 31770534991
+receipt_tests: PASS_10
+ruleset_tests: PASS_11
 atomic_git_real_tests: PASS_3
 state_machine_tests: PASS_20
-self_tests_total: PASS_39
+self_tests_total: PASS_44
 expected_gate_result_without_rulesets: FAIL_CLOSED
 publish_stable: SKIPPED
 ```
 
-Os testes cobrem publisher correto/divergente, approval correto/stale/ausente/inválido, revogação antes do consumo, stable ausente/divergente/exact-tag-only, control-lock parcial, recovery/re-run no mesmo publisher, recovery com publisher diferente, proteção ausente, bypass/exclusion, Release incompatível e NOOP exato.
+Além dos cenários anteriores, os testes rejeitam receipt sem newline terminal, receipt com linha em branco extra, pai do receipt com bytes finais divergentes e tag ruleset contendo `creation`.
 
 Esse bloco é `REFERENCE_TECHNICAL_SNAPSHOT`, não substitui CI/review do HEAD documental final.
 
 ## Findings materiais vigentes
 
 ### P1 — proteção server-side das refs de publicação
-
 Thread `PRRT_kwDOTnz-ks6ZHcv4`. Estado: `OPEN_EXTERNAL_CONFIGURATION_BLOCKER` até ruleset real das tags e prova live.
 
 ### P1 — publisher imutável server-side
-
 Thread `PRRT_kwDOTnz-ks6ZJdRe`. O antigo subdesenho com path restrictions foi superado. A correção atual usa publisher branch inteira imutável + approval ref separada. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_AND_SERVER_SIDE_PROOF`.
+
+### P2 — bytes exatos do receipt
+Review thread do finding `discussion_r3781129491`. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW`.
+
+### P2 — tag ruleset não pode bloquear creation
+Review thread do finding `discussion_r3781129494`. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW`.
 
 ## Estado de findings
 
 ```yaml
 publication_P0_count: 0
 publication_P1_count: 2
-publication_P2_count: 0
+publication_P2_count: 2
 critical_findings: 0
 high_findings: 0
 AUDIT: BLOCKED_BY_PUBLICATION_P1
@@ -158,6 +143,6 @@ Nenhum finding será encerrado por edição. Permanece obrigatório: `ACHADO →
 
 ## Próxima ação
 
-Congelar o HEAD documental, executar Stable Publication Gate, Documentation Validation e Production Readiness nesse SHA, testar re-run no mesmo publisher SHA, obter review independente exato e determinar as instruções administrativas mínimas dos dois rulesets. Não pedir configuração a LEANDRO antes dessa cadeia. Mesmo com review limpo, `P1` não chega a zero sem prova server-side real.
+Congelar o HEAD documental, executar Stable Publication Gate, Documentation Validation e Production Readiness nesse SHA, reexecutar o Stable Gate no mesmo publisher SHA, obter review independente exato e somente então preparar as instruções administrativas mínimas dos dois rulesets. Não pedir configuração a LEANDRO antes dessa cadeia. Mesmo com review limpo, `P1` não chega a zero sem prova server-side real.
 
 Nenhum conteúdo deste PRF autoriza merge, tag, Release, `latest` ou publicação.
