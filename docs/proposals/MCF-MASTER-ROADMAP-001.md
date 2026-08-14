@@ -112,7 +112,7 @@ A Fase Zero não possui blocker material remanescente no boundary terminal. Snap
 
 # 4. Transição para a Fase 1
 
-A conclusão da Fase Zero libera somente a continuidade do **Discovery e Planejamento** já aprovado como estágio de estudo.
+A conclusão da Fase Zero permite retomar o **Discovery e Planejamento** já previsto, mas não concede autoridade técnica adicional.
 
 ```yaml
 phase_1:
@@ -141,7 +141,9 @@ A transição deve preservar a diferença entre histórico e estado atual:
 - `MCF-NEXTGEN-RESUME-CARD.md` é artefato atual e deve refletir o boundary terminal da Fase Zero;
 - este Master Roadmap é artefato atual e deve refletir a entrada em Fase 1 Discovery;
 - `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md` continua válido: Q1 concluída, Q2 não iniciada;
-- `docs/MCF-CURRENT-STATE.md` na `main` continua sendo mapa de capacidades implementadas e mantém NextGen como `UNDER_STUDY`; essa classificação é compatível com `ACTIVE_DISCOVERY` e não equivale a implementação.
+- o mapa de capacidades implementadas fica fora desta branch de discovery e deve ser consultado explicitamente na `main`, por exemplo em `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md`, ou na versão live posterior da `main`.
+
+A referência ao arquivo da `main` é externa ao boundary deste HEAD e não implica que `docs/MCF-CURRENT-STATE.md` exista nesta branch.
 
 Checkpoint canônico desta passagem: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md`.
 
@@ -318,5 +320,5 @@ Um novo chat deve reconstruir o estado lendo:
 2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este `MCF-MASTER-ROADMAP-001.md`;
-5. `docs/MCF-CURRENT-STATE.md` na `main`;
-6. GitHub/provider live para estado mutável.
+5. GitHub/provider live para estado mutável;
+6. quando precisar do mapa implementado, ler explicitamente `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md` ou a versão live da `main`.
