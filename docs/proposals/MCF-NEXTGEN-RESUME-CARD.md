@@ -32,7 +32,9 @@ Q2 é:
 
 > **O que exatamente significa “não perder o contexto de um projeto”?**
 
-## Estado live observado no checkpoint
+## Estado live observado no checkpoint terminal
+
+Referência: 2026-08-14. Revalidar antes de afirmar estado corrente em nova sessão.
 
 ```yaml
 main: 7f741e10d0e745a90c732e084400b11e3f5e6794
@@ -40,7 +42,7 @@ RC3: 7f741e10d0e745a90c732e084400b11e3f5e6794
 
 PR133:
   state: OPEN
-  observed_head: 5875c459128e849fa76b735fb33f0c45a8355b20
+  observed_head: f6d3955740dec0a43172b8bd8127e208eb727bf6
   purpose: stable publication control plane
   architecture: IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF
   P0: 0
@@ -48,6 +50,22 @@ PR133:
   P2: 0
   READY_FOR_HUMAN_GATE: false
   HUMAN_GATE: NOT_APPROVED
+  stop_point: BEFORE_ADMINISTRATIVE_CONFIGURATION
+
+approval_ref:
+  ref: refs/heads/release/v1.0.0-human-gate
+  observed_sha: ec1e2c33ee476cf03f2b698c86eae447978a07c8
+  state: NAO_APROVADO
+
+server_side_protection:
+  repository_rulesets: NONE_AT_LAST_READBACK
+  blockers:
+    - TAG_RULESET_NOT_CONFIGURED
+    - PUBLISHER_BRANCH_RULESET_NOT_CONFIGURED
+
+required_future_rulesets:
+  - tag ruleset para refs/tags/v1.0.0 e refs/tags/mcf-control/v1.0.0; update + deletion; sem creation; zero bypass; zero exclusions
+  - branch ruleset para refs/heads/release/v1.0.0-stable-publish; update + deletion; zero bypass; zero exclusions
 
 PR134:
   state: OPEN
@@ -58,6 +76,7 @@ PR134:
 stable_v1_0_0:
   tag: ABSENT_AT_LAST_READBACK
   release: ABSENT_AT_LAST_READBACK
+  publication_authorized: false
 ```
 
 **Revalidar tudo que for estado live antes de afirmar que continua igual.**
@@ -69,7 +88,7 @@ stable_v1_0_0:
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
 4. `docs/proposals/MCF-NEXTGEN-NOMENCLATURE-DECISION-001.md`
 5. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-001.md` se precisar do histórico anterior
-6. GitHub live: `main`, PR #133, PR #134, stable tag/release, rulesets/workflows pertinentes
+6. GitHub live: `main`, PR #133, PR #134, approval ref, stable tag/release, rulesets/workflows pertinentes
 
 ## Decisões-chave já consolidadas
 
@@ -88,14 +107,31 @@ stable_v1_0_0:
 - complexidade só permanece se resolver problema real.
 - MCF NÃO está instalado na VPS atualmente; VPS é infraestrutura separada em preparação.
 - Codex observado no GitHub é integração de review/update do PR, não serviço hospedado na VPS.
+- publicação stable foi redesenhada para `IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF`.
+- nenhum HUMAN_GATE, stable tag, stable Release ou ruleset foi criado no checkpoint terminal.
 
-## Próxima ação
+## Próxima ação operacional da stable
 
-1. verificar o boundary operacional atual no GitHub;
-2. se ainda houver trabalho da stable, concluir esse fluxo sem iniciar publicação sem HUMAN_GATE;
-3. preservar PR #134 até a ordem segura de integração;
-4. quando o discovery for retomado, iniciar **Q2**;
-5. persistir nova decisão/checkpoint antes de nova pausa.
+A implementação do redesenho parou corretamente antes da configuração administrativa.
+
+Antes de qualquer publicação:
+
+1. decisão explícita de LEANDRO para iniciar a etapa administrativa;
+2. configurar somente os dois rulesets já especificados;
+3. comprovar os dois rulesets no GitHub live;
+4. reexecutar Stable Publication Gate no publisher SHA protegido;
+5. verificar eliminação dos dois P1;
+6. obter evidência/review adicional se exigido pelo novo estado;
+7. somente com P0=0/P1=0 renovar Augusto/Júlia/Emily/LÉO;
+8. parar em READY_FOR_HUMAN_GATE;
+9. somente então LEANDRO decide sobre a publicação da v1.0.0.
+
+## Próxima ação do Discovery
+
+- Q1 permanece concluída.
+- Q2 ainda não começou.
+- Não avançar Q2 por engano enquanto a sessão estiver dedicada ao fechamento da Fase Zero, salvo instrução explícita de LEANDRO.
+- Quando o discovery for retomado, iniciar Q2 e persistir a decisão antes de nova pausa.
 
 ## Comando mínimo de retomada por LEANDRO
 
