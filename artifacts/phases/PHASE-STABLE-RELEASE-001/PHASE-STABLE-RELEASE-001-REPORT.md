@@ -6,68 +6,83 @@
 mission: MCF-STABLE-RELEASE-001
 issue: 131
 pr: 133
-state: CORRECTING_BLOCKED_FOR_HUMAN_GATE
+state: CORRECTING_BLOCKED_BY_SERVER_SIDE_TAG_PROTECTION
 main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 candidate_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 publication_P0_count: 0
-publication_P1_count: 1
-publication_P2_count: 1
+publication_P1_count: 2
+publication_P2_count: 2
 critical_findings: 0
 high_findings: 0
 stable_v1_0_0: NAO_PUBLICADA
 HUMAN_GATE: NAO_APROVADO
+READY_FOR_HUMAN_GATE: false
 ```
 
-## P1 vigente — HEAD-change window
+## Boundary técnico atual
 
-A primeira mutação stable usa uma transação Git remota única com `git push --atomic` e `--force-with-lease` no control-head aprovado. A mesma transação tenta preservar exatamente a branch de control plane no HEAD aprovado e criar `refs/tags/v1.0.0` em RC3. Se o HEAD remoto mudou antes de a transação ser aplicada, o lease falha e a atomicidade impede a criação da tag.
+O control plane consome uma autorização direta por uma transação Git `--atomic` que avança o control branch para um commit-lock não-noop e estabelece as refs de publicação. A Release só pode ocorrer em execução posterior, após validação da autoridade consumida e da proteção server-side.
 
-Teste dedicado com Git bare real: HEAD inalterado permite a tag; outro clone move o HEAD imediatamente antes da transação e a operação falha sem criar tag.
+A proteção server-side requerida ainda NÃO existe no GitHub live. O contrato exige ruleset de tags ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com proteção de update/deletion, zero bypass e zero exclusions.
 
-Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+## Findings materiais
 
-## P2 vigente — exact tag sem Release
+### P1 — server-side protection
 
-O validator aceita `v1.0.0` exatamente em RC3 com Release ausente como estado de recovery autorizado, em vez de morrer no `404` sob `set -e`. Tag divergente e Release incompatível continuam fail-closed.
+Thread `PRRT_kwDOTnz-ks6ZHcv4`. Estado: `OPEN_EXTERNAL_CONFIGURATION_BLOCKER`.
 
-Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+### P1 — ruleset exclusions
+
+Thread `PRRT_kwDOTnz-ks6ZHxY7`. O predicado agora rejeita `conditions.ref_name.exclude` não vazio e possui fixture negativa dedicada. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+
+### P2 — consumed authority recovery
+
+Thread `PRRT_kwDOTnz-ks6ZHxY8`. Recovery por refs consumidas/protegidas é selecionado antes de receipt/título mutáveis do PR. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+
+### P2 — fail gate without protection
+
+Thread `PRRT_kwDOTnz-ks6ZHxY-`. Stable Publication Gate agora falha explicitamente quando a proteção obrigatória está ausente. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
 
 ## Evidência técnica
 
 ```yaml
-technical_head: 2129a9a555974c7c89e7a78afc00493e7901aaf5
-stable_publication_gate_run: 31753810306
-stable_publication_gate: PASS
+technical_head: 18205054ae1dc517b1d7ad85867bfed64876f1f0
+stable_publication_gate_run: 31765039114
+stable_publication_gate: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
 receipt_predicate_tests: PASS_4
-atomic_git_tests: PASS_2
+ruleset_predicate_tests: PASS_5
+atomic_git_real_tests: PASS_3
 real_state_machine_tests: PASS_12
-total_self_tests: PASS_18
-authorize_publication: APPROVED_FALSE
+total_self_tests: PASS_24
+authorize_publication: SKIPPED
 publish_stable: SKIPPED
-documentation_validation_run: 31753810224
+documentation_validation_run: 31765039112
 documentation_validation: PASS
-production_readiness_run: 31753810228
+production_readiness_run: 31765039130
 production_readiness: PASS
+server_side_tag_protection: MISSING_BLOCKER
 ```
 
-Cenários cobertos incluem control-head válido, HEAD alterado imediatamente antes da primeira mutação, exact RC3 tag sem Release, tag divergente, exact tag + exact Release NOOP, Release incompatível, HUMAN_GATE ausente, receipt stale e App-mediated/invalid receipt.
+O run falha exatamente no passo `Require server-side publication tag protection`, depois dos 24/24 testes; isto é o comportamento fail-closed requerido.
 
-## Estado de revisão
+## Produção e lineage
+
+RC1, RC2 e RC3 permanecem preservadas. `main == RC3 == 7f741e10...`. Produção Render permanece LIVE no mesmo SHA e o monitor `31762056782` concluiu `SUCCESS`.
+
+## Auditoria terminal
 
 ```yaml
-P1_HEAD_CHANGE_WINDOW: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
-P2_EXACT_TAG_NO_RELEASE_RECOVERY: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
-publication_P1_count: 1
-publication_P2_count: 1
-AUDIT: NOT_RUN_BLOCKED_BY_PUBLICATION_P1
-LEO_GATE: NOT_RUN_BLOCKED_BY_PUBLICATION_P1
-HUMAN_GATE: NAO_APROVADO
+AUGUSTO_TRACE: NOT_RUN
+JULIA_CLASS_C: NOT_RUN
+EMILY_AUDIT: NOT_RUN
+LEO_GATE: NOT_RUN
+AUDIT: BLOCKED_BY_PUBLICATION_P1
 ```
 
-P1 não será zerado antes da revisão independente do HEAD terminal.
+A renovação multiagente continua proibida enquanto `publication_P1 != 0`.
 
 ## Próxima ação
 
-Revalidar o HEAD documental final e solicitar review independente exato. Threads só podem ser resolvidos após a cadeia completa de evidência. Augusto/Júlia/Emily/LÉO somente após `P0=0/P1=0`. O máximo desta missão é `READY_FOR_HUMAN_GATE`.
+Validar o HEAD documental final e solicitar review independente exato. Depois, configurar e provar a proteção server-side real e reexecutar o gate. Threads somente podem ser resolvidos após a cadeia `ACHADO → CORREÇÃO → TESTE → EVIDÊNCIA → REVISÃO → RESOLUÇÃO`. O máximo desta missão permanece `READY_FOR_HUMAN_GATE`.
 
 Nenhum conteúdo deste relatório autoriza merge, tag, Release, `latest` ou publicação.
