@@ -1,9 +1,0 @@
-{
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "multiagent-collaboration-framework",
-  "compatibility_date": "2026-08-03",
-  "assets": {
-    "directory": "./apps/rede-social-agentes/apps/web/dist",
-    "not_found_handling": "single-page-application"
-  }
-}
