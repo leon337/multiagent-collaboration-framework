@@ -9,7 +9,7 @@
 
 ## Invariantes
 
-RC1, RC2 e RC3 permanecem preservadas. O candidato estável continua exclusivamente `v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794`. `main` permanece nesse mesmo SHA durante este boundary. PR #133 é somente publication control plane; PR #134 permanece aberto e não deve ser mergeado antes deste boundary.
+RC1, RC2 e RC3 permanecem preservadas. O candidato estável continua exclusivamente `v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794`. `main` permanece nesse mesmo SHA durante este boundary. PR #133 é somente publication control plane; PR #134 permanece aberto/não mergeado.
 
 ## Arquitetura vigente
 
@@ -21,50 +21,34 @@ stable_ref: refs/tags/v1.0.0
 control_lock_ref: refs/tags/mcf-control/v1.0.0
 ```
 
-O publisher contém workflow/scripts/lógica de publicação e não contém mais o receipt humano mutável. A approval ref separada contém apenas `LEANDRO-HUMAN-GATE.yaml` e foi inicializada em `NAO_APROVADO` no commit `ec1e2c33ee476cf03f2b698c86eae447978a07c8`.
+A approval ref foi inicializada com `NAO_APROVADO` em `ec1e2c33ee476cf03f2b698c86eae447978a07c8`. O publisher não contém mais receipt mutável.
 
-Um receipt aprovado futuro deve ser commit GitHub Web verificado por LEANDRO e vincular explicitamente `release: v1.0.0`, `approved_publisher_head: <SHA EXATO>` e RC3 `7f741e10...`.
+Um receipt aprovado futuro exige commit GitHub Web verificado por LEANDRO, arquivo único e bytes exatos, incluindo newline terminal, vinculando `v1.0.0`, RC3 e o SHA exato do publisher.
 
-## Boundary de consumo
+## Consumo da autoridade
 
-A primeira execução autorizada futura não move o publisher. Ela consome a approval ref por `git push --atomic` + `--force-with-lease` e estabelece, all-or-none:
+A primeira execução autorizada futura não move o publisher. Ela usa `git push --atomic` + `--force-with-lease` sobre a approval ref e estabelece all-or-none:
 
-- avanço de `release/v1.0.0-human-gate` para commit-lock;
+- avanço da approval ref para commit-lock;
 - `mcf-control/v1.0.0` no mesmo lock;
-- `v1.0.0 -> RC3`, se a stable tag ainda estiver ausente.
+- `v1.0.0 -> RC3`, se ausente.
 
-Se a approval ref mudar ou for revogada entre leitura e mutação, o lease falha e nenhuma tag é criada.
-
-O commit-lock registra o publisher SHA aprovado. O publisher branch permanece inalterado durante consumo.
+Mudança/revogação da approval ref antes da mutação invalida o lease e nenhuma tag é criada.
 
 ## Recovery
 
-Após consumo, recovery exige:
-
-- stable tag exata em RC3;
-- control-lock válido;
-- mesmo publisher SHA codificado no lock;
-- publisher branch live ainda no mesmo SHA;
-- proteção server-side ativa.
-
-Recovery com publisher diferente é fail-closed. A approval ref posterior ao consumo não transfere autoridade para outro publisher. O modelo operacional é re-run do workflow run associado ao mesmo publisher SHA.
-
-Existing Release só é NOOP se tag, target RC3, draft/prerelease, título/body e `releases/latest` forem todos exatos.
+Recovery exige stable tag RC3, control-lock válido, proteção server-side e o mesmo publisher SHA registrado no lock. Recovery com publisher diferente é fail-closed. Existing Release só é NOOP se tag, target RC3, draft/prerelease, título/body e `latest` forem exatos.
 
 ## Requirement anterior superseded
 
-O desenho anterior de `branch ruleset + file_path_restriction` foi **SUPERSEDED** após a análise de capacidades do GitHub para o repositório público atual. A propriedade de segurança foi preservada congelando a branch inteira do publisher e separando o HUMAN_GATE em outra ref.
-
-Não há requisito de Push Ruleset, private/internal, plano pago ou organização neste desenho.
+`branch ruleset + file_path_restriction` é **SUPERSEDED**. O desenho atual congela a branch inteira do publisher e separa o HUMAN_GATE. Não há requirement de Push Ruleset, private/internal, plano pago ou organização.
 
 ## Proteção server-side mínima
 
-Antes de qualquer publicação devem existir e ser comprovados no GitHub live:
+1. Tag ruleset ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com `update` + `deletion`, **sem `creation`**, zero bypass e zero exclusions.
+2. Branch ruleset ativo para `refs/heads/release/v1.0.0-stable-publish`, com `update` + `deletion`, zero bypass e zero exclusions.
 
-1. tag ruleset ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com `update` + `deletion`, zero bypass e zero exclusions;
-2. branch ruleset ativo para `refs/heads/release/v1.0.0-stable-publish`, com `update` + `deletion`, zero bypass e zero exclusions.
-
-Não é exigida file-path restriction.
+`creation` é proibida no tag ruleset porque impediria a criação inicial atômica das duas tags quando bypass é zero.
 
 Como `repository_rulesets=[]` no estado live atual, o Stable Publication Gate deve falhar antes de `authorize-publication`/`publish-stable`.
 
@@ -73,32 +57,33 @@ Como `repository_rulesets=[]` no estado live atual, o Stable Publication Gate de
 ```yaml
 P0: 0
 P1: 2
-P2: 0
+P2: 2
 CRITICAL: 0
 HIGH: 0
 ```
 
-### P1
-- `PRRT_kwDOTnz-ks6ZHcv4`: tag ruleset real das stable/control-lock refs — `OPEN_EXTERNAL_CONFIGURATION_BLOCKER`.
-- `PRRT_kwDOTnz-ks6ZJdRe`: publisher imutável server-side — código redesenhado/testado, antigo path restriction superseded; `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_AND_SERVER_SIDE_PROOF`.
+- P1 `PRRT_kwDOTnz-ks6ZHcv4`: tag ruleset real ainda ausente.
+- P1 `PRRT_kwDOTnz-ks6ZJdRe`: immutable publisher implementado/testado; pendente review terminal + whole-branch ruleset real.
+- P2 `discussion_r3781129491`: exact receipt bytes corrigido/testado, pendente review terminal.
+- P2 `discussion_r3781129494`: tag ruleset `creation` corrigido/testado, pendente review terminal.
 
 ## Testes dedicados
 
 ```yaml
-reference_technical_head: 11d9b4c828e03ca49a55b1c7da0c0398b230739c
-stable_publication_gate_run: 31769606221
-receipt_tests: PASS_6
-ruleset_tests: PASS_10
+reference_technical_head: 6abb7c88e096c25c45d8457560907846affb57f6
+stable_publication_gate_run: 31770534991
+receipt_tests: PASS_10
+ruleset_tests: PASS_11
 atomic_git_real_tests: PASS_3
 state_machine_tests: PASS_20
-self_tests_total: PASS_39
+self_tests_total: PASS_44
 expected_without_rulesets: FAIL_CLOSED
 publish_stable: SKIPPED
 ```
 
-Esse snapshot é técnico e não terminal. O HEAD final, seus runs e revisão independente serão registrados externamente no PR #133/Issue #131 depois de congelar o HEAD.
+Esse snapshot é técnico, não terminal. O HEAD final, seus runs e revisão independente serão registrados externamente no PR #133/Issue #131.
 
-## Estado de gates
+## Gates
 
 ```yaml
 AUDIT: BLOCKED_BY_PUBLICATION_P1
@@ -109,6 +94,4 @@ stable_v1_0_0: NAO_PUBLICADA
 publication_authorized: false
 ```
 
-Nenhum P1 será zerado sem `ACHADO → CORREÇÃO → TESTE → EVIDÊNCIA → REVISÃO INDEPENDENTE DO HEAD EXATO → RESOLUÇÃO` e prova server-side real quando aplicável.
-
-Nenhum conteúdo deste documento autoriza merge, tag, Release, `latest` ou publicação.
+Nenhum conteúdo deste documento autoriza merge, tag, Release, `latest`, ruleset ou publicação.
