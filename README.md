@@ -50,13 +50,14 @@ Capacidades comprovadas no lineage atual incluem:
 - staging/deploy com verificação de SHA, readiness/version e recovery por redeploy;
 - observabilidade de missões bloqueadas;
 - Production Readiness automatizado;
-- produção pública materializada e monitorada no lineage da RC3.
+- produção pública materializada e monitorada no lineage da RC3;
+- publicação estável `v1.0.0` concluída no mesmo SHA qualificado da RC3.
 
 Fontes: [`docs/runtime/`](docs/runtime/), [`skills/registry.yaml`](skills/registry.yaml), [`artifacts/phases/`](artifacts/phases/) e [workflows](.github/workflows/).
 
 ## Estado atual verificável
 
-Snapshot reconciliado em 2026-08-13:
+Snapshot reconciliado em 2026-08-14:
 
 ```yaml
 main: 7f741e10d0e745a90c732e084400b11e3f5e6794
@@ -64,14 +65,17 @@ rc1: v1.0.0-RC1@9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
 rc2: v1.0.0-RC2@d73d936a63cc9462a95bcf481f4b8e1d4b255719
 rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
 production: COMPLETE
-stable_v1_0_0: NOT_PUBLISHED
-stable_mission: MCF-STABLE-RELEASE-001
-stable_issue: 131
-stable_pr: 133
-human_gate: NOT_APPROVED
+stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
+stable_release: MCF v1.0.0
+latest: v1.0.0
+stable_issue_131: CLOSED_COMPLETED
+publisher_pr_133: CLOSED_UNMERGED
+human_gate: CONSUMED_PROTECTED
+human_approval_commit: 786d2535b70584762b45ae0512d43872d492b715
+consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
 ```
 
-A `v1.0.0-RC3` é a candidata qualificada atual. **`v1.0.0` estável não foi publicada.** A produção e a release estável são boundaries distintos; publicar stable exige a governança específica da missão ativa e HUMAN_GATE de LEANDRO.
+A versão estável **`v1.0.0` foi publicada** no SHA exato da RC3. A Release `MCF v1.0.0` é não-draft, não-prerelease e é a `latest`. O HUMAN_GATE de LEANDRO foi consumido e protegido pelo publication control plane; Issue #131 foi concluída e PR #133 foi fechado sem merge.
 
 Para estado live, consulte GitHub antes de usar os SHAs acima como dado operacional.
 
@@ -123,8 +127,8 @@ Skills atuais:
 | Production Readiness pós-RC1 | `HISTORICAL` + workflow atual | concluído |
 | `v1.0.0-RC2` | `HISTORICAL` | prerelease preservada |
 | produção | `CURRENT_IMPLEMENTED` | completa/live |
-| `v1.0.0-RC3` | `CURRENT_IMPLEMENTED` | prerelease candidata atual |
-| `v1.0.0` | `PLANNED` / bloqueada por governança | não publicada |
+| `v1.0.0-RC3` | `HISTORICAL` + lineage estável | prerelease preservada |
+| `v1.0.0` | `CURRENT_IMPLEMENTED` | stable publicada / latest |
 
 Detalhes: [`CHANGELOG.md`](CHANGELOG.md), [`docs/releases/`](docs/releases/) e decisões [`MCF-DEC-062`](docs/decisions/MCF-DEC-062-GATE-E-RELEASE-CANDIDATE.md), [`MCF-DEC-063`](docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md) e [`MCF-DEC-064`](docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md).
 
@@ -142,15 +146,14 @@ Existe discovery separado na branch `planning/mcf-nextgen-discovery`.
 
 O checkpoint de discovery declara explicitamente que a arquitetura não está formalmente aprovada e que implementação/protótipo não estão autorizados. Project Capsule, novas camadas de memória, model routing, DAG/paralelismo, Interaction Center, novos profiles de maturidade/delivery, gateways, caching/rate limiting, hardening adicional, VPS portátil e demais propostas **não devem ser lidos como capacidades atuais** sem evidência no runtime vigente.
 
-A missão documental atual não implementa NextGen.
+A publicação de `v1.0.0` não altera essa classificação. A missão documental atual não implementa NextGen.
 
 ## Limitações importantes
 
-- stable `v1.0.0` ainda não existe;
-- “imutabilidade” de identidade de release é uma regra de governança; não é alegada como impossibilidade técnica absoluta de exclusão/retarget por administrador;
+- a identidade pública de releases é tratada como imutável por governança/proteções do publication boundary; isso não é apresentado como impossibilidade técnica absoluta de ação administrativa fora do boundary;
 - recovery por SHA saudável não deve ser chamado de rollback nativo do provider quando isso não estiver comprovado;
 - contratos de agentes não equivalem automaticamente a isolamento cognitivo entre instâncias/modelos;
-- documentos de Gate/PRF antigos preservam o estado verdadeiro daquele momento e podem conter `BLOCKED` ou “próximo boundary” que são **históricos**, não o estado atual.
+- documentos de Gate/PRF antigos preservam o estado verdadeiro daquele momento e podem conter `BLOCKED`, `NOT_PUBLISHED`, `NOT_APPROVED` ou “próximo boundary”; essas ocorrências são **HISTORICAL** quando vinculadas ao boundary original.
 
 ## Mapa rápido
 
