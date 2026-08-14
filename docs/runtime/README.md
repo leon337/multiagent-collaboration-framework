@@ -39,10 +39,9 @@ Chat objective / mission
 
 Componentes materiais incluem persistência de missões/fases/eventos, hierarquia e retorno à missão-pai, permissionamento/HDF, adapters externos, reservations/idempotência, evidence validation, blocked-mission observability e recovery.
 
-## Estado atual reconciliado
+## Estado reconciliado: lineage durável e operação volátil
 
 ```yaml
-main: 7f741e10d0e745a90c732e084400b11e3f5e6794
 runtime_line: MCF-RUNTIME-006
 skills_registered: 16
 skills_executable: 16
@@ -51,15 +50,20 @@ gate_c_real_provider_write: COMPLETE
 gate_d_staging_deploy: COMPLETE
 gate_e_release_candidate: COMPLETE
 production_readiness: COMPLETE
-production: COMPLETE
+production_status: COMPLETE
 rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
 stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
 stable_release: MCF v1.0.0
 latest: v1.0.0
 human_gate: CONSUMED_PROTECTED
+pre_merge_baseline_main: 7f741e10d0e745a90c732e084400b11e3f5e6794
+main_sha: READ_GITHUB_LIVE
+production_reported_commit: READ_PROVIDER_LIVE
 ```
 
-Esses valores são snapshot documental de 2026-08-14. Para estado operacional, confirme GitHub live.
+RC3/stable em `7f741e10…` são fatos de release duráveis. O mesmo SHA associado a `main` é somente o baseline pré-integração desta missão. `main` pode avançar com a integração documental.
+
+A árvore de código da aplicação/runtime deste PR permanece inalterada em relação ao baseline stable; ainda assim, como Render acompanha `main`, o commit reportado por produção pode avançar após merge apenas documental. O deployed SHA exato deve ser relido no provider após integração.
 
 ## Skills executáveis
 
