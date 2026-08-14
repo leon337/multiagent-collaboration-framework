@@ -21,10 +21,10 @@ stable_release_boundary:
   mission: MCF-STABLE-RELEASE-001
   issue: 131
   pr: 133
-  state: CORRECTING_BLOCKED_BY_SERVER_SIDE_PUBLICATION_PROTECTION
+  architecture: IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF
   publication_P0_count: 0
-  publication_P1_count: 3
-  publication_P2_count: 3
+  publication_P1_count: 2
+  publication_P2_count: 0
   critical_findings: 0
   high_findings: 0
   audit: BLOCKED_BY_PUBLICATION_P1
@@ -36,37 +36,62 @@ stable_release_boundary:
 
 ## Boundary stable em correção
 
-A proteção server-side exige simultaneamente:
+O publication control plane agora separa:
 
-- ruleset de tags para `v1.0.0` e `mcf-control/v1.0.0`, protegendo update/deletion, sem bypass/exclusions;
-- ruleset do control branch impedindo mudanças em `.github/workflows/**/*` e `scripts/**/*`, também sem bypass/exclusions.
+- publisher imutável futuro: `release/v1.0.0-stable-publish`;
+- approval ref humana: `release/v1.0.0-human-gate`;
+- stable tag: `v1.0.0`;
+- control-lock: `mcf-control/v1.0.0`.
 
-Sem essas configurações reais, o Stable Publication Gate deve falhar antes dos jobs de autorização/publicação.
+A approval ref foi inicializada em `NAO_APROVADO`. O publisher não contém mais o receipt mutável e não precisa receber commit novo quando LEANDRO futuramente decidir o HUMAN_GATE.
 
-O fluxo técnico consome autorização futura por transação Git `--atomic` com avanço não-noop do control branch e refs de publicação. Recovery posterior só é aceito sob refs consumidas/protegidas e publication code protegido. Existing Release só entra em NOOP quando tag, target RC3, draft/prerelease, título/body e `latest` forem exatos.
+A aprovação futura deverá vincular `v1.0.0`, o SHA exato do publisher e RC3. O consumo usa a approval ref como lease mutável na transação atômica; publisher branch, control-lock e stable identity permanecem semanticamente separados.
 
-## Evidência terminal
+### Recovery
 
-O documento runtime não rotula um SHA/runs de commit anterior como evidência "atual" do HEAD que o contém. Após congelar o HEAD terminal, seus run IDs e o review independente devem ser registrados no PR #133/Issue #131, fora do commit, evitando criar um novo SHA apenas para registrar o SHA anterior.
+Depois do consumo, recovery só é permitido quando o mesmo publisher SHA codificado no lock continua sendo o publisher live, as tags estão exatas/protegidas e o control-lock é válido. Approval ref posterior ao consumo não autoriza código novo.
+
+O modelo operacional é re-run do workflow associado ao mesmo publisher SHA. Recovery por publisher divergente falha fechado.
+
+## Proteção server-side mínima
+
+São necessários, mas ainda não configurados:
+
+1. tag ruleset para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com `update` + `deletion`, zero bypass/exclusions;
+2. branch ruleset para `refs/heads/release/v1.0.0-stable-publish`, protegendo a branch inteira com `update` + `deletion`, zero bypass/exclusions.
+
+O desenho antigo baseado em `file_path_restriction` foi **SUPERSEDED**: essa capacidade pertence a Push Rulesets e não é requisito do ambiente público atual. Não há dependência de plano pago, private/internal ou organização.
+
+Enquanto `repository_rulesets=[]`, o Stable Publication Gate deve falhar antes de authorization/publication.
+
+## Testes dedicados do redesenho
 
 ```yaml
-terminal_evidence_source: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
-versioned_reference_snapshot_is_terminal: false
-```
-
-## REFERENCE_TECHNICAL_SNAPSHOT — não terminal
-
-```yaml
-reference_technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
-receipt_tests: PASS_4
-server_side_protection_tests: PASS_9
+reference_technical_head: 11d9b4c828e03ca49a55b1c7da0c0398b230739c
+stable_publication_gate_run: 31769606221
+receipt_tests: PASS_6
+ruleset_tests: PASS_10
 atomic_git_real_tests: PASS_3
-state_machine_tests: PASS_14
-total_self_tests: PASS_30
+state_machine_tests: PASS_20
+total_self_tests: PASS_39
 expected_behavior_without_required_protection: FAIL_CLOSED_BEFORE_AUTHORIZATION
+publish_stable: SKIPPED
 ```
 
-Este snapshot é evidência da evolução técnica, não substituto para o receipt terminal do próximo HEAD congelado.
+Os testes exercitam publisher correto/divergente, approval correto/stale/ausente/inválido, revogação antes do consumo, stable ausente/errada/exact-tag-only, control-lock parcial, falha/re-run após consumo, recovery com publisher diferente, rulesets ausentes, bypass/exclusions e Release recovery/NOOP.
+
+Esse snapshot é técnico, não terminal. O HEAD final, runs e review independente ficam em receipt externo no PR #133/Issue #131 após congelamento.
+
+## Findings atuais
+
+```yaml
+P0: 0
+P1: 2
+P2: 0
+```
+
+- P1 `PRRT_kwDOTnz-ks6ZHcv4`: tag ruleset real ainda ausente.
+- P1 `PRRT_kwDOTnz-ks6ZJdRe`: immutable publisher design implementado/testado, pendente review terminal + branch ruleset real/prova live.
 
 ## Auditoria terminal
 
@@ -78,7 +103,7 @@ LEO_GATE: NOT_RUN
 AUDIT: BLOCKED_BY_PUBLICATION_P1
 ```
 
-A renovação multiagente só ocorre depois de `publication_P0=0` e `publication_P1=0` confirmados por review independente e prova live da proteção server-side.
+A renovação multiagente só ocorre depois de `publication_P0=0` e `publication_P1=0` confirmados por review independente e prova live dos rulesets mínimos.
 
 ## Produção
 
