@@ -6,12 +6,12 @@
 mission: MCF-STABLE-RELEASE-001
 issue: 131
 pr: 133
-state: CORRECTING_BLOCKED_BY_SERVER_SIDE_PUBLICATION_PROTECTION
+state: CORRECTING_IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF
 main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 candidate_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 publication_P0_count: 0
-publication_P1_count: 3
-publication_P2_count: 3
+publication_P1_count: 2
+publication_P2_count: 0
 critical_findings: 0
 high_findings: 0
 stable_v1_0_0: NAO_PUBLICADA
@@ -19,68 +19,102 @@ HUMAN_GATE: NAO_APROVADO
 READY_FOR_HUMAN_GATE: false
 ```
 
-## Evidência terminal sem autorreferência
+## Redesenho aplicado
 
-Este relatório versionado descreve o contrato e os findings vigentes. O **SHA terminal exato, os run IDs desse SHA e o review independente desse mesmo SHA** devem ser registrados em receipt externo no PR #133/Issue #131 somente depois de o HEAD ser congelado. Atualizar este arquivo para gravar o próprio SHA criaria outro commit e invalidaria imediatamente a evidência.
+A arquitetura vigente é `IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF`.
+
+### Publisher
+
+`refs/heads/release/v1.0.0-stable-publish` contém o publication control plane e não armazena mais o estado mutável de HUMAN_GATE. Depois de qualificado, o contrato server-side exige imutabilidade da branch inteira por ruleset de branch com `update` + `deletion`, zero bypass e zero exclusions.
+
+### Approval ref
+
+`refs/heads/release/v1.0.0-human-gate` foi criada como ref separada e mínima. Estado inicial:
 
 ```yaml
-terminal_evidence_source: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
-terminal_head: PENDING_FROZEN_HEAD_RECEIPT
-terminal_ci: PENDING_FROZEN_HEAD_RECEIPT
-terminal_independent_review: PENDING_FROZEN_HEAD_RECEIPT
+initial_commit: ec1e2c33ee476cf03f2b698c86eae447978a07c8
+state: NAO_APROVADO
+approved_receipt_created: false
+file: LEANDRO-HUMAN-GATE.yaml
 ```
 
-Qualquer SHA/run abaixo rotulado `REFERENCE_TECHNICAL_SNAPSHOT` é histórico técnico, não o HEAD terminal vigente.
+Um receipt aprovado futuro só é válido se for commit GitHub Web verificado por LEANDRO e vincular `v1.0.0`, o SHA exato do publisher e RC3 `7f741e10...`.
 
-## Proteção server-side obrigatória
+## Consumo all-or-none
 
-O publication boundary exige duas configurações reais no GitHub:
+O publisher não é mais movido durante consumo. A transação Git atômica usa a approval ref como autoridade mutável:
 
-1. ruleset de tags ativo cobrindo `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com proteção contra update/deletion, zero bypass e zero exclusions;
-2. ruleset do control branch `refs/heads/release/v1.0.0-stable-publish`, ativo, zero bypass/exclusions e com file-path restriction para `.github/workflows/**/*` e `scripts/**/*`.
+1. `--force-with-lease` sobre o commit de aprovação em `release/v1.0.0-human-gate`;
+2. avanço dessa ref para commit-lock sem mudança de árvore;
+3. criação de `mcf-control/v1.0.0` no mesmo lock;
+4. criação de `v1.0.0` em RC3 se ausente.
 
-Enquanto essas proteções não forem comprovadas no GitHub live, o Stable Publication Gate deve falhar antes de autorização/publicação.
+O lock registra `publisher_head`, `approval_commit`, `candidate_sha`, release e approval ref. Se a approval ref for alterada/revogada antes da transação, o lease falha e nenhuma tag é criada.
+
+## Recovery
+
+Recovery por autoridade consumida é permitido somente quando:
+
+- stable tag == RC3;
+- control-lock é válido;
+- rulesets obrigatórios estão ativos;
+- publisher branch live permanece exatamente no SHA codificado no lock e no workflow run.
+
+Depois do consumo, a approval ref pode mudar sem transferir autoridade a publisher posterior. Tentativa de recovery por SHA diferente do publisher aprovado falha.
+
+O modelo operacional previsto usa re-run do workflow run do mesmo publisher SHA. Nenhum HUMAN_GATE aprovado ou mutação stable foi usado nos testes reais desta correção.
+
+## Requirement antigo superseded
+
+O desenho anterior exigia `branch ruleset + file_path_restriction` para congelar `.github/workflows/**/*` e `scripts/**/*`. Esse requirement foi marcado **SUPERSEDED** após análise das capacidades GitHub aplicáveis ao repositório público atual: file-path restriction pertence a Push Rulesets e não é usado no desenho vigente.
+
+A propriedade de segurança não foi reduzida: o publisher inteiro será imutável server-side, enquanto o HUMAN_GATE foi separado em outra ref.
+
+Nenhum plano pago, mudança para private/internal ou organização foi introduzido como dependência.
+
+## Rulesets mínimos ainda necessários
+
+1. Tag ruleset ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, regras `update` + `deletion`, zero bypass e zero exclusions.
+2. Branch ruleset ativo para `refs/heads/release/v1.0.0-stable-publish`, regras `update` + `deletion`, zero bypass e zero exclusions.
+
+O repositório live continua sem rulesets. Portanto o gate deve permanecer vermelho/fail-closed antes de authorization/publication.
+
+## Evidência técnica do redesenho
+
+```yaml
+reference_technical_head: 11d9b4c828e03ca49a55b1c7da0c0398b230739c
+stable_publication_gate_run: 31769606221
+receipt_tests: PASS_6
+ruleset_tests: PASS_10
+atomic_git_real_tests: PASS_3
+state_machine_tests: PASS_20
+total_self_tests: PASS_39
+stable_gate_result: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
+authorize_publication: SKIPPED
+publish_stable: SKIPPED
+```
+
+Os 39 testes incluem publisher correto/divergente, approval correto/stale/ausente/inválido, revogação antes do consumo, stable ausente/errada/exact-tag-only, control-lock parcial, falha após consumo, re-run após consumo, recovery com publisher diferente, rulesets ausentes, bypass/exclusions e Release recovery/NOOP.
+
+Esse snapshot é histórico técnico; o SHA terminal final e seus run IDs serão registrados externamente depois da reconciliação documental.
 
 ## Findings materiais
 
 ### P1 — stable/control-lock refs
-Thread `PRRT_kwDOTnz-ks6ZHcv4`. Estado: `OPEN_EXTERNAL_CONFIGURATION_BLOCKER`.
+Thread `PRRT_kwDOTnz-ks6ZHcv4`. Continua aberto até tag ruleset real e prova live.
 
-### P1 — ruleset exclusions
-Thread `PRRT_kwDOTnz-ks6ZHxY7`. Exclusions não vazias são rejeitadas e há teste negativo. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
-
-### P1 — consumed recovery ligado ao código aprovado
-Thread `PRRT_kwDOTnz-ks6ZJdRe`. Recovery consumido depende também de ruleset server-side que congela workflow/script no control branch. Estado: `CORRECTED_TESTED_PENDING_SERVER_SIDE_CONFIGURATION_AND_TERMINAL_REVIEW_CHAIN`.
-
-### P2 — consumed authority antes de metadados mutáveis
-Thread `PRRT_kwDOTnz-ks6ZHxY8`. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
-
-### P2 — gate falha sem proteção
-Thread `PRRT_kwDOTnz-ks6ZHxY-`. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
-
-### P2 — NOOP valida Release completa
-Thread `PRRT_kwDOTnz-ks6ZJdRg`. Recovery/NOOP exige tag/target RC3/draft/prerelease/título/body e `latest` corretos. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
-
-### P2 — drift de evidência do HEAD
-Finding do review `discussion_r3780758872`. Correção: remover alegação de que um SHA anterior é evidência "atual" e registrar evidência terminal externamente após congelar o novo HEAD. Estado: `CORRECTING_PENDING_NEW_FROZEN_HEAD_VALIDATION`.
-
-## REFERENCE_TECHNICAL_SNAPSHOT — não terminal
+### P1 — publisher imutável
+Thread `PRRT_kwDOTnz-ks6ZJdRe`. O requirement antigo por paths foi superado. O novo desenho foi implementado/testado, mas o P1 continua aberto até review independente do HEAD exato + branch ruleset real do publisher + prova live.
 
 ```yaml
-reference_technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
-receipt_tests: PASS_4
-server_side_protection_tests: PASS_9
-atomic_git_real_tests: PASS_3
-state_machine_tests: PASS_14
-total_self_tests: PASS_30
-expected_behavior_without_required_protection: FAIL_CLOSED_BEFORE_AUTHORIZATION
+P0: 0
+P1: 2
+P2: 0
 ```
 
-A evidência terminal deverá apontar para o novo HEAD documental congelado e seus runs, via receipt externo.
+## Evidência terminal sem autorreferência
 
-## Produção e lineage
-
-RC1, RC2 e RC3 permanecem preservadas; `main == RC3 == 7f741e10...`. A produção permanece separada do control plane. A reconfirmação terminal de produção/monitor deve ser feita depois da cadeia de review/configuração e registrada externamente.
+O SHA terminal, runs e review do HEAD final serão registrados no PR #133/Issue #131 após congelamento. Este relatório não cria um commit adicional apenas para registrar seu próprio SHA.
 
 ## Auditoria terminal
 
@@ -92,10 +126,10 @@ LEO_GATE: NOT_RUN
 AUDIT: BLOCKED_BY_PUBLICATION_P1
 ```
 
-A renovação multiagente continua bloqueada enquanto `publication_P1 != 0`.
+A auditoria multiagente só será renovada depois de `P0=0/P1=0`.
 
 ## Próxima ação
 
-Congelar o HEAD documental final, executar CI nesse SHA, registrar os runs externamente e obter review independente exato. Depois configurar/provar as proteções server-side reais e rerodar o boundary. Mesmo um review de código limpo não transforma proteção ausente em PASS. O máximo permitido continua `READY_FOR_HUMAN_GATE`.
+Concluir reconciliação documental, congelar HEAD, executar CI e re-run no mesmo SHA, obter revisão independente do HEAD exato e somente então retornar as instruções administrativas mínimas de rulesets. Nenhuma configuração humana é solicitada neste relatório.
 
 Nenhum conteúdo deste relatório autoriza merge, tag, Release, `latest` ou publicação.
