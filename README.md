@@ -40,29 +40,35 @@ RC1, RC2 e RC3 permanecem preservadas. PR #133 é somente control plane e não a
 
 ## Publication boundary
 
-A publicação permanece bloqueada por proteção server-side ainda ausente no GitHub live. O contrato atual exige:
+A publicação permanece bloqueada por proteção server-side que precisa ser comprovada no GitHub live. O contrato exige:
 
 - ruleset de tags ativo para `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com update/deletion, zero bypass e zero exclusions;
 - ruleset do control branch `refs/heads/release/v1.0.0-stable-publish`, zero bypass/exclusions e restrição de mudanças em `.github/workflows/**/*` e `scripts/**/*`.
 
-O Stable Publication Gate falha fechado enquanto esse contrato não é comprovado. Os testes dedicados atuais cobrem receipt, rulesets, transação Git atômica, recovery e metadados completos da Release.
+Sem essas proteções, o Stable Publication Gate deve falhar antes de autorização/publicação.
 
-### Evidência técnica atual
+### Evidência terminal
+
+O README não incorpora como “evidência atual” o SHA/runs de um commit anterior. O HEAD terminal exato, os run IDs desse SHA e o review independente devem ser registrados externamente no PR #133/Issue #131 depois que o HEAD for congelado. Isso evita o loop `commit para registrar SHA → novo SHA sem evidência`.
 
 ```yaml
-technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
-stable_publication_gate_run: 31766055608
-stable_publication_gate: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
+terminal_evidence_source: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
+versioned_reference_snapshot_is_terminal: false
+```
+
+### REFERENCE_TECHNICAL_SNAPSHOT — não terminal
+
+```yaml
+reference_technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
 receipt_tests: PASS_4
 server_side_protection_tests: PASS_9
 atomic_git_real_tests: PASS_3
 state_machine_tests: PASS_14
 self_tests_total: PASS_30
-authorize_publication: SKIPPED
-publish_stable: SKIPPED
-documentation_validation_run: 31766055514
-documentation_validation: PASS
+expected_behavior_without_required_protection: FAIL_CLOSED_BEFORE_AUTHORIZATION
 ```
+
+Este snapshot demonstra o desenho técnico, mas não substitui CI/review do próximo HEAD congelado.
 
 ## Auditoria terminal
 
@@ -78,7 +84,7 @@ AUDIT: BLOCKED_BY_PUBLICATION_P1
 
 ## Imutabilidade
 
-A imutabilidade das versões é uma regra de governança. Proteção técnica só é alegada quando houver configuração GitHub verificável correspondente; no boundary stable atual essa configuração ainda é blocker explícito.
+A imutabilidade das versões é uma regra de governança. Proteção técnica só é alegada quando houver configuração GitHub verificável correspondente; no boundary stable atual essa configuração permanece um blocker explícito até prova live.
 
 ## Skills executáveis
 
