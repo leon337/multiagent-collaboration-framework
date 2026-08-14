@@ -4,14 +4,14 @@ Este diretório reúne documentação normativa, operacional, histórica, experi
 
 ## Comece por aqui
 
-1. [`MCF-CURRENT-STATE.md`](MCF-CURRENT-STATE.md) — mapa reconciliado de fatos duráveis e estado operacional volátil.
+1. [`MCF-CURRENT-STATE.md`](MCF-CURRENT-STATE.md) — mapa reconciliado de identidades duráveis e estado operacional volátil.
 2. [`../README.md`](../README.md) — visão pública do framework e localização do runtime executável.
 3. [`runtime/README.md`](runtime/README.md) — arquitetura/runtime executável, skills, adapters e evidências.
 4. [`protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`](protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md) — protocolo operacional vigente.
 5. [`agentes/README.md`](agentes/README.md) — composição documental dos 29 agentes nomeados.
 6. [`../CHANGELOG.md`](../CHANGELOG.md) — marcos históricos verificáveis.
 
-Para valores voláteis — branch head, SHA de branch, PR, Issue, workflow e SHA reportado por deploy — **GitHub/provider live prevalece sobre qualquer snapshot documental**. Tags/releases imutáveis podem ser fatos duráveis; `main` e deploy commit não são.
+Para valores voláteis — branch head, SHA de branch, estado de PR/Issue, `latest`, metadados mutáveis de Release, workflow e SHA reportado por deploy — **GitHub/provider live prevalece sobre qualquer snapshot documental**. Identidades protegidas de RC3/stable podem ser fatos duráveis; status GitHub e deploy não são.
 
 ## Classificação de informação
 
@@ -58,18 +58,22 @@ LEANDRO é a autoridade humana final e não é agente. LÉO é agente distinto c
 - [`decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md`](decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md) — boundary de qualificação stable (`HISTORICAL` após publicação);
 - [`../.github/workflows/mcf-production-readiness.yml`](../.github/workflows/mcf-production-readiness.yml) e health monitor — automação atual.
 
-Fatos duráveis pós-stable:
+Identidades duráveis pós-stable:
 
 ```yaml
-stable: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
-release: MCF v1.0.0
-latest: v1.0.0
-human_gate: CONSUMED_PROTECTED
-issue_131: CLOSED_COMPLETED
-pr_133: CLOSED_UNMERGED
+durable_release_identity:
+  rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
+  stable: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
+live_github_state:
+  release_metadata: READ_GITHUB_LIVE
+  latest: READ_GITHUB_LIVE
+  issue_131_state: READ_GITHUB_LIVE
+  pr_133_state: READ_GITHUB_LIVE
 ```
 
-RC3 permanece preservada como prerelease histórica no mesmo SHA da stable publicada. Já `main` e o commit reportado por produção são voláteis: `7f741e10…` deve ser lido como baseline pré-integração quando associado a `main`, e o deployed SHA deve ser relido após qualquer merge que possa disparar Render.
+**Snapshot auditado em 2026-08-14:** a Release `MCF v1.0.0` estava não-draft/não-prerelease e `latest`; Issue #131 estava `CLOSED/COMPLETED`; PR #133 estava `CLOSED/UNMERGED`. Esses status são evidência datada, não invariantes futuros.
+
+RC3 permanece preservada como prerelease histórica no mesmo SHA da stable publicada. `main`, `latest`, estados de PR/Issue e o commit reportado por produção são voláteis e devem ser relidos após qualquer evento que possa alterá-los.
 
 ## Auditorias e evidências
 
