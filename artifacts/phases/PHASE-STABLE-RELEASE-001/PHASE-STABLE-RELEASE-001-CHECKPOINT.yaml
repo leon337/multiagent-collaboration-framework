@@ -3,7 +3,7 @@ phase: PHASE-STABLE-RELEASE-001
 issue: 131
 pr: 133
 risk_class: C
-state: CORRECTING_BLOCKED_FOR_HUMAN_GATE
+state: CORRECTING_BLOCKED_BY_SERVER_SIDE_TAG_PROTECTION
 
 main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 qualified_rc3_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
@@ -30,45 +30,46 @@ human_gate:
   mutable_issue_comment_is_authority: false
 
 publication_boundary:
-  technical_head: 2129a9a555974c7c89e7a78afc00493e7901aaf5
-  stable_publication_gate_run: 31753810306
-  validation_job: PASS
+  technical_head: 18205054ae1dc517b1d7ad85867bfed64876f1f0
+  stable_publication_gate_run: 31765039114
+  validation_job: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
   receipt_predicate_tests: PASS_4
-  atomic_git_tests: PASS_2
+  ruleset_predicate_tests: PASS_5
+  atomic_git_real_tests: PASS_3
   real_state_machine_tests: PASS_12
-  dedicated_self_tests: PASS_18
-  human_gate: NAO_APROVADO
-  authorize_publication_job: PASS_WITH_APPROVED_FALSE
+  dedicated_self_tests: PASS_24
+  authorize_publication_job: SKIPPED
   publication_job: SKIPPED
-  documentation_validation_run: 31753810224
+  documentation_validation_run: 31765039112
   documentation_validation: PASS
-  production_readiness_run: 31753810228
+  production_readiness_run: 31765039130
   production_readiness: PASS
+  server_side_tag_protection: MISSING_BLOCKER
   publication_p0_count: 0
-  publication_p1_count: 1
-  publication_p2_count: 1
+  publication_p1_count: 2
+  publication_p2_count: 2
   critical_findings: 0
   high_findings: 0
 
 active_findings:
-  - id: P1_HEAD_CHANGE_WINDOW_BEFORE_STABLE_TAG
-    thread: PRRT_kwDOTnz-ks6ZCW9C
-    correction: SERVER_SIDE_GIT_ATOMIC_PUSH_WITH_EXACT_CONTROL_HEAD_FORCE_WITH_LEASE_AND_RC3_TAG_CREATE
-    dedicated_tests:
-      - ATOMIC_UNCHANGED_CONTROL_HEAD_CREATES_EXACT_TAG
-      - CONTROL_HEAD_MOVED_IMMEDIATELY_BEFORE_MUTATION_CREATES_NO_TAG
-      - VALID_APPROVAL_AND_STABLE_HEAD_PATH_ALLOWED
-      - STALE_RECEIPT_NO_MUTATION
-      - APP_MEDIATED_INVALID_RECEIPT_NO_MUTATION
+  - id: P1_SERVER_SIDE_PUBLICATION_REF_PROTECTION
+    thread: PRRT_kwDOTnz-ks6ZHcv4
+    requirement: ACTIVE_TAG_RULESET_UPDATE_DELETION_ZERO_BYPASS_ZERO_EXCLUSIONS_FOR_STABLE_AND_CONTROL_LOCK
+    state: OPEN_EXTERNAL_CONFIGURATION_BLOCKER
+  - id: P1_RULESET_EXCLUSIONS
+    thread: PRRT_kwDOTnz-ks6ZHxY7
+    correction: REJECT_ANY_NONEMPTY_REF_NAME_EXCLUDE
+    dedicated_tests: [RULESET_EXCLUSION_FAIL_CLOSED]
     state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
-  - id: P2_EXACT_TAG_NO_RELEASE_RECOVERY
-    thread: PRRT_kwDOTnz-ks6ZCW9N
-    correction: VALIDATOR_ACCEPTS_EXACT_RC3_TAG_WITH_RELEASE_404_AS_AUTHORIZED_TAG_ONLY_RECOVERY
-    dedicated_tests:
-      - EXACT_RC3_TAG_NO_RELEASE_SAFE_RECOVERY
-      - EXACT_TAG_EXACT_RELEASE_IDEMPOTENT_NOOP
-      - INCOMPATIBLE_RELEASE_FAIL_CLOSED
-      - WRONG_SHA_TAG_FAIL_CLOSED
+  - id: P2_CONSUMED_AUTHORITY_RECOVERY_METADATA_ORDER
+    thread: PRRT_kwDOTnz-ks6ZHxY8
+    correction: VERIFY_CONSUMED_GATE_BEFORE_CURRENT_RECEIPT_OR_PR_TITLE
+    dedicated_tests: [CONSUMED_PROTECTED_RECOVERY_SURVIVES_LATER_PR_HEAD_METADATA_CHANGE]
+    state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
+  - id: P2_GATE_MUST_FAIL_WITHOUT_REQUIRED_PROTECTION
+    thread: PRRT_kwDOTnz-ks6ZHxY-
+    correction: REQUIRE_PROTECTION_STEP_EXITS_NONZERO_WHEN_RULESET_MISSING
+    evidence_run: 31765039114
     state: CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW
 
 historical_threads:
@@ -76,13 +77,15 @@ historical_threads:
   state: RECHECK_AFTER_TERMINAL_INDEPENDENT_REVIEW
 
 production_monitor:
-  status: RECONFIRM_AFTER_TERMINAL_AUDIT
+  run: 31762056782
+  sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  status: PASS
 
 production_render:
   service: rsa-api-free
   deploy: dep-d9ugl7gae00c73c5snv0
   sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
-  last_known_state: LIVE
+  state: LIVE
 
 incident_129: CLOSED_COMPLETED
 
@@ -97,16 +100,18 @@ findings:
   critical: 0
   high: 0
   publication_p0: 0
-  publication_p1: 1
-  publication_p2: 1
+  publication_p1: 2
+  publication_p2: 2
   low_postgresql_ssl: OPEN_NON_BLOCKING
   cold_start_readiness_latency: OPEN_NON_BLOCKING
 
 authorization:
   merge_pr_133: false
+  merge_pr_134: false
   tag_v1_0_0: false
   github_release_v1_0_0: false
   latest_v1_0_0: false
   human_gate: NAO_APROVADO
 
-next_action: validate terminal documentation head; request independent review of exact SHA; keep P1=1 until review; only after P0=0/P1=0 renew multiagent audit and obtain LEO_GATE; stop at READY_FOR_HUMAN_GATE
+ready_for_human_gate: false
+next_action: validate final documentation head; obtain exact-head independent review; configure and prove live server-side tag ruleset; rerun gate; keep audit and LEO_GATE blocked until P0=0/P1=0
