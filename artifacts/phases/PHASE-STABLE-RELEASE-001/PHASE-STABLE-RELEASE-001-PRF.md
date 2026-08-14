@@ -4,7 +4,7 @@
 **Issue:** #131  
 **PR:** #133  
 **Classe:** C  
-**Estado:** `CORRECTING / BLOCKED_BY_SERVER_SIDE_TAG_PROTECTION`  
+**Estado:** `CORRECTING / BLOCKED_BY_SERVER_SIDE_PUBLICATION_PROTECTION`  
 **Autoridade humana:** LEANDRO  
 **HUMAN_GATE:** NÃO APROVADO  
 **Stable `v1.0.0`:** NÃO PUBLICADA
@@ -23,57 +23,81 @@ publication_authorized: false
 
 PR #133 permanece somente control plane. PR #134 permanece OPEN e não deve ser mergeado antes do fechamento deste boundary.
 
-## Findings materiais vigentes
+## Proteção server-side requerida
 
-### P1 — proteção server-side real das refs de publicação
+O boundary exige duas proteções GitHub reais e verificáveis antes de qualquer autorização mutável:
 
-A segurança entre o consumo da autorização e a criação/recovery da Release depende de proteção GitHub real para:
+### 1. Ruleset de tags
+
+Aplicável explicitamente a:
 
 - `refs/tags/v1.0.0`;
 - `refs/tags/mcf-control/v1.0.0`.
 
-O contrato exige ruleset de tags `active`, regras `update` + `deletion`, `bypass_actors=[]` e `conditions.ref_name.exclude=[]`, cobrindo explicitamente as duas refs. O GitHub live continua sem rulesets aplicáveis. Estado: `OPEN_EXTERNAL_CONFIGURATION_BLOCKER`.
+Contrato: `target=tag`, `enforcement=active`, regras `update` + `deletion`, `bypass_actors=[]` e `conditions.ref_name.exclude=[]`.
 
-### P1 — exclusions do ruleset
+### 2. Ruleset do control branch
 
-Thread `PRRT_kwDOTnz-ks6ZHxY7`. O predicado agora rejeita qualquer lista de exclusions não vazia. Foi adicionado fixture negativo dedicado. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+Aplicável explicitamente a `refs/heads/release/v1.0.0-stable-publish`.
+
+Contrato: `target=branch`, `enforcement=active`, `bypass_actors=[]`, `conditions.ref_name.exclude=[]` e restrição server-side de alteração para `.github/workflows/**/*` e `scripts/**/*`. Assim, após a qualificação do control plane, o receipt pode evoluir, mas o código capaz de autorizar/publicar não pode ser substituído por um HEAD posterior não revisado.
+
+O GitHub live ainda retorna `rulesets=[]`. Portanto esta proteção permanece `MISSING_BLOCKER` e o Stable Publication Gate DEVE falhar fechado.
+
+## Findings materiais vigentes
+
+### P1 — proteção server-side das refs de publicação
+
+Thread `PRRT_kwDOTnz-ks6ZHcv4`. A Release só pode ser criada/reconhecida após stable/control-lock refs estarem protegidas contra update/deletion. Estado: `OPEN_EXTERNAL_CONFIGURATION_BLOCKER`.
+
+### P1 — ruleset exclusions
+
+Thread `PRRT_kwDOTnz-ks6ZHxY7`. O predicado rejeita qualquer lista `conditions.ref_name.exclude` não vazia, com fixture negativo dedicado. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+
+### P1 — recovery consumido vinculado ao código aprovado
+
+Thread `PRRT_kwDOTnz-ks6ZJdRe`. O recovery por `CONSUMED_PROTECTED` exige agora, além das refs consumidas, ruleset server-side do control branch que congela `.github/workflows/**/*` e `scripts/**/*` sem bypass/exclusions. Estado: `CORRECTED_TESTED_PENDING_SERVER_SIDE_CONFIGURATION_AND_INDEPENDENT_REVIEW`.
 
 ### P2 — recovery com autoridade já consumida
 
-Thread `PRRT_kwDOTnz-ks6ZHxY8`. O workflow agora tenta `verify-consumed-gate` antes de consultar receipt/título atuais do PR. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+Thread `PRRT_kwDOTnz-ks6ZHxY8`. `verify-consumed-gate` é avaliado antes de receipt/título mutáveis do PR. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
 
 ### P2 — gate deve falhar sem proteção obrigatória
 
-Thread `PRRT_kwDOTnz-ks6ZHxY-`. O Stable Publication Gate agora encerra com erro quando `protection-status` não encontra o ruleset requerido. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+Thread `PRRT_kwDOTnz-ks6ZHxY-`. O Stable Publication Gate termina com erro antes de authorization/publication quando a proteção server-side completa está ausente. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
 
-## Evidência técnica antes do review terminal documental
+### P2 — NOOP de Release exige metadados completos
+
+Thread `PRRT_kwDOTnz-ks6ZJdRg`. Recovery/NOOP agora valida tag, target RC3, draft/prerelease, título, body e `releases/latest`. Release parcial ou incompatível permanece fail-closed. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+
+## Evidência técnica atual
 
 ```yaml
-technical_head: 18205054ae1dc517b1d7ad85867bfed64876f1f0
-stable_publication_gate_run: 31765039114
+technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
+stable_publication_gate_run: 31766055608
 stable_publication_gate: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
 receipt_predicate_tests: PASS_4
-ruleset_predicate_tests: PASS_5
+server_side_protection_predicate_tests: PASS_9
 atomic_git_real_tests: PASS_3
-real_state_machine_tests: PASS_12
-self_tests_total: PASS_24
+real_state_machine_tests: PASS_14
+self_tests_total: PASS_30
 authorize_publication: SKIPPED
 publish_stable: SKIPPED
-documentation_validation_run: 31765039112
+documentation_validation_run: 31766055514
 documentation_validation: PASS
-production_readiness_run: 31765039130
-production_readiness: PASS
-server_side_tag_protection: MISSING_BLOCKER
+production_readiness_run: 31766055497
+production_readiness: SUPERSEDED_BY_TERMINAL_DOC_HEAD_REQUALIFICATION
+server_side_publication_protection: MISSING_BLOCKER
 ```
 
-O `FAIL` do Stable Publication Gate é comportamento correto enquanto a proteção obrigatória estiver ausente; não representa regressão de runtime.
+Os 30 testes cobrem, entre outros: receipt inválido/stale, exclusions/bypass em tag ruleset, ausência de paths protegidos no branch ruleset, HEAD-change na transação Git real, exact-tag adoption, wrong-SHA, recovery consumido, Release incompatível, metadados incorretos e `latest` divergente.
 
-## Contagem vigente
+## Contagem vigente antes do review terminal
 
 ```yaml
 publication_P0_count: 0
-publication_P1_count: 2
-publication_P2_count: 2
+publication_P1_count: 3
+publication_P2_count: 3
 critical_findings: 0
 high_findings: 0
 AUDIT: BLOCKED_BY_PUBLICATION_P1
@@ -83,10 +107,10 @@ READY_FOR_HUMAN_GATE: false
 stable_v1_0_0: NAO_PUBLICADA
 ```
 
-Nenhum P1/P2 será encerrado por edição. Para cada thread permanece obrigatório: `ACHADO → CORREÇÃO → TESTE → EVIDÊNCIA → REVISÃO INDEPENDENTE DO HEAD EXATO → RESOLUÇÃO`.
+Nenhum finding será encerrado por edição. Para cada thread permanece obrigatório: `ACHADO → CORREÇÃO → TESTE DEDICADO → EVIDÊNCIA EXECUTÁVEL → REVISÃO INDEPENDENTE DO HEAD EXATO → RESOLUÇÃO FORMAL`.
 
 ## Próxima ação
 
-Revalidar o HEAD documental final; obter revisão independente desse SHA; configurar e provar ruleset GitHub real; rerodar o boundary. Augusto/Júlia/Emily/LÉO somente depois de `P0=0/P1=0`. O máximo permitido continua `READY_FOR_HUMAN_GATE`.
+Revalidar o HEAD documental final e obter revisão independente exata. Mesmo com review limpo, `publication_P1` não pode chegar a zero enquanto os rulesets reais não existirem e não forem comprovados no GitHub live. Augusto/Júlia/Emily/LÉO permanecem bloqueados até `P0=0/P1=0`.
 
 Nenhum conteúdo deste PRF autoriza merge, tag, Release, `latest` ou publicação.
