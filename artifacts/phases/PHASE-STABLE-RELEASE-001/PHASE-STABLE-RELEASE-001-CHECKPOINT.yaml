@@ -27,18 +27,15 @@ publisher:
 human_gate:
   authority: LEANDRO
   state: NAO_APROVADO
-  github_login: leon337
-  github_user_id: 25374535
   approval_ref: refs/heads/release/v1.0.0-human-gate
   approval_file: LEANDRO-HUMAN-GATE.yaml
   approval_ref_initial_commit: ec1e2c33ee476cf03f2b698c86eae447978a07c8
-  receipt_state: NAO_APROVADO
   approved_receipt_created: false
+  exact_blob_bytes_required: true
   receipt_required_fields:
     release: v1.0.0
     approved_publisher_head: EXACT_TERMINAL_PUBLISHER_SHA
     rc3: 7f741e10d0e745a90c732e084400b11e3f5e6794
-  mechanism: GITHUB_WEB_VERIFIED_COMMIT_ON_SEPARATE_APPROVAL_REF
 
 architecture:
   name: IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF
@@ -56,7 +53,6 @@ architecture:
     publisher_ref_mutated: false
   recovery:
     required_publisher_sha: LOCK_ENCODED_EXACT_PUBLISHER_HEAD
-    approval_ref_after_consumption_is_authority: false
     different_publisher_sha: FAIL_CLOSED
 
 server_side_publication_protection:
@@ -69,6 +65,7 @@ server_side_publication_protection:
     target: tag
     enforcement: active
     required_rules: [update, deletion]
+    forbidden_rules: [creation]
     bypass_actors: []
     exclusions: []
   publisher_branch_ruleset_required:
@@ -82,19 +79,19 @@ server_side_publication_protection:
 
 reference_technical_snapshot:
   terminal: false
-  technical_head: 11d9b4c828e03ca49a55b1c7da0c0398b230739c
-  stable_publication_gate_run: 31769606221
-  receipt_predicate_tests: PASS_6
-  server_side_protection_predicate_tests: PASS_10
+  technical_head: 6abb7c88e096c25c45d8457560907846affb57f6
+  stable_publication_gate_run: 31770534991
+  receipt_predicate_tests: PASS_10
+  server_side_protection_predicate_tests: PASS_11
   atomic_git_real_tests: PASS_3
   real_state_machine_tests: PASS_20
-  dedicated_self_tests: PASS_39
+  dedicated_self_tests: PASS_44
   expected_behavior_without_required_protection: FAIL_CLOSED_BEFORE_AUTHORIZATION
 
 publication_boundary:
   publication_p0_count: 0
   publication_p1_count: 2
-  publication_p2_count: 0
+  publication_p2_count: 2
   critical_findings: 0
   high_findings: 0
   terminal_ci: PENDING_EXTERNAL_RECEIPT_FOR_FROZEN_HEAD
@@ -106,17 +103,17 @@ active_findings:
     state: OPEN_EXTERNAL_CONFIGURATION_BLOCKER
   - id: P1_IMMUTABLE_PUBLISHER_SERVER_SIDE
     thread: PRRT_kwDOTnz-ks6ZJdRe
-    previous_requirement: BRANCH_RULESET_PLUS_FILE_PATH_RESTRICTION
-    previous_requirement_state: SUPERSEDED_BY_GITHUB_CAPABILITY_ANALYSIS
     correction: WHOLE_BRANCH_IMMUTABILITY_PLUS_SEPARATE_APPROVAL_REF
     state: CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_AND_SERVER_SIDE_PROOF
-
-resolved_material_findings:
-  p2_current: 0
-  note: PREVIOUS_P2_THREADS_RESOLVED_AFTER_FULL_CHAIN_ON_PRIOR_TERMINAL_HEAD
+  - id: P2_EXACT_RECEIPT_BYTES
+    review_comment: discussion_r3781129491
+    state: CORRECTED_TESTED_PENDING_TERMINAL_REVIEW
+  - id: P2_TAG_RULESET_CREATION
+    review_comment: discussion_r3781129494
+    state: CORRECTED_TESTED_PENDING_TERMINAL_REVIEW
 
 terminal_evidence_model:
-  versioned_documents_define: CONTRACT_AND_FINDING_STATE
+  versioned_documents_define: CONTRACT_AND_PRE_REVIEW_FINDING_STATE
   terminal_head_sha_location: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
   terminal_run_ids_location: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
   terminal_independent_review_location: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
@@ -129,15 +126,6 @@ audit:
   leo_gate: NOT_RUN_PENDING_PUBLICATION_P1_ZERO
   overall: BLOCKED_UNTIL_PUBLICATION_P0_P1_ZERO
 
-findings:
-  critical: 0
-  high: 0
-  publication_p0: 0
-  publication_p1: 2
-  publication_p2: 0
-  low_postgresql_ssl: OPEN_NON_BLOCKING
-  cold_start_readiness_latency: OPEN_NON_BLOCKING
-
 authorization:
   merge_pr_133: false
   merge_pr_134: false
@@ -147,4 +135,4 @@ authorization:
   human_gate: NAO_APROVADO
 
 ready_for_human_gate: false
-next_action: freeze final publisher head; run exact-head CI and rerun-same-SHA evidence; obtain exact-head independent review; determine minimal tag and whole-publisher-branch rulesets; do not ask LEANDRO to configure them until review chain completes
+next_action: freeze final publisher head; run exact-head CI and same-SHA rerun; obtain exact-head independent review; resolve P2 only after review; determine minimal administrative rulesets; do not ask LEANDRO to configure them yet
