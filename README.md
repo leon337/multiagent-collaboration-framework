@@ -2,7 +2,7 @@
 
 O **MCF** é um framework para coordenação governada de agentes de IA, com papéis explícitos, seleção por competência, execução rastreável, handoffs, skills versionadas, runtime persistente, evidência verificável, recuperação de falhas e gates de autoridade.
 
-> **Estado documental:** reconciliado contra código, workflows, releases e evidências do GitHub. Branches, SHAs de branch e SHAs reportados por deploy são valores voláteis e devem ser lidos no GitHub/provider live. O snapshot canônico está em [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md).
+> **Estado documental:** reconciliado contra código, workflows, releases e evidências do GitHub. Branches, SHAs de branch, `latest`, estados de PR/Issue, metadados mutáveis de Release e SHAs reportados por deploy são valores voláteis e devem ser lidos no GitHub/provider live. O mapa canônico está em [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md).
 
 ## O que existe hoje
 
@@ -50,40 +50,46 @@ Capacidades comprovadas no lineage atual incluem:
 - staging/deploy com verificação de SHA, readiness/version e recovery por redeploy;
 - observabilidade de missões bloqueadas;
 - Production Readiness automatizado;
-- produção pública materializada e monitorada no lineage da RC3;
+- produção pública materializada no lineage qualificado da RC3;
 - publicação estável `v1.0.0` concluída no mesmo SHA qualificado da RC3.
 
 Fontes: [`docs/runtime/`](docs/runtime/), [`skills/registry.yaml`](skills/registry.yaml), [`artifacts/phases/`](artifacts/phases/) e [workflows](.github/workflows/).
 
-## Estado verificável: fatos duráveis vs. estado volátil
-
-Reconciliação documental de 2026-08-14:
+## Estado verificável: identidade durável vs. estado volátil
 
 ```yaml
-release_facts:
-  rc1: v1.0.0-RC1@9b4a759a4c2f1318adb0d3a09a2462f6b1c735a8
-  rc2: v1.0.0-RC2@d73d936a63cc9462a95bcf481f4b8e1d4b255719
+durable_release_identity:
   rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
-  stable_v1_0_0: PUBLISHED@7f741e10d0e745a90c732e084400b11e3f5e6794
-  stable_release: MCF v1.0.0
-  latest: v1.0.0
-  stable_issue_131: CLOSED_COMPLETED
-  publisher_pr_133: CLOSED_UNMERGED
-  human_gate: CONSUMED_PROTECTED
+  stable_v1_0_0: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
+publication_evidence:
+  publisher_head_at_publication: f6d3955740dec0a43172b8bd8127e208eb727bf6
   human_approval_commit: 786d2535b70584762b45ae0512d43872d492b715
   consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
-volatile_operational_state:
-  pre_merge_baseline_main: 7f741e10d0e745a90c732e084400b11e3f5e6794
+live_github_state:
   main: READ_GITHUB_LIVE
-  production_status: COMPLETE
+  release_metadata: READ_GITHUB_LIVE
+  latest: READ_GITHUB_LIVE
+  issue_131_state: READ_GITHUB_LIVE
+  pr_133_state: READ_GITHUB_LIVE
+live_provider_state:
+  production_health: READ_PROVIDER_LIVE
   production_reported_commit: READ_PROVIDER_LIVE
+pre_merge_snapshot_2026_08_14:
+  main: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  release: MCF v1.0.0
+  release_draft: false
+  release_prerelease: false
+  latest: v1.0.0
+  issue_131: CLOSED_COMPLETED
+  pr_133: CLOSED_UNMERGED
+  human_gate: CONSUMED_PROTECTED
 ```
 
-A versão estável **`v1.0.0` foi publicada** no SHA exato da RC3. Esse SHA é identidade de release durável e não deve ser confundido com o SHA atual de `main`.
+A versão estável **`v1.0.0` foi publicada** no SHA exato da RC3. Esse vínculo de identidade é durável dentro do publication boundary.
 
-O `main` é volátil. `7f741e10…` é o **baseline pré-integração** desta reconciliação e o SHA imutável da RC3/stable, não uma promessa de que `main` continuará nesse commit depois que documentação for integrada.
+O bloco `pre_merge_snapshot_2026_08_14` é evidência datada. `main`, `latest`, metadados da Release, status de Issue/PR e estado/commit reportados por produção podem mudar posteriormente e devem ser lidos live.
 
-A produção permanece concluída no lineage qualificado. Como `render.yaml` acompanha `main` com deploy condicionado a checks, uma integração apenas documental pode fazer o commit reportado pelo provider avançar sem alterar a árvore de código da aplicação/runtime. O SHA efetivamente reportado por produção deve ser lido no provider após qualquer integração.
+Como `render.yaml` acompanha `main` com deploy condicionado a checks, uma integração apenas documental pode fazer o commit reportado pelo provider avançar sem alterar a árvore de código da aplicação/runtime.
 
 ## Governança
 
@@ -132,9 +138,9 @@ Skills atuais:
 | `v1.0.0-RC1` | `HISTORICAL` | prerelease preservada |
 | Production Readiness pós-RC1 | `HISTORICAL` + workflow atual | concluído |
 | `v1.0.0-RC2` | `HISTORICAL` | prerelease preservada |
-| produção | `CURRENT_IMPLEMENTED` | completa/live; SHA do deploy é volátil |
-| `v1.0.0-RC3` | `HISTORICAL` + lineage estável | prerelease preservada |
-| `v1.0.0` | `CURRENT_IMPLEMENTED` | stable publicada / latest |
+| production boundary | `HISTORICAL` + capacidade preservada | concluído; health/deploy atual é live |
+| `v1.0.0-RC3` | `HISTORICAL` + identidade preservada | prerelease em `7f741e10…` |
+| `v1.0.0` | `CURRENT_IMPLEMENTED` | stable publicada em `7f741e10…`; `latest` deve ser lido live |
 
 Detalhes: [`CHANGELOG.md`](CHANGELOG.md), [`docs/releases/`](docs/releases/) e decisões [`MCF-DEC-062`](docs/decisions/MCF-DEC-062-GATE-E-RELEASE-CANDIDATE.md), [`MCF-DEC-063`](docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md) e [`MCF-DEC-064`](docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md).
 
@@ -157,7 +163,7 @@ A publicação de `v1.0.0` não altera essa classificação. A missão documenta
 ## Limitações importantes
 
 - a identidade pública de releases é tratada como imutável por governança/proteções do publication boundary; isso não é apresentado como impossibilidade técnica absoluta de ação administrativa fora do boundary;
-- branch heads e SHAs reportados por providers são voláteis e nunca devem ser inferidos de snapshots documentais;
+- branch heads, `latest`, estados de PR/Issue, metadados mutáveis de Release e SHAs/status reportados por providers são voláteis e nunca devem ser inferidos de snapshots documentais;
 - uma integração documentation-only pode alterar o commit do branch/deploy sem alterar a árvore de código da aplicação/runtime;
 - recovery por SHA saudável não deve ser chamado de rollback nativo do provider quando isso não estiver comprovado;
 - contratos de agentes não equivalem automaticamente a isolamento cognitivo entre instâncias/modelos;
@@ -183,4 +189,4 @@ A publicação de `v1.0.0` não altera essa classificação. A missão documenta
 
 ## Regra de fonte de verdade
 
-Antes de afirmar estado atual de branch, SHA, PR, Issue, workflow, produção, tag ou release, consulte o **GitHub/provider live**. Documentos neste repositório são evidência e orientação; snapshots não substituem o estado real verificável.
+Antes de afirmar estado atual de branch, SHA, PR, Issue, workflow, produção, `latest`, metadados de Release ou deploy, consulte o **GitHub/provider live**. Documentos neste repositório são evidência e orientação; snapshots não substituem o estado real verificável.
