@@ -3,7 +3,7 @@ phase: PHASE-STABLE-RELEASE-001
 issue: 131
 pr: 133
 risk_class: C
-state: CORRECTING_BLOCKED_BY_SERVER_SIDE_PUBLICATION_PROTECTION
+state: CORRECTING_IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF
 
 main_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 qualified_rc3_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
@@ -19,57 +19,82 @@ stable_v1_0_0:
   authorized: false
   required_target_sha: 7f741e10d0e745a90c732e084400b11e3f5e6794
 
+publisher:
+  ref: refs/heads/release/v1.0.0-stable-publish
+  model: WHOLE_BRANCH_IMMUTABLE_AFTER_TERMINAL_QUALIFICATION
+  human_gate_state_stored_here: false
+
 human_gate:
   authority: LEANDRO
   state: NAO_APROVADO
   github_login: leon337
   github_user_id: 25374535
-  receipt_file: artifacts/phases/PHASE-STABLE-RELEASE-001/LEANDRO-HUMAN-GATE.yaml
+  approval_ref: refs/heads/release/v1.0.0-human-gate
+  approval_file: LEANDRO-HUMAN-GATE.yaml
+  approval_ref_initial_commit: ec1e2c33ee476cf03f2b698c86eae447978a07c8
   receipt_state: NAO_APROVADO
-  mechanism: GITHUB_WEB_VERIFIED_COMMIT
-  mutable_issue_comment_is_authority: false
+  approved_receipt_created: false
+  receipt_required_fields:
+    release: v1.0.0
+    approved_publisher_head: EXACT_TERMINAL_PUBLISHER_SHA
+    rc3: 7f741e10d0e745a90c732e084400b11e3f5e6794
+  mechanism: GITHUB_WEB_VERIFIED_COMMIT_ON_SEPARATE_APPROVAL_REF
 
-terminal_evidence_model:
-  versioned_documents_define: CONTRACT_AND_FINDING_STATE
-  terminal_head_sha_location: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
-  terminal_run_ids_location: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
-  terminal_independent_review_location: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
-  rationale: EXTERNAL_RECEIPT_DOES_NOT_CREATE_NEW_HEAD
-  reject_self_referential_terminal_sha_in_versioned_checkpoint: true
+architecture:
+  name: IMMUTABLE_PUBLISHER_SEPARATE_HUMAN_GATE_REF
+  superseded_design:
+    name: BRANCH_RULESET_PLUS_FILE_PATH_RESTRICTION
+    reason: FILE_PATH_RESTRICTION_IS_PUSH_RULESET_CAPABILITY_NOT_APPLICABLE_TO_CURRENT_PUBLIC_REPOSITORY_DESIGN
+    historical: true
+  authority_consumption:
+    transaction: GIT_PUSH_ATOMIC
+    mutable_ref: refs/heads/release/v1.0.0-human-gate
+    lease: APPROVAL_COMMIT_SHA
+    creates:
+      - refs/tags/mcf-control/v1.0.0
+      - refs/tags/v1.0.0@RC3_IF_ABSENT
+    publisher_ref_mutated: false
+  recovery:
+    required_publisher_sha: LOCK_ENCODED_EXACT_PUBLISHER_HEAD
+    approval_ref_after_consumption_is_authority: false
+    different_publisher_sha: FAIL_CLOSED
 
 server_side_publication_protection:
   state: MISSING_BLOCKER_UNTIL_PROVEN_LIVE
+  repository_rulesets_live: []
   tag_ruleset_required:
     refs:
       - refs/tags/v1.0.0
       - refs/tags/mcf-control/v1.0.0
+    target: tag
     enforcement: active
     required_rules: [update, deletion]
     bypass_actors: []
     exclusions: []
-  control_branch_ruleset_required:
+  publisher_branch_ruleset_required:
     ref: refs/heads/release/v1.0.0-stable-publish
+    target: branch
     enforcement: active
+    required_rules: [update, deletion]
     bypass_actors: []
     exclusions: []
-    restricted_file_paths:
-      - .github/workflows/**/*
-      - scripts/**/*
+    restricted_file_paths_required: false
 
 reference_technical_snapshot:
   terminal: false
-  technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
-  receipt_predicate_tests: PASS_4
-  server_side_protection_predicate_tests: PASS_9
+  technical_head: 11d9b4c828e03ca49a55b1c7da0c0398b230739c
+  stable_publication_gate_run: 31769606221
+  receipt_predicate_tests: PASS_6
+  server_side_protection_predicate_tests: PASS_10
   atomic_git_real_tests: PASS_3
-  real_state_machine_tests: PASS_14
-  dedicated_self_tests: PASS_30
+  real_state_machine_tests: PASS_20
+  dedicated_self_tests: PASS_39
   expected_behavior_without_required_protection: FAIL_CLOSED_BEFORE_AUTHORIZATION
 
 publication_boundary:
   publication_p0_count: 0
-  publication_p1_count: 3
-  publication_p2_count: 3
+  publication_p1_count: 2
+  publication_p2_count: 0
   critical_findings: 0
   high_findings: 0
   terminal_ci: PENDING_EXTERNAL_RECEIPT_FOR_FROZEN_HEAD
@@ -79,34 +104,23 @@ active_findings:
   - id: P1_SERVER_SIDE_STABLE_REF_PROTECTION
     thread: PRRT_kwDOTnz-ks6ZHcv4
     state: OPEN_EXTERNAL_CONFIGURATION_BLOCKER
-  - id: P1_RULESET_EXCLUSIONS
-    thread: PRRT_kwDOTnz-ks6ZHxY7
-    correction: REJECT_ANY_NONEMPTY_REF_NAME_EXCLUDE
-    state: CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN
-  - id: P1_CONSUMED_RECOVERY_BOUND_TO_APPROVED_CODE
+  - id: P1_IMMUTABLE_PUBLISHER_SERVER_SIDE
     thread: PRRT_kwDOTnz-ks6ZJdRe
-    correction: REQUIRE_SERVER_SIDE_CONTROL_BRANCH_FILE_PATH_RESTRICTION_FOR_WORKFLOW_AND_SCRIPTS
-    state: CORRECTED_TESTED_PENDING_SERVER_SIDE_CONFIGURATION_AND_TERMINAL_REVIEW_CHAIN
-  - id: P2_CONSUMED_AUTHORITY_RECOVERY_METADATA_ORDER
-    thread: PRRT_kwDOTnz-ks6ZHxY8
-    correction: VERIFY_CONSUMED_GATE_BEFORE_CURRENT_RECEIPT_OR_PR_TITLE
-    state: CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN
-  - id: P2_GATE_MUST_FAIL_WITHOUT_REQUIRED_PROTECTION
-    thread: PRRT_kwDOTnz-ks6ZHxY-
-    correction: REQUIRE_PROTECTION_STEP_EXITS_NONZERO_WHEN_PROTECTION_MISSING
-    state: CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN
-  - id: P2_RELEASE_NOOP_COMPLETE_METADATA
-    thread: PRRT_kwDOTnz-ks6ZJdRg
-    correction: REQUIRE_EXACT_NAME_BODY_TARGET_DRAFT_PRERELEASE_AND_LATEST
-    state: CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN
-  - id: P2_CANONICAL_EVIDENCE_HEAD_DRIFT
-    review_comment: discussion_r3780758872
-    correction: TERMINAL_HEAD_AND_RUNS_RECORDED_EXTERNALLY_AFTER_HEAD_FREEZE
-    state: CORRECTING_PENDING_NEW_FROZEN_HEAD_VALIDATION
+    previous_requirement: BRANCH_RULESET_PLUS_FILE_PATH_RESTRICTION
+    previous_requirement_state: SUPERSEDED_BY_GITHUB_CAPABILITY_ANALYSIS
+    correction: WHOLE_BRANCH_IMMUTABILITY_PLUS_SEPARATE_APPROVAL_REF
+    state: CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_AND_SERVER_SIDE_PROOF
 
-historical_threads:
-  policy: RESOLVE_ONLY_AFTER_CHAIN_ACHADO_CORRECAO_TESTE_EVIDENCIA_REVIEW_RESOLUCAO
-  state: RECHECK_AFTER_TERMINAL_INDEPENDENT_REVIEW
+resolved_material_findings:
+  p2_current: 0
+  note: PREVIOUS_P2_THREADS_RESOLVED_AFTER_FULL_CHAIN_ON_PRIOR_TERMINAL_HEAD
+
+terminal_evidence_model:
+  versioned_documents_define: CONTRACT_AND_FINDING_STATE
+  terminal_head_sha_location: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
+  terminal_run_ids_location: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
+  terminal_independent_review_location: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
+  reject_self_referential_terminal_sha_in_versioned_checkpoint: true
 
 audit:
   augusto_trace: NOT_RUN_PENDING_PUBLICATION_P1_ZERO
@@ -119,8 +133,8 @@ findings:
   critical: 0
   high: 0
   publication_p0: 0
-  publication_p1: 3
-  publication_p2: 3
+  publication_p1: 2
+  publication_p2: 0
   low_postgresql_ssl: OPEN_NON_BLOCKING
   cold_start_readiness_latency: OPEN_NON_BLOCKING
 
@@ -133,4 +147,4 @@ authorization:
   human_gate: NAO_APROVADO
 
 ready_for_human_gate: false
-next_action: freeze documentation head; run exact-head CI; record terminal runs externally; obtain exact-head independent review; configure and prove live tag plus control-branch rulesets; keep audit and LEO_GATE blocked until P0=0/P1=0
+next_action: freeze final publisher head; run exact-head CI and rerun-same-SHA evidence; obtain exact-head independent review; determine minimal tag and whole-publisher-branch rulesets; do not ask LEANDRO to configure them until review chain completes
