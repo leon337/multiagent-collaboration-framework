@@ -31,9 +31,13 @@ require_runtime_env() {
   test -n "$HEAD_SHA" || return 1
 }
 
-read_content_at_ref() {
+read_content_b64_at_ref() {
   local path="$1" ref="$2"
-  gh_api "repos/$REPOSITORY/contents/$path?ref=$ref" --jq '.content' | tr -d '\n' | base64 --decode
+  gh_api "repos/$REPOSITORY/contents/$path?ref=$ref" --jq '.content' | tr -d '\r\n'
+}
+
+encode_exact_b64() {
+  base64 | tr -d '\r\n'
 }
 
 read_git_ref_sha() {
@@ -79,7 +83,8 @@ expected_approved_receipt() {
 }
 
 validate_human_gate_commit_json() {
-  local commit_json="$1" approval_content="$2" parent_content="$3" expected_publisher_sha="$4"
+  local commit_json="$1" approval_b64="$2" parent_b64="$3" expected_publisher_sha="$4"
+  local expected_approval_b64 expected_parent_b64
   test "$(jq -r '.author.login' <<<"$commit_json")" = "$LEANDRO_GITHUB_LOGIN" || return 1
   test "$(jq -r '.author.id' <<<"$commit_json")" = "$LEANDRO_GITHUB_ID" || return 1
   test "$(jq -r '.committer.login' <<<"$commit_json")" = "$WEB_FLOW_LOGIN" || return 1
@@ -91,19 +96,21 @@ validate_human_gate_commit_json() {
   test "$(jq '.files | length' <<<"$commit_json")" = 1 || return 1
   test "$(jq -r '.files[0].filename' <<<"$commit_json")" = "$APPROVAL_FILE" || return 1
   test "$(jq -r '.files[0].status' <<<"$commit_json")" = modified || return 1
-  test "$approval_content" = "$(expected_approved_receipt "$expected_publisher_sha")" || return 1
-  test "$parent_content" = "$(expected_unapproved_receipt)" || return 1
+  expected_approval_b64="$(expected_approved_receipt "$expected_publisher_sha" | encode_exact_b64)"
+  expected_parent_b64="$(expected_unapproved_receipt | encode_exact_b64)"
+  test "$approval_b64" = "$expected_approval_b64" || return 1
+  test "$parent_b64" = "$expected_parent_b64" || return 1
   jq -r '.sha' <<<"$commit_json"
 }
 
 verify_human_gate_commit_at_ref() {
-  local ref="$1" expected_publisher_sha="$2" commit_json parent_sha approval_content parent_content
+  local ref="$1" expected_publisher_sha="$2" commit_json parent_sha approval_b64 parent_b64
   commit_json="$(gh_api "repos/$REPOSITORY/commits/$ref")" || return 1
   parent_sha="$(jq -r '.parents[0].sha // empty' <<<"$commit_json")"
   test -n "$parent_sha" || return 1
-  approval_content="$(read_content_at_ref "$APPROVAL_FILE" "$ref")" || return 1
-  parent_content="$(read_content_at_ref "$APPROVAL_FILE" "$parent_sha")" || return 1
-  validate_human_gate_commit_json "$commit_json" "$approval_content" "$parent_content" "$expected_publisher_sha"
+  approval_b64="$(read_content_b64_at_ref "$APPROVAL_FILE" "$ref")" || return 1
+  parent_b64="$(read_content_b64_at_ref "$APPROVAL_FILE" "$parent_sha")" || return 1
+  validate_human_gate_commit_json "$commit_json" "$approval_b64" "$parent_b64" "$expected_publisher_sha"
 }
 
 verify_direct_human_gate_live() {
@@ -146,6 +153,7 @@ tag_ruleset_details_satisfy_contract() {
   jq -e --arg lock "refs/tags/$CONTROL_LOCK_TAG" '.conditions.ref_name.include | index($lock) != null' <<<"$json" >/dev/null || return 1
   jq -e '[.rules[].type] | index("update") != null' <<<"$json" >/dev/null || return 1
   jq -e '[.rules[].type] | index("deletion") != null' <<<"$json" >/dev/null || return 1
+  jq -e '[.rules[].type] | index("creation") == null' <<<"$json" >/dev/null || return 1
 }
 
 publisher_ruleset_details_satisfy_contract() {
@@ -165,7 +173,7 @@ verify_server_side_publication_protection() {
     if [[ -z "$tag_id" ]] && tag_ruleset_details_satisfy_contract "$details"; then tag_id="$id"; fi
     if [[ -z "$publisher_id" ]] && publisher_ruleset_details_satisfy_contract "$details"; then publisher_id="$id"; fi
   done <<<"$ids"
-  test -n "$tag_id" || { error "no active tag ruleset with update/deletion, zero bypass/exclusions protects both publication tags"; return 1; }
+  test -n "$tag_id" || { error "no active tag ruleset with update/deletion, creation allowed, zero bypass/exclusions protects both publication tags"; return 1; }
   test -n "$publisher_id" || { error "no active whole-branch publisher ruleset with update/deletion and zero bypass/exclusions protects the immutable publisher"; return 1; }
   printf 'tag_ruleset=%s publisher_ruleset=%s\n' "$tag_id" "$publisher_id"
 }
@@ -360,20 +368,29 @@ publish_or_recover() {
 
 self_test_receipt_predicate() {
   local pass=0 parent=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa publisher=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-  local base approved json bad stale wrong_rc3
-  base="$(expected_unapproved_receipt)"
-  approved="$(expected_approved_receipt "$publisher")"
+  local base_b64 approved_b64 json bad stale_b64 wrong_rc3_b64 missing_b64 extra_b64 missing_parent_b64 extra_parent_b64
+  base_b64="$(expected_unapproved_receipt | encode_exact_b64)"
+  approved_b64="$(expected_approved_receipt "$publisher" | encode_exact_b64)"
   json="$(jq -n --arg sha cccccccccccccccccccccccccccccccccccccccc --arg p "$parent" --arg m "$APPROVAL_COMMIT_MESSAGE" --arg f "$APPROVAL_FILE" '{sha:$sha,author:{login:"leon337",id:25374535},committer:{login:"web-flow",id:19864447},commit:{message:$m,verification:{verified:true,reason:"valid"}},parents:[{sha:$p}],files:[{filename:$f,status:"modified"}]}')"
-  validate_human_gate_commit_json "$json" "$approved" "$base" "$publisher" >/dev/null && pass=$((pass+1))
+  validate_human_gate_commit_json "$json" "$approved_b64" "$base_b64" "$publisher" >/dev/null && pass=$((pass+1))
   bad="$(jq '.committer={login:"chatgpt-codex-connector[bot]",id:199175422}|.commit.verification={verified:false,reason:"unsigned"}' <<<"$json")"
-  if ! validate_human_gate_commit_json "$bad" "$approved" "$base" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
-  stale="$(expected_approved_receipt dddddddddddddddddddddddddddddddddddddddd)"
-  if ! validate_human_gate_commit_json "$json" "$stale" "$base" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
-  if ! validate_human_gate_commit_json "$json" "$base" "$base" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
-  wrong_rc3="${approved/$RC3_SHA/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee}"
-  if ! validate_human_gate_commit_json "$json" "$wrong_rc3" "$base" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
+  if ! validate_human_gate_commit_json "$bad" "$approved_b64" "$base_b64" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
+  stale_b64="$(expected_approved_receipt dddddddddddddddddddddddddddddddddddddddd | encode_exact_b64)"
+  if ! validate_human_gate_commit_json "$json" "$stale_b64" "$base_b64" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
+  if ! validate_human_gate_commit_json "$json" "$base_b64" "$base_b64" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
+  wrong_rc3_b64="$(expected_approved_receipt "$publisher" | sed "s/$RC3_SHA/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee/" | encode_exact_b64)"
+  if ! validate_human_gate_commit_json "$json" "$wrong_rc3_b64" "$base_b64" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
   bad="$(jq '.files[0].filename="other.yaml"' <<<"$json")"
-  if ! validate_human_gate_commit_json "$bad" "$approved" "$base" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
+  if ! validate_human_gate_commit_json "$bad" "$approved_b64" "$base_b64" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
+
+  missing_b64="$(printf '%s' "$(expected_approved_receipt "$publisher")" | encode_exact_b64)"
+  if ! validate_human_gate_commit_json "$json" "$missing_b64" "$base_b64" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
+  extra_b64="$( { expected_approved_receipt "$publisher"; printf '\n'; } | encode_exact_b64)"
+  if ! validate_human_gate_commit_json "$json" "$extra_b64" "$base_b64" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
+  missing_parent_b64="$(printf '%s' "$(expected_unapproved_receipt)" | encode_exact_b64)"
+  if ! validate_human_gate_commit_json "$json" "$approved_b64" "$missing_parent_b64" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
+  extra_parent_b64="$( { expected_unapproved_receipt; printf '\n'; } | encode_exact_b64)"
+  if ! validate_human_gate_commit_json "$json" "$approved_b64" "$extra_parent_b64" "$publisher" >/dev/null 2>&1; then pass=$((pass+1)); fi
   echo "$pass"
 }
 
@@ -385,6 +402,7 @@ self_test_ruleset_predicate() {
   candidate="$(jq '.conditions.ref_name.include=["refs/tags/other"]' <<<"$tag_good")"; if ! tag_ruleset_details_satisfy_contract "$candidate"; then pass=$((pass+1)); fi
   candidate="$(jq '.bypass_actors=[{"actor_id":1,"actor_type":"RepositoryRole","bypass_mode":"always"}]' <<<"$tag_good")"; if ! tag_ruleset_details_satisfy_contract "$candidate"; then pass=$((pass+1)); fi
   candidate="$(jq --arg stable "refs/tags/$STABLE_TAG" '.conditions.ref_name.exclude=[$stable]' <<<"$tag_good")"; if ! tag_ruleset_details_satisfy_contract "$candidate"; then pass=$((pass+1)); fi
+  candidate="$(jq '.rules += [{"type":"creation"}]' <<<"$tag_good")"; if ! tag_ruleset_details_satisfy_contract "$candidate"; then pass=$((pass+1)); fi
 
   publisher_good="$(jq -n --arg branch "refs/heads/$PUBLISHER_BRANCH" '{target:"branch",enforcement:"active",bypass_actors:[],conditions:{ref_name:{include:[$branch],exclude:[]}},rules:[{type:"update"},{type:"deletion"}]}')"
   publisher_ruleset_details_satisfy_contract "$publisher_good" && pass=$((pass+1))
@@ -614,11 +632,11 @@ self_test() {
   echo "publication_boundary_atomic_git_tests=$atomic_git"
   echo "publication_boundary_real_state_machine_tests=$real"
   echo "publication_boundary_self_tests=$total"
-  test "$receipt" = 6
-  test "$ruleset" = 10
+  test "$receipt" = 10
+  test "$ruleset" = 11
   test "$atomic_git" = 3
   test "$real" = 20
-  test "$total" = 39
+  test "$total" = 44
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
