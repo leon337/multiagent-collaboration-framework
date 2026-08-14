@@ -1,21 +1,31 @@
 # Changelog
 
-Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live, tags/releases e PRFs prevalecem para detalhes operacionais. Estados antigos como `BLOCKED` descrevem o momento histórico correspondente.
+Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live, tags/releases e PRFs prevalecem para detalhes operacionais. Estados antigos como `BLOCKED`, `NOT_PUBLISHED` e `NOT_APPROVED` descrevem o momento histórico correspondente quando aparecem em artifacts anteriores.
 
 ## [Não publicado]
 
-### Reconciliação documental — 2026-08-13
+### Reconciliação documental pós-stable — 2026-08-14
 
-- auditoria da documentação contra GitHub live, runtime, workflows, releases e evidências;
-- criação de `docs/MCF-CURRENT-STATE.md` como mapa do estado atual;
-- separação explícita entre `CURRENT_IMPLEMENTED`, `EXPERIMENTAL`, `PLANNED`, `UNDER_STUDY`, `HISTORICAL` e `SUPERSEDED`;
-- `v1.0.0` permanece não publicada.
+- estado documental atualizado após a publicação oficial de `v1.0.0`;
+- `docs/MCF-CURRENT-STATE.md`, README raiz, runtime README e índices reconciliados com o estado pós-stable;
+- Issue #131 registrada como `CLOSED/COMPLETED` e PR #133 como `CLOSED/UNMERGED`;
+- HUMAN_GATE registrado como `CONSUMED_PROTECTED`, com approval commit e consumption lock preservados como evidência;
+- NextGen permanece `UNDER_STUDY`.
 
-### Stable boundary
+## [v1.0.0] — 2026-08-14
 
-- `MCF-STABLE-RELEASE-001` / Issue #131 permanece separada da produção;
-- PR #133 prepara o boundary, mas não equivale a HUMAN_GATE;
-- stable só pode existir após a governança aplicável e autorização de LEANDRO.
+- stable publicada exatamente em `7f741e10d0e745a90c732e084400b11e3f5e6794`, o mesmo SHA da RC3 qualificada;
+- GitHub Release `MCF v1.0.0` publicada como não-draft e não-prerelease;
+- `v1.0.0` tornou-se a Release `latest`;
+- HUMAN_GATE de LEANDRO foi consumido/protegido pelo publication control plane;
+- approval commit: `786d2535b70584762b45ae0512d43872d492b715`;
+- consumption lock: `22548bed68df93819a65d26027da353eeb0f8285`;
+- `MCF-STABLE-RELEASE-001` / Issue #131 encerrada como `CLOSED/COMPLETED`;
+- PR #133 encerrado `CLOSED/UNMERGED`, preservado como control plane histórico de publicação.
+
+### Contexto histórico pré-publicação
+
+Antes de 2026-08-14, a documentação registrava corretamente a stable como não publicada e o HUMAN_GATE como não aprovado. Essas afirmações permanecem válidas apenas como `HISTORICAL` quando vinculadas ao boundary anterior à publicação.
 
 ## [v1.0.0-RC3] — 2026-08-13
 
@@ -23,7 +33,7 @@ Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live,
 - candidato final após convergência de segurança, deploy e monitoramento pós-RC2;
 - `main` qualificada no mesmo SHA;
 - produção operando no lineage qualificado;
-- stable permaneceu gated.
+- stable ainda estava gated nesse marco histórico; o estado foi superado pela publicação de `v1.0.0` em 2026-08-14.
 
 ## [v1.0.0-RC2] — 2026-08-12
 
@@ -37,7 +47,7 @@ Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live,
 - `MCF-PRODUCTION-READINESS-001` concluída sem criar Gate F;
 - infraestrutura pública, canário/smoke, observabilidade, backup/restore e readiness verificados;
 - Production Readiness automatizado consolidado;
-- produção concluída sem promover automaticamente a stable.
+- produção concluída sem promover automaticamente a stable naquele boundary histórico.
 
 ## [v1.0.0-RC1] — 2026-08-12
 
@@ -97,5 +107,5 @@ Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live,
 - estado atual: `docs/MCF-CURRENT-STATE.md`;
 - runtime: `docs/runtime/`;
 - decisões: `docs/decisions/`;
-- releases: `docs/releases/`;
+- releases: `docs/releases/` + GitHub Releases;
 - PRFs: `artifacts/phases/`.
