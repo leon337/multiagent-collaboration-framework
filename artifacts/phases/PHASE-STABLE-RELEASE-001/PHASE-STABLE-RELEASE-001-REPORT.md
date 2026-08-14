@@ -19,6 +19,19 @@ HUMAN_GATE: NAO_APROVADO
 READY_FOR_HUMAN_GATE: false
 ```
 
+## Evidência terminal sem autorreferência
+
+Este relatório versionado descreve o contrato e os findings vigentes. O **SHA terminal exato, os run IDs desse SHA e o review independente desse mesmo SHA** devem ser registrados em receipt externo no PR #133/Issue #131 somente depois de o HEAD ser congelado. Atualizar este arquivo para gravar o próprio SHA criaria outro commit e invalidaria imediatamente a evidência.
+
+```yaml
+terminal_evidence_source: PR_133_OR_ISSUE_131_EXTERNAL_RECEIPT
+terminal_head: PENDING_FROZEN_HEAD_RECEIPT
+terminal_ci: PENDING_FROZEN_HEAD_RECEIPT
+terminal_independent_review: PENDING_FROZEN_HEAD_RECEIPT
+```
+
+Qualquer SHA/run abaixo rotulado `REFERENCE_TECHNICAL_SNAPSHOT` é histórico técnico, não o HEAD terminal vigente.
+
 ## Proteção server-side obrigatória
 
 O publication boundary exige duas configurações reais no GitHub:
@@ -26,7 +39,7 @@ O publication boundary exige duas configurações reais no GitHub:
 1. ruleset de tags ativo cobrindo `refs/tags/v1.0.0` e `refs/tags/mcf-control/v1.0.0`, com proteção contra update/deletion, zero bypass e zero exclusions;
 2. ruleset do control branch `refs/heads/release/v1.0.0-stable-publish`, ativo, zero bypass/exclusions e com file-path restriction para `.github/workflows/**/*` e `scripts/**/*`.
 
-O GitHub live ainda retorna `rulesets=[]`. Portanto o Stable Publication Gate deve e efetivamente passa a falhar antes de qualquer autorização/publicação.
+Enquanto essas proteções não forem comprovadas no GitHub live, o Stable Publication Gate deve falhar antes de autorização/publicação.
 
 ## Findings materiais
 
@@ -34,44 +47,40 @@ O GitHub live ainda retorna `rulesets=[]`. Portanto o Stable Publication Gate de
 Thread `PRRT_kwDOTnz-ks6ZHcv4`. Estado: `OPEN_EXTERNAL_CONFIGURATION_BLOCKER`.
 
 ### P1 — ruleset exclusions
-Thread `PRRT_kwDOTnz-ks6ZHxY7`. Exclusions não vazias são rejeitadas e há teste negativo. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+Thread `PRRT_kwDOTnz-ks6ZHxY7`. Exclusions não vazias são rejeitadas e há teste negativo. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
 
 ### P1 — consumed recovery ligado ao código aprovado
-Thread `PRRT_kwDOTnz-ks6ZJdRe`. Recovery consumido passa a depender também de ruleset server-side que congela workflow/script no control branch. Estado: `CORRECTED_TESTED_PENDING_SERVER_SIDE_CONFIGURATION_AND_INDEPENDENT_REVIEW`.
+Thread `PRRT_kwDOTnz-ks6ZJdRe`. Recovery consumido depende também de ruleset server-side que congela workflow/script no control branch. Estado: `CORRECTED_TESTED_PENDING_SERVER_SIDE_CONFIGURATION_AND_TERMINAL_REVIEW_CHAIN`.
 
 ### P2 — consumed authority antes de metadados mutáveis
-Thread `PRRT_kwDOTnz-ks6ZHxY8`. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+Thread `PRRT_kwDOTnz-ks6ZHxY8`. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
 
 ### P2 — gate falha sem proteção
-Thread `PRRT_kwDOTnz-ks6ZHxY-`. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+Thread `PRRT_kwDOTnz-ks6ZHxY-`. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
 
 ### P2 — NOOP valida Release completa
-Thread `PRRT_kwDOTnz-ks6ZJdRg`. Recovery/NOOP exige tag/target RC3/draft/prerelease/título/body e `latest` corretos. Estado: `CORRECTED_TESTED_PENDING_INDEPENDENT_REVIEW`.
+Thread `PRRT_kwDOTnz-ks6ZJdRg`. Recovery/NOOP exige tag/target RC3/draft/prerelease/título/body e `latest` corretos. Estado: `CORRECTED_TESTED_PENDING_TERMINAL_REVIEW_CHAIN`.
 
-## Evidência técnica
+### P2 — drift de evidência do HEAD
+Finding do review `discussion_r3780758872`. Correção: remover alegação de que um SHA anterior é evidência "atual" e registrar evidência terminal externamente após congelar o novo HEAD. Estado: `CORRECTING_PENDING_NEW_FROZEN_HEAD_VALIDATION`.
+
+## REFERENCE_TECHNICAL_SNAPSHOT — não terminal
 
 ```yaml
-technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
-stable_publication_gate_run: 31766055608
-stable_publication_gate: EXPECTED_FAILURE_MISSING_SERVER_SIDE_PROTECTION
+reference_technical_head: a2841407d07165ac9a4573f3db98e3e8788e9b5b
 receipt_tests: PASS_4
 server_side_protection_tests: PASS_9
 atomic_git_real_tests: PASS_3
 state_machine_tests: PASS_14
 total_self_tests: PASS_30
-authorize_publication: SKIPPED
-publish_stable: SKIPPED
-documentation_validation_run: 31766055514
-documentation_validation: PASS
-production_readiness_run: 31766055497
-production_readiness: SUPERSEDED_BY_TERMINAL_DOC_HEAD_REQUALIFICATION
+expected_behavior_without_required_protection: FAIL_CLOSED_BEFORE_AUTHORIZATION
 ```
 
-O `FAIL` do Stable Publication Gate é o comportamento correto enquanto as proteções server-side obrigatórias estiverem ausentes.
+A evidência terminal deverá apontar para o novo HEAD documental congelado e seus runs, via receipt externo.
 
 ## Produção e lineage
 
-RC1, RC2 e RC3 permanecem preservadas; `main == RC3 == 7f741e10...`. Produção Render permanece LIVE no mesmo SHA. O último monitor reconfirmado antes deste checkpoint foi `31762056782 = SUCCESS`.
+RC1, RC2 e RC3 permanecem preservadas; `main == RC3 == 7f741e10...`. A produção permanece separada do control plane. A reconfirmação terminal de produção/monitor deve ser feita depois da cadeia de review/configuração e registrada externamente.
 
 ## Auditoria terminal
 
@@ -87,6 +96,6 @@ A renovação multiagente continua bloqueada enquanto `publication_P1 != 0`.
 
 ## Próxima ação
 
-Revalidar o HEAD documental final, obter review independente exato e somente resolver threads com cadeia completa. Depois configurar/provar as proteções server-side reais e rerodar o boundary. Mesmo um review de código limpo não transforma `rulesets=[]` em PASS. O máximo permitido continua `READY_FOR_HUMAN_GATE`.
+Congelar o HEAD documental final, executar CI nesse SHA, registrar os runs externamente e obter review independente exato. Depois configurar/provar as proteções server-side reais e rerodar o boundary. Mesmo um review de código limpo não transforma proteção ausente em PASS. O máximo permitido continua `READY_FOR_HUMAN_GATE`.
 
 Nenhum conteúdo deste relatório autoriza merge, tag, Release, `latest` ou publicação.
