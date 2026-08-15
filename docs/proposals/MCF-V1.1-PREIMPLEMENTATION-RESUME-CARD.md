@@ -25,9 +25,11 @@ implementation_authorized: true
 codex_implementation_authorized: true
 I1: PASS
 I1_accepted_head: 1d4bea35105b6014e036b4c8f1fd0a3a4312133e
-current_execution_window: I2_REPOSITORY_BACKED_CANONICAL_PROJECT_ARTIFACT_LAYER
-I2_authorized: true
-I3_authorized: false
+I2: PASS
+I2_accepted_head: 6de580c48d8617a4bf0688af09325225bf583f95
+current_execution_window: I3_ACTIVATION_ENTRY_AND_HUMAN_INTENT_DISCOVERY
+I3_authorized: true
+I4_authorized: false
 merge_to_main_authorized: false
 release_authorized: false
 production_authorized: false
@@ -36,13 +38,11 @@ prototype_product_path_authorized: false
 
 Controlled fixtures, test harnesses and disposable qualification environments required by implementation/qualification are allowed; this does not authorize a separate product prototype or production path.
 
-## Live baselines
-
-At the latest I1 gate verification:
+## Latest live baselines verified by MESTRE
 
 ```yaml
 main_live: b91823a947715e09d69c72999e2278523f2259be
-implementation_branch_live: 1d4bea35105b6014e036b4c8f1fd0a3a4312133e
+implementation_branch_live_and_I2_accepted: 6de580c48d8617a4bf0688af09325225bf583f95
 ```
 
 Codex MUST fetch live GitHub before every new execution window and record the exact current implementation HEAD/baseline.
@@ -83,7 +83,6 @@ Corrected candidate:
 
 ```yaml
 head: 1d4bea35105b6014e036b4c8f1fd0a3a4312133e
-correction_commit: fix(schemas): require provenance for material claims
 result: PASS
 blocking_findings: 0
 ```
@@ -92,53 +91,56 @@ Accepted gate:
 
 `docs/proposals/MCF-V1.1-I1-TECHNICAL-GATE-002.md`
 
-I1 is closed as PASS. The corrected schemas enforce non-empty provenance for PIP dimensions, technical delegations, assumptions and PRR observations while preserving human-decision and PRR FACT evidence requirements.
+## I2 result
 
-## Current window — I2
+Accepted candidate:
+
+```yaml
+head: 6de580c48d8617a4bf0688af09325225bf583f95
+start_head: 1d4bea35105b6014e036b4c8f1fd0a3a4312133e
+result: PASS
+blocking_findings: 0
+new_database_state: NO
+parallel_runtime_created: NO
+```
+
+Accepted gate:
+
+`docs/proposals/MCF-V1.1-I2-TECHNICAL-GATE-001.md`
+
+I2 introduced the repository-backed canonical artifact store with canonical paths, schema validation, deterministic digesting, immutable PRR/receipt semantics, aligned-PIP mutation protection, local-vs-remote verification states and atomic local writes.
+
+## Current window — I3
 
 Canonical execution-window document:
 
-`docs/proposals/MCF-V1.1-I2-EXECUTION-WINDOW-001.md`
+`docs/proposals/MCF-V1.1-I3-EXECUTION-WINDOW-001.md`
 
-I2 objective:
+I3 objective:
 
 ```text
-Repository-backed canonical project artifact layer
+Activation + project entry classification + Human Intent Discovery
 ```
 
 Required boundary:
 
-- canonical PIP/PRR/alignment-receipt paths;
-- JSON-schema validation;
-- deterministic SHA-256 digest and verification;
-- aligned PIP immutability;
-- PRR revision immutability;
-- alignment receipt immutability;
-- local-uncheckpointed vs remotely checkpointed distinction;
-- exact revision load/verification;
-- atomic local writes;
-- no new DB table;
-- no parallel runtime;
-- no I3 implementation before technical gate.
+- `NOT_ACTIVE -> ACTIVATING -> ACTIVE` edge/bootstrap state;
+- `NEW_PROJECT`, `ADOPT_EXISTING_PROJECT`, `RESUME_MCF_PROJECT` classification;
+- `RECOVER_MCF_PROJECT` routing;
+- all 20 canonical intent dimensions;
+- evidence-aware/adaptive question selection;
+- progressive semantic read-back;
+- readiness and blocking unknowns;
+- incremental working PIP revisions through the I2 artifact store;
+- machine evidence/inference must not silently become human decisions.
 
-Gate I2 requires:
+I3 must not implement:
 
-```yaml
-pip_round_trip: PASS
-prr_round_trip: PASS
-alignment_receipt_round_trip: PASS
-aligned_revision_mutation_rejected: PASS
-prr_revision_mutation_rejected: PASS
-alignment_receipt_mutation_rejected: PASS
-digest_mismatch_rejected: PASS
-schema_invalid_write_rejected: PASS
-local_uncheckpointed_not_remote: PASS
-canonical_paths: PASS
-atomic_local_write_behavior: PASS
-legacy_I1_regression: PASS
-new_database_state: NO
-parallel_runtime_created: NO
-```
+- I4 final alignment/PASS receipt/ALIGNED transition;
+- I5 full PRR pipeline;
+- I6 Mission Runtime enforcement;
+- I7 standing-authorization/HDF behavior;
+- I8 full continuity engine.
 
 ## Preparation results that remain binding
 
@@ -170,14 +172,16 @@ new_parallel_database: NO_GO
 3. `docs/proposals/MCF-V1.1-I1-TECHNICAL-GATE-001.md`
 4. `docs/proposals/MCF-V1.1-I1-TECHNICAL-GATE-002.md`
 5. `docs/proposals/MCF-V1.1-I2-EXECUTION-WINDOW-001.md`
-6. `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-020.md`
-7. `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md`
-8. `docs/proposals/MCF-V1.1-PREIMPLEMENTATION-CONFORMANCE-001.md`
-9. `docs/proposals/MCF-V1.1-TECHNICAL-CONTRACTS-001.md`
-10. `docs/proposals/MCF-V1.1-MIGRATION-COMPATIBILITY-PLAN-001.md`
-11. `docs/proposals/MCF-V1.1-IMPLEMENTATION-PLAN-001.md`
-12. `docs/proposals/MCF-V1.1-QUALIFICATION-PLAN-001.md`
-13. `docs/proposals/MCF-V1.1-PREIMPLEMENTATION-CHECKPOINT-001.md`
+6. `docs/proposals/MCF-V1.1-I2-TECHNICAL-GATE-001.md`
+7. `docs/proposals/MCF-V1.1-I3-EXECUTION-WINDOW-001.md`
+8. `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-020.md`
+9. `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md`
+10. `docs/proposals/MCF-V1.1-PREIMPLEMENTATION-CONFORMANCE-001.md`
+11. `docs/proposals/MCF-V1.1-TECHNICAL-CONTRACTS-001.md`
+12. `docs/proposals/MCF-V1.1-MIGRATION-COMPATIBILITY-PLAN-001.md`
+13. `docs/proposals/MCF-V1.1-IMPLEMENTATION-PLAN-001.md`
+14. `docs/proposals/MCF-V1.1-QUALIFICATION-PLAN-001.md`
+15. `docs/proposals/MCF-V1.1-PREIMPLEMENTATION-CHECKPOINT-001.md`
 
 ## Execution flow
 
@@ -186,23 +190,21 @@ LEANDRO OPTION D APPROVED
         ↓
 I1 contracts/schemas
         ↓
-initial I1 candidate
+I1 correction + PASS @ 1d4bea35105b6014e036b4c8f1fd0a3a4312133e
         ↓
-MESTRE finding
+I2 repository-backed canonical artifact layer
         ↓
-I1 correction
+I2 PASS @ 6de580c48d8617a4bf0688af09325225bf583f95
         ↓
-I1 PASS @ 1d4bea35105b6014e036b4c8f1fd0a3a4312133e
+I3 AUTHORIZED
         ↓
-I2 AUTHORIZED
+activation + entry classification + Human Intent Discovery
         ↓
-repository-backed canonical artifact layer
-        ↓
-I2 tests + commit + push + receipt
+I3 tests + commit + push + receipt
         ↓
 MESTRE technical gate
         ↓
-PASS → I3
+PASS → I4
 ```
 
 ## HUMAN_GATE policy
@@ -234,4 +236,4 @@ A non-canonical empty auxiliary branch `planning/mcf-v1.1-preimplementation-conf
 
 ## Comando mínimo de retomada
 
-> `Mestre, retome a v1.1 pelo Implementation Resume Card e pelo último technical gate. Verifique GitHub live. I1 passou no HEAD 1d4bea35105b6014e036b4c8f1fd0a3a4312133e e I2 está autorizado; merge/release/produção continuam bloqueados.`
+> `Mestre, retome a v1.1 pelo Implementation Resume Card e pelo último technical gate. Verifique GitHub live. I2 passou no HEAD 6de580c48d8617a4bf0688af09325225bf583f95 e I3 está autorizado; I4, merge, release e produção continuam bloqueados.`
