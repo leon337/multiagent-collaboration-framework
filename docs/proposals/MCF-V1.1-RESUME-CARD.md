@@ -1,6 +1,6 @@
 # MCF v1.1 — Resume Card
 
-**USE ESTE ARQUIVO PRIMEIRO AO RETOMAR ESTA DISCOVERY EM OUTRO CHAT.**
+**USE ESTE ARQUIVO PRIMEIRO AO RETOMAR O TRABALHO DA v1.1 EM OUTRO CHAT.**
 
 ## Identidade
 
@@ -20,16 +20,16 @@ v1_0_mutation_by_discovery: NONE
 nextgen_round_1_mutation: NONE
 ```
 
-## Estado da Discovery
+## Estado terminal da Discovery
 
 ```yaml
 target_version: v1.1.0
-status: ACTIVE_DISCOVERY
+status: DISCOVERY_COMPLETE
 total_questions: 20
-questions_completed: 19
-questions_remaining: 1
-last_completed_question: 19
-next_question: 20
+questions_completed: 20
+questions_remaining: 0
+last_completed_question: 20
+next_question: NONE
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -49,16 +49,21 @@ Q16: COMPLETED_APPROVED_BY_LEANDRO
 Q17: COMPLETED_APPROVED_BY_LEANDRO
 Q18: COMPLETED_APPROVED_BY_LEANDRO
 Q19: COMPLETED_APPROVED_BY_LEANDRO
-Q20: NOT_STARTED
+Q20: COMPLETED_APPROVED_BY_LEANDRO
+
+discovery_verdict: CONDITIONAL_GO
+conditional_go_scope: IMPLEMENTATION_PREPARATION_ONLY
+conceptual_architecture: APPROVED
+
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q19 salvo solicitação explícita de LEANDRO.**
+**Não existe Q21. Não reiniciar Discovery nem iniciar implementação automaticamente.**
 
-A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-019.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
+A continuidade canônica após o encerramento está neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-020.md` + `MCF-V1.1-DECISION-LEDGER-001.md`. Toda retomada deve consultar GitHub live antes de afirmar estado atual.
 
 ## Preferência de apresentação de LEANDRO
 
@@ -86,125 +91,128 @@ Q16: IMPACT_BASED_HUMAN_GATES_WITH_SCOPED_STANDING_AUTHORIZATION
 Q17: EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME
 Q18: COMPATIBLE_EXTENSION_VERSIONING_AND_EXPLICIT_MIGRATION
 Q19: EVIDENCE_LAYERED_REAL_SCENARIO_QUALIFICATION_MATRIX
+Q20: CONSOLIDATED_V11_ARCHITECTURE_WITH_CONDITIONAL_GO
 ```
 
-## Síntese operacional Q6–Q19
+## Arquitetura consolidada
+
+```text
+1. ACTIVATION_AND_BOOTSTRAP
+2. PROJECT_ENTRY
+3. PROJECT_CONTEXT
+4. ALIGNMENT_AND_PLANNING_INPUTS
+5. MISSION_EXECUTION
+6. AUTHORITY_AND_HUMAN_GATE
+7. PROJECT_MEMORY_AND_AUTHORITY
+8. CONTINUITY_AND_RECOVERY
+9. VERSION_AND_COMPATIBILITY
+10. QUALIFICATION
+```
+
+### Síntese do fluxo
 
 ```text
 VERIFIED ACTIVATION
 → PROJECT ENTRY CLASSIFICATION
-→ NEW: PROJECT GENESIS
-   OR
-  ADOPT: READ_ONLY RECONNAISSANCE + PROJECT REALITY REPORT + REALITY CONFIRMATION
-   OR
-  RESUME/RECOVER: VERIFIED CONTINUITY OR RECONCILIATION FIRST
+→ NEW / ADOPT / RESUME / RECOVER
+→ PROJECT GENESIS OR EVIDENCE-FIRST RECONNAISSANCE
 → HUMAN INTENT DISCOVERY
 → 20 CANONICAL INTENT DIMENSIONS
-→ EVIDENCE-AWARE ADAPTIVE QUESTIONING
-→ EVENT-DRIVEN PROGRESSIVE READ-BACK
-→ SEMANTIC READINESS GATE
-→ VERSIONED PROJECT INTENT PACKAGE
+→ ADAPTIVE QUESTIONING
+→ PROGRESSIVE READ-BACK
+→ SEMANTIC READINESS
+→ VERSIONED PIP
 → FINAL INTENT READ-BACK
 → LEANDRO CONFIRMS
 → INTENT ALIGNMENT GATE
-→ AS-IS / TO-BE GAP MAP, quando aplicável
-→ COMPLETION / RECOVERY PLAN, quando gap material exigir
+→ PRR / GAP MAP / COMPLETION PLAN WHEN APPLICABLE
+→ MISSION CONTRACT
 → MCF-START-MISSION
-→ TEAM AUTONOMY WITHIN HUMAN-APPROVED ENVELOPE
-→ IMPACT-BASED HUMAN GATES + SCOPED STANDING AUTHORIZATION
-→ EVENT-DRIVEN DURABLE CHECKPOINTS + VERIFIED RESUME
-→ COMPATIBLE EXTENSION OF V1.0 PRIMITIVES + EXPLICIT MIGRATION
-→ EVIDENCE-LAYERED REAL-SCENARIO QUALIFICATION
+→ TEAM AUTONOMY INSIDE HUMAN ENVELOPE
+→ IMPACT-BASED HUMAN_GATE + SCOPED AUTHORIZATION
+→ EVENT-DRIVEN TRANSFERABLE CHECKPOINTS
+→ FAST_RESUME / RECONCILE / RECOVER
+→ COMPATIBLE V1.0→V1.1 EXTENSION
+→ EVIDENCE-LAYERED QUALIFICATION
 ```
 
-### Q8 — 20 dimensões
-
-`PROBLEM`, `MOTIVATION`, `DESIRED_OUTCOME`, `TARGET_USERS`, `CRITICAL_USER_JOURNEYS`, `MUST_HAVE`, `SHOULD_HAVE`, `NON_GOALS`, `PRIORITIES_AND_TRADEOFFS`, `BUSINESS_RULES`, `DATA_AND_SENSITIVITY`, `ROLES_AND_PERMISSIONS`, `AUTOMATION_LEVEL`, `INTEGRATIONS`, `PLATFORM_AND_USAGE_CONTEXT`, `COST_AND_RESOURCE_CONSTRAINTS`, `QUALITY_EXPECTATIONS`, `FAILURE_TOLERANCE`, `DEFINITION_OF_DONE`, `FUTURE_VISION`.
-
-Estados: `CLEAR`, `PARTIAL`, `UNKNOWN`, `CONFLICTING`, `NOT_APPLICABLE`.
-
-### Q9 — perguntas adaptativas
-
-Sem sequência/quantidade fixa; uma resposta pode resolver múltiplas dimensões; follow-up exige ganho de informação; dimensão `CLEAR` não reabre sem causa; evidência reduz perguntas sem substituir intenção humana.
-
-### Q10 — read-back progressivo
-
-Três níveis: `MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`. Correções invalidam derivações erradas. `FINAL_INTENT_READBACK` é obrigatório antes do Alignment Gate.
-
-### Q11 — readiness
-
-Readiness é semântica, não contagem de perguntas nem score puro. Estados: `NOT_READY`, `CONDITIONALLY_READY`, `READY_FOR_ALIGNMENT`. `BLOCKING_UNKNOWN` impede alinhamento quando capaz de alterar materialmente produto, escopo, usuários, segurança, arquitetura, custo, risco ou sucesso. `READY_FOR_ALIGNMENT != IMPLEMENTATION_AUTHORIZED`.
-
-### Q12 — Project Intent Package
-
-`VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE`: memória durável e versionada da intenção humana, separando intenção, síntese, decisão, evidência, inferência, delegação, assumption e unknown. Alignment vincula revisão exata; Mission Contract nasce depois e não redefine intenção.
-
-### Q13 — artefatos de projeto existente
-
-`EVIDENCE_BOUND_CONDITIONAL_EXISTING_PROJECT_ARTIFACT_PIPELINE`: PRR representa `AS-IS`; Gap Map compara PRR exato com PIP alinhado exato; Completion/Recovery Plan nasce de gaps validados; `RECOVER_MCF_PROJECT` reconcilia primeiro.
-
-### Q14 — autoridade e views
-
-Quatro classes: `CANONICAL_DURABLE_RECORD`, `LIVE_AUTHORITATIVE_STATE`, `DERIVED_REBUILDABLE_VIEW`, `WORKING_PROPOSED_ARTIFACT`. Estado live prevalece para fatos voláteis; derived views não criam autoridade concorrente; machine inference não vira decisão humana silenciosamente.
-
-### Q15 — autoridade humana × autonomia técnica
-
-`DELEGATED_TECHNICAL_AUTONOMY_WITHIN_HUMAN_APPROVED_ENVELOPE`: LEANDRO governa intenção/objetivo/limites; equipe governa escolhas técnicas dentro de `ALIGNED_PIP + HUMAN_DECISIONS + MISSION_CONTRACT`; `TEAM_FIRST` precede escalonamento.
-
-### Q16 — HUMAN_GATE e autorizações delimitadas
-
-`IMPACT_BASED_HUMAN_GATES_WITH_SCOPED_STANDING_AUTHORIZATION`: gate por impacto material; autorizações contínuas apenas delimitadas; gate pendente bloqueia a ação dependente, não todo trabalho seguro; silêncio nunca significa aprovação.
-
-### Q17 — checkpoint, pause/resume e troca de chat
-
-`EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME`: checkpoints em eventos/boundaries materiais; Resume Card é derived view; retomada por `Resume Card → checkpoint → fontes autoritativas → live → reconciliation`; rotas `FAST_RESUME`, `RECONCILE`, `RECOVER_MCF_PROJECT`; memória do chat é opcional; local não persistido não é transferido.
-
-### Q18 — compatibilidade v1.0 → v1.1
-
-`COMPATIBLE_EXTENSION_VERSIONING_AND_EXPLICIT_MIGRATION`: v1.1 estende o core v1.0, reutilizando runtime, `MCF-START-MISSION`, `MCF-RECOVER-CONTEXT`, Mission Contract, PRF/checkpoints, permission/Human Delegation, handoffs, receipts, reconciliation e observability. Schemas evoluem por versionamento explícito e preferencialmente aditivo. Projetos v1.0 permanecem válidos sob methodology pin; upgrade não é silencioso; migração preserva artefato original e provenance. Primitive novo exige `NO_EQUIVALENT_TEST`.
-
-### Q19 — qualificação real da v1.1
+## Q20 — significado do veredito
 
 ```yaml
-canonical_name: EVIDENCE_LAYERED_REAL_SCENARIO_QUALIFICATION_MATRIX
-qualification_layers:
-  - UNIT_AND_CONTRACT
-  - INTEGRATION
-  - REAL_E2E_SCENARIOS
-  - NEGATIVE_AND_FAILURE_PATHS
-  - RECOVERY_AND_RECONCILIATION
-  - V1_0_COMPATIBILITY_AND_MIGRATION
-  - CLEAN_ROOM_CONTINUITY
-  - STRUCTURAL_NO_PARALLEL_ARCHITECTURE
-  - EXACT_HEAD_REGRESSION
-  - INDEPENDENT_REVIEW
+canonical_name: CONSOLIDATED_V11_ARCHITECTURE_WITH_CONDITIONAL_GO
+verdict: CONDITIONAL_GO
+scope: IMPLEMENTATION_PREPARATION_ONLY
 ```
 
-Cenários obrigatórios incluem projeto novo, adoção de projeto existente, `FAST_RESUME` em novo chat sem transcript como requisito, reconcile, recovery, TEAM_FIRST, HUMAN_GATE, standing authorization, partial blocking, compatibilidade/migração v1.0, precedência de fontes, `INFERENCE != HUMAN_INTENT`, ausência de arquitetura paralela e regressão exact-head. Contratos críticos exigem caminho positivo e negativo. Evidência deve conter input, esperado, execução, observado, referência, PASS/FAIL e `TESTED_HEAD`. Veredito final: `PASS`, `CONDITIONAL_PASS` ou `FAIL`, com revisão independente.
+`CONDITIONAL_GO` significa que a Discovery conceitual está completa e suficientemente madura para a preparação técnica da implementação. Não significa que a implementação já está autorizada.
 
 ```text
-DOCUMENTED != IMPLEMENTED != TESTED != QUALIFIED
-CLEAN_ROOM_RESUME_MUST_NOT_REQUIRE_PREVIOUS_CHAT
-CRITICAL_CONTRACT = POSITIVE_PATH + NEGATIVE_PATH
-TEST_EVIDENCE_BINDS_TO_EXACT_HEAD
-LEGACY_COMPATIBILITY_MUST_BE_PROVED_NOT_ASSUMED
-INDEPENDENT_REVIEW_REQUIRED_FOR_FINAL_QUALIFICATION
+DISCOVERY_COMPLETE != IMPLEMENTATION_AUTHORIZED
+CONDITIONAL_GO = GO_FOR_TECHNICAL_PREPARATION_ONLY
+NO_CODE_FROM_Q20
+NO_PROTOTYPE_FROM_Q20
+NO_RELEASE_FROM_Q20
 ```
+
+## Próxima fase permitida
+
+A próxima fase é **PRE-IMPLEMENTATION TECHNICAL PREPARATION / CONFORMANCE**, ainda sem código de implementação.
+
+Deve produzir:
+
+1. `V1_0_IMPACT_AND_CONFORMANCE_ANALYSIS`;
+2. mapa de reutilização/extensão versus candidato a novo primitive;
+3. `NO_EQUIVALENT_TEST` para cada candidato a primitive novo;
+4. schemas e contratos exatos;
+5. runtime/skill/event/persistence mapping;
+6. migration + compatibility plan;
+7. implementation plan incremental;
+8. Qualification Plan aderente à Q19;
+9. team review;
+10. HUMAN_GATE separado dirigido a LEANDRO para eventual autorização de implementação.
+
+### Primitives v1.0 a reutilizar/estender por padrão
+
+- MCF Runtime
+- `MCF-START-MISSION`
+- `MCF-RECOVER-CONTEXT`
+- Mission Contract
+- PRF/checkpoints
+- permission profiles
+- Human Delegation Firewall
+- handoffs
+- receipts
+- reconciliation
+- observability
+
+### Candidatos a novos contratos duráveis
+
+Ainda sujeitos a `NO_EQUIVALENT_TEST`:
+
+- `PROJECT_INTENT_PACKAGE`
+- `PROJECT_REALITY_REPORT`
+
+### Não criar novo runtime state por padrão
+
+- Resume Card
+- Product Brief
+- AS-IS / TO-BE Gap Map
+- Completion/Recovery Plan draft
 
 ## Ordem de leitura ao retomar
 
-1. consultar GitHub live e confirmar a branch `planning/mcf-v1.1-discovery`;
+1. consultar GitHub live e confirmar branch/HEAD pertinentes;
 2. ler este Resume Card;
-3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-019.md`;
-4. ler `docs/proposals/MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
-5. consultar `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md` quando precisar dos contratos aprovados;
+3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-020.md`;
+4. consultar `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md` para os contratos aprovados;
+5. consultar `docs/proposals/MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md` para o fechamento das 20 perguntas;
 6. manter `IMPLEMENTATION/CODEX_IMPLEMENTATION/PROTOTYPE/RELEASE = NO_GO`;
-7. iniciar **Q20**, não Q19.
+7. iniciar somente a preparação técnica/conformance, não implementação.
 
 ## Próxima ação
 
-> **Q20 — Qual é a arquitetura/contrato consolidado da v1.1.0 e qual o GO / CONDITIONAL GO / NO-GO para implementação?**
+> **Preparar a implementação da v1.1 tecnicamente, começando pela análise de impacto/conformance da v1.0 e pelos `NO_EQUIVALENT_TESTS`, sem escrever código de implementação.**
 
 ## Comando mínimo de retomada em novo chat
 
-> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 019 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q20. Não repita Q1–Q19 e não inicie implementação.`
+> `Mestre, retome a v1.1 pelo Resume Card e pelo Checkpoint 020 no GitHub. Verifique o estado live do MCF. A Discovery Q1–Q20 está completa com CONDITIONAL_GO apenas para preparação técnica. Não reabra o questionário e não implemente. Inicie a preparação técnica/conformance da v1.1.`
