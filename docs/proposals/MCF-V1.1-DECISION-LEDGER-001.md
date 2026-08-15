@@ -186,8 +186,6 @@ chosen_option: D
 canonical_name: EVIDENCE_AWARE_ADAPTIVE_QUESTIONING_WITH_INFORMATION_GAIN
 ```
 
-### Decisão
-
 As 20 dimensões não são percorridas por sequência fixa. Antes de cada pergunta, MESTRE incorpora novo contexto/evidência, atualiza todas as dimensões afetadas, verifica contradições, identifica incertezas bloqueantes e escolhe a próxima pergunta de maior valor informacional com menor carga humana possível.
 
 ```yaml
@@ -195,14 +193,6 @@ questioning_model:
   fixed_sequence: false
   fixed_question_count: false
   one_primary_question_at_a_time: true
-
-before_each_question:
-  - INGEST_NEW_CONTEXT
-  - UPDATE_ALL_AFFECTED_DIMENSIONS
-  - CHECK_CONTRADICTIONS
-  - IDENTIFY_BLOCKING_UNCERTAINTIES
-  - RANK_QUESTION_CANDIDATES
-
 question_priority:
   - MATERIAL_HUMAN_INTENT_CONFLICT
   - BLOCKING_UNCERTAINTY
@@ -210,46 +200,24 @@ question_priority:
   - HIGH_RISK_UNCERTAINTY
   - DEPENDENCY_UNLOCK
   - SECONDARY_REFINEMENT
-
-question_value_considers:
-  - INFORMATION_GAIN
-  - BLOCKER_REDUCTION
-  - RISK_REDUCTION
-  - DEPENDENCY_UNLOCK
-  - HUMAN_BURDEN
-  - REPETITION_PENALTY
-
 clear_dimension:
   repeat_without_new_cause: PROHIBITED
-
 evidence:
   use_to_reduce_questions: true
   may_replace_human_preference: false
-
 followup:
   requires_information_value: true
-  allowed_when:
-    - PARTIAL_REMAINS
-    - MATERIAL_AMBIGUITY_CREATED
-    - CONTRADICTION_CREATED
-    - SCOPE_OR_RISK_CHANGED
-    - IMPORTANT_DEPENDENCY_UNLOCKED
-
 conflict_types:
   - AS_IS_TO_BE_DIFFERENCE
   - EVIDENCE_CONFLICT
   - HUMAN_INTENT_CONFLICT
-
 low_information_loop:
   repeated_followups: PROHIBITED
   unresolved_nonblocking: PRESERVE_AND_CONTINUE
   unresolved_blocking: MARK_BLOCKING_UNKNOWN
-
 human_delegation:
   valid_resolution: true
 ```
-
-Princípios:
 
 ```text
 ONE_ANSWER_MAY_RESOLVE_MULTIPLE_DIMENSIONS
@@ -260,7 +228,7 @@ MACHINE_EVIDENCE_REDUCES_QUESTIONS_BUT_DOES_NOT_REPLACE_HUMAN_INTENT
 QUESTION -> ANSWER -> UPDATE_DIMENSIONS -> REASSESS -> NEXT_BEST_QUESTION
 ```
 
-Mudança explícita de decisão humana não apaga o histórico: decisão anterior deve ser marcada `SUPERSEDED` e a nova como `CURRENT`. Loops de follow-up com baixo ganho são proibidos. A carga cognitiva de LEANDRO entra como custo real na seleção da próxima pergunta.
+Mudança explícita de decisão humana preserva histórico: anterior `SUPERSEDED`, nova `CURRENT`.
 
 ## V11-Q10 — Progressive Semantic Read-Back Contract
 
@@ -272,16 +240,13 @@ chosen_option: D
 canonical_name: EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK
 ```
 
-### Decisão
-
-O MCF valida entendimento de forma progressiva, orientada por eventos e com cadência de segurança. Read-back intermediário é checksum semântico para impedir propagação de interpretações erradas; não substitui o `FINAL_INTENT_READBACK` nem autoriza implementação.
+O MCF valida entendimento de forma progressiva, orientada por eventos e com cadência de segurança. Read-back intermediário é checksum semântico; não substitui o `FINAL_INTENT_READBACK` nem autoriza implementação.
 
 ```yaml
 readback_levels:
   - MICRO_CLARIFICATION
   - PROGRESSIVE_READBACK
   - FINAL_INTENT_READBACK
-
 progressive_readback_triggers:
   - MATERIAL_SCOPE_CHANGE
   - MATERIAL_HUMAN_INTENT_CONFLICT
@@ -289,51 +254,25 @@ progressive_readback_triggers:
   - SIGNIFICANT_SEMANTIC_BLOCK_COMPLETED
   - EXCESSIVE_CHANGE_SINCE_LAST_READBACK
   - CONTEXT_OR_HANDOFF_BOUNDARY
-
 cadence_safety_net:
   meaningful_exchanges: APPROXIMATELY_4_TO_6
   fixed_count: false
-
-content:
-  emphasize:
-    - NEW_UNDERSTANDING
-    - MATERIAL_CHANGES
-    - HIGH_IMPACT_INTENT
-    - IMPORTANT_CONSTRAINTS
-    - OPEN_UNCERTAINTIES
-  repeat_all_dimensions_every_time: false
-  distinguish_fact_from_interpretation: true
-  false_certainty: prohibited
-
 result_states:
   - CONFIRMED
   - CORRECTED
   - REJECTED
-
 partial_confirmation:
   allowed: true
-
 correction:
   stop_wrong_semantic_propagation: true
   identify_affected_dimensions: true
   invalidate_derived_assumptions: true
   recalculate_dimension_states: true
-
-history:
-  material_human_change:
-    old: SUPERSEDED
-    new: CURRENT
-  rejected_machine_interpretation:
-    must_not_become_human_decision: true
-
 final_readback:
   required_before_intent_alignment_gate: true
-
 progressive_confirmation:
   authorizes_implementation: false
 ```
-
-Princípios:
 
 ```text
 PROGRESSIVE_READBACK = SEMANTIC_CHECKSUM
@@ -344,7 +283,133 @@ REJECTED_MACHINE_INTERPRETATION != HUMAN_DECISION
 PROGRESSIVE_CONFIRMATION != INTENT_ALIGNMENT_GATE
 ```
 
-Correções materiais preservam histórico; interpretações derivadas invalidadas não podem continuar contaminando dimensões dependentes. Read-backs devem enfatizar o que é novo, material, alterado e ainda incerto, em linguagem compreensível para LEANDRO, sem repetir mecanicamente as 20 dimensões. Q11 definirá readiness global.
+## V11-Q11 — Context Sufficiency / Intent Readiness Contract
+
+```yaml
+decision_id: V11-Q11
+question: Q11
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: SEMANTIC_READINESS_GATE_WITH_BLOCKING_UNKNOWNS
+```
+
+### Problema
+
+Definir quando o MCF já compreendeu intenção humana suficiente para parar de perguntar e preparar o alinhamento final, sem exigir certeza artificial sobre todos os detalhes e sem permitir que lacunas materiais sejam escondidas por contagem de perguntas ou score alto.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+readiness_is:
+  semantic: true
+  question_count_based: false
+  pure_score_based: false
+
+dimension_states_preserved_from_Q8:
+  - CLEAR
+  - PARTIAL
+  - UNKNOWN
+  - CONFLICTING
+  - NOT_APPLICABLE
+
+readiness_impact:
+  - BLOCKING
+  - NON_BLOCKING
+
+blocking_unknown_definition:
+  may_materially_change:
+    - PRODUCT
+    - SCOPE
+    - USERS
+    - SECURITY
+    - ARCHITECTURE
+    - COST
+    - RISK
+    - SUCCESS_CRITERIA
+
+universal_intent_core:
+  - PROBLEM
+  - DESIRED_OUTCOME
+  - TARGET_USERS
+  - CRITICAL_USER_JOURNEYS
+  - MUST_HAVE
+  - NON_GOALS
+  - PRIORITIES_AND_TRADEOFFS
+  - DEFINITION_OF_DONE
+
+conditionally_critical_dimensions:
+  determined_by:
+    - DOMAIN
+    - RISK
+    - DATA_SENSITIVITY
+    - EXTERNAL_EFFECTS
+    - CRITICAL_JOURNEYS
+    - HUMAN_CONSTRAINTS
+
+delegation:
+  explicit_technical_delegation_is_valid_resolution: true
+
+not_applicable:
+  counts_as_resolved: true
+
+diagnostic_score:
+  allowed: true
+  gate_authority: false
+  may_override_blocker: false
+
+global_states:
+  - NOT_READY
+  - CONDITIONALLY_READY
+  - READY_FOR_ALIGNMENT
+
+ready_for_alignment_requires:
+  blocking_unknowns: 0
+  material_human_intent_conflicts: 0
+  unresolved_high_impact_interpretations: 0
+  semantic_coherence: true
+  nonblocking_unknowns_preserved: true
+  technical_delegations_explicit: true
+
+ready_for_alignment:
+  authorizes_implementation: false
+
+readiness:
+  recalculated_after_material_change: true
+```
+
+### Regras resultantes
+
+- `INTENT_SUFFICIENTLY_UNDERSTOOD != ALL_DETAILS_KNOWN`;
+- `DIMENSION_STATE != READINESS_IMPACT`;
+- `BLOCKING_UNKNOWN` é uma incerteza cuja resposta pode alterar materialmente produto, escopo, usuários, segurança, arquitetura, custo, risco ou critério de sucesso;
+- `PARTIAL` ou `UNKNOWN` podem ser aceitáveis quando explicitamente não bloqueantes;
+- `NOT_APPLICABLE` conta como dimensão resolvida quando fundamentado;
+- delegação técnica explícita à equipe conta como resolução válida da intenção humana;
+- conflito material de intenção humana é bloqueante até resolução; conflito técnico de evidência não é automaticamente blocker de Intent Readiness;
+- o core universal precisa estar semanticamente livre de blockers; outras dimensões tornam-se críticas conforme domínio e risco;
+- score pode existir apenas como diagnóstico/observabilidade e jamais sobrescreve blocker semântico;
+- `CONDITIONALLY_READY` pode preparar síntese/read-back final, mas não passa automaticamente o `INTENT_ALIGNMENT_GATE`;
+- `READY_FOR_ALIGNMENT` significa contexto suficiente para apresentar a intenção consolidada a LEANDRO, não autorização de implementação;
+- readiness é estado derivado e deve ser recalculado após mudança material;
+- o MESTRE deve parar de perguntar quando o próximo questionamento tiver baixo ganho informacional, não houver incerteza bloqueante e o core semântico estiver coerente.
+
+Princípios:
+
+```text
+QUESTION_COUNT != CONTEXT_SUFFICIENCY
+HIGH_SCORE_DOES_NOT_CANCEL_SEMANTIC_BLOCKER
+DELEGATED_TECHNICAL_DETAIL != MISSING_HUMAN_INTENT
+NOT_APPLICABLE = RESOLVED_WHEN_JUSTIFIED
+CLEAR_FIELDS_CAN_STILL_BE_SEMANTICALLY_INCOHERENT
+READY_FOR_ALIGNMENT != IMPLEMENTATION_AUTHORIZED
+MATERIAL_INTENT_CHANGE_RECALCULATES_READINESS
+```
+
+Q12 definirá como esse entendimento suficientemente pronto é persistido no `Project Intent Package`.
 
 ---
 
