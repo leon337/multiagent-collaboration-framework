@@ -26,10 +26,10 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 13
-questions_remaining: 7
-last_completed_question: 13
-next_question: 14
+questions_completed: 14
+questions_remaining: 6
+last_completed_question: 14
+next_question: 15
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -43,16 +43,21 @@ Q10: COMPLETED_APPROVED_BY_LEANDRO
 Q11: COMPLETED_APPROVED_BY_LEANDRO
 Q12: COMPLETED_APPROVED_BY_LEANDRO
 Q13: COMPLETED_APPROVED_BY_LEANDRO
-Q14: NOT_STARTED
+Q14: COMPLETED_APPROVED_BY_LEANDRO
+Q15: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q13 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q14 salvo solicitação explícita de LEANDRO.**
 
-A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-013.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
+A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-014.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
+
+## Preferência de apresentação de LEANDRO
+
+Ao apresentar alternativas decisórias, MESTRE deve marcar sua recomendação com **⭐** na lista final. A estrela é somente recomendação visual; a decisão continua pertencendo exclusivamente a LEANDRO.
 
 ## Decisões aprovadas
 
@@ -70,9 +75,10 @@ Q10: EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK
 Q11: SEMANTIC_READINESS_GATE_WITH_BLOCKING_UNKNOWNS
 Q12: VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE
 Q13: EVIDENCE_BOUND_CONDITIONAL_EXISTING_PROJECT_ARTIFACT_PIPELINE
+Q14: LAYERED_AUTHORITY_WITH_REBUILDABLE_PROJECT_VIEWS
 ```
 
-## Síntese operacional Q6–Q13
+## Síntese operacional Q6–Q14
 
 ```text
 VERIFIED ACTIVATION
@@ -170,7 +176,7 @@ ALIGNMENT_BINDS_TO_EXACT_PIP_REVISION
 PROJECT_INTENT_CAN_OUTLIVE_ANY_SINGLE_MISSION
 ```
 
-O PIP preserva provenance de afirmações materiais, delegações técnicas, assumptions, unknowns, blockers e conflicts. O `INTENT_ALIGNMENT_GATE` aprova uma revisão exata; revisão alinhada é histórica/imutável. Mudança material cria nova working revision. `Mission Contract` nasce depois do alinhamento e referencia a revisão alinhada do PIP. `Product Brief` não pode introduzir intenção nova; canônico vs derived fica para Q14.
+O PIP preserva provenance de afirmações materiais, delegações técnicas, assumptions, unknowns, blockers e conflicts. O `INTENT_ALIGNMENT_GATE` aprova uma revisão exata; revisão alinhada é histórica/imutável. Mudança material cria nova working revision. `Mission Contract` nasce depois do alinhamento e referencia a revisão alinhada do PIP.
 
 ### Q13 — artefatos de projeto existente
 
@@ -182,35 +188,50 @@ artifacts:
   - COMPLETION_RECOVERY_PLAN
 ```
 
-`Project Reality Report` representa apenas realidade `AS-IS` em baseline exato com evidência/provenance; não representa intenção nem plano. `Gap Map` compara revisão exata do PRR com revisão exata e alinhada do PIP. Análise preliminar de gap pode existir antes do alinhamento, mas não possui autoridade de planejamento. `Completion/Recovery Plan` nasce de gaps validados e não autoriza implementação.
+`Project Reality Report` representa apenas realidade `AS-IS` em baseline exato com evidência/provenance; não representa intenção nem plano. `Gap Map` compara revisão exata do PRR com revisão exata e alinhada do PIP. `Completion/Recovery Plan` nasce de gaps validados e não autoriza implementação. `RECOVER_MCF_PROJECT` reconcilia primeiro e só escala diante de divergência material.
 
-Para `ADOPT_EXISTING_PROJECT`, PRR é obrigatório; Gap Map e Plan são requeridos quando houver gap material. `RESUME_MCF_PROJECT` com continuidade verificável não reconstrói tudo por padrão. `RECOVER_MCF_PROJECT` reconcilia primeiro checkpoint + PIP + Mission State + GitHub live + evidências e só escala para reconstrução adicional diante de divergência material.
+### Q14 — autoridade e views
 
-```text
-AS_IS != TO_BE
-PRR != PIP
-PRR != PLAN
-GAP = EXACT_PRR_REVISION x EXACT_ALIGNED_PIP_REVISION
-PLAN_CREATED != IMPLEMENTATION_AUTHORIZED
-RECOVER = RECONCILE_FIRST
+```yaml
+canonical_name: LAYERED_AUTHORITY_WITH_REBUILDABLE_PROJECT_VIEWS
+authority_classes:
+  - CANONICAL_DURABLE_RECORD
+  - LIVE_AUTHORITATIVE_STATE
+  - DERIVED_REBUILDABLE_VIEW
+  - WORKING_PROPOSED_ARTIFACT
 ```
 
-Canônico vs derived permanece para Q14.
+- `CANONICAL_DURABLE_RECORD` é autoritativo dentro de escopo/boundary identificado;
+- `LIVE_AUTHORITATIVE_STATE` prevalece para fatos externos voláteis;
+- `DERIVED_REBUILDABLE_VIEW` deve ser reconstruível e não cria nova fonte de verdade;
+- `WORKING_PROPOSED_ARTIFACT` não possui autoridade até promoção explícita;
+- Product Brief e Gap Map são derived views;
+- Completion/Recovery Plan nasce como working/proposed;
+- checkpoint é canônico para o boundary capturado, mas fatos voláteis exigem reconciliação live;
+- não existe um único arquivo universal que seja fonte de verdade para todos os domínios.
+
+```text
+CANONICAL != CURRENT_FOREVER
+DERIVED_VIEW_CANNOT_OVERRIDE_CANONICAL_RECORD
+LIVE_STATE_CANNOT_REWRITE_HISTORY
+CHECKPOINT + LIVE_STATE -> RECONCILIATION
+PLAN_EXISTS != PLAN_IS_AUTHORITY
+```
 
 ## Ordem de leitura ao retomar
 
 1. consultar GitHub live e confirmar a branch `planning/mcf-v1.1-discovery`;
 2. ler este Resume Card;
-3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-013.md`;
+3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-014.md`;
 4. ler `docs/proposals/MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. consultar `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md` quando precisar dos contratos aprovados;
 6. manter `implementation/prototype/release = NO_GO`;
-7. iniciar **Q14**, não Q13.
+7. iniciar **Q15**, não Q14.
 
 ## Próxima ação
 
-> **Q14 — O que é canônico e o que é derived view na memória/continuidade do projeto?**
+> **Q15 — Qual é a divisão de autoridade entre LEANDRO e a equipe MCF após o intake?**
 
 ## Comando mínimo de retomada em novo chat
 
-> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 013 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q14. Não repita Q1–Q13 e não inicie implementação.`
+> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 014 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q15. Não repita Q1–Q14 e não inicie implementação.`
