@@ -27,10 +27,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 14
-questions_remaining: 6
-last_completed_question: 14
-next_question: 15
+questions_completed: 15
+questions_remaining: 5
+last_completed_question: 15
+next_question: 16
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -45,7 +45,7 @@ question_11: COMPLETED_APPROVED_BY_LEANDRO
 question_12: COMPLETED_APPROVED_BY_LEANDRO
 question_13: COMPLETED_APPROVED_BY_LEANDRO
 question_14: COMPLETED_APPROVED_BY_LEANDRO
-question_15: NOT_STARTED
+question_15: COMPLETED_APPROVED_BY_LEANDRO
 question_16: NOT_STARTED
 question_17: NOT_STARTED
 question_18: NOT_STARTED
@@ -120,11 +120,7 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 - PIP é memória durável da intenção, não chat log, arquitetura, backlog ou Mission Contract;
 - separa `RAW_INTENT`, síntese do MESTRE, decisões humanas, evidência, inferências e assumptions;
 - preserva 20 dimensões, readiness impact e provenance de afirmações materiais;
-- registra current/superseded human decisions, delegações, assumptions, unknowns, blockers e conflicts;
-- lifecycle: `DISCOVERY_IN_PROGRESS`, `READY_FOR_ALIGNMENT`, `ALIGNED`, `REOPENED_AFTER_MATERIAL_CHANGE`;
 - `INTENT_ALIGNMENT_GATE` vincula-se a revisão exata do PIP;
-- revisão alinhada é histórica/imutável; mudança material cria nova working revision;
-- `Intent Alignment Receipt` prova a confirmação sem duplicar todo o PIP;
 - Mission Contract nasce após alinhamento e referencia a revisão alinhada do PIP;
 - Product Brief não pode introduzir intenção nova.
 
@@ -134,10 +130,7 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 
 - `Project Reality Report` representa somente o `AS-IS` em baseline exato, com evidência e provenance;
 - `AS-IS / TO-BE Gap Map` vincula revisão exata do PRR a revisão exata e alinhada do PIP;
-- análise preliminar de gap antes do alinhamento não possui autoridade de planejamento;
 - `Completion / Recovery Plan` nasce de gaps validados e não autoriza implementação;
-- em `ADOPT_EXISTING_PROJECT`, PRR é obrigatório; Gap Map e Plan são obrigatórios quando houver gap material;
-- `RESUME_MCF_PROJECT` com continuidade verificável não reconstrói toda a Discovery por padrão;
 - `RECOVER_MCF_PROJECT` reconcilia primeiro checkpoint, PIP, Mission State, GitHub live e evidências.
 
 ### Q14 — O que é canônico e o que é derived view na memória/continuidade do projeto?
@@ -145,18 +138,24 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 **Decisão:** `LAYERED_AUTHORITY_WITH_REBUILDABLE_PROJECT_VIEWS` — Opção D.
 
 - quatro classes: `CANONICAL_DURABLE_RECORD`, `LIVE_AUTHORITATIVE_STATE`, `DERIVED_REBUILDABLE_VIEW`, `WORKING_PROPOSED_ARTIFACT`;
-- autoridade canônica é específica de domínio/boundary; não existe arquivo mestre universal;
+- autoridade canônica é específica de domínio/boundary;
 - estado live governa fatos externos voláteis e não reescreve registros históricos;
-- derived views não podem substituir fontes autoritativas e devem ser reconstruíveis;
-- Product Brief e Gap Map são `DERIVED_REBUILDABLE_VIEW`;
-- Completion/Recovery Plan nasce como `WORKING_PROPOSED_ARTIFACT`;
-- checkpoint é canônico para o boundary capturado, mas exige reconciliação live na retomada;
+- derived views não podem substituir fontes autoritativas;
 - promoção de análise/proposta para decisão/contrato autoritativo deve ser explícita.
 
 ### Q15 — Qual é a divisão de autoridade entre LEANDRO e a equipe MCF após o intake?
-**Estado:** `NOT_STARTED`
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `DELEGATED_TECHNICAL_AUTONOMY_WITHIN_HUMAN_APPROVED_ENVELOPE` — Opção D.
+
+- LEANDRO governa intenção, objetivo, resultado esperado, prioridades, limites e trade-offs humanos materiais;
+- a equipe MCF possui autonomia técnica e operacional delegada dentro do envelope aprovado;
+- `ALIGNED_PIP + HUMAN_DECISIONS + MISSION_CONTRACT` formam o envelope aplicável;
+- `TEAM_FIRST` precede escalonamento humano para ambiguidades técnicas;
+- mudanças materiais em intenção, objetivo, público, must-have/non-goal, prioridade, custo/recurso, risco, exposição externa, definição de pronto ou resultado esperado cruzam a fronteira da autoridade humana;
+- a lista concreta de `HUMAN_GATE` permanece reservada para Q16.
 
 ### Q16 — Quais ações continuam exigindo HUMAN_GATE e quais decisões técnicas podem ser delegadas?
+**Estado:** `NOT_STARTED`
 
 ### Q17 — Como checkpoint, pause/resume e troca de chat devem funcionar?
 
@@ -181,20 +180,20 @@ Para cada Q aprovada:
 
 ---
 
-## 5. Handoff após Q14
+## 5. Handoff após Q15
 
 O boundary canônico atual é:
 
 ```text
 MCF-V1.1-RESUME-CARD.md
 +
-MCF-V1.1-DISCOVERY-CHECKPOINT-014.md
+MCF-V1.1-DISCOVERY-CHECKPOINT-015.md
 ```
 
-Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q14 e retomar diretamente na Q15.
+Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q15 e retomar diretamente na Q16.
 
 ## 6. Próxima ação
 
-> **Q15 — Qual é a divisão de autoridade entre LEANDRO e a equipe MCF após o intake?**
+> **Q16 — Quais ações continuam exigindo HUMAN_GATE e quais decisões técnicas podem ser delegadas?**
 
-Não iniciar Q16 antes de decisão explícita de LEANDRO sobre Q15. Implementação permanece `NO_GO`.
+Não iniciar Q17 antes de decisão explícita de LEANDRO sobre Q16. Implementação permanece `NO_GO`.
