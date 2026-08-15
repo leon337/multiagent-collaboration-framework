@@ -27,10 +27,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 18
-questions_remaining: 2
-last_completed_question: 18
-next_question: 19
+questions_completed: 19
+questions_remaining: 1
+last_completed_question: 19
+next_question: 20
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -49,7 +49,7 @@ question_15: COMPLETED_APPROVED_BY_LEANDRO
 question_16: COMPLETED_APPROVED_BY_LEANDRO
 question_17: COMPLETED_APPROVED_BY_LEANDRO
 question_18: COMPLETED_APPROVED_BY_LEANDRO
-question_19: NOT_STARTED
+question_19: COMPLETED_APPROVED_BY_LEANDRO
 question_20: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
@@ -105,7 +105,7 @@ Sem sequência/contagem fixa; uma pergunta primária por vez; atualizar dimensõ
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK` — Opção D.
 
-Três níveis (`MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`); gatilhos por mudanças/conflitos/interpretações materiais e boundaries; correções invalidam derivações erradas; final read-back obrigatório antes do Alignment Gate.
+Três níveis (`MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`); correções invalidam derivações erradas; final read-back obrigatório antes do Alignment Gate.
 
 ### Q11 — Como medir Context Sufficiency / Intent Readiness antes de planejar?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
@@ -118,7 +118,7 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 **Decisão:** `VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE` — Opção D.
 
 - PIP é memória durável da intenção, não chat log, arquitetura, backlog ou Mission Contract;
-- separa `RAW_INTENT`, síntese do MESTRE, decisões humanas, evidência, inferências e assumptions;
+- separa intenção, síntese, decisões humanas, evidência, inferência, delegação, assumptions e unknowns;
 - preserva 20 dimensões, readiness impact e provenance de afirmações materiais;
 - `INTENT_ALIGNMENT_GATE` vincula-se a revisão exata do PIP;
 - Mission Contract nasce após alinhamento e referencia a revisão alinhada do PIP;
@@ -138,8 +138,7 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 **Decisão:** `LAYERED_AUTHORITY_WITH_REBUILDABLE_PROJECT_VIEWS` — Opção D.
 
 - quatro classes: `CANONICAL_DURABLE_RECORD`, `LIVE_AUTHORITATIVE_STATE`, `DERIVED_REBUILDABLE_VIEW`, `WORKING_PROPOSED_ARTIFACT`;
-- autoridade canônica é específica de domínio/boundary;
-- estado live governa fatos externos voláteis e não reescreve registros históricos;
+- estado live governa fatos externos voláteis;
 - derived views não podem substituir fontes autoritativas;
 - promoção de análise/proposta para decisão/contrato autoritativo deve ser explícita.
 
@@ -148,18 +147,17 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 **Decisão:** `DELEGATED_TECHNICAL_AUTONOMY_WITHIN_HUMAN_APPROVED_ENVELOPE` — Opção D.
 
 - LEANDRO governa intenção, objetivo, resultado esperado, prioridades, limites e trade-offs humanos materiais;
-- a equipe MCF possui autonomia técnica e operacional delegada dentro do envelope aprovado;
-- `ALIGNED_PIP + HUMAN_DECISIONS + MISSION_CONTRACT` formam o envelope aplicável;
-- `TEAM_FIRST` precede escalonamento humano para ambiguidades técnicas;
-- mudanças materiais cruzam a fronteira da autoridade humana.
+- a equipe possui autonomia técnica e operacional dentro do envelope aprovado;
+- `ALIGNED_PIP + HUMAN_DECISIONS + MISSION_CONTRACT` formam o envelope;
+- `TEAM_FIRST` precede escalonamento humano;
+- mudança material cruza a fronteira humana.
 
 ### Q16 — Quais ações continuam exigindo HUMAN_GATE e quais decisões técnicas podem ser delegadas?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `IMPACT_BASED_HUMAN_GATES_WITH_SCOPED_STANDING_AUTHORIZATION` — Opção D.
 
-- `HUMAN_GATE` é determinado por impacto material e autoridade aplicável, não pelo nome isolado da operação;
-- mudanças materiais de intenção/objetivo/público, custos fora do boundary, exposição jurídica/privacidade/pública, uso excepcional de credenciais/dados sensíveis, ações irreversíveis/de alto impacto, pivô/cancelamento, aceitação de risco material e ações reservadas exigem gate humano;
-- autorizações antecipadas/contínuas só valem com limites claros;
+- `HUMAN_GATE` depende de impacto material, não do nome isolado da operação;
+- autorizações antecipadas/contínuas são permitidas apenas com limites claros;
 - `TEAM_FIRST` permanece obrigatório;
 - gate pendente bloqueia apenas a ação dependente;
 - silêncio nunca equivale a aprovação.
@@ -168,36 +166,42 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME` — Opção D.
 
-- checkpoint é orientado a evento/boundary material, não a cada interação ou período fixo;
-- pausas, trocas de chat e trocas planejadas de ambiente exigem checkpoint durável e transferível;
-- Resume Card é `DERIVED_REBUILDABLE_VIEW` e serve apenas como orientação rápida;
-- retomada segue `Resume Card → checkpoint canônico → fontes autoritativas → GitHub/provider live → reconciliação`;
+- checkpoint é orientado a evento/boundary material;
+- pausas e trocas planejadas exigem checkpoint durável e transferível;
+- Resume Card é `DERIVED_REBUILDABLE_VIEW`;
+- retomada segue `Resume Card → checkpoint → fontes autoritativas → live → reconciliação`;
 - rotas: `FAST_RESUME`, `RECONCILE`, `RECOVER_MCF_PROJECT`;
-- memória/transcript do chat anterior é contexto opcional, nunca requisito;
-- trabalho local não persistido não pode ser declarado transferido;
-- mudança material inexplicável, checkpoint ausente/inválido ou evidência insuficiente exige recovery;
-- `NEW_CHAT != NEW_MISSION` e `PAUSED != CANCELLED`.
+- memória/transcript do chat anterior é opcional;
+- trabalho local não persistido não pode ser declarado transferido.
 
 ### Q18 — Como evoluir a v1.0.0 para v1.1.0 preservando compatibilidade e evitando duplicação de mecanismos?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `COMPATIBLE_EXTENSION_VERSIONING_AND_EXPLICIT_MIGRATION` — Opção D.
 
-- a v1.1 estende os primitives da v1.0 em vez de reescrever o core ou criar arquitetura paralela;
-- reutilizar runtime, `MCF-START-MISSION`, `MCF-RECOVER-CONTEXT`, Mission Contract, PRF/checkpoints, permission profiles/Human Delegation, handoffs, receipts, reconciliação e observabilidade;
-- schemas/contratos evoluem com versionamento explícito e preferencialmente extensões aditivas compatíveis;
-- artefato legado sem campos v1.1 não é automaticamente inválido;
-- projetos v1.0 não sofrem migração em massa; methodology pin impede upgrade silencioso no meio da missão;
-- migração deve preservar artefato original/provenance, produzir sucessor versionado e validar antes da ativação;
-- primitive novo exige `NO_EQUIVALENT_TEST` e justificativa;
-- compatibilidade precisa ser comprovada em documento, contrato e runtime;
-- identidade da release v1.0.0 permanece histórica/imutável;
-- incompatibilidade real em autoridade, gates ou fluxo central deve ser reclassificada, não ocultada numa versão minor.
+- v1.1 estende os primitives v1.0 em vez de reescrever ou duplicar;
+- reutiliza runtime, `MCF-START-MISSION`, `MCF-RECOVER-CONTEXT`, Mission Contract, PRF/checkpoints, permission/Human Delegation, handoffs, receipts, reconciliação e observabilidade;
+- schemas evoluem por versionamento explícito e preferencialmente aditivo;
+- projeto legado não é automaticamente inválido;
+- methodology pin impede upgrade silencioso;
+- migração preserva artefato original/provenance e valida sucessor;
+- primitive novo exige `NO_EQUIVALENT_TEST`;
+- compatibilidade deve ser provada em documento, contrato e runtime;
+- identidade v1.0.0 permanece histórica e imutável.
 
 ### Q19 — Como provar a v1.1.0 com testes reais?
-**Estado:** `NOT_STARTED`  
-Candidatos mínimos: projeto novo, projeto antigo incompleto e retomada em novo chat.
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `EVIDENCE_LAYERED_REAL_SCENARIO_QUALIFICATION_MATRIX` — Opção D.
+
+- qualificação em camadas: unit/contract, integração, E2E real, caminhos negativos, recovery/reconciliation, compatibilidade/migração v1.0, clean-room continuity, prova estrutural de não duplicação, exact-head regression e revisão independente;
+- cenários obrigatórios incluem `NEW_PROJECT`, `ADOPT_EXISTING_PROJECT`, novo chat sem transcript como requisito, `RECONCILE`, `RECOVER_MCF_PROJECT`, `TEAM_FIRST`, `HUMAN_GATE`, standing authorization, partial blocking, legado v1.0, falha de migração, precedência de fontes, `INFERENCE != HUMAN_INTENT`, no-parallel-architecture e exact-head regression;
+- contratos críticos exigem caminho positivo e negativo;
+- evidência deve registrar input, esperado, execução, observado, referência, PASS/FAIL e `TESTED_HEAD`;
+- mudança material depois da qualificação reabre testes afetados;
+- implementador não pode ser o único qualificador final;
+- veredito: `PASS`, `CONDITIONAL_PASS` ou `FAIL`.
 
 ### Q20 — Qual é a arquitetura/contrato consolidado da v1.1.0 e qual o GO / CONDITIONAL GO / NO-GO para implementação?
+**Estado:** `NOT_STARTED`
 
 ---
 
@@ -213,20 +217,20 @@ Para cada Q aprovada:
 
 ---
 
-## 5. Handoff após Q18
+## 5. Handoff após Q19
 
 O boundary canônico atual é:
 
 ```text
 MCF-V1.1-RESUME-CARD.md
 +
-MCF-V1.1-DISCOVERY-CHECKPOINT-018.md
+MCF-V1.1-DISCOVERY-CHECKPOINT-019.md
 ```
 
-Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q18 e retomar diretamente na Q19.
+Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q19 e retomar diretamente na Q20.
 
 ## 6. Próxima ação
 
-> **Q19 — Como provar a v1.1.0 com testes reais?**
+> **Q20 — Qual é a arquitetura/contrato consolidado da v1.1.0 e qual o GO / CONDITIONAL GO / NO-GO para implementação?**
 
-Não iniciar Q20 antes de decisão explícita de LEANDRO sobre Q19. Implementação permanece `NO_GO`.
+Não iniciar implementação como consequência automática da Q20. Mesmo após encerramento da Discovery, `IMPLEMENTATION`, `CODEX_IMPLEMENTATION`, `PROTOTYPE` e `RELEASE` permanecem `NO_GO` até HUMAN_GATE separado e explícito de LEANDRO.
