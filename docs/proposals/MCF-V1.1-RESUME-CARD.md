@@ -26,10 +26,10 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 17
-questions_remaining: 3
-last_completed_question: 17
-next_question: 18
+questions_completed: 18
+questions_remaining: 2
+last_completed_question: 18
+next_question: 19
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -47,16 +47,17 @@ Q14: COMPLETED_APPROVED_BY_LEANDRO
 Q15: COMPLETED_APPROVED_BY_LEANDRO
 Q16: COMPLETED_APPROVED_BY_LEANDRO
 Q17: COMPLETED_APPROVED_BY_LEANDRO
-Q18: NOT_STARTED
+Q18: COMPLETED_APPROVED_BY_LEANDRO
+Q19: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q17 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q18 salvo solicitação explícita de LEANDRO.**
 
-A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-017.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
+A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-018.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
 
 ## Preferência de apresentação de LEANDRO
 
@@ -82,9 +83,10 @@ Q14: LAYERED_AUTHORITY_WITH_REBUILDABLE_PROJECT_VIEWS
 Q15: DELEGATED_TECHNICAL_AUTONOMY_WITHIN_HUMAN_APPROVED_ENVELOPE
 Q16: IMPACT_BASED_HUMAN_GATES_WITH_SCOPED_STANDING_AUTHORIZATION
 Q17: EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME
+Q18: COMPATIBLE_EXTENSION_VERSIONING_AND_EXPLICIT_MIGRATION
 ```
 
-## Síntese operacional Q6–Q17
+## Síntese operacional Q6–Q18
 
 ```text
 VERIFIED ACTIVATION
@@ -109,6 +111,7 @@ VERIFIED ACTIVATION
 → TEAM AUTONOMY WITHIN HUMAN-APPROVED ENVELOPE
 → IMPACT-BASED HUMAN GATES + SCOPED STANDING AUTHORIZATION
 → EVENT-DRIVEN DURABLE CHECKPOINTS + VERIFIED RESUME
+→ COMPATIBLE EXTENSION OF V1.0 PRIMITIVES + EXPLICIT MIGRATION
 ```
 
 ### Q8 — 20 dimensões
@@ -160,40 +163,42 @@ Quatro classes: `CANONICAL_DURABLE_RECORD`, `LIVE_AUTHORITATIVE_STATE`, `DERIVED
 
 ### Q17 — checkpoint, pause/resume e troca de chat
 
+`EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME`: checkpoints em eventos/boundaries materiais; Resume Card é derived view; retomada por fontes autoritativas + estado live + reconciliação; memória do chat é opcional; local não persistido não é transferido.
+
+### Q18 — compatibilidade v1.0 → v1.1
+
 ```yaml
-canonical_name: EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME
-resume_routes:
-  - FAST_RESUME
-  - RECONCILE
-  - RECOVER_MCF_PROJECT
+canonical_name: COMPATIBLE_EXTENSION_VERSIONING_AND_EXPLICIT_MIGRATION
 ```
 
-Checkpoints duráveis são acionados por eventos/boundaries materiais e antes de pausas/trocas planejadas. Resume Card é visão derivada. Retomada segue `Resume Card → checkpoint canônico → fontes autoritativas → GitHub/provider live → reconciliação`. Memória do chat é opcional e nunca requisito. Estado local não persistido não é tratado como transferido. Divergência material inexplicável roteia para recovery.
+A v1.1 estende o core v1.0, não cria arquitetura paralela. Reutiliza runtime, `MCF-START-MISSION`, `MCF-RECOVER-CONTEXT`, Mission Contract, PRF/checkpoints, permission profiles/Human Delegation, handoffs, receipts, reconciliação e observabilidade. Schemas evoluem por versionamento explícito e preferencialmente aditivo. Projetos v1.0 permanecem válidos sob methodology pin; upgrade não é silencioso; migração preserva artefato original, provenance e validação. Primitive novo exige `NO_EQUIVALENT_TEST`. Compatibilidade deve existir em documento, contrato e runtime.
 
 ```text
-CHECKPOINT != CHAT_LOG
-PLANNED_TRANSFER_REQUIRES_TRANSFERABLE_CHECKPOINT
-CHAT_MEMORY = OPTIONAL_CONTEXT
-LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED
-VALID_CONTINUITY -> FAST_RESUME
-MATERIAL_UNEXPLAINED_DIVERGENCE -> RECOVER_MCF_PROJECT
-NEW_CHAT != NEW_MISSION
+V1_1_EXTENDS_V1_0
+V1_1_DOES_NOT_DUPLICATE_V1_0
+REUSE_BEFORE_NEW_PRIMITIVE
+EXTEND_BEFORE_REPLACE
+VERSION_BEFORE_BREAK
+MIGRATE_WITH_PROVENANCE
+OLD_PROJECT != INVALID_PROJECT
+PROJECT_PIN_PREVENTS_SILENT_UPGRADE
+V1_0_RELEASE_IDENTITY_REMAINS_IMMUTABLE
 ```
 
 ## Ordem de leitura ao retomar
 
 1. consultar GitHub live e confirmar a branch `planning/mcf-v1.1-discovery`;
 2. ler este Resume Card;
-3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-017.md`;
+3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-018.md`;
 4. ler `docs/proposals/MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. consultar `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md` quando precisar dos contratos aprovados;
 6. manter `implementation/prototype/release = NO_GO`;
-7. iniciar **Q18**, não Q17.
+7. iniciar **Q19**, não Q18.
 
 ## Próxima ação
 
-> **Q18 — Como evoluir a v1.0.0 para v1.1.0 preservando compatibilidade e evitando duplicação de mecanismos?**
+> **Q19 — Como provar a v1.1.0 com testes reais?**
 
 ## Comando mínimo de retomada em novo chat
 
-> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 017 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q18. Não repita Q1–Q17 e não inicie implementação.`
+> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 018 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q19. Não repita Q1–Q18 e não inicie implementação.`
