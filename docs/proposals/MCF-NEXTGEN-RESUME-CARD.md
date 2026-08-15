@@ -14,18 +14,22 @@
 
 ```yaml
 phase_zero: COMPLETE_IN_MAIN
-phase_1: ACTIVE_DISCOVERY
-architecture_final_approved: false
+phase_1: DISCOVERY_COMPLETE
+target_architecture_decision_approved: true
+architecture_final_specification_approved: false
 prototype_authorized: false
 implementation_authorized: false
+production_cutover_authorized: false
 ```
 
 ## Questionário
 
 ```yaml
 total_questions: 16
-last_completed_question: 15
-next_question: 16
+questions_completed: 16
+questions_remaining: 0
+last_completed_question: 16
+next_question: NONE
 Q1: COMPLETED
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -41,19 +45,15 @@ Q12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
 Q13: COMPLETED_APPROVED_BY_LEANDRO
 Q14: COMPLETED_APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW
 Q15: COMPLETED_APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW
-Q16_started: false
+Q16: COMPLETED_APPROVED_BY_LEANDRO_AFTER_CRITICAL_AUDIT
 implementation_authorized: false
 ```
 
-**Não repetir Q1–Q15 salvo solicitação explícita de LEANDRO.**
-
-Q16 é:
-
-> **Qual é a arquitetura final da Fase 1 e o GO/NO-GO?**
+**Não repetir Q1–Q16 salvo solicitação explícita de LEANDRO.**
 
 ## Ordem de leitura
 
-1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-017.md`
+1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-018.md`
 2. `docs/proposals/MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
 4. checkpoints anteriores conforme necessário
@@ -76,29 +76,49 @@ Q16 é:
 - Q13: `PREDECLARED_COMPARATIVE_VALUE_EVALUATION`.
 - Q14: `CLEAN_ROOM_PORTABILITY_AND_EXTERNAL_UTILITY_VALIDATION`.
 - Q15: `PRESERVE_INVARIANTS_REDUCE_IMPLEMENTATION`.
+- Q16: `GOVERNED_PORTABLE_MULTIAGENT_RUNTIME`.
 
-Invariantes centrais da Q15:
+## Invariantes centrais pós-Q16
 
 ```text
-PRESERVE_INVARIANT != PRESERVE_CURRENT_IMPLEMENTATION
-INSUFFICIENT_EVIDENCE -> INCONCLUSIVE
-REMOVE_FROM_CORE != DELETE
+TARGET_ARCHITECTURE_DECISION != FINAL_EXECUTABLE_SPECIFICATION
+LOGICAL_BOUNDARY != PHYSICAL_SERVICE
+PROJECT_CAPSULE != SOURCE_OF_TRUTH
+CAPABILITY != AUTHORITY
 DEFAULT != CONSTITUTIONAL_REQUIREMENT
-REPLACEMENT_EXISTS != LEGACY_CAN_BE_REMOVED
-SIMPLIFY_GOVERNANCE != REMOVE_AUDITABILITY
-APPLICATION_RECOVERY != DATA_RECOVERY
-SUNSET_REQUIRES_REPLACEMENT_CONFORMANCE_MIGRATION_AND_NO_ACTIVE_DEPENDENCY
-ADD_REQUIRED != IMPLEMENT_NOW
+ONE_CANONICAL_MATERIAL_WRITER_PER_EXECUTION_BOUNDARY
+COMPATIBILITY_LAYER != UNGOVERNED_DUAL_WRITE
+NEXTGEN_SHADOW_CANNOT_PERFORM_MATERIAL_EFFECTS
+MIGRATION_IS_A_PRIVILEGED_GOVERNED_EFFECT
+TARGET_ARCHITECTURE_APPROVAL != PRODUCTION_AUTHORIZATION
 ```
 
-Checkpoint detalhado da Q15: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-017.md`.
+Checkpoint detalhado da Q16: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-018.md`.
+
+## GO/NO-GO vigente
+
+```yaml
+questionnaire_direction: GO
+target_architecture_decision: GO
+discovery_completion: GO
+F1_3_decision_consolidation: GO
+F1_4_formal_target_architecture: GO
+F1_5_migration_plan: GO
+F1_6_executable_specification: GO
+prototype: NO_GO_CURRENTLY
+implementation: NO_GO_CURRENTLY
+production_cutover: NO_GO
+destructive_v1_change: NO_GO
+final_implementation_authorization: REQUIRES_EXPLICIT_LEANDRO_APPROVAL
+```
 
 ## Próxima ação
 
-- Q1–Q15 concluídas e aprovadas por LEANDRO; Q12 foi aprovação conceitual; Q14 e Q15 foram aprovadas após revisão final sem bloqueio conceitual.
-- Q16 ainda não começou.
-- Próximo passo permitido: iniciar Q16 apenas como Discovery/consolidação arquitetural.
-- Não implementar NextGen antes de Q16, consolidação das contradições, arquitetura alvo, plano de migração, critérios de aceite e aprovação final explícita de LEANDRO.
+O questionário de Discovery terminou. O próximo passo canônico é:
+
+> **F1.3 — Consolidação formal das decisões Q1–Q16.**
+
+Depois seguem F1.4 Arquitetura alvo formal, F1.5 Plano de migração e F1.6 Especificação executável. A conclusão dessas etapas não autoriza implementação automaticamente; a especificação final precisa ser submetida a LEANDRO para autorização explícita.
 
 ## Comando mínimo de retomada
 
