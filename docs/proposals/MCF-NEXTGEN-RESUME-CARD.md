@@ -24,8 +24,8 @@ implementation_authorized: false
 
 ```yaml
 total_questions: 16
-last_completed_question: 11
-next_question: 12
+last_completed_question: 12
+next_question: 13
 Q1: COMPLETED
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -37,19 +37,20 @@ Q8: COMPLETED_APPROVED_BY_LEANDRO
 Q9: COMPLETED_APPROVED_BY_LEANDRO
 Q10: COMPLETED_APPROVED_BY_LEANDRO
 Q11: COMPLETED_APPROVED_BY_LEANDRO
-Q12_started: false
+Q12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
+Q13_started: false
 implementation_authorized: false
 ```
 
-**Não repetir Q1–Q11 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q12 salvo solicitação explícita de LEANDRO.**
 
-Q12 é:
+Q13 é:
 
-> **Quais controles de segurança, permissões e gates são essenciais?**
+> **Como provar que o MCF vale o custo e a complexidade?**
 
 ## Ordem de leitura
 
-1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`
+1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`
 2. `docs/proposals/MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
 4. checkpoints anteriores conforme necessário
@@ -68,31 +69,34 @@ Q12 é:
 - Q9: `ACTIONABLE_PROGRESSIVE_OBSERVABILITY`.
 - Q10: `MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`.
 - Q11: `PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`.
+- Q12: `POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`.
 
-Invariantes centrais da Q11:
+Invariantes centrais da Q12:
 
 ```text
-LOGICAL_PLANE != PHYSICAL_SERVICE
-SINGLE_LOGICAL_AUTHORITY != SINGLE_MACHINE_FOREVER
-LEASE_ALONE != SPLIT_BRAIN_PROTECTION
-QUEUE != TASK SOURCE_OF_TRUTH
-WORKER_PRIVATE_SCRATCH != PROJECT_TRUTH
-LOCAL_STATE_PLANE_MAY_BE_CANONICAL
-PLACEMENT != AUTHORITY
-UNKNOWN_AUTHORITY = DENY
-BLIND_RETRY = FORBIDDEN
-APP_REDEPLOY != DATA_RESTORE
-PORTABLE != ACTIVE_MULTI_CLOUD
-WORKER_ALIVE != TASK_PROGRESSING
+AUTHENTICATED != AUTHORIZED
+DEFAULT = DENY
+DELEGATION_CAN_ONLY_ATTENUATE_AUTHORITY
+MODEL_COMPLIANCE_IS_NOT_SECURITY_BOUNDARY
+HUMAN_GATE = LEANDRO
+HUMAN_APPROVAL != REUSABLE_CREDENTIAL
+EXTERNAL_CONTENT != AUTHORITY_SOURCE
+TRANSFORMATION_DOES_NOT_PROMOTE_TRUST
+MODEL_OUTPUT != SAFE_MATERIAL_COMMAND
+SECRET_VALUE != PROJECT_MEMORY
+WORKER != CONTROL_PLANE_TRUST_PEER_BY_DEFAULT
+CROSS_PROJECT_DEFAULT = DENY
+PROVENANCE_PRESENT != ARTIFACT_TRUSTED
+RECEIPT != EFFECT_PROOF
 ```
 
-Checkpoint detalhado da Q11: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
+Checkpoint detalhado da Q12: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`.
 
 ## Próxima ação
 
-- Q1–Q11 concluídas e aprovadas por LEANDRO.
-- Q12 ainda não começou.
-- Próximo passo permitido: iniciar Q12 apenas como Discovery.
+- Q1–Q12 concluídas e aprovadas por LEANDRO; Q12 aprovada conceitualmente.
+- Q13 ainda não começou.
+- Próximo passo permitido: iniciar Q13 apenas como Discovery.
 - Não implementar NextGen antes de Q1–Q16, consolidação, arquitetura alvo, plano de migração, critérios de aceite e aprovação final de LEANDRO.
 
 ## Comando mínimo de retomada
