@@ -4,7 +4,7 @@
 **Status:** `ACTIVE`  
 **Branch:** `planning/mcf-v1.1-discovery`
 
-Este ledger preserva decisões aprovadas por LEANDRO durante a Discovery da v1.1.0. Implementação permanece bloqueada até encerramento formal da Discovery e autorização separada.
+Este ledger preserva decisões aprovadas por LEANDRO durante a Discovery da v1.1.0. Implementação permanece bloqueada até encerramento formal da Discovery e autorização separada. Os checkpoints imutáveis preservam o detalhamento histórico de cada decisão.
 
 ---
 
@@ -44,7 +44,7 @@ EDIT != COMMIT != PUSH != PR
 LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED
 ```
 
-`CHATGPT_REMOTE` usa conectores/ferramentas remotas. `CODEX_LOCAL` usa workspace/terminal/Git local. GitHub permanece memória institucional, checkpoint remoto, CI, revisão e integração. Boundaries materiais/governados permanecem fail-closed sem evidência aplicável.
+`CHATGPT_REMOTE` usa conectores/ferramentas remotas. `CODEX_LOCAL` usa workspace/terminal/Git local. GitHub permanece memória institucional e checkpoint remoto; boundaries materiais/governados permanecem fail-closed sem evidência aplicável.
 
 ## V11-Q03 — Bootstrap Version Resolution
 
@@ -61,8 +61,6 @@ immutable_methodology_ref: REQUIRED
 silent_mid_mission_upgrade: false
 ```
 
-Bootstrap usa locator canônico para resolver a versão operacional e depois carrega metodologia por tag/SHA imutável. Discovery, planning, RC e experimental não são defaults.
-
 ## V11-Q04 — Degraded Operation / Fail-Closed
 
 ```yaml
@@ -71,8 +69,6 @@ status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES
 ```
-
-Operação degradada só pode continuar sobre base local verificável e trabalho reversível. Inconsistência entre fontes bloqueia. Recuperação exige revalidação canônica, reconciliação de `CHECKPOINT_DEBT` e `Degraded Operation Receipt`.
 
 ```text
 UNAVAILABLE != INCONSISTENT
@@ -110,12 +106,10 @@ chosen_option: D
 canonical_name: PROGRESSIVE_DURABLE_PROJECT_GENESIS
 ```
 
-Fluxo aprovado:
-
 ```text
 VERIFIED MCF ACTIVATION
 → IDEA_CAPTURE
-→ MINI-TRIAGE (3–5)
+→ MINI-TRIAGE
 → PROJECT_GENESIS
 → PROJECT HOME / REPOSITORY
 → METHODOLOGY PIN
@@ -128,19 +122,18 @@ VERIFIED MCF ACTIVATION
 → MCF-START-MISSION
 ```
 
-Antes do Alignment Gate, implementação de produto é `NO_GO`. Discovery, documentação e protótipos não canônicos de descoberta podem existir nos limites definidos.
+Antes do Alignment Gate, implementação de produto é `NO_GO`.
 
 ## V11-Q07 — Existing Project Reconnaissance Contract
 
 ```yaml
 decision_id: V11-Q07
-question: Q7
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: EVIDENCE_FIRST_EXISTING_PROJECT_RECONNAISSANCE
 ```
 
-`ADOPT_EXISTING_PROJECT` começa provisório, com baseline exato e reconnaissance `READ_ONLY_FIRST`. Evidências são classificadas como `VERIFIED_FACT`, `OBSERVED_FACT`, `INFERRED`, `UNKNOWN`, `CONFLICTING` ou `STALE_SUSPECTED`. Continuidade MCF válida reclassifica para `RESUME`; continuidade quebrada/não verificável roteia para `RECOVER`. Permanecendo `ADOPT`, MESTRE reconstrói `AS-IS`, produz `Project Reality Report` e faz Reality Read-Back antes da Human Intent Discovery profunda.
+`ADOPT_EXISTING_PROJECT` começa provisório, com baseline exato e reconnaissance `READ_ONLY_FIRST`. Continuidade MCF válida reclassifica para `RESUME`; continuidade quebrada/não verificável roteia para `RECOVER`. Permanecendo `ADOPT`, MESTRE reconstrói `AS-IS`, produz `Project Reality Report` e faz Reality Read-Back antes da Human Intent Discovery profunda.
 
 ```text
 READ_ONLY_FIRST
@@ -155,7 +148,6 @@ HUMAN_EXPLAINS_INTENT
 
 ```yaml
 decision_id: V11-Q08
-question: Q8
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: CANONICAL_INTENT_DIMENSIONS_WITH_EVIDENCE_AWARE_RESOLUTION
@@ -163,14 +155,12 @@ canonical_dimension_count: 20
 fixed_question_count_required: false
 ```
 
-As 20 dimensões canônicas são `PROBLEM`, `MOTIVATION`, `DESIRED_OUTCOME`, `TARGET_USERS`, `CRITICAL_USER_JOURNEYS`, `MUST_HAVE`, `SHOULD_HAVE`, `NON_GOALS`, `PRIORITIES_AND_TRADEOFFS`, `BUSINESS_RULES`, `DATA_AND_SENSITIVITY`, `ROLES_AND_PERMISSIONS`, `AUTOMATION_LEVEL`, `INTEGRATIONS`, `PLATFORM_AND_USAGE_CONTEXT`, `COST_AND_RESOURCE_CONSTRAINTS`, `QUALITY_EXPECTATIONS`, `FAILURE_TOLERANCE`, `DEFINITION_OF_DONE` e `FUTURE_VISION`.
+As 20 dimensões são `PROBLEM`, `MOTIVATION`, `DESIRED_OUTCOME`, `TARGET_USERS`, `CRITICAL_USER_JOURNEYS`, `MUST_HAVE`, `SHOULD_HAVE`, `NON_GOALS`, `PRIORITIES_AND_TRADEOFFS`, `BUSINESS_RULES`, `DATA_AND_SENSITIVITY`, `ROLES_AND_PERMISSIONS`, `AUTOMATION_LEVEL`, `INTEGRATIONS`, `PLATFORM_AND_USAGE_CONTEXT`, `COST_AND_RESOURCE_CONSTRAINTS`, `QUALITY_EXPECTATIONS`, `FAILURE_TOLERANCE`, `DEFINITION_OF_DONE` e `FUTURE_VISION`.
 
-Estados por dimensão: `CLEAR`, `PARTIAL`, `UNKNOWN`, `CONFLICTING`, `NOT_APPLICABLE`.
+Estados: `CLEAR`, `PARTIAL`, `UNKNOWN`, `CONFLICTING`, `NOT_APPLICABLE`.
 
 ```text
 DIMENSION_REQUIRED != QUESTION_REQUIRED
-UNKNOWN != NOT_APPLICABLE
-UNKNOWN != HUMAN_HAS_NO_PREFERENCE
 MACHINE_EVIDENCE_CAN_SUPPLY_FACTS
 MACHINE_EVIDENCE_CANNOT_INVENT_HUMAN_PREFERENCES
 TEAM_ENGINEERING_DECIDES_HOW
@@ -180,51 +170,14 @@ TEAM_ENGINEERING_DECIDES_HOW
 
 ```yaml
 decision_id: V11-Q09
-question: Q9
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: EVIDENCE_AWARE_ADAPTIVE_QUESTIONING_WITH_INFORMATION_GAIN
 ```
 
-As 20 dimensões não são percorridas por sequência fixa. Antes de cada pergunta, MESTRE incorpora novo contexto/evidência, atualiza todas as dimensões afetadas, verifica contradições, identifica incertezas bloqueantes e escolhe a próxima pergunta de maior valor informacional com menor carga humana possível.
-
-```yaml
-questioning_model:
-  fixed_sequence: false
-  fixed_question_count: false
-  one_primary_question_at_a_time: true
-question_priority:
-  - MATERIAL_HUMAN_INTENT_CONFLICT
-  - BLOCKING_UNCERTAINTY
-  - HIGH_INFORMATION_GAIN
-  - HIGH_RISK_UNCERTAINTY
-  - DEPENDENCY_UNLOCK
-  - SECONDARY_REFINEMENT
-clear_dimension:
-  repeat_without_new_cause: PROHIBITED
-evidence:
-  use_to_reduce_questions: true
-  may_replace_human_preference: false
-followup:
-  requires_information_value: true
-conflict_types:
-  - AS_IS_TO_BE_DIFFERENCE
-  - EVIDENCE_CONFLICT
-  - HUMAN_INTENT_CONFLICT
-low_information_loop:
-  repeated_followups: PROHIBITED
-  unresolved_nonblocking: PRESERVE_AND_CONTINUE
-  unresolved_blocking: MARK_BLOCKING_UNKNOWN
-human_delegation:
-  valid_resolution: true
-```
+Sem sequência ou quantidade fixa de perguntas. Uma resposta pode resolver várias dimensões. Dimensão `CLEAR` não reabre sem causa; follow-up exige ganho de informação; evidência reduz perguntas sem substituir intenção; loops de baixo ganho são proibidos.
 
 ```text
-ONE_ANSWER_MAY_RESOLVE_MULTIPLE_DIMENSIONS
-CLEAR_DOES_NOT_REOPEN_WITHOUT_CAUSE
-FOLLOW_UP_REQUIRES_INFORMATION_VALUE
-AS_IS_TO_BE_DIFFERENCE != HUMAN_INTENT_CONFLICT
-MACHINE_EVIDENCE_REDUCES_QUESTIONS_BUT_DOES_NOT_REPLACE_HUMAN_INTENT
 QUESTION -> ANSWER -> UPDATE_DIMENSIONS -> REASSESS -> NEXT_BEST_QUESTION
 ```
 
@@ -234,51 +187,15 @@ Mudança explícita de decisão humana preserva histórico: anterior `SUPERSEDED
 
 ```yaml
 decision_id: V11-Q10
-question: Q10
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK
 ```
 
-O MCF valida entendimento de forma progressiva, orientada por eventos e com cadência de segurança. Read-back intermediário é checksum semântico; não substitui o `FINAL_INTENT_READBACK` nem autoriza implementação.
-
-```yaml
-readback_levels:
-  - MICRO_CLARIFICATION
-  - PROGRESSIVE_READBACK
-  - FINAL_INTENT_READBACK
-progressive_readback_triggers:
-  - MATERIAL_SCOPE_CHANGE
-  - MATERIAL_HUMAN_INTENT_CONFLICT
-  - HIGH_IMPACT_INTERPRETATION
-  - SIGNIFICANT_SEMANTIC_BLOCK_COMPLETED
-  - EXCESSIVE_CHANGE_SINCE_LAST_READBACK
-  - CONTEXT_OR_HANDOFF_BOUNDARY
-cadence_safety_net:
-  meaningful_exchanges: APPROXIMATELY_4_TO_6
-  fixed_count: false
-result_states:
-  - CONFIRMED
-  - CORRECTED
-  - REJECTED
-partial_confirmation:
-  allowed: true
-correction:
-  stop_wrong_semantic_propagation: true
-  identify_affected_dimensions: true
-  invalidate_derived_assumptions: true
-  recalculate_dimension_states: true
-final_readback:
-  required_before_intent_alignment_gate: true
-progressive_confirmation:
-  authorizes_implementation: false
-```
+Três níveis: `MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`. Read-back progressivo é acionado por eventos materiais e safety cadence aproximada de 4–6 trocas significativas. Correções invalidam derivações erradas e recalculam dimensões dependentes. `FINAL_INTENT_READBACK` é obrigatório antes do Alignment Gate.
 
 ```text
 PROGRESSIVE_READBACK = SEMANTIC_CHECKSUM
-HIGH_IMPACT_INTERPRETATION_REQUIRES_HUMAN_SEMANTIC_CHECK
-CORRECTION_MUST_PROPAGATE_TO_DEPENDENT_DIMENSIONS
-PARTIAL_CONFIRMATION_IS_ALLOWED
 REJECTED_MACHINE_INTERPRETATION != HUMAN_DECISION
 PROGRESSIVE_CONFIRMATION != INTENT_ALIGNMENT_GATE
 ```
@@ -287,15 +204,36 @@ PROGRESSIVE_CONFIRMATION != INTENT_ALIGNMENT_GATE
 
 ```yaml
 decision_id: V11-Q11
-question: Q11
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: SEMANTIC_READINESS_GATE_WITH_BLOCKING_UNKNOWNS
 ```
 
+Readiness é semântica, não baseada em quantidade de perguntas ou score puro. Estados globais: `NOT_READY`, `CONDITIONALLY_READY`, `READY_FOR_ALIGNMENT`. `BLOCKING_UNKNOWN` é incerteza capaz de alterar materialmente produto, escopo, usuários, segurança, arquitetura, custo, risco ou sucesso.
+
+Core universal: `PROBLEM`, `DESIRED_OUTCOME`, `TARGET_USERS`, `CRITICAL_USER_JOURNEYS`, `MUST_HAVE`, `NON_GOALS`, `PRIORITIES_AND_TRADEOFFS`, `DEFINITION_OF_DONE`. Outras dimensões tornam-se críticas conforme domínio e risco.
+
+```text
+QUESTION_COUNT != CONTEXT_SUFFICIENCY
+INTENT_SUFFICIENTLY_UNDERSTOOD != ALL_DETAILS_KNOWN
+HIGH_SCORE_DOES_NOT_CANCEL_SEMANTIC_BLOCKER
+DELEGATED_TECHNICAL_DETAIL != MISSING_HUMAN_INTENT
+READY_FOR_ALIGNMENT != IMPLEMENTATION_AUTHORIZED
+```
+
+## V11-Q12 — Project Intent Package Contract
+
+```yaml
+decision_id: V11-Q12
+question: Q12
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE
+```
+
 ### Problema
 
-Definir quando o MCF já compreendeu intenção humana suficiente para parar de perguntar e preparar o alinhamento final, sem exigir certeza artificial sobre todos os detalhes e sem permitir que lacunas materiais sejam escondidas por contagem de perguntas ou score alto.
+Transformar a intenção humana capturada pela Discovery em memória durável, versionada e auditável, sem confundir fala original de LEANDRO, síntese do MESTRE, decisões humanas, evidência técnica, inferências, assumptions ou delegações, e sem duplicar arquitetura, backlog ou Mission Contract.
 
 ### Decisão de LEANDRO
 
@@ -304,112 +242,122 @@ Definir quando o MCF já compreendeu intenção humana suficiente para parar de 
 ### Contrato conceitual aprovado
 
 ```yaml
-readiness_is:
-  semantic: true
-  question_count_based: false
-  pure_score_based: false
+purpose:
+  durable_representation_of_human_intent: true
+  chat_transcript: false
+  architecture_spec: false
+  backlog: false
+  mission_contract: false
 
-dimension_states_preserved_from_Q8:
-  - CLEAR
-  - PARTIAL
-  - UNKNOWN
-  - CONFLICTING
-  - NOT_APPLICABLE
+separation:
+  raw_human_intent: true
+  mestre_synthesis: true
+  human_decision: true
+  machine_inference: true
+  evidence: true
+  assumption: true
 
-readiness_impact:
-  - BLOCKING
-  - NON_BLOCKING
+core_sections:
+  - IDENTITY
+  - ORIGINAL_INTENT
+  - CURRENT_INTENT_DIMENSIONS
+  - HUMAN_DECISIONS
+  - TECHNICAL_DELEGATIONS
+  - ASSUMPTIONS
+  - UNKNOWNS
+  - BLOCKERS
+  - CONFLICTS
+  - READINESS
+  - ALIGNMENT
 
-blocking_unknown_definition:
-  may_materially_change:
-    - PRODUCT
-    - SCOPE
-    - USERS
-    - SECURITY
-    - ARCHITECTURE
-    - COST
-    - RISK
-    - SUCCESS_CRITERIA
+dimensions:
+  canonical_count: 20
+  preserve_Q8_states: true
+  readiness_impact_required: true
+  provenance_required_for_material_claims: true
 
-universal_intent_core:
-  - PROBLEM
-  - DESIRED_OUTCOME
-  - TARGET_USERS
-  - CRITICAL_USER_JOURNEYS
-  - MUST_HAVE
-  - NON_GOALS
-  - PRIORITIES_AND_TRADEOFFS
-  - DEFINITION_OF_DONE
+provenance_types:
+  - HUMAN_DIRECT_STATEMENT
+  - HUMAN_CONFIRMED_SYNTHESIS
+  - PRIOR_VALID_HUMAN_DECISION
+  - MACHINE_EVIDENCE
+  - MACHINE_INFERENCE
+  - TECHNICAL_DELEGATION
+  - NOT_APPLICABLE_JUSTIFICATION
 
-conditionally_critical_dimensions:
-  determined_by:
-    - DOMAIN
-    - RISK
-    - DATA_SENSITIVITY
-    - EXTERNAL_EFFECTS
-    - CRITICAL_JOURNEYS
-    - HUMAN_CONSTRAINTS
+decision_history:
+  overwrite_material_human_decisions: false
+  previous_material_decision: SUPERSEDED
+  current_material_decision: CURRENT
+  rejected_machine_interpretation_is_human_decision: false
 
-delegation:
-  explicit_technical_delegation_is_valid_resolution: true
+assumptions:
+  may_silently_resolve_blocking_human_intent: false
 
-not_applicable:
-  counts_as_resolved: true
-
-diagnostic_score:
-  allowed: true
-  gate_authority: false
-  may_override_blocker: false
-
-global_states:
-  - NOT_READY
-  - CONDITIONALLY_READY
+lifecycle:
+  - DISCOVERY_IN_PROGRESS
   - READY_FOR_ALIGNMENT
+  - ALIGNED
+  - REOPENED_AFTER_MATERIAL_CHANGE
 
-ready_for_alignment_requires:
-  blocking_unknowns: 0
-  material_human_intent_conflicts: 0
-  unresolved_high_impact_interpretations: 0
-  semantic_coherence: true
-  nonblocking_unknowns_preserved: true
-  technical_delegations_explicit: true
+revisioning:
+  identifiable_revision_required: true
+  aligned_revision_immutable: true
 
-ready_for_alignment:
-  authorizes_implementation: false
+alignment:
+  binds_to_exact_revision: true
+  final_intent_readback_required: true
+  intent_alignment_receipt_required: true
 
-readiness:
-  recalculated_after_material_change: true
+mission_contract:
+  created_after_alignment: true
+  references_aligned_pip_revision: true
+  may_redefine_human_intent: false
+
+product_brief:
+  must_not_introduce_new_intent: true
+  canonical_vs_derived: DEFER_TO_Q14
+
+existing_project_artifacts:
+  reality_report_and_gap_map: DEFER_TO_Q13
+
+implementation_authorized: false
 ```
 
 ### Regras resultantes
 
-- `INTENT_SUFFICIENTLY_UNDERSTOOD != ALL_DETAILS_KNOWN`;
-- `DIMENSION_STATE != READINESS_IMPACT`;
-- `BLOCKING_UNKNOWN` é uma incerteza cuja resposta pode alterar materialmente produto, escopo, usuários, segurança, arquitetura, custo, risco ou critério de sucesso;
-- `PARTIAL` ou `UNKNOWN` podem ser aceitáveis quando explicitamente não bloqueantes;
-- `NOT_APPLICABLE` conta como dimensão resolvida quando fundamentado;
-- delegação técnica explícita à equipe conta como resolução válida da intenção humana;
-- conflito material de intenção humana é bloqueante até resolução; conflito técnico de evidência não é automaticamente blocker de Intent Readiness;
-- o core universal precisa estar semanticamente livre de blockers; outras dimensões tornam-se críticas conforme domínio e risco;
-- score pode existir apenas como diagnóstico/observabilidade e jamais sobrescreve blocker semântico;
-- `CONDITIONALLY_READY` pode preparar síntese/read-back final, mas não passa automaticamente o `INTENT_ALIGNMENT_GATE`;
-- `READY_FOR_ALIGNMENT` significa contexto suficiente para apresentar a intenção consolidada a LEANDRO, não autorização de implementação;
-- readiness é estado derivado e deve ser recalculado após mudança material;
-- o MESTRE deve parar de perguntar quando o próximo questionamento tiver baixo ganho informacional, não houver incerteza bloqueante e o core semântico estiver coerente.
+- o PIP nasce progressivamente após `PROJECT_GENESIS`/início do intake e é enriquecido em boundaries semânticos, não como log de cada frase;
+- `IDEA_CAPTURE`/intenção original permanece separada da síntese atual do MESTRE;
+- cada afirmação material deve preservar provenance suficiente para distinguir humano, máquina, evidência, inferência e delegação;
+- evidência `AS-IS` de projeto existente não substitui intenção humana `TO-BE`;
+- decisão humana material anterior é preservada como `SUPERSEDED`, e a nova como `CURRENT`;
+- interpretação de máquina rejeitada nunca é promovida a decisão humana;
+- delegações técnicas são registradas explicitamente para evitar retransferir engenharia a LEANDRO;
+- assumptions, unknowns, blockers e conflicts são dados de primeira classe e não podem fabricar resolução humana;
+- readiness é snapshot derivado e recalculável;
+- `INTENT_ALIGNMENT_GATE` vincula-se a uma revisão exata do PIP;
+- uma revisão alinhada permanece imutável como registro histórico; mudança material cria nova working revision e pode colocar o pacote em `REOPENED_AFTER_MATERIAL_CHANGE`;
+- `Intent Alignment Receipt` prova quem confirmou, qual revisão foi confirmada e o resultado do gate, sem duplicar o conteúdo integral do PIP;
+- `Mission Contract` nasce depois do alinhamento, referencia a revisão alinhada do PIP e não pode redefinir silenciosamente intenção humana;
+- o `Product Brief` não pode introduzir intenção nova; sua classificação canônica/derived fica para Q14;
+- `Project Reality Report` e `AS-IS / TO-BE Gap Map` permanecem separados e serão tratados na Q13.
 
 Princípios:
 
 ```text
-QUESTION_COUNT != CONTEXT_SUFFICIENCY
-HIGH_SCORE_DOES_NOT_CANCEL_SEMANTIC_BLOCKER
-DELEGATED_TECHNICAL_DETAIL != MISSING_HUMAN_INTENT
-NOT_APPLICABLE = RESOLVED_WHEN_JUSTIFIED
-CLEAR_FIELDS_CAN_STILL_BE_SEMANTICALLY_INCOHERENT
-READY_FOR_ALIGNMENT != IMPLEMENTATION_AUTHORIZED
-MATERIAL_INTENT_CHANGE_RECALCULATES_READINESS
+PIP != CHAT_LOG
+PIP != ARCHITECTURE
+PIP != BACKLOG
+PIP != MISSION_CONTRACT
+RAW_INTENT != SYNTHESIS
+SYNTHESIS != HUMAN_DECISION
+INFERENCE != HUMAN_INTENT
+ASSUMPTION != RESOLUTION
+OLD_HUMAN_DECISION -> SUPERSEDED
+NEW_HUMAN_DECISION -> CURRENT
+ALIGNMENT_BINDS_TO_EXACT_PIP_REVISION
+PROJECT_INTENT_CAN_OUTLIVE_ANY_SINGLE_MISSION
 ```
-
-Q12 definirá como esse entendimento suficientemente pronto é persistido no `Project Intent Package`.
 
 ---
 
