@@ -33,10 +33,11 @@ question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
 question_04: COMPLETED_APPROVED_BY_LEANDRO
 question_05: COMPLETED_APPROVED_BY_LEANDRO
-question_06: NOT_STARTED
-questions_completed: 5
-questions_remaining: 11
-current_position: BETWEEN_Q5_AND_Q6
+question_06: COMPLETED_APPROVED_BY_LEANDRO
+question_07: NOT_STARTED
+questions_completed: 6
+questions_remaining: 10
+current_position: BETWEEN_Q6_AND_Q7
 implementation_authorized: false
 ```
 
@@ -129,6 +130,37 @@ Síntese:
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
 
+### Q6 — INDEPENDÊNCIA ENTRE AGENTES E REVISORES
+
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+Síntese:
+
+- independência deve ser provada por propriedades observáveis da execução, não por persona, nome ou simples troca de modelo;
+- `INDEPENDENCE != DIVERSITY`;
+- R2+ exige contexto separado, `BLIND_FIRST`, coleta própria de evidências, decisão própria e receipt inicial imutável;
+- compartilhar fontes canônicas é permitido; compartilhar veredito/conclusão prévia antes do julgamento inicial contamina a revisão;
+- mesmo modelo pode revisar independentemente se contexto/evidência/decisão forem separados;
+- modelos diferentes podem não ser independentes se compartilham conclusão contaminante;
+- `SELF_DECLARED_INDEPENDENCE != PROOF`;
+- `CONSENSUS != TRUTH`;
+- `REVIEWER CLAIM != VERIFIED FINDING`;
+- majority vote não resolve desacordo técnico por padrão;
+- divergência deve ser reconciliada por evidência/teste/adjudicação;
+- assurance é proporcional ao risco.
+
+Taxonomia conceitual:
+
+```yaml
+R0: SELF_REVIEW
+R1: SEPARATE_REVIEW
+R2: INDEPENDENT_REVIEW
+R3: DIVERSE_INDEPENDENT_REVIEW
+R4: EXTERNAL_ASSURANCE
+```
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`.
+
 ---
 
 ## 3. As 16 perguntas canônicas
@@ -149,20 +181,10 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
 ### Q6 — O que significa independência entre agentes e revisores?
-**Status:** `NEXT / NOT_STARTED`
-
-Definir:
-
-- separação funcional;
-- sessão/contexto separado;
-- modelo diferente;
-- provider diferente;
-- autoridade diferente;
-- auditoria externa humana;
-- critérios mínimos para chamar algo de revisão independente.
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
 ### Q7 — Como o trabalho deve ser orquestrado: pipeline, loops, graph ou paralelo?
-**Status:** `PENDING`
+**Status:** `NEXT / NOT_STARTED`
 
 Definir fluxo sequencial, DAG/graph, split/worker/verifier/merge, paralelismo, dependências, loops, parada, replanejamento, convergência e recovery.
 
@@ -261,9 +283,9 @@ Ordem:
 Estado atual:
 
 ```yaml
-last_completed_question: 5
-next_question: 6
-instruction: NÃO REPETIR Q1-Q5
+last_completed_question: 6
+next_question: 7
+instruction: NÃO REPETIR Q1-Q6
 ```
 
 ---
