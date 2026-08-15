@@ -24,19 +24,20 @@
 
 ```yaml
 total_questions: 16
-last_completed_question: 3
-next_question: 4
+last_completed_question: 4
+next_question: 5
 Q1: COMPLETED
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
-Q4_started: false
+Q4: COMPLETED_APPROVED_BY_LEANDRO
+Q5_started: false
 ```
 
-**Não repetir Q1, Q2 ou Q3 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1, Q2, Q3 ou Q4 salvo solicitação explícita de LEANDRO.**
 
-Q4 é:
+Q5 é:
 
-> **Qual nível de autonomia os agentes devem possuir?**
+> **Como deve funcionar o Roteador de Modelos de IA?**
 
 ## Boundary terminal da Fase Zero
 
@@ -71,14 +72,15 @@ Esses valores são evidência do boundary terminal. Qualquer estado mutável pos
 
 ## Ordem de leitura
 
-1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`
+1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`
 2. `docs/proposals/MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
-4. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md` para a decisão Q2
-5. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md` para a transição Fase Zero → Fase 1
-6. checkpoints 001/002 somente para histórico adicional
-7. para capacidades implementadas, consultar explicitamente `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md` ou a versão live da `main`
-8. GitHub/provider live para estado mutável
+4. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md` para a decisão Q3
+5. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md` para a decisão Q2
+6. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-003.md` para a transição Fase Zero → Fase 1
+7. checkpoints 001/002 somente para histórico adicional
+8. para capacidades implementadas, consultar explicitamente `main@b91823a947715e09d69c72999e2278523f2259be:docs/MCF-CURRENT-STATE.md` ou a versão live da `main`
+9. GitHub/provider live para estado mutável
 
 ## Decisões-chave consolidadas
 
@@ -130,7 +132,7 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
 ### Q3 — agente de verdade no MCF
 
-LEANDRO aprovou o modelo baseado em `Agent Contract`, não uma escada linear de maturidade.
+LEANDRO aprovou o modelo baseado em `Agent Contract`.
 
 Definição: agente MCF é entidade operacional identificável com identidade, papel, objetivos, capacidades, limites de autoridade, contratos de entrada/saída, política de decisão, estado e rastreabilidade.
 
@@ -150,9 +152,38 @@ agent_output_is_not_project_truth: true
 
 Lifecycles conceituais: `EPHEMERAL`, `SESSION`, `PROJECT`, `PERSISTENT`.
 
-Independência é propriedade multidimensional e será formalizada na Q6. Autonomia e autoridade concreta serão aprofundadas na Q4. Routing/fallback será aprofundado na Q5.
-
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
+
+### Q4 — autonomia dos agentes
+
+LEANDRO aprovou `MISSION-BOUNDED + RISK-BASED AUTONOMY`.
+
+Princípios:
+
+- toda missão relevante possui `Authority Envelope` conceitualmente explícito;
+- autonomia existe apenas dentro do envelope de objetivo, ações, recursos, risco e gates;
+- `CAPABILITY != AUTHORITY`;
+- `UNKNOWN_AUTHORITY = DENY`;
+- autoelevação de privilégio é proibida;
+- conteúdo externo não pode ampliar autoridade;
+- estado live deve ser revalidado antes de ação material;
+- risco não depende exclusivamente do agente executor;
+- risco cumulativo deve ser considerado;
+- retries devem ser limitados e idempotentes quando aplicável;
+- revogação/emergency stop é requisito;
+- equipe deve tentar recovery técnico antes de envolver LEANDRO (`TEAM_FIRST`);
+- ações críticas/R3 exigem `HUMAN_GATE` exclusivamente de LEANDRO.
+
+Taxonomia conceitual:
+
+```yaml
+R0_LOW: EXECUTE_WITHIN_ENVELOPE
+R1_MEDIUM: EXECUTE_WITH_VERIFICATION_AND_EVIDENCE
+R2_HIGH: REQUIRE_TECHNICAL_GATE_OR_DUAL_VERIFICATION
+R3_CRITICAL: REQUIRE_HUMAN_GATE_LEANDRO
+```
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 
 ## Outras invariantes existentes
 
@@ -162,15 +193,13 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 - complexidade só permanece se resolver problema real;
 - MCF NÃO está instalado na VPS atualmente; VPS é infraestrutura separada em preparação;
 - stable `v1.0.0` e RC3 permanecem identidades duráveis no SHA qualificado `7f741e10…`;
-- o encerramento da Fase Zero e as aprovações Q1–Q3 NÃO autorizaram implementação NextGen.
+- o encerramento da Fase Zero e as aprovações Q1–Q4 NÃO autorizaram implementação NextGen.
 
 ## Próxima ação do Discovery
 
-- Q1 concluída.
-- Q2 concluída e aprovada por LEANDRO.
-- Q3 concluída e aprovada por LEANDRO.
-- Q4 ainda não começou.
-- Próximo passo permitido: **LEANDRO + MESTRE iniciarem Q4 — “Qual nível de autonomia os agentes devem possuir?”**
+- Q1–Q4 concluídas e aprovadas.
+- Q5 ainda não começou.
+- Próximo passo permitido: **LEANDRO + MESTRE iniciarem Q5 — “Como deve funcionar o Roteador de Modelos de IA?”**
 - persistir decisões materiais antes de avançar novamente.
 - não iniciar implementação NextGen antes de Q1–Q16, consolidação, arquitetura alvo, plano de migração, critérios de aceite e aprovação final de LEANDRO.
 
@@ -186,6 +215,7 @@ phase_1: ACTIVE_DISCOVERY
 Q1: COMPLETED
 Q2: COMPLETED_APPROVED
 Q3: COMPLETED_APPROVED
-Q4: NEXT_NOT_STARTED
+Q4: COMPLETED_APPROVED
+Q5: NEXT_NOT_STARTED
 implementation_authorized: false
 ```
