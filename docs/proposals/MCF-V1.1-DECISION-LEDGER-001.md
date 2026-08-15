@@ -141,49 +141,17 @@ chosen_option: D
 canonical_name: THREE_CANONICAL_ENTRY_MODES_WITH_RECOVERY_ROUTE
 ```
 
-### Problema
+### Decisão
 
-Definir como o MCF classifica a entrada de um projeto sem confundir criação, adoção de projeto externo, retomada de projeto já governado pelo MCF e recuperação de continuidade quebrada.
-
-### Alternativas consideradas
-
-- A — dois modos: `NEW_PROJECT` e `EXISTING_PROJECT`;
-- B — três modos: `NEW_PROJECT`, `ADOPT_EXISTING_PROJECT`, `RESUME_MCF_PROJECT`;
-- C — quatro modos independentes, incluindo `RECOVER_MCF_PROJECT` como quarto entry mode;
-- D — três modos canônicos e `RECOVER_MCF_PROJECT` como rota excepcional acionada quando a continuidade MCF esperada está quebrada ou não verificável.
-
-### Decisão de LEANDRO
-
-**Opção D.**
-
-### Contrato conceitual aprovado
+O MCF possui três modos canônicos de entrada e uma rota excepcional de recuperação.
 
 ```yaml
 PROJECT_ENTRY_MODE:
   - NEW_PROJECT
   - ADOPT_EXISTING_PROJECT
   - RESUME_MCF_PROJECT
-
 RECOVERY_ROUTE:
   - RECOVER_MCF_PROJECT
-
-NEW_PROJECT:
-  meaning: NO_MATERIAL_EXISTING_IMPLEMENTATION_TO_PRESERVE
-
-ADOPT_EXISTING_PROJECT:
-  meaning: EXISTING_PROJECT_NOT_YET_UNDER_VERIFIED_MCF_CONTINUITY
-
-RESUME_MCF_PROJECT:
-  meaning: EXISTING_PROJECT_WITH_VERIFIED_MCF_CONTINUITY
-
-RECOVER_MCF_PROJECT:
-  meaning: PRIOR_MCF_PROJECT_WITH_BROKEN_OR_UNVERIFIED_CONTINUITY
-  classification: RECOVERY_ROUTE_NOT_PRIMARY_ENTRY_MODE
-```
-
-### Regras de classificação
-
-```yaml
 classification:
   human_intent: INPUT
   machine_evidence: REQUIRED
@@ -201,13 +169,137 @@ ADOPT != RECOVER
 RESUME_REQUIRES_VERIFIED_CONTINUITY
 ```
 
-- LEANDRO fala em linguagem natural; não precisa escolher códigos internos;
-- existência de repositório não define sozinha o modo — repo vazio pode continuar sendo `NEW_PROJECT`;
-- projeto externo com implementação material e sem continuidade MCF verificável entra em `ADOPT_EXISTING_PROJECT`;
-- `RESUME_MCF_PROJECT` exige memória/estado MCF verificáveis;
-- se um projeto MCF esperado apresenta continuidade quebrada ou contraditória, o MCF roteia para `RECOVER_MCF_PROJECT` antes de retomar;
-- enquanto a classificação estiver `UNRESOLVED`, MESTRE pode investigar e perguntar, mas execução de missão permanece `NO_GO`;
-- modos como fork, migração, clone ou transferência não são primary entry modes da v1.1 e devem ser tratados como variações dos modos canônicos quando possível.
+---
+
+## V11-Q06 — New Project Genesis Contract
+
+```yaml
+decision_id: V11-Q06
+question: Q6
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: PROGRESSIVE_DURABLE_PROJECT_GENESIS
+```
+
+### Problema
+
+Definir como um `NEW_PROJECT` passa da ideia humana para uma casa durável de projeto e, depois, para uma missão técnica, sem implementar cedo demais nem deixar a Discovery presa ao contexto transitório do chat.
+
+### Alternativas consideradas
+
+- A — entrevista completa antes de criar repositório;
+- B — criar repositório imediatamente ao ouvir a ideia;
+- C — mini-triagem → repo → Discovery → gate;
+- D — gênese progressiva e durável: ativação verificada, captura da ideia, mini-triagem, identidade provisória, Project Genesis durável, methodology pin, checkpoints durante Intake, Human Intent Discovery, Intent Alignment Gate e somente então `MCF-START-MISSION`.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+entry_mode: NEW_PROJECT
+model: PROGRESSIVE_DURABLE_PROJECT_GENESIS
+
+stages:
+  - VERIFIED_MCF_ACTIVATION
+  - IDEA_CAPTURE
+  - MINI_TRIAGE
+  - PROJECT_GENESIS
+  - DURABLE_INTAKE_CHECKPOINT
+  - HUMAN_INTENT_DISCOVERY
+  - INTENT_READINESS
+  - INTENT_ALIGNMENT_GATE
+  - MCF_START_MISSION
+
+mini_triage:
+  target_questions: 3_to_5
+  purpose: PROJECT_IDENTITY_NOT_FULL_REQUIREMENTS
+
+project_genesis:
+  before_deep_intent_discovery: true
+  methodology_pin_required: true
+  durable_project_home_required: true
+
+naming:
+  internal_project_id: STABLE
+  repository_slug: TECHNICAL_IDENTITY
+  working_title: PROVISIONAL
+  final_product_name: MAY_CHANGE_BEFORE_ALIGNMENT
+
+pre_alignment:
+  product_implementation: NO_GO
+  discovery_and_documentation: ALLOWED
+  noncanonical_discovery_prototype: CONDITIONAL
+
+minimum_pre_mission_artifacts:
+  - PROJECT_GENESIS_RECORD
+  - PROJECT_INTAKE_CHECKPOINT
+  - PROJECT_INTENT_PACKAGE
+  - INTENT_ALIGNMENT_RECEIPT
+
+mission_contract:
+  created_before_mcf_start_mission: false
+
+abandonment:
+  allowed_before_alignment: true
+  creates_execution_debt: false
+```
+
+### Fluxo aprovado
+
+```text
+LEANDRO: "Mestre, tenho uma ideia."
+        ↓
+MCF ACTIVATION + bootstrap/version verified
+        ↓
+NEW_PROJECT
+        ↓
+IDEA_CAPTURE — preservar intenção humana original
+        ↓
+MINI-TRIAGE — 3–5 perguntas de alta alavancagem
+        ↓
+PROJECT GENESIS — internal id + working title + repo slug + descrição
+        ↓
+PROJECT HOME / REPOSITORY
+        ↓
+METHODOLOGY PIN
+        ↓
+PROJECT GENESIS RECORD
+        ↓
+DURABLE INTAKE CHECKPOINT
+        ↓
+HUMAN INTENT DISCOVERY
+        ↓
+INTENT READINESS
+        ↓
+PROJECT INTENT PACKAGE
+        ↓
+MESTRE READ-BACK FINAL
+        ↓
+LEANDRO CONFIRMA
+        ↓
+INTENT ALIGNMENT GATE = PASS
+        ↓
+MCF-START-MISSION
+        ↓
+TEAM PLANNING / TECHNICAL ARCHITECTURE / IMPLEMENTATION
+```
+
+### Regras resultantes
+
+- `IDEA_CAPTURE` deve preservar o que LEANDRO realmente disse antes de traduções técnicas posteriores;
+- o repositório/project home nasce depois de identidade mínima suficiente e antes da entrevista profunda, para que o Intake seja durável;
+- `internal_project_id`, `repository_slug`, `working_title` e nome/marca final são conceitos distintos;
+- o methodology pin nasce no Project Genesis para impedir silent upgrade durante uma Discovery longa;
+- `LOCAL_FIRST` para código não significa `LOCAL_ONLY` para memória: Intake e checkpoints devem ganhar persistência durável aplicável;
+- antes do `INTENT_ALIGNMENT_GATE`, o MCF pode explorar, pesquisar, documentar, criar hipóteses e protótipos de descoberta não canônicos, mas implementação de produto permanece `NO_GO`;
+- protótipo de Discovery, quando útil, é descartável/não canônico e não recebe crédito de implementação;
+- terminar número fixo de perguntas não equivale a readiness; Q8–Q11 definirão conteúdo e suficiência da intenção;
+- `PROJECT_INTENT_PACKAGE` e `INTENT_ALIGNMENT_RECEIPT` devem existir antes de `MCF-START-MISSION`;
+- `MISSION CONTRACT` nasce a partir de `MCF-START-MISSION`, não durante a captura da intenção;
+- uma ideia pode ser `ABANDONED_BEFORE_ALIGNMENT` sem criar dívida de execução.
 
 ---
 
