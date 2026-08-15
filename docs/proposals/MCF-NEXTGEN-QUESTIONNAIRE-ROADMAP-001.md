@@ -14,8 +14,7 @@
 O questionário possui **16 perguntas canônicas**.
 
 - uma pergunta por vez;
-- cada pergunta traz alternativas concretas;
-- LEANDRO pode escolher, combinar ou propor outra resposta;
+- LEANDRO pode escolher, combinar ou propor resposta;
 - MESTRE registra decisões, consequências, contradições e pontos abertos;
 - decisões relevantes são persistidas no GitHub antes de avançar;
 - pergunta concluída não é repetida salvo solicitação de LEANDRO;
@@ -35,78 +34,85 @@ question_04: COMPLETED_APPROVED_BY_LEANDRO
 question_05: COMPLETED_APPROVED_BY_LEANDRO
 question_06: COMPLETED_APPROVED_BY_LEANDRO
 question_07: COMPLETED_APPROVED_BY_LEANDRO
-question_08: NOT_STARTED
-questions_completed: 7
-questions_remaining: 9
-current_position: BETWEEN_Q7_AND_Q8
+question_08: COMPLETED_APPROVED_BY_LEANDRO
+question_09: NOT_STARTED
+questions_completed: 8
+questions_remaining: 8
+current_position: BETWEEN_Q8_AND_Q9
 implementation_authorized: false
 ```
 
 ### Q1 — FINALIDADE PRINCIPAL DO MCF
 **Status:** `COMPLETED`
 
-Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade durável de projetos como problema central; ChatGPT/MESTRE como camada cognitiva superior inicial; equipes de agentes especializados; primeiro provar no uso real, depois generalizar.
+Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade durável; ChatGPT/MESTRE como camada cognitiva superior inicial; equipes especializadas; provar antes de generalizar.
 
 ### Q2 — CONTINUIDADE DE CONTEXTO
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-`LAYERED_CONTINUITY_ARCHITECTURE`; Framework Memory, Project Memory, Live Operational Memory, Evidence/Raw Archive; Project Capsule derivado/versionado e não fonte de verdade; `UNKNOWN` permanece `UNKNOWN` sem evidência; progressive disclosure; isolamento por projeto; cold-start/Continuity Recovery Test.
+`LAYERED_CONTINUITY_ARCHITECTURE`; memória, evidência, autoridade e estado live separados; Project Capsule derivado; `UNKNOWN` permanece `UNKNOWN`; cold-start/Continuity Recovery Test.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
 ### Q3 — AGENTE DE VERDADE NO MCF
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-`Agent Contract`; `AGENTE != MODELO`; persona isolada não basta; lifecycle e independência separados de agenthood; `CAPABILITY != AUTHORITY`; `IDENTITY CONTINUITY != CAPABILITY CONTINUITY`; `AGENT OUTPUT != PROJECT TRUTH`.
+`Agent Contract`; `AGENTE != MODELO`; `CAPABILITY != AUTHORITY`; `IDENTITY CONTINUITY != CAPABILITY CONTINUITY`; `AGENT OUTPUT != PROJECT TRUTH`.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
 ### Q4 — AUTONOMIA DOS AGENTES
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-`MISSION-BOUNDED + RISK-BASED AUTONOMY`; `Authority Envelope`; `UNKNOWN_AUTHORITY = DENY`; autoelevação proibida; risco cumulativo; retries limitados/idempotentes quando aplicável; emergency stop; `TEAM_FIRST`; R3/crítico → HUMAN_GATE exclusivamente de LEANDRO.
+`MISSION-BOUNDED + RISK-BASED AUTONOMY`; `Authority Envelope`; `UNKNOWN_AUTHORITY = DENY`; retries limitados; `TEAM_FIRST`; HUMAN_GATE exclusivamente de LEANDRO em R3/crítico.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 
 ### Q5 — ROTEADOR DE MODELOS DE IA
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-`CAPABILITY_AND_POLICY_BASED_ROUTER`; requisitos verificáveis antes de marca/custo; hard requirements não podem ser rebaixados; `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`; registry com proveniência/freshness/health; fallback somente compatível, limitado e sem loops; nenhum candidato compatível → `BLOCKED / ESCALATE`; routing receipt auditável.
+`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements antes de custo; `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`; fallback compatível/limitado; sem silent downgrade ou routing loops; routing receipt auditável.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
 
 ### Q6 — INDEPENDÊNCIA ENTRE AGENTES E REVISORES
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-`INDEPENDENCE != DIVERSITY`; R2+ exige contexto separado, `BLIND_FIRST`, evidência própria, decisão própria e receipt inicial imutável; `SELF_DECLARED_INDEPENDENCE != PROOF`; `CONSENSUS != TRUTH`; majority vote não resolve desacordo técnico por padrão; assurance proporcional ao risco.
-
-Taxonomia: `R0 SELF_REVIEW`, `R1 SEPARATE_REVIEW`, `R2 INDEPENDENT_REVIEW`, `R3 DIVERSE_INDEPENDENT_REVIEW`, `R4 EXTERNAL_ASSURANCE`.
+`INDEPENDENCE != DIVERSITY`; R2+ exige contexto separado, `BLIND_FIRST`, evidência própria, decisão própria e receipt; `CONSENSUS != TRUTH`; assurance R0–R4 proporcional ao risco.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`.
 
 ### Q7 — ORQUESTRAÇÃO DO TRABALHO
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Decisão: `HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`.
+`HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`; outer graph acíclico; loops isolados/limitados; paralelismo seguro; joins explícitos; replanning versionado; Complexity Budget; staleness control; Completion Contract.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`.
+
+### Q8 — DOCUMENTAÇÃO E ESTADO PERSISTENTE
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+Decisão: `LAYERED_CANONICAL_PERSISTENCE`.
 
 Síntese:
 
-- grafo principal com dependências acíclicas e transições explícitas;
-- loops somente como subfluxos delimitados, com limites, progresso verificável e stop conditions;
-- paralelismo somente quando dependências permitirem;
-- mutações concorrentes conflitantes exigem coordenação;
-- joins possuem contrato explícito;
-- falha parcial não pode avançar silenciosamente;
-- replanning cria nova versão e não reescreve histórico;
-- replanning não amplia autoridade nem remove gates obrigatórios;
-- `Complexity Budget` limita profundidade/fanout/tarefas/agentes/custo/tempo;
-- spawning ilimitado proibido;
-- outputs obsoletos devem ser rejeitados/revalidados/cancelados/superseded;
-- integração explícita substitui `last writer wins`;
-- ações com side effects exigem idempotência/controle equivalente e compensação quando aplicável;
-- missão termina por `Completion Contract`, não porque o grafo simplesmente parou.
+- camadas lógicas: canonical knowledge, operational state, transition ledger, evidence e derived views;
+- camadas lógicas não implicam cinco sistemas físicos;
+- `ONE CLAIM CLASS -> ONE AUTHORITATIVE RESOLUTION POLICY`;
+- `LIVE_OPERATIONAL_STATE != DOCUMENTATION`;
+- conversa não é project truth;
+- derived views são regeneráveis, não autoritativas, e devem carregar freshness;
+- estado e transition ledger exigem boundary atômico ou garantia equivalente; dual write inconsistente é proibido;
+- Event Sourcing completo não é obrigatório;
+- checkpoints são boundaries ancorados em versões/cursors, não cópias completas da história;
+- evidências materiais exigem integridade/proveniência;
+- Raw Archive é governado por minimização, retenção, redaction e acesso;
+- secrets não são promovidos à memória geral;
+- schema evolution, supersession lineage e proveniência de HUMAN_GATE são obrigatórios;
+- backup sem restauração comprovada não basta; restorability deve ser testada;
+- tecnologias físicas, RPO/RTO, placement e enforcement concreto ficam para Q11/Q12/Q16.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-010.md`.
 
 ---
 
@@ -133,60 +139,44 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`.
 ### Q7 — Como o trabalho deve ser orquestrado: pipeline, loops, graph ou paralelo?
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`.
-
 ### Q8 — Qual documentação e estado persistente são realmente necessários?
-**Status:** `NEXT / NOT_STARTED`
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Definir documentação mínima, checkpoint vs log bruto, decisões vs conversas, handoff, deduplicação, versionamento, GitHub como memória institucional, banco/event store para estado vivo e artifacts para evidências.
+Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-010.md`.
 
 ### Q9 — Como deve ser a experiência humana e a observabilidade?
-**Status:** `PENDING`
+**Status:** `NEXT / NOT_STARTED`
 
-Definir timeline, Central de Perguntas e Decisões, dashboard, estados/bloqueios/próxima ação, perguntas guiadas, detalhe e simplicidade para usuário não técnico.
+Definir timeline, Central de Perguntas e Decisões, dashboard, estados/bloqueios/próxima ação, perguntas guiadas, nível de detalhe, trabalho em tempo real e simplicidade para usuário não técnico.
 
 ### Q10 — O que pertence ao MCF Core e o que deve ser Factory/Plugin/Perfil?
 **Status:** `PENDING`
 
-Definir mission engine, memória, registry, handoffs, routing, permissions, gates, evidence/recovery/observability e factories especializadas, evitando core monolítico.
-
 ### Q11 — Como deve funcionar a infraestrutura e o placement de serviços?
 **Status:** `PENDING`
-
-Definir self-host/SaaS, VPS como opção e não dependência, containers, bancos, filas, MCPs, workers, isolamento, backup/restore, portabilidade e critérios econômicos/técnicos.
 
 ### Q12 — Quais controles de segurança, permissões e gates são essenciais?
 **Status:** `PENDING`
 
-Definir least privilege, autenticação, sandboxing, secrets, prompt injection, permissões granulares, gates proporcionais ao risco e capability validation.
-
 ### Q13 — Como provar que o MCF vale o custo e a complexidade?
 **Status:** `PENDING`
-
-Definir métricas de tempo, tokens/custo, retrabalho, defects escaped, intervenções de LEANDRO, contexto perdido, retomada, qualidade, recovery e baseline simples.
 
 ### Q14 — Como validar portabilidade e utilidade fora do ambiente atual?
 **Status:** `PENDING`
 
-Definir outro chat, modelo, provider, humano, cold-start externo, outro projeto/repo, testes sem histórico bruto e limites do ecossistema atual.
-
 ### Q15 — O que deve ser preservado, simplificado, removido ou substituído?
 **Status:** `PENDING`
-
-Executar ablation/revisão crítica de agentes, gates, PRFs, handoffs, documentação, control agents, social UI, skills, runtime e protocolos.
 
 Regra: **nenhuma complexidade é preservada apenas porque já existe**.
 
 ### Q16 — Qual é a arquitetura final da Fase 1 e o GO/NO-GO?
 **Status:** `PENDING`
 
-Consolidar propósito, memória, agentes, modelos, autonomia, graph/loops, UX, core/factories, infraestrutura, segurança, métricas, validação, simplificações, dependências, riscos, arquitetura alvo, plano de migração, critérios de aceite e decisão GO / CONDITIONAL GO / NO-GO.
-
 ---
 
 ## 4. Política de checkpoint
 
-Criar/atualizar checkpoint quando houver: conclusão de bloco arquitetônico; aprovação explícita de LEANDRO; mudança relevante; descoberta de lacuna/bug; pausa; antes de missão grande ao executor/Codex; antes de troca de projeto/sessão.
+Criar/atualizar checkpoint quando houver: conclusão de bloco arquitetônico; aprovação explícita de LEANDRO; mudança relevante; descoberta de lacuna/bug; pausa; antes de missão grande; antes de troca de projeto/sessão.
 
 Campos mínimos:
 
@@ -215,18 +205,16 @@ resume_instructions:
 6. verificar boundaries operacionais;
 7. continuar exatamente na `next_question`.
 
-Estado atual:
-
 ```yaml
-last_completed_question: 7
-next_question: 8
-instruction: NÃO REPETIR Q1-Q7
+last_completed_question: 8
+next_question: 9
+instruction: NÃO REPETIR Q1-Q8
 ```
 
 ---
 
 ## 6. Critério de conclusão
 
-O questionário termina somente quando Q1–Q16 estiverem respondidas, contradições conciliadas, hipóteses abertas marcadas, arquitetura alvo e métricas documentadas, plano de migração definido e LEANDRO aprovar a especificação final antes de executor/Codex.
+O questionário termina somente quando Q1–Q16 estiverem respondidas, contradições conciliadas, hipóteses abertas marcadas, arquitetura alvo/métricas/plano de migração definidos e LEANDRO aprovar a especificação final.
 
 Até lá, MCF NextGen permanece **Discovery e Planejamento**, sem implementação autorizada.
