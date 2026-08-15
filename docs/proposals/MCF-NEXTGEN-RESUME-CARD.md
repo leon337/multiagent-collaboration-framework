@@ -24,8 +24,8 @@
 
 ```yaml
 total_questions: 16
-last_completed_question: 7
-next_question: 8
+last_completed_question: 8
+next_question: 9
 Q1: COMPLETED
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -33,15 +33,16 @@ Q4: COMPLETED_APPROVED_BY_LEANDRO
 Q5: COMPLETED_APPROVED_BY_LEANDRO
 Q6: COMPLETED_APPROVED_BY_LEANDRO
 Q7: COMPLETED_APPROVED_BY_LEANDRO
-Q8_started: false
+Q8: COMPLETED_APPROVED_BY_LEANDRO
+Q9_started: false
 implementation_authorized: false
 ```
 
-**Não repetir Q1–Q7 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q8 salvo solicitação explícita de LEANDRO.**
 
-Q8 é:
+Q9 é:
 
-> **Qual documentação e estado persistente são realmente necessários?**
+> **Como deve ser a experiência humana e a observabilidade?**
 
 ## Boundary terminal da Fase Zero
 
@@ -70,90 +71,80 @@ Estado mutável posterior deve ser relido no GitHub/provider live.
 
 ## Ordem de leitura
 
-1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`
+1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-010.md`
 2. `docs/proposals/MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
-4. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md` para Q6
-5. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md` para Q5
-6. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md` para Q4
-7. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md` para Q3
-8. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md` para Q2
-9. GitHub/provider live para estado mutável
+4. checkpoints 009→004 conforme histórico necessário
+5. GitHub/provider live para estado mutável
 
 ## Decisões consolidadas
 
 ### Q1 — Finalidade
-Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade durável de projetos; ChatGPT/MESTRE como camada cognitiva superior inicial; equipes especializadas; provar antes de generalizar.
+Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade durável; provar antes de generalizar.
 
 ### Q2 — Continuidade e memória
-`LAYERED_CONTINUITY_ARCHITECTURE`; memória, evidência, autoridade e estado live são distintos; Project Capsule é derivado, não fonte de verdade; `UNKNOWN` permanece `UNKNOWN`; cold-start/Continuity Recovery Test.
-
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
+`LAYERED_CONTINUITY_ARCHITECTURE`; memória, evidência, autoridade e live state separados; Project Capsule derivado; `UNKNOWN` permanece `UNKNOWN`.
 
 ### Q3 — Agente MCF
-`Agent Contract`; `AGENTE != MODELO`; `CAPABILITY != AUTHORITY`; `IDENTITY CONTINUITY != CAPABILITY CONTINUITY`; `AGENT OUTPUT != PROJECT TRUTH`.
-
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
+`Agent Contract`; `AGENTE != MODELO`; `CAPABILITY != AUTHORITY`; `AGENT OUTPUT != PROJECT TRUTH`.
 
 ### Q4 — Autonomia
-`MISSION-BOUNDED + RISK-BASED AUTONOMY`; `Authority Envelope`; `UNKNOWN_AUTHORITY = DENY`; autoelevação proibida; `TEAM_FIRST`; retries limitados; R3/crítico → HUMAN_GATE exclusivamente de LEANDRO.
+`MISSION-BOUNDED + RISK-BASED AUTONOMY`; `Authority Envelope`; `UNKNOWN_AUTHORITY = DENY`; HUMAN_GATE exclusivamente de LEANDRO em R3/crítico.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
+### Q5 — Roteador
+`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements; `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`; fallback compatível/limitado; routing receipt.
 
-### Q5 — Roteador de Modelos
-`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements antes de custo/latência/quota; `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`; fallback compatível, limitado e sem loops; routing receipt auditável.
-
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
-
-### Q6 — Independência e assurance
-`INDEPENDENCE != DIVERSITY`; R2+ exige contexto separado, `BLIND_FIRST`, evidência própria, decisão própria e receipt inicial imutável; `CONSENSUS != TRUTH`; assurance `R0–R4` proporcional ao risco.
-
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`.
+### Q6 — Independência
+`INDEPENDENCE != DIVERSITY`; R2+ = contexto separado + `BLIND_FIRST` + evidência/decisão próprias + receipt; `CONSENSUS != TRUTH`; assurance R0–R4 por risco.
 
 ### Q7 — Orquestração
-LEANDRO aprovou `HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`.
-
-Princípios:
-
-- outer graph com dependências acíclicas;
-- loops isolados e limitados com prova de progresso;
-- paralelismo somente quando dependências permitirem;
-- mutações conflitantes coordenadas;
-- joins explícitos;
-- falha parcial não avança silenciosamente;
-- replanning versionado e histórico imutável;
-- replan não amplia autoridade nem remove gates;
-- `Complexity Budget` limita decomposição/spawning;
-- outputs stale são rejeitados/revalidados/cancelados/superseded;
-- `last writer wins` não é integração padrão;
-- side effects exigem idempotência/controle equivalente e compensação quando aplicável;
-- `GRAPH EXHAUSTION != MISSION COMPLETION`; Completion Contract define conclusão.
+`HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`; outer graph acíclico; loops isolados/limitados; paralelismo seguro; joins; replan versionado; Complexity Budget; staleness control; Completion Contract.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`.
 
+### Q8 — Documentação e estado persistente
+LEANDRO aprovou `LAYERED_CANONICAL_PERSISTENCE`.
+
+Princípios:
+
+```text
+ONE CLAIM CLASS -> ONE AUTHORITATIVE RESOLUTION POLICY
+LIVE_OPERATIONAL_STATE != DOCUMENTATION
+CONVERSATION != PROJECT_TRUTH
+DERIVED_VIEW != SOURCE_OF_TRUTH
+BACKUP_EXISTS != RECOVERY_WORKS
+```
+
+- camadas lógicas: canonical knowledge, operational state, transition ledger, evidence, derived views;
+- não exige cinco sistemas físicos;
+- estado + transição exigem boundary atômico ou garantia equivalente;
+- full Event Sourcing não é obrigatório;
+- derived views são regeneráveis e possuem freshness;
+- checkpoints/snapshots são ancorados em versões/cursors;
+- evidence refs preservam integridade/proveniência;
+- Raw Archive é governado; retenção não é infinita;
+- secrets não são promovidos à memória geral;
+- schema versioning, supersession lineage e human approval provenance são requisitos;
+- restorability deve ser testada;
+- tecnologia/placement/RPO/RTO/security enforcement ficam para Q11/Q12/Q16.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-010.md`.
+
 ## Próxima ação do Discovery
 
-- Q1–Q7 concluídas e aprovadas por LEANDRO.
-- Q8 ainda não começou.
-- Próximo passo permitido: **LEANDRO + MESTRE iniciarem Q8 — “Qual documentação e estado persistente são realmente necessários?”**
-- não iniciar implementação NextGen antes de Q1–Q16, consolidação, arquitetura alvo, plano de migração, critérios de aceite e aprovação final de LEANDRO.
+- Q1–Q8 concluídas e aprovadas por LEANDRO.
+- Q9 ainda não começou.
+- Próximo passo permitido: **LEANDRO + MESTRE iniciarem Q9 — “Como deve ser a experiência humana e a observabilidade?”**
+- implementação NextGen continua proibida até Q1–Q16, consolidação, arquitetura alvo, plano de migração, critérios de aceite e aprovação final de LEANDRO.
 
 ## Comando mínimo de retomada
 
 > `Mestre, retome o MCF pelo Resume Card e pelo checkpoint mais recente. Continue do ponto exato.`
 
-Resultado esperado:
-
 ```yaml
 phase_zero: COMPLETE_IN_MAIN
 phase_1: ACTIVE_DISCOVERY
-Q1: COMPLETED
-Q2: COMPLETED_APPROVED
-Q3: COMPLETED_APPROVED
-Q4: COMPLETED_APPROVED
-Q5: COMPLETED_APPROVED
-Q6: COMPLETED_APPROVED
-Q7: COMPLETED_APPROVED
-Q8: NEXT_NOT_STARTED
+Q1_Q8: COMPLETED_APPROVED
+Q9: NEXT_NOT_STARTED
 implementation_authorized: false
 ```
