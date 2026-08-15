@@ -26,36 +26,29 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 2
-questions_remaining: 18
-last_completed_question: 2
-next_question: 3
+questions_completed: 3
+questions_remaining: 17
+last_completed_question: 3
+next_question: 4
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
-Q3: NOT_STARTED
+Q3: COMPLETED_APPROVED_BY_LEANDRO
+Q4: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1 ou Q2 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q3 salvo solicitação explícita de LEANDRO.**
 
 ## Q1 — decisão aprovada
 
 `HYBRID_INTENT_AND_EXPLICIT_ACTIVATION` — Opção D.
 
-- Chat normal fora do MCF;
-- comando explícito pode iniciar ativação;
-- intenção clara de projeto pode iniciar ativação;
-- `ACTIVATING != ACTIVE`;
-- `ACTIVE` exige bootstrap/metodologia/fonte de verdade verificável.
-
 ## Q2 — decisão aprovada
 
 `LOCAL_FIRST_REMOTE_CHECKPOINTED` — Opção D.
-
-Princípios:
 
 ```text
 MCF_METHOD != EXECUTION_HOST
@@ -63,46 +56,48 @@ EDIT != COMMIT != PUSH != PR
 LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED
 ```
 
-### Modos suportados no escopo atual da v1.1
+- `CHATGPT_REMOTE` → conectores e ferramentas remotas;
+- `CODEX_LOCAL` → workspace, terminal e Git local;
+- GitHub → memória institucional, checkpoint, colaboração, CI, revisão e integração;
+- checkpoints remotos em boundaries semânticos/de risco;
+- `CHECKPOINT_DEBT` permitido apenas para trabalho local reversível de baixo risco quando remoto indisponível;
+- boundary material/governado → `FAIL_CLOSED` sem evidência remota aplicável.
+
+## Q3 — decisão aprovada
+
+`VERIFIED_TWO_STAGE_BOOTSTRAP` — Opção D.
 
 ```yaml
-CHATGPT_REMOTE:
-  execution_plane: CONNECTORS_AND_REMOTE_TOOLS
-
-CODEX_LOCAL:
-  execution_plane: LOCAL_WORKSPACE_TERMINAL_AND_GIT
-  exact_remote_baseline_required: true
-  isolated_branch_or_worktree: true
-  local_commits_allowed: true
-  push_every_edit: false
-  remote_checkpoint_required: true
+bootstrap_locator:
+  repository: leon337/multiagent-collaboration-framework
+  canonical_index: docs/bootstrap/MCF-BOOTSTRAP-INDEX.yaml
+resolution_order:
+  - VALID_PROJECT_PIN
+  - EXPLICIT_LEANDRO_SELECTION
+  - CURRENT_STABLE
+immutable_methodology_ref:
+  required: true
+  accepted_identity: [TAG, COMMIT_SHA]
+project_methodology_pin:
+  required_after_intake: true
+silent_mid_mission_upgrade:
+  allowed: false
+default_exclusions:
+  - DISCOVERY
+  - PLANNING
+  - RC
+  - EXPERIMENTAL
+  - ALPHA
+  - BETA
 ```
 
-### Checkpoint remoto obrigatório em
-
-- fase/submissão concluída;
-- pausa longa/fim de sessão;
-- antes de HUMAN_GATE;
-- antes de revisão independente;
-- validação material concluída;
-- antes de boundary de alto risco;
-- handoff para outro agente;
-- candidato de integração.
-
-PR não é necessário a cada checkpoint; é requerido no boundary de integração/revisão aplicável.
-
-Se o remoto estiver indisponível:
-
-```yaml
-low_risk_reversible_local_work: CONTINUE_WITH_CHECKPOINT_DEBT
-material_or_governed_boundary: FAIL_CLOSED
-```
+`ACTIVE` só pode ocorrer depois que repositório, versão, referência imutável e bootstrap forem resolvidos/verificados.
 
 ## Ordem de leitura
 
 1. GitHub live;
 2. este Resume Card;
-3. `MCF-V1.1-DISCOVERY-CHECKPOINT-002.md`;
+3. `MCF-V1.1-DISCOVERY-CHECKPOINT-003.md`;
 4. `MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. `MCF-V1.1-DECISION-LEDGER-001.md`;
 6. `MCF-V1.1-DISCOVERY-CHARTER-001.md`.
@@ -127,7 +122,7 @@ NEXT QUESTION
 
 ## Próxima ação
 
-> **Q3 — Como o bootstrap do MCF encontra e verifica a versão/metodologia vigente?**
+> **Q4 — Como deve funcionar o fail-closed quando GitHub/bootstrap/fonte canônica não estiver acessível ou verificável?**
 
 ## Comando mínimo de retomada
 
