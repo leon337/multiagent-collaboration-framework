@@ -26,16 +26,16 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 5
-questions_remaining: 15
-last_completed_question: 5
-next_question: 6
+questions_completed: 6
+questions_remaining: 14
+last_completed_question: 6
+next_question: 7
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
 question_04: COMPLETED_APPROVED_BY_LEANDRO
 question_05: COMPLETED_APPROVED_BY_LEANDRO
-question_06: NOT_STARTED
+question_06: COMPLETED_APPROVED_BY_LEANDRO
 question_07: NOT_STARTED
 question_08: NOT_STARTED
 question_09: NOT_STARTED
@@ -86,18 +86,25 @@ RECOVERY_ROUTE:
   - RECOVER_MCF_PROJECT
 ```
 
-- `NEW_PROJECT` → sem implementação material a preservar;
-- `ADOPT_EXISTING_PROJECT` → projeto existente sem continuidade MCF verificável;
-- `RESUME_MCF_PROJECT` → projeto com continuidade MCF verificável;
-- `RECOVER_MCF_PROJECT` → rota excepcional para continuidade MCF quebrada/não verificável;
-- classificação usa intenção humana + evidência de máquina;
-- LEANDRO não precisa escolher códigos internos;
-- `PROJECT_ENTRY_CLASSIFICATION_UNRESOLVED` bloqueia execução até resolução.
-
 ### Q6 — Como deve funcionar a entrada de um projeto novo?
-Definir mini-triagem, identidade/repositório, momento do methodology pin, início do Human Intent Discovery, limites pré-Intent Alignment Gate e artefatos mínimos antes de `MCF-START-MISSION`.
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `PROGRESSIVE_DURABLE_PROJECT_GENESIS` — Opção D.
+
+- ativação MCF verificada antes da entrada formal;
+- `IDEA_CAPTURE` preserva a intenção original de LEANDRO;
+- mini-triagem de 3–5 perguntas para identidade, não requisitos completos;
+- Project Genesis define `internal_project_id`, working title, repo slug e descrição;
+- project home/repositório nasce antes da entrevista profunda;
+- methodology pin nasce no Project Genesis;
+- primeiro checkpoint durável antecede Human Intent Discovery;
+- implementação de produto permanece `NO_GO` até `INTENT_ALIGNMENT_GATE = PASS`;
+- Discovery/documentação e protótipos não canônicos de descoberta podem existir nos limites definidos;
+- artefatos mínimos pré-missão: `PROJECT_GENESIS_RECORD`, `PROJECT_INTAKE_CHECKPOINT`, `PROJECT_INTENT_PACKAGE`, `INTENT_ALIGNMENT_RECEIPT`;
+- `MISSION CONTRACT` nasce somente via `MCF-START-MISSION`;
+- projeto pode ser abandonado antes do alinhamento sem dívida de execução.
 
 ### Q7 — Como deve funcionar a entrada de um projeto existente antes de perguntar ao humano?
+Definir reconnaissance read-only, fontes técnicas automáticas, separação entre fatos/inferências/unknowns, reconstrução do `AS-IS`, `Project Reality Report`, possível reclassificação para `RESUME/RECOVER`, read-back para LEANDRO e bloqueios antes da confirmação.
 
 ### Q8 — Quais dimensões de intenção humana são obrigatórias?
 
@@ -143,6 +150,6 @@ Para cada Q aprovada:
 
 ## 5. Próxima ação
 
-> **Q6 — Como deve funcionar a entrada de um projeto novo (`NEW_PROJECT`)?**
+> **Q7 — Como deve funcionar a entrada de um projeto existente (`ADOPT_EXISTING_PROJECT`) antes de perguntar ao humano em profundidade?**
 
-Não iniciar Q7 antes de decisão explícita de LEANDRO sobre Q6.
+Não iniciar Q8 antes de decisão explícita de LEANDRO sobre Q7.
