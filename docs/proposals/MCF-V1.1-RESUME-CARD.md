@@ -26,10 +26,10 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 18
-questions_remaining: 2
-last_completed_question: 18
-next_question: 19
+questions_completed: 19
+questions_remaining: 1
+last_completed_question: 19
+next_question: 20
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -48,16 +48,17 @@ Q15: COMPLETED_APPROVED_BY_LEANDRO
 Q16: COMPLETED_APPROVED_BY_LEANDRO
 Q17: COMPLETED_APPROVED_BY_LEANDRO
 Q18: COMPLETED_APPROVED_BY_LEANDRO
-Q19: NOT_STARTED
+Q19: COMPLETED_APPROVED_BY_LEANDRO
+Q20: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q18 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q19 salvo solicitação explícita de LEANDRO.**
 
-A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-018.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
+A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-019.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
 
 ## Preferência de apresentação de LEANDRO
 
@@ -84,9 +85,10 @@ Q15: DELEGATED_TECHNICAL_AUTONOMY_WITHIN_HUMAN_APPROVED_ENVELOPE
 Q16: IMPACT_BASED_HUMAN_GATES_WITH_SCOPED_STANDING_AUTHORIZATION
 Q17: EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME
 Q18: COMPATIBLE_EXTENSION_VERSIONING_AND_EXPLICIT_MIGRATION
+Q19: EVIDENCE_LAYERED_REAL_SCENARIO_QUALIFICATION_MATRIX
 ```
 
-## Síntese operacional Q6–Q18
+## Síntese operacional Q6–Q19
 
 ```text
 VERIFIED ACTIVATION
@@ -112,6 +114,7 @@ VERIFIED ACTIVATION
 → IMPACT-BASED HUMAN GATES + SCOPED STANDING AUTHORIZATION
 → EVENT-DRIVEN DURABLE CHECKPOINTS + VERIFIED RESUME
 → COMPATIBLE EXTENSION OF V1.0 PRIMITIVES + EXPLICIT MIGRATION
+→ EVIDENCE-LAYERED REAL-SCENARIO QUALIFICATION
 ```
 
 ### Q8 — 20 dimensões
@@ -122,36 +125,27 @@ Estados: `CLEAR`, `PARTIAL`, `UNKNOWN`, `CONFLICTING`, `NOT_APPLICABLE`.
 
 ### Q9 — perguntas adaptativas
 
-```text
-QUESTION
-→ ANSWER
-→ UPDATE ALL AFFECTED DIMENSIONS
-→ CHECK CONTRADICTIONS
-→ REASSESS PRIORITIES
-→ NEXT BEST QUESTION
-```
-
-Sem sequência/quantidade fixa; follow-up exige ganho de informação; dimensão `CLEAR` não reabre sem causa; evidência reduz perguntas sem substituir intenção humana; loops de baixo ganho são proibidos.
+Sem sequência/quantidade fixa; uma resposta pode resolver múltiplas dimensões; follow-up exige ganho de informação; dimensão `CLEAR` não reabre sem causa; evidência reduz perguntas sem substituir intenção humana.
 
 ### Q10 — read-back progressivo
 
-Três níveis: `MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`. Read-back funciona como checksum semântico. Correções invalidam derivações erradas e recalculam dimensões dependentes. Confirmação progressiva não equivale ao Alignment Gate.
+Três níveis: `MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`. Correções invalidam derivações erradas. `FINAL_INTENT_READBACK` é obrigatório antes do Alignment Gate.
 
 ### Q11 — readiness
 
-Readiness é semântica, não contagem de perguntas nem score puro. Estados: `NOT_READY`, `CONDITIONALLY_READY`, `READY_FOR_ALIGNMENT`. `READY_FOR_ALIGNMENT != IMPLEMENTATION_AUTHORIZED`.
+Readiness é semântica, não contagem de perguntas nem score puro. Estados: `NOT_READY`, `CONDITIONALLY_READY`, `READY_FOR_ALIGNMENT`. `BLOCKING_UNKNOWN` impede alinhamento quando capaz de alterar materialmente produto, escopo, usuários, segurança, arquitetura, custo, risco ou sucesso. `READY_FOR_ALIGNMENT != IMPLEMENTATION_AUTHORIZED`.
 
 ### Q12 — Project Intent Package
 
-`VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE`: memória durável e versionada da intenção humana; `INTENT_ALIGNMENT_GATE` vincula revisão exata; Mission Contract nasce após alinhamento.
+`VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE`: memória durável e versionada da intenção humana, separando intenção, síntese, decisão, evidência, inferência, delegação, assumption e unknown. Alignment vincula revisão exata; Mission Contract nasce depois e não redefine intenção.
 
 ### Q13 — artefatos de projeto existente
 
-`EVIDENCE_BOUND_CONDITIONAL_EXISTING_PROJECT_ARTIFACT_PIPELINE`: PRR representa `AS-IS`; Gap Map compara PRR exato com PIP alinhado exato; Completion/Recovery Plan nasce de gaps validados; recovery reconcilia primeiro.
+`EVIDENCE_BOUND_CONDITIONAL_EXISTING_PROJECT_ARTIFACT_PIPELINE`: PRR representa `AS-IS`; Gap Map compara PRR exato com PIP alinhado exato; Completion/Recovery Plan nasce de gaps validados; `RECOVER_MCF_PROJECT` reconcilia primeiro.
 
 ### Q14 — autoridade e views
 
-Quatro classes: `CANONICAL_DURABLE_RECORD`, `LIVE_AUTHORITATIVE_STATE`, `DERIVED_REBUILDABLE_VIEW`, `WORKING_PROPOSED_ARTIFACT`. Estado live prevalece para fatos voláteis; derived views não criam autoridade concorrente.
+Quatro classes: `CANONICAL_DURABLE_RECORD`, `LIVE_AUTHORITATIVE_STATE`, `DERIVED_REBUILDABLE_VIEW`, `WORKING_PROPOSED_ARTIFACT`. Estado live prevalece para fatos voláteis; derived views não criam autoridade concorrente; machine inference não vira decisão humana silenciosamente.
 
 ### Q15 — autoridade humana × autonomia técnica
 
@@ -163,42 +157,54 @@ Quatro classes: `CANONICAL_DURABLE_RECORD`, `LIVE_AUTHORITATIVE_STATE`, `DERIVED
 
 ### Q17 — checkpoint, pause/resume e troca de chat
 
-`EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME`: checkpoints em eventos/boundaries materiais; Resume Card é derived view; retomada por fontes autoritativas + estado live + reconciliação; memória do chat é opcional; local não persistido não é transferido.
+`EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME`: checkpoints em eventos/boundaries materiais; Resume Card é derived view; retomada por `Resume Card → checkpoint → fontes autoritativas → live → reconciliation`; rotas `FAST_RESUME`, `RECONCILE`, `RECOVER_MCF_PROJECT`; memória do chat é opcional; local não persistido não é transferido.
 
 ### Q18 — compatibilidade v1.0 → v1.1
 
+`COMPATIBLE_EXTENSION_VERSIONING_AND_EXPLICIT_MIGRATION`: v1.1 estende o core v1.0, reutilizando runtime, `MCF-START-MISSION`, `MCF-RECOVER-CONTEXT`, Mission Contract, PRF/checkpoints, permission/Human Delegation, handoffs, receipts, reconciliation e observability. Schemas evoluem por versionamento explícito e preferencialmente aditivo. Projetos v1.0 permanecem válidos sob methodology pin; upgrade não é silencioso; migração preserva artefato original e provenance. Primitive novo exige `NO_EQUIVALENT_TEST`.
+
+### Q19 — qualificação real da v1.1
+
 ```yaml
-canonical_name: COMPATIBLE_EXTENSION_VERSIONING_AND_EXPLICIT_MIGRATION
+canonical_name: EVIDENCE_LAYERED_REAL_SCENARIO_QUALIFICATION_MATRIX
+qualification_layers:
+  - UNIT_AND_CONTRACT
+  - INTEGRATION
+  - REAL_E2E_SCENARIOS
+  - NEGATIVE_AND_FAILURE_PATHS
+  - RECOVERY_AND_RECONCILIATION
+  - V1_0_COMPATIBILITY_AND_MIGRATION
+  - CLEAN_ROOM_CONTINUITY
+  - STRUCTURAL_NO_PARALLEL_ARCHITECTURE
+  - EXACT_HEAD_REGRESSION
+  - INDEPENDENT_REVIEW
 ```
 
-A v1.1 estende o core v1.0, não cria arquitetura paralela. Reutiliza runtime, `MCF-START-MISSION`, `MCF-RECOVER-CONTEXT`, Mission Contract, PRF/checkpoints, permission profiles/Human Delegation, handoffs, receipts, reconciliação e observabilidade. Schemas evoluem por versionamento explícito e preferencialmente aditivo. Projetos v1.0 permanecem válidos sob methodology pin; upgrade não é silencioso; migração preserva artefato original, provenance e validação. Primitive novo exige `NO_EQUIVALENT_TEST`. Compatibilidade deve existir em documento, contrato e runtime.
+Cenários obrigatórios incluem projeto novo, adoção de projeto existente, `FAST_RESUME` em novo chat sem transcript como requisito, reconcile, recovery, TEAM_FIRST, HUMAN_GATE, standing authorization, partial blocking, compatibilidade/migração v1.0, precedência de fontes, `INFERENCE != HUMAN_INTENT`, ausência de arquitetura paralela e regressão exact-head. Contratos críticos exigem caminho positivo e negativo. Evidência deve conter input, esperado, execução, observado, referência, PASS/FAIL e `TESTED_HEAD`. Veredito final: `PASS`, `CONDITIONAL_PASS` ou `FAIL`, com revisão independente.
 
 ```text
-V1_1_EXTENDS_V1_0
-V1_1_DOES_NOT_DUPLICATE_V1_0
-REUSE_BEFORE_NEW_PRIMITIVE
-EXTEND_BEFORE_REPLACE
-VERSION_BEFORE_BREAK
-MIGRATE_WITH_PROVENANCE
-OLD_PROJECT != INVALID_PROJECT
-PROJECT_PIN_PREVENTS_SILENT_UPGRADE
-V1_0_RELEASE_IDENTITY_REMAINS_IMMUTABLE
+DOCUMENTED != IMPLEMENTED != TESTED != QUALIFIED
+CLEAN_ROOM_RESUME_MUST_NOT_REQUIRE_PREVIOUS_CHAT
+CRITICAL_CONTRACT = POSITIVE_PATH + NEGATIVE_PATH
+TEST_EVIDENCE_BINDS_TO_EXACT_HEAD
+LEGACY_COMPATIBILITY_MUST_BE_PROVED_NOT_ASSUMED
+INDEPENDENT_REVIEW_REQUIRED_FOR_FINAL_QUALIFICATION
 ```
 
 ## Ordem de leitura ao retomar
 
 1. consultar GitHub live e confirmar a branch `planning/mcf-v1.1-discovery`;
 2. ler este Resume Card;
-3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-018.md`;
+3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-019.md`;
 4. ler `docs/proposals/MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. consultar `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md` quando precisar dos contratos aprovados;
-6. manter `implementation/prototype/release = NO_GO`;
-7. iniciar **Q19**, não Q18.
+6. manter `IMPLEMENTATION/CODEX_IMPLEMENTATION/PROTOTYPE/RELEASE = NO_GO`;
+7. iniciar **Q20**, não Q19.
 
 ## Próxima ação
 
-> **Q19 — Como provar a v1.1.0 com testes reais?**
+> **Q20 — Qual é a arquitetura/contrato consolidado da v1.1.0 e qual o GO / CONDITIONAL GO / NO-GO para implementação?**
 
 ## Comando mínimo de retomada em novo chat
 
-> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 018 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q19. Não repita Q1–Q18 e não inicie implementação.`
+> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 019 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q20. Não repita Q1–Q19 e não inicie implementação.`
