@@ -823,6 +823,155 @@ PENDING_HUMAN_GATE_BLOCKS_DEPENDENT_ACTION_NOT_ALL_SAFE_WORK
 HUMAN_GATE_ASKS_FOR_HUMAN_DECISION_NOT_ENGINEERING_SOLUTION
 ```
 
+## V11-Q17 — Event-Driven Transferable Continuity Contract
+
+```yaml
+decision_id: V11-Q17
+question: Q17
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME
+```
+
+### Problema
+
+Permitir pausa, troca de chat, troca de ambiente e retomada confiável sem depender da memória do chat anterior, sem transformar checkpoint em log de conversa e sem declarar como transferido trabalho que exista apenas localmente ou não seja verificável.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+checkpoint_model:
+  trigger_basis: MATERIAL_EVENT_OR_TRANSFER_BOUNDARY
+  every_interaction: false
+  timer_or_message_count_is_primary_trigger: false
+  canonical_for_captured_boundary: true
+  remote_durable_checkpoint_required_for_transferability: true
+
+checkpoint_triggers:
+  - MATERIAL_HUMAN_DECISION
+  - PHASE_OR_MISSION_BOUNDARY
+  - MATERIAL_MISSION_CONTRACT_CHANGE
+  - MATERIAL_STATE_CHANGE
+  - IMPORTANT_HANDOFF
+  - HUMAN_GATE_PENDING_OR_RESOLVED_WHEN_MATERIAL
+  - PLANNED_PAUSE
+  - PLANNED_CHAT_TRANSFER
+  - PLANNED_EXECUTION_ENVIRONMENT_TRANSFER
+  - MATERIAL_CONTEXT_LOSS_RISK
+
+transferable_checkpoint:
+  planned_pause_or_transfer_requires: true
+  minimum_references:
+    - PROJECT_AND_MISSION_IDENTITY
+    - CURRENT_PHASE
+    - METHODOLOGY_PIN
+    - ALIGNED_PIP_REVISION_WHEN_APPLICABLE
+    - MISSION_CONTRACT
+    - OBJECTIVE_AND_CURRENT_STATE
+    - REPOSITORY_BRANCH_AND_CHECKPOINT_SHA
+    - MATERIAL_DECISIONS_SINCE_PREVIOUS_CHECKPOINT
+    - EVIDENCE_AND_ARTIFACT_REFERENCES
+    - OPEN_FINDINGS_AND_BLOCKERS
+    - PENDING_HUMAN_GATES
+    - ACTIVE_STANDING_AUTHORIZATIONS
+    - NEXT_ACTION_AND_RESPONSIBLE
+    - VOLATILE_LIVE_STATE_SNAPSHOT_WITH_CAPTURE_TIME
+    - RESUME_INSTRUCTIONS
+  duplicate_full_authoritative_documents: false
+
+resume_card:
+  classification: DERIVED_REBUILDABLE_VIEW
+  role: FAST_ORIENTATION
+  may_override_authoritative_sources: false
+
+resume_pipeline:
+  - RESUME_CARD
+  - CANONICAL_CHECKPOINT
+  - AUTHORITATIVE_RECORDS_AS_NEEDED
+  - GITHUB_PROVIDER_LIVE_STATE
+  - RECONCILIATION
+
+resume_routes:
+  FAST_RESUME:
+    requires:
+      - VALID_CHECKPOINT
+      - AUTHORITATIVE_SOURCES_RESOLVED
+      - LIVE_STATE_COMPATIBLE
+      - NO_UNEXPLAINED_MATERIAL_DIVERGENCE
+  RECONCILE:
+    used_when: EXPLAINABLE_STATE_DRIFT_REQUIRES_RECONCILIATION
+  RECOVER_MCF_PROJECT:
+    used_when:
+      - CHECKPOINT_MISSING_OR_INVALID
+      - AUTHORITATIVE_SOURCE_MISSING_OR_CONFLICTING
+      - UNEXPLAINED_MATERIAL_DIVERGENCE
+      - INSUFFICIENT_EVIDENCE
+
+chat_memory:
+  classification: OPTIONAL_CONTEXT
+  required_for_project_continuity: false
+  previous_chat_transcript_required: false
+
+local_first_transfer:
+  local_uncheckpointed_work_equals_remote_checkpointed: false
+  local_only_state_may_be_declared_transferred: false
+  planned_environment_transfer_requires_persist_or_explicitly_block_transferability: true
+  unrecoverable_local_work_must_be_declared_lost_or_unverified: true
+
+continuity_states:
+  - ACTIVE
+  - PAUSED_TRANSFERABLE
+  - WAITING_EXTERNAL
+  - WAITING_HUMAN_GATE
+  - RECOVERY_REQUIRED
+  - CLOSED
+
+resume_integrity:
+  verify_methodology_pin: true
+  verify_checkpoint_integrity: true
+  verify_pip_and_mission_contract_when_applicable: true
+  reconcile_volatile_live_state: true
+  resume_from_declared_next_action_only_after_validation: true
+
+implementation_authorized: false
+```
+
+### Regras resultantes
+
+- checkpoint é orientado a eventos materiais e boundaries de transferência, não a cada mensagem nem prioritariamente por relógio/contagem;
+- pausa planejada, troca de chat ou troca de ambiente exige checkpoint durável e transferível;
+- Resume Card continua `DERIVED_REBUILDABLE_VIEW`: orienta rapidamente, mas não substitui o checkpoint nem fontes autoritativas;
+- retomada segue `Resume Card → checkpoint canônico → fontes autoritativas necessárias → GitHub/provider live → reconciliação`;
+- continuidade válida usa `FAST_RESUME`; drift explicável usa `RECONCILE`; ausência/conflito/divergência material inexplicável/evidência insuficiente roteia para `RECOVER_MCF_PROJECT`;
+- memória/transcript do chat anterior é contexto opcional, nunca requisito de continuidade;
+- trabalho exclusivamente local e não persistido não pode ser tratado como transferido remotamente;
+- em transferência planejada de ambiente, estado local deve ser persistido por mecanismo autorizado ou a transferibilidade deve ser declarada bloqueada;
+- trabalho local perdido ou não verificável é declarado `LOST_OR_UNVERIFIED_LOCAL_WORK`, nunca reconstruído por invenção;
+- `PAUSED != CANCELLED`, `WAITING_HUMAN_GATE != FAILED` e `NEW_CHAT != NEW_MISSION`;
+- retomada somente continua do `next_action` depois de validar checkpoint, metodologia, contratos aplicáveis e estado live.
+
+Princípios:
+
+```text
+CHECKPOINT != CHAT_LOG
+MATERIAL_EVENT_OR_TRANSFER_BOUNDARY -> DURABLE_CHECKPOINT
+PLANNED_TRANSFER_REQUIRES_TRANSFERABLE_CHECKPOINT
+RESUME_CARD = ORIENTATION, NOT AUTHORITY
+CHAT_MEMORY = OPTIONAL_CONTEXT
+PROJECT_CONTINUITY_MUST_NOT_REQUIRE_PREVIOUS_CHAT
+LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED
+UNVERIFIED_LOCAL_WORK_MUST_NOT_BE_INVENTED_AS_TRANSFERRED
+CHECKPOINT + AUTHORITATIVE_RECORDS + LIVE_STATE -> RECONCILIATION
+VALID_CONTINUITY -> FAST_RESUME
+MATERIAL_UNEXPLAINED_DIVERGENCE -> RECOVER_MCF_PROJECT
+NEW_CHAT != NEW_MISSION
+PAUSED != CANCELLED
+```
+
 ---
 
 ## DISCOVERY-INPUT-001 — Codex Local-First
