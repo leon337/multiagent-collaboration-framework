@@ -1,10 +1,10 @@
 # MCF v1.1 — Decision Ledger
 
 **ID:** `MCF-V1.1-DECISION-LEDGER-001`  
-**Status:** `ACTIVE`  
+**Status:** `DISCOVERY_COMPLETE`  
 **Branch:** `planning/mcf-v1.1-discovery`
 
-Este ledger preserva decisões aprovadas por LEANDRO durante a Discovery da v1.1.0. Implementação permanece bloqueada até encerramento formal da Discovery e autorização separada. Os checkpoints imutáveis preservam o detalhamento histórico de cada decisão.
+Este ledger preserva decisões aprovadas por LEANDRO durante a Discovery da v1.1.0. A Discovery foi concluída em Q20 com `CONDITIONAL_GO` apenas para preparação técnica/conformance. Implementação, Codex implementation, prototype e release permanecem bloqueados até HUMAN_GATE separado e explícito de LEANDRO. Os checkpoints imutáveis preservam o detalhamento histórico de cada decisão.
 
 ---
 
@@ -1251,6 +1251,120 @@ MATERIAL_HEAD_CHANGE -> REASSESS_AFFECTED_TESTS
 LEGACY_COMPATIBILITY_MUST_BE_PROVED_NOT_ASSUMED
 MIGRATION_FAILURE_MUST_NOT_ACTIVATE_PARTIAL_SUCCESSOR
 INDEPENDENT_REVIEW_REQUIRED_FOR_FINAL_QUALIFICATION
+```
+
+## V11-Q20 — Consolidated v1.1 Architecture and Discovery Verdict
+
+```yaml
+decision_id: V11-Q20
+question: Q20
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: CONSOLIDATED_V11_ARCHITECTURE_WITH_CONDITIONAL_GO
+```
+
+### Problema
+
+Consolidar Q1–Q19 em uma arquitetura coerente da v1.1.0 e decidir se a Discovery pode ser encerrada, sem confundir encerramento da Discovery com autorização para implementar, prototipar, executar Codex ou publicar release.
+
+### Decisão de LEANDRO
+
+**Opção D — `CONDITIONAL_GO`.**
+
+### Veredito formal
+
+```yaml
+discovery:
+  status: COMPLETE
+  questions_completed: 20
+  questions_total: 20
+  conceptual_architecture: APPROVED
+  blocking_conceptual_contradiction_found: false
+
+verdict:
+  type: CONDITIONAL_GO
+  scope: IMPLEMENTATION_PREPARATION_ONLY
+  implementation_ready_without_preparation: false
+
+pre_implementation_requirements:
+  - V1_0_IMPACT_AND_CONFORMANCE_ANALYSIS
+  - NO_EQUIVALENT_TEST_FOR_EACH_CANDIDATE_NEW_PRIMITIVE
+  - EXACT_SCHEMA_AND_CONTRACT_DESIGN
+  - RUNTIME_AND_SKILL_MAPPING
+  - MIGRATION_AND_COMPATIBILITY_PLAN
+  - IMPLEMENTATION_PLAN
+  - QUALIFICATION_PLAN_FROM_Q19
+  - TEAM_REVIEW
+  - SEPARATE_IMPLEMENTATION_HUMAN_GATE_BY_LEANDRO
+
+authorizations:
+  implementation: false
+  codex_implementation: false
+  prototype: false
+  release: false
+```
+
+### Arquitetura consolidada
+
+A v1.1 é extensão compatível do core v1.0 e organiza-se nos seguintes blocos:
+
+1. `ACTIVATION_AND_BOOTSTRAP` — ativação híbrida, methodology pin verificável e degraded/fail-closed boundaries;
+2. `PROJECT_ENTRY` — `NEW_PROJECT`, `ADOPT_EXISTING_PROJECT`, `RESUME_MCF_PROJECT` e rota `RECOVER_MCF_PROJECT`;
+3. `PROJECT_CONTEXT` — Project Genesis, evidence-first reconnaissance, PIP e PRR com separação `AS_IS != TO_BE`;
+4. `ALIGNMENT_AND_PLANNING_INPUTS` — semantic readiness, final read-back, Intent Alignment, Gap Map e Completion/Recovery Plan quando aplicável;
+5. `MISSION_EXECUTION` — Mission Contract + `MCF-START-MISSION` sobre runtime, skills, handoffs e receipts existentes;
+6. `AUTHORITY_AND_HUMAN_GATE` — autonomia técnica dentro do envelope humano, `TEAM_FIRST`, impact-based HUMAN_GATE e standing authorization delimitada;
+7. `PROJECT_MEMORY_AND_AUTHORITY` — canonical durable records, live authoritative state, derived rebuildable views e working/proposed artifacts;
+8. `CONTINUITY_AND_RECOVERY` — event-driven transferable checkpoint, `FAST_RESUME`, `RECONCILE`, `RECOVER_MCF_PROJECT` e extensão de `MCF-RECOVER-CONTEXT`;
+9. `VERSION_AND_COMPATIBILITY` — extensão/versionamento/migração explícita da v1.0, methodology pin, preservação histórica e `NO_EQUIVALENT_TEST`;
+10. `QUALIFICATION` — matriz em camadas com E2E real, caminhos negativos, clean-room new chat, compatibilidade, exact-head evidence e revisão independente.
+
+### Extensão versus novo primitive
+
+```yaml
+reuse_or_extend_by_default:
+  - MCF_RUNTIME
+  - MCF_START_MISSION
+  - MCF_RECOVER_CONTEXT
+  - MISSION_CONTRACT
+  - PRF_AND_PHASE_CHECKPOINT
+  - PERMISSION_PROFILES
+  - HUMAN_DELEGATION_FIREWALL
+  - HANDOFFS
+  - RECEIPTS
+  - RECONCILIATION
+  - OBSERVABILITY
+
+candidate_new_durable_contracts_subject_to_no_equivalent_test:
+  - PROJECT_INTENT_PACKAGE
+  - PROJECT_REALITY_REPORT
+
+derived_or_non_authoritative_not_new_runtime_state_by_default:
+  - RESUME_CARD
+  - PRODUCT_BRIEF
+  - AS_IS_TO_BE_GAP_MAP
+  - COMPLETION_RECOVERY_PLAN_DRAFT
+```
+
+### Próxima fase permitida pelo veredito
+
+O `CONDITIONAL_GO` permite somente preparar tecnicamente a implementação. A próxima fase deve produzir análise de impacto/conformance da v1.0, `NO_EQUIVALENT_TEST`, schemas/contratos exatos, mapeamento de runtime/skills, estratégia de migração/compatibilidade, plano de implementação, Qualification Plan e revisão de equipe.
+
+Somente depois dessa preparação pode existir um HUMAN_GATE separado dirigido a LEANDRO para decidir se implementação começa.
+
+### Regras finais da Discovery
+
+```text
+DISCOVERY_COMPLETE != IMPLEMENTATION_AUTHORIZED
+CONDITIONAL_GO = GO_FOR_TECHNICAL_PREPARATION_ONLY
+NO_CODE_FROM_Q20
+NO_PROTOTYPE_FROM_Q20
+NO_RELEASE_FROM_Q20
+V1_1_EXTENDS_V1_0
+REUSE_BEFORE_NEW_PRIMITIVE
+NEW_PRIMITIVE_REQUIRES_NO_EQUIVALENT_TEST
+IMPLEMENTATION_REQUIRES_SEPARATE_LEANDRO_HUMAN_GATE
+DOCUMENTED != IMPLEMENTED != TESTED != QUALIFIED
 ```
 
 ---
