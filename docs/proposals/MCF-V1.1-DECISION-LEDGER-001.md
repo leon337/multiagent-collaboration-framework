@@ -468,6 +468,133 @@ RECOVER = RECONCILE_FIRST, ESCALATE_ON_MATERIAL_DIVERGENCE
 MATERIAL_CHANGE -> REASSESS_DEPENDENT_ARTIFACTS
 ```
 
+## V11-Q14 — Layered Project Memory Authority Contract
+
+```yaml
+decision_id: V11-Q14
+question: Q14
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: LAYERED_AUTHORITY_WITH_REBUILDABLE_PROJECT_VIEWS
+```
+
+### Problema
+
+Definir autoridade e precedência entre memória durável, estado live, snapshots históricos, análises e documentos auxiliares sem criar múltiplas fontes de verdade concorrentes.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+authority_classes:
+  CANONICAL_DURABLE_RECORD:
+    role: AUTHORITATIVE_WITHIN_IDENTIFIED_SCOPE_AND_BOUNDARY
+    examples:
+      - ALIGNED_PROJECT_INTENT_PACKAGE_REVISION
+      - HUMAN_DECISION_RECORD
+      - INTENT_ALIGNMENT_RECEIPT
+      - MISSION_CONTRACT
+      - PROJECT_REALITY_REPORT_AT_EXACT_BASELINE
+      - EVIDENCE_AND_RECEIPTS
+      - CONTINUITY_CHECKPOINT
+  LIVE_AUTHORITATIVE_STATE:
+    role: CURRENT_AUTHORITY_FOR_VOLATILE_EXTERNAL_FACTS
+    examples:
+      - BRANCH_HEAD
+      - PR_STATE
+      - ISSUE_STATE
+      - CI_STATE
+      - DEPLOY_STATE
+      - HEALTH_STATE
+      - RELEASE_METADATA
+      - PROVIDER_STATE
+  DERIVED_REBUILDABLE_VIEW:
+    role: REBUILDABLE_FROM_AUTHORITATIVE_INPUTS_WITHOUT_CREATING_NEW_AUTHORITY
+    examples:
+      - RESUME_CARD
+      - CURRENT_STATE_SUMMARY
+      - PRODUCT_BRIEF
+      - AS_IS_TO_BE_GAP_MAP
+      - DASHBOARD
+      - ROADMAP_STATUS_VIEW
+  WORKING_PROPOSED_ARTIFACT:
+    role: NON_AUTHORITATIVE_UNTIL_RELEVANT_DECISION_OR_CONTRACT_IS_FORMALLY_PROMOTED
+    examples:
+      - COMPLETION_RECOVERY_PLAN_DRAFT
+      - ANALYSES
+      - DRAFTS
+      - PROPOSALS
+
+scope:
+  universal_single_canonical_file: false
+  authority_is_domain_and_boundary_specific: true
+  rebuildable_information_should_duplicate_authority: false
+
+precedence:
+  derived_view_may_override_canonical_record: false
+  historical_canonical_record_may_override_newer_live_state_for_volatile_fact: false
+  live_state_may_rewrite_historical_record: false
+  machine_inference_may_become_human_decision_silently: false
+
+checkpoint:
+  canonical_for_captured_boundary: true
+  current_volatile_state_requires_live_reconciliation: true
+
+promotion:
+  explicit_promotion_required: true
+  working_artifact_creation_does_not_create_authority: true
+  derived_analysis_requiring_human_decision_must_be_recorded_in_authoritative_decision_record: true
+
+product_brief:
+  classification: DERIVED_REBUILDABLE_VIEW
+  may_override_pip: false
+  may_introduce_new_human_intent: false
+
+gap_map:
+  classification: DERIVED_REBUILDABLE_VIEW
+  may_be_versioned_for_audit: true
+  inputs:
+    - EXACT_PRR_REVISION
+    - EXACT_ALIGNED_PIP_REVISION
+  machine_inference_becomes_human_intent_automatically: false
+
+completion_recovery_plan:
+  initial_classification: WORKING_PROPOSED_ARTIFACT
+  existence_implies_implementation_authority: false
+
+implementation_authorized: false
+```
+
+### Regras resultantes
+
+- `CANONICAL` não significa `CURRENT_FOREVER`; um registro canônico pode ser histórico e continuar válido somente para seu boundary identificado;
+- fatos externos voláteis são resolvidos por `LIVE_AUTHORITATIVE_STATE`, não por cópias documentais antigas;
+- `LIVE_AUTHORITATIVE_STATE` não apaga nem reescreve a história preservada em registros duráveis;
+- o PIP alinhado é autoridade sobre intenção humana da revisão aprovada; Product Brief é visão derivada e não pode alterar essa intenção;
+- PRR é registro durável autoritativo da realidade observada no baseline exato que declara, não uma afirmação eterna do estado corrente;
+- Gap Map é análise derivada/reconstruível entre PRR exato e PIP alinhado exato; pode ser versionado por auditoria sem se tornar autoridade independente sobre intenção;
+- Completion/Recovery Plan nasce como working/proposed artifact e sua mera existência não autoriza execução;
+- checkpoint é canônico como registro de continuidade do boundary capturado, porém a retomada deve reconciliá-lo com estado live antes de tratar fatos voláteis como atuais;
+- Resume Card, dashboards, resumos, Product Brief e views de roadmap devem apontar para fontes autoritativas e permanecer reconstruíveis;
+- promoção de proposta/análise para decisão ou contrato autoritativo deve ser explícita e registrar somente a autoridade necessária;
+- não existe um único arquivo universal que seja fonte de verdade para todos os domínios do projeto.
+
+Princípios:
+
+```text
+CANONICAL != CURRENT_FOREVER
+DERIVED_VIEW_CANNOT_OVERRIDE_CANONICAL_RECORD
+HISTORICAL_CANONICAL_RECORD_CANNOT_OVERRIDE_NEWER_LIVE_STATE_FOR_VOLATILE_FACTS
+LIVE_STATE_CANNOT_REWRITE_HISTORY
+MACHINE_INFERENCE_CANNOT_BECOME_HUMAN_DECISION_SILENTLY
+REBUILDABLE_INFORMATION_SHOULD_NOT_CREATE_A_SECOND_SOURCE_OF_TRUTH
+CHECKPOINT + LIVE_STATE -> RECONCILIATION
+PLAN_EXISTS != PLAN_IS_AUTHORITY
+```
+
 ---
 
 ## DISCOVERY-INPUT-001 — Codex Local-First
