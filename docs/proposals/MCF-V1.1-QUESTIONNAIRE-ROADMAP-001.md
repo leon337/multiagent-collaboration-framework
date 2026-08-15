@@ -18,6 +18,7 @@ O questionário possui **20 perguntas canônicas**.
 - decisão relevante é persistida no GitHub antes de avançar;
 - pergunta concluída não é repetida salvo solicitação explícita de LEANDRO;
 - discovery input não é decisão;
+- ao apresentar alternativas, MESTRE marca sua recomendação com **⭐** para facilitar visualização; a estrela não substitui decisão de LEANDRO;
 - implementação da v1.1.0 permanece bloqueada até encerramento formal e HUMAN_GATE separado.
 
 ---
@@ -26,10 +27,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 13
-questions_remaining: 7
-last_completed_question: 13
-next_question: 14
+questions_completed: 14
+questions_remaining: 6
+last_completed_question: 14
+next_question: 15
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -43,7 +44,7 @@ question_10: COMPLETED_APPROVED_BY_LEANDRO
 question_11: COMPLETED_APPROVED_BY_LEANDRO
 question_12: COMPLETED_APPROVED_BY_LEANDRO
 question_13: COMPLETED_APPROVED_BY_LEANDRO
-question_14: NOT_STARTED
+question_14: COMPLETED_APPROVED_BY_LEANDRO
 question_15: NOT_STARTED
 question_16: NOT_STARTED
 question_17: NOT_STARTED
@@ -125,28 +126,35 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 - revisão alinhada é histórica/imutável; mudança material cria nova working revision;
 - `Intent Alignment Receipt` prova a confirmação sem duplicar todo o PIP;
 - Mission Contract nasce após alinhamento e referencia a revisão alinhada do PIP;
-- Product Brief não pode introduzir intenção nova; canônico vs derived fica para Q14;
-- Reality Report e Gap Map permanecem separados para Q13.
+- Product Brief não pode introduzir intenção nova.
 
 ### Q13 — Quais artefatos adicionais um projeto existente precisa produzir?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `EVIDENCE_BOUND_CONDITIONAL_EXISTING_PROJECT_ARTIFACT_PIPELINE` — Opção D.
 
-- `Project Reality Report` representa somente o `AS-IS` em baseline exato, com evidência e provenance; não representa intenção humana nem plano;
-- `Reality Confirmation` separa correção de intenção, que segue para o PIP, de contestação de fato técnico, que exige reavaliação da evidência;
+- `Project Reality Report` representa somente o `AS-IS` em baseline exato, com evidência e provenance;
 - `AS-IS / TO-BE Gap Map` vincula revisão exata do PRR a revisão exata e alinhada do PIP;
-- análise preliminar de gap antes do alinhamento é permitida, mas não possui autoridade de planejamento;
+- análise preliminar de gap antes do alinhamento não possui autoridade de planejamento;
 - `Completion / Recovery Plan` nasce de gaps validados e não autoriza implementação;
 - em `ADOPT_EXISTING_PROJECT`, PRR é obrigatório; Gap Map e Plan são obrigatórios quando houver gap material;
 - `RESUME_MCF_PROJECT` com continuidade verificável não reconstrói toda a Discovery por padrão;
-- `RECOVER_MCF_PROJECT` reconcilia primeiro checkpoint, PIP, Mission State, GitHub live e evidências; divergência material pode escalar para novo PRR/Gap/Plan;
-- mudanças materiais em realidade, intenção ou gaps reabrem somente artefatos dependentes;
-- canônico vs derived permanece reservado para Q14.
+- `RECOVER_MCF_PROJECT` reconcilia primeiro checkpoint, PIP, Mission State, GitHub live e evidências.
 
 ### Q14 — O que é canônico e o que é derived view na memória/continuidade do projeto?
-**Estado:** `NOT_STARTED`
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `LAYERED_AUTHORITY_WITH_REBUILDABLE_PROJECT_VIEWS` — Opção D.
+
+- quatro classes: `CANONICAL_DURABLE_RECORD`, `LIVE_AUTHORITATIVE_STATE`, `DERIVED_REBUILDABLE_VIEW`, `WORKING_PROPOSED_ARTIFACT`;
+- autoridade canônica é específica de domínio/boundary; não existe arquivo mestre universal;
+- estado live governa fatos externos voláteis e não reescreve registros históricos;
+- derived views não podem substituir fontes autoritativas e devem ser reconstruíveis;
+- Product Brief e Gap Map são `DERIVED_REBUILDABLE_VIEW`;
+- Completion/Recovery Plan nasce como `WORKING_PROPOSED_ARTIFACT`;
+- checkpoint é canônico para o boundary capturado, mas exige reconciliação live na retomada;
+- promoção de análise/proposta para decisão/contrato autoritativo deve ser explícita.
 
 ### Q15 — Qual é a divisão de autoridade entre LEANDRO e a equipe MCF após o intake?
+**Estado:** `NOT_STARTED`
 
 ### Q16 — Quais ações continuam exigindo HUMAN_GATE e quais decisões técnicas podem ser delegadas?
 
@@ -173,20 +181,20 @@ Para cada Q aprovada:
 
 ---
 
-## 5. Handoff após Q13
+## 5. Handoff após Q14
 
 O boundary canônico atual é:
 
 ```text
 MCF-V1.1-RESUME-CARD.md
 +
-MCF-V1.1-DISCOVERY-CHECKPOINT-013.md
+MCF-V1.1-DISCOVERY-CHECKPOINT-014.md
 ```
 
-Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q13 e retomar diretamente na Q14.
+Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q14 e retomar diretamente na Q15.
 
 ## 6. Próxima ação
 
-> **Q14 — O que é canônico e o que é derived view na memória/continuidade do projeto?**
+> **Q15 — Qual é a divisão de autoridade entre LEANDRO e a equipe MCF após o intake?**
 
-Não iniciar Q15 antes de decisão explícita de LEANDRO sobre Q14. Implementação permanece `NO_GO`.
+Não iniciar Q16 antes de decisão explícita de LEANDRO sobre Q15. Implementação permanece `NO_GO`.
