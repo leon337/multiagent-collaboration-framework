@@ -37,7 +37,7 @@ FASE ZERO                                      ✅ COMPLETE_IN_MAIN
 
 FASE 1 — MCF NEXTGEN
 ├── F1.1 Discovery guiado                      🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q9 ✅ | Q10 próxima
+├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q10 ✅ | Q11 próxima
 ├── F1.3 Consolidação das decisões             ⏳
 ├── F1.4 Arquitetura alvo                      ⏳
 ├── F1.5 Plano de migração                     ⏳
@@ -63,7 +63,7 @@ phase_1:
 
 questionnaire:
   total: 16
-  completed: 9
+  completed: 10
   Q1: COMPLETED
   Q2: COMPLETED_APPROVED_BY_LEANDRO
   Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -73,7 +73,8 @@ questionnaire:
   Q7: COMPLETED_APPROVED_BY_LEANDRO
   Q8: COMPLETED_APPROVED_BY_LEANDRO
   Q9: COMPLETED_APPROVED_BY_LEANDRO
-  Q10: NEXT_NOT_STARTED
+  Q10: COMPLETED_APPROVED_BY_LEANDRO
+  Q11: NEXT_NOT_STARTED
 ```
 
 A aprovação de perguntas de Discovery não autoriza implementação.
@@ -98,7 +99,7 @@ Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade 
 `CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements; capability registry; fallback compatível/limitado; routing receipt.
 
 ## Q6 — Independência e assurance
-`INDEPENDENCE != DIVERSITY`; blind-first/evidência própria/decisão própria para R2+; assurance R0–R4 por risco.
+`INDEPENDENCE != DIVERSITY`; revisão independente exige separação observável, blind-first, evidência própria e decisão própria; assurance proporcional ao risco.
 
 ## Q7 — Orquestração
 `HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`; outer graph acíclico; loops limitados; paralelismo seguro; joins; replanning versionado; Complexity Budget; Completion Contract.
@@ -107,37 +108,38 @@ Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade 
 `LAYERED_CANONICAL_PERSISTENCE`; canonical knowledge, operational state, transition ledger, evidence e derived views; consistência durável, provenance, freshness, schema evolution e restorability.
 
 ## Q9 — Experiência humana e observabilidade
-LEANDRO aprovou `ACTIONABLE_PROGRESSIVE_OBSERVABILITY`.
+`ACTIONABLE_PROGRESSIVE_OBSERVABILITY`; atenção humana separada de severidade operacional; Decision Inbox; aprovação version-bound; UI derivada; progressive disclosure; causalidade tipada; notificações por mudança material.
+
+## Q10 — Core vs extensões
+LEANDRO aprovou `MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`.
 
 Princípios:
 
-- visão principal orientada a objetivo, estado, progresso material, bloqueios, necessidade de ação humana e próximo passo;
-- severidade operacional e atenção humana são eixos separados;
-- `BLOCKED != HUMAN_ACTION_REQUIRED`;
-- Decision Inbox centraliza/deduplica decisões humanas e possui lifecycle;
-- aprovação humana é vinculada à versão do objeto/estado;
-- dashboard/UI são derived views com freshness e não fonte de verdade;
-- ações da UI passam por command/policy/state revalidation e receipt;
-- progressive disclosure: Human Summary → Operational Detail → Timeline → Evidence → Raw Telemetry;
-- Simple View não omite fatos materiais;
-- causalidade é tipada; `POST_HOC != CAUSATION`;
-- progresso prefere milestones/acceptance criteria/Completion Contract;
-- notificações são baseadas em mudança material e deduplicadas;
-- pause/cancel/emergency stop são semanticamente distintos;
-- `REQUESTED != ENFORCED`;
-- overview multi-project não funde memórias;
-- chain-of-thought privada não é requisito de observabilidade.
+- Core possui `Constitutional Kernel` e contratos universais de Core Services;
+- extensão pode depender de contrato Core; Core não depende de extensão específica;
+- Plugin = capacidade executável;
+- Skill = procedimento governado;
+- Profile = configuração declarativa sem execução arbitrária;
+- Factory = gerador de blueprint versionado, sem autoridade persistente no runtime;
+- Extension Manifest versionado e compatibilidade explícita são obrigatórios para extensões materiais;
+- `INSTALLED != ENABLED != AUTHORIZED`;
+- incompatibilidade desconhecida falha fechada;
+- ciclos de dependência entre extensões são proibidos;
+- resolução de Profile é determinística; `last writer wins` silencioso é proibido;
+- extensão deve falhar de modo contido sem corromper o Core;
+- histórico permanece interpretável mesmo após remoção de extensão;
+- `Agent Contract` é Core; catálogo fixo de agentes nomeados não é Core por padrão;
+- rótulos numéricos `R0–R4` não podem aparecer sem namespace em novas especificações; risco e assurance devem usar nomes/namespace explícitos.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-011.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md`.
 
 ---
 
 # 5. Próximos blocos
 
-Q10–Q16 decidirão:
+Q11–Q16 decidirão:
 
-- Core vs factories/plugins/perfis;
-- infraestrutura/placement;
+- infraestrutura e placement;
 - segurança/gates/permissões;
 - métricas e custo-benefício;
 - portabilidade/validação externa;
@@ -146,7 +148,7 @@ Q10–Q16 decidirão:
 
 Próxima pergunta:
 
-> **Q10 — O que pertence ao MCF Core e o que deve ser Factory/Plugin/Perfil?**
+> **Q11 — Como deve funcionar a infraestrutura e o placement de serviços?**
 
 ---
 
@@ -172,16 +174,16 @@ Pré-condições:
 ```yaml
 phase_zero: COMPLETE_IN_MAIN
 phase_one_discovery: ACTIVE_DISCOVERY
-last_completed_question: 9
-next_question: 10
+last_completed_question: 10
+next_question: 11
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q10
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q11
 ```
 
 Ordem mínima de retomada:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-011.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este Master Roadmap;
 5. GitHub/provider live para estado mutável.
