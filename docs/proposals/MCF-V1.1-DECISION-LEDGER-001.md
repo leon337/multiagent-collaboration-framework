@@ -260,7 +260,91 @@ MACHINE_EVIDENCE_REDUCES_QUESTIONS_BUT_DOES_NOT_REPLACE_HUMAN_INTENT
 QUESTION -> ANSWER -> UPDATE_DIMENSIONS -> REASSESS -> NEXT_BEST_QUESTION
 ```
 
-Mudança explícita de decisão humana não apaga o histórico: decisão anterior deve ser marcada `SUPERSEDED` e a nova como `CURRENT`. Loops de follow-up com baixo ganho são proibidos. A carga cognitiva de LEANDRO entra como custo real na seleção da próxima pergunta. Q10 definirá progressive read-back; Q11 definirá readiness global.
+Mudança explícita de decisão humana não apaga o histórico: decisão anterior deve ser marcada `SUPERSEDED` e a nova como `CURRENT`. Loops de follow-up com baixo ganho são proibidos. A carga cognitiva de LEANDRO entra como custo real na seleção da próxima pergunta.
+
+## V11-Q10 — Progressive Semantic Read-Back Contract
+
+```yaml
+decision_id: V11-Q10
+question: Q10
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK
+```
+
+### Decisão
+
+O MCF valida entendimento de forma progressiva, orientada por eventos e com cadência de segurança. Read-back intermediário é checksum semântico para impedir propagação de interpretações erradas; não substitui o `FINAL_INTENT_READBACK` nem autoriza implementação.
+
+```yaml
+readback_levels:
+  - MICRO_CLARIFICATION
+  - PROGRESSIVE_READBACK
+  - FINAL_INTENT_READBACK
+
+progressive_readback_triggers:
+  - MATERIAL_SCOPE_CHANGE
+  - MATERIAL_HUMAN_INTENT_CONFLICT
+  - HIGH_IMPACT_INTERPRETATION
+  - SIGNIFICANT_SEMANTIC_BLOCK_COMPLETED
+  - EXCESSIVE_CHANGE_SINCE_LAST_READBACK
+  - CONTEXT_OR_HANDOFF_BOUNDARY
+
+cadence_safety_net:
+  meaningful_exchanges: APPROXIMATELY_4_TO_6
+  fixed_count: false
+
+content:
+  emphasize:
+    - NEW_UNDERSTANDING
+    - MATERIAL_CHANGES
+    - HIGH_IMPACT_INTENT
+    - IMPORTANT_CONSTRAINTS
+    - OPEN_UNCERTAINTIES
+  repeat_all_dimensions_every_time: false
+  distinguish_fact_from_interpretation: true
+  false_certainty: prohibited
+
+result_states:
+  - CONFIRMED
+  - CORRECTED
+  - REJECTED
+
+partial_confirmation:
+  allowed: true
+
+correction:
+  stop_wrong_semantic_propagation: true
+  identify_affected_dimensions: true
+  invalidate_derived_assumptions: true
+  recalculate_dimension_states: true
+
+history:
+  material_human_change:
+    old: SUPERSEDED
+    new: CURRENT
+  rejected_machine_interpretation:
+    must_not_become_human_decision: true
+
+final_readback:
+  required_before_intent_alignment_gate: true
+
+progressive_confirmation:
+  authorizes_implementation: false
+```
+
+Princípios:
+
+```text
+PROGRESSIVE_READBACK = SEMANTIC_CHECKSUM
+HIGH_IMPACT_INTERPRETATION_REQUIRES_HUMAN_SEMANTIC_CHECK
+CORRECTION_MUST_PROPAGATE_TO_DEPENDENT_DIMENSIONS
+PARTIAL_CONFIRMATION_IS_ALLOWED
+REJECTED_MACHINE_INTERPRETATION != HUMAN_DECISION
+PROGRESSIVE_CONFIRMATION != INTENT_ALIGNMENT_GATE
+```
+
+Correções materiais preservam histórico; interpretações derivadas invalidadas não podem continuar contaminando dimensões dependentes. Read-backs devem enfatizar o que é novo, material, alterado e ainda incerto, em linguagem compreensível para LEANDRO, sem repetir mecanicamente as 20 dimensões. Q11 definirá readiness global.
 
 ---
 
