@@ -359,6 +359,115 @@ ALIGNMENT_BINDS_TO_EXACT_PIP_REVISION
 PROJECT_INTENT_CAN_OUTLIVE_ANY_SINGLE_MISSION
 ```
 
+## V11-Q13 — Existing Project Artifact Pipeline Contract
+
+```yaml
+decision_id: V11-Q13
+question: Q13
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: EVIDENCE_BOUND_CONDITIONAL_EXISTING_PROJECT_ARTIFACT_PIPELINE
+```
+
+### Problema
+
+Definir quais artefatos adicionais um projeto existente precisa produzir sem misturar realidade observada, intenção humana e planejamento, evitando também reconstrução desnecessária quando a continuidade MCF permanece íntegra.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+artifacts:
+  project_reality_report:
+    purpose: REPRESENT_AS_IS_ONLY
+    exact_baseline_required: true
+    evidence_and_provenance_required: true
+    human_intent_contamination_forbidden: true
+  as_is_to_be_gap_map:
+    purpose: COMPARE_CONFIRMED_REALITY_TO_ALIGNED_INTENT
+    exact_prr_revision_required: true
+    exact_aligned_pip_revision_required: true
+    planning_authority_before_alignment: false
+  completion_recovery_plan:
+    purpose: TRANSFORM_VALIDATED_GAPS_INTO_LATER_EXECUTION_PATH
+    requires_valid_gap_map: true
+    implementation_authority: false
+
+entry_modes:
+  ADOPT_EXISTING_PROJECT:
+    project_reality_report: REQUIRED
+    gap_map: REQUIRED_WHEN_MATERIAL_GAP_EXISTS
+    completion_recovery_plan: REQUIRED_WHEN_MATERIAL_GAP_EXISTS
+  RESUME_MCF_PROJECT:
+    full_reconstruction_by_default: false
+    requires_verified_continuity: true
+  RECOVER_MCF_PROJECT:
+    reconcile_checkpoint_pip_mission_state_github_and_evidence_first: true
+    full_reconstruction_by_default: false
+    escalate_on_material_divergence: true
+    may_require_new_prr_gap_plan: true
+
+reality_confirmation:
+  occurs_after_reconnaissance: true
+  human_statement_about_technical_fact_becomes_machine_evidence_automatically: false
+  human_intent_corrections_route_to_pip: true
+  disputed_observable_facts_require_evidence_reassessment: true
+
+gap_map_authority:
+  preliminary_analysis_before_alignment: allowed_non_authoritative
+  authoritative_for_planning_requires:
+    - REALITY_CONFIRMED
+    - EXACT_PRR_REVISION
+    - PIP_ALIGNED
+    - EXACT_ALIGNED_PIP_REVISION
+
+invalidation:
+  material_reality_change:
+    - NEW_PRR_REVISION
+    - GAP_REASSESSMENT
+  material_intent_change:
+    - NEW_PIP_WORKING_REVISION
+    - REALIGNMENT_IF_REQUIRED
+    - GAP_REASSESSMENT
+  material_gap_change:
+    - PLAN_REASSESSMENT
+
+canonical_vs_derived: DEFER_TO_Q14
+implementation_authorized: false
+```
+
+### Regras resultantes
+
+- `Project Reality Report` representa apenas o `AS-IS` comprovado em baseline identificável; não representa intenção humana, PIP ou plano;
+- fatos materiais do PRR exigem evidência/provenance ou classificação explícita como inferência/unknown;
+- código, documentação e estado técnico podem demonstrar o que existe, mas não definem silenciosamente o que LEANDRO deseja;
+- `Reality Confirmation` ocorre após reconnaissance; correção de intenção segue para o PIP, enquanto contestação de fato observável exige reavaliação de evidência;
+- o `AS-IS / TO-BE Gap Map` vincula uma revisão exata do PRR a uma revisão exata e alinhada do PIP;
+- análise preliminar de gaps pode existir durante Discovery, mas não possui autoridade de planejamento antes de Reality Confirmation + Intent Alignment;
+- `Completion / Recovery Plan` nasce de gaps validados e não autoriza implementação;
+- em `ADOPT_EXISTING_PROJECT`, PRR é obrigatório; Gap Map e Completion/Recovery Plan são exigidos quando houver gap material entre AS-IS e TO-BE;
+- em `RESUME_MCF_PROJECT` com continuidade verificável, não se reconstrói toda a Discovery nem os três artefatos por padrão;
+- em `RECOVER_MCF_PROJECT`, primeiro se reconciliam checkpoint, PIP, Mission State, GitHub live e evidências; divergência material pode escalar para novo PRR, novo Gap Map e novo Completion/Recovery Plan;
+- mudanças materiais em realidade, intenção ou gap invalidam/reabrem somente os artefatos dependentes, preservando referências de revisão;
+- a classificação de artefatos como canônicos ou derived views permanece explicitamente adiada para Q14.
+
+Princípios:
+
+```text
+AS_IS != TO_BE
+PRR != PIP
+PRR != PLAN
+HUMAN_AUTHORITY_OVER_INTENT != AUTOMATIC_TECHNICAL_EVIDENCE
+GAP = EXACT_PRR_REVISION x EXACT_ALIGNED_PIP_REVISION
+PLAN_CREATED != IMPLEMENTATION_AUTHORIZED
+RESUME != RECONSTRUCT_BY_DEFAULT
+RECOVER = RECONCILE_FIRST, ESCALATE_ON_MATERIAL_DIVERGENCE
+MATERIAL_CHANGE -> REASSESS_DEPENDENT_ARTIFACTS
+```
+
 ---
 
 ## DISCOVERY-INPUT-001 — Codex Local-First
