@@ -4,7 +4,7 @@
 **Status:** `ACTIVE`  
 **Branch:** `planning/mcf-v1.1-discovery`
 
-Este ledger preserva decisões da Discovery da v1.1.0 sem depender do histórico de chat.
+Este ledger preserva decisões aprovadas por LEANDRO durante a Discovery da v1.1.0. Implementação permanece bloqueada até encerramento formal da Discovery e autorização separada.
 
 ---
 
@@ -12,49 +12,31 @@ Este ledger preserva decisões da Discovery da v1.1.0 sem depender do histórico
 
 ```yaml
 decision_id: V11-D0
-kind: DISCOVERY_GOVERNANCE
 status: APPROVED_BY_LEANDRO
 target_version: v1.1.0
 baseline: v1.0.0
-branch: planning/mcf-v1.1-discovery
 implementation_authorized: false
 ```
 
-### Decisão
-
-A evolução v1.1 será definida primeiro por Discovery estruturada. A implementação pelo Codex só pode ocorrer após fechamento do escopo, reconciliação, revisão crítica e autorização explícita de LEANDRO.
-
----
-
-## V11-Q01 — MCF Activation Contract
+## V11-Q01 — Activation Contract
 
 ```yaml
 decision_id: V11-Q01
-question: Q1
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: HYBRID_INTENT_AND_EXPLICIT_ACTIVATION
 ```
 
-### Decisão
-
-Chat normal permanece fora do MCF. Comando explícito ou intenção clara de projeto pode iniciar `ACTIVATING`; `ACTIVE` exige bootstrap/metodologia/fonte de verdade verificável.
-
----
+Chat normal permanece fora do MCF. Comando explícito ou intenção clara pode iniciar `ACTIVATING`; `ACTIVE` exige bootstrap/metodologia/fonte de verdade verificáveis.
 
 ## V11-Q02 — Execution Environment Contract
 
 ```yaml
 decision_id: V11-Q02
-question: Q2
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: LOCAL_FIRST_REMOTE_CHECKPOINTED
 ```
-
-### Decisão
-
-A mesma metodologia/governança do MCF opera em hosts diferentes, enquanto o execution plane pode variar.
 
 ```text
 MCF_METHOD != EXECUTION_HOST
@@ -62,106 +44,56 @@ EDIT != COMMIT != PUSH != PR
 LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED
 ```
 
-`CHATGPT_REMOTE` usa conectores/ferramentas remotas; `CODEX_LOCAL` usa workspace, terminal e Git local. GitHub permanece memória institucional, checkpoint remoto, CI, revisão e integração. Checkpoints remotos são exigidos em boundaries semânticos/de risco. Trabalho local reversível pode continuar temporariamente com `CHECKPOINT_DEBT` quando remoto estiver indisponível; boundary material/governado permanece `FAIL_CLOSED`.
+`CHATGPT_REMOTE` usa conectores/ferramentas remotas. `CODEX_LOCAL` usa workspace/terminal/Git local. GitHub permanece memória institucional, checkpoint remoto, CI, revisão e integração. Boundaries materiais/governados permanecem fail-closed sem evidência aplicável.
 
----
-
-## V11-Q03 — Bootstrap Version Resolution Contract
+## V11-Q03 — Bootstrap Version Resolution
 
 ```yaml
 decision_id: V11-Q03
-question: Q3
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: VERIFIED_TWO_STAGE_BOOTSTRAP
-```
-
-### Decisão
-
-O bootstrap resolve a metodologia em duas etapas: locator canônico mutável apenas para descobrir a versão operacional e referência imutável por tag/SHA para carregar a metodologia.
-
-```yaml
-bootstrap_locator:
-  repository: leon337/multiagent-collaboration-framework
-  canonical_index: docs/bootstrap/MCF-BOOTSTRAP-INDEX.yaml
 resolution_order:
   - VALID_PROJECT_PIN
   - EXPLICIT_LEANDRO_SELECTION
   - CURRENT_STABLE
-immutable_methodology_ref:
-  required: true
-  accepted_identity: [TAG, COMMIT_SHA]
-project_methodology_pin:
-  required_after_intake: true
-silent_mid_mission_upgrade:
-  allowed: false
-default_exclusions:
-  - DISCOVERY
-  - PLANNING
-  - RC
-  - EXPERIMENTAL
-  - ALPHA
-  - BETA
+immutable_methodology_ref: REQUIRED
+silent_mid_mission_upgrade: false
 ```
 
----
+Bootstrap usa locator canônico para resolver a versão operacional e depois carrega metodologia por tag/SHA imutável. Discovery, planning, RC e experimental não são defaults.
 
-## V11-Q04 — Degraded Operation and Fail-Closed Contract
+## V11-Q04 — Degraded Operation / Fail-Closed
 
 ```yaml
 decision_id: V11-Q04
-question: Q4
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES
 ```
 
-### Decisão
-
-Quando a fonte canônica estiver indisponível, operação degradada só é permitida quando a base local já é verificável e apenas para trabalho local reversível. Inconsistência entre fontes produz bloqueio canônico e fail-closed.
+Operação degradada só pode continuar sobre base local verificável e trabalho reversível. Inconsistência entre fontes bloqueia. Recuperação exige revalidação canônica, reconciliação de `CHECKPOINT_DEBT` e `Degraded Operation Receipt`.
 
 ```text
 UNAVAILABLE != INCONSISTENT
 LOCAL_COPY != VERIFIED_LOCAL_COPY
-CACHE_CAN_PROVE_IDENTITY != CACHE_CAN_PROVE_CURRENT_STABLE
 HUMAN_AUTHORITY != TECHNICAL_EVIDENCE
 ```
 
-Merge, deploy, release, publicação, integração final, upgrade de metodologia, mudança de autoridade, review terminal e efeitos externos materiais sem evidência remota ficam bloqueados. Recuperação do remoto exige revalidação, reconciliação do `CHECKPOINT_DEBT` e `Degraded Operation Receipt`.
-
----
-
-## V11-Q05 — Project Entry Classification Contract
+## V11-Q05 — Project Entry Classification
 
 ```yaml
 decision_id: V11-Q05
-question: Q5
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: THREE_CANONICAL_ENTRY_MODES_WITH_RECOVERY_ROUTE
-```
-
-### Decisão
-
-O MCF possui três modos canônicos de entrada e uma rota excepcional de recuperação.
-
-```yaml
 PROJECT_ENTRY_MODE:
   - NEW_PROJECT
   - ADOPT_EXISTING_PROJECT
   - RESUME_MCF_PROJECT
 RECOVERY_ROUTE:
   - RECOVER_MCF_PROJECT
-classification:
-  human_intent: INPUT
-  machine_evidence: REQUIRED
-  automatic_detection: ENABLED
-  ambiguous_state: PROJECT_ENTRY_CLASSIFICATION_UNRESOLVED
-execution_before_classification:
-  allowed: false
 ```
-
-Princípios:
 
 ```text
 HUMAN_INTENT + MACHINE_EVIDENCE = ENTRY_CLASSIFICATION
@@ -169,28 +101,55 @@ ADOPT != RECOVER
 RESUME_REQUIRES_VERIFIED_CONTINUITY
 ```
 
----
-
-## V11-Q06 — New Project Genesis Contract
+## V11-Q06 — New Project Genesis
 
 ```yaml
 decision_id: V11-Q06
-question: Q6
 status: APPROVED_BY_LEANDRO
 chosen_option: D
 canonical_name: PROGRESSIVE_DURABLE_PROJECT_GENESIS
 ```
 
+Fluxo aprovado:
+
+```text
+VERIFIED MCF ACTIVATION
+→ IDEA_CAPTURE
+→ MINI-TRIAGE (3–5)
+→ PROJECT_GENESIS
+→ PROJECT HOME / REPOSITORY
+→ METHODOLOGY PIN
+→ DURABLE INTAKE CHECKPOINT
+→ HUMAN INTENT DISCOVERY
+→ INTENT READINESS
+→ PROJECT INTENT PACKAGE
+→ LEANDRO CONFIRMS
+→ INTENT ALIGNMENT GATE = PASS
+→ MCF-START-MISSION
+```
+
+Antes do Alignment Gate, implementação de produto é `NO_GO`. Discovery, documentação e protótipos não canônicos de descoberta podem existir nos limites definidos.
+
+## V11-Q07 — Existing Project Reconnaissance Contract
+
+```yaml
+decision_id: V11-Q07
+question: Q7
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: EVIDENCE_FIRST_EXISTING_PROJECT_RECONNAISSANCE
+```
+
 ### Problema
 
-Definir como um `NEW_PROJECT` passa da ideia humana para uma casa durável de projeto e, depois, para uma missão técnica, sem implementar cedo demais nem deixar a Discovery presa ao contexto transitório do chat.
+Definir como o MCF assume um projeto existente sem depender da memória de LEANDRO e sem confundir o que foi construído (`AS-IS`) com o que LEANDRO queria construir (`TO-BE`).
 
 ### Alternativas consideradas
 
-- A — entrevista completa antes de criar repositório;
-- B — criar repositório imediatamente ao ouvir a ideia;
-- C — mini-triagem → repo → Discovery → gate;
-- D — gênese progressiva e durável: ativação verificada, captura da ideia, mini-triagem, identidade provisória, Project Genesis durável, methodology pin, checkpoints durante Intake, Human Intent Discovery, Intent Alignment Gate e somente então `MCF-START-MISSION`.
+- A — perguntar primeiro ao humano e auditar depois;
+- B — auditar e tratar o código como intenção;
+- C — auditoria read-only + resumo + confirmação humana;
+- D — reconnaissance orientado por evidências, baseline exato, classificação de fatos/inferências/unknowns, detecção de continuidade MCF, reconstrução `AS-IS`, Project Reality Report e read-back antes da Discovery humana profunda.
 
 ### Decisão de LEANDRO
 
@@ -199,107 +158,93 @@ Definir como um `NEW_PROJECT` passa da ideia humana para uma casa durável de pr
 ### Contrato conceitual aprovado
 
 ```yaml
-entry_mode: NEW_PROJECT
-model: PROGRESSIVE_DURABLE_PROJECT_GENESIS
+entry_mode:
+  initial: ADOPT_EXISTING_PROJECT
+  status: PROVISIONAL
 
-stages:
-  - VERIFIED_MCF_ACTIVATION
-  - IDEA_CAPTURE
-  - MINI_TRIAGE
-  - PROJECT_GENESIS
-  - DURABLE_INTAKE_CHECKPOINT
-  - HUMAN_INTENT_DISCOVERY
-  - INTENT_READINESS
-  - INTENT_ALIGNMENT_GATE
-  - MCF_START_MISSION
+initial_policy:
+  target_project_mutation: FORBIDDEN
+  reconnaissance: READ_ONLY_FIRST
 
-mini_triage:
-  target_questions: 3_to_5
-  purpose: PROJECT_IDENTITY_NOT_FULL_REQUIREMENTS
+baseline:
+  exact_ref_or_sha_required: true
+  observed_at_required: true
 
-project_genesis:
-  before_deep_intent_discovery: true
-  methodology_pin_required: true
-  durable_project_home_required: true
+automatic_sources:
+  - SOURCE_CODE
+  - DOCUMENTATION
+  - GIT_HISTORY
+  - BRANCHES_TAGS_RELEASES
+  - ISSUES
+  - PULL_REQUESTS
+  - CI_WORKFLOWS
+  - TESTS
+  - DATA_SCHEMAS_MIGRATIONS
+  - CONFIGURATION
+  - DEPLOY_METADATA_WHEN_ACCESSIBLE
 
-naming:
-  internal_project_id: STABLE
-  repository_slug: TECHNICAL_IDENTITY
-  working_title: PROVISIONAL
-  final_product_name: MAY_CHANGE_BEFORE_ALIGNMENT
+evidence_states:
+  - VERIFIED_FACT
+  - OBSERVED_FACT
+  - INFERRED
+  - UNKNOWN
+  - CONFLICTING
+  - STALE_SUSPECTED
 
-pre_alignment:
-  product_implementation: NO_GO
-  discovery_and_documentation: ALLOWED
-  noncanonical_discovery_prototype: CONDITIONAL
+mcf_continuity_detection:
+  enabled: true
+  verified_continuity:
+    reclassify_to: RESUME_MCF_PROJECT
+  broken_or_unverified_continuity:
+    route_to: RECOVER_MCF_PROJECT
 
-minimum_pre_mission_artifacts:
-  - PROJECT_GENESIS_RECORD
-  - PROJECT_INTAKE_CHECKPOINT
-  - PROJECT_INTENT_PACKAGE
-  - INTENT_ALIGNMENT_RECEIPT
+if_still_adopt:
+  reconstruct_as_is: true
+  project_reality_report: REQUIRED
+  reality_readback_to_leandro: REQUIRED
 
-mission_contract:
-  created_before_mcf_start_mission: false
+reality_confirmation:
+  states:
+    - CONFIRMED
+    - CONFIRMED_WITH_CORRECTIONS
+    - REJECTED_OR_MISUNDERSTOOD
 
-abandonment:
-  allowed_before_alignment: true
-  creates_execution_debt: false
+target_project_methodology_pin:
+  before_adoption_confirmation: NOT_WRITTEN_TO_TARGET
+  after_adoption_commitment: REQUIRED
+
+deep_human_intent_discovery:
+  before_reality_confirmation: NO_GO
+  after_reality_confirmation: GO
+
+implementation:
+  before_intent_alignment_gate: NO_GO
 ```
 
-### Fluxo aprovado
+### Princípios resultantes
 
 ```text
-LEANDRO: "Mestre, tenho uma ideia."
-        ↓
-MCF ACTIVATION + bootstrap/version verified
-        ↓
-NEW_PROJECT
-        ↓
-IDEA_CAPTURE — preservar intenção humana original
-        ↓
-MINI-TRIAGE — 3–5 perguntas de alta alavancagem
-        ↓
-PROJECT GENESIS — internal id + working title + repo slug + descrição
-        ↓
-PROJECT HOME / REPOSITORY
-        ↓
-METHODOLOGY PIN
-        ↓
-PROJECT GENESIS RECORD
-        ↓
-DURABLE INTAKE CHECKPOINT
-        ↓
-HUMAN INTENT DISCOVERY
-        ↓
-INTENT READINESS
-        ↓
-PROJECT INTENT PACKAGE
-        ↓
-MESTRE READ-BACK FINAL
-        ↓
-LEANDRO CONFIRMA
-        ↓
-INTENT ALIGNMENT GATE = PASS
-        ↓
-MCF-START-MISSION
-        ↓
-TEAM PLANNING / TECHNICAL ARCHITECTURE / IMPLEMENTATION
+READ_ONLY_FIRST
+AS_IS != TO_BE
+FACT != INFERENCE
+DOCUMENTATION != AUTOMATICALLY_REALITY
+MACHINE_DISCOVERS_TECHNICAL_FACTS
+HUMAN_EXPLAINS_INTENT
 ```
 
-### Regras resultantes
-
-- `IDEA_CAPTURE` deve preservar o que LEANDRO realmente disse antes de traduções técnicas posteriores;
-- o repositório/project home nasce depois de identidade mínima suficiente e antes da entrevista profunda, para que o Intake seja durável;
-- `internal_project_id`, `repository_slug`, `working_title` e nome/marca final são conceitos distintos;
-- o methodology pin nasce no Project Genesis para impedir silent upgrade durante uma Discovery longa;
-- `LOCAL_FIRST` para código não significa `LOCAL_ONLY` para memória: Intake e checkpoints devem ganhar persistência durável aplicável;
-- antes do `INTENT_ALIGNMENT_GATE`, o MCF pode explorar, pesquisar, documentar, criar hipóteses e protótipos de descoberta não canônicos, mas implementação de produto permanece `NO_GO`;
-- protótipo de Discovery, quando útil, é descartável/não canônico e não recebe crédito de implementação;
-- terminar número fixo de perguntas não equivale a readiness; Q8–Q11 definirão conteúdo e suficiência da intenção;
-- `PROJECT_INTENT_PACKAGE` e `INTENT_ALIGNMENT_RECEIPT` devem existir antes de `MCF-START-MISSION`;
-- `MISSION CONTRACT` nasce a partir de `MCF-START-MISSION`, não durante a captura da intenção;
-- uma ideia pode ser `ABANDONED_BEFORE_ALIGNMENT` sem criar dívida de execução.
+- o baseline observado deve ser ligado a SHA/ref e timestamp;
+- nenhuma correção “óbvia” pode ser feita durante reconnaissance;
+- fontes divergentes devem ser registradas como `CONFLICTING`, não reconciliadas por palpite;
+- afirmações relevantes precisam preservar sua classe de evidência;
+- a inspeção procura sinais de continuidade MCF antes de consolidar adoção;
+- continuidade MCF válida reclassifica para `RESUME_MCF_PROJECT`;
+- continuidade MCF quebrada/não verificável roteia para `RECOVER_MCF_PROJECT`;
+- se continuar `ADOPT_EXISTING_PROJECT`, MESTRE reconstrói o `AS-IS`, produz `Project Reality Report` e faz read-back a LEANDRO;
+- correções de LEANDRO complementam a realidade observada, sem apagar fatos técnicos;
+- Human Intent Discovery profunda só começa após Reality Confirmation;
+- methodology pin não é escrito no projeto alvo antes do compromisso de adoção;
+- se LEANDRO desistir após reconnaissance, não há ownership claim nem dívida de execução;
+- segredos podem ser detectados como referência, mas valores não devem ser expostos.
 
 ---
 
@@ -310,8 +255,5 @@ input_id: DISCOVERY-INPUT-001
 source: LEANDRO
 status: RESOLVED_BY_V11_Q02
 mapped_question: Q2
-not_a_decision: true
 resolution: V11-Q02
 ```
-
-O insight de execução local no Codex foi incorporado e decidido formalmente em `V11-Q02` como `LOCAL_FIRST_REMOTE_CHECKPOINTED`.
