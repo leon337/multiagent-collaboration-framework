@@ -26,10 +26,10 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 14
-questions_remaining: 6
-last_completed_question: 14
-next_question: 15
+questions_completed: 15
+questions_remaining: 5
+last_completed_question: 15
+next_question: 16
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -44,16 +44,17 @@ Q11: COMPLETED_APPROVED_BY_LEANDRO
 Q12: COMPLETED_APPROVED_BY_LEANDRO
 Q13: COMPLETED_APPROVED_BY_LEANDRO
 Q14: COMPLETED_APPROVED_BY_LEANDRO
-Q15: NOT_STARTED
+Q15: COMPLETED_APPROVED_BY_LEANDRO
+Q16: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q14 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q15 salvo solicitação explícita de LEANDRO.**
 
-A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-014.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
+A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-015.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
 
 ## Preferência de apresentação de LEANDRO
 
@@ -76,9 +77,10 @@ Q11: SEMANTIC_READINESS_GATE_WITH_BLOCKING_UNKNOWNS
 Q12: VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE
 Q13: EVIDENCE_BOUND_CONDITIONAL_EXISTING_PROJECT_ARTIFACT_PIPELINE
 Q14: LAYERED_AUTHORITY_WITH_REBUILDABLE_PROJECT_VIEWS
+Q15: DELEGATED_TECHNICAL_AUTONOMY_WITHIN_HUMAN_APPROVED_ENVELOPE
 ```
 
-## Síntese operacional Q6–Q14
+## Síntese operacional Q6–Q15
 
 ```text
 VERIFIED ACTIVATION
@@ -100,6 +102,7 @@ VERIFIED ACTIVATION
 → AS-IS / TO-BE GAP MAP, quando aplicável
 → COMPLETION / RECOVERY PLAN, quando gap material exigir
 → MCF-START-MISSION
+→ TEAM AUTONOMY WITHIN HUMAN-APPROVED ENVELOPE
 ```
 
 ### Q8 — 20 dimensões
@@ -140,43 +143,9 @@ Readiness é semântica, não contagem de perguntas nem score puro. `BLOCKING_UN
 
 ```yaml
 canonical_name: VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE
-core_sections:
-  - IDENTITY
-  - ORIGINAL_INTENT
-  - CURRENT_INTENT_DIMENSIONS
-  - HUMAN_DECISIONS
-  - TECHNICAL_DELEGATIONS
-  - ASSUMPTIONS
-  - UNKNOWNS
-  - BLOCKERS
-  - CONFLICTS
-  - READINESS
-  - ALIGNMENT
-lifecycle:
-  - DISCOVERY_IN_PROGRESS
-  - READY_FOR_ALIGNMENT
-  - ALIGNED
-  - REOPENED_AFTER_MATERIAL_CHANGE
 ```
 
-Regras centrais:
-
-```text
-PIP != CHAT_LOG
-PIP != ARCHITECTURE
-PIP != BACKLOG
-PIP != MISSION_CONTRACT
-RAW_INTENT != SYNTHESIS
-SYNTHESIS != HUMAN_DECISION
-INFERENCE != HUMAN_INTENT
-ASSUMPTION != RESOLUTION
-OLD_HUMAN_DECISION -> SUPERSEDED
-NEW_HUMAN_DECISION -> CURRENT
-ALIGNMENT_BINDS_TO_EXACT_PIP_REVISION
-PROJECT_INTENT_CAN_OUTLIVE_ANY_SINGLE_MISSION
-```
-
-O PIP preserva provenance de afirmações materiais, delegações técnicas, assumptions, unknowns, blockers e conflicts. O `INTENT_ALIGNMENT_GATE` aprova uma revisão exata; revisão alinhada é histórica/imutável. Mudança material cria nova working revision. `Mission Contract` nasce depois do alinhamento e referencia a revisão alinhada do PIP.
+PIP é a memória durável e versionada da intenção humana; separa intenção, síntese, decisões, evidência, inferências, delegações, assumptions e unknowns. `INTENT_ALIGNMENT_GATE` vincula revisão exata e `Mission Contract` nasce depois do alinhamento.
 
 ### Q13 — artefatos de projeto existente
 
@@ -188,7 +157,7 @@ artifacts:
   - COMPLETION_RECOVERY_PLAN
 ```
 
-`Project Reality Report` representa apenas realidade `AS-IS` em baseline exato com evidência/provenance; não representa intenção nem plano. `Gap Map` compara revisão exata do PRR com revisão exata e alinhada do PIP. `Completion/Recovery Plan` nasce de gaps validados e não autoriza implementação. `RECOVER_MCF_PROJECT` reconcilia primeiro e só escala diante de divergência material.
+PRR representa realidade `AS-IS` em baseline exato; Gap Map compara PRR exato com PIP alinhado exato; Completion/Recovery Plan nasce de gaps validados. `RECOVER_MCF_PROJECT` reconcilia primeiro e só escala diante de divergência material.
 
 ### Q14 — autoridade e views
 
@@ -201,37 +170,37 @@ authority_classes:
   - WORKING_PROPOSED_ARTIFACT
 ```
 
-- `CANONICAL_DURABLE_RECORD` é autoritativo dentro de escopo/boundary identificado;
-- `LIVE_AUTHORITATIVE_STATE` prevalece para fatos externos voláteis;
-- `DERIVED_REBUILDABLE_VIEW` deve ser reconstruível e não cria nova fonte de verdade;
-- `WORKING_PROPOSED_ARTIFACT` não possui autoridade até promoção explícita;
-- Product Brief e Gap Map são derived views;
-- Completion/Recovery Plan nasce como working/proposed;
-- checkpoint é canônico para o boundary capturado, mas fatos voláteis exigem reconciliação live;
-- não existe um único arquivo universal que seja fonte de verdade para todos os domínios.
+Canônico é específico de domínio/boundary; estado live prevalece para fatos voláteis; derived views não criam autoridade concorrente; working/proposed artifacts exigem promoção explícita.
+
+### Q15 — autoridade humana × autonomia técnica
+
+```yaml
+canonical_name: DELEGATED_TECHNICAL_AUTONOMY_WITHIN_HUMAN_APPROVED_ENVELOPE
+```
+
+LEANDRO governa intenção, objetivo, resultado esperado, prioridades, limites e trade-offs humanos materiais. A equipe MCF governa escolhas técnicas e operacionais dentro do envelope formado por `ALIGNED_PIP + HUMAN_DECISIONS + MISSION_CONTRACT`. `TEAM_FIRST` é aplicado antes de escalar ambiguidades. Mudança material do envelope cruza a fronteira da autoridade humana. A lista concreta de `HUMAN_GATE` fica para Q16.
 
 ```text
-CANONICAL != CURRENT_FOREVER
-DERIVED_VIEW_CANNOT_OVERRIDE_CANONICAL_RECORD
-LIVE_STATE_CANNOT_REWRITE_HISTORY
-CHECKPOINT + LIVE_STATE -> RECONCILIATION
-PLAN_EXISTS != PLAN_IS_AUTHORITY
+HUMAN_FINAL_AUTHORITY != TECHNICAL_MICROMANAGEMENT
+WITHIN_APPROVED_ENVELOPE -> TEAM_DECIDES_AND_CONTINUES
+MATERIAL_ENVELOPE_CHANGE -> HUMAN_AUTHORITY_BOUNDARY
+TEAM_FIRST_BEFORE_HUMAN_ESCALATION
 ```
 
 ## Ordem de leitura ao retomar
 
 1. consultar GitHub live e confirmar a branch `planning/mcf-v1.1-discovery`;
 2. ler este Resume Card;
-3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-014.md`;
+3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-015.md`;
 4. ler `docs/proposals/MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. consultar `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md` quando precisar dos contratos aprovados;
 6. manter `implementation/prototype/release = NO_GO`;
-7. iniciar **Q15**, não Q14.
+7. iniciar **Q16**, não Q15.
 
 ## Próxima ação
 
-> **Q15 — Qual é a divisão de autoridade entre LEANDRO e a equipe MCF após o intake?**
+> **Q16 — Quais ações continuam exigindo HUMAN_GATE e quais decisões técnicas podem ser delegadas?**
 
 ## Comando mínimo de retomada em novo chat
 
-> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 014 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q15. Não repita Q1–Q14 e não inicie implementação.`
+> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 015 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q16. Não repita Q1–Q15 e não inicie implementação.`
