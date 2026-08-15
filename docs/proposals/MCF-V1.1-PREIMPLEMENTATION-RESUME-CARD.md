@@ -22,7 +22,10 @@ implementation_human_gate: APPROVED_OPTION_D_BY_LEANDRO
 
 implementation_authorized: true
 codex_implementation_authorized: true
-current_execution_window: I1
+current_execution_window: I1_CORRECTION_REQUIRED
+last_codex_candidate: 89035db6bfc1022abcc622b1238c86033409180d
+last_technical_gate: RETORNAR_PARA_CORRECAO
+I2_authorized: false
 merge_to_main_authorized: false
 release_authorized: false
 production_authorized: false
@@ -38,7 +41,7 @@ main_at_gate: b91823a947715e09d69c72999e2278523f2259be
 preimplementation_before_authorization_record: 9496461213c2ee4019bb136b58c6695ac5c0c86f
 ```
 
-The preimplementation branch advanced after the gate because the authorization record and implementation mission were persisted. Codex MUST fetch live GitHub again and record the exact current implementation baseline before editing code.
+The preimplementation branch advanced after the gate because the authorization record, implementation mission and later technical-gate receipts were persisted. Codex MUST fetch live GitHub before every new execution window and record the exact current implementation HEAD/baseline.
 
 ## Canonical authorization
 
@@ -68,10 +71,39 @@ Mission:
 mission: MCF-V1.1-CODEX-IMPLEMENTATION-001
 executor: CODEX_LOCAL
 full_authorized_map: I1_TO_I10
-current_window: I1_CONTRACT_AND_SCHEMA_FOUNDATION
-mestre_review_required_after_I1: true
-new_leandro_gate_after_I1: false_unless_human_boundary_crossed
+current_window: I1_CORRECTION_REQUIRED
+mestre_review_required_after_correction: true
+new_leandro_gate_for_correction: false
 ```
+
+## Latest technical gate
+
+`docs/proposals/MCF-V1.1-I1-TECHNICAL-GATE-001.md`
+
+MESTRE verified GitHub candidate:
+
+```yaml
+implementation_branch: feat/mcf-v1.1-project-intake-continuity
+candidate_head: 89035db6bfc1022abcc622b1238c86033409180d
+base: 5dc055cb7d402e5774b40b82723a8f008cd00e80
+ahead_by: 3
+behind_by: 0
+changed_paths: 19
+gate: RETORNAR_PARA_CORRECAO
+```
+
+Blocking I1 finding: current PIP/PRR schemas require the `provenance` property but allow empty provenance arrays in material assertion locations. The PIP valid fixture itself contains multiple `CLEAR`/`BLOCKING` dimensions with `provenance: []`. This violates the approved evidence/provenance boundary.
+
+Required before I2:
+
+- non-empty provenance for PIP dimension records;
+- non-empty provenance for PIP technical delegations;
+- non-empty provenance for PIP assumptions;
+- non-empty provenance for PRR observations;
+- corrected valid fixtures;
+- negative tests for empty provenance;
+- focused + relevant I1 regression rerun;
+- successor commit/push and new exact-head receipt.
 
 ## Preparation results that remain binding
 
@@ -100,14 +132,15 @@ new_parallel_database: NO_GO
 
 1. `docs/proposals/MCF-V1.1-IMPLEMENTATION-AUTHORIZATION-001.md`
 2. `docs/proposals/MCF-V1.1-CODEX-IMPLEMENTATION-MISSION-001.md`
-3. `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-020.md`
-4. `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md`
-5. `docs/proposals/MCF-V1.1-PREIMPLEMENTATION-CONFORMANCE-001.md`
-6. `docs/proposals/MCF-V1.1-TECHNICAL-CONTRACTS-001.md`
-7. `docs/proposals/MCF-V1.1-MIGRATION-COMPATIBILITY-PLAN-001.md`
-8. `docs/proposals/MCF-V1.1-IMPLEMENTATION-PLAN-001.md`
-9. `docs/proposals/MCF-V1.1-QUALIFICATION-PLAN-001.md`
-10. `docs/proposals/MCF-V1.1-PREIMPLEMENTATION-CHECKPOINT-001.md`
+3. `docs/proposals/MCF-V1.1-I1-TECHNICAL-GATE-001.md`
+4. `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-020.md`
+5. `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md`
+6. `docs/proposals/MCF-V1.1-PREIMPLEMENTATION-CONFORMANCE-001.md`
+7. `docs/proposals/MCF-V1.1-TECHNICAL-CONTRACTS-001.md`
+8. `docs/proposals/MCF-V1.1-MIGRATION-COMPATIBILITY-PLAN-001.md`
+9. `docs/proposals/MCF-V1.1-IMPLEMENTATION-PLAN-001.md`
+10. `docs/proposals/MCF-V1.1-QUALIFICATION-PLAN-001.md`
+11. `docs/proposals/MCF-V1.1-PREIMPLEMENTATION-CHECKPOINT-001.md`
 
 ## Execution flow
 
@@ -116,28 +149,26 @@ LEANDRO OPTION D APPROVED
         ↓
 CODEX_LOCAL
         ↓
-fetch + live baseline + worktree safety
+I1 candidate 89035db6
         ↓
-implementation branch
+MESTRE TECHNICAL REVIEW
         ↓
-I1 contracts/schemas
+RETORNAR_PARA_CORRECAO
         ↓
-I1 tests + commit + optional remote checkpoint
+I1 provenance correction
         ↓
-return receipt to MESTRE
+focused + relevant regression
+        ↓
+commit + push + new receipt
         ↓
 MESTRE technical gate
         ↓
-I2 ... I10
-        ↓
-qualification exact HEAD + independent review
-        ↓
-separate future authority for merge/release/production
+PASS → I2
 ```
 
 ## HUMAN_GATE policy now
 
-LEANDRO does **not** need to approve each normal technical phase. The implementation mission already has authorization inside the approved envelope.
+LEANDRO does **not** need to approve this correction or each normal technical phase. The implementation mission already has authorization inside the approved envelope.
 
 Return to LEANDRO only for a non-delegable HUMAN_GATE or material crossing of the approved boundary, including merge/release/production authority when reached.
 
@@ -164,4 +195,4 @@ A non-canonical empty auxiliary branch `planning/mcf-v1.1-preimplementation-conf
 
 ## Comando mínimo de retomada
 
-> `Mestre, retome a v1.1 pelo Implementation Resume Card. Verifique GitHub live. A Opção D já autorizou a implementação; preserve os gates de merge/release/produção e continue pelo último receipt técnico válido.`
+> `Mestre, retome a v1.1 pelo Implementation Resume Card e pelo último technical gate. Verifique GitHub live. A Opção D já autorizou a implementação; I1 está em correção e I2 continua bloqueado até novo PASS.`
