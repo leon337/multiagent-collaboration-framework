@@ -37,7 +37,7 @@ FASE ZERO                                      ✅ COMPLETE_IN_MAIN
 
 FASE 1 — MCF NEXTGEN
 ├── F1.1 Discovery guiado                      🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q11 ✅ | Q12 próxima
+├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q12 ✅ | Q13 próxima
 ├── F1.3 Consolidação das decisões             ⏳
 ├── F1.4 Arquitetura alvo                      ⏳
 ├── F1.5 Plano de migração                     ⏳
@@ -63,7 +63,7 @@ phase_1:
 
 questionnaire:
   total: 16
-  completed: 11
+  completed: 12
   Q1: COMPLETED
   Q2: COMPLETED_APPROVED_BY_LEANDRO
   Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -75,7 +75,8 @@ questionnaire:
   Q9: COMPLETED_APPROVED_BY_LEANDRO
   Q10: COMPLETED_APPROVED_BY_LEANDRO
   Q11: COMPLETED_APPROVED_BY_LEANDRO
-  Q12: NEXT_NOT_STARTED
+  Q12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
+  Q13: NEXT_NOT_STARTED
 ```
 
 A aprovação de perguntas de Discovery não autoriza implementação.
@@ -115,39 +116,42 @@ Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade 
 `MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`; Constitutional Kernel + Core Services; extensões governadas/versionadas; dependência Extension→Core; profiles declarativos; factories como blueprint generators; compatibilidade fail-closed.
 
 ## Q11 — Infraestrutura e placement
-LEANDRO aprovou `PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`.
+`PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`; verdade/governança centralizadas logicamente, execução distribuível conforme hard requirements; durable dispatch, attempt identity, fencing/epoch, fail-closed em partições, recovery coerente e portabilidade sem provider como identidade constitucional.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
+
+## Q12 — Segurança, permissões e gates
+LEANDRO aprovou conceitualmente `POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`.
 
 Princípios:
 
-- Control, State, Execution, Integration e Presentation são planos lógicos, não servidores obrigatoriamente separados;
-- Control Plane preserva autoridade lógica única; split-brain/multi-writer não governado é proibido;
-- canonical state favorece consistência durante partição;
-- State Plane pode ser local/self-hosted; scratch de worker não é project truth;
-- queue não é fonte de verdade;
-- execução distribuída usa durable dispatch, attempt identity, lease e fencing/epoch ou equivalente;
-- relógio do worker não é autoridade do lease;
-- partição sem revalidação não permite novo efeito material; offline exige envelope previamente limitado;
-- efeitos materiais atravessam boundary governado com authority/idempotency/read-back/reconciliation;
-- placement não reduz hard requirements e não amplia autoridade;
-- data boundaries cobrem input, output, evidence, telemetry e cache;
-- incompatibilidade desconhecida de worker/runtime torna placement inelegível;
-- source revision, artifact digest e config version são identidades distintas;
-- recovery de aplicação e de dados são problemas separados; migrations precisam de estratégia compatível;
-- admission control/backpressure são obrigatórios e spawning ilimitado é proibido;
-- recovery considera failure domains e restore coerente/testado;
-- emergency stop remoto não é magicamente instantâneo sob partição;
-- portabilidade não exige active multi-cloud e provider binding não é identidade do Core;
-- placement material deixa `Placement Receipt`.
+- autorização default deny; `AUTHENTICATED != AUTHORIZED`;
+- efeitos materiais preservam cadeia de principal/delegação e delegação só pode atenuar autoridade;
+- autorização é vinculada ao contexto, audience, recurso, policy, estado e expiração conforme aplicável;
+- model compliance não é security boundary; efeitos materiais exigem enforcement verificável fora do modelo;
+- bypass direto do governed effect boundary é proibido quando arquiteturalmente controlável;
+- mutation de security policy/permissions/gates/credential bindings é efeito privilegiado;
+- HUMAN_GATE pertence exclusivamente a LEANDRO no MCF e deve ser vinculado ao efeito/precondições, expirar e ser protegido contra replay;
+- consumo de aprovação é explícito e limitado, não um booleano reutilizável;
+- conteúdo externo não é autoridade e sua provenance/trust não desaparece por resumo/RAG/handoff;
+- output de modelo não é comando material seguro por definição;
+- secrets não são memória/prompt/log/telemetry por default; preferir referências, brokers e credenciais curtas/escopadas;
+- workers não são trust peers do Control Plane e devem ter blast radius limitado;
+- cross-project access é deny por default; classificação de dados deve propagar e modelo não pode se autodesclassificar;
+- plugins/extensões materiais exigem digest, provenance e verificação contra trust policy; presença de provenance não equivale a confiança;
+- Authorization Receipt registra decisão de segurança, mas receipt não substitui evidence/read-back do efeito;
+- revogação, autoridade material remota limitada e security budgets são obrigatórios;
+- políticas de segurança são ativos críticos sujeitos a integridade/change control;
+- Core generalizável conhece internal gate authority role; o binding atual pode ser LÉO; HUMAN_GATE permanece LEANDRO.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`.
 
 ---
 
 # 5. Próximos blocos
 
-Q12–Q16 decidirão:
+Q13–Q16 decidirão:
 
-- segurança/gates/permissões;
 - métricas e custo-benefício;
 - portabilidade/validação externa;
 - simplificação/remoção;
@@ -155,7 +159,7 @@ Q12–Q16 decidirão:
 
 Próxima pergunta:
 
-> **Q12 — Quais controles de segurança, permissões e gates são essenciais?**
+> **Q13 — Como provar que o MCF vale o custo e a complexidade?**
 
 ---
 
@@ -181,16 +185,16 @@ Pré-condições:
 ```yaml
 phase_zero: COMPLETE_IN_MAIN
 phase_one_discovery: ACTIVE_DISCOVERY
-last_completed_question: 11
-next_question: 12
+last_completed_question: 12
+next_question: 13
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q12
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q13
 ```
 
 Ordem mínima de retomada:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este Master Roadmap;
 5. GitHub/provider live para estado mutável.
