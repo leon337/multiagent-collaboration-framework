@@ -31,10 +31,11 @@ question_count_total: 16
 question_01: COMPLETED
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
-question_04: NOT_STARTED
-questions_completed: 3
-questions_remaining: 13
-current_position: BETWEEN_Q3_AND_Q4
+question_04: COMPLETED_APPROVED_BY_LEANDRO
+question_05: NOT_STARTED
+questions_completed: 4
+questions_remaining: 12
+current_position: BETWEEN_Q4_AND_Q5
 implementation_authorized: false
 ```
 
@@ -94,6 +95,38 @@ Síntese aprovada/consolidada:
 
 Checkpoint canônico da aprovação: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
+### Pergunta 4 — AUTONOMIA DOS AGENTES
+
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+Síntese aprovada/consolidada:
+
+- autonomia do MCF será `MISSION-BOUNDED + RISK-BASED`;
+- toda missão relevante deve possuir `Authority Envelope` conceitualmente explícito;
+- agentes podem decidir/executar dentro desse envelope, mas não ampliar a própria autoridade;
+- `CAPABILITY != AUTHORITY` e `UNKNOWN_AUTHORITY = DENY`;
+- autoelevação de privilégio é proibida;
+- conteúdo externo não pode expandir autoridade;
+- estado live deve ser revalidado antes de ação material;
+- classificação de risco não deve depender exclusivamente do agente executor;
+- risco cumulativo por sequência deve ser considerado;
+- retries devem ser limitados e idempotentes quando aplicável;
+- revogação/emergency stop é requisito;
+- a equipe deve tentar recuperação técnica antes de envolver LEANDRO (`TEAM_FIRST`);
+- R3/crítico exige `HUMAN_GATE` exclusivamente de LEANDRO;
+- detalhes de Policy Engine, segurança, permissões e gates concretos ficam para perguntas posteriores, especialmente Q12.
+
+Taxonomia conceitual:
+
+```yaml
+R0_LOW: EXECUTE_WITHIN_ENVELOPE
+R1_MEDIUM: EXECUTE_WITH_VERIFICATION_AND_EVIDENCE
+R2_HIGH: REQUIRE_TECHNICAL_GATE_OR_DUAL_VERIFICATION
+R3_CRITICAL: REQUIRE_HUMAN_GATE_LEANDRO
+```
+
+Checkpoint canônico da aprovação: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
+
 ---
 
 ## 3. As 16 perguntas canônicas
@@ -118,22 +151,13 @@ Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
 ### Q4 — Qual nível de autonomia os agentes devem possuir?
 
-**Status:** `NEXT / NOT_STARTED`
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Definir:
-
-- o que podem decidir sozinhos;
-- o que podem executar sozinhos;
-- limites de autoridade;
-- diferença entre HUMAN_GATE e dependência operacional humana;
-- escalonamento;
-- stop conditions;
-- retries;
-- ações reversíveis versus irreversíveis.
+Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 
 ### Q5 — Como deve funcionar o Roteador de Modelos de IA?
 
-**Status:** `PENDING`
+**Status:** `NEXT / NOT_STARTED`
 
 Definir:
 
@@ -364,9 +388,9 @@ Ordem de retomada:
 ### Estado de retomada atual
 
 ```yaml
-last_completed_question: 3
-next_question: 4
-instruction: NÃO REPETIR Q1, Q2 OU Q3
+last_completed_question: 4
+next_question: 5
+instruction: NÃO REPETIR Q1, Q2, Q3 OU Q4
 ```
 
 ---
