@@ -37,7 +37,7 @@ FASE ZERO                                      ✅ COMPLETE_IN_MAIN
 
 FASE 1 — MCF NEXTGEN
 ├── F1.1 Discovery guiado                      🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q10 ✅ | Q11 próxima
+├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q11 ✅ | Q12 próxima
 ├── F1.3 Consolidação das decisões             ⏳
 ├── F1.4 Arquitetura alvo                      ⏳
 ├── F1.5 Plano de migração                     ⏳
@@ -63,7 +63,7 @@ phase_1:
 
 questionnaire:
   total: 16
-  completed: 10
+  completed: 11
   Q1: COMPLETED
   Q2: COMPLETED_APPROVED_BY_LEANDRO
   Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -74,7 +74,8 @@ questionnaire:
   Q8: COMPLETED_APPROVED_BY_LEANDRO
   Q9: COMPLETED_APPROVED_BY_LEANDRO
   Q10: COMPLETED_APPROVED_BY_LEANDRO
-  Q11: NEXT_NOT_STARTED
+  Q11: COMPLETED_APPROVED_BY_LEANDRO
+  Q12: NEXT_NOT_STARTED
 ```
 
 A aprovação de perguntas de Discovery não autoriza implementação.
@@ -111,35 +112,41 @@ Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade 
 `ACTIONABLE_PROGRESSIVE_OBSERVABILITY`; atenção humana separada de severidade operacional; Decision Inbox; aprovação version-bound; UI derivada; progressive disclosure; causalidade tipada; notificações por mudança material.
 
 ## Q10 — Core vs extensões
-LEANDRO aprovou `MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`.
+`MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`; Constitutional Kernel + Core Services; extensões governadas/versionadas; dependência Extension→Core; profiles declarativos; factories como blueprint generators; compatibilidade fail-closed.
+
+## Q11 — Infraestrutura e placement
+LEANDRO aprovou `PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`.
 
 Princípios:
 
-- Core possui `Constitutional Kernel` e contratos universais de Core Services;
-- extensão pode depender de contrato Core; Core não depende de extensão específica;
-- Plugin = capacidade executável;
-- Skill = procedimento governado;
-- Profile = configuração declarativa sem execução arbitrária;
-- Factory = gerador de blueprint versionado, sem autoridade persistente no runtime;
-- Extension Manifest versionado e compatibilidade explícita são obrigatórios para extensões materiais;
-- `INSTALLED != ENABLED != AUTHORIZED`;
-- incompatibilidade desconhecida falha fechada;
-- ciclos de dependência entre extensões são proibidos;
-- resolução de Profile é determinística; `last writer wins` silencioso é proibido;
-- extensão deve falhar de modo contido sem corromper o Core;
-- histórico permanece interpretável mesmo após remoção de extensão;
-- `Agent Contract` é Core; catálogo fixo de agentes nomeados não é Core por padrão;
-- rótulos numéricos `R0–R4` não podem aparecer sem namespace em novas especificações; risco e assurance devem usar nomes/namespace explícitos.
+- Control, State, Execution, Integration e Presentation são planos lógicos, não servidores obrigatoriamente separados;
+- Control Plane preserva autoridade lógica única; split-brain/multi-writer não governado é proibido;
+- canonical state favorece consistência durante partição;
+- State Plane pode ser local/self-hosted; scratch de worker não é project truth;
+- queue não é fonte de verdade;
+- execução distribuída usa durable dispatch, attempt identity, lease e fencing/epoch ou equivalente;
+- relógio do worker não é autoridade do lease;
+- partição sem revalidação não permite novo efeito material; offline exige envelope previamente limitado;
+- efeitos materiais atravessam boundary governado com authority/idempotency/read-back/reconciliation;
+- placement não reduz hard requirements e não amplia autoridade;
+- data boundaries cobrem input, output, evidence, telemetry e cache;
+- incompatibilidade desconhecida de worker/runtime torna placement inelegível;
+- source revision, artifact digest e config version são identidades distintas;
+- recovery de aplicação e de dados são problemas separados; migrations precisam de estratégia compatível;
+- admission control/backpressure são obrigatórios e spawning ilimitado é proibido;
+- recovery considera failure domains e restore coerente/testado;
+- emergency stop remoto não é magicamente instantâneo sob partição;
+- portabilidade não exige active multi-cloud e provider binding não é identidade do Core;
+- placement material deixa `Placement Receipt`.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
 
 ---
 
 # 5. Próximos blocos
 
-Q11–Q16 decidirão:
+Q12–Q16 decidirão:
 
-- infraestrutura e placement;
 - segurança/gates/permissões;
 - métricas e custo-benefício;
 - portabilidade/validação externa;
@@ -148,7 +155,7 @@ Q11–Q16 decidirão:
 
 Próxima pergunta:
 
-> **Q11 — Como deve funcionar a infraestrutura e o placement de serviços?**
+> **Q12 — Quais controles de segurança, permissões e gates são essenciais?**
 
 ---
 
@@ -164,7 +171,7 @@ Pré-condições:
 6. plano de migração definido;
 7. backward compatibility definida;
 8. critérios de aceite definidos;
-9. riscos e rollback definidos;
+9. riscos e rollback/recovery definidos;
 10. LEANDRO aprova a especificação final.
 
 ---
@@ -174,16 +181,16 @@ Pré-condições:
 ```yaml
 phase_zero: COMPLETE_IN_MAIN
 phase_one_discovery: ACTIVE_DISCOVERY
-last_completed_question: 10
-next_question: 11
+last_completed_question: 11
+next_question: 12
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q11
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q12
 ```
 
 Ordem mínima de retomada:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este Master Roadmap;
 5. GitHub/provider live para estado mutável.
