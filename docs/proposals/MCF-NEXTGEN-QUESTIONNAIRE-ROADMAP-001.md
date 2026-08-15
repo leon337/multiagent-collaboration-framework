@@ -16,11 +16,11 @@ O questionário possui **16 perguntas canônicas**.
 - uma pergunta por vez;
 - cada pergunta deve trazer alternativas concretas;
 - LEANDRO pode escolher uma, combinar várias ou propor outra resposta;
-- MESTRE deve registrar a decisão, consequências, contradições e pontos ainda abertos;
-- decisões relevantes devem ser persistidas no GitHub antes de avançar;
-- não repetir pergunta já concluída salvo solicitação de LEANDRO;
-- não transformar hipótese em implementação automaticamente;
-- ao final, todas as respostas serão conciliadas em uma arquitetura e plano de reestruturação.
+- MESTRE registra decisão, consequências, contradições e pontos abertos;
+- decisões relevantes são persistidas no GitHub antes de avançar;
+- não repetir pergunta concluída salvo solicitação de LEANDRO;
+- hipótese não vira implementação automaticamente;
+- ao final, Q1–Q16 serão conciliadas em arquitetura e plano de reestruturação.
 
 ---
 
@@ -32,149 +32,126 @@ question_01: COMPLETED
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
 question_04: COMPLETED_APPROVED_BY_LEANDRO
-question_05: NOT_STARTED
-questions_completed: 4
-questions_remaining: 12
-current_position: BETWEEN_Q4_AND_Q5
+question_05: COMPLETED_APPROVED_BY_LEANDRO
+question_06: NOT_STARTED
+questions_completed: 5
+questions_remaining: 11
+current_position: BETWEEN_Q5_AND_Q6
 implementation_authorized: false
 ```
 
-### Pergunta 1 — FINALIDADE PRINCIPAL DO MCF
+### Q1 — FINALIDADE PRINCIPAL DO MCF
 
 **Status:** `COMPLETED`
 
-Síntese aprovada/consolidada:
+Síntese:
 
-- foco primário: sistema pessoal de trabalho com IA para LEANDRO;
-- problema central: continuidade durável de projetos sem depender do contexto de chat/memória de modelo;
-- ChatGPT como camada cognitiva superior na configuração inicial;
-- equipes de agentes especializados para execução coordenada;
-- redução de custo e de dependências externas desnecessárias;
-- primeiro provar e amadurecer no uso real de LEANDRO;
-- depois generalizar o core para terceiros;
-- laboratório multiagente continua sendo dimensão relevante;
-- produto comercial é possibilidade futura, não prioridade inicial.
+- sistema pessoal de trabalho com IA para LEANDRO como foco inicial;
+- continuidade durável de projetos como problema central;
+- ChatGPT/MESTRE inicialmente como camada cognitiva superior;
+- equipes de agentes especializados;
+- primeiro provar/maturar no uso real de LEANDRO;
+- depois generalizar o core;
+- produto comercial fica como possibilidade futura.
 
-### Pergunta 2 — CONTINUIDADE DE CONTEXTO
+### Q2 — CONTINUIDADE DE CONTEXTO
 
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Síntese aprovada/consolidada:
+Síntese:
 
-- continuidade significa permitir que outro chat, modelo, agente ou humano reconstrua fielmente o estado relevante de um projeto sem depender da memória do chat anterior;
-- arquitetura conceitual em camadas: Framework Memory, Project Memory, Live Operational Memory e Evidence/Raw Archive;
-- o `Project Capsule` é uma projeção compacta, versionada e derivada para retomada; não é fonte de verdade;
-- memória, evidência, autoridade e estado live são conceitos distintos;
-- estado volátil deve ser revalidado antes de ação material;
-- fatos e decisões devem preservar proveniência e estado semântico;
-- ausência de evidência permanece `UNKNOWN`; hipótese não pode virar fato silenciosamente;
-- ações/decisões críticas exigem verificação e gates proporcionais ao risco;
-- múltiplos projetos precisam de isolamento, controle de acesso, retenção, redaction de secrets e schema versionado;
-- contexto deve usar progressive disclosure, com histórico/evidências consultados sob demanda;
-- continuidade deve ser provada por `Continuity Recovery Test`/cold-start, sem exigir que LEANDRO reconte o projeto;
-- detalhes de agente, autonomia, routing, revisão independente, persistência concreta, segurança completa, métricas e portabilidade permanecem para Q3–Q15.
+- `LAYERED_CONTINUITY_ARCHITECTURE`;
+- Framework Memory, Project Memory, Live Operational Memory, Evidence/Raw Archive;
+- Project Capsule derivado/versionado, não fonte de verdade;
+- memória, evidência, autoridade e estado live são distintos;
+- `UNKNOWN` permanece `UNKNOWN` sem evidência;
+- progressive disclosure;
+- isolamento por projeto;
+- cold-start / Continuity Recovery Test.
 
-Checkpoint canônico da aprovação: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
-### Pergunta 3 — AGENTE DE VERDADE NO MCF
+### Q3 — AGENTE DE VERDADE NO MCF
 
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Síntese aprovada/consolidada:
+Síntese:
 
-- um agente MCF é uma entidade operacional identificável com identidade, papel, objetivos, capacidades, limites de autoridade, contratos de entrada/saída, política de decisão, estado e rastreabilidade;
-- `AGENTE != MODELO`; o modelo é backend cognitivo, não identidade;
-- persona/nome/instruções, isoladamente, não satisfazem o `Agent Contract`;
-- lifecycle é separado de agenthood: agentes podem ser `EPHEMERAL`, `SESSION`, `PROJECT` ou `PERSISTENT`;
-- independência é separada de agenthood e deve ser descrita por perfil multidimensional; critérios formais ficam para Q6;
+- `Agent Contract` define agente MCF;
+- `AGENTE != MODELO`;
+- persona isolada não basta;
+- lifecycle separado de agenthood;
+- independência separada de agenthood;
 - `CAPABILITY != AUTHORITY`;
-- `IDENTITY CONTINUITY != CAPABILITY CONTINUITY`; troca de modelo exige validação de capacidades;
-- agentes não devem manter cópias concorrentes não governadas da verdade do projeto;
-- `AGENT OUTPUT != PROJECT TRUTH`; claims de agentes exigem evidência/autoridade aplicável antes de virar fato oficial, decisão ou estado operacional;
-- detalhes de autonomia, routing, independência, persistência concreta e segurança ficam deliberadamente para perguntas posteriores.
+- `IDENTITY CONTINUITY != CAPABILITY CONTINUITY`;
+- `AGENT OUTPUT != PROJECT TRUTH`.
 
-Checkpoint canônico da aprovação: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
-### Pergunta 4 — AUTONOMIA DOS AGENTES
+### Q4 — AUTONOMIA DOS AGENTES
 
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Síntese aprovada/consolidada:
+Síntese:
 
-- autonomia do MCF será `MISSION-BOUNDED + RISK-BASED`;
-- toda missão relevante deve possuir `Authority Envelope` conceitualmente explícito;
-- agentes podem decidir/executar dentro desse envelope, mas não ampliar a própria autoridade;
-- `CAPABILITY != AUTHORITY` e `UNKNOWN_AUTHORITY = DENY`;
-- autoelevação de privilégio é proibida;
-- conteúdo externo não pode expandir autoridade;
-- estado live deve ser revalidado antes de ação material;
-- classificação de risco não deve depender exclusivamente do agente executor;
-- risco cumulativo por sequência deve ser considerado;
-- retries devem ser limitados e idempotentes quando aplicável;
-- revogação/emergency stop é requisito;
-- a equipe deve tentar recuperação técnica antes de envolver LEANDRO (`TEAM_FIRST`);
-- R3/crítico exige `HUMAN_GATE` exclusivamente de LEANDRO;
-- detalhes de Policy Engine, segurança, permissões e gates concretos ficam para perguntas posteriores, especialmente Q12.
+- `MISSION-BOUNDED + RISK-BASED AUTONOMY`;
+- `Authority Envelope` conceitualmente explícito;
+- `UNKNOWN_AUTHORITY = DENY`;
+- autoelevação de privilégio proibida;
+- risco não depende exclusivamente do executor;
+- risco cumulativo considerado;
+- retries limitados/idempotentes quando aplicável;
+- revogação/emergency stop;
+- `TEAM_FIRST` para recovery técnico;
+- R3/crítico → HUMAN_GATE exclusivamente de LEANDRO.
 
-Taxonomia conceitual:
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 
-```yaml
-R0_LOW: EXECUTE_WITHIN_ENVELOPE
-R1_MEDIUM: EXECUTE_WITH_VERIFICATION_AND_EVIDENCE
-R2_HIGH: REQUIRE_TECHNICAL_GATE_OR_DUAL_VERIFICATION
-R3_CRITICAL: REQUIRE_HUMAN_GATE_LEANDRO
-```
+### Q5 — ROTEADOR DE MODELOS DE IA
 
-Checkpoint canônico da aprovação: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+Síntese:
+
+- `CAPABILITY_AND_POLICY_BASED_ROUTER`;
+- rotear por requisitos verificáveis da tarefa, não por marca/popularidade;
+- hard requirements vêm antes de custo/latência/quota;
+- router não pode rebaixar hard requirements;
+- `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`;
+- Model Capability Registry com proveniência, freshness e runtime health;
+- model self-claim não é evidência;
+- fallback somente para candidatos compatíveis;
+- silent capability downgrade proibido;
+- fallback limitado e sem routing loops;
+- nenhum modelo compatível → `BLOCKED / ESCALATE`;
+- routing receipt auditável;
+- custo/free tier nunca substituem capacidade mínima, segurança ou autoridade.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
 
 ---
 
 ## 3. As 16 perguntas canônicas
 
 ### Q1 — Qual é a finalidade principal do MCF?
-
 **Status:** `COMPLETED`
 
-Define propósito, usuário prioritário, problema central e ordem entre uso pessoal, framework público, laboratório e produto.
-
 ### Q2 — O que exatamente significa “não perder o contexto de um projeto”?
-
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
-
-Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
 ### Q3 — O que é um agente de verdade no MCF?
-
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
-
-Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
 ### Q4 — Qual nível de autonomia os agentes devem possuir?
-
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
-
 ### Q5 — Como deve funcionar o Roteador de Modelos de IA?
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
+### Q6 — O que significa independência entre agentes e revisores?
 **Status:** `NEXT / NOT_STARTED`
 
 Definir:
-
-- modelo preferencial e fallbacks;
-- quotas;
-- custo;
-- qualidade mínima;
-- contexto;
-- coding/reasoning/vision/tools;
-- troca de modelo sem perda de identidade/estado;
-- políticas de provider e indisponibilidade.
-
-### Q6 — O que significa independência entre agentes e revisores?
-
-**Status:** `PENDING`
-
-Definir níveis:
 
 - separação funcional;
 - sessão/contexto separado;
@@ -185,176 +162,72 @@ Definir níveis:
 - critérios mínimos para chamar algo de revisão independente.
 
 ### Q7 — Como o trabalho deve ser orquestrado: pipeline, loops, graph ou paralelo?
-
 **Status:** `PENDING`
 
-Definir:
-
-- fluxo sequencial;
-- DAG/graph;
-- split/worker/verifier/merge;
-- paralelismo;
-- dependências;
-- loop engineering;
-- critérios de parada;
-- replanejamento;
-- convergência e recuperação.
+Definir fluxo sequencial, DAG/graph, split/worker/verifier/merge, paralelismo, dependências, loops, parada, replanejamento, convergência e recovery.
 
 ### Q8 — Qual documentação e estado persistente são realmente necessários?
-
 **Status:** `PENDING`
 
-Definir:
-
-- documentação mínima suficiente;
-- checkpoint versus log bruto;
-- decisões versus conversas;
-- handoff compacto;
-- deduplicação;
-- versionamento;
-- GitHub como memória institucional;
-- banco/event store para estado vivo;
-- artifacts para evidências pesadas.
+Definir documentação mínima, checkpoint vs log bruto, decisões vs conversas, handoff, deduplicação, versionamento, GitHub como memória institucional, banco/event store para estado vivo e artifacts para evidências.
 
 ### Q9 — Como deve ser a experiência humana e a observabilidade?
-
 **Status:** `PENDING`
 
-Definir:
+Definir timeline, Central de Perguntas e Decisões, dashboard, estados/bloqueios/próxima ação, perguntas guiadas, detalhe e simplicidade para usuário não técnico.
 
-- Linha do Tempo dos Agentes;
-- Central de Perguntas e Decisões;
-- dashboard de projetos;
-- estados, bloqueios e próxima ação;
-- perguntas guiadas;
-- nível de detalhe;
-- visualização do trabalho em tempo real;
-- simplicidade para usuário não técnico.
-
-### Q10 — O que pertence ao MCF Core e o que deve ser uma Factory/Plugin/Perfil?
-
+### Q10 — O que pertence ao MCF Core e o que deve ser Factory/Plugin/Perfil?
 **Status:** `PENDING`
 
-Definir:
-
-- mission engine;
-- memória;
-- agent registry;
-- handoffs;
-- routing;
-- permissions;
-- gates;
-- evidence/recovery/observability;
-- factories de software, vídeo, redes sociais, automações etc.;
-- evitar core monolítico.
+Definir mission engine, memória, registry, handoffs, routing, permissions, gates, evidence/recovery/observability e factories especializadas, evitando core monolítico.
 
 ### Q11 — Como deve funcionar a infraestrutura e o placement de serviços?
-
 **Status:** `PENDING`
 
-Definir:
-
-- self-host versus SaaS;
-- VPS como infraestrutura possível, não dependência conceitual;
-- containers;
-- bancos;
-- filas;
-- MCPs;
-- workers;
-- isolamento por projeto;
-- backups/restore;
-- portabilidade;
-- critérios econômicos e técnicos de placement.
+Definir self-host/SaaS, VPS como opção e não dependência, containers, bancos, filas, MCPs, workers, isolamento, backup/restore, portabilidade e critérios econômicos/técnicos.
 
 ### Q12 — Quais controles de segurança, permissões e gates são essenciais?
-
 **Status:** `PENDING`
 
-Definir:
-
-- least privilege;
-- autenticação de agentes;
-- sandboxing;
-- secrets;
-- prompt injection;
-- permissões granulares;
-- gates proporcionais ao risco;
-- provider capability validation;
-- evitar controles impossíveis ou meramente documentais.
+Definir least privilege, autenticação, sandboxing, secrets, prompt injection, permissões granulares, gates proporcionais ao risco e capability validation.
 
 ### Q13 — Como provar que o MCF vale o custo e a complexidade?
-
 **Status:** `PENDING`
 
-Definir métricas:
-
-- tempo;
-- tokens/custo;
-- retrabalho;
-- defects escaped;
-- intervenções de LEANDRO;
-- contexto perdido;
-- tempo de retomada;
-- qualidade final;
-- recuperação;
-- comparação com workflow simples/baseline.
+Definir métricas de tempo, tokens/custo, retrabalho, defects escaped, intervenções de LEANDRO, contexto perdido, retomada, qualidade, recovery e baseline simples.
 
 ### Q14 — Como validar portabilidade e utilidade fora do ambiente atual?
-
 **Status:** `PENDING`
 
-Definir:
-
-- outro chat;
-- outro modelo;
-- outro provider;
-- outro humano;
-- cold-start de usuário externo;
-- outro repositório/projeto;
-- testes de continuidade sem histórico bruto;
-- limites do ecossistema OpenAI atual.
+Definir outro chat, modelo, provider, humano, cold-start externo, outro projeto/repo, testes sem histórico bruto e limites do ecossistema atual.
 
 ### Q15 — O que deve ser preservado, simplificado, removido ou substituído?
-
 **Status:** `PENDING`
 
-Executar ablation/revisão crítica de:
-
-- 29 agentes;
-- gates;
-- PRFs;
-- handoffs;
-- documentação;
-- control agents;
-- social UI;
-- skills;
-- runtime;
-- protocolos;
-- tudo que não provar valor suficiente.
+Executar ablation/revisão crítica de agentes, gates, PRFs, handoffs, documentação, control agents, social UI, skills, runtime e protocolos.
 
 Regra: **nenhuma complexidade é preservada apenas porque já existe**.
 
 ### Q16 — Qual é a arquitetura final da Fase 1 e o GO/NO-GO?
-
 **Status:** `PENDING`
 
-Consolidar propósito, memória, agentes, modelos, autonomia, graph/loops, UX, core/factories, infraestrutura, segurança, métricas, validação, simplificações, dependências, riscos, arquitetura alvo, plano de migração, critérios de aceite, missão estruturada para Codex/executor e decisão GO / CONDITIONAL GO / NO-GO.
+Consolidar propósito, memória, agentes, modelos, autonomia, graph/loops, UX, core/factories, infraestrutura, segurança, métricas, validação, simplificações, dependências, riscos, arquitetura alvo, plano de migração, critérios de aceite e decisão GO / CONDITIONAL GO / NO-GO.
 
 ---
 
-## 4. Política de checkpoint do questionário
+## 4. Política de checkpoint
 
-Não é necessário criar um novo arquivo a cada resposta trivial. Deve haver checkpoint quando ocorrer pelo menos um dos seguintes:
+Criar/atualizar checkpoint quando houver pelo menos um:
 
-1. conclusão de um bloco de decisões arquitetônicas;
+1. conclusão de bloco arquitetônico;
 2. aprovação explícita de LEANDRO;
-3. mudança de direção relevante;
-4. descoberta de lacuna/bug que altere a arquitetura;
+3. mudança relevante de direção;
+4. descoberta de lacuna/bug arquitetural;
 5. pausa de trabalho/chat;
-6. antes de entregar uma missão grande ao executor/Codex;
-7. antes de trocar de projeto ou sessão.
+6. antes de missão grande ao executor/Codex;
+7. antes de trocar projeto/sessão.
 
-Cada checkpoint deve registrar:
+Campos mínimos:
 
 ```yaml
 questionnaire_version:
@@ -371,40 +244,40 @@ resume_instructions:
 
 ---
 
-## 5. Protocolo de retomada em outro chat
+## 5. Protocolo de retomada
 
-Um novo MESTRE NÃO deve depender da memória do chat anterior.
+Um novo MESTRE não deve depender da memória do chat anterior.
 
-Ordem de retomada:
+Ordem:
 
 1. consultar GitHub live;
 2. ler `MCF-NEXTGEN-RESUME-CARD.md`;
-3. ler o checkpoint mais recente do discovery;
-4. ler este roadmap do questionário;
-5. ler decisões explicitamente aprovadas relacionadas às perguntas concluídas;
-6. verificar boundaries operacionais em andamento;
-7. continuar exatamente na `next_question` registrada.
+3. ler checkpoint mais recente;
+4. ler este roadmap;
+5. ler decisões aprovadas relacionadas às perguntas concluídas;
+6. verificar boundaries operacionais;
+7. continuar exatamente na `next_question`.
 
-### Estado de retomada atual
+Estado atual:
 
 ```yaml
-last_completed_question: 4
-next_question: 5
-instruction: NÃO REPETIR Q1, Q2, Q3 OU Q4
+last_completed_question: 5
+next_question: 6
+instruction: NÃO REPETIR Q1-Q5
 ```
 
 ---
 
-## 6. Critério de conclusão do questionário
+## 6. Critério de conclusão
 
 O questionário termina somente quando:
 
 - Q1–Q16 estiverem respondidas;
-- decisões contraditórias forem conciliadas;
-- hipóteses não resolvidas estiverem explicitamente marcadas;
-- arquitetura alvo estiver documentada;
-- métricas de sucesso estiverem definidas;
-- plano de migração da Fase Zero para Fase 1 estiver definido;
-- LEANDRO aprovar a especificação final antes de entrega ao executor/Codex.
+- contradições estiverem conciliadas;
+- hipóteses abertas estiverem marcadas;
+- arquitetura alvo documentada;
+- métricas definidas;
+- plano de migração definido;
+- LEANDRO aprovar especificação final antes de executor/Codex.
 
-Até lá, `MCF NextGen` permanece **Discovery e Planejamento**, não implementação autorizada.
+Até lá, MCF NextGen permanece **Discovery e Planejamento**, sem implementação autorizada.
