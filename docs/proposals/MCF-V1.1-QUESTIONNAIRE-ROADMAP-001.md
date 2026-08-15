@@ -26,13 +26,13 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 2
-questions_remaining: 18
-last_completed_question: 2
-next_question: 3
+questions_completed: 3
+questions_remaining: 17
+last_completed_question: 3
+next_question: 4
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
-question_03: NOT_STARTED
+question_03: COMPLETED_APPROVED_BY_LEANDRO
 question_04: NOT_STARTED
 question_05: NOT_STARTED
 question_06: NOT_STARTED
@@ -67,19 +67,24 @@ Chat normal permanece fora do MCF. Comando explícito ou intenção clara de pro
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `LOCAL_FIRST_REMOTE_CHECKPOINTED` — Opção D.
 
-A mesma metodologia/governança MCF deve operar em hosts diferentes, mas o execution plane pode variar:
-
-- `CHATGPT_REMOTE` → conectores e ferramentas remotas;
-- `CODEX_LOCAL` → terminal, workspace e Git local;
-- GitHub permanece memória institucional, checkpoint remoto, colaboração, CI, revisão e integração;
-- Codex parte de baseline remoto exato e usa branch/worktree isolado;
-- commits locais podem ser frequentes sem push a cada edição;
-- checkpoint remoto é obrigatório em boundaries semânticos/de risco;
-- PR é boundary de integração/revisão, não obrigatório a cada checkpoint;
-- trabalho local de baixo risco pode continuar temporariamente com `CHECKPOINT_DEBT` se remoto indisponível;
-- boundary material/governado sem evidência remota aplicável deve `FAIL_CLOSED`.
+- `CHATGPT_REMOTE` → conectores/ferramentas remotas;
+- `CODEX_LOCAL` → terminal/workspace/Git local;
+- GitHub continua memória institucional, checkpoint, CI, revisão e integração;
+- checkpoint remoto obrigatório em boundaries semânticos/de risco;
+- `EDIT != COMMIT != PUSH != PR`;
+- `LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED`;
+- boundary material/governado sem evidência remota aplicável → `FAIL_CLOSED`.
 
 ### Q3 — Como o bootstrap encontra e verifica a versão/metodologia vigente?
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `VERIFIED_TWO_STAGE_BOOTSTRAP` — Opção D.
+
+- locator mínimo aponta para repositório oficial e `docs/bootstrap/MCF-BOOTSTRAP-INDEX.yaml`;
+- resolução segue `VALID_PROJECT_PIN > EXPLICIT_LEANDRO_SELECTION > CURRENT_STABLE`;
+- metodologia carregada deve ser pinada por tag/SHA imutável;
+- projetos não fazem silent mid-mission upgrade;
+- `DISCOVERY`, `PLANNING`, `RC`, `EXPERIMENTAL`, `ALPHA` e `BETA` não são defaults operacionais;
+- `ACTIVE` exige repositório, versão, referência imutável e bootstrap verificados.
 
 ### Q4 — Como deve funcionar o fail-closed quando GitHub/bootstrap/fonte canônica não estiver acessível?
 
@@ -134,6 +139,6 @@ Para cada Q aprovada:
 
 ## 5. Próxima ação
 
-> **Q3 — Como o bootstrap do MCF encontra e verifica a versão/metodologia vigente?**
+> **Q4 — Como deve funcionar o fail-closed quando GitHub/bootstrap/fonte canônica não estiver acessível ou verificável?**
 
-Não iniciar Q4 antes de decisão explícita de LEANDRO sobre Q3.
+Não iniciar Q5 antes de decisão explícita de LEANDRO sobre Q4.
