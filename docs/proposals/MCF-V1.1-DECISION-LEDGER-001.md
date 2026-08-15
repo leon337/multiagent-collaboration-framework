@@ -201,11 +201,113 @@ ACTIVE
 - projeto novo ou projeto sem pin adota a `CURRENT_STABLE` resolvida pelo índice, salvo seleção explícita de LEANDRO;
 - RC, Discovery, planning e versões experimentais não são defaults operacionais;
 - atualização da stable não autoriza upgrade silencioso no meio de uma missão;
-- detalhes de indisponibilidade, inconsistência e fail-closed permanecem para Q4.
+- detalhes de indisponibilidade, inconsistência e fail-closed são definidos em Q4.
 
-### Compatibilidade futura
+---
 
-A decisão não exige que `methodology_version == runtime_version` para sempre. Compatibilidade entre runtime e metodologia poderá ser formalizada posteriormente sem quebrar o bootstrap em duas etapas.
+## V11-Q04 — Degraded Operation and Fail-Closed Contract
+
+```yaml
+decision_id: V11-Q04
+question: Q4
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES
+```
+
+### Problema
+
+Definir como o MCF se comporta quando GitHub, Bootstrap Index, project pin ou outra fonte canônica está indisponível, parcialmente acessível, inconsistente ou não verificável, sem confundir alta disponibilidade com perda de integridade.
+
+### Alternativas consideradas
+
+- A — `ABSOLUTE_FAIL_CLOSED`: qualquer falha paralisa toda operação;
+- B — `LAST_KNOWN_GOOD_CONTINUE`: continuar automaticamente usando cache local anterior;
+- C — perguntar sempre a LEANDRO;
+- D — operação degradada apenas quando a base local já é verificável, com fail-closed nos boundaries materiais/governados.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+operation_model: VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES
+
+new_project_without_verified_bootstrap:
+  state: ACTIVATING_BLOCKED
+  mcf_active: false
+
+existing_project:
+  verified_project_pin_required_for_degraded_mode: true
+  verified_local_methodology_cache_allowed: true
+
+degraded_allowed:
+  - READ_ONLY_ANALYSIS
+  - PLANNING
+  - LOCAL_DOCUMENTATION
+  - LOCAL_TESTS
+  - REVERSIBLE_LOCAL_CODE_CHANGE
+  - LOCAL_COMMIT
+
+degraded_blocked:
+  - MERGE
+  - DEPLOY
+  - RELEASE
+  - PUBLICATION
+  - FINAL_INTEGRATION
+  - METHODOLOGY_UPGRADE
+  - AUTHORITY_CHANGE
+  - TERMINAL_INDEPENDENT_REVIEW
+  - MATERIAL_EXTERNAL_EFFECT_WITHOUT_REMOTE_EVIDENCE
+
+canonical_conflict:
+  state: CANONICAL_CONFLICT_BLOCKED
+  result: FAIL_CLOSED
+
+remote_recovery:
+  canonical_revalidation_required: true
+  checkpoint_debt_reconciliation_required: true
+  degraded_operation_receipt_required: true
+
+human_authority:
+  may_choose_policy_or_identified_version: true
+  may_substitute_missing_technical_evidence: false
+```
+
+### Estados operacionais aprovados
+
+```yaml
+MCF_OPERATION_STATE:
+  - NOT_ACTIVE
+  - ACTIVATING
+  - ACTIVE
+  - ACTIVE_DEGRADED_VERIFIED
+  - ACTIVATING_BLOCKED
+  - CANONICAL_CONFLICT_BLOCKED
+```
+
+### Princípios resultantes
+
+```text
+UNAVAILABLE != INCONSISTENT
+LOCAL_COPY != VERIFIED_LOCAL_COPY
+CACHE_CAN_PROVE_IDENTITY != CACHE_CAN_PROVE_CURRENT_STABLE
+HUMAN_AUTHORITY != TECHNICAL_EVIDENCE
+```
+
+- indisponibilidade pode permitir `ACTIVE_DEGRADED_VERIFIED` apenas quando metodologia/project pin local já estejam verificáveis;
+- inconsistência entre fontes não pode ser resolvida silenciosamente e deve bloquear operação governada;
+- projeto novo sem bootstrap verificável não se torna `ACTIVE`; conversa preparatória pode continuar fora do estado formal do MCF;
+- operação degradada limita-se a trabalho local reversível e sem efeito material;
+- GitHub/remote restaurado exige revalidação, comparação com estado local, quitação de `CHECKPOINT_DEBT` e reconciliação antes do retorno a `ACTIVE` normal;
+- cache local pode provar a identidade da versão armazenada, mas não afirmar sozinho qual é a `CURRENT_STABLE`;
+- LEANDRO mantém autoridade sobre escolhas humanas/políticas, mas não substitui prova técnica ausente por declaração.
+
+### Evidência de operação degradada
+
+Após reconciliação, a especificação futura deverá registrar um `Degraded Operation Receipt` com período degradado, causa, methodology SHA, baseline, ações locais, efeitos materiais, checkpoint debt, reconciliação e checkpoint remoto final.
 
 ---
 
