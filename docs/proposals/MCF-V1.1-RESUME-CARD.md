@@ -26,10 +26,10 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 12
-questions_remaining: 8
-last_completed_question: 12
-next_question: 13
+questions_completed: 13
+questions_remaining: 7
+last_completed_question: 13
+next_question: 14
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -42,16 +42,17 @@ Q9: COMPLETED_APPROVED_BY_LEANDRO
 Q10: COMPLETED_APPROVED_BY_LEANDRO
 Q11: COMPLETED_APPROVED_BY_LEANDRO
 Q12: COMPLETED_APPROVED_BY_LEANDRO
-Q13: NOT_STARTED
+Q13: COMPLETED_APPROVED_BY_LEANDRO
+Q14: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q12 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q13 salvo solicitação explícita de LEANDRO.**
 
-LEANDRO decidiu encerrar a continuidade neste chat após Q12 devido ao tamanho da janela de contexto. A retomada deve ocorrer em novo chat a partir deste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-012.md`, sempre verificando GitHub live antes de afirmar estado atual.
+A continuidade canônica da Discovery está agora neste Resume Card + `MCF-V1.1-DISCOVERY-CHECKPOINT-013.md`. Qualquer retomada deve consultar GitHub live antes de afirmar estado atual.
 
 ## Decisões aprovadas
 
@@ -68,16 +69,19 @@ Q9: EVIDENCE_AWARE_ADAPTIVE_QUESTIONING_WITH_INFORMATION_GAIN
 Q10: EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK
 Q11: SEMANTIC_READINESS_GATE_WITH_BLOCKING_UNKNOWNS
 Q12: VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE
+Q13: EVIDENCE_BOUND_CONDITIONAL_EXISTING_PROJECT_ARTIFACT_PIPELINE
 ```
 
-## Síntese operacional Q6–Q12
+## Síntese operacional Q6–Q13
 
 ```text
 VERIFIED ACTIVATION
 → PROJECT ENTRY CLASSIFICATION
 → NEW: PROJECT GENESIS
    OR
-  ADOPT: READ_ONLY RECONNAISSANCE + REALITY CONFIRMATION
+  ADOPT: READ_ONLY RECONNAISSANCE + PROJECT REALITY REPORT + REALITY CONFIRMATION
+   OR
+  RESUME/RECOVER: VERIFIED CONTINUITY OR RECONCILIATION FIRST
 → HUMAN INTENT DISCOVERY
 → 20 CANONICAL INTENT DIMENSIONS
 → EVIDENCE-AWARE ADAPTIVE QUESTIONING
@@ -87,6 +91,8 @@ VERIFIED ACTIVATION
 → FINAL INTENT READ-BACK
 → LEANDRO CONFIRMS
 → INTENT ALIGNMENT GATE
+→ AS-IS / TO-BE GAP MAP, quando aplicável
+→ COMPLETION / RECOVERY PLAN, quando gap material exigir
 → MCF-START-MISSION
 ```
 
@@ -164,24 +170,47 @@ ALIGNMENT_BINDS_TO_EXACT_PIP_REVISION
 PROJECT_INTENT_CAN_OUTLIVE_ANY_SINGLE_MISSION
 ```
 
-O PIP preserva provenance de afirmações materiais, delegações técnicas, assumptions, unknowns, blockers e conflicts. O `INTENT_ALIGNMENT_GATE` aprova uma revisão exata; revisão alinhada é histórica/imutável. Mudança material cria nova working revision. `Mission Contract` nasce depois do alinhamento e referencia a revisão alinhada do PIP. `Product Brief` não pode introduzir intenção nova; canônico vs derived fica para Q14. Artefatos de realidade/gap ficam para Q13.
+O PIP preserva provenance de afirmações materiais, delegações técnicas, assumptions, unknowns, blockers e conflicts. O `INTENT_ALIGNMENT_GATE` aprova uma revisão exata; revisão alinhada é histórica/imutável. Mudança material cria nova working revision. `Mission Contract` nasce depois do alinhamento e referencia a revisão alinhada do PIP. `Product Brief` não pode introduzir intenção nova; canônico vs derived fica para Q14.
+
+### Q13 — artefatos de projeto existente
+
+```yaml
+canonical_name: EVIDENCE_BOUND_CONDITIONAL_EXISTING_PROJECT_ARTIFACT_PIPELINE
+artifacts:
+  - PROJECT_REALITY_REPORT
+  - AS_IS_TO_BE_GAP_MAP
+  - COMPLETION_RECOVERY_PLAN
+```
+
+`Project Reality Report` representa apenas realidade `AS-IS` em baseline exato com evidência/provenance; não representa intenção nem plano. `Gap Map` compara revisão exata do PRR com revisão exata e alinhada do PIP. Análise preliminar de gap pode existir antes do alinhamento, mas não possui autoridade de planejamento. `Completion/Recovery Plan` nasce de gaps validados e não autoriza implementação.
+
+Para `ADOPT_EXISTING_PROJECT`, PRR é obrigatório; Gap Map e Plan são requeridos quando houver gap material. `RESUME_MCF_PROJECT` com continuidade verificável não reconstrói tudo por padrão. `RECOVER_MCF_PROJECT` reconcilia primeiro checkpoint + PIP + Mission State + GitHub live + evidências e só escala para reconstrução adicional diante de divergência material.
+
+```text
+AS_IS != TO_BE
+PRR != PIP
+PRR != PLAN
+GAP = EXACT_PRR_REVISION x EXACT_ALIGNED_PIP_REVISION
+PLAN_CREATED != IMPLEMENTATION_AUTHORIZED
+RECOVER = RECONCILE_FIRST
+```
+
+Canônico vs derived permanece para Q14.
 
 ## Ordem de leitura ao retomar
 
 1. consultar GitHub live e confirmar a branch `planning/mcf-v1.1-discovery`;
 2. ler este Resume Card;
-3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-012.md`;
+3. ler `docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-013.md`;
 4. ler `docs/proposals/MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. consultar `docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md` quando precisar dos contratos aprovados;
 6. manter `implementation/prototype/release = NO_GO`;
-7. iniciar **Q13**, não Q12.
+7. iniciar **Q14**, não Q13.
 
 ## Próxima ação
 
-> **Q13 — Quais artefatos adicionais um projeto existente precisa produzir?**
-
-A Q13 deve tratar `Project Reality Report`, `AS-IS / TO-BE Gap Map`, `Completion/Recovery Plan`, suas condições por entry mode, baseline/evidence e ordem relativa a Reality Confirmation e Intent Alignment. Canônico vs derived permanece para Q14.
+> **Q14 — O que é canônico e o que é derived view na memória/continuidade do projeto?**
 
 ## Comando mínimo de retomada em novo chat
 
-> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 012 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q13. Não repita Q1–Q12 e não inicie implementação.`
+> `Mestre, retome a Discovery da v1.1 pelo Resume Card e pelo Checkpoint 013 no GitHub. Verifique o estado live da branch planning/mcf-v1.1-discovery e continue exatamente pela Q14. Não repita Q1–Q13 e não inicie implementação.`
