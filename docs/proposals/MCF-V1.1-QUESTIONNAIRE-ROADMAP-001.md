@@ -26,10 +26,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 10
-questions_remaining: 10
-last_completed_question: 10
-next_question: 11
+questions_completed: 11
+questions_remaining: 9
+last_completed_question: 11
+next_question: 12
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -40,7 +40,7 @@ question_07: COMPLETED_APPROVED_BY_LEANDRO
 question_08: COMPLETED_APPROVED_BY_LEANDRO
 question_09: COMPLETED_APPROVED_BY_LEANDRO
 question_10: COMPLETED_APPROVED_BY_LEANDRO
-question_11: NOT_STARTED
+question_11: COMPLETED_APPROVED_BY_LEANDRO
 question_12: NOT_STARTED
 question_13: NOT_STARTED
 question_14: NOT_STARTED
@@ -95,34 +95,33 @@ implementation_authorized: false
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `EVIDENCE_AWARE_ADAPTIVE_QUESTIONING_WITH_INFORMATION_GAIN` — Opção D.
 
-- não existe sequência fixa nem contagem fixa de perguntas;
-- uma pergunta primária por vez por padrão;
-- cada resposta atualiza todas as dimensões afetadas antes de escolher a próxima pergunta;
-- prioridade: conflito material de intenção, blocker, alto ganho informacional, alto risco, dependency unlock e só então refinamento;
-- dimensão `CLEAR` não é repetida sem nova causa;
-- evidência reduz perguntas, mas não substitui preferência/intenção humana;
-- follow-up exige valor informacional;
-- loops de baixo ganho são proibidos;
-- mudança humana preserva histórico (`SUPERSEDED` → `CURRENT`).
+Sem sequência/contagem fixa; uma pergunta primária por vez; atualizar dimensões e reavaliar antes da próxima pergunta; prioridade para conflito, blocker, ganho informacional, risco e dependency unlock; dimensão `CLEAR` não é repetida sem nova causa; follow-up exige valor; loops de baixo ganho são proibidos.
 
 ### Q10 — Como deve funcionar o progressive read-back e correção de entendimento?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK` — Opção D.
 
-- três níveis: `MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`;
-- triggers: mudança material de escopo, conflito material de intenção, interpretação de alto impacto, fechamento de bloco semântico, mudanças acumuladas e boundary de contexto/handoff;
-- safety cadence aproximada de 4–6 trocas significativas, sem contagem rígida;
-- read-back enfatiza entendimento novo/material, mudanças, constraints e unknowns abertos;
-- resultados: `CONFIRMED`, `CORRECTED`, `REJECTED`, com confirmação parcial permitida;
-- correção interrompe propagação errada, invalida assumptions derivadas e recalcula dimensões dependentes;
-- interpretação de máquina rejeitada não vira decisão humana;
-- `FINAL_INTENT_READBACK` é obrigatório antes do `INTENT_ALIGNMENT_GATE`;
-- progressive confirmation não autoriza implementação.
+Três níveis (`MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`); gatilhos por mudanças/conflitos/interpretações materiais, blocos semânticos e boundaries; safety cadence aproximada 4–6 trocas significativas; correções invalidam derivações erradas; final read-back obrigatório antes do Alignment Gate.
 
 ### Q11 — Como medir Context Sufficiency / Intent Readiness antes de planejar?
-Definir critérios para `READY_FOR_ALIGNMENT`, `NOT_READY` e eventual estado condicional; distinguir unknown tolerável de blocker, lidar com `NOT_APPLICABLE`, delegação técnica, conflitos e impedir que quantidade de perguntas seja confundida com suficiência.
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `SEMANTIC_READINESS_GATE_WITH_BLOCKING_UNKNOWNS` — Opção D.
+
+- readiness é semântica, não baseada em quantidade de perguntas nem score puro;
+- os estados da Q8 permanecem, mas cada incerteza recebe impacto `BLOCKING` ou `NON_BLOCKING`;
+- `BLOCKING_UNKNOWN` pode alterar materialmente produto, escopo, usuários, segurança, arquitetura, custo, risco ou sucesso;
+- core universal: `PROBLEM`, `DESIRED_OUTCOME`, `TARGET_USERS`, `CRITICAL_USER_JOURNEYS`, `MUST_HAVE`, `NON_GOALS`, `PRIORITIES_AND_TRADEOFFS`, `DEFINITION_OF_DONE`;
+- demais dimensões tornam-se criticamente bloqueantes conforme domínio, risco, sensibilidade de dados, efeitos externos, jornadas e constraints;
+- `NOT_APPLICABLE` conta como resolvido quando justificado;
+- delegação técnica explícita é resolução válida da intenção humana;
+- score pode existir como diagnóstico, nunca como autoridade do gate;
+- estados globais: `NOT_READY`, `CONDITIONALLY_READY`, `READY_FOR_ALIGNMENT`;
+- `READY_FOR_ALIGNMENT` exige zero blocking unknowns, zero conflitos materiais de intenção, zero interpretações de alto impacto não confirmadas, coerência semântica, unknowns não bloqueantes preservados e delegações explícitas;
+- `READY_FOR_ALIGNMENT` não autoriza implementação;
+- readiness é recalculada após mudança material.
 
 ### Q12 — Qual é o contrato do Project Intent Package?
+Definir estrutura, campos, provenance, relação com `IDEA_CAPTURE`, 20 dimensões, decisões current/superseded, delegações, assumptions, unknowns/blockers, readiness, Product Brief e Intent Alignment Receipt, sem duplicar Mission Contract.
 
 ### Q13 — Quais artefatos adicionais um projeto existente precisa produzir?
 Inclui candidatos: `Project Reality Report`, `AS-IS / TO-BE Gap Map`, `Completion/Recovery Plan`.
@@ -158,6 +157,6 @@ Para cada Q aprovada:
 
 ## 5. Próxima ação
 
-> **Q11 — Como medir Context Sufficiency / Intent Readiness antes de planejar?**
+> **Q12 — Qual é o contrato do Project Intent Package?**
 
-Não iniciar Q12 antes de decisão explícita de LEANDRO sobre Q11.
+Não iniciar Q13 antes de decisão explícita de LEANDRO sobre Q12.
