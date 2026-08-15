@@ -26,116 +26,74 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 4
-questions_remaining: 16
-last_completed_question: 4
-next_question: 5
+questions_completed: 5
+questions_remaining: 15
+last_completed_question: 5
+next_question: 6
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
 Q4: COMPLETED_APPROVED_BY_LEANDRO
-Q5: NOT_STARTED
+Q5: COMPLETED_APPROVED_BY_LEANDRO
+Q6: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q4 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q5 salvo solicitação explícita de LEANDRO.**
 
-## Q1 — decisão aprovada
+## Decisões aprovadas
 
-`HYBRID_INTENT_AND_EXPLICIT_ACTIVATION` — Opção D.
+### Q1 — `HYBRID_INTENT_AND_EXPLICIT_ACTIVATION`
+Chat normal fora do MCF; comando explícito ou intenção clara inicia `ACTIVATING`; `ACTIVE` exige bootstrap/fonte verificáveis.
 
-## Q2 — decisão aprovada
+### Q2 — `LOCAL_FIRST_REMOTE_CHECKPOINTED`
+`CHATGPT_REMOTE` opera por conectores/ferramentas remotas; `CODEX_LOCAL` usa workspace/terminal/Git local; GitHub é memória institucional/checkpoint/CI/revisão/integração; checkpoints remotos em boundaries semânticos/de risco.
 
-`LOCAL_FIRST_REMOTE_CHECKPOINTED` — Opção D.
+### Q3 — `VERIFIED_TWO_STAGE_BOOTSTRAP`
+Resolver `VALID_PROJECT_PIN > EXPLICIT_LEANDRO_SELECTION > CURRENT_STABLE`, carregar metodologia por tag/SHA imutável, sem silent mid-mission upgrade.
 
-```text
-MCF_METHOD != EXECUTION_HOST
-EDIT != COMMIT != PUSH != PR
-LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED
-```
+### Q4 — `VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES`
+Operação degradada apenas sobre base local verificável e trabalho reversível; inconsistência canônica bloqueia; efeitos materiais/governados permanecem fail-closed.
 
-- `CHATGPT_REMOTE` → conectores e ferramentas remotas;
-- `CODEX_LOCAL` → workspace, terminal e Git local;
-- GitHub → memória institucional, checkpoint, colaboração, CI, revisão e integração;
-- checkpoints remotos em boundaries semânticos/de risco;
-- `CHECKPOINT_DEBT` permitido apenas para trabalho local reversível de baixo risco quando remoto indisponível;
-- boundary material/governado → `FAIL_CLOSED` sem evidência remota aplicável.
-
-## Q3 — decisão aprovada
-
-`VERIFIED_TWO_STAGE_BOOTSTRAP` — Opção D.
+### Q5 — `THREE_CANONICAL_ENTRY_MODES_WITH_RECOVERY_ROUTE`
 
 ```yaml
-bootstrap_locator:
-  repository: leon337/multiagent-collaboration-framework
-  canonical_index: docs/bootstrap/MCF-BOOTSTRAP-INDEX.yaml
-resolution_order:
-  - VALID_PROJECT_PIN
-  - EXPLICIT_LEANDRO_SELECTION
-  - CURRENT_STABLE
-immutable_methodology_ref:
-  required: true
-  accepted_identity: [TAG, COMMIT_SHA]
-project_methodology_pin:
-  required_after_intake: true
-silent_mid_mission_upgrade:
-  allowed: false
-default_exclusions:
-  - DISCOVERY
-  - PLANNING
-  - RC
-  - EXPERIMENTAL
-  - ALPHA
-  - BETA
+PROJECT_ENTRY_MODE:
+  - NEW_PROJECT
+  - ADOPT_EXISTING_PROJECT
+  - RESUME_MCF_PROJECT
+RECOVERY_ROUTE:
+  - RECOVER_MCF_PROJECT
 ```
 
-`ACTIVE` só pode ocorrer depois que repositório, versão, referência imutável e bootstrap forem resolvidos/verificados.
+- `NEW_PROJECT`: não existe implementação material a preservar;
+- `ADOPT_EXISTING_PROJECT`: existe projeto, mas sem continuidade MCF verificável;
+- `RESUME_MCF_PROJECT`: projeto com continuidade MCF verificável;
+- `RECOVER_MCF_PROJECT`: rota excepcional quando um projeto previamente MCF possui continuidade quebrada, divergente ou não verificável.
 
-## Q4 — decisão aprovada
-
-`VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES` — Opção D.
-
-```yaml
-new_project_without_verified_bootstrap:
-  state: ACTIVATING_BLOCKED
-existing_project_degraded_mode:
-  requires_verified_project_pin: true
-  verified_local_methodology_cache_allowed: true
-canonical_conflict:
-  state: CANONICAL_CONFLICT_BLOCKED
-  result: FAIL_CLOSED
-remote_recovery:
-  canonical_revalidation_required: true
-  checkpoint_debt_reconciliation_required: true
-  degraded_operation_receipt_required: true
-```
-
-Modo degradado verificado pode continuar apenas com leitura/análise, planejamento, documentação local, testes, mudanças locais reversíveis e commits locais. Merge, deploy, release, publicação, integração final, upgrade de metodologia, mudança de autoridade, review terminal e efeitos externos materiais sem evidência remota permanecem bloqueados.
-
-Princípios:
+Classificação:
 
 ```text
-UNAVAILABLE != INCONSISTENT
-LOCAL_COPY != VERIFIED_LOCAL_COPY
-CACHE_CAN_PROVE_IDENTITY != CACHE_CAN_PROVE_CURRENT_STABLE
-HUMAN_AUTHORITY != TECHNICAL_EVIDENCE
+HUMAN_INTENT + MACHINE_EVIDENCE = ENTRY_CLASSIFICATION
+ADOPT != RECOVER
+RESUME_REQUIRES_VERIFIED_CONTINUITY
 ```
+
+LEANDRO fala naturalmente; MESTRE classifica. Se houver ambiguidade real: `PROJECT_ENTRY_CLASSIFICATION_UNRESOLVED` e execução permanece `NO_GO` até resolução.
 
 ## Ordem de leitura
 
 1. GitHub live;
 2. este Resume Card;
-3. `MCF-V1.1-DISCOVERY-CHECKPOINT-004.md`;
+3. `MCF-V1.1-DISCOVERY-CHECKPOINT-005.md`;
 4. `MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. `MCF-V1.1-DECISION-LEDGER-001.md`;
 6. `MCF-V1.1-DISCOVERY-CHARTER-001.md`.
 
 ## Política de continuidade
-
-Para cada nova pergunta aprovada:
 
 ```text
 LEANDRO DECIDE
@@ -153,9 +111,7 @@ NEXT QUESTION
 
 ## Próxima ação
 
-> **Q5 — Quais modos de entrada de projeto o MCF deve reconhecer?**
-
-Candidatos atuais: `NEW_PROJECT`, `EXISTING_PROJECT`, `RESUME_MCF_PROJECT`.
+> **Q6 — Como deve funcionar a entrada de um projeto novo (`NEW_PROJECT`)?**
 
 ## Comando mínimo de retomada
 
