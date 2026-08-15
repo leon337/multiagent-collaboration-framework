@@ -26,21 +26,22 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 3
-questions_remaining: 17
-last_completed_question: 3
-next_question: 4
+questions_completed: 4
+questions_remaining: 16
+last_completed_question: 4
+next_question: 5
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
-Q4: NOT_STARTED
+Q4: COMPLETED_APPROVED_BY_LEANDRO
+Q5: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q3 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q4 salvo solicitação explícita de LEANDRO.**
 
 ## Q1 — decisão aprovada
 
@@ -93,11 +94,41 @@ default_exclusions:
 
 `ACTIVE` só pode ocorrer depois que repositório, versão, referência imutável e bootstrap forem resolvidos/verificados.
 
+## Q4 — decisão aprovada
+
+`VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES` — Opção D.
+
+```yaml
+new_project_without_verified_bootstrap:
+  state: ACTIVATING_BLOCKED
+existing_project_degraded_mode:
+  requires_verified_project_pin: true
+  verified_local_methodology_cache_allowed: true
+canonical_conflict:
+  state: CANONICAL_CONFLICT_BLOCKED
+  result: FAIL_CLOSED
+remote_recovery:
+  canonical_revalidation_required: true
+  checkpoint_debt_reconciliation_required: true
+  degraded_operation_receipt_required: true
+```
+
+Modo degradado verificado pode continuar apenas com leitura/análise, planejamento, documentação local, testes, mudanças locais reversíveis e commits locais. Merge, deploy, release, publicação, integração final, upgrade de metodologia, mudança de autoridade, review terminal e efeitos externos materiais sem evidência remota permanecem bloqueados.
+
+Princípios:
+
+```text
+UNAVAILABLE != INCONSISTENT
+LOCAL_COPY != VERIFIED_LOCAL_COPY
+CACHE_CAN_PROVE_IDENTITY != CACHE_CAN_PROVE_CURRENT_STABLE
+HUMAN_AUTHORITY != TECHNICAL_EVIDENCE
+```
+
 ## Ordem de leitura
 
 1. GitHub live;
 2. este Resume Card;
-3. `MCF-V1.1-DISCOVERY-CHECKPOINT-003.md`;
+3. `MCF-V1.1-DISCOVERY-CHECKPOINT-004.md`;
 4. `MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. `MCF-V1.1-DECISION-LEDGER-001.md`;
 6. `MCF-V1.1-DISCOVERY-CHARTER-001.md`.
@@ -122,7 +153,9 @@ NEXT QUESTION
 
 ## Próxima ação
 
-> **Q4 — Como deve funcionar o fail-closed quando GitHub/bootstrap/fonte canônica não estiver acessível ou verificável?**
+> **Q5 — Quais modos de entrada de projeto o MCF deve reconhecer?**
+
+Candidatos atuais: `NEW_PROJECT`, `EXISTING_PROJECT`, `RESUME_MCF_PROJECT`.
 
 ## Comando mínimo de retomada
 
