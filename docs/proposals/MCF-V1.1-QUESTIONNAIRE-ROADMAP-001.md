@@ -27,10 +27,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 17
-questions_remaining: 3
-last_completed_question: 17
-next_question: 18
+questions_completed: 18
+questions_remaining: 2
+last_completed_question: 18
+next_question: 19
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -48,7 +48,7 @@ question_14: COMPLETED_APPROVED_BY_LEANDRO
 question_15: COMPLETED_APPROVED_BY_LEANDRO
 question_16: COMPLETED_APPROVED_BY_LEANDRO
 question_17: COMPLETED_APPROVED_BY_LEANDRO
-question_18: NOT_STARTED
+question_18: COMPLETED_APPROVED_BY_LEANDRO
 question_19: NOT_STARTED
 question_20: NOT_STARTED
 implementation_authorized: false
@@ -179,9 +179,22 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 - `NEW_CHAT != NEW_MISSION` e `PAUSED != CANCELLED`.
 
 ### Q18 — Como evoluir a v1.0.0 para v1.1.0 preservando compatibilidade e evitando duplicação de mecanismos?
-**Estado:** `NOT_STARTED`
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `COMPATIBLE_EXTENSION_VERSIONING_AND_EXPLICIT_MIGRATION` — Opção D.
+
+- a v1.1 estende os primitives da v1.0 em vez de reescrever o core ou criar arquitetura paralela;
+- reutilizar runtime, `MCF-START-MISSION`, `MCF-RECOVER-CONTEXT`, Mission Contract, PRF/checkpoints, permission profiles/Human Delegation, handoffs, receipts, reconciliação e observabilidade;
+- schemas/contratos evoluem com versionamento explícito e preferencialmente extensões aditivas compatíveis;
+- artefato legado sem campos v1.1 não é automaticamente inválido;
+- projetos v1.0 não sofrem migração em massa; methodology pin impede upgrade silencioso no meio da missão;
+- migração deve preservar artefato original/provenance, produzir sucessor versionado e validar antes da ativação;
+- primitive novo exige `NO_EQUIVALENT_TEST` e justificativa;
+- compatibilidade precisa ser comprovada em documento, contrato e runtime;
+- identidade da release v1.0.0 permanece histórica/imutável;
+- incompatibilidade real em autoridade, gates ou fluxo central deve ser reclassificada, não ocultada numa versão minor.
 
 ### Q19 — Como provar a v1.1.0 com testes reais?
+**Estado:** `NOT_STARTED`  
 Candidatos mínimos: projeto novo, projeto antigo incompleto e retomada em novo chat.
 
 ### Q20 — Qual é a arquitetura/contrato consolidado da v1.1.0 e qual o GO / CONDITIONAL GO / NO-GO para implementação?
@@ -200,20 +213,20 @@ Para cada Q aprovada:
 
 ---
 
-## 5. Handoff após Q17
+## 5. Handoff após Q18
 
 O boundary canônico atual é:
 
 ```text
 MCF-V1.1-RESUME-CARD.md
 +
-MCF-V1.1-DISCOVERY-CHECKPOINT-017.md
+MCF-V1.1-DISCOVERY-CHECKPOINT-018.md
 ```
 
-Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q17 e retomar diretamente na Q18.
+Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q18 e retomar diretamente na Q19.
 
 ## 6. Próxima ação
 
-> **Q18 — Como evoluir a v1.0.0 para v1.1.0 preservando compatibilidade e evitando duplicação de mecanismos?**
+> **Q19 — Como provar a v1.1.0 com testes reais?**
 
-Não iniciar Q19 antes de decisão explícita de LEANDRO sobre Q18. Implementação permanece `NO_GO`.
+Não iniciar Q20 antes de decisão explícita de LEANDRO sobre Q19. Implementação permanece `NO_GO`.
