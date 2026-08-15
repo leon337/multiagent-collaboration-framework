@@ -26,10 +26,10 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 7
-questions_remaining: 13
-last_completed_question: 7
-next_question: 8
+questions_completed: 8
+questions_remaining: 12
+last_completed_question: 8
+next_question: 9
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -37,14 +37,15 @@ Q4: COMPLETED_APPROVED_BY_LEANDRO
 Q5: COMPLETED_APPROVED_BY_LEANDRO
 Q6: COMPLETED_APPROVED_BY_LEANDRO
 Q7: COMPLETED_APPROVED_BY_LEANDRO
-Q8: NOT_STARTED
+Q8: COMPLETED_APPROVED_BY_LEANDRO
+Q9: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q7 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q8 salvo solicitação explícita de LEANDRO.**
 
 ## Decisões aprovadas
 
@@ -108,35 +109,60 @@ LEANDRO: "Assuma este projeto"
 → Human Intent Discovery profunda
 ```
 
-Estados de evidência aprovados:
+### Q8 — `CANONICAL_INTENT_DIMENSIONS_WITH_EVIDENCE_AWARE_RESOLUTION`
 
 ```yaml
-- VERIFIED_FACT
-- OBSERVED_FACT
-- INFERRED
-- UNKNOWN
-- CONFLICTING
-- STALE_SUSPECTED
+canonical_dimension_count: 20
+fixed_question_count_required: false
+
+dimensions:
+  - PROBLEM
+  - MOTIVATION
+  - DESIRED_OUTCOME
+  - TARGET_USERS
+  - CRITICAL_USER_JOURNEYS
+  - MUST_HAVE
+  - SHOULD_HAVE
+  - NON_GOALS
+  - PRIORITIES_AND_TRADEOFFS
+  - BUSINESS_RULES
+  - DATA_AND_SENSITIVITY
+  - ROLES_AND_PERMISSIONS
+  - AUTOMATION_LEVEL
+  - INTEGRATIONS
+  - PLATFORM_AND_USAGE_CONTEXT
+  - COST_AND_RESOURCE_CONSTRAINTS
+  - QUALITY_EXPECTATIONS
+  - FAILURE_TOLERANCE
+  - DEFINITION_OF_DONE
+  - FUTURE_VISION
+
+dimension_states:
+  - CLEAR
+  - PARTIAL
+  - UNKNOWN
+  - CONFLICTING
+  - NOT_APPLICABLE
 ```
 
-Princípios:
+Regras centrais:
 
 ```text
-READ_ONLY_FIRST
-AS_IS != TO_BE
-FACT != INFERENCE
-DOCUMENTATION != AUTOMATICALLY_REALITY
-MACHINE_DISCOVERS_TECHNICAL_FACTS
-HUMAN_EXPLAINS_INTENT
+DIMENSION_REQUIRED != QUESTION_REQUIRED
+UNKNOWN != NOT_APPLICABLE
+UNKNOWN != HUMAN_HAS_NO_PREFERENCE
+MACHINE_EVIDENCE_CAN_SUPPLY_FACTS
+MACHINE_EVIDENCE_CANNOT_INVENT_HUMAN_PREFERENCES
+TEAM_ENGINEERING_DECIDES_HOW
 ```
 
-Antes da confirmação de realidade, mutação do projeto alvo é `NO_GO`. Methodology pin só é escrito no projeto após compromisso de adoção. Implementação permanece `NO_GO` até `INTENT_ALIGNMENT_GATE = PASS`.
+Cada dimensão precisa ser compreendida ou explicitamente resolvida. `Não sei` e delegação técnica à equipe são respostas legítimas quando apropriadas; não exigem que LEANDRO possua conhecimento técnico.
 
 ## Ordem de leitura
 
 1. GitHub live;
 2. este Resume Card;
-3. `MCF-V1.1-DISCOVERY-CHECKPOINT-007.md`;
+3. `MCF-V1.1-DISCOVERY-CHECKPOINT-008.md`;
 4. `MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. `MCF-V1.1-DECISION-LEDGER-001.md`;
 6. `MCF-V1.1-DISCOVERY-CHARTER-001.md`.
@@ -159,7 +185,7 @@ NEXT QUESTION
 
 ## Próxima ação
 
-> **Q8 — Quais dimensões de intenção humana são obrigatórias?**
+> **Q9 — Como perguntas adaptativas devem evitar interrogatório rígido e perguntas já respondidas por evidência?**
 
 ## Comando mínimo de retomada
 
