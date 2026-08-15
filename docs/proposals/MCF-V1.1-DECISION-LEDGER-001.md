@@ -163,80 +163,9 @@ canonical_dimension_count: 20
 fixed_question_count_required: false
 ```
 
-### Problema
+As 20 dimensões canônicas são `PROBLEM`, `MOTIVATION`, `DESIRED_OUTCOME`, `TARGET_USERS`, `CRITICAL_USER_JOURNEYS`, `MUST_HAVE`, `SHOULD_HAVE`, `NON_GOALS`, `PRIORITIES_AND_TRADEOFFS`, `BUSINESS_RULES`, `DATA_AND_SENSITIVITY`, `ROLES_AND_PERMISSIONS`, `AUTOMATION_LEVEL`, `INTEGRATIONS`, `PLATFORM_AND_USAGE_CONTEXT`, `COST_AND_RESOURCE_CONSTRAINTS`, `QUALITY_EXPECTATIONS`, `FAILURE_TOLERANCE`, `DEFINITION_OF_DONE` e `FUTURE_VISION`.
 
-Definir o conjunto mínimo de dimensões que o MCF deve compreender antes de considerar a intenção humana suficientemente capturada, sem transformar a Discovery em formulário rígido nem exigir de LEANDRO decisões técnicas que pertencem à equipe.
-
-### Alternativas consideradas
-
-- A — 20 perguntas fixas;
-- B — conversa totalmente livre;
-- C — poucas dimensões essenciais e demais opcionais;
-- D — 20 dimensões canônicas obrigatórias de compreender, resolvidas por contexto, evidência, respostas humanas e perguntas adaptativas, sem exigir 20 perguntas fixas.
-
-### Decisão de LEANDRO
-
-**Opção D.**
-
-### Dimensões canônicas aprovadas
-
-```yaml
-intent_dimensions:
-  purpose:
-    - PROBLEM
-    - MOTIVATION
-    - DESIRED_OUTCOME
-
-  users_and_experience:
-    - TARGET_USERS
-    - CRITICAL_USER_JOURNEYS
-
-  scope:
-    - MUST_HAVE
-    - SHOULD_HAVE
-    - NON_GOALS
-    - PRIORITIES_AND_TRADEOFFS
-
-  domain_and_operation:
-    - BUSINESS_RULES
-    - DATA_AND_SENSITIVITY
-    - ROLES_AND_PERMISSIONS
-    - AUTOMATION_LEVEL
-    - INTEGRATIONS
-    - PLATFORM_AND_USAGE_CONTEXT
-
-  constraints_quality_and_success:
-    - COST_AND_RESOURCE_CONSTRAINTS
-    - QUALITY_EXPECTATIONS
-    - FAILURE_TOLERANCE
-    - DEFINITION_OF_DONE
-    - FUTURE_VISION
-```
-
-### Estados possíveis por dimensão
-
-```yaml
-dimension_states:
-  - CLEAR
-  - PARTIAL
-  - UNKNOWN
-  - CONFLICTING
-  - NOT_APPLICABLE
-```
-
-### Regras de resolução
-
-```yaml
-resolution:
-  every_dimension_must_be_understood_or_explicitly_resolved: true
-  fixed_question_count_required: false
-  machine_evidence_may_supply_facts: true
-  machine_evidence_may_invent_human_preferences: false
-  human_unknown_allowed: true
-  technical_decision_delegation_allowed: true
-```
-
-Princípios:
+Estados por dimensão: `CLEAR`, `PARTIAL`, `UNKNOWN`, `CONFLICTING`, `NOT_APPLICABLE`.
 
 ```text
 DIMENSION_REQUIRED != QUESTION_REQUIRED
@@ -244,17 +173,94 @@ UNKNOWN != NOT_APPLICABLE
 UNKNOWN != HUMAN_HAS_NO_PREFERENCE
 MACHINE_EVIDENCE_CAN_SUPPLY_FACTS
 MACHINE_EVIDENCE_CANNOT_INVENT_HUMAN_PREFERENCES
-HUMAN_INTENT_DISCOVERY_ASKS_WHAT_WHY_WHO_CONSEQUENCES_PREFERENCES_CONSTRAINTS_SUCCESS
 TEAM_ENGINEERING_DECIDES_HOW
 ```
 
-- as 20 dimensões são obrigatórias como cobertura semântica, não como 20 perguntas literais;
-- uma dimensão pode ser resolvida por resposta humana, contexto confirmado, evidência aplicável ou `NOT_APPLICABLE`;
-- evidência técnica não pode ser usada para inferir preferência humana silenciosamente;
-- `AS-IS` observado em projeto existente não substitui intenção `TO-BE`;
-- quando LEANDRO não souber uma decisão técnica, pode delegar recomendação/decisão à equipe sem isso ser tratado como falha de Intake;
-- tecnologias específicas, frameworks, bancos, padrões arquiteturais e provedores não fazem parte das dimensões humanas obrigatórias, salvo quando surgirem como restrição real de plataforma, recurso, custo ou contexto de uso;
-- Q9 definirá a mecânica de perguntas adaptativas; Q10 o progressive read-back; Q11 a suficiência/readiness; Q12 a persistência no `Project Intent Package`.
+## V11-Q09 — Adaptive Questioning Contract
+
+```yaml
+decision_id: V11-Q09
+question: Q9
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: EVIDENCE_AWARE_ADAPTIVE_QUESTIONING_WITH_INFORMATION_GAIN
+```
+
+### Decisão
+
+As 20 dimensões não são percorridas por sequência fixa. Antes de cada pergunta, MESTRE incorpora novo contexto/evidência, atualiza todas as dimensões afetadas, verifica contradições, identifica incertezas bloqueantes e escolhe a próxima pergunta de maior valor informacional com menor carga humana possível.
+
+```yaml
+questioning_model:
+  fixed_sequence: false
+  fixed_question_count: false
+  one_primary_question_at_a_time: true
+
+before_each_question:
+  - INGEST_NEW_CONTEXT
+  - UPDATE_ALL_AFFECTED_DIMENSIONS
+  - CHECK_CONTRADICTIONS
+  - IDENTIFY_BLOCKING_UNCERTAINTIES
+  - RANK_QUESTION_CANDIDATES
+
+question_priority:
+  - MATERIAL_HUMAN_INTENT_CONFLICT
+  - BLOCKING_UNCERTAINTY
+  - HIGH_INFORMATION_GAIN
+  - HIGH_RISK_UNCERTAINTY
+  - DEPENDENCY_UNLOCK
+  - SECONDARY_REFINEMENT
+
+question_value_considers:
+  - INFORMATION_GAIN
+  - BLOCKER_REDUCTION
+  - RISK_REDUCTION
+  - DEPENDENCY_UNLOCK
+  - HUMAN_BURDEN
+  - REPETITION_PENALTY
+
+clear_dimension:
+  repeat_without_new_cause: PROHIBITED
+
+evidence:
+  use_to_reduce_questions: true
+  may_replace_human_preference: false
+
+followup:
+  requires_information_value: true
+  allowed_when:
+    - PARTIAL_REMAINS
+    - MATERIAL_AMBIGUITY_CREATED
+    - CONTRADICTION_CREATED
+    - SCOPE_OR_RISK_CHANGED
+    - IMPORTANT_DEPENDENCY_UNLOCKED
+
+conflict_types:
+  - AS_IS_TO_BE_DIFFERENCE
+  - EVIDENCE_CONFLICT
+  - HUMAN_INTENT_CONFLICT
+
+low_information_loop:
+  repeated_followups: PROHIBITED
+  unresolved_nonblocking: PRESERVE_AND_CONTINUE
+  unresolved_blocking: MARK_BLOCKING_UNKNOWN
+
+human_delegation:
+  valid_resolution: true
+```
+
+Princípios:
+
+```text
+ONE_ANSWER_MAY_RESOLVE_MULTIPLE_DIMENSIONS
+CLEAR_DOES_NOT_REOPEN_WITHOUT_CAUSE
+FOLLOW_UP_REQUIRES_INFORMATION_VALUE
+AS_IS_TO_BE_DIFFERENCE != HUMAN_INTENT_CONFLICT
+MACHINE_EVIDENCE_REDUCES_QUESTIONS_BUT_DOES_NOT_REPLACE_HUMAN_INTENT
+QUESTION -> ANSWER -> UPDATE_DIMENSIONS -> REASSESS -> NEXT_BEST_QUESTION
+```
+
+Mudança explícita de decisão humana não apaga o histórico: decisão anterior deve ser marcada `SUPERSEDED` e a nova como `CURRENT`. Loops de follow-up com baixo ganho são proibidos. A carga cognitiva de LEANDRO entra como custo real na seleção da próxima pergunta. Q10 definirá progressive read-back; Q11 definirá readiness global.
 
 ---
 
