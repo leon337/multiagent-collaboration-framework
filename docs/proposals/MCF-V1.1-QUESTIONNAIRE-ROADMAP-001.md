@@ -26,14 +26,14 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 3
-questions_remaining: 17
-last_completed_question: 3
-next_question: 4
+questions_completed: 4
+questions_remaining: 16
+last_completed_question: 4
+next_question: 5
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
-question_04: NOT_STARTED
+question_04: COMPLETED_APPROVED_BY_LEANDRO
 question_05: NOT_STARTED
 question_06: NOT_STARTED
 question_07: NOT_STARTED
@@ -87,6 +87,17 @@ Chat normal permanece fora do MCF. Comando explícito ou intenção clara de pro
 - `ACTIVE` exige repositório, versão, referência imutável e bootstrap verificados.
 
 ### Q4 — Como deve funcionar o fail-closed quando GitHub/bootstrap/fonte canônica não estiver acessível?
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES` — Opção D.
+
+- projeto novo sem bootstrap verificável fica `ACTIVATING_BLOCKED`;
+- projeto existente pode entrar em `ACTIVE_DEGRADED_VERIFIED` somente com project pin/metodologia local já verificáveis;
+- trabalho degradado permitido restringe-se a análise, planejamento, documentação local, testes, mudanças reversíveis e commits locais;
+- merge, deploy, release, publicação, integração final, upgrade de metodologia, mudança de autoridade, review terminal e efeito externo material sem evidência remota ficam bloqueados;
+- inconsistência entre fontes produz `CANONICAL_CONFLICT_BLOCKED` e `FAIL_CLOSED`;
+- cache local prova sua própria identidade, não qual é a `CURRENT_STABLE`;
+- retorno do remoto exige revalidação canônica, reconciliação do `CHECKPOINT_DEBT` e `Degraded Operation Receipt`;
+- autoridade de LEANDRO não substitui evidência técnica ausente.
 
 ### Q5 — Quais modos de entrada de projeto o MCF deve reconhecer?
 Candidatos: `NEW_PROJECT`, `EXISTING_PROJECT`, `RESUME_MCF_PROJECT`.
@@ -139,6 +150,6 @@ Para cada Q aprovada:
 
 ## 5. Próxima ação
 
-> **Q4 — Como deve funcionar o fail-closed quando GitHub/bootstrap/fonte canônica não estiver acessível ou verificável?**
+> **Q5 — Quais modos de entrada de projeto o MCF deve reconhecer?**
 
-Não iniciar Q5 antes de decisão explícita de LEANDRO sobre Q4.
+Não iniciar Q6 antes de decisão explícita de LEANDRO sobre Q5.
