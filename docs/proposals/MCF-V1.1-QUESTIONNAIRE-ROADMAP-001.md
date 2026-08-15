@@ -26,12 +26,12 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 1
-questions_remaining: 19
-last_completed_question: 1
-next_question: 2
+questions_completed: 2
+questions_remaining: 18
+last_completed_question: 2
+next_question: 3
 question_01: COMPLETED_APPROVED_BY_LEANDRO
-question_02: NOT_STARTED
+question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: NOT_STARTED
 question_04: NOT_STARTED
 question_05: NOT_STARTED
@@ -61,19 +61,23 @@ implementation_authorized: false
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `HYBRID_INTENT_AND_EXPLICIT_ACTIVATION` — Opção D.
 
-O ChatGPT permanece normal fora do contexto MCF. Frases explícitas como “Mestre” / “Ative o MCF” e intenção clara de iniciar/assumir projeto podem iniciar `ACTIVATING`; a ativação só chega a `ACTIVE` após carregar e verificar a metodologia/fonte de verdade aplicável.
+Chat normal permanece fora do MCF. Comando explícito ou intenção clara de projeto pode iniciar `ACTIVATING`; `ACTIVE` exige bootstrap/metodologia/fonte de verdade verificável.
 
 ### Q2 — Como o MCF deve operar em diferentes ambientes de execução?
-Definir relação entre:
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `LOCAL_FIRST_REMOTE_CHECKPOINTED` — Opção D.
 
-- ChatGPT com execução orientada por conectores/serviços remotos;
-- Codex com terminal e workspace local;
-- Git/GitHub como persistência, colaboração e evidência;
-- frequência de commits/push/checkpoints;
-- isolamento local, worktrees/branches e recuperação;
-- quando abrir PR e quando publicar checkpoint remoto.
+A mesma metodologia/governança MCF deve operar em hosts diferentes, mas o execution plane pode variar:
 
-**Discovery input já registrado:** proposta de modo Codex `LOCAL_FIRST_REMOTE_CHECKPOINTED`; ainda não decidido.
+- `CHATGPT_REMOTE` → conectores e ferramentas remotas;
+- `CODEX_LOCAL` → terminal, workspace e Git local;
+- GitHub permanece memória institucional, checkpoint remoto, colaboração, CI, revisão e integração;
+- Codex parte de baseline remoto exato e usa branch/worktree isolado;
+- commits locais podem ser frequentes sem push a cada edição;
+- checkpoint remoto é obrigatório em boundaries semânticos/de risco;
+- PR é boundary de integração/revisão, não obrigatório a cada checkpoint;
+- trabalho local de baixo risco pode continuar temporariamente com `CHECKPOINT_DEBT` se remoto indisponível;
+- boundary material/governado sem evidência remota aplicável deve `FAIL_CLOSED`.
 
 ### Q3 — Como o bootstrap encontra e verifica a versão/metodologia vigente?
 
@@ -121,23 +125,15 @@ Candidatos mínimos: projeto novo, projeto antigo incompleto e retomada em novo 
 Para cada Q aprovada:
 
 1. atualizar Decision Ledger;
-2. criar ou atualizar checkpoint de retomada;
+2. criar novo checkpoint de retomada;
 3. atualizar Resume Card;
 4. atualizar este roadmap;
 5. somente então avançar para a próxima pergunta.
-
-Se a sessão parar em Q5, o GitHub deve indicar sem ambiguidade:
-
-```yaml
-Q1_Q5: COMPLETED
-last_completed_question: 5
-next_question: 6
-```
 
 ---
 
 ## 5. Próxima ação
 
-> **Q2 — Como o MCF deve operar em diferentes ambientes de execução, especialmente ChatGPT remoto e Codex local-first?**
+> **Q3 — Como o bootstrap do MCF encontra e verifica a versão/metodologia vigente?**
 
-Não iniciar Q3 antes de decisão explícita de LEANDRO sobre Q2.
+Não iniciar Q4 antes de decisão explícita de LEANDRO sobre Q3.
