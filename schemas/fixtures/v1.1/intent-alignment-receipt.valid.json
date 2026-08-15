@@ -1,0 +1,21 @@
+{
+  "artifactType": "INTENT_ALIGNMENT_RECEIPT",
+  "schemaVersion": "1.0",
+  "receiptId": "alignment-001",
+  "projectId": "mcf-v1.1",
+  "pipRef": {
+    "artifactType": "PROJECT_INTENT_PACKAGE",
+    "schemaVersion": "1.0",
+    "projectId": "mcf-v1.1",
+    "revisionId": "pip-001",
+    "path": ".mcf/intent/pip-pip-001.json",
+    "contentDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "repository": "leon337/multiagent-collaboration-framework",
+    "commitSha": "5dc055cb7d402e5774b40b82723a8f008cd00e80"
+  },
+  "decision": "PASS",
+  "humanAuthority": "LEANDRO",
+  "confirmedAt": "2026-08-15T12:00:00Z",
+  "confirmationSourceRef": "human-gate:MCF-V1.1-ALIGNMENT-001",
+  "contentDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+}

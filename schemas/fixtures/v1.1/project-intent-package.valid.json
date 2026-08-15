@@ -1,0 +1,178 @@
+{
+  "artifactType": "PROJECT_INTENT_PACKAGE",
+  "schemaVersion": "1.0",
+  "projectId": "mcf-v1.1",
+  "revisionId": "pip-001",
+  "lifecycle": "READY_FOR_ALIGNMENT",
+  "methodologyPin": {
+    "version": "1.1.0",
+    "immutableRef": "git:5dc055cb7d402e5774b40b82723a8f008cd00e80"
+  },
+  "createdAt": "2026-08-15T12:00:00Z",
+  "identity": {
+    "projectName": "Multiagent Collaboration Framework",
+    "repository": "leon337/multiagent-collaboration-framework"
+  },
+  "originalIntent": {
+    "text": "Extend MCF v1.0 compatibly with durable project-intent continuity.",
+    "provenance": [
+      {
+        "type": "HUMAN_DIRECT_STATEMENT",
+        "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q20",
+        "capturedAt": "2026-08-15T12:00:00Z",
+        "actor": "LEANDRO"
+      }
+    ]
+  },
+  "dimensions": {
+    "PROBLEM": {
+      "state": "CLEAR",
+      "value": "Project intent needs durable continuity.",
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "MOTIVATION": {
+      "state": "CLEAR",
+      "value": "Preserve intent across missions.",
+      "provenance": [],
+      "readinessImpact": "NON_BLOCKING"
+    },
+    "DESIRED_OUTCOME": {
+      "state": "CLEAR",
+      "value": "A compatible v1.1 extension.",
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "TARGET_USERS": {
+      "state": "CLEAR",
+      "value": ["MCF operators"],
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "CRITICAL_USER_JOURNEYS": {
+      "state": "CLEAR",
+      "value": ["start", "adopt", "resume"],
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "MUST_HAVE": {
+      "state": "CLEAR",
+      "value": ["PIP", "PRR"],
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "SHOULD_HAVE": {
+      "state": "CLEAR",
+      "value": [],
+      "provenance": [],
+      "readinessImpact": "NON_BLOCKING"
+    },
+    "NON_GOALS": {
+      "state": "CLEAR",
+      "value": ["parallel runtime"],
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "PRIORITIES_AND_TRADEOFFS": {
+      "state": "CLEAR",
+      "value": "Compatibility first.",
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "BUSINESS_RULES": {
+      "state": "CLEAR",
+      "value": ["human authority remains final"],
+      "provenance": [],
+      "readinessImpact": "NON_BLOCKING"
+    },
+    "DATA_AND_SENSITIVITY": {
+      "state": "CLEAR",
+      "value": "No new sensitive state.",
+      "provenance": [],
+      "readinessImpact": "NON_BLOCKING"
+    },
+    "ROLES_AND_PERMISSIONS": {
+      "state": "CLEAR",
+      "value": ["LEANDRO", "MESTRE", "CODEX_LOCAL"],
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "AUTOMATION_LEVEL": {
+      "state": "CLEAR",
+      "value": "Delegated within envelope.",
+      "provenance": [],
+      "readinessImpact": "NON_BLOCKING"
+    },
+    "INTEGRATIONS": {
+      "state": "CLEAR",
+      "value": ["GitHub"],
+      "provenance": [],
+      "readinessImpact": "NON_BLOCKING"
+    },
+    "PLATFORM_AND_USAGE_CONTEXT": {
+      "state": "CLEAR",
+      "value": "Local-first repository workflow.",
+      "provenance": [],
+      "readinessImpact": "NON_BLOCKING"
+    },
+    "COST_AND_RESOURCE_CONSTRAINTS": {
+      "state": "CLEAR",
+      "value": "No new production cost.",
+      "provenance": [],
+      "readinessImpact": "NON_BLOCKING"
+    },
+    "QUALITY_EXPECTATIONS": {
+      "state": "CLEAR",
+      "value": ["schema validation", "legacy regression"],
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "FAILURE_TOLERANCE": {
+      "state": "CLEAR",
+      "value": "Fail closed at authority boundaries.",
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "DEFINITION_OF_DONE": {
+      "state": "CLEAR",
+      "value": "Qualification on an exact head.",
+      "provenance": [],
+      "readinessImpact": "BLOCKING"
+    },
+    "FUTURE_VISION": {
+      "state": "PARTIAL",
+      "value": "Transferable continuity.",
+      "provenance": [],
+      "readinessImpact": "NONE"
+    }
+  },
+  "humanDecisions": [
+    {
+      "decisionId": "V11-Q20",
+      "status": "CURRENT",
+      "statement": "Extend v1.0 without parallel architecture.",
+      "provenance": [
+        {
+          "type": "HUMAN_DIRECT_STATEMENT",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q20",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ]
+    }
+  ],
+  "technicalDelegations": [],
+  "assumptions": [],
+  "unknowns": [],
+  "blockers": [],
+  "conflicts": [],
+  "readiness": {
+    "state": "READY_FOR_ALIGNMENT",
+    "blockingUnknownIds": [],
+    "assessedAt": "2026-08-15T12:00:00Z"
+  },
+  "alignment": {
+    "status": "NOT_ALIGNED"
+  },
+  "contentDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}
