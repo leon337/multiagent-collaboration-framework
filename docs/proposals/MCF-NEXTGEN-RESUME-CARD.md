@@ -24,8 +24,8 @@ implementation_authorized: false
 
 ```yaml
 total_questions: 16
-last_completed_question: 14
-next_question: 15
+last_completed_question: 15
+next_question: 16
 Q1: COMPLETED
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -40,19 +40,20 @@ Q11: COMPLETED_APPROVED_BY_LEANDRO
 Q12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
 Q13: COMPLETED_APPROVED_BY_LEANDRO
 Q14: COMPLETED_APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW
-Q15_started: false
+Q15: COMPLETED_APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW
+Q16_started: false
 implementation_authorized: false
 ```
 
-**Não repetir Q1–Q14 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q15 salvo solicitação explícita de LEANDRO.**
 
-Q15 é:
+Q16 é:
 
-> **O que deve ser preservado, simplificado, removido ou substituído?**
+> **Qual é a arquitetura final da Fase 1 e o GO/NO-GO?**
 
 ## Ordem de leitura
 
-1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-016.md`
+1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-017.md`
 2. `docs/proposals/MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
 4. checkpoints anteriores conforme necessário
@@ -74,31 +75,30 @@ Q15 é:
 - Q12: `POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`.
 - Q13: `PREDECLARED_COMPARATIVE_VALUE_EVALUATION`.
 - Q14: `CLEAN_ROOM_PORTABILITY_AND_EXTERNAL_UTILITY_VALIDATION`.
+- Q15: `PRESERVE_INVARIANTS_REDUCE_IMPLEMENTATION`.
 
-Invariantes centrais da Q14:
+Invariantes centrais da Q15:
 
 ```text
-PORTABILITY_IS_A_MATRIX_NOT_BOOLEAN
-DECLARED_PORTABILITY != PROVEN_PORTABILITY
-CLEAN_ROOM != FRESH_DIRECTORY
-UNDOCUMENTED_DEPENDENCY = PORTABILITY_DEFECT
-MIGRATION_MUST_NOT_SILENTLY_REPLAY_MATERIAL_EFFECTS
-NO_NEW_MATERIAL_EFFECT_BEFORE_IMPORT_ACTIVATION
-MIGRATED_HUMAN_GATE != AUTOMATICALLY_REUSABLE
-PROJECT_PORTABILITY != COPY_EVERY_SECRET
-SEMANTIC_EQUIVALENCE != BYTE_IDENTITY
-EXPORT_EXISTS != PORTABILITY_WORKS
-DEMO != EXTERNAL_UTILITY_PROVED
+PRESERVE_INVARIANT != PRESERVE_CURRENT_IMPLEMENTATION
+INSUFFICIENT_EVIDENCE -> INCONCLUSIVE
+REMOVE_FROM_CORE != DELETE
+DEFAULT != CONSTITUTIONAL_REQUIREMENT
+REPLACEMENT_EXISTS != LEGACY_CAN_BE_REMOVED
+SIMPLIFY_GOVERNANCE != REMOVE_AUDITABILITY
+APPLICATION_RECOVERY != DATA_RECOVERY
+SUNSET_REQUIRES_REPLACEMENT_CONFORMANCE_MIGRATION_AND_NO_ACTIVE_DEPENDENCY
+ADD_REQUIRED != IMPLEMENT_NOW
 ```
 
-Checkpoint detalhado da Q14: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-016.md`.
+Checkpoint detalhado da Q15: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-017.md`.
 
 ## Próxima ação
 
-- Q1–Q14 concluídas e aprovadas por LEANDRO; Q12 foi aprovação conceitual e Q14 foi aprovada após revisão final sem bloqueio conceitual.
-- Q15 ainda não começou.
-- Próximo passo permitido: iniciar Q15 apenas como Discovery.
-- Não implementar NextGen antes de Q1–Q16, consolidação, arquitetura alvo, plano de migração, critérios de aceite e aprovação final de LEANDRO.
+- Q1–Q15 concluídas e aprovadas por LEANDRO; Q12 foi aprovação conceitual; Q14 e Q15 foram aprovadas após revisão final sem bloqueio conceitual.
+- Q16 ainda não começou.
+- Próximo passo permitido: iniciar Q16 apenas como Discovery/consolidação arquitetural.
+- Não implementar NextGen antes de Q16, consolidação das contradições, arquitetura alvo, plano de migração, critérios de aceite e aprovação final explícita de LEANDRO.
 
 ## Comando mínimo de retomada
 
