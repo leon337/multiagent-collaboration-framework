@@ -26,24 +26,25 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 6
-questions_remaining: 14
-last_completed_question: 6
-next_question: 7
+questions_completed: 7
+questions_remaining: 13
+last_completed_question: 7
+next_question: 8
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
 Q4: COMPLETED_APPROVED_BY_LEANDRO
 Q5: COMPLETED_APPROVED_BY_LEANDRO
 Q6: COMPLETED_APPROVED_BY_LEANDRO
-Q7: NOT_STARTED
+Q7: COMPLETED_APPROVED_BY_LEANDRO
+Q8: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q6 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q7 salvo solicitação explícita de LEANDRO.**
 
 ## Decisões aprovadas
 
@@ -51,13 +52,13 @@ release_authorized: false
 Chat normal fora do MCF; comando explícito ou intenção clara inicia `ACTIVATING`; `ACTIVE` exige bootstrap/fonte verificáveis.
 
 ### Q2 — `LOCAL_FIRST_REMOTE_CHECKPOINTED`
-`CHATGPT_REMOTE` opera por conectores/ferramentas remotas; `CODEX_LOCAL` usa workspace/terminal/Git local; GitHub é memória institucional/checkpoint/CI/revisão/integração; checkpoints remotos em boundaries semânticos/de risco.
+Mesma metodologia em hosts diferentes; ChatGPT remoto por conectores, Codex local por workspace/terminal/Git; checkpoints remotos em boundaries semânticos/de risco.
 
 ### Q3 — `VERIFIED_TWO_STAGE_BOOTSTRAP`
-Resolver `VALID_PROJECT_PIN > EXPLICIT_LEANDRO_SELECTION > CURRENT_STABLE`, carregar metodologia por tag/SHA imutável, sem silent mid-mission upgrade.
+Resolver `VALID_PROJECT_PIN > EXPLICIT_LEANDRO_SELECTION > CURRENT_STABLE`, carregar por tag/SHA imutável e impedir silent mid-mission upgrade.
 
 ### Q4 — `VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES`
-Operação degradada apenas sobre base local verificável e trabalho reversível; inconsistência canônica bloqueia; efeitos materiais/governados permanecem fail-closed.
+Operação degradada apenas sobre base local verificável e trabalho reversível; inconsistência canônica bloqueia; autoridade humana não substitui evidência técnica.
 
 ### Q5 — `THREE_CANONICAL_ENTRY_MODES_WITH_RECOVERY_ROUTE`
 
@@ -70,56 +71,72 @@ RECOVERY_ROUTE:
   - RECOVER_MCF_PROJECT
 ```
 
-`HUMAN_INTENT + MACHINE_EVIDENCE = ENTRY_CLASSIFICATION`. LEANDRO fala naturalmente; MESTRE classifica. Ambiguidade real bloqueia execução.
-
 ### Q6 — `PROGRESSIVE_DURABLE_PROJECT_GENESIS`
 
 ```text
-VERIFIED MCF ACTIVATION
-↓
-IDEA_CAPTURE
-↓
-MINI-TRIAGE (3–5)
-↓
-PROJECT GENESIS
-↓
-PROJECT HOME / REPOSITORY
-↓
-METHODOLOGY PIN
-↓
-DURABLE INTAKE CHECKPOINT
-↓
-HUMAN INTENT DISCOVERY
-↓
-INTENT READINESS
-↓
-PROJECT INTENT PACKAGE
-↓
-LEANDRO CONFIRMS
-↓
-INTENT ALIGNMENT GATE = PASS
-↓
-MCF-START-MISSION
+VERIFIED ACTIVATION
+→ IDEA_CAPTURE
+→ MINI-TRIAGE
+→ PROJECT_GENESIS
+→ PROJECT HOME / REPO
+→ METHODOLOGY PIN
+→ DURABLE INTAKE CHECKPOINT
+→ HUMAN INTENT DISCOVERY
+→ INTENT READINESS
+→ PROJECT INTENT PACKAGE
+→ LEANDRO CONFIRMS
+→ INTENT ALIGNMENT GATE
+→ MCF-START-MISSION
 ```
 
-Regras centrais:
+### Q7 — `EVIDENCE_FIRST_EXISTING_PROJECT_RECONNAISSANCE`
 
-- preservar intenção humana original em `IDEA_CAPTURE` antes da tradução técnica;
-- repo/project home nasce depois da mini-triagem e antes da entrevista profunda;
-- `internal_project_id`, `repository_slug`, `working_title` e nome/marca final são separados;
-- methodology pin nasce no Project Genesis;
-- antes do Alignment Gate, implementação de produto é `NO_GO`;
-- Discovery/documentação são permitidas;
-- protótipo de descoberta pode existir apenas como não canônico/descartável quando útil;
-- `PROJECT GENESIS RECORD`, `PROJECT INTAKE CHECKPOINT`, `PROJECT INTENT PACKAGE` e `INTENT ALIGNMENT RECEIPT` devem existir antes da missão técnica;
-- `MISSION CONTRACT` nasce a partir de `MCF-START-MISSION`;
-- ideia pode ser `ABANDONED_BEFORE_ALIGNMENT` sem criar dívida de execução.
+```text
+LEANDRO: "Assuma este projeto"
+→ ADOPT_EXISTING_PROJECT (provisional)
+→ freeze baseline exato
+→ READ_ONLY reconnaissance
+→ classificar fatos/inferências/unknowns/conflitos
+→ detectar continuidade MCF
+   → RESUME se válida
+   → RECOVER se quebrada/não verificável
+   → ADOPT se realmente externo ao MCF
+→ reconstruir AS-IS
+→ PROJECT REALITY REPORT
+→ REALITY READ-BACK
+→ LEANDRO confirma/corrige
+→ Human Intent Discovery profunda
+```
+
+Estados de evidência aprovados:
+
+```yaml
+- VERIFIED_FACT
+- OBSERVED_FACT
+- INFERRED
+- UNKNOWN
+- CONFLICTING
+- STALE_SUSPECTED
+```
+
+Princípios:
+
+```text
+READ_ONLY_FIRST
+AS_IS != TO_BE
+FACT != INFERENCE
+DOCUMENTATION != AUTOMATICALLY_REALITY
+MACHINE_DISCOVERS_TECHNICAL_FACTS
+HUMAN_EXPLAINS_INTENT
+```
+
+Antes da confirmação de realidade, mutação do projeto alvo é `NO_GO`. Methodology pin só é escrito no projeto após compromisso de adoção. Implementação permanece `NO_GO` até `INTENT_ALIGNMENT_GATE = PASS`.
 
 ## Ordem de leitura
 
 1. GitHub live;
 2. este Resume Card;
-3. `MCF-V1.1-DISCOVERY-CHECKPOINT-006.md`;
+3. `MCF-V1.1-DISCOVERY-CHECKPOINT-007.md`;
 4. `MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. `MCF-V1.1-DECISION-LEDGER-001.md`;
 6. `MCF-V1.1-DISCOVERY-CHARTER-001.md`.
@@ -142,7 +159,7 @@ NEXT QUESTION
 
 ## Próxima ação
 
-> **Q7 — Como deve funcionar a entrada de um projeto existente (`ADOPT_EXISTING_PROJECT`) antes de perguntar ao humano em profundidade?**
+> **Q8 — Quais dimensões de intenção humana são obrigatórias?**
 
 ## Comando mínimo de retomada
 
