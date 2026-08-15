@@ -27,10 +27,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 15
-questions_remaining: 5
-last_completed_question: 15
-next_question: 16
+questions_completed: 16
+questions_remaining: 4
+last_completed_question: 16
+next_question: 17
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -46,7 +46,7 @@ question_12: COMPLETED_APPROVED_BY_LEANDRO
 question_13: COMPLETED_APPROVED_BY_LEANDRO
 question_14: COMPLETED_APPROVED_BY_LEANDRO
 question_15: COMPLETED_APPROVED_BY_LEANDRO
-question_16: NOT_STARTED
+question_16: COMPLETED_APPROVED_BY_LEANDRO
 question_17: NOT_STARTED
 question_18: NOT_STARTED
 question_19: NOT_STARTED
@@ -151,13 +151,22 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 - a equipe MCF possui autonomia técnica e operacional delegada dentro do envelope aprovado;
 - `ALIGNED_PIP + HUMAN_DECISIONS + MISSION_CONTRACT` formam o envelope aplicável;
 - `TEAM_FIRST` precede escalonamento humano para ambiguidades técnicas;
-- mudanças materiais em intenção, objetivo, público, must-have/non-goal, prioridade, custo/recurso, risco, exposição externa, definição de pronto ou resultado esperado cruzam a fronteira da autoridade humana;
-- a lista concreta de `HUMAN_GATE` permanece reservada para Q16.
+- mudanças materiais cruzam a fronteira da autoridade humana.
 
 ### Q16 — Quais ações continuam exigindo HUMAN_GATE e quais decisões técnicas podem ser delegadas?
-**Estado:** `NOT_STARTED`
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `IMPACT_BASED_HUMAN_GATES_WITH_SCOPED_STANDING_AUTHORIZATION` — Opção D.
+
+- `HUMAN_GATE` é determinado por impacto material e autoridade aplicável, não pelo nome isolado da operação;
+- mudanças materiais de intenção, objetivo, público, must-have/non-goal, definição de pronto ou resultado esperado pertencem a LEANDRO;
+- compromisso financeiro novo/relevante fora do boundary, exposição jurídica/privacidade/pública material, uso excepcional de credenciais/dados sensíveis, ações irreversíveis/de alto impacto, pivô/cancelamento, aceitação de risco material e ações explicitamente reservadas exigem gate humano;
+- autorizações antecipadas/contínuas são permitidas apenas quando delimitadas por escopo, ambiente, classes de ação, limites, boundary/expiração, exclusões e evidência;
+- `TEAM_FIRST` permanece obrigatório antes do gate para ambiguidades técnicas ordinárias;
+- gate pendente bloqueia apenas a ação dependente; trabalho independente, seguro e autorizado pode continuar;
+- silêncio nunca equivale a aprovação.
 
 ### Q17 — Como checkpoint, pause/resume e troca de chat devem funcionar?
+**Estado:** `NOT_STARTED`
 
 ### Q18 — Como evoluir a v1.0.0 para v1.1.0 preservando compatibilidade e evitando duplicação de mecanismos?
 
@@ -180,20 +189,20 @@ Para cada Q aprovada:
 
 ---
 
-## 5. Handoff após Q15
+## 5. Handoff após Q16
 
 O boundary canônico atual é:
 
 ```text
 MCF-V1.1-RESUME-CARD.md
 +
-MCF-V1.1-DISCOVERY-CHECKPOINT-015.md
+MCF-V1.1-DISCOVERY-CHECKPOINT-016.md
 ```
 
-Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q15 e retomar diretamente na Q16.
+Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q16 e retomar diretamente na Q17.
 
 ## 6. Próxima ação
 
-> **Q16 — Quais ações continuam exigindo HUMAN_GATE e quais decisões técnicas podem ser delegadas?**
+> **Q17 — Como checkpoint, pause/resume e troca de chat devem funcionar?**
 
-Não iniciar Q17 antes de decisão explícita de LEANDRO sobre Q16. Implementação permanece `NO_GO`.
+Não iniciar Q18 antes de decisão explícita de LEANDRO sobre Q17. Implementação permanece `NO_GO`.
