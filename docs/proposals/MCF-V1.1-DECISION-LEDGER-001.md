@@ -40,20 +40,6 @@ canonical_name: HYBRID_INTENT_AND_EXPLICIT_ACTIVATION
 
 Chat normal permanece fora do MCF. Comando explícito ou intenção clara de projeto pode iniciar `ACTIVATING`; `ACTIVE` exige bootstrap/metodologia/fonte de verdade verificável.
 
-### Contrato conceitual aprovado
-
-```text
-CHAT_NORMAL
-   ↓
-comando explícito OU intenção clara de projeto/MCF
-   ↓
-ACTIVATING
-   ↓
-carregar/verificar metodologia e fonte de verdade
-   ↓
-ACTIVE
-```
-
 ---
 
 ## V11-Q02 — Execution Environment Contract
@@ -70,44 +56,13 @@ canonical_name: LOCAL_FIRST_REMOTE_CHECKPOINTED
 
 A mesma metodologia/governança do MCF opera em hosts diferentes, enquanto o execution plane pode variar.
 
-```yaml
-same_mcf_methodology_across_hosts: true
-supported_execution_modes_v1_1:
-  - CHATGPT_REMOTE
-  - CODEX_LOCAL
-CHATGPT_REMOTE:
-  primary_execution_plane: CONNECTORS_AND_REMOTE_TOOLS
-CODEX_LOCAL:
-  primary_execution_plane: LOCAL_WORKSPACE_TERMINAL_AND_GIT
-  exact_remote_baseline_required: true
-  isolated_branch_or_worktree: true
-  local_commits_allowed: true
-  push_every_edit: false
-  remote_checkpoint_required: true
-checkpoint_boundaries:
-  - PHASE_OR_SUBMISSION_COMPLETED
-  - LONG_PAUSE_OR_SESSION_END
-  - BEFORE_HUMAN_GATE
-  - BEFORE_INDEPENDENT_REVIEW
-  - MATERIAL_VALIDATION_PASS
-  - BEFORE_HIGH_RISK_BOUNDARY
-  - AGENT_HANDOFF
-  - INTEGRATION_CANDIDATE
-pull_request:
-  required_at_every_checkpoint: false
-  required_for_integration_boundary: true
-remote_unavailable:
-  low_risk_reversible_local_work: CONTINUE_WITH_CHECKPOINT_DEBT
-  material_or_governed_boundary: FAIL_CLOSED
-```
-
-### Semântica aprovada
-
 ```text
 MCF_METHOD != EXECUTION_HOST
 EDIT != COMMIT != PUSH != PR
 LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED
 ```
+
+`CHATGPT_REMOTE` usa conectores/ferramentas remotas; `CODEX_LOCAL` usa workspace, terminal e Git local. GitHub permanece memória institucional, checkpoint remoto, CI, revisão e integração. Checkpoints remotos são exigidos em boundaries semânticos/de risco. Trabalho local reversível pode continuar temporariamente com `CHECKPOINT_DEBT` quando remoto estiver indisponível; boundary material/governado permanece `FAIL_CLOSED`.
 
 ---
 
@@ -121,25 +76,11 @@ chosen_option: D
 canonical_name: VERIFIED_TWO_STAGE_BOOTSTRAP
 ```
 
-### Problema
+### Decisão
 
-Definir como um novo ChatGPT/Codex encontra qual versão e metodologia MCF devem governar uma missão, evitando usar instrução stale, `main` mutável ou branch experimental como metodologia operacional por acidente.
-
-### Alternativas consideradas
-
-- A — versão fixa na instrução do ChatGPT;
-- B — sempre seguir `main`;
-- C — sempre usar a stable mais recente;
-- D — bootstrap em duas etapas: locator canônico mutável apenas para resolução + metodologia pinada por referência imutável.
-
-### Decisão de LEANDRO
-
-**Opção D.**
-
-### Contrato conceitual aprovado
+O bootstrap resolve a metodologia em duas etapas: locator canônico mutável apenas para descobrir a versão operacional e referência imutável por tag/SHA para carregar a metodologia.
 
 ```yaml
-bootstrap_model: VERIFIED_TWO_STAGE_BOOTSTRAP
 bootstrap_locator:
   repository: leon337/multiagent-collaboration-framework
   canonical_index: docs/bootstrap/MCF-BOOTSTRAP-INDEX.yaml
@@ -147,14 +88,13 @@ resolution_order:
   - VALID_PROJECT_PIN
   - EXPLICIT_LEANDRO_SELECTION
   - CURRENT_STABLE
-mutable_locator:
-  allowed: true
-  purpose: RESOLVE_CURRENT_STABLE
 immutable_methodology_ref:
   required: true
-  accepted_identity:
-    - TAG
-    - COMMIT_SHA
+  accepted_identity: [TAG, COMMIT_SHA]
+project_methodology_pin:
+  required_after_intake: true
+silent_mid_mission_upgrade:
+  allowed: false
 default_exclusions:
   - DISCOVERY
   - PLANNING
@@ -162,46 +102,7 @@ default_exclusions:
   - EXPERIMENTAL
   - ALPHA
   - BETA
-project_methodology_pin:
-  required_after_intake: true
-silent_mid_mission_upgrade:
-  allowed: false
-active_requires:
-  repository_verified: true
-  version_resolved: true
-  immutable_ref_resolved: true
-  bootstrap_loaded: true
 ```
-
-### Fluxo aprovado
-
-```text
-ACTIVATING
-   ↓
-consultar repositório oficial
-   ↓
-ler Bootstrap Index canônico
-   ↓
-resolver PROJECT_PIN > LEANDRO_EXPLICIT > CURRENT_STABLE
-   ↓
-resolver tag/SHA imutável
-   ↓
-carregar metodologia/governança nessa referência
-   ↓
-verificar requisitos mínimos
-   ↓
-ACTIVE
-```
-
-### Regras resultantes
-
-- instruções globais podem apontar para o bootstrap, mas não devem duplicar a metodologia completa;
-- `main` não é automaticamente a metodologia operacional;
-- projeto MCF existente continua pela versão pinada, salvo processo explícito de upgrade;
-- projeto novo ou projeto sem pin adota a `CURRENT_STABLE` resolvida pelo índice, salvo seleção explícita de LEANDRO;
-- RC, Discovery, planning e versões experimentais não são defaults operacionais;
-- atualização da stable não autoriza upgrade silencioso no meio de uma missão;
-- detalhes de indisponibilidade, inconsistência e fail-closed são definidos em Q4.
 
 ---
 
@@ -215,80 +116,9 @@ chosen_option: D
 canonical_name: VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES
 ```
 
-### Problema
+### Decisão
 
-Definir como o MCF se comporta quando GitHub, Bootstrap Index, project pin ou outra fonte canônica está indisponível, parcialmente acessível, inconsistente ou não verificável, sem confundir alta disponibilidade com perda de integridade.
-
-### Alternativas consideradas
-
-- A — `ABSOLUTE_FAIL_CLOSED`: qualquer falha paralisa toda operação;
-- B — `LAST_KNOWN_GOOD_CONTINUE`: continuar automaticamente usando cache local anterior;
-- C — perguntar sempre a LEANDRO;
-- D — operação degradada apenas quando a base local já é verificável, com fail-closed nos boundaries materiais/governados.
-
-### Decisão de LEANDRO
-
-**Opção D.**
-
-### Contrato conceitual aprovado
-
-```yaml
-operation_model: VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES
-
-new_project_without_verified_bootstrap:
-  state: ACTIVATING_BLOCKED
-  mcf_active: false
-
-existing_project:
-  verified_project_pin_required_for_degraded_mode: true
-  verified_local_methodology_cache_allowed: true
-
-degraded_allowed:
-  - READ_ONLY_ANALYSIS
-  - PLANNING
-  - LOCAL_DOCUMENTATION
-  - LOCAL_TESTS
-  - REVERSIBLE_LOCAL_CODE_CHANGE
-  - LOCAL_COMMIT
-
-degraded_blocked:
-  - MERGE
-  - DEPLOY
-  - RELEASE
-  - PUBLICATION
-  - FINAL_INTEGRATION
-  - METHODOLOGY_UPGRADE
-  - AUTHORITY_CHANGE
-  - TERMINAL_INDEPENDENT_REVIEW
-  - MATERIAL_EXTERNAL_EFFECT_WITHOUT_REMOTE_EVIDENCE
-
-canonical_conflict:
-  state: CANONICAL_CONFLICT_BLOCKED
-  result: FAIL_CLOSED
-
-remote_recovery:
-  canonical_revalidation_required: true
-  checkpoint_debt_reconciliation_required: true
-  degraded_operation_receipt_required: true
-
-human_authority:
-  may_choose_policy_or_identified_version: true
-  may_substitute_missing_technical_evidence: false
-```
-
-### Estados operacionais aprovados
-
-```yaml
-MCF_OPERATION_STATE:
-  - NOT_ACTIVE
-  - ACTIVATING
-  - ACTIVE
-  - ACTIVE_DEGRADED_VERIFIED
-  - ACTIVATING_BLOCKED
-  - CANONICAL_CONFLICT_BLOCKED
-```
-
-### Princípios resultantes
+Quando a fonte canônica estiver indisponível, operação degradada só é permitida quando a base local já é verificável e apenas para trabalho local reversível. Inconsistência entre fontes produz bloqueio canônico e fail-closed.
 
 ```text
 UNAVAILABLE != INCONSISTENT
@@ -297,17 +127,87 @@ CACHE_CAN_PROVE_IDENTITY != CACHE_CAN_PROVE_CURRENT_STABLE
 HUMAN_AUTHORITY != TECHNICAL_EVIDENCE
 ```
 
-- indisponibilidade pode permitir `ACTIVE_DEGRADED_VERIFIED` apenas quando metodologia/project pin local já estejam verificáveis;
-- inconsistência entre fontes não pode ser resolvida silenciosamente e deve bloquear operação governada;
-- projeto novo sem bootstrap verificável não se torna `ACTIVE`; conversa preparatória pode continuar fora do estado formal do MCF;
-- operação degradada limita-se a trabalho local reversível e sem efeito material;
-- GitHub/remote restaurado exige revalidação, comparação com estado local, quitação de `CHECKPOINT_DEBT` e reconciliação antes do retorno a `ACTIVE` normal;
-- cache local pode provar a identidade da versão armazenada, mas não afirmar sozinho qual é a `CURRENT_STABLE`;
-- LEANDRO mantém autoridade sobre escolhas humanas/políticas, mas não substitui prova técnica ausente por declaração.
+Merge, deploy, release, publicação, integração final, upgrade de metodologia, mudança de autoridade, review terminal e efeitos externos materiais sem evidência remota ficam bloqueados. Recuperação do remoto exige revalidação, reconciliação do `CHECKPOINT_DEBT` e `Degraded Operation Receipt`.
 
-### Evidência de operação degradada
+---
 
-Após reconciliação, a especificação futura deverá registrar um `Degraded Operation Receipt` com período degradado, causa, methodology SHA, baseline, ações locais, efeitos materiais, checkpoint debt, reconciliação e checkpoint remoto final.
+## V11-Q05 — Project Entry Classification Contract
+
+```yaml
+decision_id: V11-Q05
+question: Q5
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: THREE_CANONICAL_ENTRY_MODES_WITH_RECOVERY_ROUTE
+```
+
+### Problema
+
+Definir como o MCF classifica a entrada de um projeto sem confundir criação, adoção de projeto externo, retomada de projeto já governado pelo MCF e recuperação de continuidade quebrada.
+
+### Alternativas consideradas
+
+- A — dois modos: `NEW_PROJECT` e `EXISTING_PROJECT`;
+- B — três modos: `NEW_PROJECT`, `ADOPT_EXISTING_PROJECT`, `RESUME_MCF_PROJECT`;
+- C — quatro modos independentes, incluindo `RECOVER_MCF_PROJECT` como quarto entry mode;
+- D — três modos canônicos e `RECOVER_MCF_PROJECT` como rota excepcional acionada quando a continuidade MCF esperada está quebrada ou não verificável.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+PROJECT_ENTRY_MODE:
+  - NEW_PROJECT
+  - ADOPT_EXISTING_PROJECT
+  - RESUME_MCF_PROJECT
+
+RECOVERY_ROUTE:
+  - RECOVER_MCF_PROJECT
+
+NEW_PROJECT:
+  meaning: NO_MATERIAL_EXISTING_IMPLEMENTATION_TO_PRESERVE
+
+ADOPT_EXISTING_PROJECT:
+  meaning: EXISTING_PROJECT_NOT_YET_UNDER_VERIFIED_MCF_CONTINUITY
+
+RESUME_MCF_PROJECT:
+  meaning: EXISTING_PROJECT_WITH_VERIFIED_MCF_CONTINUITY
+
+RECOVER_MCF_PROJECT:
+  meaning: PRIOR_MCF_PROJECT_WITH_BROKEN_OR_UNVERIFIED_CONTINUITY
+  classification: RECOVERY_ROUTE_NOT_PRIMARY_ENTRY_MODE
+```
+
+### Regras de classificação
+
+```yaml
+classification:
+  human_intent: INPUT
+  machine_evidence: REQUIRED
+  automatic_detection: ENABLED
+  ambiguous_state: PROJECT_ENTRY_CLASSIFICATION_UNRESOLVED
+execution_before_classification:
+  allowed: false
+```
+
+Princípios:
+
+```text
+HUMAN_INTENT + MACHINE_EVIDENCE = ENTRY_CLASSIFICATION
+ADOPT != RECOVER
+RESUME_REQUIRES_VERIFIED_CONTINUITY
+```
+
+- LEANDRO fala em linguagem natural; não precisa escolher códigos internos;
+- existência de repositório não define sozinha o modo — repo vazio pode continuar sendo `NEW_PROJECT`;
+- projeto externo com implementação material e sem continuidade MCF verificável entra em `ADOPT_EXISTING_PROJECT`;
+- `RESUME_MCF_PROJECT` exige memória/estado MCF verificáveis;
+- se um projeto MCF esperado apresenta continuidade quebrada ou contraditória, o MCF roteia para `RECOVER_MCF_PROJECT` antes de retomar;
+- enquanto a classificação estiver `UNRESOLVED`, MESTRE pode investigar e perguntar, mas execução de missão permanece `NO_GO`;
+- modos como fork, migração, clone ou transferência não são primary entry modes da v1.1 e devem ser tratados como variações dos modos canônicos quando possível.
 
 ---
 
