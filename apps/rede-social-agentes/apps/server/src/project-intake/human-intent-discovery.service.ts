@@ -48,6 +48,8 @@ export type IntentDiscoveryErrorCode =
   | 'REVISION_REQUIRED'
   | 'PROVENANCE_REQUIRED'
   | 'MACHINE_AUTHORITY_BOUNDARY'
+  | 'DECISION_SUPERSESSION_INVALID'
+  | 'DECISION_CONFLICT'
   | 'PRODUCT_DEFINITION_INVALID'
   | 'INVALID_QUESTION';
 
@@ -190,6 +192,84 @@ function assertI3WorkingPip(pip: ProjectIntentPackageV1): void {
   }
 }
 
+function applyHumanDecisionUpdates(
+  existing: HumanDecisionRecord[],
+  additions: HumanDecisionRecord[],
+): HumanDecisionRecord[] {
+  const existingById = new Map<string, { decision: HumanDecisionRecord; index: number }>();
+  for (const [index, decision] of existing.entries()) {
+    if (existingById.has(decision.decisionId)) {
+      fail('DECISION_CONFLICT', `duplicate existing human decision id: ${decision.decisionId}`);
+    }
+    existingById.set(decision.decisionId, { decision, index });
+  }
+
+  const existingCurrentTargets = new Set<string>();
+  for (const decision of existing) {
+    if (decision.status !== 'CURRENT' || decision.supersedesDecisionId === undefined) continue;
+    const target = existingById.get(decision.supersedesDecisionId)?.decision;
+    if (
+      target === undefined ||
+      target.status !== 'SUPERSEDED' ||
+      existingCurrentTargets.has(decision.supersedesDecisionId)
+    ) {
+      fail('DECISION_CONFLICT', 'existing human decision history has conflicting CURRENT records');
+    }
+    existingCurrentTargets.add(decision.supersedesDecisionId);
+  }
+
+  if (additions.length === 0) return structuredClone(existing);
+
+  const newIds = new Set<string>();
+  const supersededTargets = new Set<string>();
+  for (const decision of additions) {
+    assertProvenance(decision.provenance);
+    if (!hasHumanAuthority(decision.provenance)) {
+      fail(
+        'MACHINE_AUTHORITY_BOUNDARY',
+        'machine inference or evidence cannot create or supersede a human decision',
+      );
+    }
+    if (decision.status !== 'CURRENT') {
+      fail('DECISION_SUPERSESSION_INVALID', 'a new human decision must be CURRENT');
+    }
+    if (existingById.has(decision.decisionId) || newIds.has(decision.decisionId)) {
+      fail('DECISION_CONFLICT', `duplicate human decision id: ${decision.decisionId}`);
+    }
+    newIds.add(decision.decisionId);
+
+    if (decision.supersedesDecisionId === undefined) continue;
+    const target = existingById.get(decision.supersedesDecisionId)?.decision;
+    if (target === undefined) {
+      fail(
+        'DECISION_SUPERSESSION_INVALID',
+        `superseded human decision does not exist: ${decision.supersedesDecisionId}`,
+      );
+    }
+    if (target.status !== 'CURRENT' || decision.supersedesDecisionId === decision.decisionId) {
+      fail(
+        'DECISION_SUPERSESSION_INVALID',
+        `human decision cannot be superseded from status ${target.status}`,
+      );
+    }
+    if (supersededTargets.has(decision.supersedesDecisionId)) {
+      fail(
+        'DECISION_CONFLICT',
+        `multiple CURRENT replacements target ${decision.supersedesDecisionId}`,
+      );
+    }
+    supersededTargets.add(decision.supersedesDecisionId);
+  }
+
+  const result = structuredClone(existing);
+  for (const targetId of supersededTargets) {
+    const target = existingById.get(targetId)!;
+    result[target.index] = { ...structuredClone(target.decision), status: 'SUPERSEDED' };
+  }
+  result.push(...structuredClone(additions));
+  return result;
+}
+
 export function createDiscoveryPip(input: CreateDiscoveryPipInput): ProjectIntentPackageV1 {
   assertProvenance(input.originalIntent.provenance);
   const dimensions = Object.fromEntries(
@@ -300,16 +380,10 @@ export function createIncrementalIntentRevision(
     };
   }
 
-  for (const decision of input.humanDecisions ?? []) {
-    assertProvenance(decision.provenance);
-    if (!hasHumanAuthority(decision.provenance)) {
-      fail(
-        'MACHINE_AUTHORITY_BOUNDARY',
-        'machine inference or evidence cannot create a human decision',
-      );
-    }
-    successor.humanDecisions.push(structuredClone(decision));
-  }
+  successor.humanDecisions = applyHumanDecisionUpdates(
+    successor.humanDecisions,
+    input.humanDecisions ?? [],
+  );
 
   const otherUnknowns = successor.unknowns.filter(
     (unknown) => !unknown.id.startsWith('dimension:'),

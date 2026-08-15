@@ -284,6 +284,152 @@ describe('MCF v1.1 Human Intent Discovery', () => {
     ).toThrowError(expect.objectContaining({ code: 'MACHINE_AUTHORITY_BOUNDARY' }));
   });
 
+  it('persists supersession while preserving the prior human decision history', async () => {
+    const { service, store } = await createService();
+    const priorDecision = {
+      decisionId: 'decision-001',
+      status: 'CURRENT' as const,
+      statement: 'The first launch will target internal teams.',
+      provenance: structuredClone(humanProvenance),
+    };
+    const initial = await service.persistInitialPip(initialInput());
+    const withPrior = await service.persistIncrementalRevision(initial.artifact, {
+      revisionId: 'intent-002',
+      createdAt: '2026-08-15T12:10:00Z',
+      updates: [],
+      humanDecisions: [priorDecision],
+    });
+    const replacement = {
+      decisionId: 'decision-002',
+      status: 'CURRENT' as const,
+      statement: 'The first launch will target external maintainers.',
+      supersedesDecisionId: 'decision-001',
+      provenance: [
+        {
+          type: 'HUMAN_CONFIRMED_SYNTHESIS' as const,
+          sourceRef: 'conversation:turn-002',
+          capturedAt: '2026-08-15T12:20:00Z',
+          actor: 'LEANDRO',
+        },
+      ],
+    };
+
+    const successor = await service.persistIncrementalRevision(withPrior.artifact, {
+      revisionId: 'intent-003',
+      createdAt: '2026-08-15T12:20:00Z',
+      updates: [],
+      humanDecisions: [replacement],
+    });
+
+    const loaded = await store.loadLocal(successor.reference);
+    expect(withPrior.artifact.humanDecisions[0]).toEqual(priorDecision);
+    expect(loaded.artifact.humanDecisions[0]).toEqual({
+      ...priorDecision,
+      status: 'SUPERSEDED',
+    });
+    expect(loaded.artifact.humanDecisions[0]?.statement).toBe(priorDecision.statement);
+    expect(loaded.artifact.humanDecisions[0]?.provenance).toEqual(priorDecision.provenance);
+    expect(loaded.artifact.humanDecisions[1]).toEqual(replacement);
+    expect(loaded.artifact.humanDecisions[1]).toMatchObject({
+      status: 'CURRENT',
+      supersedesDecisionId: 'decision-001',
+    });
+  });
+
+  it('rejects supersession of an unknown human decision', () => {
+    const pip = createDiscoveryPip(initialInput());
+
+    expect(() =>
+      createIncrementalIntentRevision(pip, {
+        revisionId: 'intent-002',
+        createdAt: '2026-08-15T12:10:00Z',
+        updates: [],
+        humanDecisions: [
+          {
+            decisionId: 'decision-002',
+            status: 'CURRENT',
+            statement: 'Replacement with no historical target.',
+            supersedesDecisionId: 'missing-decision',
+            provenance: humanProvenance,
+          },
+        ],
+      }),
+    ).toThrowError(expect.objectContaining({ code: 'DECISION_SUPERSESSION_INVALID' }));
+  });
+
+  it('rejects machine-only human decision supersession', () => {
+    const withPrior = createIncrementalIntentRevision(createDiscoveryPip(initialInput()), {
+      revisionId: 'intent-002',
+      createdAt: '2026-08-15T12:10:00Z',
+      updates: [],
+      humanDecisions: [
+        {
+          decisionId: 'decision-001',
+          status: 'CURRENT',
+          statement: 'Keep the product private.',
+          provenance: humanProvenance,
+        },
+      ],
+    });
+
+    expect(() =>
+      createIncrementalIntentRevision(withPrior, {
+        revisionId: 'intent-003',
+        createdAt: '2026-08-15T12:20:00Z',
+        updates: [],
+        humanDecisions: [
+          {
+            decisionId: 'decision-002',
+            status: 'CURRENT',
+            statement: 'Publish the product publicly.',
+            supersedesDecisionId: 'decision-001',
+            provenance: machineProvenance,
+          },
+        ],
+      }),
+    ).toThrowError(expect.objectContaining({ code: 'MACHINE_AUTHORITY_BOUNDARY' }));
+  });
+
+  it('rejects multiple CURRENT replacements for the same material decision', () => {
+    const withPrior = createIncrementalIntentRevision(createDiscoveryPip(initialInput()), {
+      revisionId: 'intent-002',
+      createdAt: '2026-08-15T12:10:00Z',
+      updates: [],
+      humanDecisions: [
+        {
+          decisionId: 'decision-001',
+          status: 'CURRENT',
+          statement: 'Initial material choice.',
+          provenance: humanProvenance,
+        },
+      ],
+    });
+
+    expect(() =>
+      createIncrementalIntentRevision(withPrior, {
+        revisionId: 'intent-003',
+        createdAt: '2026-08-15T12:20:00Z',
+        updates: [],
+        humanDecisions: [
+          {
+            decisionId: 'decision-002',
+            status: 'CURRENT',
+            statement: 'First conflicting replacement.',
+            supersedesDecisionId: 'decision-001',
+            provenance: humanProvenance,
+          },
+          {
+            decisionId: 'decision-003',
+            status: 'CURRENT',
+            statement: 'Second conflicting replacement.',
+            supersedesDecisionId: 'decision-001',
+            provenance: humanProvenance,
+          },
+        ],
+      }),
+    ).toThrowError(expect.objectContaining({ code: 'DECISION_CONFLICT' }));
+  });
+
   it('persists and loads an incremental successor revision through the I2 store', async () => {
     const { root, service, store } = await createService();
     const initial = await service.persistInitialPip(initialInput());
