@@ -26,10 +26,10 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 9
-questions_remaining: 11
-last_completed_question: 9
-next_question: 10
+questions_completed: 10
+questions_remaining: 10
+last_completed_question: 10
+next_question: 11
 Q1: COMPLETED_APPROVED_BY_LEANDRO
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -39,14 +39,15 @@ Q6: COMPLETED_APPROVED_BY_LEANDRO
 Q7: COMPLETED_APPROVED_BY_LEANDRO
 Q8: COMPLETED_APPROVED_BY_LEANDRO
 Q9: COMPLETED_APPROVED_BY_LEANDRO
-Q10: NOT_STARTED
+Q10: COMPLETED_APPROVED_BY_LEANDRO
+Q11: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1–Q9 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q10 salvo solicitação explícita de LEANDRO.**
 
 ## Decisões aprovadas
 
@@ -137,11 +138,36 @@ Regras centrais:
 - mudança de decisão preserva histórico: anterior `SUPERSEDED`, nova `CURRENT`;
 - carga cognitiva humana participa da seleção da próxima pergunta.
 
+### Q10 — `EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK`
+
+```text
+ADAPTIVE QUESTIONING
+→ EVENT/CADENCE TRIGGER
+→ PROGRESSIVE READ-BACK
+→ LEANDRO CONFIRMS / CORRECTS / REJECTS
+→ UPDATE AFFECTED DIMENSIONS
+→ INVALIDATE WRONG DERIVATIONS
+→ CONTINUE
+```
+
+Regras centrais:
+
+- três níveis: `MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`;
+- progressive read-back é disparado por mudança material de escopo, conflito material de intenção, interpretação de alto impacto, fechamento de bloco semântico, acúmulo excessivo de mudanças ou boundary de contexto/handoff;
+- cadência de segurança de aproximadamente 4–6 trocas significativas, sem contagem fixa;
+- read-back enfatiza entendimento novo/material, mudanças, restrições e incertezas; não recita mecanicamente as 20 dimensões;
+- resultados: `CONFIRMED`, `CORRECTED`, `REJECTED`, com confirmação parcial permitida;
+- correção interrompe propagação semântica errada, invalida assumptions derivadas e recalcula dimensões dependentes;
+- mudança humana material preserva histórico (`SUPERSEDED` → `CURRENT`);
+- interpretação de máquina rejeitada jamais vira decisão humana;
+- `FINAL_INTENT_READBACK` é obrigatório antes do `INTENT_ALIGNMENT_GATE`;
+- confirmação progressiva não autoriza implementação.
+
 ## Ordem de leitura
 
 1. GitHub live;
 2. este Resume Card;
-3. `MCF-V1.1-DISCOVERY-CHECKPOINT-009.md`;
+3. `MCF-V1.1-DISCOVERY-CHECKPOINT-010.md`;
 4. `MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. `MCF-V1.1-DECISION-LEDGER-001.md`;
 6. `MCF-V1.1-DISCOVERY-CHARTER-001.md`.
@@ -164,7 +190,7 @@ NEXT QUESTION
 
 ## Próxima ação
 
-> **Q10 — Como deve funcionar o progressive read-back e a correção de entendimento?**
+> **Q11 — Como medir Context Sufficiency / Intent Readiness antes de planejar?**
 
 ## Comando mínimo de retomada
 
