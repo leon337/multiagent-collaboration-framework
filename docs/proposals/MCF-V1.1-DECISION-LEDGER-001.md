@@ -36,20 +36,9 @@ chosen_option: D
 canonical_name: HYBRID_INTENT_AND_EXPLICIT_ACTIVATION
 ```
 
-### Problema
+### Decisão
 
-Decidir como um chat novo reconhece quando deve operar pela metodologia MCF sem transformar toda conversa comum em missão MCF.
-
-### Alternativas consideradas
-
-- A — MCF sempre ativo;
-- B — ativação somente por comando explícito;
-- C — ativação somente por detecção de intenção;
-- D — híbrida: comando explícito + detecção de intenção, seguida de bootstrap verificável.
-
-### Decisão de LEANDRO
-
-**Opção D.**
+Chat normal permanece fora do MCF. Comando explícito ou intenção clara de projeto pode iniciar `ACTIVATING`; `ACTIVE` exige bootstrap/metodologia/fonte de verdade verificável.
 
 ### Contrato conceitual aprovado
 
@@ -65,16 +54,6 @@ carregar/verificar metodologia e fonte de verdade
 ACTIVE
 ```
 
-A ativação por intenção não equivale automaticamente a afirmar que o MCF foi carregado. O estado `ACTIVE` exige bootstrap/fonte de verdade verificável segundo a futura decisão das Q3/Q4.
-
-### Consequências
-
-- conversas comuns permanecem fora do MCF;
-- `Mestre`, `Ative o MCF`, `Assuma este projeto` e equivalentes podem iniciar ativação explícita;
-- intenção clara de criar/retomar/assumir projeto pode iniciar ativação contextual;
-- a metodologia completa não deve ficar duplicada em uma instrução global estática;
-- detalhes de bootstrap ainda dependem de Q3/Q4.
-
 ---
 
 ## V11-Q02 — Execution Environment Contract
@@ -87,33 +66,17 @@ chosen_option: D
 canonical_name: LOCAL_FIRST_REMOTE_CHECKPOINTED
 ```
 
-### Problema
+### Decisão
 
-Decidir como a mesma metodologia/governança do MCF deve operar em ambientes com capacidades diferentes, especialmente ChatGPT remoto e Codex com terminal/workspace local, sem sacrificar velocidade nem continuidade durável.
-
-### Alternativas consideradas
-
-- A — `GITHUB_CENTRIC_EVERYWHERE`: sincronizar quase toda alteração no GitHub;
-- B — `LOCAL_UNTIL_FINISHED`: trabalhar localmente até o produto estar pronto;
-- C — `LOCAL_FIRST_TIME_BASED_CHECKPOINTS`: checkpoints remotos por intervalo de tempo;
-- D — `LOCAL_FIRST_REMOTE_CHECKPOINTED`: execução local por padrão, com checkpoints remotos em boundaries semânticos e de risco.
-
-### Decisão de LEANDRO
-
-**Opção D.**
-
-### Contrato conceitual aprovado
+A mesma metodologia/governança do MCF opera em hosts diferentes, enquanto o execution plane pode variar.
 
 ```yaml
 same_mcf_methodology_across_hosts: true
-
 supported_execution_modes_v1_1:
   - CHATGPT_REMOTE
   - CODEX_LOCAL
-
 CHATGPT_REMOTE:
   primary_execution_plane: CONNECTORS_AND_REMOTE_TOOLS
-
 CODEX_LOCAL:
   primary_execution_plane: LOCAL_WORKSPACE_TERMINAL_AND_GIT
   exact_remote_baseline_required: true
@@ -121,7 +84,6 @@ CODEX_LOCAL:
   local_commits_allowed: true
   push_every_edit: false
   remote_checkpoint_required: true
-
 checkpoint_boundaries:
   - PHASE_OR_SUBMISSION_COMPLETED
   - LONG_PAUSE_OR_SESSION_END
@@ -131,11 +93,9 @@ checkpoint_boundaries:
   - BEFORE_HIGH_RISK_BOUNDARY
   - AGENT_HANDOFF
   - INTEGRATION_CANDIDATE
-
 pull_request:
   required_at_every_checkpoint: false
   required_for_integration_boundary: true
-
 remote_unavailable:
   low_risk_reversible_local_work: CONTINUE_WITH_CHECKPOINT_DEBT
   material_or_governed_boundary: FAIL_CLOSED
@@ -144,27 +104,108 @@ remote_unavailable:
 ### Semântica aprovada
 
 ```text
+MCF_METHOD != EXECUTION_HOST
 EDIT != COMMIT != PUSH != PR
+LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED
 ```
 
-- `COMMIT_LOCAL`: organiza e protege trabalho no workspace local;
-- `PUSH/CHECKPOINT_REMOTO`: torna o estado durável fora do host local;
-- `PR`: boundary de integração/revisão, não obrigatório a cada checkpoint.
+---
 
-### Princípios resultantes
+## V11-Q03 — Bootstrap Version Resolution Contract
 
-- `MCF_METHOD != EXECUTION_HOST`;
-- a governança, autoridade, gates, evidência e contrato de missão permanecem invariantes entre hosts;
-- o plano de execução pode variar conforme as capacidades do ambiente;
-- GitHub não precisa intermediar cada edição do Codex;
-- GitHub permanece memória institucional, superfície de colaboração, checkpoints, CI, revisão e integração;
-- trabalho local não sincronizado deve ser distinguido de estado remoto durável;
-- `LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED`;
-- indisponibilidade remota não autoriza atravessar HUMAN_GATE, review, deploy, merge, publicação ou outro boundary material sem evidência remota aplicável.
+```yaml
+decision_id: V11-Q03
+question: Q3
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: VERIFIED_TWO_STAGE_BOOTSTRAP
+```
 
-### Consequências para especificação futura
+### Problema
 
-A v1.1 deverá permitir que o runtime/protocolo reconheça o ambiente de execução sem duplicar a metodologia. A implementação concreta de adapters/host contracts permanece fora desta decisão de Discovery.
+Definir como um novo ChatGPT/Codex encontra qual versão e metodologia MCF devem governar uma missão, evitando usar instrução stale, `main` mutável ou branch experimental como metodologia operacional por acidente.
+
+### Alternativas consideradas
+
+- A — versão fixa na instrução do ChatGPT;
+- B — sempre seguir `main`;
+- C — sempre usar a stable mais recente;
+- D — bootstrap em duas etapas: locator canônico mutável apenas para resolução + metodologia pinada por referência imutável.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+bootstrap_model: VERIFIED_TWO_STAGE_BOOTSTRAP
+bootstrap_locator:
+  repository: leon337/multiagent-collaboration-framework
+  canonical_index: docs/bootstrap/MCF-BOOTSTRAP-INDEX.yaml
+resolution_order:
+  - VALID_PROJECT_PIN
+  - EXPLICIT_LEANDRO_SELECTION
+  - CURRENT_STABLE
+mutable_locator:
+  allowed: true
+  purpose: RESOLVE_CURRENT_STABLE
+immutable_methodology_ref:
+  required: true
+  accepted_identity:
+    - TAG
+    - COMMIT_SHA
+default_exclusions:
+  - DISCOVERY
+  - PLANNING
+  - RC
+  - EXPERIMENTAL
+  - ALPHA
+  - BETA
+project_methodology_pin:
+  required_after_intake: true
+silent_mid_mission_upgrade:
+  allowed: false
+active_requires:
+  repository_verified: true
+  version_resolved: true
+  immutable_ref_resolved: true
+  bootstrap_loaded: true
+```
+
+### Fluxo aprovado
+
+```text
+ACTIVATING
+   ↓
+consultar repositório oficial
+   ↓
+ler Bootstrap Index canônico
+   ↓
+resolver PROJECT_PIN > LEANDRO_EXPLICIT > CURRENT_STABLE
+   ↓
+resolver tag/SHA imutável
+   ↓
+carregar metodologia/governança nessa referência
+   ↓
+verificar requisitos mínimos
+   ↓
+ACTIVE
+```
+
+### Regras resultantes
+
+- instruções globais podem apontar para o bootstrap, mas não devem duplicar a metodologia completa;
+- `main` não é automaticamente a metodologia operacional;
+- projeto MCF existente continua pela versão pinada, salvo processo explícito de upgrade;
+- projeto novo ou projeto sem pin adota a `CURRENT_STABLE` resolvida pelo índice, salvo seleção explícita de LEANDRO;
+- RC, Discovery, planning e versões experimentais não são defaults operacionais;
+- atualização da stable não autoriza upgrade silencioso no meio de uma missão;
+- detalhes de indisponibilidade, inconsistência e fail-closed permanecem para Q4.
+
+### Compatibilidade futura
+
+A decisão não exige que `methodology_version == runtime_version` para sempre. Compatibilidade entre runtime e metodologia poderá ser formalizada posteriormente sem quebrar o bootstrap em duas etapas.
 
 ---
 
