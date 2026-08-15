@@ -26,17 +26,17 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 6
-questions_remaining: 14
-last_completed_question: 6
-next_question: 7
+questions_completed: 7
+questions_remaining: 13
+last_completed_question: 7
+next_question: 8
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
 question_04: COMPLETED_APPROVED_BY_LEANDRO
 question_05: COMPLETED_APPROVED_BY_LEANDRO
 question_06: COMPLETED_APPROVED_BY_LEANDRO
-question_07: NOT_STARTED
+question_07: COMPLETED_APPROVED_BY_LEANDRO
 question_08: NOT_STARTED
 question_09: NOT_STARTED
 question_10: NOT_STARTED
@@ -90,23 +90,35 @@ RECOVERY_ROUTE:
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `PROGRESSIVE_DURABLE_PROJECT_GENESIS` — Opção D.
 
-- ativação MCF verificada antes da entrada formal;
-- `IDEA_CAPTURE` preserva a intenção original de LEANDRO;
-- mini-triagem de 3–5 perguntas para identidade, não requisitos completos;
-- Project Genesis define `internal_project_id`, working title, repo slug e descrição;
-- project home/repositório nasce antes da entrevista profunda;
-- methodology pin nasce no Project Genesis;
-- primeiro checkpoint durável antecede Human Intent Discovery;
-- implementação de produto permanece `NO_GO` até `INTENT_ALIGNMENT_GATE = PASS`;
-- Discovery/documentação e protótipos não canônicos de descoberta podem existir nos limites definidos;
-- artefatos mínimos pré-missão: `PROJECT_GENESIS_RECORD`, `PROJECT_INTAKE_CHECKPOINT`, `PROJECT_INTENT_PACKAGE`, `INTENT_ALIGNMENT_RECEIPT`;
-- `MISSION CONTRACT` nasce somente via `MCF-START-MISSION`;
-- projeto pode ser abandonado antes do alinhamento sem dívida de execução.
+- ativação verificada;
+- `IDEA_CAPTURE` preserva intenção original;
+- mini-triagem de 3–5 perguntas;
+- Project Genesis cria identidade técnica/provisória;
+- project home/repositório antes da entrevista profunda;
+- methodology pin no Project Genesis;
+- checkpoint durável antes da Human Intent Discovery;
+- implementação `NO_GO` até `INTENT_ALIGNMENT_GATE = PASS`;
+- `MISSION CONTRACT` somente via `MCF-START-MISSION`.
 
 ### Q7 — Como deve funcionar a entrada de um projeto existente antes de perguntar ao humano?
-Definir reconnaissance read-only, fontes técnicas automáticas, separação entre fatos/inferências/unknowns, reconstrução do `AS-IS`, `Project Reality Report`, possível reclassificação para `RESUME/RECOVER`, read-back para LEANDRO e bloqueios antes da confirmação.
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `EVIDENCE_FIRST_EXISTING_PROJECT_RECONNAISSANCE` — Opção D.
+
+- entrada `ADOPT_EXISTING_PROJECT` começa provisória;
+- baseline exato/ref + timestamp são obrigatórios;
+- reconnaissance é `READ_ONLY_FIRST` e não permite mutação do projeto alvo;
+- fontes automáticas incluem código, documentação, histórico Git, refs, Issues, PRs, CI, testes, schemas/migrations, configuração e metadata de deploy quando acessível;
+- evidência é classificada como `VERIFIED_FACT`, `OBSERVED_FACT`, `INFERRED`, `UNKNOWN`, `CONFLICTING` ou `STALE_SUSPECTED`;
+- continuidade MCF válida reclassifica para `RESUME_MCF_PROJECT`;
+- continuidade MCF quebrada/não verificável roteia para `RECOVER_MCF_PROJECT`;
+- permanecendo `ADOPT`, MESTRE reconstrói `AS-IS`, produz `Project Reality Report` e faz Reality Read-Back;
+- LEANDRO pode confirmar, corrigir ou rejeitar a reconstrução;
+- Human Intent Discovery profunda só começa após confirmação da realidade;
+- methodology pin não é escrito no projeto alvo antes do compromisso de adoção;
+- implementação continua `NO_GO` até `INTENT_ALIGNMENT_GATE = PASS`.
 
 ### Q8 — Quais dimensões de intenção humana são obrigatórias?
+Definir o conjunto canônico de dimensões de intenção para `NEW_PROJECT` e `ADOPT_EXISTING_PROJECT` após confirmação da realidade, sem transformar o processo em questionário rígido.
 
 ### Q9 — Como perguntas adaptativas devem evitar interrogatório rígido e perguntas já respondidas por evidência?
 
@@ -150,6 +162,6 @@ Para cada Q aprovada:
 
 ## 5. Próxima ação
 
-> **Q7 — Como deve funcionar a entrada de um projeto existente (`ADOPT_EXISTING_PROJECT`) antes de perguntar ao humano em profundidade?**
+> **Q8 — Quais dimensões de intenção humana são obrigatórias?**
 
-Não iniciar Q8 antes de decisão explícita de LEANDRO sobre Q7.
+Não iniciar Q9 antes de decisão explícita de LEANDRO sobre Q8.
