@@ -53,7 +53,7 @@ FASE ZERO — CONSTRUIR PARA APRENDER
 FASE 1 — REESTRUTURAR COM O QUE APRENDEMOS
 │
 ├── F1.1 Discovery guiado                       🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                    🔍 Q1 ✅ | Q2 ✅ | Q3 próxima
+├── F1.2 Questionário Q1–Q16                    🔍 Q1 ✅ | Q2 ✅ | Q3 ✅ | Q4 próxima
 ├── F1.3 Consolidação das decisões              ⏳
 ├── F1.4 Arquitetura alvo                       ⏳
 ├── F1.5 Plano de migração                      ⏳
@@ -120,7 +120,8 @@ questionnaire:
   total: 16
   Q1: COMPLETED
   Q2: COMPLETED_APPROVED_BY_LEANDRO
-  Q3: NEXT_NOT_STARTED
+  Q3: COMPLETED_APPROVED_BY_LEANDRO
+  Q4: NEXT_NOT_STARTED
 ```
 
 A aprovação das perguntas de Discovery não concede autorização implícita para reestruturar runtime ou implementar hipóteses NextGen.
@@ -164,6 +165,32 @@ O `Project Capsule` NÃO é fonte de verdade. Estado live deve ser revalidado. A
 
 Checkpoint canônico: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
+## Q3 — agente de verdade no MCF
+
+LEANDRO aprovou conceitualmente o `Agent Contract` como base de classificação de um agente MCF.
+
+Definição consolidada:
+
+> Um agente MCF é uma entidade operacional identificável que possui identidade, papel, objetivos, capacidades, limites de autoridade, contratos de entrada e saída, política de decisão e rastreabilidade próprias, podendo usar diferentes modelos, ferramentas e ambientes de execução sem que esses componentes constituam sua identidade.
+
+Invariantes:
+
+```text
+AGENTE != MODELO
+CAPABILITY != AUTHORITY
+IDENTITY CONTINUITY != CAPABILITY CONTINUITY
+AGENT OUTPUT != PROJECT TRUTH
+```
+
+- persona/nome/instruções não bastam para satisfazer o `Agent Contract`;
+- lifecycle é separado de agenthood (`EPHEMERAL`, `SESSION`, `PROJECT`, `PERSISTENT`);
+- independência é separada de agenthood e será formalizada na Q6;
+- troca de modelo exige capability validation aplicável;
+- agentes não devem manter cópias concorrentes não governadas da verdade do projeto;
+- output de agente só vira fato/estado/decisão oficial conforme evidência e autoridade aplicáveis.
+
+Checkpoint canônico: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
+
 ---
 
 # 6. Discovery da Fase 1
@@ -176,18 +203,18 @@ Estado:
 
 ```yaml
 questionnaire_total: 16
-last_completed_question: 2
-next_question: 3
-Q3_started: false
+last_completed_question: 3
+next_question: 4
+Q4_started: false
 implementation_authorized: false
 architecture_final_approved: false
 ```
 
 Próxima pergunta:
 
-> **Q3 — O que é um agente de verdade no MCF?**
+> **Q4 — Qual nível de autonomia os agentes devem possuir?**
 
-Ela definirá identidade do agente, papel, skills, tools, permissões, memória, critérios, relação agente ↔ modelo, persistência de identidade e diferença entre persona, agente simulado, agente isolado e executor real.
+Ela definirá o que os agentes podem decidir e executar sozinhos, limites de autoridade, diferença entre HUMAN_GATE e dependência operacional humana, escalonamento, stop conditions, retries e tratamento de ações reversíveis/irreversíveis.
 
 ---
 
@@ -195,13 +222,13 @@ Ela definirá identidade do agente, papel, skills, tools, permissões, memória,
 
 O MCF pretende permitir que LEANDRO transforme ideias em projetos executados por equipes de agentes, preservando memória, decisões, evidências, estado e continuidade de modo que projetos possam ser interrompidos, delegados e retomados sem dependência da memória humana, do contexto de um chat, de um modelo específico ou de uma equipe específica.
 
-Princípios já consolidados ou fortemente aceitos:
+Princípios consolidados ou fortemente aceitos:
 
 1. `AGENTE != MODELO`;
 2. GitHub permanece uma base forte de memória institucional;
 3. ChatGPT/MESTRE atua inicialmente como camada cognitiva superior/orquestradora;
 4. modelos externos podem executar papéis especializados;
-5. roteamento/fallback deve preservar identidade e estado do agente;
+5. roteamento/fallback deve preservar identidade e estado do agente quando houver capability compatibility;
 6. autonomia operacional não substitui autoridade humana;
 7. HUMAN_GATE deve ser distinguido de dependência operacional humana;
 8. complexidade interna deve produzir simplicidade operacional externa;
@@ -210,15 +237,16 @@ Princípios já consolidados ou fortemente aceitos:
 11. provider capability deve ser validada antes de virar requisito de governança;
 12. nenhuma complexidade é preservada apenas porque já existe;
 13. memória não substitui evidência;
-14. ausência de prova não deve ser convertida em certeza operacional.
+14. ausência de prova não deve ser convertida em certeza operacional;
+15. `CAPABILITY != AUTHORITY`;
+16. `AGENT OUTPUT != PROJECT TRUTH`.
 
 ---
 
 # 8. Blocos arquitetônicos ainda a decidir
 
-Q3–Q16 ainda decidirão:
+Q4–Q16 ainda decidirão:
 
-- definição real de agente;
 - autonomia;
 - model routing;
 - independência/auditoria;
@@ -237,7 +265,7 @@ Q3–Q16 ainda decidirão:
 
 # 9. Critérios para iniciar implementação da Fase 1
 
-A reestruturação grande NÃO deve começar apenas porque Q1/Q2 foram concluídas.
+A reestruturação grande NÃO deve começar apenas porque Q1–Q3 foram concluídas.
 
 Pré-condições:
 
@@ -309,19 +337,19 @@ phase_zero:
 
 phase_one_discovery:
   state: ACTIVE_DISCOVERY
-  last_completed_question: 2
-  next_question: 3
-  Q3_started: false
+  last_completed_question: 3
+  next_question: 4
+  Q4_started: false
 
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q3
-next_operational_action: NONE_BEFORE_Q3_DECISION
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q4
+next_operational_action: NONE_BEFORE_Q4_DECISION
 ```
 
 Um novo chat deve reconstruir o estado lendo:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este `MCF-MASTER-ROADMAP-001.md`;
 5. GitHub/provider live para estado mutável;
