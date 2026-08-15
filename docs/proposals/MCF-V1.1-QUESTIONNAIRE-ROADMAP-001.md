@@ -26,10 +26,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 7
-questions_remaining: 13
-last_completed_question: 7
-next_question: 8
+questions_completed: 8
+questions_remaining: 12
+last_completed_question: 8
+next_question: 9
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -37,7 +37,7 @@ question_04: COMPLETED_APPROVED_BY_LEANDRO
 question_05: COMPLETED_APPROVED_BY_LEANDRO
 question_06: COMPLETED_APPROVED_BY_LEANDRO
 question_07: COMPLETED_APPROVED_BY_LEANDRO
-question_08: NOT_STARTED
+question_08: COMPLETED_APPROVED_BY_LEANDRO
 question_09: NOT_STARTED
 question_10: NOT_STARTED
 question_11: NOT_STARTED
@@ -77,50 +77,57 @@ implementation_authorized: false
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `THREE_CANONICAL_ENTRY_MODES_WITH_RECOVERY_ROUTE` — Opção D.
 
-```yaml
-PROJECT_ENTRY_MODE:
-  - NEW_PROJECT
-  - ADOPT_EXISTING_PROJECT
-  - RESUME_MCF_PROJECT
-RECOVERY_ROUTE:
-  - RECOVER_MCF_PROJECT
-```
-
 ### Q6 — Como deve funcionar a entrada de um projeto novo?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `PROGRESSIVE_DURABLE_PROJECT_GENESIS` — Opção D.
-
-- ativação verificada;
-- `IDEA_CAPTURE` preserva intenção original;
-- mini-triagem de 3–5 perguntas;
-- Project Genesis cria identidade técnica/provisória;
-- project home/repositório antes da entrevista profunda;
-- methodology pin no Project Genesis;
-- checkpoint durável antes da Human Intent Discovery;
-- implementação `NO_GO` até `INTENT_ALIGNMENT_GATE = PASS`;
-- `MISSION CONTRACT` somente via `MCF-START-MISSION`.
 
 ### Q7 — Como deve funcionar a entrada de um projeto existente antes de perguntar ao humano?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `EVIDENCE_FIRST_EXISTING_PROJECT_RECONNAISSANCE` — Opção D.
 
-- entrada `ADOPT_EXISTING_PROJECT` começa provisória;
-- baseline exato/ref + timestamp são obrigatórios;
-- reconnaissance é `READ_ONLY_FIRST` e não permite mutação do projeto alvo;
-- fontes automáticas incluem código, documentação, histórico Git, refs, Issues, PRs, CI, testes, schemas/migrations, configuração e metadata de deploy quando acessível;
-- evidência é classificada como `VERIFIED_FACT`, `OBSERVED_FACT`, `INFERRED`, `UNKNOWN`, `CONFLICTING` ou `STALE_SUSPECTED`;
-- continuidade MCF válida reclassifica para `RESUME_MCF_PROJECT`;
-- continuidade MCF quebrada/não verificável roteia para `RECOVER_MCF_PROJECT`;
-- permanecendo `ADOPT`, MESTRE reconstrói `AS-IS`, produz `Project Reality Report` e faz Reality Read-Back;
-- LEANDRO pode confirmar, corrigir ou rejeitar a reconstrução;
-- Human Intent Discovery profunda só começa após confirmação da realidade;
-- methodology pin não é escrito no projeto alvo antes do compromisso de adoção;
-- implementação continua `NO_GO` até `INTENT_ALIGNMENT_GATE = PASS`.
-
 ### Q8 — Quais dimensões de intenção humana são obrigatórias?
-Definir o conjunto canônico de dimensões de intenção para `NEW_PROJECT` e `ADOPT_EXISTING_PROJECT` após confirmação da realidade, sem transformar o processo em questionário rígido.
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `CANONICAL_INTENT_DIMENSIONS_WITH_EVIDENCE_AWARE_RESOLUTION` — Opção D.
+
+As 20 dimensões canônicas são:
+
+```yaml
+- PROBLEM
+- MOTIVATION
+- DESIRED_OUTCOME
+- TARGET_USERS
+- CRITICAL_USER_JOURNEYS
+- MUST_HAVE
+- SHOULD_HAVE
+- NON_GOALS
+- PRIORITIES_AND_TRADEOFFS
+- BUSINESS_RULES
+- DATA_AND_SENSITIVITY
+- ROLES_AND_PERMISSIONS
+- AUTOMATION_LEVEL
+- INTEGRATIONS
+- PLATFORM_AND_USAGE_CONTEXT
+- COST_AND_RESOURCE_CONSTRAINTS
+- QUALITY_EXPECTATIONS
+- FAILURE_TOLERANCE
+- DEFINITION_OF_DONE
+- FUTURE_VISION
+```
+
+Estados por dimensão: `CLEAR`, `PARTIAL`, `UNKNOWN`, `CONFLICTING`, `NOT_APPLICABLE`.
+
+Regras centrais:
+
+- `DIMENSION_REQUIRED != QUESTION_REQUIRED`;
+- não existe requisito de 20 perguntas fixas;
+- evidência de máquina pode fornecer fatos, mas não inventar preferências humanas;
+- `UNKNOWN`, `NOT_APPLICABLE` e ausência de preferência humana são estados semanticamente distintos;
+- LEANDRO pode responder `não sei` ou delegar decisão técnica à equipe sem falhar o Intake;
+- tecnologias específicas não são dimensões humanas obrigatórias salvo quando representam restrição real;
+- engenharia decide `HOW`; Human Intent Discovery captura `WHAT/WHY/WHO/CONSEQUENCES/PREFERENCES/CONSTRAINTS/SUCCESS`.
 
 ### Q9 — Como perguntas adaptativas devem evitar interrogatório rígido e perguntas já respondidas por evidência?
+Definir a mecânica de resolução das dimensões: reutilização de contexto/evidência, follow-ups, prioridade de dúvidas bloqueantes, tratamento de conflitos, rastreabilidade pergunta→dimensão e limites contra loops sem ganho de informação.
 
 ### Q10 — Como deve funcionar o progressive read-back e correção de entendimento?
 
@@ -162,6 +169,6 @@ Para cada Q aprovada:
 
 ## 5. Próxima ação
 
-> **Q8 — Quais dimensões de intenção humana são obrigatórias?**
+> **Q9 — Como perguntas adaptativas devem evitar interrogatório rígido e perguntas já respondidas por evidência?**
 
-Não iniciar Q9 antes de decisão explícita de LEANDRO sobre Q8.
+Não iniciar Q10 antes de decisão explícita de LEANDRO sobre Q9.
