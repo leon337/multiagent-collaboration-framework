@@ -26,10 +26,10 @@ O questionário possui **16 perguntas canônicas**.
 
 ```yaml
 question_count_total: 16
-questions_completed: 10
-questions_remaining: 6
-last_completed_question: 10
-next_question: 11
+questions_completed: 11
+questions_remaining: 5
+last_completed_question: 11
+next_question: 12
 question_01: COMPLETED
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -40,7 +40,8 @@ question_07: COMPLETED_APPROVED_BY_LEANDRO
 question_08: COMPLETED_APPROVED_BY_LEANDRO
 question_09: COMPLETED_APPROVED_BY_LEANDRO
 question_10: COMPLETED_APPROVED_BY_LEANDRO
-question_11: NOT_STARTED
+question_11: COMPLETED_APPROVED_BY_LEANDRO
+question_12: NOT_STARTED
 implementation_authorized: false
 ```
 
@@ -112,39 +113,48 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-011.md`.
 ### Q10 — Core vs Factory / Plugin / Perfil
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Decisão: `MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`.
+`MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`; Constitutional Kernel + Core Service contracts; extensões governadas/versionadas; Profile declarativo; Factory gera blueprint; dependência Extension→Core; compatibilidade fail-closed.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md`.
+
+### Q11 — Infraestrutura e placement
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+Decisão: `PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`.
 
 Síntese:
 
-- Core dividido conceitualmente entre `Constitutional Kernel` e contratos de Core Services;
-- extensões dependem do Core; Core não depende de extensão específica;
-- Plugin adiciona capacidade executável;
-- Skill adiciona procedimento governado;
-- Profile é configuração declarativa e não executa lógica arbitrária;
-- Factory gera blueprint versionado e não mantém autoridade no runtime;
-- Extension Manifest versionado é obrigatório para extensões materiais;
-- `INSTALLED != ENABLED != AUTHORIZED`;
-- compatibilidade desconhecida falha fechada;
-- dependências circulares entre extensões são proibidas;
-- conflito de Profiles não usa `last writer wins` silencioso;
-- falha de extensão deve ser contida sem corromper Core;
-- remoção de extensão não destrói interpretabilidade histórica;
-- `Agent Contract` pertence ao Core; catálogo fixo de agentes nomeados não pertence ao Core por padrão;
-- especificações novas não usam rótulos `R0–R4` isolados: risco e assurance devem ser namespaced ou semanticamente nomeados.
+- Control, State, Execution, Integration e Presentation são planos lógicos, não necessariamente serviços físicos separados;
+- autoridade canônica do Control Plane é lógica e única; multi-writer sem coordenação/fencing é proibido;
+- State Plane pode ser local/self-hosted; scratch privado de worker não vira project truth;
+- queue não é fonte de verdade da task;
+- execução distribuída usa attempt identity, leases e fencing/epoch ou equivalente;
+- clock do worker não é autoridade de lease;
+- partição sem revalidação de autoridade não permite novo efeito material;
+- execução offline, se existir, depende de envelope pré-autorizado e limitado;
+- efeitos materiais atravessam fronteira governada; blind retry é proibido;
+- placement preserva hard requirements de confiança, locality, capacidade, autoridade e compatibilidade;
+- data locality inclui input, output, evidence, telemetry e cache;
+- incompatibilidade desconhecida de worker/runtime torna node inelegível;
+- source revision e artifact digest são identidades distintas;
+- app redeploy/rollback, data restore, compensation e failover são conceitos diferentes;
+- admission control e backpressure são obrigatórios; spawning ilimitado é proibido;
+- recovery considera failure domains e ponto coerente entre state/ledger/evidence/configuração;
+- emergency stop remoto pode não ser instantâneo sob partição; autoridade material remota deve ser limitada/expirável;
+- portabilidade não exige active multi-cloud;
+- provider binding não pertence à identidade constitucional;
+- placement material produz `Placement Receipt`.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
 
 ---
 
 ## 4. Perguntas restantes
 
-### Q11 — Como deve funcionar a infraestrutura e o placement de serviços?
+### Q12 — Quais controles de segurança, permissões e gates são essenciais?
 **Status:** `NEXT / NOT_STARTED`
 
-Definir self-host/SaaS, VPS como opção e não dependência, containers, bancos, filas, MCPs, workers, isolamento, backup/restore, portabilidade e critérios econômicos/técnicos de placement.
-
-### Q12 — Quais controles de segurança, permissões e gates são essenciais?
-**Status:** `PENDING`
+Definir autenticação, identidade de workloads/agentes, least privilege, secrets, sandbox, network/egress policy, extensão/supply-chain trust, prompt-injection boundaries, gates, revogação e enforcement técnico de autoridade.
 
 ### Q13 — Como provar que o MCF vale o custo e a complexidade?
 **Status:** `PENDING`
@@ -178,8 +188,8 @@ Persistir checkpoint quando houver decisão arquitetônica, aprovação de LEAND
 6. continuar exatamente na `next_question`.
 
 ```yaml
-last_completed_question: 10
-next_question: 11
-instruction: NÃO REPETIR Q1-Q10
+last_completed_question: 11
+next_question: 12
+instruction: NÃO REPETIR Q1-Q11
 implementation_authorized: false
 ```
