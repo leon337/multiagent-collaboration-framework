@@ -26,19 +26,20 @@ nextgen_round_1_mutation: NONE
 target_version: v1.1.0
 status: ACTIVE_DISCOVERY
 total_questions: 20
-questions_completed: 1
-questions_remaining: 19
-last_completed_question: 1
-next_question: 2
+questions_completed: 2
+questions_remaining: 18
+last_completed_question: 2
+next_question: 3
 Q1: COMPLETED_APPROVED_BY_LEANDRO
-Q2: NOT_STARTED
+Q2: COMPLETED_APPROVED_BY_LEANDRO
+Q3: NOT_STARTED
 implementation_authorized: false
 codex_implementation_authorized: false
 prototype_authorized: false
 release_authorized: false
 ```
 
-**Não repetir Q1 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1 ou Q2 salvo solicitação explícita de LEANDRO.**
 
 ## Q1 — decisão aprovada
 
@@ -50,33 +51,58 @@ release_authorized: false
 - `ACTIVATING != ACTIVE`;
 - `ACTIVE` exige bootstrap/metodologia/fonte de verdade verificável.
 
-## Input pendente para Q2
+## Q2 — decisão aprovada
 
-`CODEX_LOCAL_FIRST_EXECUTION` foi registrado como `DISCOVERY_INPUT`, não como decisão.
+`LOCAL_FIRST_REMOTE_CHECKPOINTED` — Opção D.
 
-Hipótese candidata:
+Princípios:
 
 ```text
-MCF METHOD / GOVERNANCE
-      ↓
-Execution environment específico
-  ↙                    ↘
-ChatGPT              Codex
-remote/connectors     local terminal/workspace/git
-  └────────────┬────────────┘
-               ↓
-        GitHub checkpoints
+MCF_METHOD != EXECUTION_HOST
+EDIT != COMMIT != PUSH != PR
+LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED
 ```
 
-Nome candidato: `LOCAL_FIRST_REMOTE_CHECKPOINTED`.
+### Modos suportados no escopo atual da v1.1
 
-Q2 deve decidir se esse modelo é aprovado e em quais boundaries o Codex deve commit/push/checkpoint/abrir PR.
+```yaml
+CHATGPT_REMOTE:
+  execution_plane: CONNECTORS_AND_REMOTE_TOOLS
+
+CODEX_LOCAL:
+  execution_plane: LOCAL_WORKSPACE_TERMINAL_AND_GIT
+  exact_remote_baseline_required: true
+  isolated_branch_or_worktree: true
+  local_commits_allowed: true
+  push_every_edit: false
+  remote_checkpoint_required: true
+```
+
+### Checkpoint remoto obrigatório em
+
+- fase/submissão concluída;
+- pausa longa/fim de sessão;
+- antes de HUMAN_GATE;
+- antes de revisão independente;
+- validação material concluída;
+- antes de boundary de alto risco;
+- handoff para outro agente;
+- candidato de integração.
+
+PR não é necessário a cada checkpoint; é requerido no boundary de integração/revisão aplicável.
+
+Se o remoto estiver indisponível:
+
+```yaml
+low_risk_reversible_local_work: CONTINUE_WITH_CHECKPOINT_DEBT
+material_or_governed_boundary: FAIL_CLOSED
+```
 
 ## Ordem de leitura
 
 1. GitHub live;
 2. este Resume Card;
-3. `MCF-V1.1-DISCOVERY-CHECKPOINT-001.md`;
+3. `MCF-V1.1-DISCOVERY-CHECKPOINT-002.md`;
 4. `MCF-V1.1-QUESTIONNAIRE-ROADMAP-001.md`;
 5. `MCF-V1.1-DECISION-LEDGER-001.md`;
 6. `MCF-V1.1-DISCOVERY-CHARTER-001.md`.
@@ -90,7 +116,7 @@ LEANDRO DECIDE
    ↓
 Decision Ledger
    ↓
-Checkpoint
+novo Checkpoint
    ↓
 Resume Card
    ↓
@@ -99,11 +125,9 @@ Roadmap
 NEXT QUESTION
 ```
 
-Assim, se a sessão parar após Q5, o estado durável deve registrar Q1–Q5 como concluídas e Q6 como próxima.
-
 ## Próxima ação
 
-> **Q2 — Como o MCF deve operar em diferentes ambientes de execução, especialmente ChatGPT remoto e Codex local-first?**
+> **Q3 — Como o bootstrap do MCF encontra e verifica a versão/metodologia vigente?**
 
 ## Comando mínimo de retomada
 
