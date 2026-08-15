@@ -126,6 +126,7 @@
           "scope": { "type": "string", "minLength": 1 },
           "provenance": {
             "type": "array",
+            "minItems": 1,
             "items": { "$ref": "#/$defs/provenanceRef" }
           }
         }
@@ -142,6 +143,7 @@
           "statement": { "type": "string", "minLength": 1 },
           "provenance": {
             "type": "array",
+            "minItems": 1,
             "items": { "$ref": "#/$defs/provenanceRef" }
           }
         }
@@ -255,6 +257,7 @@
         "value": true,
         "provenance": {
           "type": "array",
+          "minItems": 1,
           "items": { "$ref": "#/$defs/provenanceRef" }
         },
         "readinessImpact": { "enum": ["BLOCKING", "NON_BLOCKING", "NONE"] },

@@ -121,6 +121,44 @@ describe('MCF v1.1 JSON schemas', () => {
     expect(validate(invalid)).toBe(false);
   });
 
+  it('rejects an intent dimension with empty provenance', () => {
+    const validate = createValidator('project-intent-package-v1.schema.json');
+    const invalid = cloneFixture('project-intent-package.valid.json');
+    const dimensions = invalid.dimensions as Record<string, Record<string, unknown>>;
+    dimensions.PROBLEM!.provenance = [];
+
+    expect(validate(invalid)).toBe(false);
+  });
+
+  it('rejects a technical delegation with empty provenance', () => {
+    const validate = createValidator('project-intent-package-v1.schema.json');
+    const invalid = cloneFixture('project-intent-package.valid.json');
+    invalid.technicalDelegations = [
+      {
+        delegationId: 'delegation-001',
+        domain: 'schema implementation',
+        scope: 'Choose compatible validation tooling.',
+        provenance: [],
+      },
+    ];
+
+    expect(validate(invalid)).toBe(false);
+  });
+
+  it('rejects an assumption with empty provenance', () => {
+    const validate = createValidator('project-intent-package-v1.schema.json');
+    const invalid = cloneFixture('project-intent-package.valid.json');
+    invalid.assumptions = [
+      {
+        id: 'assumption-001',
+        statement: 'The repository validation tool remains available.',
+        provenance: [],
+      },
+    ];
+
+    expect(validate(invalid)).toBe(false);
+  });
+
   it('validates PRR v1 and rejects a FACT without evidence', () => {
     const validate = createValidator('project-reality-report-v1.schema.json');
     expectValid(validate, readJson(fixturesDirectory, 'project-reality-report.valid.json'));
@@ -128,6 +166,15 @@ describe('MCF v1.1 JSON schemas', () => {
     const invalid = cloneFixture('project-reality-report.valid.json');
     const observations = invalid.observations as Array<Record<string, unknown>>;
     observations[0]!.evidenceRefs = [];
+    expect(validate(invalid)).toBe(false);
+  });
+
+  it('rejects a PRR observation with empty provenance', () => {
+    const validate = createValidator('project-reality-report-v1.schema.json');
+    const invalid = cloneFixture('project-reality-report.valid.json');
+    const observations = invalid.observations as Array<Record<string, unknown>>;
+    observations[0]!.provenance = [];
+
     expect(validate(invalid)).toBe(false);
   });
 

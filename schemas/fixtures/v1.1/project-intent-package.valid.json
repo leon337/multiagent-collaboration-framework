@@ -28,121 +28,261 @@
     "PROBLEM": {
       "state": "CLEAR",
       "value": "Project intent needs durable continuity.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q20",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "MOTIVATION": {
       "state": "CLEAR",
       "value": "Preserve intent across missions.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q17",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "NON_BLOCKING"
     },
     "DESIRED_OUTCOME": {
       "state": "CLEAR",
       "value": "A compatible v1.1 extension.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q18",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "TARGET_USERS": {
       "state": "CLEAR",
       "value": ["MCF operators"],
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "HUMAN_CONFIRMED_SYNTHESIS",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q08",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "CRITICAL_USER_JOURNEYS": {
       "state": "CLEAR",
       "value": ["start", "adopt", "resume"],
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q05",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "MUST_HAVE": {
       "state": "CLEAR",
       "value": ["PIP", "PRR"],
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q20",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "SHOULD_HAVE": {
       "state": "CLEAR",
       "value": [],
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "HUMAN_CONFIRMED_SYNTHESIS",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q08",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "NON_BLOCKING"
     },
     "NON_GOALS": {
       "state": "CLEAR",
       "value": ["parallel runtime"],
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q18",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "PRIORITIES_AND_TRADEOFFS": {
       "state": "CLEAR",
       "value": "Compatibility first.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q18",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "BUSINESS_RULES": {
       "state": "CLEAR",
       "value": ["human authority remains final"],
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q15",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "NON_BLOCKING"
     },
     "DATA_AND_SENSITIVITY": {
       "state": "CLEAR",
       "value": "No new sensitive state.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "HUMAN_CONFIRMED_SYNTHESIS",
+          "sourceRef": "MCF-V1.1-IMPLEMENTATION-AUTHORIZATION-001#4",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "NON_BLOCKING"
     },
     "ROLES_AND_PERMISSIONS": {
       "state": "CLEAR",
       "value": ["LEANDRO", "MESTRE", "CODEX_LOCAL"],
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "HUMAN_CONFIRMED_SYNTHESIS",
+          "sourceRef": "MCF-V1.1-IMPLEMENTATION-AUTHORIZATION-001#6",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "AUTOMATION_LEVEL": {
       "state": "CLEAR",
       "value": "Delegated within envelope.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q15",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "NON_BLOCKING"
     },
     "INTEGRATIONS": {
       "state": "CLEAR",
       "value": ["GitHub"],
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q02",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "NON_BLOCKING"
     },
     "PLATFORM_AND_USAGE_CONTEXT": {
       "state": "CLEAR",
       "value": "Local-first repository workflow.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q02",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "NON_BLOCKING"
     },
     "COST_AND_RESOURCE_CONSTRAINTS": {
       "state": "CLEAR",
       "value": "No new production cost.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "HUMAN_CONFIRMED_SYNTHESIS",
+          "sourceRef": "MCF-V1.1-IMPLEMENTATION-AUTHORIZATION-001#4",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "NON_BLOCKING"
     },
     "QUALITY_EXPECTATIONS": {
       "state": "CLEAR",
       "value": ["schema validation", "legacy regression"],
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q19",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "FAILURE_TOLERANCE": {
       "state": "CLEAR",
       "value": "Fail closed at authority boundaries.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q04",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "DEFINITION_OF_DONE": {
       "state": "CLEAR",
       "value": "Qualification on an exact head.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q19",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "BLOCKING"
     },
     "FUTURE_VISION": {
       "state": "PARTIAL",
       "value": "Transferable continuity.",
-      "provenance": [],
+      "provenance": [
+        {
+          "type": "PRIOR_VALID_HUMAN_DECISION",
+          "sourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q17",
+          "capturedAt": "2026-08-15T12:00:00Z",
+          "actor": "LEANDRO"
+        }
+      ],
       "readinessImpact": "NONE"
     }
   },
