@@ -14,11 +14,11 @@
 O questionário possui **16 perguntas canônicas**.
 
 - uma pergunta por vez;
-- cada pergunta deve trazer alternativas concretas;
-- LEANDRO pode escolher uma, combinar várias ou propor outra resposta;
-- MESTRE registra decisão, consequências, contradições e pontos abertos;
+- cada pergunta traz alternativas concretas;
+- LEANDRO pode escolher, combinar ou propor outra resposta;
+- MESTRE registra decisões, consequências, contradições e pontos abertos;
 - decisões relevantes são persistidas no GitHub antes de avançar;
-- não repetir pergunta concluída salvo solicitação de LEANDRO;
+- pergunta concluída não é repetida salvo solicitação de LEANDRO;
 - hipótese não vira implementação automaticamente;
 - ao final, Q1–Q16 serão conciliadas em arquitetura e plano de reestruturação.
 
@@ -34,132 +34,79 @@ question_03: COMPLETED_APPROVED_BY_LEANDRO
 question_04: COMPLETED_APPROVED_BY_LEANDRO
 question_05: COMPLETED_APPROVED_BY_LEANDRO
 question_06: COMPLETED_APPROVED_BY_LEANDRO
-question_07: NOT_STARTED
-questions_completed: 6
-questions_remaining: 10
-current_position: BETWEEN_Q6_AND_Q7
+question_07: COMPLETED_APPROVED_BY_LEANDRO
+question_08: NOT_STARTED
+questions_completed: 7
+questions_remaining: 9
+current_position: BETWEEN_Q7_AND_Q8
 implementation_authorized: false
 ```
 
 ### Q1 — FINALIDADE PRINCIPAL DO MCF
-
 **Status:** `COMPLETED`
 
-Síntese:
-
-- sistema pessoal de trabalho com IA para LEANDRO como foco inicial;
-- continuidade durável de projetos como problema central;
-- ChatGPT/MESTRE inicialmente como camada cognitiva superior;
-- equipes de agentes especializados;
-- primeiro provar/maturar no uso real de LEANDRO;
-- depois generalizar o core;
-- produto comercial fica como possibilidade futura.
+Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade durável de projetos como problema central; ChatGPT/MESTRE como camada cognitiva superior inicial; equipes de agentes especializados; primeiro provar no uso real, depois generalizar.
 
 ### Q2 — CONTINUIDADE DE CONTEXTO
-
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Síntese:
-
-- `LAYERED_CONTINUITY_ARCHITECTURE`;
-- Framework Memory, Project Memory, Live Operational Memory, Evidence/Raw Archive;
-- Project Capsule derivado/versionado, não fonte de verdade;
-- memória, evidência, autoridade e estado live são distintos;
-- `UNKNOWN` permanece `UNKNOWN` sem evidência;
-- progressive disclosure;
-- isolamento por projeto;
-- cold-start / Continuity Recovery Test.
+`LAYERED_CONTINUITY_ARCHITECTURE`; Framework Memory, Project Memory, Live Operational Memory, Evidence/Raw Archive; Project Capsule derivado/versionado e não fonte de verdade; `UNKNOWN` permanece `UNKNOWN` sem evidência; progressive disclosure; isolamento por projeto; cold-start/Continuity Recovery Test.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
 ### Q3 — AGENTE DE VERDADE NO MCF
-
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Síntese:
-
-- `Agent Contract` define agente MCF;
-- `AGENTE != MODELO`;
-- persona isolada não basta;
-- lifecycle separado de agenthood;
-- independência separada de agenthood;
-- `CAPABILITY != AUTHORITY`;
-- `IDENTITY CONTINUITY != CAPABILITY CONTINUITY`;
-- `AGENT OUTPUT != PROJECT TRUTH`.
+`Agent Contract`; `AGENTE != MODELO`; persona isolada não basta; lifecycle e independência separados de agenthood; `CAPABILITY != AUTHORITY`; `IDENTITY CONTINUITY != CAPABILITY CONTINUITY`; `AGENT OUTPUT != PROJECT TRUTH`.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
 ### Q4 — AUTONOMIA DOS AGENTES
-
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Síntese:
-
-- `MISSION-BOUNDED + RISK-BASED AUTONOMY`;
-- `Authority Envelope` conceitualmente explícito;
-- `UNKNOWN_AUTHORITY = DENY`;
-- autoelevação de privilégio proibida;
-- risco não depende exclusivamente do executor;
-- risco cumulativo considerado;
-- retries limitados/idempotentes quando aplicável;
-- revogação/emergency stop;
-- `TEAM_FIRST` para recovery técnico;
-- R3/crítico → HUMAN_GATE exclusivamente de LEANDRO.
+`MISSION-BOUNDED + RISK-BASED AUTONOMY`; `Authority Envelope`; `UNKNOWN_AUTHORITY = DENY`; autoelevação proibida; risco cumulativo; retries limitados/idempotentes quando aplicável; emergency stop; `TEAM_FIRST`; R3/crítico → HUMAN_GATE exclusivamente de LEANDRO.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 
 ### Q5 — ROTEADOR DE MODELOS DE IA
-
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Síntese:
-
-- `CAPABILITY_AND_POLICY_BASED_ROUTER`;
-- rotear por requisitos verificáveis da tarefa, não por marca/popularidade;
-- hard requirements vêm antes de custo/latência/quota;
-- router não pode rebaixar hard requirements;
-- `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`;
-- Model Capability Registry com proveniência, freshness e runtime health;
-- model self-claim não é evidência;
-- fallback somente para candidatos compatíveis;
-- silent capability downgrade proibido;
-- fallback limitado e sem routing loops;
-- nenhum modelo compatível → `BLOCKED / ESCALATE`;
-- routing receipt auditável;
-- custo/free tier nunca substituem capacidade mínima, segurança ou autoridade.
+`CAPABILITY_AND_POLICY_BASED_ROUTER`; requisitos verificáveis antes de marca/custo; hard requirements não podem ser rebaixados; `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`; registry com proveniência/freshness/health; fallback somente compatível, limitado e sem loops; nenhum candidato compatível → `BLOCKED / ESCALATE`; routing receipt auditável.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
 
 ### Q6 — INDEPENDÊNCIA ENTRE AGENTES E REVISORES
-
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+`INDEPENDENCE != DIVERSITY`; R2+ exige contexto separado, `BLIND_FIRST`, evidência própria, decisão própria e receipt inicial imutável; `SELF_DECLARED_INDEPENDENCE != PROOF`; `CONSENSUS != TRUTH`; majority vote não resolve desacordo técnico por padrão; assurance proporcional ao risco.
+
+Taxonomia: `R0 SELF_REVIEW`, `R1 SEPARATE_REVIEW`, `R2 INDEPENDENT_REVIEW`, `R3 DIVERSE_INDEPENDENT_REVIEW`, `R4 EXTERNAL_ASSURANCE`.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`.
+
+### Q7 — ORQUESTRAÇÃO DO TRABALHO
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+Decisão: `HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`.
 
 Síntese:
 
-- independência deve ser provada por propriedades observáveis da execução, não por persona, nome ou simples troca de modelo;
-- `INDEPENDENCE != DIVERSITY`;
-- R2+ exige contexto separado, `BLIND_FIRST`, coleta própria de evidências, decisão própria e receipt inicial imutável;
-- compartilhar fontes canônicas é permitido; compartilhar veredito/conclusão prévia antes do julgamento inicial contamina a revisão;
-- mesmo modelo pode revisar independentemente se contexto/evidência/decisão forem separados;
-- modelos diferentes podem não ser independentes se compartilham conclusão contaminante;
-- `SELF_DECLARED_INDEPENDENCE != PROOF`;
-- `CONSENSUS != TRUTH`;
-- `REVIEWER CLAIM != VERIFIED FINDING`;
-- majority vote não resolve desacordo técnico por padrão;
-- divergência deve ser reconciliada por evidência/teste/adjudicação;
-- assurance é proporcional ao risco.
+- grafo principal com dependências acíclicas e transições explícitas;
+- loops somente como subfluxos delimitados, com limites, progresso verificável e stop conditions;
+- paralelismo somente quando dependências permitirem;
+- mutações concorrentes conflitantes exigem coordenação;
+- joins possuem contrato explícito;
+- falha parcial não pode avançar silenciosamente;
+- replanning cria nova versão e não reescreve histórico;
+- replanning não amplia autoridade nem remove gates obrigatórios;
+- `Complexity Budget` limita profundidade/fanout/tarefas/agentes/custo/tempo;
+- spawning ilimitado proibido;
+- outputs obsoletos devem ser rejeitados/revalidados/cancelados/superseded;
+- integração explícita substitui `last writer wins`;
+- ações com side effects exigem idempotência/controle equivalente e compensação quando aplicável;
+- missão termina por `Completion Contract`, não porque o grafo simplesmente parou.
 
-Taxonomia conceitual:
-
-```yaml
-R0: SELF_REVIEW
-R1: SEPARATE_REVIEW
-R2: INDEPENDENT_REVIEW
-R3: DIVERSE_INDEPENDENT_REVIEW
-R4: EXTERNAL_ASSURANCE
-```
-
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`.
 
 ---
 
@@ -184,12 +131,12 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`.
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
 ### Q7 — Como o trabalho deve ser orquestrado: pipeline, loops, graph ou paralelo?
-**Status:** `NEXT / NOT_STARTED`
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Definir fluxo sequencial, DAG/graph, split/worker/verifier/merge, paralelismo, dependências, loops, parada, replanejamento, convergência e recovery.
+Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`.
 
 ### Q8 — Qual documentação e estado persistente são realmente necessários?
-**Status:** `PENDING`
+**Status:** `NEXT / NOT_STARTED`
 
 Definir documentação mínima, checkpoint vs log bruto, decisões vs conversas, handoff, deduplicação, versionamento, GitHub como memória institucional, banco/event store para estado vivo e artifacts para evidências.
 
@@ -239,15 +186,7 @@ Consolidar propósito, memória, agentes, modelos, autonomia, graph/loops, UX, c
 
 ## 4. Política de checkpoint
 
-Criar/atualizar checkpoint quando houver pelo menos um:
-
-1. conclusão de bloco arquitetônico;
-2. aprovação explícita de LEANDRO;
-3. mudança relevante de direção;
-4. descoberta de lacuna/bug arquitetural;
-5. pausa de trabalho/chat;
-6. antes de missão grande ao executor/Codex;
-7. antes de trocar projeto/sessão.
+Criar/atualizar checkpoint quando houver: conclusão de bloco arquitetônico; aprovação explícita de LEANDRO; mudança relevante; descoberta de lacuna/bug; pausa; antes de missão grande ao executor/Codex; antes de troca de projeto/sessão.
 
 Campos mínimos:
 
@@ -268,10 +207,6 @@ resume_instructions:
 
 ## 5. Protocolo de retomada
 
-Um novo MESTRE não deve depender da memória do chat anterior.
-
-Ordem:
-
 1. consultar GitHub live;
 2. ler `MCF-NEXTGEN-RESUME-CARD.md`;
 3. ler checkpoint mais recente;
@@ -283,23 +218,15 @@ Ordem:
 Estado atual:
 
 ```yaml
-last_completed_question: 6
-next_question: 7
-instruction: NÃO REPETIR Q1-Q6
+last_completed_question: 7
+next_question: 8
+instruction: NÃO REPETIR Q1-Q7
 ```
 
 ---
 
 ## 6. Critério de conclusão
 
-O questionário termina somente quando:
-
-- Q1–Q16 estiverem respondidas;
-- contradições estiverem conciliadas;
-- hipóteses abertas estiverem marcadas;
-- arquitetura alvo documentada;
-- métricas definidas;
-- plano de migração definido;
-- LEANDRO aprovar especificação final antes de executor/Codex.
+O questionário termina somente quando Q1–Q16 estiverem respondidas, contradições conciliadas, hipóteses abertas marcadas, arquitetura alvo e métricas documentadas, plano de migração definido e LEANDRO aprovar a especificação final antes de executor/Codex.
 
 Até lá, MCF NextGen permanece **Discovery e Planejamento**, sem implementação autorizada.
