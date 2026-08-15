@@ -26,10 +26,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 8
-questions_remaining: 12
-last_completed_question: 8
-next_question: 9
+questions_completed: 9
+questions_remaining: 11
+last_completed_question: 9
+next_question: 10
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -38,7 +38,7 @@ question_05: COMPLETED_APPROVED_BY_LEANDRO
 question_06: COMPLETED_APPROVED_BY_LEANDRO
 question_07: COMPLETED_APPROVED_BY_LEANDRO
 question_08: COMPLETED_APPROVED_BY_LEANDRO
-question_09: NOT_STARTED
+question_09: COMPLETED_APPROVED_BY_LEANDRO
 question_10: NOT_STARTED
 question_11: NOT_STARTED
 question_12: NOT_STARTED
@@ -89,47 +89,29 @@ implementation_authorized: false
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `CANONICAL_INTENT_DIMENSIONS_WITH_EVIDENCE_AWARE_RESOLUTION` — Opção D.
 
-As 20 dimensões canônicas são:
-
-```yaml
-- PROBLEM
-- MOTIVATION
-- DESIRED_OUTCOME
-- TARGET_USERS
-- CRITICAL_USER_JOURNEYS
-- MUST_HAVE
-- SHOULD_HAVE
-- NON_GOALS
-- PRIORITIES_AND_TRADEOFFS
-- BUSINESS_RULES
-- DATA_AND_SENSITIVITY
-- ROLES_AND_PERMISSIONS
-- AUTOMATION_LEVEL
-- INTEGRATIONS
-- PLATFORM_AND_USAGE_CONTEXT
-- COST_AND_RESOURCE_CONSTRAINTS
-- QUALITY_EXPECTATIONS
-- FAILURE_TOLERANCE
-- DEFINITION_OF_DONE
-- FUTURE_VISION
-```
-
-Estados por dimensão: `CLEAR`, `PARTIAL`, `UNKNOWN`, `CONFLICTING`, `NOT_APPLICABLE`.
-
-Regras centrais:
-
-- `DIMENSION_REQUIRED != QUESTION_REQUIRED`;
-- não existe requisito de 20 perguntas fixas;
-- evidência de máquina pode fornecer fatos, mas não inventar preferências humanas;
-- `UNKNOWN`, `NOT_APPLICABLE` e ausência de preferência humana são estados semanticamente distintos;
-- LEANDRO pode responder `não sei` ou delegar decisão técnica à equipe sem falhar o Intake;
-- tecnologias específicas não são dimensões humanas obrigatórias salvo quando representam restrição real;
-- engenharia decide `HOW`; Human Intent Discovery captura `WHAT/WHY/WHO/CONSEQUENCES/PREFERENCES/CONSTRAINTS/SUCCESS`.
+20 dimensões canônicas; estados `CLEAR`, `PARTIAL`, `UNKNOWN`, `CONFLICTING`, `NOT_APPLICABLE`; sem requisito de 20 perguntas fixas. Evidência pode fornecer fatos, mas não inventar preferências humanas.
 
 ### Q9 — Como perguntas adaptativas devem evitar interrogatório rígido e perguntas já respondidas por evidência?
-Definir a mecânica de resolução das dimensões: reutilização de contexto/evidência, follow-ups, prioridade de dúvidas bloqueantes, tratamento de conflitos, rastreabilidade pergunta→dimensão e limites contra loops sem ganho de informação.
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `EVIDENCE_AWARE_ADAPTIVE_QUESTIONING_WITH_INFORMATION_GAIN` — Opção D.
+
+- não existe sequência fixa nem contagem fixa de perguntas;
+- uma pergunta primária por vez por padrão;
+- cada resposta atualiza todas as dimensões afetadas antes de escolher a próxima pergunta;
+- prioridade: conflito material de intenção, blocker, alto ganho informacional, alto risco, dependency unlock e só então refinamento;
+- dimensão `CLEAR` não é repetida sem nova causa;
+- uma resposta pode resolver várias dimensões;
+- evidência reduz perguntas, mas não substitui preferência/intenção humana;
+- `AS_IS_TO_BE_DIFFERENCE`, `EVIDENCE_CONFLICT` e `HUMAN_INTENT_CONFLICT` são categorias distintas;
+- follow-up exige valor informacional;
+- loops de follow-up de baixo ganho são proibidos;
+- unknown não bloqueante pode ser preservado; unknown bloqueante vira `BLOCKING_UNKNOWN`;
+- delegação técnica por LEANDRO é resolução válida;
+- mudança humana preserva histórico (`SUPERSEDED` → `CURRENT`);
+- carga cognitiva humana é fator real na escolha da próxima pergunta.
 
 ### Q10 — Como deve funcionar o progressive read-back e correção de entendimento?
+Definir quando MESTRE resume o que entendeu, quais dimensões entram em cada síntese, como LEANDRO confirma/corrige/rejeita, como correções atualizam o entendimento sem apagar histórico e quando read-back é obrigatório por mudança material ou conflito.
 
 ### Q11 — Como medir Context Sufficiency / Intent Readiness antes de planejar?
 
@@ -169,6 +151,6 @@ Para cada Q aprovada:
 
 ## 5. Próxima ação
 
-> **Q9 — Como perguntas adaptativas devem evitar interrogatório rígido e perguntas já respondidas por evidência?**
+> **Q10 — Como deve funcionar o progressive read-back e a correção de entendimento?**
 
-Não iniciar Q10 antes de decisão explícita de LEANDRO sobre Q9.
+Não iniciar Q11 antes de decisão explícita de LEANDRO sobre Q10.
