@@ -24,23 +24,24 @@
 
 ```yaml
 total_questions: 16
-last_completed_question: 6
-next_question: 7
+last_completed_question: 7
+next_question: 8
 Q1: COMPLETED
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
 Q4: COMPLETED_APPROVED_BY_LEANDRO
 Q5: COMPLETED_APPROVED_BY_LEANDRO
 Q6: COMPLETED_APPROVED_BY_LEANDRO
-Q7_started: false
+Q7: COMPLETED_APPROVED_BY_LEANDRO
+Q8_started: false
 implementation_authorized: false
 ```
 
-**Não repetir Q1–Q6 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q7 salvo solicitação explícita de LEANDRO.**
 
-Q7 é:
+Q8 é:
 
-> **Como o trabalho deve ser orquestrado: pipeline, loops, graph ou paralelo?**
+> **Qual documentação e estado persistente são realmente necessários?**
 
 ## Boundary terminal da Fase Zero
 
@@ -65,131 +66,76 @@ durable_release_identity:
   rc3: 7f741e10d0e745a90c732e084400b11e3f5e6794
 ```
 
-Esses valores representam o boundary terminal. Estado mutável posterior deve ser relido no GitHub/provider live.
+Estado mutável posterior deve ser relido no GitHub/provider live.
 
 ## Ordem de leitura
 
-1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`
+1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`
 2. `docs/proposals/MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
-4. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md` para Q5
-5. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md` para Q4
-6. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md` para Q3
-7. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md` para Q2
-8. GitHub/provider live para estado mutável
+4. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md` para Q6
+5. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md` para Q5
+6. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md` para Q4
+7. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md` para Q3
+8. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md` para Q2
+9. GitHub/provider live para estado mutável
 
 ## Decisões consolidadas
 
 ### Q1 — Finalidade
-
-- foco inicial: sistema pessoal de trabalho com IA para LEANDRO;
-- continuidade durável de projetos como problema central;
-- ChatGPT/MESTRE inicialmente como camada cognitiva superior;
-- equipes de agentes especializados;
-- primeiro provar no uso real de LEANDRO, depois generalizar.
+Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade durável de projetos; ChatGPT/MESTRE como camada cognitiva superior inicial; equipes especializadas; provar antes de generalizar.
 
 ### Q2 — Continuidade e memória
-
-LEANDRO aprovou `LAYERED_CONTINUITY_ARCHITECTURE`.
-
-Invariantes:
-
-```text
-MEMÓRIA ajuda a reconstruir.
-EVIDÊNCIA prova o que aconteceu.
-AUTORIDADE define o que vale.
-ESTADO LIVE define onde estamos agora.
-UNKNOWN permanece UNKNOWN quando falta evidência.
-```
+`LAYERED_CONTINUITY_ARCHITECTURE`; memória, evidência, autoridade e estado live são distintos; Project Capsule é derivado, não fonte de verdade; `UNKNOWN` permanece `UNKNOWN`; cold-start/Continuity Recovery Test.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
 ### Q3 — Agente MCF
-
-LEANDRO aprovou `Agent Contract`.
-
-Invariantes:
-
-```text
-AGENTE != MODELO
-CAPABILITY != AUTHORITY
-IDENTITY CONTINUITY != CAPABILITY CONTINUITY
-AGENT OUTPUT != PROJECT TRUTH
-```
+`Agent Contract`; `AGENTE != MODELO`; `CAPABILITY != AUTHORITY`; `IDENTITY CONTINUITY != CAPABILITY CONTINUITY`; `AGENT OUTPUT != PROJECT TRUTH`.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
 ### Q4 — Autonomia
-
-LEANDRO aprovou `MISSION-BOUNDED + RISK-BASED AUTONOMY`.
-
-Princípios:
-
-- `Authority Envelope` conceitualmente explícito;
-- `UNKNOWN_AUTHORITY = DENY`;
-- autoelevação de privilégio proibida;
-- conteúdo externo não expande autoridade;
-- risco não depende exclusivamente do executor;
-- risco cumulativo deve ser considerado;
-- retries limitados/idempotentes quando aplicável;
-- revogação/emergency stop;
-- `TEAM_FIRST` para recovery técnico;
-- R3/crítico exige HUMAN_GATE exclusivamente de LEANDRO.
+`MISSION-BOUNDED + RISK-BASED AUTONOMY`; `Authority Envelope`; `UNKNOWN_AUTHORITY = DENY`; autoelevação proibida; `TEAM_FIRST`; retries limitados; R3/crítico → HUMAN_GATE exclusivamente de LEANDRO.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 
-### Q5 — Roteador de Modelos de IA
-
-LEANDRO aprovou `CAPABILITY_AND_POLICY_BASED_ROUTER`.
-
-Princípios:
-
-- rotear por requisitos da tarefa;
-- hard requirements antes de custo/latência/quota;
-- router não pode rebaixar hard requirements;
-- `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`;
-- model self-claim não é evidência;
-- Model Capability Registry com proveniência/freshness/health;
-- fallback apenas compatível, limitado e sem loops;
-- silent capability downgrade proibido;
-- nenhum candidato compatível → `BLOCKED / ESCALATE`;
-- routing receipt auditável.
+### Q5 — Roteador de Modelos
+`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements antes de custo/latência/quota; `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`; fallback compatível, limitado e sem loops; routing receipt auditável.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
 
-### Q6 — Independência entre agentes e revisores
-
-LEANDRO aprovou a independência baseada em propriedades observáveis da execução.
-
-Princípios:
-
-```text
-INDEPENDENCE != DIVERSITY
-SELF_DECLARED_INDEPENDENCE != PROOF
-CONSENSUS != TRUTH
-REVIEWER CLAIM != VERIFIED FINDING
-```
-
-Para `R2+`, a revisão exige contexto separado, `BLIND_FIRST`, coleta própria de evidências, decisão própria e receipt inicial imutável. Compartilhar fontes canônicas é permitido; compartilhar conclusões/vereditos prévios antes do julgamento inicial é contaminação. Diversidade de modelo/provider/runtime aumenta assurance, mas não prova independência. Divergências são resolvidas por evidência/teste/adjudicação, não por majority vote padrão.
-
-Taxonomia:
-
-```yaml
-R0: SELF_REVIEW
-R1: SEPARATE_REVIEW
-R2: INDEPENDENT_REVIEW
-R3: DIVERSE_INDEPENDENT_REVIEW
-R4: EXTERNAL_ASSURANCE
-```
+### Q6 — Independência e assurance
+`INDEPENDENCE != DIVERSITY`; R2+ exige contexto separado, `BLIND_FIRST`, evidência própria, decisão própria e receipt inicial imutável; `CONSENSUS != TRUTH`; assurance `R0–R4` proporcional ao risco.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`.
 
+### Q7 — Orquestração
+LEANDRO aprovou `HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`.
+
+Princípios:
+
+- outer graph com dependências acíclicas;
+- loops isolados e limitados com prova de progresso;
+- paralelismo somente quando dependências permitirem;
+- mutações conflitantes coordenadas;
+- joins explícitos;
+- falha parcial não avança silenciosamente;
+- replanning versionado e histórico imutável;
+- replan não amplia autoridade nem remove gates;
+- `Complexity Budget` limita decomposição/spawning;
+- outputs stale são rejeitados/revalidados/cancelados/superseded;
+- `last writer wins` não é integração padrão;
+- side effects exigem idempotência/controle equivalente e compensação quando aplicável;
+- `GRAPH EXHAUSTION != MISSION COMPLETION`; Completion Contract define conclusão.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md`.
+
 ## Próxima ação do Discovery
 
-- Q1–Q6 concluídas e aprovadas por LEANDRO.
-- Q7 ainda não começou.
-- Próximo passo permitido: **LEANDRO + MESTRE iniciarem Q7 — “Como o trabalho deve ser orquestrado: pipeline, loops, graph ou paralelo?”**
-- persistir decisões materiais antes de avançar novamente.
+- Q1–Q7 concluídas e aprovadas por LEANDRO.
+- Q8 ainda não começou.
+- Próximo passo permitido: **LEANDRO + MESTRE iniciarem Q8 — “Qual documentação e estado persistente são realmente necessários?”**
 - não iniciar implementação NextGen antes de Q1–Q16, consolidação, arquitetura alvo, plano de migração, critérios de aceite e aprovação final de LEANDRO.
 
 ## Comando mínimo de retomada
@@ -207,6 +153,7 @@ Q3: COMPLETED_APPROVED
 Q4: COMPLETED_APPROVED
 Q5: COMPLETED_APPROVED
 Q6: COMPLETED_APPROVED
-Q7: NEXT_NOT_STARTED
+Q7: COMPLETED_APPROVED
+Q8: NEXT_NOT_STARTED
 implementation_authorized: false
 ```
