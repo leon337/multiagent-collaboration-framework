@@ -30,10 +30,11 @@ O questionário possui **16 perguntas canônicas**.
 question_count_total: 16
 question_01: COMPLETED
 question_02: COMPLETED_APPROVED_BY_LEANDRO
-question_03: NOT_STARTED
-questions_completed: 2
-questions_remaining: 14
-current_position: BETWEEN_Q2_AND_Q3
+question_03: COMPLETED_APPROVED_BY_LEANDRO
+question_04: NOT_STARTED
+questions_completed: 3
+questions_remaining: 13
+current_position: BETWEEN_Q3_AND_Q4
 implementation_authorized: false
 ```
 
@@ -74,6 +75,25 @@ Síntese aprovada/consolidada:
 
 Checkpoint canônico da aprovação: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
+### Pergunta 3 — AGENTE DE VERDADE NO MCF
+
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+Síntese aprovada/consolidada:
+
+- um agente MCF é uma entidade operacional identificável com identidade, papel, objetivos, capacidades, limites de autoridade, contratos de entrada/saída, política de decisão, estado e rastreabilidade;
+- `AGENTE != MODELO`; o modelo é backend cognitivo, não identidade;
+- persona/nome/instruções, isoladamente, não satisfazem o `Agent Contract`;
+- lifecycle é separado de agenthood: agentes podem ser `EPHEMERAL`, `SESSION`, `PROJECT` ou `PERSISTENT`;
+- independência é separada de agenthood e deve ser descrita por perfil multidimensional; critérios formais ficam para Q6;
+- `CAPABILITY != AUTHORITY`;
+- `IDENTITY CONTINUITY != CAPABILITY CONTINUITY`; troca de modelo exige validação de capacidades;
+- agentes não devem manter cópias concorrentes não governadas da verdade do projeto;
+- `AGENT OUTPUT != PROJECT TRUTH`; claims de agentes exigem evidência/autoridade aplicável antes de virar fato oficial, decisão ou estado operacional;
+- detalhes de autonomia, routing, independência, persistência concreta e segurança ficam deliberadamente para perguntas posteriores.
+
+Checkpoint canônico da aprovação: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
+
 ---
 
 ## 3. As 16 perguntas canônicas
@@ -92,20 +112,13 @@ Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
 ### Q3 — O que é um agente de verdade no MCF?
 
-**Status:** `NEXT / NOT_STARTED`
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Definir:
-
-- identidade do agente;
-- papel, skills, tools, permissões, memória e critérios;
-- relação agente ↔ modelo;
-- persistência de identidade;
-- agentes simulados, isolados e executores reais;
-- quando uma persona não deve ser chamada de agente independente.
+Decisão consolidada no `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
 ### Q4 — Qual nível de autonomia os agentes devem possuir?
 
-**Status:** `PENDING`
+**Status:** `NEXT / NOT_STARTED`
 
 Definir:
 
@@ -351,9 +364,9 @@ Ordem de retomada:
 ### Estado de retomada atual
 
 ```yaml
-last_completed_question: 2
-next_question: 3
-instruction: NÃO REPETIR Q1 OU Q2
+last_completed_question: 3
+next_question: 4
+instruction: NÃO REPETIR Q1, Q2 OU Q3
 ```
 
 ---
