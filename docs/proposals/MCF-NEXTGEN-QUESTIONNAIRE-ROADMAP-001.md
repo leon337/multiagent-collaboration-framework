@@ -26,10 +26,10 @@ O questionário possui **16 perguntas canônicas**.
 
 ```yaml
 question_count_total: 16
-questions_completed: 14
-questions_remaining: 2
-last_completed_question: 14
-next_question: 15
+questions_completed: 15
+questions_remaining: 1
+last_completed_question: 15
+next_question: 16
 question_01: COMPLETED
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -44,7 +44,8 @@ question_11: COMPLETED_APPROVED_BY_LEANDRO
 question_12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
 question_13: COMPLETED_APPROVED_BY_LEANDRO
 question_14: COMPLETED_APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW
-question_15: NOT_STARTED
+question_15: COMPLETED_APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW
+question_16: NOT_STARTED
 implementation_authorized: false
 ```
 
@@ -56,7 +57,7 @@ implementation_authorized: false
 Foco inicial: sistema pessoal de trabalho com IA para LEANDRO, continuidade durável, equipes especializadas e prova em uso real antes de generalização.
 
 ### Q2 — Continuidade de contexto
-`LAYERED_CONTINUITY_ARCHITECTURE`. Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
+`LAYERED_CONTINUITY_ARCHITECTURE`. Checkpoint 004.
 
 ### Q3 — Agente MCF
 `Agent Contract`; `AGENTE != MODELO`; `CAPABILITY != AUTHORITY`. Checkpoint 005.
@@ -83,56 +84,50 @@ Foco inicial: sistema pessoal de trabalho com IA para LEANDRO, continuidade dur�
 `MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`; Constitutional Kernel + Core Services; plugins/skills/profiles/factories governados. Checkpoint 012.
 
 ### Q11 — Infraestrutura e placement
-`PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`; logical planes, durable dispatch, leases + fencing/epoch, fail-closed em partições, recovery coerente e provider-neutral Core. Checkpoint 013.
+`PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`; logical planes, durable dispatch, fencing/epoch, fail-closed em partições, recovery coerente e provider-neutral Core. Checkpoint 013.
 
 ### Q12 — Segurança, permissões e gates
-`POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`; default deny, delegação atenuante, enforcement fora do modelo, HUMAN_GATE de LEANDRO effect-bound/replay-protected, secret minimization, worker blast-radius limitado e supply-chain trust verificável. Checkpoint 014.
+`POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`; default deny, delegação atenuante, enforcement fora do modelo, HUMAN_GATE de LEANDRO effect-bound/replay-protected, secret minimization e supply-chain trust verificável. Checkpoint 014.
 
 ### Q13 — Métricas e prova de valor
-`PREDECLARED_COMPARATIVE_VALUE_EVALUATION`; Evaluation Contract prévio, baseline crível, hard constraints antes de otimização, scorecard multidimensional, uncertainty/generalization scope e `component_value_evidence` para Q15. Checkpoint 015.
+`PREDECLARED_COMPARATIVE_VALUE_EVALUATION`; Evaluation Contract prévio, baseline crível, hard constraints antes de otimização, scorecard multidimensional e evidência para Q15. Checkpoint 015.
 
 ### Q14 — Portabilidade e utilidade externa
+`CLEAN_ROOM_PORTABILITY_AND_EXTERNAL_UTILITY_VALIDATION`; portability matrix, clean-room, migration-safe activation, authority rebinding, exit portability, Fresh Project/Operator/Context e níveis de evidência externa. Checkpoint 016.
+
+### Q15 — Preservar, simplificar, remover ou substituir
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW`
 
-Decisão: `CLEAN_ROOM_PORTABILITY_AND_EXTERNAL_UTILITY_VALIDATION`.
+Decisão: `PRESERVE_INVARIANTS_REDUCE_IMPLEMENTATION`.
 
 Síntese:
 
-- portabilidade é matriz, não booleano;
-- clean-room usa artefato identificado e não depende de working tree, chat anterior ou dependências não documentadas;
-- compatibility envelope e negative tests precisam ser declarados;
-- dimensões: runtime, provider, data, operational, project/domain, context e exit portability;
-- níveis de evidência: `DECLARED`, `CONFORMANCE_TESTED`, `MIGRATION_PROVED`, `FIELD_PROVED`;
-- migração usa checkpoint coerente e trata in-flight tasks/effects para impedir replay silencioso;
-- import passa por `VALIDATE -> RECONCILE -> ACTIVATE`; nenhum novo efeito material antes da ativação;
-- HUMAN_GATE/temporary authority não atravessam automaticamente ambientes;
-- secrets são rebindados, não copiados como estado normal;
-- target policy/capabilities devem satisfazer hard requirements;
-- semantic equivalence não exige byte identity; identity mapping auditável é permitido;
-- export sozinho não prova portabilidade; import/reconstruction precisa ser testado;
-- evidence references externas precisam continuar resolvíveis/arquivadas ou ser marcadas broken;
-- Factory/Profile/default distribution também entram na prova para detectar lock-in deslocado;
-- Fresh Project, Fresh Operator e Fresh Context fazem parte da sequência de validação;
-- external utility distingue `DEMO`, `CONTROLLED_TRIAL`, `INDEPENDENT_TRIAL`, `FIELD_USE`;
-- onboarding esperado é separado de rescue/hidden manual fixes;
-- uma experiência externa não autoriza generalização universal;
-- Portability Receipt registra a prova;
-- claims preservados exigem futura portability regression suite;
-- Q14 reutiliza a metodologia de Q13.
+- preservar invariantes/capacidades, não necessariamente implementações atuais;
+- disposições: `PRESERVE`, `SIMPLIFY`, `REPLACE`, `REMOVE`, `INCONCLUSIVE`, `ADD_REQUIRED`;
+- ausência de evidência exige `INCONCLUSIVE` em vez de poda inventada;
+- `REMOVE_FROM_CORE != DELETE`;
+- durable state, evidence/provenance, transition ledger, receipts, governed effects, fail-closed, TEAM_FIRST, Agent/Skill Contracts, observability/recovery e stable baseline são preservados semanticamente;
+- receipts/docs operacionais devem ser automatizados/derivados sem remover auditabilidade;
+- keyword planner, special-case PermissionEngine, HDF com identidades hardcoded e taxonomia A/B/C canônica futura devem ser substituídos gradualmente;
+- 29 agentes permanecem como história/contratos, mas não como requisito do Core e seu default ativo fica sujeito a evidência;
+- 16 skills permanecem como evidência/regressão, sem congelar provider bindings ou handoffs atuais;
+- GitHub, Render e PostgreSQL podem continuar adapters/defaults, não identidade constitucional;
+- runtime deve reduzir coupling ao host `rede-social-agentes` por boundary lógico, sem implicar microservices;
+- stable v1.0.0 é baseline/migration source, não rollback automático após mudança de dados/schema;
+- disposition decisions precisam respeitar dependency graph;
+- sunset exige replacement, semantic conformance, migration/compatibility e ausência de dependência ativa;
+- capabilities novas aprovadas em Q1–Q14 entram como `ADD_REQUIRED`, sem autorização de implementação.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-016.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-017.md`.
 
 ---
 
-## 4. Perguntas restantes
-
-### Q15 — O que deve ser preservado, simplificado, removido ou substituído?
-**Status:** `NEXT / NOT_STARTED`
-
-Classificar o que existe hoje e o que foi proposto em Q1–Q14 usando `PRESERVE / MODIFY / SIMPLIFY / REMOVE / REPLACE / ADD`, sem preservar complexidade por inércia.
+## 4. Pergunta restante
 
 ### Q16 — Qual é a arquitetura final da Fase 1 e o GO/NO-GO?
-**Status:** `PENDING`
+**Status:** `NEXT / NOT_STARTED`
+
+Reconciliar Q1–Q15; definir arquitetura alvo, boundaries finais, plano de migração/compatibilidade, acceptance criteria, riscos/recovery e GO/NO-GO conceitual. Nenhuma implementação é autorizada sem aprovação final explícita de LEANDRO conforme o protocolo vigente.
 
 ---
 
@@ -152,8 +147,8 @@ Persistir checkpoint quando houver decisão arquitetônica, aprovação de LEAND
 6. continuar exatamente na `next_question`.
 
 ```yaml
-last_completed_question: 14
-next_question: 15
-instruction: NÃO REPETIR Q1-Q14
+last_completed_question: 15
+next_question: 16
+instruction: NÃO REPETIR Q1-Q15
 implementation_authorized: false
 ```
