@@ -24,8 +24,8 @@ implementation_authorized: false
 
 ```yaml
 total_questions: 16
-last_completed_question: 10
-next_question: 11
+last_completed_question: 11
+next_question: 12
 Q1: COMPLETED
 Q2: COMPLETED_APPROVED_BY_LEANDRO
 Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -36,19 +36,20 @@ Q7: COMPLETED_APPROVED_BY_LEANDRO
 Q8: COMPLETED_APPROVED_BY_LEANDRO
 Q9: COMPLETED_APPROVED_BY_LEANDRO
 Q10: COMPLETED_APPROVED_BY_LEANDRO
-Q11_started: false
+Q11: COMPLETED_APPROVED_BY_LEANDRO
+Q12_started: false
 implementation_authorized: false
 ```
 
-**Não repetir Q1–Q10 salvo solicitação explícita de LEANDRO.**
+**Não repetir Q1–Q11 salvo solicitação explícita de LEANDRO.**
 
-Q11 é:
+Q12 é:
 
-> **Como deve funcionar a infraestrutura e o placement de serviços?**
+> **Quais controles de segurança, permissões e gates são essenciais?**
 
 ## Ordem de leitura
 
-1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md`
+1. `docs/proposals/MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`
 2. `docs/proposals/MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`
 3. `docs/proposals/MCF-MASTER-ROADMAP-001.md`
 4. checkpoints anteriores conforme necessário
@@ -66,29 +67,32 @@ Q11 é:
 - Q8: `LAYERED_CANONICAL_PERSISTENCE`.
 - Q9: `ACTIONABLE_PROGRESSIVE_OBSERVABILITY`.
 - Q10: `MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`.
+- Q11: `PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`.
 
-Invariantes centrais da Q10:
+Invariantes centrais da Q11:
 
 ```text
-EXTENSION -> CORE CONTRACTS = ALLOWED
-CORE -> SPECIFIC EXTENSION = FORBIDDEN
-INSTALLED != ENABLED != AUTHORIZED
-PLUGIN_CAPABILITY != AGENT_AUTHORITY
-PROFILE = DECLARATIVE_CONFIGURATION
-FACTORY = BLUEPRINT_GENERATOR, NOT_RUNTIME_AUTHORITY
-UNKNOWN_EXTENSION_COMPATIBILITY = NOT_LOADABLE
-NUMERIC_R_LABEL_WITHOUT_NAMESPACE = FORBIDDEN
+LOGICAL_PLANE != PHYSICAL_SERVICE
+SINGLE_LOGICAL_AUTHORITY != SINGLE_MACHINE_FOREVER
+LEASE_ALONE != SPLIT_BRAIN_PROTECTION
+QUEUE != TASK SOURCE_OF_TRUTH
+WORKER_PRIVATE_SCRATCH != PROJECT_TRUTH
+LOCAL_STATE_PLANE_MAY_BE_CANONICAL
+PLACEMENT != AUTHORITY
+UNKNOWN_AUTHORITY = DENY
+BLIND_RETRY = FORBIDDEN
+APP_REDEPLOY != DATA_RESTORE
+PORTABLE != ACTIVE_MULTI_CLOUD
+WORKER_ALIVE != TASK_PROGRESSING
 ```
 
-O checkpoint Q6 permanece como registro histórico aprovado; novas especificações devem distinguir explicitamente `risk` de `assurance` por namespace ou nomes semânticos.
-
-Checkpoint detalhado da Q10: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md`.
+Checkpoint detalhado da Q11: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
 
 ## Próxima ação
 
-- Q1–Q10 concluídas e aprovadas por LEANDRO.
-- Q11 ainda não começou.
-- Próximo passo permitido: iniciar Q11 apenas como Discovery.
+- Q1–Q11 concluídas e aprovadas por LEANDRO.
+- Q12 ainda não começou.
+- Próximo passo permitido: iniciar Q12 apenas como Discovery.
 - Não implementar NextGen antes de Q1–Q16, consolidação, arquitetura alvo, plano de migração, critérios de aceite e aprovação final de LEANDRO.
 
 ## Comando mínimo de retomada
