@@ -1095,6 +1095,164 @@ DOCUMENT_COMPATIBILITY + CONTRACT_COMPATIBILITY + RUNTIME_COMPATIBILITY
 V1_0_RELEASE_IDENTITY_REMAINS_IMMUTABLE
 ```
 
+## V11-Q19 — Evidence-Layered Qualification Matrix Contract
+
+```yaml
+decision_id: V11-Q19
+question: Q19
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: EVIDENCE_LAYERED_REAL_SCENARIO_QUALIFICATION_MATRIX
+```
+
+### Problema
+
+Definir quais provas são necessárias para afirmar que a v1.1.0 realmente funciona, cobrindo não apenas componentes isolados e caminho feliz, mas também continuidade em novo chat, recovery, autoridade humana/técnica, compatibilidade v1.0, migração, precedência de fontes, falhas e ausência de arquitetura paralela.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+qualification_layers:
+  - UNIT_AND_CONTRACT
+  - INTEGRATION
+  - REAL_E2E_SCENARIOS
+  - NEGATIVE_AND_FAILURE_PATHS
+  - RECOVERY_AND_RECONCILIATION
+  - V1_0_COMPATIBILITY_AND_MIGRATION
+  - CLEAN_ROOM_CONTINUITY
+  - STRUCTURAL_NO_PARALLEL_ARCHITECTURE
+  - EXACT_HEAD_REGRESSION
+  - INDEPENDENT_REVIEW
+
+required_scenario_families:
+  - NEW_PROJECT
+  - ADOPT_EXISTING_PROJECT
+  - FAST_RESUME_CLEAN_ROOM_NEW_CHAT
+  - RECONCILE_EXPLAINABLE_DRIFT
+  - RECOVER_MCF_PROJECT_BROKEN_CONTINUITY
+  - TEAM_FIRST_TECHNICAL_AUTONOMY
+  - HUMAN_GATE_MATERIAL_BOUNDARY
+  - STANDING_AUTHORIZATION_POSITIVE_AND_NEGATIVE
+  - PENDING_GATE_PARTIAL_BLOCKING
+  - V1_0_LEGACY_COMPATIBILITY
+  - MIGRATION_FAILURE_AND_FAIL_CLOSED
+  - SOURCE_AUTHORITY_PRECEDENCE
+  - MACHINE_INFERENCE_NOT_HUMAN_INTENT
+  - NO_PARALLEL_ARCHITECTURE
+  - EXACT_HEAD_REGRESSION
+
+clean_room_continuity:
+  previous_chat_transcript_required: false
+  hidden_previous_chat_memory_as_required_input: false
+  allowed_inputs:
+    - REPOSITORY
+    - RESUME_CARD
+    - CANONICAL_CHECKPOINT
+    - AUTHORITATIVE_RECORDS
+    - LIVE_STATE
+  expected_route_when_consistent: FAST_RESUME
+
+critical_contract_testing:
+  positive_path_required: true
+  negative_path_required: true
+  fail_closed_boundaries_required: true
+  team_autonomy_must_also_be_proved: true
+
+evidence_contract:
+  per_case_required:
+    - TEST_CASE_ID
+    - INPUT
+    - EXPECTED_RESULT
+    - EXECUTION_REFERENCE
+    - OBSERVED_RESULT
+    - EVIDENCE_REFERENCE
+    - PASS_OR_FAIL
+    - TESTED_HEAD
+  narrative_only_claim_is_sufficient: false
+
+exact_head:
+  evidence_must_bind_to_exact_sha: true
+  material_change_after_qualification_requires_affected_reassessment: true
+
+compatibility_proof:
+  document_compatibility: REQUIRED
+  contract_compatibility: REQUIRED
+  runtime_compatibility: REQUIRED
+  legacy_artifact_silent_rewrite_forbidden: true
+
+migration_failure:
+  partial_migration_may_be_activated: false
+  original_must_be_preserved: true
+  compatibility_mode_when_possible: true
+  otherwise: FAIL_CLOSED
+
+source_authority:
+  derived_view_may_override_authoritative_record: false
+  historical_snapshot_may_override_live_volatile_state: false
+  machine_inference_may_become_human_intent_silently: false
+
+independent_review:
+  implementer_as_sole_final_qualifier: false
+  independent_validation_or_audit_required: true
+
+safe_test_environment:
+  disposable_or_controlled_fixtures_preferred: true
+  production_effect_implied_by_test_authorization: false
+  real_financial_commitment_implied_by_test_authorization: false
+  real_sensitive_personal_data_required: false
+  destructive_real_world_action_required: false
+
+qualification_verdicts:
+  PASS:
+    blocking_scenarios_pass: true
+    evidence_complete: true
+    compatibility_proved: true
+    recovery_proved: true
+  CONDITIONAL_PASS:
+    critical_behavior_proved: true
+    only_non_blocking_limitations_remain: true
+    limitations_documented: true
+  FAIL:
+    blocking_contract_failure: true
+
+implementation_authorized: false
+```
+
+### Regras resultantes
+
+- documentação, implementação, teste e qualificação são estados distintos; existência de código ou teste unitário não prova a v1.1 completa;
+- qualificação combina unit/contract, integração, E2E real, caminhos negativos, recovery/reconciliation, compatibilidade/migração v1.0, clean-room continuity, prova estrutural e revisão independente;
+- o teste de novo chat deve funcionar sem transcript do chat anterior como requisito e retomar corretamente a partir das fontes duráveis + estado live;
+- `TEAM_FIRST` deve ser provado positivamente: escolha técnica ordinária dentro do envelope não deve gerar HUMAN_GATE desnecessário;
+- HUMAN_GATE, standing authorization e partial blocking devem possuir casos permitidos e casos bloqueados;
+- recovery deve ser exercitado com checkpoint ausente/inválido, fonte conflitante, divergência material inexplicável ou evidência insuficiente;
+- compatibilidade v1.0 deve provar documento, contrato e runtime; migração não pode reescrever artefatos históricos silenciosamente;
+- falha de migração não ativa sucessor parcial e preserva o original;
+- precedência de fontes e separação `INFERENCE != HUMAN_INTENT` devem ser testadas diretamente;
+- evidência de cada caso deve estar vinculada ao SHA exato qualificado; mudança material posterior reabre os testes afetados;
+- executor/implementador não pode ser a única autoridade do veredito final;
+- testes devem preferir ambientes descartáveis/controlados e não autorizam produção, gasto real, dado sensível real ou ação destrutiva por simples existência do plano de qualificação;
+- o veredito de qualificação é `PASS`, `CONDITIONAL_PASS` ou `FAIL`, com falha de contrato bloqueante impedindo PASS.
+
+Princípios:
+
+```text
+DOCUMENTED != IMPLEMENTED != TESTED != QUALIFIED
+QUALIFICATION_REQUIRES_REAL_BEHAVIOR_EVIDENCE
+CLEAN_ROOM_RESUME_MUST_NOT_REQUIRE_PREVIOUS_CHAT
+CRITICAL_CONTRACT = POSITIVE_PATH + NEGATIVE_PATH
+TEAM_AUTONOMY_MUST_BE_TESTED_NOT_ONLY_HUMAN_BLOCKING
+TEST_EVIDENCE_BINDS_TO_EXACT_HEAD
+MATERIAL_HEAD_CHANGE -> REASSESS_AFFECTED_TESTS
+LEGACY_COMPATIBILITY_MUST_BE_PROVED_NOT_ASSUMED
+MIGRATION_FAILURE_MUST_NOT_ACTIVATE_PARTIAL_SUCCESSOR
+INDEPENDENT_REVIEW_REQUIRED_FOR_FINAL_QUALIFICATION
+```
+
 ---
 
 ## DISCOVERY-INPUT-001 — Codex Local-First
