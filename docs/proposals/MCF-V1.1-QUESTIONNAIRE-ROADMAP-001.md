@@ -26,15 +26,15 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 4
-questions_remaining: 16
-last_completed_question: 4
-next_question: 5
+questions_completed: 5
+questions_remaining: 15
+last_completed_question: 5
+next_question: 6
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
 question_04: COMPLETED_APPROVED_BY_LEANDRO
-question_05: NOT_STARTED
+question_05: COMPLETED_APPROVED_BY_LEANDRO
 question_06: NOT_STARTED
 question_07: NOT_STARTED
 question_08: NOT_STARTED
@@ -61,48 +61,41 @@ implementation_authorized: false
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `HYBRID_INTENT_AND_EXPLICIT_ACTIVATION` — Opção D.
 
-Chat normal permanece fora do MCF. Comando explícito ou intenção clara de projeto pode iniciar `ACTIVATING`; `ACTIVE` exige bootstrap/metodologia/fonte de verdade verificável.
-
 ### Q2 — Como o MCF deve operar em diferentes ambientes de execução?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `LOCAL_FIRST_REMOTE_CHECKPOINTED` — Opção D.
-
-- `CHATGPT_REMOTE` → conectores/ferramentas remotas;
-- `CODEX_LOCAL` → terminal/workspace/Git local;
-- GitHub continua memória institucional, checkpoint, CI, revisão e integração;
-- checkpoint remoto obrigatório em boundaries semânticos/de risco;
-- `EDIT != COMMIT != PUSH != PR`;
-- `LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED`;
-- boundary material/governado sem evidência remota aplicável → `FAIL_CLOSED`.
 
 ### Q3 — Como o bootstrap encontra e verifica a versão/metodologia vigente?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `VERIFIED_TWO_STAGE_BOOTSTRAP` — Opção D.
 
-- locator mínimo aponta para repositório oficial e `docs/bootstrap/MCF-BOOTSTRAP-INDEX.yaml`;
-- resolução segue `VALID_PROJECT_PIN > EXPLICIT_LEANDRO_SELECTION > CURRENT_STABLE`;
-- metodologia carregada deve ser pinada por tag/SHA imutável;
-- projetos não fazem silent mid-mission upgrade;
-- `DISCOVERY`, `PLANNING`, `RC`, `EXPERIMENTAL`, `ALPHA` e `BETA` não são defaults operacionais;
-- `ACTIVE` exige repositório, versão, referência imutável e bootstrap verificados.
-
 ### Q4 — Como deve funcionar o fail-closed quando GitHub/bootstrap/fonte canônica não estiver acessível?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `VERIFIED_DEGRADED_OPERATION_WITH_FAIL_CLOSED_BOUNDARIES` — Opção D.
 
-- projeto novo sem bootstrap verificável fica `ACTIVATING_BLOCKED`;
-- projeto existente pode entrar em `ACTIVE_DEGRADED_VERIFIED` somente com project pin/metodologia local já verificáveis;
-- trabalho degradado permitido restringe-se a análise, planejamento, documentação local, testes, mudanças reversíveis e commits locais;
-- merge, deploy, release, publicação, integração final, upgrade de metodologia, mudança de autoridade, review terminal e efeito externo material sem evidência remota ficam bloqueados;
-- inconsistência entre fontes produz `CANONICAL_CONFLICT_BLOCKED` e `FAIL_CLOSED`;
-- cache local prova sua própria identidade, não qual é a `CURRENT_STABLE`;
-- retorno do remoto exige revalidação canônica, reconciliação do `CHECKPOINT_DEBT` e `Degraded Operation Receipt`;
-- autoridade de LEANDRO não substitui evidência técnica ausente.
-
 ### Q5 — Quais modos de entrada de projeto o MCF deve reconhecer?
-Candidatos: `NEW_PROJECT`, `EXISTING_PROJECT`, `RESUME_MCF_PROJECT`.
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `THREE_CANONICAL_ENTRY_MODES_WITH_RECOVERY_ROUTE` — Opção D.
+
+```yaml
+PROJECT_ENTRY_MODE:
+  - NEW_PROJECT
+  - ADOPT_EXISTING_PROJECT
+  - RESUME_MCF_PROJECT
+RECOVERY_ROUTE:
+  - RECOVER_MCF_PROJECT
+```
+
+- `NEW_PROJECT` → sem implementação material a preservar;
+- `ADOPT_EXISTING_PROJECT` → projeto existente sem continuidade MCF verificável;
+- `RESUME_MCF_PROJECT` → projeto com continuidade MCF verificável;
+- `RECOVER_MCF_PROJECT` → rota excepcional para continuidade MCF quebrada/não verificável;
+- classificação usa intenção humana + evidência de máquina;
+- LEANDRO não precisa escolher códigos internos;
+- `PROJECT_ENTRY_CLASSIFICATION_UNRESOLVED` bloqueia execução até resolução.
 
 ### Q6 — Como deve funcionar a entrada de um projeto novo?
+Definir mini-triagem, identidade/repositório, momento do methodology pin, início do Human Intent Discovery, limites pré-Intent Alignment Gate e artefatos mínimos antes de `MCF-START-MISSION`.
 
 ### Q7 — Como deve funcionar a entrada de um projeto existente antes de perguntar ao humano?
 
@@ -150,6 +143,6 @@ Para cada Q aprovada:
 
 ## 5. Próxima ação
 
-> **Q5 — Quais modos de entrada de projeto o MCF deve reconhecer?**
+> **Q6 — Como deve funcionar a entrada de um projeto novo (`NEW_PROJECT`)?**
 
-Não iniciar Q6 antes de decisão explícita de LEANDRO sobre Q5.
+Não iniciar Q7 antes de decisão explícita de LEANDRO sobre Q6.
