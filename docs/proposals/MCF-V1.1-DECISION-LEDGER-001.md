@@ -595,6 +595,129 @@ CHECKPOINT + LIVE_STATE -> RECONCILIATION
 PLAN_EXISTS != PLAN_IS_AUTHORITY
 ```
 
+## V11-Q15 — Human Envelope / Delegated Technical Authority Contract
+
+```yaml
+decision_id: V11-Q15
+question: Q15
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: DELEGATED_TECHNICAL_AUTONOMY_WITHIN_HUMAN_APPROVED_ENVELOPE
+```
+
+### Problema
+
+Definir como LEANDRO permanece autoridade humana final sem ser obrigado a microgerenciar engenharia, permitindo que a equipe MCF tome decisões técnicas e operacionais de forma autônoma dentro da intenção e dos limites previamente aprovados.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+human_authority:
+  final_human_authority: LEANDRO
+  governs:
+    - HUMAN_INTENT
+    - PROJECT_OBJECTIVE
+    - DESIRED_OUTCOME
+    - HUMAN_PRIORITIES
+    - HUMAN_CONSTRAINTS
+    - MATERIAL_HUMAN_TRADEOFFS
+  technical_micro_management_required: false
+
+human_envelope:
+  authoritative_inputs:
+    - ALIGNED_PROJECT_INTENT_PACKAGE
+    - APPLICABLE_HUMAN_DECISIONS
+    - MISSION_CONTRACT
+  team_may_silently_redefine: false
+
+team_authority:
+  delegated_technical_autonomy: true
+  valid_only_within_human_envelope: true
+  domains_include:
+    - ARCHITECTURE
+    - IMPLEMENTATION_DETAILS
+    - LIBRARIES_AND_FRAMEWORKS
+    - DATA_MODELING
+    - INFRASTRUCTURE_TECHNICAL_CHOICES
+    - TEST_STRATEGY
+    - TECHNICAL_SECURITY_CONTROLS
+    - OBSERVABILITY
+    - REFACTORING
+    - BUG_FIXING
+    - TECHNICAL_PATTERNS
+  subject_to:
+    - AGENT_COMPETENCE
+    - MISSION_CONTRACT
+    - GOVERNANCE
+    - EVIDENCE
+    - RISK_BOUNDARIES
+
+material_change_test:
+  checks:
+    - HUMAN_INTENT
+    - PROJECT_OBJECTIVE
+    - TARGET_USERS
+    - MUST_HAVE_OR_NON_GOAL
+    - HUMAN_PRIORITY_OR_TRADEOFF
+    - MATERIAL_COST_OR_RESOURCE_CONSTRAINT
+    - MATERIAL_RISK
+    - MATERIAL_EXTERNAL_EXPOSURE
+    - DEFINITION_OF_DONE
+    - DESIRED_OUTCOME
+  if_no_material_change: TEAM_AUTHORITY_CONTINUES
+  if_material_change: CROSS_HUMAN_AUTHORITY_BOUNDARY
+
+team_first:
+  ambiguity_default: ANALYZE_WITHIN_TEAM_FIRST
+  ask_leandro_for_ordinary_technical_choice: false
+  unresolved_or_out_of_envelope_decision: ESCALATE
+
+role_boundaries:
+  MESTRE:
+    - COORDINATES
+    - INTERPRETS_CONTRACTS
+    - PROTECTS_HUMAN_ENVELOPE
+    - MUST_NOT_REDEFINE_HUMAN_INTENT
+  LEO:
+    - OPERATIONAL_AUTHORITY_DELEGATED
+    - DECIDES_INTERNAL_GATES_WITHIN_SCOPE
+    - ESCALATES_OUT_OF_ENVELOPE_DECISIONS
+  SPECIALIST_AGENTS:
+    - TECHNICAL_AUTHORITY_WITHIN_COMPETENCE
+    - TECHNICAL_AUTHORITY_WITHIN_MISSION_CONTRACT
+    - MUST_NOT_PROMOTE_TECHNICAL_OPINION_TO_HUMAN_DECISION
+
+human_gate_specific_actions: DEFER_TO_Q16
+implementation_authorized: false
+```
+
+### Regras resultantes
+
+- LEANDRO governa intenção, objetivo, resultado esperado, prioridades humanas, limites e trade-offs humanos materiais;
+- a equipe MCF governa decisões técnicas e operacionais dentro do envelope humano aprovado, sem exigir aprovação humana para escolhas técnicas ordinárias;
+- `ALIGNED_PIP + HUMAN_DECISIONS + MISSION_CONTRACT` formam o envelope de autoridade aplicável;
+- a equipe não pode redefinir silenciosamente o envelope para justificar uma solução técnica;
+- antes de escalar uma ambiguidade, aplica-se `TEAM_FIRST`: especialistas analisam evidências, alternativas e consequências e tentam resolver dentro da autoridade delegada;
+- escolha técnica que não altera materialmente o envelope permanece sob autoridade da equipe;
+- mudança material de intenção, objetivo, público, must-have/non-goal, prioridade, custo/recurso, risco, exposição externa, definição de pronto ou resultado esperado cruza a fronteira da autoridade humana;
+- MESTRE protege e interpreta o envelope; LÉO exerce autoridade operacional delegada; especialistas possuem autoridade técnica limitada à competência, contrato e governança;
+- autoridade humana final não equivale a microgerenciamento técnico;
+- a lista específica de ações que exigem `HUMAN_GATE` permanece reservada para Q16.
+
+Princípios:
+
+```text
+HUMAN_FINAL_AUTHORITY != TECHNICAL_MICROMANAGEMENT
+WITHIN_APPROVED_ENVELOPE -> TEAM_DECIDES_AND_CONTINUES
+MATERIAL_ENVELOPE_CHANGE -> HUMAN_AUTHORITY_BOUNDARY
+TEAM_FIRST_BEFORE_HUMAN_ESCALATION
+TECHNICAL_OPINION != HUMAN_DECISION
+```
+
 ---
 
 ## DISCOVERY-INPUT-001 — Codex Local-First
