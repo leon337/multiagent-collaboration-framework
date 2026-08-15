@@ -37,7 +37,7 @@ FASE ZERO                                      ✅ COMPLETE_IN_MAIN
 
 FASE 1 — MCF NEXTGEN
 ├── F1.1 Discovery guiado                      🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q13 ✅ | Q14 próxima
+├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q14 ✅ | Q15 próxima
 ├── F1.3 Consolidação das decisões             ⏳
 ├── F1.4 Arquitetura alvo                      ⏳
 ├── F1.5 Plano de migração                     ⏳
@@ -63,7 +63,7 @@ phase_1:
 
 questionnaire:
   total: 16
-  completed: 13
+  completed: 14
   Q1: COMPLETED
   Q2: COMPLETED_APPROVED_BY_LEANDRO
   Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -77,7 +77,8 @@ questionnaire:
   Q11: COMPLETED_APPROVED_BY_LEANDRO
   Q12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
   Q13: COMPLETED_APPROVED_BY_LEANDRO
-  Q14: NEXT_NOT_STARTED
+  Q14: COMPLETED_APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW
+  Q15: NEXT_NOT_STARTED
 ```
 
 A aprovação de perguntas de Discovery não autoriza implementação.
@@ -90,82 +91,87 @@ A aprovação de perguntas de Discovery não autoriza implementação.
 Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade durável; provar antes de generalizar.
 
 ## Q2 — Continuidade
-`LAYERED_CONTINUITY_ARCHITECTURE`; memória, evidência, autoridade e estado live separados; Project Capsule derivado; `UNKNOWN` permanece `UNKNOWN`.
+`LAYERED_CONTINUITY_ARCHITECTURE`; memória, evidência, autoridade e live state separados; Project Capsule derivado; `UNKNOWN` permanece `UNKNOWN`.
 
 ## Q3 — Agente MCF
-`Agent Contract`; `AGENTE != MODELO`; `CAPABILITY != AUTHORITY`; `AGENT OUTPUT != PROJECT TRUTH`.
+`Agent Contract`; `AGENTE != MODELO`; `CAPABILITY != AUTHORITY`; `AGENT OUTPUT != PROJECT_TRUTH`.
 
 ## Q4 — Autonomia
 `MISSION-BOUNDED + RISK-BASED AUTONOMY`; Authority Envelope; TEAM_FIRST; HUMAN_GATE exclusivamente de LEANDRO quando exigido.
 
 ## Q5 — Model Router
-`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements; capability registry; fallback compatível/limitado; Routing Receipt.
+`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements, capability registry, fallback compatível/limitado e Routing Receipt.
 
 ## Q6 — Independência e assurance
-`INDEPENDENCE != DIVERSITY`; revisão independente exige separação observável, blind-first, evidência própria e decisão própria; assurance proporcional ao risco.
+`INDEPENDENCE != DIVERSITY`; blind-first, evidência própria, decisão própria e assurance proporcional ao risco.
 
 ## Q7 — Orquestração
-`HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`; outer graph acíclico; loops limitados; paralelismo seguro; joins; replanning versionado; Complexity Budget; Completion Contract.
+`HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`; outer graph acíclico, loops limitados, paralelismo seguro, joins, replanning versionado, Complexity Budget e Completion Contract.
 
 ## Q8 — Persistência
-`LAYERED_CANONICAL_PERSISTENCE`; canonical knowledge, operational state, transition ledger, evidence e derived views; consistência durável, provenance, freshness, schema evolution e restorability.
+`LAYERED_CANONICAL_PERSISTENCE`; canonical knowledge, operational state, transition ledger, evidence e derived views; provenance, freshness, schema evolution e restorability.
 
 ## Q9 — Experiência humana e observabilidade
-`ACTIONABLE_PROGRESSIVE_OBSERVABILITY`; atenção humana separada de severidade operacional; Decision Inbox; aprovação version-bound; UI derivada; progressive disclosure; causalidade tipada; notificações por mudança material.
+`ACTIONABLE_PROGRESSIVE_OBSERVABILITY`; Decision Inbox, atenção humana separada de severidade, aprovação version-bound, UI derivada e progressive disclosure.
 
 ## Q10 — Core vs extensões
-`MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`; Constitutional Kernel + Core Services; extensões governadas/versionadas; dependência Extension→Core; profiles declarativos; factories como blueprint generators; compatibilidade fail-closed.
+`MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`; Constitutional Kernel + Core Services; extensões governadas/versionadas e provider-specific adapters fora da identidade constitucional.
 
 ## Q11 — Infraestrutura e placement
-`PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`; verdade/governança centralizadas logicamente, execução distribuível conforme hard requirements; durable dispatch, attempt identity, fencing/epoch, fail-closed em partições, recovery coerente e portabilidade sem provider como identidade constitucional.
+`PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`; logical planes, durable dispatch, attempt identity, leases + fencing/epoch, fail-closed em partições, recovery coerente e provider-neutral Core.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
 
 ## Q12 — Segurança, permissões e gates
-LEANDRO aprovou conceitualmente `POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`.
-
-Princípios centrais: default deny; cadeia de delegação atenuante; enforcement fora do modelo para efeitos materiais; HUMAN_GATE exclusivo de LEANDRO, vinculado ao efeito/precondições e protegido contra replay; trust provenance preservada; secrets minimizados; workers com blast radius limitado; cross-project deny; supply-chain trust verificável; security policy como ativo privilegiado.
+`POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`; default deny, delegação atenuante, enforcement fora do modelo, HUMAN_GATE de LEANDRO effect-bound/replay-protected, secret minimization, worker blast-radius limitado, cross-project deny e supply-chain trust verificável.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`.
 
 ## Q13 — Métricas, prova de valor e custo
-LEANDRO aprovou `PREDECLARED_COMPARATIVE_VALUE_EVALUATION`.
+`PREDECLARED_COMPARATIVE_VALUE_EVALUATION`; Evaluation Contract prévio, baselines críveis, hard constraints antes de otimização, scorecard multidimensional, uncertainty/generalization scope, custo marginal/estrutural e evidência para Q15.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-015.md`.
+
+## Q14 — Portabilidade e utilidade externa
+LEANDRO aprovou `CLEAN_ROOM_PORTABILITY_AND_EXTERNAL_UTILITY_VALIDATION` após auditoria e revisão final sem bloqueio conceitual remanescente.
 
 Princípios:
 
-- toda alegação forte de valor usa Evaluation Contract definido antes da execução;
-- baseline deve ser crível e alinhado à hipótese, com modos `CONTROLLED_COMPONENT`, `EQUAL_BUDGET` ou `PRACTICAL_ALTERNATIVE`;
-- scenario governance distingue Development, Regression, Holdout e Real-world sets;
-- candidate self-grading não basta; ground truth determinístico e avaliação independente/blind são preferidos quando aplicável;
-- avaliação estocástica relevante usa repetição e uncertainty reporting;
-- versões relevantes de candidate, baseline, model/provider, profile, grader e scenario são registradas;
-- hard constraints precedem otimização e critical failures não podem desaparecer em médias;
-- `UNAUTHORIZED_SUCCESS = FAILURE`;
-- correct block/unknown podem ser corretos, mas false block/false unknown também são falhas;
-- scorecard é multidimensional por default e trade-off/Pareto é resultado legítimo;
-- custo marginal, custo estrutural e custo da própria avaliação são distinguidos;
-- medições declaram provenance: `OBSERVED`, `COMPUTED`, `HUMAN_REPORTED`, `ESTIMATED`;
-- controlled benchmark e field observation têm força causal diferente;
-- conclusões permitidas: `BENEFICIAL`, `NON_INFERIOR`, `TRADEOFF`, `REGRESSED`, `DISQUALIFIED_HARD_CONSTRAINT`, `INCONCLUSIVE`;
-- complexidade precisa demonstrar valor mensurável ou proteger invariante obrigatório;
-- preservar invariante não implica preservar a implementação atual;
-- Q13 gera `component_value_evidence` para informar Q15.
+- portabilidade é matriz por dimensão/camada, não booleano;
+- clean-room usa artifact identity/versionamento e proíbe dependências tácitas;
+- compatibility envelope e negative tests definem o que é suportado;
+- portabilidade cobre runtime, provider, data, operação, projeto/domínio, contexto e exit portability;
+- níveis de evidência: `DECLARED`, `CONFORMANCE_TESTED`, `MIGRATION_PROVED`, `FIELD_PROVED`;
+- migração usa checkpoint coerente, trata in-flight work e proíbe replay material silencioso;
+- import segue `VALIDATE -> RECONCILE -> ACTIVATE`; nenhum novo efeito material antes da ativação;
+- HUMAN_GATE, authority temporária, leases e credentials não atravessam ambientes automaticamente;
+- secrets são rebindados, não copiados como estado do projeto;
+- target policy/capabilities devem preservar hard requirements;
+- semantic equivalence preserva significado/lineage, não byte identity;
+- export só é prova quando import/reconstruction é demonstrado para o claim;
+- external evidence references precisam preservar resolubilidade/integridade ou ser classificadas como quebradas/arquivadas;
+- lock-in deve ser testado também em Factory/Profile/Blueprint/defaults, não só no Core;
+- Fresh Project, Fresh Operator e Fresh Context testam generalização/continuidade;
+- external utility distingue Demo, Controlled Trial, Independent Trial e Field Use;
+- onboarding esperado é separado de rescue e hidden manual fixes;
+- uma experiência externa não autoriza claim universal;
+- Portability Receipt registra evidência e futura regression suite protege claims persistentes;
+- Q14 reutiliza a metodologia de avaliação da Q13.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-015.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-016.md`.
 
 ---
 
 # 5. Próximos blocos
 
-Q14–Q16 decidirão:
+Q15–Q16 decidirão:
 
-- portabilidade e validação externa;
-- simplificação/remoção/substituição;
-- arquitetura final e GO/NO-GO.
+- o que preservar, simplificar, remover, substituir ou adicionar;
+- arquitetura final da Fase 1 e GO/NO-GO.
 
 Próxima pergunta:
 
-> **Q14 — Como validar portabilidade e utilidade fora do ambiente atual?**
+> **Q15 — O que deve ser preservado, simplificado, removido ou substituído?**
 
 ---
 
@@ -191,16 +197,16 @@ Pré-condições:
 ```yaml
 phase_zero: COMPLETE_IN_MAIN
 phase_one_discovery: ACTIVE_DISCOVERY
-last_completed_question: 13
-next_question: 14
+last_completed_question: 14
+next_question: 15
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q14
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q15
 ```
 
 Ordem mínima de retomada:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-015.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-016.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este Master Roadmap;
 5. GitHub/provider live para estado mutável.
