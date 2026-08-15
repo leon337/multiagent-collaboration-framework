@@ -77,39 +77,106 @@ A ativação por intenção não equivale automaticamente a afirmar que o MCF fo
 
 ---
 
+## V11-Q02 — Execution Environment Contract
+
+```yaml
+decision_id: V11-Q02
+question: Q2
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: LOCAL_FIRST_REMOTE_CHECKPOINTED
+```
+
+### Problema
+
+Decidir como a mesma metodologia/governança do MCF deve operar em ambientes com capacidades diferentes, especialmente ChatGPT remoto e Codex com terminal/workspace local, sem sacrificar velocidade nem continuidade durável.
+
+### Alternativas consideradas
+
+- A — `GITHUB_CENTRIC_EVERYWHERE`: sincronizar quase toda alteração no GitHub;
+- B — `LOCAL_UNTIL_FINISHED`: trabalhar localmente até o produto estar pronto;
+- C — `LOCAL_FIRST_TIME_BASED_CHECKPOINTS`: checkpoints remotos por intervalo de tempo;
+- D — `LOCAL_FIRST_REMOTE_CHECKPOINTED`: execução local por padrão, com checkpoints remotos em boundaries semânticos e de risco.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Contrato conceitual aprovado
+
+```yaml
+same_mcf_methodology_across_hosts: true
+
+supported_execution_modes_v1_1:
+  - CHATGPT_REMOTE
+  - CODEX_LOCAL
+
+CHATGPT_REMOTE:
+  primary_execution_plane: CONNECTORS_AND_REMOTE_TOOLS
+
+CODEX_LOCAL:
+  primary_execution_plane: LOCAL_WORKSPACE_TERMINAL_AND_GIT
+  exact_remote_baseline_required: true
+  isolated_branch_or_worktree: true
+  local_commits_allowed: true
+  push_every_edit: false
+  remote_checkpoint_required: true
+
+checkpoint_boundaries:
+  - PHASE_OR_SUBMISSION_COMPLETED
+  - LONG_PAUSE_OR_SESSION_END
+  - BEFORE_HUMAN_GATE
+  - BEFORE_INDEPENDENT_REVIEW
+  - MATERIAL_VALIDATION_PASS
+  - BEFORE_HIGH_RISK_BOUNDARY
+  - AGENT_HANDOFF
+  - INTEGRATION_CANDIDATE
+
+pull_request:
+  required_at_every_checkpoint: false
+  required_for_integration_boundary: true
+
+remote_unavailable:
+  low_risk_reversible_local_work: CONTINUE_WITH_CHECKPOINT_DEBT
+  material_or_governed_boundary: FAIL_CLOSED
+```
+
+### Semântica aprovada
+
+```text
+EDIT != COMMIT != PUSH != PR
+```
+
+- `COMMIT_LOCAL`: organiza e protege trabalho no workspace local;
+- `PUSH/CHECKPOINT_REMOTO`: torna o estado durável fora do host local;
+- `PR`: boundary de integração/revisão, não obrigatório a cada checkpoint.
+
+### Princípios resultantes
+
+- `MCF_METHOD != EXECUTION_HOST`;
+- a governança, autoridade, gates, evidência e contrato de missão permanecem invariantes entre hosts;
+- o plano de execução pode variar conforme as capacidades do ambiente;
+- GitHub não precisa intermediar cada edição do Codex;
+- GitHub permanece memória institucional, superfície de colaboração, checkpoints, CI, revisão e integração;
+- trabalho local não sincronizado deve ser distinguido de estado remoto durável;
+- `LOCAL_UNCHECKPOINTED != REMOTE_CHECKPOINTED`;
+- indisponibilidade remota não autoriza atravessar HUMAN_GATE, review, deploy, merge, publicação ou outro boundary material sem evidência remota aplicável.
+
+### Consequências para especificação futura
+
+A v1.1 deverá permitir que o runtime/protocolo reconheça o ambiente de execução sem duplicar a metodologia. A implementação concreta de adapters/host contracts permanece fora desta decisão de Discovery.
+
+---
+
 ## DISCOVERY-INPUT-001 — Codex Local-First
 
 ```yaml
 input_id: DISCOVERY-INPUT-001
 source: LEANDRO
-status: PENDING_DECISION
+status: RESOLVED_BY_V11_Q02
 mapped_question: Q2
 not_a_decision: true
+resolution: V11-Q02
 ```
 
-### Insight registrado
-
-Quando o MCF for invocado dentro do Codex, o Codex já possui terminal e workspace local. Em vez de realizar cada alteração através do GitHub como superfície de execução, ele pode trabalhar diretamente em um repositório/local workspace, produzir código, executar testes e criar commits localmente com maior velocidade, sincronizando com o GitHub em boundaries/checkpoints apropriados.
-
-### Refinamento preliminar do MESTRE — ainda não aprovado
-
-Candidato de arquitetura:
-
-```text
-MCF METHOD / GOVERNANCE
-          ↓
-EXECUTION ENVIRONMENT ADAPTER
-      ↙                 ↘
-CHATGPT_REMOTE       CODEX_LOCAL
-      ↓                 ↓
-connectors/services   terminal/workspace/git
-      └────────┬────────┘
-               ↓
-        DURABLE CHECKPOINTS
-               ↓
-             GITHUB
-```
-
-Nome candidato: `LOCAL_FIRST_REMOTE_CHECKPOINTED`.
-
-A hipótese evita tanto `GITHUB_EVERY_EDIT` quanto `LOCAL_ONLY_UNTIL_FINISHED`. A frequência e os boundaries de push/checkpoint serão decididos na Q2.
+O insight de execução local no Codex foi incorporado e decidido formalmente em `V11-Q02` como `LOCAL_FIRST_REMOTE_CHECKPOINTED`.
