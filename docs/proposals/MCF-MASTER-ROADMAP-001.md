@@ -53,7 +53,7 @@ FASE ZERO — CONSTRUIR PARA APRENDER
 FASE 1 — REESTRUTURAR COM O QUE APRENDEMOS
 │
 ├── F1.1 Discovery guiado                       🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                    🔍 Q1–Q5 ✅ | Q6 próxima
+├── F1.2 Questionário Q1–Q16                    🔍 Q1–Q6 ✅ | Q7 próxima
 ├── F1.3 Consolidação das decisões              ⏳
 ├── F1.4 Arquitetura alvo                       ⏳
 ├── F1.5 Plano de migração                      ⏳
@@ -121,7 +121,8 @@ questionnaire:
   Q3: COMPLETED_APPROVED_BY_LEANDRO
   Q4: COMPLETED_APPROVED_BY_LEANDRO
   Q5: COMPLETED_APPROVED_BY_LEANDRO
-  Q6: NEXT_NOT_STARTED
+  Q6: COMPLETED_APPROVED_BY_LEANDRO
+  Q7: NEXT_NOT_STARTED
 ```
 
 A aprovação de perguntas de Discovery não autoriza implicitamente implementação.
@@ -169,26 +170,13 @@ IDENTITY CONTINUITY != CAPABILITY CONTINUITY
 AGENT OUTPUT != PROJECT TRUTH
 ```
 
-Lifecycle e independência são propriedades separadas de agenthood.
-
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
 ## Q4 — Autonomia
 
 LEANDRO aprovou `MISSION-BOUNDED + RISK-BASED AUTONOMY`.
 
-Princípios:
-
-- `Authority Envelope`;
-- `UNKNOWN_AUTHORITY = DENY`;
-- autoelevação proibida;
-- conteúdo externo não amplia autoridade;
-- risco não depende exclusivamente do executor;
-- risco cumulativo;
-- retries limitados/idempotentes quando aplicável;
-- revogação/emergency stop;
-- `TEAM_FIRST`;
-- R3/crítico → HUMAN_GATE exclusivamente de LEANDRO.
+Princípios: `Authority Envelope`, `UNKNOWN_AUTHORITY = DENY`, autoelevação proibida, risco não depende exclusivamente do executor, risco cumulativo, retries limitados/idempotentes quando aplicável, revogação/emergency stop, `TEAM_FIRST` e R3/crítico → HUMAN_GATE exclusivamente de LEANDRO.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 
@@ -196,22 +184,38 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 
 LEANDRO aprovou `CAPABILITY_AND_POLICY_BASED_ROUTER`.
 
-Princípios:
-
-- requisitos da tarefa antes da seleção do modelo;
-- hard requirements são filtros obrigatórios;
-- router não pode reduzir hard requirements;
-- `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`;
-- model self-claim não é evidência;
-- Model Capability Registry com proveniência/freshness/health;
-- custo, latência e quota são preferências após compatibilidade;
-- fallback só para modelo compatível;
-- silent capability downgrade proibido;
-- fallbacks limitados e sem loops;
-- nenhum candidato compatível → `BLOCKED / ESCALATE`;
-- routing receipt auditável.
+Princípios: requisitos da tarefa antes da seleção, hard requirements obrigatórios, `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`, Model Capability Registry com proveniência/freshness/health, custo/latência/quota apenas após compatibilidade, fallback somente compatível e limitado, sem routing loops, sem silent downgrade, `BLOCKED / ESCALATE` quando não há candidato e routing receipt auditável.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
+
+## Q6 — Independência e assurance
+
+LEANDRO aprovou independência baseada em propriedades observáveis da execução/revisão, não em nomes/personas ou simples troca de modelo.
+
+Invariantes:
+
+```text
+INDEPENDENCE != DIVERSITY
+SELF_DECLARED_INDEPENDENCE != PROOF
+CONSENSUS != TRUTH
+REVIEWER CLAIM != VERIFIED FINDING
+```
+
+Para `R2+`, revisão exige contexto separado, `BLIND_FIRST`, coleta própria de evidências, decisão própria e receipt inicial imutável. Compartilhar fontes canônicas é permitido; compartilhar conclusões/vereditos prévios antes do julgamento inicial é contaminação. Diversidade de modelo/provider/runtime aumenta assurance, mas não prova independência. Divergências são reconciliadas por evidência/teste/adjudicação, não por majority vote padrão.
+
+Taxonomia:
+
+```yaml
+R0: SELF_REVIEW
+R1: SEPARATE_REVIEW
+R2: INDEPENDENT_REVIEW
+R3: DIVERSE_INDEPENDENT_REVIEW
+R4: EXTERNAL_ASSURANCE
+```
+
+Assurance é selecionado conforme risco.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`.
 
 ---
 
@@ -225,18 +229,18 @@ Estado:
 
 ```yaml
 questionnaire_total: 16
-last_completed_question: 5
-next_question: 6
-Q6_started: false
+last_completed_question: 6
+next_question: 7
+Q7_started: false
 implementation_authorized: false
 architecture_final_approved: false
 ```
 
 Próxima pergunta:
 
-> **Q6 — O que significa independência entre agentes e revisores?**
+> **Q7 — Como o trabalho deve ser orquestrado: pipeline, loops, graph ou paralelo?**
 
-Ela definirá separação funcional, contexto/sessão, modelo, provider, autoridade, evidência e critérios mínimos para chamar uma revisão de independente.
+Ela definirá fluxo sequencial, DAG/graph, split/worker/verifier/merge, paralelismo, dependências, loop engineering, stop conditions, replanejamento, convergência e recovery.
 
 ---
 
@@ -249,19 +253,22 @@ Ela definirá separação funcional, contexto/sessão, modelo, provider, autorid
 5. `AGENT OUTPUT != PROJECT TRUTH`;
 6. `UNKNOWN_AUTHORITY = DENY`;
 7. agentes não ampliam a própria autoridade;
-8. routing/fallback deve preservar requisitos mínimos;
+8. routing/fallback preserva requisitos mínimos;
 9. `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`;
 10. custo/free tier não supera segurança/capacidade;
-11. múltiplos projetos devem ter memória/equipe/estado isolados;
-12. complexidade só permanece se resolver problema real.
+11. `INDEPENDENCE != DIVERSITY`;
+12. `CONSENSUS != TRUTH`;
+13. revisão independente exige condições observáveis e auditáveis;
+14. assurance é proporcional ao risco;
+15. múltiplos projetos devem ter memória/equipe/estado isolados;
+16. complexidade só permanece se resolver problema real.
 
 ---
 
 # 8. Blocos ainda a decidir
 
-Q6–Q16 ainda decidirão:
+Q7–Q16 ainda decidirão:
 
-- independência/auditoria;
 - graph/loops/paralelismo;
 - documentação mínima suficiente;
 - observabilidade/UX;
@@ -298,15 +305,7 @@ Só então gerar missão estruturada para executor/Codex.
 
 Comparar empiricamente o MCF reestruturado com workflows mais simples usando métricas como tempo, custo/tokens, retrabalho, defeitos, intervenção humana, contexto perdido, tempo de retomada, recovery e qualidade final.
 
-Testes candidatos:
-
-- Continuity Recovery Test;
-- novo chat sem histórico bruto;
-- outro modelo/provider;
-- outro humano/executor;
-- projetos paralelos;
-- ablation de agentes/controles;
-- portabilidade de infraestrutura.
+Testes candidatos: Continuity Recovery Test, novo chat sem histórico bruto, outro modelo/provider, outro humano/executor, projetos paralelos, ablation de agentes/controles e portabilidade de infraestrutura.
 
 ---
 
@@ -334,19 +333,19 @@ phase_zero:
 
 phase_one_discovery:
   state: ACTIVE_DISCOVERY
-  last_completed_question: 5
-  next_question: 6
-  Q6_started: false
+  last_completed_question: 6
+  next_question: 7
+  Q7_started: false
 
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q6
-next_operational_action: NONE_BEFORE_Q6_DECISION
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q7
+next_operational_action: NONE_BEFORE_Q7_DECISION
 ```
 
 Um novo chat deve reconstruir o estado lendo:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este `MCF-MASTER-ROADMAP-001.md`;
 5. GitHub/provider live para estado mutável;
