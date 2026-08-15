@@ -140,88 +140,7 @@ chosen_option: D
 canonical_name: EVIDENCE_FIRST_EXISTING_PROJECT_RECONNAISSANCE
 ```
 
-### Problema
-
-Definir como o MCF assume um projeto existente sem depender da memória de LEANDRO e sem confundir o que foi construído (`AS-IS`) com o que LEANDRO queria construir (`TO-BE`).
-
-### Alternativas consideradas
-
-- A — perguntar primeiro ao humano e auditar depois;
-- B — auditar e tratar o código como intenção;
-- C — auditoria read-only + resumo + confirmação humana;
-- D — reconnaissance orientado por evidências, baseline exato, classificação de fatos/inferências/unknowns, detecção de continuidade MCF, reconstrução `AS-IS`, Project Reality Report e read-back antes da Discovery humana profunda.
-
-### Decisão de LEANDRO
-
-**Opção D.**
-
-### Contrato conceitual aprovado
-
-```yaml
-entry_mode:
-  initial: ADOPT_EXISTING_PROJECT
-  status: PROVISIONAL
-
-initial_policy:
-  target_project_mutation: FORBIDDEN
-  reconnaissance: READ_ONLY_FIRST
-
-baseline:
-  exact_ref_or_sha_required: true
-  observed_at_required: true
-
-automatic_sources:
-  - SOURCE_CODE
-  - DOCUMENTATION
-  - GIT_HISTORY
-  - BRANCHES_TAGS_RELEASES
-  - ISSUES
-  - PULL_REQUESTS
-  - CI_WORKFLOWS
-  - TESTS
-  - DATA_SCHEMAS_MIGRATIONS
-  - CONFIGURATION
-  - DEPLOY_METADATA_WHEN_ACCESSIBLE
-
-evidence_states:
-  - VERIFIED_FACT
-  - OBSERVED_FACT
-  - INFERRED
-  - UNKNOWN
-  - CONFLICTING
-  - STALE_SUSPECTED
-
-mcf_continuity_detection:
-  enabled: true
-  verified_continuity:
-    reclassify_to: RESUME_MCF_PROJECT
-  broken_or_unverified_continuity:
-    route_to: RECOVER_MCF_PROJECT
-
-if_still_adopt:
-  reconstruct_as_is: true
-  project_reality_report: REQUIRED
-  reality_readback_to_leandro: REQUIRED
-
-reality_confirmation:
-  states:
-    - CONFIRMED
-    - CONFIRMED_WITH_CORRECTIONS
-    - REJECTED_OR_MISUNDERSTOOD
-
-target_project_methodology_pin:
-  before_adoption_confirmation: NOT_WRITTEN_TO_TARGET
-  after_adoption_commitment: REQUIRED
-
-deep_human_intent_discovery:
-  before_reality_confirmation: NO_GO
-  after_reality_confirmation: GO
-
-implementation:
-  before_intent_alignment_gate: NO_GO
-```
-
-### Princípios resultantes
+`ADOPT_EXISTING_PROJECT` começa provisório, com baseline exato e reconnaissance `READ_ONLY_FIRST`. Evidências são classificadas como `VERIFIED_FACT`, `OBSERVED_FACT`, `INFERRED`, `UNKNOWN`, `CONFLICTING` ou `STALE_SUSPECTED`. Continuidade MCF válida reclassifica para `RESUME`; continuidade quebrada/não verificável roteia para `RECOVER`. Permanecendo `ADOPT`, MESTRE reconstrói `AS-IS`, produz `Project Reality Report` e faz Reality Read-Back antes da Human Intent Discovery profunda.
 
 ```text
 READ_ONLY_FIRST
@@ -232,19 +151,110 @@ MACHINE_DISCOVERS_TECHNICAL_FACTS
 HUMAN_EXPLAINS_INTENT
 ```
 
-- o baseline observado deve ser ligado a SHA/ref e timestamp;
-- nenhuma correção “óbvia” pode ser feita durante reconnaissance;
-- fontes divergentes devem ser registradas como `CONFLICTING`, não reconciliadas por palpite;
-- afirmações relevantes precisam preservar sua classe de evidência;
-- a inspeção procura sinais de continuidade MCF antes de consolidar adoção;
-- continuidade MCF válida reclassifica para `RESUME_MCF_PROJECT`;
-- continuidade MCF quebrada/não verificável roteia para `RECOVER_MCF_PROJECT`;
-- se continuar `ADOPT_EXISTING_PROJECT`, MESTRE reconstrói o `AS-IS`, produz `Project Reality Report` e faz read-back a LEANDRO;
-- correções de LEANDRO complementam a realidade observada, sem apagar fatos técnicos;
-- Human Intent Discovery profunda só começa após Reality Confirmation;
-- methodology pin não é escrito no projeto alvo antes do compromisso de adoção;
-- se LEANDRO desistir após reconnaissance, não há ownership claim nem dívida de execução;
-- segredos podem ser detectados como referência, mas valores não devem ser expostos.
+## V11-Q08 — Human Intent Dimensions Contract
+
+```yaml
+decision_id: V11-Q08
+question: Q8
+status: APPROVED_BY_LEANDRO
+chosen_option: D
+canonical_name: CANONICAL_INTENT_DIMENSIONS_WITH_EVIDENCE_AWARE_RESOLUTION
+canonical_dimension_count: 20
+fixed_question_count_required: false
+```
+
+### Problema
+
+Definir o conjunto mínimo de dimensões que o MCF deve compreender antes de considerar a intenção humana suficientemente capturada, sem transformar a Discovery em formulário rígido nem exigir de LEANDRO decisões técnicas que pertencem à equipe.
+
+### Alternativas consideradas
+
+- A — 20 perguntas fixas;
+- B — conversa totalmente livre;
+- C — poucas dimensões essenciais e demais opcionais;
+- D — 20 dimensões canônicas obrigatórias de compreender, resolvidas por contexto, evidência, respostas humanas e perguntas adaptativas, sem exigir 20 perguntas fixas.
+
+### Decisão de LEANDRO
+
+**Opção D.**
+
+### Dimensões canônicas aprovadas
+
+```yaml
+intent_dimensions:
+  purpose:
+    - PROBLEM
+    - MOTIVATION
+    - DESIRED_OUTCOME
+
+  users_and_experience:
+    - TARGET_USERS
+    - CRITICAL_USER_JOURNEYS
+
+  scope:
+    - MUST_HAVE
+    - SHOULD_HAVE
+    - NON_GOALS
+    - PRIORITIES_AND_TRADEOFFS
+
+  domain_and_operation:
+    - BUSINESS_RULES
+    - DATA_AND_SENSITIVITY
+    - ROLES_AND_PERMISSIONS
+    - AUTOMATION_LEVEL
+    - INTEGRATIONS
+    - PLATFORM_AND_USAGE_CONTEXT
+
+  constraints_quality_and_success:
+    - COST_AND_RESOURCE_CONSTRAINTS
+    - QUALITY_EXPECTATIONS
+    - FAILURE_TOLERANCE
+    - DEFINITION_OF_DONE
+    - FUTURE_VISION
+```
+
+### Estados possíveis por dimensão
+
+```yaml
+dimension_states:
+  - CLEAR
+  - PARTIAL
+  - UNKNOWN
+  - CONFLICTING
+  - NOT_APPLICABLE
+```
+
+### Regras de resolução
+
+```yaml
+resolution:
+  every_dimension_must_be_understood_or_explicitly_resolved: true
+  fixed_question_count_required: false
+  machine_evidence_may_supply_facts: true
+  machine_evidence_may_invent_human_preferences: false
+  human_unknown_allowed: true
+  technical_decision_delegation_allowed: true
+```
+
+Princípios:
+
+```text
+DIMENSION_REQUIRED != QUESTION_REQUIRED
+UNKNOWN != NOT_APPLICABLE
+UNKNOWN != HUMAN_HAS_NO_PREFERENCE
+MACHINE_EVIDENCE_CAN_SUPPLY_FACTS
+MACHINE_EVIDENCE_CANNOT_INVENT_HUMAN_PREFERENCES
+HUMAN_INTENT_DISCOVERY_ASKS_WHAT_WHY_WHO_CONSEQUENCES_PREFERENCES_CONSTRAINTS_SUCCESS
+TEAM_ENGINEERING_DECIDES_HOW
+```
+
+- as 20 dimensões são obrigatórias como cobertura semântica, não como 20 perguntas literais;
+- uma dimensão pode ser resolvida por resposta humana, contexto confirmado, evidência aplicável ou `NOT_APPLICABLE`;
+- evidência técnica não pode ser usada para inferir preferência humana silenciosamente;
+- `AS-IS` observado em projeto existente não substitui intenção `TO-BE`;
+- quando LEANDRO não souber uma decisão técnica, pode delegar recomendação/decisão à equipe sem isso ser tratado como falha de Intake;
+- tecnologias específicas, frameworks, bancos, padrões arquiteturais e provedores não fazem parte das dimensões humanas obrigatórias, salvo quando surgirem como restrição real de plataforma, recurso, custo ou contexto de uso;
+- Q9 definirá a mecânica de perguntas adaptativas; Q10 o progressive read-back; Q11 a suficiência/readiness; Q12 a persistência no `Project Intent Package`.
 
 ---
 
