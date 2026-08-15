@@ -26,10 +26,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 11
-questions_remaining: 9
-last_completed_question: 11
-next_question: 12
+questions_completed: 12
+questions_remaining: 8
+last_completed_question: 12
+next_question: 13
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -41,7 +41,7 @@ question_08: COMPLETED_APPROVED_BY_LEANDRO
 question_09: COMPLETED_APPROVED_BY_LEANDRO
 question_10: COMPLETED_APPROVED_BY_LEANDRO
 question_11: COMPLETED_APPROVED_BY_LEANDRO
-question_12: NOT_STARTED
+question_12: COMPLETED_APPROVED_BY_LEANDRO
 question_13: NOT_STARTED
 question_14: NOT_STARTED
 question_15: NOT_STARTED
@@ -51,6 +51,9 @@ question_18: NOT_STARTED
 question_19: NOT_STARTED
 question_20: NOT_STARTED
 implementation_authorized: false
+codex_implementation_authorized: false
+prototype_authorized: false
+release_authorized: false
 ```
 
 ---
@@ -95,36 +98,38 @@ implementation_authorized: false
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `EVIDENCE_AWARE_ADAPTIVE_QUESTIONING_WITH_INFORMATION_GAIN` — Opção D.
 
-Sem sequência/contagem fixa; uma pergunta primária por vez; atualizar dimensões e reavaliar antes da próxima pergunta; prioridade para conflito, blocker, ganho informacional, risco e dependency unlock; dimensão `CLEAR` não é repetida sem nova causa; follow-up exige valor; loops de baixo ganho são proibidos.
+Sem sequência/contagem fixa; uma pergunta primária por vez; atualizar dimensões e reavaliar antes da próxima; follow-up exige valor; loops de baixo ganho são proibidos.
 
 ### Q10 — Como deve funcionar o progressive read-back e correção de entendimento?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK` — Opção D.
 
-Três níveis (`MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`); gatilhos por mudanças/conflitos/interpretações materiais, blocos semânticos e boundaries; safety cadence aproximada 4–6 trocas significativas; correções invalidam derivações erradas; final read-back obrigatório antes do Alignment Gate.
+Três níveis (`MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`); gatilhos por mudanças/conflitos/interpretações materiais e boundaries; correções invalidam derivações erradas; final read-back obrigatório antes do Alignment Gate.
 
 ### Q11 — Como medir Context Sufficiency / Intent Readiness antes de planejar?
 **Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
 **Decisão:** `SEMANTIC_READINESS_GATE_WITH_BLOCKING_UNKNOWNS` — Opção D.
 
-- readiness é semântica, não baseada em quantidade de perguntas nem score puro;
-- os estados da Q8 permanecem, mas cada incerteza recebe impacto `BLOCKING` ou `NON_BLOCKING`;
-- `BLOCKING_UNKNOWN` pode alterar materialmente produto, escopo, usuários, segurança, arquitetura, custo, risco ou sucesso;
-- core universal: `PROBLEM`, `DESIRED_OUTCOME`, `TARGET_USERS`, `CRITICAL_USER_JOURNEYS`, `MUST_HAVE`, `NON_GOALS`, `PRIORITIES_AND_TRADEOFFS`, `DEFINITION_OF_DONE`;
-- demais dimensões tornam-se criticamente bloqueantes conforme domínio, risco, sensibilidade de dados, efeitos externos, jornadas e constraints;
-- `NOT_APPLICABLE` conta como resolvido quando justificado;
-- delegação técnica explícita é resolução válida da intenção humana;
-- score pode existir como diagnóstico, nunca como autoridade do gate;
-- estados globais: `NOT_READY`, `CONDITIONALLY_READY`, `READY_FOR_ALIGNMENT`;
-- `READY_FOR_ALIGNMENT` exige zero blocking unknowns, zero conflitos materiais de intenção, zero interpretações de alto impacto não confirmadas, coerência semântica, unknowns não bloqueantes preservados e delegações explícitas;
-- `READY_FOR_ALIGNMENT` não autoriza implementação;
-- readiness é recalculada após mudança material.
+Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDITIONALLY_READY`, `READY_FOR_ALIGNMENT`; score não tem autoridade de gate; `READY_FOR_ALIGNMENT` não autoriza implementação.
 
 ### Q12 — Qual é o contrato do Project Intent Package?
-Definir estrutura, campos, provenance, relação com `IDEA_CAPTURE`, 20 dimensões, decisões current/superseded, delegações, assumptions, unknowns/blockers, readiness, Product Brief e Intent Alignment Receipt, sem duplicar Mission Contract.
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `VERSIONED_PROVENANCE_AWARE_PROJECT_INTENT_PACKAGE` — Opção D.
+
+- PIP é memória durável da intenção, não chat log, arquitetura, backlog ou Mission Contract;
+- separa `RAW_INTENT`, síntese do MESTRE, decisões humanas, evidência, inferências e assumptions;
+- preserva 20 dimensões, readiness impact e provenance de afirmações materiais;
+- registra current/superseded human decisions, delegações, assumptions, unknowns, blockers e conflicts;
+- lifecycle: `DISCOVERY_IN_PROGRESS`, `READY_FOR_ALIGNMENT`, `ALIGNED`, `REOPENED_AFTER_MATERIAL_CHANGE`;
+- `INTENT_ALIGNMENT_GATE` vincula-se a revisão exata do PIP;
+- revisão alinhada é histórica/imutável; mudança material cria nova working revision;
+- `Intent Alignment Receipt` prova a confirmação sem duplicar todo o PIP;
+- Mission Contract nasce após alinhamento e referencia a revisão alinhada do PIP;
+- Product Brief não pode introduzir intenção nova; canônico vs derived fica para Q14;
+- Reality Report e Gap Map permanecem separados para Q13.
 
 ### Q13 — Quais artefatos adicionais um projeto existente precisa produzir?
-Inclui candidatos: `Project Reality Report`, `AS-IS / TO-BE Gap Map`, `Completion/Recovery Plan`.
+Definir contratos e ordem de `Project Reality Report`, `AS-IS / TO-BE Gap Map` e `Completion/Recovery Plan`, incluindo diferenças entre `ADOPT_EXISTING_PROJECT` e `RECOVER_MCF_PROJECT`, relação com baseline/evidência, Reality Confirmation, PIP e Intent Alignment.
 
 ### Q14 — O que é canônico e o que é derived view na memória/continuidade do projeto?
 
@@ -155,8 +160,20 @@ Para cada Q aprovada:
 
 ---
 
-## 5. Próxima ação
+## 5. Handoff após Q12
 
-> **Q12 — Qual é o contrato do Project Intent Package?**
+LEANDRO informou que continuará a Discovery em outro chat devido ao tamanho da conversa atual. O boundary canônico é:
 
-Não iniciar Q13 antes de decisão explícita de LEANDRO sobre Q12.
+```text
+MCF-V1.1-RESUME-CARD.md
++
+MCF-V1.1-DISCOVERY-CHECKPOINT-012.md
+```
+
+O novo chat deve consultar o GitHub live, não repetir Q1–Q12 e retomar diretamente na Q13.
+
+## 6. Próxima ação
+
+> **Q13 — Quais artefatos adicionais um projeto existente precisa produzir?**
+
+Não iniciar Q14 antes de decisão explícita de LEANDRO sobre Q13. Implementação permanece `NO_GO`.
