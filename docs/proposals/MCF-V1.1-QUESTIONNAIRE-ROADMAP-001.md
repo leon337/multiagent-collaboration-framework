@@ -26,10 +26,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 9
-questions_remaining: 11
-last_completed_question: 9
-next_question: 10
+questions_completed: 10
+questions_remaining: 10
+last_completed_question: 10
+next_question: 11
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -39,7 +39,7 @@ question_06: COMPLETED_APPROVED_BY_LEANDRO
 question_07: COMPLETED_APPROVED_BY_LEANDRO
 question_08: COMPLETED_APPROVED_BY_LEANDRO
 question_09: COMPLETED_APPROVED_BY_LEANDRO
-question_10: NOT_STARTED
+question_10: COMPLETED_APPROVED_BY_LEANDRO
 question_11: NOT_STARTED
 question_12: NOT_STARTED
 question_13: NOT_STARTED
@@ -100,20 +100,27 @@ implementation_authorized: false
 - cada resposta atualiza todas as dimensões afetadas antes de escolher a próxima pergunta;
 - prioridade: conflito material de intenção, blocker, alto ganho informacional, alto risco, dependency unlock e só então refinamento;
 - dimensão `CLEAR` não é repetida sem nova causa;
-- uma resposta pode resolver várias dimensões;
 - evidência reduz perguntas, mas não substitui preferência/intenção humana;
-- `AS_IS_TO_BE_DIFFERENCE`, `EVIDENCE_CONFLICT` e `HUMAN_INTENT_CONFLICT` são categorias distintas;
 - follow-up exige valor informacional;
-- loops de follow-up de baixo ganho são proibidos;
-- unknown não bloqueante pode ser preservado; unknown bloqueante vira `BLOCKING_UNKNOWN`;
-- delegação técnica por LEANDRO é resolução válida;
-- mudança humana preserva histórico (`SUPERSEDED` → `CURRENT`);
-- carga cognitiva humana é fator real na escolha da próxima pergunta.
+- loops de baixo ganho são proibidos;
+- mudança humana preserva histórico (`SUPERSEDED` → `CURRENT`).
 
 ### Q10 — Como deve funcionar o progressive read-back e correção de entendimento?
-Definir quando MESTRE resume o que entendeu, quais dimensões entram em cada síntese, como LEANDRO confirma/corrige/rejeita, como correções atualizam o entendimento sem apagar histórico e quando read-back é obrigatório por mudança material ou conflito.
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `EVENT_DRIVEN_PROGRESSIVE_SEMANTIC_READBACK` — Opção D.
+
+- três níveis: `MICRO_CLARIFICATION`, `PROGRESSIVE_READBACK`, `FINAL_INTENT_READBACK`;
+- triggers: mudança material de escopo, conflito material de intenção, interpretação de alto impacto, fechamento de bloco semântico, mudanças acumuladas e boundary de contexto/handoff;
+- safety cadence aproximada de 4–6 trocas significativas, sem contagem rígida;
+- read-back enfatiza entendimento novo/material, mudanças, constraints e unknowns abertos;
+- resultados: `CONFIRMED`, `CORRECTED`, `REJECTED`, com confirmação parcial permitida;
+- correção interrompe propagação errada, invalida assumptions derivadas e recalcula dimensões dependentes;
+- interpretação de máquina rejeitada não vira decisão humana;
+- `FINAL_INTENT_READBACK` é obrigatório antes do `INTENT_ALIGNMENT_GATE`;
+- progressive confirmation não autoriza implementação.
 
 ### Q11 — Como medir Context Sufficiency / Intent Readiness antes de planejar?
+Definir critérios para `READY_FOR_ALIGNMENT`, `NOT_READY` e eventual estado condicional; distinguir unknown tolerável de blocker, lidar com `NOT_APPLICABLE`, delegação técnica, conflitos e impedir que quantidade de perguntas seja confundida com suficiência.
 
 ### Q12 — Qual é o contrato do Project Intent Package?
 
@@ -151,6 +158,6 @@ Para cada Q aprovada:
 
 ## 5. Próxima ação
 
-> **Q10 — Como deve funcionar o progressive read-back e a correção de entendimento?**
+> **Q11 — Como medir Context Sufficiency / Intent Readiness antes de planejar?**
 
-Não iniciar Q11 antes de decisão explícita de LEANDRO sobre Q10.
+Não iniciar Q12 antes de decisão explícita de LEANDRO sobre Q11.
