@@ -1,7 +1,7 @@
 # MCF NextGen — Roadmap do Questionário de Discovery
 
 **ID:** `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001`  
-**Status:** `ACTIVE_DISCOVERY`  
+**Status:** `DISCOVERY_COMPLETE`  
 **Autoridade humana final:** LEANDRO  
 **Orquestração:** MESTRE  
 **Branch:** `planning/mcf-nextgen-discovery`
@@ -18,18 +18,18 @@ O questionário possui **16 perguntas canônicas**.
 - decisões relevantes são persistidas no GitHub antes de avançar;
 - pergunta concluída não é repetida salvo solicitação de LEANDRO;
 - hipótese não vira implementação automaticamente;
-- Q1–Q16 serão conciliadas antes de qualquer implementação NextGen.
+- Q1–Q16 precisam ser conciliadas antes de qualquer implementação NextGen.
 
 ---
 
-## 2. Estado atual
+## 2. Estado final do questionário
 
 ```yaml
 question_count_total: 16
-questions_completed: 15
-questions_remaining: 1
-last_completed_question: 15
-next_question: 16
+questions_completed: 16
+questions_remaining: 0
+last_completed_question: 16
+next_question: NONE
 question_01: COMPLETED
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -45,7 +45,10 @@ question_12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
 question_13: COMPLETED_APPROVED_BY_LEANDRO
 question_14: COMPLETED_APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW
 question_15: COMPLETED_APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW
-question_16: NOT_STARTED
+question_16: COMPLETED_APPROVED_BY_LEANDRO_AFTER_CRITICAL_AUDIT
+target_architecture_decision_approved: true
+architecture_final_specification_approved: false
+prototype_authorized: false
 implementation_authorized: false
 ```
 
@@ -96,44 +99,70 @@ Foco inicial: sistema pessoal de trabalho com IA para LEANDRO, continuidade dur�
 `CLEAN_ROOM_PORTABILITY_AND_EXTERNAL_UTILITY_VALIDATION`; portability matrix, clean-room, migration-safe activation, authority rebinding, exit portability, Fresh Project/Operator/Context e níveis de evidência externa. Checkpoint 016.
 
 ### Q15 — Preservar, simplificar, remover ou substituir
-**Status:** `COMPLETED / APPROVED_BY_LEANDRO_AFTER_NO_BLOCKER_REVIEW`
+`PRESERVE_INVARIANTS_REDUCE_IMPLEMENTATION`; preservar invariantes, não implementações por inércia; `PRESERVE / SIMPLIFY / REPLACE / REMOVE / INCONCLUSIVE / ADD_REQUIRED`; sunset condicionado a replacement/conformance/migração. Checkpoint 017.
 
-Decisão: `PRESERVE_INVARIANTS_REDUCE_IMPLEMENTATION`.
+### Q16 — Arquitetura-alvo e GO/NO-GO
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO_AFTER_CRITICAL_AUDIT`
+
+Arquitetura-alvo: `GOVERNED_PORTABLE_MULTIAGENT_RUNTIME`.
 
 Síntese:
 
-- preservar invariantes/capacidades, não necessariamente implementações atuais;
-- disposições: `PRESERVE`, `SIMPLIFY`, `REPLACE`, `REMOVE`, `INCONCLUSIVE`, `ADD_REQUIRED`;
-- ausência de evidência exige `INCONCLUSIVE` em vez de poda inventada;
-- `REMOVE_FROM_CORE != DELETE`;
-- durable state, evidence/provenance, transition ledger, receipts, governed effects, fail-closed, TEAM_FIRST, Agent/Skill Contracts, observability/recovery e stable baseline são preservados semanticamente;
-- receipts/docs operacionais devem ser automatizados/derivados sem remover auditabilidade;
-- keyword planner, special-case PermissionEngine, HDF com identidades hardcoded e taxonomia A/B/C canônica futura devem ser substituídos gradualmente;
-- 29 agentes permanecem como história/contratos, mas não como requisito do Core e seu default ativo fica sujeito a evidência;
-- 16 skills permanecem como evidência/regressão, sem congelar provider bindings ou handoffs atuais;
-- GitHub, Render e PostgreSQL podem continuar adapters/defaults, não identidade constitucional;
-- runtime deve reduzir coupling ao host `rede-social-agentes` por boundary lógico, sem implicar microservices;
-- stable v1.0.0 é baseline/migration source, não rollback automático após mudança de dados/schema;
-- disposition decisions precisam respeitar dependency graph;
-- sunset exige replacement, semantic conformance, migration/compatibility e ausência de dependência ativa;
-- capabilities novas aprovadas em Q1–Q14 entram como `ADD_REQUIRED`, sem autorização de implementação.
+- Constitutional Kernel pequeno e provider-neutral;
+- policy decision e enforcement separados do Kernel, sem policy poder enfraquecer invariantes constitucionais;
+- Bootstrap Trust requerido conceitualmente;
+- state/ledger/evidence permanecem fontes canônicas conforme classe; Project Capsule é derived view;
+- Capability Registry cobre agentes, backends/modelos, workers, extensions e tools com provenance/freshness;
+- Router + placement convergem em `Execution Binding` coerente;
+- `Execution Coordinator` preserva durable dispatch, attempts, fencing/epoch, admission e backpressure;
+- effects materiais passam por policy enforcement + governed effect boundary; extension bypass é proibido;
+- credentials/secrets e data classification possuem boundary explícito;
+- hosts usam contratos MCF e não definem o Core;
+- evaluation e portability/conformance usam contratos do runtime sem obrigação de inchar o Core;
+- compatibility com v1 prioriza interpretabilidade histórica, migração de estado/evidence e mappings versionados, não preservação universal de APIs internas;
+- migração é incremental, compatibility-first, com NextGen shadow sem efeitos materiais e exatamente uma autoridade/escritor material canônico por boundary;
+- migração/cutover é efeito privilegiado e governado;
+- acceptance gates são separados em Architecture Readiness, Implementation/Migration Readiness e Cutover/Release Readiness;
+- target architecture decision aprovada não é autorização de produção nem implementação.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-017.md`.
+GO/NO-GO:
+
+```yaml
+questionnaire_direction: GO
+target_architecture_decision: GO
+discovery_completion: GO
+F1_3_decision_consolidation: GO
+F1_4_formal_target_architecture: GO
+F1_5_migration_plan: GO
+F1_6_executable_specification: GO
+prototype: NO_GO_CURRENTLY
+implementation: NO_GO_CURRENTLY
+production_cutover: NO_GO
+destructive_v1_change: NO_GO
+final_implementation_authorization: REQUIRES_EXPLICIT_LEANDRO_APPROVAL
+```
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-018.md`.
 
 ---
 
-## 4. Pergunta restante
+## 4. Encerramento do Discovery
 
-### Q16 — Qual é a arquitetura final da Fase 1 e o GO/NO-GO?
-**Status:** `NEXT / NOT_STARTED`
+O questionário Q1–Q16 está completo. Não há Q17.
 
-Reconciliar Q1–Q15; definir arquitetura alvo, boundaries finais, plano de migração/compatibilidade, acceptance criteria, riscos/recovery e GO/NO-GO conceitual. Nenhuma implementação é autorizada sem aprovação final explícita de LEANDRO conforme o protocolo vigente.
+A aprovação da Q16 encerra o Discovery decisório, mas não conclui a especificação executável da Fase 1.
+
+Próximo bloco canônico:
+
+> **F1.3 — Consolidação formal das decisões Q1–Q16.**
+
+Depois: F1.4 Arquitetura alvo formal, F1.5 Plano de migração e F1.6 Especificação executável.
 
 ---
 
 ## 5. Política de checkpoint
 
-Persistir checkpoint quando houver decisão arquitetônica, aprovação de LEANDRO, mudança relevante, descoberta de lacuna, pausa, missão grande ou troca de sessão/projeto.
+Persistir checkpoint em decisão arquitetônica, aprovação de LEANDRO, mudança relevante, descoberta de lacuna, pausa, missão grande ou troca de sessão/projeto.
 
 ---
 
@@ -141,14 +170,15 @@ Persistir checkpoint quando houver decisão arquitetônica, aprovação de LEAND
 
 1. consultar GitHub live;
 2. ler `MCF-NEXTGEN-RESUME-CARD.md`;
-3. ler checkpoint mais recente;
+3. ler `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-018.md`;
 4. ler este roadmap;
-5. verificar boundaries operacionais;
-6. continuar exatamente na `next_question`.
+5. ler `MCF-MASTER-ROADMAP-001.md`;
+6. continuar em F1.3.
 
 ```yaml
-last_completed_question: 15
-next_question: 16
-instruction: NÃO REPETIR Q1-Q15
+last_completed_question: 16
+next_question: NONE
+next_phase_block: F1_3_DECISION_CONSOLIDATION
+instruction: NÃO REPETIR Q1-Q16
 implementation_authorized: false
 ```
