@@ -26,10 +26,10 @@ O questionário possui **16 perguntas canônicas**.
 
 ```yaml
 question_count_total: 16
-questions_completed: 11
-questions_remaining: 5
-last_completed_question: 11
-next_question: 12
+questions_completed: 12
+questions_remaining: 4
+last_completed_question: 12
+next_question: 13
 question_01: COMPLETED
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -41,7 +41,8 @@ question_08: COMPLETED_APPROVED_BY_LEANDRO
 question_09: COMPLETED_APPROVED_BY_LEANDRO
 question_10: COMPLETED_APPROVED_BY_LEANDRO
 question_11: COMPLETED_APPROVED_BY_LEANDRO
-question_12: NOT_STARTED
+question_12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
+question_13: NOT_STARTED
 implementation_authorized: false
 ```
 
@@ -120,44 +121,49 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md`.
 ### Q11 — Infraestrutura e placement
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-Decisão: `PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`.
+`PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`; verdade/governança centralizadas logicamente, execução distribuível conforme hard requirements; fencing/epoch, fail-closed em partições, recovery coerente e portabilidade sem provider como identidade do Core.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
+
+### Q12 — Segurança, permissões e gates
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO_CONCEPTUALLY`
+
+Decisão: `POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`.
 
 Síntese:
 
-- Control, State, Execution, Integration e Presentation são planos lógicos, não necessariamente serviços físicos separados;
-- autoridade canônica do Control Plane é lógica e única; multi-writer sem coordenação/fencing é proibido;
-- State Plane pode ser local/self-hosted; scratch privado de worker não vira project truth;
-- queue não é fonte de verdade da task;
-- execução distribuída usa attempt identity, leases e fencing/epoch ou equivalente;
-- clock do worker não é autoridade de lease;
-- partição sem revalidação de autoridade não permite novo efeito material;
-- execução offline, se existir, depende de envelope pré-autorizado e limitado;
-- efeitos materiais atravessam fronteira governada; blind retry é proibido;
-- placement preserva hard requirements de confiança, locality, capacidade, autoridade e compatibilidade;
-- data locality inclui input, output, evidence, telemetry e cache;
-- incompatibilidade desconhecida de worker/runtime torna node inelegível;
-- source revision e artifact digest são identidades distintas;
-- app redeploy/rollback, data restore, compensation e failover são conceitos diferentes;
-- admission control e backpressure são obrigatórios; spawning ilimitado é proibido;
-- recovery considera failure domains e ponto coerente entre state/ledger/evidence/configuração;
-- emergency stop remoto pode não ser instantâneo sob partição; autoridade material remota deve ser limitada/expirável;
-- portabilidade não exige active multi-cloud;
-- provider binding não pertence à identidade constitucional;
-- placement material produz `Placement Receipt`.
+- default deny para identidade, autoridade, compatibilidade e gates ausentes/obsoletos;
+- `AUTHENTICATED != AUTHORIZED`;
+- efeitos materiais preservam principal/delegation chain; delegação só pode atenuar autoridade;
+- autorização é contextual e, quando aplicável, vinculada a mission/task/attempt/action/resource/audience/environment/security domain/policy/state/expiry;
+- model compliance não é security boundary; efeitos materiais exigem policy enforcement verificável fora do modelo;
+- bypass direto do governed effect boundary é proibido quando arquiteturalmente controlável;
+- mudança de security policy/permissions/gates/credential bindings é efeito privilegiado;
+- HUMAN_GATE pertence a LEANDRO e é effect/precondition-bound, expiráveis, protegido contra replay e com modo explícito de consumo;
+- fatos/effect preview crítico devem ser separados de recomendação da IA;
+- conteúdo externo nunca é autoridade e permanece não confiável através de transformações/handoffs;
+- output de modelo não é comando material seguro por definição; ferramentas materiais exigem validação tipada quando aplicável;
+- secrets não entram em memória/prompt/log/telemetry por default; preferir references/brokers e credenciais curtas/escopadas;
+- workers não são trust peers do Control Plane e devem possuir blast radius limitado;
+- cross-project access é `DENY` por default e isolamento alcança storage/credentials conforme aplicável;
+- classificação de dados propaga; modelo não pode se autodesclassificar;
+- extensões materiais exigem digest, provenance e verificação contra trust policy; `PROVENANCE_PRESENT != ARTIFACT_TRUSTED`;
+- Authorization Receipts registram decisão de segurança, mas `RECEIPT != EFFECT_PROOF`;
+- revogação e autoridade material remota limitada são obrigatórias;
+- Complexity Budget/admission control também funcionam como security budgets;
+- políticas de segurança são ativos críticos sujeitos a versionamento, change control, provenance e integridade;
+- Core usa autoridade interna por papel; binding atual pode ser LÉO; HUMAN_GATE permanece LEANDRO.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`.
 
 ---
 
 ## 4. Perguntas restantes
 
-### Q12 — Quais controles de segurança, permissões e gates são essenciais?
+### Q13 — Como provar que o MCF vale o custo e a complexidade?
 **Status:** `NEXT / NOT_STARTED`
 
-Definir autenticação, identidade de workloads/agentes, least privilege, secrets, sandbox, network/egress policy, extensão/supply-chain trust, prompt-injection boundaries, gates, revogação e enforcement técnico de autoridade.
-
-### Q13 — Como provar que o MCF vale o custo e a complexidade?
-**Status:** `PENDING`
+Definir métricas, baselines, custo total, qualidade, tempo, retrabalho, autonomia útil, taxa de recuperação, consumo de modelos/providers e critérios objetivos para provar que as camadas adicionadas geram valor real.
 
 ### Q14 — Como validar portabilidade e utilidade fora do ambiente atual?
 **Status:** `PENDING`
@@ -188,8 +194,8 @@ Persistir checkpoint quando houver decisão arquitetônica, aprovação de LEAND
 6. continuar exatamente na `next_question`.
 
 ```yaml
-last_completed_question: 11
-next_question: 12
-instruction: NÃO REPETIR Q1-Q11
+last_completed_question: 12
+next_question: 13
+instruction: NÃO REPETIR Q1-Q12
 implementation_authorized: false
 ```
