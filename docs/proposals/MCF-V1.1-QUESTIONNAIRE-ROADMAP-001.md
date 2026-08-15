@@ -27,10 +27,10 @@ O questionário possui **20 perguntas canônicas**.
 
 ```yaml
 question_count_total: 20
-questions_completed: 16
-questions_remaining: 4
-last_completed_question: 16
-next_question: 17
+questions_completed: 17
+questions_remaining: 3
+last_completed_question: 17
+next_question: 18
 question_01: COMPLETED_APPROVED_BY_LEANDRO
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -47,7 +47,7 @@ question_13: COMPLETED_APPROVED_BY_LEANDRO
 question_14: COMPLETED_APPROVED_BY_LEANDRO
 question_15: COMPLETED_APPROVED_BY_LEANDRO
 question_16: COMPLETED_APPROVED_BY_LEANDRO
-question_17: NOT_STARTED
+question_17: COMPLETED_APPROVED_BY_LEANDRO
 question_18: NOT_STARTED
 question_19: NOT_STARTED
 question_20: NOT_STARTED
@@ -158,17 +158,28 @@ Readiness semântica; `BLOCKING` vs `NON_BLOCKING`; estados `NOT_READY`, `CONDIT
 **Decisão:** `IMPACT_BASED_HUMAN_GATES_WITH_SCOPED_STANDING_AUTHORIZATION` — Opção D.
 
 - `HUMAN_GATE` é determinado por impacto material e autoridade aplicável, não pelo nome isolado da operação;
-- mudanças materiais de intenção, objetivo, público, must-have/non-goal, definição de pronto ou resultado esperado pertencem a LEANDRO;
-- compromisso financeiro novo/relevante fora do boundary, exposição jurídica/privacidade/pública material, uso excepcional de credenciais/dados sensíveis, ações irreversíveis/de alto impacto, pivô/cancelamento, aceitação de risco material e ações explicitamente reservadas exigem gate humano;
-- autorizações antecipadas/contínuas são permitidas apenas quando delimitadas por escopo, ambiente, classes de ação, limites, boundary/expiração, exclusões e evidência;
-- `TEAM_FIRST` permanece obrigatório antes do gate para ambiguidades técnicas ordinárias;
-- gate pendente bloqueia apenas a ação dependente; trabalho independente, seguro e autorizado pode continuar;
+- mudanças materiais de intenção/objetivo/público, custos fora do boundary, exposição jurídica/privacidade/pública, uso excepcional de credenciais/dados sensíveis, ações irreversíveis/de alto impacto, pivô/cancelamento, aceitação de risco material e ações reservadas exigem gate humano;
+- autorizações antecipadas/contínuas só valem com limites claros;
+- `TEAM_FIRST` permanece obrigatório;
+- gate pendente bloqueia apenas a ação dependente;
 - silêncio nunca equivale a aprovação.
 
 ### Q17 — Como checkpoint, pause/resume e troca de chat devem funcionar?
-**Estado:** `NOT_STARTED`
+**Estado:** `COMPLETED_APPROVED_BY_LEANDRO`  
+**Decisão:** `EVENT_DRIVEN_TRANSFERABLE_CHECKPOINT_WITH_VERIFIED_RESUME` — Opção D.
+
+- checkpoint é orientado a evento/boundary material, não a cada interação ou período fixo;
+- pausas, trocas de chat e trocas planejadas de ambiente exigem checkpoint durável e transferível;
+- Resume Card é `DERIVED_REBUILDABLE_VIEW` e serve apenas como orientação rápida;
+- retomada segue `Resume Card → checkpoint canônico → fontes autoritativas → GitHub/provider live → reconciliação`;
+- rotas: `FAST_RESUME`, `RECONCILE`, `RECOVER_MCF_PROJECT`;
+- memória/transcript do chat anterior é contexto opcional, nunca requisito;
+- trabalho local não persistido não pode ser declarado transferido;
+- mudança material inexplicável, checkpoint ausente/inválido ou evidência insuficiente exige recovery;
+- `NEW_CHAT != NEW_MISSION` e `PAUSED != CANCELLED`.
 
 ### Q18 — Como evoluir a v1.0.0 para v1.1.0 preservando compatibilidade e evitando duplicação de mecanismos?
+**Estado:** `NOT_STARTED`
 
 ### Q19 — Como provar a v1.1.0 com testes reais?
 Candidatos mínimos: projeto novo, projeto antigo incompleto e retomada em novo chat.
@@ -189,20 +200,20 @@ Para cada Q aprovada:
 
 ---
 
-## 5. Handoff após Q16
+## 5. Handoff após Q17
 
 O boundary canônico atual é:
 
 ```text
 MCF-V1.1-RESUME-CARD.md
 +
-MCF-V1.1-DISCOVERY-CHECKPOINT-016.md
+MCF-V1.1-DISCOVERY-CHECKPOINT-017.md
 ```
 
-Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q16 e retomar diretamente na Q17.
+Qualquer novo chat deve consultar o GitHub live, não repetir Q1–Q17 e retomar diretamente na Q18.
 
 ## 6. Próxima ação
 
-> **Q17 — Como checkpoint, pause/resume e troca de chat devem funcionar?**
+> **Q18 — Como evoluir a v1.0.0 para v1.1.0 preservando compatibilidade e evitando duplicação de mecanismos?**
 
-Não iniciar Q18 antes de decisão explícita de LEANDRO sobre Q17. Implementação permanece `NO_GO`.
+Não iniciar Q19 antes de decisão explícita de LEANDRO sobre Q18. Implementação permanece `NO_GO`.
