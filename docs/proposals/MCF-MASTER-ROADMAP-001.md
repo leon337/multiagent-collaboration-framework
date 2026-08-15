@@ -24,7 +24,10 @@ Nome curto: **MCF NextGen**
 Estado atual:
 
 ```yaml
-stage: DISCOVERY_COMPLETE
+stage: DECISION_CONSOLIDATION_COMPLETE
+discovery: COMPLETE
+questionnaire: COMPLETE_16_OF_16
+decision_consolidation_F1_3: COMPLETE
 target_architecture_decision_approved: true
 architecture_final_specification_approved: false
 prototype_authorized: false
@@ -34,7 +37,7 @@ production_cutover_authorized: false
 
 Arquitetura-alvo decisória aprovada: `GOVERNED_PORTABLE_MULTIAGENT_RUNTIME`.
 
-A aprovação de Q16 encerra o questionário de Discovery, mas não autoriza código, protótipo, migração material, alteração da stable ou produção.
+A aprovação de Q16 e a conclusão de F1.3 não autorizam código, protótipo, migração material, alteração da stable ou produção.
 
 ## Fase 2 — Provar e generalizar
 
@@ -50,8 +53,8 @@ FASE ZERO                                      ✅ COMPLETE_IN_MAIN
 FASE 1 — MCF NEXTGEN
 ├── F1.1 Discovery guiado                      ✅ COMPLETE
 ├── F1.2 Questionário Q1–Q16                   ✅ COMPLETE 16/16
-├── F1.3 Consolidação das decisões             👉 NEXT
-├── F1.4 Arquitetura alvo formal               ⏳
+├── F1.3 Consolidação das decisões             ✅ COMPLETE
+├── F1.4 Arquitetura alvo formal               👉 NEXT
 ├── F1.5 Plano de migração                     ⏳
 ├── F1.6 Especificação executável              ⏳
 ├── F1.7 Entrega estruturada ao executor       ⏳
@@ -93,90 +96,79 @@ questionnaire:
 
 ---
 
-# 4. Decisões consolidadas Q1–Q16
+# 4. Consolidação formal F1.3
 
-## Q1 — Finalidade
-Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade durável; provar antes de generalizar.
+Documento canônico:
 
-## Q2 — Continuidade
-`LAYERED_CONTINUITY_ARCHITECTURE`; memória, evidência, autoridade e live state separados; Project Capsule derivado; `UNKNOWN` permanece `UNKNOWN`.
+`docs/proposals/MCF-NEXTGEN-DECISION-CONSOLIDATION-001.md`
 
-## Q3 — Agente MCF
-`Agent Contract`; `AGENTE != MODELO`; `CAPABILITY != AUTHORITY`; `AGENT OUTPUT != PROJECT_TRUTH`.
+A consolidação é índice e síntese formal; não substitui nem reescreve os checkpoints originais.
 
-## Q4 — Autonomia
-`MISSION-BOUNDED + RISK-BASED AUTONOMY`; Authority Envelope; TEAM_FIRST; HUMAN_GATE exclusivamente de LEANDRO quando exigido.
+Mapa de origem:
 
-## Q5 — Model Router
-`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements, capability registry, fallback compatível/limitado e Routing Receipt.
+```text
+Q1  -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-002.md (seção Pergunta 1)
+Q2  -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md
+Q3  -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md
+Q4  -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md
+Q5  -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md
+Q6  -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-008.md
+Q7  -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-009.md
+Q8  -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-010.md
+Q9  -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-011.md
+Q10 -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-012.md
+Q11 -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md
+Q12 -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md
+Q13 -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-015.md
+Q14 -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-016.md
+Q15 -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-017.md
+Q16 -> MCF-NEXTGEN-DISCOVERY-CHECKPOINT-018.md
+```
 
-## Q6 — Independência e assurance
-`INDEPENDENCE != DIVERSITY`; blind-first, evidência própria, decisão própria e assurance proporcional ao risco.
+Q1 não possui arquivo exclusivo `Q1-only`; sua decisão está preservada duravelmente no Checkpoint 002. Q2–Q16 possuem checkpoints dedicados.
 
-## Q7 — Orquestração
-`HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`; outer graph acíclico, loops limitados, paralelismo seguro, joins, replanning versionado, Complexity Budget e Completion Contract.
+LEANDRO declarou intenção de realizar posteriormente uma nova rodada sobre as decisões Q1–Q16. Política preservada:
 
-## Q8 — Persistência
-`LAYERED_CANONICAL_PERSISTENCE`; canonical knowledge, operational state, transition ledger, evidence e derived views; provenance, freshness, schema evolution e restorability.
-
-## Q9 — Experiência humana e observabilidade
-`ACTIONABLE_PROGRESSIVE_OBSERVABILITY`; Decision Inbox, atenção humana separada de severidade, aprovação version-bound, UI derivada e progressive disclosure.
-
-## Q10 — Core vs extensões
-`MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`; Constitutional Kernel + Core Services; extensões governadas/versionadas e provider-specific adapters fora da identidade constitucional.
-
-## Q11 — Infraestrutura e placement
-`PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`; logical planes, durable dispatch, attempt identity, leases + fencing/epoch, fail-closed em partições, recovery coerente e provider-neutral Core.
-
-## Q12 — Segurança, permissões e gates
-`POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`; default deny, delegação atenuante, enforcement fora do modelo, HUMAN_GATE de LEANDRO effect-bound/replay-protected, secret minimization, worker blast-radius limitado, cross-project deny e supply-chain trust verificável.
-
-## Q13 — Métricas, prova de valor e custo
-`PREDECLARED_COMPARATIVE_VALUE_EVALUATION`; Evaluation Contract prévio, baselines críveis, hard constraints antes de otimização, scorecard multidimensional, uncertainty/generalization scope, custo marginal/estrutural e evidência para decisões de complexidade.
-
-## Q14 — Portabilidade e utilidade externa
-`CLEAN_ROOM_PORTABILITY_AND_EXTERNAL_UTILITY_VALIDATION`; portability matrix, clean-room, compatibility envelope, migration-safe activation, authority rebinding, exit portability, Fresh Project/Operator/Context e níveis de evidência externa.
-
-## Q15 — Preservação, simplificação e substituição
-`PRESERVE_INVARIANTS_REDUCE_IMPLEMENTATION`; `PRESERVE / SIMPLIFY / REPLACE / REMOVE / INCONCLUSIVE / ADD_REQUIRED`; no big-bang; sunset condicionado a replacement/conformance/migração/dependências.
-
-## Q16 — Arquitetura-alvo e GO/NO-GO
-LEANDRO aprovou `GOVERNED_PORTABLE_MULTIAGENT_RUNTIME` após auditoria crítica transversal sem bloqueio conceitual remanescente.
-
-Refinamentos centrais:
-
-- Q16 aprova `target_architecture_decision`, não a especificação executável final;
-- Constitutional Kernel não é policy configurável; policy decision/enforcement obedecem aos invariantes do Kernel;
-- Bootstrap Trust conceitual é requerido para evitar trust cycle;
-- Capability Registry cobre agentes, model backends, workers, extensions e tools;
-- Router e placement convergem em `Execution Binding` coerente;
-- `Execution Coordinator` cobre durable dispatch, attempt identity, fencing/epoch, admission e backpressure;
-- Continuity Builder/Project Capsule permanecem derived, nunca segunda verdade;
-- credentials/secrets, data classification e trust provenance possuem boundaries explícitos;
-- extensions não podem bypassar Governed Effect Boundary;
-- host/application boundary desacopla o Core de `rede-social-agentes` sem exigir microservices;
-- assurance boundary não prova independência sozinho;
-- evaluation e portability/conformance harnesses usam contratos do runtime sem necessidade de integrar todo benchmark ao Core;
-- compatibility v1 preserva interpretabilidade histórica, state migration, evidence/receipts e mappings versionados, sem congelar APIs internas incidentais;
-- migração segue `INCREMENTAL_COMPATIBILITY_FIRST` e proíbe v1/NextGen como writers materiais concorrentes;
-- NextGen Shadow não executa efeitos materiais;
-- cutover/migration é efeito privilegiado e governado;
-- acceptance gates são separados por Architecture Readiness, Implementation/Migration Readiness e Cutover/Release Readiness.
-
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-018.md`.
+```text
+ORIGINAL_CHECKPOINTS_MUST_BE_PRESERVED
+CONSOLIDATION != REWRITE
+SECOND_ROUND_CREATES_NEW_LINEAGE
+SUPERSESSION_REQUIRES_EXPLICIT_LEANDRO_DECISION
+```
 
 ---
 
-# 5. GO/NO-GO após Q16
+# 5. Decisões consolidadas Q1–Q16
+
+- Q1 — sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade durável; provar antes de generalizar.
+- Q2 — `LAYERED_CONTINUITY_ARCHITECTURE`.
+- Q3 — Agent Contract; `AGENTE != MODELO`; `CAPABILITY != AUTHORITY`.
+- Q4 — `MISSION-BOUNDED + RISK-BASED AUTONOMY`.
+- Q5 — `CAPABILITY_AND_POLICY_BASED_ROUTER`.
+- Q6 — independência auditável; `INDEPENDENCE != DIVERSITY`.
+- Q7 — `HIERARCHICAL_GOVERNED_EXECUTION_GRAPH`.
+- Q8 — `LAYERED_CANONICAL_PERSISTENCE`.
+- Q9 — `ACTIONABLE_PROGRESSIVE_OBSERVABILITY`.
+- Q10 — `MINIMAL_STABLE_CORE_WITH_GOVERNED_EXTENSIONS`.
+- Q11 — `PORTABLE_POLICY_DRIVEN_HYBRID_PLACEMENT`.
+- Q12 — `POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`.
+- Q13 — `PREDECLARED_COMPARATIVE_VALUE_EVALUATION`.
+- Q14 — `CLEAN_ROOM_PORTABILITY_AND_EXTERNAL_UTILITY_VALIDATION`.
+- Q15 — `PRESERVE_INVARIANTS_REDUCE_IMPLEMENTATION`.
+- Q16 — `GOVERNED_PORTABLE_MULTIAGENT_RUNTIME`.
+
+---
+
+# 6. GO/NO-GO vigente
 
 ```yaml
 questionnaire_direction: GO
 target_architecture_decision: GO
 discovery_completion: GO
-F1_3_decision_consolidation: GO
-F1_4_formal_target_architecture: GO
-F1_5_migration_plan: GO
-F1_6_executable_specification: GO
+F1_3_decision_consolidation: COMPLETE
+F1_4_formal_target_architecture: GO_NEXT
+F1_5_migration_plan: GO_AFTER_F1_4
+F1_6_executable_specification: GO_AFTER_F1_5
 prototype: NO_GO_CURRENTLY
 implementation: NO_GO_CURRENTLY
 production_cutover: NO_GO
@@ -186,31 +178,34 @@ final_implementation_authorization: REQUIRES_EXPLICIT_LEANDRO_APPROVAL
 
 ---
 
-# 6. Próximo bloco: F1.3
+# 7. Próximo bloco: F1.4
 
-### F1.3 — Consolidação formal das decisões Q1–Q16
+### F1.4 — Arquitetura alvo formal
 
 Objetivo:
 
-- transformar os 16 checkpoints/decisões em um conjunto único de requisitos e invariantes;
-- eliminar duplicações terminológicas sem reescrever história;
-- registrar contradictions/resolutions e itens `INCONCLUSIVE` ainda deliberadamente abertos;
-- preparar inputs formais para F1.4 Arquitetura Alvo.
+- transformar a decisão `GOVERNED_PORTABLE_MULTIAGENT_RUNTIME` em arquitetura formal;
+- definir boundaries, contracts, dependencies e interfaces de forma verificável;
+- preservar os invariantes Q1–Q16;
+- manter itens `INCONCLUSIVE` explicitamente abertos quando ainda dependerem de evidência;
+- fornecer entrada formal para F1.5 Plano de Migração.
 
-F1.3 é trabalho de especificação/documentação. Não autoriza implementação.
+F1.4 continua sendo especificação/documentação. Não autoriza implementação.
+
+A nova rodada de revisão Q1–Q16 pretendida por LEANDRO pode ser executada sem perda da primeira rodada, usando os registros individuais e lineage previsto na consolidação F1.3.
 
 ---
 
-# 7. Critérios antes de implementação
+# 8. Critérios antes de implementação
 
 Antes de pedir autorização de implementação devem existir, no mínimo:
 
 1. Q1–Q16 concluídas — **PASS**;
-2. F1.3 decisões formalmente consolidadas;
+2. F1.3 decisões formalmente consolidadas — **PASS**;
 3. F1.4 arquitetura alvo formal documentada;
 4. F1.5 plano de migração/backward compatibility formalizado;
 5. F1.6 especificação executável e testável;
-6. dispositions `PRESERVE / SIMPLIFY / REPLACE / REMOVE / INCONCLUSIVE / ADD_REQUIRED` reconciliadas;
+6. dispositions reconciliadas;
 7. acceptance criteria e validation strategy executáveis;
 8. riscos, security model, recovery e sunset definidos;
 9. especificação aprovada vinculada a revisão exata/integridade/change-control apropriado;
@@ -227,24 +222,27 @@ DESTRUCTIVE_V1_CHANGE = NO_GO
 
 ---
 
-# 8. Ponto de retomada
+# 9. Ponto de retomada
 
 ```yaml
 phase_zero: COMPLETE_IN_MAIN
-phase_one_stage: DISCOVERY_COMPLETE
+phase_one_stage: DECISION_CONSOLIDATION_COMPLETE
 questionnaire: COMPLETE_16_OF_16
+decision_consolidation_F1_3: COMPLETE
 target_architecture_decision: GOVERNED_PORTABLE_MULTIAGENT_RUNTIME
 target_architecture_decision_approved: true
 architecture_final_specification_approved: false
 prototype_authorized: false
 implementation_authorized: false
-next_phase_block: F1_3_DECISION_CONSOLIDATION
+next_phase_block: F1_4_FORMAL_TARGET_ARCHITECTURE
 ```
 
 Ordem mínima de retomada:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-018.md`;
-3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
-4. este Master Roadmap;
-5. GitHub/provider live para estado mutável.
+2. `MCF-NEXTGEN-DECISION-CONSOLIDATION-001.md`;
+3. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-018.md`;
+4. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
+5. este Master Roadmap;
+6. checkpoint individual da pergunta quando necessário;
+7. GitHub/provider live para estado mutável.
