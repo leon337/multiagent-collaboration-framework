@@ -5,15 +5,15 @@
 **Autoridade humana final:** LEANDRO  
 **Orquestração:** MESTRE  
 **Escopo:** visão macro do MCF desde a Fase Zero até a reestruturação e validação futura.  
-**Regra:** estados live devem sempre ser revalidados no GitHub; SHAs abaixo são referências de boundaries/checkpoints e não substituem read-back live.
+**Regra:** estados live devem sempre ser revalidados no GitHub; SHAs abaixo são boundaries/checkpoints e não substituem read-back live.
 
 ---
 
-# 1. Modelo didático de fases
+# 1. Modelo de fases
 
 ## FASE ZERO — Construir para aprender
 
-Objetivo: construir uma primeira geração suficientemente completa para descobrir empiricamente os problemas reais de desenvolvimento multiagente, memória, governança, execução, observabilidade, segurança e publicação.
+Objetivo: construir uma primeira geração completa o suficiente para descobrir empiricamente problemas reais de multiagentes, memória, governança, execução, observabilidade, segurança e publicação.
 
 **Estado:** `COMPLETE_IN_MAIN`.
 
@@ -30,7 +30,7 @@ Objetivo: preservar o que funciona, corrigir o que funciona mal, simplificar exc
 
 ## FASE 2 — Provar e generalizar
 
-Objetivo: provar empiricamente o valor da arquitetura reestruturada, comparar com baselines mais simples, testar portabilidade e preparar generalização para terceiros apenas quando houver evidência suficiente.
+Objetivo: provar empiricamente o valor da arquitetura reestruturada, comparar com baselines simples, testar portabilidade e preparar generalização apenas quando houver evidência suficiente.
 
 ---
 
@@ -39,47 +39,45 @@ Objetivo: provar empiricamente o valor da arquitetura reestruturada, comparar co
 ```text
 FASE ZERO — CONSTRUIR PARA APRENDER
 │
-├── Z0.1 Fundação e governança                  ✅ concluída
-├── Z0.2 Agentes / skills / handoffs            ✅ construídos/experimentados
-├── Z0.3 Runtime executável                     ✅ implementado
-├── Z0.4 Gates C / D / E                        ✅ concluídos
-├── Z0.5 Production Readiness                   ✅ concluído
-├── Z0.6 Produção RC                            ✅ concluída
-├── Z0.7 RC1 → RC2 → RC3                       ✅ concluído
-├── Z0.8 Boundary stable v1.0.0                 ✅ concluído
-├── Z0.9 Reconciliação documental final         ✅ concluída
-└── Z0.10 Encerramento formal da Fase Zero      ✅ COMPLETE_IN_MAIN
+├── Z0.1 Fundação e governança                  ✅
+├── Z0.2 Agentes / skills / handoffs            ✅
+├── Z0.3 Runtime executável                     ✅
+├── Z0.4 Gates C / D / E                        ✅
+├── Z0.5 Production Readiness                   ✅
+├── Z0.6 Produção RC                            ✅
+├── Z0.7 RC1 → RC2 → RC3                       ✅
+├── Z0.8 Boundary stable v1.0.0                 ✅
+├── Z0.9 Reconciliação documental final         ✅
+└── Z0.10 Encerramento formal                   ✅ COMPLETE_IN_MAIN
 
 FASE 1 — REESTRUTURAR COM O QUE APRENDEMOS
 │
 ├── F1.1 Discovery guiado                       🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                    🔍 Q1 ✅ | Q2 ✅ | Q3 ✅ | Q4 ✅ | Q5 próxima
+├── F1.2 Questionário Q1–Q16                    🔍 Q1–Q5 ✅ | Q6 próxima
 ├── F1.3 Consolidação das decisões              ⏳
 ├── F1.4 Arquitetura alvo                       ⏳
 ├── F1.5 Plano de migração                      ⏳
 ├── F1.6 Especificação executável               ⏳
-├── F1.7 Entrega estruturada ao Codex/executor  ⏳
+├── F1.7 Entrega estruturada ao executor        ⏳
 ├── F1.8 Implementação da reestruturação        ⏳ NÃO AUTORIZADA
 ├── F1.9 Validação técnica e regressão          ⏳
-└── F1.10 Release da geração reestruturada      ⏳
+└── F1.10 Release reestruturada                 ⏳
 
 FASE 2 — PROVAR E GENERALIZAR
 │
-├── F2.1 Benchmarks contra baseline simples     ⏳
+├── F2.1 Benchmarks baseline                    ⏳
 ├── F2.2 Continuity Recovery Tests              ⏳
 ├── F2.3 Testes multi-model/provider            ⏳
-├── F2.4 Cold-start por outro humano/IA         ⏳
-├── F2.5 Ablation de agentes/controles          ⏳
-├── F2.6 Portabilidade de infraestrutura        ⏳
-├── F2.7 UX para usuário externo                ⏳
-└── F2.8 Decisão de generalização/produto       ⏳
+├── F2.4 Cold-start outro humano/IA             ⏳
+├── F2.5 Ablation agentes/controles             ⏳
+├── F2.6 Portabilidade infraestrutura           ⏳
+├── F2.7 UX externo                             ⏳
+└── F2.8 Decisão generalização/produto          ⏳
 ```
 
 ---
 
 # 3. Boundary terminal da Fase Zero
-
-Referência temporal: 2026-08-14. Revalidar estado mutável antes de afirmar que continua igual.
 
 ```yaml
 phase_zero:
@@ -101,7 +99,7 @@ durable_release_identity:
   rc3: 7f741e10d0e745a90c732e084400b11e3f5e6794
 ```
 
-A Fase Zero não possui blocker material remanescente no boundary terminal. Snapshots anteriores que mostrem stable ausente, PR #133 aberto, PR #134 pendente ou Fase Zero em fechamento são evidência histórica e não devem ser usados como estado atual.
+Snapshots anteriores que mostrem estado diferente devem ser lidos como `HISTORICAL`, não como estado atual.
 
 ---
 
@@ -122,36 +120,29 @@ questionnaire:
   Q2: COMPLETED_APPROVED_BY_LEANDRO
   Q3: COMPLETED_APPROVED_BY_LEANDRO
   Q4: COMPLETED_APPROVED_BY_LEANDRO
-  Q5: NEXT_NOT_STARTED
+  Q5: COMPLETED_APPROVED_BY_LEANDRO
+  Q6: NEXT_NOT_STARTED
 ```
 
-A aprovação das perguntas de Discovery não concede autorização implícita para reestruturar runtime ou implementar hipóteses NextGen.
+A aprovação de perguntas de Discovery não autoriza implicitamente implementação.
 
 ---
 
-# 5. Decisões de Discovery já consolidadas
+# 5. Decisões de Discovery consolidadas
 
-## Q1 — finalidade principal
+## Q1 — Finalidade
 
 - sistema pessoal de trabalho com IA para LEANDRO como foco inicial;
 - continuidade durável de projetos como problema central;
 - ChatGPT/MESTRE inicialmente como camada cognitiva superior;
 - equipes de agentes especializados;
-- provar e amadurecer primeiro no uso real de LEANDRO;
-- generalização e produto comercial ficam posteriores à prova de valor.
+- provar no uso real de LEANDRO antes de generalizar.
 
-## Q2 — continuidade de contexto
+## Q2 — Continuidade
 
-LEANDRO aprovou conceitualmente a `LAYERED_CONTINUITY_ARCHITECTURE`.
+LEANDRO aprovou `LAYERED_CONTINUITY_ARCHITECTURE`.
 
-Componentes:
-
-- Framework Memory;
-- Project Memory;
-- Live Operational Memory;
-- Evidence / Raw Archive;
-- Continuity Builder;
-- Project Capsule derivado/versionado para retomada.
+Componentes: Framework Memory, Project Memory, Live Operational Memory, Evidence/Raw Archive, Continuity Builder e Project Capsule derivado/versionado.
 
 Invariantes:
 
@@ -160,19 +151,14 @@ MEMÓRIA ajuda a reconstruir.
 EVIDÊNCIA prova o que aconteceu.
 AUTORIDADE define o que vale.
 ESTADO LIVE define onde estamos agora.
+UNKNOWN permanece UNKNOWN sem evidência.
 ```
 
-O `Project Capsule` NÃO é fonte de verdade. Estado live deve ser revalidado. Ausência de evidência permanece `UNKNOWN`. Hipóteses não podem ser promovidas silenciosamente a fatos. Decisões e ações críticas exigem verificação/gates proporcionais ao risco. Continuidade deve ser comprovada empiricamente por `Continuity Recovery Test`/cold-start.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
 
-Checkpoint canônico: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-004.md`.
+## Q3 — Agente MCF
 
-## Q3 — agente de verdade no MCF
-
-LEANDRO aprovou conceitualmente o `Agent Contract` como base de classificação de um agente MCF.
-
-Definição consolidada:
-
-> Um agente MCF é uma entidade operacional identificável que possui identidade, papel, objetivos, capacidades, limites de autoridade, contratos de entrada e saída, política de decisão e rastreabilidade próprias, podendo usar diferentes modelos, ferramentas e ambientes de execução sem que esses componentes constituam sua identidade.
+LEANDRO aprovou `Agent Contract`.
 
 Invariantes:
 
@@ -183,47 +169,49 @@ IDENTITY CONTINUITY != CAPABILITY CONTINUITY
 AGENT OUTPUT != PROJECT TRUTH
 ```
 
-- persona/nome/instruções não bastam para satisfazer o `Agent Contract`;
-- lifecycle é separado de agenthood (`EPHEMERAL`, `SESSION`, `PROJECT`, `PERSISTENT`);
-- independência é separada de agenthood e será formalizada na Q6;
-- troca de modelo exige capability validation aplicável;
-- agentes não devem manter cópias concorrentes não governadas da verdade do projeto;
-- output de agente só vira fato/estado/decisão oficial conforme evidência e autoridade aplicáveis.
+Lifecycle e independência são propriedades separadas de agenthood.
 
-Checkpoint canônico: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
-## Q4 — autonomia dos agentes
+## Q4 — Autonomia
 
-LEANDRO aprovou conceitualmente `MISSION-BOUNDED + RISK-BASED AUTONOMY`.
+LEANDRO aprovou `MISSION-BOUNDED + RISK-BASED AUTONOMY`.
 
 Princípios:
 
-- missões relevantes possuem `Authority Envelope` conceitualmente explícito;
-- autonomia existe apenas dentro do envelope de objetivo, ações, recursos, risco e gates;
-- `CAPABILITY != AUTHORITY`;
+- `Authority Envelope`;
 - `UNKNOWN_AUTHORITY = DENY`;
-- autoelevação de privilégio é proibida;
-- conteúdo externo não pode expandir autoridade;
-- estado live deve ser revalidado antes de ação material;
-- risco não deve depender exclusivamente do executor;
-- risco cumulativo por sequência precisa ser considerado;
-- retries são limitados e idempotentes quando aplicável;
-- revogação/emergency stop é requisito;
-- equipe tenta recovery técnico antes de envolver LEANDRO (`TEAM_FIRST`);
-- ações críticas/R3 exigem `HUMAN_GATE` exclusivamente de LEANDRO.
+- autoelevação proibida;
+- conteúdo externo não amplia autoridade;
+- risco não depende exclusivamente do executor;
+- risco cumulativo;
+- retries limitados/idempotentes quando aplicável;
+- revogação/emergency stop;
+- `TEAM_FIRST`;
+- R3/crítico → HUMAN_GATE exclusivamente de LEANDRO.
 
-Taxonomia conceitual:
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 
-```yaml
-R0_LOW: EXECUTE_WITHIN_ENVELOPE
-R1_MEDIUM: EXECUTE_WITH_VERIFICATION_AND_EVIDENCE
-R2_HIGH: REQUIRE_TECHNICAL_GATE_OR_DUAL_VERIFICATION
-R3_CRITICAL: REQUIRE_HUMAN_GATE_LEANDRO
-```
+## Q5 — Model Router
 
-Detalhes concretos de Policy Engine, segurança, permissões e gates ficam para perguntas posteriores, especialmente Q12.
+LEANDRO aprovou `CAPABILITY_AND_POLICY_BASED_ROUTER`.
 
-Checkpoint canônico: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
+Princípios:
+
+- requisitos da tarefa antes da seleção do modelo;
+- hard requirements são filtros obrigatórios;
+- router não pode reduzir hard requirements;
+- `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`;
+- model self-claim não é evidência;
+- Model Capability Registry com proveniência/freshness/health;
+- custo, latência e quota são preferências após compatibilidade;
+- fallback só para modelo compatível;
+- silent capability downgrade proibido;
+- fallbacks limitados e sem loops;
+- nenhum candidato compatível → `BLOCKED / ESCALATE`;
+- routing receipt auditável.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
 
 ---
 
@@ -237,58 +225,47 @@ Estado:
 
 ```yaml
 questionnaire_total: 16
-last_completed_question: 4
-next_question: 5
-Q5_started: false
+last_completed_question: 5
+next_question: 6
+Q6_started: false
 implementation_authorized: false
 architecture_final_approved: false
 ```
 
 Próxima pergunta:
 
-> **Q5 — Como deve funcionar o Roteador de Modelos de IA?**
+> **Q6 — O que significa independência entre agentes e revisores?**
 
-Ela definirá modelo preferencial e fallbacks, quotas, custo, qualidade mínima, contexto, coding/reasoning/vision/tools, troca de modelo sem perda de identidade/estado e políticas de provider/indisponibilidade.
+Ela definirá separação funcional, contexto/sessão, modelo, provider, autoridade, evidência e critérios mínimos para chamar uma revisão de independente.
 
 ---
 
-# 7. Tese de produto em estudo
-
-O MCF pretende permitir que LEANDRO transforme ideias em projetos executados por equipes de agentes, preservando memória, decisões, evidências, estado e continuidade de modo que projetos possam ser interrompidos, delegados e retomados sem dependência da memória humana, do contexto de um chat, de um modelo específico ou de uma equipe específica.
-
-Princípios consolidados ou fortemente aceitos:
+# 7. Princípios consolidados
 
 1. `AGENTE != MODELO`;
-2. GitHub permanece uma base forte de memória institucional;
-3. ChatGPT/MESTRE atua inicialmente como camada cognitiva superior/orquestradora;
-4. modelos externos podem executar papéis especializados;
-5. roteamento/fallback deve preservar identidade e estado do agente quando houver capability compatibility;
-6. autonomia operacional não substitui autoridade humana;
-7. HUMAN_GATE deve ser distinguido de dependência operacional humana;
-8. complexidade interna deve produzir simplicidade operacional externa;
-9. múltiplos projetos devem ter memória/equipe/estado isolados;
-10. documentação deve preservar conhecimento, não repetir conversa indefinidamente;
-11. provider capability deve ser validada antes de virar requisito de governança;
-12. nenhuma complexidade é preservada apenas porque já existe;
-13. memória não substitui evidência;
-14. ausência de prova não deve ser convertida em certeza operacional;
-15. `CAPABILITY != AUTHORITY`;
-16. `AGENT OUTPUT != PROJECT TRUTH`;
-17. `UNKNOWN_AUTHORITY = DENY`;
-18. agentes não podem ampliar a própria autoridade.
+2. memória não substitui evidência;
+3. ausência de prova não vira certeza operacional;
+4. `CAPABILITY != AUTHORITY`;
+5. `AGENT OUTPUT != PROJECT TRUTH`;
+6. `UNKNOWN_AUTHORITY = DENY`;
+7. agentes não ampliam a própria autoridade;
+8. routing/fallback deve preservar requisitos mínimos;
+9. `UNKNOWN_CAPABILITY = NOT_COMPATIBLE`;
+10. custo/free tier não supera segurança/capacidade;
+11. múltiplos projetos devem ter memória/equipe/estado isolados;
+12. complexidade só permanece se resolver problema real.
 
 ---
 
-# 8. Blocos arquitetônicos ainda a decidir
+# 8. Blocos ainda a decidir
 
-Q5–Q16 ainda decidirão:
+Q6–Q16 ainda decidirão:
 
-- model routing;
 - independência/auditoria;
 - graph/loops/paralelismo;
 - documentação mínima suficiente;
 - observabilidade/UX;
-- Core versus factories/plugins/perfis;
+- Core vs factories/plugins/perfis;
 - infraestrutura/placement;
 - segurança/gates/permissões;
 - métricas e custo-benefício;
@@ -300,41 +277,26 @@ Q5–Q16 ainda decidirão:
 
 # 9. Critérios para iniciar implementação da Fase 1
 
-A reestruturação grande NÃO deve começar apenas porque Q1–Q4 foram concluídas.
-
 Pré-condições:
 
-1. questionário Q1–Q16 concluído;
+1. Q1–Q16 concluídas;
 2. decisões contraditórias conciliadas;
 3. arquitetura alvo documentada;
-4. itens `PRESERVE / MODIFY / SIMPLIFY / REMOVE / ADD` definidos;
+4. `PRESERVE / MODIFY / SIMPLIFY / REMOVE / ADD` definidos;
 5. métricas de comparação definidas;
 6. plano de migração definido;
-7. limites de backward compatibility definidos;
+7. backward compatibility definida;
 8. critérios de aceite definidos;
 9. riscos e rollback definidos;
-10. LEANDRO aprova a especificação da reestruturação.
+10. LEANDRO aprova a especificação final.
 
-Só então gerar missão estruturada para Codex/executor.
+Só então gerar missão estruturada para executor/Codex.
 
 ---
 
 # 10. Fase 2 — prova de valor
 
-A Fase 2 deverá comparar empiricamente o MCF reestruturado com workflows mais simples.
-
-Métricas candidatas:
-
-- tempo total;
-- tokens/custo;
-- retrabalho;
-- defeitos escapados;
-- intervenção humana;
-- contexto perdido;
-- tempo de retomada;
-- recuperação;
-- qualidade final;
-- satisfação operacional de LEANDRO.
+Comparar empiricamente o MCF reestruturado com workflows mais simples usando métricas como tempo, custo/tokens, retrabalho, defeitos, intervenção humana, contexto perdido, tempo de retomada, recovery e qualidade final.
 
 Testes candidatos:
 
@@ -342,7 +304,7 @@ Testes candidatos:
 - novo chat sem histórico bruto;
 - outro modelo/provider;
 - outro humano/executor;
-- projetos distintos em paralelo;
+- projetos paralelos;
 - ablation de agentes/controles;
 - portabilidade de infraestrutura.
 
@@ -350,16 +312,16 @@ Testes candidatos:
 
 # 11. Regra de continuidade
 
-Antes de encerrar qualquer sessão relevante:
+Antes de encerrar sessão relevante:
 
 1. identificar decisões novas;
-2. identificar hipóteses ainda abertas;
+2. identificar hipóteses abertas;
 3. registrar estado live relevante;
-4. atualizar ou criar checkpoint;
+4. atualizar/criar checkpoint;
 5. registrar `last_completed_question` e `next_question`;
-6. gerar/atualizar Resume Card;
+6. atualizar Resume Card;
 7. fazer read-back do GitHub;
-8. somente então considerar a sessão encerrada com segurança.
+8. só então considerar a sessão segura para retomada.
 
 ---
 
@@ -372,19 +334,19 @@ phase_zero:
 
 phase_one_discovery:
   state: ACTIVE_DISCOVERY
-  last_completed_question: 4
-  next_question: 5
-  Q5_started: false
+  last_completed_question: 5
+  next_question: 6
+  Q6_started: false
 
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q5
-next_operational_action: NONE_BEFORE_Q5_DECISION
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q6
+next_operational_action: NONE_BEFORE_Q6_DECISION
 ```
 
 Um novo chat deve reconstruir o estado lendo:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este `MCF-MASTER-ROADMAP-001.md`;
 5. GitHub/provider live para estado mutável;
