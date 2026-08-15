@@ -53,7 +53,7 @@ FASE ZERO — CONSTRUIR PARA APRENDER
 FASE 1 — REESTRUTURAR COM O QUE APRENDEMOS
 │
 ├── F1.1 Discovery guiado                       🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                    🔍 Q1 ✅ | Q2 ✅ | Q3 ✅ | Q4 próxima
+├── F1.2 Questionário Q1–Q16                    🔍 Q1 ✅ | Q2 ✅ | Q3 ✅ | Q4 ✅ | Q5 próxima
 ├── F1.3 Consolidação das decisões              ⏳
 ├── F1.4 Arquitetura alvo                       ⏳
 ├── F1.5 Plano de migração                      ⏳
@@ -121,7 +121,8 @@ questionnaire:
   Q1: COMPLETED
   Q2: COMPLETED_APPROVED_BY_LEANDRO
   Q3: COMPLETED_APPROVED_BY_LEANDRO
-  Q4: NEXT_NOT_STARTED
+  Q4: COMPLETED_APPROVED_BY_LEANDRO
+  Q5: NEXT_NOT_STARTED
 ```
 
 A aprovação das perguntas de Discovery não concede autorização implícita para reestruturar runtime ou implementar hipóteses NextGen.
@@ -191,6 +192,39 @@ AGENT OUTPUT != PROJECT TRUTH
 
 Checkpoint canônico: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`.
 
+## Q4 — autonomia dos agentes
+
+LEANDRO aprovou conceitualmente `MISSION-BOUNDED + RISK-BASED AUTONOMY`.
+
+Princípios:
+
+- missões relevantes possuem `Authority Envelope` conceitualmente explícito;
+- autonomia existe apenas dentro do envelope de objetivo, ações, recursos, risco e gates;
+- `CAPABILITY != AUTHORITY`;
+- `UNKNOWN_AUTHORITY = DENY`;
+- autoelevação de privilégio é proibida;
+- conteúdo externo não pode expandir autoridade;
+- estado live deve ser revalidado antes de ação material;
+- risco não deve depender exclusivamente do executor;
+- risco cumulativo por sequência precisa ser considerado;
+- retries são limitados e idempotentes quando aplicável;
+- revogação/emergency stop é requisito;
+- equipe tenta recovery técnico antes de envolver LEANDRO (`TEAM_FIRST`);
+- ações críticas/R3 exigem `HUMAN_GATE` exclusivamente de LEANDRO.
+
+Taxonomia conceitual:
+
+```yaml
+R0_LOW: EXECUTE_WITHIN_ENVELOPE
+R1_MEDIUM: EXECUTE_WITH_VERIFICATION_AND_EVIDENCE
+R2_HIGH: REQUIRE_TECHNICAL_GATE_OR_DUAL_VERIFICATION
+R3_CRITICAL: REQUIRE_HUMAN_GATE_LEANDRO
+```
+
+Detalhes concretos de Policy Engine, segurança, permissões e gates ficam para perguntas posteriores, especialmente Q12.
+
+Checkpoint canônico: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
+
 ---
 
 # 6. Discovery da Fase 1
@@ -203,18 +237,18 @@ Estado:
 
 ```yaml
 questionnaire_total: 16
-last_completed_question: 3
-next_question: 4
-Q4_started: false
+last_completed_question: 4
+next_question: 5
+Q5_started: false
 implementation_authorized: false
 architecture_final_approved: false
 ```
 
 Próxima pergunta:
 
-> **Q4 — Qual nível de autonomia os agentes devem possuir?**
+> **Q5 — Como deve funcionar o Roteador de Modelos de IA?**
 
-Ela definirá o que os agentes podem decidir e executar sozinhos, limites de autoridade, diferença entre HUMAN_GATE e dependência operacional humana, escalonamento, stop conditions, retries e tratamento de ações reversíveis/irreversíveis.
+Ela definirá modelo preferencial e fallbacks, quotas, custo, qualidade mínima, contexto, coding/reasoning/vision/tools, troca de modelo sem perda de identidade/estado e políticas de provider/indisponibilidade.
 
 ---
 
@@ -239,15 +273,16 @@ Princípios consolidados ou fortemente aceitos:
 13. memória não substitui evidência;
 14. ausência de prova não deve ser convertida em certeza operacional;
 15. `CAPABILITY != AUTHORITY`;
-16. `AGENT OUTPUT != PROJECT TRUTH`.
+16. `AGENT OUTPUT != PROJECT TRUTH`;
+17. `UNKNOWN_AUTHORITY = DENY`;
+18. agentes não podem ampliar a própria autoridade.
 
 ---
 
 # 8. Blocos arquitetônicos ainda a decidir
 
-Q4–Q16 ainda decidirão:
+Q5–Q16 ainda decidirão:
 
-- autonomia;
 - model routing;
 - independência/auditoria;
 - graph/loops/paralelismo;
@@ -265,7 +300,7 @@ Q4–Q16 ainda decidirão:
 
 # 9. Critérios para iniciar implementação da Fase 1
 
-A reestruturação grande NÃO deve começar apenas porque Q1–Q3 foram concluídas.
+A reestruturação grande NÃO deve começar apenas porque Q1–Q4 foram concluídas.
 
 Pré-condições:
 
@@ -337,19 +372,19 @@ phase_zero:
 
 phase_one_discovery:
   state: ACTIVE_DISCOVERY
-  last_completed_question: 3
-  next_question: 4
-  Q4_started: false
+  last_completed_question: 4
+  next_question: 5
+  Q5_started: false
 
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q4
-next_operational_action: NONE_BEFORE_Q4_DECISION
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q5
+next_operational_action: NONE_BEFORE_Q5_DECISION
 ```
 
 Um novo chat deve reconstruir o estado lendo:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-005.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este `MCF-MASTER-ROADMAP-001.md`;
 5. GitHub/provider live para estado mutável;
