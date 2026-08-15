@@ -26,10 +26,10 @@ O questionário possui **16 perguntas canônicas**.
 
 ```yaml
 question_count_total: 16
-questions_completed: 12
-questions_remaining: 4
-last_completed_question: 12
-next_question: 13
+questions_completed: 13
+questions_remaining: 3
+last_completed_question: 13
+next_question: 14
 question_01: COMPLETED
 question_02: COMPLETED_APPROVED_BY_LEANDRO
 question_03: COMPLETED_APPROVED_BY_LEANDRO
@@ -42,7 +42,8 @@ question_09: COMPLETED_APPROVED_BY_LEANDRO
 question_10: COMPLETED_APPROVED_BY_LEANDRO
 question_11: COMPLETED_APPROVED_BY_LEANDRO
 question_12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
-question_13: NOT_STARTED
+question_13: COMPLETED_APPROVED_BY_LEANDRO
+question_14: NOT_STARTED
 implementation_authorized: false
 ```
 
@@ -79,7 +80,7 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-006.md`.
 ### Q5 — Roteador de modelos
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements antes de custo/latência/quota; fallback compatível/limitado; routing receipt.
+`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements antes de custo/latência/quota; fallback compatível/limitado; Routing Receipt.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-007.md`.
 
@@ -107,7 +108,7 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-010.md`.
 ### Q9 — Experiência humana e observabilidade
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO`
 
-`ACTIONABLE_PROGRESSIVE_OBSERVABILITY`; Decision Inbox, atenção humana separada de severidade operacional, aprovação version-bound, UI derivada com freshness, progressive disclosure e notificações orientadas a mudança material.
+`ACTIONABLE_PROGRESSIVE_OBSERVABILITY`; Decision Inbox, atenção humana separada de severidade operacional, aprovação version-bound, UI derivada com freshness, progressive disclosure e notificações por mudança material.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-011.md`.
 
@@ -128,45 +129,46 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
 ### Q12 — Segurança, permissões e gates
 **Status:** `COMPLETED / APPROVED_BY_LEANDRO_CONCEPTUALLY`
 
-Decisão: `POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`.
+`POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`; default deny, cadeia de delegação atenuante, enforcement fora do modelo para efeitos materiais, HUMAN_GATE de LEANDRO effect-bound/replay-protected, trust propagation, secret minimization, worker blast-radius limitado, cross-project deny e supply-chain trust verificável.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`.
+
+### Q13 — Métricas, prova de valor e custo
+**Status:** `COMPLETED / APPROVED_BY_LEANDRO`
+
+Decisão: `PREDECLARED_COMPARATIVE_VALUE_EVALUATION`.
 
 Síntese:
 
-- default deny para identidade, autoridade, compatibilidade e gates ausentes/obsoletos;
-- `AUTHENTICATED != AUTHORIZED`;
-- efeitos materiais preservam principal/delegation chain; delegação só pode atenuar autoridade;
-- autorização é contextual e, quando aplicável, vinculada a mission/task/attempt/action/resource/audience/environment/security domain/policy/state/expiry;
-- model compliance não é security boundary; efeitos materiais exigem policy enforcement verificável fora do modelo;
-- bypass direto do governed effect boundary é proibido quando arquiteturalmente controlável;
-- mudança de security policy/permissions/gates/credential bindings é efeito privilegiado;
-- HUMAN_GATE pertence a LEANDRO e é effect/precondition-bound, expiráveis, protegido contra replay e com modo explícito de consumo;
-- fatos/effect preview crítico devem ser separados de recomendação da IA;
-- conteúdo externo nunca é autoridade e permanece não confiável através de transformações/handoffs;
-- output de modelo não é comando material seguro por definição; ferramentas materiais exigem validação tipada quando aplicável;
-- secrets não entram em memória/prompt/log/telemetry por default; preferir references/brokers e credenciais curtas/escopadas;
-- workers não são trust peers do Control Plane e devem possuir blast radius limitado;
-- cross-project access é `DENY` por default e isolamento alcança storage/credentials conforme aplicável;
-- classificação de dados propaga; modelo não pode se autodesclassificar;
-- extensões materiais exigem digest, provenance e verificação contra trust policy; `PROVENANCE_PRESENT != ARTIFACT_TRUSTED`;
-- Authorization Receipts registram decisão de segurança, mas `RECEIPT != EFFECT_PROOF`;
-- revogação e autoridade material remota limitada são obrigatórias;
-- Complexity Budget/admission control também funcionam como security budgets;
-- políticas de segurança são ativos críticos sujeitos a versionamento, change control, provenance e integridade;
-- Core usa autoridade interna por papel; binding atual pode ser LÉO; HUMAN_GATE permanece LEANDRO.
+- toda alegação forte de valor nasce de Evaluation Contract definido antes da execução;
+- baseline deve ser crível e responder à hipótese testada;
+- modos: `CONTROLLED_COMPONENT`, `EQUAL_BUDGET`, `PRACTICAL_ALTERNATIVE`;
+- Development, Regression, Holdout e Real-world sets têm funções distintas;
+- ground truth determinístico é preferido quando disponível; candidate self-grading sozinho é insuficiente;
+- runs estocásticos exigem repetição/uncertainty quando a variância for material;
+- modelos, providers, profiles, graders e scenarios relevantes são versionados;
+- hard constraints precedem otimização; falha crítica não pode desaparecer em média;
+- `UNAUTHORIZED_SUCCESS = FAILURE`;
+- correct block/unknown contam como corretos, mas overblocking/false unknown também são falhas;
+- scorecard default é multidimensional, sem score único ocultando trade-offs;
+- custo marginal e estrutural são separados;
+- métricas distinguem `OBSERVED`, `COMPUTED`, `HUMAN_REPORTED`, `ESTIMATED`;
+- benchmark controlado e field observation produzem tipos diferentes de evidência;
+- conclusions possíveis: `BENEFICIAL`, `NON_INFERIOR`, `TRADEOFF`, `REGRESSED`, `DISQUALIFIED_HARD_CONSTRAINT`, `INCONCLUSIVE`;
+- complexidade só se justifica por valor mensurável ou invariante obrigatório;
+- preservar invariante não obriga preservar a implementação atual;
+- Q13 produz `component_value_evidence` para orientar Q15.
 
-Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`.
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-015.md`.
 
 ---
 
 ## 4. Perguntas restantes
 
-### Q13 — Como provar que o MCF vale o custo e a complexidade?
+### Q14 — Como validar portabilidade e utilidade fora do ambiente atual?
 **Status:** `NEXT / NOT_STARTED`
 
-Definir métricas, baselines, custo total, qualidade, tempo, retrabalho, autonomia útil, taxa de recuperação, consumo de modelos/providers e critérios objetivos para provar que as camadas adicionadas geram valor real.
-
-### Q14 — Como validar portabilidade e utilidade fora do ambiente atual?
-**Status:** `PENDING`
+Definir como provar portabilidade real entre providers/runtimes/projetos e como validar utilidade para contextos externos sem confundir compatibilidade declarada, demo controlada e evidência de uso real.
 
 ### Q15 — O que deve ser preservado, simplificado, removido ou substituído?
 **Status:** `PENDING`
@@ -194,8 +196,8 @@ Persistir checkpoint quando houver decisão arquitetônica, aprovação de LEAND
 6. continuar exatamente na `next_question`.
 
 ```yaml
-last_completed_question: 12
-next_question: 13
-instruction: NÃO REPETIR Q1-Q12
+last_completed_question: 13
+next_question: 14
+instruction: NÃO REPETIR Q1-Q13
 implementation_authorized: false
 ```
