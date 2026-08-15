@@ -26,7 +26,7 @@ Arquitetura final, protótipo e implementação continuam não autorizados.
 
 ## Fase 2 — Provar e generalizar
 
-Provar valor empiricamente, comparar com baselines simples, testar portabilidade e generalizar somente com evidência suficiente.
+Provar valor empiricamente, comparar com baselines críveis, testar portabilidade e generalizar somente com evidência suficiente.
 
 ---
 
@@ -37,7 +37,7 @@ FASE ZERO                                      ✅ COMPLETE_IN_MAIN
 
 FASE 1 — MCF NEXTGEN
 ├── F1.1 Discovery guiado                      🔍 ACTIVE_DISCOVERY
-├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q12 ✅ | Q13 próxima
+├── F1.2 Questionário Q1–Q16                   🔍 Q1–Q13 ✅ | Q14 próxima
 ├── F1.3 Consolidação das decisões             ⏳
 ├── F1.4 Arquitetura alvo                      ⏳
 ├── F1.5 Plano de migração                     ⏳
@@ -63,7 +63,7 @@ phase_1:
 
 questionnaire:
   total: 16
-  completed: 12
+  completed: 13
   Q1: COMPLETED
   Q2: COMPLETED_APPROVED_BY_LEANDRO
   Q3: COMPLETED_APPROVED_BY_LEANDRO
@@ -76,7 +76,8 @@ questionnaire:
   Q10: COMPLETED_APPROVED_BY_LEANDRO
   Q11: COMPLETED_APPROVED_BY_LEANDRO
   Q12: COMPLETED_APPROVED_BY_LEANDRO_CONCEPTUALLY
-  Q13: NEXT_NOT_STARTED
+  Q13: COMPLETED_APPROVED_BY_LEANDRO
+  Q14: NEXT_NOT_STARTED
 ```
 
 A aprovação de perguntas de Discovery não autoriza implementação.
@@ -98,7 +99,7 @@ Sistema pessoal de trabalho com IA para LEANDRO como foco inicial; continuidade 
 `MISSION-BOUNDED + RISK-BASED AUTONOMY`; Authority Envelope; TEAM_FIRST; HUMAN_GATE exclusivamente de LEANDRO quando exigido.
 
 ## Q5 — Model Router
-`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements; capability registry; fallback compatível/limitado; routing receipt.
+`CAPABILITY_AND_POLICY_BASED_ROUTER`; hard requirements; capability registry; fallback compatível/limitado; Routing Receipt.
 
 ## Q6 — Independência e assurance
 `INDEPENDENCE != DIVERSITY`; revisão independente exige separação observável, blind-first, evidência própria e decisão própria; assurance proporcional ao risco.
@@ -123,43 +124,48 @@ Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-013.md`.
 ## Q12 — Segurança, permissões e gates
 LEANDRO aprovou conceitualmente `POLICY_ENFORCED_IDENTITY_BOUND_ZERO_TRUST`.
 
-Princípios:
-
-- autorização default deny; `AUTHENTICATED != AUTHORIZED`;
-- efeitos materiais preservam cadeia de principal/delegação e delegação só pode atenuar autoridade;
-- autorização é vinculada ao contexto, audience, recurso, policy, estado e expiração conforme aplicável;
-- model compliance não é security boundary; efeitos materiais exigem enforcement verificável fora do modelo;
-- bypass direto do governed effect boundary é proibido quando arquiteturalmente controlável;
-- mutation de security policy/permissions/gates/credential bindings é efeito privilegiado;
-- HUMAN_GATE pertence exclusivamente a LEANDRO no MCF e deve ser vinculado ao efeito/precondições, expirar e ser protegido contra replay;
-- consumo de aprovação é explícito e limitado, não um booleano reutilizável;
-- conteúdo externo não é autoridade e sua provenance/trust não desaparece por resumo/RAG/handoff;
-- output de modelo não é comando material seguro por definição;
-- secrets não são memória/prompt/log/telemetry por default; preferir referências, brokers e credenciais curtas/escopadas;
-- workers não são trust peers do Control Plane e devem ter blast radius limitado;
-- cross-project access é deny por default; classificação de dados deve propagar e modelo não pode se autodesclassificar;
-- plugins/extensões materiais exigem digest, provenance e verificação contra trust policy; presença de provenance não equivale a confiança;
-- Authorization Receipt registra decisão de segurança, mas receipt não substitui evidence/read-back do efeito;
-- revogação, autoridade material remota limitada e security budgets são obrigatórios;
-- políticas de segurança são ativos críticos sujeitos a integridade/change control;
-- Core generalizável conhece internal gate authority role; o binding atual pode ser LÉO; HUMAN_GATE permanece LEANDRO.
+Princípios centrais: default deny; cadeia de delegação atenuante; enforcement fora do modelo para efeitos materiais; HUMAN_GATE exclusivo de LEANDRO, vinculado ao efeito/precondições e protegido contra replay; trust provenance preservada; secrets minimizados; workers com blast radius limitado; cross-project deny; supply-chain trust verificável; security policy como ativo privilegiado.
 
 Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`.
+
+## Q13 — Métricas, prova de valor e custo
+LEANDRO aprovou `PREDECLARED_COMPARATIVE_VALUE_EVALUATION`.
+
+Princípios:
+
+- toda alegação forte de valor usa Evaluation Contract definido antes da execução;
+- baseline deve ser crível e alinhado à hipótese, com modos `CONTROLLED_COMPONENT`, `EQUAL_BUDGET` ou `PRACTICAL_ALTERNATIVE`;
+- scenario governance distingue Development, Regression, Holdout e Real-world sets;
+- candidate self-grading não basta; ground truth determinístico e avaliação independente/blind são preferidos quando aplicável;
+- avaliação estocástica relevante usa repetição e uncertainty reporting;
+- versões relevantes de candidate, baseline, model/provider, profile, grader e scenario são registradas;
+- hard constraints precedem otimização e critical failures não podem desaparecer em médias;
+- `UNAUTHORIZED_SUCCESS = FAILURE`;
+- correct block/unknown podem ser corretos, mas false block/false unknown também são falhas;
+- scorecard é multidimensional por default e trade-off/Pareto é resultado legítimo;
+- custo marginal, custo estrutural e custo da própria avaliação são distinguidos;
+- medições declaram provenance: `OBSERVED`, `COMPUTED`, `HUMAN_REPORTED`, `ESTIMATED`;
+- controlled benchmark e field observation têm força causal diferente;
+- conclusões permitidas: `BENEFICIAL`, `NON_INFERIOR`, `TRADEOFF`, `REGRESSED`, `DISQUALIFIED_HARD_CONSTRAINT`, `INCONCLUSIVE`;
+- complexidade precisa demonstrar valor mensurável ou proteger invariante obrigatório;
+- preservar invariante não implica preservar a implementação atual;
+- Q13 gera `component_value_evidence` para informar Q15.
+
+Checkpoint: `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-015.md`.
 
 ---
 
 # 5. Próximos blocos
 
-Q13–Q16 decidirão:
+Q14–Q16 decidirão:
 
-- métricas e custo-benefício;
-- portabilidade/validação externa;
-- simplificação/remoção;
+- portabilidade e validação externa;
+- simplificação/remoção/substituição;
 - arquitetura final e GO/NO-GO.
 
 Próxima pergunta:
 
-> **Q13 — Como provar que o MCF vale o custo e a complexidade?**
+> **Q14 — Como validar portabilidade e utilidade fora do ambiente atual?**
 
 ---
 
@@ -185,16 +191,16 @@ Pré-condições:
 ```yaml
 phase_zero: COMPLETE_IN_MAIN
 phase_one_discovery: ACTIVE_DISCOVERY
-last_completed_question: 12
-next_question: 13
+last_completed_question: 13
+next_question: 14
 implementation_authorized: false
-next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q13
+next_human_action_for_discovery: LEANDRO_AND_MESTRE_START_Q14
 ```
 
 Ordem mínima de retomada:
 
 1. `MCF-NEXTGEN-RESUME-CARD.md`;
-2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-014.md`;
+2. `MCF-NEXTGEN-DISCOVERY-CHECKPOINT-015.md`;
 3. `MCF-NEXTGEN-QUESTIONNAIRE-ROADMAP-001.md`;
 4. este Master Roadmap;
 5. GitHub/provider live para estado mutável.
