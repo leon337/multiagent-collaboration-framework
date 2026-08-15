@@ -21,6 +21,249 @@ export type McfToolReceiptStatus = 'SUCCEEDED' | 'FAILED' | 'PARTIAL';
 
 export type McfEvidenceValidationStatus = 'VALID' | 'INVALID' | 'PENDING';
 
+export interface McfArtifactRef {
+  artifactType: string;
+  schemaVersion: string;
+  projectId: string;
+  revisionId: string;
+  path: string;
+  contentDigest: string;
+  repository: string;
+  commitSha: string | null;
+}
+
+export type IntentDimensionState =
+  'CLEAR' | 'PARTIAL' | 'UNKNOWN' | 'CONFLICTING' | 'NOT_APPLICABLE';
+
+export type PipLifecycle =
+  'DISCOVERY_IN_PROGRESS' | 'READY_FOR_ALIGNMENT' | 'ALIGNED' | 'REOPENED_AFTER_MATERIAL_CHANGE';
+
+export type ProvenanceType =
+  | 'HUMAN_DIRECT_STATEMENT'
+  | 'HUMAN_CONFIRMED_SYNTHESIS'
+  | 'PRIOR_VALID_HUMAN_DECISION'
+  | 'MACHINE_EVIDENCE'
+  | 'MACHINE_INFERENCE'
+  | 'TECHNICAL_DELEGATION'
+  | 'NOT_APPLICABLE_JUSTIFICATION';
+
+export interface ProvenanceRef {
+  type: ProvenanceType;
+  sourceRef: string;
+  capturedAt: string;
+  actor: string;
+}
+
+export interface IntentDimensionRecord {
+  state: IntentDimensionState;
+  value: unknown;
+  provenance: ProvenanceRef[];
+  readinessImpact: 'BLOCKING' | 'NON_BLOCKING' | 'NONE';
+  notes?: string[] | undefined;
+}
+
+export interface HumanDecisionRecord {
+  decisionId: string;
+  status: 'CURRENT' | 'SUPERSEDED';
+  statement: string;
+  supersedesDecisionId?: string | undefined;
+  provenance: ProvenanceRef[];
+}
+
+export interface ProjectIntentPackageV1 {
+  artifactType: 'PROJECT_INTENT_PACKAGE';
+  schemaVersion: '1.0';
+  projectId: string;
+  revisionId: string;
+  lifecycle: PipLifecycle;
+  methodologyPin: {
+    version: string;
+    immutableRef: string;
+  };
+  createdAt: string;
+  supersedesRevisionId?: string | undefined;
+  identity: {
+    projectName?: string | undefined;
+    repository?: string | undefined;
+  };
+  originalIntent: {
+    text: string;
+    provenance: ProvenanceRef[];
+  };
+  dimensions: {
+    PROBLEM: IntentDimensionRecord;
+    MOTIVATION: IntentDimensionRecord;
+    DESIRED_OUTCOME: IntentDimensionRecord;
+    TARGET_USERS: IntentDimensionRecord;
+    CRITICAL_USER_JOURNEYS: IntentDimensionRecord;
+    MUST_HAVE: IntentDimensionRecord;
+    SHOULD_HAVE: IntentDimensionRecord;
+    NON_GOALS: IntentDimensionRecord;
+    PRIORITIES_AND_TRADEOFFS: IntentDimensionRecord;
+    BUSINESS_RULES: IntentDimensionRecord;
+    DATA_AND_SENSITIVITY: IntentDimensionRecord;
+    ROLES_AND_PERMISSIONS: IntentDimensionRecord;
+    AUTOMATION_LEVEL: IntentDimensionRecord;
+    INTEGRATIONS: IntentDimensionRecord;
+    PLATFORM_AND_USAGE_CONTEXT: IntentDimensionRecord;
+    COST_AND_RESOURCE_CONSTRAINTS: IntentDimensionRecord;
+    QUALITY_EXPECTATIONS: IntentDimensionRecord;
+    FAILURE_TOLERANCE: IntentDimensionRecord;
+    DEFINITION_OF_DONE: IntentDimensionRecord;
+    FUTURE_VISION: IntentDimensionRecord;
+  };
+  humanDecisions: HumanDecisionRecord[];
+  technicalDelegations: Array<{
+    delegationId: string;
+    domain: string;
+    scope: string;
+    provenance: ProvenanceRef[];
+  }>;
+  assumptions: Array<{
+    id: string;
+    statement: string;
+    provenance: ProvenanceRef[];
+  }>;
+  unknowns: Array<{ id: string; statement: string; blocking: boolean }>;
+  blockers: Array<{ id: string; statement: string }>;
+  conflicts: Array<{ id: string; statement: string; sourceRefs: string[] }>;
+  readiness: {
+    state: 'NOT_READY' | 'CONDITIONALLY_READY' | 'READY_FOR_ALIGNMENT';
+    blockingUnknownIds: string[];
+    assessedAt: string;
+  };
+  alignment: {
+    status: 'NOT_ALIGNED' | 'ALIGNED' | 'REOPENED';
+    receiptRef?: string | undefined;
+    alignedAt?: string | undefined;
+  };
+  contentDigest: string;
+}
+
+export type RealityAssertionKind = 'FACT' | 'INFERENCE' | 'UNKNOWN' | 'CONFLICTING';
+
+export interface ProjectRealityReportV1 {
+  artifactType: 'PROJECT_REALITY_REPORT';
+  schemaVersion: '1.0';
+  projectId: string;
+  revisionId: string;
+  methodologyPin: {
+    version: string;
+    immutableRef: string;
+  };
+  createdAt: string;
+  baseline: {
+    repository: string;
+    commitSha: string;
+    branch?: string | undefined;
+    capturedAt: string;
+  };
+  observations: Array<{
+    observationId: string;
+    domain: string;
+    statement: string;
+    kind: RealityAssertionKind;
+    evidenceRefs: string[];
+    provenance: ProvenanceRef[];
+  }>;
+  unresolvedFacts: Array<{
+    id: string;
+    statement: string;
+    evidenceNeeded: string[];
+  }>;
+  realityConfirmation: {
+    status: 'PENDING' | 'CONFIRMED_WITH_CORRECTIONS' | 'CONFIRMED';
+    confirmedAt?: string | undefined;
+    correctionRefs?: string[] | undefined;
+  };
+  contentDigest: string;
+}
+
+export interface IntentAlignmentReceiptV1 {
+  artifactType: 'INTENT_ALIGNMENT_RECEIPT';
+  schemaVersion: '1.0';
+  receiptId: string;
+  projectId: string;
+  pipRef: McfArtifactRef;
+  decision: 'PASS' | 'REJECTED_FOR_CORRECTION';
+  humanAuthority: 'LEANDRO';
+  confirmedAt: string;
+  confirmationSourceRef: string;
+  contentDigest: string;
+}
+
+export type McfProjectEntryMode = 'NEW_PROJECT' | 'ADOPT_EXISTING_PROJECT' | 'RESUME_MCF_PROJECT';
+
+export type McfProjectRecoveryRoute = 'RECOVER_MCF_PROJECT';
+
+export type McfResumeRoute = 'FAST_RESUME' | 'RECONCILE' | McfProjectRecoveryRoute;
+
+export interface McfStandingAuthorization {
+  authorizationId: string;
+  projectId: string;
+  missionId?: string | undefined;
+  grantedBy: 'LEANDRO';
+  grantedAt: string;
+  actionClasses: string[];
+  environments: string[];
+  maximumCost: {
+    currency: string;
+    amount: number;
+    period?: string | undefined;
+  } | null;
+  reversibleOnly: boolean;
+  expiresAt?: string | undefined;
+  boundary?: string | undefined;
+  exclusions: string[];
+  evidenceRequirements: string[];
+  sourceDecisionRef: string;
+  status: 'ACTIVE' | 'EXPIRED' | 'REVOKED';
+}
+
+export interface McfMissionContractV11Extension {
+  contractSchemaVersion?: '1.1' | undefined;
+  projectId?: string | undefined;
+  projectEntryMode?: McfProjectEntryMode | undefined;
+  methodologyPin?:
+    | {
+        version: string;
+        immutableRef: string;
+      }
+    | undefined;
+  alignedPipRef?: McfArtifactRef | undefined;
+  projectRealityReportRef?: McfArtifactRef | undefined;
+  standingAuthorizations?: McfStandingAuthorization[] | undefined;
+  continuityCheckpointRef?: McfArtifactRef | undefined;
+}
+
+export interface McfCheckpointV11Extension {
+  schemaVersion?: '1.1' | undefined;
+  projectId?: string | undefined;
+  missionId?: string | undefined;
+  methodologyPin?:
+    | {
+        version: string;
+        immutableRef: string;
+      }
+    | undefined;
+  alignedPipRef?: McfArtifactRef | undefined;
+  missionContractRef?: string | undefined;
+  projectRealityReportRef?: McfArtifactRef | undefined;
+  pendingHumanGates?: string[] | undefined;
+  activeStandingAuthorizationIds?: string[] | undefined;
+  repositoryState?:
+    | {
+        repository: string;
+        branch: string;
+        checkpointSha: string | null;
+        capturedAt: string;
+        volatile: true;
+      }
+    | undefined;
+  resumeRouteHint?: McfResumeRoute | undefined;
+  transferability?: 'TRANSFERABLE' | 'BLOCKED_LOCAL_ONLY_STATE' | undefined;
+}
+
 export type McfEventType =
   | 'MISSION_CREATED'
   | 'MISSION_STATE_CHANGED'
@@ -53,7 +296,7 @@ export type McfEventType =
   | 'MISSION_BLOCKED_ALERT_RAISED'
   | 'CI_CALLBACK_RECEIVED';
 
-export interface McfMissionContract {
+export interface McfMissionContract extends McfMissionContractV11Extension {
   title: string;
   objective: string;
   expectedOutcome: string;
