@@ -44,79 +44,66 @@ I10: PASS
 I10_qualified_candidate_head: 1040ac932953aef45041a7dda4d930c29e94af59
 
 implementation_I1_I10: COMPLETE_AND_QUALIFIED
-current_execution_window: NONE_IMPLEMENTATION_COMPLETE
 blocking_findings: 0
-
 qualification_run_id: 31927797717
 qualification_artifact_id: 9258372795
 qualification_artifact_digest: sha256:18a703834a119d50e592021c722d7ef966ce9320e1bc03c80a43ef548347ef6b
 QP_001_to_QP_020: PASS
 independent_review: PASS
 
-merge_to_main_authorized: false
-release_authorized: false
+integration_release_human_gate: APPROVED_OPTION_D_BY_LEANDRO
+PR_139: MERGED
+main: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+candidate_to_merge_tree_equivalence: PASS
+post_merge_documentation: PASS
+post_merge_production_readiness: PASS
+post_merge_staging: PASS
+stable_tag: v1.1.0
+stable_release: PUBLISHED
+stable_release_sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+
+current_execution_window: NONE_V1_1_STABLE_COMPLETE
+merge_to_main_authorized: EXECUTED
+release_authorized: EXECUTED
 production_authorized: false
 ```
 
-## Human authority evolution
-
-LEANDRO first authorized the full v1.1 implementation under Option D. Later, after the I5→I6 combined window had been created, LEANDRO explicitly instructed MESTRE and the MCF team to assume execution continuously from I5 through I10 and return only after the implementation phases were finished, except for a genuinely non-delegable HUMAN_GATE.
-
-That later explicit instruction supersedes the earlier I6 stopping point.
-
-Canonical continuous-execution record:
-
-`docs/proposals/MCF-V1.1-I5-I10-CONTINUOUS-EXECUTION-001.md`
-
-## Final verified implementation candidate
+## Stable v1.1.0 identity
 
 ```yaml
-implementation_branch: feat/mcf-v1.1-project-intake-continuity
-qualified_head: 1040ac932953aef45041a7dda4d930c29e94af59
-main_baseline_used_for_qualification: b91823a947715e09d69c72999e2278523f2259be
-PR: 139
+qualified_candidate_sha: 1040ac932953aef45041a7dda4d930c29e94af59
+qualified_candidate_tree: ad796dc0ff4a336d4470a95a110e25aa1ec63344
+merge_main_sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+merge_main_tree: ad796dc0ff4a336d4470a95a110e25aa1ec63344
+stable_tag: v1.1.0
+stable_tag_sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+release_id: 371237825
+published_at: 2026-08-16T05:16:02Z
 ```
 
-Any material change to the implementation candidate invalidates the exact-head qualification and requires a new I10 qualification/review.
+Candidate and merge trees are identical. The stable release is therefore bound to the exact integrated content that passed the final I10 qualification.
 
-## I10 qualification summary
-
-Canonical qualification plan:
-
-`docs/proposals/MCF-V1.1-QUALIFICATION-PLAN-001.md`
-
-Final exact-head evidence:
+## Post-merge evidence
 
 ```yaml
-server_test_suites: 273
-server_test_suites_passed: 273
-server_tests: 687
-server_tests_passed: 687
-blocking_QP_scenarios: 20
-blocking_QP_failures: []
-missing_required_layers: []
-dedicated_controlled_scenarios: PASS
-exact_head_regression: PASS
-structural_no_parallel_architecture: PASS
-v1_0_compatibility: PASS
-clean_room_continuity: PASS
-independent_review: PASS
+documentation_validation_run: 31928382835
+documentation_validation: PASS
+production_readiness_run: 31928382873
+production_readiness: PASS
+staging_exact_main_run: 31928382845
+staging_exact_main: PASS
+release_executor_run: 31928595929
+release_executor: PASS
 ```
 
-The independent MESTRE review rejected two insufficient intermediate qualification states before the final PASS:
+The release executor rechecked exact-head Q19 evidence, exact tree equivalence, post-merge gates and that `main` had not moved before publishing `v1.1.0`.
 
-1. qualification bound to a PR synthetic merge SHA instead of the exact candidate HEAD;
-2. isolated tests composed as substitutes for required controlled Q19 scenarios.
+## Canonical final receipts
 
-Both were corrected and the final candidate was requalified from scratch.
-
-Independent review:
-
-`docs/proposals/MCF-V1.1-I10-INDEPENDENT-REVIEW-001.md`
-
-Final I10 gate:
-
-`docs/proposals/MCF-V1.1-I10-TECHNICAL-GATE-001.md`
+- Integration/Release HUMAN_GATE: `MCF-V1.1-INTEGRATION-RELEASE-HUMAN-GATE-001.md`
+- Stable release receipt: `MCF-V1.1-STABLE-RELEASE-RECEIPT-001.md`
+- I10 independent review: `MCF-V1.1-I10-INDEPENDENT-REVIEW-001.md`
+- I10 technical gate: `MCF-V1.1-I10-TECHNICAL-GATE-001.md`
 
 ## Structural outcome
 
@@ -131,35 +118,19 @@ NO NEW PROJECT-STATE DATABASE
 LEGACY V1.0 COMPATIBILITY PRESERVED
 ```
 
-## Accepted gates
-
-- I1: `MCF-V1.1-I1-TECHNICAL-GATE-002.md`
-- I2: `MCF-V1.1-I2-TECHNICAL-GATE-001.md`
-- I3: `MCF-V1.1-I3-TECHNICAL-GATE-002.md`
-- I4: `MCF-V1.1-I4-TECHNICAL-GATE-001.md`
-- I5: `MCF-V1.1-I5-TECHNICAL-GATE-001.md`
-- I6: `MCF-V1.1-I6-TECHNICAL-GATE-001.md`
-- I7: `MCF-V1.1-I7-TECHNICAL-GATE-001.md`
-- I8: `MCF-V1.1-I8-TECHNICAL-GATE-001.md`
-- I9: `MCF-V1.1-I9-TECHNICAL-GATE-001.md`
-- I10: `MCF-V1.1-I10-TECHNICAL-GATE-001.md`
-
-## Persistent reserved boundaries
-
-Implementation completion does **not** silently authorize integration or release.
+## Persistent reserved boundary
 
 ```text
-NO DIRECT MAIN WRITE WITHOUT HUMAN AUTHORITY
-NO MERGE WITHOUT HUMAN_GATE
-NO RELEASE/TAG WITHOUT HUMAN_GATE
 NO PRODUCTION WITHOUT HUMAN_GATE
 NO SILENT Q1-Q20 REDEFINITION
 ```
 
+The stable `v1.1.0` release does **not** authorize production deployment.
+
 ## Next action
 
 ```yaml
-next_action: HUMAN_GATE_INTEGRATION_RELEASE_DECISION
-owner: LEANDRO
-reason: implementation I1-I10 is complete and qualified; merge/release/production remain reserved human authority
+next_action: NONE_FOR_V1_1_STABLE_RELEASE
+v1_1_status: COMPLETE_STABLE_RELEASED
+production: BLOCKED_PENDING_SEPARATE_LEANDRO_HUMAN_GATE
 ```
