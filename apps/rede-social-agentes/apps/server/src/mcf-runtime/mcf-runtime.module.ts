@@ -9,6 +9,7 @@ import { CanonicalExternalActionLedger } from './canonical-external-action-ledge
 import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
+import { ContinuityRecoveryService } from './continuity-recovery.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import { ExternalActionLedger } from './external-action-ledger.js';
@@ -51,6 +52,7 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     EvidenceValidator,
     McfRuntimeTokenGuard,
     MissionV11ContextGuard,
+    ContinuityRecoveryService,
     ChatMissionPlanner,
     {
       provide: MissionObservabilityRepository,
@@ -197,6 +199,7 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
   exports: [
     MissionRuntimeService,
     MissionObservabilityService,
+    ContinuityRecoveryService,
     ChatRuntimeBridgeService,
     SocialTimelineService,
   ],
