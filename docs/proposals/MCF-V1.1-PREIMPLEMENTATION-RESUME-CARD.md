@@ -62,10 +62,19 @@ stable_tag: v1.1.0
 stable_release: PUBLISHED
 stable_release_sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
 
-current_execution_window: NONE_V1_1_STABLE_COMPLETE
+production_human_gate: APPROVED_BY_LEANDRO
+production_release: v1.1.0
+production_sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+production_api: LIVE
+production_web: LIVE
+production_acceptance: PASS_WITH_GOVERNANCE_FINDING
+production_redundant_redeploy: NOT_PERFORMED
+production_governance_issue: 140
+
+current_execution_window: NONE_V1_1_COMPLETE_AND_LIVE
 merge_to_main_authorized: EXECUTED
 release_authorized: EXECUTED
-production_authorized: false
+production_authorized: EXECUTED_AND_ACCEPTED
 ```
 
 ## Stable v1.1.0 identity
@@ -83,7 +92,38 @@ published_at: 2026-08-16T05:16:02Z
 
 Candidate and merge trees are identical. The stable release is therefore bound to the exact integrated content that passed the final I10 qualification.
 
-## Post-merge evidence
+## Production reconciliation
+
+LEANDRO explicitly authorized production after stable release publication.
+
+During reconciliation, MESTRE discovered that the Render production services were configured to auto-deploy from `main` after checks passed. They had therefore already deployed the exact stable release SHA before the separate production HUMAN_GATE.
+
+Current Render state:
+
+```yaml
+api:
+  service: rsa-api-free
+  deploy_id: dep-da0kelm1egvs739i7h20
+  sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+  status: LIVE
+web:
+  service: rsa-web-free
+  deploy_id: dep-da0kelm1egvs739i7ha0
+  sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+  status: LIVE
+```
+
+Because the desired production release was already live on the exact stable SHA, MESTRE accepted the existing rollout under LEANDRO's current authorization and did not trigger a duplicate deployment.
+
+This exposed a P1 governance defect: production can move when `main` moves without an explicit production HUMAN_GATE. Issue #140 tracks remediation.
+
+Canonical production records:
+
+- `MCF-V1.1-PRODUCTION-AUTHORIZATION-RECONCILIATION-001.md`
+- `MCF-V1.1-PRODUCTION-GOVERNANCE-FINDING-001.md`
+- GitHub Issue #140
+
+## Post-merge / health evidence
 
 ```yaml
 documentation_validation_run: 31928382835
@@ -94,16 +134,9 @@ staging_exact_main_run: 31928382845
 staging_exact_main: PASS
 release_executor_run: 31928595929
 release_executor: PASS
+production_monitor_latest_observed_run: 31928576815
+production_monitor_latest_observed_result: PASS
 ```
-
-The release executor rechecked exact-head Q19 evidence, exact tree equivalence, post-merge gates and that `main` had not moved before publishing `v1.1.0`.
-
-## Canonical final receipts
-
-- Integration/Release HUMAN_GATE: `MCF-V1.1-INTEGRATION-RELEASE-HUMAN-GATE-001.md`
-- Stable release receipt: `MCF-V1.1-STABLE-RELEASE-RECEIPT-001.md`
-- I10 independent review: `MCF-V1.1-I10-INDEPENDENT-REVIEW-001.md`
-- I10 technical gate: `MCF-V1.1-I10-TECHNICAL-GATE-001.md`
 
 ## Structural outcome
 
@@ -118,19 +151,23 @@ NO NEW PROJECT-STATE DATABASE
 LEGACY V1.0 COMPATIBILITY PRESERVED
 ```
 
-## Persistent reserved boundary
-
-```text
-NO PRODUCTION WITHOUT HUMAN_GATE
-NO SILENT Q1-Q20 REDEFINITION
-```
-
-The stable `v1.1.0` release does **not** authorize production deployment.
-
-## Next action
+## Open governance finding
 
 ```yaml
-next_action: NONE_FOR_V1_1_STABLE_RELEASE
-v1_1_status: COMPLETE_STABLE_RELEASED
-production: BLOCKED_PENDING_SEPARATE_LEANDRO_HUMAN_GATE
+issue: 140
+severity: P1
+finding: PRODUCTION_AUTO_DEPLOY_BYPASSES_RESERVED_HUMAN_GATE
+runtime_health_blocker: false
+release_integrity_blocker: false
+required_fix: ENFORCE_PRODUCTION_GATE_AT_DEPLOYMENT_BOUNDARY
+```
+
+The historical unauthorized automatic rollout is preserved as evidence and must not be rewritten away by the later human authorization.
+
+## Current final status
+
+```yaml
+v1_1_status: COMPLETE_STABLE_RELEASED_AND_ACCEPTED_IN_PRODUCTION
+production: LIVE_ON_EXACT_STABLE_SHA
+governance_follow_up: ISSUE_140_OPEN
 ```
