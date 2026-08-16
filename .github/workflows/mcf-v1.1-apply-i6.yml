@@ -1,0 +1,115 @@
+name: MCF v1.1 apply I6 runtime integration
+
+on:
+  push:
+    branches:
+      - feat/mcf-v1.1-project-intake-continuity
+
+permissions:
+  contents: write
+
+jobs:
+  apply-i6:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/mcf-v1.1-project-intake-continuity
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Apply bounded I6 integration patch
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          runtime = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.service.ts')
+          text = runtime.read_text()
+          needle = "import type { SkillRegistryLoader } from './skill-registry.loader.js';\n"
+          replacement = needle + "import type { MissionV11ContextGuard } from './mission-v11-context.guard.js';\n"
+          if "MissionV11ContextGuard" not in text:
+              assert needle in text
+              text = text.replace(needle, replacement, 1)
+
+          old_ctor = """    private readonly registry: SkillRegistryLoader,\n    private readonly evidence: EvidenceValidator,\n  ) {}\n\n  async createMission(request: CreateMcfMissionRequest): Promise<McfMissionResponse> {\n    this.humanDelegation.assertMissionAgents(request.contract.selectedAgents);\n"""
+          new_ctor = """    private readonly registry: SkillRegistryLoader,\n    private readonly evidence: EvidenceValidator,\n    private readonly v11Context?: MissionV11ContextGuard,\n  ) {}\n\n  async createMission(request: CreateMcfMissionRequest): Promise<McfMissionResponse> {\n    if (request.contract.contractSchemaVersion === '1.1') {\n      if (!this.v11Context) {\n        throw new McfPermissionDeniedError('v1.1 mission context validation is unavailable');\n      }\n      await this.v11Context.validate(request.contract);\n    }\n    this.humanDelegation.assertMissionAgents(request.contract.selectedAgents);\n"""
+          if old_ctor in text:
+              text = text.replace(old_ctor, new_ctor, 1)
+          elif "private readonly v11Context?: MissionV11ContextGuard" not in text:
+              raise SystemExit('MissionRuntimeService constructor anchor not found')
+
+          old_payload = """          selectedAgents: request.contract.selectedAgents,\n          selectedSkills: request.contract.selectedSkills,\n        },\n"""
+          new_payload = """          selectedAgents: request.contract.selectedAgents,\n          selectedSkills: request.contract.selectedSkills,\n          ...(request.contract.contractSchemaVersion === '1.1'\n            ? {\n                contractSchemaVersion: '1.1',\n                projectId: request.contract.projectId,\n                projectEntryMode: request.contract.projectEntryMode,\n                methodologyPin: request.contract.methodologyPin,\n                alignedPipRef: request.contract.alignedPipRef,\n                ...(request.contract.projectRealityReportRef\n                  ? { projectRealityReportRef: request.contract.projectRealityReportRef }\n                  : {}),\n              }\n            : {}),\n        },\n"""
+          if old_payload in text:
+              text = text.replace(old_payload, new_payload, 1)
+          elif "contractSchemaVersion: '1.1'" not in text:
+              raise SystemExit('MISSION_CREATED payload anchor not found')
+          runtime.write_text(text)
+
+          module = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts')
+          text = module.read_text()
+          import_anchor = "import { MissionRuntimeService } from './mission-runtime.service.js';\n"
+          if "mission-v11-context.guard.js" not in text:
+              assert import_anchor in text
+              text = text.replace(import_anchor, import_anchor + "import { MissionV11ContextGuard } from './mission-v11-context.guard.js';\n", 1)
+          provider_anchor = "    McfRuntimeTokenGuard,\n"
+          if "    MissionV11ContextGuard,\n" not in text:
+              assert provider_anchor in text
+              text = text.replace(provider_anchor, provider_anchor + "    MissionV11ContextGuard,\n", 1)
+          old_factory = """        registry: SkillRegistryLoader,\n        evidence: EvidenceValidator,\n      ) => new MissionRuntimeService(repository, executor, registry, evidence),\n      inject: [MCF_RUNTIME_REPOSITORY, SkillExecutor, SkillRegistryLoader, EvidenceValidator],\n"""
+          new_factory = """        registry: SkillRegistryLoader,\n        evidence: EvidenceValidator,\n        v11Context: MissionV11ContextGuard,\n      ) => new MissionRuntimeService(repository, executor, registry, evidence, v11Context),\n      inject: [\n        MCF_RUNTIME_REPOSITORY,\n        SkillExecutor,\n        SkillRegistryLoader,\n        EvidenceValidator,\n        MissionV11ContextGuard,\n      ],\n"""
+          if old_factory in text:
+              text = text.replace(old_factory, new_factory, 1)
+          elif "v11Context: MissionV11ContextGuard" not in text:
+              raise SystemExit('MissionRuntimeService module factory anchor not found')
+          module.write_text(text)
+
+          test = Path('apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-v11-context.guard.test.ts')
+          text = test.read_text().replace("riskClass: 'R1'", "riskClass: 'B'")
+          test.write_text(text)
+          PY
+      - name: Format and lint bounded I6 files
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/mission-v11-context.guard.ts \
+            apps/server/src/mcf-runtime/mission-v11-context.guard.test.ts \
+            apps/server/src/mcf-runtime/mission-runtime.service.ts \
+            apps/server/src/mcf-runtime/mcf-runtime.module.ts
+          pnpm exec eslint --fix \
+            apps/server/src/mcf-runtime/mission-v11-context.guard.ts \
+            apps/server/src/mcf-runtime/mission-v11-context.guard.test.ts \
+            apps/server/src/mcf-runtime/mission-runtime.service.ts \
+            apps/server/src/mcf-runtime/mcf-runtime.module.ts
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/mission-v11-context.guard.ts \
+            apps/server/src/mcf-runtime/mission-v11-context.guard.test.ts \
+            apps/server/src/mcf-runtime/mission-runtime.service.ts \
+            apps/server/src/mcf-runtime/mcf-runtime.module.ts
+      - name: Focused I6 test
+        working-directory: apps/rede-social-agentes
+        run: pnpm --filter @rsa/server exec vitest run src/mcf-runtime/mission-v11-context.guard.test.ts
+      - name: Commit I6 implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-v11-context.guard.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-v11-context.guard.test.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.service.ts \
+            apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
+          if git diff --cached --quiet; then
+            echo "No I6 changes to commit"
+            exit 0
+          fi
+          git commit -m "feat(v1.1): bind aligned project context into Mission Runtime"
+          git push origin HEAD:feat/mcf-v1.1-project-intake-continuity
