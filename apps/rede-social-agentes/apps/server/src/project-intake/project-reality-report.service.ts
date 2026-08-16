@@ -7,12 +7,12 @@ import type {
   RealityAssertionKind,
 } from '@rsa/contracts';
 
+import type { RepositoryProjectArtifactStore } from '../project-artifacts/repository-project-artifact.store.js';
 import {
   type CanonicalArtifactRef,
   type LocalProjectArtifact,
-  RepositoryProjectArtifactStore,
 } from '../project-artifacts/repository-project-artifact.store.js';
-import { IntentAlignmentService } from './intent-alignment.service.js';
+import type { IntentAlignmentService } from './intent-alignment.service.js';
 
 const ZERO_DIGEST = `sha256:${'0'.repeat(64)}`;
 const EXACT_SHA = /^[0-9a-f]{40}$/iu;
