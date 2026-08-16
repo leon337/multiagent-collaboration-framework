@@ -53,7 +53,9 @@ function fact(overrides: Partial<RealityObservation> = {}): RealityObservation {
     domain: 'runtime',
     statement: 'The existing MCF runtime is present at the exact baseline.',
     kind: 'FACT',
-    evidenceRefs: ['apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.service.ts'],
+    evidenceRefs: [
+      'apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.service.ts',
+    ],
     provenance: [machineEvidence(`git:${exactSha}`, '2026-08-16T03:20:00Z', 'MESTRE')],
     ...overrides,
   };
@@ -197,7 +199,10 @@ describe('MCF v1.1 existing-project reconnaissance and PRR pipeline', () => {
     const service = new ProjectRealityReportService(store, alignment);
     const readback = createRealityReadback(draft());
 
-    const persisted = await service.confirmAndPersist(readback, confirmation(readback.readbackDigest));
+    const persisted = await service.confirmAndPersist(
+      readback,
+      confirmation(readback.readbackDigest),
+    );
 
     expect(persisted.artifact.realityConfirmation.status).toBe('CONFIRMED');
     expect(persisted.reference.path).toBe('.mcf/reality/prr-prr-i5-001.json');

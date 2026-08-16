@@ -197,7 +197,10 @@ function assertObservation(observation: RealityObservation): void {
     observation.statement.trim().length === 0 ||
     observation.provenance.length === 0
   ) {
-    fail('OBSERVATION_INVALID', 'reality observations require identity, domain, statement and provenance');
+    fail(
+      'OBSERVATION_INVALID',
+      'reality observations require identity, domain, statement and provenance',
+    );
   }
   if (observation.kind === 'FACT') {
     if (observation.evidenceRefs.length === 0) {
@@ -231,7 +234,9 @@ export function calculateGapMapDigest(
   return digest(withoutDigest(gapMap as DerivedGapMap));
 }
 
-export function createReconnaissanceDraft(input: ReconnaissanceDraftInput): WorkingReconnaissanceDraft {
+export function createReconnaissanceDraft(
+  input: ReconnaissanceDraftInput,
+): WorkingReconnaissanceDraft {
   assertBaseline(input.baseline);
   assertTimestamp(input.createdAt, 'createdAt');
   if (input.projectId.trim().length === 0 || input.revisionId.trim().length === 0) {
@@ -277,7 +282,10 @@ export function createRealityReadback(draft: WorkingReconnaissanceDraft): Realit
   return { ...without, readbackDigest: calculateRealityReadbackDigest(without) };
 }
 
-function assertRealityConfirmation(readback: RealityReadback, command: RealityConfirmationCommand): void {
+function assertRealityConfirmation(
+  readback: RealityReadback,
+  command: RealityConfirmationCommand,
+): void {
   if (command.humanAuthority !== 'LEANDRO') {
     fail('REALITY_AUTHORITY_INVALID', 'Reality Confirmation must come from LEANDRO');
   }
@@ -286,13 +294,19 @@ function assertRealityConfirmation(readback: RealityReadback, command: RealityCo
     command.confirmedAt.trim().length === 0 ||
     Number.isNaN(Date.parse(command.confirmedAt))
   ) {
-    fail('REALITY_CONFIRMATION_INVALID', 'Reality Confirmation requires traceable source and timestamp');
+    fail(
+      'REALITY_CONFIRMATION_INVALID',
+      'Reality Confirmation requires traceable source and timestamp',
+    );
   }
   if (
     command.expectedRepository !== readback.exactBaseline.repository ||
     command.expectedCommitSha !== readback.exactBaseline.commitSha
   ) {
-    fail('REALITY_READBACK_INVALID', 'Reality Confirmation is not bound to the exact read-back baseline');
+    fail(
+      'REALITY_READBACK_INVALID',
+      'Reality Confirmation is not bound to the exact read-back baseline',
+    );
   }
   if (
     command.finalReadbackDigest !== readback.readbackDigest ||
@@ -342,7 +356,10 @@ export class ProjectRealityReportService {
     const persisted = await this.artifacts.writePrr(candidate);
     const loaded = await this.artifacts.loadLocal(persisted.reference);
     if (!sameRef(loaded.reference, persisted.reference)) {
-      fail('PRR_REF_MISMATCH', 'persisted PRR did not round-trip with its exact canonical reference');
+      fail(
+        'PRR_REF_MISMATCH',
+        'persisted PRR did not round-trip with its exact canonical reference',
+      );
     }
     return loaded;
   }
@@ -362,7 +379,10 @@ export class ProjectRealityReportService {
     }
     const pair = await this.alignment.verifyAlignmentPair(input.alignedPipRef);
     if (pair.state !== 'PASS_VERIFIED') {
-      fail('ALIGNMENT_PAIR_REQUIRED', 'Gap Map requires the exact verified aligned PIP + receipt pair');
+      fail(
+        'ALIGNMENT_PAIR_REQUIRED',
+        'Gap Map requires the exact verified aligned PIP + receipt pair',
+      );
     }
     if (prr.artifact.projectId !== pair.alignedPip.artifact.projectId) {
       fail('PRR_REF_MISMATCH', 'PRR and aligned PIP belong to different projects');
