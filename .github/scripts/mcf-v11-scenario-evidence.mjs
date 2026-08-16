@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = process.cwd();
+const scenarioEvidenceVersion = '1.0';
 const reportPath = resolve(
   root,
   'apps/rede-social-agentes/apps/server/test-results/vitest.json',
@@ -66,6 +67,7 @@ if (missing.length > 0) {
 }
 
 ledger.dedicatedScenarioValidation = {
+  version: scenarioEvidenceVersion,
   required: [...requiredDedicatedScenarios.keys()],
   validated: [...requiredDedicatedScenarios.keys()],
   status: 'PASS',
@@ -82,6 +84,7 @@ writeFileSync(ledgerPath, `${JSON.stringify(ledger, null, 2)}\n`, 'utf8');
 console.log(
   JSON.stringify(
     {
+      scenarioEvidenceVersion,
       dedicatedScenarios: requiredDedicatedScenarios.size,
       missing: [],
       candidateHead: ledger.candidateHead,
