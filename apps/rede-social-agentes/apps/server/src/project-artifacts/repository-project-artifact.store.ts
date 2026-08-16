@@ -263,6 +263,20 @@ export class RepositoryProjectArtifactStore {
     };
   }
 
+  async resolveLocalPipRevision(
+    projectId: string,
+    revisionId: string,
+  ): Promise<LocalProjectArtifact<'PROJECT_INTENT_PACKAGE'>> {
+    return this.resolveLocalArtifact('PROJECT_INTENT_PACKAGE', projectId, revisionId);
+  }
+
+  async resolveLocalAlignmentReceipt(
+    projectId: string,
+    receiptId: string,
+  ): Promise<LocalProjectArtifact<'INTENT_ALIGNMENT_RECEIPT'>> {
+    return this.resolveLocalArtifact('INTENT_ALIGNMENT_RECEIPT', projectId, receiptId);
+  }
+
   async loadRemoteVerified<TType extends ProjectArtifactType>(
     reference: CanonicalArtifactRef<TType>,
     reader: ExactCommitArtifactReader,
@@ -330,6 +344,44 @@ export class RepositoryProjectArtifactStore {
         if (!isNodeError(error, 'ENOENT')) throw error;
       });
     }
+  }
+
+  private async resolveLocalArtifact<TType extends ProjectArtifactType>(
+    artifactType: TType,
+    projectId: string,
+    revisionId: string,
+  ): Promise<LocalProjectArtifact<TType>> {
+    const path = canonicalPathForReference({
+      artifactType,
+      schemaVersion: '1.0',
+      projectId,
+      revisionId,
+      path: '',
+      contentDigest: `sha256:${'0'.repeat(64)}`,
+      repository: this.repository,
+      commitSha: null,
+    });
+    const content = await readFile(this.absolutePath(path), 'utf8');
+    let artifact: ProjectArtifact;
+    try {
+      artifact = JSON.parse(content) as ProjectArtifact;
+    } catch {
+      return fail('SCHEMA_INVALID', 'artifact is not valid JSON');
+    }
+    this.validateArtifact(artifact);
+    this.verifyDigest(artifact);
+    const artifactRevision =
+      artifact.artifactType === 'INTENT_ALIGNMENT_RECEIPT'
+        ? artifact.receiptId
+        : artifact.revisionId;
+    if (
+      artifact.artifactType !== artifactType ||
+      artifact.projectId !== projectId ||
+      artifactRevision !== revisionId
+    ) {
+      return fail('REFERENCE_MISMATCH', 'artifact identity does not match its canonical path');
+    }
+    return this.localResult(artifact, path) as unknown as LocalProjectArtifact<TType>;
   }
 
   private async readExisting(

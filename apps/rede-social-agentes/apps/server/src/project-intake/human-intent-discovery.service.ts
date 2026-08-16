@@ -184,10 +184,14 @@ function seedDimension(
 }
 
 function assertI3WorkingPip(pip: ProjectIntentPackageV1): void {
-  if (pip.lifecycle !== 'DISCOVERY_IN_PROGRESS' && pip.lifecycle !== 'READY_FOR_ALIGNMENT') {
+  if (
+    pip.lifecycle !== 'DISCOVERY_IN_PROGRESS' &&
+    pip.lifecycle !== 'READY_FOR_ALIGNMENT' &&
+    pip.lifecycle !== 'REOPENED_AFTER_MATERIAL_CHANGE'
+  ) {
     fail('I4_BOUNDARY', `I3 cannot handle PIP lifecycle ${pip.lifecycle}`);
   }
-  if (pip.alignment.status !== 'NOT_ALIGNED') {
+  if (pip.alignment.status !== 'NOT_ALIGNED' && pip.alignment.status !== 'REOPENED') {
     fail('I4_BOUNDARY', 'I3 cannot create or persist final alignment state');
   }
 }
