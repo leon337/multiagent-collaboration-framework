@@ -202,9 +202,7 @@ function standingAuthorization(
   };
 }
 
-function authorizationContext(
-  overrides: Record<string, unknown> = {},
-): Record<string, unknown> {
+function authorizationContext(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     projectId: 'q19-permissions',
     missionId: 'mission-q19',
@@ -358,25 +356,28 @@ describe('MCF v1.1 Q19 controlled qualification scenarios', () => {
         },
       ],
     });
-    const reopened = await harness.alignment.reopenAfterMaterialChange(aligned.alignedPip.reference, {
-      revisionId: 'pip-r3',
-      createdAt: '2026-08-16T04:05:00Z',
-      updates: [
-        {
-          dimension: 'MUST_HAVE',
-          state: 'CLEAR',
-          value: 'human-corrected-must-have',
-          provenance: structuredClone(humanProvenance),
-          readinessImpact: 'NONE',
-        },
-      ],
-    });
+    const reopened = await harness.alignment.reopenAfterMaterialChange(
+      aligned.alignedPip.reference,
+      {
+        revisionId: 'pip-r3',
+        createdAt: '2026-08-16T04:05:00Z',
+        updates: [
+          {
+            dimension: 'MUST_HAVE',
+            state: 'CLEAR',
+            value: 'human-corrected-must-have',
+            provenance: structuredClone(humanProvenance),
+            readinessImpact: 'NONE',
+          },
+        ],
+      },
+    );
 
     expect(await readFile(join(fixtureRoot, 'src/app.ts'), 'utf8')).toBe(beforeCode);
     expect(await readFile(join(fixtureRoot, 'README.md'), 'utf8')).toBe(beforeDocs);
-    expect(prr.artifact.observations.find((item) => item.observationId === 'obs-code')?.statement).toBe(
-      'Controlled fixture contains implemented code.',
-    );
+    expect(
+      prr.artifact.observations.find((item) => item.observationId === 'obs-code')?.statement,
+    ).toBe('Controlled fixture contains implemented code.');
     expect(reopened.successorPip.artifact.dimensions.MUST_HAVE.value).toBe(
       'human-corrected-must-have',
     );
@@ -444,9 +445,9 @@ describe('MCF v1.1 Q19 controlled qualification scenarios', () => {
       },
       humanGateDecision: { status: 'PENDING' },
     });
-    expect(() =>
-      guard.assertAllowed('LÉO', { v11AuthorizationContext: pendingReserved }),
-    ).toThrow(/approved by LEANDRO/u);
+    expect(() => guard.assertAllowed('LÉO', { v11AuthorizationContext: pendingReserved })).toThrow(
+      /approved by LEANDRO/u,
+    );
 
     expect(() =>
       guard.assertAllowed('LÉO', {
@@ -478,7 +479,9 @@ describe('MCF v1.1 Q19 controlled qualification scenarios', () => {
     const guard = new MissionV11ContextGuard(harness.store, harness.alignment);
     const upgradedRuntime = runtimeHarness(guard);
     const upgradedContract = missionContract(harness.projectId, aligned.alignedPip.reference);
-    const upgradedMission = await upgradedRuntime.runtime.createMission({ contract: upgradedContract });
+    const upgradedMission = await upgradedRuntime.runtime.createMission({
+      contract: upgradedContract,
+    });
 
     expect(legacy).toEqual(legacySnapshot);
     expect(legacy.contractSchemaVersion).toBeUndefined();
