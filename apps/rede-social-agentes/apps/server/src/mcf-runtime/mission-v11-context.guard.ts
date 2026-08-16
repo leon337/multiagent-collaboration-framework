@@ -199,7 +199,10 @@ export class MissionV11ContextGuard {
       loaded.realityConfirmation.status !== 'CONFIRMED' &&
       loaded.realityConfirmation.status !== 'CONFIRMED_WITH_CORRECTIONS'
     ) {
-      fail('PRR_NOT_CONFIRMED', 'Mission Runtime cannot bind an unconfirmed Project Reality Report');
+      fail(
+        'PRR_NOT_CONFIRMED',
+        'Mission Runtime cannot bind an unconfirmed Project Reality Report',
+      );
     }
     if (loaded.projectId !== projectId) {
       fail('PROJECT_CONTEXT_MISMATCH', 'Project Reality Report belongs to another project');

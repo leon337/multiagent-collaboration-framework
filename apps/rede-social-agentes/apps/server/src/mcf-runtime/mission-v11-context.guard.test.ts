@@ -3,7 +3,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { McfMissionContract, ProjectIntentPackageV1, ProjectRealityReportV1 } from '@rsa/contracts';
+import type {
+  McfMissionContract,
+  ProjectIntentPackageV1,
+  ProjectRealityReportV1,
+} from '@rsa/contracts';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -76,7 +80,7 @@ function baseContract(): McfMissionContract {
     scope: ['runtime integration'],
     outOfScope: [],
     acceptanceCriteria: ['exact refs verified'],
-    riskClass: 'R1',
+    riskClass: 'B',
     selectedAgents: ['Mestre'],
     selectedSkills: ['MCF-START-MISSION'],
     sourceOfTruth: ['GitHub'],
@@ -99,7 +103,9 @@ function v11Contract(
 }
 
 afterEach(async () => {
-  await Promise.all(temporaryRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
+  await Promise.all(
+    temporaryRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })),
+  );
 });
 
 describe('MCF v1.1 mission context guard', () => {
@@ -186,7 +192,13 @@ describe('MissionRuntimeService v1.1 integration', () => {
       }),
     } as unknown as McfRuntimeRepository;
     const guard = { validate: vi.fn() };
-    const service = new MissionRuntimeService(repository, {} as never, {} as never, {} as never, guard as never);
+    const service = new MissionRuntimeService(
+      repository,
+      {} as never,
+      {} as never,
+      {} as never,
+      guard as never,
+    );
 
     const result = await service.createMission({ contract: baseContract() });
 
@@ -211,7 +223,13 @@ describe('MissionRuntimeService v1.1 integration', () => {
       }),
     } as unknown as McfRuntimeRepository;
     const guard = { validate: vi.fn(async () => contract) };
-    const service = new MissionRuntimeService(repository, {} as never, {} as never, {} as never, guard as never);
+    const service = new MissionRuntimeService(
+      repository,
+      {} as never,
+      {} as never,
+      {} as never,
+      guard as never,
+    );
 
     await service.createMission({ contract });
 
@@ -233,10 +251,18 @@ describe('MissionRuntimeService v1.1 integration', () => {
     } as unknown as McfRuntimeRepository;
     const guard = {
       validate: vi.fn(async () => {
-        throw Object.assign(new Error('invalid v1.1 context'), { code: 'ALIGNED_PIP_PAIR_INVALID' });
+        throw Object.assign(new Error('invalid v1.1 context'), {
+          code: 'ALIGNED_PIP_PAIR_INVALID',
+        });
       }),
     };
-    const service = new MissionRuntimeService(repository, {} as never, {} as never, {} as never, guard as never);
+    const service = new MissionRuntimeService(
+      repository,
+      {} as never,
+      {} as never,
+      {} as never,
+      guard as never,
+    );
 
     await expect(
       service.createMission({

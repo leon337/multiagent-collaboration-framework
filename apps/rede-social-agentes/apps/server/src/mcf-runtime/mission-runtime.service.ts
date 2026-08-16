@@ -31,6 +31,7 @@ import {
 } from './mcf-runtime.repository.js';
 import type { SkillExecutor } from './skill-executor.js';
 import type { SkillRegistryLoader } from './skill-registry.loader.js';
+import type { MissionV11ContextGuard } from './mission-v11-context.guard.js';
 
 function toMissionResponse(mission: McfMissionRecord): McfMissionResponse {
   return {
@@ -79,9 +80,16 @@ export class MissionRuntimeService {
     private readonly executor: SkillExecutor,
     private readonly registry: SkillRegistryLoader,
     private readonly evidence: EvidenceValidator,
+    private readonly v11Context?: MissionV11ContextGuard,
   ) {}
 
   async createMission(request: CreateMcfMissionRequest): Promise<McfMissionResponse> {
+    if (request.contract.contractSchemaVersion === '1.1') {
+      if (!this.v11Context) {
+        throw new McfPermissionDeniedError('v1.1 mission context validation is unavailable');
+      }
+      await this.v11Context.validate(request.contract);
+    }
     this.humanDelegation.assertMissionAgents(request.contract.selectedAgents);
 
     const now = new Date();
@@ -109,6 +117,18 @@ export class MissionRuntimeService {
           riskClass: request.contract.riskClass,
           selectedAgents: request.contract.selectedAgents,
           selectedSkills: request.contract.selectedSkills,
+          ...(request.contract.contractSchemaVersion === '1.1'
+            ? {
+                contractSchemaVersion: '1.1',
+                projectId: request.contract.projectId,
+                projectEntryMode: request.contract.projectEntryMode,
+                methodologyPin: request.contract.methodologyPin,
+                alignedPipRef: request.contract.alignedPipRef,
+                ...(request.contract.projectRealityReportRef
+                  ? { projectRealityReportRef: request.contract.projectRealityReportRef }
+                  : {}),
+              }
+            : {}),
         },
         idempotencyKey: `mission:${missionId}:created`,
         occurredAt: now,

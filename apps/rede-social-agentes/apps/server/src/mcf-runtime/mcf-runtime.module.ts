@@ -23,6 +23,7 @@ import { MissionObservabilityRepository } from './mission-observability.reposito
 import { MissionObservabilityService } from './mission-observability.service.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
+import { MissionV11ContextGuard } from './mission-v11-context.guard.js';
 import { OrderedMcfRuntimeRepository } from './ordered-mcf-runtime.repository.js';
 import { PermissionEngine } from './permission-engine.js';
 import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
@@ -49,6 +50,7 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     PermissionEngine,
     EvidenceValidator,
     McfRuntimeTokenGuard,
+    MissionV11ContextGuard,
     ChatMissionPlanner,
     {
       provide: MissionObservabilityRepository,
@@ -147,8 +149,15 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
         executor: SkillExecutor,
         registry: SkillRegistryLoader,
         evidence: EvidenceValidator,
-      ) => new MissionRuntimeService(repository, executor, registry, evidence),
-      inject: [MCF_RUNTIME_REPOSITORY, SkillExecutor, SkillRegistryLoader, EvidenceValidator],
+        v11Context: MissionV11ContextGuard,
+      ) => new MissionRuntimeService(repository, executor, registry, evidence, v11Context),
+      inject: [
+        MCF_RUNTIME_REPOSITORY,
+        SkillExecutor,
+        SkillRegistryLoader,
+        EvidenceValidator,
+        MissionV11ContextGuard,
+      ],
     },
     {
       provide: ChatRuntimeBridgeService,
