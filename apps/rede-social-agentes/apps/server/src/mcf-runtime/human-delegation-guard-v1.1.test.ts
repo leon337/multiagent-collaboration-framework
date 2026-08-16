@@ -2,10 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { McfStandingAuthorization } from '@rsa/contracts';
 
-import {
-  HumanDelegationGuard,
-  type McfV11AuthorizationContext,
-} from './human-delegation-guard.js';
+import { HumanDelegationGuard, type McfV11AuthorizationContext } from './human-delegation-guard.js';
 
 function standingAuthorization(
   overrides: Partial<McfStandingAuthorization> = {},
@@ -30,9 +27,7 @@ function standingAuthorization(
   };
 }
 
-function context(
-  overrides: Partial<McfV11AuthorizationContext> = {},
-): McfV11AuthorizationContext {
+function context(overrides: Partial<McfV11AuthorizationContext> = {}): McfV11AuthorizationContext {
   return {
     projectId: 'project-1',
     missionId: 'mission-1',

@@ -97,8 +97,7 @@ function exclusionMatches(
     exclusions.has(`action:${action}`) ||
     exclusions.has(environment) ||
     exclusions.has(`environment:${environment}`) ||
-    (boundary !== null &&
-      (exclusions.has(boundary) || exclusions.has(`boundary:${boundary}`)))
+    (boundary !== null && (exclusions.has(boundary) || exclusions.has(`boundary:${boundary}`)))
   );
 }
 
@@ -150,7 +149,8 @@ function authorizationScopeFits(
   if (authorization.reversibleOnly && !context.reversible) return false;
   if (
     authorization.boundary !== undefined &&
-    (context.boundary === undefined || normalize(authorization.boundary) !== normalize(context.boundary))
+    (context.boundary === undefined ||
+      normalize(authorization.boundary) !== normalize(context.boundary))
   ) {
     return false;
   }
