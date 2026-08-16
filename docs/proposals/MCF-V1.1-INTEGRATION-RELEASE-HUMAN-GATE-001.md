@@ -8,7 +8,7 @@ MESTRE is the orchestrator and recommendation owner. LÉO remains a distinct MCF
 
 ## Why this HUMAN_GATE exists
 
-The delegated implementation mission has reached its technical endpoint:
+The delegated implementation mission reached its technical endpoint:
 
 ```yaml
 I1_to_I10: PASS
@@ -18,7 +18,7 @@ blocking_findings: 0
 independent_review: PASS
 ```
 
-The next actions — merge to `main` and stable release/tag publication — were explicitly excluded from the prior implementation authorization and therefore require LEANDRO.
+Merge to `main` and stable release/tag publication were explicitly excluded from the prior implementation authorization and therefore required LEANDRO.
 
 ## Live state at gate opening
 
@@ -33,13 +33,7 @@ PR_merged: false
 v1_1_0_tag_exists: false
 ```
 
-Candidate checks are green for:
-
-- Documentation validation;
-- Rede Social Container Smoke;
-- MCF v1.1 Qualification;
-- Rede Social Foundation;
-- MCF Production Readiness.
+Candidate checks were green for Documentation validation, Rede Social Container Smoke, MCF v1.1 Qualification, Rede Social Foundation and MCF Production Readiness.
 
 ## Qualification evidence
 
@@ -55,45 +49,66 @@ QP_001_to_QP_020: PASS
 independent_review: PASS
 ```
 
-## Options
+## Options offered
 
-### A — HOLD
+- A — HOLD
+- B — READY FOR FINAL REVIEW ONLY
+- C — MERGE ONLY
+- D — MERGE + CONDITIONAL STABLE v1.1.0 RELEASE
 
-Keep PR #139 open and do not integrate or release.
+MESTRE recommended Option D.
 
-### B — READY FOR FINAL REVIEW ONLY
+## LEANDRO decision
 
-Allow PR #139 to leave draft state / receive final GitHub review, but do not merge and do not publish `v1.1.0`.
+```yaml
+selected_option: D
+selected_by: LEANDRO
+authority: FINAL_HUMAN_AUTHORITY
+status: APPROVED_AND_EXECUTED
+```
 
-### C — MERGE ONLY
+Option D authorized MESTRE to require the exact qualified head, merge through the normal PR path, reconcile exact `main`, verify candidate-to-merge tree equivalence, require post-merge gates to remain green and publish `v1.1.0` only after those conditions passed. Production deployment remained separately blocked.
 
-Authorize MESTRE to merge **only if the exact PR head remains** `1040ac932953aef45041a7dda4d930c29e94af59`, then reconcile exact `main`, verify candidate→merge tree equivalence and post-merge CI. Stable `v1.1.0` tag/release remains blocked for a later HUMAN_GATE.
+## Execution result
 
-### D — MERGE + CONDITIONAL STABLE v1.1.0 RELEASE
+```yaml
+PR: 139
+PR_ready_for_review: true
+PR_merged: true
+qualified_candidate_head: 1040ac932953aef45041a7dda4d930c29e94af59
+merge_main_sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+candidate_tree: ad796dc0ff4a336d4470a95a110e25aa1ec63344
+merge_tree: ad796dc0ff4a336d4470a95a110e25aa1ec63344
+candidate_to_merge_tree_equivalence: PASS
+post_merge_docs_run: 31928382835
+post_merge_docs: PASS
+post_merge_production_readiness_run: 31928382873
+post_merge_production_readiness: PASS
+post_merge_staging_run: 31928382845
+post_merge_staging: PASS
+release_executor_branch: ops/mcf-v1.1-release-001
+release_executor_head: 5b0220fb0ea1b702278660f8cf5264cea2c3db0c
+release_executor_run: 31928595929
+release_executor: PASS
+stable_tag: v1.1.0
+stable_tag_sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+stable_release: PUBLISHED
+stable_release_prerelease: false
+stable_release_draft: false
+production_deploy: NOT_AUTHORIZED
+```
 
-Authorize MESTRE to:
+## Final gate verdict
 
-1. require PR #139 head to remain exactly `1040ac932953aef45041a7dda4d930c29e94af59`;
-2. merge into `main` using the repository's normal integration path;
-3. verify the resulting `main` SHA and candidate→merge tree equivalence;
-4. execute/reconcile post-merge exact-main qualification and all relevant CI;
-5. if and only if every integration/requalification gate is PASS, publish stable tag/release `v1.1.0` bound to the verified release SHA;
-6. if any gate fails, stop before release and use TEAM_FIRST for technical remediation where the authority envelope permits;
-7. keep production deployment separately blocked.
+**PASS — OPTION D COMPLETED.**
 
-## MESTRE recommendation
+The stable `v1.1.0` release is bound exactly to the verified post-merge `main` SHA. The qualified candidate and merge commit have identical trees. The release executor independently rechecked Q19 qualification evidence, post-merge documentation/readiness gates, exact-main staging success and that `main` had not moved immediately before publication.
 
-**D — MERGE + CONDITIONAL STABLE v1.1.0 RELEASE.**
-
-Reason: the requested v1.1.0 implementation is complete and exact-head qualified, while the conditional sequence preserves the same safety property used by the stable v1.0.0 promotion: no stable release is published until integration and exact-SHA validation remain green.
-
-## Boundaries that remain reserved even under Option D
+## Persistent reserved boundary
 
 ```yaml
 production_deploy: NOT_AUTHORIZED
 silent_Q1_Q20_redefinition: NOT_AUTHORIZED
-release_on_failed_post_merge_validation: NOT_AUTHORIZED
-release_on_unexpected_head: NOT_AUTHORIZED
 ```
 
-LEANDRO must choose the option. `NO_RESPONSE != APPROVAL`.
+This gate grants no production deployment authority.
