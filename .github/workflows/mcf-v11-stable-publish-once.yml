@@ -1,0 +1,119 @@
+name: MCF v1.1.0 Stable Publication — One Shot
+
+on:
+  push:
+    branches:
+      - ops/mcf-v1.1-release-001
+    paths:
+      - .github/workflows/mcf-v11-stable-publish-once.yml
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish-v1-1-0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      TARGET_SHA: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+      QUALIFIED_CANDIDATE: 1040ac932953aef45041a7dda4d930c29e94af59
+      EXPECTED_TREE: ad796dc0ff4a336d4470a95a110e25aa1ec63344
+      QUALIFICATION_RUN_ID: '31927797717'
+      DOCS_RUN_ID: '31928382835'
+      READINESS_RUN_ID: '31928382873'
+      STAGING_RUN_ID: '31928382845'
+      RELEASE_TAG: v1.1.0
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Checkout exact verified main release SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_SHA }}
+          fetch-depth: 0
+          path: target
+
+      - name: Verify exact release identity and candidate tree equivalence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C target rev-parse HEAD)" = "$TARGET_SHA"
+          test "$(git -C target rev-parse HEAD^{tree})" = "$EXPECTED_TREE"
+          test "$(git -C target rev-parse ${QUALIFIED_CANDIDATE}^{tree})" = "$EXPECTED_TREE"
+          test "$(git -C target ls-remote origin refs/heads/main | cut -f1)" = "$TARGET_SHA"
+
+      - name: Verify exact-head Q19 qualification evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${QUALIFICATION_RUN_ID}" --jq .conclusion)" = "success"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${QUALIFICATION_RUN_ID}/artifacts" \
+            --jq '.artifacts[].name' | grep -qx "mcf-v11-qualification-${QUALIFIED_CANDIDATE}"
+
+      - name: Verify post-merge exact-main documentation and readiness gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for run_id in "$DOCS_RUN_ID" "$READINESS_RUN_ID"; do
+            test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" --jq .head_sha)" = "$TARGET_SHA"
+            test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}" --jq .conclusion)" = "success"
+          done
+
+      - name: Wait for exact-main staging verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${STAGING_RUN_ID}" --jq .head_sha)" = "$TARGET_SHA"
+          for attempt in $(seq 1 180); do
+            status="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${STAGING_RUN_ID}" --jq .status)"
+            conclusion="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${STAGING_RUN_ID}" --jq '.conclusion // ""')"
+            if [ "$status" = "completed" ]; then
+              test "$conclusion" = "success"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'Timed out waiting for exact-main staging verification.' >&2
+          exit 1
+
+      - name: Reverify main has not moved
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C target ls-remote origin refs/heads/main | cut -f1)" = "$TARGET_SHA"
+
+      - name: Create or verify immutable v1.1.0 tag and stable release
+        shell: bash
+        working-directory: target
+        run: |
+          set -euo pipefail
+          existing_ref="$(git ls-remote origin "refs/tags/$RELEASE_TAG" | cut -f1)"
+          if [ -n "$existing_ref" ]; then
+            test "$existing_ref" = "$TARGET_SHA"
+          else
+            git tag "$RELEASE_TAG" "$TARGET_SHA"
+            git push origin "refs/tags/$RELEASE_TAG"
+            test "$(git ls-remote origin "refs/tags/$RELEASE_TAG" | cut -f1)" = "$TARGET_SHA"
+          fi
+
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            test "$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)" = "false"
+            test "$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease)" = "false"
+          else
+            gh release create "$RELEASE_TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$TARGET_SHA" \
+              --title 'MCF v1.1.0' \
+              --notes 'MCF v1.1.0 stable release. Additive extension of the v1.0 core with versioned Project Intent Package (PIP) and Project Reality Report (PRR), adaptive intent discovery and exact alignment, evidence-first existing-project reconnaissance, derived gap/recovery planning, v1.1 runtime bindings, impact-based HUMAN_GATE and scoped standing authorization, verified continuity/resume/recovery, audit-safe observability, and the Q19 qualification matrix. Qualified candidate: 1040ac932953aef45041a7dda4d930c29e94af59. Verified merge/main release SHA: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef. Candidate-to-merge tree equivalence: ad796dc0ff4a336d4470a95a110e25aa1ec63344. Exact-head Q19 qualification, post-merge readiness and exact-main staging gates are required PASS before publication. Production deployment is NOT authorized by this release.'
+          fi
+
+      - name: Verify published release identity
+        shell: bash
+        working-directory: target
+        run: |
+          set -euo pipefail
+          test "$(git ls-remote origin "refs/tags/$RELEASE_TAG" | cut -f1)" = "$TARGET_SHA"
+          test "$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)" = "$RELEASE_TAG"
+          test "$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)" = "false"
+          test "$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease)" = "false"
