@@ -56,15 +56,11 @@ describe('HumanDelegationGuard v1.1 standing authorization', () => {
   });
 
   it('fails closed for the wrong action class at a reserved human boundary', () => {
-    expect(() => assertContext(context({ actionClass: 'release-public' }))).toThrow(
-      /human gate.*LEANDRO/iu,
-    );
+    expect(() => assertContext(context({ actionClass: 'release-public' }))).toThrow(/TEAM_FIRST/u);
   });
 
   it('fails closed for the wrong environment', () => {
-    expect(() => assertContext(context({ environment: 'production' }))).toThrow(
-      /human gate.*LEANDRO/iu,
-    );
+    expect(() => assertContext(context({ environment: 'production' }))).toThrow(/TEAM_FIRST/u);
   });
 
   it('fails closed for an expired standing authorization', () => {
@@ -74,17 +70,17 @@ describe('HumanDelegationGuard v1.1 standing authorization', () => {
           observedAt: '2026-09-02T00:00:00.000Z',
         }),
       ),
-    ).toThrow(/human gate.*LEANDRO/iu);
+    ).toThrow(/TEAM_FIRST/u);
   });
 
   it('fails closed when estimated cost exceeds the authorized maximum', () => {
     expect(() =>
       assertContext(context({ estimatedCost: { currency: 'USD', amount: 26 } })),
-    ).toThrow(/human gate.*LEANDRO/iu);
+    ).toThrow(/TEAM_FIRST/u);
   });
 
   it('fails closed when a reversible-only authorization is used for an irreversible action', () => {
-    expect(() => assertContext(context({ reversible: false }))).toThrow(/human gate.*LEANDRO/iu);
+    expect(() => assertContext(context({ reversible: false }))).toThrow(/TEAM_FIRST/u);
   });
 
   it('makes an explicit exclusion win over an otherwise matching authorization', () => {
@@ -100,11 +96,11 @@ describe('HumanDelegationGuard v1.1 standing authorization', () => {
           ],
         }),
       ),
-    ).toThrow(/human gate.*LEANDRO/iu);
+    ).toThrow(/TEAM_FIRST/u);
   });
 
   it('fails closed when required authorization evidence is missing', () => {
-    expect(() => assertContext(context({ evidenceRefs: [] }))).toThrow(/human gate.*LEANDRO/iu);
+    expect(() => assertContext(context({ evidenceRefs: [] }))).toThrow(/TEAM_FIRST/u);
   });
 
   it('does not treat no response as human approval', () => {
