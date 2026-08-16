@@ -7,6 +7,7 @@ on:
     paths:
       - "apps/rede-social-agentes/**"
       - ".github/scripts/mcf-v11-qualification.mjs"
+      - ".github/scripts/mcf-v11-qualification-exact-head.mjs"
       - ".github/workflows/mcf-v11-qualification.yml"
   workflow_dispatch:
 
@@ -40,18 +41,20 @@ jobs:
       DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
       LOG_LEVEL: error
       MCF_V10_BASELINE_SHA: b91823a947715e09d69c72999e2278523f2259be
+      MCF_CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Verify exact workflow HEAD
+      - name: Verify exact candidate HEAD
         shell: bash
         run: |
           observed="$(git rev-parse HEAD)"
-          test "$observed" = "$GITHUB_SHA"
+          test "$observed" = "$MCF_CANDIDATE_SHA"
           echo "TESTED_HEAD=$observed" >> "$GITHUB_ENV"
 
       - name: Setup Node.js
@@ -96,13 +99,13 @@ jobs:
         run: pnpm build
 
       - name: Build Q19 evidence ledger
-        run: node .github/scripts/mcf-v11-qualification.mjs
+        run: node .github/scripts/mcf-v11-qualification-exact-head.mjs
 
       - name: Upload exact-head qualification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mcf-v11-qualification-${{ github.sha }}
+          name: mcf-v11-qualification-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             artifacts/mcf-v1.1-qualification/evidence-ledger.json
             apps/rede-social-agentes/apps/server/test-results/vitest.json
