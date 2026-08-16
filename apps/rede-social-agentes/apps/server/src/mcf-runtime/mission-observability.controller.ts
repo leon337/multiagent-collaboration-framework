@@ -17,7 +17,10 @@ import type {
 import type { AuthenticatedHumanRequest } from '../identity/authenticated-request.js';
 import { SessionAuthGuard } from '../identity/session-auth.guard.js';
 import { McfMissionNotFoundError } from './mcf-runtime.errors.js';
-import { MissionObservabilityService } from './mission-observability.service.js';
+import {
+  MissionObservabilityService,
+  type McfMissionV11AuditProjection,
+} from './mission-observability.service.js';
 
 @Controller('v1/mcf/observability')
 @UseGuards(SessionAuthGuard)
@@ -34,6 +37,25 @@ export class MissionObservabilityController {
   ): Promise<McfMissionObservationResponse> {
     try {
       return await this.observability.getMissionObservation(missionId);
+    } catch (error) {
+      if (error instanceof McfMissionNotFoundError) {
+        throw new NotFoundException({
+          code: 'MCF_RESOURCE_NOT_FOUND',
+          message: error.message,
+          correlationId: request.id,
+        });
+      }
+      throw error;
+    }
+  }
+
+  @Get('missions/:missionId/v1.1-audit')
+  async getMissionV11Audit(
+    @Param('missionId') missionId: string,
+    @Req() request: AuthenticatedHumanRequest,
+  ): Promise<McfMissionV11AuditProjection> {
+    try {
+      return await this.observability.getMissionV11AuditProjection(missionId);
     } catch (error) {
       if (error instanceof McfMissionNotFoundError) {
         throw new NotFoundException({
