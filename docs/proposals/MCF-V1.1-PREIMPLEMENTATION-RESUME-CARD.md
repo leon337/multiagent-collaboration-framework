@@ -30,10 +30,12 @@ I2: PASS
 I2_accepted_head: 6de580c48d8617a4bf0688af09325225bf583f95
 I3: PASS
 I3_accepted_head: 1b78235524ff93a1b93c3f5b50e6c96d29d5bf29
+I4: PASS
+I4_accepted_head: 162c25c4aff9c96b85ce16ebf1083c83ef906fab
 
-current_execution_window: I4_INTENT_ALIGNMENT_BOUNDARY
-I4_authorized: true
-I5_authorized: false
+current_execution_window: I5_EXISTING_PROJECT_RECONNAISSANCE_PRR_PIPELINE
+I5_authorized: true
+I6_authorized: false
 
 merge_to_main_authorized: false
 release_authorized: false
@@ -47,12 +49,12 @@ Controlled fixtures, test harnesses and disposable qualification environments re
 
 ```yaml
 main_live: b91823a947715e09d69c72999e2278523f2259be
-implementation_branch_live_and_I3_accepted: 1b78235524ff93a1b93c3f5b50e6c96d29d5bf29
-I3_correction_compare:
-  base: 1fea1c863280c30758d89bbcc2e9d561a3b804b4
-  ahead_by: 1
+implementation_branch_live_and_I4_accepted: 162c25c4aff9c96b85ce16ebf1083c83ef906fab
+I4_compare_from_I3:
+  base: 1b78235524ff93a1b93c3f5b50e6c96d29d5bf29
+  ahead_by: 2
   behind_by: 0
-  changed_paths: 2
+  changed_paths: 4
 ```
 
 Codex MUST fetch live GitHub before every new execution window and record the exact current implementation HEAD.
@@ -138,33 +140,68 @@ Accepted gate:
 
 `docs/proposals/MCF-V1.1-I3-TECHNICAL-GATE-002.md`
 
-## Current window — I4
+## I4 — PASS
+
+Accepted HEAD: `162c25c4aff9c96b85ce16ebf1083c83ef906fab`
+
+I4 implements and verifies:
+
+- deterministic final intent read-back as `DERIVED_REBUILDABLE_VIEW` bound to exact PIP revision/digest;
+- LEANDRO-only explicit alignment confirmation;
+- exact expected PIP project/revision/path/digest matching;
+- `READY_FOR_ALIGNMENT` + no blocking unknown/blocker/conflict requirement;
+- PASS transition of the same exact revision to `ALIGNED`;
+- canonical Intent Alignment Receipt bound to the resulting aligned PIP digest;
+- complete PIP + receipt pair required for `PASS_VERIFIED`;
+- aligned PIP without receipt classified `INCOMPLETE`, never PASS;
+- aligned revision/receipt immutability and deterministic retry after partial persistence;
+- material change preserves old aligned pair and creates a successor requiring re-alignment;
+- `ALIGNED != IMPLEMENTATION_AUTHORIZED`;
+- no new DB state or parallel runtime.
+
+Gate:
+
+`docs/proposals/MCF-V1.1-I4-TECHNICAL-GATE-001.md`
+
+## Current window — I5
 
 Canonical execution specification:
 
-`docs/proposals/MCF-V1.1-I4-EXECUTION-WINDOW-001.md`
+`docs/proposals/MCF-V1.1-I5-EXECUTION-WINDOW-001.md`
 
 Objective:
 
 ```text
-Intent Alignment Boundary
+Existing Project Reconnaissance / Project Reality Report Pipeline
 ```
 
-I4 must implement:
+I5 must implement:
 
-- final intent read-back as a derived view bound to exact PIP revision/digest;
-- alignment only from `READY_FOR_ALIGNMENT`;
-- explicit LEANDRO human-confirmation input;
-- PASS or `REJECTED_FOR_CORRECTION` receipt semantics;
-- exact aligned PIP + receipt binding;
-- aligned revision immutability;
-- incomplete PIP/receipt pair must never report PASS;
-- material change after alignment creates a successor revision and preserves old history;
-- no implementation authority is granted merely by alignment.
+- `READ_ONLY_FIRST` evidence reconstruction;
+- exact repository + commit SHA baseline;
+- FACT / INFERENCE / UNKNOWN / CONFLICTING separation;
+- deterministic Reality Read-Back;
+- canonical confirmed PRR through the I2 store without mutating a persisted PRR revision;
+- derived Gap Map bound to an exact confirmed PRR and a verified aligned PIP pair;
+- working Completion/Recovery Plan only when material validated gaps exist;
+- staleness/reassessment when exact PRR, aligned PIP or Gap Map inputs change;
+- no automatic technical-evidence promotion from human assertions;
+- no implementation authority from PRR, Gap Map or plan.
 
-I4 must NOT implement:
+Important I5 immutability rule:
 
-- I5 full PRR/reality pipeline;
+```text
+WORKING RECONNAISSANCE DRAFT
+        ↓
+REALITY CONFIRMATION
+        ↓
+CANONICAL CONFIRMED PRR
+```
+
+Do not persist `PENDING` PRR and later overwrite the same persisted revision. If the approved contract genuinely requires that pattern and cannot preserve history, Codex must stop and return a conformance finding.
+
+I5 must NOT implement:
+
 - I6 Mission Runtime enforcement;
 - I7 standing authorization/HDF behavior;
 - I8 continuity engine;
@@ -186,20 +223,24 @@ I3 correction — human decision supersession
         ↓
 I3 PASS @ 1b78235524ff93a1b93c3f5b50e6c96d29d5bf29
         ↓
-I4 AUTHORIZED
+I4 Intent Alignment Boundary
         ↓
-Intent Alignment Boundary
+I4 PASS @ 162c25c4aff9c96b85ce16ebf1083c83ef906fab
         ↓
-I4 tests + commit + push + receipt
+I5 AUTHORIZED
+        ↓
+Existing Project Reconnaissance / PRR / Gap / Completion Plan
+        ↓
+I5 tests + commit + push + receipt
         ↓
 MESTRE technical gate
         ↓
-PASS → I5
+PASS → I6
 ```
 
 ## HUMAN_GATE policy
 
-No new LEANDRO gate is required for normal I4 implementation/testing. Controlled test fixtures may represent LEANDRO confirmation, but production/runtime code must never fabricate human authority.
+No new LEANDRO gate is required for normal I5 implementation/testing. Controlled test fixtures may represent LEANDRO Reality Confirmation, but production/domain code must never fabricate human authority.
 
 Return to LEANDRO only for a non-delegable HUMAN_GATE or material crossing of the approved boundary, including merge/release/production authority when reached.
 
@@ -235,13 +276,15 @@ new_parallel_database: NO_GO
 7. `MCF-V1.1-I3-TECHNICAL-GATE-001.md`
 8. `MCF-V1.1-I3-TECHNICAL-GATE-002.md`
 9. `MCF-V1.1-I4-EXECUTION-WINDOW-001.md`
-10. `MCF-V1.1-DISCOVERY-CHECKPOINT-020.md`
-11. `MCF-V1.1-DECISION-LEDGER-001.md`
-12. `MCF-V1.1-TECHNICAL-CONTRACTS-001.md`
-13. `MCF-V1.1-MIGRATION-COMPATIBILITY-PLAN-001.md`
-14. `MCF-V1.1-IMPLEMENTATION-PLAN-001.md`
-15. `MCF-V1.1-QUALIFICATION-PLAN-001.md`
+10. `MCF-V1.1-I4-TECHNICAL-GATE-001.md`
+11. `MCF-V1.1-I5-EXECUTION-WINDOW-001.md`
+12. `MCF-V1.1-DISCOVERY-CHECKPOINT-020.md`
+13. `MCF-V1.1-DECISION-LEDGER-001.md`
+14. `MCF-V1.1-TECHNICAL-CONTRACTS-001.md`
+15. `MCF-V1.1-MIGRATION-COMPATIBILITY-PLAN-001.md`
+16. `MCF-V1.1-IMPLEMENTATION-PLAN-001.md`
+17. `MCF-V1.1-QUALIFICATION-PLAN-001.md`
 
 ## Comando mínimo de retomada
 
-> `Mestre, retome a v1.1 pelo Implementation Resume Card e pelo último technical gate. Verifique GitHub live. I1, I2 e I3 passaram; I4 está autorizado; I5, merge, release e produção continuam bloqueados.`
+> `Mestre, retome a v1.1 pelo Implementation Resume Card e pelo último technical gate. Verifique GitHub live. I1, I2, I3 e I4 passaram; I5 está autorizado; I6, merge, release e produção continuam bloqueados.`
