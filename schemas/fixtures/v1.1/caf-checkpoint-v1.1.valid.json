@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.1",
+  "projectId": "mcf-v1.1",
+  "missionId": "MCF-V1.1-CODEX-IMPLEMENTATION-001",
+  "methodologyPin": {
+    "version": "1.1.0",
+    "immutableRef": "git:5dc055cb7d402e5774b40b82723a8f008cd00e80"
+  },
+  "alignedPipRef": {
+    "artifactType": "PROJECT_INTENT_PACKAGE",
+    "schemaVersion": "1.0",
+    "projectId": "mcf-v1.1",
+    "revisionId": "pip-001",
+    "path": ".mcf/intent/pip-pip-001.json",
+    "contentDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "repository": "leon337/multiagent-collaboration-framework",
+    "commitSha": "5dc055cb7d402e5774b40b82723a8f008cd00e80"
+  },
+  "missionContractRef": ".mcf/missions/MCF-V1.1-CODEX-IMPLEMENTATION-001.json",
+  "pendingHumanGates": [],
+  "activeStandingAuthorizationIds": ["authorization-001"],
+  "repositoryState": {
+    "repository": "leon337/multiagent-collaboration-framework",
+    "branch": "feat/mcf-v1.1-project-intake-continuity",
+    "checkpointSha": null,
+    "capturedAt": "2026-08-15T12:00:00Z",
+    "volatile": true
+  },
+  "resumeRouteHint": "RECONCILE",
+  "transferability": "BLOCKED_LOCAL_ONLY_STATE",
+  "objetivo": "Implement only the I1 contract and schema foundation.",
+  "estado": "EM_EXECUCAO",
+  "ultimo_sucesso": "The implementation branch was created from the approved baseline.",
+  "falha_atual": "nenhuma",
+  "classe_da_falha": "NENHUMA",
+  "efeito_confirmado": "No failure effect.",
+  "recuperacao_escolhida": "nenhuma",
+  "proxima_acao": "Run focused contract validation.",
+  "destinatario": "MESTRE",
+  "artefatos": [
+    {
+      "tipo": "commit",
+      "referencia": "5dc055cb7d402e5774b40b82723a8f008cd00e80"
+    }
+  ]
+}

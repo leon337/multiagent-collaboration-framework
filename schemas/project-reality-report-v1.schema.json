@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/leon337/multiagent-collaboration-framework/schemas/project-reality-report-v1.schema.json",
+  "title": "MCF Project Reality Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifactType",
+    "schemaVersion",
+    "projectId",
+    "revisionId",
+    "methodologyPin",
+    "createdAt",
+    "baseline",
+    "observations",
+    "unresolvedFacts",
+    "realityConfirmation",
+    "contentDigest"
+  ],
+  "properties": {
+    "artifactType": { "const": "PROJECT_REALITY_REPORT" },
+    "schemaVersion": { "const": "1.0" },
+    "projectId": { "type": "string", "minLength": 1 },
+    "revisionId": { "type": "string", "minLength": 1 },
+    "methodologyPin": { "$ref": "#/$defs/methodologyPin" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commitSha", "capturedAt"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "commitSha": { "type": "string", "pattern": "^[a-f0-9]{40,64}$" },
+        "branch": { "type": "string", "minLength": 1 },
+        "capturedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/observation" }
+    },
+    "unresolvedFacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "statement", "evidenceNeeded"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "statement": { "type": "string", "minLength": 1 },
+          "evidenceNeeded": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "realityConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "enum": ["PENDING", "CONFIRMED_WITH_CORRECTIONS", "CONFIRMED"]
+        },
+        "confirmedAt": { "type": "string", "format": "date-time" },
+        "correctionRefs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "contentDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+  },
+  "$defs": {
+    "methodologyPin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "immutableRef"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1 },
+        "immutableRef": { "type": "string", "minLength": 1 }
+      }
+    },
+    "provenanceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sourceRef", "capturedAt", "actor"],
+      "properties": {
+        "type": {
+          "enum": [
+            "HUMAN_DIRECT_STATEMENT",
+            "HUMAN_CONFIRMED_SYNTHESIS",
+            "PRIOR_VALID_HUMAN_DECISION",
+            "MACHINE_EVIDENCE",
+            "MACHINE_INFERENCE",
+            "TECHNICAL_DELEGATION",
+            "NOT_APPLICABLE_JUSTIFICATION"
+          ]
+        },
+        "sourceRef": { "type": "string", "minLength": 1 },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "actor": { "type": "string", "minLength": 1 }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observationId",
+        "domain",
+        "statement",
+        "kind",
+        "evidenceRefs",
+        "provenance"
+      ],
+      "properties": {
+        "observationId": { "type": "string", "minLength": 1 },
+        "domain": { "type": "string", "minLength": 1 },
+        "statement": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["FACT", "INFERENCE", "UNKNOWN", "CONFLICTING"] },
+        "evidenceRefs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "provenance": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/provenanceRef" }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "kind": { "const": "FACT" } },
+            "required": ["kind"]
+          },
+          "then": {
+            "properties": { "evidenceRefs": { "type": "array", "minItems": 1 } }
+          }
+        }
+      ]
+    }
+  }
+}

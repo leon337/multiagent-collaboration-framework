@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type {
+  McfArtifactRef,
   McfBlockedAlertReconcileResponse,
   McfBlockedMissionListResponse,
   McfBlockedMissionSummary,
@@ -8,6 +9,8 @@ import type {
   McfMissionEventResponse,
   McfMissionObservationResponse,
   McfMissionResponse,
+  McfProjectEntryMode,
+  McfResumeRoute,
 } from '@rsa/contracts';
 import { randomUUID } from 'node:crypto';
 
@@ -34,6 +37,36 @@ const blockingEventTypes = new Set<McfEventType>([
   'GATE_REJECTED',
   'RECOVERY_STARTED',
 ]);
+
+const resumeRoutes = new Set<McfResumeRoute>(['FAST_RESUME', 'RECONCILE', 'RECOVER_MCF_PROJECT']);
+
+export interface McfMissionV11AuditProjection {
+  classification: 'DERIVED_REBUILDABLE_VIEW';
+  sourceAuthority: 'MCF_PERSISTENCE_AND_EVENT_LEDGER';
+  missionId: string;
+  projectId: string | null;
+  projectEntryMode: McfProjectEntryMode | null;
+  methodologyPin: { version: string; immutableRef: string } | null;
+  alignedPipRef: McfArtifactRef | null;
+  projectRealityReportRef: McfArtifactRef | null;
+  pendingHumanGate: { eventId: string; occurredAt: string } | null;
+  activeStandingAuthorizationRefs: Array<{
+    authorizationId: string;
+    sourceDecisionRef: string;
+  }>;
+  continuity: {
+    checkpointRef: McfArtifactRef | null;
+    resumeRoute: McfResumeRoute | null;
+    reconciliationOutcome: string | null;
+  };
+  volatileState: {
+    live: true;
+    missionState: McfMissionRecord['state'];
+    currentPhaseId: string | null;
+    currentAgentId: string | null;
+    observedAt: string;
+  };
+}
 
 function toMissionResponse(mission: McfMissionRecord): McfMissionResponse {
   return {
@@ -114,6 +147,37 @@ function deriveBlockContext(events: readonly McfEventRecord[]): McfMissionBlockC
   };
 }
 
+function derivePendingHumanGate(
+  events: readonly McfEventRecord[],
+): McfMissionV11AuditProjection['pendingHumanGate'] {
+  const latestGateEvent = [...events]
+    .reverse()
+    .find((event) => ['GATE_REQUIRED', 'GATE_APPROVED', 'GATE_REJECTED'].includes(event.eventType));
+  if (!latestGateEvent || latestGateEvent.eventType !== 'GATE_REQUIRED') return null;
+  return {
+    eventId: latestGateEvent.id,
+    occurredAt: latestGateEvent.occurredAt.toISOString(),
+  };
+}
+
+function safeResumeRoute(events: readonly McfEventRecord[]): McfResumeRoute | null {
+  for (const event of [...events].reverse()) {
+    const candidate = firstString(event.payload, ['resumeRoute', 'route']);
+    if (candidate && resumeRoutes.has(candidate as McfResumeRoute)) {
+      return candidate as McfResumeRoute;
+    }
+  }
+  return null;
+}
+
+function safeReconciliationOutcome(events: readonly McfEventRecord[]): string | null {
+  const recovery = [...events].reverse().find((event) => event.eventType === 'RECOVERY_COMPLETED');
+  if (!recovery) return null;
+  const candidate = firstString(recovery.payload, ['outcome', 'reconciliationOutcome']);
+  if (!candidate || !/^[A-Z0-9_:-]{1,80}$/u.test(candidate)) return null;
+  return candidate;
+}
+
 @Injectable()
 export class MissionObservabilityService {
   constructor(
@@ -142,6 +206,47 @@ export class MissionObservabilityService {
       latestEvent: latestEvent ? toEventResponse(latestEvent) : null,
       blocked,
       blockContext: blocked ? deriveBlockContext(events) : null,
+    };
+  }
+
+  async getMissionV11AuditProjection(missionId: string): Promise<McfMissionV11AuditProjection> {
+    const mission = await this.runtimeRepository.findMission(missionId);
+    if (!mission) throw new McfMissionNotFoundError(missionId);
+    const events = await this.runtimeRepository.listEvents(mission.id);
+    const contract = mission.contract;
+
+    return {
+      classification: 'DERIVED_REBUILDABLE_VIEW',
+      sourceAuthority: 'MCF_PERSISTENCE_AND_EVENT_LEDGER',
+      missionId: mission.id,
+      projectId: contract.projectId ?? null,
+      projectEntryMode: contract.projectEntryMode ?? null,
+      methodologyPin: contract.methodologyPin ? { ...contract.methodologyPin } : null,
+      alignedPipRef: contract.alignedPipRef ? { ...contract.alignedPipRef } : null,
+      projectRealityReportRef: contract.projectRealityReportRef
+        ? { ...contract.projectRealityReportRef }
+        : null,
+      pendingHumanGate: derivePendingHumanGate(events),
+      activeStandingAuthorizationRefs: (contract.standingAuthorizations ?? [])
+        .filter((authorization) => authorization.status === 'ACTIVE')
+        .map((authorization) => ({
+          authorizationId: authorization.authorizationId,
+          sourceDecisionRef: authorization.sourceDecisionRef,
+        })),
+      continuity: {
+        checkpointRef: contract.continuityCheckpointRef
+          ? { ...contract.continuityCheckpointRef }
+          : null,
+        resumeRoute: safeResumeRoute(events),
+        reconciliationOutcome: safeReconciliationOutcome(events),
+      },
+      volatileState: {
+        live: true,
+        missionState: mission.state,
+        currentPhaseId: mission.currentPhaseId,
+        currentAgentId: mission.currentAgentId,
+        observedAt: new Date().toISOString(),
+      },
     };
   }
 

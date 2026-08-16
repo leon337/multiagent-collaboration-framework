@@ -17,6 +17,103 @@
     "artefatos"
   ],
   "properties": {
+    "schemaVersion": {
+      "const": "1.1"
+    },
+    "projectId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "missionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "methodologyPin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "immutableRef"],
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "immutableRef": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "alignedPipRef": {
+      "$ref": "https://github.com/leon337/multiagent-collaboration-framework/schemas/mcf-artifact-ref.schema.json"
+    },
+    "missionContractRef": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projectRealityReportRef": {
+      "$ref": "https://github.com/leon337/multiagent-collaboration-framework/schemas/mcf-artifact-ref.schema.json"
+    },
+    "pendingHumanGates": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "activeStandingAuthorizationIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "repositoryState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "branch",
+        "checkpointSha",
+        "capturedAt",
+        "volatile"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checkpointSha": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40,64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capturedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "volatile": {
+          "const": true
+        }
+      }
+    },
+    "resumeRouteHint": {
+      "enum": ["FAST_RESUME", "RECONCILE", "RECOVER_MCF_PROJECT"]
+    },
+    "transferability": {
+      "enum": ["TRANSFERABLE", "BLOCKED_LOCAL_ONLY_STATE"]
+    },
     "objetivo": {
       "type": "string",
       "minLength": 1
@@ -79,7 +176,15 @@
         "required": ["tipo", "referencia"],
         "properties": {
           "tipo": {
-            "enum": ["arquivo", "commit", "pull_request", "teste", "log", "parecer", "outro"]
+            "enum": [
+              "arquivo",
+              "commit",
+              "pull_request",
+              "teste",
+              "log",
+              "parecer",
+              "outro"
+            ]
           },
           "referencia": {
             "type": "string",
