@@ -1,8 +1,4 @@
-import type {
-  McfArtifactRef,
-  McfCheckpointV11Extension,
-  McfResumeRoute,
-} from '@rsa/contracts';
+import type { McfArtifactRef, McfCheckpointV11Extension, McfResumeRoute } from '@rsa/contracts';
 
 export type McfContinuityMaterialEvent =
   | 'MATERIAL_HUMAN_DECISION'
