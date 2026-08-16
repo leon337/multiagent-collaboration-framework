@@ -38,11 +38,7 @@ const blockingEventTypes = new Set<McfEventType>([
   'RECOVERY_STARTED',
 ]);
 
-const resumeRoutes = new Set<McfResumeRoute>([
-  'FAST_RESUME',
-  'RECONCILE',
-  'RECOVER_MCF_PROJECT',
-]);
+const resumeRoutes = new Set<McfResumeRoute>(['FAST_RESUME', 'RECONCILE', 'RECOVER_MCF_PROJECT']);
 
 export interface McfMissionV11AuditProjection {
   classification: 'DERIVED_REBUILDABLE_VIEW';
@@ -156,9 +152,7 @@ function derivePendingHumanGate(
 ): McfMissionV11AuditProjection['pendingHumanGate'] {
   const latestGateEvent = [...events]
     .reverse()
-    .find((event) =>
-      ['GATE_REQUIRED', 'GATE_APPROVED', 'GATE_REJECTED'].includes(event.eventType),
-    );
+    .find((event) => ['GATE_REQUIRED', 'GATE_APPROVED', 'GATE_REJECTED'].includes(event.eventType));
   if (!latestGateEvent || latestGateEvent.eventType !== 'GATE_REQUIRED') return null;
   return {
     eventId: latestGateEvent.id,
@@ -177,9 +171,7 @@ function safeResumeRoute(events: readonly McfEventRecord[]): McfResumeRoute | nu
 }
 
 function safeReconciliationOutcome(events: readonly McfEventRecord[]): string | null {
-  const recovery = [...events]
-    .reverse()
-    .find((event) => event.eventType === 'RECOVERY_COMPLETED');
+  const recovery = [...events].reverse().find((event) => event.eventType === 'RECOVERY_COMPLETED');
   if (!recovery) return null;
   const candidate = firstString(recovery.payload, ['outcome', 'reconciliationOutcome']);
   if (!candidate || !/^[A-Z0-9_:-]{1,80}$/u.test(candidate)) return null;

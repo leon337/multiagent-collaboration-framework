@@ -161,10 +161,7 @@ function observabilityRepository(): MissionObservabilityRepository {
 
 describe('MissionObservabilityService v1.1 audit projection', () => {
   it('exposes authoritative v1.1 refs while labeling the projection and volatile state', async () => {
-    const service = new MissionObservabilityService(
-      runtimeRepository(),
-      observabilityRepository(),
-    );
+    const service = new MissionObservabilityService(runtimeRepository(), observabilityRepository());
 
     const view = await service.getMissionV11AuditProjection(mission().id);
 
@@ -185,10 +182,7 @@ describe('MissionObservabilityService v1.1 audit projection', () => {
   });
 
   it('exposes only active standing authorization references and pending human gate metadata', async () => {
-    const service = new MissionObservabilityService(
-      runtimeRepository(),
-      observabilityRepository(),
-    );
+    const service = new MissionObservabilityService(runtimeRepository(), observabilityRepository());
 
     const view = await service.getMissionV11AuditProjection(mission().id);
 
@@ -216,10 +210,7 @@ describe('MissionObservabilityService v1.1 audit projection', () => {
   });
 
   it('never exposes arbitrary event payload or secret-like material in the audit projection', async () => {
-    const service = new MissionObservabilityService(
-      runtimeRepository(),
-      observabilityRepository(),
-    );
+    const service = new MissionObservabilityService(runtimeRepository(), observabilityRepository());
 
     const view = await service.getMissionV11AuditProjection(mission().id);
     const serialized = JSON.stringify(view);
