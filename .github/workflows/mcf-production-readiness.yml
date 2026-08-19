@@ -72,9 +72,14 @@ jobs:
         working-directory: apps/rede-social-agentes
         run: pnpm audit --prod --audit-level high
 
-      - name: Verify formatting
+      - name: Diagnose canonical formatting
         working-directory: apps/rede-social-agentes
-        run: pnpm format:check
+        run: |
+          pnpm exec prettier --write ops/production-workflow-governance.test.mjs
+          printf '%s\n' '---BEGIN_CANONICAL_FILE---'
+          cat ops/production-workflow-governance.test.mjs
+          printf '%s\n' '---END_CANONICAL_FILE---'
+          exit 1
 
       - name: Lint
         working-directory: apps/rede-social-agentes
