@@ -76,13 +76,7 @@ function applicableAuthorization(
 
 function runtimeBaseUrl(value: string): URL {
   const url = new URL(value);
-  if (
-    url.protocol !== 'https:' ||
-    url.username ||
-    url.password ||
-    url.search ||
-    url.hash
-  ) {
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
     throw new ExternalActionAdapterError(
       'INVALID_CONTEXT',
       'production runtime URL must be public HTTPS without credentials, query or fragment',
@@ -122,8 +116,7 @@ export class RenderProductionPromotionAdapter implements ExternalActionAdapter {
   ) {
     this.productionRuntimeUrl =
       options.productionRuntimeUrl ?? process.env.MCF_PRODUCTION_RUNTIME_URL;
-    this.deployHookUrl =
-      options.deployHookUrl ?? process.env.RENDER_PRODUCTION_DEPLOY_HOOK_URL;
+    this.deployHookUrl = options.deployHookUrl ?? process.env.RENDER_PRODUCTION_DEPLOY_HOOK_URL;
     this.fetcher = options.fetchImpl ?? globalThis.fetch;
     this.timeoutMs = options.timeoutMs ?? defaultTimeoutMs;
     this.pollIntervalMs = options.pollIntervalMs ?? defaultPollIntervalMs;
@@ -219,10 +212,7 @@ export class RenderProductionPromotionAdapter implements ExternalActionAdapter {
       phaseId: request.context.phaseId,
       releaseSha,
     });
-    if (
-      resolution.state !== 'AUTHORIZED' ||
-      !applicableAuthorization(resolution, releaseSha)
-    ) {
+    if (resolution.state !== 'AUTHORIZED' || !applicableAuthorization(resolution, releaseSha)) {
       throw new ExternalActionAdapterError(
         'PRODUCTION_AUTHORIZATION_REQUIRED',
         'production promotion requires persisted LEANDRO and LÉO authorization for the exact SHA',
