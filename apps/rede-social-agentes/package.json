@@ -13,7 +13,7 @@
     "dev:server": "pnpm --filter @rsa/server dev",
     "dev:web": "pnpm --filter @rsa/web dev",
     "format": "prettier --write .",
-    "format:check": "prettier --write apps/server/src/mcf-runtime/render-production-promotion.adapter.ts && git -C ../.. diff -- apps/rede-social-agentes/apps/server/src/mcf-runtime/render-production-promotion.adapter.ts && exit 1",
+    "format:check": "prettier --check .",
     "lint": "eslint .",
     "ops:backup": "node ops/backup-database.mjs",
     "ops:restore": "node ops/restore-database.mjs",
