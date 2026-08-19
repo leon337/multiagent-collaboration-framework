@@ -47,6 +47,22 @@ test('dispatch cannot manufacture production authorization', async () => {
   excludes(workflow, 'GATE_DECISION: APPROVE');
 });
 
+test('workflow rejects non-main dispatch before production secrets are used', async () => {
+  const workflow = await productionWorkflow();
+  includes(workflow, 'Validate canonical control-plane ref');
+  includes(workflow, "if: ${{ github.ref != 'refs/heads/main' }}");
+  includes(workflow, 'ref: ${{ github.sha }}');
+  excludes(workflow, 'ref: ${{ github.workflow_sha }}');
+
+  const refGuard = workflow.indexOf('Validate canonical control-plane ref');
+  const runtimeToken = workflow.indexOf('MCF_RUNTIME_TOKEN: ${{ secrets.MCF_RUNTIME_TOKEN }}');
+  const deployHook = workflow.indexOf(
+    'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK_URL }}',
+  );
+  assert.ok(refGuard >= 0 && refGuard < runtimeToken);
+  assert.ok(refGuard < deployHook);
+});
+
 test('workflow resolves authorization from MCF control plane', async () => {
   const workflow = await productionWorkflow();
   includes(workflow, 'MCF_CONTROL_PLANE_URL: ${{ secrets.MCF_CONTROL_PLANE_URL }}');
@@ -72,7 +88,7 @@ test('provider config comes only from protected secrets', async () => {
 test('workflow uses exact release checkout', async () => {
   const workflow = await productionWorkflow();
   includes(workflow, 'Checkout trusted production control plane');
-  includes(workflow, 'ref: ${{ github.workflow_sha }}');
+  includes(workflow, 'ref: ${{ github.sha }}');
   includes(workflow, 'path: .mcf-control-plane');
   includes(workflow, 'Checkout exact production release revision');
   includes(workflow, 'ref: ${{ inputs.release_sha }}');
