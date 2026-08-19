@@ -37,7 +37,9 @@ test('production workflow keeps release SHA and delegated gate SHA independently
   assert.ok(
     workflow.includes('AUTHORIZATION_TARGET_SHA: ${{ inputs.authorization_target_sha }}'),
   );
-  assert.ok(!workflow.includes('AUTHORIZATION_TARGET_SHA: ${{ inputs.release_sha }}'));
+  assert.ok(
+    !workflow.includes('AUTHORIZATION_TARGET_SHA: ${{ inputs.release_sha }}'),
+  );
 
   assert.ok(workflow.includes('AUTHORIZATION_STATE: AUTHORIZED'));
   assert.ok(workflow.includes('HUMAN_AUTHORITY: LEANDRO'));
@@ -58,7 +60,9 @@ test('production workflow uses protected provider configuration and never accept
     ),
   );
   assert.ok(!workflow.includes('MCF_PRODUCTION_RUNTIME_URL: ${{ inputs.'));
-  assert.ok(!workflow.includes('RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ inputs.'));
+  assert.ok(
+    !workflow.includes('RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ inputs.'),
+  );
   assert.ok(workflow.includes('permissions:\n  contents: read'));
 });
 
