@@ -1,0 +1,111 @@
+name: MCF Runtime Production Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Exact Git commit SHA to promote to production
+        required: true
+        type: string
+      authorization_target_sha:
+        description: Exact SHA bound to the delegated production authorization
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcf-runtime-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  governed-production-promotion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout trusted production control plane
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: .mcf-control-plane
+          fetch-depth: 1
+
+      - name: Checkout exact production release revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_sha }}
+          path: .mcf-release
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Validate trusted production policy entrypoint
+        run: node .mcf-control-plane/apps/rede-social-agentes/ops/production-promotion-policy.mjs
+
+      - name: Evaluate and execute governed exact-SHA promotion
+        id: promote
+        env:
+          MCF_PRODUCTION_RUNTIME_URL: ${{ secrets.MCF_PRODUCTION_RUNTIME_URL }}
+          RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK_URL }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          AUTHORIZATION_TARGET_SHA: ${{ inputs.authorization_target_sha }}
+          AUTHORIZATION_STATE: AUTHORIZED
+          HUMAN_AUTHORITY: LEANDRO
+          AUTHORIZATION_SOURCE_DECISION: MCF-DEC-031
+          OPERATIONAL_GATE: LEO
+          GATE_DECISION: APPROVE
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from 'node:fs';
+          import { orchestrateProductionPromotion } from './.mcf-control-plane/apps/rede-social-agentes/ops/production-promotion-policy.mjs';
+
+          const authorization = {
+            state: process.env.AUTHORIZATION_STATE,
+            humanAuthority: process.env.HUMAN_AUTHORITY,
+            sourceDecision: process.env.AUTHORIZATION_SOURCE_DECISION,
+            targetSha: process.env.AUTHORIZATION_TARGET_SHA,
+            operationalGate: process.env.OPERATIONAL_GATE,
+            gateDecision: process.env.GATE_DECISION,
+          };
+
+          const result = await orchestrateProductionPromotion({
+            runtimeUrl: process.env.MCF_PRODUCTION_RUNTIME_URL ?? '',
+            deployHookUrl: process.env.RENDER_PRODUCTION_DEPLOY_HOOK_URL ?? '',
+            releaseSha: process.env.RELEASE_SHA ?? '',
+            authorization,
+          });
+
+          if (!process.env.GITHUB_OUTPUT) {
+            throw new Error('GITHUB_OUTPUT is required.');
+          }
+
+          appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            `status=${result.status}\nrelease_sha=${result.releaseSha}\nprevious_sha=${result.previousSha ?? ''}\n`,
+            'utf8',
+          );
+          NODE
+
+      - name: Promotion result BLOCKED
+        if: ${{ steps.promote.outputs.status == 'BLOCKED' }}
+        run: |
+          echo 'Production promotion was blocked by governance policy.'
+          exit 1
+
+      - name: Promotion result DEPLOYED
+        if: ${{ steps.promote.outputs.status == 'DEPLOYED' }}
+        run: echo 'Production promotion completed for the authorized exact SHA.'
+
+      - name: Promotion result NOOP
+        if: ${{ steps.promote.outputs.status == 'NOOP' }}
+        run: echo 'Production already runs the authorized exact SHA; no provider mutation was required.'
+
+      - name: Promotion result RECOVERED
+        if: ${{ steps.promote.outputs.status == 'RECOVERED' }}
+        run: |
+          echo 'Production promotion failed readiness and recovered the previous healthy SHA.'
+          exit 1
