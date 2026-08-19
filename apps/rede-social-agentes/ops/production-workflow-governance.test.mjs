@@ -10,18 +10,6 @@ const workflowPath = resolve(
   '../../.github/workflows/mcf-runtime-production-deploy.yml',
 );
 
-const targetShaInput = 'AUTHORIZATION_TARGET_SHA: ${{ inputs.authorization_target_sha }}';
-const derivedTargetSha = 'AUTHORIZATION_TARGET_SHA: ${{ inputs.release_sha }}';
-const runtimeSecret = 'MCF_PRODUCTION_RUNTIME_URL: ${{ secrets.MCF_PRODUCTION_RUNTIME_URL }}';
-const deployHookSecret =
-  'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK_URL }}';
-const runtimeInput = 'MCF_PRODUCTION_RUNTIME_URL: ${{ inputs.';
-const deployHookInput = 'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ inputs.';
-const policyCommand =
-  'run: node .mcf-control-plane/apps/rede-social-agentes/ops/production-promotion-policy.mjs';
-const stagingCommand =
-  'run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs';
-
 async function productionWorkflow() {
   return readFile(workflowPath, 'utf8');
 }
@@ -36,7 +24,6 @@ function excludes(workflow, unexpected) {
 
 test('production workflow has no automatic main, pull request, schedule, or workflow-run trigger', async () => {
   const workflow = await productionWorkflow();
-
   includes(workflow, 'name: MCF Runtime Production Deploy');
   includes(workflow, 'workflow_dispatch:');
   excludes(workflow, '\n  push:');
@@ -47,55 +34,55 @@ test('production workflow has no automatic main, pull request, schedule, or work
   includes(workflow, 'cancel-in-progress: false');
 });
 
-test('production workflow keeps release SHA and delegated gate SHA independently bound', async () => {
+test('dispatch supplies locators only and cannot manufacture production authorization', async () => {
   const workflow = await productionWorkflow();
-
   includes(workflow, 'release_sha:');
-  includes(workflow, 'authorization_target_sha:');
-  includes(workflow, 'required: true');
-  includes(workflow, 'RELEASE_SHA: ${{ inputs.release_sha }}');
-  includes(workflow, targetShaInput);
-  excludes(workflow, derivedTargetSha);
-  includes(workflow, 'AUTHORIZATION_STATE: AUTHORIZED');
-  includes(workflow, 'HUMAN_AUTHORITY: LEANDRO');
-  includes(workflow, 'AUTHORIZATION_SOURCE_DECISION: MCF-DEC-031');
-  includes(workflow, 'OPERATIONAL_GATE: LEO');
-  includes(workflow, 'GATE_DECISION: APPROVE');
+  includes(workflow, 'mission_id:');
+  includes(workflow, 'phase_id:');
+  excludes(workflow, 'authorization_target_sha:');
+  excludes(workflow, 'AUTHORIZATION_STATE: AUTHORIZED');
+  excludes(workflow, 'HUMAN_AUTHORITY: LEANDRO');
+  excludes(workflow, 'AUTHORIZATION_SOURCE_DECISION: MCF-DEC-031');
+  excludes(workflow, 'OPERATIONAL_GATE: LEO');
+  excludes(workflow, 'GATE_DECISION: APPROVE');
+});
+
+test('production workflow resolves authorization from protected MCF control plane', async () => {
+  const workflow = await productionWorkflow();
+  includes(workflow, 'MCF_CONTROL_PLANE_URL: ${{ secrets.MCF_CONTROL_PLANE_URL }}');
+  includes(workflow, 'MCF_RUNTIME_TOKEN: ${{ secrets.MCF_RUNTIME_TOKEN }}');
+  includes(workflow, 'resolveProductionAuthorization');
+  includes(workflow, 'missionId: process.env.MISSION_ID');
+  includes(workflow, 'phaseId: process.env.PHASE_ID');
+  includes(workflow, "resolution.state === 'AUTHORIZED'");
 });
 
 test('production workflow uses protected provider configuration and never accepts provider secrets as inputs', async () => {
   const workflow = await productionWorkflow();
-
-  includes(workflow, runtimeSecret);
-  includes(workflow, deployHookSecret);
-  excludes(workflow, runtimeInput);
-  excludes(workflow, deployHookInput);
+  includes(workflow, 'MCF_PRODUCTION_RUNTIME_URL: ${{ secrets.MCF_PRODUCTION_RUNTIME_URL }}');
+  includes(workflow, 'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK_URL }}');
+  excludes(workflow, 'MCF_PRODUCTION_RUNTIME_URL: ${{ inputs.');
+  excludes(workflow, 'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ inputs.');
   includes(workflow, 'permissions:\n  contents: read');
 });
 
-test('production workflow executes policy from trusted control plane against exact release checkout', async () => {
+test('production workflow executes trusted policy against exact release checkout', async () => {
   const workflow = await productionWorkflow();
-
   includes(workflow, 'Checkout trusted production control plane');
   includes(workflow, 'ref: ${{ github.workflow_sha }}');
   includes(workflow, 'path: .mcf-control-plane');
   includes(workflow, 'Checkout exact production release revision');
   includes(workflow, 'ref: ${{ inputs.release_sha }}');
   includes(workflow, 'path: .mcf-release');
-  includes(workflow, policyCommand);
-  excludes(workflow, stagingCommand);
+  includes(workflow, "import { orchestrateProductionPromotion }");
+  excludes(workflow, 'run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs');
 });
 
 test('production workflow exposes explicit blocked, deployed, noop, and recovered outcomes', async () => {
   const workflow = await productionWorkflow();
-
   includes(workflow, 'id: promote');
   includes(workflow, 'Promotion result BLOCKED');
   includes(workflow, 'Promotion result DEPLOYED');
   includes(workflow, 'Promotion result NOOP');
   includes(workflow, 'Promotion result RECOVERED');
-  includes(workflow, "steps.promote.outputs.status == 'BLOCKED'");
-  includes(workflow, "steps.promote.outputs.status == 'DEPLOYED'");
-  includes(workflow, "steps.promote.outputs.status == 'NOOP'");
-  includes(workflow, "steps.promote.outputs.status == 'RECOVERED'");
 });

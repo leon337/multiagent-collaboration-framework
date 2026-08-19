@@ -7,8 +7,12 @@ on:
         description: Exact Git commit SHA to promote to production
         required: true
         type: string
-      authorization_target_sha:
-        description: Exact SHA bound to the delegated production authorization
+      mission_id:
+        description: Persisted MCF mission containing the applicable production authorization
+        required: true
+        type: string
+      phase_id:
+        description: Persisted MCF phase containing the applicable production gate evidence
         required: true
         type: string
 
@@ -43,41 +47,48 @@ jobs:
         with:
           node-version: 24.18.0
 
-      - name: Validate trusted production policy entrypoint
-        run: node .mcf-control-plane/apps/rede-social-agentes/ops/production-promotion-policy.mjs
+      - name: Validate trusted production policy entrypoints
+        run: |
+          node .mcf-control-plane/apps/rede-social-agentes/ops/production-authorization-resolver.mjs
+          node .mcf-control-plane/apps/rede-social-agentes/ops/production-promotion-policy.mjs
 
-      - name: Evaluate and execute governed exact-SHA promotion
+      - name: Resolve authorization and execute governed exact-SHA promotion
         id: promote
         env:
+          MCF_CONTROL_PLANE_URL: ${{ secrets.MCF_CONTROL_PLANE_URL }}
+          MCF_RUNTIME_TOKEN: ${{ secrets.MCF_RUNTIME_TOKEN }}
           MCF_PRODUCTION_RUNTIME_URL: ${{ secrets.MCF_PRODUCTION_RUNTIME_URL }}
           RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK_URL }}
           RELEASE_SHA: ${{ inputs.release_sha }}
-          AUTHORIZATION_TARGET_SHA: ${{ inputs.authorization_target_sha }}
-          AUTHORIZATION_STATE: AUTHORIZED
-          HUMAN_AUTHORITY: LEANDRO
-          AUTHORIZATION_SOURCE_DECISION: MCF-DEC-031
-          OPERATIONAL_GATE: LEO
-          GATE_DECISION: APPROVE
+          MISSION_ID: ${{ inputs.mission_id }}
+          PHASE_ID: ${{ inputs.phase_id }}
         run: |
           node --input-type=module <<'NODE'
           import { appendFileSync } from 'node:fs';
+          import { resolveProductionAuthorization } from './.mcf-control-plane/apps/rede-social-agentes/ops/production-authorization-resolver.mjs';
           import { orchestrateProductionPromotion } from './.mcf-control-plane/apps/rede-social-agentes/ops/production-promotion-policy.mjs';
 
-          const authorization = {
-            state: process.env.AUTHORIZATION_STATE,
-            humanAuthority: process.env.HUMAN_AUTHORITY,
-            sourceDecision: process.env.AUTHORIZATION_SOURCE_DECISION,
-            targetSha: process.env.AUTHORIZATION_TARGET_SHA,
-            operationalGate: process.env.OPERATIONAL_GATE,
-            gateDecision: process.env.GATE_DECISION,
-          };
-
-          const result = await orchestrateProductionPromotion({
-            runtimeUrl: process.env.MCF_PRODUCTION_RUNTIME_URL ?? '',
-            deployHookUrl: process.env.RENDER_PRODUCTION_DEPLOY_HOOK_URL ?? '',
+          const resolution = await resolveProductionAuthorization({
+            controlPlaneUrl: process.env.MCF_CONTROL_PLANE_URL ?? '',
+            runtimeToken: process.env.MCF_RUNTIME_TOKEN ?? '',
+            missionId: process.env.MISSION_ID ?? '',
+            phaseId: process.env.PHASE_ID ?? '',
             releaseSha: process.env.RELEASE_SHA ?? '',
-            authorization,
           });
+
+          const result =
+            resolution.state === 'AUTHORIZED'
+              ? await orchestrateProductionPromotion({
+                  runtimeUrl: process.env.MCF_PRODUCTION_RUNTIME_URL ?? '',
+                  deployHookUrl: process.env.RENDER_PRODUCTION_DEPLOY_HOOK_URL ?? '',
+                  releaseSha: process.env.RELEASE_SHA ?? '',
+                  authorization: resolution,
+                })
+              : {
+                  status: 'BLOCKED',
+                  reason: resolution.reason,
+                  releaseSha: process.env.RELEASE_SHA ?? '',
+                };
 
           if (!process.env.GITHUB_OUTPUT) {
             throw new Error('GITHUB_OUTPUT is required.');
@@ -85,7 +96,7 @@ jobs:
 
           appendFileSync(
             process.env.GITHUB_OUTPUT,
-            `status=${result.status}\nrelease_sha=${result.releaseSha}\nprevious_sha=${result.previousSha ?? ''}\n`,
+            `status=${result.status}\nreason=${result.reason ?? ''}\nrelease_sha=${result.releaseSha}\nprevious_sha=${result.previousSha ?? ''}\n`,
             'utf8',
           );
           NODE
