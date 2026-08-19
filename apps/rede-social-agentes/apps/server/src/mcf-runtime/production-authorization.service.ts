@@ -60,9 +60,7 @@ export interface ProductionAuthorizationGranted {
   evidenceRef: string;
 }
 
-export type ProductionAuthorizationResolution =
-  | ProductionAuthorizationBlocked
-  | ProductionAuthorizationGranted;
+export type ProductionAuthorizationResolution = ProductionAuthorizationBlocked | ProductionAuthorizationGranted;
 
 interface HumanProductionAuthorization {
   sourceRef: string;
