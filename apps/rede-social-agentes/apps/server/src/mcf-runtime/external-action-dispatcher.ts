@@ -14,6 +14,7 @@ import type { ExternalActionLedger } from './external-action-ledger.js';
 const durableExecutionBoundaryAdapters = new Set([
   'github-pr-collaboration-write-v1',
   'github-actions-staging-deploy-v1',
+  'render-production-promotion-v1',
 ]);
 const unknownPersistenceAttempts = 3;
 
@@ -103,15 +104,11 @@ export class ExternalActionDispatcher {
 
     const durableBoundary = durableExecutionBoundaryAdapters.has(adapter.adapterId);
     if (durableBoundary) {
-      // Establish a durable boundary before adapters that can trigger an
-      // externally mutating workflow are allowed to execute. An expired
-      // EXECUTING attempt is reconciled as UNKNOWN, never blindly retried.
       try {
         await this.ledger.recordExecuting(attemptId);
       } catch (error) {
         const failure = failureFromError(error);
         try {
-          // No adapter call has occurred yet, so this is definitively pre-write.
           await this.ledger.recordFailed(attemptId, failure);
         } catch (ledgerError) {
           return {
@@ -139,8 +136,6 @@ export class ExternalActionDispatcher {
     } catch (error) {
       const failure = failureFromError(error);
       try {
-        // Adapter errors are required to represent definitively-not-applied
-        // failures. Ambiguous/post-write outcomes must be returned as PARTIAL.
         await this.ledger.recordFailed(attemptId, failure);
       } catch (ledgerError) {
         return {
@@ -163,9 +158,6 @@ export class ExternalActionDispatcher {
       await this.ledger.recordExecuted(attemptId, receipt);
       return { status: 'EXECUTED', adapterId: adapter.adapterId, attemptId, receipt };
     } catch (error) {
-      // The adapter already returned a receipt. Never convert a persistence
-      // failure here into FAILED: the provider mutation may be fully applied.
-      // UNKNOWN is returned only after that ambiguity is durable in the ledger.
       const failure = unknownFailure(error);
       await this.recordUnknownDurably(attemptId, receipt, failure);
       return { status: 'UNKNOWN', adapterId: adapter.adapterId, attemptId, receipt, failure };
