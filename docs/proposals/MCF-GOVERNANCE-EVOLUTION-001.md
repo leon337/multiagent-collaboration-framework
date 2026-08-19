@@ -819,3 +819,9 @@ PRODUCTION.......................... BLOCKED
 The next allowed step is **review/audit of this v2 redesign** and, if accepted, authorization of bounded GOV-0/GOV-1 design work.
 
 No implementation boundary is created by v2 itself.
+
+---
+
+## 23. Audit provenance
+
+This v2 redesign was produced from the conservative union of two independent audits supplied by LEANDRO against the same v1 proposal target. The canonical consolidated mapping is preserved in `MCF-GOVERNANCE-EVOLUTION-001-AUDIT-SYNTHESIS.md`; individual auditor verdicts remain evidence inputs and are not rewritten into a false single-auditor history.
