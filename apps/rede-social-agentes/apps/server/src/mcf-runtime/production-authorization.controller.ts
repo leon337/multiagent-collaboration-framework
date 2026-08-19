@@ -83,7 +83,11 @@ export class ProductionAuthorizationController {
     operationalGate: 'LEO';
     targetSha: string;
   }> {
-    const input = parseBody<RecordLeoOperationalGateRequest>(operationalGateSchema, body, request.id);
+    const input = parseBody<RecordLeoOperationalGateRequest>(
+      operationalGateSchema,
+      body,
+      request.id,
+    );
     try {
       return await this.productionAuthorization.recordLeoOperationalGate(input);
     } catch (error) {
