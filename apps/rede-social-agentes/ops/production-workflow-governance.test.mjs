@@ -10,17 +10,14 @@ const workflowPath = resolve(
   '../../.github/workflows/mcf-runtime-production-deploy.yml',
 );
 
-const targetShaInput =
-  'AUTHORIZATION_TARGET_SHA: ${{ inputs.authorization_target_sha }}';
+const targetShaInput = 'AUTHORIZATION_TARGET_SHA: ${{ inputs.authorization_target_sha }}';
 const derivedTargetSha = 'AUTHORIZATION_TARGET_SHA: ${{ inputs.release_sha }}';
-const runtimeSecret =
-  'MCF_PRODUCTION_RUNTIME_URL: ${{ secrets.MCF_PRODUCTION_RUNTIME_URL }}';
-const deployHookSecret =
-  'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK_URL }}';
-const policyCommand =
-  'run: node .mcf-control-plane/apps/rede-social-agentes/ops/production-promotion-policy.mjs';
-const stagingCommand =
-  'run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs';
+const runtimeSecret = 'MCF_PRODUCTION_RUNTIME_URL: ${{ secrets.MCF_PRODUCTION_RUNTIME_URL }}';
+const deployHookSecret = 'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK_URL }}';
+const runtimeInput = 'MCF_PRODUCTION_RUNTIME_URL: ${{ inputs.';
+const deployHookInput = 'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ inputs.';
+const policyCommand = 'run: node .mcf-control-plane/apps/rede-social-agentes/ops/production-promotion-policy.mjs';
+const stagingCommand = 'run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs';
 
 async function productionWorkflow() {
   return readFile(workflowPath, 'utf8');
@@ -68,8 +65,8 @@ test('production workflow uses protected provider configuration and never accept
 
   includes(workflow, runtimeSecret);
   includes(workflow, deployHookSecret);
-  excludes(workflow, 'MCF_PRODUCTION_RUNTIME_URL: ${{ inputs.');
-  excludes(workflow, 'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ inputs.');
+  excludes(workflow, runtimeInput);
+  excludes(workflow, deployHookInput);
   includes(workflow, 'permissions:\n  contents: read');
 });
 
