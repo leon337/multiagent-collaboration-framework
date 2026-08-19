@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { DatabaseService } from '../database.service.js';
+import type { DatabaseService } from '../database.service.js';
 import type { McfEventInput } from './mcf-runtime.repository.js';
 import type { ProductionGateEventStore } from './production-authorization.service.js';
 
