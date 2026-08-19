@@ -15,6 +15,17 @@ function authorizationFor(targetSha = releaseSha) {
     targetSha,
     operationalGate: 'LEO',
     gateDecision: 'APPROVE',
+    provenance: 'MCF_RUNTIME_PERSISTED_AUTHORIZATION',
+    authorizationId: 'MCF-DEC-031',
+    evidenceRef: 'mcf://event/gate-approved/123',
+  };
+}
+
+function canonicalRuntimeAuthorization(targetSha = releaseSha) {
+  return {
+    ...authorizationFor(targetSha),
+    sourceDecision: 'human:leandro:production:decision-001',
+    authorizationId: 'human:leandro:production:decision-001',
   };
 }
 
@@ -90,6 +101,34 @@ test('main update without applicable production authorization cannot move produc
     releaseSha,
   });
   assert.equal(externalCalls, 0);
+});
+
+test('canonical runtime decision ref is accepted without hardcoded decision identity', async () => {
+  const { evaluateProductionPromotion } = await loadPolicy();
+  const decision = evaluateProductionPromotion({
+    releaseSha,
+    authorization: canonicalRuntimeAuthorization(),
+  });
+
+  assert.deepEqual(decision, {
+    allowed: true,
+    reason: 'AUTHORIZED_EXACT_SHA',
+    releaseSha,
+  });
+});
+
+test('authorized-looking payload without canonical runtime provenance is rejected', async () => {
+  const { evaluateProductionPromotion } = await loadPolicy();
+  const authorization = canonicalRuntimeAuthorization();
+  delete authorization.provenance;
+
+  const decision = evaluateProductionPromotion({ releaseSha, authorization });
+
+  assert.deepEqual(decision, {
+    allowed: false,
+    reason: 'PRODUCTION_AUTHORIZATION_REQUIRED',
+    releaseSha,
+  });
 });
 
 test('authorization bound to a different SHA is rejected before provider access', async () => {
