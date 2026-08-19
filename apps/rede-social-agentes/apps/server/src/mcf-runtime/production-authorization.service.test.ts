@@ -100,7 +100,10 @@ function gateEvent(options?: {
 }): McfEventRecord {
   const decision = options?.decision ?? 'APPROVE';
   return {
-    id: decision === 'APPROVE' ? '33333333-3333-4333-8333-333333333333' : '44444444-4444-4444-8444-444444444444',
+    id:
+      decision === 'APPROVE'
+        ? '33333333-3333-4333-8333-333333333333'
+        : '44444444-4444-4444-8444-444444444444',
     missionId,
     phaseId,
     agentId: 'Leo',
