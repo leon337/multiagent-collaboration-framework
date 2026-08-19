@@ -60,7 +60,10 @@ test('production workflow resolves authorization from protected MCF control plan
 test('production workflow uses protected provider configuration and never accepts provider secrets as inputs', async () => {
   const workflow = await productionWorkflow();
   includes(workflow, 'MCF_PRODUCTION_RUNTIME_URL: ${{ secrets.MCF_PRODUCTION_RUNTIME_URL }}');
-  includes(workflow, 'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK_URL }}');
+  includes(
+    workflow,
+    'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PRODUCTION_DEPLOY_HOOK_URL }}',
+  );
   excludes(workflow, 'MCF_PRODUCTION_RUNTIME_URL: ${{ inputs.');
   excludes(workflow, 'RENDER_PRODUCTION_DEPLOY_HOOK_URL: ${{ inputs.');
   includes(workflow, 'permissions:\n  contents: read');
@@ -75,7 +78,10 @@ test('production workflow executes trusted policy against exact release checkout
   includes(workflow, 'ref: ${{ inputs.release_sha }}');
   includes(workflow, 'path: .mcf-release');
   includes(workflow, "import { orchestrateProductionPromotion }");
-  excludes(workflow, 'run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs');
+  excludes(
+    workflow,
+    'run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs',
+  );
 });
 
 test('production workflow exposes explicit blocked, deployed, noop, and recovered outcomes', async () => {
