@@ -77,7 +77,7 @@ test('workflow uses exact release checkout', async () => {
   includes(workflow, 'Checkout exact production release revision');
   includes(workflow, 'ref: ${{ inputs.release_sha }}');
   includes(workflow, 'path: .mcf-release');
-  includes(workflow, "import { orchestrateProductionPromotion }");
+  includes(workflow, 'import { orchestrateProductionPromotion }');
   excludes(
     workflow,
     'run: node .mcf-control-plane/apps/rede-social-agentes/ops/render-staging-deploy.mjs',
