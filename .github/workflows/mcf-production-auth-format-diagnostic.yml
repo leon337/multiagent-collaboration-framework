@@ -1,0 +1,53 @@
+name: MCF Production Auth Format Diagnostic
+
+on:
+  pull_request:
+    paths:
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/production-authorization.*'
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts'
+      - '.github/workflows/mcf-production-auth-format-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  canonical-format-diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+
+      - name: Print canonical formatting diff
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/production-authorization.controller.ts \
+            apps/server/src/mcf-runtime/production-authorization.controller.test.ts \
+            apps/server/src/mcf-runtime/production-authorization.repository.ts \
+            apps/server/src/mcf-runtime/production-authorization.repository.test.ts \
+            apps/server/src/mcf-runtime/production-authorization.service.ts \
+            apps/server/src/mcf-runtime/production-authorization.service.test.ts \
+            apps/server/src/mcf-runtime/mcf-runtime.module.ts
+          git diff -- \
+            apps/server/src/mcf-runtime/production-authorization.controller.ts \
+            apps/server/src/mcf-runtime/production-authorization.controller.test.ts \
+            apps/server/src/mcf-runtime/production-authorization.repository.ts \
+            apps/server/src/mcf-runtime/production-authorization.repository.test.ts \
+            apps/server/src/mcf-runtime/production-authorization.service.ts \
+            apps/server/src/mcf-runtime/production-authorization.service.test.ts \
+            apps/server/src/mcf-runtime/mcf-runtime.module.ts
