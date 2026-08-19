@@ -1,12 +1,19 @@
 import { orchestrateStagingDeployment } from './render-staging-deploy.mjs';
 
+function hasText(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 function hasApplicableAuthorization(authorization) {
   return (
     authorization?.state === 'AUTHORIZED' &&
     authorization?.humanAuthority === 'LEANDRO' &&
-    authorization?.sourceDecision === 'MCF-DEC-031' &&
     authorization?.operationalGate === 'LEO' &&
-    authorization?.gateDecision === 'APPROVE'
+    authorization?.gateDecision === 'APPROVE' &&
+    authorization?.provenance === 'MCF_RUNTIME_PERSISTED_AUTHORIZATION' &&
+    hasText(authorization?.sourceDecision) &&
+    hasText(authorization?.authorizationId) &&
+    hasText(authorization?.evidenceRef)
   );
 }
 
