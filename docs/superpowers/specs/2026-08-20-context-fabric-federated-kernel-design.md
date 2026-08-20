@@ -3,7 +3,7 @@
 **Mission:** `MCF-ARCHITECTURE-CONVERGENCE-001`  
 **Issue:** #147  
 **Date:** 2026-08-20  
-**Status:** `READY_FOR_LEANDRO_REVIEW`  
+**Status:** `DESIGN_APPROVED`  
 **Canonical:** `false`  
 **Implementation authorized:** `false`  
 **Production authorized:** `false`  
@@ -13,7 +13,7 @@
 
 Define the next MCF Context Fabric architecture after stabilization, with a first implementation boundary that can recover project identity and current context safely from a clean context without depending on chat memory, Mission Control, or a runtime database as canonical truth.
 
-This design consolidates the architecture approved section-by-section during mission discovery. It is still a review artifact: implementation remains a separate authorization boundary.
+This design consolidates the architecture approved section-by-section during mission discovery and approved as a written specification by LEANDRO. Implementation remains a separate authorization boundary.
 
 ## 2. Architectural decision
 
@@ -495,7 +495,11 @@ CONTEXT_FABRIC_COMPATIBLE_WITH_GOV_V2
 GOV_V2_ACTIVATED
 ```
 
-## 20. Implementation sequence after separate authorization
+## 20. Implementation sequence
+
+Implementation requires a separate authorization after the design and plan gates.
+
+Recommended order:
 
 ```text
 CF-0 — Contracts
@@ -532,67 +536,75 @@ later missions
  Mission Control
 ```
 
-## 21. First candidate implementation boundary
+The first candidate implementation boundary is only `CF-0 + minimal CF-1`:
 
-The first implementation mission, if separately authorized, should include only:
+- schemas;
+- one repository-native Registry;
+- one MCF Project Capsule;
+- validators;
+- deterministic recovery for one registered project;
+- characterization and contract tests.
 
-- CF-0 schemas and fixtures;
-- repository-native Project Registry structure;
-- one MCF Registry entry;
-- one `.mcf/project-capsule.yaml` for MCF;
-- schema validation;
-- minimum Project Resolver/Registry/Capsule loading;
-- deterministic recovery for one project;
-- Context Recovery Receipt generation;
-- tests proving cold-start recovery and fail-closed behavior for missing required context.
-
-Explicitly excluded from the first boundary:
+Excluded from the first boundary:
 
 - database/migrations;
-- Mission Control;
 - provider mutation;
-- deployment;
-- Governance v2 activation;
-- Capability Registry implementation;
-- graph materialization.
-
-## 22. Reversibility
-
-The first boundary must be structurally reversible:
-
-- removing the recovery kernel does not mutate provider state;
-- removing runtime projections loses no canonical truth;
-- Registry and Capsule are versioned artifacts and can be reverted by ordinary Git history;
-- no production service depends on Context Fabric during the first boundary;
-- Mission Control remains optional and downstream.
-
-## 23. Acceptance criteria for the design
-
-The design is ready for implementation planning only when:
-
-1. subsystem ownership is unambiguous;
-2. Truth Contracts have a shared architectural home;
-3. Git-versioned Registry/Capsule persistence is accepted as canonical for identity/recovery metadata;
-4. live providers remain canonical for `LIVE_REQUIRED` operational truth;
-5. cold-start recovery is deterministic and auditable;
-6. material actions fail closed on missing required current context;
-7. runtime indexes are rebuildable projections;
-8. Governance v2 compatibility does not imply activation;
-9. the first implementation boundary is small, reversible and does not include Mission Control, DB migrations or provider mutation;
-10. LEANDRO explicitly approves this written specification.
-
-## 24. Authorization boundary
-
-Approval of this specification means **design approval only**.
-
-It does not authorize:
-
-- implementation;
-- schema/runtime changes;
-- merge to `main`;
-- Governance v2 activation;
-- release;
 - production deployment;
-- external provider effects.
+- Mission Control;
+- Governance v2 activation;
+- capability/knowledge graph implementation.
 
-A separate implementation mission/authorization is required before any code or runtime/schema change begins.
+## 21. Pre-implementation compatibility audit gate
+
+Before any implementation of the architecture described in this specification begins, the completed implementation plan must pass an explicit compatibility and regression audit against the current MCF behavior.
+
+The audit is a hard gate, not a post-implementation check. Its purpose is to prove that the proposed Context Fabric boundary can be introduced without silently changing the behavior, authority model, production governance, mission semantics, evidence flow or other current MCF guarantees that are outside this design's intended scope.
+
+At minimum, the audit must:
+
+1. re-read the live canonical current-state and governing protocol from the then-current trusted baseline;
+2. inventory current runtime, schema, workflow, authorization, event/evidence and deployment behaviors touched directly or indirectly by the plan;
+3. identify characterization tests and regression assertions that preserve those behaviors before new behavior is introduced;
+4. verify that the plan does not turn Mission Control, runtime cache or a database into a new canonical dependency;
+5. verify that provider mutations, production promotion and external-effect authorization remain unchanged unless separately authorized;
+6. verify that LEANDRO/LÉO authority boundaries and fail-closed behavior are preserved;
+7. verify that any proposed file/schema/runtime changes are additive or explicitly migration-safe for existing consumers;
+8. produce an auditable compatibility matrix with `PRESERVE`, `INTENTIONAL_CHANGE`, `NOT_TOUCHED` or `BLOCKED` classification for each material current behavior;
+9. block implementation if an unintended behavioral regression, unresolved compatibility risk or missing characterization test remains.
+
+Required invariant:
+
+```text
+PLAN_COMPLETE
+    +
+PRE_IMPLEMENTATION_AUDIT_PASS
+    +
+SEPARATE_IMPLEMENTATION_AUTHORIZATION
+    =
+IMPLEMENTATION_MAY_BEGIN
+```
+
+If the audit finds a conflict, the design and/or implementation plan must be revised and re-reviewed before implementation. No implementation-first discovery is permitted for a known compatibility uncertainty.
+
+## 22. Acceptance criteria
+
+The design is ready for implementation planning when:
+
+1. component ownership is unambiguous;
+2. Registry and Capsule persistence is repository-native and schema-validatable;
+3. Truth Contract semantics are shared and independent;
+4. clean-context recovery is deterministic;
+5. material actions fail closed on missing required live truth;
+6. runtime projections are disposable/rebuildable;
+7. Receipts remain evidence, not truth;
+8. drift cannot silently overwrite normative decisions;
+9. Governance v2 compatibility is explicit without activation;
+10. the first implementation boundary is small and reversible;
+11. validation includes repository-only cold start and regression scenarios;
+12. the mandatory pre-implementation compatibility audit gate is explicit and blocks code until passed.
+
+## 23. Authorization boundary
+
+This document is an approved architectural design artifact. It does not authorize code changes, schema changes, migration execution, provider mutation, production deployment, release publication, Governance v2 activation, Mission Control implementation or any external effect.
+
+Implementation planning may proceed. Implementation itself requires both the pre-implementation compatibility audit gate to pass and a separate implementation authorization.
