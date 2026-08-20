@@ -1,0 +1,3 @@
+NAO_APLICAVEL
+
+Reason: this phase is a repository/governance critical review only. No v1.2 runtime code, deployment, migration or provider change was authorized or executed, therefore runtime smoke testing is not applicable at this checkpoint.
