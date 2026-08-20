@@ -1,0 +1,24 @@
+PHASE-V12-CRITICAL-REVIEW FULL VALIDATION
+
+Mission: MCF-V1.2-CRITICAL-REVIEW-001
+Branch: audit/mcf-v1.2-critical-review-001
+Source main: 439da7b6479718f6545144954937b8c4358d7c46
+Technical v1.1 baseline candidate: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+
+Evidence checked:
+1. main live branch head and protection state.
+2. v1.1 merge commit message and lineage.
+3. compare v1.1 merge -> current main: ahead_by=9, behind_by=0.
+4. changed files after v1.1 merge: architecture/governance/proposals/validation/schema only; no runtime file path changed.
+5. docs/MCF-CURRENT-STATE.md remains reconciled around v1.0.0 and is stale for post-v1.1 current-state claims.
+6. post-v1.1 drafts explicitly mark canonical=false / implementation_authorized=false where applicable.
+7. Capability Registry foundation is schema-only and incomplete for runtime authorization semantics.
+8. Validation Suite foundation is behavioral intent, not executable qualification.
+9. decision presentation requirement (A/B/C + one marked MESTRE recommendation) comes from current explicit LEANDRO authority and requires durable enforcement.
+10. main is not branch-protected and has required status check enforcement off.
+
+Verdict:
+- Continue critical design/correction: GO_WITH_CORRECTIONS
+- Canonicalize current draft wholesale: NO_GO
+- Begin v1.2 runtime implementation now: NO_GO
+- Preserve and qualify rollback to v1.1: REQUIRED
