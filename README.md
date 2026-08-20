@@ -2,13 +2,13 @@
 
 O **MCF** é um framework para coordenação governada de agentes de IA, com papéis explícitos, seleção por competência, execução rastreável, handoffs, skills versionadas, runtime persistente, evidência verificável, recuperação de falhas e gates de autoridade.
 
-> **Estado documental:** reconciliado contra código, workflows, releases e evidências do GitHub. Branches, SHAs de branch, `latest`, estados de PR/Issue, metadados mutáveis de Release e SHAs reportados por deploy são valores voláteis e devem ser lidos no GitHub/provider live. O mapa canônico está em [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md).
+> **Estado documental:** o mapa canônico está em [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md). Branch heads, `latest`, estados de PR/Issue, workflows, metadados mutáveis de Release e SHAs/status reportados por providers são valores voláteis e devem ser lidos no GitHub/provider live.
 
 ## O que existe hoje
 
 ### `CURRENT_IMPLEMENTED`
 
-O MCF possui **runtime executável**, não apenas metodologia documental.
+O MCF possui runtime executável, não apenas metodologia documental.
 
 Código principal:
 
@@ -38,65 +38,105 @@ Evidence Validator + receipts + event ledger
 handoff / CAF / gate / checkpoint
 ```
 
-Capacidades comprovadas no lineage atual incluem:
+Capacidades comprovadas incluem:
 
 - missões, fases, eventos, receipts e handoffs persistentes;
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - dispatcher de ações externas e adapters com evidência verificável;
-- **16 skills registradas, 16 executáveis, 0 apenas documentais**;
+- **16 skills registradas, 16 executáveis, 0 apenas documentais** no lineage qualificado;
 - leitura de revisão de código e CI;
-- escrita GitHub reversível e Gate C real concluído;
-- staging/deploy com verificação de SHA, readiness/version e recovery por redeploy;
+- escrita GitHub reversível e gates operacionais governados;
+- staging com verificação de SHA, readiness/version e recovery por redeploy;
 - observabilidade de missões bloqueadas;
 - Production Readiness automatizado;
-- produção pública materializada no lineage qualificado da RC3;
-- publicação estável `v1.0.0` concluída no mesmo SHA qualificado da RC3.
+- produção pública materializada;
+- promoção de produção governada por autorização persistida + gate operacional + SHA exato;
+- `main` protegida e produção desacoplada de alterações comuns no branch.
 
 Fontes: [`docs/runtime/`](docs/runtime/), [`skills/registry.yaml`](skills/registry.yaml), [`artifacts/phases/`](artifacts/phases/) e [workflows](.github/workflows/).
 
-## Estado verificável: identidade durável vs. estado volátil
+## Estado reconciliado
+
+Snapshot documental reconciliado em 2026-08-20:
 
 ```yaml
+current_reconciliation:
+  main: 1a1e57208991db87bb3bac9267e29706caae7243
+  main_protected: true
+
 durable_release_identity:
-  rc3: v1.0.0-RC3@7f741e10d0e745a90c732e084400b11e3f5e6794
   stable_v1_0_0: v1.0.0@7f741e10d0e745a90c732e084400b11e3f5e6794
-publication_evidence:
-  publisher_head_at_publication: f6d3955740dec0a43172b8bd8127e208eb727bf6
-  human_approval_commit: 786d2535b70584762b45ae0512d43872d492b715
-  consumption_lock: 22548bed68df93819a65d26027da353eeb0f8285
-live_github_state:
-  main: READ_GITHUB_LIVE
-  release_metadata: READ_GITHUB_LIVE
-  latest: READ_GITHUB_LIVE
-  issue_131_state: READ_GITHUB_LIVE
-  pr_133_state: READ_GITHUB_LIVE
-live_provider_state:
-  production_health: READ_PROVIDER_LIVE
-  production_reported_commit: READ_PROVIDER_LIVE
-pre_merge_snapshot_2026_08_14:
-  main: 7f741e10d0e745a90c732e084400b11e3f5e6794
-  release: MCF v1.0.0
-  release_draft: false
-  release_prerelease: false
-  latest: v1.0.0
-  issue_131: CLOSED_COMPLETED
-  pr_133: CLOSED_UNMERGED
-  human_gate: CONSUMED_PROTECTED
+  stable_v1_1_0: v1.1.0@5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+  latest_release_metadata: READ_GITHUB_LIVE
+
+production_snapshot:
+  rsa_api_free:
+    auto_deploy: off
+    reported_commit: 439da7b6479718f6545144954937b8c4358d7c46
+  rsa_web_free:
+    auto_deploy: off
+    reported_commit: 439da7b6479718f6545144954937b8c4358d7c46
+  promotion_model: GOVERNED_EXACT_SHA
 ```
 
-A versão estável **`v1.0.0` foi publicada** no SHA exato da RC3. Esse vínculo de identidade é durável dentro do publication boundary.
+Esse snapshot é evidência datada, não uma promessa de valores futuros. Sempre releia o estado live para decisões operacionais.
 
-O bloco `pre_merge_snapshot_2026_08_14` é evidência datada. `main`, `latest`, metadados da Release, status de Issue/PR e estado/commit reportados por produção podem mudar posteriormente e devem ser lidos live.
+O tag `v1.1.0` resolve para o SHA exato `5d79f488407c77f7b9f21ecfefb41ddfb3a52aef`. A identidade de release não deve ser confundida com o HEAD atual de `main` nem com o commit atualmente executado pelo provider.
 
-Como `render.yaml` acompanha `main` com deploy condicionado a checks, uma integração apenas documental pode fazer o commit reportado pelo provider avançar sem alterar a árvore de código da aplicação/runtime.
+## Governança de produção
 
-## Governança
+Produção **não acompanha mais `main` automaticamente**.
+
+Fluxo atual:
+
+```text
+branch
+  ↓
+PR + CI + gates aplicáveis
+  ↓
+merge em main
+  ↓
+nenhum deploy automático
+
+necessidade de produção
+  ↓
+autorização canônica de LEANDRO para boundary/SHA
+  +
+gate operacional persistido de LÉO
+  +
+SHA exato
+  ↓
+workflow governado
+  ↓
+provider + health/readiness + evidência
+```
+
+Invariantes centrais:
+
+- `HUMAN_AUTHORITY != HUMAN_OPERATION`;
+- LEANDRO não é executor técnico padrão;
+- `MERGE_OR_MAIN_UPDATE != PRODUCTION_AUTHORIZATION`;
+- `MAIN_UPDATE != PRODUCTION_DEPLOY`;
+- `CI_GREEN != PRODUCTION_AUTHORIZATION`;
+- `DISPATCH_INPUT != AUTHORIZATION_PROOF`;
+- `EXACT_SHA_BINDING = REQUIRED`.
+
+A remediação foi integrada pelo PR #145 e resolveu a Issue #140. O PR #143 foi encerrado sem merge por ter sido substituído pela implementação limpa baseada no `main` atual.
+
+Arquivos principais:
+
+- [`.github/workflows/mcf-runtime-production-deploy.yml`](.github/workflows/mcf-runtime-production-deploy.yml)
+- [`render.yaml`](render.yaml)
+- [`production-authorization.service.ts`](apps/rede-social-agentes/apps/server/src/mcf-runtime/production-authorization.service.ts)
+- [`render-production-promotion.adapter.ts`](apps/rede-social-agentes/apps/server/src/mcf-runtime/render-production-promotion.adapter.ts)
+
+## Governança e agentes
 
 - **LEANDRO** — autoridade humana final; não é agente do MCF.
 - **LÉO** — agente com autoridade operacional delegada para continuidade e gates internos dentro do boundary vigente.
 - **MESTRE** — orquestrador responsável pela condução da missão e exposição do fluxo.
-- **Emily** — auditoria independente conforme os gatilhos aplicáveis.
+- agentes especialistas — ativados conforme competência, risco e boundary.
 
 Existem **29 agentes nomeados**, selecionados por competência. Essa composição descreve papéis/contratos do MCF; não prova 29 modelos cognitivos independentes em execução simultânea. LEANDRO não entra nessa contagem.
 
@@ -109,9 +149,9 @@ Princípios centrais:
 - ESEV para execução visível e verificável;
 - CAF para falhas recuperáveis;
 - PRF para fases Classe B/C;
-- gate e review vinculados ao estado/SHA aplicável;
-- LEANDRO não é executor técnico padrão;
-- ação externa irreversível ou publicação pública relevante exige autoridade compatível com o boundary.
+- gates/reviews vinculados ao estado e SHA aplicável;
+- LEANDRO não é operador técnico rotineiro;
+- ação externa irreversível ou publicação relevante exige autoridade compatível com o boundary.
 
 ## Skills
 
@@ -136,13 +176,33 @@ Skills atuais:
 | Gate D — staging/deploy | `HISTORICAL` + capacidade preservada | concluído |
 | Gate E | `HISTORICAL` | concluído |
 | `v1.0.0-RC1` | `HISTORICAL` | prerelease preservada |
-| Production Readiness pós-RC1 | `HISTORICAL` + workflow atual | concluído |
 | `v1.0.0-RC2` | `HISTORICAL` | prerelease preservada |
-| production boundary | `HISTORICAL` + capacidade preservada | concluído; health/deploy atual é live |
-| `v1.0.0-RC3` | `HISTORICAL` + identidade preservada | prerelease em `7f741e10…` |
-| `v1.0.0` | `CURRENT_IMPLEMENTED` | stable publicada em `7f741e10…`; `latest` deve ser lido live |
+| `v1.0.0-RC3` | `HISTORICAL` + identidade preservada | `7f741e10…` |
+| `v1.0.0` | identidade durável | `7f741e10…` |
+| `v1.1.0` | identidade durável | `5d79f488…` |
+| governança de produção pós-v1.1 | `CURRENT_IMPLEMENTED` | #140 resolvida via #145 |
 
-Detalhes: [`CHANGELOG.md`](CHANGELOG.md), [`docs/releases/`](docs/releases/) e decisões [`MCF-DEC-062`](docs/decisions/MCF-DEC-062-GATE-E-RELEASE-CANDIDATE.md), [`MCF-DEC-063`](docs/decisions/MCF-DEC-063-PRODUCTION-READINESS-POST-RC1.md) e [`MCF-DEC-064`](docs/decisions/MCF-DEC-064-QUALIFICACAO-DA-RELEASE-ESTAVEL-V1.0.0.md).
+`latest` e metadados mutáveis da página de Release devem ser lidos live.
+
+Detalhes históricos: [`CHANGELOG.md`](CHANGELOG.md), [`docs/releases/`](docs/releases/) e [`docs/decisions/`](docs/decisions/).
+
+## Arquitetura em evolução
+
+O checkpoint [`docs/architecture/ARCHITECTURAL_CHECKPOINT_004.md`](docs/architecture/ARCHITECTURAL_CHECKPOINT_004.md) continua uma arquitetura draft, não canônica e sem autorização de implementação.
+
+ZRCL, Context Fabric, Truth Contracts, Capability Registry, Artifact System e Validation Suite devem ser classificados conforme evidência real do componente; a existência de documentos/propostas não transforma automaticamente esse conjunto em arquitetura canônica implementada.
+
+## Mission Control
+
+A Issue #141 permanece em `DISCOVERY_IN_PROGRESS` com `implementation_authorized: false`.
+
+O Mission Control deve permanecer separado do Execution Plane e não pode se tornar segunda fonte de verdade. Discovery/alinhamento não autoriza implementação por si só.
+
+## Governance Evolution v2
+
+O PR #142 permanece `OPEN / DRAFT / NOT_CURRENT / NOT_IMPLEMENTATION_AUTHORIZED`.
+
+Design autorizado de GOV-0/GOV-1 não equivale a autorização de merge, runtime, schema, metodologia, release ou produção.
 
 ## Experimentos
 
@@ -151,23 +211,6 @@ Detalhes: [`CHANGELOG.md`](CHANGELOG.md), [`docs/releases/`](docs/releases/) e d
 O experimento encontrou evidência positiva de preservação/handoff no protocolo testado. A ressalva metodológica é obrigatória: **os papéis foram executados no mesmo ChatGPT**, portanto o resultado não comprova independência cognitiva real entre agentes.
 
 Fonte: [`experimentos/telefone-sem-fio-001/RESULTADO_FINAL.md`](experimentos/telefone-sem-fio-001/RESULTADO_FINAL.md).
-
-## NextGen — `UNDER_STUDY`
-
-Existe discovery separado na branch `planning/mcf-nextgen-discovery`.
-
-O checkpoint de discovery declara explicitamente que a arquitetura não está formalmente aprovada e que implementação/protótipo não estão autorizados. Project Capsule, novas camadas de memória, model routing, DAG/paralelismo, Interaction Center, novos profiles de maturidade/delivery, gateways, caching/rate limiting, hardening adicional, VPS portátil e demais propostas **não devem ser lidos como capacidades atuais** sem evidência no runtime vigente.
-
-A publicação de `v1.0.0` não altera essa classificação. A missão documental atual não implementa NextGen.
-
-## Limitações importantes
-
-- a identidade pública de releases é tratada como imutável por governança/proteções do publication boundary; isso não é apresentado como impossibilidade técnica absoluta de ação administrativa fora do boundary;
-- branch heads, `latest`, estados de PR/Issue, metadados mutáveis de Release e SHAs/status reportados por providers são voláteis e nunca devem ser inferidos de snapshots documentais;
-- uma integração documentation-only pode alterar o commit do branch/deploy sem alterar a árvore de código da aplicação/runtime;
-- recovery por SHA saudável não deve ser chamado de rollback nativo do provider quando isso não estiver comprovado;
-- contratos de agentes não equivalem automaticamente a isolamento cognitivo entre instâncias/modelos;
-- documentos de Gate/PRF antigos preservam o estado verdadeiro daquele momento e podem conter `BLOCKED`, `NOT_PUBLISHED`, `NOT_APPROVED` ou “próximo boundary”; essas ocorrências são **HISTORICAL** quando vinculadas ao boundary original.
 
 ## Mapa rápido
 
@@ -187,6 +230,12 @@ A publicação de `v1.0.0` não altera essa classificação. A missão documenta
 | Onde estão propostas? | [`docs/proposals/`](docs/proposals/) e branches de planning |
 | Qual é o índice completo? | [`docs/README.md`](docs/README.md) |
 
-## Regra de fonte de verdade
+## Regra de continuidade
 
-Antes de afirmar estado atual de branch, SHA, PR, Issue, workflow, produção, `latest`, metadados de Release ou deploy, consulte o **GitHub/provider live**. Documentos neste repositório são evidência e orientação; snapshots não substituem o estado real verificável.
+Antes de afirmar estado atual de branch, SHA, PR, Issue, workflow, produção, `latest`, Release ou deploy:
+
+1. leia a instrução atual de LEANDRO;
+2. consulte GitHub/provider live;
+3. use [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md) como mapa;
+4. confira código/testes/workflows/evidências do boundary ativo;
+5. nunca inferir produção a partir do HEAD de `main`.
