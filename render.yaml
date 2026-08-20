@@ -9,7 +9,7 @@ services:
     dockerfilePath: ./apps/rede-social-agentes/deploy/server.Dockerfile
     dockerContext: .
     healthCheckPath: /health/ready
-    autoDeployTrigger: checksPass
+    autoDeployTrigger: off
     envVars:
       - key: NODE_ENV
         value: production
@@ -49,7 +49,7 @@ services:
       pnpm --filter @rsa/contracts build &&
       pnpm --filter @rsa/web build
     staticPublishPath: ./apps/rede-social-agentes/apps/web/dist
-    autoDeployTrigger: checksPass
+    autoDeployTrigger: off
     envVars:
       - key: NODE_VERSION
         value: 24.18.0
