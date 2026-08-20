@@ -1,0 +1,45 @@
+mission_id: MCF-V1.2-CRITICAL-REVIEW-001
+phase_id: PHASE-V12-CRITICAL-REVIEW
+class: C
+cycle: 1
+status: EM_REVISAO
+objective_state: CRITICAL_REVIEW_COMPLETED_INITIAL_PASS
+source:
+  repository: leon337/multiagent-collaboration-framework
+  main_sha: 439da7b6479718f6545144954937b8c4358d7c46
+baseline:
+  v1_1_technical_candidate_sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+  stable_v1_1_release_proven: false
+post_v1_1_delta:
+  commits: 9
+  runtime_files_changed: false
+  nature: documentation_and_schema_only
+verdict:
+  design_continuation: GO_WITH_CORRECTIONS
+  v1_2_implementation: NO_GO
+  canonicalization: NO_GO
+critical_findings:
+  - current_state_documentation_drift
+  - stable_v1_1_baseline_not_yet_proven
+  - rollback_must_be_acceptance_criterion
+  - checkpoint_004_mixes_maturity_levels
+  - decision_presentation_contract_not_enforced
+approved_with_corrections:
+  - ZRCL_v0_3
+  - Context_Fabric_core
+  - Truth_Contracts
+  - Capability_Registry
+deferred:
+  - broad_graph_infrastructure
+  - broad_Concept_Memory
+  - Validation_Suite_runtime_until_specified
+  - wholesale_checkpoint_004_canonicalization
+new_requirement_candidates:
+  - three_options_plus_marked_mestre_recommendation
+  - silence_is_not_approval
+  - material_decision_provenance
+  - v1_1_to_v1_2_to_v1_1_recovery_test
+human_gate:
+  pending: true
+  reason: LEANDRO must choose next review/correction path before canonical implementation
+next_action: choose_next_option_for_correction_phase
