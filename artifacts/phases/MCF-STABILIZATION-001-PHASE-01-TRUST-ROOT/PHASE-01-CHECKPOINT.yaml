@@ -1,8 +1,8 @@
 mission_id: MCF-STABILIZATION-001
 phase_id: PHASE-01-TRUST-ROOT
 risk_class: C
-state: AGUARDANDO_DEPENDENCIA_EXTERNA
-cycle: 1
+state: BLOQUEADO_POR_RISCO
+cycle: 2
 human_authority: LEANDRO
 orchestrator: MESTRE
 working_branch: ops/mcf-stabilization-001
@@ -20,18 +20,52 @@ production_governance:
     merge_base_sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
     ahead_of_current_main: 59
     behind_current_main: 9
-    integration_state: DIVERGED
+    integration_state: DIVERGED_CLEAN_MERGEABILITY
+  workflow_gap:
+    github_environment_binding: absent
+    secret_scope_observed: secrets_direct_reference
+provider_live:
+  rsa_api_free:
+    service_id: srv-d9u5vnijobas73ecvlo0
+    branch: main
+    auto_deploy: true
+    auto_deploy_trigger: checksPass
+    live_sha: 439da7b6479718f6545144954937b8c4358d7c46
+    deploy_trigger: new_commit
+    deploy_id: dep-da38eeh6l8oc738ts8hg
+  rsa_web_free:
+    service_id: srv-d9og08142hec739btoi0
+    branch: main
+    auto_deploy: true
+    auto_deploy_trigger: checksPass
+    live_sha: 439da7b6479718f6545144954937b8c4358d7c46
+    deploy_trigger: new_commit
+    deploy_id: dep-da38eeh6l8oc738ts8h0
+impact:
+  functional_change_proven: false
+  reason: The 9 commits from stable v1.1.0 SHA to current main change only docs/** and schemas/capability.schema.yaml; no application/runtime path changed.
+  governance_violation_proven: true
 blockers:
+  - PRODUCTION_AUTODEPLOY_STILL_ACTIVE
   - TRUST_ROOT_UNPROTECTED
+  - PRODUCTION_CREDENTIAL_ENVIRONMENT_BOUNDARY_ABSENT
   - PR_143_DIVERGED_FROM_CURRENT_MAIN
-external_dependency:
-  control: github_branch_ruleset_or_equivalent
-  reason: connected GitHub action surface does not expose branch-protection/ruleset/environment-policy mutation
+external_dependencies:
+  - control: render_disable_autodeploy_existing_services
+    reason: connected Render action surface does not expose autoDeploy mutation for existing services
+  - control: github_branch_ruleset_or_equivalent
+    reason: connected GitHub action surface does not expose branch-protection/ruleset mutation
+  - control: github_production_environment_policy
+    reason: connected GitHub action surface does not expose environment-policy/secret-scope mutation
+required_checks:
+  - smoke
+  - foundation
+  - qualification
+  - production-candidate-readiness
 preserved_invariants:
   - MERGE_OR_MAIN_UPDATE != PRODUCTION_AUTHORIZATION
   - CI_GREEN != PRODUCTION_AUTHORIZATION
   - DISPATCH_INPUT != AUTHORIZATION_PROOF
   - EXACT_SHA_BINDING = REQUIRED
   - NO_CANONICAL_AUTHORIZATION => NO_PROVIDER_CALL
-  - PROVIDER_LIVE_UNTOUCHED
-next_action: Apply external GitHub trust-root protection to main, then re-read live protection state and reconcile PR #143 against current main.
+next_action: Disable Render auto-deploy for rsa-api-free and rsa-web-free, protect main, then re-read live containment state before reconciling PR #143.
