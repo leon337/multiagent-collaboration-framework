@@ -19,7 +19,8 @@ test('Render blueprint provisions a free API and static web without secrets in G
   assert.match(blueprint, /plan: free/u);
   assert.match(blueprint, /region: virginia/u);
   assert.match(blueprint, /healthCheckPath: \/health\/ready/u);
-  assert.match(blueprint, /autoDeployTrigger: checksPass/u);
+  assert.equal((blueprint.match(/autoDeployTrigger: off/gu) ?? []).length, 2);
+  assert.doesNotMatch(blueprint, /autoDeployTrigger: checksPass/u);
   assert.doesNotMatch(blueprint, /dockerCommand:/u);
   assert.match(
     dockerfile,

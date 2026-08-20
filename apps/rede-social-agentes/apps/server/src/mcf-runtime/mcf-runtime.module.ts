@@ -28,6 +28,13 @@ import { MissionV11ContextGuard } from './mission-v11-context.guard.js';
 import { OrderedMcfRuntimeRepository } from './ordered-mcf-runtime.repository.js';
 import { PermissionEngine } from './permission-engine.js';
 import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
+import { ProductionAuthorizationController } from './production-authorization.controller.js';
+import { ProductionAuthorizationRepository } from './production-authorization.repository.js';
+import {
+  PRODUCTION_GATE_EVENT_STORE,
+  ProductionAuthorizationService,
+  type ProductionGateEventStore,
+} from './production-authorization.service.js';
 import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 import { SkillExecutor } from './skill-executor.js';
 import { SkillRegistryLoader } from './skill-registry.loader.js';
@@ -45,6 +52,7 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     McfStagingDeployCallbackController,
     ChatRuntimeBridgeController,
     SocialTimelineController,
+    ProductionAuthorizationController,
   ],
   providers: [
     SkillRegistryLoader,
@@ -133,6 +141,21 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     {
       provide: MCF_RUNTIME_REPOSITORY,
       useExisting: OrderedMcfRuntimeRepository,
+    },
+    {
+      provide: ProductionAuthorizationRepository,
+      useFactory: (database: DatabaseService) => new ProductionAuthorizationRepository(database),
+      inject: [DatabaseService],
+    },
+    {
+      provide: PRODUCTION_GATE_EVENT_STORE,
+      useExisting: ProductionAuthorizationRepository,
+    },
+    {
+      provide: ProductionAuthorizationService,
+      useFactory: (repository: McfRuntimeRepository, gateStore: ProductionGateEventStore) =>
+        new ProductionAuthorizationService(repository, gateStore),
+      inject: [MCF_RUNTIME_REPOSITORY, PRODUCTION_GATE_EVENT_STORE],
     },
     {
       provide: SkillExecutor,
