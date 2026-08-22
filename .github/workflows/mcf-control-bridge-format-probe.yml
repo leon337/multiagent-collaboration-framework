@@ -1,9 +1,7 @@
 name: MCF Control Bridge Format Probe
 
 on:
-  push:
-    branches:
-      - team/mcf-control-bridge-integration-20260822
+  pull_request:
     paths:
       - apps/rede-social-agentes/apps/server/src/mcf-runtime/control-bridge-g2b.preparation.ts
       - .github/workflows/mcf-control-bridge-format-probe.yml
