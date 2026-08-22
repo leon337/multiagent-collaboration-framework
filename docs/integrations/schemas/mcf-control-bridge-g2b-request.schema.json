@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcf.local/schemas/mcf-control-bridge-g2b-request.schema.json",
+  "title": "MCF Control Bridge G2-B request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "request_id", "mission_id", "declared_actor", "project", "operation", "arguments"],
+  "properties": {
+    "protocol": { "const": "MCF_WORKSPACE_MUTATION_V1" },
+    "request_id": { "type": "string", "pattern": "^[A-Z0-9][A-Z0-9-]{0,127}$" },
+    "mission_id": { "const": "CONTROL-BRIDGE-G2B-PILOT" },
+    "declared_actor": { "const": "MESTRE_MCF" },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenant", "name", "environment"],
+      "properties": {
+        "tenant": { "type": "string", "minLength": 1, "maxLength": 63, "pattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 63, "pattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$" },
+        "environment": { "enum": ["dev", "staging"] }
+      }
+    },
+    "operation": { "enum": ["workspace.write", "rollback", "status", "revoke"] },
+    "arguments": { "type": "object" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "operation": { "const": "workspace.write" } } },
+      "then": {
+        "properties": {
+          "arguments": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "content", "precondition"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 },
+              "content": { "type": "string" },
+              "precondition": {
+                "oneOf": [
+                  { "type": "object", "additionalProperties": false, "required": ["state"], "properties": { "state": { "const": "ABSENT" } } },
+                  { "type": "object", "additionalProperties": false, "required": ["sha256"], "properties": { "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" } } }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "operation": { "const": "rollback" } } },
+      "then": {
+        "properties": {
+          "arguments": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["original_request_id"],
+            "properties": { "original_request_id": { "type": "string", "pattern": "^[A-Z0-9][A-Z0-9-]{0,127}$" } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "operation": { "enum": ["status", "revoke"] } } },
+      "then": { "properties": { "arguments": { "type": "object", "maxProperties": 0 } } }
+    }
+  ],
+  "$comment": "Derived from cloud-infrastructure G2-B protocol at fbef3d407dbd9b7947b6c100a63d098eaebe2b6a. This schema does not authorize execution. UTF-8 content byte limit 65536 remains an application validation requirement."
+}
