@@ -82,13 +82,7 @@ export interface PreparedControlBridgeG2bDispatch {
 }
 
 export type ControlBridgeG2bNormalizedOutcome =
-  | 'SUCCESS'
-  | 'REJECTED'
-  | 'CONFLICT'
-  | 'INFRA_ERROR'
-  | 'TIMEOUT'
-  | 'ROLLED_BACK'
-  | 'REVOKED';
+  'SUCCESS' | 'REJECTED' | 'CONFLICT' | 'INFRA_ERROR' | 'TIMEOUT' | 'ROLLED_BACK' | 'REVOKED';
 
 export interface ControlBridgeG2bNormalizedResult {
   outcome: ControlBridgeG2bNormalizedOutcome;
@@ -101,7 +95,10 @@ export interface ControlBridgeG2bNormalizedResult {
 }
 
 export class ControlBridgeG2bPreparationError extends Error {
-  constructor(readonly code: string, message: string) {
+  constructor(
+    readonly code: string,
+    message: string,
+  ) {
     super(message);
     this.name = 'ControlBridgeG2bPreparationError';
   }
