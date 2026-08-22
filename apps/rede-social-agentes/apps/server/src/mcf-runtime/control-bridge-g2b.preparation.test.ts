@@ -93,14 +93,20 @@ describe('Control Bridge G2-B preparation contract', () => {
 
   it('rejects a mission without authorization', () => {
     expectPreparationError(
-      () => prepareControlBridgeG2bDispatch(context({ permissionGranted: false }), { operation: 'status' }),
+      () =>
+        prepareControlBridgeG2bDispatch(context({ permissionGranted: false }), {
+          operation: 'status',
+        }),
       'MISSION_NOT_AUTHORIZED',
     );
   });
 
   it('rejects an invalid identity/governance context', () => {
     expectPreparationError(
-      () => prepareControlBridgeG2bDispatch(context({ agentId: ' MESTRE ' }), { operation: 'status' }),
+      () =>
+        prepareControlBridgeG2bDispatch(context({ agentId: ' MESTRE ' }), {
+          operation: 'status',
+        }),
       'INVALID_GOVERNANCE_CONTEXT',
     );
   });
@@ -116,7 +122,13 @@ describe('Control Bridge G2-B preparation contract', () => {
     expectPreparationError(
       () =>
         prepareControlBridgeG2bDispatch(
-          context({ project: { tenant: 'leon337', name: 'g2a-smoke', environment: 'production' as never } }),
+          context({
+            project: {
+              tenant: 'leon337',
+              name: 'g2a-smoke',
+              environment: 'production' as never,
+            },
+          }),
           { operation: 'status' },
         ),
       'OUT_OF_SCOPE',
@@ -137,10 +149,15 @@ describe('Control Bridge G2-B preparation contract', () => {
   });
 
   it('builds rollback and revoke commands without performing them', () => {
-    const rollback = prepared({ operation: 'rollback', originalRequestId: 'MCF-G2B-WRITE-0001' });
+    const rollback = prepared({
+      operation: 'rollback',
+      originalRequestId: 'MCF-G2B-WRITE-0001',
+    });
     const revoke = prepared({ operation: 'revoke' });
 
-    expect(rollback.request.arguments).toEqual({ original_request_id: 'MCF-G2B-WRITE-0001' });
+    expect(rollback.request.arguments).toEqual({
+      original_request_id: 'MCF-G2B-WRITE-0001',
+    });
     expect(revoke.request.arguments).toEqual({});
   });
 
@@ -167,7 +184,12 @@ describe('Control Bridge G2-B preparation contract', () => {
   it('fails closed when evidence digest is absent', () => {
     const dispatch = prepared();
     expectPreparationError(
-      () => normalizeControlBridgeG2bResult(dispatch, SOURCE_SHA, bridgeResult(dispatch, { request_digest: null })),
+      () =>
+        normalizeControlBridgeG2bResult(
+          dispatch,
+          SOURCE_SHA,
+          bridgeResult(dispatch, { request_digest: null }),
+        ),
       'EVIDENCE_MISSING',
     );
   });
@@ -175,7 +197,12 @@ describe('Control Bridge G2-B preparation contract', () => {
   it('fails closed on an inconsistent response', () => {
     const dispatch = prepared();
     expectPreparationError(
-      () => normalizeControlBridgeG2bResult(dispatch, SOURCE_SHA, bridgeResult(dispatch, { operation: 'revoke' })),
+      () =>
+        normalizeControlBridgeG2bResult(
+          dispatch,
+          SOURCE_SHA,
+          bridgeResult(dispatch, { operation: 'revoke' }),
+        ),
       'CORRELATION_MISMATCH',
     );
   });
@@ -194,7 +221,10 @@ describe('Control Bridge G2-B preparation contract', () => {
         normalizeControlBridgeG2bResult(
           dispatch,
           SOURCE_SHA,
-          bridgeResult(dispatch, { replayed: true, request_id: 'MCF-G2B-OTHER-0001' }),
+          bridgeResult(dispatch, {
+            replayed: true,
+            request_id: 'MCF-G2B-OTHER-0001',
+          }),
         ),
       'CORRELATION_MISMATCH',
     );
