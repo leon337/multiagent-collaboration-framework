@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcf.local/schemas/mcf-control-bridge-g2b-result.schema.json",
+  "title": "MCF Control Bridge G2-B public result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol","request_id","request_digest","mission_id","declared_actor","authority","transport_principal","grant_id","project","operation","path","started_at","finished_at","precondition","before","after","status","replayed","rollback_request_id","revocation_request_id","error"],
+  "properties": {
+    "protocol": { "const": "MCF_WORKSPACE_MUTATION_RESULT_V1" },
+    "request_id": { "type": ["string","null"] },
+    "request_digest": { "type": ["string","null"], "pattern": "^[0-9a-f]{64}$" },
+    "mission_id": { "type": ["string","null"] },
+    "declared_actor": { "type": ["string","null"] },
+    "authority": { "type": ["object","null"] },
+    "transport_principal": { "type": ["object","null"] },
+    "grant_id": { "type": ["string","null"] },
+    "project": { "type": ["object","null"] },
+    "operation": { "type": ["string","null"] },
+    "path": { "type": ["string","null"] },
+    "started_at": { "type": ["string","null"] },
+    "finished_at": { "type": ["string","null"] },
+    "precondition": { "type": ["object","null"] },
+    "before": { "type": ["object","null"] },
+    "after": { "type": ["object","null"] },
+    "status": { "enum": ["PASS","REFUSED","CONFLICT","FAILED","TIMEOUT","ROLLED_BACK","REVOKED"] },
+    "replayed": { "type": "boolean" },
+    "rollback_request_id": { "type": ["string","null"] },
+    "revocation_request_id": { "type": ["string","null"] },
+    "error": { "type": ["object","string","null"] }
+  },
+  "$comment": "Shape mirrors cloud-infrastructure RECEIPT_FIELDS/PUBLIC_RESULT_STATUSES at G2-B head fbef3d407dbd9b7947b6c100a63d098eaebe2b6a. Correlated MCF success additionally requires exact request/mission/actor/project/operation/SHA checks and evidence eligibility."
+}
