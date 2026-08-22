@@ -173,10 +173,7 @@ function argumentsFor(command: ControlBridgeG2bCommand): Record<string, unknown>
     }
     case 'rollback':
       if (!REQUEST_ID.test(command.originalRequestId)) {
-        return fail(
-          'INVALID_ORIGINAL_REQUEST_ID',
-          'rollback requires a valid original request id',
-        );
+        return fail('INVALID_ORIGINAL_REQUEST_ID', 'rollback requires a valid original request id');
       }
       return { original_request_id: command.originalRequestId };
     case 'status':
