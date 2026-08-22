@@ -136,7 +136,10 @@ function assertGovernanceContext(context: ControlBridgeG2bGovernanceContext): vo
   requireNonEmpty(context.permissionProfile, 'permissionProfile');
   requireNonEmpty(context.permissionRef, 'permissionRef');
   if (!context.permissionGranted || !context.authorizedScope) {
-    fail('MISSION_NOT_AUTHORIZED', 'permission and authorized scope are required before preparation');
+    fail(
+      'MISSION_NOT_AUTHORIZED',
+      'permission and authorized scope are required before preparation',
+    );
   }
   if (!COMMIT_SHA.test(context.sourceSha)) {
     fail('INVALID_SOURCE_SHA', 'sourceSha must be the exact lowercase 40-character commit SHA');
@@ -154,7 +157,10 @@ function argumentsFor(command: ControlBridgeG2bCommand): Record<string, unknown>
         return fail('INVALID_PATH', 'workspace.write requires a non-empty canonical path');
       }
       if (Buffer.byteLength(command.content, 'utf8') > 65_536) {
-        return fail('CONTENT_TOO_LARGE', 'workspace.write content exceeds the G2-B 65536-byte limit');
+        return fail(
+          'CONTENT_TOO_LARGE',
+          'workspace.write content exceeds the G2-B 65536-byte limit',
+        );
       }
       if ('sha256' in command.precondition && !SHA256.test(command.precondition.sha256)) {
         return fail('INVALID_PRECONDITION', 'sha256 precondition must be lowercase SHA-256');
@@ -167,7 +173,10 @@ function argumentsFor(command: ControlBridgeG2bCommand): Record<string, unknown>
     }
     case 'rollback':
       if (!REQUEST_ID.test(command.originalRequestId)) {
-        return fail('INVALID_ORIGINAL_REQUEST_ID', 'rollback requires a valid original request id');
+        return fail(
+          'INVALID_ORIGINAL_REQUEST_ID',
+          'rollback requires a valid original request id',
+        );
       }
       return { original_request_id: command.originalRequestId };
     case 'status':
@@ -264,7 +273,10 @@ export function normalizeControlBridgeG2bResult(
   if (value.mission_id !== G2B_PILOT_MISSION_ID || value.declared_actor !== G2B_DECLARED_ACTOR) {
     fail('CORRELATION_MISMATCH', 'bridge result mission or declared actor is inconsistent');
   }
-  if (value.operation !== prepared.request.operation || !sameProject(value.project, prepared.request.project)) {
+  if (
+    value.operation !== prepared.request.operation ||
+    !sameProject(value.project, prepared.request.project)
+  ) {
     fail('CORRELATION_MISMATCH', 'bridge result operation or project is inconsistent');
   }
   if (typeof value.request_digest !== 'string' || !SHA256.test(value.request_digest)) {
@@ -273,7 +285,10 @@ export function normalizeControlBridgeG2bResult(
   if (typeof value.replayed !== 'boolean') {
     fail('INVALID_RESPONSE', 'bridge result replay marker is missing or invalid');
   }
-  if (typeof value.status !== 'string' || !(G2B_STATUSES as readonly string[]).includes(value.status)) {
+  if (
+    typeof value.status !== 'string' ||
+    !(G2B_STATUSES as readonly string[]).includes(value.status)
+  ) {
     fail('INVALID_RESPONSE', 'bridge result status is unsupported');
   }
 
