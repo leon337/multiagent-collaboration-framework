@@ -1,10 +1,9 @@
 # MCF — Estado Atual e Mapa de Verdade
 
-**Classificação:** `CURRENT_IMPLEMENTED`  
+**Classificação:** `CURRENT_IMPLEMENTED` + `CURRENT_CANONICAL_DOCUMENTATION`  
 **Natureza:** mapa canônico de orientação; valores voláteis devem ser confirmados no GitHub/provider live  
-**Reconciliação:** 2026-08-20  
-**Reconciliação local adicional do boundary CF-0/CF-1:** 2026-08-23
-**Baseline desta reconciliação:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
+**Reconciliação:** 2026-08-23  
+**Baseline live anterior à MCF-DEC-053:** `main@f52485d2bff004df2f1c6b1eb787575d9ad5a8fc`
 
 ## 1. Regra de fonte de verdade
 
@@ -20,14 +19,17 @@ Em caso de divergência, use esta ordem:
 
 Classificações:
 
-- `CURRENT_IMPLEMENTED` — existe e possui evidência verificável;
+- `CURRENT_IMPLEMENTED` — existe e possui evidência verificável no runtime/boundary descrito;
+- `CURRENT_CANONICAL_DOCUMENTATION` — decisão/contrato canônico, podendo possuir implementação parcial explicitamente declarada;
 - `EXPERIMENTAL` — experimento, sem equivaler a capacidade geral;
 - `PLANNED` — boundary formal previsto, ainda não materializado;
 - `UNDER_STUDY` — discovery/proposta sem autorização de implementação;
 - `HISTORICAL` — verdade preservada de um boundary anterior;
 - `SUPERSEDED` — substituído por decisão/evidência posterior.
 
-## 2. Snapshot reconciliado em 2026-08-20
+## 2. Snapshot reconciliado de produção/runtime
+
+O snapshot de produção reconciliado em 2026-08-20 permanece evidência histórica datada:
 
 ```yaml
 reconciled_snapshot_2026_08_20:
@@ -51,23 +53,11 @@ reconciled_snapshot_2026_08_20:
     promotion_model: GOVERNED_EXACT_SHA
     github_environment: production
     environment_branch_boundary: main_only
-
-  governance_remediation:
-    issue_140: CLOSED_COMPLETED
-    pr_143: CLOSED_SUPERSEDED_UNMERGED
-    pr_145: MERGED
-    merge_sha: 1a1e57208991db87bb3bac9267e29706caae7243
-
-  active_nonimplementation_work:
-    issue_141_mission_control: DISCOVERY_IN_PROGRESS_IMPLEMENTATION_FALSE
-    pr_142_governance_v2: OPEN_DRAFT_NOT_CURRENT_NOT_IMPLEMENTATION_AUTHORIZED
 ```
 
-O snapshot acima foi verificado durante `MCF-STABILIZATION-001`. Qualquer valor mutável deve ser relido quando uma nova missão começar.
+Qualquer valor mutável deve ser relido quando uma nova missão começar.
 
 ### Evidência de separação entre `main` e produção
-
-Após o merge do PR #145, `main` avançou de `439da7b6…` para `1a1e5720…`. Os dois serviços de produção permaneceram em `439da7b6…`, sem novo deploy. Isso fornece evidência live do invariante:
 
 ```text
 MAIN_UPDATE != PRODUCTION_AUTHORIZATION
@@ -75,11 +65,9 @@ MAIN_UPDATE != PRODUCTION_DEPLOY
 CI_GREEN != PRODUCTION_AUTHORIZATION
 ```
 
-Produção não deve acompanhar `main` automaticamente. Uma promoção é uma ação separada, governada e vinculada a SHA exato.
+Produção não deve acompanhar `main` automaticamente. Uma promoção é ação separada, governada e vinculada a SHA exato.
 
 ## 3. Identidades duráveis de release
-
-As identidades de release não devem ser confundidas com o HEAD atual de `main` ou com o SHA atualmente reportado pelo provider.
 
 ```yaml
 durable_release_identity:
@@ -88,13 +76,11 @@ durable_release_identity:
   stable_v1_1_0: v1.1.0@5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
 ```
 
-O tag `v1.1.0` foi reconciliado contra `5d79f488407c77f7b9f21ecfefb41ddfb3a52aef` e é idêntico a esse SHA. Metadados mutáveis da página de Release e o conceito de `latest` continuam sendo leitura live.
-
-O snapshot de 2026-08-14 da publicação `v1.0.0` permanece `HISTORICAL`; ele não deve ser usado como estado atual de `main`, provider, PR ou Issue.
+Metadados mutáveis da página de Release e o conceito de `latest` continuam sendo leitura live.
 
 ## 4. O que o MCF é hoje
 
-O MCF é um framework multiagente com duas camadas complementares:
+O MCF possui duas camadas complementares:
 
 1. **governança e coordenação** — papéis, autoridade, gates, PRFs, handoffs, CAF, Human Delegation Firewall e evidência rastreável;
 2. **runtime executável** — persistência de missões/fases/eventos/receipts, skills executáveis, adapters externos, dispatcher, reconciliação, observabilidade e integrações de CI/deploy/GitHub.
@@ -115,22 +101,44 @@ Aplicação hospedeira:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - External Action Dispatcher e adapters com evidência;
-- 16 skills registradas, 16 executáveis, 0 somente documentais no lineage qualificado;
+- **16 skills executáveis** no `SkillExecutor`;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA/readiness/version e recovery por redeploy de SHA saudável;
 - observabilidade de missões bloqueadas;
-- Production Readiness automatizado com dependency audit, lint/typecheck, migrations, testes, build e backup/restore isolado;
+- Production Readiness automatizado;
 - produção pública materializada;
 - health monitoring de produção;
 - promoção de produção governada por autorização persistida + LÉO gate operacional + SHA exato;
 - `main` protegida por ruleset;
-- provider de produção desacoplado de alterações comuns em `main` por Auto-Deploy OFF;
-- GitHub Environment `production` como boundary de execução de produção.
+- provider de produção desacoplado de alterações comuns em `main` por Auto-Deploy OFF.
+
+### `CURRENT_CANONICAL_DOCUMENTATION` — MCF-DEC-053
+
+```yaml
+organization:
+  roster_named_agents: 49
+  human_authority_counted_as_agent: false
+  canonical_matrix: docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-49-AGENTES.md
+  individual_contracts: 49
+
+skills:
+  registered: 22
+  executable: 16
+  documental_only: 6
+
+new_divisions:
+  design_and_experience_engineering:
+    lead: Evelyn
+  ai_and_model_systems:
+    technical_lead: Tiago
+
+runtime_extension_for_new_skill_ids: PENDING_NOT_CLAIMED
+```
+
+As seis novas skills registradas por MCF-DEC-053 são documentais enquanto não forem adicionadas explicitamente ao `SkillExecutor` com evidência e testes. Registrar a skill no YAML não prova execução.
 
 ## 6. Governança de produção atual
-
-O PR #145 substituiu o histórico divergente do PR #143 e resolveu a Issue #140.
 
 Fluxo esperado:
 
@@ -152,10 +160,6 @@ gate operacional persistido de LÉO
 SHA exato
     ↓
 workflow de promoção governada
-    ↓
-provider
-    ↓
-health/readiness/evidência/receipt
 ```
 
 Invariantes atuais:
@@ -167,34 +171,34 @@ Invariantes atuais:
 - `DISPATCH_INPUT != AUTHORIZATION_PROOF`;
 - `EXACT_SHA_BINDING = REQUIRED`;
 - sem autorização canônica persistida, a promoção falha fechada;
-- sem gate operacional aplicável de LÉO, a promoção falha fechada;
-- provider mutation só ocorre depois da resolução autorizada.
-
-Arquivos principais:
-
-- `.github/workflows/mcf-runtime-production-deploy.yml`
-- `render.yaml`
-- `apps/rede-social-agentes/apps/server/src/mcf-runtime/production-authorization.service.ts`
-- `apps/rede-social-agentes/apps/server/src/mcf-runtime/render-production-promotion.adapter.ts`
-- `apps/rede-social-agentes/ops/production-authorization-resolver.mjs`
-- `apps/rede-social-agentes/ops/production-promotion-policy.mjs`
+- sem gate operacional aplicável de LÉO, a promoção falha fechada.
 
 ## 7. Agentes e skills
 
-A composição documental oficial contém **29 agentes nomeados**. LEANDRO é a autoridade humana final e não entra nessa contagem.
+A composição documental oficial contém **49 agentes nomeados**. LEANDRO é a autoridade humana final e não entra nessa contagem.
 
-Fontes:
+Fontes vigentes:
 
 - `docs/agentes/README.md`
-- `docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md`
+- `docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-49-AGENTES.md`
+- `docs/decisions/MCF-DEC-053-EXPANSAO-ORGANIZACIONAL-PARA-49-AGENTES.md`
 - `skills/registry.yaml`
+
+Fontes históricas preservadas:
+
+- `docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md`
+- MCF-DEC-050 na parte de composição anterior.
 
 Papéis centrais:
 
 - **LEANDRO** — autoridade humana final;
 - **LÉO** — autoridade operacional delegada nos boundaries permitidos;
 - **MESTRE** — orquestração da missão;
-- agentes especialistas — selecionados por competência e risco.
+- **Evelyn** — liderança de Design & Experience Engineering;
+- **Tiago** — liderança técnica de AI & Model Systems;
+- especialistas — selecionados dinamicamente por competência e risco.
+
+A cobertura de AI & Model Systems é explicitamente global/provider-neutral e inclui ecossistemas asiáticos, open weights, free APIs, routers, protocolos, self-hosting, harnesses e benchmarks quando material à missão.
 
 ## 8. Arquitetura em evolução
 
@@ -208,72 +212,28 @@ implementation_authorized: false
 
 As ideias de ZRCL, Capability Registry, Artifact System e Validation Suite podem existir como discovery/design/fundação documental sem equivaler a uma nova arquitetura canônica implementada.
 
-Não promover esses componentes, nem a arquitetura integral do checkpoint, a `CURRENT_IMPLEMENTED` sem decisão e evidência próprias.
+### Context Fabric CF-0 + CF-1 mínimo
 
-### Context Fabric CF-0 + CF-1 mínimo — boundary local em revisão
-
-Em 2026-08-23, a implementação autorizada de CF-0 + CF-1 mínimo foi concluída e verificada na branch isolada `codex/mcf-context-fabric-cf0-cf1`, sobre o Gate 0 em `027405348bec031edae0ac756643979e93a94452`.
-
-O boundary materializado contém somente:
-
-- contratos públicos aditivos `McfContext*` e quatro JSON Schemas isolados;
-- Registry canônico do MCF e Capsule local versionados no Git;
-- loader YAML estritamente read-only, resolução determinística de projeto, Truth Contracts e reconciliação fail-closed;
-- Context Recovery Receipt declaradamente `evidence_only`;
-- testes de contrato, schema, fixture, loader, resolução, verdade e recuperação.
-
-Estado preciso deste snapshot:
-
-```yaml
-context_fabric_cf0_cf1_minimum:
-  local_branch_status: IMPLEMENTED_AND_LOCALLY_VERIFIED
-  main_status: NOT_MERGED
-  push_status: NOT_PUSHED
-  production_status: NOT_AUTHORIZED_NOT_TOUCHED
-  runtime_wiring: NONE
-  provider_or_external_mutation: NONE
-  database_or_cache_canonicalization: NONE
-  live_provider_adapters: DEFERRED_CF2
-```
-
-Essa implementação local não torna todo o `ARCHITECTURAL_CHECKPOINT_004` canônico, não altera `main` e não autoriza merge, release, deploy ou produção. Fatos operacionais marcados `LIVE_REQUIRED` continuam exigindo verificação na fonte live proprietária.
+O boundary previamente registrado de CF-0/CF-1 mantém sua classificação própria. MCF-DEC-053 não altera automaticamente Context Fabric, produção, schemas, provider state ou release.
 
 ## 9. Mission Control
 
-Issue #141 permanece aberta em discovery.
-
-Estado vigente da própria contratação:
-
-```yaml
-state: DISCOVERY_IN_PROGRESS
-implementation_authorized: false
-```
-
-Mission Control deve continuar separado do Execution Plane e não pode virar segunda fonte de verdade. Nenhuma implementação deve começar apenas porque discovery ou arquitetura candidata existem.
+Issue #141 e qualquer estado mutável relacionado devem ser lidos live antes de afirmação operacional. Discovery/alinhamento não autoriza implementação por si só.
 
 ## 10. Governance Evolution v2
 
-PR #142 permanece uma proposta auditável, não o estado atual do MCF.
-
-Estado declarado:
-
-```text
-PROPOSED_V2
-NOT_CURRENT
-NOT_IMPLEMENTATION_AUTHORIZED
-```
-
-GOV-0/GOV-1 design autorizado anteriormente não implica autorização de merge, schema, runtime, metodologia, release ou produção.
+O estado de PRs de governança é volátil e deve ser lido live. Design autorizado não equivale automaticamente a autorização de merge, schema, runtime, metodologia, release ou produção.
 
 ## 11. Limitações e cuidados
 
 - `main`, `latest`, PRs, Issues, workflow runs e provider state são voláteis;
 - identidade de tag/release não é sinônimo de produção atual;
-- produção atualmente pode reportar um SHA diferente de `main` por design;
-- recovery por redeploy de SHA saudável não deve ser chamado de rollback nativo do provider sem evidência específica;
-- 29 contratos de agentes não provam 29 processos cognitivos independentes simultâneos;
+- produção pode reportar SHA diferente de `main` por design;
+- **49 contratos de agentes não provam 49 processos cognitivos independentes simultâneos**;
+- as seis novas skills de MCF-DEC-053 estão registradas, mas **NÃO EXECUTÁVEIS** no runtime atual;
+- ferramentas listadas para skills documentais não concedem permissão nem execução;
 - propostas/discovery não são implementação;
-- estados antigos `BLOCKED`, `NOT_APPROVED` ou `NOT_PUBLISHED` continuam verdadeiros quando lidos como `HISTORICAL` no boundary original.
+- claims de provider, benchmark ou free tier permanecem NÃO VERIFICADOS para uso operacional até evidência própria compatível.
 
 ## 12. Mapa documental
 
@@ -283,6 +243,7 @@ GOV-0/GOV-1 design autorizado anteriormente não implica autorização de merge,
 - runtime: `docs/runtime/` + `apps/rede-social-agentes/apps/server/src/mcf-runtime/`
 - governança: `docs/governanca/`, `docs/protocols/`, `docs/decisions/`
 - agentes: `docs/agentes/` e `docs/matrices/`
+- skills: `skills/registry.yaml`
 - releases: `docs/releases/` + GitHub tags/releases live
 - evidências/PRFs: `artifacts/phases/`, `docs/evidence/`, `docs/audits/`, `docs/auditoria/`
 - propostas/discovery: `docs/proposals/` e branches de planejamento
@@ -296,5 +257,6 @@ Ao retomar o projeto:
 3. leia este mapa;
 4. identifique o boundary/missão ativos;
 5. confira código, testes, workflows e evidências do SHA aplicável;
-6. mantenha propostas não implementadas como `PLANNED` ou `UNDER_STUDY`;
-7. nunca inferir produção a partir de `main` — leia o provider e o boundary de autorização separadamente.
+6. mantenha skills documentais como não executáveis até runtime/testes comprovarem o contrário;
+7. mantenha propostas não implementadas como `PLANNED` ou `UNDER_STUDY`;
+8. nunca inferir produção a partir de `main` — leia o provider e o boundary de autorização separadamente.
