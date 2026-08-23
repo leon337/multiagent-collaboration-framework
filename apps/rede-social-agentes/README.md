@@ -82,7 +82,9 @@ Endpoints locais:
 - web: `http://127.0.0.1:5173`;
 - API: `http://127.0.0.1:3000`;
 - liveness: `http://127.0.0.1:3000/health/live`;
-- readiness: `http://127.0.0.1:3000/health/ready`.
+- readiness: `http://127.0.0.1:3000/health/ready`;
+- Cloud context local read (disabled by default): `GET /v1/mcf/context/cloud/g2a`; see
+  `docs/integrations/MCF-CLOUD-CONTEXT-LOCAL-READ.md` from the repository root.
 
 ## Verificação
 
