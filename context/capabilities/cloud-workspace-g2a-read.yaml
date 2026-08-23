@@ -1,0 +1,54 @@
+schema_version: 1
+
+capability:
+  id: cloud.workspace.g2a.read
+  provider_project_id: cloud-infrastructure
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+    - triview-workspace-linux
+  mode: READ_ONLY
+
+contract:
+  protocol: MCF_WORKSPACE_CONTROL_V1
+  allowed_operations:
+    - git.branch
+    - git.diff
+    - git.head
+    - git.status
+    - project.get
+    - project.list
+    - workspace.list
+    - workspace.read
+    - workspace.stat
+  prohibited_operations:
+    - docker.socket
+    - git.mutate
+    - host.admin
+    - production.mutate
+    - shell.execute
+    - workspace.write
+
+scope:
+  environments:
+    - dev
+  resources:
+    - leon337/g2a-smoke/dev
+
+governance:
+  authorization_state: NOT_AUTHORIZED
+  required_gate: DEDICATED_FORCED_COMMAND_SSH_READ_TRANSPORT
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: DISCONNECTED
+  runtime_state: UNKNOWN
+  verification_state: HISTORICALLY_VERIFIED
+  last_verified_at: "2026-08-22T15:35:21+02:00"
+
+evidence:
+  - source_ref: repo://leon337/cloud-infrastructure/state/control-bridge-g2a.yaml
+    source_revision: 3e34044c0fb10429fe2f7a262dec21932479f143
+    observed_at: "2026-08-22T15:35:21+02:00"
+
+freshness: LIVE_REQUIRED

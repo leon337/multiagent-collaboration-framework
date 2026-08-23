@@ -1,0 +1,46 @@
+schema_version: 1
+
+capability:
+  id: mcf.context.recovery.read
+  provider_project_id: multiagent-collaboration-framework
+  consumer_project_ids:
+    - cloud-infrastructure
+    - cognitive-ledger
+    - triview-workspace-linux
+  mode: READ_ONLY
+
+contract:
+  protocol: MCF_CONTEXT_RECOVERY_HTTP_V1
+  allowed_operations:
+    - context.recover
+  prohibited_operations:
+    - mission.execute
+    - provider.write
+    - receipt.persist
+    - production.deploy
+
+scope:
+  environments:
+    - lab
+  resources:
+    - context/projects/*.yaml
+    - .mcf/project-capsule.yaml
+
+governance:
+  authorization_state: AUTHORIZED
+  required_gate: DEDICATED_CONTEXT_READ_TOKEN
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: CONNECTED
+  runtime_state: ACTIVE
+  verification_state: VERIFIED
+  last_verified_at: "2026-08-23T06:30:22.842Z"
+
+evidence:
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/mcf-context/mcf-context-recovery.controller.ts
+    source_revision: d5bbcfd79e41e5604071013a8c9ec6aa1b861591
+    observed_at: "2026-08-23T06:30:22.842Z"
+
+freshness: LIVE_REQUIRED
