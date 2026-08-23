@@ -1,0 +1,27 @@
+schema_version: 1
+
+project:
+  id: cloud-infrastructure
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/cloud-infrastructure
+  aliases:
+    - Cloud Infrastructure
+    - Infra
+    - VPS Infrastructure
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - state/current.yaml
+    - state/control-bridge-g2a.yaml
+    - state/control-bridge-g2b.yaml
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE

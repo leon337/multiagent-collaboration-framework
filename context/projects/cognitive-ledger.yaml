@@ -1,0 +1,25 @@
+schema_version: 1
+
+project:
+  id: cognitive-ledger
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/cognitive-ledger
+  aliases:
+    - Cognitive Ledger
+    - Ledger
+    - Memoria Cognitiva
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - supabase/functions/cognitive-ledger-api/index.ts
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
