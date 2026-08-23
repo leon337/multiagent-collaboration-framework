@@ -1,2 +1,0 @@
-scope_locked=true
-allowed_remaining_actions=pr,ci,review,fixes_required_by_ci_or_review,closeout
