@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Roadmap visual e checklist local para integrar MCF, Cloud Infrastructure, Cognitive Ledger e TriView Workspace Linux."
+      content="Painel visual do estado, evidências, próximos passos e gates da integração entre MCF, Cloud Infrastructure, Cognitive Ledger e TriView Workspace Linux."
     />
     <title>Roadmap de Integração do Ecossistema MCF</title>
     <style>
@@ -1385,6 +1385,11 @@
           padding: 10px 0;
         }
 
+        .topbar nav {
+          width: 100%;
+          max-width: 100%;
+        }
+
         .nav-list {
           width: 100%;
           max-width: none;
@@ -1565,23 +1570,23 @@
     <main id="conteudo">
       <section class="hero shell" id="topo">
         <p class="eyebrow">
-          <span class="dot" aria-hidden="true"></span> Snapshot 23 ago 2026 ·
-          visualização não canônica
+          <span class="dot" aria-hidden="true"></span>
+          Snapshot de integração · 23 ago 2026 · evidências até o laboratório
         </p>
         <h1>
-          Quatro repositórios.
-          <span class="gradient-text">Um ecossistema compreensível.</span>
+          As quatro peças já têm um mapa comum.
+          <span class="gradient-text">Agora faltam fechar duas pontes.</span>
         </h1>
         <p class="hero-copy">
-          Plano para fazer o MCF reconhecer o ecossistema, recuperar contexto
-          confiável e coordenar agentes; usar o Cognitive Ledger como memória;
-          apresentar o trabalho no TriView; e acessar a infraestrutura por
-          capacidades limitadas — sempre com custo zero de API de IA e sem
-          confundir planejamento com autorização operacional.
+          Este painel mostra o estado comprovado da integração entre MCF, Cloud
+          Infrastructure, Cognitive Ledger e TriView Workspace. A fundação,
+          descoberta federada, memória sem API paga e cockpit read-only já têm
+          evidência. As pontes MCF → Ledger e MCF → Cloud G2-A ainda estão sendo
+          finalizadas. VPS, escrita remota e produção continuam fechadas.
         </p>
         <div class="hero-actions">
           <a class="button primary" href="#checklist">Abrir checklist</a>
-          <a class="button" href="#roadmap">Ver sequência recomendada</a>
+          <a class="button" href="#roadmap">Ver o caminho restante</a>
           <button class="button" id="print-roadmap" type="button">
             Imprimir / salvar PDF
           </button>
@@ -1590,42 +1595,38 @@
         <div class="snapshot-note" role="note">
           <span class="snapshot-icon" aria-hidden="true">◇</span>
           <div>
-            <strong
-              >Leia isto como mapa, não como fonte de verdade live.</strong
-            >
-            O CF-0 + CF-1 mínimo está concluído e verificado somente na branch
-            local isolada do MCF. A integração dos quatro repositórios, o wiring
-            no runtime, a VPS e a interface integrada ainda não foram
-            implementados por esta missão. Marcar itens no checklist salva
-            apenas uma preferência neste navegador.
+            <strong>É um painel de evidências, não um console da VPS.</strong>
+            Itens fixos e marcados foram comprovados por código, merge ou teste.
+            Itens interativos são o planejamento local deste navegador. A
+            integração principal do MCF ainda está em branch; nenhum dado deste
+            painel autoriza produção, VPS, escrita remota ou uma R7 ampla.
           </div>
         </div>
 
-        <div class="metrics" aria-label="Resumo do estado atual">
+        <div class="metrics" aria-label="Resumo do estado comprovado">
           <article class="metric">
-            <span class="metric-value">1</span>
-            <span class="metric-label"
-              >fundação local pronta: CF-0 + CF-1 mínimo</span
-            >
+            <span class="metric-value">4 / 4</span>
+            <span class="metric-label">
+              projetos registrados e recuperáveis pelo Context Fabric
+            </span>
           </article>
           <article class="metric">
-            <span class="metric-value">3</span>
-            <span class="metric-label"
-              >repositórios ainda precisam ser integrados ao Registry</span
-            >
+            <span class="metric-value">2 GET</span>
+            <span class="metric-label">
+              endpoints MCF protegidos: recovery e capabilities
+            </span>
+          </article>
+          <article class="metric">
+            <span class="metric-value">13 / 13</span>
+            <span class="metric-label">
+              marcadores do Cloud G2-B Task 8 no laboratório descartável
+            </span>
           </article>
           <article class="metric">
             <span class="metric-value">R$ 0</span>
-            <span class="metric-label"
-              >teto obrigatório para APIs programáticas de IA</span
-            >
-          </article>
-          <article class="metric">
-            <span class="metric-value">0</span>
-            <span class="metric-label"
-              >deploys, merges, pushes ou mutações de produção nesta
-              missão</span
-            >
+            <span class="metric-label">
+              embeddings e chamadas pagas no E2E real do Cognitive Ledger
+            </span>
           </article>
         </div>
       </section>
@@ -1633,52 +1634,56 @@
       <section class="section shell" aria-labelledby="entendimento-title">
         <div class="section-heading">
           <div>
-            <span class="section-index">00 / INTENÇÃO</span>
-            <h2 id="entendimento-title">O que estamos construindo</h2>
+            <span class="section-index">01 / VISÃO ATUAL</span>
+            <h2 id="entendimento-title">O que já virou ecossistema</h2>
           </div>
           <p>
-            Uma camada de continuidade que permita a qualquer agente entrar em
-            um chat limpo, entender qual projeto está em pauta, localizar a
-            verdade correta e agir somente dentro da autorização vigente.
+            Pense em uma estação: o MCF é o centro de controle, o Ledger é o
+            arquivo, o TriView é o painel e o Cloud é a casa de máquinas. O
+            painel já sabe onde cada peça está; duas conexões internas ainda
+            precisam do lacre final.
           </p>
         </div>
 
-        <article class="panel summary-panel">
+        <div class="panel summary-panel">
           <div class="summary-main">
             <p>
-              O <strong>MCF</strong> será o coordenador: identifica projetos,
-              aplica contratos, recupera contexto e governa a equipe. O
-              <strong>Cloud Infrastructure</strong> continua dono da verdade da
-              VPS e dos runbooks. O <strong>Cognitive Ledger</strong> preserva
-              memória, decisões e evidências consultáveis sem virar uma cópia da
-              verdade operacional. O <strong>TriView</strong> apresenta o
-              workspace e o estado verificado aos agentes, sem guardar segredos
-              nem acessar a VPS diretamente.
+              O <strong>MCF</strong> já possui contratos, schemas, Registry dos
+              quatro projetos, leitura de Capsules, verificação de freshness e
+              dois endpoints GET-only protegidos. O CF-0/CF-1 foi incorporado ao
+              <code>main</code> no PR #153; CF-2 e o Capability Registry estão
+              na branch consolidada de integração.
             </p>
             <p>
-              A integração deve ser federada: cada projeto continua dono dos
-              seus detalhes mutáveis; o MCF guarda identidade estável, aliases,
-              relacionamentos, ponteiros e regras de recuperação. Índices e
-              caches podem acelerar a busca, mas precisam ser descartáveis e
-              reconstruíveis.
+              O <strong>Cognitive Ledger</strong> comprovou uma rota local real
+              sem API paga. O <strong>TriView</strong> já apresenta recovery e
+              capabilities de forma read-only no branch de release. O
+              <strong>Cloud G2-B</strong> passou o Task 8, mas permanece
+              deliberadamente inativo; o adapter G2-A read-only está em
+              finalização.
             </p>
-            <div class="legend" aria-label="Legenda de estados">
-              <span class="status done">Concluído local</span>
-              <span class="status next">Próximo</span>
-              <span class="status planned">Planejado</span>
-              <span class="status gate">Depende de gate</span>
+            <p>
+              Portanto, “implementado” não significa automaticamente
+              “conectado”, “autorizado” ou “verificado”. Essa separação impede
+              que um agente trate código existente como permissão operacional.
+            </p>
+          </div>
+          <aside class="summary-aside" aria-label="Legenda de estado">
+            <strong>Como ler os estados</strong>
+            <p>
+              Verde é evidência fechada. Azul é a próxima integração. Violeta é
+              planejamento. Amarelo exige gate humano. Vermelho está fora desta
+              entrega.
+            </p>
+            <div class="legend">
+              <span class="status done">Comprovado</span>
+              <span class="status next">Em fechamento</span>
+              <span class="status planned">Depois</span>
+              <span class="status gate">Gate humano</span>
               <span class="status out">Fora do escopo</span>
             </div>
-          </div>
-          <aside class="summary-aside">
-            <strong>Princípio central</strong>
-            <p>
-              O MCF sabe <em>onde</em> e <em>como</em> recuperar contexto. Cada
-              fonte canônica continua responsável pelo que é verdade naquele
-              domínio.
-            </p>
           </aside>
-        </article>
+        </div>
       </section>
 
       <section
@@ -1688,13 +1693,13 @@
       >
         <div class="section-heading">
           <div>
-            <span class="section-index">01 / PAPÉIS</span>
-            <h2 id="arquitetura-title">Como as peças se encaixam</h2>
+            <span class="section-index">02 / ARQUITETURA</span>
+            <h2 id="arquitetura-title">Responsabilidade de cada peça</h2>
           </div>
           <p>
-            Os quatro repositórios têm responsabilidades diferentes. A
-            integração funciona quando essas fronteiras ficam explícitas e
-            nenhuma peça tenta assumir a verdade da outra.
+            Cada repositório continua dono da sua verdade. O MCF conecta
+            referências e capacidades; não copia estado vivo nem herda
+            autoridade.
           </p>
         </div>
 
@@ -1702,33 +1707,33 @@
           <article class="system-card mcf">
             <div class="system-topline">
               <span class="system-number">01</span>
-              <span class="status done">Base local</span>
+              <span class="status next">Consolidação</span>
             </div>
             <h3>Multiagent Collaboration Framework</h3>
             <p>
-              Equipe, orquestração, governança e núcleo de recuperação do
-              ecossistema.
+              Catálogo e central de contexto. Descobre projetos, valida
+              proveniência/freshness e expõe somente leitura por token dedicado.
             </p>
             <ul class="ownership">
               <li>
-                <strong>É dono</strong
+                <strong>Pronto</strong
                 ><span
-                  >identidade dos projetos, aliases, contratos e regras de
-                  recovery</span
+                  >CF-0/1 no main; CF-2, Registry e endpoints na branch de
+                  integração</span
                 >
               </li>
               <li>
-                <strong>Consome</strong
+                <strong>Rotas</strong
                 ><span
-                  >Capsules, memória derivada, estado live e capacidades
-                  verificadas</span
+                  ><code>GET /v1/mcf/context/recovery</code> e
+                  <code>/capabilities</code></span
                 >
               </li>
               <li>
-                <strong>Não é</strong
+                <strong>Pendente</strong
                 ><span
-                  >banco global da verdade nem substituto dos outros
-                  repositórios</span
+                  >adapters MCF → Ledger e MCF → Cloud G2-A + E2E
+                  consolidado</span
                 >
               </li>
             </ul>
@@ -1737,32 +1742,29 @@
           <article class="system-card cloud">
             <div class="system-topline">
               <span class="system-number">02</span>
-              <span class="status planned">Integração pendente</span>
+              <span class="status gate">Lab inativo</span>
             </div>
             <h3>Cloud Infrastructure</h3>
             <p>
-              Ambiente da equipe e fonte técnica para estado desejado/live da
-              VPS, segurança e runbooks.
+              Fonte da topologia, runbooks e boundaries operacionais. A VPS não
+              é acessada diretamente por agentes nem por esta página.
             </p>
             <ul class="ownership">
               <li>
-                <strong>É dono</strong
+                <strong>G2-B</strong
                 ><span
-                  >infraestrutura, automação, estado técnico e recuperação da
-                  VPS</span
+                  >Task 8: 13/13; 381/381 unitários;
+                  <code>LAB_VALIDATED_INACTIVE</code></span
                 >
               </li>
               <li>
-                <strong>Expõe</strong
-                ><span
-                  >contexto e capacidades estreitas, verificáveis e com menor
-                  privilégio</span
-                >
+                <strong>Fechado</strong
+                ><span>Tasks 9/10, ativação, VPS, escrita e produção</span>
               </li>
               <li>
-                <strong>Não é</strong
+                <strong>Pendente</strong
                 ><span
-                  >parte interna do MCF nem shell irrestrito para agentes</span
+                  >fechar adapter local G2-A read-only e sua evidência E2E</span
                 >
               </li>
             </ul>
@@ -1771,34 +1773,29 @@
           <article class="system-card ledger">
             <div class="system-topline">
               <span class="system-number">03</span>
-              <span class="status planned">Contrato pendente</span>
+              <span class="status next">Adapter MCF</span>
             </div>
             <h3>Cognitive Ledger</h3>
             <p>
-              Memória cognitiva, decisões, eventos e evidências recuperáveis
-              entre chats e projetos.
+              Memória auditável. O core zero-cost foi incorporado ao branch de
+              design e comprovado contra a stack local real.
             </p>
             <ul class="ownership">
               <li>
-                <strong>É dono</strong
+                <strong>Pronto</strong
                 ><span
-                  >eventos cognitivos, retenção, proveniência e busca de
-                  memória</span
+                  >4 tools/leituras, 4 audits, 3 eventos, 0 embeddings</span
                 >
               </li>
               <li>
-                <strong>Consome</strong
+                <strong>Custo</strong
                 ><span
-                  >referências e Receipts auditáveis, com redaction e
-                  deduplicação</span
+                  >provider pago desabilitado; nenhuma chamada paga no E2E</span
                 >
               </li>
               <li>
-                <strong>Não é</strong
-                ><span
-                  >verdade operacional live nem dependência do bootstrap
-                  básico</span
-                >
+                <strong>Pendente</strong
+                ><span>ponte MCF → MCP → Edge → PostgREST → PostgreSQL</span>
               </li>
             </ul>
           </article>
@@ -1806,55 +1803,52 @@
           <article class="system-card triview">
             <div class="system-topline">
               <span class="system-number">04</span>
-              <span class="status planned">Adapter pendente</span>
+              <span class="status done">Release integrado</span>
             </div>
             <h3>TriView Workspace Linux</h3>
             <p>
-              Superfície de trabalho onde os agentes visualizam projetos, fontes
-              e próximos passos.
+              Cockpit humano read-only. Mostra recovery, capabilities, freshness
+              e gates sem transformar a interface em autoridade operacional.
             </p>
             <ul class="ownership">
               <li>
-                <strong>É dono</strong
-                ><span
-                  >workspace, painéis, sessões e experiência local do
-                  usuário</span
-                >
+                <strong>Merges</strong
+                ><span>PRs #76 e #77 em <code>release/1.0.0a4</code></span>
               </li>
               <li>
-                <strong>Exibe</strong
-                ><span
-                  >freshness, proveniência, blockers, next action e
-                  Receipts</span
-                >
+                <strong>Testes</strong
+                ><span>419 aprovados, 2 skips físicos previstos</span>
               </li>
               <li>
-                <strong>Não é</strong
+                <strong>Real</strong
                 ><span
-                  >fonte canônica, cofre de segredos ou executor direto da
-                  VPS</span
+                  >MCF GET-only + gate focado Linux Mint/X11 aprovados</span
                 >
               </li>
             </ul>
           </article>
         </div>
 
-        <div class="flow-strip" aria-label="Fluxo conceitual da integração">
-          <span class="flow-node">Usuário / agentes</span>
-          <span class="flow-arrow" aria-hidden="true">→</span>
-          <span class="flow-node">TriView</span>
+        <div class="flow-strip" aria-label="Fluxo permitido do ecossistema">
+          <span class="flow-node">TriView read-only</span>
           <span class="flow-arrow" aria-hidden="true">↔</span>
-          <span class="flow-node">MCF + Context Fabric ↔ Ledger</span>
-          <span class="flow-arrow" aria-hidden="true">→</span>
-          <span class="flow-node">Capability / Control Bridge → Cloud</span>
+          <span class="flow-node">MCF Context Fabric</span>
+          <span class="flow-arrow" aria-hidden="true">↔</span>
+          <span class="flow-node">Adapters limitados</span>
+          <span class="flow-arrow" aria-hidden="true">↔</span>
+          <span class="flow-node">Ledger / Cloud owners</span>
         </div>
-        <p class="bridge-note">
-          <strong>Sobre o Control Bridge:</strong> ele é uma fronteira candidata
-          de execução entre MCF e infraestrutura, não um quinto dono de verdade.
-          A frente atual pode avançar em paralelo, mas o contrato de capability
-          e os gates precisam ser estabilizados antes do wiring. Nenhuma
-          implementação completa da VPS está incluída aqui.
-        </p>
+
+        <div class="bridge-note" role="note">
+          <strong>Regra do Capability Registry:</strong>
+          <code>IMPLEMENTED</code> só diz que há código;
+          <code>CONNECTED</code> exige transporte real;
+          <code>AUTHORIZED</code> exige permissão válida; e
+          <code>VERIFIED</code> exige evidência recente. O estado
+          <code>ACTIVE</code> somente pode existir quando todas essas condições
+          e o timestamp forem válidos. O G2-B não atende esse conjunto e,
+          corretamente, continua inativo.
+        </div>
       </section>
 
       <section
@@ -1864,13 +1858,13 @@
       >
         <div class="section-heading">
           <div>
-            <span class="section-index">02 / SEQUÊNCIA</span>
-            <h2 id="roadmap-title">Roadmap recomendado</h2>
+            <span class="section-index">03 / SEQUÊNCIA</span>
+            <h2 id="roadmap-title">Roadmap baseado no que foi comprovado</h2>
           </div>
           <p>
-            A ordem protege o ecossistema contra acoplamento precoce: primeiro
-            contratos e leitura; depois memória e UI; por último capacidades de
-            escrita, laboratório e qualquer consideração de produção.
+            A sequência restante fecha primeiro leitura real entre os
+            repositórios, depois consolida testes e documentação. Escrita, VPS e
+            produção não entram por consequência.
           </p>
         </div>
 
@@ -1880,136 +1874,81 @@
             <div class="phase-card">
               <div class="phase-header">
                 <div>
-                  <h3>Fundação repository-native do MCF</h3>
+                  <h3>Fundação repository-native</h3>
                   <p>
-                    Contratos, schemas, Registry/Capsule do MCF e recuperação
-                    determinística read-only.
+                    Schemas, contratos, Registry/Capsule do MCF e recuperação
+                    determinística mínima.
                   </p>
                 </div>
-                <span class="status done">Concluído local</span>
+                <span class="status done">Merged · PR #153</span>
               </div>
               <div class="phase-details">
                 <div class="phase-detail">
-                  <strong>Entregue</strong>
-                  Truth Contract, Receipt evidence-only, loaders YAML, resolver,
-                  reconciliação e fail-closed.
+                  <strong>Evidência</strong>
+                  Merge <code>876e9f5</code> no <code>main</code> do MCF.
                 </div>
                 <div class="phase-detail">
-                  <strong>Evidência / limite</strong>
-                  49/49 testes de Context; branch local, sem push/merge, runtime
-                  wiring ou adapter live.
+                  <strong>Resultado</strong>
+                  Identidade e contexto básico sobrevivem sem Ledger, UI, VPS ou
+                  provider de IA.
                 </div>
               </div>
             </div>
           </article>
 
-          <article class="phase">
-            <div class="phase-marker">G-1</div>
-            <div class="phase-card current">
-              <div class="phase-header">
-                <div>
-                  <h3>Handoff e revisão humana da fundação</h3>
-                  <p>
-                    Revisar a branch isolada e decidir separadamente se ela pode
-                    seguir para push, PR e CI remoto.
-                  </p>
-                </div>
-                <span class="status next">Próximo</span>
-              </div>
-              <div class="phase-details">
-                <div class="phase-detail">
-                  <strong>Entrada</strong>
-                  Branch <code>codex/mcf-context-fabric-cf0-cf1</code> e
-                  evidências locais verdes.
-                </div>
-                <div class="phase-detail">
-                  <strong>Gate de saída</strong>
-                  Autorização explícita para cada ação remota. Merge não
-                  significa deploy.
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="phase">
-            <div class="phase-marker">P-1</div>
-            <div class="phase-card">
-              <div class="phase-header">
-                <div>
-                  <h3>Contrato comum e onboarding dos quatro repositórios</h3>
-                  <p>
-                    Congelar IDs, aliases, owners, fontes canônicas, Capsules,
-                    relações e versionamento de schema.
-                  </p>
-                </div>
-                <span class="status planned">Planejado</span>
-              </div>
-              <div class="phase-details">
-                <div class="phase-detail">
-                  <strong>Trabalho</strong>
-                  Auditar HEAD/branch das equipes; criar 3 Registry entries e 3
-                  Capsules restantes; validar em CI.
-                </div>
-                <div class="phase-detail">
-                  <strong>Critério de saída</strong>
-                  Recuperar 4/4 projetos por ID, repositório e alias sem
-                  depender da memória do chat.
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="phase">
+          <article class="phase done">
             <div class="phase-marker">CF-2</div>
             <div class="phase-card">
               <div class="phase-header">
                 <div>
-                  <h3>Freshness e recuperação read-only entre repositórios</h3>
+                  <h3>Descoberta federada e recuperação read-only</h3>
                   <p>
-                    Verificar Git/local, detectar drift e conflitos e registrar
-                    evidência em Receipts.
+                    Quatro Registry entries, Capsules, proveniência qualificada,
+                    freshness por Git local e endpoints protegidos.
                   </p>
                 </div>
-                <span class="status planned">Planejado</span>
+                <span class="status done">Implementado em branch</span>
               </div>
               <div class="phase-details">
                 <div class="phase-detail">
-                  <strong>Teste-chave</strong>
-                  “MESTRE, vamos continuar a VPS” resolve Cloud Infrastructure e
-                  verifica fonte live quando exigido.
+                  <strong>Evidência</strong>
+                  Branch <code>codex/ecosystem-context-integration</code> em
+                  <code>c7455fc</code>.
                 </div>
                 <div class="phase-detail">
-                  <strong>Comportamento seguro</strong>
-                  Se a fonte falhar: PARTIAL/SOURCE_UNAVAILABLE. Nunca completar
-                  contexto ou capability por invenção.
+                  <strong>Limite</strong>
+                  GET-only, token separado, configuração limitada, desabilitado
+                  por padrão e sem rede para freshness.
                 </div>
               </div>
             </div>
           </article>
 
           <div class="parallel">
-            <div class="parallel-label">EM PARALELO</div>
+            <div class="parallel-label">FRENTES PARALELAS</div>
             <div class="parallel-grid">
-              <article class="phase-card">
+              <article class="phase-card current">
                 <div class="phase-header">
                   <div>
-                    <h3>P-2A · Cognitive Ledger read-only e custo zero</h3>
+                    <h3>P-2A · Ledger zero-cost</h3>
                     <p>
-                      Definir memória, retenção, privacidade, deduplicação e
-                      busca sem dependência paga.
+                      Core e E2E real concluídos; adapter do MCF ainda em
+                      implementação.
                     </p>
                   </div>
-                  <span class="status planned">Planejado</span>
+                  <span class="status next">Fechar ponte</span>
                 </div>
                 <div class="phase-details">
                   <div class="phase-detail">
-                    <strong>Estratégia</strong>
-                    Adapter neutro; busca textual como fallback; embeddings
-                    locais ou tier oficial gratuito verificável.
+                    <strong>Pronto</strong>
+                    PR #2 merged em
+                    <code>design/cognitive-ledger-foundation</code>; CI
+                    pós-merge com E2E real PASS em <code>e0e715b</code>.
                   </div>
                   <div class="phase-detail">
-                    <strong>Invariante</strong>
-                    Apagar o índice e reconstruir sem perder a verdade canônica.
+                    <strong>Falta</strong>
+                    Validar a cadeia MCF → MCP → Ledger real sem persistir a
+                    memória bruta no MCF.
                   </div>
                 </div>
               </article>
@@ -2017,24 +1956,23 @@
               <article class="phase-card">
                 <div class="phase-header">
                   <div>
-                    <h3>P-2B · TriView como cockpit read-only</h3>
+                    <h3>P-2B · TriView cockpit</h3>
                     <p>
-                      Consumir Context Fabric e Ledger para mostrar projetos,
-                      fontes, freshness e próximos passos.
+                      Recovery e Capability Registry visíveis com estados e
+                      gates separados.
                     </p>
                   </div>
-                  <span class="status planned">Planejado</span>
+                  <span class="status done">Merged em release</span>
                 </div>
                 <div class="phase-details">
                   <div class="phase-detail">
-                    <strong>Primeira entrega</strong>
-                    Bootstrap do workspace + painel de contexto e Receipt, sem
-                    ação autônoma.
+                    <strong>Evidência</strong>
+                    PRs #76/#77; último merge <code>5013ffeb</code>.
                   </div>
                   <div class="phase-detail">
-                    <strong>Comportamento seguro</strong>
-                    Sinalizar stale/ambiguous e desabilitar ações quando o
-                    contexto for insuficiente.
+                    <strong>Limite</strong>
+                    Somente GET; nenhum segredo, shell, mutação ou acesso direto
+                    à VPS.
                   </div>
                 </div>
               </article>
@@ -2042,28 +1980,56 @@
           </div>
 
           <article class="phase">
-            <div class="phase-marker">P-3</div>
-            <div class="phase-card">
+            <div class="phase-marker">CLOUD</div>
+            <div class="phase-card current">
               <div class="phase-header">
                 <div>
-                  <h3>Capability Registry e ponte controlada para a VPS</h3>
+                  <h3>Fechar leitura Cloud sem ativar o G2-B</h3>
                   <p>
-                    Modelar o que existe, está conectado, autorizado, disponível
-                    e recentemente verificado.
+                    Confirmar adapter G2-A local read-only e registrar a
+                    evidência final. Preservar o lifecycle G2-B inativo.
                   </p>
                 </div>
-                <span class="status gate">Novo gate</span>
+                <span class="status next">Em finalização</span>
               </div>
               <div class="phase-details">
                 <div class="phase-detail">
-                  <strong>Primeiro boundary</strong>
-                  Control Bridge somente read-only, allowlist, menor privilégio
-                  e Receipt auditável.
+                  <strong>Já comprovado</strong>
+                  G2-B Task 8 13/13 e 381/381 testes unitários.
                 </div>
                 <div class="phase-detail">
-                  <strong>Escrita futura</strong>
-                  Missão separada: alvo exato, dry-run, idempotência, rollback e
-                  HUMAN_GATE. Nunca shell irrestrito.
+                  <strong>Não confundir</strong>
+                  Harness aprovado não equivale a conexão, autorização, VPS,
+                  Tasks 9/10 ou capability ativa.
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="phase">
+            <div class="phase-marker">E2E</div>
+            <div class="phase-card current">
+              <div class="phase-header">
+                <div>
+                  <h3>Consolidação cross-repo em lab/staging</h3>
+                  <p>
+                    Incorporar os dois adapters, atualizar evidências do
+                    Capability Registry e executar a suíte completa com falhas
+                    fechadas.
+                  </p>
+                </div>
+                <span class="status next">Próxima missão</span>
+              </div>
+              <div class="phase-details">
+                <div class="phase-detail">
+                  <strong>Saída esperada</strong>
+                  PR consolidado do MCF, checks verdes, roadmap atualizado e
+                  handoff reproduzível.
+                </div>
+                <div class="phase-detail">
+                  <strong>Escopo máximo</strong>
+                  Laboratório/staging validado; sem produção, VPS ou escrita
+                  externa.
                 </div>
               </div>
             </div>
@@ -2074,75 +2040,49 @@
             <div class="phase-card">
               <div class="phase-header">
                 <div>
-                  <h3>
-                    Projeções derivadas e validação ponta a ponta em laboratório
-                  </h3>
+                  <h3>Escrita controlada e rollout</h3>
                   <p>
-                    Cache, alias index e aceleração reconstruíveis; cenários E2E
-                    com todos os componentes.
-                  </p>
-                </div>
-                <span class="status planned">Planejado</span>
-              </div>
-              <div class="phase-details">
-                <div class="phase-detail">
-                  <strong>Cenários mínimos</strong>
-                  Alias, Capsule stale, fonte offline, conflito, índice apagado,
-                  redaction e ação bloqueada.
-                </div>
-                <div class="phase-detail">
-                  <strong>Critério de saída</strong>
-                  Fluxo em lab reproduzível, custo de API de IA igual a zero e
-                  relatório de auditoria aprovado.
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="phase">
-            <div class="phase-marker">G-4</div>
-            <div class="phase-card">
-              <div class="phase-header">
-                <div>
-                  <h3>Piloto controlado e produção</h3>
-                  <p>
-                    Somente depois dos contratos, read-only, laboratório,
-                    segurança, backup e rollback.
+                    Qualquer capability material exige missão e autorização
+                    próprias, allowlist, dry-run, Receipt, rollback e revogação.
                   </p>
                 </div>
                 <span class="status out">Não autorizado</span>
               </div>
               <div class="phase-details">
                 <div class="phase-detail">
-                  <strong>Não faz parte desta entrega</strong>
-                  Deploy, mudança live, publicação, Mission Control completo ou
-                  autonomia de escrita.
+                  <strong>Fechado agora</strong>
+                  Tasks 9/10, VPS, produção e declaração de R7 ampla.
                 </div>
                 <div class="phase-detail">
-                  <strong>Gate necessário</strong>
-                  Autorização explícita e separada com escopo, ambiente, risco e
-                  plano de rollback definidos.
+                  <strong>Gate futuro</strong>
+                  Só avaliar após E2E read-only consolidado, segurança,
+                  observabilidade e recovery.
                 </div>
               </div>
             </div>
           </article>
         </div>
 
-        <div class="dependency-map" aria-label="Caminho crítico resumido">
+        <div class="dependency-map" aria-label="Ordem das dependências">
           <div class="dependency-step">
-            <strong>1. Fundação local</strong>CF-0/CF-1 verificado
+            <strong>1. Fundação</strong>
+            CF-0/1 merged
           </div>
           <div class="dependency-step">
-            <strong>2. Revisão</strong>handoff e autorização
+            <strong>2. Contexto</strong>
+            Registry + CF-2
           </div>
           <div class="dependency-step">
-            <strong>3. Contrato 4 repos</strong>Registry + Capsules
+            <strong>3. Pontes</strong>
+            Ledger + Cloud G2-A
           </div>
           <div class="dependency-step">
-            <strong>4. Leitura confiável</strong>CF-2 + Ledger + TriView
+            <strong>4. Validação</strong>
+            E2E cross-repo
           </div>
           <div class="dependency-step">
-            <strong>5. Ação controlada</strong>bridge + lab + gates
+            <strong>5. Autoridade</strong>
+            gate humano separado
           </div>
         </div>
       </section>
@@ -2150,62 +2090,62 @@
       <section class="section shell" aria-labelledby="guardrails-title">
         <div class="section-heading">
           <div>
-            <span class="section-index">03 / INVARIANTES</span>
+            <span class="section-index">04 / GUARDRAILS</span>
             <h2 id="guardrails-title">Regras que não podem quebrar</h2>
           </div>
           <p>
-            Estas regras reduzem risco, evitam duplicação de verdade e mantêm o
-            sistema recuperável mesmo offline.
+            Estas regras transformam integração em cooperação segura, em vez de
+            dar uma chave mestra a cada agente.
           </p>
         </div>
 
         <div class="guardrails">
           <article class="guardrail">
             <span class="guardrail-icon" aria-hidden="true">01</span>
-            <h3>Fonte certa para cada fato</h3>
+            <h3>Owner por verdade</h3>
             <p>
-              Identidade no Registry; contexto no repo dono; estado operacional
-              na fonte live; memória no Ledger.
+              Registry identifica; cada repo mantém seu contexto; Cloud mantém
+              estado operacional; Ledger mantém memória auditável.
             </p>
           </article>
           <article class="guardrail">
             <span class="guardrail-icon" aria-hidden="true">02</span>
-            <h3>Leitura pode degradar</h3>
+            <h3>Read-only degrada; write fecha</h3>
             <p>
-              Sem fonte live, a resposta identifica o que está stale ou
-              indisponível. Não preenche lacunas com suposição.
+              Leitura pode informar stale/offline. Escrita nunca continua por
+              cache, suposição ou evidência histórica.
             </p>
           </article>
           <article class="guardrail">
             <span class="guardrail-icon" aria-hidden="true">03</span>
-            <h3>Escrita falha fechada</h3>
+            <h3>Freshness visível</h3>
             <p>
-              Ação material exige contexto atual, capability comprovada,
-              autorização e alvo específico.
+              Repo root, HEAD, worktree e observed_at acompanham a afirmação;
+              snapshot não se fantasia de estado live.
             </p>
           </article>
           <article class="guardrail">
             <span class="guardrail-icon" aria-hidden="true">04</span>
-            <h3>Proveniência obrigatória</h3>
+            <h3>Segredo fora do contexto</h3>
             <p>
-              Todo fato material registra fonte, momento observado, freshness e
-              conflito relevante.
+              Tokens ficam em variáveis/secret stores. Capsule, Registry,
+              Ledger, Receipt e TriView guardam apenas referências seguras.
             </p>
           </article>
           <article class="guardrail">
             <span class="guardrail-icon" aria-hidden="true">05</span>
-            <h3>Derivados são descartáveis</h3>
+            <h3>Bootstrap independente</h3>
             <p>
-              Cache, índice e Receipt aceleram ou provam; nunca se tornam nova
-              fonte canônica.
+              O MCF recupera identidade mesmo com Ledger, TriView, provider de
+              IA ou Cloud offline.
             </p>
           </article>
           <article class="guardrail">
             <span class="guardrail-icon" aria-hidden="true">06</span>
-            <h3>Segredo não é contexto</h3>
+            <h3>VPS é outro boundary</h3>
             <p>
-              Capsule, Registry, Ledger e TriView guardam referências e
-              metadados, jamais credenciais.
+              Continuidade da VPS segue em frente paralela preservada. Nenhuma
+              evidência local aqui concede acesso ou altera o ambiente.
             </p>
           </article>
         </div>
@@ -2214,55 +2154,53 @@
       <section class="section shell" aria-labelledby="custo-title">
         <div class="section-heading">
           <div>
-            <span class="section-index">04 / CUSTO ZERO</span>
+            <span class="section-index">05 / CUSTO ZERO</span>
             <h2 id="custo-title">IA sem cobrança por API</h2>
           </div>
           <p>
-            Custo zero não pode ser uma promessa informal do provedor; deve ser
-            uma restrição técnica testada e sem fallback pago silencioso.
+            Custo zero é uma restrição arquitetural: nenhuma rota automática
+            pode cair silenciosamente em provider pago.
           </p>
         </div>
 
-        <article class="panel cost-panel">
+        <div class="panel cost-panel">
           <div class="cost-hero">
             <span class="cost-number">R$ 0</span>
-            <span class="cost-caption"
-              >em chaves/API de inteligência artificial</span
-            >
+            <span class="cost-caption">
+              chamadas pagas e embeddings no E2E real do Ledger
+            </span>
           </div>
           <div class="cost-rules">
-            <h3>Estratégia transversal</h3>
+            <h3>Política operacional</h3>
             <ul>
               <li>
-                Manter o ChatGPT e o humano no loop nesta fase, sem exigir
-                integração programática paga.
+                ChatGPT pode continuar sendo a interface humana atual, sem
+                exigir chave paga dentro dos serviços.
               </li>
               <li>
-                Definir uma interface neutra de provider, sem acoplar o
-                ecossistema a uma única IA.
+                Embeddings pagos ficam estritamente opt-in e desabilitados no
+                caminho padrão.
               </li>
               <li>
-                Priorizar inferência local; permitir endpoint gratuito oficial
-                somente após verificar quota e termos.
+                Busca estruturada, leitura repository-native e fallback local
+                continuam disponíveis sem provider externo.
               </li>
               <li>
-                Ter fallback offline/determinístico para recovery e busca
-                textual; IA não é fonte canônica.
+                Qualquer API gratuita futura deve ficar atrás de adapter neutro,
+                quota explícita e fallback offline.
               </li>
               <li>
-                Bloquear qualquer fallback que peça cartão, crédito ou possa
-                gerar cobrança.
+                Testes de integração devem provar zero chamadas pagas, não
+                apenas confiar em configuração.
               </li>
             </ul>
-            <div class="conflict">
-              <strong>Conflito já identificado:</strong> a etapa de embeddings
-              do Cognitive Ledger está bloqueada por crédito de API esgotado. A
-              solução recomendada é redesenhar essa dependência — embeddings
-              locais ou busca textual como fallback — e não comprar novos
-              créditos.
+            <div class="bridge-note">
+              <strong>Evidência Ledger:</strong> 4 tools, 4 leituras, 4 linhas
+              de auditoria, 3 eventos, fingerprint imutável e 0 embeddings no
+              fluxo MCP → Edge Function → PostgREST → PostgreSQL/pgvector.
             </div>
           </div>
-        </article>
+        </div>
       </section>
 
       <section
@@ -2272,112 +2210,94 @@
       >
         <div class="section-heading">
           <div>
-            <span class="section-index">05 / PARALELISMO</span>
-            <h2 id="coordenacao-title">Coordenação entre equipes</h2>
+            <span class="section-index">06 / COORDENAÇÃO</span>
+            <h2 id="coordenacao-title">
+              Como as equipes trabalham em paralelo
+            </h2>
           </div>
           <p>
-            As frentes podem avançar ao mesmo tempo desde que cada equipe
-            declare branch, HEAD, arquivos em alteração, contratos exportados e
-            gate atual antes da integração.
+            Cada equipe fecha um boundary e publica evidência. A integração só
+            muda de estado quando o contrato e o teste concordam.
           </p>
         </div>
 
-        <div
-          class="coordination-table-wrap"
-          role="region"
-          aria-label="Matriz de coordenação"
-          tabindex="0"
-        >
+        <div class="coordination-table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Frente</th>
-                <th>Pode avançar agora</th>
-                <th>Contrato de integração</th>
-                <th>Não deve fazer</th>
+                <th scope="col">Frente</th>
+                <th scope="col">Entrega comprovada</th>
+                <th scope="col">Próximo boundary</th>
+                <th scope="col">Não assumir</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>MCF / Context Fabric</td>
                 <td>
-                  Revisão da fundação, estabilização dos schemas e desenho do
-                  onboarding.
+                  CF-0/1 merged; quatro projetos; CF-2; recovery e capabilities
+                  GET-only.
                 </td>
                 <td>
-                  Registry entry, Capsule, Truth Contract, Receipt e versão de
-                  schema.
+                  Incorporar adapters Ledger/Cloud, evidências finais e suíte
+                  E2E consolidada.
                 </td>
                 <td>
-                  Wiring no runtime, push/merge ou provider live sem novo gate.
-                </td>
-              </tr>
-              <tr>
-                <td>Cloud Infrastructure</td>
-                <td>
-                  Continuar a execução da sua própria roadmap e produzir
-                  estado/read models confiáveis.
-                </td>
-                <td>
-                  Capsule, ownership de facts, freshness e capabilities
-                  fornecidas.
-                </td>
-                <td>
-                  Duplicar governança do MCF ou interpretar Capsule como
-                  autorização de produção.
+                  Branch de integração não é automaticamente main, staging ou
+                  produção.
                 </td>
               </tr>
               <tr>
                 <td>Cognitive Ledger</td>
                 <td>
-                  Definir consulta read-only, privacidade, retenção e
-                  alternativa gratuita aos embeddings.
+                  PR #2 merged; stack real; 4 tools/audits; 3 eventos; custo
+                  pago zero.
                 </td>
-                <td>
-                  Memory record, provenance, dedupe, redaction, query e rebuild.
-                </td>
-                <td>
-                  Virar banco global da verdade ou depender de API paga para
-                  iniciar.
-                </td>
+                <td>Fechar e comprovar adapter read-only iniciado pelo MCF.</td>
+                <td>Core pronto não significa que o MCF já está conectado.</td>
               </tr>
               <tr>
                 <td>TriView Workspace</td>
                 <td>
-                  Projetar painel de contexto e adapter read-only atrás de
-                  interface mockada.
+                  PRs #76/#77 merged; 419/2; recovery/capabilities e gate
+                  Mint/X11.
                 </td>
                 <td>
-                  Context view model, estados stale/ambiguous e Receipt
-                  presentation.
+                  Consumir evidências finais dos adapters sem ganhar autoridade
+                  de escrita.
+                </td>
+                <td>Cockpit não é Control Bridge, shell nem console da VPS.</td>
+              </tr>
+              <tr>
+                <td>Cloud G2-A / G2-B</td>
+                <td>G2-B Task 8 13/13 e 381/381; lifecycle inativo.</td>
+                <td>
+                  Finalizar adapter G2-A local read-only; manter G2-B fechado.
                 </td>
                 <td>
-                  Acessar VPS diretamente, guardar segredo ou assumir que
-                  snapshot é live.
+                  Harness histórico não prova conexão, autorização, Tasks 9/10
+                  ou VPS ativa.
                 </td>
               </tr>
               <tr>
-                <td>Control Bridge / VPS</td>
+                <td>VPS continuity</td>
                 <td>
-                  Testes isolados, grants estreitos e inventário de operações,
-                  sem wiring MCF prematuro.
+                  Frente paralela preservada, sem interferência desta entrega.
                 </td>
+                <td>Continuar sob owner, missão e gates próprios.</td>
                 <td>
-                  Capability descriptor, target, read/write, evidence, expiry e
-                  rollback.
-                </td>
-                <td>
-                  Shell irrestrito, mutação fora de allowlist ou produção sem
-                  HUMAN_GATE.
+                  Nenhum push desta integração autoriza mudança na VPS ou
+                  produção.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="order-banner">
-          <strong>Ordem de integração:</strong>
-          schemas/contratos → Capsules/Registry → adapters read-only →
-          consumidores → execução controlada.
+        <div class="order-banner" role="note">
+          <strong>Contrato de passagem:</strong>
+          SHA + branch + owner + schema + provenance + teste reproduzível +
+          estado do capability. Sem esse pacote, a próxima equipe recebe
+          hipótese, não evidência.
         </div>
       </section>
 
@@ -2388,13 +2308,13 @@
       >
         <div class="section-heading">
           <div>
-            <span class="section-index">06 / ACOMPANHAMENTO</span>
-            <h2 id="checklist-title">Checklist do ecossistema</h2>
+            <span class="section-index">07 / CHECKLIST</span>
+            <h2 id="checklist-title">Comprovado versus trabalho restante</h2>
           </div>
           <p>
-            Itens concluídos estão bloqueados como evidência do snapshot. Os
-            demais podem ser marcados localmente para acompanhamento pessoal;
-            isso não altera nenhum repositório nem concede autorização.
+            Caixas fixas e desabilitadas representam evidência do repositório.
+            Caixas editáveis são acompanhamento pessoal salvo apenas neste
+            navegador e nunca alteram Git, CI, VPS ou serviços.
           </p>
         </div>
 
@@ -2403,7 +2323,7 @@
             <div>
               <div class="progress-copy">
                 <strong>Progresso visual</strong>
-                <span id="progress-label" aria-live="polite">Calculando…</span>
+                <span id="progress-label">Calculando…</span>
               </div>
               <div
                 class="progress-track"
@@ -2416,525 +2336,380 @@
                 <div class="progress-bar" id="progress-bar"></div>
               </div>
             </div>
+
             <div class="checklist-controls" aria-label="Filtros do checklist">
               <button
                 class="filter-button"
-                type="button"
                 data-filter="all"
+                type="button"
                 aria-pressed="true"
               >
                 Todos
               </button>
               <button
                 class="filter-button"
-                type="button"
                 data-filter="done"
+                type="button"
                 aria-pressed="false"
               >
-                Concluídos
+                Comprovados
               </button>
               <button
                 class="filter-button"
-                type="button"
                 data-filter="next"
+                type="button"
                 aria-pressed="false"
               >
                 Próximos
               </button>
               <button
                 class="filter-button"
-                type="button"
                 data-filter="planned"
+                type="button"
                 aria-pressed="false"
               >
                 Planejados
               </button>
               <button
                 class="filter-button"
-                type="button"
                 data-filter="gate"
+                type="button"
                 aria-pressed="false"
               >
                 Gates
               </button>
               <button class="reset-button" id="reset-checklist" type="button">
-                Limpar marcações locais
+                Limpar marcações pessoais
               </button>
             </div>
             <p class="storage-note" id="storage-note">
-              Armazenamento: somente neste navegador. O checklist não é fonte
-              canônica nem registro de aprovação.
+              “Fixo” = evidência imutável neste snapshot. “Interativo” = nota
+              local; não é fonte de verdade nem autorização.
             </p>
           </div>
 
           <div class="check-groups">
             <section class="check-group" aria-labelledby="check-foundation">
               <div class="check-group-header">
-                <span class="status done">Concluído local</span>
-                <h3 id="check-foundation">Fundação CF-0 + CF-1 mínimo</h3>
+                <span class="status done">Comprovado</span>
+                <h3 id="check-foundation">MCF · fundação e Context Fabric</h3>
               </div>
               <ul class="check-list">
                 <li class="check-item" data-status="done">
-                  <input id="c-gate0" type="checkbox" checked disabled />
-                  <label for="c-gate0"
-                    >Gate 0 e auditoria de compatibilidade executados</label
-                  >
+                  <input id="c-cf01-merged" type="checkbox" checked disabled />
+                  <label for="c-cf01-merged">
+                    CF-0/CF-1 merged no main pelo PR #153
+                  </label>
                   <span class="check-status">fixo</span>
                 </li>
                 <li class="check-item" data-status="done">
-                  <input id="c-branch" type="checkbox" checked disabled />
-                  <label for="c-branch"
-                    >Branch isolada criada e escopo preservado</label
-                  >
+                  <input
+                    id="c-four-projects"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-four-projects">
+                    Quatro Registry entries e Capsules recuperáveis
+                  </label>
                   <span class="check-status">fixo</span>
                 </li>
                 <li class="check-item" data-status="done">
-                  <input id="c-schemas" type="checkbox" checked disabled />
-                  <label for="c-schemas"
-                    >Quatro schemas e contratos de contexto implementados</label
-                  >
+                  <input
+                    id="c-cf2-freshness"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-cf2-freshness">
+                    CF-2, proveniência repo:// e freshness Git local
+                  </label>
                   <span class="check-status">fixo</span>
                 </li>
                 <li class="check-item" data-status="done">
-                  <input id="c-mcf-registry" type="checkbox" checked disabled />
-                  <label for="c-mcf-registry"
-                    >Registry entry e Capsule do MCF criados</label
-                  >
+                  <input id="c-context-get" type="checkbox" checked disabled />
+                  <label for="c-context-get">
+                    Recovery GET protegido, limitado e desabilitado por padrão
+                  </label>
                   <span class="check-status">fixo</span>
                 </li>
                 <li class="check-item" data-status="done">
-                  <input id="c-recovery" type="checkbox" checked disabled />
-                  <label for="c-recovery"
-                    >Resolver, loaders e recuperação read-only
-                    implementados</label
-                  >
+                  <input
+                    id="c-capabilities-get"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-capabilities-get">
+                    Capability Registry e endpoint GET protegidos
+                  </label>
                   <span class="check-status">fixo</span>
                 </li>
                 <li class="check-item" data-status="done">
-                  <input id="c-truth" type="checkbox" checked disabled />
-                  <label for="c-truth"
-                    >Truth normalization, conflitos e Receipt evidence-only
-                    implementados</label
-                  >
+                  <input
+                    id="c-capability-semantics"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-capability-semantics">
+                    IMPLEMENTED, CONNECTED, AUTHORIZED e VERIFIED separados
+                  </label>
                   <span class="check-status">fixo</span>
-                </li>
-                <li class="check-item" data-status="done">
-                  <input id="c-tests" type="checkbox" checked disabled />
-                  <label for="c-tests"
-                    >Testes, build, lint, typecheck e auditoria locais
-                    verdes</label
-                  >
-                  <span class="check-status">fixo</span>
-                </li>
-                <li class="check-item" data-status="done">
-                  <input id="c-safety" type="checkbox" checked disabled />
-                  <label for="c-safety"
-                    >Sem produção, mutação externa ou API paga</label
-                  >
-                  <span class="check-status">fixo</span>
-                </li>
-              </ul>
-            </section>
-
-            <section class="check-group" aria-labelledby="check-handoff">
-              <div class="check-group-header">
-                <span class="status next">Próximo</span>
-                <h3 id="check-handoff">Handoff e baseline das equipes</h3>
-              </div>
-              <ul class="check-list">
-                <li class="check-item" data-status="next">
-                  <input
-                    id="c-review"
-                    data-check-id="human-review"
-                    type="checkbox"
-                  />
-                  <label for="c-review"
-                    >Revisar a branch CF-0/CF-1 e suas evidências</label
-                  >
-                  <span class="check-status">próximo</span>
-                </li>
-                <li class="check-item" data-status="gate">
-                  <input
-                    id="c-push-auth"
-                    data-check-id="push-authorization"
-                    type="checkbox"
-                  />
-                  <label for="c-push-auth"
-                    >Decidir e registrar autorização separada para
-                    push/PR</label
-                  >
-                  <span class="check-status">gate</span>
-                </li>
-                <li class="check-item" data-status="next">
-                  <input
-                    id="c-inventory"
-                    data-check-id="live-inventory"
-                    type="checkbox"
-                  />
-                  <label for="c-inventory"
-                    >Inventariar branch, HEAD, owner e arquivos ativos dos 4
-                    repos</label
-                  >
-                  <span class="check-status">próximo</span>
-                </li>
-                <li class="check-item" data-status="next">
-                  <input
-                    id="c-collision"
-                    data-check-id="collision-map"
-                    type="checkbox"
-                  />
-                  <label for="c-collision"
-                    >Mapear sobreposição com frentes paralelas antes de
-                    editar</label
-                  >
-                  <span class="check-status">próximo</span>
-                </li>
-              </ul>
-            </section>
-
-            <section class="check-group" aria-labelledby="check-contract">
-              <div class="check-group-header">
-                <span class="status planned">Planejado</span>
-                <h3 id="check-contract">Contrato comum e onboarding</h3>
-              </div>
-              <ul class="check-list">
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-ownership"
-                    data-check-id="ownership-matrix"
-                    type="checkbox"
-                  />
-                  <label for="c-ownership"
-                    >Aprovar matriz de ownership e fonte de verdade por
-                    claim</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-identities"
-                    data-check-id="stable-identities"
-                    type="checkbox"
-                  />
-                  <label for="c-identities"
-                    >Definir IDs estáveis, aliases e relações dos 4
-                    projetos</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-registry3"
-                    data-check-id="remaining-registry"
-                    type="checkbox"
-                  />
-                  <label for="c-registry3"
-                    >Criar as 3 Registry entries restantes no MCF</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-capsules3"
-                    data-check-id="remaining-capsules"
-                    type="checkbox"
-                  />
-                  <label for="c-capsules3"
-                    >Criar Capsules versionadas nos 3 repositórios
-                    restantes</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-schema-ci"
-                    data-check-id="schema-ci"
-                    type="checkbox"
-                  />
-                  <label for="c-schema-ci"
-                    >Validar Registry/Capsules no CI de cada repositório</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-resolve4"
-                    data-check-id="resolve-four"
-                    type="checkbox"
-                  />
-                  <label for="c-resolve4"
-                    >Provar recuperação determinística de 4/4 projetos</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-              </ul>
-            </section>
-
-            <section class="check-group" aria-labelledby="check-readonly">
-              <div class="check-group-header">
-                <span class="status planned">Planejado</span>
-                <h3 id="check-readonly">CF-2 e integração read-only</h3>
-              </div>
-              <ul class="check-list">
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-git-adapter"
-                    data-check-id="git-read-adapter"
-                    type="checkbox"
-                  />
-                  <label for="c-git-adapter"
-                    >Implementar adapter Git/local somente leitura</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-live-adapter"
-                    data-check-id="live-read-adapter"
-                    type="checkbox"
-                  />
-                  <label for="c-live-adapter"
-                    >Implementar adapter live read-only para facts
-                    LIVE_REQUIRED</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-drift"
-                    data-check-id="drift-detection"
-                    type="checkbox"
-                  />
-                  <label for="c-drift"
-                    >Detectar stale, drift, conflito e fonte indisponível</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-vps-prompt"
-                    data-check-id="vps-recovery-test"
-                    type="checkbox"
-                  />
-                  <label for="c-vps-prompt"
-                    >Passar o teste “vamos continuar a VPS” sem contexto de
-                    chat</label
-                  >
-                  <span class="check-status">planejado</span>
                 </li>
               </ul>
             </section>
 
             <section class="check-group" aria-labelledby="check-ledger">
               <div class="check-group-header">
-                <span class="status planned">Planejado</span>
-                <h3 id="check-ledger">Cognitive Ledger sem dependência paga</h3>
+                <span class="status done">Core comprovado</span>
+                <h3 id="check-ledger">Cognitive Ledger · custo zero</h3>
               </div>
               <ul class="check-list">
-                <li class="check-item" data-status="planned">
+                <li class="check-item" data-status="done">
+                  <input id="c-ledger-pr" type="checkbox" checked disabled />
+                  <label for="c-ledger-pr">
+                    PR #2 merged; CI pós-merge e E2E real PASS em e0e715b
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+                <li class="check-item" data-status="done">
                   <input
-                    id="c-memory-contract"
-                    data-check-id="memory-contract"
+                    id="c-ledger-real-e2e"
                     type="checkbox"
+                    checked
+                    disabled
                   />
-                  <label for="c-memory-contract"
-                    >Definir contrato de memória, retenção, dedupe e
-                    privacidade</label
-                  >
-                  <span class="check-status">planejado</span>
+                  <label for="c-ledger-real-e2e">
+                    E2E real: 4 tools, 4 reads, 4 audits e 3 eventos
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+                <li class="check-item" data-status="done">
+                  <input
+                    id="c-ledger-zero-cost"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-ledger-zero-cost">
+                    0 embeddings, 0 API paga e fingerprint imutável
+                  </label>
+                  <span class="check-status">fixo</span>
                 </li>
                 <li class="check-item" data-status="next">
                   <input
-                    id="c-free-search"
-                    data-check-id="zero-cost-search"
+                    id="c-mcf-ledger-adapter"
+                    data-check-id="mcf-ledger-adapter-final"
                     type="checkbox"
                   />
-                  <label for="c-free-search"
-                    >Substituir bloqueio de embeddings pagos por caminho custo
-                    zero</label
-                  >
-                  <span class="check-status">prioridade</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-ledger-query"
-                    data-check-id="ledger-query"
-                    type="checkbox"
-                  />
-                  <label for="c-ledger-query"
-                    >Expor consulta read-only com provenance e redaction</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-rebuild"
-                    data-check-id="ledger-rebuild"
-                    type="checkbox"
-                  />
-                  <label for="c-rebuild"
-                    >Provar rebuild depois de apagar o índice derivado</label
-                  >
-                  <span class="check-status">planejado</span>
+                  <label for="c-mcf-ledger-adapter">
+                    Finalizar adapter MCF → Ledger e validar contra stack real
+                  </label>
+                  <span class="check-status">interativo</span>
                 </li>
               </ul>
             </section>
 
             <section class="check-group" aria-labelledby="check-triview">
               <div class="check-group-header">
-                <span class="status planned">Planejado</span>
-                <h3 id="check-triview">TriView Workspace</h3>
+                <span class="status done">Comprovado</span>
+                <h3 id="check-triview">TriView · cockpit read-only</h3>
               </div>
               <ul class="check-list">
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-viewmodel"
-                    data-check-id="triview-view-model"
-                    type="checkbox"
-                  />
-                  <label for="c-viewmodel"
-                    >Definir view model de contexto e Receipt</label
-                  >
-                  <span class="check-status">planejado</span>
+                <li class="check-item" data-status="done">
+                  <input id="c-triview-prs" type="checkbox" checked disabled />
+                  <label for="c-triview-prs">
+                    PRs #76 e #77 merged em release/1.0.0a4
+                  </label>
+                  <span class="check-status">fixo</span>
                 </li>
-                <li class="check-item" data-status="planned">
+                <li class="check-item" data-status="done">
                   <input
-                    id="c-panel"
-                    data-check-id="triview-panel"
+                    id="c-triview-suite"
                     type="checkbox"
+                    checked
+                    disabled
                   />
-                  <label for="c-panel"
-                    >Criar painel read-only dos 4 projetos</label
-                  >
-                  <span class="check-status">planejado</span>
+                  <label for="c-triview-suite">
+                    Suíte local: 419 aprovados e 2 skips físicos previstos
+                  </label>
+                  <span class="check-status">fixo</span>
                 </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-workspace-bootstrap"
-                    data-check-id="workspace-bootstrap"
-                    type="checkbox"
-                  />
-                  <label for="c-workspace-bootstrap"
-                    >Abrir workspace/repositório correto a partir do
-                    project_id</label
-                  >
-                  <span class="check-status">planejado</span>
+                <li class="check-item" data-status="done">
+                  <input id="c-triview-http" type="checkbox" checked disabled />
+                  <label for="c-triview-http">
+                    Recovery/capabilities por MCF real e somente GET
+                  </label>
+                  <span class="check-status">fixo</span>
                 </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-ui-block"
-                    data-check-id="ui-safe-states"
-                    type="checkbox"
-                  />
-                  <label for="c-ui-block"
-                    >Exibir stale/ambiguous e bloquear ação insegura na
-                    UI</label
-                  >
-                  <span class="check-status">planejado</span>
+                <li class="check-item" data-status="done">
+                  <input id="c-triview-x11" type="checkbox" checked disabled />
+                  <label for="c-triview-x11">
+                    Gate focado aprovado no Linux Mint/X11 físico
+                  </label>
+                  <span class="check-status">fixo</span>
                 </li>
               </ul>
             </section>
 
-            <section class="check-group" aria-labelledby="check-vps">
+            <section class="check-group" aria-labelledby="check-cloud">
               <div class="check-group-header">
-                <span class="status gate">Depende de gate</span>
-                <h3 id="check-vps">
-                  Capability Registry, Control Bridge e VPS
+                <span class="status next">Lab inativo</span>
+                <h3 id="check-cloud">Cloud · G2-A leitura e G2-B controlado</h3>
+              </div>
+              <ul class="check-list">
+                <li class="check-item" data-status="done">
+                  <input id="c-g2b-task8" type="checkbox" checked disabled />
+                  <label for="c-g2b-task8">
+                    G2-B Task 8 aprovado com 13/13 marcadores
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+                <li class="check-item" data-status="done">
+                  <input id="c-cloud-unit" type="checkbox" checked disabled />
+                  <label for="c-cloud-unit">
+                    Suíte Cloud unitária aprovada: 381/381
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+                <li class="check-item" data-status="done">
+                  <input id="c-g2b-inactive" type="checkbox" checked disabled />
+                  <label for="c-g2b-inactive">
+                    Lifecycle LAB_VALIDATED_INACTIVE e Tasks 9/10 fechados
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+                <li class="check-item" data-status="next">
+                  <input
+                    id="c-g2a-adapter"
+                    data-check-id="cloud-g2a-adapter-final"
+                    type="checkbox"
+                  />
+                  <label for="c-g2a-adapter">
+                    Finalizar adapter local G2-A read-only e E2E
+                  </label>
+                  <span class="check-status">interativo</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="check-group" aria-labelledby="check-integration">
+              <div class="check-group-header">
+                <span class="status next">Próximo</span>
+                <h3 id="check-integration">Consolidação da integração</h3>
+              </div>
+              <ul class="check-list">
+                <li class="check-item" data-status="next">
+                  <input
+                    id="c-capability-evidence"
+                    data-check-id="capability-evidence-final"
+                    type="checkbox"
+                  />
+                  <label for="c-capability-evidence">
+                    Atualizar capabilities com SHAs e evidências finais
+                  </label>
+                  <span class="check-status">interativo</span>
+                </li>
+                <li class="check-item" data-status="next">
+                  <input
+                    id="c-cross-repo-e2e"
+                    data-check-id="cross-repo-e2e"
+                    type="checkbox"
+                  />
+                  <label for="c-cross-repo-e2e">
+                    Executar E2E cross-repo, auth negativa e fail-closed
+                  </label>
+                  <span class="check-status">interativo</span>
+                </li>
+                <li class="check-item" data-status="next">
+                  <input
+                    id="c-mcf-verify"
+                    data-check-id="mcf-full-verify-final"
+                    type="checkbox"
+                  />
+                  <label for="c-mcf-verify">
+                    Rodar verify completo do MCF no baseline final
+                  </label>
+                  <span class="check-status">interativo</span>
+                </li>
+                <li class="check-item" data-status="next">
+                  <input
+                    id="c-integration-pr"
+                    data-check-id="mcf-integration-pr"
+                    type="checkbox"
+                  />
+                  <label for="c-integration-pr">
+                    Revisar, publicar e integrar PR consolidado do MCF
+                  </label>
+                  <span class="check-status">interativo</span>
+                </li>
+                <li class="check-item" data-status="planned">
+                  <input
+                    id="c-roadmap-final"
+                    data-check-id="roadmap-adapters-final"
+                    type="checkbox"
+                  />
+                  <label for="c-roadmap-final">
+                    Atualizar este snapshot após os dois adapters
+                  </label>
+                  <span class="check-status">interativo</span>
+                </li>
+                <li class="check-item" data-status="planned">
+                  <input
+                    id="c-staging-audit"
+                    data-check-id="staging-audit"
+                    type="checkbox"
+                  />
+                  <label for="c-staging-audit">
+                    Se houver staging, auditar deploy e provar ausência de
+                    produção
+                  </label>
+                  <span class="check-status">interativo</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="check-group" aria-labelledby="check-gates">
+              <div class="check-group-header">
+                <span class="status gate">Fechado</span>
+                <h3 id="check-gates">
+                  Autoridade futura · não faz parte desta entrega
                 </h3>
               </div>
               <ul class="check-list">
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-capability"
-                    data-check-id="capability-registry"
-                    type="checkbox"
-                  />
-                  <label for="c-capability"
-                    >Definir Capability Registry e estados verificáveis</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-bridge-read"
-                    data-check-id="bridge-readonly"
-                    type="checkbox"
-                  />
-                  <label for="c-bridge-read"
-                    >Integrar primeiro boundary do bridge somente leitura</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
                 <li class="check-item" data-status="gate">
                   <input
                     id="c-write-gate"
                     data-check-id="write-boundary-gate"
                     type="checkbox"
                   />
-                  <label for="c-write-gate"
-                    >Autorizar separadamente qualquer capability de
-                    escrita</label
-                  >
-                  <span class="check-status">gate</span>
+                  <label for="c-write-gate">
+                    Abrir missão separada para Tasks 9/10 e escrita controlada
+                  </label>
+                  <span class="check-status">gate futuro</span>
                 </li>
                 <li class="check-item" data-status="gate">
                   <input
-                    id="c-write-safety"
-                    data-check-id="write-safety"
+                    id="c-vps-gate"
+                    data-check-id="vps-activation-gate"
                     type="checkbox"
                   />
-                  <label for="c-write-safety"
-                    >Provar allowlist, dry-run, idempotência, Receipt e
-                    rollback</label
-                  >
-                  <span class="check-status">gate</span>
-                </li>
-              </ul>
-            </section>
-
-            <section class="check-group" aria-labelledby="check-e2e">
-              <div class="check-group-header">
-                <span class="status gate">Depende de gate</span>
-                <h3 id="check-e2e">Validação, laboratório e rollout</h3>
-              </div>
-              <ul class="check-list">
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-ai-adapter"
-                    data-check-id="ai-provider-adapter"
-                    type="checkbox"
-                  />
-                  <label for="c-ai-adapter"
-                    >Implementar adapter neutro de IA com fallback
-                    local/offline</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input id="c-e2e" data-check-id="e2e-suite" type="checkbox" />
-                  <label for="c-e2e"
-                    >Executar suíte E2E de falhas, segurança e recovery</label
-                  >
-                  <span class="check-status">planejado</span>
-                </li>
-                <li class="check-item" data-status="planned">
-                  <input
-                    id="c-cost-audit"
-                    data-check-id="zero-cost-audit"
-                    type="checkbox"
-                  />
-                  <label for="c-cost-audit"
-                    >Auditar que cobrança de API de IA permanece em zero</label
-                  >
-                  <span class="check-status">planejado</span>
+                  <label for="c-vps-gate">
+                    Autorizar separadamente qualquer acesso ou ativação da VPS
+                  </label>
+                  <span class="check-status">gate futuro</span>
                 </li>
                 <li class="check-item" data-status="gate">
-                  <input id="c-lab" data-check-id="lab-pilot" type="checkbox" />
-                  <label for="c-lab"
-                    >Autorizar e concluir piloto controlado em
-                    lab/staging</label
-                  >
-                  <span class="check-status">gate</span>
+                  <input
+                    id="c-r7-gate"
+                    data-check-id="r7-broad-gate"
+                    type="checkbox"
+                  />
+                  <label for="c-r7-gate">
+                    Definir critérios antes de qualquer declaração de R7 ampla
+                  </label>
+                  <span class="check-status">gate futuro</span>
                 </li>
                 <li class="check-item" data-status="gate">
                   <input
@@ -2942,11 +2717,10 @@
                     data-check-id="production-authorization"
                     type="checkbox"
                   />
-                  <label for="c-production"
-                    >Avaliar produção somente em autorização futura
-                    separada</label
-                  >
-                  <span class="check-status">gate</span>
+                  <label for="c-production">
+                    Avaliar produção somente com autorização humana futura
+                  </label>
+                  <span class="check-status">gate futuro</span>
                 </li>
               </ul>
             </section>
@@ -2960,86 +2734,86 @@
       <section class="section shell" id="riscos" aria-labelledby="riscos-title">
         <div class="section-heading">
           <div>
-            <span class="section-index">07 / RISCOS</span>
-            <h2 id="riscos-title">O que pode quebrar a integração</h2>
+            <span class="section-index">08 / RISCOS</span>
+            <h2 id="riscos-title">Onde ainda podemos nos enganar</h2>
           </div>
           <p>
-            Os riscos principais não são de interface: são deriva de verdade,
-            autoridade excessiva e acoplamento.
+            O risco principal agora é promover evidência de laboratório para
+            autoridade operacional sem fechar transporte, auth e freshness.
           </p>
         </div>
 
         <div class="risk-grid">
           <article class="risk">
-            <span class="risk-level">ALTO · DRIFT</span>
-            <h3>Duas versões da verdade</h3>
+            <span class="risk-level">ALTO · ESTADO</span>
+            <h3>Implemented vira active por atalho</h3>
             <p>
-              Mitigar com owner por claim, freshness explícita, live check e
-              Registry sem copiar estado mutável.
+              Exigir conexão, autorização, verificação e timestamp válidos antes
+              de ACTIVE.
             </p>
           </article>
           <article class="risk">
-            <span class="risk-level">ALTO · PARALELISMO</span>
-            <h3>Equipes editam o mesmo boundary</h3>
+            <span class="risk-level">ALTO · EVIDÊNCIA</span>
+            <h3>Task 8 vira VPS pronta</h3>
             <p>
-              Registrar SHA/branch, ownership de arquivos, versão do schema e
-              integrar contract-first.
+              Manter G2-B como LAB_VALIDATED_INACTIVE; Tasks 9/10 e VPS seguem
+              fechados.
             </p>
           </article>
           <article class="risk critical">
             <span class="risk-level">CRÍTICO · AUTORIDADE</span>
-            <h3>Execução remota ou segredo vaza</h3>
+            <h3>Cockpit ganha mutação</h3>
             <p>
-              Read-only primeiro, allowlist, menor privilégio, redaction e
-              nenhum segredo em Capsule/Ledger/UI.
+              TriView continua GET-only; nenhuma credencial de bridge, shell ou
+              segredo na interface.
             </p>
           </article>
           <article class="risk">
             <span class="risk-level">ALTO · MEMÓRIA</span>
-            <h3>Ledger vira dependência canônica</h3>
+            <h3>MCF duplica memória bruta</h3>
             <p>
-              Bootstrap continua repository-native; memória e índice precisam
-              ser reconstruíveis.
+              Adapter Ledger deve devolver leitura efêmera; Ledger permanece o
+              owner e o MCF não persiste o conteúdo.
             </p>
           </article>
           <article class="risk">
-            <span class="risk-level">MÉDIO · INTERFACE</span>
-            <h3>Snapshot aparece como estado live</h3>
+            <span class="risk-level">MÉDIO · FRESHNESS</span>
+            <h3>SHA histórico parece live</h3>
             <p>
-              TriView deve exibir observed_at/freshness e desabilitar ação
-              quando a confiança for insuficiente.
+              Proveniência e observed_at acompanham toda claim; escrita falha
+              fechada se a evidência expirar.
             </p>
           </article>
           <article class="risk">
             <span class="risk-level">ALTO · CUSTO</span>
-            <h3>API gratuita muda quota</h3>
+            <h3>Fallback aciona provider pago</h3>
             <p>
-              Adapter neutro, inferência local, fallback offline e nenhuma rota
-              automática para cobrança.
+              Provider pago desabilitado por padrão, sem fallback automático e
+              com auditoria de zero chamadas.
             </p>
           </article>
           <article class="risk">
-            <span class="risk-level">MÉDIO · ACOPLAMENTO</span>
-            <h3>Falha circular derruba tudo</h3>
+            <span class="risk-level">ALTO · PARALELISMO</span>
+            <h3>Branches concorrentes se atropelam</h3>
             <p>
-              MCF deve recuperar identidade mesmo se Ledger, TriView ou provider
-              estiverem offline.
+              Integrar por commits/contratos, preservar worktrees originais e
+              publicar handoffs com SHAs exatos.
             </p>
           </article>
           <article class="risk">
-            <span class="risk-level">ALTO · CAPABILITY</span>
-            <h3>Agente inventa capacidade</h3>
+            <span class="risk-level">MÉDIO · DEPLOY</span>
+            <h3>Merge dispara ambiente inesperado</h3>
             <p>
-              Capability Registry separa existência, implementação, conexão,
-              autorização e verificação.
+              Auditar workflows antes do merge; aceitar somente lab/staging
+              explícito e provar que produção permaneceu intocada.
             </p>
           </article>
           <article class="risk">
             <span class="risk-level">ALTO · VPS</span>
-            <h3>Ambiente vira ponto único de falha</h3>
+            <h3>Frente paralela perde isolamento</h3>
             <p>
-              Health checks, backup/restore, rollout em lab e rollback
-              verificável antes de produção.
+              Continuidade da VPS mantém owner e missão próprios; esta entrega
+              não lê nem altera NODE-01.
             </p>
           </article>
         </div>
@@ -3048,56 +2822,62 @@
       <section class="section shell" aria-labelledby="gates-title">
         <div class="section-heading">
           <div>
-            <span class="section-index">08 / AUTORIDADE</span>
-            <h2 id="gates-title">Gates que preservam o controle humano</h2>
+            <span class="section-index">09 / AUTORIDADE</span>
+            <h2 id="gates-title">Gates que continuam valendo</h2>
           </div>
           <p>
-            Cada gate autoriza somente o próximo boundary. Nenhuma aprovação é
-            herdada para produção.
+            Um gate aprovado vale apenas para o boundary nomeado. Evidência de
+            leitura nunca concede escrita ou produção por herança.
           </p>
         </div>
 
         <div class="gate-grid">
           <article class="gate-card">
-            <span class="gate-number">GATE 1 · AGORA</span>
-            <h3>Revisar fundação</h3>
+            <span class="gate-number">GATE 1 · APROVADO</span>
+            <h3>Fundação e read-only</h3>
             <p>
-              Validar CF-0/CF-1 local e decidir se haverá push/PR. Ainda sem
-              deploy.
+              CF-0/1, CF-2, Registry, Capsules e cockpit GET-only têm evidência
+              dentro dos branches indicados.
             </p>
           </article>
           <article class="gate-card">
-            <span class="gate-number">GATE 2 · CONTRATO</span>
-            <h3>Onboard dos 4 repos</h3>
-            <p>Aprovar ownership, Registry/Capsules e integração read-only.</p>
+            <span class="gate-number">GATE 2 · EM FECHAMENTO</span>
+            <h3>Adapters reais</h3>
+            <p>
+              Cloud G2-A e MCF → Ledger precisam de teste real e SHA final antes
+              de subir de estado.
+            </p>
           </article>
           <article class="gate-card">
-            <span class="gate-number">GATE 3 · ESCRITA</span>
+            <span class="gate-number">GATE 3 · FECHADO</span>
             <h3>Capability material</h3>
             <p>
-              Autorizar alvo, ação, credencial limitada, dry-run e rollback.
+              Tasks 9/10, G2-B ativo e qualquer escrita exigem missão e
+              autorização próprias.
             </p>
           </article>
           <article class="gate-card">
-            <span class="gate-number">GATE 4 · PRODUÇÃO</span>
-            <h3>Rollout separado</h3>
+            <span class="gate-number">GATE 4 · FORA DO ESCOPO</span>
+            <h3>VPS e produção</h3>
             <p>
-              Somente após laboratório, auditoria, observabilidade e recovery.
+              Nenhum rollout, acesso à VPS, produção ou R7 ampla foi autorizado
+              ou declarado.
             </p>
           </article>
         </div>
 
         <article class="next-mission">
-          <span class="next-mission-number">→</span>
+          <span class="next-mission-number" aria-hidden="true">→</span>
           <div>
             <h3>Próxima missão recomendada</h3>
             <p>
-              Fazer o handoff/revisão da branch CF-0/CF-1 e, em paralelo,
-              produzir um inventário somente leitura dos quatro repositórios
-              (branch, HEAD, owner, fonte canônica, arquivos ativos e
-              dependências). Com esse baseline, preparar o contrato comum e as
-              três Capsules restantes sem tocar em produção ou nas frentes em
-              edição por outras equipes.
+              Fechar em paralelo o adapter local Cloud G2-A read-only e o
+              adapter MCF → Cognitive Ledger; publicar seus SHAs e E2Es;
+              atualizar as entradas do Capability Registry sem promover G2-B;
+              rodar a verificação completa do MCF; e consolidar tudo em um único
+              PR auditado para lab/staging. Depois, atualizar este painel com os
+              dois resultados. VPS, Tasks 9/10, escrita, R7 ampla e produção
+              permanecem para missões futuras separadas.
             </p>
           </div>
         </article>
@@ -3106,59 +2886,115 @@
       <section class="section shell" aria-labelledby="fontes-title">
         <div class="section-heading">
           <div>
-            <span class="section-index">09 / EVIDÊNCIAS</span>
-            <h2 id="fontes-title">Fontes usadas neste snapshot</h2>
+            <span class="section-index">10 / EVIDÊNCIAS</span>
+            <h2 id="fontes-title">Fontes deste snapshot</h2>
           </div>
           <p>
-            Os documentos abaixo sustentam o estado do MCF. Os papéis de Ledger
-            e TriView são recomendações derivadas da intenção do ecossistema e
-            ainda precisam de aprovação formal em contrato.
+            Links apontam para branches, merges, PRs e contratos que sustentam
+            os estados. O Cloud G2-A e o adapter MCF → Ledger ainda precisam de
+            uma última atualização quando seus SHAs finais existirem.
           </p>
         </div>
 
         <ul class="sources">
           <li>
-            <a href="MCF-CURRENT-STATE.md">
-              <span
-                ><span class="source-label">Estado local</span>MCF Current
-                State</span
-              >
+            <a
+              href="https://github.com/leon337/multiagent-collaboration-framework/pull/153"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>
+                <span class="source-label">MCF · merged</span>
+                PR #153 · CF-0/CF-1
+              </span>
             </a>
           </li>
           <li>
             <a
-              href="superpowers/specs/2026-08-20-context-fabric-federated-kernel-design.md"
+              href="https://github.com/leon337/multiagent-collaboration-framework/commit/c7455fc"
+              target="_blank"
+              rel="noreferrer"
             >
-              <span
-                ><span class="source-label">Design aprovado</span>Federated
-                Context Kernel</span
-              >
+              <span>
+                <span class="source-label">MCF · branch</span>
+                Context Fabric integrado · c7455fc
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="integrations/MCF-CONTEXT-RECOVERY-READ-API.md">
+              <span>
+                <span class="source-label">Contrato local</span>
+                Context Recovery Read API
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md">
+              <span>
+                <span class="source-label">Handoff local</span>
+                Frentes paralelas do ecossistema
+              </span>
             </a>
           </li>
           <li>
             <a
-              href="audits/2026-08-20-context-fabric-pre-implementation-compatibility-audit-rerun-001.md"
+              href="https://github.com/leon337/cognitive-ledger/pull/2"
+              target="_blank"
+              rel="noreferrer"
             >
-              <span
-                ><span class="source-label">Auditoria</span>Compatibility Audit
-                Rerun</span
-              >
+              <span>
+                <span class="source-label">Ledger · merged</span>
+                PR #2 · core zero-cost e E2E
+              </span>
             </a>
           </li>
           <li>
-            <a href="proposals/MCF-CONTEXT-FABRIC-DISCOVERY-CHECKPOINT-001.md">
-              <span
-                ><span class="source-label">Descoberta</span>Context Fabric
-                Checkpoint</span
-              >
+            <a
+              href="https://github.com/leon337/cognitive-ledger/commit/e0e715b"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>
+                <span class="source-label">Ledger · pós-merge</span>
+                CI real · e0e715b
+              </span>
             </a>
           </li>
           <li>
-            <a href="proposals/MCF-CONTEXT-FABRIC-BLOCK-2-DRAFT.md">
-              <span
-                ><span class="source-label">Draft não canônico</span
-                >Architectural Block 2</span
-              >
+            <a
+              href="https://github.com/leon337/triview-workspace-linux/pull/76"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>
+                <span class="source-label">TriView · merged</span>
+                PR #76 · Context Recovery
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/leon337/triview-workspace-linux/pull/77"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>
+                <span class="source-label">TriView · merged</span>
+                PR #77 · Capability Cockpit
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/leon337/triview-workspace-linux/commit/5013ffeb"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>
+                <span class="source-label">TriView · release</span>
+                Último merge integrado · 5013ffeb
+              </span>
             </a>
           </li>
           <li>
@@ -3167,34 +3003,28 @@
               target="_blank"
               rel="noreferrer"
             >
-              <span
-                ><span class="source-label">Repositório proprietário</span>Cloud
-                Infrastructure</span
-              >
+              <span>
+                <span class="source-label">Cloud · owner</span>
+                G2-B Task 8 e G2-A em finalização
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="MCF-CURRENT-STATE.md">
+              <span>
+                <span class="source-label">MCF · estado</span>
+                MCF Current State
+              </span>
             </a>
           </li>
           <li>
             <a
-              href="https://github.com/leon337/cognitive-ledger"
-              target="_blank"
-              rel="noreferrer"
+              href="superpowers/specs/2026-08-20-context-fabric-federated-kernel-design.md"
             >
-              <span
-                ><span class="source-label">Repositório proprietário</span
-                >Cognitive Ledger</span
-              >
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://github.com/leon337/triview-workspace-linux"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span
-                ><span class="source-label">Repositório proprietário</span
-                >TriView Workspace Linux</span
-              >
+              <span>
+                <span class="source-label">Design</span>
+                Federated Context Kernel
+              </span>
             </a>
           </li>
         </ul>
@@ -3204,7 +3034,7 @@
     <footer>
       <div class="shell footer-inner">
         <span
-          >MCF Ecosystem Integration Roadmap · snapshot local de
+          >MCF Ecosystem Integration Roadmap · snapshot de evidências de
           2026-08-23</span
         >
         <span
@@ -3218,7 +3048,7 @@
       (() => {
         "use strict";
 
-        const storageKey = "mcf-ecosystem-roadmap-checklist-v1";
+        const storageKey = "mcf-ecosystem-roadmap-checklist-v2";
         const checkboxes = Array.from(
           document.querySelectorAll(".check-item input[type='checkbox']"),
         );
