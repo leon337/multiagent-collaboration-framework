@@ -2,17 +2,19 @@
 
 Status: **PREPARATION ONLY**. This runbook does not authorize or instruct a real NODE-01 write.
 
-## Before G2-B technical PASS
+## Before any G2-B activation
 
 1. Work only on the MCF preparation branch/PR.
 2. Keep the preparation module unregistered from live `AdapterRegistry` transport.
 3. Run unit/contract tests and schema checks in CI.
-4. Record the exact MCF source SHA and the exact G2-B candidate SHA used for contract comparison.
+4. Bind the exact MCF source SHA and the Task 8 lab candidate
+   `570779b75ba41ac3725ef16bc65a163e01631a1c` used for contract comparison.
 5. Treat all real-write, grant/reissue, production, merge, and NODE-01 mutation gates as closed unless independently authorized in their own authority flow.
 
-## Final contract reconciliation after G2-B PASS
+## Final contract reconciliation after Tasks 9/10
 
-At the exact technically approved G2-B SHA, compare:
+Task 8 has a 13/13 PASS only in a disposable, network-isolated local lab. At the exact future
+Tasks 9/10 candidate SHA, compare:
 
 - `control_plane/g2b/protocol.py` request constants/fields/operations;
 - `control_plane/g2b/state.py` public receipt fields;
@@ -71,7 +73,7 @@ The MCF side never performs NODE-01 emergency root actions. Emergency bridge shu
 - preparation branch/PR targets current MCF `main`;
 - no cloud-infrastructure code changed by this mission;
 - no live adapter registration/transport present;
-- G2-B exact SHA re-read after technical PASS;
+- Task 8 exact lab SHA recorded and future Tasks 9/10 SHA re-read before activation;
 - contract tests include negative and replay/SHA/evidence cases;
 - Permission Engine and Human Delegation Firewall remain in the path;
 - dispatcher/ledger/evidence model is reused, not duplicated;
