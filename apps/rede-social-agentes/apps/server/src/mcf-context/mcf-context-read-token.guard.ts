@@ -32,7 +32,7 @@ export class McfContextReadTokenGuard implements CanActivate {
     if (this.expectedDigest === null) {
       throw new ServiceUnavailableException({
         code: 'MCF_CONTEXT_READ_DISABLED',
-        message: 'The read-only Context Recovery endpoint is disabled.',
+        message: 'The read-only MCF Context boundary is disabled.',
       });
     }
 
@@ -44,7 +44,7 @@ export class McfContextReadTokenGuard implements CanActivate {
     if (!token || !timingSafeEqual(digest(token), this.expectedDigest)) {
       throw new UnauthorizedException({
         code: 'MCF_CONTEXT_AUTHENTICATION_FAILED',
-        message: 'The Context Recovery read token is invalid.',
+        message: 'The MCF Context read token is invalid.',
       });
     }
     return true;
