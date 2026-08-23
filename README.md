@@ -44,7 +44,7 @@ Capacidades comprovadas incluem:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - dispatcher de ações externas e adapters com evidência verificável;
-- **16 skills registradas, 16 executáveis, 0 apenas documentais** no lineage qualificado;
+- **22 skills registradas: 16 executáveis e 6 documentais**; as seis de MCF-DEC-053 ainda não são aceitas pelo `SkillExecutor`;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA, readiness/version e recovery por redeploy;
@@ -138,7 +138,9 @@ Arquivos principais:
 - **MESTRE** — orquestrador responsável pela condução da missão e exposição do fluxo.
 - agentes especialistas — ativados conforme competência, risco e boundary.
 
-Existem **29 agentes nomeados**, selecionados por competência. Essa composição descreve papéis/contratos do MCF; não prova 29 modelos cognitivos independentes em execução simultânea. LEANDRO não entra nessa contagem.
+Existem **49 agentes nomeados**, selecionados por competência. Essa composição descreve papéis/contratos do MCF; não prova 49 modelos cognitivos independentes em execução simultânea. LEANDRO não entra nessa contagem.
+
+A expansão foi aprovada em `MCF-DEC-053` e adiciona duas divisões especializadas: **Design & Experience Engineering** e **AI & Model Systems**. A matriz vigente é [`docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-49-AGENTES.md`](docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-49-AGENTES.md).
 
 Protocolo operacional vigente:
 [`docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`](docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md)
@@ -151,21 +153,26 @@ Princípios centrais:
 - PRF para fases Classe B/C;
 - gates/reviews vinculados ao estado e SHA aplicável;
 - LEANDRO não é operador técnico rotineiro;
-- ação externa irreversível ou publicação relevante exige autoridade compatível com o boundary.
+- ação externa irreversível ou publicação relevante exige autoridade compatível com o boundary;
+- popularidade ou região do fornecedor não substituem avaliação de capacidade, recência, custo, licença/termos, privacidade e evidência própria.
 
 ## Skills
 
 O registro canônico está em [`skills/registry.yaml`](skills/registry.yaml).
 
 ```yaml
-registered: 16
+registered: 22
 executable: 16
-documental_only: 0
+documental_only: 6
 ```
 
-Skills atuais:
+Skills executáveis atuais:
 
 `MCF-START-MISSION`, `MCF-SELECT-AGENTS`, `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE`, `MCF-DESIGN-ARCHITECTURE`, `MCF-IMPLEMENT-CHANGE`, `MCF-REVIEW-CODE`, `MCF-RUN-TESTS`, `MCF-GIT-PR-RELEASE`, `MCF-DEPLOY-VALIDATE`, `MCF-TRACE-MISSION`, `MCF-EVALUATE-AGENTS`, `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`.
+
+Skills documentais adicionadas por MCF-DEC-053, **ainda não executáveis pelo runtime**:
+
+`MCF-DESIGN-SPECIALIST`, `MCF-DESIGN-SYSTEM`, `MCF-RADAR-MODELS`, `MCF-DISCOVER-FREE-API`, `MCF-ROUTE-MODELS` e `MCF-EVALUATE-MODEL`.
 
 ## Releases e marcos
 
@@ -181,6 +188,7 @@ Skills atuais:
 | `v1.0.0` | identidade durável | `7f741e10…` |
 | `v1.1.0` | identidade durável | `5d79f488…` |
 | governança de produção pós-v1.1 | `CURRENT_IMPLEMENTED` | #140 resolvida via #145 |
+| MCF-DEC-053 — roster de 49 agentes | `CURRENT_CANONICAL_DOCUMENTATION` | aprovado; runtime das 6 novas skills pendente |
 
 `latest` e metadados mutáveis da página de Release devem ser lidos live.
 
@@ -220,7 +228,7 @@ Fonte: [`experimentos/telefone-sem-fio-001/RESULTADO_FINAL.md`](experimentos/tel
 | Onde está o runtime? | [`apps/rede-social-agentes/apps/server/src/mcf-runtime/`](apps/rede-social-agentes/apps/server/src/mcf-runtime/) |
 | Como o runtime é documentado? | [`docs/runtime/README.md`](docs/runtime/README.md) |
 | Quais skills existem? | [`skills/registry.yaml`](skills/registry.yaml) |
-| Quem são os agentes? | [`docs/agentes/README.md`](docs/agentes/README.md) |
+| Quem são os agentes? | [`docs/agentes/README.md`](docs/agentes/README.md) + matriz de 49 agentes |
 | Qual é o protocolo operacional? | [`docs/protocols/`](docs/protocols/) |
 | Onde estão as decisões? | [`docs/decisions/`](docs/decisions/) |
 | Onde está a governança? | [`docs/governanca/`](docs/governanca/) |
