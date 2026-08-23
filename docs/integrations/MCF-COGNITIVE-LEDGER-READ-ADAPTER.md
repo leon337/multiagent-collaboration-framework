@@ -1,6 +1,6 @@
 # MCF → Cognitive Ledger — read-only adapter de laboratório
 
-**Estado desta revisão:** `IMPLEMENTED_AWAITING_REAL_LAB_E2E`
+**Estado desta revisão:** `REAL_READONLY_LAB_E2E_PASS`
 
 **Provider fixo:** `leon337/cognitive-ledger@b882d2808af74858a6ba351fb755bb3843e33ab2`
 
@@ -12,6 +12,8 @@ O adapter pertence ao boundary de Context do MCF e expõe uma única consulta:
 POST /v1/mcf/context/ledger/query
 x-mcf-context-token: <MCF_CONTEXT_READ_TOKEN>
 Content-Type: application/json
+
+HTTP/1.1 200 OK
 ```
 
 `POST` transporta uma pergunta estruturada; não representa autorização de
@@ -125,3 +127,30 @@ O gate só passa quando observa quatro respostas pelo controller MCF, quatro
 auditorias Ledger, três Eventos antes/depois, zero embeddings, zero chamadas pagas
 e fingerprint idêntico de `eventos_cognitivos`. A auditoria de leitura é o único
 efeito esperado.
+
+## Evidência executada
+
+O gate foi executado no adapter MCF
+`e26c6ca6878bcc5e96bf3259d371a1765fc9c858`, contra o provider fixo
+`b882d2808af74858a6ba351fb755bb3843e33ab2`, em
+`2026-08-23T22:09:01.187Z`:
+
+```text
+resultado                    PASS
+ferramentas                  4/4
+Eventos antes/depois         3/3
+auditorias antes/depois      0/4
+embeddings                   0
+chamadas pagas               0
+fingerprint antes/depois     f2d32b5241e0feb78093938f0c4c72f1 (idêntico)
+persistência no MCF          false
+repositórios imutáveis       true
+processos/portas encerrados  true
+```
+
+O fingerprint muda entre laboratórios porque as fixtures contêm timestamps de
+criação, mas é calculado imediatamente antes e depois das quatro consultas dentro
+da mesma execução; o valor acima permaneceu idêntico no par observado. O harness
+também confirmou os mesmos commits e worktrees limpos no início/fim, encerrou MCF,
+MCP, Edge e Supabase e verificou fechadas as portas `33110`, `33100`, `54331` e
+`54332` antes de emitir `PASS`.
