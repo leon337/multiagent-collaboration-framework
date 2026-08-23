@@ -46,3 +46,49 @@ This checkpoint may become `PREPARATION_PASS` only after the preparation branch 
 ## Next gate after G2-B technical PASS
 
 Reconcile this preparation against the exact approved G2-B SHA. If compatible, prepare a separate reviewed activation change for the real adapter/transport and its Evidence Validator integration. The first real mutation still requires the explicit real-write authority/gate; it is not inherited from this checkpoint.
+
+## Post-preparation live audit — 2026-08-22
+
+### MCF preparation evidence
+
+The persisted preparation head `c22fc5aadd70ee2de2a38f1d5532f2400ab20700` completed all five observed pull-request workflows successfully:
+
+- Documentation validation — run `32605416599` — `success`;
+- Rede Social Container Smoke — run `32605416591` — `success`;
+- Rede Social Foundation — run `32605416574` — `success`;
+- MCF v1.1 Qualification — run `32605416558` — `success`;
+- MCF Production Readiness — run `32605416594` — `success`.
+
+This supports `PREPARATION_PASS` for the consumer-side preparation only.
+
+### G2-B live reconciliation
+
+The active cloud G2-B PR #11 still points to candidate `fbef3d407dbd9b7947b6c100a63d098eaebe2b6a` and remains draft/unmerged.
+
+Newer PR evidence than the original checkpoint shows the disposable Task 8 attempt terminating with:
+
+```text
+TASK8_STATUS=2
+G2B_DISPOSABLE_TEST_ABORTED stage=apply_g2b exit=2 cleanup=0
+TASK8_ACCEPTANCE=FAIL_OR_NOT_TERMINAL
+```
+
+The resource update itself reported `RESOURCE_UPDATE_PASS`, but zero lifecycle acceptance markers were produced before the abort. The exact root cause of `apply_g2b exit=2` is **NÃO VERIFICADA** by this MCF-side audit and must not be invented.
+
+The durable cloud state file on that same branch contains older Task 8 state than the later PR evidence. This audit therefore treats the later PR execution evidence as the current observational result while leaving cloud canonical-state reconciliation to the G2-B mission owner.
+
+### Current decision
+
+- MCF preparation: `PREPARATION_PASS`.
+- G2-B technical acceptance: `NOT_PASS`.
+- MCF live adapter/transport activation: `BLOCKED_G2B_TASK8`.
+- NODE-01 real write: `NOT_AUTHORIZED`.
+- real grant/reissue: `NOT_AUTHORIZED`.
+- production mutation: `NOT_AUTHORIZED`.
+- merge: not performed by this mission.
+
+No executable integration capability is added by this audit update.
+
+### Next allowed step
+
+Wait for the G2-B mission to produce a terminal technical PASS on an exact candidate SHA. Then re-read the approved `protocol.py`, `state.py`, executor, workflow, grant/replay/rollback/revoke boundaries and evidence contract at that exact SHA. Any material drift from the preparation baseline requires `REQUIRES_REVIEW`; compatibility alone does not authorize a real write.
