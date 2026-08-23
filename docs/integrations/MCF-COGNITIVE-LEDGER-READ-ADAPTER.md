@@ -131,9 +131,9 @@ efeito esperado.
 ## Evidência executada
 
 O gate foi executado no adapter MCF
-`e26c6ca6878bcc5e96bf3259d371a1765fc9c858`, contra o provider fixo
+`cee46e1d5d935144a84f67ad42a35a7a370bf49f`, contra o provider fixo
 `b882d2808af74858a6ba351fb755bb3843e33ab2`, em
-`2026-08-23T22:09:01.187Z`:
+`2026-08-23T22:18:26.123Z`:
 
 ```text
 resultado                    PASS
@@ -142,7 +142,7 @@ Eventos antes/depois         3/3
 auditorias antes/depois      0/4
 embeddings                   0
 chamadas pagas               0
-fingerprint antes/depois     f2d32b5241e0feb78093938f0c4c72f1 (idêntico)
+fingerprint antes/depois     4c519bb6a61808742c6dd11979ca6abe (idêntico)
 persistência no MCF          false
 repositórios imutáveis       true
 processos/portas encerrados  true

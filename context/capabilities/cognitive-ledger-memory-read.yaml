@@ -40,14 +40,14 @@ lifecycle:
   connection_state: CONNECTED
   runtime_state: ACTIVE
   verification_state: VERIFIED
-  last_verified_at: "2026-08-23T22:09:01.187Z"
+  last_verified_at: "2026-08-23T22:18:26.123Z"
 
 evidence:
   - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/e2e/cognitive-ledger-real-lab.mjs
-    source_revision: e26c6ca6878bcc5e96bf3259d371a1765fc9c858
-    observed_at: "2026-08-23T22:09:01.187Z"
+    source_revision: cee46e1d5d935144a84f67ad42a35a7a370bf49f
+    observed_at: "2026-08-23T22:18:26.123Z"
   - source_ref: repo://leon337/cognitive-ledger/documentacao/integracao/mcf-mcp-readonly-lab.md
     source_revision: b882d2808af74858a6ba351fb755bb3843e33ab2
-    observed_at: "2026-08-23T22:09:01.187Z"
+    observed_at: "2026-08-23T22:18:26.123Z"
 
 freshness: LIVE_REQUIRED
