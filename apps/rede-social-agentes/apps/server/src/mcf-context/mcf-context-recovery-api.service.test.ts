@@ -143,7 +143,22 @@ describe('McfContextRecoveryApiService', () => {
   });
 
   it('stays disabled for absent or malformed environment configuration', async () => {
-    for (const env of [{}, { MCF_CONTEXT_CONFIG_JSON: '{"unexpected":true}' }]) {
+    for (const env of [
+      {},
+      { MCF_CONTEXT_CONFIG_JSON: '{"unexpected":true}' },
+      {
+        MCF_CONTEXT_CONFIG_JSON: JSON.stringify({
+          registry_repository_root: '/missing/mcf-registry',
+          registry_sources: [
+            {
+              source_ref: 'context/projects/missing.yaml',
+              source_revision: 'a'.repeat(40),
+            },
+          ],
+          project_repositories: {},
+        }),
+      },
+    ]) {
       const service = McfContextRecoveryApiService.fromEnvironment(env);
       await expect(service.recoverReadOnly('MCF', false)).rejects.toBeInstanceOf(
         McfContextRecoveryUnavailableError,

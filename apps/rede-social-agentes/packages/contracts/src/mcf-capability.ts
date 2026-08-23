@@ -39,3 +39,13 @@ export interface McfCapabilityRegistryEntry {
   evidence: McfContextProvenance[];
   freshness: McfContextFreshness;
 }
+
+export interface McfCapabilityRegistrySnapshot {
+  schema_version: 1;
+  retrieved_at: string;
+  project_id: string | null;
+  read_only: true;
+  evidence_only: true;
+  entries: McfCapabilityRegistryEntry[];
+  sources: McfContextProvenance[];
+}

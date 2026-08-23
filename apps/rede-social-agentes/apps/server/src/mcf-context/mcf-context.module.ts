@@ -4,12 +4,18 @@ import {
   MCF_CONTEXT_READ_TOKEN,
   McfContextReadTokenGuard,
 } from './mcf-context-read-token.guard.js';
+import { McfCapabilityRegistryApiService } from './mcf-capability-registry-api.service.js';
+import { McfCapabilityRegistryController } from './mcf-capability-registry.controller.js';
 import { McfContextRecoveryApiService } from './mcf-context-recovery-api.service.js';
 import { McfContextRecoveryController } from './mcf-context-recovery.controller.js';
 
 @Module({
-  controllers: [McfContextRecoveryController],
+  controllers: [McfCapabilityRegistryController, McfContextRecoveryController],
   providers: [
+    {
+      provide: McfCapabilityRegistryApiService,
+      useFactory: () => McfCapabilityRegistryApiService.fromEnvironment(process.env),
+    },
     {
       provide: McfContextRecoveryApiService,
       useFactory: () => McfContextRecoveryApiService.fromEnvironment(process.env),
@@ -20,6 +26,6 @@ import { McfContextRecoveryController } from './mcf-context-recovery.controller.
     },
     McfContextReadTokenGuard,
   ],
-  exports: [McfContextRecoveryApiService],
+  exports: [McfCapabilityRegistryApiService, McfContextRecoveryApiService],
 })
 export class McfContextModule {}

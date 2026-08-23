@@ -2,12 +2,12 @@
 
 ## Boundary
 
-The endpoint is an optional laboratory/staging projection of Context Fabric. It reads the MCF
-Project Registry plus the owning repository Capsule and returns a validated
-`McfContextRecoveryReceipt`.
+The endpoints are an optional laboratory/staging projection of Context Fabric. They read the MCF
+Project and Capability Registries plus the owning repository Capsule.
 
 ```text
 GET /v1/mcf/context/recovery
+GET /v1/mcf/context/capabilities
 ```
 
 It never accepts a material-action flag, persists a Receipt, invokes an external-action adapter,
@@ -20,7 +20,7 @@ The boundary is disabled unless both are configured:
 - `MCF_CONTEXT_CONFIG_JSON`: a bounded, strict configuration with exact repository roots and Git
   revisions.
 
-## Request
+## Recovery request
 
 Header:
 
@@ -43,6 +43,22 @@ curl --fail-with-body --silent --show-error \
   "http://127.0.0.1:3000/v1/mcf/context/recovery?project_hint=TriView&requires_current_operational_state=true"
 ```
 
+## Capability Registry request
+
+The capability endpoint uses the same dedicated read token. With no query it returns every
+configured entry; an optional stable `project_id` filters entries where that project is the
+provider or a consumer.
+
+```bash
+curl --fail-with-body --silent --show-error \
+  --header "x-mcf-context-token: ${MCF_CONTEXT_READ_TOKEN}" \
+  "http://127.0.0.1:3000/v1/mcf/context/capabilities?project_id=triview-workspace-linux"
+```
+
+The response is an evidence-only `McfCapabilityRegistrySnapshot`. Lifecycle fields distinguish
+implemented code from a currently connected, authorized and verified capability. A bounded-write
+entry cannot become `ACTIVE` merely because its code exists.
+
 ## Laboratory configuration
 
 `MCF_CONTEXT_CONFIG_JSON` has this strict shape:
@@ -54,6 +70,12 @@ curl --fail-with-body --silent --show-error \
   "registry_sources": [
     {
       "source_ref": "context/projects/triview-workspace-linux.yaml",
+      "source_revision": "<exact-40-or-64-character-git-commit>"
+    }
+  ],
+  "capability_sources": [
+    {
+      "source_ref": "context/capabilities/mcf-context-recovery-read.yaml",
       "source_revision": "<exact-40-or-64-character-git-commit>"
     }
   ],
@@ -86,6 +108,7 @@ fresh; that requires the separately governed read-only Control Bridge capability
 - no paid AI API or model call;
 - no secret inside Registry, Capsule, Receipt, or configuration committed to Git;
 - dedicated read token cannot authorize MCF runtime actions;
+- capability listing is GET-only and cannot authorize a declared capability;
 - repository roots and revisions are operator configuration, not request input;
 - bounded YAML/JSON parsing, no aliases, tags, symlinks, traversal, or network schema loading;
 - endpoint is not enabled in production by this change.

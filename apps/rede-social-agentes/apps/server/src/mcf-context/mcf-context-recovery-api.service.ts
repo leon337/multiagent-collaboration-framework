@@ -36,6 +36,18 @@ const contextApiConfigurationSchema = z
       )
       .min(1)
       .max(255),
+    capability_sources: z
+      .array(
+        z
+          .object({
+            source_ref: sourceReferenceSchema,
+            source_revision: gitRevisionSchema,
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(128)
+      .optional(),
     project_repositories: z.record(
       projectIdSchema,
       z
@@ -47,6 +59,26 @@ const contextApiConfigurationSchema = z
     ),
   })
   .strict();
+
+export type McfContextApiConfiguration = z.infer<typeof contextApiConfigurationSchema>;
+
+export function loadMcfContextApiConfiguration(
+  env: NodeJS.ProcessEnv,
+): McfContextApiConfiguration | null {
+  const rawConfiguration = env.MCF_CONTEXT_CONFIG_JSON;
+  if (
+    rawConfiguration === undefined ||
+    Buffer.byteLength(rawConfiguration, 'utf8') > MAX_CONTEXT_CONFIG_BYTES
+  ) {
+    return null;
+  }
+
+  try {
+    return contextApiConfigurationSchema.parse(JSON.parse(rawConfiguration));
+  } catch {
+    return null;
+  }
+}
 
 export class McfContextRecoveryUnavailableError extends Error {
   constructor() {
@@ -63,16 +95,10 @@ export class McfContextRecoveryApiService {
     env: NodeJS.ProcessEnv = process.env,
     liveVerifier: ContextLiveVerifier = new GitRepositoryLiveVerifier(),
   ): McfContextRecoveryApiService {
-    const rawConfiguration = env.MCF_CONTEXT_CONFIG_JSON;
-    if (
-      rawConfiguration === undefined ||
-      Buffer.byteLength(rawConfiguration, 'utf8') > MAX_CONTEXT_CONFIG_BYTES
-    ) {
-      return new McfContextRecoveryApiService(null);
-    }
+    const configuration = loadMcfContextApiConfiguration(env);
+    if (configuration === null) return new McfContextRecoveryApiService(null);
 
     try {
-      const configuration = contextApiConfigurationSchema.parse(JSON.parse(rawConfiguration));
       return new McfContextRecoveryApiService(
         new ContextRecoveryService(
           {
