@@ -1,4 +1,4 @@
-/* global console, fetch, setTimeout, URL */
+/* global clearTimeout, console, fetch, setTimeout, URL */
 
 import 'reflect-metadata';
 
@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { connect as connectTcp } from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
@@ -17,6 +18,7 @@ import { exportJWK, generateKeyPair, importJWK, SignJWT } from 'jose';
 
 const PROVIDER_REVISION = 'b882d2808af74858a6ba351fb755bb3843e33ab2';
 const serverRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const mcfRepositoryRoot = resolve(serverRoot, '../../../..');
 const providerRootValue = process.env.COGNITIVE_LEDGER_REPOSITORY_ROOT;
 if (!providerRootValue) {
   throw new Error('Defina COGNITIVE_LEDGER_REPOSITORY_ROOT para o provider fixo do laboratório.');
@@ -73,6 +75,14 @@ assert.equal(
   execute('git', ['status', '--porcelain']).trim(),
   '',
   'Provider Ledger deve estar limpo.',
+);
+const initialMcfRevision = execute('git', ['rev-parse', 'HEAD'], {
+  cwd: mcfRepositoryRoot,
+}).trim();
+assert.equal(
+  execute('git', ['status', '--porcelain'], { cwd: mcfRepositoryRoot }).trim(),
+  '',
+  'Worktree MCF deve estar limpo antes do laboratório.',
 );
 assert.ok(
   readFileSync(providerConfigPath, 'utf8').includes('project_id = "cognitive-ledger-lab"'),
@@ -223,7 +233,9 @@ async function waitForHttp(url, accept, processHandle, timeoutMs = 30_000) {
 }
 
 async function stopProcess(processHandle) {
-  if (!processHandle || processHandle.exitCode !== null) return;
+  if (!processHandle || processHandle.exitCode !== null || processHandle.signalCode !== null) {
+    return;
+  }
   processHandle.kill('SIGTERM');
   await Promise.race([
     new Promise((resolveExit) => processHandle.once('exit', resolveExit)),
@@ -231,6 +243,51 @@ async function stopProcess(processHandle) {
   ]);
   if (processHandle.exitCode === null && processHandle.signalCode === null) {
     processHandle.kill('SIGKILL');
+    await Promise.race([
+      new Promise((resolveExit) => processHandle.once('exit', resolveExit)),
+      new Promise((resolveDelay) => setTimeout(resolveDelay, 5_000)),
+    ]);
+  }
+}
+
+async function assertTcpPortClosed(port) {
+  await new Promise((resolveClosed, rejectOpen) => {
+    const socket = connectTcp({ host: '127.0.0.1', port });
+    const timeout = setTimeout(() => {
+      socket.destroy();
+      rejectOpen(new Error(`Timeout verificando encerramento da porta local ${port}.`));
+    }, 2_000);
+    socket.once('connect', () => {
+      clearTimeout(timeout);
+      socket.destroy();
+      rejectOpen(new Error(`Porta local ${port} permaneceu aberta após o laboratório.`));
+    });
+    socket.once('error', () => {
+      clearTimeout(timeout);
+      socket.destroy();
+      resolveClosed();
+    });
+  });
+}
+
+function assertProcessStopped(runtime, name) {
+  assert.ok(
+    runtime &&
+      (runtime.processHandle.exitCode !== null || runtime.processHandle.signalCode !== null),
+    `${name} permaneceu ativo após o laboratório.`,
+  );
+}
+
+async function stopAndVerifyLocalServices() {
+  await mcfApplication?.close();
+  mcfApplication = undefined;
+  await stopProcess(mcpRuntime?.processHandle);
+  await stopProcess(edgeRuntime?.processHandle);
+  stopSupabase();
+  assertProcessStopped(mcpRuntime, 'MCP Ledger');
+  assertProcessStopped(edgeRuntime, 'Edge Function Ledger');
+  for (const port of [33110, 33100, 54331, 54332]) {
+    await assertTcpPortClosed(port);
   }
 }
 
@@ -305,7 +362,7 @@ async function callMcf(operation, input) {
     },
     body: JSON.stringify({ operation, input }),
   });
-  assert.equal(response.status, 201, `Boundary MCF falhou para ${operation}.`);
+  assert.equal(response.status, 200, `Boundary MCF falhou para ${operation}.`);
   assert.equal(response.headers.get('cache-control'), 'no-store, private');
   const body = await response.json();
   assert.deepEqual(
@@ -426,6 +483,23 @@ try {
   assert.equal(audits.filter(({ fonte_bruta_acessada }) => fonte_bruta_acessada).length, 1);
   assert.equal(audits.filter(({ degradado }) => degradado).length, 2);
 
+  await stopAndVerifyLocalServices();
+  assert.equal(execute('git', ['rev-parse', 'HEAD']).trim(), PROVIDER_REVISION);
+  assert.equal(
+    execute('git', ['status', '--porcelain']).trim(),
+    '',
+    'Provider Ledger foi alterado pelo laboratório.',
+  );
+  assert.equal(
+    execute('git', ['rev-parse', 'HEAD'], { cwd: mcfRepositoryRoot }).trim(),
+    initialMcfRevision,
+  );
+  assert.equal(
+    execute('git', ['status', '--porcelain'], { cwd: mcfRepositoryRoot }).trim(),
+    '',
+    'Worktree MCF foi alterado pelo laboratório.',
+  );
+
   console.log(
     JSON.stringify(
       {
@@ -440,6 +514,8 @@ try {
         chamadas_pagas: 0,
         fingerprint_eventos: fingerprintAfter,
         persistencia_mcf: false,
+        repositorios_imutaveis: true,
+        processos_e_portas_encerrados: true,
       },
       null,
       2,

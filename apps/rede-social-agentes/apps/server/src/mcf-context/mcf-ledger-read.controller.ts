@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Header,
+  HttpCode,
   Inject,
   Post,
   ServiceUnavailableException,
@@ -26,6 +27,7 @@ export class McfLedgerReadController {
   ) {}
 
   @Post('query')
+  @HttpCode(200)
   @Header('Cache-Control', 'no-store, private')
   @Header('Pragma', 'no-cache')
   @Header('X-Content-Type-Options', 'nosniff')
