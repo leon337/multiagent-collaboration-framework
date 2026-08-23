@@ -443,7 +443,9 @@ export class McfLedgerReadApiService {
 
     let serializedInput: string;
     try {
-      serializedInput = JSON.stringify(value);
+      const serialized = JSON.stringify(value);
+      if (serialized === undefined) throw new McfLedgerQueryInvalidError();
+      serializedInput = serialized;
     } catch {
       throw new McfLedgerQueryInvalidError();
     }

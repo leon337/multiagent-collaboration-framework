@@ -245,6 +245,15 @@ describe('McfLedgerReadApiService', () => {
     expect(mcp.connect).not.toHaveBeenCalled();
   });
 
+  it('treats non-JSON top-level values as invalid queries instead of provider failures', async () => {
+    const mcp = client();
+    const service = new McfLedgerReadApiService(configuration(), factory(mcp));
+    for (const value of [undefined, () => undefined, Symbol('non-json')]) {
+      await expect(service.queryReadOnly(value)).rejects.toBeInstanceOf(McfLedgerQueryInvalidError);
+    }
+    expect(mcp.connect).not.toHaveBeenCalled();
+  });
+
   it.each([
     {
       providerTools: [
