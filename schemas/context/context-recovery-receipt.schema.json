@@ -139,6 +139,17 @@
           "material_action": { "const": false }
         }
       }
+    },
+    {
+      "if": {
+        "properties": { "recovery_state": { "const": "AMBIGUOUS_CONTEXT" } },
+        "required": ["recovery_state"]
+      },
+      "then": {
+        "properties": {
+          "project_id": { "type": "null" }
+        }
+      }
     }
   ],
   "$defs": {

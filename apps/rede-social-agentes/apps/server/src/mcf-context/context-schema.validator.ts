@@ -15,6 +15,8 @@ export type ContextSchemaValidationResult =
 
 const RFC_3339_DATE_TIME =
   /^(\d{4})-(\d{2})-(\d{2})[Tt](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:[Zz]|([+-])(\d{2}):(\d{2}))$/;
+const MAX_JSON_DEPTH = 64;
+const MAX_JSON_NODES = 10_000;
 
 function readSchema(path: string): AnySchema {
   return JSON.parse(readFileSync(path, 'utf8')) as AnySchema;
@@ -73,77 +75,89 @@ function isRfc3339DateTime(value: string): boolean {
   );
 }
 
-function findNonJsonValue(
-  value: unknown,
-  instancePath = '',
-  ancestors = new Set<object>(),
-): string | null {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean') return null;
-  if (typeof value === 'number') return Number.isFinite(value) ? null : instancePath;
-  if (typeof value !== 'object') return instancePath;
+function findNonJsonValue(value: unknown): string | null {
+  const pending: Array<{ value: unknown; instancePath: string; depth: number }> = [
+    { value, instancePath: '', depth: 0 },
+  ];
+  const seen = new WeakSet<object>();
+  let visitedNodes = 0;
 
-  if (ancestors.has(value)) return instancePath;
-  const prototype = Object.getPrototypeOf(value);
-  if (!Array.isArray(value) && prototype !== Object.prototype && prototype !== null) {
-    return instancePath;
-  }
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (!current) break;
 
-  ancestors.add(value);
-  if (Array.isArray(value)) {
-    if (Object.getOwnPropertySymbols(value).length > 0) {
-      ancestors.delete(value);
-      return instancePath;
+    visitedNodes += 1;
+    if (visitedNodes > MAX_JSON_NODES || current.depth > MAX_JSON_DEPTH) {
+      return current.instancePath;
     }
 
-    const ownNames = Object.getOwnPropertyNames(value);
+    const currentValue = current.value;
     if (
-      ownNames.some(
-        (name) =>
-          name !== 'length' && (!/^(?:0|[1-9]\d*)$/.test(name) || Number(name) >= value.length),
-      )
+      currentValue === null ||
+      typeof currentValue === 'string' ||
+      typeof currentValue === 'boolean'
     ) {
-      ancestors.delete(value);
-      return instancePath;
+      continue;
+    }
+    if (typeof currentValue === 'number') {
+      if (!Number.isFinite(currentValue)) return current.instancePath;
+      continue;
+    }
+    if (typeof currentValue !== 'object') return current.instancePath;
+    if (seen.has(currentValue)) return current.instancePath;
+    seen.add(currentValue);
+
+    const prototype = Object.getPrototypeOf(currentValue);
+    if (!Array.isArray(currentValue) && prototype !== Object.prototype && prototype !== null) {
+      return current.instancePath;
+    }
+    if (Object.getOwnPropertySymbols(currentValue).length > 0) return current.instancePath;
+
+    const children: Array<{ value: unknown; instancePath: string; depth: number }> = [];
+    if (Array.isArray(currentValue)) {
+      const ownNames = Object.getOwnPropertyNames(currentValue);
+      if (
+        ownNames.some(
+          (name) =>
+            name !== 'length' &&
+            (!/^(?:0|[1-9]\d*)$/.test(name) || Number(name) >= currentValue.length),
+        )
+      ) {
+        return current.instancePath;
+      }
+
+      for (let index = 0; index < currentValue.length; index += 1) {
+        const descriptor = Object.getOwnPropertyDescriptor(currentValue, index);
+        if (!descriptor || !descriptor.enumerable || !('value' in descriptor)) {
+          return `${current.instancePath}/${index}`;
+        }
+        children.push({
+          value: descriptor.value,
+          instancePath: `${current.instancePath}/${index}`,
+          depth: current.depth + 1,
+        });
+      }
+    } else {
+      for (const key of Object.getOwnPropertyNames(currentValue).sort()) {
+        const descriptor = Object.getOwnPropertyDescriptor(currentValue, key);
+        const escapedKey = key.replaceAll('~', '~0').replaceAll('/', '~1');
+        if (!descriptor || !descriptor.enumerable || !('value' in descriptor)) {
+          return `${current.instancePath}/${escapedKey}`;
+        }
+        children.push({
+          value: descriptor.value,
+          instancePath: `${current.instancePath}/${escapedKey}`,
+          depth: current.depth + 1,
+        });
+      }
     }
 
-    for (let index = 0; index < value.length; index += 1) {
-      const descriptor = Object.getOwnPropertyDescriptor(value, index);
-      if (!descriptor || !descriptor.enumerable || !('value' in descriptor)) {
-        ancestors.delete(value);
-        return `${instancePath}/${index}`;
-      }
-      const invalidPath = findNonJsonValue(descriptor.value, `${instancePath}/${index}`, ancestors);
-      if (invalidPath !== null) {
-        ancestors.delete(value);
-        return invalidPath;
-      }
-    }
-  } else {
-    if (Object.getOwnPropertySymbols(value).length > 0) {
-      ancestors.delete(value);
-      return instancePath;
-    }
-
-    for (const key of Object.getOwnPropertyNames(value).sort()) {
-      const descriptor = Object.getOwnPropertyDescriptor(value, key);
-      if (!descriptor || !descriptor.enumerable || !('value' in descriptor)) {
-        ancestors.delete(value);
-        return `${instancePath}/${key}`;
-      }
-      const escapedKey = key.replaceAll('~', '~0').replaceAll('/', '~1');
-      const invalidPath = findNonJsonValue(
-        descriptor.value,
-        `${instancePath}/${escapedKey}`,
-        ancestors,
-      );
-      if (invalidPath !== null) {
-        ancestors.delete(value);
-        return invalidPath;
-      }
+    for (let index = children.length - 1; index >= 0; index -= 1) {
+      const child = children[index];
+      if (child) pending.push(child);
     }
   }
 
-  ancestors.delete(value);
   return null;
 }
 
@@ -197,7 +211,7 @@ export class ContextSchemaValidator {
             instancePath: invalidJsonPath,
             schemaPath: '#/json-safe',
             keyword: 'jsonSafe',
-            message: 'must be a finite, acyclic JSON value without accessors',
+            message: 'must be a bounded, finite, acyclic JSON value without aliases or accessors',
           },
         ],
       };

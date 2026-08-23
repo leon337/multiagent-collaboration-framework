@@ -188,6 +188,15 @@ describe('ContextSchemaValidator', () => {
     for (const value of [undefined, Number.NaN, 1n, new Date(), cyclic]) {
       expect(validate.validate({ ...truthClaim(), value }).valid).toBe(false);
     }
+
+    let deeplyNested: unknown = 'leaf';
+    for (let depth = 0; depth < 20_000; depth += 1) deeplyNested = [deeplyNested];
+
+    expect(() => validate.validate({ ...truthClaim(), value: deeplyNested })).not.toThrow();
+    expect(validate.validate({ ...truthClaim(), value: deeplyNested })).toEqual({
+      valid: false,
+      errors: [expect.objectContaining({ keyword: 'jsonSafe' })],
+    });
   });
 
   it('accepts evidence-only Receipts and rejects truth-owner fields or ambiguous modes', () => {
@@ -210,6 +219,13 @@ describe('ContextSchemaValidator', () => {
         recovery_state: 'PARTIAL_RECOVERY',
         read_only: false,
         material_action: true,
+      }).valid,
+    ).toBe(false);
+
+    expect(
+      validate.validate({
+        ...receipt(),
+        recovery_state: 'AMBIGUOUS_CONTEXT',
       }).valid,
     ).toBe(false);
 
