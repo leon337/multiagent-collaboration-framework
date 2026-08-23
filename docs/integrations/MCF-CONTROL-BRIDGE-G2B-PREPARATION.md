@@ -2,11 +2,17 @@
 
 Status: **PREPARATION ONLY — NO REAL NODE-01 WRITE AUTHORIZATION**
 
-Baseline read live on 2026-08-22:
+Original design baseline read on 2026-08-22, reconciled locally on 2026-08-23:
 
 - MCF `main`: `87c7f24d0d0240207bd694ae3ebbfe2642e6a774`.
-- cloud-infrastructure active G2-B PR #11 head used for this preparation: `fbef3d407dbd9b7947b6c100a63d098eaebe2b6a`.
-- G2-B remains in Task 8 and its real-write/production gates remain closed at preparation time.
+- original cloud-infrastructure G2-B PR #11 head used for the preparation:
+  `fbef3d407dbd9b7947b6c100a63d098eaebe2b6a`;
+- exact successful disposable Task 8 candidate:
+  `570779b75ba41ac3725ef16bc65a163e01631a1c`;
+- reconciled Cloud context/evidence head:
+  `28b3894387b11580f8690293ff4a467f90d213cf`;
+- Task 8 is `PASS_DISPOSABLE_NOTEBOOK_DOCKER` with 13/13 markers, while Tasks 9/10,
+  MCF mutating transport, NODE-01 execution and production authorization remain closed.
 
 This document consumes the existing G2-B contract. It does not modify, replace, approve, or reimplement the Control Bridge.
 
@@ -111,7 +117,7 @@ Failure of any binding/evidence check MUST NOT produce a success receipt. Missin
 
 `PREPARATION_PASS` is NOT real-write authorization. Before the first future `workspace.write`, all of the following must be independently evidenced:
 
-- applicable technical G2-B PASS at the exact candidate SHA;
+- applicable G2-B lab PASS at the exact candidate SHA plus the still-pending Tasks 9/10;
 - exact operation explicitly permitted by the current bridge/grant;
 - MCF identity/authority verifiable through Human Delegation Firewall + PermissionEngine;
 - authorized scope/project/environment;
@@ -129,11 +135,15 @@ Green CI, adapter existence, a merged PR, or G2-B appearing functional are indiv
 
 ## Contract drift rule
 
-The active G2-B branch is still under development. After G2-B technical PASS, compare its final request/result protocol, operation allowlist, public result fields, grant semantics, workflow transport, helper/sudoers boundary, replay rules, and evidence requirements against the baseline above. Any material mismatch returns this integration to `REQUIRES_REVIEW` until schemas/tests are updated.
+Task 8 passed only in the exact disposable, network-isolated lab candidate above. Before any
+activation, compare the future Tasks 9/10 result and final request/result protocol, operation
+allowlist, public result fields, grant semantics, workflow transport, helper/sudoers boundary,
+replay rules and evidence requirements against this preparation. Any material mismatch returns
+the integration to `REQUIRES_REVIEW` until schemas/tests are updated.
 
 ## Risks
 
-- **Contract drift while Task 8 continues:** mitigated by final exact-SHA revalidation.
+- **Contract drift after the Task 8 lab PASS:** mitigated by exact-SHA revalidation at Tasks 9/10.
 - **Permission metadata not visible to G2-B:** intentional separation; mitigated by durable MCF correlation plus independent bridge grant validation.
 - **Timeout/partial effect:** must use UNKNOWN/reconciliation semantics; no blind retry.
 - **Replay ambiguity:** bind request id + digest + operation/project + source SHA; changed payload under same id is not success.

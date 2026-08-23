@@ -47,7 +47,7 @@ This checkpoint may become `PREPARATION_PASS` only after the preparation branch 
 
 Reconcile this preparation against the exact approved G2-B SHA. If compatible, prepare a separate reviewed activation change for the real adapter/transport and its Evidence Validator integration. The first real mutation still requires the explicit real-write authority/gate; it is not inherited from this checkpoint.
 
-## Post-preparation live audit — 2026-08-22
+## Post-preparation live audit — 2026-08-22 (historical, superseded below)
 
 ### MCF preparation evidence
 
@@ -92,3 +92,33 @@ No executable integration capability is added by this audit update.
 ### Next allowed step
 
 Wait for the G2-B mission to produce a terminal technical PASS on an exact candidate SHA. Then re-read the approved `protocol.py`, `state.py`, executor, workflow, grant/replay/rollback/revoke boundaries and evidence contract at that exact SHA. Any material drift from the preparation baseline requires `REQUIRES_REVIEW`; compatibility alone does not authorize a real write.
+
+## Superseding local lab reconciliation — 2026-08-23
+
+The Cloud reconciliation branch `codex/context-bridge-reconcile-20260823` at
+`28b3894387b11580f8690293ff4a467f90d213cf` preserves the mature G1/G2-A lineage and
+supersedes the failed Task 8 observation above for the exact disposable candidate
+`570779b75ba41ac3725ef16bc65a163e01631a1c`.
+
+The candidate completed the network-isolated Ubuntu 24.04 Docker harness on the developer
+notebook with exit 0, cleanup PASS and all 13 ordered acceptance markers: identity, direct-write
+refusal, bounded grant, write, replay, request-id conflict, concurrency, audit, rollback, final
+state, revoke, post-revoke refusal and bounded cleanup. The reconciled Cloud worktree also passed
+381/381 unit tests. Its aggregate historical scanner remains environmentally blocked before test
+execution by two pre-existing zero-byte loose objects in the shared Git object database; that
+database was deliberately left untouched.
+
+### Current decision
+
+- MCF preparation: `PREPARATION_PASS`.
+- G2-B Task 8 local disposable acceptance: `PASS_13_OF_13`.
+- G2-B lifecycle: `LAB_VALIDATED_INACTIVE`.
+- Tasks 9/10: `NOT_STARTED`.
+- Context-to-G2-B mutating transport: `NOT_IMPLEMENTED`.
+- effective MCF use and real NODE-01 grant/write/rollback/revoke: `NOT_EXECUTED`.
+- activation, NODE-01 access and production mutation: `NOT_AUTHORIZED`.
+
+This newer lab result removes the historical Task 8 implementation blocker; it does not open the
+activation gate. The next allowed work is the separate read-only local integration and future
+Tasks 9/10 review. Any real mutation still requires exact-SHA contract review, durable MCF
+governance correlation and a new explicit human authorization.

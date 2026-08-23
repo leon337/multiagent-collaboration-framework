@@ -119,11 +119,14 @@ describe('CapabilityRegistryLoader', () => {
     expect(
       result.entries.find(({ capability }) => capability.id === 'cloud.workspace.g2b.write'),
     ).toMatchObject({
-      governance: { authorization_state: 'NOT_AUTHORIZED' },
+      governance: {
+        authorization_state: 'NOT_AUTHORIZED',
+        required_gate: 'G2B_TASKS9_10_AND_SEPARATE_HUMAN_GATE',
+      },
       lifecycle: {
         connection_state: 'DISCONNECTED',
         runtime_state: 'BLOCKED',
-        verification_state: 'NOT_VERIFIED',
+        verification_state: 'HISTORICALLY_VERIFIED',
       },
     });
   });
