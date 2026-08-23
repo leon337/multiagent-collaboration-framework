@@ -170,6 +170,42 @@
         "properties": {
           "lifecycle": {
             "type": "object",
+            "properties": {
+              "verification_state": { "const": "VERIFIED" }
+            },
+            "required": ["verification_state"]
+          }
+        },
+        "required": ["lifecycle"]
+      },
+      "then": {
+        "properties": {
+          "governance": {
+            "type": "object",
+            "properties": { "authorization_state": { "const": "AUTHORIZED" } },
+            "required": ["authorization_state"]
+          },
+          "lifecycle": {
+            "type": "object",
+            "properties": {
+              "implementation_state": { "const": "IMPLEMENTED" },
+              "connection_state": { "const": "CONNECTED" },
+              "runtime_state": { "const": "ACTIVE" }
+            },
+            "required": [
+              "implementation_state",
+              "connection_state",
+              "runtime_state"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "lifecycle": {
+            "type": "object",
             "properties": { "verification_state": { "const": "NOT_VERIFIED" } },
             "required": ["verification_state"]
           }

@@ -175,4 +175,26 @@ describe('CapabilityRegistryLoader', () => {
       details: ['fixture.read'],
     });
   });
+
+  it('rejects VERIFIED as a label for a disconnected or unauthorized capability', () => {
+    const root = temporaryRepository();
+    const sourceRef = 'context/capabilities/fixture.yaml';
+    const mislabeled = capabilityFixture();
+    mislabeled.lifecycle.verification_state = 'VERIFIED';
+    mislabeled.lifecycle.last_verified_at = '2026-08-23T08:00:00.000Z';
+    writeYaml(root, sourceRef, mislabeled);
+
+    expect(
+      new CapabilityRegistryLoader({
+        repositoryRoot: root,
+        schemaDirectory,
+        sources: [{ source_ref: sourceRef, source_revision: 'fixture-revision' }],
+        knownProjectIds,
+      }).load(),
+    ).toMatchObject({
+      ok: false,
+      code: 'CAPABILITY_SCHEMA_INVALID',
+      source_ref: sourceRef,
+    });
+  });
 });
