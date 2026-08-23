@@ -86,7 +86,10 @@ export class McfCapabilityRegistryApiService {
                 capability.provider_project_id === projectId ||
                 capability.consumer_project_ids.includes(projectId),
             ),
-      sources: result.sources,
+      sources: result.sources.map(({ source_ref, source_revision }) => ({
+        source_ref,
+        source_revision,
+      })),
     };
   }
 }

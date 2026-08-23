@@ -48,7 +48,8 @@ describe('McfCapabilityRegistryApiService', () => {
       () => '2026-08-23T08:00:00.000Z',
     );
 
-    expect(service.listReadOnly()).toMatchObject({
+    const snapshot = service.listReadOnly();
+    expect(snapshot).toMatchObject({
       schema_version: 1,
       retrieved_at: '2026-08-23T08:00:00.000Z',
       project_id: null,
@@ -66,6 +67,10 @@ describe('McfCapabilityRegistryApiService', () => {
         }),
       ]),
     });
+    expect(snapshot.sources).toEqual(
+      capabilitySources.map((source_ref) => ({ source_ref, source_revision: revision })),
+    );
+    expect(snapshot.sources.every((source) => !('resolved_path' in source))).toBe(true);
 
     const triView = service.listReadOnly('triview-workspace-linux');
     expect(triView.project_id).toBe('triview-workspace-linux');
