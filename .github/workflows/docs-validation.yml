@@ -67,8 +67,29 @@ jobs:
             docs/agentes/BEATRIZ.md
             docs/agentes/MIRIAM.md
             docs/agentes/JULIA.md
+            docs/agentes/GABRIELA.md
+            docs/agentes/RENATA.md
+            docs/agentes/ARTUR.md
+            docs/agentes/DAVI.md
+            docs/agentes/MELISSA.md
+            docs/agentes/NATALIA.md
+            docs/agentes/FELIPE.md
+            docs/agentes/CAMILA.md
+            docs/agentes/AKIRA.md
+            docs/agentes/SAMUEL.md
+            docs/agentes/ALINE.md
+            docs/agentes/IGOR.md
+            docs/agentes/VITOR.md
+            docs/agentes/CAIO.md
+            docs/agentes/NAOMI.md
+            docs/agentes/HUGO.md
+            docs/agentes/PEDRO.md
+            docs/agentes/RAQUEL.md
+            docs/agentes/ANDREIA.md
+            docs/agentes/SERGIO.md
             docs/agentes/MATRIZ_RACI.md
             docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md
+            docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-49-AGENTES.md
             templates/CHECKLIST_DE_PUBLICACAO.md
             templates/CHECKLIST_DE_RECONCILIACAO.md
           )
@@ -76,7 +97,7 @@ jobs:
             test -s "$file" || { echo "Missing or empty: $file"; exit 1; }
           done
 
-      - name: Check official 29-agent contract set
+      - name: Check official 49-agent contract set
         shell: bash
         run: |
           set -euo pipefail
@@ -110,22 +131,46 @@ jobs:
             BEATRIZ.md
             MIRIAM.md
             JULIA.md
+            GABRIELA.md
+            RENATA.md
+            ARTUR.md
+            DAVI.md
+            MELISSA.md
+            NATALIA.md
+            FELIPE.md
+            CAMILA.md
+            AKIRA.md
+            SAMUEL.md
+            ALINE.md
+            IGOR.md
+            VITOR.md
+            CAIO.md
+            NAOMI.md
+            HUGO.md
+            PEDRO.md
+            RAQUEL.md
+            ANDREIA.md
+            SERGIO.md
           )
-          test "${#expected[@]}" -eq 29
+          test "${#expected[@]}" -eq 49
           for file in "${expected[@]}"; do
             test -s "docs/agentes/$file" || { echo "Missing official agent contract: $file"; exit 1; }
           done
           actual="$(find docs/agentes -maxdepth 1 -type f -name '*.md' ! -name 'README.md' ! -name 'MATRIZ_RACI.md' | wc -l | tr -d ' ')"
-          test "$actual" -eq 29 || {
-            echo "Expected exactly 29 individual agent contracts, found $actual"
+          test "$actual" -eq 49 || {
+            echo "Expected exactly 49 individual agent contracts, found $actual"
             exit 1
           }
-          grep -Fq 'Existem **29 agentes nomeados**' README.md || {
-            echo 'Root README no longer declares 29 named agents'
+          grep -Fq 'Existem **49 agentes nomeados**' README.md || {
+            echo 'Root README no longer declares 49 named agents'
+            exit 1
+          }
+          grep -Fq 'Matriz Consolidada de Competências — 49 Agentes do MCF' docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-49-AGENTES.md || {
+            echo 'Canonical 49-agent matrix title not found'
             exit 1
           }
           grep -Fq 'Matriz Consolidada de Competências — 29 Agentes do MCF' docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md || {
-            echo 'Canonical 29-agent matrix title not found'
+            echo 'Historical 29-agent matrix title not found'
             exit 1
           }
 
@@ -138,7 +183,7 @@ jobs:
           import sys
           import unicodedata
 
-          matrix_path = Path('docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-29-AGENTES.md')
+          matrix_path = Path('docs/matrices/MCF-MATRIZ-CONSOLIDADA-DE-COMPETENCIAS-49-AGENTES.md')
           index_path = Path('docs/agentes/README.md')
           matrix_row_pattern = re.compile(r'^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|')
           index_row_pattern = re.compile(
@@ -152,7 +197,7 @@ jobs:
                   if not match:
                       continue
                   number = int(match.group(1))
-                  if 1 <= number <= 29:
+                  if 1 <= number <= 49:
                       rows.append((number, match.group(2).strip(), match.group(3).strip()))
               return rows
 
@@ -163,7 +208,7 @@ jobs:
                   if not match:
                       continue
                   number = int(match.group(1))
-                  if 1 <= number <= 29:
+                  if 1 <= number <= 49:
                       rows.append(
                           (
                               number,
@@ -179,13 +224,13 @@ jobs:
               return re.sub(r'[^A-Za-z0-9]+', '_', normalized).strip('_').upper()
 
           matrix_rows = parse_matrix_rows(matrix_path)
-          if len(matrix_rows) != 29 or [number for number, _, _ in matrix_rows] != list(range(1, 30)):
-              print(f'Canonical matrix must expose agents 1..29 exactly once; got {len(matrix_rows)} rows')
+          if len(matrix_rows) != 49 or [number for number, _, _ in matrix_rows] != list(range(1, 50)):
+              print(f'Canonical matrix must expose agents 1..49 exactly once; got {len(matrix_rows)} rows')
               sys.exit(1)
 
           index_rows = parse_index_rows(index_path)
-          if len(index_rows) != 29 or [number for number, _, _, _ in index_rows] != list(range(1, 30)):
-              print(f'Agent index must expose agents 1..29 exactly once with contract targets; got {len(index_rows)} rows')
+          if len(index_rows) != 49 or [number for number, _, _, _ in index_rows] != list(range(1, 50)):
+              print(f'Agent index must expose agents 1..49 exactly once with contract targets; got {len(index_rows)} rows')
               sys.exit(1)
 
           failures = []
@@ -227,7 +272,7 @@ jobs:
               print('\n'.join(failures))
               sys.exit(1)
 
-          print('29-agent matrix, index targets and individual contract roles are consistent')
+          print('49-agent matrix, index targets and individual contract roles are consistent')
           PY
 
       - name: Check required metadata in normative documents
@@ -272,6 +317,26 @@ jobs:
             docs/agentes/BEATRIZ.md
             docs/agentes/MIRIAM.md
             docs/agentes/JULIA.md
+            docs/agentes/GABRIELA.md
+            docs/agentes/RENATA.md
+            docs/agentes/ARTUR.md
+            docs/agentes/DAVI.md
+            docs/agentes/MELISSA.md
+            docs/agentes/NATALIA.md
+            docs/agentes/FELIPE.md
+            docs/agentes/CAMILA.md
+            docs/agentes/AKIRA.md
+            docs/agentes/SAMUEL.md
+            docs/agentes/ALINE.md
+            docs/agentes/IGOR.md
+            docs/agentes/VITOR.md
+            docs/agentes/CAIO.md
+            docs/agentes/NAOMI.md
+            docs/agentes/HUGO.md
+            docs/agentes/PEDRO.md
+            docs/agentes/RAQUEL.md
+            docs/agentes/ANDREIA.md
+            docs/agentes/SERGIO.md
             docs/agentes/MATRIZ_RACI.md
           )
           for file in "${normative[@]}"; do

@@ -1,6 +1,6 @@
 registry:
   name: MCF Skill Registry
-  version: 1.0.0
+  version: 1.1.0
   status: ACTIVE
   authority_human: Leandro
   authority_operational: Leo
@@ -9,6 +9,7 @@ registry:
     - MCF-DEC-050
     - MCF-DEC-051
     - MCF-DEC-052
+    - MCF-DEC-053
 
 permission_profiles:
   - READ_ONLY
@@ -29,11 +30,7 @@ skills:
     allowed_tools: [GitHub, Linear, Notion, Google_Drive]
     forbidden_tools: [public_deployment, destructive_write]
     permission_profile: READ_AND_PROPOSE
-    execution_steps:
-      - classificar_missao
-      - definir_contrato
-      - selecionar_agentes
-      - abrir_primeira_passagem
+    execution_steps: [classificar_missao, definir_contrato, selecionar_agentes, abrir_primeira_passagem]
     required_evidence: [mission_id, phase_id, selected_agents, acceptance_criteria]
     expected_outputs: [mission_contract, initial_handoff]
     acceptance_criteria: [objective_verifiable, agents_have_real_delivery]
@@ -325,3 +322,118 @@ skills:
     failure_modes: [missing_evidence, incomplete_checkpoint]
     fallback: Retornar para correção ou declarar dependência externa.
     handoff_to: Mestre
+
+  # Novas skills registradas por MCF-DEC-053. O runtime atual ainda não executa estes IDs.
+  - skill_id: MCF-DESIGN-SPECIALIST
+    runtime_status: DOCUMENTAL_ONLY
+    name: Executar especialidade de Design
+    version: 1.0.0
+    purpose: Produzir entrega especializada de brand, direção de arte, motion, conteúdo, design engineering ou visual QA.
+    owner_agents: [Renata, Artur, Melissa, Natalia, Felipe, Camila]
+    trigger_phrases: ["brand", "direção de arte", "motion", "ux writing", "design engineering", "visual qa"]
+    required_inputs: [design_context, acceptance_criteria]
+    optional_inputs: [brand, prototype, implementation_reference]
+    allowed_tools: [Figma, Canva, GitHub, Notion, Product_Design]
+    forbidden_tools: [production_release, fabricated_evidence]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps: [validar_contexto, executar_especialidade, documentar_decisoes, produzir_evidencia, transferir]
+    required_evidence: [artifact_reference, decisions, limitations]
+    acceptance_criteria: [specialty_boundary_respected, evidence_verifiable]
+    failure_modes: [decorative_participation, missing_reference]
+    fallback: Produzir especificação verificável e declarar ferramenta indisponível.
+    handoff_to: Evelyn
+
+  - skill_id: MCF-DESIGN-SYSTEM
+    runtime_status: DOCUMENTAL_ONLY
+    name: Projetar e validar design system
+    version: 1.0.0
+    purpose: Definir tokens, componentes, estados e contratos entre design e código.
+    owner_agents: [Davi, Felipe, Camila]
+    trigger_phrases: ["design system", "tokens", "componentes", "design to code"]
+    required_inputs: [design_context, platform_constraints]
+    optional_inputs: [existing_components, brand]
+    allowed_tools: [Figma, GitHub, Notion, Product_Design]
+    forbidden_tools: [production_release]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps: [inventariar_padroes, definir_tokens, definir_componentes, validar_estados, registrar_handoff]
+    required_evidence: [component_inventory, token_reference, handoff_reference]
+    acceptance_criteria: [reusable_contracts, states_covered]
+    failure_modes: [premature_abstraction, design_code_drift]
+    fallback: Entregar especificação textual de tokens e componentes.
+    handoff_to: Helena
+
+  - skill_id: MCF-RADAR-MODELS
+    runtime_status: DOCUMENTAL_ONLY
+    name: Pesquisar fronteira de modelos
+    version: 1.0.0
+    purpose: Detectar modelos, versões e capacidades recentes com cobertura global e open-weight.
+    owner_agents: [Samuel, Akira]
+    trigger_phrases: ["modelos novos", "últimos dias", "frontier", "GLM", "DeepSeek", "Qwen", "Kimi"]
+    required_inputs: [capability_need]
+    optional_inputs: [time_window, regions, modalities]
+    allowed_tools: [GitHub, Exa, Consensus, Sider_Scholar, Notion]
+    forbidden_tools: [claim_without_source]
+    permission_profile: READ_ONLY
+    execution_steps: [fixar_janela, pesquisar_fontes_primarias, validar_datas, classificar_capacidades, registrar_incertezas]
+    required_evidence: [sources, dates, model_versions, verification_status]
+    acceptance_criteria: [recency_respected, regional_coverage_material]
+    failure_modes: [popularity_bias, stale_source, vendor_claim_only]
+    fallback: Ampliar janela e declarar lacunas de cobertura.
+    handoff_to: Raquel
+
+  - skill_id: MCF-DISCOVER-FREE-API
+    runtime_status: DOCUMENTAL_ONLY
+    name: Descobrir APIs gratuitas e créditos
+    version: 1.0.0
+    purpose: Mapear free tiers, trials, quotas, créditos promocionais e endpoints subsidiados.
+    owner_agents: [Aline]
+    trigger_phrases: ["api grátis", "free tier", "créditos", "trial", "endpoint grátis"]
+    required_inputs: [capability_need]
+    optional_inputs: [region, commercial_use, data_sensitivity]
+    allowed_tools: [GitHub, Exa, Notion]
+    forbidden_tools: [quota_bypass, unsupported_commercial_claim]
+    permission_profile: READ_ONLY
+    execution_steps: [localizar_oferta, validar_quota, validar_expiracao, registrar_termos, registrar_privacidade, propor_teste]
+    required_evidence: [provider, endpoint, quota, verified_at, terms_status]
+    acceptance_criteria: [free_status_precise, expiration_recorded]
+    failure_modes: [trial_called_free_forever, stale_quota]
+    fallback: Classificar como NÃO VERIFICADO e não usar operacionalmente.
+    handoff_to: Igor
+
+  - skill_id: MCF-ROUTE-MODELS
+    runtime_status: DOCUMENTAL_ONLY
+    name: Projetar routing e integração de modelos
+    version: 1.0.0
+    purpose: Definir gateways, protocolos, adapters, providers, fallback e economia de rota.
+    owner_agents: [Igor, Vitor, Andreia, Sergio]
+    trigger_phrases: ["router", "gateway", "fallback", "Anthropic compatible", "OpenAI compatible", "provider"]
+    required_inputs: [clients, providers, routing_requirements]
+    optional_inputs: [quota_constraints, privacy_constraints, cost_targets]
+    allowed_tools: [GitHub, Notion, OpenAI_Developers]
+    forbidden_tools: [secret_exposure, quota_bypass, unreviewed_mitm]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps: [mapear_protocolos, mapear_rotas, definir_fallback, avaliar_quota_cache, definir_adapters, registrar_riscos]
+    required_evidence: [routing_map, compatibility_matrix, fallback_plan, risks]
+    acceptance_criteria: [routes_explicit, failure_behavior_known]
+    failure_modes: [protocol_loss, hidden_lock_in, unverified_entitlement]
+    fallback: Manter rota direta conhecida e declarar capability gap.
+    handoff_to: Ricardo
+
+  - skill_id: MCF-EVALUATE-MODEL
+    runtime_status: DOCUMENTAL_ONLY
+    name: Avaliar modelo em workload real
+    version: 1.0.0
+    purpose: Comparar modelos, harnesses e inferência com benchmarks reproduzíveis do MCF.
+    owner_agents: [Raquel, Caio, Naomi, Hugo, Pedro, Andreia]
+    trigger_phrases: ["benchmark de modelo", "comparar modelos", "coding model", "multimodal benchmark"]
+    required_inputs: [candidates, benchmark_suite, criteria]
+    optional_inputs: [baseline, harness, router, hardware]
+    allowed_tools: [GitHub, PostHog, Amplitude, Consensus, Sider_Scholar]
+    forbidden_tools: [vendor_benchmark_as_verdict, fabricated_score]
+    permission_profile: READ_ONLY
+    execution_steps: [congelar_configuracao, executar_suite, coletar_resultados, medir_variancia, comparar_baseline, emitir_scorecard]
+    required_evidence: [test_cases, versions, results, scores, failures]
+    acceptance_criteria: [reproducible_suite, comparable_results]
+    failure_modes: [mixed_versions, subjective_only, trivial_workload]
+    fallback: Emitir avaliação limitada e declarar dados faltantes.
+    handoff_to: Tiago
