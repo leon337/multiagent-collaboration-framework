@@ -1,0 +1,23 @@
+[Unit]
+Description=MCF persistent multi-step mission coordinator
+Documentation=/opt/mcf-continuity/RUNBOOK.md
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/mcf-continuity/continuity.env
+ConditionPathExists=/etc/mcf-continuity/policy.json
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/mcf-continuity
+Environment=COMPOSE_PROJECT_NAME=mcf-continuity
+ExecStartPre=/usr/bin/docker compose --env-file /etc/mcf-continuity/continuity.env --file /opt/mcf-continuity/compose.continuity.yaml config --quiet
+ExecStart=/usr/bin/docker compose --env-file /etc/mcf-continuity/continuity.env --file /opt/mcf-continuity/compose.continuity.yaml up --detach --remove-orphans
+ExecReload=/usr/bin/docker compose --env-file /etc/mcf-continuity/continuity.env --file /opt/mcf-continuity/compose.continuity.yaml up --detach --remove-orphans
+ExecStop=/usr/bin/docker compose --env-file /etc/mcf-continuity/continuity.env --file /opt/mcf-continuity/compose.continuity.yaml stop --timeout 30 continuity-worker
+TimeoutStartSec=0
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

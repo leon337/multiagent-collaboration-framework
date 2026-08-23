@@ -1,0 +1,64 @@
+x-worker-runtime: &worker-runtime
+  image: ${MCF_WORKER_IMAGE:?MCF_WORKER_IMAGE must use an immutable digest}
+  user: '1901:1901'
+  environment:
+    NODE_ENV: production
+    LOG_LEVEL: ${MCF_LOG_LEVEL:-info}
+    DATABASE_URL: ${MCF_DATABASE_URL:?MCF_DATABASE_URL is required}
+    MCF_WORKER_ID: ${MCF_WORKER_ID:-mcf-vps-worker-01}
+    MCF_POLICY_PATH: /etc/mcf-continuity/policy.json
+    MCF_CODEX_HOME: /var/lib/mcf-codex/codex-home
+    MCF_WORKTREE_ROOT: /var/lib/mcf-codex/worktrees
+    MCF_ARTIFACT_ROOT: /var/lib/mcf-codex/artifacts
+    MCF_CHECKPOINT_ROOT: /var/lib/mcf-codex/checkpoints
+    MCF_CODEX_EXECUTABLE: /usr/local/bin/codex
+    MCF_GIT_EXECUTABLE: /usr/bin/git
+    MCF_FLOCK_EXECUTABLE: /usr/bin/flock
+    MCF_LEASE_DURATION_MS: ${MCF_LEASE_DURATION_MS:-60000}
+    MCF_HEARTBEAT_INTERVAL_MS: ${MCF_HEARTBEAT_INTERVAL_MS:-15000}
+    MCF_POLL_INTERVAL_MS: ${MCF_POLL_INTERVAL_MS:-2000}
+    MCF_STEP_TIMEOUT_MS: ${MCF_STEP_TIMEOUT_MS:-2700000}
+
+services:
+  continuity-migrate:
+    <<: *worker-runtime
+    command: ['node', 'packages/database/scripts/migrate.mjs']
+    restart: 'no'
+
+  continuity-worker:
+    <<: *worker-runtime
+    command: ['node', 'apps/worker/dist/main.js', 'daemon']
+    depends_on:
+      continuity-migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 512
+    volumes:
+      - type: bind
+        source: ${MCF_POLICY_FILE:?MCF_POLICY_FILE is required}
+        target: /etc/mcf-continuity/policy.json
+        read_only: true
+      - type: bind
+        source: ${MCF_REPOSITORY_ROOT:?MCF_REPOSITORY_ROOT is required}
+        target: /srv/mcf/repositories
+      - type: bind
+        source: ${MCF_CODEX_HOME_DIR:?MCF_CODEX_HOME_DIR is required}
+        target: /var/lib/mcf-codex/codex-home
+      - type: bind
+        source: ${MCF_WORKTREE_DIR:?MCF_WORKTREE_DIR is required}
+        target: /var/lib/mcf-codex/worktrees
+      - type: bind
+        source: ${MCF_ARTIFACT_DIR:?MCF_ARTIFACT_DIR is required}
+        target: /var/lib/mcf-codex/artifacts
+      - type: bind
+        source: ${MCF_CHECKPOINT_DIR:?MCF_CHECKPOINT_DIR is required}
+        target: /var/lib/mcf-codex/checkpoints
