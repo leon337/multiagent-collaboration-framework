@@ -48,6 +48,15 @@ export interface ContextRecoveryServiceOptions {
   schemaDirectory: string;
   registrySources: readonly ContextRecoveryRegistrySource[];
   capsuleSourceRevisions: Readonly<Record<string, string>>;
+  projectRepositories?: Readonly<
+    Record<
+      string,
+      {
+        repositoryRoot: string;
+        sourceRevision: string;
+      }
+    >
+  >;
   maxSourceBytes?: number;
 }
 
@@ -196,6 +205,13 @@ function defaultNormalizeClaims(input: ContextClaimsNormalizationInput): McfTrut
 
 export class ContextRecoveryService {
   private readonly source: RepositoryContextSource;
+  private readonly projectRepositories: ReadonlyMap<
+    string,
+    {
+      source: RepositoryContextSource;
+      sourceRevision: string;
+    }
+  >;
   private readonly registrySources: readonly ContextRecoveryRegistrySource[];
   private readonly capsuleSourceRevisions: ReadonlyMap<string, string>;
   private readonly registryValidator: ContextSchemaValidator;
@@ -214,6 +230,20 @@ export class ContextRecoveryService {
       repositoryRoot: options.repositoryRoot,
       ...(options.maxSourceBytes === undefined ? {} : { maxSourceBytes: options.maxSourceBytes }),
     });
+    this.projectRepositories = new Map(
+      Object.entries(options.projectRepositories ?? {}).map(([projectId, repository]) => [
+        projectId,
+        {
+          source: new RepositoryContextSource({
+            repositoryRoot: repository.repositoryRoot,
+            ...(options.maxSourceBytes === undefined
+              ? {}
+              : { maxSourceBytes: options.maxSourceBytes }),
+          }),
+          sourceRevision: repository.sourceRevision,
+        },
+      ]),
+    );
     this.registrySources = options.registrySources.map((source) => ({ ...source }));
     this.capsuleSourceRevisions = new Map(Object.entries(options.capsuleSourceRevisions));
     this.registryValidator = new ContextSchemaValidator(
@@ -365,7 +395,9 @@ export class ContextRecoveryService {
       provenance(resolvedRegistry.source),
     );
     const capsuleRef = resolvedRegistry.entry.context.capsule_path;
-    const capsuleRevision = this.capsuleSourceRevisions.get(capsuleRef);
+    const projectRepository = this.projectRepositories.get(resolution.project_id);
+    const capsuleRevision =
+      projectRepository?.sourceRevision ?? this.capsuleSourceRevisions.get(capsuleRef);
     if (capsuleRevision === undefined) {
       return this.createReceipt({
         mode,
@@ -377,7 +409,10 @@ export class ContextRecoveryService {
       });
     }
 
-    const loadedCapsule = this.source.loadCapsule(resolvedRegistry.entry, capsuleRevision);
+    const loadedCapsule = (projectRepository?.source ?? this.source).loadCapsule(
+      resolvedRegistry.entry,
+      capsuleRevision,
+    );
     if (!loadedCapsule.ok) {
       return this.createReceipt({
         mode,
@@ -389,8 +424,14 @@ export class ContextRecoveryService {
       });
     }
 
+    const capsuleSource = projectRepository
+      ? {
+          ...loadedCapsule.source,
+          source_ref: `repo://${resolvedRegistry.entry.identity.canonical_repository}/${loadedCapsule.source.source_ref}`,
+        }
+      : loadedCapsule.source;
     const capsuleValidation = this.capsuleValidator.validate(loadedCapsule.document);
-    const loadedSources = [...registrySourceEvidence, capsuleEvidence(loadedCapsule.source)];
+    const loadedSources = [...registrySourceEvidence, capsuleEvidence(capsuleSource)];
     if (!capsuleValidation.valid) {
       return this.createReceipt({
         mode,
@@ -407,7 +448,7 @@ export class ContextRecoveryService {
     const projectCapsule = loadedCapsule.document as unknown as McfProjectCapsule;
     const allSources = [
       ...registrySourceEvidence,
-      capsuleEvidence(loadedCapsule.source, projectCapsule.observed_at),
+      capsuleEvidence(capsuleSource, projectCapsule.observed_at),
     ];
     if (projectCapsule.project_id !== resolvedRegistry.entry.project.id) {
       return this.createReceipt({
@@ -426,7 +467,7 @@ export class ContextRecoveryService {
         registry: resolvedRegistry.entry,
         capsule: projectCapsule,
         registryProvenance: provenance(resolvedRegistry.source),
-        capsuleProvenance: capsuleProvenance(loadedCapsule.source, projectCapsule.observed_at),
+        capsuleProvenance: capsuleProvenance(capsuleSource, projectCapsule.observed_at),
       });
       if (!Array.isArray(producedClaims)) {
         return this.createReceipt({

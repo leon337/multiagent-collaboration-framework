@@ -505,6 +505,141 @@ describe('ContextRecoveryService repository-only kernel', () => {
     expect(afterDeletion.recovery_state).toBe('RECOVERED');
   });
 
+  it('loads an owning-project Capsule from an explicitly mapped repository root', () => {
+    const registryRoot = createTemporaryRepository();
+    const projectRoot = createTemporaryRepository();
+    writeYaml(
+      registryRoot,
+      canonicalRegistryRef,
+      registryEntry({
+        projectId: 'cognitive-ledger',
+        canonicalRepository: 'leon337/cognitive-ledger',
+        aliases: ['Ledger'],
+      }),
+    );
+    writeYaml(projectRoot, canonicalCapsuleRef, capsule('cognitive-ledger'));
+
+    const receipt = service({
+      repositoryRoot: registryRoot,
+      capsuleSourceRevisions: {},
+      projectRepositories: {
+        'cognitive-ledger': {
+          repositoryRoot: projectRoot,
+          sourceRevision: 'ledger-commit-sha',
+        },
+      },
+    }).recover(readOnlyRequest({ project_hint: 'Ledger' }));
+
+    expect(receipt).toMatchObject({
+      project_id: 'cognitive-ledger',
+      recovery_state: 'RECOVERED',
+    });
+    expect(receipt.sources).toContainEqual({
+      role: 'CAPSULE',
+      source_ref: 'repo://leon337/cognitive-ledger/.mcf/project-capsule.yaml',
+      source_revision: 'ledger-commit-sha',
+      observed_at: '2026-08-23T00:22:10-03:00',
+    });
+    expect(receipt.claims).toContainEqual(
+      expect.objectContaining({
+        claim_key: 'snapshot.current_status',
+        source_ref: 'repo://leon337/cognitive-ledger/.mcf/project-capsule.yaml',
+      }),
+    );
+  });
+
+  it('does not fall back to the Registry repository when a mapped Capsule is unavailable', () => {
+    const registryRoot = createTemporaryRepository();
+    const emptyProjectRoot = createTemporaryRepository();
+    writeYaml(
+      registryRoot,
+      canonicalRegistryRef,
+      registryEntry({
+        projectId: 'cognitive-ledger',
+        canonicalRepository: 'leon337/cognitive-ledger',
+        aliases: ['Ledger'],
+      }),
+    );
+    writeYaml(registryRoot, canonicalCapsuleRef, capsule('cognitive-ledger'));
+
+    const receipt = service({
+      repositoryRoot: registryRoot,
+      capsuleSourceRevisions: {},
+      projectRepositories: {
+        'cognitive-ledger': {
+          repositoryRoot: emptyProjectRoot,
+          sourceRevision: 'ledger-commit-sha',
+        },
+      },
+    }).recover(readOnlyRequest({ project_hint: 'Ledger' }));
+
+    expect(receipt).toMatchObject({
+      project_id: 'cognitive-ledger',
+      recovery_state: 'SOURCE_UNAVAILABLE',
+    });
+    expect(receipt.warnings).toContain('SOURCE_NOT_FOUND:.mcf/project-capsule.yaml');
+  });
+
+  it('keeps identical Capsule paths isolated by stable project id', () => {
+    const registryRoot = createTemporaryRepository();
+    const ledgerRoot = createTemporaryRepository();
+    const triViewRoot = createTemporaryRepository();
+    const ledgerRegistryRef = 'context/projects/cognitive-ledger.yaml';
+    const triViewRegistryRef = 'context/projects/triview-workspace-linux.yaml';
+    writeYaml(
+      registryRoot,
+      ledgerRegistryRef,
+      registryEntry({
+        projectId: 'cognitive-ledger',
+        canonicalRepository: 'leon337/cognitive-ledger',
+        aliases: ['Ledger'],
+      }),
+    );
+    writeYaml(
+      registryRoot,
+      triViewRegistryRef,
+      registryEntry({
+        projectId: 'triview-workspace-linux',
+        canonicalRepository: 'leon337/triview-workspace-linux',
+        aliases: ['TriView'],
+      }),
+    );
+    writeYaml(ledgerRoot, canonicalCapsuleRef, capsule('cognitive-ledger'));
+    writeYaml(triViewRoot, canonicalCapsuleRef, capsule('triview-workspace-linux'));
+
+    const recovery = service({
+      repositoryRoot: registryRoot,
+      registrySources: [
+        { source_ref: ledgerRegistryRef, source_revision: 'registry-sha' },
+        { source_ref: triViewRegistryRef, source_revision: 'registry-sha' },
+      ],
+      capsuleSourceRevisions: {},
+      projectRepositories: {
+        'cognitive-ledger': {
+          repositoryRoot: ledgerRoot,
+          sourceRevision: 'ledger-sha',
+        },
+        'triview-workspace-linux': {
+          repositoryRoot: triViewRoot,
+          sourceRevision: 'triview-sha',
+        },
+      },
+    });
+
+    expect(recovery.recover(readOnlyRequest({ project_hint: 'Ledger' }))).toMatchObject({
+      project_id: 'cognitive-ledger',
+      recovery_state: 'RECOVERED',
+      sources: expect.arrayContaining([expect.objectContaining({ source_revision: 'ledger-sha' })]),
+    });
+    expect(recovery.recover(readOnlyRequest({ project_hint: 'TriView' }))).toMatchObject({
+      project_id: 'triview-workspace-linux',
+      recovery_state: 'RECOVERED',
+      sources: expect.arrayContaining([
+        expect.objectContaining({ source_revision: 'triview-sha' }),
+      ]),
+    });
+  });
+
   it('keeps stable project identity after a canonical repository rename', () => {
     const root = createTemporaryRepository();
     writeYaml(
