@@ -20,6 +20,7 @@ const knownProjectIds = [
 const canonicalSources = [
   'context/capabilities/cloud-workspace-g2a-read.yaml',
   'context/capabilities/cloud-workspace-g2b-write.yaml',
+  'context/capabilities/cognitive-ledger-memory-read.yaml',
   'context/capabilities/mcf-capability-registry-read.yaml',
   'context/capabilities/mcf-context-recovery-read.yaml',
 ].map((sourceRef) => ({
@@ -92,9 +93,26 @@ describe('CapabilityRegistryLoader', () => {
     expect(result.entries.map(({ capability }) => capability.id)).toEqual([
       'cloud.workspace.g2a.read',
       'cloud.workspace.g2b.write',
+      'cognitive-ledger.memory.read',
       'mcf.capability.registry.read',
       'mcf.context.recovery.read',
     ]);
+    expect(
+      result.entries.find(({ capability }) => capability.id === 'cognitive-ledger.memory.read'),
+    ).toMatchObject({
+      capability: {
+        provider_project_id: 'cognitive-ledger',
+        consumer_project_ids: ['multiagent-collaboration-framework'],
+        mode: 'READ_ONLY',
+      },
+      governance: { authorization_state: 'AUTHORIZED' },
+      lifecycle: {
+        implementation_state: 'IMPLEMENTED',
+        connection_state: 'CONNECTED',
+        runtime_state: 'ACTIVE',
+        verification_state: 'VERIFIED',
+      },
+    });
     expect(
       result.entries.find(({ capability }) => capability.id === 'mcf.context.recovery.read'),
     ).toMatchObject({
@@ -132,7 +150,9 @@ describe('CapabilityRegistryLoader', () => {
   });
 
   it('fails closed for duplicate capability ids', () => {
-    const source = canonicalSources[3];
+    const source = canonicalSources.find(({ source_ref }) =>
+      source_ref.endsWith('/mcf-context-recovery-read.yaml'),
+    );
     if (!source) throw new Error('fixture source missing');
     const result = new CapabilityRegistryLoader({
       repositoryRoot,

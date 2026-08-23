@@ -18,6 +18,7 @@ const registrySources = [
 const capabilitySources = [
   'context/capabilities/cloud-workspace-g2a-read.yaml',
   'context/capabilities/cloud-workspace-g2b-write.yaml',
+  'context/capabilities/cognitive-ledger-memory-read.yaml',
   'context/capabilities/mcf-capability-registry-read.yaml',
   'context/capabilities/mcf-context-recovery-read.yaml',
 ];
