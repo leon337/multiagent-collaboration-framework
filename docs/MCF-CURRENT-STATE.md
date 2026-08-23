@@ -3,6 +3,7 @@
 **Classificação:** `CURRENT_IMPLEMENTED`  
 **Natureza:** mapa canônico de orientação; valores voláteis devem ser confirmados no GitHub/provider live  
 **Reconciliação:** 2026-08-20  
+**Reconciliação local adicional do boundary CF-0/CF-1:** 2026-08-23
 **Baseline desta reconciliação:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
 
 ## 1. Regra de fonte de verdade
@@ -205,9 +206,37 @@ canonical: false
 implementation_authorized: false
 ```
 
-As ideias de ZRCL, Context Fabric, Truth Contracts, Capability Registry, Artifact System e Validation Suite podem existir como discovery/design/fundação documental sem equivaler a uma nova arquitetura canônica implementada.
+As ideias de ZRCL, Capability Registry, Artifact System e Validation Suite podem existir como discovery/design/fundação documental sem equivaler a uma nova arquitetura canônica implementada.
 
-Não promover esses componentes a `CURRENT_IMPLEMENTED` sem decisão e evidência próprias.
+Não promover esses componentes, nem a arquitetura integral do checkpoint, a `CURRENT_IMPLEMENTED` sem decisão e evidência próprias.
+
+### Context Fabric CF-0 + CF-1 mínimo — boundary local em revisão
+
+Em 2026-08-23, a implementação autorizada de CF-0 + CF-1 mínimo foi concluída e verificada na branch isolada `codex/mcf-context-fabric-cf0-cf1`, sobre o Gate 0 em `027405348bec031edae0ac756643979e93a94452`.
+
+O boundary materializado contém somente:
+
+- contratos públicos aditivos `McfContext*` e quatro JSON Schemas isolados;
+- Registry canônico do MCF e Capsule local versionados no Git;
+- loader YAML estritamente read-only, resolução determinística de projeto, Truth Contracts e reconciliação fail-closed;
+- Context Recovery Receipt declaradamente `evidence_only`;
+- testes de contrato, schema, fixture, loader, resolução, verdade e recuperação.
+
+Estado preciso deste snapshot:
+
+```yaml
+context_fabric_cf0_cf1_minimum:
+  local_branch_status: IMPLEMENTED_AND_LOCALLY_VERIFIED
+  main_status: NOT_MERGED
+  push_status: NOT_PUSHED
+  production_status: NOT_AUTHORIZED_NOT_TOUCHED
+  runtime_wiring: NONE
+  provider_or_external_mutation: NONE
+  database_or_cache_canonicalization: NONE
+  live_provider_adapters: DEFERRED_CF2
+```
+
+Essa implementação local não torna todo o `ARCHITECTURAL_CHECKPOINT_004` canônico, não altera `main` e não autoriza merge, release, deploy ou produção. Fatos operacionais marcados `LIVE_REQUIRED` continuam exigindo verificação na fonte live proprietária.
 
 ## 9. Mission Control
 

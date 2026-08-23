@@ -130,3 +130,102 @@ IMPLEMENTATION_MAY_BEGIN              = false
 The planning package is now eligible for the **separate implementation-authorization decision** required by the existing hard gate.
 
 No implementation may begin until LEANDRO explicitly authorizes implementation after this PASS.
+
+---
+
+## 8. Implementation evidence appendix — 2026-08-23
+
+This appendix records post-authorization implementation evidence. It does not rewrite or broaden the original pre-implementation decision above.
+
+### 8.1 Authorized local boundary
+
+```text
+implementation_base                     = 027405348bec031edae0ac756643979e93a94452
+isolated_branch                         = codex/mcf-context-fabric-cf0-cf1
+implementation_authorized               = CF-0 + minimal CF-1 only
+production_authorized                   = false
+push_performed                          = false
+merge_performed                         = false
+external_or_provider_mutation_performed = false
+paid_AI_API_added                       = false
+```
+
+The implementation is repository-native and isolated from the application/runtime graph. It adds contracts, four schemas, the MCF Registry/Capsule pair, a bounded read-only YAML source, deterministic project resolution, truth normalization/reconciliation and a recovery service that emits evidence-only Receipts.
+
+### 8.2 Dependency correction
+
+The planned `yaml@2.8.1` became ineligible after `pnpm audit --prod` reported `GHSA-48c2-rrv3-qjmp`. Amendment 002 corrects only that exact patch to `yaml@2.8.3`.
+
+Evidence after the correction:
+
+```text
+pnpm install --frozen-lockfile = PASS
+pnpm audit --prod             = PASS — no known vulnerabilities
+dependency                    = yaml@2.8.3 exact
+```
+
+The dependency-substitution recheck required by the original Gate 0 was performed against all matrix rows. The parser package, role and trust boundary are unchanged; the patch removes a known vulnerability and adds no touchpoint. Rows 1–17 retain their classifications and zero rows are blocked:
+
+```text
+DEPENDENCY_SUBSTITUTION_RECHECK = PASS
+COMPATIBILITY_MATRIX_ROWS       = 1-17 UNCHANGED
+BLOCKED_ROWS                    = 0
+PRE_IMPLEMENTATION_AUDIT_PASS   = preserved
+```
+
+### 8.3 Compatibility and isolation evidence
+
+| Gate 0 behavior family | Implementation evidence | Result |
+|---|---|---|
+| Existing runtime contracts | Additive export only; compatibility characterization remains green. | `PRESERVED` |
+| HUMAN_GATE and LEANDRO/LÉO authority | No Context Fabric authorization engine or runtime wiring added. | `PRESERVED` |
+| Exact-SHA/provider/production semantics | Production workflow, adapters and authorization services have no diff. | `NOT_TOUCHED` |
+| Event/evidence persistence | Receipt is `evidence_only`; no event ledger or database persistence added. | `PRESERVED` |
+| Runtime DB/cache | No database package, migration or cache dependency changed. | `NOT_TOUCHED` |
+| Server route/startup graph | No `AppModule` or `McfRuntimeModule` registration added. | `NOT_TOUCHED` |
+| Repository recovery | Registry and Capsule are paired before reconciliation; ambiguity and malformed inputs fail closed. | `IMPLEMENTED` |
+| Freshness | Unverified `LIVE_REQUIRED` material work is blocked; read-only current-state work is explicitly partial. | `IMPLEMENTED` |
+| Receipt authority | Prior Receipts are ignored as inputs and remain evidence, never truth. | `IMPLEMENTED` |
+
+The final diff guard confirms no implementation changes under:
+
+```text
+.github/workflows/mcf-runtime-production-deploy.yml
+.github/workflows/mcf-production-readiness.yml
+apps/rede-social-agentes/packages/database/
+apps/rede-social-agentes/apps/server/src/mcf-runtime/
+apps/rede-social-agentes/apps/server/src/app.module.ts
+provider/deployment configuration
+Mission Control implementation paths
+```
+
+### 8.4 Verification evidence
+
+The final verification record is completed on the exact documentation-inclusive head before local handoff. The required evidence set is:
+
+```text
+Node.js / pnpm                      = 24.18.0 / 11.17.0
+Context Fabric targeted tests       = PASS — 49/49
+frozen dependency install           = PASS
+production dependency audit         = PASS
+format / lint / typecheck            = PASS
+migrations applied twice             = PASS
+full workspace tests                 = PASS
+workspace build                      = PASS
+backup and isolated restore          = PASS — 30 migration ledger rows restored
+release-readiness contract tests     = PASS — 38/38
+```
+
+The first no-environment test attempt lacked `DATABASE_URL` and PostgreSQL, so legacy server tests stopped in `loadRuntimeConfig`; no failing file intersected the Context Fabric diff. Repeating under disposable CI-equivalent PostgreSQL produced the green result above. Both PostgreSQL containers were local, temporary and removed after verification.
+
+Because the user explicitly prohibited push, no remote PR workflow run was created. The existing `MCF Production Readiness` workflow remains unchanged; its actual remote green run is a future pre-merge gate, while every local step it defines was reproduced without production access.
+
+### 8.5 Independent audit status
+
+An independent architectural/regression audit reviewed scope isolation, canonical truth, authority boundaries, Receipt semantics, bounded diagnostics and fail-closed behavior. It confirmed the `yaml@2.8.3` correction, the four canonical/documentation deltas and the final hardening without remaining technical or scope findings. The exact working tree then passed the complete verification in section 8.4.
+
+```text
+INDEPENDENT_ARCHITECTURAL_AUDIT = PASS
+UNRESOLVED_P0_P1_P2_FINDINGS    = 0
+IMPLEMENTATION_SCOPE_VERDICT    = COMPLIANT
+```

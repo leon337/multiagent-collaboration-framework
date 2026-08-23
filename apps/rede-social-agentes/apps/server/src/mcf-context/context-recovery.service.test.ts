@@ -146,7 +146,7 @@ describe('ContextRecoveryService repository-only kernel', () => {
         expect.objectContaining({
           claim_key: 'snapshot.current_status',
           freshness: 'SNAPSHOT',
-          observed_at: '2026-08-23T00:22:10-03:00',
+          observed_at: '2026-08-23T01:35:37-03:00',
         }),
       ]),
     );
@@ -168,7 +168,7 @@ describe('ContextRecoveryService repository-only kernel', () => {
         role: 'CAPSULE',
         source_ref: canonicalCapsuleRef,
         source_revision: 'capsule-revision-input',
-        observed_at: '2026-08-23T00:22:10-03:00',
+        observed_at: '2026-08-23T01:35:37-03:00',
       },
     ]);
   });

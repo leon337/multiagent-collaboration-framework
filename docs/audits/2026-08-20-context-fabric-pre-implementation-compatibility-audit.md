@@ -128,3 +128,15 @@ IMPLEMENTATION_MAY_BEGIN              = false
 ```
 
 No code, schema, runtime, database, provider, workflow, production or deployment implementation is authorized by this audit.
+
+---
+
+## 7. Postscript — implementation evidence pointer (2026-08-23)
+
+The `PRE_IMPLEMENTATION_AUDIT_BLOCKED` decision above remains the historically correct result for the original stale plan. It was closed by Amendment 001 and the separate Gate 0 rerun in:
+
+```text
+docs/audits/2026-08-20-context-fabric-pre-implementation-compatibility-audit-rerun-001.md
+```
+
+After LEANDRO separately authorized CF-0 + minimal CF-1 implementation, the local implementation, dependency-substitution recheck, regression evidence and independent audit verdict were appended to that PASS artifact. Amendment 002 records the security-required exact patch correction from `yaml@2.8.1` to `yaml@2.8.3`. This pointer does not alter the original blocked decision or authorize push, merge, release or production.

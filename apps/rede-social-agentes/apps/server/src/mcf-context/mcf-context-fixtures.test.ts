@@ -63,12 +63,12 @@ describe('canonical MCF Context Fabric fixtures', () => {
       lifecycle: 'ACTIVE',
       snapshot: {
         current_workstream: 'context-fabric-cf0-cf1',
-        current_status: 'CF0_CF1_IMPLEMENTATION_IN_PROGRESS',
-        next_action: 'Complete repository-native recovery kernel',
+        current_status: 'CF0_CF1_IMPLEMENTED_LOCALLY_AWAITING_REVIEW',
+        next_action: 'Review local evidence before any push or merge',
         blockers: [],
       },
       sources: { current_state: 'docs/MCF-CURRENT-STATE.md' },
-      observed_at: '2026-08-23T00:22:10-03:00',
+      observed_at: '2026-08-23T01:35:37-03:00',
     });
 
     const forbiddenOperationalKeys = new Set([
