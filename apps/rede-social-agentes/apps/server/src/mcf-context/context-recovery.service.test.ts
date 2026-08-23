@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import type { McfProjectCapsule, McfProjectRegistryEntry, McfTruthClaim } from '@rsa/contracts';
 import { stringify } from 'yaml';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ContextSchemaValidator } from './context-schema.validator.js';
 import {
@@ -440,6 +440,101 @@ describe('ContextRecoveryService repository-only kernel', () => {
     });
     expect(receipt.claims.length).toBeGreaterThan(0);
     expect(receipt.warnings).toContain('LIVE_VERIFICATION_UNAVAILABLE:READ_ONLY_CONTEXT_ONLY');
+  });
+
+  it('adds live evidence when the configured read-only verifier confirms freshness', async () => {
+    const verify = vi.fn().mockResolvedValue({
+      outcome: 'VERIFIED',
+      source: {
+        role: 'LIVE_VERIFICATION',
+        source_ref: 'repo://leon337/multiagent-collaboration-framework/.git/HEAD',
+        source_revision: 'a'.repeat(40),
+        observed_at: '2026-08-23T07:00:00Z',
+      },
+      warnings: [],
+    });
+    const receipt = await service(
+      {},
+      { ...fixedDependencies, liveVerifier: { verify } },
+    ).recoverWithLiveVerification(readOnlyRequest({ requires_current_operational_state: true }));
+
+    expect(receipt).toMatchObject({
+      project_id: 'multiagent-collaboration-framework',
+      recovery_state: 'RECOVERED',
+      evidence_only: true,
+    });
+    expect(receipt.sources).toContainEqual({
+      role: 'LIVE_VERIFICATION',
+      source_ref: 'repo://leon337/multiagent-collaboration-framework/.git/HEAD',
+      source_revision: 'a'.repeat(40),
+      observed_at: '2026-08-23T07:00:00Z',
+    });
+    expect(verify).toHaveBeenCalledOnce();
+  });
+
+  it('does not call the live verifier for snapshot-only read recovery', async () => {
+    const verify = vi.fn();
+    const receipt = await service(
+      {},
+      { ...fixedDependencies, liveVerifier: { verify } },
+    ).recoverWithLiveVerification(readOnlyRequest());
+
+    expect(receipt.recovery_state).toBe('RECOVERED');
+    expect(verify).not.toHaveBeenCalled();
+  });
+
+  it('returns DRIFT_DETECTED with live evidence when the repository moved', async () => {
+    const receipt = await service(
+      {},
+      {
+        ...fixedDependencies,
+        liveVerifier: {
+          verify: async () => ({
+            outcome: 'DRIFT_DETECTED',
+            source: {
+              role: 'LIVE_VERIFICATION',
+              source_ref: 'repo://leon337/multiagent-collaboration-framework/.git/HEAD',
+              source_revision: 'b'.repeat(40),
+              observed_at: '2026-08-23T07:00:00Z',
+            },
+            warnings: [`GIT_HEAD_DRIFT:${'a'.repeat(40)}:${'b'.repeat(40)}`],
+          }),
+        },
+      },
+    ).recoverWithLiveVerification(readOnlyRequest({ requires_current_operational_state: true }));
+
+    expect(receipt.recovery_state).toBe('DRIFT_DETECTED');
+    expect(receipt.warnings).toContain(`GIT_HEAD_DRIFT:${'a'.repeat(40)}:${'b'.repeat(40)}`);
+  });
+
+  it('fails closed when a live verifier returns malformed evidence', async () => {
+    const receipt = await service(
+      {},
+      {
+        ...fixedDependencies,
+        liveVerifier: {
+          verify: async () =>
+            ({
+              outcome: 'VERIFIED',
+              source: {
+                role: 'CAPSULE',
+                source_ref: 'invalid-live-source',
+                source_revision: 'invalid',
+              },
+              warnings: [],
+            }) as never,
+        },
+      },
+    ).recoverWithLiveVerification(readOnlyRequest({ requires_current_operational_state: true }));
+
+    expect(receipt.recovery_state).toBe('PARTIAL_RECOVERY');
+    expect(receipt.warnings).toEqual(
+      expect.arrayContaining([
+        'LIVE_VERIFICATION_INVALID_RESULT',
+        'LIVE_VERIFICATION_UNAVAILABLE:READ_ONLY_CONTEXT_ONLY',
+      ]),
+    );
+    expect(receipt.sources.some(({ role }) => role === 'LIVE_VERIFICATION')).toBe(false);
   });
 
   it('returns RECONCILIATION_REQUIRED for an injected internal authoritative conflict', () => {

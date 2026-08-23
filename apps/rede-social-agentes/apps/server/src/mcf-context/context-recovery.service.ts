@@ -71,6 +71,30 @@ export interface ContextRecoveryServiceDependencies {
   now?: () => string;
   receiptId?: () => string;
   normalizeClaims?: (input: ContextClaimsNormalizationInput) => McfTruthClaim[];
+  liveVerifier?: ContextLiveVerifier;
+}
+
+export interface ContextLiveVerificationRequest {
+  project_id: string;
+  canonical_repository: string;
+  repository_root: string | null;
+  expected_revision: string | null;
+}
+
+export type ContextLiveVerificationResult =
+  | {
+      outcome: 'VERIFIED' | 'DRIFT_DETECTED' | 'RECONCILIATION_REQUIRED';
+      source: McfContextSourceEvidence;
+      warnings: string[];
+    }
+  | {
+      outcome: 'SOURCE_UNAVAILABLE';
+      source?: McfContextSourceEvidence;
+      warnings: string[];
+    };
+
+export interface ContextLiveVerifier {
+  verify(input: ContextLiveVerificationRequest): Promise<ContextLiveVerificationResult>;
 }
 
 interface LoadedRegistry {
@@ -104,6 +128,12 @@ const MAX_RECEIPT_CLAIMS = 1024;
 const MAX_RECEIPT_WARNINGS = 256;
 const MAX_RECEIPT_WARNING_LENGTH = 1024;
 const MAX_REGISTRY_SOURCES = MAX_RECEIPT_SOURCES - 1;
+const LIVE_VERIFICATION_OUTCOMES = [
+  'VERIFIED',
+  'DRIFT_DETECTED',
+  'RECONCILIATION_REQUIRED',
+  'SOURCE_UNAVAILABLE',
+] as const;
 
 function compareText(left: string, right: string): number {
   if (left < right) return -1;
@@ -196,6 +226,41 @@ function capsuleProvenance(
   };
 }
 
+function isValidLiveSource(value: unknown): value is McfContextSourceEvidence {
+  if (typeof value !== 'object' || value === null) return false;
+  const source = value as Partial<McfContextSourceEvidence>;
+  return (
+    source.role === 'LIVE_VERIFICATION' &&
+    typeof source.source_ref === 'string' &&
+    /\S/u.test(source.source_ref) &&
+    Array.from(source.source_ref).length <= 1024 &&
+    typeof source.source_revision === 'string' &&
+    /\S/u.test(source.source_revision) &&
+    Array.from(source.source_revision).length <= 256 &&
+    typeof source.observed_at === 'string' &&
+    !Number.isNaN(Date.parse(source.observed_at))
+  );
+}
+
+function isValidLiveVerificationResult(value: unknown): value is ContextLiveVerificationResult {
+  if (typeof value !== 'object' || value === null) return false;
+  const result = value as Partial<ContextLiveVerificationResult>;
+  if (
+    typeof result.outcome !== 'string' ||
+    !LIVE_VERIFICATION_OUTCOMES.includes(
+      result.outcome as (typeof LIVE_VERIFICATION_OUTCOMES)[number],
+    ) ||
+    !Array.isArray(result.warnings) ||
+    !result.warnings.every((warning) => typeof warning === 'string')
+  ) {
+    return false;
+  }
+  if (result.outcome === 'SOURCE_UNAVAILABLE') {
+    return result.source === undefined || isValidLiveSource(result.source);
+  }
+  return isValidLiveSource(result.source);
+}
+
 function defaultNormalizeClaims(input: ContextClaimsNormalizationInput): McfTruthClaim[] {
   return [
     ...normalizeRegistryClaims(input.registry, input.registryProvenance),
@@ -210,6 +275,7 @@ export class ContextRecoveryService {
     {
       source: RepositoryContextSource;
       sourceRevision: string;
+      repositoryRoot: string;
     }
   >;
   private readonly registrySources: readonly ContextRecoveryRegistrySource[];
@@ -221,6 +287,7 @@ export class ContextRecoveryService {
   private readonly now: () => string;
   private readonly receiptId: () => string;
   private readonly normalizeClaims: (input: ContextClaimsNormalizationInput) => McfTruthClaim[];
+  private readonly liveVerifier: ContextLiveVerifier | undefined;
 
   constructor(
     options: ContextRecoveryServiceOptions,
@@ -241,6 +308,7 @@ export class ContextRecoveryService {
               : { maxSourceBytes: options.maxSourceBytes }),
           }),
           sourceRevision: repository.sourceRevision,
+          repositoryRoot: repository.repositoryRoot,
         },
       ]),
     );
@@ -261,9 +329,123 @@ export class ContextRecoveryService {
     this.now = dependencies.now ?? (() => new Date().toISOString());
     this.receiptId = dependencies.receiptId ?? (() => `context-recovery-${randomUUID()}`);
     this.normalizeClaims = dependencies.normalizeClaims ?? defaultNormalizeClaims;
+    this.liveVerifier = dependencies.liveVerifier;
   }
 
   recover(request: ContextRecoveryRequest): McfContextRecoveryReceipt {
+    return this.recoverCanonicalContext(request, false);
+  }
+
+  async recoverWithLiveVerification(
+    request: ContextRecoveryRequest,
+  ): Promise<McfContextRecoveryReceipt> {
+    if (!this.liveVerifier) return this.recover(request);
+
+    const baseline = this.recoverCanonicalContext(request, true);
+    if (baseline.recovery_state !== 'RECOVERED' || baseline.project_id === null) return baseline;
+    if (!request.material_action && request.requires_current_operational_state !== true) {
+      return baseline;
+    }
+
+    const canonicalRepository = baseline.claims.find(
+      ({ claim_key }) => claim_key === 'identity.canonical_repository',
+    )?.value;
+    const mode = { readOnly: request.read_only, materialAction: request.material_action };
+    if (typeof canonicalRepository !== 'string' || !/\S/u.test(canonicalRepository)) {
+      return this.createReceipt({
+        mode,
+        projectId: baseline.project_id,
+        recoveryState: 'INVALID_CONTEXT',
+        sources: baseline.sources,
+        claims: baseline.claims,
+        warnings: [...baseline.warnings, 'CANONICAL_REPOSITORY_CLAIM_MISSING'],
+      });
+    }
+
+    const projectRepository = this.projectRepositories.get(baseline.project_id);
+    let verification: ContextLiveVerificationResult;
+    try {
+      const result: unknown = await this.liveVerifier.verify({
+        project_id: baseline.project_id,
+        canonical_repository: canonicalRepository,
+        repository_root: projectRepository?.repositoryRoot ?? null,
+        expected_revision: projectRepository?.sourceRevision ?? null,
+      });
+      verification = isValidLiveVerificationResult(result)
+        ? result
+        : {
+            outcome: 'SOURCE_UNAVAILABLE',
+            warnings: ['LIVE_VERIFICATION_INVALID_RESULT'],
+          };
+    } catch {
+      verification = {
+        outcome: 'SOURCE_UNAVAILABLE',
+        warnings: ['LIVE_VERIFICATION_FAILED'],
+      };
+    }
+
+    const liveSource =
+      verification.source === undefined
+        ? []
+        : [
+            {
+              role: verification.source.role,
+              source_ref: verification.source.source_ref,
+              source_revision: verification.source.source_revision,
+              observed_at: verification.source.observed_at,
+            },
+          ];
+    const sources = [...baseline.sources, ...liveSource];
+    if (verification.outcome === 'VERIFIED') {
+      return this.createReceipt({
+        mode,
+        projectId: baseline.project_id,
+        recoveryState: 'RECOVERED',
+        sources,
+        claims: baseline.claims,
+        warnings: [...baseline.warnings, ...verification.warnings],
+      });
+    }
+    if (verification.outcome === 'DRIFT_DETECTED') {
+      return this.createReceipt({
+        mode,
+        projectId: baseline.project_id,
+        recoveryState: 'DRIFT_DETECTED',
+        sources,
+        claims: baseline.claims,
+        warnings: [...baseline.warnings, ...verification.warnings],
+      });
+    }
+    if (verification.outcome === 'RECONCILIATION_REQUIRED') {
+      return this.createReceipt({
+        mode,
+        projectId: baseline.project_id,
+        recoveryState: 'RECONCILIATION_REQUIRED',
+        sources,
+        claims: baseline.claims,
+        warnings: [...baseline.warnings, ...verification.warnings],
+      });
+    }
+    return this.createReceipt({
+      mode,
+      projectId: baseline.project_id,
+      recoveryState: mode.readOnly ? 'PARTIAL_RECOVERY' : 'SOURCE_UNAVAILABLE',
+      sources,
+      claims: baseline.claims,
+      warnings: [
+        ...baseline.warnings,
+        ...verification.warnings,
+        mode.readOnly
+          ? 'LIVE_VERIFICATION_UNAVAILABLE:READ_ONLY_CONTEXT_ONLY'
+          : 'LIVE_VERIFICATION_UNAVAILABLE:MATERIAL_ACTION_BLOCKED',
+      ],
+    });
+  }
+
+  private recoverCanonicalContext(
+    request: ContextRecoveryRequest,
+    liveVerificationAvailable: boolean,
+  ): McfContextRecoveryReceipt {
     const mode = this.validateMode(request);
     if (!mode) {
       return this.createReceipt({
@@ -558,7 +740,7 @@ export class ContextRecoveryService {
     const requiresCurrentOperationalState =
       resolvedRegistry.entry.freshness.operational_state === 'LIVE_REQUIRED' &&
       (mode.materialAction || request.requires_current_operational_state === true);
-    if (requiresCurrentOperationalState) {
+    if (requiresCurrentOperationalState && !liveVerificationAvailable) {
       return this.createReceipt({
         mode,
         projectId: resolution.project_id,
