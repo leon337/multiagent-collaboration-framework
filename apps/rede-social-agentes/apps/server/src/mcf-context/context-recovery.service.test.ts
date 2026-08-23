@@ -302,6 +302,114 @@ describe('ContextRecoveryService repository-only kernel', () => {
     expect(receipt.warnings).toContain('TRUTH_NORMALIZATION_INVALID_RESULT');
   });
 
+  it('bounds schema warnings and returns a valid fail-closed Receipt', () => {
+    const root = createTemporaryRepository();
+    const invalidRegistry = registryEntry() as unknown as Record<string, unknown>;
+    (invalidRegistry.identity as Record<string, unknown>).aliases = Array.from(
+      { length: 300 },
+      (_, index) => index,
+    );
+    writeYaml(root, canonicalRegistryRef, invalidRegistry);
+
+    const recovery = service({ repositoryRoot: root });
+    const receipt = recovery.recover(readOnlyRequest());
+
+    expect(receipt).toMatchObject({
+      project_id: null,
+      recovery_state: 'INVALID_CONTEXT',
+    });
+    expect(receipt.warnings).toHaveLength(256);
+    expect(receipt.warnings).toEqual(
+      expect.arrayContaining([expect.stringMatching(/^RECEIPT_WARNINGS_TRUNCATED:\d+$/u)]),
+    );
+    expect(recovery.recover(readOnlyRequest())).toEqual(receipt);
+    const receiptValidator = new ContextSchemaValidator(
+      join(schemaDirectory, 'context-recovery-receipt.schema.json'),
+    );
+    expect(receiptValidator.validate(receipt)).toEqual({ valid: true, errors: [] });
+  });
+
+  it('rejects an oversized internal truth result before claim validation', () => {
+    const oversizedDependencies: ContextRecoveryServiceDependencies = {
+      ...fixedDependencies,
+      normalizeClaims: ({ registry, registryProvenance }) => {
+        const template = normalizeRegistryClaims(registry, registryProvenance)[0] as McfTruthClaim;
+        return Array.from({ length: 1025 }, (_, index) => ({
+          ...template,
+          claim_key: `test.claim.${index}`,
+        }));
+      },
+    };
+
+    const receipt = service({}, oversizedDependencies).recover({
+      project_hint: 'MCF',
+      read_only: false,
+      material_action: true,
+    });
+
+    expect(receipt).toMatchObject({
+      project_id: 'multiagent-collaboration-framework',
+      recovery_state: 'INVALID_CONTEXT',
+      read_only: false,
+      material_action: true,
+    });
+    expect(receipt.warnings).toContain('TRUTH_CLAIMS_LIMIT_EXCEEDED:1025:1024');
+    expect(receipt.claims).toEqual([]);
+  });
+
+  it('fails closed when individually valid claims exceed the aggregate Receipt budget', () => {
+    const aggregateDependencies: ContextRecoveryServiceDependencies = {
+      ...fixedDependencies,
+      normalizeClaims: ({ registry, registryProvenance }) => {
+        const template = normalizeRegistryClaims(registry, registryProvenance)[0] as McfTruthClaim;
+        return Array.from({ length: 900 }, (_, index) => ({
+          ...template,
+          claim_key: `aggregate.claim.${index}`,
+          value: { index },
+          provenance: template.provenance.map((entry) => ({ ...entry })),
+        }));
+      },
+    };
+
+    const receipt = service({}, aggregateDependencies).recover(readOnlyRequest());
+
+    expect(receipt).toMatchObject({
+      project_id: 'multiagent-collaboration-framework',
+      recovery_state: 'INVALID_CONTEXT',
+      claims: [],
+    });
+    expect(receipt.warnings).toContain('RECEIPT_CLAIMS_OMITTED:AGGREGATE_LIMIT');
+  });
+
+  it('bounds a diagnostic derived from the maximum accepted project hint', () => {
+    const request = readOnlyRequest({ project_hint: 'x'.repeat(1024) });
+    const recovery = service();
+
+    const receipt = recovery.recover(request);
+
+    expect(receipt.recovery_state).toBe('SOURCE_UNAVAILABLE');
+    expect(receipt.warnings).toHaveLength(1);
+    expect(Array.from(receipt.warnings[0] ?? '')).toHaveLength(1024);
+    expect(receipt.warnings[0]).toMatch(/:TRUNCATED_SHA256:[a-f0-9]{64}$/u);
+    expect(recovery.recover(request)).toEqual(receipt);
+  });
+
+  it('rejects registry source fan-out that cannot fit with Capsule evidence', () => {
+    const registrySources = Array.from({ length: 257 }, (_, index) => ({
+      source_ref: canonicalRegistryRef,
+      source_revision: `registry-revision-${index}`,
+    }));
+
+    const receipt = service({ registrySources }).recover(readOnlyRequest());
+
+    expect(receipt).toMatchObject({
+      project_id: null,
+      recovery_state: 'INVALID_CONTEXT',
+      sources: [],
+    });
+    expect(receipt.warnings).toContain('REGISTRY_SOURCES_LIMIT_EXCEEDED:257:255');
+  });
+
   it('blocks a material-current request when live verification is unavailable', () => {
     const receipt = service().recover({
       project_hint: 'MCF',

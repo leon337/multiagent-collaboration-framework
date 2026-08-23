@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 
 import type {
@@ -90,11 +90,49 @@ const DEFAULT_AUTHORITY_RULES: readonly ClaimAuthorityRule[] = [
     authoritative_owner: 'MCF_PROJECT_REGISTRY',
   },
 ];
+const MAX_RECEIPT_SOURCES = 256;
+const MAX_RECEIPT_CLAIMS = 1024;
+const MAX_RECEIPT_WARNINGS = 256;
+const MAX_RECEIPT_WARNING_LENGTH = 1024;
+const MAX_REGISTRY_SOURCES = MAX_RECEIPT_SOURCES - 1;
 
 function compareText(left: string, right: string): number {
   if (left < right) return -1;
   if (left > right) return 1;
   return 0;
+}
+
+function boundWarning(value: unknown): string {
+  const warning = typeof value === 'string' && /\S/u.test(value) ? value : 'INVALID_WARNING_ENTRY';
+  const characters = Array.from(warning);
+  if (characters.length <= MAX_RECEIPT_WARNING_LENGTH) return warning;
+
+  const digest = createHash('sha256').update(warning).digest('hex');
+  const suffix = `:TRUNCATED_SHA256:${digest}`;
+  const prefixLength = MAX_RECEIPT_WARNING_LENGTH - Array.from(suffix).length;
+  return `${characters.slice(0, prefixLength).join('')}${suffix}`;
+}
+
+function boundWarnings(
+  values: readonly unknown[],
+  mandatoryValues: readonly unknown[] = [],
+): string[] {
+  const mandatory = [...new Set(mandatoryValues.map(boundWarning))].toSorted(compareText);
+  const mandatorySet = new Set(mandatory);
+  const regular = [...new Set(values.map(boundWarning))]
+    .filter((warning) => !mandatorySet.has(warning))
+    .toSorted(compareText);
+  if (mandatory.length + regular.length <= MAX_RECEIPT_WARNINGS) {
+    return [...mandatory, ...regular].toSorted(compareText);
+  }
+
+  const retainedMandatory = mandatory.slice(0, MAX_RECEIPT_WARNINGS - 1);
+  const regularCapacity = Math.max(0, MAX_RECEIPT_WARNINGS - retainedMandatory.length - 1);
+  const retainedRegular = regular.slice(0, regularCapacity);
+  const omitted =
+    mandatory.length - retainedMandatory.length + regular.length - retainedRegular.length;
+  const sentinel = `RECEIPT_WARNINGS_TRUNCATED:${omitted}`;
+  return [...retainedMandatory, ...retainedRegular, sentinel].toSorted(compareText);
 }
 
 function sourceRoleOrder(role: McfContextSourceEvidence['role']): number {
@@ -220,6 +258,18 @@ export class ContextRecoveryService {
         sources: [],
         claims: [],
         warnings: ['INVALID_RECOVERY_REQUEST'],
+      });
+    }
+    if (this.registrySources.length > MAX_REGISTRY_SOURCES) {
+      return this.createReceipt({
+        mode,
+        projectId: null,
+        recoveryState: 'INVALID_CONTEXT',
+        sources: [],
+        claims: [],
+        warnings: [
+          `REGISTRY_SOURCES_LIMIT_EXCEEDED:${this.registrySources.length}:${MAX_REGISTRY_SOURCES}`,
+        ],
       });
     }
 
@@ -388,6 +438,16 @@ export class ContextRecoveryService {
           warnings: ['TRUTH_NORMALIZATION_INVALID_RESULT'],
         });
       }
+      if (producedClaims.length > MAX_RECEIPT_CLAIMS) {
+        return this.createReceipt({
+          mode,
+          projectId: resolution.project_id,
+          recoveryState: 'INVALID_CONTEXT',
+          sources: allSources,
+          claims: [],
+          warnings: [`TRUTH_CLAIMS_LIMIT_EXCEEDED:${producedClaims.length}:${MAX_RECEIPT_CLAIMS}`],
+        });
+      }
       normalizedClaims = producedClaims;
     } catch {
       return this.createReceipt({
@@ -408,12 +468,18 @@ export class ContextRecoveryService {
       if (validation.valid) {
         validClaims.push(claim);
       } else {
-        const claimKey =
+        const candidateClaimKey =
           typeof unknownClaim === 'object' &&
           unknownClaim !== null &&
           'claim_key' in unknownClaim &&
           typeof unknownClaim.claim_key === 'string'
             ? unknownClaim.claim_key
+            : null;
+        const claimKey =
+          candidateClaimKey !== null &&
+          /\S/u.test(candidateClaimKey) &&
+          Array.from(candidateClaimKey).length <= 256
+            ? candidateClaimKey
             : `claim-${index}`;
         claimWarnings.push(
           ...validation.errors.map(
@@ -490,21 +556,50 @@ export class ContextRecoveryService {
   }
 
   private createReceipt(input: ReceiptInput): McfContextRecoveryReceipt {
+    const orderedSources = input.sources.toSorted(compareSources);
+    const sourcesExceeded = orderedSources.length > MAX_RECEIPT_SOURCES;
+    const claimsExceeded = input.claims.length > MAX_RECEIPT_CLAIMS;
+    const limitWarnings = [
+      ...(sourcesExceeded
+        ? [`RECEIPT_SOURCES_LIMIT_EXCEEDED:${orderedSources.length}:${MAX_RECEIPT_SOURCES}`]
+        : []),
+      ...(claimsExceeded
+        ? [`RECEIPT_CLAIMS_LIMIT_EXCEEDED:${input.claims.length}:${MAX_RECEIPT_CLAIMS}`]
+        : []),
+    ];
     const receipt: McfContextRecoveryReceipt = {
       schema_version: 1,
       receipt_id: this.receiptId(),
       project_id: input.projectId,
-      recovery_state: input.recoveryState,
+      recovery_state: sourcesExceeded || claimsExceeded ? 'INVALID_CONTEXT' : input.recoveryState,
       recovered_at: this.now(),
       read_only: input.mode.readOnly,
       material_action: input.mode.materialAction,
-      sources: input.sources.toSorted(compareSources),
-      claims: [...input.claims],
-      warnings: [...new Set(input.warnings)].toSorted(compareText),
+      sources: orderedSources.slice(0, MAX_RECEIPT_SOURCES),
+      claims: claimsExceeded ? [] : [...input.claims],
+      warnings: boundWarnings(input.warnings, limitWarnings),
       evidence_only: true,
     };
 
-    const validation = this.receiptValidator.validate(receipt);
+    let validation = this.receiptValidator.validate(receipt);
+    const aggregateClaimLimitExceeded =
+      !validation.valid &&
+      validation.errors.some(
+        ({ instancePath, keyword, schemaPath }) =>
+          keyword === 'jsonSafe' &&
+          schemaPath === '#/json-safe' &&
+          (instancePath === '/claims' || instancePath.startsWith('/claims/')),
+      );
+    if (aggregateClaimLimitExceeded && receipt.claims.length > 0) {
+      const failClosedReceipt: McfContextRecoveryReceipt = {
+        ...receipt,
+        recovery_state: 'INVALID_CONTEXT',
+        claims: [],
+        warnings: boundWarnings(receipt.warnings, ['RECEIPT_CLAIMS_OMITTED:AGGREGATE_LIMIT']),
+      };
+      validation = this.receiptValidator.validate(failClosedReceipt);
+      if (validation.valid) return failClosedReceipt;
+    }
     if (!validation.valid) {
       throw new Error(
         `ContextRecoveryService produced an invalid Receipt: ${validation.errors
