@@ -1,0 +1,23 @@
+schema_version: 1
+
+project:
+  id: multiagent-collaboration-framework
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/multiagent-collaboration-framework
+  aliases:
+    - MCF
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - docs/MCF-CURRENT-STATE.md
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE

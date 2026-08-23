@@ -1,0 +1,19 @@
+schema_version: 1
+project_id: multiagent-collaboration-framework
+
+purpose: >-
+  Framework for governed coordination of AI agents with explicit roles,
+  traceable execution, versioned skills, and verifiable evidence.
+
+lifecycle: ACTIVE
+
+snapshot:
+  current_workstream: context-fabric-cf0-cf1
+  current_status: CF0_CF1_IMPLEMENTED_LOCALLY_AWAITING_REVIEW
+  next_action: Review local evidence before any push or merge
+  blockers: []
+
+sources:
+  current_state: docs/MCF-CURRENT-STATE.md
+
+observed_at: "2026-08-23T01:35:37-03:00"

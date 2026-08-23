@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/leon337/multiagent-collaboration-framework/schemas/context/truth-contract.schema.json",
+  "title": "MCF Context Truth Claim",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claim_key",
+    "type",
+    "value",
+    "owner",
+    "source_ref",
+    "freshness",
+    "provenance",
+    "requires_live_verification"
+  ],
+  "properties": {
+    "claim_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "\\S"
+    },
+    "type": { "enum": ["IDENTITY", "NORMATIVE", "OPERATIONAL", "DERIVED"] },
+    "value": { "$ref": "#/$defs/json_value" },
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "\\S"
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "\\S"
+    },
+    "freshness": {
+      "enum": ["DURABLE", "SNAPSHOT", "LIVE_REQUIRED", "DERIVED"]
+    },
+    "observed_at": { "type": "string", "format": "date-time" },
+    "provenance": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/provenance" }
+    },
+    "requires_live_verification": { "type": "boolean" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "freshness": { "const": "SNAPSHOT" } },
+        "required": ["freshness"]
+      },
+      "then": {
+        "properties": {
+          "observed_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["observed_at"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "freshness": { "const": "LIVE_REQUIRED" } },
+        "required": ["freshness"]
+      },
+      "then": {
+        "properties": { "requires_live_verification": { "const": true } }
+      },
+      "else": {
+        "properties": { "requires_live_verification": { "const": false } }
+      }
+    }
+  ],
+  "$defs": {
+    "json_value": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "number" },
+        { "type": "string" },
+        {
+          "type": "array",
+          "maxItems": 1024,
+          "items": { "$ref": "#/$defs/json_value" }
+        },
+        {
+          "type": "object",
+          "maxProperties": 1024,
+          "additionalProperties": { "$ref": "#/$defs/json_value" }
+        }
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_ref", "source_revision"],
+      "properties": {
+        "source_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "\\S"
+        },
+        "source_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "\\S"
+        },
+        "observed_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

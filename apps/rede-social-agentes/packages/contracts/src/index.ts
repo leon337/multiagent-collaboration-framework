@@ -292,3 +292,5 @@ export type {
   ProvenanceType,
   RealityAssertionKind,
 } from './mcf-runtime.js';
+
+export * from './mcf-context.js';
