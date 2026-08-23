@@ -20,6 +20,7 @@ const knownProjectIds = [
 const canonicalSources = [
   'context/capabilities/cloud-workspace-g2a-read.yaml',
   'context/capabilities/cloud-workspace-g2b-write.yaml',
+  'context/capabilities/mcf-capability-registry-read.yaml',
   'context/capabilities/mcf-context-recovery-read.yaml',
 ].map((sourceRef) => ({
   source_ref: sourceRef,
@@ -91,6 +92,7 @@ describe('CapabilityRegistryLoader', () => {
     expect(result.entries.map(({ capability }) => capability.id)).toEqual([
       'cloud.workspace.g2a.read',
       'cloud.workspace.g2b.write',
+      'mcf.capability.registry.read',
       'mcf.context.recovery.read',
     ]);
     expect(
@@ -127,7 +129,7 @@ describe('CapabilityRegistryLoader', () => {
   });
 
   it('fails closed for duplicate capability ids', () => {
-    const source = canonicalSources[2];
+    const source = canonicalSources[3];
     if (!source) throw new Error('fixture source missing');
     const result = new CapabilityRegistryLoader({
       repositoryRoot,

@@ -18,6 +18,7 @@ const registrySources = [
 const capabilitySources = [
   'context/capabilities/cloud-workspace-g2a-read.yaml',
   'context/capabilities/cloud-workspace-g2b-write.yaml',
+  'context/capabilities/mcf-capability-registry-read.yaml',
   'context/capabilities/mcf-context-recovery-read.yaml',
 ];
 
@@ -70,6 +71,7 @@ describe('McfCapabilityRegistryApiService', () => {
     expect(triView.project_id).toBe('triview-workspace-linux');
     expect(triView.entries.map(({ capability }) => capability.id)).toEqual([
       'cloud.workspace.g2a.read',
+      'mcf.capability.registry.read',
       'mcf.context.recovery.read',
     ]);
   });
