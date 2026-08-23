@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/leon337/multiagent-collaboration-framework/schemas/context/context-recovery-receipt.schema.json",
+  "title": "MCF Context Recovery Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "project_id",
+    "recovery_state",
+    "recovered_at",
+    "read_only",
+    "material_action",
+    "sources",
+    "claims",
+    "warnings",
+    "evidence_only"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "receipt_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "\\S"
+    },
+    "project_id": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        { "type": "null" }
+      ]
+    },
+    "recovery_state": {
+      "enum": [
+        "RECOVERED",
+        "PARTIAL_RECOVERY",
+        "AMBIGUOUS_CONTEXT",
+        "SOURCE_UNAVAILABLE",
+        "INVALID_CONTEXT",
+        "DRIFT_DETECTED",
+        "RECONCILIATION_REQUIRED"
+      ]
+    },
+    "recovered_at": { "type": "string", "format": "date-time" },
+    "read_only": { "type": "boolean" },
+    "material_action": { "type": "boolean" },
+    "sources": {
+      "type": "array",
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/source_evidence" }
+    },
+    "claims": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {
+        "$ref": "https://github.com/leon337/multiagent-collaboration-framework/schemas/context/truth-contract.schema.json"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "pattern": "\\S"
+      }
+    },
+    "evidence_only": { "const": true }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "read_only": { "const": true },
+        "material_action": { "const": false }
+      },
+      "required": ["read_only", "material_action"]
+    },
+    {
+      "properties": {
+        "read_only": { "const": false },
+        "material_action": { "const": true }
+      },
+      "required": ["read_only", "material_action"]
+    }
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": { "recovery_state": { "const": "RECOVERED" } },
+        "required": ["recovery_state"]
+      },
+      "then": {
+        "properties": {
+          "project_id": { "$ref": "#/$defs/project_id" },
+          "sources": {
+            "type": "array",
+            "minItems": 2,
+            "allOf": [
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": { "role": { "const": "REGISTRY" } },
+                  "required": ["role"]
+                },
+                "minContains": 1
+              },
+              {
+                "contains": {
+                  "type": "object",
+                  "properties": { "role": { "const": "CAPSULE" } },
+                  "required": ["role"]
+                },
+                "minContains": 1
+              }
+            ]
+          },
+          "claims": { "type": "array", "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "recovery_state": { "const": "PARTIAL_RECOVERY" } },
+        "required": ["recovery_state"]
+      },
+      "then": {
+        "properties": {
+          "project_id": { "$ref": "#/$defs/project_id" },
+          "sources": { "type": "array", "minItems": 1 },
+          "claims": { "type": "array", "minItems": 1 },
+          "read_only": { "const": true },
+          "material_action": { "const": false }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "project_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "source_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "source_ref", "source_revision"],
+      "properties": {
+        "role": { "enum": ["REGISTRY", "CAPSULE", "LIVE_VERIFICATION"] },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "\\S"
+        },
+        "source_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "\\S"
+        },
+        "observed_at": { "type": "string", "format": "date-time" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "role": { "const": "LIVE_VERIFICATION" } },
+            "required": ["role"]
+          },
+          "then": {
+            "properties": {
+              "observed_at": { "type": "string", "format": "date-time" }
+            },
+            "required": ["observed_at"]
+          }
+        }
+      ]
+    }
+  }
+}
