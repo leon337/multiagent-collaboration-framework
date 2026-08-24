@@ -114,7 +114,8 @@ outside this disabled-by-default local-lab boundary.
 - Python executable: 64 MiB;
 - execution timeout: 20 seconds;
 - forced termination settlement: 1 second after `SIGKILL`;
-- global abuse policy for this exact GET route: 10 requests/minute per hashed subject;
+- global abuse policy for this exact GET route: 10 requests/minute per HMAC-hashed direct socket
+  peer; client-selected `Authorization` and forwarded request IP values cannot split the bucket;
 - per-MCF-process bulkhead: one active Cloud child; excess work fails immediately with `503`.
 
 Any drift, symlink, invalid schema, response mismatch, stderr output, non-zero exit, timeout or
@@ -151,10 +152,14 @@ guard/controller → one-child bulkhead → bounded process adapter → Cloud CL
 It proves the Context/TriView and both Ledger keys cannot open the Cloud route, duplicate raw Cloud
 headers fail at the HTTP/guard boundary, query/path injection and non-GET methods fail before
 execution, and no absolute configuration, token or provider payload reaches the response, logs or
-MCF stores. All non-abuse database tables remain byte-semantically identical; the only expected MCF
-write is the opaque HMAC technical counter in `abuse_rate_limits`. The 16-file closure, disposable
-tree, original repositories and controlled venv fingerprints remain unchanged, the actual child
-process and ephemeral HTTP listener close, and the unique database is absent after teardown.
+MCF stores. Eleven requests carrying the correct Cloud ingress token and eleven different synthetic
+Bearer values remain in one direct-peer bucket; the eleventh is rejected with `429` before a child
+can start. All non-abuse database tables remain byte-semantically identical; the only expected
+application write is the opaque HMAC technical counter in `abuse_rate_limits`. The 16-file closure,
+disposable tree, original repositories and controlled venv fingerprints remain unchanged, the
+actual child process and ephemeral HTTP listener close, and the unique database is absent after
+teardown. The committed credential strings are synthetic fixtures, not real secrets; the E2E proves
+that neither repository's Git fingerprint changes during execution.
 
 After teardown the connection is truthfully `DISCONNECTED`, runtime is `INACTIVE`, and the E2E is
 only historical lab evidence. It says nothing about NODE-01/VPS freshness or production.

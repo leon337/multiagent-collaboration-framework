@@ -116,7 +116,8 @@ describe('CapabilityRegistryLoader', () => {
       scope: { environments: ['lab'] },
       governance: {
         authorization_state: 'AUTHORIZED',
-        required_gate: 'DISPOSABLE_LOCAL_LAB_ONLY_PAIRWISE_DISTINCT_TOKEN_16_FILE_CLOSURE',
+        required_gate:
+          'DISPOSABLE_LOCAL_LAB_ONLY_PAIRWISE_DISTINCT_TOKEN_16_FILE_CLOSURE_DIRECT_PEER_RATE_BUCKET',
       },
       lifecycle: {
         connection_state: 'DISCONNECTED',

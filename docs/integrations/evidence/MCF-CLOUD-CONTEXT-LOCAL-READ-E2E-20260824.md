@@ -25,6 +25,8 @@ remote/VPS capability `cloud.workspace.g2a.read`.
 - MCF initial security/AppModule checkpoint: `e2663fc3bf95283b1ea8bf4cb264aecae9ecf359`;
 - MCF complete execution-closure/security checkpoint:
   `425e258bb110799f33ad3942fbed7ae1be17313d`;
+- MCF direct-peer rate-limit checkpoint:
+  `54fadeca31509e3fbde3f4a16434df1dda02c281`;
 - Cloud provider feature content: `cb97df4bcc0bb374c7524e6aa395309af8967297`;
 - Cloud PR #26 lab-target merge: `dbd772a6c37452008b7c8debd58d2782127514db`;
 - Node.js: `24.18.0`;
@@ -71,11 +73,11 @@ typing_extensions-4.16.0: 481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d7
 
 ## Gates executed
 
-Focused Cloud guard/controller/service plus abuse-policy suite:
+Focused Cloud guard/controller/service, Capability Registry and abuse-policy suite:
 
 ```text
-Test Files  4 passed (4)
-Tests       43 passed (43)
+Test Files  6 passed (6)
+Tests       49 passed (49)
 ```
 
 Real full-AppModule suite:
@@ -112,7 +114,9 @@ The route accepts only `x-mcf-cloud-context-token`, backed by
 - a Cloud token equal to any Context/TriView/Ledger key disables configuration;
 - leading/trailing whitespace, CR/LF, commas, arrays and duplicate raw Cloud headers fail closed;
 - the distinct Cloud key reaches the fixed read path;
-- none of the four keys appears in response, runtime log, database counter or Git.
+- no credential fixture appears in the response, runtime log or database counter;
+- the credential strings committed in the E2E are explicitly synthetic, not real secrets, and the
+  Git fingerprints of both repositories remain unchanged during execution.
 
 ## Process and contract boundary
 
@@ -129,9 +133,14 @@ timeout Promise settled after the bounded post-`SIGKILL` grace even when the inj
 emitted `close`; this proves bounded adapter settlement, while the real-process E2E separately
 proved PID cleanup.
 
-The exact GET route used policy `mcf-cloud-context-local-read` at 10 requests/minute, and the MCF
-service allowed one active Cloud read per process. Saturation failed immediately with normalized
-`503`; unit tests proved release after success, child error and timeout.
+The exact GET route used policy `mcf-cloud-context-local-read` at 10 requests/minute, keyed by the
+HMAC-hashed direct socket peer rather than a client-selected Bearer or forwarded request IP. Unit
+tests proved subject isolation without changing other routes. The AppModule E2E sent eleven
+requests with the correct Cloud ingress token and eleven different Bearers: they shared one bucket,
+the first ten were rejected as query-bearing requests, and the eleventh was rejected with `429`
+before provider execution. The MCF service allowed one active Cloud read per process. Saturation
+failed immediately with normalized `503`; unit tests proved release after success, child error and
+timeout.
 
 The successful HTTP response used `Cache-Control: private, no-store` and exposed no repository
 root, Python path, absolute host path, token, arbitrary header value or raw error. It declared:
@@ -152,12 +161,14 @@ applied all MCF migrations, ran AppModule on an ephemeral loopback HTTP port, cl
 dropped only that database. A postflight query proved the database absent. The shared Postgres
 container remained running and was neither stopped nor removed.
 
-Before/after snapshots of every public table except `abuse_rate_limits` were identical. The only
-MCF mutation was one expected row in `abuse_rate_limits`:
+Before/after snapshots of every public table except `abuse_rate_limits` were identical. To make the
+absolute 60-second-window proof deterministic, the harness first removed only its own disposable
+Cloud-policy counter rows, away from a window boundary, and then issued the eleven attempts. The
+application's final state contained one expected row in `abuse_rate_limits`:
 
 - key: 64-character HMAC-SHA256 of the loopback subject;
 - policy: `mcf-cloud-context-local-read`;
-- request count: `7` for the seven matched GET requests that reached AppModule abuse protection;
+- request count: `11` for the eleven rotating-Bearer attempts in the isolated proof window;
 - columns: only key hash, policy, time window, count and update timestamp.
 
 The counter schema and values contained no token, path, request payload, Cloud response or provider
