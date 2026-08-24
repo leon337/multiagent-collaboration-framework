@@ -6,7 +6,7 @@ on:
     paths:
       - '.github/workflows/mcf-zero-cost-agent-harness.yml'
       - 'ops/mission-agent-harness/**'
-      - 'artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/**'
+      - 'artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/ZERO-COST-EXECUTION-RECOVERY.md'
       - 'docs/MCF-NEXT-STABLE-COGNITIVE-MEMORY-ROADMAP.md'
 
 permissions:
