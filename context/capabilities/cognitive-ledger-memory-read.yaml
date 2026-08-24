@@ -12,11 +12,11 @@ contract:
   allowed_operations:
     - buscar_eventos
     - ler_diario
-    - ler_fonte_bruta
     - recuperar_contexto
   prohibited_operations:
     - embedding.paid
     - external-action-receipt.persist
+    - ler_fonte_bruta
     - memory.mutate
     - production.deploy
     - provider.direct-database-access
@@ -28,26 +28,25 @@ scope:
     - ler_diario
     - buscar_eventos
     - recuperar_contexto
-    - ler_fonte_bruta
 
 governance:
   authorization_state: AUTHORIZED
-  required_gate: DEDICATED_CONTEXT_TOKEN_AND_SEPARATE_LEDGER_OAUTH_BEARER
+  required_gate: DEDICATED_LEDGER_INGRESS_PAIRWISE_CREDENTIALS_AND_DISPOSABLE_APPMODULE_LAB
   expiration: null
 
 lifecycle:
   implementation_state: IMPLEMENTED
-  connection_state: CONNECTED
-  runtime_state: ACTIVE
-  verification_state: VERIFIED
-  last_verified_at: "2026-08-23T22:18:26.123Z"
+  connection_state: DISCONNECTED
+  runtime_state: INACTIVE
+  verification_state: HISTORICALLY_VERIFIED
+  last_verified_at: "2026-08-24T01:26:54.000Z"
 
 evidence:
   - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/e2e/cognitive-ledger-real-lab.mjs
-    source_revision: cee46e1d5d935144a84f67ad42a35a7a370bf49f
-    observed_at: "2026-08-23T22:18:26.123Z"
+    source_revision: 43ba4063ab6f061329a37f2dcc227dd49a082357
+    observed_at: "2026-08-24T01:26:54.000Z"
   - source_ref: repo://leon337/cognitive-ledger/documentacao/integracao/mcf-mcp-readonly-lab.md
     source_revision: b882d2808af74858a6ba351fb755bb3843e33ab2
-    observed_at: "2026-08-23T22:18:26.123Z"
+    observed_at: "2026-08-24T01:26:54.000Z"
 
 freshness: LIVE_REQUIRED

@@ -108,9 +108,13 @@ describe('CapabilityRegistryLoader', () => {
       governance: { authorization_state: 'AUTHORIZED' },
       lifecycle: {
         implementation_state: 'IMPLEMENTED',
-        connection_state: 'CONNECTED',
-        runtime_state: 'ACTIVE',
-        verification_state: 'VERIFIED',
+        connection_state: 'DISCONNECTED',
+        runtime_state: 'INACTIVE',
+        verification_state: 'HISTORICALLY_VERIFIED',
+      },
+      contract: {
+        allowed_operations: ['buscar_eventos', 'ler_diario', 'recuperar_contexto'],
+        prohibited_operations: expect.arrayContaining(['ler_fonte_bruta']),
       },
     });
     expect(
