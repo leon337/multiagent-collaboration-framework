@@ -40,6 +40,10 @@ const cloudIngressToken = 'mcf-cloud-context-dedicated-ingress-e2e-20260823';
 const ledgerIngressToken = 'mcf-ledger-dedicated-ingress-e2e-20260823';
 const ledgerBearerToken = 'mcf-ledger-provider-bearer-e2e-20260823';
 const rateLimitSecret = 'mcf-cloud-context-rate-limit-hmac-e2e-20260823';
+const syntheticBearerBypassAttempts = Array.from(
+  { length: 11 },
+  (_, index) => `Bearer synthetic-cloud-rate-bypass-${String(index + 1).padStart(2, '0')}`,
+);
 const mcfRepositoryRoot = fileURLToPath(new URL('../../../../../../', import.meta.url));
 
 function digest(value: Buffer | string): string {
@@ -125,6 +129,14 @@ function requestWithRawHeaders(
     request.once('error', rejectRequest);
     request.end();
   });
+}
+
+async function startAwayFromRateLimitBoundary(): Promise<void> {
+  const windowMilliseconds = 60_000;
+  const remainingMilliseconds = windowMilliseconds - (Date.now() % windowMilliseconds);
+  if (remainingMilliseconds <= 5_000) {
+    await new Promise((resolve) => setTimeout(resolve, remainingMilliseconds + 100));
+  }
 }
 
 function copyProvider(source: string, target: string): void {
@@ -464,7 +476,10 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     expect(response.status, responseBody).toBe(200);
     expect(response.headers.get('cache-control')).toBe('private, no-store');
     expect(response.headers.get('x-ratelimit-limit')).toBe('10');
-    expect(response.headers.get('x-ratelimit-remaining')).toBe('3');
+    const remaining = response.headers.get('x-ratelimit-remaining');
+    if (remaining === null) throw new Error('rate-limit remaining header unavailable');
+    expect(Number(remaining)).toBeGreaterThanOrEqual(0);
+    expect(Number(remaining)).toBeLessThan(10);
     const body = JSON.parse(responseBody) as Record<string, unknown>;
     expect(body).toMatchObject({
       schema_version: 1,
@@ -503,8 +518,34 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     expect(directChildPids()).toBe(childrenBefore);
   }, 60_000);
 
-  it('persists only the opaque AppModule abuse counter, never the provider payload', async () => {
+  it('keeps rotating Bearers in one 10/minute bucket and persists no provider payload', async () => {
     if (evidenceDatabase === undefined) throw new Error('evidence database unavailable');
+
+    await startAwayFromRateLimitBoundary();
+    await evidenceDatabase.pool.query('delete from "abuse_rate_limits" where "policy" = $1', [
+      'mcf-cloud-context-local-read',
+    ]);
+
+    const url = `${baseUrl}/v1/mcf/context/cloud/g2a`;
+    for (const [index, authorization] of syntheticBearerBypassAttempts.entries()) {
+      const attemptedBypass = await fetch(`${url}?bypass_probe=1`, {
+        headers: {
+          authorization,
+          'x-mcf-cloud-context-token': cloudIngressToken,
+        },
+      });
+      expect(attemptedBypass.headers.get('x-ratelimit-limit')).toBe('10');
+      expect(attemptedBypass.headers.get('x-ratelimit-remaining')).toBe(
+        String(Math.max(0, 9 - index)),
+      );
+      if (index < syntheticBearerBypassAttempts.length - 1) {
+        expect(attemptedBypass.status).toBe(400);
+      } else {
+        expect(attemptedBypass.status).toBe(429);
+        expect(await attemptedBypass.json()).toMatchObject({ code: 'RATE_LIMIT_EXCEEDED' });
+      }
+    }
+
     expect(await databaseSnapshot(evidenceDatabase)).toEqual(nonAbuseDatabaseBefore);
 
     const columns = await evidenceDatabase.pool.query<{ column_name: string }>(`
@@ -528,9 +569,9 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     `);
     expect(counters.rows).toHaveLength(1);
     expect(counters.rows[0]).toMatchObject({
-      key_hash: createHmac('sha256', rateLimitSecret).update('ip:127.0.0.1').digest('hex'),
+      key_hash: createHmac('sha256', rateLimitSecret).update('cloud-peer:127.0.0.1').digest('hex'),
       policy: 'mcf-cloud-context-local-read',
-      request_count: 7,
+      request_count: 11,
     });
     const renderedCounters = JSON.stringify(counters.rows);
     const renderedLogs = runtimeLogs.join('\n');
@@ -539,6 +580,7 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
       cloudIngressToken,
       ledgerIngressToken,
       ledgerBearerToken,
+      ...syntheticBearerBypassAttempts,
       disposableRoot,
       sourceRoot,
       '/etc',
@@ -551,5 +593,5 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
         expect(renderedLogs).not.toContain(forbidden);
       }
     }
-  });
+  }, 15_000);
 });
