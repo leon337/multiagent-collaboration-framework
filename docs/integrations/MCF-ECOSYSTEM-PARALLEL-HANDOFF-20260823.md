@@ -1,6 +1,7 @@
 # Handoff paralelo — integração do ecossistema MCF
 
 Data do checkpoint: 2026-08-23
+Base MCF deste checkpoint: `codex/ecosystem-context-integration@28eafbb274f33925d7c6fa361cbd8aa6767e11c7`
 
 ## Objetivo e limite
 
@@ -11,231 +12,198 @@ Integrar os quatro repositórios até laboratório/staging comprovado:
 - TriView como cockpit read-only;
 - Cloud Infrastructure como autoridade da infraestrutura e dos Control Bridges.
 
-Este checkpoint **não autoriza** produção, NODE-01/VPS, SSH, mutação externa, API paga ou
-reparo do banco de objetos Git compartilhado. Push e PR de branches isoladas são permitidos. Um
-merge futuro deve respeitar o target específico de cada repositório e continuar sem produção.
+Este checkpoint **não autoriza nem afirma** produção, NODE-01/VPS, SSH, escrita externa,
+Tasks 9/10 do G2-B, R7 ampla ou API paga. Os merges citados abaixo ocorreram somente nos targets
+seguros indicados. Nenhuma evidência local deve ser promovida a freshness da VPS.
 
 ## Analogia operacional
 
-- O **MCF é o mestre de obras**: identifica o projeto, lê os contratos e escolhe a ferramenta.
+- O **MCF é o mestre de obras**: identifica o projeto, lê contratos e escolhe a ferramenta.
 - O **Registry é a lista telefônica**: diz quem é cada projeto e onde está sua Capsule.
 - A **Capsule é a ficha na porta**: resume estado, próximo passo, bloqueios e fontes canônicas.
-- O **Cognitive Ledger é a biblioteca**: devolve memória, mas não decide nem escreve por conta
-  própria.
+- O **Cognitive Ledger é a biblioteca**: devolve memória sem o MCF copiar o livro para seu
+  próprio ledger.
 - O **TriView é o painel de instrumentos**: exibe evidência; não vira fonte de verdade.
-- A **Cloud é a sala de máquinas**: somente bridges governados podem chegar perto dela.
+- A **Cloud é a sala de máquinas**: somente bridges governados podem se aproximar dela.
 - O **Capability Registry é o quadro de chaves**: `IMPLEMENTED`, `CONNECTED`, `AUTHORIZED` e
-  `VERIFIED` são chaves diferentes. Código existente não significa sistema ligado.
+  `VERIFIED` são estados independentes. Código existente não significa sistema ligado.
 
-## Branches e targets
+## Snapshot dos repositórios
 
-| Repositório | Branch de checkpoint | Target futuro seguro | Estado no checkpoint |
-| --- | --- | --- | --- |
-| MCF | `codex/ecosystem-context-integration` | `main` | enviada ao GitHub; HEAD mínimo `d03f1b3` |
-| Cognitive Ledger | `codex/cognitive-ledger-zero-cost-lab` | `design/cognitive-ledger-foundation` | enviada ao GitHub; HEAD `b882d2808af74858a6ba351fb755bb3843e33ab2` |
-| TriView | `codex/triview-capability-registry-lab` | `release/1.0.0a4` | cockpit implementado; checkpoint/push final da frente em andamento |
-| Cloud | `codex/context-bridge-reconcile-20260823` | `mcf/mission-001-control-bridge-g1` | enviada ao GitHub; HEAD `aeb58beeb294e4bf05574695957745bb55eec514` |
+| Repositório      | Target seguro                        | Evidência integrada                                                                          | Estado factual                                                                                          |
+| ---------------- | ------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| MCF              | `main`                               | CF-0/CF-1 PR #153, merge `876e9f565671578c04be194c729c8d4e7b0080d9`; integração em `28eafbb` | CF-0/1 no `main`; CF-2, quatro projetos, endpoints e adapter Ledger pré-hardening na branch consolidada |
+| Cognitive Ledger | `design/cognitive-ledger-foundation` | PR #2, merge `e0e715b0105abe0bc636d198e7ebb137d7de9bd7`                                      | provider zero-cost/read-only integrado e CI pós-merge aprovada                                          |
+| TriView          | `release/1.0.0a4`                    | PR #77, merge `5013ffebd1c7efe8fb7cfd2d41f16e5efec49194`                                     | cockpit read-only integrado no branch de release; `main`/publicação não tocados                         |
+| Cloud            | `mcf/mission-001-control-bridge-g1`  | PR #26, merge `dbd772a6c37452008b7c8debd58d2782127514db`                                     | G2-A local e G2-B lab preservados; G2-B continua inativo                                                |
 
-Não apontar Cloud para `main`. Não apontar TriView diretamente para `main`: o workflow de `main`
-publica release. Não ativar o workflow mutante G2-B.
+O `main` do MCF usado pela consolidação contém o audit de recuperação de 2026-08-23 em
+`f52485d`. A composição canônica de **29 agentes** permanece preservada. A proposta concorrente
+do PR #159 não foi incorporada por este trabalho.
 
-## O que já está comprovado
+## Evidência comprovada
 
-### MCF
+### MCF — Context Fabric e Registry
 
-- CF-0/CF-1 mínimo já foi revisado e mergeado no PR #153.
-- quatro projetos registrados com identidade estável;
-- Capsule cross-repository e provenance qualificada;
-- freshness local Git read-only e fail-closed;
-- `GET /v1/mcf/context/recovery`;
-- `GET /v1/mcf/context/capabilities`;
-- token dedicado `x-mcf-context-token`, separado do runtime;
-- endpoints desabilitados sem configuração explícita;
-- Capability Registry distingue implementação, conexão, autorização, runtime e verificação;
-- preparação G2-B incorporada, mas sem transporte/registro de adapter mutante;
-- correção `d03f1b3`: a API pública não vaza `resolved_path` interno em `sources`.
+- CF-0/CF-1 mínimo revisado e mergeado pelo PR #153;
+- quatro projetos com identidade estável, Registry e Capsules versionados no Git;
+- recuperação cross-repository com provenance qualificada;
+- freshness Git local estritamente read-only e fail-closed;
+- `GET /v1/mcf/context/recovery` e `GET /v1/mcf/context/capabilities`;
+- token de Context dedicado, separado do runtime, e boundary desabilitado sem configuração;
+- Capability Registry separa implementação, conexão, autorização, runtime e verificação;
+- projeção pública não expõe `resolved_path` interno;
+- audit de recuperação do ecossistema preservado em `f52485d`.
 
-O full `pnpm verify` passou antes das integrações mais recentes. Ele deve ser repetido depois que
-os adapters finais forem integrados.
+O `pnpm verify` completo deve ser repetido no HEAD consolidado depois do hardening Ledger e da
+entrada da ponte MCF → Cloud. Um resultado anterior não deve ser atribuído automaticamente ao
+próximo HEAD.
 
-### Cognitive Ledger
+### Cognitive Ledger — provider comprovado e adapter MCF em hardening
 
-- embeddings pagos são opt-in explícito e ficam `disabled` por padrão;
-- busca textual local via PostgreSQL/`pg_trgm`;
-- quatro operações MCP read-only: `ler_diario`, `buscar_eventos`, `recuperar_contexto` e
+Provider:
+
+- PR #2 mergeado em `design/cognitive-ledger-foundation` no SHA `e0e715b`;
+- 29 testes Deno, 10 testes Node legado/exportação e 14 testes MCP aprovados;
+- busca textual PostgreSQL/`pg_trgm`; embeddings pagos são opt-in e ficam desabilitados;
+- quatro tools MCP read-only: `ler_diario`, `buscar_eventos`, `recuperar_contexto` e
   `ler_fonte_bruta`;
-- OAuth/JWT e capability por operação;
-- E2E real já observado: cliente MCP → MCP real → Edge Function local → GoTrue/JWKS →
-  PostgREST → PostgreSQL/pgvector;
-- 4 leituras, 4 auditorias esperadas, 3 eventos sintéticos, 0 embeddings e 0 chamadas pagas;
-- fingerprint dos eventos permaneceu idêntico antes/depois.
-- matrizes concluídas: 29 testes Deno, 10 Node legado/exportação e 14 MCP;
-- auditorias npm, Capsule, workflow e scan de segredos aprovados;
-- contrato de handoff: `documentacao/integracao/mcf-mcp-readonly-lab.md`.
+- CI do PR e pós-merge aprovadas com E2E real.
 
-Auditoria é o único efeito esperado das leituras; não persistir memória bruta no ledger de ações
-externas do MCF.
+Adapter MCF no checkpoint `28eafbb`:
 
-### TriView
+- implementação pré-hardening em `cee46e1d5d935144a84f67ad42a35a7a370bf49f` e checkpoint de
+  evidência em `8e7977bb4f056ad19a2883474a405025e477028d`;
+- rota `POST /v1/mcf/context/ledger/query`: POST transporta uma consulta estruturada e não
+  concede mutação;
+- SDK MCP oficial `1.30.0` e schemas estritos de entrada/saída;
+- disabled-by-default, token de entrada separado do Bearer upstream, URL/timeout/tamanho
+  limitados e HTTP somente em IP loopback literal para dev/test;
+- leitura efêmera com `Cache-Control: no-store, private`; o payload de memória não é persistido
+  pelo MCF;
+- E2E real pré-hardening MCF → MCP → Edge/Auth → PostgREST → PostgreSQL 17/pgvector aprovado,
+  com auditorias esperadas no provider, 3 eventos antes/depois, 0 embeddings, 0 chamadas pagas e
+  fingerprint idêntico dentro da execução;
+- worktrees permaneceram imutáveis e processos/portas do laboratório foram encerrados.
 
-- recuperação Context Fabric anterior já foi mergeada em `release/1.0.0a4` pelo PR #76;
-- cockpit do Capability Registry usa GET-only e token dedicado;
-- parser estrito, limites, fallback para repositório e falha fechada;
-- teste físico Linux Mint 22.3/X11 comprovou layout, scroll, fechamento e ausência de mutação;
-- a interface mostra explicitamente `IMPLEMENTED ≠ CONNECTED ≠ AUTHORIZED ≠ VERIFIED`.
+A revisão final identificou hardening adicional ainda em andamento:
 
-O primeiro E2E real encontrou o campo interno `resolved_path` no MCF e caiu corretamente no
-fallback. O MCF foi corrigido em `d03f1b3`; repetir o E2E contra esse SHA antes de declarar PASS.
+- o adapter MCF deve expor somente as três operações padrão — `ler_diario`, `buscar_eventos` e
+  `recuperar_contexto` — sem `ler_fonte_bruta`;
+- o token de ingresso do Ledger deve ser separado do token consumido pelo TriView;
+- o E2E final deve atravessar o `AppModule` real;
+- o MCF não persiste o payload de memória; somente contador técnico de abuse protection, sem
+  conteúdo da consulta/resposta, pode constituir efeito local esperado.
 
-### Cloud / Control Bridge
+Portanto, `cee46e1/8e7977b` são evidência pré-hardening, não a revisão final do capability. O
+provider continua oferecendo quatro tools read-only; isso não obriga o consumidor MCF a expor as
+quatro.
 
-- reconciliação G1/G2-A/G2-B preservada em branch isolada;
-- G2-B Task 8 passou no Docker Ubuntu 24.04 descartável, sem rede, com 13/13 marcadores;
-- suíte Cloud final anterior: 381/381;
-- lifecycle honesto: `LAB_VALIDATED_INACTIVE`;
-- Tasks 9/10, transporte mutante MCF, NODE-01 e produção continuam fechados;
-- G2-A histórico permanece read-only e exige freshness live antes de uso operacional.
-- adapter local stdio `context.get` está implementado, disabled-by-default e ainda com E2E
-  pendente; checkpoint `IMPLEMENTED_LOCALLY_DISABLED_BY_DEFAULT_UNIT_PASS_E2E_PENDING`;
-- validações do checkpoint: 9/9 focadas, 17/17 adapter+Context, 390/390 unitárias e 62 YAML.
-
-O `scripts/test.sh` local é bloqueado antes dos testes por dois loose objects Git zero-byte
-preexistentes no object DB compartilhado. Não reparar, apagar ou substituir esse object DB. A CI
-em clone limpo deve ser usada para separar o problema ambiental do candidato.
-
-## Divisão recomendada para quatro equipes
-
-As equipes devem trabalhar em worktrees/branches próprias e publicar checkpoints pequenos. Não
-compartilhar o mesmo arquivo entre duas equipes.
-
-### Equipe A — adapter MCF → Cognitive Ledger
-
-Base: `origin/codex/ecosystem-context-integration`. Ledger provider fixado em
-`b882d2808af74858a6ba351fb755bb3843e33ab2`.
-
-1. Criar cliente MCF para o MCP oficial do Ledger usando `@modelcontextprotocol/sdk` fixado na
-   versão usada pelo Ledger.
-2. Permitir somente as quatro ferramentas conhecidas e exigir annotations read-only.
-3. Configuração disabled-by-default, Bearer dedicado, timeout, limite de resposta e URL exata.
-4. Permitir HTTP somente em loopback para dev/test; fora disso exigir HTTPS. Recusar URL com
-   credencial, query ou fragmento.
-5. Expor uma boundary read-query estrita; POST pode transportar consulta, mas não representa
-   mutação. Nunca gravar conteúdo recuperado no External Action Ledger.
-6. Normalizar erros sem ecoar token, consulta privada ou resposta bruta em logs.
-7. Provar E2E MCF → MCP → API → Postgres no harness descartável do Ledger, com 0 chamada paga e
-   fingerprint imutável, exceto auditoria esperada.
-
-Aceite: configuração ausente = 503/fail-closed; operação desconhecida = 400 sem rede; sucesso
-real nas operações autorizadas; segredo não aparece em processo, log, Receipt ou Git.
-
-### Equipe B — adapter local MCF → Cloud G2-A
-
-Base: `origin/codex/context-bridge-reconcile-20260823` em
-`aeb58beeb294e4bf05574695957745bb55eec514`.
-
-1. Consumir o CLI/stdio local disabled-by-default com allowlist fixa G2-A já implementado em
-   `platform/control-bridge/mcf-cloud-context-read`.
-2. Validar request/result por JSON Schema estrito, paths repo-relative e sem symlink/traversal.
-3. Não aceitar shell, comando arbitrário, SSH, URL ou path vindo livremente do cliente.
-4. Criar o cliente-fixture MCF e provar MCF → adapter → estado Cloud em fixture descartável. O
-   request exato usa protocolo `MCF_CLOUD_CONTEXT_READ_V1`, projeto `cloud-infrastructure`,
-   operação `context.get` e `arguments: {}`.
-5. Comparar Git e filesystem antes/depois; qualquer diferença material falha o teste.
-6. Manter lifecycle inativo até o E2E; não confundir lab local com freshness da VPS.
-
-Aceite: E2E local PASS, saída limitada com provenance/freshness, zero rede, zero write, testes de
-negação e Capsule/mapping atualizados honestamente.
-
-### Equipe C — TriView Capability Cockpit
-
-Base: `origin/codex/triview-capability-registry-lab` depois de confirmar o HEAD remoto.
-
-1. Repetir o E2E real contra MCF `d03f1b3` ou sucessor que preserve a projeção pública.
-2. Confirmar 200, filtro `triview-workspace-linux` e ausência de `resolved_path`.
-3. Confirmar refresh GET-only, digests de Registry/Capsule/YAML iguais e zero token em log/UI.
-4. Rodar suíte completa e gate físico Linux Mint/X11.
-5. Abrir PR para `release/1.0.0a4`; não fazer merge direto em `main`.
-
-Aceite: endpoint real exibido sem fallback, fallback ainda funciona em falha, janela fecha com
-processo exit 0 e nenhuma mutação de repositório.
-
-### Equipe D — consolidação, CI e publicação do roadmap
-
-Começar somente depois dos checkpoints A/B/C.
-
-1. Adicionar/atualizar Capability Registry central com os SHAs exatos das evidências.
-2. Só usar `CONNECTED/AUTHORIZED/VERIFIED/ACTIVE` quando todos os respectivos gates forem reais.
-3. Executar recuperação das quatro Capsules com roots e revisões explícitos.
-4. Rodar full verify do MCF com Node 24.18.0 e pnpm 11.17.0.
-5. Abrir um único PR consolidado MCF para reduzir acionamentos de staging.
-6. Revisar workflows antes do merge. Merge em MCF `main` pode acionar staging, autorizado nesta
-   missão; produção continua proibida.
-7. Atualizar `docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html` com fatos e gates atuais.
-8. Verificar a publicação `https://mcf-ecosystem-roadmap.vercel.app` sem criar serviço pago.
-9. Encerrar/superseder o PR MCF #151 após o conteúdo consolidado chegar ao `main`.
-
-## Comandos de validação
-
-### MCF
-
-Use exatamente Node 24.18.0 e pnpm 11.17.0:
-
-```bash
-cd apps/rede-social-agentes
-pnpm verify
+```yaml
+mcf_to_ledger_final_hardening:
+  state: IN_PROGRESS_NOT_YET_CLAIMED
+  required_operations:
+    - ler_diario
+    - buscar_eventos
+    - recuperar_contexto
+  prohibited_operation: ler_fonte_bruta
+  required_ingress_token: DEDICATED_NOT_TRIVIEW_TOKEN
+  required_e2e: REAL_APPMODULE_TO_LEDGER_LAB_E2E
+  allowed_local_effect: ABUSE_PROTECTION_TECHNICAL_COUNTER_WITHOUT_PAYLOAD
 ```
 
-Para iteração curta, execute o Vitest diretamente no pacote server e depois `pnpm typecheck`.
+### TriView — cockpit read-only
 
-### Cognitive Ledger
+- Context Recovery já integrado pelo PR #76;
+- Capability Cockpit integrado pelo PR #77 em `release/1.0.0a4`, merge `5013ffeb`;
+- suíte local: **419 aprovados e 2 skips físicos previstos**;
+- E2E real TriView → MCF fez exatamente dois GETs, recebeu 200, selecionou três capabilities
+  read-only e excluiu G2-B;
+- sem fallback no caminho de sucesso, sem `resolved_path`, credencial, POST ou mutação;
+- digests observados permaneceram idênticos;
+- gate físico focado Linux Mint 22.3/X11 aprovado.
 
-Siga o README da branch e execute, no mínimo:
+Esse gate focado não equivale a uma declaração de R7 ampla. `main` e o workflow de publicação do
+TriView não foram acionados por este merge no branch de release.
 
-```bash
-deno fmt --check supabase/functions/cognitive-ledger-api
-deno check supabase/functions/cognitive-ledger-api/index.ts
-deno test --allow-env supabase/functions/cognitive-ledger-api/testes
-npm --prefix mcp ci --ignore-scripts --no-audit --no-fund
-npm --prefix mcp test
+### Cloud — merge lab e limites
+
+- PR #26 mergeado no target seguro `mcf/mission-001-control-bridge-g1`, SHA `dbd772a6`;
+- adapter stdio Cloud `context.get` disabled-by-default;
+- E2E Cloud com fixture MCF descartável: **13/13 marcadores**;
+- testes focados adapter+E2E: **12/12**;
+- gate local: **396/396** unitários, 16 shell syntax, 9 Ansible syntax, 16 ShellCheck e scan de
+  segredos do candidato `--revision HEAD` aprovados;
+- fingerprints Git/filesystem idênticos antes/depois e cleanup aprovado;
+- sem rede, shell, escrita interna, SSH, VPS ou subprocesso iniciado pelo adapter;
+- G2-B Task 8 continua `LAB_VALIDATED_INACTIVE`; Tasks 9/10 continuam fechadas.
+
+Os jobs GitHub-hosted do PR #26 tiveram zero steps: o GitHub os bloqueou antes da execução com
+a mensagem de cobrança/limite da conta. A classificação correta é
+`NOT_EXECUTED_EXTERNAL_BILLING_GATE`, **não** falha do candidato. A política de custo zero impede
+comprar créditos ou usar NODE-01 como contorno.
+
+O teste Cloud acima usou uma **fixture de cliente MCF**. Portanto, ele não comprova a ponte real
+MCF → processo stdio Cloud. Essa frente permanece:
+
+```yaml
+mcf_to_cloud_real_adapter:
+  state: IN_PROGRESS_NOT_YET_CLAIMED
+  required_evidence: REAL_MCF_CLIENT_TO_CLOUD_STDIO_E2E
+  default_activation: DISABLED
+  vps_freshness: NOT_OBSERVED_LIVE_REQUIRED
 ```
 
-Use apenas o harness lab descartável documentado para o E2E real. Ele deve gerar credenciais
-sintéticas e limpar os arquivos temporários.
+## Boundary restante para a equipe Cloud/MCF
 
-### Cloud
+Consumir exclusivamente a interface fixa já publicada no Cloud:
 
-Execute primeiro os testes focados do adapter e schemas, depois as suítes documentadas na
-evidência da branch. O lifecycle G2-B descartável exige Docker privilegiado e deve permanecer
-`--network none`; não substituí-lo por NODE-01.
+```text
+cwd: .../leon337/g2a-smoke/dev
+env: MCF_CLOUD_CONTEXT_READ_ENABLE=DISPOSABLE_LOCAL_LAB_ONLY
+command: python -I platform/control-bridge/mcf-cloud-context-read
+protocol: MCF_CLOUD_CONTEXT_READ_V1
+project_id: cloud-infrastructure
+operation: context.get
+arguments: {}
+```
 
-### TriView
+Aceite da ponte real:
 
-Execute a suíte indicada pelo `pyproject.toml`/README da branch, o E2E com MCF local e o gate
-físico X11 documentado. Não execute workflow de publicação.
+1. configuração ausente falha fechada e nenhuma operação desconhecida inicia processo;
+2. executável/root/operação/env são allowlists fixas; sem shell, URL, SSH ou path livre;
+3. timeout e limites de stdin/stdout/stderr são aplicados;
+4. resposta valida o JSON Schema Cloud e recomputa provenance SHA-256;
+5. E2E usa o serviço/cliente real do MCF e a fixture Cloud descartável;
+6. Git/filesystem ficam idênticos, não há persistência e o processo é limpo;
+7. capability permanece restrito a laboratório e não afirma freshness da VPS.
 
-## Ordem de integração final
+## Ordem de consolidação final
 
-1. preservar todos os branches remotos;
-2. concluir os E2E Ledger e Cloud sem dependência um do outro;
-3. concluir o E2E TriView contra MCF corrigido;
-4. revisar e fazer PR/merge de Ledger, Cloud e TriView nos targets indicados;
-5. incorporar os adapters e SHAs finais na branch MCF;
-6. full verify MCF;
-7. PR MCF, checks, merge único e validação de staging;
-8. atualizar e verificar o roadmap Vercel;
-9. auditar: 0 API paga, 0 produção, 0 VPS/NODE-01, nenhum segredo.
+1. concluir o hardening do adapter Ledger e repetir o E2E pelo `AppModule`;
+2. concluir e revisar a ponte real MCF → Cloud;
+3. atualizar o Capability Registry com SHAs e timestamps exatos dos dois resultados finais;
+4. atualizar neste documento e no roadmap os marcadores explicitamente pendentes;
+5. executar recuperação das quatro Capsules no baseline final;
+6. executar `pnpm verify` com Node 24.18.0 e pnpm 11.17.0;
+7. abrir um único PR MCF, observar checks e revisar workflows;
+8. aceitar no máximo lab/staging; não promover produção;
+9. validar o roadmap público sem serviço/API paga;
+10. encerrar/superseder o PR MCF #151 somente depois de o conteúdo consolidado chegar ao `main`.
 
 ## Checklist de retomada
 
-- [ ] Confirmar que os quatro branches de checkpoint existem no GitHub e anotar seus HEADs.
-- [ ] Ler os READMEs/evidências nas próprias branches; não confiar somente neste handoff.
-- [ ] Verificar worktrees originais sujos antes de qualquer edição e não limpá-los.
-- [ ] Criar uma branch/worktree nova por equipe.
-- [ ] Equipe A concluir adapter Ledger e E2E real MCF.
-- [ ] Equipe B concluir adapter Cloud G2-A e E2E local.
-- [ ] Equipe C repetir E2E real TriView com a correção `d03f1b3`.
-- [ ] Atualizar capabilities somente com evidência exata.
-- [ ] Rodar as suítes completas.
-- [ ] Abrir PRs para os targets corretos e observar toda a CI.
-- [ ] Não fazer produção, VPS, SSH, API paga ou mutação externa.
-- [ ] Atualizar roadmap e checklist público após os merges comprovados.
+- [x] CF-0/CF-1 mergeado pelo PR MCF #153.
+- [x] Audit de recuperação `f52485d` incorporado à base de integração.
+- [x] Ledger provider mergeado pelo PR #2 e CI pós-merge aprovada.
+- [x] Adapter MCF → Ledger pré-hardening comprovado em stack real, com custo pago zero.
+- [x] TriView PR #77 mergeado em `release/1.0.0a4`; 419/2 e E2E GET-only aprovados.
+- [x] Cloud PR #26 mergeado no branch lab seguro; gates locais 396/396 e 13/13 aprovados.
+- [x] CI Cloud classificada honestamente como `NOT_EXECUTED_EXTERNAL_BILLING_GATE`.
+- [ ] Fechar hardening Ledger: 3 operações, token ingress próprio, `AppModule` e contador técnico
+      sem payload.
+- [ ] Concluir a ponte **real** MCF → Cloud e seu E2E descartável.
+- [ ] Atualizar capability/roadmap/handoff com os SHAs finais Ledger e Cloud.
+- [ ] Rodar a suíte completa do MCF no HEAD consolidado.
+- [ ] Abrir/revisar/mergear o PR consolidado MCF e validar apenas lab/staging.
+- [ ] Confirmar 0 API paga, 0 produção, 0 VPS/NODE-01, 0 segredo e 0 mutação externa.
