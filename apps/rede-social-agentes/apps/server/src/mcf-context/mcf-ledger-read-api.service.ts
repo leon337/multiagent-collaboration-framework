@@ -6,14 +6,22 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import type { FetchLike, Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { z } from 'zod';
 
-export const MCF_LEDGER_TOOL_NAMES = [
+import { loadMcfLedgerReadIngressToken } from './mcf-ledger-read-token.guard.js';
+
+export const MCF_LEDGER_PROVIDER_TOOL_NAMES = [
   'ler_diario',
   'buscar_eventos',
   'recuperar_contexto',
   'ler_fonte_bruta',
 ] as const;
+export const MCF_LEDGER_QUERY_TOOL_NAMES = [
+  'ler_diario',
+  'buscar_eventos',
+  'recuperar_contexto',
+] as const;
 
-export type McfLedgerToolName = (typeof MCF_LEDGER_TOOL_NAMES)[number];
+export type McfLedgerProviderToolName = (typeof MCF_LEDGER_PROVIDER_TOOL_NAMES)[number];
+export type McfLedgerToolName = (typeof MCF_LEDGER_QUERY_TOOL_NAMES)[number];
 
 const boundedText = (maximum: number) =>
   z
@@ -48,17 +56,6 @@ const ledgerQuerySchema = z.discriminatedUnion('operation', [
     .object({
       operation: z.literal('recuperar_contexto'),
       input: z.object({ objetivo: boundedText(4096), ...filters }).strict(),
-    })
-    .strict(),
-  z
-    .object({
-      operation: z.literal('ler_fonte_bruta'),
-      input: z
-        .object({
-          evento_id: boundedText(256),
-          justificativa: boundedText(1024),
-        })
-        .strict(),
     })
     .strict(),
 ]);
@@ -139,29 +136,10 @@ const contextResultSchema = z
       .max(128),
   })
   .strict();
-const sourceResultSchema = z
-  .object({
-    estado: z.literal('ok'),
-    degradado: z.literal(false),
-    fonte: z
-      .object({
-        id: nonEmptyOutputText(256),
-        evento_id: nonEmptyOutputText(256),
-        tipo_de_fonte: nonEmptyOutputText(256),
-        provedor: outputText(4_096).nullable(),
-        referencia: outputText(8_192).nullable(),
-        escopo_da_captura: outputText(32_768).nullable(),
-        conteudo_bruto: outputText(262_144).nullable(),
-      })
-      .strict(),
-  })
-  .strict();
-
 const resultSchemas = {
   ler_diario: diaryResultSchema,
   buscar_eventos: searchResultSchema,
   recuperar_contexto: contextResultSchema,
-  ler_fonte_bruta: sourceResultSchema,
 } satisfies Record<McfLedgerToolName, z.ZodType>;
 
 export type McfLedgerReadQuery = z.infer<typeof ledgerQuerySchema>;
@@ -171,7 +149,7 @@ export interface McfLedgerReadResponse {
   provider_project_id: 'cognitive-ledger';
   operation: McfLedgerToolName;
   read_only: true;
-  persisted_by_mcf: false;
+  memory_payload_persisted_by_mcf: false;
   result: Record<string, unknown>;
 }
 
@@ -181,6 +159,7 @@ export interface McfLedgerReadConfiguration {
   timeoutMs: number;
   inputLimitBytes: number;
   responseLimitBytes: number;
+  maxConcurrentQueries: number;
 }
 
 interface McpToolDescriptor {
@@ -210,6 +189,7 @@ export interface McfLedgerMcpClient {
 
 export type McfLedgerMcpClientFactory = (
   configuration: McfLedgerReadConfiguration,
+  deadlineSignal: AbortSignal,
 ) => McfLedgerMcpClient;
 
 export class McfLedgerQueryInvalidError extends Error {
@@ -275,14 +255,20 @@ export function loadMcfLedgerReadConfiguration(
 ): McfLedgerReadConfiguration | null {
   const endpointValue = env.MCF_COGNITIVE_LEDGER_MCP_URL;
   const bearerToken = env.MCF_COGNITIVE_LEDGER_BEARER_TOKEN;
-  const ingressToken = env.MCF_CONTEXT_READ_TOKEN;
+  const ingressToken = loadMcfLedgerReadIngressToken(env);
   if (!endpointValue || !bearerToken || !ingressToken) return null;
+  const peerCredentials = [
+    ingressToken,
+    bearerToken,
+    env.MCF_CONTEXT_READ_TOKEN,
+    env.MCF_CLOUD_CONTEXT_INGRESS_TOKEN,
+  ].filter((value): value is string => value !== undefined && value.length > 0);
   if (
     bearerToken.length < 32 ||
     bearerToken.length > 8192 ||
     bearerToken !== bearerToken.trim() ||
-    /[\r\n]/u.test(bearerToken) ||
-    bearerToken === ingressToken
+    !/^[A-Za-z0-9._~+/-]+={0,}$/u.test(bearerToken) ||
+    new Set(peerCredentials).size !== peerCredentials.length
   ) {
     return null;
   }
@@ -300,10 +286,29 @@ export function loadMcfLedgerReadConfiguration(
     4_096,
     1_048_576,
   );
-  if (!endpoint || timeoutMs === null || inputLimitBytes === null || responseLimitBytes === null) {
+  const maxConcurrentQueries = parseBoundedInteger(
+    env.MCF_COGNITIVE_LEDGER_MAX_CONCURRENT_QUERIES,
+    4,
+    1,
+    16,
+  );
+  if (
+    !endpoint ||
+    timeoutMs === null ||
+    inputLimitBytes === null ||
+    responseLimitBytes === null ||
+    maxConcurrentQueries === null
+  ) {
     return null;
   }
-  return { endpoint, bearerToken, timeoutMs, inputLimitBytes, responseLimitBytes };
+  return {
+    endpoint,
+    bearerToken,
+    timeoutMs,
+    inputLimitBytes,
+    responseLimitBytes,
+    maxConcurrentQueries,
+  };
 }
 
 async function readBodyBounded(response: Response, maximumBytes: number): Promise<Uint8Array> {
@@ -339,20 +344,25 @@ async function readBodyBounded(response: Response, maximumBytes: number): Promis
 export function createBoundedMcpFetch(
   configuration: McfLedgerReadConfiguration,
   baseFetch: FetchLike = fetch,
+  aggregateSignal?: AbortSignal,
 ): FetchLike {
   return async (url, init = {}) => {
     const requestedUrl = new URL(url);
     if (requestedUrl.href !== configuration.endpoint.href || init.method !== 'POST') {
       throw new McfLedgerReadUnavailableError();
     }
-    const outboundBytes = typeof init.body === 'string' ? Buffer.byteLength(init.body, 'utf8') : 0;
+    if (typeof init.body !== 'string') throw new McfLedgerReadUnavailableError();
+    const outboundBytes = Buffer.byteLength(init.body, 'utf8');
     if (outboundBytes > configuration.inputLimitBytes + 16_384) {
       throw new McfLedgerReadUnavailableError();
     }
 
     const controller = new AbortController();
     const abortFromCaller = () => controller.abort();
+    const abortFromAggregate = () => controller.abort();
     init.signal?.addEventListener('abort', abortFromCaller, { once: true });
+    aggregateSignal?.addEventListener('abort', abortFromAggregate, { once: true });
+    if (init.signal?.aborted === true || aggregateSignal?.aborted === true) controller.abort();
     const timer = setTimeout(() => controller.abort(), configuration.timeoutMs);
     try {
       const response = await baseFetch(url, {
@@ -375,16 +385,20 @@ export function createBoundedMcpFetch(
     } finally {
       clearTimeout(timer);
       init.signal?.removeEventListener('abort', abortFromCaller);
+      aggregateSignal?.removeEventListener('abort', abortFromAggregate);
     }
   };
 }
 
-function officialClientFactory(configuration: McfLedgerReadConfiguration): McfLedgerMcpClient {
+function officialClientFactory(
+  configuration: McfLedgerReadConfiguration,
+  deadlineSignal: AbortSignal,
+): McfLedgerMcpClient {
   const transport = new StreamableHTTPClientTransport(configuration.endpoint, {
     requestInit: {
       headers: { Authorization: `Bearer ${configuration.bearerToken}` },
     },
-    fetch: createBoundedMcpFetch(configuration),
+    fetch: createBoundedMcpFetch(configuration, fetch, deadlineSignal),
     reconnectionOptions: {
       maxReconnectionDelay: configuration.timeoutMs,
       initialReconnectionDelay: 250,
@@ -404,8 +418,8 @@ function officialClientFactory(configuration: McfLedgerReadConfiguration): McfLe
 }
 
 function hasExactReadOnlyContract(tools: readonly McpToolDescriptor[]): boolean {
-  if (tools.length !== MCF_LEDGER_TOOL_NAMES.length) return false;
-  const expected = new Set<string>(MCF_LEDGER_TOOL_NAMES);
+  if (tools.length !== MCF_LEDGER_PROVIDER_TOOL_NAMES.length) return false;
+  const expected = new Set<string>(MCF_LEDGER_PROVIDER_TOOL_NAMES);
   const observed = new Set(tools.map(({ name }) => name));
   if (observed.size !== expected.size || [...expected].some((name) => !observed.has(name))) {
     return false;
@@ -419,6 +433,37 @@ function hasExactReadOnlyContract(tools: readonly McpToolDescriptor[]): boolean 
   );
 }
 
+function withAbortDeadline<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+  if (signal.aborted) return Promise.reject(new McfLedgerReadUnavailableError());
+  return new Promise<T>((resolve, reject) => {
+    const abort = () => reject(new McfLedgerReadUnavailableError());
+    signal.addEventListener('abort', abort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener('abort', abort);
+        resolve(value);
+      },
+      (error: unknown) => {
+        signal.removeEventListener('abort', abort);
+        reject(error);
+      },
+    );
+  });
+}
+
+async function closeWithin(client: McfLedgerMcpClient, maximumMs: number): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([
+    Promise.resolve()
+      .then(() => client.close())
+      .catch(() => undefined),
+    new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, maximumMs);
+    }),
+  ]);
+  if (timer !== undefined) clearTimeout(timer);
+}
+
 function parseStructuredResult(
   operation: McfLedgerToolName,
   value: unknown,
@@ -429,6 +474,8 @@ function parseStructuredResult(
 
 @Injectable()
 export class McfLedgerReadApiService {
+  private activeQueries = 0;
+
   constructor(
     private readonly configuration: McfLedgerReadConfiguration | null,
     private readonly clientFactory: McfLedgerMcpClientFactory = officialClientFactory,
@@ -454,16 +501,36 @@ export class McfLedgerReadApiService {
     }
     const parsed = ledgerQuerySchema.safeParse(value);
     if (!parsed.success) throw new McfLedgerQueryInvalidError();
+    if (this.activeQueries >= this.configuration.maxConcurrentQueries) {
+      throw new McfLedgerReadUnavailableError();
+    }
+    this.activeQueries += 1;
 
-    const client = this.clientFactory(this.configuration);
+    const deadline = new AbortController();
+    const deadlineTimer = setTimeout(() => deadline.abort(), this.configuration.timeoutMs);
+    let client: McfLedgerMcpClient | undefined;
     try {
-      await client.connect();
-      const listed = await client.listTools();
+      client = this.clientFactory(this.configuration, deadline.signal);
+      await withAbortDeadline(
+        Promise.resolve().then(() => client?.connect()),
+        deadline.signal,
+      );
+      const listed = await withAbortDeadline(
+        Promise.resolve().then(() => client?.listTools()),
+        deadline.signal,
+      );
+      if (listed === undefined) throw new McfLedgerReadUnavailableError();
       if (!hasExactReadOnlyContract(listed.tools)) throw new McfLedgerReadUnavailableError();
-      const result = await client.callTool({
-        name: parsed.data.operation,
-        arguments: parsed.data.input,
-      });
+      const result = await withAbortDeadline(
+        Promise.resolve().then(() =>
+          client?.callTool({
+            name: parsed.data.operation,
+            arguments: parsed.data.input,
+          }),
+        ),
+        deadline.signal,
+      );
+      if (result === undefined) throw new McfLedgerReadUnavailableError();
       if (result.isError === true) {
         throw new McfLedgerReadUnavailableError();
       }
@@ -481,14 +548,19 @@ export class McfLedgerReadApiService {
         provider_project_id: 'cognitive-ledger',
         operation: parsed.data.operation,
         read_only: true,
-        persisted_by_mcf: false,
+        memory_payload_persisted_by_mcf: false,
         result: structuredResult,
       };
     } catch (error) {
       if (error instanceof McfLedgerQueryInvalidError) throw error;
       throw new McfLedgerReadUnavailableError();
     } finally {
-      await client.close().catch(() => undefined);
+      clearTimeout(deadlineTimer);
+      deadline.abort();
+      if (client !== undefined) {
+        await closeWithin(client, Math.min(this.configuration.timeoutMs, 1_000));
+      }
+      this.activeQueries -= 1;
     }
   }
 }

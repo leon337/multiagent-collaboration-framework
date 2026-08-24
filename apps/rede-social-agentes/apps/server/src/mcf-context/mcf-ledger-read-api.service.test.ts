@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   createBoundedMcpFetch,
   loadMcfLedgerReadConfiguration,
-  MCF_LEDGER_TOOL_NAMES,
+  MCF_LEDGER_PROVIDER_TOOL_NAMES,
   McfLedgerQueryInvalidError,
   type McfLedgerMcpClient,
   type McfLedgerMcpClientFactory,
@@ -16,13 +16,15 @@ import {
   type McfLedgerToolName,
 } from './mcf-ledger-read-api.service.js';
 
-const ingressToken = 'mcf-context-ingress-token-for-readonly-lab-0001';
+const contextToken = 'mcf-context-ingress-token-for-triview-lab-0001';
+const ingressToken = 'mcf-ledger-ingress-token-for-readonly-lab-0002';
 const bearerToken = 'ledger-oauth-bearer-token-for-readonly-lab-0002';
 
 function environment(overrides: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
   return {
     NODE_ENV: 'test',
-    MCF_CONTEXT_READ_TOKEN: ingressToken,
+    MCF_CONTEXT_READ_TOKEN: contextToken,
+    MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: ingressToken,
     MCF_COGNITIVE_LEDGER_MCP_URL: 'http://127.0.0.1:33100/mcp',
     MCF_COGNITIVE_LEDGER_BEARER_TOKEN: bearerToken,
     ...overrides,
@@ -38,12 +40,13 @@ function configuration(
     timeoutMs: 500,
     inputLimitBytes: 32_768,
     responseLimitBytes: 262_144,
+    maxConcurrentQueries: 4,
     ...overrides,
   };
 }
 
 function tools() {
-  return MCF_LEDGER_TOOL_NAMES.map((name) => ({
+  return MCF_LEDGER_PROVIDER_TOOL_NAMES.map((name) => ({
     name,
     annotations: {
       readOnlyHint: true,
@@ -108,19 +111,7 @@ function resultFor(operation: McfLedgerToolName): Record<string, unknown> {
       conflitos: [{ origem: 'ec-lab-002', destino: 'ec-lab-001', tipo: 'revisa' }],
     };
   }
-  return {
-    estado: 'ok',
-    degradado: false,
-    fonte: {
-      id: 'fonte-lab-001',
-      evento_id: 'ec-lab-001',
-      tipo_de_fonte: 'teste',
-      provedor: 'laboratorio-local',
-      referencia: 'fixture://cognitive-ledger/ec-lab-001',
-      escopo_da_captura: 'fixture sintética',
-      conteudo_bruto: 'conteúdo exclusivamente sintético',
-    },
-  };
+  throw new Error(`unsupported test operation: ${operation satisfies never}`);
 }
 
 function client(overrides: Partial<McfLedgerMcpClient> = {}): McfLedgerMcpClient {
@@ -142,9 +133,23 @@ describe('Cognitive Ledger read-only configuration', () => {
     const invalidEnvironments = [
       {},
       environment({ MCF_COGNITIVE_LEDGER_MCP_URL: undefined }),
+      environment({ MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: undefined }),
+      environment({ MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: contextToken }),
+      environment({ MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: bearerToken }),
+      environment({
+        MCF_CLOUD_CONTEXT_INGRESS_TOKEN: ingressToken,
+      }),
       environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: ingressToken }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: contextToken }),
+      environment({
+        MCF_CLOUD_CONTEXT_INGRESS_TOKEN: bearerToken,
+      }),
       environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: 'short' }),
       environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken}\n` }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken},duplicate` }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken} internal` }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken}:colon` }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken}ç` }),
       environment({ MCF_COGNITIVE_LEDGER_MCP_URL: 'http://ledger.example/mcp' }),
       environment({ MCF_COGNITIVE_LEDGER_MCP_URL: 'http://localhost:33100/mcp' }),
       environment({
@@ -158,6 +163,8 @@ describe('Cognitive Ledger read-only configuration', () => {
       environment({ MCF_COGNITIVE_LEDGER_TIMEOUT_MS: '15100' }),
       environment({ MCF_COGNITIVE_LEDGER_INPUT_LIMIT_BYTES: '32769' }),
       environment({ MCF_COGNITIVE_LEDGER_RESPONSE_LIMIT_BYTES: '1048577' }),
+      environment({ MCF_COGNITIVE_LEDGER_MAX_CONCURRENT_QUERIES: '0' }),
+      environment({ MCF_COGNITIVE_LEDGER_MAX_CONCURRENT_QUERIES: '17' }),
     ];
     for (const env of invalidEnvironments) {
       expect(loadMcfLedgerReadConfiguration(env)).toBeNull();
@@ -190,10 +197,6 @@ describe('McfLedgerReadApiService', () => {
       operation: 'recuperar_contexto',
       input: { objetivo: 'retomar integração', assuntos: ['custo zero'] },
     },
-    {
-      operation: 'ler_fonte_bruta',
-      input: { evento_id: 'ec-lab-001', justificativa: 'fixture sintética controlada' },
-    },
   ])('calls only the annotated read-only tool $operation without persistence', async (query) => {
     const mcp = client();
     const service = new McfLedgerReadApiService(configuration(), factory(mcp));
@@ -205,7 +208,7 @@ describe('McfLedgerReadApiService', () => {
       provider_project_id: 'cognitive-ledger',
       operation: query.operation,
       read_only: true,
-      persisted_by_mcf: false,
+      memory_payload_persisted_by_mcf: false,
       result: resultFor(query.operation),
     });
     expect(mcp.callTool).toHaveBeenCalledWith({
@@ -221,7 +224,10 @@ describe('McfLedgerReadApiService', () => {
     { operation: 'buscar_eventos', input: { texto: ' válido com espaço externo ' } },
     { operation: 'ler_diario', input: { limite: 13 } },
     { operation: 'ler_diario', input: { desconhecido: true } },
-    { operation: 'ler_fonte_bruta', input: { evento_id: 'ec-lab-001' } },
+    {
+      operation: 'ler_fonte_bruta',
+      input: { evento_id: 'ec-lab-001', justificativa: 'mesmo completa deve ser proibida' },
+    },
   ])('rejects malformed or unknown queries before connecting: %j', async (query) => {
     const mcp = client();
     const service = new McfLedgerReadApiService(configuration(), factory(mcp));
@@ -359,6 +365,78 @@ describe('McfLedgerReadApiService', () => {
       new McfLedgerReadApiService(null).queryReadOnly({ operation: 'ler_diario', input: {} }),
     ).rejects.toBeInstanceOf(McfLedgerReadUnavailableError);
   });
+
+  it('enforces one aggregate deadline across connect, inventory and call', async () => {
+    const wait = (milliseconds: number) =>
+      new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+    let observedSignal: AbortSignal | undefined;
+    const mcp = client({
+      connect: vi.fn(async () => wait(140)),
+      listTools: vi.fn(async () => {
+        await wait(140);
+        return { tools: tools() };
+      }),
+    });
+    const service = new McfLedgerReadApiService(
+      configuration({ timeoutMs: 250 }),
+      vi.fn((_configuration, signal) => {
+        observedSignal = signal;
+        return mcp;
+      }),
+    );
+
+    await expect(
+      service.queryReadOnly({ operation: 'ler_diario', input: {} }),
+    ).rejects.toBeInstanceOf(McfLedgerReadUnavailableError);
+    expect(observedSignal?.aborted).toBe(true);
+    expect(mcp.callTool).not.toHaveBeenCalled();
+    expect(mcp.close).toHaveBeenCalledOnce();
+  });
+
+  it('bounds close even when the provider client never settles', async () => {
+    const mcp = client({ close: vi.fn(() => new Promise<void>(() => undefined)) });
+    const service = new McfLedgerReadApiService(configuration({ timeoutMs: 250 }), factory(mcp));
+    const startedAt = Date.now();
+    await expect(
+      service.queryReadOnly({ operation: 'ler_diario', input: {} }),
+    ).resolves.toMatchObject({ operation: 'ler_diario' });
+    expect(Date.now() - startedAt).toBeLessThan(1_000);
+  });
+
+  it('fails closed at the concurrency bulkhead and recovers after the slot is released', async () => {
+    let releaseConnect: (() => void) | undefined;
+    const blockedClient = client({
+      connect: vi.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            releaseConnect = resolve;
+          }),
+      ),
+    });
+    const recoveredClient = client();
+    const clientFactory = vi
+      .fn<McfLedgerMcpClientFactory>()
+      .mockReturnValueOnce(blockedClient)
+      .mockReturnValueOnce(recoveredClient);
+    const service = new McfLedgerReadApiService(
+      configuration({ maxConcurrentQueries: 1, timeoutMs: 1_000 }),
+      clientFactory,
+    );
+
+    const first = service.queryReadOnly({ operation: 'ler_diario', input: {} });
+    await vi.waitFor(() => expect(clientFactory).toHaveBeenCalledOnce());
+    await expect(
+      service.queryReadOnly({ operation: 'ler_diario', input: {} }),
+    ).rejects.toBeInstanceOf(McfLedgerReadUnavailableError);
+    expect(clientFactory).toHaveBeenCalledOnce();
+
+    releaseConnect?.();
+    await expect(first).resolves.toMatchObject({ operation: 'ler_diario' });
+    await expect(
+      service.queryReadOnly({ operation: 'ler_diario', input: {} }),
+    ).resolves.toMatchObject({ operation: 'ler_diario' });
+    expect(clientFactory).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('bounded MCP network transport', () => {
@@ -412,6 +490,19 @@ describe('bounded MCP network transport', () => {
         method: 'POST',
         body: 'x'.repeat(1024 + 16_385),
       }),
+    ).rejects.toBeInstanceOf(McfLedgerReadUnavailableError);
+    expect(baseFetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    new Uint8Array([123, 125]),
+    new URLSearchParams({ jsonrpc: '2.0' }),
+    new Blob(['{}'], { type: 'application/json' }),
+  ])('rejects non-string outbound BodyInit before the network call', async (body) => {
+    const baseFetch = vi.fn<FetchLike>();
+    const bounded = createBoundedMcpFetch(configuration(), baseFetch);
+    await expect(
+      bounded('http://127.0.0.1:33100/mcp', { method: 'POST', body }),
     ).rejects.toBeInstanceOf(McfLedgerReadUnavailableError);
     expect(baseFetch).not.toHaveBeenCalled();
   });

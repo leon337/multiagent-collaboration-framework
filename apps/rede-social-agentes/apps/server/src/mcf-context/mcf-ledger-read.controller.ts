@@ -10,16 +10,16 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { McfContextReadTokenGuard } from './mcf-context-read-token.guard.js';
 import {
   McfLedgerQueryInvalidError,
   McfLedgerReadApiService,
   type McfLedgerReadResponse,
   McfLedgerReadUnavailableError,
 } from './mcf-ledger-read-api.service.js';
+import { McfLedgerReadTokenGuard } from './mcf-ledger-read-token.guard.js';
 
 @Controller('v1/mcf/context/ledger')
-@UseGuards(McfContextReadTokenGuard)
+@UseGuards(McfLedgerReadTokenGuard)
 export class McfLedgerReadController {
   constructor(
     @Inject(McfLedgerReadApiService)
