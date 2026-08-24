@@ -1,0 +1,26 @@
+schema_version: 1
+
+project:
+  id: triview-workspace-linux
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/triview-workspace-linux
+  aliases:
+    - TriView
+    - TriView Workspace
+    - TrieView Workspace
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - docs/architecture/MCF_STACK_INTEGRATION_R6.md
+    - docs/architecture/TRIVIEW_RELEASE_1.0.0A4_QUALIFICATION_R7.md
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE

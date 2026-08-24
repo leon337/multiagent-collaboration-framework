@@ -1,0 +1,47 @@
+schema_version: 1
+
+capability:
+  id: cloud.workspace.g2b.write
+  provider_project_id: cloud-infrastructure
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: BOUNDED_WRITE
+
+contract:
+  protocol: MCF_WORKSPACE_MUTATION_V1
+  allowed_operations:
+    - rollback
+    - revoke
+    - status
+    - workspace.write
+  prohibited_operations:
+    - docker.socket
+    - git.mutate
+    - host.admin
+    - production.mutate
+    - shell.execute
+
+scope:
+  environments:
+    - dev
+  resources:
+    - leon337/g2a-smoke/dev/G2B-PILOT.txt
+
+governance:
+  authorization_state: NOT_AUTHORIZED
+  required_gate: G2B_TASKS9_10_AND_SEPARATE_HUMAN_GATE
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: DISCONNECTED
+  runtime_state: BLOCKED
+  verification_state: HISTORICALLY_VERIFIED
+  last_verified_at: "2026-08-23T04:06:14-03:00"
+
+evidence:
+  - source_ref: repo://leon337/cloud-infrastructure/evidence/CONTROL-BRIDGE-G2B/TASK-8-RECONCILED-LAB-20260823.md
+    source_revision: 28b3894387b11580f8690293ff4a467f90d213cf
+    observed_at: "2026-08-23T04:06:14-03:00"
+
+freshness: LIVE_REQUIRED

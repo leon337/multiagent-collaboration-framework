@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/leon337/multiagent-collaboration-framework/schemas/context/capability-registry-entry.schema.json",
+  "title": "MCF Capability Registry Entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capability",
+    "contract",
+    "scope",
+    "governance",
+    "lifecycle",
+    "evidence",
+    "freshness"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "provider_project_id", "consumer_project_ids", "mode"],
+      "properties": {
+        "id": { "$ref": "#/$defs/stable_id" },
+        "provider_project_id": { "$ref": "#/$defs/stable_id" },
+        "consumer_project_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/stable_id" }
+        },
+        "mode": { "enum": ["READ_ONLY", "BOUNDED_WRITE"] }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol", "allowed_operations", "prohibited_operations"],
+      "properties": {
+        "protocol": { "$ref": "#/$defs/non_empty_text" },
+        "allowed_operations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/operation" }
+        },
+        "prohibited_operations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/operation" }
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["environments", "resources"],
+      "properties": {
+        "environments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "enum": ["dev", "lab", "staging"] }
+        },
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/non_empty_text" }
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorization_state", "required_gate", "expiration"],
+      "properties": {
+        "authorization_state": { "enum": ["NOT_AUTHORIZED", "AUTHORIZED"] },
+        "required_gate": {
+          "oneOf": [{ "$ref": "#/$defs/non_empty_text" }, { "type": "null" }]
+        },
+        "expiration": {
+          "oneOf": [
+            { "type": "string", "format": "date-time" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "implementation_state",
+        "connection_state",
+        "runtime_state",
+        "verification_state",
+        "last_verified_at"
+      ],
+      "properties": {
+        "implementation_state": { "enum": ["DECLARED", "IMPLEMENTED"] },
+        "connection_state": { "enum": ["DISCONNECTED", "CONNECTED"] },
+        "runtime_state": {
+          "enum": ["UNKNOWN", "INACTIVE", "ACTIVE", "BLOCKED"]
+        },
+        "verification_state": {
+          "enum": ["NOT_VERIFIED", "HISTORICALLY_VERIFIED", "VERIFIED"]
+        },
+        "last_verified_at": {
+          "oneOf": [
+            { "type": "string", "format": "date-time" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": { "$ref": "#/$defs/provenance" }
+    },
+    "freshness": { "const": "LIVE_REQUIRED" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "lifecycle": {
+            "type": "object",
+            "properties": { "runtime_state": { "const": "ACTIVE" } },
+            "required": ["runtime_state"]
+          }
+        },
+        "required": ["lifecycle"]
+      },
+      "then": {
+        "properties": {
+          "governance": {
+            "type": "object",
+            "properties": { "authorization_state": { "const": "AUTHORIZED" } },
+            "required": ["authorization_state"]
+          },
+          "lifecycle": {
+            "type": "object",
+            "properties": {
+              "implementation_state": { "const": "IMPLEMENTED" },
+              "connection_state": { "const": "CONNECTED" },
+              "verification_state": { "const": "VERIFIED" },
+              "last_verified_at": { "type": "string", "format": "date-time" }
+            },
+            "required": [
+              "implementation_state",
+              "connection_state",
+              "verification_state",
+              "last_verified_at"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "lifecycle": {
+            "type": "object",
+            "properties": {
+              "verification_state": { "const": "VERIFIED" }
+            },
+            "required": ["verification_state"]
+          }
+        },
+        "required": ["lifecycle"]
+      },
+      "then": {
+        "properties": {
+          "governance": {
+            "type": "object",
+            "properties": { "authorization_state": { "const": "AUTHORIZED" } },
+            "required": ["authorization_state"]
+          },
+          "lifecycle": {
+            "type": "object",
+            "properties": {
+              "implementation_state": { "const": "IMPLEMENTED" },
+              "connection_state": { "const": "CONNECTED" },
+              "runtime_state": { "const": "ACTIVE" }
+            },
+            "required": [
+              "implementation_state",
+              "connection_state",
+              "runtime_state"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "lifecycle": {
+            "type": "object",
+            "properties": { "verification_state": { "const": "NOT_VERIFIED" } },
+            "required": ["verification_state"]
+          }
+        },
+        "required": ["lifecycle"]
+      },
+      "then": {
+        "properties": {
+          "lifecycle": {
+            "type": "object",
+            "properties": { "last_verified_at": { "type": "null" } },
+            "required": ["last_verified_at"]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "lifecycle": {
+            "type": "object",
+            "properties": {
+              "last_verified_at": { "type": "string", "format": "date-time" }
+            },
+            "required": ["last_verified_at"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "capability": {
+            "type": "object",
+            "properties": { "mode": { "const": "BOUNDED_WRITE" } },
+            "required": ["mode"]
+          }
+        },
+        "required": ["capability"]
+      },
+      "then": {
+        "properties": {
+          "governance": {
+            "type": "object",
+            "properties": {
+              "required_gate": { "$ref": "#/$defs/non_empty_text" }
+            },
+            "required": ["required_gate"]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "stable_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "non_empty_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "\\S"
+    },
+    "operation": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9._:-]*$"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_ref", "source_revision"],
+      "properties": {
+        "source_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "\\S"
+        },
+        "source_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "\\S"
+        },
+        "observed_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

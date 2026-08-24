@@ -1,0 +1,45 @@
+schema_version: 1
+
+capability:
+  id: mcf.capability.registry.read
+  provider_project_id: multiagent-collaboration-framework
+  consumer_project_ids:
+    - cloud-infrastructure
+    - cognitive-ledger
+    - triview-workspace-linux
+  mode: READ_ONLY
+
+contract:
+  protocol: MCF_CAPABILITY_REGISTRY_HTTP_V1
+  allowed_operations:
+    - capability.list
+  prohibited_operations:
+    - capability.authorize
+    - capability.mutate
+    - mission.execute
+    - production.deploy
+
+scope:
+  environments:
+    - lab
+  resources:
+    - context/capabilities/*.yaml
+
+governance:
+  authorization_state: AUTHORIZED
+  required_gate: DEDICATED_CONTEXT_READ_TOKEN
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: CONNECTED
+  runtime_state: ACTIVE
+  verification_state: VERIFIED
+  last_verified_at: "2026-08-23T06:50:07.067Z"
+
+evidence:
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/mcf-context/mcf-capability-registry.controller.ts
+    source_revision: 8f72bf86c0b7769f3f8aeba20155159b00986fac
+    observed_at: "2026-08-23T06:50:07.067Z"
+
+freshness: LIVE_REQUIRED

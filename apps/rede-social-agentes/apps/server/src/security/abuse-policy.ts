@@ -12,6 +12,8 @@ const policies = {
   comments: { name: 'comments', limit: 30, windowSeconds: 60 },
   reactions: { name: 'reactions', limit: 120, windowSeconds: 60 },
   moderation: { name: 'moderation', limit: 120, windowSeconds: 60 },
+  ledgerReadQuery: { name: 'mcf-ledger-read-query', limit: 60, windowSeconds: 60 },
+  cloudContextLocalRead: { name: 'mcf-cloud-context-local-read', limit: 10, windowSeconds: 60 },
   mutation: { name: 'mutation', limit: 60, windowSeconds: 60 },
   read: { name: 'read', limit: 300, windowSeconds: 60 },
 } satisfies Record<string, AbusePolicy>;
@@ -30,6 +32,12 @@ export function selectAbusePolicy(method: string, routeUrl: string): AbusePolicy
   }
   if (normalizedMethod === 'POST' && routeUrl === '/v1/reports') {
     return policies.reports;
+  }
+  if (normalizedMethod === 'GET' && routeUrl === '/v1/mcf/context/cloud/g2a') {
+    return policies.cloudContextLocalRead;
+  }
+  if (normalizedMethod === 'POST' && routeUrl === '/v1/mcf/context/ledger/query') {
+    return policies.ledgerReadQuery;
   }
   if (routeUrl.includes('/comments') || routeUrl.includes('/comment-drafts')) {
     return policies.comments;

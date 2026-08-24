@@ -1,0 +1,52 @@
+schema_version: 1
+
+capability:
+  id: cognitive-ledger.memory.read
+  provider_project_id: cognitive-ledger
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: READ_ONLY
+
+contract:
+  protocol: COGNITIVE_LEDGER_MCP_STREAMABLE_HTTP_READ_V1
+  allowed_operations:
+    - buscar_eventos
+    - ler_diario
+    - recuperar_contexto
+  prohibited_operations:
+    - embedding.paid
+    - external-action-receipt.persist
+    - ler_fonte_bruta
+    - memory.mutate
+    - production.deploy
+    - provider.direct-database-access
+
+scope:
+  environments:
+    - lab
+  resources:
+    - ler_diario
+    - buscar_eventos
+    - recuperar_contexto
+
+governance:
+  authorization_state: AUTHORIZED
+  required_gate: DEDICATED_LEDGER_INGRESS_PAIRWISE_CREDENTIALS_AND_DISPOSABLE_APPMODULE_LAB
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: DISCONNECTED
+  runtime_state: INACTIVE
+  verification_state: HISTORICALLY_VERIFIED
+  last_verified_at: "2026-08-24T01:26:54.000Z"
+
+evidence:
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/e2e/cognitive-ledger-real-lab.mjs
+    source_revision: 43ba4063ab6f061329a37f2dcc227dd49a082357
+    observed_at: "2026-08-24T01:26:54.000Z"
+  - source_ref: repo://leon337/cognitive-ledger/documentacao/integracao/mcf-mcp-readonly-lab.md
+    source_revision: b882d2808af74858a6ba351fb755bb3843e33ab2
+    observed_at: "2026-08-24T01:26:54.000Z"
+
+freshness: LIVE_REQUIRED
