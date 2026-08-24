@@ -196,10 +196,9 @@ ZRCL, Context Fabric, Truth Contracts, Capability Registry, Artifact System e Va
 
 O CF-0/CF-1 mínimo foi mergeado no `main` pelo PR #153. O PR #160 integrou Registry/Capsules dos
 quatro projetos, recuperação read-only, freshness Git local, Capability Registry e as duas pontes
-read-only no `main@efe5164290d56f22023f07de073e2ad7c027fb95`, com **7/7 checks** aprovados. O
-checkpoint de código testado `e646527f` agora é ancestral desse merge. Seu baseline estrutural de
-recovery recuperou **4/4 projetos** com sucesso antes da sincronização semântica dos providers; a
-repetição 4/4 contra as Capsules pós-sync continua sendo um gate separado e ainda pendente.
+read-only. O PR #161 concluiu a reconciliação do MCF no
+`main@2dc4584c4be186b5cdf131105b810610a9cf620a`, com **7/7 checks** aprovados. O checkpoint de
+código testado `e646527f` é ancestral desse estado final.
 
 No checkpoint `e646527f`, o adapter MCF → Cognitive Ledger expõe somente três operações, usa
 ingresso próprio e passou pelo `AppModule` real até MCP → Edge/Auth → PostgREST → PostgreSQL, sem
@@ -211,15 +210,15 @@ No mesmo checkpoint, migrations 2x passaram com 30 registros e `pnpm verify` enc
 real-Cloud pulados por design. Format, lint, typecheck e build passaram; `pnpm audit` de produção
 em nível high reportou 0 vulnerabilidades conhecidas.
 
-O staging marcou o SHA exato do merge como `DEPLOYED` no run `32685810702`; Production Readiness e
-Documentation Validation pós-merge passaram. O artefato público da Vercel correspondeu ao roadmap
-de `main@efe5164` pelo SHA-256
-`5d95e38b841e324f1b91848441492de1ffd0454becfc1c22fdbcbaf5cf1fca0e`. Essa publicação estática é
+O staging marcou o SHA exato do PR #161 como `DEPLOYED` no run `32688775406`; Production Readiness
+e Documentation Validation pós-merge passaram. O artefato público da Vercel correspondeu ao
+roadmap de `main@2dc4584` pelo SHA-256
+`0ac09ccd2ead8fb592a51e9407def07d5edafc6e43dbaee892915a4497728d47`. Essa publicação estática é
 uma classe de deployment `Production` da própria Vercel, mas não contém runtime nem API do MCF. O
-runtime de produção permaneceu em `439da7b6479718f6545144954937b8c4358d7c46`, sem novo deploy; não
-houve acesso VPS/NODE-01 nem SSH, e os workflows RC2/RC3 terminaram como NOOP preservando suas
-identidades imutáveis. O PR #151 foi marcado automaticamente como `MERGED` pela ancestralidade do
-PR #160.
+runtime de produção permaneceu em `439da7b6479718f6545144954937b8c4358d7c46`; o workflow de
+produção teve zero runs, não houve acesso VPS/NODE-01 nem SSH, e os workflows RC2/RC3 terminaram
+como NOOP preservando suas identidades imutáveis. O PR #151 foi marcado automaticamente como
+`MERGED` pela ancestralidade do PR #160.
 
 A sincronização semântica dos providers também terminou em seus targets seguros: Cognitive Ledger
 PR #3, merge `a64cfc05f83567f624bbda70288310f56a7264e8`, com CI verde; TriView PR #78, merge
@@ -230,9 +229,14 @@ PR #3, merge `a64cfc05f83567f624bbda70288310f56a7264e8`, com CI verde; TriView P
 laboratório descartável; o G2-A remoto permanece
 `NOT_AUTHORIZED/DISCONNECTED/UNKNOWN/LIVE_REQUIRED`, e o G2-B,
 `NOT_AUTHORIZED/DISCONNECTED/BLOCKED/LIVE_REQUIRED`. Tasks 9/10, VPS/SSH, runtime de produção,
-escrita externa, API paga e R7 ampla continuam fechados. Resta fechar a Capsule/documentação do
-próprio MCF nesta branch e, somente depois, repetir o recovery estrutural 4/4 pós-sync; nenhum
-resultado desses dois gates é antecipado aqui.
+escrita externa, API paga e R7 ampla continuam fechados.
+
+O recovery estrutural final pós-sync passou entre `2026-08-24T04:14:24.044Z` e
+`2026-08-24T04:14:24.195Z`: **4/4 projetos `RECOVERED`**, cada um com 17 claims, 6 sources e 0
+warnings. Todos preservaram `read_only: true`, `evidence_only: true` e `material_action: false`, com HEAD,
+worktree limpa e revisão live exata: Cloud `38cd22e`, Ledger `a64cfc`, TriView `09a361` e MCF
+`2dc4584`. A evidência está no
+[relatório final 4/4](docs/integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md).
 
 Veja o [roadmap visual](docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html) e o
 [handoff factual](docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md).

@@ -5,7 +5,7 @@
 **Reconciliação-base:** 2026-08-20
 **Reconciliação adicional do ecossistema:** 2026-08-24
 **Baseline histórico de estabilização:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
-**Main integrado observado:** `efe5164290d56f22023f07de073e2ad7c027fb95` (PR #160 e staging exato)
+**Main integrado observado:** `2dc4584c4be186b5cdf131105b810610a9cf620a` (PR #161 e staging exato)
 
 ## 1. Regra de fonte de verdade
 
@@ -135,7 +135,7 @@ Aplicação hospedeira:
   `876e9f565671578c04be194c729c8d4e7b0080d9`;
 - Registry e Capsule repository-native, contratos e schemas públicos;
 - recuperação cross-repository estrutural dos quatro projetos com provenance e freshness Git
-  local: baseline pré-sync **4/4 PASS**;
+  local: baseline pré-sync **4/4 PASS** e gate final pós-sync **4/4 PASS**;
 - `GET /v1/mcf/context/recovery` e `GET /v1/mcf/context/capabilities`, protegidos por token
   dedicado e desabilitados sem configuração;
 - Capability Registry com implementação, conexão, autorização, runtime e verificação separados;
@@ -145,11 +145,11 @@ Aplicação hospedeira:
   governado, hashes antes/depois e E2E descartável.
 
 O conjunto integrado foi mergeado pelo PR #160 em
-`main@efe5164290d56f22023f07de073e2ad7c027fb95`; esse SHA passou em staging. As Capsules dos três
-providers foram sincronizadas nos seus branches seguros. Isso não conecta nem ativa provider,
-não torna evidência histórica current e não autoriza runtime de produção, VPS, SSH ou escrita.
-O closeout da Capsule do MCF e o recovery estrutural 4/4 pós-sync continuam gates versionados
-separados até sua própria evidência.
+`main@efe5164290d56f22023f07de073e2ad7c027fb95`. O closeout da Capsule entrou pelo PR #161 em
+`main@2dc4584c4be186b5cdf131105b810610a9cf620a`; ambos os SHAs passaram em staging. As Capsules dos
+três providers foram sincronizadas nos seus branches seguros, e o recovery final pós-sync
+recuperou **4/4** no segundo SHA. Isso não conecta nem ativa provider, não torna evidência histórica
+current e não autoriza runtime de produção, VPS, SSH ou escrita.
 
 ## 6. Governança de produção atual
 
@@ -252,12 +252,13 @@ canônico. Esse boundary entrega:
 - evidência real MCF → processo stdio Cloud em fixture descartável, com integridade pré/pós,
   limites e cleanup.
 
-O PR #160 passou sete checks no HEAD exato. O workflow de staging repetiu smoke, migrações, suíte
-e build, então publicou e verificou exatamente `efe5164290d56f22023f07de073e2ad7c027fb95`.
-Produção permaneceu no baseline anterior e o roadmap público estático foi sincronizado à mesma
-árvore do novo `main`. O GitHub classificou o PR #151 como `MERGED` porque seu HEAD já era
-ancestral do merge consolidado; não houve um segundo merge independente. O PR #159 e sua proposta
-de 49 agentes não entraram no candidato, que preservou os 29 agentes oficiais.
+O PR #160 passou sete checks no HEAD exato. O PR #161 também passou sete checks e fechou a Capsule
+do MCF; o workflow de staging repetiu smoke, migrações, suíte e build, então publicou e verificou
+exatamente `2dc4584c4be186b5cdf131105b810610a9cf620a` no run `32688775406`. Produção permaneceu no
+baseline anterior e o roadmap público estático foi sincronizado à mesma árvore do novo `main`. O
+GitHub classificou o PR #151 como `MERGED` porque seu HEAD já era ancestral do merge consolidado;
+não houve um segundo merge independente. O PR #159 e sua proposta de 49 agentes não entraram no
+candidato, que preservou os 29 agentes oficiais.
 
 Estado preciso deste snapshot de closeout:
 
@@ -317,8 +318,21 @@ ecosystem_integration_2026_08_24:
       github_ci: NOT_EXECUTED_EXTERNAL_BILLING_GATE
   mcf_capsule_closeout:
     candidate_branch: codex/ecosystem-capsule-closeout-20260824
-    status: PENDING_PR_CHECKS_MERGE_AND_EXACT_SHA_STAGING
-    structural_recovery_post_sync: PENDING_AFTER_CLOSEOUT
+    pull_request: 161
+    main_merge: 2dc4584c4be186b5cdf131105b810610a9cf620a
+    checks: PASS_7_OF_7
+    staging:
+      workflow_run: 32688775406
+      result: DEPLOYED_EXACT_SHA
+      ready: PASS
+    structural_recovery_post_sync:
+      result: PASS_4_OF_4
+      window_utc: 2026-08-24T04:14:24.044Z/2026-08-24T04:14:24.195Z
+      receipts: 4_RECOVERED
+      claims_per_receipt: 17
+      sources_per_receipt: 6
+      warnings: 0
+      evidence: docs/integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md
   paid_ai_api_calls_observed: 0
   runtime_production:
     revision: 439da7b6479718f6545144954937b8c4358d7c46
@@ -330,7 +344,8 @@ ecosystem_integration_2026_08_24:
     runtime_or_api: NONE
     integration_public_sync: PASS_BYTE_FOR_BYTE
     integration_sha256: 5d95e38b841e324f1b91848441492de1ffd0454becfc1c22fdbcbaf5cf1fca0e
-    closeout_public_sync: PENDING
+    closeout_public_sync: PASS_BYTE_FOR_BYTE
+    closeout_sha256: 0ac09ccd2ead8fb592a51e9407def07d5edafc6e43dbaee892915a4497728d47
   vps_or_node_01_status: NOT_ACCESSED
   ssh_status: NOT_USED
 ```
@@ -364,11 +379,13 @@ capability permanece restrito ao laboratório local.
 NODE-01/VPS continuam fechados. O cockpit TriView permanece GET-only e evidence-only; a PR #74 e a
 R7 física continuam gates separados.
 
-O baseline estrutural anterior recuperou 4/4 projetos, mas ocorreu antes da sincronização
-semântica. Este closeout atualiza a Capsule do MCF e seu source document; depois de PR, checks,
-merge e staging do SHA exato, o recovery estrutural 4/4 deve ser repetido contra os quatro SHAs
-pós-sync. Só esse novo Receipt encerra o gate final, sem conectar provider nem executar ação
-material.
+O gate final repetiu o recovery contra os quatro SHAs pós-sync: **4/4 `RECOVERED`**, 17 claims e
+seis fontes por Receipt, zero warnings, `read_only=true`, `evidence_only=true` e
+`material_action=false`. Capsule e live SHA coincidiram em cada projeto, e os quatro worktrees
+estavam limpos. A evidência está em
+[`MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md`](integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md).
+Esse resultado fecha o gate estrutural sem conectar provider nem executar ação material; qualquer
+afirmação operacional futura ainda exige recovery fresco.
 
 ## 9. Mission Control
 
@@ -413,6 +430,7 @@ GOV-0/GOV-1 design autorizado anteriormente não implica autorização de merge,
 - estado atual: `docs/MCF-CURRENT-STATE.md`
 - roadmap do ecossistema: `docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html`
 - handoff da integração: `docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md`
+- recovery final 4/4: `docs/integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md`
 - índice documental: `docs/README.md`
 - runtime: `docs/runtime/` + `apps/rede-social-agentes/apps/server/src/mcf-runtime/`
 - governança: `docs/governanca/`, `docs/protocols/`, `docs/decisions/`

@@ -1575,7 +1575,7 @@
         </p>
         <h1>
           O ecossistema chegou ao main e ao staging sem tocar a produção.
-          <span class="gradient-text">Agora falta fechar a Capsule MCF.</span>
+          <span class="gradient-text">Closeout e recovery 4/4 concluídos.</span>
         </h1>
         <p class="hero-copy">
           Este painel mostra o estado comprovado da integração entre MCF, Cloud
@@ -1583,17 +1583,16 @@
           descoberta federada, memória MCF → Ledger sem API paga, cockpit
           read-only e cliente real MCF → Cloud local têm evidência de
           laboratório. O checkpoint <code>e646527f</code> passou o full verify
-          com 943 testes e 0 falhas e agora é ancestral do merge
-          <code>efe5164</code>. O PR #160 passou 7/7 checks; staging exact-SHA,
-          readiness/docs, Vercel estática e o sync das três Capsules providers
-          foram comprovados. O baseline estrutural anterior recuperou 4/4
-          projetos; o closeout da Capsule MCF é o próximo gate e o recovery 4/4
-          pós-sync ainda está pendente. VPS, SSH, escrita remota e runtime de
-          produção continuam fechados.
+          com 943 testes e 0 falhas e agora é ancestral do closeout
+          <code>main@2dc4584</code>. O PR #161 passou 7/7 checks; staging
+          exact-SHA, readiness/docs, Vercel estática e o sync das três Capsules
+          providers foram comprovados. O recovery final pós-sync recuperou 4/4
+          projetos, sem warnings e preservando todos os boundaries read-only.
+          VPS, SSH, escrita remota e runtime de produção continuam fechados.
         </p>
         <div class="hero-actions">
           <a class="button primary" href="#checklist">Abrir checklist</a>
-          <a class="button" href="#roadmap">Ver o caminho restante</a>
+          <a class="button" href="#roadmap">Ver o closeout</a>
           <button class="button" id="print-roadmap" type="button">
             Imprimir / salvar PDF
           </button>
@@ -1617,7 +1616,7 @@
           <article class="metric">
             <span class="metric-value">4 / 4 PASS</span>
             <span class="metric-label">
-              baseline de recovery estrutural anterior ao sync semântico
+              recovery estrutural final pós-sync · 17 claims por projeto
             </span>
           </article>
           <article class="metric">
@@ -1629,7 +1628,7 @@
           <article class="metric">
             <span class="metric-value">7 / 7</span>
             <span class="metric-label">
-              checks do PR #160 antes do merge efe5164
+              checks do PR #161 antes do merge 2dc4584
             </span>
           </article>
           <article class="metric">
@@ -1651,10 +1650,9 @@
             Pense em uma estação: o MCF é o centro de controle, o Ledger é o
             arquivo, o TriView é o painel e o Cloud é a casa de máquinas. O
             painel já sabe onde cada peça está, e as duas passagens read-only
-            funcionaram no laboratório. O main, staging e as fichas semânticas
-            dos providers já foram reconciliados. O inventário estrutural 4/4
-            anterior continua válido como baseline; a nova conferência 4/4 só
-            ocorre depois do closeout da ficha do próprio MCF.
+            funcionaram no laboratório. Main, staging e as fichas semânticas dos
+            quatro projetos foram reconciliados. A conferência final recuperou
+            4/4 projetos com HEAD, worktree limpa e referência live exata.
           </p>
         </div>
 
@@ -1666,9 +1664,9 @@
               dois endpoints GET-only protegidos. O CF-0/CF-1 foi incorporado ao
               <code>main</code> no PR #153; CF-2 e o Capability Registry foram
               <code>IMPLEMENTED_AND_VERIFIED_IN_BRANCH</code> no checkpoint
-              <code>e646527f</code>, agora ancestral do merge do PR #160. O
-              baseline estrutural 4/4 PASS precede o sync; o recovery pós-sync
-              ainda precisa de resultado próprio.
+              <code>e646527f</code>, agora ancestral do closeout do PR #161. O
+              recovery estrutural final pós-sync passou 4/4 no
+              <code>main@2dc4584</code>.
             </p>
             <p>
               O <strong>Cognitive Ledger</strong> comprovou a rota final de três
@@ -1729,7 +1727,7 @@
           <article class="system-card mcf">
             <div class="system-topline">
               <span class="system-number">01</span>
-              <span class="status next">Closeout MCF</span>
+              <span class="status done">Closeout concluído</span>
             </div>
             <h3>Multiagent Collaboration Framework</h3>
             <p>
@@ -1740,7 +1738,7 @@
               <li>
                 <strong>Pronto</strong
                 ><span
-                  >PR #160 merge efe5164; 7/7 checks; staging exact-SHA
+                  >PR #161 merge 2dc4584; 7/7 checks; staging exact-SHA
                   DEPLOYED</span
                 >
               </li>
@@ -1752,10 +1750,9 @@
                 >
               </li>
               <li>
-                <strong>Pendente</strong
+                <strong>Final</strong
                 ><span
-                  >Capsule/docs do MCF; depois recovery estrutural 4/4
-                  pós-sync</span
+                  >Capsule/docs reconciliadas; recovery 4/4 pós-sync PASS</span
                 >
               </li>
             </ul>
@@ -1913,11 +1910,9 @@
             <h2 id="roadmap-title">Roadmap baseado no que foi comprovado</h2>
           </div>
           <p>
-            Full verify, PR/checks/merge, staging/Vercel e o sync das Capsules
-            providers já passaram. A sequência restante começa pelo closeout da
-            Capsule/documentação do próprio MCF e termina com um novo recovery
-            estrutural 4/4 pós-sync. Escrita, VPS, SSH e runtime de produção não
-            entram por consequência.
+            Full verify, PR/checks/merge, staging/Vercel, sync das Capsules,
+            closeout MCF e recovery estrutural 4/4 pós-sync passaram. Escrita,
+            VPS, SSH e runtime de produção não entram por consequência.
           </p>
         </div>
 
@@ -1966,15 +1961,15 @@
                 <div class="phase-detail">
                   <strong>Evidência</strong>
                   Checkpoint <code>e646527f</code>, ancestral do merge
-                  <code>main@efe5164</code> pelo PR #160 e reconciliado com o
+                  <code>main@2dc4584</code> pelo PR #161 e reconciliado com o
                   audit <code>f52485d</code>; baseline recovery estrutural
                   <strong>4/4 PASS</strong> antes do sync semântico.
                 </div>
                 <div class="phase-detail">
                   <strong>Limite</strong>
                   GET-only, token separado, configuração limitada, desabilitado
-                  por padrão e sem rede para freshness. O PASS estrutural do
-                  baseline não equivale ao recovery 4/4 pós-sync ainda pendente.
+                  por padrão e sem rede para freshness. O recovery final
+                  pós-sync repetiu a prova e passou 4/4 sem ampliar autoridade.
                 </div>
               </div>
             </div>
@@ -2084,32 +2079,33 @@
             </div>
           </article>
 
-          <article class="phase">
+          <article class="phase done">
             <div class="phase-marker">E2E</div>
-            <div class="phase-card current">
+            <div class="phase-card">
               <div class="phase-header">
                 <div>
-                  <h3>Closeout do Context Fabric</h3>
+                  <h3>Closeout definitivo do Context Fabric</h3>
                   <p>
-                    Full verify, main, staging/Vercel, #151 e Capsules providers
-                    estão concluídos → closeout MCF → recovery estrutural 4/4
-                    pós-sync.
+                    Full verify, main, staging/Vercel, #151, Capsules providers,
+                    closeout MCF e recovery 4/4 pós-sync concluídos.
                   </p>
                 </div>
-                <span class="status next">Capsule MCF · próximo</span>
+                <span class="status done">34/34 · 100%</span>
               </div>
               <div class="phase-details">
                 <div class="phase-detail">
                   <strong>Integração concluída</strong>
-                  PR #160 merge <code>efe5164</code>, 7/7 checks; staging
+                  PR #161 merge <code>2dc4584</code>, 7/7 checks; staging
                   exact-SHA <code>DEPLOYED</code>; readiness/docs PASS; Vercel
-                  hash-match; PR #151 auto-MERGED; providers sincronizados.
+                  hash-match; PR #151 auto-MERGED; providers sincronizados;
+                  produção preservada.
                 </div>
                 <div class="phase-detail">
-                  <strong>Saída restante</strong>
-                  Atualizar a Capsule/docs do próprio MCF nesta branch e só
-                  então executar e registrar o recovery estrutural 4/4 pós-sync.
-                  O resultado desse recovery ainda não é antecipado.
+                  <strong>Recovery final</strong>
+                  4/4 RECOVERED; cada projeto com 17 claims, 6 sources e 0
+                  warnings; read-only/evidence-only true e
+                  material_action=false. Janela 04:14:24.044Z–04:14:24.195Z; MCF
+                  2dc4584, Ledger a64cfc, TriView 09a361 e Cloud 38cd22e.
                 </div>
               </div>
             </div>
@@ -2151,7 +2147,7 @@
           </div>
           <div class="dependency-step">
             <strong>2. Main</strong>
-            concluído · PR #160 · 7/7
+            concluído · PR #161 · 7/7
           </div>
           <div class="dependency-step">
             <strong>3. Ambientes</strong>
@@ -2163,11 +2159,11 @@
           </div>
           <div class="dependency-step">
             <strong>5. Closeout MCF</strong>
-            próximo · Capsule + docs
+            concluído · Capsule + docs
           </div>
           <div class="dependency-step">
             <strong>6. Recovery pós-sync</strong>
-            pendente · estrutural 4/4
+            concluído · 4/4 RECOVERED
           </div>
         </div>
       </section>
@@ -2322,13 +2318,10 @@
               <tr>
                 <td>MCF / Context Fabric</td>
                 <td>
-                  PR #160 merge <code>efe5164</code>; 7/7 checks; staging
-                  exact-SHA DEPLOYED; Vercel hash-match; baseline recovery 4/4.
+                  PR #161 merge <code>2dc4584</code>; 7/7 checks; staging
+                  exact-SHA DEPLOYED; Vercel hash-match; recovery final 4/4.
                 </td>
-                <td>
-                  Fechar Capsule/docs do MCF; depois executar e registrar o novo
-                  recovery estrutural 4/4 pós-sync.
-                </td>
+                <td>Missão concluída; preservar evidência e boundaries.</td>
                 <td>
                   Main/staging não são runtime de produção; o runtime permaneceu
                   em <code>439da7b</code>, sem deploy produtivo ou VPS/SSH.
@@ -2404,12 +2397,12 @@
         <div class="section-heading">
           <div>
             <span class="section-index">07 / CHECKLIST</span>
-            <h2 id="checklist-title">Comprovado versus trabalho restante</h2>
+            <h2 id="checklist-title">Closeout comprovado · 34/34</h2>
           </div>
           <p>
-            Caixas fixas e desabilitadas representam evidência do repositório.
-            Caixas editáveis são acompanhamento pessoal salvo apenas neste
-            navegador e nunca alteram Git, CI, VPS ou serviços.
+            As 34 caixas fixas e desabilitadas representam evidência do
+            repositório. O checklist está 100% concluído e não concede
+            autoridade sobre Git, CI, VPS ou serviços.
           </p>
         </div>
 
@@ -2418,7 +2411,7 @@
             <div>
               <div class="progress-copy">
                 <strong>Progresso visual</strong>
-                <span id="progress-label">Calculando…</span>
+                <span id="progress-label">34 de 34 itens · 100%</span>
               </div>
               <div
                 class="progress-track"
@@ -2426,9 +2419,13 @@
                 aria-label="Progresso do checklist"
                 aria-valuemin="0"
                 aria-valuemax="100"
-                aria-valuenow="0"
+                aria-valuenow="100"
               >
-                <div class="progress-bar" id="progress-bar"></div>
+                <div
+                  class="progress-bar"
+                  id="progress-bar"
+                  style="width: 100%"
+                ></div>
               </div>
             </div>
 
@@ -2473,13 +2470,18 @@
               >
                 Gates
               </button>
-              <button class="reset-button" id="reset-checklist" type="button">
-                Limpar marcações pessoais
+              <button
+                class="reset-button"
+                id="reset-checklist"
+                type="button"
+                disabled
+              >
+                Snapshot final · sem marcações pessoais
               </button>
             </div>
             <p class="storage-note" id="storage-note">
-              “Fixo” = evidência imutável neste snapshot. “Interativo” = nota
-              local; não é fonte de verdade nem autorização.
+              “Fixo” = evidência imutável neste snapshot final; conclusão não é
+              autorização para ampliar qualquer boundary.
             </p>
           </div>
 
@@ -2733,7 +2735,7 @@
 
             <section class="check-group" aria-labelledby="check-integration">
               <div class="check-group-header">
-                <span class="status next">Próximo</span>
+                <span class="status done">Concluído</span>
                 <h3 id="check-integration">Consolidação da integração</h3>
               </div>
               <ul class="check-list">
@@ -2764,7 +2766,7 @@
                     disabled
                   />
                   <label for="c-integration-pr">
-                    PR #160: 7/7 checks e merge main efe5164; #151 auto-MERGED
+                    PR #161: 7/7 checks e merge main 2dc4584; #151 auto-MERGED
                   </label>
                   <span class="check-status">fixo</span>
                 </li>
@@ -2776,14 +2778,14 @@
                     disabled
                   />
                   <label for="c-staging-audit">
-                    Staging exact-SHA DEPLOYED; prod 439da7b e VPS/SSH intactos
+                    Run 32688775406 DEPLOYED; prod 439da7b e VPS/SSH intactos
                   </label>
                   <span class="check-status">fixo</span>
                 </li>
                 <li class="check-item" data-status="done">
                   <input id="c-vercel-final" type="checkbox" checked disabled />
                   <label for="c-vercel-final">
-                    Vercel pública correspondeu ao roadmap main@efe5164 por hash
+                    Vercel pública correspondeu ao roadmap main@2dc4584 por hash
                   </label>
                   <span class="check-status">fixo</span>
                 </li>
@@ -2799,27 +2801,25 @@
                   </label>
                   <span class="check-status">fixo</span>
                 </li>
-                <li class="check-item" data-status="next">
-                  <input
-                    id="c-mcf-closeout"
-                    data-check-id="mcf-closeout"
-                    type="checkbox"
-                  />
+                <li class="check-item" data-status="done">
+                  <input id="c-mcf-closeout" type="checkbox" checked disabled />
                   <label for="c-mcf-closeout">
-                    Fechar a Capsule/docs do próprio MCF nesta branch
+                    Closeout da Capsule/docs MCF concluído pelo PR #161
                   </label>
-                  <span class="check-status">interativo</span>
+                  <span class="check-status">fixo</span>
                 </li>
-                <li class="check-item" data-status="planned">
+                <li class="check-item" data-status="done">
                   <input
                     id="c-recovery-post-sync"
-                    data-check-id="cross-repo-recovery-post-sync"
                     type="checkbox"
+                    checked
+                    disabled
                   />
                   <label for="c-recovery-post-sync">
-                    Repetir recovery estrutural 4/4 contra Capsules pós-sync
+                    Recovery final: 4/4 RECOVERED, 17 claims/6 sources/0
+                    warnings
                   </label>
-                  <span class="check-status">interativo</span>
+                  <span class="check-status">fixo</span>
                 </li>
               </ul>
             </section>
@@ -2988,8 +2988,8 @@
             <p>
               CF-0/1, CF-2, Registry, baseline recovery estrutural 4/4 e cockpit
               GET-only têm evidência integrada ao main. O sync semântico dos
-              providers terminou; o recovery estrutural 4/4 pós-sync permanece
-              um gate separado e ainda pendente.
+              providers e o recovery estrutural 4/4 pós-sync terminaram com
+              PASS.
             </p>
           </article>
           <article class="gate-card">
@@ -3024,13 +3024,12 @@
         <article class="next-mission">
           <span class="next-mission-number" aria-hidden="true">→</span>
           <div>
-            <h3>Próxima etapa de consolidação</h3>
+            <h3>Closeout definitivo concluído</h3>
             <p>
-              PR/checks/merge, staging/Vercel, #151 e o sync dos três providers
-              estão concluídos. Agora é preciso fechar a Capsule/docs do próprio
-              MCF nesta branch e, depois, executar o recovery estrutural 4/4
-              contra as quatro Capsules pós-sync. VPS/SSH, Tasks 9/10, escrita e
-              R7 ampla permanecem fechados e fora desta missão.
+              PR/checks/merge, staging/Vercel, #151, sync dos providers,
+              closeout MCF e recovery 4/4 pós-sync estão concluídos. VPS/SSH,
+              Tasks 9/10, escrita, API paga, runtime de produção e R7 ampla
+              permanecem fechados e fora desta missão.
             </p>
           </div>
         </article>
@@ -3044,10 +3043,9 @@
           </div>
           <p>
             Links apontam para branches, merges, PRs e contratos que sustentam
-            os estados. Full verify, merge MCF, staging exact-SHA, Vercel e sync
-            semântico dos providers têm evidência própria. O closeout da Capsule
-            MCF é o próximo gate; o recovery estrutural 4/4 pós-sync permanece
-            pendente e não herda o resultado do baseline anterior.
+            os estados. Full verify, merge MCF, staging exact-SHA, Vercel, sync
+            semântico dos providers, closeout da Capsule MCF e recovery
+            estrutural 4/4 pós-sync têm evidência própria.
           </p>
         </div>
 
@@ -3066,25 +3064,25 @@
           </li>
           <li>
             <a
-              href="https://github.com/leon337/multiagent-collaboration-framework/pull/160"
+              href="https://github.com/leon337/multiagent-collaboration-framework/pull/161"
               target="_blank"
               rel="noreferrer"
             >
               <span>
-                <span class="source-label">MCF · main integrado</span>
-                PR #160 · 7/7 checks · merge efe5164
+                <span class="source-label">MCF · closeout definitivo</span>
+                PR #161 · 7/7 checks · merge 2dc4584
               </span>
             </a>
           </li>
           <li>
             <a
-              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32685810702"
+              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32688775406"
               target="_blank"
               rel="noreferrer"
             >
               <span>
                 <span class="source-label">MCF · staging</span>
-                Exact SHA efe5164 · DEPLOYED
+                Exact SHA 2dc4584 · DEPLOYED
               </span>
             </a>
           </li>
@@ -3096,13 +3094,13 @@
             >
               <span>
                 <span class="source-label">MCF · ancestry</span>
-                PR #151 · auto-MERGED pelo merge efe5164
+                PR #151 · auto-MERGED por ancestry do PR #160
               </span>
             </a>
           </li>
           <li>
             <a
-              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32685810700"
+              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32688775435"
               target="_blank"
               rel="noreferrer"
             >
@@ -3114,7 +3112,7 @@
           </li>
           <li>
             <a
-              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32685810708"
+              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32688775402"
               target="_blank"
               rel="noreferrer"
             >
@@ -3132,32 +3130,31 @@
             >
               <span>
                 <span class="source-label">Vercel · público estático</span>
-                Hash corresponde ao roadmap de main@efe5164 anterior a este
-                draft de closeout
+                Hash 0ac09ccd… corresponde ao roadmap de main@2dc4584
               </span>
             </a>
           </li>
           <li>
             <a
-              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32685941191"
+              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32688887618"
               target="_blank"
               rel="noreferrer"
             >
               <span>
                 <span class="source-label">MCF · RC2 imutável</span>
-                Run 32685941191 · NOOP
+                Run 32688887618 · NOOP
               </span>
             </a>
           </li>
           <li>
             <a
-              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32685941203"
+              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/32688887658"
               target="_blank"
               rel="noreferrer"
             >
               <span>
                 <span class="source-label">MCF · RC3 imutável</span>
-                Run 32685941203 · NOOP
+                Run 32688887658 · NOOP
               </span>
             </a>
           </li>
@@ -3186,6 +3183,16 @@
               <span>
                 <span class="source-label">Handoff local</span>
                 Frentes paralelas do ecossistema
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md"
+            >
+              <span>
+                <span class="source-label">Recovery final · 4/4 PASS</span>
+                17 claims · 6 sources · 0 warnings por projeto
               </span>
             </a>
           </li>
@@ -3376,7 +3383,7 @@
       (() => {
         "use strict";
 
-        const storageKey = "mcf-ecosystem-roadmap-checklist-v4";
+        const storageKey = "mcf-ecosystem-roadmap-checklist-v5";
         const checkboxes = Array.from(
           document.querySelectorAll(".check-item input[type='checkbox']"),
         );
