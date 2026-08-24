@@ -1,12 +1,12 @@
 # MCF — Roadmap da próxima release estável com memória cognitiva persistente
 
 **Mission ID:** `MCF-MEMORY-LIVE-NEXT-STABLE-001`  
-**Estado:** `MISSION_STARTED / CONTEXT_RECOVERED / ONBOARDING_IN_PROGRESS / IMPLEMENTATION_BLOCKED`  
-**Classificação preliminar:** `CLASSE_C`  
+**Estado:** `MISSION_STARTED / CONTEXT_RECOVERED / ONBOARDING_CLOSED / PHASE_02_EXECUTION_GATED / IMPLEMENTATION_BLOCKED`  
+**Classificação:** `CLASSE_C`  
 **Autoridade humana final:** LEANDRO  
 **Orquestração:** MESTRE  
 **Continuidade e gates internos:** LÉO  
-**Critério terminal:** a missão só termina quando a próxima release estável do MCF estiver publicada e houver evidência reproduzível do ciclo real de memória persistente entre chats, com write governado do Cognitive Ledger, provider live autorizado, recovery cross-repo, staging exact-SHA e auditoria final.
+**Critério terminal:** a missão só termina quando a próxima release estável do MCF estiver publicada e houver evidência reproduzível do ciclo real de memória persistente entre chats, com write governado do Cognitive Ledger, provider live autorizado, recovery cross-repo, staging exact-SHA, auditoria final e prova pós-release.
 
 ---
 
@@ -17,384 +17,323 @@ Ordem de precedência:
 1. instrução explícita atual de LEANDRO;
 2. GitHub/provider live;
 3. código, testes e documentos do SHA/branch aplicável;
-4. protocolo operacional vigente do MCF;
-5. documentos históricos.
+4. `project-instructions/*` e Protocolo Operacional Unificado vigente do MCF;
+5. documentos históricos, somente quando não conflitarem com uma fonte superior.
 
-Para o Cognitive Ledger, a implementação atual vive em `design/cognitive-ledger-foundation`; o `main` do repositório permanece um bootstrap. Estados live, deploys, conexões e credenciais devem ser verificados novamente antes de qualquer afirmação operacional.
-
----
-
-## 2. Correção de contexto incorporada ao roadmap
-
-O onboarding inicial desta missão começou antes de uma leitura suficiente do repositório do Cognitive Ledger. A recuperação posterior mostrou que a premissa “precisamos criar escrita do zero” era incorreta.
-
-O provider já possui:
-
-- tabela `eventos_cognitivos`;
-- tabela `fontes`;
-- tabela `relacoes`;
-- RPC transacional `public.registrar_evento_cognitivo(...)`;
-- rota administrativa `POST /registros` na Edge Function;
-- idempotência por ID compatível e rejeição de colisão incompatível;
-- leitura de volta/timeline;
-- exportação controlada Supabase → Git;
-- histórico de Eventos Cognitivos já existente.
-
-O que continua faltando para o objetivo desta missão é a **integração governada desse write existente ao MCF**, com authN/authZ apropriados, capability própria, provider live atual verificado e prova cross-chat.
+O Cognitive Ledger tem implementação relevante em `design/cognitive-ledger-foundation`; o `main` do repositório continua bootstrap-level. O estado live do provider deve sempre ser verificado antes de afirmações operacionais.
 
 ---
 
-## 3. O que o Cognitive Ledger já é hoje
+## 2. Estado real recuperado
 
-O roadmap canônico do próprio Ledger define:
+A premissa inicial de que seria necessário criar escrita do zero foi corrigida. O provider já possui o domínio operacional do Ledger e uma escrita administrativa existente.
 
-```text
-Supabase / Postgres
-=
-fonte operacional de verdade
+### Cognitive Ledger / Supabase
 
-Git
-=
-código + documentação + histórico + exportação/backup controlado
-```
+Provider oficial escolhido e já existente:
 
-Logo, ler `diario/*.md` no repositório não equivale a consultar o diário operacional atual.
+- projeto Supabase: `glyfavvwarffkkthpwlj` (`cognitive-ledger`);
+- região: `sa-east-1`;
+- estado verificado: `ACTIVE_HEALTHY`;
+- PostgreSQL 17;
+- 26 Eventos Cognitivos;
+- 26 Fontes;
+- 39 Relações;
+- 0 eventos com embedding armazenado no checkpoint atual;
+- 0 clientes OAuth cadastrados no checkpoint atual.
 
-O modelo durável é **Evento Cognitivo**, não conversa inteira. Cada captura separa:
+O provider já possui RPC transacional `public.registrar_evento_cognitivo(...)`, idempotência por ID e rejeição de colisão incompatível.
 
-- Registro Cognitivo estruturado;
-- Registro de Fonte/proveniência.
+### Edge Function live
 
-A evolução do pensamento não deve ser apagada silenciosamente; refinamentos e substituições devem preservar o histórico por relações ou novos eventos.
+A função `cognitive-ledger-api` live permanece na versão 6. Ela possui o boundary administrativo legado de escrita (`POST /registros`) e autenticação própria. O boundary OAuth `/v1` live está atrás da implementação mais nova do repositório: autentica cliente, mas não entrega as rotas read-only mais recentes. Também não existe ainda `cognitive-ledger.memory.write` live.
 
----
+A versão live ainda contém indexação de embedding em background dependente de `OPENAI_API_KEY`. Isso não prova uso pago, mas conflita com a política aprovada de opt-in explícito e deve ser reconciliado antes da ativação governada.
 
-## 4. Estado de privacidade que precisa permanecer explícito
+### MCF runtime
 
-O repositório `leon337/cognitive-ledger` está atualmente público no GitHub. O roadmap do próprio Ledger registra que essa visibilidade pública foi temporária para desbloquear CI e determina:
+O runtime MCF é software real de orquestração/evidência. Ele valida missão, skill, agente selecionado, permissões, evidence envelope e Receipt. Entretanto, os skills cognitivos governados recebem `execution_evidence` produzida pelo agente selecionado; o runtime atual não origina sozinho o trabalho cognitivo de Sofia, Miriam, Ricardo etc.
 
-```text
-novo conteúdo privado
-        ↓
-Supabase privado
-        ↓
-NÃO exportar automaticamente ao Git público
-```
+O Chat bridge executa apenas o bootstrap permitido e deixa trabalho especializado em estado equivalente a `READY_AGENT` até existir execução/evidência real.
 
-Portanto, nenhum novo conteúdo pessoal real deve ser versionado automaticamente no repositório público, em fixtures, logs ou evidências abertas.
+### Staging MCF
+
+O serviço Render `mcf-runtime-staging-api` continua live, com auto-deploy desabilitado, mas o deploy observado está no SHA `3d6367fb6a821c2e1b4acb7976aef82fac06daf5`, atrás do `main` desta missão. Ele não pode ser usado como prova exact-SHA da nova release até promoção governada posterior.
 
 ---
 
-## 5. Boundary atual MCF ↔ Ledger
+## 3. Boundary de privacidade
 
-O MCF já possui adapter de leitura do Cognitive Ledger validado em laboratório/staging, com as operações:
+Supabase/Postgres é a fonte operacional de verdade da memória.
 
-- `ler_diario`;
-- `buscar_eventos`;
-- `recuperar_contexto`;
-- `ler_fonte_bruta` permanece fora do allowlist padrão do MCF.
+Git é código, documentação e histórico técnico. Novo conteúdo pessoal real não deve ser exportado automaticamente ao Git público, fixtures, CI, issues, PRs, traces ou logs.
 
-A capability `cognitive-ledger.memory.read` permanece separada dos futuros caminhos de escrita.
-
-O write existente do provider **não está exposto como capability MCF de memória**. Essa é a lacuna funcional real desta missão.
+O modelo durável é Evento Cognitivo + Fonte/proveniência, não a cópia integral da conversa.
 
 ---
 
-## 6. Objetivo verificável
+## 4. Contrato de produto fechado — decisões 1–19
 
-A nova release estável deve permitir que um Mestre autorizado:
+1. **Provider:** reutilizar o Supabase/Postgres existente como provider operacional oficial e preservar os registros atuais.
+2. **Captura:** pedido explícito ou sugestão inteligente seguida de confirmação; nunca persistência automática silenciosa.
+3. **Autoridade de write:** Mestre inicia a escrita governada; Miriam governa memória/provenance/reconciliação; outros agentes não recebem escrita direta por padrão.
+4. **Representação:** texto original autorizado + estrutura semântica; o original prevalece se houver divergência de interpretação.
+5. **Correção:** refinamentos/supersessions preservam história; não existe overwrite silencioso.
+6. **Confirmação:** resposta curta + Receipt auditável somente após persistência e read-back verificáveis.
+7. **Prova:** sintético primeiro; memória real somente no final e com autorização explícita.
+8. **Dados existentes:** evolução in-place com inventário, backup/restore, migração compatível/reversível e sem reset/reseed destrutivo.
+9. **AuthN/AuthZ:** MCF usa capability OAuth dedicada, como `cognitive-ledger.memory.write`; MCF nunca recebe `service_role`; write administrativo legado fica separado até a arquitetura definir endurecimento/depreciação.
+10. **SemVer:** alvo `v1.2.0` se a mudança permanecer aditiva/compatível; breaking change real obriga reenquadramento técnico de SemVer.
+11. **Latest:** a nova stable vira `latest` somente depois de todos os gates e prova pós-release.
+12. **Git:** novas memórias reais permanecem no provider privado; Git não é sink de memória pessoal nova.
+13. **Original:** conteúdo original autorizado fica em `fontes`; Evento Cognitivo armazena a interpretação estruturada.
+14. **Minimização:** persistir somente o trecho relevante + contexto mínimo necessário, não a conversa inteira por padrão.
+15. **Palavras-chave:** gerar automaticamente 3–8 palavras-chave concisas, preferencialmente em `assuntos`, para melhorar leitura e absorção.
+16. **Recuperação:** apresentar primeiro cartão cognitivo curto; texto original e provenance ficam disponíveis sob demanda ou para validação.
+17. **Exclusão definitiva:** correções normais preservam histórico; comando inequívoco de exclusão definitiva usa fluxo privilegiado de hard delete do conteúdo privado/dependentes, com no máximo tombstone sem conteúdo quando auditabilidade exigir.
+18. **Busca/embeddings:** busca textual/estruturada funciona sempre; embeddings externos ficam desabilitados por padrão e exigem opt-in separado; presença de API key não é autorização.
+19. **Modelo operacional:** LEANDRO não é operador técnico da equipe; arquitetura/implementação são responsabilidade dos agentes. Os 29 agentes oficiais devem contribuir substantivamente para este goal e produzir seus próprios artefatos reais. É deterministicamente proibido simular papéis ou relabelar artefatos do coordenador como se fossem de outro agente.
 
-1. recupere o estado atual do ecossistema por Registry + Capsules + SHAs + provenance + recovery;
-2. reconheça uma intenção explícita de persistência;
-3. use uma capability específica e governada para registrar memória no Cognitive Ledger;
-4. preserve o texto original e a estrutura semântica do Evento Cognitivo;
-5. obter confirmação do provider e leitura de volta;
-6. produzir um Receipt auditável;
-7. recuperar a mesma memória em outra sessão/chat;
-8. distinguir memória histórica, estado atual e inferência;
-9. falhar fechado quando write/read/provider/auth estiverem indisponíveis ou não autorizados.
-
----
-
-## 7. Decisões de onboarding já aprovadas por LEANDRO
-
-### 7.1 Provider live
-
-**Supabase privado dedicado ao Cognitive Ledger.**
-
-A decisão não implica que um projeto Supabase já esteja criado/ativo. O estado live deve ser verificado no gate de ambiente.
-
-### 7.2 Política de captura
-
-**Pedido explícito + sugestão inteligente.**
-
-- Se LEANDRO disser “registre isso”, “guarde no meu diário” ou equivalente, o Mestre pode iniciar a gravação governada.
-- Se o Mestre detectar algo potencialmente valioso, pode sugerir o registro.
-- Nenhuma sugestão vira gravação sem confirmação.
-- Não existe captura automática irrestrita.
-
-### 7.3 Autoridade de escrita
-
-**Mestre registra; Miriam governa memória e conhecimento.**
-
-Outros agentes não recebem acesso genérico ao banco. A escrita ocorre por capability específica do MCF e dentro das autorizações aplicáveis.
-
-### 7.4 Forma da memória
-
-**Texto original + estrutura semântica.**
-
-Preservar o conteúdo original relevante e também campos estruturados do Evento Cognitivo, fontes, relações e provenance.
-
-### 7.5 Correção e invalidação
-
-**Preservar histórico.**
-
-Correções não sobrescrevem silenciosamente o passado. Um registro pode ser substituído, refinado, resolvido ou invalidado por novo estado/evento/relação conforme o modelo aprovado.
-
-### 7.6 Confirmação ao usuário
-
-**Confirmação curta + Receipt auditável.**
-
-A resposta de uso normal deve ser breve, mas baseada em persistência real e leitura de volta. O Receipt preserva identificador, resultado e provenance suficiente.
-
-### 7.7 Prova final
-
-**Teste sintético primeiro + uma memória real explicitamente autorizada no final.**
-
-Dados reais não entram no ciclo de desenvolvimento antes de os gates de segurança/privacidade/live passarem.
+O onboarding está encerrado. As decisões técnicas restantes pertencem à arquitetura e aos especialistas e não devem ser empurradas para LEANDRO como operação técnica.
 
 ---
 
-## 8. Decisões ainda abertas
+## 5. Regra de execução real dos agentes
 
-O onboarding ainda precisa fechar, uma pergunta por vez:
+Nomear um agente em plano, prompt, comentário ou relatório não constitui participação.
 
-1. como preservar/reconciliar os Eventos Cognitivos já existentes quando o novo provider live for materializado;
-2. qual authN/authZ será usada no write MCF → Ledger e como ela se relaciona com o write administrativo já existente;
-3. se o caminho administrativo histórico `POST /registros` será mantido, endurecido ou isolado do novo caminho MCF;
-4. se haverá reconciliação/backup adicional Git sem expor memória privada;
-5. semver final da nova release;
-6. se a nova stable assume `latest` imediatamente após os gates.
+Um agente só recebe crédito quando existem simultaneamente:
 
-Nenhuma decisão irreversível deve ser inferida antes das respostas e do design aprovado.
+1. identidade de execução real distinguível do coordenador;
+2. work packet da missão compatível com sua competência oficial;
+3. artefato criado por essa execução;
+4. evidência/Receipt ligando agente, ação, artefato, origem, tempo e resultado;
+5. handoff cronológico visível quando houver dependência.
 
----
+Sem isso, o estado correto é `CONVOKED_WAITING_EXECUTOR` ou equivalente.
 
-## 9. Classificação e seleção de agentes
-
-Esta missão é preliminarmente **Classe C** por envolver memória persistente, dados pessoais potenciais, autenticação, provider live e publicação de release estável.
-
-O MCF possui 29 agentes oficiais, mas o protocolo proíbe participação decorativa. O pool inteiro permanece disponível; `selected_agents` é definido por fase e somente agentes com entrega real são ativados.
-
-### Fase 1 — onboarding e recuperação de contexto
-
-Selecionados:
-
-- **Mestre** — contrato, fluxo e orquestração;
-- **Léo** — continuidade e gates internos;
-- **Leonardo** — produto e critérios de aceite;
-- **Miriam** — memória, provenance e reconciliação;
-- **Júlia** — dados, autonomia e governança de IA;
-- **Augusto** — mission trace obrigatório em Classe C;
-- **Beatriz** — avaliação de comportamento de memória/agentes;
-- **Carmem** — consistência documental;
-- **Emily** — auditoria independente do gate.
-
-### Fase 2 — arquitetura e segurança
-
-Entram quando a Fase 1 fechar:
-
-- **Sofia** — arquitetura e boundaries;
-- **Manoel** — modelo de dados, integridade e migrações;
-- **Daniela** — lineage/provenance e qualidade de dados;
-- **Ricardo** — threat model, auth, secrets e privacidade técnica;
-- **Bruno** — provider live, SRE, backup/restore;
-- **Eduardo/Rafael** — integração backend/MCF;
-- **Renato** — estratégia de testes e E2E.
-
-### Release
-
-- **Gabriel** — branches, PRs, tag/release e prova de publicação.
-
-Outros agentes somente serão selecionados se surgir uma entrega real no respectivo domínio.
+O requisito humano de participação dos 29 agentes é mission-wide e não revoga a regra MCF contra participação decorativa. Cada agente precisa produzir entrega real em algum ponto da missão antes do terminal `ENTREGUE`.
 
 ---
 
-## 10. Método obrigatório da missão
+## 6. Roster mission-wide e artefatos obrigatórios
 
-O fluxo segue o Protocolo Operacional Unificado do MCF:
+| Agente | Entrega substantiva mínima da missão |
+|---|---|
+| Léo | gate(s) baseados em evidência |
+| Mestre | contratos, ESEV, orchestration ledger e handoffs |
+| Leonardo | critérios de produto/release e aceite |
+| Carlos | horizonte de riscos/oportunidades da memória durável |
+| Evelyn | coordenação/decisão de experiência |
+| Laura | fluxo UX de captura/recuperação |
+| Isabela | especificação visual/estados do cartão cognitivo |
+| Marina | acessibilidade/legibilidade |
+| Sofia | arquitetura e ADRs |
+| Rafael | desenho/execução de implementação e integração |
+| Manoel | schema, backup/restore e migração |
+| Renato | estratégia e evidências de validação |
+| Bruno | staging/live, rollback, observabilidade e SRE |
+| Ricardo | threat model e security review |
+| Gabriel | branch/PR/tag/release provenance |
+| Carmem | documentação técnica e consolidação PRF |
+| Emily | auditoria independente baseada em evidência |
+| Eduardo | contrato backend/API/capability e integração |
+| Helena | impacto frontend/host ou no-impact comprovado por execução própria |
+| André | impacto mobile/client ou no-impact comprovado por execução própria |
+| Tiago | política técnica de RAG/embeddings/fallback |
+| Daniela | lineage, qualidade e reconciliação de dados |
+| Vinícius | code review/refactoring e disposition |
+| Patrícia | failure-mode/debug/recovery drill |
+| Lucas | performance/recursos/sustentabilidade |
+| Augusto | trace multiagente, loops e handoffs |
+| Beatriz | avaliação de agentes/memória/routing/regressões |
+| Miriam | recovery/provenance/conflitos/reconciliação/governança de memória |
+| Júlia | privacidade, dados, autonomia e compliance Classe C |
 
-```text
-CONTRATAR
-→ RECUPERAR CONTEXTO
-→ EXECUTAR
-→ VERIFICAR
-→ MEDIR PROGRESSO
-→ CORRIGIR OU AVANÇAR
-→ REPETIR
-```
-
-Fases Classe C devem produzir PRF. A execução deve ser cronológica e verificável, com handoffs reais, evidências, auditoria e decisão de Léo.
-
-Nenhuma ferramenta ou ação deve ser simulada. Quando o estado for desconhecido, registrar `UNKNOWN`/`LIVE_REQUIRED` em vez de inferir.
+Um `no-impact` só conta se for conclusão real do próprio agente após inspeção e com evidência.
 
 ---
 
-## 11. Fases da missão
+## 7. Gate de execução atual
+
+`GATE-RUNTIME-REALITY = NOT_SATISFIED` para crédito dos agentes cognitivos nomeados diferentes de Mestre.
+
+A auditoria do runtime mostrou que o MCF já valida evidence/receipts, mas ainda depende de um executor que produza a evidência cognitiva do agente selecionado. O tool surface desta sessão também não oferece dispatcher nativo de subagentes nem um POST autenticado direto ao boundary de sessão do runtime MCF.
+
+Foi identificado um managed-agent provider externo disponível no ecossistema ChatGPT capaz de executar agentes/task runs, mas ele não está instalado/conectado. Conexão de terceiro é gate de autorização e não pode ser feita silenciosamente. Nenhuma credencial, configuração manual ou operação técnica será solicitada a LEANDRO para contornar essa ausência.
+
+Enquanto o executor real não estiver disponível:
+
+- Mestre pode continuar recuperação de fontes, contratos, inventários e artefatos próprios de coordenação;
+- agentes não executados não recebem crédito;
+- conteúdo criado pelo Mestre não será inserido como `execution_evidence` de Sofia/Miriam/Ricardo/etc.;
+- implementação permanece bloqueada;
+- nenhum dado pessoal real é enviado a executor externo.
+
+---
+
+## 8. Método obrigatório
+
+Fluxo operacional:
+
+`CONTRATAR → RECUPERAR CONTEXTO → EXECUTAR → VERIFICAR → MEDIR PROGRESSO → CORRIGIR OU AVANÇAR → REPETIR`
+
+Classe C exige PRF, ESEV cronológico, ações reais, evidence/Receipt, controles obrigatórios, auditoria e decisão de Léo.
+
+A Human Delegation Firewall permanece ativa: LEANDRO decide propósito, riscos materiais, custo, exposição pública, ações irreversíveis e autorizações externas; não executa CLI, SQL, migrations, deploys, debug, OAuth, secrets ou tarefas de engenharia para a equipe.
+
+---
+
+## 9. Fases da missão
 
 ### Fase 0 — Roadmap e abertura
 
-Estado: `CONCLUÍDA`, com correção de contexto incorporada.
+Estado: `CONCLUÍDA`.
 
-Saída:
+- roadmap canônico em `main`;
+- Mission Control #164 aberto;
+- objetivo terminal e fontes de verdade definidos.
 
-- roadmap em `main`;
-- Mission Control aberto;
-- objetivo terminal explícito;
-- fontes de verdade identificadas.
+### Fase 1 — Recuperação/onboarding/contrato de produto
 
-### Fase 1 — Onboarding e contrato de produto
+Estado: `CONCLUÍDA COMO CONTRATO DE PRODUTO`.
 
-Estado: `EM ANDAMENTO`.
-
-Saída necessária:
-
-- decisões abertas resolvidas;
-- comportamento registrar/sugerir/confirmar aprovado;
-- política para registros existentes;
-- critérios de aceite e fora de escopo;
-- Gate 1 de LEANDRO.
+- 19 decisões fechadas pela autoridade humana;
+- nenhuma participação especializada passada é retroativamente creditada sem execução real;
+- implementação continua bloqueada até arquitetura.
 
 ### Fase 2 — Arquitetura, threat model e contrato
 
-Saída necessária:
+Estado: `ABERTA / EXECUTION_GATED`.
 
-- arquitetura MCF → Ledger write;
-- reutilização vs. isolamento do write administrativo existente;
-- authN/authZ;
-- capability e contrato;
-- modelo de versionamento/invalidação;
-- privacidade e redaction;
-- idempotência;
-- backup/restore/recovery;
-- Gate 2 de arquitetura e segurança.
+PRF: `artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/`.
+
+Já existem artefatos reais do Mestre para contrato, decisões, auditoria do runtime, source inventory, dispatch dos 29 e checkpoint. Os artefatos especializados aguardam executor real distinguível.
+
+Saídas exigidas:
+
+- current-state map MCF/Ledger/Supabase/Render/Context Fabric;
+- reconciliação de drift live/repo;
+- capability OAuth least-privilege de write;
+- idempotência, read-back e Receipt;
+- correction/supersession/hard-delete;
+- provenance/minimização/public-Git boundary;
+- backup/restore/migração/rollback;
+- cross-chat recovery e cognitive-card contract;
+- embeddings opt-in;
+- threat model/compliance/failure behavior;
+- observabilidade/auditoria/release evidence;
+- exact-SHA staging/post-release plan;
+- avaliação de compatibilidade/SemVer;
+- auditoria independente e gate Léo.
 
 ### Fase 3 — Implementação de integração write em lab
 
-O foco é integrar/endurecer o write existente, não reimplementar o Ledger do zero.
+Só inicia depois do design/gates da Fase 2.
 
 Critérios:
 
-- write específico, não SQL genérico;
+- write específico, nunca SQL genérico;
 - persistência transacional;
-- leitura de volta;
-- Receipt;
-- auth tests;
+- read-back + Receipt;
+- auth/capability tests;
 - idempotência/colisão;
 - regressão read-only;
 - zero dados reais.
 
-### Fase 4 — Adapter MCF + comportamento do Mestre
+### Fase 4 — Adapter MCF + comportamento Mestre/Miriam
 
 Critérios:
 
-- `cognitive-ledger.memory.write` no Capability Registry;
-- operação allowlisted;
-- pedido explícito + sugestão confirmada;
-- Miriam policy hooks/documentação;
-- fail-closed;
-- AppModule E2E.
+- capability `cognitive-ledger.memory.write` no Registry;
+- operação allowlisted e fail-closed;
+- captura explícita/sugestão confirmada;
+- policy hooks de memória/provenance;
+- AppModule/MCP E2E.
 
-### Fase 5 — Provider live privado
+### Fase 5 — Provider live
 
 Critérios:
 
-- Supabase privado autorizado;
-- migrações e dados existentes reconciliados;
-- segredos protegidos;
-- health/readiness;
-- backup/restore;
+- preservar 26 eventos, 26 fontes e 39 relações atuais;
+- backup/restore antes de migration material;
+- reconcile Edge Function live/repo;
+- OAuth client/capability governado;
+- secrets protegidos;
 - logs sem conteúdo privado desnecessário;
+- embeddings desativados por padrão;
 - currentness verificada.
 
 ### Fase 6 — E2E live sintético
 
-Critérios:
-
 - Chat/sessão A grava marcador sintético;
-- Receipt confirma;
-- Chat/sessão B recupera;
-- marcador pode ser invalidado conforme política;
-- nenhuma dependência do histórico do Chat A.
+- Receipt confirma persistência/read-back;
+- Chat/sessão B recupera sem histórico efêmero de A;
+- cleanup/invalidation conforme política.
 
 ### Fase 7 — Primeira memória real autorizada
 
 Somente após gates anteriores.
 
-Critérios:
-
-- LEANDRO fornece/autoriza uma memória real;
-- persistência e leitura de volta comprovadas;
-- recuperação por outra sessão/Mestre;
+- memória real explicitamente autorizada;
+- persistência/read-back comprovados;
+- recuperação em outra sessão;
 - nenhum vazamento para Git/logs/evidências públicas.
 
-### Fase 8 — Regressão cross-repo e TriView
-
-Critérios:
+### Fase 8 — Regressão cross-repo / Context Fabric / TriView
 
 - recovery 4/4;
-- capabilities read/write qualificadas;
-- TriView mostra estados sem revelar conteúdo privado por padrão;
+- read/write capabilities qualificadas;
+- TriView sem conteúdo privado por padrão;
 - Capsules/Registry sincronizados.
 
 ### Fase 9 — Staging exact-SHA e auditoria final
 
-Critérios:
-
 - CI completa;
 - staging exact-SHA;
 - security/privacy review;
-- PRF completo;
-- Emily emite parecer;
+- PRF Classe C completo;
+- Emily audita evidência real;
 - Léo decide gate.
 
 ### Fase 10 — Release estável
 
-Critérios:
-
-- versão semver validada;
-- tag e release em SHA exato;
-- release notes descrevem Context Fabric + memória persistente;
-- nenhuma release anterior é reescrita.
+- SemVer validado;
+- alvo `v1.2.0` se compatível;
+- tag/release no SHA exato;
+- release notes Context Fabric + memória persistente;
+- releases anteriores imutáveis.
 
 ### Fase 11 — Prova pós-release e closeout
 
-Critérios:
-
-- verificar release publicada live;
-- verificar artefatos/tag/SHA;
+- release publicada verificada;
+- tag/SHA/artefatos verificados;
 - fresh recovery;
-- confirmar que novos Mestres usam a metodologia oficial;
-- fechar Mission Control somente com objetivo atendido.
+- ciclo real de memória verificado;
+- nova stable promovida a `latest` após PASS;
+- Mission Control só fecha com objetivo terminal atendido.
 
 ---
 
-## 12. Critério terminal
+## 10. Critério terminal
 
 `ENTREGUE` exige simultaneamente:
 
 - nova release estável publicada;
 - write existente do Ledger integrado ao MCF por capability governada;
 - provider live privado/autorizado;
-- registros existentes preservados/reconciliados sem perda silenciosa;
+- registros existentes preservados sem perda silenciosa;
+- todos os 29 agentes com contribuição substantiva real e artefato próprio rastreável;
 - sintético A→B PASS;
 - memória real autorizada A→B PASS;
 - read regression PASS;
 - recovery 4/4 PASS;
 - staging exact-SHA PASS;
 - PRF Classe C completo;
-- auditoria final suficiente;
+- auditoria independente suficiente;
 - decisão de Léo compatível;
+- prova pós-release PASS;
+- nova stable marcada `latest` conforme decisão humana;
 - nenhuma pendência executável restante no escopo.
 
 Até lá, a missão permanece aberta.
