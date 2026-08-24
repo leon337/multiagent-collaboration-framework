@@ -19,6 +19,7 @@ function digest(value: string): Buffer {
 export function loadMcfLedgerReadIngressToken(env: NodeJS.ProcessEnv): string | null {
   const ingressToken = env.MCF_COGNITIVE_LEDGER_INGRESS_TOKEN;
   const contextToken = env.MCF_CONTEXT_READ_TOKEN;
+  const cloudIngressToken = env.MCF_CLOUD_CONTEXT_INGRESS_TOKEN;
   const providerBearer = env.MCF_COGNITIVE_LEDGER_BEARER_TOKEN;
   if (
     !ingressToken ||
@@ -27,6 +28,7 @@ export function loadMcfLedgerReadIngressToken(env: NodeJS.ProcessEnv): string | 
     ingressToken !== ingressToken.trim() ||
     /[\r\n,]/u.test(ingressToken) ||
     ingressToken === contextToken ||
+    ingressToken === cloudIngressToken ||
     ingressToken === providerBearer
   ) {
     return null;

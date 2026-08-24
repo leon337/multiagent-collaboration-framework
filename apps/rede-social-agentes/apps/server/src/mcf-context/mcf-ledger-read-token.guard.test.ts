@@ -11,6 +11,7 @@ import {
 const ledgerToken = 'mcf-ledger-ingress-token-for-readonly-lab-0001';
 const contextToken = 'mcf-context-ingress-token-for-triview-lab-0002';
 const bearerToken = 'ledger-provider-bearer-token-for-readonly-lab-0003';
+const cloudToken = 'mcf-cloud-ingress-token-for-readonly-lab-0004';
 
 function context(
   headers: Record<string, string | string[] | undefined>,
@@ -30,6 +31,7 @@ describe('Cognitive Ledger ingress token configuration', () => {
         MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: ledgerToken,
         MCF_CONTEXT_READ_TOKEN: contextToken,
         MCF_COGNITIVE_LEDGER_BEARER_TOKEN: bearerToken,
+        MCF_CLOUD_CONTEXT_INGRESS_TOKEN: cloudToken,
       }),
     ).toBe(ledgerToken);
 
@@ -38,6 +40,7 @@ describe('Cognitive Ledger ingress token configuration', () => {
       'short',
       contextToken,
       bearerToken,
+      cloudToken,
       `${ledgerToken}\n`,
       `${ledgerToken},duplicate`,
       'x'.repeat(4_097),
@@ -47,6 +50,7 @@ describe('Cognitive Ledger ingress token configuration', () => {
           MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: candidate,
           MCF_CONTEXT_READ_TOKEN: contextToken,
           MCF_COGNITIVE_LEDGER_BEARER_TOKEN: bearerToken,
+          MCF_CLOUD_CONTEXT_INGRESS_TOKEN: cloudToken,
         }),
       ).toBeNull();
     }

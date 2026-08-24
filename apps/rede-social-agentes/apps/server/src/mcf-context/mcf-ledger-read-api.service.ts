@@ -159,6 +159,7 @@ export interface McfLedgerReadConfiguration {
   timeoutMs: number;
   inputLimitBytes: number;
   responseLimitBytes: number;
+  maxConcurrentQueries: number;
 }
 
 interface McpToolDescriptor {
@@ -256,12 +257,18 @@ export function loadMcfLedgerReadConfiguration(
   const bearerToken = env.MCF_COGNITIVE_LEDGER_BEARER_TOKEN;
   const ingressToken = loadMcfLedgerReadIngressToken(env);
   if (!endpointValue || !bearerToken || !ingressToken) return null;
+  const peerCredentials = [
+    ingressToken,
+    bearerToken,
+    env.MCF_CONTEXT_READ_TOKEN,
+    env.MCF_CLOUD_CONTEXT_INGRESS_TOKEN,
+  ].filter((value): value is string => value !== undefined && value.length > 0);
   if (
     bearerToken.length < 32 ||
     bearerToken.length > 8192 ||
     bearerToken !== bearerToken.trim() ||
     /[\r\n]/u.test(bearerToken) ||
-    bearerToken === ingressToken
+    new Set(peerCredentials).size !== peerCredentials.length
   ) {
     return null;
   }
@@ -279,10 +286,29 @@ export function loadMcfLedgerReadConfiguration(
     4_096,
     1_048_576,
   );
-  if (!endpoint || timeoutMs === null || inputLimitBytes === null || responseLimitBytes === null) {
+  const maxConcurrentQueries = parseBoundedInteger(
+    env.MCF_COGNITIVE_LEDGER_MAX_CONCURRENT_QUERIES,
+    4,
+    1,
+    16,
+  );
+  if (
+    !endpoint ||
+    timeoutMs === null ||
+    inputLimitBytes === null ||
+    responseLimitBytes === null ||
+    maxConcurrentQueries === null
+  ) {
     return null;
   }
-  return { endpoint, bearerToken, timeoutMs, inputLimitBytes, responseLimitBytes };
+  return {
+    endpoint,
+    bearerToken,
+    timeoutMs,
+    inputLimitBytes,
+    responseLimitBytes,
+    maxConcurrentQueries,
+  };
 }
 
 async function readBodyBounded(response: Response, maximumBytes: number): Promise<Uint8Array> {
@@ -448,6 +474,8 @@ function parseStructuredResult(
 
 @Injectable()
 export class McfLedgerReadApiService {
+  private activeQueries = 0;
+
   constructor(
     private readonly configuration: McfLedgerReadConfiguration | null,
     private readonly clientFactory: McfLedgerMcpClientFactory = officialClientFactory,
@@ -473,6 +501,10 @@ export class McfLedgerReadApiService {
     }
     const parsed = ledgerQuerySchema.safeParse(value);
     if (!parsed.success) throw new McfLedgerQueryInvalidError();
+    if (this.activeQueries >= this.configuration.maxConcurrentQueries) {
+      throw new McfLedgerReadUnavailableError();
+    }
+    this.activeQueries += 1;
 
     const deadline = new AbortController();
     const deadlineTimer = setTimeout(() => deadline.abort(), this.configuration.timeoutMs);
@@ -528,6 +560,7 @@ export class McfLedgerReadApiService {
       if (client !== undefined) {
         await closeWithin(client, Math.min(this.configuration.timeoutMs, 1_000));
       }
+      this.activeQueries -= 1;
     }
   }
 }

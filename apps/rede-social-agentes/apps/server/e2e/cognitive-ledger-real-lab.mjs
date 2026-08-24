@@ -592,6 +592,7 @@ function mcfChildEnvironment(token) {
     MCF_COGNITIVE_LEDGER_TIMEOUT_MS: '15000',
     MCF_COGNITIVE_LEDGER_INPUT_LIMIT_BYTES: '32768',
     MCF_COGNITIVE_LEDGER_RESPONSE_LIMIT_BYTES: '262144',
+    MCF_COGNITIVE_LEDGER_MAX_CONCURRENT_QUERIES: '2',
   };
 }
 
@@ -617,6 +618,8 @@ async function duplicatedLedgerHeaderRequest(query) {
         headers: [
           'Content-Type',
           'application/json',
+          'Content-Length',
+          String(Buffer.byteLength(body, 'utf8')),
           'x-mcf-ledger-read-token',
           ledgerIngressToken,
           'x-mcf-ledger-read-token',

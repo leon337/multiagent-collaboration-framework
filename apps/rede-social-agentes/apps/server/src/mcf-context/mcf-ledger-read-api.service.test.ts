@@ -40,6 +40,7 @@ function configuration(
     timeoutMs: 500,
     inputLimitBytes: 32_768,
     responseLimitBytes: 262_144,
+    maxConcurrentQueries: 4,
     ...overrides,
   };
 }
@@ -135,7 +136,14 @@ describe('Cognitive Ledger read-only configuration', () => {
       environment({ MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: undefined }),
       environment({ MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: contextToken }),
       environment({ MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: bearerToken }),
+      environment({
+        MCF_CLOUD_CONTEXT_INGRESS_TOKEN: ingressToken,
+      }),
       environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: ingressToken }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: contextToken }),
+      environment({
+        MCF_CLOUD_CONTEXT_INGRESS_TOKEN: bearerToken,
+      }),
       environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: 'short' }),
       environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken}\n` }),
       environment({ MCF_COGNITIVE_LEDGER_MCP_URL: 'http://ledger.example/mcp' }),
@@ -151,6 +159,8 @@ describe('Cognitive Ledger read-only configuration', () => {
       environment({ MCF_COGNITIVE_LEDGER_TIMEOUT_MS: '15100' }),
       environment({ MCF_COGNITIVE_LEDGER_INPUT_LIMIT_BYTES: '32769' }),
       environment({ MCF_COGNITIVE_LEDGER_RESPONSE_LIMIT_BYTES: '1048577' }),
+      environment({ MCF_COGNITIVE_LEDGER_MAX_CONCURRENT_QUERIES: '0' }),
+      environment({ MCF_COGNITIVE_LEDGER_MAX_CONCURRENT_QUERIES: '17' }),
     ];
     for (const env of invalidEnvironments) {
       expect(loadMcfLedgerReadConfiguration(env)).toBeNull();
@@ -387,6 +397,41 @@ describe('McfLedgerReadApiService', () => {
       service.queryReadOnly({ operation: 'ler_diario', input: {} }),
     ).resolves.toMatchObject({ operation: 'ler_diario' });
     expect(Date.now() - startedAt).toBeLessThan(1_000);
+  });
+
+  it('fails closed at the concurrency bulkhead and recovers after the slot is released', async () => {
+    let releaseConnect: (() => void) | undefined;
+    const blockedClient = client({
+      connect: vi.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            releaseConnect = resolve;
+          }),
+      ),
+    });
+    const recoveredClient = client();
+    const clientFactory = vi
+      .fn<McfLedgerMcpClientFactory>()
+      .mockReturnValueOnce(blockedClient)
+      .mockReturnValueOnce(recoveredClient);
+    const service = new McfLedgerReadApiService(
+      configuration({ maxConcurrentQueries: 1, timeoutMs: 1_000 }),
+      clientFactory,
+    );
+
+    const first = service.queryReadOnly({ operation: 'ler_diario', input: {} });
+    await vi.waitFor(() => expect(clientFactory).toHaveBeenCalledOnce());
+    await expect(
+      service.queryReadOnly({ operation: 'ler_diario', input: {} }),
+    ).rejects.toBeInstanceOf(McfLedgerReadUnavailableError);
+    expect(clientFactory).toHaveBeenCalledOnce();
+
+    releaseConnect?.();
+    await expect(first).resolves.toMatchObject({ operation: 'ler_diario' });
+    await expect(
+      service.queryReadOnly({ operation: 'ler_diario', input: {} }),
+    ).resolves.toMatchObject({ operation: 'ler_diario' });
+    expect(clientFactory).toHaveBeenCalledTimes(2);
   });
 });
 
