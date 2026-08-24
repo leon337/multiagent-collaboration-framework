@@ -12,14 +12,14 @@ import {
 } from '@nestjs/common';
 import type { McfCloudContextReadReceipt } from '@rsa/contracts';
 
-import { McfContextReadTokenGuard } from './mcf-context-read-token.guard.js';
+import { McfCloudContextIngressTokenGuard } from './mcf-cloud-context-ingress-token.guard.js';
 import {
   McfCloudContextReadService,
   McfCloudContextReadUnavailableError,
 } from './mcf-cloud-context-read.service.js';
 
 @Controller('v1/mcf/context')
-@UseGuards(McfContextReadTokenGuard)
+@UseGuards(McfCloudContextIngressTokenGuard)
 export class McfCloudContextReadController {
   constructor(
     @Inject(McfCloudContextReadService)

@@ -28,7 +28,7 @@ export interface McfCloudContextReadReceipt {
   schema_version: 1;
   read_only: true;
   material_action: false;
-  persisted_by_mcf: false;
+  provider_payload_persisted_by_mcf: false;
   evidence_only: true;
   provider_response: McfCloudContextProviderResponse;
 }

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, createHmac, randomUUID } from 'node:crypto';
 import {
   copyFileSync,
   lstatSync,
@@ -19,9 +19,10 @@ import { fileURLToPath } from 'node:url';
 
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { createDatabase, type DatabaseHandle, type DatabaseRow } from '@rsa/database';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { McfContextModule } from './mcf-context.module.js';
+import { AppModule } from '../app.module.js';
 import {
   MCF_CLOUD_CONTEXT_ENABLE_VALUE,
   MCF_CLOUD_CONTEXT_SOURCE_PATHS,
@@ -29,10 +30,13 @@ import {
 
 const sourceRoot = process.env.MCF_CLOUD_CONTEXT_E2E_SOURCE_ROOT;
 const expectedSourceRevision = process.env.MCF_CLOUD_CONTEXT_E2E_SOURCE_REVISION;
+const adminDatabaseUrl = process.env.MCF_CLOUD_CONTEXT_E2E_ADMIN_DATABASE_URL;
 const pythonExecutable = realpathSync(
   process.env.MCF_CLOUD_CONTEXT_TEST_PYTHON ?? '/usr/bin/python3',
 );
-const contextToken = 'mcf-cloud-context-real-e2e-token-20260823';
+const sharedContextToken = 'mcf-context-token-delivered-to-triview-e2e-20260823';
+const cloudIngressToken = 'mcf-cloud-context-dedicated-ingress-e2e-20260823';
+const rateLimitSecret = 'mcf-cloud-context-rate-limit-hmac-e2e-20260823';
 const mcfRepositoryRoot = fileURLToPath(new URL('../../../../../../', import.meta.url));
 const extraProviderPaths = [
   'control_plane/__init__.py',
@@ -98,7 +102,46 @@ function copyProvider(source: string, target: string): void {
   }
 }
 
-const realE2EEnabled = sourceRoot !== undefined && expectedSourceRevision !== undefined;
+function quoteIdentifier(value: string): string {
+  if (!/^[a-z0-9_]{1,63}$/u.test(value)) throw new Error('unsafe database identifier');
+  return `"${value}"`;
+}
+
+async function databaseSnapshot(database: DatabaseHandle): Promise<Record<string, unknown>> {
+  const tables = await database.pool.query<{ table_name: string }>(`
+    select "table_name"
+    from "information_schema"."tables"
+    where "table_schema" = 'public'
+      and "table_type" = 'BASE TABLE'
+      and "table_name" <> 'abuse_rate_limits'
+    order by "table_name"
+  `);
+  const snapshot: Record<string, unknown> = {};
+  for (const { table_name: tableName } of tables.rows) {
+    const rows = await database.pool.query<{ snapshot: unknown }>(`
+      select coalesce(
+        jsonb_agg(to_jsonb(row_value) order by to_jsonb(row_value)::text),
+        '[]'::jsonb
+      ) as "snapshot"
+      from ${quoteIdentifier(tableName)} as row_value
+    `);
+    snapshot[tableName] = rows.rows[0]?.snapshot ?? null;
+  }
+  return snapshot;
+}
+
+interface AbuseCounterRow extends DatabaseRow {
+  key_hash: string;
+  policy: string;
+  request_count: number;
+  window_started_at: Date;
+  updated_at: Date;
+}
+
+const realE2EEnabled =
+  sourceRoot !== undefined &&
+  expectedSourceRevision !== undefined &&
+  adminDatabaseUrl !== undefined;
 
 describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local adapter', () => {
   let app: NestFastifyApplication | undefined;
@@ -109,11 +152,22 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
   let sourceGitBefore = '';
   let mcfGitBefore = '';
   let disposableBefore = '';
-  let childrenBefore = '';
+  let childrenBefore: string | undefined;
+  let adminDatabase: DatabaseHandle | undefined;
+  let evidenceDatabase: DatabaseHandle | undefined;
+  let databaseName = '';
+  let databaseCreated = false;
+  let nonAbuseDatabaseBefore: Record<string, unknown> = {};
+  const runtimeLogs: string[] = [];
+  let infoSpy: ReturnType<typeof vi.spyOn> | undefined;
+  let warnSpy: ReturnType<typeof vi.spyOn> | undefined;
+  let errorSpy: ReturnType<typeof vi.spyOn> | undefined;
   const priorEnvironment: Record<string, string | undefined> = {};
 
   beforeAll(async () => {
-    if (!sourceRoot || !expectedSourceRevision) throw new Error('real E2E configuration missing');
+    if (!sourceRoot || !expectedSourceRevision || !adminDatabaseUrl) {
+      throw new Error('real E2E configuration missing');
+    }
     const canonicalSourceRoot = realpathSync(sourceRoot);
     const actualRevision = execFileSync('git', ['rev-parse', 'HEAD'], {
       cwd: canonicalSourceRoot,
@@ -130,16 +184,63 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     disposableBefore = treeFingerprint(disposableRoot);
     childrenBefore = directChildPids();
 
+    adminDatabase = createDatabase(adminDatabaseUrl);
+    await adminDatabase.pool.query('select 1');
+    databaseName = `mcf_cloud_e2e_${process.pid}_${randomUUID().replaceAll('-', '').slice(0, 12)}`;
+    const preflight = await adminDatabase.pool.query<{ exists: boolean }>(
+      'select exists(select 1 from "pg_database" where "datname" = $1) as "exists"',
+      [databaseName],
+    );
+    expect(preflight.rows[0]?.exists).toBe(false);
+    await adminDatabase.pool.query(`create database ${quoteIdentifier(databaseName)}`);
+    databaseCreated = true;
+    const databaseUrl = new URL(adminDatabaseUrl);
+    databaseUrl.pathname = `/${databaseName}`;
+    const disposableDatabaseUrl = databaseUrl.toString();
+    execFileSync(
+      process.execPath,
+      [join(mcfRepositoryRoot, 'apps/rede-social-agentes/packages/database/scripts/migrate.mjs')],
+      {
+        cwd: join(mcfRepositoryRoot, 'apps/rede-social-agentes'),
+        env: {
+          DATABASE_URL: disposableDatabaseUrl,
+          MIGRATION_DATABASE_URL: disposableDatabaseUrl,
+        },
+        stdio: 'pipe',
+      },
+    );
+    evidenceDatabase = createDatabase(disposableDatabaseUrl);
+    await evidenceDatabase.pool.query('select 1');
+
     const expectedSourceSha256 = Object.fromEntries(
       MCF_CLOUD_CONTEXT_SOURCE_PATHS.map((relativePath) => [
         relativePath,
         digest(readFileSync(join(disposableRoot, relativePath))),
       ]),
     );
-    for (const name of ['MCF_CONTEXT_READ_TOKEN', 'MCF_CLOUD_CONTEXT_READ_CONFIG_JSON']) {
+    for (const name of [
+      'MCF_CONTEXT_READ_TOKEN',
+      'MCF_CLOUD_CONTEXT_INGRESS_TOKEN',
+      'MCF_CLOUD_CONTEXT_READ_CONFIG_JSON',
+      'MCF_CONTEXT_CONFIG_JSON',
+      'DATABASE_URL',
+      'NODE_ENV',
+      'RATE_LIMIT_KEY_SECRET',
+      'MCF_RECEIPT_SECRET',
+      'MCF_RUNTIME_TOKEN',
+      'ALLOWED_ORIGINS',
+    ]) {
       priorEnvironment[name] = process.env[name];
     }
-    process.env.MCF_CONTEXT_READ_TOKEN = contextToken;
+    process.env.MCF_CONTEXT_READ_TOKEN = sharedContextToken;
+    process.env.MCF_CLOUD_CONTEXT_INGRESS_TOKEN = cloudIngressToken;
+    process.env.MCF_CONTEXT_CONFIG_JSON = '';
+    process.env.DATABASE_URL = disposableDatabaseUrl;
+    process.env.NODE_ENV = 'test';
+    process.env.RATE_LIMIT_KEY_SECRET = rateLimitSecret;
+    process.env.MCF_RECEIPT_SECRET = 'mcf-cloud-context-receipt-secret-e2e-20260823';
+    process.env.MCF_RUNTIME_TOKEN = 'mcf-cloud-context-runtime-token-e2e-20260823';
+    process.env.ALLOWED_ORIGINS = 'http://127.0.0.1:5173';
     process.env.MCF_CLOUD_CONTEXT_READ_CONFIG_JSON = JSON.stringify({
       enable: MCF_CLOUD_CONTEXT_ENABLE_VALUE,
       repository_root: disposableRoot,
@@ -148,8 +249,19 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
       expected_source_sha256: expectedSourceSha256,
     });
 
+    const captureLog = (...values: unknown[]): void => {
+      runtimeLogs.push(
+        values
+          .map((value) => (typeof value === 'string' ? value : JSON.stringify(value)))
+          .join(' '),
+      );
+    };
+    infoSpy = vi.spyOn(console, 'info').mockImplementation(captureLog);
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation(captureLog);
+    errorSpy = vi.spyOn(console, 'error').mockImplementation(captureLog);
+
     app = await NestFactory.create<NestFastifyApplication>(
-      McfContextModule,
+      AppModule,
       new FastifyAdapter({ logger: false }),
       { logger: false },
     );
@@ -157,6 +269,7 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     const address = app.getHttpServer().address();
     if (address === null || typeof address === 'string') throw new Error('E2E port unavailable');
     baseUrl = `http://127.0.0.1:${address.port}`;
+    nonAbuseDatabaseBefore = await databaseSnapshot(evidenceDatabase);
   }, 60_000);
 
   afterAll(async () => {
@@ -172,13 +285,45 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
       }
       if (mcfGitBefore !== '') expect(gitFingerprint(mcfRepositoryRoot)).toBe(mcfGitBefore);
       if (disposableRoot !== '') expect(treeFingerprint(disposableRoot)).toBe(disposableBefore);
-      if (childrenBefore !== '') expect(directChildPids()).toBe(childrenBefore);
+      if (childrenBefore !== undefined) expect(directChildPids()).toBe(childrenBefore);
     } finally {
-      for (const [name, value] of Object.entries(priorEnvironment)) {
-        if (value === undefined) delete process.env[name];
-        else process.env[name] = value;
+      try {
+        if (evidenceDatabase !== undefined) await evidenceDatabase.pool.end();
+      } finally {
+        try {
+          if (databaseCreated && adminDatabase !== undefined) {
+            try {
+              await adminDatabase.pool.query(`drop database ${quoteIdentifier(databaseName)}`);
+            } catch {
+              await adminDatabase.pool.query(
+                `select pg_terminate_backend("pid")
+                 from "pg_stat_activity"
+                 where "datname" = $1 and "pid" <> pg_backend_pid()`,
+                [databaseName],
+              );
+              await adminDatabase.pool.query(`drop database ${quoteIdentifier(databaseName)}`);
+            }
+            const postflight = await adminDatabase.pool.query<{ exists: boolean }>(
+              'select exists(select 1 from "pg_database" where "datname" = $1) as "exists"',
+              [databaseName],
+            );
+            expect(postflight.rows[0]?.exists).toBe(false);
+          }
+        } finally {
+          try {
+            if (adminDatabase !== undefined) await adminDatabase.pool.end();
+          } finally {
+            infoSpy?.mockRestore();
+            warnSpy?.mockRestore();
+            errorSpy?.mockRestore();
+            for (const [name, value] of Object.entries(priorEnvironment)) {
+              if (value === undefined) delete process.env[name];
+              else process.env[name] = value;
+            }
+            if (temporaryRoot !== '') rmSync(temporaryRoot, { recursive: true, force: true });
+          }
+        }
       }
-      if (temporaryRoot !== '') rmSync(temporaryRoot, { recursive: true, force: true });
     }
   }, 60_000);
 
@@ -187,9 +332,18 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     const unauthenticated = await fetch(url);
     expect(unauthenticated.status).toBe(401);
 
+    const triViewTokenAtItsOwnHeader = await fetch(url, {
+      headers: { 'x-mcf-context-token': sharedContextToken },
+    });
+    expect(triViewTokenAtItsOwnHeader.status).toBe(401);
+    const triViewTokenAtCloudHeader = await fetch(url, {
+      headers: { 'x-mcf-cloud-context-token': sharedContextToken },
+    });
+    expect(triViewTokenAtCloudHeader.status).toBe(401);
+
     const injected = await fetch(
       `${url}?repository_root=${encodeURIComponent('/etc')}&operation=workspace.read`,
-      { headers: { 'x-mcf-context-token': contextToken } },
+      { headers: { 'x-mcf-cloud-context-token': cloudIngressToken } },
     );
     expect(injected.status).toBe(400);
     expect(await injected.text()).not.toContain('/etc');
@@ -198,7 +352,7 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-mcf-context-token': contextToken,
+        'x-mcf-cloud-context-token': cloudIngressToken,
       },
       body: JSON.stringify({ repository_root: '/etc', command: 'sh' }),
     });
@@ -209,7 +363,7 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
   it('performs the real read and exposes no configuration, path or secret', async () => {
     const response = await fetch(`${baseUrl}/v1/mcf/context/cloud/g2a`, {
       headers: {
-        'x-mcf-context-token': contextToken,
+        'x-mcf-cloud-context-token': cloudIngressToken,
         'x-mcf-cloud-root': '/etc',
         'x-mcf-cloud-command': 'arbitrary-command',
       },
@@ -217,12 +371,14 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     const responseBody = await response.text();
     expect(response.status, responseBody).toBe(200);
     expect(response.headers.get('cache-control')).toBe('private, no-store');
+    expect(response.headers.get('x-ratelimit-limit')).toBe('300');
+    expect(response.headers.get('x-ratelimit-remaining')).toBe('295');
     const body = JSON.parse(responseBody) as Record<string, unknown>;
     expect(body).toMatchObject({
       schema_version: 1,
       read_only: true,
       material_action: false,
-      persisted_by_mcf: false,
+      provider_payload_persisted_by_mcf: false,
       evidence_only: true,
       provider_response: {
         protocol: 'MCF_CLOUD_CONTEXT_READ_RESULT_V1',
@@ -241,7 +397,8 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
       disposableRoot,
       sourceRoot,
       pythonExecutable,
-      contextToken,
+      sharedContextToken,
+      cloudIngressToken,
       '/home/',
       'arbitrary-command',
     ]) {
@@ -250,4 +407,52 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     expect(treeFingerprint(disposableRoot)).toBe(disposableBefore);
     expect(directChildPids()).toBe(childrenBefore);
   }, 60_000);
+
+  it('persists only the opaque AppModule abuse counter, never the provider payload', async () => {
+    if (evidenceDatabase === undefined) throw new Error('evidence database unavailable');
+    expect(await databaseSnapshot(evidenceDatabase)).toEqual(nonAbuseDatabaseBefore);
+
+    const columns = await evidenceDatabase.pool.query<{ column_name: string }>(`
+      select "column_name"
+      from "information_schema"."columns"
+      where "table_schema" = 'public' and "table_name" = 'abuse_rate_limits'
+      order by "ordinal_position"
+    `);
+    expect(columns.rows.map(({ column_name: columnName }) => columnName)).toEqual([
+      'key_hash',
+      'policy',
+      'window_started_at',
+      'request_count',
+      'updated_at',
+    ]);
+
+    const counters = await evidenceDatabase.pool.query<AbuseCounterRow>(`
+      select "key_hash", "policy", "window_started_at", "request_count", "updated_at"
+      from "abuse_rate_limits"
+      order by "policy", "window_started_at"
+    `);
+    expect(counters.rows).toHaveLength(1);
+    expect(counters.rows[0]).toMatchObject({
+      key_hash: createHmac('sha256', rateLimitSecret).update('ip:127.0.0.1').digest('hex'),
+      policy: 'read',
+      request_count: 5,
+    });
+    const renderedCounters = JSON.stringify(counters.rows);
+    const renderedLogs = runtimeLogs.join('\n');
+    for (const forbidden of [
+      sharedContextToken,
+      cloudIngressToken,
+      disposableRoot,
+      sourceRoot,
+      '/etc',
+      'context.get',
+      'provider_response',
+      'arbitrary-command',
+    ]) {
+      if (forbidden !== undefined) {
+        expect(renderedCounters).not.toContain(forbidden);
+        expect(renderedLogs).not.toContain(forbidden);
+      }
+    }
+  });
 });

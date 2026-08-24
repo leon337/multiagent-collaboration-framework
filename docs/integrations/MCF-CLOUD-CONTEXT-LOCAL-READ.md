@@ -10,9 +10,16 @@ This adapter does **not** connect to NODE-01, SSH, the VPS, staging or productio
 turn the remote `cloud.workspace.g2a.read` capability into a live connection. Operational Cloud
 state remains `LIVE_REQUIRED` until separately observed through its own authorized transport.
 
-The endpoint is disabled when either `MCF_CONTEXT_READ_TOKEN` or
-`MCF_CLOUD_CONTEXT_READ_CONFIG_JSON` is absent or invalid. A successful response is marked
-`read_only: true`, `material_action: false`, `persisted_by_mcf: false` and `evidence_only: true`.
+The endpoint has its own ingress secret and accepts it only through
+`x-mcf-cloud-context-token`. `MCF_CLOUD_CONTEXT_INGRESS_TOKEN` must be 32–4096 characters and must
+differ from `MCF_CONTEXT_READ_TOKEN`, the key used by recovery/capabilities clients such as
+TriView. Reusing the general Context token disables the Cloud adapter; presenting that token at
+either header never opens this route.
+
+The endpoint is disabled when its dedicated token or `MCF_CLOUD_CONTEXT_READ_CONFIG_JSON` is
+absent or invalid. A successful response is marked `read_only: true`, `material_action: false`,
+`provider_payload_persisted_by_mcf: false` and `evidence_only: true`. The narrower name distinguishes
+provider-payload persistence from the AppModule's expected HMAC abuse counter.
 
 ## Fixed request
 
@@ -89,7 +96,8 @@ all 13 provenance digests.
 
 Any drift, symlink, invalid schema, response mismatch, stderr output, non-zero exit, timeout or
 limit excess fails closed. Public errors never include the configured root, executable, child
-output, request token or raw provider response. Responses use `Cache-Control: private, no-store`.
+output, either ingress token or raw provider response. Responses use
+`Cache-Control: private, no-store`.
 
 ## Real local E2E
 
@@ -101,12 +109,23 @@ VPS or SSH.
 MCF_CLOUD_CONTEXT_E2E_SOURCE_ROOT=/absolute/path/to/cloud-feature-worktree \
 MCF_CLOUD_CONTEXT_E2E_SOURCE_REVISION=<exact-40-character-SHA> \
 MCF_CLOUD_CONTEXT_TEST_PYTHON=/absolute/copies-venv/bin/python3.12 \
+MCF_CLOUD_CONTEXT_E2E_ADMIN_DATABASE_URL=<synthetic-lab-admin-url> \
 pnpm --filter @rsa/server exec vitest run \
   src/mcf-context/mcf-cloud-context-read.real-e2e.test.ts --reporter=verbose
 ```
 
-The test proves the real sequence MCF HTTP → Nest guard/controller → bounded process adapter →
-Cloud CLI → Cloud schemas/state. It also proves wrong authentication, query/path injection and
-non-GET methods fail before execution; no absolute configuration or token reaches the response;
-the complete source and disposable filesystem fingerprints are unchanged; the child process and
-loopback listener are closed.
+The harness creates a uniquely named database in an already-running shared lab PostgreSQL,
+applies the repository migrations, starts the full `AppModule` on an ephemeral loopback port and
+drops only that database during teardown. It never stops or removes the shared container.
+
+The test proves the real sequence MCF `AppModule` HTTP → global abuse guard → dedicated Cloud
+guard/controller → bounded process adapter → Cloud CLI → Cloud schemas/state. It also proves the
+TriView/general Context key cannot open the Cloud route, query/path injection and non-GET methods
+fail before execution, and no absolute configuration, token or provider payload reaches the
+response, logs or MCF stores. All non-abuse database tables remain byte-semantically identical;
+the only expected MCF write is the opaque HMAC technical counter in `abuse_rate_limits`. The
+complete source and disposable filesystem fingerprints remain unchanged, the child process and
+ephemeral HTTP listener close, and the unique database is absent after teardown.
+
+After teardown the connection is truthfully `DISCONNECTED`, runtime is `INACTIVE`, and the E2E is
+only historical lab evidence. It says nothing about NODE-01/VPS freshness or production.

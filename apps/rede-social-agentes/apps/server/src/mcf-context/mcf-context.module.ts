@@ -4,6 +4,10 @@ import {
   MCF_CONTEXT_READ_TOKEN,
   McfContextReadTokenGuard,
 } from './mcf-context-read-token.guard.js';
+import {
+  MCF_CLOUD_CONTEXT_INGRESS_TOKEN,
+  McfCloudContextIngressTokenGuard,
+} from './mcf-cloud-context-ingress-token.guard.js';
 import { McfCloudContextReadController } from './mcf-cloud-context-read.controller.js';
 import { McfCloudContextReadService } from './mcf-cloud-context-read.service.js';
 import { McfCapabilityRegistryApiService } from './mcf-capability-registry-api.service.js';
@@ -34,6 +38,11 @@ import { McfContextRecoveryController } from './mcf-context-recovery.controller.
       provide: MCF_CONTEXT_READ_TOKEN,
       useFactory: () => process.env.MCF_CONTEXT_READ_TOKEN ?? '',
     },
+    {
+      provide: MCF_CLOUD_CONTEXT_INGRESS_TOKEN,
+      useFactory: () => process.env.MCF_CLOUD_CONTEXT_INGRESS_TOKEN ?? '',
+    },
+    McfCloudContextIngressTokenGuard,
     McfContextReadTokenGuard,
   ],
   exports: [McfCapabilityRegistryApiService, McfContextRecoveryApiService],

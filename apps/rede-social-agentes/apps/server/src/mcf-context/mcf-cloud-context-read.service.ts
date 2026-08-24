@@ -107,6 +107,16 @@ function exactSourceDigestMap(value: Record<string, string>): boolean {
 export function loadMcfCloudContextReadConfiguration(
   env: NodeJS.ProcessEnv,
 ): McfCloudContextReadConfiguration | null {
+  const ingressToken = env.MCF_CLOUD_CONTEXT_INGRESS_TOKEN;
+  const sharedContextToken = env.MCF_CONTEXT_READ_TOKEN;
+  if (
+    ingressToken === undefined ||
+    ingressToken.length < 32 ||
+    ingressToken.length > 4096 ||
+    ingressToken === sharedContextToken
+  ) {
+    return null;
+  }
   const raw = env.MCF_CLOUD_CONTEXT_READ_CONFIG_JSON;
   if (raw === undefined || Buffer.byteLength(raw, 'utf8') > MAX_CONFIGURATION_BYTES) return null;
 
@@ -398,7 +408,7 @@ export class McfCloudContextReadService {
       schema_version: 1,
       read_only: true,
       material_action: false,
-      persisted_by_mcf: false,
+      provider_payload_persisted_by_mcf: false,
       evidence_only: true,
       provider_response: providerResponse,
     };

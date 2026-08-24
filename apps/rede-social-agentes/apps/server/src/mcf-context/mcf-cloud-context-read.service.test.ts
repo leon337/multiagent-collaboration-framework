@@ -35,6 +35,8 @@ const temporaryDirectories: string[] = [];
 const pythonExecutable = realpathSync(
   process.env.MCF_CLOUD_CONTEXT_TEST_PYTHON ?? '/usr/bin/python3',
 );
+const cloudIngressToken = 'cloud-context-ingress-token-for-service-test-0001';
+const sharedContextToken = 'shared-context-read-token-for-service-test-0001';
 
 function digest(value: Buffer | string): string {
   return createHash('sha256').update(value).digest('hex');
@@ -257,6 +259,8 @@ describe('McfCloudContextReadService', () => {
     expect(
       loadMcfCloudContextReadConfiguration({
         MCF_CLOUD_CONTEXT_READ_CONFIG_JSON: JSON.stringify(valid),
+        MCF_CLOUD_CONTEXT_INGRESS_TOKEN: cloudIngressToken,
+        MCF_CONTEXT_READ_TOKEN: sharedContextToken,
       }),
     ).toEqual(valid);
 
@@ -265,6 +269,16 @@ describe('McfCloudContextReadService', () => {
     expect(
       loadMcfCloudContextReadConfiguration({
         MCF_CLOUD_CONTEXT_READ_CONFIG_JSON: JSON.stringify(incomplete),
+        MCF_CLOUD_CONTEXT_INGRESS_TOKEN: cloudIngressToken,
+        MCF_CONTEXT_READ_TOKEN: sharedContextToken,
+      }),
+    ).toBeNull();
+
+    expect(
+      loadMcfCloudContextReadConfiguration({
+        MCF_CLOUD_CONTEXT_READ_CONFIG_JSON: JSON.stringify(valid),
+        MCF_CLOUD_CONTEXT_INGRESS_TOKEN: sharedContextToken,
+        MCF_CONTEXT_READ_TOKEN: sharedContextToken,
       }),
     ).toBeNull();
 
@@ -289,7 +303,7 @@ describe('McfCloudContextReadService', () => {
       schema_version: 1,
       read_only: true,
       material_action: false,
-      persisted_by_mcf: false,
+      provider_payload_persisted_by_mcf: false,
       evidence_only: true,
       provider_response: {
         status: 'PASS',
