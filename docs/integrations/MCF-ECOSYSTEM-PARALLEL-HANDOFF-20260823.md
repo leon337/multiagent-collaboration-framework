@@ -1,9 +1,9 @@
 # Handoff paralelo — integração do ecossistema MCF
 
 Data do closeout: 2026-08-24
-Base MCF deste closeout: `main@efe5164290d56f22023f07de073e2ad7c027fb95`
+Base MCF definitiva: `main@2dc4584c4be186b5cdf131105b810610a9cf620a`
 Checkpoint de código testado: `e646527fcb098d22923d64021aefe4dea9993ed3`, agora ancestral do `main`
-Estado: `PR_160_MERGED__CHECKS_7_OF_7_PASS__STAGING_EXACT_SHA_DEPLOYED`
+Estado: `CLOSEOUT_COMPLETE__PR_161_MERGED__STAGING_EXACT_SHA_DEPLOYED__RECOVERY_4_OF_4_PASS`
 
 ## Objetivo e limite
 
@@ -38,15 +38,15 @@ deploys de produção e zero acesso VPS/SSH.
 
 | Repositório      | Target seguro                        | Evidência integrada                                                                                              | Estado factual                                                                                                                                                                                               |
 | ---------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| MCF              | `main`                               | checkpoint `e646527f`; PR #160, merge `efe5164`; 7/7 checks; staging exact SHA `DEPLOYED` no run `32685810702`   | CF-2 e pontes read-only integrados; produção `439da7b` preservada; closeout da Capsule MCF é o próximo gate                                                                                                  |
+| MCF              | `main`                               | checkpoint `e646527f`; PR #161, merge `2dc4584`; 7/7 checks; staging exact SHA `DEPLOYED` no run `32688775406`   | closeout concluído; recovery final 4/4 PASS; produção `439da7b` preservada e workflow produtivo com zero runs                                                                                                |
 | Cognitive Ledger | `design/cognitive-ledger-foundation` | baseline PR #2/`e0e715b`; sync semântico PR #3, merge `a64cfc05f83567f624bbda70288310f56a7264e8`                 | provider zero-cost/read-only sincronizado, CI verde e runtime externo `DISCONNECTED/INACTIVE`                                                                                                                |
 | TriView          | `release/1.0.0a4`                    | cockpit PR #77/`5013ffeb`; sync semântico PR #78, merge `09a361d761adf1e2e614d23718b84776c365cacc`               | Capsule reconciliada; cockpit continua GET-only/evidence-only e a R7 ampla permanece separada                                                                                                                |
 | Cloud            | `mcf/mission-001-control-bridge-g1`  | baseline PR #26/`dbd772a6`; sync PR #27, merge `38cd22e0a814bdf4957edcf5bb30506a4810bda0`; local 21/21 + 396/396 | jobs remotos `NOT_EXECUTED_EXTERNAL_BILLING_GATE`/zero steps; G2-A remoto `NOT_AUTHORIZED/DISCONNECTED/UNKNOWN/LIVE_REQUIRED`; G2-B `NOT_AUTHORIZED/DISCONNECTED/BLOCKED/LIVE_REQUIRED`; Tasks 9/10 fechadas |
 
-O `main` do MCF contém o audit de recuperação de 2026-08-23 em `f52485d` e o merge do PR #160 em
-`efe5164`. O PR #151 foi marcado automaticamente como `MERGED` pela ancestralidade desse merge. A
-composição canônica de **29 agentes** permanece preservada. A proposta concorrente do PR #159 não
-foi incorporada por este trabalho.
+O `main` do MCF contém o audit de recuperação de 2026-08-23 em `f52485d`, a integração do PR #160
+e o closeout do PR #161 em `2dc4584`. O PR #151 foi marcado automaticamente como `MERGED` pela
+ancestralidade do PR #160. A composição canônica de **29 agentes** permanece preservada. A
+proposta concorrente do PR #159 não foi incorporada por este trabalho.
 
 ## Evidência comprovada
 
@@ -57,7 +57,7 @@ foi incorporada por este trabalho.
 - recuperação cross-repository com provenance qualificada;
 - freshness Git local estritamente read-only e fail-closed;
 - CF-2 recovery: `IMPLEMENTED_AND_VERIFIED_IN_BRANCH` no checkpoint testado `e646527f`, agora
-  ancestral do `main@efe5164`;
+  ancestral do `main@2dc4584`;
 - baseline estrutural de recovery: **4/4 projetos recuperados com PASS** antes do sync semântico;
 - `GET /v1/mcf/context/recovery` e `GET /v1/mcf/context/capabilities`;
 - token de Context dedicado, separado do runtime, e boundary desabilitado sem configuração;
@@ -66,35 +66,51 @@ foi incorporada por este trabalho.
 - audit de recuperação do ecossistema preservado em `f52485d`.
 
 O baseline 4/4 comprova que Registry, contratos, proveniência, freshness e as Capsules anteriores
-ao sync eram estruturalmente recuperáveis. Ledger, TriView e Cloud já concluíram a sincronização
-semântica pós-main; isso **não** antecipa o novo resultado. O recovery estrutural 4/4 ainda será
-repetido contra as quatro Capsules pós-sync depois do closeout da Capsule MCF.
+ao sync eram estruturalmente recuperáveis. Depois do sync semântico e do closeout MCF, o recovery
+estrutural final repetiu essa prova contra as quatro Capsules atuais e passou 4/4.
 
 No HEAD consolidado `e646527f`, o gate completo passou: migrations 2x PASS com 30 registros;
 `pnpm verify` exit 0; format/lint/typecheck/build PASS; 38 ops + 16 contracts + 5 web + 884
 server = **943 testes aprovados**, 3 real-Cloud E2E pulados por design e 0 falhas. O
 `pnpm audit` de produção em nível high passou com 0 vulnerabilidades conhecidas. Esse checkpoint
-de código é ancestral do merge `efe5164`; a evidência específica de integração e ambiente vem do
-PR #160, dos checks e dos gates pós-merge abaixo, não do teste local isolado.
+de código é ancestral do `main@2dc4584`; a evidência específica de integração e ambiente vem dos
+PRs #160/#161, dos checks e dos gates pós-merge abaixo, não do teste local isolado.
 
-### MCF — merge, staging e boundaries pós-merge comprovados
+### MCF — closeout, staging e boundaries pós-merge comprovados
 
-- PR #160 mergeado no `main` em `efe5164290d56f22023f07de073e2ad7c027fb95` após **7/7 checks**;
-- Production Readiness pós-merge PASS no run `32685810700` e Documentation Validation PASS no run
-  `32685810708`;
+- PR #161 mergeado no `main` em `2dc4584c4be186b5cdf131105b810610a9cf620a` após **7/7 checks**;
+- Production Readiness e Documentation Validation pós-merge PASS;
 - staging fez checkout do SHA exato e terminou `DEPLOYED`, com readiness/version PASS, no run
-  `32685810702`;
-- o roadmap público Vercel correspondeu ao arquivo de `main@efe5164` pelo SHA-256
-  `5d95e38b841e324f1b91848441492de1ffd0454becfc1c22fdbcbaf5cf1fca0e`;
-- runtime de produção preservado em `439da7b6479718f6545144954937b8c4358d7c46`, zero novos deploys
-  produtivos e zero acesso VPS/SSH;
-- workflows RC2 `32685941191` e RC3 `32685941203` concluíram como NOOP, sem mover as identidades
+  `32688775406`;
+- o roadmap público Vercel correspondeu ao arquivo de `main@2dc4584` pelo SHA-256
+  `0ac09ccd2ead8fb592a51e9407def07d5edafc6e43dbaee892915a4497728d47`;
+- runtime de produção preservado em `439da7b6479718f6545144954937b8c4358d7c46`, workflow produtivo
+  com zero runs e zero acesso VPS/SSH;
+- workflows RC2 `32688887618` e RC3 `32688887658` concluíram como NOOP, sem mover as identidades
   imutáveis;
-- PR #151 ficou `MERGED` automaticamente por ancestry no mesmo merge `efe5164`.
+- PR #151 ficou `MERGED` automaticamente por ancestry do PR #160.
 
 Esses fatos comprovam `main`, staging e a publicação documental estática. Eles não conectam Ledger
 ou Cloud a runtime externo, não promovem o MCF para produção e não autorizam VPS, SSH, escrita,
 Tasks 9/10, G2-B ativo ou R7 ampla.
+
+### Recovery estrutural final pós-sync
+
+Entre `2026-08-24T04:14:24.044Z` e `2026-08-24T04:14:24.195Z`, o recovery definitivo terminou
+**4/4 `RECOVERED`**:
+
+| Projeto          | Revisão recuperada | Claims | Sources | Warnings | Boundary                                            |
+| ---------------- | ------------------ | -----: | ------: | -------: | --------------------------------------------------- |
+| MCF              | `2dc4584`          |     17 |       6 |        0 | read_only/evidence_only true; material_action false |
+| Cognitive Ledger | `a64cfc`           |     17 |       6 |        0 | read_only/evidence_only true; material_action false |
+| TriView          | `09a361`           |     17 |       6 |        0 | read_only/evidence_only true; material_action false |
+| Cloud            | `38cd22e`          |     17 |       6 |        0 | read_only/evidence_only true; material_action false |
+
+Cada revisão correspondeu ao HEAD esperado, com worktree limpa e referência live exata. O PASS
+não altera autoridade: Ledger e Cloud local continuam `DISCONNECTED/INACTIVE`; G2-A remoto segue
+`NOT_AUTHORIZED/DISCONNECTED/UNKNOWN/LIVE_REQUIRED`; G2-B segue
+`NOT_AUTHORIZED/DISCONNECTED/BLOCKED/LIVE_REQUIRED`. A evidência completa está em
+[`MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md`](evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md).
 
 ### Cognitive Ledger — provider e adapter MCF comprovados em laboratório
 
@@ -110,7 +126,7 @@ Provider:
 - CI do PR e pós-merge aprovadas com E2E real.
 
 Adapter MCF final na branch histórica `f3ba9a0` (núcleo de hardening em `43ba406`), incorporado ao
-checkpoint `e646527f` e, por ancestry, ao `main@efe5164`:
+checkpoint `e646527f` e, por ancestry, ao `main@2dc4584`:
 
 - rota `POST /v1/mcf/context/ledger/query`: POST transporta uma consulta estruturada e não
   concede mutação;
@@ -140,7 +156,7 @@ mcf_to_ledger_final_hardening:
   ingress_token: DEDICATED_AND_PAIRWISE_DISTINCT
   e2e: REAL_APPMODULE_TO_LEDGER_LAB_PASS
   allowed_local_effect: ABUSE_PROTECTION_TECHNICAL_COUNTER_WITHOUT_PAYLOAD
-  main_status: MERGED_PR_160_AT_EFE5164
+  main_status: CLOSEOUT_MERGED_PR_161_AT_2DC4584
   external_connection: DISCONNECTED
   activation: INACTIVE
 ```
@@ -204,7 +220,7 @@ mcf_to_cloud_real_adapter:
   evidence_closure: 425e258
   default_activation: DISABLED
   vps_freshness: NOT_OBSERVED_LIVE_REQUIRED
-  main_status: MERGED_PR_160_AT_EFE5164
+  main_status: CLOSEOUT_MERGED_PR_161_AT_2DC4584
   activation: INACTIVE
   remote_capability:
     id: cloud.workspace.g2a.read
@@ -238,21 +254,20 @@ Controles comprovados da ponte real:
 6. Git/filesystem ficam idênticos, não há persistência e o processo é limpo;
 7. capability permanece restrito a laboratório e não afirma freshness da VPS.
 
-## Ordem de consolidação final
+## Consolidação final concluída
 
-O baseline estrutural 4/4, o full verify e os gates externos de integração já passaram. A sequência
-restante é:
+Todos os gates desta missão passaram na ordem prevista:
 
 1. **Concluído:** migrations 2x, `pnpm verify` e audit prod/high no checkpoint `e646527f`;
-2. **Concluído:** PR #160, 7/7 checks e merge `efe5164` no `main`; PR #151 auto-mergeado por
-   ancestry;
-3. **Concluído:** staging exact-SHA `DEPLOYED`, readiness/docs PASS, runtime prod/VPS intactos,
-   RC2/RC3 NOOP e roadmap estático Vercel com hash correspondente;
+2. **Concluído:** PR #160 integrou o ecossistema; PR #161 fechou o MCF em `2dc4584` após 7/7
+   checks; PR #151 auto-mergeado por ancestry;
+3. **Concluído:** staging exact-SHA `DEPLOYED` no run `32688775406`, readiness/docs PASS, runtime
+   prod/VPS intactos, RC2/RC3 NOOP e roadmap estático Vercel com hash correspondente;
 4. **Concluído:** sync semântico das Capsules dos providers pelos PRs Ledger #3, TriView #78 e
    Cloud #27;
-5. **Próximo:** executar o closeout MCF nesta branch, incluindo sua própria Capsule/documentação;
-6. **Pendente:** repetir o recovery estrutural **4/4 pós-sync** contra as quatro Capsules e
-   registrar o resultado; este é um gate novo e não herda o PASS do baseline anterior.
+5. **Concluído:** closeout da Capsule/documentação MCF pelo PR #161;
+6. **Concluído:** recovery estrutural **4/4 pós-sync**, com 17 claims/6 sources/0 warnings por
+   projeto e todos os boundaries read-only preservados.
 
 ## Checklist de retomada
 
@@ -270,10 +285,11 @@ restante é:
 - [x] Capability/roadmap/handoff atualizados com os SHAs finais Ledger e Cloud na branch.
 - [x] Gate completo no `e646527f`: migrations 2x/30 registros; verify exit 0; 943 aprovados,
       3 real-Cloud E2E skips por design, 0 falhas; audit prod/high com 0 vulnerabilidades.
-- [x] PR MCF #160 mergeado em `efe5164` após 7/7 checks; PR #151 auto-mergeado por ancestry.
-- [x] Staging exact-SHA `DEPLOYED` no run `32685810702`; readiness/docs PASS; produção preservada
-      em `439da7b`, 0 deploy produtivo, 0 VPS/SSH e RC2/RC3 NOOP.
-- [x] Roadmap estático Vercel conferido por hash contra `main@efe5164`.
+- [x] PR MCF #161 mergeado em `2dc4584` após 7/7 checks; PR #151 auto-mergeado por ancestry do
+      PR #160.
+- [x] Staging exact-SHA `DEPLOYED` no run `32688775406`; readiness/docs PASS; produção preservada
+      em `439da7b`, workflow produtivo com 0 runs, 0 VPS/SSH e RC2/RC3 NOOP.
+- [x] Roadmap estático Vercel conferido por hash contra `main@2dc4584`.
 - [x] Capsules dos providers sincronizadas: Ledger PR #3/`a64cfc05`, TriView PR #78/`09a361d7` e
       Cloud PR #27/`38cd22e0`.
 - [x] Cloud pós-sync: jobs remotos `NOT_EXECUTED_EXTERNAL_BILLING_GATE`/zero steps; local 21/21 +
@@ -282,5 +298,6 @@ restante é:
       `NOT_AUTHORIZED/DISCONNECTED/UNKNOWN/LIVE_REQUIRED`; G2-B
       `NOT_AUTHORIZED/DISCONNECTED/BLOCKED/LIVE_REQUIRED`; Tasks 9/10, VPS/SSH, produção e R7 ampla
       permanecem fechados.
-- [ ] Executar o closeout MCF e atualizar sua Capsule/documentação.
-- [ ] Repetir e registrar o recovery estrutural 4/4 pós-sync contra as quatro Capsules.
+- [x] Closeout da Capsule/documentação MCF concluído pelo PR #161.
+- [x] Recovery final 4/4 pós-sync: todos `RECOVERED`, 17 claims/6 sources/0 warnings por projeto,
+      `read_only`/`evidence_only` true, `material_action` false e HEAD/clean/live exatos.

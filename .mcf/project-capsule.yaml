@@ -9,8 +9,8 @@ lifecycle: ACTIVE
 
 snapshot:
   current_workstream: ecosystem-context-fabric-readonly-lab
-  current_status: FOUR_REPOSITORY_CONTEXT_FABRIC_AND_PROVIDER_READ_ADAPTERS_LAB_PASS__MAIN_MERGED__STAGING_EXACT_SHA_VERIFIED__PROVIDER_CAPSULES_SYNCED
-  next_action: Run and record the final read-only 4/4 recovery against the post-sync provider and MCF Capsules; keep local provider capabilities disconnected and inactive, remote G2-A UNKNOWN, and G2-B BLOCKED unless a new human gate authorizes activation.
+  current_status: FOUR_REPOSITORY_CONTEXT_FABRIC_AND_PROVIDER_READ_ADAPTERS_LAB_PASS__MAIN_AND_STAGING_VERIFIED__PROVIDER_CAPSULES_SYNCED__FINAL_READONLY_RECOVERY_4_OF_4_PASS
+  next_action: Treat the versioned 4/4 Receipt as read-only evidence; require a fresh recovery before any later operational-currentness claim and a new human gate before provider activation or material work.
   blockers:
     - cloud.context.local.read and cognitive-ledger.memory.read remain DISCONNECTED, INACTIVE, HISTORICALLY_VERIFIED, and LIVE_REQUIRED after lab teardown.
     - cloud.workspace.g2a.read remains NOT_AUTHORIZED, DISCONNECTED, UNKNOWN, and LIVE_REQUIRED; cloud.workspace.g2b.write, Tasks 9 and 10 remain NOT_AUTHORIZED, DISCONNECTED, BLOCKED, and LIVE_REQUIRED.
@@ -20,4 +20,4 @@ snapshot:
 sources:
   current_state: docs/MCF-CURRENT-STATE.md
 
-observed_at: "2026-08-24T03:38:21Z"
+observed_at: "2026-08-24T04:14:24.195Z"
