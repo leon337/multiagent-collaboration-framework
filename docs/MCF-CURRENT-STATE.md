@@ -2,9 +2,10 @@
 
 **Classificação:** `CURRENT_IMPLEMENTED`  
 **Natureza:** mapa canônico de orientação; valores voláteis devem ser confirmados no GitHub/provider live  
-**Reconciliação:** 2026-08-20  
-**Reconciliação local adicional do boundary CF-0/CF-1:** 2026-08-23
-**Baseline desta reconciliação:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
+**Reconciliação-base:** 2026-08-20
+**Reconciliação adicional do ecossistema:** 2026-08-23
+**Baseline histórico de estabilização:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
+**Main observado pela integração:** `f52485d` (audit de recuperação de 2026-08-23)
 
 ## 1. Regra de fonte de verdade
 
@@ -128,6 +129,22 @@ Aplicação hospedeira:
 - provider de produção desacoplado de alterações comuns em `main` por Auto-Deploy OFF;
 - GitHub Environment `production` como boundary de execução de produção.
 
+### `CURRENT_IMPLEMENTED` no boundary Context Fabric
+
+- CF-0/CF-1 mínimo mergeado no `main` pelo PR #153, merge
+  `876e9f565671578c04be194c729c8d4e7b0080d9`;
+- Registry e Capsule repository-native, contratos e schemas públicos;
+- recuperação cross-repository dos quatro projetos com provenance e freshness Git local;
+- `GET /v1/mcf/context/recovery` e `GET /v1/mcf/context/capabilities`, protegidos por token
+  dedicado e desabilitados sem configuração;
+- Capability Registry com implementação, conexão, autorização, runtime e verificação separados;
+- adapter MCF → Cognitive Ledger read-only pré-hardening, com E2E real de laboratório e zero API
+  paga, integrado na branch `codex/ecosystem-context-integration@28eafbb`; o contrato final de
+  três operações, token ingress próprio e E2E pelo `AppModule` ainda está em revisão.
+
+Os itens posteriores ao CF-0/CF-1 permanecem na branch de integração até PR, checks e merge
+próprios. Eles não devem ser descritos como presentes no `main`, staging ou produção.
+
 ## 6. Governança de produção atual
 
 O PR #145 substituiu o histórico divergente do PR #143 e resolveu a Issue #140.
@@ -210,33 +227,62 @@ As ideias de ZRCL, Capability Registry, Artifact System e Validation Suite podem
 
 Não promover esses componentes, nem a arquitetura integral do checkpoint, a `CURRENT_IMPLEMENTED` sem decisão e evidência próprias.
 
-### Context Fabric CF-0 + CF-1 mínimo — boundary local em revisão
+### Context Fabric e integração dos quatro repositórios — boundary em consolidação
 
-Em 2026-08-23, a implementação autorizada de CF-0 + CF-1 mínimo foi concluída e verificada na branch isolada `codex/mcf-context-fabric-cf0-cf1`, sobre o Gate 0 em `027405348bec031edae0ac756643979e93a94452`.
+O CF-0/CF-1 mínimo deixou de ser apenas um candidato local: foi revisado e mergeado no `main`
+pelo PR #153, merge `876e9f565671578c04be194c729c8d4e7b0080d9`. A branch isolada
+`codex/ecosystem-context-integration@28eafbb274f33925d7c6fa361cbd8aa6767e11c7`
+acrescenta, sem tornar o checkpoint arquitetural inteiro canônico:
 
-O boundary materializado contém somente:
-
-- contratos públicos aditivos `McfContext*` e quatro JSON Schemas isolados;
-- Registry canônico do MCF e Capsule local versionados no Git;
-- loader YAML estritamente read-only, resolução determinística de projeto, Truth Contracts e reconciliação fail-closed;
-- Context Recovery Receipt declaradamente `evidence_only`;
-- testes de contrato, schema, fixture, loader, resolução, verdade e recuperação.
+- Registry de quatro projetos e leitura de suas Capsules;
+- recuperação cross-repository, provenance qualificada e freshness Git local fail-closed;
+- endpoints protegidos de recovery e capabilities;
+- adapter MCF → Cognitive Ledger read-only, disabled-by-default e com schemas estritos;
+- evidência real pré-hardening MCF → MCP → Edge/Auth → PostgREST → PostgreSQL/pgvector, sem
+  persistência do payload de memória no MCF e com 0 embeddings/0 chamadas pagas.
 
 Estado preciso deste snapshot:
 
 ```yaml
-context_fabric_cf0_cf1_minimum:
-  local_branch_status: IMPLEMENTED_AND_LOCALLY_VERIFIED
-  main_status: NOT_MERGED
-  push_status: NOT_PUSHED
+ecosystem_integration_2026_08_23:
+  mcf_main_audit: f52485d
+  agent_roster: 29
+  unmerged_roster_pr_159_included: false
+  cf0_cf1:
+    main_status: MERGED_PR_153
+    merge_sha: 876e9f565671578c04be194c729c8d4e7b0080d9
+  integration_branch:
+    revision: 28eafbb274f33925d7c6fa361cbd8aa6767e11c7
+    cf2_registry_recovery: IMPLEMENTED_IN_BRANCH
+    mcf_to_ledger: REAL_READONLY_LAB_E2E_PASS_PRE_HARDENING
+    mcf_to_ledger_final_contract: PENDING_THREE_OPERATIONS_DEDICATED_INGRESS_TOKEN_APPMODULE_E2E
+    mcf_to_cloud: IN_PROGRESS_NOT_YET_CLAIMED
+  provider_merges:
+    cognitive_ledger: e0e715b0105abe0bc636d198e7ebb137d7de9bd7
+    triview_release: 5013ffebd1c7efe8fb7cfd2d41f16e5efec49194
+    cloud_lab_branch: dbd772a6c37452008b7c8debd58d2782127514db
+  paid_ai_api_calls_observed: 0
   production_status: NOT_AUTHORIZED_NOT_TOUCHED
-  runtime_wiring: NONE
-  provider_or_external_mutation: NONE
-  database_or_cache_canonicalization: NONE
-  live_provider_adapters: DEFERRED_CF2
+  vps_or_node_01_status: NOT_ACCESSED_NOT_CLAIMED
 ```
 
-Essa implementação local não torna todo o `ARCHITECTURAL_CHECKPOINT_004` canônico, não altera `main` e não autoriza merge, release, deploy ou produção. Fatos operacionais marcados `LIVE_REQUIRED` continuam exigindo verificação na fonte live proprietária.
+O Ledger PR #2 foi mergeado no branch `design/cognitive-ledger-foundation`; o TriView PR #77 foi
+mergeado em `release/1.0.0a4`; e o Cloud PR #26 foi mergeado no branch lab
+`mcf/mission-001-control-bridge-g1`. Esses targets não equivalem a produção.
+
+No Ledger, o provider oferece quatro tools read-only, mas o consumidor MCF final será reduzido às
+três operações padrão e terá token de ingresso separado do TriView. O payload de memória não deve
+ser persistido no MCF; um contador técnico de abuse protection sem conteúdo pode ser o único
+efeito local esperado. O E2E final deve atravessar o `AppModule` real.
+
+No Cloud, 396/396 testes locais e 13/13 marcadores E2E da fixture passaram. Os jobs remotos não
+executaram nenhum step por um gate externo de cobrança da conta GitHub; sua classificação é
+`NOT_EXECUTED_EXTERNAL_BILLING_GATE`, não falha do código. O E2E ainda usa uma fixture de cliente
+MCF, então a ponte real MCF → Cloud permanece em andamento até SHA e E2E próprios.
+
+Nenhuma dessas evidências autoriza Tasks 9/10, G2-B ativo, escrita externa, NODE-01/VPS, R7 ampla,
+release ou produção. Fatos operacionais marcados `LIVE_REQUIRED` continuam exigindo verificação
+na fonte live proprietária.
 
 ## 9. Mission Control
 
@@ -279,6 +325,8 @@ GOV-0/GOV-1 design autorizado anteriormente não implica autorização de merge,
 
 - porta pública: `README.md`
 - estado atual: `docs/MCF-CURRENT-STATE.md`
+- roadmap do ecossistema: `docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html`
+- handoff da integração: `docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md`
 - índice documental: `docs/README.md`
 - runtime: `docs/runtime/` + `apps/rede-social-agentes/apps/server/src/mcf-runtime/`
 - governança: `docs/governanca/`, `docs/protocols/`, `docs/decisions/`

@@ -169,18 +169,18 @@ Skills atuais:
 
 ## Releases e marcos
 
-| Marco | Classificação | Estado |
-|---|---|---|
-| Runtime persistente / evidence model | `CURRENT_IMPLEMENTED` | integrado |
-| Gate C — provider write | `HISTORICAL` + capacidade preservada | concluído |
-| Gate D — staging/deploy | `HISTORICAL` + capacidade preservada | concluído |
-| Gate E | `HISTORICAL` | concluído |
-| `v1.0.0-RC1` | `HISTORICAL` | prerelease preservada |
-| `v1.0.0-RC2` | `HISTORICAL` | prerelease preservada |
-| `v1.0.0-RC3` | `HISTORICAL` + identidade preservada | `7f741e10…` |
-| `v1.0.0` | identidade durável | `7f741e10…` |
-| `v1.1.0` | identidade durável | `5d79f488…` |
-| governança de produção pós-v1.1 | `CURRENT_IMPLEMENTED` | #140 resolvida via #145 |
+| Marco                                | Classificação                        | Estado                  |
+| ------------------------------------ | ------------------------------------ | ----------------------- |
+| Runtime persistente / evidence model | `CURRENT_IMPLEMENTED`                | integrado               |
+| Gate C — provider write              | `HISTORICAL` + capacidade preservada | concluído               |
+| Gate D — staging/deploy              | `HISTORICAL` + capacidade preservada | concluído               |
+| Gate E                               | `HISTORICAL`                         | concluído               |
+| `v1.0.0-RC1`                         | `HISTORICAL`                         | prerelease preservada   |
+| `v1.0.0-RC2`                         | `HISTORICAL`                         | prerelease preservada   |
+| `v1.0.0-RC3`                         | `HISTORICAL` + identidade preservada | `7f741e10…`             |
+| `v1.0.0`                             | identidade durável                   | `7f741e10…`             |
+| `v1.1.0`                             | identidade durável                   | `5d79f488…`             |
+| governança de produção pós-v1.1      | `CURRENT_IMPLEMENTED`                | #140 resolvida via #145 |
 
 `latest` e metadados mutáveis da página de Release devem ser lidos live.
 
@@ -191,6 +191,23 @@ Detalhes históricos: [`CHANGELOG.md`](CHANGELOG.md), [`docs/releases/`](docs/re
 O checkpoint [`docs/architecture/ARCHITECTURAL_CHECKPOINT_004.md`](docs/architecture/ARCHITECTURAL_CHECKPOINT_004.md) continua uma arquitetura draft, não canônica e sem autorização de implementação.
 
 ZRCL, Context Fabric, Truth Contracts, Capability Registry, Artifact System e Validation Suite devem ser classificados conforme evidência real do componente; a existência de documentos/propostas não transforma automaticamente esse conjunto em arquitetura canônica implementada.
+
+### Integração do ecossistema em laboratório
+
+O CF-0/CF-1 mínimo foi mergeado no `main` pelo PR #153. A branch
+`codex/ecosystem-context-integration` acrescenta Registry/Capsules dos quatro projetos,
+recuperação read-only, freshness Git local, Capability Registry e um E2E real pré-hardening da
+ponte MCF → Cognitive Ledger sem API paga. O contrato final do adapter Ledger — três operações,
+token ingress próprio e E2E pelo `AppModule` — ainda está em revisão. Cognitive Ledger PR #2,
+TriView PR #77 e Cloud PR #26 foram mergeados em seus targets seguros de design/release/lab.
+
+A ponte **real** MCF → Cloud ainda está em andamento: os 396/396 testes Cloud e 13/13 marcadores
+com fixture não devem ser chamados de conexão real do MCF. O hardening Ledger também precisa de
+SHA/E2E finais. G2-B permanece inativo. Nada dessa integração autoriza produção, VPS/NODE-01,
+escrita externa ou R7 ampla.
+
+Veja o [roadmap visual](docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html) e o
+[handoff factual](docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md).
 
 ## Mission Control
 
@@ -214,21 +231,21 @@ Fonte: [`experimentos/telefone-sem-fio-001/RESULTADO_FINAL.md`](experimentos/tel
 
 ## Mapa rápido
 
-| Pergunta | Fonte |
-|---|---|
-| Qual é o estado atual? | [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md) + GitHub/provider live |
-| Onde está o runtime? | [`apps/rede-social-agentes/apps/server/src/mcf-runtime/`](apps/rede-social-agentes/apps/server/src/mcf-runtime/) |
-| Como o runtime é documentado? | [`docs/runtime/README.md`](docs/runtime/README.md) |
-| Quais skills existem? | [`skills/registry.yaml`](skills/registry.yaml) |
-| Quem são os agentes? | [`docs/agentes/README.md`](docs/agentes/README.md) |
-| Qual é o protocolo operacional? | [`docs/protocols/`](docs/protocols/) |
-| Onde estão as decisões? | [`docs/decisions/`](docs/decisions/) |
-| Onde está a governança? | [`docs/governanca/`](docs/governanca/) |
-| Onde estão PRFs/evidências? | [`artifacts/phases/`](artifacts/phases/) e [`docs/evidence/`](docs/evidence/) |
-| Qual é o histórico de releases? | [`CHANGELOG.md`](CHANGELOG.md) e [`docs/releases/`](docs/releases/) |
-| Onde estão experimentos? | [`experimentos/`](experimentos/) |
-| Onde estão propostas? | [`docs/proposals/`](docs/proposals/) e branches de planning |
-| Qual é o índice completo? | [`docs/README.md`](docs/README.md) |
+| Pergunta                        | Fonte                                                                                                            |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Qual é o estado atual?          | [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md) + GitHub/provider live                                  |
+| Onde está o runtime?            | [`apps/rede-social-agentes/apps/server/src/mcf-runtime/`](apps/rede-social-agentes/apps/server/src/mcf-runtime/) |
+| Como o runtime é documentado?   | [`docs/runtime/README.md`](docs/runtime/README.md)                                                               |
+| Quais skills existem?           | [`skills/registry.yaml`](skills/registry.yaml)                                                                   |
+| Quem são os agentes?            | [`docs/agentes/README.md`](docs/agentes/README.md)                                                               |
+| Qual é o protocolo operacional? | [`docs/protocols/`](docs/protocols/)                                                                             |
+| Onde estão as decisões?         | [`docs/decisions/`](docs/decisions/)                                                                             |
+| Onde está a governança?         | [`docs/governanca/`](docs/governanca/)                                                                           |
+| Onde estão PRFs/evidências?     | [`artifacts/phases/`](artifacts/phases/) e [`docs/evidence/`](docs/evidence/)                                    |
+| Qual é o histórico de releases? | [`CHANGELOG.md`](CHANGELOG.md) e [`docs/releases/`](docs/releases/)                                              |
+| Onde estão experimentos?        | [`experimentos/`](experimentos/)                                                                                 |
+| Onde estão propostas?           | [`docs/proposals/`](docs/proposals/) e branches de planning                                                      |
+| Qual é o índice completo?       | [`docs/README.md`](docs/README.md)                                                                               |
 
 ## Regra de continuidade
 
