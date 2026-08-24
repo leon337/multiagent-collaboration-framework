@@ -3,9 +3,9 @@
 **Classificação:** `CURRENT_IMPLEMENTED`  
 **Natureza:** mapa canônico de orientação; valores voláteis devem ser confirmados no GitHub/provider live  
 **Reconciliação-base:** 2026-08-20
-**Reconciliação adicional do ecossistema:** 2026-08-23
+**Reconciliação adicional do ecossistema:** 2026-08-24
 **Baseline histórico de estabilização:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
-**Main observado pela integração:** `f52485d` (audit de recuperação de 2026-08-23)
+**Main integrado observado:** `efe5164290d56f22023f07de073e2ad7c027fb95` (PR #160 e staging exato)
 
 ## 1. Regra de fonte de verdade
 
@@ -135,7 +135,7 @@ Aplicação hospedeira:
   `876e9f565671578c04be194c729c8d4e7b0080d9`;
 - Registry e Capsule repository-native, contratos e schemas públicos;
 - recuperação cross-repository estrutural dos quatro projetos com provenance e freshness Git
-  local: baseline **4/4 PASS** na branch;
+  local: baseline pré-sync **4/4 PASS**;
 - `GET /v1/mcf/context/recovery` e `GET /v1/mcf/context/capabilities`, protegidos por token
   dedicado e desabilitados sem configuração;
 - Capability Registry com implementação, conexão, autorização, runtime e verificação separados;
@@ -144,8 +144,12 @@ Aplicação hospedeira:
 - adapter MCF → Cloud local read-only, disabled-by-default, com cliente real, processo stdio
   governado, hashes antes/depois e E2E descartável.
 
-Os itens posteriores ao CF-0/CF-1 permanecem na branch de integração até PR, checks e merge
-próprios. Eles não devem ser descritos como presentes no `main`, staging ou produção.
+O conjunto integrado foi mergeado pelo PR #160 em
+`main@efe5164290d56f22023f07de073e2ad7c027fb95`; esse SHA passou em staging. As Capsules dos três
+providers foram sincronizadas nos seus branches seguros. Isso não conecta nem ativa provider,
+não torna evidência histórica current e não autoriza runtime de produção, VPS, SSH ou escrita.
+O closeout da Capsule do MCF e o recovery estrutural 4/4 pós-sync continuam gates versionados
+separados até sua própria evidência.
 
 ## 6. Governança de produção atual
 
@@ -229,12 +233,12 @@ As ideias de ZRCL, Capability Registry, Artifact System e Validation Suite podem
 
 Não promover esses componentes, nem a arquitetura integral do checkpoint, a `CURRENT_IMPLEMENTED` sem decisão e evidência próprias.
 
-### Context Fabric e integração dos quatro repositórios — boundary em consolidação
+### Context Fabric e integração dos quatro repositórios — lab/staging integrado
 
-O CF-0/CF-1 mínimo deixou de ser apenas um candidato local: foi revisado e mergeado no `main`
-pelo PR #153, merge `876e9f565671578c04be194c729c8d4e7b0080d9`. A branch isolada
-`codex/ecosystem-context-integration@e646527fcb098d22923d64021aefe4dea9993ed3`
-acrescenta, sem tornar o checkpoint arquitetural inteiro canônico:
+O CF-0/CF-1 mínimo entrou no `main` pelo PR #153. O checkpoint de código combinado
+`e646527fcb098d22923d64021aefe4dea9993ed3` foi consolidado, documentado e mergeado pelo PR #160
+em `main@efe5164290d56f22023f07de073e2ad7c027fb95`, sem tornar o checkpoint arquitetural inteiro
+canônico. Esse boundary entrega:
 
 - Registry de quatro projetos e leitura de suas Capsules;
 - recuperação cross-repository, provenance qualificada e freshness Git local fail-closed;
@@ -248,27 +252,33 @@ acrescenta, sem tornar o checkpoint arquitetural inteiro canônico:
 - evidência real MCF → processo stdio Cloud em fixture descartável, com integridade pré/pós,
   limites e cleanup.
 
-Estado preciso deste snapshot:
+O PR #160 passou sete checks no HEAD exato. O workflow de staging repetiu smoke, migrações, suíte
+e build, então publicou e verificou exatamente `efe5164290d56f22023f07de073e2ad7c027fb95`.
+Produção permaneceu no baseline anterior e o roadmap público estático foi sincronizado à mesma
+árvore do novo `main`. O GitHub classificou o PR #151 como `MERGED` porque seu HEAD já era
+ancestral do merge consolidado; não houve um segundo merge independente. O PR #159 e sua proposta
+de 49 agentes não entraram no candidato, que preservou os 29 agentes oficiais.
+
+Estado preciso deste snapshot de closeout:
 
 ```yaml
-ecosystem_integration_2026_08_23:
-  mcf_main_audit: f52485d
+ecosystem_integration_2026_08_24:
+  recovery_audit_base: f52485d2bff004df2f1c6b1eb787575d9ad5a8fc
   agent_roster: 29
-  unmerged_roster_pr_159_included: false
+  roster_pr_159_included: false
   cf0_cf1:
     main_status: MERGED_PR_153
     merge_sha: 876e9f565671578c04be194c729c8d4e7b0080d9
-  integration_branch:
-    revision: e646527fcb098d22923d64021aefe4dea9993ed3
-    main_status: NOT_MERGED
-    cf2_registry_recovery: IMPLEMENTED_AND_VERIFIED_IN_BRANCH
-    baseline_structural_recovery: 4_OF_4_PASS
-    provider_capsule_semantic_sync: PENDING_POST_MAIN
+  integrated_mcf:
+    pull_request: 160
+    main_merge: efe5164290d56f22023f07de073e2ad7c027fb95
+    code_checkpoint: e646527fcb098d22923d64021aefe4dea9993ed3
+    checks: PASS_7_OF_7
+    cf2_registry_recovery: IMPLEMENTED_AND_MERGED
+    baseline_structural_recovery_pre_sync: PASS_4_OF_4
     mcf_to_ledger: REAL_READONLY_LAB_E2E_PASS
-    mcf_to_ledger_branch: f3ba9a0
     mcf_to_ledger_code: 43ba406
     mcf_to_cloud: REAL_LOCAL_READONLY_LAB_E2E_PASS
-    mcf_to_cloud_branch: e5ae1f9
     mcf_to_cloud_code: 54fadec
     mcf_to_cloud_closure: 425e258
     migrations_twice: PASS_30_RECORDS
@@ -285,26 +295,51 @@ ecosystem_integration_2026_08_23:
     production_audit_high:
       status: PASS
       known_vulnerabilities: 0
-  provider_merges:
-    cognitive_ledger: e0e715b0105abe0bc636d198e7ebb137d7de9bd7
-    cognitive_ledger_feature_tree: b882d28
-    triview_release: 5013ffebd1c7efe8fb7cfd2d41f16e5efec49194
-    triview_feature_tree: a072cf9
-    cloud_lab_branch: dbd772a6c37452008b7c8debd58d2782127514db
-    cloud_feature_tree: cb97df4
+    staging:
+      workflow_run: 32685810702
+      result: DEPLOYED_EXACT_SHA
+      revision: efe5164290d56f22023f07de073e2ad7c027fb95
+      ready: PASS
+  provider_semantic_sync:
+    cognitive_ledger:
+      pull_request: 3
+      target_merge: a64cfc05f83567f624bbda70288310f56a7264e8
+      ci: PASS
+    triview_workspace:
+      pull_request: 78
+      target_merge: 09a361d761adf1e2e614d23718b84776c365cacc
+      ci: PASS
+    cloud_infrastructure:
+      pull_request: 27
+      target_merge: 38cd22e0a814bdf4957edcf5bb30506a4810bda0
+      local_focused: PASS_21_OF_21
+      local_regression: PASS_396_OF_396
+      github_ci: NOT_EXECUTED_EXTERNAL_BILLING_GATE
+  mcf_capsule_closeout:
+    candidate_branch: codex/ecosystem-capsule-closeout-20260824
+    status: PENDING_PR_CHECKS_MERGE_AND_EXACT_SHA_STAGING
+    structural_recovery_post_sync: PENDING_AFTER_CLOSEOUT
   paid_ai_api_calls_observed: 0
-  runtime_production_status: NOT_AUTHORIZED_NOT_TOUCHED
+  runtime_production:
+    revision: 439da7b6479718f6545144954937b8c4358d7c46
+    ready: PASS
+    deploy_workflow_runs: 0
+    status: NOT_AUTHORIZED_NOT_TOUCHED
   static_vercel_roadmap:
     deployment_class: PRODUCTION
     runtime_or_api: NONE
-    final_public_sync: PENDING
+    integration_public_sync: PASS_BYTE_FOR_BYTE
+    integration_sha256: 5d95e38b841e324f1b91848441492de1ffd0454becfc1c22fdbcbaf5cf1fca0e
+    closeout_public_sync: PENDING
   vps_or_node_01_status: NOT_ACCESSED
   ssh_status: NOT_USED
 ```
 
-O Ledger PR #2 foi mergeado no branch `design/cognitive-ledger-foundation`; o TriView PR #77 foi
-mergeado em `release/1.0.0a4`; e o Cloud PR #26 foi mergeado no branch lab
-`mcf/mission-001-control-bridge-g1`. Esses targets não equivalem a produção.
+As sincronizações semânticas foram versionadas nos branches seguros, não em produção: Ledger PR
+#3 → `a64cfc05`; TriView PR #78 → `09a361d7`; Cloud PR #27 → `38cd22e0`. O Cloud GitHub Actions
+não iniciou runners ou steps por gate externo de billing/spending; isso é
+`NOT_EXECUTED_EXTERNAL_BILLING_GATE`. Os gates locais independentes passaram 21/21 focados e
+396/396 na regressão, sem recomendar compra ou aumento de limite.
 
 No Ledger, o provider continua oferecendo quatro tools read-only, mas o consumidor MCF expõe
 somente `ler_diario`, `buscar_eventos` e `recuperar_contexto`; `ler_fonte_bruta` foi bloqueada
@@ -322,20 +357,18 @@ dependências locais do ambiente verificado; `python -I` e o audit hook reduzem 
 não constituem sandbox de sistema operacional nem prova completa da supply chain. Por isso o
 capability permanece restrito ao laboratório local.
 
-O capability local `cloud.context.local.read` possui evidência histórica de laboratório, mas o
-remoto `cloud.workspace.g2a.read` permanece `NOT_AUTHORIZED`, `DISCONNECTED` e
-`LIVE_REQUIRED`. Tasks 9/10, G2-B ativo, escrita externa, SSH, NODE-01/VPS e runtime de produção
-continuam fora do boundary. A página estática Vercel pertence à classe de deployment
-`Production` da Vercel, porém não contém runtime nem API do MCF. O baseline estrutural de recovery
-já recuperou 4/4 projetos; ele não prova que o texto das Capsules representa o estado pós-main.
-No HEAD `e646527f`, migrations 2x passaram com 30 registros; `pnpm verify` terminou com exit 0;
-38 ops + 16 contracts + 5 web + 884 server somaram 943 testes aprovados, com 3 real-Cloud E2E
-pulados por design e 0 falhas. Format, lint, typecheck e build passaram, e o audit de produção em
-nível high reportou 0 vulnerabilidades conhecidas.
+`cloud.context.local.read` e `cognitive-ledger.memory.read` permanecem `DISCONNECTED`, `INACTIVE`,
+`HISTORICALLY_VERIFIED` e `LIVE_REQUIRED`. `cloud.workspace.g2a.read` permanece `NOT_AUTHORIZED`,
+`DISCONNECTED`, `UNKNOWN` e `LIVE_REQUIRED`; `cloud.workspace.g2b.write` permanece
+`NOT_AUTHORIZED`, `DISCONNECTED`, `BLOCKED` e `LIVE_REQUIRED`. Tasks 9/10, escrita externa, SSH e
+NODE-01/VPS continuam fechados. O cockpit TriView permanece GET-only e evidence-only; a PR #74 e a
+R7 física continuam gates separados.
 
-Ainda faltam, nesta ordem, PR/checks/merge MCF; staging por SHA com runtime de produção/VPS
-intactos e Vercel; sincronização semântica das Capsules nos providers; closeout MCF; e repetição
-do recovery estrutural 4/4 contra as Capsules pós-sync.
+O baseline estrutural anterior recuperou 4/4 projetos, mas ocorreu antes da sincronização
+semântica. Este closeout atualiza a Capsule do MCF e seu source document; depois de PR, checks,
+merge e staging do SHA exato, o recovery estrutural 4/4 deve ser repetido contra os quatro SHAs
+pós-sync. Só esse novo Receipt encerra o gate final, sem conectar provider nem executar ação
+material.
 
 ## 9. Mission Control
 
