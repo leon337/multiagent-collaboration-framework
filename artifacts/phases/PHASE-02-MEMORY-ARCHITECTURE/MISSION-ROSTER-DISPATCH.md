@@ -1,60 +1,63 @@
-# Mission-wide roster dispatch
+# Mission roster dispatch — MCF-MEMORY-LIVE-NEXT-STABLE-001
 
-Mission: `MCF-MEMORY-LIVE-NEXT-STABLE-001`
 Coordinator: Mestre
-State: `CONVOKED / EXECUTION PROVIDER GATED`
-Canonical base: `5fd36516f22f847495906f710d27dfb8976980ad`
+State: `EXECUTOR_POOL_READY / PHASE_02_SELECTED / BILLABLE_RUN_GATE_PENDING`
 
-## Purpose
+## Governance rule
 
-Leandro requires the full official roster of 29 MCF agents to contribute substantive work to this goal. This dispatch records the mission-wide work packets without pretending that queued work has already happened.
+The official roster is maintained as an available pool. Participation is selective by phase. An agent is credited only when a real, distinguishable execution produces its own artifact/evidence.
 
-A row marked `CONVOKED_WAITING_EXECUTOR` is an assignment only. It is **not** execution evidence, not an agent artifact, not a handoff and not participation credit.
+Creating or configuring an agent is not participation. Convocation without work is not participation. Decorative make-work is prohibited.
 
-## Dispatch ledger
+## Executor pool
 
-| # | Agent | Mission work packet | Required agent-owned artifact | State |
-|---:|---|---|---|---|
-| 1 | Léo | phase/release authority gates | evidence-based gate decision(s) | CONVOKED_WAITING_EXECUTOR |
-| 2 | Mestre | contracts, orchestration, ESEV and handoffs | mission/phase contract + orchestration ledger | EXECUTING_COORDINATOR |
-| 3 | Leonardo | product/release acceptance | product acceptance contract | CONVOKED_WAITING_EXECUTOR |
-| 4 | Carlos | future evolution/risks | durable-memory opportunity/risk horizon | CONVOKED_WAITING_EXECUTOR |
-| 5 | Evelyn | experience design coordination | experience decision record | CONVOKED_WAITING_EXECUTOR |
-| 6 | Laura | capture/retrieval UX | memory UX flow | CONVOKED_WAITING_EXECUTOR |
-| 7 | Isabela | visual/state model | cognitive-card visual/state spec | CONVOKED_WAITING_EXECUTOR |
-| 8 | Marina | accessibility/readability | accessibility/readability review | CONVOKED_WAITING_EXECUTOR |
-| 9 | Sofia | system architecture | architecture package + ADRs | CONVOKED_WAITING_EXECUTOR |
-| 10 | Rafael | implementation/integration | implementation design + execution artifacts | CONVOKED_WAITING_EXECUTOR |
-| 11 | Manoel | database/migration | backup/restore/schema/migration package | CONVOKED_WAITING_EXECUTOR |
-| 12 | Renato | testing | validation strategy + executed evidence | CONVOKED_WAITING_EXECUTOR |
-| 13 | Bruno | staging/SRE | deploy/rollback/observability evidence | CONVOKED_WAITING_EXECUTOR |
-| 14 | Ricardo | security | threat model + security findings | CONVOKED_WAITING_EXECUTOR |
-| 15 | Gabriel | Git/release provenance | PR/release provenance package | CONVOKED_WAITING_EXECUTOR |
-| 16 | Carmem | technical documentation | PRF/docs consolidation | CONVOKED_WAITING_EXECUTOR |
-| 17 | Emily | independent audit | evidence-based independent audit | CONVOKED_WAITING_EXECUTOR |
-| 18 | Eduardo | backend/API | capability/API contract + integration evidence | CONVOKED_WAITING_EXECUTOR |
-| 19 | Helena | web/client impact | frontend/host impact review or evidenced no-impact | CONVOKED_WAITING_EXECUTOR |
-| 20 | André | mobile/client portability | mobile/client impact review or evidenced no-impact | CONVOKED_WAITING_EXECUTOR |
-| 21 | Tiago | AI/RAG/embeddings | embedding/search policy + fallback evaluation | CONVOKED_WAITING_EXECUTOR |
-| 22 | Daniela | data quality/lineage | lineage/reconciliation/quality package | CONVOKED_WAITING_EXECUTOR |
-| 23 | Vinícius | code quality | review/refactoring findings + disposition | CONVOKED_WAITING_EXECUTOR |
-| 24 | Patrícia | failure recovery | incident/failure/recovery drill artifact | CONVOKED_WAITING_EXECUTOR |
-| 25 | Lucas | performance/sustainability | bounded performance/resource evidence | CONVOKED_WAITING_EXECUTOR |
-| 26 | Augusto | multiagent observability | trace/handoff/loop observability report | CONVOKED_WAITING_EXECUTOR |
-| 27 | Beatriz | agent behavior/memory | agent/memory/routing evaluation | CONVOKED_WAITING_EXECUTOR |
-| 28 | Miriam | context/memory governance | recovery/provenance/conflict/reconciliation artifact | CONVOKED_WAITING_EXECUTOR |
-| 29 | Júlia | Class C governance | privacy/autonomy/compliance review | CONVOKED_WAITING_EXECUTOR |
+Brainbase MCP currently contains 29/29 official MCF managed-agent identities aligned to the current competency matrix.
 
-## Chronology rule
+This roster materialization resolves identity availability only; it does not retroactively create mission contributions.
 
-When an execution provider becomes available, the coordinator must update each row only after the runtime or provider returns a distinguishable execution identity and the resulting artifact/receipt exists. Handoffs must then be recorded in chronological order under the mission PRF.
+## Phase 2 selected agents
+
+- Mestre
+- Miriam
+- Sofia
+- Manoel
+- Ricardo
+- Júlia
+- Rafael
+- Eduardo
+- Bruno
+- Renato
+- Beatriz
+- Augusto
+- Emily
+- Léo
+
+Private orchestration ID: `33296bb3-2020-43cf-8d62-e5c1d364f6b0`.
+
+No task run has executed at this checkpoint because the billable-run authority gate remains pending.
+
+## Non-selected official pool
+
+Leonardo, Carlos, Evelyn, Laura, Isabela, Marina, Gabriel, Carmem, Helena, André, Tiago, Daniela, Vinícius, Patrícia and Lucas remain available. They are not participants in Phase 2 unless a concrete domain need emerges.
+
+No `no-impact` artifact is manufactured merely to count a role.
+
+## Current evidence state
+
+- roster identity/configuration: `VERIFIED`;
+- selected orchestration configuration: `VERIFIED`;
+- specialist task execution: `NOT_STARTED`;
+- specialist artifacts: `NOT_CREATED`;
+- specialist participation credit: `NONE_YET`;
+- personal memory sent externally: `NO`;
+- secrets sent externally: `NO`.
 
 ## Anti-relabelling rule
 
-No coordinator-authored artifact may be renamed or described as if it were produced by another agent. Tool output, model output or third-party output may be attributed to an agent only when the execution itself was created for that agent identity and the evidence chain binds that identity to the artifact.
+No coordinator-authored artifact may be renamed or described as if it were produced by another agent. External-agent output counts only when the task execution is bound to that managed-agent identity and a task identifier/evidence exists.
 
-## Current blocker
+## Next gate
 
-All non-Mestre rows remain waiting because the current MCF runtime validates `execution_evidence` but does not originate named cognitive-agent work, and the current ChatGPT execution surface does not expose a native subagent dispatcher or authenticated MCF agent executor.
+`GATE-BRAINBASE-BILLABLE-RUN = PENDING_HUMAN_AUTHORIZATION`.
 
-This blocker is operational, not a request for Leandro to perform technical work.
+After approval, selected agents execute chronologically under ESEV and receive credit only from their real task evidence.
