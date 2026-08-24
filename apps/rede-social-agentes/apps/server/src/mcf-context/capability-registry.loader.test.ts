@@ -18,6 +18,7 @@ const knownProjectIds = [
   'triview-workspace-linux',
 ];
 const canonicalSources = [
+  'context/capabilities/cloud-context-local-read.yaml',
   'context/capabilities/cloud-workspace-g2a-read.yaml',
   'context/capabilities/cloud-workspace-g2b-write.yaml',
   'context/capabilities/cognitive-ledger-memory-read.yaml',
@@ -91,6 +92,7 @@ describe('CapabilityRegistryLoader', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error(result.code);
     expect(result.entries.map(({ capability }) => capability.id)).toEqual([
+      'cloud.context.local.read',
       'cloud.workspace.g2a.read',
       'cloud.workspace.g2b.write',
       'cognitive-ledger.memory.read',
@@ -126,6 +128,23 @@ describe('CapabilityRegistryLoader', () => {
         connection_state: 'CONNECTED',
         runtime_state: 'ACTIVE',
         verification_state: 'VERIFIED',
+      },
+    });
+    expect(
+      result.entries.find(({ capability }) => capability.id === 'cloud.context.local.read'),
+    ).toMatchObject({
+      capability: { mode: 'READ_ONLY' },
+      contract: { protocol: 'MCF_CLOUD_CONTEXT_READ_V1' },
+      scope: { environments: ['lab'] },
+      governance: {
+        authorization_state: 'AUTHORIZED',
+        required_gate:
+          'DISPOSABLE_LOCAL_LAB_ONLY_PAIRWISE_DISTINCT_TOKEN_16_FILE_CLOSURE_DIRECT_PEER_RATE_BUCKET',
+      },
+      lifecycle: {
+        connection_state: 'DISCONNECTED',
+        runtime_state: 'INACTIVE',
+        verification_state: 'HISTORICALLY_VERIFIED',
       },
     });
     expect(

@@ -16,6 +16,7 @@ const registrySources = [
   'context/projects/triview-workspace-linux.yaml',
 ];
 const capabilitySources = [
+  'context/capabilities/cloud-context-local-read.yaml',
   'context/capabilities/cloud-workspace-g2a-read.yaml',
   'context/capabilities/cloud-workspace-g2b-write.yaml',
   'context/capabilities/cognitive-ledger-memory-read.yaml',
@@ -80,6 +81,11 @@ describe('McfCapabilityRegistryApiService', () => {
       'mcf.capability.registry.read',
       'mcf.context.recovery.read',
     ]);
+
+    const mcf = service.listReadOnly('multiagent-collaboration-framework');
+    expect(mcf.entries.map(({ capability }) => capability.id)).toEqual(
+      expect.arrayContaining(['cloud.context.local.read', 'cognitive-ledger.memory.read']),
+    );
   });
 
   it('stays disabled unless explicit capability sources are configured', () => {

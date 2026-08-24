@@ -7,6 +7,7 @@ describe('selectAbusePolicy', () => {
     ['POST', '/v1/accounts', 'account-registration', 5, 900],
     ['POST', '/v1/sessions', 'session-creation', 10, 300],
     ['POST', '/v1/reports', 'reports', 10, 3600],
+    ['GET', '/v1/mcf/context/cloud/g2a', 'mcf-cloud-context-local-read', 10, 60],
     ['POST', '/v1/mcf/context/ledger/query', 'mcf-ledger-read-query', 60, 60],
     ['GET', '/v1/mcf/context/ledger/query', 'read', 300, 60],
     ['POST', '/v1/mcf/context/ledger/other', 'mutation', 60, 60],

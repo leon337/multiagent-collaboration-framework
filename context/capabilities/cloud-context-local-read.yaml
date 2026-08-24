@@ -1,0 +1,55 @@
+schema_version: 1
+
+capability:
+  id: cloud.context.local.read
+  provider_project_id: cloud-infrastructure
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: READ_ONLY
+
+contract:
+  protocol: MCF_CLOUD_CONTEXT_READ_V1
+  allowed_operations:
+    - context.get
+  prohibited_operations:
+    - network.access
+    - production.mutate
+    - provider.payload.persist
+    - shell.execute
+    - ssh.connect
+    - vps.observe
+    - workspace.write
+
+scope:
+  environments:
+    - lab
+  resources:
+    - local-disposable/leon337/g2a-smoke/dev
+
+governance:
+  authorization_state: AUTHORIZED
+  required_gate: DISPOSABLE_LOCAL_LAB_ONLY_PAIRWISE_DISTINCT_TOKEN_16_FILE_CLOSURE_DIRECT_PEER_RATE_BUCKET
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: DISCONNECTED
+  runtime_state: INACTIVE
+  verification_state: HISTORICALLY_VERIFIED
+  last_verified_at: "2026-08-24T02:30:00Z"
+
+evidence:
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/mcf-context/mcf-cloud-context-read.service.ts
+    source_revision: 425e258bb110799f33ad3942fbed7ae1be17313d
+    observed_at: "2026-08-24T01:56:09Z"
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/security/abuse-protection.guard.ts
+    source_revision: 54fadeca31509e3fbde3f4a16434df1dda02c281
+    observed_at: "2026-08-24T02:30:00Z"
+  - source_ref: repo://leon337/cloud-infrastructure/platform/control-bridge/mcf-cloud-context-read
+    source_revision: cb97df4bcc0bb374c7524e6aa395309af8967297
+    observed_at: "2026-08-24T01:56:09Z"
+  - source_ref: github://leon337/cloud-infrastructure/pull/26
+    source_revision: dbd772a6c37452008b7c8debd58d2782127514db
+    observed_at: "2026-08-24T01:56:09Z"
+
+freshness: LIVE_REQUIRED
