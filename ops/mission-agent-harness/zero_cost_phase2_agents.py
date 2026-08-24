@@ -68,13 +68,16 @@ AGENTS = [
     AgentPacket("Léo", "Autoridade Delegada de Continuidade e Gates Internos", "Using only the prior agent artifacts in this run as advisory input, define the evidence-based gate conditions for APPROVE, APPROVE_WITH_RESERVATIONS, RETURN_FOR_CORRECTION, or BLOCK. Do not claim the gate is passed unless evidence actually supports it.", "Mestre"),
 ]
 
+# Artifact structure is validated independently from handoff transport. The
+# handoff itself is emitted by the harness as machine-bound evidence so a small
+# local model cannot invalidate an otherwise attributable artifact merely by
+# omitting one narrative heading.
 REQUIRED_HEADINGS = [
     "## Entrada recebida",
     "## Ação executada",
     "## Evidência observada",
     "## Resultado e análise",
     "## Decisão e entrega",
-    "## Passagem interna",
 ]
 
 
@@ -89,7 +92,7 @@ Regras obrigatórias:
 4. Não inclua segredos, credenciais, memória pessoal real ou dados privados.
 5. Não proponha API paga como requisito. O design deve operar a custo novo zero.
 6. Sua entrega deve ser substantiva, técnica e específica à sua competência.
-7. Use exatamente os seis títulos Markdown obrigatórios abaixo.
+7. Use exatamente os cinco títulos Markdown obrigatórios abaixo. O handoff formal será registrado separadamente pelo harness como evidência de máquina; você pode mencionar o destinatário na análise, mas não precisa criar um sexto título.
 
 Missão: {MISSION_ID}
 
@@ -114,8 +117,6 @@ Formato obrigatório:
 ## Resultado e análise
 ...
 ## Decisão e entrega
-...
-## Passagem interna
 ...
 """
 
@@ -184,6 +185,10 @@ def main() -> int:
         print(output, flush=True)
         print(
             f"MCF_AGENT_EXECUTION_END agent_id={packet.agent_id} run_id={meta['run_id']} sha256={meta['sha256']}",
+            flush=True,
+        )
+        print(
+            f"MCF_HANDOFF mission_id={MISSION_ID} from={packet.agent_id} to={packet.handoff} run_id={meta['run_id']} artifact_sha256={meta['sha256']}",
             flush=True,
         )
         prior.append(summarize_for_next(packet.agent_id, output))
