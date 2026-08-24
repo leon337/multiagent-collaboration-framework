@@ -146,6 +146,10 @@ describe('Cognitive Ledger read-only configuration', () => {
       }),
       environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: 'short' }),
       environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken}\n` }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken},duplicate` }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken} internal` }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken}:colon` }),
+      environment({ MCF_COGNITIVE_LEDGER_BEARER_TOKEN: `${bearerToken}ç` }),
       environment({ MCF_COGNITIVE_LEDGER_MCP_URL: 'http://ledger.example/mcp' }),
       environment({ MCF_COGNITIVE_LEDGER_MCP_URL: 'http://localhost:33100/mcp' }),
       environment({

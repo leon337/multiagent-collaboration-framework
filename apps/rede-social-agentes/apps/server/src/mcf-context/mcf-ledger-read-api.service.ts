@@ -267,7 +267,7 @@ export function loadMcfLedgerReadConfiguration(
     bearerToken.length < 32 ||
     bearerToken.length > 8192 ||
     bearerToken !== bearerToken.trim() ||
-    /[\r\n]/u.test(bearerToken) ||
+    !/^[A-Za-z0-9._~+/-]+={0,}$/u.test(bearerToken) ||
     new Set(peerCredentials).size !== peerCredentials.length
   ) {
     return null;

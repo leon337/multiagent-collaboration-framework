@@ -616,6 +616,8 @@ async function duplicatedLedgerHeaderRequest(query) {
         path: '/v1/mcf/context/ledger/query',
         method: 'POST',
         headers: [
+          'Host',
+          '127.0.0.1:33110',
           'Content-Type',
           'application/json',
           'Content-Length',
