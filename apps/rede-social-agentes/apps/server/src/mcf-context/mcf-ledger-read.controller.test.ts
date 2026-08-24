@@ -15,7 +15,7 @@ describe('McfLedgerReadController', () => {
       provider_project_id: 'cognitive-ledger' as const,
       operation: 'ler_diario' as const,
       read_only: true as const,
-      persisted_by_mcf: false as const,
+      memory_payload_persisted_by_mcf: false as const,
       result: { estado: 'ok' },
     };
     const queryReadOnly = vi.fn().mockResolvedValue(response);
