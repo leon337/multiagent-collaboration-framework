@@ -24,7 +24,6 @@ import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fa
 import { createDatabase, type DatabaseHandle, type DatabaseRow } from '@rsa/database';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { AppModule } from '../app.module.js';
 import {
   MCF_CLOUD_CONTEXT_ENABLE_VALUE,
   MCF_CLOUD_CONTEXT_EXECUTION_DEPENDENCY_PATHS,
@@ -323,7 +322,6 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
         'RATE_LIMIT_KEY_SECRET',
       ].sort(),
     );
-
     const captureLog = (...values: unknown[]): void => {
       runtimeLogs.push(
         values
@@ -334,6 +332,7 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     infoSpy = vi.spyOn(console, 'info').mockImplementation(captureLog);
     warnSpy = vi.spyOn(console, 'warn').mockImplementation(captureLog);
     errorSpy = vi.spyOn(console, 'error').mockImplementation(captureLog);
+    const { AppModule } = await import('../app.module.js');
 
     app = await NestFactory.create<NestFastifyApplication>(
       AppModule,

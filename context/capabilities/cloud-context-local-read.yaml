@@ -28,7 +28,7 @@ scope:
 
 governance:
   authorization_state: AUTHORIZED
-  required_gate: DISPOSABLE_LOCAL_LAB_ONLY_AND_DEDICATED_INGRESS_TOKEN
+  required_gate: DISPOSABLE_LOCAL_LAB_ONLY_PAIRWISE_DISTINCT_TOKEN_16_FILE_CLOSURE
   expiration: null
 
 lifecycle:
@@ -36,17 +36,17 @@ lifecycle:
   connection_state: DISCONNECTED
   runtime_state: INACTIVE
   verification_state: HISTORICALLY_VERIFIED
-  last_verified_at: "2026-08-24T01:07:00Z"
+  last_verified_at: "2026-08-24T01:56:09Z"
 
 evidence:
   - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/mcf-context/mcf-cloud-context-read.service.ts
-    source_revision: e2663fc3bf95283b1ea8bf4cb264aecae9ecf359
-    observed_at: "2026-08-24T01:07:00Z"
+    source_revision: 425e258bb110799f33ad3942fbed7ae1be17313d
+    observed_at: "2026-08-24T01:56:09Z"
   - source_ref: repo://leon337/cloud-infrastructure/platform/control-bridge/mcf-cloud-context-read
     source_revision: cb97df4bcc0bb374c7524e6aa395309af8967297
-    observed_at: "2026-08-24T01:07:00Z"
+    observed_at: "2026-08-24T01:56:09Z"
   - source_ref: github://leon337/cloud-infrastructure/pull/26
     source_revision: dbd772a6c37452008b7c8debd58d2782127514db
-    observed_at: "2026-08-24T01:07:00Z"
+    observed_at: "2026-08-24T01:56:09Z"
 
 freshness: LIVE_REQUIRED
