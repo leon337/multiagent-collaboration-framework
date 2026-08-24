@@ -1,67 +1,67 @@
 # Checkpoint — PHASE-02-MEMORY-ARCHITECTURE
 
 Mission: `MCF-MEMORY-LIVE-NEXT-STABLE-001`
-Checkpoint state: `AGUARDANDO_DEPENDENCIA_EXTERNA`
+Checkpoint state: `EXECUTOR_READY / BILLABLE_RUN_GATE_PENDING`
 Objective met: false
 Human technical action required: false
-Human authority gate pending: `EXTERNAL_AGENT_EXECUTOR_CONNECTION`
+Human authority gate pending: `BRAINBASE_BILLABLE_RUN_AUTHORIZATION`
 Checkpoint recipient: Mestre
-Canonical main at checkpoint opening: `85ccf418740e78b5e1e3eeb7742baf6f869978c1`
 
 ## Completed in this phase
 
-- project instruction set re-read from current MCF main;
-- DEC-050/051/052/053, skills registry, competency matrix and tool/capability constraints recovered;
-- MCF runtime execution path inspected through Chat bridge, mission controller, skill executor and internal evidence validator;
-- anti-simulation runtime finding documented;
-- onboarding/product decisions 1–19 frozen for architecture;
-- mission-wide substantive artifact requirement mapped across all 29 official agents without crediting unexecuted roles;
-- full-roster dispatch recorded with non-Mestre roles explicitly `CONVOKED_WAITING_EXECUTOR`;
-- live MCF/Render/Cognitive-Ledger/Supabase source inventory recorded without private memory payloads or secrets;
-- Supabase current aggregate state verified at 26 events / 26 sources / 39 relations / 0 stored embeddings / 0 OAuth clients;
-- live Cognitive Ledger Edge Function v6 drift documented;
-- MCF staging runtime lineage verified behind current mission main;
-- execution-provider alternatives evaluated;
-- PR #168 passed MCF Production Readiness and merged into main as `85ccf418740e78b5e1e3eeb7742baf6f869978c1`.
+- project instructions and current MCF governance re-read from repository main;
+- DEC-050/051/052/053, protocol, competency matrix and runtime evidence constraints recovered;
+- onboarding/product contract closed;
+- live MCF/Ledger/Supabase/Render state recovered without exposing private memory payloads or secrets;
+- anti-simulation runtime finding preserved;
+- Brainbase MCP connected as a real managed-agent executor;
+- Brainbase organization/team resolved;
+- **29/29 official MCF agents materialized as distinguishable managed agents** with functions aligned to the current 29-agent competency matrix;
+- no agent task run has been started yet;
+- no private memory, `fontes.conteudo_bruto`, Supabase `service_role`, token or secret has been sent to Brainbase;
+- Phase 2 private orchestration created as `33296bb3-2020-43cf-8d62-e5c1d364f6b0`;
+- selected Phase 2 chain prepared: Mestre → Miriam → Sofia → Manoel → Ricardo → Júlia → Rafael → Eduardo → Bruno → Renato → Beatriz → Augusto → Emily → Léo;
+- non-selected agents remain available in the pool and receive no participation credit merely for existing;
+- roadmap corrected to restore the protocol invariant: only agents with concrete delivery are executed/credited; there is no artificial requirement that all 29 perform work.
 
-## Blocking finding
+## Gate resolution
 
-The MCF runtime proves orchestration and evidence validation, but governed cognitive skills require `execution_evidence` produced by the selected agent. The current ChatGPT execution surface does not expose a native subagent dispatcher or an authenticated invoker that originates Sofia/Miriam/Ricardo/Júlia/etc. work.
+The previous external-executor connection dependency is resolved.
 
-Creating coordinator-authored prose and submitting it as another agent's evidence would be role simulation and remains deterministically forbidden.
+`GATE-RUNTIME-REALITY = SATISFIED_FOR_EXECUTOR_IDENTITY_AND_CONFIGURATION`.
 
-## External execution provider discovery
+Brainbase task execution is explicitly described by the provider as billable. Under the MCF Human Delegation Firewall, a new financial cost is reserved to human authority. Therefore the next gate is:
 
-A managed-agent provider capable of creating/running distinguishable agents and task runs was discovered through the ChatGPT plugin registry (`Brainbase MCP`). It is available but is not installed/connected.
+`GATE-BRAINBASE-BILLABLE-RUN = PENDING_HUMAN_AUTHORIZATION`.
 
-Installing/connecting an external provider requires explicit human authorization and cannot be done silently by Mestre. This is an authority/access gate, not a technical-operation request.
+This gate requires no technical operation from Leandro. It is only a decision about whether billable task runs may start.
 
-No private memory content, raw `fontes.conteudo_bruto`, Supabase service-role credential, production token or other sensitive material may be sent to an external execution provider before the Class C security/compliance controls permit it.
+## Work that remains blocked until the cost gate
 
-## Work that may continue while gated
+- no Brainbase `tasks_create(... auto_run=true)`;
+- no specialist execution credit;
+- no architecture approval based on unexecuted specialists;
+- no Cognitive Ledger implementation;
+- no live provider mutation;
+- no personal-memory test.
 
-Mestre may continue source recovery, canonical roadmap synchronization, evidence inventories, mission contracts, PRF maintenance and other coordinator-owned artifacts. Those actions do not grant specialist-agent credit and do not authorize implementation.
+## Work allowed while gated
 
-## Work that may not cross this gate
-
-- no fake Sofia/Miriam/Ricardo/Júlia/Emily/Léo artifact;
-- no relabelling coordinator work as a named agent artifact;
-- no Cognitive Ledger implementation before architecture/design approval;
-- no external provider connection without explicit authorization;
-- no real personal memory in development/test evidence.
+Mestre may continue coordinator-owned source recovery, GitHub evidence maintenance, PRF synchronization and non-billable executor configuration. None of those actions can be relabeled as another agent's artifact.
 
 ## Next action after authorization
 
-Establish a real distinguishable agent execution boundary, verify identity/work-packet/artifact/receipt binding with a synthetic non-sensitive pilot, then execute the Phase 2 specialist chain chronologically under ESEV.
+Start the Phase 2 ESEV chain with synthetic/non-sensitive work packets. Each selected managed agent must produce its own task artifact and task identifier; handoffs must be chronological. Emily audits after the specialist chain and Léo decides the phase gate. Only then may architecture be presented for the required design approval and implementation proceed.
 
 ## Remaining findings
 
-- real named-agent executor not yet connected;
-- MCF staging runtime behind current main;
+- Brainbase billable-run authorization pending;
+- MCF staging runtime remains behind the mission candidate lineage;
 - Cognitive Ledger live Edge Function/repository drift unresolved;
-- Class C specialist security/compliance/audit artifacts not yet executed;
-- architecture approval gate not yet reached.
+- architecture specialist artifacts not yet executed;
+- Class C audit/gate not yet executed;
+- implementation remains blocked.
 
 ## Next action owner
 
-Mestre owns all non-blocked work. LEANDRO has no technical task. The only pending human action is the explicit authorization/connection of a real external agent executor if that route is accepted by the authority.
+Human authority decides only the cost gate. Mestre retains all technical execution ownership after that decision.
