@@ -192,32 +192,47 @@ O checkpoint [`docs/architecture/ARCHITECTURAL_CHECKPOINT_004.md`](docs/architec
 
 ZRCL, Context Fabric, Truth Contracts, Capability Registry, Artifact System e Validation Suite devem ser classificados conforme evidência real do componente; a existência de documentos/propostas não transforma automaticamente esse conjunto em arquitetura canônica implementada.
 
-### Integração do ecossistema em laboratório
+### Integração do ecossistema — closeout pós-main
 
-O CF-0/CF-1 mínimo foi mergeado no `main` pelo PR #153. A branch
-`codex/ecosystem-context-integration` acrescenta Registry/Capsules dos quatro projetos,
-recuperação read-only, freshness Git local, Capability Registry e as duas pontes read-only de
-laboratório. O baseline estrutural de recovery recuperou **4/4 projetos** com sucesso na branch;
-isso comprova contratos, proveniência e leitura das Capsules existentes, mas não antecipa sua
-sincronização semântica pós-merge. No checkpoint `e646527f`, ainda não mergeado no `main`, o
-adapter MCF → Cognitive Ledger expõe somente três operações, usa ingresso próprio e passou pelo
-`AppModule` real até MCP → Edge/Auth → PostgREST → PostgreSQL, sem persistir memória, embeddings
-ou chamadas pagas. A ponte MCF → Cloud também passou pelo cliente real e pelo processo stdio
-governado: 3/3 testes E2E, 16 arquivos verificados e cleanup completo.
+O CF-0/CF-1 mínimo foi mergeado no `main` pelo PR #153. O PR #160 integrou Registry/Capsules dos
+quatro projetos, recuperação read-only, freshness Git local, Capability Registry e as duas pontes
+read-only no `main@efe5164290d56f22023f07de073e2ad7c027fb95`, com **7/7 checks** aprovados. O
+checkpoint de código testado `e646527f` agora é ancestral desse merge. Seu baseline estrutural de
+recovery recuperou **4/4 projetos** com sucesso antes da sincronização semântica dos providers; a
+repetição 4/4 contra as Capsules pós-sync continua sendo um gate separado e ainda pendente.
+
+No checkpoint `e646527f`, o adapter MCF → Cognitive Ledger expõe somente três operações, usa
+ingresso próprio e passou pelo `AppModule` real até MCP → Edge/Auth → PostgREST → PostgreSQL, sem
+persistir memória, embeddings ou chamadas pagas. A ponte MCF → Cloud também passou pelo cliente
+real e pelo processo stdio governado: 3/3 testes E2E, 16 arquivos verificados e cleanup completo.
 
 No mesmo checkpoint, migrations 2x passaram com 30 registros e `pnpm verify` encerrou com exit 0:
 38 testes ops + 16 contracts + 5 web + 884 server = **943 aprovados**, 0 falhas e 3 testes
 real-Cloud pulados por design. Format, lint, typecheck e build passaram; `pnpm audit` de produção
 em nível high reportou 0 vulnerabilidades conhecidas.
 
-Cognitive Ledger PR #2, TriView PR #77 e Cloud PR #26 foram mergeados somente em seus targets
-seguros de design/release/lab. O G2-B, Tasks 9/10 e o capability remoto
-`cloud.workspace.g2a.read` permanecem inativos/não autorizados. Ainda faltam PR/checks/merge MCF
-no `main`; validação de staging por SHA, runtime de produção/VPS intactos e Vercel; sincronização
-semântica das Capsules nos providers; closeout MCF; e uma nova recuperação estrutural 4/4
-pós-sync. Nada dessa integração autoriza runtime de produção,
-VPS/NODE-01, SSH, escrita externa, API paga ou R7 ampla. A página estática pública na Vercel é uma
-classe de deployment `Production` da própria Vercel, mas não contém runtime nem API do MCF.
+O staging marcou o SHA exato do merge como `DEPLOYED` no run `32685810702`; Production Readiness e
+Documentation Validation pós-merge passaram. O artefato público da Vercel correspondeu ao roadmap
+de `main@efe5164` pelo SHA-256
+`5d95e38b841e324f1b91848441492de1ffd0454becfc1c22fdbcbaf5cf1fca0e`. Essa publicação estática é
+uma classe de deployment `Production` da própria Vercel, mas não contém runtime nem API do MCF. O
+runtime de produção permaneceu em `439da7b6479718f6545144954937b8c4358d7c46`, sem novo deploy; não
+houve acesso VPS/NODE-01 nem SSH, e os workflows RC2/RC3 terminaram como NOOP preservando suas
+identidades imutáveis. O PR #151 foi marcado automaticamente como `MERGED` pela ancestralidade do
+PR #160.
+
+A sincronização semântica dos providers também terminou em seus targets seguros: Cognitive Ledger
+PR #3, merge `a64cfc05f83567f624bbda70288310f56a7264e8`, com CI verde; TriView PR #78, merge
+`09a361d761adf1e2e614d23718b84776c365cacc`, com CI verde; e Cloud PR #27, merge
+`38cd22e0a814bdf4957edcf5bb30506a4810bda0`. Os jobs remotos Cloud continuam classificados como
+`NOT_EXECUTED_EXTERNAL_BILLING_GATE`, com zero steps; os gates locais passaram em 21/21 focados e
+396/396 na regressão. Ledger e o provider Cloud local permanecem `DISCONNECTED/INACTIVE` fora do
+laboratório descartável; o G2-A remoto permanece
+`NOT_AUTHORIZED/DISCONNECTED/UNKNOWN/LIVE_REQUIRED`, e o G2-B,
+`NOT_AUTHORIZED/DISCONNECTED/BLOCKED/LIVE_REQUIRED`. Tasks 9/10, VPS/SSH, runtime de produção,
+escrita externa, API paga e R7 ampla continuam fechados. Resta fechar a Capsule/documentação do
+próprio MCF nesta branch e, somente depois, repetir o recovery estrutural 4/4 pós-sync; nenhum
+resultado desses dois gates é antecipado aqui.
 
 Veja o [roadmap visual](docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html) e o
 [handoff factual](docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md).

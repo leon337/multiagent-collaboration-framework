@@ -62,13 +62,20 @@ describe('canonical MCF Context Fabric fixtures', () => {
       project_id: 'multiagent-collaboration-framework',
       lifecycle: 'ACTIVE',
       snapshot: {
-        current_workstream: 'context-fabric-cf0-cf1',
-        current_status: 'CF0_CF1_IMPLEMENTED_LOCALLY_AWAITING_REVIEW',
-        next_action: 'Review local evidence before any push or merge',
-        blockers: [],
+        current_workstream: 'ecosystem-context-fabric-readonly-lab',
+        current_status:
+          'FOUR_REPOSITORY_CONTEXT_FABRIC_AND_PROVIDER_READ_ADAPTERS_LAB_PASS__MAIN_MERGED__STAGING_EXACT_SHA_VERIFIED__PROVIDER_CAPSULES_SYNCED',
+        next_action:
+          'Run and record the final read-only 4/4 recovery against the post-sync provider and MCF Capsules; keep local provider capabilities disconnected and inactive, remote G2-A UNKNOWN, and G2-B BLOCKED unless a new human gate authorizes activation.',
+        blockers: [
+          'cloud.context.local.read and cognitive-ledger.memory.read remain DISCONNECTED, INACTIVE, HISTORICALLY_VERIFIED, and LIVE_REQUIRED after lab teardown.',
+          'cloud.workspace.g2a.read remains NOT_AUTHORIZED, DISCONNECTED, UNKNOWN, and LIVE_REQUIRED; cloud.workspace.g2b.write, Tasks 9 and 10 remain NOT_AUTHORIZED, DISCONNECTED, BLOCKED, and LIVE_REQUIRED.',
+          'Runtime production and VPS or NODE-01 were not changed; the authorized Vercel publication is static documentation, not agent runtime.',
+          'TriView promotion PR 74 remains draft until its separate full physical R7 qualification and human gate are complete.',
+        ],
       },
       sources: { current_state: 'docs/MCF-CURRENT-STATE.md' },
-      observed_at: '2026-08-23T01:35:37-03:00',
+      observed_at: '2026-08-24T03:38:21Z',
     });
 
     const forbiddenOperationalKeys = new Set([
