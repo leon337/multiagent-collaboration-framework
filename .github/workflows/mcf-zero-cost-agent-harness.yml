@@ -1,0 +1,91 @@
+name: MCF Zero-Cost Agent Harness
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/mcf-zero-cost-agent-harness.yml'
+      - 'ops/mission-agent-harness/**'
+      - 'artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/**'
+      - 'docs/MCF-NEXT-STABLE-COGNITIVE-MEMORY-ROADMAP.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcf-zero-cost-agent-harness-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  phase2-agent-chain:
+    name: phase2-local-agent-chain
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      OLLAMA_MODEL: qwen2.5:1.5b
+      OLLAMA_VERSION: 0.32.14
+      OLLAMA_TARBALL_SHA256: c620917a71e146ab3a7f893084f066069c4c65d144ef8379a91c3cbe8b27de8f
+    steps:
+      - name: Checkout exact PR candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Assert zero-cost/public-runner boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ github.event.repository.private }}" = "false"
+          test "${{ runner.environment }}" = "github-hosted"
+          echo "MCF_ZERO_COST_BOUNDARY=PUBLIC_STANDARD_GITHUB_HOSTED_RUNNER"
+          echo "MCF_PAID_API_USED=false"
+          echo "MCF_PRIVATE_MEMORY_ALLOWED=false"
+
+      - name: Install pinned Ollama locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/ollama/ollama/releases/download/v${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst"
+          curl --fail --location --retry 3 --output /tmp/ollama-linux-amd64.tar.zst "$url"
+          echo "${OLLAMA_TARBALL_SHA256}  /tmp/ollama-linux-amd64.tar.zst" | sha256sum -c -
+          sudo tar --zstd -xf /tmp/ollama-linux-amd64.tar.zst -C /usr
+          ollama --version
+
+      - name: Start local model service
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup ollama serve >/tmp/ollama-serve.log 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then
+              echo "OLLAMA_LOCAL_READY=true"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/ollama-serve.log || true
+          exit 1
+
+      - name: Pull zero-cost local model
+        shell: bash
+        run: |
+          set -euo pipefail
+          ollama pull "$OLLAMA_MODEL"
+          echo "MCF_MODEL_INVENTORY_BEGIN"
+          ollama list
+          echo "MCF_MODEL_INVENTORY_END"
+
+      - name: Execute selected MCF agents as isolated local model runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 ops/mission-agent-harness/zero_cost_phase2_agents.py --model "$OLLAMA_MODEL" --timeout 420
+
+      - name: Prove no repository mutation by harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+          echo "MCF_HARNESS_REPO_MUTATION=false"
