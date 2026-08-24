@@ -14,6 +14,7 @@ This directory is the active Phase Record Folder for the cognitive-memory archit
 - `CHECKPOINT.md` — current execution-gated checkpoint.
 - `MISSION-ROSTER-DISPATCH.md` — mission-wide convocation ledger; queued rows are explicitly not execution credit.
 - `AGENT-EXECUTION-PROVIDER-OPTIONS.md` — evaluated routes to a real distinguishable agent executor.
+- `SOURCE-INVENTORY-LIVE.md` — current MCF/Render/Cognitive-Ledger/Supabase state recovered without exposing private memory content or secrets.
 
 ## Deliberately absent until evidence exists
 
