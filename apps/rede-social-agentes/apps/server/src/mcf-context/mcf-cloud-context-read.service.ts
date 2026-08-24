@@ -6,6 +6,7 @@ import {
   fstatSync,
   lstatSync,
   openSync,
+  readdirSync,
   readFileSync,
   readSync,
   realpathSync,
@@ -16,6 +17,8 @@ import { Injectable } from '@nestjs/common';
 import type { McfCloudContextProviderResponse, McfCloudContextReadReceipt } from '@rsa/contracts';
 import { Ajv2020, type AnySchema } from 'ajv/dist/2020.js';
 import { z } from 'zod';
+
+import { loadMcfCloudContextIngressToken } from './mcf-cloud-context-ingress-token.guard.js';
 
 export const MCF_CLOUD_CONTEXT_ENABLE_VALUE = 'DISPOSABLE_LOCAL_LAB_ONLY';
 export const MCF_CLOUD_CONTEXT_ADAPTER_PATH = 'platform/control-bridge/mcf-cloud-context-read';
@@ -36,15 +39,30 @@ export const MCF_CLOUD_CONTEXT_SOURCE_PATHS = [
   'state/control-bridge-g2a.yaml',
   'state/control-bridge-g2b.yaml',
 ] as const;
+export const MCF_CLOUD_CONTEXT_EXECUTION_DEPENDENCY_PATHS = [
+  'control_plane/__init__.py',
+  'control_plane/g2a/__init__.py',
+  'scripts/yaml_strict.py',
+] as const;
+export const MCF_CLOUD_CONTEXT_VERIFIED_PATHS = [
+  ...MCF_CLOUD_CONTEXT_SOURCE_PATHS,
+  ...MCF_CLOUD_CONTEXT_EXECUTION_DEPENDENCY_PATHS,
+] as const;
+const MCF_CLOUD_CONTEXT_PYTHON_IMPORT_DIRECTORIES = [
+  'control_plane',
+  'control_plane/g2a',
+  'scripts',
+] as const;
 
 const MAX_CONFIGURATION_BYTES = 32 * 1024;
 const MAX_INPUT_BYTES = 4_096;
 const MAX_OUTPUT_BYTES = 65_536;
 const MAX_STDERR_BYTES = 4_096;
 const MAX_SOURCE_BYTES = 262_144;
-const MAX_PYTHON_BYTES = 256 * 1024 * 1024;
+const MAX_PYTHON_BYTES = 64 * 1024 * 1024;
 const PROCESS_TIMEOUT_MS = 20_000;
 const PROCESS_KILL_GRACE_MS = 1_000;
+export const MCF_CLOUD_CONTEXT_MAX_CONCURRENT_READS = 1;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
 const REQUEST_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u;
 const PYTHON_NAME_PATTERN = /^python3(?:\.\d+)*$/u;
@@ -58,7 +76,7 @@ const configurationSchema = z
     repository_root: absolutePathSchema,
     python_executable: absolutePathSchema,
     python_executable_sha256: sha256Schema,
-    expected_source_sha256: z.record(z.string(), sha256Schema),
+    expected_verified_file_sha256: z.record(z.string(), sha256Schema),
   })
   .strict();
 
@@ -66,6 +84,7 @@ export type McfCloudContextReadConfiguration = z.infer<typeof configurationSchem
 type ProcessFailureCode =
   | 'MCF_CLOUD_CONTEXT_ADAPTER_FAILED'
   | 'MCF_CLOUD_CONTEXT_BOUNDARY_INVALID'
+  | 'MCF_CLOUD_CONTEXT_BUSY'
   | 'MCF_CLOUD_CONTEXT_CONTRACT_INVALID'
   | 'MCF_CLOUD_CONTEXT_OUTPUT_LIMIT_EXCEEDED'
   | 'MCF_CLOUD_CONTEXT_TIMEOUT';
@@ -95,9 +114,9 @@ export type McfCloudContextSpawnAdapter = (
   },
 ) => ChildProcessWithoutNullStreams;
 
-function exactSourceDigestMap(value: Record<string, string>): boolean {
+function exactVerifiedFileDigestMap(value: Record<string, string>): boolean {
   const configured = Object.keys(value).sort();
-  const expected = [...MCF_CLOUD_CONTEXT_SOURCE_PATHS].sort();
+  const expected = [...MCF_CLOUD_CONTEXT_VERIFIED_PATHS].sort();
   return (
     configured.length === expected.length &&
     configured.every((key, index) => key === expected[index])
@@ -107,22 +126,13 @@ function exactSourceDigestMap(value: Record<string, string>): boolean {
 export function loadMcfCloudContextReadConfiguration(
   env: NodeJS.ProcessEnv,
 ): McfCloudContextReadConfiguration | null {
-  const ingressToken = env.MCF_CLOUD_CONTEXT_INGRESS_TOKEN;
-  const sharedContextToken = env.MCF_CONTEXT_READ_TOKEN;
-  if (
-    ingressToken === undefined ||
-    ingressToken.length < 32 ||
-    ingressToken.length > 4096 ||
-    ingressToken === sharedContextToken
-  ) {
-    return null;
-  }
+  if (loadMcfCloudContextIngressToken(env) === null) return null;
   const raw = env.MCF_CLOUD_CONTEXT_READ_CONFIG_JSON;
   if (raw === undefined || Buffer.byteLength(raw, 'utf8') > MAX_CONFIGURATION_BYTES) return null;
 
   try {
     const parsed = configurationSchema.parse(JSON.parse(raw));
-    return exactSourceDigestMap(parsed.expected_source_sha256) ? parsed : null;
+    return exactVerifiedFileDigestMap(parsed.expected_verified_file_sha256) ? parsed : null;
   } catch {
     return null;
   }
@@ -195,7 +205,7 @@ function assertCanonicalRoot(root: string): void {
 }
 
 function confinedPath(root: string, sourcePath: string): string {
-  if (!(MCF_CLOUD_CONTEXT_SOURCE_PATHS as readonly string[]).includes(sourcePath)) {
+  if (!(MCF_CLOUD_CONTEXT_VERIFIED_PATHS as readonly string[]).includes(sourcePath)) {
     throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_BOUNDARY_INVALID');
   }
   let cursor = root;
@@ -218,17 +228,46 @@ function confinedPath(root: string, sourcePath: string): string {
   return candidate;
 }
 
+function assertNoPythonBytecodeCaches(root: string): void {
+  for (const relativeDirectory of MCF_CLOUD_CONTEXT_PYTHON_IMPORT_DIRECTORIES) {
+    let cursor = root;
+    for (const segment of relativeDirectory.split('/')) {
+      cursor = join(cursor, segment);
+      const metadata = lstatSync(cursor);
+      if (metadata.isSymbolicLink() || !metadata.isDirectory()) {
+        throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_BOUNDARY_INVALID');
+      }
+    }
+    const canonicalDirectory = realpathSync(cursor);
+    const relativePath = relative(root, canonicalDirectory);
+    if (
+      relativePath === '' ||
+      relativePath === '..' ||
+      relativePath.startsWith(`..${sep}`) ||
+      isAbsolute(relativePath)
+    ) {
+      throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_BOUNDARY_INVALID');
+    }
+    for (const entry of readdirSync(canonicalDirectory, { withFileTypes: true })) {
+      if (entry.name === '__pycache__' || /\.py[co]$/u.test(entry.name)) {
+        throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_BOUNDARY_INVALID');
+      }
+    }
+  }
+}
+
 function readAndVerifySources(
   configuration: McfCloudContextReadConfiguration,
 ): Map<string, Buffer> {
   assertCanonicalRoot(configuration.repository_root);
+  assertNoPythonBytecodeCaches(configuration.repository_root);
   const sources = new Map<string, Buffer>();
-  for (const sourcePath of MCF_CLOUD_CONTEXT_SOURCE_PATHS) {
+  for (const sourcePath of MCF_CLOUD_CONTEXT_VERIFIED_PATHS) {
     const content = readRegularFile(
       confinedPath(configuration.repository_root, sourcePath),
       MAX_SOURCE_BYTES,
     );
-    if (sha256(content) !== configuration.expected_source_sha256[sourcePath]) {
+    if (sha256(content) !== configuration.expected_verified_file_sha256[sourcePath]) {
       throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_BOUNDARY_INVALID');
     }
     sources.set(sourcePath, content);
@@ -328,6 +367,14 @@ function validateProviderResponse(
     throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_CONTRACT_INVALID');
   }
 
+  for (const verifiedPath of MCF_CLOUD_CONTEXT_VERIFIED_PATHS) {
+    const before = sourcesBefore.get(verifiedPath);
+    const after = sourcesAfter.get(verifiedPath);
+    if (before === undefined || after === undefined || !before.equals(after)) {
+      throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_CONTRACT_INVALID');
+    }
+  }
+
   const reported = new Map(response.provenance.sources.map((item) => [item.path, item.sha256]));
   if (reported.size !== MCF_CLOUD_CONTEXT_SOURCE_PATHS.length) {
     throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_CONTRACT_INVALID');
@@ -335,12 +382,7 @@ function validateProviderResponse(
   for (const sourcePath of MCF_CLOUD_CONTEXT_SOURCE_PATHS) {
     const before = sourcesBefore.get(sourcePath);
     const after = sourcesAfter.get(sourcePath);
-    if (
-      before === undefined ||
-      after === undefined ||
-      !before.equals(after) ||
-      reported.get(sourcePath) !== sha256(after)
-    ) {
+    if (before === undefined || after === undefined || reported.get(sourcePath) !== sha256(after)) {
       throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_CONTRACT_INVALID');
     }
   }
@@ -349,6 +391,8 @@ function validateProviderResponse(
 
 @Injectable()
 export class McfCloudContextReadService {
+  private activeReads = 0;
+
   constructor(
     private readonly configuration: McfCloudContextReadConfiguration | null,
     private readonly spawnAdapter: McfCloudContextSpawnAdapter = spawn,
@@ -363,7 +407,20 @@ export class McfCloudContextReadService {
     if (configuration === null) {
       throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_READ_DISABLED');
     }
+    if (this.activeReads >= MCF_CLOUD_CONTEXT_MAX_CONCURRENT_READS) {
+      throw new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_BUSY');
+    }
+    this.activeReads += 1;
+    try {
+      return await this.readConfigured(configuration);
+    } finally {
+      this.activeReads -= 1;
+    }
+  }
 
+  private async readConfigured(
+    configuration: McfCloudContextReadConfiguration,
+  ): Promise<McfCloudContextReadReceipt> {
     let sourcesBefore: Map<string, Buffer>;
     try {
       assertPythonExecutable(configuration);

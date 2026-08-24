@@ -46,7 +46,10 @@ export class McfCloudContextReadController {
           code: error.code,
           message: 'The local read-only Cloud context adapter is unavailable.',
         };
-        if (error.code === 'MCF_CLOUD_CONTEXT_READ_DISABLED') {
+        if (
+          error.code === 'MCF_CLOUD_CONTEXT_READ_DISABLED' ||
+          error.code === 'MCF_CLOUD_CONTEXT_BUSY'
+        ) {
           throw new ServiceUnavailableException(response);
         }
         if (error.code === 'MCF_CLOUD_CONTEXT_TIMEOUT') {

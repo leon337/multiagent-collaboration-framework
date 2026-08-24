@@ -25,7 +25,9 @@ import {
   loadMcfCloudContextReadConfiguration,
   MCF_CLOUD_CONTEXT_ADAPTER_PATH,
   MCF_CLOUD_CONTEXT_ENABLE_VALUE,
+  MCF_CLOUD_CONTEXT_EXECUTION_DEPENDENCY_PATHS,
   MCF_CLOUD_CONTEXT_SOURCE_PATHS,
+  MCF_CLOUD_CONTEXT_VERIFIED_PATHS,
   McfCloudContextReadService,
   type McfCloudContextReadConfiguration,
   type McfCloudContextSpawnAdapter,
@@ -37,6 +39,8 @@ const pythonExecutable = realpathSync(
 );
 const cloudIngressToken = 'cloud-context-ingress-token-for-service-test-0001';
 const sharedContextToken = 'shared-context-read-token-for-service-test-0001';
+const ledgerIngressToken = 'ledger-ingress-token-for-service-test-0001';
+const ledgerBearerToken = 'ledger-bearer-token-for-service-test-0001';
 
 function digest(value: Buffer | string): string {
   return createHash('sha256').update(value).digest('hex');
@@ -195,7 +199,7 @@ function fixture(): {
   const temporaryRoot = mkdtempSync(join(tmpdir(), 'mcf-cloud-context-service-'));
   temporaryDirectories.push(temporaryRoot);
   const root = join(temporaryRoot, 'workspaces/leon337/g2a-smoke/dev');
-  for (const sourcePath of MCF_CLOUD_CONTEXT_SOURCE_PATHS) {
+  for (const sourcePath of MCF_CLOUD_CONTEXT_VERIFIED_PATHS) {
     const target = join(root, sourcePath);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, `fixture:${sourcePath}\n`, 'utf8');
@@ -208,8 +212,8 @@ function fixture(): {
   writeFileSync(join(root, MCF_CLOUD_CONTEXT_ADAPTER_PATH), providerProgram(), 'utf8');
   chmodSync(join(root, MCF_CLOUD_CONTEXT_ADAPTER_PATH), 0o755);
 
-  const expectedSourceSha256 = Object.fromEntries(
-    MCF_CLOUD_CONTEXT_SOURCE_PATHS.map((sourcePath) => [
+  const expectedVerifiedFileSha256 = Object.fromEntries(
+    MCF_CLOUD_CONTEXT_VERIFIED_PATHS.map((sourcePath) => [
       sourcePath,
       digest(readFileSync(join(root, sourcePath))),
     ]),
@@ -222,7 +226,7 @@ function fixture(): {
       repository_root: root,
       python_executable: pythonExecutable,
       python_executable_sha256: pythonExecutableSha256,
-      expected_source_sha256: expectedSourceSha256,
+      expected_verified_file_sha256: expectedVerifiedFileSha256,
     },
   };
 }
@@ -261,16 +265,20 @@ describe('McfCloudContextReadService', () => {
         MCF_CLOUD_CONTEXT_READ_CONFIG_JSON: JSON.stringify(valid),
         MCF_CLOUD_CONTEXT_INGRESS_TOKEN: cloudIngressToken,
         MCF_CONTEXT_READ_TOKEN: sharedContextToken,
+        MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: ledgerIngressToken,
+        MCF_COGNITIVE_LEDGER_BEARER_TOKEN: ledgerBearerToken,
       }),
     ).toEqual(valid);
 
     const incomplete = structuredClone(valid);
-    delete incomplete.expected_source_sha256['state/control-bridge-g2a.yaml'];
+    delete incomplete.expected_verified_file_sha256['state/control-bridge-g2a.yaml'];
     expect(
       loadMcfCloudContextReadConfiguration({
         MCF_CLOUD_CONTEXT_READ_CONFIG_JSON: JSON.stringify(incomplete),
         MCF_CLOUD_CONTEXT_INGRESS_TOKEN: cloudIngressToken,
         MCF_CONTEXT_READ_TOKEN: sharedContextToken,
+        MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: ledgerIngressToken,
+        MCF_COGNITIVE_LEDGER_BEARER_TOKEN: ledgerBearerToken,
       }),
     ).toBeNull();
 
@@ -279,8 +287,22 @@ describe('McfCloudContextReadService', () => {
         MCF_CLOUD_CONTEXT_READ_CONFIG_JSON: JSON.stringify(valid),
         MCF_CLOUD_CONTEXT_INGRESS_TOKEN: sharedContextToken,
         MCF_CONTEXT_READ_TOKEN: sharedContextToken,
+        MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: ledgerIngressToken,
+        MCF_COGNITIVE_LEDGER_BEARER_TOKEN: ledgerBearerToken,
       }),
     ).toBeNull();
+
+    for (const reusedToken of [ledgerIngressToken, ledgerBearerToken]) {
+      expect(
+        loadMcfCloudContextReadConfiguration({
+          MCF_CLOUD_CONTEXT_READ_CONFIG_JSON: JSON.stringify(valid),
+          MCF_CLOUD_CONTEXT_INGRESS_TOKEN: reusedToken,
+          MCF_CONTEXT_READ_TOKEN: sharedContextToken,
+          MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: ledgerIngressToken,
+          MCF_COGNITIVE_LEDGER_BEARER_TOKEN: ledgerBearerToken,
+        }),
+      ).toBeNull();
+    }
 
     await expect(new McfCloudContextReadService(null).readOnly()).rejects.toMatchObject({
       code: 'MCF_CLOUD_CONTEXT_READ_DISABLED',
@@ -328,6 +350,18 @@ describe('McfCloudContextReadService', () => {
     expect(treeFingerprint(root)).toBe(fingerprintBefore);
   });
 
+  it('rejects concurrent work and releases the single-read bulkhead after success', async () => {
+    const { configuration } = fixture();
+    const service = new McfCloudContextReadService(configuration);
+
+    const first = service.readOnly();
+    await expect(service.readOnly()).rejects.toMatchObject({ code: 'MCF_CLOUD_CONTEXT_BUSY' });
+    await expect(first).resolves.toMatchObject({ provider_response: { status: 'PASS' } });
+    await expect(service.readOnly()).resolves.toMatchObject({
+      provider_response: { status: 'PASS' },
+    });
+  });
+
   it('fails before spawn when any configured source or executable digest drifts', async () => {
     const { configuration, root } = fixture();
     writeFileSync(join(root, 'state/control-bridge-g2a.yaml'), 'tampered\n', 'utf8');
@@ -358,6 +392,87 @@ describe('McfCloudContextReadService', () => {
     });
   });
 
+  it.each(MCF_CLOUD_CONTEXT_EXECUTION_DEPENDENCY_PATHS)(
+    'fails before spawn when execution dependency %s drifts',
+    async (executionDependencyPath) => {
+      const { configuration, root } = fixture();
+      writeFileSync(join(root, executionDependencyPath), 'tampered execution dependency\n', 'utf8');
+      const spawnAdapter = vi.fn();
+
+      await expect(
+        new McfCloudContextReadService(
+          configuration,
+          spawnAdapter as unknown as McfCloudContextSpawnAdapter,
+        ).readOnly(),
+      ).rejects.toMatchObject({ code: 'MCF_CLOUD_CONTEXT_BOUNDARY_INVALID' });
+      expect(spawnAdapter).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(MCF_CLOUD_CONTEXT_EXECUTION_DEPENDENCY_PATHS)(
+    'fails before spawn when execution dependency %s is a symlink',
+    async (executionDependencyPath) => {
+      const testFixture = fixture();
+      const target = join(
+        testFixture.temporaryRoot,
+        `outside-${executionDependencyPath.replaceAll('/', '-')}`,
+      );
+      writeFileSync(target, 'outside execution dependency\n', 'utf8');
+      const dependency = join(testFixture.root, executionDependencyPath);
+      unlinkSync(dependency);
+      symlinkSync(target, dependency);
+      const spawnAdapter = vi.fn();
+
+      await expect(
+        new McfCloudContextReadService(
+          testFixture.configuration,
+          spawnAdapter as unknown as McfCloudContextSpawnAdapter,
+        ).readOnly(),
+      ).rejects.toMatchObject({ code: 'MCF_CLOUD_CONTEXT_BOUNDARY_INVALID' });
+      expect(spawnAdapter).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(MCF_CLOUD_CONTEXT_EXECUTION_DEPENDENCY_PATHS)(
+    'fails after execution when dependency %s drifts while the child runs',
+    async (executionDependencyPath) => {
+      const { configuration, root } = fixture();
+      const spawnAdapter: McfCloudContextSpawnAdapter = (executable, arguments_, options) => {
+        const child = spawn(executable, [...arguments_], options);
+        child.once('close', () => {
+          writeFileSync(
+            join(root, executionDependencyPath),
+            'drifted while the child ran\n',
+            'utf8',
+          );
+        });
+        return child;
+      };
+
+      await expect(
+        new McfCloudContextReadService(configuration, spawnAdapter).readOnly(),
+      ).rejects.toMatchObject({ code: 'MCF_CLOUD_CONTEXT_BOUNDARY_INVALID' });
+    },
+  );
+
+  it.each(['control_plane/__pycache__', 'control_plane/g2a/__pycache__', 'scripts/__pycache__'])(
+    'fails before spawn when owned import directory %s contains bytecode cache',
+    async (cache) => {
+      const { configuration, root } = fixture();
+      mkdirSync(join(root, cache), { recursive: true });
+      writeFileSync(join(root, cache, 'owned.cpython-312.pyc'), 'untrusted bytecode', 'utf8');
+      const spawnAdapter = vi.fn();
+
+      await expect(
+        new McfCloudContextReadService(
+          configuration,
+          spawnAdapter as unknown as McfCloudContextSpawnAdapter,
+        ).readOnly(),
+      ).rejects.toMatchObject({ code: 'MCF_CLOUD_CONTEXT_BOUNDARY_INVALID' });
+      expect(spawnAdapter).not.toHaveBeenCalled();
+    },
+  );
+
   it.each([
     ['stdout', 65_537],
     ['stderr', 4_097],
@@ -376,16 +491,18 @@ describe('McfCloudContextReadService', () => {
     expect(child!.kill).toHaveBeenCalledWith('SIGKILL');
   });
 
-  it('normalizes spawn errors even when the child never emits close', async () => {
+  it('normalizes spawn errors, settles boundedly without close and releases the bulkhead', async () => {
     vi.useFakeTimers();
     const { configuration } = fixture();
-    let child: ChildProcessWithoutNullStreams;
+    const children: ChildProcessWithoutNullStreams[] = [];
     const spawnAdapter: McfCloudContextSpawnAdapter = () => {
-      child = inertChild(undefined, false);
+      const child = inertChild(undefined, false);
+      children.push(child);
       queueMicrotask(() => child.emit('error', new Error('sensitive internal spawn detail')));
       return child;
     };
-    const promise = new McfCloudContextReadService(configuration, spawnAdapter).readOnly();
+    const service = new McfCloudContextReadService(configuration, spawnAdapter);
+    const promise = service.readOnly();
     const assertion = expect(promise).rejects.toMatchObject({
       code: 'MCF_CLOUD_CONTEXT_ADAPTER_FAILED',
       message: 'The local read-only Cloud context adapter is unavailable.',
@@ -393,16 +510,32 @@ describe('McfCloudContextReadService', () => {
 
     await vi.advanceTimersByTimeAsync(1_001);
     await assertion;
-    expect(child!.kill).toHaveBeenCalledWith('SIGKILL');
+    expect(children[0]?.kill).toHaveBeenCalledWith('SIGKILL');
+
+    const second = service.readOnly();
+    const secondAssertion = expect(second).rejects.toMatchObject({
+      code: 'MCF_CLOUD_CONTEXT_ADAPTER_FAILED',
+    });
+    await vi.advanceTimersByTimeAsync(1_001);
+    await secondAssertion;
+    expect(children).toHaveLength(2);
   });
 
-  it('enforces the child-process timeout and waits for cleanup', async () => {
+  it('enforces timeout, settles boundedly without close and releases the bulkhead', async () => {
     vi.useFakeTimers();
     const { configuration } = fixture();
     let killed = false;
-    const spawnAdapter: McfCloudContextSpawnAdapter = () =>
-      inertChild(() => (killed = true), false);
-    const promise = new McfCloudContextReadService(configuration, spawnAdapter).readOnly();
+    let calls = 0;
+    const spawnAdapter: McfCloudContextSpawnAdapter = () => {
+      calls += 1;
+      const child = inertChild(() => (killed = true), false);
+      if (calls > 1) {
+        queueMicrotask(() => child.emit('error', new Error('second synthetic failure')));
+      }
+      return child;
+    };
+    const service = new McfCloudContextReadService(configuration, spawnAdapter);
+    const promise = service.readOnly();
     const assertion = expect(promise).rejects.toMatchObject({
       code: 'MCF_CLOUD_CONTEXT_TIMEOUT',
     });
@@ -410,5 +543,13 @@ describe('McfCloudContextReadService', () => {
     await vi.advanceTimersByTimeAsync(21_001);
     await assertion;
     expect(killed).toBe(true);
+
+    const second = service.readOnly();
+    const secondAssertion = expect(second).rejects.toMatchObject({
+      code: 'MCF_CLOUD_CONTEXT_ADAPTER_FAILED',
+    });
+    await vi.advanceTimersByTimeAsync(1_001);
+    await secondAssertion;
+    expect(calls).toBe(2);
   });
 });

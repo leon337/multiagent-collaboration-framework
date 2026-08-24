@@ -5,6 +5,7 @@ import {
   McfContextReadTokenGuard,
 } from './mcf-context-read-token.guard.js';
 import {
+  loadMcfCloudContextIngressToken,
   MCF_CLOUD_CONTEXT_INGRESS_TOKEN,
   McfCloudContextIngressTokenGuard,
 } from './mcf-cloud-context-ingress-token.guard.js';
@@ -40,7 +41,7 @@ import { McfContextRecoveryController } from './mcf-context-recovery.controller.
     },
     {
       provide: MCF_CLOUD_CONTEXT_INGRESS_TOKEN,
-      useFactory: () => process.env.MCF_CLOUD_CONTEXT_INGRESS_TOKEN ?? '',
+      useFactory: () => loadMcfCloudContextIngressToken(process.env),
     },
     McfCloudContextIngressTokenGuard,
     McfContextReadTokenGuard,

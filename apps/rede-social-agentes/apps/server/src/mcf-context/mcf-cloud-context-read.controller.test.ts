@@ -70,6 +70,12 @@ describe('McfCloudContextReadController', () => {
 
     await expect(
       controller(() =>
+        Promise.reject(new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_BUSY')),
+      ).readOnly({}),
+    ).rejects.toBeInstanceOf(ServiceUnavailableException);
+
+    await expect(
+      controller(() =>
         Promise.reject(
           new McfCloudContextReadUnavailableError('MCF_CLOUD_CONTEXT_CONTRACT_INVALID'),
         ),

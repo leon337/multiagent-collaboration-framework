@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { execFileSync } from 'node:child_process';
 import { createHash, createHmac, randomUUID } from 'node:crypto';
+import { request as httpRequest } from 'node:http';
 import {
   copyFileSync,
   lstatSync,
@@ -12,6 +13,7 @@ import {
   readlinkSync,
   realpathSync,
   rmSync,
+  type Stats,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -25,31 +27,41 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AppModule } from '../app.module.js';
 import {
   MCF_CLOUD_CONTEXT_ENABLE_VALUE,
+  MCF_CLOUD_CONTEXT_EXECUTION_DEPENDENCY_PATHS,
   MCF_CLOUD_CONTEXT_SOURCE_PATHS,
+  MCF_CLOUD_CONTEXT_VERIFIED_PATHS,
 } from './mcf-cloud-context-read.service.js';
 
 const sourceRoot = process.env.MCF_CLOUD_CONTEXT_E2E_SOURCE_ROOT;
 const expectedSourceRevision = process.env.MCF_CLOUD_CONTEXT_E2E_SOURCE_REVISION;
 const adminDatabaseUrl = process.env.MCF_CLOUD_CONTEXT_E2E_ADMIN_DATABASE_URL;
-const pythonExecutable = realpathSync(
-  process.env.MCF_CLOUD_CONTEXT_TEST_PYTHON ?? '/usr/bin/python3',
-);
+const configuredPythonExecutable = process.env.MCF_CLOUD_CONTEXT_TEST_PYTHON;
 const sharedContextToken = 'mcf-context-token-delivered-to-triview-e2e-20260823';
 const cloudIngressToken = 'mcf-cloud-context-dedicated-ingress-e2e-20260823';
+const ledgerIngressToken = 'mcf-ledger-dedicated-ingress-e2e-20260823';
+const ledgerBearerToken = 'mcf-ledger-provider-bearer-e2e-20260823';
 const rateLimitSecret = 'mcf-cloud-context-rate-limit-hmac-e2e-20260823';
 const mcfRepositoryRoot = fileURLToPath(new URL('../../../../../../', import.meta.url));
-const extraProviderPaths = [
-  'control_plane/__init__.py',
-  'control_plane/g2a/__init__.py',
-  'scripts/yaml_strict.py',
-] as const;
 
 function digest(value: Buffer | string): string {
   return createHash('sha256').update(value).digest('hex');
 }
 
-function treeFingerprint(root: string): string {
+function assertRuntimeTreeEntry(path: string, metadata: Stats): void {
+  const currentUserId = typeof process.getuid === 'function' ? process.getuid() : undefined;
+  if (currentUserId !== undefined && metadata.uid !== currentUserId) {
+    throw new Error(`Python runtime entry is not owned by the E2E user: ${path}`);
+  }
+  if ((metadata.isDirectory() || metadata.isFile()) && (metadata.mode & 0o022) !== 0) {
+    throw new Error(`Python runtime entry is group/world writable: ${path}`);
+  }
+}
+
+function treeFingerprint(root: string, requireOwnedNonWritableTree = false): string {
   const evidence: string[] = [];
+  const rootMetadata = lstatSync(root);
+  if (requireOwnedNonWritableTree) assertRuntimeTreeEntry(root, rootMetadata);
+  evidence.push(`root:${rootMetadata.mode & 0o777}:${rootMetadata.uid}`);
   const visit = (directory: string, relativeDirectory: string): void => {
     for (const entry of readdirSync(directory, { withFileTypes: true }).sort((left, right) =>
       left.name.localeCompare(right.name),
@@ -58,6 +70,7 @@ function treeFingerprint(root: string): string {
       const relativePath = join(relativeDirectory, entry.name);
       const path = join(directory, entry.name);
       const metadata = lstatSync(path);
+      if (requireOwnedNonWritableTree) assertRuntimeTreeEntry(path, metadata);
       if (entry.isDirectory()) {
         evidence.push(`directory:${relativePath}:${metadata.mode & 0o777}`);
         visit(path, relativePath);
@@ -94,8 +107,29 @@ function directChildPids(): string {
   }
 }
 
+function requestWithRawHeaders(
+  url: string,
+  rawHeaders: readonly string[],
+): Promise<{ body: string; status: number }> {
+  return new Promise((resolveRequest, rejectRequest) => {
+    const request = httpRequest(url, { headers: rawHeaders }, (response) => {
+      const chunks: Buffer[] = [];
+      response.on('data', (chunk: Buffer) => chunks.push(chunk));
+      response.once('error', rejectRequest);
+      response.once('end', () => {
+        resolveRequest({
+          body: Buffer.concat(chunks).toString('utf8'),
+          status: response.statusCode ?? 0,
+        });
+      });
+    });
+    request.once('error', rejectRequest);
+    request.end();
+  });
+}
+
 function copyProvider(source: string, target: string): void {
-  for (const relativePath of [...MCF_CLOUD_CONTEXT_SOURCE_PATHS, ...extraProviderPaths]) {
+  for (const relativePath of MCF_CLOUD_CONTEXT_VERIFIED_PATHS) {
     const destination = join(target, relativePath);
     mkdirSync(dirname(destination), { recursive: true });
     copyFileSync(join(source, relativePath), destination);
@@ -141,7 +175,8 @@ interface AbuseCounterRow extends DatabaseRow {
 const realE2EEnabled =
   sourceRoot !== undefined &&
   expectedSourceRevision !== undefined &&
-  adminDatabaseUrl !== undefined;
+  adminDatabaseUrl !== undefined &&
+  configuredPythonExecutable !== undefined;
 
 describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local adapter', () => {
   let app: NestFastifyApplication | undefined;
@@ -152,6 +187,9 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
   let sourceGitBefore = '';
   let mcfGitBefore = '';
   let disposableBefore = '';
+  let pythonExecutable = '';
+  let pythonRuntimeRoot = '';
+  let pythonRuntimeBefore = '';
   let childrenBefore: string | undefined;
   let adminDatabase: DatabaseHandle | undefined;
   let evidenceDatabase: DatabaseHandle | undefined;
@@ -162,12 +200,31 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
   let infoSpy: ReturnType<typeof vi.spyOn> | undefined;
   let warnSpy: ReturnType<typeof vi.spyOn> | undefined;
   let errorSpy: ReturnType<typeof vi.spyOn> | undefined;
-  const priorEnvironment: Record<string, string | undefined> = {};
+  const priorEnvironment: NodeJS.ProcessEnv = {};
+  let environmentIsolated = false;
 
   beforeAll(async () => {
-    if (!sourceRoot || !expectedSourceRevision || !adminDatabaseUrl) {
+    expect(process.versions.node).toBe('24.18.0');
+    if (
+      !sourceRoot ||
+      !expectedSourceRevision ||
+      !adminDatabaseUrl ||
+      !configuredPythonExecutable
+    ) {
       throw new Error('real E2E configuration missing');
     }
+    pythonExecutable = realpathSync(configuredPythonExecutable);
+    pythonRuntimeRoot = dirname(dirname(pythonExecutable));
+    const pythonRuntimeConfiguration = join(pythonRuntimeRoot, 'pyvenv.cfg');
+    expect(readFileSync(pythonRuntimeConfiguration, 'utf8')).toContain('home =');
+    for (const trustedRuntimePath of [
+      pythonRuntimeRoot,
+      pythonRuntimeConfiguration,
+      pythonExecutable,
+    ]) {
+      assertRuntimeTreeEntry(trustedRuntimePath, lstatSync(trustedRuntimePath));
+    }
+    pythonRuntimeBefore = treeFingerprint(pythonRuntimeRoot, true);
     const canonicalSourceRoot = realpathSync(sourceRoot);
     const actualRevision = execFileSync('git', ['rev-parse', 'HEAD'], {
       cwd: canonicalSourceRoot,
@@ -181,6 +238,9 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     temporaryRoot = mkdtempSync(join(tmpdir(), 'mcf-cloud-real-e2e-'));
     disposableRoot = join(temporaryRoot, 'workspaces/leon337/g2a-smoke/dev');
     copyProvider(canonicalSourceRoot, disposableRoot);
+    expect(MCF_CLOUD_CONTEXT_SOURCE_PATHS).toHaveLength(13);
+    expect(MCF_CLOUD_CONTEXT_EXECUTION_DEPENDENCY_PATHS).toHaveLength(3);
+    expect(MCF_CLOUD_CONTEXT_VERIFIED_PATHS).toHaveLength(16);
     disposableBefore = treeFingerprint(disposableRoot);
     childrenBefore = directChildPids();
 
@@ -212,42 +272,57 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     evidenceDatabase = createDatabase(disposableDatabaseUrl);
     await evidenceDatabase.pool.query('select 1');
 
-    const expectedSourceSha256 = Object.fromEntries(
-      MCF_CLOUD_CONTEXT_SOURCE_PATHS.map((relativePath) => [
+    const expectedVerifiedFileSha256 = Object.fromEntries(
+      MCF_CLOUD_CONTEXT_VERIFIED_PATHS.map((relativePath) => [
         relativePath,
         digest(readFileSync(join(disposableRoot, relativePath))),
       ]),
     );
-    for (const name of [
-      'MCF_CONTEXT_READ_TOKEN',
-      'MCF_CLOUD_CONTEXT_INGRESS_TOKEN',
-      'MCF_CLOUD_CONTEXT_READ_CONFIG_JSON',
-      'MCF_CONTEXT_CONFIG_JSON',
-      'DATABASE_URL',
-      'NODE_ENV',
-      'RATE_LIMIT_KEY_SECRET',
-      'MCF_RECEIPT_SECRET',
-      'MCF_RUNTIME_TOKEN',
-      'ALLOWED_ORIGINS',
-    ]) {
-      priorEnvironment[name] = process.env[name];
+    Object.assign(priorEnvironment, process.env);
+    for (const name of Object.keys(process.env)) {
+      delete process.env[name];
     }
-    process.env.MCF_CONTEXT_READ_TOKEN = sharedContextToken;
-    process.env.MCF_CLOUD_CONTEXT_INGRESS_TOKEN = cloudIngressToken;
-    process.env.MCF_CONTEXT_CONFIG_JSON = '';
-    process.env.DATABASE_URL = disposableDatabaseUrl;
-    process.env.NODE_ENV = 'test';
-    process.env.RATE_LIMIT_KEY_SECRET = rateLimitSecret;
-    process.env.MCF_RECEIPT_SECRET = 'mcf-cloud-context-receipt-secret-e2e-20260823';
-    process.env.MCF_RUNTIME_TOKEN = 'mcf-cloud-context-runtime-token-e2e-20260823';
-    process.env.ALLOWED_ORIGINS = 'http://127.0.0.1:5173';
-    process.env.MCF_CLOUD_CONTEXT_READ_CONFIG_JSON = JSON.stringify({
-      enable: MCF_CLOUD_CONTEXT_ENABLE_VALUE,
-      repository_root: disposableRoot,
-      python_executable: pythonExecutable,
-      python_executable_sha256: digest(readFileSync(pythonExecutable)),
-      expected_source_sha256: expectedSourceSha256,
+    const isolatedHome = join(temporaryRoot, 'isolated-home');
+    mkdirSync(isolatedHome, { recursive: true });
+    Object.assign(process.env, {
+      ALLOWED_ORIGINS: 'http://127.0.0.1:5173',
+      DATABASE_URL: disposableDatabaseUrl,
+      HOME: isolatedHome,
+      MCF_CLOUD_CONTEXT_INGRESS_TOKEN: cloudIngressToken,
+      MCF_CLOUD_CONTEXT_READ_CONFIG_JSON: JSON.stringify({
+        enable: MCF_CLOUD_CONTEXT_ENABLE_VALUE,
+        repository_root: disposableRoot,
+        python_executable: pythonExecutable,
+        python_executable_sha256: digest(readFileSync(pythonExecutable)),
+        expected_verified_file_sha256: expectedVerifiedFileSha256,
+      }),
+      MCF_COGNITIVE_LEDGER_BEARER_TOKEN: ledgerBearerToken,
+      MCF_COGNITIVE_LEDGER_INGRESS_TOKEN: ledgerIngressToken,
+      MCF_CONTEXT_CONFIG_JSON: '',
+      MCF_CONTEXT_READ_TOKEN: sharedContextToken,
+      MCF_RECEIPT_SECRET: 'mcf-cloud-context-receipt-secret-e2e-20260823',
+      MCF_RUNTIME_TOKEN: 'mcf-cloud-context-runtime-token-e2e-20260823',
+      NODE_ENV: 'test',
+      RATE_LIMIT_KEY_SECRET: rateLimitSecret,
     });
+    environmentIsolated = true;
+    expect(Object.keys(process.env).sort()).toEqual(
+      [
+        'ALLOWED_ORIGINS',
+        'DATABASE_URL',
+        'HOME',
+        'MCF_CLOUD_CONTEXT_INGRESS_TOKEN',
+        'MCF_CLOUD_CONTEXT_READ_CONFIG_JSON',
+        'MCF_COGNITIVE_LEDGER_BEARER_TOKEN',
+        'MCF_COGNITIVE_LEDGER_INGRESS_TOKEN',
+        'MCF_CONTEXT_CONFIG_JSON',
+        'MCF_CONTEXT_READ_TOKEN',
+        'MCF_RECEIPT_SECRET',
+        'MCF_RUNTIME_TOKEN',
+        'NODE_ENV',
+        'RATE_LIMIT_KEY_SECRET',
+      ].sort(),
+    );
 
     const captureLog = (...values: unknown[]): void => {
       runtimeLogs.push(
@@ -285,6 +360,9 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
       }
       if (mcfGitBefore !== '') expect(gitFingerprint(mcfRepositoryRoot)).toBe(mcfGitBefore);
       if (disposableRoot !== '') expect(treeFingerprint(disposableRoot)).toBe(disposableBefore);
+      if (pythonRuntimeRoot !== '') {
+        expect(treeFingerprint(pythonRuntimeRoot, true)).toBe(pythonRuntimeBefore);
+      }
       if (childrenBefore !== undefined) expect(directChildPids()).toBe(childrenBefore);
     } finally {
       try {
@@ -316,9 +394,9 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
             infoSpy?.mockRestore();
             warnSpy?.mockRestore();
             errorSpy?.mockRestore();
-            for (const [name, value] of Object.entries(priorEnvironment)) {
-              if (value === undefined) delete process.env[name];
-              else process.env[name] = value;
+            if (environmentIsolated) {
+              for (const name of Object.keys(process.env)) delete process.env[name];
+              Object.assign(process.env, priorEnvironment);
             }
             if (temporaryRoot !== '') rmSync(temporaryRoot, { recursive: true, force: true });
           }
@@ -340,6 +418,21 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
       headers: { 'x-mcf-cloud-context-token': sharedContextToken },
     });
     expect(triViewTokenAtCloudHeader.status).toBe(401);
+
+    for (const ledgerToken of [ledgerIngressToken, ledgerBearerToken]) {
+      const ledgerTokenAtCloudHeader = await fetch(url, {
+        headers: { 'x-mcf-cloud-context-token': ledgerToken },
+      });
+      expect(ledgerTokenAtCloudHeader.status).toBe(401);
+    }
+
+    const duplicatedCloudHeader = await requestWithRawHeaders(url, [
+      'x-mcf-cloud-context-token',
+      cloudIngressToken,
+      'x-mcf-cloud-context-token',
+      cloudIngressToken,
+    ]);
+    expect([400, 401], duplicatedCloudHeader.body).toContain(duplicatedCloudHeader.status);
 
     const injected = await fetch(
       `${url}?repository_root=${encodeURIComponent('/etc')}&operation=workspace.read`,
@@ -371,8 +464,8 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     const responseBody = await response.text();
     expect(response.status, responseBody).toBe(200);
     expect(response.headers.get('cache-control')).toBe('private, no-store');
-    expect(response.headers.get('x-ratelimit-limit')).toBe('300');
-    expect(response.headers.get('x-ratelimit-remaining')).toBe('295');
+    expect(response.headers.get('x-ratelimit-limit')).toBe('10');
+    expect(response.headers.get('x-ratelimit-remaining')).toBe('3');
     const body = JSON.parse(responseBody) as Record<string, unknown>;
     expect(body).toMatchObject({
       schema_version: 1,
@@ -397,8 +490,11 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
       disposableRoot,
       sourceRoot,
       pythonExecutable,
+      process.env.HOME,
       sharedContextToken,
       cloudIngressToken,
+      ledgerIngressToken,
+      ledgerBearerToken,
       '/home/',
       'arbitrary-command',
     ]) {
@@ -434,14 +530,16 @@ describe.skipIf(!realE2EEnabled).sequential('MCF HTTP to real Cloud G2-A local a
     expect(counters.rows).toHaveLength(1);
     expect(counters.rows[0]).toMatchObject({
       key_hash: createHmac('sha256', rateLimitSecret).update('ip:127.0.0.1').digest('hex'),
-      policy: 'read',
-      request_count: 5,
+      policy: 'mcf-cloud-context-local-read',
+      request_count: 7,
     });
     const renderedCounters = JSON.stringify(counters.rows);
     const renderedLogs = runtimeLogs.join('\n');
     for (const forbidden of [
       sharedContextToken,
       cloudIngressToken,
+      ledgerIngressToken,
+      ledgerBearerToken,
       disposableRoot,
       sourceRoot,
       '/etc',
