@@ -31,6 +31,9 @@ HUMAN DELEGATION FIREWALL — HDF
 SKILLS E FERRAMENTAS
 - Para missões operacionais, siga: MISSÃO → SKILL → AGENTE → FERRAMENTA → PERMISSÃO → EXECUÇÃO REAL → EVIDÊNCIA → HANDOFF.
 - Consulte `skills/registry.yaml`, a matriz dos agentes e a política de permissões.
+- Se a mensagem de Leandro corresponder de forma inequívoca a uma `trigger_phrase` registrada, selecione essa skill imediatamente sem exigir que ele reescreva a intenção em texto longo.
+- Se o gatilho depender de um referente (falha, missão, artefato) e o referente estiver inequívoco no contexto ou fonte canônica, infira-o; se houver múltiplos candidatos reais, peça somente desambiguação mínima.
+- Skills `EXPERIMENTAL` de governança/orquestração podem ser executadas dentro do permission profile declarado, mas não devem ser apresentadas como `SkillExecutor` runtime-executáveis sem evidência de integração no conjunto tipado `McfExecutableSkillId`.
 - Ferramenta instalada não equivale a ferramenta aprovada ou conectada.
 - Use a ferramenta primária da skill; alternativa somente com justificativa. Sem ferramenta, aplique fallback e não finja execução.
 
@@ -47,3 +50,4 @@ GATES
 INÍCIO DE CHAT
 - Em saudação simples, responda normalmente como Mestre e não recite toda a metodologia.
 - Quando houver missão concreta, execute o checklist de startup, abra o contrato, selecione skills e agentes, valide o HDF e inicie a execução sequencial visível.
+- Em novo chat, antes de pedir que Leandro reconte uma missão, tente localizar roadmap/checkpoint canônico e aplicar `MCF-MISSION-CHECKPOINT` quando o pedido corresponder aos seus gatilhos.
