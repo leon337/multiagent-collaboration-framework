@@ -1,0 +1,97 @@
+skill:
+  skill_id: MCF-FAILURE-AUTOPSY
+  name: "Autópsia de falha do agente"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Reconstruir de forma auditável o caminho operacional de uma falha de agente para estudo, correção e prevenção."
+  owner_agents: [Augusto, Beatriz]
+  supporting_agents: [Emily, Patricia, Mestre]
+  trigger_phrases:
+    - "AUTÓPSIA DA FALHA"
+    - "ANALISE SEU ERRO"
+    - "ANALISE O SEU ERRO"
+    - "ONDE VOCÊ ERROU?"
+    - "EXPLIQUE A FALHA"
+  required_inputs: [failure_reference]
+  optional_inputs: [mission_reference, affected_artifact, user_observation]
+  preconditions:
+    - "Existe uma falha identificável no contexto atual, histórico acessível ou artefato fornecido; caso contrário aplicar fallback sem inventar causa."
+  allowed_tools: [GitHub]
+  alternative_tools:
+    - "conectores/hosts e ferramentas de observabilidade realmente disponíveis no ambiente, quando necessários para verificar a falha"
+  forbidden_tools:
+    - invent_private_reasoning
+    - fabricate_tool_use
+    - erase_failure_evidence
+    - self_approval_without_evidence
+    - invent_root_cause
+  permission_profile: READ_ONLY
+  execution_steps:
+    - delimitar_falha
+    - reconstruir_trace_observavel
+    - separar_fato_de_hipotese
+    - identificar_premissas_observaveis
+    - inventariar_ferramentas_disponiveis_usadas_e_omitidas
+    - localizar_ponto_de_decisao_incorreta
+    - mapear_regra_boundary_ou_contrato_violado
+    - avaliar_impacto
+    - descrever_caminho_operacional_correto
+    - propor_prevencao_reutilizavel
+    - declarar_lacunas_nao_verificadas
+  required_evidence:
+    - failure_trigger
+    - chronological_trace
+    - evidence_references
+    - observed_premises
+    - tools_used
+    - omitted_checks_or_tools
+    - violated_rules_or_boundaries
+    - impact
+    - corrected_path
+    - prevention_actions
+  expected_outputs: [failure_autopsy_report, prevention_actions]
+  acceptance_criteria:
+    - facts_separated_from_hypotheses
+    - no_private_chain_fabrication
+    - causal_path_supported
+    - omitted_tool_checks_explicit
+    - violated_rule_supported
+    - prevention_actionable
+    - limitations_declared
+  failure_modes:
+    - insufficient_evidence
+    - ambiguous_failure_scope
+    - unavailable_history
+    - false_causal_attribution
+    - private_reasoning_substitution
+  fallback:
+    without_primary_tool: "Usar evidência já disponível e ferramenta alternativa aprovada; marcar o que não puder ser verificado."
+    without_any_tool: "Produzir autópsia limitada aos fatos presentes na conversa/artefatos e marcar lacunas como NAO_VERIFICADO."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Emily
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: INTERNAL
+    human_gate_triggers:
+      - "a correção proposta altera objetivo material, custo, produção ou autorização reservada"
+    prohibited_actions:
+      - "inventar cadeia privada token a token"
+      - "apagar evidência negativa"
+      - "converter hipótese em fato"
+      - "atribuir execução a agente/ferramenta sem evidência"
+  tests:
+    positive_scenarios:
+      - FALSE_LOCAL_WORKTREE_ACCESS_ASSUMPTION
+      - TWO_APPARENT_ACTIVE_ROADMAPS
+    negative_scenarios:
+      - insufficient_failure_reference
+      - request_private_chain_token_by_token
+      - unproven_external_root_cause
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED
