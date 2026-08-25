@@ -9,11 +9,11 @@
 **Classe de risco:** `B`  
 **Fuso canônico deste roadmap:** `America/Recife (BRT, UTC-03)`  
 **Criado em:** `2026-08-25 01:52 BRT`  
-**Última atualização:** `2026-08-25 02:12 BRT`  
+**Última atualização:** `2026-08-25 02:15 BRT`  
 **Estado:** `AGUARDANDO_GATE_DE_LEANDRO_PARA_INICIAR_EXECUCAO`  
 **Etapa atual:** `R2 — Revisão humana do checklist`
 
-> Este documento é o **único roadmap/checklist operacional canônico** desta missão a partir de `2026-08-25 02:12 BRT`.
+> Este documento é o **único roadmap/checklist operacional canônico** desta missão a partir de `2026-08-25 02:15 BRT`.
 > O roadmap inicial `2026-08-25-codex-work-recovery-roadmap.md` foi retirado de `docs/roadmaps/` após aprovação de Leandro, porque continha uma premissa falsa e sua permanência lado a lado com este arquivo criou uma segunda fonte operacional aparente.
 > A evidência histórica foi preservada em `artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md` e no histórico Git.
 
@@ -93,7 +93,7 @@ Nenhum novo chat deve voltar a pedir ZIP/TAR/manual export a Leandro antes de te
 
 ### Correção formal de governança documental — dois roadmaps aparentes
 
-**Falha identificada por Leandro em `2026-08-25 02:05 BRT` e correção aprovada em `2026-08-25 02:12 BRT`.**
+**Falha identificada por Leandro em `2026-08-25 02:05 BRT`, correção aprovada em `2026-08-25 02:12 BRT` e executada em `2026-08-25 02:15 BRT`.**
 
 Depois da criação deste roadmap v2, o roadmap inicial permaneceu lado a lado em `docs/roadmaps/`. Embora a intenção fosse preservar evidência histórica, a organização criou duas fontes aparentemente operacionais e poderia levar um novo agente/chat a escolher o documento errado.
 
@@ -456,13 +456,23 @@ Qualquer novo MESTRE que receba esta missão deve executar, nesta ordem:
 
 - timestamp_brt: 2026-08-25 02:12
   stage: R2
-  actor: Leandro/Mestre/Emily
-  action: Leandro aprovou a correção; o roadmap inicial foi retirado da área operacional ativa, a referência histórica foi preservada e este v2 foi atualizado como única fonte canônica da missão.
+  actor: Leandro
+  action: Aprovou explicitamente a recomendação de manter um único roadmap operacional canônico e preservar o roadmap inicial apenas como evidência histórica.
+  evidence:
+    - autorização explícita na conversa
+  result: HUMAN_GATE
+  next_action: executar reorganização documental e registrar evidência
+
+- timestamp_brt: 2026-08-25 02:15
+  stage: R2
+  actor: Mestre/Emily
+  action: Executou a correção aprovada; o roadmap inicial foi retirado da área operacional ativa, a referência histórica foi preservada e este v2 foi atualizado como única fonte canônica da missão.
   evidence:
     - artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md
     - blob histórico 5023279fc8e4d5103bcf7774c3a07d6565f8e5f7
     - commit histórico 346419a745bd60f13f36f5edbb22294c98f65df0
     - docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md
+    - docs/roadmaps contém somente o roadmap v2 desta missão após a correção
   result: PASS
   next_action: Leandro concluir a revisão do checklist R2 antes do início de R3
 ```
