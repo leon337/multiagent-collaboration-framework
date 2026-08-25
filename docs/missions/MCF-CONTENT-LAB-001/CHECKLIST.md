@@ -74,7 +74,7 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 
 ## R03A — Mapear a superfície de integração do NotebookLM
 
-**Estado:** `[~] EM PREPARAÇÃO — MUDANÇA DE ESCOPO RECEBIDA`
+**Estado:** `[~] EM EXECUÇÃO`
 
 - [x] LEANDRO determinou a criação de uma integração própria para extrair e operar o máximo possível do NotebookLM.
 - [x] Diretório de plugins do ChatGPT pesquisado; nenhum plugin específico de NotebookLM apareceu nos resultados deste checkpoint.
@@ -83,19 +83,25 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 - [x] Documentação confirma visualização do comando personalizado usado em vários artefatos e exportações/downloads em formatos específicos.
 - [x] API oficial `Gemini Notebook Enterprise` encontrada em `v1alpha`/Preview para gestão de notebooks, fontes e Resumo em Áudio.
 - [x] Nas fontes oficiais consultadas, não foi encontrada API pública documentada do produto pessoal cobrindo integralmente conversa e todos os artefatos do Estúdio.
+- [x] `ROADMAP.md` atualizado com R03A e R03B — commit `2fa68b2537bfe1bb9a47babfa7765af9bb03930f`.
+- [x] Checklist sincronizado após a mudança de roadmap neste checkpoint.
 - [ ] Mapear recurso por recurso em matriz `capacidade → leitura → criação → exportação → API oficial → UI → evidência`.
 - [ ] Definir fronteira permitida para integração com o produto pessoal sem coletar credenciais nem contornar controles de acesso.
-- [ ] Atualizar roadmap com R03A e R03B antes de continuar implementação.
+- [ ] Atualizar este checklist antes de concluir R03A.
+
+**Próxima ação:** concluir a matriz de capacidades e decidir a arquitetura segura para o NotebookLM pessoal versus Gemini Notebook Enterprise.
 
 ## R03B — Construir MVP do App/connector NotebookLM ↔ ChatGPT
 
-**Estado:** `[ ] PENDENTE — AGUARDA SINCRONIZAÇÃO DO ROADMAP`
+**Estado:** `[ ] PENDENTE`
 
-- [ ] Classificar arquétipo do App ChatGPT.
+- [ ] Classificar arquétipo do App ChatGPT; hipótese inicial: `tool-only`/data-first com UI opcional posterior.
 - [ ] Definir ferramentas MCP e contratos de dados.
+- [ ] Expor `search` e `fetch` como superfície padrão de leitura estruturada.
 - [ ] Implementar adaptador oficial para NotebookLM Enterprise quando aplicável.
 - [ ] Projetar adaptador para produto pessoal via mecanismos permitidos e autorização explícita do usuário.
-- [ ] Expor `search` e `fetch` para leitura estruturada e ferramentas de ação separadas quando seguras.
+- [ ] Avaliar extensão de navegador companheira multiplataforma como ponte para a UI pessoal, se necessária.
+- [ ] Integrar exportações oficiais via Google Docs/Sheets/Drive quando aplicável.
 - [ ] Testar com o notebook real desta missão.
 - [ ] Validar extração de transcrição, fontes, citações, prompts e artefatos.
 - [ ] Atualizar este checklist antes de concluir R03B.
