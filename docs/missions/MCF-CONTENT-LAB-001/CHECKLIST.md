@@ -22,30 +22,31 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 
 ## R01 — Preparar e governar a missão
 
-**Estado:** `[~] EM EXECUÇÃO — VALIDAÇÃO CONCLUÍDA, AGUARDANDO FECHAMENTO NO ROADMAP`
+**Estado:** `[x] CONCLUÍDO`
 
 - [x] Release pública vigente consultada: `MCF v1.1.0@5d79f488407c77f7b9f21ecfefb41ddfb3a52aef`.
 - [x] `main` live consultado antes da branch: `85ccf418740e78b5e1e3eeb7742baf6f869978c1`.
 - [x] Branch exclusiva criada: `mission/mcf-video-gemini-content-lab-20260825`.
 - [x] Contrato da missão criado: `MISSAO.md` — commit `5070c583aa0722e5292471d0b0bd1701d6c5737e`.
-- [x] Roadmap cronológico criado: `ROADMAP.md` — commit `ef2c1277a8be14e10f8b13c71606987a3cf18523`.
-- [x] Checklist cronológico criado: `CHECKLIST.md` — commit `7eb063c54f4536ddebc743099a15953e10c96a4b`.
+- [x] Roadmap cronológico criado: `ROADMAP.md` — commit inicial `ef2c1277a8be14e10f8b13c71606987a3cf18523`.
+- [x] Checklist cronológico criado: `CHECKLIST.md` — commit inicial `7eb063c54f4536ddebc743099a15953e10c96a4b`.
 - [x] `MISSAO.md` relido diretamente na branch e validado como legível/coerente.
 - [x] `ROADMAP.md` relido diretamente na branch e validado como legível/coerente.
 - [x] `CHECKLIST.md` relido diretamente na branch e validado como legível/coerente.
 - [x] Contrato, roadmap e checklist reconciliados sem divergência material identificada neste checkpoint.
-- [ ] Atualizar R01 no `ROADMAP.md` para `CONCLUÍDO`.
-- [ ] Atualizar este checklist com o commit de fechamento do roadmap e então marcar R01 como `CONCLUÍDO`.
+- [x] Checklist atualizado antes do fechamento do roadmap — commit `4983488e38b89774fbe78ff375e23917a1312b52`.
+- [x] R01 marcado como `CONCLUÍDO` no `ROADMAP.md` — commit `43270d5638858d3f66ab692d2cb9d05381c2d4c1`.
+- [x] Fechamento de R01 sincronizado neste checklist.
 
-**Evidência de validação:** leitura direta dos três arquivos na branch após criação.
+**Evidência de validação:** leitura direta dos três arquivos na branch após criação e fechamento sequencial checklist → roadmap → checklist.
 
-**Próxima ação:** fechar R01 no `ROADMAP.md` e registrar o fechamento aqui antes de iniciar R02.
+**Próxima ação:** iniciar R02 — concluir a auditoria integral do vídeo, preservando a trilha `MCF-VIDEO-AUDIT-001`.
 
 ---
 
 ## R02 — Concluir a auditoria integral do vídeo
 
-**Estado:** `[ ] PENDENTE`
+**Estado:** `[ ] PENDENTE — PRÓXIMO`
 
 - [ ] Consolidar timeline visual.
 - [ ] Resolver a dependência da transcrição/narração ou registrar limitação verificável.
