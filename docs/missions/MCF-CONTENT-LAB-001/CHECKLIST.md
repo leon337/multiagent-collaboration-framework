@@ -22,19 +22,24 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 
 ## R01 — Preparar e governar a missão
 
-**Estado:** `[~] EM EXECUÇÃO`
+**Estado:** `[~] EM EXECUÇÃO — VALIDAÇÃO CONCLUÍDA, AGUARDANDO FECHAMENTO NO ROADMAP`
 
 - [x] Release pública vigente consultada: `MCF v1.1.0@5d79f488407c77f7b9f21ecfefb41ddfb3a52aef`.
 - [x] `main` live consultado antes da branch: `85ccf418740e78b5e1e3eeb7742baf6f869978c1`.
 - [x] Branch exclusiva criada: `mission/mcf-video-gemini-content-lab-20260825`.
 - [x] Contrato da missão criado: `MISSAO.md` — commit `5070c583aa0722e5292471d0b0bd1701d6c5737e`.
 - [x] Roadmap cronológico criado: `ROADMAP.md` — commit `ef2c1277a8be14e10f8b13c71606987a3cf18523`.
-- [x] Checklist cronológico criado: `CHECKLIST.md`.
-- [ ] Verificar por leitura os três artefatos diretamente na branch.
-- [ ] Atualizar este checklist com a evidência da verificação.
-- [ ] Somente então marcar R01 como `CONCLUÍDO`.
+- [x] Checklist cronológico criado: `CHECKLIST.md` — commit `7eb063c54f4536ddebc743099a15953e10c96a4b`.
+- [x] `MISSAO.md` relido diretamente na branch e validado como legível/coerente.
+- [x] `ROADMAP.md` relido diretamente na branch e validado como legível/coerente.
+- [x] `CHECKLIST.md` relido diretamente na branch e validado como legível/coerente.
+- [x] Contrato, roadmap e checklist reconciliados sem divergência material identificada neste checkpoint.
+- [ ] Atualizar R01 no `ROADMAP.md` para `CONCLUÍDO`.
+- [ ] Atualizar este checklist com o commit de fechamento do roadmap e então marcar R01 como `CONCLUÍDO`.
 
-**Próxima ação:** ler `MISSAO.md`, `ROADMAP.md` e `CHECKLIST.md` na branch e reconciliar qualquer divergência antes de fechar R01.
+**Evidência de validação:** leitura direta dos três arquivos na branch após criação.
+
+**Próxima ação:** fechar R01 no `ROADMAP.md` e registrar o fechamento aqui antes de iniciar R02.
 
 ---
 
