@@ -1,10 +1,14 @@
 mission_id: MCF-20260825-CODEX-WORK-RECOVERY
 phase_id: PHASE-01-CODEX-WORK-RECOVERY
 cycle: 1
-state: EM_EXECUCAO
+state: AGUARDANDO_GATE_HUMANO
+current_stage: R2_REVIEW_CHECKLIST
+last_updated_brt: "2026-08-25 01:52"
+timezone: America/Recife
 objective: >-
   Recuperar sem perda e sem reconstrução inventada o trabalho NextGen local não publicado,
-  criar checkpoint remoto verificável e devolver continuidade à missão original.
+  criar checkpoint remoto verificável e devolver continuidade à missão original, adicionando
+  mecanismos auditáveis de autópsia de falha e apresentação de checkpoint/status.
 risk_class: B
 coordinator: Mestre
 decision_authority: Leo
@@ -12,30 +16,50 @@ authority_human: Leandro
 repository: leon337/multiagent-collaboration-framework
 recovery_branch: mission/codex-work-recovery-20260825
 opened_from_main_sha: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
+main_sha_last_verified: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
 latest_stable_release_observed: v1.1.0@5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+canonical_roadmap: docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md
+superseded_roadmap_for_mutable_status: docs/roadmaps/2026-08-25-codex-work-recovery-roadmap.md
 concurrent_prs:
   - number: 170
     state_observed: OPEN
     merged_observed: false
     head_sha_observed: 1da1a13bd8ca47bed2f4a4e560e64691788582f8
+    verified_at_brt: "2026-08-25 01:51"
 observed_local_source:
+  host: leo-N43SM
   path: /home/leo/Documentos/GitHub/multiagent-collaboration-framework-nextgen-reconciliation-20260824
-  access_from_current_session: false
-  evidence: screenshots_only
-observed_local_diff:
+  access_from_current_session: true
+  access_evidence: SENTINELX_DIRECT_READ
+  branch: docs/mcf-nextgen-reconciliation-f14-plan-20260824
+  head: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
+  verified_at_brt: "2026-08-25 01:51"
+current_local_diff:
+  tracked_files_changed: 12
+  additions: 1261
+  deletions: 213
+  untracked_root: artifacts/phases/PHASE-NEXTGEN-RECONCILIATION-F14-001/
+  status: DIRECTLY_OBSERVED_NOT_YET_FORENSICALLY_INVENTORIED
+historical_screenshot_diff:
   files_changed: 19
   additions: 1759
   deletions: 318
-  status: NOT_YET_RECONCILED_WITH_EXACT_PAYLOAD
+  status: HISTORICAL_EVIDENCE_TO_RECONCILE
 completed:
-  - live_main_read
   - live_release_read
+  - live_main_read
   - live_pr_170_read
   - recovery_branch_created
-  - recovery_roadmap_published
-  - phase_plan_opened
+  - direct_host_discovery
+  - direct_worktree_access_verified
+  - prior_access_assumption_audited_and_corrected
+  - auditable_roadmap_v2_published
 pending:
-  - acquire_exact_local_payload
+  - leandro_review_and_approve_checklist
+  - implement_failure_autopsy_skill
+  - implement_mission_checkpoint_skill
+  - validate_both_skills
+  - forensic_inventory_exact_local_payload
   - preserve_binary_diff_and_untracked_files
   - generate_file_hash_inventory
   - create_forensic_recovery_commit
@@ -46,14 +70,14 @@ pending:
   - independent_audit
   - leo_gate
   - handoff_to_nextgen
-blockers:
-  - id: LOCAL_WORKTREE_NOT_EXPOSED
-    type: EXTERNAL_DEPENDENCY
-    description: >-
-      A sessão atual não possui acesso direto ao filesystem que contém a worktree observada.
-      Conteúdo ausente não será reconstruído por screenshots.
-next_action: acquire_exact_local_payload
-acceptance_for_next_action: exact bytes or lossless export of local worktree available
+blockers: []
+human_gate:
+  id: LEANDRO-REVIEW-AUDITABLE-ROADMAP-V2
+  status: OPEN
+  opened_at_brt: "2026-08-25 01:52"
+  decision_needed: Aprovar ou corrigir o checklist cronologico antes da execucao das skills e da recuperacao material.
+next_action: leandro_review_and_approve_checklist
+acceptance_for_next_action: explicit approval or corrections from Leandro
 prohibitions:
   - no_screenshot_reconstruction
   - no_reset_or_clean_original_worktree
@@ -62,3 +86,5 @@ prohibitions:
   - no_runtime_vps_production_release_change
   - no_nx0_implementation
   - no_fabricated_agent_execution
+  - no_skill_implementation_before_current_human_gate
+  - no_payload_recovery_mutation_before_current_human_gate
