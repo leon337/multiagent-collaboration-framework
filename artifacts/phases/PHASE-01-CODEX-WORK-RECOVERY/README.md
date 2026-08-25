@@ -2,7 +2,7 @@
 
 Mission: `MCF-20260825-CODEX-WORK-RECOVERY`
 
-Last updated: `2026-08-25 01:52 BRT (America/Recife)`
+Last updated: `2026-08-25 02:12 BRT (America/Recife)`
 
 ## Purpose
 
@@ -15,9 +15,12 @@ This phase also plans two permanent MCF skills:
 
 ## Canonical current roadmap
 
-- `docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md` — **canonical mutable status, chronological checklist, timestamped audit log and next action**.
+- `docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md` — **único roadmap operacional canônico**, com status mutável, checklist cronológico, timestamps, audit log e próxima ação.
 
-The older `docs/roadmaps/2026-08-25-codex-work-recovery-roadmap.md` is preserved as historical evidence. Its former `LOCAL_WORKTREE_NOT_EXPOSED` blocker is superseded and must not be treated as current truth.
+O roadmap inicial incorreto foi retirado de `docs/roadmaps/`. Sua existência e causa da supersessão estão preservadas em:
+
+- `history/INITIAL-ROADMAP-SUPERSEDED.md` — **SUPERSEDED / não usar para continuidade**;
+- histórico Git no commit `346419a745bd60f13f36f5edbb22294c98f65df0` e blob `5023279fc8e4d5103bcf7774c3a07d6565f8e5f7`.
 
 ## Current verified state
 
@@ -27,6 +30,8 @@ The older `docs/roadmaps/2026-08-25-codex-work-recovery-roadmap.md` is preserved
 - Local worktree HEAD: `85ccf418740e78b5e1e3eeb7742baf6f869978c1`.
 - Current tracked diff observed: `12 files / +1261 / -213` plus untracked `artifacts/phases/PHASE-NEXTGEN-RECONCILIATION-F14-001/`.
 - Historical screenshot snapshot `19 files / +1759 / -318` remains evidence to reconcile, not current measured truth.
+- The false blocker `LOCAL_WORKTREE_NOT_EXPOSED` is superseded.
+- Governance failure `TWO_APPARENT_ACTIVE_ROADMAPS` was identified by Leandro and corrected at `2026-08-25 02:12 BRT`.
 - Current phase state: `AGUARDANDO_GATE_HUMANO`.
 - Current stage: `R2 — Leandro reviews the auditable checklist`.
 
@@ -36,6 +41,7 @@ The older `docs/roadmaps/2026-08-25-codex-work-recovery-roadmap.md` is preserved
 - `PHASE-01-CHECKPOINT.yaml` — current recoverable state.
 - `PHASE-01-DECISIONS.md` — recovery decisions and boundaries.
 - canonical roadmap v2 above — authoritative chronology/current position.
+- `history/INITIAL-ROADMAP-SUPERSEDED.md` — historical failure evidence only.
 
 ## Required before phase close
 
