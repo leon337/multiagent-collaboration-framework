@@ -9,11 +9,10 @@ Branch: `mission/document-harness-mestre-ox-communication-20260825` (base `85ccf
 |---|---|
 | `docs/integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md` | Especificação canônica do canal |
 | `docs/integrations/evidence/MCF-HARNESS-MESTRE-OX-E2E-20260825.md` | Evidência E2E datada (ids efêmeros) |
-| `README.md` | Cross-link na seção de integração do ecossistema |
 | `docs/README.md` | Cross-link no índice por domínio |
 | `artifacts/phases/MCF-HARNESS-COMMS-DOC-001/*` | PLAN/CHECKPOINT/DECISIONS/REPORT desta missão |
 
-A Ox produziu localmente os commits `b236393c`, `213854f0` e `09c85bb5`. Como o ambiente DSH não possuía credenciais GitHub, a publicação remota foi delegada ao MESTRE e materializada por um ambiente GitHub autenticado. Os SHAs remotos de publicação são, portanto, diferentes dos SHAs locais da Ox, sem alterar o conteúdo entregue.
+A Ox produziu localmente os commits `b236393c`, `213854f0` e `09c85bb5`. Como o ambiente DSH não possuía credenciais GitHub, a publicação remota foi delegada ao MESTRE e materializada por um ambiente GitHub autenticado. Os SHAs remotos de publicação são, portanto, diferentes dos SHAs locais da Ox, sem alterar o conteúdo substantivo entregue.
 
 ## Fontes primárias usadas (fatos técnicos)
 
