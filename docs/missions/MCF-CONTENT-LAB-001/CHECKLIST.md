@@ -44,7 +44,7 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 
 ## R02 — Concluir a auditoria integral do vídeo
 
-**Estado:** `[~] EM EXECUÇÃO — ALTERNATIVAS DE TRANSCRIÇÃO PESQUISADAS`
+**Estado:** `[~] EM EXECUÇÃO — FALLBACK LOCAL DEFINIDO`
 
 - [x] Auditoria visual preliminar preservada da trilha `MCF-VIDEO-AUDIT-001`.
 - [x] Matriz visual e achados consolidados em `analises/R02-AUDITORIA-VISUAL-PRELIMINAR.md` — commit `11f40ab0c91b69a67bbf519376c3b98f6488319a`.
@@ -57,13 +57,18 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 - [x] Primeiro claim narrado identificado: “uma arquitetura que de fato roda em produção” — classificado preliminarmente como `SIMPLIFICADO / POTENCIALMENTE AMBÍGUO`.
 - [!] AccurateScribe limita a recuperação útil a aproximadamente 1 minuto neste checkpoint sem acesso premium.
 - [x] Alternativas de transcrição integral pesquisadas e registradas em `analises/R02-PESQUISA-FERRAMENTAS-TRANSCRICAO.md` — commit `e4fd3b5a50f467dd000efd350b469bf62f0c55ad`.
-- [x] Plugin `Whisper Transcribe AI` identificado no diretório do ChatGPT e sugestão de instalação apresentada; preço/limites ainda `NÃO VERIFICADOS`.
-- [x] Repositórios verificados: `openai/whisper`, `SYSTRAN/faster-whisper`, `ggml-org/whisper.cpp` e `Purfview/whisper-standalone-win`.
+- [x] WhisperTranscribe.ai testado por LEANDRO; a interface exibiu `Upgrade your plan to unlock the complete transcription record`, portanto a rota gratuita também é truncada por paywall.
+- [x] O plugin `Whisper Transcribe AI` permanece não instalado no diretório do ChatGPT neste checkpoint; conectar o plugin não é tratado como forma de contornar restrições comerciais da conta.
+- [x] Repositórios verificados: `openai/whisper`, `SYSTRAN/faster-whisper`, `ggml-org/whisper.cpp`, `Purfview/whisper-standalone-win` e `SubtitleEdit/subtitleedit`.
+- [x] `SubtitleEdit/subtitleedit` confirmado como MIT, offline/open-source, com `Video → Speech to text...` e suporte local a Whisper CPP, Purfview Faster Whisper XXL e Whisper CTranslate2; motores/modelos podem ser baixados no primeiro uso.
+- [x] `Purfview/whisper-standalone-win` confirmado como opção standalone para Windows sem configuração Python, aceitando arquivo de vídeo diretamente em exemplos oficiais.
 - [x] `ggml-org/whisper.cpp` confirmado com suporte a Windows e release atual contendo binário pré-compilado x64; licença MIT.
 - [x] `faster-whisper` confirmado com timestamps por segmento/palavra, execução em CPU/GPU e sem FFmpeg instalado no sistema; licença MIT.
-- [ ] Testar `Whisper Transcribe AI` para o vídeo integral.
-- [ ] Se houver limite impeditivo, executar fallback local com `whisper.cpp` no Windows.
-- [ ] Obter a narração integral com timestamps.
+- [x] MP4 original confirmado ainda disponível no runtime desta conversa em `/mnt/data/MCF__Execução_Real_de_IA.mp4`.
+- [x] Tentativa de instalar `faster-whisper` neste runtime executada; falhou por indisponibilidade de rede/DNS do ambiente, não por falha comprovada da ferramenta.
+- [x] Fallback local e instruções operacionais registrados em `analises/R02-FALLBACK-LOCAL-TRANSCRICAO.md` — commit `8216b20f7f43b522ff000d0b24ceed7e24711f0e`.
+- [ ] Executar transcrição local no Windows com Subtitle Edit, preferencialmente usando Whisper CPP ou Purfview Faster Whisper XXL.
+- [ ] Obter a narração integral com timestamps em `.srt` ou `.txt`.
 - [ ] Extrair afirmações faladas relevantes do restante do vídeo.
 - [ ] Confrontar as afirmações faladas com a fonte canônica aplicável.
 - [ ] Reconciliar afirmações visuais e faladas.
@@ -71,7 +76,7 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 - [ ] Registrar correções finais e limitações.
 - [ ] Atualizar este checklist antes de concluir R02.
 
-**Próxima ação:** conectar e testar `Whisper Transcribe AI`; se houver truncamento, paywall ou outro bloqueio, usar `ggml-org/whisper.cpp` local como fallback gratuito/offline.
+**Próxima ação:** no Windows, usar Subtitle Edit → `Video → Speech to text...` → motor local Whisper CPP ou Purfview Faster Whisper XXL → idioma Portuguese → modelo `medium` preferencialmente → exportar transcrição integral com timestamps; depois fornecer o `.srt` ou `.txt` para continuidade da auditoria.
 
 ## R03 — Investigar o processo verificável do Gemini/NotebookLM
 
