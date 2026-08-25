@@ -1,0 +1,70 @@
+mission_id: MCF-HARNESS-COMMS-DOC-001
+parent_mission_id: NAO_APLICAVEL
+phase_id: PHASE-01-SINGLE-PHASE
+cycle: 1
+risk_class: B
+decision_authority: Leo
+human_authority: LEANDRO
+status: PUBLICACAO_EM_ANDAMENTO
+
+objective: >
+  Oficializar no repo MCF a especificacao do canal programatico MESTRE(ChatGPT) <-> Ox(DSH),
+  em branch dedicada com PR aberto, reproduzivel por futuros chats, sem duplicar/contradizer
+  docs vigentes e sem expor credenciais.
+
+authorizations:
+  - inspecao do repositorio
+  - criacao de branch dedicada
+  - edicao de documentacao
+  - validacao de links/estrutura
+  - commit
+  - push da branch
+  - abertura de Pull Request
+
+prohibitions:
+  - merge em main
+  - deletar branches
+  - mudar CI/CD
+  - deploy ou servicos de producao
+  - secrets/DNS/releases/tags
+  - sobrescrever trabalho alheio
+
+base_commit: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
+branch: mission/document-harness-mestre-ox-communication-20260825
+
+local_ox_commits:
+  - b236393c
+  - 213854f0
+  - 09c85bb5
+
+publication_note: >
+  O ambiente DSH da Ox nao possuia credencial GitHub. LEANDRO selecionou o handoff
+  para o MESTRE executar push+PR em ambiente autenticado. O MESTRE materializou
+  a branch remota via conector GitHub autenticado, preservando o conteudo produzido pela Ox.
+
+decisions:
+  - id: DEC-001
+    text: Doc canonica vive em docs/integrations/ e evidencia datada em docs/integrations/evidence/.
+    by: Ox
+  - id: DEC-002
+    text: Harness documentado como execution provider/adapter candidato; precedencia normativa do MCF preservada.
+    by: Ox
+  - id: DEC-003
+    text: IDs de sessao/hostnames/PIDs sao DEPLOYMENT/EVIDENCE, nunca invariantes.
+    by: Ox
+  - id: DEC-004
+    text: Trabalho alheio fora do escopo permanece intocado.
+    by: Ox
+
+evidence:
+  - docs/integrations/evidence/MCF-HARNESS-MESTRE-OX-E2E-20260825.md
+  - session-101f2fac-1434-431c-9344-c4ed81cf8dae
+
+next_action: >
+  Abrir PR contra main, devolver a PR para Ox validar ao vivo, verificar CI/estado e
+  atualizar este checkpoint para ENTREGUE se os criterios passarem. Merge permanece proibido sem novo gate.
+
+gate_log:
+  - gate: HUMAN_GATE_PUSH_AUTH
+    question: como concluir a etapa externa pre-autorizada sem credencial no ambiente da Ox?
+    answer: MESTRE executa push+PR em ambiente autenticado; Ox valida a PR ao vivo depois.
