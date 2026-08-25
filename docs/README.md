@@ -103,6 +103,7 @@ O material NextGen está `UNDER_STUDY`: arquitetura formalmente aprovada = false
 |---|---|
 | Estado atual | `MCF-CURRENT-STATE.md` |
 | Runtime | `runtime/` |
+| Integrações externas | `integrations/` (inclui canal MESTRE↔Ox via DeepSeek Harness: [`integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md`](integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md)) |
 | Protocolos | `protocols/` |
 | Decisões | `decisions/` |
 | Agentes | `agentes/`, `matrices/` |

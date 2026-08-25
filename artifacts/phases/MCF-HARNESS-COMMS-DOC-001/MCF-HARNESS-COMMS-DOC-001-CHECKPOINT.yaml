@@ -1,0 +1,97 @@
+mission_id: MCF-HARNESS-COMMS-DOC-001
+parent_mission_id: NAO_APLICAVEL
+phase_id: PHASE-01-SINGLE-PHASE
+cycle: 1
+risk_class: B
+decision_authority: Leo
+human_authority: LEANDRO
+status: ENTREGUE
+
+objective: >
+  Oficializar no repo MCF a especificacao do canal programatico MESTRE(ChatGPT) <-> Ox(DSH),
+  em branch dedicada com PR aberto, reproduzivel por futuros chats, sem duplicar/contradizer
+  docs vigentes e sem expor credenciais.
+
+authorizations:
+  - inspecao do repositorio
+  - criacao de branch dedicada
+  - edicao de documentacao
+  - validacao de links/estrutura
+  - commit
+  - push da branch
+  - abertura de Pull Request
+  - merge da PR 171 em main, autorizado por LEANDRO no gate final da missao
+
+prohibitions:
+  - deletar branches
+  - mudar CI/CD
+  - deploy ou servicos de producao
+  - secrets/DNS/releases/tags
+  - sobrescrever trabalho alheio
+
+base_commit: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
+branch: mission/document-harness-mestre-ox-communication-20260825
+pull_request: 171
+
+local_ox_commits:
+  - b236393c
+  - 213854f0
+  - 09c85bb5
+
+publication_note: >
+  O ambiente DSH da Ox nao possuia credencial GitHub. LEANDRO selecionou o handoff
+  para o MESTRE executar push+PR em ambiente autenticado. O MESTRE materializou
+  a branch remota via conector GitHub autenticado, preservando o conteudo substantivo produzido pela Ox.
+
+validation:
+  ox_result: PASS
+  ox_session: session-101f2fac-1434-431c-9344-c4ed81cf8dae
+  pr_state_observed: OPEN
+  pr_mergeable_observed: true
+  documentation_validation: success
+  production_readiness: success
+  vercel_status: success
+  remote_links: 0_broken
+  checkpoint_yaml: parse_ok
+
+decisions:
+  - id: DEC-001
+    text: Doc canonica vive em docs/integrations/ e evidencia datada em docs/integrations/evidence/.
+    by: Ox
+  - id: DEC-002
+    text: Harness documentado como execution provider/adapter candidato; precedencia normativa do MCF preservada.
+    by: Ox
+  - id: DEC-003
+    text: IDs de sessao/hostnames/PIDs sao DEPLOYMENT/EVIDENCE, nunca invariantes.
+    by: Ox
+  - id: DEC-004
+    text: Trabalho alheio fora do escopo permanece intocado.
+    by: Ox
+  - id: DEC-007
+    text: Rematerializacao remota omitiu apenas o cross-link opcional no README raiz; docs/README mantem o ponto de descoberta canonico.
+    by: Ox
+  - id: DEC-008
+    text: LEANDRO determinou concluir a missao; MESTRE interpreta a ordem como autorizacao limitada ao merge da PR 171 apos CI verde, sem deploy/release/production.
+    by: MESTRE
+
+known_divergence:
+  - root README cross-link produzido localmente pela Ox nao entrou na PR; impacto aceito como baixo porque docs/README preserva a descoberta.
+
+evidence:
+  - docs/integrations/evidence/MCF-HARNESS-MESTRE-OX-E2E-20260825.md
+  - PR #171
+  - session-101f2fac-1434-431c-9344-c4ed81cf8dae
+
+next_action: >
+  A entrega documental esta validada. Executar merge da PR #171 somente com head exato
+  e checks verdes; depois verificar main live. Nenhum deploy/release/production autorizado.
+
+gate_log:
+  - gate: HUMAN_GATE_PUSH_AUTH
+    question: como concluir a etapa externa pre-autorizada sem credencial no ambiente da Ox?
+    answer: MESTRE executa push+PR em ambiente autenticado; Ox valida a PR ao vivo depois.
+  - gate: HUMAN_GATE_MERGE_MAIN
+    status: AUTHORIZED
+    authority: LEANDRO
+    basis: "resolvam pois voces ainda nao terminaram a missao que eu dei a voces"
+    scope: "merge apenas da PR #171 apos CI verde; sem deploy/release/production"
