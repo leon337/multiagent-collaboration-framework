@@ -9,13 +9,13 @@
 **Classe de risco:** `B`  
 **Fuso canônico deste roadmap:** `America/Recife (BRT, UTC-03)`  
 **Criado em:** `2026-08-25 01:52 BRT`  
-**Última atualização:** `2026-08-25 01:52 BRT`  
+**Última atualização:** `2026-08-25 02:12 BRT`  
 **Estado:** `AGUARDANDO_GATE_DE_LEANDRO_PARA_INICIAR_EXECUCAO`  
 **Etapa atual:** `R2 — Revisão humana do checklist`
 
-> Este documento é o roadmap/checklist canônico a partir de `2026-08-25 01:52 BRT`.
-> Ele **supersede apenas o estado operacional mutável e o blocker incorreto** do roadmap anterior
-> `2026-08-25-codex-work-recovery-roadmap.md`, preservando o arquivo antigo como evidência histórica.
+> Este documento é o **único roadmap/checklist operacional canônico** desta missão a partir de `2026-08-25 02:12 BRT`.
+> O roadmap inicial `2026-08-25-codex-work-recovery-roadmap.md` foi retirado de `docs/roadmaps/` após aprovação de Leandro, porque continha uma premissa falsa e sua permanência lado a lado com este arquivo criou uma segunda fonte operacional aparente.
+> A evidência histórica foi preservada em `artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md` e no histórico Git.
 
 ---
 
@@ -75,7 +75,7 @@ historical_screenshot_snapshot:
   status: HISTORICAL_EVIDENCE_TO_RECONCILE
 ```
 
-### Correção formal de erro anterior
+### Correção formal de erro anterior — acesso à worktree
 
 A afirmação anterior `LOCAL_WORKTREE_NOT_EXPOSED` é **FALSA / SUPERSEDED**.
 
@@ -90,6 +90,37 @@ SentinelX → host leo-N43SM → worktree real acessível
 ```
 
 Nenhum novo chat deve voltar a pedir ZIP/TAR/manual export a Leandro antes de tentar a rota de host conectado disponível.
+
+### Correção formal de governança documental — dois roadmaps aparentes
+
+**Falha identificada por Leandro em `2026-08-25 02:05 BRT` e correção aprovada em `2026-08-25 02:12 BRT`.**
+
+Depois da criação deste roadmap v2, o roadmap inicial permaneceu lado a lado em `docs/roadmaps/`. Embora a intenção fosse preservar evidência histórica, a organização criou duas fontes aparentemente operacionais e poderia levar um novo agente/chat a escolher o documento errado.
+
+Cadeia da falha:
+
+```text
+roadmap inicial contém premissa falsa
+        ↓
+roadmap v2 corrige a premissa
+        ↓
+roadmap inicial é preservado na mesma pasta ativa
+        ↓
+duas fontes operacionais aparentes
+        ↓
+risco de retomada pelo documento errado
+```
+
+Correção aplicada:
+
+- apenas este roadmap v2 permanece em `docs/roadmaps/` para esta missão;
+- o roadmap inicial foi retirado da área ativa;
+- sua existência e conteúdo continuam preservados no histórico Git;
+- foi criada a referência histórica `artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md`;
+- o artefato histórico está marcado `SUPERSEDED / NAO_USAR_PARA_CONTINUIDADE`;
+- esta ocorrência será usada como caso de teste da futura skill `MCF-FAILURE-AUTOPSY`.
+
+**Regra permanente derivada:** preservar histórico não pode criar uma segunda fonte canônica aparente.
 
 ---
 
@@ -126,6 +157,7 @@ Formato obrigatório do registro:
 - Falta de evidência = `NÃO VERIFICADO`.
 - Falha externa e falha de implementação devem ser separadas.
 - Cada novo chat deve começar lendo este arquivo e o último registro cronológico.
+- Documentos superseded devem sair da superfície operacional ativa ou carregar sinalização impossível de confundir com estado canônico.
 
 ---
 
@@ -179,7 +211,15 @@ Leandro deve verificar se:
 - [ ] há alguma etapa que precisa ser adicionada/removida;
 - [ ] os gatilhos sugeridos para as skills fazem sentido.
 
-**Nenhuma implementação nova será iniciada antes deste gate.**
+Correção de governança documental concluída durante este gate:
+
+- [x] identificar que dois roadmaps lado a lado criavam ambiguidade operacional;
+- [x] obter aprovação explícita de Leandro para a reorganização;
+- [x] preservar a referência histórica fora de `docs/roadmaps/`;
+- [x] remover o roadmap superseded da área operacional ativa;
+- [x] registrar a falha e a correção neste roadmap canônico.
+
+**Nenhuma implementação nova será iniciada antes do fechamento deste gate.**
 
 ---
 
@@ -200,6 +240,7 @@ Checklist de implementação:
 - [ ] proibir invenção de cadeia privada/token a token;
 - [ ] usar resumo de raciocínio seguro quando disponível;
 - [ ] testar contra o erro real `sandbox ≠ host conectado`;
+- [ ] testar contra a falha de `dois roadmaps operacionais aparentes`;
 - [ ] Beatriz validar cenários;
 - [ ] Emily auditar fidelidade ao ocorrido;
 - [ ] Léo emitir gate.
@@ -218,6 +259,7 @@ Checklist de implementação:
 A skill deve:
 
 - [ ] localizar o roadmap/checklist canônico da missão;
+- [ ] rejeitar roadmaps/artefatos marcados `SUPERSEDED` como fonte de estado corrente;
 - [ ] ler o último registro cronológico;
 - [ ] reler estado live mutável quando necessário;
 - [ ] informar etapa atual;
@@ -239,12 +281,14 @@ A skill deve:
 **Status:** `⏳ PLANEJADO`
 
 - [ ] cenário: erro de ferramenta semelhante ao ocorrido;
+- [ ] cenário: duas fontes documentais aparentemente canônicas;
 - [ ] cenário: missão interrompida em etapa intermediária;
 - [ ] cenário: novo chat sem histórico desta conversa;
 - [ ] cenário: GitHub avançou desde o último checkpoint;
 - [ ] cenário: blocker externo;
 - [ ] cenário: afirmação do agente sem evidência;
 - [ ] validar que a skill de status sempre fornece link e próxima ação;
+- [ ] validar que a skill de status ignora artefatos superseded para estado corrente;
 - [ ] validar que a autópsia separa fatos de hipótese;
 - [ ] auditoria independente;
 - [ ] gate de Léo.
@@ -351,12 +395,13 @@ Qualquer novo MESTRE que receba esta missão deve executar, nesta ordem:
 ```text
 1. consultar a release vigente do repositório oficial;
 2. abrir este roadmap v2;
-3. ler “Etapa atual”;
-4. ler o último item do “Registro cronológico auditável”;
-5. reler GitHub live para estados mutáveis;
-6. verificar host/worktree quando a etapa depender de arquivos locais;
-7. continuar da próxima checkbox pendente da etapa atual;
-8. atualizar este roadmap com data/hora antes de declarar avanço.
+3. confirmar que o arquivo escolhido NÃO está marcado SUPERSEDED;
+4. ler “Etapa atual”;
+5. ler o último item do “Registro cronológico auditável”;
+6. reler GitHub live para estados mutáveis;
+7. verificar host/worktree quando a etapa depender de arquivos locais;
+8. continuar da próxima checkbox pendente da etapa atual;
+9. atualizar este roadmap com data/hora antes de declarar avanço.
 ```
 
 É proibido reiniciar a missão do zero enquanto existir checkpoint válido.
@@ -397,13 +442,36 @@ Qualquer novo MESTRE que receba esta missão deve executar, nesta ordem:
     - docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md
   result: PASS
   next_action: HUMAN_GATE de Leandro para aprovar ou corrigir o checklist
+
+- timestamp_brt: 2026-08-25 02:05
+  stage: R2
+  actor: Leandro/Mestre
+  action: Leandro identificou que dois roadmaps permaneciam lado a lado em docs/roadmaps; Mestre reconheceu que a preservação histórica havia criado duas fontes operacionais aparentes.
+  evidence:
+    - screenshot de Leandro mostrando os dois arquivos em docs/roadmaps
+    - docs/roadmaps/2026-08-25-codex-work-recovery-roadmap.md
+    - docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md
+  result: FAIL
+  next_action: propor uma única fonte canônica e mover o histórico para área de auditoria
+
+- timestamp_brt: 2026-08-25 02:12
+  stage: R2
+  actor: Leandro/Mestre/Emily
+  action: Leandro aprovou a correção; o roadmap inicial foi retirado da área operacional ativa, a referência histórica foi preservada e este v2 foi atualizado como única fonte canônica da missão.
+  evidence:
+    - artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md
+    - blob histórico 5023279fc8e4d5103bcf7774c3a07d6565f8e5f7
+    - commit histórico 346419a745bd60f13f36f5edbb22294c98f65df0
+    - docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md
+  result: PASS
+  next_action: Leandro concluir a revisão do checklist R2 antes do início de R3
 ```
 
 ---
 
 ## 7. Próxima ação exata
 
-`AGUARDAR LEANDRO revisar este checklist.`
+`AGUARDAR LEANDRO concluir a revisão do checklist R2.`
 
 Enquanto este gate estiver aberto:
 
@@ -413,4 +481,4 @@ Enquanto este gate estiver aberto:
 - não alterar `main`;
 - não abrir PR de recuperação.
 
-Após aprovação explícita de Leandro, avançar para `R3 — Skill 1: Autópsia de falha do agente`, salvo se Leandro alterar a ordem.
+Após aprovação explícita de Leandro sobre a sequência do checklist, avançar para `R3 — Skill 1: Autópsia de falha do agente`, salvo se Leandro alterar a ordem.
