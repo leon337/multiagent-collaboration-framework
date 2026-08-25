@@ -44,23 +44,27 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 
 ## R02 — Concluir a auditoria integral do vídeo
 
-**Estado:** `[~] EM EXECUÇÃO — DEPENDÊNCIA EXTERNA SOMENTE PARA NARRAÇÃO`
+**Estado:** `[~] EM EXECUÇÃO — TRANSCRIÇÃO PARCIAL RECUPERADA`
 
 - [x] Auditoria visual preliminar preservada da trilha `MCF-VIDEO-AUDIT-001`.
 - [x] Matriz visual e achados consolidados em `analises/R02-AUDITORIA-VISUAL-PRELIMINAR.md` — commit `11f40ab0c91b69a67bbf519376c3b98f6488319a`.
 - [x] Correção metodológica registrada: `ESEV` é termo canônico; o achado material está na associação indevida com “recibos físicos para cada ação”.
 - [x] Afirmações visuais relevantes confrontadas preliminarmente com a fonte canônica aplicável.
 - [x] Limitação de cobertura v1.1.0 registrada como lacuna de completude, não como erro automático do vídeo.
-- [!] Transcrição/narração palavra por palavra depende do envio do MP4 no widget do AccurateScribe; o arquivo anexado ao chat não é consumido por esse aplicativo.
-- [ ] Obter resultado da transcrição.
-- [ ] Extrair afirmações faladas relevantes.
+- [x] MP4 processado no AccurateScribe: registro `312a8f91-02b6-4e61-b695-bd0dca4dc0da`, status `completed`, duração `532,18 s`.
+- [x] Resultado recuperado pela integração e preservado em `analises/R02-TRANSCRICAO-PARCIAL-ACCURATESCRIBE.md` — commit `d152401be67ab52e4668ee41bcc4b09211e71066`.
+- [x] Cobertura real do texto retornado verificada: `00:00,096–00:59,967`; não representa a narração integral.
+- [x] Primeiro claim narrado identificado: “uma arquitetura que de fato roda em produção” — classificado preliminarmente como `SIMPLIFICADO / POTENCIALMENTE AMBÍGUO`.
+- [!] A integração conectada não expôs a narração após `00:59,967`; a conta aparece sem acesso premium neste checkpoint.
+- [ ] Obter a narração restante por meio permitido ou registrar formalmente a limitação definitiva da fonte.
+- [ ] Extrair afirmações faladas relevantes do restante do vídeo.
 - [ ] Confrontar as afirmações faladas com a fonte canônica aplicável.
 - [ ] Reconciliar afirmações visuais e faladas.
 - [ ] Classificar fidelidade e gravidade do vídeo completo.
 - [ ] Registrar correções finais e limitações.
 - [ ] Atualizar este checklist antes de concluir R02.
 
-**Próxima ação:** LEANDRO seleciona ou arrasta o MP4 no widget do AccurateScribe; após a transcrição ficar disponível, retomar R02 sem reiniciar a análise visual.
+**Próxima ação:** obter acesso ao texto integral da transcrição no AccurateScribe ou exportá-lo/fornecê-lo como fonte verificável; enquanto isso, manter como `NÃO VERIFICADO` qualquer claim narrado após `00:59,967`.
 
 ## R03 — Investigar o processo verificável do Gemini/NotebookLM
 
