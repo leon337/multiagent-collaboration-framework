@@ -30,7 +30,7 @@ Critério de conclusão: branch e artefatos existem, estão legíveis e o checkl
 
 ## R02 — Concluir a auditoria integral do vídeo
 
-**Estado:** `PENDENTE`
+**Estado:** `EM_EXECUÇÃO`
 
 Entregas:
 
