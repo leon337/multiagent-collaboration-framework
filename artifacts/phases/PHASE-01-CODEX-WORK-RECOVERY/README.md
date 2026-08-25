@@ -2,7 +2,7 @@
 
 Mission: `MCF-20260825-CODEX-WORK-RECOVERY`
 
-Last updated: `2026-08-25 02:12 BRT (America/Recife)`
+Last updated: `2026-08-25 02:15 BRT (America/Recife)`
 
 ## Purpose
 
@@ -31,7 +31,7 @@ O roadmap inicial incorreto foi retirado de `docs/roadmaps/`. Sua existência e 
 - Current tracked diff observed: `12 files / +1261 / -213` plus untracked `artifacts/phases/PHASE-NEXTGEN-RECONCILIATION-F14-001/`.
 - Historical screenshot snapshot `19 files / +1759 / -318` remains evidence to reconcile, not current measured truth.
 - The false blocker `LOCAL_WORKTREE_NOT_EXPOSED` is superseded.
-- Governance failure `TWO_APPARENT_ACTIVE_ROADMAPS` was identified by Leandro and corrected at `2026-08-25 02:12 BRT`.
+- Governance failure `TWO_APPARENT_ACTIVE_ROADMAPS` was identified by Leandro, approved for correction at `2026-08-25 02:12 BRT` and corrected at `2026-08-25 02:15 BRT`.
 - Current phase state: `AGUARDANDO_GATE_HUMANO`.
 - Current stage: `R2 — Leandro reviews the auditable checklist`.
 
