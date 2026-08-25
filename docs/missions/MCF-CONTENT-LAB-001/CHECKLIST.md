@@ -44,7 +44,7 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 
 ## R02 — Concluir a auditoria integral do vídeo
 
-**Estado:** `[~] EM EXECUÇÃO — TRANSCRIÇÃO PARCIAL RECUPERADA`
+**Estado:** `[~] EM EXECUÇÃO — ALTERNATIVAS DE TRANSCRIÇÃO PESQUISADAS`
 
 - [x] Auditoria visual preliminar preservada da trilha `MCF-VIDEO-AUDIT-001`.
 - [x] Matriz visual e achados consolidados em `analises/R02-AUDITORIA-VISUAL-PRELIMINAR.md` — commit `11f40ab0c91b69a67bbf519376c3b98f6488319a`.
@@ -55,8 +55,15 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 - [x] Resultado recuperado pela integração e preservado em `analises/R02-TRANSCRICAO-PARCIAL-ACCURATESCRIBE.md` — commit `d152401be67ab52e4668ee41bcc4b09211e71066`.
 - [x] Cobertura real do texto retornado verificada: `00:00,096–00:59,967`; não representa a narração integral.
 - [x] Primeiro claim narrado identificado: “uma arquitetura que de fato roda em produção” — classificado preliminarmente como `SIMPLIFICADO / POTENCIALMENTE AMBÍGUO`.
-- [!] A integração conectada não expôs a narração após `00:59,967`; a conta aparece sem acesso premium neste checkpoint.
-- [ ] Obter a narração restante por meio permitido ou registrar formalmente a limitação definitiva da fonte.
+- [!] AccurateScribe limita a recuperação útil a aproximadamente 1 minuto neste checkpoint sem acesso premium.
+- [x] Alternativas de transcrição integral pesquisadas e registradas em `analises/R02-PESQUISA-FERRAMENTAS-TRANSCRICAO.md` — commit `e4fd3b5a50f467dd000efd350b469bf62f0c55ad`.
+- [x] Plugin `Whisper Transcribe AI` identificado no diretório do ChatGPT e sugestão de instalação apresentada; preço/limites ainda `NÃO VERIFICADOS`.
+- [x] Repositórios verificados: `openai/whisper`, `SYSTRAN/faster-whisper`, `ggml-org/whisper.cpp` e `Purfview/whisper-standalone-win`.
+- [x] `ggml-org/whisper.cpp` confirmado com suporte a Windows e release atual contendo binário pré-compilado x64; licença MIT.
+- [x] `faster-whisper` confirmado com timestamps por segmento/palavra, execução em CPU/GPU e sem FFmpeg instalado no sistema; licença MIT.
+- [ ] Testar `Whisper Transcribe AI` para o vídeo integral.
+- [ ] Se houver limite impeditivo, executar fallback local com `whisper.cpp` no Windows.
+- [ ] Obter a narração integral com timestamps.
 - [ ] Extrair afirmações faladas relevantes do restante do vídeo.
 - [ ] Confrontar as afirmações faladas com a fonte canônica aplicável.
 - [ ] Reconciliar afirmações visuais e faladas.
@@ -64,7 +71,7 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 - [ ] Registrar correções finais e limitações.
 - [ ] Atualizar este checklist antes de concluir R02.
 
-**Próxima ação:** obter acesso ao texto integral da transcrição no AccurateScribe ou exportá-lo/fornecê-lo como fonte verificável; enquanto isso, manter como `NÃO VERIFICADO` qualquer claim narrado após `00:59,967`.
+**Próxima ação:** conectar e testar `Whisper Transcribe AI`; se houver truncamento, paywall ou outro bloqueio, usar `ggml-org/whisper.cpp` local como fallback gratuito/offline.
 
 ## R03 — Investigar o processo verificável do Gemini/NotebookLM
 
