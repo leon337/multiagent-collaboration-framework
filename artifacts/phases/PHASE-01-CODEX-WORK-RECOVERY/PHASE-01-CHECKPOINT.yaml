@@ -3,7 +3,7 @@ phase_id: PHASE-01-CODEX-WORK-RECOVERY
 cycle: 1
 state: AGUARDANDO_GATE_HUMANO
 current_stage: R2_REVIEW_CHECKLIST
-last_updated_brt: "2026-08-25 02:12"
+last_updated_brt: "2026-08-25 02:15"
 timezone: America/Recife
 objective: >-
   Recuperar sem perda e sem reconstrução inventada o trabalho NextGen local não publicado,
@@ -57,7 +57,8 @@ governance_failures:
     status: CORRECTED
     detected_by: Leandro
     detected_at_brt: "2026-08-25 02:05"
-    corrected_at_brt: "2026-08-25 02:12"
+    approved_at_brt: "2026-08-25 02:12"
+    corrected_at_brt: "2026-08-25 02:15"
     cause: Superseded roadmap was preserved beside the canonical roadmap in docs/roadmaps.
     correction: Old roadmap removed from active roadmap area; historical reference preserved under phase history and Git history.
 completed:
@@ -70,6 +71,7 @@ completed:
   - prior_access_assumption_audited_and_corrected
   - auditable_roadmap_v2_published
   - duplicate_roadmap_governance_failure_identified
+  - duplicate_roadmap_cleanup_approved_by_leandro
   - historical_roadmap_archived
   - superseded_roadmap_removed_from_active_area
   - canonical_roadmap_updated_with_failure_record
