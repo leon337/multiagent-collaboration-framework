@@ -7,488 +7,301 @@
 **Autoridade humana final:** Leandro  
 **Autoridade operacional/gate:** Léo  
 **Classe de risco:** `B`  
-**Fuso canônico deste roadmap:** `America/Recife (BRT, UTC-03)`  
+**Fuso canônico:** `America/Recife (BRT, UTC-03)`  
 **Criado em:** `2026-08-25 01:52 BRT`  
-**Última atualização:** `2026-08-25 02:15 BRT`  
-**Estado:** `AGUARDANDO_GATE_DE_LEANDRO_PARA_INICIAR_EXECUCAO`  
-**Etapa atual:** `R2 — Revisão humana do checklist`
+**Última atualização:** `2026-08-25 02:23 BRT`  
+**Estado:** `EM_EXECUCAO`  
+**Etapa atual:** `R3 — Skill 1: Autópsia de falha do agente`
 
-> Este documento é o **único roadmap/checklist operacional canônico** desta missão a partir de `2026-08-25 02:15 BRT`.
-> O roadmap inicial `2026-08-25-codex-work-recovery-roadmap.md` foi retirado de `docs/roadmaps/` após aprovação de Leandro, porque continha uma premissa falsa e sua permanência lado a lado com este arquivo criou uma segunda fonte operacional aparente.
-> A evidência histórica foi preservada em `artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md` e no histórico Git.
-
----
+> Este é o **único roadmap/checklist operacional canônico** desta missão. Documentos marcados `SUPERSEDED` não podem ser usados como fonte de estado corrente.
 
 ## 1. Objetivo
 
 Recuperar, preservar, auditar e devolver continuidade ao trabalho NextGen produzido pelo Codex na worktree local interrompida, sem perda, sem reconstrução por aproximação e sem misturar o conteúdo original com correções posteriores.
 
-Em paralelo, esta missão incluirá duas melhorias permanentes de governança do MCF:
+Antes da recuperação material, criar e validar duas melhorias permanentes de governança:
 
-1. uma skill de **autópsia de falha do agente**;
-2. uma skill de **apresentação do checkpoint/status atual da missão**, acionável por frase curta, para que Leandro possa entender em que ponto estamos e retomar em outro chat sem reconstrução manual.
+1. `MCF-FAILURE-AUTOPSY` — autópsia de falha do agente por frase curta;
+2. `MCF-MISSION-CHECKPOINT` — apresentação auditável do status/checkpoint da missão por frase curta.
 
-A implementação das skills e a recuperação material da worktree **não começam antes da aprovação explícita de Leandro sobre este checklist**.
-
----
-
-## 2. Estado verificável no momento deste roadmap
+## 2. Estado verificável de referência
 
 ```yaml
-stable_release:
-  version: v1.1.0
-  sha: 5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
-  verified_at: 2026-08-25 01:50 BRT
-
-main:
-  sha: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
-  verified_at: 2026-08-25 01:51 BRT
-
-recovery_branch:
-  name: mission/codex-work-recovery-20260825
-  current_remote_head_before_this_v2: 773c75329a8ceab17dd6c3d32cdd50fa35dd0e4d
-
+stable_release: v1.1.0@5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
+main_last_verified: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
+recovery_branch: mission/codex-work-recovery-20260825
 concurrent_pr_170:
-  state: OPEN
-  merged: false
-  head_sha: 1da1a13bd8ca47bed2f4a4e560e64691788582f8
-  verified_at: 2026-08-25 01:51 BRT
-
+  state_last_verified: OPEN
+  merged_last_verified: false
+  head_last_verified: 1da1a13bd8ca47bed2f4a4e560e64691788582f8
 codex_worktree:
   host: leo-N43SM
-  host_access: VERIFIED
+  access: VERIFIED
   path: /home/leo/Documentos/GitHub/multiagent-collaboration-framework-nextgen-reconciliation-20260824
   branch: docs/mcf-nextgen-reconciliation-f14-plan-20260824
   head: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
-  access_verified_at: 2026-08-25 01:51 BRT
-
-tracked_diff_now:
-  files: 12
-  additions: 1261
-  deletions: 213
-  untracked_root: artifacts/phases/PHASE-NEXTGEN-RECONCILIATION-F14-001/
-
-historical_screenshot_snapshot:
-  files_changed: 19
-  additions: 1759
-  deletions: 318
-  status: HISTORICAL_EVIDENCE_TO_RECONCILE
+current_measured_tracked_diff: 12 files / +1261 / -213
+untracked_root: artifacts/phases/PHASE-NEXTGEN-RECONCILIATION-F14-001/
+historical_screenshot_snapshot: 19 files / +1759 / -318
 ```
 
-### Correção formal de erro anterior — acesso à worktree
+O snapshot histórico deve ser reconciliado em R6; diferença de contagem não é automaticamente erro.
 
-A afirmação anterior `LOCAL_WORKTREE_NOT_EXPOSED` é **FALSA / SUPERSEDED**.
+## 3. Falhas de governança já registradas
 
-Fato atual verificado:
+### `FALSE_LOCAL_WORKTREE_ACCESS_ASSUMPTION`
 
-```text
-ChatGPT sandbox não contém /home/leo
-        ≠
-worktree inacessível
+A sessão confundiu ausência de `/home/leo` no sandbox com incapacidade de acesso ao host conectado. O acesso via SentinelX ao `leo-N43SM` foi depois verificado. Regra derivada: **ausência no sandbox não prova ausência de capacidade; descobrir conectores/hosts antes de declarar inacessibilidade**.
 
-SentinelX → host leo-N43SM → worktree real acessível
-```
+### `TWO_APPARENT_ACTIVE_ROADMAPS`
 
-Nenhum novo chat deve voltar a pedir ZIP/TAR/manual export a Leandro antes de tentar a rota de host conectado disponível.
+O roadmap inicial com premissa falsa permaneceu ao lado do roadmap corrigido em `docs/roadmaps/`, criando duas fontes operacionais aparentes. Após autorização de Leandro, o antigo foi retirado da área ativa e preservado em:
 
-### Correção formal de governança documental — dois roadmaps aparentes
+`artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md`
 
-**Falha identificada por Leandro em `2026-08-25 02:05 BRT`, correção aprovada em `2026-08-25 02:12 BRT` e executada em `2026-08-25 02:15 BRT`.**
+Regra derivada: **preservar histórico não pode criar uma segunda fonte canônica aparente**.
 
-Depois da criação deste roadmap v2, o roadmap inicial permaneceu lado a lado em `docs/roadmaps/`. Embora a intenção fosse preservar evidência histórica, a organização criou duas fontes aparentemente operacionais e poderia levar um novo agente/chat a escolher o documento errado.
+## 4. Regra obrigatória de atualização cronológica
 
-Cadeia da falha:
+A cada avanço, retorno de correção, blocker ou gate, atualizar antes de declarar a transição concluída:
 
-```text
-roadmap inicial contém premissa falsa
-        ↓
-roadmap v2 corrige a premissa
-        ↓
-roadmap inicial é preservado na mesma pasta ativa
-        ↓
-duas fontes operacionais aparentes
-        ↓
-risco de retomada pelo documento errado
-```
+- `Última atualização`;
+- `Estado`;
+- `Etapa atual`;
+- status/checks da etapa;
+- registro cronológico;
+- evidências/SHAs/links;
+- próxima ação exata.
 
-Correção aplicada:
-
-- apenas este roadmap v2 permanece em `docs/roadmaps/` para esta missão;
-- o roadmap inicial foi retirado da área ativa;
-- sua existência e conteúdo continuam preservados no histórico Git;
-- foi criada a referência histórica `artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md`;
-- o artefato histórico está marcado `SUPERSEDED / NAO_USAR_PARA_CONTINUIDADE`;
-- esta ocorrência será usada como caso de teste da futura skill `MCF-FAILURE-AUTOPSY`.
-
-**Regra permanente derivada:** preservar histórico não pode criar uma segunda fonte canônica aparente.
-
----
-
-## 3. Regra obrigatória de atualização cronológica
-
-A cada avanço de etapa, retorno de correção, novo blocker ou gate, este roadmap deve ser atualizado **antes de declarar a transição concluída**.
-
-Cada atualização deve modificar:
-
-1. `Última atualização`;
-2. `Estado`;
-3. `Etapa atual`;
-4. checkbox da etapa;
-5. `Registro cronológico auditável`;
-6. `Próxima ação exata`;
-7. links/SHAs/evidências disponíveis.
-
-Formato obrigatório do registro:
+Formato:
 
 ```yaml
 - timestamp_brt: YYYY-MM-DD HH:MM
   stage: Rn
-  actor: <agente/papel>
+  actor: <papel>
   action: <ação objetiva>
-  evidence:
-    - <SHA, arquivo, PR, host, teste ou ferramenta>
+  evidence: [<referências>]
   result: PASS | FAIL | BLOCKED | PARTIAL | HUMAN_GATE
-  next_action: <passo verificável seguinte>
+  next_action: <passo seguinte>
 ```
 
-### Regra de verdade
+Falta de evidência = `NÃO_VERIFICADO`. Não expor nem inventar raciocínio privado token a token; expor fatos, premissas observáveis, decisões, ferramentas, omissões, causalidade suportada e limitações.
 
-- Nenhuma etapa vira `✅ CONCLUÍDA` apenas por declaração do agente.
-- Falta de evidência = `NÃO VERIFICADO`.
-- Falha externa e falha de implementação devem ser separadas.
-- Cada novo chat deve começar lendo este arquivo e o último registro cronológico.
-- Documentos superseded devem sair da superfície operacional ativa ou carregar sinalização impossível de confundir com estado canônico.
-
----
-
-## 4. Checklist cronológico mestre
+## 5. Checklist cronológico mestre
 
 ### R0 — Contenção e descoberta correta de capacidade
+**Status:** `✅ CONCLUÍDO` — `2026-08-25 01:51 BRT`
+- [x] release vigente consultada;
+- [x] `main` live consultado;
+- [x] branch de recovery criada;
+- [x] hosts conectados descobertos;
+- [x] `leo-N43SM` confirmado;
+- [x] worktree, branch e HEAD do Codex confirmados;
+- [x] falsa limitação de acesso registrada.
 
-**Status:** `✅ CONCLUÍDO`  
-**Timestamp de fechamento:** `2026-08-25 01:51 BRT`
+### R1 — Continuidade auditável
+**Status:** `✅ CONCLUÍDO` — `2026-08-25 01:52 BRT`
+- [x] roadmap canônico criado;
+- [x] timestamp por transição definido;
+- [x] etapa atual única definida;
+- [x] log cronológico definido;
+- [x] retomada cross-chat definida;
+- [x] duas skills incluídas no roadmap.
 
-- [x] Consultar release vigente.
-- [x] Consultar `main` live.
-- [x] Confirmar branch de recuperação existente.
-- [x] Descobrir hosts conectados.
-- [x] Confirmar host `leo-N43SM`.
-- [x] Confirmar acesso direto à worktree real.
-- [x] Confirmar branch e HEAD local do trabalho do Codex.
-- [x] Registrar que a alegação anterior de falta de acesso era incorreta.
+### R2 — HUMAN_GATE: revisão do checklist
+**Status:** `✅ CONCLUÍDO` — fechado `2026-08-25 02:23 BRT`
+- [x] Leandro revisou o checklist;
+- [x] ambiguidade dos dois roadmaps corrigida;
+- [x] Leandro aprovou explicitamente a sequência;
+- [x] sequência autorizada: `R3 → R4 → R5 → R6`.
 
-**Saída:** fonte primária real localizada e acessível sem intervenção manual de Leandro.
-
----
-
-### R1 — Criar mecanismo auditável de continuidade
-
-**Status:** `✅ CONCLUÍDO`  
-**Timestamp de fechamento:** `2026-08-25 01:52 BRT`
-
-- [x] Criar este roadmap v2.
-- [x] Tornar explícita a regra de timestamp por transição.
-- [x] Definir uma única `Etapa atual`.
-- [x] Definir registro cronológico append-only por evento.
-- [x] Separar histórico anterior de estado corrente.
-- [x] Incluir no roadmap as duas skills requeridas por Leandro.
-- [x] Definir contrato mínimo de retomada cross-chat.
-
-**Saída:** qualquer novo chat consegue localizar o ponto atual lendo este documento.
-
----
-
-### R2 — GATE HUMANO: Leandro revisa este checklist
-
-**Status:** `🟡 ATUAL / AGUARDANDO LEANDRO`  
-**Aberto em:** `2026-08-25 01:52 BRT`
-
-Leandro deve verificar se:
-
-- [ ] a ordem cronológica está correta;
-- [ ] as duas skills propostas representam exatamente a intenção desejada;
-- [ ] a recuperação do Codex deve começar somente após as skills ou pode ocorrer depois da especificação delas;
-- [ ] há alguma etapa que precisa ser adicionada/removida;
-- [ ] os gatilhos sugeridos para as skills fazem sentido.
-
-Correção de governança documental concluída durante este gate:
-
-- [x] identificar que dois roadmaps lado a lado criavam ambiguidade operacional;
-- [x] obter aprovação explícita de Leandro para a reorganização;
-- [x] preservar a referência histórica fora de `docs/roadmaps/`;
-- [x] remover o roadmap superseded da área operacional ativa;
-- [x] registrar a falha e a correção neste roadmap canônico.
-
-**Nenhuma implementação nova será iniciada antes do fechamento deste gate.**
-
----
-
-### R3 — Skill 1: Autópsia de falha do agente
-
-**Status:** `⏳ PLANEJADO`
-
-**Nome de trabalho:** `MCF-FAILURE-AUTOPSY`  
-**Gatilhos candidatos:** `AUTÓPSIA DA FALHA`, `ANALISE SEU ERRO`, `ONDE VOCÊ ERROU?`
-
-Checklist de implementação:
-
-- [ ] definir contrato da skill;
-- [ ] definir agente owner e agentes de controle aplicáveis;
+### R3 — `MCF-FAILURE-AUTOPSY`
+**Status:** `🟡 EM EXECUÇÃO` — aberto `2026-08-25 02:23 BRT`
+- [ ] definir contrato e owners;
 - [ ] registrar no `skills/registry.yaml`;
-- [ ] criar documentação/skill contract versionado;
-- [ ] exigir reconstrução operacional auditável: objetivo → evidência → premissas → ferramentas → decisão → ponto da falha → regra violada → impacto → caminho correto → prevenção;
+- [ ] criar contrato versionado e guia da skill;
+- [ ] exigir reconstrução auditável: objetivo → fatos/evidências → premissas → ferramentas disponíveis/usadas/omitidas → decisão incorreta → regra violada → impacto → caminho correto → prevenção;
 - [ ] proibir invenção de cadeia privada/token a token;
-- [ ] usar resumo de raciocínio seguro quando disponível;
-- [ ] testar contra o erro real `sandbox ≠ host conectado`;
-- [ ] testar contra a falha de `dois roadmaps operacionais aparentes`;
+- [ ] testar `FALSE_LOCAL_WORKTREE_ACCESS_ASSUMPTION`;
+- [ ] testar `TWO_APPARENT_ACTIVE_ROADMAPS`;
 - [ ] Beatriz validar cenários;
-- [ ] Emily auditar fidelidade ao ocorrido;
-- [ ] Léo emitir gate.
+- [ ] Emily auditar suficiência;
+- [ ] Léo emitir gate interno.
 
-**Aceite:** uma frase curta dispara uma autópsia útil e reprodutível, sem Leandro precisar reescrever a explicação longa.
+**Gatilhos candidatos aprovados:** `AUTÓPSIA DA FALHA`, `ANALISE SEU ERRO`, `ONDE VOCÊ ERROU?`.
 
----
-
-### R4 — Skill 2: Status/checkpoint da missão (Tópico 3 de Leandro)
-
+### R4 — `MCF-MISSION-CHECKPOINT`
 **Status:** `⏳ PLANEJADO`
+- [ ] localizar roadmap/checkpoint canônico;
+- [ ] rejeitar `SUPERSEDED` como estado corrente;
+- [ ] ler último registro;
+- [ ] reler estado mutável quando necessário;
+- [ ] informar etapa, concluído/atual/pendente/bloqueado;
+- [ ] informar timestamp, branch, SHA, PRs, link e próxima ação;
+- [ ] distinguir fato/inferência/não verificado;
+- [ ] impedir reinício de missão com checkpoint válido;
+- [ ] Beatriz/Emily validar;
+- [ ] Léo emitir gate interno.
 
-**Nome de trabalho:** `MCF-MISSION-CHECKPOINT`  
-**Gatilhos candidatos:** `ONDE ESTAMOS?`, `STATUS DA MISSÃO`, `CHECKPOINT DA MISSÃO`
+**Gatilhos candidatos aprovados:** `ONDE ESTAMOS?`, `STATUS DA MISSÃO`, `CHECKPOINT DA MISSÃO`.
 
-A skill deve:
-
-- [ ] localizar o roadmap/checklist canônico da missão;
-- [ ] rejeitar roadmaps/artefatos marcados `SUPERSEDED` como fonte de estado corrente;
-- [ ] ler o último registro cronológico;
-- [ ] reler estado live mutável quando necessário;
-- [ ] informar etapa atual;
-- [ ] mostrar concluído / atual / pendente / bloqueado;
-- [ ] informar último timestamp BRT;
-- [ ] informar branch, SHA e PR relevantes;
-- [ ] fornecer o link direto do roadmap/checklist;
-- [ ] informar a próxima ação exata;
-- [ ] distinguir fato, inferência e não verificado;
-- [ ] não reiniciar a missão;
-- [ ] produzir um checkpoint que outro chat possa usar imediatamente.
-
-**Aceite:** Leandro usa uma frase curta e recebe a fotografia auditável da missão + link, sem precisar explicar contexto novamente.
-
----
-
-### R5 — Validar as duas skills e a continuidade cross-chat
-
+### R5 — Validar skills e continuidade cross-chat
 **Status:** `⏳ PLANEJADO`
+- [ ] erro de ferramenta semelhante ao ocorrido;
+- [ ] duas fontes documentais aparentes;
+- [ ] missão interrompida;
+- [ ] novo chat sem histórico;
+- [ ] estado GitHub mudou;
+- [ ] blocker externo;
+- [ ] afirmação sem evidência;
+- [ ] status sempre fornece link + próxima ação;
+- [ ] checkpoint ignora `SUPERSEDED`;
+- [ ] autópsia separa fato/hipótese;
+- [ ] auditoria e gate.
 
-- [ ] cenário: erro de ferramenta semelhante ao ocorrido;
-- [ ] cenário: duas fontes documentais aparentemente canônicas;
-- [ ] cenário: missão interrompida em etapa intermediária;
-- [ ] cenário: novo chat sem histórico desta conversa;
-- [ ] cenário: GitHub avançou desde o último checkpoint;
-- [ ] cenário: blocker externo;
-- [ ] cenário: afirmação do agente sem evidência;
-- [ ] validar que a skill de status sempre fornece link e próxima ação;
-- [ ] validar que a skill de status ignora artefatos superseded para estado corrente;
-- [ ] validar que a autópsia separa fatos de hipótese;
-- [ ] auditoria independente;
-- [ ] gate de Léo.
-
----
-
-### R6 — Inventário forense da worktree real do Codex
-
+### R6 — Inventário forense da worktree Codex
 **Status:** `⏳ PLANEJADO`
-
-- [ ] capturar branch, HEAD, remotes e status por porcelain;
+- [ ] capturar branch/HEAD/remotes/status porcelain;
 - [ ] capturar diff tracked completo sem editar;
-- [ ] inventariar todos os untracked em `PHASE-NEXTGEN-RECONCILIATION-F14-001/`;
-- [ ] reconciliar `12 tracked + untracked` com o snapshot histórico `19 files`;
-- [ ] reconciliar `+1261/-213` atual com `+1759/-318` histórico;
-- [ ] gerar hashes SHA-256 dos arquivos do payload;
-- [ ] preservar patch/binário quando aplicável;
-- [ ] não rodar reset/clean/rebase;
-- [ ] registrar qualquer divergência como evidência, não como erro automático.
-
-**Aceite:** sabemos exatamente quais bytes existem e como se relacionam ao último estado observado do Codex.
-
----
+- [ ] inventariar untracked;
+- [ ] reconciliar `12 tracked + untracked` com histórico `19 files`;
+- [ ] reconciliar `+1261/-213` com `+1759/-318`;
+- [ ] SHA-256 dos arquivos;
+- [ ] patch/binário quando aplicável;
+- [ ] nenhum reset/clean/rebase.
 
 ### R7 — Checkpoint remoto forense
-
 **Status:** `⏳ PLANEJADO`
+- [ ] preservar conteúdo original antes de correções;
+- [ ] commit de recovery separado;
+- [ ] publicar checkpoint remoto;
+- [ ] registrar/verificar SHA.
 
-- [ ] preservar o conteúdo original antes de corrigir qualquer coisa;
-- [ ] publicar o payload recuperado em commit separado nesta branch ou em branch dedicada derivada dela, conforme verificação Git;
-- [ ] não misturar melhorias com o checkpoint original;
-- [ ] registrar SHA remoto;
-- [ ] verificar o conteúdo novamente no GitHub;
-- [ ] atualizar este roadmap com timestamp + SHA.
-
-**Aceite:** o trabalho deixa de depender da máquina local e pode ser retomado por outro chat/agente.
-
----
-
-### R8 — Reconciliar com o estado live do MCF
-
+### R8 — Reconciliar estado live
 **Status:** `⏳ PLANEJADO`
-
-- [ ] reler `main`;
-- [ ] reler PR #170 e outras PRs/Issues relevantes;
+- [ ] reler `main`/PRs/Issues relevantes;
 - [ ] comparar recovery × main;
-- [ ] separar conflito textual de conflito semântico;
-- [ ] registrar toda decisão de reconciliação;
-- [ ] preservar lineage Q1–Q16;
-- [ ] verificar efeitos sobre NX-0/NX-1…NX-9;
-- [ ] não incorporar mudança concorrente silenciosamente.
+- [ ] separar conflitos textuais/semânticos;
+- [ ] preservar lineage Q1–Q16 e boundaries NX.
 
----
-
-### R9 — Validação técnica e semântica
-
+### R9 — Validação técnica/semântica
 **Status:** `⏳ PLANEJADO`
-
-- [ ] `git diff --check`;
-- [ ] links/documentação;
-- [ ] Capsule/recovery tests aplicáveis;
-- [ ] schemas/contratos;
-- [ ] secret scan gratuito e reproduzível;
+- [ ] `git diff --check`, links, testes Capsule/recovery;
+- [ ] schemas/contratos e secret scan;
 - [ ] Q13/Q14;
 - [ ] Request/Receipt e autorização por tentativa;
-- [ ] migration pointer/sidecar;
+- [ ] migration sidecar/pointers;
 - [ ] TriView downstream;
-- [ ] classificação explícita de `state ↔ ledger`;
-- [ ] nenhum PASS antigo reutilizado para novo diff.
-
----
+- [ ] `state ↔ ledger` explicitamente classificado;
+- [ ] nenhum PASS antigo reutilizado para diff novo.
 
 ### R10 — Auditoria e gate operacional
-
 **Status:** `⏳ PLANEJADO`
-
-- [ ] Beatriz consolida evidências de qualidade;
-- [ ] Emily audita a cadeia e não conformidades;
-- [ ] Augusto verifica cronologia/handoffs quando aplicável;
+- [ ] Beatriz consolida qualidade;
+- [ ] Emily audita evidências;
+- [ ] Augusto confere cronologia/handoffs;
 - [ ] Léo decide continuidade;
-- [ ] matéria reservada volta para HUMAN_GATE de Leandro.
+- [ ] matéria reservada retorna a Leandro.
 
----
-
-### R11 — Handoff de volta para a missão NextGen
-
+### R11 — Handoff para NextGen
 **Status:** `⏳ PLANEJADO`
-
-- [ ] checkpoint final com branch/SHA/base;
-- [ ] lista de pendências reais;
+- [ ] checkpoint final branch/SHA/base;
+- [ ] pendências reais;
 - [ ] próximo boundary exato;
-- [ ] NX-0 continua sem autorização implícita;
-- [ ] link do roadmap final;
-- [ ] novo chat consegue retomar apenas lendo o checkpoint.
+- [ ] NX-0 sem autorização implícita;
+- [ ] link final e retomada cross-chat.
 
-**Estado esperado da recuperação:** `ENTREGUE`.
+## 6. Contrato de retomada em outro chat
 
----
+1. consultar release vigente;
+2. abrir este roadmap;
+3. confirmar que não está `SUPERSEDED`;
+4. ler `Etapa atual` e último registro cronológico;
+5. reler estados live mutáveis;
+6. verificar host/worktree quando aplicável;
+7. continuar da próxima checkbox pendente;
+8. atualizar roadmap antes de declarar avanço.
 
-## 5. Contrato mínimo de retomada em outro chat
+É proibido reiniciar do zero enquanto existir checkpoint válido.
 
-Qualquer novo MESTRE que receba esta missão deve executar, nesta ordem:
-
-```text
-1. consultar a release vigente do repositório oficial;
-2. abrir este roadmap v2;
-3. confirmar que o arquivo escolhido NÃO está marcado SUPERSEDED;
-4. ler “Etapa atual”;
-5. ler o último item do “Registro cronológico auditável”;
-6. reler GitHub live para estados mutáveis;
-7. verificar host/worktree quando a etapa depender de arquivos locais;
-8. continuar da próxima checkbox pendente da etapa atual;
-9. atualizar este roadmap com data/hora antes de declarar avanço.
-```
-
-É proibido reiniciar a missão do zero enquanto existir checkpoint válido.
-
----
-
-## 6. Registro cronológico auditável
+## 7. Registro cronológico auditável
 
 ```yaml
 - timestamp_brt: 2026-08-25 01:50
   stage: R0
   actor: Mestre
-  action: Releu release oficial e confirmou v1.1.0@5d79f488.
-  evidence:
-    - GitHub releases/latest
+  action: Confirmou release v1.1.0.
+  evidence: [GitHub releases/latest]
   result: PASS
-  next_action: verificar main, PR concorrente e fonte local real
+  next_action: verificar estado live e fonte local
 
 - timestamp_brt: 2026-08-25 01:51
   stage: R0
   actor: Mestre/Gabriel
-  action: Confirmou main, PR #170 e acesso direto à worktree no host leo-N43SM.
-  evidence:
-    - main@85ccf418740e78b5e1e3eeb7742baf6f869978c1
-    - PR#170 head@1da1a13bd8ca47bed2f4a4e560e64691788582f8
-    - host leo-N43SM
-    - worktree branch docs/mcf-nextgen-reconciliation-f14-plan-20260824
-    - worktree HEAD 85ccf418740e78b5e1e3eeb7742baf6f869978c1
-    - tracked diff 12 files, +1261/-213
+  action: Confirmou main, PR concorrente e acesso direto à worktree em leo-N43SM.
+  evidence: [main@85ccf418, PR#170@1da1a13, host leo-N43SM, worktree HEAD@85ccf418]
   result: PASS
-  next_action: criar mecanismo auditável de continuidade
+  next_action: criar continuidade auditável
 
 - timestamp_brt: 2026-08-25 01:52
   stage: R1
   actor: Mestre
-  action: Criou roadmap/checklist auditável v2 e incluiu as duas skills requeridas no plano.
-  evidence:
-    - docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md
+  action: Criou roadmap auditável e definiu duas skills permanentes no plano.
+  evidence: [docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md]
   result: PASS
-  next_action: HUMAN_GATE de Leandro para aprovar ou corrigir o checklist
+  next_action: revisão humana
 
 - timestamp_brt: 2026-08-25 02:05
   stage: R2
   actor: Leandro/Mestre
-  action: Leandro identificou que dois roadmaps permaneciam lado a lado em docs/roadmaps; Mestre reconheceu que a preservação histórica havia criado duas fontes operacionais aparentes.
-  evidence:
-    - screenshot de Leandro mostrando os dois arquivos em docs/roadmaps
-    - docs/roadmaps/2026-08-25-codex-work-recovery-roadmap.md
-    - docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md
+  action: Detectada ambiguidade de dois roadmaps ativos aparentes.
+  evidence: [screenshot, TWO_APPARENT_ACTIVE_ROADMAPS]
   result: FAIL
-  next_action: propor uma única fonte canônica e mover o histórico para área de auditoria
+  next_action: manter uma única fonte canônica
 
 - timestamp_brt: 2026-08-25 02:12
   stage: R2
   actor: Leandro
-  action: Aprovou explicitamente a recomendação de manter um único roadmap operacional canônico e preservar o roadmap inicial apenas como evidência histórica.
-  evidence:
-    - autorização explícita na conversa
+  action: Aprovou reorganização documental.
+  evidence: [autorização explícita na conversa]
   result: HUMAN_GATE
-  next_action: executar reorganização documental e registrar evidência
+  next_action: executar correção
 
 - timestamp_brt: 2026-08-25 02:15
   stage: R2
   actor: Mestre/Emily
-  action: Executou a correção aprovada; o roadmap inicial foi retirado da área operacional ativa, a referência histórica foi preservada e este v2 foi atualizado como única fonte canônica da missão.
-  evidence:
-    - artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md
-    - blob histórico 5023279fc8e4d5103bcf7774c3a07d6565f8e5f7
-    - commit histórico 346419a745bd60f13f36f5edbb22294c98f65df0
-    - docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md
-    - docs/roadmaps contém somente o roadmap v2 desta missão após a correção
+  action: Removeu roadmap superseded da superfície ativa e preservou evidência histórica.
+  evidence: [INITIAL-ROADMAP-SUPERSEDED.md, docs/roadmaps com uma fonte canônica]
   result: PASS
-  next_action: Leandro concluir a revisão do checklist R2 antes do início de R3
+  next_action: Leandro concluir revisão
+
+- timestamp_brt: 2026-08-25 02:21
+  stage: R2
+  actor: Leandro/Mestre
+  action: Leandro informou REVISADA; Mestre manteve gate por faltar decisão explícita.
+  evidence: [mensagem REVISADA]
+  result: HUMAN_GATE
+  next_action: receber APROVO ou correções
+
+- timestamp_brt: 2026-08-25 02:23
+  stage: R2
+  actor: Leandro
+  action: Aprovou explicitamente o checklist e a sequência R3→R4→R5→R6.
+  evidence: [mensagem APROVO]
+  result: PASS
+  next_action: iniciar R3
+
+- timestamp_brt: 2026-08-25 02:23
+  stage: R3
+  actor: Mestre
+  action: Iniciou MCF-FAILURE-AUTOPSY usando os dois incidentes reais como baseline RED.
+  evidence: [FALSE_LOCAL_WORKTREE_ACCESS_ASSUMPTION, TWO_APPARENT_ACTIVE_ROADMAPS]
+  result: PARTIAL
+  next_action: criar contrato, registro e testes da skill
 ```
 
----
+## 8. Próxima ação exata
 
-## 7. Próxima ação exata
+`EXECUTAR R3 — implementar e validar MCF-FAILURE-AUTOPSY sem iniciar recuperação material do Codex.`
 
-`AGUARDAR LEANDRO concluir a revisão do checklist R2.`
-
-Enquanto este gate estiver aberto:
-
-- não criar ainda as duas skills;
-- não copiar/commit/push do payload do Codex;
-- não modificar a worktree local;
-- não alterar `main`;
-- não abrir PR de recuperação.
-
-Após aprovação explícita de Leandro sobre a sequência do checklist, avançar para `R3 — Skill 1: Autópsia de falha do agente`, salvo se Leandro alterar a ordem.
+Durante R3 não modificar a worktree local do Codex, `main`, VPS, produção ou payload de recuperação.
