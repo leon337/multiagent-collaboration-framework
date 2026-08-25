@@ -84,9 +84,12 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 - [x] API oficial `Gemini Notebook Enterprise` encontrada em `v1alpha`/Preview para gestão de notebooks, fontes e Resumo em Áudio.
 - [x] Nas fontes oficiais consultadas, não foi encontrada API pública documentada do produto pessoal cobrindo integralmente conversa e todos os artefatos do Estúdio.
 - [x] `ROADMAP.md` atualizado com R03A e R03B — commit `2fa68b2537bfe1bb9a47babfa7765af9bb03930f`.
+- [x] `MISSAO.md` ampliado para incluir o App/connector NotebookLM ↔ ChatGPT e fronteiras de segurança — commit `b1ce39f6fa6d0c9dd6b375ab6ed28b18cdc252c7`.
+- [x] Inventário inicial e arquitetura registrados em `analises/R03A-INVENTARIO-INICIAL-NOTEBOOKLM.md` — commit `189b9fac2c316deee4072975cc58d2faf0d28519`.
+- [x] Matriz inicial `capacidade → produto pessoal → Enterprise API → estratégia` criada no artefato de R03A.
 - [x] Checklist sincronizado após a mudança de roadmap neste checkpoint.
-- [ ] Mapear recurso por recurso em matriz `capacidade → leitura → criação → exportação → API oficial → UI → evidência`.
-- [ ] Definir fronteira permitida para integração com o produto pessoal sem coletar credenciais nem contornar controles de acesso.
+- [ ] Aprofundar a matriz recurso por recurso com `leitura → criação → exportação → API oficial → UI → evidência`.
+- [ ] Definir fronteira permitida para integração com o produto pessoal após revisão de termos aplicáveis.
 - [ ] Atualizar este checklist antes de concluir R03A.
 
 **Próxima ação:** concluir a matriz de capacidades e decidir a arquitetura segura para o NotebookLM pessoal versus Gemini Notebook Enterprise.
