@@ -44,18 +44,23 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 
 ## R02 — Concluir a auditoria integral do vídeo
 
-**Estado:** `[~] EM EXECUÇÃO`
+**Estado:** `[~] EM EXECUÇÃO — DEPENDÊNCIA EXTERNA SOMENTE PARA NARRAÇÃO`
 
 - [x] Auditoria visual preliminar preservada da trilha `MCF-VIDEO-AUDIT-001`.
-- [ ] Consolidar timeline visual em artefato da missão.
-- [~] Resolver a dependência da transcrição/narração ou registrar limitação verificável.
-- [ ] Extrair afirmações relevantes.
-- [ ] Confrontar cada afirmação com a fonte canônica aplicável.
-- [ ] Classificar fidelidade e gravidade.
-- [ ] Registrar correções recomendadas e limitações.
+- [x] Matriz visual e achados consolidados em `analises/R02-AUDITORIA-VISUAL-PRELIMINAR.md` — commit `11f40ab0c91b69a67bbf519376c3b98f6488319a`.
+- [x] Correção metodológica registrada: `ESEV` é termo canônico; o achado material está na associação indevida com “recibos físicos para cada ação”.
+- [x] Afirmações visuais relevantes confrontadas preliminarmente com a fonte canônica aplicável.
+- [x] Limitação de cobertura v1.1.0 registrada como lacuna de completude, não como erro automático do vídeo.
+- [!] Transcrição/narração palavra por palavra depende do envio do MP4 no widget do AccurateScribe; o arquivo anexado ao chat não é consumido por esse aplicativo.
+- [ ] Obter resultado da transcrição.
+- [ ] Extrair afirmações faladas relevantes.
+- [ ] Confrontar as afirmações faladas com a fonte canônica aplicável.
+- [ ] Reconciliar afirmações visuais e faladas.
+- [ ] Classificar fidelidade e gravidade do vídeo completo.
+- [ ] Registrar correções finais e limitações.
 - [ ] Atualizar este checklist antes de concluir R02.
 
-**Próxima ação:** abrir o fluxo de transcrição para obter narração verificável e, em paralelo lógico, consolidar os achados visuais já produzidos.
+**Próxima ação:** LEANDRO seleciona ou arrasta o MP4 no widget do AccurateScribe; após a transcrição ficar disponível, retomar R02 sem reiniciar a análise visual.
 
 ## R03 — Investigar o processo verificável do Gemini/NotebookLM
 
