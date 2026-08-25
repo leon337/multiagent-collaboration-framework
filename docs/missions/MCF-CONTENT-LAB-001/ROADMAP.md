@@ -13,7 +13,7 @@ Estados possíveis: `PENDENTE`, `EM_EXECUÇÃO`, `BLOQUEADO`, `CONCLUÍDO`.
 
 ## R01 — Preparar e governar a missão
 
-**Estado:** `EM_EXECUÇÃO`
+**Estado:** `CONCLUÍDO`
 
 Entregas:
 
@@ -25,6 +25,8 @@ Entregas:
 - atualizar o checklist antes de concluir R01.
 
 Critério de conclusão: branch e artefatos existem, estão legíveis e o checklist registra as evidências e a próxima ação.
+
+**Evidência de fechamento:** branch criada a partir de `main@85ccf418740e78b5e1e3eeb7742baf6f869978c1`; `MISSAO.md`, `ROADMAP.md` e `CHECKLIST.md` criados, relidos diretamente na branch e reconciliados; checklist atualizado antes deste fechamento.
 
 ## R02 — Concluir a auditoria integral do vídeo
 
