@@ -325,3 +325,24 @@ skills:
     failure_modes: [missing_evidence, incomplete_checkpoint]
     fallback: Retornar para correção ou declarar dependência externa.
     handoff_to: Mestre
+
+  - skill_id: MCF-FAILURE-AUTOPSY
+    name: Autópsia de falha do agente
+    version: 0.1.0
+    status: EXPERIMENTAL
+    purpose: Reconstruir de forma auditável o caminho operacional de uma falha de agente para estudo, correção e prevenção.
+    owner_agents: [Augusto, Beatriz]
+    supporting_agents: [Emily, Patricia, Mestre]
+    trigger_phrases: ["autópsia da falha", "analise seu erro", "analise o seu erro", "onde você errou?", "explique a falha"]
+    required_inputs: [failure_reference]
+    optional_inputs: [mission_reference, affected_artifact, user_observation]
+    allowed_tools: [GitHub]
+    forbidden_tools: [invent_private_reasoning, fabricate_tool_use, erase_failure_evidence, self_approval_without_evidence, invent_root_cause]
+    permission_profile: READ_ONLY
+    execution_steps: [delimitar_falha, reconstruir_trace_observavel, separar_fato_hipotese, identificar_premissas, verificar_ferramentas_disponiveis_usadas_e_omitidas, localizar_ponto_de_decisao_incorreta, mapear_regra_violada, avaliar_impacto, descrever_caminho_correto, propor_prevencao]
+    required_evidence: [failure_trigger, chronological_trace, evidence_references, omitted_checks, violated_rules, impact, corrected_path]
+    expected_outputs: [failure_autopsy_report, prevention_actions]
+    acceptance_criteria: [facts_separated_from_hypotheses, no_private_chain_fabrication, causal_path_supported, omitted_tool_checks_explicit, prevention_actionable]
+    failure_modes: [insufficient_evidence, ambiguous_failure_scope, unavailable_history, false_causal_attribution]
+    fallback: Produzir autópsia limitada ao que é verificável, marcar lacunas como NAO_VERIFICADO e solicitar somente a evidência mínima inevitável.
+    handoff_to: Emily
