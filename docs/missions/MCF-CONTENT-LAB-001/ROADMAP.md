@@ -36,6 +36,7 @@ Entregas:
 
 - consolidar timeline visual;
 - obter ou produzir transcrição verificável quando possível;
+- priorizar a recuperação da transcrição diretamente do NotebookLM quando o próprio produto a disponibilizar;
 - separar afirmações visuais e faladas;
 - confrontar cada afirmação relevante com a fonte canônica aplicável;
 - classificar como correta, simplificada, extrapolada, incorreta ou não comprovada;
@@ -52,6 +53,43 @@ Entregas:
 - evitar solicitar ou tratar raciocínio privado como evidência;
 - registrar respostas do Gemini como auto-relato do processo, não como prova absoluta;
 - comparar o auto-relato com o vídeo e com as fontes realmente disponíveis.
+
+## R03A — Mapear a superfície de integração do NotebookLM
+
+**Estado:** `EM_EXECUÇÃO`
+
+Entregas:
+
+- inventariar capacidades do produto pessoal e do Gemini Notebook Enterprise;
+- mapear fontes, conversa, citações, notas, histórico, prompts personalizados, compartilhamento, análise e artefatos do Estúdio;
+- mapear Resumo em Áudio, Resumo em Vídeo, mapas mentais, relatórios, tabela de dados, cartões de estudo, testes, apresentações de slides e infográficos;
+- registrar formatos de download/exportação e links compartilháveis quando oficialmente disponíveis;
+- distinguir `API oficial`, `exportação oficial`, `superfície visível da UI` e `NÃO VERIFICADO`;
+- verificar limites e termos aplicáveis antes de qualquer automação do produto pessoal;
+- definir fronteira de segurança: nenhuma coleta de senha/token de sessão e nenhum contorno de autenticação, paywall ou controle de acesso;
+- produzir matriz `capacidade → leitura → criação → exportação → API → UI → evidência`.
+
+Critério de conclusão: matriz de capacidades completa o suficiente para decidir a arquitetura do conector sem depender de endpoints privados não verificados.
+
+## R03B — Construir MVP do App/connector NotebookLM ↔ ChatGPT
+
+**Estado:** `PENDENTE`
+
+Entregas:
+
+- tratar o produto como **App ChatGPT/MCP** (termo atual), mantendo “plugin” como nome informal de uso;
+- iniciar pelo menor arquétipo capaz de resolver o problema: `tool-only`/data-first, com UI opcional posterior;
+- expor `search` e `fetch` como superfície padrão de leitura estruturada;
+- definir ferramentas específicas e separadas para ações mutáveis;
+- implementar adaptador oficial para Gemini Notebook Enterprise quando aplicável;
+- projetar adaptador para NotebookLM pessoal somente por mecanismos permitidos e com autorização explícita do usuário;
+- considerar extensão de navegador companheira multiplataforma caso a UI pessoal não tenha API pública suficiente;
+- integrar exportações oficiais via Google Docs/Sheets/Drive quando isso reduzir dependência de automação de interface;
+- testar inicialmente com o notebook real desta missão;
+- validar extração de transcrição, fontes, citações, prompts usados na geração e artefatos disponíveis;
+- registrar limitações, segurança, privacidade, idempotência e evidências de cada ação.
+
+Critério de conclusão do MVP: ChatGPT consegue consultar um notebook autorizado e recuperar, com proveniência, pelo menos fontes, respostas/citações, transcrição obtida pelo NotebookLM e metadados de artefatos sem coleta de credenciais do usuário.
 
 ## R04 — Diagnosticar a apresentação atual do MCF
 
@@ -99,7 +137,8 @@ Entregas:
 - registrar proveniência, autoria, origem, direitos/licença, resumo próprio, afirmações e evidências;
 - definir pipeline de conhecimento para roteiro, vídeo, postagem, aula e outros formatos;
 - manter português como superfície editorial padrão para o público brasileiro;
-- evitar dependência obrigatória de um único serviço gratuito.
+- evitar dependência obrigatória de um único serviço gratuito;
+- integrar NotebookLM por adaptador substituível, não como fonte única nem dependência irreversível.
 
 ## R08 — Desenhar e validar a skill `ALINHAR`
 
