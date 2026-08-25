@@ -30,53 +30,38 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 - [x] Contrato da missão criado: `MISSAO.md` — commit `5070c583aa0722e5292471d0b0bd1701d6c5737e`.
 - [x] Roadmap cronológico criado: `ROADMAP.md` — commit inicial `ef2c1277a8be14e10f8b13c71606987a3cf18523`.
 - [x] Checklist cronológico criado: `CHECKLIST.md` — commit inicial `7eb063c54f4536ddebc743099a15953e10c96a4b`.
-- [x] `MISSAO.md` relido diretamente na branch e validado como legível/coerente.
-- [x] `ROADMAP.md` relido diretamente na branch e validado como legível/coerente.
-- [x] `CHECKLIST.md` relido diretamente na branch e validado como legível/coerente.
-- [x] Contrato, roadmap e checklist reconciliados sem divergência material identificada neste checkpoint.
+- [x] `MISSAO.md`, `ROADMAP.md` e `CHECKLIST.md` relidos e reconciliados.
 - [x] Checklist atualizado antes do fechamento do roadmap — commit `4983488e38b89774fbe78ff375e23917a1312b52`.
 - [x] R01 marcado como `CONCLUÍDO` no `ROADMAP.md` — commit `43270d5638858d3f66ab692d2cb9d05381c2d4c1`.
-- [x] Fechamento de R01 sincronizado neste checklist.
-
-**Evidência de validação:** leitura direta dos três arquivos na branch após criação e fechamento sequencial checklist → roadmap → checklist.
 
 ---
 
 ## R02 — Concluir a auditoria integral do vídeo
 
-**Estado:** `[~] EM EXECUÇÃO — FALLBACK LOCAL DEFINIDO`
+**Estado:** `[~] EM EXECUÇÃO — NOTEBOOKLM PRIORIZADO`
 
 - [x] Auditoria visual preliminar preservada da trilha `MCF-VIDEO-AUDIT-001`.
-- [x] Matriz visual e achados consolidados em `analises/R02-AUDITORIA-VISUAL-PRELIMINAR.md` — commit `11f40ab0c91b69a67bbf519376c3b98f6488319a`.
-- [x] Correção metodológica registrada: `ESEV` é termo canônico; o achado material está na associação indevida com “recibos físicos para cada ação”.
-- [x] Afirmações visuais relevantes confrontadas preliminarmente com a fonte canônica aplicável.
-- [x] Limitação de cobertura v1.1.0 registrada como lacuna de completude, não como erro automático do vídeo.
-- [x] MP4 processado no AccurateScribe: registro `312a8f91-02b6-4e61-b695-bd0dca4dc0da`, status `completed`, duração `532,18 s`.
-- [x] Resultado recuperado pela integração e preservado em `analises/R02-TRANSCRICAO-PARCIAL-ACCURATESCRIBE.md` — commit `d152401be67ab52e4668ee41bcc4b09211e71066`.
-- [x] Cobertura real do texto retornado verificada: `00:00,096–00:59,967`; não representa a narração integral.
-- [x] Primeiro claim narrado identificado: “uma arquitetura que de fato roda em produção” — classificado preliminarmente como `SIMPLIFICADO / POTENCIALMENTE AMBÍGUO`.
-- [!] AccurateScribe limita a recuperação útil a aproximadamente 1 minuto neste checkpoint sem acesso premium.
-- [x] Alternativas de transcrição integral pesquisadas e registradas em `analises/R02-PESQUISA-FERRAMENTAS-TRANSCRICAO.md` — commit `e4fd3b5a50f467dd000efd350b469bf62f0c55ad`.
-- [x] WhisperTranscribe.ai testado por LEANDRO; a interface exibiu `Upgrade your plan to unlock the complete transcription record`, portanto a rota gratuita também é truncada por paywall.
-- [x] O plugin `Whisper Transcribe AI` permanece não instalado no diretório do ChatGPT neste checkpoint; conectar o plugin não é tratado como forma de contornar restrições comerciais da conta.
-- [x] Repositórios verificados: `openai/whisper`, `SYSTRAN/faster-whisper`, `ggml-org/whisper.cpp`, `Purfview/whisper-standalone-win` e `SubtitleEdit/subtitleedit`.
-- [x] `SubtitleEdit/subtitleedit` confirmado como MIT, offline/open-source, com `Video → Speech to text...` e suporte local a Whisper CPP, Purfview Faster Whisper XXL e Whisper CTranslate2; motores/modelos podem ser baixados no primeiro uso.
-- [x] `Purfview/whisper-standalone-win` confirmado como opção standalone para Windows sem configuração Python, aceitando arquivo de vídeo diretamente em exemplos oficiais.
-- [x] `ggml-org/whisper.cpp` confirmado com suporte a Windows e release atual contendo binário pré-compilado x64; licença MIT.
-- [x] `faster-whisper` confirmado com timestamps por segmento/palavra, execução em CPU/GPU e sem FFmpeg instalado no sistema; licença MIT.
-- [x] MP4 original confirmado ainda disponível no runtime desta conversa em `/mnt/data/MCF__Execução_Real_de_IA.mp4`.
-- [x] Tentativa de instalar `faster-whisper` neste runtime executada; falhou por indisponibilidade de rede/DNS do ambiente, não por falha comprovada da ferramenta.
-- [x] Fallback local e instruções operacionais registrados em `analises/R02-FALLBACK-LOCAL-TRANSCRICAO.md` — commit `8216b20f7f43b522ff000d0b24ceed7e24711f0e`.
-- [ ] Executar transcrição local no Windows com Subtitle Edit, preferencialmente usando Whisper CPP ou Purfview Faster Whisper XXL.
-- [ ] Obter a narração integral com timestamps em `.srt` ou `.txt`.
+- [x] Matriz visual consolidada em `analises/R02-AUDITORIA-VISUAL-PRELIMINAR.md` — commit `11f40ab0c91b69a67bbf519376c3b98f6488319a`.
+- [x] Correção metodológica: `ESEV` é termo canônico; o problema está em “recibos físicos para cada ação”.
+- [x] MP4 processado no AccurateScribe; cobertura útil gratuita limitada a ~1 minuto.
+- [x] Resultado parcial preservado em `analises/R02-TRANSCRICAO-PARCIAL-ACCURATESCRIBE.md` — commit `d152401be67ab52e4668ee41bcc4b09211e71066`.
+- [x] Primeiro claim narrado identificado: “uma arquitetura que de fato roda em produção” — `SIMPLIFICADO / POTENCIALMENTE AMBÍGUO`.
+- [x] WhisperTranscribe.ai testado; a transcrição completa ficou bloqueada por upgrade.
+- [x] Alternativas abertas pesquisadas: `openai/whisper`, `SYSTRAN/faster-whisper`, `ggml-org/whisper.cpp`, `Purfview/whisper-standalone-win`, `SubtitleEdit/subtitleedit`.
+- [x] Tentativa de instalar `faster-whisper` no runtime desta conversa falhou por rede/DNS do ambiente.
+- [x] Não conformidade identificada: foi inferido incorretamente que LEANDRO usava Windows sem evidência verificável.
+- [x] LEANDRO informou explicitamente que não usa Windows; a premissa Windows foi invalidada.
+- [x] Artefato de fallback corrigido para retirar a recomendação Windows-first — commit `6bc74d7c6c77e6ef77ca108d6db2bce3643e3ce0`.
+- [x] Nova evidência visual: no próprio NotebookLM, LEANDRO solicitou `quero a transcrição do vídeo que você criou` e o NotebookLM iniciou uma `Transcrição Completa do Vídeo Explicativo`.
+- [ ] Recuperar a transcrição completa diretamente do NotebookLM e preservá-la como evidência.
 - [ ] Extrair afirmações faladas relevantes do restante do vídeo.
-- [ ] Confrontar as afirmações faladas com a fonte canônica aplicável.
+- [ ] Confrontar afirmações faladas com a fonte canônica aplicável.
 - [ ] Reconciliar afirmações visuais e faladas.
 - [ ] Classificar fidelidade e gravidade do vídeo completo.
 - [ ] Registrar correções finais e limitações.
 - [ ] Atualizar este checklist antes de concluir R02.
 
-**Próxima ação:** no Windows, usar Subtitle Edit → `Video → Speech to text...` → motor local Whisper CPP ou Purfview Faster Whisper XXL → idioma Portuguese → modelo `medium` preferencialmente → exportar transcrição integral com timestamps; depois fornecer o `.srt` ou `.txt` para continuidade da auditoria.
+**Próxima ação:** explorar a transcrição e demais dados diretamente no NotebookLM; não usar mais uma rota dependente de Windows como padrão.
 
 ## R03 — Investigar o processo verificável do Gemini/NotebookLM
 
@@ -86,6 +71,34 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 - [ ] Registrar respostas como auto-relato, sem alegar acesso a raciocínio privado.
 - [ ] Comparar respostas com vídeo e fontes disponíveis.
 - [ ] Atualizar este checklist antes de concluir R03.
+
+## R03A — Mapear a superfície de integração do NotebookLM
+
+**Estado:** `[~] EM PREPARAÇÃO — MUDANÇA DE ESCOPO RECEBIDA`
+
+- [x] LEANDRO determinou a criação de uma integração própria para extrair e operar o máximo possível do NotebookLM.
+- [x] Diretório de plugins do ChatGPT pesquisado; nenhum plugin específico de NotebookLM apareceu nos resultados deste checkpoint.
+- [x] Ajuda oficial do NotebookLM consultada e superfície inicial confirmada: fontes, conversa com citações, notas e artefatos do Estúdio.
+- [x] Artefatos do Estúdio confirmados na documentação: Resumo em Áudio, Resumo em Vídeo, mapa mental, relatórios, tabela de dados, cartões de estudo, testes, apresentação de slides e infográfico.
+- [x] Documentação confirma visualização do comando personalizado usado em vários artefatos e exportações/downloads em formatos específicos.
+- [x] API oficial `Gemini Notebook Enterprise` encontrada em `v1alpha`/Preview para gestão de notebooks, fontes e Resumo em Áudio.
+- [x] Nas fontes oficiais consultadas, não foi encontrada API pública documentada do produto pessoal cobrindo integralmente conversa e todos os artefatos do Estúdio.
+- [ ] Mapear recurso por recurso em matriz `capacidade → leitura → criação → exportação → API oficial → UI → evidência`.
+- [ ] Definir fronteira permitida para integração com o produto pessoal sem coletar credenciais nem contornar controles de acesso.
+- [ ] Atualizar roadmap com R03A e R03B antes de continuar implementação.
+
+## R03B — Construir MVP do App/connector NotebookLM ↔ ChatGPT
+
+**Estado:** `[ ] PENDENTE — AGUARDA SINCRONIZAÇÃO DO ROADMAP`
+
+- [ ] Classificar arquétipo do App ChatGPT.
+- [ ] Definir ferramentas MCP e contratos de dados.
+- [ ] Implementar adaptador oficial para NotebookLM Enterprise quando aplicável.
+- [ ] Projetar adaptador para produto pessoal via mecanismos permitidos e autorização explícita do usuário.
+- [ ] Expor `search` e `fetch` para leitura estruturada e ferramentas de ação separadas quando seguras.
+- [ ] Testar com o notebook real desta missão.
+- [ ] Validar extração de transcrição, fontes, citações, prompts e artefatos.
+- [ ] Atualizar este checklist antes de concluir R03B.
 
 ## R04 — Diagnosticar a apresentação atual do MCF
 
@@ -125,6 +138,7 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 - [ ] Definir proveniência e direitos.
 - [ ] Definir suporte a múltiplos motores de IA.
 - [ ] Definir pipeline editorial em português.
+- [ ] Integrar o App/connector NotebookLM como um motor substituível, não como dependência única.
 - [ ] Atualizar este checklist antes de concluir R07.
 
 ## R08 — Desenhar e validar a skill `ALINHAR`
