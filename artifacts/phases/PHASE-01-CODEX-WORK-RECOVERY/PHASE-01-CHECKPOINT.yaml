@@ -3,7 +3,7 @@ phase_id: PHASE-01-CODEX-WORK-RECOVERY
 cycle: 1
 state: AGUARDANDO_GATE_HUMANO
 current_stage: R2_REVIEW_CHECKLIST
-last_updated_brt: "2026-08-25 02:15"
+last_updated_brt: "2026-08-25 02:21"
 timezone: America/Recife
 objective: >-
   Recuperar sem perda e sem reconstrução inventada o trabalho NextGen local não publicado,
@@ -75,8 +75,9 @@ completed:
   - historical_roadmap_archived
   - superseded_roadmap_removed_from_active_area
   - canonical_roadmap_updated_with_failure_record
+  - leandro_reviewed_checklist
 pending:
-  - leandro_review_and_approve_checklist
+  - leandro_explicit_approve_or_correct_checklist
   - implement_failure_autopsy_skill
   - implement_mission_checkpoint_skill
   - validate_both_skills
@@ -96,8 +97,10 @@ human_gate:
   id: LEANDRO-REVIEW-AUDITABLE-ROADMAP-V2
   status: OPEN
   opened_at_brt: "2026-08-25 01:52"
-  decision_needed: Aprovar ou corrigir o checklist cronologico antes da execucao das skills e da recuperacao material.
-next_action: leandro_review_and_approve_checklist
+  review_status: REVIEWED_AWAITING_EXPLICIT_DECISION
+  reviewed_at_brt: "2026-08-25 02:21"
+  decision_needed: Aprovar explicitamente o checklist ou indicar correcoes antes da execucao das skills e da recuperacao material.
+next_action: leandro_explicit_approve_or_correct_checklist
 acceptance_for_next_action: explicit approval or corrections from Leandro
 prohibitions:
   - no_screenshot_reconstruction
