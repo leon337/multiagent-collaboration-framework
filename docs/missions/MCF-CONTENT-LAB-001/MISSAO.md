@@ -19,7 +19,8 @@ Estudar de forma verificável como o Gemini/NotebookLM lê e interpreta o reposi
 4. testar melhorias de documentação por experimentos repetidos e comparativos;
 5. amadurecer, somente após evidência suficiente, um protocolo de validação de conteúdo gerado por IA;
 6. estudar uma arquitetura de repositório de conhecimento e futura fábrica de conteúdo em português para o público brasileiro;
-7. formalizar padrões operacionais recorrentes como skills do MCF, incluindo `ALINHAR` e `ESTRUTURAR MISSÃO`.
+7. formalizar padrões operacionais recorrentes como skills do MCF, incluindo `ALINHAR` e `ESTRUTURAR MISSÃO`;
+8. mapear e construir um App/connector próprio NotebookLM ↔ ChatGPT para recuperar, com autorização e proveniência, o máximo possível de fontes, conversas, citações, prompts, transcrições, artefatos e exportações oficialmente acessíveis.
 
 ## Fonte de verdade
 
@@ -30,7 +31,8 @@ Ordem de precedência para esta missão:
 3. código, testes, workflows e evidências do SHA aplicável;
 4. protocolos e decisões vigentes do MCF;
 5. documentação histórica;
-6. saídas do Gemini/NotebookLM tratadas como objeto de análise, nunca como fonte canônica do MCF.
+6. documentação oficial do Google/OpenAI para capacidades mutáveis de NotebookLM, Gemini Notebook Enterprise e Apps SDK;
+7. saídas do Gemini/NotebookLM tratadas como objeto de análise, nunca como fonte canônica do MCF.
 
 ## Escopo
 
@@ -43,7 +45,11 @@ Incluído:
 - experimentos repetidos e A/B;
 - desenho de protocolo após evidência suficiente;
 - desenho da futura fábrica de conteúdo e do repositório de conhecimento;
-- desenho e validação das skills recorrentes identificadas durante a missão.
+- desenho e validação das skills recorrentes identificadas durante a missão;
+- inventário de capacidades do NotebookLM pessoal e Gemini Notebook Enterprise;
+- projeto e MVP de App ChatGPT/MCP para integração com NotebookLM por mecanismos permitidos;
+- uso de exportações oficiais para Google Docs/Sheets/Drive quando aplicável;
+- avaliação de uma extensão de navegador companheira multiplataforma caso a UI pessoal não disponha de API pública suficiente.
 
 ## Fora do escopo por enquanto
 
@@ -51,6 +57,9 @@ Incluído:
 - publicar protocolo definitivo antes dos experimentos e da auditoria completa;
 - tratar explicação do Gemini sobre sua própria linha de raciocínio como evidência de raciocínio interno;
 - criar dependência arquitetural obrigatória de um único fornecedor de IA;
+- coletar senha, cookie, token de sessão ou credencial do usuário para automatizar NotebookLM;
+- contornar autenticação, paywall, controle de acesso ou limite comercial;
+- depender de endpoints privados/ocultos não documentados sem análise explícita de termos, risco e necessidade;
 - merge em `main`, release ou deploy de produção sem os gates aplicáveis.
 
 ## Invariante de controle da missão
@@ -87,6 +96,8 @@ A missão só poderá ser encerrada quando:
 - a estratégia de português para conteúdo público estiver definida sem quebrar rastreabilidade técnica;
 - a arquitetura inicial da fábrica/repositório de conhecimento estiver documentada;
 - as skills `ALINHAR` e `ESTRUTURAR MISSÃO` estiverem desenhadas, avaliadas e com decisão explícita sobre integração ao registro canônico;
+- a matriz de capacidades do NotebookLM estiver documentada distinguindo API oficial, exportação oficial, UI visível e itens não verificados;
+- houver um MVP ou uma decisão técnica fundamentada sobre o App/connector NotebookLM ↔ ChatGPT, com fronteiras de segurança explícitas;
 - `ROADMAP.md` e `CHECKLIST.md` estiverem reconciliados;
 - pendências, riscos e decisões futuras estiverem explicitamente registradas.
 
