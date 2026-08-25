@@ -40,21 +40,22 @@ Se o roadmap mudar, este checklist deve ser atualizado antes da continuidade da 
 
 **Evidência de validação:** leitura direta dos três arquivos na branch após criação e fechamento sequencial checklist → roadmap → checklist.
 
-**Próxima ação:** iniciar R02 — concluir a auditoria integral do vídeo, preservando a trilha `MCF-VIDEO-AUDIT-001`.
-
 ---
 
 ## R02 — Concluir a auditoria integral do vídeo
 
-**Estado:** `[ ] PENDENTE — PRÓXIMO`
+**Estado:** `[~] EM EXECUÇÃO`
 
-- [ ] Consolidar timeline visual.
-- [ ] Resolver a dependência da transcrição/narração ou registrar limitação verificável.
+- [x] Auditoria visual preliminar preservada da trilha `MCF-VIDEO-AUDIT-001`.
+- [ ] Consolidar timeline visual em artefato da missão.
+- [~] Resolver a dependência da transcrição/narração ou registrar limitação verificável.
 - [ ] Extrair afirmações relevantes.
 - [ ] Confrontar cada afirmação com a fonte canônica aplicável.
 - [ ] Classificar fidelidade e gravidade.
 - [ ] Registrar correções recomendadas e limitações.
 - [ ] Atualizar este checklist antes de concluir R02.
+
+**Próxima ação:** abrir o fluxo de transcrição para obter narração verificável e, em paralelo lógico, consolidar os achados visuais já produzidos.
 
 ## R03 — Investigar o processo verificável do Gemini/NotebookLM
 
