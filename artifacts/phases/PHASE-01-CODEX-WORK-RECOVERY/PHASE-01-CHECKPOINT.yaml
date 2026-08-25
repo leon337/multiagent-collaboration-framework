@@ -3,7 +3,7 @@ phase_id: PHASE-01-CODEX-WORK-RECOVERY
 cycle: 1
 state: AGUARDANDO_GATE_HUMANO
 current_stage: R2_REVIEW_CHECKLIST
-last_updated_brt: "2026-08-25 01:52"
+last_updated_brt: "2026-08-25 02:12"
 timezone: America/Recife
 objective: >-
   Recuperar sem perda e sem reconstrução inventada o trabalho NextGen local não publicado,
@@ -19,7 +19,10 @@ opened_from_main_sha: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
 main_sha_last_verified: 85ccf418740e78b5e1e3eeb7742baf6f869978c1
 latest_stable_release_observed: v1.1.0@5d79f488407c77f7b9f21ecfefb41ddfb3a52aef
 canonical_roadmap: docs/roadmaps/2026-08-25-codex-work-recovery-auditable-roadmap-v2.md
-superseded_roadmap_for_mutable_status: docs/roadmaps/2026-08-25-codex-work-recovery-roadmap.md
+historical_roadmap_reference: artifacts/phases/PHASE-01-CODEX-WORK-RECOVERY/history/INITIAL-ROADMAP-SUPERSEDED.md
+historical_roadmap_original_path: docs/roadmaps/2026-08-25-codex-work-recovery-roadmap.md
+historical_roadmap_blob: 5023279fc8e4d5103bcf7774c3a07d6565f8e5f7
+historical_roadmap_last_active_commit: 346419a745bd60f13f36f5edbb22294c98f65df0
 concurrent_prs:
   - number: 170
     state_observed: OPEN
@@ -45,6 +48,18 @@ historical_screenshot_diff:
   additions: 1759
   deletions: 318
   status: HISTORICAL_EVIDENCE_TO_RECONCILE
+governance_failures:
+  - id: FALSE_LOCAL_WORKTREE_ACCESS_ASSUMPTION
+    status: CORRECTED
+    detected_by: Leandro
+    correction: SentinelX direct host discovery verified leo-N43SM and the real worktree.
+  - id: TWO_APPARENT_ACTIVE_ROADMAPS
+    status: CORRECTED
+    detected_by: Leandro
+    detected_at_brt: "2026-08-25 02:05"
+    corrected_at_brt: "2026-08-25 02:12"
+    cause: Superseded roadmap was preserved beside the canonical roadmap in docs/roadmaps.
+    correction: Old roadmap removed from active roadmap area; historical reference preserved under phase history and Git history.
 completed:
   - live_release_read
   - live_main_read
@@ -54,6 +69,10 @@ completed:
   - direct_worktree_access_verified
   - prior_access_assumption_audited_and_corrected
   - auditable_roadmap_v2_published
+  - duplicate_roadmap_governance_failure_identified
+  - historical_roadmap_archived
+  - superseded_roadmap_removed_from_active_area
+  - canonical_roadmap_updated_with_failure_record
 pending:
   - leandro_review_and_approve_checklist
   - implement_failure_autopsy_skill
@@ -88,3 +107,4 @@ prohibitions:
   - no_fabricated_agent_execution
   - no_skill_implementation_before_current_human_gate
   - no_payload_recovery_mutation_before_current_human_gate
+  - no_superseded_document_as_current_truth
