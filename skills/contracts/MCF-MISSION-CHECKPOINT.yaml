@@ -1,0 +1,94 @@
+skill:
+  skill_id: MCF-MISSION-CHECKPOINT
+  name: "Apresentar checkpoint da missão"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Apresentar o estado atual auditável de uma missão e permitir retomada cross-chat sem reconstrução manual."
+  owner_agents: [Mestre, Miriam, Augusto]
+  supporting_agents: [Gabriel, Emily]
+  trigger_phrases:
+    - "ONDE ESTAMOS?"
+    - "STATUS DA MISSÃO"
+    - "CHECKPOINT DA MISSÃO"
+  required_inputs: [mission_reference]
+  optional_inputs: [current_chat_context, repository, branch]
+  preconditions:
+    - "A missão deve ser identificável pelo contexto atual ou por fonte canônica acessível; se houver ambiguidade, pedir somente desambiguação mínima."
+  allowed_tools: [GitHub]
+  alternative_tools:
+    - "host/conector da fonte canônica ou do estado live, quando realmente disponível"
+  forbidden_tools:
+    - use_superseded_as_current
+    - fabricate_live_state
+    - restart_existing_mission_without_invalidation
+    - invent_missing_checkpoint
+    - erase_negative_evidence
+  permission_profile: READ_ONLY
+  execution_steps:
+    - identificar_missao
+    - localizar_roadmap_checkpoint_canonico
+    - rejeitar_fontes_superseded_como_estado_corrente
+    - ler_etapa_atual_e_ultimo_registro
+    - identificar_campos_mutaveis
+    - reler_estado_live_quando_necessario_e_disponivel
+    - marcar_stale_ou_nao_verificado_quando_nao_for_possivel_reler
+    - sintetizar_concluido_atual_pendente_bloqueado
+    - informar_branch_sha_prs_evidencias
+    - fornecer_link_canonico
+    - informar_proxima_acao_exata
+  required_evidence:
+    - mission_id
+    - canonical_roadmap_or_checkpoint
+    - last_timestamp
+    - current_stage
+    - branch_and_sha_when_applicable
+    - live_state_references_or_staleness_marker
+    - next_action
+  expected_outputs: [mission_checkpoint]
+  acceptance_criteria:
+    - single_canonical_source
+    - superseded_not_used_as_current
+    - current_stage_explicit
+    - stale_live_state_refreshed_or_marked
+    - roadmap_link_present
+    - next_action_exact
+    - no_restart_when_valid_checkpoint_exists
+    - facts_inference_unknown_separated
+  failure_modes:
+    - no_canonical_roadmap
+    - conflicting_current_sources
+    - ambiguous_mission_reference
+    - unavailable_live_source
+    - stale_checkpoint_without_marker
+  fallback:
+    without_primary_tool: "Usar o último checkpoint verificável acessível e marcar estados mutáveis como STALE ou NAO_VERIFICADO."
+    without_any_tool: "Usar somente evidência já presente na conversa; não afirmar atualidade não comprovada."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Mestre
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: INTERNAL
+    human_gate_triggers:
+      - "o checkpoint revela decisão material reservada que ainda depende de Leandro"
+    prohibited_actions:
+      - "usar documento superseded como verdade corrente"
+      - "inventar estado live"
+      - "reiniciar missão com checkpoint válido"
+  tests:
+    positive_scenarios:
+      - current_unambiguous_mission
+      - superseded_source_present
+      - new_chat_with_canonical_roadmap
+      - resume_existing_stage
+    negative_scenarios:
+      - unavailable_live_state
+      - no_canonical_source
+      - ambiguous_active_missions
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED
