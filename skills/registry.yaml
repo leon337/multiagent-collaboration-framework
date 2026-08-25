@@ -29,11 +29,7 @@ skills:
     allowed_tools: [GitHub, Linear, Notion, Google_Drive]
     forbidden_tools: [public_deployment, destructive_write]
     permission_profile: READ_AND_PROPOSE
-    execution_steps:
-      - classificar_missao
-      - definir_contrato
-      - selecionar_agentes
-      - abrir_primeira_passagem
+    execution_steps: [classificar_missao, definir_contrato, selecionar_agentes, abrir_primeira_passagem]
     required_evidence: [mission_id, phase_id, selected_agents, acceptance_criteria]
     expected_outputs: [mission_contract, initial_handoff]
     acceptance_criteria: [objective_verifiable, agents_have_real_delivery]
@@ -346,3 +342,24 @@ skills:
     failure_modes: [insufficient_evidence, ambiguous_failure_scope, unavailable_history, false_causal_attribution]
     fallback: Produzir autópsia limitada ao que é verificável, marcar lacunas como NAO_VERIFICADO e solicitar somente a evidência mínima inevitável.
     handoff_to: Emily
+
+  - skill_id: MCF-MISSION-CHECKPOINT
+    name: Apresentar checkpoint da missão
+    version: 0.1.0
+    status: EXPERIMENTAL
+    purpose: Apresentar o estado atual auditável de uma missão e permitir retomada cross-chat sem reconstrução manual.
+    owner_agents: [Mestre, Miriam, Augusto]
+    supporting_agents: [Gabriel, Emily]
+    trigger_phrases: ["onde estamos?", "status da missão", "checkpoint da missão"]
+    required_inputs: [mission_reference]
+    optional_inputs: [current_chat_context, repository, branch]
+    allowed_tools: [GitHub]
+    forbidden_tools: [use_superseded_as_current, fabricate_live_state, restart_existing_mission_without_invalidation, invent_missing_checkpoint]
+    permission_profile: READ_ONLY
+    execution_steps: [identificar_missao, localizar_roadmap_canonico, rejeitar_superseded, ler_ultimo_checkpoint, identificar_campos_mutaveis, reler_estado_live, marcar_stale_quando_necessario, sintetizar_status, fornecer_link_e_proxima_acao]
+    required_evidence: [mission_id, canonical_roadmap, last_timestamp, current_stage, branch_sha_when_applicable, live_state_or_staleness_marker, next_action]
+    expected_outputs: [mission_checkpoint]
+    acceptance_criteria: [single_canonical_source, superseded_not_used_as_current, current_stage_explicit, stale_live_state_refreshed_or_marked, roadmap_link_present, next_action_exact, no_restart_with_valid_checkpoint]
+    failure_modes: [no_canonical_roadmap, conflicting_current_sources, ambiguous_mission_reference, unavailable_live_source]
+    fallback: Usar o último checkpoint verificável, marcar campos mutáveis como STALE/NAO_VERIFICADO e não reiniciar a missão.
+    handoff_to: Mestre
