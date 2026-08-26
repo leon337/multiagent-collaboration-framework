@@ -1,0 +1,39 @@
+PHASE_ID=PHASE-NEXTGEN-RECONCILIATION-F14-001
+VALIDATION_STATE=LOCAL_CONTROLLED_PASS_WITH_DISCLOSED_BASELINE_FLAKE_EXTERNAL_RECEIPTS_PENDING
+
+COMMANDS_AND_CHECKS:
+- live Git/GitHub baseline at 2026-08-28T09:24:53Z: PASS; origin/main=42d941b5; Issues 164/165 OPEN; concurrent PR dispositions unchanged
+- candidate catalog: PASS; 17 families, 5 paired families, 22 concrete contracts, zero expected names/schemas missing
+- changed TypeScript fences: PASS; 8 blocks, zero parse errors, zero duplicate type members
+- targeted Context Fabric tests: PASS; 2 files, 28 tests
+- prior candidate full pnpm verify: PASS; 961 passed tests and 3 live Cloud E2E skipped by design
+- exact-tree canonical pnpm verify: NONZERO; format/lint/typecheck/ops/contracts/web passed, while 900 server tests passed, 2 baseline timing tests failed and 3 live E2E were skipped
+- unchanged staging adapter characterization: PASS; delta vs origin/main zero, 3 isolated runs x 21/21 and controlled full server suite 902/902, with 3 live E2E skipped
+- exact-tree separate build on Node 24.18.0: PASS; contracts, database, server, web and worker
+- disposable PostgreSQL migrations: PASS; migrations 0000..0029 applied once, second run no-op
+- production dependency audit: PASS; no known vulnerabilities
+- candidate delta Gitleaks v8.30.1: PASS; zero findings
+- origin/main tracked-tree Gitleaks baseline: DISCLOSED; 23 preexisting untriaged findings, candidate delta zero
+- git diff --check, Prettier, Markdown fences/links and PRF manifest: PASS
+- terminal independent review: INTERRUPTED_USAGE_LIMIT_NO_VERDICT; no PASS claimed
+- GitHub PR required checks and merge: PENDING_EXTERNAL_RECEIPT
+
+SUMMARY:
+- controlled_candidate_checks_failed: 0
+- canonical_exact_tree_nonzero_attempts: 1_BASELINE_TIMING_FLAKE
+- candidate_local_result: PASS_WITH_DISCLOSED_BASELINE_TIMING_FLAKE
+- disclosed_review_limit: 1
+- disclosed_preexisting_security_baseline: 23_GITLEAKS_FINDINGS_ON_ORIGIN_MAIN
+- external_receipts_pending: PR_CHECKS_AND_MERGE
+
+EVIDENCE_REFERENCES:
+- PHASE-NEXTGEN-RECONCILIATION-F14-001-VALIDATION-FULL.txt
+- PHASE-NEXTGEN-RECONCILIATION-F14-001-ARTIFACT-MANIFEST.sha256
+- docs/MCF-NEXTGEN-RECONCILIATION-ROADMAP.md
+- docs/architecture/MCF-NEXTGEN-FORMAL-TARGET-ARCHITECTURE-001.md
+- GitHub PR/checks for the final pushed HEAD
+
+NOTES:
+- O comando canônico passou numa árvore candidata anterior, mas oscilou na árvore exata final por dois deadlines do staging adapter inalterado. Três runs isolados e a suíte integral controlada passaram; o check externo do HEAD exato continua obrigatório.
+- A revisão interrompida e os findings preexistentes não foram promovidos a PASS nem escondidos.
+- Nenhuma validação executou provider, IA paga, Cloud remoto, VPS, deploy, release ou produção.

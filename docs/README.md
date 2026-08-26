@@ -33,6 +33,7 @@ Código atual:
 `../apps/rede-social-agentes/apps/server/src/mcf-runtime/`
 
 Documentação:
+
 - [`runtime/`](runtime/)
 - [`../skills/registry.yaml`](../skills/registry.yaml)
 - [`../artifacts/phases/`](../artifacts/phases/)
@@ -43,6 +44,7 @@ Estado reconciliado: 16 skills registradas, 16 executáveis e 0 somente document
 ## Governança e autoridade
 
 Fontes atuais mais relevantes:
+
 - [`protocols/`](protocols/) — protocolos operacionais vigentes;
 - [`decisions/`](decisions/) — decisões e boundaries, incluindo MCF-DEC-050 a MCF-DEC-064;
 - [`governanca/`](governanca/) — fundação normativa e materiais de governança, alguns preservados como baseline histórico;
@@ -95,26 +97,55 @@ O experimento fornece evidência positiva de preservação/handoff no protocolo 
 - [`proposals/`](proposals/) contém propostas disponíveis na branch corrente;
 - a branch `planning/mcf-nextgen-discovery` contém discovery pós-Fase-Zero.
 
-O material NextGen está `UNDER_STUDY`: arquitetura formalmente aprovada = false; implementação/protótipo autorizados = false no checkpoint de discovery. A publicação de `v1.0.0` não altera essa classificação. Ideias de Project Capsule, novas camadas de memória, model routing, DAG/paralelismo, Interaction Center, gateways, caching/rate limiting, VPS e outras propostas não devem ser anunciadas como capacidade atual sem evidência independente no runtime vigente.
+A rodada histórica NextGen completou Q1–Q16 e aprovou a **direção**
+`GOVERNED_PORTABLE_MULTIAGENT_RUNTIME`, mas não uma especificação executável nem implementação. O
+pacote atual de reconciliação está no
+[`MCF-NEXTGEN-RECONCILIATION-ROADMAP.md`](MCF-NEXTGEN-RECONCILIATION-ROADMAP.md), com
+[disposition Q1–Q16](proposals/MCF-NEXTGEN-ROUND-2-DISPOSITION-001.md),
+[arquitetura F1.4 candidata](architecture/MCF-NEXTGEN-FORMAL-TARGET-ARCHITECTURE-001.md) e
+[plano de implementação](superpowers/plans/2026-08-24-mcf-nextgen-reconciled-implementation-plan.md).
+O [PRF Classe C](../artifacts/phases/PHASE-NEXTGEN-RECONCILIATION-F14-001/README.md) registra
+execução, decisões, validação e gaps de identidade sem atribuir crédito simulado.
+
+Classificação precisa:
+
+```yaml
+target_architecture_direction_historical: APPROVED
+formal_realization_q16: REOPENED_FOR_LEANDRO
+reconciled_formal_architecture: PROPOSED_FOR_LEANDRO_REVIEW
+prototype_authorized: false
+implementation_authorized: false
+production_authorized: false
+```
+
+Capsule, Registry e recovery possuem boundaries mínimos implementados no `main`; model routing,
+Mission Graph geral, Registry multissubject e runtime NextGen completo não. Nenhum agente deve
+promover proposta, plano ou evidência parcial a capacidade atual.
+
+O lineage v1.2.0 já inclui Human Control/GUI; o `main` pós-release inclui também protocolo/schema de
+sucessão GUI/window e conta autenticada reservada para decisão humana na rota implementada. Esses
+fatos são compatibility surfaces, não prova de pausa persistente, controle de janela, Authority
+Envelope genérico ou Decision Inbox.
 
 ## Índice por domínio
 
-| Domínio | Local |
-|---|---|
-| Estado atual | `MCF-CURRENT-STATE.md` |
-| Runtime | `runtime/` |
+| Domínio              | Local                                                                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Estado atual         | `MCF-CURRENT-STATE.md`                                                                                                                                          |
+| Runtime              | `runtime/`                                                                                                                                                      |
 | Integrações externas | `integrations/` (inclui canal MESTRE↔Ox via DeepSeek Harness: [`integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md`](integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md)) |
-| Protocolos | `protocols/` |
-| Decisões | `decisions/` |
-| Agentes | `agentes/`, `matrices/` |
-| Governança | `governanca/` |
-| Auditoria | `auditoria/`, `audits/` |
-| Releases | `releases/` + GitHub Releases |
-| Runbooks | `runbooks/` |
-| Projetos | `projects/` |
-| Evidências | `evidence/`, `../artifacts/phases/` |
-| Experimentos | `../experimentos/`, `experimentos/` |
-| Propostas/discovery | `proposals/`, branches de planejamento |
+| Protocolos           | `protocols/`                                                                                                                                                    |
+| Decisões             | `decisions/`                                                                                                                                                    |
+| Agentes              | `agentes/`, `matrices/`                                                                                                                                         |
+| Governança           | `governanca/`                                                                                                                                                   |
+| Auditoria            | `auditoria/`, `audits/`                                                                                                                                         |
+| Releases             | `releases/` + GitHub Releases                                                                                                                                   |
+| Runbooks             | `runbooks/`                                                                                                                                                     |
+| Projetos             | `projects/`                                                                                                                                                     |
+| Evidências           | `evidence/`, `../artifacts/phases/`                                                                                                                             |
+| Experimentos         | `../experimentos/`, `experimentos/`                                                                                                                             |
+| Propostas/discovery  | `proposals/`, branches de planejamento                                                                                                                          |
+| NextGen reconciliado | `MCF-NEXTGEN-RECONCILIATION-ROADMAP.md`, `architecture/`, `superpowers/plans/`, PRF da fase                                                                     |
 
 ## Regra de continuidade
 

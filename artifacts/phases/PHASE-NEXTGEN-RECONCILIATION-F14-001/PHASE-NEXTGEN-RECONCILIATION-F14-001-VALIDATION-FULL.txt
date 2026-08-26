@@ -1,0 +1,91 @@
+PHASE_ID=PHASE-NEXTGEN-RECONCILIATION-F14-001
+GENERATED_AT=2026-08-28T06:40:48-03:00
+SOURCE_COMMIT=BOUND_EXTERNALLY_TO_PR_HEAD_AFTER_FREEZE
+STATE=LOCAL_CONTROLLED_COMPLETE_CANONICAL_FLAKE_EXTERNAL_RECEIPTS_PENDING
+
+[BASELINE]
+origin_main=42d941b5bc299cb7121175db0367b780d381c93e
+historical_nextgen=f9813afdef27cf51c1b4075aeeb61aa963a917ef
+branch=docs/mcf-nextgen-reconciliation-f14-plan-20260824
+
+[TOOLCHAIN]
+node=24.18.0
+pnpm=11.17.0
+gitleaks=8.30.1
+gitleaks_tarball_sha256=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+
+[LIVE_FREEZE]
+observed_at=2026-08-28T09:24:53Z
+origin_main=42d941b5bc299cb7121175db0367b780d381c93e
+issue_164=OPEN updated_at=2026-08-24T09:08:04Z
+issue_165=OPEN updated_at=2026-08-24T06:25:37Z
+pr_170=OPEN NON_DRAFT UNSTABLE head=1da1a13bd8ca47bed2f4a4e560e64691788582f8
+prs_174_176_177_180_182=OPEN_DRAFT_OUTSIDE_MAIN
+
+[DATABASE]
+container=mcf-cf-lab-postgres-20260823
+database=mcf_nextgen_validation_20260828_0600
+preexistence_check=ABSENT
+first_migration_run=PASS applied=0000..0029
+second_migration_run=PASS no_changes=true
+cleanup=PASS database_absence_count=0 container_restored_state=exited
+
+[TARGETED_CONTEXT]
+command=corepack pnpm --filter @rsa/server exec vitest run src/mcf-context/context-recovery.service.test.ts src/mcf-context/mcf-context-fixtures.test.ts --reporter=default
+result=PASS files=2 tests=28
+
+[CONTRACT_DOCUMENT_CONFORMANCE]
+catalog=PASS families=17 paired_families=5 concrete_contracts=22 missing_contract_names=0 missing_schema_names=0
+typescript_fences=PASS blocks=8 parse_errors=0 duplicate_members=0
+markdown_fences=PASS
+
+[FULL_VERIFY]
+command=corepack pnpm verify
+prior_candidate_integral_rerun=PASS total_passed_tests=961 live_e2e_skipped=3
+exact_tree_canonical_attempt=FAILED_BASELINE_TIMING_FLAKE
+exact_tree_format=PASS
+exact_tree_lint=PASS
+exact_tree_typecheck=PASS
+exact_tree_ops_tests=PASS tests=38
+exact_tree_contracts_tests=PASS tests=16
+exact_tree_server_tests=FAILED passed=900 failed=2 skipped=3
+exact_tree_web_tests=PASS tests=5
+exact_tree_build_in_canonical_command=NOT_REACHED_AFTER_TEST_FAILURE
+flaky_test=src/mcf-runtime/github-staging-deploy.adapter.test.ts
+adapter_and_test_delta_vs_origin_main=ZERO
+isolated_characterization=PASS runs=3 tests_per_run=21 total_passed=63 code_changes=0 max_workers=1
+controlled_exact_tree_server=PASS tests=902 skipped=3 max_workers=1
+exact_tree_build_separate=PASS packages=contracts,database,server,web,worker node=24.18.0
+local_validation_verdict=PASS_WITH_DISCLOSED_BASELINE_TIMING_FLAKE
+
+[AUDITS]
+production_dependencies=PASS result=no_known_vulnerabilities
+gitleaks_candidate_delta=PASS findings=0
+gitleaks_origin_main_tracked_tree=DISCLOSED_BASELINE findings=23 triage=OUT_OF_SCOPE_NOT_INTRODUCED
+gitleaks_full_history=NOT_COMPLETED partial_clone_blob_hydration_interrupted=true
+secret_values_persisted_in_prf=false
+
+[DOCUMENT_INTEGRITY]
+git_diff_check=PASS
+prettier=PASS
+markdown_local_links=PASS
+prf_manifest=PASS
+
+[INDEPENDENT_REVIEW]
+prior_material_findings=CORRECTED
+three_terminal_platform_tasks=ERRORED_USAGE_LIMIT_NO_VERDICT
+codex_cli_terminal_review=INTERRUPTED_USAGE_LIMIT_NO_VERDICT
+material_finding_emitted_before_interruption=false
+independent_terminal_pass_claimed=false
+read_only_test_attempt_inside_review=INVOCATION_BLOCKED_BY_READ_ONLY_SANDBOX_NOT_PRODUCT_FAILURE
+
+[EXTERNAL_RECEIPTS]
+pull_request=BOUND_EXTERNALLY_AFTER_CREATION
+required_checks=READ_GITHUB_LIVE
+merge_commit=BOUND_EXTERNALLY_AFTER_MERGE
+
+SECURITY_NOTE:
+- Nenhum token, credential, secret ou valor sensível é persistido neste artifact.
+- Resultados são sanitizados; nenhum finding inclui valor, token, credential ou segredo.
+- O PASS de Gitleaks limita-se ao delta candidato; os 23 findings já presentes em origin/main permanecem explicitamente não triados.
+- Nenhum comando chamou IA paga, provider, Cloud remoto, VPS, deploy, release ou produção.

@@ -4,6 +4,23 @@ Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live,
 
 ## [Não publicado]
 
+### Planejamento NextGen reconciliado — iniciado em 2026-08-24, atualizado em 2026-08-28
+
+- rodada histórica Q1–Q16 preservada e reconciliada contra o lineage v1.2.0, os contratos/runtime
+  v1/v1.1, Context Fabric e os quatro
+  repositórios;
+- Human Control/GUI v1.2, trace GUI/window e autoridade humana vinculada à conta autenticada foram
+  preservados como compatibility surfaces, sem inferir pausa persistente ou runtime NextGen;
+- roadmap, arquitetura F1.4 candidata e plano de implementação/checklist publicados como
+  planejamento;
+- execução cognitiva real, origem de artifacts e `GATE-RUNTIME-REALITY` escopado passam a ter
+  boundary/gates explícitos no plano, sem atribuição simulada aos 29 agentes;
+- migração Capsule v1/v2, cobertura de 17 famílias/22 contratos novos e audits reprodutíveis foram
+  especificados;
+- PRF Classe C preserva decisões, findings, validações e pendências da missão;
+- custo zero com APIs de IA elevado a hard requirement, incluindo proibição de fallback pago;
+- nenhuma implementação, provider, VPS, release ou produção autorizados por este pacote.
+
 ## [v1.2.0] — 2026-08-27
 
 - `HUMANO NO CONTROLE` formalizado como gate suspensivo imediato da autoridade humana final, com normalização de caixa/espaços, checkpoint e retomada explícita;

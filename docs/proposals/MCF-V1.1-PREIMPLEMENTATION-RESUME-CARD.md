@@ -1,6 +1,13 @@
-# MCF v1.1 — Implementation Resume Card
+# MCF v1.1 — Implementation Resume Card (histórico)
 
-**USE ESTE ARQUIVO PRIMEIRO AO RETOMAR A v1.1 APÓS O HUMAN_GATE DE IMPLEMENTAÇÃO.**
+**Classificação atual:** `HISTORICAL_IMPLEMENTATION_GATE_SNAPSHOT`
+
+**Não usar como estado atual:** a v1.1.0 foi implementada e publicada em
+`v1.1.0@5d79f488407c77f7b9f21ecfefb41ddfb3a52aef`. Para retomada corrente, ler primeiro
+[`docs/MCF-CURRENT-STATE.md`](../MCF-CURRENT-STATE.md), a Capsule e o GitHub/provider live.
+
+Este arquivo preserva o handoff no momento do HUMAN_GATE de implementação. Os campos abaixo são
+históricos e não revogam nem alteram a release estável posterior.
 
 ## Identidade
 
@@ -12,7 +19,7 @@
 - Preparação/autoridade branch: `planning/mcf-v1.1-preimplementation-conformance`
 - Executor técnico autorizado: `CODEX_LOCAL`
 
-## Estado atual
+## Estado histórico no gate
 
 ```yaml
 target_version: v1.1.0
@@ -58,7 +65,7 @@ RELEASE != AUTHORIZED
 PRODUCTION != AUTHORIZED
 ```
 
-## Current Codex mission
+## Missão Codex naquele gate
 
 `docs/proposals/MCF-V1.1-CODEX-IMPLEMENTATION-MISSION-001.md`
 
