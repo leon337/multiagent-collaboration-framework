@@ -1,0 +1,40 @@
+{
+  "trace_version": "mcf_gui_window_succession_trace/v1",
+  "mission_id": "MCF-MESTRE-CROSS-CHAT-SUCCESSION-001",
+  "classification": "MAINTAIN_WITH_GAP",
+  "predecessor": {
+    "session_id": "chat-predecessor-001",
+    "window_surface_id": "brave-window-shared-001",
+    "surface_preserved_through_equivalence_and_handoff": false
+  },
+  "successor": {
+    "session_id": "chat-successor-001",
+    "window_surface_id": "brave-window-shared-001"
+  },
+  "handoff": {
+    "successor_equivalence": "PASS",
+    "explicit_handoff": true,
+    "predecessor_close_governed_separately": true
+  },
+  "window_control": {
+    "open_new_window": true,
+    "open_new_chat": true,
+    "visual_assertion_two_windows": "PASS",
+    "monitor_aware_placement": "PASS",
+    "predecessor_monitor_id": "LVDS-1",
+    "successor_monitor_id": "LVDS-1"
+  },
+  "input_evidence": {
+    "mechanism": "X11_SYNTHETIC_EVENT",
+    "claimed_equivalent_to_physical_input": true,
+    "shortcut": "Super+Left",
+    "observed_effect": "synthetic key event sent"
+  },
+  "observability": {
+    "shortcut_execution_logged": true,
+    "simultaneous_copresence_regression": "PASS",
+    "evidence_refs": [
+      "negative-fixture"
+    ]
+  }
+}
