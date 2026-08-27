@@ -2,7 +2,7 @@ checkpoint_id: CP-GUI-WINDOW-CONTROL-FORMALIZATION-20260827-04
 mission: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
 phase: PHASE-GUI-WINDOW-CONTROL-FORMALIZATION
 prf_class: B
-status: POST_MERGE_VERIFIED_AWAITING_RELEASE_DELIBERATION
+status: POST_MERGE_VERIFIED_PRF_INTEGRITY_PASS_AWAITING_RELEASE_DELIBERATION
 candidate:
   branch: ops/mcf-gui-window-control-clean-candidate
   pr: 179
@@ -56,13 +56,7 @@ prf:
   decisions: PRESENT
   mission_trace: PRESENT
   readme: PRESENT
-  artifact_manifest_sha256: PRESENT_REQUIRES_REFRESH_AFTER_POST_MERGE_CHECKPOINT_UPDATE
-observability:
-  leo_project_window_distinct: PASS
-  emily_project_window_distinct: PASS
-  visible_terminal: PASS
-  visible_log: /home/leo/mcf-visible-collaboration.log
-  augusto_execution_mode: EXECUCAO_POR_PAPEL_DO_MCF_NESTA_SESSAO
+  artifact_manifest_sha256: PRESENT_VERIFIED
 governance:
   main_mutation: a98cc9140c8b001135a8ce9cc37abab69c7165a6
   merge_executed: true
@@ -71,7 +65,5 @@ governance:
   version_number: NOT_DECIDED
   next_human_gate: RELEASE_VERSION_DELIBERATION_NOT_YET_OPENED
 next:
-  - refresh ARTIFACT-MANIFEST.sha256 because this checkpoint changed after merge verification
-  - verify sha256sum -c on a fresh audit-branch clone
   - deliberate SemVer and release scope with the team
   - return to LEANDRO with a separate HUMAN_GATE before any tag or release
