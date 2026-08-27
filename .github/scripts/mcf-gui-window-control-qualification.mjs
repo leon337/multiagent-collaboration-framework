@@ -86,6 +86,21 @@ function validateTrace(trace) {
   return errors;
 }
 
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function expectReject(name, base, mutate, expectedError) {
+  const candidate = clone(base);
+  mutate(candidate);
+  const errors = validateTrace(candidate);
+  if (!errors.includes(expectedError)) {
+    fail(`regression ${name} did not reject with expected error: ${expectedError}; got: ${errors.join('; ') || 'none'}`);
+  } else {
+    pass(`regression ${name}: ${expectedError}`);
+  }
+}
+
 const protocolText = readRequired(protocolPath);
 const unifiedText = readRequired(unifiedPath);
 const schemaText = readRequired(schemaPath);
@@ -122,6 +137,25 @@ if (validFixture) {
   const errors = validateTrace(validFixture);
   if (errors.length) fail(`valid fixture rejected: ${errors.join('; ')}`);
   else pass('valid fixture accepted');
+
+  const cases = [
+    ['session-identity', (x) => { x.successor.session_id = x.predecessor.session_id; }, 'successor session must be distinct'],
+    ['window-identity', (x) => { x.successor.window_surface_id = x.predecessor.window_surface_id; }, 'successor window surface must be distinct'],
+    ['predecessor-preservation', (x) => { x.predecessor.surface_preserved_through_equivalence_and_handoff = false; }, 'predecessor surface must be preserved through equivalence and handoff'],
+    ['equivalence', (x) => { x.handoff.successor_equivalence = 'FAIL'; }, 'successor equivalence must PASS'],
+    ['explicit-handoff', (x) => { x.handoff.explicit_handoff = false; }, 'handoff must be explicit'],
+    ['separate-close-gate', (x) => { x.handoff.predecessor_close_governed_separately = false; }, 'predecessor close must be separately governed'],
+    ['open-new-window', (x) => { x.window_control.open_new_window = false; }, 'OPEN_NEW_WINDOW must be explicit'],
+    ['open-new-chat', (x) => { x.window_control.open_new_chat = false; }, 'OPEN_NEW_CHAT must be explicit'],
+    ['visual-assertion', (x) => { x.window_control.visual_assertion_two_windows = 'FAIL'; }, 'two-window visual assertion must PASS'],
+    ['monitor-aware-placement', (x) => { x.window_control.monitor_aware_placement = 'FAIL'; }, 'monitor-aware placement must PASS'],
+    ['monitor-identities', (x) => { x.window_control.successor_monitor_id = ''; }, 'monitor identity required'],
+    ['input-mechanism-enum', (x) => { x.input_evidence.mechanism = 'UNKNOWN'; }, 'input mechanism must be truthful and enumerated'],
+    ['x11-truthfulness', (x) => { x.input_evidence.mechanism = 'X11_SYNTHETIC_EVENT'; x.input_evidence.claimed_equivalent_to_physical_input = true; }, 'X11 synthetic event cannot be claimed equivalent to physical input'],
+    ['shortcut-observability', (x) => { x.observability.shortcut_execution_logged = false; }, 'shortcut execution must be logged'],
+    ['copresence-regression', (x) => { x.observability.simultaneous_copresence_regression = 'FAIL'; }, 'simultaneous copresence regression must PASS'],
+  ];
+  for (const [name, mutate, expected] of cases) expectReject(name, validFixture, mutate, expected);
 }
 
 if (invalidFixture) {
