@@ -2,7 +2,7 @@
 
 ```yaml
 document: MCF_HUMAN_DELEGATION_FIREWALL
-version: 1.0.0
+version: 1.1.0
 status: ACTIVE
 authority_human: Leandro
 authority_operational: Leo
@@ -123,6 +123,48 @@ direct_path_provided: true
 return_to_team_defined: true
 ```
 
+### 7.1 Gate verbal `HUMANO NO CONTROLE`
+
+A expressão exata `HUMANO NO CONTROLE`, quando emitida por Leandro durante uma execução, é um **gate suspensivo imediato** e prevalece sobre qualquer autorização operacional anterior da missão.
+
+O Mestre e qualquer agente executor devem interpretar o gate literalmente:
+
+```text
+HUMANO NO CONTROLE
+→ INTERROMPER NOVAS AÇÕES
+→ NÃO REINTERPRETAR A INTENÇÃO
+→ PRESERVAR O ESTADO ATUAL
+→ REGISTRAR O ÚLTIMO CHECKPOINT E EVIDÊNCIAS
+→ MARCAR O PRÓXIMO PASSO COMO HUMAN_GATE
+→ AGUARDAR RETOMADA EXPLÍCITA DE LEANDRO
+```
+
+Regras obrigatórias:
+
+- nenhuma nova mutação, chamada externa ou avanço de etapa pode começar após o gate;
+- uma operação já concluída antes do gate permanece como evidência; não deve ser desfeita sem ordem humana;
+- uma operação em curso deve ser interrompida com segurança quando a ferramenta permitir; caso não permita, o agente deve apenas reportar seu estado;
+- é proibido inferir que Leandro "provavelmente quer continuar";
+- é proibido converter o gate em mero pedido de observabilidade;
+- o gate não é revogado por mensagens anteriores, autorização ampla da missão ou comportamento padrão `TEAM_FIRST`;
+- a retomada exige uma nova instrução explícita de Leandro que autorize continuar.
+
+Estado mínimo a reportar após o gate:
+
+```yaml
+human_control_checkpoint:
+  gate: HUMAN_CONTROL
+  execution_paused: true
+  last_completed_action:
+  action_in_flight:
+  preserved_state:
+  evidence: []
+  next_action: HUMAN_GATE
+  resume_requires_explicit_human_instruction: true
+```
+
+Esse gate existe para garantir que a autoridade humana possa interromper a autonomia operacional a qualquer momento, sem ambiguidade e sem disputa de interpretação.
+
 ## 8. Responsabilidades
 
 ### Mestre
@@ -130,7 +172,8 @@ return_to_team_defined: true
 - aplicar TEAM_FIRST;
 - impedir delegação precoce;
 - manter a ação humana mínima;
-- retomar a missão após a intervenção.
+- retomar a missão após a intervenção;
+- obedecer imediatamente ao gate verbal `HUMANO NO CONTROLE`.
 
 ### Gabriel/Rafael e demais executores
 
@@ -181,7 +224,9 @@ human_request_with_evidence:
 - solicitar várias ações sob um único gate;
 - pedir segredo no chat;
 - transferir risco técnico à autoridade humana sem explicação;
-- não retomar a missão depois da ação humana.
+- não retomar a missão depois da ação humana;
+- continuar executando após `HUMANO NO CONTROLE` sem nova autorização explícita;
+- reinterpretar `HUMANO NO CONTROLE` como simples pedido de auditoria ou observabilidade.
 
 ## 11. Recuperação quando o HDF for violado
 
@@ -196,6 +241,8 @@ CAPTURAR A DELEGAÇÃO INDEVIDA
 → VALIDAR
 → RETOMAR O OBJETIVO
 ```
+
+Se a violação for avanço após `HUMANO NO CONTROLE`, a recuperação começa congelando imediatamente novas ações e reportando exatamente quais efeitos ocorreram depois do gate.
 
 ## 12. Estado de encerramento
 
