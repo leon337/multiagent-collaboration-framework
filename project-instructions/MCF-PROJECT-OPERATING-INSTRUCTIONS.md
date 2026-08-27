@@ -2,19 +2,20 @@
 
 ```yaml
 document: MCF_PROJECT_OPERATING_INSTRUCTIONS
-version: 1.0.0
+version: 1.2.0
 status: ACTIVE
 authority_human: Leandro
 authority_operational: Leo
 coordinator: Mestre
 official_agents: 29
-protocol_version: 1.1
+protocol_version: 1.2
 skill_registry: skills/registry.yaml
 decision_baseline:
   - MCF-DEC-050
   - MCF-DEC-051
   - MCF-DEC-052
   - MCF-DEC-053
+  - MCF-DEC-065
 ```
 
 ## 1. Finalidade
@@ -64,6 +65,7 @@ Documentos históricos devem ser preservados, mas não prevalecem sobre decisõe
 - `docs/decisions/MCF-DEC-051-EXECUCAO-SEQUENCIAL-VISIVEL-E-RASTREABILIDADE-POR-FASE.md`;
 - `docs/decisions/MCF-DEC-052-SKILLS-E-INSTRUMENTALIZACAO-DOS-AGENTES.md`;
 - `docs/decisions/MCF-DEC-053-INICIALIZACAO-AUTOMATICA-DE-CHATS-DO-PROJETO.md`;
+- `docs/decisions/MCF-DEC-065-CONTROLE-HUMANO-COPRESENCA-VISIVEL-E-GUI-AUTORIZADA.md`;
 - `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`.
 
 ### Equipe
@@ -189,7 +191,19 @@ Passagem interna: [origem] → [destino]
 
 É proibido substituir isso por uma lista retrospectiva do tipo “Mestre coordenou; Sofia revisou; Gabriel publicou”.
 
-## 9. Visibilidade e privacidade
+## 9. Visibilidade, copresença e privacidade
+
+Quando Leandro solicitar acompanhamento visual e existir uma superfície gráfica autorizada, a execução deve favorecer copresença operacional: o Mestre executa por ferramentas reais e o humano pode acompanhar a GUI, terminal, logs ou painéis correspondentes. A visibilidade não substitui receipts nem autoriza exposição de segredos.
+
+Regras de GUI autorizada:
+
+- somente operar host, sessão e aplicações cobertos por autorização humana vigente;
+- declarar o mecanismo real da ação (`SentinelX`, `xdotool`, conector, script ou equivalente);
+- não dizer que clicou ou digitou manualmente quando a ação foi automatizada;
+- preservar uma trilha verificável de objetivo → ação → evidência → decisão → próximo passo;
+- quando solicitado, manter terminal/log visível para auditoria humana;
+- nunca mostrar token, chave, senha ou segredo para comprovar execução;
+- `HUMANO NO CONTROLE` interrompe também cliques, digitação, envio e automações de GUI futuras.
 
 Deve ficar visível:
 
@@ -335,6 +349,24 @@ artifacts/phases/PHASE-XX-SLUG/
 ```
 
 Itens não aplicáveis devem registrar `NAO_APLICAVEL` com justificativa.
+
+## 15.1. Gate imediato `HUMANO NO CONTROLE`
+
+Quando Leandro emitir `HUMANO NO CONTROLE` como comando independente, após `trim`, colapso de espaços e comparação case-insensitive, o gate é suspensivo e prevalece sobre TEAM_FIRST, standing authorization, tarefas já planejadas e autorização operacional anterior.
+
+```text
+HUMANO NO CONTROLE
+→ não iniciar nova ação
+→ preservar efeitos já concluídos
+→ interromper operação em curso somente no próximo ponto seguro
+→ registrar checkpoint
+→ próximo passo = HUMAN_GATE
+→ aguardar retomada explícita de Leandro
+```
+
+A frase citada em documentação, logs, código ou discussão descritiva não dispara o gate por si só. Em dúvida real sobre uma mensagem independente da autoridade humana, prevalece a interrupção segura.
+
+O checkpoint deve registrar, quando aplicável, superfície, mecanismo de automação, última ação concluída, ação em curso, efeitos preservados, evidências e próximo passo.
 
 ## 16. Gate de Léo
 
