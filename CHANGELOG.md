@@ -4,6 +4,15 @@ Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live,
 
 ## [Não publicado]
 
+## [v1.2.0] — 2026-08-27
+
+- `HUMANO NO CONTROLE` formalizado como gate suspensivo imediato da autoridade humana final, com normalização de caixa/espaços, checkpoint e retomada explícita;
+- copresença visível oficializada: GUI autorizada pode ser operada por automação aprovada com terminal/log/receipt auditável;
+- obrigação de declarar o mecanismo real da ação visual e proibição de simular controle manual/percepção visual inexistente;
+- testes HDF T09–T12 e suite V01–V08 para execução visível/GUI;
+- validação de campo preservada com gate deliberado, digitação sem envio e round-trip `hello word`;
+- limitação explícita: MissionRuntime de referência ainda não possui pause/resume genérico persistente por mensagem humana.
+
 ### Reconciliação documental pós-stable — 2026-08-14
 
 - estado documental atualizado após a publicação oficial de `v1.0.0`;
