@@ -1,0 +1,62 @@
+checkpoint_id: CP-GUI-WINDOW-CONTROL-FORMALIZATION-20260827-03
+mission: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+phase: PHASE-GUI-WINDOW-CONTROL-FORMALIZATION
+prf_class: B
+status: AWAITING_MANIFEST_AND_EMILY_RECHECK
+candidate:
+  branch: ops/mcf-gui-window-control-clean-candidate
+  pr: 179
+  pr_state: DRAFT
+  base_main: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+  head: 3a2545237ca1449b4ac2ba44d781c3e4e01be339
+  changed_files: 7
+  qualification: PASS
+classification:
+  historical_cross_chat_succession: PASS
+  original_gui_window_coverage: GAP_NOT_TESTED
+  consolidated: MAINTAIN_WITH_GAP
+validation:
+  gui_qualification_push_33103543742: PASS
+  gui_qualification_pr_33103547722: PASS
+  documentation_validation_33103547784: PASS
+  production_readiness_33103547736: PASS
+  local_smoke_attempt_1: FAIL_HARNESS_CWD
+  local_smoke_attempt_2: PASS
+reviews:
+  leo_isolated_project:
+    gate: PASS_WITH_NOTES
+    severity: LOW
+    open_blockers: NONE
+  emily_isolated_project:
+    closure_gate: PASS_WITH_CONDITIONS
+    blocker: PRF_COMPLETION
+prf:
+  plan: PRESENT
+  report: PRESENT
+  validation: PRESENT
+  validation_full: PRESENT
+  smoke: PRESENT
+  checkpoint: PRESENT
+  decisions: PRESENT
+  mission_trace: PRESENT
+  readme: PRESENT
+  artifact_manifest_sha256: PENDING
+observability:
+  leo_project_window_distinct: PASS
+  emily_project_window_distinct: PASS
+  visible_terminal: PASS
+  visible_log: /home/leo/mcf-visible-collaboration.log
+  augusto_execution_mode: EXECUCAO_POR_PAPEL_DO_MCF_NESTA_SESSAO
+governance:
+  human_formalization_gate: APPROVED
+  main_mutation: NONE
+  merge_authorized: false
+  tag_authorized: false
+  release_authorized: false
+  version_number: NOT_DECIDED
+  next_human_gate: NOT_OPENED
+next:
+  - create ARTIFACT-MANIFEST.sha256 for all non-manifest PRF files
+  - ask isolated EMILY project to re-audit completed PRF
+  - if EMILY closure gate passes, update this checkpoint and regenerate manifest
+  - return to MESTRE and open HUMAN_GATE to LEANDRO only for the next governance decision
