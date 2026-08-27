@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcf.local/schemas/mcf-gui-window-succession-trace-v1.schema.json",
+  "title": "MCF GUI Window Succession Trace v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trace_version",
+    "mission_id",
+    "classification",
+    "predecessor",
+    "successor",
+    "handoff",
+    "window_control",
+    "input_evidence",
+    "observability"
+  ],
+  "properties": {
+    "trace_version": {
+      "const": "mcf_gui_window_succession_trace/v1"
+    },
+    "mission_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classification": {
+      "type": "string",
+      "enum": ["PASS", "MAINTAIN_WITH_GAP", "FAIL"]
+    },
+    "predecessor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "window_surface_id",
+        "surface_preserved_through_equivalence_and_handoff"
+      ],
+      "properties": {
+        "session_id": { "type": "string", "minLength": 1 },
+        "window_surface_id": { "type": "string", "minLength": 1 },
+        "surface_preserved_through_equivalence_and_handoff": { "type": "boolean" }
+      }
+    },
+    "successor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session_id", "window_surface_id"],
+      "properties": {
+        "session_id": { "type": "string", "minLength": 1 },
+        "window_surface_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "successor_equivalence",
+        "explicit_handoff",
+        "predecessor_close_governed_separately"
+      ],
+      "properties": {
+        "successor_equivalence": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "explicit_handoff": { "type": "boolean" },
+        "predecessor_close_governed_separately": { "type": "boolean" }
+      }
+    },
+    "window_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "open_new_window",
+        "open_new_chat",
+        "visual_assertion_two_windows",
+        "monitor_aware_placement",
+        "predecessor_monitor_id",
+        "successor_monitor_id"
+      ],
+      "properties": {
+        "open_new_window": { "type": "boolean" },
+        "open_new_chat": { "type": "boolean" },
+        "visual_assertion_two_windows": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "monitor_aware_placement": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "predecessor_monitor_id": { "type": "string", "minLength": 1 },
+        "successor_monitor_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "input_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mechanism",
+        "claimed_equivalent_to_physical_input",
+        "shortcut",
+        "observed_effect"
+      ],
+      "properties": {
+        "mechanism": {
+          "type": "string",
+          "enum": ["X11_SYNTHETIC_EVENT", "DEVICE_LEVEL_INPUT_EVENT", "PHYSICAL_INPUT_EVENT"]
+        },
+        "claimed_equivalent_to_physical_input": { "type": "boolean" },
+        "shortcut": { "type": "string", "minLength": 1 },
+        "observed_effect": { "type": "string", "minLength": 1 }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shortcut_execution_logged",
+        "simultaneous_copresence_regression",
+        "evidence_refs"
+      ],
+      "properties": {
+        "shortcut_execution_logged": { "type": "boolean" },
+        "simultaneous_copresence_regression": { "type": "string", "enum": ["PASS", "FAIL"] },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
