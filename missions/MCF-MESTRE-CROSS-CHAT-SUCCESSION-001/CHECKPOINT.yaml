@@ -1,0 +1,50 @@
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+status: IN_PROGRESS
+checkpoint_id: CP-001
+checkpoint_date: 2026-08-27
+human_authority: LEANDRO
+coordinator: MESTRE
+
+source_branch: ops/mcf-mestre-cross-chat-succession-001
+release_candidate:
+  pull_request: 175
+  target_version: v1.2.0
+  qualified_head: 43b0cccab4b29a2ed4c77abd824b652521c2b8c1
+  qualified_tree: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
+  local_remote_tree_equivalence: PASS
+  focused_tests: "34/34 PASS"
+  canonical_ci: "5/5 SUCCESS"
+
+release_gate:
+  leo: PASS_WITH_NONBLOCKING_NOTES
+  renato: PASS_WITH_NONBLOCKING_NOTES
+  emily: PASS
+  critical_high_blockers: NONE
+
+human_authorization:
+  merge_pr_175_after_validation: AUTHORIZED
+  complete_v1_2_0_release: AUTHORIZED
+  cross_chat_succession_test: AUTHORIZED
+
+succession:
+  predecessor_state: ACTIVE
+  successor_state: NOT_SPAWNED
+  next_task: S03_CAPSULE_FREEZE
+  pass_rule: NO_EVIDENCE_NO_PASS
+
+nonblocking_followups:
+  - integrated human-control-policy to GUI suspension test
+  - gate during in-flight tool call
+  - explicit resume regression test
+  - CI automation for tested-tree equals published-tree
+  - richer GUI smoke payload
+  - independent architecture/security review
+  - persistent MissionRuntime pause/resume API
+  - gate telemetry
+
+constraints:
+  - do not expose secrets
+  - do not invent missing state
+  - reconcile live GitHub before mutating main
+  - successor must prove recovery before merge
+  - HUMANO_NO_CONTROLE suspends new actions immediately
