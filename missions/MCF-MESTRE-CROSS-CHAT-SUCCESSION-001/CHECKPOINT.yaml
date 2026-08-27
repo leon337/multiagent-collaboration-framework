@@ -1,6 +1,6 @@
 mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
 status: IN_PROGRESS
-checkpoint_id: CP-003-S08-HANDOFF
+checkpoint_id: CP-004-S12-POST-MERGE
 checkpoint_date: 2026-08-27
 human_authority: LEANDRO
 coordinator: MESTRE
@@ -8,19 +8,25 @@ coordinator: MESTRE
 source_branch: ops/mcf-mestre-cross-chat-succession-001
 succession_pr: 176
 
-live_pre_spawn_state:
-  main_sha: 2b8ce24b71c9f9095c801dafdd762a2cef202fa9
-  main_drift: NONE
-  release_pr_state: OPEN_READY_MERGEABLE
-
 release_candidate:
   pull_request: 175
   target_version: v1.2.0
-  qualified_head: 43b0cccab4b29a2ed4c77abd824b652521c2b8c1
+  qualified_pr_head: 43b0cccab4b29a2ed4c77abd824b652521c2b8c1
   qualified_tree: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
-  local_remote_tree_equivalence: PASS
   focused_tests: "34/34 PASS"
-  canonical_ci: "5/5 SUCCESS"
+  pre_merge_canonical_ci: "5/5 SUCCESS"
+  local_remote_tree_equivalence: PASS
+
+post_merge_state:
+  pre_merge_main_sha: 2b8ce24b71c9f9095c801dafdd762a2cef202fa9
+  merged_main_sha: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+  merged_main_tree: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
+  tested_tree_equals_merged_tree: PASS
+  production_readiness: PASS
+  staging_deploy: PASS
+  tag_v1_2_0: PENDING
+  github_release_v1_2_0: PENDING
+  latest_public_release_observed: v1.1.0
 
 release_gate:
   leo: PASS_WITH_NONBLOCKING_NOTES
@@ -30,7 +36,7 @@ release_gate:
   persisted_remote_evidence: FINAL_REVIEW_GATE.md
 
 human_authorization:
-  merge_pr_175_after_validation: AUTHORIZED
+  merge_pr_175_after_validation: AUTHORIZED_COMPLETED
   complete_v1_2_0_release: AUTHORIZED
   cross_chat_succession_test: AUTHORIZED
   visible_auditable_operation: AUTHORIZED
@@ -44,11 +50,24 @@ succession:
   s06_challenge: PASS
   s07_succession_equivalence: PASS
   s08_handoff: PASS
+  s09_persist_final_reviews: PASS
+  s10_main_drift_check: PASS
+  s11_exact_merge_pr_175: PASS
+  s12_post_merge_qualification: PASS
   recovered_state_commit: 013ef49672532eca19aa6392f6c234f0991e9fbd
   equivalence_commit: dbf9a917e9d6d2f971fdffb5326de0fda58d0fcc
-  next_task: S10_MAIN_DRIFT_CHECK
+  next_task: S13_TAG_V1_2_0
   pass_rule: NO_EVIDENCE_NO_PASS
   anti_copy_rule: successor_writes_RECOVERED_STATE_before_reading_EXPECTED_STATE
+
+publication_boundary:
+  target_sha: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+  target_tree: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
+  immutable_tag_required: true
+  tag_must_not_retarget: true
+  release_must_reference_exact_tag: true
+  existing_direct_connector_tag_release_write_surface: NOT_EXPOSED
+  repository_publication_pattern: github_actions_contents_write_plus_gh_release
 
 artifacts:
   - ROADMAP.md
@@ -76,6 +95,6 @@ nonblocking_followups:
 constraints:
   - do not expose secrets
   - do not invent missing state
-  - reconcile live GitHub before mutating main
-  - successor must prove recovery before merge
+  - do not retarget immutable tags
+  - publish only the exact qualified post-merge SHA
   - HUMANO_NO_CONTROLE suspends new actions immediately
