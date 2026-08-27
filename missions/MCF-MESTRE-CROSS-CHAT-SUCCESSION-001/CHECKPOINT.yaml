@@ -1,6 +1,6 @@
 mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
 status: IN_PROGRESS
-checkpoint_id: CP-002-S03-FREEZE
+checkpoint_id: CP-003-S08-HANDOFF
 checkpoint_date: 2026-08-27
 human_authority: LEANDRO
 coordinator: MESTRE
@@ -36,10 +36,17 @@ human_authorization:
   visible_auditable_operation: AUTHORIZED
 
 succession:
-  predecessor_state: ACTIVE
-  successor_state: NOT_SPAWNED
+  predecessor_state: STANDBY
+  successor_state: ACTIVE
   s03_capsule_freeze: PASS
-  next_task: S04_SPAWN_SUCCESSOR
+  s04_spawn_successor: PASS
+  s05_cold_recovery: PASS
+  s06_challenge: PASS
+  s07_succession_equivalence: PASS
+  s08_handoff: PASS
+  recovered_state_commit: 013ef49672532eca19aa6392f6c234f0991e9fbd
+  equivalence_commit: dbf9a917e9d6d2f971fdffb5326de0fda58d0fcc
+  next_task: S10_MAIN_DRIFT_CHECK
   pass_rule: NO_EVIDENCE_NO_PASS
   anti_copy_rule: successor_writes_RECOVERED_STATE_before_reading_EXPECTED_STATE
 
@@ -53,6 +60,8 @@ artifacts:
   - SOURCE_MANIFEST.md
   - RECOVERY_CHALLENGE.md
   - FINAL_REVIEW_GATE.md
+  - RECOVERED_STATE.yaml
+  - SUCCESSION_EQUIVALENCE.md
 
 nonblocking_followups:
   - integrated human-control-policy to GUI suspension test
