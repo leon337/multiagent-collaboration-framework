@@ -416,3 +416,13 @@ mission_closeout:
 ```
 
 `final_state: ENTREGUE` exige objetivo atendido, ausência de ação pendente no ciclo e rastreabilidade da fase disponível.
+
+## 17. Extensão candidata — sucessão cross-chat com GUI/window control
+
+Quando uma missão de sucessão cross-chat incluir copresença visual em GUI autorizada, aplicar adicionalmente a extensão:
+
+`docs/protocols/MCF-PROTOCOLO-SUCESSAO-CROSS-CHAT-E-CONTROLE-DE-JANELAS.md`
+
+Na branch candidata, essa extensão formaliza critérios testáveis para identidade distinta de sessão e superfície, preservação da superfície predecessora até equivalência + handoff, fechamento do predecessor como ação separada, verdade sobre o mecanismo de input, monitor-aware placement e regressão de copresença.
+
+A referência nesta branch não autoriza `main`, merge, tag, release ou número de versão. O status oficial depende dos gates posteriores de qualificação, auditoria e autoridade humana.
