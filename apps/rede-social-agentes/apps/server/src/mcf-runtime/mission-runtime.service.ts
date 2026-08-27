@@ -15,6 +15,10 @@ import type {
 
 import type { EvidenceValidator } from './evidence-validator.js';
 import {
+  canonicalizeHumanGateDecision,
+  type AuthenticatedHumanExecutionProof,
+} from './human-authority-proof.js';
+import {
   McfMissionNotFoundError,
   McfPermissionDeniedError,
   McfPhaseNotFoundError,
@@ -81,6 +85,7 @@ export class MissionRuntimeService {
     private readonly registry: SkillRegistryLoader,
     private readonly evidence: EvidenceValidator,
     private readonly v11Context?: MissionV11ContextGuard,
+    private readonly reservedHumanAuthorityAccountId?: string,
   ) {}
 
   async createMission(request: CreateMcfMissionRequest): Promise<McfMissionResponse> {
@@ -149,6 +154,7 @@ export class MissionRuntimeService {
   async executePhase(
     missionId: string,
     request: ExecuteMcfPhaseRequest,
+    authenticatedHuman?: AuthenticatedHumanExecutionProof,
   ): Promise<McfPhaseExecutionResponse> {
     const mission = await this.repository.findMission(missionId);
     if (!mission) {
@@ -166,11 +172,16 @@ export class MissionRuntimeService {
       );
     }
 
+    const effectiveInputs = canonicalizeHumanGateDecision(
+      request.inputs,
+      authenticatedHuman,
+      this.reservedHumanAuthorityAccountId,
+    );
     const phaseId = request.phaseId ?? randomUUID();
     const outcome = await this.executor.execute({
       skillId: request.skillId,
       agentId: request.agentId,
-      inputs: request.inputs,
+      inputs: effectiveInputs,
       tool: request.tool,
       executionContext: {
         missionId,
@@ -184,14 +195,14 @@ export class MissionRuntimeService {
     }
 
     const existingEvents =
-      outcome.skill.skillId === 'MCF-TRACE-MISSION' && request.inputs.final_checkpoint === true
+      outcome.skill.skillId === 'MCF-TRACE-MISSION' && effectiveInputs.final_checkpoint === true
         ? await this.repository.listEvents(missionId)
         : [];
     const missionState = resolveMissionState({
       selectedSkills: mission.contract.selectedSkills,
       currentSkillId: outcome.skill.skillId,
       currentPhaseCompleted: outcome.phaseState === 'COMPLETED',
-      finalCheckpointRequested: request.inputs.final_checkpoint === true,
+      finalCheckpointRequested: effectiveInputs.final_checkpoint === true,
       defaultState: outcome.missionState,
       existingEvents,
     });
@@ -204,7 +215,7 @@ export class MissionRuntimeService {
       agentId: request.agentId,
       state: outcome.phaseState,
       cycle: 1,
-      inputs: request.inputs,
+      inputs: effectiveInputs,
       expectedEvidence: outcome.skill.requiredEvidence,
       startedAt: now,
       completedAt: outcome.phaseState === 'COMPLETED' ? now : null,

@@ -15,6 +15,7 @@ const productionEnvironment = {
   TRUST_PROXY: 'true',
   BODY_LIMIT_BYTES: '131072',
   REGISTRATION_ALLOWLIST: 'invited@example.test',
+  RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID: '11111111-1111-4111-8111-111111111111',
 };
 
 describe('loadRuntimeConfig', () => {
@@ -48,6 +49,18 @@ describe('loadRuntimeConfig', () => {
       loadRuntimeConfig({
         ...productionEnvironment,
         REGISTRATION_ALLOWLIST: '',
+        ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+      }),
+    ).toThrow();
+  });
+
+  it('rejects production without a reserved human authority account ID', () => {
+    const environment: NodeJS.ProcessEnv = { ...productionEnvironment };
+    delete environment.RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID;
+
+    expect(() =>
+      loadRuntimeConfig({
+        ...environment,
         ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
       }),
     ).toThrow();

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { loadRuntimeConfig } from '../config.js';
 import { DatabaseModule } from '../database.module.js';
 import { DatabaseService } from '../database.service.js';
 import { IdentityModule } from '../identity/identity.module.js';
@@ -154,7 +155,11 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     {
       provide: ProductionAuthorizationService,
       useFactory: (repository: McfRuntimeRepository, gateStore: ProductionGateEventStore) =>
-        new ProductionAuthorizationService(repository, gateStore),
+        new ProductionAuthorizationService(
+          repository,
+          gateStore,
+          loadRuntimeConfig().RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID,
+        ),
       inject: [MCF_RUNTIME_REPOSITORY, PRODUCTION_GATE_EVENT_STORE],
     },
     {
@@ -175,7 +180,15 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
         registry: SkillRegistryLoader,
         evidence: EvidenceValidator,
         v11Context: MissionV11ContextGuard,
-      ) => new MissionRuntimeService(repository, executor, registry, evidence, v11Context),
+      ) =>
+        new MissionRuntimeService(
+          repository,
+          executor,
+          registry,
+          evidence,
+          v11Context,
+          loadRuntimeConfig().RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID,
+        ),
       inject: [
         MCF_RUNTIME_REPOSITORY,
         SkillExecutor,

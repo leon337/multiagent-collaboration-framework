@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import {
   Body,
   ConflictException,
@@ -37,6 +39,7 @@ import {
   McfSkillNotExecutableError,
   McfSkillNotFoundError,
 } from './mcf-runtime.errors.js';
+import type { AuthenticatedHumanExecutionProof } from './human-authority-proof.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
 import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 
@@ -185,8 +188,12 @@ export class MissionRuntimeController {
     @Req() request: AuthenticatedHumanRequest,
   ): Promise<McfPhaseExecutionResponse> {
     const input = parseBody<ExecuteMcfPhaseRequest>(executePhaseSchema, body, request.id);
+    const authenticatedHuman: AuthenticatedHumanExecutionProof = {
+      accountId: request.authenticatedHuman.accountId,
+      sourceRef: `human-authority:${randomUUID()}`,
+    };
     try {
-      return await this.runtime.executePhase(missionId, input);
+      return await this.runtime.executePhase(missionId, input, authenticatedHuman);
     } catch (error) {
       rethrowRuntimeError(error, request.id);
     }

@@ -41,6 +41,7 @@ const runtimeConfigSchema = z
     MCF_RUNTIME_TOKEN: z.string().min(32).default('development-only-mcf-runtime-token-0001'),
     ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:5173'),
     REGISTRATION_ALLOWLIST: z.string().default(''),
+    RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID: z.string().uuid().optional(),
   })
   .superRefine((config, context) => {
     const insecureProductionSecrets: Array<[string, string, string]> = [
@@ -58,6 +59,15 @@ const runtimeConfigSchema = z
             message: `${name} must be explicitly configured in production.`,
           });
         }
+      }
+
+      if (!config.RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID'],
+          message:
+            'RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID must bind the reserved human authority in production.',
+        });
       }
 
       const registrationAllowlist = parseRegistrationAllowlist(config.REGISTRATION_ALLOWLIST);

@@ -18,6 +18,8 @@ const phaseId = '22222222-2222-4222-8222-222222222222';
 const releaseSha = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const otherSha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const humanAuthorizationRef = 'human:leandro:production:decision-001';
+const reservedHumanAccountId = '55555555-5555-4555-8555-555555555555';
+const otherHumanAccountId = '66666666-6666-4666-8666-666666666666';
 
 function contract(): McfMissionContract {
   return {
@@ -56,6 +58,7 @@ function authorizationContext(sourceRef = humanAuthorizationRef): Record<string,
     humanGateDecision: {
       status: 'APPROVED',
       decidedBy: 'LEANDRO',
+      accountId: reservedHumanAccountId,
       sourceRef,
     },
   };
@@ -126,6 +129,7 @@ function harness(options?: {
   phase?: McfPhaseRecord;
   events?: McfEventRecord[];
   inserted?: boolean;
+  reservedAccountId?: string;
 }) {
   const ledger = [...(options?.events ?? [])];
   const runtime: McfRuntimeRepository = {
@@ -146,7 +150,11 @@ function harness(options?: {
   };
 
   return {
-    service: new ProductionAuthorizationService(runtime, store),
+    service: new ProductionAuthorizationService(
+      runtime,
+      store,
+      options?.reservedAccountId ?? reservedHumanAccountId,
+    ),
     runtime,
     store,
     ledger,
@@ -198,6 +206,29 @@ describe('ProductionAuthorizationService', () => {
         v11AuthorizationContext: {
           ...authorizationContext(),
           humanGateDecision: { status: 'PENDING' },
+        },
+      },
+    });
+    const { service } = harness({ phase: invalidPhase, events: [gateEvent()] });
+
+    await expect(service.resolveProductionAuthorization(resolveRequest)).resolves.toMatchObject({
+      state: 'BLOCKED',
+      reason: 'PRODUCTION_AUTHORIZATION_REQUIRED',
+      targetSha: releaseSha,
+    });
+  });
+
+  it('fails closed when persisted human authority is bound to a different account', async () => {
+    const invalidPhase = phase({
+      inputs: {
+        v11AuthorizationContext: {
+          ...authorizationContext(),
+          humanGateDecision: {
+            status: 'APPROVED',
+            decidedBy: 'LEANDRO',
+            accountId: otherHumanAccountId,
+            sourceRef: humanAuthorizationRef,
+          },
         },
       },
     });
