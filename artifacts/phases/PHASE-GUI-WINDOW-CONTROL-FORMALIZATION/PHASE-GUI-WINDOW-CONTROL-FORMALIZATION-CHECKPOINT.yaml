@@ -2,7 +2,7 @@ checkpoint_id: CP-GUI-WINDOW-CONTROL-FORMALIZATION-20260827-03
 mission: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
 phase: PHASE-GUI-WINDOW-CONTROL-FORMALIZATION
 prf_class: B
-status: AWAITING_MANIFEST_AND_EMILY_RECHECK
+status: READY_FOR_HUMAN_GATE_AFTER_MANIFEST_REFRESH
 candidate:
   branch: ops/mcf-gui-window-control-clean-candidate
   pr: 179
@@ -27,9 +27,16 @@ reviews:
     gate: PASS_WITH_NOTES
     severity: LOW
     open_blockers: NONE
+    recommendation: KEEP_QUALIFIED_DRAFT_AND_FORWARD_TO_LEANDRO_HUMAN_GATE
   emily_isolated_project:
-    closure_gate: PASS_WITH_CONDITIONS
-    blocker: PRF_COMPLETION
+    initial_closure_gate: PASS_WITH_CONDITIONS
+    initial_blocker: PRF_COMPLETION
+    final_gate: PASS_WITH_NOTES
+    evidence_sufficiency: SUFFICIENT_FOR_PHASE_CLOSEOUT_AND_HUMAN_GATE
+    blocking_findings: NONE
+    prf_integrity: PASS
+    human_gate_readiness: READY
+    note: GAP_NOT_TESTED_MAINTAIN_WITH_GAP_REMAINS_EXPLICIT
 prf:
   plan: PRESENT
   report: PRESENT
@@ -40,7 +47,7 @@ prf:
   decisions: PRESENT
   mission_trace: PRESENT
   readme: PRESENT
-  artifact_manifest_sha256: PENDING
+  artifact_manifest_sha256: PRESENT_REQUIRES_REFRESH_AFTER_THIS_CHECKPOINT_UPDATE
 observability:
   leo_project_window_distinct: PASS
   emily_project_window_distinct: PASS
@@ -54,9 +61,8 @@ governance:
   tag_authorized: false
   release_authorized: false
   version_number: NOT_DECIDED
-  next_human_gate: NOT_OPENED
+  next_human_gate: READY_TO_OPEN_AFTER_MANIFEST_REFRESH
 next:
-  - create ARTIFACT-MANIFEST.sha256 for all non-manifest PRF files
-  - ask isolated EMILY project to re-audit completed PRF
-  - if EMILY closure gate passes, update this checkpoint and regenerate manifest
-  - return to MESTRE and open HUMAN_GATE to LEANDRO only for the next governance decision
+  - regenerate ARTIFACT-MANIFEST.sha256 because this checkpoint changed after Emily recheck
+  - verify sha256sum -c on a fresh audit-branch clone
+  - if verification passes and candidate HEAD remains unchanged, MESTRE may open HUMAN_GATE to LEANDRO for the next governance decision
