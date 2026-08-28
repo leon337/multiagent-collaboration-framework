@@ -1,7 +1,7 @@
 checkpoint_id: CP-HUMAN-CONTROL-RUNTIME-WIRING-REMEDIATION-20260828-04
 mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
 recorded_date: 2026-08-28
-status: MERGE_AUTHORIZED_PENDING_EXECUTION
+status: MERGED_AND_EXACT_MAIN_QUALIFIED
 
 authorization:
   decision: APPROVE_MERGE_PR_184
@@ -17,20 +17,20 @@ authorization:
 
 source_of_truth:
   main_sha_before_merge: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
+  candidate_head_sha: c8f31fe4d07bb101334843b2f1d14af9cb5e567b
+  merge_main_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  merge_tree_sha: 3e52ad4e39486c76743d39310de2afcacfc7c6d5
+  pull_request: 184
+  pull_request_merged: true
   latest_stable_release: v1.2.0
   latest_stable_release_id: 377709546
-  remediation_branch: fix/human-control-runtime-wiring
-  pull_request: 184
-  pull_request_state_before_merge: OPEN_DRAFT
-  pull_request_merged_before_execution: false
-  candidate_head_sha: c8f31fe4d07bb101334843b2f1d14af9cb5e567b
 
 finding:
   id: HUMAN_CONTROL_RUNTIME_WIRING
   prior_state: OPEN
   prior_severity: NOT_VERIFIED
   reproduced: true
-  remediation_classification: REMEDIATED_IN_CHAT_RUNTIME_BOUNDARY
+  current_state_on_main: REMEDIATED_IN_CHAT_RUNTIME_BOUNDARY
   universal_persistent_pause_resume_claim: false
 
 technical_scope:
@@ -47,11 +47,9 @@ technical_scope:
     resume_requires_explicit_human_instruction: true
   negative_account_boundary:
     different_authenticated_account_gets_human_control_gate: false
-  changed_files: 5
 
 red_evidence:
   sha: 879b0b09115d11c484e92a9c3431c9165aa7aec0
-  workflow: MCF Production Readiness
   result: FAILURE_EXPECTED
   server_suite:
     passed: 902
@@ -59,28 +57,47 @@ red_evidence:
     failed: 1
   specific_failure: runtime.createMission was called once for standalone HUMANO NO CONTROLE while regression expected zero calls
 
-green_evidence:
+premerge_green_evidence:
   sha: c8f31fe4d07bb101334843b2f1d14af9cb5e567b
+  focused_regression:
+    file: apps/rede-social-agentes/apps/server/src/mcf-runtime/chat-runtime-bridge.service.test.ts
+    passed: 5
+    failed: 0
+  full_server_suite:
+    passed: 904
+    skipped: 3
+    failed: 0
+
+postmerge_exact_main_qualification:
+  sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  event: workflow_dispatch
   workflows:
     mcf_v1_1_qualification:
-      run_id: 33190732116
-      result: SUCCESS
-    rede_social_foundation:
-      run_id: 33190732109
-      result: SUCCESS
-    rede_social_container_smoke:
-      run_id: 33190732107
+      run_id: 33192330234
+      job_id: 98920678943
       result: SUCCESS
     mcf_production_readiness:
-      run_id: 33190732159
+      run_id: 33192332452
+      job_id: 98920686522
+      result: SUCCESS
+    rede_social_foundation:
+      run_id: 33192334548
+      result: SUCCESS
+    rede_social_container_smoke:
+      run_id: 33192336957
       result: SUCCESS
   focused_regression:
     file: apps/rede-social-agentes/apps/server/src/mcf-runtime/chat-runtime-bridge.service.test.ts
     passed: 5
     failed: 0
-    includes:
-      - reserved authenticated account halts before mission creation
-      - different authenticated account cannot acquire HUMAN_CONTROL gate
+  security_regressions:
+    human_control_policy: PASS_10
+    authority_provenance_unit: PASS_4
+    authority_provenance_http: PASS_1
+    human_delegation_guard_v1_1: PASS_14
+    human_delegation_guard: PASS_11
+    production_authorization_service: PASS_10
+    production_authorization_controller: PASS_3
   full_server_suite:
     passed: 904
     skipped: 3
@@ -90,35 +107,46 @@ green_evidence:
   typecheck: PASS
   migrations: PASS
   build: PASS
+  vulnerability_gate: PASS
   backup_restore: PASS
   release_readiness_contracts: PASS
-  exact_head_qualifier_verdict: AUTOMATED_EVIDENCE_PASS_PENDING_INDEPENDENT_REVIEW
+  qualifier:
+    scenarios: 20
+    failures: 0
+    missing_layers: 0
+    full_suite_passed: true
+    verdict: AUTOMATED_EVIDENCE_PASS_PENDING_INDEPENDENT_REVIEW
+  qualification_artifact:
+    id: 9694307473
+    name: mcf-v11-qualification-2a264b283d976bd1b392052fa928d076debfc7fb
+    sha256: 60c3d7fe82ee045ed04fdc644a14042ca860b9d72030efea68dae6181ba1b05a
 
-audit:
+final_audit:
   execution_mode: SAME_SESSION_MCF_ROLES
   independent_runtime_audit_performed: false
   emily_role_verdict: PASS_WITH_CONDITIONS
   conditions:
     - remediation claim is limited to authenticated chat-to-runtime dispatch boundary
     - no claim of universal persistent pause/resume for already-running missions
-    - repository code-search for all alternate uses of legacy textual helper returned incomplete_results=true, so universal absence is NOT_VERIFIED
-  evidence_sufficiency_for_merge_deliberation: SUFFICIENT
+    - universal absence of alternate uses of the legacy textual helper remains NOT_VERIFIED
+  publication_boundary:
+    main_drift_after_qualification: false
+    latest_stable_release: v1.2.0
+    latest_stable_release_id: 377709546
+    new_version_tag_created: false
+    new_release_created: false
+    production_deploy_performed: false
 
 governance:
-  main_mutated_by_this_remediation_before_gate_execution: false
-  main_sha_before_gate_execution: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
   version_candidate_recommendation: v1.3.0
   version_officially_decided: false
-  tag_created: false
-  release_created: false
-  production_deploy_performed: false
+  tag_authorized: false
+  release_authorized: false
+  production_deploy_authorized: false
 
 human_gate:
-  state: CONSUMED
-  authority: LEANDRO
-  decision: APPROVE_MERGE_PR_184
-  merge_scope_only: true
-  version_tag_release_deploy_included: false
-  post_merge_requirement: qualify exact resulting main SHA before returning to release deliberation
+  previous_merge_gate_state: CONSUMED
+  next_gate_required: true
+  next_decision: RELEASE_PREPARATION_SCOPE
 
-next_action: EXECUTE_PR_184_MERGE_WITH_EXPECTED_HEAD
+next_action: RETURN_TO_MESTRE_FOR_RELEASE_DELIBERATION_GATE
