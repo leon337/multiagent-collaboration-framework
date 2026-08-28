@@ -1,30 +1,28 @@
 checkpoint_id: CP-HUMAN-CONTROL-RUNTIME-WIRING-REMEDIATION-20260828-04
 mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
 recorded_date: 2026-08-28
-status: WAITING_HUMAN_MERGE_GATE
+status: MERGE_AUTHORIZED_PENDING_EXECUTION
 
 authorization:
-  decision: REMEDIATE_FIRST
+  decision: APPROVE_MERGE_PR_184
   authority: LEANDRO
   scope_authorized:
-    - non-main implementation
-    - tests
-    - qualification
-    - audit
-  merge_authorized: false
+    - merge PR 184 only
+    - post-merge exact-main qualification
+  merge_authorized: true
   version_authorized: false
   tag_authorized: false
   release_authorized: false
   deploy_authorized: false
 
 source_of_truth:
-  main_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
+  main_sha_before_merge: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
   latest_stable_release: v1.2.0
   latest_stable_release_id: 377709546
   remediation_branch: fix/human-control-runtime-wiring
   pull_request: 184
-  pull_request_state: OPEN_DRAFT
-  pull_request_merged: false
+  pull_request_state_before_merge: OPEN_DRAFT
+  pull_request_merged_before_execution: false
   candidate_head_sha: c8f31fe4d07bb101334843b2f1d14af9cb5e567b
 
 finding:
@@ -107,8 +105,8 @@ audit:
   evidence_sufficiency_for_merge_deliberation: SUFFICIENT
 
 governance:
-  main_mutated_by_this_remediation: false
-  main_current_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
+  main_mutated_by_this_remediation_before_gate_execution: false
+  main_sha_before_gate_execution: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
   version_candidate_recommendation: v1.3.0
   version_officially_decided: false
   tag_created: false
@@ -116,12 +114,11 @@ governance:
   production_deploy_performed: false
 
 human_gate:
-  state: OPEN
+  state: CONSUMED
   authority: LEANDRO
-  decision_requested: APPROVE_OR_REJECT_MERGE_PR_184
-  recommendation: APPROVE_MERGE_PR_184
+  decision: APPROVE_MERGE_PR_184
   merge_scope_only: true
   version_tag_release_deploy_included: false
   post_merge_requirement: qualify exact resulting main SHA before returning to release deliberation
 
-next_action: AWAIT_LEANDRO_PR_184_MERGE_GATE
+next_action: EXECUTE_PR_184_MERGE_WITH_EXPECTED_HEAD
