@@ -102,7 +102,7 @@ Ownership essencial:
 - [x] abertura em `main@21c6670` e delta até `main@42d941b` reconciliados;
 - [x] branch histórica NextGen identificada e preservada;
 - [x] divergência atual na auditoria: branch NextGen `+81`; `main` `+313`;
-- [x] Issues #141, #147, #164/#165, PRs #163/#166/#168/#171/#175/#179/#181, PR #169 fechado sem merge, PR #170 ativo e drafts #174/#176/#177/#180/#182 analisados;
+- [x] Issues #141, #147, #164/#165, PRs #163/#166/#168/#171/#175/#179/#180/#181, PR #169 fechado sem merge, PR #170 ativo e drafts #174/#176/#177/#182 analisados;
 - [x] branch Cloud Hermes não default `mcf/hermes-relay-bootstrap-20260823@23e4e6c` tratada somente como input concorrente não canônico;
 - [x] branch/worktree isolada criada a partir do `main` atual;
 - [x] boundary sem runtime/provider/produção mantido.
@@ -297,12 +297,12 @@ persistente no MissionRuntime, integração TriView, Decision Inbox ou contrato 
 promover essa primitive a contrato reabre o catálogo 17/22. O recognizer ainda compara
 `actorId=leandro` por texto e não autentica; wiring futuro deve usar a conta reservada da sessão.
 
-### PR #179 e draft PR #180 — sucessão GUI/window
+### PRs #179 e #180 — sucessão GUI/window
 
-O `main` contém protocolo, schema, fixtures e qualifier puro da sucessão cross-chat. Não contém
-producer/consumer nem controle de janela conectado ao runtime. O texto de status mergeado ainda se
-descreve como candidato/não mergeado; o draft PR #180 propõe a reconciliação pós-merge, mas permanece
-input concorrente não canônico até PR próprio.
+O `main` contém protocolo, schema, fixtures e qualifier puro da sucessão cross-chat. O PR #180
+reconciliou o texto de status pós-merge, mas não adicionou producer/consumer, controle de janela
+conectado ao runtime ou autoridade de UI. Os artefatos selados da missão preservam corretamente o
+estado anterior ao merge; este roadmap é a visão corrente que os sucede.
 
 ### PR #181 — autoridade humana vinculada à conta
 

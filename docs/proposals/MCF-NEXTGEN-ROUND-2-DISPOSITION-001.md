@@ -82,10 +82,9 @@ checkpoint. A regra tem precedência normativa, mas não existe wiring persisten
 o recognizer atual por `actorId=leandro` é sintático e não autentica. Isso reforça Q4/Q9/Q12/Q15 sem
 mudar suas dispositions.
 
-O PR #179 mergeou protocolo, schema, fixtures e qualifier puro da sucessão cross-chat GUI/window. É
-trace/evidence reutilizável, não producer/consumer, controle automático de janela ou authority. Seu
-status textual pós-merge está inconsistente; o draft PR #180 propõe correção, mas permanece fora de
-`main` e não é capacidade canônica.
+O PR #179 mergeou protocolo, schema, fixtures e qualifier puro da sucessão cross-chat GUI/window. O
+PR #180 reconciliou o texto de status pós-merge. Ambos estão em `main` e são trace/evidence
+reutilizável, não producer/consumer, controle automático de janela ou authority.
 
 O PR #181 exige a conta autenticada reservada e canonicaliza `sourceRef` server-side na rota de
 decisão humana terminal e no consumidor de production authorization. Isso fecha spoofing nominal no
@@ -165,7 +164,7 @@ Portability Claim/Matrix + compatibility envelope
 | Canal MESTRE↔Ox via DSH do PR #171                    | `PRESERVE_AS_EXTERNAL_EVIDENCE / ADAPT_LATER`  | adapter candidato separado de transport/locality/cost      | continuidade externa e logs de sessão; não é dependência do runtime              | contrato/fixture NX-5 primeiro; deployment remoto exige gate próprio; sem Receipt/trust/cost proof não recebe crédito   |
 | Ledger read e Cloud local read                        | `PRESERVE_BOUNDARY / EVOLVE`                   | context envelopes tipados com freshness                    | Context Recovery, Task Requirements e futuros bindings                           | conformance de allowlist/no-store/currentness; write/remote continuam em gates separados                                |
 | TriView GET-only                                      | `PRESERVE_AS_DERIVED_CONSUMER / EVOLVE`        | operational read models tipados com freshness              | operadores; consome runtime/context/receipts aceitos, nunca alimenta eligibility | conformance de currentness/privacy; commands continuam em gate separado                                                 |
-| Trace/schema/qualifier GUI/window do PR #179          | `PRESERVE_AS_COMPATIBILITY_EVIDENCE`           | producer/consumer somente em boundary posterior            | sucessão cross-chat; status pós-merge acompanhado pelo draft #180                | sem runtime/authority inferidos; reutilização/equivalência antes de qualquer contrato ou wiring                         |
+| Trace/schema/qualifier GUI/window dos PRs #179/#180   | `PRESERVE_AS_COMPATIBILITY_EVIDENCE`           | producer/consumer somente em boundary posterior            | sucessão cross-chat; status pós-merge reconciliado em `main`                     | sem runtime/authority inferidos; reutilização/equivalência antes de qualquer contrato ou wiring                         |
 | Bindings provider-specific tratados como detalhe Core | `KEEP_AS_ADAPTER / REPLACE_AS_CORE_IDENTITY`   | Registry multissubject + Execution/Placement Binding       | dispatcher, config/env e workflows atuais                                        | capability/currentness/compatibility provadas e nenhum consumidor ativo dependente do binding antigo                    |
 | Taxonomia de risco A/B/C                              | `PRESERVE_INTERPRETABILITY / EVOLVE`           | mapping versionado para policy/authority mais expressiva   | templates, HDF, documentação e histórico                                         | todo estado histórico continua interpretável; nenhuma troca silenciosa de semântica                                     |
 | Status/receipts manuais duplicados                    | `PRESERVE_AUDITABILITY / SIMPLIFY`             | derived views e receipts automatizados                     | recovery, auditoria e handoffs                                                   | source canônica, lineage e evidence permanecem recuperáveis antes de remover duplicação manual                          |
@@ -195,10 +194,11 @@ bloqueados/falhos. Ele não é `main`, lineage seguro de recovery, backend gratu
 executor admitido ou autorização de remoto/VPS/SSH. Sua evidência preserva tentativas e bloqueios,
 sem mudar Q5, Q11 ou Q16.
 
-Os drafts #176, #177, #180 e #182 permanecem inputs concorrentes fora de `main`: audit ledger de
-sucessão, proposta de qualificação AGDO v1.3, reconciliação de status GUI/window e runbook/evidência
-dual-VPS. Checks ou field evidence nesses branches não os tornam runtime/capability canônicos, não
-autorizam merge por esta missão e não abrem placement remoto/VPS.
+Os drafts #176, #177 e #182 permanecem inputs concorrentes fora de `main`: audit ledger de
+sucessão, proposta de qualificação AGDO v1.3 e runbook/evidência dual-VPS. Checks ou field evidence
+nesses branches não os tornam runtime/capability canônicos, não autorizam merge por esta missão e
+não abrem placement remoto/VPS. O PR #180 saiu dessa lista ao ser mergeado como reconciliação
+documental; ele não materializa runtime ou authority.
 
 ## 4. Fontes de verdade e ownership
 
@@ -238,11 +238,11 @@ autorizam merge por esta missão e não abrem placement remoto/VPS.
 - primitive/checkpoint interno testado, sem pause/resume persistente no MissionRuntime;
 - precedência e testes HDF/GUI são compatibility surfaces obrigatórias.
 
-### GUI/window / PR #179 e draft #180
+### GUI/window / PRs #179 e #180
 
 - protocolo/schema/fixtures/qualifier estão no `main` pós-release;
 - não há producer/consumer/runtime wiring nem autoridade de UI;
-- status pós-merge stale possui correção draft não canônica no PR #180.
+- status pós-merge reconciliado pelo PR #180, sem producer/consumer/runtime wiring.
 
 ### Human authority / PR #181
 

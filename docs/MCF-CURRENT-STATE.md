@@ -5,7 +5,7 @@
 - **Reconciliação-base:** 2026-08-20
 - **Reconciliação adicional do ecossistema:** 2026-08-28
 - **Baseline histórico de estabilização:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
-- **Main observado antes deste PR de planejamento:** `42d941b5bc299cb7121175db0367b780d381c93e` (PR #181; reler GitHub live)
+- **Main observado após a reconciliação GUI/window:** `a8e2372925a512eeaf856b16b4eb82546d9bc0d2` (PR #180; reler GitHub live)
 
 ## 1. Regra de fonte de verdade
 
@@ -276,7 +276,7 @@ nextgen_reconciliation:
   contractual_authority_binding_ref: NOT_IMPLEMENTED
   generic_nextgen_authority_envelope: NOT_IMPLEMENTED
   gui_window_succession: MERGED_PROTOCOL_SCHEMA_FIXTURES_QUALIFIER_NOT_RUNTIME_WIRED
-  gui_window_postmerge_status: STALE_TEXT_CORRECTION_OPEN_DRAFT_PR_180
+  gui_window_postmerge_status: RECONCILED_IN_MAIN_BY_PR_180_NO_RUNTIME_DELTA
   cloud_hermes_branch: NONDEFAULT_NONCANONICAL_NOT_ELIGIBLE_EXECUTOR
   capsule_v2_migration: PLANNED_SIDECAR_POINTER_V1_PRESERVED
   paid_ai_apis_and_fallback: FORBIDDEN_IN_CANDIDATE
@@ -304,7 +304,7 @@ current_v1_2_control_surfaces:
   mission_control: DISCOVERY_IN_PROGRESS_IMPLEMENTATION_FALSE
   gui_window_succession_protocol: MERGED_SCHEMA_FIXTURES_PURE_QUALIFIER
   gui_window_runtime_producer_consumer: NOT_IMPLEMENTED
-  gui_window_status_reconciliation: OPEN_DRAFT_PR_180_NON_CANONICAL
+  gui_window_status_reconciliation: MERGED_PR_180_NORMATIVE_TEXT_NO_RUNTIME
   human_terminal_decision_account_binding: CURRENT_IMPLEMENTED_SCOPED_HTTP_AND_PRODUCTION_AUTH
   generic_authority_envelope: NOT_IMPLEMENTED
   nextgen_decision_inbox: NOT_IMPLEMENTED
@@ -313,8 +313,8 @@ current_v1_2_control_surfaces:
 O PR #175 tornou Human Control/GUI uma regra operacional vigente, mas sua primitive de checkpoint
 não possui call site no MissionRuntime, persistência, schema público ou retomada após restart. O PR
 #179 mergeou o protocolo/schema/fixtures/qualifier da sucessão GUI/window, sem producer, consumer ou
-controle automático conectado; seu status textual pós-merge está inconsistente e a correção proposta
-no PR #180 permanece draft fora de `main`. O PR #181 fechou spoofing de provenance humana pelo caller
+controle automático conectado. O PR #180 reconciliou o texto de status pós-merge e também está em
+`main`; não adicionou runtime, controle de janela ou autoridade de UI. O PR #181 fechou spoofing de provenance humana pelo caller
 na rota implementada por conta autenticada reservada e `sourceRef` server-side; não criou sozinho os contratos
 NextGen ou uma Decision Inbox.
 
@@ -343,9 +343,10 @@ ausência de chave; portanto ele não qualifica backend/executor. O Cloud defaul
 `38cd22e0a814bdf4957edcf5bb30506a4810bda0`. O branch Hermes não altera o PASS 4/4 nem abre
 Cloud remoto, VPS ou SSH.
 
-Os drafts #176, #177, #180 e #182 também permanecem fora de `main` no freeze. Eles preservam,
-respectivamente, audit ledger da missão de sucessão, proposta de qualificação AGDO v1.3, correção do
-status pós-merge da sucessão GUI/window e runbook/evidência de workspace dual-VPS. Nenhum deles é
+No freeze original do pacote NextGen, o PR #180 ainda era draft; esse fato permanece nos artefatos
+históricos selados e foi superado pelo merge `a8e23729`. Os drafts #176, #177 e #182 permanecem fora
+de `main` e preservam, respectivamente, audit ledger da missão de sucessão, proposta de qualificação
+AGDO v1.3 e runbook/evidência de workspace dual-VPS. Nenhum deles é
 capacidade canônica atual, autorização NextGen ou permissão para operar VPS/provider.
 
 ### Memória cognitiva e próxima stable — missão paralela

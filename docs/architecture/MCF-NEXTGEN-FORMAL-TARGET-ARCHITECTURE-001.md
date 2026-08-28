@@ -132,9 +132,9 @@ uma implementação NextGen completa:
 - o PR #175 tornou vigente a governança Human Control e a GUI autorizada, além de uma primitive
   interna testada de reconhecimento/checkpoint; não conectou pausa/retomada persistente ao
   MissionRuntime;
-- o PR #179 mergeou protocolo, schema, fixtures e qualifier puro da sucessão cross-chat por
-  GUI/window; não conectou producer, consumer nem controle de janela ao runtime, e o status textual
-  pós-merge ainda possui correção concorrente no draft PR #180;
+- os PRs #179/#180 mergearam protocolo, schema, fixtures, qualifier puro e reconciliação textual
+  pós-merge da sucessão cross-chat por GUI/window; não conectaram producer, consumer nem controle de
+  janela ao runtime;
 - o PR #181 vinculou a decisão humana terminal, na rota implementada, à conta autenticada reservada e
   a um `sourceRef` gerado no servidor; ele fecha spoofing pelo caller nesse boundary, mas não
   materializa o Authority Envelope genérico, Decision Inbox ou suspensão persistente NextGen.
