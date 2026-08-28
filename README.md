@@ -188,6 +188,23 @@ Detalhes históricos: [`CHANGELOG.md`](CHANGELOG.md), [`docs/releases/`](docs/re
 
 ## Arquitetura em evolução
 
+O roadmap canônico da missão de reconciliação NextGen está em
+[`docs/MCF-NEXTGEN-RECONCILIATION-ROADMAP.md`](docs/MCF-NEXTGEN-RECONCILIATION-ROADMAP.md).
+Ele preserva a rodada histórica Q1–Q16, reconcilia o lineage v1.2.0, os contratos/runtime v1/v1.1,
+Context Fabric, Cognitive Ledger, Cloud e TriView e entrega uma arquitetura F1.4 e um plano de
+implementação **candidatos**. Human Control, autoridade autenticada e o trace GUI/window atuais são
+preservados sem serem confundidos com pausa persistente, Decision Inbox ou runtime NextGen. A direção
+`GOVERNED_PORTABLE_MULTIAGENT_RUNTIME` permanece a decisão-alvo histórica; a especificação formal
+reconciliada ainda exige revisão de LEANDRO, e protótipo/implementação/produção continuam não
+autorizados. A política candidata proíbe API de IA paga e qualquer fallback pago.
+
+Documentos do pacote:
+
+- [disposition Q1–Q16](docs/proposals/MCF-NEXTGEN-ROUND-2-DISPOSITION-001.md);
+- [arquitetura formal candidata F1.4](docs/architecture/MCF-NEXTGEN-FORMAL-TARGET-ARCHITECTURE-001.md);
+- [plano de implementação e checklist](docs/superpowers/plans/2026-08-24-mcf-nextgen-reconciled-implementation-plan.md);
+- [PRF Classe C da missão](artifacts/phases/PHASE-NEXTGEN-RECONCILIATION-F14-001/README.md).
+
 O checkpoint [`docs/architecture/ARCHITECTURAL_CHECKPOINT_004.md`](docs/architecture/ARCHITECTURAL_CHECKPOINT_004.md) continua uma arquitetura draft, não canônica e sem autorização de implementação.
 
 ZRCL, Context Fabric, Truth Contracts, Capability Registry, Artifact System e Validation Suite devem ser classificados conforme evidência real do componente; a existência de documentos/propostas não transforma automaticamente esse conjunto em arquitetura canônica implementada.
@@ -266,6 +283,7 @@ Fonte: [`experimentos/telefone-sem-fio-001/RESULTADO_FINAL.md`](experimentos/tel
 | Pergunta                        | Fonte                                                                                                            |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Qual é o estado atual?          | [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md) + GitHub/provider live                                  |
+| Qual é o roadmap NextGen?       | [`docs/MCF-NEXTGEN-RECONCILIATION-ROADMAP.md`](docs/MCF-NEXTGEN-RECONCILIATION-ROADMAP.md)                       |
 | Onde está o runtime?            | [`apps/rede-social-agentes/apps/server/src/mcf-runtime/`](apps/rede-social-agentes/apps/server/src/mcf-runtime/) |
 | Como o runtime é documentado?   | [`docs/runtime/README.md`](docs/runtime/README.md)                                                               |
 | Quais skills existem?           | [`skills/registry.yaml`](skills/registry.yaml)                                                                   |

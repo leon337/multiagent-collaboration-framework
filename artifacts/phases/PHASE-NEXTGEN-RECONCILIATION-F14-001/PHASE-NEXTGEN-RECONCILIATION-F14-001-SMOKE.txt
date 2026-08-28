@@ -1,0 +1,18 @@
+PHASE_ID=PHASE-NEXTGEN-RECONCILIATION-F14-001
+SMOKE_STATE=NAO_APLICAVEL
+
+SCENARIO:
+- preconditions: documentação candidata; nenhum runtime/provider/deploy alterado
+- action: smoke material ponta a ponta
+- expected: NAO_APLICAVEL
+- actual: não executado porque a missão proíbe wiring, provider, VPS, release e produção
+- result: NAO_APLICAVEL
+
+EVIDENCE:
+- A regressão aplicável é coberta por schema/fixture tests, links, formatting e validação integral
+  caracterizada; o flake canônico do baseline está divulgado no artifact VALIDATION-FULL.
+- A contagem histórica de 28 testes targeted não é prova terminal nem smoke E2E de runtime NextGen;
+  a contagem terminal real fica no artifact VALIDATION.
+
+NOT_APPLICABLE_JUSTIFICATION:
+- Um smoke material exigiria implementar ou ativar exatamente os efeitos fora do escopo desta fase.
