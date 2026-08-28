@@ -1583,13 +1583,15 @@
         <p class="hero-copy">
           O closeout read-only de 24/08 permanece comprovado: recovery 4/4,
           adapters locais e custo pago zero. Desde então, o MCF avançou até
-          <code>main@0b900ee0</code> pelo PR #185, após reconciliar os PRs #180
-          e #184. Cloud PR #38 e TriView PRs #79/#80 sincronizaram somente
+          <code>main@b2be8eeb</code> pelo PR #186, mergeado após sete checks
+          verdes. Cloud PR #38 e TriView PRs #79/#80 sincronizaram somente
           Capsule/documentação nos targets não produtivos, com CI verde. Ledger
           PR #4 também está verde, mas permanece draft/aberta porque seu target
-          pode acionar o auto-deploy Render. O recovery preliminar dos quatro
-          candidatos passou 4/4. VPS, SSH, escrita real, provider live, release,
-          produção, API de IA paga e NextGen NX-0 continuam fechados.
+          pode acionar o auto-deploy Render. O recovery final pós-merge passou
+          4/4 em Cloud <code>420ee7d</code>, Ledger <code>a3fc0d</code>, MCF
+          <code>b2be8e</code> e TriView <code>7b2440a</code>. VPS, SSH, escrita
+          real, provider live, release, produção, API de IA paga e NextGen NX-0
+          continuam fechados.
         </p>
         <div class="hero-actions">
           <a class="button primary" href="#checklist">Abrir checklist</a>
@@ -1605,19 +1607,30 @@
             <strong>É um painel de evidências, não um console da VPS.</strong>
             Itens fixos e marcados foram comprovados por código, merge ou teste.
             Itens interativos são o planejamento local deste navegador. A
-            integração principal do MCF está no
-            <code>main</code>, mas nenhum dado deste painel autoriza runtime de
-            produção, VPS, SSH, escrita remota ou uma R7 ampla. A página
-            estática Vercel pertence à classe de deployment
+            integração principal do MCF está no <code>main</code>. O staging
+            automático
+            <a
+              href="https://github.com/leon337/multiagent-collaboration-framework/actions/runs/33198097882"
+              >run 33198097882</a
+            >
+            não convergiu o novo SHA: terminou como <code>failure</code> com
+            resultado controlado <code>RECOVERED</code> e preservou o healthy
+            <code>5c7f9832</code>. A automação preexistente invocou o hook
+            Render para uma tentativa real de staging; a investigação é separada
+            e não houve retry manual, runtime de produção ou VPS. Os follow-ons
+            RC2/RC3 foram <code>immutable NOOP</code> sobre tags históricas;
+            nenhuma release foi criada ou redirecionada. Nenhum dado deste
+            painel autoriza runtime de produção, VPS, SSH, escrita remota ou uma
+            R7 ampla. A página estática Vercel pertence à classe de deployment
             <code>Production</code>, mas não contém runtime nem API do MCF.
           </div>
         </div>
 
         <div class="metrics" aria-label="Resumo do estado comprovado">
           <article class="metric">
-            <span class="metric-value">0b900ee0</span>
+            <span class="metric-value">b2be8eeb</span>
             <span class="metric-label">
-              MCF pós-PR #185 · todos os checks verdes
+              MCF main · PR #186 mergeado · sete checks verdes
             </span>
           </article>
           <article class="metric">
@@ -1635,7 +1648,7 @@
           <article class="metric">
             <span class="metric-value">4 / 4</span>
             <span class="metric-label">
-              recovery preliminar · read-only · zero warnings
+              recovery final pós-merge · read-only · zero warnings
             </span>
           </article>
         </div>
@@ -1672,10 +1685,11 @@
             <tbody>
               <tr>
                 <td>MCF</td>
-                <td><code>main@0b900ee0</code> · PR #186</td>
-                <td><span class="status next">Fechamento em revisão</span></td>
+                <td><code>main@b2be8eeb</code> · PR #186 merged</td>
+                <td><span class="status done">Reconciliado</span></td>
                 <td>
-                  Validar Capsule, congelar commit e repetir recovery 4/4.
+                  Closeout comprovado por sete checks e recovery final 4/4;
+                  nenhum gate operacional foi aberto.
                 </td>
               </tr>
               <tr>
@@ -1803,8 +1817,8 @@
 
             <section class="check-group" aria-labelledby="check-current-next">
               <div class="check-group-header">
-                <span class="status next">Em fechamento</span>
-                <h3 id="check-current-next">Próximos passos auditáveis</h3>
+                <span class="status done">Fechado</span>
+                <h3 id="check-current-next">Closeout e gates preservados</h3>
               </div>
               <ul class="check-list">
                 <li class="check-item" data-status="done">
@@ -1820,24 +1834,32 @@
                   </label>
                   <span class="check-status">concluído</span>
                 </li>
-                <li class="check-item" data-status="next">
-                  <input id="c-fresh-recovery" type="checkbox" disabled />
+                <li class="check-item" data-status="done">
+                  <input
+                    id="c-fresh-recovery"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
                   <label for="c-fresh-recovery">
-                    Repetir recovery estrutural read-only 4/4 nos novos SHAs
+                    Recovery estrutural final read-only 4/4 concluído em Cloud
+                    420ee7d, Ledger a3fc0d, MCF b2be8e e TriView 7b2440a
                   </label>
-                  <span class="check-status">pendente</span>
+                  <span class="check-status">concluído</span>
                 </li>
-                <li class="check-item" data-status="next">
-                  <input id="c-roadmap-main" type="checkbox" disabled />
+                <li class="check-item" data-status="done">
+                  <input id="c-roadmap-main" type="checkbox" checked disabled />
                   <label for="c-roadmap-main">
-                    Mergear este roadmap no MCF main e confirmar Vercel
+                    Versão PR #186 do roadmap mergeada e publicação Vercel
+                    confirmada byte a byte
                   </label>
-                  <span class="check-status">pendente</span>
+                  <span class="check-status">concluído</span>
                 </li>
                 <li class="check-item" data-status="gate">
                   <input id="c-human-decisions" type="checkbox" disabled />
                   <label for="c-human-decisions">
-                    LEANDRO decide separadamente G2-B/VPS e NX-0
+                    LEANDRO decide separadamente Ledger/Render, TriView
+                    R7/release, G2-B/VPS e NextGen NX-0
                   </label>
                   <span class="check-status">gate humano</span>
                 </li>
@@ -1850,6 +1872,12 @@
           <strong>Documentos executáveis:</strong>
           <a href="./integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md">
             roadmap/checklist completo
+          </a>
+          ·
+          <a
+            href="./integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260828.md"
+          >
+            recovery final 4/4
           </a>
           ·
           <a
@@ -1874,9 +1902,11 @@
             Pense em uma estação: o MCF é o centro de controle, o Ledger é o
             arquivo, o TriView é o painel e o Cloud é a casa de máquinas. O
             painel já sabe onde cada peça está, e as duas passagens read-only
-            funcionaram no laboratório. Main, staging e as fichas semânticas dos
-            quatro projetos foram reconciliados. A conferência final recuperou
-            4/4 projetos com HEAD, worktree limpa e referência live exata.
+            funcionaram no laboratório. Main e as fichas semânticas dos quatro
+            projetos foram reconciliados. A conferência final recuperou 4/4
+            projetos com HEAD, worktree limpa e referência live exata. O staging
+            não convergiu o novo SHA: preservou o baseline saudável anterior e
+            permanece em investigação separada.
           </p>
         </div>
 
@@ -2134,9 +2164,11 @@
             <h2 id="roadmap-title">Roadmap baseado no que foi comprovado</h2>
           </div>
           <p>
-            Full verify, PR/checks/merge, staging/Vercel, sync das Capsules,
-            closeout MCF e recovery estrutural 4/4 pós-sync passaram. Escrita,
-            VPS, SSH e runtime de produção não entram por consequência.
+            No checkpoint histórico do Context Fabric, full verify,
+            PR/checks/merge, staging/Vercel, sync das Capsules, closeout MCF e
+            recovery estrutural 4/4 pós-sync passaram. Isso não descreve a
+            tentativa de staging de <code>b2be8eeb</code>, que não convergiu.
+            Escrita, VPS, SSH e runtime de produção não entram por consequência.
           </p>
         </div>
 
@@ -2310,8 +2342,9 @@
                 <div>
                   <h3>Closeout definitivo do Context Fabric</h3>
                   <p>
-                    Full verify, main, staging/Vercel, #151, Capsules providers,
-                    closeout MCF e recovery 4/4 pós-sync concluídos.
+                    Checkpoint histórico PR #161: full verify, main,
+                    staging/Vercel, #151, Capsules providers, closeout MCF e
+                    recovery 4/4 pós-sync concluídos.
                   </p>
                 </div>
                 <span class="status done">34/34 · 100%</span>
@@ -2375,7 +2408,7 @@
           </div>
           <div class="dependency-step">
             <strong>3. Ambientes</strong>
-            concluído · staging/Vercel/#151
+            histórico PR #161 · staging/Vercel/#151
           </div>
           <div class="dependency-step">
             <strong>4. Providers</strong>
@@ -3253,10 +3286,12 @@
           <div>
             <h3>Closeout definitivo concluído</h3>
             <p>
-              PR/checks/merge, staging/Vercel, #151, sync dos providers,
-              closeout MCF e recovery 4/4 pós-sync estão concluídos. VPS/SSH,
-              Tasks 9/10, escrita, API paga, runtime de produção e R7 ampla
-              permanecem fechados e fora desta missão.
+              PR/checks/merge, Vercel estática, #151, sync dos providers,
+              closeout MCF e recovery 4/4 pós-sync estão concluídos. A promoção
+              do novo SHA em staging não concluiu e permanece numa investigação
+              separada após recuperação controlada. VPS/SSH, Tasks 9/10,
+              escrita, API paga, runtime de produção e R7 ampla permanecem
+              fechados e fora desta missão.
             </p>
           </div>
         </article>

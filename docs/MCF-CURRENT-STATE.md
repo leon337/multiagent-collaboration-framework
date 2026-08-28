@@ -5,7 +5,7 @@
 - **Reconciliação-base:** 2026-08-20
 - **Reconciliação adicional do ecossistema:** 2026-08-28
 - **Baseline histórico de estabilização:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
-- **Main observado após a reconciliação pós-PRs #180/#184:** `0b900ee03a05153e2e4a795fce7b457f5b4bb812` (PR #185; reler GitHub live)
+- **Baseline MCF recuperado no fechamento do ecossistema:** `b2be8eeb1c6753bea912cca741803f8497ab880a` (PR #186, sobre PR #185; o commit documental deste relatório é posterior; reler GitHub live)
 
 ## 1. Regra de fonte de verdade
 
@@ -603,10 +603,25 @@ somente os targets não produtivos:
   atualizar a branch de design pode acionar o auto-deploy Render documentado. Nenhum provider foi
   ativado.
 
-O recovery preliminar desses candidatos passou 4/4 em `2026-08-28T17:42:38Z`, com 17 claims, seis
-fontes e zero warnings por Receipt; todos registraram `read_only=true`, `evidence_only=true` e
-`material_action=false`. O checkpoint final deve usar os merge SHAs Cloud/TriView acima, o head
-Ledger preservado e um commit MCF que já contenha este Capsule reconciliado.
+O recovery preliminar desses candidatos passou 4/4 em `2026-08-28T17:42:38Z`. Depois do merge do PR
+#186, o gate final repetiu a prova contra MCF `b2be8eeb`, Cloud `420ee7d2`, Ledger `a3fc0d61` e
+TriView `7b2440a6`: 4/4 `RECOVERED`, 17 claims, seis fontes e zero warnings por Receipt,
+`read_only=true`, `evidence_only=true`, `material_action=false` e Capsule/live SHA idênticos. A
+evidência está em
+[`MCF-ECOSYSTEM-RECOVERY-4OF4-20260828.md`](integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260828.md).
+O Capsule MCF em `b2be8eeb` permanece deliberadamente como a entrada pré-gate `READY` observada às
+`18:00:44Z`; o `COMPLETE` é a conclusão posterior registrada nessa evidência. Atualizar o Capsule
+criaria um novo snapshot e exigiria outro recovery 4/4.
+
+O workflow automático de staging disparado pelos testes alterados no PR #186 validou todo o
+candidato localmente no runner e invocou o hook Render para uma tentativa real de rollout em
+staging, mas não convergiu o novo SHA em 20 minutos. O run `33198097882` terminou `failure` com
+recuperação controlada `RECOVERED`, `deployId=null`, `rollbackDeployId=null` e preservação do SHA
+saudável anterior `5c7f9832f037f374ec3fe2d4160342a5f2cf8a06`. O merge, e não um dispatch ou retry
+manual, acionou essa automação preexistente. Nenhum runtime de produção ou VPS foi tocado; uma
+investigação de staging é um boundary separado. Os follow-ons RC2/RC3 foram `immutable NOOP` sobre
+tags históricas já existentes, e o callback de staging foi `skipped`; nenhuma release foi criada ou
+redirecionada por esse merge.
 
 Os detalhes e checklists estão em
 [`MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md`](integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md).
@@ -658,7 +673,8 @@ GOV-0/GOV-1 design autorizado anteriormente não implica autorização de merge,
 - roadmap do ecossistema: `docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html`
 - handoff da integração: `docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md`
 - roadmap/checklist de promoção: `docs/integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md`
-- recovery final 4/4: `docs/integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md`
+- recovery final do alinhamento: `docs/integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260828.md`
+- recovery histórico de 24/08: `docs/integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md`
 - checkpoint de alinhamento: `docs/integrations/evidence/MCF-ECOSYSTEM-ALIGNMENT-CHECKPOINT-20260828.md`
 - gates humanos propostos: `docs/integrations/gates/`
 - índice documental: `docs/README.md`

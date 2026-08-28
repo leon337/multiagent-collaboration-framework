@@ -28,7 +28,7 @@ Aprovar um item não aprova os seguintes.
 - G2-B remoto publicado `codex/control-bridge-g2b@fbef3d407dbd9b7947b6c100a63d098eaebe2b6a`;
 - preservação SSH `recovery/g2b-ssh-local-preservation-20260828@7fa9ab996be6cdffd4ea3913c082e3da7090fff4`;
 - patch local predecessor `ef2d10a` deve ser avaliado separadamente;
-- MCF canônico `main@0b900ee03a05153e2e4a795fce7b457f5b4bb812`.
+- MCF canônico no fechamento estrutural `main@b2be8eeb1c6753bea912cca741803f8497ab880a`.
 
 Essas linhas divergem. Nenhuma delas é, por si só, o candidato autorizado.
 
