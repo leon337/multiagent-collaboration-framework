@@ -20,6 +20,8 @@ Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live,
 - PRF Classe C preserva decisões, findings, validações e pendências da missão;
 - estado corrente pós-PR #180 reconciliado na Capsule, no mapa de verdade, no roadmap, na
   disposition, na arquitetura e no plano, preservando o PRF original como freeze histórico;
+- gate de chat `HUMANO NO CONTROLE` pós-PR #184 registrado como interceptação autenticada da conta
+  humana reservada antes do bootstrap, sem generalizar para pausa persistente de missão em curso;
 - custo zero com APIs de IA elevado a hard requirement, incluindo proibição de fallback pago;
 - nenhuma implementação, provider, VPS, release ou produção autorizados por este pacote.
 

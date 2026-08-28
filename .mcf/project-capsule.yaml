@@ -9,11 +9,11 @@ lifecycle: ACTIVE
 
 snapshot:
   current_workstream: nextgen-reconciliation-and-memory-live-planning
-  current_status: NEXTGEN_F14_PLANNING_COMPLETE_CANDIDATE__V1_2_HUMAN_CONTROL_AUTHORITY_AND_GUI_DELTAS_RECONCILED__IMPLEMENTATION_NOT_AUTHORIZED
-  next_action: Review the exact reconciled NextGen planning package published by this mission; re-read Issues 164 and 165 plus PRs 170, 174, 176, 177, and 182 live; preserve PRs 175, 179, 180, and 181 as current compatibility surfaces; and require explicit LEANDRO disposition, F1.4, and implementation-boundary decisions before NX-0.
+  current_status: NEXTGEN_F14_PLANNING_COMPLETE_CANDIDATE__POST_PR184_AUTHENTICATED_HUMAN_CONTROL_CHAT_GATE_RECONCILED__IMPLEMENTATION_NOT_AUTHORIZED
+  next_action: Review the exact reconciled NextGen planning package published by this mission; re-read Issues 164 and 165 plus PRs 170, 174, 176, 177, and 182 live; preserve PRs 175, 179, 180, 181, and 184 as current compatibility surfaces; and require explicit LEANDRO disposition, F1.4, and implementation-boundary decisions before NX-0.
   blockers:
     - NextGen F1.4 is PROPOSED_FOR_LEANDRO_REVIEW; prototype, implementation, provider activation, release, and production remain unauthorized.
-    - Human Control v1.2 is active governance with an internal tested checkpoint primitive, but its nominal actor recognizer is not authentication and persistent MissionRuntime pause, restart-safe resume, safe-point, and admission blocking are not implemented.
+    - PR 184 binds the standalone HUMAN CONTROL chat command to the authenticated reserved human account and intercepts it before mission bootstrap. Persistent pause/resume for already-running missions, restart-safe resume, safe-point reconciliation, and global admission blocking are not implemented.
     - PRs 179 and 180 merged the GUI/window protocol, schema, fixtures, pure qualifier, and post-merge status reconciliation. They still provide no runtime producer, consumer, automatic window control, or UI authority.
     - PR 181 binds terminal human decisions in the implemented route to the reserved authenticated account and server-generated source provenance. Generic NextGen Authority Envelope, Human Decision chain, and contractual authority binding remain unimplemented.
     - Issue 164 confirms that Brainbase task runs are billable and ineligible for this zero-cost plan; PR 169 is closed without merge. Provider-side Ledger write exists, while governed MCF write, auth, live activation, real-data proof, semver, and release remain separately gated.
@@ -27,4 +27,4 @@ snapshot:
 sources:
   current_state: docs/MCF-CURRENT-STATE.md
 
-observed_at: "2026-08-28T16:04:15Z"
+observed_at: "2026-08-28T16:54:27Z"

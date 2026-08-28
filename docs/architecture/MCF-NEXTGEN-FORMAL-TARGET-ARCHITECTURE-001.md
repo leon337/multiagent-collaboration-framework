@@ -137,7 +137,10 @@ uma implementação NextGen completa:
   janela ao runtime;
 - o PR #181 vinculou a decisão humana terminal, na rota implementada, à conta autenticada reservada e
   a um `sourceRef` gerado no servidor; ele fecha spoofing pelo caller nesse boundary, mas não
-  materializa o Authority Envelope genérico, Decision Inbox ou suspensão persistente NextGen.
+  materializa o Authority Envelope genérico, Decision Inbox ou suspensão persistente NextGen;
+- o PR #184 conectou o comando standalone `HUMANO NO CONTROLE` à conta autenticada reservada e o
+  intercepta antes de planner/bootstrap/criação de missão/execução de fase; não persiste pausa de
+  missões já em andamento, não implementa safe point e não cria admissão global NextGen.
 
 ## 5. Planos e responsabilidades
 
@@ -171,12 +174,13 @@ bootstrap_trust:
 Alterar qualquer binding acima é efeito privilegiado; nem policy comum, modelo, agente, UI nem LÉO
 podem redefinir a autoridade humana final de LEANDRO.
 
-O comportamento vigente pós-PR #181 deriva `accountId` da sessão autenticada, exige o UUID reservado
-configurado no servidor e canonicaliza a provenance/`sourceRef` de decisões humanas terminais antes
-da execução e persistência. Ainda não existe um `authorityBindingRef` contratual nessa rota. A
-evolução para `McfAuthorityEnvelopeV1` e `McfHumanDecisionReceiptV1` deve preservar o piso fail-closed
-atual e adicionar o binding versionado: nome, `decidedBy`, `accountId` ou `sourceRef` fornecidos no
-corpo nunca são prova de autoridade.
+O comportamento vigente pós-PRs #181/#184 deriva `accountId` da sessão autenticada, exige o UUID
+reservado configurado no servidor, canonicaliza a provenance/`sourceRef` de decisões humanas
+terminais e admite o comando standalone de Human Control somente dessa mesma conta antes do
+bootstrap. Ainda não existe um `authorityBindingRef` contratual nessas rotas. A evolução para
+`McfAuthorityEnvelopeV1` e `McfHumanDecisionReceiptV1` deve preservar o piso fail-closed atual e
+adicionar o binding versionado: nome, `decidedBy`, `accountId` ou `sourceRef` fornecidos no corpo nunca
+são prova de autoridade.
 
 `HumanControlCheckpoint`, introduzido como primitive interna no PR #175, representa suspensão e
 estado preservado; `McfHumanDecisionReceiptV1` representa uma decisão humana tipada e vinculada a
@@ -184,9 +188,10 @@ objeto/estado/spec. Um não substitui o outro. O checkpoint não integra o catá
 F1.4; promovê-lo a contrato público ou criar um novo envelope de suspensão exige reabrir catálogo,
 contagem e schemas antes de código.
 
-O recognizer interno atual de Human Control compara `actorId` textual com `leandro`; o PR #181 não o
-conectou à autenticação. Qualquer wiring persistente deve substituir essa confiança nominal pela
-conta humana reservada autenticada e por provenance server-side antes de admitir o comando.
+O recognizer legado de Human Control ainda compara `actorId` textual com `leandro` e, isoladamente,
+não prova autoridade. O callsite aceito no PR #184 não confia nesse nome: usa a sessão autenticada e o
+UUID humano reservado. Qualquer wiring persistente deve preservar essa autenticação e provenance
+server-side em vez de reutilizar a confiança nominal do helper legado.
 
 ### 5.2 Context and Continuity Plane
 
@@ -414,10 +419,12 @@ objeto, estado, spec/digests, validade, opção e supersession; conta autenticad
 server-side e bootstrap authority binding versionado são validados separadamente. Approval de estado
 antigo, nome no payload ou Receipt expirado/superseded falha fechado.
 
-`HUMANO NO CONTROLE` preempta novas admissões de graph, cognitive execution, placement e effect. O
-target persiste pausa/checkpoint e transition event atomicamente, preserva o estado no restart, leva
-operações já em voo a safe point/reconciliation sem retry cego e só retoma por instrução explícita da
-conta humana reservada autenticada. O recognizer nominal interno atual não satisfaz esse gate.
+No comportamento atual do PR #184, `HUMANO NO CONTROLE` autenticado preempta o bootstrap de novo
+trabalho iniciado pelo chat. No target, ele também preempta novas admissões de graph, cognitive
+execution, placement e effect, persiste pausa/checkpoint e transition event atomicamente, preserva o
+estado no restart, leva operações já em voo a safe point/reconciliation sem retry cego e só retoma
+por instrução explícita da conta humana reservada autenticada. O gate pré-bootstrap atual não
+satisfaz sozinho essa semântica persistente e global.
 
 ### 5.9 Memory Plane
 
@@ -690,10 +697,10 @@ atualizar explicitamente disposition, catálogo e contagem de contratos antes de
 mesmo estado.
 
 O mesmo preflight caracteriza e congela como compatibility surfaces a governança Human Control
-v1.2, a primitive interna de checkpoint, a decisão humana vinculada à conta autenticada do PR #181 e
-o trace GUI/window do PR #179. A implementação não pode regredir esses comportamentos, duplicá-los
-silenciosamente nem inferir que eles já oferecem pausa persistente, Authority Envelope genérico ou
-controle de janela em runtime.
+v1.2, a primitive interna de checkpoint, a decisão humana vinculada à conta autenticada do PR #181,
+o gate autenticado de chat pré-bootstrap do PR #184 e o trace GUI/window do PR #179. A implementação
+não pode regredir esses comportamentos, duplicá-los silenciosamente nem inferir que eles já oferecem
+pausa persistente, Authority Envelope genérico ou controle de janela em runtime.
 
 1. preservar os checkpoints históricos e aprovar a disposition Q1–Q16;
 2. aprovar esta F1.4 no SHA/digest exato;

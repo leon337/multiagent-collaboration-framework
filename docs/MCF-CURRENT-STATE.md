@@ -5,7 +5,7 @@
 - **Reconciliação-base:** 2026-08-20
 - **Reconciliação adicional do ecossistema:** 2026-08-28
 - **Baseline histórico de estabilização:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
-- **Main observado após a reconciliação GUI/window:** `a8e2372925a512eeaf856b16b4eb82546d9bc0d2` (PR #180; reler GitHub live)
+- **Main observado após o gate autenticado de Human Control no chat:** `2a264b283d976bd1b392052fa928d076debfc7fb` (PR #184; reler GitHub live)
 
 ## 1. Regra de fonte de verdade
 
@@ -271,7 +271,8 @@ nextgen_reconciliation:
   continuity_capsule_pr_174: OPEN_DRAFT_NON_CANONICAL_EQUIVALENCE_REVIEW_REQUIRED
   human_control_v1_2_governance: CURRENT_ACTIVE
   human_control_checkpoint_primitive: IMPLEMENTED_TESTED_INTERNAL_NOT_PUBLIC_CONTRACT
-  persistent_missionruntime_pause_resume: NOT_IMPLEMENTED
+  authenticated_human_control_chat_interception: IMPLEMENTED_PR_184_PRE_BOOTSTRAP
+  persistent_missionruntime_pause_resume: NOT_IMPLEMENTED_FOR_RUNNING_MISSIONS
   authenticated_human_account_proof: CURRENT_IMPLEMENTED_SCOPED_ROUTE_AND_PRODUCTION_AUTH
   contractual_authority_binding_ref: NOT_IMPLEMENTED
   generic_nextgen_authority_envelope: NOT_IMPLEMENTED
@@ -297,7 +298,8 @@ current_v1_2_control_surfaces:
   stable_release: v1.2.0@5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
   human_control_governance: CURRENT_ACTIVE
   human_control_recognizer_checkpoint_primitive: IMPLEMENTED_TESTED_INTERNAL
-  persistent_missionruntime_pause_resume: NOT_IMPLEMENTED
+  authenticated_human_control_chat_interception: IMPLEMENTED_PR_184_PRE_BOOTSTRAP
+  persistent_missionruntime_pause_resume: NOT_IMPLEMENTED_FOR_RUNNING_MISSIONS
   authorized_gui_field_validation: PASS_SPECIFIC_LOCAL_SESSION
   gui_is_authority: false
   triview_command_surface: NOT_IMPLEMENTED_NOT_AUTHORIZED
@@ -310,18 +312,20 @@ current_v1_2_control_surfaces:
   nextgen_decision_inbox: NOT_IMPLEMENTED
 ```
 
-O PR #175 tornou Human Control/GUI uma regra operacional vigente, mas sua primitive de checkpoint
-não possui call site no MissionRuntime, persistência, schema público ou retomada após restart. O PR
+O PR #175 tornou Human Control/GUI uma regra operacional vigente. O PR #184 conectou o comando
+standalone `HUMANO NO CONTROLE` no chat à conta humana reservada autenticada e o intercepta antes de
+planner, bootstrap, criação de missão ou execução de fase. Isso não pausa uma missão já em curso e
+não adiciona persistência, retomada após restart, safe point ou bloqueio global de admissão. O PR
 #179 mergeou o protocolo/schema/fixtures/qualifier da sucessão GUI/window, sem producer, consumer ou
 controle automático conectado. O PR #180 reconciliou o texto de status pós-merge e também está em
 `main`; não adicionou runtime, controle de janela ou autoridade de UI. O PR #181 fechou spoofing de provenance humana pelo caller
 na rota implementada por conta autenticada reservada e `sourceRef` server-side; não criou sozinho os contratos
 NextGen ou uma Decision Inbox.
 
-O recognizer interno `isHumanControlCommand()` do PR #175 ainda compara o `actorId` textual com
-`leandro`; ele não é chamado pelo MissionRuntime e o PR #181 não o conectou à autenticação. Portanto
-é somente reconhecimento sintático testado, não prova de autoridade. Qualquer wiring futuro deve
-derivar a conta reservada da sessão autenticada e falhar fechado.
+O recognizer legado `isHumanControlCommand()` ainda compara `actorId` textual com `leandro` e não é
+prova de autoridade. O call site novo usa `isReservedHumanControlCommand()` somente após o controller
+derivar a conta da sessão autenticada e o bridge comparar o UUID reservado configurado no servidor.
+Qualquer wiring futuro fora desse boundary deve preservar essa derivação fail-closed.
 
 `HumanControlCheckpoint`, `HumanAuthorityProof` e o trace GUI/window são compatibility surfaces
 existentes. Não devem ser contados silenciosamente como novos contratos públicos nem usados para
