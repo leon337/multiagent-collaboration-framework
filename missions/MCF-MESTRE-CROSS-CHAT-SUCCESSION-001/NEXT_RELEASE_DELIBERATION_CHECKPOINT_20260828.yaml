@@ -51,7 +51,17 @@ open_findings:
     severity: NOT_VERIFIED
     source: PR_181
     release_policy: HUMAN_DECISION_REQUIRED
-    note: Do not equate this finding with the v1.2.0 persistent pause/resume limitation without additional evidence.
+    technical_triage:
+      policy_implementation_exists: true
+      isolated_unit_tests_exist: true
+      runtime_module_provider_wiring_observed: false
+      chat_runtime_bridge_command_interception_observed: false
+      evidence_basis:
+        - apps/rede-social-agentes/apps/server/src/mcf-runtime/human-control-policy.ts
+        - apps/rede-social-agentes/apps/server/src/mcf-runtime/human-control-policy.test.ts
+        - apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
+        - apps/rede-social-agentes/apps/server/src/mcf-runtime/chat-runtime-bridge.service.ts
+    note: Evidence supports a concrete wiring gap, but formal severity remains NOT_VERIFIED. Do not equate it automatically with the v1.2.0 persistent pause/resume limitation.
 
 role_audit:
   execution_mode: SAME_SESSION_MCF_ROLES
@@ -70,13 +80,13 @@ governance:
 human_gate:
   state: OPEN
   authority: LEANDRO
-  recommendation: ADOPT_V1_3_0_AS_CANDIDATE_WITHOUT_PUBLICATION
-  decision_requested: Choose whether to accept and explicitly document HUMAN_CONTROL_RUNTIME_WIRING as an open limitation for the v1.3.0 candidate, or require its remediation before release preparation.
+  recommendation: REMEDIATE_HUMAN_CONTROL_RUNTIME_WIRING_BEFORE_RELEASE_PREPARATION
+  decision_requested: Choose whether to remediate and qualify HUMAN_CONTROL_RUNTIME_WIRING before defining/preparing v1.3.0, or explicitly accept the open wiring limitation for the v1.3.0 candidate.
   option_a:
-    id: ACCEPT_OPEN_FINDING
-    effect: Define v1.3.0 as candidate and prepare release artifacts with the finding explicitly documented; no tag or release publication yet.
-  option_b:
     id: REMEDIATE_FIRST
-    effect: Keep version unofficial and remediate/qualify HUMAN_CONTROL_RUNTIME_WIRING before release preparation.
+    effect: Keep v1.3.0 as a recommendation only; implement runtime/chat wiring on non-main branch, test, qualify, audit, then return to a new HUMAN_GATE before integration/release preparation.
+  option_b:
+    id: ACCEPT_OPEN_FINDING
+    effect: Define v1.3.0 as candidate and prepare release artifacts with the wiring limitation explicitly documented; no tag or release publication yet.
 
 next_action: AWAIT_LEANDRO_RELEASE_SCOPE_DECISION
