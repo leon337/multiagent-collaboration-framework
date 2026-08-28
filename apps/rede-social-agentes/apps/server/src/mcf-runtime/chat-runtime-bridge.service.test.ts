@@ -10,6 +10,8 @@ import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
 import type { MissionRuntimeService } from './mission-runtime.service.js';
 
+const RESERVED_HUMAN_ACCOUNT_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+
 function mission(): McfMissionResponse {
   return {
     id: '11111111-1111-4111-8111-111111111111',
@@ -113,6 +115,28 @@ function runtimeMock(created: McfMissionResponse): MissionRuntimeService {
 }
 
 describe('ChatRuntimeBridgeService', () => {
+  it('halts before mission creation when the reserved human sends the standalone control command', async () => {
+    const created = mission();
+    const runtime = runtimeMock(created);
+    const service = new ChatRuntimeBridgeService(runtime, new ChatMissionPlanner());
+
+    const result = await Reflect.apply(service.dispatch, service, [
+      { objective: '  humano   no   controle  ' },
+      { authenticatedAccountId: RESERVED_HUMAN_ACCOUNT_ID },
+    ]);
+
+    expect(runtime.createMission).not.toHaveBeenCalled();
+    expect(runtime.executePhase).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      gate: 'HUMAN_CONTROL',
+      executionPaused: true,
+      nextAction: 'HUMAN_GATE',
+      resumeRequiresExplicitHumanInstruction: true,
+      humanActionRequired: true,
+      missionCreated: false,
+    });
+  });
+
   it('persists the mission and executes the consecutive internal startup block', async () => {
     const created = mission();
     const runtime = runtimeMock(created);
