@@ -41,6 +41,7 @@ export interface McfV11AuthorizationContext {
     | {
         status: 'PENDING' | 'APPROVED' | 'REJECTED';
         decidedBy?: string | undefined;
+        accountId?: string | undefined;
         sourceRef?: string | undefined;
       }
     | undefined;
@@ -195,6 +196,9 @@ function assertLeandroGate(context: McfV11AuthorizationContext): void {
   }
   if (normalize(String(decision.decidedBy ?? '')) !== 'leandro') {
     deny('v1.1 human gate approval must come from LEANDRO');
+  }
+  if (!hasText(decision.accountId)) {
+    deny('v1.1 human gate approval requires canonical account provenance');
   }
   if (!hasText(decision.sourceRef)) {
     deny('v1.1 human gate approval requires a sourceRef');

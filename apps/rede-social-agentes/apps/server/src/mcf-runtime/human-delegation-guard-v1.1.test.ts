@@ -133,6 +133,26 @@ describe('HumanDelegationGuard v1.1 standing authorization', () => {
     ).toThrow(/TEAM_FIRST/u);
   });
 
+  it('rejects an approved LEANDRO gate without canonical account provenance', () => {
+    expect(() =>
+      assertContext(
+        context({
+          standingAuthorizations: [],
+          teamFirst: {
+            attempted: true,
+            evidenceRefs: ['team-attempt:1'],
+            fallbackExhausted: true,
+          },
+          humanGateDecision: {
+            status: 'APPROVED',
+            decidedBy: 'LEANDRO',
+            sourceRef: 'human-gate:approved:missing-account',
+          },
+        }),
+      ),
+    ).toThrow(/account/iu);
+  });
+
   it('accepts a LEANDRO gate only after TEAM_FIRST is exhausted', () => {
     expect(() =>
       assertContext(
@@ -146,6 +166,7 @@ describe('HumanDelegationGuard v1.1 standing authorization', () => {
           humanGateDecision: {
             status: 'APPROVED',
             decidedBy: 'LEANDRO',
+            accountId: '55555555-5555-4555-8555-555555555555',
             sourceRef: 'human-gate:approved:1',
           },
         }),

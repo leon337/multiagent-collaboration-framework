@@ -42,6 +42,7 @@ services:
       BODY_LIMIT_BYTES: 262144
       ALLOWED_ORIGINS: https://smoke.invalid
       REGISTRATION_ALLOWLIST: invited@example.test
+      RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID: 77777777-7777-4777-8777-777777777777
     depends_on:
       migrate:
         condition: service_completed_successfully

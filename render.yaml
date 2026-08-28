@@ -35,6 +35,8 @@ services:
         sync: false
       - key: REGISTRATION_ALLOWLIST
         sync: false
+      - key: RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID
+        sync: false
 
   - type: web
     name: rsa-web-free

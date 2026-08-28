@@ -4,6 +4,10 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { HumanDelegationGuard } from './human-delegation-guard.js';
 import {
+  readApprovedHumanAuthorityProof,
+  type HumanAuthorityProof,
+} from './human-authority-proof.js';
+import {
   McfMissionNotFoundError,
   McfPermissionDeniedError,
   McfPhaseNotFoundError,
@@ -62,10 +66,6 @@ export interface ProductionAuthorizationGranted {
 
 export type ProductionAuthorizationResolution =
   ProductionAuthorizationBlocked | ProductionAuthorizationGranted;
-
-interface HumanProductionAuthorization {
-  sourceRef: string;
-}
 
 interface CanonicalOperationalGate {
   decision: 'APPROVE' | 'REJECT';
@@ -140,6 +140,7 @@ export class ProductionAuthorizationService {
   constructor(
     @Inject(MCF_RUNTIME_REPOSITORY) private readonly runtime: McfRuntimeRepository,
     @Inject(PRODUCTION_GATE_EVENT_STORE) private readonly gateStore: ProductionGateEventStore,
+    private readonly reservedHumanAuthorityAccountId?: string,
   ) {}
 
   async recordLeoOperationalGate(request: RecordLeoOperationalGateRequest): Promise<{
@@ -259,7 +260,7 @@ export class ProductionAuthorizationService {
     mission: McfMissionRecord,
     phase: McfPhaseRecord,
     releaseSha: string,
-  ): HumanProductionAuthorization | null {
+  ): HumanAuthorityProof | null {
     if (
       mission.contract.contractSchemaVersion !== '1.1' ||
       !hasText(mission.contract.projectId) ||
@@ -269,7 +270,10 @@ export class ProductionAuthorizationService {
     }
 
     const context = asRecord(phase.inputs.v11AuthorizationContext);
-    const humanDecision = asRecord(context?.humanGateDecision);
+    const humanAuthority = readApprovedHumanAuthorityProof(
+      context?.humanGateDecision,
+      this.reservedHumanAuthorityAccountId,
+    );
     if (
       !context ||
       context.projectId !== mission.contract.projectId ||
@@ -280,10 +284,7 @@ export class ProductionAuthorizationService {
       normalize(context.environment) !== 'production' ||
       context.reservedHumanAuthority !== true ||
       context.boundary !== `release-sha:${releaseSha}` ||
-      humanDecision?.status !== 'APPROVED' ||
-      !hasText(humanDecision.decidedBy) ||
-      normalize(humanDecision.decidedBy) !== 'leandro' ||
-      !hasText(humanDecision.sourceRef)
+      !humanAuthority
     ) {
       return null;
     }
@@ -300,6 +301,6 @@ export class ProductionAuthorizationService {
       throw error;
     }
 
-    return { sourceRef: humanDecision.sourceRef };
+    return humanAuthority;
   }
 }
