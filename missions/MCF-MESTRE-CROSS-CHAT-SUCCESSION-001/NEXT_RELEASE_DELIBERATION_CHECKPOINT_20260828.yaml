@@ -1,0 +1,82 @@
+checkpoint_id: CP-NEXT-RELEASE-DELIBERATION-20260828-03
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+recorded_date: 2026-08-28
+status: WAITING_HUMAN_RELEASE_SCOPE_GATE
+
+source_of_truth:
+  main_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
+  latest_stable_release: v1.2.0
+  latest_stable_release_id: 377709546
+  audit_branch_parent_sha: 37efdbe9d9d00198f7edf098a07652059b0297b4
+
+release_delta:
+  commits_since_v1_2_0: 18
+  material_change: true
+  backward_compatible_breaking_change_detected: false
+  proposed_scope:
+    - governed cross-chat GUI/window succession protocol
+    - machine-readable GUI/window succession trace schema and regressions
+    - GUI/window qualification and post-merge consistency checks
+    - authenticated reserved-human authority provenance hardening
+    - HumanAuthorityProof binding for production authorization
+    - documentation reconciliation for merged-unreleased rules
+  excluded_from_feature_claims:
+    - NextGen planning as implemented runtime
+    - universal persistent pause/resume enforcement
+
+semver:
+  recommended_candidate: v1.3.0
+  rationale: additive backward-compatible framework capability plus security hardening; more than a patch; no verified breaking change requiring major
+  version_officially_decided: false
+
+qualification:
+  exact_combined_main_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
+  gui_window_qualify: PASS
+  gui_postmerge_consistency: PASS
+  validate: PASS
+  production_candidate_readiness: PASS
+  authority_provenance_unit_regression: PASS
+  authority_provenance_http_regression: PASS
+  human_delegation_guard: PASS
+  production_authorization: PASS
+  full_server_suite:
+    passed: 902
+    skipped: 3
+  build: PASS
+  backup_restore: PASS
+
+open_findings:
+  - id: HUMAN_CONTROL_RUNTIME_WIRING
+    state: OPEN
+    severity: NOT_VERIFIED
+    source: PR_181
+    release_policy: HUMAN_DECISION_REQUIRED
+    note: Do not equate this finding with the v1.2.0 persistent pause/resume limitation without additional evidence.
+
+role_audit:
+  execution_mode: SAME_SESSION_MCF_ROLES
+  independent_runtime_audit_performed: false
+  evidence_sufficiency_for_release_deliberation: SUFFICIENT
+  release_readiness_classification: READY_FOR_HUMAN_DELIBERATION_WITH_OPEN_FINDING
+
+governance:
+  main_mutation_in_this_deliberation: NONE
+  version_tag_created: false
+  release_created: false
+  tag_authorized: false
+  release_authorized: false
+  production_deploy_authorized: false
+
+human_gate:
+  state: OPEN
+  authority: LEANDRO
+  recommendation: ADOPT_V1_3_0_AS_CANDIDATE_WITHOUT_PUBLICATION
+  decision_requested: Choose whether to accept and explicitly document HUMAN_CONTROL_RUNTIME_WIRING as an open limitation for the v1.3.0 candidate, or require its remediation before release preparation.
+  option_a:
+    id: ACCEPT_OPEN_FINDING
+    effect: Define v1.3.0 as candidate and prepare release artifacts with the finding explicitly documented; no tag or release publication yet.
+  option_b:
+    id: REMEDIATE_FIRST
+    effect: Keep version unofficial and remediate/qualify HUMAN_CONTROL_RUNTIME_WIRING before release preparation.
+
+next_action: AWAIT_LEANDRO_RELEASE_SCOPE_DECISION
