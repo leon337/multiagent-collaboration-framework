@@ -22,7 +22,9 @@ Aprovar um item não aprova os seguintes.
 ## Baseline auditado
 
 - Cloud `main@ce829067a9a04eceaa6eaefd9553899b2ce14da1`;
-- integration train `mcf/mission-001-control-bridge-g1@38cd22e0a814bdf4957edcf5bb30506a4810bda0`;
+- integration train `mcf/mission-001-control-bridge-g1@420ee7d26bc40159e3040a5319b16b21a6f02499`;
+- o delta de `38cd22e0a814bdf4957edcf5bb30506a4810bda0` para `420ee7d2` é somente o
+  Capsule/evidência do PR #38, validado por CI; ele não promove a integração para `main`;
 - G2-B remoto publicado `codex/control-bridge-g2b@fbef3d407dbd9b7947b6c100a63d098eaebe2b6a`;
 - preservação SSH `recovery/g2b-ssh-local-preservation-20260828@7fa9ab996be6cdffd4ea3913c082e3da7090fff4`;
 - patch local predecessor `ef2d10a` deve ser avaliado separadamente;

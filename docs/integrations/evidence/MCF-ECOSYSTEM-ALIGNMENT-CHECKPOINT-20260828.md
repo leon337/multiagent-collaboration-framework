@@ -2,7 +2,7 @@
 
 **Janela:** 2026-08-28  
 **Classificação:** `REPOSITORY_AND_GITHUB_EVIDENCE_ONLY`  
-**Resultado:** `PASS_WITH_PROVIDER_PROMOTIONS_BLOCKED`
+**Resultado:** `PASS_REPOSITORY_ALIGNMENT__LIVE_GATES_CLOSED`
 
 ## Escopo observado
 
@@ -84,6 +84,44 @@ Checks remotos do PR #185:
 - R7 físico, LEA-197, smoke MCF, update/rollback, Issue #26 e HUMAN_GATE continuam bloqueados;
 - decisão: `WAIT_R7_AND_HUMAN_GATE`.
 
+## Atualização segura dos targets não produtivos
+
+Depois da auditoria acima, somente Capsule/documentação/evidência foram propostas nos lineages já
+existentes. Isso atualizou os mapas de cada estação sem promover provider, VPS ou release:
+
+| Projeto          | PR                                                                                                                                    | Target                               | Resultado                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------- |
+| Cloud            | [#38](https://github.com/leon337/cloud-infrastructure/pull/38)                                                                        | `mcf/mission-001-control-bridge-g1`  | MERGED em `420ee7d26bc40159e3040a5319b16b21a6f02499`; CI verde                |
+| Cognitive Ledger | [#4](https://github.com/leon337/cognitive-ledger/pull/4)                                                                              | `design/cognitive-ledger-foundation` | DRAFT/OPEN/CLEAN em `a3fc0d61737d4b0b55b265f34383c0e9b77d7334`; 2/2 CI verdes |
+| TriView          | [#79](https://github.com/leon337/triview-workspace-linux/pull/79) e [#80](https://github.com/leon337/triview-workspace-linux/pull/80) | `release/1.0.0a4`                    | MERGED; target final `7b2440a64d6519515100911f486547480b5ab9aa`; CI verde     |
+
+O PR Ledger não foi mergeado: a documentação do próprio repositório registra auto-deploy Render
+ligado à branch de design. Manter o PR aberto evita transformar um merge documental em efeito
+externo não autorizado. Embeddings, reindex, Supabase/Render live, dados reais e write continuam
+fechados.
+
+No Cloud, os oito checks pré-merge do PR #38 e as três suítes reexecutadas sobre o novo target
+passaram. Os workflows self-hosted/VPS não foram acionados, porque o delta se limita a Capsule e
+evidência e não satisfaz seus filtros. No TriView, o CI da correção e a revalidação do PR #74 sobre o
+novo target passaram; o PR #74 permanece draft.
+
+## Recovery preliminar dos candidatos
+
+Antes de congelar o Capsule final do MCF, o recovery estrutural foi executado nos quatro candidatos
+entre `2026-08-28T17:42:38.123Z` e `2026-08-28T17:42:38.334Z`:
+
+| Projeto          | Revisão candidata                          | Receipt                                                 |
+| ---------------- | ------------------------------------------ | ------------------------------------------------------- |
+| Cloud            | `ab10d21319844f18e897cf119ebe3fd20544e9ca` | `context-recovery-bff41aaa-413b-480c-8032-84ad3f57eb45` |
+| Cognitive Ledger | `a3fc0d61737d4b0b55b265f34383c0e9b77d7334` | `context-recovery-d516d183-b31e-4f20-a28b-f8e2b971f58b` |
+| MCF              | `1de6336e45e78c43d2db0dae29187faa3fb433b1` | `context-recovery-48a4a60b-1f77-4b2d-810a-37507bb192e1` |
+| TriView          | `3533d07b657dd9ca80c43c1db38a255e287731b0` | `context-recovery-813960cb-9822-4285-93ab-3e7e6ae5532e` |
+
+Resultado: **4/4 `RECOVERED`**, 17 claims e 6 sources por Receipt, zero warnings,
+`read_only=true`, `evidence_only=true` e `material_action=false`. Capsule e live revision coincidiram
+em todos os candidatos. Esses Receipts são evidência efêmera desta execução; não foram persistidos
+como memória nem usados como fonte de verdade.
+
 ## Invariantes preservados
 
 - `ZERO_PAID_AI_API`;
@@ -97,6 +135,6 @@ Checks remotos do PR #185:
 
 ## Próxima prova
 
-Depois que as atualizações documentais/Capsules forem incorporadas nos targets seguros, executar um
-novo recovery estrutural read-only 4/4, congelar os quatro SHAs e registrar Receipts sem persistir
-payload de memória ou estado live.
+Congelar um commit de conteúdo do MCF com o Capsule atualizado e repetir o recovery estrutural
+read-only contra Cloud `420ee7d2`, Ledger `a3fc0d61`, TriView `7b2440a6` e esse commit MCF. Registrar
+os Receipts finais sem persistir payload de memória ou estado live.

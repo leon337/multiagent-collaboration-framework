@@ -146,7 +146,7 @@ Envelope genérico ou Decision Inbox.
 | Experimentos            | `../experimentos/`, `experimentos/`                                                                                                                              |
 | Propostas/discovery     | `proposals/`, branches de planejamento                                                                                                                           |
 | NextGen reconciliado    | `MCF-NEXTGEN-RECONCILIATION-ROADMAP.md`, `architecture/`, `superpowers/plans/`, PRF da fase                                                                      |
-| Promoção do ecossistema | [`integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md`](integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md), `integrations/gates/`, checkpoint 2026-08-28 |
+| Promoção do ecossistema | [`integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md`](integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md), [`checkpoint 2026-08-28`](integrations/evidence/MCF-ECOSYSTEM-ALIGNMENT-CHECKPOINT-20260828.md), `integrations/gates/` |
 
 ## Regra de continuidade
 

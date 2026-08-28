@@ -588,6 +588,26 @@ A auditoria read-only contemporânea bloqueou promoção direta dos três provid
 | Cognitive Ledger | `main@f95bcddd`; design `a64cfc05` `+171/-9`; PR #1 draft/conflicting                            | reconciliar em branch limpa e manter embeddings/reindex disabled                      |
 | TriView          | `main@60b7e86`; release `09a361d7` `+117/-0`; PR #74 clean/draft                                 | reconciliar docs e executar R7 físico + HUMAN_GATE antes de promoção                  |
 
+Essa tabela preserva o ponto de partida da auditoria. A etapa documental subsequente atualizou
+somente os targets não produtivos:
+
+- Cloud PR #38 foi mergeada na linha de integração, produzindo
+  `420ee7d26bc40159e3040a5319b16b21a6f02499`, com os oito checks pré-merge e as três suítes
+  reexecutadas sobre o target verdes. Isso não promoveu a linha para `main`, não replayou o payload
+  SSH e não acessou a VPS;
+- TriView PRs #79/#80 foram mergeadas em `release/1.0.0a4`, produzindo
+  `7b2440a64d6519515100911f486547480b5ab9aa`. O PR #74 continua draft/clean, com CI verde, e ainda
+  depende de R7 físico, LEA-197, smoke MCF, update/rollback, Issue #26 e HUMAN_GATE;
+- Cognitive Ledger PR #4 está draft/clean em
+  `a3fc0d61737d4b0b55b265f34383c0e9b77d7334`, com 2/2 checks verdes, mas permanece aberta porque
+  atualizar a branch de design pode acionar o auto-deploy Render documentado. Nenhum provider foi
+  ativado.
+
+O recovery preliminar desses candidatos passou 4/4 em `2026-08-28T17:42:38Z`, com 17 claims, seis
+fontes e zero warnings por Receipt; todos registraram `read_only=true`, `evidence_only=true` e
+`material_action=false`. O checkpoint final deve usar os merge SHAs Cloud/TriView acima, o head
+Ledger preservado e um commit MCF que já contenha este Capsule reconciliado.
+
 Os detalhes e checklists estão em
 [`MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md`](integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md).
 Os gates G2-B/VPS e NextGen NX-0 são documentos separados e ambos permanecem

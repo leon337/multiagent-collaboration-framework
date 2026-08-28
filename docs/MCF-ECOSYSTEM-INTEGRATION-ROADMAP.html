@@ -1575,19 +1575,21 @@
           Checkpoint de alinhamento · 28 ago 2026 · promoções auditadas
         </p>
         <h1>
-          O trabalho está preservado e o MCF foi reconciliado.
-          <span class="gradient-text">As três promoções aguardam gates.</span>
+          O trabalho está preservado e os mapas agora concordam.
+          <span class="gradient-text"
+            >As operações live continuam fechadas.</span
+          >
         </h1>
         <p class="hero-copy">
           O closeout read-only de 24/08 permanece comprovado: recovery 4/4,
           adapters locais e custo pago zero. Desde então, o MCF avançou até
           <code>main@0b900ee0</code> pelo PR #185, após reconciliar os PRs #180
-          e #184. Cloud, Cognitive Ledger e TriView foram comparados com seus
-          respectivos <code>main</code>: nenhum dos três deve ser promovido
-          diretamente hoje. Os deltas locais conhecidos foram preservados em
-          branches remotas, e os gates G2-B/VPS e NextGen NX-0 foram preparados
-          sem executá-los. VPS, SSH, escrita real, provider live, release,
-          produção e API de IA paga continuam fechados.
+          e #184. Cloud PR #38 e TriView PRs #79/#80 sincronizaram somente
+          Capsule/documentação nos targets não produtivos, com CI verde. Ledger
+          PR #4 também está verde, mas permanece draft/aberta porque seu target
+          pode acionar o auto-deploy Render. O recovery preliminar dos quatro
+          candidatos passou 4/4. VPS, SSH, escrita real, provider live, release,
+          produção, API de IA paga e NextGen NX-0 continuam fechados.
         </p>
         <div class="hero-actions">
           <a class="button primary" href="#checklist">Abrir checklist</a>
@@ -1603,11 +1605,11 @@
             <strong>É um painel de evidências, não um console da VPS.</strong>
             Itens fixos e marcados foram comprovados por código, merge ou teste.
             Itens interativos são o planejamento local deste navegador. A
-            integração principal do MCF está no <code>main</code>, mas nenhum
-            dado deste painel autoriza runtime de produção, VPS, SSH, escrita
-            remota ou uma R7 ampla. A página estática Vercel pertence à classe
-            de deployment <code>Production</code>, mas não contém runtime nem
-            API do MCF.
+            integração principal do MCF está no
+            <code>main</code>, mas nenhum dado deste painel autoriza runtime de
+            produção, VPS, SSH, escrita remota ou uma R7 ampla. A página
+            estática Vercel pertence à classe de deployment
+            <code>Production</code>, mas não contém runtime nem API do MCF.
           </div>
         </div>
 
@@ -1625,15 +1627,15 @@
             </span>
           </article>
           <article class="metric">
-            <span class="metric-value">0 / 3</span>
+            <span class="metric-value">2 / 3</span>
             <span class="metric-label">
-              providers liberados para promoção direta no snapshot atual
+              targets não produtivos com Capsule/documentação sincronizadas
             </span>
           </article>
           <article class="metric">
-            <span class="metric-value">R$ 0</span>
+            <span class="metric-value">4 / 4</span>
             <span class="metric-label">
-              embeddings e chamadas pagas no E2E final MCF → Ledger
+              recovery preliminar · read-only · zero warnings
             </span>
           </article>
         </div>
@@ -1651,8 +1653,9 @@
           </div>
           <p>
             Uma branch preservada é um cofre, não uma pista de lançamento. Cada
-            provider precisa chegar ao target atual por uma reconciliação
-            própria, com CI e gate humano no SHA exato.
+            provider mantém seu próprio trilho. Sincronizar a ficha de uma
+            estação não autoriza ligar máquinas, entrar na VPS ou publicar uma
+            release.
           </p>
         </div>
 
@@ -1669,46 +1672,46 @@
             <tbody>
               <tr>
                 <td>MCF</td>
-                <td><code>main@0b900ee0</code> · PR #185</td>
-                <td><span class="status done">Reconciliado</span></td>
+                <td><code>main@0b900ee0</code> · PR #186</td>
+                <td><span class="status next">Fechamento em revisão</span></td>
                 <td>
-                  Atualizar Capsules, repetir recovery 4/4 e revisar NX-0.
+                  Validar Capsule, congelar commit e repetir recovery 4/4.
                 </td>
               </tr>
               <tr>
                 <td>Cloud Infrastructure</td>
                 <td>
                   <code>main@ce829067</code> · integration
-                  <code>38cd22e0</code> · recovery <code>7fa9ab9</code>
+                  <code>420ee7d2</code> · PR #38 merged
                 </td>
-                <td><span class="status gate">Sem merge direto</span></td>
+                <td><span class="status done">Ficha sincronizada</span></td>
                 <td>
-                  Replay seletivo em target limpo, 13+7, 4 Ansible syntax,
-                  secret scan e CI verde; VPS continua separada.
+                  Promoção para main e replay G2-B continuam separados; 4
+                  Ansible syntax e gate VPS ainda pendentes.
                 </td>
               </tr>
               <tr>
                 <td>Cognitive Ledger</td>
                 <td>
-                  <code>main@f95bcddd</code> · design <code>a64cfc05</code> · PR
-                  #1 conflicting
+                  <code>main@f95bcddd</code> · PR #4 draft, head
+                  <code>a3fc0d61</code>
                 </td>
-                <td><span class="status gate">Reconciliação exigida</span></td>
+                <td><span class="status gate">Gate Render</span></td>
                 <td>
-                  Branch limpa de main, README factual, embeddings/reindex
-                  disabled e CI zero-cost.
+                  Manter PR aberta até confirmar auto-deploy desabilitado ou
+                  obter autorização humana específica.
                 </td>
               </tr>
               <tr>
                 <td>TriView Workspace</td>
                 <td>
-                  <code>main@60b7e86</code> · release <code>09a361d7</code> · PR
-                  #74 clean/draft
+                  <code>main@60b7e86</code> · release <code>7b2440a6</code> · PR
+                  #74 draft/clean
                 </td>
-                <td><span class="status gate">R7 bloqueante</span></td>
+                <td><span class="status done">Ficha sincronizada</span></td>
                 <td>
-                  Capsule/docs, R7 físico, LEA-197, smoke MCF, update/rollback,
-                  Issue #26 e HUMAN_GATE.
+                  R7 físico, LEA-197, smoke MCF, update/rollback, Issue #26 e
+                  HUMAN_GATE continuam bloqueando release.
                 </td>
               </tr>
             </tbody>
@@ -1769,6 +1772,32 @@
                   </label>
                   <span class="check-status">fixo</span>
                 </li>
+                <li class="check-item" data-status="done">
+                  <input
+                    id="c-provider-doc-sync"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-provider-doc-sync">
+                    Cloud e TriView sincronizados nos targets seguros; Ledger
+                    verde e preservado atrás do gate Render
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+                <li class="check-item" data-status="done">
+                  <input
+                    id="c-preliminary-recovery"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-preliminary-recovery">
+                    Recovery preliminar 4/4, read-only, zero warnings e nenhuma
+                    ação material
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
               </ul>
             </section>
 
@@ -1778,12 +1807,18 @@
                 <h3 id="check-current-next">Próximos passos auditáveis</h3>
               </div>
               <ul class="check-list">
-                <li class="check-item" data-status="next">
-                  <input id="c-provider-doc-prs" type="checkbox" disabled />
+                <li class="check-item" data-status="done">
+                  <input
+                    id="c-provider-doc-prs"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
                   <label for="c-provider-doc-prs">
-                    Incorporar Capsule/documentação nos três targets seguros
+                    Incorporar Cloud/TriView e impedir merge Ledger com efeito
+                    externo não autorizado
                   </label>
-                  <span class="check-status">pendente</span>
+                  <span class="check-status">concluído</span>
                 </li>
                 <li class="check-item" data-status="next">
                   <input id="c-fresh-recovery" type="checkbox" disabled />
@@ -2513,7 +2548,8 @@
                 <td>Missão concluída; preservar evidência e boundaries.</td>
                 <td>
                   Main/staging não são runtime de produção; o runtime permaneceu
-                  em <code>439da7b</code>, sem deploy produtivo ou VPS/SSH.
+                  em
+                  <code>439da7b</code>, sem deploy produtivo ou VPS/SSH.
                 </td>
               </tr>
               <tr>
@@ -3143,8 +3179,9 @@
             <h3>Isolamento Python parece sandbox</h3>
             <p>
               Os 16 arquivos e o venv medidos provam integridade daquela
-              execução. <code>python -I</code>/audit hook não atestam toda a
-              supply chain nem criam sandbox de sistema operacional.
+              execução.
+              <code>python -I</code>/audit hook não atestam toda a supply chain
+              nem criam sandbox de sistema operacional.
             </p>
           </article>
           <article class="risk">
@@ -3186,9 +3223,10 @@
             <h3>Adapters reais</h3>
             <p>
               MCF → Ledger e MCF → Cloud local têm E2E pelos clientes reais no
-              checkpoint <code>e646527f</code>, agora ancestral do main. Main e
-              staging foram comprovados separadamente; Ledger e o provider Cloud
-              local continuam <code>DISCONNECTED/INACTIVE</code>, o G2-A remoto
+              checkpoint
+              <code>e646527f</code>, agora ancestral do main. Main e staging
+              foram comprovados separadamente; Ledger e o provider Cloud local
+              continuam <code>DISCONNECTED/INACTIVE</code>, o G2-A remoto
               continua <code>UNKNOWN</code> e o G2-B, <code>BLOCKED</code>.
             </p>
           </article>

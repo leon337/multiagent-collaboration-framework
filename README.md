@@ -258,8 +258,14 @@ worktree limpa e revisão live exata: Cloud `38cd22e`, Ledger `a64cfc`, TriView 
 Veja o [roadmap visual](docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html) e o
 [handoff factual](docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md). A auditoria de
 2026-08-28, as decisões de não promover diretamente e o checklist atual estão no
-[roadmap de promoção](docs/integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md); os gates
-G2-B/VPS e NextGen NX-0 permanecem propostos, não autorizados.
+[roadmap de promoção](docs/integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md). Depois dessa
+auditoria, Cloud PR #38 sincronizou Capsule/evidência na linha de integração em `420ee7d2`, e
+TriView PRs #79/#80 sincronizaram Capsule/documentação na linha de release em `7b2440a6`; ambos
+passaram CI, sem promoção para `main`, VPS ou release. Cognitive Ledger PR #4 passou 2/2 checks em
+`a3fc0d61`, mas permanece draft/aberta porque seu target possui auto-deploy Render documentado. O
+recovery preliminar dos quatro candidatos passou 4/4, read-only e sem ação material. Os gates
+G2-B/VPS, Ledger external-deploy, TriView R7/release e NextGen NX-0 permanecem separados e não
+autorizados.
 
 ## Mission Control
 
