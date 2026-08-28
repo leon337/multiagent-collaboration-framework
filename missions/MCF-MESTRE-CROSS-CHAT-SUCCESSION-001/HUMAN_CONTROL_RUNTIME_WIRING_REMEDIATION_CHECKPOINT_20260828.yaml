@@ -1,0 +1,127 @@
+checkpoint_id: CP-HUMAN-CONTROL-RUNTIME-WIRING-REMEDIATION-20260828-04
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+recorded_date: 2026-08-28
+status: WAITING_HUMAN_MERGE_GATE
+
+authorization:
+  decision: REMEDIATE_FIRST
+  authority: LEANDRO
+  scope_authorized:
+    - non-main implementation
+    - tests
+    - qualification
+    - audit
+  merge_authorized: false
+  version_authorized: false
+  tag_authorized: false
+  release_authorized: false
+  deploy_authorized: false
+
+source_of_truth:
+  main_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
+  latest_stable_release: v1.2.0
+  latest_stable_release_id: 377709546
+  remediation_branch: fix/human-control-runtime-wiring
+  pull_request: 184
+  pull_request_state: OPEN_DRAFT
+  pull_request_merged: false
+  candidate_head_sha: c8f31fe4d07bb101334843b2f1d14af9cb5e567b
+
+finding:
+  id: HUMAN_CONTROL_RUNTIME_WIRING
+  prior_state: OPEN
+  prior_severity: NOT_VERIFIED
+  reproduced: true
+  remediation_classification: REMEDIATED_IN_CHAT_RUNTIME_BOUNDARY
+  universal_persistent_pause_resume_claim: false
+
+technical_scope:
+  authenticated_identity_source: request.authenticatedHuman.accountId
+  reserved_authority_source: RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID
+  caller_body_account_id_trusted: false
+  interception_position: BEFORE_PLANNER_AND_MISSION_BOOTSTRAP
+  effects_on_reserved_control_command:
+    create_mission: false
+    execute_phase: false
+    gate: HUMAN_CONTROL
+    execution_paused: true
+    next_action: HUMAN_GATE
+    resume_requires_explicit_human_instruction: true
+  negative_account_boundary:
+    different_authenticated_account_gets_human_control_gate: false
+  changed_files: 5
+
+red_evidence:
+  sha: 879b0b09115d11c484e92a9c3431c9165aa7aec0
+  workflow: MCF Production Readiness
+  result: FAILURE_EXPECTED
+  server_suite:
+    passed: 902
+    skipped: 3
+    failed: 1
+  specific_failure: runtime.createMission was called once for standalone HUMANO NO CONTROLE while regression expected zero calls
+
+green_evidence:
+  sha: c8f31fe4d07bb101334843b2f1d14af9cb5e567b
+  workflows:
+    mcf_v1_1_qualification:
+      run_id: 33190732116
+      result: SUCCESS
+    rede_social_foundation:
+      run_id: 33190732109
+      result: SUCCESS
+    rede_social_container_smoke:
+      run_id: 33190732107
+      result: SUCCESS
+    mcf_production_readiness:
+      run_id: 33190732159
+      result: SUCCESS
+  focused_regression:
+    file: apps/rede-social-agentes/apps/server/src/mcf-runtime/chat-runtime-bridge.service.test.ts
+    passed: 5
+    failed: 0
+    includes:
+      - reserved authenticated account halts before mission creation
+      - different authenticated account cannot acquire HUMAN_CONTROL gate
+  full_server_suite:
+    passed: 904
+    skipped: 3
+    failed: 0
+  format: PASS
+  lint: PASS
+  typecheck: PASS
+  migrations: PASS
+  build: PASS
+  backup_restore: PASS
+  release_readiness_contracts: PASS
+  exact_head_qualifier_verdict: AUTOMATED_EVIDENCE_PASS_PENDING_INDEPENDENT_REVIEW
+
+audit:
+  execution_mode: SAME_SESSION_MCF_ROLES
+  independent_runtime_audit_performed: false
+  emily_role_verdict: PASS_WITH_CONDITIONS
+  conditions:
+    - remediation claim is limited to authenticated chat-to-runtime dispatch boundary
+    - no claim of universal persistent pause/resume for already-running missions
+    - repository code-search for all alternate uses of legacy textual helper returned incomplete_results=true, so universal absence is NOT_VERIFIED
+  evidence_sufficiency_for_merge_deliberation: SUFFICIENT
+
+governance:
+  main_mutated_by_this_remediation: false
+  main_current_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
+  version_candidate_recommendation: v1.3.0
+  version_officially_decided: false
+  tag_created: false
+  release_created: false
+  production_deploy_performed: false
+
+human_gate:
+  state: OPEN
+  authority: LEANDRO
+  decision_requested: APPROVE_OR_REJECT_MERGE_PR_184
+  recommendation: APPROVE_MERGE_PR_184
+  merge_scope_only: true
+  version_tag_release_deploy_included: false
+  post_merge_requirement: qualify exact resulting main SHA before returning to release deliberation
+
+next_action: AWAIT_LEANDRO_PR_184_MERGE_GATE
