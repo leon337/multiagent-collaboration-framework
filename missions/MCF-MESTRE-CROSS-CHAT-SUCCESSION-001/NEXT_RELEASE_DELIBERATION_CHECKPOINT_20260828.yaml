@@ -91,7 +91,7 @@ human_gate:
   decision_requested: APPROVE_OR_REJECT_MERGE_PR_184_ONLY
   after_approved_merge: fresh exact-resulting-main-SHA qualification is mandatory before returning to release deliberation
 
- governance_note: |
+governance_note: |
   The v1.3.0 value remains a recommendation only. PR 184 merge, version decision, tag, release, and deployment are separate governed actions.
 
 next_action: AWAIT_LEANDRO_PR_184_MERGE_GATE
