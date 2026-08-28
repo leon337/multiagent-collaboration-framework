@@ -1,0 +1,117 @@
+checkpoint_id: CP-V1-3-0-RELEASE-PREPARATION-20260828-01
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+recorded_date: 2026-08-28
+status: PREPARED_AWAITING_PUBLICATION_HUMAN_GATE
+
+authorization:
+  authority: LEANDRO
+  decision: APPROVE_V1_3_0_RELEASE_PREPARATION
+  version_candidate_definition_authorized: true
+  release_artifact_preparation_authorized: true
+  tag_authorized: false
+  release_publication_authorized: false
+  deploy_authorized: false
+  pr_176_merge_authorized: false
+
+candidate:
+  version: v1.3.0
+  official_next_release_candidate: true
+  release_name_draft: MCF v1.3.0 — Authenticated Human Control + Governed Succession
+  source_main_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  source_tree_sha: 3e52ad4e39486c76743d39310de2afcacfc7c6d5
+  previous_stable: v1.2.0
+  previous_stable_sha: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+  commits_since_previous_stable: 25
+  semver_rationale: additive backward-compatible framework capability plus security hardening; more than a patch; no verified breaking change requiring major
+
+release_scope:
+  implemented:
+    - governed cross-chat succession and window-control protocol
+    - machine-readable mcf_gui_window_succession_trace/v1 schema, fixtures and qualification
+    - authenticated reserved-human authority provenance hardening
+    - typed HumanAuthorityProof binding for production authorization
+    - HUMANO NO CONTROLE interception in authenticated chat-to-runtime dispatch before planner/bootstrap
+    - documentation/current-state reconciliation
+  planning_only_not_runtime_capability:
+    - NextGen roadmap
+    - NextGen formal target architecture
+    - NextGen reconciled implementation plan
+    - related planning and disposition artifacts
+
+human_control_boundary:
+  finding_id: HUMAN_CONTROL_RUNTIME_WIRING
+  state_on_candidate: REMEDIATED_IN_CHAT_RUNTIME_BOUNDARY
+  authenticated_identity_source: request.authenticatedHuman.accountId
+  reserved_authority_source: RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID
+  interception_position: BEFORE_PLANNER_AND_MISSION_BOOTSTRAP
+  reserved_command_effect:
+    create_mission: false
+    execute_phase: false
+    gate: HUMAN_CONTROL
+    execution_paused: true
+    next_action: HUMAN_GATE
+    resume_requires_explicit_human_instruction: true
+  different_authenticated_account_acquires_reserved_gate: false
+  universal_persistent_pause_resume_claim: false
+  universal_absence_of_legacy_helper_usage: NOT_VERIFIED
+
+qualification:
+  exact_main_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  workflows:
+    mcf_v1_1_qualification:
+      run_id: 33192330234
+      result: SUCCESS
+    mcf_production_readiness:
+      run_id: 33192332452
+      result: SUCCESS
+    rede_social_foundation:
+      run_id: 33192334548
+      result: SUCCESS
+    rede_social_container_smoke:
+      run_id: 33192336957
+      result: SUCCESS
+  server_suite:
+    passed: 904
+    skipped: 3
+    failed: 0
+  focused_human_control_bridge_regression:
+    passed: 5
+    failed: 0
+  human_control_policy: PASS_10
+  authority_provenance_unit: PASS_4
+  authority_provenance_http: PASS_1
+  human_delegation_guard_v1_1: PASS_14
+  human_delegation_guard: PASS_11
+  production_authorization_service: PASS_10
+  production_authorization_controller: PASS_3
+  format: PASS
+  lint: PASS
+  typecheck: PASS
+  migrations: PASS
+  build: PASS
+  vulnerability_gate: PASS
+  backup_restore: PASS
+  release_readiness_contracts: PASS
+  exact_head_qualifier_verdict: AUTOMATED_EVIDENCE_PASS_PENDING_INDEPENDENT_REVIEW
+  qualification_artifact:
+    id: 9694307473
+    sha256: 60c3d7fe82ee045ed04fdc644a14042ca860b9d72030efea68dae6181ba1b05a
+
+release_artifacts:
+  notes_draft: missions/MCF-MESTRE-CROSS-CHAT-SUCCESSION-001/V1_3_0_RELEASE_NOTES_DRAFT_20260828.md
+  preparation_checkpoint: missions/MCF-MESTRE-CROSS-CHAT-SUCCESSION-001/V1_3_0_RELEASE_PREPARATION_CHECKPOINT_20260828.yaml
+
+publication_boundary:
+  main_mutated_by_preparation: false
+  version_tag_created: false
+  github_release_created: false
+  production_deploy_performed: false
+  latest_stable_expected_before_publication_gate: v1.2.0
+
+human_gate:
+  state: OPEN
+  authority: LEANDRO
+  next_decision: PUBLISH_V1_3_0
+  effect_if_approved: revalidate live main/tag/release/checks, create v1.3.0 tag on exact authorized SHA, publish GitHub Release from prepared notes, then verify publication; deployment remains separately unauthorized unless explicitly granted
+
+next_action: AWAIT_LEANDRO_V1_3_0_PUBLICATION_GATE
