@@ -1,16 +1,18 @@
 checkpoint_id: CP-NEXT-RELEASE-DELIBERATION-20260828-03
 mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
 recorded_date: 2026-08-28
-status: WAITING_HUMAN_RELEASE_SCOPE_GATE
+status: REMEDIATION_FIRST_CONSUMED_WAITING_PR184_MERGE_GATE
 
 source_of_truth:
   main_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
   latest_stable_release: v1.2.0
   latest_stable_release_id: 377709546
-  audit_branch_parent_sha: 37efdbe9d9d00198f7edf098a07652059b0297b4
+  remediation_checkpoint: CP-HUMAN-CONTROL-RUNTIME-WIRING-REMEDIATION-20260828-04
+  remediation_candidate_sha: c8f31fe4d07bb101334843b2f1d14af9cb5e567b
+  remediation_pr: 184
 
 release_delta:
-  commits_since_v1_2_0: 18
+  commits_since_v1_2_0_at_deliberation: 18
   material_change: true
   backward_compatible_breaking_change_detected: false
   proposed_scope:
@@ -20,6 +22,7 @@ release_delta:
     - authenticated reserved-human authority provenance hardening
     - HumanAuthorityProof binding for production authorization
     - documentation reconciliation for merged-unreleased rules
+    - authenticated chat-to-runtime HUMAN_CONTROL interception if PR 184 is later merged under a separate gate
   excluded_from_feature_claims:
     - NextGen planning as implemented runtime
     - universal persistent pause/resume enforcement
@@ -29,7 +32,7 @@ semver:
   rationale: additive backward-compatible framework capability plus security hardening; more than a patch; no verified breaking change requiring major
   version_officially_decided: false
 
-qualification:
+prior_main_qualification:
   exact_combined_main_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
   gui_window_qualify: PASS
   gui_postmerge_consistency: PASS
@@ -45,48 +48,50 @@ qualification:
   build: PASS
   backup_restore: PASS
 
-open_findings:
-  - id: HUMAN_CONTROL_RUNTIME_WIRING
-    state: OPEN
-    severity: NOT_VERIFIED
-    source: PR_181
-    release_policy: HUMAN_DECISION_REQUIRED
-    technical_triage:
-      policy_implementation_exists: true
-      isolated_unit_tests_exist: true
-      runtime_module_provider_wiring_observed: false
-      chat_runtime_bridge_command_interception_observed: false
-      evidence_basis:
-        - apps/rede-social-agentes/apps/server/src/mcf-runtime/human-control-policy.ts
-        - apps/rede-social-agentes/apps/server/src/mcf-runtime/human-control-policy.test.ts
-        - apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
-        - apps/rede-social-agentes/apps/server/src/mcf-runtime/chat-runtime-bridge.service.ts
-    note: Evidence supports a concrete wiring gap, but formal severity remains NOT_VERIFIED. Do not equate it automatically with the v1.2.0 persistent pause/resume limitation.
+release_scope_gate:
+  decision: REMEDIATE_FIRST
+  authority: LEANDRO
+  consumed: true
+  merge_authorized_by_that_decision: false
+  tag_authorized: false
+  release_authorized: false
+  deploy_authorized: false
+
+finding_remediation:
+  id: HUMAN_CONTROL_RUNTIME_WIRING
+  previous_state: OPEN
+  remediation_candidate_state: REMEDIATED_IN_CHAT_RUNTIME_BOUNDARY
+  remediation_pr: 184
+  candidate_sha: c8f31fe4d07bb101334843b2f1d14af9cb5e567b
+  tdd_red_sha: 879b0b09115d11c484e92a9c3431c9165aa7aec0
+  candidate_ci:
+    mcf_v1_1_qualification: PASS
+    rede_social_foundation: PASS
+    rede_social_container_smoke: PASS
+    mcf_production_readiness: PASS
+  server_suite:
+    passed: 904
+    skipped: 3
+    failed: 0
+  audit_verdict: PASS_WITH_CONDITIONS
+  boundary:
+    authenticated_chat_to_runtime: REMEDIATED_CANDIDATE
+    universal_persistent_pause_resume: NOT_CLAIMED
+    universal_absence_of_legacy_helper_usage: NOT_VERIFIED
 
 role_audit:
   execution_mode: SAME_SESSION_MCF_ROLES
   independent_runtime_audit_performed: false
-  evidence_sufficiency_for_release_deliberation: SUFFICIENT
-  release_readiness_classification: READY_FOR_HUMAN_DELIBERATION_WITH_OPEN_FINDING
-
-governance:
-  main_mutation_in_this_deliberation: NONE
-  version_tag_created: false
-  release_created: false
-  tag_authorized: false
-  release_authorized: false
-  production_deploy_authorized: false
+  evidence_sufficiency_for_merge_deliberation: SUFFICIENT
 
 human_gate:
   state: OPEN
   authority: LEANDRO
-  recommendation: REMEDIATE_HUMAN_CONTROL_RUNTIME_WIRING_BEFORE_RELEASE_PREPARATION
-  decision_requested: Choose whether to remediate and qualify HUMAN_CONTROL_RUNTIME_WIRING before defining/preparing v1.3.0, or explicitly accept the open wiring limitation for the v1.3.0 candidate.
-  option_a:
-    id: REMEDIATE_FIRST
-    effect: Keep v1.3.0 as a recommendation only; implement runtime/chat wiring on non-main branch, test, qualify, audit, then return to a new HUMAN_GATE before integration/release preparation.
-  option_b:
-    id: ACCEPT_OPEN_FINDING
-    effect: Define v1.3.0 as candidate and prepare release artifacts with the wiring limitation explicitly documented; no tag or release publication yet.
+  recommendation: APPROVE_MERGE_PR_184
+  decision_requested: APPROVE_OR_REJECT_MERGE_PR_184_ONLY
+  after_approved_merge: fresh exact-resulting-main-SHA qualification is mandatory before returning to release deliberation
 
-next_action: AWAIT_LEANDRO_RELEASE_SCOPE_DECISION
+ governance_note: |
+  The v1.3.0 value remains a recommendation only. PR 184 merge, version decision, tag, release, and deployment are separate governed actions.
+
+next_action: AWAIT_LEANDRO_PR_184_MERGE_GATE
