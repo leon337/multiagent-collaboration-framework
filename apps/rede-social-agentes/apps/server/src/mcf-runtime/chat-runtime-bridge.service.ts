@@ -8,7 +8,23 @@ import type {
 } from '@rsa/contracts';
 
 import { ChatMissionPlanner } from './chat-mission-planner.js';
+import {
+  buildHumanControlCheckpoint,
+  isReservedHumanControlCommand,
+  type HumanControlCheckpoint,
+} from './human-control-policy.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
+
+export interface McfChatDispatchAuthorityContext {
+  authenticatedAccountId: string;
+}
+
+export type McfHumanControlGateResponse = HumanControlCheckpoint & {
+  missionCreated: false;
+  humanActionRequired: true;
+};
+
+export type McfChatRuntimeDispatchResult = McfChatDispatchResponse | McfHumanControlGateResponse;
 
 function selectedDomainAgent(plan: McfChatPlanStep[], currentOrder: number): string {
   return (
@@ -66,9 +82,46 @@ export class ChatRuntimeBridgeService {
   constructor(
     @Inject(MissionRuntimeService) private readonly runtime: MissionRuntimeService,
     @Inject(ChatMissionPlanner) private readonly planner: ChatMissionPlanner,
+    private readonly reservedHumanAuthorityAccountId?: string,
   ) {}
 
-  async dispatch(request: McfChatDispatchRequest): Promise<McfChatDispatchResponse> {
+  async dispatch(request: McfChatDispatchRequest): Promise<McfChatDispatchResponse>;
+  async dispatch(
+    request: McfChatDispatchRequest,
+    authority: McfChatDispatchAuthorityContext,
+  ): Promise<McfChatRuntimeDispatchResult>;
+  async dispatch(
+    request: McfChatDispatchRequest,
+    authority?: McfChatDispatchAuthorityContext,
+  ): Promise<McfChatRuntimeDispatchResult> {
+    if (
+      authority &&
+      isReservedHumanControlCommand(
+        authority.authenticatedAccountId,
+        this.reservedHumanAuthorityAccountId,
+        request.objective,
+      )
+    ) {
+      return {
+        ...buildHumanControlCheckpoint({
+          lastCompletedAction: null,
+          actionInFlight: null,
+          preservedState: {
+            missionCreated: false,
+            phaseExecuted: false,
+          },
+          evidence: [
+            'reserved-human-account-authenticated',
+            'standalone-human-control-command-normalized',
+          ],
+          surface: 'chat-runtime-bridge',
+          automationChannel: null,
+        }),
+        missionCreated: false,
+        humanActionRequired: true,
+      };
+    }
+
     const planned = this.planner.plan(request);
     const plan = planned.steps.map((step) => ({ ...step }));
     let currentMission = await this.runtime.createMission({ contract: planned.contract });
