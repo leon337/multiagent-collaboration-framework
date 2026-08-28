@@ -200,7 +200,11 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     {
       provide: ChatRuntimeBridgeService,
       useFactory: (runtime: MissionRuntimeService, planner: ChatMissionPlanner) =>
-        new ChatRuntimeBridgeService(runtime, planner),
+        new ChatRuntimeBridgeService(
+          runtime,
+          planner,
+          loadRuntimeConfig().RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID,
+        ),
       inject: [MissionRuntimeService, ChatMissionPlanner],
     },
     {

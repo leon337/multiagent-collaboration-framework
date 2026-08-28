@@ -15,6 +15,18 @@ export function isHumanControlCommand(actorId: string, message: string): boolean
   );
 }
 
+export function isReservedHumanControlCommand(
+  authenticatedAccountId: string,
+  reservedHumanAuthorityAccountId: string | undefined,
+  message: string,
+): boolean {
+  return (
+    Boolean(reservedHumanAuthorityAccountId) &&
+    authenticatedAccountId === reservedHumanAuthorityAccountId &&
+    normalizeHumanControlCommand(message) === HUMAN_CONTROL_COMMAND
+  );
+}
+
 export interface HumanControlCheckpointInput {
   lastCompletedAction: string | null;
   actionInFlight: string | null;
