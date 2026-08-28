@@ -1,21 +1,23 @@
-checkpoint_id: CP-NEXT-RELEASE-DELIBERATION-20260828-03
+checkpoint_id: CP-NEXT-RELEASE-DELIBERATION-20260828-04
 mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
 recorded_date: 2026-08-28
-status: READY_FOR_HUMAN_RELEASE_PREPARATION_GATE
+status: READY_FOR_V1_3_0_PUBLICATION_HUMAN_GATE
 
 source_of_truth:
   main_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
   main_tree_sha: 3e52ad4e39486c76743d39310de2afcacfc7c6d5
   latest_stable_release: v1.2.0
   latest_stable_release_id: 377709546
+  commits_since_v1_2_0: 25
   remediation_checkpoint: CP-HUMAN-CONTROL-RUNTIME-WIRING-REMEDIATION-20260828-04
+  release_preparation_checkpoint: CP-V1-3-0-RELEASE-PREPARATION-20260828-01
   remediation_pr: 184
   remediation_pr_merged: true
 
 semver:
-  recommended_candidate: v1.3.0
+  official_next_release_candidate: v1.3.0
+  version_officially_decided: true
   rationale: additive backward-compatible framework capability plus security hardening; more than a patch; no verified breaking change requiring major
-  version_officially_decided: false
 
 consumed_gates:
   release_scope_gate:
@@ -23,6 +25,9 @@ consumed_gates:
     authority: LEANDRO
   remediation_merge_gate:
     decision: APPROVE_MERGE_PR_184
+    authority: LEANDRO
+  release_preparation_gate:
+    decision: APPROVE_V1_3_0_RELEASE_PREPARATION
     authority: LEANDRO
 
 finding_remediation:
@@ -34,6 +39,19 @@ finding_remediation:
     authenticated_chat_to_runtime: REMEDIATED_ON_MAIN
     universal_persistent_pause_resume: NOT_CLAIMED
     universal_absence_of_legacy_helper_usage: NOT_VERIFIED
+
+release_scope:
+  implemented:
+    - governed cross-chat succession and window-control protocol
+    - machine-readable GUI/window succession trace schema and qualification
+    - authenticated reserved-human authority provenance hardening
+    - typed HumanAuthorityProof production-authorization binding
+    - HUMANO NO CONTROLE authenticated chat-runtime interception before planner/bootstrap
+    - documentation/current-state reconciliation
+  planning_only:
+    - NextGen roadmap
+    - NextGen formal target architecture
+    - NextGen implementation plan and disposition artifacts
 
 postmerge_qualification:
   exact_main_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
@@ -49,11 +67,16 @@ postmerge_qualification:
     failed: 0
   focused_human_control_bridge_regression: PASS_5
   build: PASS
+  vulnerability_gate: PASS
   backup_restore: PASS
   release_readiness_contracts: PASS
 
-publication_audit:
-  main_sha_unchanged_after_qualification: true
+release_artifacts:
+  notes_draft: missions/MCF-MESTRE-CROSS-CHAT-SUCCESSION-001/V1_3_0_RELEASE_NOTES_DRAFT_20260828.md
+  preparation_checkpoint: missions/MCF-MESTRE-CROSS-CHAT-SUCCESSION-001/V1_3_0_RELEASE_PREPARATION_CHECKPOINT_20260828.yaml
+
+publication_audit_before_preparation:
+  main_sha_unchanged: true
   latest_stable_release: v1.2.0
   latest_stable_release_id: 377709546
   new_version_tag_created: false
@@ -61,7 +84,7 @@ publication_audit:
   production_deploy_performed: false
 
 governance:
-  version_officially_decided: false
+  version_officially_decided: true
   tag_authorized: false
   release_authorized: false
   production_deploy_authorized: false
@@ -70,10 +93,10 @@ governance:
 human_gate:
   state: OPEN
   authority: LEANDRO
-  recommendation: DEFINE_V1_3_0_AND_PREPARE_RELEASE_ARTIFACTS_ONLY
-  decision_requested: Approve or reject defining v1.3.0 as the next release candidate and preparing release artifacts. This does not authorize tag creation, release publication, deployment, or PR 176 merge.
+  recommendation: PUBLISH_V1_3_0_FROM_EXACT_QUALIFIED_MAIN
+  decision_requested: Approve or reject creation of tag v1.3.0 on exact SHA 2a264b283d976bd1b392052fa928d076debfc7fb and publication of the GitHub Release from the prepared release notes. Deployment and PR 176 merge remain excluded.
   recommended_option:
-    id: APPROVE_V1_3_0_RELEASE_PREPARATION
-    effect: Make v1.3.0 the official next release candidate and prepare release notes/checkpoints against exact main SHA 2a264b283d976bd1b392052fa928d076debfc7fb, then return to a separate publication HUMAN_GATE.
+    id: APPROVE_V1_3_0_PUBLICATION
+    effect: Revalidate live main/tag/release/checks, create immutable v1.3.0 tag on the exact authorized SHA, publish the GitHub Release, verify stable/latest state, and stop before any production deploy.
 
-next_action: AWAIT_LEANDRO_V1_3_0_RELEASE_PREPARATION_GATE
+next_action: AWAIT_LEANDRO_V1_3_0_PUBLICATION_GATE
