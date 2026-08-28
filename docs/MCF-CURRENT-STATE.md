@@ -5,7 +5,7 @@
 - **Reconciliação-base:** 2026-08-20
 - **Reconciliação adicional do ecossistema:** 2026-08-28
 - **Baseline histórico de estabilização:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
-- **Main observado após o gate autenticado de Human Control no chat:** `2a264b283d976bd1b392052fa928d076debfc7fb` (PR #184; reler GitHub live)
+- **Main observado após a reconciliação pós-PRs #180/#184:** `0b900ee03a05153e2e4a795fce7b457f5b4bb812` (PR #185; reler GitHub live)
 
 ## 1. Regra de fonte de verdade
 
@@ -563,6 +563,37 @@ estavam limpos. A evidência está em
 Esse resultado fecha o gate estrutural sem conectar provider nem executar ação material; qualquer
 afirmação operacional futura ainda exige recovery fresco.
 
+### Auditoria de promoção e preservação — 2026-08-28
+
+Depois do closeout histórico, os quatro lineages avançaram de forma independente. O MCF foi
+reconciliado após os PRs #180/#184 e o PR #185 foi mergeado em
+`main@0b900ee03a05153e2e4a795fce7b457f5b4bb812`, com todos os checks verdes. O gate do PR #184
+intercepta `HUMANO NO CONTROLE` autenticado antes de novo bootstrap pelo chat; ele não é pausa
+persistente de missão em andamento.
+
+Trabalho local-only conhecido foi preservado sem promoção implícita:
+
+- Cloud G2-B SSH em
+  `recovery/g2b-ssh-local-preservation-20260828@7fa9ab996be6cdffd4ea3913c082e3da7090fff4`;
+- continuidade VPS do MCF em
+  `recovery/codex-mcf-vps-continuity-20260823@2e8d22894fbe533d108301f6731236e0fbacac1d`;
+- artefatos históricos em
+  `recovery/ecosystem-audit-artifacts-20260823@673a23eca6bf2c444c868a930263caf79c02f259`.
+
+A auditoria read-only contemporânea bloqueou promoção direta dos três providers:
+
+| Projeto          | Snapshot auditado                                                                                | Decisão                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| Cloud            | `main@ce829067`; integration `38cd22e0` `+370/-81`; recovery SSH divergente; PR #21 sem CI verde | replay seletivo em target limpo; nenhuma branch histórica é candidata de merge direto |
+| Cognitive Ledger | `main@f95bcddd`; design `a64cfc05` `+171/-9`; PR #1 draft/conflicting                            | reconciliar em branch limpa e manter embeddings/reindex disabled                      |
+| TriView          | `main@60b7e86`; release `09a361d7` `+117/-0`; PR #74 clean/draft                                 | reconciliar docs e executar R7 físico + HUMAN_GATE antes de promoção                  |
+
+Os detalhes e checklists estão em
+[`MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md`](integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md).
+Os gates G2-B/VPS e NextGen NX-0 são documentos separados e ambos permanecem
+`PROPOSED_NOT_AUTHORIZED`. Nenhum provider, VPS, SSH, write, release, produção ou API paga foi
+ativado por essa auditoria.
+
 ## 9. Mission Control
 
 Issue #141 permanece aberta em discovery.
@@ -606,7 +637,10 @@ GOV-0/GOV-1 design autorizado anteriormente não implica autorização de merge,
 - estado atual: `docs/MCF-CURRENT-STATE.md`
 - roadmap do ecossistema: `docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html`
 - handoff da integração: `docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md`
+- roadmap/checklist de promoção: `docs/integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md`
 - recovery final 4/4: `docs/integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md`
+- checkpoint de alinhamento: `docs/integrations/evidence/MCF-ECOSYSTEM-ALIGNMENT-CHECKPOINT-20260828.md`
+- gates humanos propostos: `docs/integrations/gates/`
 - índice documental: `docs/README.md`
 - runtime: `docs/runtime/` + `apps/rede-social-agentes/apps/server/src/mcf-runtime/`
 - governança: `docs/governanca/`, `docs/protocols/`, `docs/decisions/`

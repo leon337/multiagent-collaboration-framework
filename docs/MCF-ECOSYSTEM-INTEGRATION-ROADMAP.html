@@ -1557,6 +1557,7 @@
         </a>
         <nav aria-label="Navegação da página">
           <ul class="nav-list">
+            <li><a href="#promocao">Promoção</a></li>
             <li><a href="#arquitetura">Arquitetura</a></li>
             <li><a href="#roadmap">Roadmap</a></li>
             <li><a href="#coordenacao">Equipes</a></li>
@@ -1571,28 +1572,26 @@
       <section class="hero shell" id="topo">
         <p class="eyebrow">
           <span class="dot" aria-hidden="true"></span>
-          Closeout de integração · 24 ago 2026 · main e staging comprovados
+          Checkpoint de alinhamento · 28 ago 2026 · promoções auditadas
         </p>
         <h1>
-          O ecossistema chegou ao main e ao staging sem tocar a produção.
-          <span class="gradient-text">Closeout e recovery 4/4 concluídos.</span>
+          O trabalho está preservado e o MCF foi reconciliado.
+          <span class="gradient-text">As três promoções aguardam gates.</span>
         </h1>
         <p class="hero-copy">
-          Este painel mostra o estado comprovado da integração entre MCF, Cloud
-          Infrastructure, Cognitive Ledger e TriView Workspace. A fundação,
-          descoberta federada, memória MCF → Ledger sem API paga, cockpit
-          read-only e cliente real MCF → Cloud local têm evidência de
-          laboratório. O checkpoint <code>e646527f</code> passou o full verify
-          com 943 testes e 0 falhas e agora é ancestral do closeout
-          <code>main@2dc4584</code>. O PR #161 passou 7/7 checks; staging
-          exact-SHA, readiness/docs, Vercel estática e o sync das três Capsules
-          providers foram comprovados. O recovery final pós-sync recuperou 4/4
-          projetos, sem warnings e preservando todos os boundaries read-only.
-          VPS, SSH, escrita remota e runtime de produção continuam fechados.
+          O closeout read-only de 24/08 permanece comprovado: recovery 4/4,
+          adapters locais e custo pago zero. Desde então, o MCF avançou até
+          <code>main@0b900ee0</code> pelo PR #185, após reconciliar os PRs #180
+          e #184. Cloud, Cognitive Ledger e TriView foram comparados com seus
+          respectivos <code>main</code>: nenhum dos três deve ser promovido
+          diretamente hoje. Os deltas locais conhecidos foram preservados em
+          branches remotas, e os gates G2-B/VPS e NextGen NX-0 foram preparados
+          sem executá-los. VPS, SSH, escrita real, provider live, release,
+          produção e API de IA paga continuam fechados.
         </p>
         <div class="hero-actions">
           <a class="button primary" href="#checklist">Abrir checklist</a>
-          <a class="button" href="#roadmap">Ver o closeout</a>
+          <a class="button" href="#promocao">Ver gates atuais</a>
           <button class="button" id="print-roadmap" type="button">
             Imprimir / salvar PDF
           </button>
@@ -1614,21 +1613,21 @@
 
         <div class="metrics" aria-label="Resumo do estado comprovado">
           <article class="metric">
-            <span class="metric-value">4 / 4 PASS</span>
+            <span class="metric-value">0b900ee0</span>
             <span class="metric-label">
-              recovery estrutural final pós-sync · 17 claims por projeto
+              MCF pós-PR #185 · todos os checks verdes
             </span>
           </article>
           <article class="metric">
-            <span class="metric-value">943 PASS</span>
+            <span class="metric-value">904 PASS</span>
             <span class="metric-label">
-              full verify no e646527f, agora ancestral do main
+              servidor no candidato pós-PR #184 · 3 skips por design
             </span>
           </article>
           <article class="metric">
-            <span class="metric-value">7 / 7</span>
+            <span class="metric-value">0 / 3</span>
             <span class="metric-label">
-              checks do PR #161 antes do merge 2dc4584
+              providers liberados para promoção direta no snapshot atual
             </span>
           </article>
           <article class="metric">
@@ -1637,6 +1636,196 @@
               embeddings e chamadas pagas no E2E final MCF → Ledger
             </span>
           </article>
+        </div>
+      </section>
+
+      <section
+        class="section shell"
+        id="promocao"
+        aria-labelledby="promocao-title"
+      >
+        <div class="section-heading">
+          <div>
+            <span class="section-index">00 / CHECKPOINT ATUAL</span>
+            <h2 id="promocao-title">Mapa de promoção segura · 28/08</h2>
+          </div>
+          <p>
+            Uma branch preservada é um cofre, não uma pista de lançamento. Cada
+            provider precisa chegar ao target atual por uma reconciliação
+            própria, com CI e gate humano no SHA exato.
+          </p>
+        </div>
+
+        <div class="coordination-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Projeto</th>
+                <th scope="col">Refs auditadas</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Próximo gate</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>MCF</td>
+                <td><code>main@0b900ee0</code> · PR #185</td>
+                <td><span class="status done">Reconciliado</span></td>
+                <td>
+                  Atualizar Capsules, repetir recovery 4/4 e revisar NX-0.
+                </td>
+              </tr>
+              <tr>
+                <td>Cloud Infrastructure</td>
+                <td>
+                  <code>main@ce829067</code> · integration
+                  <code>38cd22e0</code> · recovery <code>7fa9ab9</code>
+                </td>
+                <td><span class="status gate">Sem merge direto</span></td>
+                <td>
+                  Replay seletivo em target limpo, 13+7, 4 Ansible syntax,
+                  secret scan e CI verde; VPS continua separada.
+                </td>
+              </tr>
+              <tr>
+                <td>Cognitive Ledger</td>
+                <td>
+                  <code>main@f95bcddd</code> · design <code>a64cfc05</code> · PR
+                  #1 conflicting
+                </td>
+                <td><span class="status gate">Reconciliação exigida</span></td>
+                <td>
+                  Branch limpa de main, README factual, embeddings/reindex
+                  disabled e CI zero-cost.
+                </td>
+              </tr>
+              <tr>
+                <td>TriView Workspace</td>
+                <td>
+                  <code>main@60b7e86</code> · release <code>09a361d7</code> · PR
+                  #74 clean/draft
+                </td>
+                <td><span class="status gate">R7 bloqueante</span></td>
+                <td>
+                  Capsule/docs, R7 físico, LEA-197, smoke MCF, update/rollback,
+                  Issue #26 e HUMAN_GATE.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel checklist-panel">
+          <div class="check-groups">
+            <section class="check-group" aria-labelledby="check-current-done">
+              <div class="check-group-header">
+                <span class="status done">Concluído</span>
+                <h3 id="check-current-done">Checkpoint atual</h3>
+              </div>
+              <ul class="check-list">
+                <li class="check-item" data-status="done">
+                  <input
+                    id="c-preserved-work"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-preserved-work">
+                    Cloud SSH, continuidade VPS do MCF e auditorias preservados
+                    em branches remotas exatas
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+                <li class="check-item" data-status="done">
+                  <input id="c-pr185" type="checkbox" checked disabled />
+                  <label for="c-pr185">
+                    PR #185 mergeada no MCF com todos os checks verdes
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+                <li class="check-item" data-status="done">
+                  <input
+                    id="c-provider-audit"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-provider-audit">
+                    Promoção Cloud, Ledger e TriView auditada sem mutação
+                    externa
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+                <li class="check-item" data-status="done">
+                  <input
+                    id="c-gates-prepared"
+                    type="checkbox"
+                    checked
+                    disabled
+                  />
+                  <label for="c-gates-prepared">
+                    Gates G2-B/VPS e NextGen NX-0 preparados, ambos não
+                    autorizados
+                  </label>
+                  <span class="check-status">fixo</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="check-group" aria-labelledby="check-current-next">
+              <div class="check-group-header">
+                <span class="status next">Em fechamento</span>
+                <h3 id="check-current-next">Próximos passos auditáveis</h3>
+              </div>
+              <ul class="check-list">
+                <li class="check-item" data-status="next">
+                  <input id="c-provider-doc-prs" type="checkbox" disabled />
+                  <label for="c-provider-doc-prs">
+                    Incorporar Capsule/documentação nos três targets seguros
+                  </label>
+                  <span class="check-status">pendente</span>
+                </li>
+                <li class="check-item" data-status="next">
+                  <input id="c-fresh-recovery" type="checkbox" disabled />
+                  <label for="c-fresh-recovery">
+                    Repetir recovery estrutural read-only 4/4 nos novos SHAs
+                  </label>
+                  <span class="check-status">pendente</span>
+                </li>
+                <li class="check-item" data-status="next">
+                  <input id="c-roadmap-main" type="checkbox" disabled />
+                  <label for="c-roadmap-main">
+                    Mergear este roadmap no MCF main e confirmar Vercel
+                  </label>
+                  <span class="check-status">pendente</span>
+                </li>
+                <li class="check-item" data-status="gate">
+                  <input id="c-human-decisions" type="checkbox" disabled />
+                  <label for="c-human-decisions">
+                    LEANDRO decide separadamente G2-B/VPS e NX-0
+                  </label>
+                  <span class="check-status">gate humano</span>
+                </li>
+              </ul>
+            </section>
+          </div>
+        </div>
+
+        <div class="order-banner" role="note">
+          <strong>Documentos executáveis:</strong>
+          <a href="./integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md">
+            roadmap/checklist completo
+          </a>
+          ·
+          <a
+            href="./integrations/gates/MCF-CLOUD-G2B-VPS-HUMAN-GATE-20260828.md"
+          >
+            gate G2-B/VPS
+          </a>
+          ·
+          <a href="./integrations/gates/MCF-NEXTGEN-NX0-HUMAN-GATE-20260828.md">
+            gate NX-0
+          </a>
         </div>
       </section>
 
@@ -2397,12 +2586,12 @@
         <div class="section-heading">
           <div>
             <span class="section-index">07 / CHECKLIST</span>
-            <h2 id="checklist-title">Closeout comprovado · 34/34</h2>
+            <h2 id="checklist-title">Closeout histórico de 24/08 · 34/34</h2>
           </div>
           <p>
-            As 34 caixas fixas e desabilitadas representam evidência do
-            repositório. O checklist está 100% concluído e não concede
-            autoridade sobre Git, CI, VPS ou serviços.
+            As 34 caixas fixas e desabilitadas representam a evidência fechada
+            do checkpoint anterior. O checklist histórico está 100% concluído;
+            as promoções atuais permanecem no checklist de 28/08 acima.
           </p>
         </div>
 
@@ -3052,6 +3241,28 @@
         <ul class="sources">
           <li>
             <a
+              href="https://github.com/leon337/multiagent-collaboration-framework/pull/185"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>
+                <span class="source-label">MCF · checkpoint 28/08</span>
+                PR #185 · pós-PRs #180/#184 · merge 0b900ee0
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="./integrations/evidence/MCF-ECOSYSTEM-ALIGNMENT-CHECKPOINT-20260828.md"
+            >
+              <span>
+                <span class="source-label">Ecossistema · auditoria</span>
+                Preservação, SHAs, divergências e decisões de promoção
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
               href="https://github.com/leon337/multiagent-collaboration-framework/pull/153"
               target="_blank"
               rel="noreferrer"
@@ -3369,8 +3580,8 @@
     <footer>
       <div class="shell footer-inner">
         <span
-          >MCF Ecosystem Integration Roadmap · snapshot de evidências de
-          2026-08-24</span
+          >MCF Ecosystem Integration Roadmap · closeout 2026-08-24 · gates
+          2026-08-28</span
         >
         <span
           >NON_CANONICAL_VISUALIZATION · sem telemetria · sem dependências
@@ -3385,7 +3596,9 @@
 
         const storageKey = "mcf-ecosystem-roadmap-checklist-v5";
         const checkboxes = Array.from(
-          document.querySelectorAll(".check-item input[type='checkbox']"),
+          document.querySelectorAll(
+            "#checklist .check-item input[type='checkbox']",
+          ),
         );
         const editableCheckboxes = checkboxes.filter(
           (checkbox) => !checkbox.disabled,
@@ -3398,9 +3611,11 @@
         const filterButtons = Array.from(
           document.querySelectorAll(".filter-button"),
         );
-        const checkItems = Array.from(document.querySelectorAll(".check-item"));
+        const checkItems = Array.from(
+          document.querySelectorAll("#checklist .check-item"),
+        );
         const checkGroups = Array.from(
-          document.querySelectorAll(".check-group"),
+          document.querySelectorAll("#checklist .check-group"),
         );
         const noResults = document.getElementById("no-results");
 

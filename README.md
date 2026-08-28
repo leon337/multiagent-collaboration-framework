@@ -256,7 +256,10 @@ worktree limpa e revisão live exata: Cloud `38cd22e`, Ledger `a64cfc`, TriView 
 [relatório final 4/4](docs/integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260824.md).
 
 Veja o [roadmap visual](docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html) e o
-[handoff factual](docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md).
+[handoff factual](docs/integrations/MCF-ECOSYSTEM-PARALLEL-HANDOFF-20260823.md). A auditoria de
+2026-08-28, as decisões de não promover diretamente e o checklist atual estão no
+[roadmap de promoção](docs/integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md); os gates
+G2-B/VPS e NextGen NX-0 permanecem propostos, não autorizados.
 
 ## Mission Control
 
