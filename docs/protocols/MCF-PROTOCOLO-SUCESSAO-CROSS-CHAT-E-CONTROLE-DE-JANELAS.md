@@ -1,10 +1,10 @@
 # Protocolo de Sucessão Cross-Chat e Controle de Janelas — MCF
 
-**Classificação:** REGRA NORMATIVA CANDIDATA  
-**Estado:** HUMAN_AUTHORIZED_FOR_IMPLEMENTATION — NOT_RELEASED  
+**Classificação:** REGRA NORMATIVA  
+**Estado:** MERGED — AWAITING_RELEASE_DECISION  
 **Origem:** `MCF-MESTRE-CROSS-CHAT-SUCCESSION-001`  
 **Autoridade humana:** LEANDRO  
-**Aplicação candidata:** missões de sucessão cross-chat que usem GUI/superfície de janela autorizada
+**Aplicação:** missões de sucessão cross-chat que usem GUI/superfície de janela autorizada
 
 ## 1. Finalidade
 
@@ -113,7 +113,7 @@ A assertion deve estar vinculada a identificadores de sessão e de superfície, 
 
 ## 9. Trace mínimo obrigatório
 
-A estrutura machine-readable candidata é `mcf_gui_window_succession_trace/v1`, formalizada em:
+A estrutura machine-readable é `mcf_gui_window_succession_trace/v1`, formalizada em:
 
 `schemas/mcf-gui-window-succession-trace-v1.schema.json`
 
@@ -154,7 +154,7 @@ observability:
 
 O JSON Schema valida estrutura; o qualificador MCF valida relações que o schema padrão não expressa diretamente, como desigualdade entre IDs predecessor/sucessor.
 
-## 10. Sequência candidata de execução
+## 10. Sequência de execução
 
 ```text
 CHECKPOINT_PREDECESSOR
@@ -184,7 +184,7 @@ Para runs executados depois da adoção deste invariante:
 
 A experiência histórica que originou este protocolo permanece `MAINTAIN_WITH_GAP`; esta regra não altera retrospectivamente o contrato de aceite daquele run.
 
-## 12. Regressões obrigatórias candidatas
+## 12. Regressões obrigatórias
 
 1. novo chat na mesma janela deve ser rejeitado como prova de janela sucessora distinta;
 2. mesma `window_surface_id` para predecessor e sucessor deve falhar;
@@ -194,17 +194,17 @@ A experiência histórica que originou este protocolo permanece `MAINTAIN_WITH_G
 6. duas superfícies distintas + preservação + equivalência + handoff + trace observável deve passar;
 7. teste de copresença simultânea deve passar antes de um eventual fechamento governado do predecessor.
 
-## 13. Limites de governança desta candidata
+## 13. Limites de governança pós-merge
 
-A existência deste documento em branch candidata não implica publicação.
+A integração deste documento em `main` não implica autorização de publicação, definição de versão ou criação de tag.
 
 ```text
-PROTOCOL_RULE_OFFICIAL = NO_UNTIL_MERGED_UNDER_FUTURE_GATE
-MAIN_MUTATION = NONE
-MERGE = NOT_AUTHORIZED_BY_FORMALIZATION_GATE
+PROTOCOL_RULE_OFFICIAL = YES_ON_MAIN_UNRELEASED
+MAIN_MUTATION = MERGED_VIA_PR_179
+MERGE = COMPLETED_UNDER_HUMAN_GATE
 TAG = NOT_AUTHORIZED
 RELEASE = NOT_AUTHORIZED
 VERSION_NUMBER = NOT_DECIDED
 ```
 
-Qualificação técnica e auditoria devem ocorrer antes de qualquer novo HUMAN_GATE relacionado a merge, tag, versão ou release.
+A integração normativa registra os critérios operacionais em `main`; tag, versão e release permanecem sujeitos a gates separados, qualificação contra o SHA final aplicável e autorização humana explícita.

@@ -11,6 +11,7 @@ on:
       - 'schemas/mcf-gui-window-succession-trace-v1.schema.json'
       - 'schemas/fixtures/mcf-gui-window-succession-trace.*.json'
       - '.github/scripts/mcf-gui-window-control-qualification.mjs'
+      - '.github/scripts/mcf-gui-window-postmerge-consistency.mjs'
       - '.github/workflows/mcf-gui-window-control-qualification.yml'
 
 permissions:
@@ -30,3 +31,6 @@ jobs:
 
       - name: Run GUI/window succession qualification
         run: node .github/scripts/mcf-gui-window-control-qualification.mjs
+
+      - name: Run GUI/window post-merge consistency regression
+        run: node .github/scripts/mcf-gui-window-postmerge-consistency.mjs
