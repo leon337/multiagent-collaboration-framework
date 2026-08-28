@@ -5,7 +5,7 @@
 - **Reconciliação-base:** 2026-08-20
 - **Reconciliação adicional do ecossistema:** 2026-08-28
 - **Baseline histórico de estabilização:** `main@1a1e57208991db87bb3bac9267e29706caae7243`
-- **Main observado antes deste PR de planejamento:** `42d941b5bc299cb7121175db0367b780d381c93e` (PR #181; reler GitHub live)
+- **Main observado após o gate autenticado de Human Control no chat:** `2a264b283d976bd1b392052fa928d076debfc7fb` (PR #184; reler GitHub live)
 
 ## 1. Regra de fonte de verdade
 
@@ -271,12 +271,13 @@ nextgen_reconciliation:
   continuity_capsule_pr_174: OPEN_DRAFT_NON_CANONICAL_EQUIVALENCE_REVIEW_REQUIRED
   human_control_v1_2_governance: CURRENT_ACTIVE
   human_control_checkpoint_primitive: IMPLEMENTED_TESTED_INTERNAL_NOT_PUBLIC_CONTRACT
-  persistent_missionruntime_pause_resume: NOT_IMPLEMENTED
+  authenticated_human_control_chat_interception: IMPLEMENTED_PR_184_PRE_BOOTSTRAP
+  persistent_missionruntime_pause_resume: NOT_IMPLEMENTED_FOR_RUNNING_MISSIONS
   authenticated_human_account_proof: CURRENT_IMPLEMENTED_SCOPED_ROUTE_AND_PRODUCTION_AUTH
   contractual_authority_binding_ref: NOT_IMPLEMENTED
   generic_nextgen_authority_envelope: NOT_IMPLEMENTED
   gui_window_succession: MERGED_PROTOCOL_SCHEMA_FIXTURES_QUALIFIER_NOT_RUNTIME_WIRED
-  gui_window_postmerge_status: STALE_TEXT_CORRECTION_OPEN_DRAFT_PR_180
+  gui_window_postmerge_status: RECONCILED_IN_MAIN_BY_PR_180_NO_RUNTIME_DELTA
   cloud_hermes_branch: NONDEFAULT_NONCANONICAL_NOT_ELIGIBLE_EXECUTOR
   capsule_v2_migration: PLANNED_SIDECAR_POINTER_V1_PRESERVED
   paid_ai_apis_and_fallback: FORBIDDEN_IN_CANDIDATE
@@ -297,31 +298,34 @@ current_v1_2_control_surfaces:
   stable_release: v1.2.0@5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
   human_control_governance: CURRENT_ACTIVE
   human_control_recognizer_checkpoint_primitive: IMPLEMENTED_TESTED_INTERNAL
-  persistent_missionruntime_pause_resume: NOT_IMPLEMENTED
+  authenticated_human_control_chat_interception: IMPLEMENTED_PR_184_PRE_BOOTSTRAP
+  persistent_missionruntime_pause_resume: NOT_IMPLEMENTED_FOR_RUNNING_MISSIONS
   authorized_gui_field_validation: PASS_SPECIFIC_LOCAL_SESSION
   gui_is_authority: false
   triview_command_surface: NOT_IMPLEMENTED_NOT_AUTHORIZED
   mission_control: DISCOVERY_IN_PROGRESS_IMPLEMENTATION_FALSE
   gui_window_succession_protocol: MERGED_SCHEMA_FIXTURES_PURE_QUALIFIER
   gui_window_runtime_producer_consumer: NOT_IMPLEMENTED
-  gui_window_status_reconciliation: OPEN_DRAFT_PR_180_NON_CANONICAL
+  gui_window_status_reconciliation: MERGED_PR_180_NORMATIVE_TEXT_NO_RUNTIME
   human_terminal_decision_account_binding: CURRENT_IMPLEMENTED_SCOPED_HTTP_AND_PRODUCTION_AUTH
   generic_authority_envelope: NOT_IMPLEMENTED
   nextgen_decision_inbox: NOT_IMPLEMENTED
 ```
 
-O PR #175 tornou Human Control/GUI uma regra operacional vigente, mas sua primitive de checkpoint
-não possui call site no MissionRuntime, persistência, schema público ou retomada após restart. O PR
+O PR #175 tornou Human Control/GUI uma regra operacional vigente. O PR #184 conectou o comando
+standalone `HUMANO NO CONTROLE` no chat à conta humana reservada autenticada e o intercepta antes de
+planner, bootstrap, criação de missão ou execução de fase. Isso não pausa uma missão já em curso e
+não adiciona persistência, retomada após restart, safe point ou bloqueio global de admissão. O PR
 #179 mergeou o protocolo/schema/fixtures/qualifier da sucessão GUI/window, sem producer, consumer ou
-controle automático conectado; seu status textual pós-merge está inconsistente e a correção proposta
-no PR #180 permanece draft fora de `main`. O PR #181 fechou spoofing de provenance humana pelo caller
+controle automático conectado. O PR #180 reconciliou o texto de status pós-merge e também está em
+`main`; não adicionou runtime, controle de janela ou autoridade de UI. O PR #181 fechou spoofing de provenance humana pelo caller
 na rota implementada por conta autenticada reservada e `sourceRef` server-side; não criou sozinho os contratos
 NextGen ou uma Decision Inbox.
 
-O recognizer interno `isHumanControlCommand()` do PR #175 ainda compara o `actorId` textual com
-`leandro`; ele não é chamado pelo MissionRuntime e o PR #181 não o conectou à autenticação. Portanto
-é somente reconhecimento sintático testado, não prova de autoridade. Qualquer wiring futuro deve
-derivar a conta reservada da sessão autenticada e falhar fechado.
+O recognizer legado `isHumanControlCommand()` ainda compara `actorId` textual com `leandro` e não é
+prova de autoridade. O call site novo usa `isReservedHumanControlCommand()` somente após o controller
+derivar a conta da sessão autenticada e o bridge comparar o UUID reservado configurado no servidor.
+Qualquer wiring futuro fora desse boundary deve preservar essa derivação fail-closed.
 
 `HumanControlCheckpoint`, `HumanAuthorityProof` e o trace GUI/window são compatibility surfaces
 existentes. Não devem ser contados silenciosamente como novos contratos públicos nem usados para
@@ -343,9 +347,10 @@ ausência de chave; portanto ele não qualifica backend/executor. O Cloud defaul
 `38cd22e0a814bdf4957edcf5bb30506a4810bda0`. O branch Hermes não altera o PASS 4/4 nem abre
 Cloud remoto, VPS ou SSH.
 
-Os drafts #176, #177, #180 e #182 também permanecem fora de `main` no freeze. Eles preservam,
-respectivamente, audit ledger da missão de sucessão, proposta de qualificação AGDO v1.3, correção do
-status pós-merge da sucessão GUI/window e runbook/evidência de workspace dual-VPS. Nenhum deles é
+No freeze original do pacote NextGen, o PR #180 ainda era draft; esse fato permanece nos artefatos
+históricos selados e foi superado pelo merge `a8e23729`. Os drafts #176, #177 e #182 permanecem fora
+de `main` e preservam, respectivamente, audit ledger da missão de sucessão, proposta de qualificação
+AGDO v1.3 e runbook/evidência de workspace dual-VPS. Nenhum deles é
 capacidade canônica atual, autorização NextGen ou permissão para operar VPS/provider.
 
 ### Memória cognitiva e próxima stable — missão paralela

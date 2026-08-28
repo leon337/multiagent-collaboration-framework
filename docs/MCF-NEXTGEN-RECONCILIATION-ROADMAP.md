@@ -18,9 +18,10 @@ O NextGen não é um segundo MCF e não é uma implementação ativa. A rodada h
 
 O baseline atual também contém a release v1.2.0 de Human Control/GUI, o protocolo mergeado de
 sucessão cross-chat por GUI/window e a vinculação da decisão humana terminal à conta autenticada
-reservada. Esses deltas são superfícies atuais que a F1.4 deve preservar; eles ainda não constituem
-pausa persistente do MissionRuntime, controle automático de janela, Authority Envelope genérico ou
-Decision Inbox NextGen.
+reservada. O PR #184 também intercepta o comando standalone de Human Control da conta reservada
+antes do bootstrap. Esses deltas são superfícies atuais que a F1.4 deve preservar; eles ainda não
+constituem pausa persistente de missão em curso, controle automático de janela, Authority Envelope
+genérico ou Decision Inbox NextGen.
 
 Esta missão reconciliou esses fatos e produziu:
 
@@ -58,7 +59,7 @@ implementation_authorized: false
 | Cognitive Ledger write provider-side                     | `EXISTS_IN_LEDGER_LINEAGE / NOT_AN_MCF_CAPABILITY`            | integração governada, auth e live pertencem #164       |
 | Cloud local read                                         | `LAB_E2E_PASS / DISCONNECTED_INACTIVE_AFTER_TEARDOWN`         | placement local somente após gate                      |
 | TriView cockpit                                          | `READ_ONLY_EVIDENCE_ONLY_IN_SAFE_LINEAGE`                     | read models; nenhum command material                   |
-| Human Control v1.2                                       | `GOVERNANCE_ACTIVE / INTERNAL_CHECKPOINT_PRIMITIVE_TESTED`    | preservar; pausa/retomada persistente ainda ausente    |
+| Human Control v1.2 + PR #184                             | `GOVERNANCE_ACTIVE / AUTHENTICATED_CHAT_PRE_BOOTSTRAP_GATE`   | preservar; pausa persistente de missão ainda ausente   |
 | Decisão humana terminal na rota implementada             | `ACCOUNT_BOUND_SERVER_CANONICALIZED / CALLER_SPOOF_REJECTED`  | generalizar no AuthorityEnvelope sem regressão         |
 | Sucessão cross-chat GUI/window                           | `MERGED_SCHEMA_FIXTURES_QUALIFIER / NOT_RUNTIME_WIRED`        | reutilizar trace; reconciliar status via PR próprio    |
 | Agent Contract machine-readable                          | `NOT_IMPLEMENTED`                                             | NX-0/NX-1                                              |
@@ -102,7 +103,7 @@ Ownership essencial:
 - [x] abertura em `main@21c6670` e delta até `main@42d941b` reconciliados;
 - [x] branch histórica NextGen identificada e preservada;
 - [x] divergência atual na auditoria: branch NextGen `+81`; `main` `+313`;
-- [x] Issues #141, #147, #164/#165, PRs #163/#166/#168/#171/#175/#179/#181, PR #169 fechado sem merge, PR #170 ativo e drafts #174/#176/#177/#180/#182 analisados;
+- [x] Issues #141, #147, #164/#165, PRs #163/#166/#168/#171/#175/#179/#180/#181/#184, PR #169 fechado sem merge, PR #170 ativo e drafts #174/#176/#177/#182 analisados;
 - [x] branch Cloud Hermes não default `mcf/hermes-relay-bootstrap-20260823@23e4e6c` tratada somente como input concorrente não canônico;
 - [x] branch/worktree isolada criada a partir do `main` atual;
 - [x] boundary sem runtime/provider/produção mantido.
@@ -289,20 +290,20 @@ O canal DSH está documentado no `main` como capacidade externa E2E atual e perm
 executor-adapter candidato. Ele não materializa Registry/Binding/Receipt NextGen, não recebe crédito
 retroativo de agente e não autoriza operar provider, túnel, VPS ou credenciais nesta missão.
 
-### v1.2.0 / PR #175 — Human Control e GUI autorizada
+### v1.2.0 / PRs #175 e #184 — Human Control e GUI autorizada
 
-Human Control é governança vigente e possui recognizer/checkpoint interno testado. A GUI autorizada é
-uma superfície operacional governada, não autoridade própria. Não existe wiring de pausa/retomada
-persistente no MissionRuntime, integração TriView, Decision Inbox ou contrato público de checkpoint;
-promover essa primitive a contrato reabre o catálogo 17/22. O recognizer ainda compara
-`actorId=leandro` por texto e não autentica; wiring futuro deve usar a conta reservada da sessão.
+Human Control é governança vigente e possui recognizer/checkpoint interno testado. O PR #184 adiciona
+um gate de chat autenticado pela conta reservada antes de planner/bootstrap, sem criar missão ou fase.
+A GUI autorizada é uma superfície operacional governada, não autoridade própria. Não existe pausa e
+retomada persistente de missão já em curso, integração TriView, Decision Inbox ou contrato público de
+checkpoint; promover essa primitive a contrato reabre o catálogo 17/22.
 
-### PR #179 e draft PR #180 — sucessão GUI/window
+### PRs #179 e #180 — sucessão GUI/window
 
-O `main` contém protocolo, schema, fixtures e qualifier puro da sucessão cross-chat. Não contém
-producer/consumer nem controle de janela conectado ao runtime. O texto de status mergeado ainda se
-descreve como candidato/não mergeado; o draft PR #180 propõe a reconciliação pós-merge, mas permanece
-input concorrente não canônico até PR próprio.
+O `main` contém protocolo, schema, fixtures e qualifier puro da sucessão cross-chat. O PR #180
+reconciliou o texto de status pós-merge, mas não adicionou producer/consumer, controle de janela
+conectado ao runtime ou autoridade de UI. Os artefatos selados da missão preservam corretamente o
+estado anterior ao merge; este roadmap é a visão corrente que os sucede.
 
 ### PR #181 — autoridade humana vinculada à conta
 

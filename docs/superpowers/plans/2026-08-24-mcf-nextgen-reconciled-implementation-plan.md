@@ -27,6 +27,8 @@ e só avança após seu gate, compatibility audit e autorização exata.
 - `STATE_TRANSITION_AND_LEDGER_APPEND_ATOMIC_OR_EQUIVALENT`.
 - `PAID_AI_API = FORBIDDEN`; `PAID_AI_API_FALLBACK = FORBIDDEN`; `max_paid_ai_cost=0`.
 - contratos v1/v1.1 permanecem interpretáveis durante toda a migração.
+- o gate autenticado `HUMANO NO CONTROLE` pré-bootstrap do PR #184 é compatibility surface, não
+  prova de pausa persistente de missão.
 - nenhum provider/VPS/G2-A/G2-B/SSH/release/produção sem missão e gate próprios.
 - TDD obrigatório: teste falha pelo motivo esperado, mudança mínima, teste passa, regressão passa.
 - nenhum boundary começa sem autorização de LEANDRO vinculada ao SHA/digest e paths exatos.
@@ -102,7 +104,7 @@ Antes de editar código em qualquer boundary autorizado:
 
 - [ ] reler a instrução de LEANDRO e extrair o escopo exato;
 - [ ] consultar GitHub live e registrar `origin/main` contemporâneo;
-- [ ] verificar Issues #141, #147, #164 e #165, os PRs #170/#171/#174/#175/#179/#181 e os drafts concorrentes #176/#177/#180/#182;
+- [ ] verificar Issues #141, #147, #164 e #165, os PRs #170/#171/#174/#175/#179/#180/#181/#184 e os drafts concorrentes #176/#177/#182;
 - [ ] verificar se `mcf/hermes-relay-bootstrap-20260823@23e4e6c` ou outro lineage Cloud não default avançou, sem tratá-lo como `main` ou executor elegível;
 - [ ] criar worktree/branch isolada sem tocar trabalho de outras equipes;
 - [ ] provar que o worktree base está limpo;
@@ -176,11 +178,12 @@ Regras:
 - todo tipo público da tabela F1.4 possui mapping 1:1 para schema, fixture válida, fixture negativa e teste de paridade contrato/schema;
 - Cognitive Execution Receipt inclui manifests de artifacts, mas nunca chain-of-thought ou segredo;
 - Capsule Version Pointer não altera nem amplia o schema estrito do Registry/Capsule v1;
-- Human Control v1.2, `human-control-policy.ts`, `HumanAuthorityProof` e o trace GUI/window do PR
-  #179 são compatibility surfaces vigentes a caracterizar; não são implementações dos contratos
-  NextGen nem entradas implícitas no catálogo;
-- o recognizer nominal `actorId=leandro` é somente sintaxe legada: nenhum wiring pode tratá-lo como
-  autenticação ou autoridade;
+- Human Control v1.2, `human-control-policy.ts`, `HumanAuthorityProof`, o gate autenticado de chat
+  pré-bootstrap do PR #184 e o trace GUI/window do PR #179 são compatibility surfaces vigentes a
+  caracterizar; não são implementações dos contratos NextGen nem entradas implícitas no catálogo;
+- o recognizer nominal `actorId=leandro` é somente sintaxe legada: o callsite aceito deve derivar a
+  sessão e o UUID humano reservado autenticados, como no PR #184; nenhum wiring pode tratar o nome
+  como autenticação ou autoridade;
 - as 17 famílias/22 entradas contam somente contratos públicos novos da F1.4; promover
   `HumanControlCheckpoint`, `HumanAuthorityProof`, o trace GUI/window ou qualquer record interno para
   contrato público reabre arquitetura, catálogo e contagem antes de código;
@@ -344,9 +347,9 @@ esperado.
 `McfTrustedAuthorityBindingRefV1` é um value object que aponta para o binding de bootstrap trust
 versionado da instância; não é um 23º contrato público. O checker puro recebe o snapshot confiável
 de `bootstrap_trust.trusted_authority_binding` como input explícito; no runtime, a resolução stateful
-ocorre fora do payload. No runtime vigente pós-PR #181 ainda existe somente a
-conta autenticada reservada e `sourceRef` server-side; a referência de binding é uma exigência
-aditiva do target NextGen.
+ocorre fora do payload. No runtime vigente pós-PRs #181/#184 existem a conta autenticada reservada,
+`sourceRef` server-side na decisão terminal e o gate autenticado pré-bootstrap de chat; a referência
+de binding continua uma exigência aditiva do target NextGen.
 
 - [ ] **Step 1: escrever o teste que importa os tipos ausentes e valida as oito fixtures base**
 
@@ -1577,21 +1580,21 @@ preservar claims/receipts e manter v1.1 canônico.
 
 ## 5. Lineages paralelos e boundaries separados
 
-| Linha                              | Relação                                                             | Regra                                                                                                                     |
-| ---------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Context Fabric / #147              | Fundação reutilizada                                                | Não reimplementar Registry/Capsule/recovery.                                                                              |
-| Mission Control / #141             | Consumidor de read models                                           | Não implementar UI/commands nesta missão sem autorização própria.                                                         |
-| Cognitive memory / #164            | O Ledger possui write provider-side; integração MCF/live é separada | Preservar decisões já aprovadas e ler a Issue live; não inferir authN/authZ, integração, dados reais, semver ou ativação. |
-| MESTRE↔Ox DSH / PR #171            | Canal externo E2E atual; adapter candidato                          | Preservar evidência; nenhum binding/trust/cost/origin NextGen é inferido.                                                 |
-| Agent Continuity Capsule / PR #174 | Draft concorrente não canônico                                      | Se mergear, equivalence/disposition antes de NX-0; nenhum segundo Capsule/state/memory writer.                            |
-| Human Control/GUI / PR #175        | Governança v1.2 + primitive interna; release `v1.2.0@5c7f983`       | Preservar precedência/characterization; não inferir pausa persistente nem 23º contrato.                                   |
-| GUI/window / PR #179 e draft #180  | Schema/fixtures/qualifier mergeados; status correction em draft     | Reutilizar trace; sem producer/consumer/runtime/authority e sem tratar #180 como canônico.                                |
-| Human authority / PR #181          | Conta autenticada reservada + `sourceRef` server-side na rota atual | Preservar piso anti-spoof; authority binding/Envelope genéricos continuam target.                                         |
-| Drafts #176/#177/#182              | Audit ledger, proposal de qualificação e runbook VPS concorrentes   | Inputs de preflight fora de `main`; nenhuma capability, merge ou ação VPS inferida.                                       |
-| Cloud Hermes não default           | Probes falhos/bloqueados em branch próprio                          | Não é `main`, recovery seguro, executor elegível ou autorização de remoto/VPS.                                            |
-| Cloud G2-A/G2-B                    | Futuro placement/effects                                            | Local read/lab apenas até gate remoto próprio.                                                                            |
-| TriView                            | Cockpit read-only                                                   | Command/Decision Inbox material exige contrato e gate posterior.                                                          |
-| Produção/release                   | Fora deste plano inicial                                            | `MERGE != RELEASE != DEPLOY`.                                                                                             |
+| Linha                              | Relação                                                                      | Regra                                                                                                                     |
+| ---------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Context Fabric / #147              | Fundação reutilizada                                                         | Não reimplementar Registry/Capsule/recovery.                                                                              |
+| Mission Control / #141             | Consumidor de read models                                                    | Não implementar UI/commands nesta missão sem autorização própria.                                                         |
+| Cognitive memory / #164            | O Ledger possui write provider-side; integração MCF/live é separada          | Preservar decisões já aprovadas e ler a Issue live; não inferir authN/authZ, integração, dados reais, semver ou ativação. |
+| MESTRE↔Ox DSH / PR #171            | Canal externo E2E atual; adapter candidato                                   | Preservar evidência; nenhum binding/trust/cost/origin NextGen é inferido.                                                 |
+| Agent Continuity Capsule / PR #174 | Draft concorrente não canônico                                               | Se mergear, equivalence/disposition antes de NX-0; nenhum segundo Capsule/state/memory writer.                            |
+| Human Control/GUI / PRs #175/#184  | Governança v1.2 + primitive interna + gate autenticado de chat pré-bootstrap | Preservar precedência/characterization; não inferir pausa persistente de missão nem 23º contrato.                         |
+| GUI/window / PRs #179 e #180       | Schema/fixtures/qualifier e status correction mergeados                      | Reutilizar trace; sem producer/consumer/runtime/authority inferidos.                                                      |
+| Human authority / PR #181          | Conta autenticada reservada + `sourceRef` server-side na rota atual          | Preservar piso anti-spoof; authority binding/Envelope genéricos continuam target.                                         |
+| Drafts #176/#177/#182              | Audit ledger, proposal de qualificação e runbook VPS concorrentes            | Inputs de preflight fora de `main`; nenhuma capability, merge ou ação VPS inferida.                                       |
+| Cloud Hermes não default           | Probes falhos/bloqueados em branch próprio                                   | Não é `main`, recovery seguro, executor elegível ou autorização de remoto/VPS.                                            |
+| Cloud G2-A/G2-B                    | Futuro placement/effects                                                     | Local read/lab apenas até gate remoto próprio.                                                                            |
+| TriView                            | Cockpit read-only                                                            | Command/Decision Inbox material exige contrato e gate posterior.                                                          |
+| Produção/release                   | Fora deste plano inicial                                                     | `MERGE != RELEASE != DEPLOY`.                                                                                             |
 
 ## 6. Plano cross-repository
 
@@ -1685,7 +1688,9 @@ Superfícies obrigatórias:
 - HDF, PermissionEngine e HUMAN_GATE;
 - HDF v1.2, DEC-065, `human-control-policy.ts`, T09–T12/V01–V08 e pausa/retomada;
 - conta humana reservada/`HumanAuthorityProof` e canonicalização server-side do PR #181;
-- protocolo/schema/fixtures/qualifier GUI/window do PR #179 e status concorrente do draft #180;
+- interceptação autenticada do comando standalone antes do bootstrap pelo PR #184, sem atribuir-lhe
+  pausa persistente, restart safety, safe point ou admissão global;
+- protocolo/schema/fixtures/qualifier GUI/window do PR #179 e status reconciliado pelo PR #180;
 - ExternalActionDispatcher/idempotency/reconciliation;
 - Context Fabric/Truth Contracts;
 - providers e produção;
@@ -1698,32 +1703,32 @@ Qualquer `BLOCKED` interrompe o boundary e devolve o plano para correção.
 
 ## 9. Risk register
 
-| Risco                                                     | Controle                                                            | Gate                 |
-| --------------------------------------------------------- | ------------------------------------------------------------------- | -------------------- |
-| segundo runtime/ledger surgir por conveniência            | extensão do runtime atual + structural diff/test                    | NX-0/NX-4            |
-| Registry v2 virar fonte concorrente                       | dual-read, owner explícito e Receipt/provenance                     | NX-1/NX-3            |
-| modelo gratuito mudar preço/quota                         | freshness/expiry e fail-closed                                      | NX-5                 |
-| fallback pago silencioso                                  | hard policy + negative tests + usage receipt                        | NX-0/NX-5            |
-| router existir sem originar trabalho cognitivo            | Request/Receipt + executor autenticado + conformance/real-run gates | NX-0/NX-5            |
-| evidence fornecida receber crédito de agente              | origin attestation + GATE-RUNTIME-REALITY escopado                  | NX-0/NX-5            |
-| graph duplicar efeitos após crash                         | attempts, idempotency, durable reservation e fencing                | NX-4/NX-7            |
-| prompt/memória escalar autoridade                         | typed boundary, HDF/policy outside model                            | NX-0/NX-7            |
-| Human Control ser aceito por nome no payload              | conta autenticada reservada + provenance server-side                | NX-0/NX-4            |
-| pausa desaparecer no restart ou admitir ação              | estado/ledger atômicos + safe point + admission checks              | NX-4/NX-5/NX-7       |
-| checkpoint interno ser vendido como runtime               | characterization + gate persistente separado                        | NX-0/NX-4            |
-| GUI autorizada ser confundida com authority               | UI boundary + tests negativos                                       | NX-0/NX-3            |
-| trace GUI/window ser duplicado como 23º contrato          | equivalence/catalog test + reabertura formal se público             | Preflight/NX-0       |
-| status stale do PR #179 ser tratado como live             | ler `main` + PR #180 como draft não canônico                        | Preflight            |
-| Capsule ou TriView parecer current sem prova              | freshness e labels `SNAPSHOT/UNKNOWN`                               | NX-3                 |
-| Capsule v2 quebrar reader/rollback v1                     | sidecar + version pointer + v1 imutável no coexistence              | NX-0/NX-3            |
-| PR #174 criar contrato/writer de continuidade concorrente | live rebase + equivalence/disposition + catálogo único              | Preflight/NX-0       |
-| Cognitive Ledger virar truth global                       | ownership matrix e contracts separados                              | NX-0/NX-3            |
-| 29 agentes virarem 29 processos fictícios                 | profile + evidence-based activation                                 | NX-1                 |
-| branch histórica ser mergeada diretamente                 | lineage preservado; implementação parte do main atual               | Preflight            |
-| trabalho paralelo ser sobrescrito                         | live issue/PR audit e PRs separados                                 | Preflight/cross-repo |
-| escopo chegar a VPS/produção                              | explicit forbidden paths e separate human gate                      | Todos                |
-| avaliação Q13 ser ajustada depois do resultado            | contract/digest predeclarado e lineage imutável                     | NX-0/NX-8            |
-| recovery 4/4 ser vendido como portabilidade               | matriz por camada, negative suite e Receipt Q14                     | NX-9                 |
+| Risco                                                                      | Controle                                                             | Gate                 |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------- |
+| segundo runtime/ledger surgir por conveniência                             | extensão do runtime atual + structural diff/test                     | NX-0/NX-4            |
+| Registry v2 virar fonte concorrente                                        | dual-read, owner explícito e Receipt/provenance                      | NX-1/NX-3            |
+| modelo gratuito mudar preço/quota                                          | freshness/expiry e fail-closed                                       | NX-5                 |
+| fallback pago silencioso                                                   | hard policy + negative tests + usage receipt                         | NX-0/NX-5            |
+| router existir sem originar trabalho cognitivo                             | Request/Receipt + executor autenticado + conformance/real-run gates  | NX-0/NX-5            |
+| evidence fornecida receber crédito de agente                               | origin attestation + GATE-RUNTIME-REALITY escopado                   | NX-0/NX-5            |
+| graph duplicar efeitos após crash                                          | attempts, idempotency, durable reservation e fencing                 | NX-4/NX-7            |
+| prompt/memória escalar autoridade                                          | typed boundary, HDF/policy outside model                             | NX-0/NX-7            |
+| Human Control regredir do gate autenticado do PR #184 para nome no payload | conta autenticada reservada + provenance server-side                 | NX-0/NX-4            |
+| pausa desaparecer no restart ou admitir ação                               | estado/ledger atômicos + safe point + admission checks               | NX-4/NX-5/NX-7       |
+| checkpoint interno ser vendido como runtime                                | characterization + gate persistente separado                         | NX-0/NX-4            |
+| GUI autorizada ser confundida com authority                                | UI boundary + tests negativos                                        | NX-0/NX-3            |
+| trace GUI/window ser duplicado como 23º contrato                           | equivalence/catalog test + reabertura formal se público              | Preflight/NX-0       |
+| status histórico do PR #179 ser tratado como live                          | ler `main` pós-PR #180 e preservar o freeze histórico como histórico | Preflight            |
+| Capsule ou TriView parecer current sem prova                               | freshness e labels `SNAPSHOT/UNKNOWN`                                | NX-3                 |
+| Capsule v2 quebrar reader/rollback v1                                      | sidecar + version pointer + v1 imutável no coexistence               | NX-0/NX-3            |
+| PR #174 criar contrato/writer de continuidade concorrente                  | live rebase + equivalence/disposition + catálogo único               | Preflight/NX-0       |
+| Cognitive Ledger virar truth global                                        | ownership matrix e contracts separados                               | NX-0/NX-3            |
+| 29 agentes virarem 29 processos fictícios                                  | profile + evidence-based activation                                  | NX-1                 |
+| branch histórica ser mergeada diretamente                                  | lineage preservado; implementação parte do main atual                | Preflight            |
+| trabalho paralelo ser sobrescrito                                          | live issue/PR audit e PRs separados                                  | Preflight/cross-repo |
+| escopo chegar a VPS/produção                                               | explicit forbidden paths e separate human gate                       | Todos                |
+| avaliação Q13 ser ajustada depois do resultado                             | contract/digest predeclarado e lineage imutável                      | NX-0/NX-8            |
+| recovery 4/4 ser vendido como portabilidade                                | matriz por camada, negative suite e Receipt Q14                      | NX-9                 |
 
 ## 10. Rollback e recovery
 
