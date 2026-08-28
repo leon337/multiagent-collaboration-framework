@@ -62,19 +62,20 @@ describe('canonical MCF Context Fabric fixtures', () => {
       project_id: 'multiagent-collaboration-framework',
       lifecycle: 'ACTIVE',
       snapshot: {
-        current_workstream: 'nextgen-reconciliation-and-memory-live-planning',
+        current_workstream: 'ecosystem-alignment-closeout-and-nextgen-gating',
         current_status:
-          'NEXTGEN_F14_PLANNING_COMPLETE_CANDIDATE__POST_PR184_AUTHENTICATED_HUMAN_CONTROL_CHAT_GATE_RECONCILED__IMPLEMENTATION_NOT_AUTHORIZED',
+          'ECOSYSTEM_REPOSITORY_ALIGNMENT_READY__LIVE_PROVIDER_VPS_RELEASE_AND_NEXTGEN_NX0_NOT_AUTHORIZED',
         next_action:
-          'Review the exact reconciled NextGen planning package published by this mission; re-read Issues 164 and 165 plus PRs 170, 174, 176, 177, and 182 live; preserve PRs 175, 179, 180, 181, and 184 as current compatibility surfaces; and require explicit LEANDRO disposition, F1.4, and implementation-boundary decisions before NX-0.',
+          'Review the exact provider promotion evidence and the separate G2-B/VPS, Ledger external-deploy, TriView R7/release, and NextGen NX-0 gates; require an explicit LEANDRO decision for each boundary before any live, remote, release, production, paid-API, or NextGen implementation action.',
         blockers: [
           'NextGen F1.4 is PROPOSED_FOR_LEANDRO_REVIEW; prototype, implementation, provider activation, release, and production remain unauthorized.',
+          'Cloud PR 38 merged Capsule and evidence only into the integration target at 420ee7d26bc40159e3040a5319b16b21a6f02499; this did not promote the integration lineage to main, replay G2-B SSH, run Ansible syntax checks, access the VPS, or authorize write.',
+          'Cognitive Ledger PR 4 is draft and clean with both CI jobs green at a3fc0d61737d4b0b55b265f34383c0e9b77d7334, but remains open because merging into the design target can trigger the documented Render auto-deploy; provider activation, live data, embeddings, reindex, and governed write remain unauthorized.',
+          'TriView PRs 79 and 80 merged Capsule and documentation only into release/1.0.0a4 at 7b2440a64d6519515100911f486547480b5ab9aa; physical R7, LEA-197, MCF smoke, controlled update and rollback, Issue 26, final HUMAN_GATE, tag, release, and publication remain pending.',
           'PR 184 binds the standalone HUMAN CONTROL chat command to the authenticated reserved human account and intercepts it before mission bootstrap. Persistent pause/resume for already-running missions, restart-safe resume, safe-point reconciliation, and global admission blocking are not implemented.',
           'PRs 179 and 180 merged the GUI/window protocol, schema, fixtures, pure qualifier, and post-merge status reconciliation. They still provide no runtime producer, consumer, automatic window control, or UI authority.',
           'PR 181 binds terminal human decisions in the implemented route to the reserved authenticated account and server-generated source provenance. Generic NextGen Authority Envelope, Human Decision chain, and contractual authority binding remain unimplemented.',
           'Issue 164 confirms that Brainbase task runs are billable and ineligible for this zero-cost plan; PR 169 is closed without merge. Provider-side Ledger write exists, while governed MCF write, auth, live activation, real-data proof, semver, and release remain separately gated.',
-          'PR 170 prepares a local Ollama zero-cost harness. Its first actual run rejected Miriam for a missing handoff heading; run 32710207078 was cancelled before agent execution; run 32710229432 on head 1da1a13bd8ca47bed2f4a4e560e64691788582f8 reached 6/15 and failed on Tiago for two missing headings at 2026-08-24T09:23:42Z.',
-          'PR 170 job 97379873672 preserves six attributable, structurally validated partial outputs and handoffs, but uploaded no artifact, emitted no terminal success, promoted nothing into the mission PRF, and skipped the repository-nonmutation proof. It is not a completed chain, accepted artifact, contribution credit, or satisfied origin gate.',
           'cloud.context.local.read and cognitive-ledger.memory.read remain DISCONNECTED, INACTIVE, HISTORICALLY_VERIFIED, and LIVE_REQUIRED after the recorded lab teardown.',
           'cloud.workspace.g2a.read remains NOT_AUTHORIZED, DISCONNECTED, UNKNOWN, and LIVE_REQUIRED; cloud.workspace.g2b.write, Tasks 9 and 10 remain NOT_AUTHORIZED, DISCONNECTED, BLOCKED, and LIVE_REQUIRED.',
           'Draft PRs 174, 176, 177, and 182 are outside main and remain noncanonical inputs; they do not authorize continuity duplication, qualification claims, runtime, provider, or VPS action.',
@@ -82,7 +83,7 @@ describe('canonical MCF Context Fabric fixtures', () => {
         ],
       },
       sources: { current_state: 'docs/MCF-CURRENT-STATE.md' },
-      observed_at: '2026-08-28T16:54:27Z',
+      observed_at: '2026-08-28T18:00:44Z',
     });
 
     const forbiddenOperationalKeys = new Set([

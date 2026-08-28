@@ -129,23 +129,24 @@ Envelope genérico ou Decision Inbox.
 
 ## Índice por domínio
 
-| Domínio              | Local                                                                                                                                                           |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Estado atual         | `MCF-CURRENT-STATE.md`                                                                                                                                          |
-| Runtime              | `runtime/`                                                                                                                                                      |
-| Integrações externas | `integrations/` (inclui canal MESTRE↔Ox via DeepSeek Harness: [`integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md`](integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md)) |
-| Protocolos           | `protocols/`                                                                                                                                                    |
-| Decisões             | `decisions/`                                                                                                                                                    |
-| Agentes              | `agentes/`, `matrices/`                                                                                                                                         |
-| Governança           | `governanca/`                                                                                                                                                   |
-| Auditoria            | `auditoria/`, `audits/`                                                                                                                                         |
-| Releases             | `releases/` + GitHub Releases                                                                                                                                   |
-| Runbooks             | `runbooks/`                                                                                                                                                     |
-| Projetos             | `projects/`                                                                                                                                                     |
-| Evidências           | `evidence/`, `../artifacts/phases/`                                                                                                                             |
-| Experimentos         | `../experimentos/`, `experimentos/`                                                                                                                             |
-| Propostas/discovery  | `proposals/`, branches de planejamento                                                                                                                          |
-| NextGen reconciliado | `MCF-NEXTGEN-RECONCILIATION-ROADMAP.md`, `architecture/`, `superpowers/plans/`, PRF da fase                                                                     |
+| Domínio                 | Local                                                                                                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Estado atual            | `MCF-CURRENT-STATE.md`                                                                                                                                           |
+| Runtime                 | `runtime/`                                                                                                                                                       |
+| Integrações externas    | `integrations/` (inclui canal MESTRE↔Ox via DeepSeek Harness: [`integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md`](integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md))  |
+| Protocolos              | `protocols/`                                                                                                                                                     |
+| Decisões                | `decisions/`                                                                                                                                                     |
+| Agentes                 | `agentes/`, `matrices/`                                                                                                                                          |
+| Governança              | `governanca/`                                                                                                                                                    |
+| Auditoria               | `auditoria/`, `audits/`                                                                                                                                          |
+| Releases                | `releases/` + GitHub Releases                                                                                                                                    |
+| Runbooks                | `runbooks/`                                                                                                                                                      |
+| Projetos                | `projects/`                                                                                                                                                      |
+| Evidências              | `evidence/`, `../artifacts/phases/`                                                                                                                              |
+| Experimentos            | `../experimentos/`, `experimentos/`                                                                                                                              |
+| Propostas/discovery     | `proposals/`, branches de planejamento                                                                                                                           |
+| NextGen reconciliado    | `MCF-NEXTGEN-RECONCILIATION-ROADMAP.md`, `architecture/`, `superpowers/plans/`, PRF da fase                                                                      |
+| Promoção do ecossistema | [`integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md`](integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md), [`checkpoint 2026-08-28`](integrations/evidence/MCF-ECOSYSTEM-ALIGNMENT-CHECKPOINT-20260828.md), `integrations/gates/` |
 
 ## Regra de continuidade
 
