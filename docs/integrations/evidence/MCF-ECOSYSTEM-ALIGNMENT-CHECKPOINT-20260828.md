@@ -133,8 +133,31 @@ como memória nem usados como fonte de verdade.
 - nenhum segredo foi incluído nesta evidência;
 - nenhuma ação na VPS foi executada.
 
-## Próxima prova
+## Recovery final pós-merge
 
-Congelar um commit de conteúdo do MCF com o Capsule atualizado e repetir o recovery estrutural
-read-only contra Cloud `420ee7d2`, Ledger `a3fc0d61`, TriView `7b2440a6` e esse commit MCF. Registrar
-os Receipts finais sem persistir payload de memória ou estado live.
+O recovery estrutural final foi repetido entre `2026-08-28T18:11:17.344Z` e
+`2026-08-28T18:11:17.676Z` contra as revisões efetivamente consolidadas:
+
+| Projeto          | Revisão recuperada                         |
+| ---------------- | ------------------------------------------ |
+| Cloud            | `420ee7d26bc40159e3040a5319b16b21a6f02499` |
+| Cognitive Ledger | `a3fc0d61737d4b0b55b265f34383c0e9b77d7334` |
+| MCF              | `b2be8eeb1c6753bea912cca741803f8497ab880a` |
+| TriView          | `7b2440a64d6519515100911f486547480b5ab9aa` |
+
+Resultado: **4/4 `RECOVERED`**. Cada Receipt registrou 17 claims, 6 sources e zero warnings, sem
+persistir payload de memória ou estado live. Os Receipts e a verificação detalhada estão em
+[MCF-ECOSYSTEM-RECOVERY-4OF4-20260828.md](./MCF-ECOSYSTEM-RECOVERY-4OF4-20260828.md).
+
+### Staging automático — recuperação controlada
+
+O merge de fechamento do MCF acionou automaticamente o workflow de staging existente, run
+[#33198097882](https://github.com/leon337/multiagent-collaboration-framework/actions/runs/33198097882).
+Testes e build passaram, e a automação preexistente invocou o hook Render para uma tentativa real de
+rollout em staging. O novo SHA não convergiu no limite de 20 minutos. O workflow terminou com
+conclusão GitHub `failure`, resultado controlado `RECOVERED`, `deployId=null`,
+`rollbackDeployId=null` e preservação do SHA saudável
+`5c7f9832f037f374ec3fe2d4160342a5f2cf8a06`.
+
+Não houve dispatch ou retry manual, acesso à VPS nem ação no runtime de produção. A investigação da
+não convergência permanece separada deste fechamento documental.

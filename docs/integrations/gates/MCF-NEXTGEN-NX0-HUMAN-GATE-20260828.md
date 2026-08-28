@@ -2,7 +2,7 @@
 
 **Status:** `PROPOSED_NOT_AUTHORIZED`  
 **Boundary:** `NX-0_CONTRACTS_AND_CONFORMANCE`  
-**Baseline MCF:** `main@0b900ee03a05153e2e4a795fce7b457f5b4bb812`
+**Baseline do pacote de decisão:** `main@b2be8eeb1c6753bea912cca741803f8497ab880a`
 
 Documentos candidatos congelados nesse baseline:
 

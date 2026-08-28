@@ -263,9 +263,12 @@ auditoria, Cloud PR #38 sincronizou Capsule/evidência na linha de integração 
 TriView PRs #79/#80 sincronizaram Capsule/documentação na linha de release em `7b2440a6`; ambos
 passaram CI, sem promoção para `main`, VPS ou release. Cognitive Ledger PR #4 passou 2/2 checks em
 `a3fc0d61`, mas permanece draft/aberta porque seu target possui auto-deploy Render documentado. O
-recovery preliminar dos quatro candidatos passou 4/4, read-only e sem ação material. Os gates
-G2-B/VPS, Ledger external-deploy, TriView R7/release e NextGen NX-0 permanecem separados e não
-autorizados.
+PR #186 publicou esse checkpoint no MCF `main@b2be8eeb`; o recovery final dos quatro SHAs exatos
+passou 4/4, read-only, sem warnings ou ação material no próprio recovery. Os Receipts e o resultado controlado
+`RECOVERED` da tentativa automática de staging pós-merge via hook Render estão na
+[evidência de recovery 2026-08-28](docs/integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260828.md).
+Os gates G2-B/VPS, Ledger external-deploy, TriView R7/release e NextGen NX-0 permanecem separados e
+não autorizados.
 
 ## Mission Control
 

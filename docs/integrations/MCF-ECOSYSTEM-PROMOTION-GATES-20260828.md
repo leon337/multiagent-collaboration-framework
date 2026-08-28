@@ -1,8 +1,8 @@
 # MCF Ecosystem — roadmap de promoção e checklist
 
-**Snapshot UTC:** `2026-08-28T18:00:44Z`
-**MCF canônico:** `main@0b900ee03a05153e2e4a795fce7b457f5b4bb812`
-**Estado:** `REPOSITORY_ALIGNMENT_READY__LIVE_GATES_CLOSED`
+**Snapshot UTC:** `2026-08-28T18:33:40Z`
+**Baseline MCF recuperado:** `main@b2be8eeb1c6753bea912cca741803f8497ab880a` (o commit documental deste relatório é posterior)
+**Estado:** `REPOSITORY_ALIGNMENT_COMPLETE__LIVE_GATES_CLOSED`
 **Política econômica:** `ZERO_PAID_AI_API`
 
 ## Resultado executivo
@@ -12,7 +12,8 @@ linhas de release independentes. A analogia correta é uma ferrovia com quatro e
 fichas de cada estação agora concordam; isso não dá ao trem autorização para entrar na VPS, conectar
 providers ou publicar uma release.
 
-- o MCF foi reconciliado após os PRs #180 e #184; o PR #185 foi mergeado com todos os checks verdes;
+- o MCF foi reconciliado após os PRs #180 e #184; o PR #185 foi mergeado em `0b900ee0` e o PR #186
+  concluiu o alinhamento documental em `main@b2be8eeb`, ambos com todos os checks verdes;
 - todo trabalho local-only conhecido foi preservado em branches remotas isoladas;
 - Cloud PR #38 incorporou Capsule/evidência na linha de integração, merge `420ee7d2`, com CI verde;
 - TriView PRs #79/#80 incorporaram Capsule/documentação na linha de release, culminando em
@@ -20,20 +21,34 @@ providers ou publicar uma release.
 - Cognitive Ledger PR #4 está draft/limpa e com dois checks verdes, mas permanece aberta porque
   atualizar a branch de design pode disparar o auto-deploy Render documentado;
 - nenhuma linha provider foi promovida para `main`, provider live, VPS ou release por esses merges;
-- um recovery preliminar read-only passou 4/4 nos candidatos documentais, sem warnings ou ação
-  material;
+- o recovery final read-only passou 4/4 em Cloud
+  `420ee7d26bc40159e3040a5319b16b21a6f02499`, Ledger
+  `a3fc0d61737d4b0b55b265f34383c0e9b77d7334`, MCF
+  `b2be8eeb1c6753bea912cca741803f8497ab880a` e TriView
+  `7b2440a64d6519515100911f486547480b5ab9aa`, cada resultado com 17 claims, 6 sources, zero warnings
+  e nenhuma ação material;
+- a versão do roadmap incorporada pelo PR #186 foi confirmada byte a byte na Vercel, e os Receipts
+  finais foram registrados na
+  [evidência de recovery 4/4](evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260828.md);
+- o workflow automático de staging MCF, run `33198097882`, terminou com conclusion `failure` e
+  resultado controlado `RECOVERED` depois de invocar o hook Render para uma tentativa real de
+  staging; o novo SHA não foi confirmado e o saudável
+  `5c7f9832f037f374ec3fe2d4160342a5f2cf8a06` foi preservado; não houve retry manual, acesso à VPS ou
+  runtime de produção, e os follow-ons RC2/RC3 foram `immutable NOOP` sem criar ou redirecionar
+  release;
 - os gates G2-B/VPS e NextGen NX-0 são independentes e permanecem `NOT_AUTHORIZED`;
-- esta missão não acessou VPS, não executou escrita real, não ativou provider, não fez release e não
-  usou API de IA paga.
+- nenhum agente desta missão acessou VPS, executou write de dados, ativou provider, publicou release
+  ou usou API de IA paga; a tentativa automática de staging acima foi o único efeito externo de
+  runtime disparado pelo merge.
 
 ## Snapshot exato dos quatro repositórios
 
-| Projeto              | Linha principal observada | Linha segura atual                                   | Evidência atual                                               | Decisão                             |
-| -------------------- | ------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- | ----------------------------------- |
-| MCF                  | `main@0b900ee0`           | PR #186, branch documental                           | PR #185 mergeada; PR #186 valida o fechamento                 | `FINALIZE_ROADMAP_AND_RECOVERY`     |
-| Cloud Infrastructure | `main@ce829067`           | `mcf/mission-001-control-bridge-g1@420ee7d2`         | PR #38 mergeada; checks pré e pós-merge verdes                | `DOC_SYNC_DONE__NO_MAIN_PROMOTION`  |
-| Cognitive Ledger     | `main@f95bcddd`           | PR #4 draft, head `a3fc0d61` → `design/...@a64cfc05` | PR limpa; 2/2 checks verdes; risco de auto-deploy no target   | `KEEP_OPEN__EXTERNAL_DEPLOY_GATE`   |
-| TriView Workspace    | `main@60b7e86`            | `release/1.0.0a4@7b2440a6`                           | PRs #79/#80 mergeadas; PR #74 continua draft/clean e CI verde | `DOC_SYNC_DONE__WAIT_R7_HUMAN_GATE` |
+| Projeto              | Linha principal observada | Linha segura atual                                   | Evidência atual                                                          | Decisão                             |
+| -------------------- | ------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------- |
+| MCF                  | `main@b2be8eeb`           | `main@b2be8eeb`                                      | PR #186 mergeada; 7 checks verdes; roadmap publicado; recovery final 4/4 | `RECONCILED`                        |
+| Cloud Infrastructure | `main@ce829067`           | `mcf/mission-001-control-bridge-g1@420ee7d2`         | PR #38 mergeada; checks pré e pós-merge verdes                           | `DOC_SYNC_DONE__NO_MAIN_PROMOTION`  |
+| Cognitive Ledger     | `main@f95bcddd`           | PR #4 draft, head `a3fc0d61` → `design/...@a64cfc05` | PR limpa; 2/2 checks verdes; risco de auto-deploy no target              | `KEEP_OPEN__EXTERNAL_DEPLOY_GATE`   |
+| TriView Workspace    | `main@60b7e86`            | `release/1.0.0a4@7b2440a6`                           | PRs #79/#80 mergeadas; PR #74 continua draft/clean e CI verde            | `DOC_SYNC_DONE__WAIT_R7_HUMAN_GATE` |
 
 As contagens são relativas ao snapshot acima. Devem ser recalculadas antes de qualquer promoção.
 
@@ -52,6 +67,13 @@ As contagens são relativas ao snapshot acima. Devem ser recalculadas antes de q
 - [x] candidato Ledger validado e mantido fora do target ligado ao Render;
 - [x] recovery preliminar dos quatro candidatos retornou `RECOVERED` 4/4, zero warnings,
       `read_only=true`, `evidence_only=true` e `material_action=false`.
+- [x] recovery final contra Cloud `420ee7d2`, Ledger `a3fc0d61`, MCF `b2be8eeb` e TriView
+      `7b2440a6` retornou `RECOVERED` 4/4, com 17 claims, 6 sources e zero warnings por repositório;
+- [x] versão PR #186 do roadmap confirmada byte a byte na Vercel e Receipts finais registrados na
+      evidência auditável;
+- [x] staging automático MCF run `33198097882` invocou o hook Render, não confirmou o novo SHA e
+      recuperou de forma controlada o SHA saudável `5c7f9832`, sem retry manual, VPS ou runtime de
+      produção.
 
 ## O que não está comprovado
 
@@ -152,9 +174,9 @@ providers.
 - [x] rejeitar promoção direta onde a evidência não sustenta o merge;
 - [x] mergear atualizações documentais/Capsules de Cloud e TriView nos targets seguros;
 - [x] validar o PR documental Ledger e mantê-lo aberto atrás do gate Render;
-- [ ] repetir recovery read-only 4/4 contra os novos SHAs documentais;
-- [ ] publicar o roadmap atualizado a partir do `main` do MCF;
-- [ ] registrar os Receipts finais e links de PR/checks;
+- [x] repetir recovery read-only 4/4 contra os novos SHAs documentais;
+- [x] publicar e confirmar byte a byte a versão PR #186 do roadmap a partir do `main` do MCF;
+- [x] registrar os Receipts finais e links de PR/checks;
 - [x] apresentar a LEANDRO os gates G2-B/VPS e NX-0 sem executá-los.
 
 ## Regra de autoridade
