@@ -10,6 +10,9 @@ import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
 import type { MissionRuntimeService } from './mission-runtime.service.js';
 
+const RESERVED_HUMAN_ACCOUNT_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const OTHER_HUMAN_ACCOUNT_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
 function mission(): McfMissionResponse {
   return {
     id: '11111111-1111-4111-8111-111111111111',
@@ -113,6 +116,51 @@ function runtimeMock(created: McfMissionResponse): MissionRuntimeService {
 }
 
 describe('ChatRuntimeBridgeService', () => {
+  it('halts before mission creation when the reserved human sends the standalone control command', async () => {
+    const created = mission();
+    const runtime = runtimeMock(created);
+    const service = new ChatRuntimeBridgeService(
+      runtime,
+      new ChatMissionPlanner(),
+      RESERVED_HUMAN_ACCOUNT_ID,
+    );
+
+    const result = await service.dispatch(
+      { objective: '  humano   no   controle  ' },
+      { authenticatedAccountId: RESERVED_HUMAN_ACCOUNT_ID },
+    );
+
+    expect(runtime.createMission).not.toHaveBeenCalled();
+    expect(runtime.executePhase).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      gate: 'HUMAN_CONTROL',
+      executionPaused: true,
+      nextAction: 'HUMAN_GATE',
+      resumeRequiresExplicitHumanInstruction: true,
+      humanActionRequired: true,
+      missionCreated: false,
+    });
+  });
+
+  it('does not grant the human-control gate to a different authenticated account', async () => {
+    const created = mission();
+    const runtime = runtimeMock(created);
+    const service = new ChatRuntimeBridgeService(
+      runtime,
+      new ChatMissionPlanner(),
+      RESERVED_HUMAN_ACCOUNT_ID,
+    );
+
+    const result = await service.dispatch(
+      { objective: 'HUMANO NO CONTROLE' },
+      { authenticatedAccountId: OTHER_HUMAN_ACCOUNT_ID },
+    );
+
+    expect(runtime.createMission).toHaveBeenCalledOnce();
+    expect(runtime.executePhase).toHaveBeenCalledTimes(3);
+    expect('gate' in result).toBe(false);
+  });
+
   it('persists the mission and executes the consecutive internal startup block', async () => {
     const created = mission();
     const runtime = runtimeMock(created);

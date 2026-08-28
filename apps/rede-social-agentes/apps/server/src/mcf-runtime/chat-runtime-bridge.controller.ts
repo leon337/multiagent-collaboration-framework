@@ -11,13 +11,16 @@ import {
   UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
-import type { McfChatDispatchRequest, McfChatDispatchResponse } from '@rsa/contracts';
+import type { McfChatDispatchRequest } from '@rsa/contracts';
 import { z } from 'zod';
 
 import { parseBody } from '../http/parse-body.js';
 import type { AuthenticatedHumanRequest } from '../identity/authenticated-request.js';
 import { SessionAuthGuard } from '../identity/session-auth.guard.js';
-import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
+import {
+  ChatRuntimeBridgeService,
+  type McfChatRuntimeDispatchResult,
+} from './chat-runtime-bridge.service.js';
 import {
   McfEvidenceRejectedError,
   McfMissionNotFoundError,
@@ -103,10 +106,12 @@ export class ChatRuntimeBridgeController {
   async dispatch(
     @Body() body: unknown,
     @Req() request: AuthenticatedHumanRequest,
-  ): Promise<McfChatDispatchResponse> {
+  ): Promise<McfChatRuntimeDispatchResult> {
     const input = parseBody<McfChatDispatchRequest>(chatDispatchSchema, body, request.id);
     try {
-      return await this.bridge.dispatch(input);
+      return await this.bridge.dispatch(input, {
+        authenticatedAccountId: request.authenticatedHuman.accountId,
+      });
     } catch (error) {
       rethrowBridgeError(error, request.id);
     }
