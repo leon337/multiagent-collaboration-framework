@@ -41,6 +41,42 @@ services:
         sync: false
 
   - type: web
+    name: mcf-human-authority-bootstrap-staging
+    runtime: docker
+    plan: free
+    region: virginia
+    repo: https://github.com/leon337/multiagent-collaboration-framework
+    branch: feat/human-authority-bootstrap-004
+    dockerfilePath: ./apps/rede-social-agentes/deploy/server.Dockerfile
+    dockerContext: .
+    healthCheckPath: /health/ready
+    autoDeployTrigger: off
+    envVars:
+      - key: MCF_BOOTSTRAP_ISSUER
+        value: "true"
+      - key: DATABASE_URL
+        fromService:
+          type: web
+          name: mcf-runtime-staging-api
+          envVarKey: DATABASE_URL
+      - key: BOOTSTRAP_SEAL_PUBLIC_JWK
+        sync: false
+      - key: BOOTSTRAP_SUBJECT_PEPPER
+        generateValue: true
+      - key: BOOTSTRAP_OIDC_AUDIENCE
+        value: mcf-human-authority-bootstrap
+      - key: BOOTSTRAP_ALLOWED_REPOSITORY
+        value: leon337/multiagent-collaboration-framework
+      - key: BOOTSTRAP_ALLOWED_REPOSITORY_ID
+        value: "1316814482"
+      - key: BOOTSTRAP_ALLOWED_REF
+        value: refs/heads/feat/human-authority-bootstrap-004
+      - key: BOOTSTRAP_ALLOWED_WORKFLOW_REF
+        value: leon337/multiagent-collaboration-framework/.github/workflows/human-authority-bootstrap-staging.yml@refs/heads/feat/human-authority-bootstrap-004
+      - key: BOOTSTRAP_ALLOWED_ENVIRONMENT
+        value: mcf-human-authority-staging
+
+  - type: web
     name: rsa-web-free
     runtime: static
     repo: https://github.com/leon337/multiagent-collaboration-framework

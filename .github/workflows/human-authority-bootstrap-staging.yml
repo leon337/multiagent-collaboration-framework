@@ -1,0 +1,61 @@
+name: MCF Human Authority Bootstrap Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      intent_ref:
+        description: Opaque bootstrap intent reference
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: mcf-human-authority-bootstrap-staging
+  cancel-in-progress: false
+
+jobs:
+  bind_authority:
+    if: >-
+      github.repository == 'leon337/multiagent-collaboration-framework' &&
+      github.ref == 'refs/heads/feat/human-authority-bootstrap-004'
+    runs-on: ubuntu-latest
+    environment: mcf-human-authority-staging
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install and build control plane
+        working-directory: apps/rede-social-agentes
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @rsa/contracts build
+          pnpm --filter @rsa/database build
+          pnpm --filter @rsa/server build
+
+      - name: Apply sealed human authority binding
+        working-directory: apps/rede-social-agentes
+        env:
+          BOOTSTRAP_INTENT_REF: ${{ inputs.intent_ref }}
+          BOOTSTRAP_OIDC_AUDIENCE: mcf-human-authority-bootstrap
+          BOOTSTRAP_ISSUER_URL: ${{ vars.BOOTSTRAP_ISSUER_URL }}
+          BOOTSTRAP_SEAL_PRIVATE_JWK: ${{ secrets.BOOTSTRAP_SEAL_PRIVATE_JWK }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_STAGING_SERVICE_ID: ${{ secrets.RENDER_STAGING_SERVICE_ID }}
+        run: node apps/server/dist/bootstrap-control-plane-main.js

@@ -11,7 +11,7 @@ async function read(path) {
   return readFile(path, 'utf8');
 }
 
-test('Render blueprint provisions a free API and static web without secrets in Git', async () => {
+test('Render blueprint provisions the free API, bootstrap issuer and static web without secrets in Git', async () => {
   const blueprint = await read(resolve(repositoryRoot, 'render.yaml'));
   const dockerfile = await read(resolve(appRoot, 'deploy/server.Dockerfile'));
 
@@ -19,18 +19,21 @@ test('Render blueprint provisions a free API and static web without secrets in G
   assert.match(blueprint, /plan: free/u);
   assert.match(blueprint, /region: virginia/u);
   assert.match(blueprint, /healthCheckPath: \/health\/ready/u);
-  assert.equal((blueprint.match(/autoDeployTrigger: off/gu) ?? []).length, 2);
+  assert.equal((blueprint.match(/autoDeployTrigger: off/gu) ?? []).length, 3);
   assert.doesNotMatch(blueprint, /autoDeployTrigger: checksPass/u);
   assert.doesNotMatch(blueprint, /dockerCommand:/u);
-  assert.match(
-    dockerfile,
-    /CMD \["sh", "-c", "node packages\/database\/scripts\/migrate\.mjs && exec node apps\/server\/dist\/main\.js"\]/u,
-  );
+  assert.match(dockerfile, /node packages\/database\/scripts\/migrate\.mjs/u);
+  assert.match(dockerfile, /MCF_BOOTSTRAP_ISSUER/u);
+  assert.match(dockerfile, /apps\/server\/dist\/bootstrap-main\.js/u);
+  assert.match(dockerfile, /else exec node apps\/server\/dist\/main\.js/u);
   assert.doesNotMatch(blueprint, /preDeployCommand:/u);
   assert.match(blueprint, /key: RATE_LIMIT_KEY_SECRET\s+generateValue: true/u);
   assert.match(blueprint, /key: DATABASE_URL\s+sync: false/u);
   assert.match(blueprint, /key: MIGRATION_DATABASE_URL\s+sync: false/u);
   assert.match(blueprint, /key: ALLOWED_ORIGINS\s+sync: false/u);
+
+  assert.match(blueprint, /name: mcf-human-authority-bootstrap-staging\s+runtime: docker/u);
+  assert.match(blueprint, /name: mcf-human-authority-bootstrap-staging[\s\S]*?plan: free/u);
 
   assert.match(blueprint, /name: rsa-web-free\s+runtime: static/u);
   assert.match(blueprint, /staticPublishPath: \.\/apps\/rede-social-agentes\/apps\/web\/dist/u);
