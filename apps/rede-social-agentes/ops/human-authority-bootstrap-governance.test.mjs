@@ -50,6 +50,8 @@ test('control-plane workflow fails closed before referencing an absent protected
   assert.match(workflowText, /ENVIRONMENT_NOT_READY/);
   assert.match(workflowText, /required_reviewers/);
   assert.match(workflowText, /25374535/);
+  assert.match(workflowText, /reviewers\?\.length===1/);
+  assert.match(workflowText, /prevent_self_review===false/);
   assert.match(workflowText, /deployment-branch-policies/);
   assert.match(workflowText, /feat\/human-authority-bootstrap-004/);
   assert.equal(job.needs, 'environment_precondition');
