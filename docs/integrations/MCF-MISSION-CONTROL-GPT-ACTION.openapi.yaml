@@ -1,0 +1,77 @@
+openapi: 3.1.0
+info:
+  title: MCF Mission Control
+  version: 0.1.0
+  description: >-
+    Starts bounded MCF missions from an authorized ChatGPT conversation and
+    reads the latest canonical Mission Control snapshot. It does not call an AI
+    API and it does not execute production, deployment, GitHub or VPS actions.
+servers:
+  - url: https://mcf-runtime-staging-api.onrender.com
+paths:
+  /v1/mcf/mission-control/dispatch:
+    post:
+      operationId: startMcfMission
+      summary: Start a bounded MCF mission from the current chat request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [objective, repository]
+              properties:
+                objective:
+                  type: string
+                  minLength: 10
+                  maxLength: 4000
+                expectedOutcome:
+                  type: string
+                  minLength: 5
+                  maxLength: 4000
+                repository:
+                  type: string
+                  enum: [leon337/multiagent-collaboration-framework]
+                requestedRiskClass:
+                  type: string
+                  enum: [A, B, C]
+      responses:
+        "201":
+          description: Mission created and internally bootstrapped
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "401":
+          description: Invalid Mission Control credential
+  /v1/mcf/mission-control/latest:
+    get:
+      operationId: readLatestMcfMission
+      summary: Read the latest MCF Mission Control snapshot for a repository
+      parameters:
+        - name: repository
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [leon337/multiagent-collaboration-framework]
+      responses:
+        "200":
+          description: Canonical mission, timeline and observability projection
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "404":
+          description: No mission exists for the repository
+components:
+  securitySchemes:
+    missionControlBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+security:
+  - missionControlBearer: []

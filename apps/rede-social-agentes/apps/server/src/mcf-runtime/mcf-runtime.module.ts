@@ -21,6 +21,10 @@ import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapte
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
 import { MissionObservabilityController } from './mission-observability.controller.js';
+import { MissionControlController } from './mission-control.controller.js';
+import { MissionControlRepository } from './mission-control.repository.js';
+import { MissionControlService } from './mission-control.service.js';
+import { McfMissionControlTokenGuard } from './mission-control-token.guard.js';
 import { MissionObservabilityRepository } from './mission-observability.repository.js';
 import { MissionObservabilityService } from './mission-observability.service.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
@@ -54,12 +58,15 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     ChatRuntimeBridgeController,
     SocialTimelineController,
     ProductionAuthorizationController,
+    MissionControlController,
   ],
   providers: [
     SkillRegistryLoader,
     PermissionEngine,
     EvidenceValidator,
     McfRuntimeTokenGuard,
+    McfMissionControlTokenGuard,
+    MissionControlRepository,
     MissionV11ContextGuard,
     ContinuityRecoveryService,
     ChatMissionPlanner,
@@ -206,6 +213,21 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
           loadRuntimeConfig().RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID,
         ),
       inject: [MissionRuntimeService, ChatMissionPlanner],
+    },
+    {
+      provide: MissionControlService,
+      useFactory: (
+        bridge: ChatRuntimeBridgeService,
+        runtime: MissionRuntimeService,
+        observability: MissionObservabilityService,
+        repository: MissionControlRepository,
+      ) => new MissionControlService(bridge, runtime, observability, repository),
+      inject: [
+        ChatRuntimeBridgeService,
+        MissionRuntimeService,
+        MissionObservabilityService,
+        MissionControlRepository,
+      ],
     },
     {
       provide: StagingDeployReconciliationService,

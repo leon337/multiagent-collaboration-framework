@@ -12,6 +12,7 @@ const productionEnvironment = {
   RATE_LIMIT_KEY_SECRET: 'a-production-secret-with-at-least-32-characters',
   MCF_RECEIPT_SECRET: 'a-production-receipt-secret-with-at-least-32-characters',
   MCF_RUNTIME_TOKEN: 'a-production-runtime-token-with-at-least-32-characters',
+  MCF_MISSION_CONTROL_TOKEN: 'a-production-mission-control-token-at-least-32-characters',
   TRUST_PROXY: 'true',
   BODY_LIMIT_BYTES: '131072',
   REGISTRATION_ALLOWLIST: 'invited@example.test',
@@ -29,7 +30,7 @@ describe('loadRuntimeConfig', () => {
     ).toThrow();
   });
 
-  it.each(['MCF_RECEIPT_SECRET', 'MCF_RUNTIME_TOKEN'] as const)(
+  it.each(['MCF_RECEIPT_SECRET', 'MCF_RUNTIME_TOKEN', 'MCF_MISSION_CONTROL_TOKEN'] as const)(
     'rejects an omitted production secret: %s',
     (secretName) => {
       const environment = { ...productionEnvironment };
@@ -43,6 +44,16 @@ describe('loadRuntimeConfig', () => {
       ).toThrow();
     },
   );
+
+  it('rejects a Mission Control token reused by another boundary', () => {
+    expect(() =>
+      loadRuntimeConfig({
+        ...productionEnvironment,
+        MCF_MISSION_CONTROL_TOKEN: productionEnvironment.MCF_RUNTIME_TOKEN,
+        ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+      }),
+    ).toThrow();
+  });
 
   it('rejects production without controlled registration invitations', () => {
     expect(() =>

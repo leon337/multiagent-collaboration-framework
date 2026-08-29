@@ -39,6 +39,10 @@ const runtimeConfigSchema = z
     RATE_LIMIT_KEY_SECRET: z.string().min(32).default('development-only-rate-limit-secret'),
     MCF_RECEIPT_SECRET: z.string().min(32).default('development-only-mcf-receipt-secret-0001'),
     MCF_RUNTIME_TOKEN: z.string().min(32).default('development-only-mcf-runtime-token-0001'),
+    MCF_MISSION_CONTROL_TOKEN: z
+      .string()
+      .min(32)
+      .default('development-only-mission-control-token-0001'),
     ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:5173'),
     REGISTRATION_ALLOWLIST: z.string().default(''),
     RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID: z.string().uuid().optional(),
@@ -48,6 +52,11 @@ const runtimeConfigSchema = z
       ['RATE_LIMIT_KEY_SECRET', config.RATE_LIMIT_KEY_SECRET, 'development-only-rate-limit-secret'],
       ['MCF_RECEIPT_SECRET', config.MCF_RECEIPT_SECRET, 'development-only-mcf-receipt-secret-0001'],
       ['MCF_RUNTIME_TOKEN', config.MCF_RUNTIME_TOKEN, 'development-only-mcf-runtime-token-0001'],
+      [
+        'MCF_MISSION_CONTROL_TOKEN',
+        config.MCF_MISSION_CONTROL_TOKEN,
+        'development-only-mission-control-token-0001',
+      ],
     ];
 
     if (config.NODE_ENV === 'production') {
@@ -59,6 +68,20 @@ const runtimeConfigSchema = z
             message: `${name} must be explicitly configured in production.`,
           });
         }
+      }
+
+      const distinctSecrets = new Set([
+        config.RATE_LIMIT_KEY_SECRET,
+        config.MCF_RECEIPT_SECRET,
+        config.MCF_RUNTIME_TOKEN,
+        config.MCF_MISSION_CONTROL_TOKEN,
+      ]);
+      if (distinctSecrets.size !== 4) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_MISSION_CONTROL_TOKEN'],
+          message: 'Mission Control, runtime, receipt and rate-limit secrets must be distinct.',
+        });
       }
 
       if (!config.RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID) {

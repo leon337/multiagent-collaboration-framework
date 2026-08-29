@@ -27,6 +27,8 @@ services:
         generateValue: true
       - key: MCF_RUNTIME_TOKEN
         generateValue: true
+      - key: MCF_MISSION_CONTROL_TOKEN
+        sync: false
       - key: DATABASE_URL
         sync: false
       - key: MIGRATION_DATABASE_URL
