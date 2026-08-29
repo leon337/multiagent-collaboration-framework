@@ -1,6 +1,6 @@
-import type { DatabaseService } from '../database.service.js';
+import type { BootstrapDatabaseService } from './bootstrap-database.service.js';
 
-const STAGING_RUNTIME_SERVICE = 'mcf-runtime-staging-api';
+const STAGING_BOOTSTRAP_ISSUER_SERVICE = 'mcf-human-authority-bootstrap-staging';
 
 export const STAGING_CATALOG_PROBE_SQL = `
 select
@@ -114,7 +114,7 @@ export class StagingCatalogProbeQueryError extends Error {
   }
 }
 
-type QueryOnlyDatabase = Pick<DatabaseService, 'query'>;
+type QueryOnlyDatabase = Pick<BootstrapDatabaseService, 'query'>;
 
 export class StagingCatalogProbeService {
   constructor(
@@ -123,7 +123,7 @@ export class StagingCatalogProbeService {
   ) {}
 
   async run() {
-    if (this.serviceName !== STAGING_RUNTIME_SERVICE) {
+    if (this.serviceName !== STAGING_BOOTSTRAP_ISSUER_SERVICE) {
       throw new StagingCatalogProbeDisabledError();
     }
 

@@ -44,9 +44,9 @@ const successfulRow = {
 };
 
 describe('StagingCatalogProbeService', () => {
-  it('fails closed before querying outside the exact staging runtime', async () => {
+  it('fails closed before querying outside the exact staging bootstrap issuer', async () => {
     const database = new QueryRecorder(successfulRow);
-    const service = new StagingCatalogProbeService(database, 'mcf-runtime-production-api');
+    const service = new StagingCatalogProbeService(database, 'mcf-runtime-staging-api');
 
     await expect(service.run()).rejects.toBeInstanceOf(StagingCatalogProbeDisabledError);
     expect(database.calls).toEqual([]);
@@ -54,7 +54,10 @@ describe('StagingCatalogProbeService', () => {
 
   it('executes one fixed SELECT with no caller-controlled values', async () => {
     const database = new QueryRecorder(successfulRow);
-    const service = new StagingCatalogProbeService(database, 'mcf-runtime-staging-api');
+    const service = new StagingCatalogProbeService(
+      database,
+      'mcf-human-authority-bootstrap-staging',
+    );
 
     await service.run();
 
@@ -75,7 +78,10 @@ describe('StagingCatalogProbeService', () => {
       sessionUser: 'should-never-leak',
       databaseUrl: 'RAW_DATABASE_DETAIL_SHOULD_NOT_LEAK',
     });
-    const service = new StagingCatalogProbeService(database, 'mcf-runtime-staging-api');
+    const service = new StagingCatalogProbeService(
+      database,
+      'mcf-human-authority-bootstrap-staging',
+    );
 
     const result = await service.run();
     expect(result).toEqual({
@@ -94,7 +100,10 @@ describe('StagingCatalogProbeService', () => {
       null,
       new Error('RAW_DATABASE_DETAIL_SHOULD_NOT_LEAK permission denied for hidden_role'),
     );
-    const service = new StagingCatalogProbeService(database, 'mcf-runtime-staging-api');
+    const service = new StagingCatalogProbeService(
+      database,
+      'mcf-human-authority-bootstrap-staging',
+    );
 
     let observed: unknown;
     try {

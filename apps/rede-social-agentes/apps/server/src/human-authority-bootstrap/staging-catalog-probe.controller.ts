@@ -7,14 +7,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { McfMissionControlTokenGuard } from './mission-control-token.guard.js';
+import { BootstrapGithubOidcGuard } from './github-oidc.guard.js';
 import {
   StagingCatalogProbeDisabledError,
   StagingCatalogProbeService,
 } from './staging-catalog-probe.service.js';
 
-@Controller('v1/mcf/staging/catalog-probe')
-@UseGuards(McfMissionControlTokenGuard)
+@Controller('v1/bootstrap/staging/catalog-probe')
+@UseGuards(BootstrapGithubOidcGuard)
 export class StagingCatalogProbeController {
   constructor(
     @Inject(StagingCatalogProbeService)

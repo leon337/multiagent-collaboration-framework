@@ -45,8 +45,6 @@ import { SkillExecutor } from './skill-executor.js';
 import { SkillRegistryLoader } from './skill-registry.loader.js';
 import { SocialTimelineController } from './social-timeline.controller.js';
 import { SocialTimelineService } from './social-timeline.service.js';
-import { StagingCatalogProbeController } from './staging-catalog-probe.controller.js';
-import { StagingCatalogProbeService } from './staging-catalog-probe.service.js';
 import { McfStagingDeployCallbackController } from './staging-deploy-callback.controller.js';
 import { StagingDeployReconciliationService } from './staging-deploy-reconciliation.service.js';
 
@@ -61,7 +59,6 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     SocialTimelineController,
     ProductionAuthorizationController,
     MissionControlController,
-    StagingCatalogProbeController,
   ],
   providers: [
     SkillRegistryLoader,
@@ -69,11 +66,6 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     EvidenceValidator,
     McfRuntimeTokenGuard,
     McfMissionControlTokenGuard,
-    {
-      provide: StagingCatalogProbeService,
-      useFactory: (database: DatabaseService) => new StagingCatalogProbeService(database),
-      inject: [DatabaseService],
-    },
     MissionControlRepository,
     MissionV11ContextGuard,
     ContinuityRecoveryService,

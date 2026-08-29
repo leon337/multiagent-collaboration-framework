@@ -1,7 +1,7 @@
 import { NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
 
-import { McfMissionControlTokenGuard } from './mission-control-token.guard.js';
+import { BootstrapGithubOidcGuard } from './github-oidc.guard.js';
 import { StagingCatalogProbeController } from './staging-catalog-probe.controller.js';
 import {
   StagingCatalogProbeDisabledError,
@@ -27,12 +27,12 @@ const safeResult = {
 };
 
 describe('StagingCatalogProbeController', () => {
-  it('is a fixed Mission Control protected staging route with zero inputs', () => {
+  it('is a fixed GitHub OIDC protected bootstrap staging route with zero inputs', () => {
     expect(Reflect.getMetadata('path', StagingCatalogProbeController)).toBe(
-      'v1/mcf/staging/catalog-probe',
+      'v1/bootstrap/staging/catalog-probe',
     );
     expect(Reflect.getMetadata('__guards__', StagingCatalogProbeController)).toContain(
-      McfMissionControlTokenGuard,
+      BootstrapGithubOidcGuard,
     );
     expect(StagingCatalogProbeController.prototype.probe.length).toBe(0);
   });
