@@ -9,7 +9,8 @@
     "start": "node dist/main.js",
     "test": "vitest run --reporter=default --reporter=json --outputFile=test-results/vitest.json",
     "test:ledger:real:lab": "node e2e/cognitive-ledger-real-lab.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start:bootstrap": "node dist/bootstrap-main.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",
@@ -23,9 +24,8 @@
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
     "yaml": "2.8.3",
-    "zod": "4.4.3"
-  },
-  "devDependencies": {
+    "zod": "4.4.3",
     "jose": "6.2.10"
-  }
+  },
+  "devDependencies": {}
 }
