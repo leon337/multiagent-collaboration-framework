@@ -6,6 +6,7 @@ export interface BootstrapGithubOidcPolicy {
   repositoryOwnerId: string;
   ref: string;
   workflowRef: string;
+  workflowSha: string;
   environment: string;
 }
 
@@ -26,6 +27,7 @@ export function assertBootstrapGithubOidcClaims(
   const repositoryOwnerId = claim(claims, 'repository_owner_id');
   const ref = claim(claims, 'ref');
   const workflowRef = claim(claims, 'workflow_ref');
+  const workflowSha = claim(claims, 'workflow_sha');
   const environment = claim(claims, 'environment');
   const subject = claim(claims, 'sub');
   const [owner, repositoryName] = policy.repository.split('/');
@@ -39,6 +41,7 @@ export function assertBootstrapGithubOidcClaims(
     repositoryOwnerId !== policy.repositoryOwnerId ||
     ref !== policy.ref ||
     workflowRef !== policy.workflowRef ||
+    workflowSha !== policy.workflowSha ||
     environment !== policy.environment ||
     eventName !== 'workflow_dispatch' ||
     subject !== expectedSubject
@@ -52,6 +55,7 @@ export function assertBootstrapGithubOidcClaims(
     repositoryOwnerId,
     ref,
     workflowRef,
+    workflowSha,
     environment,
     runId: claim(claims, 'run_id'),
     jti: claim(claims, 'jti'),

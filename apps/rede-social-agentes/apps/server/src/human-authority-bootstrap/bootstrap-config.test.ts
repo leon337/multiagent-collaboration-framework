@@ -12,6 +12,7 @@ const base = {
   BOOTSTRAP_ALLOWED_REF: 'refs/heads/feat/human-authority-bootstrap-004',
   BOOTSTRAP_ALLOWED_WORKFLOW_REF:
     'leon337/multiagent-collaboration-framework/.github/workflows/human-authority-bootstrap-staging.yml@refs/heads/feat/human-authority-bootstrap-004',
+  BOOTSTRAP_ALLOWED_WORKFLOW_SHA: 'f'.repeat(40),
   BOOTSTRAP_ALLOWED_ENVIRONMENT: 'mcf-human-authority-staging',
   BOOTSTRAP_RUNTIME_BASE_URL: 'https://mcf-runtime-staging-api.onrender.com',
   BOOTSTRAP_EXPECTED_RUNTIME_SHA: 'a7b2016cd7705f37acb949ba77de31833cf62521',
@@ -27,7 +28,7 @@ describe('bootstrap config', () => {
 
   it('fails closed when the OIDC boundary is incomplete', () => {
     const incomplete = { ...base };
-    delete (incomplete as Partial<typeof base>).BOOTSTRAP_ALLOWED_ENVIRONMENT;
+    delete (incomplete as Partial<typeof base>).BOOTSTRAP_ALLOWED_WORKFLOW_SHA;
     expect(() => loadBootstrapConfigFrom(incomplete)).toThrow();
   });
 });

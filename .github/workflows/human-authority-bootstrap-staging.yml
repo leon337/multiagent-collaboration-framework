@@ -9,6 +9,7 @@ on:
         type: string
 
 permissions:
+  actions: read
   contents: read
   id-token: write
 
@@ -39,8 +40,29 @@ jobs:
           node -e '
             const fs=require("fs");
             const p=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/environment.json","utf8"));
-            if(p.name!=="mcf-human-authority-staging" || !Array.isArray(p.protection_rules) || p.protection_rules.length===0){
-              console.error("::error title=ENVIRONMENT_NOT_READY::Environment exists but has no protection rules.");
+            const required=(p.protection_rules||[]).find((rule)=>rule.type==="required_reviewers");
+            const human=required?.reviewers?.some((entry)=>entry.type==="User" && Number(entry.reviewer?.id)===25374535);
+            const branch=p.deployment_branch_policy;
+            if(p.name!=="mcf-human-authority-staging" || !human || branch?.protected_branches!==false || branch?.custom_branch_policies!==true){
+              console.error("::error title=ENVIRONMENT_NOT_READY::Environment must require the canonical human reviewer and an exact custom branch policy.");
+              process.exit(1);
+            }
+          '
+          policies_api="${api}/deployment-branch-policies?per_page=100"
+          policies_status="$(curl --silent --show-error --output "${RUNNER_TEMP}/branch-policies.json" --write-out '%{http_code}' \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "${policies_api}")"
+          if [ "${policies_status}" != '200' ]; then
+            echo "::error title=ENVIRONMENT_NOT_READY::Deployment branch policy lookup failed with HTTP ${policies_status}."
+            exit 1
+          fi
+          node -e '
+            const fs=require("fs");
+            const p=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/branch-policies.json","utf8"));
+            if(!Array.isArray(p.branch_policies) || !p.branch_policies.some((rule)=>rule.name==="feat/human-authority-bootstrap-004")){
+              console.error("::error title=ENVIRONMENT_NOT_READY::Exact staging bootstrap branch policy is missing.");
               process.exit(1);
             }
           '
@@ -55,13 +77,14 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout exact ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.18.0
 

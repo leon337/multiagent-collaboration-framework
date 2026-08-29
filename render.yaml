@@ -75,6 +75,8 @@ services:
         value: refs/heads/feat/human-authority-bootstrap-004
       - key: BOOTSTRAP_ALLOWED_WORKFLOW_REF
         value: leon337/multiagent-collaboration-framework/.github/workflows/human-authority-bootstrap-staging.yml@refs/heads/feat/human-authority-bootstrap-004
+      - key: BOOTSTRAP_ALLOWED_WORKFLOW_SHA
+        sync: false
       - key: BOOTSTRAP_ALLOWED_ENVIRONMENT
         value: mcf-human-authority-staging
       - key: BOOTSTRAP_RUNTIME_BASE_URL

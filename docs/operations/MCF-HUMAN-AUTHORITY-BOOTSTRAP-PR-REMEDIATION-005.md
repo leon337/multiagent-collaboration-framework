@@ -61,3 +61,13 @@ Any active state + intent expiry
 ## Next gate
 
 Codex review should validate the exact new HEAD, the no-PUT provider boundary, the absence of a BOUND route, the protected-environment precondition, and all local/remote checks. No operational G2+ action is consumed by this document or remediation.
+## Codex re-review blockers and remediation
+
+The canonical Codex re-review of `423a6f18aa60d9e964617d17901f5f26230ea796` returned `FAIL` with three blockers. This follow-up remediates them without consuming an operational gate:
+
+1. **Exact workflow revision:** OIDC policy now requires the GitHub `workflow_sha` claim to equal `BOOTSTRAP_ALLOWED_WORKFLOW_SHA`. The issuer configuration fails closed if that 40-hex SHA is absent. The Render blueprint keeps this value `sync: false`, so a later authorized staging gate must bind it to the exact reviewed workflow commit rather than trusting a mutable branch.
+2. **Human reviewer and branch policy:** the environment preflight now requires a `required_reviewers` rule containing the canonical human GitHub user ID and requires custom deployment branch policies. A second read-only API call requires an exact policy named `feat/human-authority-bootstrap-004` before the environment-bound job can run.
+3. **Immutable third-party Actions:** `actions/checkout` and `actions/setup-node` are pinned to the exact commit SHAs resolved from their public `v4` refs at remediation time; mutable `@v4` references are forbidden by the governance test.
+4. **Read-only preflight integrity:** the workflow grants only the additional `actions: read` permission required by GitHub environment/branch-policy reads, checks out `${{ github.sha }}` rather than the mutable branch ref, and disables persisted checkout credentials.
+
+Focused RED→GREEN evidence: OIDC/config tests initially failed on ignored/missing `workflow_sha`; governance tests initially failed on absent workflow-SHA configuration, reviewer/branch-policy checks, and mutable Action refs. After remediation, OIDC/config is 12/12 PASS, governance is 7/7 PASS, server typecheck PASS, and the bootstrap test directory is 35 PASS / 3 skipped by design.

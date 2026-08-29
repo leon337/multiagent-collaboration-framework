@@ -38,6 +38,7 @@ export class BootstrapGithubOidcVerifier {
       repositoryOwnerId: this.config.BOOTSTRAP_ALLOWED_REPOSITORY_OWNER_ID,
       ref: this.config.BOOTSTRAP_ALLOWED_REF,
       workflowRef: this.config.BOOTSTRAP_ALLOWED_WORKFLOW_REF,
+      workflowSha: this.config.BOOTSTRAP_ALLOWED_WORKFLOW_SHA,
       environment: this.config.BOOTSTRAP_ALLOWED_ENVIRONMENT,
     });
   }

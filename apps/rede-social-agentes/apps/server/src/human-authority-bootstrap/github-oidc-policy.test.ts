@@ -8,6 +8,7 @@ const policy = {
   ref: 'refs/heads/feat/human-authority-bootstrap-004',
   workflowRef:
     'leon337/multiagent-collaboration-framework/.github/workflows/human-authority-bootstrap-staging.yml@refs/heads/feat/human-authority-bootstrap-004',
+  workflowSha: 'f'.repeat(40),
   environment: 'mcf-human-authority-staging',
 };
 
@@ -20,6 +21,7 @@ const valid = {
   repository_owner_id: policy.repositoryOwnerId,
   ref: policy.ref,
   workflow_ref: policy.workflowRef,
+  workflow_sha: policy.workflowSha,
   environment: policy.environment,
   event_name: 'workflow_dispatch',
   sub: immutableSubject,
@@ -38,6 +40,7 @@ describe('bootstrap GitHub OIDC policy', () => {
     ['repository-owner-id', { ...valid, repository_owner_id: '999999999' }],
     ['ref', { ...valid, ref: 'refs/heads/main' }],
     ['workflow', { ...valid, workflow_ref: 'other/workflow@refs/heads/main' }],
+    ['workflow-sha', { ...valid, workflow_sha: '0'.repeat(40) }],
     ['environment', { ...valid, environment: 'production' }],
     ['event', { ...valid, event_name: 'push' }],
     [

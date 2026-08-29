@@ -25,6 +25,7 @@ test('bootstrap staging service is isolated, free, and has no provider credentia
   assert.equal(env.BOOTSTRAP_RUNTIME_BASE_URL.sync, false);
   assert.equal(env.BOOTSTRAP_ALLOWED_REPOSITORY_ID.value, '1316814482');
   assert.equal(env.BOOTSTRAP_ALLOWED_REPOSITORY_OWNER_ID.value, '25374535');
+  assert.equal(env.BOOTSTRAP_ALLOWED_WORKFLOW_SHA.sync, false);
   assert.equal(
     env.BOOTSTRAP_EXPECTED_RUNTIME_SHA.value,
     'a7b2016cd7705f37acb949ba77de31833cf62521',
@@ -41,17 +42,28 @@ test('control-plane workflow fails closed before referencing an absent protected
   const preflight = workflow.jobs.environment_precondition;
   const job = workflow.jobs.bind_authority;
   assert.equal(workflow.permissions.contents, 'read');
+  assert.equal(workflow.permissions.actions, 'read');
   assert.equal(workflow.permissions['id-token'], 'write');
   assert.ok(preflight);
   assert.equal(preflight.environment, undefined);
   assert.match(workflowText, /environments\/mcf-human-authority-staging/);
   assert.match(workflowText, /ENVIRONMENT_NOT_READY/);
+  assert.match(workflowText, /required_reviewers/);
+  assert.match(workflowText, /25374535/);
+  assert.match(workflowText, /deployment-branch-policies/);
+  assert.match(workflowText, /feat\/human-authority-bootstrap-004/);
   assert.equal(job.needs, 'environment_precondition');
   assert.equal(job.environment, 'mcf-human-authority-staging');
   assert.equal(job['runs-on'], 'ubuntu-latest');
   assert.match(workflowText, /BOOTSTRAP_INTENT_REF/);
   assert.match(workflowText, /BOOTSTRAP_SEAL_PRIVATE_JWK/);
   assert.match(workflowText, /RENDER_API_KEY/);
+  assert.match(workflowText, /actions\/checkout@11d5960a326750d5838078e36cf38b85af677262/);
+  assert.match(workflowText, /actions\/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020/);
+  assert.doesNotMatch(workflowText, /actions\/(?:checkout|setup-node)@v[0-9]+/);
+  assert.match(workflowText, /ref: \$\{\{ github\.sha \}\}/);
+  assert.match(workflowText, /persist-credentials: false/);
+  assert.doesNotMatch(workflowText, /ref: \$\{\{ github\.ref \}\}/);
   assert.doesNotMatch(workflowText, /VPS/);
   assert.doesNotMatch(workflowText, /curl[^\n]*(?:-X|--request)\s+(?:PUT|POST|PATCH|DELETE)/i);
 });
