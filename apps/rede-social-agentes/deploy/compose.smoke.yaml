@@ -38,6 +38,7 @@ services:
       RATE_LIMIT_KEY_SECRET: smoke-only-rate-limit-secret-with-at-least-32-characters
       MCF_RECEIPT_SECRET: smoke-only-receipt-secret-with-at-least-32-characters
       MCF_RUNTIME_TOKEN: smoke-only-runtime-token-with-at-least-32-characters
+      MCF_MISSION_CONTROL_TOKEN: smoke-only-mission-control-token-with-at-least-32-characters
       TRUST_PROXY: 'true'
       BODY_LIMIT_BYTES: 262144
       ALLOWED_ORIGINS: https://smoke.invalid
