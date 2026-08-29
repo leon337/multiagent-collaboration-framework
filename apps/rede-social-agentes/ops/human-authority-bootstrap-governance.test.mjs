@@ -22,25 +22,38 @@ test('bootstrap staging service is isolated, free, and has no provider credentia
   assert.equal(env.MCF_BOOTSTRAP_ISSUER.value, 'true');
   assert.equal(env.BOOTSTRAP_OIDC_AUDIENCE.value, 'mcf-human-authority-bootstrap');
   assert.equal(env.BOOTSTRAP_ALLOWED_ENVIRONMENT.value, 'mcf-human-authority-staging');
+  assert.equal(env.BOOTSTRAP_RUNTIME_BASE_URL.sync, false);
+  assert.equal(env.BOOTSTRAP_ALLOWED_REPOSITORY_ID.value, '1316814482');
+  assert.equal(env.BOOTSTRAP_ALLOWED_REPOSITORY_OWNER_ID.value, '25374535');
+  assert.equal(
+    env.BOOTSTRAP_EXPECTED_RUNTIME_SHA.value,
+    'a7b2016cd7705f37acb949ba77de31833cf62521',
+  );
   assert.ok(env.DATABASE_URL);
   assert.ok(env.BOOTSTRAP_SEAL_PUBLIC_JWK);
   assert.equal(env.RENDER_API_KEY, undefined);
   assert.equal(env.BOOTSTRAP_SEAL_PRIVATE_JWK, undefined);
 });
 
-test('control-plane workflow uses GitHub OIDC and a staging-only environment', async () => {
+test('control-plane workflow fails closed before referencing an absent protected environment', async () => {
   const workflowText = await read('.github/workflows/human-authority-bootstrap-staging.yml');
   const workflow = YAML.parse(workflowText);
+  const preflight = workflow.jobs.environment_precondition;
   const job = workflow.jobs.bind_authority;
   assert.equal(workflow.permissions.contents, 'read');
   assert.equal(workflow.permissions['id-token'], 'write');
+  assert.ok(preflight);
+  assert.equal(preflight.environment, undefined);
+  assert.match(workflowText, /environments\/mcf-human-authority-staging/);
+  assert.match(workflowText, /ENVIRONMENT_NOT_READY/);
+  assert.equal(job.needs, 'environment_precondition');
   assert.equal(job.environment, 'mcf-human-authority-staging');
   assert.equal(job['runs-on'], 'ubuntu-latest');
   assert.match(workflowText, /BOOTSTRAP_INTENT_REF/);
   assert.match(workflowText, /BOOTSTRAP_SEAL_PRIVATE_JWK/);
   assert.match(workflowText, /RENDER_API_KEY/);
-  assert.doesNotMatch(workflowText, /production/i);
   assert.doesNotMatch(workflowText, /VPS/);
+  assert.doesNotMatch(workflowText, /curl[^\n]*(?:-X|--request)\s+(?:PUT|POST|PATCH|DELETE)/i);
 });
 
 test('Docker entrypoint can run bootstrap issuer without loading the public runtime', async () => {
@@ -51,15 +64,31 @@ test('Docker entrypoint can run bootstrap issuer without loading the public runt
 });
 
 test('bootstrap persistence stores no raw human identity columns', async () => {
-  const migration = await read(
-    'apps/rede-social-agentes/packages/database/migrations/0030_human_authority_binding_bootstrap.sql',
-  );
+  const migration = [
+    await read(
+      'apps/rede-social-agentes/packages/database/migrations/0030_human_authority_binding_bootstrap.sql',
+    ),
+    await read(
+      'apps/rede-social-agentes/packages/database/migrations/0031_human_authority_binding_evidence_gates.sql',
+    ),
+  ].join('\n');
   assert.match(migration, /"sealed_binding" text NOT NULL/);
   assert.match(migration, /"subject_fingerprint" text NOT NULL/);
+  assert.match(migration, /RUNTIME_VERIFIED/);
+  assert.match(migration, /RECONCILIATION_REQUIRED/);
   assert.doesNotMatch(migration, /"account_id"/);
   assert.doesNotMatch(migration, /"email"/);
   assert.doesNotMatch(migration, /"token"/);
   assert.doesNotMatch(migration, /render_api_key/i);
+});
+
+test('OIDC verification pins issuer, audience and RS256 before immutable claim policy', async () => {
+  const guard = await read(
+    'apps/rede-social-agentes/apps/server/src/human-authority-bootstrap/github-oidc.guard.ts',
+  );
+  assert.match(guard, /issuer: 'https:\/\/token\.actions\.githubusercontent\.com'/);
+  assert.match(guard, /audience: this\.config\.BOOTSTRAP_OIDC_AUDIENCE/);
+  assert.match(guard, /algorithms: \['RS256'\]/);
 });
 
 test('bootstrap entrypoint remains independent from the public runtime module', async () => {

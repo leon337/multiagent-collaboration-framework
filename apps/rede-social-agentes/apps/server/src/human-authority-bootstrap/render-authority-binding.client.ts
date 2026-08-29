@@ -3,8 +3,14 @@ import { createHash } from 'node:crypto';
 const key = 'RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID';
 
 export type RenderBindingOutcome =
-  | { outcome: 'BOUND'; mutated: boolean; providerMutationDigest: string }
-  | { outcome: 'CONFLICT'; mutated: false; providerMutationDigest: string };
+  | { outcome: 'ALREADY_BOUND'; mutated: false; providerMutationDigest: string }
+  | { outcome: 'CONFLICT'; mutated: false; providerMutationDigest: string }
+  | {
+      outcome: 'RECONCILIATION_REQUIRED';
+      mutated: false;
+      reason: 'PROVIDER_ATOMIC_CREATE_UNAVAILABLE';
+      providerMutationDigest: string;
+    };
 
 function digest(value: Record<string, unknown>): string {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -41,7 +47,7 @@ export class RenderAuthorityBindingClient {
     if (current.status === 'PRESENT') {
       const matches = current.value === accountId;
       return {
-        outcome: matches ? 'BOUND' : 'CONFLICT',
+        outcome: matches ? 'ALREADY_BOUND' : 'CONFLICT',
         mutated: false,
         providerMutationDigest: digest({
           provider: 'render',
@@ -51,26 +57,15 @@ export class RenderAuthorityBindingClient {
       } as RenderBindingOutcome;
     }
 
-    const response = await this.fetchImpl(this.endpoint(), {
-      method: 'PUT',
-      headers: {
-        authorization: `Bearer ${this.apiKey}`,
-        accept: 'application/json',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ value: accountId }),
-    });
-    if (!response.ok)
-      throw new Error(`Render environment update failed with HTTP ${response.status}.`);
-
-    const verified = await this.get();
-    if (verified.status !== 'PRESENT' || verified.value !== accountId) {
-      throw new Error('Render environment update could not be verified.');
-    }
     return {
-      outcome: 'BOUND',
-      mutated: true,
-      providerMutationDigest: digest({ provider: 'render', key, result: 'CREATED_AND_VERIFIED' }),
+      outcome: 'RECONCILIATION_REQUIRED',
+      mutated: false,
+      reason: 'PROVIDER_ATOMIC_CREATE_UNAVAILABLE',
+      providerMutationDigest: digest({
+        provider: 'render',
+        key,
+        result: 'ABSENT_AT_READ_NO_ATOMIC_CREATE',
+      }),
     };
   }
 }

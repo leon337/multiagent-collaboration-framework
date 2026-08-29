@@ -1,7 +1,9 @@
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { RenderAuthorityBindingClient } from './render-authority-binding.client.js';
 
-const accountId = '11111111-1111-4111-8111-111111111111';
+const accountId = randomUUID();
+const otherAccountId = randomUUID();
 
 function response(status: number, body?: unknown): Response {
   return new Response(body === undefined ? null : JSON.stringify(body), {
@@ -11,38 +13,29 @@ function response(status: number, body?: unknown): Response {
 }
 
 describe('RenderAuthorityBindingClient', () => {
-  it('creates only the reserved binding when it is absent and verifies it without deploying', async () => {
+  it('fails closed without PUT when the binding is absent because Render exposes no atomic create/CAS contract', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(response(404));
+    const client = new RenderAuthorityBindingClient(fetchImpl, 'srv-staging', 'render-key');
+
+    await expect(client.reconcile(accountId)).resolves.toMatchObject({
+      outcome: 'RECONCILIATION_REQUIRED',
+      mutated: false,
+      reason: 'PROVIDER_ATOMIC_CREATE_UNAVAILABLE',
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls.some(([, init]) => init?.method === 'PUT')).toBe(false);
+  });
+
+  it('treats the same existing binding as an idempotent read-only reconciliation', async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(response(404))
-      .mockResolvedValueOnce(
-        response(200, { key: 'RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID', value: accountId }),
-      )
-      .mockResolvedValueOnce(
+      .mockResolvedValue(
         response(200, { key: 'RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID', value: accountId }),
       );
     const client = new RenderAuthorityBindingClient(fetchImpl, 'srv-staging', 'render-key');
 
-    const result = await client.reconcile(accountId);
-
-    expect(result).toMatchObject({ outcome: 'BOUND', mutated: true });
-    const put = fetchImpl.mock.calls[1];
-    expect(put?.[1]).toMatchObject({ method: 'PUT', body: JSON.stringify({ value: accountId }) });
-    expect(fetchImpl).toHaveBeenCalledTimes(3);
-    expect(fetchImpl.mock.calls.some(([url]) => String(url).includes('/deploy'))).toBe(false);
-  });
-
-  it('treats the same existing binding as an idempotent reconciliation', async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
-      response(200, {
-        key: 'RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID',
-        value: accountId,
-      }),
-    );
-    const client = new RenderAuthorityBindingClient(fetchImpl, 'srv-staging', 'render-key');
-
     await expect(client.reconcile(accountId)).resolves.toMatchObject({
-      outcome: 'BOUND',
+      outcome: 'ALREADY_BOUND',
       mutated: false,
     });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
@@ -52,7 +45,7 @@ describe('RenderAuthorityBindingClient', () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       response(200, {
         key: 'RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID',
-        value: '22222222-2222-4222-8222-222222222222',
+        value: otherAccountId,
       }),
     );
     const client = new RenderAuthorityBindingClient(fetchImpl, 'srv-staging', 'render-key');
@@ -62,5 +55,6 @@ describe('RenderAuthorityBindingClient', () => {
       mutated: false,
     });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl.mock.calls.some(([, init]) => init?.method === 'PUT')).toBe(false);
   });
 });

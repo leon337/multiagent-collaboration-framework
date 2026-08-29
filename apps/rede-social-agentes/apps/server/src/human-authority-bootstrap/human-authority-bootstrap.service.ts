@@ -2,7 +2,15 @@ import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 
 export type HumanAuthorityBootstrapTarget = 'STAGING';
 export type HumanAuthorityBootstrapState =
-  'PENDING' | 'APPLYING' | 'VERIFYING' | 'BOUND' | 'CONFLICT' | 'FAILED';
+  | 'PENDING'
+  | 'APPLYING'
+  | 'PROVIDER_APPLIED'
+  | 'VERIFYING'
+  | 'RUNTIME_VERIFIED'
+  | 'RECONCILIATION_REQUIRED'
+  | 'BOUND'
+  | 'CONFLICT'
+  | 'FAILED';
 
 export interface HumanAuthorityBootstrapIntentRecord {
   intentRef: string;
@@ -31,16 +39,30 @@ export interface HumanAuthorityBootstrapRepository {
     claimExpiresAt: Date;
     now: Date;
   }): Promise<HumanAuthorityBootstrapIntentRecord | null>;
-  markVerifying?(input: {
+  markProviderApplied?(input: {
     intentRef: string;
     claimRef: string;
     providerMutationDigest: string;
     now: Date;
   }): Promise<boolean>;
+  markReconciliationRequired?(input: {
+    intentRef: string;
+    claimRef: string;
+    reconciliationDigest: string;
+    reason: 'PROVIDER_ATOMIC_CREATE_UNAVAILABLE' | 'PROVIDER_STATE_DRIFT';
+    now: Date;
+  }): Promise<boolean>;
+  markVerifying?(input: { intentRef: string; claimRef: string; now: Date }): Promise<boolean>;
+  markRuntimeVerified?(input: {
+    intentRef: string;
+    claimRef: string;
+    runtimeEvidenceDigest: string;
+    now: Date;
+  }): Promise<boolean>;
   finalizeIntent?(input: {
     intentRef: string;
     claimRef: string;
-    outcome: 'BOUND' | 'CONFLICT' | 'FAILED';
+    outcome: 'CONFLICT' | 'FAILED';
     receiptDigest: string;
     now: Date;
   }): Promise<boolean>;
@@ -85,12 +107,11 @@ export class HumanAuthorityBootstrapService {
     const subjectFingerprint = this.fingerprint(authenticatedHuman.accountId);
     const intentRef = randomUUID();
     const expiresAt = new Date(now.getTime() + this.intentTtlMs);
-    const nonce = randomBytes(32).toString('base64url');
     const sealedBinding = await this.seal({
       intentRef,
       target: request.target,
       accountId: authenticatedHuman.accountId,
-      nonce,
+      nonce: randomBytes(32).toString('base64url'),
       issuedAt: now.toISOString(),
       expiresAt: expiresAt.toISOString(),
     });
@@ -106,25 +127,21 @@ export class HumanAuthorityBootstrapService {
       },
       now,
     );
-    if (reserved.status === 'CONFLICT') {
-      throw new HumanAuthorityBootstrapConflictError();
-    }
+    if (reserved.status === 'CONFLICT') throw new HumanAuthorityBootstrapConflictError();
     return publicIntent(reserved.intent);
   }
 
   async claimIntent(intentRef: string, principalFingerprint: string, now = new Date()) {
     if (!this.repository.claimIntent) throw new Error('Bootstrap repository cannot claim intents.');
-    const claimRef = randomUUID();
     const claimed = await this.repository.claimIntent({
       intentRef,
-      claimRef,
+      claimRef: randomUUID(),
       principalFingerprint,
       claimExpiresAt: new Date(now.getTime() + this.claimLeaseMs),
       now,
     });
-    if (!claimed?.claimRef || !claimed.claimExpiresAt) {
+    if (!claimed?.claimRef || !claimed.claimExpiresAt)
       throw new Error('Authority-binding intent is not claimable.');
-    }
     return {
       intentRef: claimed.intentRef,
       target: claimed.target,
@@ -137,39 +154,86 @@ export class HumanAuthorityBootstrapService {
     };
   }
 
-  async markVerifying(
+  async markProviderApplied(
     intentRef: string,
     claimRef: string,
     providerMutationDigest: string,
     now = new Date(),
   ): Promise<void> {
+    if (!this.repository.markProviderApplied)
+      throw new Error('Bootstrap repository cannot record provider application.');
+    if (
+      !(await this.repository.markProviderApplied({
+        intentRef,
+        claimRef,
+        providerMutationDigest,
+        now,
+      }))
+    )
+      throw new Error('Authority-binding claim is stale or not applying.');
+  }
+
+  async markReconciliationRequired(
+    intentRef: string,
+    claimRef: string,
+    reconciliationDigest: string,
+    reason: 'PROVIDER_ATOMIC_CREATE_UNAVAILABLE' | 'PROVIDER_STATE_DRIFT',
+    now = new Date(),
+  ): Promise<void> {
+    if (!this.repository.markReconciliationRequired)
+      throw new Error('Bootstrap repository cannot record reconciliation.');
+    if (
+      !(await this.repository.markReconciliationRequired({
+        intentRef,
+        claimRef,
+        reconciliationDigest,
+        reason,
+        now,
+      }))
+    )
+      throw new Error('Authority-binding claim is stale or not reconcilable.');
+  }
+
+  async markVerifying(intentRef: string, claimRef: string, now = new Date()): Promise<void> {
     if (!this.repository.markVerifying)
       throw new Error('Bootstrap repository cannot verify intents.');
-    const updated = await this.repository.markVerifying({
-      intentRef,
-      claimRef,
-      providerMutationDigest,
-      now,
-    });
-    if (!updated) throw new Error('Authority-binding claim is stale or not applying.');
+    if (!(await this.repository.markVerifying({ intentRef, claimRef, now })))
+      throw new Error('Authority-binding claim is stale or provider application is unproven.');
+  }
+
+  async markRuntimeVerified(
+    intentRef: string,
+    claimRef: string,
+    runtimeEvidenceDigest: string,
+    now = new Date(),
+  ): Promise<void> {
+    if (!this.repository.markRuntimeVerified)
+      throw new Error('Bootstrap repository cannot record runtime verification.');
+    if (
+      !(await this.repository.markRuntimeVerified({
+        intentRef,
+        claimRef,
+        runtimeEvidenceDigest,
+        now,
+      }))
+    )
+      throw new Error(
+        'Authority-binding claim is stale or runtime verification is out of sequence.',
+      );
   }
 
   async finalizeIntent(
     intentRef: string,
     claimRef: string,
-    outcome: 'BOUND' | 'CONFLICT' | 'FAILED',
+    outcome: 'CONFLICT' | 'FAILED',
     receiptDigest: string,
     now = new Date(),
   ): Promise<void> {
     if (!this.repository.finalizeIntent)
       throw new Error('Bootstrap repository cannot finalize intents.');
-    const updated = await this.repository.finalizeIntent({
-      intentRef,
-      claimRef,
-      outcome,
-      receiptDigest,
-      now,
-    });
-    if (!updated) throw new Error('Authority-binding claim is stale or not finalizable.');
+    if (
+      !(await this.repository.finalizeIntent({ intentRef, claimRef, outcome, receiptDigest, now }))
+    )
+      throw new Error('Authority-binding claim is stale or not finalizable.');
   }
 }

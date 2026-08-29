@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 export interface BootstrapGithubOidcPolicy {
   repository: string;
   repositoryId: string;
+  repositoryOwnerId: string;
   ref: string;
   workflowRef: string;
   environment: string;
@@ -22,18 +23,24 @@ export function assertBootstrapGithubOidcClaims(
 ): string {
   const repository = claim(claims, 'repository');
   const repositoryId = claim(claims, 'repository_id');
+  const repositoryOwnerId = claim(claims, 'repository_owner_id');
   const ref = claim(claims, 'ref');
   const workflowRef = claim(claims, 'workflow_ref');
   const environment = claim(claims, 'environment');
   const subject = claim(claims, 'sub');
-  const expectedSubject = `repo:${policy.repository}:environment:${policy.environment}`;
+  const [owner, repositoryName] = policy.repository.split('/');
+  if (!owner || !repositoryName) throw new Error('OIDC repository policy is invalid.');
+  const expectedSubject = `repo:${owner}@${policy.repositoryOwnerId}/${repositoryName}@${policy.repositoryId}:environment:${policy.environment}`;
+  const eventName = claim(claims, 'event_name');
 
   if (
     repository !== policy.repository ||
     repositoryId !== policy.repositoryId ||
+    repositoryOwnerId !== policy.repositoryOwnerId ||
     ref !== policy.ref ||
     workflowRef !== policy.workflowRef ||
     environment !== policy.environment ||
+    eventName !== 'workflow_dispatch' ||
     subject !== expectedSubject
   ) {
     throw new Error('OIDC claims do not match the staging bootstrap trust boundary.');
@@ -42,6 +49,7 @@ export function assertBootstrapGithubOidcClaims(
   const principal = {
     repository,
     repositoryId,
+    repositoryOwnerId,
     ref,
     workflowRef,
     environment,

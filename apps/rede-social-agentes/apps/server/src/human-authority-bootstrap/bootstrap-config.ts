@@ -9,9 +9,15 @@ const schema = z.object({
   BOOTSTRAP_OIDC_AUDIENCE: z.string().min(3),
   BOOTSTRAP_ALLOWED_REPOSITORY: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u),
   BOOTSTRAP_ALLOWED_REPOSITORY_ID: z.string().regex(/^[0-9]+$/u),
+  BOOTSTRAP_ALLOWED_REPOSITORY_OWNER_ID: z.string().regex(/^[0-9]+$/u),
   BOOTSTRAP_ALLOWED_REF: z.string().startsWith('refs/'),
   BOOTSTRAP_ALLOWED_WORKFLOW_REF: z.string().includes('/.github/workflows/'),
   BOOTSTRAP_ALLOWED_ENVIRONMENT: z.string().min(1),
+  BOOTSTRAP_RUNTIME_BASE_URL: z
+    .string()
+    .url()
+    .refine((value) => value.startsWith('https://')),
+  BOOTSTRAP_EXPECTED_RUNTIME_SHA: z.string().regex(/^[a-f0-9]{40}$/u),
   BOOTSTRAP_INTENT_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(600),
   BOOTSTRAP_CLAIM_LEASE_SECONDS: z.coerce.number().int().min(30).max(900).default(300),
   BOOTSTRAP_ALLOWED_ORIGIN: z.string().url().optional(),

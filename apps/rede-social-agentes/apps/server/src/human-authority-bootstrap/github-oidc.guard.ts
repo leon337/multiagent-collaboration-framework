@@ -35,6 +35,7 @@ export class BootstrapGithubOidcVerifier {
     return assertBootstrapGithubOidcClaims(payload, {
       repository: this.config.BOOTSTRAP_ALLOWED_REPOSITORY,
       repositoryId: this.config.BOOTSTRAP_ALLOWED_REPOSITORY_ID,
+      repositoryOwnerId: this.config.BOOTSTRAP_ALLOWED_REPOSITORY_OWNER_ID,
       ref: this.config.BOOTSTRAP_ALLOWED_REF,
       workflowRef: this.config.BOOTSTRAP_ALLOWED_WORKFLOW_REF,
       environment: this.config.BOOTSTRAP_ALLOWED_ENVIRONMENT,

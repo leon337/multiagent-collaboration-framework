@@ -17,7 +17,36 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  environment_precondition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require pre-existing protected staging environment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/environments/mcf-human-authority-staging"
+          status="$(curl --silent --show-error --output "${RUNNER_TEMP}/environment.json" --write-out '%{http_code}' \
+            --header 'Accept: application/vnd.github+json' \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "${api}")"
+          if [ "${status}" != '200' ]; then
+            echo "::error title=ENVIRONMENT_NOT_READY::Protected environment must pre-exist; observed HTTP ${status}."
+            exit 1
+          fi
+          node -e '
+            const fs=require("fs");
+            const p=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/environment.json","utf8"));
+            if(p.name!=="mcf-human-authority-staging" || !Array.isArray(p.protection_rules) || p.protection_rules.length===0){
+              console.error("::error title=ENVIRONMENT_NOT_READY::Environment exists but has no protection rules.");
+              process.exit(1);
+            }
+          '
+
   bind_authority:
+    needs: environment_precondition
     if: >-
       github.repository == 'leon337/multiagent-collaboration-framework' &&
       github.ref == 'refs/heads/feat/human-authority-bootstrap-004'

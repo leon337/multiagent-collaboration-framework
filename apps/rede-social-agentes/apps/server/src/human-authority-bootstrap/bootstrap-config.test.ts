@@ -8,10 +8,13 @@ const base = {
   BOOTSTRAP_OIDC_AUDIENCE: 'mcf-human-authority-bootstrap',
   BOOTSTRAP_ALLOWED_REPOSITORY: 'leon337/multiagent-collaboration-framework',
   BOOTSTRAP_ALLOWED_REPOSITORY_ID: '1316814482',
+  BOOTSTRAP_ALLOWED_REPOSITORY_OWNER_ID: '25374535',
   BOOTSTRAP_ALLOWED_REF: 'refs/heads/feat/human-authority-bootstrap-004',
   BOOTSTRAP_ALLOWED_WORKFLOW_REF:
     'leon337/multiagent-collaboration-framework/.github/workflows/human-authority-bootstrap-staging.yml@refs/heads/feat/human-authority-bootstrap-004',
   BOOTSTRAP_ALLOWED_ENVIRONMENT: 'mcf-human-authority-staging',
+  BOOTSTRAP_RUNTIME_BASE_URL: 'https://mcf-runtime-staging-api.onrender.com',
+  BOOTSTRAP_EXPECTED_RUNTIME_SHA: 'a7b2016cd7705f37acb949ba77de31833cf62521',
 };
 
 describe('bootstrap config', () => {

@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -7,8 +7,12 @@ import {
   type HumanAuthorityBootstrapRepository,
 } from './human-authority-bootstrap.service.js';
 
-const accountA = '11111111-1111-4111-8111-111111111111';
-const accountB = '22222222-2222-4222-8222-222222222222';
+const accountA = randomUUID();
+const accountB = randomUUID();
+const activeIntentA = randomUUID();
+const activeIntentB = randomUUID();
+const claimIntentRef = randomUUID();
+const claimRef = randomUUID();
 const now = new Date('2026-08-29T11:00:00.000Z');
 const fingerprint = (accountId: string) =>
   createHmac('sha256', 'pepper').update(accountId).digest('hex');
@@ -41,7 +45,7 @@ describe('HumanAuthorityBootstrapService', () => {
 
   it('is idempotent for the same authenticated account while an intent is pending', async () => {
     const active = {
-      intentRef: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      intentRef: activeIntentA,
       target: 'STAGING' as const,
       state: 'PENDING' as const,
       subjectFingerprint: fingerprint(accountA),
@@ -63,7 +67,7 @@ describe('HumanAuthorityBootstrapService', () => {
 
   it('fails closed when another authenticated account already owns the active target intent', async () => {
     const active = {
-      intentRef: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+      intentRef: activeIntentB,
       target: 'STAGING' as const,
       state: 'PENDING' as const,
       subjectFingerprint: fingerprint(accountA),
@@ -86,31 +90,27 @@ describe('HumanAuthorityBootstrapService', () => {
 it('returns only the sealed binding and a fresh claim reference to the authorized control plane', async () => {
   const repo = repository({
     claimIntent: vi.fn(async () => ({
-      intentRef: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      intentRef: claimIntentRef,
       target: 'STAGING' as const,
       state: 'APPLYING' as const,
       subjectFingerprint: fingerprint(accountA),
       sealedBinding: 'opaque-jwe',
       expiresAt: new Date(now.getTime() + 60_000),
       createdAt: now,
-      claimRef: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+      claimRef: claimRef,
       claimExpiresAt: new Date(now.getTime() + 30_000),
     })),
   });
   const service = new HumanAuthorityBootstrapService(repo, vi.fn(), 'pepper', 600_000);
 
-  const result = await service.claimIntent(
-    'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
-    'principal-fingerprint',
-    now,
-  );
+  const result = await service.claimIntent(claimIntentRef, 'principal-fingerprint', now);
 
   expect(result).toEqual(
     expect.objectContaining({
       state: 'APPLYING',
       target: 'STAGING',
       sealedBinding: 'opaque-jwe',
-      claimRef: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+      claimRef: claimRef,
       identityDisclosed: false,
     }),
   );
@@ -121,26 +121,25 @@ it('rejects a stale or replayed control-plane claim', async () => {
   const repo = repository({ claimIntent: vi.fn(async () => null) });
   const service = new HumanAuthorityBootstrapService(repo, vi.fn(), 'pepper', 600_000);
 
-  await expect(
-    service.claimIntent('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'principal', now),
-  ).rejects.toThrow('not claimable');
+  await expect(service.claimIntent(claimIntentRef, 'principal', now)).rejects.toThrow(
+    'not claimable',
+  );
 });
 
-it('moves an applying claim to verifying before it can be finalized as bound', async () => {
+it('advances only through RUNTIME_VERIFIED; BOUND remains outside this service contract', async () => {
+  const markProviderApplied = vi.fn(async () => true);
   const markVerifying = vi.fn(async () => true);
-  const finalizeIntent = vi.fn(async () => true);
-  const repo = repository({ markVerifying, finalizeIntent });
+  const markRuntimeVerified = vi.fn(async () => true);
+  const repo = repository({ markProviderApplied, markVerifying, markRuntimeVerified });
   const service = new HumanAuthorityBootstrapService(repo, vi.fn(), 'pepper', 600_000);
 
-  await service.markVerifying('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'claim', 'a'.repeat(64), now);
-  await service.finalizeIntent(
-    'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
-    'claim',
-    'BOUND',
-    'b'.repeat(64),
-    now,
-  );
+  await service.markProviderApplied(claimIntentRef, 'claim', 'a'.repeat(64), now);
+  await service.markVerifying(claimIntentRef, 'claim', now);
+  await service.markRuntimeVerified(claimIntentRef, 'claim', 'b'.repeat(64), now);
 
+  expect(markProviderApplied).toHaveBeenCalled();
   expect(markVerifying).toHaveBeenCalled();
-  expect(finalizeIntent).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'BOUND' }));
+  expect(markRuntimeVerified).toHaveBeenCalledWith(
+    expect.objectContaining({ runtimeEvidenceDigest: 'b'.repeat(64) }),
+  );
 });

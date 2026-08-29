@@ -10,6 +10,7 @@ import { HumanAuthorityBootstrapControlPlaneController } from './human-authority
 import { HumanAuthorityBootstrapController } from './human-authority-bootstrap.controller.js';
 import { HumanAuthorityBindingSealer } from './human-authority-bootstrap.sealer.js';
 import { HumanAuthorityBootstrapService } from './human-authority-bootstrap.service.js';
+import { HumanAuthorityRuntimeVerifier } from './human-authority-runtime-verifier.js';
 import { PostgresHumanAuthorityBootstrapRepository } from './postgres-human-authority-bootstrap.repository.js';
 
 @Module({
@@ -29,6 +30,16 @@ import { PostgresHumanAuthorityBootstrapRepository } from './postgres-human-auth
     BootstrapGithubOidcVerifier,
     BootstrapGithubOidcGuard,
     PostgresHumanAuthorityBootstrapRepository,
+    {
+      provide: HumanAuthorityRuntimeVerifier,
+      useFactory: () => {
+        const config = loadBootstrapConfig();
+        return new HumanAuthorityRuntimeVerifier(
+          config.BOOTSTRAP_RUNTIME_BASE_URL,
+          config.BOOTSTRAP_EXPECTED_RUNTIME_SHA,
+        );
+      },
+    },
     {
       provide: HumanAuthorityBootstrapService,
       useFactory: (repository: PostgresHumanAuthorityBootstrapRepository) => {

@@ -69,12 +69,18 @@ services:
         value: leon337/multiagent-collaboration-framework
       - key: BOOTSTRAP_ALLOWED_REPOSITORY_ID
         value: "1316814482"
+      - key: BOOTSTRAP_ALLOWED_REPOSITORY_OWNER_ID
+        value: "25374535"
       - key: BOOTSTRAP_ALLOWED_REF
         value: refs/heads/feat/human-authority-bootstrap-004
       - key: BOOTSTRAP_ALLOWED_WORKFLOW_REF
         value: leon337/multiagent-collaboration-framework/.github/workflows/human-authority-bootstrap-staging.yml@refs/heads/feat/human-authority-bootstrap-004
       - key: BOOTSTRAP_ALLOWED_ENVIRONMENT
         value: mcf-human-authority-staging
+      - key: BOOTSTRAP_RUNTIME_BASE_URL
+        sync: false
+      - key: BOOTSTRAP_EXPECTED_RUNTIME_SHA
+        value: a7b2016cd7705f37acb949ba77de31833cf62521
 
   - type: web
     name: rsa-web-free
