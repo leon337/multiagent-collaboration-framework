@@ -953,7 +953,10 @@ function validateVisualDesktopAuditReceipt(
     reject('visual desktop audit surfaceInventory must match actualSurfaceCount');
   }
   for (const surface of surfaces) {
-    const item = requireRecord(surface, 'visual desktop audit surfaceInventory entries must be objects');
+    const item = requireRecord(
+      surface,
+      'visual desktop audit surfaceInventory entries must be objects',
+    );
     recordString(item, 'windowId', 'visual desktop audit surface requires windowId');
     recordString(item, 'title', 'visual desktop audit surface requires title');
     recordString(item, 'label', 'visual desktop audit surface requires an observable label');

@@ -377,9 +377,33 @@ describe('SkillExecutor expanded batch', () => {
         annotatedArtifact: '/tmp/audit-annotated.png',
         verificationArtifact: '/tmp/audit-verification.png',
         surfaceInventory: [
-          { windowId: '0x1', title: 'Left - Brave', x: 0, y: 0, width: 1360, height: 768, label: 'Current GROK BOT conversation' },
-          { windowId: '0x2', title: 'Center - Brave', x: 1360, y: 0, width: 680, height: 714, label: 'GROK BOT chats' },
-          { windowId: '0x3', title: 'Right - Brave', x: 2040, y: 0, width: 680, height: 714, label: 'GROK BOT chats' },
+          {
+            windowId: '0x1',
+            title: 'Left - Brave',
+            x: 0,
+            y: 0,
+            width: 1360,
+            height: 768,
+            label: 'Current GROK BOT conversation',
+          },
+          {
+            windowId: '0x2',
+            title: 'Center - Brave',
+            x: 1360,
+            y: 0,
+            width: 680,
+            height: 714,
+            label: 'GROK BOT chats',
+          },
+          {
+            windowId: '0x3',
+            title: 'Right - Brave',
+            x: 2040,
+            y: 0,
+            width: 680,
+            height: 714,
+            label: 'GROK BOT chats',
+          },
         ],
         elapsedMs: 3448,
         openVerified: true,
@@ -430,7 +454,15 @@ describe('SkillExecutor expanded batch', () => {
         annotatedArtifact: '/tmp/annotated.png',
         verificationArtifact: '/tmp/verification.png',
         surfaceInventory: [
-          { windowId: '0x1', title: 'Brave', x: 0, y: 0, width: 800, height: 600, label: 'Visible content' },
+          {
+            windowId: '0x1',
+            title: 'Brave',
+            x: 0,
+            y: 0,
+            width: 800,
+            height: 600,
+            label: 'Visible content',
+          },
         ],
         elapsedMs: 2000,
         openVerified: false,
@@ -475,5 +507,4 @@ describe('SkillExecutor expanded batch', () => {
       }),
     ).rejects.toThrow(/audit-desktop-visual/u);
   });
-
 });

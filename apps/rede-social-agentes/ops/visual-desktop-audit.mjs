@@ -1,6 +1,8 @@
+/* global process, setTimeout */
+
 import { execFile as execFileCallback, spawn } from 'node:child_process';
 import { constants as fsConstants } from 'node:fs';
-import { access, chmod, chown, mkdir, mkdtemp, rm, stat } from 'node:fs/promises';
+import { access, chown, mkdir, mkdtemp, rm, stat } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import { basename, isAbsolute, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -78,15 +80,26 @@ export function parseAuditOptions(argv) {
   if (!outputDir || !isAbsolute(outputDir)) {
     throw new Error('visual audit requires an absolute output directory');
   }
-  const expectedSurfaces = integerOption(values.get('--expected-surfaces') ?? '1', 'expected surfaces');
-  const openSurface = integerOption(values.get('--open-surface') ?? String(expectedSurfaces), 'open surface');
+  const expectedSurfaces = integerOption(
+    values.get('--expected-surfaces') ?? '1',
+    'expected surfaces',
+  );
+  const openSurface = integerOption(
+    values.get('--open-surface') ?? String(expectedSurfaces),
+    'open surface',
+  );
   if (openSurface > expectedSurfaces) {
     throw new Error('open surface cannot exceed expected surfaces');
   }
   const timeBudgetMs = integerOption(values.get('--time-budget-ms') ?? '8000', 'time budget ms');
   const windowPattern = (values.get('--window-pattern') ?? 'Brave').trim();
   if (!windowPattern) throw new Error('window pattern cannot be empty');
-  const sessionUser = (values.get('--session-user') ?? process.env.SUDO_USER ?? process.env.USER ?? '').trim();
+  const sessionUser = (
+    values.get('--session-user') ??
+    process.env.SUDO_USER ??
+    process.env.USER ??
+    ''
+  ).trim();
   if (!USER_PATTERN.test(sessionUser)) {
     throw new Error('session user is invalid');
   }
@@ -127,12 +140,24 @@ export function ocrBand(surface) {
   };
 }
 
+function stripAsciiControls(text) {
+  return [...text]
+    .filter((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      return (
+        codePoint === 0x09 ||
+        codePoint === 0x0a ||
+        codePoint === 0x0d ||
+        (codePoint >= 0x20 && codePoint !== 0x7f)
+      );
+    })
+    .join('');
+}
+
 export function sanitizeOcrText(text, maxSegments = 4) {
   const seen = new Set();
   const segments = [];
-  for (const rawLine of text
-    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/gu, '')
-    .split(/\r?\n/u)) {
+  for (const rawLine of stripAsciiControls(text).split(/\r?\n/u)) {
     const line = rawLine.replace(/\s+/gu, ' ').trim();
     if (line.length < 3) continue;
     const folded = line.toLocaleLowerCase();
@@ -147,7 +172,9 @@ export function sanitizeOcrText(text, maxSegments = 4) {
 function distinctArtifacts(artifacts) {
   if (!artifacts || typeof artifacts !== 'object') return false;
   const paths = [artifacts.raw, artifacts.annotated, artifacts.verification];
-  return paths.every((item) => typeof item === 'string' && isAbsolute(item)) && new Set(paths).size === 3;
+  return (
+    paths.every((item) => typeof item === 'string' && isAbsolute(item)) && new Set(paths).size === 3
+  );
 }
 
 export function validateAuditResult(result, constraints) {
@@ -156,19 +183,29 @@ export function validateAuditResult(result, constraints) {
     if (!failures.includes(code)) failures.push(code);
   };
 
-  if (result.expectedSurfaceCount !== constraints.expectedSurfaces) fail('EXPECTED_SURFACE_COUNT_MISMATCH');
+  if (result.expectedSurfaceCount !== constraints.expectedSurfaces)
+    fail('EXPECTED_SURFACE_COUNT_MISMATCH');
   if (result.actualSurfaceCount !== constraints.expectedSurfaces) fail('SURFACE_COUNT_MISMATCH');
   if (!Array.isArray(result.surfaces) || result.surfaces.length !== result.actualSurfaceCount) {
     fail('SURFACE_INVENTORY_MISMATCH');
-  } else if (result.surfaces.some((surface) => typeof surface.label !== 'string' || surface.label.trim().length === 0)) {
+  } else if (
+    result.surfaces.some(
+      (surface) => typeof surface.label !== 'string' || surface.label.trim().length === 0,
+    )
+  ) {
     fail('EMPTY_VISIBLE_LABEL');
   }
   if (!distinctArtifacts(result.artifacts)) fail('ARTIFACTS_INVALID');
   if (result.openVerified !== true) fail('OPEN_NOT_VERIFIED');
   if (!Number.isInteger(result.elapsedMs) || result.elapsedMs < 0) fail('ELAPSED_TIME_INVALID');
-  if (Number.isInteger(result.elapsedMs) && result.elapsedMs > constraints.timeBudgetMs) fail('TIME_BUDGET_EXCEEDED');
+  if (Number.isInteger(result.elapsedMs) && result.elapsedMs > constraints.timeBudgetMs)
+    fail('TIME_BUDGET_EXCEEDED');
 
-  return { ...result, criticalFailures: failures, verdict: failures.length === 0 ? 'PASS' : 'FAIL' };
+  return {
+    ...result,
+    criticalFailures: failures,
+    verdict: failures.length === 0 ? 'PASS' : 'FAIL',
+  };
 }
 
 function receiptMetadata(result) {
@@ -188,7 +225,11 @@ function receiptMetadata(result) {
 }
 
 async function run(command, args, options = {}) {
-  return execFile(command, args, { encoding: 'utf8', timeout: options.timeout ?? 5000, env: options.env ?? process.env });
+  return execFile(command, args, {
+    encoding: 'utf8',
+    timeout: options.timeout ?? 5000,
+    env: options.env ?? process.env,
+  });
 }
 
 async function assertDependencies(env) {
@@ -213,7 +254,8 @@ function desktopEnvironment(sessionUser) {
     DISPLAY: process.env.DISPLAY || ':0',
     XAUTHORITY: process.env.XAUTHORITY || `${userHome}/.Xauthority`,
     DBUS_SESSION_BUS_ADDRESS:
-      process.env.DBUS_SESSION_BUS_ADDRESS || `unix:path=/run/user/${process.env.SUDO_UID || '1000'}/bus`,
+      process.env.DBUS_SESSION_BUS_ADDRESS ||
+      `unix:path=/run/user/${process.env.SUDO_UID || '1000'}/bus`,
   };
 }
 
@@ -265,8 +307,13 @@ async function openAnnotated(windowId, annotatedPath, env) {
   await new Promise((resolveDelay) => setTimeout(resolveDelay, 450));
   try {
     clipboard.kill();
-  } catch {}
-  const { stdout } = await run('xdotool', ['getactivewindow', 'getwindowname'], { env, timeout: 1000 });
+  } catch {
+    // Clipboard helper may already have exited after the paste request.
+  }
+  const { stdout } = await run('xdotool', ['getactivewindow', 'getwindowname'], {
+    env,
+    timeout: 1000,
+  });
   return stdout.includes(basename(annotatedPath));
 }
 
@@ -288,7 +335,9 @@ async function maybeChown(paths, sessionUser, env) {
     const gid = Number(group.stdout.trim());
     if (!Number.isInteger(uid) || !Number.isInteger(gid)) return;
     for (const path of paths) await chown(path, uid, gid);
-  } catch {}
+  } catch {
+    // Ownership normalization is best-effort and must not invalidate audit evidence.
+  }
 }
 
 export async function runVisualDesktopAudit(options) {
@@ -296,7 +345,10 @@ export async function runVisualDesktopAudit(options) {
   await assertDependencies(env);
   await mkdir(options.outputDir, { recursive: true });
   const workDir = await mkdtemp(join(tmpdir(), 'mcf-visual-audit-'));
-  const stamp = new Date().toISOString().replace(/[-:TZ.]/gu, '').slice(0, 14);
+  const stamp = new Date()
+    .toISOString()
+    .replace(/[-:TZ.]/gu, '')
+    .slice(0, 14);
   const rawPath = resolve(options.outputDir, `mcf_visual_audit_${stamp}_raw.png`);
   const annotatedPath = resolve(options.outputDir, `mcf_visual_audit_${stamp}_annotated.png`);
   const verificationPath = resolve(options.outputDir, `mcf_visual_audit_${stamp}_verification.png`);
@@ -306,7 +358,9 @@ export async function runVisualDesktopAudit(options) {
     const { stdout: wmctrlOutput } = await run('wmctrl', ['-lG'], { env, timeout: 1500 });
     const windows = parseWmctrlWindows(wmctrlOutput, options.windowPattern);
     if (windows.length !== options.expectedSurfaces) {
-      throw new Error(`expected ${options.expectedSurfaces} matching surfaces, observed ${windows.length}`);
+      throw new Error(
+        `expected ${options.expectedSurfaces} matching surfaces, observed ${windows.length}`,
+      );
     }
 
     await run('scrot', [rawPath], { env, timeout: 2500 });
@@ -361,7 +415,9 @@ async function main() {
     if (result.verdict !== 'PASS') process.exitCode = 1;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    process.stdout.write(`${JSON.stringify({ verdict: 'FAIL', criticalFailures: ['EXECUTION_FAILED'], message })}\n`);
+    process.stdout.write(
+      `${JSON.stringify({ verdict: 'FAIL', criticalFailures: ['EXECUTION_FAILED'], message })}\n`,
+    );
     process.exitCode = 1;
   }
 }
