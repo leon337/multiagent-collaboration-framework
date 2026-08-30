@@ -262,6 +262,30 @@ function assertClosePhaseBoundary(
   }
 }
 
+function assertVisualDesktopAuditBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  if (skillId !== 'MCF-AUDIT-VISUAL-DESKTOP') return;
+  if (!['sentinelx', 'remote-desktop-commander'].includes(provider)) {
+    throw new McfPermissionDeniedError(
+      'MCF-AUDIT-VISUAL-DESKTOP requires an authorized desktop adapter',
+    );
+  }
+  if (operation !== 'audit-desktop-visual') {
+    throw new McfPermissionDeniedError(
+      'MCF-AUDIT-VISUAL-DESKTOP permits only audit-desktop-visual',
+    );
+  }
+  if (resource !== 'authorized-desktop-session') {
+    throw new McfPermissionDeniedError(
+      'MCF-AUDIT-VISUAL-DESKTOP is restricted to authorized-desktop-session',
+    );
+  }
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
@@ -316,6 +340,7 @@ export class PermissionEngine {
     assertSecurityReviewBoundary(skill.skillId, provider, operation, resource);
     assertDebugIncidentBoundary(skill, provider, operation, resource, inputs);
     assertClosePhaseBoundary(skill, provider, operation, resource, inputs);
+    assertVisualDesktopAuditBoundary(skill.skillId, provider, operation, resource);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');

@@ -38,6 +38,17 @@ function definition(input: {
 
 const skills = new Map<string, McfSkillDefinition>([
   [
+    'MCF-AUDIT-VISUAL-DESKTOP',
+    definition({
+      skillId: 'MCF-AUDIT-VISUAL-DESKTOP',
+      ownerAgents: ['Augusto', 'Beatriz'],
+      requiredInputs: ['audit_request', 'requested_unit', 'output_directory', 'authorizedScope'],
+      allowedTools: ['SentinelX', 'Remote_Desktop_Commander'],
+      permissionProfile: 'SCOPED_WRITE',
+      handoffTo: 'Beatriz',
+    }),
+  ],
+  [
     'MCF-SELECT-AGENTS',
     definition({
       skillId: 'MCF-SELECT-AGENTS',
@@ -343,5 +354,157 @@ describe('SkillExecutor expanded batch', () => {
         },
       }),
     ).rejects.toThrow(/humanGateApproved/u);
+  });
+
+  it('accepts a semantically complete SentinelX visual desktop audit receipt', async () => {
+    const { executor, evidence } = createExecutor();
+    const tool = {
+      provider: 'SentinelX',
+      operation: 'audit-desktop-visual',
+      resource: 'authorized-desktop-session',
+    };
+    const receipt = evidence.createTrustedReceipt({
+      ...tool,
+      externalId: 'visual-audit-1',
+      commitSha: null,
+      status: 'SUCCEEDED',
+      observedAt: new Date().toISOString(),
+      metadata: {
+        requestedUnit: 'browser-window',
+        expectedSurfaceCount: 3,
+        actualSurfaceCount: 3,
+        rawArtifact: '/tmp/audit-raw.png',
+        annotatedArtifact: '/tmp/audit-annotated.png',
+        verificationArtifact: '/tmp/audit-verification.png',
+        surfaceInventory: [
+          {
+            windowId: '0x1',
+            title: 'Left - Brave',
+            x: 0,
+            y: 0,
+            width: 1360,
+            height: 768,
+            label: 'Current GROK BOT conversation',
+          },
+          {
+            windowId: '0x2',
+            title: 'Center - Brave',
+            x: 1360,
+            y: 0,
+            width: 680,
+            height: 714,
+            label: 'GROK BOT chats',
+          },
+          {
+            windowId: '0x3',
+            title: 'Right - Brave',
+            x: 2040,
+            y: 0,
+            width: 680,
+            height: 714,
+            label: 'GROK BOT chats',
+          },
+        ],
+        elapsedMs: 3448,
+        openVerified: true,
+        criticalFailures: [],
+        interpretationMode: 'ocr-fallback',
+      },
+    });
+
+    const result = await executor.execute({
+      skillId: 'MCF-AUDIT-VISUAL-DESKTOP',
+      agentId: 'Augusto',
+      inputs: {
+        audit_request: 'Annotate the three Brave surfaces',
+        requested_unit: 'browser-window',
+        output_directory: '/tmp',
+        authorizedScope: true,
+        expected_surface_count: 3,
+        time_budget_ms: 8000,
+      },
+      tool: { ...tool, externalReceipt: receipt },
+    });
+
+    expect(result).toMatchObject({
+      evidenceStatus: 'VALID',
+      phaseState: 'COMPLETED',
+      handoffTo: 'Beatriz',
+    });
+  });
+
+  it('rejects visual audit evidence when the annotated artifact was not really opened', async () => {
+    const { executor, evidence } = createExecutor();
+    const tool = {
+      provider: 'SentinelX',
+      operation: 'audit-desktop-visual',
+      resource: 'authorized-desktop-session',
+    };
+    const receipt = evidence.createTrustedReceipt({
+      ...tool,
+      externalId: 'visual-audit-not-opened',
+      commitSha: null,
+      status: 'SUCCEEDED',
+      observedAt: new Date().toISOString(),
+      metadata: {
+        requestedUnit: 'browser-window',
+        expectedSurfaceCount: 1,
+        actualSurfaceCount: 1,
+        rawArtifact: '/tmp/raw.png',
+        annotatedArtifact: '/tmp/annotated.png',
+        verificationArtifact: '/tmp/verification.png',
+        surfaceInventory: [
+          {
+            windowId: '0x1',
+            title: 'Brave',
+            x: 0,
+            y: 0,
+            width: 800,
+            height: 600,
+            label: 'Visible content',
+          },
+        ],
+        elapsedMs: 2000,
+        openVerified: false,
+        criticalFailures: [],
+        interpretationMode: 'ocr-fallback',
+      },
+    });
+
+    const result = await executor.execute({
+      skillId: 'MCF-AUDIT-VISUAL-DESKTOP',
+      agentId: 'Augusto',
+      inputs: {
+        audit_request: 'Audit one window',
+        requested_unit: 'browser-window',
+        output_directory: '/tmp',
+        authorizedScope: true,
+      },
+      tool: { ...tool, externalReceipt: receipt },
+    });
+
+    expect(result.evidenceStatus).toBe('INVALID');
+    expect(result.rejectionReason).toMatch(/openVerified/u);
+  });
+
+  it('rejects a visual desktop audit request that uses an operation outside the bounded adapter', async () => {
+    const { executor } = createExecutor();
+    await expect(
+      executor.execute({
+        skillId: 'MCF-AUDIT-VISUAL-DESKTOP',
+        agentId: 'Augusto',
+        inputs: {
+          audit_request: 'Audit the browser surfaces',
+          requested_unit: 'browser-window',
+          output_directory: '/tmp',
+          authorizedScope: true,
+        },
+        tool: {
+          provider: 'SentinelX',
+          operation: 'execute-arbitrary-command',
+          resource: 'authorized-desktop-session',
+        },
+      }),
+    ).rejects.toThrow(/audit-desktop-visual/u);
   });
 });

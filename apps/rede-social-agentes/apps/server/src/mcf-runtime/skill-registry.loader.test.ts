@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { parseMcfSkillRegistry } from './skill-registry.loader.js';
@@ -51,6 +54,19 @@ describe('parseMcfSkillRegistry', () => {
       handoffTo: 'Miriam',
     });
     expect(skills[1]?.requiredInputs).toEqual(['acceptance_criteria', 'test_target']);
+  });
+
+  it('loads the reusable visual desktop audit skill from the canonical registry', async () => {
+    const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
+    const content = await readFile(registryPath, 'utf8');
+    const skills = parseMcfSkillRegistry(content);
+
+    expect(skills.find((skill) => skill.skillId === 'MCF-AUDIT-VISUAL-DESKTOP')).toMatchObject({
+      ownerAgents: ['Augusto', 'Beatriz'],
+      permissionProfile: 'SCOPED_WRITE',
+      requiredInputs: ['audit_request', 'requested_unit', 'output_directory', 'authorizedScope'],
+      handoffTo: 'Beatriz',
+    });
   });
 
   it('rejects duplicate skill identifiers', () => {

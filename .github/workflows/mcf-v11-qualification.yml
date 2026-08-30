@@ -42,6 +42,7 @@ jobs:
       DATABASE_URL: postgresql://rsa:rsa_ci_only@127.0.0.1:5432/rsa
       LOG_LEVEL: error
       MCF_V10_BASELINE_SHA: b91823a947715e09d69c72999e2278523f2259be
+      MCF_STRUCTURAL_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
       MCF_CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
     steps:

@@ -55,6 +55,7 @@ const executableSkills = new Set([
   'MCF-SECURITY-REVIEW',
   'MCF-DEBUG-INCIDENT',
   'MCF-CLOSE-PHASE',
+  'MCF-AUDIT-VISUAL-DESKTOP',
 ]);
 
 const internalSkills = new Set([

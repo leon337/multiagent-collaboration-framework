@@ -325,3 +325,22 @@ skills:
     failure_modes: [missing_evidence, incomplete_checkpoint]
     fallback: Retornar para correção ou declarar dependência externa.
     handoff_to: Mestre
+
+  - skill_id: MCF-AUDIT-VISUAL-DESKTOP
+    name: Auditar superfícies visuais do desktop
+    version: 1.0.0
+    purpose: Capturar, identificar, anotar e verificar superfícies operacionais visíveis em um desktop autorizado sem inventar conteúdo.
+    owner_agents: [Augusto, Beatriz]
+    trigger_phrases: ["auditar desktop", "tirar print e anotar", "marcar navegadores", "auditoria visual"]
+    required_inputs: [audit_request, requested_unit, output_directory, authorizedScope]
+    optional_inputs: [expected_surface_count, time_budget_ms, open_surface_index, window_pattern]
+    allowed_tools: [SentinelX, Remote_Desktop_Commander]
+    forbidden_tools: [destructive_write, secret_exposure, fabricated_visual_evidence]
+    permission_profile: SCOPED_WRITE
+    execution_steps: [inventariar_superficies, capturar_raw, interpretar_observavel, delimitar_e_anotar, salvar_artefatos, abrir_resultado, verificar_abertura, medir_execucao]
+    required_evidence: [raw_artifact, annotated_artifact, verification_artifact, surface_inventory, elapsed_ms, open_verified]
+    expected_outputs: [visual_audit_result, annotated_screenshot, verification_screenshot]
+    acceptance_criteria: [requested_unit_respected, annotations_observable_only, artifacts_traceable, open_verified, time_budget_respected_when_provided]
+    failure_modes: [gui_unavailable, surface_count_mismatch, ocr_unreliable, artifact_missing, open_not_verified]
+    fallback: Preferir fonte estruturada; usar OCR somente como fallback; se a sessão gráfica ou a evidência final não puder ser verificada, declarar bloqueio sem inventar sucesso.
+    handoff_to: Beatriz
