@@ -12,6 +12,7 @@ const outputPath = resolve(outputDir, 'evidence-ledger.json');
 const testedHead = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const expectedHead = process.env.GITHUB_SHA?.trim() || testedHead;
 const baselineMain = process.env.MCF_V10_BASELINE_SHA?.trim();
+const structuralBase = process.env.MCF_STRUCTURAL_BASE_SHA?.trim() || baselineMain;
 const timestamp = new Date().toISOString();
 const runId = process.env.GITHUB_RUN_ID || 'local';
 const runAttempt = process.env.GITHUB_RUN_ATTEMPT || '1';
@@ -254,12 +255,12 @@ const scenarios = [
 ];
 
 function structuralNoParallelArchitecture() {
-  if (!baselineMain) {
-    return { pass: false, details: ['MCF_V10_BASELINE_SHA is required'] };
+  if (!structuralBase) {
+    return { pass: false, details: ['MCF_STRUCTURAL_BASE_SHA or MCF_V10_BASELINE_SHA is required'] };
   }
   const changed = execFileSync(
     'git',
-    ['diff', '--name-only', `${baselineMain}...${testedHead}`],
+    ['diff', '--name-only', `${structuralBase}...${testedHead}`],
     { encoding: 'utf8' },
   )
     .split('\n')
@@ -287,6 +288,7 @@ function structuralNoParallelArchitecture() {
   ];
   const missingCore = requiredCore.filter((path) => !existsSync(resolve(repoRoot, path)));
   const details = [
+    `structural_base=${structuralBase}`,
     `changed_paths=${changed.length}`,
     `database_state_changes=${newDbState.length}`,
     `forbidden_duplicate_core_files=${forbiddenDuplicateNames.length}`,
@@ -335,7 +337,7 @@ const records = scenarios.map((scenario) => {
       : `FAIL; missing=${missing.join(' || ') || 'none'}; ${extra.details.join('; ')}`,
     EVIDENCE_REFERENCE: [
       'apps/rede-social-agentes/apps/server/test-results/vitest.json',
-      ...(scenario.structural ? [`git-diff:${baselineMain}...${testedHead}`] : []),
+      ...(scenario.structural ? [`git-diff:${structuralBase}...${testedHead}`] : []),
       ...(scenario.exactHead ? [`git-head:${testedHead}`] : []),
     ],
     PASS_OR_FAIL: pass ? 'PASS' : 'FAIL',
@@ -368,6 +370,7 @@ const ledger = {
   sourceDecision: 'Q19-EVIDENCE_LAYERED_REAL_SCENARIO_QUALIFICATION_MATRIX',
   candidateHead: testedHead,
   baselineMain,
+  structuralBase,
   executionReference,
   environment,
   timestamp,
