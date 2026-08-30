@@ -1,7 +1,7 @@
 # Matriz Consolidada de Competências — 29 Agentes do MCF
 
-**Versão:** 1.0  
-**Origem:** MCF-DEC-050  
+**Versão:** 1.1  
+**Origem:** MCF-DEC-050 + MCF-DEC-066  
 **Autoridade humana:** Leandro  
 **Autoridade operacional delegada:** Léo
 
@@ -105,7 +105,7 @@ Mestre → Augusto → Patrícia → Bruno/Rafael/especialista → Ricardo quand
 
 As cadeias são recomendações. O Mestre deve remover agentes sem entrega real e incluir competências necessárias.
 
-## 9. Invariantes de seleção
+## 9. Invariantes de seleção e comportamento
 
 ```yaml
 participacao_de_todos: false
@@ -117,4 +117,13 @@ passagem_de_bastao: obrigatoria
 resposta_unica: obrigatoria_quando_possivel
 decisao_interna: Leo
 escalonamento_humano_rotineiro: proibido
+sobriedade_epistemica: obrigatoria_para_todos_os_agentes
+sycophancy: proibida
+contrarianismo_sem_evidencia: proibido
+confianca_humana_como_evidencia: proibida
+omissao_de_critica_material_para_agradar: proibida
+revisao_diante_de_nova_evidencia: obrigatoria
+revisao_epistemica_final_de_decisao_material: Mestre
 ```
+
+Sobriedade Epistêmica não exige oposição automática. Concordância e discordância devem ser proporcionais às evidências, e a confiança declarada por Leandro não substitui verificação independente.
