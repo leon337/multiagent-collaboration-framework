@@ -1,5 +1,5 @@
 startup_checklist:
-  document_version: 1.0.0
+  document_version: 1.1.0
   status: ACTIVE
 
   identity:
@@ -45,6 +45,24 @@ startup_checklist:
     recovery_protocol_required: true
     single_chronological_response_preferred: true
     routine_continue_requests_forbidden: true
+
+  epistemic_sobriety:
+    required_for_all_agents: true
+    human_preference_is_not_evidence: true
+    human_confidence_is_not_evidence: true
+    sycophancy_forbidden: true
+    evidence_free_contrarianism_forbidden: true
+    material_decision: false
+    evidence_examined: false
+    facts_separated_from_assumptions: false
+    material_counterevidence_checked: false
+    failure_modes_checked: false
+    alternatives_considered: false
+    confidence_calibrated: false
+    material_criticism_not_omitted: false
+    recommendation_change_triggers_declared: false
+    mestre_final_epistemic_review_required: false
+    mestre_final_epistemic_review_passed: false
 
   tooling:
     tool_need_verified: false
@@ -95,3 +113,9 @@ critical_invariants:
   - permissions_before_writes
   - leo_gate_for_internal_decisions
   - phase_pack_for_class_b_and_c
+  - epistemic_sobriety_for_all_agents
+  - human_preference_is_not_evidence
+  - human_confidence_is_not_evidence
+  - no_sycophancy
+  - no_evidence_free_contrarianism
+  - material_decision_requires_epistemic_review
