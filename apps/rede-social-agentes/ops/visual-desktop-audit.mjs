@@ -19,8 +19,7 @@ image = Image.open(raw).convert('RGB')
 paths = []
 for index, spec in enumerate(json.loads(specs_json), 1):
     x, y, w, h = spec['x'], spec['y'], spec['width'], spec['height']
-    top_height = min(h, max(120, min(220, h // 3)))
-    crop = image.crop((x, y, x + w, y + top_height))
+    crop = image.crop((x, y, x + w, y + h))
     crop = crop.resize((max(1, crop.width * 2), max(1, crop.height * 2)))
     crop = ImageOps.autocontrast(ImageOps.grayscale(crop))
     path = os.path.join(outdir, f'ocr-{index}.png')
@@ -115,6 +114,17 @@ export function parseWmctrlWindows(output, windowPattern) {
     })
     .filter((window) => window && window.title.toLocaleLowerCase().includes(needle))
     .sort((left, right) => left.x - right.x || left.y - right.y);
+}
+
+export function ocrBand(surface) {
+  const inset = Math.min(72, Math.floor(surface.height / 2));
+  const remaining = Math.max(1, surface.height - inset);
+  return {
+    x: surface.x,
+    y: surface.y + inset,
+    width: surface.width,
+    height: Math.min(220, remaining),
+  };
 }
 
 export function sanitizeOcrText(text, maxSegments = 4) {
@@ -216,7 +226,7 @@ async function ensureArtifact(path) {
 async function createOcrCrops(rawPath, surfaces, workDir, env) {
   const { stdout } = await run(
     'python3',
-    ['-c', CROP_PYTHON, rawPath, JSON.stringify(surfaces), workDir],
+    ['-c', CROP_PYTHON, rawPath, JSON.stringify(surfaces.map(ocrBand)), workDir],
     { env, timeout: 3000 },
   );
   return JSON.parse(stdout);

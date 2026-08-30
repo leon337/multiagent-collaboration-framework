@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  ocrBand,
   parseAuditOptions,
   parseWmctrlWindows,
   sanitizeOcrText,
@@ -25,6 +26,18 @@ test('parses matching desktop windows and sorts them left to right', () => {
       { windowId: '0x03000037', x: 1356, width: 680, title: 'ChatGPT - GROK BOT - Brave' },
       { windowId: '0x030000ad', x: 2028, width: 680, title: 'ChatGPT - GROK BOT - Brave' },
     ],
+  );
+});
+
+test('builds an OCR band below browser chrome while preserving window bounds', () => {
+  assert.deepEqual(
+    ocrBand({ x: 1356, y: 0, width: 680, height: 714 }),
+    { x: 1356, y: 72, width: 680, height: 220 },
+  );
+
+  assert.deepEqual(
+    ocrBand({ x: 0, y: 0, width: 500, height: 120 }),
+    { x: 0, y: 60, width: 500, height: 60 },
   );
 });
 
