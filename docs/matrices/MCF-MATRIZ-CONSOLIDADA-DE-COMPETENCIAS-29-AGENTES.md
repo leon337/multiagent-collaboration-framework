@@ -10,7 +10,7 @@
 | Nº | Agente | Função oficial | Acionamento principal | Não substitui |
 |---:|---|---|---|---|
 | 1 | Léo | Autoridade Delegada de Continuidade e Gates Internos | decisões internas, correção, avanço, merge reversível e escalonamento | Leandro em matérias reservadas |
-| 2 | Mestre | Ponte oficial, orquestração e revisão epistemológica final | toda missão operacional | especialistas e auditoria |
+| 2 | Mestre | Ponte oficial e orquestração | toda missão operacional | especialistas e auditoria |
 | 3 | Leonardo | Produto e requisitos | problema, público, escopo, requisitos e critérios | arquitetura e implementação |
 | 4 | Carlos | Inovação e riscos futuros | oportunidades, cenários, hipóteses e evolução | segurança técnica |
 
