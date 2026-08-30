@@ -887,6 +887,124 @@ function validatePullRequestReceipt(receipt: McfToolReceipt): void {
   requireString(receipt.metadata, 'prState', 'pull request evidence requires prState');
 }
 
+function validateVisualDesktopAuditReceipt(
+  receipt: McfToolReceipt,
+  inputs: Readonly<Record<string, unknown>> = {},
+): void {
+  const provider = canonicalizeProvider(receipt.provider);
+  if (!['sentinelx', 'remote-desktop-commander'].includes(provider)) {
+    reject('visual desktop audit evidence requires an authorized desktop adapter');
+  }
+
+  const requestedUnit = requireString(
+    receipt.metadata,
+    'requestedUnit',
+    'visual desktop audit evidence requires requestedUnit',
+  );
+  if (typeof inputs.requested_unit === 'string' && requestedUnit !== inputs.requested_unit.trim()) {
+    reject('visual desktop audit requestedUnit must match the current requested_unit');
+  }
+
+  const expectedSurfaceCount = requireNonNegativeInteger(
+    receipt.metadata,
+    'expectedSurfaceCount',
+    'visual desktop audit evidence requires expectedSurfaceCount',
+  );
+  const actualSurfaceCount = requireNonNegativeInteger(
+    receipt.metadata,
+    'actualSurfaceCount',
+    'visual desktop audit evidence requires actualSurfaceCount',
+  );
+  if (expectedSurfaceCount < 1 || actualSurfaceCount !== expectedSurfaceCount) {
+    reject('visual desktop audit surface count must match the expected non-zero count');
+  }
+  if (
+    Number.isInteger(inputs.expected_surface_count) &&
+    Number(inputs.expected_surface_count) !== expectedSurfaceCount
+  ) {
+    reject('visual desktop audit expectedSurfaceCount must match the current request');
+  }
+
+  const rawArtifact = requireString(
+    receipt.metadata,
+    'rawArtifact',
+    'visual desktop audit evidence requires rawArtifact',
+  );
+  const annotatedArtifact = requireString(
+    receipt.metadata,
+    'annotatedArtifact',
+    'visual desktop audit evidence requires annotatedArtifact',
+  );
+  const verificationArtifact = requireString(
+    receipt.metadata,
+    'verificationArtifact',
+    'visual desktop audit evidence requires verificationArtifact',
+  );
+  if (new Set([rawArtifact, annotatedArtifact, verificationArtifact]).size !== 3) {
+    reject('visual desktop audit artifact references must be distinct');
+  }
+
+  const surfaces = requireNonEmptyArray(
+    receipt.metadata,
+    'surfaceInventory',
+    'visual desktop audit evidence requires surfaceInventory',
+  );
+  if (surfaces.length !== actualSurfaceCount) {
+    reject('visual desktop audit surfaceInventory must match actualSurfaceCount');
+  }
+  for (const surface of surfaces) {
+    const item = requireRecord(surface, 'visual desktop audit surfaceInventory entries must be objects');
+    recordString(item, 'windowId', 'visual desktop audit surface requires windowId');
+    recordString(item, 'title', 'visual desktop audit surface requires title');
+    recordString(item, 'label', 'visual desktop audit surface requires an observable label');
+    for (const key of ['x', 'y', 'width', 'height']) {
+      const value = item[key];
+      if (!Number.isInteger(value) || (value as number) < 0) {
+        reject(`visual desktop audit surface requires non-negative integer ${key}`);
+      }
+      if ((key === 'width' || key === 'height') && (value as number) === 0) {
+        reject(`visual desktop audit surface requires positive ${key}`);
+      }
+    }
+  }
+
+  const elapsedMs = requireNonNegativeInteger(
+    receipt.metadata,
+    'elapsedMs',
+    'visual desktop audit evidence requires elapsedMs',
+  );
+  if (
+    Number.isInteger(inputs.time_budget_ms) &&
+    Number(inputs.time_budget_ms) >= 0 &&
+    elapsedMs > Number(inputs.time_budget_ms)
+  ) {
+    reject('visual desktop audit elapsedMs exceeds the requested time budget');
+  }
+
+  const openVerified = requireBoolean(
+    receipt.metadata,
+    'openVerified',
+    'visual desktop audit evidence requires openVerified',
+  );
+  if (!openVerified) {
+    reject('visual desktop audit openVerified must be true');
+  }
+
+  const criticalFailures = requireArray(
+    receipt.metadata,
+    'criticalFailures',
+    'visual desktop audit evidence requires criticalFailures',
+  );
+  if (criticalFailures.length > 0) {
+    reject('visual desktop audit cannot pass with criticalFailures');
+  }
+  requireString(
+    receipt.metadata,
+    'interpretationMode',
+    'visual desktop audit evidence requires interpretationMode',
+  );
+}
+
 function validateDeploymentReceipt(receipt: McfToolReceipt): void {
   const deployProviders = new Set(['render', 'vercel', 'cloudflare']);
   if (!deployProviders.has(receipt.provider) || !receipt.externalId || !receipt.commitSha) {
@@ -1053,6 +1171,9 @@ export class EvidenceValidator {
         break;
       case 'MCF-DEPLOY-VALIDATE':
         validateDeploymentReceipt(receipt);
+        break;
+      case 'MCF-AUDIT-VISUAL-DESKTOP':
+        validateVisualDesktopAuditReceipt(receipt, inputs);
         break;
       default:
         break;
