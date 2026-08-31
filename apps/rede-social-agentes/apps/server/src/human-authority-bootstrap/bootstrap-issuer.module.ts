@@ -12,12 +12,15 @@ import { HumanAuthorityBindingSealer } from './human-authority-bootstrap.sealer.
 import { HumanAuthorityBootstrapService } from './human-authority-bootstrap.service.js';
 import { HumanAuthorityRuntimeVerifier } from './human-authority-runtime-verifier.js';
 import { PostgresHumanAuthorityBootstrapRepository } from './postgres-human-authority-bootstrap.repository.js';
+import { StagingCatalogProbeController } from './staging-catalog-probe.controller.js';
+import { StagingCatalogProbeService } from './staging-catalog-probe.service.js';
 
 @Module({
   controllers: [
     BootstrapHealthController,
     HumanAuthorityBootstrapController,
     HumanAuthorityBootstrapControlPlaneController,
+    StagingCatalogProbeController,
   ],
   providers: [
     {
@@ -29,6 +32,11 @@ import { PostgresHumanAuthorityBootstrapRepository } from './postgres-human-auth
     BootstrapSessionAuthGuard,
     BootstrapGithubOidcVerifier,
     BootstrapGithubOidcGuard,
+    {
+      provide: StagingCatalogProbeService,
+      useFactory: (database: BootstrapDatabaseService) => new StagingCatalogProbeService(database),
+      inject: [BootstrapDatabaseService],
+    },
     PostgresHumanAuthorityBootstrapRepository,
     {
       provide: HumanAuthorityRuntimeVerifier,
