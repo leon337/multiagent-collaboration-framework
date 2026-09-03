@@ -1,0 +1,88 @@
+checkpoint_id: CP-NEXT-RELEASE-DELIBERATION-20260828-05
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+recorded_date: 2026-08-28
+status: V1_3_0_PUBLISHED_STABLE_STOP_BEFORE_DEPLOY
+
+source_of_truth:
+  main_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  main_tree_sha: 3e52ad4e39486c76743d39310de2afcacfc7c6d5
+  latest_stable_release: v1.3.0
+  latest_stable_release_id: 378639945
+  stable_tag_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  remediation_checkpoint: CP-HUMAN-CONTROL-RUNTIME-WIRING-REMEDIATION-20260828-04
+  release_preparation_checkpoint: CP-V1-3-0-RELEASE-PREPARATION-20260828-01
+  release_publication_checkpoint: CP-V1-3-0-RELEASE-PUBLICATION-20260828-01
+
+semver:
+  released_version: v1.3.0
+  version_officially_decided: true
+  published_stable: true
+  rationale: additive backward-compatible framework capability plus security hardening; more than a patch; no verified breaking change requiring major
+
+consumed_gates:
+  release_scope_gate:
+    decision: REMEDIATE_FIRST
+    authority: LEANDRO
+  remediation_merge_gate:
+    decision: APPROVE_MERGE_PR_184
+    authority: LEANDRO
+  release_preparation_gate:
+    decision: APPROVE_V1_3_0_RELEASE_PREPARATION
+    authority: LEANDRO
+  release_publication_gate:
+    decision: APPROVE_V1_3_0_PUBLICATION
+    authority: LEANDRO
+
+finding_remediation:
+  id: HUMAN_CONTROL_RUNTIME_WIRING
+  state_on_stable: REMEDIATED_IN_CHAT_RUNTIME_BOUNDARY
+  boundary:
+    authenticated_chat_to_runtime: REMEDIATED_ON_STABLE
+    universal_persistent_pause_resume: NOT_CLAIMED
+    universal_absence_of_legacy_helper_usage: NOT_VERIFIED
+
+qualification:
+  exact_release_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  all_required_workflows_passed: true
+  workflows:
+    mcf_v1_1_qualification: 33192330234
+    mcf_production_readiness: 33192332452
+    rede_social_foundation: 33192334548
+    rede_social_container_smoke: 33192336957
+  full_server_suite:
+    passed: 904
+    skipped: 3
+    failed: 0
+
+publication:
+  release_name: MCF v1.3.0 — Authenticated Human Control + Governed Succession
+  release_id: 378639945
+  release_url: https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.3.0
+  draft: false
+  prerelease: false
+  published_at_utc: 2026-08-28T17:13:56Z
+  latest_verified: true
+  tag_target_verified: true
+  main_unchanged: true
+
+release_scope:
+  implemented:
+    - governed cross-chat succession and window-control protocol
+    - machine-readable GUI/window succession trace schema and qualification
+    - authenticated reserved-human authority provenance hardening
+    - typed HumanAuthorityProof production-authorization binding
+    - HUMANO NO CONTROLE authenticated chat-runtime interception before planner/bootstrap
+    - documentation/current-state reconciliation
+  planning_only:
+    - NextGen roadmap
+    - NextGen formal target architecture
+    - NextGen implementation plan and disposition artifacts
+
+governance:
+  production_deploy_authorized: false
+  production_deploy_performed_by_publication_gate: false
+  release_event_workflows_triggered: 0
+  pr_176_merge_authorized: false
+  next_production_action_requires_separate_human_gate: true
+
+next_action: NO_AUTOMATIC_ACTION_AFTER_RELEASE_PUBLICATION
