@@ -10,7 +10,11 @@ import { CanonicalExternalActionLedger } from './canonical-external-action-ledge
 import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
-import { CodeBuddyExecutorAdapter } from './codebuddy-executor.adapter.js';
+import {
+  CodeBuddyExecutorAdapter,
+  probeCodeBuddyExecutorCapability,
+  type CodeBuddyExecutorConfig,
+} from './codebuddy-executor.adapter.js';
 import { ContinuityRecoveryService } from './continuity-recovery.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
@@ -49,6 +53,17 @@ import { SocialTimelineService } from './social-timeline.service.js';
 import { McfStagingDeployCallbackController } from './staging-deploy-callback.controller.js';
 import { StagingDeployReconciliationService } from './staging-deploy-reconciliation.service.js';
 
+function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
+  const config = loadRuntimeConfig();
+  return {
+    enabled: config.MCF_CODEBUDDY_EXECUTOR_ENABLED,
+    binary: config.MCF_CODEBUDDY_BINARY,
+    workspaceRoot: config.MCF_CODEBUDDY_WORKSPACE_ROOT,
+    model: config.MCF_CODEBUDDY_MODEL,
+    timeoutMs: config.MCF_CODEBUDDY_TIMEOUT_MS,
+  };
+}
+
 @Module({
   imports: [DatabaseModule, IdentityModule],
   controllers: [
@@ -72,7 +87,10 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     ContinuityRecoveryService,
     {
       provide: ChatMissionPlanner,
-      useFactory: () => new ChatMissionPlanner(loadRuntimeConfig().MCF_CODEBUDDY_EXECUTOR_ENABLED),
+      useFactory: () => {
+        const config = codeBuddyExecutorConfig();
+        return new ChatMissionPlanner(probeCodeBuddyExecutorCapability(config));
+      },
     },
     {
       provide: MissionObservabilityRepository,
@@ -115,13 +133,10 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     {
       provide: CodeBuddyExecutorAdapter,
       useFactory: (evidence: EvidenceValidator) => {
-        const config = loadRuntimeConfig();
+        const config = codeBuddyExecutorConfig();
         return new CodeBuddyExecutorAdapter(evidence, {
-          enabled: config.MCF_CODEBUDDY_EXECUTOR_ENABLED,
-          binary: config.MCF_CODEBUDDY_BINARY,
-          workspaceRoot: config.MCF_CODEBUDDY_WORKSPACE_ROOT,
-          model: config.MCF_CODEBUDDY_MODEL,
-          timeoutMs: config.MCF_CODEBUDDY_TIMEOUT_MS,
+          ...config,
+          enabled: probeCodeBuddyExecutorCapability(config),
         });
       },
       inject: [EvidenceValidator],

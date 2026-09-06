@@ -1094,6 +1094,33 @@ function validateCodeBuddyImplementReceipt(
     if (!/^[a-f0-9]{64}$/u.test(value))
       reject(`CodeBuddy implementation ${key} must be a SHA-256 digest`);
   }
+  const diffArtifact = requireRecord(
+    receipt.metadata.diffArtifact,
+    'CodeBuddy implementation evidence requires diffArtifact',
+  );
+  if (
+    recordString(diffArtifact, 'encoding', 'CodeBuddy diffArtifact requires encoding') !== 'base64'
+  )
+    reject('CodeBuddy diffArtifact encoding must be base64');
+  const diffArtifactData = recordString(
+    diffArtifact,
+    'data',
+    'CodeBuddy diffArtifact requires data',
+  );
+  const diffArtifactBytes = Buffer.from(diffArtifactData, 'base64');
+  if (diffArtifactBytes.toString('base64') !== diffArtifactData)
+    reject('CodeBuddy diffArtifact data must be canonical base64');
+  if (
+    requireNonNegativeInteger(
+      diffArtifact,
+      'byteLength',
+      'CodeBuddy diffArtifact requires byteLength',
+    ) !== diffArtifactBytes.byteLength
+  )
+    reject('CodeBuddy diffArtifact byteLength does not match artifact bytes');
+  const artifactDigest = createHash('sha256').update(diffArtifactBytes).digest('hex');
+  if (artifactDigest !== receipt.metadata.diffDigest)
+    reject('CodeBuddy diffDigest does not match diffArtifact bytes');
   if (
     requireBoolean(receipt.metadata, 'localOnly', 'CodeBuddy evidence requires localOnly') !== true
   )
@@ -1102,6 +1129,14 @@ function validateCodeBuddyImplementReceipt(
     requireBoolean(receipt.metadata, 'committed', 'CodeBuddy evidence requires committed') !== false
   )
     reject('CodeBuddy implementation adapter must not commit');
+  if (
+    requireString(
+      receipt.metadata,
+      'executionIsolation',
+      'CodeBuddy implementation evidence requires executionIsolation',
+    ) !== 'DISPOSABLE_GIT_WORKTREE'
+  )
+    reject('CodeBuddy implementation evidence must prove disposable-worktree isolation');
   if (
     requireNonNegativeInteger(
       receipt.metadata,

@@ -13,6 +13,7 @@ const execFileAsync = promisify(execFile);
 import {
   CodeBuddyExecutorAdapter,
   LocalCodeBuddyHost,
+  probeCodeBuddyExecutorCapability,
   type CodeBuddyChangeEvidence,
   type CodeBuddyExecutionResult,
   type CodeBuddyHost,
@@ -72,11 +73,20 @@ class FakeHost implements CodeBuddyHost {
   changes: CodeBuddyChangeEvidence = {
     changedFiles: ['fixture.txt'],
     diff: 'diff --git a/fixture.txt b/fixture.txt\n+AFTER\n',
+    headSha: 'a'.repeat(40),
   };
 
   inspectWorkspace = vi.fn(async () => this.snapshot);
+  assertPathsSafe = vi.fn(async () => undefined);
+  createExecutionWorkspace = vi.fn(async () => ({
+    realPath: '/tmp/mcf-codebuddy-run/worktree',
+    cleanupRoot: '/tmp/mcf-codebuddy-run',
+    baseSha: this.snapshot.headSha,
+  }));
   execute = vi.fn(async () => this.result);
   collectChanges = vi.fn(async () => this.changes);
+  publishChanges = vi.fn(async () => undefined);
+  removeExecutionWorkspace = vi.fn(async () => undefined);
   restoreWorkspace = vi.fn(async () => undefined);
 }
 
@@ -103,6 +113,35 @@ function adapter(host = new FakeHost(), enabled = true) {
 }
 
 describe('LocalCodeBuddyHost', () => {
+  it('probes CodeBuddy capability from a live executable and workspace root', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-capability-'));
+    const binary = join(dir, 'codebuddy-capability');
+    await writeFile(binary, '#!/bin/sh\nprintf "%s" "--agent cli --model custom"\n');
+    await chmod(binary, 0o700);
+    try {
+      expect(
+        probeCodeBuddyExecutorCapability({
+          enabled: true,
+          binary,
+          workspaceRoot: dir,
+          model: 'cx/gpt-5.6-sol',
+          timeoutMs: 300000,
+        }),
+      ).toBe(true);
+      expect(
+        probeCodeBuddyExecutorCapability({
+          enabled: true,
+          binary: join(dir, 'missing'),
+          workspaceRoot: dir,
+          model: 'cx/gpt-5.6-sol',
+          timeoutMs: 300000,
+        }),
+      ).toBe(false);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('forces the Standard cli agent for headless execution', async () => {
     const host = new LocalCodeBuddyHost();
     const result = await host.execute({
@@ -151,7 +190,10 @@ describe('LocalCodeBuddyHost', () => {
       await execFileAsync('git', ['commit', '-m', 'base'], { cwd: dir });
       await writeFile(join(dir, 'new.txt'), 'NEW_SENTINEL\n');
 
-      const changes = await new LocalCodeBuddyHost().collectChanges(dir);
+      const headSha = (
+        await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: dir })
+      ).stdout.trim();
+      const changes = await new LocalCodeBuddyHost().collectChanges(dir, headSha);
       expect(changes.changedFiles).toEqual(['new.txt']);
       expect(changes.diff).toContain('NEW_SENTINEL');
       expect(changes.diff).toContain('new.txt');
@@ -225,28 +267,32 @@ describe('CodeBuddyExecutorAdapter', () => {
     host.changes = {
       changedFiles: ['fixture.txt', 'src/outside.ts'],
       diff: 'diff --git a/fixture.txt b/fixture.txt\n+AFTER\ndiff --git a/src/outside.ts b/src/outside.ts\n+NO\n',
+      headSha: host.snapshot.headSha,
     };
     await expect(subject.execute(request)).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
-    expect(host.restoreWorkspace).toHaveBeenCalledWith('/srv/mcf/worktrees/task-1');
+    expect(host.removeExecutionWorkspace).toHaveBeenCalledOnce();
+    expect(host.restoreWorkspace).not.toHaveBeenCalled();
   });
 
   it('maps process timeout to ADAPTER_TIMEOUT', async () => {
     const { adapter: subject, host } = adapter();
     host.result.timedOut = true;
     await expect(subject.execute(request)).rejects.toMatchObject({ code: 'ADAPTER_TIMEOUT' });
-    expect(host.restoreWorkspace).toHaveBeenCalledWith('/srv/mcf/worktrees/task-1');
+    expect(host.removeExecutionWorkspace).toHaveBeenCalledOnce();
+    expect(host.restoreWorkspace).not.toHaveBeenCalled();
   });
 
   it('maps non-zero CodeBuddy exit to ADAPTER_FAILURE', async () => {
     const { adapter: subject, host } = adapter();
     host.result.exitCode = 2;
     await expect(subject.execute(request)).rejects.toMatchObject({ code: 'ADAPTER_FAILURE' });
-    expect(host.restoreWorkspace).toHaveBeenCalledWith('/srv/mcf/worktrees/task-1');
+    expect(host.removeExecutionWorkspace).toHaveBeenCalledOnce();
+    expect(host.restoreWorkspace).not.toHaveBeenCalled();
   });
 
   it('rejects successful execution with no changed files', async () => {
     const { adapter: subject, host } = adapter();
-    host.changes = { changedFiles: [], diff: '' };
+    host.changes = { changedFiles: [], diff: '', headSha: host.snapshot.headSha };
     await expect(subject.execute(request)).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
   });
 

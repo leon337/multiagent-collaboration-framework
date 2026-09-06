@@ -1,7 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { execFile } from 'node:child_process';
-import { realpath } from 'node:fs/promises';
-import { posix, relative, resolve } from 'node:path';
+import { execFile, spawn, spawnSync } from 'node:child_process';
+import { accessSync, constants, statSync } from 'node:fs';
+import { lstat, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, posix, relative, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
 import type { McfToolReceipt } from '@rsa/contracts';
@@ -47,6 +49,11 @@ export interface CodeBuddyWorkspaceSnapshot {
   headSha: string;
   dirtyPaths: string[];
 }
+export interface CodeBuddyExecutionWorkspace {
+  realPath: string;
+  cleanupRoot: string;
+  baseSha: string;
+}
 export interface CodeBuddyExecutionResult {
   exitCode: number;
   stdout: string;
@@ -57,9 +64,15 @@ export interface CodeBuddyExecutionResult {
 export interface CodeBuddyChangeEvidence {
   changedFiles: string[];
   diff: string;
+  headSha: string;
 }
 export interface CodeBuddyHost {
   inspectWorkspace(workspace: string): Promise<CodeBuddyWorkspaceSnapshot>;
+  assertPathsSafe(workspace: string, paths: string[]): Promise<void>;
+  createExecutionWorkspace(
+    workspace: string,
+    baseSha: string,
+  ): Promise<CodeBuddyExecutionWorkspace>;
   execute(input: {
     binary: string;
     cwd: string;
@@ -68,8 +81,22 @@ export interface CodeBuddyHost {
     timeoutMs: number;
     tools: string[];
   }): Promise<CodeBuddyExecutionResult>;
-  collectChanges(workspace: string): Promise<CodeBuddyChangeEvidence>;
-  restoreWorkspace(workspace: string): Promise<void>;
+  collectChanges(
+    workspace: string,
+    baseSha: string,
+    restrictPaths?: string[],
+  ): Promise<CodeBuddyChangeEvidence>;
+  publishChanges(
+    executionWorkspace: string,
+    targetWorkspace: string,
+    baseSha: string,
+    changes: CodeBuddyChangeEvidence,
+  ): Promise<void>;
+  removeExecutionWorkspace(
+    sourceWorkspace: string,
+    execution: CodeBuddyExecutionWorkspace,
+  ): Promise<void>;
+  restoreWorkspace(workspace: string, baseSha: string, changedFiles: string[]): Promise<void>;
 }
 
 function canonicalRepository(value: string): string | null {
@@ -101,6 +128,31 @@ function restrictedEnvironment(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     if (value !== undefined) environment[key] = value;
   }
   return environment;
+}
+
+export function probeCodeBuddyExecutorCapability(config: CodeBuddyExecutorConfig): boolean {
+  if (
+    !config.enabled ||
+    !config.binary.trim() ||
+    !config.workspaceRoot.trim() ||
+    !config.model.trim()
+  )
+    return false;
+  try {
+    accessSync(config.binary, constants.X_OK);
+    if (!statSync(config.workspaceRoot).isDirectory()) return false;
+    const result = spawnSync(config.binary, ['--help'], {
+      encoding: 'utf8',
+      timeout: 3000,
+      env: restrictedEnvironment(process.env),
+    });
+    if (result.error || result.status !== 0) return false;
+    const output = `${result.stdout ?? ''}
+${result.stderr ?? ''}`;
+    return output.includes('--agent') && output.includes('--model');
+  } catch {
+    return false;
+  }
 }
 function canonicalRepositoryPath(value: unknown, label: string): string {
   if (typeof value !== 'string' || !value.trim())
@@ -216,13 +268,87 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
         'Workspace repository metadata is invalid',
         false,
       );
-    const status = await git(resolved, ['status', '--porcelain=v1', '-z']);
-    const dirtyPaths = status
+    const tracked = (
+      await git(resolved, ['diff', '--name-only', '-z', '--no-renames', 'HEAD', '--'])
+    )
       .split('\0')
-      .filter(Boolean)
-      .map((entry) => entry.slice(3));
+      .filter(Boolean);
+    const untracked = (await git(resolved, ['ls-files', '--others', '--exclude-standard', '-z']))
+      .split('\0')
+      .filter(Boolean);
+    const dirtyPaths = [...new Set([...tracked, ...untracked])].sort();
     return { realPath: await realpath(top), repository, headSha, dirtyPaths };
   }
+
+  async assertPathsSafe(workspace: string, paths: string[]): Promise<void> {
+    const root = await realpath(workspace);
+    for (const input of paths) {
+      const path = canonicalRepositoryPath(input, 'allowed_paths');
+      if (path === '.git' || path.startsWith('.git/'))
+        throw new ExternalActionAdapterError(
+          'INVALID_CONTEXT',
+          'CodeBuddy paths cannot target Git metadata',
+          false,
+        );
+      const segments = path.split('/');
+      let current = root;
+      for (let index = 0; index < segments.length; index += 1) {
+        current = join(current, segments[index] ?? '');
+        try {
+          const stat = await lstat(current);
+          if (stat.isSymbolicLink())
+            throw new ExternalActionAdapterError(
+              'INVALID_CONTEXT',
+              'CodeBuddy paths cannot traverse symbolic links',
+              false,
+            );
+          if (index < segments.length - 1 && !stat.isDirectory())
+            throw new ExternalActionAdapterError(
+              'INVALID_CONTEXT',
+              'CodeBuddy path ancestors must be directories',
+              false,
+            );
+          if (index === segments.length - 1 && !stat.isDirectory() && !stat.isFile())
+            throw new ExternalActionAdapterError(
+              'INVALID_CONTEXT',
+              'CodeBuddy paths must resolve to regular files or directories',
+              false,
+            );
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code === 'ENOENT') break;
+          throw error;
+        }
+      }
+    }
+  }
+
+  async createExecutionWorkspace(
+    workspace: string,
+    baseSha: string,
+  ): Promise<CodeBuddyExecutionWorkspace> {
+    const cleanupRoot = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-run-'));
+    const executionPath = join(cleanupRoot, 'worktree');
+    try {
+      await execFileAsync(
+        'git',
+        ['-C', workspace, 'worktree', 'add', '--detach', executionPath, baseSha],
+        { encoding: 'utf8', maxBuffer: OUTPUT_LIMIT_BYTES },
+      );
+      return {
+        realPath: await realpath(executionPath),
+        cleanupRoot,
+        baseSha,
+      };
+    } catch {
+      await rm(cleanupRoot, { recursive: true, force: true });
+      throw new ExternalActionAdapterError(
+        'ADAPTER_FAILURE',
+        'CodeBuddy execution worktree could not be created',
+        false,
+      );
+    }
+  }
+
   async execute(input: {
     binary: string;
     cwd: string;
@@ -247,58 +373,260 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
       '--output-format',
       'json',
     ];
-    try {
-      const { stdout, stderr } = await execFileAsync(input.binary, args, {
+
+    return await new Promise<CodeBuddyExecutionResult>((resolveExecution, rejectExecution) => {
+      let stdout = '';
+      let stderr = '';
+      let timedOut = false;
+      let outputExceeded = false;
+      let settled = false;
+      const child = spawn(input.binary, args, {
         cwd: input.cwd,
-        encoding: 'utf8',
-        timeout: input.timeoutMs,
-        maxBuffer: OUTPUT_LIMIT_BYTES,
         env: restrictedEnvironment(process.env),
+        detached: true,
+        stdio: ['ignore', 'pipe', 'pipe'],
       });
-      return { exitCode: 0, stdout, stderr, durationMs: Date.now() - startedAt, timedOut: false };
-    } catch (error) {
-      const e = error as NodeJS.ErrnoException & {
-        killed?: boolean;
-        signal?: string;
-        stdout?: string;
-        stderr?: string;
-        code?: number | string;
+      const killGroup = (signal: NodeJS.Signals): void => {
+        if (!child.pid) return;
+        try {
+          process.kill(-child.pid, signal);
+        } catch {
+          // The process group may already have terminated.
+        }
       };
-      if (e.code === 'ENOENT')
+      const append = (kind: 'stdout' | 'stderr', chunk: Buffer | string): void => {
+        const value = chunk.toString();
+        if (kind === 'stdout') stdout += value;
+        else stderr += value;
+        if (Buffer.byteLength(stdout) + Buffer.byteLength(stderr) > OUTPUT_LIMIT_BYTES) {
+          outputExceeded = true;
+          killGroup('SIGTERM');
+        }
+      };
+      child.stdout?.on('data', (chunk) => append('stdout', chunk));
+      child.stderr?.on('data', (chunk) => append('stderr', chunk));
+      const timer = setTimeout(() => {
+        timedOut = true;
+        killGroup('SIGTERM');
+        const force = setTimeout(() => killGroup('SIGKILL'), 150);
+        force.unref();
+      }, input.timeoutMs);
+      timer.unref();
+      child.once('error', (error: NodeJS.ErrnoException) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (error.code === 'ENOENT') {
+          rejectExecution(
+            new ExternalActionAdapterError(
+              'TARGET_NOT_FOUND',
+              'CodeBuddy binary was not found',
+              false,
+            ),
+          );
+          return;
+        }
+        resolveExecution({
+          exitCode: 1,
+          stdout,
+          stderr: `${stderr}${error.message}`,
+          durationMs: Date.now() - startedAt,
+          timedOut: false,
+        });
+      });
+      child.once('close', (code) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        const finish = (): void =>
+          resolveExecution({
+            exitCode: outputExceeded ? 1 : (code ?? 1),
+            stdout,
+            stderr: outputExceeded ? `${stderr}\nOUTPUT_LIMIT_EXCEEDED` : stderr,
+            durationMs: Date.now() - startedAt,
+            timedOut,
+          });
+        if (timedOut) setTimeout(finish, 200);
+        else finish();
+      });
+    });
+  }
+
+  async collectChanges(
+    workspace: string,
+    baseSha: string,
+    restrictPaths?: string[],
+  ): Promise<CodeBuddyChangeEvidence> {
+    const headSha = (await git(workspace, ['rev-parse', 'HEAD'])).trim().toLowerCase();
+    const pathspec = restrictPaths?.length ? ['--', ...restrictPaths] : ['--'];
+    const tracked = (
+      await git(workspace, ['diff', '--name-only', '-z', '--no-renames', baseSha, ...pathspec])
+    )
+      .split('\0')
+      .filter(Boolean);
+    const untrackedArgs = ['ls-files', '--others', '-z'];
+    if (restrictPaths?.length) untrackedArgs.push('--', ...restrictPaths);
+    const untracked = (await git(workspace, untrackedArgs)).split('\0').filter(Boolean);
+    const changedFiles = [...new Set([...tracked, ...untracked])].sort();
+    const trackedDiff = await git(workspace, [
+      'diff',
+      '--binary',
+      '--no-renames',
+      baseSha,
+      ...pathspec,
+    ]);
+    const untrackedDiffs = await Promise.all(
+      [...new Set(untracked)].sort().map((path) => gitNoIndexDiff(workspace, path)),
+    );
+    return { changedFiles, diff: [trackedDiff, ...untrackedDiffs].join(''), headSha };
+  }
+
+  async publishChanges(
+    executionWorkspace: string,
+    targetWorkspace: string,
+    baseSha: string,
+    changes: CodeBuddyChangeEvidence,
+  ): Promise<void> {
+    const before = await this.inspectWorkspace(targetWorkspace);
+    if (before.headSha !== baseSha || before.dirtyPaths.length)
+      throw new ExternalActionAdapterError(
+        'RESERVATION_CONFLICT',
+        'Authorized workspace changed before CodeBuddy publication',
+        true,
+      );
+    await this.assertPathsSafe(targetWorkspace, changes.changedFiles);
+    const patchRoot = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-patch-'));
+    const patchPath = join(patchRoot, 'change.patch');
+    try {
+      await writeFile(patchPath, changes.diff, 'utf8');
+      await execFileAsync(
+        'git',
+        ['-C', targetWorkspace, 'apply', '--binary', '--whitespace=nowarn', patchPath],
+        { encoding: 'utf8', maxBuffer: OUTPUT_LIMIT_BYTES },
+      );
+      const actual = await this.collectChanges(targetWorkspace, baseSha, changes.changedFiles);
+      if (
+        actual.headSha !== baseSha ||
+        JSON.stringify(actual.changedFiles) !== JSON.stringify(changes.changedFiles) ||
+        actual.diff !== changes.diff
+      )
         throw new ExternalActionAdapterError(
-          'TARGET_NOT_FOUND',
-          'CodeBuddy binary was not found',
+          'ADAPTER_FAILURE',
+          'Published CodeBuddy patch does not match validated evidence',
           false,
         );
-      return {
-        exitCode: typeof e.code === 'number' ? e.code : 1,
-        stdout: e.stdout ?? '',
-        stderr: e.stderr ?? '',
-        durationMs: Date.now() - startedAt,
-        timedOut: e.killed === true || e.signal === 'SIGTERM',
-      };
+      await this.assertPathsSafe(targetWorkspace, changes.changedFiles);
+      for (const path of changes.changedFiles) {
+        const source = join(executionWorkspace, path);
+        const target = join(targetWorkspace, path);
+        let sourceBytes: Buffer | null = null;
+        try {
+          const sourceStat = await lstat(source);
+          if (!sourceStat.isFile())
+            throw new ExternalActionAdapterError(
+              'INVALID_RESPONSE',
+              'CodeBuddy produced a non-regular changed path',
+              false,
+            );
+          sourceBytes = await readFile(source);
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+        }
+        if (sourceBytes === null) {
+          try {
+            await lstat(target);
+            throw new ExternalActionAdapterError(
+              'ADAPTER_FAILURE',
+              'Deleted CodeBuddy path remained after publication',
+              false,
+            );
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+          }
+        } else {
+          const targetStat = await lstat(target);
+          if (!targetStat.isFile() || !sourceBytes.equals(await readFile(target)))
+            throw new ExternalActionAdapterError(
+              'ADAPTER_FAILURE',
+              'Published CodeBuddy file content does not match validated source',
+              false,
+            );
+        }
+      }
+    } catch (error) {
+      try {
+        await this.restoreWorkspace(targetWorkspace, baseSha, changes.changedFiles);
+      } catch {
+        throw new ExternalActionAdapterError(
+          'ADAPTER_FAILURE',
+          'CodeBuddy publication failed and authorized workspace restoration failed',
+          false,
+        );
+      }
+      if (error instanceof ExternalActionAdapterError) throw error;
+      throw new ExternalActionAdapterError(
+        'ADAPTER_FAILURE',
+        'Validated CodeBuddy patch publication failed',
+        false,
+      );
+    } finally {
+      await rm(patchRoot, { recursive: true, force: true });
     }
   }
-  async collectChanges(workspace: string): Promise<CodeBuddyChangeEvidence> {
-    const status = await git(workspace, ['status', '--porcelain=v1', '-z']);
-    const changedFiles = status
-      .split('\0')
-      .filter(Boolean)
-      .map((entry) => entry.slice(3))
-      .sort();
-    const trackedDiff = await git(workspace, ['diff', '--binary', 'HEAD', '--']);
-    const untracked = (await git(workspace, ['ls-files', '--others', '--exclude-standard', '-z']))
-      .split('\0')
-      .filter(Boolean)
-      .sort();
-    const untrackedDiffs = await Promise.all(
-      untracked.map((path) => gitNoIndexDiff(workspace, path)),
-    );
-    return { changedFiles, diff: [trackedDiff, ...untrackedDiffs].join('') };
+
+  async removeExecutionWorkspace(
+    sourceWorkspace: string,
+    execution: CodeBuddyExecutionWorkspace,
+  ): Promise<void> {
+    try {
+      await execFileAsync(
+        'git',
+        ['-C', sourceWorkspace, 'worktree', 'remove', '--force', execution.realPath],
+        { encoding: 'utf8', maxBuffer: OUTPUT_LIMIT_BYTES },
+      );
+    } catch {
+      await rm(execution.realPath, { recursive: true, force: true });
+      await execFileAsync('git', ['-C', sourceWorkspace, 'worktree', 'prune'], {
+        encoding: 'utf8',
+        maxBuffer: OUTPUT_LIMIT_BYTES,
+      });
+    } finally {
+      await rm(execution.cleanupRoot, { recursive: true, force: true });
+    }
   }
-  async restoreWorkspace(workspace: string): Promise<void> {
-    await git(workspace, ['reset', '--hard', 'HEAD']);
-    await git(workspace, ['clean', '-fd']);
+
+  async restoreWorkspace(
+    workspace: string,
+    baseSha: string,
+    changedFiles: string[],
+  ): Promise<void> {
+    await execFileAsync('git', ['-C', workspace, 'reset', '--hard', baseSha], {
+      encoding: 'utf8',
+      maxBuffer: OUTPUT_LIMIT_BYTES,
+    });
+    if (changedFiles.length)
+      await execFileAsync('git', ['-C', workspace, 'clean', '-fdx', '--', ...changedFiles], {
+        encoding: 'utf8',
+        maxBuffer: OUTPUT_LIMIT_BYTES,
+      });
+    const snapshot = await this.inspectWorkspace(workspace);
+    if (snapshot.headSha !== baseSha || snapshot.dirtyPaths.length)
+      throw new ExternalActionAdapterError(
+        'ADAPTER_FAILURE',
+        'Authorized workspace restoration could not be verified',
+        false,
+      );
+    for (const path of changedFiles) {
+      const residual = (await git(workspace, ['ls-files', '--others', '-z', '--', path]))
+        .split('\0')
+        .filter(Boolean);
+      if (residual.length)
+        throw new ExternalActionAdapterError(
+          'ADAPTER_FAILURE',
+          'Authorized workspace restoration left residual files',
+          false,
+        );
+    }
   }
 }
 
@@ -348,6 +676,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         'Workspace must be clean before CodeBuddy execution',
         true,
       );
+    await this.host.assertPathsSafe(snapshot.realPath, allowedPaths);
     const model =
       request.inputs.model === undefined
         ? this.config.model
@@ -363,14 +692,26 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       `MCF phase: ${request.context?.phaseId ?? 'unbound'}`,
       `Repository: ${repository}`,
       `Approved scope: ${scope}`,
+      'Allowed repository paths:',
+      ...allowedPaths.map((path) => `- ${path}`),
       'Acceptance criteria:',
       ...acceptance.map((item) => `- ${item}`),
-      'Modify only files required by the approved scope. Do not commit, merge, deploy, publish, or use shell commands.',
+      'Modify only the listed allowed repository paths. Do not commit, merge, deploy, publish, or use shell commands.',
     ].join('\n');
+
+    let executionWorkspace: CodeBuddyExecutionWorkspace | null = null;
+    let publishedChanges: CodeBuddyChangeEvidence | null = null;
+    let receipt: McfToolReceipt | null = null;
+    let executionError: unknown = null;
     try {
+      executionWorkspace = await this.host.createExecutionWorkspace(
+        snapshot.realPath,
+        snapshot.headSha,
+      );
+      await this.host.assertPathsSafe(executionWorkspace.realPath, allowedPaths);
       const execution = await this.host.execute({
         binary: this.config.binary,
-        cwd: snapshot.realPath,
+        cwd: executionWorkspace.realPath,
         model,
         prompt,
         timeoutMs: this.config.timeoutMs,
@@ -388,7 +729,13 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
           'CodeBuddy execution failed',
           false,
         );
-      const changes = await this.host.collectChanges(snapshot.realPath);
+      const changes = await this.host.collectChanges(executionWorkspace.realPath, snapshot.headSha);
+      if (changes.headSha !== snapshot.headSha)
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'CodeBuddy changed the execution worktree HEAD',
+          false,
+        );
       if (!changes.changedFiles.length)
         throw new ExternalActionAdapterError(
           'INVALID_RESPONSE',
@@ -410,6 +757,16 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
           'CodeBuddy changed files outside allowed_paths',
           false,
         );
+      await this.host.assertPathsSafe(executionWorkspace.realPath, normalizedChangedFiles);
+      await this.host.publishChanges(
+        executionWorkspace.realPath,
+        snapshot.realPath,
+        snapshot.headSha,
+        changes,
+      );
+      publishedChanges = changes;
+      const diffBytes = Buffer.from(changes.diff, 'utf8');
+      const diffDigest = digest(changes.diff);
       const metadata = {
         adapterId: this.adapterId,
         repository,
@@ -419,7 +776,12 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         changedFiles: normalizedChangedFiles,
         changedFileCount: normalizedChangedFiles.length,
         approvedPaths: allowedPaths,
-        diffDigest: digest(changes.diff),
+        diffDigest,
+        diffArtifact: {
+          encoding: 'base64',
+          data: diffBytes.toString('base64'),
+          byteLength: diffBytes.byteLength,
+        },
         model,
         testHandoff: {
           skillId: 'MCF-RUN-TESTS',
@@ -432,8 +794,9 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         stdoutDigest: digest(execution.stdout),
         localOnly: true,
         committed: false,
+        executionIsolation: 'DISPOSABLE_GIT_WORKTREE',
       };
-      return this.evidence.createTrustedReceipt({
+      receipt = this.evidence.createTrustedReceipt({
         provider: 'codebuddy',
         operation: 'implement-change',
         resource: request.tool.resource,
@@ -444,16 +807,38 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         metadata,
       });
     } catch (error) {
+      executionError = error;
+    }
+
+    if (executionWorkspace) {
       try {
-        await this.host.restoreWorkspace(snapshot.realPath);
+        await this.host.removeExecutionWorkspace(snapshot.realPath, executionWorkspace);
       } catch {
+        if (publishedChanges) {
+          try {
+            await this.host.restoreWorkspace(
+              snapshot.realPath,
+              snapshot.headSha,
+              publishedChanges.changedFiles,
+            );
+          } catch {
+            // Cleanup failure remains authoritative; the workspace is not claimed safe.
+          }
+        }
         throw new ExternalActionAdapterError(
           'ADAPTER_FAILURE',
-          'CodeBuddy execution failed and workspace restoration could not be verified',
+          'CodeBuddy execution workspace cleanup failed',
           false,
         );
       }
-      throw error;
     }
+    if (executionError) throw executionError;
+    if (!receipt)
+      throw new ExternalActionAdapterError(
+        'ADAPTER_FAILURE',
+        'CodeBuddy execution completed without a receipt',
+        false,
+      );
+    return receipt;
   }
 }

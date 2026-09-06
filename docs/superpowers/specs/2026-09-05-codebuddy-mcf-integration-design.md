@@ -43,13 +43,14 @@ ExternalActionDispatcher
     v
 CodeBuddyExecutorAdapter
     |
-    +-- allowed workspace/worktree only
-    +-- CodeBuddy 2.146.0
-    +-- Read / Edit / Glob / Grep only
+    +-- authorized workspace is inspected but never used as CodeBuddy cwd
+    +-- detached disposable Git worktree at the captured base SHA
+    +-- CodeBuddy 2.146.0 with Read / Edit / Glob / Grep only
     +-- selected 9Router-backed model
+    +-- validate complete effects + publish validated patch only
     |
     v
-signed McfToolReceipt + changed-files evidence
+signed McfToolReceipt + retrievable diff bytes + changed-files evidence
 ```
 
 ## 5. CodeBuddy consolidation
@@ -64,12 +65,12 @@ Create one persistent user service named `codebuddy-web.service` with:
 
 - bind: `127.0.0.1` only;
 - port: `46514`;
-- authentication: password enabled;
+- authentication: `none` while the service is strictly bound to localhost; re-enable authentication before any Tailscale/remote exposure;
 - agent: `cli`;
 - permission mode: `default`;
 - working directory: `/home/leo/Documentos/GitHub/multiagent-collaboration-framework`;
 - restart policy: `on-failure`;
-- no `--auth none` in the persistent service.
+- `--auth none` is allowed only for the persistent localhost-only service; remote exposure is out of scope until authentication is restored.
 
 Retire the temporary port 46515 unit and the misleading `workbuddy-enterprise-*` service names after verification. The service must survive restart and must not watch `/home/leo` as its workspace root.
 
@@ -111,7 +112,7 @@ The adapter requires:
 
 Optional input:
 
-- `model`: one of the locally configured 9Router-backed CodeBuddy model ids; otherwise `MCF_CODEBUDDY_MODEL` is used.
+- `model`: if provided, it must exactly equal `MCF_CODEBUDDY_MODEL`; v1 intentionally supports one configured model rather than an arbitrary caller-selected model.
 
 ### 7.4 Workspace safety
 
@@ -124,7 +125,9 @@ Before CodeBuddy runs, the adapter must:
 5. require a clean working tree;
 6. record the exact 40-character base commit SHA.
 
-The adapter fails closed before model invocation on any mismatch.
+The adapter also rejects unsafe `allowed_paths`, including symlink-mediated paths that can resolve outside the repository. The adapter fails closed before model invocation on any mismatch.
+
+CodeBuddy never executes in the authorized workspace. After the checks above, the adapter creates a detached disposable Git worktree at the captured base SHA and uses that worktree as CodeBuddy cwd.
 
 ### 7.5 CodeBuddy execution policy
 
@@ -137,7 +140,11 @@ Invoke CodeBuddy non-interactively with session persistence disabled. The v1 too
 
 Bash, MCP, deploy, browser automation, GitHub writes, and permission bypass are excluded from the v1 executor. Edits may be auto-accepted; all other CodeBuddy permissions remain constrained by the explicit tool set.
 
-The prompt is constructed by the adapter from `approved_scope`, `acceptance_criteria`, repository, workspace and MCF mission identifiers. The adapter does not accept a raw shell command.
+The prompt is constructed by the adapter from `approved_scope`, `allowed_paths`, `acceptance_criteria`, repository and MCF mission identifiers. The adapter does not accept a raw shell command.
+
+The local host launches CodeBuddy in its own process group and terminates the process group on timeout before cleanup. Ignored files, untracked files, tracked edits and rename/copy effects are collected from the disposable worktree. Any effect outside `allowed_paths`, any symlink escape, or any change to the detached HEAD rejects the run.
+
+Only after validation does the MCF-controlled publisher apply the validated patch to the authorized workspace. CodeBuddy itself never publishes into that workspace.
 
 ### 7.6 Post-execution evidence
 
@@ -151,7 +158,9 @@ Receipt metadata includes:
 - `baseCommitSha`;
 - `changedFiles`;
 - `changedFileCount`;
-- `diffDigest` (SHA-256 of the Git diff);
+- `diffDigest` (SHA-256 of the exact canonical Git diff bytes);
+- `diffArtifact` containing those exact bytes as signed base64 metadata plus byte length, allowing independent recomputation;
+- `executionIsolation: DISPOSABLE_GIT_WORKTREE`;
 - `model`;
 - `toolPolicy`;
 - `exitCode`;
@@ -162,7 +171,7 @@ Receipt metadata includes:
 
 The receipt `commitSha` is the unchanged base commit SHA and is explicitly labelled as such in metadata. The adapter does not create a commit in v1; Git commit/PR remains a separate MCF gate and skill.
 
-`EvidenceValidator.verifyForSkill` adds a CodeBuddy-specific validator for `MCF-IMPLEMENT-CHANGE` / `implement-change`, requiring the metadata above and rejecting empty change sets, provider mismatches, invalid digests, or `committed=true`.
+`EvidenceValidator.verifyForSkill` adds a CodeBuddy-specific validator for `MCF-IMPLEMENT-CHANGE` / `implement-change`. It decodes `diffArtifact`, verifies its byte length, recomputes SHA-256 and requires equality with `diffDigest`; it also requires disposable-worktree isolation and rejects empty change sets, provider mismatches, invalid digests, or `committed=true`.
 
 ## 8. Failure semantics
 
@@ -172,7 +181,9 @@ The receipt `commitSha` is the unchanged base commit SHA and is explicitly label
 - missing binary -> `TARGET_NOT_FOUND`, non-retryable;
 - timeout -> `ADAPTER_TIMEOUT`, retryable;
 - CodeBuddy non-zero exit -> `ADAPTER_FAILURE`, retryability false unless timeout/network is proven separately;
-- CodeBuddy success with no filesystem changes -> `INVALID_RESPONSE`, non-retryable.
+- CodeBuddy success with no filesystem changes -> `INVALID_RESPONSE`, non-retryable;
+- any ignored/out-of-scope/symlink/HEAD mutation in the execution worktree -> fail closed before publication;
+- disposable worktree cleanup failure -> `ADAPTER_FAILURE`; if publication already happened, the publisher restores only the affected paths against the captured base SHA and verifies the restored state.
 
 No failure path may expose secret values in errors, logs, receipts, stdout excerpts, or test fixtures.
 
@@ -190,6 +201,14 @@ Unit and integration tests cover:
 - non-zero exit maps to `ADAPTER_FAILURE`;
 - empty diff rejected;
 - changed files and digests are derived from Git evidence;
+- CodeBuddy cwd is a detached disposable worktree, not the authorized workspace;
+- ignored out-of-scope effects are detected without contaminating the authorized workspace;
+- rename across the allowed-path boundary is rejected;
+- symlink-mediated escape is rejected before invocation;
+- timeout terminates descendant processes before delayed writes;
+- restoration targets the captured SHA and verifies cleanup;
+- a well-formed but incorrect diff digest is rejected by recomputing the signed diff artifact;
+- planner enablement is based on a local capability probe, not the feature flag alone;
 - receipt signature and CodeBuddy-specific evidence validation;
 - `McfRuntimeModule` includes the adapter in `AdapterRegistry`;
 - registry permits CodeBuddy only for the authorized implementation skill.
@@ -202,8 +221,8 @@ A live local smoke test uses a disposable Git worktree/file, a 9Router-backed Co
 2. Only one persistent CodeBuddy Web UI remains, on authenticated localhost port 46514.
 3. Service restart returns HTTP 200 and ACP connects without the 10,000-watcher/EPIPE failure.
 4. The MCF adapter is disabled by default and cannot be enabled in production.
-5. An authorized local MCF implementation request causes CodeBuddy to edit only an approved worktree with no Bash.
-6. MCF receives a signed receipt whose changed files and diff digest are independently derived from Git.
+5. An authorized local MCF implementation request causes CodeBuddy to edit only a detached disposable worktree with no Bash; the MCF publisher applies only the validated patch to the authorized workspace.
+6. MCF receives a signed receipt whose changed files and exact diff bytes are independently derived from Git, and whose `diffDigest` can be recomputed from `diffArtifact`.
 7. A separate verification confirms the expected edit; no merge, release, deploy or publication occurs.
 8. All affected unit tests, typecheck and relevant validation pass before completion is claimed.
 
@@ -211,5 +230,5 @@ A live local smoke test uses a disposable Git worktree/file, a 9Router-backed Co
 
 - Restore the previous npm launcher/service if the canonical CodeBuddy service fails.
 - Keep the native 2.146.0 binary as an explicit rollback command until final validation.
-- Disable `MCF_CODEBUDDY_EXECUTOR_ENABLED` to remove the adapter from routing without code rollback.
+- Disable `MCF_CODEBUDDY_EXECUTOR_ENABLED` to remove the adapter from routing without code rollback. Startup capability probing also keeps CodeBuddy out of routing when the binary or workspace capability is not positively available.
 - Revert the feature branch commits to remove the MCF integration. No database migration is introduced.

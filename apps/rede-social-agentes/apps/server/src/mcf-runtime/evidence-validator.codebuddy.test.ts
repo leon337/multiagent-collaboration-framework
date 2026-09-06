@@ -1,4 +1,5 @@
 import type { McfSkillDefinition } from '@rsa/contracts';
+import { createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { EvidenceValidator } from './evidence-validator.js';
@@ -32,7 +33,8 @@ const inputs = {
   model: 'cx/gpt-5.6-sol',
 };
 const sha = 'a'.repeat(40);
-const digest = 'b'.repeat(64);
+const patch = 'diff --git a/fixture.txt b/fixture.txt\n+AFTER\n';
+const digest = createHash('sha256').update(patch).digest('hex');
 
 beforeEach(() => {
   process.env.DATABASE_URL = 'postgresql://rsa:rsa@127.0.0.1:5432/rsa';
@@ -57,6 +59,11 @@ function receipt(evidence: EvidenceValidator, metadata: Record<string, unknown> 
       changedFileCount: 1,
       approvedPaths: ['fixture.txt'],
       diffDigest: digest,
+      diffArtifact: {
+        encoding: 'base64',
+        data: Buffer.from(patch, 'utf8').toString('base64'),
+        byteLength: Buffer.byteLength(patch),
+      },
       model: 'cx/gpt-5.6-sol',
       testHandoff: {
         skillId: 'MCF-RUN-TESTS',
@@ -69,6 +76,7 @@ function receipt(evidence: EvidenceValidator, metadata: Record<string, unknown> 
       stdoutDigest: 'c'.repeat(64),
       localOnly: true,
       committed: false,
+      executionIsolation: 'DISPOSABLE_GIT_WORKTREE',
       ...metadata,
     },
   });
@@ -128,11 +136,35 @@ describe('EvidenceValidator CodeBuddy implementation receipts', () => {
     ).toThrow(/MCF-RUN-TESTS/i);
   });
 
+  it('rejects a receipt that does not prove disposable-worktree isolation', () => {
+    const evidence = new EvidenceValidator();
+    expect(() =>
+      evidence.verifyForSkill(
+        receipt(evidence, { executionIsolation: undefined }),
+        tool,
+        skill,
+        inputs,
+      ),
+    ).toThrow(/isolation|worktree/i);
+  });
+
   it('rejects a receipt whose model differs from the authorized execution model', () => {
     const evidence = new EvidenceValidator();
     expect(() =>
       evidence.verifyForSkill(receipt(evidence, { model: 'other/model' }), tool, skill, inputs),
     ).toThrow(/model/i);
+  });
+
+  it('rejects a well-formed diff digest that does not match the signed diff artifact bytes', () => {
+    const evidence = new EvidenceValidator();
+    expect(() =>
+      evidence.verifyForSkill(
+        receipt(evidence, { diffDigest: 'd'.repeat(64) }),
+        tool,
+        skill,
+        inputs,
+      ),
+    ).toThrow(/diffArtifact|diffDigest|digest/i);
   });
 
   it.each([
