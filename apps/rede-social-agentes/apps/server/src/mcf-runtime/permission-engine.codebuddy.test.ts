@@ -84,8 +84,8 @@ describe('PermissionEngine CodeBuddy boundary', () => {
   it('preserves the SCOPED_WRITE authorizedScope requirement', () => {
     const engine = new PermissionEngine();
 
-    expect(() =>
-      engine.assertAllowed(implementationSkill, 'Rafael', canonicalTool, {}),
-    ).toThrow(/authorizedScope=true/i);
+    expect(() => engine.assertAllowed(implementationSkill, 'Rafael', canonicalTool, {})).toThrow(
+      /authorizedScope=true/i,
+    );
   });
 });

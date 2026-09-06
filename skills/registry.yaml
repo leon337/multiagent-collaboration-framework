@@ -144,7 +144,7 @@ skills:
     trigger_phrases: ["implementar", "corrigir", "integrar", "criar funcionalidade"]
     required_inputs: [approved_scope, acceptance_criteria, repository]
     optional_inputs: [branch, issue, design_reference]
-    allowed_tools: [GitHub, Linear, Supabase, Neon_Postgres, Render, Vercel, Cloudflare, OpenAI_Developers, Figma]
+    allowed_tools: [GitHub, Linear, Supabase, Neon_Postgres, Render, Vercel, Cloudflare, OpenAI_Developers, Figma, CodeBuddy]
     forbidden_tools: [direct_main_write, public_release_without_gate]
     permission_profile: SCOPED_WRITE
     execution_steps: [criar_branch, implementar, testar_localmente, documentar, passar_para_revisao]
