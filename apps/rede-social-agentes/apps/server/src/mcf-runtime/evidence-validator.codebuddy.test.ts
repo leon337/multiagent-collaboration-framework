@@ -1,0 +1,86 @@
+import type { McfSkillDefinition } from '@rsa/contracts';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { EvidenceValidator } from './evidence-validator.js';
+
+const skill: McfSkillDefinition = {
+  skillId: 'MCF-IMPLEMENT-CHANGE',
+  name: 'Implementar mudança autorizada',
+  version: '1.0.0',
+  purpose: 'Implementar mudança.',
+  ownerAgents: ['Rafael'],
+  requiredInputs: ['approved_scope', 'acceptance_criteria', 'repository'],
+  allowedTools: ['CodeBuddy'],
+  forbiddenTools: [],
+  permissionProfile: 'SCOPED_WRITE',
+  executionSteps: ['implementar'],
+  requiredEvidence: ['changed_files'],
+  acceptanceCriteria: ['scope_respected'],
+  failureModes: ['scope_creep'],
+  fallback: 'patch',
+  handoffTo: 'Vinicius',
+};
+
+const tool = {
+  provider: 'codebuddy',
+  operation: 'implement-change',
+  resource: 'leon337/multiagent-collaboration-framework',
+};
+const inputs = { repository: tool.resource };
+const sha = 'a'.repeat(40);
+const digest = 'b'.repeat(64);
+
+beforeEach(() => {
+  process.env.DATABASE_URL = 'postgresql://rsa:rsa@127.0.0.1:5432/rsa';
+  process.env.MCF_RECEIPT_SECRET = 'test-only-mcf-receipt-secret-0000000001';
+});
+
+function receipt(evidence: EvidenceValidator, metadata: Record<string, unknown> = {}) {
+  return evidence.createTrustedReceipt({
+    provider: 'codebuddy',
+    operation: 'implement-change',
+    resource: tool.resource,
+    externalId: 'local-execution-1',
+    commitSha: sha,
+    status: 'SUCCEEDED',
+    observedAt: new Date().toISOString(),
+    metadata: {
+      adapterId: 'codebuddy-implement-change-local-v1',
+      repository: tool.resource,
+      workspaceRelativeToRoot: 'task-1',
+      baseCommitSha: sha,
+      changedFiles: ['fixture.txt'],
+      changedFileCount: 1,
+      diffDigest: digest,
+      model: 'cx/gpt-5.6-sol',
+      toolPolicy: ['Read', 'Edit', 'Glob', 'Grep'],
+      exitCode: 0,
+      durationMs: 100,
+      stdoutDigest: 'c'.repeat(64),
+      localOnly: true,
+      committed: false,
+      ...metadata,
+    },
+  });
+}
+
+describe('EvidenceValidator CodeBuddy implementation receipts', () => {
+  it('accepts a bounded local CodeBuddy change receipt', () => {
+    const evidence = new EvidenceValidator();
+    expect(() => evidence.verifyForSkill(receipt(evidence), tool, skill, inputs)).not.toThrow();
+  });
+
+  it.each([
+    ['empty changes', { changedFiles: [], changedFileCount: 0 }],
+    ['wrong base sha', { baseCommitSha: 'd'.repeat(40) }],
+    ['invalid diff digest', { diffDigest: 'not-a-digest' }],
+    ['non-local execution', { localOnly: false }],
+    ['committed execution', { committed: true }],
+    ['Bash in tool policy', { toolPolicy: ['Read', 'Edit', 'Glob', 'Grep', 'Bash'] }],
+  ])('rejects %s', (_name, mutation) => {
+    const evidence = new EvidenceValidator();
+    expect(() =>
+      evidence.verifyForSkill(receipt(evidence, mutation), tool, skill, inputs),
+    ).toThrow();
+  });
+});

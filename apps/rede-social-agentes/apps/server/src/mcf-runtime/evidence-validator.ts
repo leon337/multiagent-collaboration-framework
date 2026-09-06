@@ -1008,6 +1008,95 @@ function validateVisualDesktopAuditReceipt(
   );
 }
 
+function validateCodeBuddyImplementReceipt(
+  receipt: McfToolReceipt,
+  expected: McfToolRequest,
+  inputs: Readonly<Record<string, unknown>>,
+): void {
+  if (canonicalizeProvider(receipt.provider) !== 'codebuddy')
+    reject('CodeBuddy implementation evidence requires provider=codebuddy');
+  const commitSha = exactCommitSha(receipt.commitSha);
+  const baseCommitSha = exactCommitSha(receipt.metadata.baseCommitSha);
+  if (!commitSha || !baseCommitSha || commitSha !== baseCommitSha)
+    reject('CodeBuddy implementation evidence requires matching exact base commit SHA');
+  const resourceRepository = repositoryFromValue(expected.resource);
+  const metadataValue = receipt.metadata.repository;
+  const metadataRepository =
+    typeof metadataValue === 'string' ? repositoryFromValue(metadataValue) : null;
+  if (
+    !resourceRepository ||
+    !metadataRepository ||
+    metadataRepository.toLowerCase() !== resourceRepository.toLowerCase()
+  )
+    reject('CodeBuddy implementation evidence repository must match the tool resource');
+  if (
+    typeof inputs.repository !== 'string' ||
+    repositoryFromValue(inputs.repository)?.toLowerCase() !== resourceRepository.toLowerCase()
+  )
+    reject('CodeBuddy implementation evidence repository must match the current repository input');
+  const changedFiles = requireNonEmptyArray(
+    receipt.metadata,
+    'changedFiles',
+    'CodeBuddy implementation evidence requires changedFiles',
+  );
+  if (changedFiles.some((item) => typeof item !== 'string' || !item.trim()))
+    reject('CodeBuddy implementation changedFiles must contain non-empty paths');
+  const changedFileCount = requireNonNegativeInteger(
+    receipt.metadata,
+    'changedFileCount',
+    'CodeBuddy implementation evidence requires changedFileCount',
+  );
+  if (changedFileCount !== changedFiles.length)
+    reject('CodeBuddy implementation changedFileCount must match changedFiles');
+  for (const key of ['diffDigest', 'stdoutDigest'] as const) {
+    const value = requireString(
+      receipt.metadata,
+      key,
+      `CodeBuddy implementation evidence requires ${key}`,
+    );
+    if (!/^[a-f0-9]{64}$/u.test(value))
+      reject(`CodeBuddy implementation ${key} must be a SHA-256 digest`);
+  }
+  if (
+    requireBoolean(receipt.metadata, 'localOnly', 'CodeBuddy evidence requires localOnly') !== true
+  )
+    reject('CodeBuddy implementation evidence must be local-only');
+  if (
+    requireBoolean(receipt.metadata, 'committed', 'CodeBuddy evidence requires committed') !== false
+  )
+    reject('CodeBuddy implementation adapter must not commit');
+  if (
+    requireNonNegativeInteger(
+      receipt.metadata,
+      'exitCode',
+      'CodeBuddy implementation evidence requires exitCode',
+    ) !== 0
+  )
+    reject('CodeBuddy implementation evidence requires exitCode=0');
+  requireNonNegativeInteger(
+    receipt.metadata,
+    'durationMs',
+    'CodeBuddy implementation evidence requires durationMs',
+  );
+  requireString(receipt.metadata, 'model', 'CodeBuddy implementation evidence requires model');
+  requireString(
+    receipt.metadata,
+    'workspaceRelativeToRoot',
+    'CodeBuddy implementation evidence requires workspaceRelativeToRoot',
+  );
+  const policy = requireArray(
+    receipt.metadata,
+    'toolPolicy',
+    'CodeBuddy implementation evidence requires toolPolicy',
+  );
+  const expectedPolicy = ['Read', 'Edit', 'Glob', 'Grep'];
+  if (
+    policy.length !== expectedPolicy.length ||
+    policy.some((item, index) => item !== expectedPolicy[index])
+  )
+    reject('CodeBuddy implementation toolPolicy must be exactly Read/Edit/Glob/Grep');
+}
+
 function validateDeploymentReceipt(receipt: McfToolReceipt): void {
   const deployProviders = new Set(['render', 'vercel', 'cloudflare']);
   if (!deployProviders.has(receipt.provider) || !receipt.externalId || !receipt.commitSha) {
@@ -1161,6 +1250,10 @@ export class EvidenceValidator {
     }
 
     switch (skill.skillId) {
+      case 'MCF-IMPLEMENT-CHANGE':
+        if (operation === 'implement-change')
+          validateCodeBuddyImplementReceipt(receipt, expected, inputs ?? {});
+        break;
       case 'MCF-REVIEW-CODE':
         validateReviewReceipt(receipt);
         break;
