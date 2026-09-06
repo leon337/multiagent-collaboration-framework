@@ -153,6 +153,8 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
       '-p',
       input.prompt,
       '--no-session-persistence',
+      '--agent',
+      'cli',
       '--tools',
       input.tools.join(','),
       '--permission-mode',

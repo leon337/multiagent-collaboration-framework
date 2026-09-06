@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EvidenceValidator } from './evidence-validator.js';
 import {
   CodeBuddyExecutorAdapter,
+  LocalCodeBuddyHost,
   type CodeBuddyChangeEvidence,
   type CodeBuddyExecutionResult,
   type CodeBuddyHost,
@@ -90,6 +91,23 @@ function adapter(host = new FakeHost(), enabled = true) {
     ),
   };
 }
+
+describe('LocalCodeBuddyHost', () => {
+  it('forces the Standard cli agent for headless execution', async () => {
+    const host = new LocalCodeBuddyHost();
+    const result = await host.execute({
+      binary: '/bin/echo',
+      cwd: process.cwd(),
+      model: 'cx/gpt-5.6-sol',
+      prompt: 'smoke',
+      timeoutMs: 1000,
+      tools: ['Read', 'Edit'],
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('--agent cli');
+  });
+});
 
 describe('CodeBuddyExecutorAdapter', () => {
   it('does not support requests when disabled', () => {
