@@ -105,4 +105,38 @@ describe('loadRuntimeConfig', () => {
       }),
     ).toThrow();
   });
+
+  it('keeps the CodeBuddy executor disabled by default', () => {
+    expect(loadRuntimeConfig(baseEnvironment)).toMatchObject({
+      MCF_CODEBUDDY_EXECUTOR_ENABLED: false,
+      MCF_CODEBUDDY_BINARY: 'codebuddy',
+      MCF_CODEBUDDY_WORKSPACE_ROOT: '',
+      MCF_CODEBUDDY_MODEL: 'cx/gpt-5.6-sol',
+      MCF_CODEBUDDY_TIMEOUT_MS: 300000,
+    });
+  });
+
+  it('rejects CodeBuddy executor enablement in production', () => {
+    expect(() =>
+      loadRuntimeConfig({
+        ...productionEnvironment,
+        ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+        MCF_CODEBUDDY_EXECUTOR_ENABLED: 'true',
+        MCF_CODEBUDDY_WORKSPACE_ROOT: '/srv/mcf',
+      }),
+    ).toThrow(/CodeBuddy executor/i);
+  });
+
+  it.each(['', '/', 'relative/path'])(
+    'rejects an unsafe enabled CodeBuddy workspace root: %s',
+    (root) => {
+      expect(() =>
+        loadRuntimeConfig({
+          ...baseEnvironment,
+          MCF_CODEBUDDY_EXECUTOR_ENABLED: 'true',
+          MCF_CODEBUDDY_WORKSPACE_ROOT: root,
+        }),
+      ).toThrow(/workspace root/i);
+    },
+  );
 });
