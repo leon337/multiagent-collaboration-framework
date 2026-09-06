@@ -10,6 +10,7 @@ import { CanonicalExternalActionLedger } from './canonical-external-action-ledge
 import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
+import { CodeBuddyExecutorAdapter } from './codebuddy-executor.adapter.js';
 import { ContinuityRecoveryService } from './continuity-recovery.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
@@ -109,19 +110,41 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
       inject: [EvidenceValidator],
     },
     {
+      provide: CodeBuddyExecutorAdapter,
+      useFactory: (evidence: EvidenceValidator) => {
+        const config = loadRuntimeConfig();
+        return new CodeBuddyExecutorAdapter(evidence, {
+          enabled: config.MCF_CODEBUDDY_EXECUTOR_ENABLED,
+          binary: config.MCF_CODEBUDDY_BINARY,
+          workspaceRoot: config.MCF_CODEBUDDY_WORKSPACE_ROOT,
+          model: config.MCF_CODEBUDDY_MODEL,
+          timeoutMs: config.MCF_CODEBUDDY_TIMEOUT_MS,
+        });
+      },
+      inject: [EvidenceValidator],
+    },
+    {
       provide: AdapterRegistry,
       useFactory: (
         githubReview: GitHubCodeReviewAdapter,
         githubCiQuery: GitHubCiQueryAdapter,
         githubBranchPr: GitHubBranchPullRequestAdapter,
         githubPrCollaboration: GitHubPullCollaborationAdapter,
+        codeBuddy: CodeBuddyExecutorAdapter,
       ) =>
-        new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration]),
+        new AdapterRegistry([
+          githubReview,
+          githubCiQuery,
+          githubBranchPr,
+          githubPrCollaboration,
+          codeBuddy,
+        ]),
       inject: [
         GitHubCodeReviewAdapter,
         GitHubCiQueryAdapter,
         GitHubBranchPullRequestAdapter,
         GitHubPullCollaborationAdapter,
+        CodeBuddyExecutorAdapter,
       ],
     },
     {
