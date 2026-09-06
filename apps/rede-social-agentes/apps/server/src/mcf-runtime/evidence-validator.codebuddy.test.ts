@@ -9,12 +9,12 @@ const skill: McfSkillDefinition = {
   version: '1.0.0',
   purpose: 'Implementar mudança.',
   ownerAgents: ['Rafael'],
-  requiredInputs: ['approved_scope', 'acceptance_criteria', 'repository'],
+  requiredInputs: ['approved_scope', 'acceptance_criteria', 'repository', 'allowed_paths'],
   allowedTools: ['CodeBuddy'],
   forbiddenTools: [],
   permissionProfile: 'SCOPED_WRITE',
   executionSteps: ['implementar'],
-  requiredEvidence: ['changed_files'],
+  requiredEvidence: ['changed_files', 'base_commit_sha', 'diff_digest', 'test_results_or_handoff'],
   acceptanceCriteria: ['scope_respected'],
   failureModes: ['scope_creep'],
   fallback: 'patch',
@@ -26,7 +26,11 @@ const tool = {
   operation: 'implement-change',
   resource: 'leon337/multiagent-collaboration-framework',
 };
-const inputs = { repository: tool.resource };
+const inputs = {
+  repository: tool.resource,
+  allowed_paths: ['fixture.txt'],
+  model: 'cx/gpt-5.6-sol',
+};
 const sha = 'a'.repeat(40);
 const digest = 'b'.repeat(64);
 
@@ -51,8 +55,14 @@ function receipt(evidence: EvidenceValidator, metadata: Record<string, unknown> 
       baseCommitSha: sha,
       changedFiles: ['fixture.txt'],
       changedFileCount: 1,
+      approvedPaths: ['fixture.txt'],
       diffDigest: digest,
       model: 'cx/gpt-5.6-sol',
+      testHandoff: {
+        skillId: 'MCF-RUN-TESTS',
+        status: 'PENDING',
+        reason: 'CODEBUDDY_TOOL_POLICY_EXCLUDES_TEST_EXECUTION',
+      },
       toolPolicy: ['Read', 'Edit', 'Glob', 'Grep'],
       exitCode: 0,
       durationMs: 100,
@@ -68,6 +78,61 @@ describe('EvidenceValidator CodeBuddy implementation receipts', () => {
   it('accepts a bounded local CodeBuddy change receipt', () => {
     const evidence = new EvidenceValidator();
     expect(() => evidence.verifyForSkill(receipt(evidence), tool, skill, inputs)).not.toThrow();
+  });
+
+  it('rejects a receipt without structured approved paths', () => {
+    const evidence = new EvidenceValidator();
+    expect(() =>
+      evidence.verifyForSkill(receipt(evidence, { approvedPaths: undefined }), tool, skill, inputs),
+    ).toThrow(/approvedPaths|allowed_paths/i);
+  });
+
+  it('rejects changed files outside the approved paths', () => {
+    const evidence = new EvidenceValidator();
+    expect(() =>
+      evidence.verifyForSkill(
+        receipt(evidence, {
+          approvedPaths: ['fixture.txt'],
+          changedFiles: ['src/outside.ts'],
+          changedFileCount: 1,
+        }),
+        tool,
+        skill,
+        inputs,
+      ),
+    ).toThrow(/approved|scope|path/i);
+  });
+
+  it('rejects a receipt without a pending handoff to MCF-RUN-TESTS', () => {
+    const evidence = new EvidenceValidator();
+    expect(() =>
+      evidence.verifyForSkill(receipt(evidence, { testHandoff: undefined }), tool, skill, inputs),
+    ).toThrow(/testHandoff|MCF-RUN-TESTS|tests/i);
+  });
+
+  it('rejects a handoff to a different skill', () => {
+    const evidence = new EvidenceValidator();
+    expect(() =>
+      evidence.verifyForSkill(
+        receipt(evidence, {
+          testHandoff: {
+            skillId: 'MCF-REVIEW-CODE',
+            status: 'PENDING',
+            reason: 'CODEBUDDY_TOOL_POLICY_EXCLUDES_TEST_EXECUTION',
+          },
+        }),
+        tool,
+        skill,
+        inputs,
+      ),
+    ).toThrow(/MCF-RUN-TESTS/i);
+  });
+
+  it('rejects a receipt whose model differs from the authorized execution model', () => {
+    const evidence = new EvidenceValidator();
+    expect(() =>
+      evidence.verifyForSkill(receipt(evidence, { model: 'other/model' }), tool, skill, inputs),
+    ).toThrow(/model/i);
   });
 
   it.each([

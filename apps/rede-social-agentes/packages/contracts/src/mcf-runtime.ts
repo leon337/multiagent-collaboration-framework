@@ -503,7 +503,7 @@ export type McfExecutableSkillId =
   | 'MCF-CLOSE-PHASE';
 
 export type McfExecutableToolProvider =
-  'internal' | 'github' | 'github-actions' | 'render' | 'vercel' | 'cloudflare';
+  'internal' | 'github' | 'github-actions' | 'render' | 'vercel' | 'cloudflare' | 'codebuddy';
 
 export interface McfChatDispatchRequest {
   objective: string;

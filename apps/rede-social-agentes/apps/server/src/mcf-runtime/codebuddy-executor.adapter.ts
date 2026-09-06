@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { realpath } from 'node:fs/promises';
-import { relative, resolve } from 'node:path';
+import { posix, relative, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
 import type { McfToolReceipt } from '@rsa/contracts';
@@ -17,6 +17,22 @@ import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine
 const execFileAsync = promisify(execFile);
 const TOOL_POLICY = ['Read', 'Edit', 'Glob', 'Grep'] as const;
 const OUTPUT_LIMIT_BYTES = 1024 * 1024;
+const SAFE_ENV_KEYS = [
+  'HOME',
+  'PATH',
+  'USER',
+  'LOGNAME',
+  'LANG',
+  'LC_ALL',
+  'LC_CTYPE',
+  'TERM',
+  'TMPDIR',
+  'XDG_CONFIG_HOME',
+  'XDG_CACHE_HOME',
+  'XDG_DATA_HOME',
+  'XDG_RUNTIME_DIR',
+  'NO_COLOR',
+] as const;
 
 export interface CodeBuddyExecutorConfig {
   enabled: boolean;
@@ -53,6 +69,7 @@ export interface CodeBuddyHost {
     tools: string[];
   }): Promise<CodeBuddyExecutionResult>;
   collectChanges(workspace: string): Promise<CodeBuddyChangeEvidence>;
+  restoreWorkspace(workspace: string): Promise<void>;
 }
 
 function canonicalRepository(value: string): string | null {
@@ -76,6 +93,54 @@ function requireNonEmptyString(value: unknown, label: string): string {
       false,
     );
   return value.trim();
+}
+function restrictedEnvironment(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const environment: NodeJS.ProcessEnv = {};
+  for (const key of SAFE_ENV_KEYS) {
+    const value = source[key];
+    if (value !== undefined) environment[key] = value;
+  }
+  return environment;
+}
+function canonicalRepositoryPath(value: unknown, label: string): string {
+  if (typeof value !== 'string' || !value.trim())
+    throw new ExternalActionAdapterError('INVALID_CONTEXT', `${label} must contain paths`, false);
+  const trimmed = value.trim();
+  if (trimmed.includes('\0') || trimmed.includes('\\') || trimmed.startsWith('/'))
+    throw new ExternalActionAdapterError(
+      'INVALID_CONTEXT',
+      `${label} contains an unsafe path`,
+      false,
+    );
+  const normalized = posix.normalize(trimmed).replace(/\/$/u, '');
+  if (
+    normalized === '.' ||
+    normalized === '..' ||
+    normalized.startsWith('../') ||
+    normalized.includes('/../')
+  )
+    throw new ExternalActionAdapterError(
+      'INVALID_CONTEXT',
+      `${label} contains an unsafe path`,
+      false,
+    );
+  return normalized;
+}
+function approvedPaths(value: unknown): string[] {
+  if (!Array.isArray(value) || value.length === 0)
+    throw new ExternalActionAdapterError(
+      'INVALID_CONTEXT',
+      'allowed_paths must be a non-empty array of repository-relative paths',
+      false,
+    );
+  const paths = value.map((item) => canonicalRepositoryPath(item, 'allowed_paths'));
+  if (new Set(paths).size !== paths.length)
+    throw new ExternalActionAdapterError('INVALID_CONTEXT', 'allowed_paths must be unique', false);
+  return paths;
+}
+function pathIsAllowed(path: string, allowed: string[]): boolean {
+  const normalized = canonicalRepositoryPath(path, 'changedFiles');
+  return allowed.some((scope) => normalized === scope || normalized.startsWith(`${scope}/`));
 }
 function criteria(value: unknown): string[] {
   if (typeof value === 'string' && value.trim()) return [value.trim()];
@@ -106,6 +171,24 @@ async function git(workspace: string, args: string[]): Promise<string> {
     throw new ExternalActionAdapterError(
       'INVALID_CONTEXT',
       'Workspace Git inspection failed',
+      false,
+    );
+  }
+}
+async function gitNoIndexDiff(workspace: string, path: string): Promise<string> {
+  try {
+    const { stdout } = await execFileAsync(
+      'git',
+      ['-C', workspace, 'diff', '--no-index', '--binary', '--', '/dev/null', path],
+      { encoding: 'utf8', maxBuffer: OUTPUT_LIMIT_BYTES },
+    );
+    return stdout;
+  } catch (error) {
+    const candidate = error as { code?: number | string; stdout?: string };
+    if (candidate.code === 1 && typeof candidate.stdout === 'string') return candidate.stdout;
+    throw new ExternalActionAdapterError(
+      'INVALID_CONTEXT',
+      'Workspace Git diff inspection failed',
       false,
     );
   }
@@ -170,6 +253,7 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
         encoding: 'utf8',
         timeout: input.timeoutMs,
         maxBuffer: OUTPUT_LIMIT_BYTES,
+        env: restrictedEnvironment(process.env),
       });
       return { exitCode: 0, stdout, stderr, durationMs: Date.now() - startedAt, timedOut: false };
     } catch (error) {
@@ -202,8 +286,19 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
       .filter(Boolean)
       .map((entry) => entry.slice(3))
       .sort();
-    const diff = await git(workspace, ['diff', '--binary', 'HEAD', '--']);
-    return { changedFiles, diff };
+    const trackedDiff = await git(workspace, ['diff', '--binary', 'HEAD', '--']);
+    const untracked = (await git(workspace, ['ls-files', '--others', '--exclude-standard', '-z']))
+      .split('\0')
+      .filter(Boolean)
+      .sort();
+    const untrackedDiffs = await Promise.all(
+      untracked.map((path) => gitNoIndexDiff(workspace, path)),
+    );
+    return { changedFiles, diff: [trackedDiff, ...untrackedDiffs].join('') };
+  }
+  async restoreWorkspace(workspace: string): Promise<void> {
+    await git(workspace, ['reset', '--hard', 'HEAD']);
+    await git(workspace, ['clean', '-fd']);
   }
 }
 
@@ -227,6 +322,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
     const acceptance = criteria(request.inputs.acceptance_criteria);
     const repository = requireNonEmptyString(request.inputs.repository, 'repository');
     const workspace = requireNonEmptyString(request.inputs.workspace, 'workspace');
+    const allowedPaths = approvedPaths(request.inputs.allowed_paths);
     if (canonicalRepository(repository)?.toLowerCase() !== request.tool.resource.toLowerCase())
       throw new ExternalActionAdapterError(
         'INVALID_CONTEXT',
@@ -256,6 +352,12 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       request.inputs.model === undefined
         ? this.config.model
         : requireNonEmptyString(request.inputs.model, 'model');
+    if (model !== this.config.model)
+      throw new ExternalActionAdapterError(
+        'INVALID_CONTEXT',
+        'Requested CodeBuddy model is outside the configured allowlist',
+        false,
+      );
     const prompt = [
       `MCF mission: ${request.context?.missionId ?? 'unbound'}`,
       `MCF phase: ${request.context?.phaseId ?? 'unbound'}`,
@@ -265,55 +367,93 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       ...acceptance.map((item) => `- ${item}`),
       'Modify only files required by the approved scope. Do not commit, merge, deploy, publish, or use shell commands.',
     ].join('\n');
-    const execution = await this.host.execute({
-      binary: this.config.binary,
-      cwd: snapshot.realPath,
-      model,
-      prompt,
-      timeoutMs: this.config.timeoutMs,
-      tools: [...TOOL_POLICY],
-    });
-    if (execution.timedOut)
-      throw new ExternalActionAdapterError(
-        'ADAPTER_TIMEOUT',
-        'CodeBuddy execution exceeded its deadline',
-        true,
+    try {
+      const execution = await this.host.execute({
+        binary: this.config.binary,
+        cwd: snapshot.realPath,
+        model,
+        prompt,
+        timeoutMs: this.config.timeoutMs,
+        tools: [...TOOL_POLICY],
+      });
+      if (execution.timedOut)
+        throw new ExternalActionAdapterError(
+          'ADAPTER_TIMEOUT',
+          'CodeBuddy execution exceeded its deadline',
+          true,
+        );
+      if (execution.exitCode !== 0)
+        throw new ExternalActionAdapterError(
+          'ADAPTER_FAILURE',
+          'CodeBuddy execution failed',
+          false,
+        );
+      const changes = await this.host.collectChanges(snapshot.realPath);
+      if (!changes.changedFiles.length)
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'CodeBuddy completed without filesystem changes',
+          false,
+        );
+      const normalizedChangedFiles = changes.changedFiles.map((path) =>
+        canonicalRepositoryPath(path, 'changedFiles'),
       );
-    if (execution.exitCode !== 0)
-      throw new ExternalActionAdapterError('ADAPTER_FAILURE', 'CodeBuddy execution failed', false);
-    const changes = await this.host.collectChanges(snapshot.realPath);
-    if (!changes.changedFiles.length)
-      throw new ExternalActionAdapterError(
-        'INVALID_RESPONSE',
-        'CodeBuddy completed without filesystem changes',
-        false,
-      );
-    const metadata = {
-      adapterId: this.adapterId,
-      repository,
-      workspaceRelativeToRoot:
-        relative(resolve(this.config.workspaceRoot), resolve(snapshot.realPath)) || '.',
-      baseCommitSha: snapshot.headSha,
-      changedFiles: changes.changedFiles,
-      changedFileCount: changes.changedFiles.length,
-      diffDigest: digest(changes.diff),
-      model,
-      toolPolicy: [...TOOL_POLICY],
-      exitCode: execution.exitCode,
-      durationMs: execution.durationMs,
-      stdoutDigest: digest(execution.stdout),
-      localOnly: true,
-      committed: false,
-    };
-    return this.evidence.createTrustedReceipt({
-      provider: 'codebuddy',
-      operation: 'implement-change',
-      resource: request.tool.resource,
-      externalId: randomUUID(),
-      commitSha: snapshot.headSha,
-      status: 'SUCCEEDED',
-      observedAt: new Date().toISOString(),
-      metadata,
-    });
+      if (new Set(normalizedChangedFiles).size !== normalizedChangedFiles.length)
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'CodeBuddy reported duplicate changed files',
+          false,
+        );
+      if (normalizedChangedFiles.some((path) => !pathIsAllowed(path, allowedPaths)))
+        throw new ExternalActionAdapterError(
+          'INVALID_RESPONSE',
+          'CodeBuddy changed files outside allowed_paths',
+          false,
+        );
+      const metadata = {
+        adapterId: this.adapterId,
+        repository,
+        workspaceRelativeToRoot:
+          relative(resolve(this.config.workspaceRoot), resolve(snapshot.realPath)) || '.',
+        baseCommitSha: snapshot.headSha,
+        changedFiles: normalizedChangedFiles,
+        changedFileCount: normalizedChangedFiles.length,
+        approvedPaths: allowedPaths,
+        diffDigest: digest(changes.diff),
+        model,
+        testHandoff: {
+          skillId: 'MCF-RUN-TESTS',
+          status: 'PENDING',
+          reason: 'CODEBUDDY_TOOL_POLICY_EXCLUDES_TEST_EXECUTION',
+        },
+        toolPolicy: [...TOOL_POLICY],
+        exitCode: execution.exitCode,
+        durationMs: execution.durationMs,
+        stdoutDigest: digest(execution.stdout),
+        localOnly: true,
+        committed: false,
+      };
+      return this.evidence.createTrustedReceipt({
+        provider: 'codebuddy',
+        operation: 'implement-change',
+        resource: request.tool.resource,
+        externalId: randomUUID(),
+        commitSha: snapshot.headSha,
+        status: 'SUCCEEDED',
+        observedAt: new Date().toISOString(),
+        metadata,
+      });
+    } catch (error) {
+      try {
+        await this.host.restoreWorkspace(snapshot.realPath);
+      } catch {
+        throw new ExternalActionAdapterError(
+          'ADAPTER_FAILURE',
+          'CodeBuddy execution failed and workspace restoration could not be verified',
+          false,
+        );
+      }
+      throw error;
+    }
   }
 }

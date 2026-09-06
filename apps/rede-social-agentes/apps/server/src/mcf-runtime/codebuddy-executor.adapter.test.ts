@@ -1,7 +1,15 @@
 import type { McfSkillDefinition } from '@rsa/contracts';
+import { execFile } from 'node:child_process';
+import { chmod, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { promisify } from 'node:util';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EvidenceValidator } from './evidence-validator.js';
+
+const execFileAsync = promisify(execFile);
 import {
   CodeBuddyExecutorAdapter,
   LocalCodeBuddyHost,
@@ -17,7 +25,7 @@ const skill: McfSkillDefinition = {
   version: '1.0.0',
   purpose: 'Produzir alteração de código dentro do escopo aprovado.',
   ownerAgents: ['Rafael'],
-  requiredInputs: ['approved_scope', 'acceptance_criteria', 'repository'],
+  requiredInputs: ['approved_scope', 'acceptance_criteria', 'repository', 'allowed_paths'],
   allowedTools: ['CodeBuddy'],
   forbiddenTools: ['direct_main_write', 'public_release_without_gate'],
   permissionProfile: 'SCOPED_WRITE',
@@ -37,6 +45,7 @@ const request = {
     acceptance_criteria: ['fixture.txt contains AFTER'],
     repository: 'leon337/multiagent-collaboration-framework',
     workspace: '/srv/mcf/worktrees/task-1',
+    allowed_paths: ['fixture.txt'],
     authorizedScope: true,
   },
   tool: {
@@ -68,6 +77,7 @@ class FakeHost implements CodeBuddyHost {
   inspectWorkspace = vi.fn(async () => this.snapshot);
   execute = vi.fn(async () => this.result);
   collectChanges = vi.fn(async () => this.changes);
+  restoreWorkspace = vi.fn(async () => undefined);
 }
 
 beforeEach(() => {
@@ -106,6 +116,48 @@ describe('LocalCodeBuddyHost', () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('--agent cli');
+  });
+
+  it('does not inherit unrelated environment variables into the CodeBuddy subprocess', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-env-'));
+    const binary = join(dir, 'fake-codebuddy');
+    await writeFile(binary, '#!/bin/sh\nprintf "%s" "${MCF_CODEBUDDY_TEST_SECRET:-absent}"\n');
+    await chmod(binary, 0o700);
+    process.env.MCF_CODEBUDDY_TEST_SECRET = 'must-not-leak';
+    try {
+      const result = await new LocalCodeBuddyHost().execute({
+        binary,
+        cwd: dir,
+        model: 'cx/gpt-5.6-sol',
+        prompt: 'smoke',
+        timeoutMs: 1000,
+        tools: ['Read'],
+      });
+      expect(result.stdout).toBe('absent');
+    } finally {
+      delete process.env.MCF_CODEBUDDY_TEST_SECRET;
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('includes untracked file content in Git-derived change evidence', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-git-'));
+    try {
+      await execFileAsync('git', ['init'], { cwd: dir });
+      await execFileAsync('git', ['config', 'user.email', 'test@example.test'], { cwd: dir });
+      await execFileAsync('git', ['config', 'user.name', 'MCF Test'], { cwd: dir });
+      await writeFile(join(dir, 'base.txt'), 'BASE\n');
+      await execFileAsync('git', ['add', 'base.txt'], { cwd: dir });
+      await execFileAsync('git', ['commit', '-m', 'base'], { cwd: dir });
+      await writeFile(join(dir, 'new.txt'), 'NEW_SENTINEL\n');
+
+      const changes = await new LocalCodeBuddyHost().collectChanges(dir);
+      expect(changes.changedFiles).toEqual(['new.txt']);
+      expect(changes.diff).toContain('NEW_SENTINEL');
+      expect(changes.diff).toContain('new.txt');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });
 
@@ -150,16 +202,46 @@ describe('CodeBuddyExecutorAdapter', () => {
     expect(host.execute).not.toHaveBeenCalled();
   });
 
+  it('requires a structured non-empty allowed path list before execution', async () => {
+    const { adapter: subject, host } = adapter();
+    const inputs = { ...request.inputs } as Record<string, unknown>;
+    delete inputs.allowed_paths;
+    await expect(subject.execute({ ...request, inputs })).rejects.toMatchObject({
+      code: 'INVALID_CONTEXT',
+    });
+    expect(host.execute).not.toHaveBeenCalled();
+  });
+
+  it('rejects a model override outside the configured model before execution', async () => {
+    const { adapter: subject, host } = adapter();
+    await expect(
+      subject.execute({ ...request, inputs: { ...request.inputs, model: 'other/model' } }),
+    ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    expect(host.execute).not.toHaveBeenCalled();
+  });
+
+  it('rejects changes outside allowed paths and restores the workspace', async () => {
+    const { adapter: subject, host } = adapter();
+    host.changes = {
+      changedFiles: ['fixture.txt', 'src/outside.ts'],
+      diff: 'diff --git a/fixture.txt b/fixture.txt\n+AFTER\ndiff --git a/src/outside.ts b/src/outside.ts\n+NO\n',
+    };
+    await expect(subject.execute(request)).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+    expect(host.restoreWorkspace).toHaveBeenCalledWith('/srv/mcf/worktrees/task-1');
+  });
+
   it('maps process timeout to ADAPTER_TIMEOUT', async () => {
     const { adapter: subject, host } = adapter();
     host.result.timedOut = true;
     await expect(subject.execute(request)).rejects.toMatchObject({ code: 'ADAPTER_TIMEOUT' });
+    expect(host.restoreWorkspace).toHaveBeenCalledWith('/srv/mcf/worktrees/task-1');
   });
 
   it('maps non-zero CodeBuddy exit to ADAPTER_FAILURE', async () => {
     const { adapter: subject, host } = adapter();
     host.result.exitCode = 2;
     await expect(subject.execute(request)).rejects.toMatchObject({ code: 'ADAPTER_FAILURE' });
+    expect(host.restoreWorkspace).toHaveBeenCalledWith('/srv/mcf/worktrees/task-1');
   });
 
   it('rejects successful execution with no changed files', async () => {
@@ -192,7 +274,13 @@ describe('CodeBuddyExecutorAdapter', () => {
         repository: 'leon337/multiagent-collaboration-framework',
         changedFiles: ['fixture.txt'],
         changedFileCount: 1,
+        approvedPaths: ['fixture.txt'],
         model: 'cx/gpt-5.6-sol',
+        testHandoff: {
+          skillId: 'MCF-RUN-TESTS',
+          status: 'PENDING',
+          reason: 'CODEBUDDY_TOOL_POLICY_EXCLUDES_TEST_EXECUTION',
+        },
         toolPolicy: ['Read', 'Edit', 'Glob', 'Grep'],
         exitCode: 0,
         localOnly: true,

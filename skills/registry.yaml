@@ -142,15 +142,15 @@ skills:
     purpose: Produzir alteração de código dentro do escopo aprovado.
     owner_agents: [Rafael, Eduardo, Helena, Andre, Tiago, Daniela]
     trigger_phrases: ["implementar", "corrigir", "integrar", "criar funcionalidade"]
-    required_inputs: [approved_scope, acceptance_criteria, repository]
+    required_inputs: [approved_scope, acceptance_criteria, repository, allowed_paths]
     optional_inputs: [branch, issue, design_reference]
     allowed_tools: [GitHub, Linear, Supabase, Neon_Postgres, Render, Vercel, Cloudflare, OpenAI_Developers, Figma, CodeBuddy]
     forbidden_tools: [direct_main_write, public_release_without_gate]
     permission_profile: SCOPED_WRITE
-    execution_steps: [criar_branch, implementar, testar_localmente, documentar, passar_para_revisao]
-    required_evidence: [changed_files, commit_sha, test_results]
+    execution_steps: [preparar_workspace, implementar, coletar_diff, registrar_handoff_de_testes, passar_para_revisao]
+    required_evidence: [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
     expected_outputs: [implementation, technical_notes]
-    acceptance_criteria: [scope_respected, tests_pass]
+    acceptance_criteria: [scope_respected, tests_or_handoff_proven]
     failure_modes: [scope_creep, unsafe_write, missing_tests]
     fallback: Produzir patch ou plano executável sem alegar aplicação.
     handoff_to: Vinicius

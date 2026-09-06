@@ -1008,6 +1008,21 @@ function validateVisualDesktopAuditReceipt(
   );
 }
 
+function repositoryRelativeEvidencePath(value: unknown, label: string): string {
+  if (typeof value !== 'string' || value.length === 0 || value !== value.trim())
+    return reject(`${label} must contain repository-relative paths`);
+  if (value.startsWith('/') || value.includes('\\') || value.includes('\0'))
+    return reject(`${label} contains an unsafe repository path`);
+  const segments = value.split('/');
+  if (segments.some((segment) => segment.length === 0 || segment === '.' || segment === '..'))
+    return reject(`${label} contains an unsafe repository path`);
+  return value;
+}
+
+function pathWithinApprovedScope(path: string, approvedPaths: string[]): boolean {
+  return approvedPaths.some((scope) => path === scope || path.startsWith(`${scope}/`));
+}
+
 function validateCodeBuddyImplementReceipt(
   receipt: McfToolReceipt,
   expected: McfToolRequest,
@@ -1048,6 +1063,28 @@ function validateCodeBuddyImplementReceipt(
   );
   if (changedFileCount !== changedFiles.length)
     reject('CodeBuddy implementation changedFileCount must match changedFiles');
+  const normalizedChangedFiles = changedFiles.map((item) =>
+    repositoryRelativeEvidencePath(item, 'CodeBuddy implementation changedFiles'),
+  );
+  const approvedPaths = requireNonEmptyArray(
+    receipt.metadata,
+    'approvedPaths',
+    'CodeBuddy implementation evidence requires approvedPaths',
+  ).map((item) => repositoryRelativeEvidencePath(item, 'CodeBuddy implementation approvedPaths'));
+  if (new Set(approvedPaths).size !== approvedPaths.length)
+    reject('CodeBuddy implementation approvedPaths must be unique');
+  const requestedPaths = Array.isArray(inputs.allowed_paths)
+    ? inputs.allowed_paths.map((item) =>
+        repositoryRelativeEvidencePath(item, 'CodeBuddy implementation allowed_paths'),
+      )
+    : reject('CodeBuddy implementation evidence requires allowed_paths input');
+  if (
+    requestedPaths.length !== approvedPaths.length ||
+    requestedPaths.some((item, index) => item !== approvedPaths[index])
+  )
+    reject('CodeBuddy implementation approvedPaths must match allowed_paths');
+  if (normalizedChangedFiles.some((path) => !pathWithinApprovedScope(path, approvedPaths)))
+    reject('CodeBuddy implementation changed files must remain inside approvedPaths');
   for (const key of ['diffDigest', 'stdoutDigest'] as const) {
     const value = requireString(
       receipt.metadata,
@@ -1078,7 +1115,29 @@ function validateCodeBuddyImplementReceipt(
     'durationMs',
     'CodeBuddy implementation evidence requires durationMs',
   );
-  requireString(receipt.metadata, 'model', 'CodeBuddy implementation evidence requires model');
+  const model = requireString(
+    receipt.metadata,
+    'model',
+    'CodeBuddy implementation evidence requires model',
+  );
+  const configuredModel = loadRuntimeConfig().MCF_CODEBUDDY_MODEL;
+  if (model !== configuredModel)
+    reject('CodeBuddy implementation evidence model must match the configured model');
+  const handoff = requireRecord(
+    receipt.metadata.testHandoff,
+    'CodeBuddy implementation evidence requires testHandoff',
+  );
+  if (
+    recordString(handoff, 'skillId', 'CodeBuddy testHandoff requires skillId') !== 'MCF-RUN-TESTS'
+  )
+    reject('CodeBuddy testHandoff must target MCF-RUN-TESTS');
+  if (recordString(handoff, 'status', 'CodeBuddy testHandoff requires status') !== 'PENDING')
+    reject('CodeBuddy testHandoff must remain PENDING');
+  if (
+    recordString(handoff, 'reason', 'CodeBuddy testHandoff requires reason') !==
+    'CODEBUDDY_TOOL_POLICY_EXCLUDES_TEST_EXECUTION'
+  )
+    reject('CodeBuddy testHandoff reason is invalid');
   requireString(
     receipt.metadata,
     'workspaceRelativeToRoot',

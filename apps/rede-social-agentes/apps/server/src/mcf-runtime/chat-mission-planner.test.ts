@@ -62,12 +62,34 @@ describe('ChatMissionPlanner', () => {
       agentId: 'Rafael',
       handoffTo: 'Vinicius',
       state: 'READY_EXTERNAL',
-      toolProvider: 'codebuddy',
-      toolOperation: 'implement-change',
+      toolProvider: 'github',
+      toolOperation: 'code-change',
     });
     expect(plan.steps.at(-1)).toMatchObject({
       skillId: 'MCF-TRACE-MISSION',
       state: 'PLANNED_INTERNAL',
+    });
+  });
+
+  it('routes implementation through CodeBuddy only when the executor capability is enabled', () => {
+    const enabledPlanner = new ChatMissionPlanner(true);
+    const plan = enabledPlanner.plan({
+      objective: 'Implementar uma ponte segura entre o chat e o runtime.',
+      repository: 'leon337/multiagent-collaboration-framework',
+    });
+
+    expect(plan.steps[2]).toMatchObject({
+      skillId: 'MCF-IMPLEMENT-CHANGE',
+      state: 'READY_EXTERNAL',
+      toolProvider: 'codebuddy',
+      toolOperation: 'implement-change',
+      toolResource: 'leon337/multiagent-collaboration-framework',
+      requiredEvidence: [
+        'changed_files',
+        'base_commit_sha',
+        'diff_digest',
+        'test_results_or_handoff',
+      ],
     });
   });
 

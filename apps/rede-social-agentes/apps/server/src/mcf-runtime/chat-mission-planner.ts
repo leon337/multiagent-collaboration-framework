@@ -68,10 +68,15 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
   'MCF-IMPLEMENT-CHANGE': {
     agentId: 'Rafael',
     handoffTo: 'Vinicius',
-    toolProvider: 'codebuddy',
-    toolOperation: 'implement-change',
+    toolProvider: 'github',
+    toolOperation: 'code-change',
     internal: false,
-    requiredEvidence: ['changed_files', 'commit_sha', 'test_results'],
+    requiredEvidence: [
+      'changed_files',
+      'base_commit_sha',
+      'diff_digest',
+      'test_results_or_handoff',
+    ],
   },
   'MCF-REVIEW-CODE': {
     agentId: 'Vinicius',
@@ -306,9 +311,15 @@ function resourceFor(skillId: McfExecutableSkillId, repository: string | undefin
 function buildSteps(
   selectedSkills: McfExecutableSkillId[],
   repository: string | undefined,
+  codeBuddyEnabled: boolean,
 ): McfChatPlanStep[] {
   return selectedSkills.map((skillId, index) => {
     const config = skillConfig[skillId];
+    const useCodeBuddy = skillId === 'MCF-IMPLEMENT-CHANGE' && codeBuddyEnabled;
+    const toolProvider: McfChatPlanStep['toolProvider'] = useCodeBuddy
+      ? 'codebuddy'
+      : config.toolProvider;
+    const toolOperation = useCodeBuddy ? 'implement-change' : config.toolOperation;
     const nextSkill = selectedSkills[index + 1];
     const handoffTo =
       config.handoffTo === 'selected_domain_agent' && nextSkill
@@ -316,7 +327,7 @@ function buildSteps(
         : config.handoffTo;
     const state: McfChatPlanStep['state'] = config.internal
       ? 'PLANNED_INTERNAL'
-      : config.toolProvider === 'internal'
+      : toolProvider === 'internal'
         ? 'READY_AGENT'
         : 'READY_EXTERNAL';
 
@@ -325,8 +336,8 @@ function buildSteps(
       skillId,
       agentId: config.agentId,
       handoffTo,
-      toolProvider: config.toolProvider,
-      toolOperation: config.toolOperation,
+      toolProvider,
+      toolOperation,
       toolResource: resourceFor(skillId, repository),
       state,
       requiredEvidence: config.requiredEvidence,
@@ -341,9 +352,11 @@ export interface ChatMissionPlan {
 
 @Injectable()
 export class ChatMissionPlanner {
+  constructor(private readonly codeBuddyEnabled = false) {}
+
   plan(request: McfChatDispatchRequest): ChatMissionPlan {
     const selectedSkills = inferSkills(request);
-    const steps = buildSteps(selectedSkills, request.repository);
+    const steps = buildSteps(selectedSkills, request.repository, this.codeBuddyEnabled);
     const selectedAgents = unique(steps.flatMap((step) => [step.agentId, step.handoffTo]));
     const sourceOfTruth = unique([
       'chat-objective',

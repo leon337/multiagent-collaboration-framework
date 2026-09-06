@@ -70,7 +70,10 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     MissionControlRepository,
     MissionV11ContextGuard,
     ContinuityRecoveryService,
-    ChatMissionPlanner,
+    {
+      provide: ChatMissionPlanner,
+      useFactory: () => new ChatMissionPlanner(loadRuntimeConfig().MCF_CODEBUDDY_EXECUTOR_ENABLED),
+    },
     {
       provide: MissionObservabilityRepository,
       useFactory: (database: DatabaseService) => new MissionObservabilityRepository(database),
