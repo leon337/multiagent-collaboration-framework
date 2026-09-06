@@ -68,8 +68,8 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
   'MCF-IMPLEMENT-CHANGE': {
     agentId: 'Rafael',
     handoffTo: 'Vinicius',
-    toolProvider: 'github',
-    toolOperation: 'code-change',
+    toolProvider: 'codebuddy',
+    toolOperation: 'implement-change',
     internal: false,
     requiredEvidence: ['changed_files', 'commit_sha', 'test_results'],
   },

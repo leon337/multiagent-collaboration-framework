@@ -62,7 +62,8 @@ describe('ChatMissionPlanner', () => {
       agentId: 'Rafael',
       handoffTo: 'Vinicius',
       state: 'READY_EXTERNAL',
-      toolProvider: 'github',
+      toolProvider: 'codebuddy',
+      toolOperation: 'implement-change',
     });
     expect(plan.steps.at(-1)).toMatchObject({
       skillId: 'MCF-TRACE-MISSION',
