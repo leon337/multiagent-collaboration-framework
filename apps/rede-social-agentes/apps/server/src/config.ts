@@ -1,3 +1,5 @@
+import { isAbsolute, parse as parsePath } from 'node:path';
+
 import { z } from 'zod';
 
 import { parseRegistrationAllowlist } from './identity/registration-policy.js';
@@ -46,8 +48,34 @@ const runtimeConfigSchema = z
     ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:5173'),
     REGISTRATION_ALLOWLIST: z.string().default(''),
     RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID: z.string().uuid().optional(),
+    MCF_CODEBUDDY_EXECUTOR_ENABLED: booleanEnvironmentValue,
+    MCF_CODEBUDDY_BINARY: z.string().min(1).default('codebuddy'),
+    MCF_CODEBUDDY_WORKSPACE_ROOT: z.string().default(''),
+    MCF_CODEBUDDY_MODEL: z.string().min(1).default('cx/gpt-5.6-sol'),
+    MCF_CODEBUDDY_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(600_000).default(300_000),
   })
   .superRefine((config, context) => {
+    if (config.MCF_CODEBUDDY_EXECUTOR_ENABLED) {
+      const workspaceRoot = config.MCF_CODEBUDDY_WORKSPACE_ROOT.trim();
+      if (config.NODE_ENV === 'production') {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_CODEBUDDY_EXECUTOR_ENABLED'],
+          message: 'CodeBuddy executor cannot be enabled in production.',
+        });
+      }
+      if (
+        !workspaceRoot ||
+        !isAbsolute(workspaceRoot) ||
+        workspaceRoot === parsePath(workspaceRoot).root
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_CODEBUDDY_WORKSPACE_ROOT'],
+          message: 'CodeBuddy workspace root must be an absolute non-root path when enabled.',
+        });
+      }
+    }
     const insecureProductionSecrets: Array<[string, string, string]> = [
       ['RATE_LIMIT_KEY_SECRET', config.RATE_LIMIT_KEY_SECRET, 'development-only-rate-limit-secret'],
       ['MCF_RECEIPT_SECRET', config.MCF_RECEIPT_SECRET, 'development-only-mcf-receipt-secret-0001'],
