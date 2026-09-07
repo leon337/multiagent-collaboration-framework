@@ -10,6 +10,11 @@ import { CanonicalExternalActionLedger } from './canonical-external-action-ledge
 import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
+import {
+  CodeBuddyExecutorAdapter,
+  probeCodeBuddyExecutorCapability,
+  type CodeBuddyExecutorConfig,
+} from './codebuddy-executor.adapter.js';
 import { ContinuityRecoveryService } from './continuity-recovery.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
@@ -48,6 +53,17 @@ import { SocialTimelineService } from './social-timeline.service.js';
 import { McfStagingDeployCallbackController } from './staging-deploy-callback.controller.js';
 import { StagingDeployReconciliationService } from './staging-deploy-reconciliation.service.js';
 
+function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
+  const config = loadRuntimeConfig();
+  return {
+    enabled: config.MCF_CODEBUDDY_EXECUTOR_ENABLED,
+    binary: config.MCF_CODEBUDDY_BINARY,
+    workspaceRoot: config.MCF_CODEBUDDY_WORKSPACE_ROOT,
+    model: config.MCF_CODEBUDDY_MODEL,
+    timeoutMs: config.MCF_CODEBUDDY_TIMEOUT_MS,
+  };
+}
+
 @Module({
   imports: [DatabaseModule, IdentityModule],
   controllers: [
@@ -69,7 +85,13 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
     MissionControlRepository,
     MissionV11ContextGuard,
     ContinuityRecoveryService,
-    ChatMissionPlanner,
+    {
+      provide: ChatMissionPlanner,
+      useFactory: () => {
+        const config = codeBuddyExecutorConfig();
+        return new ChatMissionPlanner(probeCodeBuddyExecutorCapability(config));
+      },
+    },
     {
       provide: MissionObservabilityRepository,
       useFactory: (database: DatabaseService) => new MissionObservabilityRepository(database),
@@ -109,19 +131,38 @@ import { StagingDeployReconciliationService } from './staging-deploy-reconciliat
       inject: [EvidenceValidator],
     },
     {
+      provide: CodeBuddyExecutorAdapter,
+      useFactory: (evidence: EvidenceValidator) => {
+        const config = codeBuddyExecutorConfig();
+        return new CodeBuddyExecutorAdapter(evidence, {
+          ...config,
+          enabled: probeCodeBuddyExecutorCapability(config),
+        });
+      },
+      inject: [EvidenceValidator],
+    },
+    {
       provide: AdapterRegistry,
       useFactory: (
         githubReview: GitHubCodeReviewAdapter,
         githubCiQuery: GitHubCiQueryAdapter,
         githubBranchPr: GitHubBranchPullRequestAdapter,
         githubPrCollaboration: GitHubPullCollaborationAdapter,
+        codeBuddy: CodeBuddyExecutorAdapter,
       ) =>
-        new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration]),
+        new AdapterRegistry([
+          githubReview,
+          githubCiQuery,
+          githubBranchPr,
+          githubPrCollaboration,
+          codeBuddy,
+        ]),
       inject: [
         GitHubCodeReviewAdapter,
         GitHubCiQueryAdapter,
         GitHubBranchPullRequestAdapter,
         GitHubPullCollaborationAdapter,
+        CodeBuddyExecutorAdapter,
       ],
     },
     {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { AdapterRegistry } from './adapter-registry.js';
+import { CodeBuddyExecutorAdapter } from './codebuddy-executor.adapter.js';
 import type { ExternalActionAdapter } from './external-action.contracts.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
@@ -40,6 +41,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       GitHubCiQueryAdapter,
       GitHubBranchPullRequestAdapter,
       GitHubPullCollaborationAdapter,
+      CodeBuddyExecutorAdapter,
     ]);
 
     const registry = registryProvider?.useFactory?.(
@@ -47,9 +49,11 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       stub('github-ci-query-read-v1'),
       stub('github-branch-pr-write-v1'),
       stub('github-pr-collaboration-write-v1'),
+      stub('codebuddy-implement-change-local-v1'),
     ) as AdapterRegistry;
 
     expect(registry.listAdapterIds()).toContain('github-branch-pr-write-v1');
     expect(registry.listAdapterIds()).toContain('github-pr-collaboration-write-v1');
+    expect(registry.listAdapterIds()).toContain('codebuddy-implement-change-local-v1');
   });
 });

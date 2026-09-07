@@ -47,6 +47,24 @@ function isCanonicalGitHubRepositoryResource(value: string): boolean {
   return value === value.trim() && canonicalGitHubRepositoryResource.test(value);
 }
 
+function assertCodeBuddyImplementationBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  if (provider !== 'codebuddy') return;
+  if (skillId !== 'MCF-IMPLEMENT-CHANGE') {
+    throw new McfPermissionDeniedError('CodeBuddy execution is restricted to MCF-IMPLEMENT-CHANGE');
+  }
+  if (operation !== 'implement-change') {
+    throw new McfPermissionDeniedError('CodeBuddy permits only implement-change');
+  }
+  if (!isCanonicalGitHubRepositoryResource(resource)) {
+    throw new McfPermissionDeniedError('CodeBuddy requires a canonical owner/repository resource');
+  }
+}
+
 const githubPrCollaborationOperations = new Set([
   'comment-pr',
   'review-pr-comment',
@@ -286,6 +304,30 @@ function assertVisualDesktopAuditBoundary(
   }
 }
 
+function assertCodeBuddyBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  const identifiesCodeBuddy = provider === 'codebuddy' || operation === 'implement-change';
+  if (!identifiesCodeBuddy) return;
+  if (
+    skillId !== 'MCF-IMPLEMENT-CHANGE' ||
+    provider !== 'codebuddy' ||
+    operation !== 'implement-change'
+  ) {
+    throw new McfPermissionDeniedError(
+      'CodeBuddy execution is restricted to MCF-IMPLEMENT-CHANGE/implement-change',
+    );
+  }
+  if (!isCanonicalGitHubRepositoryResource(resource)) {
+    throw new McfPermissionDeniedError(
+      'CodeBuddy execution requires a canonical repository resource',
+    );
+  }
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
 const destructiveOperations = [
@@ -341,6 +383,8 @@ export class PermissionEngine {
     assertDebugIncidentBoundary(skill, provider, operation, resource, inputs);
     assertClosePhaseBoundary(skill, provider, operation, resource, inputs);
     assertVisualDesktopAuditBoundary(skill.skillId, provider, operation, resource);
+    assertCodeBuddyBoundary(skill.skillId, provider, operation, tool.resource);
+    assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');

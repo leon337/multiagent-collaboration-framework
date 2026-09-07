@@ -16,12 +16,9 @@ describe('Gate D provider boundary', () => {
     const source = await readFile(modulePath, 'utf8');
 
     expect(source).toContain('provide: GitHubActionsStagingDeployAdapter');
-    expect(source).toContain(
-      'new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration])',
-    );
-    expect(source).not.toContain(
-      'new AdapterRegistry([githubReview, githubCiQuery, githubBranchPr, githubPrCollaboration, githubStagingDeploy])',
-    );
+    const registryBlock = source.match(/new AdapterRegistry\(\[([\s\S]*?)\]\)/)?.[1] ?? '';
+    expect(registryBlock).toContain('codeBuddy');
+    expect(registryBlock).not.toContain('githubStagingDeploy');
     expect(source).not.toContain('github-actions-staging-deploy-v1');
   });
 });

@@ -69,6 +69,25 @@ describe('parseMcfSkillRegistry', () => {
     });
   });
 
+  it('loads the canonical implementation skill as patch evidence with a test handoff', async () => {
+    const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
+    const content = await readFile(registryPath, 'utf8');
+    const skills = parseMcfSkillRegistry(content);
+    const implementation = skills.find((skill) => skill.skillId === 'MCF-IMPLEMENT-CHANGE');
+
+    expect(implementation).toMatchObject({
+      requiredInputs: ['approved_scope', 'acceptance_criteria', 'repository', 'allowed_paths'],
+      requiredEvidence: [
+        'changed_files',
+        'base_commit_sha',
+        'diff_digest',
+        'test_results_or_handoff',
+      ],
+      acceptanceCriteria: ['scope_respected', 'tests_or_handoff_proven'],
+      handoffTo: 'Vinicius',
+    });
+  });
+
   it('rejects duplicate skill identifiers', () => {
     expect(() =>
       parseMcfSkillRegistry(`${registry}\n${registry.split('skills:')[1] ?? ''}`),

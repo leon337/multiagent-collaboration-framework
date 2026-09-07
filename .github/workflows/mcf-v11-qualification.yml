@@ -92,6 +92,18 @@ jobs:
           pnpm --filter @rsa/database db:migrate
           pnpm --filter @rsa/database db:migrate
 
+      - name: Prepare Bubblewrap sandbox runtime
+        working-directory: apps/rede-social-agentes
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap apparmor-profiles
+          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+          test -f "$profile"
+          sudo install -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
+          bwrap --version
+          bwrap --unshare-user --unshare-pid --die-with-parent --ro-bind / / -- /bin/true
+
       - name: Run full blocking regression
         working-directory: apps/rede-social-agentes
         run: pnpm test
