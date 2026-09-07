@@ -76,6 +76,12 @@ jobs:
           pnpm --filter @rsa/database db:migrate
           pnpm --filter @rsa/database db:migrate
 
+      - name: Install Bubblewrap sandbox runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap
+          bwrap --version
+
       - name: Test
         run: pnpm test
 
