@@ -4,7 +4,7 @@
 **Autoridade humana:** Leandro
 **Autoridade operacional delegada:** Léo
 **Coordenação:** Mestre
-**Estado:** aprovado para implantação
+**Estado de governança do documento:** `CANONICALIZATION_PENDING` — arquitetura aprovada por humana, mas este branch (`feat/gate-3-multi-ai-continuity-v1-2`) ainda não é `main` canônico; transiciona para `CANONICAL` somente após merge em `main` e verificação objetiva do estado persistido.
 **Relacionadas:** MCF-DEC-016, MCF-DEC-053, MCF-PROTOCOLO-SUCESSAO-CROSS-CHAT-E-CONTROLE-DE-JANELAS
 
 ## 1. Escopo/Problema/Racional
@@ -12,6 +12,14 @@
 O problema é a continuidade de estado em ambientes multi-IA onde diferentes domínios (registrado-projeto, runtime-live, chat-client) possuem fontes de verdade distintas e necessitam de regras claras para autoridade, governança, evidência e canonicidade sem conflitos ou redefinição de conceitos existentes (HUMANO NO CONTROLE, HDF, ESEV, CAF, precedência).
 
 **Racional:** Garantir que cada domínio mantenha sua responsabilidade clara, evitando sobreposições autoritativas, preservando a independência entre snapshots remotos canônicos e estados locais/live, e estabelecendo eixos de governança e evidenciação independentes que se complementam ao protocolo de sucessão cross-chat existente.
+
+**Escopo positivo (in-scope):** Este decision governa:
+- Continuidade e descoberta para projetos registrados pela MCF.
+- Resolução de autoridade por domínio (qual fonte de verdade prevalece para qual pergunta).
+- Frescor entre snapshot remoto canônico e snapshot local/live.
+- Estado de canonicalização (governança) e transições até `CANONICAL`.
+- Guarda de concorrência e publicação (`base_sha`, head remoto, sobreposição de trabalho/domínio/arquivo).
+- Governança de retomada por cliente novo (fresh-client resume) dentro deste framework de autoridade.
 
 ## 2. Divisão de Responsabilidade
 
@@ -70,7 +78,7 @@ Antes de publicar (push/commit), verificar:
 - Sobreposição de domínio/arquivo (mesmo escopo de responsabilidade).
 Se qualquer condição indicar conflito, bloquear publicação e exigir rebase/merge e nova observação do estado live.
 
-## 10. Princípio de Frescor: LIVE_REQUERED Re-observado
+## 10. Princípio de Frescor: LIVE_REQUIRED Re-observado
 
 Qualquer afirmação sobre estado operacional corrente (`LIVE_REQUIRED`) deve ser baseada em re-observação direta do estado live imediatamente antes da afirmação. Estados observados anteriormente tornam-se `STALE` e não podem ser usados para claims atuais.
 
@@ -110,4 +118,4 @@ Não se propõe a:
 - Substituir ou duplicar o protocolo de sucessão cross-chat; apenas complementa-o.
 
 ---
-*Este decision entra em vigor imediatamente após merge na branch main, sujeito ao gate humano de Léo e precedência documental vigente.*
+*Este decision permanece em `CANONICALIZATION_PENDING` até merge em `main` e verificação objetiva do estado persistido; após isso, governança transiciona para `CANONICAL`, sujeito ao gate humano de Léo e precedência documental vigente.*
