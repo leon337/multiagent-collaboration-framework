@@ -75,6 +75,24 @@ test('staging workflow executes the deploy protocol from its trusted control-pla
   assert.ok(!workflow.includes('run: node apps/rede-social-agentes/ops/render-staging-deploy.mjs'));
 });
 
+test('staging workflow prepares the Bubblewrap sandbox without disabling AppArmor userns hardening', async () => {
+  const workflow = await readFile(workflowPath, 'utf8');
+
+  assert.ok(workflow.includes('Prepare Bubblewrap sandbox runtime'));
+  assert.ok(workflow.includes('sudo apt-get install -y bubblewrap apparmor-profiles'));
+  assert.ok(workflow.includes('bwrap-userns-restrict'));
+  assert.ok(workflow.includes('sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict'));
+  assert.ok(
+    workflow.includes(
+      'bwrap --unshare-user --unshare-pid --die-with-parent --ro-bind / / -- /bin/true',
+    ),
+  );
+  assert.ok(!workflow.includes('kernel.apparmor_restrict_unprivileged_userns=0'));
+  assert.ok(
+    workflow.indexOf('Prepare Bubblewrap sandbox runtime') < workflow.indexOf('- name: Test'),
+  );
+});
+
 test('staging workflow completion reconciles through a canonical stable control plane', async () => {
   const callback = await readFile(callbackPath, 'utf8');
   assert.ok(callback.includes('workflow_run:'));
