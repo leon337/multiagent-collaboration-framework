@@ -31,4 +31,20 @@ describe('bootstrap config', () => {
     delete (incomplete as Partial<typeof base>).BOOTSTRAP_ALLOWED_WORKFLOW_SHA;
     expect(() => loadBootstrapConfigFrom(incomplete)).toThrow();
   });
+
+  it('requires initial-human email and registration token as an all-or-nothing pair', () => {
+    expect(() =>
+      loadBootstrapConfigFrom({
+        ...base,
+        BOOTSTRAP_INITIAL_HUMAN_EMAIL: 'authority@example.test',
+      }),
+    ).toThrow();
+
+    const config = loadBootstrapConfigFrom({
+      ...base,
+      BOOTSTRAP_INITIAL_HUMAN_EMAIL: 'authority@example.test',
+      BOOTSTRAP_INITIAL_REGISTRATION_TOKEN: 't'.repeat(48),
+    });
+    expect(config.BOOTSTRAP_INITIAL_HUMAN_EMAIL).toBe('authority@example.test');
+  });
 });

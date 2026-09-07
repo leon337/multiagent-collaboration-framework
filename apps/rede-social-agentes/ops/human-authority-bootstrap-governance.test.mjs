@@ -32,6 +32,8 @@ test('bootstrap staging service is isolated, free, and has no provider credentia
   );
   assert.ok(env.DATABASE_URL);
   assert.ok(env.BOOTSTRAP_SEAL_PUBLIC_JWK);
+  assert.equal(env.BOOTSTRAP_INITIAL_HUMAN_EMAIL.sync, false);
+  assert.equal(env.BOOTSTRAP_INITIAL_REGISTRATION_TOKEN.sync, false);
   assert.equal(env.RENDER_API_KEY, undefined);
   assert.equal(env.BOOTSTRAP_SEAL_PRIVATE_JWK, undefined);
 });
@@ -118,4 +120,16 @@ test('repository-root Docker context excludes local dependency and build artifac
   assert.match(dockerignore, /(^|\n)\*\*\/node_modules(\n|$)/u);
   assert.match(dockerignore, /(^|\n)\*\*\/dist(\n|$)/u);
   assert.match(dockerignore, /(^|\n)\.env\.\*(\n|$)/u);
+});
+
+test('production readiness proves initial-human bootstrap against an isolated empty-db phase', async () => {
+  const workflowText = await read('.github/workflows/mcf-production-readiness.yml');
+  const dedicated = workflowText.indexOf(
+    'Verify initial-human bootstrap against empty database state',
+  );
+  const general = workflowText.indexOf('      - name: Test\n');
+  assert.ok(dedicated >= 0);
+  assert.ok(general > dedicated);
+  assert.match(workflowText, /BOOTSTRAP_EMPTY_DB_INTEGRATION:\s*["']?1["']?/);
+  assert.match(workflowText, /postgres-initial-human-bootstrap\.repository\.integration\.test\.ts/);
 });
