@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { execFile, spawn, spawnSync } from 'node:child_process';
-import { accessSync, constants, statSync } from 'node:fs';
-import { lstat, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { accessSync, constants, realpathSync, statSync } from 'node:fs';
+import { lstat, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, posix, relative, resolve } from 'node:path';
+import { delimiter, dirname, join, posix, relative, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
 import type { McfToolReceipt } from '@rsa/contracts';
@@ -96,7 +96,11 @@ export interface CodeBuddyHost {
     sourceWorkspace: string,
     execution: CodeBuddyExecutionWorkspace,
   ): Promise<void>;
-  restoreWorkspace(workspace: string, baseSha: string, changedFiles: string[]): Promise<void>;
+  restoreWorkspace(
+    workspace: string,
+    baseSha: string,
+    changes: CodeBuddyChangeEvidence,
+  ): Promise<void>;
 }
 
 function canonicalRepository(value: string): string | null {
@@ -130,6 +134,98 @@ function restrictedEnvironment(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   return environment;
 }
 
+function resolveExecutablePath(
+  binary: string,
+  source: NodeJS.ProcessEnv = process.env,
+): string | null {
+  const value = binary.trim();
+  if (!value) return null;
+  const candidates = value.includes('/')
+    ? [value]
+    : (source.PATH ?? '')
+        .split(delimiter)
+        .filter(Boolean)
+        .map((directory) => join(directory, value));
+  for (const candidate of candidates) {
+    try {
+      accessSync(candidate, constants.X_OK);
+      if (!statSync(candidate).isFile()) continue;
+      return realpathSync(candidate);
+    } catch {
+      // Continue searching PATH entries.
+    }
+  }
+  return null;
+}
+
+async function findCodeBuddyPackageRoot(binary: string): Promise<string | null> {
+  let current = dirname(binary);
+  for (let depth = 0; depth < 12; depth += 1) {
+    try {
+      const packageJson = JSON.parse(await readFile(join(current, 'package.json'), 'utf8')) as {
+        name?: unknown;
+      };
+      if (packageJson.name === '@tencent-ai/codebuddy-code') return current;
+    } catch {
+      // Not the CodeBuddy package root; continue upward.
+    }
+    const parent = dirname(current);
+    if (parent === current) break;
+    current = parent;
+  }
+  return null;
+}
+
+async function writeSandboxModelConfig(
+  configRoot: string,
+  model: string,
+  requireConfiguredModel: boolean,
+): Promise<void> {
+  await mkdir(configRoot, { recursive: true, mode: 0o700 });
+  let selected: Record<string, unknown> | undefined;
+  const sourceConfigRoot =
+    process.env.CODEBUDDY_CONFIG_DIR?.trim() ||
+    (process.env.HOME?.trim() ? join(process.env.HOME, '.codebuddy') : null);
+  if (sourceConfigRoot) {
+    try {
+      const source = JSON.parse(await readFile(join(sourceConfigRoot, 'models.json'), 'utf8')) as {
+        models?: unknown;
+      };
+      if (Array.isArray(source.models)) {
+        selected = source.models.find(
+          (candidate): candidate is Record<string, unknown> =>
+            typeof candidate === 'object' &&
+            candidate !== null &&
+            !Array.isArray(candidate) &&
+            candidate.id === model,
+        );
+      }
+    } catch {
+      // A fake/test executable does not require a CodeBuddy model configuration.
+    }
+  }
+  if (requireConfiguredModel && !selected)
+    throw new ExternalActionAdapterError(
+      'INVALID_CONTEXT',
+      'Configured CodeBuddy model is unavailable for isolated execution',
+      false,
+    );
+  await writeFile(
+    join(configRoot, 'models.json'),
+    `${JSON.stringify({ models: selected ? [selected] : [] })}\n`,
+    { mode: 0o600 },
+  );
+}
+
+function addReadOnlyMountIfPresent(args: string[], source: string, target = source): void {
+  try {
+    statSync(source);
+    args.push('--ro-bind', source, target);
+  } catch {
+    // Optional runtime path is absent on this host.
+  }
+}
+
 export function probeCodeBuddyExecutorCapability(config: CodeBuddyExecutorConfig): boolean {
   if (
     !config.enabled ||
@@ -139,9 +235,10 @@ export function probeCodeBuddyExecutorCapability(config: CodeBuddyExecutorConfig
   )
     return false;
   try {
-    accessSync(config.binary, constants.X_OK);
-    if (!statSync(config.workspaceRoot).isDirectory()) return false;
-    const result = spawnSync(config.binary, ['--help'], {
+    const binary = resolveExecutablePath(config.binary);
+    const bubblewrap = resolveExecutablePath('bwrap');
+    if (!binary || !bubblewrap || !statSync(config.workspaceRoot).isDirectory()) return false;
+    const result = spawnSync(binary, ['--help'], {
       encoding: 'utf8',
       timeout: 3000,
       env: restrictedEnvironment(process.env),
@@ -358,98 +455,266 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
     tools: string[];
   }): Promise<CodeBuddyExecutionResult> {
     const startedAt = Date.now();
-    const args = [
-      '-p',
-      input.prompt,
-      '--no-session-persistence',
-      '--agent',
-      'cli',
-      '--tools',
-      input.tools.join(','),
-      '--permission-mode',
-      'acceptEdits',
-      '--model',
-      input.model,
-      '--output-format',
-      'json',
-    ];
+    const binary = resolveExecutablePath(input.binary);
+    const bubblewrap = resolveExecutablePath('bwrap');
+    if (!binary)
+      throw new ExternalActionAdapterError(
+        'TARGET_NOT_FOUND',
+        'CodeBuddy binary was not found',
+        false,
+      );
+    if (!bubblewrap)
+      throw new ExternalActionAdapterError(
+        'TARGET_NOT_FOUND',
+        'Bubblewrap sandbox runtime was not found',
+        false,
+      );
 
-    return await new Promise<CodeBuddyExecutionResult>((resolveExecution, rejectExecution) => {
-      let stdout = '';
-      let stderr = '';
-      let timedOut = false;
-      let outputExceeded = false;
-      let settled = false;
-      const child = spawn(input.binary, args, {
-        cwd: input.cwd,
-        env: restrictedEnvironment(process.env),
-        detached: true,
-        stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      const killGroup = (signal: NodeJS.Signals): void => {
-        if (!child.pid) return;
-        try {
-          process.kill(-child.pid, signal);
-        } catch {
-          // The process group may already have terminated.
-        }
-      };
-      const append = (kind: 'stdout' | 'stderr', chunk: Buffer | string): void => {
-        const value = chunk.toString();
-        if (kind === 'stdout') stdout += value;
-        else stderr += value;
-        if (Buffer.byteLength(stdout) + Buffer.byteLength(stderr) > OUTPUT_LIMIT_BYTES) {
-          outputExceeded = true;
-          killGroup('SIGTERM');
-        }
-      };
-      child.stdout?.on('data', (chunk) => append('stdout', chunk));
-      child.stderr?.on('data', (chunk) => append('stderr', chunk));
-      const timer = setTimeout(() => {
-        timedOut = true;
-        killGroup('SIGTERM');
-        const force = setTimeout(() => killGroup('SIGKILL'), 150);
-        force.unref();
-      }, input.timeoutMs);
-      timer.unref();
-      child.once('error', (error: NodeJS.ErrnoException) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        if (error.code === 'ENOENT') {
-          rejectExecution(
-            new ExternalActionAdapterError(
-              'TARGET_NOT_FOUND',
-              'CodeBuddy binary was not found',
-              false,
-            ),
-          );
-          return;
-        }
-        resolveExecution({
-          exitCode: 1,
-          stdout,
-          stderr: `${stderr}${error.message}`,
-          durationMs: Date.now() - startedAt,
-          timedOut: false,
+    const sandboxRoot = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-sandbox-'));
+    const sandboxConfig = join(sandboxRoot, 'config');
+    const packageRoot = await findCodeBuddyPackageRoot(binary);
+    try {
+      await writeSandboxModelConfig(sandboxConfig, input.model, packageRoot !== null);
+      const uid = typeof process.getuid === 'function' ? process.getuid() : 1000;
+      const gid = typeof process.getgid === 'function' ? process.getgid() : 1000;
+      const sandboxPasswd = join(sandboxRoot, 'passwd');
+      const sandboxGroup = join(sandboxRoot, 'group');
+      await writeFile(
+        sandboxPasswd,
+        `mcf:x:${uid}:${gid}:MCF Sandbox:/home/mcf:/usr/sbin/nologin\n`,
+        { mode: 0o644 },
+      );
+      await writeFile(sandboxGroup, `mcf:x:${gid}:\n`, { mode: 0o644 });
+      const codeBuddyArgs = [
+        '-p',
+        input.prompt,
+        '--no-session-persistence',
+        '--agent',
+        'cli',
+        '--tools',
+        input.tools.join(','),
+        '--permission-mode',
+        'acceptEdits',
+        '--model',
+        input.model,
+        '--output-format',
+        'json',
+      ];
+      const sandboxArgs = [
+        '--unshare-user',
+        '--unshare-pid',
+        '--die-with-parent',
+        '--new-session',
+        '--cap-drop',
+        'ALL',
+        '--proc',
+        '/proc',
+        '--dev',
+        '/dev',
+        '--tmpfs',
+        '/tmp',
+        '--dir',
+        '/etc',
+        '--dir',
+        '/home',
+        '--dir',
+        '/home/mcf',
+        '--dir',
+        '/mcf',
+        '--dir',
+        '/mcf/bin',
+        '--dir',
+        '/mcf/xdg-config',
+        '--dir',
+        '/mcf/xdg-cache',
+        '--dir',
+        '/mcf/xdg-data',
+        '--dir',
+        '/mcf/xdg-runtime',
+      ];
+      addReadOnlyMountIfPresent(sandboxArgs, '/usr');
+      addReadOnlyMountIfPresent(sandboxArgs, '/bin');
+      addReadOnlyMountIfPresent(sandboxArgs, '/lib');
+      addReadOnlyMountIfPresent(sandboxArgs, '/lib64');
+      addReadOnlyMountIfPresent(sandboxArgs, '/etc/ld.so.cache');
+      addReadOnlyMountIfPresent(sandboxArgs, '/etc/nsswitch.conf');
+      addReadOnlyMountIfPresent(sandboxArgs, '/etc/hosts');
+      addReadOnlyMountIfPresent(sandboxArgs, '/etc/resolv.conf');
+      sandboxArgs.push(
+        '--ro-bind',
+        sandboxPasswd,
+        '/etc/passwd',
+        '--ro-bind',
+        sandboxGroup,
+        '/etc/group',
+        '--bind',
+        input.cwd,
+        '/workspace',
+        '--bind',
+        sandboxConfig,
+        '/mcf/config',
+      );
+
+      let sandboxCommand: string;
+      if (packageRoot) {
+        sandboxArgs.push(
+          '--ro-bind',
+          packageRoot,
+          '/opt/codebuddy',
+          '--ro-bind',
+          process.execPath,
+          '/mcf/bin/node',
+        );
+        sandboxCommand = '/mcf/bin/node';
+        codeBuddyArgs.unshift('/opt/codebuddy/bin/codebuddy');
+      } else {
+        sandboxArgs.push('--ro-bind', binary, '/mcf/bin/codebuddy');
+        sandboxCommand = '/mcf/bin/codebuddy';
+      }
+
+      sandboxArgs.push(
+        '--clearenv',
+        '--setenv',
+        'HOME',
+        '/home/mcf',
+        '--setenv',
+        'USER',
+        'mcf',
+        '--setenv',
+        'LOGNAME',
+        'mcf',
+        '--setenv',
+        'PATH',
+        '/mcf/bin:/usr/bin:/bin',
+        '--setenv',
+        'TMPDIR',
+        '/tmp',
+        '--setenv',
+        'XDG_CONFIG_HOME',
+        '/mcf/xdg-config',
+        '--setenv',
+        'XDG_CACHE_HOME',
+        '/mcf/xdg-cache',
+        '--setenv',
+        'XDG_DATA_HOME',
+        '/mcf/xdg-data',
+        '--setenv',
+        'XDG_RUNTIME_DIR',
+        '/mcf/xdg-runtime',
+        '--setenv',
+        'CODEBUDDY_CONFIG_DIR',
+        '/mcf/config',
+        '--setenv',
+        'NO_COLOR',
+        '1',
+        '--chdir',
+        '/workspace',
+        '--',
+        sandboxCommand,
+        ...codeBuddyArgs,
+      );
+
+      return await new Promise<CodeBuddyExecutionResult>((resolveExecution, rejectExecution) => {
+        let stdout = '';
+        let stderr = '';
+        let capturedBytes = 0;
+        let timedOut = false;
+        let outputExceeded = false;
+        let settled = false;
+        let forceTimer: NodeJS.Timeout | null = null;
+        let settlementTimer: NodeJS.Timeout | null = null;
+        const child = spawn(bubblewrap, sandboxArgs, {
+          cwd: input.cwd,
+          env: { PATH: process.env.PATH ?? '/usr/bin:/bin' },
+          detached: true,
+          stdio: ['ignore', 'pipe', 'pipe'],
         });
-      });
-      child.once('close', (code) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        const finish = (): void =>
+        const clearTimers = (): void => {
+          clearTimeout(timer);
+          if (forceTimer) clearTimeout(forceTimer);
+          if (settlementTimer) clearTimeout(settlementTimer);
+        };
+        const killGroup = (signal: NodeJS.Signals): void => {
+          if (!child.pid) return;
+          try {
+            process.kill(-child.pid, signal);
+          } catch {
+            // The sandbox process group may already have terminated.
+          }
+        };
+        const finish = (code: number | null): void => {
+          if (settled) return;
+          settled = true;
+          clearTimers();
+          child.stdout?.removeAllListeners('data');
+          child.stderr?.removeAllListeners('data');
           resolveExecution({
             exitCode: outputExceeded ? 1 : (code ?? 1),
             stdout,
-            stderr: outputExceeded ? `${stderr}\nOUTPUT_LIMIT_EXCEEDED` : stderr,
+            stderr,
             durationMs: Date.now() - startedAt,
             timedOut,
           });
-        if (timedOut) setTimeout(finish, 200);
-        else finish();
+        };
+        const terminate = (): void => {
+          killGroup('SIGTERM');
+          if (!forceTimer) {
+            forceTimer = setTimeout(() => killGroup('SIGKILL'), 150);
+            forceTimer.unref();
+          }
+          if (!settlementTimer) {
+            settlementTimer = setTimeout(() => finish(1), 1200);
+            settlementTimer.unref();
+          }
+        };
+        const append = (kind: 'stdout' | 'stderr', chunk: Buffer | string): void => {
+          const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+          const remaining = Math.max(0, OUTPUT_LIMIT_BYTES - capturedBytes);
+          if (remaining > 0) {
+            const retained = bytes.subarray(0, remaining);
+            if (kind === 'stdout') stdout += retained.toString('utf8');
+            else stderr += retained.toString('utf8');
+            capturedBytes += retained.byteLength;
+          }
+          if (bytes.byteLength > remaining && !outputExceeded) {
+            outputExceeded = true;
+            terminate();
+          }
+        };
+        child.stdout?.on('data', (chunk) => append('stdout', chunk));
+        child.stderr?.on('data', (chunk) => append('stderr', chunk));
+        const timer = setTimeout(() => {
+          timedOut = true;
+          terminate();
+        }, input.timeoutMs);
+        timer.unref();
+        child.once('error', (error: NodeJS.ErrnoException) => {
+          if (settled) return;
+          clearTimers();
+          settled = true;
+          if (error.code === 'ENOENT') {
+            rejectExecution(
+              new ExternalActionAdapterError(
+                'TARGET_NOT_FOUND',
+                'Bubblewrap sandbox runtime was not found',
+                false,
+              ),
+            );
+            return;
+          }
+          resolveExecution({
+            exitCode: 1,
+            stdout,
+            stderr: `${stderr}${error.message}`.slice(0, OUTPUT_LIMIT_BYTES),
+            durationMs: Date.now() - startedAt,
+            timedOut: false,
+          });
+        });
+        child.once('close', (code) => finish(code));
       });
-    });
+    } finally {
+      await rm(sandboxRoot, { recursive: true, force: true });
+    }
   }
 
   async collectChanges(
@@ -497,6 +762,7 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
     await this.assertPathsSafe(targetWorkspace, changes.changedFiles);
     const patchRoot = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-patch-'));
     const patchPath = join(patchRoot, 'change.patch');
+    let patchApplied = false;
     try {
       await writeFile(patchPath, changes.diff, 'utf8');
       await execFileAsync(
@@ -504,6 +770,7 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
         ['-C', targetWorkspace, 'apply', '--binary', '--whitespace=nowarn', patchPath],
         { encoding: 'utf8', maxBuffer: OUTPUT_LIMIT_BYTES },
       );
+      patchApplied = true;
       const actual = await this.collectChanges(targetWorkspace, baseSha, changes.changedFiles);
       if (
         actual.headSha !== baseSha ||
@@ -554,14 +821,16 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
         }
       }
     } catch (error) {
-      try {
-        await this.restoreWorkspace(targetWorkspace, baseSha, changes.changedFiles);
-      } catch {
-        throw new ExternalActionAdapterError(
-          'ADAPTER_FAILURE',
-          'CodeBuddy publication failed and authorized workspace restoration failed',
-          false,
-        );
+      if (patchApplied) {
+        try {
+          await this.restoreWorkspace(targetWorkspace, baseSha, changes);
+        } catch {
+          throw new ExternalActionAdapterError(
+            'ADAPTER_FAILURE',
+            'CodeBuddy publication failed and transactional restoration failed',
+            false,
+          );
+        }
       }
       if (error instanceof ExternalActionAdapterError) throw error;
       throw new ExternalActionAdapterError(
@@ -598,34 +867,40 @@ export class LocalCodeBuddyHost implements CodeBuddyHost {
   async restoreWorkspace(
     workspace: string,
     baseSha: string,
-    changedFiles: string[],
+    changes: CodeBuddyChangeEvidence,
   ): Promise<void> {
-    await execFileAsync('git', ['-C', workspace, 'reset', '--hard', baseSha], {
-      encoding: 'utf8',
-      maxBuffer: OUTPUT_LIMIT_BYTES,
-    });
-    if (changedFiles.length)
-      await execFileAsync('git', ['-C', workspace, 'clean', '-fdx', '--', ...changedFiles], {
-        encoding: 'utf8',
-        maxBuffer: OUTPUT_LIMIT_BYTES,
-      });
-    const snapshot = await this.inspectWorkspace(workspace);
-    if (snapshot.headSha !== baseSha || snapshot.dirtyPaths.length)
+    const headSha = (await git(workspace, ['rev-parse', 'HEAD'])).trim().toLowerCase();
+    if (headSha !== baseSha)
       throw new ExternalActionAdapterError(
-        'ADAPTER_FAILURE',
-        'Authorized workspace restoration could not be verified',
-        false,
+        'RESERVATION_CONFLICT',
+        'Authorized workspace HEAD changed before transactional restoration',
+        true,
       );
-    for (const path of changedFiles) {
-      const residual = (await git(workspace, ['ls-files', '--others', '-z', '--', path]))
-        .split('\0')
-        .filter(Boolean);
-      if (residual.length)
+    const patchRoot = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-rollback-'));
+    const patchPath = join(patchRoot, 'change.patch');
+    try {
+      await writeFile(patchPath, changes.diff, 'utf8');
+      await execFileAsync(
+        'git',
+        ['-C', workspace, 'apply', '--reverse', '--binary', '--whitespace=nowarn', patchPath],
+        { encoding: 'utf8', maxBuffer: OUTPUT_LIMIT_BYTES },
+      );
+      const residual = await this.collectChanges(workspace, baseSha, changes.changedFiles);
+      if (residual.headSha !== baseSha || residual.changedFiles.length || residual.diff)
         throw new ExternalActionAdapterError(
           'ADAPTER_FAILURE',
-          'Authorized workspace restoration left residual files',
+          'Transactional CodeBuddy restoration could not be verified',
           false,
         );
+    } catch (error) {
+      if (error instanceof ExternalActionAdapterError) throw error;
+      throw new ExternalActionAdapterError(
+        'ADAPTER_FAILURE',
+        'Transactional CodeBuddy restoration failed without destructive reset',
+        false,
+      );
+    } finally {
+      await rm(patchRoot, { recursive: true, force: true });
     }
   }
 }
@@ -795,6 +1070,9 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         localOnly: true,
         committed: false,
         executionIsolation: 'DISPOSABLE_GIT_WORKTREE',
+        filesystemIsolation: 'BUBBLEWRAP_MINIMAL_FS',
+        processIsolation: 'BUBBLEWRAP_PID_NAMESPACE',
+        configIsolation: 'EPHEMERAL_CODEBUDDY_CONFIG',
       };
       receipt = this.evidence.createTrustedReceipt({
         provider: 'codebuddy',
@@ -816,11 +1094,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       } catch {
         if (publishedChanges) {
           try {
-            await this.host.restoreWorkspace(
-              snapshot.realPath,
-              snapshot.headSha,
-              publishedChanges.changedFiles,
-            );
+            await this.host.restoreWorkspace(snapshot.realPath, snapshot.headSha, publishedChanges);
           } catch {
             // Cleanup failure remains authoritative; the workspace is not claimed safe.
           }

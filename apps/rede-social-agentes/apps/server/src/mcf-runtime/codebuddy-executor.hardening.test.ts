@@ -8,7 +8,11 @@ import { promisify } from 'node:util';
 
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { CodeBuddyExecutorAdapter, LocalCodeBuddyHost } from './codebuddy-executor.adapter.js';
+import {
+  CodeBuddyExecutorAdapter,
+  LocalCodeBuddyHost,
+  probeCodeBuddyExecutorCapability,
+} from './codebuddy-executor.adapter.js';
 import { EvidenceValidator } from './evidence-validator.js';
 
 const execFileAsync = promisify(execFile);
@@ -89,16 +93,14 @@ beforeEach(() => {
 describe('CodeBuddy disposable-worktree hardening', () => {
   it('executes CodeBuddy outside the authorized workspace and publishes only the validated patch', async () => {
     const dir = await initRepo();
-    const cwdReport = join(tmpdir(), `mcf-codebuddy-cwd-${Date.now()}.txt`);
-    const binary = await fakeBinary(dir, `pwd > '${cwdReport}'\nprintf 'AFTER\\n' > fixture.txt`);
+    const binary = await fakeBinary(dir, `printf 'CWD=%s\nAFTER\n' "$PWD" > fixture.txt`);
     try {
       const receipt = await subject(dir, binary).execute(request(dir));
-      const executionCwd = (await readFile(cwdReport, 'utf8')).trim();
-      expect(executionCwd).not.toBe(dir);
-      expect(await readFile(join(dir, 'fixture.txt'), 'utf8')).toBe('AFTER\n');
+      const published = await readFile(join(dir, 'fixture.txt'), 'utf8');
+      expect(published).toBe('CWD=/workspace\nAFTER\n');
+      expect(published).not.toContain(dir);
       expect(receipt.metadata.changedFiles).toEqual(['fixture.txt']);
     } finally {
-      await rm(cwdReport, { force: true });
       await rm(binary, { force: true });
       await rm(dir, { recursive: true, force: true });
     }
@@ -144,10 +146,8 @@ describe('CodeBuddy disposable-worktree hardening', () => {
       ).rejects.toMatchObject({
         code: 'INVALID_CONTEXT',
       });
-      await expect(readFile(report, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
       expect(await readFile(join(external, 'victim.txt'), 'utf8')).toBe('BEFORE\n');
     } finally {
-      await rm(report, { force: true });
       await rm(binary, { force: true });
       await rm(external, { recursive: true, force: true });
       await rm(dir, { recursive: true, force: true });
@@ -170,10 +170,106 @@ describe('CodeBuddy disposable-worktree hardening', () => {
     }
   });
 
+  it('resolves a CodeBuddy executable supplied by PATH during capability probing', async () => {
+    const dir = await initRepo();
+    const binDir = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-path-'));
+    const binary = join(binDir, 'codebuddy-path-probe');
+    await writeFile(binary, "#!/bin/sh\nprintf '%s\n' '--agent --model'\n");
+    await chmod(binary, 0o700);
+    const previousPath = process.env.PATH;
+    try {
+      process.env.PATH = `${binDir}:${previousPath ?? ''}`;
+      expect(
+        probeCodeBuddyExecutorCapability({
+          enabled: true,
+          binary: 'codebuddy-path-probe',
+          workspaceRoot: dir,
+          model,
+          timeoutMs: 5000,
+        }),
+      ).toBe(true);
+    } finally {
+      process.env.PATH = previousPath;
+      await rm(binDir, { recursive: true, force: true });
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('hides host paths outside the execution workspace and replaces HOME/XDG/TMP', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-sandbox-'));
+    const canary = join(tmpdir(), `mcf-codebuddy-host-canary-${Date.now()}.txt`);
+    await writeFile(canary, 'HOST-CANARY\n');
+    const binary = await fakeBinary(
+      dir,
+      `test ! -e '${canary}'\ntest "$HOME" = '/home/mcf'\ntest "$CODEBUDDY_CONFIG_DIR" = '/mcf/config'\ntest "$TMPDIR" = '/tmp'`,
+    );
+    try {
+      const result = await new LocalCodeBuddyHost().execute({
+        binary,
+        cwd: dir,
+        model,
+        prompt: 'sandbox smoke',
+        timeoutMs: 3000,
+        tools: ['Read'],
+      });
+      expect(result.exitCode).toBe(0);
+    } finally {
+      await rm(canary, { force: true });
+      await rm(binary, { force: true });
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('provides only a synthetic passwd identity for runtimes that resolve the current user', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-passwd-'));
+    const binary = await fakeBinary(
+      dir,
+      `/usr/bin/python3 -c "import os,pwd; u=pwd.getpwuid(os.getuid()); assert u.pw_name == 'mcf' and u.pw_dir == '/home/mcf'"`,
+    );
+    try {
+      const result = await new LocalCodeBuddyHost().execute({
+        binary,
+        cwd: dir,
+        model,
+        prompt: 'identity smoke',
+        timeoutMs: 3000,
+        tools: ['Read'],
+      });
+      expect(result.exitCode).toBe(0);
+    } finally {
+      await rm(binary, { force: true });
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('bounds captured stdout and stderr even when the child floods output', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-output-'));
+    const binary = await fakeBinary(dir, `yes X | head -c 2097152`);
+    try {
+      const result = await new LocalCodeBuddyHost().execute({
+        binary,
+        cwd: dir,
+        model,
+        prompt: 'output smoke',
+        timeoutMs: 3000,
+        tools: ['Read'],
+      });
+      expect(
+        Buffer.byteLength(result.stdout) + Buffer.byteLength(result.stderr),
+      ).toBeLessThanOrEqual(1024 * 1024);
+      expect(result.exitCode).not.toBe(0);
+    } finally {
+      await rm(binary, { force: true });
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('kills descendant processes on timeout before they can perform delayed writes', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-timeout-'));
-    const report = join(tmpdir(), `mcf-codebuddy-late-${Date.now()}.txt`);
-    const binary = await fakeBinary(dir, `(sleep 0.6; printf 'LATE\n' > '${report}') &\nsleep 5`);
+    const binary = await fakeBinary(
+      dir,
+      `/usr/bin/setsid /bin/sh -c 'sleep 0.6; printf "LATE\\n" > escaped.txt' >/dev/null 2>&1 &\nsleep 5`,
+    );
     try {
       const result = await new LocalCodeBuddyHost().execute({
         binary,
@@ -185,33 +281,37 @@ describe('CodeBuddy disposable-worktree hardening', () => {
       });
       expect(result.timedOut).toBe(true);
       await new Promise((resolve) => setTimeout(resolve, 850));
-      await expect(readFile(report, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' });
+      await expect(readFile(join(dir, 'escaped.txt'), 'utf8')).rejects.toMatchObject({
+        code: 'ENOENT',
+      });
     } finally {
-      await rm(report, { force: true });
       await rm(binary, { force: true });
       await rm(dir, { recursive: true, force: true });
     }
   });
 
-  it('restores the captured base SHA and removes ignored residue only from affected paths', async () => {
+  it('rolls back only the published transaction and preserves concurrent unrelated work', async () => {
     const dir = await initRepo();
-    await writeFile(join(dir, '.gitignore'), '.hidden\n');
-    await execFileAsync('git', ['add', '.gitignore'], { cwd: dir });
-    await execFileAsync('git', ['commit', '-m', 'baseline ignore'], { cwd: dir });
+    await writeFile(join(dir, 'unrelated.txt'), 'BASE\n');
+    await execFileAsync('git', ['add', 'unrelated.txt'], { cwd: dir });
+    await execFileAsync('git', ['commit', '-m', 'add unrelated'], { cwd: dir });
     const baseSha = (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: dir })).stdout.trim();
-    await writeFile(join(dir, 'fixture.txt'), 'AFTER-COMMIT\n');
-    await execFileAsync('git', ['add', 'fixture.txt'], { cwd: dir });
-    await execFileAsync('git', ['commit', '-m', 'moved head'], { cwd: dir });
-    await writeFile(join(dir, '.hidden'), 'RESIDUE\n');
+    const host = new LocalCodeBuddyHost();
+    const execution = await host.createExecutionWorkspace(dir, baseSha);
     try {
-      await new LocalCodeBuddyHost().restoreWorkspace(dir, baseSha, ['fixture.txt', '.hidden']);
+      await writeFile(join(execution.realPath, 'fixture.txt'), 'AFTER\n');
+      const changes = await host.collectChanges(execution.realPath, baseSha);
+      await host.publishChanges(execution.realPath, dir, baseSha, changes);
+      await writeFile(join(dir, 'unrelated.txt'), 'CONCURRENT\n');
+
+      await host.restoreWorkspace(dir, baseSha, changes);
+
       const head = (await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: dir })).stdout.trim();
       expect(head).toBe(baseSha);
       expect(await readFile(join(dir, 'fixture.txt'), 'utf8')).toBe('BEFORE\n');
-      await expect(readFile(join(dir, '.hidden'), 'utf8')).rejects.toMatchObject({
-        code: 'ENOENT',
-      });
+      expect(await readFile(join(dir, 'unrelated.txt'), 'utf8')).toBe('CONCURRENT\n');
     } finally {
+      await host.removeExecutionWorkspace(dir, execution);
       await rm(dir, { recursive: true, force: true });
     }
   });

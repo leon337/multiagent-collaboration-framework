@@ -15,6 +15,7 @@ const durableExecutionBoundaryAdapters = new Set([
   'github-pr-collaboration-write-v1',
   'github-actions-staging-deploy-v1',
   'render-production-promotion-v1',
+  'codebuddy-implement-change-local-v1',
 ]);
 const unknownPersistenceAttempts = 3;
 

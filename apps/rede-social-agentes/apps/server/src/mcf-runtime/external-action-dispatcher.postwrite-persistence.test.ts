@@ -66,9 +66,12 @@ function receipt(status: 'SUCCEEDED' | 'PARTIAL' = 'SUCCEEDED'): McfToolReceipt 
   };
 }
 
-function harness(adapterReceipt: McfToolReceipt | Error) {
+function harness(
+  adapterReceipt: McfToolReceipt | Error,
+  adapterId = 'github-pr-collaboration-write-v1',
+) {
   const adapter: ExternalActionAdapter = {
-    adapterId: 'github-pr-collaboration-write-v1',
+    adapterId,
     supports: () => true,
     execute: vi.fn(async () => {
       if (adapterReceipt instanceof Error) throw adapterReceipt;
@@ -238,6 +241,65 @@ describe('ExternalActionDispatcher post-write persistence semantics', () => {
       expect.objectContaining({ code: 'TARGET_NOT_FOUND' }),
     );
     expect(ledger.recordUnknown).not.toHaveBeenCalled();
+  });
+
+  it('establishes durable EXECUTING before invoking the CodeBuddy mutation adapter', async () => {
+    const { adapter, dispatcher, ledger } = harness(
+      receipt(),
+      'codebuddy-implement-change-local-v1',
+    );
+    vi.mocked(ledger.recordExecuting).mockRejectedValueOnce(
+      new ExternalActionAdapterError('LEDGER_FAILURE', 'cannot persist executing state', true),
+    );
+
+    const result = await dispatcher.dispatch(request);
+
+    expect(result.status).toBe('FAILED');
+    expect(adapter.execute).not.toHaveBeenCalled();
+    expect(ledger.recordExecuting).toHaveBeenCalledWith('attempt-postwrite-0001');
+  });
+
+  it('records CodeBuddy post-publication receipt persistence failure as durable UNKNOWN', async () => {
+    const successfulReceipt = receipt();
+    const { adapter, dispatcher, ledger } = harness(
+      successfulReceipt,
+      'codebuddy-implement-change-local-v1',
+    );
+    vi.mocked(ledger.recordExecuted).mockRejectedValueOnce(
+      new ExternalActionAdapterError('LEDGER_FAILURE', 'executed transition failed', true),
+    );
+
+    const result = await dispatcher.dispatch(request);
+
+    expect(result.status).toBe('UNKNOWN');
+    expect(adapter.execute).toHaveBeenCalledTimes(1);
+    expect(ledger.recordUnknown).toHaveBeenCalledWith(
+      'attempt-postwrite-0001',
+      successfulReceipt,
+      expect.objectContaining({ code: 'LEDGER_FAILURE', retryable: false }),
+    );
+  });
+
+  it('retries CodeBuddy UNKNOWN persistence without re-executing the mutation adapter', async () => {
+    const successfulReceipt = receipt();
+    const { adapter, dispatcher, ledger } = harness(
+      successfulReceipt,
+      'codebuddy-implement-change-local-v1',
+    );
+    vi.mocked(ledger.recordExecuted).mockRejectedValueOnce(
+      new ExternalActionAdapterError('LEDGER_FAILURE', 'executed transition failed', true),
+    );
+    vi.mocked(ledger.recordUnknown)
+      .mockRejectedValueOnce(
+        new ExternalActionAdapterError('LEDGER_FAILURE', 'temporary unknown failure', true),
+      )
+      .mockResolvedValueOnce(undefined);
+
+    const result = await dispatcher.dispatch(request);
+
+    expect(result.status).toBe('UNKNOWN');
+    expect(adapter.execute).toHaveBeenCalledTimes(1);
+    expect(ledger.recordUnknown).toHaveBeenCalledTimes(2);
   });
 
   it('does not invoke the adapter when durable EXECUTING persistence cannot be established', async () => {
