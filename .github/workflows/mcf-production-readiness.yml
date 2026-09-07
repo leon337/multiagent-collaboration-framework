@@ -90,6 +90,15 @@ jobs:
           pnpm --filter @rsa/database db:migrate
           pnpm --filter @rsa/database db:migrate
 
+      - name: Verify initial-human bootstrap against empty database state
+        working-directory: apps/rede-social-agentes
+        env:
+          BOOTSTRAP_EMPTY_DB_INTEGRATION: "1"
+        run: |
+          pnpm --filter @rsa/server exec vitest run \
+            src/human-authority-bootstrap/postgres-initial-human-bootstrap.repository.integration.test.ts \
+            --maxWorkers=1
+
       - name: Prepare Bubblewrap sandbox runtime
         working-directory: apps/rede-social-agentes
         run: |

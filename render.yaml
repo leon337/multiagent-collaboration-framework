@@ -59,6 +59,10 @@ services:
           type: web
           name: mcf-runtime-staging-api
           envVarKey: DATABASE_URL
+      - key: BOOTSTRAP_INITIAL_HUMAN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_INITIAL_REGISTRATION_TOKEN
+        sync: false
       - key: BOOTSTRAP_SEAL_PUBLIC_JWK
         sync: false
       - key: BOOTSTRAP_SUBJECT_PEPPER
