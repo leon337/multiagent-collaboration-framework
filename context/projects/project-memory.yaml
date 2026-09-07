@@ -1,0 +1,31 @@
+schema_version: 1
+
+project:
+  id: project-memory
+  lifecycle: ACTIVE
+
+identity:
+  canonical_repository: leon337/project-memory
+  aliases:
+    - Project Memory
+    - Robo Operador
+    - Robô Operador
+    - Operador Digital
+    - Automacao de GUI
+    - Automação de GUI
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - docs/STATUS.md
+    - docs/ARCHITECTURE.md
+    - docs/DECISIONS.md
+    - docs/NEXT.md
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
