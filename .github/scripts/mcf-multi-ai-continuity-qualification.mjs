@@ -6,6 +6,7 @@ const protocolPath = 'docs/protocols/MCF-PROTOCOLO-CONTINUIDADE-MULTI-IA-V1.2.md
 const schemaPath = 'schemas/mcf-multi-ai-continuity-v1.schema.json';
 const validFixturePath = 'schemas/fixtures/mcf-multi-ai-continuity.valid.json';
 const invalidFixturePath = 'schemas/fixtures/mcf-multi-ai-continuity.invalid.json';
+const bootstrapPointerPath = 'AGENTS.md';
 
 const GOVERNANCE_STATES = ['NOT_AUTHORIZED', 'AUTHORIZED', 'CANONICALIZATION_PENDING', 'CANONICAL'];
 const EVIDENCE_STATES = ['UNVERIFIED', 'IN_PROGRESS', 'PASS', 'FAIL', 'STALE'];
@@ -630,6 +631,24 @@ function main() {
   const schemaText = readRequired(schemaPath);
   const validText = readRequired(validFixturePath);
   const invalidText = readRequired(invalidFixturePath);
+  const bootstrapPointerText = readRequired(bootstrapPointerPath);
+
+  if (bootstrapPointerText) {
+    const requiredBootstrapPointerTokens = [
+      'context/projects/*.yaml',
+      'aliases',
+      'identity.canonical_repository',
+      'TARGET_REPOSITORY_ROOT',
+      'current workspace',
+      'context.capsule_path',
+      'context.canonical_entrypoints',
+      'never relative to the MCF repository',
+      'perform discovery only and do not modify files'
+    ];
+    const missing = requiredBootstrapPointerTokens.filter(token => !bootstrapPointerText.includes(token));
+    if (missing.length) fail(`bootstrap pointer missing required tokens: ${missing.join(', ')}`);
+    else pass('bootstrap pointer binds alias resolution to target repository root and fail-closed discovery');
+  }
 
   if (protocolText) {
     for (const token of [...GOVERNANCE_STATES, ...EVIDENCE_STATES, ...BOOTSTRAP_STEPS, ...CHECKPOINT_CLASSES]) if (!protocolText.includes(token)) fail(`protocol missing token: ${token}`);
