@@ -1,0 +1,27 @@
+schema_version: 1
+
+project:
+  id: mcf-model-intelligence
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/mcf-model-intelligence
+  aliases:
+    - MCF Model Intelligence
+    - Model Intelligence
+    - MI
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - state/current.yaml
+    - CHECKPOINT.md
+    - ROADMAP.md
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
