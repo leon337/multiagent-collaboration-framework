@@ -39,6 +39,19 @@ describe('Gemini runtime configuration', () => {
     ).toThrow(/allowlist/u);
   });
 
+  it('rejects paid fallback even when the model is otherwise valid', () => {
+    expect(() =>
+      loadRuntimeConfig({
+        ...baseEnvironment,
+        MCF_GEMINI_ENABLED: 'true',
+        GEMINI_API_KEY: 'test-only-key',
+        MCF_GEMINI_MODEL: 'gemini-test',
+        MCF_GEMINI_MODEL_ALLOWLIST: 'gemini-test',
+        MCF_GEMINI_PAID_FALLBACK_ALLOWED: 'true',
+      }),
+    ).toThrow(/paid fallback/u);
+  });
+
   it('accepts an enabled allowlisted Gemini model without paid fallback', () => {
     expect(
       loadRuntimeConfig({
