@@ -51,7 +51,11 @@
         { "type": "issue_comment", "value": "issue-205-comment-5647670652" },
         { "type": "commit", "value": "643b1cecde9c24305d81d217bb7e95fb152434d9" },
         { "type": "commit", "value": "fc6535e06753b0dddefc9190178737554c8ea36b" },
-        { "type": "commit", "value": "3f40fc6ec45fc7a3740f616c2b6969214ebeac26" }
+        { "type": "commit", "value": "3f40fc6ec45fc7a3740f616c2b6969214ebeac26" },
+        { "type": "commit", "value": "e9c2ffc0351eb0335eeebf2bd78ed32175a88876" },
+        { "type": "artifact", "value": "artifacts/phases/PHASE-GAMA-03-GEMINI-INTEGRATION/" },
+        { "type": "runtime_check", "value": "mission-center-vps-http-200-api-live" },
+        { "type": "test", "value": "mission-center-13-pass-gemini-boundary-11-pass-typecheck-pass" }
       ]
     },
     { "id": "G4", "label": "Killer demo with attributable evidence", "status": "PENDING", "evidence": [] },
@@ -63,24 +67,24 @@
     { "id": "G10", "label": "Submission and receipt preservation", "status": "PENDING", "evidence": [] }
   ],
   "lastAction": {
-    "at": "2026-09-12T18:34:10Z",
+    "at": "2026-09-12T20:52:00Z",
     "executor": "MESTRE",
-    "summary": "Governed Gemini provider and Mission Center design/plan were committed to the mission branch.",
+    "summary": "Mission Center VPS was verified live and G3 targeted integration tests/typecheck passed on the exact mission branch HEAD; only the real Gemini free-tier call remains blocked on a server-side key.",
     "evidence": [
-      { "type": "commit", "value": "3f40fc6ec45fc7a3740f616c2b6969214ebeac26" },
-      { "type": "commit", "value": "0c00bd29c33573ddffa212f2d1a5baddee00724e" }
+      { "type": "commit", "value": "e9c2ffc0351eb0335eeebf2bd78ed32175a88876" },
+      { "type": "runtime_check", "value": "mission-center-vps-http-200-api-live" },
+      { "type": "test", "value": "24-targeted-tests-pass" }
     ]
   },
   "blockers": [
-    "Full workspace Vitest/typecheck verification is pending an executable repository runner or recovered VPS shell.",
-    "Real Gemini free-tier qualification is pending a server-side GEMINI_API_KEY and exact live model selection.",
-    "Mission Center VPS deployment is pending shell access to the VPS."
+    "Real Gemini free-tier qualification is blocked because no GEMINI_API_KEY or GOOGLE_API_KEY is provisioned server-side on the authorized VPS; no paid fallback or billing action is authorized."
   ],
-  "nextStep": "Implement the Mission Center status source and UI, then complete workspace verification and the live Gemini qualification.",
+  "nextStep": "LEANDRO must securely provision an authorized Gemini API key for the VPS; MESTRE will then perform one minimal free-tier live call, preserve the sanitized receipt, and close G3 if it passes.",
   "humanGates": {
     "g3": "AUTHORIZED",
+    "geminiCredential": "REQUIRED_FROM_LEANDRO",
     "externalSubmission": "NOT_AUTHORIZED",
     "paidBilling": "NOT_AUTHORIZED"
   },
-  "updatedAt": "2026-09-12T18:34:10Z"
+  "updatedAt": "2026-09-12T20:52:00Z"
 }
