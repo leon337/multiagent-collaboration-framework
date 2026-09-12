@@ -21,6 +21,7 @@ context:
     - CHECKLIST.md
     - ROADMAP.md
     - docs/CHANGELOG.md
+    - docs/MCF-CURRENT-STATE.md
 
 freshness:
   operational_state: LIVE_REQUIRED

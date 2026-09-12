@@ -38,7 +38,13 @@ describe('Arvore Presente Digital Twin Context Fabric registry', () => {
       ownership: { project_owner: 'LEANDRO' },
       context: {
         capsule_path: '.mcf/project-capsule.yaml',
-        canonical_entrypoints: ['README.md', 'CHECKLIST.md', 'ROADMAP.md', 'docs/CHANGELOG.md'],
+        canonical_entrypoints: [
+          'README.md',
+          'CHECKLIST.md',
+          'ROADMAP.md',
+          'docs/CHANGELOG.md',
+          'docs/MCF-CURRENT-STATE.md',
+        ],
       },
       freshness: { operational_state: 'LIVE_REQUIRED', project_identity: 'DURABLE' },
     });
