@@ -1,0 +1,28 @@
+schema_version: 1
+
+project:
+  id: arvore-presente-digital-twin
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/arvore-presente-digital-twin
+  aliases:
+    - Árvore Presente
+    - Arvore Presente
+    - Arvore Presente Digital Twin
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - CHECKLIST.md
+    - ROADMAP.md
+    - docs/CHANGELOG.md
+    - docs/MCF-CURRENT-STATE.md
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
