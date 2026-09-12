@@ -1,0 +1,27 @@
+mission_id: MCF-GAMA-FUND-2026-001
+phase_id: PHASE-GAMA-02-GOOGLE-GEMINI-DESIGN
+state: ENTREGUE
+executor_real: MESTRE
+human_authority: LEANDRO
+baseline_main: 632921eef5ab6ff8e414a0024fb8f00983442844
+decision: DESIGN_PASS_OPTION_B_RECOMMENDED
+recommended_architecture: DEDICATED_MODEL_EXECUTION_PROVIDER_REGISTRY
+google_model_integration: NOT_YET_PROVEN
+implementation_authorized: false
+paid_fallback_allowed: false
+external_effect_boundary: EXISTING_MCF_PERMISSION_DELEGATION_DISPATCHER
+core_invariant: MODEL_TOOL_INTENT_NE_MATERIAL_EXTERNAL_EFFECT
+qualification_requires:
+  - REAL_HARMLESS_GEMINI_CALL
+  - EXACT_MODEL_ID_EVIDENCE
+  - MISSION_PHASE_BINDING
+  - MODEL_EXECUTION_RECEIPT
+  - SECRET_NON_LEAKAGE
+  - ZERO_PAID_FALLBACK
+  - EXISTING_RUNTIME_REGRESSION_PASS
+anti_simulation:
+  simulated_agent_role: FORBIDDEN
+  specialist_agent_execution: NOT_EXECUTED
+  executor_credited: MESTRE
+next_gate: HUMAN_GATE_LEANDRO_FOR_G3_IMPLEMENTATION
+external_submission_authorized: false
