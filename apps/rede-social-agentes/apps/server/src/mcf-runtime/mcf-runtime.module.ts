@@ -19,11 +19,13 @@ import { ContinuityRecoveryService } from './continuity-recovery.service.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import { ExternalActionLedger } from './external-action-ledger.js';
+import { GeminiModelProvider, type GeminiClient } from './gemini-model.provider.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
+import { createGoogleGenAiClient } from './google-genai.client.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
 import { MissionObservabilityController } from './mission-observability.controller.js';
 import { MissionControlController } from './mission-control.controller.js';
@@ -35,6 +37,7 @@ import { MissionObservabilityService } from './mission-observability.service.js'
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
 import { MissionV11ContextGuard } from './mission-v11-context.guard.js';
+import { ModelExecutionRegistry } from './model-execution.registry.js';
 import { OrderedMcfRuntimeRepository } from './ordered-mcf-runtime.repository.js';
 import { PermissionEngine } from './permission-engine.js';
 import { PostgresMcfRuntimeRepository } from './postgres-mcf-runtime.repository.js';
@@ -64,6 +67,14 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
   };
 }
 
+function disabledGeminiClient(): GeminiClient {
+  return {
+    async generateContent() {
+      throw new Error('Gemini model provider is disabled.');
+    },
+  };
+}
+
 @Module({
   imports: [DatabaseModule, IdentityModule],
   controllers: [
@@ -85,6 +96,25 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     MissionControlRepository,
     MissionV11ContextGuard,
     ContinuityRecoveryService,
+    {
+      provide: GeminiModelProvider,
+      useFactory: async () => {
+        const config = loadRuntimeConfig();
+        const client = config.MCF_GEMINI_ENABLED
+          ? await createGoogleGenAiClient(config.GEMINI_API_KEY)
+          : disabledGeminiClient();
+        return new GeminiModelProvider(client, {
+          enabled: config.MCF_GEMINI_ENABLED,
+          modelAllowlist: config.MCF_GEMINI_MODEL_ALLOWLIST,
+          paidFallbackAllowed: config.MCF_GEMINI_PAID_FALLBACK_ALLOWED,
+        });
+      },
+    },
+    {
+      provide: ModelExecutionRegistry,
+      useFactory: (gemini: GeminiModelProvider) => new ModelExecutionRegistry([gemini]),
+      inject: [GeminiModelProvider],
+    },
     {
       provide: ChatMissionPlanner,
       useFactory: () => {
@@ -305,6 +335,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     ContinuityRecoveryService,
     ChatRuntimeBridgeService,
     SocialTimelineService,
+    ModelExecutionRegistry,
   ],
 })
 export class McfRuntimeModule {}
