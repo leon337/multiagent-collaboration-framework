@@ -31,7 +31,11 @@ const result = {
 describe('handleMissionCenterApi', () => {
   it('serves sanitized mission status from GET /api/status', async () => {
     const response = await handleMissionCenterApi(
-      { async getStatus() { return result; } },
+      {
+        async getStatus() {
+          return result;
+        },
+      },
       { method: 'GET', path: '/api/status' },
     );
 

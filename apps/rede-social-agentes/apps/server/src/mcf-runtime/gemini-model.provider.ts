@@ -48,7 +48,9 @@ function stableValue(value: unknown, seen = new WeakSet<object>()): unknown {
 }
 
 function sha256(value: unknown): string {
-  return createHash('sha256').update(JSON.stringify(stableValue(value))).digest('hex');
+  return createHash('sha256')
+    .update(JSON.stringify(stableValue(value)))
+    .digest('hex');
 }
 
 function toolIntentsFrom(response: GeminiClientResponse): ModelToolIntent[] {

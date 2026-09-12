@@ -14,9 +14,9 @@ describe('loadMissionCenterConfig', () => {
 
   it('rejects invalid port, cache TTL and unsafe upstream protocol', () => {
     expect(() => loadMissionCenterConfig({ MCF_MISSION_CENTER_PORT: '0' })).toThrow(/port/u);
-    expect(() =>
-      loadMissionCenterConfig({ MCF_MISSION_CENTER_CACHE_TTL_MS: '10' }),
-    ).toThrow(/cache TTL/u);
+    expect(() => loadMissionCenterConfig({ MCF_MISSION_CENTER_CACHE_TTL_MS: '10' })).toThrow(
+      /cache TTL/u,
+    );
     expect(() =>
       loadMissionCenterConfig({ MCF_MISSION_STATUS_URL: 'file:///tmp/status.json' }),
     ).toThrow(/status URL/u);

@@ -61,7 +61,10 @@ const runtimeConfigSchema = z
     RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID: z.string().uuid().optional(),
     GEMINI_API_KEY: z.string().default(''),
     MCF_GEMINI_ENABLED: booleanEnvironmentValue,
-    MCF_GEMINI_MODEL: z.string().default('').transform((value) => value.trim()),
+    MCF_GEMINI_MODEL: z
+      .string()
+      .default('')
+      .transform((value) => value.trim()),
     MCF_GEMINI_MODEL_ALLOWLIST: z.string().default(''),
     MCF_GEMINI_PAID_FALLBACK_ALLOWED: booleanEnvironmentValue,
     MCF_CODEBUDDY_EXECUTOR_ENABLED: booleanEnvironmentValue,

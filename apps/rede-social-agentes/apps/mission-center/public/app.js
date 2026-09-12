@@ -1,10 +1,24 @@
+/* global document, fetch, setInterval */
 const byId = (id) => document.getElementById(id);
 const elements = Object.fromEntries(
   [
-    'freshness', 'mission-id', 'mission-title', 'mission-state', 'current-stage',
-    'progress-bar', 'progress-label', 'stale-banner', 'deadline', 'stages',
-    'last-action', 'last-action-meta', 'last-evidence', 'next-step', 'gates',
-    'blockers', 'updated-at',
+    'freshness',
+    'mission-id',
+    'mission-title',
+    'mission-state',
+    'current-stage',
+    'progress-bar',
+    'progress-label',
+    'stale-banner',
+    'deadline',
+    'stages',
+    'last-action',
+    'last-action-meta',
+    'last-evidence',
+    'next-step',
+    'gates',
+    'blockers',
+    'updated-at',
   ].map((id) => [id, byId(id)]),
 );
 
@@ -30,7 +44,10 @@ function renderEvidence(target, evidence) {
   target.replaceChildren(
     ...evidence.map((item) => {
       const chip = node('span', 'evidence-chip');
-      chip.append(node('b', '', item.type), document.createTextNode(` ${shortEvidence(item.value)}`));
+      chip.append(
+        node('b', '', item.type),
+        document.createTextNode(` ${shortEvidence(item.value)}`),
+      );
       return chip;
     }),
   );
@@ -42,13 +59,15 @@ function render(result) {
   elements['mission-title'].textContent = snapshot.title;
   elements['mission-state'].textContent = snapshot.state;
   elements['mission-state'].className = `badge ${statusClass(snapshot.state)}`;
-  elements['current-stage'].textContent = `${snapshot.currentStage.id} · ${snapshot.currentStage.label}`;
+  elements['current-stage'].textContent =
+    `${snapshot.currentStage.id} · ${snapshot.currentStage.label}`;
   elements.deadline.textContent = `Deadline: ${snapshot.deadline}`;
 
   const delivered = snapshot.stages.filter((stage) => stage.status === 'ENTREGUE').length;
   const percent = Math.round((delivered / snapshot.stages.length) * 100);
   elements['progress-bar'].style.width = `${percent}%`;
-  elements['progress-label'].textContent = `${delivered}/${snapshot.stages.length} etapas entregues · ${percent}%`;
+  elements['progress-label'].textContent =
+    `${delivered}/${snapshot.stages.length} etapas entregues · ${percent}%`;
 
   elements.stages.replaceChildren(
     ...snapshot.stages.map((stage) => {
@@ -68,7 +87,8 @@ function render(result) {
   );
 
   elements['last-action'].textContent = snapshot.lastAction.summary;
-  elements['last-action-meta'].textContent = `${snapshot.lastAction.executor} · ${new Date(snapshot.lastAction.at).toLocaleString('pt-BR')}`;
+  elements['last-action-meta'].textContent =
+    `${snapshot.lastAction.executor} · ${new Date(snapshot.lastAction.at).toLocaleString('pt-BR')}`;
   renderEvidence(elements['last-evidence'], snapshot.lastAction.evidence);
   elements['next-step'].textContent = snapshot.nextStep;
 
@@ -86,9 +106,12 @@ function render(result) {
   const blockers = snapshot.blockers.length ? snapshot.blockers : ['Nenhum blocker registrado.'];
   elements.blockers.replaceChildren(...blockers.map((blocker) => node('li', '', blocker)));
   elements['stale-banner'].classList.toggle('hidden', !stale);
-  elements.freshness.textContent = stale ? 'STALE · último snapshot válido' : 'LIVE · atualização automática';
+  elements.freshness.textContent = stale
+    ? 'STALE · último snapshot válido'
+    : 'LIVE · atualização automática';
   elements.freshness.className = `freshness ${stale ? 'stale' : 'live'}`;
-  elements['updated-at'].textContent = `Projeto: ${new Date(snapshot.updatedAt).toLocaleString('pt-BR')} · Fonte: ${new Date(fetchedAt).toLocaleString('pt-BR')}`;
+  elements['updated-at'].textContent =
+    `Projeto: ${new Date(snapshot.updatedAt).toLocaleString('pt-BR')} · Fonte: ${new Date(fetchedAt).toLocaleString('pt-BR')}`;
 }
 
 async function refresh() {

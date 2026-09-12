@@ -25,7 +25,13 @@ const snapshot = {
 };
 
 function response(body: unknown, ok = true, status = 200): StatusFetchResponse {
-  return { ok, status, async json() { return body; } };
+  return {
+    ok,
+    status,
+    async json() {
+      return body;
+    },
+  };
 }
 
 describe('MissionStatusSource', () => {
@@ -33,7 +39,10 @@ describe('MissionStatusSource', () => {
     let calls = 0;
     const source = new MissionStatusSource({
       url: 'https://example.test/status.json',
-      fetcher: async () => { calls += 1; return response(snapshot); },
+      fetcher: async () => {
+        calls += 1;
+        return response(snapshot);
+      },
       now: () => 1000,
       ttlMs: 10000,
     });
@@ -49,7 +58,10 @@ describe('MissionStatusSource', () => {
     let now = 1000;
     const source = new MissionStatusSource({
       url: 'https://example.test/status.json',
-      fetcher: async () => { calls += 1; return response(snapshot); },
+      fetcher: async () => {
+        calls += 1;
+        return response(snapshot);
+      },
       now: () => now,
       ttlMs: 10000,
     });

@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type {
-  ModelExecutionProvider,
-  ModelExecutionRequest,
-} from './model-execution.contracts.js';
+import type { ModelExecutionProvider, ModelExecutionRequest } from './model-execution.contracts.js';
 import { ModelExecutionRegistry } from './model-execution.registry.js';
 
 const request: ModelExecutionRequest = {

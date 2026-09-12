@@ -39,18 +39,18 @@ describe('parseMissionStatus', () => {
 
   it('rejects delivered stages without attributable evidence', () => {
     const invalid = structuredClone(valid);
-    invalid.stages[0].evidence = [];
+    invalid.stages[0]!.evidence = [];
 
     expect(() => parseMissionStatus(invalid)).toThrow(/ENTREGUE.*evidence/u);
   });
 
   it('rejects malformed stage identifiers and duplicate stage ids', () => {
     const malformed = structuredClone(valid);
-    malformed.stages[1].id = 'bad';
+    malformed.stages[1]!.id = 'bad';
     expect(() => parseMissionStatus(malformed)).toThrow(/stage id/u);
 
     const duplicate = structuredClone(valid);
-    duplicate.stages[1].id = 'G0';
+    duplicate.stages[1]!.id = 'G0';
     expect(() => parseMissionStatus(duplicate)).toThrow(/duplicate stage/u);
   });
 

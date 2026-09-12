@@ -8,5 +8,8 @@
     "start": "node dist/main.js",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3"
   }
 }

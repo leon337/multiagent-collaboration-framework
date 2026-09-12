@@ -86,9 +86,7 @@ describe('GeminiModelProvider', () => {
     expect(receipt.failureCode).toBeUndefined();
     expect(receipt.inputDigest).toMatch(/^[a-f0-9]{64}$/u);
     expect(receipt.outputDigest).toMatch(/^[a-f0-9]{64}$/u);
-    expect(receipt.toolIntents).toEqual([
-      { name: 'open_pr', arguments: { branch: 'demo' } },
-    ]);
+    expect(receipt.toolIntents).toEqual([{ name: 'open_pr', arguments: { branch: 'demo' } }]);
     expect(receipt.usage).toEqual({
       promptTokens: 3,
       outputTokens: 1,

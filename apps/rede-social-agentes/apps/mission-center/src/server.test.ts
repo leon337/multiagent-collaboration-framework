@@ -32,7 +32,11 @@ const result = {
 
 describe('createMissionCenterServer', () => {
   it('serves API and static dashboard over a real HTTP listener', async () => {
-    const server = createMissionCenterServer({ async getStatus() { return result; } });
+    const server = createMissionCenterServer({
+      async getStatus() {
+        return result;
+      },
+    });
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
 
     try {

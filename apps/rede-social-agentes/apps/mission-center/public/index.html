@@ -1,36 +1,66 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
-  <title>MCF Mission Center</title>
-  <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
-  <header class="topbar">
-    <div><span class="eyebrow">MCF</span><h1>Mission Center</h1></div>
-    <div id="freshness" class="freshness">Carregando…</div>
-  </header>
-  <main>
-    <section class="hero card">
-      <div><p id="mission-id" class="mono"></p><h2 id="mission-title">Carregando missão…</h2></div>
-      <div class="hero-status"><span id="mission-state" class="badge"></span><strong id="current-stage"></strong></div>
-      <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
-      <p id="progress-label" class="muted"></p>
-    </section>
-    <div id="stale-banner" class="banner hidden">Exibindo o último snapshot válido; a fonte está temporariamente indisponível.</div>
-    <section class="layout">
-      <div class="card wide"><div class="section-head"><h3>Etapas G0 → G10</h3><span id="deadline" class="muted"></span></div><div id="stages" class="stages"></div></div>
-      <aside class="stack">
-        <section class="card"><h3>Última ação real</h3><p id="last-action"></p><p id="last-action-meta" class="muted"></p><div id="last-evidence" class="evidence"></div></section>
-        <section class="card"><h3>Próximo passo</h3><p id="next-step"></p></section>
-        <section class="card"><h3>HUMAN_GATE</h3><div id="gates" class="gates"></div></section>
-      </aside>
-    </section>
-    <section class="card"><h3>Blockers</h3><ul id="blockers" class="blockers"></ul></section>
-  </main>
-  <footer><span>CLAIM ≤ EVIDENCE</span><span id="updated-at"></span></footer>
-  <script type="module" src="/app.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>MCF Mission Center</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <span class="eyebrow">MCF</span>
+        <h1>Mission Center</h1>
+      </div>
+      <div id="freshness" class="freshness">Carregando…</div>
+    </header>
+    <main>
+      <section class="hero card">
+        <div>
+          <p id="mission-id" class="mono"></p>
+          <h2 id="mission-title">Carregando missão…</h2>
+        </div>
+        <div class="hero-status">
+          <span id="mission-state" class="badge"></span><strong id="current-stage"></strong>
+        </div>
+        <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+        <p id="progress-label" class="muted"></p>
+      </section>
+      <div id="stale-banner" class="banner hidden">
+        Exibindo o último snapshot válido; a fonte está temporariamente indisponível.
+      </div>
+      <section class="layout">
+        <div class="card wide">
+          <div class="section-head">
+            <h3>Etapas G0 → G10</h3>
+            <span id="deadline" class="muted"></span>
+          </div>
+          <div id="stages" class="stages"></div>
+        </div>
+        <aside class="stack">
+          <section class="card">
+            <h3>Última ação real</h3>
+            <p id="last-action"></p>
+            <p id="last-action-meta" class="muted"></p>
+            <div id="last-evidence" class="evidence"></div>
+          </section>
+          <section class="card">
+            <h3>Próximo passo</h3>
+            <p id="next-step"></p>
+          </section>
+          <section class="card">
+            <h3>HUMAN_GATE</h3>
+            <div id="gates" class="gates"></div>
+          </section>
+        </aside>
+      </section>
+      <section class="card">
+        <h3>Blockers</h3>
+        <ul id="blockers" class="blockers"></ul>
+      </section>
+    </main>
+    <footer><span>CLAIM ≤ EVIDENCE</span><span id="updated-at"></span></footer>
+    <script type="module" src="/app.js"></script>
+  </body>
 </html>

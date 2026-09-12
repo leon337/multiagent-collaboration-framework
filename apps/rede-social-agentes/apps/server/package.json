@@ -13,6 +13,7 @@
     "start:bootstrap": "node dist/bootstrap-main.js"
   },
   "dependencies": {
+    "@google/genai": "2.22.0",
     "@modelcontextprotocol/sdk": "1.30.0",
     "@nestjs/common": "11.1.28",
     "@nestjs/core": "11.1.28",
@@ -21,11 +22,10 @@
     "@rsa/database": "workspace:*",
     "ajv": "8.20.0",
     "fastify": "5.10.0",
+    "jose": "6.2.10",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
     "yaml": "2.8.3",
-    "zod": "4.4.3",
-    "jose": "6.2.10"
-  },
-  "devDependencies": {}
+    "zod": "4.4.3"
+  }
 }
