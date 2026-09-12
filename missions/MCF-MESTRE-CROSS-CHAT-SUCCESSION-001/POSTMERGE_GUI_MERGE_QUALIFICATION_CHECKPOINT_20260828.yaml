@@ -1,0 +1,79 @@
+checkpoint_id: CP-GUI-POSTMERGE-MERGE-QUALIFIED-20260828-02
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+recorded_date: 2026-08-28
+status: MERGE_GATE_CLOSED_QUALIFIED
+
+human_authority:
+  authority: LEANDRO
+  decision: APPROVE_PR_180_MERGE
+  consumed: true
+  authorization_scope:
+    - merge_pr_180_into_main
+    - qualify_exact_resulting_main_sha
+  authorization_does_not_include:
+    - version_number
+    - new_tag
+    - new_release
+
+pre_merge_drift:
+  prior_main_sha: a98cc9140c8b001135a8ce9cc37abab69c7165a6
+  live_main_before_merge: fb237d1875d0f72fecc2f87a4641e06086195998
+  pr_head_sha: f2e5abf175e4203d09850ca1f539147bd60e5dcc
+  compatibility_check: PASS
+  path_overlap_with_intervening_main_changes: NONE_DETECTED
+
+merge:
+  pr: 180
+  state: MERGED
+  method: merge
+  expected_head_sha_enforced: f2e5abf175e4203d09850ca1f539147bd60e5dcc
+  resulting_main_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
+  human_gate_receipt_comment_id: 5454790762
+
+exact_main_qualification:
+  target_sha: a8e2372925a512eeaf856b16b4eb82546d9bc0d2
+  execution_trigger:
+    branch_ref: ops/mcf-gui-window-control-clean-candidate
+    ref_update: FAST_FORWARD_TO_EXACT_MAIN_SHA
+  checks:
+    gui_window_qualify: SUCCESS
+    postmerge_consistency_regression: PASS
+    validate: SUCCESS
+    production_candidate_readiness: SUCCESS
+  readiness_steps:
+    dependency_vulnerability_gate: SUCCESS
+    formatting: SUCCESS
+    lint: SUCCESS
+    typecheck: SUCCESS
+    migrations_twice: SUCCESS
+    test: SUCCESS
+    build: SUCCESS
+    backup_restore: SUCCESS
+    release_readiness_contract_tests: SUCCESS
+
+publication_boundary_audit:
+  automated_jobs_observed:
+    - publish-rc2
+    - publish-rc3
+  rc2_result: IMMUTABLE_NOOP_EXISTING_V1_0_0_RC2_NOT_RETARGETED
+  rc3_result: IMMUTABLE_NOOP_EXISTING_V1_0_0_RC3_NOT_RETARGETED
+  new_tag_created_by_this_gate: false
+  new_release_created_by_this_gate: false
+  latest_stable_release: v1.2.0
+
+historical_classification:
+  cross_chat_succession: PASS
+  original_gui_window_coverage: GAP_NOT_TESTED
+  consolidated: MAINTAIN_WITH_GAP
+  changed_by_this_merge: false
+
+governance:
+  merge_gate: CLOSED_PASS
+  exact_main_qualification: PASS
+  version_number: NOT_DECIDED_BY_THIS_GATE
+  tag_authorized: false
+  release_authorized: false
+  stable_release_changed: false
+
+next_state: RETURN_TO_LEANDRO
+next_action: Resume release deliberation only under a new explicit HUMAN_GATE before any version, tag, or release action.
