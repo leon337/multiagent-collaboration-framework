@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "missionId": "MCF-GAMA-FUND-2026-001",
+  "title": "Gama Fund Readiness & Application",
+  "state": "IN_PROGRESS",
+  "deadline": "2026-09-28",
+  "humanAuthority": "LEANDRO",
+  "orchestrator": "MESTRE",
+  "currentStage": {
+    "id": "G3",
+    "label": "Google/Gemini integration implementation and qualification",
+    "status": "IN_PROGRESS"
+  },
+  "stages": [
+    {
+      "id": "G0",
+      "label": "Product & Investment Readiness",
+      "status": "ENTREGUE",
+      "decision": "GO_WITH_CONDITIONS",
+      "evidence": [
+        { "type": "commit", "value": "72dd4d1a573b64aee95fd0d4ab484eadf7f57f60" },
+        { "type": "artifact", "value": "artifacts/phases/PHASE-GAMA-00-READINESS/" }
+      ]
+    },
+    {
+      "id": "G1",
+      "label": "Product thesis, ICP, problem and market evidence",
+      "status": "ENTREGUE",
+      "decision": "PASS_WITH_OPEN_MARKET_VALIDATION_GAP",
+      "evidence": [
+        { "type": "commit", "value": "3934f344b17b5a7fc24a8f827d199886e78836c6" },
+        { "type": "artifact", "value": "artifacts/phases/PHASE-GAMA-01-PRODUCT-MARKET/" }
+      ]
+    },
+    {
+      "id": "G2",
+      "label": "Google/Gemini technical fit design",
+      "status": "ENTREGUE",
+      "decision": "DESIGN_PASS_OPTION_B_RECOMMENDED",
+      "evidence": [
+        { "type": "commit", "value": "7fd8f3c5e67cc1e5cd2cf22a0711e6d2764935b7" },
+        { "type": "artifact", "value": "artifacts/phases/PHASE-GAMA-02-GOOGLE-GEMINI-DESIGN/" }
+      ]
+    },
+    {
+      "id": "G3",
+      "label": "Google/Gemini integration implementation and qualification",
+      "status": "IN_PROGRESS",
+      "decision": "AUTHORIZED_BY_LEANDRO",
+      "evidence": [
+        { "type": "issue_comment", "value": "issue-205-comment-5647670652" },
+        { "type": "commit", "value": "643b1cecde9c24305d81d217bb7e95fb152434d9" },
+        { "type": "commit", "value": "fc6535e06753b0dddefc9190178737554c8ea36b" },
+        { "type": "commit", "value": "3f40fc6ec45fc7a3740f616c2b6969214ebeac26" }
+      ]
+    },
+    { "id": "G4", "label": "Killer demo with attributable evidence", "status": "PENDING", "evidence": [] },
+    { "id": "G5", "label": "Market validation / pilot evidence", "status": "PENDING", "evidence": [] },
+    { "id": "G6", "label": "Investor surface", "status": "PENDING", "evidence": [] },
+    { "id": "G7", "label": "Application draft", "status": "PENDING", "evidence": [] },
+    { "id": "G8", "label": "Independent red-team review", "status": "PENDING", "evidence": [] },
+    { "id": "G9", "label": "LEANDRO final HUMAN_GATE", "status": "PENDING", "evidence": [] },
+    { "id": "G10", "label": "Submission and receipt preservation", "status": "PENDING", "evidence": [] }
+  ],
+  "lastAction": {
+    "at": "2026-09-12T18:34:10Z",
+    "executor": "MESTRE",
+    "summary": "Governed Gemini provider and Mission Center design/plan were committed to the mission branch.",
+    "evidence": [
+      { "type": "commit", "value": "3f40fc6ec45fc7a3740f616c2b6969214ebeac26" },
+      { "type": "commit", "value": "0c00bd29c33573ddffa212f2d1a5baddee00724e" }
+    ]
+  },
+  "blockers": [
+    "Full workspace Vitest/typecheck verification is pending an executable repository runner or recovered VPS shell.",
+    "Real Gemini free-tier qualification is pending a server-side GEMINI_API_KEY and exact live model selection.",
+    "Mission Center VPS deployment is pending shell access to the VPS."
+  ],
+  "nextStep": "Implement the Mission Center status source and UI, then complete workspace verification and the live Gemini qualification.",
+  "humanGates": {
+    "g3": "AUTHORIZED",
+    "externalSubmission": "NOT_AUTHORIZED",
+    "paidBilling": "NOT_AUTHORIZED"
+  },
+  "updatedAt": "2026-09-12T18:34:10Z"
+}
