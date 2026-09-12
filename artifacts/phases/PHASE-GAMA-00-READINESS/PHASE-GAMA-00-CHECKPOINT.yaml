@@ -1,0 +1,22 @@
+mission_id: MCF-GAMA-FUND-2026-001
+phase_id: PHASE-GAMA-00-READINESS
+state: ENTREGUE
+executor_real: MESTRE
+human_authority: LEANDRO
+baseline_main: 632921eef5ab6ff8e414a0024fb8f00983442844
+mission_branch: mission/gama-fund-2026-001
+tracker_issue: 205
+decision: GO_WITH_CONDITIONS
+submission_ready: false
+next_phase: G1_PRODUCT_THESIS_ICP_MARKET_EVIDENCE
+anti_simulation:
+  simulated_agent_role: FORBIDDEN
+  named_agent_credit_requires: ATTRIBUTABLE_REAL_EXECUTION_EVIDENCE
+  no_evidence: NOT_EXECUTED
+critical_gaps:
+  - GOOGLE_MODEL_INTEGRATION_NOT_YET_PROVEN
+  - MARKET_TRACTION_NOT_YET_PROVEN
+  - FOUNDER_AND_STAGE_ELIGIBILITY_NOT_YET_CONFIRMED
+  - INVESTOR_NARRATIVE_NEEDS_PRODUCTIZATION
+next_action: Define product thesis, ICP, problem statement and market evidence for G1 without exceeding available evidence.
+external_submission_authorized: false
