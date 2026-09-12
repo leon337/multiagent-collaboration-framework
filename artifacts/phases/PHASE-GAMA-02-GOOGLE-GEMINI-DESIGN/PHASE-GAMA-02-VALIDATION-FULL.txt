@@ -1,0 +1,51 @@
+PHASE-GAMA-02 VALIDATION FULL
+
+Repository evidence at baseline main@632921eef5ab6ff8e414a0024fb8f00983442844:
+
+1. adapter-registry.ts
+   - resolves ExternalActionAdapter by supports(request)
+   - fails if multiple adapters match
+   - keeps adapter IDs enumerable
+
+2. external-action.contracts.ts
+   - request includes skill, agentId, inputs, tool and optional mission/phase/version context
+   - adapter execute returns McfToolReceipt
+   - typed failures include AUTHENTICATION_REQUIRED, RATE_LIMITED, INVALID_RESPONSE, NETWORK_FAILURE, ADAPTER_TIMEOUT, LEDGER_FAILURE and EXTERNAL_EFFECT_UNKNOWN
+
+3. permission-engine.ts
+   - canonicalizes provider/operation/resource
+   - already carries provider-specific and operation-specific fail-closed boundaries
+
+4. @rsa/server package.json
+   - TypeScript/NestJS runtime
+   - @google/genai is not present at the inspected baseline, therefore no SDK installation is claimed in G2
+
+Official Google evidence verified 2026-09-12:
+- Gemini API getting-started docs: JavaScript SDK `@google/genai`; API key authentication; Interactions API in JavaScript.
+- API key docs: `GEMINI_API_KEY` supported as environment configuration.
+- Gemini Developer API pricing: free tier exists with limited model access and free input/output tokens; paid tier is distinct.
+- Rate-limit docs: limits vary by project/model/tier; 429 RESOURCE_EXHAUSTED is used for rate limiting.
+- Gemini docs demonstrate function/tool calling.
+
+Architectural evaluation:
+A) Reuse ExternalActionAdapter — rejected for semantic conflation of cognition and material effect.
+B) Dedicated ModelExecutionProvider/Registry — recommended because it isolates model inference while preserving the existing material-action dispatcher.
+C) Vertex AI first — deferred because it adds IAM/billing/setup complexity that is unnecessary for the deadline-constrained qualification MVP.
+
+Security/cost invariants:
+- key never enters repo, client, logs, ledger or receipt;
+- Gemini disabled by default;
+- exact model configurable and allowlisted;
+- no implicit paid route or billing activation;
+- tool-call intent cannot itself be considered execution evidence of a material action;
+- external mutation remains gated by the existing MCF permission/delegation/dispatcher path.
+
+Evidence discipline:
+- G2 is design only.
+- GOOGLE_MODEL_INTEGRATION remains NOT_YET_PROVEN.
+- No API call was performed.
+- No billing was enabled.
+- No specialist named agent executed independently in this phase.
+
+Result:
+The recommended G3 architecture is feasible against the current MCF runtime without weakening its external-effect boundary. Implementation remains blocked pending LEANDRO HUMAN_GATE.
