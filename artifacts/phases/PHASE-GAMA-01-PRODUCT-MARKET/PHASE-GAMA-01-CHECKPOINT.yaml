@@ -1,0 +1,22 @@
+mission_id: MCF-GAMA-FUND-2026-001
+phase_id: PHASE-GAMA-01-PRODUCT-MARKET
+state: ENTREGUE
+executor_real: MESTRE
+human_authority: LEANDRO
+decision: PASS_WITH_OPEN_MARKET_VALIDATION_GAP
+primary_icp: AI_NATIVE_AND_ENGINEERING_PLATFORM_TEAMS_USING_MULTI_AGENT_SOFTWARE_WORKFLOWS
+primary_buyer:
+  - CTO
+  - VP_OR_HEAD_OF_ENGINEERING
+  - HEAD_OF_AI_PLATFORM
+  - PLATFORM_ENGINEERING_LEAD
+initial_wedge: GOVERNED_AUTONOMOUS_SOFTWARE_DELIVERY
+positioning: GOVERNED_RUNTIME_AND_CONTROL_PLANE_FOR_MULTI_AGENT_AI
+market_validation_state: SECONDARY_EVIDENCE_PASS_PRIMARY_CUSTOMER_EVIDENCE_NOT_YET_PROVEN
+competitive_risk: HIGH
+anti_simulation:
+  simulated_agent_role: FORBIDDEN
+  specialist_agent_execution: NOT_EXECUTED
+  executor_credited: MESTRE
+next_phase: G2_GOOGLE_GEMINI_TECHNICAL_FIT_DESIGN
+external_submission_authorized: false
