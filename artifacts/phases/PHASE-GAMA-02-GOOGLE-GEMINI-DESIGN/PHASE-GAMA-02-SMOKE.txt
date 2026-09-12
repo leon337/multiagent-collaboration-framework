@@ -1,0 +1,15 @@
+PHASE-GAMA-02 SMOKE
+
+Scope: architecture/design only; no runtime mutation.
+
+PASS — design artifacts written only to mission branch.
+PASS — no write to main.
+PASS — no production change.
+PASS — no Gemini API call performed.
+PASS — no Gemini credential created/changed/stored.
+PASS — no Cloud Billing activation performed.
+PASS — no paid fallback introduced.
+PASS — no specialist-agent execution fabricated.
+PASS — G3 remains blocked by LEANDRO HUMAN_GATE.
+
+Runtime smoke: NAO_APLICAVEL — no software/runtime change in G2.
