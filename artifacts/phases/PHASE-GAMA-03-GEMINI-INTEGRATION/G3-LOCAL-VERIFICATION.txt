@@ -1,0 +1,40 @@
+=== G3 LOCAL VERIFICATION ===
+Timestamp: 2026-09-12T18:43:49Z
+Executor: MESTRE
+Environment: isolated local execution environment
+Node: v22.16.0
+TypeScript: 5.8.3
+
+Command shape:
+  tsc -p tsconfig.json
+  cp src/*.test.mjs dist/
+  node --test dist/model-execution.registry.test.mjs dist/gemini-model.provider.test.mjs dist/google-genai.client.test.mjs
+
+Result:
+  tests 12
+  suites 0
+  pass 12
+  fail 0
+  cancelled 0
+  skipped 0
+  todo 0
+
+Passed behaviors:
+1. fails closed without calling the client when provider is disabled
+2. fails closed before network when model is not allowlisted
+3. returns sanitized evidence and preserves function calls only as tool intents
+4. maps a blocked response to MODEL_BLOCKED
+5. maps SDK HTTP errors without leaking their message into the receipt
+6. maps timeout and network failures
+7. treats an empty provider response as INVALID_RESPONSE
+8. constructs the SDK with the server-side key and disables automatic function calling
+9. fails closed when the API key is empty
+10. returns null when no model provider matches
+11. returns the single matching model provider
+12. fails closed when multiple model providers match
+
+Harness note:
+An earlier evidence-capture attempt invoked the .mjs tests from src/ after TypeScript output had been written to dist/, so Node could not resolve sibling .js modules. That invocation failed with ERR_MODULE_NOT_FOUND. The harness was corrected by copying the test drivers into dist/ and rerunning from the compiled output. The clean execution above is the reproducible result. No product-code change was made to turn that harness failure green.
+
+Scope caveat:
+This is focused local verification of the new provider/registry/SDK wrapper. It is not a substitute for the repository's Node 24 + pnpm workspace verification or a live Gemini API call.
