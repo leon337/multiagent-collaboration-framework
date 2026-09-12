@@ -9,6 +9,17 @@ const booleanEnvironmentValue = z
   .default('false')
   .transform((value) => value === 'true');
 
+function parseCommaSeparatedValues(value: string): string[] {
+  return [
+    ...new Set(
+      value
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter((entry) => entry.length > 0),
+    ),
+  ];
+}
+
 function parseAllowedOrigins(value: string): string[] {
   const origins = value
     .split(',')
@@ -48,6 +59,11 @@ const runtimeConfigSchema = z
     ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:5173'),
     REGISTRATION_ALLOWLIST: z.string().default(''),
     RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID: z.string().uuid().optional(),
+    GEMINI_API_KEY: z.string().default(''),
+    MCF_GEMINI_ENABLED: booleanEnvironmentValue,
+    MCF_GEMINI_MODEL: z.string().default('').transform((value) => value.trim()),
+    MCF_GEMINI_MODEL_ALLOWLIST: z.string().default(''),
+    MCF_GEMINI_PAID_FALLBACK_ALLOWED: booleanEnvironmentValue,
     MCF_CODEBUDDY_EXECUTOR_ENABLED: booleanEnvironmentValue,
     MCF_CODEBUDDY_BINARY: z.string().min(1).default('codebuddy'),
     MCF_CODEBUDDY_WORKSPACE_ROOT: z.string().default(''),
@@ -55,6 +71,39 @@ const runtimeConfigSchema = z
     MCF_CODEBUDDY_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(600_000).default(300_000),
   })
   .superRefine((config, context) => {
+    const geminiModelAllowlist = parseCommaSeparatedValues(config.MCF_GEMINI_MODEL_ALLOWLIST);
+
+    if (config.MCF_GEMINI_PAID_FALLBACK_ALLOWED) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['MCF_GEMINI_PAID_FALLBACK_ALLOWED'],
+        message: 'Gemini paid fallback is not permitted by the current G3 policy.',
+      });
+    }
+
+    if (config.MCF_GEMINI_ENABLED) {
+      if (config.GEMINI_API_KEY.trim().length === 0) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['GEMINI_API_KEY'],
+          message: 'GEMINI_API_KEY is required when Gemini model execution is enabled.',
+        });
+      }
+      if (config.MCF_GEMINI_MODEL.length === 0) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_GEMINI_MODEL'],
+          message: 'MCF_GEMINI_MODEL is required when Gemini model execution is enabled.',
+        });
+      } else if (!geminiModelAllowlist.includes(config.MCF_GEMINI_MODEL)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_GEMINI_MODEL_ALLOWLIST'],
+          message: 'Configured Gemini model must be present in the explicit model allowlist.',
+        });
+      }
+    }
+
     if (config.MCF_CODEBUDDY_EXECUTOR_ENABLED) {
       const workspaceRoot = config.MCF_CODEBUDDY_WORKSPACE_ROOT.trim();
       if (config.NODE_ENV === 'production') {
@@ -175,10 +224,11 @@ type ParsedRuntimeConfig = z.infer<typeof runtimeConfigSchema>;
 
 export type RuntimeConfig = Omit<
   ParsedRuntimeConfig,
-  'ALLOWED_ORIGINS' | 'REGISTRATION_ALLOWLIST'
+  'ALLOWED_ORIGINS' | 'REGISTRATION_ALLOWLIST' | 'MCF_GEMINI_MODEL_ALLOWLIST'
 > & {
   ALLOWED_ORIGINS: string[];
   REGISTRATION_ALLOWLIST: string[];
+  MCF_GEMINI_MODEL_ALLOWLIST: string[];
 };
 
 export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): RuntimeConfig {
@@ -187,5 +237,6 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     ...parsed,
     ALLOWED_ORIGINS: parseAllowedOrigins(parsed.ALLOWED_ORIGINS),
     REGISTRATION_ALLOWLIST: parseRegistrationAllowlist(parsed.REGISTRATION_ALLOWLIST),
+    MCF_GEMINI_MODEL_ALLOWLIST: parseCommaSeparatedValues(parsed.MCF_GEMINI_MODEL_ALLOWLIST),
   };
 }
