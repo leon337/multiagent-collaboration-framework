@@ -1,0 +1,14 @@
+PHASE-GAMA-00 SMOKE
+
+Scope: documentation/research phase; no runtime mutation.
+
+Smoke checks:
+PASS — canonical mission tracker exists: GitHub Issue #205.
+PASS — dedicated mission branch exists: mission/gama-fund-2026-001.
+PASS — initial email notification channel to LEANDRO was tested successfully.
+PASS — branch starts from verified main baseline 632921eef5ab6ff8e414a0024fb8f00983442844.
+PASS — no write to main performed by this phase.
+PASS — no Gama Fund submission performed.
+PASS — no specialist-agent execution fabricated.
+
+Runtime smoke: NAO_APLICAVEL — no software/runtime change in G0.
