@@ -119,14 +119,17 @@ export class GeminiModelProvider implements ModelExecutionProvider {
   async execute(request: ModelExecutionRequest): Promise<ModelExecutionReceipt> {
     const startedAt = new Date().toISOString();
     const inputDigest = sha256(request.input);
+    const bindings = {
+      ...(request.missionId !== undefined ? { missionId: request.missionId } : {}),
+      ...(request.phaseId !== undefined ? { phaseId: request.phaseId } : {}),
+      ...(request.agentId !== undefined ? { agentId: request.agentId } : {}),
+    };
     const base = {
       provider: request.provider,
       model: request.model,
       operation: request.operation,
       executor: request.executor,
-      missionId: request.missionId,
-      phaseId: request.phaseId,
-      agentId: request.agentId,
+      ...bindings,
       startedAt,
       inputDigest,
       toolIntents: [] as ModelToolIntent[],
@@ -152,6 +155,7 @@ export class GeminiModelProvider implements ModelExecutionProvider {
       const toolIntents = toolIntentsFrom(response);
       const blockReason = response.promptFeedback?.blockReason;
       const outputEvidence = { text: response.text ?? null, toolIntents };
+      const usage = usageFrom(response);
 
       if (blockReason) {
         return {
@@ -162,7 +166,7 @@ export class GeminiModelProvider implements ModelExecutionProvider {
           toolIntents,
           validationVerdict: 'BLOCKED',
           failureCode: 'MODEL_BLOCKED',
-          usage: usageFrom(response),
+          ...(usage !== undefined ? { usage } : {}),
         };
       }
 
@@ -178,7 +182,7 @@ export class GeminiModelProvider implements ModelExecutionProvider {
           response.candidates?.[0]?.finishReason ?? (toolIntents.length ? 'TOOL_INTENT' : 'STOP'),
         toolIntents,
         validationVerdict: 'PASS',
-        usage: usageFrom(response),
+        ...(usage !== undefined ? { usage } : {}),
       };
     } catch (error) {
       return failed(mapFailure(error));
