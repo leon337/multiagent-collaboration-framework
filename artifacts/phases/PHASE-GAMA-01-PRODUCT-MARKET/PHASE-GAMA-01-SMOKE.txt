@@ -1,0 +1,13 @@
+PHASE-GAMA-01 SMOKE
+
+Scope: product/market research and documentation; no runtime mutation.
+
+PASS — G1 artifacts written only to mission branch.
+PASS — no write to main.
+PASS — no production change.
+PASS — no Gama Fund submission.
+PASS — market claims constrained to cited secondary evidence.
+PASS — no customer traction fabricated.
+PASS — no specialist-agent execution fabricated.
+
+Runtime smoke: NAO_APLICAVEL — no software/runtime change in G1.
