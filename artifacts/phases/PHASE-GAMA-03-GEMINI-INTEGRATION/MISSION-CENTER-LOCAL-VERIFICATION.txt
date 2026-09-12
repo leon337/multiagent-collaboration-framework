@@ -1,0 +1,39 @@
+=== MISSION CENTER LOCAL VERIFICATION ===
+Timestamp: 2026-09-12T18:43:49Z
+Executor: MESTRE
+Environment: isolated local execution environment
+Node: v22.16.0
+TypeScript: 5.8.3
+
+Command shape:
+  tsc -p tsconfig.json
+  cp src/*.test.mjs dist/
+  node --test dist/status.test.mjs dist/status-source.test.mjs dist/config.test.mjs dist/app.test.mjs dist/server.test.mjs
+
+Result:
+  tests 13
+  suites 0
+  pass 13
+  fail 0
+  cancelled 0
+  skipped 0
+  todo 0
+
+Passed behaviors include:
+- sanitized GET /api/status;
+- fail-closed API errors without internal details;
+- localhost-only defaults;
+- bounded status cache and safe upstream protocols;
+- real HTTP listener serving API and static dashboard;
+- fresh status validation;
+- TTL cache reuse;
+- stale last-known-good fallback;
+- invalid first snapshot rejection;
+- evidence requirement for delivered stages and last real action;
+- malformed/duplicate stage rejection.
+
+Harness note:
+An earlier evidence-capture attempt invoked .mjs tests from src/ after TypeScript output had been written to dist/, producing ERR_MODULE_NOT_FOUND. The test harness was corrected and the clean compiled-output execution above passed. No production-code change was made to conceal that harness error.
+
+Scope caveat:
+This verifies the Mission Center implementation locally, including a real loopback HTTP listener. VPS deployment/private exposure remains a separate operational step.
