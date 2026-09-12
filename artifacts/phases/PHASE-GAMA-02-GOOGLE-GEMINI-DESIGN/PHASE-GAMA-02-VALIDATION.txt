@@ -1,0 +1,23 @@
+PHASE-GAMA-02 VALIDATION SUMMARY
+
+Mission: MCF-GAMA-FUND-2026-001
+Executor: MESTRE
+Date: 2026-09-12
+
+PASS — current MCF external-action boundary inspected at exact baseline.
+PASS — official Gemini JavaScript SDK identified as @google/genai.
+PASS — official Gemini free tier and rate-limit behavior verified.
+PASS — three integration approaches compared.
+PASS — Option B selected: dedicated ModelExecutionProvider/Registry.
+PASS — model inference separated from material external effects.
+PASS — Gemini tool/function intent must re-enter existing MCF permission/delegation/dispatcher boundary before any mutation.
+PASS — GEMINI_API_KEY restricted to server-side secret configuration.
+PASS — paid fallback disabled by default in design.
+PASS — exact model ID deferred to G3 live free-tier verification instead of hard-coding a volatile assumption.
+PASS — qualification plan includes a real harmless Gemini call and receipt evidence.
+PASS — no Gemini call, credential mutation, billing activation or production mutation performed in G2.
+PASS — no specialist-agent execution fabricated.
+
+VERDICT: DESIGN_PASS_OPTION_B_RECOMMENDED
+IMPLEMENTATION_AUTHORIZED: NO
+NEXT: HUMAN_GATE_LEANDRO_FOR_G3
