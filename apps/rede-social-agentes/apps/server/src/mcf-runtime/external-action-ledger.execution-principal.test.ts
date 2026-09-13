@@ -89,6 +89,8 @@ describe('ExternalActionLedger execution principal attribution', () => {
       attributionMode: 'BOOTSTRAP_DELEGATED',
     });
     expect(externalExecutionPrincipalFromMetadata(durable, 'Bruno')).toBeNull();
-    expect(externalExecutionPrincipalFromMetadata({ ...durable, provider: 'gitlab' }, 'Gabriel')).toBeNull();
+    expect(
+      externalExecutionPrincipalFromMetadata({ ...durable, provider: 'gitlab' }, 'Gabriel'),
+    ).toBeNull();
   });
 });

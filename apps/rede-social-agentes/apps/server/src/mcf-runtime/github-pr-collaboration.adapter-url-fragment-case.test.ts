@@ -44,12 +44,12 @@ function request(operation: 'comment-pr' | 'review-pr-comment'): ExternalActionR
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
-  executionPrincipal: {
-    provider: 'github' as const,
-    principalId: 'MESTRE',
-    externalActor: 'mcfmestreagent-svg',
-    attributionMode: 'BOOTSTRAP_DELEGATED' as const,
-  },
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       repository: REPOSITORY,
       pull_request_number: PR_NUMBER,

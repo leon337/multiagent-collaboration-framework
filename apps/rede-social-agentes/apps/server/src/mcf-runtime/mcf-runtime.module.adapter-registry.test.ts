@@ -63,7 +63,6 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
   });
 });
 
-
 describe('McfRuntimeModule GitHub execution identity composition', () => {
   it('shares one GitHubExecutionIdentityRegistry provider across all write paths', () => {
     const providers = Reflect.getMetadata('providers', McfRuntimeModule) as unknown[];

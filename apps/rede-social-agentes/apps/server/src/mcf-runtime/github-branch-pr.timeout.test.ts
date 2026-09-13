@@ -37,12 +37,12 @@ function request() {
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
-  executionPrincipal: {
-    provider: 'github' as const,
-    principalId: 'MESTRE',
-    externalActor: 'mcfmestreagent-svg',
-    attributionMode: 'BOOTSTRAP_DELEGATED' as const,
-  },
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       repository: 'leon337/multiagent-collaboration-framework',
       base_branch: 'main',

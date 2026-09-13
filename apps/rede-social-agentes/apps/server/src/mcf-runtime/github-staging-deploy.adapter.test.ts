@@ -290,7 +290,9 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     expect(receipt.metadata.nativeRollbackClaimed).toBe(false);
     expect(JSON.stringify(receipt.metadata)).not.toContain('RENDER_DEPLOY_HOOK_URL');
     expect(provider.githubAuthorizations.length).toBeGreaterThan(0);
-    expect(provider.githubAuthorizations.every((value) => value === 'Bearer principal-token')).toBe(true);
+    expect(provider.githubAuthorizations.every((value) => value === 'Bearer principal-token')).toBe(
+      true,
+    );
     expect(receipt.metadata).toMatchObject({
       logicalAgentId: 'Gabriel',
       executionPrincipalId: 'MESTRE',

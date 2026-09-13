@@ -192,7 +192,9 @@ export class GitHubExecutionIdentityRegistry implements GitHubExecutionTokenReso
     const principalId = principal.principalId as PrincipalId;
     const configured = this.credentials(principalId);
     if (configured.login.toLowerCase() !== principal.externalActor.toLowerCase()) {
-      throw authenticationRequired('GitHub execution principal descriptor does not match its credential');
+      throw authenticationRequired(
+        'GitHub execution principal descriptor does not match its credential',
+      );
     }
     return configured.token;
   }

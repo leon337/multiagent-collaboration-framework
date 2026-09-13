@@ -580,7 +580,10 @@ export class ExternalActionLedger {
       agentId: row.agentId,
       skillId: row.skillId,
       resource: row.resource,
-      executionPrincipal: externalExecutionPrincipalFromMetadata(row.principalMetadata, row.agentId),
+      executionPrincipal: externalExecutionPrincipalFromMetadata(
+        row.principalMetadata,
+        row.agentId,
+      ),
       previousSha: typeof previousSha === 'string' ? previousSha : null,
       reconciliationEligible: metadata?.reconciliationEligible === true,
     };
