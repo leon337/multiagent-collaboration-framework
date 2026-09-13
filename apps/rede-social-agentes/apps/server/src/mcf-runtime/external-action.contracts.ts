@@ -23,12 +23,22 @@ export interface ExternalActionExecutionContext {
   expectedMissionVersion: number;
 }
 
+export type ExternalAttributionMode = 'DIRECT' | 'BOOTSTRAP_DELEGATED';
+
+export interface ExternalExecutionPrincipal {
+  provider: 'github';
+  principalId: string;
+  externalActor: string;
+  attributionMode: ExternalAttributionMode;
+}
+
 export interface ExternalActionRequest {
   skill: McfSkillDefinition;
   agentId: string;
   inputs: Record<string, unknown>;
   tool: McfToolRequest;
   context?: ExternalActionExecutionContext | undefined;
+  executionPrincipal?: ExternalExecutionPrincipal | undefined;
 }
 
 export interface ExternalActionFailure {
