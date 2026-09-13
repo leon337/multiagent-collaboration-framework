@@ -28,6 +28,14 @@ Classificações:
 - `HISTORICAL` — verdade preservada de um boundary anterior;
 - `SUPERSEDED` — substituído por decisão/evidência posterior.
 
+### Checkpoint operacional de continuidade — 2026-09-13
+
+Para retomar o trabalho recente de identidade GitHub por agente, DSH/VPS, approvals e PR #208, ler:
+
+- `docs/runbooks/MCF-CONTINUIDADE-OPERACIONAL-IDENTIDADE-DSH-PR208-2026-09-13.md`
+
+Classificação: `HISTORICAL_OPERATIONAL_CHECKPOINT`. O documento preserva timeline, erros, correções, ambiente e runbook de retomada; qualquer estado volátil de PR, SHA, CI, sessão DSH ou infraestrutura deve ser reconciliado com GitHub/provider live antes de nova execução.
+
 ## 2. Snapshot reconciliado em 2026-08-20
 
 ```yaml
