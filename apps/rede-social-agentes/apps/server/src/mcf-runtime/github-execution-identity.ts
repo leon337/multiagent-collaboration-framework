@@ -50,8 +50,35 @@ function authenticationRequired(message: string): ExternalActionAdapterError {
   return new ExternalActionAdapterError('AUTHENTICATION_REQUIRED', message, false, 403);
 }
 
+export interface GitHubExecutionTokenResolver {
+  tokenFor(principal: ExternalExecutionPrincipal): Promise<string>;
+}
+
+export function requireGitHubExecutionPrincipal(
+  request: ExternalActionRequest,
+): ExternalExecutionPrincipal {
+  const principal = request.executionPrincipal;
+  if (!principal || principal.provider !== 'github') {
+    throw authenticationRequired('GitHub write execution requires a verified execution principal');
+  }
+  return principal;
+}
+
+export function githubExecutionAttribution(
+  request: ExternalActionRequest,
+): Record<string, unknown> {
+  const principal = requireGitHubExecutionPrincipal(request);
+  return {
+    logicalAgentId: request.agentId,
+    executionPrincipalId: principal.principalId,
+    externalActor: principal.externalActor,
+    attributionMode: principal.attributionMode,
+    identityBindingVerified: true,
+  };
+}
+
 @Injectable()
-export class GitHubExecutionIdentityRegistry {
+export class GitHubExecutionIdentityRegistry implements GitHubExecutionTokenResolver {
   private readonly verified = new Map<PrincipalId, { login: string; token: string }>();
 
   constructor(
@@ -163,10 +190,10 @@ export class GitHubExecutionIdentityRegistry {
       throw authenticationRequired('Unsupported GitHub execution principal');
     }
     const principalId = principal.principalId as PrincipalId;
-    const verified = await this.verify(principalId);
-    if (verified.login.toLowerCase() !== principal.externalActor.toLowerCase()) {
+    const configured = this.credentials(principalId);
+    if (configured.login.toLowerCase() !== principal.externalActor.toLowerCase()) {
       throw authenticationRequired('GitHub execution principal descriptor does not match its credential');
     }
-    return verified.token;
+    return configured.token;
   }
 }

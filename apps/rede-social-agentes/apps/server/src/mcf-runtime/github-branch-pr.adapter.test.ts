@@ -39,6 +39,12 @@ function request(overrides: Partial<ExternalActionRequest['inputs']> = {}): Exte
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       repository: 'leon337/multiagent-collaboration-framework',
       base_branch: 'main',
@@ -86,15 +92,18 @@ function pull(body = `<!-- mcf-idempotency:${KEY} -->`, state = 'open') {
 describe('GitHubBranchPullRequestAdapter', () => {
   beforeEach(() => {
     process.env.MCF_RECEIPT_SECRET = 'test-secret-that-is-long-enough-for-mcf-runtime';
+    process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+    process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
   });
 
   it('creates branch and pull request once and verifies both by read-back', async () => {
-    const calls: Array<{ method: string; url: string }> = [];
+    const calls: Array<{ method: string; url: string; authorization: string | null }> = [];
     let branchExists = false;
     let prExists = false;
     const fetcher = vi.fn(async (input: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET';
-      calls.push({ method, url: input });
+      const headers = new Headers(init?.headers);
+      calls.push({ method, url: input, authorization: headers.get('authorization') });
       if (input.includes('/git/ref/heads/main')) return jsonResponse(baseRef());
       if (input.includes(`/commits/${HEAD_SHA}`)) {
         return jsonResponse({
@@ -128,6 +137,14 @@ describe('GitHubBranchPullRequestAdapter', () => {
     expect(receipt.metadata.idempotencyKey).toBe(KEY);
     expect(receipt.metadata.readBackVerified).toBe(true);
     expect(calls.filter((call) => call.method === 'POST')).toHaveLength(2);
+    expect(calls.every((call) => call.authorization === 'Bearer principal-token')).toBe(true);
+    expect(receipt.metadata).toMatchObject({
+      logicalAgentId: 'Gabriel',
+      executionPrincipalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED',
+      identityBindingVerified: true,
+    });
   });
 
   it('reconciles an existing compatible branch and PR without any write', async () => {

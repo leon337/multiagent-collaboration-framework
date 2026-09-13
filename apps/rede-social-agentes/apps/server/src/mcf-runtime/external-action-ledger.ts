@@ -8,6 +8,7 @@ import {
   ExternalActionAdapterError,
   type ExternalActionFailure,
   type ExternalActionRequest,
+  type ExternalExecutionPrincipal,
 } from './external-action.contracts.js';
 import {
   EXTERNAL_ACTION_LEASE_MS,
@@ -45,6 +46,7 @@ export interface StagingDeployReconciliationAttempt {
   agentId: string;
   skillId: string;
   resource: string;
+  executionPrincipal: ExternalExecutionPrincipal | null;
   previousSha: string | null;
   reconciliationEligible: boolean;
 }
@@ -57,6 +59,7 @@ interface StagingDeployReconciliationRow {
   skillId: string;
   resource: string;
   initialMetadata: unknown;
+  principalMetadata: unknown;
 }
 
 interface AttemptStateRow extends AttemptRow {
@@ -222,6 +225,34 @@ export function externalActionPrincipalMetadata(
     executionPrincipalId: principal.principalId,
     externalActor: principal.externalActor,
     attributionMode: principal.attributionMode,
+  };
+}
+
+export function externalExecutionPrincipalFromMetadata(
+  metadata: unknown,
+  expectedAgentId: string,
+): ExternalExecutionPrincipal | null {
+  if (typeof metadata !== 'object' || metadata === null || Array.isArray(metadata)) return null;
+  const record = metadata as Record<string, unknown>;
+  const principalId = record.executionPrincipalId;
+  const externalActor = record.externalActor;
+  const attributionMode = record.attributionMode;
+  if (
+    record.logicalAgentId !== expectedAgentId ||
+    record.provider !== 'github' ||
+    typeof principalId !== 'string' ||
+    principalId.trim().length === 0 ||
+    typeof externalActor !== 'string' ||
+    externalActor.trim().length === 0 ||
+    !['DIRECT', 'BOOTSTRAP_DELEGATED'].includes(String(attributionMode))
+  ) {
+    return null;
+  }
+  return {
+    provider: 'github',
+    principalId,
+    externalActor,
+    attributionMode: attributionMode as ExternalExecutionPrincipal['attributionMode'],
   };
 }
 
@@ -504,7 +535,18 @@ export class ExternalActionLedger {
              order by e."sequence" asc
              limit 1
            )
-         ) as "initialMetadata"
+         ) as "initialMetadata",
+         (
+           select e."payload"
+           from "mcf_events" e
+           where e."mission_id" = a."mission_id"
+             and e."phase_id" = a."phase_id"
+             and e."event_type" = 'EXTERNAL_ACTION_ALLOWED'
+             and e."payload"->>'attemptId' = a."attempt_id"
+             and e."payload"->>'provider' = 'github'
+           order by e."sequence" asc
+           limit 1
+         ) as "principalMetadata"
        from "mcf_external_action_attempts" a
        where a."mission_id" = $1
          and a."phase_id" = $2
@@ -538,6 +580,7 @@ export class ExternalActionLedger {
       agentId: row.agentId,
       skillId: row.skillId,
       resource: row.resource,
+      executionPrincipal: externalExecutionPrincipalFromMetadata(row.principalMetadata, row.agentId),
       previousSha: typeof previousSha === 'string' ? previousSha : null,
       reconciliationEligible: metadata?.reconciliationEligible === true,
     };

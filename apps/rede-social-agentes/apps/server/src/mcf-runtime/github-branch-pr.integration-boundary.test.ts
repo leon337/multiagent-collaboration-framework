@@ -4,6 +4,9 @@ import { AdapterRegistry } from './adapter-registry.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 
+process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
+
 const request = {
   skill: {
     skillId: 'MCF-GIT-PR-RELEASE',
@@ -23,6 +26,12 @@ const request = {
     handoffTo: 'Mestre',
   },
   agentId: 'Gabriel',
+  executionPrincipal: {
+    provider: 'github' as const,
+    principalId: 'MESTRE',
+    externalActor: 'mcfmestreagent-svg',
+    attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+  },
   inputs: {},
   tool: {
     provider: 'github',

@@ -10,6 +10,9 @@ import {
   GitHubPullCollaborationClient,
 } from './github-pr-collaboration.adapter.js';
 
+process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
+
 const HEAD_SHA = '2'.repeat(40);
 const MOVED_SHA = '3'.repeat(40);
 const KEY = 'mcf-c2-p1-regression-0001';
@@ -66,6 +69,12 @@ function request(
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+  executionPrincipal: {
+    provider: 'github' as const,
+    principalId: 'MESTRE',
+    externalActor: 'mcfmestreagent-svg',
+    attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+  },
     inputs: {
       repository: REPOSITORY,
       pull_request_number: PR_NUMBER,

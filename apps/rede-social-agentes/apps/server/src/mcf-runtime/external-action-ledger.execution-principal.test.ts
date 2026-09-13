@@ -4,6 +4,7 @@ import type { ExternalActionRequest } from './external-action.contracts.js';
 import {
   externalActionIdempotencyFingerprint,
   externalActionPrincipalMetadata,
+  externalExecutionPrincipalFromMetadata,
 } from './external-action-ledger.js';
 
 function request(principalId: 'MESTRE' | 'LEO'): ExternalActionRequest {
@@ -70,5 +71,24 @@ describe('ExternalActionLedger execution principal attribution', () => {
       attributionMode: 'BOOTSTRAP_DELEGATED',
     });
     expect(JSON.stringify(metadata)).not.toMatch(/token|secret|credential/iu);
+  });
+
+  it('reconstructs only a principal bound to the same logical agent and GitHub provider', () => {
+    const durable = {
+      provider: 'github',
+      logicalAgentId: 'Gabriel',
+      executionPrincipalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED',
+    };
+
+    expect(externalExecutionPrincipalFromMetadata(durable, 'Gabriel')).toEqual({
+      provider: 'github',
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED',
+    });
+    expect(externalExecutionPrincipalFromMetadata(durable, 'Bruno')).toBeNull();
+    expect(externalExecutionPrincipalFromMetadata({ ...durable, provider: 'gitlab' }, 'Gabriel')).toBeNull();
   });
 });
