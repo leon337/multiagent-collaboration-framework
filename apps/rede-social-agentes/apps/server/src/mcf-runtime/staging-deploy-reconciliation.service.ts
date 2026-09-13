@@ -456,11 +456,17 @@ export class StagingDeployReconciliationService {
         'durable staging UNKNOWN attempt is not yet eligible for automatic reconciliation',
       );
     }
+    if (!attempt.executionPrincipal) {
+      throw new McfEvidenceRejectedError(
+        'durable staging UNKNOWN attempt is missing verified execution principal attribution',
+      );
+    }
 
     const skill = await this.registry.load(phase.skillId);
     const externalRequest: ExternalActionRequest = {
       skill,
       agentId: phase.agentId,
+      executionPrincipal: attempt.executionPrincipal,
       inputs: phase.inputs,
       tool: { provider: 'github', operation: 'deploy-staging', resource: repository },
       context: {

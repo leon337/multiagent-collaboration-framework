@@ -6,6 +6,9 @@ import {
   GitHubBranchPullRequestAdapter,
 } from './github-branch-pr.adapter.js';
 
+process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
+
 const BASE_SHA = '1'.repeat(40);
 const HEAD_SHA = '2'.repeat(40);
 const KEY = 'mcf-c1-timeout-reconcile-0001';
@@ -34,6 +37,12 @@ function request() {
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       repository: 'leon337/multiagent-collaboration-framework',
       base_branch: 'main',

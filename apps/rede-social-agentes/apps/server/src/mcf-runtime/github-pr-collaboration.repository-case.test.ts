@@ -7,6 +7,9 @@ import {
   GitHubPullCollaborationClient,
 } from './github-pr-collaboration.adapter.js';
 
+process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
+
 const HEAD_SHA = 'a'.repeat(40);
 
 function request(): ExternalActionRequest {
@@ -29,6 +32,12 @@ function request(): ExternalActionRequest {
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       authorizedScope: true,
       repository: 'microsoft/typescript',

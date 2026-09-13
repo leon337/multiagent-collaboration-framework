@@ -22,6 +22,7 @@ import { ExternalActionLedger } from './external-action-ledger.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
+import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js';
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
@@ -80,6 +81,10 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     SkillRegistryLoader,
     PermissionEngine,
     EvidenceValidator,
+    {
+      provide: GitHubExecutionIdentityRegistry,
+      useFactory: () => new GitHubExecutionIdentityRegistry(),
+    },
     McfRuntimeTokenGuard,
     McfMissionControlTokenGuard,
     MissionControlRepository,
@@ -117,18 +122,21 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     },
     {
       provide: GitHubBranchPullRequestAdapter,
-      useFactory: (evidence: EvidenceValidator) => new GitHubBranchPullRequestAdapter(evidence),
-      inject: [EvidenceValidator],
+      useFactory: (evidence: EvidenceValidator, identities: GitHubExecutionIdentityRegistry) =>
+        new GitHubBranchPullRequestAdapter(evidence, undefined, identities),
+      inject: [EvidenceValidator, GitHubExecutionIdentityRegistry],
     },
     {
       provide: GitHubPullCollaborationAdapter,
-      useFactory: (evidence: EvidenceValidator) => new GitHubPullCollaborationAdapter(evidence),
-      inject: [EvidenceValidator],
+      useFactory: (evidence: EvidenceValidator, identities: GitHubExecutionIdentityRegistry) =>
+        new GitHubPullCollaborationAdapter(evidence, undefined, identities),
+      inject: [EvidenceValidator, GitHubExecutionIdentityRegistry],
     },
     {
       provide: GitHubActionsStagingDeployAdapter,
-      useFactory: (evidence: EvidenceValidator) => new GitHubActionsStagingDeployAdapter(evidence),
-      inject: [EvidenceValidator],
+      useFactory: (evidence: EvidenceValidator, identities: GitHubExecutionIdentityRegistry) =>
+        new GitHubActionsStagingDeployAdapter(evidence, undefined, {}, identities),
+      inject: [EvidenceValidator, GitHubExecutionIdentityRegistry],
     },
     {
       provide: CodeBuddyExecutorAdapter,
@@ -172,9 +180,12 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     },
     {
       provide: ExternalActionDispatcher,
-      useFactory: (registry: AdapterRegistry, ledger: ExternalActionLedger) =>
-        new ExternalActionDispatcher(registry, ledger),
-      inject: [AdapterRegistry, ExternalActionLedger],
+      useFactory: (
+        registry: AdapterRegistry,
+        ledger: ExternalActionLedger,
+        identities: GitHubExecutionIdentityRegistry,
+      ) => new ExternalActionDispatcher(registry, ledger, identities),
+      inject: [AdapterRegistry, ExternalActionLedger, GitHubExecutionIdentityRegistry],
     },
     {
       provide: PostgresMcfRuntimeRepository,

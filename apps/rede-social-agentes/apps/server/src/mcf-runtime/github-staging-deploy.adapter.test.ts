@@ -42,6 +42,12 @@ function request(overrides: Record<string, unknown> = {}): ExternalActionRequest
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       repository: REPOSITORY,
       artifact_or_commit: RELEASE_SHA,
@@ -149,6 +155,7 @@ function fakeProvider(
   let hang = options.hang ?? false;
   let dispatches = 0;
   const requests: string[] = [];
+  const githubAuthorizations: Array<string | null> = [];
 
   const fetcher = vi.fn(async (input: string, init?: RequestInit) => {
     const method = init?.method ?? 'GET';
@@ -165,6 +172,7 @@ function fakeProvider(
     if (url.hostname !== 'api.github.com') {
       throw new Error(`unexpected host ${url.hostname}`);
     }
+    githubAuthorizations.push(new Headers(init?.headers).get('authorization'));
     if (url.pathname.endsWith('/git/ref/heads/main')) {
       return jsonResponse({ ref: 'refs/heads/main', object: { sha: MAIN_SHA } });
     }
@@ -235,6 +243,7 @@ function fakeProvider(
       return dispatches;
     },
     requests,
+    githubAuthorizations,
     finish() {
       hang = false;
       currentSha = outcome === 'RECOVERED' ? PREVIOUS_SHA : RELEASE_SHA;
@@ -246,7 +255,7 @@ function fakeProvider(
 function adapter(provider: ReturnType<typeof fakeProvider>, timeoutMs = 200) {
   return new GitHubActionsStagingDeployAdapter(
     new EvidenceValidator(),
-    new GitHubStagingDeployClient(provider.fetcher, 'test-token'),
+    new GitHubStagingDeployClient(provider.fetcher),
     {
       stagingRuntimeUrl: 'https://staging.example',
       timeoutMs,
@@ -262,6 +271,8 @@ function adapter(provider: ReturnType<typeof fakeProvider>, timeoutMs = 200) {
 describe('GitHubActionsStagingDeployAdapter', () => {
   beforeEach(() => {
     process.env.MCF_RECEIPT_SECRET = 'test-secret-that-is-long-enough-for-mcf-runtime';
+    process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+    process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
   });
 
   it('dispatches one correlated workflow and verifies the exact healthy release', async () => {
@@ -278,6 +289,17 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     expect(receipt.metadata.stagingReady).toBe(true);
     expect(receipt.metadata.nativeRollbackClaimed).toBe(false);
     expect(JSON.stringify(receipt.metadata)).not.toContain('RENDER_DEPLOY_HOOK_URL');
+    expect(provider.githubAuthorizations.length).toBeGreaterThan(0);
+    expect(provider.githubAuthorizations.every((value) => value === 'Bearer principal-token')).toBe(
+      true,
+    );
+    expect(receipt.metadata).toMatchObject({
+      logicalAgentId: 'Gabriel',
+      executionPrincipalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED',
+      identityBindingVerified: true,
+    });
   });
 
   it('persists reconciliation metadata before workflow dispatch', async () => {
@@ -285,7 +307,7 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     const persisted: Record<string, unknown>[] = [];
     const gateD = new GitHubActionsStagingDeployAdapter(
       new EvidenceValidator(),
-      new GitHubStagingDeployClient(provider.fetcher, 'test-token'),
+      new GitHubStagingDeployClient(provider.fetcher),
       {
         stagingRuntimeUrl: 'https://staging.example',
         timeoutMs: 200,
@@ -318,7 +340,7 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     const provider = fakeProvider();
     const gateD = new GitHubActionsStagingDeployAdapter(
       new EvidenceValidator(),
-      new GitHubStagingDeployClient(provider.fetcher, 'test-token'),
+      new GitHubStagingDeployClient(provider.fetcher),
       {
         stagingRuntimeUrl: 'https://staging.example',
         timeoutMs: 200,
@@ -573,7 +595,7 @@ describe('GitHubActionsStagingDeployAdapter', () => {
     });
     const gateD = new GitHubActionsStagingDeployAdapter(
       new EvidenceValidator(),
-      new GitHubStagingDeployClient(fetcher, 'test-token'),
+      new GitHubStagingDeployClient(fetcher),
       {
         stagingRuntimeUrl: 'https://staging.example',
         timeoutMs: 200,
