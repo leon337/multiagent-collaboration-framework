@@ -6,6 +6,7 @@ import {
   GitHubActionsStagingDeployAdapter,
   GitHubStagingDeployClient,
 } from './github-staging-deploy.adapter.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
 
 const REPOSITORY = 'leon337/multiagent-collaboration-framework';
 const PREVIOUS_SHA = 'a'.repeat(40);
@@ -265,6 +266,7 @@ function adapter(provider: ReturnType<typeof fakeProvider>, timeoutMs = 200) {
         persistReconciliationMetadata: async () => {},
       },
     },
+    createTestGitHubExecutionIdentityRegistry(),
   );
 }
 
@@ -314,6 +316,7 @@ describe('GitHubActionsStagingDeployAdapter', () => {
         pollIntervalMs: 2,
         sleepImpl: async () => new Promise((resolve) => setTimeout(resolve, 1)),
       },
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await gateD.execute(request(), {
@@ -347,6 +350,7 @@ describe('GitHubActionsStagingDeployAdapter', () => {
         pollIntervalMs: 2,
         sleepImpl: async () => new Promise((resolve) => setTimeout(resolve, 1)),
       },
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(
@@ -602,6 +606,7 @@ describe('GitHubActionsStagingDeployAdapter', () => {
         pollIntervalMs: 1,
         sleepImpl: async () => {},
       },
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(gateD.execute(request())).rejects.toMatchObject({

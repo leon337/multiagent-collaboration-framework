@@ -6,6 +6,7 @@ import {
   GitHubBranchPullRequestAdapter,
 } from './github-branch-pr.adapter.js';
 import type { ExternalActionRequest } from './external-action.contracts.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
 
 const BASE_SHA = '1'.repeat(40);
 const HEAD_SHA = '2'.repeat(40);
@@ -128,6 +129,7 @@ describe('GitHubBranchPullRequestAdapter', () => {
     const adapter = new GitHubBranchPullRequestAdapter(
       new EvidenceValidator(),
       new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(request());
@@ -162,6 +164,7 @@ describe('GitHubBranchPullRequestAdapter', () => {
     const adapter = new GitHubBranchPullRequestAdapter(
       new EvidenceValidator(),
       new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(request());
@@ -182,6 +185,7 @@ describe('GitHubBranchPullRequestAdapter', () => {
     const adapter = new GitHubBranchPullRequestAdapter(
       new EvidenceValidator(),
       new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(adapter.execute(request())).rejects.toThrow(/does not match the expected SHA/u);
@@ -200,6 +204,7 @@ describe('GitHubBranchPullRequestAdapter', () => {
     const adapter = new GitHubBranchPullRequestAdapter(
       new EvidenceValidator(),
       new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(adapter.execute(request())).rejects.toThrow(/incompatible pull request/u);
@@ -217,6 +222,7 @@ describe('GitHubBranchPullRequestAdapter', () => {
     const adapter = new GitHubBranchPullRequestAdapter(
       new EvidenceValidator(),
       new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(adapter.execute(request())).rejects.toThrow(/incompatible pull request/u);
@@ -227,6 +233,7 @@ describe('GitHubBranchPullRequestAdapter', () => {
     const adapter = new GitHubBranchPullRequestAdapter(
       new EvidenceValidator(),
       new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(adapter.execute(request({ branch_ref: 'main' }))).rejects.toThrow(

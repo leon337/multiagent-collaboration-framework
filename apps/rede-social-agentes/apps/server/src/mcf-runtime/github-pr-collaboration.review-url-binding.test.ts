@@ -6,6 +6,7 @@ import {
   GitHubPullCollaborationAdapter,
   GitHubPullCollaborationClient,
 } from './github-pr-collaboration.adapter.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
 
 process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
 process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
@@ -109,6 +110,7 @@ describe('GitHub PR review URL binding', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(adapter.execute(request())).rejects.toThrow(

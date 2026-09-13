@@ -6,6 +6,7 @@ import {
   GitHubPullCollaborationAdapter,
   GitHubPullCollaborationClient,
 } from './github-pr-collaboration.adapter.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
 
 process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
 process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
@@ -133,6 +134,7 @@ describe('C2 ambiguous-write reconciliation request budget', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
     const receipt = await adapter.execute(request('comment-pr'));
 
@@ -175,6 +177,7 @@ describe('C2 ambiguous-write reconciliation request budget', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
     const receipt = await adapter.execute(request('review-pr-comment'));
 

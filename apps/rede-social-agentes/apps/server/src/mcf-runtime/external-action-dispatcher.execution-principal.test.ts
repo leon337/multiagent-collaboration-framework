@@ -136,6 +136,36 @@ describe('ExternalActionDispatcher GitHub execution principal binding', () => {
     expect(adapter.execute).not.toHaveBeenCalled();
   });
 
+  it('fails before reservation when a GitHub write has no identity registry', async () => {
+    const adapter: ExternalActionAdapter = {
+      adapterId: 'github-branch-pr-write-v1',
+      supports: () => true,
+      execute: vi.fn(async () => receipt()),
+    };
+    const registry = { resolve: vi.fn(() => adapter) } as unknown as AdapterRegistry;
+    const ledger = {
+      reserve: vi.fn(async () => 'attempt-1'),
+      recordExecuting: vi.fn(async () => undefined),
+      recordExecuted: vi.fn(async () => undefined),
+      recordUnknown: vi.fn(async () => undefined),
+      recordFailed: vi.fn(async () => undefined),
+      recordEvidenceValidated: vi.fn(async () => undefined),
+      recordEvidenceRejected: vi.fn(async () => undefined),
+    } as unknown as ExternalActionLedger;
+    const dispatcher = new ExternalActionDispatcher(registry, ledger);
+
+    const result = await dispatcher.dispatch(request());
+
+    expect(result).toMatchObject({
+      status: 'FAILED',
+      adapterId: adapter.adapterId,
+      attemptId: null,
+      failure: { code: 'AUTHENTICATION_REQUIRED' },
+    });
+    expect(ledger.reserve).not.toHaveBeenCalled();
+    expect(adapter.execute).not.toHaveBeenCalled();
+  });
+
   it('does not bind GitHub read-only operations', async () => {
     const identities = {
       bindWritePrincipal: vi.fn(),

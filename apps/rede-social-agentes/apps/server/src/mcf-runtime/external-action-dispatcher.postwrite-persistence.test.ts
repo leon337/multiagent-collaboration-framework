@@ -1,6 +1,8 @@
 import type { McfToolReceipt } from '@rsa/contracts';
 import { describe, expect, it, vi } from 'vitest';
 
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
+
 import type { AdapterRegistry } from './adapter-registry.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import type { ExternalActionLedger } from './external-action-ledger.js';
@@ -90,7 +92,15 @@ function harness(
     recordEvidenceValidated: vi.fn(async () => undefined),
     recordEvidenceRejected: vi.fn(async () => undefined),
   } as unknown as ExternalActionLedger;
-  return { adapter, ledger, dispatcher: new ExternalActionDispatcher(registry, ledger) };
+  return {
+    adapter,
+    ledger,
+    dispatcher: new ExternalActionDispatcher(
+      registry,
+      ledger,
+      createTestGitHubExecutionIdentityRegistry(),
+    ),
+  };
 }
 
 describe('ExternalActionDispatcher post-write persistence semantics', () => {

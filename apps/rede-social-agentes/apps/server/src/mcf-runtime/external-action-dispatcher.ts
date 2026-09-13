@@ -97,7 +97,22 @@ export class ExternalActionDispatcher {
     }
 
     let executionRequest = request;
-    if (this.githubIdentities && isGitHubWriteRequest(request)) {
+    if (isGitHubWriteRequest(request)) {
+      if (!this.githubIdentities) {
+        return {
+          status: 'FAILED',
+          adapterId: adapter.adapterId,
+          attemptId: null,
+          failure: failureFromError(
+            new ExternalActionAdapterError(
+              'AUTHENTICATION_REQUIRED',
+              'GitHub write execution requires a configured execution identity registry',
+              false,
+              403,
+            ),
+          ),
+        };
+      }
       try {
         executionRequest = await this.githubIdentities.bindWritePrincipal(request);
       } catch (error) {

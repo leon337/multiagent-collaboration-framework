@@ -196,6 +196,12 @@ export class GitHubExecutionIdentityRegistry implements GitHubExecutionTokenReso
         'GitHub execution principal descriptor does not match its credential',
       );
     }
-    return configured.token;
+    const verified = await this.verify(principalId);
+    if (verified.login.toLowerCase() !== principal.externalActor.toLowerCase()) {
+      throw authenticationRequired(
+        'GitHub execution principal descriptor does not match its verified external actor',
+      );
+    }
+    return verified.token;
   }
 }

@@ -5,6 +5,7 @@ import {
   GitHubBranchPrClient,
   GitHubBranchPullRequestAdapter,
 } from './github-branch-pr.adapter.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
 
 process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
 process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
@@ -112,6 +113,7 @@ describe('GitHub branch/PR timeout reconciliation', () => {
     const adapter = new GitHubBranchPullRequestAdapter(
       new EvidenceValidator(),
       new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(request());
@@ -142,6 +144,7 @@ describe('GitHub branch/PR timeout reconciliation', () => {
     const adapter = new GitHubBranchPullRequestAdapter(
       new EvidenceValidator(),
       new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(request());
@@ -175,6 +178,7 @@ describe('GitHub branch/PR timeout reconciliation', () => {
     const adapter = new GitHubBranchPullRequestAdapter(
       new EvidenceValidator(),
       new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(request());
@@ -202,7 +206,11 @@ describe('GitHub branch/PR timeout reconciliation', () => {
       }
       throw new Error(`unexpected ${method} ${url}`);
     });
-    const adapter = new GitHubBranchPullRequestAdapter(evidence, new GitHubBranchPrClient(fetcher));
+    const adapter = new GitHubBranchPullRequestAdapter(
+      evidence,
+      new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
+    );
 
     const input = request();
     const receipt = await adapter.execute(input);
@@ -236,7 +244,11 @@ describe('GitHub branch/PR timeout reconciliation', () => {
       }
       throw new Error(`unexpected ${method} ${url}`);
     });
-    const adapter = new GitHubBranchPullRequestAdapter(evidence, new GitHubBranchPrClient(fetcher));
+    const adapter = new GitHubBranchPullRequestAdapter(
+      evidence,
+      new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
+    );
 
     const input = request();
     const receipt = await adapter.execute(input);
@@ -269,7 +281,11 @@ describe('GitHub branch/PR timeout reconciliation', () => {
       }
       throw new Error(`unexpected ${method} ${url}`);
     });
-    const adapter = new GitHubBranchPullRequestAdapter(evidence, new GitHubBranchPrClient(fetcher));
+    const adapter = new GitHubBranchPullRequestAdapter(
+      evidence,
+      new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
+    );
 
     const input = request();
     const receipt = await adapter.execute(input);
@@ -302,7 +318,11 @@ describe('GitHub branch/PR timeout reconciliation', () => {
       }
       throw new Error(`unexpected ${method} ${url}`);
     });
-    const adapter = new GitHubBranchPullRequestAdapter(evidence, new GitHubBranchPrClient(fetcher));
+    const adapter = new GitHubBranchPullRequestAdapter(
+      evidence,
+      new GitHubBranchPrClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
+    );
 
     const input = request();
     const receipt = await adapter.execute(input);

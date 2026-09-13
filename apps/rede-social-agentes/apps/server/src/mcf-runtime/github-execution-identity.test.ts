@@ -128,6 +128,42 @@ describe('GitHubExecutionIdentityRegistry', () => {
     );
   });
 
+  it('re-verifies a recovered principal before returning its token', async () => {
+    const fetcher = vi.fn(async () => githubUser('unexpected-actor'));
+    const registry = new GitHubExecutionIdentityRegistry(
+      {
+        MCF_GITHUB_MESTRE_LOGIN: 'mcfmestreagent-svg',
+        MCF_GITHUB_MESTRE_TOKEN: 'mestre-token',
+      },
+      fetcher,
+    );
+
+    await expect(
+      registry.tokenFor({
+        provider: 'github',
+        principalId: 'MESTRE',
+        externalActor: 'mcfmestreagent-svg',
+        attributionMode: 'BOOTSTRAP_DELEGATED',
+      }),
+    ).rejects.toMatchObject({ code: 'AUTHENTICATION_REQUIRED' });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-verifies after execution-principal credential rotation', async () => {
+    const env: NodeJS.ProcessEnv = {
+      MCF_GITHUB_MESTRE_LOGIN: 'mcfmestreagent-svg',
+      MCF_GITHUB_MESTRE_TOKEN: 'token-v1',
+    };
+    const fetcher = vi.fn(async () => githubUser('mcfmestreagent-svg'));
+    const registry = new GitHubExecutionIdentityRegistry(env, fetcher);
+    const bound = await registry.bindWritePrincipal(request('Mestre'));
+
+    env.MCF_GITHUB_MESTRE_TOKEN = 'token-v2';
+
+    await expect(registry.tokenFor(bound.executionPrincipal!)).resolves.toBe('token-v2');
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
   it('rejects a credential whose GitHub actor does not match the configured login', async () => {
     const registry = new GitHubExecutionIdentityRegistry(
       {
