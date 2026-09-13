@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';
 import {
   ExternalActionAdapterError,
   type ExternalActionRequest,
@@ -29,6 +30,21 @@ const directPrincipals = new Map<string, PrincipalId>([
   ['Mestre', 'MESTRE'],
   ['Leo', 'LEO'],
 ]);
+
+const githubWriteOperations = new Set([
+  'create-branch-pr',
+  'comment-pr',
+  'review-pr-comment',
+  'update-pr-text-metadata',
+  'deploy-staging',
+]);
+
+export function isGitHubWriteRequest(request: ExternalActionRequest): boolean {
+  return (
+    canonicalizeProvider(request.tool.provider) === 'github' &&
+    githubWriteOperations.has(canonicalizeToolValue(request.tool.operation))
+  );
+}
 
 function authenticationRequired(message: string): ExternalActionAdapterError {
   return new ExternalActionAdapterError('AUTHENTICATION_REQUIRED', message, false, 403);

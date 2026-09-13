@@ -146,7 +146,7 @@ function canonicalizeC2FingerprintInputs(inputs: Record<string, unknown>): Recor
   return canonical;
 }
 
-function requestIdempotencyFingerprint(
+export function externalActionIdempotencyFingerprint(
   request: ExternalActionRequest,
   adapterId: string,
   idempotencyKey: string | null,
@@ -163,6 +163,7 @@ function requestIdempotencyFingerprint(
     operation: canonicalC2 ? canonicalizeToolValue(request.tool.operation) : request.tool.operation,
     resource: canonicalC2 ? request.tool.resource.trim().toLowerCase() : request.tool.resource,
     inputs: canonicalC2 ? canonicalizeC2FingerprintInputs(request.inputs) : request.inputs,
+    executionPrincipal: request.executionPrincipal,
   });
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
@@ -211,6 +212,19 @@ function requestGlobalIdempotencyScopeKey(
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
 
+export function externalActionPrincipalMetadata(
+  request: ExternalActionRequest,
+): Record<string, unknown> {
+  const principal = request.executionPrincipal;
+  if (!principal) return {};
+  return {
+    logicalAgentId: request.agentId,
+    executionPrincipalId: principal.principalId,
+    externalActor: principal.externalActor,
+    attributionMode: principal.attributionMode,
+  };
+}
+
 @Injectable()
 export class ExternalActionLedger {
   constructor(private readonly database: DatabaseService) {}
@@ -225,7 +239,7 @@ export class ExternalActionLedger {
     }
 
     const idempotencyKey = requestIdempotencyKey(request);
-    const idempotencyFingerprint = requestIdempotencyFingerprint(
+    const idempotencyFingerprint = externalActionIdempotencyFingerprint(
       request,
       adapterId,
       idempotencyKey,
@@ -383,6 +397,7 @@ export class ExternalActionLedger {
               idempotencyFingerprint,
               idempotencyScopeKey,
               expectedMissionVersion: request.context.expectedMissionVersion,
+              ...externalActionPrincipalMetadata(request),
             },
             idempotencyKey: `external-action:${attemptId}:requested`,
           },
@@ -398,6 +413,7 @@ export class ExternalActionLedger {
               idempotencyKey,
               idempotencyFingerprint,
               idempotencyScopeKey,
+              ...externalActionPrincipalMetadata(request),
             },
             idempotencyKey: `external-action:${attemptId}:allowed`,
           },

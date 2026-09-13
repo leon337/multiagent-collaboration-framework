@@ -10,6 +10,10 @@ import {
   type ExternalActionRequest,
 } from './external-action.contracts.js';
 import type { ExternalActionLedger } from './external-action-ledger.js';
+import {
+  isGitHubWriteRequest,
+  type GitHubExecutionIdentityRegistry,
+} from './github-execution-identity.js';
 
 const durableExecutionBoundaryAdapters = new Set([
   'github-pr-collaboration-write-v1',
@@ -56,6 +60,7 @@ export class ExternalActionDispatcher {
   constructor(
     private readonly registry: AdapterRegistry,
     private readonly ledger: ExternalActionLedger,
+    private readonly githubIdentities?: GitHubExecutionIdentityRegistry,
   ) {}
 
   private async recordUnknownDurably(
@@ -91,9 +96,23 @@ export class ExternalActionDispatcher {
       return { status: 'NOT_HANDLED', adapterId: null, attemptId: null };
     }
 
+    let executionRequest = request;
+    if (this.githubIdentities && isGitHubWriteRequest(request)) {
+      try {
+        executionRequest = await this.githubIdentities.bindWritePrincipal(request);
+      } catch (error) {
+        return {
+          status: 'FAILED',
+          adapterId: adapter.adapterId,
+          attemptId: null,
+          failure: failureFromError(error),
+        };
+      }
+    }
+
     let attemptId: string;
     try {
-      attemptId = await this.ledger.reserve(request, adapter.adapterId);
+      attemptId = await this.ledger.reserve(executionRequest, adapter.adapterId);
     } catch (error) {
       return {
         status: 'FAILED',
@@ -133,7 +152,7 @@ export class ExternalActionDispatcher {
 
     let receipt: McfToolReceipt;
     try {
-      receipt = await adapter.execute(request, mutationBoundary);
+      receipt = await adapter.execute(executionRequest, mutationBoundary);
     } catch (error) {
       const failure = failureFromError(error);
       try {
