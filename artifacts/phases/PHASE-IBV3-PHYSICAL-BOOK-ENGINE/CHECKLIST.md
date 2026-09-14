@@ -2,8 +2,16 @@
 
 Mission: `MCF-20260914-INTERACTIVE-BOOK-V3`
 
-Estado geral: **IMPLEMENTADO / AGUARDANDO VALIDACAO INLINE**  
-Goal: **entregar o prototipo pronto e validavel dentro do ChatGPT antes de qualquer publicacao externa**.
+Estado geral: **EM EXECUCAO / VALIDACAO INCREMENTAL**  
+Goal: **entregar o prototipo pronto e validado dentro do ChatGPT, aplicando e validando uma melhoria por vez antes de qualquer publicacao externa**.
+
+## Regra de execucao incremental
+
+Uma melhoria por vez:
+
+`IMPLEMENTAR -> RENDERIZAR INLINE -> LEANDRO VALIDAR -> MARCAR [x] -> PROXIMA MELHORIA`
+
+Nenhuma melhoria perceptual de UX pode ser marcada como concluida apenas porque existe codigo. Se LEANDRO reprovar a experiencia, o item permanece aberto e a mesma etapa deve ser iterada.
 
 ## G0 — Registro e baseline
 
@@ -13,51 +21,56 @@ Goal: **entregar o prototipo pronto e validavel dentro do ChatGPT antes de qualq
 - [x] Registrar contrato da missao
 - [x] Registrar checklist vivo
 - [x] Registrar plano de implementacao
-- [x] Registrar baseline funcional da V2
+- [x] Registrar baseline funcional anterior
+- [x] Corrigir processo: abandonar aplicacao simultanea de todas as melhorias
 
 ## G1 — Physical Page Engine
 
-- [x] Substituir virada de placa rigida por curvatura visual segmentada
-- [x] Fazer a folha acompanhar mouse/toque em tempo real
-- [x] Criar zonas de pega em bordas e cantos
-- [x] Implementar corner lift antes do arraste
-- [x] Implementar limiar de retorno/completude da virada
-- [x] Aplicar sombras dinamicas durante a dobra
-- [x] Representar pilha de paginas lidas e restantes
-- [x] Implementar capa frontal fisica
-- [x] Implementar contracapa fisica
+### G1.1 — Dobra / curvatura da folha — **EM VALIDACAO**
+
+- [x] Isolar a G1.1 sem aplicar novas melhorias em paralelo
+- [x] Criar contrato tecnico da geometria da dobra
+- [x] Executar teste RED antes da implementacao
+- [x] Implementar geometria de curvatura continua
+- [x] Executar teste GREEN da geometria
+- [x] Fazer a folha acompanhar o arraste em tempo real
+- [x] Manter limiar de retorno/completude ja existente
+- [ ] **HUMAN VALIDATION G1.1 — LEANDRO aprova visualmente a dobra/curvatura**
+
+### G1.2 — Zona fisica de pega / corner behavior
+
+- [ ] Iniciar somente depois da aprovacao da G1.1
+
+### G1.3 — Sombras fisicas da dobra
+
+- [ ] Iniciar somente depois da aprovacao da G1.2
+
+### G1.4 — Pilha/espessura fisica de paginas
+
+- [ ] Iniciar somente depois da aprovacao da G1.3
+
+### G1.5 — Capa e contracapa fisicas
+
+- [ ] Iniciar somente depois da aprovacao da G1.4
 
 ## G2 — Audio, leitura e navegacao
 
-- [x] Gerar som de papel via Web Audio API
-- [x] Fazer som reagir a velocidade/progresso do gesto
-- [x] Adicionar mute e volume
-- [x] Preservar selecao/copia de texto fora das zonas de pega
-- [x] Adicionar navegacao por botoes e teclado
-- [x] Adicionar navegacao por capitulos com transicao coerente
-- [x] Adicionar marcador de pagina
-- [x] Adicionar progresso de leitura
-- [x] Adicionar retomada local da ultima pagina
-- [x] Adicionar controle de tamanho de fonte
-- [x] Respeitar `prefers-reduced-motion`
-- [x] Adicionar pagina de fontes e versao do conteudo
+- [ ] Refinar audio de papel dependente da fisica
+- [ ] Adicionar niveis/volume de audio
+- [ ] Preservar selecao/copia de texto sem conflito com gesto
+- [ ] Refinar navegacao por capitulos
+- [ ] Adicionar marcador/progresso/retomada
+- [ ] Adicionar tamanho de fonte e contraste
+- [ ] Completar `prefers-reduced-motion`
+- [ ] Adicionar pagina de fontes e versao do conteudo
 
-## G3 — Responsividade e validacao
+## G3 — Responsividade e validacao final
 
-- [ ] Garantir desktop sem corte critico de conteudo — **aguarda renderer inline**
-- [ ] Garantir mobile sem corte critico de conteudo — **aguarda renderer inline**
-- [ ] Smoke: proxima/anterior
-- [ ] Smoke: arraste esquerda/direita
-- [ ] Smoke: retorno abaixo do limiar
-- [ ] Smoke: completar acima do limiar
-- [ ] Smoke: audio on/off/volume
-- [ ] Smoke: selecao de texto
-- [ ] Smoke: teclado
-- [ ] Smoke: capitulos
-- [ ] Smoke: persistencia local
-- [x] Registrar validacao tecnica estatica
-- [ ] Renderizar prototipo inline no ChatGPT
-- [ ] **HUMAN VALIDATION — LEANDRO valida experiencia dentro do ChatGPT**
+- [ ] Desktop sem corte critico de conteudo
+- [ ] Mobile sem corte critico de conteudo
+- [ ] Smoke completo de mouse/touch/botoes/teclado/audio/capitulos
+- [ ] Registrar validacao tecnica final
+- [ ] **HUMAN VALIDATION FINAL — LEANDRO valida a experiencia completa dentro do ChatGPT**
 
 ## G4 — Publicacao externa
 
@@ -70,12 +83,12 @@ Goal: **entregar o prototipo pronto e validavel dentro do ChatGPT antes de qualq
 ## Evidencias atuais
 
 - Branch: `mission/interactive-book-v3-physical-engine-20260914`
-- Fonte: `experimentos/interactive-book-v3/index.html`
+- PR draft: `#212`
 - Contrato: `MCF-20260914-INTERACTIVE-BOOK-V3-MISSION.yaml`
 - Plano: `docs/superpowers/plans/2026-09-14-interactive-book-v3-physical-engine.md`
-- Validacao estatica: `PHASE-IBV3-VALIDATION.txt`
-- Checkpoint: `PHASE-IBV3-CHECKPOINT.yaml`
+- G1.1 geometry test: RED confirmado por modulo ausente; GREEN confirmado com `curl3d contract: PASS`
+- G1.1 estado: **IMPLEMENTADA / AGUARDANDO VALIDACAO VISUAL INLINE DO LEANDRO**
 
-## Regra de atualizacao
+## Proxima acao unica
 
-Cada item so pode ser marcado `[x]` quando houver evidencia objetiva da etapa executada. Itens perceptuais de UX que dependem da experiencia final permanecem abertos ate validacao do LEANDRO.
+Renderizar a G1.1 dentro do ChatGPT e aguardar o veredito de LEANDRO. Nao iniciar G1.2 antes disso.
