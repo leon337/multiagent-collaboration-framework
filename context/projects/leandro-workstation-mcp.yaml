@@ -1,0 +1,25 @@
+schema_version: 1
+project:
+  id: leandro-workstation-mcp
+  lifecycle: CANDIDATE
+identity:
+  canonical_repository: leon337/leandro-workstation-mcp
+  aliases:
+  - Leandro Workstation MCP
+  - Workstation MCP
+  - PC MCP
+  - MCP do Notebook
+ownership:
+  project_owner: LEANDRO
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+  - README.md
+  - PROJECT-STATE.yaml
+  - CONTINUITY.md
+  - CHECKLIST.md
+  - AGENT-HANDOFF.md
+  - docs/MCF-ADOPTION.md
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
