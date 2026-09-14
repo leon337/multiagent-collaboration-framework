@@ -1,0 +1,30 @@
+mission_id: MCF-20260914-INTERACTIVE-BOOK-V3
+phase_id: PHASE-IBV3-PHYSICAL-BOOK-ENGINE
+state: IMPLEMENTED_AWAITING_INLINE_HUMAN_VALIDATION
+branch: mission/interactive-book-v3-physical-engine-20260914
+base_main: 6c3d0f22cb35471b5d823fd83f7950ea67ad66aa
+prototype_source: experimentos/interactive-book-v3/index.html
+checklist: artifacts/phases/PHASE-IBV3-PHYSICAL-BOOK-ENGINE/CHECKLIST.md
+validation: artifacts/phases/PHASE-IBV3-PHYSICAL-BOOK-ENGINE/PHASE-IBV3-VALIDATION.txt
+completed:
+  - mission_registered
+  - live_checklist_registered
+  - implementation_plan_registered
+  - segmented_page_curl_implemented
+  - edge_drag_implemented
+  - reactive_web_audio_implemented
+  - reader_controls_implemented
+  - persistence_and_accessibility_controls_implemented
+  - static_parse_validation_completed
+pending:
+  - render_inline_in_chatgpt
+  - human_visual_and_interaction_validation
+  - responsive_smoke_in_actual_inline_renderer
+  - human_gate_for_external_publication
+prohibitions:
+  - no_vercel_deploy_before_human_gate
+  - no_main_merge_before_human_gate
+next_action: render_prototype_inline_and_collect_leandro_validation
+human_authority: LEANDRO
+coordinator: MESTRE
+updated_at: 2026-09-14T16:24:00-03:00
