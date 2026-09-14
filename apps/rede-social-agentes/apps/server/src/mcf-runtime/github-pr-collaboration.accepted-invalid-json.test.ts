@@ -6,6 +6,10 @@ import {
   GitHubPullCollaborationAdapter,
   GitHubPullCollaborationClient,
 } from './github-pr-collaboration.adapter.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
+
+process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
 
 const HEAD_SHA = '2'.repeat(40);
 const KEY = 'mcf-c2-invalid-json-0001';
@@ -58,6 +62,12 @@ function request(operation: string, overrides: Record<string, unknown>): Externa
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       authorizedScope: true,
       repository: REPOSITORY,
@@ -108,6 +118,7 @@ describe('C2 accepted mutation with invalid JSON response', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(request('comment-pr', { comment_body: 'checkpoint' }));
@@ -147,6 +158,7 @@ describe('C2 accepted mutation with invalid JSON response', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(
@@ -175,6 +187,7 @@ describe('C2 accepted mutation with invalid JSON response', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(

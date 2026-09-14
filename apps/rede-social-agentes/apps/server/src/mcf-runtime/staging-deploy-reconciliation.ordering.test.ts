@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { ExternalActionLedger } from './external-action-ledger.js';
+import type {
+  ExternalActionLedger,
+  StagingDeployReconciliationAttempt,
+} from './external-action-ledger.js';
 import type { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import type { McfEventRecord, McfRuntimeRepository } from './mcf-runtime.repository.js';
 import type { SkillExecutor } from './skill-executor.js';
@@ -123,17 +126,25 @@ function createScenario() {
   } as unknown as SkillRegistryLoader;
   const recordEvidenceValidated = vi.fn(async () => {});
   const recordEvidenceRejected = vi.fn(async () => {});
+  const attempt: StagingDeployReconciliationAttempt = {
+    attemptId,
+    status: 'UNKNOWN' as const,
+    expectedMissionVersion: 7,
+    agentId: 'Gabriel',
+    skillId: 'MCF-DEPLOY-VALIDATE',
+    resource: repositoryName,
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
+    previousSha,
+    reconciliationEligible: true,
+  };
+  const loadStagingDeployReconciliationAttempt = vi.fn(async () => attempt);
   const ledger = {
-    loadStagingDeployReconciliationAttempt: vi.fn(async () => ({
-      attemptId,
-      status: 'UNKNOWN' as const,
-      expectedMissionVersion: 7,
-      agentId: 'Gabriel',
-      skillId: 'MCF-DEPLOY-VALIDATE',
-      resource: repositoryName,
-      previousSha,
-      reconciliationEligible: true,
-    })),
+    loadStagingDeployReconciliationAttempt,
     recordEvidenceValidated,
     recordEvidenceRejected,
   } as unknown as ExternalActionLedger;
@@ -156,6 +167,8 @@ function createScenario() {
     reconcile,
     recordEvidenceValidated,
     recordEvidenceRejected,
+    attempt,
+    loadStagingDeployReconciliationAttempt,
   };
 }
 
@@ -173,6 +186,20 @@ describe('staging reconciliation completion ordering', () => {
     );
     expect(scenario.recordEvidenceValidated).not.toHaveBeenCalled();
     expect(scenario.recordEvidenceRejected).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when the durable UNKNOWN attempt has no verified execution principal', async () => {
+    const scenario = createScenario();
+    scenario.loadStagingDeployReconciliationAttempt.mockResolvedValueOnce({
+      ...scenario.attempt,
+      executionPrincipal: null,
+    });
+
+    await expect(scenario.service.accept(callbackRequest())).rejects.toThrow(
+      'durable staging UNKNOWN attempt is missing verified execution principal attribution',
+    );
+    expect(scenario.reconcile).not.toHaveBeenCalled();
+    expect(scenario.completePendingPhase).not.toHaveBeenCalled();
   });
 
   it('reuses the persisted receipt when retrying ledger settlement', async () => {
@@ -215,6 +242,18 @@ describe('staging reconciliation completion ordering', () => {
     });
 
     expect(scenario.reconcile).toHaveBeenCalledTimes(1);
+    expect(scenario.reconcile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        agentId: 'Gabriel',
+        executionPrincipal: {
+          provider: 'github',
+          principalId: 'MESTRE',
+          externalActor: 'mcfmestreagent-svg',
+          attributionMode: 'BOOTSTRAP_DELEGATED',
+        },
+      }),
+      expect.any(Object),
+    );
     expect(scenario.completePendingPhase).toHaveBeenCalledTimes(1);
     expect(scenario.listEvents).toHaveBeenCalledTimes(2);
     expect(scenario.recordEvidenceValidated).toHaveBeenCalledTimes(2);

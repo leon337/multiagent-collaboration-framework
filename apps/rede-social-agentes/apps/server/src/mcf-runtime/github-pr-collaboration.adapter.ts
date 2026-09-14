@@ -9,6 +9,12 @@ import {
   type ExternalActionRequest,
 } from './external-action.contracts.js';
 import { EXTERNAL_ACTION_LEASE_MS } from './external-action-reservation.js';
+import {
+  GitHubExecutionIdentityRegistry,
+  githubExecutionAttribution,
+  requireGitHubExecutionPrincipal,
+  type GitHubExecutionTokenResolver,
+} from './github-execution-identity.js';
 import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
@@ -365,17 +371,14 @@ function isAmbiguousMutationError(error: unknown): error is ExternalActionAdapte
 }
 
 export class GitHubPullCollaborationClient {
-  constructor(
-    private readonly fetcher: FetchLike = globalThis.fetch,
-    private readonly token: string | undefined = process.env.MCF_GITHUB_TOKEN ??
-      process.env.GITHUB_TOKEN,
-  ) {}
+  constructor(private readonly fetcher: FetchLike = globalThis.fetch) {}
 
   async requestJson<T>(
     method: HttpMethod,
     path: string,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
     body?: Record<string, unknown>,
   ): Promise<T> {
     if (
@@ -421,7 +424,7 @@ export class GitHubPullCollaborationClient {
             'Content-Type': 'application/json',
             'X-GitHub-Api-Version': '2022-11-28',
             'User-Agent': 'mcf-runtime-pr-collaboration-adapter',
-            ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+            Authorization: `Bearer ${token}`,
           },
           ...(body ? { body: JSON.stringify(body) } : {}),
         });
@@ -515,6 +518,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
   constructor(
     private readonly evidence: EvidenceValidator,
     private readonly client: GitHubPullCollaborationClient = new GitHubPullCollaborationClient(),
+    private readonly identities: GitHubExecutionTokenResolver = new GitHubExecutionIdentityRegistry(),
   ) {}
 
   supports(request: ExternalActionRequest): boolean {
@@ -530,12 +534,14 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
     target: PullCollaborationTarget,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<GitHubPullResponse> {
     const pull = await this.client.requestJson<GitHubPullResponse>(
       'GET',
       `/repos/${target.repository}/pulls/${target.pullNumber}`,
       deadlineAt,
       budget,
+      token,
     );
     assertPull(pull, target);
     return pull;
@@ -573,6 +579,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         skillId: request.skill.skillId,
         skillVersion: request.skill.version,
         agentId: request.agentId,
+        ...githubExecutionAttribution(request),
         missionId: context.missionId,
         phaseId: context.phaseId,
         expectedMissionVersion: context.expectedMissionVersion,
@@ -585,6 +592,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
     expectedBody: string,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<GitHubIssueCommentResponse | null> {
     const marker = idempotencyMarker(target.idempotencyKey);
     const matches: GitHubIssueCommentResponse[] = [];
@@ -595,6 +603,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         `/repos/${target.repository}/issues/${target.pullNumber}/comments?per_page=${PAGE_SIZE}&page=${page}`,
         deadlineAt,
         budget,
+        token,
       );
       if (!Array.isArray(comments)) {
         throw new ExternalActionAdapterError(
@@ -633,6 +642,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
     expectedBody: string,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<GitHubReviewResponse | null> {
     const marker = idempotencyMarker(target.idempotencyKey);
     const matches: GitHubReviewResponse[] = [];
@@ -643,6 +653,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         `/repos/${target.repository}/pulls/${target.pullNumber}/reviews?per_page=${PAGE_SIZE}&page=${page}`,
         deadlineAt,
         budget,
+        token,
       );
       if (!Array.isArray(reviews)) {
         throw new ExternalActionAdapterError(
@@ -717,6 +728,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         skillId: request.skill.skillId,
         skillVersion: request.skill.version,
         agentId: request.agentId,
+        ...githubExecutionAttribution(request),
         missionId: context.missionId,
         phaseId: context.phaseId,
         expectedMissionVersion: context.expectedMissionVersion,
@@ -763,6 +775,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
         skillId: request.skill.skillId,
         skillVersion: request.skill.version,
         agentId: request.agentId,
+        ...githubExecutionAttribution(request),
         missionId: context.missionId,
         phaseId: context.phaseId,
         expectedMissionVersion: context.expectedMissionVersion,
@@ -775,9 +788,10 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
     target: PullCollaborationTarget,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<McfToolReceipt> {
     const expectedBody = `${idempotencyMarker(target.idempotencyKey)}\n\n${target.text!}`;
-    let comment = await this.findComment(target, expectedBody, deadlineAt, budget);
+    let comment = await this.findComment(target, expectedBody, deadlineAt, budget, token);
     if (!comment) {
       try {
         await this.client.requestJson<GitHubIssueCommentResponse>(
@@ -785,12 +799,13 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
           `/repos/${target.repository}/issues/${target.pullNumber}/comments`,
           deadlineAt,
           budget,
+          token,
           { body: expectedBody },
         );
       } catch (error) {
         if (!shouldReconcileMutationError(error)) throw error;
         try {
-          comment = await this.findComment(target, expectedBody, deadlineAt, budget);
+          comment = await this.findComment(target, expectedBody, deadlineAt, budget, token);
         } catch (reconciliationError) {
           if (isAmbiguousMutationError(error)) {
             return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
@@ -807,7 +822,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
 
       if (!comment) {
         try {
-          comment = await this.findComment(target, expectedBody, deadlineAt, budget);
+          comment = await this.findComment(target, expectedBody, deadlineAt, budget, token);
         } catch {
           return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
         }
@@ -817,7 +832,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
 
     assertComment(comment, target, expectedBody);
     try {
-      await this.readPull(target, deadlineAt, budget);
+      await this.readPull(target, deadlineAt, budget, token);
     } catch {
       return this.unknownReceipt(request, target, 'COMMENT_PR', budget);
     }
@@ -836,9 +851,10 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
     target: PullCollaborationTarget,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<McfToolReceipt> {
     const expectedBody = `${idempotencyMarker(target.idempotencyKey)}\n\n${target.text!}`;
-    let review = await this.findReview(target, expectedBody, deadlineAt, budget);
+    let review = await this.findReview(target, expectedBody, deadlineAt, budget, token);
     if (!review) {
       try {
         await this.client.requestJson<GitHubReviewResponse>(
@@ -846,12 +862,13 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
           `/repos/${target.repository}/pulls/${target.pullNumber}/reviews`,
           deadlineAt,
           budget,
+          token,
           { body: expectedBody, event: 'COMMENT', commit_id: target.expectedHeadSha },
         );
       } catch (error) {
         if (!shouldReconcileMutationError(error)) throw error;
         try {
-          review = await this.findReview(target, expectedBody, deadlineAt, budget);
+          review = await this.findReview(target, expectedBody, deadlineAt, budget, token);
         } catch (reconciliationError) {
           if (isAmbiguousMutationError(error)) {
             return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
@@ -868,7 +885,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
 
       if (!review) {
         try {
-          review = await this.findReview(target, expectedBody, deadlineAt, budget);
+          review = await this.findReview(target, expectedBody, deadlineAt, budget, token);
         } catch {
           return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
         }
@@ -878,7 +895,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
 
     assertReview(review, target, expectedBody);
     try {
-      await this.readPull(target, deadlineAt, budget);
+      await this.readPull(target, deadlineAt, budget, token);
     } catch {
       return this.unknownReceipt(request, target, 'REVIEW_PR_COMMENT', budget);
     }
@@ -904,8 +921,9 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
     target: PullCollaborationTarget,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<McfToolReceipt> {
-    let pull = await this.readPull(target, deadlineAt, budget);
+    let pull = await this.readPull(target, deadlineAt, budget, token);
     if (!this.metadataMatches(pull, target)) {
       const patch: Record<string, unknown> = {};
       if (target.title !== null) patch.title = target.title;
@@ -916,12 +934,13 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
           `/repos/${target.repository}/pulls/${target.pullNumber}`,
           deadlineAt,
           budget,
+          token,
           patch,
         );
       } catch (error) {
         if (!shouldReconcileMutationError(error)) throw error;
         try {
-          pull = await this.readPull(target, deadlineAt, budget);
+          pull = await this.readPull(target, deadlineAt, budget, token);
         } catch (reconciliationError) {
           if (isAmbiguousMutationError(error)) {
             return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);
@@ -937,7 +956,7 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
       }
 
       try {
-        pull = await this.readPull(target, deadlineAt, budget);
+        pull = await this.readPull(target, deadlineAt, budget, token);
       } catch {
         return this.unknownReceipt(request, target, 'UPDATE_PR_TEXT_METADATA', budget);
       }
@@ -950,18 +969,20 @@ export class GitHubPullCollaborationAdapter implements ExternalActionAdapter {
   }
 
   async execute(request: ExternalActionRequest): Promise<McfToolReceipt> {
+    const principal = requireGitHubExecutionPrincipal(request);
+    const token = await this.identities.tokenFor(principal);
     const deadlineAt = Date.now() + GITHUB_PR_COLLABORATION_TIMEOUT_MS;
     const budget: RequestBudget = { requests: 0 };
     const target = resolveTarget(request);
 
-    await this.readPull(target, deadlineAt, budget);
+    await this.readPull(target, deadlineAt, budget, token);
 
     if (target.operation === 'comment-pr') {
-      return this.executeComment(request, target, deadlineAt, budget);
+      return this.executeComment(request, target, deadlineAt, budget, token);
     }
     if (target.operation === 'review-pr-comment') {
-      return this.executeReview(request, target, deadlineAt, budget);
+      return this.executeReview(request, target, deadlineAt, budget, token);
     }
-    return this.executeMetadata(request, target, deadlineAt, budget);
+    return this.executeMetadata(request, target, deadlineAt, budget, token);
   }
 }

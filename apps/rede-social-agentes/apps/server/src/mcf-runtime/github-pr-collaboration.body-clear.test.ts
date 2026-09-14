@@ -6,6 +6,10 @@ import {
   GitHubPullCollaborationAdapter,
   GitHubPullCollaborationClient,
 } from './github-pr-collaboration.adapter.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
+
+process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
 
 const HEAD_SHA = '2'.repeat(40);
 const REPOSITORY = 'leon337/multiagent-collaboration-framework';
@@ -42,6 +46,12 @@ function request(): ExternalActionRequest {
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       authorizedScope: true,
       repository: REPOSITORY,
@@ -88,6 +98,7 @@ describe('C2 PR metadata body clearing', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(request());

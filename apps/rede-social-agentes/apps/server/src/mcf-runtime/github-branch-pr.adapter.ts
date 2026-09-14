@@ -7,6 +7,12 @@ import {
   type ExternalActionRequest,
 } from './external-action.contracts.js';
 import { EXTERNAL_ACTION_LEASE_MS } from './external-action-reservation.js';
+import {
+  GitHubExecutionIdentityRegistry,
+  githubExecutionAttribution,
+  requireGitHubExecutionPrincipal,
+  type GitHubExecutionTokenResolver,
+} from './github-execution-identity.js';
 import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
@@ -228,17 +234,14 @@ function isAmbiguousMutationError(error: unknown): error is ExternalActionAdapte
 }
 
 export class GitHubBranchPrClient {
-  constructor(
-    private readonly fetcher: FetchLike = globalThis.fetch,
-    private readonly token: string | undefined = process.env.MCF_GITHUB_TOKEN ??
-      process.env.GITHUB_TOKEN,
-  ) {}
+  constructor(private readonly fetcher: FetchLike = globalThis.fetch) {}
 
   async requestJson<T>(
     method: HttpMethod,
     path: string,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
     body?: Record<string, unknown>,
     allowNotFound = false,
   ): Promise<T | null> {
@@ -281,7 +284,7 @@ export class GitHubBranchPrClient {
             'Content-Type': 'application/json',
             'X-GitHub-Api-Version': '2022-11-28',
             'User-Agent': 'mcf-runtime-branch-pr-adapter',
-            ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+            Authorization: `Bearer ${token}`,
           },
           ...(body ? { body: JSON.stringify(body) } : {}),
         });
@@ -376,6 +379,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
   constructor(
     private readonly evidence: EvidenceValidator,
     private readonly client: GitHubBranchPrClient = new GitHubBranchPrClient(),
+    private readonly identities: GitHubExecutionTokenResolver = new GitHubExecutionIdentityRegistry(),
   ) {}
 
   supports(request: ExternalActionRequest): boolean {
@@ -419,6 +423,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
         skillId: request.skill.skillId,
         skillVersion: request.skill.version,
         agentId: request.agentId,
+        ...githubExecutionAttribution(request),
         missionId: context.missionId,
         phaseId: context.phaseId,
         expectedMissionVersion: context.expectedMissionVersion,
@@ -430,12 +435,14 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
     target: BranchPrTarget,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<GitHubRefResponse | null> {
     return this.client.requestJson<GitHubRefResponse>(
       'GET',
       `/repos/${target.repository}/git/ref/heads/${encodeRef(target.branchRef)}`,
       deadlineAt,
       budget,
+      token,
       undefined,
       true,
     );
@@ -445,6 +452,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
     target: BranchPrTarget,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<GitHubPullResponse | null> {
     const head = encodeURIComponent(`${target.owner}:${target.branchRef}`);
     const base = encodeURIComponent(target.baseRef);
@@ -453,6 +461,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
       `/repos/${target.repository}/pulls?state=all&head=${head}&base=${base}&per_page=100`,
       deadlineAt,
       budget,
+      token,
     );
     if (!pulls) return null;
     if (!Array.isArray(pulls)) {
@@ -553,6 +562,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
       skillId: request.skill.skillId,
       skillVersion: request.skill.version,
       agentId: request.agentId,
+      ...githubExecutionAttribution(request),
       missionId: context.missionId,
       phaseId: context.phaseId,
       expectedMissionVersion: context.expectedMissionVersion,
@@ -570,6 +580,8 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
   }
 
   async execute(request: ExternalActionRequest): Promise<McfToolReceipt> {
+    const principal = requireGitHubExecutionPrincipal(request);
+    const token = await this.identities.tokenFor(principal);
     const deadlineAt = Date.now() + GITHUB_BRANCH_PR_TIMEOUT_MS;
     const budget: RequestBudget = { requests: 0 };
     const target = resolveTarget(request);
@@ -579,6 +591,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
       `/repos/${target.repository}/git/ref/heads/${encodeRef(target.baseRef)}`,
       deadlineAt,
       budget,
+      token,
     );
     if (!base) {
       throw new ExternalActionAdapterError('TARGET_NOT_FOUND', 'Base branch was not found', false);
@@ -590,6 +603,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
       `/repos/${target.repository}/commits/${target.headSha}`,
       deadlineAt,
       budget,
+      token,
     );
     if (!commit || exactSha(commit.sha, 'provider commit SHA') !== target.headSha) {
       throw new ExternalActionAdapterError(
@@ -599,7 +613,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
       );
     }
 
-    let branch = await this.getBranch(target, deadlineAt, budget);
+    let branch = await this.getBranch(target, deadlineAt, budget, token);
     if (branch) {
       assertRef(branch, target.branchRef, target.headSha);
     } else {
@@ -610,6 +624,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
           `/repos/${target.repository}/git/refs`,
           deadlineAt,
           budget,
+          token,
           { ref: `refs/heads/${target.branchRef}`, sha: target.headSha },
         );
       } catch (error) {
@@ -618,7 +633,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
       }
 
       const reconciliation = await this.reconcileReadBack(
-        () => this.getBranch(target, deadlineAt, budget),
+        () => this.getBranch(target, deadlineAt, budget, token),
         deadlineAt,
       );
       branch = reconciliation.value;
@@ -635,7 +650,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
       assertRef(branch, target.branchRef, target.headSha);
     }
 
-    let pull = await this.findPull(target, deadlineAt, budget);
+    let pull = await this.findPull(target, deadlineAt, budget, token);
     if (!pull) {
       let mutationError: ExternalActionAdapterError | null = null;
       try {
@@ -644,6 +659,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
           `/repos/${target.repository}/pulls`,
           deadlineAt,
           budget,
+          token,
           {
             title: target.title,
             head: target.branchRef,
@@ -657,7 +673,7 @@ export class GitHubBranchPullRequestAdapter implements ExternalActionAdapter {
       }
 
       const reconciliation = await this.reconcileReadBack(
-        () => this.findPull(target, deadlineAt, budget),
+        () => this.findPull(target, deadlineAt, budget, token),
         deadlineAt,
       );
       pull = reconciliation.value;

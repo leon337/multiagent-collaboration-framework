@@ -6,6 +6,7 @@ import {
   GitHubPullCollaborationAdapter,
   GitHubPullCollaborationClient,
 } from './github-pr-collaboration.adapter.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
 
 const HEAD_SHA = '2'.repeat(40);
 const OTHER_SHA = '3'.repeat(40);
@@ -43,6 +44,12 @@ function request(
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       repository: REPOSITORY,
       pull_request_number: PR_NUMBER,
@@ -100,12 +107,14 @@ function review(body: string) {
 describe('GitHubPullCollaborationAdapter', () => {
   beforeEach(() => {
     process.env.MCF_RECEIPT_SECRET = 'test-secret-that-is-long-enough-for-mcf-runtime';
+    process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+    process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
   });
 
   it('creates one idempotent PR comment and verifies it by read-back', async () => {
     const expectedBody = `<!-- mcf-idempotency:${KEY} -->\n\nAutomated MCF checkpoint`;
     let created = false;
-    const writes: Array<{ method: string; body: unknown }> = [];
+    const writes: Array<{ method: string; body: unknown; authorization: string | null }> = [];
     const fetcher = vi.fn(async (input: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET';
       if (input.endsWith(`/pulls/${PR_NUMBER}`)) return jsonResponse(pull());
@@ -113,7 +122,11 @@ describe('GitHubPullCollaborationAdapter', () => {
         return jsonResponse(created ? [comment(expectedBody)] : []);
       }
       if (input.endsWith(`/issues/${PR_NUMBER}/comments`) && method === 'POST') {
-        writes.push({ method, body: init?.body ? JSON.parse(String(init.body)) : null });
+        writes.push({
+          method,
+          body: init?.body ? JSON.parse(String(init.body)) : null,
+          authorization: new Headers(init?.headers).get('authorization'),
+        });
         created = true;
         return jsonResponse(comment(expectedBody), 201);
       }
@@ -122,6 +135,7 @@ describe('GitHubPullCollaborationAdapter', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(
@@ -131,7 +145,16 @@ describe('GitHubPullCollaborationAdapter', () => {
     expect(receipt.status).toBe('SUCCEEDED');
     expect(receipt.externalId).toBe('101');
     expect(receipt.metadata.readBackVerified).toBe(true);
-    expect(writes).toEqual([{ method: 'POST', body: { body: expectedBody } }]);
+    expect(writes).toEqual([
+      { method: 'POST', body: { body: expectedBody }, authorization: 'Bearer principal-token' },
+    ]);
+    expect(receipt.metadata).toMatchObject({
+      logicalAgentId: 'Gabriel',
+      executionPrincipalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED',
+      identityBindingVerified: true,
+    });
   });
 
   it('submits only COMMENT review events bound to the expected HEAD SHA', async () => {
@@ -154,6 +177,7 @@ describe('GitHubPullCollaborationAdapter', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(
@@ -181,6 +205,7 @@ describe('GitHubPullCollaborationAdapter', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
     const input = request('update-pr-text-metadata', {
       title: 'Controlled title',
@@ -200,6 +225,7 @@ describe('GitHubPullCollaborationAdapter', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(
@@ -213,6 +239,7 @@ describe('GitHubPullCollaborationAdapter', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(
@@ -247,6 +274,7 @@ describe('GitHubPullCollaborationAdapter', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(

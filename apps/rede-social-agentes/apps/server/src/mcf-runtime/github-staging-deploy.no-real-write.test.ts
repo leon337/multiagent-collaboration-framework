@@ -7,7 +7,7 @@ import { GitHubStagingDeployClient } from './github-staging-deploy.adapter.js';
 describe('Gate D provider boundary', () => {
   it('allows dependency injection so tests never require a real staging dispatch', () => {
     const fetcher = async () => new Response('{}', { status: 200 });
-    const client = new GitHubStagingDeployClient(fetcher, 'test-token');
+    const client = new GitHubStagingDeployClient(fetcher);
     expect(client).toBeInstanceOf(GitHubStagingDeployClient);
   });
 

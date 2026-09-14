@@ -9,6 +9,10 @@ import {
   GitHubPullCollaborationAdapter,
   GitHubPullCollaborationClient,
 } from './github-pr-collaboration.adapter.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
+
+process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
 
 const HEAD_SHA = '2'.repeat(40);
 const MOVED_SHA = '3'.repeat(40);
@@ -66,6 +70,12 @@ function request(
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       repository: REPOSITORY,
       pull_request_number: PR_NUMBER,
@@ -124,6 +134,7 @@ describe('C2 independent-review P1 regressions', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(request('comment-pr', { comment_body: 'checkpoint' }));
@@ -173,6 +184,7 @@ describe('C2 independent-review P1 regressions', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(request('comment-pr', { comment_body: 'checkpoint' }));
@@ -200,6 +212,7 @@ describe('C2 independent-review P1 regressions', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const receipt = await adapter.execute(

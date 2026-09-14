@@ -5,6 +5,7 @@ import { EvidenceValidator } from './evidence-validator.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import type { ExternalActionLedger } from './external-action-ledger.js';
 import type { ExternalActionAdapter, ExternalActionRequest } from './external-action.contracts.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
 
 const request: ExternalActionRequest = {
   skill: {
@@ -102,6 +103,7 @@ describe('ExternalActionDispatcher Gate D durable boundary', () => {
     const dispatcher = new ExternalActionDispatcher(
       new AdapterRegistry([stagingAdapter(order)]),
       ledger(order),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const result = await dispatcher.dispatch(request);
@@ -116,6 +118,7 @@ describe('ExternalActionDispatcher Gate D durable boundary', () => {
     const dispatcher = new ExternalActionDispatcher(
       new AdapterRegistry([adapter]),
       ledger(order, new Error('ledger unavailable')),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const result = await dispatcher.dispatch(request);
@@ -130,6 +133,7 @@ describe('ExternalActionDispatcher Gate D durable boundary', () => {
     const dispatcher = new ExternalActionDispatcher(
       new AdapterRegistry([stagingAdapter(order, receipt('PARTIAL'))]),
       ledger(order),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     const result = await dispatcher.dispatch(request);

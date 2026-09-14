@@ -6,6 +6,10 @@ import {
   GitHubPullCollaborationAdapter,
   GitHubPullCollaborationClient,
 } from './github-pr-collaboration.adapter.js';
+import { createTestGitHubExecutionIdentityRegistry } from './github-execution-identity.test-fixture.js';
+
+process.env.MCF_GITHUB_MESTRE_LOGIN = 'mcfmestreagent-svg';
+process.env.MCF_GITHUB_MESTRE_TOKEN = 'principal-token';
 
 const HEAD_SHA = '2'.repeat(40);
 const KEY = 'mcf-c2-review-url-0001';
@@ -39,6 +43,12 @@ function request(): ExternalActionRequest {
       handoffTo: 'Mestre',
     },
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github' as const,
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED' as const,
+    },
     inputs: {
       repository: REPOSITORY,
       pull_request_number: PR_NUMBER,
@@ -100,6 +110,7 @@ describe('GitHub PR review URL binding', () => {
     const adapter = new GitHubPullCollaborationAdapter(
       new EvidenceValidator(),
       new GitHubPullCollaborationClient(fetcher),
+      createTestGitHubExecutionIdentityRegistry(),
     );
 
     await expect(adapter.execute(request())).rejects.toThrow(

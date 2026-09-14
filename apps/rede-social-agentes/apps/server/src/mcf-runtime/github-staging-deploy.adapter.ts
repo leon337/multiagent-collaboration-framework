@@ -8,6 +8,12 @@ import {
   type ExternalActionRequest,
 } from './external-action.contracts.js';
 import { EXTERNAL_ACTION_LEASE_MS } from './external-action-reservation.js';
+import {
+  GitHubExecutionIdentityRegistry,
+  githubExecutionAttribution,
+  requireGitHubExecutionPrincipal,
+  type GitHubExecutionTokenResolver,
+} from './github-execution-identity.js';
 import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine.js';
 
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
@@ -359,11 +365,7 @@ function markerOutcome(jobs: GitHubWorkflowJob[]): DeploymentOutcome | null {
 }
 
 export class GitHubStagingDeployClient {
-  constructor(
-    private readonly fetcher: FetchLike = globalThis.fetch,
-    private readonly token: string | undefined = process.env.MCF_GITHUB_TOKEN ??
-      process.env.GITHUB_TOKEN,
-  ) {}
+  constructor(private readonly fetcher: FetchLike = globalThis.fetch) {}
 
   private async fetchWithDeadline(
     input: string,
@@ -418,6 +420,7 @@ export class GitHubStagingDeployClient {
     path: string,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
     body?: Record<string, unknown>,
   ): Promise<T> {
     if (!path.startsWith('/repos/') || path.includes('://')) {
@@ -436,7 +439,7 @@ export class GitHubStagingDeployClient {
           'Content-Type': 'application/json',
           'X-GitHub-Api-Version': '2022-11-28',
           'User-Agent': 'mcf-runtime-staging-deploy-adapter',
-          ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         ...(body ? { body: JSON.stringify(body) } : {}),
       },
@@ -462,6 +465,7 @@ export class GitHubStagingDeployClient {
     path: string,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
     body: Record<string, unknown>,
   ): Promise<void> {
     const response = await this.fetchWithDeadline(
@@ -473,7 +477,7 @@ export class GitHubStagingDeployClient {
           'Content-Type': 'application/json',
           'X-GitHub-Api-Version': '2022-11-28',
           'User-Agent': 'mcf-runtime-staging-deploy-adapter',
-          ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       },
@@ -602,6 +606,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     private readonly evidence: EvidenceValidator,
     private readonly client: GitHubStagingDeployClient = new GitHubStagingDeployClient(),
     options: GitHubStagingDeployAdapterOptions = {},
+    private readonly identities: GitHubExecutionTokenResolver = new GitHubExecutionIdentityRegistry(),
   ) {
     const configuredUrl = options.stagingRuntimeUrl ?? process.env.MCF_STAGING_RUNTIME_URL;
     this.stagingRuntimeUrl = configuredUrl ? publicHttpsBaseUrl(configuredUrl) : null;
@@ -679,6 +684,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         skillId: request.skill.skillId,
         skillVersion: request.skill.version,
         agentId: request.agentId,
+        ...githubExecutionAttribution(request),
         missionId: context.missionId,
         phaseId: context.phaseId,
         expectedMissionVersion: context.expectedMissionVersion,
@@ -751,6 +757,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         skillId: request.skill.skillId,
         skillVersion: request.skill.version,
         agentId: request.agentId,
+        ...githubExecutionAttribution(request),
         missionId: context.missionId,
         phaseId: context.phaseId,
         expectedMissionVersion: context.expectedMissionVersion,
@@ -762,6 +769,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     target: DeployTarget,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<GitHubWorkflowRun | null> {
     const collected: GitHubWorkflowRun[] = [];
     let totalCount: number | null = null;
@@ -772,6 +780,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         `/repos/${target.repository}/actions/workflows/${WORKFLOW_FILE}/runs?event=workflow_dispatch&per_page=${RUN_PAGE_SIZE}&page=${page}`,
         deadlineAt,
         budget,
+        token,
       );
       if (
         !Array.isArray(response.workflow_runs) ||
@@ -838,9 +847,10 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     target: DeployTarget,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<GitHubWorkflowRun | null> {
     while (Date.now() < deadlineAt) {
-      const run = await this.findRun(target, deadlineAt, budget);
+      const run = await this.findRun(target, deadlineAt, budget, token);
       if (run) return run;
       await this.sleepImpl(this.pollIntervalMs);
     }
@@ -852,6 +862,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     initial: GitHubWorkflowRun,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<GitHubWorkflowRun | null> {
     let run = initial;
     while (Date.now() < deadlineAt) {
@@ -863,6 +874,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
           `/repos/${target.repository}/actions/runs/${run.id}`,
           deadlineAt,
           budget,
+          token,
         ),
       );
     }
@@ -874,12 +886,14 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     runId: number,
     deadlineAt: number,
     budget: RequestBudget,
+    token: string,
   ): Promise<DeploymentOutcome | null> {
     const response = await this.client.githubJson<GitHubWorkflowJobsResponse>(
       'GET',
       `/repos/${target.repository}/actions/runs/${runId}/jobs?per_page=100`,
       deadlineAt,
       budget,
+      token,
     );
     if (
       !Array.isArray(response.jobs) ||
@@ -907,6 +921,8 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     request: ExternalActionRequest,
     options: StagingDeployReconciliationOptions,
   ): Promise<McfToolReceipt> {
+    const principal = requireGitHubExecutionPrincipal(request);
+    const token = await this.identities.tokenFor(principal);
     const target = resolveTarget(request);
     const previousSha = exactSha(options.previousSha, 'reconciliation previous SHA');
     if (!Number.isSafeInteger(options.expectedRunId) || options.expectedRunId < 1) {
@@ -923,7 +939,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
 
     let run: GitHubWorkflowRun | null;
     try {
-      run = await this.findRun(target, deadlineAt, budget);
+      run = await this.findRun(target, deadlineAt, budget, token);
     } catch (error) {
       return this.unknownReceipt(
         request,
@@ -962,7 +978,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
 
     let outcome: DeploymentOutcome | null;
     try {
-      outcome = await this.readMarkerOutcome(target, run.id, deadlineAt, budget);
+      outcome = await this.readMarkerOutcome(target, run.id, deadlineAt, budget, token);
     } catch (error) {
       return this.unknownReceipt(
         request,
@@ -1034,6 +1050,8 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     request: ExternalActionRequest,
     mutationBoundary?: ExternalActionMutationBoundary,
   ): Promise<McfToolReceipt> {
+    const principal = requireGitHubExecutionPrincipal(request);
+    const token = await this.identities.tokenFor(principal);
     const target = resolveTarget(request);
     if (!this.stagingRuntimeUrl) {
       throw new ExternalActionAdapterError(
@@ -1047,7 +1065,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
     const budget: RequestBudget = { requests: 0 };
     let run: GitHubWorkflowRun | null;
     try {
-      run = await this.findRun(target, deadlineAt, budget);
+      run = await this.findRun(target, deadlineAt, budget, token);
     } catch (error) {
       if (
         error instanceof ExternalActionAdapterError &&
@@ -1082,6 +1100,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         `/repos/${target.repository}/git/ref/heads/main`,
         deadlineAt,
         budget,
+        token,
       );
       if (mainRef.ref !== 'refs/heads/main') {
         throw new ExternalActionAdapterError(
@@ -1097,6 +1116,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         `/repos/${target.repository}/commits/${target.releaseSha}`,
         deadlineAt,
         budget,
+        token,
       );
       if (
         exactSha(commit.sha, 'provider release SHA') !== target.releaseSha ||
@@ -1115,6 +1135,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
         `/repos/${target.repository}/compare/${target.releaseSha}...${mainSha}`,
         deadlineAt,
         budget,
+        token,
       );
       const mergeBase = exactSha(compare.merge_base_commit?.sha ?? '', 'provider merge-base SHA');
       if (!['ahead', 'identical'].includes(compare.status) || mergeBase !== target.releaseSha) {
@@ -1160,6 +1181,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
           `/repos/${target.repository}/actions/workflows/${WORKFLOW_FILE}/dispatches`,
           deadlineAt,
           budget,
+          token,
           {
             ref: 'main',
             inputs: {
@@ -1175,7 +1197,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
       }
 
       try {
-        run = await this.waitForRun(target, deadlineAt, budget);
+        run = await this.waitForRun(target, deadlineAt, budget, token);
       } catch (error) {
         return this.unknownReceipt(
           request,
@@ -1202,7 +1224,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
 
     let completed: GitHubWorkflowRun | null;
     try {
-      completed = await this.waitForCompletion(target, run, deadlineAt, budget);
+      completed = await this.waitForCompletion(target, run, deadlineAt, budget, token);
     } catch (error) {
       return this.unknownReceipt(
         request,
@@ -1241,7 +1263,7 @@ export class GitHubActionsStagingDeployAdapter implements ExternalActionAdapter 
 
     let outcome: DeploymentOutcome | null;
     try {
-      outcome = await this.readMarkerOutcome(target, completed.id, deadlineAt, budget);
+      outcome = await this.readMarkerOutcome(target, completed.id, deadlineAt, budget, token);
     } catch (error) {
       return this.unknownReceipt(
         request,

@@ -57,6 +57,12 @@ function externalRequest(
   return {
     skill,
     agentId: 'Gabriel',
+    executionPrincipal: {
+      provider: 'github',
+      principalId: 'MESTRE',
+      externalActor: 'mcfmestreagent-svg',
+      attributionMode: 'BOOTSTRAP_DELEGATED',
+    },
     inputs: {
       authorizedScope: true,
       repository: REPOSITORY,
@@ -145,6 +151,18 @@ describe('Gate D interrupted staging dispatch callback recovery', () => {
       ).rejects.toThrow('stop after durable crash recovery');
 
       expect(reconcile).toHaveBeenCalledTimes(1);
+      expect(reconcile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          agentId: 'Gabriel',
+          executionPrincipal: {
+            provider: 'github',
+            principalId: 'MESTRE',
+            externalActor: 'mcfmestreagent-svg',
+            attributionMode: 'BOOTSTRAP_DELEGATED',
+          },
+        }),
+        expect.objectContaining({ previousSha: PREVIOUS_SHA }),
+      );
 
       const phase = await repository.findPhase(missionId, phaseId);
       expect(phase).toMatchObject({
