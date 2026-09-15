@@ -1,0 +1,30 @@
+name: MCF Multi-AI Continuity Qualification
+
+on:
+  pull_request:
+    paths:
+      - 'AGENTS.md'
+      - 'docs/protocols/MCF-PROTOCOLO-CONTINUIDADE-MULTI-IA-V1.2.md'
+      - 'schemas/mcf-multi-ai-continuity-v1.schema.json'
+      - 'schemas/fixtures/mcf-multi-ai-continuity.*.json'
+      - 'project-instructions/MCF-PROJECT-OPERATING-INSTRUCTIONS.md'
+      - 'project-instructions/MCF-STARTUP-CHECKLIST.yaml'
+      - 'context/projects/project-memory.yaml'
+      - '.github/scripts/mcf-multi-ai-continuity-qualification.mjs'
+      - '.github/workflows/mcf-multi-ai-continuity-qualification.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run multi-AI continuity qualification
+        run: node .github/scripts/mcf-multi-ai-continuity-qualification.mjs
