@@ -1,0 +1,114 @@
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+status: PASS
+checkpoint_id: CP-005-S16-COMPLETE
+checkpoint_date: 2026-08-27
+human_authority: LEANDRO
+coordinator: MESTRE
+
+source_branch: ops/mcf-mestre-cross-chat-succession-001
+succession_pr: 176
+
+succession:
+  predecessor_state: STANDBY
+  successor_state: ACTIVE
+  s03_capsule_freeze: PASS
+  s04_spawn_successor: PASS
+  s05_cold_recovery: PASS
+  s06_challenge: PASS
+  s07_succession_equivalence: PASS
+  s08_handoff: PASS
+  s09_persist_final_reviews: PASS
+  s10_main_drift_check: PASS
+  s11_exact_merge_pr_175: PASS
+  s12_post_merge_qualification: PASS
+  s13_tag_v1_2_0: PASS
+  s14_github_release_v1_2_0: PASS
+  s15_release_receipt: PASS
+  s16_cross_chat_proof: PASS
+  recovered_state_commit: 013ef49672532eca19aa6392f6c234f0991e9fbd
+  equivalence_commit: dbf9a917e9d6d2f971fdffb5326de0fda58d0fcc
+  next_task: NONE
+  pass_rule: NO_EVIDENCE_NO_PASS
+  anti_copy_rule: successor_writes_RECOVERED_STATE_before_reading_EXPECTED_STATE
+
+release:
+  pull_request: 175
+  target_version: v1.2.0
+  qualified_pr_head: 43b0cccab4b29a2ed4c77abd824b652521c2b8c1
+  qualified_tree: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
+  merged_main_sha: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+  merged_main_tree: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
+  tested_tree_equals_merged_tree: PASS
+  post_merge_production_readiness: PASS
+  staging_deploy: PASS
+  publication_workflow_run: 33059572578
+  tag: v1.2.0
+  tag_sha: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+  github_release_id: 377709546
+  github_release_draft: false
+  github_release_prerelease: false
+  github_release_latest: true
+  tag_to_sha_to_release: PASS
+
+release_gate:
+  leo: PASS_WITH_NONBLOCKING_NOTES
+  renato: PASS_WITH_NONBLOCKING_NOTES
+  emily: PASS
+  critical_high_blockers: NONE
+  focused_tests: "34/34 PASS"
+  pre_merge_canonical_ci: "5/5 SUCCESS"
+
+human_authorization:
+  merge_pr_175_after_validation: AUTHORIZED_COMPLETED
+  complete_v1_2_0_release: AUTHORIZED_COMPLETED
+  cross_chat_succession_test: AUTHORIZED_COMPLETED
+  visible_auditable_operation: AUTHORIZED_COMPLETED
+  final_authority: LEANDRO
+  human_control_command: HUMANO_NO_CONTROLE
+
+artifacts:
+  - ROADMAP.md
+  - CHECKPOINT.yaml
+  - EXPECTED_STATE.yaml
+  - EVIDENCE.md
+  - HANDOFF.md
+  - SUCCESSION_CAPSULE.yaml
+  - SOURCE_MANIFEST.md
+  - RECOVERY_CHALLENGE.md
+  - FINAL_REVIEW_GATE.md
+  - RECOVERED_STATE.yaml
+  - SUCCESSION_EQUIVALENCE.md
+  - RELEASE_PUBLISH_TRIGGER.md
+  - RELEASE_RECEIPT.md
+  - CROSS_CHAT_PROOF.md
+
+publication_boundary:
+  exact_sha_only: true
+  exact_tree_only: true
+  live_main_guard: PASS
+  immutable_tag_guard: PASS
+  retarget_attempted: false
+  secrets_exposed: false
+
+blocking_pending_work: []
+
+nonblocking_followups:
+  - integrated human-control-policy to GUI suspension test
+  - gate during in-flight tool call
+  - explicit resume regression test
+  - CI automation for tested-tree equals published-tree
+  - richer GUI smoke payload
+  - independent architecture/security review
+  - persistent MissionRuntime pause/resume API
+  - gate telemetry
+
+constraints:
+  - do not expose secrets
+  - do not invent missing state
+  - HUMANO_NO_CONTROLE suspends new actions immediately
+
+final_result:
+  succession_equivalence: PASS
+  cross_chat_successor_proof: PASS
+  mcf_v1_2_0_publication: PASS
+  mission: PASS

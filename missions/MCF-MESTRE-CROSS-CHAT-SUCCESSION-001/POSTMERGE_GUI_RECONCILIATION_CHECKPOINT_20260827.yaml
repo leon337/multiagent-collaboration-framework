@@ -1,0 +1,79 @@
+checkpoint_id: CP-GUI-POSTMERGE-RECONCILIATION-20260827-01
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+status: WAITING_HUMAN_GATE
+recorded_date: 2026-08-27
+
+human_authority:
+  authority: LEANDRO
+  authorization_received: FORMALIZATION_IMPLEMENTATION_TESTS_ON_NON_MAIN
+  authorization_does_not_include:
+    - merge
+    - version_number
+    - tag
+    - release
+
+live_source_of_truth_at_start:
+  main_sha: a98cc9140c8b001135a8ce9cc37abab69c7165a6
+  latest_release: v1.2.0
+  previous_gui_window_merge_pr: 179
+  previous_gui_window_merge_state: MERGED
+  audit_branch_pre_checkpoint_sha: f3315825f221b7bd56d97dbe2a6ab49ac827b11d
+
+finding:
+  id: POSTMERGE_STATUS_LANGUAGE_STALE
+  state: REMEDIATED_ON_NON_MAIN
+  description: GUI/window succession protocol and unified protocol retained candidate/pre-merge wording after PR 179 had already been merged to main.
+
+remediation:
+  branch: ops/mcf-gui-window-control-postmerge-reconcile-001
+  draft_pr: 180
+  base_sha: a98cc9140c8b001135a8ce9cc37abab69c7165a6
+  green_head_sha: f2e5abf175e4203d09850ca1f539147bd60e5dcc
+  changed_artifacts:
+    - .github/scripts/mcf-gui-window-postmerge-consistency.mjs
+    - .github/workflows/mcf-gui-window-control-qualification.yml
+    - docs/protocols/MCF-PROTOCOLO-SUCESSAO-CROSS-CHAT-E-CONTROLE-DE-JANELAS.md
+    - docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md
+
+red_green_evidence:
+  red:
+    head_sha: dbeda9aa2d626ff0c94fcf38087812afd00d6758
+    qualify: FAILURE
+    cause_verified: true
+    cause: post-merge consistency regression detected the expected stale candidate/pre-merge status tokens while the original GUI/window qualifier passed
+  green:
+    head_sha: f2e5abf175e4203d09850ca1f539147bd60e5dcc
+    qualify: SUCCESS
+    validate: SUCCESS
+    production_candidate_readiness: SUCCESS
+    postmerge_consistency: PASS
+    original_gui_window_qualification: PASS
+
+historical_classification:
+  cross_chat_succession: PASS
+  original_gui_window_coverage: GAP_NOT_TESTED
+  consolidated: MAINTAIN_WITH_GAP
+  changed_by_this_remediation: false
+
+remaining_blocker:
+  id: EXACT_FINAL_RELEASE_TARGET_SHA_GUI_QUALIFICATION
+  state: OPEN
+  reason: the specific GUI/window qualifier has not yet been executed against the future exact post-merge release-target SHA; satisfying that requirement requires an integration event that is not authorized by the current human gate.
+  main_current_general_checks:
+    validate: SUCCESS
+    production_candidate_readiness: SUCCESS
+  main_current_specific_gui_qualify: NOT_VERIFIED_ON_EXACT_MAIN_SHA
+
+pull_request_governance:
+  pr: 180
+  state: OPEN_DRAFT
+  merge_authorized: false
+  tag_authorized: false
+  release_authorized: false
+  version_number_decided: false
+
+human_gate:
+  state: OPEN
+  decision_requested: Approve or reject merge of draft PR 180 into main. Approval of this merge must not be interpreted as authorization for a tag, version number, or release. If merge is approved and completed, the exact resulting main SHA must receive fresh GUI/window qualification before any release deliberation can proceed.
+
+next_action: AWAIT_LEANDRO_MERGE_GATE_DECISION

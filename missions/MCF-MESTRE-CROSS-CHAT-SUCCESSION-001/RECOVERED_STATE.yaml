@@ -1,0 +1,121 @@
+schema: mcf_mestre_recovered_state/v1
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+recovered_date: 2026-08-27
+recovery_basis: persistent_sources_plus_live_github
+expected_state_read_before_recovery: false
+
+identity:
+  operational_role: MESTRE
+  session_role: successor
+  continuity_claim: operational_succession_only_no_literal_consciousness_continuity
+  distinctions:
+    LEANDRO: final_human_authority
+    MESTRE: chatgpt_orchestrator_and_mission_coordinator
+    LEO: mcf_agent_and_release_reviewer_distinct_from_LEANDRO
+    OX: dsh_side_operational_agent_execution_context_distinct_from_MESTRE_and_LEANDRO
+
+mission:
+  purpose: >-
+    Prove that a successor MESTRE context can reconstruct and continue a material
+    MCF mission from persistent sources without operational dependence on the predecessor chat,
+    then complete the qualified MCF v1.2.0 release under existing human authorization.
+  roadmap_status: IN_PROGRESS
+  recovered_phase: S05_COLD_RECOVERY
+  next_gate: S06_CHALLENGE_AND_S07_SUCCESSION_EQUIVALENCE
+
+succession_surface:
+  branch: ops/mcf-mestre-cross-chat-succession-001
+  branch_head_observed: 57915f59737911e83bbaac995c87b967e25e0ca8
+  audit_pull_request: 176
+  audit_pr_state: OPEN_DRAFT
+  audit_pr_purpose: persistence_and_audit_only_not_release_payload
+
+live_repository:
+  main_sha: 2b8ce24b71c9f9095c801dafdd762a2cef202fa9
+  frozen_main_sha: 2b8ce24b71c9f9095c801dafdd762a2cef202fa9
+  main_drift_from_frozen_state: NONE
+
+release_candidate:
+  pull_request: 175
+  target_version: v1.2.0
+  pr_state: OPEN
+  pr_draft: false
+  mergeable: true
+  mergeable_state: clean
+  candidate_head: 43b0cccab4b29a2ed4c77abd824b652521c2b8c1
+  candidate_tree: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
+  candidate_head_matches_frozen: true
+  candidate_tree_matches_frozen: true
+  local_remote_tree_equivalence: PASS
+
+qualification:
+  focused_tests: "34/34 PASS"
+  canonical_github_actions:
+    total: 5
+    completed_success: 5
+    result: PASS
+  external_checks:
+    vercel_preview_comments: SUCCESS
+  exact_head_qualified: true
+
+release_gate:
+  leo: PASS_WITH_NONBLOCKING_NOTES
+  renato: PASS_WITH_NONBLOCKING_NOTES
+  emily: PASS
+  critical_high_blockers: NONE
+  internal_release_gate: PASS
+  declared_limitation: >-
+    Final reviewers evaluated supplied exact-tree, CI, focused-test, field-validation,
+    and limitation evidence; they did not independently rerun every tool/test.
+  runtime_limitation: >-
+    Do not claim universal MissionRuntime pause/resume enforcement; the candidate
+    does not provide a generic persistent pause/resume API for all in-flight processes.
+
+human_authority:
+  final_authority: LEANDRO
+  merge_pr_175_after_validation: AUTHORIZED
+  complete_v1_2_0_release: AUTHORIZED
+  cross_chat_succession_test: AUTHORIZED
+  visible_auditable_operation: AUTHORIZED
+  human_control_command: HUMANO_NO_CONTROLE
+  human_control_semantics: >-
+    Suspend new actions immediately, preserve state, checkpoint, enter HUMAN_GATE,
+    and require explicit human resumption before continuing.
+
+blocking_pending_work:
+  - complete_successor_recovery_challenge
+  - compare_RECOVERED_STATE_with_EXPECTED_STATE
+  - require_SUCCESSION_EQUIVALENCE_PASS
+  - mark_predecessor_STANDBY_and_successor_ACTIVE_after_PASS
+  - recheck_main_and_PR175_immediately_before_merge
+  - merge_exact_PR175_candidate_with_head_change_protection
+  - post_merge_qualification_and_tree_equivalence
+  - create_tag_v1.2.0_at_qualified_main_sha
+  - publish_GitHub_release_v1.2.0
+  - verify_tag_to_sha_to_release_chain
+  - persist_final_release_receipt_and_cross_chat_proof
+
+nonblocking_followups:
+  - integrated_policy_to_GUI_suspension_test
+  - gate_during_in_flight_tool_call
+  - explicit_resume_regression_test
+  - automate_tested_tree_equals_published_tree
+  - richer_GUI_payload_smoke
+  - independent_architecture_security_review
+  - persistent_MissionRuntime_pause_resume_API
+  - gate_telemetry
+
+recovery_assessment:
+  missing_required_state: NONE
+  live_drift_detected: NONE
+  critical_blocker_detected: NONE
+  ready_to_read_expected_state: true
+  next_action: READ_EXPECTED_STATE_AND_PRODUCE_SUCCESSION_EQUIVALENCE
+
+constraints:
+  - do_not_expose_secrets
+  - do_not_invent_missing_state
+  - no_merge_tag_or_release_before_SUCCESSION_EQUIVALENCE_PASS
+  - live_GitHub_outweighs_frozen_values_for_mutable_state
+  - HUMANO_NO_CONTROLE_has_immediate_precedence
+  - no_evidence_no_pass
