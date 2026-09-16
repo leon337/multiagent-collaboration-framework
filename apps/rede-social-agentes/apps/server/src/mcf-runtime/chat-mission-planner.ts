@@ -41,6 +41,14 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     internal: false,
     requiredEvidence: ['source_references', 'precedence_decisions', 'contradictions'],
   },
+  'MCF-RECOVER-CHATGPT-SHARE': {
+    agentId: 'Miriam',
+    handoffTo: 'Mestre',
+    toolProvider: 'chatgpt-share',
+    toolOperation: 'fetch-share',
+    internal: false,
+    requiredEvidence: ['source_url', 'share_id', 'messages', 'parser_version'],
+  },
   'MCF-DEFINE-PRODUCT': {
     agentId: 'Leonardo',
     handoffTo: 'Sofia',
@@ -164,6 +172,11 @@ const implementationTerms = [
   'refatorar',
 ];
 const validationTerms = ['testar', 'validar', 'auditar', 'verificar', 'smoke', 'ci'];
+const chatGptShareTerms = [
+  'chatgpt.com/share/',
+  'conversa compartilhada do chatgpt',
+  'recuperar conversa compartilhada',
+];
 const evaluationTerms = [
   'avaliar agentes',
   'avaliar agente',
@@ -264,6 +277,14 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
   }
 
   const normalized = request.objective.toLowerCase();
+  if (includesAny(normalized, chatGptShareTerms)) {
+    return [
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-RECOVER-CHATGPT-SHARE',
+      'MCF-TRACE-MISSION',
+    ];
+  }
   if (includesAny(normalized, closePhaseTerms)) {
     return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-CLOSE-PHASE', 'MCF-TRACE-MISSION'];
   }
@@ -297,6 +318,7 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
 }
 
 function resourceFor(skillId: McfExecutableSkillId, repository: string | undefined): string {
+  if (skillId === 'MCF-RECOVER-CHATGPT-SHARE') return 'public-chatgpt-share';
   const config = skillConfig[skillId];
   if (config.toolProvider === 'internal') {
     if (skillId === 'MCF-TRACE-MISSION') return 'mcf-mission-timeline';

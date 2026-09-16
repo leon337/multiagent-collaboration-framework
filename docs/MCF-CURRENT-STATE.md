@@ -121,7 +121,7 @@ Aplicação hospedeira:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - External Action Dispatcher e adapters com evidência;
-- 16 skills registradas, 16 executáveis, 0 somente documentais no lineage qualificado;
+- lineage stable `v1.0.0`: 16 skills registradas, 16 executáveis e 0 somente documentais; candidato atual: 17 registradas / 17 executáveis com `MCF-RECOVER-CHATGPT-SHARE`;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA/readiness/version e recovery por redeploy de SHA saudável;

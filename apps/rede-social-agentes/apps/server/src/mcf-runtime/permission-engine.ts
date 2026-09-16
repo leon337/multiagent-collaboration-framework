@@ -280,6 +280,28 @@ function assertClosePhaseBoundary(
   }
 }
 
+function assertChatGptShareRecoveryBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  if (skillId !== 'MCF-RECOVER-CHATGPT-SHARE') return;
+  if (provider !== 'chatgpt-share') {
+    throw new McfPermissionDeniedError(
+      'MCF-RECOVER-CHATGPT-SHARE requires the dedicated chatgpt-share provider',
+    );
+  }
+  if (operation !== 'fetch-share') {
+    throw new McfPermissionDeniedError('MCF-RECOVER-CHATGPT-SHARE permits only fetch-share');
+  }
+  if (resource !== 'public-chatgpt-share') {
+    throw new McfPermissionDeniedError(
+      'MCF-RECOVER-CHATGPT-SHARE is restricted to public-chatgpt-share',
+    );
+  }
+}
+
 function assertVisualDesktopAuditBoundary(
   skillId: string,
   provider: string,
@@ -382,6 +404,7 @@ export class PermissionEngine {
     assertSecurityReviewBoundary(skill.skillId, provider, operation, resource);
     assertDebugIncidentBoundary(skill, provider, operation, resource, inputs);
     assertClosePhaseBoundary(skill, provider, operation, resource, inputs);
+    assertChatGptShareRecoveryBoundary(skill.skillId, provider, operation, resource);
     assertVisualDesktopAuditBoundary(skill.skillId, provider, operation, resource);
     assertCodeBuddyBoundary(skill.skillId, provider, operation, tool.resource);
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);

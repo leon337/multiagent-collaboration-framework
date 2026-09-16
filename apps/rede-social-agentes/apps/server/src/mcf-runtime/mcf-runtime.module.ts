@@ -8,6 +8,7 @@ import { AdapterRegistry } from './adapter-registry.js';
 import { BoundStagingDeployReconciliationService } from './bound-staging-deploy-reconciliation.service.js';
 import { CanonicalExternalActionLedger } from './canonical-external-action-ledger.js';
 import { ChatMissionPlanner } from './chat-mission-planner.js';
+import { ChatGptShareRecoveryAdapter } from './chatgpt-share-recovery.adapter.js';
 import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
 import {
@@ -111,6 +112,11 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [MCF_RUNTIME_REPOSITORY, MissionObservabilityRepository],
     },
     {
+      provide: ChatGptShareRecoveryAdapter,
+      useFactory: (evidence: EvidenceValidator) => new ChatGptShareRecoveryAdapter(evidence),
+      inject: [EvidenceValidator],
+    },
+    {
       provide: GitHubCodeReviewAdapter,
       useFactory: (evidence: EvidenceValidator) => new GitHubCodeReviewAdapter(evidence),
       inject: [EvidenceValidator],
@@ -152,6 +158,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     {
       provide: AdapterRegistry,
       useFactory: (
+        chatGptShare: ChatGptShareRecoveryAdapter,
         githubReview: GitHubCodeReviewAdapter,
         githubCiQuery: GitHubCiQueryAdapter,
         githubBranchPr: GitHubBranchPullRequestAdapter,
@@ -159,6 +166,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         codeBuddy: CodeBuddyExecutorAdapter,
       ) =>
         new AdapterRegistry([
+          chatGptShare,
           githubReview,
           githubCiQuery,
           githubBranchPr,
@@ -166,6 +174,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           codeBuddy,
         ]),
       inject: [
+        ChatGptShareRecoveryAdapter,
         GitHubCodeReviewAdapter,
         GitHubCiQueryAdapter,
         GitHubBranchPullRequestAdapter,

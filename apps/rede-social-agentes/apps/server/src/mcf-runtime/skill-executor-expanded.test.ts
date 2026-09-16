@@ -38,6 +38,17 @@ function definition(input: {
 
 const skills = new Map<string, McfSkillDefinition>([
   [
+    'MCF-RECOVER-CHATGPT-SHARE',
+    definition({
+      skillId: 'MCF-RECOVER-CHATGPT-SHARE',
+      ownerAgents: ['Miriam'],
+      requiredInputs: ['share_url'],
+      allowedTools: ['ChatGPT_Share'],
+      permissionProfile: 'READ_ONLY',
+      handoffTo: 'Mestre',
+    }),
+  ],
+  [
     'MCF-AUDIT-VISUAL-DESKTOP',
     definition({
       skillId: 'MCF-AUDIT-VISUAL-DESKTOP',
@@ -485,6 +496,24 @@ describe('SkillExecutor expanded batch', () => {
 
     expect(result.evidenceStatus).toBe('INVALID');
     expect(result.rejectionReason).toMatch(/openVerified/u);
+  });
+
+  it('treats the ChatGPT share recovery skill as executable external read work', async () => {
+    const { executor } = createExecutor();
+    const result = await executor.execute({
+      skillId: 'MCF-RECOVER-CHATGPT-SHARE',
+      agentId: 'Miriam',
+      inputs: { share_url: 'https://chatgpt.com/share/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' },
+      tool: {
+        provider: 'chatgpt-share',
+        operation: 'fetch-share',
+        resource: 'public-chatgpt-share',
+      },
+    });
+
+    expect(result.evidenceStatus).toBe('PENDING');
+    expect(result.phaseState).toBe('WAITING_EVIDENCE');
+    expect(result.missionState).toBe('WAITING_EXTERNAL');
   });
 
   it('rejects a visual desktop audit request that uses an operation outside the bounded adapter', async () => {

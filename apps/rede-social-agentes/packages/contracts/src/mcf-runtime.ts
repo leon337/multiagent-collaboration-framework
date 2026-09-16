@@ -488,6 +488,7 @@ export type McfExecutableSkillId =
   | 'MCF-START-MISSION'
   | 'MCF-SELECT-AGENTS'
   | 'MCF-RECOVER-CONTEXT'
+  | 'MCF-RECOVER-CHATGPT-SHARE'
   | 'MCF-DEFINE-PRODUCT'
   | 'MCF-DESIGN-EXPERIENCE'
   | 'MCF-DESIGN-ARCHITECTURE'
@@ -503,7 +504,14 @@ export type McfExecutableSkillId =
   | 'MCF-CLOSE-PHASE';
 
 export type McfExecutableToolProvider =
-  'internal' | 'github' | 'github-actions' | 'render' | 'vercel' | 'cloudflare' | 'codebuddy';
+  | 'internal'
+  | 'github'
+  | 'github-actions'
+  | 'render'
+  | 'vercel'
+  | 'cloudflare'
+  | 'codebuddy'
+  | 'chatgpt-share';
 
 export interface McfChatDispatchRequest {
   objective: string;

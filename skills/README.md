@@ -36,6 +36,7 @@ Quando necessário, Leandro ou Léo podem solicitar:
 ```text
 EXECUTAR_SKILL MCF-START-MISSION
 EXECUTAR_SKILL MCF-DEBUG-INCIDENT
+EXECUTAR_SKILL MCF-RECOVER-CHATGPT-SHARE
 EXECUTAR_SKILL MCF-GIT-PR-RELEASE
 EXECUTAR_SKILL MCF-CLOSE-PHASE
 ```
@@ -59,7 +60,7 @@ O incremento candidato `MCF-RUNTIME-006-LOT-4-B-EVALUATE-AGENTS` adiciona `MCF-E
 
 ## Qualificação de Release Candidate
 
-O Gate E qualifica o conjunto executável existente sem alterar contratos de skill. Para um Release Candidate, a contagem `16 registradas / 16 executáveis / 0 documentais` deve ser comprovada no mesmo SHA candidato usado pelos gates finais.
+O Gate E que qualificou o lineage stable `v1.0.0` comprovou `16 registradas / 16 executáveis / 0 documentais` no mesmo SHA candidato usado pelos gates finais. O candidato desta mudança adiciona `MCF-RECOVER-CHATGPT-SHARE` e passa a exigir `17 registradas / 17 executáveis / 0 documentais`, sem reescrever a evidência histórica do Gate E.
 
 A qualificação não concede permissões novas, não ativa produção e não promove automaticamente a versão estável. Qualquer defeito que exija mudança de contrato durante o Gate E deve ser tratado como finding, passar por CAF, receber validação no novo SHA e retornar ao gate de release.
 

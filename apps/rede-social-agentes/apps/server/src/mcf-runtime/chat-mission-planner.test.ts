@@ -179,6 +179,23 @@ describe('ChatMissionPlanner', () => {
     expect(plan.steps[1]?.handoffTo).toBe('Vinicius');
   });
 
+  it('routes public ChatGPT share recovery through the dedicated read-only provider', () => {
+    const plan = planner.plan({
+      objective:
+        'Recuperar o contexto de https://chatgpt.com/share/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+    });
+
+    expect(plan.contract.selectedSkills).toContain('MCF-RECOVER-CHATGPT-SHARE');
+    expect(plan.steps.find((step) => step.skillId === 'MCF-RECOVER-CHATGPT-SHARE')).toMatchObject({
+      agentId: 'Miriam',
+      handoffTo: 'Mestre',
+      toolProvider: 'chatgpt-share',
+      toolOperation: 'fetch-share',
+      toolResource: 'public-chatgpt-share',
+      state: 'READY_EXTERNAL',
+    });
+  });
+
   it('never selects Leandro as an executing or handoff agent', () => {
     const plan = planner.plan({
       objective: 'Implementar, testar e validar uma alteração no repositório.',

@@ -88,6 +88,20 @@ describe('parseMcfSkillRegistry', () => {
     });
   });
 
+  it('loads the canonical public ChatGPT share recovery skill', async () => {
+    const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
+    const content = await readFile(registryPath, 'utf8');
+    const skills = parseMcfSkillRegistry(content);
+
+    expect(skills.find((skill) => skill.skillId === 'MCF-RECOVER-CHATGPT-SHARE')).toMatchObject({
+      ownerAgents: ['Miriam'],
+      permissionProfile: 'READ_ONLY',
+      requiredInputs: ['share_url'],
+      allowedTools: ['ChatGPT_Share'],
+      handoffTo: 'Mestre',
+    });
+  });
+
   it('rejects duplicate skill identifiers', () => {
     expect(() =>
       parseMcfSkillRegistry(`${registry}\n${registry.split('skills:')[1] ?? ''}`),
