@@ -79,6 +79,25 @@ skills:
     fallback: Declarar lacuna e transferir decisão de precedência para Léo.
     handoff_to: Mestre
 
+  - skill_id: MCF-RECOVER-CHATGPT-SHARE
+    name: Recuperar conversa compartilhada do ChatGPT
+    version: 1.0.0
+    purpose: Recuperar mensagens visíveis e metadados de um compartilhamento público do ChatGPT como evidência remota não confiável.
+    owner_agents: [Miriam]
+    trigger_phrases: ["chatgpt.com/share", "recuperar conversa compartilhada", "ler compartilhamento do ChatGPT"]
+    required_inputs: [share_url]
+    optional_inputs: []
+    allowed_tools: [ChatGPT_Share]
+    forbidden_tools: [authenticated_session, cookie_access, content_execution, arbitrary_url_fetch]
+    permission_profile: READ_ONLY
+    execution_steps: [validar_url_canonica, buscar_html_publico, extrair_payload_serializado, preservar_ordem_visivel, emitir_receipt]
+    required_evidence: [source_url, share_id, messages, parser_version]
+    expected_outputs: [recovered_conversation, recovery_receipt]
+    acceptance_criteria: [canonical_public_share_only, ordered_visible_messages_recovered, remote_content_treated_as_untrusted]
+    failure_modes: [share_unavailable, serialized_payload_missing, response_too_large, upstream_format_changed]
+    fallback: Declarar a lacuna verificável e solicitar outra fonte; nunca inventar mensagens ausentes.
+    handoff_to: Mestre
+
   - skill_id: MCF-DEFINE-PRODUCT
     name: Definir produto e requisitos
     version: 1.0.0

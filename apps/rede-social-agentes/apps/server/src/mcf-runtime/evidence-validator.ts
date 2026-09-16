@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import type { McfSkillDefinition, McfToolReceipt, McfToolReceiptStatus } from '@rsa/contracts';
 
 import { loadRuntimeConfig } from '../config.js';
+import { validateChatGptShareUrl } from './chatgpt-share-recovery.js';
 import type { ExternalActionExecutionContext } from './external-action.contracts.js';
 import { McfEvidenceRejectedError } from './mcf-runtime.errors.js';
 import {
@@ -887,6 +888,120 @@ function validatePullRequestReceipt(receipt: McfToolReceipt): void {
   requireString(receipt.metadata, 'prState', 'pull request evidence requires prState');
 }
 
+function validateChatGptShareRecoveryReceipt(
+  receipt: McfToolReceipt,
+  skill: McfSkillDefinition,
+  inputs: Readonly<Record<string, unknown>> = {},
+  current?: EvidenceVerificationContext,
+): void {
+  if (canonicalizeProvider(receipt.provider) !== 'chatgpt-share') {
+    reject('ChatGPT share recovery evidence requires the dedicated chatgpt-share provider');
+  }
+  const sourceUrl = requireString(
+    receipt.metadata,
+    'source_url',
+    'ChatGPT share recovery evidence requires source_url',
+  );
+  const shareId = requireString(
+    receipt.metadata,
+    'share_id',
+    'ChatGPT share recovery evidence requires share_id',
+  );
+  const requested = inputs.share_url;
+  if (typeof requested !== 'string' || requested.trim().length === 0) {
+    reject('ChatGPT share recovery verification requires the current share URL');
+  }
+  let canonical;
+  try {
+    canonical = validateChatGptShareUrl(requested);
+  } catch {
+    return reject('ChatGPT share recovery verification received an invalid share URL');
+  }
+  if (sourceUrl !== canonical.canonicalUrl || shareId !== canonical.shareId) {
+    reject('ChatGPT share recovery source_url and share_id must match the current share URL');
+  }
+  if (receipt.externalId !== shareId) {
+    reject('ChatGPT share recovery externalId must match share_id');
+  }
+  const parserVersion = requireString(
+    receipt.metadata,
+    'parser_version',
+    'ChatGPT share recovery evidence requires parser_version',
+  );
+  if (!/^\d+\.\d+\.\d+$/u.test(parserVersion)) {
+    reject('ChatGPT share recovery parser_version must be semantic version text');
+  }
+  const contentTrust = requireString(
+    receipt.metadata,
+    'content_trust',
+    'ChatGPT share recovery evidence requires content_trust',
+  );
+  if (contentTrust !== 'UNTRUSTED_REMOTE_CONTENT') {
+    reject('ChatGPT share recovery content must remain marked UNTRUSTED_REMOTE_CONTENT');
+  }
+  const messages = requireNonEmptyArray(
+    receipt.metadata,
+    'messages',
+    'ChatGPT share recovery evidence requires non-empty messages',
+  );
+  for (const item of messages) {
+    const message = requireRecord(
+      item,
+      'ChatGPT share recovery message evidence must be an object',
+    );
+    recordString(message, 'id', 'ChatGPT share recovery message requires id');
+    const role = recordString(message, 'role', 'ChatGPT share recovery message requires role');
+    if (role !== 'user' && role !== 'assistant') {
+      reject('ChatGPT share recovery message role must be user or assistant');
+    }
+    recordString(message, 'text', 'ChatGPT share recovery message requires text');
+  }
+  const domain = requireRecord(
+    receipt.metadata.receipt_domain,
+    'ChatGPT share recovery evidence requires receipt_domain',
+  );
+  if (
+    recordString(domain, 'skill_id', 'ChatGPT share recovery receipt_domain requires skill_id') !==
+      skill.skillId ||
+    recordString(
+      domain,
+      'skill_version',
+      'ChatGPT share recovery receipt_domain requires skill_version',
+    ) !== skill.version
+  ) {
+    reject('ChatGPT share recovery receipt_domain does not match the selected skill');
+  }
+  if (current) {
+    if (
+      recordString(
+        domain,
+        'agent_id',
+        'ChatGPT share recovery receipt_domain requires agent_id',
+      ) !== current.agentId
+    ) {
+      reject('ChatGPT share recovery receipt_domain agent does not match current execution');
+    }
+    const context = current.executionContext;
+    if (context) {
+      if (
+        recordString(
+          domain,
+          'mission_id',
+          'ChatGPT share recovery receipt_domain requires mission_id',
+        ) !== context.missionId ||
+        recordString(
+          domain,
+          'phase_id',
+          'ChatGPT share recovery receipt_domain requires phase_id',
+        ) !== context.phaseId ||
+        domain.expected_mission_version !== context.expectedMissionVersion
+      ) {
+        reject('ChatGPT share recovery receipt_domain does not match current mission execution');
+      }
+    }
+  }
+}
+
 function validateVisualDesktopAuditReceipt(
   receipt: McfToolReceipt,
   inputs: Readonly<Record<string, unknown>> = {},
@@ -1361,6 +1476,9 @@ export class EvidenceValidator {
         break;
       case 'MCF-DEPLOY-VALIDATE':
         validateDeploymentReceipt(receipt);
+        break;
+      case 'MCF-RECOVER-CHATGPT-SHARE':
+        validateChatGptShareRecoveryReceipt(receipt, skill, inputs, current);
         break;
       case 'MCF-AUDIT-VISUAL-DESKTOP':
         validateVisualDesktopAuditReceipt(receipt, inputs);

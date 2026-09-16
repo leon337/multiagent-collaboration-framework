@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { AdapterRegistry } from './adapter-registry.js';
+import { ChatGptShareRecoveryAdapter } from './chatgpt-share-recovery.adapter.js';
 import { CodeBuddyExecutorAdapter } from './codebuddy-executor.adapter.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import { ExternalActionLedger } from './external-action-ledger.js';
@@ -42,6 +43,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
 
     expect(registryProvider).toBeDefined();
     expect(registryProvider?.inject).toEqual([
+      ChatGptShareRecoveryAdapter,
       GitHubCodeReviewAdapter,
       GitHubCiQueryAdapter,
       GitHubBranchPullRequestAdapter,
@@ -50,6 +52,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
     ]);
 
     const registry = registryProvider?.useFactory?.(
+      stub('chatgpt-share-recovery-read-only-v1'),
       stub('github-code-review-read-v1'),
       stub('github-ci-query-read-v1'),
       stub('github-branch-pr-write-v1'),
@@ -57,6 +60,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       stub('codebuddy-implement-change-local-v1'),
     ) as AdapterRegistry;
 
+    expect(registry.listAdapterIds()).toContain('chatgpt-share-recovery-read-only-v1');
     expect(registry.listAdapterIds()).toContain('github-branch-pr-write-v1');
     expect(registry.listAdapterIds()).toContain('github-pr-collaboration-write-v1');
     expect(registry.listAdapterIds()).toContain('codebuddy-implement-change-local-v1');

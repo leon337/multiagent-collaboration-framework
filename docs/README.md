@@ -39,7 +39,7 @@ Documentação:
 - [`../artifacts/phases/`](../artifacts/phases/)
 - [`../.github/workflows/`](../.github/workflows/)
 
-Estado reconciliado: 16 skills registradas, 16 executáveis e 0 somente documentais; Gate C, Gate D e Gate E são boundaries concluídos; produção foi concluída; RC1/RC2/RC3 estão preservadas; `v1.0.0` stable foi publicada no SHA da RC3.
+Estado reconciliado: o lineage stable `v1.0.0` foi qualificado com 16 skills registradas, 16 executáveis e 0 somente documentais; este candidato adiciona `MCF-RECOVER-CHATGPT-SHARE` como a 17ª skill executável, sem alterar o histórico de Gate C, Gate D, Gate E ou RC1/RC2/RC3.
 
 ## Governança e autoridade
 
