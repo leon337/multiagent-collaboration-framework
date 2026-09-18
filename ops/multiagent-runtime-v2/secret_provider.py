@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from capability_tokens import CapabilityDenied
-from security_guard import SecretPolicy
+from security_guard import ConfusedDeputyGuard, SecretPolicy
 
 
 class SecretProviderError(RuntimeError):
@@ -138,6 +138,37 @@ class SecretBroker:
         if provider is None:
             raise SecretProviderError(f"unknown secret provider {provider_name}")
         provider.revoke(ref)
+
+    def acquire_for_execution(
+        self,
+        provider_name: str,
+        ref: SecretRef,
+        *,
+        issuer,
+        token: str,
+        agent_id: str,
+        task_id: str,
+        execution_id: str,
+        execution: dict[str, object],
+        ttl_seconds: int | None = None,
+        now: float | None = None,
+    ) -> SecretLease:
+        capability = f"secret:{ref.name}"
+        ConfusedDeputyGuard.authorize_tool_call(
+            issuer,
+            token,
+            agent_id=agent_id,
+            task_id=task_id,
+            execution_id=execution_id,
+            tool=capability,
+            execution=execution,
+            now=now,
+        )
+        return self.acquire(
+            provider_name,
+            ref,
+            ttl_seconds=ttl_seconds,
+        )
 
     @staticmethod
     def audit_metadata(lease: SecretLease) -> dict[str, object]:
