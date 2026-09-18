@@ -11,9 +11,11 @@ repository: leon337/reconhecimento_facial
 product_scope: FRONTEND_ONLY
 active_mission: CPP-NF-01-PRODUTO-DESIGN-SYSTEM
 active_phase: N_DESIGN_LAB_VALIDATION
-current_gate: H1_MANUAL_BROWSER_ZOOM_200
+current_gate: H1_EXISTING_HUMAN_DECISION_RECONCILIATION
 n3_screen_reader_gate: PASS_REAL_ORCA_HUMAN_DIRECTED
 n2_zoom_technical_evidence: PASS_AGENT_LOCAL_REAL_BROWSER
+h1_retest_allowed: false
+h1_human_acceptance_state: RECONCILE_EXISTING_DECISION_DO_NOT_RETEST
 phase_o_start_allowed: false
 nf02_start_allowed: false
 merge_authorized: false
@@ -72,15 +74,16 @@ restrictions:
 
 human_authority: LEANDRO
 next_action: >-
-  Complete H1 manual 200 percent zoom acceptance, then reconcile N4 and Phase N.
-  Do not merge PR #32 or start Phase O/NF-02 without the applicable human gate.
+  Reconcile the existing H1 human decision already provided by LEANDRO without
+  rerunning zoom 200 or N3/Orca. Keep PR #32 unmerged until explicit merge
+  authorization; do not start Phase O or NF-02 by inference.
 
 validation:
   controle_ponto:
-    validated_head: 78ec66b579130d2765dfe2abc40515ba95137814
-    ci_606: SUCCESS
-    phase_n_validation_60: SUCCESS
-    production_validation_459: SUCCESS
+    validated_head: f14c4c55e966227fb53799cbf95c4ce5894589ef
+    ci_607: SUCCESS
+    phase_n_validation_61: SUCCESS
+    production_validation_460: SUCCESS
   mcf:
     documentation_validation_1237: SUCCESS
     production_readiness_595: SUCCESS
@@ -95,10 +98,23 @@ integration_gate:
 
 voicehub_persistence:
   repository: leon337/voicehub-linux
-  main_commit: c483a59dba342a83ab1af31c3cee75a97fdaee14
+  main_commit: dd1dc8f2f71ff23b4398cec209dcd1ef285ca14c
   visibility: PRIVATE
-  ci_run: 35321328130
+  version: 0.1.1
+  ci_run: 35324248107
   ci_result: SUCCESS
   radio_fx: PERSISTED
   speech_queue: PERSISTED
   installer: PERSISTED
+  hardening_pr: 2
+  hardening_pr_state: MERGED
+  regression_tests: 6
+  smoke_test: PASS
+  local_runtime_matches_main: true
+
+cognitive_ledger:
+  event_id: cog-20260918-controle-ponto-frontend-mission-runtime-001
+  upstream_written_confirmed: false
+  local_pending_queue: /home/leo/.local/state/cognitive-ledger/pending/cog-20260918-controle-ponto-frontend-mission-runtime-001.json
+  retry_status: BLOCKED_BY_UPSTREAM_TIMEOUT_OR_TOOL_SECURITY
+  duplicate_allowed: false
