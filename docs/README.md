@@ -151,3 +151,5 @@ Envelope genérico ou Decision Inbox.
 ## Regra de continuidade
 
 Ao retomar uma missão, não use este índice como prova de estado live. Consulte GitHub/provider, depois o `MCF-CURRENT-STATE.md`, a decisão/PRF do boundary ativo e o código/testes/workflows pertinentes.
+
+No notebook `leo-N43SM`, a seleção do workspace local está documentada em [`operations/MCF-LOCAL-WORKSPACE-CANONICALIZATION.md`](operations/MCF-LOCAL-WORKSPACE-CANONICALIZATION.md). Para execução do MESTRE dentro do ChatGPT, o boundary canônico do Harness V2 é `CHATGPT_BUBBLE_LOCAL_SANDBOX`; essa política não substitui GitHub live nem o Project Registry.
