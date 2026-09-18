@@ -5,7 +5,7 @@ Legend: `[x]` locally validated · `[~]` partial/CI pending · `[ ]` pending.
 ## Journal / Authority
 - [x] A10 local cryptographic authority anchor with HMAC.
 - [~] C08 external anchor publication — signer exists; external publication not automatic.
-- [ ] C09 explicit schema migration framework.
+- [x] C09 explicit schema migration framework.
 - [x] C10 auditable snapshot + non-destructive prefix archive.
 - [x] J10 dedicated receipt schema.
 - [~] J11 external attestation — local anchor ready, external provider not selected.
@@ -38,3 +38,13 @@ Legend: `[x]` locally validated · `[~]` partial/CI pending · `[ ]` pending.
 - [~] GitHub Harness CI.
 - [~] GitHub Production Readiness.
 - [ ] HUMAN_GATE for merge.
+
+
+## Schema migration evidence
+- [x] explicit adjacent-only registry;
+- [x] multi-hop planning requires every hop;
+- [x] downgrade denied;
+- [x] cross-family migration denied;
+- [x] missing hop fails closed;
+- [x] duplicate source migration rejected;
+- [x] migration output must remain an object.
