@@ -80,5 +80,90 @@ class ExecutionAuthorityTests(unittest.TestCase):
             self.rt.request_tool("c1", "e1", "repo_read", "a" * 64, "a1")
 
 
+    def test_stale_execution_cannot_finish_after_lease_recovery(self):
+        self.active_agent("a1")
+        task = self.leased_task(owner_id="a1")
+        self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
+        self.rt.update_task(
+            "t1",
+            task["revision"],
+            "recovery",
+            status="blocked",
+            owner_id=None,
+            lease_id=None,
+            lease_until=None,
+        )
+        with self.assertRaises(ConflictError):
+            self.rt.finish_execution(
+                "e1",
+                "mestre",
+                success=True,
+                finish_reason="stale-worker",
+            )
+
+    def test_expired_lease_cannot_finish_execution(self):
+        self.active_agent("a1")
+        task = self.leased_task(owner_id="a1")
+        task = self.rt.update_task(
+            "t1",
+            task["revision"],
+            "mestre",
+            lease_until=0,
+        )
+        self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
+        with self.assertRaises(ConflictError):
+            self.rt.finish_execution(
+                "e1",
+                "mestre",
+                success=True,
+                finish_reason="expired",
+            )
+
+    def test_execution_cannot_finish_with_unresolved_tool(self):
+        self.active_agent("a1")
+        self.leased_task(owner_id="a1")
+        self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
+        self.rt.request_tool("c1", "e1", "repo_read", "a" * 64, "a1")
+        with self.assertRaises(ConflictError):
+            self.rt.finish_execution(
+                "e1",
+                "mestre",
+                success=True,
+                finish_reason="tool-still-running",
+            )
+
+    def test_tool_finisher_must_own_execution(self):
+        self.active_agent("a1")
+        self.leased_task(owner_id="a1")
+        self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
+        self.rt.request_tool("c1", "e1", "repo_read", "a" * 64, "a1")
+        with self.assertRaises(ConflictError):
+            self.rt.finish_tool(
+                "c1",
+                "mestre",
+                success=True,
+                result_sha256="b" * 64,
+            )
+
+    def test_tool_must_settle_before_execution_can_finish(self):
+        self.active_agent("a1")
+        self.leased_task(owner_id="a1")
+        self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
+        self.rt.request_tool("c1", "e1", "repo_read", "a" * 64, "a1")
+        self.rt.finish_tool(
+            "c1",
+            "a1",
+            success=True,
+            result_sha256="b" * 64,
+        )
+        done = self.rt.finish_execution(
+            "e1",
+            "mestre",
+            success=True,
+            finish_reason="done",
+        )
+        self.assertEqual(done["status"], "completed")
+
+
 if __name__ == "__main__":
     unittest.main()
