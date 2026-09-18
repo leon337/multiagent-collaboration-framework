@@ -68,6 +68,7 @@ def projection_material(projection) -> dict[str, Any]:
             "tasks": projection.tasks,
             "messages": projection.messages,
             "delivered_messages": projection.delivered_messages,
+            "delivery_attempts": projection.delivery_attempts,
             "executions": projection.executions,
             "tool_calls": projection.tool_calls,
             "sessions": projection.sessions,
