@@ -29,11 +29,11 @@ The local bubble sandbox cannot resolve `storage.googleapis.com`, so direct mate
 ## Gates
 
 - [x] G0 — issue + branch + HUMAN_GATE
-- [ ] G1 — recover 25 voice clips in cloud runner
-- [ ] G2 — measure durations / timing manifest
-- [ ] G3 — generate 25 1080×1920 slides
-- [ ] G4 — render technical multi-voice MP4
-- [ ] G5 — validate 25 scenes, 3 voices, 9:16 and duration
+- [x] G1 — recover 25 voice clips in cloud runner
+- [x] G2 — measure durations / timing manifest
+- [x] G3 — generate 25 1080×1920 slides
+- [x] G4 — render technical multi-voice MP4
+- [x] G5 — validate 25 scenes, 3 voices, 9:16 and duration
 - [ ] G6 — refine soundtrack, SFX and transitions
 
 ## Outputs
@@ -47,3 +47,12 @@ Supporting evidence:
 - `timing-manifest.json`
 - `render-evidence.json`
 - 25 generated slide PNGs
+
+## Technical render receipt
+
+- State: **G1–G5 PASS / G6 PENDING**
+- Render executor: `mcf-render-multivoice-001` (Render free)
+- Duration: 62.03 s
+- Resolution: 1080×1920
+- SHA-256: `337c90be8da06e9b3156b30d3003ab603cb47aabc3148dad2a629ae7e967c260`
+- Evidence: `EVIDENCE.md`
