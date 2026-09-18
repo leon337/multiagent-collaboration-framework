@@ -255,7 +255,8 @@ app.get("/setup/google-cloud", (_req, res) => {
   const keyId = "391428cc7b858455395cae7cb9971588112181745e324808c7d0a69908d0a581";
   const publicKeyPem = "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAzpnqqzM6TFqRjLAb3AjZ\n+jctjNZ8IS8zqtJ+sGiu31aXGaZHpPL8i9VsZcs9kxMbsXhJU4BpyUTzQQFgpAFw\nc1wMqhhJ0n2OBtu7V6KUv3bWzjLwcLf9tauwNxcwzUXzVhM1xdGhyKHonYgc8GxH\nGaS1SJxofBZNUHlGriSvJZGasnHQufwXpT1XwOuc0RCt1CxbqXtL+mitGBhMSHYG\n1UmClXEXRipPcFcg9mhpwPzaA+Z7qqKLRxfVrMleIP75CLzKhEi1oAvaldiDTpih\nvQdHy7UbM4072ypEPEpAh/MAW1tI9gqVENgR5xX7VHPd0/koLW9+xNSvmGT/MXTz\n75gHwaRnXisAbK+qQiphn4B4pxqZ7XaU4TAQO7CINRCb/sKe64cLaRdF3fDfjFVz\nKxnOQ8+u0xDLEM7iQMT3KESKH8WDCjuT7/qXvlajQVMBl+U626RfSTGc/aB7QOAW\n2ps4NtbZiDlhr60cLaM1ipceB1UFc+EuO2D6kz7Sx3ezAgMBAAE=\n-----END PUBLIC KEY-----";
   const apiUrl = "https://console.cloud.google.com/apis/library/photospicker.googleapis.com?project=" + encodeURIComponent(projectId);
-  const clientsUrl = "https://console.cloud.google.com/auth/clients?project=" + encodeURIComponent(projectId);\n  const audienceUrl = "https://console.cloud.google.com/auth/audience?project=" + encodeURIComponent(projectId);
+  const clientsUrl = "https://console.cloud.google.com/auth/clients?project=" + encodeURIComponent(projectId);
+  const audienceUrl = "https://console.cloud.google.com/auth/audience?project=" + encodeURIComponent(projectId);
   res.type("html").send(`<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Configurar Google Photos Bridge</title>
@@ -313,7 +314,8 @@ code,textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}textarea{w
 <script>
 const callback="https://mcf-google-photos-bridge.onrender.com/oauth/google/callback";
 const publicKeyPem="-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAzpnqqzM6TFqRjLAb3AjZ\n+jctjNZ8IS8zqtJ+sGiu31aXGaZHpPL8i9VsZcs9kxMbsXhJU4BpyUTzQQFgpAFw\nc1wMqhhJ0n2OBtu7V6KUv3bWzjLwcLf9tauwNxcwzUXzVhM1xdGhyKHonYgc8GxH\nGaS1SJxofBZNUHlGriSvJZGasnHQufwXpT1XwOuc0RCt1CxbqXtL+mitGBhMSHYG\n1UmClXEXRipPcFcg9mhpwPzaA+Z7qqKLRxfVrMleIP75CLzKhEi1oAvaldiDTpih\nvQdHy7UbM4072ypEPEpAh/MAW1tI9gqVENgR5xX7VHPd0/koLW9+xNSvmGT/MXTz\n75gHwaRnXisAbK+qQiphn4B4pxqZ7XaU4TAQO7CINRCb/sKe64cLaRdF3fDfjFVz\nKxnOQ8+u0xDLEM7iQMT3KESKH8WDCjuT7/qXvlajQVMBl+U626RfSTGc/aB7QOAW\n2ps4NtbZiDlhr60cLaM1ipceB1UFc+EuO2D6kz7Sx3ezAgMBAAE=\n-----END PUBLIC KEY-----";
-const keyId="391428cc7b858455395cae7cb9971588112181745e324808c7d0a69908d0a581";\nconst projectId="our-rock-308910";
+const keyId="391428cc7b858455395cae7cb9971588112181745e324808c7d0a69908d0a581";
+const projectId="our-rock-308910";
 function pemToBuf(pem){
   const b64=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g,"");
   const bin=atob(b64); const out=new Uint8Array(bin.length);
