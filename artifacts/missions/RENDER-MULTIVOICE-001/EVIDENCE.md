@@ -1,6 +1,6 @@
 # EVIDENCE — RENDER-MULTIVOICE-001
 
-State: **G1–G5 PASS / G6 PENDING**
+State: **G1–G5 PASS / G6-A AUDIO REFINEMENT PASS / G6-B VISUAL REVIEW PENDING**
 
 Human authority: **LEANDRO**  
 Orchestrator: **MESTRE**  
@@ -16,8 +16,8 @@ Branch: `mission/render-multivoice-001`
 - Service ID: `srv-damrpv3ncjis73ck2t5g`
 - Plan: free
 - Region: Virginia
-- Canonical deploy: `dep-damrqisss21s73a5eib0`
-- Commit: `2aea1cf270c80c95fc915683b80dc744c8c3e340`
+- Canonical deploy: `dep-damrs2qjnfac738vtnhg`
+- Commit: `5399a3693fe079f6ce57bd59c37f74df46c2a029`
 - Public base URL: `https://mcf-render-multivoice-001.onrender.com`
 
 No existing Render service was modified.
@@ -53,7 +53,7 @@ Artifact:
 ### G5 — Validation
 **PASS**
 
-- Duration: **62.03 s**
+- Duration: **62.04 s**
 - Resolution: **1080×1920**
 - Video: **H.264**
 - Audio: **AAC-LC**
@@ -61,21 +61,30 @@ Artifact:
 - Layout: **stereo**
 - Observed FPS: **29.96**
 - Scenes: **25**
-- SHA-256: `337c90be8da06e9b3156b30d3003ab603cb47aabc3148dad2a629ae7e967c260`
-- Size: **7,572,374 bytes**
+- SHA-256: `4a0da5c5df116131a34c4f9ac288797e32552c813eb34751fb18fb3e089d80c0`
+- Size: **7,862,571 bytes**
 - Runtime HTTP probe: **200**
 
 Direct artifact URL:
 `https://mcf-render-multivoice-001.onrender.com/chamado-amanhecer-v2-multivoz.mp4`
 
 ## G6 — Creative refinement
+
+### G6-A — Audio refinement
+**PASS**
+
+- Original synthesized ambient bed; no external music asset or licensing dependency.
+- Low-volume dawn/wind texture.
+- Four subtle memory accents at scenes s04, s13, s14 and s19.
+- Voice-driven sidechain ducking.
+- Output revalidated after mix.
+
+### G6-B — Visual/human review
 **PENDING**
 
-Next pass:
-- soundtrack/ambient bed;
-- scene-specific SFX;
-- improved transitions;
-- visual review;
+Remaining:
+- human playback review of image rhythm and voice balance;
+- optional transition tuning after review;
 - optional Instagram-optimized encode.
 
 ## Resolved blocker
