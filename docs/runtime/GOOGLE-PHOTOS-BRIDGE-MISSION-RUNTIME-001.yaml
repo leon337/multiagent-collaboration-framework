@@ -99,3 +99,47 @@ checkpoint_2026_09_18_0638_brt:
     Default all development, testing, analysis and artifact work to the ChatGPT
     sandbox inside the conversation. Do not require LEANDRO's notebook, VPS or
     Brainbase unless a task specifically needs those resources.
+
+
+checkpoint_2026_09_18_v0_4:
+  execution_environment: CHATGPT_SANDBOX
+  sandbox_tests:
+    total: 15
+    passed: 15
+    failed: 0
+  version: 0.4.0
+  security:
+    mcp_oauth_adapter_implemented: true
+    rfc9728_metadata: true
+    jwt_jwks_validation: true
+    validates:
+      - iss
+      - aud
+      - exp
+      - nbf
+      - scopes
+    connection_bound_to_authenticated_user: true
+    staging_mcp_auth_enabled: false
+  render:
+    deploy_id: dep-damgjnn40ujc73as9t90
+    build_tests: 15_PASS_0_FAIL
+    npm_audit_vulnerabilities: 0
+    status: DEPLOYING
+  github:
+    draft_pr: 233
+    pr_title: "feat: Google Photos Bridge MCP App V0.4"
+    mergeable: true
+    merge_authorized: false
+  current_gate:
+    id: GOOGLE_AUTH_PLATFORM
+    required:
+      - enable Google Photos Picker API
+      - create OAuth Web client
+      - register redirect URI https://mcf-google-photos-bridge.onrender.com/oauth/google/callback
+  production_gate:
+    id: MCP_OAUTH_PROVIDER
+    required:
+      - compatible OAuth 2.1 Authorization Server
+      - PKCE S256
+      - protected resource audience binding
+      - enable MCP_AUTH_ENABLED only after validation
