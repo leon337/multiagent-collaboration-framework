@@ -487,6 +487,7 @@ export interface McfCiCallbackResponse {
 export type McfExecutableSkillId =
   | 'MCF-START-MISSION'
   | 'MCF-SELECT-AGENTS'
+  | 'MCF-EXECUTE-LOCAL-TEAM'
   | 'MCF-RECOVER-CONTEXT'
   | 'MCF-DEFINE-PRODUCT'
   | 'MCF-DESIGN-EXPERIENCE'
@@ -503,7 +504,14 @@ export type McfExecutableSkillId =
   | 'MCF-CLOSE-PHASE';
 
 export type McfExecutableToolProvider =
-  'internal' | 'github' | 'github-actions' | 'render' | 'vercel' | 'cloudflare' | 'codebuddy';
+  | 'internal'
+  | 'github'
+  | 'github-actions'
+  | 'render'
+  | 'vercel'
+  | 'cloudflare'
+  | 'codebuddy'
+  | 'local-agent-runtime';
 
 export interface McfChatDispatchRequest {
   objective: string;

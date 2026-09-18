@@ -12,6 +12,7 @@ import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js';
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
+import { LocalAgentTeamAdapter } from './local-agent-team.adapter.js';
 import { McfRuntimeModule } from './mcf-runtime.module.js';
 
 type FactoryProvider = {
@@ -47,6 +48,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       GitHubBranchPullRequestAdapter,
       GitHubPullCollaborationAdapter,
       CodeBuddyExecutorAdapter,
+      LocalAgentTeamAdapter,
     ]);
 
     const registry = registryProvider?.useFactory?.(
@@ -55,11 +57,13 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       stub('github-branch-pr-write-v1'),
       stub('github-pr-collaboration-write-v1'),
       stub('codebuddy-implement-change-local-v1'),
+      stub('local-agent-team-process-v1'),
     ) as AdapterRegistry;
 
     expect(registry.listAdapterIds()).toContain('github-branch-pr-write-v1');
     expect(registry.listAdapterIds()).toContain('github-pr-collaboration-write-v1');
     expect(registry.listAdapterIds()).toContain('codebuddy-implement-change-local-v1');
+    expect(registry.listAdapterIds()).toContain('local-agent-team-process-v1');
   });
 });
 

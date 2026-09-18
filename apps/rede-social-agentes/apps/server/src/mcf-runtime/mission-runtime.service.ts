@@ -172,11 +172,15 @@ export class MissionRuntimeService {
       );
     }
 
-    const effectiveInputs = canonicalizeHumanGateDecision(
+    const canonicalInputs = canonicalizeHumanGateDecision(
       request.inputs,
       authenticatedHuman,
       this.reservedHumanAuthorityAccountId,
     );
+    const effectiveInputs =
+      request.skillId === 'MCF-EXECUTE-LOCAL-TEAM'
+        ? { ...canonicalInputs, mission_selected_agents: [...mission.contract.selectedAgents] }
+        : canonicalInputs;
     const phaseId = request.phaseId ?? randomUUID();
     const outcome = await this.executor.execute({
       skillId: request.skillId,

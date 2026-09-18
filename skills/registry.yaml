@@ -344,3 +344,27 @@ skills:
     failure_modes: [gui_unavailable, surface_count_mismatch, ocr_unreliable, artifact_missing, open_not_verified]
     fallback: Preferir fonte estruturada; usar OCR somente como fallback; se a sessão gráfica ou a evidência final não puder ser verificada, declarar bloqueio sem inventar sucesso.
     handoff_to: Beatriz
+
+  - skill_id: MCF-EXECUTE-LOCAL-TEAM
+    name: Executar time local multiagente governado
+    version: 0.1.0
+    purpose: Selecionar agentes canônicos por competência e executar workers locais não cognitivos em processos separados, com receipts individuais e consolidados.
+    owner_agents: [Mestre]
+    trigger_phrases: ["multiagente", "subagentes", "time de agentes", "mais agentes", "paralelismo"]
+    required_inputs: [objective, mission_selected_agents]
+    optional_inputs: []
+    allowed_tools: [local-agent-runtime]
+    forbidden_tools: [shell_arbitrary, public_deployment, production_action, secret_access]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps:
+      - selecionar_agentes_canonicos
+      - validar_escopo_da_missao
+      - executar_workers_locais_limitados
+      - coletar_receipts_filhos
+      - consolidar_receipt
+    required_evidence: [selected_agents, process_ids, worker_receipts, consolidated_digest]
+    expected_outputs: [local_team_result, consolidated_receipt]
+    acceptance_criteria: [canonical_agents_only, unique_processes, receipts_valid, cognitive_non_claim_preserved]
+    failure_modes: [executor_disabled, worker_timeout, duplicate_pid, invalid_receipt, mission_scope_mismatch]
+    fallback: Falhar fechado e retornar ao Mestre sem alegar execução cognitiva independente.
+    handoff_to: Mestre

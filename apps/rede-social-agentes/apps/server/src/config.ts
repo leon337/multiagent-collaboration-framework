@@ -53,8 +53,18 @@ const runtimeConfigSchema = z
     MCF_CODEBUDDY_WORKSPACE_ROOT: z.string().default(''),
     MCF_CODEBUDDY_MODEL: z.string().min(1).default('cx/gpt-5.6-sol'),
     MCF_CODEBUDDY_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(600_000).default(300_000),
+    MCF_LOCAL_AGENT_TEAM_ENABLED: booleanEnvironmentValue,
+    MCF_LOCAL_AGENT_TEAM_TIMEOUT_MS: z.coerce.number().int().min(500).max(120_000).default(10_000),
+    MCF_LOCAL_AGENT_TEAM_MAX_PARALLELISM: z.coerce.number().int().min(1).max(8).default(4),
   })
   .superRefine((config, context) => {
+    if (config.MCF_LOCAL_AGENT_TEAM_ENABLED && config.NODE_ENV === 'production') {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['MCF_LOCAL_AGENT_TEAM_ENABLED'],
+        message: 'Local agent team executor cannot be enabled in production.',
+      });
+    }
     if (config.MCF_CODEBUDDY_EXECUTOR_ENABLED) {
       const workspaceRoot = config.MCF_CODEBUDDY_WORKSPACE_ROOT.trim();
       if (config.NODE_ENV === 'production') {

@@ -26,6 +26,7 @@ import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js'
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
+import { LocalAgentTeamAdapter } from './local-agent-team.adapter.js';
 import { MissionObservabilityController } from './mission-observability.controller.js';
 import { MissionControlController } from './mission-control.controller.js';
 import { MissionControlRepository } from './mission-control.repository.js';
@@ -93,8 +94,12 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     {
       provide: ChatMissionPlanner,
       useFactory: () => {
-        const config = codeBuddyExecutorConfig();
-        return new ChatMissionPlanner(probeCodeBuddyExecutorCapability(config));
+        const codeBuddy = codeBuddyExecutorConfig();
+        const runtime = loadRuntimeConfig();
+        return new ChatMissionPlanner(
+          probeCodeBuddyExecutorCapability(codeBuddy),
+          runtime.MCF_LOCAL_AGENT_TEAM_ENABLED,
+        );
       },
     },
     {
@@ -150,6 +155,18 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [EvidenceValidator],
     },
     {
+      provide: LocalAgentTeamAdapter,
+      useFactory: (evidence: EvidenceValidator) => {
+        const config = loadRuntimeConfig();
+        return new LocalAgentTeamAdapter(evidence, {
+          enabled: config.MCF_LOCAL_AGENT_TEAM_ENABLED,
+          timeoutMs: config.MCF_LOCAL_AGENT_TEAM_TIMEOUT_MS,
+          maxParallelism: config.MCF_LOCAL_AGENT_TEAM_MAX_PARALLELISM,
+        });
+      },
+      inject: [EvidenceValidator],
+    },
+    {
       provide: AdapterRegistry,
       useFactory: (
         githubReview: GitHubCodeReviewAdapter,
@@ -157,6 +174,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         githubBranchPr: GitHubBranchPullRequestAdapter,
         githubPrCollaboration: GitHubPullCollaborationAdapter,
         codeBuddy: CodeBuddyExecutorAdapter,
+        localAgentTeam: LocalAgentTeamAdapter,
       ) =>
         new AdapterRegistry([
           githubReview,
@@ -164,6 +182,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           githubBranchPr,
           githubPrCollaboration,
           codeBuddy,
+          localAgentTeam,
         ]),
       inject: [
         GitHubCodeReviewAdapter,
@@ -171,6 +190,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         GitHubBranchPullRequestAdapter,
         GitHubPullCollaborationAdapter,
         CodeBuddyExecutorAdapter,
+        LocalAgentTeamAdapter,
       ],
     },
     {

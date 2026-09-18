@@ -13,6 +13,8 @@ import type {
   ExternalActionExecutionContext,
   ExternalActionTrace,
 } from './external-action.contracts.js';
+import { verifyLocalAgentTeamEvidence } from './local-agent-team.evidence.js';
+import { LOCAL_AGENT_TEAM_PROVIDER, LOCAL_AGENT_TEAM_RESOURCE } from './local-agent-team.router.js';
 import { verifyGitHubBranchPrEvidence } from './github-branch-pr.evidence.js';
 import { verifyGitHubPrCollaborationEvidence } from './github-pr-collaboration.evidence.js';
 import {
@@ -41,6 +43,7 @@ import type { SkillRegistryLoader } from './skill-registry.loader.js';
 const executableSkills = new Set([
   'MCF-START-MISSION',
   'MCF-SELECT-AGENTS',
+  'MCF-EXECUTE-LOCAL-TEAM',
   'MCF-RECOVER-CONTEXT',
   'MCF-DEFINE-PRODUCT',
   'MCF-DESIGN-EXPERIENCE',
@@ -117,6 +120,14 @@ function ledgerFailureTrace(trace: ExternalActionTrace | null): ExternalActionTr
     failureCode: 'LEDGER_FAILURE',
     retryable: true,
   };
+}
+
+function isLocalAgentTeamReceipt(receipt: McfToolReceipt, skill: McfSkillDefinition): boolean {
+  return (
+    skill.skillId === 'MCF-EXECUTE-LOCAL-TEAM' &&
+    canonicalizeProvider(receipt.provider) === LOCAL_AGENT_TEAM_PROVIDER &&
+    canonicalizeToolValue(receipt.operation) === 'execute-agent-team'
+  );
 }
 
 function isRunTestsCiQueryReceipt(receipt: McfToolReceipt, skill: McfSkillDefinition): boolean {
@@ -376,6 +387,21 @@ export class SkillExecutor {
           agentId: input.agentId,
           executionContext: input.executionContext,
         });
+      } else if (isLocalAgentTeamReceipt(receipt, skill)) {
+        this.evidence.verify(receipt, input.tool);
+        const workerReceipts = verifyLocalAgentTeamEvidence(
+          receipt,
+          input.tool,
+          skill,
+          input.inputs,
+        );
+        for (const workerReceipt of workerReceipts) {
+          this.evidence.verify(workerReceipt, {
+            provider: LOCAL_AGENT_TEAM_PROVIDER,
+            operation: 'worker-result',
+            resource: LOCAL_AGENT_TEAM_RESOURCE,
+          });
+        }
       } else {
         this.evidence.verifyForSkill(receipt, input.tool, skill, input.inputs, {
           agentId: input.agentId,

@@ -47,6 +47,24 @@ function isCanonicalGitHubRepositoryResource(value: string): boolean {
   return value === value.trim() && canonicalGitHubRepositoryResource.test(value);
 }
 
+function assertLocalAgentTeamBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  if (provider !== 'local-agent-runtime') return;
+  if (
+    skillId !== 'MCF-EXECUTE-LOCAL-TEAM' ||
+    operation !== 'execute-agent-team' ||
+    resource !== 'mcf-agent-runtime'
+  ) {
+    throw new McfPermissionDeniedError(
+      'local-agent-runtime is restricted to MCF-EXECUTE-LOCAL-TEAM/execute-agent-team',
+    );
+  }
+}
+
 function assertCodeBuddyImplementationBoundary(
   skillId: string,
   provider: string,
@@ -329,7 +347,14 @@ function assertCodeBuddyBoundary(
 }
 
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
-const proposalOperations = [...readOperations, 'draft', 'plan', 'design', 'create-contract'];
+const proposalOperations = [
+  ...readOperations,
+  'draft',
+  'plan',
+  'design',
+  'create-contract',
+  'execute-agent-team',
+];
 const destructiveOperations = [
   'delete',
   'drop',
@@ -385,6 +410,7 @@ export class PermissionEngine {
     assertVisualDesktopAuditBoundary(skill.skillId, provider, operation, resource);
     assertCodeBuddyBoundary(skill.skillId, provider, operation, tool.resource);
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);
+    assertLocalAgentTeamBoundary(skill.skillId, provider, operation, resource);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');

@@ -1,0 +1,20 @@
+[Unit]
+Description=VoiceHub Linux - Painel de Controle de Voz
+After=graphical-session.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.local/share/voicehub-linux
+ExecStart=/usr/bin/python3 %h/.local/share/voicehub-linux/voicehub_server.py
+Restart=always
+RestartSec=2
+Environment=VOICEHUB_PORT=8788
+Environment=DISPLAY=:0
+Environment=XDG_RUNTIME_DIR=%t
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=%t/bus
+Environment=PULSE_SERVER=unix:%t/pulse/native
+ExecStartPost=-/usr/bin/pactl set-sink-mute @DEFAULT_SINK@ 0
+ExecStartPost=-/usr/bin/pactl set-sink-volume @DEFAULT_SINK@ 100%
+
+[Install]
+WantedBy=default.target
