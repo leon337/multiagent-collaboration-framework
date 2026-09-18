@@ -6,14 +6,22 @@ export class EphemeralStore {
     this.sessions = new Map();
   }
 
-  createConnection() {
+  createConnection(ownerId = "anonymous") {
     const connectionId = crypto.randomBytes(24).toString("base64url");
-    this.connections.set(connectionId, { status: "pending", token: null, createdAt: Date.now() });
+    this.connections.set(connectionId, { ownerId: String(ownerId), status: "pending", token: null, createdAt: Date.now() });
     return connectionId;
   }
 
   connection(connectionId) {
     return this.connections.get(connectionId) ?? null;
+  }
+
+  assertConnectionOwner(ownerId, connectionId) {
+    const connection = this.connection(connectionId);
+    if (!connection || connection.ownerId !== String(ownerId)) {
+      throw new Error("Google Photos connection does not belong to this authenticated user");
+    }
+    return connection;
   }
 
   deleteConnection(connectionId) {
