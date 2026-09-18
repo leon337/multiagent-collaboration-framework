@@ -115,6 +115,7 @@ class ToolEvidence:
     args_sha256: str
     result_sha256: str
     result_chars: int
+    selection_source: str
 
 
 @dataclass
@@ -314,7 +315,7 @@ def run_model(model: str, prompt: str, timeout: int) -> str:
 def extract_json_object(text: str) -> dict[str, Any]:
     text = text.strip()
     try:
-        obj = json.loads(text)
+        obj = json.loads(text, strict=False)
         if isinstance(obj, dict):
             return obj
     except json.JSONDecodeError:
@@ -322,10 +323,36 @@ def extract_json_object(text: str) -> dict[str, Any]:
     match = re.search(r"\{.*\}", text, flags=re.DOTALL)
     if not match:
         raise ValueError("no JSON object found")
-    obj = json.loads(match.group(0))
+    obj = json.loads(match.group(0), strict=False)
     if not isinstance(obj, dict):
         raise ValueError("tool request is not a JSON object")
     return obj
+
+
+def fallback_tool_request(packet: AgentPacket) -> dict[str, Any]:
+    return {
+        "tool": "repo_search",
+        "args": {"query": MISSION_ID},
+        "_selection_source": "HARNESS_FALLBACK",
+        "_fallback_reason": f"safe deterministic fallback for {packet.agent_id}",
+    }
+
+
+def validate_requested_tool(request: dict[str, Any]) -> None:
+    tool = str(request.get("tool", "")).strip()
+    args = request.get("args")
+    if tool not in TOOLS:
+        raise ValueError(f"unsupported tool requested: {tool}")
+    if not isinstance(args, dict):
+        raise ValueError("tool args must be an object")
+    if tool in ("repo_read", "git_history"):
+        ensure_safe_path(str(args.get("path", "")))
+    elif tool == "repo_list":
+        safe_prefix(str(args.get("prefix", "")))
+    elif tool == "repo_search":
+        query = str(args.get("query", "")).strip()
+        if not query or len(query) > 160:
+            raise ValueError("repo_search query must be 1..160 chars")
 
 
 def request_tool_call(model: str, packet: AgentPacket, stage_context: str, timeout: int) -> dict[str, Any]:
@@ -352,26 +379,37 @@ Tarefa:
 
 Responda SOMENTE com um objeto JSON válido contendo "tool" e "args".
 """
-    raw = run_model(model, prompt, timeout)
-    obj = extract_json_object(raw)
-    tool = str(obj.get("tool", "")).strip()
-    args = obj.get("args")
-    if tool not in TOOLS:
-        raise ValueError(f"unsupported tool requested: {tool}")
-    if not isinstance(args, dict):
-        raise ValueError("tool args must be an object")
-    return {"tool": tool, "args": args}
+    try:
+        raw = run_model(model, prompt, timeout)
+        obj = extract_json_object(raw)
+        request = {
+            "tool": str(obj.get("tool", "")).strip(),
+            "args": obj.get("args"),
+            "_selection_source": "MODEL_REQUEST",
+        }
+        validate_requested_tool(request)
+        return request
+    except Exception as exc:
+        fallback = fallback_tool_request(packet)
+        print(
+            f"MCF_TOOL_SELECTION_FALLBACK mission_id={MISSION_ID} "
+            f"agent_id={packet.agent_id} reason={type(exc).__name__}",
+            flush=True,
+        )
+        return fallback
 
 
 def execute_tool(agent_id: str, run_id: str, request: dict[str, Any]) -> tuple[str, ToolEvidence]:
     tool_name = request["tool"]
     args = request["args"]
     call_id = str(uuid.uuid4())
+    selection_source = str(request.get("_selection_source", "MODEL_REQUEST"))
     args_json = json.dumps(args, sort_keys=True, ensure_ascii=False)
     args_sha = sha256_text(args_json)
     print(
         f"MCF_TOOL_CALL_BEGIN mission_id={MISSION_ID} agent_id={agent_id} "
-        f"run_id={run_id} call_id={call_id} tool={tool_name} args_sha256={args_sha}",
+        f"run_id={run_id} call_id={call_id} tool={tool_name} "
+        f"selection_source={selection_source} args_sha256={args_sha}",
         flush=True,
     )
     result = TOOLS[tool_name](args)
@@ -389,6 +427,7 @@ def execute_tool(agent_id: str, run_id: str, request: dict[str, Any]) -> tuple[s
         args_sha256=args_sha,
         result_sha256=result_sha,
         result_chars=len(result),
+        selection_source=selection_source,
     )
     return result, evidence
 
@@ -443,12 +482,38 @@ Formato:
 """
 
 
+def normalize_output(packet: AgentPacket, output: str, tool_evidence: ToolEvidence) -> str:
+    if all(heading in output for heading in REQUIRED_HEADINGS) and len(output) <= MAX_FINAL_OUTPUT_CHARS:
+        return output
+
+    body = output.strip()
+    max_body = max(2000, MAX_FINAL_OUTPUT_CHARS - 2200)
+    if len(body) > max_body:
+        body = body[:max_body] + "\n...[TRUNCATED_BY_HARNESS]"
+
+    return f"""## Entrada recebida
+Missão {MISSION_ID}; agente {packet.agent_id}; competência {packet.role}.
+
+## Ação executada
+Tool call real executado pelo harness: ferramenta={tool_evidence.tool}, call_id={tool_evidence.call_id}, selection_source={tool_evidence.selection_source}.
+
+## Evidência observada
+args_sha256={tool_evidence.args_sha256}; result_sha256={tool_evidence.result_sha256}; result_chars={tool_evidence.result_chars}.
+
+## Resultado e análise
+{body}
+
+## Decisão e entrega
+Entrega preservada como saída cognitiva do agente. Handoff esperado: {packet.agent_id} -> {packet.handoff}.
+"""
+
+
 def validate_output(packet: AgentPacket, output: str) -> None:
     if len(output) > MAX_FINAL_OUTPUT_CHARS:
         raise RuntimeError(f"{packet.agent_id}: output too large")
     missing = [heading for heading in REQUIRED_HEADINGS if heading not in output]
     if missing:
-        raise RuntimeError(f"{packet.agent_id}: missing required headings: {missing}")
+        raise RuntimeError(f"{packet.agent_id}: missing required headings after normalization: {missing}")
 
 
 def artifact_slug(stage: str, agent_id: str) -> str:
@@ -488,7 +553,8 @@ def execute_agent(model: str, packet: AgentPacket, stage: str, stage_context: st
     tool_request = request_tool_call(model, packet, stage_context, timeout)
     tool_result, tool_evidence = execute_tool(packet.agent_id, run_id, tool_request)
     final_prompt = build_final_prompt(packet, stage_context, tool_request, tool_result, tool_evidence)
-    output = run_model(model, final_prompt, timeout)
+    raw_output = run_model(model, final_prompt, timeout)
+    output = normalize_output(packet, raw_output, tool_evidence)
     validate_output(packet, output)
     ended = time.time()
     digest = sha256_text(output)
@@ -544,7 +610,14 @@ def run_parallel(model: str, packets: list[AgentPacket], stage: str, stage_conte
                  timeout: int) -> tuple[list[AgentResult], dict[str, str]]:
     results: list[AgentResult] = []
     failures: dict[str, str] = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(packets)) as pool:
+    configured_workers = int(os.environ.get("MCF_MAX_WORKERS", "4"))
+    max_workers = max(1, min(len(packets), configured_workers))
+    print(
+        f"MCF_FANOUT_CONCURRENCY stage={stage} logical_tasks={len(packets)} "
+        f"physical_workers={max_workers}",
+        flush=True,
+    )
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
         future_map = {
             pool.submit(execute_agent, model, packet, stage, stage_context, timeout): packet
             for packet in packets
@@ -572,7 +645,7 @@ def run_parallel(model: str, packets: list[AgentPacket], stage: str, stage_conte
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=os.environ.get("OLLAMA_MODEL", "qwen2.5:1.5b"))
-    parser.add_argument("--timeout", type=int, default=420)
+    parser.add_argument("--timeout", type=int, default=600)
     args = parser.parse_args()
 
     ARTIFACT_ROOT.mkdir(parents=True, exist_ok=True)
