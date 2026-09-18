@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+
+import { selectLocalAgentTeam } from './local-agent-team.router.js';
 import type {
   McfChatDispatchRequest,
   McfChatPlanStep,
@@ -32,6 +34,14 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     toolOperation: 'inspect-selection',
     internal: true,
     requiredEvidence: ['selection_justifications'],
+  },
+  'MCF-EXECUTE-LOCAL-TEAM': {
+    agentId: 'Mestre',
+    handoffTo: 'Mestre',
+    toolProvider: 'local-agent-runtime',
+    toolOperation: 'execute-agent-team',
+    internal: false,
+    requiredEvidence: ['selected_agents', 'process_ids', 'worker_receipts', 'consolidated_digest'],
   },
   'MCF-RECOVER-CONTEXT': {
     agentId: 'Miriam',
@@ -164,6 +174,17 @@ const implementationTerms = [
   'refatorar',
 ];
 const validationTerms = ['testar', 'validar', 'auditar', 'verificar', 'smoke', 'ci'];
+const localTeamTerms = [
+  'multiagente',
+  'multi-agente',
+  'subagentes',
+  'subagente',
+  'time de agentes',
+  'equipe de agentes',
+  'mais agentes',
+  'paralelismo',
+  'workers',
+];
 const evaluationTerms = [
   'avaliar agentes',
   'avaliar agente',
@@ -253,7 +274,10 @@ function inferRisk(
   return requested;
 }
 
-function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
+function inferSkills(
+  request: McfChatDispatchRequest,
+  localAgentTeamEnabled: boolean,
+): McfExecutableSkillId[] {
   if (request.requestedSkills?.length) {
     return unique([
       'MCF-START-MISSION',
@@ -264,6 +288,14 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
   }
 
   const normalized = request.objective.toLowerCase();
+  if (localAgentTeamEnabled && includesAny(normalized, localTeamTerms)) {
+    return [
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-EXECUTE-LOCAL-TEAM',
+      'MCF-TRACE-MISSION',
+    ];
+  }
   if (includesAny(normalized, closePhaseTerms)) {
     return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-CLOSE-PHASE', 'MCF-TRACE-MISSION'];
   }
@@ -298,6 +330,7 @@ function inferSkills(request: McfChatDispatchRequest): McfExecutableSkillId[] {
 
 function resourceFor(skillId: McfExecutableSkillId, repository: string | undefined): string {
   const config = skillConfig[skillId];
+  if (skillId === 'MCF-EXECUTE-LOCAL-TEAM') return 'mcf-agent-runtime';
   if (config.toolProvider === 'internal') {
     if (skillId === 'MCF-TRACE-MISSION') return 'mcf-mission-timeline';
     return config.internal ? 'mcf-chat-bridge' : 'mcf-agent-runtime';
@@ -352,12 +385,20 @@ export interface ChatMissionPlan {
 
 @Injectable()
 export class ChatMissionPlanner {
-  constructor(private readonly codeBuddyEnabled = false) {}
+  constructor(
+    private readonly codeBuddyEnabled = false,
+    private readonly localAgentTeamEnabled = false,
+  ) {}
 
   plan(request: McfChatDispatchRequest): ChatMissionPlan {
-    const selectedSkills = inferSkills(request);
+    const selectedSkills = inferSkills(request, this.localAgentTeamEnabled);
     const steps = buildSteps(selectedSkills, request.repository, this.codeBuddyEnabled);
-    const selectedAgents = unique(steps.flatMap((step) => [step.agentId, step.handoffTo]));
+    const selectedAgents = unique([
+      ...steps.flatMap((step) => [step.agentId, step.handoffTo]),
+      ...(selectedSkills.includes('MCF-EXECUTE-LOCAL-TEAM')
+        ? selectLocalAgentTeam(request.objective)
+        : []),
+    ]);
     const sourceOfTruth = unique([
       'chat-objective',
       ...(request.repository ? [request.repository] : []),

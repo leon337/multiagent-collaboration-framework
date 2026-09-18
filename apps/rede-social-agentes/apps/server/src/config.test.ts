@@ -116,6 +116,24 @@ describe('loadRuntimeConfig', () => {
     });
   });
 
+  it('keeps the local agent team executor disabled by default', () => {
+    expect(loadRuntimeConfig(baseEnvironment)).toMatchObject({
+      MCF_LOCAL_AGENT_TEAM_ENABLED: false,
+      MCF_LOCAL_AGENT_TEAM_TIMEOUT_MS: 10000,
+      MCF_LOCAL_AGENT_TEAM_MAX_PARALLELISM: 4,
+    });
+  });
+
+  it('rejects local agent team enablement in production', () => {
+    expect(() =>
+      loadRuntimeConfig({
+        ...productionEnvironment,
+        ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+        MCF_LOCAL_AGENT_TEAM_ENABLED: 'true',
+      }),
+    ).toThrow(/Local agent team executor/i);
+  });
+
   it('rejects CodeBuddy executor enablement in production', () => {
     expect(() =>
       loadRuntimeConfig({
