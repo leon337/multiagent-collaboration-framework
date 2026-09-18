@@ -13,7 +13,7 @@ import { createMcpAuthMiddleware, loadMcpAuthConfig, protectedResourceMetadata }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_FILE = path.join(__dirname, "../web/mcp-app.html");
-const APP_VERSION = "0.4.1";
+const APP_VERSION = "0.4.2";
 const DEPLOY_SHA = process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null;
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || "").replace(/\/$/, "");
@@ -208,6 +208,46 @@ app.use((req, res, next) => {
   return next();
 });
 app.use(express.json({ limit: "1mb" }));
+
+function legalPage(title, bodyHtml) {
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font-family:system-ui,-apple-system,sans-serif;max-width:760px;margin:0 auto;padding:28px 18px;line-height:1.55;color:#111827}h1,h2{line-height:1.2}a{color:#1d4ed8}code{background:#f3f4f6;padding:2px 5px;border-radius:5px}.muted{color:#6b7280}</style></head><body>${bodyHtml}</body></html>`;
+}
+
+app.get("/", (_req, res) => res.type("html").send(legalPage("Google Photos Bridge", `
+  <h1>Google Photos Bridge</h1>
+  <p>MCP App mobile-first que conecta o ChatGPT ao Google Photos Picker oficial. O Bridge acessa apenas mídias que o usuário seleciona explicitamente no Picker.</p>
+  <p><a href="/privacy">Política de Privacidade</a> · <a href="/terms">Termos de Uso</a> · <a href="/healthz">Health</a></p>
+  <p class="muted">Versão ${APP_VERSION}</p>
+`)));
+
+app.get("/privacy", (_req, res) => res.type("html").send(legalPage("Política de Privacidade — Google Photos Bridge", `
+  <h1>Política de Privacidade</h1>
+  <p><strong>Última atualização:</strong> 18 de setembro de 2026.</p>
+  <h2>Dados acessados</h2>
+  <p>O Google Photos Bridge solicita somente o escopo de leitura do Google Photos Picker. O serviço não solicita acesso irrestrito à biblioteca. Somente mídias escolhidas explicitamente pelo usuário em uma sessão do Picker podem ser listadas ou lidas.</p>
+  <h2>Tokens e sessões</h2>
+  <p>Tokens OAuth do Google são mantidos no servidor e não são enviados para o componente de interface do ChatGPT. Na versão atual, conexões e sessões são armazenadas de forma efêmera em memória. Desconectar revoga a autorização Google usada pelo Bridge e limpa o estado efêmero associado.</p>
+  <h2>Uso das mídias</h2>
+  <p>As imagens selecionadas são recuperadas somente quando uma ferramenta do Bridge precisa entregá-las ao modelo para atender à solicitação do usuário. O Bridge não cria um índice biométrico nem oferece busca irrestrita da biblioteca.</p>
+  <h2>Infraestrutura</h2>
+  <p>O serviço é hospedado no Render e pode processar metadados operacionais necessários para fornecer e proteger o serviço. Segredos OAuth não são deliberadamente gravados em logs pelo Bridge.</p>
+  <h2>Contato</h2>
+  <p>Questões sobre privacidade podem ser registradas no repositório do projeto: <a href="https://github.com/leon337/multiagent-collaboration-framework">multiagent-collaboration-framework</a>.</p>
+`)));
+
+app.get("/terms", (_req, res) => res.type("html").send(legalPage("Termos de Uso — Google Photos Bridge", `
+  <h1>Termos de Uso</h1>
+  <p><strong>Última atualização:</strong> 18 de setembro de 2026.</p>
+  <p>O Google Photos Bridge é uma integração que permite ao usuário selecionar mídias por meio do Google Photos Picker oficial e disponibilizá-las a uma sessão do ChatGPT.</p>
+  <h2>Controle do usuário</h2>
+  <p>O usuário controla quais mídias são selecionadas e pode encerrar a sessão do Picker ou desconectar a conta Google pelo Bridge.</p>
+  <h2>Uso permitido</h2>
+  <p>O serviço deve ser usado apenas com contas e mídias que o usuário esteja autorizado a acessar. Não é permitido tentar contornar controles de acesso do Google, do ChatGPT ou do próprio Bridge.</p>
+  <h2>Disponibilidade</h2>
+  <p>Esta versão está em desenvolvimento e pode mudar. O funcionamento depende de serviços externos, incluindo Google, OpenAI e Render.</p>
+  <h2>Contato</h2>
+  <p>Questões podem ser registradas no repositório do projeto: <a href="https://github.com/leon337/multiagent-collaboration-framework">multiagent-collaboration-framework</a>.</p>
+`)));
 app.get("/healthz", (_req, res) => res.json({ ok: true, service: "google-photos-bridge", version: APP_VERSION, deploy_sha: DEPLOY_SHA, configured: BRIDGE_CONFIGURED, mcp_auth_enabled: MCP_AUTH.enabled }));
 app.get("/setup", (_req, res) => res.json({ configured: BRIDGE_CONFIGURED, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI, checks: { google_oauth: google.configured, state_secret: STATE_SECRET_CONFIGURED }, mcp_auth: { enabled: MCP_AUTH.enabled, issuer: MCP_AUTH.issuer || null, audience: MCP_AUTH.audience || null, scopes: MCP_AUTH.requiredScopes }, required: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "APP_STATE_SECRET"] }));
 
