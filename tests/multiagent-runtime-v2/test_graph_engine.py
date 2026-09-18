@@ -50,15 +50,16 @@ class GraphEngineTests(unittest.TestCase):
         )
 
     def complete(self, node_id):
+        owner = self.engine.projection("g1").nodes[node_id]["owner_id"]
         receipt = make_graph_receipt(
             graph_id="g1",
             node_id=node_id,
-            actor_id=node_id,
+            actor_id=owner,
             status="PASS",
             evidence_refs=[f"artifact://{node_id}"],
             result={"node": node_id, "ok": True},
         )
-        self.engine.complete_node("g1", node_id, receipt, node_id)
+        self.engine.complete_node("g1", node_id, receipt, "mestre")
 
     def test_unknown_dependency_rejected(self):
         graph = GraphDefinition(
@@ -183,6 +184,75 @@ class GraphEngineTests(unittest.TestCase):
                 idempotency_key="bad-complete",
             )
             self.engine.projection("g1")
+
+    def test_create_graph_is_idempotent_after_materialization(self):
+        graph = self.fanout_graph()
+        self.engine.create_graph(graph, "mestre")
+        before = set(self.runtime.projection().tasks)
+        self.engine.create_graph(graph, "mestre")
+        after = set(self.runtime.projection().tasks)
+        self.assertEqual(before, after)
+
+    def test_reconcile_repairs_lease_before_graph_started_event(self):
+        self.engine.create_graph(self.fanout_graph(), "mestre")
+        self.engine.start_graph("g1", "mestre")
+        task = self.runtime.projection().tasks["graph:g1:start"]
+        self.runtime.lease_task("graph:g1:start", task["revision"], "w0", 30, "mestre")
+        self.assertEqual(self.engine.projection("g1").nodes["start"]["status"], "pending")
+        result = self.engine.reconcile("g1", "mestre")
+        self.assertEqual(result["repaired_started"], ["start"])
+        self.assertEqual(result["projection"].nodes["start"]["status"], "running")
+
+    def test_reconcile_finishes_completed_task_when_receipt_was_persisted(self):
+        self.engine.create_graph(self.fanout_graph(), "mestre")
+        self.engine.start_graph("g1", "mestre")
+        self.engine.lease_node("g1", "start", "w0", 30, "mestre")
+        receipt = make_graph_receipt(
+            graph_id="g1", node_id="start", actor_id="w0",
+            status="PASS", evidence_refs=["artifact://start"]
+        )
+        self.store.append(
+            "M", "graph/node_receipt_recorded", "mestre",
+            {
+                "graph_id":"g1","node_id":"start",
+                "receipt_sha256":receipt["receipt_sha256"],
+                "evidence_refs":receipt["evidence_refs"],
+                "actor_id":"w0",
+            },
+            idempotency_key=f"graph:node:receipt:g1:start:{receipt['receipt_sha256']}",
+        )
+        task = self.runtime.projection().tasks["graph:g1:start"]
+        self.runtime.update_task(
+            "graph:g1:start", task["revision"], "mestre",
+            status="completed", owner_id=None, lease_id=None, lease_until=None
+        )
+        result = self.engine.reconcile("g1", "mestre")
+        self.assertEqual(result["repaired_completed"], ["start"])
+        self.assertEqual(result["projection"].nodes["start"]["status"], "completed")
+
+    def test_reconcile_refuses_completed_task_without_receipt(self):
+        self.engine.create_graph(self.fanout_graph(), "mestre")
+        self.engine.start_graph("g1", "mestre")
+        self.engine.lease_node("g1", "start", "w0", 30, "mestre")
+        task = self.runtime.projection().tasks["graph:g1:start"]
+        self.runtime.update_task(
+            "graph:g1:start", task["revision"], "mestre",
+            status="completed", owner_id=None, lease_id=None, lease_until=None
+        )
+        result = self.engine.reconcile("g1", "mestre")
+        self.assertEqual(result["blocked_missing_receipt"], ["start"])
+        self.assertEqual(result["projection"].nodes["start"]["status"], "running")
+
+    def test_receipt_actor_must_match_lease_owner(self):
+        self.engine.create_graph(self.fanout_graph(), "mestre")
+        self.engine.start_graph("g1", "mestre")
+        self.engine.lease_node("g1", "start", "w0", 30, "mestre")
+        receipt = make_graph_receipt(
+            graph_id="g1", node_id="start", actor_id="mallory",
+            status="PASS", evidence_refs=["artifact://start"]
+        )
+        with self.assertRaises(GraphReceiptError):
+            self.engine.complete_node("g1", "start", receipt, "mestre")
 
 
 if __name__ == "__main__":
