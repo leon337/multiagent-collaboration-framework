@@ -1,0 +1,36 @@
+executor:
+  executor_id: MCF-CHATGPT-BUBBLE-SANDBOX
+  version: 0.1.0
+  status: PROPOSED
+  runtime: chatgpt_sandbox
+  coordinator: Mestre
+  authority_human: LEANDRO
+
+  properties:
+    ephemeral_compute: true
+    persistent_storage: false
+    sandbox_network_assumed: false
+    model_executor_assumed: false
+    connected_tools_supported: true
+
+  persistence:
+    source_of_truth: GitHub/MCF
+    sandbox_cache_is_authoritative: false
+    recover_before_execute: true
+    checkpoint_after_material_change: true
+
+  execution:
+    preferred_topology: PARALLEL_FAN_OUT_FAN_IN
+    credit_requires_real_execution: true
+    tool_evidence_required_when_tool_is_applicable: true
+    allow_simulated_agent_credit: false
+
+  executor_selection:
+    - sandbox_local_model_if_verified
+    - connected_authorized_agent_executor
+    - mission_authorized_external_executor
+    - fail_closed_model_executor_unavailable
+
+  human_gate:
+    authority: LEANDRO
+    never_delegate_reserved_decision_to_sandbox: true
