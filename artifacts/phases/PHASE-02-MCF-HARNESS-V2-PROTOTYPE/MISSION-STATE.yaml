@@ -1,8 +1,8 @@
 mission:
   id: MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001
   title: MCF Harness V2 — Bubble-Native Multi-Agent Runtime
-  status: ACTIVE
-  current_phase: R4_COGNITIVE_EXECUTOR_LOCAL
+  status: RC_READY_WITH_FORMAL_DEFERMENTS
+  current_phase: R10_RELEASE_CANDIDATE
   risk_class: B
   authority_human: LEANDRO
   coordinator: MESTRE
@@ -64,8 +64,8 @@ current_evidence:
   local_worker_count: 5
   local_auditor_count: 1
   fanout_workers_pass: 5
-  runtime_tests_pass: 39
-  live_history_events_last_run: 13
+  runtime_tests_pass: 53
+  live_history_events_last_run: 15
   live_history_cockpit_validation: PASS
   executor_interface: PASS
   local_process_executor: PASS_NON_COGNITIVE
@@ -89,25 +89,31 @@ current_evidence:
   capability_escalation_detection: PASS
   stale_lease_detection: PASS
   provenance_enforcement: PASS
+  recovery_bundle_clean_workspace: PASS
+  recovery_journal_integrity: PASS
+  recovery_mailbox_continuity: PASS
+  recovery_session_resume: PASS
+  runtime_metrics: PASS
+  adaptive_team_policy: PASS
+  six_worker_capacity_probe: PASS
+  protocol_release: 2.0.0-rc1
   notebook_used: false
   brainbase_used: false
   cognitive_agents_claimed: false
 
 next_gate:
-  id: R4
-  name: Cognitive Executor Local
+  id: R10
+  name: Stable Release Human Gate
   acceptance:
-    - define_executor_interface
-    - identify_bubble_native_cognitive_backend
-    - run_at_least_two_independent_cognitive_agents
-    - persist_each_execution_receipt
-    - prove_executor_failure_does_not_destroy_mission_state
+    - accept_formal_deferments_or_resolve_G08
+    - approve_or_reject_stable_promotion
 
 blocked_or_unresolved:
   - no_cognitive_llm_executor_installed_in_current_sandbox
   - no_verified_bubble_native_independent_cognitive_backend_available
   - audit_is_technical_not_yet_cognitive
-  - cross_chat_recovery_not_yet_end_to_end_validated
+  - v1_schema_not_located_for_safe_compatibility_contract
+  - fresh_chat_user_level_acceptance_requires_separate_chat
 
 promotion:
   production_authorized: false
