@@ -1,4 +1,4 @@
-# Google Photos Bridge — MCP App V1
+# Google Photos Bridge — MCP App V0.4
 
 Integração mobile-first do ChatGPT com o Google Photos Picker.
 
@@ -11,7 +11,8 @@ Permitir que LEANDRO, pelo telefone, autorize a conta Google, selecione fotos pe
 - `/mcp` — MCP Streamable HTTP
 - `/healthz` — health check
 - `/setup` — estado público de configuração, sem segredos
-- `/oauth/google/callback` — callback OAuth
+- `/.well-known/oauth-protected-resource/mcp` — RFC 9728 quando a proteção MCP está habilitada
+- `/oauth/google/callback` — callback OAuth do Google Photos
 
 ## Ferramentas MCP
 
@@ -23,27 +24,45 @@ Permitir que LEANDRO, pelo telefone, autorize a conta Google, selecione fotos pe
 - `photos_list_items`
 - `photos_get_image`
 - `photos_picker_close`
+- `photos_disconnect`
 
-## Segurança do MVP
+## Segurança
 
 - Usa somente o escopo Google Photos Picker de leitura.
 - Não afirma nem implementa leitura irrestrita da biblioteca.
-- Tokens OAuth permanecem no servidor e não são entregues ao widget.
+- Tokens Google permanecem no servidor e não são entregues ao widget.
 - `state` OAuth é assinado com HMAC e possui TTL.
 - Toda leitura de mídia verifica que o item pertence à sessão Picker da mesma conexão.
-- O armazenamento do MVP é efêmero em memória: reiniciar o serviço exige reconectar.
+- Quando o MCP OAuth está habilitado, cada conexão Google é vinculada ao `sub`/identidade autenticada.
+- O adaptador OAuth do MCP valida assinatura JWT via JWKS, `iss`, `aud`, `exp`, `nbf` e escopos.
+- O armazenamento ainda é efêmero em memória: reiniciar o serviço exige reconectar.
 - Nenhuma credencial ou token deve ser commitado.
 
-## Variáveis
+## Google Photos OAuth
 
-Copie `.env.example`. São necessárias para o fluxo real:
+Variáveis obrigatórias para o fluxo real:
 
 - `PUBLIC_BASE_URL`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
-- `APP_STATE_SECRET`
+- `APP_STATE_SECRET` com no mínimo 32 caracteres
 
-Sem as credenciais Google, o serviço inicia deliberadamente em **setup mode**, permitindo validar deploy, health check, MCP e UI antes do gate OAuth.
+Sem as credenciais Google, o serviço inicia em **setup mode**.
+
+## Proteção OAuth 2.1 do próprio MCP
+
+A V0.4 adiciona um adaptador de resource server compatível com o contrato atual da OpenAI/MCP. Ele fica desligado no staging até existir um Authorization Server compatível.
+
+Variáveis:
+
+- `MCP_AUTH_ENABLED=true`
+- `MCP_AUTH_ISSUER=https://seu-authorization-server`
+- `MCP_AUTH_AUDIENCE=https://mcf-google-photos-bridge.onrender.com/mcp`
+- `MCP_AUTH_SCOPES=photos.read`
+- `MCP_AUTH_JWKS_URI=` (opcional se o issuer publica discovery)
+- `MCP_AUTH_RESOURCE_METADATA_URL=https://mcf-google-photos-bridge.onrender.com/.well-known/oauth-protected-resource/mcp`
+
+Quando habilitado, requisições sem Bearer token recebem `401` com `WWW-Authenticate` apontando para os metadados RFC 9728.
 
 ## Validação
 
@@ -53,4 +72,6 @@ npm run check
 npm start
 ```
 
-A UI fica em `ui://google-photos-bridge/v1.html` e foi desenhada para operação no celular dentro do ChatGPT. As telas oficiais de consentimento OAuth e do Photos Picker permanecem sob controle do Google.
+Estado do sandbox V0.4: **15/15 testes PASS**.
+
+A UI fica em `ui://google-photos-bridge/v2.html` e foi desenhada para operação no celular dentro do ChatGPT. As telas oficiais de consentimento OAuth e do Photos Picker permanecem sob controle do Google.
