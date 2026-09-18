@@ -1,0 +1,7 @@
+SMOKE: PASS
+
+- execution boundary matches `CHATGPT_BUBBLE_LOCAL_SANDBOX`;
+- policy names the host-scoped canonical workspace;
+- policy explicitly prevents Brainbase/notebook from being treated as runtime for bubble execution;
+- Project Registry schema is not modified;
+- GitHub is used only for persistent continuity of this documentation change.
