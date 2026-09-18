@@ -83,3 +83,11 @@ Do not recreate or redirect this team to Brainbase. Recover this checkpoint, con
 - última execução: 8 eventos, 5/5 workers PASS, auditor PASS_WITH_GAPS.
 - suíte total: 12/12 PASS.
 - notebook_used=false; brainbase_used=false; cognitive_agents_claimed=false.
+
+## HISTORY_PIPELINE_E2E_VALIDATED
+
+- local append-only history: PASS
+- LIVE-DASHBOARD projection: PASS
+- Issue #234 projection: PASS
+- mcf-cockpit-live /api/mcf validation: PASS
+- checkpoint text, 12/12 PASS and chain head observed through the live Vercel API.
