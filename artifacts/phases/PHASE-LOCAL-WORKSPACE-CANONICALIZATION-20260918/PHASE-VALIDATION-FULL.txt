@@ -1,0 +1,21 @@
+Evidence generated in ChatGPT bubble sandbox under:
+`/mnt/data/mcf-harness-v2-local/team/`
+
+Observed worker receipts:
+- Miriam: PASS, distinct PID
+- Gabriel: PASS, distinct PID
+- Augusto: PASS, distinct PID
+- Carmem: PASS, distinct PID
+- Renato: PASS, distinct PID
+
+Artifacts generated locally:
+- mission-journal.sqlite
+- live-history.jsonl
+- live-history-projection.json
+- evidence/*.json
+- receipts/*.json
+- audit/audit.json
+- audit/summary.json
+- run-output.json
+
+The execution is a real multi-process engineering fan-out/fan-in. Per Harness V2 hard boundary, `cognitive=false`; no independent cognitive LLM backend is claimed.
