@@ -88,6 +88,24 @@ class GraphDefinition:
     def node_map(self) -> dict[str, GraphNode]:
         return {node.node_id: node for node in self.nodes}
 
+    def topological_order(self) -> tuple[GraphNode, ...]:
+        self.validate()
+        node_map = self.node_map()
+        emitted: list[GraphNode] = []
+        done: set[str] = set()
+        while len(done) < len(node_map):
+            ready = sorted(
+                node_id
+                for node_id, node in node_map.items()
+                if node_id not in done and set(node.blocked_by).issubset(done)
+            )
+            if not ready:
+                raise GraphDefinitionError("graph has no topological progress")
+            for node_id in ready:
+                emitted.append(node_map[node_id])
+                done.add(node_id)
+        return tuple(emitted)
+
 
 @dataclass
 class GraphProjection:
@@ -246,7 +264,7 @@ class GraphEngine:
             idempotency_key=f"graph:create:{definition.graph_id}",
         )
 
-        for node in definition.nodes:
+        for node in definition.topological_order():
             task_id = node_task_id(definition.graph_id, node.node_id)
             blocked = [node_task_id(definition.graph_id, dep) for dep in node.blocked_by]
             self.runtime.create_task(task_id, node.subject, blocked, actor)
