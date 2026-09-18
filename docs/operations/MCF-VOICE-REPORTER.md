@@ -26,7 +26,9 @@ mcf-voice-status
       v
 AUGUSTO Voice Reporter (systemd --user)
       |
-      | a cada 30 s
+      | poll a cada 30 s
+      | fala somente se a missão estiver ACTIVE
+      | e o status tiver mudado
       v
 VoiceHub /api/speak
       |
@@ -67,10 +69,31 @@ Para persistir fora de uma sessão gráfica, o usuário deve ter `Linger=yes`.
 
 ## Operação
 
-Atualizar o status:
+Iniciar uma missão com reporte habilitado:
 
 ```bash
-mcf-voice-status --mission MCF-EXAMPLE-001 --phase testes "Testes concluídos; iniciando auditoria."
+mcf-voice-status --resume --active   --mission MCF-EXAMPLE-001   --phase testes   "Testes iniciados."
+```
+
+Atualizar o progresso da missão:
+
+```bash
+mcf-voice-status --phase auditoria "Testes concluídos; iniciando auditoria."
+```
+
+O novo texto será falado uma vez. Polls seguintes com o mesmo conteúdo ficam silenciosos.
+
+Encerrar uma missão:
+
+```bash
+mcf-voice-status --complete
+```
+
+Também existem estados terminais explícitos:
+
+```bash
+mcf-voice-status --fail
+mcf-voice-status --cancel
 ```
 
 Ver o status atual:
@@ -93,14 +116,49 @@ systemctl --user stop mcf-voice-reporter.service
 systemctl --user start mcf-voice-reporter.service
 ```
 
-## Cadência
+## Cadência e deduplicação V2
 
-O loop agenda uma tentativa de fala a cada **30 segundos** usando relógio
-monotônico. O tempo de síntese/resposta do provider pode fazer o horário de
-conclusão variar alguns segundos.
+O worker faz **polling a cada 30 segundos**, mas isso não significa falar a
+cada 30 segundos.
+
+A fala só é permitida quando:
+
+```text
+enabled = true
+mission_active = true
+mission_state = ACTIVE
+fingerprint(status atual) != fingerprint(último status falado)
+```
+
+O fingerprint considera `mission`, `phase` e `message`. Após uma fala
+bem-sucedida, ele é persistido em
+`~/.local/state/mcf-voice-reporter/last-spoken.json`. Isso evita replay do
+mesmo estado mesmo após reinício do serviço ou do Linux.
+
+Estados `IDLE`, `COMPLETED`, `FAILED` e `CANCELLED` ficam silenciosos.
+`--pause` também silencia o reporter sem parar o serviço `systemd`.
 
 ## Segurança
 
 Nenhuma chave de TTS ou provider é armazenada neste worker. O VoiceHub é o
 único responsável pelo roteamento para NVIDIA, Edge ou outro provider já
 configurado localmente.
+
+
+## Evidência pós-reboot V2
+
+Em 2026-09-18, após reboot real do notebook, foram observados:
+
+```text
+voicehub-linux.service        enabled + active
+mcf-voice-reporter.service   enabled + active
+Restart                      always
+Linger                       yes
+VoiceHub 127.0.0.1:8788      listening
+reporter                     IDLE / silencioso
+```
+
+O reporter V2 reiniciou automaticamente e registrou
+`skip_inactive_or_disabled`, sem reproduzir a última mensagem antiga.
+A evidência detalhada está em
+`artifacts/phases/PHASE-MCF-VOICE-REPORTER-V2-001/CHECKPOINT.md`.
