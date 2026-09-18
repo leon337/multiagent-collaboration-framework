@@ -4,13 +4,18 @@
   "issue": 241,
   "title": "MCF Harness Graph Engine 2.2",
   "status": "IN_PROGRESS",
-  "current_phase": "G1 — Graph Journal + Graph Definition",
-  "updated_at": "2026-09-18T17:42:00-03:00",
+  "current_phase": "G5 — MVP E2E + exact-head gates",
+  "updated_at": "2026-09-18T17:47:00-03:00",
   "branch": "feature/mcf-harness-graph-engine-2.2-20260918",
   "evidence": {
-    "unit_tests": "PENDING",
-    "integration_tests": "PENDING",
-    "exact_head_ci": "PENDING",
+    "unit_tests": "PASS_PREVIOUS_HEAD",
+    "integration_tests": "PASS_PREVIOUS_HEAD",
+    "exact_head_ci": "PENDING_CURRENT_HEAD",
+    "production_readiness": "PENDING_CURRENT_HEAD",
+    "graph_fanout": "3 runtime cells / 3 unique PIDs / peak concurrency 3",
+    "failure_injection": "PASS",
+    "bounded_loop": "PASS",
+    "runtime_pool_multiprocess": "IN_VALIDATION",
     "notebook_used": false,
     "brainbase_used": false,
     "cognitive_agents_claimed": false
@@ -24,27 +29,27 @@
     {
       "id": "G1",
       "name": "Graph Journal + Graph Definition",
-      "status": "IN_PROGRESS"
+      "status": "PASS_IMPLEMENTATION"
     },
     {
       "id": "G2",
       "name": "Graph Scheduler",
-      "status": "PENDING"
+      "status": "PASS_IMPLEMENTATION"
     },
     {
       "id": "G3",
       "name": "Bounded Loop Controller",
-      "status": "PENDING"
+      "status": "PASS_IMPLEMENTATION"
     },
     {
       "id": "G4",
       "name": "Local Runtime Pool",
-      "status": "PENDING"
+      "status": "PASS_IMPLEMENTATION"
     },
     {
       "id": "G5",
       "name": "MVP E2E",
-      "status": "PENDING"
+      "status": "PASS_PREVIOUS_HEAD_CURRENT_HEAD_VALIDATING"
     },
     {
       "id": "G6",
@@ -64,6 +69,18 @@
       "actor": "MESTRE",
       "type": "MISSION_CREATED",
       "text": "Issue #241 e branch Graph Engine 2.2 criadas sobre main."
+    },
+    {
+      "at": "2026-09-18T17:44:30-03:00",
+      "actor": "MESTRE",
+      "type": "MVP_E2E",
+      "text": "3 runtime cells multiprocess + fan-in + failure injection + bounded loop added; Harness CI PASS on prior head."
+    },
+    {
+      "at": "2026-09-18T17:46:30-03:00",
+      "actor": "MESTRE",
+      "type": "POOL_CONCURRENCY",
+      "text": "Added 4-process contention test for 2-slot Runtime Pool; exact-head validation pending."
     }
   ]
 }
