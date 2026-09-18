@@ -216,7 +216,11 @@ export class SkillExecutor {
     }
 
     this.permissions.assertAllowed(skill, input.agentId, input.tool, input.inputs);
-    const handoffTo = resolveHandoff(skill, input.inputs);
+    const resolvedHandoffTo = resolveHandoff(skill, input.inputs);
+    const handoffTo =
+      skill.skillId === 'MCF-EXECUTE-LOCAL-TEAM' && resolvedHandoffTo === input.agentId
+        ? null
+        : resolvedHandoffTo;
 
     if (canonicalizeProvider(input.tool.provider) === 'internal') {
       let executionEvidence: Record<string, unknown> | null;
