@@ -1,0 +1,24 @@
+VALIDATION: PASS
+
+MCF Harness V2 boundary:
+CHATGPT_BUBBLE_LOCAL_SANDBOX
+
+Local cloud run:
+workers=5
+pass_count=5
+unique_processes=5
+auditor=PASS
+notebook_used=false
+brainbase_used=false
+cognitive_agents_claimed=false
+
+Local history:
+event_count=8
+chain_head=13518134628892a4a496ec6cbd2c1f05b6e5027467373787a388c09a3874ad7a
+
+Adversarial audit:
+verdict=PASS
+failed_count=0
+audit_sha256=8d7ee3303e11c14d9fc54726b711c8d451ad202ddb87325d59bececff8cab5ce
+
+Production touched: false
