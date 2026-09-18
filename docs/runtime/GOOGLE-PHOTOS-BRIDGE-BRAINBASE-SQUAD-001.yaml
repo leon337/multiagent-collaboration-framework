@@ -38,3 +38,23 @@ notes:
   - Subagents are mission-specific and do not replace the 29 official MCF agents.
   - All subagents have the isolated Google Photos Bridge staging MCP attached.
   - No Brainbase task execution was started because task runs can be billable.
+
+
+execution_state:
+  attempted_at: 2026-09-18
+  authorized_by: LEANDRO
+  initial_runs:
+    GPB-A1: 08aadd99-606c-5de9-a94d-e169ed5160f6
+    GPB-A2: fdaf1c75-5232-5ada-b025-3719ae16c71e
+    GPB-A3: 6413ff23-d147-57f2-a79c-dd02b6898e06
+    GPB-A4: 6d563cd0-2e1a-5405-9808-b49913d67b91
+  retry_performed: true
+  result: BLOCKED_BY_BRAINBASE_BILLING_UNAVAILABLE
+  provider_error: BILLING_UNAVAILABLE
+  http_status: 503
+  work_executed: false
+  GPB-A5_started: false
+  next_action: >-
+    Do not create duplicate Brainbase tasks. Retry the existing task IDs only
+    after Brainbase billing authorization becomes available, then start GPB-A5
+    after upstream specialist outputs exist.
