@@ -135,24 +135,52 @@ class MailboxDispatcher:
             pending = self._ordered_pending(target_id)[:batch]
             delivered_ids: list[str] = []
             failed_id = None
+            reconciliation_required_message_id = None
+            attempted = 0
 
             for message in pending:
-                ok = deliver(dict(message))
+                if message.get("reconciliation_required"):
+                    reconciliation_required_message_id = message["message_id"]
+                    break
+
+                attempt_id = str(uuid.uuid4())
+                self.runtime.start_message_delivery(
+                    message["message_id"],
+                    target_id,
+                    attempt_id,
+                    actor or target_id,
+                )
+                attempted += 1
+
+                try:
+                    ok = deliver(dict(message))
+                except Exception:
+                    raise
+
                 if ok is False:
+                    self.runtime.fail_message_delivery(
+                        message["message_id"],
+                        attempt_id,
+                        actor or target_id,
+                        error_class="delivery_callback_returned_false",
+                    )
                     failed_id = message["message_id"]
                     break
+
                 self.runtime.ack_message(
                     message["message_id"],
                     target_id,
                     actor or target_id,
+                    attempt_id=attempt_id,
                 )
                 delivered_ids.append(message["message_id"])
 
             return {
-                "schema": "mcf_mailbox_dispatch/v1",
+                "schema": "mcf_mailbox_dispatch/v2",
                 "target_id": target_id,
-                "attempted": len(delivered_ids) + (1 if failed_id else 0),
+                "attempted": attempted,
                 "delivered": delivered_ids,
                 "failed_message_id": failed_id,
+                "reconciliation_required_message_id": reconciliation_required_message_id,
                 "remaining": self.pending_count(target_id),
             }
