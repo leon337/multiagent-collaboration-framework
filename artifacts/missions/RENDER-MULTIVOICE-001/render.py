@@ -405,14 +405,75 @@ def render_video() -> None:
         "".join(f"file '{p.resolve().as_posix()}'\n" for p in segment_paths),
         encoding="utf-8",
     )
+    base_mp4 = OUTPUT_DIR / "chamado-amanhecer-v2-multivoz-base.mp4"
     run(
         [
             "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
             "-f", "concat", "-safe", "0", "-i", str(concat),
             "-c", "copy", "-movflags", "+faststart",
-            str(FINAL_MP4),
+            str(base_mp4),
         ]
     )
+
+    # G6-A: original synthesized ambient bed. It is generated locally from
+    # sine/pink-noise sources, so it has no external music licensing dependency.
+    total_duration = sum(x["duration"] for x in timeline)
+    fade_out_start = max(total_duration - 3.0, 0.0)
+    accents = [
+        ("s04", 660),
+        ("s13", 520),
+        ("s14", 440),
+        ("s19", 720),
+    ]
+    starts = {item["id"]: item["start"] for item in timeline}
+
+    cmd = [
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        "-i", str(base_mp4),
+        "-f", "lavfi", "-i", f"sine=frequency=110:sample_rate=48000:duration={total_duration:.4f}",
+        "-f", "lavfi", "-i", f"sine=frequency=165:sample_rate=48000:duration={total_duration:.4f}",
+        "-f", "lavfi", "-i", f"anoisesrc=color=pink:sample_rate=48000:duration={total_duration:.4f}",
+    ]
+    for _, freq in accents:
+        cmd += ["-f", "lavfi", "-i", f"sine=frequency={freq}:sample_rate=48000:duration=0.9"]
+
+    filters = [
+        f"[1:a]volume=0.012,afade=t=in:st=0:d=2,afade=t=out:st={fade_out_start:.3f}:d=3[p1]",
+        f"[2:a]volume=0.006,afade=t=in:st=0:d=3,afade=t=out:st={fade_out_start:.3f}:d=3[p2]",
+        "[3:a]highpass=f=120,lowpass=f=1200,volume=0.0035[wind]",
+    ]
+    accent_labels = []
+    for index, (scene_id, _) in enumerate(accents):
+        input_index = 4 + index
+        delay_ms = int(starts[scene_id] * 1000)
+        label = f"accent{index}"
+        filters.append(
+            f"[{input_index}:a]volume=0.018,afade=t=out:st=0.20:d=0.65,"
+            f"adelay={delay_ms}|{delay_ms}[{label}]"
+        )
+        accent_labels.append(f"[{label}]")
+
+    bed_inputs = "[p1][p2][wind]" + "".join(accent_labels)
+    filters.append(
+        f"{bed_inputs}amix=inputs={3 + len(accent_labels)}:duration=longest:normalize=0[bed]"
+    )
+    # Voice drives the sidechain so the ambient layer gently ducks under speech.
+    filters.append(
+        "[bed][0:a]sidechaincompress=threshold=0.018:ratio=6:attack=20:release=280[ducked]"
+    )
+    filters.append(
+        "[0:a][ducked]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[mix]"
+    )
+
+    cmd += [
+        "-filter_complex", ";".join(filters),
+        "-map", "0:v:0", "-map", "[mix]",
+        "-c:v", "copy",
+        "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
+        "-movflags", "+faststart",
+        str(FINAL_MP4),
+    ]
+    run(cmd)
     print(FINAL_MP4)
 
 
