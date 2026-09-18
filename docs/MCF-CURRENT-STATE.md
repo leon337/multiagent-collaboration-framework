@@ -121,7 +121,7 @@ Aplicação hospedeira:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - External Action Dispatcher e adapters com evidência;
-- 16 skills registradas, 16 executáveis, 0 somente documentais no lineage qualificado;
+- 18 skills registradas, 18 executáveis, 0 somente documentais no lineage qualificado;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA/readiness/version e recovery por redeploy de SHA saudável;
@@ -133,6 +133,18 @@ Aplicação hospedeira:
 - `main` protegida por ruleset;
 - provider de produção desacoplado de alterações comuns em `main` por Auto-Deploy OFF;
 - GitHub Environment `production` como boundary de execução de produção.
+
+### `CURRENT_IMPLEMENTED` — time local multiagente determinístico
+
+- `MCF-EXECUTE-LOCAL-TEAM` integrado ao runtime canônico pelo PR #216, merge `41ba0c01e6d6fafe3af65bbc2ccdc050c673db6e`;
+- provider `local-agent-runtime`, adapter `local-agent-team-process-v1`, execução disabled-by-default e bloqueada em `NODE_ENV=production`;
+- roteamento limitado às identidades canônicas Sofia, Beatriz, Emily, Carmem, Bruno, Gabriel, Ricardo e Renato;
+- workers locais em processos OS separados, com timeout/paralelismo limitados, child receipts assinados e receipt consolidado;
+- E2E da Issue #217 qualificou o caminho `MissionRuntimeService → SkillExecutor → ExternalActionDispatcher → AdapterRegistry → LocalAgentTeamAdapter → EvidenceValidator`;
+- qualificação durável em PostgreSQL: receipt `VALID`, external attempt `EVIDENCE_VALIDATED`, 8/8 PIDs distintos e eventos persistidos;
+- o self-handoff `Mestre → Mestre` detectado no primeiro E2E durável foi corrigido no boundary específico do skill;
+- esta capacidade prova orquestração determinística/process isolation/receipts; **não** prova LLMs independentes ou cognição independente;
+- não houve release nem ativação em produção.
 
 ### `CURRENT_IMPLEMENTED` no boundary Context Fabric
 

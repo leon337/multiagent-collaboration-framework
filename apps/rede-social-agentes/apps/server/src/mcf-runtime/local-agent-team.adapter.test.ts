@@ -12,7 +12,6 @@ import {
 } from './local-agent-team.adapter.js';
 import { verifyLocalAgentTeamEvidence } from './local-agent-team.evidence.js';
 
-process.env.DATABASE_URL ??= 'postgresql://mcf:test@127.0.0.1:5432/mcf_test';
 import {
   LOCAL_AGENT_TEAM_OPERATION,
   LOCAL_AGENT_TEAM_PROVIDER,

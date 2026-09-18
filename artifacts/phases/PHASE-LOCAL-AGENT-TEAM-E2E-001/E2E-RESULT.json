@@ -1,0 +1,42 @@
+{
+  "mission_id": "MCF-LOCAL-AGENT-TEAM-E2E-001",
+  "issue": 217,
+  "base_main_sha": "41ba0c01e6d6fafe3af65bbc2ccdc050c673db6e",
+  "status": "PASS",
+  "qualified_at": "2026-09-18",
+  "runtime_path": [
+    "MissionRuntimeService",
+    "SkillExecutor",
+    "ExternalActionDispatcher",
+    "AdapterRegistry",
+    "LocalAgentTeamAdapter",
+    "EvidenceValidator",
+    "PostgresMcfRuntimeRepository",
+    "CanonicalExternalActionLedger"
+  ],
+  "semantic_e2e": {
+    "tests": "2/2 PASS",
+    "mission_id": "a7b04668-9315-4440-bf67-6e997b8e1bd1",
+    "phase_id": "5163e270-fe94-4433-bf72-d61bfc70a361",
+    "receipt_id": "e10aff06-3069-4598-a235-db006a4b7a12",
+    "process_ids": [143676,143677,143678,143679,143680,143681,143682,143683],
+    "consolidated_digest": "08c96025537290fd6e1b01f6a79e138b91466030927dd075a90a2a46c0a3a4fd",
+    "events": ["MISSION_CREATED","TOOL_RECEIPT_RECORDED","EVIDENCE_VALIDATED","PHASE_COMPLETED"]
+  },
+  "postgres_e2e": {
+    "tests": "1/1 PASS",
+    "mission_id": "1cbc0ba7-4229-41f1-b3bd-f2f9fb75c5ae",
+    "phase_id": "1a4b6352-6f14-4f8c-ae6a-832bdf228730",
+    "receipt_id": "4801e55b-d84c-4102-99ba-2cda0d1ce8e5",
+    "process_ids": [143752,143753,143754,143760,143766,143772,143778,143789],
+    "external_attempt_id": "10817e8d-f285-417d-ac4f-1a622bc834bb",
+    "external_attempt_status": "EVIDENCE_VALIDATED",
+    "receipt_validation_status": "VALID",
+    "persisted_event_count": 12
+  },
+  "selected_agents": ["Sofia","Beatriz","Emily","Carmem","Bruno","Gabriel","Ricardo","Renato"],
+  "execution_mode": "DETERMINISTIC_LOCAL_PROCESS",
+  "cognitive_independence_proven": false,
+  "production_activated": false,
+  "release_created": false
+}
