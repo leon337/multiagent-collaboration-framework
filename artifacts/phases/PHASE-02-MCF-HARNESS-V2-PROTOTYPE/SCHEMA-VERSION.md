@@ -1,6 +1,6 @@
 # MCF Harness V2 — Schema Registry
 
-Release candidate: `2.0.0-rc1`
+Stable release: `2.0.0`
 
 | Domain | Schema |
 |---|---|
@@ -13,3 +13,5 @@ Release candidate: `2.0.0-rc1`
 | Capability token | `mcf_capability_token/v1` |
 
 Unknown major versions fail closed. Additive fields are accepted only by consumers that explicitly allow them.
+
+Promotion to stable was approved by LEANDRO on 2026-09-18 with the documented deferments preserved.
