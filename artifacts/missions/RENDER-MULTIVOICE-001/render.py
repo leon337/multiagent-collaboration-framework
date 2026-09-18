@@ -11,6 +11,8 @@ import sys
 import textwrap
 import time
 import urllib.request
+import re
+import shutil
 from pathlib import Path
 
 MISSION_DIR = Path(__file__).resolve().parent
@@ -29,15 +31,32 @@ HEIGHT = 1920
 FPS = 30
 
 
-def run(cmd: list[str], *, capture: bool = False) -> str:
+def ffmpeg_exe() -> str:
+    configured = os.environ.get("FFMPEG_EXE")
+    if configured:
+        return configured
+    system = shutil.which("ffmpeg")
+    if system:
+        return system
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception as exc:
+        raise RuntimeError("ffmpeg binary unavailable") from exc
+
+
+def run(cmd: list[str], *, capture: bool = False, check: bool = True) -> str:
+    cmd = [ffmpeg_exe() if cmd and cmd[0] == "ffmpeg" else cmd[0], *cmd[1:]]
     result = subprocess.run(
         cmd,
-        check=True,
+        check=check,
         text=True,
         stdout=subprocess.PIPE if capture else None,
         stderr=subprocess.PIPE if capture else None,
     )
-    return result.stdout.strip() if capture else ""
+    if capture:
+        return (result.stdout or "").strip() + "\n" + (result.stderr or "").strip()
+    return ""
 
 
 def load_manifest() -> dict:
@@ -101,16 +120,20 @@ def download(url: str, target: Path, retries: int = 4) -> None:
 
 
 def audio_duration(path: Path) -> float:
-    out = run(
-        [
-            "ffprobe", "-v", "error",
-            "-show_entries", "format=duration",
-            "-of", "default=noprint_wrappers=1:nokey=1",
-            str(path),
-        ],
-        capture=True,
-    )
-    return float(out)
+    try:
+        from mutagen import File as MutagenFile
+        media = MutagenFile(path)
+        if media is not None and getattr(media, "info", None) is not None:
+            return float(media.info.length)
+    except Exception:
+        pass
+
+    out = run(["ffmpeg", "-hide_banner", "-i", str(path), "-f", "null", "-"], capture=True, check=False)
+    match = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", out)
+    if not match:
+        raise RuntimeError(f"cannot determine duration for {path}")
+    hours, minutes, seconds = match.groups()
+    return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
 
 
 def recover_audio() -> None:
@@ -393,17 +416,30 @@ def render_video() -> None:
     print(FINAL_MP4)
 
 
-def ffprobe_json(path: Path) -> dict:
-    out = run(
-        [
-            "ffprobe", "-v", "error",
-            "-show_entries", "format=duration,size,bit_rate:stream=index,codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels",
-            "-of", "json",
-            str(path),
-        ],
-        capture=True,
-    )
-    return json.loads(out)
+def probe_media(path: Path) -> dict:
+    out = run(["ffmpeg", "-hide_banner", "-i", str(path), "-f", "null", "-"], capture=True, check=False)
+
+    duration_match = re.search(r"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", out)
+    if not duration_match:
+        raise RuntimeError("could not parse output duration")
+    hours, minutes, seconds = duration_match.groups()
+    duration = int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+
+    video_match = re.search(r"Video:\s*([^,]+).*?(\d{2,5})x(\d{2,5}).*?(\d+(?:\.\d+)?)\s*fps", out)
+    audio_match = re.search(r"Audio:\s*([^,]+),\s*(\d+)\s*Hz,\s*([^,]+)", out)
+    if not video_match or not audio_match:
+        raise RuntimeError("render must contain parseable video and audio streams")
+
+    return {
+        "duration": duration,
+        "video_codec": video_match.group(1).strip(),
+        "width": int(video_match.group(2)),
+        "height": int(video_match.group(3)),
+        "fps": video_match.group(4),
+        "audio_codec": audio_match.group(1).strip(),
+        "audio_sample_rate": audio_match.group(2),
+        "audio_layout": audio_match.group(3).strip(),
+    }
 
 
 def sha256(path: Path) -> str:
@@ -422,16 +458,11 @@ def validate_output(input_path: Path | None = None) -> None:
     if not path.exists():
         raise SystemExit(f"missing rendered video: {path}")
 
-    probe = ffprobe_json(path)
-    streams = probe.get("streams", [])
-    video = next((s for s in streams if s.get("codec_type") == "video"), None)
-    audio = next((s for s in streams if s.get("codec_type") == "audio"), None)
-    if not video or not audio:
-        raise SystemExit("render must contain video and audio")
-    if video.get("width") != WIDTH or video.get("height") != HEIGHT:
-        raise SystemExit(f"unexpected dimensions: {video.get('width')}x{video.get('height')}")
+    probe = probe_media(path)
+    if probe["width"] != WIDTH or probe["height"] != HEIGHT:
+        raise SystemExit(f"unexpected dimensions: {probe['width']}x{probe['height']}")
 
-    duration = float(probe["format"]["duration"])
+    duration = float(probe["duration"])
     if not (45.0 <= duration <= 80.0):
         raise SystemExit(f"duration outside technical acceptance window: {duration:.3f}s")
 
@@ -449,13 +480,13 @@ def validate_output(input_path: Path | None = None) -> None:
             "sha256": sha256(path),
             "bytes": path.stat().st_size,
             "duration": round(duration, 4),
-            "width": video.get("width"),
-            "height": video.get("height"),
-            "video_codec": video.get("codec_name"),
-            "audio_codec": audio.get("codec_name"),
-            "fps": video.get("r_frame_rate"),
-            "audio_sample_rate": audio.get("sample_rate"),
-            "audio_channels": audio.get("channels"),
+            "width": probe["width"],
+            "height": probe["height"],
+            "video_codec": probe["video_codec"],
+            "audio_codec": probe["audio_codec"],
+            "fps": probe["fps"],
+            "audio_sample_rate": probe["audio_sample_rate"],
+            "audio_layout": probe["audio_layout"],
         },
         "scene_count": 25,
         "speaker_counts": speaker_counts,
