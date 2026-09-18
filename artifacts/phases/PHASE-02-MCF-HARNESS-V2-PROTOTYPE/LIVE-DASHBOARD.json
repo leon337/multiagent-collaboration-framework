@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T07:44:00-03:00",
+  "updated_at": "2026-09-18T07:51:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -204,6 +204,12 @@
       "actor": "MESTRE",
       "type": "AUTOMATION",
       "text": "Agendada retomada idempotente do deploy dedicado da Vercel após a janela de 24h; primeiro valida URL existente e só publica se continuar pendente."
+    },
+    {
+      "at": "2026-09-18T07:51:00-03:00",
+      "actor": "MESTRE",
+      "type": "LIVE_SURFACE",
+      "text": "Concept 3 do mcf-cockpit-live definido como superfície viva oficial da missão; refresh automático a cada 60s."
     }
   ],
   "links": {
@@ -223,5 +229,16 @@
       "publisher": "leo-N43SM via Vercel CLI",
       "runtime_moved_to_notebook": false
     }
+  },
+  "live_surface": {
+    "status": "LIVE",
+    "provider": "Vercel",
+    "project": "mcf-cockpit-live",
+    "concept": "concept-3",
+    "route": "https://mcf-cockpit-live.vercel.app/concept-3#mission",
+    "refresh_seconds": 60,
+    "data_source": "/api/mcf -> GitHub REST public data",
+    "mission_source": "Issue #234",
+    "note": "Mission tab renders the full Issue #234 body; overview includes mission, checklist, GitHub timeline and agents."
   }
 }
