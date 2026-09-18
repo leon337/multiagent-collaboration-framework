@@ -60,3 +60,42 @@ next_action: >-
   Publish a new isolated free Render service from the working branch in setup
   mode, validate its public health/setup endpoints, then create a draft PR with
   evidence. Do not change existing MCF production or staging services.
+
+
+checkpoint_2026_09_18_0638_brt:
+  execution_environment: CHATGPT_SANDBOX
+  sandbox_path: /mnt/data/google-photos-bridge-app
+  sandbox_tests:
+    total: 8
+    passed: 8
+    failed: 0
+  render:
+    service: mcf-google-photos-bridge
+    service_id: srv-damfure7bikc73bgu1rg
+    url: https://mcf-google-photos-bridge.onrender.com
+    deploy_id: dep-damgcg8u01pc73a68fg0
+    commit: 121b1427ead5167be7656ecac890766f233e5dbf
+    status: LIVE
+    package_version: 0.3.0
+    build_tests: 8_PASS_0_FAIL
+  github:
+    draft_pr: 233
+    pr_state: OPEN_DRAFT
+    merge_authorized: false
+    production_authorized: false
+  brainbase:
+    squad_registered: true
+    execution_status: BLOCKED_BILLING_UNAVAILABLE
+    execution_required_for_continuity: false
+  current_gate:
+    id: GOOGLE_OAUTH_CREDENTIALS
+    owner: LEANDRO
+    required:
+      - enable Google Photos Picker API in a Google Cloud project
+      - create OAuth Web client
+      - register redirect URI https://mcf-google-photos-bridge.onrender.com/oauth/google/callback
+    secrets_must_not_be_committed: true
+  continuation_rule: >-
+    Default all development, testing, analysis and artifact work to the ChatGPT
+    sandbox inside the conversation. Do not require LEANDRO's notebook, VPS or
+    Brainbase unless a task specifically needs those resources.
