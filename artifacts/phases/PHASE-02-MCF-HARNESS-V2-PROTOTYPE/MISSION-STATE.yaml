@@ -64,8 +64,8 @@ current_evidence:
   local_worker_count: 5
   local_auditor_count: 1
   fanout_workers_pass: 5
-  runtime_tests_pass: 29
-  live_history_events_last_run: 12
+  runtime_tests_pass: 39
+  live_history_events_last_run: 13
   live_history_cockpit_validation: PASS
   executor_interface: PASS
   local_process_executor: PASS_NON_COGNITIVE
@@ -82,6 +82,13 @@ current_evidence:
   capability_token_expiry: PASS
   capability_narrowing: PASS
   capability_revocation: PASS
+  adversarial_technical_audit: PASS
+  false_green_detection: PASS
+  evidence_forgery_detection: PASS
+  mailbox_poisoning_detection: PASS
+  capability_escalation_detection: PASS
+  stale_lease_detection: PASS
+  provenance_enforcement: PASS
   notebook_used: false
   brainbase_used: false
   cognitive_agents_claimed: false
