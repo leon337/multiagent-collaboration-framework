@@ -1,0 +1,71 @@
+mission_id: CPP-FRONTEND-MISSION-RUNTIME-001
+project_id: controle-ponto-frontend
+framework: MCF
+state: EXECUTING
+objective: >-
+  Materialize a governed Mission Runtime for the Controle de Ponto frontend,
+  preserving NF-01 evidence, human gates, parallel workstreams, continuity and
+  explicit human authority without changing production product code.
+
+repository: leon337/reconhecimento_facial
+product_scope: FRONTEND_ONLY
+active_mission: CPP-NF-01-PRODUTO-DESIGN-SYSTEM
+active_phase: N_DESIGN_LAB_VALIDATION
+current_gate: H1_MANUAL_BROWSER_ZOOM_200
+n3_screen_reader_gate: PASS_REAL_ORCA_HUMAN_DIRECTED
+n2_zoom_technical_evidence: PASS_AGENT_LOCAL_REAL_BROWSER
+phase_o_start_allowed: false
+nf02_start_allowed: false
+merge_authorized: false
+
+runtime_contract:
+  mission_state_source: docs/nf-01/runtime/current.yaml
+  mission_definition_source: docs/nf-01/runtime/mission.yaml
+  project_capsule_source: .mcf/project-capsule.yaml
+  false_green_allowed: false
+  human_gate_required_for_manual_claims: true
+  automatic_merge: false
+  production_write: false
+
+parallel_workstreams:
+  - id: A
+    name: accessibility_and_gui_evidence
+    authority: TEST_AND_EVIDENCE_ONLY
+  - id: B
+    name: regression_and_ci
+    authority: TEST_ONLY
+  - id: C
+    name: governance_and_invariants
+    authority: READ_AUDIT_AND_DOCUMENT
+  - id: D
+    name: human_gate_and_continuity
+    authority: PREPARE_GATE_AND_HANDOFF
+
+communications:
+  human_channel: VoiceHub
+  speaker_identity: "Mestre — missão Controle de Ponto"
+  report_on_significant_advance: true
+  report_fields:
+    - completed
+    - current_state
+    - next_step
+    - human_action_required
+
+evidence:
+  n3_real_orca: docs/nf-01/evidence/phase-n/2026-09-18_N3_REAL_ORCA_HUMAN_DIRECTED_EVIDENCE.md
+  h1_zoom_technical: docs/nf-01/evidence/phase-n/2026-09-18_H1_ZOOM200_TECHNICAL_EVIDENCE.md
+  human_gate_readiness: docs/nf-01/evidence/phase-n/2026-09-18_PHASE_N_HUMAN_GATE_READINESS.md
+
+restrictions:
+  app_paths_change: false
+  templates_paths_change: false
+  static_paths_change: false
+  migrations_paths_change: false
+  backend_routes_change: false
+  production_homologation_claim: false
+  legal_conformity_claim: false
+
+human_authority: LEANDRO
+next_action: >-
+  Complete H1 manual 200 percent zoom acceptance, then reconcile N4 and Phase N.
+  Do not merge PR #32 or start Phase O/NF-02 without the applicable human gate.
