@@ -1,0 +1,26 @@
+name: MCF Harness V2 Prototype Validation
+
+on:
+  pull_request:
+    paths:
+      - 'ops/multiagent-runtime-v2/**'
+      - 'tests/multiagent-runtime-v2/**'
+      - 'artifacts/phases/PHASE-02-MCF-HARNESS-V2-PROTOTYPE/**'
+
+permissions:
+  contents: read
+
+jobs:
+  v2-prototype:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compile
+        run: python3 -m py_compile ops/multiagent-runtime-v2/runtime.py
+      - name: Run unit/integration prototype tests
+        env:
+          PYTHONPATH: ops/multiagent-runtime-v2
+        run: python3 -m unittest discover -s tests/multiagent-runtime-v2 -p 'test_*.py' -v
