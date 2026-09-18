@@ -1,0 +1,30 @@
+schema_version: 1
+
+project:
+  id: curso-instavar
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/curso-instavar
+  aliases:
+    - Curso Instavar
+    - Instavar Course
+    - Instavar AI Platform
+    - Instavar V2.5
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - .mcf/mission.yaml
+    - docs/MCF-MISSION-STATE.md
+    - README.md
+    - course-data.mjs
+    - api/agent.mjs
+    - api/transcribe.py
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
