@@ -88,7 +88,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile ops/mission-agent-harness/zero_cost_phase2_fanout.py
+          PYTHONPYCACHEPREFIX=/tmp/mcf-pycache python3 -m py_compile ops/mission-agent-harness/zero_cost_phase2_fanout.py
 
       - name: Execute parallel tool-using MCF agents
         shell: bash
