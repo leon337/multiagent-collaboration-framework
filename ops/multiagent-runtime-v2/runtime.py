@@ -320,6 +320,7 @@ class Projection:
     tasks: dict[str, dict[str, Any]]
     messages: dict[str, dict[str, Any]]
     delivered_messages: set[str]
+    delivery_attempts: dict[str, dict[str, Any]]
     executions: dict[str, dict[str, Any]]
     tool_calls: dict[str, dict[str, Any]]
     sessions: dict[str, dict[str, Any]]
@@ -351,6 +352,7 @@ def replay(events: Iterable[Event]) -> Projection:
     tasks: dict[str, dict[str, Any]] = {}
     messages: dict[str, dict[str, Any]] = {}
     delivered: set[str] = set()
+    delivery_attempts: dict[str, dict[str, Any]] = {}
     executions: dict[str, dict[str, Any]] = {}
     tool_calls: dict[str, dict[str, Any]] = {}
     sessions: dict[str, dict[str, Any]] = {}
@@ -419,12 +421,56 @@ def replay(events: Iterable[Event]) -> Projection:
             if mid in messages:
                 raise ProjectionError(f"duplicate message {mid}")
             messages[mid] = dict(p)
+        elif event.event_type == "message/delivery_started":
+            mid = p["message_id"]
+            if mid not in messages:
+                raise ProjectionError(f"message {mid} delivery started before queue")
+            if mid in delivered:
+                raise ProjectionError(f"message {mid} delivery started after delivery")
+            prior = delivery_attempts.get(mid)
+            if prior is not None and prior.get("status") == "started":
+                raise ProjectionError(f"message {mid} already has unresolved delivery attempt")
+            delivery_attempts[mid] = {
+                "message_id": mid,
+                "attempt_id": p["attempt_id"],
+                "target_id": p["target_id"],
+                "status": "started",
+                "started_at": event.timestamp,
+            }
+        elif event.event_type == "message/delivery_failed":
+            mid = p["message_id"]
+            attempt = delivery_attempts.get(mid)
+            if (
+                attempt is None
+                or attempt.get("status") != "started"
+                or attempt.get("attempt_id") != p["attempt_id"]
+            ):
+                raise ProjectionError(f"invalid failed delivery transition for {mid}")
+            attempt["status"] = "failed"
+            attempt["failed_at"] = event.timestamp
+            if "error_class" in p:
+                attempt["error_class"] = p["error_class"]
+            if "evidence_ref" in p:
+                attempt["evidence_ref"] = p["evidence_ref"]
         elif event.event_type == "message/delivered":
             mid = p["message_id"]
             if mid not in messages:
                 raise ProjectionError(f"message {mid} delivered before queue")
             if mid in delivered:
                 raise ProjectionError(f"message {mid} delivered twice")
+            attempt_id = p.get("attempt_id")
+            if attempt_id is not None:
+                attempt = delivery_attempts.get(mid)
+                if (
+                    attempt is None
+                    or attempt.get("status") != "started"
+                    or attempt.get("attempt_id") != attempt_id
+                ):
+                    raise ProjectionError(f"invalid delivered transition for {mid}")
+                attempt["status"] = "delivered"
+                attempt["delivered_at"] = event.timestamp
+                if "evidence_ref" in p:
+                    attempt["evidence_ref"] = p["evidence_ref"]
             delivered.add(mid)
         elif event.event_type == "execution/started":
             eid = p["execution_id"]
@@ -521,6 +567,7 @@ def replay(events: Iterable[Event]) -> Projection:
         tasks=tasks,
         messages=messages,
         delivered_messages=delivered,
+        delivery_attempts=delivery_attempts,
         executions=executions,
         tool_calls=tool_calls,
         sessions=sessions,
@@ -893,7 +940,79 @@ class MissionRuntime:
         )
         return self.projection().messages[message_id]
 
-    def ack_message(self, message_id: str, target_id: str, actor: str) -> None:
+    def start_message_delivery(
+        self,
+        message_id: str,
+        target_id: str,
+        attempt_id: str,
+        actor: str,
+    ) -> dict[str, Any]:
+        p = self.projection()
+        msg = p.messages.get(message_id)
+        if msg is None:
+            raise MissionError(f"unknown message {message_id}")
+        if msg["target_id"] != target_id:
+            raise ConflictError("message target mismatch")
+        if message_id in p.delivered_messages:
+            raise ConflictError(f"message {message_id} already delivered")
+        current = p.delivery_attempts.get(message_id)
+        if current is not None and current.get("status") == "started":
+            if current.get("attempt_id") == attempt_id:
+                return current
+            raise ConflictError(f"message {message_id} requires delivery reconciliation")
+        self.store.append(
+            self.mission_id,
+            "message/delivery_started",
+            actor,
+            {
+                "message_id": message_id,
+                "target_id": target_id,
+                "attempt_id": attempt_id,
+            },
+            idempotency_key=f"message:delivery_started:{message_id}:{attempt_id}",
+        )
+        return self.projection().delivery_attempts[message_id]
+
+    def fail_message_delivery(
+        self,
+        message_id: str,
+        attempt_id: str,
+        actor: str,
+        *,
+        error_class: str | None = None,
+        evidence_ref: str | None = None,
+    ) -> dict[str, Any]:
+        current = self.projection().delivery_attempts.get(message_id)
+        if current is None:
+            raise MissionError(f"message {message_id} has no delivery attempt")
+        if current.get("attempt_id") != attempt_id or current.get("status") != "started":
+            raise ConflictError(f"message {message_id} delivery attempt mismatch")
+        payload: dict[str, Any] = {
+            "message_id": message_id,
+            "attempt_id": attempt_id,
+        }
+        if error_class is not None:
+            payload["error_class"] = error_class
+        if evidence_ref is not None:
+            payload["evidence_ref"] = evidence_ref
+        self.store.append(
+            self.mission_id,
+            "message/delivery_failed",
+            actor,
+            payload,
+            idempotency_key=f"message:delivery_failed:{message_id}:{attempt_id}",
+        )
+        return self.projection().delivery_attempts[message_id]
+
+    def ack_message(
+        self,
+        message_id: str,
+        target_id: str,
+        actor: str,
+        *,
+        attempt_id: str | None = None,
+        evidence_ref: str | None = None,
+    ) -> None:
         p = self.projection()
         msg = p.messages.get(message_id)
         if msg is None:
@@ -902,11 +1021,68 @@ class MissionRuntime:
             raise ConflictError("message target mismatch")
         if message_id in p.delivered_messages:
             return
+        if attempt_id is not None:
+            current = p.delivery_attempts.get(message_id)
+            if (
+                current is None
+                or current.get("attempt_id") != attempt_id
+                or current.get("status") != "started"
+            ):
+                raise ConflictError(f"message {message_id} delivery attempt mismatch")
+        payload: dict[str, Any] = {
+            "message_id": message_id,
+            "target_id": target_id,
+        }
+        if attempt_id is not None:
+            payload["attempt_id"] = attempt_id
+        if evidence_ref is not None:
+            payload["evidence_ref"] = evidence_ref
+        suffix = attempt_id or "legacy"
         self.store.append(
-            self.mission_id, "message/delivered", actor,
-            {"message_id": message_id, "target_id": target_id},
-            idempotency_key=f"message:delivered:{message_id}",
+            self.mission_id,
+            "message/delivered",
+            actor,
+            payload,
+            idempotency_key=f"message:delivered:{message_id}:{suffix}",
         )
+
+    def reconcile_message_delivery(
+        self,
+        message_id: str,
+        target_id: str,
+        *,
+        delivered: bool,
+        actor: str,
+        evidence_ref: str,
+        error_class: str = "reconciled_not_delivered",
+    ) -> dict[str, Any]:
+        p = self.projection()
+        msg = p.messages.get(message_id)
+        if msg is None:
+            raise MissionError(f"unknown message {message_id}")
+        if msg["target_id"] != target_id:
+            raise ConflictError("message target mismatch")
+        current = p.delivery_attempts.get(message_id)
+        if current is None or current.get("status") != "started":
+            raise ConflictError(f"message {message_id} has no unresolved delivery attempt")
+        attempt_id = str(current["attempt_id"])
+        if delivered:
+            self.ack_message(
+                message_id,
+                target_id,
+                actor,
+                attempt_id=attempt_id,
+                evidence_ref=evidence_ref,
+            )
+        else:
+            self.fail_message_delivery(
+                message_id,
+                attempt_id,
+                actor,
+                error_class=error_class,
+                evidence_ref=evidence_ref,
+            )
+        return self.projection().delivery_attempts[message_id]
 
 
     def create_session(
