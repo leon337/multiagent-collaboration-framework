@@ -13,6 +13,8 @@ import { createMcpAuthMiddleware, loadMcpAuthConfig, protectedResourceMetadata }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_FILE = path.join(__dirname, "../web/mcp-app.html");
+const APP_VERSION = "0.4.1";
+const DEPLOY_SHA = process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null;
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || "").replace(/\/$/, "");
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
@@ -41,7 +43,7 @@ function result(data, text) {
 
 function createMcpServer(authInfo = null) {
   const ownerId = authInfo?.subject || authInfo?.clientId || "anonymous";
-  const server = new McpServer({ name: "Google Photos Bridge", version: "0.4.0" }, { capabilities: { resources: {}, tools: {} } });
+  const server = new McpServer({ name: "Google Photos Bridge", version: APP_VERSION }, { capabilities: { resources: {}, tools: {} } });
 
   registerAppTool(server, "photos_bridge_status", {
     title: "Open Google Photos Bridge",
@@ -206,7 +208,7 @@ app.use((req, res, next) => {
   return next();
 });
 app.use(express.json({ limit: "1mb" }));
-app.get("/healthz", (_req, res) => res.json({ ok: true, service: "google-photos-bridge", version: "0.4.0", configured: BRIDGE_CONFIGURED, mcp_auth_enabled: MCP_AUTH.enabled }));
+app.get("/healthz", (_req, res) => res.json({ ok: true, service: "google-photos-bridge", version: APP_VERSION, deploy_sha: DEPLOY_SHA, configured: BRIDGE_CONFIGURED, mcp_auth_enabled: MCP_AUTH.enabled }));
 app.get("/setup", (_req, res) => res.json({ configured: BRIDGE_CONFIGURED, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI, checks: { google_oauth: google.configured, state_secret: STATE_SECRET_CONFIGURED }, mcp_auth: { enabled: MCP_AUTH.enabled, issuer: MCP_AUTH.issuer || null, audience: MCP_AUTH.audience || null, scopes: MCP_AUTH.requiredScopes }, required: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "APP_STATE_SECRET"] }));
 
 if (MCP_AUTH.enabled) {
@@ -246,4 +248,4 @@ app.all("/mcp", mcpAuthMiddleware, async (req, res) => {
   catch (error) { console.error(error); if (!res.headersSent) res.status(500).json({ jsonrpc: "2.0", error: { code: -32603, message: "Internal server error" }, id: null }); }
 });
 
-app.listen(PORT, "0.0.0.0", () => console.log(`Google Photos Bridge listening on :${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`Google Photos Bridge v${APP_VERSION} listening on :${PORT} deploy=${DEPLOY_SHA || "unknown"}`));
