@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T08:34:00-03:00",
+  "updated_at": "2026-09-18T08:43:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -18,7 +18,7 @@
     "local_workers": 5,
     "local_auditor": 1,
     "fanout_pass": "5/5",
-    "runtime_tests_pass": "29/29",
+    "runtime_tests_pass": "39/39",
     "cognitive_agents_claimed": false
   },
   "roadmap": [
@@ -60,7 +60,7 @@
     {
       "id": "R7",
       "name": "Auditor Cognitivo Adversarial",
-      "status": "PENDING"
+      "status": "PASS_TECHNICAL_COGNITIVE_PENDING"
     },
     {
       "id": "R8",
@@ -240,6 +240,12 @@
       "actor": "MESTRE",
       "type": "R6_WORKSPACE_CAPABILITIES",
       "text": "R6 validado: isolamento de workspace + reconciliation gate + capability tokens; 29/29 PASS. Histórico reconciliado append-only."
+    },
+    {
+      "at": "2026-09-18T08:43:00-03:00",
+      "actor": "auditor-technical",
+      "type": "R7_TECHNICAL_AUDIT",
+      "text": "Auditoria adversarial técnica PASS: 9 classes de rejeição testadas; parecer separado; 39/39 PASS; cognitive=false."
     }
   ],
   "links": {
@@ -274,8 +280,8 @@
   "history_pipeline": {
     "schema": "mcf_live_history/v1",
     "status": "PASS_E2E",
-    "events_last_run": 12,
-    "chain_head": "9a18b3c1482ca59f39ad34cf797e6f835c4bba0b2acd9c9a2345e2a01c565c6e",
+    "events_last_run": 13,
+    "chain_head": "505b7519a37306d2fa61d875957cd02e7e220fe2c4273436c99dc6e4d88d3950",
     "guarantees": [
       "append_only",
       "hash_chain",
@@ -322,5 +328,13 @@
     "capability_narrowing": "PASS",
     "capability_revocation": "PASS",
     "history_reconciliation": "PASS_APPEND_ONLY_CORRECTION"
+  },
+  "r7_adversarial_audit": {
+    "status": "PASS_TECHNICAL",
+    "cognitive": false,
+    "valid_packet": "PASS",
+    "rejection_classes": 9,
+    "receipt_sha256": "2ea745dbc4e36b3c16a83996487db8cab30c3c38891ee5d798a2b97b4c491286",
+    "cognitive_auditor": "BLOCKED_G08"
   }
 }
