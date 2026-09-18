@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T07:20:00-03:00",
+  "updated_at": "2026-09-18T07:26:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -186,11 +186,29 @@
       "actor": "MESTRE",
       "type": "DASHBOARD",
       "text": "Iniciada publicação do painel vivo na Vercel."
+    },
+    {
+      "at": "2026-09-18T07:24:00-03:00",
+      "actor": "MESTRE",
+      "type": "VERCEL",
+      "text": "Projeto predix-ai-br/mcf-harness-v2-live criado via CLI no notebook."
+    },
+    {
+      "at": "2026-09-18T07:25:00-03:00",
+      "actor": "MESTRE",
+      "type": "BLOCKER",
+      "text": "Deploy de produção bloqueado pela cota diária Hobby da Vercel: api-deployments-free-per-day."
     }
   ],
   "links": {
     "issue": "https://github.com/leon337/multiagent-collaboration-framework/issues/234",
     "prototype_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/236",
     "repo": "https://github.com/leon337/multiagent-collaboration-framework"
+  },
+  "vercel": {
+    "project": "predix-ai-br/mcf-harness-v2-live",
+    "state": "BLOCKED_BY_DAILY_HOBBY_DEPLOYMENT_LIMIT",
+    "error_code": "api-deployments-free-per-day",
+    "detail": "Vercel CLI reported more than 100 free deployments in the last day; project exists but production deployment was not created."
   }
 }
