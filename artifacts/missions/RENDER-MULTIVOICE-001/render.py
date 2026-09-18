@@ -391,7 +391,7 @@ def render_video() -> None:
                 "-af", af,
                 "-t", f"{duration:.4f}",
                 "-r", str(FPS),
-                "-c:v", "libx264", "-preset", "veryfast", "-crf", "18",
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
                 "-pix_fmt", "yuv420p",
                 "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
                 str(segment),
