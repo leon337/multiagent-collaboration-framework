@@ -1,0 +1,90 @@
+mission:
+  id: MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001
+  title: MCF Harness V2 — Bubble-Native Multi-Agent Runtime
+  status: ACTIVE
+  current_phase: R4_COGNITIVE_EXECUTOR_LOCAL
+  risk_class: B
+  authority_human: LEANDRO
+  coordinator: MESTRE
+  last_updated: '2026-09-18'
+
+execution_boundary:
+  canonical_runtime: CHATGPT_BUBBLE_LOCAL_SANDBOX
+  notebook_used: false
+  brainbase_used: false
+  github_role: persistence_versioning_audit_only
+  vps_required: false
+  external_orchestrator_required: false
+
+persistence:
+  local_workspace: /mnt/data/mcf-harness-v2-local
+  source_repository: leon337/multiagent-collaboration-framework
+  issue: 234
+  research_pr: 235
+  prototype_pr: 236
+  prototype_branch: prototype/mcf-harness-v2-event-runtime-20260918
+  local_checkpoint: /mnt/data/mcf-harness-v2-local/LOCAL_TEAM_CHECKPOINT.md
+  roadmap: /mnt/data/mcf-harness-v2-local/ROADMAP.md
+  checklist: /mnt/data/mcf-harness-v2-local/CHECKLIST.md
+
+invariants:
+  - LEANDRO_IS_FINAL_HUMAN_AUTHORITY
+  - EXECUTION_HAPPENS_INSIDE_CHATGPT_BUBBLE
+  - NOTEBOOK_IS_NOT_RUNTIME
+  - BRAINBASE_IS_NOT_RUNTIME
+  - GITHUB_IS_NOT_PRIMARY_EXECUTOR
+  - NO_AGENT_CREDIT_WITHOUT_REAL_EXECUTION_AND_EVIDENCE
+  - NO_FALSE_GREEN
+  - FAIL_CLOSED_ON_AUTHORITY_OR_CAPABILITY_AMBIGUITY
+  - MISSION_STATE_MUST_OUTLIVE_ONE_PROCESS_OR_CHAT
+  - MODEL_IS_EXECUTOR_NOT_SOURCE_OF_TRUTH
+
+validated_capabilities:
+  mission_journal_sqlite_wal: PASS
+  monotonic_sequence: PASS
+  idempotency: PASS
+  deterministic_replay: PASS
+  transactional_task_cas: PASS
+  task_dag: PASS
+  task_readiness: PASS
+  mailbox_queue_ack: PASS
+  task_leases: PASS
+  lease_heartbeat: PASS
+  execution_receipts: PASS
+  tool_evidence_projection: PASS
+  task_scoped_capabilities: PASS
+  event_hash_chain: PASS
+  local_parallel_workers: PASS
+  local_audit_fanin: PASS
+
+current_evidence:
+  local_worker_count: 5
+  local_auditor_count: 1
+  fanout_workers_pass: 5
+  runtime_tests_pass: 7
+  notebook_used: false
+  brainbase_used: false
+  cognitive_agents_claimed: false
+
+next_gate:
+  id: R4
+  name: Cognitive Executor Local
+  acceptance:
+    - define_executor_interface
+    - identify_bubble_native_cognitive_backend
+    - run_at_least_two_independent_cognitive_agents
+    - persist_each_execution_receipt
+    - prove_executor_failure_does_not_destroy_mission_state
+
+blocked_or_unresolved:
+  - no_cognitive_llm_executor_installed_in_current_sandbox
+  - agent_sessions_not_yet_durable
+  - workspace_isolation_not_yet_implemented
+  - audit_is_technical_not_yet_cognitive
+  - cross_chat_recovery_not_yet_end_to_end_validated
+
+promotion:
+  production_authorized: false
+  automatic_merge_authorized: false
+  stable_release_authorized: false
+  final_gate_owner: LEANDRO
