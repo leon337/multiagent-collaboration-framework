@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T09:32:00-03:00",
+  "updated_at": "2026-09-18T09:36:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -291,8 +291,8 @@
   "history_pipeline": {
     "schema": "mcf_live_history/v1",
     "status": "PASS_E2E",
-    "events_last_run": 15,
-    "chain_head": "505b7519a37306d2fa61d875957cd02e7e220fe2c4273436c99dc6e4d88d3950",
+    "events_last_run": 16,
+    "chain_head": "6d8b858e5458a5fbb129065600348af288d73a6466add0b705ff08e77d6aa760",
     "guarantees": [
       "append_only",
       "hash_chain",
@@ -388,6 +388,8 @@
       "G08/L02 bubble-native cognitive backend/auditor",
       "M09 separate-chat acceptance",
       "P05 V1 schema unavailable"
-    ]
+    ],
+    "audit_package_sha256": "81ed3191c8113bf78f2999cc46586653f3dea5280f9ceefde470e8bd2b17b55d",
+    "local_chain_head": "6d8b858e5458a5fbb129065600348af288d73a6466add0b705ff08e77d6aa760"
   }
 }
