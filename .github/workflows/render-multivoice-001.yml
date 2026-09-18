@@ -1,0 +1,127 @@
+name: RENDER-MULTIVOICE-001
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "artifacts/missions/RENDER-MULTIVOICE-001/**"
+      - ".github/workflows/render-multivoice-001.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: render-multivoice-001-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  manifest:
+    name: Manifest validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate 25-scene contract
+        run: python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py validate-manifest
+
+  audio-recovery:
+    name: G1 Audio recovery
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Recover all generated voice clips
+        run: python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py audio
+      - name: Upload recovered voices
+        uses: actions/upload-artifact@v4
+        with:
+          name: multivoice-audio
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            artifacts/missions/RENDER-MULTIVOICE-001/work/voices/*.mp3
+            artifacts/missions/RENDER-MULTIVOICE-001/work/audio-recovery.json
+
+  visual-plan:
+    name: G3 Visual slides
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pillow and fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pil fonts-dejavu-core
+      - name: Generate 25 vertical slides
+        run: python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py slides
+      - name: Upload visual slides
+        uses: actions/upload-artifact@v4
+        with:
+          name: multivoice-slides
+          if-no-files-found: error
+          retention-days: 7
+          path: artifacts/missions/RENDER-MULTIVOICE-001/work/slides/*.png
+
+  cloud-render:
+    name: G2/G4 Cloud timing and render
+    needs: [manifest, audio-recovery, visual-plan]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Restore recovered voices
+        uses: actions/download-artifact@v4
+        with:
+          name: multivoice-audio
+          path: artifacts/missions/RENDER-MULTIVOICE-001/work
+      - name: Restore visual slides
+        uses: actions/download-artifact@v4
+        with:
+          name: multivoice-slides
+          path: artifacts/missions/RENDER-MULTIVOICE-001/work/slides
+      - name: Render MP4
+        run: python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py render
+      - name: Upload technical render
+        uses: actions/upload-artifact@v4
+        with:
+          name: multivoice-render
+          if-no-files-found: error
+          retention-days: 7
+          path: artifacts/missions/RENDER-MULTIVOICE-001/output/*
+
+  validate:
+    name: G5 Final validation
+    needs: [cloud-render]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Restore technical render
+        uses: actions/download-artifact@v4
+        with:
+          name: multivoice-render
+          path: artifacts/missions/RENDER-MULTIVOICE-001/output
+      - name: Validate MP4 evidence
+        run: |
+          python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py validate-output \
+            --input artifacts/missions/RENDER-MULTIVOICE-001/output/chamado-amanhecer-v2-multivoz.mp4
+      - name: Upload validated deliverable
+        uses: actions/upload-artifact@v4
+        with:
+          name: chamado-amanhecer-v2-multivoz
+          if-no-files-found: error
+          retention-days: 14
+          path: artifacts/missions/RENDER-MULTIVOICE-001/output/*
