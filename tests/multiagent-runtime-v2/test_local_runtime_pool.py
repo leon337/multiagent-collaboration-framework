@@ -76,6 +76,21 @@ class LocalRuntimePoolTests(unittest.TestCase):
         acquired = [e for e in events if e.event_type == "pool/slot_acquired"][0]
         self.assertFalse(acquired.payload["cognitive"])
 
+    def test_run_id_reuse_with_different_identity_fails(self):
+        self.pool.configure(2, "mestre")
+        self.pool.acquire("r1", "t1", "w1", "mestre")
+        with self.assertRaises(RuntimePoolError):
+            self.pool.acquire("r1", "t2", "w1", "mestre")
+        with self.assertRaises(RuntimePoolError):
+            self.pool.acquire("r1", "t1", "w2", "mestre")
+
+    def test_pool_cannot_shrink_below_active_count(self):
+        self.pool.configure(2, "mestre")
+        self.pool.acquire("r1", "t1", "w1", "mestre")
+        self.pool.acquire("r2", "t2", "w2", "mestre")
+        with self.assertRaises(RuntimePoolError):
+            self.pool.configure(1, "mestre")
+
 
 if __name__ == "__main__":
     unittest.main()
