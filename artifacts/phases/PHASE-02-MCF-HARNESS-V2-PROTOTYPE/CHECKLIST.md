@@ -236,5 +236,5 @@ M04 → M09  Recovery entre chats
 - [x] Q06 workers registram resultado automaticamente.
 - [x] Q07 auditor registra verdict automaticamente.
 - [x] Q08 suíte integrada 12/12 PASS.
-- [~] Q09 projeção para LIVE-DASHBOARD.json.
-- [~] Q10 projeção para Issue #234 / cockpit Vercel.
+- [x] Q09 projeção para LIVE-DASHBOARD.json.
+- [x] Q10 projeção para Issue #234 / cockpit Vercel.
