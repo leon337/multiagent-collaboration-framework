@@ -398,7 +398,10 @@ def replay(events: Iterable[Event]) -> Projection:
             if int(p["revision"]) != task["revision"] + 1:
                 raise ProjectionError(f"non-contiguous task revision for {tid}")
             task["revision"] = int(p["revision"])
-            for key in ("status", "subject", "blocked_by", "owner_id", "lease_id", "lease_until"):
+            for key in (
+                "status", "subject", "blocked_by", "owner_id", "lease_id", "lease_until",
+                "priority", "lane", "preemptible", "enqueued_at"
+            ):
                 if key in p:
                     task[key] = p[key]
             _detect_cycle(tasks)
@@ -712,6 +715,16 @@ class MissionRuntime:
         )
         return self.projection().tasks[task_id]
 
+    def task_ready(self, task_id: str) -> bool:
+        p = self.projection()
+        task = p.tasks.get(task_id)
+        if task is None:
+            raise MissionError(f"unknown task {task_id}")
+        return all(
+            p.tasks.get(dep, {}).get("status") == "completed"
+            for dep in task.get("blocked_by", [])
+        )
+
     def lease_task(
         self,
         task_id: str,
@@ -722,6 +735,8 @@ class MissionRuntime:
     ) -> dict[str, Any]:
         if ttl_seconds <= 0:
             raise ValueError("ttl_seconds must be positive")
+        if not self.task_ready(task_id):
+            raise ConflictError(f"task {task_id} dependencies are not complete")
         lease_id = str(uuid.uuid4())
         return self.update_task(
             task_id, expected_revision, actor,
