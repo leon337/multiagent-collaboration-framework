@@ -15,8 +15,10 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent
-STATE = ROOT / "state"
-STATE.mkdir(exist_ok=True)
+STATE = Path(
+    os.getenv("MCF_BUBBLE_STATE_DIR", str(ROOT / "state"))
+).resolve()
+STATE.mkdir(parents=True, exist_ok=True)
 
 DEFAULT_MISSION: dict[str, Any] = {
     "mission_id": "MCF-MEMORY-LIVE-NEXT-STABLE-001",
@@ -154,6 +156,7 @@ def prepare_run(mission: str) -> dict[str, Any]:
         "run_id": f"bubble-{int(time.time())}",
         "created_epoch": time.time(),
         "runtime": "chatgpt_sandbox",
+        "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
         "capabilities": caps,
         "contract": contract,
         "status": status,
@@ -182,6 +185,7 @@ def emit_checkpoint(mission: str) -> dict[str, Any]:
     checkpoint = {
         "mission_id": mission,
         "runtime": "chatgpt_sandbox",
+        "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
         "run_id": run["run_id"],
         "state": run["status"],
         "persistent_source_of_truth": run["contract"]["persistent_source_of_truth"],
