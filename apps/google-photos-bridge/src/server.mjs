@@ -13,7 +13,7 @@ import { createMcpAuthMiddleware, loadMcpAuthConfig, protectedResourceMetadata }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_FILE = path.join(__dirname, "../web/mcp-app.html");
-const APP_VERSION = "0.4.2";
+const APP_VERSION = "0.4.3";
 const DEPLOY_SHA = process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null;
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || "").replace(/\/$/, "");
