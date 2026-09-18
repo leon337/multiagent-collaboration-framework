@@ -29,7 +29,7 @@ function result(data, text) {
 }
 
 function createMcpServer() {
-  const server = new McpServer({ name: "Google Photos Bridge", version: "0.2.0" }, { capabilities: { resources: {}, tools: {} } });
+  const server = new McpServer({ name: "Google Photos Bridge", version: "0.3.0" }, { capabilities: { resources: {}, tools: {} } });
 
   registerAppTool(server, "photos_bridge_status", {
     title: "Open Google Photos Bridge",
