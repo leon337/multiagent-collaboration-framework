@@ -13,7 +13,7 @@ import { createMcpAuthMiddleware, loadMcpAuthConfig, protectedResourceMetadata }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_FILE = path.join(__dirname, "../web/mcp-app.html");
-const APP_VERSION = "0.4.3";
+const APP_VERSION = "0.4.4";
 const DEPLOY_SHA = process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null;
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || "").replace(/\/$/, "");
@@ -248,6 +248,93 @@ app.get("/terms", (_req, res) => res.type("html").send(legalPage("Termos de Uso 
   <h2>Contato</h2>
   <p>Questões podem ser registradas no repositório do projeto: <a href="https://github.com/leon337/multiagent-collaboration-framework">multiagent-collaboration-framework</a>.</p>
 `)));
+
+app.get("/setup/google-cloud", (_req, res) => {
+  const projectId = "our-rock-308910";
+  const callback = "https://mcf-google-photos-bridge.onrender.com/oauth/google/callback";
+  const keyId = "391428cc7b858455395cae7cb9971588112181745e324808c7d0a69908d0a581";
+  const publicKeyPem = "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAzpnqqzM6TFqRjLAb3AjZ\n+jctjNZ8IS8zqtJ+sGiu31aXGaZHpPL8i9VsZcs9kxMbsXhJU4BpyUTzQQFgpAFw\nc1wMqhhJ0n2OBtu7V6KUv3bWzjLwcLf9tauwNxcwzUXzVhM1xdGhyKHonYgc8GxH\nGaS1SJxofBZNUHlGriSvJZGasnHQufwXpT1XwOuc0RCt1CxbqXtL+mitGBhMSHYG\n1UmClXEXRipPcFcg9mhpwPzaA+Z7qqKLRxfVrMleIP75CLzKhEi1oAvaldiDTpih\nvQdHy7UbM4072ypEPEpAh/MAW1tI9gqVENgR5xX7VHPd0/koLW9+xNSvmGT/MXTz\n75gHwaRnXisAbK+qQiphn4B4pxqZ7XaU4TAQO7CINRCb/sKe64cLaRdF3fDfjFVz\nKxnOQ8+u0xDLEM7iQMT3KESKH8WDCjuT7/qXvlajQVMBl+U626RfSTGc/aB7QOAW\n2ps4NtbZiDlhr60cLaM1ipceB1UFc+EuO2D6kz7Sx3ezAgMBAAE=\n-----END PUBLIC KEY-----";
+  const apiUrl = "https://console.cloud.google.com/apis/library/photospicker.googleapis.com?project=" + encodeURIComponent(projectId);
+  const clientsUrl = "https://console.cloud.google.com/auth/clients?project=" + encodeURIComponent(projectId);
+  res.type("html").send(`<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Configurar Google Photos Bridge</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;max-width:760px;margin:0 auto;padding:18px;background:#0b1020;color:#eef2ff}
+.card{background:#151b2f;border:1px solid #2a3558;border-radius:16px;padding:16px;margin:12px 0}
+h1{font-size:22px}h2{font-size:17px;margin-top:0}.muted{color:#a9b3cf;font-size:13px}
+a.btn,button{display:block;width:100%;box-sizing:border-box;text-align:center;text-decoration:none;border:0;border-radius:12px;padding:13px 14px;margin:10px 0;background:#eef2ff;color:#111827;font-weight:700;font-size:15px}
+button.secondary{background:#263252;color:#eef2ff;border:1px solid #46557f}
+input{width:100%;box-sizing:border-box;border-radius:10px;border:1px solid #46557f;background:#0f1528;color:#fff;padding:12px;margin:6px 0 12px;font-size:14px}
+code,textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}textarea{width:100%;box-sizing:border-box;min-height:120px;border-radius:10px;padding:10px;background:#0f1528;color:#dbeafe;border:1px solid #46557f}
+.ok{color:#86efac}.warn{color:#fde68a}
+</style></head><body>
+<h1>Google Photos Bridge — configuração guiada</h1>
+<p class="muted">Projeto Google Cloud selecionado: <strong>${projectId}</strong>. Você só precisa confirmar as telas oficiais do Google. Não digite senha neste site.</p>
+
+<section class="card">
+<h2>1. Habilitar Google Photos Picker API</h2>
+<p>Abra a página oficial e toque em <strong>Ativar / Enable</strong> se aparecer.</p>
+<a class="btn" href="${apiUrl}" target="_blank" rel="noopener">Abrir Photos Picker API no Google</a>
+</section>
+
+<section class="card">
+<h2>2. Criar o cliente OAuth</h2>
+<p>Abra a página oficial do Google Auth Platform. Se pedir para registrar o app, use <strong>Google Photos Bridge</strong>. Depois crie um cliente do tipo <strong>Web application</strong>.</p>
+<a class="btn" href="${clientsUrl}" target="_blank" rel="noopener">Abrir Google Auth Platform → Clients</a>
+<p class="muted">Em “Authorized redirect URIs”, adicione exatamente:</p>
+<textarea id="callback" readonly>${callback}</textarea>
+<button class="secondary" onclick="navigator.clipboard.writeText(callback)">Copiar callback</button>
+</section>
+
+<section class="card">
+<h2>3. Entregar as credenciais com segurança</h2>
+<p>Depois que o Google criar o cliente, cole abaixo o <strong>Client ID</strong> e o <strong>Client Secret</strong>. A criptografia acontece no seu telefone com RSA-OAEP/SHA-256 antes de sair desta página.</p>
+<label>Client ID</label><input id="cid" autocomplete="off" spellcheck="false">
+<label>Client Secret</label><input id="csecret" type="password" autocomplete="off" spellcheck="false">
+<button id="encrypt">Criptografar para o Mestre</button>
+<p id="status" class="muted"></p>
+<textarea id="cipher" readonly placeholder="O pacote criptografado aparecerá aqui."></textarea>
+<button class="secondary" id="copy" disabled>Copiar pacote criptografado</button>
+<p class="muted">Key ID: ${keyId.slice(0,16)}… A chave privada correspondente permanece somente no sandbox desta conversa.</p>
+</section>
+
+<script>
+const callback="https://mcf-google-photos-bridge.onrender.com/oauth/google/callback";
+const publicKeyPem="-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAzpnqqzM6TFqRjLAb3AjZ\n+jctjNZ8IS8zqtJ+sGiu31aXGaZHpPL8i9VsZcs9kxMbsXhJU4BpyUTzQQFgpAFw\nc1wMqhhJ0n2OBtu7V6KUv3bWzjLwcLf9tauwNxcwzUXzVhM1xdGhyKHonYgc8GxH\nGaS1SJxofBZNUHlGriSvJZGasnHQufwXpT1XwOuc0RCt1CxbqXtL+mitGBhMSHYG\n1UmClXEXRipPcFcg9mhpwPzaA+Z7qqKLRxfVrMleIP75CLzKhEi1oAvaldiDTpih\nvQdHy7UbM4072ypEPEpAh/MAW1tI9gqVENgR5xX7VHPd0/koLW9+xNSvmGT/MXTz\n75gHwaRnXisAbK+qQiphn4B4pxqZ7XaU4TAQO7CINRCb/sKe64cLaRdF3fDfjFVz\nKxnOQ8+u0xDLEM7iQMT3KESKH8WDCjuT7/qXvlajQVMBl+U626RfSTGc/aB7QOAW\n2ps4NtbZiDlhr60cLaM1ipceB1UFc+EuO2D6kz7Sx3ezAgMBAAE=\n-----END PUBLIC KEY-----";
+const keyId="391428cc7b858455395cae7cb9971588112181745e324808c7d0a69908d0a581";
+function pemToBuf(pem){
+  const b64=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g,"");
+  const bin=atob(b64); const out=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i);
+  return out.buffer;
+}
+function b64url(buf){
+  const bytes=new Uint8Array(buf); let s="";
+  for(const b of bytes) s+=String.fromCharCode(b);
+  return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+document.getElementById("encrypt").onclick=async()=>{
+  const cid=document.getElementById("cid").value.trim();
+  const sec=document.getElementById("csecret").value.trim();
+  const st=document.getElementById("status");
+  if(!cid||!sec){st.textContent="Preencha Client ID e Client Secret.";st.className="warn";return}
+  try{
+    const key=await crypto.subtle.importKey("spki",pemToBuf(publicKeyPem),{name:"RSA-OAEP",hash:"SHA-256"},false,["encrypt"]);
+    const payload=new TextEncoder().encode(JSON.stringify({v:1,key_id:keyId,client_id:cid,client_secret:sec,created_at:new Date().toISOString()}));
+    const encrypted=await crypto.subtle.encrypt({name:"RSA-OAEP"},key,payload);
+    document.getElementById("cipher").value="GPB1."+keyId+"."+b64url(encrypted);
+    document.getElementById("copy").disabled=false;
+    document.getElementById("cid").value="";
+    document.getElementById("csecret").value="";
+    st.textContent="Credenciais criptografadas no dispositivo. Agora copie somente o pacote GPB1 e envie na conversa.";
+    st.className="ok";
+  }catch(e){st.textContent="Falha ao criptografar: "+e.message;st.className="warn"}
+};
+document.getElementById("copy").onclick=()=>navigator.clipboard.writeText(document.getElementById("cipher").value);
+</script>
+</body></html>`);
+});
 app.get("/healthz", (_req, res) => res.json({ ok: true, service: "google-photos-bridge", version: APP_VERSION, deploy_sha: DEPLOY_SHA, configured: BRIDGE_CONFIGURED, mcp_auth_enabled: MCP_AUTH.enabled }));
 app.get("/setup", (_req, res) => res.json({ configured: BRIDGE_CONFIGURED, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI, checks: { google_oauth: google.configured, state_secret: STATE_SECRET_CONFIGURED }, mcp_auth: { enabled: MCP_AUTH.enabled, issuer: MCP_AUTH.issuer || null, audience: MCP_AUTH.audience || null, scopes: MCP_AUTH.requiredScopes }, required: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "APP_STATE_SECRET"] }));
 
