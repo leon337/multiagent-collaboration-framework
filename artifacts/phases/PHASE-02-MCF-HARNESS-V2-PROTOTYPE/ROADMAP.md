@@ -101,6 +101,15 @@ Evidência:
 
 Gate: `PASS_TECHNICAL`
 
+### History Pipeline v1 — concluído dentro da R3/R4
+
+- log append-only separado do texto visual;
+- hash-chain e idempotência;
+- concorrência entre processos com lock;
+- workers e auditor gravam automaticamente;
+- projection JSON para superfícies live;
+- 12/12 testes unitários/integração verdes.
+
 ## R4 — Executor Cognitivo Local Plugável
 Estado: `PRÓXIMA FASE`
 
