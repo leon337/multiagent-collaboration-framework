@@ -4,21 +4,28 @@
   "issue": 241,
   "title": "MCF Harness Graph Engine 2.2",
   "status": "READY_FOR_HUMAN_GATE",
-  "current_phase": "G6 — Final exact-head validation",
-  "updated_at": "2026-09-18T17:53:00-03:00",
+  "current_phase": "G6 — HUMAN_GATE",
+  "updated_at": "2026-09-18T17:56:30-03:00",
   "branch": "feature/mcf-harness-graph-engine-2.2-20260918",
   "technical_head": "6d961e6e1572c75aea4abe95a0bdf221439fa228",
+  "documental_head": "aa7bafd0f168697a37412d3657beb39b4ae0d005",
   "evidence": {
     "unit_integration_tests": "83/83 PASS",
-    "harness_ci": {
+    "technical_harness_ci": {
       "status": "SUCCESS",
-      "run": 35393552144,
-      "head": "6d961e6e1572c75aea4abe95a0bdf221439fa228"
+      "run": 35393552144
     },
-    "production_readiness": {
+    "technical_production_readiness": {
       "status": "SUCCESS",
-      "run": 35393552168,
-      "head": "6d961e6e1572c75aea4abe95a0bdf221439fa228"
+      "run": 35393552168
+    },
+    "documental_harness_ci": {
+      "status": "SUCCESS",
+      "run": 35393984025
+    },
+    "documental_production_readiness": {
+      "status": "SUCCESS",
+      "run": 35393984033
     },
     "graph_fanout": "3 runtime cells / 3 unique PIDs / peak concurrency 3",
     "graph_failure_injection": "PASS",
@@ -64,7 +71,7 @@
     {
       "id": "G6",
       "name": "Gate",
-      "status": "FINAL_HEAD_VALIDATING_THEN_HUMAN_GATE"
+      "status": "HUMAN_GATE"
     }
   ],
   "history": [
@@ -97,6 +104,12 @@
       "actor": "CI",
       "type": "TECHNICAL_GATES",
       "text": "SHA 6d961e6e: Harness CI 83/83 PASS e Production Readiness SUCCESS."
+    },
+    {
+      "at": "2026-09-18T17:56:00-03:00",
+      "actor": "CI",
+      "type": "DOCUMENTAL_GATES",
+      "text": "SHA aa7bafd0: Harness CI e Production Readiness SUCCESS. Somente HUMAN_GATE permanece."
     }
   ]
 }

@@ -1,6 +1,6 @@
 # CHECKLIST — MCF Harness Graph Engine 2.2
 
-Legend: `[x]` concluído · `[~]` validação final · `[ ]` pendente.
+Legend: `[x]` concluído · `[ ]` pendente.
 
 ## G0 — Governança
 - [x] G001 — Issue própria (#241).
@@ -65,9 +65,10 @@ Legend: `[x]` concluído · `[~]` validação final · `[ ]` pendente.
 - [x] G508 — missing receipt fail-closed.
 
 ## Gate
-- [x] unit tests — 83 PASS no SHA técnico.
+- [x] unit tests — 83 PASS.
 - [x] integration tests — PASS.
-- [x] Harness CI SHA técnico — run 35393552144 SUCCESS.
-- [x] Production Readiness SHA técnico — run 35393552168 SUCCESS.
-- [~] exact-head final documental — revalidação após este commit.
+- [x] Harness CI SHA técnico `6d961e6e…` — run 35393552144 SUCCESS.
+- [x] Production Readiness SHA técnico `6d961e6e…` — run 35393552168 SUCCESS.
+- [x] Harness CI head documental `aa7bafd0…` — run 35393984025 SUCCESS.
+- [x] Production Readiness head documental `aa7bafd0…` — run 35393984033 SUCCESS.
 - [ ] HUMAN_GATE para merge.
