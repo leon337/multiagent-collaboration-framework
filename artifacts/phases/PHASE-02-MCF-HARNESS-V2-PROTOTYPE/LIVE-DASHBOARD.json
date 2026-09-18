@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T08:31:00-03:00",
+  "updated_at": "2026-09-18T08:41:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -246,6 +246,12 @@
       "actor": "auditor-technical",
       "type": "R7_TECHNICAL_AUDIT",
       "text": "Auditoria adversarial técnica PASS: 9 classes de rejeição testadas; parecer separado; 39/39 PASS; cognitive=false."
+    },
+    {
+      "at": "2026-09-18T08:41:00-03:00",
+      "actor": "MESTRE",
+      "type": "PUBLISH_RENDER_LIVE",
+      "text": "15 investigadores técnicos avaliaram rotas de publicação; Render Web Service selecionado e publicado com /api/mcf vivo."
     }
   ],
   "links": {
@@ -268,14 +274,13 @@
   },
   "live_surface": {
     "status": "LIVE",
-    "provider": "Vercel",
-    "project": "mcf-cockpit-live",
-    "concept": "concept-3",
-    "route": "https://mcf-cockpit-live.vercel.app/concept-3#mission",
-    "refresh_seconds": 60,
-    "data_source": "/api/mcf -> GitHub REST public data",
-    "mission_source": "Issue #234",
-    "note": "Mission tab renders the full Issue #234 body; overview includes mission, checklist, GitHub timeline and agents."
+    "provider": "Render",
+    "service": "mcf-cockpit-mobile-v3-live",
+    "route": "https://mcf-cockpit-mobile-v3-live.onrender.com/concept-3#mission",
+    "api": "https://mcf-cockpit-mobile-v3-live.onrender.com/api/mcf?mission=234",
+    "source_branch": "fix/mobile-mission-ux-v3-20260918",
+    "source_commit": "94378428dfe628356db9c5908fb4d237fbaa2984",
+    "note": "Primary live mission cockpit while Vercel deployment quota is blocked."
   },
   "history_pipeline": {
     "schema": "mcf_live_history/v1",
@@ -336,5 +341,12 @@
     "rejection_classes": 9,
     "receipt_sha256": "2ea745dbc4e36b3c16a83996487db8cab30c3c38891ee5d798a2b97b4c491286",
     "cognitive_auditor": "BLOCKED_G08"
+  },
+  "publish_swarm": {
+    "status": "PASS",
+    "investigator_count": 15,
+    "cognitive_agents_claimed": false,
+    "selected_route": "Render Web Service",
+    "fallback": "Floot"
   }
 }
