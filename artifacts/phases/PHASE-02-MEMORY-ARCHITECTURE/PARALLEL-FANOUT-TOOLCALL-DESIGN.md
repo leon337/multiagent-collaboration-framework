@@ -82,20 +82,21 @@ The tool layer:
 
 This is a mission harness, not the permanent MCF production executor.
 
-## Zero-cost boundary
+## Executor policy
 
-The execution path uses:
+Two executors are allowed under one evidence contract:
 
-- public MCF repository;
-- standard GitHub-hosted runner;
-- pinned local Ollama;
-- `qwen2.5:1.5b`;
-- no paid model API;
-- no Brainbase billable task;
-- no paid embeddings;
-- no paid/larger runner requirement.
+1. **Brainbase managed agents — preferred when available**
+   - explicitly authorized by LEANDRO for billable task runs on 2026-09-18;
+   - each credited run must still provide attributable execution, real tool evidence and artifact provenance;
+   - current provider observation: `BILLING_UNAVAILABLE / HTTP 503` before model/tool execution.
 
-The earlier Brainbase path is not part of this execution design.
+2. **Public GitHub-hosted runner + local Ollama — zero-cost contingency**
+   - pinned local Ollama with `qwen2.5:1.5b`;
+   - no paid model API, paid embeddings or paid/larger runner requirement;
+   - used so the mission does not stall when Brainbase is unavailable.
+
+Executor choice does not change privacy, anti-simulation, fan-out/fan-in, Class C or human-authority boundaries.
 
 ## Concurrency semantics
 
