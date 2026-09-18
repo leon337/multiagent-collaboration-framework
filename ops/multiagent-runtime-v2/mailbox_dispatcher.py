@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import uuid
 from pathlib import Path
 from typing import Any, Callable
 
@@ -59,9 +60,19 @@ class MailboxDispatcher:
             p = event.payload
             if p.get("target_id") != target_id:
                 continue
-            if p.get("message_id") in projection.delivered_messages:
+            message_id = p.get("message_id")
+            if message_id in projection.delivered_messages:
                 continue
-            pending.append({**p, "queued_seq": event.seq, "queued_at": event.timestamp})
+            attempt = projection.delivery_attempts.get(message_id)
+            pending.append({
+                **p,
+                "queued_seq": event.seq,
+                "queued_at": event.timestamp,
+                "delivery_attempt": None if attempt is None else dict(attempt),
+                "reconciliation_required": bool(
+                    attempt is not None and attempt.get("status") == "started"
+                ),
+            })
         return pending
 
     def pending_count(self, target_id: str) -> int:
