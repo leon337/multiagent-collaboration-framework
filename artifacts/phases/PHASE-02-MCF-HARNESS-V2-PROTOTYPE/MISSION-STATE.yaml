@@ -56,12 +56,16 @@ validated_capabilities:
   event_hash_chain: PASS
   local_parallel_workers: PASS
   local_audit_fanin: PASS
+  live_history_pipeline: PASS_LOCAL
+  live_history_hash_chain: PASS
+  live_history_concurrent_append: PASS
 
 current_evidence:
   local_worker_count: 5
   local_auditor_count: 1
   fanout_workers_pass: 5
-  runtime_tests_pass: 7
+  runtime_tests_pass: 12
+  live_history_events_last_run: 8
   notebook_used: false
   brainbase_used: false
   cognitive_agents_claimed: false
