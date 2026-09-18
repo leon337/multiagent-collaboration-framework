@@ -772,6 +772,13 @@ class MissionRuntime:
             )
         if task.get("lease_until") is not None and float(task["lease_until"]) <= time.time():
             raise ConflictError(f"execution {execution_id} task lease has expired")
+        if any(
+            tool.get("execution_id") == execution_id and tool.get("status") == "requested"
+            for tool in projection.tool_calls.values()
+        ):
+            raise ConflictError(
+                f"execution {execution_id} has unresolved tool calls"
+            )
 
         event_type = "execution/completed" if success else "execution/failed"
         self.store.append(
