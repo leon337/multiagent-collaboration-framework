@@ -122,3 +122,15 @@ Do not recreate or redirect this team to Brainbase. Recover this checkpoint, con
 - canonical local history: 13 events.
 - chain head: `505b7519a37306d2fa61d875957cd02e7e220fe2c4273436c99dc6e4d88d3950`.
 - cognitive auditor remains blocked by G08; no cognitive claim.
+
+## R10_RELEASE_CANDIDATE_READY
+
+- release candidate: `2.0.0-rc1`
+- local suite: `53/53 PASS`
+- GitHub exact-head CI before final manifest: `34ccc9410b30ef661e0948a5fc1f702219594a05` → PASS
+- Render mobile surface validated: R10 / 53/53 / 82%
+- local history count: 16
+- local chain head: `6d8b858e5458a5fbb129065600348af288d73a6466add0b705ff08e77d6aa760`
+- audit package SHA-256: `81ed3191c8113bf78f2999cc46586653f3dea5280f9ceefde470e8bd2b17b55d`
+- stable promotion remains HUMAN_GATE
+- formal deferments: G08/L02, M09 separate-chat acceptance, P05 canonical V1 schema unavailable.
