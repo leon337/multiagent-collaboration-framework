@@ -1,4 +1,4 @@
-# Google Photos Bridge — MCP App V0.4
+# Google Photos Bridge — MCP App V0.4.3
 
 Integração mobile-first do ChatGPT com o Google Photos Picker.
 
@@ -51,7 +51,7 @@ Sem as credenciais Google, o serviço inicia em **setup mode**.
 
 ## Proteção OAuth 2.1 do próprio MCP
 
-A V0.4 adiciona um adaptador de resource server compatível com o contrato atual da OpenAI/MCP. Ele fica desligado no staging até existir um Authorization Server compatível.
+A V0.4.3 inclui um adaptador de resource server compatível com o contrato atual da OpenAI/MCP. Ele fica desligado no staging até existir um Authorization Server compatível.
 
 Variáveis:
 
@@ -72,6 +72,19 @@ npm run check
 npm start
 ```
 
-Estado do sandbox V0.4: **15/15 testes PASS**.
+Estado do sandbox V0.4.3: **16/16 testes PASS**.
 
 A UI fica em `ui://google-photos-bridge/v2.html` e foi desenhada para operação no celular dentro do ChatGPT. As telas oficiais de consentimento OAuth e do Photos Picker permanecem sob controle do Google.
+
+
+## Pacote portátil
+
+O diretório também contém:
+
+- `plugin.json` — manifesto Agent Plugins.
+- `mcp.json` — endpoint Streamable HTTP distribuível.
+- `skills/google-photos-bridge/SKILL.md` — fluxo canônico de uso.
+- `skills/google-photos-bridge/agents/openai.yaml` — dependência MCP da skill.
+- `/privacy` e `/terms` — páginas públicas preparadas para revisão.
+
+A existência do pacote não autoriza submissão, merge ou publicação pública.
