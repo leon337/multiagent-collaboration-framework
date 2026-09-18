@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T07:26:00-03:00",
+  "updated_at": "2026-09-18T07:44:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -198,6 +198,12 @@
       "actor": "MESTRE",
       "type": "BLOCKER",
       "text": "Deploy de produção bloqueado pela cota diária Hobby da Vercel: api-deployments-free-per-day."
+    },
+    {
+      "at": "2026-09-18T07:44:00-03:00",
+      "actor": "MESTRE",
+      "type": "AUTOMATION",
+      "text": "Agendada retomada idempotente do deploy dedicado da Vercel após a janela de 24h; primeiro valida URL existente e só publica se continuar pendente."
     }
   ],
   "links": {
@@ -209,6 +215,13 @@
     "project": "predix-ai-br/mcf-harness-v2-live",
     "state": "BLOCKED_BY_DAILY_HOBBY_DEPLOYMENT_LIMIT",
     "error_code": "api-deployments-free-per-day",
-    "detail": "Vercel CLI reported more than 100 free deployments in the last day; project exists but production deployment was not created."
+    "detail": "Vercel CLI reported more than 100 free deployments in the last day; project exists but production deployment was not created.",
+    "retry": {
+      "state": "SCHEDULED",
+      "target": "2026-09-19T07:44:37-03:00",
+      "strategy": "verify_existing_production_url_then_deploy_if_pending",
+      "publisher": "leo-N43SM via Vercel CLI",
+      "runtime_moved_to_notebook": false
+    }
   }
 }
