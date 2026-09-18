@@ -35,8 +35,8 @@ Legend: `[x]` locally validated · `[~]` partial/CI pending · `[ ]` pending.
 - [x] two concurrent dispatchers: zero duplicate delivery.
 - [x] five concurrent producers: exact backpressure bound.
 - [x] two concurrent schedulers: exact max-active bound.
-- [~] GitHub Harness CI.
-- [~] GitHub Production Readiness.
+- [x] GitHub Harness CI — run 35389797242 on head `145594c3…`.
+- [x] GitHub Production Readiness — run 35389797116 on head `145594c3…`.
 - [ ] HUMAN_GATE for merge.
 
 
@@ -72,3 +72,16 @@ Legend: `[x]` locally validated · `[~]` partial/CI pending · `[ ]` pending.
 - [x] failed-agent name remains permanently reserved;
 - [x] identical provision retry is idempotent;
 - [x] reconciliation evidence_ref persisted.
+
+
+## Final local parallel validation
+- [x] 6 independent technical shards in ChatGPT bubble;
+- [x] 93 tests total;
+- [x] schema shard: 9 PASS;
+- [x] security shard: 29 PASS;
+- [x] anchor/history shard: 12 PASS;
+- [x] coordination shard: 15 PASS;
+- [x] executor shard: 10 PASS;
+- [x] recovery/core shard: 18 PASS;
+- [x] notebook_used=false;
+- [x] Brainbase_used=false;

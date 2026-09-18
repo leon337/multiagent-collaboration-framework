@@ -17,7 +17,7 @@ Runtime: ChatGPT bubble local sandbox
 - message-size limits;
 - multiprocess duplicate-delivery test.
 
-Status: **PASS_LOCAL / CI_PENDING**
+Status: **PASS_LOCAL_AND_REMOTE_CI**
 
 ## H2 — Scheduler hardening
 
@@ -29,7 +29,7 @@ Status: **PASS_LOCAL / CI_PENDING**
 - safe preemption recommendation only;
 - multiprocess max-active test.
 
-Status: **PASS_LOCAL / CI_PENDING**
+Status: **PASS_LOCAL_AND_REMOTE_CI**
 
 ## H3 — Security hardening
 
@@ -39,7 +39,7 @@ Status: **PASS_LOCAL / CI_PENDING**
 - secret-reference allowlist;
 - capability + execution + agent + task confused-deputy binding.
 
-Status: **PASS_LOCAL / CI_PENDING**
+Status: **PASS_LOCAL_AND_REMOTE_CI**
 
 ## H4 — Journal / receipts
 
@@ -52,7 +52,7 @@ Status: **PASS_LOCAL / CI_PENDING**
 - HMAC authority anchor;
 - no destructive compaction.
 
-Status: **PASS_LOCAL / CI_PENDING**
+Status: **PASS_LOCAL_AND_REMOTE_CI**
 
 ## H5 — Threat model + release decision
 
@@ -62,7 +62,18 @@ Status: **PASS_LOCAL / CI_PENDING**
 - run Production Readiness;
 - keep PR draft until HUMAN_GATE.
 
-Status: **IN_PROGRESS**
+Status: **READY_FOR_HUMAN_GATE**
+
+Additional hardening completed:
+- C09 explicit adjacent schema migration registry;
+- H08 ephemeral secret lifecycle + execution-scoped capability binding;
+- H09 threat model with residual-risk classification;
+- F05 provisioning reconciliation across restart;
+- public anchor witness contract that refuses false immutability claims.
+
+Residual external items:
+- C08/J11 actual authority-anchor publication to an external witness provider remains partial;
+- no merge to main without LEANDRO HUMAN_GATE.
 
 ## Release rule
 
