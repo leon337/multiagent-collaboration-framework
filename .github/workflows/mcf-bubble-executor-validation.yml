@@ -1,0 +1,37 @@
+name: MCF Bubble Executor Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ops/bubble-executor/**'
+      - 'tests/bubble-executor/**'
+      - 'docs/runtime/MCF-BUBBLE-EXECUTOR-CONTRACT.md'
+      - 'docs/runtime/MCF-DEEPSEEK-HARNESS-AGENT-TEAMS-EXECUTOR.md'
+      - 'context/executors/chatgpt-bubble-sandbox.yaml'
+      - 'context/executors/deepseek-harness-agent-teams.yaml'\n      - 'context/missions/mcf-memory-live-next-stable.json'
+
+permissions:
+  contents: read
+
+jobs:
+  bubble-executor-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Compile executors
+        run: |
+          python3 -m py_compile ops/bubble-executor/bubble_executor.py
+          python3 -m py_compile ops/bubble-executor/dsh_agent_team_executor.py
+      - name: Run unit tests
+        run: |
+          python3 -m unittest discover -s tests/bubble-executor -p 'test_*.py' -v
+      - name: Verify fail-closed doctor
+        run: |
+          python3 ops/bubble-executor/bubble_executor.py doctor
+          python3 ops/bubble-executor/dsh_agent_team_executor.py doctor
+          python3 ops/bubble-executor/dsh_agent_team_executor.py plan >/tmp/mcf-dsh-team-plan.json
+          python3 -m json.tool /tmp/mcf-dsh-team-plan.json >/dev/null
