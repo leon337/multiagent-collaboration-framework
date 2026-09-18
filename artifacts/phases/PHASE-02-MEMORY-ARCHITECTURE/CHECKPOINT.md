@@ -9,8 +9,9 @@ Recovery baseline: `main@b969df76544e69cb2ff7833a5b65bd231d4db7aa`
 
 ## Reconciled decisions
 
-- zero-new-cost remains mandatory;
-- Brainbase billable task execution is outside the active mission path;
+- LEANDRO authorized Brainbase billable task execution for this mission on 2026-09-18;
+- Brainbase is preferred when available; current controlled pilots are blocked by provider-side `BILLING_UNAVAILABLE / HTTP 503` before model/tool execution;
+- the GitHub/Ollama path remains an active zero-cost contingency executor;
 - the official 29-agent roster remains a pool, not a decorative mandatory full-roster run;
 - explicit current LEANDRO instruction requires discovery/design fan-out so specialists do not depend on peer delivery;
 - every credited specialist must have a real tool call plus attributable artifact evidence;
@@ -73,12 +74,14 @@ Artifacts are written outside the repository and uploaded as CI evidence. Harnes
 
 Allowed input: public technical repository content.
 
-Forbidden:
-- personal Cognitive Ledger memory;
+Forbidden regardless of executor:
+- personal Cognitive Ledger memory in this discovery harness;
 - raw private `fontes`;
 - provider tokens/secrets;
 - `service_role`;
-- paid APIs/embeddings/billable agent tasks.
+- unapproved provider mutation or live implementation.
+
+Brainbase billable agent tasks are permitted for this mission by explicit LEANDRO authorization, but only for competence-aligned executions with attributable evidence. Paid embeddings and paid/larger runners are not required by this phase.
 
 ## Current blockers
 
