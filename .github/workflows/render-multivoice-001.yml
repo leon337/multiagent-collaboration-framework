@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Validate 25-scene contract
         run: python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py validate-manifest
 
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install ffmpeg
         run: |
           sudo apt-get update
@@ -38,7 +38,7 @@ jobs:
       - name: Recover all generated voice clips
         run: python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py audio
       - name: Upload recovered voices
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: multivoice-audio
           if-no-files-found: error
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install Pillow and fonts
         run: |
           sudo apt-get update
@@ -60,7 +60,7 @@ jobs:
       - name: Generate 25 vertical slides
         run: python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py slides
       - name: Upload visual slides
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: multivoice-slides
           if-no-files-found: error
@@ -73,25 +73,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install ffmpeg
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
       - name: Restore recovered voices
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: multivoice-audio
           path: artifacts/missions/RENDER-MULTIVOICE-001/work
       - name: Restore visual slides
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: multivoice-slides
           path: artifacts/missions/RENDER-MULTIVOICE-001/work/slides
       - name: Render MP4
         run: python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py render
       - name: Upload technical render
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: multivoice-render
           if-no-files-found: error
@@ -104,13 +104,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Install ffmpeg
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
       - name: Restore technical render
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: multivoice-render
           path: artifacts/missions/RENDER-MULTIVOICE-001/output
@@ -119,7 +119,7 @@ jobs:
           python3 artifacts/missions/RENDER-MULTIVOICE-001/render.py validate-output \
             --input artifacts/missions/RENDER-MULTIVOICE-001/output/chamado-amanhecer-v2-multivoz.mp4
       - name: Upload validated deliverable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: chamado-amanhecer-v2-multivoz
           if-no-files-found: error
