@@ -61,11 +61,11 @@ def fanout_definition() -> GraphDefinition:
     )
 
 
-def _pass_receipt(node_id: str) -> dict[str, Any]:
+def _pass_receipt(node_id: str, actor_id: str) -> dict[str, Any]:
     return make_graph_receipt(
         graph_id="mvp",
         node_id=node_id,
-        actor_id=node_id,
+        actor_id=actor_id,
         status="PASS",
         evidence_refs=[f"artifact://{node_id}"],
         result={"node": node_id, "ok": True},
@@ -88,7 +88,7 @@ def run_fanout_demo(root: str | Path, *, fail_node: str | None = None) -> dict[s
     pool.configure(3, "mestre")
 
     engine.lease_node("mvp", "start", "start-worker", 30, "mestre")
-    engine.complete_node("mvp", "start", _pass_receipt("start"), "start-worker")
+    engine.complete_node("mvp", "start", _pass_receipt("start", "start-worker"), "start-worker")
 
     ready_before = engine.ready_nodes("mvp")
     expected = ["test_a", "test_b", "test_c"]
@@ -124,7 +124,7 @@ def run_fanout_demo(root: str | Path, *, fail_node: str | None = None) -> dict[s
     for row in rows:
         node_id = row["node_id"]
         if row["status"] == "PASS":
-            engine.complete_node("mvp", node_id, _pass_receipt(node_id), f"worker-{node_id}")
+            engine.complete_node("mvp", node_id, _pass_receipt(node_id, f"worker-{node_id}"), f"worker-{node_id}")
         else:
             engine.fail_node("mvp", node_id, f"worker-{node_id}", "injected_failure")
         pool.release(f"run-{node_id}", "mestre")
@@ -136,9 +136,9 @@ def run_fanout_demo(root: str | Path, *, fail_node: str | None = None) -> dict[s
         if not audit_ready:
             raise RuntimeError("audit did not become ready after successful fanout")
         engine.lease_node("mvp", "audit", "auditor", 30, "mestre")
-        engine.complete_node("mvp", "audit", _pass_receipt("audit"), "auditor")
+        engine.complete_node("mvp", "audit", _pass_receipt("audit", "auditor"), "auditor")
         engine.lease_node("mvp", "end", "end-worker", 30, "mestre")
-        engine.complete_node("mvp", "end", _pass_receipt("end"), "end-worker")
+        engine.complete_node("mvp", "end", _pass_receipt("end", "end-worker"), "end-worker")
         final = engine.maybe_complete_graph("mvp", "mestre")
     else:
         final = graph_after_fanout
