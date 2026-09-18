@@ -366,7 +366,14 @@ def replay(events: Iterable[Event]) -> Projection:
             aid = p["agent_id"]
             if aid in agents:
                 raise ProjectionError(f"agent {aid} already exists")
-            agents[aid] = {"agent_id": aid, "name": p["name"], "phase": "provisioning"}
+            if any(agent.get("name") == p["name"] for agent in agents.values()):
+                raise ProjectionError(f"agent name {p['name']} is permanently reserved")
+            agents[aid] = {
+                "agent_id": aid,
+                "name": p["name"],
+                "phase": "provisioning",
+                "executor_ref": p["executor_ref"],
+            }
         elif event.event_type in {"agent/active", "agent/failed"}:
             aid = p["agent_id"]
             prior = agents.get(aid)
@@ -375,6 +382,8 @@ def replay(events: Iterable[Event]) -> Projection:
             prior["phase"] = event.event_type.split("/")[1]
             if "error" in p:
                 prior["error"] = p["error"]
+            if "evidence_ref" in p:
+                prior["evidence_ref"] = p["evidence_ref"]
         elif event.event_type == "task/created":
             tid = p["task_id"]
             if tid in tasks:
@@ -532,6 +541,16 @@ class MissionRuntime:
         executor_ref: str,
         actor: str,
     ) -> dict[str, Any]:
+        projection = self.projection()
+        existing = projection.agents.get(agent_id)
+        if existing is not None:
+            if existing.get("name") == name and existing.get("executor_ref") == executor_ref:
+                return existing
+            raise ConflictError(f"agent id {agent_id} already reserved")
+        for other in projection.agents.values():
+            if other.get("name") == name:
+                raise ConflictError(f"agent name {name} is permanently reserved")
+
         self.store.append(
             self.mission_id,
             "agent/provisioning",
@@ -547,6 +566,7 @@ class MissionRuntime:
         observed_phase: str,
         actor: str,
         error: str | None = None,
+        evidence_ref: str | None = None,
     ) -> dict[str, Any]:
         if observed_phase not in {"active", "failed"}:
             raise ValueError("observed_phase must be active or failed")
@@ -560,6 +580,8 @@ class MissionRuntime:
         payload = {"agent_id": agent_id}
         if error is not None:
             payload["error"] = error
+        if evidence_ref is not None:
+            payload["evidence_ref"] = evidence_ref
         self.store.append(
             self.mission_id,
             f"agent/{observed_phase}",
@@ -568,6 +590,63 @@ class MissionRuntime:
             idempotency_key=f"agent:settle:{agent_id}:{observed_phase}",
         )
         return self.projection().agents[agent_id]
+
+    def reconcile_provisioning(
+        self,
+        observations: dict[str, dict[str, Any]],
+        actor: str,
+    ) -> dict[str, Any]:
+        projection = self.projection()
+        settled: dict[str, str] = {}
+        pending: list[str] = []
+        already_settled: dict[str, str] = {}
+
+        for agent_id, agent in sorted(projection.agents.items()):
+            observation = observations.get(agent_id)
+            if agent["phase"] != "provisioning":
+                if observation is not None:
+                    observed_phase = observation.get("phase")
+                    if observed_phase is not None and observed_phase != agent["phase"]:
+                        raise ConflictError(
+                            f"agent {agent_id} observed as {observed_phase} "
+                            f"but journal says {agent['phase']}"
+                        )
+                    already_settled[agent_id] = agent["phase"]
+                continue
+
+            if observation is None:
+                pending.append(agent_id)
+                continue
+
+            observed_phase = observation.get("phase")
+            if observed_phase not in {"active", "failed"}:
+                raise ValueError(
+                    f"agent {agent_id} observation phase must be active or failed"
+                )
+            observed_executor = observation.get("executor_ref")
+            if observed_executor is not None and observed_executor != agent.get("executor_ref"):
+                raise ConflictError(
+                    f"agent {agent_id} executor mismatch: "
+                    f"{observed_executor} != {agent.get('executor_ref')}"
+                )
+
+            result = self.settle_agent(
+                agent_id,
+                observed_phase,
+                actor,
+                error=observation.get("error"),
+                evidence_ref=observation.get("evidence_ref"),
+            )
+            settled[agent_id] = result["phase"]
+
+        unknown = sorted(set(observations).difference(projection.agents))
+        return {
+            "schema": "mcf_provisioning_reconcile/v1",
+            "settled": settled,
+            "pending": pending,
+            "already_settled": already_settled,
+            "unknown_observations": unknown,
+        }
 
     def start_execution(
         self,
