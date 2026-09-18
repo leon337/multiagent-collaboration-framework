@@ -435,6 +435,7 @@ def replay(events: Iterable[Event]) -> Projection:
                 "agent_id": p["agent_id"],
                 "task_id": p["task_id"],
                 "executor": p["executor"],
+                "lease_id": p.get("lease_id"),
                 "status": "running",
                 "resource_usage": {},
             }
@@ -657,8 +658,28 @@ class MissionRuntime:
         actor: str,
     ) -> dict[str, Any]:
         p = self.projection()
-        if task_id not in p.tasks:
+        agent = p.agents.get(agent_id)
+        if agent is None:
+            raise MissionError(f"unknown agent {agent_id}")
+        if agent.get("phase") != "active":
+            raise ConflictError(f"agent {agent_id} is not active")
+
+        task = p.tasks.get(task_id)
+        if task is None:
             raise MissionError(f"unknown task {task_id}")
+        if task.get("status") != "leased":
+            raise ConflictError(f"task {task_id} is not leased")
+        if task.get("owner_id") != agent_id:
+            raise ConflictError(
+                f"task {task_id} lease owner {task.get('owner_id')} "
+                f"does not match agent {agent_id}"
+            )
+        if any(
+            execution.get("task_id") == task_id and execution.get("status") == "running"
+            for execution in p.executions.values()
+        ):
+            raise ConflictError(f"task {task_id} already has a running execution")
+
         self.store.append(
             self.mission_id,
             "execution/started",
@@ -668,6 +689,7 @@ class MissionRuntime:
                 "agent_id": agent_id,
                 "task_id": task_id,
                 "executor": executor,
+                "lease_id": task.get("lease_id"),
             },
             idempotency_key=f"execution:start:{execution_id}",
         )
@@ -711,8 +733,15 @@ class MissionRuntime:
         args_sha256: str,
         actor: str,
     ) -> dict[str, Any]:
-        if execution_id not in self.projection().executions:
+        execution = self.projection().executions.get(execution_id)
+        if execution is None:
             raise MissionError(f"unknown execution {execution_id}")
+        if execution.get("status") != "running":
+            raise ConflictError(f"execution {execution_id} is not running")
+        if actor != execution.get("agent_id"):
+            raise ConflictError(
+                f"tool requester {actor} does not own execution {execution_id}"
+            )
         self.store.append(
             self.mission_id,
             "tool/requested",
