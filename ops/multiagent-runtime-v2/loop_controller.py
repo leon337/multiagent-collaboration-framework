@@ -179,6 +179,8 @@ class BoundedLoopController:
         return self.projection(loop_id)
 
     def validation_failed(self, loop_id: str, actor: str, evidence_refs: list[str], *, now: float | None = None) -> LoopProjection:
+        if not evidence_refs:
+            raise LoopTransitionError("failed validation requires evidence")
         state = self.projection(loop_id)
         self._enforce_limits(state, actor, now=now)
         if state.phase != "executing":
@@ -196,6 +198,8 @@ class BoundedLoopController:
         return self.projection(loop_id)
 
     def repair_completed(self, loop_id: str, actor: str, evidence_refs: list[str], *, now: float | None = None) -> LoopProjection:
+        if not evidence_refs:
+            raise LoopTransitionError("repair completion requires evidence")
         state = self.projection(loop_id)
         self._enforce_limits(state, actor, now=now)
         if state.phase != "needs_repair":
