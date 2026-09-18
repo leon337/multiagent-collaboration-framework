@@ -55,7 +55,7 @@ Legend: `[x]` locally validated · `[~]` partial/CI pending · `[ ]` pending.
 - [x] arbitrary environment lookup denied;
 - [x] mapped secret missing → fail closed;
 - [x] ephemeral bytearray lease;
-- [x] zeroization on close;
+- [x] best-effort overwrite of the mutable lease buffer on close;
 - [x] TTL expiry;
 - [x] revocation;
 - [x] metadata-only audit record;

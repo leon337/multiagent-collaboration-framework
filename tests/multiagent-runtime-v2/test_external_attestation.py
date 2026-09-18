@@ -36,7 +36,7 @@ class ExternalAttestationTests(unittest.TestCase):
         receipt = build_publication_receipt(
             self.attestation,
             provider="github-issue-comment",
-            remote_ref="issue:238#comment:1",
+            remote_ref="https://github.com/leon337/multiagent-collaboration-framework/issues/238#issuecomment-1",
             published_at=101,
         )
         out = validate_publication_receipt(self.attestation, receipt)
@@ -47,13 +47,13 @@ class ExternalAttestationTests(unittest.TestCase):
         receipt = build_publication_receipt(
             self.attestation,
             provider="github-issue-comment",
-            remote_ref="issue:238#comment:1",
+            remote_ref="https://github.com/leon337/multiagent-collaboration-framework/issues/238#issuecomment-1",
             published_at=101,
         )
         other = build_attestation(
             mission_id="M",
             authority_id="LEANDRO",
-            source_commit="othercommit",
+            source_commit="deadbeef",
             artifact_sha256="b" * 64,
             created_at=100,
         )
@@ -64,12 +64,39 @@ class ExternalAttestationTests(unittest.TestCase):
         receipt = build_publication_receipt(
             self.attestation,
             provider="github-issue-comment",
-            remote_ref="issue:238#comment:1",
+            remote_ref="https://github.com/leon337/multiagent-collaboration-framework/issues/238#issuecomment-1",
             published_at=101,
         )
         receipt["immutability_claimed"] = True
         with self.assertRaises(AttestationError):
             validate_publication_receipt(self.attestation, receipt)
+
+    def test_non_hex_artifact_digest_rejected(self):
+        with self.assertRaises(AttestationError):
+            build_attestation(
+                mission_id="M",
+                authority_id="LEANDRO",
+                source_commit="abcdef1",
+                artifact_sha256="z" * 64,
+            )
+
+    def test_non_hex_commit_rejected(self):
+        with self.assertRaises(AttestationError):
+            build_attestation(
+                mission_id="M",
+                authority_id="LEANDRO",
+                source_commit="not-a-commit",
+                artifact_sha256="a" * 64,
+            )
+
+    def test_relative_publication_reference_rejected(self):
+        with self.assertRaises(AttestationError):
+            build_publication_receipt(
+                self.attestation,
+                provider="github-issue-comment",
+                remote_ref="issue:238#comment:1",
+                published_at=101,
+            )
 
 
 if __name__ == "__main__":

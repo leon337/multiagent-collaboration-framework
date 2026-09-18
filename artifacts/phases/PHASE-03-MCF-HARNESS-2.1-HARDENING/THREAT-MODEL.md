@@ -39,9 +39,9 @@
 | Capability widening | child-token narrowing rule | existing 2.0 |
 | Unauthorized secret access | exact secret-name policy + `secret:<name>` capability | implemented |
 | Secret value persistence | ephemeral lease + metadata-only audit | implemented |
-| Secret reuse after expiry/revoke | TTL + revoke + zeroization | implemented |
+| Secret reuse after expiry/revoke | TTL + revoke + best-effort mutable-buffer overwrite | implemented; process-memory erasure is not guaranteed |
 | Arbitrary environment lookup | explicit name→environment mapping only | implemented |
-| Mailbox duplicate side effect | target process lock + ack after side effect | implemented |
+| Ambiguous mailbox side effect after crash | durable delivery attempt + no blind retry + explicit reconciliation with evidence | implemented |
 | Mailbox overload | per-target queue + message-size limits | implemented |
 | Mailbox reordering | ordered target dispatcher | implemented |
 | Scheduler starvation | bounded aging + lane fairness | implemented |
