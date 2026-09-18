@@ -190,6 +190,9 @@ class BoundedLoopController:
             {"loop_id": loop_id, "iteration": state.iteration, "evidence_refs": list(evidence_refs)},
             idempotency_key=f"loop:validation:fail:{loop_id}:{state.iteration}",
         )
+        failed = self.projection(loop_id)
+        if failed.iteration >= failed.max_iterations:
+            self._exhaust(loop_id, actor, "max_iterations")
         return self.projection(loop_id)
 
     def repair_completed(self, loop_id: str, actor: str, evidence_refs: list[str], *, now: float | None = None) -> LoopProjection:
