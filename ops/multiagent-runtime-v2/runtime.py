@@ -752,11 +752,27 @@ class MissionRuntime:
         artifact_refs: list[str] | None = None,
         resource_usage: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        current = self.projection().executions.get(execution_id)
+        projection = self.projection()
+        current = projection.executions.get(execution_id)
         if current is None:
             raise MissionError(f"unknown execution {execution_id}")
         if current["status"] != "running":
             return current
+
+        task = projection.tasks.get(current["task_id"])
+        if task is None:
+            raise MissionError(f"execution {execution_id} references unknown task")
+        if (
+            task.get("status") != "leased"
+            or task.get("owner_id") != current.get("agent_id")
+            or task.get("lease_id") != current.get("lease_id")
+        ):
+            raise ConflictError(
+                f"execution {execution_id} no longer owns the current task lease"
+            )
+        if task.get("lease_until") is not None and float(task["lease_until"]) <= time.time():
+            raise ConflictError(f"execution {execution_id} task lease has expired")
+
         event_type = "execution/completed" if success else "execution/failed"
         self.store.append(
             self.mission_id,
@@ -812,11 +828,25 @@ class MissionRuntime:
         result_sha256: str | None = None,
         error_class: str | None = None,
     ) -> dict[str, Any]:
-        current = self.projection().tool_calls.get(call_id)
+        projection = self.projection()
+        current = projection.tool_calls.get(call_id)
         if current is None:
             raise MissionError(f"unknown tool call {call_id}")
         if current["status"] != "requested":
             return current
+
+        execution = projection.executions.get(current["execution_id"])
+        if execution is None:
+            raise MissionError(f"tool call {call_id} references unknown execution")
+        if execution.get("status") != "running":
+            raise ConflictError(
+                f"tool call {call_id} cannot finish after execution termination"
+            )
+        if actor != execution.get("agent_id"):
+            raise ConflictError(
+                f"tool finisher {actor} does not own execution {current['execution_id']}"
+            )
+
         event_type = "tool/completed" if success else "tool/failed"
         payload: dict[str, Any] = {"call_id": call_id}
         if result_sha256 is not None:
