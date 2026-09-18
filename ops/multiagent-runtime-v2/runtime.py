@@ -80,6 +80,12 @@ class MissionStore:
             );
             CREATE INDEX IF NOT EXISTS idx_events_mission_seq
               ON mission_events(mission_id, seq);
+            CREATE TABLE IF NOT EXISTS task_heads (
+              mission_id TEXT NOT NULL,
+              task_id TEXT NOT NULL,
+              revision INTEGER NOT NULL,
+              PRIMARY KEY(mission_id, task_id)
+            );
             """
         )
 
@@ -155,6 +161,142 @@ class MissionStore:
             payload=payload, payload_sha256=payload_sha,
         )
 
+    def _allocate_seq(self, mission_id: str) -> int:
+        row = self.conn.execute(
+            "SELECT next_seq FROM mission_seq WHERE mission_id=?", (mission_id,)
+        ).fetchone()
+        seq = 1 if row is None else int(row["next_seq"])
+        if row is None:
+            self.conn.execute(
+                "INSERT INTO mission_seq(mission_id,next_seq) VALUES(?,?)",
+                (mission_id, seq + 1),
+            )
+        else:
+            self.conn.execute(
+                "UPDATE mission_seq SET next_seq=? WHERE mission_id=?",
+                (seq + 1, mission_id),
+            )
+        return seq
+
+    def _insert_event_tx(
+        self,
+        mission_id: str,
+        seq: int,
+        event_type: str,
+        actor_id: str,
+        payload: dict[str, Any],
+        idempotency_key: str,
+        correlation_id: str | None = None,
+        causation_id: str | None = None,
+    ) -> Event:
+        payload_json = _canonical_json(payload)
+        payload_sha = hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
+        correlation_id = correlation_id or str(uuid.uuid4())
+        event_id = str(uuid.uuid4())
+        ts = time.time()
+        self.conn.execute(
+            """
+            INSERT INTO mission_events(
+              mission_id,seq,event_id,schema_version,event_type,actor_id,ts,
+              idempotency_key,correlation_id,causation_id,payload_json,payload_sha256
+            ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                mission_id, seq, event_id, SCHEMA_VERSION, event_type, actor_id, ts,
+                idempotency_key, correlation_id, causation_id, payload_json, payload_sha,
+            ),
+        )
+        return Event(
+            mission_id=mission_id, seq=seq, event_id=event_id, event_type=event_type,
+            actor_id=actor_id, timestamp=ts, idempotency_key=idempotency_key,
+            correlation_id=correlation_id, causation_id=causation_id,
+            payload=payload, payload_sha256=payload_sha,
+        )
+
+    def append_task_created(
+        self,
+        mission_id: str,
+        task_id: str,
+        actor_id: str,
+        payload: dict[str, Any],
+        *,
+        idempotency_key: str,
+    ) -> Event:
+        self.conn.execute("BEGIN IMMEDIATE")
+        try:
+            existing = self.conn.execute(
+                "SELECT * FROM mission_events WHERE mission_id=? AND idempotency_key=?",
+                (mission_id, idempotency_key),
+            ).fetchone()
+            if existing is not None:
+                self.conn.execute("COMMIT")
+                return self._row_to_event(existing)
+            head = self.conn.execute(
+                "SELECT revision FROM task_heads WHERE mission_id=? AND task_id=?",
+                (mission_id, task_id),
+            ).fetchone()
+            if head is not None:
+                raise ConflictError(f"task {task_id} already exists")
+            seq = self._allocate_seq(mission_id)
+            event = self._insert_event_tx(
+                mission_id, seq, "task/created", actor_id, payload, idempotency_key
+            )
+            self.conn.execute(
+                "INSERT INTO task_heads(mission_id,task_id,revision) VALUES(?,?,1)",
+                (mission_id, task_id),
+            )
+            self.conn.execute("COMMIT")
+            return event
+        except Exception:
+            self.conn.execute("ROLLBACK")
+            raise
+
+    def append_task_updated(
+        self,
+        mission_id: str,
+        task_id: str,
+        expected_revision: int,
+        actor_id: str,
+        changes: dict[str, Any],
+        *,
+        idempotency_key: str,
+    ) -> Event:
+        self.conn.execute("BEGIN IMMEDIATE")
+        try:
+            existing = self.conn.execute(
+                "SELECT * FROM mission_events WHERE mission_id=? AND idempotency_key=?",
+                (mission_id, idempotency_key),
+            ).fetchone()
+            if existing is not None:
+                self.conn.execute("COMMIT")
+                return self._row_to_event(existing)
+            head = self.conn.execute(
+                "SELECT revision FROM task_heads WHERE mission_id=? AND task_id=?",
+                (mission_id, task_id),
+            ).fetchone()
+            if head is None:
+                raise MissionError(f"unknown task {task_id}")
+            current = int(head["revision"])
+            if current != expected_revision:
+                raise ConflictError(
+                    f"stale task revision: expected {expected_revision}, current {current}"
+                )
+            new_revision = current + 1
+            payload = {"task_id": task_id, "revision": new_revision, **changes}
+            seq = self._allocate_seq(mission_id)
+            event = self._insert_event_tx(
+                mission_id, seq, "task/updated", actor_id, payload, idempotency_key
+            )
+            self.conn.execute(
+                "UPDATE task_heads SET revision=? WHERE mission_id=? AND task_id=?",
+                (new_revision, mission_id, task_id),
+            )
+            self.conn.execute("COMMIT")
+            return event
+        except Exception:
+            self.conn.execute("ROLLBACK")
+            raise
+
     def events(self, mission_id: str) -> list[Event]:
         rows = self.conn.execute(
             "SELECT * FROM mission_events WHERE mission_id=? ORDER BY seq", (mission_id,)
@@ -178,6 +320,8 @@ class Projection:
     tasks: dict[str, dict[str, Any]]
     messages: dict[str, dict[str, Any]]
     delivered_messages: set[str]
+    executions: dict[str, dict[str, Any]]
+    tool_calls: dict[str, dict[str, Any]]
 
 
 def _detect_cycle(tasks: dict[str, dict[str, Any]]) -> None:
@@ -206,6 +350,8 @@ def replay(events: Iterable[Event]) -> Projection:
     tasks: dict[str, dict[str, Any]] = {}
     messages: dict[str, dict[str, Any]] = {}
     delivered: set[str] = set()
+    executions: dict[str, dict[str, Any]] = {}
+    tool_calls: dict[str, dict[str, Any]] = {}
     expected_seq = 1
 
     for event in events:
@@ -266,8 +412,59 @@ def replay(events: Iterable[Event]) -> Projection:
             if mid in delivered:
                 raise ProjectionError(f"message {mid} delivered twice")
             delivered.add(mid)
+        elif event.event_type == "execution/started":
+            eid = p["execution_id"]
+            if eid in executions:
+                raise ProjectionError(f"execution {eid} already exists")
+            executions[eid] = {
+                "execution_id": eid,
+                "agent_id": p["agent_id"],
+                "task_id": p["task_id"],
+                "executor": p["executor"],
+                "status": "running",
+                "resource_usage": {},
+            }
+        elif event.event_type in {"execution/completed", "execution/failed"}:
+            eid = p["execution_id"]
+            execution = executions.get(eid)
+            if execution is None or execution["status"] != "running":
+                raise ProjectionError(f"invalid execution transition for {eid}")
+            execution["status"] = event.event_type.split("/")[1]
+            execution["finish_reason"] = p.get("finish_reason")
+            execution["artifact_refs"] = list(p.get("artifact_refs", []))
+            execution["resource_usage"] = dict(p.get("resource_usage", {}))
+        elif event.event_type == "tool/requested":
+            call_id = p["call_id"]
+            if call_id in tool_calls:
+                raise ProjectionError(f"tool call {call_id} already exists")
+            if p["execution_id"] not in executions:
+                raise ProjectionError(f"tool call {call_id} references unknown execution")
+            tool_calls[call_id] = {
+                "call_id": call_id,
+                "execution_id": p["execution_id"],
+                "tool": p["tool"],
+                "args_sha256": p["args_sha256"],
+                "status": "requested",
+            }
+        elif event.event_type in {"tool/completed", "tool/failed"}:
+            call_id = p["call_id"]
+            tool = tool_calls.get(call_id)
+            if tool is None or tool["status"] != "requested":
+                raise ProjectionError(f"invalid tool transition for {call_id}")
+            tool["status"] = event.event_type.split("/")[1]
+            if "result_sha256" in p:
+                tool["result_sha256"] = p["result_sha256"]
+            if "error_class" in p:
+                tool["error_class"] = p["error_class"]
 
-    return Projection(agents=agents, tasks=tasks, messages=messages, delivered_messages=delivered)
+    return Projection(
+        agents=agents,
+        tasks=tasks,
+        messages=messages,
+        delivered_messages=delivered,
+        executions=executions,
+        tool_calls=tool_calls,
+    )
 
 
 class MissionRuntime:
@@ -278,6 +475,158 @@ class MissionRuntime:
     def projection(self) -> Projection:
         return replay(self.store.events(self.mission_id))
 
+    def provision_agent(
+        self,
+        agent_id: str,
+        name: str,
+        executor_ref: str,
+        actor: str,
+    ) -> dict[str, Any]:
+        self.store.append(
+            self.mission_id,
+            "agent/provisioning",
+            actor,
+            {"agent_id": agent_id, "name": name, "executor_ref": executor_ref},
+            idempotency_key=f"agent:provisioning:{agent_id}",
+        )
+        return self.projection().agents[agent_id]
+
+    def settle_agent(
+        self,
+        agent_id: str,
+        observed_phase: str,
+        actor: str,
+        error: str | None = None,
+    ) -> dict[str, Any]:
+        if observed_phase not in {"active", "failed"}:
+            raise ValueError("observed_phase must be active or failed")
+        current = self.projection().agents.get(agent_id)
+        if current is None:
+            raise MissionError(f"unknown agent {agent_id}")
+        if current["phase"] != "provisioning":
+            if current["phase"] == observed_phase:
+                return current
+            raise ConflictError(f"agent {agent_id} already settled as {current['phase']}")
+        payload = {"agent_id": agent_id}
+        if error is not None:
+            payload["error"] = error
+        self.store.append(
+            self.mission_id,
+            f"agent/{observed_phase}",
+            actor,
+            payload,
+            idempotency_key=f"agent:settle:{agent_id}:{observed_phase}",
+        )
+        return self.projection().agents[agent_id]
+
+    def start_execution(
+        self,
+        execution_id: str,
+        agent_id: str,
+        task_id: str,
+        executor: str,
+        actor: str,
+    ) -> dict[str, Any]:
+        p = self.projection()
+        if task_id not in p.tasks:
+            raise MissionError(f"unknown task {task_id}")
+        self.store.append(
+            self.mission_id,
+            "execution/started",
+            actor,
+            {
+                "execution_id": execution_id,
+                "agent_id": agent_id,
+                "task_id": task_id,
+                "executor": executor,
+            },
+            idempotency_key=f"execution:start:{execution_id}",
+        )
+        return self.projection().executions[execution_id]
+
+    def finish_execution(
+        self,
+        execution_id: str,
+        actor: str,
+        *,
+        success: bool,
+        finish_reason: str,
+        artifact_refs: list[str] | None = None,
+        resource_usage: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        current = self.projection().executions.get(execution_id)
+        if current is None:
+            raise MissionError(f"unknown execution {execution_id}")
+        if current["status"] != "running":
+            return current
+        event_type = "execution/completed" if success else "execution/failed"
+        self.store.append(
+            self.mission_id,
+            event_type,
+            actor,
+            {
+                "execution_id": execution_id,
+                "finish_reason": finish_reason,
+                "artifact_refs": list(artifact_refs or []),
+                "resource_usage": dict(resource_usage or {}),
+            },
+            idempotency_key=f"execution:finish:{execution_id}:{event_type}",
+        )
+        return self.projection().executions[execution_id]
+
+    def request_tool(
+        self,
+        call_id: str,
+        execution_id: str,
+        tool: str,
+        args_sha256: str,
+        actor: str,
+    ) -> dict[str, Any]:
+        if execution_id not in self.projection().executions:
+            raise MissionError(f"unknown execution {execution_id}")
+        self.store.append(
+            self.mission_id,
+            "tool/requested",
+            actor,
+            {
+                "call_id": call_id,
+                "execution_id": execution_id,
+                "tool": tool,
+                "args_sha256": args_sha256,
+            },
+            idempotency_key=f"tool:requested:{call_id}",
+        )
+        return self.projection().tool_calls[call_id]
+
+    def finish_tool(
+        self,
+        call_id: str,
+        actor: str,
+        *,
+        success: bool,
+        result_sha256: str | None = None,
+        error_class: str | None = None,
+    ) -> dict[str, Any]:
+        current = self.projection().tool_calls.get(call_id)
+        if current is None:
+            raise MissionError(f"unknown tool call {call_id}")
+        if current["status"] != "requested":
+            return current
+        event_type = "tool/completed" if success else "tool/failed"
+        payload: dict[str, Any] = {"call_id": call_id}
+        if result_sha256 is not None:
+            payload["result_sha256"] = result_sha256
+        if error_class is not None:
+            payload["error_class"] = error_class
+        self.store.append(
+            self.mission_id,
+            event_type,
+            actor,
+            payload,
+            idempotency_key=f"tool:finish:{call_id}:{event_type}",
+        )
+        return self.projection().tool_calls[call_id]
+
     def create_task(self, task_id: str, subject: str, blocked_by: list[str], actor: str) -> dict[str, Any]:
         candidate = self.projection()
         if task_id in candidate.tasks:
@@ -285,8 +634,10 @@ class MissionRuntime:
         temp = dict(candidate.tasks)
         temp[task_id] = {"blocked_by": list(blocked_by)}
         _detect_cycle(temp)
-        self.store.append(
-            self.mission_id, "task/created", actor,
+        self.store.append_task_created(
+            self.mission_id,
+            task_id,
+            actor,
             {"task_id": task_id, "subject": subject, "blocked_by": blocked_by},
             idempotency_key=f"task:create:{task_id}",
         )
@@ -301,14 +652,16 @@ class MissionRuntime:
             raise ConflictError(
                 f"stale task revision: expected {expected_revision}, current {task['revision']}"
             )
-        new_rev = expected_revision + 1
         candidate_tasks = json.loads(json.dumps(p.tasks))
         candidate_tasks[task_id].update(changes)
         _detect_cycle(candidate_tasks)
-        payload = {"task_id": task_id, "revision": new_rev, **changes}
-        self.store.append(
-            self.mission_id, "task/updated", actor, payload,
-            idempotency_key=f"task:update:{task_id}:{new_rev}:{_sha(changes)[:16]}",
+        self.store.append_task_updated(
+            self.mission_id,
+            task_id,
+            expected_revision,
+            actor,
+            changes,
+            idempotency_key=f"task:update:{task_id}:{expected_revision + 1}:{_sha(changes)[:16]}",
         )
         return self.projection().tasks[task_id]
 
