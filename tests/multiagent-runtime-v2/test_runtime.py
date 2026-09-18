@@ -1,8 +1,9 @@
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 
-from runtime import ConflictError, MissionRuntime, MissionStore, ProjectionError, replay
+from runtime import ConflictError, MissionError, MissionRuntime, MissionStore, ProjectionError, replay
 
 
 class RuntimeV2Tests(unittest.TestCase):
@@ -70,6 +71,79 @@ class RuntimeV2Tests(unittest.TestCase):
         broken = [e1, e2.__class__(**{**e2.__dict__, "seq": 3})]
         with self.assertRaises(ProjectionError):
             replay(broken)
+
+    def test_agent_provisioning_reconciles_to_active(self):
+        agent = self.rt.provision_agent("a1", "worker", "sandbox:one", "mestre")
+        self.assertEqual(agent["phase"], "provisioning")
+        active = self.rt.settle_agent("a1", "active", "mestre")
+        self.assertEqual(active["phase"], "active")
+        again = self.rt.settle_agent("a1", "active", "mestre")
+        self.assertEqual(again["phase"], "active")
+        with self.assertRaises(ConflictError):
+            self.rt.settle_agent("a1", "failed", "mestre", error="late contradictory observation")
+
+    def test_execution_receipt_and_tool_evidence_are_correlated(self):
+        self.rt.provision_agent("a1", "worker", "sandbox:one", "mestre")
+        self.rt.settle_agent("a1", "active", "mestre")
+        task = self.rt.create_task("t1", "work", [], "mestre")
+        execution = self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
+        self.assertEqual(execution["status"], "running")
+        tool = self.rt.request_tool("c1", "e1", "repo_read", "a" * 64, "a1")
+        self.assertEqual(tool["status"], "requested")
+        done_tool = self.rt.finish_tool(
+            "c1", "a1", success=True, result_sha256="b" * 64
+        )
+        self.assertEqual(done_tool["status"], "completed")
+        done = self.rt.finish_execution(
+            "e1",
+            "mestre",
+            success=True,
+            finish_reason="completed",
+            artifact_refs=["artifact://one"],
+            resource_usage={"wall_ms": 12, "tool_calls": 1},
+        )
+        self.assertEqual(done["status"], "completed")
+        self.assertEqual(done["resource_usage"]["tool_calls"], 1)
+        self.assertEqual(self.rt.projection().tool_calls["c1"]["result_sha256"], "b" * 64)
+
+    def test_tool_call_cannot_reference_unknown_execution(self):
+        with self.assertRaises(MissionError):
+            self.rt.request_tool("c1", "missing", "repo_read", "a" * 64, "a1")
+
+    def test_two_connections_compete_for_same_task_revision(self):
+        task = self.rt.create_task("t1", "one", [], "mestre")
+        expected = task["revision"]
+        barrier = threading.Barrier(2)
+        outcomes = []
+        lock = threading.Lock()
+
+        def worker(name, status):
+            store = MissionStore(self.db)
+            try:
+                runtime = MissionRuntime(store, "M1")
+                barrier.wait()
+                try:
+                    runtime.update_task("t1", expected, name, status=status)
+                    result = "success"
+                except ConflictError:
+                    result = "conflict"
+                with lock:
+                    outcomes.append(result)
+            finally:
+                store.close()
+
+        threads = [
+            threading.Thread(target=worker, args=("w1", "running")),
+            threading.Thread(target=worker, args=("w2", "completed")),
+        ]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        self.assertEqual(sorted(outcomes), ["conflict", "success"])
+        current = self.rt.projection().tasks["t1"]
+        self.assertEqual(current["revision"], 2)
 
 
 if __name__ == "__main__":
