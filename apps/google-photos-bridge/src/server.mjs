@@ -9,6 +9,7 @@ import { registerAppResource, registerAppTool, RESOURCE_MIME_TYPE } from "@model
 import { EphemeralStore } from "./store.mjs";
 import { GooglePhotosClient } from "./google.mjs";
 import { signState, verifyState } from "./state.mjs";
+import { createMcpAuthMiddleware, loadMcpAuthConfig, protectedResourceMetadata } from "./auth.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_FILE = path.join(__dirname, "../web/mcp-app.html");
@@ -23,20 +24,32 @@ const store = new EphemeralStore();
 const google = new GooglePhotosClient({ clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET, redirectUri: REDIRECT_URI, store });
 const BRIDGE_CONFIGURED = google.configured && STATE_SECRET_CONFIGURED;
 const RESOURCE_URI = "ui://google-photos-bridge/v2.html";
+const MCP_RESOURCE_URL = PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL}/mcp` : "";
+const MCP_RESOURCE_METADATA_URL = PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL}/.well-known/oauth-protected-resource/mcp` : "";
+const MCP_AUTH = loadMcpAuthConfig({
+  ...process.env,
+  MCP_AUTH_AUDIENCE: process.env.MCP_AUTH_AUDIENCE || MCP_RESOURCE_URL,
+  MCP_AUTH_RESOURCE_METADATA_URL: process.env.MCP_AUTH_RESOURCE_METADATA_URL || MCP_RESOURCE_METADATA_URL,
+});
+const MCP_SECURITY_SCHEMES = MCP_AUTH.enabled
+  ? [{ type: "oauth2", scopes: MCP_AUTH.requiredScopes }]
+  : [{ type: "noauth" }];
 
 function result(data, text) {
   return { structuredContent: data, content: [{ type: "text", text: text || JSON.stringify(data) }] };
 }
 
-function createMcpServer() {
-  const server = new McpServer({ name: "Google Photos Bridge", version: "0.3.0" }, { capabilities: { resources: {}, tools: {} } });
+function createMcpServer(authInfo = null) {
+  const ownerId = authInfo?.subject || authInfo?.clientId || "anonymous";
+  const server = new McpServer({ name: "Google Photos Bridge", version: "0.4.0" }, { capabilities: { resources: {}, tools: {} } });
 
   registerAppTool(server, "photos_bridge_status", {
     title: "Open Google Photos Bridge",
     description: "Open the interactive Google Photos helper and report whether Google OAuth is configured.",
     inputSchema: {},
     outputSchema: z.object({ configured: z.boolean(), public_base_url: z.string(), redirect_uri: z.string() }),
-    _meta: { ui: { resourceUri: RESOURCE_URI, visibility: ["model", "app"] } },
+    securitySchemes: MCP_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_SECURITY_SCHEMES, ui: { resourceUri: RESOURCE_URI, visibility: ["model", "app"] } },
   }, async () => result({ configured: BRIDGE_CONFIGURED, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI }, "Google Photos Bridge helper ready."));
 
   registerAppTool(server, "photos_connect", {
@@ -44,10 +57,11 @@ function createMcpServer() {
     description: "Create a private Google Photos OAuth connection and return the official Google authorization URL.",
     inputSchema: {},
     outputSchema: z.object({ connection_id: z.string(), authorization_url: z.string(), status: z.string() }),
-    _meta: { ui: { resourceUri: RESOURCE_URI, visibility: ["model", "app"] }, "openai/widgetAccessible": true },
+    securitySchemes: MCP_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_SECURITY_SCHEMES, ui: { resourceUri: RESOURCE_URI, visibility: ["model", "app"] }, "openai/widgetAccessible": true },
   }, async () => {
     if (!BRIDGE_CONFIGURED) throw new Error("Google Photos Bridge setup is incomplete");
-    const connectionId = store.createConnection();
+    const connectionId = store.createConnection(ownerId);
     const state = signState(APP_STATE_SECRET, { connectionId });
     return result({ connection_id: connectionId, authorization_url: google.authorizationUrl(state), status: "pending" });
   });
@@ -57,16 +71,22 @@ function createMcpServer() {
     description: "Check whether the Google OAuth connection is complete.",
     inputSchema: z.object({ connection_id: z.string() }),
     outputSchema: z.object({ connection_id: z.string(), status: z.string() }),
-    _meta: { ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
-  }, async ({ connection_id }) => result({ connection_id, status: store.connection(connection_id)?.status || "unknown" }));
+    securitySchemes: MCP_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_SECURITY_SCHEMES, ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
+  }, async ({ connection_id }) => {
+    store.assertConnectionOwner(ownerId, connection_id);
+    return result({ connection_id, status: store.connection(connection_id)?.status || "unknown" });
+  });
 
   registerAppTool(server, "photos_picker_start", {
     title: "Start Google Photos Picker",
     description: "Create an official Google Photos Picker session for the connected account.",
     inputSchema: z.object({ connection_id: z.string(), max_items: z.number().int().min(1).max(2000).default(100) }),
     outputSchema: z.object({ session_id: z.string(), picker_uri: z.string(), expire_time: z.string().nullable(), ready: z.boolean() }),
-    _meta: { ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
+    securitySchemes: MCP_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_SECURITY_SCHEMES, ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
   }, async ({ connection_id, max_items }) => {
+    store.assertConnectionOwner(ownerId, connection_id);
     const s = await google.createSession(connection_id, max_items);
     return result({ session_id: String(s.id), picker_uri: String(s.pickerUri), expire_time: s.expireTime ?? null, ready: Boolean(s.mediaItemsSet) });
   });
@@ -76,8 +96,10 @@ function createMcpServer() {
     description: "Check whether the user finished selecting media in Google Photos Picker.",
     inputSchema: z.object({ connection_id: z.string(), session_id: z.string() }),
     outputSchema: z.object({ session_id: z.string(), ready: z.boolean(), expire_time: z.string().nullable() }),
-    _meta: { ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
+    securitySchemes: MCP_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_SECURITY_SCHEMES, ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
   }, async ({ connection_id, session_id }) => {
+    store.assertConnectionOwner(ownerId, connection_id);
     const s = await google.getSession(connection_id, session_id);
     return result({ session_id, ready: Boolean(s.mediaItemsSet), expire_time: s.expireTime ?? null });
   });
@@ -87,8 +109,10 @@ function createMcpServer() {
     description: "List metadata for media explicitly selected by the user in the active Picker session.",
     inputSchema: z.object({ connection_id: z.string(), session_id: z.string() }),
     outputSchema: z.object({ ready: z.boolean(), count: z.number(), items: z.array(z.object({ id: z.string(), type: z.string().nullable(), filename: z.string().nullable(), mime_type: z.string().nullable(), create_time: z.string().nullable() })) }),
-    _meta: { ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
+    securitySchemes: MCP_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_SECURITY_SCHEMES, ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
   }, async ({ connection_id, session_id }) => {
+    store.assertConnectionOwner(ownerId, connection_id);
     const s = await google.getSession(connection_id, session_id);
     if (!s.mediaItemsSet) return result({ ready: false, count: 0, items: [] });
     const items = (await google.listItems(connection_id, session_id)).map((it) => ({
@@ -108,8 +132,10 @@ function createMcpServer() {
       max_height: z.number().int().min(1).max(4096).default(1600),
     }),
     outputSchema: z.object({ id: z.string(), filename: z.string().nullable(), mime_type: z.string(), width: z.number(), height: z.number() }),
-    _meta: { ui: { visibility: ["model"] } },
+    securitySchemes: MCP_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_SECURITY_SCHEMES, ui: { visibility: ["model"] } },
   }, async ({ connection_id, session_id, media_id, max_width, max_height }) => {
+    store.assertConnectionOwner(ownerId, connection_id);
     const image = await google.getImageBytes(connection_id, session_id, media_id, max_width, max_height);
     return {
       structuredContent: { id: image.id, filename: image.filename, mime_type: image.mimeType, width: image.width, height: image.height },
@@ -125,8 +151,10 @@ function createMcpServer() {
     description: "Delete an active Google Photos Picker session after the selected media is no longer needed.",
     inputSchema: z.object({ connection_id: z.string(), session_id: z.string() }),
     outputSchema: z.object({ closed: z.boolean(), session_id: z.string() }),
-    _meta: { ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
+    securitySchemes: MCP_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_SECURITY_SCHEMES, ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
   }, async ({ connection_id, session_id }) => {
+    store.assertConnectionOwner(ownerId, connection_id);
     await google.deleteSession(connection_id, session_id);
     return result({ closed: true, session_id }, "Google Photos Picker session closed.");
   });
@@ -136,8 +164,10 @@ function createMcpServer() {
     description: "Revoke the Google OAuth grant used by this bridge and clear the ephemeral connection state.",
     inputSchema: z.object({ connection_id: z.string() }),
     outputSchema: z.object({ disconnected: z.boolean() }),
-    _meta: { ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
+    securitySchemes: MCP_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_SECURITY_SCHEMES, ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
   }, async ({ connection_id }) => {
+    store.assertConnectionOwner(ownerId, connection_id);
     const disconnected = await google.disconnect(connection_id);
     return result({ disconnected }, disconnected ? "Google Photos disconnected." : "Connection was already absent.");
   });
@@ -176,8 +206,14 @@ app.use((req, res, next) => {
   return next();
 });
 app.use(express.json({ limit: "1mb" }));
-app.get("/healthz", (_req, res) => res.json({ ok: true, service: "google-photos-bridge", version: "0.3.0", configured: BRIDGE_CONFIGURED }));
-app.get("/setup", (_req, res) => res.json({ configured: BRIDGE_CONFIGURED, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI, checks: { google_oauth: google.configured, state_secret: STATE_SECRET_CONFIGURED }, required: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "APP_STATE_SECRET"] }));
+app.get("/healthz", (_req, res) => res.json({ ok: true, service: "google-photos-bridge", version: "0.4.0", configured: BRIDGE_CONFIGURED, mcp_auth_enabled: MCP_AUTH.enabled }));
+app.get("/setup", (_req, res) => res.json({ configured: BRIDGE_CONFIGURED, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI, checks: { google_oauth: google.configured, state_secret: STATE_SECRET_CONFIGURED }, mcp_auth: { enabled: MCP_AUTH.enabled, issuer: MCP_AUTH.issuer || null, audience: MCP_AUTH.audience || null, scopes: MCP_AUTH.requiredScopes }, required: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "APP_STATE_SECRET"] }));
+
+if (MCP_AUTH.enabled) {
+  const metadataHandler = (_req, res) => res.json(protectedResourceMetadata(MCP_AUTH, MCP_RESOURCE_URL));
+  app.get("/.well-known/oauth-protected-resource/mcp", metadataHandler);
+  app.get("/.well-known/oauth-protected-resource", metadataHandler);
+}
 
 app.get("/oauth/google/start", (req, res) => {
   try {
@@ -198,11 +234,12 @@ app.get("/oauth/google/callback", async (req, res) => {
     if (!store.connection(connectionId)) throw new Error("Unknown connection");
     store.saveToken(connectionId, await google.exchangeCode(code));
     res.type("html").send("<main style='font-family:system-ui;padding:24px'><h1>Google Fotos conectado ✅</h1><p>Volte para a conversa do ChatGPT e toque em <b>Verificar conexão</b>.</p></main>");
-  } catch (error) { res.status(400).type("html").send(`<main style='font-family:system-ui;padding:24px'><h1>Falha na conexãO</h1><p>${String(error.message).replace(/[<>&]/g, "")}</p></main>`); }
+  } catch (error) { res.status(400).type("html").send(`<main style='font-family:system-ui;padding:24px'><h1>Falha na conexão</h1><p>${String(error.message).replace(/[<>&]/g, "")}</p></main>`); }
 });
 
-app.all("/mcp", async (req, res) => {
-  const server = createMcpServer();
+const mcpAuthMiddleware = createMcpAuthMiddleware(MCP_AUTH);
+app.all("/mcp", mcpAuthMiddleware, async (req, res) => {
+  const server = createMcpServer(req.mcpAuth || null);
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   res.on("close", () => { transport.close().catch(() => {}); server.close().catch(() => {}); });
   try { await server.connect(transport); await transport.handleRequest(req, res, req.body); }
