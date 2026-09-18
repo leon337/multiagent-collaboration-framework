@@ -72,18 +72,18 @@ DECORATIVE_FULL_ROSTER_EXECUTION=FORBIDDEN
 
 A phase selects only roles with a concrete deliverable. Other roles enter later when their competence has executable work.
 
-## Zero-new-cost invariant
+## Executor cost policy — Brainbase authorized, zero-cost fallback
 
-This mission must not require:
+LEANDRO explicitly authorized billable Brainbase task runs for this mission on 2026-09-18.
 
-- paid model API;
-- billable managed-agent task;
-- paid embedding provider;
-- paid/larger runner.
+Current policy:
+- Brainbase is the preferred managed executor when its billing service is available;
+- execution remains competence-based; authorization to spend does not authorize decorative/full-roster runs;
+- paid embeddings and paid/larger runners remain unnecessary by default;
+- the public GitHub-hosted + pinned local Ollama / `qwen2.5:1.5b` harness remains the zero-cost contingency executor;
+- the same anti-simulation, privacy, provenance and tool-evidence contract applies to both executors.
 
-The Brainbase billable task path is not part of the active execution route.
-
-The mission harness uses a standard public GitHub-hosted runner plus pinned local Ollama / `qwen2.5:1.5b`.
+Observed Brainbase pilot state on 2026-09-18: `BILLING_UNAVAILABLE / HTTP 503` before model/tool execution.
 
 ## Deterministic anti-simulation invariant
 
