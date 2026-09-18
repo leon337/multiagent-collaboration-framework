@@ -28,6 +28,7 @@ jobs:
       OLLAMA_TARBALL_SHA256: c620917a71e146ab3a7f893084f066069c4c65d144ef8379a91c3cbe8b27de8f
       OLLAMA_NUM_PARALLEL: 4
       OLLAMA_MAX_LOADED_MODELS: 1
+      MCF_MAX_WORKERS: 4
       MCF_AGENT_ARTIFACT_DIR: /tmp/mcf-agent-artifacts
 
     steps:
@@ -90,11 +91,17 @@ jobs:
           set -euo pipefail
           PYTHONPYCACHEPREFIX=/tmp/mcf-pycache python3 -m py_compile ops/mission-agent-harness/zero_cost_phase2_fanout.py
 
+      - name: Run harness regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m unittest tests/mission-agent-harness/test_zero_cost_phase2_fanout.py
+
       - name: Execute parallel tool-using MCF agents
         shell: bash
         run: |
           set -euo pipefail
-          python3 ops/mission-agent-harness/zero_cost_phase2_fanout.py             --model "$OLLAMA_MODEL"             --timeout 420
+          python3 ops/mission-agent-harness/zero_cost_phase2_fanout.py             --model "$OLLAMA_MODEL"             --timeout 600
 
       - name: Upload per-agent execution evidence
         if: always()
