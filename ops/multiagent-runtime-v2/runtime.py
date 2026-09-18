@@ -582,6 +582,39 @@ class MissionRuntime:
     def projection(self) -> Projection:
         return replay(self.store.events(self.mission_id))
 
+    def _assert_running_execution_authority(
+        self,
+        projection: Projection,
+        execution_id: str,
+    ) -> dict[str, Any]:
+        execution = projection.executions.get(execution_id)
+        if execution is None:
+            raise MissionError(f"unknown execution {execution_id}")
+        if execution.get("status") != "running":
+            raise ConflictError(f"execution {execution_id} is not running")
+
+        agent = projection.agents.get(execution.get("agent_id"))
+        if agent is None or agent.get("phase") != "active":
+            raise ConflictError(
+                f"execution {execution_id} agent is not active"
+            )
+
+        task = projection.tasks.get(execution.get("task_id"))
+        if task is None:
+            raise MissionError(f"execution {execution_id} references unknown task")
+        if (
+            task.get("status") != "leased"
+            or task.get("owner_id") != execution.get("agent_id")
+            or task.get("lease_id") != execution.get("lease_id")
+        ):
+            raise ConflictError(
+                f"execution {execution_id} no longer owns the current task lease"
+            )
+        if task.get("lease_until") is not None and float(task["lease_until"]) <= time.time():
+            raise ConflictError(f"execution {execution_id} task lease has expired")
+
+        return execution
+
     def provision_agent(
         self,
         agent_id: str,
@@ -721,6 +754,8 @@ class MissionRuntime:
                 f"task {task_id} lease owner {task.get('owner_id')} "
                 f"does not match agent {agent_id}"
             )
+        if task.get("lease_until") is not None and float(task["lease_until"]) <= time.time():
+            raise ConflictError(f"task {task_id} lease has expired")
         if any(
             execution.get("task_id") == task_id and execution.get("status") == "running"
             for execution in p.executions.values()
@@ -758,20 +793,10 @@ class MissionRuntime:
             raise MissionError(f"unknown execution {execution_id}")
         if current["status"] != "running":
             return current
-
-        task = projection.tasks.get(current["task_id"])
-        if task is None:
-            raise MissionError(f"execution {execution_id} references unknown task")
-        if (
-            task.get("status") != "leased"
-            or task.get("owner_id") != current.get("agent_id")
-            or task.get("lease_id") != current.get("lease_id")
-        ):
-            raise ConflictError(
-                f"execution {execution_id} no longer owns the current task lease"
-            )
-        if task.get("lease_until") is not None and float(task["lease_until"]) <= time.time():
-            raise ConflictError(f"execution {execution_id} task lease has expired")
+        current = self._assert_running_execution_authority(
+            projection,
+            execution_id,
+        )
         if any(
             tool.get("execution_id") == execution_id and tool.get("status") == "requested"
             for tool in projection.tool_calls.values()
@@ -803,11 +828,11 @@ class MissionRuntime:
         args_sha256: str,
         actor: str,
     ) -> dict[str, Any]:
-        execution = self.projection().executions.get(execution_id)
-        if execution is None:
-            raise MissionError(f"unknown execution {execution_id}")
-        if execution.get("status") != "running":
-            raise ConflictError(f"execution {execution_id} is not running")
+        projection = self.projection()
+        execution = self._assert_running_execution_authority(
+            projection,
+            execution_id,
+        )
         if actor != execution.get("agent_id"):
             raise ConflictError(
                 f"tool requester {actor} does not own execution {execution_id}"
@@ -842,13 +867,10 @@ class MissionRuntime:
         if current["status"] != "requested":
             return current
 
-        execution = projection.executions.get(current["execution_id"])
-        if execution is None:
-            raise MissionError(f"tool call {call_id} references unknown execution")
-        if execution.get("status") != "running":
-            raise ConflictError(
-                f"tool call {call_id} cannot finish after execution termination"
-            )
+        execution = self._assert_running_execution_authority(
+            projection,
+            current["execution_id"],
+        )
         if actor != execution.get("agent_id"):
             raise ConflictError(
                 f"tool finisher {actor} does not own execution {current['execution_id']}"
