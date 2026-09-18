@@ -111,3 +111,14 @@ Do not recreate or redirect this team to Brainbase. Recover this checkpoint, con
 - narrowing/no widening: PASS
 - revocation: PASS
 - local unit/integration suite: 29/29 PASS
+
+## R7_TECHNICAL_ADVERSARIAL_AUDIT_PASS
+
+- deterministic technical auditor implemented; `cognitive=false`.
+- 9 adversarial rejection classes validated plus one valid-packet acceptance.
+- real audit receipt: `team/receipts/r7-adversarial-audit.json`.
+- receipt SHA-256: `2ea745dbc4e36b3c16a83996487db8cab30c3c38891ee5d798a2b97b4c491286`.
+- local suite: 39/39 PASS.
+- canonical local history: 13 events.
+- chain head: `505b7519a37306d2fa61d875957cd02e7e220fe2c4273436c99dc6e4d88d3950`.
+- cognitive auditor remains blocked by G08; no cognitive claim.
