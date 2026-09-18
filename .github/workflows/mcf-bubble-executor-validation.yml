@@ -9,7 +9,8 @@ on:
       - 'docs/runtime/MCF-BUBBLE-EXECUTOR-CONTRACT.md'
       - 'docs/runtime/MCF-DEEPSEEK-HARNESS-AGENT-TEAMS-EXECUTOR.md'
       - 'context/executors/chatgpt-bubble-sandbox.yaml'
-      - 'context/executors/deepseek-harness-agent-teams.yaml'\n      - 'context/missions/mcf-memory-live-next-stable.json'
+      - 'context/executors/deepseek-harness-agent-teams.yaml'
+      - 'context/missions/mcf-memory-live-next-stable.json'
 
 permissions:
   contents: read
