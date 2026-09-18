@@ -1,46 +1,93 @@
 # Checkpoint — PHASE-02-MEMORY-ARCHITECTURE
 
-Mission: `MCF-MEMORY-LIVE-NEXT-STABLE-001`
-Checkpoint state: `EXECUTION_GATED`
-Objective met: false
-Human action required: false
-Checkpoint recipient: Mestre
+Mission: `MCF-MEMORY-LIVE-NEXT-STABLE-001`  
+Checkpoint state: `PARALLEL_TOOLCALL_HARNESS_PREPARED`  
+Objective met: false  
+Human technical action required: false  
+Checkpoint recipient: Mestre  
+Recovery baseline: `main@b969df76544e69cb2ff7833a5b65bd231d4db7aa`
 
-## Completed in this phase
+## Reconciled decisions
 
-- project instruction set re-read from current MCF main;
-- DEC-050/051/052/053, skills registry, competency matrix and tool/capability constraints recovered;
-- current MCF main re-verified at `08fef949c49496050596e9681aaf011259e51f77`;
-- current Render service inventory recovered;
-- live `mcf-runtime-staging-api` lineage checked and found at `3d6367fb6a821c2e1b4acb7976aef82fac06daf5`, behind current main;
-- runtime execution path inspected down to Chat bridge, mission controller, skill executor and internal evidence validator;
-- anti-simulation runtime finding documented;
-- onboarding/product decisions frozen for architecture;
-- mission-wide substantive artifact requirement mapped across all 29 official agents without crediting any unexecuted role.
+- zero-new-cost remains mandatory;
+- Brainbase billable task execution is outside the active mission path;
+- the official 29-agent roster remains a pool, not a decorative mandatory full-roster run;
+- explicit current LEANDRO instruction requires discovery/design fan-out so specialists do not depend on peer delivery;
+- every credited specialist must have a real tool call plus attributable artifact evidence;
+- implementation and live mutation remain blocked.
 
-## Blocking finding
+## Historical zero-cost evidence recovered
 
-The repository/runtime currently proves orchestration and evidence validation but not the origin of named agents' cognitive artifacts. Governed internal skill execution requires `execution_evidence` to be supplied by the selected agent. The current ChatGPT tool surface does not expose an authenticated invoker for those named agents or the MCF session-protected dispatch endpoint.
+PR #170 previously proved that a standard public GitHub-hosted runner could:
 
-Accordingly, inserting coordinator-authored content as another agent's `execution_evidence` is forbidden and will not be used.
+- install pinned Ollama;
+- start the local service;
+- pull `qwen2.5:1.5b`;
+- start a real role-bound Miriam execution.
 
-## Next technical action
+That run stopped because the artifact format contract was too strict. No specialist received false credit.
 
-Establish and verify a real agent-execution boundary that can produce distinguishable, agent-owned artifacts and bind them to MCF mission/phase/skill receipts. This must be solved by the team/tooling path, not delegated to Leandro.
+PR #170 is old and non-mergeable against the current main; its validated zero-cost findings are reused, not its stale serial topology.
 
-After that gate passes, start the chronological architecture chain and collect the actual specialist artifacts. Only when architecture is complete will the resulting design be surfaced at the human approval gate.
+## Current recovery branch
 
-## Unresolved findings
+`mission/memory-parallel-toolcall-20260918`
 
-- real invocable named-agent executor not yet proven in this ChatGPT execution surface;
-- MCF staging runtime is behind current main;
-- Cognitive Ledger live Edge Function/code drift remains to be reconciled by the architecture team;
-- Class C security/compliance/audit specialist artifacts not yet executed.
+Prepared artifacts:
 
-## Blockers
+- `.github/workflows/mcf-zero-cost-parallel-agent-harness.yml`;
+- `ops/mission-agent-harness/zero_cost_phase2_fanout.py`;
+- `artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/PARALLEL-FANOUT-TOOLCALL-DESIGN.md`;
+- reconciled Phase 2 plan/checkpoint.
 
-- `GATE-RUNTIME-REALITY` for named-agent execution credit.
+## Execution topology
+
+Stage A:
+- 15 competence-aligned specialists dispatched independently;
+- no peer-output dependency;
+- every credited role requires a successful read-only repository tool call;
+- one failure does not stop other specialists.
+
+Stage B:
+- Carmem consolidation and Emily independent audit run in parallel from the complete available evidence package.
+
+Stage C:
+- Léo receives the package and emits an internal evidence gate only.
+
+## Tool evidence contract
+
+Each credited run must include:
+
+- role;
+- run UUID;
+- tool-call UUID;
+- tool name;
+- tool argument SHA-256;
+- tool result SHA-256;
+- artifact SHA-256;
+- timestamps/duration.
+
+Artifacts are written outside the repository and uploaded as CI evidence. Harness repository mutation must remain false.
+
+## Privacy / cost boundary
+
+Allowed input: public technical repository content.
+
+Forbidden:
+- personal Cognitive Ledger memory;
+- raw private `fontes`;
+- provider tokens/secrets;
+- `service_role`;
+- paid APIs/embeddings/billable agent tasks.
+
+## Current blockers
+
+No human technical blocker is open.
+
+Remaining technical dependency: obtain real CI execution evidence from the new parallel tool-using harness and apply CAF to any failed role.
 
 ## Next action owner
 
-Mestre / platform tooling path. Leandro has no technical action at this checkpoint.
+Mestre / GitHub CI path.
+
+LEANDRO is needed only when a reserved design/authority gate is actually reached.
