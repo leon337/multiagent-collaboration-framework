@@ -251,12 +251,11 @@ def render_slides() -> None:
     for i, scene in enumerate(data["scenes"], start=1):
         c0, c1 = palettes[(i - 1) % len(palettes)]
         image = Image.new("RGB", (WIDTH, HEIGHT), c0)
-        px = image.load()
+        base_draw = ImageDraw.Draw(image)
         for y in range(HEIGHT):
             t = y / max(HEIGHT - 1, 1)
             c = interpolate(c0, c1, t)
-            for x in range(WIDTH):
-                px[x, y] = c
+            base_draw.line((0, y, WIDTH, y), fill=c)
 
         draw = ImageDraw.Draw(image, "RGBA")
         draw_scene_art(draw, i, scene["speaker"])
