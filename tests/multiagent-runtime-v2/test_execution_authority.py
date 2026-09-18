@@ -101,23 +101,51 @@ class ExecutionAuthorityTests(unittest.TestCase):
                 finish_reason="stale-worker",
             )
 
-    def test_expired_lease_cannot_finish_execution(self):
+    def test_expired_lease_cannot_start_execution(self):
         self.active_agent("a1")
         task = self.leased_task(owner_id="a1")
-        task = self.rt.update_task(
+        self.rt.update_task(
             "t1",
             task["revision"],
             "mestre",
             lease_until=0,
         )
+        with self.assertRaises(ConflictError):
+            self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
+
+    def test_lease_expiry_after_start_blocks_finish(self):
+        self.active_agent("a1")
+        task = self.leased_task(owner_id="a1")
         self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
+        self.rt.update_task(
+            "t1",
+            task["revision"],
+            "mestre",
+            lease_until=0,
+        )
         with self.assertRaises(ConflictError):
             self.rt.finish_execution(
                 "e1",
                 "mestre",
                 success=True,
-                finish_reason="expired",
+                finish_reason="expired-after-start",
             )
+
+    def test_lease_loss_after_start_blocks_new_tool_request(self):
+        self.active_agent("a1")
+        task = self.leased_task(owner_id="a1")
+        self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
+        self.rt.update_task(
+            "t1",
+            task["revision"],
+            "recovery",
+            status="blocked",
+            owner_id=None,
+            lease_id=None,
+            lease_until=None,
+        )
+        with self.assertRaises(ConflictError):
+            self.rt.request_tool("c1", "e1", "repo_read", "a" * 64, "a1")
 
     def test_execution_cannot_finish_with_unresolved_tool(self):
         self.active_agent("a1")
