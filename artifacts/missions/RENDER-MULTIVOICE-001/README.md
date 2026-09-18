@@ -1,6 +1,7 @@
 # RENDER-MULTIVOICE-001
 
 Issue: #244  
+PR: #247  
 Human authority: **LEANDRO**  
 Orchestrator: **MESTRE**  
 Runtime boundary: cloud / GitHub Actions; no dependency on LEANDRO's notebook.
