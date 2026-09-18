@@ -177,3 +177,38 @@ checkpoint_2026_09_18_v0_4_1:
       - register redirect URI https://mcf-google-photos-bridge.onrender.com/oauth/google/callback
   merge_authorized: false
   production_authorized: false
+
+
+checkpoint_2026_09_18_v0_4_3:
+  execution_environment: CHATGPT_SANDBOX
+  version: 0.4.3
+  sandbox_tests:
+    total: 16
+    passed: 16
+    failed: 0
+  package:
+    portable_manifest: apps/google-photos-bridge/plugin.json
+    mcp_mapping: apps/google-photos-bridge/mcp.json
+    skill: apps/google-photos-bridge/skills/google-photos-bridge/SKILL.md
+    openai_metadata: true
+    privacy_route: /privacy
+    terms_route: /terms
+    package_consistency_test: PASS
+  render:
+    deploy_id: dep-damgnp67bikc73bjh2v0
+    commit: 6c4f4a1562cdf1737060f640cd4405f67034daaf
+    status: LIVE
+    build_tests: 16_PASS_0_FAIL
+    npm_audit_vulnerabilities: 0
+    runtime_evidence:
+      instance: srv-damfure7bikc73bgu1rg-6jghf
+      startup: "Google Photos Bridge v0.4.3 listening on :10000 deploy=6c4f4a1562cdf1737060f640cd4405f67034daaf"
+  review_readiness:
+    checklist: docs/runtime/GOOGLE-PHOTOS-BRIDGE-REVIEW-READINESS-001.md
+    submission_authorized: false
+    public_publication_authorized: false
+  blocking_gate:
+    id: GOOGLE_AUTH_PLATFORM
+    reason: >-
+      Live Google Photos Picker E2E requires a Google OAuth Web client and the
+      Google Photos Picker API enabled for LEANDRO's Google Cloud project.
