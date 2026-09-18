@@ -98,6 +98,15 @@ class BoundedLoopControllerTests(unittest.TestCase):
         after = self.loop.projection("L")
         self.assertEqual(before.__dict__, after.__dict__)
 
+    def test_failed_validation_and_repair_require_evidence(self):
+        state = self.loop.create("L", LoopPolicy(2, 60), "mestre")
+        self.loop.begin_iteration("L", "worker", now=state.started_at + 1)
+        with self.assertRaises(LoopTransitionError):
+            self.loop.validation_failed("L", "validator", [], now=state.started_at + 2)
+        self.loop.validation_failed("L", "validator", ["e://fail"], now=state.started_at + 2)
+        with self.assertRaises(LoopTransitionError):
+            self.loop.repair_completed("L", "repair", [], now=state.started_at + 3)
+
 
 if __name__ == "__main__":
     unittest.main()
