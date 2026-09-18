@@ -16,11 +16,13 @@ const PORT = Number(process.env.PORT || 3000);
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || "").replace(/\/$/, "");
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
-const APP_STATE_SECRET = process.env.APP_STATE_SECRET || "dev-only-change-me";
+const APP_STATE_SECRET = process.env.APP_STATE_SECRET || "";
+const STATE_SECRET_CONFIGURED = APP_STATE_SECRET.length >= 32;
 const REDIRECT_URI = PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL}/oauth/google/callback` : "";
 const store = new EphemeralStore();
 const google = new GooglePhotosClient({ clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET, redirectUri: REDIRECT_URI, store });
-const RESOURCE_URI = "ui://google-photos-bridge/v1.html";
+const BRIDGE_CONFIGURED = google.configured && STATE_SECRET_CONFIGURED;
+const RESOURCE_URI = "ui://google-photos-bridge/v2.html";
 
 function result(data, text) {
   return { structuredContent: data, content: [{ type: "text", text: text || JSON.stringify(data) }] };
@@ -35,7 +37,7 @@ function createMcpServer() {
     inputSchema: {},
     outputSchema: z.object({ configured: z.boolean(), public_base_url: z.string(), redirect_uri: z.string() }),
     _meta: { ui: { resourceUri: RESOURCE_URI, visibility: ["model", "app"] } },
-  }, async () => result({ configured: google.configured, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI }, "Google Photos Bridge helper ready."));
+  }, async () => result({ configured: BRIDGE_CONFIGURED, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI }, "Google Photos Bridge helper ready."));
 
   registerAppTool(server, "photos_connect", {
     title: "Connect Google Photos",
@@ -44,7 +46,7 @@ function createMcpServer() {
     outputSchema: z.object({ connection_id: z.string(), authorization_url: z.string(), status: z.string() }),
     _meta: { ui: { resourceUri: RESOURCE_URI, visibility: ["model", "app"] }, "openai/widgetAccessible": true },
   }, async () => {
-    if (!google.configured) throw new Error("Google OAuth is not configured on the server");
+    if (!BRIDGE_CONFIGURED) throw new Error("Google Photos Bridge setup is incomplete");
     const connectionId = store.createConnection();
     const state = signState(APP_STATE_SECRET, { connectionId });
     return result({ connection_id: connectionId, authorization_url: google.authorizationUrl(state), status: "pending" });
@@ -129,13 +131,28 @@ function createMcpServer() {
     return result({ closed: true, session_id }, "Google Photos Picker session closed.");
   });
 
+  registerAppTool(server, "photos_disconnect", {
+    title: "Disconnect Google Photos",
+    description: "Revoke the Google OAuth grant used by this bridge and clear the ephemeral connection state.",
+    inputSchema: z.object({ connection_id: z.string() }),
+    outputSchema: z.object({ disconnected: z.boolean() }),
+    _meta: { ui: { visibility: ["model", "app"] }, "openai/widgetAccessible": true },
+  }, async ({ connection_id }) => {
+    const disconnected = await google.disconnect(connection_id);
+    return result({ disconnected }, disconnected ? "Google Photos disconnected." : "Connection was already absent.");
+  });
+
   registerAppResource(server, "Google Photos Bridge UI", RESOURCE_URI, { mimeType: RESOURCE_MIME_TYPE }, async () => ({
     contents: [{
       uri: RESOURCE_URI,
       mimeType: RESOURCE_MIME_TYPE,
       text: await fs.readFile(WEB_FILE, "utf8"),
       _meta: {
-        ui: { prefersBorder: true },
+        ui: {
+          prefersBorder: true,
+          ...(PUBLIC_BASE_URL ? { domain: PUBLIC_BASE_URL } : {}),
+          csp: { connectDomains: [], resourceDomains: [] },
+        },
         "openai/widgetDescription": "Mobile-first helper for connecting Google Photos and choosing media through the official Picker.",
         "openai/widgetPrefersBorder": true,
         "openai/widgetCSP": { redirect_domains: ["https://accounts.google.com", "https://photos.google.com"] },
@@ -159,8 +176,8 @@ app.use((req, res, next) => {
   return next();
 });
 app.use(express.json({ limit: "1mb" }));
-app.get("/healthz", (_req, res) => res.json({ ok: true, service: "google-photos-bridge", version: "0.2.0", google_oauth_configured: google.configured }));
-app.get("/setup", (_req, res) => res.json({ configured: google.configured, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI, required: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "APP_STATE_SECRET"] }));
+app.get("/healthz", (_req, res) => res.json({ ok: true, service: "google-photos-bridge", version: "0.3.0", configured: BRIDGE_CONFIGURED }));
+app.get("/setup", (_req, res) => res.json({ configured: BRIDGE_CONFIGURED, public_base_url: PUBLIC_BASE_URL, redirect_uri: REDIRECT_URI, checks: { google_oauth: google.configured, state_secret: STATE_SECRET_CONFIGURED }, required: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "APP_STATE_SECRET"] }));
 
 app.get("/oauth/google/start", (req, res) => {
   try {
