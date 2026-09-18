@@ -83,9 +83,11 @@ def make_receipt(
         "created_at": float(time.time() if created_at is None else created_at),
     }
     return Receipt(
-        **material,
-        evidence_refs=refs,
-        receipt_sha256=_sha(material),
+        **{
+            **material,
+            "evidence_refs": refs,
+            "receipt_sha256": _sha(material),
+        }
     )
 
 
