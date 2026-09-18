@@ -1,0 +1,69 @@
+{
+  "schema": "mcf_live_dashboard/v1",
+  "mission_id": "MCF-HARNESS-GRAPH-ENGINE-2.2-001",
+  "issue": 241,
+  "title": "MCF Harness Graph Engine 2.2",
+  "status": "IN_PROGRESS",
+  "current_phase": "G1 — Graph Journal + Graph Definition",
+  "updated_at": "2026-09-18T17:42:00-03:00",
+  "branch": "feature/mcf-harness-graph-engine-2.2-20260918",
+  "evidence": {
+    "unit_tests": "PENDING",
+    "integration_tests": "PENDING",
+    "exact_head_ci": "PENDING",
+    "notebook_used": false,
+    "brainbase_used": false,
+    "cognitive_agents_claimed": false
+  },
+  "roadmap": [
+    {
+      "id": "G0",
+      "name": "Fundação da missão",
+      "status": "PASS"
+    },
+    {
+      "id": "G1",
+      "name": "Graph Journal + Graph Definition",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "id": "G2",
+      "name": "Graph Scheduler",
+      "status": "PENDING"
+    },
+    {
+      "id": "G3",
+      "name": "Bounded Loop Controller",
+      "status": "PENDING"
+    },
+    {
+      "id": "G4",
+      "name": "Local Runtime Pool",
+      "status": "PENDING"
+    },
+    {
+      "id": "G5",
+      "name": "MVP E2E",
+      "status": "PENDING"
+    },
+    {
+      "id": "G6",
+      "name": "Gate",
+      "status": "PENDING"
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-09-18T17:42:00-03:00",
+      "actor": "LEANDRO",
+      "type": "HUMAN_APPROVAL",
+      "text": "Nova missão Graph Engine aprovada."
+    },
+    {
+      "at": "2026-09-18T17:42:30-03:00",
+      "actor": "MESTRE",
+      "type": "MISSION_CREATED",
+      "text": "Issue #241 e branch Graph Engine 2.2 criadas sobre main."
+    }
+  ]
+}
