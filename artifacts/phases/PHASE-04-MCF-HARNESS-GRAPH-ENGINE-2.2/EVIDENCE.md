@@ -1,5 +1,20 @@
 # EVIDENCE — MCF Harness Graph Engine 2.2 MVP
 
+## Final delivery
+
+State: **ENTREGUE**
+
+PR: #242  
+Merge method: squash  
+Merge commit: `7867b28932183ed3f38c4cc7eb6b8c158ebbea69`
+
+Human authority LEANDRO authorized final completion without additional confirmation.
+
+### Post-merge main validation
+
+- Documentation validation: **SUCCESS** — run `35396058116`
+- Production Readiness: **SUCCESS** — run `35396058156`
+
 ## Technical candidate
 
 SHA: `6d961e6e1572c75aea4abe95a0bdf221439fa228`
@@ -25,9 +40,15 @@ SHA: `6d961e6e1572c75aea4abe95a0bdf221439fa228`
 - Backup + isolated restore: PASS
 - Release-readiness contracts: PASS
 
+## Final pre-merge head
+
+SHA: `80c7fe65d3cbb93c491fed93f7fb75619add3cd9`
+
+- Harness CI: **SUCCESS** — run `35394361334`
+- Production Readiness: **SUCCESS** — run `35394361210`
+
 ## Graph MVP
 
-Fan-out graph:
 ```text
         ┌→ TEST_A ─┐
 START ──┼→ TEST_B ─┼→ AUDIT → END
@@ -73,4 +94,4 @@ Observed:
 
 This MVP does not implement Graph-of-Graphs, speculative execution or shadow runtime. It does not claim independent cognitive agents.
 
-Final promotion remains HUMAN_GATE.
+The authorized MVP is merged and validated on main.

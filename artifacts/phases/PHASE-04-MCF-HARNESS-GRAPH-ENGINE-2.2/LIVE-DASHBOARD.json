@@ -3,12 +3,12 @@
   "mission_id": "MCF-HARNESS-GRAPH-ENGINE-2.2-001",
   "issue": 241,
   "title": "MCF Harness Graph Engine 2.2",
-  "status": "READY_FOR_HUMAN_GATE",
-  "current_phase": "G6 — HUMAN_GATE",
-  "updated_at": "2026-09-18T17:56:30-03:00",
-  "branch": "feature/mcf-harness-graph-engine-2.2-20260918",
-  "technical_head": "6d961e6e1572c75aea4abe95a0bdf221439fa228",
-  "documental_head": "aa7bafd0f168697a37412d3657beb39b4ae0d005",
+  "status": "ENTREGUE",
+  "current_phase": "G6 — Entregue na main",
+  "updated_at": "2026-09-18T18:21:00-03:00",
+  "branch": "main",
+  "pull_request": 242,
+  "merge_commit": "7867b28932183ed3f38c4cc7eb6b8c158ebbea69",
   "evidence": {
     "unit_integration_tests": "83/83 PASS",
     "technical_harness_ci": {
@@ -19,13 +19,21 @@
       "status": "SUCCESS",
       "run": 35393552168
     },
-    "documental_harness_ci": {
+    "final_branch_harness_ci": {
       "status": "SUCCESS",
-      "run": 35393984025
+      "run": 35394361334
     },
-    "documental_production_readiness": {
+    "final_branch_production_readiness": {
       "status": "SUCCESS",
-      "run": 35393984033
+      "run": 35394361210
+    },
+    "main_documentation_validation": {
+      "status": "SUCCESS",
+      "run": 35396058116
+    },
+    "main_production_readiness": {
+      "status": "SUCCESS",
+      "run": 35396058156
     },
     "graph_fanout": "3 runtime cells / 3 unique PIDs / peak concurrency 3",
     "graph_failure_injection": "PASS",
@@ -33,7 +41,7 @@
     "runtime_pool_multiprocess": "4 processes / 2 slots / exact backpressure PASS",
     "crash_reconciliation": "PASS",
     "missing_receipt_fail_closed": "PASS",
-    "notebook_used": false,
+    "notebook_used_as_runtime": false,
     "brainbase_used": false,
     "cognitive_agents_claimed": false
   },
@@ -70,8 +78,8 @@
     },
     {
       "id": "G6",
-      "name": "Gate",
-      "status": "HUMAN_GATE"
+      "name": "Gate / Entrega",
+      "status": "ENTREGUE"
     }
   ],
   "history": [
@@ -79,37 +87,43 @@
       "at": "2026-09-18T17:42:00-03:00",
       "actor": "LEANDRO",
       "type": "HUMAN_APPROVAL",
-      "text": "Nova missão Graph Engine 2.2 aprovada."
+      "text": "Missão Graph Engine 2.2 aprovada."
     },
     {
       "at": "2026-09-18T17:42:30-03:00",
       "actor": "MESTRE",
       "type": "MISSION_CREATED",
-      "text": "Issue #241, branch e PR #242 draft criados sobre main."
+      "text": "Issue #241, branch e PR #242 criados."
     },
     {
       "at": "2026-09-18T17:44:30-03:00",
       "actor": "MESTRE",
       "type": "MVP_E2E",
-      "text": "3 runtime cells multiprocess, fan-in, failure injection e bounded loop implementados."
+      "text": "Fan-out multiprocesso, fan-in, failure injection e bounded loop implementados."
     },
     {
       "at": "2026-09-18T17:49:00-03:00",
       "actor": "MESTRE",
       "type": "HARDENING",
-      "text": "Crash reconciliation, two-phase receipt, owner binding e Runtime Pool identity protections adicionados."
+      "text": "Crash reconciliation, two-phase receipt, owner binding e Runtime Pool protections adicionados."
     },
     {
-      "at": "2026-09-18T17:52:30-03:00",
-      "actor": "CI",
-      "type": "TECHNICAL_GATES",
-      "text": "SHA 6d961e6e: Harness CI 83/83 PASS e Production Readiness SUCCESS."
+      "at": "2026-09-18T17:58:00-03:00",
+      "actor": "LEANDRO",
+      "type": "HUMAN_GATE",
+      "text": "Autorização concedida para concluir sem novas confirmações."
     },
     {
-      "at": "2026-09-18T17:56:00-03:00",
+      "at": "2026-09-18T18:18:01-03:00",
+      "actor": "MESTRE",
+      "type": "MERGE",
+      "text": "PR #242 mergeado por squash na main; commit 7867b289."
+    },
+    {
+      "at": "2026-09-18T18:20:31-03:00",
       "actor": "CI",
-      "type": "DOCUMENTAL_GATES",
-      "text": "SHA aa7bafd0: Harness CI e Production Readiness SUCCESS. Somente HUMAN_GATE permanece."
+      "type": "POST_MERGE_VALIDATION",
+      "text": "Documentation validation e Production Readiness da main concluídos com SUCCESS."
     }
   ]
 }

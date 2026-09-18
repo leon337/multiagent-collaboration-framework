@@ -2,16 +2,15 @@
 
 Mission: `MCF-HARNESS-GRAPH-ENGINE-2.2-001`  
 Issue: #241  
-PR: #242 (draft)  
+PR: #242 — **MERGED**  
 Authority: LEANDRO  
 Coordinator: MESTRE  
-Base: `main` / Harness V2 `2.0.0`  
 Runtime boundary: ChatGPT bubble local sandbox
 
 ## G0 — Fundação
 Status: **PASS**
 
-Issue, branch, cockpit feed e PR draft próprios. Main protegida e Graph Engine separado do hardening #239.
+Issue, branch, cockpit feed e PR próprios. Main protegida e Graph Engine separado do hardening #239.
 
 ## G1 — Graph Journal + Graph Definition
 Status: **PASS**
@@ -79,22 +78,21 @@ Prova:
 - bounded repair loop passa na terceira iteração;
 - três falhas consecutivas encerram por max_iterations.
 
-## G6 — Gate
-Status: **HUMAN_GATE**
+## G6 — Gate e entrega
+Status: **ENTREGUE**
 
-Evidência técnica do SHA `6d961e6e1572c75aea4abe95a0bdf221439fa228`:
-- Harness CI: **SUCCESS** — run `35393552144`;
-- 83 testes: **PASS**;
-- Production Readiness: **SUCCESS** — run `35393552168`;
-- format/lint/typecheck/migrations/bootstrap/Bubblewrap/test/build/backup+restore/release contracts: **PASS**.
-
-O próximo head contém somente este fechamento documental e deve repetir os dois gates antes de qualquer merge.
+- Human authority LEANDRO autorizou conclusão sem novas confirmações;
+- PR #242 saiu de draft e foi mergeado por squash;
+- merge commit: `7867b28932183ed3f38c4cc7eb6b8c158ebbea69`;
+- Documentation validation na main: **SUCCESS** — run `35396058116`;
+- Production Readiness na main: **SUCCESS** — run `35396058156`.
 
 ## Fora do MVP
+
 - graph-of-graphs;
 - speculative execution;
 - shadow runtime;
 - promoção automática;
 - efeitos externos sem gate.
 
-Esses itens permanecem para ciclos posteriores, não são claims desta entrega.
+Esses itens permanecem para ciclos posteriores e não são claims desta entrega.

@@ -1,13 +1,13 @@
 # CHECKLIST — MCF Harness Graph Engine 2.2
 
-Legend: `[x]` concluído · `[ ]` pendente.
+Legend: `[x]` concluído.
 
 ## G0 — Governança
 - [x] G001 — Issue própria (#241).
 - [x] G002 — Branch própria sobre main.
 - [x] G003 — Missão separada do hardening #239.
 - [x] G004 — main protegida.
-- [x] G005 — merge exige HUMAN_GATE.
+- [x] G005 — HUMAN_GATE concedido por LEANDRO.
 
 ## G1 — Graph Definition / Journal
 - [x] G101 — schema `mcf_graph/v1`.
@@ -64,11 +64,16 @@ Legend: `[x]` concluído · `[ ]` pendente.
 - [x] G507 — crash reconciliation de graph.
 - [x] G508 — missing receipt fail-closed.
 
-## Gate
-- [x] unit tests — 83 PASS.
-- [x] integration tests — PASS.
-- [x] Harness CI SHA técnico `6d961e6e…` — run 35393552144 SUCCESS.
-- [x] Production Readiness SHA técnico `6d961e6e…` — run 35393552168 SUCCESS.
-- [x] Harness CI head documental `aa7bafd0…` — run 35393984025 SUCCESS.
-- [x] Production Readiness head documental `aa7bafd0…` — run 35393984033 SUCCESS.
-- [ ] HUMAN_GATE para merge.
+## Gate / entrega
+- [x] 83/83 unit + integration tests PASS no candidato técnico.
+- [x] Harness CI técnico — run 35393552144 SUCCESS.
+- [x] Production Readiness técnico — run 35393552168 SUCCESS.
+- [x] Harness CI head final pré-merge — run 35394361334 SUCCESS.
+- [x] Production Readiness head final pré-merge — run 35394361210 SUCCESS.
+- [x] HUMAN_GATE concedido.
+- [x] PR #242 mergeado.
+- [x] Merge commit na main — `7867b28932183ed3f38c4cc7eb6b8c158ebbea69`.
+- [x] Documentation validation pós-merge — run 35396058116 SUCCESS.
+- [x] Production Readiness pós-merge — run 35396058156 SUCCESS.
+
+**Estado final: ENTREGUE.**
