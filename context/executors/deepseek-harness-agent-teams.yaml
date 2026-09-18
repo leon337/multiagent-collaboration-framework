@@ -1,0 +1,46 @@
+executor:
+  executor_id: MCF-DEEPSEEK-HARNESS-AGENT-TEAMS
+  version: 0.1.0
+  status: EXPERIMENTAL_ADAPTER
+  runtime: deepseek_harness
+  authority_human: LEANDRO
+  coordinator: Mestre
+
+  role:
+    governance_source_of_truth: GitHub/MCF
+    execution_engine: DeepSeek Harness
+    multiagent_domain: native_experimental_agent_teams
+
+  required_capabilities:
+    - deepseek_harness_python_sdk
+    - explicit_dsh_home
+    - provider_endpoint_or_credential
+    - agent_team_profile_enabled
+    - agent_team_healthcheck_passed
+
+  tools_expected:
+    - list_agents
+    - spawn_teammate
+    - send_message
+    - team_task_create
+    - team_task_get
+    - team_task_list
+    - team_task_update
+    - wait_agent
+    - interrupt_agent
+
+  activation:
+    environment_gate: MCF_DSH_AGENT_TEAM_READY
+    default_enabled: false
+    fail_closed: true
+
+  persistence:
+    dsh_team_state: DSH session log under isolated DSH_HOME
+    institutional_checkpoint: GitHub/MCF
+    sandbox_cache_authoritative: false
+
+  governance:
+    real_execution_required_for_credit: true
+    no_live_cognitive_ledger_mutation_by_default: true
+    no_human_authority_inference: true
+    pin_tested_version_tuple: true
