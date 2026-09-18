@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+process.env.DATABASE_URL ??= 'postgresql://mcf-test:mcf-test@127.0.0.1:5432/mcf_test';
+
 import type { McfSkillDefinition } from '@rsa/contracts';
 
 import { EvidenceValidator } from './evidence-validator.js';

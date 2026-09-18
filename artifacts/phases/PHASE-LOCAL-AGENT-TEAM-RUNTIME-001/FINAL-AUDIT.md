@@ -26,11 +26,22 @@ Observed unique audit processes: **8/8**.
 - `git diff --check`: PASS
 - shell option in local worker adapter: ABSENT
 - local team executor in production: BLOCKED BY CONFIG
-- focused local-team qualification: 4 files / 10 tests PASS
-- relevant regression suite: 11 files / 54 tests PASS
+- focused local-team qualification: 4 files / 11 tests PASS
+- relevant regression suite: 18 files / 151 tests PASS
 - ESLint on changed TypeScript files: PASS
 - server typecheck after `build:packages`: PASS
 - server build: PASS
+
+## VoiceHub persistence
+
+LEANDRO requested VoiceHub persistence as a closeout requirement. Local validation:
+
+- sink volume 100%, unmuted;
+- `voicehub-linux.service` enabled + active;
+- `Restart=always`;
+- `loginctl Linger=yes`;
+- sanitized unit and operational note are versioned under `docs/operations/`;
+- no provider secrets or API tokens are versioned.
 
 ## Evidence boundary
 
