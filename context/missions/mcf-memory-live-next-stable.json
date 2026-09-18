@@ -1,0 +1,15 @@
+{
+  "mission_id": "MCF-MEMORY-LIVE-NEXT-STABLE-001",
+  "risk_class": "C",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "execution_topology": "PARALLEL_FAN_OUT_FAN_IN",
+  "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
+  "subagent_credit_requires_real_execution": true,
+  "tool_call_evidence_required": true,
+  "live_mutation_authorized": false,
+  "persistent_source_of_truth": "GitHub/MCF",
+  "persistent_project": "cognitive-ledger",
+  "canonical_project_descriptor": "context/projects/cognitive-ledger.yaml",
+  "sandbox_persistent": false
+}
