@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T08:18:00-03:00",
+  "updated_at": "2026-09-18T08:27:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -18,7 +18,7 @@
     "local_workers": 5,
     "local_auditor": 1,
     "fanout_pass": "5/5",
-    "runtime_tests_pass": "16/16",
+    "runtime_tests_pass": "21/21",
     "cognitive_agents_claimed": false
   },
   "roadmap": [
@@ -50,7 +50,7 @@
     {
       "id": "R5",
       "name": "Sessões persistentes por agente",
-      "status": "PENDING"
+      "status": "PASS_INFRASTRUCTURE"
     },
     {
       "id": "R6",
@@ -228,6 +228,12 @@
       "actor": "MESTRE",
       "type": "R4_EXECUTOR",
       "text": "Executor boundary validado: interface + crash/resume + executor swap PASS; G08 bloqueado por ausência de backend cognitivo bubble-native verificado."
+    },
+    {
+      "at": "2026-09-18T08:27:00-03:00",
+      "actor": "MESTRE",
+      "type": "R5_SESSIONS",
+      "text": "Sessões persistentes executor-agnostic validadas: reopen, dedup, interrupt/resume e mailbox continuity; 21/21 PASS."
     }
   ],
   "links": {
@@ -288,5 +294,16 @@
     "mission_state_survives_executor_crash": "PASS",
     "cognitive_backend_verified": false,
     "blocker": "No independent bubble-native cognitive LLM backend verified."
+  },
+  "r5_sessions": {
+    "status": "PASS_INFRASTRUCTURE",
+    "durable_session_id": "PASS",
+    "checkpoint_sequence": "PASS",
+    "message_dedup": "PASS",
+    "interrupt_resume": "PASS",
+    "mailbox_continuity": "PASS",
+    "task_memory": "checkpoint_hash_only",
+    "institutional_memory": "external_governed",
+    "cognitive_session_claimed": false
   }
 }
