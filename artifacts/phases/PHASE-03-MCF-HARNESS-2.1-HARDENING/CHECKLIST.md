@@ -26,8 +26,8 @@ Legend: `[x]` locally validated · `[~]` partial/CI pending · `[ ]` pending.
 ## Security
 - [x] H06 tool-output sanitation.
 - [x] H07 confused-deputy binding.
-- [~] H08 explicit secret-reference policy — provider lifecycle/rotation remains future work.
-- [~] H09 threat model document + residual-risk classification.
+- [x] H08 explicit secret-reference policy + ephemeral provider lifecycle + TTL/revoke + execution-scoped capability binding.
+- [x] H09 threat model document + residual-risk classification.
 
 ## Evidence
 - [x] 6 local technical test shards in parallel.
@@ -48,3 +48,16 @@ Legend: `[x]` locally validated · `[~]` partial/CI pending · `[ ]` pending.
 - [x] missing hop fails closed;
 - [x] duplicate source migration rejected;
 - [x] migration output must remain an object.
+
+
+## Secret lifecycle evidence
+- [x] explicit secret-name allowlist;
+- [x] arbitrary environment lookup denied;
+- [x] mapped secret missing → fail closed;
+- [x] ephemeral bytearray lease;
+- [x] zeroization on close;
+- [x] TTL expiry;
+- [x] revocation;
+- [x] metadata-only audit record;
+- [x] execution + agent + task + named capability binding;
+- [x] secret value never included in audit metadata.
