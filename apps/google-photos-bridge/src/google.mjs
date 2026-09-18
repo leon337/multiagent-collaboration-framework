@@ -1,5 +1,6 @@
 const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
+const REVOKE_URL = "https://oauth2.googleapis.com/revoke";
 const PICKER_BASE = "https://photospicker.googleapis.com/v1";
 export const PICKER_SCOPE = "https://www.googleapis.com/auth/photospicker.mediaitems.readonly";
 
@@ -138,5 +139,24 @@ export class GooglePhotosClient {
     this.store.assertSessionOwner(connectionId, sessionId);
     await this.request(connectionId, "DELETE", `/sessions/${encodeURIComponent(sessionId)}`);
     this.store.deleteSession(connectionId, sessionId);
+  }
+
+  async disconnect(connectionId) {
+    const connection = this.store.connection(connectionId);
+    if (!connection) return false;
+    const token = connection.token?.refresh_token || connection.token?.access_token;
+    if (token) {
+      const body = new URLSearchParams({ token });
+      const response = await fetch(REVOKE_URL, {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body,
+      });
+      if (!response.ok && response.status !== 400) {
+        throw new Error(`Google token revocation failed (${response.status})`);
+      }
+    }
+    this.store.deleteConnection(connectionId);
+    return true;
   }
 }
