@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T08:27:00-03:00",
+  "updated_at": "2026-09-18T08:34:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -18,7 +18,7 @@
     "local_workers": 5,
     "local_auditor": 1,
     "fanout_pass": "5/5",
-    "runtime_tests_pass": "21/21",
+    "runtime_tests_pass": "29/29",
     "cognitive_agents_claimed": false
   },
   "roadmap": [
@@ -55,7 +55,7 @@
     {
       "id": "R6",
       "name": "Workspace isolado + Capability Tokens",
-      "status": "PARTIAL"
+      "status": "PASS_PROTOTYPE"
     },
     {
       "id": "R7",
@@ -234,6 +234,12 @@
       "actor": "MESTRE",
       "type": "R5_SESSIONS",
       "text": "Sessões persistentes executor-agnostic validadas: reopen, dedup, interrupt/resume e mailbox continuity; 21/21 PASS."
+    },
+    {
+      "at": "2026-09-18T08:34:00-03:00",
+      "actor": "MESTRE",
+      "type": "R6_WORKSPACE_CAPABILITIES",
+      "text": "R6 validado: isolamento de workspace + reconciliation gate + capability tokens; 29/29 PASS. Histórico reconciliado append-only."
     }
   ],
   "links": {
@@ -268,8 +274,8 @@
   "history_pipeline": {
     "schema": "mcf_live_history/v1",
     "status": "PASS_E2E",
-    "events_last_run": 8,
-    "chain_head": "ab7f47da1f01ed91e28d3976956317cb5bce01a5584dde9e378229486adeca88",
+    "events_last_run": 12,
+    "chain_head": "9a18b3c1482ca59f39ad34cf797e6f835c4bba0b2acd9c9a2345e2a01c565c6e",
     "guarantees": [
       "append_only",
       "hash_chain",
@@ -305,5 +311,16 @@
     "task_memory": "checkpoint_hash_only",
     "institutional_memory": "external_governed",
     "cognitive_session_claimed": false
+  },
+  "r6_workspace_capabilities": {
+    "status": "PASS_PROTOTYPE",
+    "workspace_isolation": "PASS",
+    "conflict_detection": "PASS",
+    "reconciliation_gate": "PASS",
+    "rollback": "PASS",
+    "capability_expiry": "PASS",
+    "capability_narrowing": "PASS",
+    "capability_revocation": "PASS",
+    "history_reconciliation": "PASS_APPEND_ONLY_CORRECTION"
   }
 }
