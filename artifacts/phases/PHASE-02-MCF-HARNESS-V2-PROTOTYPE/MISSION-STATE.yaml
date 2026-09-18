@@ -1,0 +1,98 @@
+mission:
+  id: MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001
+  title: MCF Harness V2 — Bubble-Native Multi-Agent Runtime
+  status: ENTREGUE
+  delivery_mode: STABLE_WITH_APPROVED_DEFERMENTS
+  release: 2.0.0
+  current_phase: R10_STABLE_RELEASE
+  risk_class: B
+  authority_human: LEANDRO
+  coordinator: MESTRE
+  approved_at: '2026-09-18T16:15:00-03:00'
+  last_updated: '2026-09-18'
+
+execution_boundary:
+  canonical_runtime: CHATGPT_BUBBLE_LOCAL_SANDBOX
+  notebook_used: false
+  brainbase_used: false
+  github_role: persistence_versioning_audit_only
+  vps_required: false
+  external_orchestrator_required: false
+
+persistence:
+  local_workspace: /mnt/data/mcf-harness-v2-local
+  source_repository: leon337/multiagent-collaboration-framework
+  issue: 234
+  research_pr: 235
+  prototype_pr: 236
+  prototype_branch: prototype/mcf-harness-v2-event-runtime-20260918
+  live_cockpit: https://mcf-cockpit-mobile-v3-live.onrender.com/concept-3#mission
+
+invariants:
+  - LEANDRO_IS_FINAL_HUMAN_AUTHORITY
+  - EXECUTION_HAPPENS_INSIDE_CHATGPT_BUBBLE
+  - NOTEBOOK_IS_NOT_RUNTIME
+  - BRAINBASE_IS_NOT_RUNTIME
+  - GITHUB_IS_NOT_PRIMARY_EXECUTOR
+  - NO_AGENT_CREDIT_WITHOUT_REAL_EXECUTION_AND_EVIDENCE
+  - NO_FALSE_GREEN
+  - FAIL_CLOSED_ON_AUTHORITY_OR_CAPABILITY_AMBIGUITY
+  - MISSION_STATE_MUST_OUTLIVE_ONE_PROCESS_OR_CHAT
+  - MODEL_IS_EXECUTOR_NOT_SOURCE_OF_TRUTH
+
+validated_capabilities:
+  mission_journal_sqlite_wal: PASS
+  deterministic_replay: PASS
+  transactional_task_cas: PASS
+  task_dag: PASS
+  mailbox_queue_ack: PASS
+  task_leases_and_recovery: PASS
+  execution_and_tool_receipts: PASS
+  task_scoped_capabilities: PASS
+  event_hash_chain_local: PASS
+  local_parallel_workers: PASS
+  live_history_pipeline: PASS_E2E
+  executor_interface: PASS
+  executor_crash_resume: PASS
+  executor_swap_recovery: PASS
+  durable_sessions: PASS
+  workspace_isolation: PASS
+  reconciliation_gate: PASS
+  capability_expiry_narrowing_revocation: PASS
+  adversarial_technical_audit: PASS
+  recovery_clean_workspace: PASS
+  runtime_metrics: PASS
+  adaptive_team_policy: PASS
+  six_process_capacity_probe: PASS
+
+current_evidence:
+  local_worker_count: 5
+  local_auditor_count: 1
+  fanout_workers_pass: 5
+  runtime_tests_pass: 53
+  capacity_probe_processes: 6
+  capacity_probe_pass: 6
+  cognitive_agents_claimed: false
+  protocol_release: 2.0.0
+  local_history_events: 16
+  local_chain_head: 6d8b858e5458a5fbb129065600348af288d73a6466add0b705ff08e77d6aa760
+  rc_audit_package_sha256: 81ed3191c8113bf78f2999cc46586653f3dea5280f9ceefde470e8bd2b17b55d
+
+accepted_deferments:
+  - id: G08_L02
+    status: ACCEPTED_DEFERMENT
+    detail: independent bubble-native cognitive backend/auditor not verified
+  - id: M09
+    status: ACCEPTED_DEFERMENT
+    detail: separate ChatGPT conversation acceptance requires product/human initiation
+  - id: P05
+    status: ACCEPTED_DEFERMENT
+    detail: canonical V1 schema was not located; no compatibility contract was fabricated
+
+promotion:
+  human_gate: APPROVED
+  approved_by: LEANDRO
+  stable_release_authorized: true
+  merge_authorized: true
+  production_deployment_authorized: false
+  final_state: ENTREGUE

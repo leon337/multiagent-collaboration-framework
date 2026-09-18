@@ -1,0 +1,410 @@
+{
+  "schema_version": 1,
+  "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
+  "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
+  "updated_at": "2026-09-18T16:18:00-03:00",
+  "authority_human": "LEANDRO",
+  "coordinator": "MESTRE",
+  "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
+  "status": "ENTREGUE",
+  "current_phase": "R10 — Stable Release 2.0.0",
+  "runtime_flags": {
+    "notebook_runtime": false,
+    "brainbase_runtime": false,
+    "github_role": "persistence_versioning_audit",
+    "vercel_role": "live_observability_dashboard"
+  },
+  "evidence": {
+    "local_workers": 5,
+    "local_auditor": 1,
+    "fanout_pass": "5/5",
+    "runtime_tests_pass": "53/53",
+    "cognitive_agents_claimed": false,
+    "parallel_subagent_validation": "6/6 shards PASS"
+  },
+  "roadmap": [
+    {
+      "id": "R0",
+      "name": "Governança, escopo e continuidade",
+      "status": "PASS"
+    },
+    {
+      "id": "R1",
+      "name": "Engenharia reversa DSH + Agent Teams",
+      "status": "PASS"
+    },
+    {
+      "id": "R2",
+      "name": "Núcleo persistente Harness V2",
+      "status": "PASS_PROTOTYPE"
+    },
+    {
+      "id": "R3",
+      "name": "Time técnico local na bolha",
+      "status": "PASS"
+    },
+    {
+      "id": "R4",
+      "name": "Executor Cognitivo Local Plugável",
+      "status": "PARTIAL_BLOCKED_G08"
+    },
+    {
+      "id": "R5",
+      "name": "Sessões persistentes por agente",
+      "status": "PASS_INFRASTRUCTURE"
+    },
+    {
+      "id": "R6",
+      "name": "Workspace isolado + Capability Tokens",
+      "status": "PASS_PROTOTYPE"
+    },
+    {
+      "id": "R7",
+      "name": "Auditoria adversarial técnica",
+      "status": "PASS_TECHNICAL_COGNITIVE_PENDING"
+    },
+    {
+      "id": "R8",
+      "name": "Recovery entre chats e executor swap",
+      "status": "PASS_TECHNICAL"
+    },
+    {
+      "id": "R9",
+      "name": "Avaliação, desempenho e auto-otimização",
+      "status": "PASS_TELEMETRY"
+    },
+    {
+      "id": "R10",
+      "name": "Release estável Bubble Multi-Agent Runtime",
+      "status": "PASS_STABLE"
+    }
+  ],
+  "checklist": {
+    "completed": 67,
+    "partial": 3,
+    "pending": 52,
+    "blocked": 0,
+    "current_block": [
+      "G01",
+      "G02",
+      "G03",
+      "G04",
+      "G05",
+      "G06",
+      "G07",
+      "G08"
+    ]
+  },
+  "agents": [
+    {
+      "id": "mestre",
+      "name": "MESTRE",
+      "role": "coordenação e síntese",
+      "state": "ACTIVE"
+    },
+    {
+      "id": "worker-journal",
+      "name": "worker-journal",
+      "role": "journal/projection",
+      "state": "PASS"
+    },
+    {
+      "id": "worker-recovery",
+      "name": "worker-recovery",
+      "role": "recovery/leases",
+      "state": "PASS"
+    },
+    {
+      "id": "worker-observability",
+      "name": "worker-observability",
+      "role": "receipts/observability",
+      "state": "PASS"
+    },
+    {
+      "id": "worker-tests",
+      "name": "worker-tests",
+      "role": "unit/integration tests",
+      "state": "PASS"
+    },
+    {
+      "id": "worker-security",
+      "name": "worker-security",
+      "role": "security/capabilities",
+      "state": "PASS"
+    },
+    {
+      "id": "auditor-local",
+      "name": "auditor-local",
+      "role": "independent technical audit",
+      "state": "PASS_WITH_GAPS"
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-09-18T06:02:00-03:00",
+      "actor": "MESTRE",
+      "type": "MISSION",
+      "text": "Criada Issue #234 para engenharia reversa DeepSeek Harness + Agent Teams."
+    },
+    {
+      "at": "2026-09-18T06:14:00-03:00",
+      "actor": "MESTRE",
+      "type": "RESEARCH",
+      "text": "Concluída engenharia reversa e criada arquitetura candidata do Harness V2."
+    },
+    {
+      "at": "2026-09-18T06:31:00-03:00",
+      "actor": "MESTRE",
+      "type": "PROTOTYPE",
+      "text": "Criado protótipo event-sourced com SQLite/WAL, replay, DAG, mailbox e leases."
+    },
+    {
+      "at": "2026-09-18T06:54:00-03:00",
+      "actor": "worker-team",
+      "type": "TEST",
+      "text": "Primeiro fan-out local: 5/5 workers PASS; auditoria técnica concluída."
+    },
+    {
+      "at": "2026-09-18T07:03:00-03:00",
+      "actor": "MESTRE",
+      "type": "HARDENING",
+      "text": "Adicionados DAG readiness, task capabilities, hash-chain e heartbeat de lease."
+    },
+    {
+      "at": "2026-09-18T07:07:00-03:00",
+      "actor": "worker-tests",
+      "type": "TEST",
+      "text": "Segundo ciclo local: 7/7 testes PASS."
+    },
+    {
+      "at": "2026-09-18T07:12:00-03:00",
+      "actor": "MESTRE",
+      "type": "GOVERNANCE",
+      "text": "Persistidos ROADMAP, CHECKLIST, MISSION-STATE e manifesto SHA-256."
+    },
+    {
+      "at": "2026-09-18T07:20:00-03:00",
+      "actor": "MESTRE",
+      "type": "DASHBOARD",
+      "text": "Iniciada publicação do painel vivo na Vercel."
+    },
+    {
+      "at": "2026-09-18T07:24:00-03:00",
+      "actor": "MESTRE",
+      "type": "VERCEL",
+      "text": "Projeto predix-ai-br/mcf-harness-v2-live criado via CLI no notebook."
+    },
+    {
+      "at": "2026-09-18T07:25:00-03:00",
+      "actor": "MESTRE",
+      "type": "BLOCKER",
+      "text": "Deploy de produção bloqueado pela cota diária Hobby da Vercel: api-deployments-free-per-day."
+    },
+    {
+      "at": "2026-09-18T07:44:00-03:00",
+      "actor": "MESTRE",
+      "type": "AUTOMATION",
+      "text": "Agendada retomada idempotente do deploy dedicado da Vercel após a janela de 24h; primeiro valida URL existente e só publica se continuar pendente."
+    },
+    {
+      "at": "2026-09-18T07:51:00-03:00",
+      "actor": "MESTRE",
+      "type": "LIVE_SURFACE",
+      "text": "Concept 3 do mcf-cockpit-live definido como superfície viva oficial da missão; refresh automático a cada 60s."
+    },
+    {
+      "at": "2026-09-18T08:05:00-03:00",
+      "actor": "MESTRE",
+      "type": "HISTORY_PIPELINE",
+      "text": "History Pipeline v1 ativado: 8 eventos reais registrados automaticamente; suíte total 12/12 PASS."
+    },
+    {
+      "at": "2026-09-18T08:09:00-03:00",
+      "actor": "MESTRE",
+      "type": "HISTORY_E2E",
+      "text": "History Pipeline validado ponta a ponta: local → LIVE-DASHBOARD → Issue #234 → API Vercel."
+    },
+    {
+      "at": "2026-09-18T08:18:00-03:00",
+      "actor": "MESTRE",
+      "type": "R4_EXECUTOR",
+      "text": "Executor boundary validado: interface + crash/resume + executor swap PASS; G08 bloqueado por ausência de backend cognitivo bubble-native verificado."
+    },
+    {
+      "at": "2026-09-18T08:27:00-03:00",
+      "actor": "MESTRE",
+      "type": "R5_SESSIONS",
+      "text": "Sessões persistentes executor-agnostic validadas: reopen, dedup, interrupt/resume e mailbox continuity; 21/21 PASS."
+    },
+    {
+      "at": "2026-09-18T08:34:00-03:00",
+      "actor": "MESTRE",
+      "type": "R6_WORKSPACE_CAPABILITIES",
+      "text": "R6 validado: isolamento de workspace + reconciliation gate + capability tokens; 29/29 PASS. Histórico reconciliado append-only."
+    },
+    {
+      "at": "2026-09-18T08:43:00-03:00",
+      "actor": "auditor-technical",
+      "type": "R7_TECHNICAL_AUDIT",
+      "text": "Auditoria adversarial técnica PASS: 9 classes de rejeição testadas; parecer separado; 39/39 PASS; cognitive=false."
+    },
+    {
+      "at": "2026-09-18T08:41:00-03:00",
+      "actor": "MESTRE",
+      "type": "PUBLISH_RENDER_LIVE",
+      "text": "15 investigadores técnicos avaliaram rotas de publicação; Render Web Service selecionado e publicado com /api/mcf vivo."
+    },
+    {
+      "at": "2026-09-18T09:32:00-03:00",
+      "actor": "MESTRE",
+      "type": "R10_RELEASE_CANDIDATE",
+      "text": "RC 2.0.0-rc1 preparado: R8 recovery PASS técnico, R9 telemetria PASS, 53/53 testes locais; stable aguarda HUMAN_GATE e deferimentos formais."
+    },
+    {
+      "at": "2026-09-18T16:15:00-03:00",
+      "actor": "LEANDRO",
+      "type": "STABLE_APPROVED",
+      "text": "HUMAN_GATE aprovado. MCF Harness V2 promovido a 2.0.0 com deferimentos G08/L02, M09 e P05 preservados e aceitos."
+    },
+    {
+      "at": "2026-09-18T16:18:00-03:00",
+      "actor": "MESTRE",
+      "type": "PARALLEL_SUBAGENT_VALIDATION",
+      "text": "6 subagentes técnicos locais validaram o RC em paralelo; 6/6 shards PASS após hardening do timeout de checkpoint."
+    }
+  ],
+  "links": {
+    "issue": "https://github.com/leon337/multiagent-collaboration-framework/issues/234",
+    "prototype_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/236",
+    "repo": "https://github.com/leon337/multiagent-collaboration-framework"
+  },
+  "vercel": {
+    "project": "predix-ai-br/mcf-harness-v2-live",
+    "state": "BLOCKED_BY_DAILY_HOBBY_DEPLOYMENT_LIMIT",
+    "error_code": "api-deployments-free-per-day",
+    "detail": "Vercel CLI reported more than 100 free deployments in the last day; project exists but production deployment was not created.",
+    "retry": {
+      "state": "SCHEDULED",
+      "target": "2026-09-19T07:44:37-03:00",
+      "strategy": "verify_existing_production_url_then_deploy_if_pending",
+      "publisher": "leo-N43SM via Vercel CLI",
+      "runtime_moved_to_notebook": false
+    }
+  },
+  "live_surface": {
+    "status": "LIVE",
+    "provider": "Render",
+    "service": "mcf-cockpit-mobile-v3-live",
+    "route": "https://mcf-cockpit-mobile-v3-live.onrender.com/concept-3#mission",
+    "api": "https://mcf-cockpit-mobile-v3-live.onrender.com/api/mcf?mission=234",
+    "source_branch": "fix/mobile-mission-ux-v3-20260918",
+    "source_commit": "94378428dfe628356db9c5908fb4d237fbaa2984",
+    "note": "Primary live mission cockpit while Vercel deployment quota is blocked."
+  },
+  "history_pipeline": {
+    "schema": "mcf_live_history/v1",
+    "status": "PASS_E2E",
+    "events_last_run": 16,
+    "chain_head": "6d8b858e5458a5fbb129065600348af288d73a6466add0b705ff08e77d6aa760",
+    "guarantees": [
+      "append_only",
+      "hash_chain",
+      "idempotency",
+      "process_lock",
+      "deterministic_replay"
+    ],
+    "automatic_sources": [
+      "MESTRE team-run boundary",
+      "worker results",
+      "auditor verdict"
+    ],
+    "cockpit_validation": "PASS",
+    "surface": "https://mcf-cockpit-live.vercel.app/concept-3#mission"
+  },
+  "r4_executor": {
+    "status": "PARTIAL_BLOCKED_G08",
+    "interface": "PASS",
+    "local_process_executor": "PASS_NON_COGNITIVE",
+    "crash_resume": "PASS",
+    "executor_swap": "PASS",
+    "mission_state_survives_executor_crash": "PASS",
+    "cognitive_backend_verified": false,
+    "blocker": "Nenhum backend LLM independente, bubble-native e verificável foi confirmado."
+  },
+  "r5_sessions": {
+    "status": "PASS_INFRASTRUCTURE",
+    "durable_session_id": "PASS",
+    "checkpoint_sequence": "PASS",
+    "message_dedup": "PASS",
+    "interrupt_resume": "PASS",
+    "mailbox_continuity": "PASS",
+    "task_memory": "checkpoint_hash_only",
+    "institutional_memory": "external_governed",
+    "cognitive_session_claimed": false
+  },
+  "r6_workspace_capabilities": {
+    "status": "PASS_PROTOTYPE",
+    "workspace_isolation": "PASS",
+    "conflict_detection": "PASS",
+    "reconciliation_gate": "PASS",
+    "rollback": "PASS",
+    "capability_expiry": "PASS",
+    "capability_narrowing": "PASS",
+    "capability_revocation": "PASS",
+    "history_reconciliation": "PASS_APPEND_ONLY_CORRECTION"
+  },
+  "r7_adversarial_audit": {
+    "status": "PASS_TECHNICAL",
+    "cognitive": false,
+    "valid_packet": "PASS",
+    "rejection_classes": 9,
+    "receipt_sha256": "2ea745dbc4e36b3c16a83996487db8cab30c3c38891ee5d798a2b97b4c491286",
+    "cognitive_auditor": "BLOCKED_G08"
+  },
+  "publish_swarm": {
+    "status": "PASS",
+    "investigator_count": 15,
+    "cognitive_agents_claimed": false,
+    "selected_route": "Render Web Service",
+    "fallback": "Floot"
+  },
+  "r8_recovery": {
+    "status": "PASS_TECHNICAL_FRESH_CHAT_ACCEPTANCE_PENDING",
+    "clean_workspace": "PASS",
+    "journal_integrity": "PASS",
+    "mailbox_continuity": "PASS",
+    "task_reassign": "PASS",
+    "session_resume": "PASS",
+    "fresh_chat_real": "REQUIRES_SEPARATE_CHAT_PRODUCT_ACTION"
+  },
+  "r9_metrics": {
+    "status": "PASS_TELEMETRY",
+    "workers": "5/5 PASS",
+    "failure_rate": 0,
+    "peak_concurrency_observed": 5,
+    "queue_samples": 6,
+    "retries": 0,
+    "audit_rejection_rate": 0,
+    "capacity_probe": {
+      "workers": 6,
+      "pass": "6/6",
+      "unique_pids": 6,
+      "peak_concurrency": 6
+    },
+    "model_policy": "BLOCKED_G08_NO_BUBBLE_NATIVE_COGNITIVE_BACKEND"
+  },
+  "r10_release": {
+    "status": "STABLE_APPROVED",
+    "release": "2.0.0",
+    "human_gate": "APPROVED_BY_LEANDRO",
+    "approved_at": "2026-09-18T16:15:00-03:00",
+    "deferments": [
+      "G08/L02 bubble-native cognitive backend/auditor",
+      "M09 separate-chat acceptance",
+      "P05 V1 schema unavailable"
+    ],
+    "deferments_accepted": true,
+    "audit_package_sha256": "81ed3191c8113bf78f2999cc46586653f3dea5280f9ceefde470e8bd2b17b55d",
+    "local_chain_head": "6d8b858e5458a5fbb129065600348af288d73a6466add0b705ff08e77d6aa760"
+  }
+}
