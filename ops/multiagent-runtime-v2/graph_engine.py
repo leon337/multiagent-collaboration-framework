@@ -206,10 +206,23 @@ def replay_graph(events, graph_id: str) -> GraphProjection:
             node["status"] = "running"
             node["owner_id"] = payload["owner_id"]
             node["lease_id"] = payload["lease_id"]
+        elif event.event_type == "graph/node_receipt_recorded":
+            node = nodes.get(payload["node_id"])
+            if node is None or node["status"] != "running":
+                raise GraphTransitionError("invalid node receipt")
+            prior = node.get("pending_receipt_sha256")
+            if prior is not None and prior != payload["receipt_sha256"]:
+                raise GraphTransitionError("conflicting node receipt")
+            node["pending_receipt_sha256"] = payload["receipt_sha256"]
+            node["pending_evidence_refs"] = list(payload.get("evidence_refs", []))
+            node["receipt_actor_id"] = payload.get("actor_id")
         elif event.event_type == "graph/node_completed":
             node = nodes.get(payload["node_id"])
             if node is None or node["status"] != "running":
                 raise GraphTransitionError("invalid node completion")
+            pending = node.get("pending_receipt_sha256")
+            if pending is None or pending != payload["receipt_sha256"]:
+                raise GraphTransitionError("node completion missing matching persisted receipt")
             node["status"] = "completed"
             node["receipt_sha256"] = payload["receipt_sha256"]
         elif event.event_type == "graph/node_failed":
@@ -264,16 +277,40 @@ class GraphEngine:
             idempotency_key=f"graph:create:{definition.graph_id}",
         )
 
+        self._materialize_tasks(definition, actor)
+        return self.projection(definition.graph_id)
+
+    def _materialize_tasks(self, definition: GraphDefinition, actor: str) -> None:
         for node in definition.topological_order():
             task_id = node_task_id(definition.graph_id, node.node_id)
             blocked = [node_task_id(definition.graph_id, dep) for dep in node.blocked_by]
+            tasks = self.runtime.projection().tasks
+            existing = tasks.get(task_id)
+            if existing is not None:
+                if existing.get("subject") != node.subject or list(existing.get("blocked_by", [])) != blocked:
+                    raise GraphTransitionError(f"existing task {task_id} does not match graph definition")
+                continue
             self.runtime.create_task(task_id, node.subject, blocked, actor)
-        return self.projection(definition.graph_id)
+
+    def _definition_from_projection(self, graph: GraphProjection) -> GraphDefinition:
+        return GraphDefinition(
+            graph.graph_id,
+            tuple(
+                GraphNode(
+                    node_id=node_id,
+                    subject=node["subject"],
+                    blocked_by=tuple(node.get("blocked_by", [])),
+                    kind=node.get("kind", "task"),
+                )
+                for node_id, node in graph.nodes.items()
+            ),
+        )
 
     def start_graph(self, graph_id: str, actor: str) -> GraphProjection:
         projection = self.projection(graph_id)
         if projection.status != "created":
             raise GraphTransitionError("graph is not ready to start")
+        self._materialize_tasks(self._definition_from_projection(projection), actor)
         self.store.append(
             self.mission_id,
             "graph/started",
@@ -346,20 +383,46 @@ class GraphEngine:
         validate_graph_receipt(receipt, graph_id, node_id)
         graph = self.projection(graph_id)
         node = graph.nodes.get(node_id)
-        if node is None or node["status"] != "running":
+        if node is None:
+            raise GraphTransitionError("unknown graph node")
+        if node["status"] == "completed":
+            if node.get("receipt_sha256") == receipt["receipt_sha256"]:
+                return graph
+            raise GraphTransitionError("node already completed with different receipt")
+        if node["status"] != "running":
             raise GraphTransitionError("node is not running")
+        owner_id = node.get("owner_id")
+        if receipt.get("actor_id") != owner_id or actor != owner_id:
+            raise GraphReceiptError("receipt actor must match leased node owner")
+
+        self.store.append(
+            self.mission_id,
+            "graph/node_receipt_recorded",
+            actor,
+            {
+                "graph_id": graph_id,
+                "node_id": node_id,
+                "receipt_sha256": receipt["receipt_sha256"],
+                "evidence_refs": list(receipt["evidence_refs"]),
+                "actor_id": receipt["actor_id"],
+            },
+            idempotency_key=f"graph:node:receipt:{graph_id}:{node_id}:{receipt['receipt_sha256']}",
+        )
 
         task_id = node_task_id(graph_id, node_id)
         task = self.runtime.projection().tasks[task_id]
-        self.runtime.update_task(
-            task_id,
-            task["revision"],
-            actor,
-            status="completed",
-            owner_id=None,
-            lease_id=None,
-            lease_until=None,
-        )
+        if task["status"] != "completed":
+            if task.get("owner_id") != owner_id:
+                raise GraphTransitionError("task owner no longer matches graph node owner")
+            self.runtime.update_task(
+                task_id,
+                task["revision"],
+                actor,
+                status="completed",
+                owner_id=None,
+                lease_id=None,
+                lease_until=None,
+            )
         self.store.append(
             self.mission_id,
             "graph/node_completed",
@@ -398,6 +461,71 @@ class GraphEngine:
             idempotency_key=f"graph:node:fail:{graph_id}:{node_id}:{_sha(error)}",
         )
         return self.projection(graph_id)
+
+    def reconcile(self, graph_id: str, actor: str) -> dict[str, Any]:
+        repaired_started: list[str] = []
+        repaired_completed: list[str] = []
+        blocked_missing_receipt: list[str] = []
+
+        graph = self.projection(graph_id)
+        tasks = self.runtime.projection().tasks
+
+        for node_id, node in graph.nodes.items():
+            task = tasks.get(node_task_id(graph_id, node_id))
+            if task is None:
+                continue
+            if node["status"] == "pending" and task.get("status") == "leased":
+                owner_id = task.get("owner_id")
+                lease_id = task.get("lease_id")
+                if not owner_id or not lease_id:
+                    blocked_missing_receipt.append(node_id)
+                    continue
+                self.store.append(
+                    self.mission_id,
+                    "graph/node_started",
+                    actor,
+                    {
+                        "graph_id": graph_id,
+                        "node_id": node_id,
+                        "owner_id": owner_id,
+                        "lease_id": lease_id,
+                    },
+                    idempotency_key=f"graph:node:start:{graph_id}:{node_id}:{lease_id}",
+                )
+                repaired_started.append(node_id)
+
+        graph = self.projection(graph_id)
+        tasks = self.runtime.projection().tasks
+        for node_id, node in graph.nodes.items():
+            task = tasks.get(node_task_id(graph_id, node_id))
+            if task is None or node["status"] != "running":
+                continue
+            if task.get("status") == "completed":
+                receipt_sha = node.get("pending_receipt_sha256")
+                if not receipt_sha:
+                    blocked_missing_receipt.append(node_id)
+                    continue
+                self.store.append(
+                    self.mission_id,
+                    "graph/node_completed",
+                    actor,
+                    {
+                        "graph_id": graph_id,
+                        "node_id": node_id,
+                        "receipt_sha256": receipt_sha,
+                        "evidence_refs": list(node.get("pending_evidence_refs", [])),
+                    },
+                    idempotency_key=f"graph:node:complete:{graph_id}:{node_id}:{receipt_sha}",
+                )
+                repaired_completed.append(node_id)
+
+        return {
+            "graph_id": graph_id,
+            "repaired_started": repaired_started,
+            "repaired_completed": repaired_completed,
+            "blocked_missing_receipt": sorted(set(blocked_missing_receipt)),
+            "projection": self.projection(graph_id),
+        }
 
     def maybe_complete_graph(self, graph_id: str, actor: str) -> GraphProjection:
         graph = self.projection(graph_id)
