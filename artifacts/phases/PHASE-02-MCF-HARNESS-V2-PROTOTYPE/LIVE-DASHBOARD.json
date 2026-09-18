@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T08:05:00-03:00",
+  "updated_at": "2026-09-18T08:09:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -216,6 +216,12 @@
       "actor": "MESTRE",
       "type": "HISTORY_PIPELINE",
       "text": "History Pipeline v1 ativado: 8 eventos reais registrados automaticamente; suíte total 12/12 PASS."
+    },
+    {
+      "at": "2026-09-18T08:09:00-03:00",
+      "actor": "MESTRE",
+      "type": "HISTORY_E2E",
+      "text": "History Pipeline validado ponta a ponta: local → LIVE-DASHBOARD → Issue #234 → API Vercel."
     }
   ],
   "links": {
@@ -249,7 +255,7 @@
   },
   "history_pipeline": {
     "schema": "mcf_live_history/v1",
-    "status": "PASS_LOCAL_SYNCING",
+    "status": "PASS_E2E",
     "events_last_run": 8,
     "chain_head": "ab7f47da1f01ed91e28d3976956317cb5bce01a5584dde9e378229486adeca88",
     "guarantees": [
@@ -263,6 +269,8 @@
       "MESTRE team-run boundary",
       "worker results",
       "auditor verdict"
-    ]
+    ],
+    "cockpit_validation": "PASS",
+    "surface": "https://mcf-cockpit-live.vercel.app/concept-3#mission"
   }
 }
