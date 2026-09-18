@@ -392,7 +392,7 @@ class GraphEngine:
         if node["status"] != "running":
             raise GraphTransitionError("node is not running")
         owner_id = node.get("owner_id")
-        if receipt.get("actor_id") != owner_id or actor != owner_id:
+        if receipt.get("actor_id") != owner_id:
             raise GraphReceiptError("receipt actor must match leased node owner")
 
         self.store.append(
