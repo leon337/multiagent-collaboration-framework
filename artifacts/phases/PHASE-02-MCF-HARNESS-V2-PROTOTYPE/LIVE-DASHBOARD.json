@@ -2,7 +2,7 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T07:51:00-03:00",
+  "updated_at": "2026-09-18T08:05:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
@@ -18,7 +18,7 @@
     "local_workers": 5,
     "local_auditor": 1,
     "fanout_pass": "5/5",
-    "runtime_tests_pass": "7/7",
+    "runtime_tests_pass": "12/12",
     "cognitive_agents_claimed": false
   },
   "roadmap": [
@@ -210,6 +210,12 @@
       "actor": "MESTRE",
       "type": "LIVE_SURFACE",
       "text": "Concept 3 do mcf-cockpit-live definido como superfície viva oficial da missão; refresh automático a cada 60s."
+    },
+    {
+      "at": "2026-09-18T08:05:00-03:00",
+      "actor": "MESTRE",
+      "type": "HISTORY_PIPELINE",
+      "text": "History Pipeline v1 ativado: 8 eventos reais registrados automaticamente; suíte total 12/12 PASS."
     }
   ],
   "links": {
@@ -240,5 +246,23 @@
     "data_source": "/api/mcf -> GitHub REST public data",
     "mission_source": "Issue #234",
     "note": "Mission tab renders the full Issue #234 body; overview includes mission, checklist, GitHub timeline and agents."
+  },
+  "history_pipeline": {
+    "schema": "mcf_live_history/v1",
+    "status": "PASS_LOCAL_SYNCING",
+    "events_last_run": 8,
+    "chain_head": "ab7f47da1f01ed91e28d3976956317cb5bce01a5584dde9e378229486adeca88",
+    "guarantees": [
+      "append_only",
+      "hash_chain",
+      "idempotency",
+      "process_lock",
+      "deterministic_replay"
+    ],
+    "automatic_sources": [
+      "MESTRE team-run boundary",
+      "worker results",
+      "auditor verdict"
+    ]
   }
 }
