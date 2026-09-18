@@ -322,6 +322,7 @@ class Projection:
     delivered_messages: set[str]
     executions: dict[str, dict[str, Any]]
     tool_calls: dict[str, dict[str, Any]]
+    sessions: dict[str, dict[str, Any]]
 
 
 def _detect_cycle(tasks: dict[str, dict[str, Any]]) -> None:
@@ -352,6 +353,7 @@ def replay(events: Iterable[Event]) -> Projection:
     delivered: set[str] = set()
     executions: dict[str, dict[str, Any]] = {}
     tool_calls: dict[str, dict[str, Any]] = {}
+    sessions: dict[str, dict[str, Any]] = {}
     expected_seq = 1
 
     for event in events:
@@ -456,6 +458,50 @@ def replay(events: Iterable[Event]) -> Projection:
                 tool["result_sha256"] = p["result_sha256"]
             if "error_class" in p:
                 tool["error_class"] = p["error_class"]
+        elif event.event_type == "session/created":
+            sid = p["session_id"]
+            if sid in sessions:
+                raise ProjectionError(f"session {sid} already exists")
+            sessions[sid] = {
+                **p,
+                "status": "active",
+                "checkpoint_seq": 0,
+                "seen_message_ids": set(),
+                "resume_count": 0,
+            }
+        elif event.event_type == "session/checkpointed":
+            sid = p["session_id"]
+            session = sessions.get(sid)
+            if session is None:
+                raise ProjectionError(f"unknown session {sid}")
+            expected = int(session.get("checkpoint_seq", 0)) + 1
+            if int(p["checkpoint_seq"]) != expected:
+                raise ProjectionError(f"non-contiguous session checkpoint for {sid}")
+            session.update(p)
+        elif event.event_type == "session/message_seen":
+            sid = p["session_id"]
+            session = sessions.get(sid)
+            if session is None:
+                raise ProjectionError(f"unknown session {sid}")
+            mid = p["message_id"]
+            if mid in session["seen_message_ids"]:
+                raise ProjectionError(f"session message {mid} seen twice")
+            session["seen_message_ids"].add(mid)
+        elif event.event_type == "session/interrupted":
+            sid = p["session_id"]
+            session = sessions.get(sid)
+            if session is None or session["status"] != "active":
+                raise ProjectionError(f"invalid session interrupt for {sid}")
+            session["status"] = "interrupted"
+            session["interrupt_reason"] = p.get("reason")
+        elif event.event_type == "session/resumed":
+            sid = p["session_id"]
+            session = sessions.get(sid)
+            if session is None or session["status"] != "interrupted":
+                raise ProjectionError(f"invalid session resume for {sid}")
+            session["status"] = "active"
+            session["resume_count"] = int(session.get("resume_count", 0)) + 1
+            session["resume_executor_state_ref"] = p.get("executor_state_ref")
 
     return Projection(
         agents=agents,
@@ -464,6 +510,7 @@ def replay(events: Iterable[Event]) -> Projection:
         delivered_messages=delivered,
         executions=executions,
         tool_calls=tool_calls,
+        sessions=sessions,
     )
 
 
@@ -737,3 +784,104 @@ class MissionRuntime:
             {"message_id": message_id, "target_id": target_id},
             idempotency_key=f"message:delivered:{message_id}",
         )
+
+
+    def create_session(
+        self,
+        session_id: str,
+        agent_id: str,
+        executor_type: str,
+        actor: str,
+        task_id: str | None = None,
+    ) -> dict[str, Any]:
+        payload = {
+            "session_id": session_id,
+            "agent_id": agent_id,
+            "executor_type": executor_type,
+            "task_id": task_id,
+            "memory_policy": {
+                "task": "session_checkpoint_hash_only",
+                "institutional": "external_governed",
+            },
+        }
+        self.store.append(
+            self.mission_id,
+            "session/created",
+            actor,
+            payload,
+            idempotency_key=f"session:create:{session_id}",
+        )
+        return self.projection().sessions[session_id]
+
+    def checkpoint_session(
+        self,
+        session_id: str,
+        context_sha256: str,
+        actor: str,
+        *,
+        task_id: str | None = None,
+        executor_state_ref: str | None = None,
+    ) -> dict[str, Any]:
+        current = self.projection().sessions.get(session_id)
+        if current is None:
+            raise MissionError(f"unknown session {session_id}")
+        checkpoint_seq = int(current.get("checkpoint_seq", 0)) + 1
+        payload = {
+            "session_id": session_id,
+            "checkpoint_seq": checkpoint_seq,
+            "context_sha256": context_sha256,
+            "task_id": task_id if task_id is not None else current.get("task_id"),
+            "executor_state_ref": executor_state_ref,
+        }
+        self.store.append(
+            self.mission_id,
+            "session/checkpointed",
+            actor,
+            payload,
+            idempotency_key=f"session:checkpoint:{session_id}:{checkpoint_seq}",
+        )
+        return self.projection().sessions[session_id]
+
+    def mark_session_message(self, session_id: str, message_id: str, actor: str) -> dict[str, Any]:
+        if session_id not in self.projection().sessions:
+            raise MissionError(f"unknown session {session_id}")
+        self.store.append(
+            self.mission_id,
+            "session/message_seen",
+            actor,
+            {"session_id": session_id, "message_id": message_id},
+            idempotency_key=f"session:message:{session_id}:{message_id}",
+        )
+        return self.projection().sessions[session_id]
+
+    def interrupt_session(self, session_id: str, actor: str, reason: str = "interrupted") -> dict[str, Any]:
+        current = self.projection().sessions.get(session_id)
+        if current is None:
+            raise MissionError(f"unknown session {session_id}")
+        self.store.append(
+            self.mission_id,
+            "session/interrupted",
+            actor,
+            {"session_id": session_id, "reason": reason},
+            idempotency_key=f"session:interrupt:{session_id}:{int(current.get('resume_count', 0))}",
+        )
+        return self.projection().sessions[session_id]
+
+    def resume_session(
+        self,
+        session_id: str,
+        actor: str,
+        executor_state_ref: str | None = None,
+    ) -> dict[str, Any]:
+        current = self.projection().sessions.get(session_id)
+        if current is None:
+            raise MissionError(f"unknown session {session_id}")
+        next_resume = int(current.get("resume_count", 0)) + 1
+        self.store.append(
+            self.mission_id,
+            "session/resumed",
+            actor,
+            {"session_id": session_id, "executor_state_ref": executor_state_ref},
+            idempotency_key=f"session:resume:{session_id}:{next_resume}",
+        )
+        return self.projection().sessions[session_id]
