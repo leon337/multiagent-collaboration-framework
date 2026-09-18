@@ -1,12 +1,12 @@
 {
   "name": "mcf-google-photos-bridge",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "engines": { "node": ">=20" },
   "scripts": {
     "start": "node src/server.mjs",
-    "check": "node --check src/server.mjs && node --check src/google.mjs && node --check src/store.mjs && node --check src/state.mjs && node --test tests/*.test.mjs"
+    "check": "node --check src/server.mjs && node --check src/google.mjs && node --check src/store.mjs && node --check src/state.mjs && node --check src/auth.mjs && node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": "1.7.5",
