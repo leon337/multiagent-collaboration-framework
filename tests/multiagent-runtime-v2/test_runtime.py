@@ -148,3 +148,34 @@ class RuntimeV2Tests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FailureAndSoakTests(unittest.TestCase):
+    def test_storage_failure_injection_leaves_no_false_green(self):
+        with tempfile.TemporaryDirectory() as d:
+            store = MissionStore(Path(d) / "failure.db")
+            store.conn.execute(
+                "CREATE TRIGGER fail_events BEFORE INSERT ON mission_events "
+                "BEGIN SELECT RAISE(ABORT,'simulated storage failure'); END;"
+            )
+            rt = MissionRuntime(store, "M")
+            with self.assertRaises(Exception):
+                rt.create_task("x", "X", [], "mestre")
+            self.assertEqual(store.events("M"), [])
+            store.close()
+
+    def test_soak_reopen_replay_fifty_events(self):
+        with tempfile.TemporaryDirectory() as d:
+            db = Path(d) / "soak.db"
+            store = MissionStore(db)
+            rt = MissionRuntime(store, "M")
+            for i in range(25):
+                task = rt.create_task(f"t{i}", f"T{i}", [], "mestre")
+                rt.update_task(f"t{i}", task["revision"], "mestre", status="completed")
+                if i % 5 == 4:
+                    store.close()
+                    store = MissionStore(db)
+                    rt = MissionRuntime(store, "M")
+                    self.assertEqual(len(rt.projection().tasks), i + 1)
+            self.assertEqual(len(store.events("M")), 50)
+            store.close()
