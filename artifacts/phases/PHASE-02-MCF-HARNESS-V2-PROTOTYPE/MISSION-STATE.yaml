@@ -64,9 +64,13 @@ current_evidence:
   local_worker_count: 5
   local_auditor_count: 1
   fanout_workers_pass: 5
-  runtime_tests_pass: 12
+  runtime_tests_pass: 16
   live_history_events_last_run: 8
   live_history_cockpit_validation: PASS
+  executor_interface: PASS
+  local_process_executor: PASS_NON_COGNITIVE
+  executor_crash_resume: PASS
+  executor_swap_recovery: PASS
   notebook_used: false
   brainbase_used: false
   cognitive_agents_claimed: false
@@ -83,6 +87,7 @@ next_gate:
 
 blocked_or_unresolved:
   - no_cognitive_llm_executor_installed_in_current_sandbox
+  - no_verified_bubble_native_independent_cognitive_backend_available
   - agent_sessions_not_yet_durable
   - workspace_isolation_not_yet_implemented
   - audit_is_technical_not_yet_cognitive
