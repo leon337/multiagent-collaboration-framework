@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import platform
@@ -50,16 +51,28 @@ def capabilities() -> dict[str, Any]:
         "jq": shutil.which("jq"),
         "ollama": shutil.which("ollama"),
         "llama_cli": shutil.which("llama-cli"),
+        "dsh": shutil.which("dsh"),
+        "deepseek_harness_sdk": importlib.util.find_spec("deepseek_harness") is not None,
+        "dsh_home_present": bool(os.getenv("DSH_HOME")),
+        "dsh_agent_team_ready_flag": os.getenv("MCF_DSH_AGENT_TEAM_READY", "").strip().lower() in {"1", "true", "yes"},
         "network_dns_github": network_dns_ok(),
         "openai_api_key_present": bool(os.getenv("OPENAI_API_KEY")),
         "sandbox_persistent": False,
     }
+    data["dsh_agent_team_executor_available"] = bool(
+        data["deepseek_harness_sdk"]
+        and data["dsh_home_present"]
+        and data["dsh_agent_team_ready_flag"]
+        and (bool(os.getenv("DEEPSEEK_API_KEY")) or bool(os.getenv("DEEPSEEK_BASE_URL")))
+    )
     data["local_model_executor_available"] = bool(data["ollama"] or data["llama_cli"])
     data["remote_api_executor_possible"] = bool(
         data["network_dns_github"] and data["openai_api_key_present"]
     )
     data["model_executor_available"] = bool(
-        data["local_model_executor_available"] or data["remote_api_executor_possible"]
+        data["dsh_agent_team_executor_available"]
+        or data["local_model_executor_available"]
+        or data["remote_api_executor_possible"]
     )
     return data
 
@@ -124,9 +137,15 @@ def import_contract(mission: str, file_path: str) -> dict[str, Any]:
 def prepare_run(mission: str) -> dict[str, Any]:
     caps = capabilities()
     contract = load_contract(mission)
-    if caps["model_executor_available"]:
+    if caps["dsh_agent_team_executor_available"]:
+        status = "READY_FOR_DSH_AGENT_TEAM_EXECUTION"
+        next_action = "execute_deepseek_harness_agent_team"
+    elif caps["local_model_executor_available"]:
         status = "READY_FOR_SANDBOX_MODEL_EXECUTION"
         next_action = "execute_role_bound_agents"
+    elif caps["remote_api_executor_possible"]:
+        status = "READY_FOR_REMOTE_API_EXECUTION"
+        next_action = "execute_role_bound_agents_via_remote_api"
     else:
         status = "SANDBOX_READY_MODEL_EXECUTOR_UNAVAILABLE"
         next_action = "use_connected_agent_executor_without_claiming_local_model_execution"
@@ -169,6 +188,7 @@ def emit_checkpoint(mission: str) -> dict[str, Any]:
         "sandbox_persistent": False,
         "anti_simulation": run["anti_simulation"],
         "model_executor_available": run["capabilities"]["model_executor_available"],
+        "dsh_agent_team_executor_available": run["capabilities"].get("dsh_agent_team_executor_available", False),
         "next_action": run["next_action"],
         "checkpoint_sha256": "",
     }
