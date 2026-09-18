@@ -59,11 +59,11 @@ class BoundedLoopControllerTests(unittest.TestCase):
         state = self.loop.create("L", LoopPolicy(1, 60), "mestre")
         now = state.started_at + 1
         self.loop.begin_iteration("L", "worker", now=now)
-        self.loop.validation_failed("L", "validator", ["e://fail"], now=now + 1)
-        self.loop.repair_completed("L", "repair", ["e://repair"], now=now + 2)
-        with self.assertRaises(LoopLimitExceeded):
-            self.loop.begin_iteration("L", "worker", now=now + 3)
-        self.assertEqual(self.loop.projection("L").failure_reason, "max_iterations")
+        failed = self.loop.validation_failed("L", "validator", ["e://fail"], now=now + 1)
+        self.assertEqual(failed.status, "failed")
+        self.assertEqual(failed.failure_reason, "max_iterations")
+        with self.assertRaises(LoopTransitionError):
+            self.loop.repair_completed("L", "repair", ["e://repair"], now=now + 2)
 
     def test_timeout_exhausts_fail_closed(self):
         state = self.loop.create("L", LoopPolicy(3, 5), "mestre")
