@@ -43,6 +43,11 @@ parallel_workstreams:
 
 communications:
   human_channel: VoiceHub
+  canonical_repository: leon337/voicehub-linux
+  canonical_branch: main
+  preferred_endpoint: /api/speech/enqueue
+  radio_fx_supported: true
+  radio_fx_default: false
   speaker_identity: "Mestre — missão Controle de Ponto"
   report_on_significant_advance: true
   report_fields:
@@ -82,7 +87,18 @@ validation:
 
 integration_gate:
   mcf_pr: 225
-  mcf_pr_state: OPEN_DRAFT
-  merge_authorized: false
+  mcf_pr_state: MERGED
+  mcf_merge_commit: 55783ce2b32bdc498c3382c85935630a8519dab7
+  merge_authorized: true
   controle_ponto_pr: 32
   controle_ponto_merge_authorized: false
+
+voicehub_persistence:
+  repository: leon337/voicehub-linux
+  main_commit: c483a59dba342a83ab1af31c3cee75a97fdaee14
+  visibility: PRIVATE
+  ci_run: 35321328130
+  ci_result: SUCCESS
+  radio_fx: PERSISTED
+  speech_queue: PERSISTED
+  installer: PERSISTED
