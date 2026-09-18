@@ -26,6 +26,7 @@ executor:
     allow_simulated_agent_credit: false
 
   executor_selection:
+    - deepseek_harness_agent_teams_if_verified
     - sandbox_local_model_if_verified
     - connected_authorized_agent_executor
     - mission_authorized_external_executor
