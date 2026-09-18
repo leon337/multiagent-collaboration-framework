@@ -38,3 +38,13 @@ governance:
   automatic_merge: false
   false_green_allowed: false
   voice_reporting: VOICEHUB_IDENTIFIED_MESTRE
+
+communications:
+  voicehub:
+    canonical_repository: leon337/voicehub-linux
+    default_branch: main
+    endpoint: http://127.0.0.1:8788
+    preferred_api: /api/speech/enqueue
+    radio_fx_supported: true
+    radio_fx_default: false
+    identified_speaker: "Mestre — missão Controle de Ponto"
