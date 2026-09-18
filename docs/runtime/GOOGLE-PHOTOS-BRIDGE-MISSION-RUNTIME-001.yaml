@@ -1,0 +1,62 @@
+mission_id: GOOGLE-PHOTOS-BRIDGE-MCP-APP-001
+runtime_id: GOOGLE-PHOTOS-BRIDGE-MISSION-RUNTIME-001
+timestamp_reference: 2026-09-18
+human_authority: LEANDRO
+orchestrator: MESTRE
+repository: leon337/multiagent-collaboration-framework
+base_branch: main
+base_sha: b969df76544e69cb2ff7833a5b65bd231d4db7aa
+working_branch: feat/google-photos-bridge-mcp-app-20260918
+
+objective: >-
+  Build a mobile-first Google Photos Bridge for ChatGPT that renders its helper
+  inside the conversation, uses official Google OAuth and Google Photos Picker,
+  and exposes only user-selected media for model analysis.
+
+current_phase: STAGING_SETUP_MODE
+production_authorized: false
+merge_authorized: false
+
+implemented:
+  mcp_streamable_http: true
+  inline_mcp_app_ui: true
+  mobile_first_ui: true
+  google_oauth_flow: true
+  google_photos_picker_flow: true
+  selected_media_listing: true
+  selected_photo_bytes_to_model: true
+  oauth_state_hmac_ttl: true
+  session_ownership_checks: true
+  ephemeral_token_store: true
+  setup_mode_without_google_credentials: true
+
+validation:
+  local_npm_check: PASS
+  local_tests_passed: 3
+  live_google_oauth: NOT_RUN_MISSING_GOOGLE_CLIENT
+  live_picker: NOT_RUN_MISSING_GOOGLE_CLIENT
+  live_chatgpt_plugin_attachment: NOT_RUN
+
+restrictions:
+  - DO_NOT_TOUCH_EXISTING_MCF_PRODUCTION_SERVICES
+  - DO_NOT_COMMIT_GOOGLE_CLIENT_SECRET_OR_OAUTH_TOKENS
+  - DO_NOT_CLAIM_FULL_GOOGLE_PHOTOS_LIBRARY_ACCESS
+  - USER_SELECTION_IN_OFFICIAL_PICKER_IS_REQUIRED
+  - DO_NOT_MERGE_WITHOUT_APPLICABLE_MCF_REVIEW
+  - NO_PAID_AI_API_REQUIRED
+
+external_gate:
+  state: REQUIRED
+  owner: LEANDRO
+  reason: >-
+    A Google Cloud OAuth Web client must exist and the Google Photos Picker API
+    must be enabled before live account authorization can occur.
+  required_values:
+    - GOOGLE_CLIENT_ID
+    - GOOGLE_CLIENT_SECRET
+  redirect_uri_source: PUBLIC_BASE_URL/oauth/google/callback
+
+next_action: >-
+  Publish a new isolated free Render service from the working branch in setup
+  mode, validate its public health/setup endpoints, then create a draft PR with
+  evidence. Do not change existing MCF production or staging services.
