@@ -19,6 +19,7 @@ def load():
     data.setdefault("enabled", False)
     data.setdefault("mission_active", False)
     data.setdefault("mission_state", "IDLE")
+    data.setdefault("project", "MCF")
     data.setdefault("mission", "MCF")
     data.setdefault("phase", "idle")
     data.setdefault("message", "Sem missão ativa.")
@@ -40,6 +41,7 @@ def save(data):
 def main():
     p = argparse.ArgumentParser(description="Controla o AUGUSTO Voice Reporter.")
     p.add_argument("message", nargs="?")
+    p.add_argument("--project")
     p.add_argument("--mission")
     p.add_argument("--phase")
     p.add_argument("--pause", action="store_true")
@@ -68,6 +70,8 @@ def main():
     if args.cancel:
         data["mission_active"] = False
         data["mission_state"] = "CANCELLED"
+    if args.project:
+        data["project"] = args.project
     if args.mission:
         data["mission"] = args.mission
     if args.phase:
@@ -77,7 +81,7 @@ def main():
 
     changed = any([
         args.pause, args.resume, args.active, args.complete, args.fail, args.cancel,
-        args.mission, args.phase, args.message
+        args.project, args.mission, args.phase, args.message
     ])
     if changed:
         save(data)
