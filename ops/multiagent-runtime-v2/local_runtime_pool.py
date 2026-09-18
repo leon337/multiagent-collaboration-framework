@@ -82,6 +82,8 @@ class LocalRuntimePool:
         if target_slots < 1:
             raise ValueError("target_slots must be positive")
         current = self.projection()
+        if target_slots < len(current.active):
+            raise RuntimePoolError("cannot shrink pool below active slot count")
         version = current.last_event_seq + 1
         self.store.append(
             self.mission_id,
@@ -105,7 +107,10 @@ class LocalRuntimePool:
             if state.status != "active":
                 raise RuntimePoolError("pool is not configured")
             if run_id in state.active:
-                return dict(state.active[run_id])
+                existing = state.active[run_id]
+                if existing["task_id"] != task_id or existing["worker_id"] != worker_id:
+                    raise RuntimePoolError("run_id reused with different task or worker")
+                return dict(existing)
             if len(state.active) >= state.target_slots:
                 raise RuntimePoolBackpressure("runtime pool has no free slots")
             used = {item["slot"] for item in state.active.values()}
