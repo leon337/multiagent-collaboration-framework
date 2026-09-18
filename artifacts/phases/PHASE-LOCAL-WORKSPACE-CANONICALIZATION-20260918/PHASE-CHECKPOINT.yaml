@@ -1,0 +1,17 @@
+mission: MCF-LOCAL-WORKSPACE-CANONICALIZATION-20260918
+state: ENTREGUE
+authority: LEANDRO
+coordinator: MESTRE
+execution_boundary: CHATGPT_BUBBLE_LOCAL_SANDBOX
+cloud_runtime_path: /mnt/data/mcf-harness-v2-local
+local_host_scope: leo-N43SM
+canonical_execution_workspace: /home/leo/mcf-workspaces/leo/multiagent-collaboration-framework
+github_main_observed: 47315de99c0304c7f63a7a98f70f5813bb65c957
+fanout_workers: 5
+fanout_pass: 5
+audit: PASS
+notebook_runtime: false
+brainbase_runtime: false
+cognitive_agents_claimed: false
+production_touched: false
+human_action_required: false
