@@ -15,8 +15,15 @@ test("OAuth state rejects tamper", () => {
 
 test("session ownership is enforced", () => {
   const store = new EphemeralStore();
-  const id = store.createConnection();
+  const id = store.createConnection("user-a");
   store.saveSession(id, { id: "s1", pickerUri: "https://photos.google.com/picker/x" });
   assert.doesNotThrow(() => store.assertSessionOwner(id, "s1"));
   assert.throws(() => store.assertSessionOwner("other", "s1"));
+});
+
+test("connection ownership is enforced", () => {
+  const store = new EphemeralStore();
+  const id = store.createConnection("user-a");
+  assert.doesNotThrow(() => store.assertConnectionOwner("user-a", id));
+  assert.throws(() => store.assertConnectionOwner("user-b", id));
 });
