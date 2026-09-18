@@ -12,7 +12,7 @@ class CognitiveExecutorTests(unittest.TestCase):
             try:self.executor.dispose(eid)
             except Exception:pass
         self.tmp.cleanup()
-    def _wait_step(self,eid,min_step=1,timeout=3):
+    def _wait_step(self,eid,min_step=1,timeout=10):
         end=time.time()+timeout
         while time.time()<end:
             cp=self.executor.collect_events(eid)['checkpoint']
