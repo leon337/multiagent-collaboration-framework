@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
+  "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
+  "updated_at": "2026-09-18T07:20:00-03:00",
+  "authority_human": "LEANDRO",
+  "coordinator": "MESTRE",
+  "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
+  "status": "ACTIVE",
+  "current_phase": "R4 — Cognitive Executor Local",
+  "runtime_flags": {
+    "notebook_runtime": false,
+    "brainbase_runtime": false,
+    "github_role": "persistence_versioning_audit",
+    "vercel_role": "live_observability_dashboard"
+  },
+  "evidence": {
+    "local_workers": 5,
+    "local_auditor": 1,
+    "fanout_pass": "5/5",
+    "runtime_tests_pass": "7/7",
+    "cognitive_agents_claimed": false
+  },
+  "roadmap": [
+    {
+      "id": "R0",
+      "name": "Governança, escopo e continuidade",
+      "status": "PASS"
+    },
+    {
+      "id": "R1",
+      "name": "Engenharia reversa DSH + Agent Teams",
+      "status": "PASS"
+    },
+    {
+      "id": "R2",
+      "name": "Núcleo persistente Harness V2",
+      "status": "PASS_PROTOTYPE"
+    },
+    {
+      "id": "R3",
+      "name": "Time técnico local na bolha",
+      "status": "PASS"
+    },
+    {
+      "id": "R4",
+      "name": "Executor Cognitivo Local Plugável",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "id": "R5",
+      "name": "Sessões persistentes por agente",
+      "status": "PENDING"
+    },
+    {
+      "id": "R6",
+      "name": "Workspace isolado + Capability Tokens",
+      "status": "PARTIAL"
+    },
+    {
+      "id": "R7",
+      "name": "Auditor Cognitivo Adversarial",
+      "status": "PENDING"
+    },
+    {
+      "id": "R8",
+      "name": "Recovery entre chats e executor swap",
+      "status": "PARTIAL"
+    },
+    {
+      "id": "R9",
+      "name": "Avaliação, desempenho e auto-otimização",
+      "status": "PENDING"
+    },
+    {
+      "id": "R10",
+      "name": "Release estável Bubble Multi-Agent Runtime",
+      "status": "PENDING"
+    }
+  ],
+  "checklist": {
+    "completed": 67,
+    "partial": 3,
+    "pending": 52,
+    "blocked": 0,
+    "current_block": [
+      "G01",
+      "G02",
+      "G03",
+      "G04",
+      "G05",
+      "G06",
+      "G07",
+      "G08"
+    ]
+  },
+  "agents": [
+    {
+      "id": "mestre",
+      "name": "MESTRE",
+      "role": "coordenação e síntese",
+      "state": "ACTIVE"
+    },
+    {
+      "id": "worker-journal",
+      "name": "worker-journal",
+      "role": "journal/projection",
+      "state": "PASS"
+    },
+    {
+      "id": "worker-recovery",
+      "name": "worker-recovery",
+      "role": "recovery/leases",
+      "state": "PASS"
+    },
+    {
+      "id": "worker-observability",
+      "name": "worker-observability",
+      "role": "receipts/observability",
+      "state": "PASS"
+    },
+    {
+      "id": "worker-tests",
+      "name": "worker-tests",
+      "role": "unit/integration tests",
+      "state": "PASS"
+    },
+    {
+      "id": "worker-security",
+      "name": "worker-security",
+      "role": "security/capabilities",
+      "state": "PASS"
+    },
+    {
+      "id": "auditor-local",
+      "name": "auditor-local",
+      "role": "independent technical audit",
+      "state": "PASS_WITH_GAPS"
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-09-18T06:02:00-03:00",
+      "actor": "MESTRE",
+      "type": "MISSION",
+      "text": "Criada Issue #234 para engenharia reversa DeepSeek Harness + Agent Teams."
+    },
+    {
+      "at": "2026-09-18T06:14:00-03:00",
+      "actor": "MESTRE",
+      "type": "RESEARCH",
+      "text": "Concluída engenharia reversa e criada arquitetura candidata do Harness V2."
+    },
+    {
+      "at": "2026-09-18T06:31:00-03:00",
+      "actor": "MESTRE",
+      "type": "PROTOTYPE",
+      "text": "Criado protótipo event-sourced com SQLite/WAL, replay, DAG, mailbox e leases."
+    },
+    {
+      "at": "2026-09-18T06:54:00-03:00",
+      "actor": "worker-team",
+      "type": "TEST",
+      "text": "Primeiro fan-out local: 5/5 workers PASS; auditoria técnica concluída."
+    },
+    {
+      "at": "2026-09-18T07:03:00-03:00",
+      "actor": "MESTRE",
+      "type": "HARDENING",
+      "text": "Adicionados DAG readiness, task capabilities, hash-chain e heartbeat de lease."
+    },
+    {
+      "at": "2026-09-18T07:07:00-03:00",
+      "actor": "worker-tests",
+      "type": "TEST",
+      "text": "Segundo ciclo local: 7/7 testes PASS."
+    },
+    {
+      "at": "2026-09-18T07:12:00-03:00",
+      "actor": "MESTRE",
+      "type": "GOVERNANCE",
+      "text": "Persistidos ROADMAP, CHECKLIST, MISSION-STATE e manifesto SHA-256."
+    },
+    {
+      "at": "2026-09-18T07:20:00-03:00",
+      "actor": "MESTRE",
+      "type": "DASHBOARD",
+      "text": "Iniciada publicação do painel vivo na Vercel."
+    }
+  ],
+  "links": {
+    "issue": "https://github.com/leon337/multiagent-collaboration-framework/issues/234",
+    "prototype_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/236",
+    "repo": "https://github.com/leon337/multiagent-collaboration-framework"
+  }
+}
