@@ -41,9 +41,16 @@
 | Signing-key theft | local file mode 0600 | partial; host compromise remains |
 | Cross-node split brain | not solved by one-host file locks | residual |
 | External anchor rollback | no external immutable anchor selected | residual |
-| Secret rotation/revocation lifecycle | name allowlist only | residual |
+| Secret rotation/revocation lifecycle | ephemeral lease + TTL + revoke + execution-scoped capability binding | implemented locally |
 | Malicious binary/tool output | text trust-boundary sanitizer only | residual |
 
 ## Residual risks
 
 The 2.1 hardening is explicitly **single-host process-safe**, not a distributed consensus system. File locks do not provide cross-node mutual exclusion. External immutable anchoring and full secret-provider lifecycle remain future work.
+
+
+## Secret lifecycle boundary
+
+The 2.1 runtime now supports policy-gated ephemeral secret leases and explicit revocation. Secret values are never part of Journal/receipt metadata, and access requires a task/execution capability named `secret:<SECRET_NAME>`.
+
+Residual: a managed external secret service with organizational rotation/audit policy is not selected. The current `EnvSecretProvider` is explicitly mapped and single-host; it is not a replacement for Vault/OpenBao/cloud secret managers.
