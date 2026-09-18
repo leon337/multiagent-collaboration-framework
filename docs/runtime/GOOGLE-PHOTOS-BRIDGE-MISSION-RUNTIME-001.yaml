@@ -143,3 +143,37 @@ checkpoint_2026_09_18_v0_4:
       - PKCE S256
       - protected resource audience binding
       - enable MCP_AUTH_ENABLED only after validation
+
+
+checkpoint_2026_09_18_v0_4_1:
+  execution_environment: CHATGPT_SANDBOX
+  version: 0.4.1
+  sandbox_tests:
+    total: 15
+    passed: 15
+    failed: 0
+  render:
+    deploy_id: dep-damglk740ujc73asgc40
+    commit: 18fb587ec52100f7f7ba6c2e04574f94d23961e0
+    status: LIVE
+    clear_cache_redeploy: true
+    build_tests: 15_PASS_0_FAIL
+    npm_audit_vulnerabilities: 0
+    runtime_evidence:
+      instance: srv-damfure7bikc73bgu1rg-5zbth
+      startup: "Google Photos Bridge v0.4.1 listening on :10000 deploy=18fb587ec52100f7f7ba6c2e04574f94d23961e0"
+  reconciliation:
+    previous_version_log_anomaly: RESOLVED
+    explanation: >-
+      The previous 0.3.0 log line belonged to an older instance during rollout.
+      V0.4.1 now emits explicit runtime version and deploy SHA and has been
+      confirmed live by Render.
+  current_gate:
+    id: GOOGLE_AUTH_PLATFORM
+    owner: LEANDRO
+    required:
+      - enable Google Photos Picker API
+      - create OAuth Web client
+      - register redirect URI https://mcf-google-photos-bridge.onrender.com/oauth/google/callback
+  merge_authorized: false
+  production_authorized: false
