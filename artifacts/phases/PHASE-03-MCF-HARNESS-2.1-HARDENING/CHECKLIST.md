@@ -61,3 +61,14 @@ Legend: `[x]` locally validated · `[~]` partial/CI pending · `[ ]` pending.
 - [x] metadata-only audit record;
 - [x] execution + agent + task + named capability binding;
 - [x] secret value never included in audit metadata.
+
+
+## Lifecycle / provisioning
+- [x] F05 executor_ref durable in projection;
+- [x] provisioning reconciliation after restart;
+- [x] executor_ref mismatch fails closed;
+- [x] contradictory settled observation fails closed;
+- [x] missing observation remains provisioning/pending;
+- [x] failed-agent name remains permanently reserved;
+- [x] identical provision retry is idempotent;
+- [x] reconciliation evidence_ref persisted.
