@@ -13,7 +13,7 @@ import { createMcpAuthMiddleware, loadMcpAuthConfig, protectedResourceMetadata }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WEB_FILE = path.join(__dirname, "../web/mcp-app.html");
-const APP_VERSION = "0.4.4";
+const APP_VERSION = "0.4.5";
 const DEPLOY_SHA = process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || null;
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || "").replace(/\/$/, "");
@@ -255,7 +255,7 @@ app.get("/setup/google-cloud", (_req, res) => {
   const keyId = "391428cc7b858455395cae7cb9971588112181745e324808c7d0a69908d0a581";
   const publicKeyPem = "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAzpnqqzM6TFqRjLAb3AjZ\n+jctjNZ8IS8zqtJ+sGiu31aXGaZHpPL8i9VsZcs9kxMbsXhJU4BpyUTzQQFgpAFw\nc1wMqhhJ0n2OBtu7V6KUv3bWzjLwcLf9tauwNxcwzUXzVhM1xdGhyKHonYgc8GxH\nGaS1SJxofBZNUHlGriSvJZGasnHQufwXpT1XwOuc0RCt1CxbqXtL+mitGBhMSHYG\n1UmClXEXRipPcFcg9mhpwPzaA+Z7qqKLRxfVrMleIP75CLzKhEi1oAvaldiDTpih\nvQdHy7UbM4072ypEPEpAh/MAW1tI9gqVENgR5xX7VHPd0/koLW9+xNSvmGT/MXTz\n75gHwaRnXisAbK+qQiphn4B4pxqZ7XaU4TAQO7CINRCb/sKe64cLaRdF3fDfjFVz\nKxnOQ8+u0xDLEM7iQMT3KESKH8WDCjuT7/qXvlajQVMBl+U626RfSTGc/aB7QOAW\n2ps4NtbZiDlhr60cLaM1ipceB1UFc+EuO2D6kz7Sx3ezAgMBAAE=\n-----END PUBLIC KEY-----";
   const apiUrl = "https://console.cloud.google.com/apis/library/photospicker.googleapis.com?project=" + encodeURIComponent(projectId);
-  const clientsUrl = "https://console.cloud.google.com/auth/clients?project=" + encodeURIComponent(projectId);
+  const clientsUrl = "https://console.cloud.google.com/auth/clients?project=" + encodeURIComponent(projectId);\n  const audienceUrl = "https://console.cloud.google.com/auth/audience?project=" + encodeURIComponent(projectId);
   res.type("html").send(`<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Configurar Google Photos Bridge</title>
@@ -288,8 +288,19 @@ code,textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}textarea{w
 </section>
 
 <section class="card">
-<h2>3. Entregar as credenciais com segurança</h2>
-<p>Depois que o Google criar o cliente, cole abaixo o <strong>Client ID</strong> e o <strong>Client Secret</strong>. A criptografia acontece no seu telefone com RSA-OAEP/SHA-256 antes de sair desta página.</p>
+<h2>3. Adicionar sua conta como usuário de teste</h2>
+<p>Como o app está em <strong>Testing</strong>, abra <strong>Audience</strong> e confirme que sua própria conta Google está na lista de <strong>Test users</strong>. Não mude para produção agora.</p>
+<a class="btn" href="${audienceUrl}" target="_blank" rel="noopener">Abrir Audience / Test users</a>
+</section>
+
+<section class="card">
+<h2>4. Entregar as credenciais com segurança</h2>
+<p>Você já baixou o JSON do cliente OAuth. Selecione esse arquivo abaixo. O navegador vai ler somente <strong>client_id</strong>, <strong>client_secret</strong>, <strong>project_id</strong> e <strong>redirect_uris</strong>, validar o callback e criptografar as credenciais no seu telefone antes de você enviar qualquer coisa para o chat.</p>
+<label>Arquivo JSON baixado do Google</label>
+<input id="jsonfile" type="file" accept=".json,application/json">
+<p id="jsonstatus" class="muted">Nenhum arquivo selecionado.</p>
+<hr style="border:0;border-top:1px solid #2a3558;margin:16px 0">
+<p class="muted">Fallback manual, caso o seletor de arquivo não funcione:</p>
 <label>Client ID</label><input id="cid" autocomplete="off" spellcheck="false">
 <label>Client Secret</label><input id="csecret" type="password" autocomplete="off" spellcheck="false">
 <button id="encrypt">Criptografar para o Mestre</button>
@@ -302,7 +313,7 @@ code,textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}textarea{w
 <script>
 const callback="https://mcf-google-photos-bridge.onrender.com/oauth/google/callback";
 const publicKeyPem="-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAzpnqqzM6TFqRjLAb3AjZ\n+jctjNZ8IS8zqtJ+sGiu31aXGaZHpPL8i9VsZcs9kxMbsXhJU4BpyUTzQQFgpAFw\nc1wMqhhJ0n2OBtu7V6KUv3bWzjLwcLf9tauwNxcwzUXzVhM1xdGhyKHonYgc8GxH\nGaS1SJxofBZNUHlGriSvJZGasnHQufwXpT1XwOuc0RCt1CxbqXtL+mitGBhMSHYG\n1UmClXEXRipPcFcg9mhpwPzaA+Z7qqKLRxfVrMleIP75CLzKhEi1oAvaldiDTpih\nvQdHy7UbM4072ypEPEpAh/MAW1tI9gqVENgR5xX7VHPd0/koLW9+xNSvmGT/MXTz\n75gHwaRnXisAbK+qQiphn4B4pxqZ7XaU4TAQO7CINRCb/sKe64cLaRdF3fDfjFVz\nKxnOQ8+u0xDLEM7iQMT3KESKH8WDCjuT7/qXvlajQVMBl+U626RfSTGc/aB7QOAW\n2ps4NtbZiDlhr60cLaM1ipceB1UFc+EuO2D6kz7Sx3ezAgMBAAE=\n-----END PUBLIC KEY-----";
-const keyId="391428cc7b858455395cae7cb9971588112181745e324808c7d0a69908d0a581";
+const keyId="391428cc7b858455395cae7cb9971588112181745e324808c7d0a69908d0a581";\nconst projectId="our-rock-308910";
 function pemToBuf(pem){
   const b64=pem.replace(/-----BEGIN PUBLIC KEY-----|-----END PUBLIC KEY-----|\s/g,"");
   const bin=atob(b64); const out=new Uint8Array(bin.length);
@@ -314,22 +325,53 @@ function b64url(buf){
   for(const b of bytes) s+=String.fromCharCode(b);
   return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 }
-document.getElementById("encrypt").onclick=async()=>{
-  const cid=document.getElementById("cid").value.trim();
-  const sec=document.getElementById("csecret").value.trim();
+async function encryptCredentials(cid,sec,project=""){
   const st=document.getElementById("status");
-  if(!cid||!sec){st.textContent="Preencha Client ID e Client Secret.";st.className="warn";return}
+  if(!cid||!sec){st.textContent="Client ID ou Client Secret ausente.";st.className="warn";return}
   try{
     const key=await crypto.subtle.importKey("spki",pemToBuf(publicKeyPem),{name:"RSA-OAEP",hash:"SHA-256"},false,["encrypt"]);
-    const payload=new TextEncoder().encode(JSON.stringify({v:1,key_id:keyId,client_id:cid,client_secret:sec,created_at:new Date().toISOString()}));
+    const payload=new TextEncoder().encode(JSON.stringify({v:1,key_id:keyId,client_id:cid,client_secret:sec,project_id:project||projectId}));
     const encrypted=await crypto.subtle.encrypt({name:"RSA-OAEP"},key,payload);
     document.getElementById("cipher").value="GPB1."+keyId+"."+b64url(encrypted);
     document.getElementById("copy").disabled=false;
     document.getElementById("cid").value="";
     document.getElementById("csecret").value="";
-    st.textContent="Credenciais criptografadas no dispositivo. Agora copie somente o pacote GPB1 e envie na conversa.";
+    st.textContent="Credenciais criptografadas no dispositivo. Copie somente o pacote GPB1 e envie na conversa.";
     st.className="ok";
   }catch(e){st.textContent="Falha ao criptografar: "+e.message;st.className="warn"}
+}
+
+document.getElementById("jsonfile").onchange=async(ev)=>{
+  const file=ev.target.files?.[0];
+  const js=document.getElementById("jsonstatus");
+  if(!file){js.textContent="Nenhum arquivo selecionado.";js.className="muted";return}
+  try{
+    const raw=JSON.parse(await file.text());
+    const web=raw.web;
+    if(!web) throw new Error("O JSON não contém a seção web esperada.");
+    const cid=String(web.client_id||"").trim();
+    const sec=String(web.client_secret||"").trim();
+    const pid=String(web.project_id||"").trim();
+    const redirects=Array.isArray(web.redirect_uris)?web.redirect_uris.map(String):[];
+    if(!cid||!sec) throw new Error("Client ID/Secret ausentes no JSON.");
+    if(pid && pid!==projectId) throw new Error("O JSON pertence a outro projeto: "+pid);
+    if(!redirects.includes(callback)) throw new Error("O callback do Bridge não aparece em redirect_uris. Edite o cliente OAuth antes de continuar.");
+    js.textContent="JSON validado ✅ Projeto, tipo Web e callback conferem. Criptografando...";
+    js.className="ok";
+    await encryptCredentials(cid,sec,pid);
+    js.textContent="JSON validado e credenciais criptografadas ✅";
+  }catch(e){
+    js.textContent="Não consegui validar esse JSON: "+e.message;
+    js.className="warn";
+  }
+};
+
+document.getElementById("encrypt").onclick=async()=>{
+  const cid=document.getElementById("cid").value.trim();
+  const sec=document.getElementById("csecret").value.trim();
+  const st=document.getElementById("status");
+  if(!cid||!sec){st.textContent="Preencha Client ID e Client Secret.";st.className="warn";return}
+  await encryptCredentials(cid,sec,projectId);
 };
 document.getElementById("copy").onclick=()=>navigator.clipboard.writeText(document.getElementById("cipher").value);
 </script>
