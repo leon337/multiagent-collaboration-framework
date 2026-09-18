@@ -64,8 +64,8 @@ current_evidence:
   local_worker_count: 5
   local_auditor_count: 1
   fanout_workers_pass: 5
-  runtime_tests_pass: 21
-  live_history_events_last_run: 8
+  runtime_tests_pass: 29
+  live_history_events_last_run: 12
   live_history_cockpit_validation: PASS
   executor_interface: PASS
   local_process_executor: PASS_NON_COGNITIVE
@@ -75,6 +75,13 @@ current_evidence:
   session_interrupt_resume: PASS
   session_mailbox_continuity: PASS
   task_memory_boundary: PASS_HASH_ONLY
+  workspace_isolation: PASS
+  write_conflict_detection: PASS
+  reconciliation_gate: PASS
+  workspace_rollback: PASS
+  capability_token_expiry: PASS
+  capability_narrowing: PASS
+  capability_revocation: PASS
   notebook_used: false
   brainbase_used: false
   cognitive_agents_claimed: false
@@ -92,7 +99,6 @@ next_gate:
 blocked_or_unresolved:
   - no_cognitive_llm_executor_installed_in_current_sandbox
   - no_verified_bubble_native_independent_cognitive_backend_available
-  - workspace_isolation_not_yet_implemented
   - audit_is_technical_not_yet_cognitive
   - cross_chat_recovery_not_yet_end_to_end_validated
 
