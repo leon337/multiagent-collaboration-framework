@@ -2,12 +2,12 @@
   "schema_version": 1,
   "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
   "title": "MCF Harness V2 — Bubble-Native Multi-Agent Runtime",
-  "updated_at": "2026-09-18T08:41:00-03:00",
+  "updated_at": "2026-09-18T09:32:00-03:00",
   "authority_human": "LEANDRO",
   "coordinator": "MESTRE",
   "execution_boundary": "CHATGPT_BUBBLE_LOCAL_SANDBOX",
-  "status": "ACTIVE",
-  "current_phase": "R8 — Recovery entre chats e executor swap",
+  "status": "RC_READY_WITH_FORMAL_DEFERMENTS",
+  "current_phase": "R10 — Release Candidate 2.0.0-rc1",
   "runtime_flags": {
     "notebook_runtime": false,
     "brainbase_runtime": false,
@@ -18,7 +18,7 @@
     "local_workers": 5,
     "local_auditor": 1,
     "fanout_pass": "5/5",
-    "runtime_tests_pass": "39/39",
+    "runtime_tests_pass": "53/53",
     "cognitive_agents_claimed": false
   },
   "roadmap": [
@@ -65,17 +65,17 @@
     {
       "id": "R8",
       "name": "Recovery entre chats e executor swap",
-      "status": "IN_PROGRESS"
+      "status": "PASS_TECHNICAL"
     },
     {
       "id": "R9",
       "name": "Avaliação, desempenho e auto-otimização",
-      "status": "PENDING"
+      "status": "PASS_TELEMETRY"
     },
     {
       "id": "R10",
       "name": "Release estável Bubble Multi-Agent Runtime",
-      "status": "PENDING"
+      "status": "HUMAN_GATE"
     }
   ],
   "checklist": {
@@ -252,6 +252,12 @@
       "actor": "MESTRE",
       "type": "PUBLISH_RENDER_LIVE",
       "text": "15 investigadores técnicos avaliaram rotas de publicação; Render Web Service selecionado e publicado com /api/mcf vivo."
+    },
+    {
+      "at": "2026-09-18T09:32:00-03:00",
+      "actor": "MESTRE",
+      "type": "R10_RELEASE_CANDIDATE",
+      "text": "RC 2.0.0-rc1 preparado: R8 recovery PASS técnico, R9 telemetria PASS, 53/53 testes locais; stable aguarda HUMAN_GATE e deferimentos formais."
     }
   ],
   "links": {
@@ -285,7 +291,7 @@
   "history_pipeline": {
     "schema": "mcf_live_history/v1",
     "status": "PASS_E2E",
-    "events_last_run": 13,
+    "events_last_run": 15,
     "chain_head": "505b7519a37306d2fa61d875957cd02e7e220fe2c4273436c99dc6e4d88d3950",
     "guarantees": [
       "append_only",
@@ -348,5 +354,40 @@
     "cognitive_agents_claimed": false,
     "selected_route": "Render Web Service",
     "fallback": "Floot"
+  },
+  "r8_recovery": {
+    "status": "PASS_TECHNICAL_FRESH_CHAT_ACCEPTANCE_PENDING",
+    "clean_workspace": "PASS",
+    "journal_integrity": "PASS",
+    "mailbox_continuity": "PASS",
+    "task_reassign": "PASS",
+    "session_resume": "PASS",
+    "fresh_chat_real": "REQUIRES_SEPARATE_CHAT_PRODUCT_ACTION"
+  },
+  "r9_metrics": {
+    "status": "PASS_TELEMETRY",
+    "workers": "5/5 PASS",
+    "failure_rate": 0,
+    "peak_concurrency_observed": 5,
+    "queue_samples": 6,
+    "retries": 0,
+    "audit_rejection_rate": 0,
+    "capacity_probe": {
+      "workers": 6,
+      "pass": "6/6",
+      "unique_pids": 6,
+      "peak_concurrency": 6
+    },
+    "model_policy": "BLOCKED_G08_NO_BUBBLE_NATIVE_COGNITIVE_BACKEND"
+  },
+  "r10_release": {
+    "status": "RC_READY_WITH_FORMAL_DEFERMENTS",
+    "release": "2.0.0-rc1",
+    "human_gate": "PENDING",
+    "deferments": [
+      "G08/L02 bubble-native cognitive backend/auditor",
+      "M09 separate-chat acceptance",
+      "P05 V1 schema unavailable"
+    ]
   }
 }
