@@ -1,0 +1,107 @@
+{
+  "schema": "mcf_publish_swarm/v1",
+  "mission_id": "MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001",
+  "runtime": "chatgpt-bubble-local-process",
+  "cognitive_agents_claimed": false,
+  "investigator_count": 15,
+  "candidates": [
+    {
+      "agent_id": "agent-01-github-pages",
+      "platform": "GitHub Pages",
+      "confidence": "MEDIUM"
+    },
+    {
+      "agent_id": "agent-02-render",
+      "platform": "Render",
+      "confidence": "HIGH"
+    },
+    {
+      "agent_id": "agent-03-cloudflare-pages",
+      "platform": "Cloudflare Pages/Workers",
+      "confidence": "MEDIUM"
+    },
+    {
+      "agent_id": "agent-04-netlify",
+      "platform": "Netlify",
+      "confidence": "MEDIUM"
+    },
+    {
+      "agent_id": "agent-05-surge",
+      "platform": "Surge",
+      "confidence": "LOW"
+    },
+    {
+      "agent_id": "agent-06-firebase",
+      "platform": "Firebase Hosting",
+      "confidence": "LOW"
+    },
+    {
+      "agent_id": "agent-07-gitlab-pages",
+      "platform": "GitLab Pages",
+      "confidence": "LOW"
+    },
+    {
+      "agent_id": "agent-08-codeberg-pages",
+      "platform": "Codeberg Pages",
+      "confidence": "LOW"
+    },
+    {
+      "agent_id": "agent-09-fly",
+      "platform": "Fly.io",
+      "confidence": "LOW"
+    },
+    {
+      "agent_id": "agent-10-railway",
+      "platform": "Railway",
+      "confidence": "LOW"
+    },
+    {
+      "agent_id": "agent-11-floot",
+      "platform": "Floot",
+      "confidence": "HIGH"
+    },
+    {
+      "agent_id": "agent-12-neocities",
+      "platform": "Neocities",
+      "confidence": "LOW"
+    },
+    {
+      "agent_id": "agent-13-fleek",
+      "platform": "Fleek",
+      "confidence": "LOW"
+    },
+    {
+      "agent_id": "agent-14-static-app",
+      "platform": "Static.app",
+      "confidence": "LOW"
+    },
+    {
+      "agent_id": "agent-15-github-actions-pages",
+      "platform": "GitHub Actions + Pages",
+      "confidence": "MEDIUM"
+    }
+  ],
+  "conclusion": {
+    "selected": "Render Web Service",
+    "reason": "Direct connected deployment path; preserves dynamic /api/mcf endpoint; avoids Vercel daily deployment quota.",
+    "fallback": "Floot hosted app",
+    "static_site_attempt": "created but insufficient because /api/mcf requires runtime",
+    "web_service": {
+      "service_id": "srv-dami5qtbedkc73brk8g0",
+      "deploy_id": "dep-dami5rlbedkc73brkbdg",
+      "status": "LIVE",
+      "url": "https://mcf-cockpit-mobile-v3-live.onrender.com",
+      "branch": "fix/mobile-mission-ux-v3-20260918",
+      "commit": "94378428dfe628356db9c5908fb4d237fbaa2984"
+    }
+  },
+  "validation": {
+    "mission_issue": 234,
+    "phase": "R8 — Recovery entre chats e executor swap",
+    "progress_percent": 64,
+    "runtime_tests": "39/39",
+    "history_events": 18,
+    "api_live": true,
+    "mobile_dom_validated": true
+  }
+}
