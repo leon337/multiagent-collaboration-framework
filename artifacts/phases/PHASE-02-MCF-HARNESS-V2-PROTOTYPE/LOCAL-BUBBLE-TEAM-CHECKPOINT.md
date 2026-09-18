@@ -73,3 +73,13 @@ Observed result:
 ## Recovery instruction for a new chat
 
 Do not recreate or redirect this team to Brainbase. Recover this checkpoint, continue the local sandbox workspace, inspect `team/manifest.json`, `team/evidence/`, `team/receipts/`, and run the local unit/integration suite before making new runtime claims.
+
+## HISTORY_PIPELINE_V1 — 2026-09-18
+
+- `ops/live_history.py` implementado no workspace local da bolha.
+- `team/live-history.jsonl` é append-only e hash-chained.
+- `team/live-history-projection.json` é a projeção auditável para superfícies live.
+- `local_team_runner.py` registra início, resultado de cada worker, auditoria e conclusão.
+- última execução: 8 eventos, 5/5 workers PASS, auditor PASS_WITH_GAPS.
+- suíte total: 12/12 PASS.
+- notebook_used=false; brainbase_used=false; cognitive_agents_claimed=false.
