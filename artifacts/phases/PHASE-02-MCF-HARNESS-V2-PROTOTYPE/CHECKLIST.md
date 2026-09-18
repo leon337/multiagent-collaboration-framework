@@ -226,3 +226,15 @@ M04 → M09  Recovery entre chats
 - Time cognitivo local: NOT_YET_IMPLEMENTED
 - Recovery entre chats: PARTIAL
 - Stable release: NOT_AUTHORIZED
+
+## Q. History Pipeline
+- [x] Q01 log append-only local.
+- [x] Q02 escrita concorrente serializada com lock de processo.
+- [x] Q03 idempotency key por evento.
+- [x] Q04 hash-chain por evento.
+- [x] Q05 replay/projection determinístico.
+- [x] Q06 workers registram resultado automaticamente.
+- [x] Q07 auditor registra verdict automaticamente.
+- [x] Q08 suíte integrada 12/12 PASS.
+- [~] Q09 projeção para LIVE-DASHBOARD.json.
+- [~] Q10 projeção para Issue #234 / cockpit Vercel.
