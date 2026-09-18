@@ -91,3 +91,23 @@ Do not recreate or redirect this team to Brainbase. Recover this checkpoint, con
 - Issue #234 projection: PASS
 - mcf-cockpit-live /api/mcf validation: PASS
 - checkpoint text, 12/12 PASS and chain head observed through the live Vercel API.
+
+## R6_HISTORY_ID_RECONCILIATION
+
+- During R6 checkpointing, the first R6 event was appended with the parent mission ID instead of the local runtime mission ID suffix `-LOCAL`.
+- The append-only record was preserved; it was not deleted or rewritten.
+- R6 was then appended to the canonical local chain with the correct mission ID.
+- The live local projection remains scoped to `MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001-LOCAL`.
+- Canonical local chain after R6: 12 events.
+- Canonical chain head after R6: `9a18b3c1482ca59f39ad34cf797e6f835c4bba0b2acd9c9a2345e2a01c565c6e`.
+
+## R6_WORKSPACE_CAPABILITIES_PASS
+
+- isolated task workspace: PASS
+- conflict detection: PASS
+- reconciliation human gate: PASS
+- checkpoint/rollback: PASS
+- expiring capability tokens: PASS
+- narrowing/no widening: PASS
+- revocation: PASS
+- local unit/integration suite: 29/29 PASS
