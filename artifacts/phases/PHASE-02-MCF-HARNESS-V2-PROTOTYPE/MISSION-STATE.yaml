@@ -1,11 +1,14 @@
 mission:
   id: MCF-HARNESS-REVERSE-ENGINEERING-DSH-AGENT-TEAMS-001
   title: MCF Harness V2 — Bubble-Native Multi-Agent Runtime
-  status: RC_READY_WITH_FORMAL_DEFERMENTS
-  current_phase: R10_RELEASE_CANDIDATE
+  status: ENTREGUE
+  delivery_mode: STABLE_WITH_APPROVED_DEFERMENTS
+  release: 2.0.0
+  current_phase: R10_STABLE_RELEASE
   risk_class: B
   authority_human: LEANDRO
   coordinator: MESTRE
+  approved_at: '2026-09-18T16:15:00-03:00'
   last_updated: '2026-09-18'
 
 execution_boundary:
@@ -23,9 +26,7 @@ persistence:
   research_pr: 235
   prototype_pr: 236
   prototype_branch: prototype/mcf-harness-v2-event-runtime-20260918
-  local_checkpoint: /mnt/data/mcf-harness-v2-local/LOCAL_TEAM_CHECKPOINT.md
-  roadmap: /mnt/data/mcf-harness-v2-local/ROADMAP.md
-  checklist: /mnt/data/mcf-harness-v2-local/CHECKLIST.md
+  live_cockpit: https://mcf-cockpit-mobile-v3-live.onrender.com/concept-3#mission
 
 invariants:
   - LEANDRO_IS_FINAL_HUMAN_AUTHORITY
@@ -41,82 +42,57 @@ invariants:
 
 validated_capabilities:
   mission_journal_sqlite_wal: PASS
-  monotonic_sequence: PASS
-  idempotency: PASS
   deterministic_replay: PASS
   transactional_task_cas: PASS
   task_dag: PASS
-  task_readiness: PASS
   mailbox_queue_ack: PASS
-  task_leases: PASS
-  lease_heartbeat: PASS
-  execution_receipts: PASS
-  tool_evidence_projection: PASS
+  task_leases_and_recovery: PASS
+  execution_and_tool_receipts: PASS
   task_scoped_capabilities: PASS
-  event_hash_chain: PASS
+  event_hash_chain_local: PASS
   local_parallel_workers: PASS
-  local_audit_fanin: PASS
   live_history_pipeline: PASS_E2E
-  live_history_hash_chain: PASS
-  live_history_concurrent_append: PASS
+  executor_interface: PASS
+  executor_crash_resume: PASS
+  executor_swap_recovery: PASS
+  durable_sessions: PASS
+  workspace_isolation: PASS
+  reconciliation_gate: PASS
+  capability_expiry_narrowing_revocation: PASS
+  adversarial_technical_audit: PASS
+  recovery_clean_workspace: PASS
+  runtime_metrics: PASS
+  adaptive_team_policy: PASS
+  six_process_capacity_probe: PASS
 
 current_evidence:
   local_worker_count: 5
   local_auditor_count: 1
   fanout_workers_pass: 5
   runtime_tests_pass: 53
-  live_history_events_last_run: 15
-  live_history_cockpit_validation: PASS
-  executor_interface: PASS
-  local_process_executor: PASS_NON_COGNITIVE
-  executor_crash_resume: PASS
-  executor_swap_recovery: PASS
-  agent_session_persistence: PASS
-  session_interrupt_resume: PASS
-  session_mailbox_continuity: PASS
-  task_memory_boundary: PASS_HASH_ONLY
-  workspace_isolation: PASS
-  write_conflict_detection: PASS
-  reconciliation_gate: PASS
-  workspace_rollback: PASS
-  capability_token_expiry: PASS
-  capability_narrowing: PASS
-  capability_revocation: PASS
-  adversarial_technical_audit: PASS
-  false_green_detection: PASS
-  evidence_forgery_detection: PASS
-  mailbox_poisoning_detection: PASS
-  capability_escalation_detection: PASS
-  stale_lease_detection: PASS
-  provenance_enforcement: PASS
-  recovery_bundle_clean_workspace: PASS
-  recovery_journal_integrity: PASS
-  recovery_mailbox_continuity: PASS
-  recovery_session_resume: PASS
-  runtime_metrics: PASS
-  adaptive_team_policy: PASS
-  six_worker_capacity_probe: PASS
-  protocol_release: 2.0.0-rc1
-  notebook_used: false
-  brainbase_used: false
+  capacity_probe_processes: 6
+  capacity_probe_pass: 6
   cognitive_agents_claimed: false
+  protocol_release: 2.0.0
+  local_history_events: 16
+  local_chain_head: 6d8b858e5458a5fbb129065600348af288d73a6466add0b705ff08e77d6aa760
+  rc_audit_package_sha256: 81ed3191c8113bf78f2999cc46586653f3dea5280f9ceefde470e8bd2b17b55d
 
-next_gate:
-  id: R10
-  name: Stable Release Human Gate
-  acceptance:
-    - accept_formal_deferments_or_resolve_G08
-    - approve_or_reject_stable_promotion
-
-blocked_or_unresolved:
-  - no_cognitive_llm_executor_installed_in_current_sandbox
-  - no_verified_bubble_native_independent_cognitive_backend_available
-  - audit_is_technical_not_yet_cognitive
-  - v1_schema_not_located_for_safe_compatibility_contract
-  - fresh_chat_user_level_acceptance_requires_separate_chat
+accepted_deferments:
+  - id: G08_L02
+    status: ACCEPTED_DEFERMENT
+    detail: independent bubble-native cognitive backend/auditor not verified
+  - id: M09
+    status: ACCEPTED_DEFERMENT
+    detail: separate ChatGPT conversation acceptance requires product/human initiation
+  - id: P05
+    status: ACCEPTED_DEFERMENT
+    detail: canonical V1 schema was not located; no compatibility contract was fabricated
 
 promotion:
-  production_authorized: false
-  automatic_merge_authorized: false
-  stable_release_authorized: false
-  final_gate_owner: LEANDRO
+  human_gate: APPROVED
+  approved_by: LEANDRO
+  stable_release_authorized: true
+  merge_authorized: true
+  production_deployment_authorized: false
+  final_state: ENTREGUE
