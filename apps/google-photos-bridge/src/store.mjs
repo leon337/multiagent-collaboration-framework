@@ -16,6 +16,16 @@ export class EphemeralStore {
     return this.connections.get(connectionId) ?? null;
   }
 
+  deleteConnection(connectionId) {
+    const item = this.connection(connectionId);
+    if (!item) return false;
+    for (const [sessionId, session] of this.sessions.entries()) {
+      if (session.connectionId === connectionId) this.sessions.delete(sessionId);
+    }
+    this.connections.delete(connectionId);
+    return true;
+  }
+
   saveToken(connectionId, token) {
     const item = this.connection(connectionId);
     if (!item) throw new Error("Unknown connection");
