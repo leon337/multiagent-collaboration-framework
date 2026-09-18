@@ -1,0 +1,40 @@
+schema_version: 1
+
+project:
+  id: controle-ponto-frontend
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/reconhecimento_facial
+  aliases:
+    - Controle de Ponto Front-end
+    - Controle de Ponto NF-01
+    - CPP Front-end
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - docs/nf-01/runtime/current.yaml
+    - docs/nf-01/runtime/mission.yaml
+    - docs/nf-01/runtime/README.md
+    - docs/nf-01/68_NF01_PHASE_N_N1_DESIGN_LAB_VALIDATION_DEFINITION_2026-08-18.md
+
+scope:
+  product: controle-de-ponto
+  active_surface: frontend
+  active_mission: CPP-NF-01-PRODUTO-DESIGN-SYSTEM
+  backend_authority: OUT_OF_SCOPE_FOR_THIS_RUNTIME
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
+
+governance:
+  framework: MCF
+  human_authority: LEANDRO
+  automatic_merge: false
+  false_green_allowed: false
+  voice_reporting: VOICEHUB_IDENTIFIED_MESTRE
