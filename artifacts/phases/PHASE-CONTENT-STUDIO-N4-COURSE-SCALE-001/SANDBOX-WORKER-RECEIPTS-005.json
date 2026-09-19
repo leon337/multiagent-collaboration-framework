@@ -1,0 +1,35 @@
+{
+  "mission_id": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001",
+  "wave": "SANDBOX-PARALLEL-005",
+  "worker_kind": "deterministic_sandbox_workers",
+  "cognitive_agent_credit": false,
+  "workers": [
+    {
+      "id": "source_exhaustion_worker",
+      "status": "PASS",
+      "files_scanned": 5,
+      "unique_numbered_lessons": [
+        "Aula 3.1"
+      ],
+      "generic_example_hits": 23,
+      "conclusion": "FULL_CURRICULUM_NOT_PRESENT"
+    },
+    {
+      "id": "checklist_resolution_worker",
+      "status": "PASS",
+      "closed_items": 14,
+      "blocked_items": 2,
+      "blocked": [
+        "curriculum_recovery",
+        "canvas_capture"
+      ]
+    }
+  ],
+  "source_hashes": {
+    "Aprofundar_A": "3141066baebb78c82be00a0646da285389431c43ea4b4b2c9140e4c2519a3a47",
+    "Aprofundar_B": "ed18b057c43eb5763917d2c3091221b693c59cee11b384760715c56f2b7648a3",
+    "Instalar_A": "68ab6dfefa996599ddea0923c34624eb0d65d751087bf4ad5ff49d0cd55f0e72",
+    "Instalar_B": "966298c9aa4080c7ad7eb266eba1cb709d15902a8cba3da7df935121df80e363"
+  },
+  "note": "Workers provide deterministic extraction/evidence only. MESTRE owns synthesis and implementation."
+}

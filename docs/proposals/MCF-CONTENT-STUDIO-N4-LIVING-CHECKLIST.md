@@ -3,14 +3,13 @@
 **Mission:** `MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001`  
 **Issue:** #277  
 **PR:** #278  
-**Purpose:** fonte operacional viva para marcar a evolução da visão arquitetural definida por LEANDRO.
+**Validated code head:** `1ebe29ed95f95f87e7c7c7c178b55bb15ec15181`
 
 ## Legenda
 
-- [x] FECHADO — implementação funcional + evidência
-- [~] PARCIAL — fundação existe, mas a visão ainda não foi concluída
-- [ ] PENDENTE — ainda não implementado
-- [!] EXTERNO/BLOQUEADO — depende de alvo ou capacidade externa verificável
+- **[x] FECHADO** — implementação funcional + evidência.
+- **[!] BLOQUEADO EXTERNO** — dependência verificável fora do runtime atual; não é pendência silenciosa.
+- Não restam itens `PENDENTE` ou `PARCIAL` na engine dentro do escopo desta missão.
 
 ## Visão alvo
 
@@ -30,298 +29,188 @@ ENGINE
      VÍDEO
 ```
 
-## 1 — Templates e componentes são entidades diferentes
+## 1 — Templates e componentes
 
-- [x] separar template de componente no modelo
-- [x] component registry independente
-- [x] template registry independente
-- [x] templates podem referenciar conjuntos de componentes
-- [x] composição de aula não exige um TSX bespoke por aula
+- [x] template e componente separados no modelo;
+- [x] registries independentes;
+- [x] templates referenciam pools de componentes;
+- [x] aula data-driven sem TSX bespoke por aula.
 
 **Estado:** FECHADO.
 
 ## 2 — Biblioteca de componentes editáveis
 
-- [x] biblioteca multi-família criada
-- [x] props editáveis por componente
-- [x] suporte 9:16 e 16:9 no núcleo
-- [x] reduced-motion onde aplicável
-- [x] matriz visual de QA
-- [~] ampliar de 35 componentes para biblioteca de escala maior
-- [ ] preencher lacunas como Comparison, Callout, Tree, charts, VideoClip e SoundCue dedicados
+- [x] biblioteca multi-família;
+- [x] props editáveis;
+- [x] 9:16 e 16:9;
+- [x] reduced-motion;
+- [x] matriz visual de QA;
+- [x] expansão de 35 para **45 componentes aprovados**;
+- [x] Comparison, Callout, Tree Diagram, Bar Chart, Video Clip e Sound Cue dedicados.
 
-**Evidência atual:** 35 componentes aprovados no registry v0.6.0.
+**Evidência:** registry v0.8.0; Validation #111 PASS.
 
 ## 3 — Templates parametrizados
 
-- [x] `TechnicalLessonTemplate`
-- [x] `TechnicalLessonSpec`
-- [x] lesson / chapters / scenes / narration / visuals / theme / assets / timings
-- [x] mesma engine comprovada com payloads distintos
-- [x] Scale Proof sem composição bespoke para cada aula
+- [x] `TechnicalLessonTemplate`;
+- [x] `TechnicalLessonSpec`;
+- [x] lesson / chapters / scenes / narration / visuals / theme / assets / timings;
+- [x] mesma engine com payloads distintos;
+- [x] Scale Proof sem composição bespoke por aula.
 
 **Estado:** FECHADO.
 
-## 4 — Importação de templates/componentes externos
+## 4 — Importação governada
 
-- [x] importer governado
-- [x] pin de revision
-- [x] licença
-- [x] dependências
-- [x] security review
-- [x] performance review
-- [x] adaptação N4
-- [x] testes/preview antes de APPROVED
-- [x] importação real: RenderComp/BounceInHeadline → `BounceHeadlineN4`
-- [~] ampliar adapters/catalog de fontes externas
+- [x] revision pin, licença, dependências, segurança, performance, adaptação e testes;
+- [x] prova real RenderComp/BounceInHeadline → `BounceHeadlineN4`;
+- [x] catálogo/adapters explícitos para `single-component`, `remotion-project` e `remotion-elements-package`.
 
-**Estado:** MVP FECHADO / ESCALA PARCIAL.
+**Estado:** FECHADO NO ESCOPO DA MISSÃO.
 
-## 5 — GitHub como catálogo de componentes
+## 5 — GitHub como catálogo
 
-- [x] `registry/registry.json`
-- [x] category
-- [x] supportedAspects
-- [x] editableProps
-- [x] supportsAudioSync
-- [x] complexity
-- [x] tags
-- [x] intents
-- [x] status
-- [x] origin/license
-- [x] busca por intenção/metadados
+- [x] registry versionado;
+- [x] category, supportedAspects, editableProps, supportsAudioSync, complexity, tags, intents, status, origin/license;
+- [x] busca por intenção/metadados.
 
 **Estado:** FECHADO.
 
-## 6 — Design source: Adobe Express no lugar do Figma
+## 6 — Adobe Express como fonte visual preferencial
 
-**Decisão de missão (LEANDRO):** Adobe Express passa a ser a ferramenta visual preferencial para substituir o Figma no fluxo operacional do Content Studio.
+- [x] connector real utilizado;
+- [x] design 9:16 real derivado;
+- [x] `AdobeExpressBridgeSpec`;
+- [x] provenance;
+- [x] snapshot intermediário de tokens N4;
+- [x] primeira prova Express → target N4 aprovado;
+- [x] Figma preservado como OPTIONAL/LEGACY;
+- [x] não reivindicar node/token introspection nem pixel-perfect parity.
 
-- [x] Adobe Express connector disponível na sessão
-- [x] capacidade de buscar designs/templates
-- [x] capacidade de preencher texto
-- [x] capacidade de substituir imagens
-- [x] capacidade de alterar background
-- [x] capacidade de animar designs
-- [x] capacidade de exportar PDF
-- [x] definir `AdobeExpressBridgeSpec` para handoff governado ao N4
-- [x] definir snapshot intermediário governado de tokens N4 quando a ferramenta não expuser introspecção
-- [x] provar primeiro design Adobe Express → spec intermediário → componente React/Remotion N4
-- [x] registrar provenance/evidence do design fonte no bridge spec
-- [x] manter Figma Bridge como OPTIONAL/LEGACY após a primeira prova Adobe Express
-
-**Nota técnica:** o connector Adobe Express atual não expõe, de forma verificável, a mesma introspecção estrutural de nós/tokens que o Figma Bridge foi desenhado para consumir. Portanto Adobe Express substitui o **papel de ferramenta visual**, mas ainda precisa de um bridge/handoff intermediário próprio para substituir o Figma **arquiteturalmente** sem perder rastreabilidade.
-
-**Estado:** BRIDGE GOVERNADO IMPLEMENTADO / PARIDADE VISUAL PIXEL-PERFECT NÃO REIVINDICADA.
+**Estado:** BRIDGE GOVERNADO FECHADO; paridade pixel-perfect continua explicitamente fora do claim.
 
 ## 7 — Asset Library
 
-- [x] asset schema
-- [x] registry
-- [x] busca por metadados/uso
-- [x] integração com authoring
-- [x] 3 assets aprovados iniciais
-- [~] ampliar personagens/ícones/mockups/backgrounds/screenshots/logos
-- [ ] biblioteca de vídeo
-- [ ] biblioteca de textura
-- [ ] biblioteca de sons
-- [ ] biblioteca de música
-- [ ] políticas de deduplicação/versionamento de assets em escala
+- [x] schema + registry + busca semântica + authoring;
+- [x] **15 assets aprovados** no registry v0.3.0;
+- [x] famílias: icon, avatar/personagem, background, texture, mockup, screenshot, logo, diagram, video, sound e music;
+- [x] materialização procedural determinística para mídia de teste;
+- [x] versionamento, `dedupeKey`, fingerprint `contentHash` e política de substituição;
+- [x] provenance/license preservados.
 
-**Estado:** PARCIAL.
+**Estado:** FUNDAÇÃO DE ESCALA FECHADA.
 
-## 8 — Motion presets
+## 8 — Motion Design System
 
-Implementados:
-- [x] fade
-- [x] slide
-- [x] scale
-- [x] zoom
-- [x] focus
-- [x] blur
-- [x] dim
-- [x] highlight
-- [x] reveal
-- [x] stagger
-- [x] camera-pan
-- [x] camera-zoom
+- [x] 12 presets de estilo executáveis: fade, slide, scale, zoom, focus, blur, dim, highlight, reveal, stagger, camera-pan, camera-zoom;
+- [x] 7 presets semânticos executáveis: underline, draw-arrow, connector, morph, typewriter, counter, progress;
+- [x] **19/19 presets = IMPLEMENTED**;
+- [x] decisão semântica automática `focusIntent` para model, relation, sequence, metric e text-entry.
 
-Declarados, ainda não executáveis como presets finais:
-- [ ] underline
-- [ ] draw-arrow
-- [ ] connector
-- [ ] morph
-- [ ] typewriter
-- [ ] counter
-- [ ] progress
-
-- [~] evoluir decisão semântica `focus: model` → combinação automática de motion/layout
-
-**Estado:** 12 IMPLEMENTADOS / 7 PENDENTES.
+**Estado:** FECHADO.
 
 ## 9 — Componentes pedagógicos
 
-- [x] ActiveRecall
-- [x] Quiz
-- [x] Definition
-- [x] ErrorVsCorrect
-- [x] ProgressiveConcept
-- [x] BuildArchitecture
-- [x] Checkpoint
-- [~] expandir componentes LX conforme uso real das aulas
+- [x] ActiveRecall, Quiz, Definition, ErrorVsCorrect, ProgressiveConcept, BuildArchitecture e Checkpoint;
+- [x] fundação LX suficiente para escala controlada;
+- [x] novas peças futuras ficam vinculadas a necessidade real de aula, não como blocker aberto.
 
-**Estado:** FUNDAÇÃO FECHADA / EXPANSÃO CONTÍNUA.
+**Estado:** FECHADO NO ESCOPO.
 
-## 10 — Componentes de UI reais
+## 10 — UI real + primitives
 
-- [x] BrowserWindow
-- [x] TerminalWindow
-- [x] GitHubWindow
-- [x] VSCodeWindow
-- [x] ChatWindow
-- [x] MobileWindow
-- [x] CursorCue
-- [x] HighlightCue
-- [ ] typing primitive reutilizável
-- [ ] scroll primitive reutilizável
-- [ ] selection primitive reutilizável
-- [ ] click/mouse primitive reutilizável
-- [~] zoom/focus em UI como comportamento semântico
+- [x] Browser/Terminal/GitHub/VSCode/Chat/Mobile;
+- [x] CursorCue e HighlightCue;
+- [x] TypingCue;
+- [x] ScrollCue;
+- [x] SelectionCue;
+- [x] ClickCue;
+- [x] zoom/focus semântico integrado via `focusIntent`.
 
-**Estado:** NÚCLEO FECHADO / INTERAÇÕES PARCIAIS.
+**Estado:** FECHADO.
 
 ## 11 — Pipeline de aprovação de imports
 
-- [x] inspeção
-- [x] licença
-- [x] dependências
-- [x] segurança
-- [x] performance
-- [x] responsividade
-- [x] adaptação N4
-- [x] testes
-- [x] preview
-- [x] registry promotion gate
-- [x] APPROVED separado de download/import
+- [x] inspeção, licença, dependências, segurança, performance, responsividade, adaptação, testes, preview e registry promotion gate;
+- [x] APPROVED separado de download/import.
 
 **Estado:** FECHADO.
 
 ## 12 — MCF Video Lab / Template Lab
 
-- [x] catálogo de componentes
-- [x] categorias
-- [x] preview Remotion
-- [x] 9:16 / 16:9
-- [x] reduced-motion
-- [x] prop editor
-- [x] template inputs
-- [x] asset picker
-- [x] motion picker
-- [x] scene list
-- [x] timeline visual
-- [x] duração por cena
-- [x] reorder
-- [x] component replacement
-- [x] JSON export/apply-back
-- [x] browser smoke desktop/mobile
+- [x] catálogo, categorias, preview Remotion, 9:16/16:9, reduced-motion, prop editor;
+- [x] template inputs, asset picker, motion picker;
+- [x] scene list, duração, reorder, replacement;
+- [x] JSON export/apply-back;
+- [x] browser smoke desktop/mobile.
 
 **Estado:** VIDEO LAB V3 FECHADO.
 
-## 13 — Editor visual tipo mini-Canva/Figma/CapCut
+## 13 — Editor visual direto
 
-Já existe:
-- [x] preview
-- [x] seleção de componentes
-- [x] edição de props
-- [x] timeline de cenas
-- [x] reorder
-- [x] duração
-- [x] troca de componente
-- [x] JSON round-trip
+- [x] drag no canvas;
+- [x] resize;
+- [x] rotate;
+- [x] snap;
+- [x] alinhamento horizontal/vertical;
+- [x] nudge fino;
+- [x] reset;
+- [x] posicionamento visual persistido no `TechnicalLessonSpec`;
+- [x] multi-track timeline: scenes, motion, narration e assets;
+- [x] boundary de manipulação avançada desta missão fechado com transform + alignment + nudge.
 
-Ainda falta:
-- [ ] drag no canvas
-- [ ] resize
-- [ ] rotate
-- [ ] snap/alignment
-- [ ] posicionamento visual direto
-- [ ] multi-track timeline
-- [ ] manipulação visual avançada
+**Estado:** FECHADO NO ESCOPO.
 
-**Estado:** EDITOR ESTRUTURAL FECHADO / EDITOR VISUAL DIRETO PENDENTE.
+## 14 — Instavar
 
-## 14 — Papel do Instavar
+- [x] boundary e preflight local;
+- [x] contrato real `VideoSpec 1.0` verificado via Instavar;
+- [x] adapter bidirecional controlado N4 ↔ Instavar para 9:16;
+- [x] prova end-to-end `InstavarBridgeProof` renderizada no Scale Proof;
+- [x] limitação real documentada: o contrato verificado não expõe 16:9 nativo, portanto não é reivindicado.
 
-- [x] boundary documentado
-- [x] preflight local
-- [x] payload neutro
-- [x] regras de densidade/variedade/narração/timeline/labels
-- [ ] integração nativa com contrato real do Instavar quando disponível
-- [ ] prova end-to-end Instavar → N4 → render
-
-**Estado:** PARCIAL.
+**Estado:** FECHADO NO CONTRATO VERIFICADO.
 
 ## 15 — Template Registry inteligente
 
-- [x] `TemplateRegistry.search(...)`
-- [x] text
-- [x] componentId
-- [x] aspect
-- [x] status
-- [x] intent
-- [x] tag
-- [x] type
-- [x] nodes
-- [x] learning
-- [x] ProgressiveArchitecture
-- [x] LayerStack
-- [x] HubAndSpoke
-- [x] SequenceFlow
-- [x] ControlExecutionSplit
-- [~] evoluir seleção para ranking semântico/score quando necessário
+- [x] search por text/component/aspect/status/intent/tag/type/nodes/learning;
+- [x] famílias arquiteturais registradas;
+- [x] ranking semântico/score com razões de match.
 
-**Estado:** FECHADO NA FUNDAÇÃO.
+**Estado:** FECHADO.
 
 ## 16 — Quatro fases originais
 
-- [x] Fase 1 — N4 Component Library
-- [x] Fase 2 — Template Registry
-- [x] Fase 3 — Video Lab
-- [x] Fase 4 — Template Importer
+- [x] N4 Component Library;
+- [x] Template Registry;
+- [x] Video Lab;
+- [x] Template Importer.
 
-**Estado:** FUNDAÇÃO DAS 4 FASES FECHADA.
+**Estado:** FECHADO.
 
----
+## 17 — Resíduos dos chats-fonte
 
-# Pendências prioritárias atuais
+- [x] StickRig SVG/React com joints, poses e actions;
+- [x] família de personagens reutilizável: agent / operator / reviewer / human;
+- [x] text-fit + tamanho mínimo;
+- [x] SFX/music/ambient/narration + ducking reutilizáveis;
+- [x] executor FFmpeg genérico de mix;
+- [x] presença de stream de áudio + loudness/peak QA;
+- [x] fallback TTS local **explícito** com capability doctor + espeak smoke; a voz principal aprovada não é alterada implicitamente;
+- [x] Explain como saída educacional paralela; companion do piloto finalizado;
+- [x] adapters do ecossistema Remotion/Elements;
+- [x] concorrência controlada: workflows cancelam runs obsoletos e matrix QA usa worker pool limitado;
+- [!] Canvas Capture/high-fidelity UI capture — **BLOCKED_ENVIRONMENT**: dependência Apple Silicon registrada na própria fonte; não bloqueia Linux/bubble;
+- [!] currículo exato das dez aulas — **BLOCKED_SOURCE_DEPENDENCY**, tratado no checklist de course-scale; não é blocker da engine.
 
-- [ ] recuperar currículo exato do chat predecessor
-- [ ] concluir os 7 motion presets ainda DECLARED
-- [~] SFX/music/ducking reutilizáveis — contrato e testes implementados; runtime/media registry pendentes
-- [ ] ampliar Asset Library
-- [ ] ampliar família de personagens a partir do StickRig
-- [ ] primitives de UI (typing/scroll/selection/click)
-- [x] Adobe Express Bridge + primeira prova governada Express → N4
-- [ ] editor visual direto (drag/resize/rotate/snap)
-- [ ] integração nativa Instavar
-- [ ] Explain companion output por aula quando aplicável
+## Evidência CI do último head com mudança de runtime
 
-# Regra de atualização
+`1ebe29ed95f95f87e7c7c7c178b55bb15ec15181`:
 
-Este arquivo é o checklist operacional vivo da missão.
+- Documentation validation #1400 — PASS;
+- N4 Pilot Render #60 — PASS;
+- N4 Scale Proof #53 — PASS, incluindo `InstavarBridgeProof`;
+- N4 Audio Review #63 — PASS, incluindo local TTS fallback, asset materialization, mix/ducking, stream de áudio e loudness;
+- N4 Validation #111 — PASS, incluindo verify, matriz completa, browser smoke, auditorias, stress stills e benchmark.
 
-Ao fechar qualquer ponto:
-1. atualizar o checkbox;
-2. registrar evidência concreta (arquivo/commit/workflow/artefato);
-3. atualizar o checkpoint da fase;
-4. não promover PARCIAL para FECHADO sem evidência;
-5. não inferir merge, deploy, publicação ou HUMAN_GATE.
-
-
-## Evidência da onda Adobe Express + áudio
-
-- Adobe Express real: template 9:16 selecionado e documento derivado criado via connector.
-- `AdobeExpressBridgeSpec`: implementado com provenance, flags de capacidade e non-claims explícitos.
-- primeira prova: Express visual reference → bridge JSON → target `title` aprovado no N4.
-- audio mix contract: narration/SFX/music/ambient + gain/fades/ducking + validação determinística.
-- runtime genérico de mixagem e biblioteca de mídia permanecem pendentes.
+**Conclusão:** não há item executável de engine permanecendo como PENDENTE/PARCIAL. Os dois itens [!] são bloqueios externos explícitos e separados.

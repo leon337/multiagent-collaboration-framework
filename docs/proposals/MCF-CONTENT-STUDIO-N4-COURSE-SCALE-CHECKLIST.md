@@ -2,75 +2,95 @@
 
 **Mission:** `MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001`  
 **Issue:** #277  
-**PR:** #278
+**PR:** #278  
+**Validated engine code head:** `1ebe29ed95f95f87e7c7c7c178b55bb15ec15181`
 
-> Checklist-mãe vivo da engine: `docs/proposals/MCF-CONTENT-STUDIO-N4-LIVING-CHECKLIST.md`
+> Checklist-mãe da engine: `docs/proposals/MCF-CONTENT-STUDIO-N4-LIVING-CHECKLIST.md`.
+
+## Regra de resolução
+
+Nesta missão, um item está resolvido quando está:
+- **[x] fechado com evidência**, ou
+- **[!] bloqueado por dependência real e explicitamente documentada**.
+
+Não há itens silenciosamente pendentes.
 
 ## C0 — Curriculum inventory / predecessor recovery
 
-- [x] search accessible Project sources and current MCF/GitHub lineage
-- [x] LEANDRO identified the predecessor chat as the canonical location of the remaining lesson curriculum
-- [ ] recover the authoritative full lesson curriculum from predecessor chat
-- [ ] resolve approved ordering
-- [ ] resolve titles for all ten lessons
-- [ ] resolve learning objectives for all ten lessons
-- [x] identify existing pilot mapping: Aula 3.1 / Runtime Agêntico Moderno — Nível 4
-- [x] classify confidence for verified pilot and source fragments
-- [x] version partial curriculum inventory without inventing missing lessons
-- [x] inspect and reject unrelated `leon337/curso-instavar` curriculum as silent substitution
+- [x] pesquisar Project sources acessíveis, screenshots de continuidade e linhagem MCF/GitHub;
+- [x] LEANDRO identificou o chat predecessor como localização canônica do currículo;
+- [x] confirmar piloto: Aula 3.1 / Runtime Agêntico Moderno — Nível 4;
+- [x] confirmar escopo: piloto + nove aulas restantes;
+- [x] classificar exemplos Runtime / Context Engineering / MCP / Agents / Realtime / Evals como **não canônicos** para ordem/títulos;
+- [x] rejeitar `leon337/curso-instavar` como substituição silenciosa;
+- [x] executar worker determinístico de esgotamento de fontes: cinco chats/fontes materializados, única numeração encontrada = `Aula 3.1`;
+- [x] buscar GitHub por `Aula 3.2`, `Aula 3.3` e `Aula 3.10`: sem inventário canônico encontrado;
+- [!] recuperar o transcript integral do predecessor — **BLOCKED_SOURCE_DEPENDENCY**: não está exposto nas fontes/Library acessíveis desta sessão;
+- [!] resolver ordem, títulos e objetivos das outras nove aulas — dependem do mesmo transcript, portanto não podem ser inferidos.
 
-**C0 state:** `SOURCE_RECOVERY_IN_PROGRESS`
-
-Accessible Project files establish a ten-lesson scale scope and the existing pilot. LEANDRO has now identified the predecessor chat as the source of the exact remaining curriculum. Generic examples such as Runtime, Context Engineering, MCP, Agents, Realtime and Evals remain non-canonical until reconciled against that predecessor curriculum.
+**C0 state:** `BLOCKED_SOURCE_DEPENDENCY`.  
+**HUMAN_GATE:** não. É dependência de fonte, não pedido de aprovação.
 
 ## S0 — Residual source-chat engine improvements
 
-This track runs independently from C0 where no curriculum dependency exists.
+- [x] materializar e reconciliar todos os chats-fonte acessíveis;
+- [x] workers determinísticos com receipts;
+- [x] StickRig + family variants;
+- [x] text-fit/readability;
+- [x] encoded-audio fail-closed;
+- [x] reusable narration/SFX/music/ambient mix + ducking executor;
+- [x] loudness/peak QA;
+- [x] local/materializable TTS fallback explícito;
+- [x] 19 motion presets executáveis;
+- [x] semantic focus composition;
+- [x] UI primitives typing/scroll/selection/click;
+- [x] editor visual direto + alignment/nudge + multi-track;
+- [x] Asset Library ampliada + versionamento/dedupe;
+- [x] character family ampliada;
+- [x] adapters/catalog externos;
+- [x] template semantic ranking;
+- [x] Adobe Express Bridge + primeira prova governada;
+- [x] integração nativa Instavar VideoSpec 1.0 + render proof;
+- [x] Explain companion output do piloto;
+- [x] exact code-bearing head CI green em Validation #111, Scale Proof #53, Pilot #60 e Audio Review #63.
 
-- [x] materialize all accessible Project source-chat files in the ChatGPT sandbox
-- [x] run parallel deterministic sandbox workers with receipts
-- [x] reconcile the earlier Remotion/Instavar/Explain exploration chat against N4 Evolution
-- [x] identify residual improvement backlog
-- [x] add `character` component family
-- [x] implement source-defined SVG/React `StickRig` with joints, poses and actions
-- [x] add StickRig to Registry + Technical Lesson component pool
-- [x] add discovery test for agent-storytelling intent
-- [x] add deterministic text-fit/minimum-readability utility
-- [x] apply text-fit to Title, FocusConcept and Keyword
-- [x] add text-fit tests
-- [x] add media-level encoded-audio presence verifier
-- [x] make narrated Audio Review fail closed if the final video has no audio stream
-- [ ] exact-head CI green for this wave
-- [ ] reusable SFX/music/ducking contract
-- [ ] semantic motion presets currently DECLARED become executable only with real implementations/tests
-- [ ] optional Explain companion output from the same factual lesson pack
-- [ ] Adobe Express Bridge + first Express → N4 governed proof
-- [ ] direct drag/resize/rotate editor increment when it becomes a real authoring bottleneck
+**S0 state:** `CLOSED`.
 
-## C1–C6 — Per lesson
+## C1–C6 — Produção por aula
 
-Lesson authoring waits for C0 exact curriculum recovery. S0 does not wait.
+Como o inventário canônico não está disponível, não existe autorização factual para criar nomes, ordem, objetivos ou conteúdo das outras nove aulas.
 
-For every canonical lesson:
-- [ ] content pack
-- [ ] TechnicalLessonSpec
-- [ ] template/component discovery
-- [ ] preflight
-- [ ] narration PT-BR
-- [ ] captions
-- [ ] 9:16 render
-- [ ] mobile QA
-- [ ] Review Lab
-- [ ] factual/content QA
-- [ ] lesson gate
+- [!] content pack — BLOCKED_BY_C0;
+- [!] TechnicalLessonSpec — BLOCKED_BY_C0;
+- [!] template/component discovery por aula — BLOCKED_BY_C0;
+- [!] preflight por aula — BLOCKED_BY_C0;
+- [!] narration PT-BR por aula — BLOCKED_BY_C0;
+- [!] captions por aula — BLOCKED_BY_C0;
+- [!] 9:16 render por aula — BLOCKED_BY_C0;
+- [!] mobile QA por aula — BLOCKED_BY_C0;
+- [!] Review Lab por aula — BLOCKED_BY_C0;
+- [!] factual/content QA por aula — BLOCKED_BY_C0;
+- [!] lesson gate das aulas desconhecidas — BLOCKED_BY_C0.
+
+O piloto existente continua sendo evidência da engine, não substituto para as nove aulas cujo currículo não foi recuperado.
 
 ## C7 — Course gate
 
-- [ ] every canonical lesson reconciled
-- [ ] no silent structural-only video labeled final
-- [ ] blocked/deferred lessons documented
-- [ ] final course-scale audit
+- [!] todas as aulas canônicas reconciliadas — BLOCKED_BY_C0 porque o inventário não está materializado;
+- [x] nenhum structural/silent proof é rotulado como aula final;
+- [x] bloqueio e condição de retomada documentados;
+- [x] auditoria final desta execução registrada;
+- [x] merge/deploy/publicação continuam separados e não inferidos.
 
-## Executor note
+**C7 result:** `COURSE_SCALE_BLOCKED_SOURCE_DEPENDENCY`.
 
-Five sandbox-local deterministic workers are active for source extraction/evidence packaging. They accelerate the mission but are not credited as cognitive agents or subagents. MESTRE remains accountable for synthesis, implementation and evidence.
+## Condição automática de retomada
+
+Quando o transcript/fonte canônica do chat predecessor ficar acessível, retomar em C0 e extrair exatamente:
+1. ordem;
+2. numeração;
+3. títulos;
+4. objetivos;
+5. conteúdo factual por aula.
+
+Somente depois iniciar C1–C6. Nenhum preenchimento por inferência.

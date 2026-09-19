@@ -1,126 +1,141 @@
 phase_id: PHASE-CONTENT-STUDIO-N4-COURSE-SCALE-001
 mission_id: MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001
 parent_mission_id: MCF-CONTENT-STUDIO-N4-EVOLUTION-001
-objective_state: EM_EXECUCAO
+objective_state: BLOCKED_SOURCE_DEPENDENCY
 risk_class: B
 branch: planning/mcf-content-studio-n4-course-scale-20260919
 base_branch: planning/mcf-content-studio-n4-evolution-20260919
-base_commit: 012188ea5415500bf9ad67b3689ffbaf9cade522
 tracker: 277
+pr: 278
 
-completed:
-  - successor mission created from validated N4 evolution closeout
-  - PR #278 tracker reference corrected from undefined to #277
-  - pilot lineage verified as Aula 3.1 / Runtime Agêntico Moderno — Nível 4
-  - separate leon337/curso-instavar curriculum rejected as a silent substitution
-  - all accessible Project source-chat files materialized for sandbox analysis
-  - five sandbox-local deterministic workers executed in parallel with receipts
-  - source-chat reconciliation expanded beyond the 16-section evolution source
-  - residual improvement backlog versioned
-  - StickRig character system implementation started from source-defined SVG/React joint model
-  - character registry/schema support added
-  - deterministic text-fit readability guardrail added to core typography components
+validated_code_head: 1ebe29ed95f95f87e7c7c7c178b55bb15ec15181
+validated_code_workflows:
+  documentation_validation:
+    run: 1400
+    run_id: 35443098105
+    conclusion: success
+  pilot_render:
+    run: 60
+    run_id: 35443098101
+    conclusion: success
+    artifact_id: 10584656675
+  scale_proof:
+    run: 53
+    run_id: 35443098118
+    conclusion: success
+    artifact_id: 10584636104
+  audio_review:
+    run: 63
+    run_id: 35443098116
+    conclusion: success
+    artifact_id: 10584770376
+  validation:
+    run: 111
+    run_id: 35443098102
+    conclusion: success
+    artifact_id: 10584241907
+
+engine:
+  state: CLOSED_FOR_CURRENT_SCOPE
+  registry:
+    version: 0.8.0
+    approved_components: 45
+    templates: 6
+  asset_library:
+    version: 0.3.0
+    approved_assets: 15
+  motion:
+    version: 0.2.0
+    implemented_presets: 19
+    declared_only_presets: 0
+  visual_editor:
+    - drag
+    - resize
+    - rotate
+    - snap
+    - alignment
+    - nudge
+    - multi_track_timeline
+  integrations:
+    adobe_express: GOVERNED_BRIDGE_PROVEN
+    instavar: VIDEOSPEC_1_0_BRIDGE_PROVEN
+    explain: PILOT_COMPANION_FINISHED
+  audio:
+    mix_executor: PASS
+    ducking: PASS
+    encoded_stream_qa: PASS
+    loudness_peak_qa: PASS
+    local_tts_fallback: PASS_EXPLICIT_ONLY
 
 tracks:
-  course_content:
-    state: SOURCE_RECOVERY_IN_PROGRESS
-    source_hint_from_leandro: predecessor_chat
-    verified:
-      - total scope is pilot plus nine remaining lessons
-      - pilot is Aula 3.1 / Runtime Agêntico Moderno — Nível 4
-    unresolved:
-      - exact ordered curriculum from predecessor chat
-      - titles/objectives of the other nine lessons
-    rule: DO_NOT_INVENT
   residual_engine_improvements:
-    state: ACTIVE
-    source: Project source chats
-    current_wave:
-      - StickRig character component
-      - text-fit readability floor
-      - encoded audio-stream presence QA
-    next_candidates:
-      - audio mix / SFX / ducking contract
-      - semantic motion preset implementations
-      - optional Explain companion path
-      - generic audio mix runtime / SFX+music asset registry
+    state: CLOSED
+  course_content:
+    state: BLOCKED_SOURCE_DEPENDENCY
+    rule: DO_NOT_INVENT
+    verified:
+      - pilot is Aula 3.1 / Runtime Agêntico Moderno — Nível 4
+      - scale scope is pilot plus nine remaining lessons
+    unresolved_due_source:
+      - exact ordered ten-lesson inventory
+      - titles of the other nine lessons
+      - learning objectives of the other nine lessons
+      - approved numbering beyond 3.1
 
-open:
-  - recover canonical predecessor-chat curriculum
-  - C1 lesson content packs
-  - C2 N4 authoring
-  - C3 narration
-  - C4 renders
-  - C5 Review Labs
-  - C6 lesson QA
-  - C7 course gate
-  - residual engine improvement validation
+source_exhaustion:
+  project_source_files_scanned: 5
+  unique_numbered_lessons_found:
+    - Aula 3.1
+  generic_noncanonical_terms:
+    - Runtime
+    - Context Engineering
+    - MCP
+    - Agents
+    - Realtime
+    - Evals
+  github_queries_without_canonical_inventory:
+    - Aula 3.2
+    - Aula 3.3
+    - Aula 3.10
+  predecessor_screenshots_inspected: true
+  full_predecessor_transcript_accessible: false
+
+external_blockers:
+  - code: CANONICAL_CURRICULUM_SOURCE_UNAVAILABLE
+    affects: course_content
+    human_gate: false
+  - code: CANVAS_CAPTURE_APPLE_SILICON_UNAVAILABLE
+    affects: optional_high_fidelity_capture
+    human_gate: false
+    blocks_course: false
+
+explain_companion:
+  guide: guide0qe1v5ukv
+  url: https://scrimba.com/explain/guide0qe1v5ukv?claim=doq60himunkpsh88&fullscreen=1
+  entries: 47
+  says: 10
+  status: FINISHED
 
 executor:
   boundary: CHATGPT_BUBBLE_LOCAL_SANDBOX
-  sandbox_workers:
+  sandbox_worker_kind: deterministic_parallel_workers
+  cognitive_agent_credit: false
+  workers:
     - curriculum_worker
     - improvements_worker
     - pipeline_worker
     - governance_worker
     - visual_language_worker
-  sandbox_worker_kind: deterministic_parallel_workers
-  cognitive_agent_credit: false
-  note: >-
-    Local workers accelerate source scanning and evidence packaging. They are not
-    credited as cognitive subagents. MESTRE remains responsible for synthesis,
-    implementation and evidence reconciliation.
-
-next_action: >-
-  Validate the StickRig/text-fit/audio-QA wave at exact PR head while continuing predecessor
-  curriculum recovery and then fan out lesson content packs as soon as the ordered
-  curriculum is recovered.
+    - source_exhaustion_worker
+    - checklist_resolution_worker
 
 human_action_required: false
+next_action: >-
+  Automatically resume C0 when the canonical predecessor transcript becomes accessible;
+  extract exact ordering/titles/objectives before authoring any of the nine unknown lessons.
 
-living_engine_checklist:
-  path: docs/proposals/MCF-CONTENT-STUDIO-N4-LIVING-CHECKLIST.md
-  role: canonical_progress_tracker_for_engine_vision
-  update_rule: >-
-    Every closed improvement must update checkbox state, attach concrete evidence,
-    update this checkpoint, and preserve separation between implementation,
-    merge, deploy, publication and HUMAN_GATE.
-  adobe_express:
-    decision: PREFERRED_VISUAL_AUTHORING_TOOL
-    replaces_figma_operationally: true
-    replaces_figma_bridge_architecturally: false
-    bridge_state: PENDING
-    note: >-
-      Adobe Express is adopted as the preferred visual design source. The current
-      connector supports template/design search, text fill, image replacement,
-      background changes, animation and PDF export, but does not expose verified
-      node/token introspection equivalent to the existing Figma bridge. A governed
-      AdobeExpressBridgeSpec and first Express-to-N4 proof are therefore required.
-
-adobe_express_bridge:
-  state: IMPLEMENTED_PENDING_EXACT_HEAD_CI
-  source_template_urn: urn:aaid:sc:VA6C2:1a487348-7767-4b43-9ac1-22d1918dbb8b
-  derived_document_urn: urn:aaid:sc:VA6C2:b0b20f81-59b6-4508-ba43-b45b3b022261
-  target_component: title
-  handoff_mode: visual-reference-plus-n4-target-tokens
-  claims:
-    - real Adobe Express template selected
-    - real derived Adobe Express document created
-    - governed intermediate bridge spec implemented
-    - target React/Remotion component exists and is APPROVED
-  non_claims:
-    - pixel-perfect parity
-    - Adobe Express node introspection
-    - Adobe Express token introspection
-
-audio_mix:
-  state: CONTRACT_IMPLEMENTED_PENDING_EXACT_HEAD_CI
-  implemented:
-    - narration/sfx/music/ambient clip model
-    - gain and fades
-    - narration-driven ducking rules
-    - deterministic validation tests
-  pending:
-    - reusable SFX/music asset registry
-    - generic FFmpeg/Remotion mix executor
-    - loudness/peak QA
+governance:
+  pr_state: DRAFT_OPEN
+  merge_inferred: false
+  deploy_inferred: false
+  publication_inferred: false

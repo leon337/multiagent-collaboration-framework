@@ -2,7 +2,7 @@ schema_version: 1
 mission_id: MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001
 phase_id: PHASE-CONTENT-STUDIO-N4-COURSE-SCALE-001
 gate: C0
-state: PARTIAL_BLOCKED
+state: BLOCKED_SOURCE_DEPENDENCY
 expected_lesson_count: 10
 
 verified:
@@ -11,59 +11,55 @@ verified:
     title: "Runtime Agêntico Moderno — Nível 4"
     implementation_id: runtime-agentico-n4-pilot
     confidence: HIGH
-    evidence:
-      - "MCF Issue #254: pilot Aula 3.1 named Runtime Agêntico Moderno — Nível 4"
-      - "planning/mcf-content-studio-n4-20260919: experimentos/mcf-content-studio-n4/src/pilot/lesson.ts"
   scale_scope:
     remaining_lessons: 9
     confidence: HIGH
-    evidence:
-      - "MCF Issue #254"
-      - "PHASE-CONTENT-STUDIO-N4-FOUNDATION-001-SCALE-DECISION.md"
 
-project_source_fragments:
-  - source: "Aprofundar documentação OpenAI.txt"
-    supported_terms:
-      - Runtime
-      - Context Engineering
-      - MCP
-      - Agents
-      - Realtime
-      - Evals
-    interpretation: "Examples of lessons/content the generic TechnicalLessonTemplate could produce."
-    limitation: "The source uses an ellipsis and does not provide an authoritative ten-lesson list, ordering, numbering, or objectives."
-    confidence_as_canonical_curriculum: LOW
+source_exhaustion:
+  scanned_project_sources:
+    - Aprofundar_documentacao_OpenAI_A.txt
+    - Aprofundar_documentacao_OpenAI_B.txt
+    - Instalar_Remotion_notebook_A.txt
+    - Instalar_Remotion_notebook_B.txt
+    - Orquestrar_agentes_MCF.txt
+  predecessor_screenshots_inspected: 5
+  unique_numbered_lessons_found:
+    - "Aula 3.1"
+  generic_examples_found:
+    - Runtime
+    - Context Engineering
+    - MCP
+    - Agents
+    - Realtime
+    - Evals
+  generic_examples_are_canonical_curriculum: false
+  github_searches:
+    "Aula 3.2": NO_CANONICAL_RESULT
+    "Aula 3.3": NO_CANONICAL_RESULT
+    "Aula 3.10": NO_CANONICAL_RESULT
 
 rejected_substitutions:
-  - candidate: leon337/curso-instavar@main:course-data.mjs
-    observed_lesson_count: 10
+  - candidate: leon337/curso-instavar@main
     reason: >-
-      This is a separate registered product curriculum about Instavar fundamentals,
-      production and finalization. It does not match the verified Runtime Agêntico
-      pilot lineage, so it cannot be silently substituted for this mission's course.
+      Separate ten-lesson Instavar curriculum; does not match verified Runtime Agêntico
+      pilot lineage and cannot be silently substituted.
 
-unresolved:
-  - canonical course identifier/name
-  - full ten-lesson ordered inventory
+blocked_fields:
+  - full ordered inventory
   - titles for the other nine lessons
-  - approved numbering scheme beyond pilot 3.1
-  - per-lesson learning objectives
-  - authoritative source location for the advanced course curriculum
+  - objectives for the other nine lessons
+  - numbering beyond pilot 3.1
 
 blocker:
-  code: CANONICAL_CURRICULUM_SOURCE_UNRESOLVED
-  effect: "C1 lesson content packs and downstream authoring must not start."
-  human_gate: false
+  code: CANONICAL_CURRICULUM_SOURCE_UNAVAILABLE
   dependency: >-
-    A canonical Project source containing the approved curriculum must become
-    accessible or be explicitly identified. This is a source dependency, not an
-    authorization to invent missing lessons.
-
-executor_observation:
-  bubble_native_cognitive_subagents: UNAVAILABLE_IN_CURRENT_SESSION
-  evidence: >-
-    Capability doctor found no DeepSeek Harness binary/SDK, no DSH_HOME and no
-    MCF_DSH_AGENT_TEAM_READY flag. No cognitive subagent execution is claimed.
-  allowed_work: >-
-    MESTRE may continue source reconciliation, GitHub bookkeeping, deterministic
-    validation and checkpointing without mislabeling those operations as subagents.
+    The full predecessor-chat transcript containing the approved curriculum is not
+    exposed in current Project/Library sources. The visible screenshots show the prior
+    recovery attempt and conversation limit, not the missing lesson list.
+  effect: >-
+    C1-C6 for the nine unknown lessons are explicitly BLOCKED_BY_C0. No lesson is
+    invented or derived from generic examples.
+  human_gate: false
+  resume_condition: >-
+    Canonical predecessor transcript becomes accessible in Project sources or is
+    otherwise supplied as an authoritative source.
