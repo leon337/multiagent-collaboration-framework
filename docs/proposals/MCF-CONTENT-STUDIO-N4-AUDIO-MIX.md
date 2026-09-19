@@ -23,7 +23,12 @@ Current state:
 - contract/types/tests: IMPLEMENTED;
 - encoded stream presence QA: IMPLEMENTED;
 - reusable media registry for SFX/music: PENDING;
-- actual generic FFmpeg/Remotion mix executor: PENDING;
+- generic FFmpeg mix executor: IMPLEMENTED + sandbox smoke PASS;
+- CI synthetic narration/music/SFX/ducking smoke: IMPLEMENTED;
 - loudness/peak QA: PENDING.
 
 The contract must not be marked as a finished audio/FX system until those runtime pieces exist.
+
+## Sandbox proof
+
+The generic executor was exercised locally with synthetic narration, music and SFX. It produced a 4.0 s AAC mix and passed ffprobe stream/duration verification before being promoted to the mission branch.

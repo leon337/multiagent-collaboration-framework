@@ -7,6 +7,8 @@ on:
       - 'experimentos/mcf-content-studio-n4/scripts/build-review-html.py'
       - 'experimentos/mcf-content-studio-n4/scripts/build-review-lab-v2.py'
       - 'experimentos/mcf-content-studio-n4/scripts/verify-media-audio.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-audio-mix.py'
+      - 'experimentos/mcf-content-studio-n4/src/audio/**'
       - 'experimentos/mcf-content-studio-n4/scripts/benchmark.mjs'
       - 'experimentos/mcf-content-studio-n4/src/pilot/**'
       - 'experimentos/mcf-content-studio-n4/src/qa/**'
@@ -52,6 +54,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
           ffmpeg -version | head -n 1
+
+      - name: Smoke reusable narration/music/SFX ducking mix
+        run: |
+          mkdir -p out/audio-mix-smoke
+          ffmpeg -y -f lavfi -i 'sine=frequency=440:duration=4' -c:a pcm_s16le out/audio-mix-smoke/narr.wav
+          ffmpeg -y -f lavfi -i 'sine=frequency=220:duration=4' -c:a pcm_s16le out/audio-mix-smoke/music.wav
+          ffmpeg -y -f lavfi -i 'sine=frequency=880:duration=1' -c:a pcm_s16le out/audio-mix-smoke/sfx.wav
+          cat > out/audio-mix-smoke/spec.json <<'JSON'
+          {"fps":30,"clips":[{"id":"n1","kind":"narration","assetId":"narr","startFrame":0,"durationFrames":120,"gainDb":0},{"id":"m1","kind":"music","assetId":"music","startFrame":0,"durationFrames":120,"gainDb":-12,"fadeInFrames":15,"fadeOutFrames":15},{"id":"s1","kind":"sfx","assetId":"sfx","startFrame":45,"durationFrames":30,"gainDb":-6}],"ducking":[{"trigger":"narration","targets":["music"],"reductionDb":-9,"attackFrames":6,"releaseFrames":15}]}
+          JSON
+          cat > out/audio-mix-smoke/assets.json <<'JSON'
+          {"narr":"out/audio-mix-smoke/narr.wav","music":"out/audio-mix-smoke/music.wav","sfx":"out/audio-mix-smoke/sfx.wav"}
+          JSON
+          python scripts/build-audio-mix.py --spec out/audio-mix-smoke/spec.json --asset-map out/audio-mix-smoke/assets.json --output out/audio-mix-smoke/mix.m4a
+          python scripts/verify-media-audio.py out/audio-mix-smoke/mix.m4a --min-duration 3.9
 
       - name: Download generated narration segments
         run: |
