@@ -239,7 +239,13 @@
         "supportedAspects",
         "componentIds",
         "slots",
-        "status"
+        "status",
+        "tags",
+        "intents",
+        "complexity",
+        "learning",
+        "minNodes",
+        "maxNodes"
       ],
       "additionalProperties": false,
       "properties": {
@@ -304,6 +310,38 @@
         },
         "status": {
           "$ref": "#/$defs/status"
+        },
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "intents": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "complexity": {
+          "$ref": "#/$defs/complexity"
+        },
+        "learning": {
+          "type": "boolean"
+        },
+        "minNodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxNodes": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     }

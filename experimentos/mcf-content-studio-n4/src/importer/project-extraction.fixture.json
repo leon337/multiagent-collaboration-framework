@@ -1,0 +1,48 @@
+{
+  "extractionId": "rendercomp-project-extraction",
+  "source": {
+    "url": "https://github.com/RenderComp/free-remotion-templates",
+    "revision": "f648980e528defb7594e24c6447055f0540f340b",
+    "license": {
+      "id": "MIT",
+      "evidence": "https://github.com/RenderComp/free-remotion-templates/blob/f648980e528defb7594e24c6447055f0540f340b/LICENSE",
+      "reviewed": true
+    }
+  },
+  "candidates": [
+    {
+      "id": "bounce-headline",
+      "path": "src/components/bounce-in-headline/BounceInHeadline.tsx",
+      "kind": "component",
+      "reason": "Reusable kinetic headline already adapted in foundation.",
+      "dependencies": [],
+      "networkRequired": false,
+      "dynamicCode": false,
+      "assetRefs": [],
+      "status": "DISCOVERED"
+    },
+    {
+      "id": "remote-demo",
+      "path": "src/components/remote-demo.tsx",
+      "kind": "component",
+      "reason": "Example of a candidate requiring network review.",
+      "dependencies": [],
+      "networkRequired": true,
+      "dynamicCode": false,
+      "assetRefs": [],
+      "status": "DISCOVERED"
+    },
+    {
+      "id": "readme",
+      "path": "README.md",
+      "kind": "asset",
+      "reason": "Not an audiovisual component candidate.",
+      "dependencies": [],
+      "networkRequired": false,
+      "dynamicCode": false,
+      "assetRefs": [],
+      "status": "DISCOVERED"
+    }
+  ],
+  "status": "REVIEWED"
+}

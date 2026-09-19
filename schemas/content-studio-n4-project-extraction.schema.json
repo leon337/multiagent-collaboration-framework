@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcf.local/schemas/content-studio-n4-project-extraction.schema.json",
+  "title": "MCF N4 External Project Extraction Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "extractionId",
+    "source",
+    "candidates",
+    "status"
+  ],
+  "properties": {
+    "extractionId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]+$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "revision",
+        "license"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "license": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "evidence",
+            "reviewed"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reviewed": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "path",
+          "kind",
+          "reason",
+          "dependencies",
+          "networkRequired",
+          "dynamicCode",
+          "assetRefs",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]+$"
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "component",
+              "motion",
+              "template",
+              "asset"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dependencies": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "networkRequired": {
+            "type": "boolean"
+          },
+          "dynamicCode": {
+            "type": "boolean"
+          },
+          "assetRefs": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "enum": [
+              "DISCOVERED",
+              "ELIGIBLE",
+              "REVIEW_REQUIRED",
+              "REJECTED"
+            ]
+          }
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "DISCOVERED",
+        "REVIEWED",
+        "EXTRACTED",
+        "REJECTED"
+      ]
+    }
+  }
+}
