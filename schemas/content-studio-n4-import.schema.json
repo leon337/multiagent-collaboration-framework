@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcf.local/schemas/content-studio-n4-import.schema.json",
+  "title": "MCF Content Studio N4 Import Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["importId", "source", "license", "dependencies", "security", "performance", "adaptation", "status"],
+  "properties": {
+    "importId": {"type": "string", "pattern": "^[a-z][a-z0-9-]+$"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "revision", "retrievedAt"],
+      "properties": {
+        "url": {"type": "string", "format": "uri"},
+        "revision": {"type": "string", "minLength": 1},
+        "retrievedAt": {"type": "string", "format": "date-time"}
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "evidence", "reviewed"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "evidence": {"type": "string", "minLength": 1},
+        "reviewed": {"type": "boolean"}
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "version", "purpose"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "version": {"type": "string", "minLength": 1},
+          "purpose": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "required": ["reviewed", "networkRequired", "dynamicCode", "findings"],
+      "additionalProperties": false,
+      "properties": {
+        "reviewed": {"type": "boolean"},
+        "networkRequired": {"type": "boolean"},
+        "dynamicCode": {"type": "boolean"},
+        "findings": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "performance": {
+      "type": "object",
+      "required": ["reviewed", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "reviewed": {"type": "boolean"},
+        "notes": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "adaptation": {
+      "type": "object",
+      "required": ["targetComponentId", "changes", "tests"],
+      "additionalProperties": false,
+      "properties": {
+        "targetComponentId": {"type": "string", "minLength": 1},
+        "changes": {"type": "array", "items": {"type": "string"}},
+        "tests": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "status": {"enum": ["DISCOVERED", "REVIEWED", "ADAPTED", "APPROVED", "REJECTED"]}
+  }
+}
