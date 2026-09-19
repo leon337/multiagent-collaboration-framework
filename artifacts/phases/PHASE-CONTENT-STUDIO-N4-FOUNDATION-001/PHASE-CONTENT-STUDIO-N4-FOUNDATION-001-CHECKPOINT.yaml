@@ -1,0 +1,51 @@
+phase_id: PHASE-CONTENT-STUDIO-N4-FOUNDATION-001
+mission_id: MCF-CONTENT-STUDIO-N4-001
+parent_mission_id: null
+project: multiagent-collaboration-framework
+base_commit: 19731f281126c1360e33732dd74b82a85e9e7f7a
+head_commit: ""
+branch: planning/mcf-content-studio-n4-20260919
+pull_request: null
+objective: "Implantar fundação N4: components, registry, Video Lab, importer, piloto e QA."
+objective_state: EM_EXECUCAO
+cycle: 1
+completed_acceptance_criteria:
+  - "missao registrada na Issue #254"
+  - "baseline verificado"
+  - "branch isolada criada"
+  - "roadmap/checklist/plan/checkpoint iniciados"
+remaining_gaps:
+  - "arquitetura N4"
+  - "10 componentes"
+  - "registry"
+  - "Video Lab"
+  - "importer"
+  - "piloto Aula 3.1"
+  - "QA/benchmark"
+  - "auditoria"
+artifacts:
+  - docs/proposals/MCF-CONTENT-STUDIO-N4-ROADMAP.md
+  - docs/proposals/MCF-CONTENT-STUDIO-N4-CHECKLIST.md
+  - artifacts/phases/PHASE-CONTENT-STUDIO-N4-FOUNDATION-001/PHASE-CONTENT-STUDIO-N4-FOUNDATION-001-PLAN.md
+evidence:
+  - "GitHub Issue #254"
+  - "main@19731f281126c1360e33732dd74b82a85e9e7f7a"
+  - "Issue #251 benchmark"
+  - "Issue #248 related visual mission"
+decisions:
+  - "risk_class=B"
+  - "implementation limited to isolated branch and draft PR"
+  - "pilot gates migration of remaining nine lessons"
+open_findings: []
+blockers: []
+recoveries: []
+next_phase: ""
+next_action: "Definir arquitetura N4, contracts e schemas do G1."
+recipient: Mestre
+return_to: Mestre
+human_action_required: false
+source_of_truth:
+  - "GitHub live state"
+  - "Issue #254"
+  - "project-instructions/MCF-PROJECT-OPERATING-INSTRUCTIONS.md"
+  - "templates/MCF-UNIFIED-MISSION.yaml"
