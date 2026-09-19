@@ -17,6 +17,7 @@ describe('N4 evolution foundations',()=>{
 
   it('discovers components by pedagogical intent',()=>{
     expect(searchComponentManifests({intent:'retrieval-practice',status:'APPROVED'}).map((x)=>x.id)).toContain('active-recall');
+    expect(searchComponentManifests({intent:'agent-storytelling',status:'APPROVED'}).map((x)=>x.id)).toContain('stick-rig');
   });
 
   it('derives lesson duration from scene data',()=>{
