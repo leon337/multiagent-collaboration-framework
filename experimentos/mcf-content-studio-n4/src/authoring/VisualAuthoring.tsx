@@ -24,7 +24,7 @@ export const alignSceneLayout=(value:SceneLayout,alignment:SceneAlignment):Scene
   if(alignment==='bottom') next.y=0.35;
   return normalizeSceneLayout(next);
 };
-export const nudgeSceneLayout=(value:SceneLayout,dx:number,dy:number)=>normalizeSceneLayout({...value,x:value.x+dx,y:value.y+dy});
+export const nudgeSceneLayout=(value:SceneLayout,dx:number,dy:number)=>normalizeSceneLayout({...value,x:Number((value.x+dx).toFixed(6)),y:Number((value.y+dy).toFixed(6))});
 
 type Gesture={mode:'drag'|'resize'|'rotate';startX:number;startY:number;start:SceneLayout;pointerId:number};
 
