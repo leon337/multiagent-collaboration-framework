@@ -1,0 +1,99 @@
+# PHASE-CONTENT-STUDIO-N4-FOUNDATION-001 — Validation Full
+
+## Exact-head technical evidence
+
+`7f012451e65980fb213d87cfe063d49fd7d68525`
+
+All required Content Studio workflows observed on this head returned SUCCESS.
+
+## Component matrix
+
+Registry:
+- 10 MCF-native components;
+- 1 governed external component;
+- total: 11.
+
+Render matrix:
+- portrait: all 11;
+- landscape: all 11;
+- reduced-motion: every component declaring support;
+- total renders: 31;
+- minimum observed still runtime: 3416 ms;
+- maximum observed still runtime: 11687 ms;
+- average observed still runtime: ~3725 ms.
+
+Times are runner-specific and not universal performance guarantees.
+
+## Browser smoke
+
+Real Chromium, not static HTML inspection.
+
+Desktop:
+- 1440×900;
+- Video Lab visible;
+- 11/11 registry entries visible before filtering;
+- editability filter exercised;
+- 16:9 exercised;
+- reduced-motion exercised;
+- still pipeline command produced;
+- horizontal overflow: false;
+- ready time observed: 542 ms.
+
+Mobile:
+- 390×844;
+- same critical flow exercised;
+- horizontal overflow: false;
+- ready time observed: 279 ms.
+
+## Schema validation
+
+Live registry validates against `content-studio-n4-registry.schema.json`.
+
+Approved external import manifest validates against `content-studio-n4-import.schema.json`.
+
+## Adversarial technical audit
+
+The MCF deterministic `TechnicalAdversarialAuditor` was executed through a mission-specific evidence packet.
+
+Result:
+- schema: `mcf_adversarial_audit/v1`;
+- cognitive: `false`;
+- verdict: `PASS`;
+- findings: 9;
+- failed: 0.
+
+This is explicitly not an Emily independent cognitive audit.
+
+## External Relay advisory
+
+Neura Relay was asked to review the proposed mission closeout.
+
+Observed:
+- identity_check: pass;
+- authority_check: pass;
+- evidence_check: pass;
+- policy_check: pass;
+- risk_check: warn;
+- final decision: stop.
+
+The warning was bound to Relay Registry lookup readiness:
+`MESTRE` / `MCF-PROTOCOL-1.2` were not registered as Relay Registry references.
+
+Classification for this mission:
+`lacuna_ainda_em_definicao / external_optional_adapter_registry_gap`.
+
+Reason it is not a blocker to experimental MCF closeout:
+- Relay identifies itself as optional adapter, not core dependency;
+- it did not identify missing MCF evidence or policy;
+- downstream execution remained developer-owned;
+- no production/publication/merge action is being taken.
+
+The STOP is preserved as evidence and is not rewritten as approval.
+
+## Methodological limits
+
+- internal named-agent reviews were produced under one coordinating conversational context;
+- no independent cognitive Emily execution occurred;
+- visual fixtures do not prove arbitrary future content can never overflow;
+- review audio is not yet a durable production asset;
+- no production promotion is claimed.

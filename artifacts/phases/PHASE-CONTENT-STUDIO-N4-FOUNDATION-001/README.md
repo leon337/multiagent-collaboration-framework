@@ -1,11 +1,22 @@
 # PHASE-CONTENT-STUDIO-N4-FOUNDATION-001
 
-Missão: `MCF-CONTENT-STUDIO-N4-001`  
-Tracker: #254  
-Branch: `planning/mcf-content-studio-n4-20260919`
+Final state: `ENTREGUE`.
 
-Esta fase contém os artefatos de rastreabilidade da fundação do Content Studio N4.
+This directory is the traceability pack for `MCF-CONTENT-STUDIO-N4-001`.
 
-Estado inicial: `EM_EXECUCAO`.
+Core files:
+- PLAN — original phase contract;
+- REPORT — final outcome;
+- VALIDATION — concise exact-head evidence;
+- VALIDATION-FULL — detailed evidence and methodological limits;
+- SMOKE — critical path result;
+- CHECKPOINT — final machine-readable state;
+- DECISIONS — architectural/process decisions;
+- AUDIT-PACK — pre-audit evidence map;
+- AUDIT — final audit verdict;
+- MISSION-TRACE — chronological execution/recovery trace;
+- LEO-GATE — internal closeout decision;
+- SCALE-DECISION — decision for future lesson migration;
+- ARTIFACT-MANIFEST.sha256 — phase document integrity.
 
-O phase pack completo será preenchido conforme G1–G8. Arquivos ainda não criados permanecem PENDENTES e não devem ser inferidos como validados.
+No file in this pack represents production publication or a merge to main.
