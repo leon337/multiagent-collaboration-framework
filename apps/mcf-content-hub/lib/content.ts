@@ -1,4 +1,4 @@
-import {list} from '@vercel/blob';
+import {get,list} from '@vercel/blob';
 import seed from '@/data/seed-content.json';
 import type {ContentItem} from './types';
 const MANIFEST='mcf-content-hub/manifest.json';
@@ -11,9 +11,9 @@ export async function getContentItems():Promise<ContentItem[]>{
     const result=await list({prefix:MANIFEST,limit:1,token});
     const manifest=result.blobs.find((blob)=>blob.pathname===MANIFEST);
     if(!manifest) return fallback;
-    const response=await fetch(manifest.url,{cache:'no-store'});
-    if(!response.ok) return fallback;
-    const remote=await response.json() as ContentItem[];
+    const response=await get(manifest.pathname,{access:'private',token,useCache:false});
+    if(response?.statusCode!==200) return fallback;
+    const remote=await new Response(response.stream).json() as ContentItem[];
     const merged=new Map<string,ContentItem>();
     for(const item of fallback) merged.set(item.slug,item);
     for(const item of remote) merged.set(item.slug,item);
