@@ -243,7 +243,7 @@ def tool_repo_search(args: dict[str, Any]) -> str:
     pathspecs = [p.rstrip("/") for p in SAFE_PREFIXES if (REPO_ROOT / p.rstrip("/")).exists()]
     if (REPO_ROOT / "README.md").exists():
         pathspecs.append("README.md")
-    proc = run_command(["git", "grep", "-n", "-I", "-e", query, "--", *pathspecs], timeout=30)
+    proc = run_command(["git", "grep", "-n", "-I", "-F", "-e", query, "--", *pathspecs], timeout=30)
     if proc.returncode not in (0, 1):
         raise RuntimeError(proc.stderr[-1000:])
     lines = (proc.stdout or "NO_MATCHES").splitlines()[:80]
@@ -641,6 +641,48 @@ def run_parallel(model: str, packets: list[AgentPacket], stage: str, stage_conte
                 )
     return results, failures
 
+def run_parallel_with_retry(
+    model: str,
+    packets: list[AgentPacket],
+    stage: str,
+    stage_context: str,
+    timeout: int,
+) -> tuple[list[AgentResult], dict[str, str], dict[str, int]]:
+    results, failures = run_parallel(model, packets, stage, stage_context, timeout)
+    retry_attempts: dict[str, int] = {}
+    if not failures:
+        return results, failures, retry_attempts
+
+    failed_ids = set(failures)
+    retry_packets = [packet for packet in packets if packet.agent_id in failed_ids]
+    retry_context = (
+        stage_context[:5000]
+        + "\n\nRETRY_CONTEXT: prior attempt failed. Keep the answer concise, "
+          "use exactly one allowed read-only tool call, and avoid speculative repository regex."
+    )
+    print(
+        f"MCF_FANOUT_RETRY stage={stage} agents={','.join(p.agent_id for p in retry_packets)}",
+        flush=True,
+    )
+    retry_results, retry_failures = run_parallel(
+        model,
+        retry_packets,
+        stage,
+        retry_context,
+        timeout,
+    )
+    for packet in retry_packets:
+        retry_attempts[packet.agent_id] = 1
+
+    succeeded = {result.agent_id for result in retry_results}
+    merged_results = results + retry_results
+    remaining_failures = {
+        agent_id: error
+        for agent_id, error in retry_failures.items()
+        if agent_id not in succeeded
+    }
+    return merged_results, remaining_failures, retry_attempts
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -665,13 +707,13 @@ def main() -> int:
         "STAGE=A_AUTHORING_FAN_OUT. Work independently. No peer artifacts are available by design. "
         "Use your tool call to inspect the current checked-out public repository and produce your own evidence."
     )
-    author_results, author_failures = run_parallel(
+    author_results, author_failures, author_retries = run_parallel_with_retry(
         args.model, author_packets, "A", author_context, args.timeout
     )
 
     author_package = build_package(author_results, author_failures, per_agent_limit=1700)
 
-    fanin_results, fanin_failures = run_parallel(
+    fanin_results, fanin_failures, fanin_retries = run_parallel_with_retry(
         args.model, fanin_packets, "B", author_package, args.timeout
     )
 
@@ -679,7 +721,7 @@ def main() -> int:
                                  {**author_failures, **fanin_failures},
                                  per_agent_limit=1500)
 
-    gate_results, gate_failures = run_parallel(
+    gate_results, gate_failures, gate_retries = run_parallel_with_retry(
         args.model, [GATE_AGENT], "C", gate_context, args.timeout
     )
 
@@ -698,6 +740,7 @@ def main() -> int:
         "success_count": total_success,
         "expected_count": total_expected,
         "failures": failures,
+        "retry_attempts": {**author_retries, **fanin_retries, **gate_retries},
         "implementation_authorized": False,
         "live_mutation_performed": False,
         "paid_api_used": False,
