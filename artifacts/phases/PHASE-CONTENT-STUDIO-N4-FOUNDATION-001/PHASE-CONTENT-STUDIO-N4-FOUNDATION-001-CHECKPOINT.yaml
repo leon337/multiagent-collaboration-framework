@@ -10,6 +10,9 @@ objective: "Implantar fundação N4: components, registry, Video Lab, importer, 
 objective_state: EM_EXECUCAO
 cycle: 2
 completed_acceptance_criteria:
+  - "HTML review self-contained com MP4 H.264 + audio AAC integrado"
+  - "narracao PT-BR clear segmentada por cena e muxada no piloto de 67s"
+  - "GitHub Actions run 35431478491 = success"
   - "G0 bootstrap completo"
   - "G1 arquitetura, contracts, schemas, tokens e asset policy materializados"
   - "10 componentes N4 implementados"
@@ -20,13 +23,11 @@ completed_acceptance_criteria:
   - "piloto Runtime Agentico N4 registrado como Composition Remotion de 67s"
   - "CI Content Studio N4 run #6: typecheck + tests + build = success"
 remaining_gaps:
-  - "render smoke run #7 em execucao"
   - "inspecao visual dos stills 9:16, 16:9, reduced-motion e piloto"
   - "promocao ou rejeicao do componente externo apos preview"
   - "filtros avancados do registry"
   - "template selection no Video Lab"
   - "still capture dentro do Video Lab"
-  - "audio e legendas sincronizados no piloto"
   - "overflow/text-fit visual tests"
   - "benchmark de preview/render e comparacao #251"
   - "auditoria Emily"
@@ -59,13 +60,12 @@ decisions:
   - "Vercel free-tier deployment limit is unrelated and not used as mission evidence"
   - "no merge to main, deploy, or publication authorized"
 open_findings:
-  - "G7 render smoke pending"
 blockers: []
 recoveries:
   - "initial CI failed because pnpm blocked esbuild install script"
   - "recovered by explicit local allowBuilds: esbuild=true, preserving supply-chain policy"
 next_phase: ""
-next_action: "Inspect Content Studio N4 run #7 smoke artifacts; fix visual/runtime failures; then decide external component approval."
+next_action: "Evoluir o HTML review com comparacao A/B e consolidar QA/benchmark antes da auditoria."
 recipient: Mestre
 return_to: Mestre
 human_action_required: false
