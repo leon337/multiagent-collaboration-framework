@@ -1,0 +1,84 @@
+schema: mcf_mestre_succession_capsule/v1
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+checkpoint_id: CP-002-S03-FREEZE
+created_date: 2026-08-27
+predecessor:
+  role: MESTRE
+  state: ACTIVE_UNTIL_HANDOFF
+successor:
+  role: MESTRE
+  state: NOT_SPAWNED
+human_authority: LEANDRO
+
+purpose: >-
+  Prove that a new ChatGPT/MESTRE context can reconstruct mission state from
+  persistent sources, pass a recovery challenge, assume the mission, and finish
+  MCF v1.2.0 without operational dependence on the predecessor chat.
+
+live_github_state:
+  main_sha: 2b8ce24b71c9f9095c801dafdd762a2cef202fa9
+  main_drift_since_pr175_base: NONE
+  release_candidate_pr: 175
+  release_candidate_state: OPEN_READY_MERGEABLE
+  release_candidate_head: 43b0cccab4b29a2ed4c77abd824b652521c2b8c1
+  release_candidate_tree: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
+  release_target: v1.2.0
+  succession_ledger_pr: 176
+  succession_branch: ops/mcf-mestre-cross-chat-succession-001
+
+qualification:
+  focused_tests: 34/34_PASS
+  canonical_ci: 5/5_SUCCESS
+  local_remote_tree_equivalence: PASS
+  final_reviews:
+    leo: PASS_WITH_NONBLOCKING_NOTES
+    renato: PASS_WITH_NONBLOCKING_NOTES
+    emily: PASS
+    critical_high_blockers: NONE
+
+validated_behaviors:
+  - name: HUMANO_NO_CONTROLE
+    effect: suspend_new_actions_preserve_state_checkpoint_wait_explicit_resume
+  - name: VISIBLE_GUI_COPRESENCE
+    effect: authorized_GUI_operation_with_truthful_mechanism_and_audit_trace
+  - name: GUI_ROUND_TRIP
+    evidence: hello_word_typed_then_sent_then_received
+
+human_authorizations:
+  merge_pr175_after_validation: AUTHORIZED
+  complete_v1_2_0_release: AUTHORIZED
+  cross_chat_succession_test: AUTHORIZED
+  visible_auditable_operation: AUTHORIZED
+
+remaining_release_work:
+  - persist_final_reviewer_gate_in_remote_evidence
+  - successor_reconcile_live_main_and_pr175
+  - successor_pass_recovery_challenge
+  - merge_pr175_with_expected_head_sha
+  - capture_resulting_main_sha_and_tree
+  - post_merge_qualification
+  - create_tag_v1.2.0
+  - create_github_release_v1.2.0
+  - verify_tag_sha_release_chain
+  - publish_final_release_receipt
+
+nonblocking_followups:
+  - integrated_policy_to_GUI_suspension_test
+  - gate_during_in_flight_tool_call
+  - explicit_resume_regression_test
+  - automate_tested_tree_equals_published_tree
+  - richer_GUI_payload_smoke
+  - independent_architecture_security_review
+  - persistent_MissionRuntime_pause_resume_API
+  - gate_telemetry
+
+successor_rules:
+  - do_not_read_EXPECTED_STATE_before_producing_RECOVERED_STATE
+  - reconcile_live_GitHub_instead_of_trusting_capsule_when_state_can_drift
+  - do_not_invent_missing_state
+  - do_not_expose_secrets
+  - no_merge_until_SUCCESSION_EQUIVALENCE_PASS
+  - HUMANO_NO_CONTROLE_has_immediate_precedence
+  - no_evidence_no_pass
+
+next_task: S04_SPAWN_SUCCESSOR
