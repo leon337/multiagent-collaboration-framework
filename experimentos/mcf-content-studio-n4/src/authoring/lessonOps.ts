@@ -4,6 +4,7 @@ export const reorderScene=(spec:TechnicalLessonSpec,from:number,to:number):Techn
   if(from<0||from>=spec.scenes.length||to<0||to>=spec.scenes.length||from===to) return spec;
   const scenes=[...spec.scenes];
   const [scene]=scenes.splice(from,1);
+  if(!scene) return spec;
   scenes.splice(to,0,scene);
   return {...spec,scenes};
 };

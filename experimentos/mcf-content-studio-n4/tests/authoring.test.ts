@@ -9,13 +9,13 @@ const spec=lesson as TechnicalLessonSpec;
 describe('N4 authoring core',()=>{
   it('reorders scenes without mutating the source',()=>{
     const next=reorderScene(spec,0,1);
-    expect(next.scenes[0].id).toBe(spec.scenes[1].id);
-    expect(spec.scenes[0].id).toBe('orientation');
+    expect(next.scenes[0]!.id).toBe(spec.scenes[1]!.id);
+    expect(spec.scenes[0]!.id).toBe('orientation');
   });
 
   it('updates scene duration with a safe positive frame count',()=>{
     const next=updateSceneDuration(spec,0,0);
-    expect(next.scenes[0].durationFrames).toBe(1);
+    expect(next.scenes[0]!.durationFrames).toBe(1);
   });
 
   it('exports stable JSON',()=>{

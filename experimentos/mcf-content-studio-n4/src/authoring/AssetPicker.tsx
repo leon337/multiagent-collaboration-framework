@@ -9,7 +9,7 @@ export type AssetPickerProps={
 
 export const AssetPicker=({usage,selected=[],onChange}:AssetPickerProps)=>{
   const [query,setQuery]=useState('');
-  const assets=useMemo(()=>searchAssets({usage}).filter((asset)=>
+  const assets=useMemo(()=>searchAssets(usage?{usage}:{}).filter((asset)=>
     !query.trim()||
     asset.id.toLowerCase().includes(query.trim().toLowerCase())||
     asset.style.toLowerCase().includes(query.trim().toLowerCase())
