@@ -3,6 +3,7 @@ import {searchAssets} from '../src/assets/searchAssets';
 import {getMotionPreset,isSemanticMotion,motionPresets,resolveMotionStyle} from '../src/motion/presets';
 import {resolveSemanticFocus} from '../src/motion/semantic';
 import {fitTextSize,isAtMinimumTextSize} from '../src/lib/textFit';
+import {stickRigVariants} from '../src/components/StickRig';
 import {searchComponentManifests} from '../src/registry/search';
 import lesson from '../src/templates/runtime-agentico-data-demo.lesson.json';
 import {getTechnicalLessonDuration,type TechnicalLessonSpec} from '../src/templates/types';
@@ -10,6 +11,9 @@ import {getTechnicalLessonDuration,type TechnicalLessonSpec} from '../src/templa
 describe('N4 evolution foundations',()=>{
   it('finds approved assets by semantic usage metadata',()=>{
     expect(searchAssets({usage:'sandbox'}).map((x)=>x.id)).toContain('sandbox-boundary-icon');
+    expect(searchAssets({type:'music'}).map((x)=>x.id)).toContain('music-bed');
+    expect(searchAssets({type:'sound'}).map((x)=>x.id)).toContain('ui-click');
+    expect(searchAssets({type:'video'}).map((x)=>x.id)).toContain('demo-loop');
   });
   it('resolves implemented motion styles deterministically',()=>{
     expect(getMotionPreset('fade')?.status).toBe('IMPLEMENTED');
@@ -27,6 +31,8 @@ describe('N4 evolution foundations',()=>{
     expect(searchComponentManifests({intent:'agent-storytelling',status:'APPROVED'}).map((x)=>x.id)).toContain('stick-rig');
     expect(searchComponentManifests({intent:'interaction',status:'APPROVED'}).map((x)=>x.id)).toContain('click-cue');
   });
+  it('exposes a reusable character cast from StickRig variants',()=>{expect(stickRigVariants).toEqual(['agent','operator','reviewer','human']);});
+
   it('fits long text without dropping below the readability floor',()=>{
     const size=fitTextSize({text:'Uma manchete técnica longa que precisa permanecer legível na safe area',preferredPx:76,minPx:52,softCharacterLimit:34});
     expect(size).toBeGreaterThanOrEqual(52); expect(size).toBeLessThan(76);

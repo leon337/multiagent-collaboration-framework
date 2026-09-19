@@ -9,6 +9,9 @@ on:
       - 'experimentos/mcf-content-studio-n4/scripts/verify-media-audio.py'
       - 'experimentos/mcf-content-studio-n4/scripts/build-audio-mix.py'
       - 'experimentos/mcf-content-studio-n4/src/audio/**'
+      - 'experimentos/mcf-content-studio-n4/assets/**'
+      - 'experimentos/mcf-content-studio-n4/scripts/materialize-built-in-assets.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/verify-audio-loudness.py'
       - 'experimentos/mcf-content-studio-n4/scripts/benchmark.mjs'
       - 'experimentos/mcf-content-studio-n4/src/pilot/**'
       - 'experimentos/mcf-content-studio-n4/src/qa/**'
@@ -55,6 +58,17 @@ jobs:
           sudo apt-get install -y ffmpeg
           ffmpeg -version | head -n 1
 
+      - name: Materialize built-in video/audio assets
+        run: |
+          python scripts/materialize-built-in-assets.py
+          test -s public/assets/n4/generated/demo-loop.mp4
+          test -s public/assets/n4/generated/ui-click.wav
+          test -s public/assets/n4/generated/ambient-pulse.wav
+          test -s public/assets/n4/generated/music-bed.wav
+          python scripts/verify-media-audio.py public/assets/n4/generated/ui-click.wav --min-duration 0.1
+          python scripts/verify-media-audio.py public/assets/n4/generated/music-bed.wav --min-duration 1.9
+          python scripts/verify-audio-loudness.py public/assets/n4/generated/music-bed.wav
+
       - name: Smoke reusable narration/music/SFX ducking mix
         run: |
           mkdir -p out/audio-mix-smoke
@@ -69,6 +83,7 @@ jobs:
           JSON
           python scripts/build-audio-mix.py --spec out/audio-mix-smoke/spec.json --asset-map out/audio-mix-smoke/assets.json --output out/audio-mix-smoke/mix.m4a
           python scripts/verify-media-audio.py out/audio-mix-smoke/mix.m4a --min-duration 3.9
+          python scripts/verify-audio-loudness.py out/audio-mix-smoke/mix.m4a
 
       - name: Download generated narration segments
         run: |
@@ -125,8 +140,10 @@ jobs:
         run: |
           ffmpeg -y             -i out/runtime-agentico-n4-silent.mp4             -i out/runtime-agentico-n4-narration.m4a             -map 0:v:0             -map 1:a:0             -c:v copy             -c:a aac             -b:a 192k             -t 67             -movflags +faststart             out/runtime-agentico-n4-audio.mp4
 
-      - name: Verify encoded narration stream
-        run: python scripts/verify-media-audio.py out/runtime-agentico-n4-audio.mp4 --min-duration 60
+      - name: Verify encoded narration stream and loudness
+        run: |
+          python scripts/verify-media-audio.py out/runtime-agentico-n4-audio.mp4 --min-duration 60
+          python scripts/verify-audio-loudness.py out/runtime-agentico-n4-audio.mp4
 
       - name: Render Review Lab QA stills
         run: |

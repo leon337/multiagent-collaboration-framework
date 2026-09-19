@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.7.0",
+  "registryVersion": "0.8.0",
   "components": [
     {
       "id": "focus-concept",
@@ -1666,7 +1666,7 @@
     {
       "id": "stick-rig",
       "displayName": "StickRig",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "category": "character",
       "pedagogicalPurpose": "Representar agentes e papéis como personagens reutilizáveis com juntas, poses e ações dirigidas pela timeline.",
       "supportedAspects": [
@@ -1674,16 +1674,19 @@
         "16:9"
       ],
       "defaultProps": {
-        "label": "MESTRE",
-        "pose": "pointing",
+        "label": "AGENTE",
+        "pose": "idle",
         "action": "idle",
+        "variant": "agent",
         "showLabel": true
       },
       "editableProps": [
         "label",
         "pose",
         "action",
-        "showLabel"
+        "variant",
+        "showLabel",
+        "accent"
       ],
       "duration": {
         "minFrames": 60,
@@ -1709,7 +1712,11 @@
         "agent",
         "storytelling",
         "pose",
-        "action"
+        "action",
+        "cast",
+        "operator",
+        "reviewer",
+        "human"
       ],
       "intents": [
         "agent-storytelling",

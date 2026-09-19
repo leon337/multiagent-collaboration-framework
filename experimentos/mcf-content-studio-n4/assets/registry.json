@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.2.0",
+  "registryVersion": "0.3.0",
   "assets": [
     {
       "id": "runtime-node-icon",
@@ -20,7 +20,9 @@
         "id": "MCF-REPOSITORY-LICENSE",
         "evidence": "../../../LICENSE"
       },
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "version": "1.0.0",
+      "dedupeKey": "runtime-node-icon@1.0.0"
     },
     {
       "id": "sandbox-boundary-icon",
@@ -41,7 +43,9 @@
         "id": "MCF-REPOSITORY-LICENSE",
         "evidence": "../../../LICENSE"
       },
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "version": "1.0.0",
+      "dedupeKey": "sandbox-boundary-icon@1.0.0"
     },
     {
       "id": "agent-avatar-neutral",
@@ -58,6 +62,323 @@
       "source": {
         "kind": "mcf",
         "path": "/assets/n4/agent-avatar-neutral.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED",
+      "version": "1.0.0",
+      "dedupeKey": "agent-avatar-neutral@1.0.0"
+    },
+    {
+      "id": "mcf-background-01",
+      "version": "1.0.0",
+      "dedupeKey": "mcf-background-01@1.0.0",
+      "contentHash": "sha256:3ae415848abf5dce619503419e019755d5674a742f7d46ed30f0ef556e642f0b",
+      "type": "background",
+      "style": "technical-editorial",
+      "orientation": "portrait",
+      "theme": "dark",
+      "usage": [
+        "background",
+        "technical",
+        "lesson"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/mcf-background.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "technical-grid-texture",
+      "version": "1.0.0",
+      "dedupeKey": "technical-grid-texture@1.0.0",
+      "contentHash": "sha256:17c48b4280764f62e4afff2efef3e3c504e7a98ce20c929f1a7ba6e4151755ff",
+      "type": "texture",
+      "style": "technical-editorial",
+      "orientation": "square",
+      "theme": "dark",
+      "usage": [
+        "texture",
+        "technical",
+        "background"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/technical-grid-texture.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "browser-chrome-mockup",
+      "version": "1.0.0",
+      "dedupeKey": "browser-chrome-mockup@1.0.0",
+      "contentHash": "sha256:49cfce3fb453eff69ca05911afc858d30769a7c1f4313236ea00a74070e6ade7",
+      "type": "mockup",
+      "style": "technical-editorial",
+      "orientation": "landscape",
+      "theme": "dark",
+      "usage": [
+        "browser",
+        "ui",
+        "mockup"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/browser-mockup.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "mcf-mark",
+      "version": "1.0.0",
+      "dedupeKey": "mcf-mark@1.0.0",
+      "contentHash": "sha256:2a8fd837727d16d5a6a8756d818938115aa571c61da5cdcab4de9ebd893d4ed7",
+      "type": "logo",
+      "style": "technical-editorial",
+      "orientation": "square",
+      "theme": "dark",
+      "usage": [
+        "brand",
+        "mcf",
+        "logo"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/mcf-mark.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "source-engine-video-diagram",
+      "version": "1.0.0",
+      "dedupeKey": "source-engine-video-diagram@1.0.0",
+      "contentHash": "sha256:456606f073f28bdbf9dddd5b5b24af44891d2e0eacf162b17185e0fb6443a408",
+      "type": "diagram",
+      "style": "technical-editorial",
+      "orientation": "landscape",
+      "theme": "dark",
+      "usage": [
+        "engine",
+        "pipeline",
+        "diagram"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/source-engine-video.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "studio-ui-snapshot",
+      "version": "1.0.0",
+      "dedupeKey": "studio-ui-snapshot@1.0.0",
+      "contentHash": "sha256:1a7f753dd2033f64b44954044d704bd7e149330fb69e8625b402b62545c027f6",
+      "type": "screenshot",
+      "style": "technical-editorial",
+      "orientation": "landscape",
+      "theme": "dark",
+      "usage": [
+        "video-lab",
+        "ui",
+        "screenshot"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/studio-ui-snapshot.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "agent-avatar-operator",
+      "version": "1.0.0",
+      "dedupeKey": "agent-avatar-operator@1.0.0",
+      "contentHash": "sha256:4cf37036ca78fbad99ce4418e6375462db01e5c3115f1375777ab89c39a7dee8",
+      "type": "avatar",
+      "style": "technical-editorial",
+      "orientation": "square",
+      "theme": "dark",
+      "usage": [
+        "agent",
+        "operator",
+        "character"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/agent-avatar-operator.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "agent-avatar-reviewer",
+      "version": "1.0.0",
+      "dedupeKey": "agent-avatar-reviewer@1.0.0",
+      "contentHash": "sha256:e2b69d13c6587ee11477eb6b37a04a3b3014e9b73ffac2f23dcf14213ba8d665",
+      "type": "avatar",
+      "style": "technical-editorial",
+      "orientation": "square",
+      "theme": "dark",
+      "usage": [
+        "agent",
+        "reviewer",
+        "character"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/agent-avatar-reviewer.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "demo-loop",
+      "version": "1.0.0",
+      "dedupeKey": "demo-loop@1.0.0",
+      "contentHash": "sha256:46f1ab45c65093bcd12150bf36d34311e6d57071a0985020f2341f7736bb5a68",
+      "type": "video",
+      "style": "technical-editorial",
+      "orientation": "portrait",
+      "theme": "dark",
+      "usage": [
+        "video",
+        "demo",
+        "placeholder"
+      ],
+      "source": {
+        "kind": "procedural",
+        "path": "/assets/n4/generated/demo-loop.mp4",
+        "generator": "ffmpeg-color-loop-v1",
+        "params": {
+          "width": 320,
+          "height": 568,
+          "durationSec": 1,
+          "fps": 15,
+          "background": "#080c14",
+          "accent": "#7c8cff"
+        }
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "ui-click",
+      "version": "1.0.0",
+      "dedupeKey": "ui-click@1.0.0",
+      "contentHash": "sha256:e3b8ac65c8bdf5b398e1808bf2eae70cc1b53d01d39674e86ec8ec90cf16144b",
+      "type": "sound",
+      "style": "technical-editorial",
+      "orientation": "any",
+      "theme": "dark",
+      "usage": [
+        "sfx",
+        "click",
+        "ui"
+      ],
+      "source": {
+        "kind": "procedural",
+        "path": "/assets/n4/generated/ui-click.wav",
+        "generator": "sine-wav-v1",
+        "params": {
+          "frequency": 880,
+          "durationSec": 0.12,
+          "gain": 0.25
+        }
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "ambient-pulse",
+      "version": "1.0.0",
+      "dedupeKey": "ambient-pulse@1.0.0",
+      "contentHash": "sha256:ff51938902c6cb346daa5d34292a8d747557b20630bf78c4ff88b56d4a36d411",
+      "type": "sound",
+      "style": "technical-editorial",
+      "orientation": "any",
+      "theme": "dark",
+      "usage": [
+        "ambient",
+        "background",
+        "sound"
+      ],
+      "source": {
+        "kind": "procedural",
+        "path": "/assets/n4/generated/ambient-pulse.wav",
+        "generator": "sine-wav-v1",
+        "params": {
+          "frequency": 220,
+          "durationSec": 1,
+          "gain": 0.1
+        }
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "music-bed",
+      "version": "1.0.0",
+      "dedupeKey": "music-bed@1.0.0",
+      "contentHash": "sha256:41b99fbfb5a00d8075a23b204066c375fb5363b98722f3739bd9ee44a706a188",
+      "type": "music",
+      "style": "technical-editorial",
+      "orientation": "any",
+      "theme": "dark",
+      "usage": [
+        "music",
+        "bed",
+        "lesson"
+      ],
+      "source": {
+        "kind": "procedural",
+        "path": "/assets/n4/generated/music-bed.wav",
+        "generator": "sine-wav-v1",
+        "params": {
+          "frequency": 330,
+          "durationSec": 2,
+          "gain": 0.08
+        }
       },
       "license": {
         "id": "MCF-REPOSITORY-LICENSE",
