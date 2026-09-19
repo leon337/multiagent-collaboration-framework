@@ -11,8 +11,6 @@ import uiCodeLesson from '../src/templates/ui-code-agent-flow.lesson.json';
 import importManifest from '../src/importer/rendercomp-bounce-in-headline.manifest.json';
 
 const loadJson=(relative:string)=>JSON.parse(readFileSync(new URL(relative,import.meta.url),'utf8'));
-const ajv=new Ajv2020({allErrors:true,strict:false});
-addFormats(ajv);
 
 const cases=[
   ['registry','../../../schemas/content-studio-n4-registry.schema.json',registry],
@@ -27,6 +25,8 @@ const cases=[
 describe('N4 JSON schemas',()=>{
   for(const [name,path,value] of cases){
     it(`validates ${name}`,()=>{
+      const ajv=new Ajv2020({allErrors:true,strict:false});
+      addFormats(ajv);
       const validate=ajv.compile(loadJson(path));
       expect(validate(value),JSON.stringify(validate.errors,null,2)).toBe(true);
     });
