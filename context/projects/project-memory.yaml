@@ -25,6 +25,9 @@ context:
     - docs/ARCHITECTURE.md
     - docs/DECISIONS.md
     - docs/NEXT.md
+  continuity:
+    protocol: docs/protocols/MCF-PROTOCOLO-CONTINUIDADE-MULTI-IA-V1.2.md
+    overlay: docs/CONTINUITY.md
 
 freshness:
   operational_state: LIVE_REQUIRED
