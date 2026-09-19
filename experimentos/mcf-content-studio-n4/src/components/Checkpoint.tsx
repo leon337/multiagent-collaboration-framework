@@ -19,4 +19,3 @@ export const Checkpoint=({aspect='9:16',reducedMotion=false,title='Checkpoint',k
       </Card>
     </div>
   </SafeFrame>;
-};
