@@ -49,7 +49,7 @@ class LocalRuntimePoolTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(len(self.pool.projection().active), 1)
 
-    def test_adaptive_configuration_uses_existing_policy(self):
+    def test_adaptive_configuration_uses_discrete_default_policy(self):
         metrics = {
             "worker_count": 2,
             "success_rate": 1.0,
@@ -57,8 +57,8 @@ class LocalRuntimePoolTests(unittest.TestCase):
             "duration_ms": {"p95": 100},
         }
         result = self.pool.configure_from_metrics(metrics, "mestre", max_team_size=4)
-        self.assertEqual(result["policy"]["team_size"], 3)
-        self.assertEqual(result["projection"].target_slots, 3)
+        self.assertEqual(result["policy"]["team_size"], 4)
+        self.assertEqual(result["projection"].target_slots, 4)
         self.assertIn("BLOCKED_G08", result["policy"]["model_policy"])
 
     def test_replay_survives_reopen(self):
