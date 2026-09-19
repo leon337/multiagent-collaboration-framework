@@ -3,13 +3,16 @@ mission_id: MCF-CONTENT-STUDIO-N4-001
 parent_mission_id: null
 project: multiagent-collaboration-framework
 base_commit: 19731f281126c1360e33732dd74b82a85e9e7f7a
-head_commit: 77890c1b1abfe71ca6eeca8add10706d12aa5cb6
+head_commit: 1da1e0b053096cec5f5d7f2bc48c18bd5096ab34
 branch: planning/mcf-content-studio-n4-20260919
 pull_request: 255
 objective: "Implantar fundação N4: components, registry, Video Lab, importer, piloto e QA."
 objective_state: EM_EXECUCAO
 cycle: 2
 completed_acceptance_criteria:
+  - "Review Lab V2 artifact verificado no CI run 35432326389"
+  - "artifact contem HTML V2, MP4 com audio, narracao, benchmark e QA stills"
+  - "implementation head 1da1e0b053096cec5f5d7f2bc48c18bd5096ab34 com Validation #25, Audio Review #7, Pilot Render #8 e Production Readiness = PASS"
   - "G7 QA visual e benchmark reproduzivel substancialmente concluidos"
   - "Review Lab V2 implementado como superficie A/B de validacao"
   - "captions e active recall inspecionados em frames do MP4 com audio"
@@ -71,7 +74,7 @@ recoveries:
   - "initial CI failed because pnpm blocked esbuild install script"
   - "recovered by explicit local allowBuilds: esbuild=true, preserving supply-chain policy"
 next_phase: ""
-next_action: "Concluir validacao do Review Lab V2 e submeter audit pack para G8 sem promover merge/publicacao."
+next_action: "G8: auditoria independente do audit pack; depois gate interno e decisao humana de escala. Merge/publicacao permanecem bloqueados."
 recipient: Mestre
 return_to: Mestre
 human_action_required: false
