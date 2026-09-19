@@ -1,0 +1,22 @@
+phase_id: PHASE-CONTENT-STUDIO-N4-COURSE-SCALE-001
+mission_id: MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001
+parent_mission_id: MCF-CONTENT-STUDIO-N4-EVOLUTION-001
+objective_state: EM_EXECUCAO
+risk_class: B
+branch: planning/mcf-content-studio-n4-course-scale-20260919
+base_branch: planning/mcf-content-studio-n4-evolution-20260919
+base_commit: 012188ea5415500bf9ad67b3689ffbaf9cade522
+tracker: undefined
+completed:
+  - successor mission created from validated N4 evolution closeout
+open:
+  - C0 canonical curriculum inventory
+  - C1 lesson content packs
+  - C2 N4 authoring
+  - C3 narration
+  - C4 renders
+  - C5 Review Labs
+  - C6 lesson QA
+  - C7 course gate
+next_action: "Resolve canonical curriculum inventory from Project sources before creating lesson payloads."
+human_action_required: false
