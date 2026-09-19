@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.1.0",
+  "registryVersion": "0.2.0",
   "components": [
     {
       "id": "focus-concept",
@@ -36,7 +36,18 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "concept",
+        "focus",
+        "definition"
+      ],
+      "intents": [
+        "explain-concept",
+        "definition"
+      ]
     },
     {
       "id": "progressive-diagram",
@@ -75,7 +86,18 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "diagram",
+        "relation",
+        "progressive"
+      ],
+      "intents": [
+        "architecture",
+        "explain-relation"
+      ]
     },
     {
       "id": "animated-timeline",
@@ -115,7 +137,18 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "timeline",
+        "events",
+        "sequence"
+      ],
+      "intents": [
+        "sequence",
+        "events"
+      ]
     },
     {
       "id": "active-recall",
@@ -152,7 +185,18 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "learning",
+        "quiz",
+        "recall"
+      ],
+      "intents": [
+        "retrieval-practice",
+        "quiz"
+      ]
     },
     {
       "id": "error-vs-correct",
@@ -189,7 +233,18 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "learning",
+        "comparison",
+        "error"
+      ],
+      "intents": [
+        "compare",
+        "correct-misconception"
+      ]
     },
     {
       "id": "architecture-node",
@@ -224,7 +279,16 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "architecture",
+        "node"
+      ],
+      "intents": [
+        "architecture"
+      ]
     },
     {
       "id": "animated-arrow",
@@ -259,7 +323,18 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "diagram",
+        "connector",
+        "arrow"
+      ],
+      "intents": [
+        "relation",
+        "architecture"
+      ]
     },
     {
       "id": "chapter-progress",
@@ -299,7 +374,17 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "progress",
+        "orientation",
+        "chapter"
+      ],
+      "intents": [
+        "orientation"
+      ]
     },
     {
       "id": "browser-window",
@@ -336,7 +421,18 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "ui",
+        "browser",
+        "web"
+      ],
+      "intents": [
+        "ui-demo",
+        "web-demo"
+      ]
     },
     {
       "id": "terminal-window",
@@ -371,7 +467,18 @@
         "evidence": "../../../LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "code",
+        "terminal",
+        "execution"
+      ],
+      "intents": [
+        "code-demo",
+        "terminal-demo"
+      ]
     },
     {
       "id": "bounce-headline-n4",
@@ -416,7 +523,18 @@
         "evidence": "https://github.com/RenderComp/free-remotion-templates/blob/f648980e528defb7594e24c6447055f0540f340b/LICENSE"
       },
       "dependencies": [],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "motion",
+        "typography",
+        "headline"
+      ],
+      "intents": [
+        "emphasis",
+        "intro"
+      ]
     }
   ],
   "templates": [

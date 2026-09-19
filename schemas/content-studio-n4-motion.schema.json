@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcf.local/schemas/content-studio-n4-motion.schema.json",
+  "title": "MCF Content Studio N4 Motion Presets",
+  "type": "object",
+  "required": [
+    "registryVersion",
+    "presets"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "registryVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "presets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "displayName",
+          "kind",
+          "status",
+          "pedagogicalUse"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]+$"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "style",
+              "semantic"
+            ]
+          },
+          "status": {
+            "enum": [
+              "IMPLEMENTED",
+              "DECLARED"
+            ]
+          },
+          "pedagogicalUse": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

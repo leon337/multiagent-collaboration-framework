@@ -1,0 +1,100 @@
+{
+  "lesson": {
+    "id": "runtime-agentico-data-demo",
+    "title": "Runtime agêntico — template por dados",
+    "summary": "Prova de TechnicalLessonTemplate sem composição TSX por aula."
+  },
+  "chapters": [
+    "Modelo",
+    "Runtime",
+    "Governança"
+  ],
+  "scenes": [
+    {
+      "id": "orientation",
+      "componentId": "chapter-progress",
+      "durationFrames": 90,
+      "props": {
+        "chapters": [
+          "Modelo",
+          "Runtime",
+          "Governança"
+        ],
+        "activeIndex": 0
+      }
+    },
+    {
+      "id": "concept",
+      "componentId": "focus-concept",
+      "durationFrames": 150,
+      "props": {
+        "eyebrow": "TEMPLATE N4",
+        "title": "Dados escolhem a cena",
+        "body": "O template resolve componentes aprovados pelo Registry."
+      }
+    },
+    {
+      "id": "flow",
+      "componentId": "progressive-diagram",
+      "durationFrames": 180,
+      "props": {
+        "title": "Payload → Registry → Componente",
+        "nodes": [
+          "lesson.json",
+          "Registry",
+          "Remotion"
+        ]
+      }
+    },
+    {
+      "id": "recall",
+      "componentId": "active-recall",
+      "durationFrames": 150,
+      "props": {
+        "question": "Precisamos criar um TSX para cada aula?",
+        "answer": "Não. A engine recebe dados e compõe as cenas.",
+        "revealAfterFrame": 70
+      }
+    }
+  ],
+  "narration": {
+    "cues": [
+      {
+        "from": 0,
+        "to": 90,
+        "text": "Agora a estrutura da aula vem de dados, não de um arquivo específico para o tema."
+      },
+      {
+        "from": 90,
+        "to": 240,
+        "text": "Cada cena aponta para um componente aprovado no Registry."
+      },
+      {
+        "from": 240,
+        "to": 420,
+        "text": "O payload escolhe a sequência, as propriedades e a duração."
+      },
+      {
+        "from": 420,
+        "to": 570,
+        "text": "Assim podemos criar novas aulas sem duplicar a infraestrutura."
+      }
+    ]
+  },
+  "visuals": {
+    "aspect": "9:16",
+    "reducedMotion": false
+  },
+  "theme": {
+    "id": "mcf-dark",
+    "background": "#080c14",
+    "accent": "#7c8cff"
+  },
+  "assets": [
+    "runtime-node-icon",
+    "sandbox-boundary-icon"
+  ],
+  "timings": {
+    "fps": 30
+  }
+}

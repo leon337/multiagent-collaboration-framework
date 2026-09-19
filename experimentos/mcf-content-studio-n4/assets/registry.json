@@ -1,0 +1,47 @@
+{
+  "registryVersion": "0.1.0",
+  "assets": [
+    {
+      "id": "runtime-node-icon",
+      "type": "icon",
+      "style": "technical-editorial",
+      "orientation": "any",
+      "theme": "dark",
+      "usage": [
+        "runtime",
+        "agent",
+        "architecture"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/runtime-node-icon.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "sandbox-boundary-icon",
+      "type": "icon",
+      "style": "technical-editorial",
+      "orientation": "any",
+      "theme": "dark",
+      "usage": [
+        "sandbox",
+        "security",
+        "boundary"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/sandbox-boundary-icon.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    }
+  ]
+}

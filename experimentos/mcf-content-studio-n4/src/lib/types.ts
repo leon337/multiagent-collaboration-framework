@@ -2,9 +2,10 @@ import type {ComponentType} from 'react';
 
 export type AspectRatio = '9:16' | '16:9';
 export type RegistryStatus = 'DISCOVERED' | 'REVIEWED' | 'ADAPTED' | 'APPROVED' | 'DEPRECATED';
+export type Complexity = 'low' | 'medium' | 'high';
 export type ComponentCategory =
   | 'concept' | 'diagram' | 'timeline' | 'learning' | 'architecture'
-  | 'progress' | 'ui' | 'code' | 'media' | 'motion';
+  | 'progress' | 'ui' | 'code' | 'media' | 'motion' | 'typography' | 'layout' | 'fx';
 
 export type CommonProps = {aspect?: AspectRatio; reducedMotion?: boolean};
 
@@ -33,6 +34,10 @@ export type ComponentManifest = {
   license: {id:string;evidence:string};
   dependencies: string[];
   status: RegistryStatus;
+  supportsAudioSync: boolean;
+  complexity: Complexity;
+  tags: string[];
+  intents: string[];
 };
 
 export type N4Component = ComponentType<Record<string, unknown>>;

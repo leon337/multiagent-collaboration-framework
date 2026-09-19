@@ -1,0 +1,138 @@
+{
+  "registryVersion": "0.1.0",
+  "presets": [
+    {
+      "id": "fade",
+      "displayName": "Fade",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "entrada/saída sem competir com leitura"
+    },
+    {
+      "id": "slide",
+      "displayName": "Slide",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "progressão espacial"
+    },
+    {
+      "id": "scale",
+      "displayName": "Scale",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "ênfase de foco"
+    },
+    {
+      "id": "zoom",
+      "displayName": "Zoom",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "aproximação de detalhe"
+    },
+    {
+      "id": "focus",
+      "displayName": "Focus",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "guiar atenção"
+    },
+    {
+      "id": "blur",
+      "displayName": "Blur",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "reduzir competição visual"
+    },
+    {
+      "id": "dim",
+      "displayName": "Dim",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "despriorizar elementos"
+    },
+    {
+      "id": "highlight",
+      "displayName": "Highlight",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "marcar elemento atual"
+    },
+    {
+      "id": "reveal",
+      "displayName": "Reveal",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "segmentação progressiva"
+    },
+    {
+      "id": "stagger",
+      "displayName": "Stagger",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "revelar grupos em sequência"
+    },
+    {
+      "id": "camera-pan",
+      "displayName": "Camera Pan",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "mover foco entre áreas"
+    },
+    {
+      "id": "camera-zoom",
+      "displayName": "Camera Zoom",
+      "kind": "style",
+      "status": "IMPLEMENTED",
+      "pedagogicalUse": "aproximar região ativa"
+    },
+    {
+      "id": "underline",
+      "displayName": "Underline",
+      "kind": "semantic",
+      "status": "DECLARED",
+      "pedagogicalUse": "sinalizar termo"
+    },
+    {
+      "id": "draw-arrow",
+      "displayName": "Draw Arrow",
+      "kind": "semantic",
+      "status": "DECLARED",
+      "pedagogicalUse": "explicitar relação"
+    },
+    {
+      "id": "connector",
+      "displayName": "Connector",
+      "kind": "semantic",
+      "status": "DECLARED",
+      "pedagogicalUse": "ligar nós"
+    },
+    {
+      "id": "morph",
+      "displayName": "Morph",
+      "kind": "semantic",
+      "status": "DECLARED",
+      "pedagogicalUse": "mostrar transformação"
+    },
+    {
+      "id": "typewriter",
+      "displayName": "Typewriter",
+      "kind": "semantic",
+      "status": "DECLARED",
+      "pedagogicalUse": "simular entrada de texto"
+    },
+    {
+      "id": "counter",
+      "displayName": "Counter",
+      "kind": "semantic",
+      "status": "DECLARED",
+      "pedagogicalUse": "mostrar métrica variando"
+    },
+    {
+      "id": "progress",
+      "displayName": "Progress",
+      "kind": "semantic",
+      "status": "DECLARED",
+      "pedagogicalUse": "mostrar avanço"
+    }
+  ]
+}

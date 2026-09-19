@@ -1,4 +1,7 @@
 import {Composition} from 'remotion';
+import {TechnicalLessonTemplate} from '../templates/TechnicalLessonTemplate';
+import {getTechnicalLessonDuration} from '../templates/types';
+import technicalLessonDemo from '../templates/runtime-agentico-data-demo.lesson.json';
 import {RuntimeAgenticoPilot} from '../pilot/RuntimeAgenticoPilot';
 import {RUNTIME_AGENTICO_PILOT,RUNTIME_AGENTICO_PILOT_DURATION} from '../pilot/lesson';
 import {LongDiagramQa,LongFocusConceptQa,LongTimelineQa} from '../qa/VisualQaCompositions';
@@ -31,4 +34,9 @@ export const RemotionRoot=()=> <>
   <Composition id="RegistryComponentQaLandscape" component={RegistryComponentQaLandscape}
     durationInFrames={180} fps={30} width={1920} height={1080}
     defaultProps={{componentId:'focus-concept',reducedMotion:false}}/>
+  <Composition id="TechnicalLessonTemplateDemo" component={TechnicalLessonTemplate}
+    durationInFrames={getTechnicalLessonDuration(technicalLessonDemo)}
+    fps={technicalLessonDemo.timings.fps}
+    width={1080} height={1920}
+    defaultProps={{spec:technicalLessonDemo}}/>
 </>;

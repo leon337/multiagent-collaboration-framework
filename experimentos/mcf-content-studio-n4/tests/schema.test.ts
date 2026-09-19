@@ -3,22 +3,28 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import {describe,expect,it} from 'vitest';
 import registry from '../registry/registry.json';
+import assets from '../assets/registry.json';
+import motion from '../motion/presets.json';
+import lesson from '../src/templates/runtime-agentico-data-demo.lesson.json';
 import importManifest from '../src/importer/rendercomp-bounce-in-headline.manifest.json';
 
 const loadJson=(relative:string)=>JSON.parse(readFileSync(new URL(relative,import.meta.url),'utf8'));
 const ajv=new Ajv2020({allErrors:true,strict:false});
 addFormats(ajv);
 
-describe('N4 JSON schemas',()=>{
-  it('validates the live registry against the canonical schema',()=>{
-    const schema=loadJson('../../../schemas/content-studio-n4-registry.schema.json');
-    const validate=ajv.compile(schema);
-    expect(validate(registry),JSON.stringify(validate.errors,null,2)).toBe(true);
-  });
+const cases=[
+  ['registry','../../../schemas/content-studio-n4-registry.schema.json',registry],
+  ['assets','../../../schemas/content-studio-n4-assets.schema.json',assets],
+  ['motion','../../../schemas/content-studio-n4-motion.schema.json',motion],
+  ['lesson','../../../schemas/content-studio-n4-lesson.schema.json',lesson],
+  ['import','../../../schemas/content-studio-n4-import.schema.json',importManifest],
+] as const;
 
-  it('validates the approved external import manifest',()=>{
-    const schema=loadJson('../../../schemas/content-studio-n4-import.schema.json');
-    const validate=ajv.compile(schema);
-    expect(validate(importManifest),JSON.stringify(validate.errors,null,2)).toBe(true);
-  });
+describe('N4 JSON schemas',()=>{
+  for(const [name,path,value] of cases){
+    it(`validates ${name}`,()=>{
+      const validate=ajv.compile(loadJson(path));
+      expect(validate(value),JSON.stringify(validate.errors,null,2)).toBe(true);
+    });
+  }
 });
