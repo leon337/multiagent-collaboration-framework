@@ -3,6 +3,7 @@ import {searchAssets} from '../src/assets/searchAssets';
 import {getMotionPreset,isSemanticMotion,motionPresets,resolveMotionStyle} from '../src/motion/presets';
 import {resolveSemanticFocus,resolveSemanticFocusPresets} from '../src/motion/semantic';
 import {fitTextSize,isAtMinimumTextSize} from '../src/lib/textFit';
+import {captionLayoutFor,layoutFor} from '../src/lib/tokens';
 import {stickRigVariants} from '../src/components/StickRig';
 import {searchComponentManifests} from '../src/registry/search';
 import lesson from '../src/templates/runtime-agentico-data-demo.lesson.json';
@@ -26,7 +27,7 @@ describe('N4 evolution foundations',()=>{
     }
     expect(resolveSemanticFocus('relation')).toEqual(['dim-others','draw-connector','scale-target']);
     expect(resolveSemanticFocusPresets('model')).toEqual(['dim','camera-zoom']);
-    expect(resolveSemanticFocusPresets('relation')).toEqual(['connector','scale']);
+    expect(resolveSemanticFocusPresets('relation')).toEqual(['highlight','scale']);
     expect(resolveSemanticFocusPresets('text-entry')).toEqual(['typewriter','underline']);
   });
   it('discovers components by pedagogical intent',()=>{
@@ -35,6 +36,8 @@ describe('N4 evolution foundations',()=>{
     expect(searchComponentManifests({intent:'interaction',status:'APPROVED'}).map((x)=>x.id)).toContain('click-cue');
   });
   it('exposes a reusable character cast from StickRig variants',()=>{expect(stickRigVariants).toEqual(['agent','operator','reviewer','human']);});
+
+  it('reserves a mobile caption lane with readable text',()=>{const caption=captionLayoutFor('9:16');const layout=layoutFor('9:16');expect(caption.fontSize).toBeGreaterThanOrEqual(40);expect(caption.reservedHeight).toBeGreaterThanOrEqual(280);expect(layout.safeInsets.bottom).toBeGreaterThanOrEqual(caption.reservedHeight);});
 
   it('fits long text without dropping below the readability floor',()=>{
     const size=fitTextSize({text:'Uma manchete técnica longa que precisa permanecer legível na safe area',preferredPx:76,minPx:52,softCharacterLimit:34});

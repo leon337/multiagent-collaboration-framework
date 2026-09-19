@@ -40,7 +40,7 @@
         "from": "CONCEITO A",
         "to": "CONCEITO B"
       },
-      "focusIntent": "relation"
+      "motionPreset": "focus"
     },
     {
       "id": "typing",

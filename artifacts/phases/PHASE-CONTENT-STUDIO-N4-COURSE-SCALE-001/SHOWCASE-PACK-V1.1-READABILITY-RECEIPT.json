@@ -1,0 +1,26 @@
+{
+  "mission_id": "MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001",
+  "issue": 279,
+  "wave": "SHOWCASE-V1.1-READABILITY-COLLISION-FIX",
+  "source_feedback": "LEANDRO screenshot review",
+  "problems": [
+    "portrait captions too small for mobile",
+    "semantic relation overlay crossed text/diagram elements"
+  ],
+  "changes": [
+    "portrait caption font raised to 42px with stronger panel/padding",
+    "portrait content safe bottom raised to 360px",
+    "relation focus intent changed to highlight+scale instead of global connector overlay",
+    "semantic bottom overlays moved above caption lane",
+    "showcase tree/relation scenes no longer add a global relation connector",
+    "editor showcase reserves 360px caption lane",
+    "QA stills added for all three V1.1 videos"
+  ],
+  "acceptance": [
+    "caption >=40px portrait",
+    "caption lane >=280px",
+    "no global connector crossing tree labels",
+    "no content inside caption-reserved bottom lane"
+  ],
+  "cognitive_agent_credit": false
+}

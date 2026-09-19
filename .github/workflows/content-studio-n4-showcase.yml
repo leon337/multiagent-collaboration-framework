@@ -39,6 +39,13 @@ jobs:
           pnpm exec remotion render src/remotion/index.ts ShowcaseEngineRegistry out/showcase/silent/01-engine.mp4 --codec=h264 --crf=22 --concurrency=2
           pnpm exec remotion render src/remotion/index.ts ShowcaseMotionSystem out/showcase/silent/02-motion.mp4 --codec=h264 --crf=22 --concurrency=2
           pnpm exec remotion render src/remotion/index.ts ShowcaseVisualEditor out/showcase/silent/03-editor.mp4 --codec=h264 --crf=22 --concurrency=2
+      - name: Render V1.1 QA stills
+        run: |
+          mkdir -p out/showcase/qa
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineRegistry out/showcase/qa/01-engine-tree.png --frame=430
+          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionSystem out/showcase/qa/02-motion-relation.png --frame=390
+          pnpm exec remotion still src/remotion/index.ts ShowcaseVisualEditor out/showcase/qa/03-editor-layout.png --frame=620
+
       - name: Mux narration
         run: |
           for pair in '01-engine engine' '02-motion motion' '03-editor editor'; do
@@ -69,5 +76,6 @@ jobs:
             experimentos/mcf-content-studio-n4/out/showcase/02-motion.mp4
             experimentos/mcf-content-studio-n4/out/showcase/03-editor.mp4
             experimentos/mcf-content-studio-n4/out/showcase/manifest.json
+            experimentos/mcf-content-studio-n4/out/showcase/qa/*.png
           if-no-files-found: error
           retention-days: 14

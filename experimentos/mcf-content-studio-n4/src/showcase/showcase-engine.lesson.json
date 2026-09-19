@@ -47,7 +47,7 @@
           "15 assets"
         ]
       },
-      "focusIntent": "relation"
+      "motionPreset": "focus"
     },
     {
       "id": "metrics",
@@ -71,7 +71,7 @@
         ],
         "max": 50
       },
-      "focusIntent": "metric"
+      "motionPreset": "scale"
     },
     {
       "id": "close",

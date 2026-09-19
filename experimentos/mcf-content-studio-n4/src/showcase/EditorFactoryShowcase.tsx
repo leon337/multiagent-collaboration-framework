@@ -23,11 +23,11 @@ export const EditorFactoryShowcase=()=>{
  const play=seg(f,760,990);
  const pointerX=interpolate(f,[150,300,420,540,660],[24,68,72,42,50],clamp);
  const pointerY=interpolate(f,[150,300,420,540,660],[40,34,62,52,44],clamp);
- return <AbsoluteFill style={{background:designTokens.color.background,color:designTokens.color.text,fontFamily:'Inter,system-ui,sans-serif',padding:'110px 72px 150px'}}>
+ return <AbsoluteFill style={{background:designTokens.color.background,color:designTokens.color.text,fontFamily:'Inter,system-ui,sans-serif',padding:'96px 64px 360px'}}>
    <div style={{fontSize:24,letterSpacing:4,color:designTokens.color.accent,fontWeight:800}}>N4 VIDEO LAB</div>
-   <div style={{fontSize:70,fontWeight:900,lineHeight:1.02,marginTop:16}}>EDITOR VISUAL DIRETO</div>
+   <div style={{fontSize:62,fontWeight:900,lineHeight:1.02,marginTop:16}}>EDITOR VISUAL DIRETO</div>
    <div style={{fontSize:28,color:designTokens.color.muted,marginTop:18}}>drag · resize · rotate · snap · align · nudge · multi-track</div>
-   <div style={{display:'grid',gridTemplateColumns:'1fr 1.3fr',gap:28,marginTop:70,height:1050}}>
+   <div style={{display:'grid',gridTemplateColumns:'1fr 1.3fr',gap:28,marginTop:48,height:820}}>
      <div style={{border:'1px solid '+designTokens.color.line,borderRadius:28,padding:22,background:designTokens.color.surface}}>
        <div style={{fontSize:22,fontWeight:800}}>COMPONENTES</div>
        {['Title','Diagram','Browser','Quiz','StickRig','SoundCue'].map((item,i)=><div key={item} style={{marginTop:18,padding:'18px 16px',borderRadius:14,background:i===2?designTokens.color.surfaceStrong:'#0d1320',border:i===2?'1px solid '+designTokens.color.accent:'1px solid transparent',fontSize:22}}>{item}</div>)}
@@ -43,7 +43,7 @@ export const EditorFactoryShowcase=()=>{
        <div style={{position:'absolute',left:24,right:24,bottom:24,display:'flex',gap:8,flexWrap:'wrap'}}>{['SNAP','←','↔','→','↑','↕','↓','x−','x+','y−','y+','0°'].map((item,i)=><span key={item+i} style={{padding:'8px 11px',border:'1px solid '+designTokens.color.line,borderRadius:9,fontSize:14,background:i===0&&f>520?designTokens.color.accent:designTokens.color.surface}}>{item}</span>)}</div>
      </div>
    </div>
-   <div style={{marginTop:34,border:'1px solid '+designTokens.color.line,borderRadius:24,padding:20,background:designTokens.color.surface}}>
+   <div style={{marginTop:24,border:'1px solid '+designTokens.color.line,borderRadius:24,padding:20,background:designTokens.color.surface}}>
      {[['Scenes',designTokens.color.accent,.86],['Motion','#9b8cff',.72],['Narration',designTokens.color.positive,.92],['Assets','#f6c85f',.62]].map(([label,color,width],i)=><div key={String(label)} style={{display:'grid',gridTemplateColumns:'120px 1fr',alignItems:'center',gap:14,marginTop:i?13:0}}><span style={{fontSize:16,color:designTokens.color.muted}}>{label}</span><div style={{height:20,borderRadius:8,background:'#0d1320',overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(100,Number(width)*100*play)}%`,background:String(color),borderRadius:8}}/></div></div>)}
    </div>
    <CaptionOverlay cues={cues}/>

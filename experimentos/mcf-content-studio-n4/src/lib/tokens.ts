@@ -12,5 +12,9 @@ export const designTokens = {
 
 export const layoutFor=(aspect:AspectRatio,reducedMotion=false):LayoutContext =>
   aspect==='9:16'
-    ? {aspect,width:1080,height:1920,fps:30,safeInsets:{top:120,right:72,bottom:220,left:72},reducedMotion}
-    : {aspect,width:1920,height:1080,fps:30,safeInsets:{top:72,right:96,bottom:96,left:96},reducedMotion};
+    ? {aspect,width:1080,height:1920,fps:30,safeInsets:{top:120,right:72,bottom:360,left:72},reducedMotion}
+    : {aspect,width:1920,height:1080,fps:30,safeInsets:{top:72,right:96,bottom:180,left:96},reducedMotion};
+
+export const captionLayoutFor=(aspect:AspectRatio)=>aspect==='9:16'
+  ? {side:64,bottom:76,maxWidth:940,fontSize:42,lineHeight:1.25,paddingY:24,paddingX:30,reservedHeight:300}
+  : {side:110,bottom:44,maxWidth:1320,fontSize:34,lineHeight:1.25,paddingY:18,paddingX:28,reservedHeight:150};
