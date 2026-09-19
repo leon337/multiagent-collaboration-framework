@@ -19,12 +19,11 @@ export const AssetPicker=({usage,selected=[],onChange}:AssetPickerProps)=>{
   const orientations=useMemo(()=>['all',...Array.from(new Set(assetRegistry.map((asset)=>asset.orientation))).sort()],[ ]);
 
   const assets=useMemo(()=>{
-    const filters:AssetQuery={
-      ...(usage?{usage}:{}),
-      ...(type!=='all'?{type:type as AssetQuery['type']}:{}),
-      ...(theme!=='all'?{theme}:{}),
-      ...(orientation!=='all'?{orientation:orientation as AssetQuery['orientation']}:{}),
-    };
+    const filters:AssetQuery={};
+    if(usage) filters.usage=usage;
+    if(type!=='all') filters.type=type as NonNullable<AssetQuery['type']>;
+    if(theme!=='all') filters.theme=theme;
+    if(orientation!=='all') filters.orientation=orientation as NonNullable<AssetQuery['orientation']>;
     const normalized=query.trim().toLowerCase();
     return searchAssets(filters).filter((asset)=>
       !normalized||
