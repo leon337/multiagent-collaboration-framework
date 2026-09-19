@@ -1,3 +1,4 @@
+// Authoring core invariants are validated under strict TypeScript.
 import {describe,expect,it} from 'vitest';
 import lesson from '../src/templates/runtime-agentico-data-demo.lesson.json';
 import type {TechnicalLessonSpec} from '../src/templates/types';
