@@ -58,6 +58,7 @@ jobs:
           pnpm exec remotion still src/remotion/index.ts BounceHeadlinePreviewLandscape out/bounce-landscape.png --frame=45
           pnpm exec remotion still src/remotion/index.ts BounceHeadlinePreviewReducedMotion out/bounce-reduced-motion.png --frame=45
           pnpm exec remotion still src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-pilot.png --frame=900
+          pnpm exec remotion still src/remotion/index.ts TechnicalLessonTemplateDemo out/technical-lesson-data-demo.png --frame=270
           pnpm exec remotion still src/remotion/index.ts LongFocusConceptQa out/qa-long-focus.png --frame=90
           pnpm exec remotion still src/remotion/index.ts LongTimelineQa out/qa-long-timeline.png --frame=120
           pnpm exec remotion still src/remotion/index.ts LongDiagramQa out/qa-long-diagram.png --frame=120
