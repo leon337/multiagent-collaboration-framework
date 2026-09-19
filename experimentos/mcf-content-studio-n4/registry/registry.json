@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.3.0",
+  "registryVersion": "0.4.0",
   "components": [
     {
       "id": "focus-concept",
@@ -1646,7 +1646,25 @@
           "required": true
         }
       ],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "tags": [
+        "technical",
+        "learning",
+        "architecture",
+        "ui",
+        "code"
+      ],
+      "intents": [
+        "architecture",
+        "explain-concept",
+        "ui-demo",
+        "code-demo",
+        "retrieval-practice"
+      ],
+      "complexity": "medium",
+      "learning": true,
+      "minNodes": 1,
+      "maxNodes": 8
     }
   ]
 }
