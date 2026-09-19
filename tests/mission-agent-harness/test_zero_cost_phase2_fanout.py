@@ -55,5 +55,42 @@ class HarnessRegressionTests(unittest.TestCase):
         self.assertIn("raw analysis without headings", out)
 
 
+    def test_repo_search_uses_fixed_string_for_model_query(self):
+        fake = mock.Mock(returncode=1, stdout="", stderr="")
+        with mock.patch.object(h, "run_command", return_value=fake) as runner:
+            out = h.tool_repo_search({"query": "Experience [Layer"})
+        self.assertEqual(out, "NO_MATCHES")
+        argv = runner.call_args.args[0]
+        self.assertIn("-F", argv)
+        self.assertIn("Experience [Layer", argv)
+
+    def test_parallel_retry_only_reexecutes_failed_agent(self):
+        a = h.AgentPacket("A", "role", "focus", "next")
+        b = h.AgentPacket("B", "role", "focus", "next")
+        result_a = mock.Mock(agent_id="A")
+        result_b = mock.Mock(agent_id="B")
+        with mock.patch.object(
+            h,
+            "run_parallel",
+            side_effect=[
+                ([result_a], {"B": "TimeoutExpired: first attempt"}),
+                ([result_b], {}),
+            ],
+        ) as runner:
+            results, failures, retries = h.run_parallel_with_retry(
+                "model",
+                [a, b],
+                "A",
+                "context",
+                600,
+            )
+        self.assertEqual([r.agent_id for r in results], ["A", "B"])
+        self.assertEqual(failures, {})
+        self.assertEqual(retries, {"B": 1})
+        self.assertEqual(runner.call_count, 2)
+        retried_packets = runner.call_args_list[1].args[1]
+        self.assertEqual([packet.agent_id for packet in retried_packets], ["B"])
+
+
 if __name__ == "__main__":
     unittest.main()
