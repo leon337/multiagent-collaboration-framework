@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/mcf-zero-cost-parallel-agent-harness.yml'
       - 'ops/mission-agent-harness/zero_cost_phase2_fanout.py'
+      - 'tests/mission-agent-harness/test_zero_cost_phase2_fanout.py'
       - 'artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/PARALLEL-FANOUT-TOOLCALL-DESIGN.md'
       - 'artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/PLAN.md'
       - 'artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/CHECKPOINT.md'
@@ -30,6 +31,7 @@ jobs:
       OLLAMA_MAX_LOADED_MODELS: 1
       MCF_MAX_WORKERS: 4
       MCF_AGENT_ARTIFACT_DIR: /tmp/mcf-agent-artifacts
+      PYTHONPYCACHEPREFIX: /tmp/mcf-pycache
 
     steps:
       - name: Checkout exact PR candidate
