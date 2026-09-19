@@ -1,0 +1,24 @@
+{
+  "mission_id": "MCF-CONTENT-HUB-001",
+  "wave": "V1-SCAFFOLD",
+  "worker_kind": "deterministic_sandbox_workers",
+  "cognitive_agent_credit": false,
+  "workers": [
+    {
+      "id": "architecture_worker",
+      "status": "PASS",
+      "sha256": "60adce226622aeba7f478d7f94d33eaacdfcb1b37c38f283383acfdb745974eb"
+    },
+    {
+      "id": "ux_worker",
+      "status": "PASS",
+      "sha256": "cd8c7e17cde9dbf75a581e82dad233cda664c34d5688876728c9f9eadd21567d"
+    },
+    {
+      "id": "publication_worker",
+      "status": "PASS",
+      "sha256": "7a3084b23466c86e9103ca64e426ef8f3a006852277178def813bf1d08efb99c"
+    }
+  ],
+  "note": "Workers provided deterministic architecture, UX and pipeline decomposition. MESTRE owns synthesis and implementation."
+}
