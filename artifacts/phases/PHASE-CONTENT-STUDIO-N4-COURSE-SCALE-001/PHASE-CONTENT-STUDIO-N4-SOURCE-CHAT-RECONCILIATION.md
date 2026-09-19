@@ -34,9 +34,9 @@ The following source-defined capabilities have material implementation evidence 
 
 | Source-defined improvement | Current evidence | Reconciled state | Course-scale action |
 |---|---|---|---|
-| reusable `StickRig` with joints, poses and actions | only neutral agent avatar asset; no StickRig component in registry | NOT_IMPLEMENTED | implement reusable character component + registry/QA |
-| MCF visual language using stick characters for agent stories | no character component family in 34-component registry | PARTIAL | establish character family starting with StickRig |
-| `fitText` / minimum readable text constraints | density preflight exists; no reusable fit-text contract found | PARTIAL | add text-fit utility + QA boundary |
+| reusable `StickRig` with joints, poses and actions | `StickRig.tsx` + registry entry + discovery test added on #278 | IMPLEMENTED_PENDING_CI | validate portrait/landscape/reduced-motion matrix |
+| MCF visual language using stick characters for agent stories | `character` registry category + `StickRig` introduced | PARTIAL_IMPLEMENTED | expand only when real lesson/story needs demand more rigs |
+| `fitText` / minimum readable text constraints | deterministic text-fit utility applied to Title/FocusConcept/Keyword + tests | IMPLEMENTED_PENDING_CI | validate long-text stress renders |
 | interactive canvas editing rather than raw x/y guessing | Video Lab has property/timeline editing; direct drag/resize/rotate not evidenced | PARTIAL | future editor increment, not required to block lesson authoring |
 | complete motion vocabulary | 12 style presets IMPLEMENTED; underline/draw-arrow/connector/morph/typewriter/counter/progress remain DECLARED | PARTIAL | promote only with real executable behavior/tests |
 | synchronized SFX/music/ducking | narration mux exists; no reusable SFX/music/ducking pipeline evidenced | NOT_IMPLEMENTED | add audio-mix contract and deterministic QA |
@@ -88,3 +88,9 @@ They scan/materialize Project source text in parallel and emit evidence packs. T
 Start with `StickRig` because it is explicitly defined in the source chat, materially absent from the current registry, and directly improves the visual language of agent lessons without depending on the missing course inventory.
 
 Publication, merge, deploy and HUMAN_GATE remain separate.
+
+## Current implementation wave
+
+- `StickRig`: implementation + registry/schema/discovery test landed on the mission branch; CI pending.
+- text-fit readability floor: implementation + tests landed on the mission branch; CI pending.
+- next residual candidates remain audio mix/audio-stream QA and semantic motion presets; they are not claimed complete.
