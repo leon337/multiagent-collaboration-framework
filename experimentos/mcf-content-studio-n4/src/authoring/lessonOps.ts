@@ -1,3 +1,4 @@
+import type {MotionPresetId} from '../motion/presets';
 import type {TechnicalLessonSpec} from '../templates/types';
 
 export const reorderScene=(spec:TechnicalLessonSpec,from:number,to:number):TechnicalLessonSpec=>{
@@ -18,6 +19,16 @@ export const updateSceneDuration=(spec:TechnicalLessonSpec,index:number,duration
 export const updateSceneProps=(spec:TechnicalLessonSpec,index:number,props:Record<string,unknown>):TechnicalLessonSpec=>{
   if(index<0||index>=spec.scenes.length) return spec;
   return {...spec,scenes:spec.scenes.map((scene,i)=>i===index?{...scene,props:{...scene.props,...props}}:scene)};
+};
+
+export const updateSceneComponent=(spec:TechnicalLessonSpec,index:number,componentId:string):TechnicalLessonSpec=>{
+  if(index<0||index>=spec.scenes.length) return spec;
+  return {...spec,scenes:spec.scenes.map((scene,i)=>i===index?{...scene,componentId}:scene)};
+};
+
+export const updateSceneMotion=(spec:TechnicalLessonSpec,index:number,motionPreset:MotionPresetId):TechnicalLessonSpec=>{
+  if(index<0||index>=spec.scenes.length) return spec;
+  return {...spec,scenes:spec.scenes.map((scene,i)=>i===index?{...scene,motionPreset}:scene)};
 };
 
 export const serializeLesson=(spec:TechnicalLessonSpec)=>JSON.stringify(spec,null,2)+'\n';
