@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcf.local/schemas/content-studio-n4-figma-bridge.schema.json",
+  "title": "MCF Content Studio N4 Figma Bridge Spec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bridgeVersion",
+    "source",
+    "tokens",
+    "component"
+  ],
+  "properties": {
+    "bridgeVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "fileKey",
+        "nodeId",
+        "capturedAt"
+      ],
+      "properties": {
+        "kind": {
+          "const": "figma"
+        },
+        "fileKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nodeId": {
+          "type": "string",
+          "pattern": "^\\d+[:-]\\d+$"
+        },
+        "capturedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "colors",
+        "spacing",
+        "radius",
+        "typography"
+      ],
+      "properties": {
+        "colors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "spacing": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "radius": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "typography": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fontFamily",
+              "fontSize",
+              "fontWeight",
+              "lineHeight"
+            ],
+            "properties": {
+              "fontFamily": {
+                "type": "string",
+                "minLength": 1
+              },
+              "fontSize": {
+                "type": "number",
+                "minimum": 1
+              },
+              "fontWeight": {
+                "type": "number",
+                "minimum": 100,
+                "maximum": 1000
+              },
+              "lineHeight": {
+                "type": "number",
+                "minimum": 0.5,
+                "maximum": 4
+              }
+            }
+          }
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind",
+        "width",
+        "height",
+        "props",
+        "bindings"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "card",
+            "callout",
+            "quiz",
+            "terminal",
+            "browser",
+            "architecture-node",
+            "header",
+            "progress-bar",
+            "custom"
+          ]
+        },
+        "width": {
+          "type": "number",
+          "minimum": 1
+        },
+        "height": {
+          "type": "number",
+          "minimum": 1
+        },
+        "props": {
+          "type": "object"
+        },
+        "bindings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
