@@ -4,6 +4,8 @@
 **Issue:** #277  
 **PR:** #278
 
+> Checklist-mãe vivo da engine: `docs/proposals/MCF-CONTENT-STUDIO-N4-LIVING-CHECKLIST.md`
+
 ## C0 — Curriculum inventory / predecessor recovery
 
 - [x] search accessible Project sources and current MCF/GitHub lineage
@@ -42,6 +44,7 @@ This track runs independently from C0 where no curriculum dependency exists.
 - [ ] reusable SFX/music/ducking contract
 - [ ] semantic motion presets currently DECLARED become executable only with real implementations/tests
 - [ ] optional Explain companion output from the same factual lesson pack
+- [ ] Adobe Express Bridge + first Express → N4 governed proof
 - [ ] direct drag/resize/rotate editor increment when it becomes a real authoring bottleneck
 
 ## C1–C6 — Per lesson
