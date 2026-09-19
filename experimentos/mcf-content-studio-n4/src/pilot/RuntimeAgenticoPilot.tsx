@@ -11,6 +11,8 @@ import {
   TerminalWindow,
 } from '../components';
 import {LessonProgressBar} from './LessonProgressBar';
+import {CaptionOverlay} from './CaptionOverlay';
+import {runtimeAgenticoNarration} from './narration';
 
 const Scene=({from,duration,children}:{from:number;duration:number;children:React.ReactNode})=>
   <Sequence from={from} durationInFrames={duration} premountFor={15}>{children}</Sequence>;
@@ -65,4 +67,5 @@ export const RuntimeAgenticoPilot=()=> <AbsoluteFill style={{background:'#080c14
   </Scene>
 
   <LessonProgressBar/>
+  <CaptionOverlay cues={runtimeAgenticoNarration.cues}/>
 </AbsoluteFill>;
