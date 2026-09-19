@@ -1,0 +1,149 @@
+{
+  "lesson": {
+    "id": "architecture-control-plane",
+    "title": "Como o controle atravessa uma arquitetura agêntica",
+    "summary": "Aula de prova focada em arquitetura progressiva."
+  },
+  "chapters": [
+    "Entrada",
+    "Orquestração",
+    "Execução",
+    "Limites"
+  ],
+  "scenes": [
+    {
+      "id": "open",
+      "componentId": "title",
+      "durationFrames": 90,
+      "props": {
+        "eyebrow": "ARQUITETURA",
+        "title": "Quem controla cada etapa?",
+        "subtitle": "Vamos construir o caminho da intenção humana até a execução."
+      }
+    },
+    {
+      "id": "map",
+      "componentId": "build-architecture",
+      "durationFrames": 180,
+      "props": {
+        "title": "Quatro responsabilidades",
+        "nodes": [
+          "Usuário",
+          "Aplicação",
+          "Agente",
+          "Runtime"
+        ]
+      }
+    },
+    {
+      "id": "focus",
+      "componentId": "focus-area",
+      "durationFrames": 150,
+      "props": {
+        "title": "Onde a execução acontece",
+        "context": [
+          "Usuário",
+          "Aplicação",
+          "Agente",
+          "Runtime"
+        ],
+        "focus": "Runtime",
+        "note": "O runtime autorizado executa; as outras camadas orientam, organizam ou governam."
+      }
+    },
+    {
+      "id": "boundary",
+      "componentId": "progressive-concept",
+      "durationFrames": 150,
+      "props": {
+        "title": "Execução precisa de limite",
+        "concepts": [
+          "Runtime",
+          "Sandbox"
+        ],
+        "linkLabel": "opera dentro de"
+      }
+    },
+    {
+      "id": "recall",
+      "componentId": "quiz",
+      "durationFrames": 150,
+      "props": {
+        "question": "Qual camada limita o alcance da execução?",
+        "options": [
+          "Modelo",
+          "Sandbox",
+          "Sessão"
+        ],
+        "correctIndex": 1,
+        "revealAfterFrame": 80
+      }
+    },
+    {
+      "id": "close",
+      "componentId": "checkpoint",
+      "durationFrames": 120,
+      "props": {
+        "title": "Mapa consolidado",
+        "known": [
+          "Aplicação governa",
+          "Agente organiza",
+          "Runtime executa"
+        ],
+        "next": [
+          "Sandbox limita"
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "cues": [
+      {
+        "from": 0,
+        "to": 90,
+        "text": "Nesta aula vamos construir a arquitetura pelo papel de cada camada."
+      },
+      {
+        "from": 90,
+        "to": 270,
+        "text": "Usuário, aplicação, agente e runtime têm responsabilidades diferentes."
+      },
+      {
+        "from": 270,
+        "to": 420,
+        "text": "O ponto de execução está no runtime autorizado, não no modelo isoladamente."
+      },
+      {
+        "from": 420,
+        "to": 570,
+        "text": "Essa execução opera dentro de uma fronteira explícita: o sandbox."
+      },
+      {
+        "from": 570,
+        "to": 720,
+        "text": "Recupere agora qual camada limita o alcance do que pode ser executado."
+      },
+      {
+        "from": 720,
+        "to": 840,
+        "text": "Aplicação governa, agente organiza, runtime executa e sandbox limita."
+      }
+    ]
+  },
+  "visuals": {
+    "aspect": "9:16",
+    "reducedMotion": false
+  },
+  "theme": {
+    "id": "mcf-dark",
+    "background": "#080c14",
+    "accent": "#7c8cff"
+  },
+  "assets": [
+    "runtime-node-icon",
+    "sandbox-boundary-icon"
+  ],
+  "timings": {
+    "fps": 30
+  }
+}

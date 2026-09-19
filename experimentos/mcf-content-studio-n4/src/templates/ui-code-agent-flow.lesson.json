@@ -1,0 +1,130 @@
+{
+  "lesson": {
+    "id": "ui-code-agent-flow",
+    "title": "Do pedido no chat ao código executado",
+    "summary": "Aula de prova focada em interfaces e código."
+  },
+  "chapters": [
+    "Chat",
+    "Código",
+    "Terminal",
+    "Diff"
+  ],
+  "scenes": [
+    {
+      "id": "open",
+      "componentId": "title",
+      "durationFrames": 90,
+      "props": {
+        "eyebrow": "UI + CÓDIGO",
+        "title": "Do pedido ao resultado",
+        "subtitle": "A mesma engine pode ensinar um fluxo de software real."
+      }
+    },
+    {
+      "id": "chat",
+      "componentId": "chat-window",
+      "durationFrames": 150,
+      "props": {
+        "title": "Conversa",
+        "messages": [
+          "Usuário: rode os testes.",
+          "Agente: vou preparar o comando.",
+          "Tool: execução autorizada."
+        ]
+      }
+    },
+    {
+      "id": "code",
+      "componentId": "vscode-window",
+      "durationFrames": 150,
+      "props": {
+        "file": "runner.ts",
+        "code": "const result = await runtime.exec('pnpm test');\\nreturn result;"
+      }
+    },
+    {
+      "id": "terminal",
+      "componentId": "terminal-window",
+      "durationFrames": 180,
+      "props": {
+        "command": "pnpm test",
+        "output": "✓ 128 tests passed"
+      }
+    },
+    {
+      "id": "diff",
+      "componentId": "diff-viewer",
+      "durationFrames": 150,
+      "props": {
+        "title": "Mudança aplicada",
+        "removed": [
+          "- execução sem boundary"
+        ],
+        "added": [
+          "+ runtime autorizado",
+          "+ sandbox obrigatório"
+        ]
+      }
+    },
+    {
+      "id": "recall",
+      "componentId": "active-recall",
+      "durationFrames": 150,
+      "props": {
+        "question": "O chat executa o comando diretamente?",
+        "answer": "Não. Ele organiza a intenção; o runtime executa.",
+        "revealAfterFrame": 75
+      }
+    }
+  ],
+  "narration": {
+    "cues": [
+      {
+        "from": 0,
+        "to": 90,
+        "text": "Agora vamos provar a mesma engine em uma aula centrada em interfaces e código."
+      },
+      {
+        "from": 90,
+        "to": 240,
+        "text": "A intenção aparece no chat, mas isso ainda não significa execução."
+      },
+      {
+        "from": 240,
+        "to": 390,
+        "text": "O código prepara a operação que será enviada ao runtime."
+      },
+      {
+        "from": 390,
+        "to": 570,
+        "text": "O terminal representa a execução real do comando e o resultado."
+      },
+      {
+        "from": 570,
+        "to": 720,
+        "text": "O diff mostra a mudança de arquitetura: autorização e sandbox passam a ser explícitos."
+      },
+      {
+        "from": 720,
+        "to": 870,
+        "text": "O chat não executa diretamente. Ele organiza a intenção; o runtime executa."
+      }
+    ]
+  },
+  "visuals": {
+    "aspect": "9:16",
+    "reducedMotion": false
+  },
+  "theme": {
+    "id": "mcf-dark",
+    "background": "#080c14",
+    "accent": "#7c8cff"
+  },
+  "assets": [
+    "runtime-node-icon"
+  ],
+  "timings": {
+    "fps": 30
+  }
+}
