@@ -6,6 +6,7 @@ on:
       - 'experimentos/mcf-content-studio-n4/audio/**'
       - 'experimentos/mcf-content-studio-n4/scripts/build-review-html.py'
       - 'experimentos/mcf-content-studio-n4/scripts/build-review-lab-v2.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/verify-media-audio.py'
       - 'experimentos/mcf-content-studio-n4/scripts/benchmark.mjs'
       - 'experimentos/mcf-content-studio-n4/src/pilot/**'
       - 'experimentos/mcf-content-studio-n4/src/qa/**'
@@ -102,6 +103,9 @@ jobs:
       - name: Mux narration into pilot
         run: |
           ffmpeg -y             -i out/runtime-agentico-n4-silent.mp4             -i out/runtime-agentico-n4-narration.m4a             -map 0:v:0             -map 1:a:0             -c:v copy             -c:a aac             -b:a 192k             -t 67             -movflags +faststart             out/runtime-agentico-n4-audio.mp4
+
+      - name: Verify encoded narration stream
+        run: python scripts/verify-media-audio.py out/runtime-agentico-n4-audio.mp4 --min-duration 60
 
       - name: Render Review Lab QA stills
         run: |
