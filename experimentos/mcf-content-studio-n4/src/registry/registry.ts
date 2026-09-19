@@ -43,7 +43,7 @@ export const labTemplates:LabTemplate[]=registryData.templates.map((template)=>(
   id:template.id,
   name:template.displayName,
   purpose:template.purpose,
-  supportedAspects:template.supportedAspects,
+  supportedAspects:template.supportedAspects as LabTemplate['supportedAspects'],
   componentIds:template.componentIds,
   status:template.status,
 }));
