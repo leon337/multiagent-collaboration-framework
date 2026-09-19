@@ -1,0 +1,53 @@
+name: Content Studio N4 Pilot Render
+
+on:
+  pull_request:
+    paths:
+      - 'experimentos/mcf-content-studio-n4/src/pilot/**'
+      - 'experimentos/mcf-content-studio-n4/src/remotion/**'
+      - 'experimentos/mcf-content-studio-n4/package.json'
+      - 'experimentos/mcf-content-studio-n4/pnpm-workspace.yaml'
+      - '.github/workflows/content-studio-n4-pilot-render.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: experimentos/mcf-content-studio-n4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Render pilot MP4
+        run: |
+          mkdir -p out
+          pnpm exec remotion render src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-n4-pilot.mp4 --codec=h264 --crf=23 --concurrency=2
+
+      - name: Upload pilot
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-agentico-n4-pilot
+          path: experimentos/mcf-content-studio-n4/out/runtime-agentico-n4-pilot.mp4
+          if-no-files-found: error
+          retention-days: 14
