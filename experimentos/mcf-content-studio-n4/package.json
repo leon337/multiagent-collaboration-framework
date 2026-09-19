@@ -4,13 +4,18 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.17.0",
-  "engines": {"node": ">=24.18.0 <25"},
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
-    "verify": "pnpm typecheck && pnpm test && pnpm build"
+    "verify": "pnpm typecheck && pnpm test && pnpm build",
+    "studio": "remotion studio src/remotion/index.ts",
+    "render:pilot": "remotion render src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-n4-pilot.mp4",
+    "still:pilot": "remotion still src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-n4-pilot.png --frame=900"
   },
   "dependencies": {
     "@remotion/player": "4.0.526",
