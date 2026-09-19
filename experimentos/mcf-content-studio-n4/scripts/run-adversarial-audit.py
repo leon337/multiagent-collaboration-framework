@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import hashlib, importlib.util, json, subprocess
+import hashlib, importlib.util, json, subprocess, sys
 from pathlib import Path
 
 experiment=Path(__file__).resolve().parents[1]
@@ -35,6 +35,7 @@ auditor_path=repo/'ops/multiagent-runtime-v2/adversarial_auditor.py'
 spec=importlib.util.spec_from_file_location('mcf_adversarial_auditor',auditor_path)
 module=importlib.util.module_from_spec(spec)
 assert spec and spec.loader
+sys.modules[spec.name]=module
 spec.loader.exec_module(module)
 
 packet={
