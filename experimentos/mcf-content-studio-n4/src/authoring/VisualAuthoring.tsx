@@ -10,7 +10,7 @@ export const normalizeSceneLayout=(value:Partial<SceneLayout>={}):SceneLayout=>(
 });
 export const snapSceneLayout=(value:SceneLayout):SceneLayout=>{
   if(!value.snap) return normalizeSceneLayout(value);
-  const step=(n:number,s:number)=>Math.round(n/s)*s;
+  const step=(n:number,s:number)=>Number((Math.round(n/s)*s).toFixed(6));
   return normalizeSceneLayout({...value,x:step(value.x,.05),y:step(value.y,.05),scale:step(value.scale,.05),rotationDeg:step(value.rotationDeg,15)});
 };
 
