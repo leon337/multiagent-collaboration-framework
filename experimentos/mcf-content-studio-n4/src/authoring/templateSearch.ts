@@ -5,6 +5,8 @@ export type TemplateSearchQuery={
   componentId?:string;
   aspect?:'9:16'|'16:9';
   status?:string;
+  intent?:string;
+  tag?:string;
 };
 
 export const searchTemplates=(query:TemplateSearchQuery={})=>{
@@ -18,6 +20,18 @@ export const searchTemplates=(query:TemplateSearchQuery={})=>{
     if(query.componentId&&!template.componentIds.includes(query.componentId)) return false;
     if(query.aspect&&!template.supportedAspects.includes(query.aspect)) return false;
     if(query.status&&template.status!==query.status) return false;
+    if(query.intent){
+      const matches=template.componentIds.some((componentId)=>
+        registryData.components.find((component)=>component.id===componentId)?.intents.includes(query.intent!)
+      );
+      if(!matches) return false;
+    }
+    if(query.tag){
+      const matches=template.componentIds.some((componentId)=>
+        registryData.components.find((component)=>component.id===componentId)?.tags.includes(query.tag!)
+      );
+      if(!matches) return false;
+    }
     return true;
   });
 };

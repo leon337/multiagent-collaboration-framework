@@ -11,6 +11,10 @@ export type LabEntry={
   durationInFrames:number;
   defaultProps:Record<string,unknown>;
   editableProps:string[];
+  tags:string[];
+  intents:string[];
+  complexity:'low'|'medium'|'high';
+  supportsAudioSync:boolean;
   component:ComponentType<any>;
 };
 

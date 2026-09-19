@@ -10,3 +10,29 @@ export type ImportManifest={
   adaptation:{targetComponentId:string;changes:string[];tests:string[]};
   status:ImportStatus;
 };
+
+export type ProjectSourceFile={
+  path:string;
+  content?:string;
+  sizeBytes?:number;
+};
+
+export type ProjectSnapshot={
+  source:{url:string;revision:string};
+  dependencies:Record<string,string>;
+  files:ProjectSourceFile[];
+};
+
+export type ProjectImportCandidate={
+  path:string;
+  kind:'component'|'composition'|'utility';
+  signals:string[];
+  riskSignals:string[];
+};
+
+export type ProjectExtractionResult={
+  remotionDetected:boolean;
+  candidates:ProjectImportCandidate[];
+  projectFindings:string[];
+};
+

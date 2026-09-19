@@ -21,9 +21,9 @@ export const updateSceneProps=(spec:TechnicalLessonSpec,index:number,props:Recor
   return {...spec,scenes:spec.scenes.map((scene,i)=>i===index?{...scene,props:{...scene.props,...props}}:scene)};
 };
 
-export const updateSceneComponent=(spec:TechnicalLessonSpec,index:number,componentId:string):TechnicalLessonSpec=>{
+export const updateSceneComponent=(spec:TechnicalLessonSpec,index:number,componentId:string,props?:Record<string,unknown>):TechnicalLessonSpec=>{
   if(index<0||index>=spec.scenes.length) return spec;
-  return {...spec,scenes:spec.scenes.map((scene,i)=>i===index?{...scene,componentId}:scene)};
+  return {...spec,scenes:spec.scenes.map((scene,i)=>i===index?{...scene,componentId,...(props?{props}:{})}:scene)};
 };
 
 export const updateSceneMotion=(spec:TechnicalLessonSpec,index:number,motionPreset:MotionPresetId):TechnicalLessonSpec=>{

@@ -23,6 +23,7 @@ export const LabShell=({entries,templates}:Props)=>{
   const [query,setQuery]=useState('');
   const [category,setCategory]=useState('all');
   const [status,setStatus]=useState('APPROVED');
+  const [intent,setIntent]=useState('all');
   const [editable,setEditable]=useState<EditableFilter>('all');
   const [templateId,setTemplateId]=useState('all');
   const [overrides,setOverrides]=useState<Record<string,Record<string,unknown>>>({});
@@ -31,6 +32,7 @@ export const LabShell=({entries,templates}:Props)=>{
 
   const template=templates.find((item)=>item.id===templateId);
   const categories=useMemo(()=>['all',...Array.from(new Set(entries.map((entry)=>entry.category))).sort()],[entries]);
+  const intents=useMemo(()=>['all',...Array.from(new Set(entries.flatMap((entry)=>entry.intents))).sort()],[entries]);
 
   const filtered=useMemo(()=>{
     const normalized=query.trim().toLowerCase();
@@ -38,15 +40,18 @@ export const LabShell=({entries,templates}:Props)=>{
       const queryMatch=!normalized||
         entry.id.toLowerCase().includes(normalized)||
         entry.name.toLowerCase().includes(normalized)||
-        entry.category.toLowerCase().includes(normalized);
+        entry.category.toLowerCase().includes(normalized)||
+        entry.tags.some((tag)=>tag.toLowerCase().includes(normalized))||
+        entry.intents.some((item)=>item.toLowerCase().includes(normalized));
       const categoryMatch=category==='all'||entry.category===category;
       const statusMatch=status==='all'||entry.status===status;
+      const intentMatch=intent==='all'||entry.intents.includes(intent);
       const aspectMatch=entry.supportedAspects.includes(aspect);
       const editableMatch=editable==='all'||(editable==='editable'?entry.editableProps.length>0:entry.editableProps.length===0);
       const templateMatch=!template||template.componentIds.includes(entry.id);
-      return queryMatch&&categoryMatch&&statusMatch&&aspectMatch&&editableMatch&&templateMatch;
+      return queryMatch&&categoryMatch&&statusMatch&&intentMatch&&aspectMatch&&editableMatch&&templateMatch;
     });
-  },[entries,query,category,status,aspect,editable,template]);
+  },[entries,query,category,status,intent,aspect,editable,template]);
 
   useEffect(()=>{
     if(!filtered.some((entry)=>entry.id===selectedId)&&filtered[0]) setSelectedId(filtered[0].id);
@@ -90,6 +95,7 @@ export const LabShell=({entries,templates}:Props)=>{
         <div className="lab-filter-grid">
           <label>Categoria<select value={category} onChange={(event)=>setCategory(event.target.value)}>{categories.map((item)=><option key={item}>{item}</option>)}</select></label>
           <label>Status<select value={status} onChange={(event)=>setStatus(event.target.value)}><option>all</option><option>APPROVED</option><option>ADAPTED</option></select></label>
+          <label>Intenção<select value={intent} onChange={(event)=>setIntent(event.target.value)}>{intents.map((item)=><option key={item} value={item}>{item}</option>)}</select></label>
           <label>Editabilidade<select value={editable} onChange={(event)=>setEditable(event.target.value as EditableFilter)}><option value="all">all</option><option value="editable">editable</option><option value="fixed">fixed</option></select></label>
           <label>Template<select value={templateId} onChange={(event)=>setTemplateId(event.target.value)}><option value="all">all</option>{templates.map((item)=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
         </div>

@@ -37,6 +37,10 @@ try{
     const readyMs=Math.round(performance.now()-started);
 
     const countText=await page.locator('.lab-count').innerText();
+    await page.getByLabel('Intenção').selectOption('retrieval-practice');
+    const intentCountText=await page.locator('.lab-count').innerText();
+    if(intentCountText===countText) throw new Error('Intent filter did not narrow the component catalog');
+    await page.getByLabel('Intenção').selectOption('all');
     await page.getByLabel('Editabilidade').selectOption('editable');
     await page.getByRole('button',{name:'16:9'}).click();
     await page.getByText('reduced motion').locator('input').check();
@@ -58,15 +62,24 @@ try{
 
     await page.getByRole('button',{name:'Aula'}).click();
     await page.getByLabel('Lesson authoring').waitFor({state:'visible'});
+    await page.getByLabel('Título da aula').fill('Aula editada no Video Lab V3');
     await page.getByLabel('Duração em frames').fill('165');
-    const exportText=await page.getByLabel('Lesson JSON export').inputValue();
+    let exportText=await page.getByLabel('Lesson JSON export').inputValue();
     if(!exportText.includes('"durationFrames": 165')) throw new Error('Lesson authoring did not update exported JSON');
+    if(!exportText.includes('Aula editada no Video Lab V3')) throw new Error('Template input editor did not update exported JSON');
+    const parsed=JSON.parse(exportText);
+    parsed.lesson.title='Aula round-trip JSON';
+    await page.getByLabel('Lesson JSON export').fill(JSON.stringify(parsed,null,2));
+    await page.getByRole('button',{name:'Aplicar JSON ao preview'}).click();
+    await page.getByText('Aula round-trip JSON',{exact:true}).first().waitFor({state:'visible'});
+    exportText=await page.getByLabel('Lesson JSON export').inputValue();
+    if(!exportText.includes('Aula round-trip JSON')) throw new Error('JSON round-trip did not update preview state');
     const lessonMode=await page.locator('.lab-player-wrap').getAttribute('data-lab-mode');
     if(lessonMode!=='lesson') throw new Error('Lesson preview mode did not activate');
 
     const screenshot=`out/lab-${testCase.name}.png`;
     await page.screenshot({path:screenshot,fullPage:true});
-    report.cases.push({name:testCase.name,viewport:testCase.viewport,readyMs,countText,overflow:layout.overflow,layout,screenshot,stillCommand,lessonMode});
+    report.cases.push({name:testCase.name,viewport:testCase.viewport,readyMs,countText,intentCountText,overflow:layout.overflow,layout,screenshot,stillCommand,lessonMode});
 
     if(testCase.name==='mobile'&&layout.overflow){
       throw new Error('Mobile horizontal overflow detected: '+JSON.stringify(layout));

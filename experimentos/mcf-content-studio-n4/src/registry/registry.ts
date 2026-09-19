@@ -59,6 +59,10 @@ export const labEntries:LabEntry[]=componentManifests.map((manifest)=>{
     durationInFrames:manifest.duration.recommendedFrames,
     defaultProps:manifest.defaultProps,
     editableProps:manifest.editableProps,
+    tags:manifest.tags,
+    intents:manifest.intents,
+    complexity:manifest.complexity,
+    supportsAudioSync:manifest.supportsAudioSync,
     component,
   };
 });
