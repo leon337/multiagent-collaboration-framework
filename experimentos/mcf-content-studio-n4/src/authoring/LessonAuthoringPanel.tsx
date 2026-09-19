@@ -1,9 +1,11 @@
 import {useMemo,useState} from 'react';
 import type {TechnicalLessonSpec} from '../templates/types';
 import {getTechnicalLessonDuration} from '../templates/types';
+import type {MotionPresetId} from '../motion/presets';
+import {labEntries} from '../registry/registry';
 import {AssetPicker} from './AssetPicker';
 import {MotionPicker} from './MotionPicker';
-import {reorderScene,serializeLesson,updateSceneDuration} from './lessonOps';
+import {reorderScene,serializeLesson,updateSceneComponent,updateSceneDuration,updateSceneMotion} from './lessonOps';
 
 export type LessonAuthoringPanelProps={
   spec:TechnicalLessonSpec;
@@ -12,9 +14,9 @@ export type LessonAuthoringPanelProps={
 
 export const LessonAuthoringPanel=({spec,onChange}:LessonAuthoringPanelProps)=>{
   const [selectedScene,setSelectedScene]=useState(0);
-  const [motionPreset,setMotionPreset]=useState('fade');
   const json=useMemo(()=>serializeLesson(spec),[spec]);
   const duration=getTechnicalLessonDuration(spec);
+  const scene=spec.scenes[selectedScene];
 
   const setSpec=(next:TechnicalLessonSpec)=>onChange?.(next);
   const move=(delta:number)=>{
@@ -26,36 +28,49 @@ export const LessonAuthoringPanel=({spec,onChange}:LessonAuthoringPanelProps)=>{
     }
   };
 
-  return <section className="lesson-authoring-panel">
+  return <section className="lesson-authoring-panel" aria-label="Lesson authoring">
     <header>
       <strong>{spec.lesson.title}</strong>
       <span>{spec.scenes.length} cenas · {duration} frames</span>
     </header>
 
-    <div style={{display:'grid',gap:8,marginTop:12}}>
-      {spec.scenes.map((scene,index)=><button key={scene.id} type="button" onClick={()=>setSelectedScene(index)} aria-pressed={index===selectedScene}>
-        {String(index+1).padStart(2,'0')} · {scene.componentId} · {scene.durationFrames}f
+    <div className="lesson-timeline" aria-label="Timeline da aula">
+      {spec.scenes.map((item,index)=><button key={item.id} type="button"
+        style={{flexGrow:item.durationFrames}} className={index===selectedScene?'active':''}
+        onClick={()=>setSelectedScene(index)} title={item.componentId}>
+        {index+1}
       </button>)}
     </div>
 
-    {spec.scenes[selectedScene]?<div style={{display:'grid',gap:10,marginTop:14}}>
-      <label>Duration frames
-        <input type="number" min={1} value={spec.scenes[selectedScene].durationFrames}
+    <div className="lesson-scene-list">
+      {spec.scenes.map((item,index)=><button key={item.id} type="button" onClick={()=>setSelectedScene(index)} aria-pressed={index===selectedScene}>
+        {String(index+1).padStart(2,'0')} · {item.componentId} · {item.durationFrames}f
+      </button>)}
+    </div>
+
+    {scene?<div className="lesson-scene-editor">
+      <label>Componente
+        <select value={scene.componentId} onChange={(event)=>setSpec(updateSceneComponent(spec,selectedScene,event.target.value))}>
+          {labEntries.filter((entry)=>entry.status==='APPROVED').map((entry)=><option key={entry.id} value={entry.id}>{entry.name}</option>)}
+        </select>
+      </label>
+      <label>Duração em frames
+        <input aria-label="Duração em frames" type="number" min={1} value={scene.durationFrames}
           onChange={(event)=>setSpec(updateSceneDuration(spec,selectedScene,Number(event.target.value)))}/>
       </label>
-      <div style={{display:'flex',gap:8}}>
+      <div className="lesson-reorder">
         <button type="button" disabled={selectedScene===0} onClick={()=>move(-1)}>↑ Mover</button>
         <button type="button" disabled={selectedScene===spec.scenes.length-1} onClick={()=>move(1)}>↓ Mover</button>
       </div>
-      <MotionPicker value={motionPreset} onChange={setMotionPreset}/>
+      <MotionPicker value={scene.motionPreset??'fade'} onChange={(id)=>setSpec(updateSceneMotion(spec,selectedScene,id as MotionPresetId))}/>
     </div>:null}
 
-    <div style={{marginTop:16}}>
+    <div className="lesson-assets">
       <AssetPicker selected={spec.assets} onChange={(assets)=>setSpec({...spec,assets})}/>
     </div>
 
-    <label style={{display:'grid',gap:6,marginTop:16}}>JSON / VideoSpec-like payload
-      <textarea readOnly value={json} rows={18}/>
+    <label className="lesson-export">JSON / VideoSpec-like payload
+      <textarea aria-label="Lesson JSON export" readOnly value={json} rows={18}/>
     </label>
   </section>;
 };

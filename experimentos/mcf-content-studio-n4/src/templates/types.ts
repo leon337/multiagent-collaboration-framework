@@ -1,4 +1,5 @@
 import type {AspectRatio} from '../lib/types';
+import type {MotionPresetId} from '../motion/presets';
 
 export type LessonCaptionCue={from:number;to:number;text:string};
 export type TechnicalLessonScene={
@@ -6,6 +7,7 @@ export type TechnicalLessonScene={
   componentId:string;
   durationFrames:number;
   props:Record<string,unknown>;
+  motionPreset?:MotionPresetId;
 };
 export type TechnicalLessonSpec={
   lesson:{id:string;title:string;summary?:string};

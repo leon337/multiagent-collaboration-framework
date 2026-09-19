@@ -70,6 +70,10 @@
           },
           "props": {
             "type": "object"
+          },
+          "motionPreset": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]+$"
           }
         }
       }

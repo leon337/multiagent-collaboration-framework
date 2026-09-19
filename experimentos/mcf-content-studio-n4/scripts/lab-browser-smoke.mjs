@@ -56,9 +56,17 @@ try{
       return {scrollWidth:root.scrollWidth,clientWidth:root.clientWidth,overflow:root.scrollWidth>window.innerWidth+1,offenders};
     });
 
+    await page.getByRole('button',{name:'Aula'}).click();
+    await page.getByLabel('Lesson authoring').waitFor({state:'visible'});
+    await page.getByLabel('Duração em frames').fill('165');
+    const exportText=await page.getByLabel('Lesson JSON export').inputValue();
+    if(!exportText.includes('"durationFrames": 165')) throw new Error('Lesson authoring did not update exported JSON');
+    const lessonMode=await page.locator('.lab-player-wrap').getAttribute('data-lab-mode');
+    if(lessonMode!=='lesson') throw new Error('Lesson preview mode did not activate');
+
     const screenshot=`out/lab-${testCase.name}.png`;
     await page.screenshot({path:screenshot,fullPage:true});
-    report.cases.push({name:testCase.name,viewport:testCase.viewport,readyMs,countText,overflow:layout.overflow,layout,screenshot,stillCommand});
+    report.cases.push({name:testCase.name,viewport:testCase.viewport,readyMs,countText,overflow:layout.overflow,layout,screenshot,stillCommand,lessonMode});
 
     if(testCase.name==='mobile'&&layout.overflow){
       throw new Error('Mobile horizontal overflow detected: '+JSON.stringify(layout));
