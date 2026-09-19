@@ -233,7 +233,11 @@ function factory(
 ): McfLedgerWriteMcpClient {
   const transport = new StreamableHTTPClientTransport(configuration.endpoint, {
     requestInit: { headers: { Authorization: `Bearer ${configuration.bearerToken}` } },
-    fetch: createBoundedMcpFetch(configuration, fetch, signal),
+    fetch: createBoundedMcpFetch(
+      { ...configuration, maxConcurrentQueries: configuration.maxConcurrentWrites },
+      fetch,
+      signal,
+    ),
     reconnectionOptions: {
       maxReconnectionDelay: configuration.timeoutMs,
       initialReconnectionDelay: 250,
