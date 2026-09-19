@@ -2,6 +2,7 @@ import {Composition} from 'remotion';
 import {RuntimeAgenticoPilot} from '../pilot/RuntimeAgenticoPilot';
 import {RUNTIME_AGENTICO_PILOT,RUNTIME_AGENTICO_PILOT_DURATION} from '../pilot/lesson';
 import {LongDiagramQa,LongFocusConceptQa,LongTimelineQa} from '../qa/VisualQaCompositions';
+import {RegistryComponentQaLandscape,RegistryComponentQaPortrait} from '../qa/RegistryQaCompositions';
 import {
   BounceHeadlinePreviewLandscape,
   BounceHeadlinePreviewPortrait,
@@ -24,4 +25,10 @@ export const RemotionRoot=()=> <>
     durationInFrames={180} fps={30} width={1080} height={1920}/>
   <Composition id="LongDiagramQa" component={LongDiagramQa}
     durationInFrames={180} fps={30} width={1080} height={1920}/>
+  <Composition id="RegistryComponentQaPortrait" component={RegistryComponentQaPortrait}
+    durationInFrames={180} fps={30} width={1080} height={1920}
+    defaultProps={{componentId:'focus-concept',reducedMotion:false}}/>
+  <Composition id="RegistryComponentQaLandscape" component={RegistryComponentQaLandscape}
+    durationInFrames={180} fps={30} width={1920} height={1080}
+    defaultProps={{componentId:'focus-concept',reducedMotion:false}}/>
 </>;

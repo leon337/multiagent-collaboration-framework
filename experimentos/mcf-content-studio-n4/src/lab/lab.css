@@ -29,3 +29,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 .lab-filter-grid label{display:grid;gap:6px;font-size:12px;color:#8290a7}
 .lab-filter-grid select{width:100%;padding:10px 12px;border:1px solid #31405e;border-radius:10px;background:#111827;color:#fff}
 .lab-template-purpose{font-size:12px;line-height:1.45;color:#aab4c6;background:#111827;border-radius:10px;padding:10px 12px;margin:0 0 14px}
+
+.lab-still-command{width:100%;min-height:150px;background:#080c14;color:#dbe5f5;border:1px solid #31405e;border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.45}
+.lab-hint{color:#8290a7;font-size:12px;line-height:1.5}

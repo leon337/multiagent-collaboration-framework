@@ -13,7 +13,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: experimentos/mcf-content-studio-n4
@@ -36,8 +36,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile=false
 
+      - name: Install Chromium for browser smoke
+        run: pnpm exec playwright install --with-deps chromium
+
       - name: Verify
         run: pnpm verify
+
+      - name: Render full component matrix
+        run: pnpm qa:matrix
+
+      - name: Browser smoke and preview benchmark
+        run: pnpm qa:browser
+
+      - name: Technical adversarial audit
+        run: pnpm audit:technical
 
       - name: Render smoke and stress stills
         run: |
@@ -59,6 +71,7 @@ jobs:
           name: content-studio-n4-evidence-${{ github.sha }}
           path: |
             experimentos/mcf-content-studio-n4/out/*.png
-            experimentos/mcf-content-studio-n4/out/benchmark.json
+            experimentos/mcf-content-studio-n4/out/*.json
+            experimentos/mcf-content-studio-n4/out/component-matrix/*.png
           if-no-files-found: error
           retention-days: 14

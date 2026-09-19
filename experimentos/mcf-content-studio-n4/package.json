@@ -15,7 +15,10 @@
     "verify": "pnpm typecheck && pnpm test && pnpm build",
     "studio": "remotion studio src/remotion/index.ts",
     "render:pilot": "remotion render src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-n4-pilot.mp4",
-    "still:pilot": "remotion still src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-n4-pilot.png --frame=900"
+    "still:pilot": "remotion still src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-n4-pilot.png --frame=900",
+    "qa:matrix": "node scripts/render-component-matrix.mjs",
+    "qa:browser": "node scripts/lab-browser-smoke.mjs",
+    "audit:technical": "python scripts/run-adversarial-audit.py"
   },
   "dependencies": {
     "@remotion/player": "4.0.526",
@@ -30,6 +33,9 @@
     "@vitejs/plugin-react": "6.0.4",
     "typescript": "6.0.3",
     "vite": "8.1.5",
-    "vitest": "4.1.10"
+    "vitest": "4.1.10",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "playwright": "1.63.0"
   }
 }
