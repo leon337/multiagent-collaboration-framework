@@ -1,0 +1,30 @@
+{
+  "name": "@mcf/content-studio-n4",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.17.0",
+  "engines": {"node": ">=24.18.0 <25"},
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty false",
+    "test": "vitest run",
+    "verify": "pnpm typecheck && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "@remotion/player": "4.0.526",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "remotion": "4.0.526"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.526",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.4",
+    "typescript": "6.0.3",
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
+  }
+}
