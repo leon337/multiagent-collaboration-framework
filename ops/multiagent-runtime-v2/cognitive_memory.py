@@ -16,7 +16,9 @@ from runtime import MissionRuntime
 
 
 TOOL_NAME = "cognitive_memory_write"
+READ_TOOL_NAME = "cognitive_memory_read"
 RECEIPT_SCHEMA = "mcf_cognitive_memory_receipt/v1"
+READ_RECEIPT_SCHEMA = "mcf_cognitive_memory_read_receipt/v1"
 
 
 class CognitiveMemoryError(RuntimeError):
@@ -91,6 +93,25 @@ class MemoryWriteReceipt:
     source_count: int
     relation_count: int
     read_back_verified: bool
+    created_at: float
+    receipt_sha256: str
+
+    def as_dict(self) -> dict[str, Any]:
+        return dict(self.__dict__)
+
+
+@dataclass(frozen=True)
+class MemoryReadReceipt:
+    schema: str
+    receipt_id: str
+    mission_id: str
+    execution_id: str
+    agent_id: str
+    task_id: str
+    event_id: str
+    provider: str
+    read_back_sha256: str
+    recovered: bool
     created_at: float
     receipt_sha256: str
 
@@ -321,6 +342,86 @@ class CognitiveMemoryCapability:
         self.runtime = runtime
         self.issuer = issuer
         self.provider = provider
+
+    def read_event(
+        self,
+        *,
+        token: str,
+        execution_id: str,
+        agent_id: str,
+        task_id: str,
+        event_id: str,
+        actor: str,
+        call_id: str | None = None,
+        now: float | None = None,
+    ) -> tuple[dict[str, Any], MemoryReadReceipt]:
+        if not event_id:
+            raise ValueError("event_id is required")
+        claims = self.issuer.verify(token, tool=READ_TOOL_NAME, now=now)
+        if claims["agent_id"] != agent_id or claims["task_id"] != task_id:
+            raise CapabilityDenied("memory read capability scope mismatch")
+
+        execution = self.runtime.projection().executions.get(execution_id)
+        if execution is None:
+            raise CognitiveMemoryError("unknown execution")
+        if execution["status"] != "running":
+            raise CognitiveMemoryError("execution is not running")
+        if (
+            execution["agent_id"] != agent_id
+            or execution["task_id"] != task_id
+        ):
+            raise CapabilityDenied("execution scope mismatch")
+
+        call_id = call_id or str(uuid.uuid4())
+        self.runtime.request_tool(
+            call_id,
+            execution_id,
+            READ_TOOL_NAME,
+            _sha({"event_id": event_id}),
+            actor,
+        )
+        try:
+            read_back = self.provider.read_back(event_id)
+            if read_back is None:
+                raise ReadBackVerificationError(
+                    "memory event not found during read-back"
+                )
+            if str(read_back.get("id")) != event_id:
+                raise ReadBackVerificationError("read-back id mismatch")
+            created_at = float(time.time() if now is None else now)
+            material = {
+                "schema": READ_RECEIPT_SCHEMA,
+                "receipt_id": str(uuid.uuid4()),
+                "mission_id": self.runtime.mission_id,
+                "execution_id": execution_id,
+                "agent_id": agent_id,
+                "task_id": task_id,
+                "event_id": event_id,
+                "provider": self.provider.name,
+                "read_back_sha256": _sha(read_back),
+                "recovered": True,
+                "created_at": created_at,
+            }
+            receipt_sha256 = _sha(material)
+            receipt = MemoryReadReceipt(
+                **material,
+                receipt_sha256=receipt_sha256,
+            )
+            self.runtime.finish_tool(
+                call_id,
+                actor,
+                success=True,
+                result_sha256=receipt_sha256,
+            )
+            return read_back, receipt
+        except Exception as exc:
+            self.runtime.finish_tool(
+                call_id,
+                actor,
+                success=False,
+                error_class=type(exc).__name__,
+            )
+            raise
 
     def write(
         self,
