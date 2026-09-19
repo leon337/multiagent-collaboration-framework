@@ -41,7 +41,7 @@ The following source-defined capabilities have material implementation evidence 
 | complete motion vocabulary | 12 style presets IMPLEMENTED; underline/draw-arrow/connector/morph/typewriter/counter/progress remain DECLARED | PARTIAL | promote only with real executable behavior/tests |
 | synchronized SFX/music/ducking | narration mux exists; no reusable SFX/music/ducking pipeline evidenced | NOT_IMPLEMENTED | add audio-mix contract and deterministic QA |
 | local/materializable TTS fallback (Supertonic/Kokoro class) | current review workflow downloads externally generated narration segments | NOT_IMPLEMENTED | evaluate materializable local TTS path without silently changing approved voice |
-| detect final video that should have audio but is silent | preflight checks narration cues, not encoded audio stream | PARTIAL | add media-level audio presence QA |
+| detect final video that should have audio but is silent | `verify-media-audio.py` + Audio Review fail-closed step added | IMPLEMENTED_PENDING_CI | validate encoded narrated review in workflow |
 | Explain as parallel educational output, not chained after Remotion | architecture is documented; no per-lesson Explain output is part of course DoD | PARTIAL | preserve bifurcation; add optional Explain companion artifact after factual pack |
 | Remotion Elements/ecosystem adapters | governed importer exists, but no explicit Elements adapter/catalog | PARTIAL | backlog; import only when a lesson has a real gap |
 | high-fidelity UI capture / Canvas Capture | source itself records Apple Silicon dependency | BLOCKED_ENVIRONMENT | do not block Linux/bubble lesson production |
@@ -93,4 +93,5 @@ Publication, merge, deploy and HUMAN_GATE remain separate.
 
 - `StickRig`: implementation + registry/schema/discovery test landed on the mission branch; CI pending.
 - text-fit readability floor: implementation + tests landed on the mission branch; CI pending.
-- next residual candidates remain audio mix/audio-stream QA and semantic motion presets; they are not claimed complete.
+- encoded-audio presence QA: fail-closed ffprobe verification added to the narrated review workflow; CI pending.
+- next residual candidates remain reusable audio mix/SFX/ducking and semantic motion presets; they are not claimed complete.
