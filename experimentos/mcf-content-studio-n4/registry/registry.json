@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.2.0",
+  "registryVersion": "0.3.0",
   "components": [
     {
       "id": "focus-concept",
@@ -535,6 +535,1038 @@
         "emphasis",
         "intro"
       ]
+    },
+    {
+      "id": "title",
+      "displayName": "Title",
+      "version": "0.1.0",
+      "category": "typography",
+      "pedagogicalPurpose": "Abrir capítulo ou ideia com hierarquia forte.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "eyebrow": "CAPÍTULO",
+        "title": "Título principal",
+        "subtitle": "Contexto curto para orientar a cena."
+      },
+      "editableProps": [
+        "eyebrow",
+        "title",
+        "subtitle"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "typography",
+        "title",
+        "headline"
+      ],
+      "intents": [
+        "intro",
+        "chapter-open",
+        "emphasis"
+      ]
+    },
+    {
+      "id": "subtitle",
+      "displayName": "Subtitle",
+      "version": "0.1.0",
+      "category": "typography",
+      "pedagogicalPurpose": "Apresentar uma segunda camada de explicação.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Subtítulo",
+        "body": "Uma segunda camada de explicação com menos peso visual."
+      },
+      "editableProps": [
+        "title",
+        "body"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "typography",
+        "subtitle"
+      ],
+      "intents": [
+        "explain-concept",
+        "context"
+      ]
+    },
+    {
+      "id": "keyword",
+      "displayName": "Keyword",
+      "version": "0.1.0",
+      "category": "typography",
+      "pedagogicalPurpose": "Fixar termo central com definição curta.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "prefix": "PALAVRA-CHAVE",
+        "keyword": "Sandbox",
+        "definition": "Uma fronteira explícita que limita o alcance da execução."
+      },
+      "editableProps": [
+        "prefix",
+        "keyword",
+        "definition"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "typography",
+        "keyword"
+      ],
+      "intents": [
+        "definition",
+        "emphasis"
+      ]
+    },
+    {
+      "id": "caption",
+      "displayName": "Caption",
+      "version": "0.1.0",
+      "category": "typography",
+      "pedagogicalPurpose": "Demonstrar bloco de legenda com reserva visual.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "text": "A legenda deve acompanhar a fala sem competir com o foco visual.",
+        "label": "CAPTION"
+      },
+      "editableProps": [
+        "text",
+        "label"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "typography",
+        "caption"
+      ],
+      "intents": [
+        "caption",
+        "accessibility"
+      ]
+    },
+    {
+      "id": "stack",
+      "displayName": "Stack",
+      "version": "0.1.0",
+      "category": "layout",
+      "pedagogicalPurpose": "Organizar itens verticalmente com ordem explícita.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Stack",
+        "items": [
+          "Entrada",
+          "Processamento",
+          "Saída"
+        ],
+        "gap": 18
+      },
+      "editableProps": [
+        "title",
+        "items",
+        "gap"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "layout",
+        "stack"
+      ],
+      "intents": [
+        "sequence",
+        "list"
+      ]
+    },
+    {
+      "id": "grid",
+      "displayName": "Grid",
+      "version": "0.1.0",
+      "category": "layout",
+      "pedagogicalPurpose": "Comparar múltiplos itens em grade controlada.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Grid",
+        "items": [
+          "Modelo",
+          "Agente",
+          "Sessão",
+          "Runtime"
+        ],
+        "columns": 2
+      },
+      "editableProps": [
+        "title",
+        "items",
+        "columns"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "layout",
+        "grid"
+      ],
+      "intents": [
+        "compare",
+        "overview"
+      ]
+    },
+    {
+      "id": "split-screen",
+      "displayName": "SplitScreen",
+      "version": "0.1.0",
+      "category": "layout",
+      "pedagogicalPurpose": "Comparar dois lados ou responsabilidades em paralelo.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "leftTitle": "Decide",
+        "leftBody": "Modelo",
+        "rightTitle": "Executa",
+        "rightBody": "Runtime autorizado"
+      },
+      "editableProps": [
+        "leftTitle",
+        "leftBody",
+        "rightTitle",
+        "rightBody"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "layout",
+        "comparison",
+        "split"
+      ],
+      "intents": [
+        "compare",
+        "contrast"
+      ]
+    },
+    {
+      "id": "focus-area",
+      "displayName": "FocusArea",
+      "version": "0.1.0",
+      "category": "layout",
+      "pedagogicalPurpose": "Reduzir competição visual e marcar o elemento ativo.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Onde olhar agora",
+        "context": [
+          "Aplicação",
+          "Agente",
+          "Modelo",
+          "Runtime"
+        ],
+        "focus": "Runtime",
+        "note": "Somente o runtime autorizado executa no ambiente."
+      },
+      "editableProps": [
+        "title",
+        "context",
+        "focus",
+        "note"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "layout",
+        "focus"
+      ],
+      "intents": [
+        "guided-reading",
+        "focus"
+      ]
+    },
+    {
+      "id": "quiz",
+      "displayName": "Quiz",
+      "version": "0.1.0",
+      "category": "learning",
+      "pedagogicalPurpose": "Fazer pergunta objetiva com revelação posterior.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "question": "Qual camada executa comandos?",
+        "options": [
+          "Modelo",
+          "Runtime",
+          "Prompt"
+        ],
+        "correctIndex": 1,
+        "revealAfterFrame": 75
+      },
+      "editableProps": [
+        "question",
+        "options",
+        "correctIndex",
+        "revealAfterFrame"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "learning",
+        "quiz"
+      ],
+      "intents": [
+        "quiz",
+        "retrieval-practice"
+      ]
+    },
+    {
+      "id": "definition",
+      "displayName": "Definition",
+      "version": "0.1.0",
+      "category": "learning",
+      "pedagogicalPurpose": "Explicar termo, definição e exemplo.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "term": "Sessão",
+        "definition": "Unidade persistente que conserva conversa e trabalho ao longo dos turnos.",
+        "example": "Ex.: histórico + eventos + artefatos relacionados."
+      },
+      "editableProps": [
+        "term",
+        "definition",
+        "example"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "learning",
+        "definition"
+      ],
+      "intents": [
+        "definition",
+        "explain-concept"
+      ]
+    },
+    {
+      "id": "progressive-concept",
+      "displayName": "ProgressiveConcept",
+      "version": "0.1.0",
+      "category": "learning",
+      "pedagogicalPurpose": "Construir dois ou mais conceitos e só depois revelar a ligação.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Conceitos que se conectam",
+        "concepts": [
+          "Modelo",
+          "Runtime"
+        ],
+        "linkLabel": "pede → executa"
+      },
+      "editableProps": [
+        "title",
+        "concepts",
+        "linkLabel"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "learning",
+        "progressive",
+        "concept"
+      ],
+      "intents": [
+        "explain-relation",
+        "progressive-concept"
+      ]
+    },
+    {
+      "id": "build-architecture",
+      "displayName": "BuildArchitecture",
+      "version": "0.1.0",
+      "category": "architecture",
+      "pedagogicalPurpose": "Construir arquitetura nó a nó.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Construindo a arquitetura",
+        "nodes": [
+          "Usuário",
+          "Aplicação",
+          "Agente",
+          "Runtime"
+        ]
+      },
+      "editableProps": [
+        "title",
+        "nodes"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 180
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "architecture",
+        "build"
+      ],
+      "intents": [
+        "architecture",
+        "progressive-build"
+      ]
+    },
+    {
+      "id": "checkpoint",
+      "displayName": "Checkpoint",
+      "version": "0.1.0",
+      "category": "learning",
+      "pedagogicalPurpose": "Reforçar o que já foi aprendido e o próximo alvo.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Checkpoint",
+        "known": [
+          "Modelo decide",
+          "Runtime executa"
+        ],
+        "next": [
+          "Aplicação governa"
+        ]
+      },
+      "editableProps": [
+        "title",
+        "known",
+        "next"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "learning",
+        "checkpoint"
+      ],
+      "intents": [
+        "checkpoint",
+        "recap"
+      ]
+    },
+    {
+      "id": "code-panel",
+      "displayName": "CodePanel",
+      "version": "0.1.0",
+      "category": "code",
+      "pedagogicalPurpose": "Mostrar trecho de código com contexto e linguagem.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Código",
+        "language": "ts",
+        "code": "const result = await agent.run(input);"
+      },
+      "editableProps": [
+        "title",
+        "language",
+        "code"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "code",
+        "panel"
+      ],
+      "intents": [
+        "code-demo",
+        "explain-code"
+      ]
+    },
+    {
+      "id": "diff-viewer",
+      "displayName": "DiffViewer",
+      "version": "0.1.0",
+      "category": "code",
+      "pedagogicalPurpose": "Mostrar mudança de código ou configuração em diff.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Diff",
+        "removed": [
+          "- acesso irrestrito"
+        ],
+        "added": [
+          "+ runtime autorizado",
+          "+ sandbox explícito"
+        ]
+      },
+      "editableProps": [
+        "title",
+        "removed",
+        "added"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "code",
+        "diff"
+      ],
+      "intents": [
+        "diff",
+        "change-explanation"
+      ]
+    },
+    {
+      "id": "github-window",
+      "displayName": "GitHubWindow",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Representar PR ou estado de repositório sem screenshot frágil.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "repo": "leon337/mcf",
+        "pr": "PR #266",
+        "status": "DRAFT",
+        "summary": "Evolução da engine audiovisual modular."
+      },
+      "editableProps": [
+        "repo",
+        "pr",
+        "status",
+        "summary"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "ui",
+        "github"
+      ],
+      "intents": [
+        "github",
+        "pr-demo"
+      ]
+    },
+    {
+      "id": "vscode-window",
+      "displayName": "VSCodeWindow",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Representar editor e arquivo de código.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "file": "TechnicalLessonTemplate.tsx",
+        "code": "export const TechnicalLessonTemplate = ({spec}) => {\\n  return renderScenes(spec.scenes);\\n};"
+      },
+      "editableProps": [
+        "file",
+        "code"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "ui",
+        "vscode",
+        "code"
+      ],
+      "intents": [
+        "vscode",
+        "code-demo"
+      ]
+    },
+    {
+      "id": "chat-window",
+      "displayName": "ChatWindow",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Simular conversa multi-turno com hierarquia clara.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Chat",
+        "messages": [
+          "Usuário: explique o runtime.",
+          "Agente: vou separar decisão de execução.",
+          "Tool: comando executado com sucesso."
+        ]
+      },
+      "editableProps": [
+        "title",
+        "messages"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "ui",
+        "chat"
+      ],
+      "intents": [
+        "chat-demo",
+        "agent-conversation"
+      ]
+    },
+    {
+      "id": "mobile-window",
+      "displayName": "MobileWindow",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Representar experiência mobile controlada.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "app": "MCF",
+        "title": "Review Lab",
+        "body": "Uma interface mobile simulada para demonstrar fluxos sem depender de screenshot externo."
+      },
+      "editableProps": [
+        "app",
+        "title",
+        "body"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "ui",
+        "mobile"
+      ],
+      "intents": [
+        "mobile-demo",
+        "ui-demo"
+      ]
+    },
+    {
+      "id": "cursor-cue",
+      "displayName": "CursorCue",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Guiar o olhar para uma coordenada da interface.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "label": "Clique aqui",
+        "x": 62,
+        "y": 48
+      },
+      "editableProps": [
+        "label",
+        "x",
+        "y"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "ui",
+        "cursor",
+        "cue"
+      ],
+      "intents": [
+        "guided-reading",
+        "ui-demo"
+      ]
+    },
+    {
+      "id": "highlight-cue",
+      "displayName": "HighlightCue",
+      "version": "0.1.0",
+      "category": "motion",
+      "pedagogicalPurpose": "Destacar uma palavra ou relação durante a fala.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "prefix": "O modelo ",
+        "highlight": "decide",
+        "suffix": ", mas o ambiente executa."
+      },
+      "editableProps": [
+        "prefix",
+        "highlight",
+        "suffix"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "motion",
+        "highlight",
+        "cue"
+      ],
+      "intents": [
+        "emphasis",
+        "guided-reading"
+      ]
     }
   ],
   "templates": [
@@ -557,7 +1589,28 @@
         "architecture-node",
         "animated-arrow",
         "browser-window",
-        "terminal-window"
+        "terminal-window",
+        "title",
+        "subtitle",
+        "keyword",
+        "caption",
+        "stack",
+        "grid",
+        "split-screen",
+        "focus-area",
+        "quiz",
+        "definition",
+        "progressive-concept",
+        "build-architecture",
+        "checkpoint",
+        "code-panel",
+        "diff-viewer",
+        "github-window",
+        "vscode-window",
+        "chat-window",
+        "mobile-window",
+        "cursor-cue",
+        "highlight-cue"
       ],
       "slots": [
         {

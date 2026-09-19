@@ -3,6 +3,9 @@ import registryData from '../../registry/registry.json';
 import {
   ActiveRecall,AnimatedArrow,AnimatedTimeline,ArchitectureNode,BounceHeadlineN4,
   BrowserWindow,ChapterProgress,ErrorVsCorrect,FocusConcept,ProgressiveDiagram,TerminalWindow,
+  Title,Subtitle,Keyword,Caption,Stack,Grid,SplitScreen,FocusArea,Quiz,Definition,
+  ProgressiveConcept,BuildArchitecture,Checkpoint,CodePanel,DiffViewer,GitHubWindow,
+  VSCodeWindow,ChatWindow,MobileWindow,CursorCue,HighlightCue,
 } from '../components';
 import type {ComponentManifest} from '../lib/types';
 import type {LabEntry,LabTemplate} from '../lab/types';
@@ -19,6 +22,27 @@ const componentMap: Record<string, ComponentType<any>> = {
   'bounce-headline-n4':BounceHeadlineN4,
   'browser-window':BrowserWindow,
   'terminal-window':TerminalWindow,
+  'title':Title,
+  'subtitle':Subtitle,
+  'keyword':Keyword,
+  'caption':Caption,
+  'stack':Stack,
+  'grid':Grid,
+  'split-screen':SplitScreen,
+  'focus-area':FocusArea,
+  'quiz':Quiz,
+  'definition':Definition,
+  'progressive-concept':ProgressiveConcept,
+  'build-architecture':BuildArchitecture,
+  'checkpoint':Checkpoint,
+  'code-panel':CodePanel,
+  'diff-viewer':DiffViewer,
+  'github-window':GitHubWindow,
+  'vscode-window':VSCodeWindow,
+  'chat-window':ChatWindow,
+  'mobile-window':MobileWindow,
+  'cursor-cue':CursorCue,
+  'highlight-cue':HighlightCue,
 };
 
 export const componentManifests=registryData.components as ComponentManifest[];
