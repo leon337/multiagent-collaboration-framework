@@ -1,0 +1,73 @@
+name: Content Studio N4 Showcase Pack
+on:
+  pull_request:
+    paths:
+      - 'experimentos/mcf-content-studio-n4/src/showcase/**'
+      - 'experimentos/mcf-content-studio-n4/src/remotion/Root.tsx'
+      - '.github/workflows/content-studio-n4-showcase.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: content-studio-n4-showcase-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  render-showcase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults: {run: {working-directory: experimentos/mcf-content-studio-n4}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Download natural narration previews
+        run: |
+          mkdir -p out/showcase/narration
+          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/8eeef72a-bedc-4084-9114-c4bc162ded1d.mp3' -o out/showcase/narration/engine.mp3
+          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b1ecafcf-dd2e-49be-950d-a6f25fb083f7.mp3' -o out/showcase/narration/motion.mp3
+          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ade9c240-1f0e-49de-aa9a-0f673cfd563a.mp3' -o out/showcase/narration/editor.mp3
+      - name: Render N4 showcase videos
+        run: |
+          mkdir -p out/showcase/silent
+          pnpm exec remotion render src/remotion/index.ts ShowcaseEngineRegistry out/showcase/silent/01-engine.mp4 --codec=h264 --crf=22 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseMotionSystem out/showcase/silent/02-motion.mp4 --codec=h264 --crf=22 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseVisualEditor out/showcase/silent/03-editor.mp4 --codec=h264 --crf=22 --concurrency=2
+      - name: Mux narration
+        run: |
+          for pair in '01-engine engine' '02-motion motion' '03-editor editor'; do
+            set -- $pair; name=$1; voice=$2
+            ffmpeg -y -i out/showcase/silent/$name.mp4 -i out/showcase/narration/$voice.mp3               -filter_complex '[0:v]tpad=stop_mode=clone:stop_duration=15[v]'               -map '[v]' -map 1:a -c:v libx264 -crf 22 -preset medium -c:a aac -b:a 192k -shortest out/showcase/$name.mp4
+            python scripts/verify-media-audio.py out/showcase/$name.mp4 --min-duration 20
+            python scripts/verify-audio-loudness.py out/showcase/$name.mp4 --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+          done
+      - name: Build showcase manifest
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          items=[]
+          for name in ['01-engine','02-motion','03-editor']:
+              path=Path('out/showcase')/(name+'.mp4')
+              duration=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=nw=1:nk=1',str(path)],text=True).strip())
+              items.append({'id':name,'path':str(path),'bytes':path.stat().st_size,'durationSec':round(duration,2)})
+          Path('out/showcase/manifest.json').write_text(json.dumps({'factory':'MCF Content Studio N4','videos':items},indent=2)+'\n')
+          print(json.dumps(items,indent=2))
+          PY
+      - name: Upload showcase pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: n4-showcase-pack-v1
+          path: |
+            experimentos/mcf-content-studio-n4/out/showcase/01-engine.mp4
+            experimentos/mcf-content-studio-n4/out/showcase/02-motion.mp4
+            experimentos/mcf-content-studio-n4/out/showcase/03-editor.mp4
+            experimentos/mcf-content-studio-n4/out/showcase/manifest.json
+          if-no-files-found: error
+          retention-days: 14
