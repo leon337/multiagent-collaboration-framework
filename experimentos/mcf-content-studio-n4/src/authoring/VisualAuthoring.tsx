@@ -13,6 +13,18 @@ export const snapSceneLayout=(value:SceneLayout):SceneLayout=>{
   const step=(n:number,s:number)=>Number((Math.round(n/s)*s).toFixed(6));
   return normalizeSceneLayout({...value,x:step(value.x,.05),y:step(value.y,.05),scale:step(value.scale,.05),rotationDeg:step(value.rotationDeg,15)});
 };
+export type SceneAlignment='left'|'center-x'|'right'|'top'|'center-y'|'bottom';
+export const alignSceneLayout=(value:SceneLayout,alignment:SceneAlignment):SceneLayout=>{
+  const next={...value};
+  if(alignment==='left') next.x=-0.35;
+  if(alignment==='center-x') next.x=0;
+  if(alignment==='right') next.x=0.35;
+  if(alignment==='top') next.y=-0.35;
+  if(alignment==='center-y') next.y=0;
+  if(alignment==='bottom') next.y=0.35;
+  return normalizeSceneLayout(next);
+};
+export const nudgeSceneLayout=(value:SceneLayout,dx:number,dy:number)=>normalizeSceneLayout({...value,x:value.x+dx,y:value.y+dy});
 
 type Gesture={mode:'drag'|'resize'|'rotate';startX:number;startY:number;start:SceneLayout;pointerId:number};
 
@@ -49,6 +61,17 @@ export const SceneCanvasEditor=({aspect,layout,onChange}:{aspect:'9:16'|'16:9';l
     </div>
     <div className="scene-layout-controls">
       <label><input type="checkbox" checked={value.snap} onChange={(e)=>onChange({...value,snap:e.target.checked})}/> snap</label>
+      <button type="button" onClick={()=>onChange(alignSceneLayout(value,'left'))}>←</button>
+      <button type="button" onClick={()=>onChange(alignSceneLayout(value,'center-x'))}>↔</button>
+      <button type="button" onClick={()=>onChange(alignSceneLayout(value,'right'))}>→</button>
+      <button type="button" onClick={()=>onChange(alignSceneLayout(value,'top'))}>↑</button>
+      <button type="button" onClick={()=>onChange(alignSceneLayout(value,'center-y'))}>↕</button>
+      <button type="button" onClick={()=>onChange(alignSceneLayout(value,'bottom'))}>↓</button>
+      <button type="button" onClick={()=>onChange(nudgeSceneLayout(value,-.01,0))}>x−</button>
+      <button type="button" onClick={()=>onChange(nudgeSceneLayout(value,.01,0))}>x+</button>
+      <button type="button" onClick={()=>onChange(nudgeSceneLayout(value,0,-.01))}>y−</button>
+      <button type="button" onClick={()=>onChange(nudgeSceneLayout(value,0,.01))}>y+</button>
+      <button type="button" onClick={()=>onChange({...value,rotationDeg:0})}>0°</button>
       <button type="button" onClick={()=>onChange(DEFAULT_SCENE_LAYOUT)}>Reset</button>
       <output>x {value.x.toFixed(2)} · y {value.y.toFixed(2)} · scale {value.scale.toFixed(2)} · rot {Math.round(value.rotationDeg)}°</output>
     </div>
