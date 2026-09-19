@@ -18,6 +18,7 @@ describe('N4 lesson audio mix contract',()=>{
   });
 
   it('fails closed on invalid ducking gain',()=>{
-    expect(validateAudioMix({...mix,ducking:[{...mix.ducking[0],reductionDb:3}]})).toContain('DUCKING_REDUCTION_MUST_BE_NEGATIVE');
+    const invalidRule={...mix.ducking[0],reductionDb:3};
+    expect(validateAudioMix({...mix,ducking:[invalidRule]})).toContain('DUCKING_REDUCTION_MUST_BE_NEGATIVE');
   });
 });
