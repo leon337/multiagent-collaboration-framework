@@ -1,22 +1,43 @@
 phase_id: PHASE-CONTENT-STUDIO-N4-EVOLUTION-001
 mission_id: MCF-CONTENT-STUDIO-N4-EVOLUTION-001
 parent_mission_id: MCF-CONTENT-STUDIO-N4-001
-objective_state: EM_EXECUCAO
+objective_state: ENTREGUE_COM_RESSALVAS
 risk_class: B
 branch: planning/mcf-content-studio-n4-evolution-20260919
 base_branch: planning/mcf-content-studio-n4-20260919
-base_commit: 0d71c8849ebe4e142052b8fdad7bc7b074efa3e5
 tracker: 265
-completed:
-  - canonical source chat located and read in full
-  - foundation/full-vision mismatch identified
-  - successor mission created
-  - evolution roadmap/checklist created
-open:
-  - Wave 1 Engine contracts and libraries
-  - Wave 2 Component ecosystem
-  - Wave 3 Discovery and authoring
-  - Wave 4 Design system and ecosystem
-  - Wave 5 Scale proof
-next_action: "Implement Wave 1 in parallel tracks: assets, motion, registry v2, TechnicalLessonTemplate."
+technical_head: 19e23de50e71dab8b4273cb8285a95f4cbd9da05
+ci:
+  documentation_validation: "1350 PASS"
+  pilot_render: "37 PASS"
+  scale_proof: "11 PASS"
+  audio_review: "36 PASS"
+  validation: "69 PASS"
+evidence:
+  registry_components: 34
+  component_matrix_renders: 86
+  browser_desktop: "1440x900 readyMs=515 overflow=false"
+  browser_mobile: "390x844 readyMs=320 overflow=false"
+  lesson_authoring_mode: PASS
+  scale_architecture: "28s 1080x1920 30fps renderMs=48039"
+  scale_ui_code: "29s 1080x1920 30fps renderMs=39461"
+audit:
+  verdict: APTO_COM_RESSALVA_EXTERNA
+  deterministic: PASS
+  cognitive: false
+  failed_findings: 0
+blocked_external:
+  - id: FIGMA_REAL_DERIVATION
+    reason: "No unambiguous Figma fileKey/nodeId exists in Project sources; connector exposes multiple possible writable plans."
+reservations:
+  - "Scale proof videos do not contain final audio."
+  - "Exact Instavar VideoSpec compatibility is not claimed."
+scale_decision: APTO_PARA_ESCALA_CONTROLADA
+next_mission: MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001
+prohibitions_preserved:
+  - no main merge inferred
+  - no production deploy
+  - no external publication
+  - no false Figma PASS
+  - no silent scale-proof-as-final-lesson claim
 human_action_required: false
