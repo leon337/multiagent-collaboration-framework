@@ -1,0 +1,11 @@
+{
+  "focusConcept": {
+    "eyebrow": "ARQUITETURA E GOVERNANÇA",
+    "title": "Uma responsabilidade arquitetural com um título deliberadamente longo para testar quebra e safe area",
+    "body": "Este texto existe como fixture de stress para verificar se o componente mantém legibilidade e não invade a área reservada a legendas e controles do player."
+  },
+  "timeline": {
+    "title": "Sequência temporal com muitos eventos",
+    "items": ["mensagem recebida","tool call com descrição longa","resultado estruturado","erro recuperável","checkpoint persistido","aprovação humana","artefato final"]
+  }
+}
