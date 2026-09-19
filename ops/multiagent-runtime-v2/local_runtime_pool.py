@@ -96,7 +96,17 @@ class LocalRuntimePool:
 
     def configure_from_metrics(self, metrics: dict[str, Any], actor: str, *, max_team_size: int = 8) -> dict[str, Any]:
         recommendation = adaptive_policy(metrics, max_team_size=max_team_size)
-        projection = self.configure(int(recommendation["team_size"]), actor)
+        requested = int(recommendation["team_size"])
+        active_count = len(self.projection().active)
+        target_slots = max(requested, active_count)
+        if target_slots != requested:
+            recommendation = {
+                **recommendation,
+                "requested_team_size": requested,
+                "team_size": target_slots,
+                "constraint": "active_slots_floor",
+            }
+        projection = self.configure(target_slots, actor)
         return {"projection": projection, "policy": recommendation}
 
     def acquire(self, run_id: str, task_id: str, worker_id: str, actor: str) -> dict[str, Any]:

@@ -49,7 +49,7 @@ class LocalRuntimePoolTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(len(self.pool.projection().active), 1)
 
-    def test_adaptive_configuration_uses_existing_policy(self):
+    def test_adaptive_configuration_uses_discrete_default_policy(self):
         metrics = {
             "worker_count": 2,
             "success_rate": 1.0,
@@ -57,8 +57,8 @@ class LocalRuntimePoolTests(unittest.TestCase):
             "duration_ms": {"p95": 100},
         }
         result = self.pool.configure_from_metrics(metrics, "mestre", max_team_size=4)
-        self.assertEqual(result["policy"]["team_size"], 3)
-        self.assertEqual(result["projection"].target_slots, 3)
+        self.assertEqual(result["policy"]["team_size"], 4)
+        self.assertEqual(result["projection"].target_slots, 4)
         self.assertIn("BLOCKED_G08", result["policy"]["model_policy"])
 
     def test_replay_survives_reopen(self):
@@ -83,6 +83,23 @@ class LocalRuntimePoolTests(unittest.TestCase):
             self.pool.acquire("r1", "t2", "w1", "mestre")
         with self.assertRaises(RuntimePoolError):
             self.pool.acquire("r1", "t1", "w2", "mestre")
+
+    def test_adaptive_configuration_respects_active_slot_floor(self):
+        self.pool.configure(4, "mestre")
+        self.pool.acquire("r1", "t1", "w1", "mestre")
+        self.pool.acquire("r2", "t2", "w2", "mestre")
+        self.pool.acquire("r3", "t3", "w3", "mestre")
+        metrics = {
+            "worker_count": 4,
+            "success_rate": 0.5,
+            "peak_concurrency_observed": 4,
+            "duration_ms": {"p95": 100, "sum": 400},
+        }
+
+        result = self.pool.configure_from_metrics(metrics, "mestre", max_team_size=8)
+
+        self.assertEqual(result["policy"]["team_size"], 3)
+        self.assertEqual(result["projection"].target_slots, 3)
 
     def test_pool_cannot_shrink_below_active_count(self):
         self.pool.configure(2, "mestre")
