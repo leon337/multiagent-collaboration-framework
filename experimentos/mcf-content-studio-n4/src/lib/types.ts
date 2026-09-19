@@ -5,7 +5,7 @@ export type RegistryStatus = 'DISCOVERED' | 'REVIEWED' | 'ADAPTED' | 'APPROVED' 
 export type Complexity = 'low' | 'medium' | 'high';
 export type ComponentCategory =
   | 'concept' | 'diagram' | 'timeline' | 'learning' | 'architecture'
-  | 'progress' | 'ui' | 'code' | 'media' | 'motion' | 'typography' | 'layout' | 'fx';
+  | 'progress' | 'ui' | 'code' | 'media' | 'motion' | 'typography' | 'layout' | 'fx' | 'character';
 
 export type CommonProps = {aspect?: AspectRatio; reducedMotion?: boolean};
 
