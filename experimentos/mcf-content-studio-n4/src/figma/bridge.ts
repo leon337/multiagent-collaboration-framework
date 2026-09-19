@@ -69,7 +69,7 @@ export const toN4ComponentDefaults=(spec:FigmaBridgeSpec,aspect:AspectRatio='9:1
   aspect,
 });
 
-export const compareTokenSnapshots=(figma:FigmaBridgeSpec['tokens'],n4=N4TokenSnapshot())=>{
+export const compareTokenSnapshots=(figma:FigmaBridgeSpec['tokens'],n4=n4TokenSnapshot())=>{
   const conflicts:string[]=[];
   for(const [name,value] of Object.entries(figma.colors)){
     if(name in n4.colors&&n4.colors[name]!==value) conflicts.push(`colors.${name}`);
