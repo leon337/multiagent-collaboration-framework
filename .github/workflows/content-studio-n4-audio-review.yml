@@ -94,7 +94,12 @@ jobs:
           name: runtime-agentico-n4-audio-review
           path: |
             experimentos/mcf-content-studio-n4/out/runtime-agentico-n4-review.html
+            experimentos/mcf-content-studio-n4/out/runtime-agentico-n4-review-lab-v2.html
             experimentos/mcf-content-studio-n4/out/runtime-agentico-n4-audio.mp4
             experimentos/mcf-content-studio-n4/out/runtime-agentico-n4-narration.m4a
+            experimentos/mcf-content-studio-n4/out/benchmark.json
+            experimentos/mcf-content-studio-n4/out/qa-long-focus.png
+            experimentos/mcf-content-studio-n4/out/qa-long-timeline.png
+            experimentos/mcf-content-studio-n4/out/qa-long-diagram.png
           if-no-files-found: error
           retention-days: 14
