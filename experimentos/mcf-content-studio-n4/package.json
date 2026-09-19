@@ -18,7 +18,8 @@
     "still:pilot": "remotion still src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-n4-pilot.png --frame=900",
     "qa:matrix": "node scripts/render-component-matrix.mjs",
     "qa:browser": "node scripts/lab-browser-smoke.mjs",
-    "audit:technical": "python scripts/run-adversarial-audit.py"
+    "audit:technical": "python scripts/run-adversarial-audit.py",
+    "audit:evolution": "python scripts/run-evolution-audit.py"
   },
   "dependencies": {
     "@remotion/player": "4.0.526",

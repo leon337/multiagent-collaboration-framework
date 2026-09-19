@@ -51,6 +51,9 @@ jobs:
       - name: Technical adversarial audit
         run: pnpm audit:technical
 
+      - name: Evolution adversarial audit
+        run: pnpm audit:evolution
+
       - name: Render smoke and stress stills
         run: |
           mkdir -p out
