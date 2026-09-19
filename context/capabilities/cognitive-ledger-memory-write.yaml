@@ -1,0 +1,45 @@
+schema_version: 1
+
+capability:
+  id: cognitive-ledger.memory.write.explicit
+  provider_project_id: cognitive-ledger
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: EXPLICIT_GOVERNED_WRITE
+
+contract:
+  protocol: COGNITIVE_LEDGER_MCP_STREAMABLE_HTTP_WRITE_V1
+  endpoint: /mcp-write
+  allowed_operations:
+    - registrar_memoria
+  prohibited_operations:
+    - memory.silent_capture
+    - provider.direct-database-access
+    - provider.service_role.expose
+    - memory.delete_destructive
+    - production.deploy
+
+governance:
+  authorization_state: AUTHORIZED_FOR_SYNTHETIC_VALIDATION
+  explicit_user_intent_required: true
+  provider_capability_required: registrar_memoria
+  receipt_required: true
+  read_back_required: true
+  least_privilege_client_required: true
+
+privacy:
+  memory_payload_persisted_by_mcf: false
+  receipt_payload_allowed:
+    - evento_id
+    - provider_status
+    - read_back
+    - event_sha256
+    - receipt_sha256
+
+lifecycle:
+  implementation_state: CANDIDATE
+  connection_state: DISCONNECTED
+  runtime_state: INACTIVE
+  verification_state: SYNTHETIC_VALIDATION_PENDING
+
+freshness: LIVE_REQUIRED
