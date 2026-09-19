@@ -39,3 +39,19 @@ jobs:
 
       - name: Verify
         run: pnpm verify
+
+      - name: Render smoke stills
+        run: |
+          mkdir -p out
+          pnpm exec remotion still src/remotion/index.ts BounceHeadlinePreviewPortrait out/bounce-portrait.png --frame=45
+          pnpm exec remotion still src/remotion/index.ts BounceHeadlinePreviewLandscape out/bounce-landscape.png --frame=45
+          pnpm exec remotion still src/remotion/index.ts BounceHeadlinePreviewReducedMotion out/bounce-reduced-motion.png --frame=45
+          pnpm exec remotion still src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-pilot.png --frame=900
+
+      - name: Upload smoke evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-studio-n4-smoke-${{ github.sha }}
+          path: experimentos/mcf-content-studio-n4/out/*.png
+          if-no-files-found: error
+          retention-days: 14
