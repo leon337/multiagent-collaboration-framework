@@ -38,7 +38,7 @@ export const LessonAuthoringPanel=({spec,onChange}:LessonAuthoringPanelProps)=>{
    <div className="lesson-reorder"><button type="button" disabled={selectedScene===0} onClick={()=>move(-1)}>↑ Mover</button><button type="button" disabled={selectedScene===spec.scenes.length-1} onClick={()=>move(1)}>↓ Mover</button></div>
    <MotionPicker value={scene.motionPreset??'fade'} onChange={(id)=>setSpec(updateSceneMotion(spec,selectedScene,id as MotionPresetId))}/>
    <strong>Editor visual direto</strong>
-   <SceneCanvasEditor aspect={spec.visuals.aspect} layout={scene.layout} onChange={(layout)=>setSpec({...spec,scenes:spec.scenes.map((item,i)=>i===selectedScene?{...item,layout}:item)})}/>
+   <SceneCanvasEditor aspect={spec.visuals.aspect} {...(scene.layout?{layout:scene.layout}:{})} onChange={(layout)=>setSpec({...spec,scenes:spec.scenes.map((item,i)=>i===selectedScene?{...item,layout}:item)})}/>
    {sceneEntry?<div className="lesson-scene-props"><strong>Props editáveis da cena</strong><PropEditor props={sceneProps} editableProps={sceneEntry.editableProps} onChange={(key,value)=>setSpec(updateSceneProps(spec,selectedScene,{[key]:value}))}/></div>:null}
   </div>:null}
   <div className="lesson-assets"><AssetPicker selected={spec.assets} onChange={(assets)=>setSpec({...spec,assets})}/></div>

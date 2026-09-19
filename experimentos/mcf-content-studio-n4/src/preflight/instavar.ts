@@ -61,7 +61,7 @@ export const toInstavarVideoSpec=(spec:TechnicalLessonSpec):InstavarVideoSpec=>{
   if(spec.visuals.aspect!=='9:16') throw new Error('Instavar VideoSpec 1.0 does not expose 16:9 in the verified runtime contract.');
   return {
     schemaVersion:'1.0',id:spec.lesson.id,templateFamily:'proof-walkthrough',
-    meta:{title:spec.lesson.title,description:spec.lesson.summary,source:'MCF TechnicalLessonSpec',tags:['mcf','n4']},
+    meta:{title:spec.lesson.title,...(spec.lesson.summary?{description:spec.lesson.summary}:{}),source:'MCF TechnicalLessonSpec',tags:['mcf','n4']},
     target:{aspect:'9:16',fps:spec.timings.fps,durationMode:'fixed',fixedDurationSec:spec.scenes.reduce((n,s)=>n+s.durationFrames,0)/spec.timings.fps},
     style:{theme:spec.theme.id,variant:'n4',safeAreaProfile:'metaSafe'},
     audio:{mode:spec.narration.cues.length?'narration':'silent',ducking:true,narrationText:spec.narration.cues.map(c=>c.text).join('\n\n')},

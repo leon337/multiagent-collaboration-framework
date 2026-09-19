@@ -1,0 +1,49 @@
+{
+  "mission_id": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001",
+  "wave": "SANDBOX-PARALLEL-004",
+  "worker_kind": "deterministic_sandbox_workers",
+  "cognitive_agent_credit": false,
+  "workers": [
+    {
+      "id": "asset_worker",
+      "status": "PASS",
+      "outputs": [
+        "MCF-owned SVG asset pack",
+        "synthetic WAV music/SFX/ambient",
+        "synthetic MP4 demo loop"
+      ]
+    },
+    {
+      "id": "checklist_worker",
+      "status": "PASS",
+      "open_items": [
+        "curriculum recovery",
+        "asset breadth",
+        "audio loudness QA",
+        "Explain companion",
+        "exact-head CI evidence"
+      ]
+    },
+    {
+      "id": "ci_worker",
+      "status": "PASS",
+      "findings": [
+        "exactOptionalPropertyTypes layout",
+        "exactOptionalPropertyTypes Instavar description"
+      ]
+    },
+    {
+      "id": "explain_worker",
+      "status": "PASS",
+      "scope": "pilot fact pack only; no curriculum inference"
+    },
+    {
+      "id": "governance_worker",
+      "status": "PASS",
+      "boundaries": [
+        "no curriculum invention",
+        "no merge/deploy/publication inference"
+      ]
+    }
+  ]
+}
