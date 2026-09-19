@@ -11,8 +11,9 @@ describe('RenderComp BounceInHeadline import',()=>{
     expect(decideImport(manifest as ImportManifest)).toBe('ELIGIBLE_FOR_APPROVAL');
   });
 
-  it('stays non-automatic until preview evidence exists',()=>{
+  it('is approved only after pinned license, tests and visual smoke evidence',()=>{
     const entry=registry.components.find((component)=>component.id==='bounce-headline-n4');
-    expect(entry?.status).toBe('ADAPTED');
+    expect(entry?.status).toBe('APPROVED');
+    expect(manifest.status).toBe('APPROVED');
   });
 });

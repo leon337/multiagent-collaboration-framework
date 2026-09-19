@@ -15,7 +15,7 @@ export const ProgressiveDiagram=({aspect='9:16',reducedMotion=false,title='Fluxo
         const p=progressAt(frame,index*18,index*18+14,reducedMotion);
         return <div key={`${node}-${index}`} style={{display:'contents'}}>
           <Card style={{flex:1,display:'grid',placeItems:'center',minHeight:180,opacity:p,transform:`scale(${0.92+p*0.08})`}}>
-            <span style={{fontSize:36,fontWeight:700}}>{node}</span>
+            <span style={{fontSize:36,fontWeight:700,textAlign:'center',whiteSpace:'pre-line',lineHeight:1.15}}>{node}</span>
           </Card>
           {index<nodes.length-1?<div style={{fontSize:44,color:designTokens.color.accent,opacity:p,alignSelf:'center',transform:aspect==='9:16'?'rotate(90deg)':undefined}}>→</div>:null}
         </div>;

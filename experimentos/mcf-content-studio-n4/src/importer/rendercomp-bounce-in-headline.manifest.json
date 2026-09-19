@@ -11,8 +11,16 @@
     "reviewed": true
   },
   "dependencies": [
-    {"name":"remotion","version":"4.0.518","purpose":"source animation primitives"},
-    {"name":"react","version":"^19.0.0","purpose":"source component runtime"}
+    {
+      "name": "remotion",
+      "version": "4.0.518",
+      "purpose": "source animation primitives"
+    },
+    {
+      "name": "react",
+      "version": "^19.0.0",
+      "purpose": "source component runtime"
+    }
   ],
   "security": {
     "reviewed": true,
@@ -45,5 +53,5 @@
       "reduced-motion preview"
     ]
   },
-  "status": "ADAPTED"
+  "status": "APPROVED"
 }
