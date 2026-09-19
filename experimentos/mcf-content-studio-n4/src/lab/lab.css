@@ -49,3 +49,4 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px soli
 .lesson-apply-json{padding:10px 12px;border:1px solid #44537b;border-radius:10px;background:#172033;color:#fff}
 .lesson-json-error{padding:10px 12px;border:1px solid #ff7f87;border-radius:10px;background:#2a1118;color:#ffd9dd;font-size:12px}
 @media(max-width:720px){.lesson-template-grid{grid-template-columns:1fr}}
+.asset-filter-grid{display:grid;grid-template-columns:1fr;gap:7px;margin-top:9px}.asset-filter-grid label{display:grid;gap:5px;color:#8290a7;font-size:11px}.asset-filter-grid select,.asset-picker input{width:100%;min-width:0;padding:8px;border:1px solid #31405e;border-radius:8px;background:#111827;color:#fff}

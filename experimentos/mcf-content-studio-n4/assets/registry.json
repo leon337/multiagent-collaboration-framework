@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.1.0",
+  "registryVersion": "0.2.0",
   "assets": [
     {
       "id": "runtime-node-icon",
@@ -36,6 +36,28 @@
       "source": {
         "kind": "mcf",
         "path": "/assets/n4/sandbox-boundary-icon.svg"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "status": "APPROVED"
+    },
+    {
+      "id": "agent-avatar-neutral",
+      "type": "avatar",
+      "style": "technical-editorial",
+      "orientation": "portrait",
+      "theme": "dark",
+      "usage": [
+        "agent",
+        "character",
+        "conversation",
+        "learning"
+      ],
+      "source": {
+        "kind": "mcf",
+        "path": "/assets/n4/agent-avatar-neutral.svg"
       },
       "license": {
         "id": "MCF-REPOSITORY-LICENSE",
