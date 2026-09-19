@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.6.0",
+  "registryVersion": "0.7.0",
   "components": [
     {
       "id": "focus-concept",
@@ -1717,6 +1717,507 @@
         "explain-orchestration",
         "human-gate"
       ]
+    },
+    {
+      "id": "comparison",
+      "displayName": "Comparison",
+      "version": "0.1.0",
+      "category": "learning",
+      "pedagogicalPurpose": "Contrastar duas alternativas editáveis.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Compare",
+        "leftTitle": "Antes",
+        "leftBody": "Fluxo manual",
+        "rightTitle": "Depois",
+        "rightBody": "Engine reutilizável"
+      },
+      "editableProps": [
+        "title",
+        "leftTitle",
+        "leftBody",
+        "rightTitle",
+        "rightBody"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "comparison",
+        "learning"
+      ],
+      "intents": [
+        "compare"
+      ]
+    },
+    {
+      "id": "callout",
+      "displayName": "Callout",
+      "version": "0.1.0",
+      "category": "concept",
+      "pedagogicalPurpose": "Destacar regra ou alerta sem criar layout bespoke.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "label": "IMPORTANTE",
+        "title": "Regra operacional",
+        "body": "Animação serve à compreensão.",
+        "accent": "#7c8cff"
+      },
+      "editableProps": [
+        "label",
+        "title",
+        "body",
+        "accent"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "callout",
+        "concept"
+      ],
+      "intents": [
+        "emphasis",
+        "explain-concept"
+      ]
+    },
+    {
+      "id": "tree-diagram",
+      "displayName": "Tree Diagram",
+      "version": "0.1.0",
+      "category": "diagram",
+      "pedagogicalPurpose": "Representar hierarquia em árvore.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Árvore",
+        "root": "ENGINE",
+        "children": [
+          "Templates",
+          "Components",
+          "Assets"
+        ]
+      },
+      "editableProps": [
+        "title",
+        "root",
+        "children"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "tree",
+        "diagram"
+      ],
+      "intents": [
+        "architecture",
+        "hierarchy"
+      ]
+    },
+    {
+      "id": "bar-chart",
+      "displayName": "Bar Chart",
+      "version": "0.1.0",
+      "category": "diagram",
+      "pedagogicalPurpose": "Visualizar valores comparáveis com barras animadas.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Métrica",
+        "items": [
+          {
+            "label": "Components",
+            "value": 45
+          },
+          {
+            "label": "Templates",
+            "value": 6
+          },
+          {
+            "label": "Motion",
+            "value": 19
+          }
+        ],
+        "max": 50
+      },
+      "editableProps": [
+        "title",
+        "items",
+        "max"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "chart",
+        "data"
+      ],
+      "intents": [
+        "data-visualization",
+        "compare"
+      ]
+    },
+    {
+      "id": "video-clip",
+      "displayName": "Video Clip",
+      "version": "0.1.0",
+      "category": "media",
+      "pedagogicalPurpose": "Representar ou reproduzir um asset de vídeo.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Video clip",
+        "src": "",
+        "caption": "Asset de vídeo reutilizável"
+      },
+      "editableProps": [
+        "title",
+        "src",
+        "caption"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "video",
+        "media"
+      ],
+      "intents": [
+        "video-demo",
+        "media"
+      ]
+    },
+    {
+      "id": "sound-cue",
+      "displayName": "Sound Cue",
+      "version": "0.1.0",
+      "category": "fx",
+      "pedagogicalPurpose": "Visualizar um cue de SFX, música ou ambiente.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "label": "Impact",
+        "kind": "sfx",
+        "gainDb": -6
+      },
+      "editableProps": [
+        "label",
+        "kind",
+        "gainDb"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "sound",
+        "audio",
+        "fx"
+      ],
+      "intents": [
+        "audio-cue",
+        "emphasis"
+      ]
+    },
+    {
+      "id": "typing-cue",
+      "displayName": "Typing Cue",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Simular digitação programável em interfaces.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "text": "pnpm test",
+        "prefix": "$ ",
+        "speedFrames": 3
+      },
+      "editableProps": [
+        "text",
+        "prefix",
+        "speedFrames"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "typing",
+        "ui"
+      ],
+      "intents": [
+        "code-demo",
+        "ui-demo"
+      ]
+    },
+    {
+      "id": "scroll-cue",
+      "displayName": "Scroll Cue",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Simular scroll determinístico em conteúdo.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Scroll",
+        "lines": [
+          "source",
+          "storyboard",
+          "spec",
+          "components",
+          "motion",
+          "render",
+          "review"
+        ],
+        "visibleLines": 4
+      },
+      "editableProps": [
+        "title",
+        "lines",
+        "visibleLines"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "scroll",
+        "ui"
+      ],
+      "intents": [
+        "ui-demo",
+        "guided-reading"
+      ]
+    },
+    {
+      "id": "selection-cue",
+      "displayName": "Selection Cue",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Evidenciar seleção de texto/código.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "text": "const runtime = authorize(tool)",
+        "selection": "authorize"
+      },
+      "editableProps": [
+        "text",
+        "selection"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "selection",
+        "ui",
+        "code"
+      ],
+      "intents": [
+        "code-demo",
+        "guided-reading"
+      ]
+    },
+    {
+      "id": "click-cue",
+      "displayName": "Click Cue",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Representar clique/mouse com ripple sincronizado.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "label": "Clique",
+        "x": 50,
+        "y": 50
+      },
+      "editableProps": [
+        "label",
+        "x",
+        "y"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "click",
+        "pointer",
+        "ui"
+      ],
+      "intents": [
+        "ui-demo",
+        "interaction"
+      ]
     }
   ],
   "templates": [
@@ -1763,7 +2264,17 @@
         "highlight-cue",
         "screenshot-frame",
         "glow-pulse",
-        "stick-rig"
+        "stick-rig",
+        "comparison",
+        "callout",
+        "tree-diagram",
+        "bar-chart",
+        "video-clip",
+        "sound-cue",
+        "typing-cue",
+        "scroll-cue",
+        "selection-cue",
+        "click-cue"
       ],
       "slots": [
         {
