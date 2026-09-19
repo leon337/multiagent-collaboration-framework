@@ -1,5 +1,5 @@
 import {describe,expect,it} from 'vitest';
-import {hasNarrationDucking,validateAudioMix,type LessonAudioMix} from '../src/audio/mix';
+import {hasNarrationDucking,validateAudioMix,type DuckingRule,type LessonAudioMix} from '../src/audio/mix';
 
 const mix:LessonAudioMix={
   fps:30,
@@ -18,7 +18,7 @@ describe('N4 lesson audio mix contract',()=>{
   });
 
   it('fails closed on invalid ducking gain',()=>{
-    const invalidRule={...mix.ducking[0],reductionDb:3};
+    const invalidRule:DuckingRule={...mix.ducking[0]!,reductionDb:3};
     expect(validateAudioMix({...mix,ducking:[invalidRule]})).toContain('DUCKING_REDUCTION_MUST_BE_NEGATIVE');
   });
 });
