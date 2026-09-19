@@ -4,7 +4,7 @@
 mission_id: MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001
 parent_mission_id: MCF-CONTENT-STUDIO-N4-EVOLUTION-001
 phase_id: PHASE-CONTENT-STUDIO-N4-COURSE-SCALE-001
-tracker: undefined
+tracker: 277
 branch: planning/mcf-content-studio-n4-course-scale-20260919
 base_branch: planning/mcf-content-studio-n4-evolution-20260919
 base_commit: 012188ea5415500bf9ad67b3689ffbaf9cade522
