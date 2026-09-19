@@ -3,7 +3,7 @@ import {designTokens} from '../lib/tokens';
 import type {CommonProps} from '../lib/types';
 import {SafeFrame} from './shared';
 
-export type StickRigPose='idle'|'thinking'|'talking'|'pointing'|'typing'|'surprised'|'celebrating';
+export type StickRigPose='idle'|'thinking'|'talking'|'pointing'|'typing'|'surprised'|'angry'|'confused'|'celebrating';
 export type StickRigAction='idle'|'walk'|'run'|'turn'|'lookAt'|'pointAt'|'type'|'talk'|'fall'|'jump'|'react';
 
 export type StickRigProps=CommonProps&{
@@ -57,6 +57,10 @@ export const StickRig=({
     leftUpper=68; leftLower=70; rightUpper=-68; rightLower=-70;
   }else if(pose==='surprised'){
     leftUpper=150; leftLower=10; rightUpper=-150; rightLower=-10;
+  }else if(pose==='angry'){
+    leftUpper=42; leftLower=-78; rightUpper=-42; rightLower=78;
+  }else if(pose==='confused'){
+    leftUpper=108; leftLower=52; rightUpper=-72; rightLower=-26;
   }else if(pose==='celebrating'){
     leftUpper=154; leftLower=12; rightUpper=-154; rightLower=-12;
   }
@@ -99,6 +103,7 @@ export const StickRig=({
   const talking=pose==='talking'||action==='talk';
   const mouthOpen=talking && !reducedMotion ? 5+Math.abs(Math.sin(frame/3))*10 : talking?8:2;
   const eyeShift=action==='lookAt'?6:0;
+  const browTilt=pose==='angry'?12:pose==='confused'?7:0;
 
   const stroke=designTokens.color.text;
   const accent=designTokens.color.accent;
@@ -123,6 +128,10 @@ export const StickRig=({
           <circle cx={178+eyeShift} cy="112" r="7"/>
           <circle cx={222+eyeShift} cy="112" r="7"/>
         </g>
+        {browTilt>0&&<g stroke={stroke} strokeWidth="7" strokeLinecap="round">
+          <line x1="164" y1={pose==='angry'?88:94} x2="190" y2={pose==='angry'?96:90}/>
+          <line x1="210" y1={pose==='angry'?96:90} x2="236" y2={pose==='angry'?88:98}/>
+        </g>}
         <rect x="181" y="145" width="38" height={mouthOpen} rx="6" fill={talking?accent:stroke}/>
         <circle cx={leftHand.x} cy={leftHand.y} r="12" fill={accent}/>
         <circle cx={rightHand.x} cy={rightHand.y} r="12" fill={accent}/>
