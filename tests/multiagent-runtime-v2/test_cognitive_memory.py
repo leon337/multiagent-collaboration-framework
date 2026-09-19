@@ -293,6 +293,96 @@ class LegacyHttpProviderTests(unittest.TestCase):
         self.assertEqual(out["status"], "criado")
         self.assertEqual(self.provider.read_back(event["id"]), event)
 
+    def test_cross_session_recovery_uses_external_provider(self):
+        event = {
+            "id": "ec-cross-session-001",
+            "timestamp": "2026-09-18T22:58:00-03:00",
+            "tipo": "checkpoint",
+            "titulo": "Cross session",
+            "resumo": "Persisted outside the runtime session",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            store_a = MissionStore(root / "session-a.db")
+            runtime_a = MissionRuntime(store_a, "M")
+            runtime_a.create_task("t-write", "write memory", [], "mestre")
+            runtime_a.start_execution(
+                "e-write",
+                "agent-a",
+                "t-write",
+                "bubble",
+                "mestre",
+            )
+            issuer_a = CapabilityIssuer(root / "cap-a.key")
+            write_token = issuer_a.issue(
+                "agent-a",
+                "t-write",
+                [TOOL_NAME],
+                60,
+                now=100,
+            )
+            capability_a = CognitiveMemoryCapability(
+                runtime=runtime_a,
+                issuer=issuer_a,
+                provider=self.provider,
+            )
+            write_receipt = capability_a.write(
+                token=write_token,
+                execution_id="e-write",
+                agent_id="agent-a",
+                task_id="t-write",
+                event=event,
+                confirmed=True,
+                actor="mestre",
+                now=101,
+            )
+            self.assertTrue(write_receipt.read_back_verified)
+            store_a.close()
+
+            store_b = MissionStore(root / "session-b.db")
+            runtime_b = MissionRuntime(store_b, "M")
+            runtime_b.create_task("t-read", "read memory", [], "mestre")
+            runtime_b.start_execution(
+                "e-read",
+                "agent-b",
+                "t-read",
+                "bubble",
+                "mestre",
+            )
+            issuer_b = CapabilityIssuer(root / "cap-b.key")
+            read_token = issuer_b.issue(
+                "agent-b",
+                "t-read",
+                [READ_TOOL_NAME],
+                60,
+                now=200,
+            )
+            capability_b = CognitiveMemoryCapability(
+                runtime=runtime_b,
+                issuer=issuer_b,
+                provider=self.provider,
+            )
+            recovered, read_receipt = capability_b.read_event(
+                token=read_token,
+                execution_id="e-read",
+                agent_id="agent-b",
+                task_id="t-read",
+                event_id=event["id"],
+                actor="mestre",
+                now=201,
+            )
+            self.assertEqual(recovered, event)
+            self.assertTrue(read_receipt.recovered)
+            self.assertEqual(read_receipt.agent_id, "agent-b")
+            self.assertEqual(read_receipt.task_id, "t-read")
+            encoded = json.dumps(
+                read_receipt.as_dict(),
+                ensure_ascii=False,
+            )
+            self.assertNotIn(event["resumo"], encoded)
+            store_b.close()
+
     def test_bad_credentials_fail_closed(self):
         bad = LegacyHttpCognitiveLedgerProvider(
             f"http://127.0.0.1:{self.server.server_port}",

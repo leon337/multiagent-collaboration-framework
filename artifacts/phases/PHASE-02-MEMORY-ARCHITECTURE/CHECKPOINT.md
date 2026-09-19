@@ -94,3 +94,15 @@ Remaining technical dependencies: exact-head CI for governed Cognitive Memory ca
 Mestre / GitHub CI path.
 
 LEANDRO is needed only when a reserved design/authority gate is actually reached.
+
+## Cross-session recovery evidence
+
+Local reconciled candidate:
+- Cognitive Memory capability/provider tests: 16/16 PASS;
+- mission harness regression tests: 6/6 PASS;
+- Runtime A wrote through the external HTTP provider and was closed;
+- Runtime B used a distinct MissionStore, execution, agent/task and capability key;
+- Runtime B recovered the prior event from the external provider;
+- read Receipt remained hash-only and did not contain the memory body;
+- live external provider mutation remains disabled by mission contract;
+- exact-head remote CI remains the promotion gate.
