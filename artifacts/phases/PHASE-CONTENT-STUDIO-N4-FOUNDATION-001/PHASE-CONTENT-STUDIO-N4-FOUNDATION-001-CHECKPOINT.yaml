@@ -3,53 +3,69 @@ mission_id: MCF-CONTENT-STUDIO-N4-001
 parent_mission_id: null
 project: multiagent-collaboration-framework
 base_commit: 19731f281126c1360e33732dd74b82a85e9e7f7a
-head_commit: 06076d19464a74ca1d157158d6a56fca271824c8
+head_commit: a459b031495176a26cd849f36540120ba5c6d266
 branch: planning/mcf-content-studio-n4-20260919
 pull_request: 255
 objective: "Implantar fundação N4: components, registry, Video Lab, importer, piloto e QA."
 objective_state: EM_EXECUCAO
-cycle: 1
+cycle: 2
 completed_acceptance_criteria:
-  - "missao registrada na Issue #254"
-  - "baseline verificado"
-  - "branch isolada criada"
-  - "roadmap versionado"
-  - "checklist versionado"
-  - "phase PLAN criado"
-  - "phase CHECKPOINT criado"
-  - "draft PR #255 aberto"
+  - "G0 bootstrap completo"
+  - "G1 arquitetura, contracts, schemas, tokens e asset policy materializados"
+  - "10 componentes N4 implementados"
+  - "registry estatico e Technical Lesson N4 registrados"
+  - "Video Lab shell com Player, busca, props, aspect switch e Error Boundary implementado"
+  - "importer governado implementado"
+  - "componente externo BounceInHeadline adaptado com revisao e MIT fixados"
+  - "piloto Runtime Agentico N4 registrado como Composition Remotion de 67s"
+  - "CI Content Studio N4 run #6: typecheck + tests + build = success"
 remaining_gaps:
-  - "arquitetura N4"
-  - "10 componentes"
-  - "registry"
-  - "Video Lab"
-  - "importer"
-  - "piloto Aula 3.1"
-  - "QA/benchmark"
-  - "auditoria"
+  - "render smoke run #7 em execucao"
+  - "inspecao visual dos stills 9:16, 16:9, reduced-motion e piloto"
+  - "promocao ou rejeicao do componente externo apos preview"
+  - "filtros avancados do registry"
+  - "template selection no Video Lab"
+  - "still capture dentro do Video Lab"
+  - "audio e legendas sincronizados no piloto"
+  - "overflow/text-fit visual tests"
+  - "benchmark de preview/render e comparacao #251"
+  - "auditoria Emily"
 artifacts:
   - docs/proposals/MCF-CONTENT-STUDIO-N4-ROADMAP.md
   - docs/proposals/MCF-CONTENT-STUDIO-N4-CHECKLIST.md
+  - docs/architecture/MCF-CONTENT-STUDIO-N4-ARCHITECTURE.md
+  - docs/architecture/MCF-CONTENT-STUDIO-N4-COMPONENT-CONTRACT.md
+  - docs/architecture/MCF-CONTENT-STUDIO-N4-TOKENS.md
+  - docs/architecture/MCF-CONTENT-STUDIO-N4-ASSET-POLICY.md
+  - schemas/content-studio-n4-registry.schema.json
+  - schemas/content-studio-n4-import.schema.json
+  - experimentos/mcf-content-studio-n4
   - artifacts/phases/PHASE-CONTENT-STUDIO-N4-FOUNDATION-001/PHASE-CONTENT-STUDIO-N4-FOUNDATION-001-PLAN.md
   - artifacts/phases/PHASE-CONTENT-STUDIO-N4-FOUNDATION-001/PHASE-CONTENT-STUDIO-N4-FOUNDATION-001-CHECKPOINT.yaml
-  - artifacts/phases/PHASE-CONTENT-STUDIO-N4-FOUNDATION-001/README.md
 evidence:
   - "GitHub Issue #254"
   - "Draft PR #255"
-  - "main@19731f281126c1360e33732dd74b82a85e9e7f7a"
-  - "branch@06076d19464a74ca1d157158d6a56fca271824c8"
-  - "Issue #251 benchmark"
-  - "Issue #248 related visual mission"
+  - "track PRs #256 #257 #258 #259 #260 merged into mission branch"
+  - "CI Content Studio N4 run #6 success at 4fa69f1833f5e80bb2911fa6fa3fb8be3f0e5fe9"
+  - "Documentation validation success"
+  - "external source RenderComp/free-remotion-templates@f648980e528defb7594e24c6447055f0540f340b"
+  - "external license MIT pinned"
+  - "Remotion 4.0.526 packages pinned and aligned"
 decisions:
   - "risk_class=B"
-  - "implementation limited to isolated branch and draft PR"
-  - "pilot gates migration of remaining nine lessons"
-  - "no merge/deploy/publication authorized by G0"
-open_findings: []
+  - "implementation remains isolated under experimentos/"
+  - "fan-out executed in five track branches and reconciled via internal PRs"
+  - "external component remains ADAPTED until visual smoke evidence passes"
+  - "Vercel free-tier deployment limit is unrelated and not used as mission evidence"
+  - "no merge to main, deploy, or publication authorized"
+open_findings:
+  - "G7 render smoke pending"
 blockers: []
-recoveries: []
+recoveries:
+  - "initial CI failed because pnpm blocked esbuild install script"
+  - "recovered by explicit local allowBuilds: esbuild=true, preserving supply-chain policy"
 next_phase: ""
-next_action: "Executar G1: arquitetura N4, component contracts, registry schema e import manifest."
+next_action: "Inspect Content Studio N4 run #7 smoke artifacts; fix visual/runtime failures; then decide external component approval."
 recipient: Mestre
 return_to: Mestre
 human_action_required: false
@@ -57,5 +73,6 @@ source_of_truth:
   - "GitHub live state"
   - "Issue #254"
   - "Draft PR #255"
+  - "CI Content Studio N4"
   - "project-instructions/MCF-PROJECT-OPERATING-INSTRUCTIONS.md"
-  - "templates/MCF-UNIFIED-MISSION.yaml"
+  - "MCF-CONTENT-STUDIO-INSTRUCTIONS.md"
