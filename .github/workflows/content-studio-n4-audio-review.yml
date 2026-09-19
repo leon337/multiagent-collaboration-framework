@@ -6,6 +6,14 @@ on:
       - 'experimentos/mcf-content-studio-n4/audio/**'
       - 'experimentos/mcf-content-studio-n4/scripts/build-review-html.py'
       - 'experimentos/mcf-content-studio-n4/scripts/build-review-lab-v2.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/verify-media-audio.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-audio-mix.py'
+      - 'experimentos/mcf-content-studio-n4/src/audio/**'
+      - 'experimentos/mcf-content-studio-n4/assets/**'
+      - 'experimentos/mcf-content-studio-n4/scripts/materialize-built-in-assets.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/verify-audio-loudness.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/tts-capability-doctor.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/synthesize-local-tts.py'
       - 'experimentos/mcf-content-studio-n4/scripts/benchmark.mjs'
       - 'experimentos/mcf-content-studio-n4/src/pilot/**'
       - 'experimentos/mcf-content-studio-n4/src/qa/**'
@@ -15,6 +23,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: content-studio-n4-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-review:
@@ -45,8 +57,43 @@ jobs:
       - name: Install ffmpeg
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg espeak
           ffmpeg -version | head -n 1
+
+      - name: Smoke local materializable TTS fallback
+        run: |
+          mkdir -p out/local-tts
+          python scripts/tts-capability-doctor.py --require espeak
+          python scripts/synthesize-local-tts.py --provider espeak --voice pt-br --text 'Fallback local de voz do MCF. A voz principal aprovada não é alterada.' --output out/local-tts/fallback.wav
+          python scripts/verify-media-audio.py out/local-tts/fallback.wav --min-duration 1
+          python scripts/verify-audio-loudness.py out/local-tts/fallback.wav --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+
+      - name: Materialize built-in video/audio assets
+        run: |
+          python scripts/materialize-built-in-assets.py
+          test -s public/assets/n4/generated/demo-loop.mp4
+          test -s public/assets/n4/generated/ui-click.wav
+          test -s public/assets/n4/generated/ambient-pulse.wav
+          test -s public/assets/n4/generated/music-bed.wav
+          python scripts/verify-media-audio.py public/assets/n4/generated/ui-click.wav --min-duration 0.1
+          python scripts/verify-media-audio.py public/assets/n4/generated/music-bed.wav --min-duration 1.9
+          python scripts/verify-audio-loudness.py public/assets/n4/generated/music-bed.wav
+
+      - name: Smoke reusable narration/music/SFX ducking mix
+        run: |
+          mkdir -p out/audio-mix-smoke
+          ffmpeg -y -f lavfi -i 'sine=frequency=440:duration=4' -c:a pcm_s16le out/audio-mix-smoke/narr.wav
+          ffmpeg -y -f lavfi -i 'sine=frequency=220:duration=4' -c:a pcm_s16le out/audio-mix-smoke/music.wav
+          ffmpeg -y -f lavfi -i 'sine=frequency=880:duration=1' -c:a pcm_s16le out/audio-mix-smoke/sfx.wav
+          cat > out/audio-mix-smoke/spec.json <<'JSON'
+          {"fps":30,"clips":[{"id":"n1","kind":"narration","assetId":"narr","startFrame":0,"durationFrames":120,"gainDb":0},{"id":"m1","kind":"music","assetId":"music","startFrame":0,"durationFrames":120,"gainDb":-12,"fadeInFrames":15,"fadeOutFrames":15},{"id":"s1","kind":"sfx","assetId":"sfx","startFrame":45,"durationFrames":30,"gainDb":-6}],"ducking":[{"trigger":"narration","targets":["music"],"reductionDb":-9,"attackFrames":6,"releaseFrames":15}]}
+          JSON
+          cat > out/audio-mix-smoke/assets.json <<'JSON'
+          {"narr":"out/audio-mix-smoke/narr.wav","music":"out/audio-mix-smoke/music.wav","sfx":"out/audio-mix-smoke/sfx.wav"}
+          JSON
+          python scripts/build-audio-mix.py --spec out/audio-mix-smoke/spec.json --asset-map out/audio-mix-smoke/assets.json --output out/audio-mix-smoke/mix.m4a
+          python scripts/verify-media-audio.py out/audio-mix-smoke/mix.m4a --min-duration 3.9
+          python scripts/verify-audio-loudness.py out/audio-mix-smoke/mix.m4a
 
       - name: Download generated narration segments
         run: |
@@ -102,6 +149,11 @@ jobs:
       - name: Mux narration into pilot
         run: |
           ffmpeg -y             -i out/runtime-agentico-n4-silent.mp4             -i out/runtime-agentico-n4-narration.m4a             -map 0:v:0             -map 1:a:0             -c:v copy             -c:a aac             -b:a 192k             -t 67             -movflags +faststart             out/runtime-agentico-n4-audio.mp4
+
+      - name: Verify encoded narration stream and loudness
+        run: |
+          python scripts/verify-media-audio.py out/runtime-agentico-n4-audio.mp4 --min-duration 60
+          python scripts/verify-audio-loudness.py out/runtime-agentico-n4-audio.mp4
 
       - name: Render Review Lab QA stills
         run: |

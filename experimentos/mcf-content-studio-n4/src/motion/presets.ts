@@ -5,9 +5,11 @@ export type MotionPresetId=(typeof presetsData.presets)[number]['id'];
 export const motionPresets=presetsData.presets;
 
 const clamp={extrapolateLeft:'clamp',extrapolateRight:'clamp'} as const;
-
 export const motionProgress=(frame:number,start=0,duration=18,reducedMotion=false)=>
   reducedMotion?1:interpolate(frame,[start,start+Math.max(1,duration)],[0,1],clamp);
+
+export const semanticMotionIds=new Set<MotionPresetId>(['underline','draw-arrow','connector','morph','typewriter','counter','progress'] as MotionPresetId[]);
+export const isSemanticMotion=(id:MotionPresetId)=>semanticMotionIds.has(id);
 
 export const resolveMotionStyle=(id:MotionPresetId,progress:number):Record<string,string|number>=>{
   const p=Math.max(0,Math.min(1,progress));
@@ -27,5 +29,4 @@ export const resolveMotionStyle=(id:MotionPresetId,progress:number):Record<strin
     default: return {};
   }
 };
-
 export const getMotionPreset=(id:MotionPresetId)=>motionPresets.find((preset)=>preset.id===id);

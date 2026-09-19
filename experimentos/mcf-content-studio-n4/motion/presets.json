@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.1.0",
+  "registryVersion": "0.2.0",
   "presets": [
     {
       "id": "fade",
@@ -89,49 +89,49 @@
       "id": "underline",
       "displayName": "Underline",
       "kind": "semantic",
-      "status": "DECLARED",
+      "status": "IMPLEMENTED",
       "pedagogicalUse": "sinalizar termo"
     },
     {
       "id": "draw-arrow",
       "displayName": "Draw Arrow",
       "kind": "semantic",
-      "status": "DECLARED",
+      "status": "IMPLEMENTED",
       "pedagogicalUse": "explicitar relação"
     },
     {
       "id": "connector",
       "displayName": "Connector",
       "kind": "semantic",
-      "status": "DECLARED",
+      "status": "IMPLEMENTED",
       "pedagogicalUse": "ligar nós"
     },
     {
       "id": "morph",
       "displayName": "Morph",
       "kind": "semantic",
-      "status": "DECLARED",
+      "status": "IMPLEMENTED",
       "pedagogicalUse": "mostrar transformação"
     },
     {
       "id": "typewriter",
       "displayName": "Typewriter",
       "kind": "semantic",
-      "status": "DECLARED",
+      "status": "IMPLEMENTED",
       "pedagogicalUse": "simular entrada de texto"
     },
     {
       "id": "counter",
       "displayName": "Counter",
       "kind": "semantic",
-      "status": "DECLARED",
+      "status": "IMPLEMENTED",
       "pedagogicalUse": "mostrar métrica variando"
     },
     {
       "id": "progress",
       "displayName": "Progress",
       "kind": "semantic",
-      "status": "DECLARED",
+      "status": "IMPLEMENTED",
       "pedagogicalUse": "mostrar avanço"
     }
   ]

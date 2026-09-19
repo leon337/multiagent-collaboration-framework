@@ -1,0 +1,65 @@
+schema_version: 1
+mission_id: MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001
+phase_id: PHASE-CONTENT-STUDIO-N4-COURSE-SCALE-001
+gate: C0
+state: BLOCKED_SOURCE_DEPENDENCY
+expected_lesson_count: 10
+
+verified:
+  pilot:
+    lesson_ref: "3.1"
+    title: "Runtime Agêntico Moderno — Nível 4"
+    implementation_id: runtime-agentico-n4-pilot
+    confidence: HIGH
+  scale_scope:
+    remaining_lessons: 9
+    confidence: HIGH
+
+source_exhaustion:
+  scanned_project_sources:
+    - Aprofundar_documentacao_OpenAI_A.txt
+    - Aprofundar_documentacao_OpenAI_B.txt
+    - Instalar_Remotion_notebook_A.txt
+    - Instalar_Remotion_notebook_B.txt
+    - Orquestrar_agentes_MCF.txt
+  predecessor_screenshots_inspected: 5
+  unique_numbered_lessons_found:
+    - "Aula 3.1"
+  generic_examples_found:
+    - Runtime
+    - Context Engineering
+    - MCP
+    - Agents
+    - Realtime
+    - Evals
+  generic_examples_are_canonical_curriculum: false
+  github_searches:
+    "Aula 3.2": NO_CANONICAL_RESULT
+    "Aula 3.3": NO_CANONICAL_RESULT
+    "Aula 3.10": NO_CANONICAL_RESULT
+
+rejected_substitutions:
+  - candidate: leon337/curso-instavar@main
+    reason: >-
+      Separate ten-lesson Instavar curriculum; does not match verified Runtime Agêntico
+      pilot lineage and cannot be silently substituted.
+
+blocked_fields:
+  - full ordered inventory
+  - titles for the other nine lessons
+  - objectives for the other nine lessons
+  - numbering beyond pilot 3.1
+
+blocker:
+  code: CANONICAL_CURRICULUM_SOURCE_UNAVAILABLE
+  dependency: >-
+    The full predecessor-chat transcript containing the approved curriculum is not
+    exposed in current Project/Library sources. The visible screenshots show the prior
+    recovery attempt and conversation limit, not the missing lesson list.
+  effect: >-
+    C1-C6 for the nine unknown lessons are explicitly BLOCKED_BY_C0. No lesson is
+    invented or derived from generic examples.
+  human_gate: false
+  resume_condition: >-
+    Canonical predecessor transcript becomes accessible in Project sources or is
+    otherwise supplied as an authoritative source.

@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcf.local/schemas/content-studio-n4-adobe-express-bridge.schema.json",
+  "title": "MCF Content Studio N4 Adobe Express Bridge Spec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bridgeVersion",
+    "source",
+    "inspection",
+    "handoffMode",
+    "target",
+    "evidence"
+  ],
+  "properties": {
+    "bridgeVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "templateURN",
+        "documentURN",
+        "capturedAt",
+        "aspectRatio",
+        "temporaryDocument"
+      ],
+      "properties": {
+        "kind": {
+          "const": "adobe-express"
+        },
+        "templateURN": {
+          "type": "string",
+          "minLength": 1
+        },
+        "documentURN": {
+          "type": "string",
+          "minLength": 1
+        },
+        "capturedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aspectRatio": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "temporaryDocument": {
+          "type": "boolean"
+        },
+        "editorUrl": {
+          "type": "string"
+        },
+        "previewUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "inspection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "textEditing",
+        "imageReplacement",
+        "backgroundEditing",
+        "animation",
+        "pdfExport",
+        "nodeIntrospection",
+        "tokenIntrospection"
+      ],
+      "properties": {
+        "textEditing": {
+          "type": "boolean"
+        },
+        "imageReplacement": {
+          "type": "boolean"
+        },
+        "backgroundEditing": {
+          "type": "boolean"
+        },
+        "animation": {
+          "type": "boolean"
+        },
+        "pdfExport": {
+          "type": "boolean"
+        },
+        "nodeIntrospection": {
+          "const": false
+        },
+        "tokenIntrospection": {
+          "const": false
+        }
+      }
+    },
+    "handoffMode": {
+      "const": "visual-reference-plus-n4-target-tokens"
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "componentId",
+        "aspect",
+        "props",
+        "tokens"
+      ],
+      "properties": {
+        "componentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aspect": {
+          "enum": [
+            "9:16",
+            "16:9"
+          ]
+        },
+        "props": {
+          "type": "object"
+        },
+        "tokens": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "colors",
+            "spacing",
+            "radius"
+          ],
+          "properties": {
+            "colors": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "spacing": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "radius": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authoringInstruction",
+        "sourceIsTemporary",
+        "claims",
+        "nonClaims"
+      ],
+      "properties": {
+        "authoringInstruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceIsTemporary": {
+          "type": "boolean"
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "nonClaims": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

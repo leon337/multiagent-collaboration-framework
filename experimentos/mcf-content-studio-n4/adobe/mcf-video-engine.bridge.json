@@ -1,0 +1,73 @@
+{
+  "bridgeVersion": "0.1.0",
+  "source": {
+    "kind": "adobe-express",
+    "templateURN": "urn:aaid:sc:VA6C2:1a487348-7767-4b43-9ac1-22d1918dbb8b",
+    "documentURN": "urn:aaid:sc:VA6C2:b0b20f81-59b6-4508-ba43-b45b3b022261",
+    "capturedAt": "2026-09-19T11:31:00Z",
+    "aspectRatio": 0.5625,
+    "temporaryDocument": true,
+    "editorUrl": "https://to.adobe.com/P1ARywHw",
+    "previewUrl": "https://to.adobe.com/KGCMXNI6"
+  },
+  "inspection": {
+    "textEditing": true,
+    "imageReplacement": true,
+    "backgroundEditing": true,
+    "animation": true,
+    "pdfExport": true,
+    "nodeIntrospection": false,
+    "tokenIntrospection": false
+  },
+  "handoffMode": "visual-reference-plus-n4-target-tokens",
+  "target": {
+    "componentId": "title",
+    "aspect": "9:16",
+    "props": {
+      "eyebrow": "MCF CONTENT STUDIO",
+      "title": "MCF VIDEO ENGINE",
+      "subtitle": "Templates · Components · Motion · Assets"
+    },
+    "tokens": {
+      "colors": {
+        "background": "#080c14",
+        "surface": "#111827",
+        "surfaceStrong": "#172033",
+        "text": "#f7f9fc",
+        "muted": "#aab4c6",
+        "accent": "#7c8cff",
+        "positive": "#58d68d",
+        "negative": "#ff7f87",
+        "line": "#31405e"
+      },
+      "spacing": {
+        "xs": 8,
+        "sm": 16,
+        "md": 24,
+        "lg": 40,
+        "xl": 64,
+        "xxl": 96
+      },
+      "radius": {
+        "sm": 12,
+        "md": 20,
+        "lg": 32
+      }
+    }
+  },
+  "evidence": {
+    "authoringInstruction": "Replace the main headline with MCF VIDEO ENGINE, supporting text with Templates · Components · Motion · Assets, and the callout with ROTEIRO → ENGINE → VÍDEO while preserving the vertical story layout.",
+    "sourceIsTemporary": true,
+    "claims": [
+      "Adobe Express template search returned a 9:16 technology design.",
+      "Adobe Express fill_text created a derived document with the MCF copy.",
+      "The handoff targets an existing approved N4 React/Remotion component."
+    ],
+    "nonClaims": [
+      "pixel-perfect parity",
+      "Adobe Express node introspection",
+      "Adobe Express token introspection",
+      "automatic extraction of layout measurements"
+    ]
+  }
+}

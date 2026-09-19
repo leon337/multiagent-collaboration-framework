@@ -32,3 +32,5 @@ export {CursorCue} from './CursorCue';
 export {HighlightCue} from './HighlightCue';
 export {ScreenshotFrame} from './ScreenshotFrame';
 export {GlowPulse} from './GlowPulse';
+export {StickRig} from './StickRig';
+export {Comparison,Callout,TreeDiagram,BarChart,VideoClip,SoundCue,TypingCue,ScrollCue,SelectionCue,ClickCue} from './ExtendedComponents';

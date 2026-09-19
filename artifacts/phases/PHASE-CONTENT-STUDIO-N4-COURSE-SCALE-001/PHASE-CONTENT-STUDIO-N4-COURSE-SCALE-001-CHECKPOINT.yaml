@@ -1,0 +1,141 @@
+phase_id: PHASE-CONTENT-STUDIO-N4-COURSE-SCALE-001
+mission_id: MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001
+parent_mission_id: MCF-CONTENT-STUDIO-N4-EVOLUTION-001
+objective_state: BLOCKED_SOURCE_DEPENDENCY
+risk_class: B
+branch: planning/mcf-content-studio-n4-course-scale-20260919
+base_branch: planning/mcf-content-studio-n4-evolution-20260919
+tracker: 277
+pr: 278
+
+validated_code_head: 1ebe29ed95f95f87e7c7c7c178b55bb15ec15181
+validated_code_workflows:
+  documentation_validation:
+    run: 1400
+    run_id: 35443098105
+    conclusion: success
+  pilot_render:
+    run: 60
+    run_id: 35443098101
+    conclusion: success
+    artifact_id: 10584656675
+  scale_proof:
+    run: 53
+    run_id: 35443098118
+    conclusion: success
+    artifact_id: 10584636104
+  audio_review:
+    run: 63
+    run_id: 35443098116
+    conclusion: success
+    artifact_id: 10584770376
+  validation:
+    run: 111
+    run_id: 35443098102
+    conclusion: success
+    artifact_id: 10584241907
+
+engine:
+  state: CLOSED_FOR_CURRENT_SCOPE
+  registry:
+    version: 0.8.0
+    approved_components: 45
+    templates: 6
+  asset_library:
+    version: 0.3.0
+    approved_assets: 15
+  motion:
+    version: 0.2.0
+    implemented_presets: 19
+    declared_only_presets: 0
+  visual_editor:
+    - drag
+    - resize
+    - rotate
+    - snap
+    - alignment
+    - nudge
+    - multi_track_timeline
+  integrations:
+    adobe_express: GOVERNED_BRIDGE_PROVEN
+    instavar: VIDEOSPEC_1_0_BRIDGE_PROVEN
+    explain: PILOT_COMPANION_FINISHED
+  audio:
+    mix_executor: PASS
+    ducking: PASS
+    encoded_stream_qa: PASS
+    loudness_peak_qa: PASS
+    local_tts_fallback: PASS_EXPLICIT_ONLY
+
+tracks:
+  residual_engine_improvements:
+    state: CLOSED
+  course_content:
+    state: BLOCKED_SOURCE_DEPENDENCY
+    rule: DO_NOT_INVENT
+    verified:
+      - pilot is Aula 3.1 / Runtime Agêntico Moderno — Nível 4
+      - scale scope is pilot plus nine remaining lessons
+    unresolved_due_source:
+      - exact ordered ten-lesson inventory
+      - titles of the other nine lessons
+      - learning objectives of the other nine lessons
+      - approved numbering beyond 3.1
+
+source_exhaustion:
+  project_source_files_scanned: 5
+  unique_numbered_lessons_found:
+    - Aula 3.1
+  generic_noncanonical_terms:
+    - Runtime
+    - Context Engineering
+    - MCP
+    - Agents
+    - Realtime
+    - Evals
+  github_queries_without_canonical_inventory:
+    - Aula 3.2
+    - Aula 3.3
+    - Aula 3.10
+  predecessor_screenshots_inspected: true
+  full_predecessor_transcript_accessible: false
+
+external_blockers:
+  - code: CANONICAL_CURRICULUM_SOURCE_UNAVAILABLE
+    affects: course_content
+    human_gate: false
+  - code: CANVAS_CAPTURE_APPLE_SILICON_UNAVAILABLE
+    affects: optional_high_fidelity_capture
+    human_gate: false
+    blocks_course: false
+
+explain_companion:
+  guide: guide0qe1v5ukv
+  url: https://scrimba.com/explain/guide0qe1v5ukv?claim=doq60himunkpsh88&fullscreen=1
+  entries: 47
+  says: 10
+  status: FINISHED
+
+executor:
+  boundary: CHATGPT_BUBBLE_LOCAL_SANDBOX
+  sandbox_worker_kind: deterministic_parallel_workers
+  cognitive_agent_credit: false
+  workers:
+    - curriculum_worker
+    - improvements_worker
+    - pipeline_worker
+    - governance_worker
+    - visual_language_worker
+    - source_exhaustion_worker
+    - checklist_resolution_worker
+
+human_action_required: false
+next_action: >-
+  Automatically resume C0 when the canonical predecessor transcript becomes accessible;
+  extract exact ordering/titles/objectives before authoring any of the nine unknown lessons.
+
+governance:
+  pr_state: DRAFT_OPEN
+  merge_inferred: false
+  deploy_inferred: false
+  publication_inferred: false

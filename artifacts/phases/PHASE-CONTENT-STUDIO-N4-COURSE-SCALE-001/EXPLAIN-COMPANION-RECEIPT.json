@@ -1,0 +1,21 @@
+{
+  "mission_id": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001",
+  "output_kind": "explain_parallel_companion",
+  "source_scope": "verified pilot fact pack only",
+  "guide": "guide0qe1v5ukv",
+  "url": "https://scrimba.com/explain/guide0qe1v5ukv?claim=doq60himunkpsh88&fullscreen=1",
+  "status": "FINISHED",
+  "entries": 47,
+  "says": 10,
+  "narration_ms": 85548,
+  "language": "pt-BR",
+  "claims": [
+    "parallel educational output exists for the verified Runtime Agentico pilot",
+    "explainer was finalized and is directly watchable"
+  ],
+  "non_claims": [
+    "not a substitute for the missing nine-lesson curriculum",
+    "not publication approval",
+    "not a merge/deploy gate"
+  ]
+}
