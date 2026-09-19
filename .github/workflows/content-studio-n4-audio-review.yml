@@ -55,8 +55,16 @@ jobs:
       - name: Install ffmpeg
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg espeak
           ffmpeg -version | head -n 1
+
+      - name: Smoke local materializable TTS fallback
+        run: |
+          mkdir -p out/local-tts
+          python scripts/tts-capability-doctor.py --require espeak
+          python scripts/synthesize-local-tts.py --provider espeak --voice pt-br --text 'Fallback local de voz do MCF. A voz principal aprovada não é alterada.' --output out/local-tts/fallback.wav
+          python scripts/verify-media-audio.py out/local-tts/fallback.wav --min-duration 1
+          python scripts/verify-audio-loudness.py out/local-tts/fallback.wav --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
 
       - name: Materialize built-in video/audio assets
         run: |
