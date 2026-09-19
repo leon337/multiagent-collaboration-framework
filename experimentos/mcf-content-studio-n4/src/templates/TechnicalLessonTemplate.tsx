@@ -2,7 +2,8 @@ import type {CSSProperties} from 'react';
 import {AbsoluteFill,Sequence,useCurrentFrame,useVideoConfig} from 'remotion';
 import {labEntries} from '../registry/registry';
 import {CaptionOverlay} from '../pilot/CaptionOverlay';
-import {motionProgress,resolveMotionStyle} from '../motion/presets';
+import {isSemanticMotion,motionProgress,resolveMotionStyle} from '../motion/presets';
+import {SemanticMotionLayer} from '../motion/semantic';
 import type {TechnicalLessonScene,TechnicalLessonSpec} from './types';
 
 const Progress=()=>{
@@ -17,6 +18,7 @@ const Progress=()=>{
 const SceneMotion=({scene,reducedMotion,children}:{scene:TechnicalLessonScene;reducedMotion:boolean;children:React.ReactNode})=>{
   const frame=useCurrentFrame();
   if(!scene.motionPreset) return <>{children}</>;
+  if(isSemanticMotion(scene.motionPreset)) return <SemanticMotionLayer id={scene.motionPreset} reducedMotion={reducedMotion}>{children}</SemanticMotionLayer>;
   const p=motionProgress(frame,0,18,reducedMotion);
   const style=resolveMotionStyle(scene.motionPreset,p) as CSSProperties;
   return <AbsoluteFill style={style}>{children}</AbsoluteFill>;
@@ -25,8 +27,7 @@ const SceneMotion=({scene,reducedMotion,children}:{scene:TechnicalLessonScene;re
 export const TechnicalLessonTemplate=({spec}:{spec:TechnicalLessonSpec})=>{
   let cursor=0;
   const scenes=spec.scenes.map((scene)=>{
-    const from=cursor;
-    cursor+=scene.durationFrames;
+    const from=cursor; cursor+=scene.durationFrames;
     const entry=labEntries.find((item)=>item.id===scene.componentId);
     if(!entry) throw new Error(`Unknown lesson component: ${scene.componentId}`);
     if(entry.status!=='APPROVED') throw new Error(`Component ${scene.componentId} is not APPROVED`);
@@ -34,15 +35,8 @@ export const TechnicalLessonTemplate=({spec}:{spec:TechnicalLessonSpec})=>{
     const Component=entry.component;
     const props={...entry.defaultProps,...scene.props,aspect:spec.visuals.aspect,reducedMotion:spec.visuals.reducedMotion};
     return <Sequence key={scene.id} from={from} durationInFrames={scene.durationFrames} premountFor={15}>
-      <SceneMotion scene={scene} reducedMotion={spec.visuals.reducedMotion}>
-        <Component {...props}/>
-      </SceneMotion>
+      <SceneMotion scene={scene} reducedMotion={spec.visuals.reducedMotion}><Component {...props}/></SceneMotion>
     </Sequence>;
   });
-
-  return <AbsoluteFill style={{background:spec.theme.background}}>
-    {scenes}
-    <CaptionOverlay cues={spec.narration.cues}/>
-    <Progress/>
-  </AbsoluteFill>;
+  return <AbsoluteFill style={{background:spec.theme.background}}>{scenes}<CaptionOverlay cues={spec.narration.cues}/><Progress/></AbsoluteFill>;
 };
