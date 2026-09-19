@@ -1,7 +1,9 @@
 import {Composition} from 'remotion';
 import {TechnicalLessonTemplate} from '../templates/TechnicalLessonTemplate';
-import {getTechnicalLessonDuration} from '../templates/types';
-import technicalLessonDemo from '../templates/runtime-agentico-data-demo.lesson.json';
+import {getTechnicalLessonDuration,type TechnicalLessonSpec} from '../templates/types';
+import technicalLessonDemoData from '../templates/runtime-agentico-data-demo.lesson.json';
+
+const technicalLessonDemo=technicalLessonDemoData as TechnicalLessonSpec;
 import {RuntimeAgenticoPilot} from '../pilot/RuntimeAgenticoPilot';
 import {RUNTIME_AGENTICO_PILOT,RUNTIME_AGENTICO_PILOT_DURATION} from '../pilot/lesson';
 import {LongDiagramQa,LongFocusConceptQa,LongTimelineQa} from '../qa/VisualQaCompositions';

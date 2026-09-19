@@ -18,7 +18,7 @@ export const searchComponentManifests=(query:ComponentSearchQuery={})=>
     if(query.tag&&!component.tags.includes(query.tag)) return false;
     if(query.aspect&&!component.supportedAspects.includes(query.aspect)) return false;
     if(query.supportsAudioSync!==undefined&&component.supportsAudioSync!==query.supportsAudioSync) return false;
-    if(query.maxComplexity&&rank[component.complexity]>rank[query.maxComplexity]) return false;
+    if(query.maxComplexity&&rank[component.complexity as Complexity]>rank[query.maxComplexity]) return false;
     if(query.status&&component.status!==query.status) return false;
     return true;
   });

@@ -3,7 +3,7 @@ import {searchAssets} from '../src/assets/searchAssets';
 import {getMotionPreset,resolveMotionStyle} from '../src/motion/presets';
 import {searchComponentManifests} from '../src/registry/search';
 import lesson from '../src/templates/runtime-agentico-data-demo.lesson.json';
-import {getTechnicalLessonDuration} from '../src/templates/types';
+import {getTechnicalLessonDuration,type TechnicalLessonSpec} from '../src/templates/types';
 
 describe('N4 evolution foundations',()=>{
   it('finds approved assets by semantic usage metadata',()=>{
@@ -20,6 +20,6 @@ describe('N4 evolution foundations',()=>{
   });
 
   it('derives lesson duration from scene data',()=>{
-    expect(getTechnicalLessonDuration(lesson)).toBe(570);
+    expect(getTechnicalLessonDuration(lesson as TechnicalLessonSpec)).toBe(570);
   });
 });
