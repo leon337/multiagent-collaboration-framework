@@ -1,7 +1,7 @@
 import {describe,expect,it} from 'vitest';
 import {searchAssets} from '../src/assets/searchAssets';
 import {getMotionPreset,isSemanticMotion,motionPresets,resolveMotionStyle} from '../src/motion/presets';
-import {resolveSemanticFocus} from '../src/motion/semantic';
+import {resolveSemanticFocus,resolveSemanticFocusPresets} from '../src/motion/semantic';
 import {fitTextSize,isAtMinimumTextSize} from '../src/lib/textFit';
 import {stickRigVariants} from '../src/components/StickRig';
 import {searchComponentManifests} from '../src/registry/search';
@@ -25,6 +25,9 @@ describe('N4 evolution foundations',()=>{
       expect(isSemanticMotion(id)).toBe(true);
     }
     expect(resolveSemanticFocus('relation')).toEqual(['dim-others','draw-connector','scale-target']);
+    expect(resolveSemanticFocusPresets('model')).toEqual(['dim','camera-zoom']);
+    expect(resolveSemanticFocusPresets('relation')).toEqual(['connector','scale']);
+    expect(resolveSemanticFocusPresets('text-entry')).toEqual(['typewriter','underline']);
   });
   it('discovers components by pedagogical intent',()=>{
     expect(searchComponentManifests({intent:'retrieval-practice',status:'APPROVED'}).map((x)=>x.id)).toContain('active-recall');

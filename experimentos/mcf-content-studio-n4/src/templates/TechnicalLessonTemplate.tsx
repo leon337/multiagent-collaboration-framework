@@ -3,7 +3,7 @@ import {AbsoluteFill,Sequence,useCurrentFrame,useVideoConfig} from 'remotion';
 import {labEntries} from '../registry/registry';
 import {CaptionOverlay} from '../pilot/CaptionOverlay';
 import {isSemanticMotion,motionProgress,resolveMotionStyle} from '../motion/presets';
-import {SemanticMotionLayer} from '../motion/semantic';
+import {SemanticFocusLayer,SemanticMotionLayer} from '../motion/semantic';
 import type {TechnicalLessonScene,TechnicalLessonSpec} from './types';
 
 const Progress=()=>{const frame=useCurrentFrame();const {durationInFrames}=useVideoConfig();const p=Math.max(0,Math.min(1,frame/Math.max(1,durationInFrames-1)));
@@ -24,5 +24,6 @@ export const TechnicalLessonTemplate=({spec}:{spec:TechnicalLessonSpec})=>{let c
  if(entry.status!=='APPROVED')throw new Error(`Component ${scene.componentId} is not APPROVED`);
  if(!entry.supportedAspects.includes(spec.visuals.aspect))throw new Error(`Component ${scene.componentId} does not support ${spec.visuals.aspect}`);
  const Component=entry.component;const props={...entry.defaultProps,...scene.props,aspect:spec.visuals.aspect,reducedMotion:spec.visuals.reducedMotion};
- return <Sequence key={scene.id} from={from} durationInFrames={scene.durationFrames} premountFor={15}><SceneTransform scene={scene}><SceneMotion scene={scene} reducedMotion={spec.visuals.reducedMotion}><Component {...props}/></SceneMotion></SceneTransform></Sequence>;});
+ const body=<SceneTransform scene={scene}><SceneMotion scene={scene} reducedMotion={spec.visuals.reducedMotion}><Component {...props}/></SceneMotion></SceneTransform>;
+ return <Sequence key={scene.id} from={from} durationInFrames={scene.durationFrames} premountFor={15}>{scene.focusIntent?<SemanticFocusLayer intent={scene.focusIntent} reducedMotion={spec.visuals.reducedMotion}>{body}</SemanticFocusLayer>:body}</Sequence>;});
  return <AbsoluteFill style={{background:spec.theme.background}}>{scenes}<CaptionOverlay cues={spec.narration.cues}/><Progress/></AbsoluteFill>;};

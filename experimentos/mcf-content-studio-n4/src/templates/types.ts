@@ -1,8 +1,9 @@
 import type {AspectRatio} from '../lib/types';
 import type {MotionPresetId} from '../motion/presets';
+import type {SemanticFocusIntent} from '../motion/semantic';
 export type LessonCaptionCue={from:number;to:number;text:string};
 export type SceneLayout={x:number;y:number;scale:number;rotationDeg:number;snap:boolean};
-export type TechnicalLessonScene={id:string;componentId:string;durationFrames:number;props:Record<string,unknown>;motionPreset?:MotionPresetId;layout?:SceneLayout};
+export type TechnicalLessonScene={id:string;componentId:string;durationFrames:number;props:Record<string,unknown>;motionPreset?:MotionPresetId;focusIntent?:SemanticFocusIntent;layout?:SceneLayout};
 export type TechnicalLessonSpec={
   lesson:{id:string;title:string;summary?:string};chapters:string[];scenes:TechnicalLessonScene[];
   narration:{cues:LessonCaptionCue[]};visuals:{aspect:AspectRatio;reducedMotion:boolean};

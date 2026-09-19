@@ -103,6 +103,15 @@
                 "type": "boolean"
               }
             }
+          },
+          "focusIntent": {
+            "enum": [
+              "model",
+              "relation",
+              "sequence",
+              "metric",
+              "text-entry"
+            ]
           }
         }
       }

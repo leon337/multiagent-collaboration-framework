@@ -2,7 +2,7 @@ import type {CSSProperties,ReactNode} from 'react';
 import {AbsoluteFill,useCurrentFrame} from 'remotion';
 import {designTokens} from '../lib/tokens';
 import type {MotionPresetId} from './presets';
-import {motionProgress} from './presets';
+import {motionProgress,resolveMotionStyle} from './presets';
 
 export type SemanticFocusIntent='model'|'relation'|'sequence'|'metric'|'text-entry';
 export type SemanticFocusAction='dim-others'|'scale-target'|'draw-connector'|'camera-zoom'|'underline'|'progress'|'typewriter'|'counter';
@@ -56,4 +56,25 @@ export const SemanticMotionLayer=({id,reducedMotion=false,children}:{id:MotionPr
     </div>
   </AbsoluteFill>;
   return <>{children}</>;
+};
+
+export const resolveSemanticFocusPresets=(intent:SemanticFocusIntent):MotionPresetId[]=>{
+  switch(intent){
+    case 'model': return ['dim','camera-zoom'];
+    case 'relation': return ['connector','scale'];
+    case 'sequence': return ['progress','draw-arrow'];
+    case 'metric': return ['counter','scale'];
+    case 'text-entry': return ['typewriter','underline'];
+  }
+};
+
+export const SemanticFocusLayer=({intent,reducedMotion=false,children}:{intent:SemanticFocusIntent;reducedMotion?:boolean;children:ReactNode})=>{
+  const frame=useCurrentFrame();
+  const presets=resolveSemanticFocusPresets(intent);
+  const stylePresets=presets.filter((id)=>!['underline','draw-arrow','connector','morph','typewriter','counter','progress'].includes(id));
+  const semanticPresets=presets.filter((id)=>!stylePresets.includes(id));
+  const p=motionProgress(frame,0,24,reducedMotion);
+  const style=stylePresets.reduce<CSSProperties>((acc,id)=>({...acc,...resolveMotionStyle(id,p)}),{});
+  const wrapped=semanticPresets.reduce<ReactNode>((node,id)=><SemanticMotionLayer key={id} id={id} reducedMotion={reducedMotion}>{node}</SemanticMotionLayer>,children);
+  return <AbsoluteFill style={style}>{wrapped}</AbsoluteFill>;
 };
