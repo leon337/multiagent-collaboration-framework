@@ -6,8 +6,19 @@ export type LabEntry={
   id:string;
   name:string;
   category:string;
+  status:string;
+  supportedAspects:LabAspect[];
   durationInFrames:number;
   defaultProps:Record<string,unknown>;
   editableProps:string[];
   component:ComponentType<any>;
+};
+
+export type LabTemplate={
+  id:string;
+  name:string;
+  purpose:string;
+  supportedAspects:LabAspect[];
+  componentIds:string[];
+  status:string;
 };
