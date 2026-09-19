@@ -7,15 +7,45 @@ branch: planning/mcf-content-studio-n4-course-scale-20260919
 base_branch: planning/mcf-content-studio-n4-evolution-20260919
 base_commit: 012188ea5415500bf9ad67b3689ffbaf9cade522
 tracker: 277
+
 completed:
   - successor mission created from validated N4 evolution closeout
   - PR #278 tracker reference corrected from undefined to #277
-  - C0 source reconciliation executed against accessible Project sources and current GitHub state
   - pilot lineage verified as Aula 3.1 / Runtime Agêntico Moderno — Nível 4
-  - separate leon337/curso-instavar ten-lesson curriculum inspected and rejected as a silent substitution
-  - partial curriculum inventory versioned with explicit blocker
+  - separate leon337/curso-instavar curriculum rejected as a silent substitution
+  - all accessible Project source-chat files materialized for sandbox analysis
+  - five sandbox-local deterministic workers executed in parallel with receipts
+  - source-chat reconciliation expanded beyond the 16-section evolution source
+  - residual improvement backlog versioned
+  - StickRig character system implementation started from source-defined SVG/React joint model
+  - character registry/schema support added
+  - deterministic text-fit readability guardrail added to core typography components
+
+tracks:
+  course_content:
+    state: SOURCE_RECOVERY_IN_PROGRESS
+    source_hint_from_leandro: predecessor_chat
+    verified:
+      - total scope is pilot plus nine remaining lessons
+      - pilot is Aula 3.1 / Runtime Agêntico Moderno — Nível 4
+    unresolved:
+      - exact ordered curriculum from predecessor chat
+      - titles/objectives of the other nine lessons
+    rule: DO_NOT_INVENT
+  residual_engine_improvements:
+    state: ACTIVE
+    source: Project source chats
+    current_wave:
+      - StickRig character component
+      - text-fit readability floor
+    next_candidates:
+      - audio mix / SFX / ducking contract
+      - encoded audio-stream presence QA
+      - semantic motion preset implementations
+      - optional Explain companion path
+
 open:
-  - C0 canonical curriculum source dependency
+  - recover canonical predecessor-chat curriculum
   - C1 lesson content packs
   - C2 N4 authoring
   - C3 narration
@@ -23,25 +53,26 @@ open:
   - C5 Review Labs
   - C6 lesson QA
   - C7 course gate
-blocked:
-  - code: CANONICAL_CURRICULUM_SOURCE_UNRESOLVED
-    gate: C0
-    effect: C1_AND_DOWNSTREAM_STOP
-    human_gate: false
-    detail: >-
-      Accessible Project sources prove a ten-lesson scale scope and the Aula 3.1
-      Runtime Agêntico pilot, but do not enumerate the authoritative titles,
-      ordering and objectives of the other nine lessons.
+  - residual engine improvement validation
+
 executor:
   boundary: CHATGPT_BUBBLE_LOCAL_SANDBOX
-  cognitive_subagents: UNAVAILABLE_IN_CURRENT_SESSION
-  execution_claimed: false
+  sandbox_workers:
+    - curriculum_worker
+    - improvements_worker
+    - pipeline_worker
+    - governance_worker
+    - visual_language_worker
+  sandbox_worker_kind: deterministic_parallel_workers
+  cognitive_agent_credit: false
   note: >-
-    Capability doctor found no DeepSeek Harness binary/SDK, DSH_HOME or
-    MCF_DSH_AGENT_TEAM_READY flag. Deterministic tooling is not credited as
-    cognitive subagent execution.
+    Local workers accelerate source scanning and evidence packaging. They are not
+    credited as cognitive subagents. MESTRE remains responsible for synthesis,
+    implementation and evidence reconciliation.
+
 next_action: >-
-  Make the canonical advanced-course curriculum source accessible or identify its
-  exact Project/GitHub location; then resume C0 and fan out C1 content-pack work.
-human_action_required: true
-human_action_reason: CANONICAL_SOURCE_LOCATION_OR_FILE_REQUIRED
+  Validate the StickRig/text-fit wave at exact PR head while continuing predecessor
+  curriculum recovery and then fan out lesson content packs as soon as the ordered
+  curriculum is recovered.
+
+human_action_required: false
