@@ -30,9 +30,9 @@ jobs:
       - name: Download natural narration previews
         run: |
           mkdir -p out/showcase/narration
-          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/8eeef72a-bedc-4084-9114-c4bc162ded1d.mp3' -o out/showcase/narration/engine.mp3
-          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b1ecafcf-dd2e-49be-950d-a6f25fb083f7.mp3' -o out/showcase/narration/motion.mp3
-          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ade9c240-1f0e-49de-aa9a-0f673cfd563a.mp3' -o out/showcase/narration/editor.mp3
+          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9a14bc44-5f69-4017-92a8-d3fb61bf4d67.mp3' -o out/showcase/narration/engine.mp3
+          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f2666514-7de0-4d66-9c2c-e95af27dd496.mp3' -o out/showcase/narration/motion.mp3
+          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d654c046-bac2-4877-a4d6-4227afaa2b2f.mp3' -o out/showcase/narration/editor.mp3
       - name: Render N4 showcase videos
         run: |
           mkdir -p out/showcase/silent
