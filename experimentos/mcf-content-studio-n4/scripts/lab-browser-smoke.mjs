@@ -45,12 +45,24 @@ try{
     const stillCommand=await page.getByLabel('Still command').inputValue();
     if(!stillCommand.includes('remotion still')) throw new Error('Still pipeline command was not generated');
 
-    const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+1);
-    if(testCase.name==='mobile'&&overflow) throw new Error('Mobile horizontal overflow detected');
+    const layout=await page.evaluate(()=>{
+      const root=document.documentElement;
+      const all=[...document.querySelectorAll('*')];
+      const offenders=all
+        .map((el)=>({tag:el.tagName,className:typeof el.className==='string'?el.className:'',scrollWidth:el.scrollWidth,clientWidth:el.clientWidth}))
+        .filter((item)=>item.scrollWidth>item.clientWidth+1)
+        .sort((a,b)=>(b.scrollWidth-b.clientWidth)-(a.scrollWidth-a.clientWidth))
+        .slice(0,12);
+      return {scrollWidth:root.scrollWidth,clientWidth:root.clientWidth,overflow:root.scrollWidth>window.innerWidth+1,offenders};
+    });
 
     const screenshot=`out/lab-${testCase.name}.png`;
     await page.screenshot({path:screenshot,fullPage:true});
-    report.cases.push({name:testCase.name,viewport:testCase.viewport,readyMs,countText,overflow,screenshot,stillCommand});
+    report.cases.push({name:testCase.name,viewport:testCase.viewport,readyMs,countText,overflow:layout.overflow,layout,screenshot,stillCommand});
+
+    if(testCase.name==='mobile'&&layout.overflow){
+      throw new Error('Mobile horizontal overflow detected: '+JSON.stringify(layout));
+    }
     await page.close();
   }
 } finally {
