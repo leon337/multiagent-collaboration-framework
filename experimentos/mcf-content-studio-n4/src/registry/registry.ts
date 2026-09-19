@@ -5,7 +5,7 @@ import {
   BrowserWindow,ChapterProgress,ErrorVsCorrect,FocusConcept,ProgressiveDiagram,TerminalWindow,
   Title,Subtitle,Keyword,Caption,Stack,Grid,SplitScreen,FocusArea,Quiz,Definition,
   ProgressiveConcept,BuildArchitecture,Checkpoint,CodePanel,DiffViewer,GitHubWindow,
-  VSCodeWindow,ChatWindow,MobileWindow,CursorCue,HighlightCue,
+  VSCodeWindow,ChatWindow,MobileWindow,CursorCue,HighlightCue,ScreenshotFrame,GlowPulse,
 } from '../components';
 import type {ComponentManifest} from '../lib/types';
 import type {LabEntry,LabTemplate} from '../lab/types';
@@ -43,6 +43,8 @@ const componentMap: Record<string, ComponentType<any>> = {
   'mobile-window':MobileWindow,
   'cursor-cue':CursorCue,
   'highlight-cue':HighlightCue,
+  'screenshot-frame':ScreenshotFrame,
+  'glow-pulse':GlowPulse,
 };
 
 export const componentManifests=registryData.components as ComponentManifest[];

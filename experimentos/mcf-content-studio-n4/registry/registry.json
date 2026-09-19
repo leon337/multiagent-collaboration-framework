@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.3.0",
+  "registryVersion": "0.4.0",
   "components": [
     {
       "id": "focus-concept",
@@ -1567,6 +1567,101 @@
         "emphasis",
         "guided-reading"
       ]
+    },
+    {
+      "id": "screenshot-frame",
+      "displayName": "ScreenshotFrame",
+      "version": "0.1.0",
+      "category": "media",
+      "pedagogicalPurpose": "Enquadrar screenshot ou imagem como evidência visual sem depender do layout externo.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Screenshot",
+        "src": "",
+        "caption": "Imagem enquadrada como evidência visual."
+      },
+      "editableProps": [
+        "title",
+        "src",
+        "caption"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "media",
+        "screenshot",
+        "evidence"
+      ],
+      "intents": [
+        "visual-evidence",
+        "ui-demo"
+      ]
+    },
+    {
+      "id": "glow-pulse",
+      "displayName": "GlowPulse",
+      "version": "0.1.0",
+      "category": "fx",
+      "pedagogicalPurpose": "Criar ênfase luminosa funcional sem adicionar informação nova.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "label": "Foco",
+        "intensity": 1
+      },
+      "editableProps": [
+        "label",
+        "intensity"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-EVOLUTION-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "low",
+      "tags": [
+        "fx",
+        "glow",
+        "pulse",
+        "focus"
+      ],
+      "intents": [
+        "emphasis",
+        "guided-reading"
+      ]
     }
   ],
   "templates": [
@@ -1610,7 +1705,9 @@
         "chat-window",
         "mobile-window",
         "cursor-cue",
-        "highlight-cue"
+        "highlight-cue",
+        "screenshot-frame",
+        "glow-pulse"
       ],
       "slots": [
         {

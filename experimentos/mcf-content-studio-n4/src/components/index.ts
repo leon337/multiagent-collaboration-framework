@@ -30,3 +30,5 @@ export {ChatWindow} from './ChatWindow';
 export {MobileWindow} from './MobileWindow';
 export {CursorCue} from './CursorCue';
 export {HighlightCue} from './HighlightCue';
+export {ScreenshotFrame} from './ScreenshotFrame';
+export {GlowPulse} from './GlowPulse';
