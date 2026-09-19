@@ -7,6 +7,7 @@ p.add_argument("--architecture",required=True)
 p.add_argument("--ui-code",required=True)
 p.add_argument("--architecture-spec",required=True)
 p.add_argument("--ui-code-spec",required=True)
+p.add_argument("--benchmark")
 p.add_argument("--output",required=True)
 args=p.parse_args()
 
@@ -17,12 +18,24 @@ arch_video=data_uri(args.architecture,"video/mp4")
 ui_video=data_uri(args.ui_code,"video/mp4")
 arch=json.loads(Path(args.architecture_spec).read_text(encoding="utf-8"))
 ui=json.loads(Path(args.ui_code_spec).read_text(encoding="utf-8"))
+benchmark=json.loads(Path(args.benchmark).read_text(encoding="utf-8")) if args.benchmark else None
 
 def scene_rows(spec):
     return "".join(
       f"<tr><td>{i+1:02d}</td><td>{html.escape(s['componentId'])}</td><td>{s['durationFrames']}f</td></tr>"
       for i,s in enumerate(spec["scenes"])
     )
+
+bench_html=""
+if benchmark:
+    def fmt_ms(value):
+        return f"{value/1000:.2f}s"
+    def fmt_mb(value):
+        return f"{value/1024/1024:.2f} MB"
+    bench_html=f"""<section class="card" style="margin-top:20px"><h2>Benchmark do Scale Proof</h2><table><thead><tr><th>Aula</th><th>Render</th><th>Arquivo</th></tr></thead><tbody>
+    <tr><td>Arquitetura</td><td>{fmt_ms(benchmark["architecture"]["renderMs"])}</td><td>{fmt_mb(benchmark["architecture"]["bytes"])}</td></tr>
+    <tr><td>UI + Código</td><td>{fmt_ms(benchmark["uiCode"]["renderMs"])}</td><td>{fmt_mb(benchmark["uiCode"]["bytes"])}</td></tr>
+    </tbody></table><p>Tempos específicos do runner CI; não são promessa universal de performance.</p></section>"""
 
 page=f"""<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -39,6 +52,7 @@ main{{max-width:1300px;margin:auto;padding:24px}}.top{{display:flex;justify-cont
 <section class="card"><video controls playsinline preload="metadata"><source src="{arch_video}" type="video/mp4"></video><h2>{html.escape(arch["lesson"]["title"])}</h2><p>{html.escape(arch["lesson"].get("summary",""))}</p><table><thead><tr><th>#</th><th>Componente</th><th>Duração</th></tr></thead><tbody>{scene_rows(arch)}</tbody></table></section>
 <section class="card"><video controls playsinline preload="metadata"><source src="{ui_video}" type="video/mp4"></video><h2>{html.escape(ui["lesson"]["title"])}</h2><p>{html.escape(ui["lesson"].get("summary",""))}</p><table><thead><tr><th>#</th><th>Componente</th><th>Duração</th></tr></thead><tbody>{scene_rows(ui)}</tbody></table></section>
 </div>
+{bench_html}
 <div class="note">Os dois vídeos usam a mesma composição <strong>TechnicalLessonTemplate</strong>. O que muda é o payload da aula e a seleção de componentes. Esta prova valida escala estrutural; não representa master de publicação nem áudio final.</div>
 </main></body></html>"""
 Path(args.output).write_text(page,encoding="utf-8")

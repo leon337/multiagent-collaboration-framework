@@ -35,18 +35,41 @@ jobs:
       - name: Render architecture-heavy lesson
         run: |
           mkdir -p out
+          start=$(date +%s%3N)
           pnpm exec remotion render src/remotion/index.ts ArchitectureControlPlaneLesson out/architecture-control-plane.mp4 --codec=h264 --crf=24 --concurrency=2
+          end=$(date +%s%3N)
+          echo $((end-start)) > out/architecture-render-ms.txt
       - name: Render UI-code-heavy lesson
         run: |
+          start=$(date +%s%3N)
           pnpm exec remotion render src/remotion/index.ts UiCodeAgentFlowLesson out/ui-code-agent-flow.mp4 --codec=h264 --crf=24 --concurrency=2
+          end=$(date +%s%3N)
+          echo $((end-start)) > out/ui-code-render-ms.txt
+      - name: Build scale benchmark
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          def n(path):
+              return int(Path(path).read_text().strip())
+          def size(path):
+              return Path(path).stat().st_size
+          report={
+              "architecture":{"renderMs":n("out/architecture-render-ms.txt"),"bytes":size("out/architecture-control-plane.mp4")},
+              "uiCode":{"renderMs":n("out/ui-code-render-ms.txt"),"bytes":size("out/ui-code-agent-flow.mp4")},
+          }
+          Path("out/scale-benchmark.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
+          print(json.dumps(report,indent=2))
+          PY
       - name: Build self-contained scale review
         run: |
-          python scripts/build-scale-review.py             --architecture out/architecture-control-plane.mp4             --ui-code out/ui-code-agent-flow.mp4             --architecture-spec src/templates/architecture-control-plane.lesson.json             --ui-code-spec src/templates/ui-code-agent-flow.lesson.json             --output out/n4-scale-proof-review.html
+          python scripts/build-scale-review.py             --architecture out/architecture-control-plane.mp4             --ui-code out/ui-code-agent-flow.mp4             --architecture-spec src/templates/architecture-control-plane.lesson.json             --ui-code-spec src/templates/ui-code-agent-flow.lesson.json             --benchmark out/scale-benchmark.json             --output out/n4-scale-proof-review.html
       - name: Verify scale artifacts
         run: |
           test -s out/architecture-control-plane.mp4
           test -s out/ui-code-agent-flow.mp4
           test -s out/n4-scale-proof-review.html
+          test -s out/scale-benchmark.json
       - name: Upload scale proof
         uses: actions/upload-artifact@v4
         with:
@@ -55,5 +78,6 @@ jobs:
             experimentos/mcf-content-studio-n4/out/architecture-control-plane.mp4
             experimentos/mcf-content-studio-n4/out/ui-code-agent-flow.mp4
             experimentos/mcf-content-studio-n4/out/n4-scale-proof-review.html
+            experimentos/mcf-content-studio-n4/out/scale-benchmark.json
           if-no-files-found: error
           retention-days: 14
