@@ -21,4 +21,3 @@ export const ScreenshotFrame=({aspect='9:16',reducedMotion=false,title='Screensh
       <div style={{padding:'18px 24px',fontSize:24,lineHeight:1.4,color:designTokens.color.muted}}>{caption}</div>
     </Card>
   </SafeFrame>;
-};
