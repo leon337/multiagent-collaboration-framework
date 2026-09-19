@@ -9,8 +9,13 @@ base_commit: 012188ea5415500bf9ad67b3689ffbaf9cade522
 tracker: 277
 completed:
   - successor mission created from validated N4 evolution closeout
+  - PR #278 tracker reference corrected from undefined to #277
+  - C0 source reconciliation executed against accessible Project sources and current GitHub state
+  - pilot lineage verified as Aula 3.1 / Runtime Agêntico Moderno — Nível 4
+  - separate leon337/curso-instavar ten-lesson curriculum inspected and rejected as a silent substitution
+  - partial curriculum inventory versioned with explicit blocker
 open:
-  - C0 canonical curriculum inventory
+  - C0 canonical curriculum source dependency
   - C1 lesson content packs
   - C2 N4 authoring
   - C3 narration
@@ -18,5 +23,25 @@ open:
   - C5 Review Labs
   - C6 lesson QA
   - C7 course gate
-next_action: "Resolve canonical curriculum inventory from Project sources before creating lesson payloads."
-human_action_required: false
+blocked:
+  - code: CANONICAL_CURRICULUM_SOURCE_UNRESOLVED
+    gate: C0
+    effect: C1_AND_DOWNSTREAM_STOP
+    human_gate: false
+    detail: >-
+      Accessible Project sources prove a ten-lesson scale scope and the Aula 3.1
+      Runtime Agêntico pilot, but do not enumerate the authoritative titles,
+      ordering and objectives of the other nine lessons.
+executor:
+  boundary: CHATGPT_BUBBLE_LOCAL_SANDBOX
+  cognitive_subagents: UNAVAILABLE_IN_CURRENT_SESSION
+  execution_claimed: false
+  note: >-
+    Capability doctor found no DeepSeek Harness binary/SDK, DSH_HOME or
+    MCF_DSH_AGENT_TEAM_READY flag. Deterministic tooling is not credited as
+    cognitive subagent execution.
+next_action: >-
+  Make the canonical advanced-course curriculum source accessible or identify its
+  exact Project/GitHub location; then resume C0 and fan out C1 content-pack work.
+human_action_required: true
+human_action_reason: CANONICAL_SOURCE_LOCATION_OR_FILE_REQUIRED
