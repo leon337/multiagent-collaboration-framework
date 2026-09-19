@@ -84,6 +84,23 @@ class LocalRuntimePoolTests(unittest.TestCase):
         with self.assertRaises(RuntimePoolError):
             self.pool.acquire("r1", "t1", "w2", "mestre")
 
+    def test_adaptive_configuration_respects_active_slot_floor(self):
+        self.pool.configure(4, "mestre")
+        self.pool.acquire("r1", "t1", "w1", "mestre")
+        self.pool.acquire("r2", "t2", "w2", "mestre")
+        self.pool.acquire("r3", "t3", "w3", "mestre")
+        metrics = {
+            "worker_count": 4,
+            "success_rate": 0.5,
+            "peak_concurrency_observed": 4,
+            "duration_ms": {"p95": 100, "sum": 400},
+        }
+
+        result = self.pool.configure_from_metrics(metrics, "mestre", max_team_size=8)
+
+        self.assertEqual(result["policy"]["team_size"], 3)
+        self.assertEqual(result["projection"].target_slots, 3)
+
     def test_pool_cannot_shrink_below_active_count(self):
         self.pool.configure(2, "mestre")
         self.pool.acquire("r1", "t1", "w1", "mestre")
