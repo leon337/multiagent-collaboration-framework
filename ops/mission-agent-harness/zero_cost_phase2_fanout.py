@@ -647,8 +647,12 @@ def main() -> int:
     parser.add_argument("--model", default=os.environ.get("OLLAMA_MODEL", "qwen2.5:1.5b"))
     parser.add_argument("--timeout", type=int, default=600)
     parser.add_argument("--author-limit", type=int, default=0, help="0 keeps the full Stage A roster; positive values are lab-only subsets")
+    parser.add_argument("--fanin-limit", type=int, default=0, help="0 keeps the full Stage B roster; positive values are lab-only subsets")
     args = parser.parse_args()
-    author_packets = AUTHORING_AGENTS if args.author_limit <= 0 else AUTHORING_AGENTS[:args.author_limit]
+    if args.author_limit < 0 or args.fanin_limit < 0:
+        parser.error("agent limits must be non-negative")
+    author_packets = AUTHORING_AGENTS if args.author_limit == 0 else AUTHORING_AGENTS[:args.author_limit]
+    fanin_packets = FANIN_AGENTS if args.fanin_limit == 0 else FANIN_AGENTS[:args.fanin_limit]
 
     ARTIFACT_ROOT.mkdir(parents=True, exist_ok=True)
     print(
@@ -668,7 +672,7 @@ def main() -> int:
     author_package = build_package(author_results, author_failures, per_agent_limit=1700)
 
     fanin_results, fanin_failures = run_parallel(
-        args.model, FANIN_AGENTS, "B", author_package, args.timeout
+        args.model, fanin_packets, "B", author_package, args.timeout
     )
 
     gate_context = build_package(author_results + fanin_results,
@@ -681,7 +685,7 @@ def main() -> int:
 
     failures = {**author_failures, **fanin_failures, **gate_failures}
     total_success = len(author_results) + len(fanin_results) + len(gate_results)
-    total_expected = len(author_packets) + len(FANIN_AGENTS) + 1
+    total_expected = len(author_packets) + len(fanin_packets) + 1
 
     manifest = {
         "mission_id": MISSION_ID,
@@ -689,7 +693,7 @@ def main() -> int:
         "execution": "PARALLEL_FAN_OUT_FAN_IN",
         "tool_calls_required": True,
         "authoring_agents": [p.agent_id for p in author_packets],
-        "fanin_agents": [p.agent_id for p in FANIN_AGENTS],
+        "fanin_agents": [p.agent_id for p in fanin_packets],
         "gate_agent": GATE_AGENT.agent_id,
         "success_count": total_success,
         "expected_count": total_expected,
