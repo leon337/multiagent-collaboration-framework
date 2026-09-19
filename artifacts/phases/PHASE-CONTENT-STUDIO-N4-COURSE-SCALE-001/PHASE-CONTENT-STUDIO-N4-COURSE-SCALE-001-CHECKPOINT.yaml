@@ -43,6 +43,7 @@ tracks:
       - audio mix / SFX / ducking contract
       - semantic motion preset implementations
       - optional Explain companion path
+      - generic audio mix runtime / SFX+music asset registry
 
 open:
   - recover canonical predecessor-chat curriculum
@@ -95,3 +96,31 @@ living_engine_checklist:
       background changes, animation and PDF export, but does not expose verified
       node/token introspection equivalent to the existing Figma bridge. A governed
       AdobeExpressBridgeSpec and first Express-to-N4 proof are therefore required.
+
+adobe_express_bridge:
+  state: IMPLEMENTED_PENDING_EXACT_HEAD_CI
+  source_template_urn: urn:aaid:sc:VA6C2:1a487348-7767-4b43-9ac1-22d1918dbb8b
+  derived_document_urn: urn:aaid:sc:VA6C2:b0b20f81-59b6-4508-ba43-b45b3b022261
+  target_component: title
+  handoff_mode: visual-reference-plus-n4-target-tokens
+  claims:
+    - real Adobe Express template selected
+    - real derived Adobe Express document created
+    - governed intermediate bridge spec implemented
+    - target React/Remotion component exists and is APPROVED
+  non_claims:
+    - pixel-perfect parity
+    - Adobe Express node introspection
+    - Adobe Express token introspection
+
+audio_mix:
+  state: CONTRACT_IMPLEMENTED_PENDING_EXACT_HEAD_CI
+  implemented:
+    - narration/sfx/music/ambient clip model
+    - gain and fades
+    - narration-driven ducking rules
+    - deterministic validation tests
+  pending:
+    - reusable SFX/music asset registry
+    - generic FFmpeg/Remotion mix executor
+    - loudness/peak QA

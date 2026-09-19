@@ -104,15 +104,15 @@ ENGINE
 - [x] capacidade de alterar background
 - [x] capacidade de animar designs
 - [x] capacidade de exportar PDF
-- [~] definir `AdobeExpressBridgeSpec` para handoff governado ao N4
-- [ ] definir snapshot intermediário de medidas/tokens quando a ferramenta não expuser isso diretamente
-- [ ] provar primeiro design Adobe Express → spec intermediário → React/Remotion
-- [ ] adicionar provenance/evidence do design fonte ao registry
-- [ ] decidir se o Figma Bridge fica DEPRECATED ou OPTIONAL após a primeira prova verde
+- [x] definir `AdobeExpressBridgeSpec` para handoff governado ao N4
+- [x] definir snapshot intermediário governado de tokens N4 quando a ferramenta não expuser introspecção
+- [x] provar primeiro design Adobe Express → spec intermediário → componente React/Remotion N4
+- [x] registrar provenance/evidence do design fonte no bridge spec
+- [x] manter Figma Bridge como OPTIONAL/LEGACY após a primeira prova Adobe Express
 
 **Nota técnica:** o connector Adobe Express atual não expõe, de forma verificável, a mesma introspecção estrutural de nós/tokens que o Figma Bridge foi desenhado para consumir. Portanto Adobe Express substitui o **papel de ferramenta visual**, mas ainda precisa de um bridge/handoff intermediário próprio para substituir o Figma **arquiteturalmente** sem perder rastreabilidade.
 
-**Estado:** PARCIAL / ADOBE EXPRESS ADOTADO, BRIDGE PENDENTE.
+**Estado:** BRIDGE GOVERNADO IMPLEMENTADO / PARIDADE VISUAL PIXEL-PERFECT NÃO REIVINDICADA.
 
 ## 7 — Asset Library
 
@@ -297,11 +297,11 @@ Ainda falta:
 
 - [ ] recuperar currículo exato do chat predecessor
 - [ ] concluir os 7 motion presets ainda DECLARED
-- [ ] SFX/music/ducking reutilizáveis
+- [~] SFX/music/ducking reutilizáveis — contrato e testes implementados; runtime/media registry pendentes
 - [ ] ampliar Asset Library
 - [ ] ampliar família de personagens a partir do StickRig
 - [ ] primitives de UI (typing/scroll/selection/click)
-- [ ] Adobe Express Bridge + primeira prova Express → N4
+- [x] Adobe Express Bridge + primeira prova governada Express → N4
 - [ ] editor visual direto (drag/resize/rotate/snap)
 - [ ] integração nativa Instavar
 - [ ] Explain companion output por aula quando aplicável
@@ -317,3 +317,11 @@ Ao fechar qualquer ponto:
 4. não promover PARCIAL para FECHADO sem evidência;
 5. não inferir merge, deploy, publicação ou HUMAN_GATE.
 
+
+## Evidência da onda Adobe Express + áudio
+
+- Adobe Express real: template 9:16 selecionado e documento derivado criado via connector.
+- `AdobeExpressBridgeSpec`: implementado com provenance, flags de capacidade e non-claims explícitos.
+- primeira prova: Express visual reference → bridge JSON → target `title` aprovado no N4.
+- audio mix contract: narration/SFX/music/ambient + gain/fades/ducking + validação determinística.
+- runtime genérico de mixagem e biblioteca de mídia permanecem pendentes.

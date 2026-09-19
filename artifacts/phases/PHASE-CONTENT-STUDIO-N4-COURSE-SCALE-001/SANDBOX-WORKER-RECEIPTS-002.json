@@ -1,0 +1,43 @@
+{
+  "mission_id": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001",
+  "wave": "SANDBOX-PARALLEL-002",
+  "worker_kind": "deterministic_sandbox_workers",
+  "cognitive_agent_credit": false,
+  "workers": [
+    {
+      "id": "adobe_bridge",
+      "decision": "IMPLEMENT_BRIDGE_NOW",
+      "non_claims": [
+        "node introspection",
+        "token introspection"
+      ]
+    },
+    {
+      "id": "motion_gap",
+      "decision": "DO_NOT_PROMOTE_DECLARED_PRESETS_AS_STYLE_ONLY",
+      "reason": "semantic presets require dedicated content-aware primitives"
+    },
+    {
+      "id": "audio_gap",
+      "decision": "BUILD_CONTRACT_BEFORE_MEDIA_LIBRARY",
+      "contract": [
+        "narration",
+        "sfx",
+        "music",
+        "ambient",
+        "ducking",
+        "gain/fades"
+      ]
+    },
+    {
+      "id": "checklist",
+      "decision": "CLOSE_ONLY_WITH_CODE_TEST_EVIDENCE",
+      "keep_open": [
+        "visual parity",
+        "asset scale",
+        "semantic motion runtime",
+        "generic audio mix runtime"
+      ]
+    }
+  ]
+}
