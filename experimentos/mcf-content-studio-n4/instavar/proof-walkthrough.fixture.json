@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "id": "mcf-runtime-ag-ntico-moderno-n-vel-4",
+  "templateFamily": "proof-walkthrough",
+  "meta": {
+    "title": "MCF Runtime Agêntico Moderno — Nível 4",
+    "tags": []
+  },
+  "target": {
+    "aspect": "9:16",
+    "fps": 30,
+    "durationMode": "auto"
+  },
+  "style": {
+    "theme": "default",
+    "variant": "default",
+    "safeAreaProfile": "metaSafe"
+  },
+  "audio": {
+    "ducking": true
+  },
+  "assets": {},
+  "scenes": [
+    {
+      "id": "hero",
+      "kind": "hero",
+      "content": {
+        "title": "MCF Runtime Agêntico Moderno — Nível 4",
+        "subtitle": "Replace with a concise promise"
+      }
+    },
+    {
+      "id": "working",
+      "kind": "equation",
+      "content": {
+        "title": "Work through the idea",
+        "latexBlocks": [
+          "x = \\\\frac{-b \\\\pm \\\\sqrt{b^2 - 4ac}}{2a}"
+        ]
+      }
+    },
+    {
+      "id": "cta",
+      "kind": "cta",
+      "content": {
+        "line1": "Replace with the next action"
+      }
+    }
+  ]
+}
