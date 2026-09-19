@@ -8,3 +8,4 @@ export {AnimatedArrow} from './AnimatedArrow';
 export {ChapterProgress} from './ChapterProgress';
 export {BrowserWindow} from './BrowserWindow';
 export {TerminalWindow} from './TerminalWindow';
+export {BounceHeadlineN4} from './BounceHeadlineN4';

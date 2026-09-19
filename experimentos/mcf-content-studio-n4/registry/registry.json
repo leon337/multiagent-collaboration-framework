@@ -1,32 +1,481 @@
 {
   "registryVersion": "0.1.0",
   "components": [
-    {"id":"focus-concept","displayName":"Focus Concept","version":"0.1.0","category":"concept","pedagogicalPurpose":"Apresentar um conceito por vez com foco visual.","supportedAspects":["9:16","16:9"],"defaultProps":{"eyebrow":"CONCEITO","title":"O modelo decide","body":"Contexto entra. Uma decisão estruturada sai."},"editableProps":["eyebrow","title","body"],"duration":{"minFrames":45,"recommendedFrames":120},"safeArea":"required","reducedMotion":"supported","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"},
-    {"id":"progressive-diagram","displayName":"Progressive Diagram","version":"0.1.0","category":"diagram","pedagogicalPurpose":"Construir relações gradualmente.","supportedAspects":["9:16","16:9"],"defaultProps":{"title":"Fluxo progressivo","nodes":["Contexto","Modelo","Ação"]},"editableProps":["title","nodes"],"duration":{"minFrames":90,"recommendedFrames":180},"safeArea":"required","reducedMotion":"supported","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"},
-    {"id":"animated-timeline","displayName":"Animated Timeline","version":"0.1.0","category":"timeline","pedagogicalPurpose":"Mostrar sequência temporal e rastreabilidade.","supportedAspects":["9:16","16:9"],"defaultProps":{"title":"Eventos","items":["mensagem","tool call","resultado","checkpoint"]},"editableProps":["title","items"],"duration":{"minFrames":90,"recommendedFrames":180},"safeArea":"required","reducedMotion":"supported","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"},
-    {"id":"active-recall","displayName":"Active Recall","version":"0.1.0","category":"learning","pedagogicalPurpose":"Criar pausa de recuperação antes da resposta.","supportedAspects":["9:16","16:9"],"defaultProps":{"question":"Quem executa o comando?","answer":"O runtime autorizado.","revealAfterFrame":60},"editableProps":["question","answer","revealAfterFrame"],"duration":{"minFrames":90,"recommendedFrames":150},"safeArea":"required","reducedMotion":"supported","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"},
-    {"id":"error-vs-correct","displayName":"Error vs Correct","version":"0.1.0","category":"learning","pedagogicalPurpose":"Contrastar erro comum e padrão correto.","supportedAspects":["9:16","16:9"],"defaultProps":{"title":"Erro comum vs. forma correta","wrong":"Capacidade = permissão","right":"Capacidade ≠ permissão"},"editableProps":["title","wrong","right"],"duration":{"minFrames":60,"recommendedFrames":120},"safeArea":"required","reducedMotion":"supported","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"},
-    {"id":"architecture-node","displayName":"Architecture Node","version":"0.1.0","category":"architecture","pedagogicalPurpose":"Representar uma responsabilidade arquitetural em foco.","supportedAspects":["9:16","16:9"],"defaultProps":{"label":"AGENTE","subtitle":"organiza modelo + tools + policy"},"editableProps":["label","subtitle"],"duration":{"minFrames":45,"recommendedFrames":90},"safeArea":"required","reducedMotion":"supported","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"},
-    {"id":"animated-arrow","displayName":"Animated Arrow","version":"0.1.0","category":"diagram","pedagogicalPurpose":"Mostrar relação somente quando ela é explicada.","supportedAspects":["9:16","16:9"],"defaultProps":{"from":"MODELO","to":"RUNTIME"},"editableProps":["from","to"],"duration":{"minFrames":45,"recommendedFrames":90},"safeArea":"required","reducedMotion":"supported","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"},
-    {"id":"chapter-progress","displayName":"Chapter Progress","version":"0.1.0","category":"progress","pedagogicalPurpose":"Orientar posição cognitiva dentro da aula.","supportedAspects":["9:16","16:9"],"defaultProps":{"chapters":["Modelo","Agente","Sessão","Ambiente"],"activeIndex":1},"editableProps":["chapters","activeIndex"],"duration":{"minFrames":45,"recommendedFrames":90},"safeArea":"required","reducedMotion":"not-applicable","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"},
-    {"id":"browser-window","displayName":"Browser Window","version":"0.1.0","category":"ui","pedagogicalPurpose":"Simular produto web de forma estável e editável.","supportedAspects":["9:16","16:9"],"defaultProps":{"url":"mcf.local/runtime","headline":"Runtime agêntico","body":"Uma interface simulada para explicar software sem depender de screenshots frágeis."},"editableProps":["url","headline","body"],"duration":{"minFrames":60,"recommendedFrames":150},"safeArea":"required","reducedMotion":"not-applicable","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"},
-    {"id":"terminal-window","displayName":"Terminal Window","version":"0.1.0","category":"code","pedagogicalPurpose":"Mostrar execução de comando e resultado.","supportedAspects":["9:16","16:9"],"defaultProps":{"command":"pnpm test","output":"✓ 128 tests passed"},"editableProps":["command","output"],"duration":{"minFrames":90,"recommendedFrames":180},"safeArea":"required","reducedMotion":"supported","origin":{"kind":"mcf","source":"MCF-CONTENT-STUDIO-N4-001"},"license":{"id":"MCF-REPOSITORY-LICENSE","evidence":"../../../LICENSE"},"dependencies":[],"status":"APPROVED"}
+    {
+      "id": "focus-concept",
+      "displayName": "Focus Concept",
+      "version": "0.1.0",
+      "category": "concept",
+      "pedagogicalPurpose": "Apresentar um conceito por vez com foco visual.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "eyebrow": "CONCEITO",
+        "title": "O modelo decide",
+        "body": "Contexto entra. Uma decisão estruturada sai."
+      },
+      "editableProps": [
+        "eyebrow",
+        "title",
+        "body"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "progressive-diagram",
+      "displayName": "Progressive Diagram",
+      "version": "0.1.0",
+      "category": "diagram",
+      "pedagogicalPurpose": "Construir relações gradualmente.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Fluxo progressivo",
+        "nodes": [
+          "Contexto",
+          "Modelo",
+          "Ação"
+        ]
+      },
+      "editableProps": [
+        "title",
+        "nodes"
+      ],
+      "duration": {
+        "minFrames": 90,
+        "recommendedFrames": 180
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "animated-timeline",
+      "displayName": "Animated Timeline",
+      "version": "0.1.0",
+      "category": "timeline",
+      "pedagogicalPurpose": "Mostrar sequência temporal e rastreabilidade.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Eventos",
+        "items": [
+          "mensagem",
+          "tool call",
+          "resultado",
+          "checkpoint"
+        ]
+      },
+      "editableProps": [
+        "title",
+        "items"
+      ],
+      "duration": {
+        "minFrames": 90,
+        "recommendedFrames": 180
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "active-recall",
+      "displayName": "Active Recall",
+      "version": "0.1.0",
+      "category": "learning",
+      "pedagogicalPurpose": "Criar pausa de recuperação antes da resposta.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "question": "Quem executa o comando?",
+        "answer": "O runtime autorizado.",
+        "revealAfterFrame": 60
+      },
+      "editableProps": [
+        "question",
+        "answer",
+        "revealAfterFrame"
+      ],
+      "duration": {
+        "minFrames": 90,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "error-vs-correct",
+      "displayName": "Error vs Correct",
+      "version": "0.1.0",
+      "category": "learning",
+      "pedagogicalPurpose": "Contrastar erro comum e padrão correto.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "title": "Erro comum vs. forma correta",
+        "wrong": "Capacidade = permissão",
+        "right": "Capacidade ≠ permissão"
+      },
+      "editableProps": [
+        "title",
+        "wrong",
+        "right"
+      ],
+      "duration": {
+        "minFrames": 60,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "architecture-node",
+      "displayName": "Architecture Node",
+      "version": "0.1.0",
+      "category": "architecture",
+      "pedagogicalPurpose": "Representar uma responsabilidade arquitetural em foco.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "label": "AGENTE",
+        "subtitle": "organiza modelo + tools + policy"
+      },
+      "editableProps": [
+        "label",
+        "subtitle"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "animated-arrow",
+      "displayName": "Animated Arrow",
+      "version": "0.1.0",
+      "category": "diagram",
+      "pedagogicalPurpose": "Mostrar relação somente quando ela é explicada.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "from": "MODELO",
+        "to": "RUNTIME"
+      },
+      "editableProps": [
+        "from",
+        "to"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "chapter-progress",
+      "displayName": "Chapter Progress",
+      "version": "0.1.0",
+      "category": "progress",
+      "pedagogicalPurpose": "Orientar posição cognitiva dentro da aula.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "chapters": [
+          "Modelo",
+          "Agente",
+          "Sessão",
+          "Ambiente"
+        ],
+        "activeIndex": 1
+      },
+      "editableProps": [
+        "chapters",
+        "activeIndex"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 90
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "browser-window",
+      "displayName": "Browser Window",
+      "version": "0.1.0",
+      "category": "ui",
+      "pedagogicalPurpose": "Simular produto web de forma estável e editável.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "url": "mcf.local/runtime",
+        "headline": "Runtime agêntico",
+        "body": "Uma interface simulada para explicar software sem depender de screenshots frágeis."
+      },
+      "editableProps": [
+        "url",
+        "headline",
+        "body"
+      ],
+      "duration": {
+        "minFrames": 60,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "not-applicable",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "terminal-window",
+      "displayName": "Terminal Window",
+      "version": "0.1.0",
+      "category": "code",
+      "pedagogicalPurpose": "Mostrar execução de comando e resultado.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "command": "pnpm test",
+        "output": "✓ 128 tests passed"
+      },
+      "editableProps": [
+        "command",
+        "output"
+      ],
+      "duration": {
+        "minFrames": 90,
+        "recommendedFrames": 180
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED"
+    },
+    {
+      "id": "bounce-headline-n4",
+      "displayName": "Bounce Headline N4",
+      "version": "0.1.0",
+      "category": "motion",
+      "pedagogicalPurpose": "Introduzir uma palavra ou conceito com entrada elástica curta sem competir com a leitura.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "headline": "CONCEITO-CHAVE",
+        "accent": "#7c8cff",
+        "background": "#080c14",
+        "bounces": 2,
+        "height": 84,
+        "delay": 8,
+        "duration": 36
+      },
+      "editableProps": [
+        "headline",
+        "accent",
+        "background",
+        "bounces",
+        "height",
+        "delay",
+        "duration"
+      ],
+      "duration": {
+        "minFrames": 45,
+        "recommendedFrames": 120
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "external",
+        "source": "https://github.com/RenderComp/free-remotion-templates/blob/f648980e528defb7594e24c6447055f0540f340b/src/components/bounce-in-headline/BounceInHeadline.tsx"
+      },
+      "license": {
+        "id": "MIT",
+        "evidence": "https://github.com/RenderComp/free-remotion-templates/blob/f648980e528defb7594e24c6447055f0540f340b/LICENSE"
+      },
+      "dependencies": [],
+      "status": "ADAPTED"
+    }
   ],
   "templates": [
     {
-      "id":"technical-lesson-n4",
-      "displayName":"Technical Lesson N4",
-      "version":"0.1.0",
-      "purpose":"Aula técnica com foco progressivo, diagrama, aplicação e recuperação ativa.",
-      "supportedAspects":["9:16","16:9"],
-      "componentIds":["chapter-progress","focus-concept","progressive-diagram","animated-timeline","active-recall","error-vs-correct","architecture-node","animated-arrow","browser-window","terminal-window"],
-      "slots":[
-        {"id":"orientation","accepts":["progress"],"required":true},
-        {"id":"concept","accepts":["concept","architecture"],"required":true},
-        {"id":"explanation","accepts":["diagram","timeline","ui","code"],"required":true},
-        {"id":"recall","accepts":["learning"],"required":true}
+      "id": "technical-lesson-n4",
+      "displayName": "Technical Lesson N4",
+      "version": "0.1.0",
+      "purpose": "Aula técnica com foco progressivo, diagrama, aplicação e recuperação ativa.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
       ],
-      "status":"APPROVED"
+      "componentIds": [
+        "chapter-progress",
+        "focus-concept",
+        "progressive-diagram",
+        "animated-timeline",
+        "active-recall",
+        "error-vs-correct",
+        "architecture-node",
+        "animated-arrow",
+        "browser-window",
+        "terminal-window"
+      ],
+      "slots": [
+        {
+          "id": "orientation",
+          "accepts": [
+            "progress"
+          ],
+          "required": true
+        },
+        {
+          "id": "concept",
+          "accepts": [
+            "concept",
+            "architecture"
+          ],
+          "required": true
+        },
+        {
+          "id": "explanation",
+          "accepts": [
+            "diagram",
+            "timeline",
+            "ui",
+            "code"
+          ],
+          "required": true
+        },
+        {
+          "id": "recall",
+          "accepts": [
+            "learning"
+          ],
+          "required": true
+        }
+      ],
+      "status": "APPROVED"
     }
   ]
 }

@@ -1,0 +1,49 @@
+{
+  "importId": "rendercomp-bounce-in-headline",
+  "source": {
+    "url": "https://github.com/RenderComp/free-remotion-templates",
+    "revision": "f648980e528defb7594e24c6447055f0540f340b",
+    "retrievedAt": "2026-09-19T08:00:00Z"
+  },
+  "license": {
+    "id": "MIT",
+    "evidence": "https://github.com/RenderComp/free-remotion-templates/blob/f648980e528defb7594e24c6447055f0540f340b/LICENSE",
+    "reviewed": true
+  },
+  "dependencies": [
+    {"name":"remotion","version":"4.0.518","purpose":"source animation primitives"},
+    {"name":"react","version":"^19.0.0","purpose":"source component runtime"}
+  ],
+  "security": {
+    "reviewed": true,
+    "networkRequired": false,
+    "dynamicCode": false,
+    "findings": []
+  },
+  "performance": {
+    "reviewed": true,
+    "notes": [
+      "single useCurrentFrame call",
+      "interpolate plus deterministic Math.sin",
+      "no assets, network, timers, randomness or side effects"
+    ]
+  },
+  "adaptation": {
+    "targetComponentId": "bounce-headline-n4",
+    "changes": [
+      "wrapped in N4 SafeFrame",
+      "added 9:16 and 16:9 typography",
+      "added reduced-motion behavior",
+      "removed source project constants and external styling assumptions",
+      "kept only React/Remotion primitives already present in N4"
+    ],
+    "tests": [
+      "registry manifest validation",
+      "import policy eligibility",
+      "9:16 preview",
+      "16:9 preview",
+      "reduced-motion preview"
+    ]
+  },
+  "status": "ADAPTED"
+}
