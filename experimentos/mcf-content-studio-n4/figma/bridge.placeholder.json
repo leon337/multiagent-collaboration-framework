@@ -1,0 +1,68 @@
+{
+  "bridgeVersion": "0.1.0",
+  "source": {
+    "kind": "figma",
+    "fileKey": "REQUIRES_CONCRETE_FIGMA_FILE_KEY",
+    "nodeId": "0:1",
+    "capturedAt": "2026-09-19T00:00:00Z"
+  },
+  "tokens": {
+    "colors": {
+      "background": "#080c14",
+      "surface": "#111827",
+      "text": "#f7f9fc",
+      "muted": "#aab4c6",
+      "accent": "#7c8cff"
+    },
+    "spacing": {
+      "xs": 8,
+      "sm": 16,
+      "md": 24,
+      "lg": 40,
+      "xl": 64,
+      "xxl": 96
+    },
+    "radius": {
+      "sm": 12,
+      "md": 20,
+      "lg": 32
+    },
+    "typography": {
+      "title": {
+        "fontFamily": "Inter",
+        "fontSize": 64,
+        "fontWeight": 800,
+        "lineHeight": 1.05
+      },
+      "body": {
+        "fontFamily": "Inter",
+        "fontSize": 34,
+        "fontWeight": 400,
+        "lineHeight": 1.35
+      },
+      "label": {
+        "fontFamily": "Inter",
+        "fontSize": 24,
+        "fontWeight": 700,
+        "lineHeight": 1.2
+      }
+    }
+  },
+  "component": {
+    "name": "MCF / Concept Card",
+    "kind": "card",
+    "width": 936,
+    "height": 520,
+    "props": {
+      "eyebrow": "CONCEITO",
+      "title": "O modelo decide",
+      "body": "Contexto entra. Uma decisão estruturada sai."
+    },
+    "bindings": {
+      "background": "colors.surface",
+      "accent": "colors.accent",
+      "radius": "radius.lg",
+      "padding": "spacing.lg"
+    }
+  }
+}
