@@ -3,13 +3,16 @@ mission_id: MCF-CONTENT-STUDIO-N4-001
 parent_mission_id: null
 project: multiagent-collaboration-framework
 base_commit: 19731f281126c1360e33732dd74b82a85e9e7f7a
-head_commit: a459b031495176a26cd849f36540120ba5c6d266
+head_commit: 77890c1b1abfe71ca6eeca8add10706d12aa5cb6
 branch: planning/mcf-content-studio-n4-20260919
 pull_request: 255
 objective: "Implantar fundação N4: components, registry, Video Lab, importer, piloto e QA."
 objective_state: EM_EXECUCAO
 cycle: 2
 completed_acceptance_criteria:
+  - "G7 QA visual e benchmark reproduzivel substancialmente concluidos"
+  - "Review Lab V2 implementado como superficie A/B de validacao"
+  - "captions e active recall inspecionados em frames do MP4 com audio"
   - "HTML review self-contained com MP4 H.264 + audio AAC integrado"
   - "narracao PT-BR clear segmentada por cena e muxada no piloto de 67s"
   - "GitHub Actions run 35431478491 = success"
@@ -60,12 +63,15 @@ decisions:
   - "Vercel free-tier deployment limit is unrelated and not used as mission evidence"
   - "no merge to main, deploy, or publication authorized"
 open_findings:
+  - "audio de producao duravel ainda nao materializado como asset canonico"
+  - "benchmark interativo do Remotion Player pendente"
+  - "review da licenca Remotion antes de promocao para producao"
 blockers: []
 recoveries:
   - "initial CI failed because pnpm blocked esbuild install script"
   - "recovered by explicit local allowBuilds: esbuild=true, preserving supply-chain policy"
 next_phase: ""
-next_action: "Evoluir o HTML review com comparacao A/B e consolidar QA/benchmark antes da auditoria."
+next_action: "Concluir validacao do Review Lab V2 e submeter audit pack para G8 sem promover merge/publicacao."
 recipient: Mestre
 return_to: Mestre
 human_action_required: false

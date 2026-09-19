@@ -55,18 +55,18 @@
 - [x] BrowserWindow
 - [x] TerminalWindow
 - [x] Props tipadas
-- [ ] 9:16
-- [ ] 16:9
-- [ ] safe areas
-- [ ] reduced-motion
+- [x] 9:16
+- [x] 16:9
+- [x] safe areas
+- [x] reduced-motion
 - [ ] still/example por componente
 
 ## G3 — Registry
 
 - [x] Loader
 - [x] Search
-- [ ] Category filter
-- [ ] Aspect filter
+- [x] Category filter
+- [x] Aspect filter
 - [ ] Editable filter
 - [x] Origin field
 - [x] License field
@@ -80,14 +80,14 @@
 ## G4 — Video Lab
 
 - [x] Gallery
-- [ ] Search
-- [ ] Preview
+- [x] Search
+- [x] Preview
 - [x] Prop editor
 - [x] 9:16 preset
 - [x] 16:9 preset
 - [ ] Still capture
 - [x] Component selection
-- [ ] Template selection
+- [x] Template selection
 - [x] Error boundary
 - [ ] Mobile smoke
 - [ ] Desktop smoke
@@ -101,9 +101,9 @@
 - [x] Performance revisada
 - [x] Adaptação N4 concluída
 - [x] Testes adicionados
-- [ ] Preview gerado
+- [x] Preview gerado
 - [x] Registry atualizado
-- [ ] 1 componente externo aprovado
+- [x] 1 componente externo aprovado
 
 ## G6 — Piloto Aula 3.1
 
@@ -113,10 +113,10 @@
 - [x] progress bar
 - [x] diagramas progressivos
 - [x] active recall
-- [ ] legendas não competem com visual
-- [ ] safe area passa
-- [ ] áudio sincronizado
-- [ ] preview sem erro
+- [x] legendas não competem com visual
+- [x] safe area passa
+- [x] áudio sincronizado
+- [x] preview sem erro
 - [ ] master sem erro
 - [ ] LEANDRO valida
 
@@ -125,15 +125,15 @@
 - [ ] Component tests
 - [ ] Registry schema tests
 - [x] Import manifest tests
-- [ ] Overflow tests
-- [ ] Text fit tests
-- [ ] Safe-area tests
-- [ ] Reduced-motion tests
-- [ ] Performance benchmark
+- [x] Overflow tests
+- [x] Text fit tests
+- [x] Safe-area tests
+- [x] Reduced-motion tests
+- [x] Performance benchmark
 - [ ] Preview benchmark
-- [ ] Render benchmark
-- [ ] Compare #251
-- [ ] Zero animation syntax error no piloto
+- [x] Render benchmark
+- [x] Compare #251
+- [x] Zero animation syntax error no piloto
 - [x] Evidência capturada
 
 ## G8 — Audit / Gate
@@ -150,8 +150,8 @@
 
 ## Regras
 
-- [ ] Nunca marcar PASS sem evidência
-- [ ] Nunca tratar template externo como confiável por padrão
-- [ ] Nunca confundir preview com master
-- [ ] Nunca confundir implementação com publicação
-- [ ] Nunca migrar as 9 aulas antes do gate do piloto
+- [x] Nunca marcar PASS sem evidência
+- [x] Nunca tratar template externo como confiável por padrão
+- [x] Nunca confundir preview com master
+- [x] Nunca confundir implementação com publicação
+- [x] Nunca migrar as 9 aulas antes do gate do piloto
