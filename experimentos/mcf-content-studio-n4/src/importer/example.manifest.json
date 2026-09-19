@@ -1,0 +1,30 @@
+{
+  "importId": "example-external-component",
+  "source": {
+    "url": "https://example.invalid/component",
+    "revision": "PINNED_REVISION_REQUIRED",
+    "retrievedAt": "2026-09-19T00:00:00Z"
+  },
+  "license": {
+    "id": "UNKNOWN",
+    "evidence": "PENDING",
+    "reviewed": false
+  },
+  "dependencies": [],
+  "security": {
+    "reviewed": false,
+    "networkRequired": false,
+    "dynamicCode": false,
+    "findings": []
+  },
+  "performance": {
+    "reviewed": false,
+    "notes": []
+  },
+  "adaptation": {
+    "targetComponentId": "external-example",
+    "changes": [],
+    "tests": []
+  },
+  "status": "DISCOVERED"
+}
