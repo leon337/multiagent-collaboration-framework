@@ -209,6 +209,107 @@ class LegacyHttpCognitiveLedgerProvider:
         return None
 
 
+class MachineTokenCognitiveLedgerProvider:
+    """MCF-specific machine boundary exposed by the private Ledger service."""
+
+    name = "cognitive-ledger-mcf-proxy"
+
+    def __init__(
+        self,
+        base_url: str,
+        token: str,
+        *,
+        timeout_seconds: float = 15.0,
+    ):
+        if not base_url.startswith(("https://", "http://")):
+            raise ValueError("base_url must be http(s)")
+        if not token:
+            raise ValueError("machine token is required")
+        self.base_url = base_url.rstrip("/")
+        self._token = token
+        self.timeout_seconds = float(timeout_seconds)
+
+    @classmethod
+    def from_env(cls) -> "MachineTokenCognitiveLedgerProvider":
+        base_url = os.getenv("COGNITIVE_LEDGER_MCF_URL")
+        token = os.getenv("COGNITIVE_LEDGER_MCF_TOKEN")
+        missing = []
+        if not base_url:
+            missing.append("COGNITIVE_LEDGER_MCF_URL")
+        if not token:
+            missing.append("COGNITIVE_LEDGER_MCF_TOKEN")
+        if missing:
+            raise CognitiveMemoryError(
+                f"missing Cognitive Ledger MCF settings: {missing}"
+            )
+        return cls(base_url or "", token or "")
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        body: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        data = None
+        headers = {
+            "Authorization": f"Bearer {self._token}",
+            "Accept": "application/json",
+        }
+        if body is not None:
+            data = json.dumps(body, ensure_ascii=False).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(
+            f"{self.base_url}{path}",
+            data=data,
+            headers=headers,
+            method=method,
+        )
+        try:
+            with urllib.request.urlopen(
+                req,
+                timeout=self.timeout_seconds,
+            ) as response:
+                raw = response.read().decode("utf-8")
+                return json.loads(raw or "{}")
+        except urllib.error.HTTPError as exc:
+            payload = exc.read().decode("utf-8", errors="replace")
+            raise ProviderWriteError(
+                f"provider HTTP {exc.code}: {payload[:400]}"
+            ) from exc
+        except (urllib.error.URLError, TimeoutError) as exc:
+            raise ProviderWriteError(
+                f"provider unavailable: {type(exc).__name__}"
+            ) from exc
+
+    def write(
+        self,
+        *,
+        event: dict[str, Any],
+        sources: list[dict[str, Any]],
+        relations: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST",
+            "/internal/mcf-memory/registros",
+            {
+                "evento": event,
+                "fontes": sources,
+                "relacoes": relations,
+            },
+        )
+
+    def read_back(self, event_id: str) -> dict[str, Any] | None:
+        timeline = self._request(
+            "GET",
+            "/internal/mcf-memory/timeline",
+        )
+        records = timeline.get("registros", [])
+        for record in records if isinstance(records, list) else []:
+            if isinstance(record, dict) and record.get("id") == event_id:
+                return record
+        return None
+
+
 class CognitiveMemoryCapability:
     def __init__(
         self,
