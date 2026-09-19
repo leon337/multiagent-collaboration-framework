@@ -1,21 +1,21 @@
 # Checkpoint — PHASE-02-MEMORY-ARCHITECTURE
 
 Mission: `MCF-MEMORY-LIVE-NEXT-STABLE-001`  
-Checkpoint state: `PARALLEL_TOOLCALL_HARNESS_PREPARED`  
+Checkpoint state: `COGNITIVE_MEMORY_CAPABILITIES_IMPLEMENTED / CI_PENDING`
 Objective met: false  
 Human technical action required: false  
 Checkpoint recipient: Mestre  
-Recovery baseline: `main@b969df76544e69cb2ff7833a5b65bd231d4db7aa`
+Recovery baseline: `main@3bd149ef159d46e82dbe2396f9e5991822f14327`
 
 ## Reconciled decisions
 
 - LEANDRO authorized Brainbase billable task execution for this mission on 2026-09-18;
-- Brainbase is preferred when available; current controlled pilots are blocked by provider-side `BILLING_UNAVAILABLE / HTTP 503` before model/tool execution;
+- Brainbase remains optional; current controlled tasks are blocked by `CREDITS_EXHAUSTED` before agent execution and receive no participation credit;
 - the GitHub/Ollama path remains an active zero-cost contingency executor;
 - the official 29-agent roster remains a pool, not a decorative mandatory full-roster run;
 - explicit current LEANDRO instruction requires discovery/design fan-out so specialists do not depend on peer delivery;
 - every credited specialist must have a real tool call plus attributable artifact evidence;
-- implementation and live mutation remain blocked.
+- governed Cognitive Memory read/write capabilities are implemented and locally tested; live provider mutation remains blocked.
 
 ## Historical zero-cost evidence recovered
 
@@ -32,7 +32,7 @@ PR #170 is old and non-mergeable against the current main; its validated zero-co
 
 ## Current recovery branch
 
-`mission/memory-parallel-toolcall-20260918`
+`feat/mcf-cognitive-memory-reconciled-20260918`
 
 Prepared artifacts:
 
@@ -87,7 +87,7 @@ Brainbase billable agent tasks are permitted for this mission by explicit LEANDR
 
 No human technical blocker is open.
 
-Remaining technical dependency: obtain real CI execution evidence from the new parallel tool-using harness and apply CAF to any failed role.
+Remaining technical dependencies: exact-head CI for governed Cognitive Memory capabilities and the parallel tool-using harness; live provider mutation remains outside this candidate.
 
 ## Next action owner
 

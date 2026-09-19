@@ -2,8 +2,8 @@
 
 Mission: `MCF-MEMORY-LIVE-NEXT-STABLE-001`  
 Risk class: `C`  
-Status: `OPEN / PARALLEL_EXECUTION_PREPARED / IMPLEMENTATION_BLOCKED`  
-Current recovery baseline: `main@b969df76544e69cb2ff7833a5b65bd231d4db7aa`  
+Status: `OPEN / CAPABILITIES_IMPLEMENTED / LIVE_PROVIDER_MUTATION_BLOCKED`
+Current recovery baseline: `main@3bd149ef159d46e82dbe2396f9e5991822f14327`
 Authority: LEANDRO (final human authority) / Léo (delegated operational gates)  
 Coordinator: Mestre
 
@@ -11,7 +11,7 @@ Coordinator: Mestre
 
 Produce an approvable architecture for an MCF Experience Intelligence / persistent-memory layer that can learn from validated operational experience without turning hypotheses, poisoned context or stale observations into institutional truth.
 
-This phase is design/evidence only. Product implementation, provider mutation, production promotion and release publication remain blocked.
+This phase now includes governed Cognitive Memory read/write capability implementations and tests. Live provider mutation, production promotion and release publication remain blocked.
 
 ## Source precedence
 
@@ -83,7 +83,7 @@ Current policy:
 - the public GitHub-hosted + pinned local Ollama / `qwen2.5:1.5b` harness remains the zero-cost contingency executor;
 - the same anti-simulation, privacy, provenance and tool-evidence contract applies to both executors.
 
-Observed Brainbase pilot state on 2026-09-18: `BILLING_UNAVAILABLE / HTTP 503` before model/tool execution.
+Observed Brainbase state on 2026-09-18: `CREDITS_EXHAUSTED` before agent execution. Blocked tasks receive no participation credit.
 
 ## Deterministic anti-simulation invariant
 
@@ -111,6 +111,16 @@ Allowed tools are read-only:
 The agent requests the tool. The harness validates and executes it. The agent receives the real observation before producing its final artifact.
 
 The tool layer is restricted to the checked-out public repository and denies secret/credential-like paths. It does not expose tokens, private Ledger content or provider credentials.
+
+## Implemented governed memory capabilities
+
+The reconciled candidate includes `ops/multiagent-runtime-v2/cognitive_memory.py` with:
+- `cognitive_memory_write`: explicit confirmation, execution-scoped token, provider write, mandatory read-back, idempotent provider status and hash-only Receipt;
+- `cognitive_memory_read`: execution-scoped token, provider read-back and hash-only read Receipt;
+- legacy Basic-auth provider adapter and dedicated machine-token provider adapter;
+- fail-closed behavior for missing/invalid provider results;
+- no memory body or secret material in receipts;
+- live external provider mutation remains disabled by the mission contract.
 
 ## Product contract already closed
 

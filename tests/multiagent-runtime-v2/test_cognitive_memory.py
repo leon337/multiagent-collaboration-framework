@@ -191,6 +191,29 @@ class MemoryCapabilityTests(unittest.TestCase):
         call = list(self.runtime.projection().tool_calls.values())[-1]
         self.assertEqual(call["status"], "failed")
 
+    def test_mission_contract_declares_memory_governance(self):
+        contract_path = (
+            Path(__file__).resolve().parents[2]
+            / "context" / "missions"
+            / "mcf-memory-live-next-stable.json"
+        )
+        contract = json.loads(contract_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            set(contract["implemented_capabilities"]),
+            {TOOL_NAME, READ_TOOL_NAME},
+        )
+        write_policy = contract["memory_write_policy"]
+        self.assertTrue(write_policy["requires_explicit_confirmation"])
+        self.assertTrue(write_policy["requires_execution_scoped_capability"])
+        self.assertTrue(write_policy["requires_provider_read_back"])
+        self.assertTrue(write_policy["receipt_required"])
+        self.assertFalse(write_policy["live_mutation_authorized"])
+        read_policy = contract["memory_read_policy"]
+        self.assertTrue(read_policy["requires_execution_scoped_capability"])
+        self.assertTrue(read_policy["requires_provider_read_back"])
+        self.assertTrue(read_policy["receipt_required"])
+
+
 
 class _LedgerHandler(BaseHTTPRequestHandler):
     records = {}

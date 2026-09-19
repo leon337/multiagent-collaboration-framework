@@ -89,7 +89,7 @@ Two executors are allowed under one evidence contract:
 1. **Brainbase managed agents — preferred when available**
    - explicitly authorized by LEANDRO for billable task runs on 2026-09-18;
    - each credited run must still provide attributable execution, real tool evidence and artifact provenance;
-   - current provider observation: `BILLING_UNAVAILABLE / HTTP 503` before model/tool execution.
+   - current provider observation: `CREDITS_EXHAUSTED` before agent execution; blocked tasks receive no participation credit.
 
 2. **Public GitHub-hosted runner + local Ollama — zero-cost contingency**
    - pinned local Ollama with `qwen2.5:1.5b`;
@@ -158,8 +158,8 @@ A failed specialist remains uncredited. Peers remain valid if their own evidence
 
 This design does not:
 
-- implement Cognitive Ledger write;
-- mutate Supabase;
+- perform live Cognitive Ledger provider mutation in this candidate;
+- mutate Supabase directly;
 - authorize production;
 - authorize a release;
 - activate automatic memory capture;

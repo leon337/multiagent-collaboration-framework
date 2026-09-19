@@ -10,6 +10,9 @@ on:
       - 'artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/PARALLEL-FANOUT-TOOLCALL-DESIGN.md'
       - 'artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/PLAN.md'
       - 'artifacts/phases/PHASE-02-MEMORY-ARCHITECTURE/CHECKPOINT.md'
+      - 'ops/multiagent-runtime-v2/cognitive_memory.py'
+      - 'tests/multiagent-runtime-v2/test_cognitive_memory.py'
+      - 'context/missions/mcf-memory-live-next-stable.json'
 
 permissions:
   contents: read
@@ -19,6 +22,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  cognitive-memory-capability:
+    name: cognitive-memory-capability
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+          fetch-depth: 50
+
+      - name: Validate Cognitive Memory capability syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PYTHONPYCACHEPREFIX=/tmp/mcf-pycache-memory
+          python3 -m py_compile ops/multiagent-runtime-v2/cognitive_memory.py
+
+      - name: Run Cognitive Memory unit and integration tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PYTHONPYCACHEPREFIX=/tmp/mcf-pycache-memory
+          export PYTHONPATH="$PWD/ops/multiagent-runtime-v2"
+          python3 -m unittest tests/multiagent-runtime-v2/test_cognitive_memory.py -v
+
+      - name: Prove capability tests did not mutate repository
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+          echo "MCF_COGNITIVE_MEMORY_REPO_MUTATION=false"
+
   phase2-parallel-agent-fanout:
     name: phase2-parallel-agent-fanout
     runs-on: ubuntu-latest
