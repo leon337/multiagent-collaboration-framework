@@ -1,0 +1,69 @@
+schema_version: 1
+mission_id: MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001
+phase_id: PHASE-CONTENT-STUDIO-N4-COURSE-SCALE-001
+gate: C0
+state: PARTIAL_BLOCKED
+expected_lesson_count: 10
+
+verified:
+  pilot:
+    lesson_ref: "3.1"
+    title: "Runtime Agêntico Moderno — Nível 4"
+    implementation_id: runtime-agentico-n4-pilot
+    confidence: HIGH
+    evidence:
+      - "MCF Issue #254: pilot Aula 3.1 named Runtime Agêntico Moderno — Nível 4"
+      - "planning/mcf-content-studio-n4-20260919: experimentos/mcf-content-studio-n4/src/pilot/lesson.ts"
+  scale_scope:
+    remaining_lessons: 9
+    confidence: HIGH
+    evidence:
+      - "MCF Issue #254"
+      - "PHASE-CONTENT-STUDIO-N4-FOUNDATION-001-SCALE-DECISION.md"
+
+project_source_fragments:
+  - source: "Aprofundar documentação OpenAI.txt"
+    supported_terms:
+      - Runtime
+      - Context Engineering
+      - MCP
+      - Agents
+      - Realtime
+      - Evals
+    interpretation: "Examples of lessons/content the generic TechnicalLessonTemplate could produce."
+    limitation: "The source uses an ellipsis and does not provide an authoritative ten-lesson list, ordering, numbering, or objectives."
+    confidence_as_canonical_curriculum: LOW
+
+rejected_substitutions:
+  - candidate: leon337/curso-instavar@main:course-data.mjs
+    observed_lesson_count: 10
+    reason: >-
+      This is a separate registered product curriculum about Instavar fundamentals,
+      production and finalization. It does not match the verified Runtime Agêntico
+      pilot lineage, so it cannot be silently substituted for this mission's course.
+
+unresolved:
+  - canonical course identifier/name
+  - full ten-lesson ordered inventory
+  - titles for the other nine lessons
+  - approved numbering scheme beyond pilot 3.1
+  - per-lesson learning objectives
+  - authoritative source location for the advanced course curriculum
+
+blocker:
+  code: CANONICAL_CURRICULUM_SOURCE_UNRESOLVED
+  effect: "C1 lesson content packs and downstream authoring must not start."
+  human_gate: false
+  dependency: >-
+    A canonical Project source containing the approved curriculum must become
+    accessible or be explicitly identified. This is a source dependency, not an
+    authorization to invent missing lessons.
+
+executor_observation:
+  bubble_native_cognitive_subagents: UNAVAILABLE_IN_CURRENT_SESSION
+  evidence: >-
+    Capability doctor found no DeepSeek Harness binary/SDK, no DSH_HOME and no
+    MCF_DSH_AGENT_TEAM_READY flag. No cognitive subagent execution is claimed.
+  allowed_work: >-
+    MESTRE may continue source reconciliation, GitHub bookkeeping, deterministic
+    validation and checkpointing without mislabeling those operations as subagents.
