@@ -5,6 +5,7 @@ import {
   AnimatedArrow,
   AnimatedTimeline,
   ArchitectureNode,
+  BounceHeadlineN4,
   BrowserWindow,
   ChapterProgress,
   ErrorVsCorrect,
@@ -24,6 +25,7 @@ const componentMap: Record<string, ComponentType<any>> = {
   'architecture-node': ArchitectureNode,
   'animated-arrow': AnimatedArrow,
   'chapter-progress': ChapterProgress,
+  'bounce-headline-n4': BounceHeadlineN4,
   'browser-window': BrowserWindow,
   'terminal-window': TerminalWindow,
 };
