@@ -13,6 +13,7 @@ from cognitive_memory import (
     MachineTokenCognitiveLedgerProvider,
     ProviderWriteError,
     ReadBackVerificationError,
+    READ_TOOL_NAME,
     TOOL_NAME,
 )
 from runtime import MissionRuntime, MissionStore
@@ -128,6 +129,67 @@ class MemoryCapabilityTests(unittest.TestCase):
         encoded = json.dumps(receipt, ensure_ascii=False)
         self.assertNotIn("Teste governado", encoded)
         self.assertNotIn("password", encoded.lower())
+
+
+    def test_read_event_requires_named_read_capability(self):
+        self.provider.records[self.event["id"]] = dict(self.event)
+        with self.assertRaises(CapabilityDenied):
+            self.capability.read_event(
+                token=self.token,
+                execution_id="e1",
+                agent_id="agent-a",
+                task_id="t1",
+                event_id=self.event["id"],
+                actor="mestre",
+                now=101,
+            )
+
+    def test_read_event_returns_hash_only_receipt(self):
+        self.provider.records[self.event["id"]] = dict(self.event)
+        read_token = self.issuer.issue(
+            "agent-a",
+            "t1",
+            [READ_TOOL_NAME],
+            60,
+            now=100,
+        )
+        record, receipt = self.capability.read_event(
+            token=read_token,
+            execution_id="e1",
+            agent_id="agent-a",
+            task_id="t1",
+            event_id=self.event["id"],
+            actor="mestre",
+            now=101,
+        )
+        self.assertEqual(record["id"], self.event["id"])
+        self.assertTrue(receipt.recovered)
+        encoded = json.dumps(receipt.as_dict(), ensure_ascii=False)
+        self.assertNotIn("Teste governado", encoded)
+        call = list(self.runtime.projection().tool_calls.values())[-1]
+        self.assertEqual(call["tool"], READ_TOOL_NAME)
+        self.assertEqual(call["status"], "completed")
+
+    def test_read_event_missing_memory_fails_tool(self):
+        read_token = self.issuer.issue(
+            "agent-a",
+            "t1",
+            [READ_TOOL_NAME],
+            60,
+            now=100,
+        )
+        with self.assertRaises(ReadBackVerificationError):
+            self.capability.read_event(
+                token=read_token,
+                execution_id="e1",
+                agent_id="agent-a",
+                task_id="t1",
+                event_id="missing",
+                actor="mestre",
+                now=101,
+            )
+        call = list(self.runtime.projection().tool_calls.values())[-1]
+        self.assertEqual(call["status"], "failed")
 
 
 class _LedgerHandler(BaseHTTPRequestHandler):
