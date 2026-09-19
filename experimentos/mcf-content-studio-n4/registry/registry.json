@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.5.0",
+  "registryVersion": "0.6.0",
   "components": [
     {
       "id": "focus-concept",
@@ -1662,6 +1662,61 @@
         "emphasis",
         "guided-reading"
       ]
+    },
+    {
+      "id": "stick-rig",
+      "displayName": "StickRig",
+      "version": "0.1.0",
+      "category": "character",
+      "pedagogicalPurpose": "Representar agentes e papéis como personagens reutilizáveis com juntas, poses e ações dirigidas pela timeline.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "defaultProps": {
+        "label": "MESTRE",
+        "pose": "pointing",
+        "action": "idle",
+        "showLabel": true
+      },
+      "editableProps": [
+        "label",
+        "pose",
+        "action",
+        "showLabel"
+      ],
+      "duration": {
+        "minFrames": 60,
+        "recommendedFrames": 150
+      },
+      "safeArea": "required",
+      "reducedMotion": "supported",
+      "origin": {
+        "kind": "mcf",
+        "source": "MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001"
+      },
+      "license": {
+        "id": "MCF-REPOSITORY-LICENSE",
+        "evidence": "../../../LICENSE"
+      },
+      "dependencies": [],
+      "status": "APPROVED",
+      "supportsAudioSync": true,
+      "complexity": "medium",
+      "tags": [
+        "character",
+        "stick-rig",
+        "agent",
+        "storytelling",
+        "pose",
+        "action"
+      ],
+      "intents": [
+        "agent-storytelling",
+        "agent-dialogue",
+        "explain-orchestration",
+        "human-gate"
+      ]
     }
   ],
   "templates": [
@@ -1707,7 +1762,8 @@
         "cursor-cue",
         "highlight-cue",
         "screenshot-frame",
-        "glow-pulse"
+        "glow-pulse",
+        "stick-rig"
       ],
       "slots": [
         {
