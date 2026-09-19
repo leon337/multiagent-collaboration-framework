@@ -12,6 +12,8 @@ on:
       - 'experimentos/mcf-content-studio-n4/assets/**'
       - 'experimentos/mcf-content-studio-n4/scripts/materialize-built-in-assets.py'
       - 'experimentos/mcf-content-studio-n4/scripts/verify-audio-loudness.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/tts-capability-doctor.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/synthesize-local-tts.py'
       - 'experimentos/mcf-content-studio-n4/scripts/benchmark.mjs'
       - 'experimentos/mcf-content-studio-n4/src/pilot/**'
       - 'experimentos/mcf-content-studio-n4/src/qa/**'
