@@ -3,7 +3,7 @@ import {describe,expect,it} from 'vitest';
 import lesson from '../src/templates/runtime-agentico-data-demo.lesson.json';
 import type {TechnicalLessonSpec} from '../src/templates/types';
 import {reorderScene,serializeLesson,updateSceneComponent,updateSceneDuration} from '../src/authoring/lessonOps';
-import {searchTemplates} from '../src/authoring/templateSearch';
+import {searchTemplates,TemplateRegistry} from '../src/authoring/templateSearch';
 
 const spec=lesson as TechnicalLessonSpec;
 
@@ -29,6 +29,14 @@ describe('N4 authoring core',()=>{
 
   it('finds templates by pedagogical intent',()=>{
     expect(searchTemplates({intent:'retrieval-practice'}).map((x)=>x.id)).toContain('technical-lesson-n4');
+  });
+
+  it('searches architecture templates by type, nodes, aspect and learning',()=>{
+    const ids=TemplateRegistry.search({type:'architecture',nodes:5,aspect:'9:16',learning:true}).map((x)=>x.id);
+    expect(ids).toContain('progressive-architecture');
+    expect(ids).toContain('layer-stack');
+    expect(ids).toContain('sequence-flow');
+    expect(ids).toContain('control-execution-split');
   });
 
   it('can replace a scene component and reset its props',()=>{

@@ -7,6 +7,9 @@ export type TemplateSearchQuery={
   status?:string;
   intent?:string;
   tag?:string;
+  type?:string;
+  nodes?:number;
+  learning?:boolean;
 };
 
 export const searchTemplates=(query:TemplateSearchQuery={})=>{
@@ -20,6 +23,9 @@ export const searchTemplates=(query:TemplateSearchQuery={})=>{
     if(query.componentId&&!template.componentIds.includes(query.componentId)) return false;
     if(query.aspect&&!template.supportedAspects.includes(query.aspect)) return false;
     if(query.status&&template.status!==query.status) return false;
+    if(query.type&&!template.types.includes(query.type)) return false;
+    if(query.nodes!==undefined&&(query.nodes<template.nodeRange.min||query.nodes>template.nodeRange.max)) return false;
+    if(query.learning!==undefined&&template.learning!==query.learning) return false;
     if(query.intent){
       const matches=template.componentIds.some((componentId)=>
         registryData.components.find((component)=>component.id===componentId)?.intents.includes(query.intent!)
@@ -34,4 +40,9 @@ export const searchTemplates=(query:TemplateSearchQuery={})=>{
     }
     return true;
   });
+};
+
+
+export const TemplateRegistry={
+  search:searchTemplates,
 };

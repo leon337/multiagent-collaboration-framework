@@ -1,5 +1,5 @@
 {
-  "registryVersion": "0.4.0",
+  "registryVersion": "0.5.0",
   "components": [
     {
       "id": "focus-concept",
@@ -1743,7 +1743,283 @@
           "required": true
         }
       ],
-      "status": "APPROVED"
+      "status": "APPROVED",
+      "types": [
+        "technical-lesson",
+        "architecture",
+        "code",
+        "ui"
+      ],
+      "nodeRange": {
+        "min": 1,
+        "max": 12
+      },
+      "learning": true,
+      "intents": [
+        "explain-concept",
+        "architecture",
+        "code-demo",
+        "retrieval-practice"
+      ]
+    },
+    {
+      "id": "progressive-architecture",
+      "displayName": "ProgressiveArchitecture",
+      "version": "0.1.0",
+      "purpose": "Construir arquitetura nó a nó e explicitar conexões progressivamente.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "componentIds": [
+        "build-architecture",
+        "progressive-diagram",
+        "architecture-node",
+        "animated-arrow",
+        "focus-area",
+        "active-recall"
+      ],
+      "slots": [
+        {
+          "id": "nodes",
+          "accepts": [
+            "architecture"
+          ],
+          "required": true
+        },
+        {
+          "id": "connections",
+          "accepts": [
+            "diagram"
+          ],
+          "required": true
+        },
+        {
+          "id": "recall",
+          "accepts": [
+            "learning"
+          ],
+          "required": false
+        }
+      ],
+      "status": "APPROVED",
+      "types": [
+        "architecture"
+      ],
+      "nodeRange": {
+        "min": 2,
+        "max": 8
+      },
+      "learning": true,
+      "intents": [
+        "architecture",
+        "progressive-build",
+        "explain-relation"
+      ]
+    },
+    {
+      "id": "layer-stack",
+      "displayName": "LayerStack",
+      "version": "0.1.0",
+      "purpose": "Explicar camadas empilhadas e responsabilidades adjacentes.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "componentIds": [
+        "stack",
+        "grid",
+        "focus-area",
+        "architecture-node",
+        "highlight-cue"
+      ],
+      "slots": [
+        {
+          "id": "layers",
+          "accepts": [
+            "layout",
+            "architecture"
+          ],
+          "required": true
+        },
+        {
+          "id": "focus",
+          "accepts": [
+            "layout",
+            "motion"
+          ],
+          "required": false
+        }
+      ],
+      "status": "APPROVED",
+      "types": [
+        "architecture",
+        "layers"
+      ],
+      "nodeRange": {
+        "min": 3,
+        "max": 8
+      },
+      "learning": true,
+      "intents": [
+        "architecture",
+        "compare",
+        "guided-reading"
+      ]
+    },
+    {
+      "id": "hub-and-spoke",
+      "displayName": "HubAndSpoke",
+      "version": "0.1.0",
+      "purpose": "Mostrar um núcleo central conectado a múltiplos participantes ou serviços.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "componentIds": [
+        "architecture-node",
+        "animated-arrow",
+        "progressive-diagram",
+        "focus-area"
+      ],
+      "slots": [
+        {
+          "id": "hub",
+          "accepts": [
+            "architecture"
+          ],
+          "required": true
+        },
+        {
+          "id": "spokes",
+          "accepts": [
+            "architecture",
+            "diagram"
+          ],
+          "required": true
+        }
+      ],
+      "status": "APPROVED",
+      "types": [
+        "architecture",
+        "network"
+      ],
+      "nodeRange": {
+        "min": 3,
+        "max": 9
+      },
+      "learning": false,
+      "intents": [
+        "architecture",
+        "explain-relation"
+      ]
+    },
+    {
+      "id": "sequence-flow",
+      "displayName": "SequenceFlow",
+      "version": "0.1.0",
+      "purpose": "Explicar fluxo sequencial, eventos e transições entre etapas.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "componentIds": [
+        "animated-timeline",
+        "progressive-diagram",
+        "animated-arrow",
+        "checkpoint"
+      ],
+      "slots": [
+        {
+          "id": "sequence",
+          "accepts": [
+            "timeline",
+            "diagram"
+          ],
+          "required": true
+        },
+        {
+          "id": "checkpoint",
+          "accepts": [
+            "learning"
+          ],
+          "required": false
+        }
+      ],
+      "status": "APPROVED",
+      "types": [
+        "architecture",
+        "flow",
+        "sequence"
+      ],
+      "nodeRange": {
+        "min": 2,
+        "max": 10
+      },
+      "learning": true,
+      "intents": [
+        "sequence",
+        "events",
+        "checkpoint"
+      ]
+    },
+    {
+      "id": "control-execution-split",
+      "displayName": "ControlExecutionSplit",
+      "version": "0.1.0",
+      "purpose": "Separar quem governa, decide e executa em uma arquitetura.",
+      "supportedAspects": [
+        "9:16",
+        "16:9"
+      ],
+      "componentIds": [
+        "split-screen",
+        "focus-area",
+        "error-vs-correct",
+        "terminal-window",
+        "active-recall"
+      ],
+      "slots": [
+        {
+          "id": "control",
+          "accepts": [
+            "layout",
+            "concept"
+          ],
+          "required": true
+        },
+        {
+          "id": "execution",
+          "accepts": [
+            "ui",
+            "code",
+            "concept"
+          ],
+          "required": true
+        },
+        {
+          "id": "recall",
+          "accepts": [
+            "learning"
+          ],
+          "required": false
+        }
+      ],
+      "status": "APPROVED",
+      "types": [
+        "architecture",
+        "control-execution"
+      ],
+      "nodeRange": {
+        "min": 2,
+        "max": 6
+      },
+      "learning": true,
+      "intents": [
+        "compare",
+        "architecture",
+        "retrieval-practice"
+      ]
     }
   ]
 }
