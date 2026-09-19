@@ -1,0 +1,8 @@
+{
+  "compositions": [
+    {"id":"LongFocusConceptQa","aspect":"9:16","frame":90,"checks":["overflow","safe-area","caption-reserve"]},
+    {"id":"LongTimelineQa","aspect":"9:16","frame":120,"checks":["overflow","density","safe-area"]},
+    {"id":"LongDiagramQa","aspect":"9:16","frame":120,"checks":["line-breaks","overflow","safe-area"]}
+  ],
+  "rule":"visual evidence is required; build success alone is insufficient"
+}
