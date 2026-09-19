@@ -1,0 +1,92 @@
+{
+  "voice": "clear",
+  "generatedBy": "AI_Voice_Generator",
+  "note": "Temporary generated speech inputs for N4 pilot review artifact. Canonical master audio remains a later production gate.",
+  "fps": 30,
+  "segments": [
+    {
+      "id": "s00",
+      "startFrame": 0,
+      "durationFrames": 90,
+      "text": "Vamos separar quem decide, organiza, persiste, executa, limita e governa.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d81cf699-5acf-4e19-b537-35beab76c834.mp3"
+    },
+    {
+      "id": "s01",
+      "startFrame": 90,
+      "durationFrames": 150,
+      "text": "O modelo recebe contexto e produz uma decisão ou saída estruturada.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ba745e2e-db00-4823-a3a4-cdb8c91d5c54.mp3"
+    },
+    {
+      "id": "s02",
+      "startFrame": 240,
+      "durationFrames": 150,
+      "text": "Inteligência não concede automaticamente acesso a arquivos, rede ou credenciais.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c8331cee-8dc9-49be-8032-a8ddb042a70e.mp3"
+    },
+    {
+      "id": "s03",
+      "startFrame": 390,
+      "durationFrames": 150,
+      "text": "O agente organiza modelo, instruções, ferramentas e política de trabalho.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0ab6a88a-14ae-48b5-a28f-facde599fc34.mp3"
+    },
+    {
+      "id": "s04",
+      "startFrame": 540,
+      "durationFrames": 180,
+      "text": "A sessão mantém continuidade entre turnos e eventos.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/77d301cc-311c-44ed-add3-e57f67890ee9.mp3"
+    },
+    {
+      "id": "s05",
+      "startFrame": 720,
+      "durationFrames": 210,
+      "text": "Estado sustenta continuidade. Eventos dão evidência. Artefatos viram entrega.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/263b3f5f-4ad3-4cf6-8343-6603271b18b5.mp3"
+    },
+    {
+      "id": "s06",
+      "startFrame": 930,
+      "durationFrames": 180,
+      "text": "O modelo pede. O runtime autorizado executa o comando.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/2c17ffa1-11fa-4780-ab52-94ac13b8dc59.mp3"
+    },
+    {
+      "id": "s07",
+      "startFrame": 1110,
+      "durationFrames": 150,
+      "text": "Capacidade não é permissão. O sandbox limita o alcance.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3ef92fb2-2d75-44b1-a6e6-db43371a3025.mp3"
+    },
+    {
+      "id": "s08",
+      "startFrame": 1260,
+      "durationFrames": 150,
+      "text": "A aplicação governa sessões, políticas, aprovação e observabilidade.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e63da654-6167-49bf-b4ee-4d82f1745cdd.mp3"
+    },
+    {
+      "id": "s09",
+      "startFrame": 1410,
+      "durationFrames": 180,
+      "text": "Quem executa o comando de verdade? Pense antes de revelar. O ambiente, ou runtime, autorizado.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/85062360-0e5c-4942-84f2-f30ef445ba44.mp3"
+    },
+    {
+      "id": "s10",
+      "startFrame": 1590,
+      "durationFrames": 240,
+      "text": "Reconstruímos a arquitetura: usuário, aplicação, agente, modelo, ambiente e sandbox.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/fad78775-ec47-482b-ac7b-b45ca519e4fe.mp3"
+    },
+    {
+      "id": "s11",
+      "startFrame": 1830,
+      "durationFrames": 180,
+      "text": "Guarde seis verbos: modelo decide; agente organiza; sessão persiste; ambiente executa; sandbox limita; aplicação governa.",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/585a8293-8265-41ae-ae7e-e54601f2c02f.mp3"
+    }
+  ]
+}

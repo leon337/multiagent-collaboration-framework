@@ -1,0 +1,94 @@
+name: Content Studio N4 Audio Review
+
+on:
+  pull_request:
+    paths:
+      - 'experimentos/mcf-content-studio-n4/audio/**'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-review-html.py'
+      - 'experimentos/mcf-content-studio-n4/src/pilot/**'
+      - 'experimentos/mcf-content-studio-n4/src/remotion/**'
+      - '.github/workflows/content-studio-n4-audio-review.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: experimentos/mcf-content-studio-n4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Download generated narration segments
+        run: |
+          mkdir -p out/audio
+          python - <<'PY'
+          import json, pathlib, subprocess
+          data=json.load(open("audio/runtime-agentico-n4.timeline.json",encoding="utf-8"))
+          for seg in data["segments"]:
+              path=f"out/audio/{seg['id']}.mp3"
+              subprocess.run(["curl","-fL","--retry","3","--retry-delay","2","-o",path,seg["url"]],check=True)
+          PY
+
+      - name: Build scene-aligned narration track
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          data=json.load(open("audio/runtime-agentico-n4.timeline.json",encoding="utf-8"))
+          fps=data["fps"]
+          inputs=[]
+          filters=[]
+          labels=[]
+          for i,seg in enumerate(data["segments"]):
+              inputs += ["-i",f"out/audio/{seg['id']}.mp3"]
+              start_ms=round(seg["startFrame"]/fps*1000)
+              slot=seg["durationFrames"]/fps
+              label=f"a{i}"
+              filters.append(f"[{i}:a]atrim=0:{slot:.3f},asetpts=PTS-STARTPTS,adelay={start_ms}|{start_ms}[{label}]")
+              labels.append(f"[{label}]")
+          filters.append("".join(labels)+f"amix=inputs={len(labels)}:normalize=0,apad,atrim=0:67[aout]")
+          cmd=["ffmpeg","-y",*inputs,"-filter_complex",";".join(filters),"-map","[aout]","-c:a","aac","-b:a","192k","out/runtime-agentico-n4-narration.m4a"]
+          subprocess.run(cmd,check=True)
+          PY
+
+      - name: Render silent Remotion pilot
+        run: |
+          pnpm exec remotion render src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-n4-silent.mp4 --codec=h264 --crf=23 --concurrency=2
+
+      - name: Mux narration into pilot
+        run: |
+          ffmpeg -y             -i out/runtime-agentico-n4-silent.mp4             -i out/runtime-agentico-n4-narration.m4a             -map 0:v:0 -map 1:a:0             -c:v copy -c:a aac -b:a 192k             -t 67             -movflags +faststart             out/runtime-agentico-n4-audio.mp4
+
+      - name: Build self-contained HTML review
+        run: |
+          python scripts/build-review-html.py             --video out/runtime-agentico-n4-audio.mp4             --timeline audio/runtime-agentico-n4.timeline.json             --output out/runtime-agentico-n4-review.html
+
+      - name: Upload review package
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-agentico-n4-audio-review
+          path: |
+            experimentos/mcf-content-studio-n4/out/runtime-agentico-n4-review.html
+            experimentos/mcf-content-studio-n4/out/runtime-agentico-n4-audio.mp4
+            experimentos/mcf-content-studio-n4/out/runtime-agentico-n4-narration.m4a
+          if-no-files-found: error
+          retention-days: 14
