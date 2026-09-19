@@ -5,7 +5,10 @@ on:
     paths:
       - 'experimentos/mcf-content-studio-n4/audio/**'
       - 'experimentos/mcf-content-studio-n4/scripts/build-review-html.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-review-lab-v2.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/benchmark.mjs'
       - 'experimentos/mcf-content-studio-n4/src/pilot/**'
+      - 'experimentos/mcf-content-studio-n4/src/qa/**'
       - 'experimentos/mcf-content-studio-n4/src/remotion/**'
       - '.github/workflows/content-studio-n4-audio-review.yml'
   workflow_dispatch:
@@ -17,6 +20,7 @@ jobs:
   build-review:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     defaults:
       run:
         working-directory: experimentos/mcf-content-studio-n4
@@ -48,11 +52,14 @@ jobs:
         run: |
           mkdir -p out/audio
           python - <<'PY'
-          import json, pathlib, subprocess
+          import json, subprocess
           data=json.load(open("audio/runtime-agentico-n4.timeline.json",encoding="utf-8"))
           for seg in data["segments"]:
               path=f"out/audio/{seg['id']}.mp3"
-              subprocess.run(["curl","-fL","--retry","3","--retry-delay","2","-o",path,seg["url"]],check=True)
+              subprocess.run(
+                  ["curl","-fL","--retry","3","--retry-delay","2","-o",path,seg["url"]],
+                  check=True,
+              )
           PY
 
       - name: Build scene-aligned narration track
@@ -69,24 +76,59 @@ jobs:
               start_ms=round(seg["startFrame"]/fps*1000)
               slot=seg["durationFrames"]/fps
               label=f"a{i}"
-              filters.append(f"[{i}:a]atrim=0:{slot:.3f},asetpts=PTS-STARTPTS,adelay={start_ms}|{start_ms}[{label}]")
+              filters.append(
+                  f"[{i}:a]atrim=0:{slot:.3f},asetpts=PTS-STARTPTS,"
+                  f"adelay={start_ms}|{start_ms}[{label}]"
+              )
               labels.append(f"[{label}]")
-          filters.append("".join(labels)+f"amix=inputs={len(labels)}:normalize=0,apad,atrim=0:67[aout]")
-          cmd=["ffmpeg","-y",*inputs,"-filter_complex",";".join(filters),"-map","[aout]","-c:a","aac","-b:a","192k","out/runtime-agentico-n4-narration.m4a"]
+          filters.append(
+              "".join(labels)+
+              f"amix=inputs={len(labels)}:normalize=0,apad,atrim=0:67[aout]"
+          )
+          cmd=[
+              "ffmpeg","-y",*inputs,
+              "-filter_complex",";".join(filters),
+              "-map","[aout]",
+              "-c:a","aac","-b:a","192k",
+              "out/runtime-agentico-n4-narration.m4a",
+          ]
           subprocess.run(cmd,check=True)
           PY
 
       - name: Render silent Remotion pilot
         run: |
-          pnpm exec remotion render src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-n4-silent.mp4 --codec=h264 --crf=23 --concurrency=2
+          pnpm exec remotion render             src/remotion/index.ts             RuntimeAgenticoPilot             out/runtime-agentico-n4-silent.mp4             --codec=h264             --crf=23             --concurrency=2
 
       - name: Mux narration into pilot
         run: |
-          ffmpeg -y             -i out/runtime-agentico-n4-silent.mp4             -i out/runtime-agentico-n4-narration.m4a             -map 0:v:0 -map 1:a:0             -c:v copy -c:a aac -b:a 192k             -t 67             -movflags +faststart             out/runtime-agentico-n4-audio.mp4
+          ffmpeg -y             -i out/runtime-agentico-n4-silent.mp4             -i out/runtime-agentico-n4-narration.m4a             -map 0:v:0             -map 1:a:0             -c:v copy             -c:a aac             -b:a 192k             -t 67             -movflags +faststart             out/runtime-agentico-n4-audio.mp4
 
-      - name: Build self-contained HTML review
+      - name: Render Review Lab QA stills
+        run: |
+          pnpm exec remotion still src/remotion/index.ts LongFocusConceptQa out/qa-long-focus.png --frame=90
+          pnpm exec remotion still src/remotion/index.ts LongTimelineQa out/qa-long-timeline.png --frame=120
+          pnpm exec remotion still src/remotion/index.ts LongDiagramQa out/qa-long-diagram.png --frame=120
+          pnpm exec remotion still src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-pilot.png --frame=900
+
+      - name: Benchmark review assets
+        run: node scripts/benchmark.mjs
+
+      - name: Build self-contained HTML reviews
         run: |
           python scripts/build-review-html.py             --video out/runtime-agentico-n4-audio.mp4             --timeline audio/runtime-agentico-n4.timeline.json             --output out/runtime-agentico-n4-review.html
+
+          python scripts/build-review-lab-v2.py             --video-a out/runtime-agentico-n4-silent.mp4             --video-b out/runtime-agentico-n4-audio.mp4             --timeline audio/runtime-agentico-n4.timeline.json             --benchmark out/benchmark.json             --stills-dir out             --output out/runtime-agentico-n4-review-lab-v2.html
+
+      - name: Verify review artifacts
+        run: |
+          test -s out/runtime-agentico-n4-review.html
+          test -s out/runtime-agentico-n4-review-lab-v2.html
+          test -s out/runtime-agentico-n4-audio.mp4
+          test -s out/runtime-agentico-n4-narration.m4a
+          test -s out/benchmark.json
+          test -s out/qa-long-focus.png
+          test -s out/qa-long-timeline.png
+          test -s out/qa-long-diagram.png
 
       - name: Upload review package
         uses: actions/upload-artifact@v4
