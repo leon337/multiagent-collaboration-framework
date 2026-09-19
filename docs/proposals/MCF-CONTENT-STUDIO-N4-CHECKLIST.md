@@ -27,16 +27,16 @@
 
 ## G1 — Arquitetura
 
-- [ ] Component contract definido
-- [ ] Template contract definido
-- [ ] Registry schema definido
-- [ ] Import manifest definido
-- [ ] Design tokens definidos
-- [ ] Motion tokens definidos
-- [ ] Asset policy definida
-- [ ] Naming/versioning definido
-- [ ] Estados de lifecycle definidos
-- [ ] Instavar/Remotion/Explain boundary documentado
+- [x] Component contract definido
+- [x] Template contract definido
+- [x] Registry schema definido
+- [x] Import manifest definido
+- [x] Design tokens definidos
+- [x] Motion tokens definidos
+- [x] Asset policy definida
+- [x] Naming/versioning definido
+- [x] Estados de lifecycle definidos
+- [x] Instavar/Remotion/Explain boundary documentado
 - [ ] UX/LX review
 - [ ] UI review
 - [ ] Accessibility review
@@ -44,17 +44,17 @@
 
 ## G2 — Component Library
 
-- [ ] FocusConcept
-- [ ] ProgressiveDiagram
-- [ ] AnimatedTimeline
-- [ ] ActiveRecall
-- [ ] ErrorVsCorrect
-- [ ] ArchitectureNode
-- [ ] AnimatedArrow
-- [ ] ChapterProgress
-- [ ] BrowserWindow
-- [ ] TerminalWindow
-- [ ] Props tipadas
+- [x] FocusConcept
+- [x] ProgressiveDiagram
+- [x] AnimatedTimeline
+- [x] ActiveRecall
+- [x] ErrorVsCorrect
+- [x] ArchitectureNode
+- [x] AnimatedArrow
+- [x] ChapterProgress
+- [x] BrowserWindow
+- [x] TerminalWindow
+- [x] Props tipadas
 - [ ] 9:16
 - [ ] 16:9
 - [ ] safe areas
@@ -63,56 +63,56 @@
 
 ## G3 — Registry
 
-- [ ] Loader
-- [ ] Search
+- [x] Loader
+- [x] Search
 - [ ] Category filter
 - [ ] Aspect filter
 - [ ] Editable filter
-- [ ] Origin field
-- [ ] License field
-- [ ] Dependency field
-- [ ] Compatibility field
-- [ ] Approval status
-- [ ] Preview reference
-- [ ] Version field
-- [ ] Deprecation support
+- [x] Origin field
+- [x] License field
+- [x] Dependency field
+- [x] Compatibility field
+- [x] Approval status
+- [x] Preview reference
+- [x] Version field
+- [x] Deprecation support
 
 ## G4 — Video Lab
 
-- [ ] Gallery
+- [x] Gallery
 - [ ] Search
 - [ ] Preview
-- [ ] Prop editor
-- [ ] 9:16 preset
-- [ ] 16:9 preset
+- [x] Prop editor
+- [x] 9:16 preset
+- [x] 16:9 preset
 - [ ] Still capture
-- [ ] Component selection
+- [x] Component selection
 - [ ] Template selection
-- [ ] Error boundary
+- [x] Error boundary
 - [ ] Mobile smoke
 - [ ] Desktop smoke
 
 ## G5 — Importer
 
-- [ ] Origem registrada
-- [ ] Licença verificada
-- [ ] Dependências inventariadas
-- [ ] Segurança revisada
-- [ ] Performance revisada
-- [ ] Adaptação N4 concluída
-- [ ] Testes adicionados
+- [x] Origem registrada
+- [x] Licença verificada
+- [x] Dependências inventariadas
+- [x] Segurança revisada
+- [x] Performance revisada
+- [x] Adaptação N4 concluída
+- [x] Testes adicionados
 - [ ] Preview gerado
-- [ ] Registry atualizado
+- [x] Registry atualizado
 - [ ] 1 componente externo aprovado
 
 ## G6 — Piloto Aula 3.1
 
-- [ ] Storyboard migrado
-- [ ] 1 conceito ativo por vez
-- [ ] leitura guiada
-- [ ] progress bar
-- [ ] diagramas progressivos
-- [ ] active recall
+- [x] Storyboard migrado
+- [x] 1 conceito ativo por vez
+- [x] leitura guiada
+- [x] progress bar
+- [x] diagramas progressivos
+- [x] active recall
 - [ ] legendas não competem com visual
 - [ ] safe area passa
 - [ ] áudio sincronizado
@@ -124,7 +124,7 @@
 
 - [ ] Component tests
 - [ ] Registry schema tests
-- [ ] Import manifest tests
+- [x] Import manifest tests
 - [ ] Overflow tests
 - [ ] Text fit tests
 - [ ] Safe-area tests
@@ -134,7 +134,7 @@
 - [ ] Render benchmark
 - [ ] Compare #251
 - [ ] Zero animation syntax error no piloto
-- [ ] Evidência capturada
+- [x] Evidência capturada
 
 ## G8 — Audit / Gate
 
