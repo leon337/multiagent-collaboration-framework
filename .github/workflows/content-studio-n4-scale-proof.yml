@@ -1,0 +1,59 @@
+name: Content Studio N4 Scale Proof
+
+on:
+  pull_request:
+    paths:
+      - 'experimentos/mcf-content-studio-n4/src/templates/**'
+      - 'experimentos/mcf-content-studio-n4/src/components/**'
+      - 'experimentos/mcf-content-studio-n4/src/remotion/**'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-scale-review.py'
+      - '.github/workflows/content-studio-n4-scale-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render-scale-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: experimentos/mcf-content-studio-n4
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+      - name: Render architecture-heavy lesson
+        run: |
+          mkdir -p out
+          pnpm exec remotion render src/remotion/index.ts ArchitectureControlPlaneLesson out/architecture-control-plane.mp4 --codec=h264 --crf=24 --concurrency=2
+      - name: Render UI-code-heavy lesson
+        run: |
+          pnpm exec remotion render src/remotion/index.ts UiCodeAgentFlowLesson out/ui-code-agent-flow.mp4 --codec=h264 --crf=24 --concurrency=2
+      - name: Build self-contained scale review
+        run: |
+          python scripts/build-scale-review.py             --architecture out/architecture-control-plane.mp4             --ui-code out/ui-code-agent-flow.mp4             --architecture-spec src/templates/architecture-control-plane.lesson.json             --ui-code-spec src/templates/ui-code-agent-flow.lesson.json             --output out/n4-scale-proof-review.html
+      - name: Verify scale artifacts
+        run: |
+          test -s out/architecture-control-plane.mp4
+          test -s out/ui-code-agent-flow.mp4
+          test -s out/n4-scale-proof-review.html
+      - name: Upload scale proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: n4-scale-proof
+          path: |
+            experimentos/mcf-content-studio-n4/out/architecture-control-plane.mp4
+            experimentos/mcf-content-studio-n4/out/ui-code-agent-flow.mp4
+            experimentos/mcf-content-studio-n4/out/n4-scale-proof-review.html
+          if-no-files-found: error
+          retention-days: 14

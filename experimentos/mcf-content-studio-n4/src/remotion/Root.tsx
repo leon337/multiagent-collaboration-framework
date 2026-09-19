@@ -2,8 +2,12 @@ import {Composition} from 'remotion';
 import {TechnicalLessonTemplate} from '../templates/TechnicalLessonTemplate';
 import {getTechnicalLessonDuration,type TechnicalLessonSpec} from '../templates/types';
 import technicalLessonDemoData from '../templates/runtime-agentico-data-demo.lesson.json';
+import architectureLessonData from '../templates/architecture-control-plane.lesson.json';
+import uiCodeLessonData from '../templates/ui-code-agent-flow.lesson.json';
 
 const technicalLessonDemo=technicalLessonDemoData as TechnicalLessonSpec;
+const architectureLesson=architectureLessonData as TechnicalLessonSpec;
+const uiCodeLesson=uiCodeLessonData as TechnicalLessonSpec;
 import {RuntimeAgenticoPilot} from '../pilot/RuntimeAgenticoPilot';
 import {RUNTIME_AGENTICO_PILOT,RUNTIME_AGENTICO_PILOT_DURATION} from '../pilot/lesson';
 import {LongDiagramQa,LongFocusConceptQa,LongTimelineQa} from '../qa/VisualQaCompositions';
@@ -41,4 +45,14 @@ export const RemotionRoot=()=> <>
     fps={technicalLessonDemo.timings.fps}
     width={1080} height={1920}
     defaultProps={{spec:technicalLessonDemo}}/>
+  <Composition id="ArchitectureControlPlaneLesson" component={TechnicalLessonTemplate}
+    durationInFrames={getTechnicalLessonDuration(architectureLesson)}
+    fps={architectureLesson.timings.fps}
+    width={1080} height={1920}
+    defaultProps={{spec:architectureLesson}}/>
+  <Composition id="UiCodeAgentFlowLesson" component={TechnicalLessonTemplate}
+    durationInFrames={getTechnicalLessonDuration(uiCodeLesson)}
+    fps={uiCodeLesson.timings.fps}
+    width={1080} height={1920}
+    defaultProps={{spec:uiCodeLesson}}/>
 </>;
