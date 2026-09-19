@@ -14,7 +14,6 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     defaults:
       run:
         working-directory: experimentos/mcf-content-studio-n4
@@ -40,18 +39,26 @@ jobs:
       - name: Verify
         run: pnpm verify
 
-      - name: Render smoke stills
+      - name: Render smoke and stress stills
         run: |
           mkdir -p out
           pnpm exec remotion still src/remotion/index.ts BounceHeadlinePreviewPortrait out/bounce-portrait.png --frame=45
           pnpm exec remotion still src/remotion/index.ts BounceHeadlinePreviewLandscape out/bounce-landscape.png --frame=45
           pnpm exec remotion still src/remotion/index.ts BounceHeadlinePreviewReducedMotion out/bounce-reduced-motion.png --frame=45
           pnpm exec remotion still src/remotion/index.ts RuntimeAgenticoPilot out/runtime-agentico-pilot.png --frame=900
+          pnpm exec remotion still src/remotion/index.ts LongFocusConceptQa out/qa-long-focus.png --frame=90
+          pnpm exec remotion still src/remotion/index.ts LongTimelineQa out/qa-long-timeline.png --frame=120
+          pnpm exec remotion still src/remotion/index.ts LongDiagramQa out/qa-long-diagram.png --frame=120
 
-      - name: Upload smoke evidence
+      - name: Benchmark
+        run: node scripts/benchmark.mjs
+
+      - name: Upload visual and benchmark evidence
         uses: actions/upload-artifact@v4
         with:
-          name: content-studio-n4-smoke-${{ github.sha }}
-          path: experimentos/mcf-content-studio-n4/out/*.png
+          name: content-studio-n4-evidence-${{ github.sha }}
+          path: |
+            experimentos/mcf-content-studio-n4/out/*.png
+            experimentos/mcf-content-studio-n4/out/benchmark.json
           if-no-files-found: error
           retention-days: 14
