@@ -38,9 +38,9 @@ tracks:
     current_wave:
       - StickRig character component
       - text-fit readability floor
+      - encoded audio-stream presence QA
     next_candidates:
       - audio mix / SFX / ducking contract
-      - encoded audio-stream presence QA
       - semantic motion preset implementations
       - optional Explain companion path
 
@@ -71,7 +71,7 @@ executor:
     implementation and evidence reconciliation.
 
 next_action: >-
-  Validate the StickRig/text-fit wave at exact PR head while continuing predecessor
+  Validate the StickRig/text-fit/audio-QA wave at exact PR head while continuing predecessor
   curriculum recovery and then fan out lesson content packs as soon as the ordered
   curriculum is recovered.
 
