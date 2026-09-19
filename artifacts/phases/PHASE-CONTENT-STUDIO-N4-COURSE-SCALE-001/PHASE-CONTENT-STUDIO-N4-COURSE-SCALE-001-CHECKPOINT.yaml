@@ -76,3 +76,22 @@ next_action: >-
   curriculum is recovered.
 
 human_action_required: false
+
+living_engine_checklist:
+  path: docs/proposals/MCF-CONTENT-STUDIO-N4-LIVING-CHECKLIST.md
+  role: canonical_progress_tracker_for_engine_vision
+  update_rule: >-
+    Every closed improvement must update checkbox state, attach concrete evidence,
+    update this checkpoint, and preserve separation between implementation,
+    merge, deploy, publication and HUMAN_GATE.
+  adobe_express:
+    decision: PREFERRED_VISUAL_AUTHORING_TOOL
+    replaces_figma_operationally: true
+    replaces_figma_bridge_architecturally: false
+    bridge_state: PENDING
+    note: >-
+      Adobe Express is adopted as the preferred visual design source. The current
+      connector supports template/design search, text fill, image replacement,
+      background changes, animation and PDF export, but does not expose verified
+      node/token introspection equivalent to the existing Figma bridge. A governed
+      AdobeExpressBridgeSpec and first Express-to-N4 proof are therefore required.
