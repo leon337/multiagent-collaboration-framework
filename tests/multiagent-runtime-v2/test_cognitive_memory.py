@@ -10,6 +10,7 @@ from cognitive_memory import (
     CognitiveMemoryCapability,
     ConfirmationRequired,
     LegacyHttpCognitiveLedgerProvider,
+    MachineTokenCognitiveLedgerProvider,
     ProviderWriteError,
     ReadBackVerificationError,
     TOOL_NAME,
@@ -222,6 +223,56 @@ class LegacyHttpProviderTests(unittest.TestCase):
                     "tipo": "x",
                     "titulo": "x",
                     "resumo": "x",
+                },
+                sources=[],
+                relations=[],
+            )
+
+class MachineTokenProviderTests(unittest.TestCase):
+    def setUp(self):
+        _LedgerHandler.records = {}
+        _LedgerHandler.auth = "Bearer machine-token"
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), _LedgerHandler)
+        self.thread = threading.Thread(
+            target=self.server.serve_forever,
+            daemon=True,
+        )
+        self.thread.start()
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.server.shutdown)
+        self.base = f"http://127.0.0.1:{self.server.server_port}"
+
+    def test_machine_provider_write_and_read_back(self):
+        provider = MachineTokenCognitiveLedgerProvider(
+            self.base,
+            "machine-token",
+            timeout_seconds=2,
+        )
+        event = {
+            "id": "ec-machine-001",
+            "timestamp": "2026-09-18T21:00:00-03:00",
+            "tipo": "checkpoint",
+            "titulo": "Machine",
+            "resumo": "provider",
+        }
+        out = provider.write(event=event, sources=[], relations=[])
+        self.assertEqual(out["status"], "criado")
+        self.assertEqual(provider.read_back(event["id"]), event)
+
+    def test_machine_provider_bad_token_fails_closed(self):
+        provider = MachineTokenCognitiveLedgerProvider(
+            self.base,
+            "wrong-token",
+            timeout_seconds=2,
+        )
+        with self.assertRaises(ProviderWriteError):
+            provider.write(
+                event={
+                    "id": "ec-machine-002",
+                    "timestamp": "2026-09-18T21:00:00-03:00",
+                    "tipo": "checkpoint",
+                    "titulo": "Machine",
+                    "resumo": "bad token",
                 },
                 sources=[],
                 relations=[],
