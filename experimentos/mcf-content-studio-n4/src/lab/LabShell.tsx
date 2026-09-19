@@ -1,6 +1,7 @@
 import {useMemo,useState} from 'react';
 import {Player} from '@remotion/player';
 import type {LabAspect,LabEntry} from './types';
+import {LabErrorBoundary} from './LabErrorBoundary';
 import {PropEditor} from './PropEditor';
 import './lab.css';
 
@@ -10,8 +11,19 @@ export const LabShell=({entries}:Props)=>{
   const [selectedId,setSelectedId]=useState(entries[0]?.id??'');
   const [aspect,setAspect]=useState<LabAspect>('9:16');
   const [reducedMotion,setReducedMotion]=useState(false);
-  const selected=entries.find((entry)=>entry.id===selectedId)??entries[0];
+  const [query,setQuery]=useState('');
   const [overrides,setOverrides]=useState<Record<string,Record<string,unknown>>>({});
+
+  const selected=entries.find((entry)=>entry.id===selectedId)??entries[0];
+  const filtered=useMemo(()=>{
+    const normalized=query.trim().toLowerCase();
+    if(!normalized) return entries;
+    return entries.filter((entry)=>
+      entry.id.toLowerCase().includes(normalized)||
+      entry.name.toLowerCase().includes(normalized)||
+      entry.category.toLowerCase().includes(normalized)
+    );
+  },[entries,query]);
 
   const inputProps=useMemo(()=>{
     if(!selected) return {};
@@ -21,14 +33,23 @@ export const LabShell=({entries}:Props)=>{
   if(!selected) return <main className="lab-empty">Nenhum componente registrado.</main>;
 
   const vertical=aspect==='9:16';
+
   return <main className="lab-shell">
     <aside className="lab-sidebar">
       <div className="lab-brand">MCF Video Lab <span>N4</span></div>
-      <input className="lab-search" placeholder="Buscar componente…" aria-label="Buscar componente"/>
-      <nav>
-        {entries.map((entry)=><button className={entry.id===selected.id?'active':''} key={entry.id} onClick={()=>setSelectedId(entry.id)}>
+      <input
+        className="lab-search"
+        placeholder="Buscar componente…"
+        aria-label="Buscar componente"
+        value={query}
+        onChange={(event)=>setQuery(event.target.value)}
+      />
+      <div className="lab-count">{filtered.length} de {entries.length} componentes</div>
+      <nav aria-label="Componentes N4">
+        {filtered.map((entry)=><button className={entry.id===selected.id?'active':''} key={entry.id} onClick={()=>setSelectedId(entry.id)}>
           <strong>{entry.name}</strong><small>{entry.category}</small>
         </button>)}
+        {filtered.length===0?<div className="lab-empty-results">Nenhum resultado.</div>:null}
       </nav>
     </aside>
 
@@ -38,26 +59,28 @@ export const LabShell=({entries}:Props)=>{
         <div className="lab-controls">
           <button className={aspect==='9:16'?'active':''} onClick={()=>setAspect('9:16')}>9:16</button>
           <button className={aspect==='16:9'?'active':''} onClick={()=>setAspect('16:9')}>16:9</button>
-          <label><input type="checkbox" checked={reducedMotion} onChange={(e)=>setReducedMotion(e.target.checked)}/> reduced motion</label>
+          <label><input type="checkbox" checked={reducedMotion} onChange={(event)=>setReducedMotion(event.target.checked)}/> reduced motion</label>
         </div>
       </header>
       <div className="lab-player-wrap">
-        <Player
-          component={selected.component}
-          inputProps={inputProps}
-          durationInFrames={selected.durationInFrames}
-          compositionWidth={vertical?1080:1920}
-          compositionHeight={vertical?1920:1080}
-          fps={30}
-          controls
-          loop
-          style={{width:'100%',height:'100%'}}
-        />
+        <LabErrorBoundary key={`${selected.id}-${aspect}-${reducedMotion}`}>
+          <Player
+            component={selected.component}
+            inputProps={inputProps}
+            durationInFrames={selected.durationInFrames}
+            compositionWidth={vertical?1080:1920}
+            compositionHeight={vertical?1920:1080}
+            fps={30}
+            controls
+            loop
+            style={{width:'100%',height:'100%'}}
+          />
+        </LabErrorBoundary>
       </div>
     </section>
 
     <aside className="lab-inspector">
-      <h2>Props</h2>
+      <h2>Props editáveis</h2>
       <PropEditor
         props={inputProps}
         editableProps={selected.editableProps}

@@ -1,3 +1,5 @@
+import type {ComponentType} from 'react';
+
 export type LabAspect='9:16'|'16:9';
 
 export type LabEntry={
@@ -7,5 +9,5 @@ export type LabEntry={
   durationInFrames:number;
   defaultProps:Record<string,unknown>;
   editableProps:string[];
-  component:React.ComponentType<Record<string,unknown>>;
+  component:ComponentType<any>;
 };
