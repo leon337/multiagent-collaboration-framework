@@ -6,7 +6,7 @@ risk_class: B
 branch: planning/mcf-content-studio-n4-course-scale-20260919
 base_branch: planning/mcf-content-studio-n4-evolution-20260919
 base_commit: 012188ea5415500bf9ad67b3689ffbaf9cade522
-tracker: undefined
+tracker: 277
 completed:
   - successor mission created from validated N4 evolution closeout
 open:
