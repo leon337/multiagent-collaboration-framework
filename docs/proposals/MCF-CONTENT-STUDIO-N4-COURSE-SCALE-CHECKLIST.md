@@ -1,7 +1,7 @@
 # MCF Content Studio N4 Course Scale — Checklist
 
 **Mission:** `MCF-CONTENT-STUDIO-N4-COURSE-SCALE-001`  
-**Issue:** #undefined
+**Issue:** #277
 
 ## C0 — Curriculum inventory
 
