@@ -1,0 +1,22 @@
+phase_id: PHASE-CONTENT-STUDIO-N4-EVOLUTION-001
+mission_id: MCF-CONTENT-STUDIO-N4-EVOLUTION-001
+parent_mission_id: MCF-CONTENT-STUDIO-N4-001
+objective_state: EM_EXECUCAO
+risk_class: B
+branch: planning/mcf-content-studio-n4-evolution-20260919
+base_branch: planning/mcf-content-studio-n4-20260919
+base_commit: 0d71c8849ebe4e142052b8fdad7bc7b074efa3e5
+tracker: 265
+completed:
+  - canonical source chat located and read in full
+  - foundation/full-vision mismatch identified
+  - successor mission created
+  - evolution roadmap/checklist created
+open:
+  - Wave 1 Engine contracts and libraries
+  - Wave 2 Component ecosystem
+  - Wave 3 Discovery and authoring
+  - Wave 4 Design system and ecosystem
+  - Wave 5 Scale proof
+next_action: "Implement Wave 1 in parallel tracks: assets, motion, registry v2, TechnicalLessonTemplate."
+human_action_required: false
