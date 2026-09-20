@@ -19,8 +19,9 @@ context:
   canonical_entrypoints:
     - README.md
     - docs/ARCHITECTURE.md
-    - docs/PROTOTYPE-V2.md
-    - docs/V3-EXECUTION-PLAN.md
+    - docs/HANDOFF-MCF-COCKPIT-V3-1-001.md
+    - docs/PROTOTYPE-V3.1-RESULT.md
+    - docs/V3.1-EXECUTION-PLAN.md
     - .mcf/project-capsule.yaml
 
 freshness:
