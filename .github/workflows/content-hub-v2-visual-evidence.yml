@@ -7,6 +7,8 @@ permissions: {contents: read}
 jobs:
   capture:
     runs-on: ubuntu-latest
+    env:
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
     defaults:
       run:
         working-directory: apps/mcf-content-hub
@@ -34,6 +36,15 @@ jobs:
           done
           cat /tmp/content-hub.log
           exit 1
+      - name: Verify real review manifest
+        run: |
+          test -n "$BLOB_READ_WRITE_TOKEN"
+          html=$(curl -fsS http://127.0.0.1:3000/)
+          echo "$html" | grep -q 'V1.3'
+          if echo "$html" | grep -q 'Manifesto remoto indisponível'; then
+            echo "Remote manifest was not loaded."
+            exit 1
+          fi
       - name: Capture desktop
         run: |
           mkdir -p screenshots
@@ -41,7 +52,7 @@ jobs:
           pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/review screenshots/02-review-desktop.png
           pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/library screenshots/03-library-desktop.png
           pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/factory-runs screenshots/04-factory-runs-desktop.png
-          pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/videos/n4-showcase-engine-v1-1 screenshots/05-watch-desktop.png
+          pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/videos/n4-showcase-engine-v1-3 screenshots/05-watch-desktop.png
       - name: Capture mobile
         run: |
           pnpm dlx playwright@1.55.0 screenshot --full-page --browser=chromium --viewport-size="390,844" http://127.0.0.1:3000/ screenshots/06-overview-mobile.png
