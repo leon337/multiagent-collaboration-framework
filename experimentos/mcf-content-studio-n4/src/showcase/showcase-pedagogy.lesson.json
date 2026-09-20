@@ -1,0 +1,151 @@
+{
+  "lesson": {
+    "id": "showcase-pedagogy-characters",
+    "title": "N4 Showcase — Pedagogy + Characters",
+    "summary": "Primitives pedagógicos e StickRig executados dentro da própria fábrica."
+  },
+  "chapters": [
+    "Pedagogy",
+    "Practice",
+    "Characters"
+  ],
+  "scenes": [
+    {
+      "id": "title",
+      "componentId": "title",
+      "durationFrames": 120,
+      "props": {
+        "eyebrow": "N4 FACTORY SHOWCASE 05",
+        "title": "PEDAGOGY + CHARACTERS",
+        "subtitle": "Explicar, praticar e representar na mesma composição."
+      },
+      "motionPreset": "reveal"
+    },
+    {
+      "id": "recall",
+      "componentId": "active-recall",
+      "durationFrames": 135,
+      "props": {
+        "question": "Quem executa o comando?",
+        "answer": "O runtime autorizado.",
+        "revealAfterFrame": 55
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "quiz",
+      "componentId": "quiz",
+      "durationFrames": 135,
+      "props": {
+        "question": "Qual camada aplica o gate?",
+        "options": [
+          "Modelo",
+          "Runtime",
+          "Publicação"
+        ],
+        "correctIndex": 1,
+        "revealAfterFrame": 62
+      },
+      "motionPreset": "slide"
+    },
+    {
+      "id": "error",
+      "componentId": "error-vs-correct",
+      "durationFrames": 120,
+      "props": {
+        "title": "Erro comum vs. forma correta",
+        "wrong": "Capacidade = permissão",
+        "right": "Capacidade ≠ permissão"
+      },
+      "motionPreset": "scale"
+    },
+    {
+      "id": "progressive",
+      "componentId": "progressive-concept",
+      "durationFrames": 135,
+      "props": {
+        "title": "Conceitos que se conectam",
+        "concepts": [
+          "Modelo",
+          "Runtime",
+          "Gate"
+        ],
+        "linkLabel": "→"
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "checkpoint",
+      "componentId": "checkpoint",
+      "durationFrames": 135,
+      "props": {
+        "title": "Checkpoint",
+        "known": [
+          "Modelo decide",
+          "Runtime executa"
+        ],
+        "next": [
+          "Gate governa publicação"
+        ]
+      },
+      "motionPreset": "progress"
+    },
+    {
+      "id": "character-roles",
+      "componentId": "stick-rig",
+      "durationFrames": 120,
+      "props": {
+        "label": "REVISOR",
+        "variant": "reviewer",
+        "pose": "thinking",
+        "action": "lookAt",
+        "showLabel": true
+      },
+      "motionPreset": "reveal"
+    },
+    {
+      "id": "character-action",
+      "componentId": "stick-rig",
+      "durationFrames": 120,
+      "props": {
+        "label": "OPERADOR",
+        "variant": "operator",
+        "pose": "typing",
+        "action": "type",
+        "showLabel": true
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "close",
+      "componentId": "callout",
+      "durationFrames": 120,
+      "props": {
+        "label": "RESULTADO",
+        "title": "Pedagogia vira sistema visual.",
+        "body": "Componentes de aprendizagem e personagens compartilham o mesmo runtime de vídeo."
+      },
+      "motionPreset": "progress"
+    }
+  ],
+  "narration": {
+    "cues": []
+  },
+  "visuals": {
+    "aspect": "9:16",
+    "reducedMotion": false
+  },
+  "theme": {
+    "id": "mcf-dark",
+    "background": "#080c14",
+    "accent": "#7c8cff"
+  },
+  "assets": [
+    "agent-avatar-neutral",
+    "agent-avatar-operator",
+    "agent-avatar-reviewer"
+  ],
+  "timings": {
+    "fps": 30
+  }
+}
