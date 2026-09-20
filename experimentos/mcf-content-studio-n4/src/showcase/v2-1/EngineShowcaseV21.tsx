@@ -1,6 +1,6 @@
 import {AbsoluteFill,Sequence,interpolate,useCurrentFrame} from 'remotion';
 import {CaptionOverlay} from '../../pilot/CaptionOverlay';
-import {showcaseEngineSpec} from '../synced';
+import {engineSync,showcaseEngineSpec} from '../synced';
 import {AnimatedLine,Chip,MiniCode,Node,Panel,Stage,StatusDot,reveal,v21,V21Canvas} from './shared';
 
 const cues=showcaseEngineSpec.narration.cues;
@@ -121,11 +121,16 @@ const Close=()=>{
   </Stage>;
 };
 
+const Scene=({id,children}:{id:keyof typeof engineSync.scenes;children:React.ReactNode})=>{
+  const s=engineSync.scenes[id]!;
+  return <Sequence from={s.from} durationInFrames={s.durationFrames}>{children}</Sequence>;
+};
+
 export const EngineShowcaseV21=()=> <AbsoluteFill>
-  <Sequence from={0} durationInFrames={150}><Intro/></Sequence>
-  <Sequence from={150} durationInFrames={180}><Compare/></Sequence>
-  <Sequence from={330} durationInFrames={210}><Tree/></Sequence>
-  <Sequence from={540} durationInFrames={210}><Metrics/></Sequence>
-  <Sequence from={750} durationInFrames={180}><Close/></Sequence>
+  <Scene id="title"><Intro/></Scene>
+  <Scene id="compare"><Compare/></Scene>
+  <Scene id="tree"><Tree/></Scene>
+  <Scene id="metrics"><Metrics/></Scene>
+  <Scene id="close"><Close/></Scene>
   <CaptionOverlay cues={cues}/>
 </AbsoluteFill>;
