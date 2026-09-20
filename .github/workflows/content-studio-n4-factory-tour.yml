@@ -1,0 +1,165 @@
+name: Content Studio N4 Factory Tour
+on:
+  pull_request:
+    paths:
+      - 'experimentos/mcf-content-studio-n4/src/showcase/factory-tour/**'
+      - 'experimentos/mcf-content-studio-n4/audio/factory-tour-v1.0.json'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-factory-tour-sync.py'
+      - 'experimentos/mcf-content-studio-n4/src/remotion/Root.tsx'
+      - '.github/workflows/content-studio-n4-factory-tour.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: content-studio-n4-factory-tour-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render-factory-tour:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: experimentos/mcf-content-studio-n4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+      - name: Install media and neural TTS dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak
+          python3 -m pip install --user edge-tts
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Download approved Phase A and Phase B footage
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf out/factory-tour/source-a out/factory-tour/source-b public/factory-tour
+          mkdir -p out/factory-tour/source-a out/factory-tour/source-b public/factory-tour/qa
+          gh run download 35490129346 --repo "$GITHUB_REPOSITORY" -n n4-showcase-pack-v1 -D out/factory-tour/source-a
+          gh run download 35490129282 --repo "$GITHUB_REPOSITORY" -n n4-showcase-pack-phase-b-v1-4 -D out/factory-tour/source-b
+
+          cp "$(find out/factory-tour/source-a -name '01-engine.mp4' -print -quit)" public/factory-tour/01-engine.mp4
+          cp "$(find out/factory-tour/source-a -name '02-motion.mp4' -print -quit)" public/factory-tour/02-motion.mp4
+          cp "$(find out/factory-tour/source-a -name '03-editor.mp4' -print -quit)" public/factory-tour/03-editor.mp4
+          cp "$(find out/factory-tour/source-b -name '04-ui-code.mp4' -print -quit)" public/factory-tour/04-ui-code.mp4
+          cp "$(find out/factory-tour/source-b -name '05-pedagogy.mp4' -print -quit)" public/factory-tour/05-pedagogy.mp4
+          cp "$(find out/factory-tour/source-b -name '06-assets-audio.mp4' -print -quit)" public/factory-tour/06-assets-audio.mp4
+          cp "$(find out/factory-tour/source-b -name '07-integrations.mp4' -print -quit)" public/factory-tour/07-integrations.mp4
+
+          cp "$(find out/factory-tour/source-a -name '01-engine-universal.png' -print -quit)" public/factory-tour/qa/01-engine-universal.png
+          cp "$(find out/factory-tour/source-b -name '04-ui-code-universal.png' -print -quit)" public/factory-tour/qa/04-ui-code-universal.png
+          cp "$(find out/factory-tour/source-b -name '06-assets-audio-universal.png' -print -quit)" public/factory-tour/qa/06-assets-audio-universal.png
+          cp "$(find out/factory-tour/source-b -name '07-integrations-universal.png' -print -quit)" public/factory-tour/qa/07-integrations-universal.png
+
+          for f in public/factory-tour/*.mp4 public/factory-tour/qa/*.png; do test -s "$f"; done
+          find public/factory-tour -maxdepth 2 -type f -printf '%P %s bytes\n' | sort
+
+      - name: Build Factory Tour audio-locked timeline
+        run: |
+          python scripts/build-factory-tour-sync.py             --manifest audio/factory-tour-v1.0.json             --out-dir out/factory-tour/sync             --source-sync src/showcase/factory-tour/sync.json
+          cat out/factory-tour/sync/summary.json
+
+      - name: Validate Factory Tour composition
+        run: |
+          pnpm typecheck
+          pnpm test --             tests/audio-mix.test.ts             tests/adobe-express-bridge.test.ts             tests/instavar-bridge.test.ts             tests/external-import.test.ts             tests/evolution.test.ts
+
+      - name: Render Factory Tour
+        run: |
+          mkdir -p out/factory-tour/final out/factory-tour/qa out/factory-tour/silent
+          pnpm exec remotion render src/remotion/index.ts ShowcaseFactoryTour out/factory-tour/silent/08-factory-tour.mp4 --codec=h264 --crf=21 --concurrency=2
+
+      - name: Render Factory Tour social-safe QA
+        run: |
+          frame=$(python -c "import json; d=json.load(open('out/factory-tour/sync/timeline.json')); print(d['scenes']['qa']['from'] + d['scenes']['qa']['durationFrames']//2)")
+          pnpm exec remotion still src/remotion/index.ts FactoryTourYouTubeQa out/factory-tour/qa/08-factory-tour-youtube.png --frame="$frame"
+          pnpm exec remotion still src/remotion/index.ts FactoryTourTikTokQa out/factory-tour/qa/08-factory-tour-tiktok.png --frame="$frame"
+          pnpm exec remotion still src/remotion/index.ts FactoryTourReelsQa out/factory-tour/qa/08-factory-tour-reels.png --frame="$frame"
+          pnpm exec remotion still src/remotion/index.ts FactoryTourUniversalQa out/factory-tour/qa/08-factory-tour-universal.png --frame="$frame"
+
+          python - <<'PY'
+          import json,subprocess
+          d=json.load(open('out/factory-tour/sync/timeline.json'))
+          for scene in ('intro','motion','uiPedagogy','assetsAudio','integrations','qa','close'):
+              s=d['scenes'][scene]
+              frame=s['from']+s['durationFrames']//2
+              subprocess.run([
+                'pnpm','exec','remotion','still','src/remotion/index.ts','ShowcaseFactoryTour',
+                f'out/factory-tour/qa/scene-{scene}.png','--frame',str(frame)
+              ],check=True)
+          PY
+
+      - name: Mux narration and validate A/V sync
+        run: |
+          ffmpeg -y             -i out/factory-tour/silent/08-factory-tour.mp4             -i out/factory-tour/sync/factory-tour-narration.m4a             -map 0:v:0 -map 1:a:0             -c:v copy -c:a aac -b:a 192k -movflags +faststart             out/factory-tour/final/08-factory-tour.mp4
+
+          python scripts/verify-media-audio.py out/factory-tour/final/08-factory-tour.mp4 --min-duration 60
+          python scripts/verify-audio-loudness.py out/factory-tour/final/08-factory-tour.mp4 --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+          python scripts/verify-showcase-av-sync.py             --media out/factory-tour/final/08-factory-tour.mp4             --timeline out/factory-tour/sync/timeline.json             --max-drift-frames 2 > out/factory-tour/final/08-factory-tour-sync.json
+          cat out/factory-tour/final/08-factory-tour-sync.json
+
+      - name: Build Factory Tour manifest
+        run: |
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          media=Path('out/factory-tour/final/08-factory-tour.mp4')
+          duration=float(subprocess.check_output([
+              'ffprobe','-v','error','-show_entries','format=duration',
+              '-of','default=nw=1:nk=1',str(media)
+          ],text=True).strip())
+          timeline=json.load(open('out/factory-tour/sync/timeline.json',encoding='utf-8'))
+          payload={
+            'mission':'MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001',
+            'showcase':'08',
+            'title':'N4 Factory Tour',
+            'version':'1.0',
+            'durationSec':round(duration,3),
+            'bytes':media.stat().st_size,
+            'sourceRuns':{
+              'phaseA':35490129346,
+              'phaseB':35490129282
+            },
+            'sourceShowcases':['01','02','03','04','05','06','07'],
+            'voice':timeline.get('voice'),
+            'providers':timeline.get('providers'),
+            'status':'REVIEW'
+          }
+          Path('out/factory-tour/manifest.json').write_text(json.dumps(payload,indent=2)+'\n')
+          print(json.dumps(payload,indent=2))
+          PY
+
+      - name: Publish Factory Tour to Content Hub REVIEW
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        if: env.BLOB_READ_WRITE_TOKEN != ''
+        working-directory: .
+        run: |
+          corepack enable
+          cd apps/mcf-content-hub
+          pnpm install --frozen-lockfile=false
+          node scripts/publish-content.mjs             --file=../../experimentos/mcf-content-studio-n4/out/factory-tour/final/08-factory-tour.mp4             --slug=n4-factory-tour-v1-0             --title="N4 Factory Tour"             --version=1.0             --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001             --issue=279             --pr=280             --commit=${{ github.sha }}             --run=factory-tour-v1.0             --tags=factory-tour,showcase,n4
+
+      - name: Upload Factory Tour artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: n4-factory-tour-v1-0
+          path: |
+            experimentos/mcf-content-studio-n4/out/factory-tour/final/08-factory-tour.mp4
+            experimentos/mcf-content-studio-n4/out/factory-tour/final/08-factory-tour-sync.json
+            experimentos/mcf-content-studio-n4/out/factory-tour/manifest.json
+            experimentos/mcf-content-studio-n4/out/factory-tour/sync/summary.json
+            experimentos/mcf-content-studio-n4/out/factory-tour/sync/timeline.json
+            experimentos/mcf-content-studio-n4/out/factory-tour/qa/*.png
+          if-no-files-found: error
+          retention-days: 14
