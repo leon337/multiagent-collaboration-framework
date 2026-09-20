@@ -20,6 +20,12 @@ import {RUNTIME_AGENTICO_PILOT,RUNTIME_AGENTICO_PILOT_DURATION} from '../pilot/l
 import {LongDiagramQa,LongFocusConceptQa,LongTimelineQa} from '../qa/VisualQaCompositions';
 import {RegistryComponentQaLandscape,RegistryComponentQaPortrait} from '../qa/RegistryQaCompositions';
 import {BounceHeadlinePreviewLandscape,BounceHeadlinePreviewPortrait,BounceHeadlinePreviewReducedMotion} from './PreviewCompositions';
+import {UiCodeSimulationShowcase} from '../showcase/phase-b/UiCodeSimulationShowcase';
+import {PedagogyCharactersShowcase} from '../showcase/phase-b/PedagogyCharactersShowcase';
+import {AssetAudioFactoryShowcase} from '../showcase/phase-b/AssetAudioFactoryShowcase';
+import {IntegrationsShowcase} from '../showcase/phase-b/IntegrationsShowcase';
+import {uiCodeSync,pedagogySync,assetsAudioSync,integrationsSync} from '../showcase/phase-b/synced';
+import {ShowcaseUiCodeYouTubeQa,ShowcaseUiCodeTikTokQa,ShowcaseUiCodeReelsQa,ShowcaseUiCodeUniversalQa,ShowcasePedagogyYouTubeQa,ShowcasePedagogyTikTokQa,ShowcasePedagogyReelsQa,ShowcasePedagogyUniversalQa,ShowcaseAssetsAudioYouTubeQa,ShowcaseAssetsAudioTikTokQa,ShowcaseAssetsAudioReelsQa,ShowcaseAssetsAudioUniversalQa,ShowcaseIntegrationsYouTubeQa,ShowcaseIntegrationsTikTokQa,ShowcaseIntegrationsReelsQa,ShowcaseIntegrationsUniversalQa} from '../showcase/phase-b/PhaseBSocialQaCompositions';
 export const RemotionRoot=()=> <>
  <Composition id="RuntimeAgenticoPilot" component={RuntimeAgenticoPilot} durationInFrames={RUNTIME_AGENTICO_PILOT_DURATION} fps={RUNTIME_AGENTICO_PILOT.fps} width={RUNTIME_AGENTICO_PILOT.width} height={RUNTIME_AGENTICO_PILOT.height}/>
  <Composition id="BounceHeadlinePreviewPortrait" component={BounceHeadlinePreviewPortrait} durationInFrames={120} fps={30} width={1080} height={1920}/>
@@ -49,4 +55,24 @@ export const RemotionRoot=()=> <>
  <Composition id="ShowcaseEditorTikTokQa" component={ShowcaseEditorTikTokQa} durationInFrames={editorSync.totalFrames} fps={editorSync.fps} width={1080} height={1920}/>
  <Composition id="ShowcaseEditorReelsQa" component={ShowcaseEditorReelsQa} durationInFrames={editorSync.totalFrames} fps={editorSync.fps} width={1080} height={1920}/>
  <Composition id="ShowcaseEditorUniversalQa" component={ShowcaseEditorUniversalQa} durationInFrames={editorSync.totalFrames} fps={editorSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseUiCodeSimulation" component={UiCodeSimulationShowcase} durationInFrames={uiCodeSync.totalFrames} fps={uiCodeSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcasePedagogyCharacters" component={PedagogyCharactersShowcase} durationInFrames={pedagogySync.totalFrames} fps={pedagogySync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseAssetAudioFactory" component={AssetAudioFactoryShowcase} durationInFrames={assetsAudioSync.totalFrames} fps={assetsAudioSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseIntegrations" component={IntegrationsShowcase} durationInFrames={integrationsSync.totalFrames} fps={integrationsSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseUiCodeYouTubeQa" component={ShowcaseUiCodeYouTubeQa} durationInFrames={uiCodeSync.totalFrames} fps={uiCodeSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseUiCodeTikTokQa" component={ShowcaseUiCodeTikTokQa} durationInFrames={uiCodeSync.totalFrames} fps={uiCodeSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseUiCodeReelsQa" component={ShowcaseUiCodeReelsQa} durationInFrames={uiCodeSync.totalFrames} fps={uiCodeSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseUiCodeUniversalQa" component={ShowcaseUiCodeUniversalQa} durationInFrames={uiCodeSync.totalFrames} fps={uiCodeSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcasePedagogyYouTubeQa" component={ShowcasePedagogyYouTubeQa} durationInFrames={pedagogySync.totalFrames} fps={pedagogySync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcasePedagogyTikTokQa" component={ShowcasePedagogyTikTokQa} durationInFrames={pedagogySync.totalFrames} fps={pedagogySync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcasePedagogyReelsQa" component={ShowcasePedagogyReelsQa} durationInFrames={pedagogySync.totalFrames} fps={pedagogySync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcasePedagogyUniversalQa" component={ShowcasePedagogyUniversalQa} durationInFrames={pedagogySync.totalFrames} fps={pedagogySync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseAssetsAudioYouTubeQa" component={ShowcaseAssetsAudioYouTubeQa} durationInFrames={assetsAudioSync.totalFrames} fps={assetsAudioSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseAssetsAudioTikTokQa" component={ShowcaseAssetsAudioTikTokQa} durationInFrames={assetsAudioSync.totalFrames} fps={assetsAudioSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseAssetsAudioReelsQa" component={ShowcaseAssetsAudioReelsQa} durationInFrames={assetsAudioSync.totalFrames} fps={assetsAudioSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseAssetsAudioUniversalQa" component={ShowcaseAssetsAudioUniversalQa} durationInFrames={assetsAudioSync.totalFrames} fps={assetsAudioSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseIntegrationsYouTubeQa" component={ShowcaseIntegrationsYouTubeQa} durationInFrames={integrationsSync.totalFrames} fps={integrationsSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseIntegrationsTikTokQa" component={ShowcaseIntegrationsTikTokQa} durationInFrames={integrationsSync.totalFrames} fps={integrationsSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseIntegrationsReelsQa" component={ShowcaseIntegrationsReelsQa} durationInFrames={integrationsSync.totalFrames} fps={integrationsSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseIntegrationsUniversalQa" component={ShowcaseIntegrationsUniversalQa} durationInFrames={integrationsSync.totalFrames} fps={integrationsSync.fps} width={1080} height={1920}/>
 </>;
