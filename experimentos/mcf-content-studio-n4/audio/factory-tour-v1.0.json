@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "fps": 30,
+  "leadInFrames": 6,
+  "interCueGapFrames": 3,
+  "sceneTailFrames": 10,
+  "voice": "pt-BR-AntonioNeural",
+  "scenes": [
+    {
+      "sceneId": "intro",
+      "text": "Esta é a fábrica N4 em operação. Sete showcases, compostos pelo próprio sistema, agora viram um único tour."
+    },
+    {
+      "sceneId": "evidence",
+      "text": "Tudo começa na evidência real. O conteúdo nasce de código, registros, políticas e estados verificáveis, não de uma narrativa inventada."
+    },
+    {
+      "sceneId": "components",
+      "text": "O spec escolhe componentes e registro. Templates e blocos reutilizáveis transformam intenção editorial em estrutura executável."
+    },
+    {
+      "sceneId": "motion",
+      "text": "O sistema de motion adiciona foco, relação, digitação, métricas e progresso como comportamento, não como decoração."
+    },
+    {
+      "sceneId": "editor",
+      "text": "O editor visual move, redimensiona, rotaciona, alinha, persiste layout e organiza múltiplas trilhas."
+    },
+    {
+      "sceneId": "uiPedagogy",
+      "text": "As mesmas cenas simulam browser, terminal e código, ou criam recall, quiz, comparação, progressão e personagens."
+    },
+    {
+      "sceneId": "assetsAudio",
+      "text": "Assets aprovados entram no pipeline. Narração, música, ambiente e efeitos são mixados com ducking e QA de loudness."
+    },
+    {
+      "sceneId": "integrations",
+      "text": "Bridges externos entram com proveniência e limites explícitos. Adobe, Instavar e imports governados não pulam revisão."
+    },
+    {
+      "sceneId": "qa",
+      "text": "Antes da entrega, cada saída passa por typecheck, testes, QA social e sincronização de áudio e vídeo."
+    },
+    {
+      "sceneId": "close",
+      "text": "O resultado é uma fábrica que transforma evidência em vídeo assistível, rastreável e pronto para revisão. Este é o N4."
+    }
+  ]
+}
