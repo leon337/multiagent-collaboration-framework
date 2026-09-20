@@ -1,0 +1,116 @@
+{
+  "version": "1.4-placeholder",
+  "fps": 30,
+  "videoId": "integrations",
+  "totalFrames": 720,
+  "durationSec": 24,
+  "cues": [
+    {
+      "from": 6,
+      "to": 82,
+      "text": "placeholder"
+    },
+    {
+      "from": 96,
+      "to": 172,
+      "text": "placeholder"
+    },
+    {
+      "from": 186,
+      "to": 262,
+      "text": "placeholder"
+    },
+    {
+      "from": 276,
+      "to": 352,
+      "text": "placeholder"
+    },
+    {
+      "from": 366,
+      "to": 442,
+      "text": "placeholder"
+    },
+    {
+      "from": 456,
+      "to": 532,
+      "text": "placeholder"
+    },
+    {
+      "from": 546,
+      "to": 622,
+      "text": "placeholder"
+    },
+    {
+      "from": 636,
+      "to": 712,
+      "text": "placeholder"
+    }
+  ],
+  "scenes": {
+    "intro": {
+      "from": 0,
+      "to": 90,
+      "durationFrames": 90,
+      "segmentIds": [
+        "integrations-01"
+      ]
+    },
+    "adobe": {
+      "from": 90,
+      "to": 180,
+      "durationFrames": 90,
+      "segmentIds": [
+        "integrations-02"
+      ]
+    },
+    "limits": {
+      "from": 180,
+      "to": 270,
+      "durationFrames": 90,
+      "segmentIds": [
+        "integrations-03"
+      ]
+    },
+    "instavar": {
+      "from": 270,
+      "to": 360,
+      "durationFrames": 90,
+      "segmentIds": [
+        "integrations-04"
+      ]
+    },
+    "importer": {
+      "from": 360,
+      "to": 450,
+      "durationFrames": 90,
+      "segmentIds": [
+        "integrations-05"
+      ]
+    },
+    "adapted": {
+      "from": 450,
+      "to": 540,
+      "durationFrames": 90,
+      "segmentIds": [
+        "integrations-06"
+      ]
+    },
+    "explain": {
+      "from": 540,
+      "to": 630,
+      "durationFrames": 90,
+      "segmentIds": [
+        "integrations-07"
+      ]
+    },
+    "close": {
+      "from": 630,
+      "to": 720,
+      "durationFrames": 90,
+      "segmentIds": [
+        "integrations-08"
+      ]
+    }
+  },
+  "segments": []
+}
