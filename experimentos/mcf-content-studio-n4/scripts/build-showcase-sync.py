@@ -91,7 +91,7 @@ def main():
             }
         total_frames=cursor
         timeline={
-            "version":"1.3","fps":fps,"videoId":video_id,
+            "version":manifest.get("version","1.3"),"fps":fps,"videoId":video_id,
             "totalFrames":total_frames,"durationSec":round(total_frames/fps,6),
             "cues":cues,"scenes":scenes,"segments":segments
         }
