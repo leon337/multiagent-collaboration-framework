@@ -10,11 +10,14 @@ const time=(item:ContentItem)=>new Date(item.createdAt).getTime();
 const versionParts=(value:string)=>value.split('.').map((part)=>Number.parseInt(part,10)||0);
 export const compareVersions=(a:string,b:string)=>{const aa=versionParts(a),bb=versionParts(b);for(let i=0;i<Math.max(aa.length,bb.length);i++){const diff=(bb[i]??0)-(aa[i]??0);if(diff) return diff;}return 0;};
 export const contentFamilyKey=(item:ContentItem)=>item.slug.replace(/-v\d+(?:-\d+)*$/,'');
+const outputPriority=(item:ContentItem)=>item.slug.includes('-engine-')?10:item.slug.includes('-motion-')?20:item.slug.includes('-editor-')?30:item.slug.includes('consolidated')?40:50;
+const sortOutputs=(a:ContentItem,b:ContentItem)=>outputPriority(a)-outputPriority(b)||a.title.localeCompare(b.title);
+const factoryRunKey=(run:string)=>run.replace(/-consolidated$/,'');
 
 export function getContentFamilies(items:ContentItem[]):ContentFamily[]{
   const groups=new Map<string,ContentItem[]>();
   for(const item of items){const key=contentFamilyKey(item);groups.set(key,[...(groups.get(key)??[]),item]);}
-  return [...groups.entries()].map(([key,versions])=>{const sorted=[...versions].sort((a,b)=>compareVersions(a.version,b.version)||time(b)-time(a));return {key,latest:sorted[0],versions:sorted};}).sort((a,b)=>time(b.latest)-time(a.latest));
+  return [...groups.entries()].map(([key,versions])=>{const sorted=[...versions].sort((a,b)=>compareVersions(a.version,b.version)||time(b)-time(a));return {key,latest:sorted[0],versions:sorted};}).sort((a,b)=>sortOutputs(a.latest,b.latest)||time(b.latest)-time(a.latest));
 }
 
 export function getVersionHistory(items:ContentItem[],current:ContentItem){return getContentFamilies(items).find((family)=>family.key===contentFamilyKey(current))?.versions??[current];}
@@ -22,7 +25,7 @@ export function getVersionHistory(items:ContentItem[],current:ContentItem){retur
 export function getReviewBatches(items:ContentItem[]):ReviewBatch[]{
   const groups=new Map<string,ContentItem[]>();
   for(const item of items.filter((entry)=>entry.status==='REVIEW')){const key=`${item.mission}::${item.version}`;groups.set(key,[...(groups.get(key)??[]),item]);}
-  const batches=[...groups.entries()].map(([key,batchItems])=>({key,mission:batchItems[0].mission,version:batchItems[0].version,createdAt:[...batchItems].sort((a,b)=>time(b)-time(a))[0].createdAt,items:[...batchItems].sort((a,b)=>a.title.localeCompare(b.title))}));
+  const batches=[...groups.entries()].map(([key,batchItems])=>({key,mission:batchItems[0].mission,version:batchItems[0].version,createdAt:[...batchItems].sort((a,b)=>time(b)-time(a))[0].createdAt,items:[...batchItems].sort(sortOutputs)}));
   const latestByMission=new Map<string,ReviewBatch>();
   for(const batch of batches){
     const current=latestByMission.get(batch.mission);
@@ -59,6 +62,6 @@ function deriveStages(items:ContentItem[]):FactoryStage[]{
 
 export function getFactoryRuns(items:ContentItem[]):FactoryRunView[]{
   const groups=new Map<string,ContentItem[]>();
-  for(const item of items){const run=item.factoryRun??'unassigned';groups.set(run,[...(groups.get(run)??[]),item]);}
-  return [...groups.entries()].map(([run,runItems])=>({run,items:[...runItems].sort((a,b)=>a.title.localeCompare(b.title)),createdAt:[...runItems].sort((a,b)=>time(b)-time(a))[0].createdAt,stages:deriveStages(runItems)})).sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
+  for(const item of items){const run=factoryRunKey(item.factoryRun??'unassigned');groups.set(run,[...(groups.get(run)??[]),item]);}
+  return [...groups.entries()].map(([run,runItems])=>({run,items:[...runItems].sort(sortOutputs),createdAt:[...runItems].sort((a,b)=>time(b)-time(a))[0].createdAt,stages:deriveStages(runItems)})).sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
 }
