@@ -87,9 +87,10 @@ describe('parseMcfSkillRegistry', () => {
       handoffTo: 'Vinicius',
     });
   });
-
-
-  it('loads the provider-agnostic web research skill package with governed permissions', async () => {
+ 
+  it(
+    'loads the provider-agnostic web research skill package with governed permissions',
+    async () => {
     const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
     const policyPath = resolve(process.cwd(), '../../../../skills/web/provider-policy.yaml');
     const [content, policy] = await Promise.all([
@@ -123,8 +124,9 @@ describe('parseMcfSkillRegistry', () => {
     });
     expect(policy).toContain('Firecrawl_MUST_NOT_be_required_for_any_MCF_WEB_skill');
     expect(policy).toContain('optional_fallbacks: [Firecrawl]');
-    expect(policy).toContain('no_silent_paid_fallback');
-  });
+      expect(policy).toContain('no_silent_paid_fallback');
+    },
+  );
 
   it('rejects duplicate skill identifiers', () => {
     expect(() =>
