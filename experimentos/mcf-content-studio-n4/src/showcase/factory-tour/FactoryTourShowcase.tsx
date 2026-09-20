@@ -35,7 +35,7 @@ const Montage=({files}:{files:Array<{file:string;startSec:number}>})=>{
   const scale=interpolate(frame,[0,80],[1.005,1.025],{extrapolateRight:'clamp'});
   return <AbsoluteFill style={{background:'#f7faff',padding:26,overflow:'hidden'}}>
     <LightTechBackdrop/>
-    <div style={{position:'relative',zIndex:2,display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,width:'100%',height:'100%',transform:`scale(${scale})`,paddingTop:410,paddingBottom:190}}>
+    <div style={{position:'relative',zIndex:2,display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,width:'100%',height:'100%',boxSizing:'border-box',transform:`scale(${scale})`,paddingTop:410,paddingBottom:190}}>
       {files.slice(0,4).map((item)=><div key={item.file} style={{overflow:'hidden',borderRadius:30,border:'1px solid #c9dbff',boxShadow:'0 24px 55px rgba(49,91,182,.17)',background:'white'}}><Clip {...item}/></div>)}
     </div>
   </AbsoluteFill>;
@@ -43,7 +43,7 @@ const Montage=({files}:{files:Array<{file:string;startSec:number}>})=>{
 
 const Split=({left,right}:{left:{file:string;startSec:number};right:{file:string;startSec:number}})=><AbsoluteFill style={{background:'#f7faff',padding:26,overflow:'hidden'}}>
   <LightTechBackdrop/>
-  <div style={{position:'relative',zIndex:2,display:'grid',gridTemplateRows:'1fr 1fr',gap:14,width:'100%',height:'100%',paddingTop:410,paddingBottom:190}}>
+  <div style={{position:'relative',zIndex:2,display:'grid',gridTemplateRows:'1fr 1fr',gap:14,width:'100%',height:'100%',boxSizing:'border-box',paddingTop:410,paddingBottom:190}}>
     <div style={{overflow:'hidden',borderRadius:30,border:'1px solid #c9dbff',boxShadow:'0 24px 55px rgba(49,91,182,.15)',background:'white'}}><Clip {...left}/></div>
     <div style={{overflow:'hidden',borderRadius:30,border:'1px solid #c9dbff',boxShadow:'0 24px 55px rgba(49,91,182,.15)',background:'white'}}><Clip {...right}/></div>
   </div>
@@ -51,14 +51,14 @@ const Split=({left,right}:{left:{file:string;startSec:number};right:{file:string
 
 const Single=({file,startSec}:{file:string;startSec:number})=><AbsoluteFill style={{background:'#f7faff',padding:26,overflow:'hidden'}}>
   <LightTechBackdrop/>
-  <div style={{position:'relative',zIndex:2,width:'100%',height:'100%',paddingTop:410,paddingBottom:190}}>
+  <div style={{position:'relative',zIndex:2,width:'100%',height:'100%',boxSizing:'border-box',paddingTop:410,paddingBottom:190}}>
     <div style={{width:'100%',height:'100%',overflow:'hidden',borderRadius:34,border:'1px solid #c9dbff',boxShadow:'0 28px 65px rgba(49,91,182,.18)',background:'white'}}><Clip file={file} startSec={startSec}/></div>
   </div>
 </AbsoluteFill>;
 
 const QaScene=()=> <AbsoluteFill style={{background:'#f7faff',padding:26,overflow:'hidden'}}>
   <LightTechBackdrop/>
-  <div style={{position:'relative',zIndex:2,display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,paddingTop:410,paddingBottom:190,width:'100%',height:'100%'}}>
+  <div style={{position:'relative',zIndex:2,display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,paddingTop:410,paddingBottom:190,width:'100%',height:'100%',boxSizing:'border-box'}}>
     {['qa/01-engine-universal.png','qa/04-ui-code-universal.png','qa/06-assets-audio-universal.png','qa/07-integrations-universal.png'].map((file)=><div key={file} style={{overflow:'hidden',borderRadius:28,border:'1px solid #c9dbff',background:'white',boxShadow:'0 22px 52px rgba(49,91,182,.14)'}}>
       <Img src={source(file)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
     </div>)}
