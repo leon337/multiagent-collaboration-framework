@@ -41,7 +41,7 @@ const Adobe=()=>{
         </div>
         <StatusDot label="source identified"/>
       </Panel>
-      <div style={{fontSize:64,textAlign:'center',color:v21.blue,transform:\`translateX(\${(1-p)*-18}px)\`}}>→</div>
+      <div style={{fontSize:64,textAlign:'center',color:v21.blue,transform:`translateX(${(1-p)*-18}px)`}}>→</div>
       <Panel style={{height:'100%',padding:24,display:'grid',gridTemplateRows:'auto 1fr auto'}}>
         <Chip tone="green">N4 HANDOFF</Chip>
         <div style={{display:'grid',alignContent:'center',gap:13}}>
@@ -103,7 +103,7 @@ const Importer=()=>{
       <Panel style={{padding:24,display:'grid',gridTemplateRows:'auto 1fr auto'}}>
         <Chip>POLICY DECISION</Chip>
         <div style={{display:'grid',placeItems:'center'}}>
-          <div style={{width:220,height:220,borderRadius:'50%',display:'grid',placeItems:'center',background:\`conic-gradient(\${v21.green} \${p*290}deg,#e8efff 0)\`}}>
+          <div style={{width:220,height:220,borderRadius:'50%',display:'grid',placeItems:'center',background:`conic-gradient(${v21.green} ${p*290}deg,#e8efff 0)`}}>
             <div style={{width:166,height:166,borderRadius:'50%',background:'white',display:'grid',placeItems:'center',fontSize:34,fontWeight:950,color:v21.green}}>ADAPT</div>
           </div>
         </div>
@@ -120,7 +120,7 @@ const Adapted=()=>{
       <div style={{padding:24,borderRadius:24,background:'#13213d',color:'white',height:360,display:'grid',alignContent:'center',textAlign:'center',opacity:.86}}>
         <Chip tone="amber">EXTERNAL</Chip><div style={{fontSize:38,fontWeight:950,marginTop:40}}>BOUNCE HEADLINE</div><div style={{fontSize:16,color:'#b7c7e6',marginTop:12}}>source component</div>
       </div>
-      <div style={{fontSize:62,textAlign:'center',color:v21.blue,transform:\`rotate(\${(1-p)*-12}deg)\`}}>→</div>
+      <div style={{fontSize:62,textAlign:'center',color:v21.blue,transform:`rotate(${(1-p)*-12}deg)`}}>→</div>
       <div style={{padding:24,borderRadius:24,background:'linear-gradient(145deg,#eef3ff,#f7faff)',border:'2px solid #a9bdff',height:360,display:'grid',alignContent:'center',textAlign:'center',boxShadow:'0 26px 62px rgba(36,92,255,.14)'}}>
         <Chip>N4 ADAPTED</Chip><div style={{fontSize:38,fontWeight:950,marginTop:40,color:v21.blue}}>IMPORT GOVERNADO</div><div style={{fontSize:16,color:v21.muted,marginTop:12}}>provenance retained</div>
       </div>
@@ -132,12 +132,12 @@ const Explain=()=>{
   const f=useCurrentFrame(); const p=reveal(f,6,30);
   return <Stage kicker="06 · EXPLAIN COMPANION" title="DUAS SAÍDAS, DOIS PAPÉIS" subtitle="Remotion entrega o vídeo composto. Explain entrega uma revisão narrada assistível; nenhum substitui a governança." proof={['REMOTION','EXPLAIN','SEPARATE']}>
     <div style={{height:'100%',display:'grid',gridTemplateColumns:'1fr 1fr',gap:18}}>
-      <Panel style={{padding:26,transform:\`translateX(\${(1-p)*-22}px)\`}}>
+      <Panel style={{padding:26,transform:`translateX(${(1-p)*-22}px)`}}>
         <Chip>REMOTION / N4</Chip>
         <div style={{height:280,borderRadius:26,background:'linear-gradient(145deg,#17305f,#245cff)',display:'grid',placeItems:'center',color:'white',fontSize:68,marginTop:26}}>▶</div>
         <div style={{display:'grid',gap:12,marginTop:24}}><StatusDot label="composition"/><StatusDot label="render"/><StatusDot label="A/V sync"/></div>
       </Panel>
-      <Panel style={{padding:26,transform:\`translateX(\${(1-p)*22}px)\`}}>
+      <Panel style={{padding:26,transform:`translateX(${(1-p)*22}px)`}}>
         <Chip tone="green">EXPLAIN</Chip>
         <div style={{height:280,borderRadius:26,background:'linear-gradient(145deg,#e9fbf4,#eafaff)',display:'grid',placeItems:'center',fontSize:62,color:v21.green,marginTop:26}}>◫</div>
         <div style={{display:'grid',gap:12,marginTop:24}}><StatusDot label="inline review"/><StatusDot label="narrated"/><StatusDot label="companion"/></div>
