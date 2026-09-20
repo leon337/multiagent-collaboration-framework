@@ -44,7 +44,7 @@ Capacidades comprovadas incluem:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - dispatcher de ações externas e adapters com evidência verificável;
-- **16 skills registradas, 16 executáveis, 0 apenas documentais** no lineage qualificado;
+- **18 skills executáveis no servidor atual**; esta branch candidata adiciona **7 Skills web EXPERIMENTAL/orchestration-ready** (25 registradas no total), sem alegar adapter web no runtime;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA, readiness/version e recovery por redeploy;
@@ -158,14 +158,15 @@ Princípios centrais:
 O registro canônico está em [`skills/registry.yaml`](skills/registry.yaml).
 
 ```yaml
-registered: 16
-executable: 16
-documental_only: 0
+registered_in_candidate_branch: 25
+server_runtime_executable: 18
+experimental_web_orchestration_ready: 7
+runtime_adapter_pending: 7
 ```
 
 Skills atuais:
 
-`MCF-START-MISSION`, `MCF-SELECT-AGENTS`, `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE`, `MCF-DESIGN-ARCHITECTURE`, `MCF-IMPLEMENT-CHANGE`, `MCF-REVIEW-CODE`, `MCF-RUN-TESTS`, `MCF-GIT-PR-RELEASE`, `MCF-DEPLOY-VALIDATE`, `MCF-TRACE-MISSION`, `MCF-EVALUATE-AGENTS`, `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT` e `MCF-CLOSE-PHASE`.
+`MCF-START-MISSION`, `MCF-SELECT-AGENTS`, `MCF-RECOVER-CONTEXT`, `MCF-DEFINE-PRODUCT`, `MCF-DESIGN-EXPERIENCE`, `MCF-DESIGN-ARCHITECTURE`, `MCF-IMPLEMENT-CHANGE`, `MCF-REVIEW-CODE`, `MCF-RUN-TESTS`, `MCF-GIT-PR-RELEASE`, `MCF-DEPLOY-VALIDATE`, `MCF-TRACE-MISSION`, `MCF-EVALUATE-AGENTS`, `MCF-SECURITY-REVIEW`, `MCF-DEBUG-INCIDENT`, `MCF-CLOSE-PHASE`, `MCF-AUDIT-VISUAL-DESKTOP` e `MCF-EXECUTE-LOCAL-TEAM` são executáveis no servidor atual. A branch candidata acrescenta `MCF-WEB-SEARCH`, `MCF-WEB-FETCH`, `MCF-WEB-MAP`, `MCF-WEB-COLLECT`, `MCF-WEB-RESEARCH`, `MCF-WEB-INTERACT` e `MCF-WEB-MONITOR` como contratos EXPERIMENTAL/orchestration-ready; o adapter server-side permanece pendente.
 
 ## Releases e marcos
 

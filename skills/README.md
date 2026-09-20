@@ -42,6 +42,24 @@ EXECUTAR_SKILL MCF-CLOSE-PHASE
 
 O comando explícito não substitui os requisitos da skill.
 
+## Pacote Web Research — candidate 2026-09-20
+
+O registro desta branch contém **25 Skills**: **18 já executáveis pelo servidor atual** e **7 novas Skills web em estado EXPERIMENTAL**, prontas para orquestração em ambientes que exponham os providers correspondentes, porém ainda dependentes de um futuro `Web Capability Provider` para execução direta pelo servidor MCF.
+
+As novas Skills são:
+
+- `MCF-WEB-SEARCH`;
+- `MCF-WEB-FETCH`;
+- `MCF-WEB-MAP`;
+- `MCF-WEB-COLLECT`;
+- `MCF-WEB-RESEARCH`;
+- `MCF-WEB-INTERACT`;
+- `MCF-WEB-MONITOR`.
+
+Contratos e política de provider: [`web/README.md`](web/README.md) e [`web/provider-policy.yaml`](web/provider-policy.yaml).
+
+**Invariante:** Firecrawl pode ser fallback opcional, mas não pode ser dependência obrigatória de nenhuma Skill `MCF-WEB-*`.
+
 ## Estado de execução no runtime
 
 O conjunto executável deve ser lido no código e validado por teste no mesmo SHA do candidato.

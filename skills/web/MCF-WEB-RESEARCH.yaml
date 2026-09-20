@@ -1,0 +1,42 @@
+skill:
+  skill_id: MCF-WEB-RESEARCH
+  name: "Executar pesquisa web multi-fonte"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Responder questões que exigem descoberta, leitura e reconciliação de múltiplas fontes sem depender de um único motor de pesquisa."
+  owner_agents: [Miriam, Carlos]
+  supporting_agents: [Tiago, Beatriz, Emily]
+  trigger_phrases: ["pesquisa aprofundada", "pesquisa multi-fonte", "investigar", "verificar na web", "deep research"]
+  required_inputs: [research_question]
+  optional_inputs: [time_window, source_priority, domains, evidence_threshold, output_schema]
+  preconditions: [network_capability_available]
+  allowed_tools: [Web_Native, GitHub, OpenAI_Developers, Exa, Consensus, Sider_Scholar, ChatGPT_Work]
+  alternative_tools: [Firecrawl]
+  forbidden_tools: [single_source_overclaim, paid_fallback_without_authorization, fabricated_citation, access_control_bypass]
+  permission_profile: READ_ONLY
+  execution_steps: [decompor_pergunta, definir_plano_de_fontes, buscar, recuperar_fontes, reconciliar_conflitos, mapear_claims_para_fontes, classificar_confianca, consolidar]
+  required_evidence: [research_question, providers_used, source_ledger, claim_source_map, contradictions, observed_at, limitations]
+  expected_outputs: [research_report, source_ledger, uncertainty_register]
+  acceptance_criteria: [material_claims_sourced, conflicts_explicit, primary_sources_preferred, provider_failures_visible]
+  failure_modes: [insufficient_sources, conflicting_primary_sources, provider_unavailable, stale_evidence, unverifiable_claim]
+  fallback:
+    without_primary_tool: "Combinar MCF-WEB-SEARCH e MCF-WEB-FETCH com providers alternativos aprovados."
+    without_any_tool: "Entregar apenas conhecimento previamente disponível explicitamente marcado como NÃO VERIFICADO e registrar bloqueio."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Emily
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: PUBLIC_OR_APPROVED
+    human_gate_triggers: [paid_provider_activation, authenticated_source_access]
+    prohibited_actions: [secret_submission, citation_fabrication, access_control_bypass]
+  tests:
+    positive_scenarios: [current_fact_verification, technical_research, conflicting_sources, multi_domain_research]
+    negative_scenarios: [one_source_only_for_contested_claim, all_providers_down, unsupported_claim_in_report]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED

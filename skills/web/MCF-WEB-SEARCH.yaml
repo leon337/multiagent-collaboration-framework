@@ -1,0 +1,42 @@
+skill:
+  skill_id: MCF-WEB-SEARCH
+  name: "Pesquisar fontes na web"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Descobrir fontes web relevantes e atuais sem depender de um único provedor externo."
+  owner_agents: [Miriam, Mestre]
+  supporting_agents: [Carlos, Tiago]
+  trigger_phrases: ["pesquisar na web", "buscar fontes", "procurar na internet", "encontrar fontes atuais"]
+  required_inputs: [query]
+  optional_inputs: [recency, domains, source_type, max_results, language]
+  preconditions: [network_capability_available]
+  allowed_tools: [Web_Native, GitHub, OpenAI_Developers, Exa, Consensus, Sider_Scholar]
+  alternative_tools: [Firecrawl]
+  forbidden_tools: [paid_fallback_without_authorization, fabricate_results, bypass_access_controls]
+  permission_profile: READ_ONLY
+  execution_steps: [classificar_consulta, selecionar_provider, executar_busca, deduplicar_resultados, priorizar_fontes_primarias, registrar_limitacoes]
+  required_evidence: [query, provider_used, result_urls, observed_at, limitations]
+  expected_outputs: [search_result_set, source_shortlist]
+  acceptance_criteria: [sources_traceable, provider_declared, no_fabricated_result, limitations_explicit]
+  failure_modes: [provider_unavailable, zero_results, stale_results, provider_rate_limited]
+  fallback:
+    without_primary_tool: "Tentar o próximo provider aprovado para a classe da consulta, preservando filtros e registrando a troca."
+    without_any_tool: "Retornar BLOQUEADO_DEPENDENCIA_EXTERNA com a consulta preservada; não inventar resultados."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Miriam
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: PUBLIC_OR_APPROVED
+    human_gate_triggers: [paid_provider_activation]
+    prohibited_actions: [secret_submission, access_control_bypass]
+  tests:
+    positive_scenarios: [general_web_search, developer_search, academic_search, recency_filtered_search]
+    negative_scenarios: [all_providers_unavailable, paid_only_fallback, stale_source_without_disclosure]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED

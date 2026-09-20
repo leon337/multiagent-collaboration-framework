@@ -1,0 +1,42 @@
+skill:
+  skill_id: MCF-WEB-MONITOR
+  name: "Monitorar mudanças e novos resultados web"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Criar acompanhamento recorrente de páginas ou consultas sem acoplar o MCF ao monitoramento do Firecrawl."
+  owner_agents: [Augusto, Miriam]
+  supporting_agents: [Mestre]
+  trigger_phrases: ["monitorar página", "avisar quando mudar", "acompanhar novos resultados", "watch web"]
+  required_inputs: [monitor_goal, target_or_query, schedule_or_condition, authorizedScope]
+  optional_inputs: [recipients, change_threshold, retention_policy, max_results]
+  preconditions: [scheduler_or_automation_available, explicit_monitor_scope]
+  allowed_tools: [Automations, Web_Native]
+  alternative_tools: [Firecrawl]
+  forbidden_tools: [silent_paid_monitor, spam_notifications, access_control_bypass]
+  permission_profile: SCOPED_WRITE
+  execution_steps: [validar_objetivo, classificar_alvo, selecionar_scheduler, criar_monitor, executar_smoke_check, registrar_identificador, definir_condicao_de_notificacao]
+  required_evidence: [monitor_id, provider_used, target_or_query, schedule_or_condition, smoke_check, notification_policy]
+  expected_outputs: [monitor_record, monitoring_receipt]
+  acceptance_criteria: [monitor_created_or_blocked_truthfully, trigger_clear, no_duplicate_monitor, smoke_check_recorded]
+  failure_modes: [scheduler_unavailable, provider_quota, invalid_schedule, target_unreachable, duplicate_monitor]
+  fallback:
+    without_primary_tool: "Usar provider alternativo de monitoramento aprovado; não criar polling manual oculto."
+    without_any_tool: "Retornar plano de monitoramento não executado e estado AGUARDANDO_DEPENDENCIA_EXTERNA."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Augusto
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: PUBLIC_OR_APPROVED
+    human_gate_triggers: [external_webhook, external_email_recipient, paid_monitor_activation]
+    prohibited_actions: [hidden_polling, unsolicited_notification]
+  tests:
+    positive_scenarios: [page_change_watch, search_result_watch, smoke_check_after_creation]
+    negative_scenarios: [duplicate_monitor, unavailable_scheduler, external_recipient_without_gate]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED

@@ -88,6 +88,37 @@ describe('parseMcfSkillRegistry', () => {
     });
   });
 
+  it('loads governed web research skills from the canonical registry', async () => {
+    const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
+    const content = await readFile(registryPath, 'utf8');
+    const skills = parseMcfSkillRegistry(content);
+    const webSkills = skills.filter((skill) => skill.skillId.startsWith('MCF-WEB-'));
+    const byId = new Map(webSkills.map((skill) => [skill.skillId, skill]));
+
+    expect(webSkills).toHaveLength(7);
+    expect(webSkills.map((skill) => skill.skillId).sort()).toEqual([
+      'MCF-WEB-COLLECT',
+      'MCF-WEB-FETCH',
+      'MCF-WEB-INTERACT',
+      'MCF-WEB-MAP',
+      'MCF-WEB-MONITOR',
+      'MCF-WEB-RESEARCH',
+      'MCF-WEB-SEARCH',
+    ]);
+    expect(byId.get('MCF-WEB-SEARCH')).toMatchObject({
+      permissionProfile: 'READ_ONLY',
+      handoffTo: 'Miriam',
+    });
+    expect(byId.get('MCF-WEB-INTERACT')).toMatchObject({
+      permissionProfile: 'SCOPED_WRITE',
+      handoffTo: 'Beatriz',
+    });
+    expect(byId.get('MCF-WEB-MONITOR')).toMatchObject({
+      permissionProfile: 'SCOPED_WRITE',
+      handoffTo: 'Augusto',
+    });
+  });
+
   it('rejects duplicate skill identifiers', () => {
     expect(() =>
       parseMcfSkillRegistry(`${registry}\n${registry.split('skills:')[1] ?? ''}`),

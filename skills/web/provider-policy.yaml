@@ -1,0 +1,79 @@
+policy:
+  id: MCF-WEB-PROVIDER-POLICY
+  version: 0.1.0
+  status: EXPERIMENTAL
+  objective: "Eliminar dependência obrigatória de Firecrawl por roteamento provider-agnostic com degradação explícita."
+
+invariants:
+  - Firecrawl_MUST_NOT_be_required_for_any_MCF_WEB_skill
+  - no_silent_paid_fallback
+  - no_success_claim_without_evidence
+  - provider_and_observed_at_must_be_recorded
+  - access_controls_must_not_be_bypassed
+  - secrets_must_not_be_submitted_to_web_providers
+  - complete_coverage_must_not_be_claimed_from_partial_sampling
+
+routing:
+  general_search:
+    primary: [Web_Native]
+    alternatives: [Exa]
+    optional_fallbacks: [Firecrawl]
+  developer_search:
+    primary: [GitHub, OpenAI_Developers]
+    alternatives: [Web_Native, Exa]
+    optional_fallbacks: [Firecrawl]
+  academic_search:
+    primary: [Consensus, Sider_Scholar]
+    alternatives: [Web_Native]
+    optional_fallbacks: [Firecrawl]
+  page_fetch:
+    primary: [Web_Native]
+    alternatives: [ChatGPT_Work]
+    optional_fallbacks: [Firecrawl]
+  site_map:
+    primary: [Web_Native]
+    alternatives: [ChatGPT_Work]
+    optional_fallbacks: [Firecrawl]
+  bounded_collection:
+    primary: [Web_Native]
+    alternatives: [ChatGPT_Work]
+    optional_fallbacks: [Firecrawl]
+  interactive_navigation:
+    primary: [ChatGPT_Work]
+    alternatives: [Remote_Desktop_Commander]
+    optional_fallbacks: [Firecrawl]
+  monitoring:
+    primary: [Automations]
+    alternatives: []
+    optional_fallbacks: [Firecrawl]
+
+failure_policy:
+  provider_402_or_quota:
+    action: TRY_NEXT_APPROVED_PROVIDER
+    record: [provider, error_code, observed_at]
+  provider_auth_failure:
+    action: TRY_NEXT_APPROVED_PROVIDER
+    record: [provider, auth_state_without_secret, observed_at]
+  all_providers_unavailable:
+    action: FAIL_CLOSED
+    state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  paid_only_remaining:
+    action: REQUIRE_AUTHORIZATION
+    state: HUMAN_GATE
+  login_or_sensitive_account_required:
+    action: REQUIRE_AUTHORIZATION
+    state: HUMAN_GATE
+
+coverage:
+  firecrawl_search: [MCF-WEB-SEARCH]
+  firecrawl_scrape: [MCF-WEB-FETCH]
+  firecrawl_map: [MCF-WEB-MAP]
+  firecrawl_crawl: [MCF-WEB-COLLECT]
+  firecrawl_agent: [MCF-WEB-RESEARCH]
+  firecrawl_interact: [MCF-WEB-INTERACT]
+  firecrawl_monitor: [MCF-WEB-MONITOR]
+  firecrawl_developer_search: [MCF-WEB-SEARCH, MCF-WEB-RESEARCH]
+  firecrawl_research_index: [MCF-WEB-SEARCH, MCF-WEB-RESEARCH]
+  firecrawl_parse:
+    replacement: EXISTING_FILE_AND_DOCUMENT_SKILLS
+    note: "Arquivos locais não pertencem ao pacote web; usar Files/PDF/Documents conforme o tipo."
