@@ -27,6 +27,8 @@ jobs:
         run: pnpm install --frozen-lockfile=false
       - name: Validate seed manifest
         run: pnpm validate:seed
+      - name: Validate V2 structure
+        run: node scripts/validate-hub-v2.mjs
       - name: Typecheck
         run: pnpm typecheck
       - name: Build
