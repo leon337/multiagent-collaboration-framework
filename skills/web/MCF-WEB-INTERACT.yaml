@@ -1,0 +1,42 @@
+skill:
+  skill_id: MCF-WEB-INTERACT
+  name: "Navegar e interagir com página web autorizada"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Navegar páginas que exigem interação visual ou JavaScript, mantendo side effects governados e separando leitura de mutação."
+  owner_agents: [Mestre, Rafael]
+  supporting_agents: [Ricardo, Beatriz]
+  trigger_phrases: ["clicar no site", "navegar página", "interagir com formulário", "conteúdo exige login"]
+  required_inputs: [target_url, interaction_goal, authorizedScope]
+  optional_inputs: [allowed_actions, forbidden_actions, account_context]
+  preconditions: [interactive_browser_available, explicit_scope]
+  allowed_tools: [ChatGPT_Work, Remote_Desktop_Commander]
+  alternative_tools: [Firecrawl]
+  forbidden_tools: [credential_capture, payment_without_human_gate, destructive_external_action, access_control_bypass]
+  permission_profile: SCOPED_WRITE
+  execution_steps: [classificar_interacao, separar_read_de_write, validar_escopo, navegar, executar_somente_acoes_autorizadas, capturar_evidencia, encerrar_sessao]
+  required_evidence: [target_url, provider_used, actions_performed, side_effects, screenshots_or_receipts, observed_at]
+  expected_outputs: [interaction_result, interaction_receipt]
+  acceptance_criteria: [authorized_actions_only, side_effects_declared, no_secret_exposure, evidence_traceable]
+  failure_modes: [login_required, captcha_or_anti_bot, scope_insufficient, destructive_action_requested, provider_unavailable]
+  fallback:
+    without_primary_tool: "Usar outro navegador autorizado; se só leitura for necessária, degradar para MCF-WEB-FETCH."
+    without_any_tool: "Bloquear a interação e retornar instruções manuais sem alegar execução."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Beatriz
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: SENSITIVE_POSSIBLE
+    human_gate_triggers: [form_submission, purchase, public_post, account_change, irreversible_action]
+    prohibited_actions: [secret_capture, bypass_captcha, bypass_access_control, unauthorized_transaction]
+  tests:
+    positive_scenarios: [js_navigation_read_only, authorized_reversible_form_action]
+    negative_scenarios: [payment_without_gate, credential_request, destructive_action, captcha_bypass]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED
