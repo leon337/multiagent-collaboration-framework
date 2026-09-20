@@ -37,7 +37,7 @@ const Intro=()=>{
 };
 
 const Browser=()=>{
-  const f=useCurrentFrame(); const select=f>Math.max(12,Math.floor(uiCodeSync.scenes.browser.durationFrames*.45));
+  const f=useCurrentFrame(); const select=f>Math.max(12,Math.floor(uiCodeSync.scenes.browser!.durationFrames*.45));
   const rows=[
     ['N4 Factory Tour','REVIEW','82s'],
     ['Integrations','REVIEW','58s'],
@@ -72,7 +72,7 @@ const Browser=()=>{
 };
 
 const Terminal=()=>{
-  const f=useCurrentFrame(); const total=uiCodeSync.scenes.terminal.durationFrames;
+  const f=useCurrentFrame(); const total=uiCodeSync.scenes.terminal!.durationFrames;
   const command="pnpm verify"; const count=Math.min(command.length,Math.floor(f/3));
   const show1=f>total*.34,show2=f>total*.52,show3=f>total*.69,showDone=f>total*.84;
   return <Stage kicker="02 · TERMINAL WINDOW" title="COMANDO → EXECUÇÃO → PROVA" subtitle="O viewer acompanha o processo; não recebe apenas o estado final." proof={['COMMAND','RUN','PASS']}>
@@ -120,7 +120,7 @@ const GitHub=()=>{
 };
 
 const VSCode=()=>{
-  const f=useCurrentFrame(); const total=uiCodeSync.scenes.vscode.durationFrames; const idx=Math.min(4,Math.floor(f/Math.max(1,total/5)));
+  const f=useCurrentFrame(); const total=uiCodeSync.scenes.vscode!.durationFrames; const idx=Math.min(4,Math.floor(f/Math.max(1,total/5)));
   const lines=[
     "export const TechnicalLessonTemplate = ({spec}) => {",
     "  const scenes = spec.scenes.map((scene) => {",
@@ -148,7 +148,7 @@ const VSCode=()=>{
 };
 
 const Chat=()=>{
-  const f=useCurrentFrame(); const total=uiCodeSync.scenes.chat.durationFrames;
+  const f=useCurrentFrame(); const total=uiCodeSync.scenes.chat!.durationFrames;
   const steps=[
     ['USER','valide o showcase.','blue'],
     ['AGENT','consulto a fonte antes de afirmar.','violet'],
@@ -171,7 +171,7 @@ const Chat=()=>{
 };
 
 const Mobile=()=>{
-  const f=useCurrentFrame(); const total=uiCodeSync.scenes.mobile.durationFrames;
+  const f=useCurrentFrame(); const total=uiCodeSync.scenes.mobile!.durationFrames;
   const tapped=f>total*.43;
   return <Stage kicker="06 · MOBILE WINDOW" title="O MESMO PRODUTO, OUTRO VIEWPORT" subtitle="A cena mostra navegação e estado mobile em vez de deixar um telefone vazio." proof={['LIST','TAP','DETAIL']}>
     <div style={{height:'100%',display:'grid',gridTemplateColumns:'.78fr 1.22fr',gap:18,alignItems:'center'}}>
