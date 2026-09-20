@@ -1,0 +1,42 @@
+skill:
+  skill_id: MCF-WEB-MAP
+  name: "Mapear URLs de um site"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Descobrir URLs relevantes de um domínio por sitemap, links observáveis e busca restrita ao site."
+  owner_agents: [Miriam]
+  supporting_agents: [Rafael]
+  trigger_phrases: ["mapear site", "listar páginas", "descobrir URLs", "achar páginas deste domínio"]
+  required_inputs: [site_root]
+  optional_inputs: [search_term, max_urls, include_subdomains, sitemap_policy]
+  preconditions: [site_root_is_explicit, network_capability_available]
+  allowed_tools: [Web_Native, ChatGPT_Work]
+  alternative_tools: [Firecrawl]
+  forbidden_tools: [unbounded_crawl, access_control_bypass, fabricate_url_inventory]
+  permission_profile: READ_ONLY
+  execution_steps: [normalizar_dominio, consultar_sitemap_e_robots_quando_disponiveis, coletar_links_observaveis, complementar_com_busca_site_scoped, deduplicar, classificar_cobertura]
+  required_evidence: [site_root, provider_used, discovered_urls, discovery_methods, coverage_statement, observed_at]
+  expected_outputs: [url_inventory, coverage_statement]
+  acceptance_criteria: [urls_traceable, methods_declared, coverage_not_overclaimed]
+  failure_modes: [no_sitemap, site_blocks_listing, provider_unavailable, excessive_url_count]
+  fallback:
+    without_primary_tool: "Usar busca site:dominio e links de páginas-semente; classificar o resultado como PARCIAL."
+    without_any_tool: "Retornar inventário vazio com estado BLOQUEADO; não afirmar cobertura."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Miriam
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: PUBLIC_OR_APPROVED
+    human_gate_triggers: []
+    prohibited_actions: [authentication_bypass, denial_of_service_pattern]
+  tests:
+    positive_scenarios: [site_with_sitemap, site_without_sitemap_with_links, scoped_map_by_term]
+    negative_scenarios: [blocked_domain, unbounded_request, incomplete_map_claimed_complete]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED
