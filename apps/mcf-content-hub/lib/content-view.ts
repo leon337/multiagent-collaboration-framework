@@ -22,7 +22,14 @@ export function getVersionHistory(items:ContentItem[],current:ContentItem){retur
 export function getReviewBatches(items:ContentItem[]):ReviewBatch[]{
   const groups=new Map<string,ContentItem[]>();
   for(const item of items.filter((entry)=>entry.status==='REVIEW')){const key=`${item.mission}::${item.version}`;groups.set(key,[...(groups.get(key)??[]),item]);}
-  return [...groups.entries()].map(([key,batchItems])=>({key,mission:batchItems[0].mission,version:batchItems[0].version,createdAt:[...batchItems].sort((a,b)=>time(b)-time(a))[0].createdAt,items:[...batchItems].sort((a,b)=>a.title.localeCompare(b.title))})).sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
+  const batches=[...groups.entries()].map(([key,batchItems])=>({key,mission:batchItems[0].mission,version:batchItems[0].version,createdAt:[...batchItems].sort((a,b)=>time(b)-time(a))[0].createdAt,items:[...batchItems].sort((a,b)=>a.title.localeCompare(b.title))}));
+  const latestByMission=new Map<string,ReviewBatch>();
+  for(const batch of batches){
+    const current=latestByMission.get(batch.mission);
+    const isNewer=!current||compareVersions(batch.version,current.version)<0||(batch.version===current.version&&new Date(batch.createdAt)>new Date(current.createdAt));
+    if(isNewer) latestByMission.set(batch.mission,batch);
+  }
+  return [...latestByMission.values()].sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
 }
 
 const allQaPass=(qa:QaStatus)=>Object.values(qa).every((value)=>value==='PASS');
