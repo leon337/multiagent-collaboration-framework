@@ -8,7 +8,7 @@ const clamp={extrapolateLeft:'clamp',extrapolateRight:'clamp'} as const;
 
 const Intro=()=>{
   const f=useCurrentFrame(); const p=reveal(f,0,20);
-  const nodes=[['SOURCE','Issue / PR'],['SPEC','TechnicalLessonSpec'],['REGISTRY','APPROVED'],['RENDER','Remotion']];
+  const nodes:Array<[string,string]>=[['SOURCE','Issue / PR'],['SPEC','TechnicalLessonSpec'],['REGISTRY','APPROVED'],['RENDER','Remotion']];
   return <Stage kicker="N4 SHOWCASE 01 · ENGINE" title="ROTEIRO VIRA SISTEMA EXECUTÁVEL" subtitle="A mesma fonte factual percorre spec, registry e composição sem duplicar a aula." proof={['SOURCE REAL','SPEC','VIDEO']}>
     <div style={{position:'relative',height:'100%',display:'grid',gridTemplateRows:'1fr 180px',gap:18}}>
       <Panel style={{position:'relative',padding:28,overflow:'hidden'}}>
