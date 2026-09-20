@@ -1,0 +1,42 @@
+skill:
+  skill_id: MCF-WEB-FETCH
+  name: "Recuperar página web conhecida"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Ler e extrair conteúdo de uma URL conhecida com proveniência, sem exigir Firecrawl."
+  owner_agents: [Miriam]
+  supporting_agents: [Rafael, Ricardo]
+  trigger_phrases: ["abrir esta página", "ler esta URL", "extrair conteúdo", "consultar esta página"]
+  required_inputs: [url]
+  optional_inputs: [freshness_requirement, extraction_goal, max_content, language]
+  preconditions: [url_is_explicit, network_capability_available]
+  allowed_tools: [Web_Native, ChatGPT_Work]
+  alternative_tools: [Firecrawl]
+  forbidden_tools: [form_submission, credential_capture, access_control_bypass, paid_fallback_without_authorization]
+  permission_profile: READ_ONLY
+  execution_steps: [validar_url, selecionar_provider, recuperar_pagina, extrair_conteudo_relevante, registrar_metadados, declarar_limites]
+  required_evidence: [url, provider_used, observed_at, content_reference, fetch_status, limitations]
+  expected_outputs: [page_content, page_metadata]
+  acceptance_criteria: [url_traceable, content_grounded, freshness_declared, no_hidden_side_effect]
+  failure_modes: [blocked_by_site, authentication_required, javascript_only_content, provider_unavailable, content_too_large]
+  fallback:
+    without_primary_tool: "Usar navegador autorizado somente para leitura; se ainda indisponível, tentar provider alternativo aprovado."
+    without_any_tool: "Declarar a URL como não recuperada e preservar o motivo verificável."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Miriam
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: PUBLIC_OR_APPROVED
+    human_gate_triggers: [authentication_with_user_account]
+    prohibited_actions: [secret_submission, form_submission, access_control_bypass]
+  tests:
+    positive_scenarios: [static_page, current_page, large_page_targeted_extraction]
+    negative_scenarios: [login_wall, blocked_page, unavailable_provider]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED
