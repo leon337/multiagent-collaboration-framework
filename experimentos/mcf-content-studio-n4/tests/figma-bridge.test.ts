@@ -8,8 +8,8 @@ const spec=placeholder as FigmaBridgeSpec;
 describe('N4 Figma bridge',()=>{
   it('resolves token bindings deterministically',()=>{
     expect(resolveFigmaBindings(spec)).toMatchObject({
-      background:'#111827',
-      accent:'#7c8cff',
+      background:'rgba(255,255,255,.86)',
+      accent:'#2d5bff',
       radius:32,
       padding:40,
     });
@@ -19,7 +19,7 @@ describe('N4 Figma bridge',()=>{
     expect(toN4ComponentDefaults(spec,'16:9')).toMatchObject({
       title:'O modelo decide',
       aspect:'16:9',
-      accent:'#7c8cff',
+      accent:'#2d5bff',
     });
   });
 
