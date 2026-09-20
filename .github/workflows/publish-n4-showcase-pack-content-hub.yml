@@ -1,6 +1,11 @@
 name: Publish N4 Showcase Pack to Content Hub
 
 on:
+  push:
+    branches:
+      - 'ops/content-hub-publish-showcase-pack-20260920'
+    paths:
+      - '.github/workflows/publish-n4-showcase-pack-content-hub.yml'
   workflow_dispatch:
 
 permissions:
