@@ -1,0 +1,14 @@
+{
+  "mission_id": "MCF-CONTENT-HUB-001",
+  "wave": "MANIFEST-PRESERVATION-HOTFIX",
+  "discovered_from": "LEANDRO browser 404 on V1.2 Engine watch page",
+  "root_cause": "publish-content.mjs fetched a private Blob manifest URL without authenticated private get(), so each sequential publish reset manifest=[] and overwrote the manifest with only the latest item.",
+  "impact": "V1.2 media blobs existed, but only the last consolidated V1.2 record remained discoverable by Content Hub.",
+  "repair": [
+    "Rebuilt private manifest atomically with 8 records (V1.1 + V1.2).",
+    "Changed publisher to use @vercel/blob get(...,{access:'private'}) before merge.",
+    "Validated all four V1.2 watch routes HTTP 200 and media routes HTTP 200."
+  ],
+  "content_state": "REVIEW",
+  "public_surface": true
+}
