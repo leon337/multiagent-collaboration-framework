@@ -368,3 +368,146 @@ skills:
     failure_modes: [executor_disabled, worker_timeout, duplicate_pid, invalid_receipt, mission_scope_mismatch]
     fallback: Falhar fechado e retornar ao Mestre sem alegar execução cognitiva independente.
     handoff_to: Mestre
+
+  # Provider-agnostic web research skills.
+  # EXPERIMENTAL: orchestration-ready; server runtime adapter pending.
+  - skill_id: MCF-WEB-SEARCH
+    status: EXPERIMENTAL
+    name: Pesquisar fontes na web
+    version: 0.1.0
+    purpose: Descobrir fontes web relevantes e atuais sem depender de um único provedor externo.
+    owner_agents: [Miriam, Mestre]
+    trigger_phrases: ["pesquisar na web", "buscar fontes", "procurar na internet", "encontrar fontes atuais"]
+    required_inputs: [query]
+    optional_inputs: [recency, domains, source_type, max_results, language]
+    allowed_tools: [Web_Native, GitHub, OpenAI_Developers, Exa, Consensus, Sider_Scholar, Firecrawl]
+    forbidden_tools: [paid_fallback_without_authorization, fabricate_results, bypass_access_controls]
+    permission_profile: READ_ONLY
+    execution_steps: [classificar_consulta, selecionar_provider, executar_busca, deduplicar_resultados, priorizar_fontes_primarias, registrar_limitacoes]
+    required_evidence: [query, provider_used, result_urls, observed_at, limitations]
+    expected_outputs: [search_result_set, source_shortlist]
+    acceptance_criteria: [sources_traceable, provider_declared, no_fabricated_result, limitations_explicit]
+    failure_modes: [provider_unavailable, zero_results, stale_results, provider_rate_limited]
+    fallback: Usar o próximo provider aprovado; Firecrawl é apenas fallback opcional; se todos falharem, declarar dependência externa.
+    handoff_to: Miriam
+
+  - skill_id: MCF-WEB-FETCH
+    status: EXPERIMENTAL
+    name: Recuperar página web conhecida
+    version: 0.1.0
+    purpose: Ler e extrair conteúdo de uma URL conhecida com proveniência, sem exigir Firecrawl.
+    owner_agents: [Miriam]
+    trigger_phrases: ["abrir esta página", "ler esta URL", "extrair conteúdo", "consultar esta página"]
+    required_inputs: [url]
+    optional_inputs: [freshness_requirement, extraction_goal, max_content, language]
+    allowed_tools: [Web_Native, ChatGPT_Work, Firecrawl]
+    forbidden_tools: [form_submission, credential_capture, access_control_bypass, paid_fallback_without_authorization]
+    permission_profile: READ_ONLY
+    execution_steps: [validar_url, selecionar_provider, recuperar_pagina, extrair_conteudo_relevante, registrar_metadados, declarar_limites]
+    required_evidence: [url, provider_used, observed_at, content_reference, fetch_status, limitations]
+    expected_outputs: [page_content, page_metadata]
+    acceptance_criteria: [url_traceable, content_grounded, freshness_declared, no_hidden_side_effect]
+    failure_modes: [blocked_by_site, authentication_required, javascript_only_content, provider_unavailable, content_too_large]
+    fallback: Usar navegador autorizado somente para leitura; se indisponível, tentar provider alternativo e declarar falha se todos falharem.
+    handoff_to: Miriam
+
+  - skill_id: MCF-WEB-MAP
+    status: EXPERIMENTAL
+    name: Mapear URLs de um site
+    version: 0.1.0
+    purpose: Descobrir URLs relevantes de um domínio por sitemap, links observáveis e busca restrita ao site.
+    owner_agents: [Miriam]
+    trigger_phrases: ["mapear site", "listar páginas", "descobrir URLs", "achar páginas deste domínio"]
+    required_inputs: [site_root]
+    optional_inputs: [search_term, max_urls, include_subdomains, sitemap_policy]
+    allowed_tools: [Web_Native, ChatGPT_Work, Firecrawl]
+    forbidden_tools: [unbounded_crawl, access_control_bypass, fabricate_url_inventory]
+    permission_profile: READ_ONLY
+    execution_steps: [normalizar_dominio, consultar_sitemap_e_robots, coletar_links_observaveis, complementar_com_busca_site_scoped, deduplicar, classificar_cobertura]
+    required_evidence: [site_root, provider_used, discovered_urls, discovery_methods, coverage_statement, observed_at]
+    expected_outputs: [url_inventory, coverage_statement]
+    acceptance_criteria: [urls_traceable, methods_declared, coverage_not_overclaimed]
+    failure_modes: [no_sitemap, site_blocks_listing, provider_unavailable, excessive_url_count]
+    fallback: Usar busca site-scoped e páginas-semente, marcando cobertura PARCIAL; nunca alegar inventário completo sem evidência.
+    handoff_to: Miriam
+
+  - skill_id: MCF-WEB-COLLECT
+    status: EXPERIMENTAL
+    name: Coletar conteúdo multi-página
+    version: 0.1.0
+    purpose: Coletar um conjunto limitado de páginas de um site ou lista de URLs com deduplicação e evidência por página.
+    owner_agents: [Miriam]
+    trigger_phrases: ["coletar várias páginas", "crawl limitado", "baixar documentação", "ler seção inteira"]
+    required_inputs: [seed_urls_or_site_root, collection_goal]
+    optional_inputs: [max_pages, max_depth, include_paths, exclude_paths, allow_subdomains]
+    allowed_tools: [Web_Native, ChatGPT_Work, Firecrawl]
+    forbidden_tools: [unbounded_crawl, high_frequency_scraping, access_control_bypass, paid_fallback_without_authorization]
+    permission_profile: READ_ONLY
+    execution_steps: [definir_fronteira, descobrir_urls, ordenar_fila, recuperar_paginas, deduplicar_conteudo, registrar_erros_por_pagina, produzir_manifesto]
+    required_evidence: [scope, provider_used, page_manifest, succeeded_urls, failed_urls, observed_at, coverage_statement]
+    expected_outputs: [collection_manifest, collected_content_refs]
+    acceptance_criteria: [scope_bounded, page_level_provenance, failures_visible, no_complete_claim_without_evidence]
+    failure_modes: [provider_rate_limited, robots_or_policy_block, excessive_scope, partial_collection, content_duplication]
+    fallback: Degradar para MCF-WEB-MAP mais MCF-WEB-FETCH dentro do limite de páginas; Firecrawl permanece opcional.
+    handoff_to: Miriam
+
+  - skill_id: MCF-WEB-RESEARCH
+    status: EXPERIMENTAL
+    name: Executar pesquisa web multi-fonte
+    version: 0.1.0
+    purpose: Responder questões que exigem descoberta, leitura e reconciliação de múltiplas fontes sem depender de um único motor.
+    owner_agents: [Miriam, Carlos]
+    trigger_phrases: ["pesquisa aprofundada", "pesquisa multi-fonte", "investigar", "verificar na web", "deep research"]
+    required_inputs: [research_question]
+    optional_inputs: [time_window, source_priority, domains, evidence_threshold, output_schema]
+    allowed_tools: [Web_Native, GitHub, OpenAI_Developers, Exa, Consensus, Sider_Scholar, ChatGPT_Work, Firecrawl]
+    forbidden_tools: [single_source_overclaim, paid_fallback_without_authorization, fabricated_citation, access_control_bypass]
+    permission_profile: READ_ONLY
+    execution_steps: [decompor_pergunta, definir_plano_de_fontes, buscar, recuperar_fontes, reconciliar_conflitos, mapear_claims_para_fontes, classificar_confianca, consolidar]
+    required_evidence: [research_question, providers_used, source_ledger, claim_source_map, contradictions, observed_at, limitations]
+    expected_outputs: [research_report, source_ledger, uncertainty_register]
+    acceptance_criteria: [material_claims_sourced, conflicts_explicit, primary_sources_preferred, provider_failures_visible]
+    failure_modes: [insufficient_sources, conflicting_primary_sources, provider_unavailable, stale_evidence, unverifiable_claim]
+    fallback: Combinar MCF-WEB-SEARCH e MCF-WEB-FETCH com providers alternativos; sem providers, marcar fatos atuais como NÃO VERIFICADOS.
+    handoff_to: Emily
+
+  - skill_id: MCF-WEB-INTERACT
+    status: EXPERIMENTAL
+    name: Navegar e interagir com página web autorizada
+    version: 0.1.0
+    purpose: Navegar páginas que exigem interação visual ou JavaScript, governando side effects.
+    owner_agents: [Mestre, Rafael]
+    trigger_phrases: ["clicar no site", "navegar página", "interagir com formulário", "conteúdo exige login"]
+    required_inputs: [target_url, interaction_goal, authorizedScope]
+    optional_inputs: [allowed_actions, forbidden_actions, account_context]
+    allowed_tools: [ChatGPT_Work, Remote_Desktop_Commander, Firecrawl]
+    forbidden_tools: [credential_capture, payment_without_human_gate, destructive_external_action, access_control_bypass]
+    permission_profile: SCOPED_WRITE
+    execution_steps: [classificar_interacao, separar_read_de_write, validar_escopo, navegar, executar_somente_acoes_autorizadas, capturar_evidencia, encerrar_sessao]
+    required_evidence: [target_url, provider_used, actions_performed, side_effects, screenshots_or_receipts, observed_at]
+    expected_outputs: [interaction_result, interaction_receipt]
+    acceptance_criteria: [authorized_actions_only, side_effects_declared, no_secret_exposure, evidence_traceable]
+    failure_modes: [login_required, captcha_or_anti_bot, scope_insufficient, destructive_action_requested, provider_unavailable]
+    fallback: Usar outro navegador autorizado ou degradar para MCF-WEB-FETCH se apenas leitura for necessária; nunca contornar CAPTCHA ou acesso.
+    handoff_to: Beatriz
+
+  - skill_id: MCF-WEB-MONITOR
+    status: EXPERIMENTAL
+    name: Monitorar mudanças e novos resultados web
+    version: 0.1.0
+    purpose: Criar acompanhamento recorrente de páginas ou consultas sem acoplar o MCF ao monitoramento do Firecrawl.
+    owner_agents: [Augusto, Miriam]
+    trigger_phrases: ["monitorar página", "avisar quando mudar", "acompanhar novos resultados", "watch web"]
+    required_inputs: [monitor_goal, target_or_query, schedule_or_condition, authorizedScope]
+    optional_inputs: [recipients, change_threshold, retention_policy, max_results]
+    allowed_tools: [Automations, Web_Native, Firecrawl]
+    forbidden_tools: [silent_paid_monitor, spam_notifications, access_control_bypass]
+    permission_profile: SCOPED_WRITE
+    execution_steps: [validar_objetivo, classificar_alvo, selecionar_scheduler, criar_monitor, executar_smoke_check, registrar_identificador, definir_condicao_de_notificacao]
+    required_evidence: [monitor_id, provider_used, target_or_query, schedule_or_condition, smoke_check, notification_policy]
+    expected_outputs: [monitor_record, monitoring_receipt]
+    acceptance_criteria: [monitor_created_or_blocked_truthfully, trigger_clear, no_duplicate_monitor, smoke_check_recorded]
+    failure_modes: [scheduler_unavailable, provider_quota, invalid_schedule, target_unreachable, duplicate_monitor]
+    fallback: Usar provider alternativo aprovado; se nenhum existir, registrar plano não executado e dependência externa.
+    handoff_to: Augusto
+
