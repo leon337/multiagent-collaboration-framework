@@ -2,6 +2,7 @@ import fs from 'node:fs';
 const root=process.cwd();
 const checks=[
   ['review route','app/review/page.tsx',/getReviewBatches/],
+  ['review supersession','lib/content-view.ts',/latestByMission/],
   ['library route','app/library/page.tsx',/getContentFamilies/],
   ['overview','app/page.tsx',/Review Queue|Revis[aã]o/],
   ['factory truthfulness','app/factory-runs/page.tsx',/stage\.state/],
