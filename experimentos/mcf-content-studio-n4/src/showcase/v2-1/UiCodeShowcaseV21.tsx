@@ -26,7 +26,7 @@ const Intro=()=>{
     <div style={{height:'100%',display:'grid',gridTemplateColumns:'repeat(2,1fr)',gridTemplateRows:'repeat(3,1fr)',gap:14}}>
       {tiles.map(([a,b],i)=>{
         const q=interpolate(p,[i*.08,Math.min(1,i*.08+.5)],[0,1],clamp);
-        return <Panel key={a} style={{padding:22,display:'grid',alignContent:'space-between',background:i===0?'linear-gradient(145deg,#fff,#eaf2ff)':'rgba(255,255,255,.9)',opacity:q,transform:\`translateY(\${(1-q)*14}px)\`}}>
+        return <Panel key={a} style={{padding:22,display:'grid',alignContent:'space-between',background:i===0?'linear-gradient(145deg,#fff,#eaf2ff)':'rgba(255,255,255,.9)',opacity:q,transform:`translateY(${(1-q)*14}px)`}}>
           <Chip tone={i%3===0?'blue':i%3===1?'violet':'green'}>{a}</Chip>
           <div style={{fontSize:27,fontWeight:950,lineHeight:1.05}}>{b}</div>
           <div style={{height:6,borderRadius:99,background:['#245cff','#7257ff','#10b981'][i%3],opacity:.35}}/>
