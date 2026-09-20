@@ -67,7 +67,7 @@ export const ProofRail=({values,accent=v21.blue}:{values:[string,string,string];
 
 export const Panel=({children,style,accent}:{children:ReactNode;style?:CSSProperties;accent?:string})=><div style={{
   background:v21.panel,border:'1px solid '+(accent??v21.line),borderRadius:28,
-  boxShadow:'0 24px 60px rgba(39,76,154,.12),backdropFilter:'blur(14px)',boxSizing:'border-box',...style,
+  boxShadow:'0 24px 60px rgba(39,76,154,.12)',backdropFilter:'blur(14px)',boxSizing:'border-box',...style,
 }}>{children}</div>;
 
 export const Chip=({children,tone='blue',style}:{children:ReactNode;tone?:'blue'|'green'|'violet'|'amber'|'red';style?:CSSProperties})=>{
