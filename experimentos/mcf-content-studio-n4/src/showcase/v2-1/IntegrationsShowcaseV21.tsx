@@ -15,7 +15,7 @@ const Intro=()=>{
     <Panel style={{height:'100%',position:'relative',padding:26}}>
       <Node label="N4" value="governed handoff" active style={{position:'absolute',left:'50%',top:'50%',transform:'translate(-50%,-50%)',width:330}}/>
       {nodes.map(([a,b,c],i)=>{
-        const pos=[[60,90],[650,90],[60,520],[650,520]][i];
+        const pos=([[60,90],[650,90],[60,520],[650,520]] as Array<[number,number]>)[i]!;
         return <Panel key={String(a)} style={{position:'absolute',left:pos[0],top:pos[1],width:270,padding:22,opacity:interpolate(p,[i*.12,Math.min(1,i*.12+.55)],[0,1],clamp),borderColor:String(c),background:'#fff'}}>
           <Chip tone={i===1?'violet':i===2?'amber':i===3?'green':'blue'}>{a}</Chip>
           <div style={{fontSize:22,fontWeight:950,marginTop:16}}>{b}</div>
@@ -30,7 +30,7 @@ const Intro=()=>{
 };
 
 const Adobe=()=>{
-  const f=useCurrentFrame(); const total=integrationsSync.scenes.adobe.durationFrames; const p=reveal(f,6,30);
+  const f=useCurrentFrame(); const total=integrationsSync.scenes.adobe!.durationFrames; const p=reveal(f,6,30);
   return <Stage kicker="01 · ADOBE EXPRESS → N4" title="REFERÊNCIA VISUAL ENTRA COMO HANDOFF" subtitle="O bridge transporta alvo, aspect e tokens sem fingir introspecção que não existe." proof={['REFERENCE','TOKENS','0 FINDINGS']}>
     <div style={{height:'100%',display:'grid',gridTemplateColumns:'1fr 90px 1fr',gap:14,alignItems:'center'}}>
       <Panel style={{height:'100%',padding:24,display:'grid',gridTemplateRows:'auto 1fr auto'}}>
@@ -74,7 +74,7 @@ const Limits=()=>{
 };
 
 const Instavar=()=>{
-  const f=useCurrentFrame(); const total=integrationsSync.scenes.instavar.durationFrames; const active=Math.min(2,Math.floor(f/Math.max(1,total/3)));
+  const f=useCurrentFrame(); const total=integrationsSync.scenes.instavar!.durationFrames; const active=Math.min(2,Math.floor(f/Math.max(1,total/3)));
   const beats=[['BEAT 1','problem'],['BEAT 2','proof'],['BEAT 3','takeaway']];
   return <Stage kicker="03 · INSTAVAR" title="STORYBOARD VIRA VIDEOSPEC E DEPOIS CENA" subtitle="A ponte preserva aspecto, cenas e timing antes de entrar no N4." proof={['STORYBOARD','VIDEOSPEC','N4']}>
     <Panel style={{height:'100%',padding:24,display:'grid',gridTemplateRows:'1fr 1fr',gap:18}}>
