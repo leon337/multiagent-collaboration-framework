@@ -1,0 +1,35 @@
+name: N4 Showcase Phase B Sync Evidence
+on:
+  push:
+    branches:
+      - 'validation/n4-showcase-phase-b-sync-20260920'
+permissions: {contents: read}
+jobs:
+  build-sync:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experimentos/mcf-content-studio-n4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Build measured Phase B timelines
+        run: |
+          python scripts/build-showcase-sync.py \
+            --manifest audio/showcase-phase-b-sync.json \
+            --out-dir out/phase-b-sync
+      - name: Print summary
+        run: |
+          cat out/phase-b-sync/summary.json
+          for f in out/phase-b-sync/timelines/*.json; do echo "=== $f ==="; cat "$f"; done
+      - name: Upload sync evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: n4-showcase-phase-b-sync
+          path: |
+            experimentos/mcf-content-studio-n4/out/phase-b-sync/summary.json
+            experimentos/mcf-content-studio-n4/out/phase-b-sync/timelines/*.json
+            experimentos/mcf-content-studio-n4/out/phase-b-sync/audio/*.m4a
+          if-no-files-found: error
+          retention-days: 14
