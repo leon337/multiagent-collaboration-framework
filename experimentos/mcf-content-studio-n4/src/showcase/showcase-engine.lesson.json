@@ -144,9 +144,9 @@
     "reducedMotion": false
   },
   "theme": {
-    "id": "mcf-dark",
-    "background": "#080c14",
-    "accent": "#7c8cff"
+    "id": "mcf-light-tech",
+    "background": "#f7faff",
+    "accent": "#2d5bff"
   },
   "assets": [
     "mcf-mark",
