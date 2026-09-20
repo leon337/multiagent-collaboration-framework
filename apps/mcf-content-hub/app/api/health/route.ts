@@ -1,0 +1,1 @@
+export async function GET(){return Response.json({service:'mcf-content-hub',status:'ok',environment:process.env.CONTENT_HUB_ENV??'review',blobConfigured:Boolean(process.env.BLOB_READ_WRITE_TOKEN),timestamp:new Date().toISOString()});}

@@ -1,0 +1,5 @@
+import Link from 'next/link';
+import {getContentItems} from '@/lib/content';
+import {getFactoryRuns} from '@/lib/content-view';
+export const dynamic='force-dynamic';
+export default async function FactoryRuns(){const runs=getFactoryRuns(await getContentItems());return <div className="page"><section className="page-head"><div><span>FACTORY RUNS</span><h1>Execução derivada de evidência</h1><p>Cada estágio é calculado a partir dos metadados disponíveis. O Hub não inventa conclusão de pipeline.</p></div></section><div className="runs">{runs.map((run)=><article className="run-card" key={run.run}><div className="run-top"><div><small>RUN</small><h2>{run.run}</h2></div><span>{run.items.length} outputs</span></div><div className="pipeline">{run.stages.map((stage)=><div key={stage.key} className={'stage stage-'+stage.state.toLowerCase()}><i/><span>{stage.label}</span><small>{stage.state}</small></div>)}</div><div className="run-items">{run.items.map((item)=><Link href={'/videos/'+item.slug} key={item.slug}>{item.title}<span>v{item.version}</span></Link>)}</div></article>)}</div></div>;}

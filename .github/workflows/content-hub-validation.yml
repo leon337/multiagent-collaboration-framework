@@ -1,0 +1,33 @@
+name: MCF Content Hub Validation
+on:
+  pull_request:
+    paths:
+      - 'apps/mcf-content-hub/**'
+      - '.github/workflows/content-hub-validation.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: mcf-content-hub-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mcf-content-hub
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install
+        run: pnpm install --frozen-lockfile=false
+      - name: Validate seed manifest
+        run: pnpm validate:seed
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Build
+        run: pnpm build

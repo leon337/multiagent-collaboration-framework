@@ -80,6 +80,26 @@ jobs:
               --max-drift-frames 2 > out/showcase/$name-sync.json
             cat out/showcase/$name-sync.json
           done
+      - name: Build consolidated showcase
+        run: |
+          printf "file '%s'\n" "$PWD/out/showcase/01-engine.mp4" "$PWD/out/showcase/02-motion.mp4" "$PWD/out/showcase/03-editor.mp4" > out/showcase/concat.txt
+          ffmpeg -y -f concat -safe 0 -i out/showcase/concat.txt -c copy out/showcase/00-factory-showcase-consolidated.mp4
+          python scripts/verify-media-audio.py out/showcase/00-factory-showcase-consolidated.mp4 --min-duration 70
+
+      - name: Publish to Content Hub review storage
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        if: env.BLOB_READ_WRITE_TOKEN != ''
+        working-directory: .
+        run: |
+          corepack enable
+          cd apps/mcf-content-hub
+          pnpm install --frozen-lockfile=false
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase/01-engine.mp4 --slug=n4-showcase-engine-v1-1 --title="N4 Showcase — Engine, Componentes e Registry" --version=1.1 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-v1.1 --tags=engine,registry,components
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase/02-motion.mp4 --slug=n4-showcase-motion-v1-1 --title="N4 Showcase — Motion System" --version=1.1 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-v1.1 --tags=motion,semantic
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase/03-editor.mp4 --slug=n4-showcase-editor-v1-1 --title="N4 Showcase — Editor Visual" --version=1.1 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-v1.1 --tags=editor,timeline
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase/00-factory-showcase-consolidated.mp4 --slug=n4-factory-showcase-consolidated-v1-1 --title="N4 Factory Showcase — Consolidado" --version=1.1 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-v1.1-consolidated --tags=showcase,consolidated
+
       - name: Build showcase manifest
         run: |
           python - <<'PY'
@@ -98,6 +118,7 @@ jobs:
         with:
           name: n4-showcase-pack-v1
           path: |
+            experimentos/mcf-content-studio-n4/out/showcase/00-factory-showcase-consolidated.mp4
             experimentos/mcf-content-studio-n4/out/showcase/01-engine.mp4
             experimentos/mcf-content-studio-n4/out/showcase/02-motion.mp4
             experimentos/mcf-content-studio-n4/out/showcase/03-editor.mp4

@@ -1,0 +1,106 @@
+[
+  {
+    "slug": "n4-showcase-engine-v1-1",
+    "title": "N4 Showcase — Engine, Componentes e Registry",
+    "summary": "TechnicalLessonTemplate, componentes reutilizáveis e Registry demonstrados pela própria fábrica.",
+    "version": "1.1",
+    "status": "REVIEW",
+    "kind": "video",
+    "aspect": "9:16",
+    "createdAt": "2026-09-19T12:00:00Z",
+    "mission": "MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001",
+    "issue": 279,
+    "pr": 280,
+    "commit": "66aedcb225a488c69c080b39ba22c99d6300ff51",
+    "factoryRun": "showcase-v1.1",
+    "qa": {
+      "visual": "PASS",
+      "audio": "PASS",
+      "captions": "PASS",
+      "ci": "PASS"
+    },
+    "tags": [
+      "engine",
+      "registry",
+      "components"
+    ]
+  },
+  {
+    "slug": "n4-showcase-motion-v1-1",
+    "title": "N4 Showcase — Motion System",
+    "summary": "19 presets executáveis e focus intents aplicados em vídeo real.",
+    "version": "1.1",
+    "status": "REVIEW",
+    "kind": "video",
+    "aspect": "9:16",
+    "createdAt": "2026-09-19T12:01:00Z",
+    "mission": "MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001",
+    "issue": 279,
+    "pr": 280,
+    "commit": "66aedcb225a488c69c080b39ba22c99d6300ff51",
+    "factoryRun": "showcase-v1.1",
+    "qa": {
+      "visual": "PASS",
+      "audio": "PASS",
+      "captions": "PASS",
+      "ci": "PASS"
+    },
+    "tags": [
+      "motion",
+      "focus-intent",
+      "semantics"
+    ]
+  },
+  {
+    "slug": "n4-showcase-editor-v1-1",
+    "title": "N4 Showcase — Editor Visual",
+    "summary": "Drag, resize, rotate, snap, alignment, nudge e timeline multitrack.",
+    "version": "1.1",
+    "status": "REVIEW",
+    "kind": "video",
+    "aspect": "9:16",
+    "createdAt": "2026-09-19T12:02:00Z",
+    "mission": "MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001",
+    "issue": 279,
+    "pr": 280,
+    "commit": "66aedcb225a488c69c080b39ba22c99d6300ff51",
+    "factoryRun": "showcase-v1.1",
+    "qa": {
+      "visual": "PASS",
+      "audio": "PASS",
+      "captions": "PASS",
+      "ci": "PASS"
+    },
+    "tags": [
+      "editor",
+      "timeline",
+      "layout"
+    ]
+  },
+  {
+    "slug": "n4-factory-showcase-consolidated-v1-1",
+    "title": "N4 Factory Showcase — Consolidado",
+    "summary": "Engine, Motion e Editor reunidos em um único vídeo de revisão.",
+    "version": "1.1",
+    "status": "REVIEW",
+    "kind": "video",
+    "aspect": "9:16",
+    "createdAt": "2026-09-19T12:03:00Z",
+    "mission": "MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001",
+    "issue": 279,
+    "pr": 280,
+    "commit": "66aedcb225a488c69c080b39ba22c99d6300ff51",
+    "factoryRun": "showcase-v1.1-consolidated",
+    "qa": {
+      "visual": "PASS",
+      "audio": "PASS",
+      "captions": "PASS",
+      "ci": "PASS"
+    },
+    "tags": [
+      "showcase",
+      "consolidated",
+      "review"
+    ]
+  }
+]
