@@ -1,0 +1,206 @@
+name: Content Studio N4 Light Tech Showcase V2
+
+on:
+  pull_request:
+    paths:
+      - 'experimentos/mcf-content-studio-n4/src/**'
+      - 'experimentos/mcf-content-studio-n4/audio/**'
+      - '.github/workflows/content-studio-n4-showcase-light-tech-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: n4-light-tech-v2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    defaults:
+      run:
+        working-directory: experimentos/mcf-content-studio-n4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Download approved audio baselines
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf out/light-tech-v2 public/factory-tour
+          mkdir -p out/light-tech-v2/source-a out/light-tech-v2/source-b out/light-tech-v2/source-tour public/factory-tour/qa
+
+          gh run download 35492719724 --repo "$GITHUB_REPOSITORY" -n n4-showcase-pack-v1 -D out/light-tech-v2/source-a
+          gh run download 35492719779 --repo "$GITHUB_REPOSITORY" -n n4-showcase-pack-phase-b-v1-4 -D out/light-tech-v2/source-b
+          gh run download 35492719751 --repo "$GITHUB_REPOSITORY" -n n4-factory-tour-v1-0 -D out/light-tech-v2/source-tour
+
+          A=out/light-tech-v2/source-a/showcase
+          B=out/light-tech-v2/source-b/showcase-phase-b/final
+          T=out/light-tech-v2/source-tour/final
+
+          cp "$A/01-engine.mp4" public/factory-tour/01-engine.mp4
+          cp "$A/02-motion.mp4" public/factory-tour/02-motion.mp4
+          cp "$A/03-editor.mp4" public/factory-tour/03-editor.mp4
+          cp "$B/04-ui-code.mp4" public/factory-tour/04-ui-code.mp4
+          cp "$B/05-pedagogy.mp4" public/factory-tour/05-pedagogy.mp4
+          cp "$B/06-assets-audio.mp4" public/factory-tour/06-assets-audio.mp4
+          cp "$B/07-integrations.mp4" public/factory-tour/07-integrations.mp4
+
+      - name: Typecheck and tests
+        run: |
+          pnpm typecheck
+          pnpm test --             tests/evolution.test.ts             tests/audio-mix.test.ts             tests/adobe-express-bridge.test.ts             tests/instavar-bridge.test.ts             tests/external-import.test.ts
+
+      - name: Render 01-07 Light Tech visuals
+        run: |
+          mkdir -p out/light-tech-v2/silent out/light-tech-v2/final
+          pnpm exec remotion render src/remotion/index.ts ShowcaseEngineRegistry out/light-tech-v2/silent/01-engine.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseMotionSystem out/light-tech-v2/silent/02-motion.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseVisualEditor out/light-tech-v2/silent/03-editor.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseUiCodeSimulation out/light-tech-v2/silent/04-ui-code.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcasePedagogyCharacters out/light-tech-v2/silent/05-pedagogy.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseAssetAudioFactory out/light-tech-v2/silent/06-assets-audio.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseIntegrations out/light-tech-v2/silent/07-integrations.mp4 --codec=h264 --crf=21 --concurrency=2
+
+      - name: Reuse approved audio and validate 01-07
+        run: |
+          A=out/light-tech-v2/source-a/showcase
+          B=out/light-tech-v2/source-b/showcase-phase-b/final
+          declare -A SOURCE
+          SOURCE[01-engine]="$A/01-engine.mp4"
+          SOURCE[02-motion]="$A/02-motion.mp4"
+          SOURCE[03-editor]="$A/03-editor.mp4"
+          SOURCE[04-ui-code]="$B/04-ui-code.mp4"
+          SOURCE[05-pedagogy]="$B/05-pedagogy.mp4"
+          SOURCE[06-assets-audio]="$B/06-assets-audio.mp4"
+          SOURCE[07-integrations]="$B/07-integrations.mp4"
+
+          declare -A TIMELINE
+          TIMELINE[01-engine]="src/showcase/sync/engine.json"
+          TIMELINE[02-motion]="src/showcase/sync/motion.json"
+          TIMELINE[03-editor]="src/showcase/sync/editor.json"
+          TIMELINE[04-ui-code]="src/showcase/phase-b/sync/ui-code.json"
+          TIMELINE[05-pedagogy]="src/showcase/phase-b/sync/pedagogy.json"
+          TIMELINE[06-assets-audio]="src/showcase/phase-b/sync/assets-audio.json"
+          TIMELINE[07-integrations]="src/showcase/phase-b/sync/integrations.json"
+
+          for name in 01-engine 02-motion 03-editor 04-ui-code 05-pedagogy 06-assets-audio 07-integrations; do
+            ffmpeg -y               -i "out/light-tech-v2/silent/$name.mp4"               -i "${SOURCE[$name]}"               -map 0:v:0 -map 1:a:0               -c:v copy -c:a copy -movflags +faststart               "out/light-tech-v2/final/$name.mp4"
+
+            python scripts/verify-media-audio.py "out/light-tech-v2/final/$name.mp4" --min-duration 15
+            python scripts/verify-audio-loudness.py "out/light-tech-v2/final/$name.mp4" --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+            python scripts/verify-showcase-av-sync.py               --media "out/light-tech-v2/final/$name.mp4"               --timeline "${TIMELINE[$name]}"               --max-drift-frames 2 > "out/light-tech-v2/final/$name-sync.json"
+          done
+
+      - name: Render QA stills 01-07
+        run: |
+          mkdir -p out/light-tech-v2/qa
+          python - <<'PY'
+          import json,subprocess
+          specs=[
+            ('01-engine','src/showcase/sync/engine.json',['ShowcaseEngineYouTubeQa','ShowcaseEngineTikTokQa','ShowcaseEngineReelsQa','ShowcaseEngineUniversalQa']),
+            ('02-motion','src/showcase/sync/motion.json',['ShowcaseMotionYouTubeQa','ShowcaseMotionTikTokQa','ShowcaseMotionReelsQa','ShowcaseMotionUniversalQa']),
+            ('03-editor','src/showcase/sync/editor.json',['ShowcaseEditorYouTubeQa','ShowcaseEditorTikTokQa','ShowcaseEditorReelsQa','ShowcaseEditorUniversalQa']),
+            ('04-ui-code','src/showcase/phase-b/sync/ui-code.json',['ShowcaseUiCodeYouTubeQa','ShowcaseUiCodeTikTokQa','ShowcaseUiCodeReelsQa','ShowcaseUiCodeUniversalQa']),
+            ('05-pedagogy','src/showcase/phase-b/sync/pedagogy.json',['ShowcasePedagogyYouTubeQa','ShowcasePedagogyTikTokQa','ShowcasePedagogyReelsQa','ShowcasePedagogyUniversalQa']),
+            ('06-assets-audio','src/showcase/phase-b/sync/assets-audio.json',['ShowcaseAssetsAudioYouTubeQa','ShowcaseAssetsAudioTikTokQa','ShowcaseAssetsAudioReelsQa','ShowcaseAssetsAudioUniversalQa']),
+            ('07-integrations','src/showcase/phase-b/sync/integrations.json',['ShowcaseIntegrationsYouTubeQa','ShowcaseIntegrationsTikTokQa','ShowcaseIntegrationsReelsQa','ShowcaseIntegrationsUniversalQa']),
+          ]
+          suffix=['youtube','tiktok','reels','universal']
+          for name,timeline,comps in specs:
+              d=json.load(open(timeline))
+              frame=d['totalFrames']//2
+              for comp,sfx in zip(comps,suffix):
+                  subprocess.run(['pnpm','exec','remotion','still','src/remotion/index.ts',comp,f'out/light-tech-v2/qa/{name}-{sfx}.png','--frame',str(frame)],check=True)
+          PY
+
+      - name: Feed Light Tech 01-07 into Factory Tour
+        run: |
+          cp out/light-tech-v2/final/01-engine.mp4 public/factory-tour/01-engine.mp4
+          cp out/light-tech-v2/final/02-motion.mp4 public/factory-tour/02-motion.mp4
+          cp out/light-tech-v2/final/03-editor.mp4 public/factory-tour/03-editor.mp4
+          cp out/light-tech-v2/final/04-ui-code.mp4 public/factory-tour/04-ui-code.mp4
+          cp out/light-tech-v2/final/05-pedagogy.mp4 public/factory-tour/05-pedagogy.mp4
+          cp out/light-tech-v2/final/06-assets-audio.mp4 public/factory-tour/06-assets-audio.mp4
+          cp out/light-tech-v2/final/07-integrations.mp4 public/factory-tour/07-integrations.mp4
+
+          cp out/light-tech-v2/qa/01-engine-universal.png public/factory-tour/qa/01-engine-universal.png
+          cp out/light-tech-v2/qa/04-ui-code-universal.png public/factory-tour/qa/04-ui-code-universal.png
+          cp out/light-tech-v2/qa/06-assets-audio-universal.png public/factory-tour/qa/06-assets-audio-universal.png
+          cp out/light-tech-v2/qa/07-integrations-universal.png public/factory-tour/qa/07-integrations-universal.png
+
+      - name: Render 08 Light Tech Factory Tour
+        run: |
+          pnpm exec remotion render src/remotion/index.ts ShowcaseFactoryTour out/light-tech-v2/silent/08-factory-tour.mp4 --codec=h264 --crf=21 --concurrency=2
+          T=out/light-tech-v2/source-tour/final/08-factory-tour.mp4
+          ffmpeg -y             -i out/light-tech-v2/silent/08-factory-tour.mp4             -i "$T"             -map 0:v:0 -map 1:a:0             -c:v copy -c:a copy -movflags +faststart             out/light-tech-v2/final/08-factory-tour.mp4
+          python scripts/verify-media-audio.py out/light-tech-v2/final/08-factory-tour.mp4 --min-duration 60
+          python scripts/verify-audio-loudness.py out/light-tech-v2/final/08-factory-tour.mp4 --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+          python scripts/verify-showcase-av-sync.py             --media out/light-tech-v2/final/08-factory-tour.mp4             --timeline src/showcase/factory-tour/sync.json             --max-drift-frames 2 > out/light-tech-v2/final/08-factory-tour-sync.json
+
+      - name: Render Factory Tour QA and editorial samples
+        run: |
+          frame=$(python -c "import json; d=json.load(open('src/showcase/factory-tour/sync.json')); print(d['scenes']['qa']['from'] + d['scenes']['qa']['durationFrames']//2)")
+          pnpm exec remotion still src/remotion/index.ts FactoryTourYouTubeQa out/light-tech-v2/qa/08-factory-tour-youtube.png --frame="$frame"
+          pnpm exec remotion still src/remotion/index.ts FactoryTourTikTokQa out/light-tech-v2/qa/08-factory-tour-tiktok.png --frame="$frame"
+          pnpm exec remotion still src/remotion/index.ts FactoryTourReelsQa out/light-tech-v2/qa/08-factory-tour-reels.png --frame="$frame"
+          pnpm exec remotion still src/remotion/index.ts FactoryTourUniversalQa out/light-tech-v2/qa/08-factory-tour-universal.png --frame="$frame"
+
+          for pair in             "ShowcaseEngineRegistry 01-engine src/showcase/sync/engine.json"             "ShowcaseMotionSystem 02-motion src/showcase/sync/motion.json"             "ShowcaseVisualEditor 03-editor src/showcase/sync/editor.json"             "ShowcaseUiCodeSimulation 04-ui-code src/showcase/phase-b/sync/ui-code.json"             "ShowcasePedagogyCharacters 05-pedagogy src/showcase/phase-b/sync/pedagogy.json"             "ShowcaseAssetAudioFactory 06-assets-audio src/showcase/phase-b/sync/assets-audio.json"             "ShowcaseIntegrations 07-integrations src/showcase/phase-b/sync/integrations.json"             "ShowcaseFactoryTour 08-factory-tour src/showcase/factory-tour/sync.json"; do
+            set -- $pair
+            comp=$1; name=$2; timeline=$3
+            total=$(python -c "import json; print(json.load(open('$timeline'))['totalFrames'])")
+            for pct in 20 50 80; do
+              frame=$(( total * pct / 100 ))
+              pnpm exec remotion still src/remotion/index.ts "$comp" "out/light-tech-v2/qa/$name-$pct.png" --frame="$frame"
+            done
+          done
+
+      - name: Build V2 manifest
+        run: |
+          python - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          items=[]
+          for name in ['01-engine','02-motion','03-editor','04-ui-code','05-pedagogy','06-assets-audio','07-integrations','08-factory-tour']:
+              p=Path('out/light-tech-v2/final')/(name+'.mp4')
+              duration=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=nw=1:nk=1',str(p)],text=True).strip())
+              items.append({'id':name,'path':str(p),'bytes':p.stat().st_size,'durationSec':round(duration,3),'status':'REVIEW'})
+          payload={
+            'mission':'MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001',
+            'packVersion':'2.0',
+            'designSystem':'N4 Light Tech',
+            'audioPolicy':'reuse-approved-audio',
+            'videos':items
+          }
+          Path('out/light-tech-v2/manifest.json').write_text(json.dumps(payload,indent=2)+'\n')
+          print(json.dumps(payload,indent=2))
+          PY
+
+      - name: Upload Light Tech V2 pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: n4-showcase-pack-light-tech-v2
+          path: |
+            experimentos/mcf-content-studio-n4/out/light-tech-v2/final/*.mp4
+            experimentos/mcf-content-studio-n4/out/light-tech-v2/final/*-sync.json
+            experimentos/mcf-content-studio-n4/out/light-tech-v2/manifest.json
+            experimentos/mcf-content-studio-n4/out/light-tech-v2/qa/*.png
+          if-no-files-found: error
+          retention-days: 14
