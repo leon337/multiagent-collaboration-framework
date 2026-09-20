@@ -24,7 +24,7 @@ const Intro=()=>{
 };
 
 const Assets=()=>{
-  const f=useCurrentFrame(); const total=assetsAudioSync.scenes.assets.durationFrames; const active=Math.min(5,Math.floor(f/Math.max(1,total/6)));
+  const f=useCurrentFrame(); const total=assetsAudioSync.scenes.assets!.durationFrames; const active=Math.min(5,Math.floor(f/Math.max(1,total/6)));
   const items=[
     ['demo-loop','video','approved'],
     ['ui-click','sfx','approved'],
@@ -54,7 +54,7 @@ const Assets=()=>{
 };
 
 const Procedural=()=>{
-  const f=useCurrentFrame(); const total=assetsAudioSync.scenes.procedural.durationFrames;
+  const f=useCurrentFrame(); const total=assetsAudioSync.scenes.procedural!.durationFrames;
   const jobs=[['demo-loop','ffmpeg-color-loop-v1'],['ui-click','sine-wav-v1'],['ambient-pulse','sine-wav-v1'],['music-bed','sine-wav-v1']];
   return <Stage kicker="02 · MATERIALIZAÇÃO" title="ASSETS PROCEDURAIS NASCEM DENTRO DO PIPELINE" subtitle="Cada job mostra gerador, progresso e arquivo materializado." proof={['GENERATOR','BUILD','READY']}>
     <Panel style={{height:'100%',padding:22,display:'grid',gap:14,alignContent:'center'}}>
@@ -71,7 +71,7 @@ const Procedural=()=>{
 };
 
 const Mix=()=>{
-  const f=useCurrentFrame(); const total=assetsAudioSync.scenes.mix.durationFrames; const play=interpolate(f,[0,total],[0,1],clamp);
+  const f=useCurrentFrame(); const total=assetsAudioSync.scenes.mix!.durationFrames; const play=interpolate(f,[0,total],[0,1],clamp);
   return <Stage kicker="03 · MIX" title="QUATRO TRILHAS, UM MESMO TEMPO" subtitle="Narração, música, SFX e ambiente ficam sincronizados com um playhead comum." proof={['NARRATION','MUSIC','SFX + AMBIENT']}>
     <Panel style={{height:'100%',padding:24,display:'grid',gridTemplateRows:'auto 1fr auto',gap:18,background:'linear-gradient(145deg,#fff,#f1f6ff)'}}>
       <div style={{display:'flex',justifyContent:'space-between'}}><Chip>LessonAudioMix</Chip><Chip tone="green">ducking on</Chip></div>
@@ -89,7 +89,7 @@ const Mix=()=>{
 };
 
 const Ducking=()=>{
-  const f=useCurrentFrame(); const total=assetsAudioSync.scenes.ducking.durationFrames; const p=interpolate(f,[8,total*.72],[0,1],clamp);
+  const f=useCurrentFrame(); const total=assetsAudioSync.scenes.ducking!.durationFrames; const p=interpolate(f,[8,total*.72],[0,1],clamp);
   const points=Array.from({length:24},(_,i)=>{const x=i/23; const narration=x>.25&&x<.72; const music=narration?-9*p:0; return {x,music,narration};});
   return <Stage kicker="04 · DUCKING" title="A VOZ ABRE ESPAÇO NO MIX" subtitle="Quando a narração entra, música e ambiente reduzem ganho; depois recuperam." proof={['TRIGGER','-9 DB','RELEASE']}>
     <Panel style={{height:'100%',padding:28,display:'grid',gridTemplateRows:'auto 1fr auto',gap:18}}>
