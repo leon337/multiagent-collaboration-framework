@@ -44,8 +44,8 @@ jobs:
           pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/videos/n4-showcase-engine-v1-1 screenshots/05-watch-desktop.png
       - name: Capture mobile
         run: |
-          pnpm dlx playwright@1.55.0 screenshot --full-page --device="iPhone 13" http://127.0.0.1:3000/ screenshots/06-overview-mobile.png
-          pnpm dlx playwright@1.55.0 screenshot --full-page --device="iPhone 13" http://127.0.0.1:3000/review screenshots/07-review-mobile.png
+          pnpm dlx playwright@1.55.0 screenshot --full-page --browser=chromium --viewport-size="390,844" http://127.0.0.1:3000/ screenshots/06-overview-mobile.png
+          pnpm dlx playwright@1.55.0 screenshot --full-page --browser=chromium --viewport-size="390,844" http://127.0.0.1:3000/review screenshots/07-review-mobile.png
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         with:
