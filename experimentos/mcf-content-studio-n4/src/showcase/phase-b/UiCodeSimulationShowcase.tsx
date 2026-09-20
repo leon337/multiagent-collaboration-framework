@@ -10,7 +10,7 @@ import {CaptionOverlay} from '../../pilot/CaptionOverlay';
 import {uiCodeSync} from './synced';
 
 const Scene=({id,children}:{id:keyof typeof uiCodeSync.scenes;children:React.ReactNode})=>{
-  const scene=uiCodeSync.scenes[id];
+  const scene=uiCodeSync.scenes[id]!;
   return <Sequence from={scene.from} durationInFrames={scene.durationFrames}>{children}</Sequence>;
 };
 
