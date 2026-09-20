@@ -39,7 +39,7 @@ Documentação:
 - [`../artifacts/phases/`](../artifacts/phases/)
 - [`../.github/workflows/`](../.github/workflows/)
 
-Estado reconciliado: 16 skills registradas, 16 executáveis e 0 somente documentais; Gate C, Gate D e Gate E são boundaries concluídos; produção foi concluída; RC1/RC2/RC3 estão preservadas; `v1.0.0` stable foi publicada no SHA da RC3.
+Estado do servidor no lineage atual: 18 skills executáveis. Esta branch candidata registra adicionalmente 7 Skills web EXPERIMENTAL/orchestration-ready (25 entradas no registry), com adapter server-side ainda pendente; isso não deve ser confundido com capacidade de rede já materializada no runtime. Gate C, Gate D e Gate E são boundaries concluídos; produção foi concluída; RC1/RC2/RC3 estão preservadas; `v1.0.0` stable foi publicada no SHA da RC3.
 
 ## Governança e autoridade
 
