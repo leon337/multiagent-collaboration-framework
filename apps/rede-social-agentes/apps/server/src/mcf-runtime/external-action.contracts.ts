@@ -5,6 +5,7 @@ import type { McfToolRequest } from './permission-engine.js';
 export type ExternalActionFailureCode =
   | 'AUTHENTICATION_REQUIRED'
   | 'RATE_LIMITED'
+  | 'QUOTA_EXHAUSTED'
   | 'TARGET_NOT_FOUND'
   | 'UNSUPPORTED_TARGET'
   | 'INVALID_RESPONSE'
