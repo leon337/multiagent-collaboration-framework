@@ -1,0 +1,28 @@
+schema_version: 1
+
+project:
+  id: mcf-cockpit-next
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/mcf-cockpit-next
+  aliases:
+    - MCF Cockpit Next
+    - MCF Cockpit
+    - Cockpit Next
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - docs/ARCHITECTURE.md
+    - docs/PROTOTYPE-V2.md
+    - docs/V3-EXECUTION-PLAN.md
+    - .mcf/project-capsule.yaml
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
