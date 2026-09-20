@@ -62,7 +62,7 @@ const Procedural=()=>{
         const start=i*Math.max(1,total/6); const p=interpolate(f,[start,start+Math.max(20,total/3)],[0,1],clamp);
         return <div key={j[0]} style={{display:'grid',gridTemplateColumns:'180px 1fr 120px',gap:16,alignItems:'center',padding:'16px 18px',borderRadius:18,border:'1px solid '+v21.line,background:'#fbfdff'}}>
           <div><div style={{fontSize:18,fontWeight:950}}>{j[0]}</div><div style={{fontSize:13,color:v21.muted,marginTop:4}}>{j[1]}</div></div>
-          <div style={{height:14,borderRadius:99,background:'#e7eefb',overflow:'hidden'}}><div style={{height:'100%',width:\`\${p*100}%\`,background:i%2?'linear-gradient(90deg,#7257ff,#48c7ff)':'linear-gradient(90deg,#245cff,#10b981)'}}/></div>
+          <div style={{height:14,borderRadius:99,background:'#e7eefb',overflow:'hidden'}}><div style={{height:'100%',width:`${p*100}%`,background:i%2?'linear-gradient(90deg,#7257ff,#48c7ff)':'linear-gradient(90deg,#245cff,#10b981)'}}/></div>
           <div style={{textAlign:'right'}}>{p>=1?<Chip tone="green">ready</Chip>:<Chip tone="amber">{Math.round(p*100)}%</Chip>}</div>
         </div>;
       })}
@@ -82,7 +82,7 @@ const Mix=()=>{
         <TimelineTrack label="Ambient" segments={[1.4,.9,1.1]} accent={v21.cyan} play={play}/>
       </div>
       <div style={{height:110,display:'flex',alignItems:'end',gap:6}}>
-        {Array.from({length:44},(_,i)=>{const h=.22+.72*Math.abs(Math.sin(i*.62+play*8));return <div key={i} style={{flex:1,height:\`\${h*100}%\`,borderRadius:6,background:i%3===0?v21.green:i%3===1?v21.blue:v21.violet,opacity:.58}}/>})}
+        {Array.from({length:44},(_,i)=>{const h=.22+.72*Math.abs(Math.sin(i*.62+play*8));return <div key={i} style={{flex:1,height:`${h*100}%`,borderRadius:6,background:i%3===0?v21.green:i%3===1?v21.blue:v21.violet,opacity:.58}}/>})}
       </div>
     </Panel>
   </Stage>;
@@ -95,10 +95,10 @@ const Ducking=()=>{
     <Panel style={{height:'100%',padding:28,display:'grid',gridTemplateRows:'auto 1fr auto',gap:18}}>
       <div style={{display:'flex',gap:12}}><Chip tone="green">trigger: narration</Chip><Chip tone="violet">targets: music + ambient</Chip><Chip tone="amber">reduction: -9 dB</Chip></div>
       <div style={{position:'relative',borderRadius:24,background:'#f8fbff',border:'1px solid '+v21.line,overflow:'hidden'}}>
-        {[0,1,2,3].map(i=><div key={i} style={{position:'absolute',left:0,right:0,top:\`\${20+i*20}%\`,height:1,background:'#dfe8f8'}}/>)}
+        {[0,1,2,3].map(i=><div key={i} style={{position:'absolute',left:0,right:0,top:`${20+i*20}%`,height:1,background:'#dfe8f8'}}/>)}
         <svg viewBox="0 0 1000 420" style={{width:'100%',height:'100%'}}>
-          <polyline points={points.map(pt=>\`\${pt.x*1000},\${210-pt.music*13}\`).join(' ')} fill="none" stroke={v21.violet} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
-          <polyline points={points.map(pt=>\`\${pt.x*1000},\${pt.narration?120:300}\`).join(' ')} fill="none" stroke={v21.green} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+          <polyline points={points.map(pt=>`${pt.x*1000},${210-pt.music*13}`).join(' ')} fill="none" stroke={v21.violet} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/>
+          <polyline points={points.map(pt=>`${pt.x*1000},${pt.narration?120:300}`).join(' ')} fill="none" stroke={v21.green} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
         <div style={{position:'absolute',left:'27%',top:20,bottom:20,width:'43%',background:'rgba(16,185,129,.06)',borderLeft:'2px dashed '+v21.green,borderRight:'2px dashed '+v21.green}}/>
       </div>
