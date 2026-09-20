@@ -1,0 +1,69 @@
+mission_contract:
+  mission_id: MCF-20260920-OCI-PAONOSSO-RUNTIME-001
+  parent_mission_id: null
+  phase_id: PHASE-OCI-PAONOSSO-RUNTIME-001
+  title: "OCI Always Free runtime para PÃO NOSSO"
+  objective: >-
+    Provisionar e validar um runtime Oracle OCI Always Free para o backend
+    PÃO NOSSO sem interromper a produção atual.
+  expected_outcome: >-
+    VM Ubuntu ARM64 A1 Flex 2 OCPU / 12 GB em RUNNING, acesso SSH validado,
+    HTTPS/health funcionais e runtime pronto para receber implantação controlada.
+  scope:
+    - Oracle OCI Free Tier / Always Free
+    - cloud-infrastructure continuity
+    - VM, rede, SSH, hardening e runtime base
+    - validação para receber PÃO NOSSO
+  out_of_scope:
+    - recurso OCI pago
+    - downgrade de shape sem decisão humana
+    - cutover do webhook Meta
+    - remoção do runtime de produção atual
+  inputs:
+    - cloud-infrastructure branch mission/oci-paonosso-runtime-20260920
+    - state/oci-paonosso-runtime.yaml
+    - Oracle OCI Console live state
+  source_of_truth:
+    - context/projects/cloud-infrastructure.yaml
+    - leon337/cloud-infrastructure@mission/oci-paonosso-runtime-20260920
+  assumptions:
+    - A1 capacity is provider-dependent and may be temporarily unavailable
+  acceptance_criteria:
+    - shape remains VM.Standard.A1.Flex Always Free-eligible
+    - shape build is 2 OCPU / 12 GB
+    - instance reaches RUNNING
+    - SSH access succeeds with governed key
+    - no paid resource is created by inference
+    - continuity checkpoint is updated before handoff
+  authorizations:
+    - Persist mission and continuity artifacts authorized by LEANDRO on 2026-09-20
+  prohibitions:
+    - no secrets or private keys in Git
+    - no paid OCI resource without explicit LEANDRO decision
+    - no production Meta cutover in this infrastructure mission
+  risk_class: C
+  current_state: BLOQUEADO_CAPACIDADE
+  cycle: 1
+  selected_agents:
+    - Mestre
+    - Augusto
+    - Miriam
+    - Julia
+  decision_authority: LEANDRO
+  human_escalation_triggers:
+    - paid billing or upgrade
+    - MFA or identity verification
+    - production webhook mutation
+    - proposal to downgrade from A1 2/12
+  phase_artifact_directory: artifacts/phases/PHASE-OCI-PAONOSSO-RUNTIME-001
+
+current_checkpoint:
+  provider: Oracle Cloud Infrastructure
+  region: sa-vinhedo-1
+  shape: VM.Standard.A1.Flex
+  shape_build: 2_OCPU_12_GB
+  image: Canonical Ubuntu 24.04 Minimal aarch64
+  always_free_eligible: true
+  latest_result: OCI_A1_AD1_OUT_OF_CAPACITY
+  instance_created: false
+  next_action: RETRY_ALWAYS_FREE_A1_CAPACITY_WITHOUT_CHANGING_COST_BOUNDARY

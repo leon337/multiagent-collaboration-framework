@@ -1,0 +1,17 @@
+{
+  "mission_id": "MCF-20260920-OCI-PAONOSSO-RUNTIME-001",
+  "risk_class": "C",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "execution_topology": "PARALLEL_FAN_OUT_FAN_IN",
+  "execution_boundary": "ORACLE_OCI_AND_CLOUD_INFRASTRUCTURE",
+  "subagent_credit_requires_real_execution": true,
+  "tool_call_evidence_required": true,
+  "live_mutation_authorized": false,
+  "persistent_source_of_truth": "GitHub/MCF+cloud-infrastructure",
+  "persistent_project": "cloud-infrastructure",
+  "canonical_project_descriptor": "context/projects/cloud-infrastructure.yaml",
+  "mission_artifact": "artifacts/phases/PHASE-OCI-PAONOSSO-RUNTIME-001/MCF-20260920-OCI-PAONOSSO-RUNTIME-001-MISSION.yaml",
+  "resume_checkpoint": "artifacts/phases/PHASE-OCI-PAONOSSO-RUNTIME-001/PHASE-OCI-PAONOSSO-RUNTIME-001-CHECKPOINT.yaml",
+  "sandbox_persistent": false
+}
