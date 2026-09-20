@@ -88,6 +88,44 @@ describe('parseMcfSkillRegistry', () => {
     });
   });
 
+
+  it('loads the provider-agnostic web research skill package with governed permissions', async () => {
+    const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
+    const policyPath = resolve(process.cwd(), '../../../../skills/web/provider-policy.yaml');
+    const [content, policy] = await Promise.all([
+      readFile(registryPath, 'utf8'),
+      readFile(policyPath, 'utf8'),
+    ]);
+    const skills = parseMcfSkillRegistry(content);
+    const webSkills = skills.filter((skill) => skill.skillId.startsWith('MCF-WEB-'));
+
+    expect(webSkills.map((skill) => skill.skillId).sort()).toEqual([
+      'MCF-WEB-COLLECT',
+      'MCF-WEB-FETCH',
+      'MCF-WEB-INTERACT',
+      'MCF-WEB-MAP',
+      'MCF-WEB-MONITOR',
+      'MCF-WEB-RESEARCH',
+      'MCF-WEB-SEARCH',
+    ]);
+    expect(new Set(webSkills.map((skill) => skill.skillId)).size).toBe(7);
+    expect(webSkills.find((skill) => skill.skillId === 'MCF-WEB-SEARCH')).toMatchObject({
+      permissionProfile: 'READ_ONLY',
+      handoffTo: 'Miriam',
+    });
+    expect(webSkills.find((skill) => skill.skillId === 'MCF-WEB-INTERACT')).toMatchObject({
+      permissionProfile: 'SCOPED_WRITE',
+      handoffTo: 'Beatriz',
+    });
+    expect(webSkills.find((skill) => skill.skillId === 'MCF-WEB-MONITOR')).toMatchObject({
+      permissionProfile: 'SCOPED_WRITE',
+      handoffTo: 'Augusto',
+    });
+    expect(policy).toContain('Firecrawl_MUST_NOT_be_required_for_any_MCF_WEB_skill');
+    expect(policy).toContain('optional_fallbacks: [Firecrawl]');
+    expect(policy).toContain('no_silent_paid_fallback');
+  });
+
   it('rejects duplicate skill identifiers', () => {
     expect(() =>
       parseMcfSkillRegistry(`${registry}\n${registry.split('skills:')[1] ?? ''}`),
