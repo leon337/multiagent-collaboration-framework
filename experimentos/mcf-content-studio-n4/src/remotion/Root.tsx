@@ -26,6 +26,8 @@ import {AssetAudioFactoryShowcase} from '../showcase/phase-b/AssetAudioFactorySh
 import {IntegrationsShowcase} from '../showcase/phase-b/IntegrationsShowcase';
 import {uiCodeSync,pedagogySync,assetsAudioSync,integrationsSync} from '../showcase/phase-b/synced';
 import {ShowcaseUiCodeYouTubeQa,ShowcaseUiCodeTikTokQa,ShowcaseUiCodeReelsQa,ShowcaseUiCodeUniversalQa,ShowcasePedagogyYouTubeQa,ShowcasePedagogyTikTokQa,ShowcasePedagogyReelsQa,ShowcasePedagogyUniversalQa,ShowcaseAssetsAudioYouTubeQa,ShowcaseAssetsAudioTikTokQa,ShowcaseAssetsAudioReelsQa,ShowcaseAssetsAudioUniversalQa,ShowcaseIntegrationsYouTubeQa,ShowcaseIntegrationsTikTokQa,ShowcaseIntegrationsReelsQa,ShowcaseIntegrationsUniversalQa} from '../showcase/phase-b/PhaseBSocialQaCompositions';
+import {FactoryTourShowcase,factoryTourSync} from '../showcase/factory-tour/FactoryTourShowcase';
+import {FactoryTourYouTubeQa,FactoryTourTikTokQa,FactoryTourReelsQa,FactoryTourUniversalQa} from '../showcase/factory-tour/FactoryTourSocialQa';
 export const RemotionRoot=()=> <>
  <Composition id="RuntimeAgenticoPilot" component={RuntimeAgenticoPilot} durationInFrames={RUNTIME_AGENTICO_PILOT_DURATION} fps={RUNTIME_AGENTICO_PILOT.fps} width={RUNTIME_AGENTICO_PILOT.width} height={RUNTIME_AGENTICO_PILOT.height}/>
  <Composition id="BounceHeadlinePreviewPortrait" component={BounceHeadlinePreviewPortrait} durationInFrames={120} fps={30} width={1080} height={1920}/>
@@ -75,4 +77,9 @@ export const RemotionRoot=()=> <>
  <Composition id="ShowcaseIntegrationsTikTokQa" component={ShowcaseIntegrationsTikTokQa} durationInFrames={integrationsSync.totalFrames} fps={integrationsSync.fps} width={1080} height={1920}/>
  <Composition id="ShowcaseIntegrationsReelsQa" component={ShowcaseIntegrationsReelsQa} durationInFrames={integrationsSync.totalFrames} fps={integrationsSync.fps} width={1080} height={1920}/>
  <Composition id="ShowcaseIntegrationsUniversalQa" component={ShowcaseIntegrationsUniversalQa} durationInFrames={integrationsSync.totalFrames} fps={integrationsSync.fps} width={1080} height={1920}/>
+ <Composition id="ShowcaseFactoryTour" component={FactoryTourShowcase} durationInFrames={factoryTourSync.totalFrames} fps={factoryTourSync.fps} width={1080} height={1920}/>
+ <Composition id="FactoryTourYouTubeQa" component={FactoryTourYouTubeQa} durationInFrames={factoryTourSync.totalFrames} fps={factoryTourSync.fps} width={1080} height={1920}/>
+ <Composition id="FactoryTourTikTokQa" component={FactoryTourTikTokQa} durationInFrames={factoryTourSync.totalFrames} fps={factoryTourSync.fps} width={1080} height={1920}/>
+ <Composition id="FactoryTourReelsQa" component={FactoryTourReelsQa} durationInFrames={factoryTourSync.totalFrames} fps={factoryTourSync.fps} width={1080} height={1920}/>
+ <Composition id="FactoryTourUniversalQa" component={FactoryTourUniversalQa} durationInFrames={factoryTourSync.totalFrames} fps={factoryTourSync.fps} width={1080} height={1920}/>
 </>;
