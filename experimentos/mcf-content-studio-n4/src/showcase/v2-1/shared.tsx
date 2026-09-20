@@ -15,7 +15,7 @@ export const v21={
   red:'#f04468',
   amber:'#f2b84b',
   line:'#cbdcff',
-  panel:'rgba(255,255,255,.92)',
+  panel:'rgba(239,245,255,.95)',
 };
 
 export const reveal=(frame:number,start=0,duration=18)=>interpolate(frame,[start,start+duration],[0,1],clamp);
@@ -24,10 +24,10 @@ export const V21Canvas=({children,accent=v21.blue,style}:{children:ReactNode;acc
   const frame=useCurrentFrame();
   const drift=Math.sin(frame/52)*16;
   return <AbsoluteFill style={{
-    background:'linear-gradient(145deg,#ffffff 0%,#f7faff 42%,#edf4ff 100%)',
+    background:'linear-gradient(145deg,#e7f1ff 0%,#f2f6ff 42%,#e4edff 100%)',
     color:v21.ink,fontFamily:'Inter,ui-sans-serif,system-ui,sans-serif',overflow:'hidden',...style,
   }}>
-    <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(67,103,180,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(67,103,180,.08) 1px,transparent 1px)',backgroundSize:'54px 54px',opacity:.42}}/>
+    <div style={{position:'absolute',inset:0,backgroundImage:'linear-gradient(rgba(67,103,180,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(67,103,180,.08) 1px,transparent 1px)',backgroundSize:'54px 54px',opacity:.62}}/>
     <div style={{position:'absolute',left:-250+drift,top:-270,width:660,height:660,borderRadius:'50%',background:'radial-gradient(circle at 65% 65%,rgba(104,190,255,.72),rgba(83,92,255,.32) 46%,transparent 72%)'}}/>
     <div style={{position:'absolute',right:-300-drift,bottom:-280,width:760,height:760,borderRadius:'50%',background:'radial-gradient(circle at 30% 30%,rgba(89,224,255,.55),rgba(116,81,255,.30) 48%,transparent 74%)'}}/>
     <div style={{position:'absolute',right:34,top:150,width:240,height:240,opacity:.36,backgroundImage:'radial-gradient(circle,'+accent+' 2px,transparent 2px)',backgroundSize:'22px 22px'}}/>
@@ -58,7 +58,7 @@ export const ProofRail=({values,accent=v21.blue}:{values:[string,string,string];
   const frame=useCurrentFrame();
   const p=reveal(frame,8,20);
   return <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,alignItems:'center',opacity:p}}>
-    {values.map((v,i)=><div key={v+i} style={{height:58,border:'1px solid '+v21.line,borderRadius:18,background:'rgba(255,255,255,.78)',display:'flex',alignItems:'center',justifyContent:'center',gap:10,boxShadow:'0 10px 30px rgba(48,83,156,.07)'}}>
+    {values.map((v,i)=><div key={v+i} style={{height:58,border:'1px solid '+v21.line,borderRadius:18,background:'rgba(236,243,255,.88)',display:'flex',alignItems:'center',justifyContent:'center',gap:10,boxShadow:'0 10px 30px rgba(48,83,156,.07)'}}>
       <span style={{width:10,height:10,borderRadius:99,background:i===2?v21.green:accent,boxShadow:`0 0 0 6px ${i===2?'rgba(16,185,129,.10)':'rgba(36,92,255,.09)'}`}}/>
       <span style={{fontSize:15,fontWeight:900,letterSpacing:1.8,color:i===2?'#087a59':'#49628f'}}>{v}</span>
     </div>)}
@@ -76,7 +76,7 @@ export const Chip=({children,tone='blue',style}:{children:ReactNode;tone?:'blue'
   return <span style={{display:'inline-flex',alignItems:'center',gap:8,padding:'9px 13px',borderRadius:999,background:bg,color:fg,fontWeight:850,fontSize:15,border:'1px solid '+fg+'24',...style}}>{children}</span>;
 };
 
-export const Node=({label,value,accent=v21.blue,active=false,style}:{label:string;value?:string|number;accent?:string;active?:boolean;style?:CSSProperties})=><Panel accent={active?accent:undefined} style={{padding:20,textAlign:'center',background:active?'linear-gradient(145deg,#fff,#eef4ff)':v21.panel,boxShadow:active?'0 28px 72px rgba(36,92,255,.20)':'0 18px 42px rgba(39,76,154,.10)',...style}}>
+export const Node=({label,value,accent=v21.blue,active=false,style}:{label:string;value?:string|number;accent?:string;active?:boolean;style?:CSSProperties})=><Panel accent={active?accent:undefined} style={{padding:20,textAlign:'center',background:active?'linear-gradient(145deg,#f7faff,#dfeaff)':v21.panel,boxShadow:active?'0 28px 72px rgba(36,92,255,.20)':'0 18px 42px rgba(39,76,154,.10)',...style}}>
   <div style={{fontSize:14,letterSpacing:2.2,fontWeight:900,color:accent}}>{label}</div>
   {value!==undefined?<div style={{fontSize:34,fontWeight:950,marginTop:8}}>{value}</div>:null}
 </Panel>;
