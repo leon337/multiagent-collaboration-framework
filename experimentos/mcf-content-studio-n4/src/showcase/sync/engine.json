@@ -1,0 +1,198 @@
+{
+  "version": "1.3",
+  "fps": 30,
+  "videoId": "engine",
+  "totalFrames": 728,
+  "durationSec": 24.266667,
+  "cues": [
+    {
+      "from": 6,
+      "to": 71,
+      "text": "O MCF Content Studio N4 deixou de ser"
+    },
+    {
+      "from": 74,
+      "to": 137,
+      "text": "uma sequência de cenas isoladas."
+    },
+    {
+      "from": 151,
+      "to": 215,
+      "text": "Agora o roteiro alimenta uma engine"
+    },
+    {
+      "from": 218,
+      "to": 300,
+      "text": "com templates e componentes reutilizáveis."
+    },
+    {
+      "from": 314,
+      "to": 381,
+      "text": "O Technical Lesson Template combina"
+    },
+    {
+      "from": 384,
+      "to": 442,
+      "text": "peças aprovadas pelo Registry."
+    },
+    {
+      "from": 456,
+      "to": 533,
+      "text": "A biblioteca reúne 45 componentes,"
+    },
+    {
+      "from": 536,
+      "to": 603,
+      "text": "19 motions e 15 assets."
+    },
+    {
+      "from": 617,
+      "to": 659,
+      "text": "Menos código repetido."
+    },
+    {
+      "from": 662,
+      "to": 720,
+      "text": "Mais composição reutilizável."
+    }
+  ],
+  "scenes": {
+    "title": {
+      "from": 0,
+      "to": 145,
+      "durationFrames": 145,
+      "segmentIds": [
+        "eng-01",
+        "eng-02"
+      ]
+    },
+    "compare": {
+      "from": 145,
+      "to": 308,
+      "durationFrames": 163,
+      "segmentIds": [
+        "eng-03",
+        "eng-04"
+      ]
+    },
+    "tree": {
+      "from": 308,
+      "to": 450,
+      "durationFrames": 142,
+      "segmentIds": [
+        "eng-05",
+        "eng-06"
+      ]
+    },
+    "metrics": {
+      "from": 450,
+      "to": 611,
+      "durationFrames": 161,
+      "segmentIds": [
+        "eng-07",
+        "eng-08"
+      ]
+    },
+    "close": {
+      "from": 611,
+      "to": 728,
+      "durationFrames": 117,
+      "segmentIds": [
+        "eng-09",
+        "eng-10"
+      ]
+    }
+  },
+  "segments": [
+    {
+      "id": "eng-01",
+      "sceneId": "title",
+      "text": "O MCF Content Studio N4 deixou de ser",
+      "startFrame": 6,
+      "endFrame": 71,
+      "durationFrames": 65,
+      "durationSec": 2.136
+    },
+    {
+      "id": "eng-02",
+      "sceneId": "title",
+      "text": "uma sequência de cenas isoladas.",
+      "startFrame": 74,
+      "endFrame": 137,
+      "durationFrames": 63,
+      "durationSec": 2.088
+    },
+    {
+      "id": "eng-03",
+      "sceneId": "compare",
+      "text": "Agora o roteiro alimenta uma engine",
+      "startFrame": 151,
+      "endFrame": 215,
+      "durationFrames": 64,
+      "durationSec": 2.112
+    },
+    {
+      "id": "eng-04",
+      "sceneId": "compare",
+      "text": "com templates e componentes reutilizáveis.",
+      "startFrame": 218,
+      "endFrame": 300,
+      "durationFrames": 82,
+      "durationSec": 2.712
+    },
+    {
+      "id": "eng-05",
+      "sceneId": "tree",
+      "text": "O Technical Lesson Template combina",
+      "startFrame": 314,
+      "endFrame": 381,
+      "durationFrames": 67,
+      "durationSec": 2.232
+    },
+    {
+      "id": "eng-06",
+      "sceneId": "tree",
+      "text": "peças aprovadas pelo Registry.",
+      "startFrame": 384,
+      "endFrame": 442,
+      "durationFrames": 58,
+      "durationSec": 1.92
+    },
+    {
+      "id": "eng-07",
+      "sceneId": "metrics",
+      "text": "A biblioteca reúne 45 componentes,",
+      "startFrame": 456,
+      "endFrame": 533,
+      "durationFrames": 77,
+      "durationSec": 2.544
+    },
+    {
+      "id": "eng-08",
+      "sceneId": "metrics",
+      "text": "19 motions e 15 assets.",
+      "startFrame": 536,
+      "endFrame": 603,
+      "durationFrames": 67,
+      "durationSec": 2.232
+    },
+    {
+      "id": "eng-09",
+      "sceneId": "close",
+      "text": "Menos código repetido.",
+      "startFrame": 617,
+      "endFrame": 659,
+      "durationFrames": 42,
+      "durationSec": 1.392
+    },
+    {
+      "id": "eng-10",
+      "sceneId": "close",
+      "text": "Mais composição reutilizável.",
+      "startFrame": 662,
+      "endFrame": 720,
+      "durationFrames": 58,
+      "durationSec": 1.92
+    }
+  ]
+}

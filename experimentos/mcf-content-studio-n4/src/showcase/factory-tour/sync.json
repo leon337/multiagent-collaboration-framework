@@ -1,0 +1,141 @@
+{
+  "version": "1.0-placeholder",
+  "fps": 30,
+  "videoId": "factory-tour",
+  "totalFrames": 1800,
+  "durationSec": 60,
+  "cues": [
+    {
+      "from": 6,
+      "to": 170,
+      "text": "Esta é a fábrica N4 em operação. Sete showcases, compostos pelo próprio sistema, agora viram um único tour."
+    },
+    {
+      "from": 186,
+      "to": 350,
+      "text": "Tudo começa na evidência real. O conteúdo nasce de código, registros, políticas e estados verificáveis, não de uma narrativa inventada."
+    },
+    {
+      "from": 366,
+      "to": 530,
+      "text": "O spec escolhe componentes e registro. Templates e blocos reutilizáveis transformam intenção editorial em estrutura executável."
+    },
+    {
+      "from": 546,
+      "to": 710,
+      "text": "O sistema de motion adiciona foco, relação, digitação, métricas e progresso como comportamento, não como decoração."
+    },
+    {
+      "from": 726,
+      "to": 890,
+      "text": "O editor visual move, redimensiona, rotaciona, alinha, persiste layout e organiza múltiplas trilhas."
+    },
+    {
+      "from": 906,
+      "to": 1070,
+      "text": "As mesmas cenas simulam browser, terminal e código, ou criam recall, quiz, comparação, progressão e personagens."
+    },
+    {
+      "from": 1086,
+      "to": 1250,
+      "text": "Assets aprovados entram no pipeline. Narração, música, ambiente e efeitos são mixados com ducking e QA de loudness."
+    },
+    {
+      "from": 1266,
+      "to": 1430,
+      "text": "Bridges externos entram com proveniência e limites explícitos. Adobe, Instavar e imports governados não pulam revisão."
+    },
+    {
+      "from": 1446,
+      "to": 1610,
+      "text": "Antes da entrega, cada saída passa por typecheck, testes, QA social e sincronização de áudio e vídeo."
+    },
+    {
+      "from": 1626,
+      "to": 1790,
+      "text": "O resultado é uma fábrica que transforma evidência em vídeo assistível, rastreável e pronto para revisão. Este é o N4."
+    }
+  ],
+  "scenes": {
+    "intro": {
+      "from": 0,
+      "to": 180,
+      "durationFrames": 180,
+      "segmentIds": [
+        "intro-01"
+      ]
+    },
+    "evidence": {
+      "from": 180,
+      "to": 360,
+      "durationFrames": 180,
+      "segmentIds": [
+        "evidence-01"
+      ]
+    },
+    "components": {
+      "from": 360,
+      "to": 540,
+      "durationFrames": 180,
+      "segmentIds": [
+        "components-01"
+      ]
+    },
+    "motion": {
+      "from": 540,
+      "to": 720,
+      "durationFrames": 180,
+      "segmentIds": [
+        "motion-01"
+      ]
+    },
+    "editor": {
+      "from": 720,
+      "to": 900,
+      "durationFrames": 180,
+      "segmentIds": [
+        "editor-01"
+      ]
+    },
+    "uiPedagogy": {
+      "from": 900,
+      "to": 1080,
+      "durationFrames": 180,
+      "segmentIds": [
+        "uiPedagogy-01"
+      ]
+    },
+    "assetsAudio": {
+      "from": 1080,
+      "to": 1260,
+      "durationFrames": 180,
+      "segmentIds": [
+        "assetsAudio-01"
+      ]
+    },
+    "integrations": {
+      "from": 1260,
+      "to": 1440,
+      "durationFrames": 180,
+      "segmentIds": [
+        "integrations-01"
+      ]
+    },
+    "qa": {
+      "from": 1440,
+      "to": 1620,
+      "durationFrames": 180,
+      "segmentIds": [
+        "qa-01"
+      ]
+    },
+    "close": {
+      "from": 1620,
+      "to": 1800,
+      "durationFrames": 180,
+      "segmentIds": [
+        "close-01"
+      ]
+    }
+  }
+}

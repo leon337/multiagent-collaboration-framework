@@ -1,0 +1,131 @@
+name: Content Studio N4 Showcase Pack
+on:
+  pull_request:
+    paths:
+      - 'experimentos/mcf-content-studio-n4/src/showcase/**'
+      - 'experimentos/mcf-content-studio-n4/audio/showcase-v1.3-sync.json'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-showcase-sync.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/verify-showcase-av-sync.py'
+      - 'experimentos/mcf-content-studio-n4/src/remotion/Root.tsx'
+      - '.github/workflows/content-studio-n4-showcase.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: content-studio-n4-showcase-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  render-showcase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults: {run: {working-directory: experimentos/mcf-content-studio-n4}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Build audio-locked narration timelines
+        run: |
+          python scripts/build-showcase-sync.py \
+            --manifest audio/showcase-v1.3-sync.json \
+            --out-dir out/showcase-sync
+          diff -u src/showcase/sync/engine.json out/showcase-sync/timelines/engine.json
+          diff -u src/showcase/sync/motion.json out/showcase-sync/timelines/motion.json
+          diff -u src/showcase/sync/editor.json out/showcase-sync/timelines/editor.json
+      - name: Verify social-safe layout contracts
+        run: pnpm test -- tests/evolution.test.ts
+      - name: Render N4 showcase videos
+        run: |
+          mkdir -p out/showcase/silent
+          pnpm exec remotion render src/remotion/index.ts ShowcaseEngineRegistry out/showcase/silent/01-engine.mp4 --codec=h264 --crf=22 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseMotionSystem out/showcase/silent/02-motion.mp4 --codec=h264 --crf=22 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseVisualEditor out/showcase/silent/03-editor.mp4 --codec=h264 --crf=22 --concurrency=2
+      - name: Render V1.3 audio-locked social-safe QA stills
+        run: |
+          mkdir -p out/showcase/qa
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineYouTubeQa out/showcase/qa/01-engine-youtube.png --frame=430
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineTikTokQa out/showcase/qa/01-engine-tiktok.png --frame=430
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineReelsQa out/showcase/qa/01-engine-reels.png --frame=430
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineUniversalQa out/showcase/qa/01-engine-universal.png --frame=430
+          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionYouTubeQa out/showcase/qa/02-motion-youtube.png --frame=390
+          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionTikTokQa out/showcase/qa/02-motion-tiktok.png --frame=390
+          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionReelsQa out/showcase/qa/02-motion-reels.png --frame=390
+          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionUniversalQa out/showcase/qa/02-motion-universal.png --frame=390
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEditorYouTubeQa out/showcase/qa/03-editor-youtube.png --frame=620
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEditorTikTokQa out/showcase/qa/03-editor-tiktok.png --frame=620
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEditorReelsQa out/showcase/qa/03-editor-reels.png --frame=620
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEditorUniversalQa out/showcase/qa/03-editor-universal.png --frame=620
+
+      - name: Mux audio-locked narration
+        run: |
+          for pair in '01-engine engine' '02-motion motion' '03-editor editor'; do
+            set -- $pair; name=$1; voice=$2
+            ffmpeg -y \
+              -i out/showcase/silent/$name.mp4 \
+              -i out/showcase-sync/audio/$voice.m4a \
+              -map 0:v:0 -map 1:a:0 \
+              -c:v copy -c:a aac -b:a 192k -movflags +faststart \
+              out/showcase/$name.mp4
+            python scripts/verify-media-audio.py out/showcase/$name.mp4 --min-duration 20
+            python scripts/verify-audio-loudness.py out/showcase/$name.mp4 --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+            python scripts/verify-showcase-av-sync.py \
+              --media out/showcase/$name.mp4 \
+              --timeline out/showcase-sync/timelines/$voice.json \
+              --max-drift-frames 2 > out/showcase/$name-sync.json
+            cat out/showcase/$name-sync.json
+          done
+      - name: Build consolidated showcase
+        run: |
+          printf "file '%s'\n" "$PWD/out/showcase/01-engine.mp4" "$PWD/out/showcase/02-motion.mp4" "$PWD/out/showcase/03-editor.mp4" > out/showcase/concat.txt
+          ffmpeg -y -f concat -safe 0 -i out/showcase/concat.txt -c copy out/showcase/00-factory-showcase-consolidated.mp4
+          python scripts/verify-media-audio.py out/showcase/00-factory-showcase-consolidated.mp4 --min-duration 70
+
+      - name: Publish to Content Hub review storage
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        if: env.BLOB_READ_WRITE_TOKEN != ''
+        working-directory: .
+        run: |
+          corepack enable
+          cd apps/mcf-content-hub
+          pnpm install --frozen-lockfile=false
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase/01-engine.mp4 --slug=n4-showcase-engine-v1-1 --title="N4 Showcase — Engine, Componentes e Registry" --version=1.1 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-v1.1 --tags=engine,registry,components
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase/02-motion.mp4 --slug=n4-showcase-motion-v1-1 --title="N4 Showcase — Motion System" --version=1.1 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-v1.1 --tags=motion,semantic
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase/03-editor.mp4 --slug=n4-showcase-editor-v1-1 --title="N4 Showcase — Editor Visual" --version=1.1 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-v1.1 --tags=editor,timeline
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase/00-factory-showcase-consolidated.mp4 --slug=n4-factory-showcase-consolidated-v1-1 --title="N4 Factory Showcase — Consolidado" --version=1.1 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-v1.1-consolidated --tags=showcase,consolidated
+
+      - name: Build showcase manifest
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          items=[]
+          for name in ['01-engine','02-motion','03-editor']:
+              path=Path('out/showcase')/(name+'.mp4')
+              duration=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=nw=1:nk=1',str(path)],text=True).strip())
+              items.append({'id':name,'path':str(path),'bytes':path.stat().st_size,'durationSec':round(duration,2)})
+          Path('out/showcase/manifest.json').write_text(json.dumps({'factory':'MCF Content Studio N4','videos':items},indent=2)+'\n')
+          print(json.dumps(items,indent=2))
+          PY
+      - name: Upload showcase pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: n4-showcase-pack-v1
+          path: |
+            experimentos/mcf-content-studio-n4/out/showcase/00-factory-showcase-consolidated.mp4
+            experimentos/mcf-content-studio-n4/out/showcase/01-engine.mp4
+            experimentos/mcf-content-studio-n4/out/showcase/02-motion.mp4
+            experimentos/mcf-content-studio-n4/out/showcase/03-editor.mp4
+            experimentos/mcf-content-studio-n4/out/showcase/manifest.json
+            experimentos/mcf-content-studio-n4/out/showcase/*-sync.json
+            experimentos/mcf-content-studio-n4/out/showcase-sync/summary.json
+            experimentos/mcf-content-studio-n4/out/showcase-sync/timelines/*.json
+            experimentos/mcf-content-studio-n4/out/showcase/qa/*.png
+          if-no-files-found: error
+          retention-days: 14

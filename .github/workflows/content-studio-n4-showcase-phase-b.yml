@@ -1,0 +1,174 @@
+name: Content Studio N4 Showcase Phase B
+on:
+  pull_request:
+    paths:
+      - 'experimentos/mcf-content-studio-n4/src/showcase/phase-b/**'
+      - 'experimentos/mcf-content-studio-n4/audio/showcase-phase-b-v1.4.json'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-showcase-phase-b-sync.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-audio-mix.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/materialize-built-in-assets.py'
+      - 'experimentos/mcf-content-studio-n4/src/remotion/Root.tsx'
+      - 'experimentos/mcf-content-studio-n4/src/audio/**'
+      - 'experimentos/mcf-content-studio-n4/src/assets/**'
+      - 'experimentos/mcf-content-studio-n4/src/adobe/**'
+      - 'experimentos/mcf-content-studio-n4/src/preflight/**'
+      - 'experimentos/mcf-content-studio-n4/src/importer/**'
+      - 'experimentos/mcf-content-studio-n4/assets/**'
+      - 'experimentos/mcf-content-studio-n4/adobe/**'
+      - 'experimentos/mcf-content-studio-n4/instavar/**'
+      - '.github/workflows/content-studio-n4-showcase-phase-b.yml'
+  workflow_dispatch:
+permissions: {contents: read}
+concurrency:
+  group: content-studio-n4-showcase-phase-b-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render-phase-b:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: experimentos/mcf-content-studio-n4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+      - name: Install media and neural TTS dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak
+          python3 -m pip install --user edge-tts
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Build audio-locked Phase B timelines
+        run: |
+          python scripts/build-showcase-phase-b-sync.py             --manifest audio/showcase-phase-b-v1.4.json             --out-dir out/showcase-phase-b-sync             --source-sync-dir src/showcase/phase-b/sync
+          cat out/showcase-phase-b-sync/summary.json
+
+      - name: Validate Phase B contracts
+        run: |
+          pnpm typecheck
+          pnpm test --             tests/audio-mix.test.ts             tests/adobe-express-bridge.test.ts             tests/instavar-bridge.test.ts             tests/external-import.test.ts             tests/evolution.test.ts
+
+      - name: Materialize built-in assets
+        run: python scripts/materialize-built-in-assets.py
+
+      - name: Build Showcase 06 governed audio mix
+        run: |
+          mkdir -p out/showcase-phase-b/audio-mix
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          timeline=json.load(open('out/showcase-phase-b-sync/timelines/assets-audio.json',encoding='utf-8'))
+          fps=timeline['fps']; total=timeline['totalFrames']; total_sec=total/fps
+          root=Path('out/showcase-phase-b/audio-mix'); root.mkdir(parents=True,exist_ok=True)
+          subprocess.run(['ffmpeg','-y','-stream_loop','-1','-i','public/assets/n4/generated/music-bed.wav','-t',f'{total_sec:.6f}','-c:a','pcm_s16le',str(root/'music-loop.wav')],check=True)
+          subprocess.run(['ffmpeg','-y','-stream_loop','-1','-i','public/assets/n4/generated/ambient-pulse.wav','-t',f'{total_sec:.6f}','-c:a','pcm_s16le',str(root/'ambient-loop.wav')],check=True)
+          clips=[]; assets={}
+          for seg in timeline['segments']:
+              clips.append({'id':seg['id'],'kind':'narration','assetId':seg['id'],'startFrame':seg['startFrame'],'durationFrames':seg['durationFrames'],'gainDb':0})
+              assets[seg['id']]=seg['audioPath']
+          clips += [
+              {'id':'music-main','kind':'music','assetId':'music','startFrame':0,'durationFrames':total,'gainDb':-15,'fadeInFrames':15,'fadeOutFrames':30},
+              {'id':'ambient-main','kind':'ambient','assetId':'ambient','startFrame':0,'durationFrames':total,'gainDb':-22,'fadeInFrames':10,'fadeOutFrames':20},
+          ]
+          for i,scene in enumerate(timeline['scenes'].values()):
+              clips.append({'id':f'click-{i+1}','kind':'sfx','assetId':'click','startFrame':scene['from'],'durationFrames':4,'gainDb':-7})
+          assets.update({'music':str(root/'music-loop.wav'),'ambient':str(root/'ambient-loop.wav'),'click':'public/assets/n4/generated/ui-click.wav'})
+          spec={'fps':fps,'clips':clips,'ducking':[{'trigger':'narration','targets':['music','ambient'],'reductionDb':-9,'attackFrames':6,'releaseFrames':15}]}
+          (root/'spec.json').write_text(json.dumps(spec,indent=2)+'\n')
+          (root/'assets.json').write_text(json.dumps(assets,indent=2)+'\n')
+          PY
+          python scripts/build-audio-mix.py             --spec out/showcase-phase-b/audio-mix/spec.json             --asset-map out/showcase-phase-b/audio-mix/assets.json             --output out/showcase-phase-b/audio-mix/assets-audio-mixed.m4a
+          python scripts/verify-media-audio.py out/showcase-phase-b/audio-mix/assets-audio-mixed.m4a --min-duration 15
+          python scripts/verify-audio-loudness.py out/showcase-phase-b/audio-mix/assets-audio-mixed.m4a --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+
+      - name: Render Phase B showcase videos
+        run: |
+          mkdir -p out/showcase-phase-b/silent
+          pnpm exec remotion render src/remotion/index.ts ShowcaseUiCodeSimulation out/showcase-phase-b/silent/04-ui-code.mp4 --codec=h264 --crf=22 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcasePedagogyCharacters out/showcase-phase-b/silent/05-pedagogy.mp4 --codec=h264 --crf=22 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseAssetAudioFactory out/showcase-phase-b/silent/06-assets-audio.mp4 --codec=h264 --crf=22 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseIntegrations out/showcase-phase-b/silent/07-integrations.mp4 --codec=h264 --crf=22 --concurrency=2
+
+      - name: Render Phase B social-safe QA stills
+        run: |
+          mkdir -p out/showcase-phase-b/qa
+          ui_frame=$(python -c "import json; d=json.load(open('out/showcase-phase-b-sync/timelines/ui-code.json')); print(d['totalFrames']//2)")
+          ped_frame=$(python -c "import json; d=json.load(open('out/showcase-phase-b-sync/timelines/pedagogy.json')); print(d['totalFrames']//2)")
+          aud_frame=$(python -c "import json; d=json.load(open('out/showcase-phase-b-sync/timelines/assets-audio.json')); print(d['totalFrames']//2)")
+          int_frame=$(python -c "import json; d=json.load(open('out/showcase-phase-b-sync/timelines/integrations.json')); print(d['totalFrames']//2)")
+          for spec in             "ShowcaseUiCodeYouTubeQa 04-ui-code-youtube $ui_frame"             "ShowcaseUiCodeTikTokQa 04-ui-code-tiktok $ui_frame"             "ShowcaseUiCodeReelsQa 04-ui-code-reels $ui_frame"             "ShowcaseUiCodeUniversalQa 04-ui-code-universal $ui_frame"             "ShowcasePedagogyYouTubeQa 05-pedagogy-youtube $ped_frame"             "ShowcasePedagogyTikTokQa 05-pedagogy-tiktok $ped_frame"             "ShowcasePedagogyReelsQa 05-pedagogy-reels $ped_frame"             "ShowcasePedagogyUniversalQa 05-pedagogy-universal $ped_frame"             "ShowcaseAssetsAudioYouTubeQa 06-assets-audio-youtube $aud_frame"             "ShowcaseAssetsAudioTikTokQa 06-assets-audio-tiktok $aud_frame"             "ShowcaseAssetsAudioReelsQa 06-assets-audio-reels $aud_frame"             "ShowcaseAssetsAudioUniversalQa 06-assets-audio-universal $aud_frame"             "ShowcaseIntegrationsYouTubeQa 07-integrations-youtube $int_frame"             "ShowcaseIntegrationsTikTokQa 07-integrations-tiktok $int_frame"             "ShowcaseIntegrationsReelsQa 07-integrations-reels $int_frame"             "ShowcaseIntegrationsUniversalQa 07-integrations-universal $int_frame"; do
+            set -- $spec
+            pnpm exec remotion still src/remotion/index.ts "$1" "out/showcase-phase-b/qa/$2.png" --frame="$3"
+          done
+
+      - name: Mux audio-locked Phase B narration
+        run: |
+          mkdir -p out/showcase-phase-b/final
+          for spec in             "04-ui-code ui-code out/showcase-phase-b-sync/audio/ui-code.m4a"             "05-pedagogy pedagogy out/showcase-phase-b-sync/audio/pedagogy.m4a"             "06-assets-audio assets-audio out/showcase-phase-b/audio-mix/assets-audio-mixed.m4a"             "07-integrations integrations out/showcase-phase-b-sync/audio/integrations.m4a"; do
+            set -- $spec; name=$1; voice=$2; audio=$3
+            ffmpeg -y               -i "out/showcase-phase-b/silent/$name.mp4"               -i "$audio"               -map 0:v:0 -map 1:a:0               -c:v copy -c:a aac -b:a 192k -movflags +faststart               "out/showcase-phase-b/final/$name.mp4"
+            python scripts/verify-media-audio.py "out/showcase-phase-b/final/$name.mp4" --min-duration 15
+            python scripts/verify-audio-loudness.py "out/showcase-phase-b/final/$name.mp4" --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+            python scripts/verify-showcase-av-sync.py               --media "out/showcase-phase-b/final/$name.mp4"               --timeline "out/showcase-phase-b-sync/timelines/$voice.json"               --max-drift-frames 2 > "out/showcase-phase-b/final/$name-sync.json"
+            cat "out/showcase-phase-b/final/$name-sync.json"
+          done
+
+      - name: Build Phase B consolidated review
+        run: |
+          printf "file '%s'\n"             "$PWD/out/showcase-phase-b/final/04-ui-code.mp4"             "$PWD/out/showcase-phase-b/final/05-pedagogy.mp4"             "$PWD/out/showcase-phase-b/final/06-assets-audio.mp4"             "$PWD/out/showcase-phase-b/final/07-integrations.mp4"             > out/showcase-phase-b/concat.txt
+          ffmpeg -y -f concat -safe 0 -i out/showcase-phase-b/concat.txt -c copy out/showcase-phase-b/final/00-phase-b-consolidated.mp4
+          python scripts/verify-media-audio.py out/showcase-phase-b/final/00-phase-b-consolidated.mp4 --min-duration 60
+
+      - name: Publish Phase B to Content Hub REVIEW
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        if: env.BLOB_READ_WRITE_TOKEN != ''
+        working-directory: .
+        run: |
+          corepack enable
+          cd apps/mcf-content-hub
+          pnpm install --frozen-lockfile=false
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase-phase-b/final/04-ui-code.mp4 --slug=n4-showcase-ui-code-v1-4 --title="N4 Showcase — UI + Code Simulation" --version=1.4 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-phase-b-v1.4 --tags=ui,code,simulation
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase-phase-b/final/05-pedagogy.mp4 --slug=n4-showcase-pedagogy-v1-4 --title="N4 Showcase — Pedagogy + Characters" --version=1.4 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-phase-b-v1.4 --tags=pedagogy,characters,learning
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase-phase-b/final/06-assets-audio.mp4 --slug=n4-showcase-assets-audio-v1-4 --title="N4 Showcase — Asset + Audio Factory" --version=1.4 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-phase-b-v1.4 --tags=assets,audio,ducking
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase-phase-b/final/07-integrations.mp4 --slug=n4-showcase-integrations-v1-4 --title="N4 Showcase — Integrations" --version=1.4 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-phase-b-v1.4 --tags=integrations,adobe,instavar
+          node scripts/publish-content.mjs --file=../../experimentos/mcf-content-studio-n4/out/showcase-phase-b/final/00-phase-b-consolidated.mp4 --slug=n4-showcase-phase-b-consolidated-v1-4 --title="N4 Showcase — Phase B Consolidated" --version=1.4 --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 --issue=279 --pr=280 --commit=${{ github.sha }} --run=showcase-phase-b-v1.4 --tags=showcase,phase-b,consolidated
+
+      - name: Build Phase B manifest
+        run: |
+          python - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          items=[]
+          for name in ['04-ui-code','05-pedagogy','06-assets-audio','07-integrations','00-phase-b-consolidated']:
+              path=Path('out/showcase-phase-b/final')/(name+'.mp4')
+              duration=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=nw=1:nk=1',str(path)],text=True).strip())
+              items.append({'id':name,'path':str(path),'bytes':path.stat().st_size,'durationSec':round(duration,3)})
+          payload={'factory':'MCF Content Studio N4','packVersion':'1.4','phase':'B','videos':items}
+          Path('out/showcase-phase-b/manifest.json').write_text(json.dumps(payload,indent=2)+'\n')
+          print(json.dumps(payload,indent=2))
+          PY
+
+      - name: Upload Phase B showcase pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: n4-showcase-pack-phase-b-v1-4
+          path: |
+            experimentos/mcf-content-studio-n4/out/showcase-phase-b/final/*.mp4
+            experimentos/mcf-content-studio-n4/out/showcase-phase-b/final/*-sync.json
+            experimentos/mcf-content-studio-n4/out/showcase-phase-b/manifest.json
+            experimentos/mcf-content-studio-n4/out/showcase-phase-b-sync/summary.json
+            experimentos/mcf-content-studio-n4/out/showcase-phase-b-sync/timelines/*.json
+            experimentos/mcf-content-studio-n4/out/showcase-phase-b/qa/*.png
+            experimentos/mcf-content-studio-n4/out/showcase-phase-b/audio-mix/spec.json
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,159 @@
+{
+  "lesson": {
+    "id": "showcase-engine-registry",
+    "title": "N4 Showcase — Engine, Componentes e Registry",
+    "summary": "A própria N4 demonstrando sua arquitetura reutilizável."
+  },
+  "chapters": [
+    "Engine",
+    "Componentes",
+    "Registry"
+  ],
+  "scenes": [
+    {
+      "id": "title",
+      "componentId": "title",
+      "durationFrames": 150,
+      "props": {
+        "eyebrow": "N4 FACTORY SHOWCASE",
+        "title": "ROTEIRO → ENGINE → VÍDEO",
+        "subtitle": "Templates, componentes e registry trabalhando juntos."
+      },
+      "motionPreset": "reveal"
+    },
+    {
+      "id": "compare",
+      "componentId": "comparison",
+      "durationFrames": 180,
+      "props": {
+        "title": "De cenas isoladas para uma engine",
+        "leftTitle": "ANTES",
+        "leftBody": "TSX específico por aula",
+        "rightTitle": "AGORA",
+        "rightBody": "TechnicalLessonSpec + componentes reutilizáveis"
+      },
+      "motionPreset": "slide"
+    },
+    {
+      "id": "tree",
+      "componentId": "tree-diagram",
+      "durationFrames": 210,
+      "props": {
+        "title": "A engine combina",
+        "root": "TechnicalLessonTemplate",
+        "children": [
+          "45 componentes",
+          "6 templates",
+          "15 assets"
+        ]
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "metrics",
+      "componentId": "bar-chart",
+      "durationFrames": 210,
+      "props": {
+        "title": "Biblioteca atual",
+        "items": [
+          {
+            "label": "Components",
+            "value": 45
+          },
+          {
+            "label": "Motion",
+            "value": 19
+          },
+          {
+            "label": "Assets",
+            "value": 15
+          }
+        ],
+        "max": 50
+      },
+      "motionPreset": "scale"
+    },
+    {
+      "id": "close",
+      "componentId": "callout",
+      "durationFrames": 180,
+      "props": {
+        "label": "RESULTADO",
+        "title": "Dados mudam. A infraestrutura permanece.",
+        "body": "A próxima aula escolhe peças aprovadas em vez de duplicar código."
+      },
+      "motionPreset": "progress"
+    }
+  ],
+  "narration": {
+    "cues": [
+      {
+        "from": 0,
+        "to": 75,
+        "text": "O MCF Content Studio N4 deixou de ser"
+      },
+      {
+        "from": 75,
+        "to": 150,
+        "text": "uma sequência de cenas isoladas."
+      },
+      {
+        "from": 150,
+        "to": 240,
+        "text": "Agora o roteiro alimenta uma engine"
+      },
+      {
+        "from": 240,
+        "to": 330,
+        "text": "com templates e componentes reutilizáveis."
+      },
+      {
+        "from": 330,
+        "to": 435,
+        "text": "O Technical Lesson Template combina"
+      },
+      {
+        "from": 435,
+        "to": 540,
+        "text": "peças aprovadas pelo Registry."
+      },
+      {
+        "from": 540,
+        "to": 645,
+        "text": "A biblioteca reúne 45 componentes,"
+      },
+      {
+        "from": 645,
+        "to": 750,
+        "text": "19 motions e 15 assets."
+      },
+      {
+        "from": 750,
+        "to": 840,
+        "text": "Menos código repetido."
+      },
+      {
+        "from": 840,
+        "to": 930,
+        "text": "Mais composição reutilizável."
+      }
+    ]
+  },
+  "visuals": {
+    "aspect": "9:16",
+    "reducedMotion": false
+  },
+  "theme": {
+    "id": "mcf-light-tech",
+    "background": "#f7faff",
+    "accent": "#2d5bff"
+  },
+  "assets": [
+    "mcf-mark",
+    "source-engine-video-diagram",
+    "studio-ui-snapshot"
+  ],
+  "timings": {
+    "fps": 30
+  }
+}

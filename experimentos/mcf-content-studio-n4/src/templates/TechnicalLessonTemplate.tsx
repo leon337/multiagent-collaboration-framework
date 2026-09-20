@@ -7,7 +7,7 @@ import {SemanticFocusLayer,SemanticMotionLayer} from '../motion/semantic';
 import type {TechnicalLessonScene,TechnicalLessonSpec} from './types';
 
 const Progress=()=>{const frame=useCurrentFrame();const {durationInFrames}=useVideoConfig();const p=Math.max(0,Math.min(1,frame/Math.max(1,durationInFrames-1)));
- return <div style={{position:'absolute',left:0,right:0,bottom:0,height:8,background:'rgba(255,255,255,.12)',zIndex:40}}><div style={{height:'100%',width:`${p*100}%`,background:'#7c8cff'}}/></div>;};
+ return <div style={{position:'absolute',left:0,right:0,bottom:0,height:8,background:'rgba(45,91,255,.10)',zIndex:40}}><div style={{height:'100%',width:`${p*100}%`,background:'linear-gradient(90deg,#2d5bff,#63c8ff)'}}/></div>;};
 
 const SceneMotion=({scene,reducedMotion,children}:{scene:TechnicalLessonScene;reducedMotion:boolean;children:React.ReactNode})=>{
  const frame=useCurrentFrame();if(!scene.motionPreset)return <>{children}</>;

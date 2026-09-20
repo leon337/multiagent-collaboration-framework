@@ -1,0 +1,256 @@
+name: Content Studio N4 Showcase V2.1 Creative QA
+
+on:
+  pull_request:
+    paths:
+      - 'experimentos/mcf-content-studio-n4/src/showcase/v2-1/**'
+      - 'experimentos/mcf-content-studio-n4/src/remotion/Root.tsx'
+      - 'experimentos/mcf-content-studio-n4/scripts/visual-quality-gate-v21.py'
+      - '.github/workflows/content-studio-n4-showcase-v2-1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: n4-showcase-v21-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render-v21:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    defaults:
+      run:
+        working-directory: experimentos/mcf-content-studio-n4
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Install media and visual QA dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python3 -m pip install --user pillow
+
+      - name: Download approved audio and measured timelines
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf out/v2-1 public/factory-tour-v21
+          mkdir -p out/v2-1/source-a out/v2-1/source-b out/v2-1/source-tour public/factory-tour-v21/qa
+
+          gh run download 35492719724 --repo "$GITHUB_REPOSITORY" -n n4-showcase-pack-v1 -D out/v2-1/source-a
+          gh run download 35492719779 --repo "$GITHUB_REPOSITORY" -n n4-showcase-pack-phase-b-v1-4 -D out/v2-1/source-b
+          gh run download 35492719751 --repo "$GITHUB_REPOSITORY" -n n4-factory-tour-v1-0 -D out/v2-1/source-tour
+
+          cp "$(find out/v2-1/source-b -path '*/timelines/ui-code.json' -print -quit)" src/showcase/phase-b/sync/ui-code.json
+          cp "$(find out/v2-1/source-b -path '*/timelines/pedagogy.json' -print -quit)" src/showcase/phase-b/sync/pedagogy.json
+          cp "$(find out/v2-1/source-b -path '*/timelines/assets-audio.json' -print -quit)" src/showcase/phase-b/sync/assets-audio.json
+          cp "$(find out/v2-1/source-b -path '*/timelines/integrations.json' -print -quit)" src/showcase/phase-b/sync/integrations.json
+          cp "$(find out/v2-1/source-tour -path '*/sync/timeline.json' -print -quit)" src/showcase/factory-tour/sync.json
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          expected={'ui-code':40,'pedagogy':38,'assets-audio':38,'integrations':50,'factory-tour':60}
+          paths={
+            'ui-code':Path('src/showcase/phase-b/sync/ui-code.json'),
+            'pedagogy':Path('src/showcase/phase-b/sync/pedagogy.json'),
+            'assets-audio':Path('src/showcase/phase-b/sync/assets-audio.json'),
+            'integrations':Path('src/showcase/phase-b/sync/integrations.json'),
+            'factory-tour':Path('src/showcase/factory-tour/sync.json'),
+          }
+          for name,path in paths.items():
+              d=json.loads(path.read_text())
+              duration=float(d['durationSec'])
+              if duration < expected[name]:
+                  raise SystemExit(f'{name}: measured timeline missing ({duration}s)')
+              print(name,duration,d['totalFrames'])
+          PY
+
+      - name: Validate source and V2.1 code
+        run: |
+          pnpm typecheck
+          pnpm test -- \
+            tests/evolution.test.ts \
+            tests/audio-mix.test.ts \
+            tests/adobe-express-bridge.test.ts \
+            tests/instavar-bridge.test.ts \
+            tests/external-import.test.ts
+
+      - name: Render V2.1 visuals 01-07
+        run: |
+          mkdir -p out/v2-1/silent out/v2-1/final out/v2-1/qa out/v2-1/creative-qa
+          pnpm exec remotion render src/remotion/index.ts ShowcaseEngineRegistryV21 out/v2-1/silent/01-engine.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseMotionSystemV21 out/v2-1/silent/02-motion.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseVisualEditorV21 out/v2-1/silent/03-editor.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseUiCodeSimulationV21 out/v2-1/silent/04-ui-code.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcasePedagogyCharactersV21 out/v2-1/silent/05-pedagogy.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseAssetAudioFactoryV21 out/v2-1/silent/06-assets-audio.mp4 --codec=h264 --crf=21 --concurrency=2
+          pnpm exec remotion render src/remotion/index.ts ShowcaseIntegrationsV21 out/v2-1/silent/07-integrations.mp4 --codec=h264 --crf=21 --concurrency=2
+
+      - name: Reuse approved audio and validate 01-07
+        run: |
+          A=out/v2-1/source-a/showcase
+          B=out/v2-1/source-b/showcase-phase-b/final
+
+          declare -A SOURCE
+          SOURCE[01-engine]="$A/01-engine.mp4"
+          SOURCE[02-motion]="$A/02-motion.mp4"
+          SOURCE[03-editor]="$A/03-editor.mp4"
+          SOURCE[04-ui-code]="$B/04-ui-code.mp4"
+          SOURCE[05-pedagogy]="$B/05-pedagogy.mp4"
+          SOURCE[06-assets-audio]="$B/06-assets-audio.mp4"
+          SOURCE[07-integrations]="$B/07-integrations.mp4"
+
+          declare -A TIMELINE
+          TIMELINE[01-engine]="src/showcase/sync/engine.json"
+          TIMELINE[02-motion]="src/showcase/sync/motion.json"
+          TIMELINE[03-editor]="src/showcase/sync/editor.json"
+          TIMELINE[04-ui-code]="src/showcase/phase-b/sync/ui-code.json"
+          TIMELINE[05-pedagogy]="src/showcase/phase-b/sync/pedagogy.json"
+          TIMELINE[06-assets-audio]="src/showcase/phase-b/sync/assets-audio.json"
+          TIMELINE[07-integrations]="src/showcase/phase-b/sync/integrations.json"
+
+          for name in 01-engine 02-motion 03-editor 04-ui-code 05-pedagogy 06-assets-audio 07-integrations; do
+            ffmpeg -y \
+              -i "out/v2-1/silent/$name.mp4" \
+              -i "${SOURCE[$name]}" \
+              -map 0:v:0 -map 1:a:0 \
+              -c:v copy -c:a copy -movflags +faststart \
+              "out/v2-1/final/$name.mp4"
+
+            python3 scripts/verify-media-audio.py "out/v2-1/final/$name.mp4" --min-duration 15
+            python3 scripts/verify-audio-loudness.py "out/v2-1/final/$name.mp4" --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+            python3 scripts/verify-showcase-av-sync.py \
+              --media "out/v2-1/final/$name.mp4" \
+              --timeline "${TIMELINE[$name]}" \
+              --max-drift-frames 2 > "out/v2-1/final/$name-sync.json"
+          done
+
+      - name: Render V2.1 universal safe-area evidence
+        run: |
+          python3 - <<'PY'
+          import json,subprocess
+          specs=[
+            ('01-engine','src/showcase/sync/engine.json','V21EngineUniversalQa'),
+            ('02-motion','src/showcase/sync/motion.json','V21MotionUniversalQa'),
+            ('03-editor','src/showcase/sync/editor.json','V21EditorUniversalQa'),
+            ('04-ui-code','src/showcase/phase-b/sync/ui-code.json','V21UiCodeUniversalQa'),
+            ('05-pedagogy','src/showcase/phase-b/sync/pedagogy.json','V21PedagogyUniversalQa'),
+            ('06-assets-audio','src/showcase/phase-b/sync/assets-audio.json','V21AssetAudioUniversalQa'),
+            ('07-integrations','src/showcase/phase-b/sync/integrations.json','V21IntegrationsUniversalQa'),
+          ]
+          for name,timeline,comp in specs:
+              d=json.load(open(timeline))
+              frame=d['totalFrames']//2
+              subprocess.run([
+                'pnpm','exec','remotion','still','src/remotion/index.ts',comp,
+                f'out/v2-1/qa/{name}-universal.png','--frame',str(frame)
+              ],check=True)
+          PY
+
+      - name: Feed V2.1 01-07 into Factory Tour
+        run: |
+          cp out/v2-1/final/01-engine.mp4 public/factory-tour-v21/01-engine.mp4
+          cp out/v2-1/final/02-motion.mp4 public/factory-tour-v21/02-motion.mp4
+          cp out/v2-1/final/03-editor.mp4 public/factory-tour-v21/03-editor.mp4
+          cp out/v2-1/final/04-ui-code.mp4 public/factory-tour-v21/04-ui-code.mp4
+          cp out/v2-1/final/05-pedagogy.mp4 public/factory-tour-v21/05-pedagogy.mp4
+          cp out/v2-1/final/06-assets-audio.mp4 public/factory-tour-v21/06-assets-audio.mp4
+          cp out/v2-1/final/07-integrations.mp4 public/factory-tour-v21/07-integrations.mp4
+
+          cp out/v2-1/qa/01-engine-universal.png public/factory-tour-v21/qa/01-engine-universal.png
+          cp out/v2-1/qa/04-ui-code-universal.png public/factory-tour-v21/qa/04-ui-code-universal.png
+          cp out/v2-1/qa/06-assets-audio-universal.png public/factory-tour-v21/qa/06-assets-audio-universal.png
+          cp out/v2-1/qa/07-integrations-universal.png public/factory-tour-v21/qa/07-integrations-universal.png
+
+      - name: Render V2.1 Factory Tour
+        run: |
+          pnpm exec remotion render src/remotion/index.ts ShowcaseFactoryTourV21 out/v2-1/silent/08-factory-tour.mp4 --codec=h264 --crf=21 --concurrency=2
+          T=out/v2-1/source-tour/final/08-factory-tour.mp4
+          ffmpeg -y \
+            -i out/v2-1/silent/08-factory-tour.mp4 \
+            -i "$T" \
+            -map 0:v:0 -map 1:a:0 \
+            -c:v copy -c:a copy -movflags +faststart \
+            out/v2-1/final/08-factory-tour.mp4
+
+          python3 scripts/verify-media-audio.py out/v2-1/final/08-factory-tour.mp4 --min-duration 60
+          python3 scripts/verify-audio-loudness.py out/v2-1/final/08-factory-tour.mp4 --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+          python3 scripts/verify-showcase-av-sync.py \
+            --media out/v2-1/final/08-factory-tour.mp4 \
+            --timeline src/showcase/factory-tour/sync.json \
+            --max-drift-frames 2 > out/v2-1/final/08-factory-tour-sync.json
+
+          qa_frame=$(python3 -c "import json; d=json.load(open('src/showcase/factory-tour/sync.json')); s=d['scenes']['qa']; print(s['from']+s['durationFrames']//2)")
+          pnpm exec remotion still src/remotion/index.ts V21FactoryTourUniversalQa out/v2-1/qa/08-factory-tour-universal.png --frame="$qa_frame"
+
+      - name: Creative visual quality gate
+        run: |
+          python3 scripts/visual-quality-gate-v21.py \
+            --media \
+              out/v2-1/final/01-engine.mp4 \
+              out/v2-1/final/02-motion.mp4 \
+              out/v2-1/final/03-editor.mp4 \
+              out/v2-1/final/04-ui-code.mp4 \
+              out/v2-1/final/05-pedagogy.mp4 \
+              out/v2-1/final/06-assets-audio.mp4 \
+              out/v2-1/final/07-integrations.mp4 \
+              out/v2-1/final/08-factory-tour.mp4 \
+            --out-dir out/v2-1/creative-qa
+
+      - name: Build V2.1 manifest
+        run: |
+          python3 - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          items=[]
+          for name in ['01-engine','02-motion','03-editor','04-ui-code','05-pedagogy','06-assets-audio','07-integrations','08-factory-tour']:
+              p=Path('out/v2-1/final')/(name+'.mp4')
+              duration=float(subprocess.check_output([
+                'ffprobe','-v','error','-show_entries','format=duration',
+                '-of','default=nw=1:nk=1',str(p)
+              ],text=True).strip())
+              items.append({
+                'id':name,'path':str(p),'bytes':p.stat().st_size,
+                'durationSec':round(duration,3),'status':'REVIEW'
+              })
+          qa=json.load(open('out/v2-1/creative-qa/visual-quality-report.json'))
+          payload={
+            'mission':'MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001',
+            'packVersion':'2.1',
+            'designSystem':'N4 Light Tech — Evidence First',
+            'audioPolicy':'reuse-approved-audio',
+            'creativeQa':qa['status'],
+            'videos':items,
+          }
+          Path('out/v2-1/manifest.json').write_text(json.dumps(payload,indent=2)+'\n')
+          print(json.dumps(payload,indent=2))
+          PY
+
+      - name: Upload V2.1 review pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: n4-showcase-pack-v2-1
+          path: |
+            experimentos/mcf-content-studio-n4/out/v2-1/final/*.mp4
+            experimentos/mcf-content-studio-n4/out/v2-1/final/*-sync.json
+            experimentos/mcf-content-studio-n4/out/v2-1/manifest.json
+            experimentos/mcf-content-studio-n4/out/v2-1/qa/*.png
+            experimentos/mcf-content-studio-n4/out/v2-1/creative-qa/**
+          if-no-files-found: error
+          retention-days: 14

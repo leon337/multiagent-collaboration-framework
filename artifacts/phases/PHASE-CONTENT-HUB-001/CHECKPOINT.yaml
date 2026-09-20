@@ -1,0 +1,32 @@
+mission_id: MCF-CONTENT-HUB-001
+issue: 281
+state: IMPLEMENTING_V1
+approved_by: LEANDRO
+approved_scope:
+  - Vercel-hosted review application
+  - persistent content library
+  - automated publication-to-review pipeline
+  - Vercel Blob storage contract
+governance:
+  upload_implies_publication: false
+  default_content_state: REVIEW
+  production_domain_gate: HUMAN_GATE
+  merge_gate: HUMAN_GATE
+  public_release_gate: HUMAN_GATE
+architecture:
+  app: apps/mcf-content-hub
+  framework: Next.js
+  hosting: Vercel
+  storage: Vercel Blob
+  metadata: Blob manifest with local seed fallback
+  publisher: scripts/publish-content.mjs
+initial_content:
+  - n4-showcase-engine-v1-1
+  - n4-showcase-motion-v1-1
+  - n4-showcase-editor-v1-1
+  - n4-factory-showcase-consolidated-v1-1
+external_setup:
+  required:
+    - create/connect Vercel project
+    - connect Vercel Blob store
+    - propagate BLOB_READ_WRITE_TOKEN to GitHub Actions

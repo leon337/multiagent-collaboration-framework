@@ -3,10 +3,13 @@ import {searchAssets} from '../src/assets/searchAssets';
 import {getMotionPreset,isSemanticMotion,motionPresets,resolveMotionStyle} from '../src/motion/presets';
 import {resolveSemanticFocus,resolveSemanticFocusPresets} from '../src/motion/semantic';
 import {fitTextSize,isAtMinimumTextSize} from '../src/lib/textFit';
+import {captionLayoutFor,layoutFor} from '../src/lib/tokens';
+import {profileContains,socialCaptionLane,socialCoreContentInsets,socialSafeAreaProfiles} from '../src/lib/socialSafeArea';
 import {stickRigVariants} from '../src/components/StickRig';
 import {searchComponentManifests} from '../src/registry/search';
 import lesson from '../src/templates/runtime-agentico-data-demo.lesson.json';
 import {getTechnicalLessonDuration,type TechnicalLessonSpec} from '../src/templates/types';
+import {editorSync,engineSync,motionSync,showcaseEngineSpec,showcaseMotionSpec} from '../src/showcase/synced';
 
 describe('N4 evolution foundations',()=>{
   it('finds approved assets by semantic usage metadata',()=>{
@@ -26,7 +29,7 @@ describe('N4 evolution foundations',()=>{
     }
     expect(resolveSemanticFocus('relation')).toEqual(['dim-others','draw-connector','scale-target']);
     expect(resolveSemanticFocusPresets('model')).toEqual(['dim','camera-zoom']);
-    expect(resolveSemanticFocusPresets('relation')).toEqual(['connector','scale']);
+    expect(resolveSemanticFocusPresets('relation')).toEqual(['highlight','scale']);
     expect(resolveSemanticFocusPresets('text-entry')).toEqual(['typewriter','underline']);
   });
   it('discovers components by pedagogical intent',()=>{
@@ -36,10 +39,30 @@ describe('N4 evolution foundations',()=>{
   });
   it('exposes a reusable character cast from StickRig variants',()=>{expect(stickRigVariants).toEqual(['agent','operator','reviewer','human']);});
 
+  it('reserves a mobile caption lane above social platform chrome',()=>{const caption=captionLayoutFor('9:16');const layout=layoutFor('9:16');expect(caption.fontSize).toBeGreaterThanOrEqual(44);expect(caption.bottom).toBeGreaterThan(socialSafeAreaProfiles['universal-social'].uiInsets.bottom);expect(layout.safeInsets.bottom).toBeGreaterThan(caption.bottom+caption.reservedHeight-80);});
+
+  it('universal social profile contains all platform envelopes',()=>{expect(profileContains('universal-social','youtube-shorts')).toBe(true);expect(profileContains('universal-social','tiktok')).toBe(true);expect(profileContains('universal-social','instagram-reels')).toBe(true);expect(socialCoreContentInsets.right).toBeGreaterThanOrEqual(socialSafeAreaProfiles['universal-social'].uiInsets.right);expect(socialCaptionLane.right).toBeGreaterThanOrEqual(socialSafeAreaProfiles['universal-social'].uiInsets.right);});
+
   it('fits long text without dropping below the readability floor',()=>{
     const size=fitTextSize({text:'Uma manchete técnica longa que precisa permanecer legível na safe area',preferredPx:76,minPx:52,softCharacterLimit:34});
     expect(size).toBeGreaterThanOrEqual(52); expect(size).toBeLessThan(76);
     expect(isAtMinimumTextSize({text:'x'.repeat(500),preferredPx:76,minPx:52,softCharacterLimit:34})).toBe(true);
   });
   it('derives lesson duration from scene data',()=>{expect(getTechnicalLessonDuration(lesson as TechnicalLessonSpec)).toBe(570);});
+  it('locks showcase scene duration to measured narration timelines',()=>{
+    expect(getTechnicalLessonDuration(showcaseEngineSpec)).toBe(engineSync.totalFrames);
+    expect(getTechnicalLessonDuration(showcaseMotionSpec)).toBe(motionSync.totalFrames);
+    expect(editorSync.totalFrames).toBeGreaterThan(editorSync.cues.at(-1)?.to??0);
+  });
+  it('keeps captions monotonic and inside audio-locked timelines',()=>{
+    for(const sync of [engineSync,motionSync,editorSync]){
+      let previous=-1;
+      for(const cue of sync.cues){
+        expect(cue.from).toBeGreaterThanOrEqual(previous);
+        expect(cue.to).toBeGreaterThan(cue.from);
+        expect(cue.to).toBeLessThanOrEqual(sync.totalFrames);
+        previous=cue.to;
+      }
+    }
+  });
 });

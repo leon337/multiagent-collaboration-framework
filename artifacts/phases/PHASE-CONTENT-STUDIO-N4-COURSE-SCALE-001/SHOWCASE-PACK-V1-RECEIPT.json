@@ -1,0 +1,50 @@
+{
+  "mission_id": "MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001",
+  "issue": 279,
+  "wave": "SHOWCASE-V1-FOUNDATION",
+  "worker_kind": "deterministic_sandbox_workers",
+  "cognitive_agent_credit": false,
+  "source_head": "514a85db51450f5194b0a297835a3c682318885d",
+  "videos": [
+    {
+      "id": "01-engine",
+      "features": [
+        "TechnicalLessonTemplate",
+        "45 components",
+        "6 templates",
+        "registry",
+        "semantic discovery"
+      ],
+      "narration_provider": "AI Voice Generator / clear",
+      "composition": "ShowcaseEngineRegistry"
+    },
+    {
+      "id": "02-motion",
+      "features": [
+        "19 motion presets",
+        "focusIntent",
+        "connector",
+        "typewriter",
+        "counter",
+        "progress"
+      ],
+      "narration_provider": "AI Voice Generator / clear",
+      "composition": "ShowcaseMotionSystem"
+    },
+    {
+      "id": "03-editor",
+      "features": [
+        "drag",
+        "resize",
+        "rotate",
+        "snap",
+        "align",
+        "nudge",
+        "multi-track"
+      ],
+      "narration_provider": "AI Voice Generator / clear",
+      "composition": "ShowcaseVisualEditor"
+    }
+  ],
+  "delivery_rule": "watchable video first; source and artifacts secondary"
+}

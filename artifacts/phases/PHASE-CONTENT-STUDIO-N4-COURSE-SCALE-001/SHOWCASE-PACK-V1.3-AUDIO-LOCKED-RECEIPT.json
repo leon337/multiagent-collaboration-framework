@@ -1,0 +1,58 @@
+{
+  "mission_id": "MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001",
+  "issue": 279,
+  "wave": "SHOWCASE-V1.3-AUDIO-LOCKED",
+  "detected_by": "LEANDRO",
+  "problem": "Captions, animation scene timing and narration audio were authored on independent clocks.",
+  "v1_2_evidence": {
+    "authored_visual_duration_sec": {
+      "engine": 31,
+      "motion": 34.5,
+      "editor": 33
+    },
+    "encoded_final_duration_sec": {
+      "engine": 28.8,
+      "motion": 27.288,
+      "editor": 26.832
+    },
+    "mux_behavior": "monolithic narration MP3 + video tpad + -shortest",
+    "consequence": "video/caption timeline could be truncated or drift relative to spoken narration"
+  },
+  "correction": {
+    "timing_source": "measured narration segment duration",
+    "voice": "clear",
+    "narration_segments": 29,
+    "fps": 30,
+    "lead_in_frames": 6,
+    "inter_cue_gap_frames": 3,
+    "scene_tail_frames": 8,
+    "derived_timelines": {
+      "engine": {
+        "totalFrames": 728,
+        "durationSec": 24.266667,
+        "segments": 10
+      },
+      "motion": {
+        "totalFrames": 754,
+        "durationSec": 25.133333,
+        "segments": 9
+      },
+      "editor": {
+        "totalFrames": 820,
+        "durationSec": 27.333333,
+        "segments": 10
+      }
+    },
+    "rules": [
+      "caption from/to comes from the exact segment start/end frames",
+      "scene duration is derived from the narration segments assigned to that scene",
+      "editor animation anchors use caption/audio cue frames instead of hardcoded wall-clock frames",
+      "mux no longer uses tpad or -shortest to hide timeline mismatch",
+      "post-mux QA fails when audio/video/timeline drift exceeds two frames"
+    ]
+  },
+  "gate": "Showcase 04–08 remains paused until V1.3 exact-head render passes sync QA and LEANDRO visually reviews the result.",
+  "merge": false,
+  "deploy": false,
+  "publication": false
+}

@@ -17,14 +17,14 @@ export const resolveSemanticFocus=(intent:SemanticFocusIntent):SemanticFocusActi
   }
 };
 
-const overlayBase:CSSProperties={position:'absolute',pointerEvents:'none',zIndex:30};
+const overlayBase:CSSProperties={position:'absolute',pointerEvents:'none',zIndex:20};
 
 export const SemanticMotionLayer=({id,reducedMotion=false,children}:{id:MotionPresetId;reducedMotion?:boolean;children:ReactNode})=>{
   const frame=useCurrentFrame();
   const p=motionProgress(frame,0,24,reducedMotion);
   if(id==='underline') return <AbsoluteFill>
     {children}
-    <div style={{...overlayBase,left:'18%',right:'18%',bottom:'16%',height:8,borderRadius:8,background:designTokens.color.accent,transform:`scaleX(${p})`,transformOrigin:'left'}}/>
+    <div style={{...overlayBase,left:'20%',right:'20%',bottom:'22%',height:8,borderRadius:8,background:designTokens.color.accent,transform:`scaleX(${p})`,transformOrigin:'left'}}/>
   </AbsoluteFill>;
   if(id==='draw-arrow') return <AbsoluteFill>
     {children}
@@ -51,7 +51,7 @@ export const SemanticMotionLayer=({id,reducedMotion=false,children}:{id:MotionPr
   </AbsoluteFill>;
   if(id==='progress') return <AbsoluteFill>
     {children}
-    <div style={{...overlayBase,left:'8%',right:'8%',bottom:'8%',height:12,background:'rgba(255,255,255,.12)',borderRadius:8,overflow:'hidden'}}>
+    <div style={{...overlayBase,left:'10%',right:'10%',bottom:'22%',height:12,background:'rgba(255,255,255,.12)',borderRadius:8,overflow:'hidden'}}>
       <div style={{height:'100%',width:`${p*100}%`,background:designTokens.color.accent}}/>
     </div>
   </AbsoluteFill>;
@@ -61,7 +61,7 @@ export const SemanticMotionLayer=({id,reducedMotion=false,children}:{id:MotionPr
 export const resolveSemanticFocusPresets=(intent:SemanticFocusIntent):MotionPresetId[]=>{
   switch(intent){
     case 'model': return ['dim','camera-zoom'];
-    case 'relation': return ['connector','scale'];
+    case 'relation': return ['highlight','scale'];
     case 'sequence': return ['progress','draw-arrow'];
     case 'metric': return ['counter','scale'];
     case 'text-entry': return ['typewriter','underline'];

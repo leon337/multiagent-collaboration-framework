@@ -1,0 +1,152 @@
+{
+  "lesson": {
+    "id": "showcase-motion-system",
+    "title": "N4 Showcase — Motion System",
+    "summary": "Demonstração dos presets e focus intents executáveis."
+  },
+  "chapters": [
+    "Motion",
+    "Semântica",
+    "Foco"
+  ],
+  "scenes": [
+    {
+      "id": "title",
+      "componentId": "title",
+      "durationFrames": 135,
+      "props": {
+        "eyebrow": "N4 MOTION SYSTEM",
+        "title": "19 PRESETS EXECUTÁVEIS",
+        "subtitle": "Movimento com função pedagógica."
+      },
+      "motionPreset": "fade"
+    },
+    {
+      "id": "focus",
+      "componentId": "focus-concept",
+      "durationFrames": 180,
+      "props": {
+        "eyebrow": "FOCUS INTENT: MODEL",
+        "title": "A cena declara o que importa",
+        "body": "A engine combina dim + camera zoom para concentrar atenção."
+      },
+      "focusIntent": "model"
+    },
+    {
+      "id": "relation",
+      "componentId": "animated-arrow",
+      "durationFrames": 180,
+      "props": {
+        "from": "CONCEITO A",
+        "to": "CONCEITO B"
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "typing",
+      "componentId": "typing-cue",
+      "durationFrames": 180,
+      "props": {
+        "text": "focusIntent: 'text-entry'",
+        "prefix": "> ",
+        "speedFrames": 3
+      },
+      "focusIntent": "text-entry"
+    },
+    {
+      "id": "metric",
+      "componentId": "bar-chart",
+      "durationFrames": 180,
+      "props": {
+        "title": "Semântica executável",
+        "items": [
+          {
+            "label": "style",
+            "value": 12
+          },
+          {
+            "label": "semantic",
+            "value": 7
+          }
+        ],
+        "max": 19
+      },
+      "focusIntent": "metric"
+    },
+    {
+      "id": "close",
+      "componentId": "callout",
+      "durationFrames": 180,
+      "props": {
+        "label": "REGRA",
+        "title": "Animação serve à compreensão.",
+        "body": "O roteiro declara intenção. A engine resolve o movimento."
+      },
+      "motionPreset": "progress"
+    }
+  ],
+  "narration": {
+    "cues": [
+      {
+        "from": 0,
+        "to": 135,
+        "text": "O sistema de motion tem 19 presets executáveis."
+      },
+      {
+        "from": 135,
+        "to": 315,
+        "text": "Fade, zoom e câmera cuidam do ritmo e do foco."
+      },
+      {
+        "from": 315,
+        "to": 495,
+        "text": "Connector e draw arrow explicam relações."
+      },
+      {
+        "from": 495,
+        "to": 585,
+        "text": "Typewriter, underline, counter e progress"
+      },
+      {
+        "from": 585,
+        "to": 675,
+        "text": "tornam estados legíveis."
+      },
+      {
+        "from": 675,
+        "to": 765,
+        "text": "Com focus intent, a cena declara a intenção."
+      },
+      {
+        "from": 765,
+        "to": 855,
+        "text": "A engine combina o movimento."
+      },
+      {
+        "from": 855,
+        "to": 945,
+        "text": "A animação deixa de ser decoração."
+      },
+      {
+        "from": 945,
+        "to": 1035,
+        "text": "Ela passa a servir à compreensão."
+      }
+    ]
+  },
+  "visuals": {
+    "aspect": "9:16",
+    "reducedMotion": false
+  },
+  "theme": {
+    "id": "mcf-light-tech",
+    "background": "#f7faff",
+    "accent": "#2d5bff"
+  },
+  "assets": [
+    "technical-grid-texture"
+  ],
+  "timings": {
+    "fps": 30
+  }
+}

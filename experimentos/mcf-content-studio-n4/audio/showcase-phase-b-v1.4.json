@@ -1,0 +1,309 @@
+{
+  "version": "1.4",
+  "fps": 30,
+  "leadInFrames": 6,
+  "interCueGapFrames": 3,
+  "sceneTailFrames": 8,
+  "voice": "pt-BR-AntonioNeural",
+  "videos": {
+    "ui-code": {
+      "outputId": "ui-code",
+      "scenes": [
+        {
+          "sceneId": "intro",
+          "segments": [
+            {
+              "id": "ui-01",
+              "text": "A fábrica também simula interfaces e código sem depender de screenshots frágeis."
+            }
+          ]
+        },
+        {
+          "sceneId": "browser",
+          "segments": [
+            {
+              "id": "ui-02",
+              "text": "Browser Window representa produto web com conteúdo editável."
+            }
+          ]
+        },
+        {
+          "sceneId": "terminal",
+          "segments": [
+            {
+              "id": "ui-03",
+              "text": "Terminal Window digita comandos e revela resultados de forma determinística."
+            }
+          ]
+        },
+        {
+          "sceneId": "github",
+          "segments": [
+            {
+              "id": "ui-04",
+              "text": "GitHub Window transforma estado de pull request em cena rastreável."
+            }
+          ]
+        },
+        {
+          "sceneId": "vscode",
+          "segments": [
+            {
+              "id": "ui-05",
+              "text": "VS Code Window mostra arquivos e trechos de código dentro da própria composição."
+            }
+          ]
+        },
+        {
+          "sceneId": "chat",
+          "segments": [
+            {
+              "id": "ui-06",
+              "text": "Chat Window separa usuário, agente e ferramenta em uma conversa visual."
+            }
+          ]
+        },
+        {
+          "sceneId": "mobile",
+          "segments": [
+            {
+              "id": "ui-07",
+              "text": "Mobile Window leva o mesmo vocabulário para fluxos de aplicativo."
+            }
+          ]
+        },
+        {
+          "sceneId": "close",
+          "segments": [
+            {
+              "id": "ui-08",
+              "text": "A interface deixa de ser captura. Vira componente reutilizável."
+            }
+          ]
+        }
+      ]
+    },
+    "pedagogy": {
+      "outputId": "pedagogy",
+      "scenes": [
+        {
+          "sceneId": "intro",
+          "segments": [
+            {
+              "id": "ped-01",
+              "text": "O N4 também trata pedagogia como parte da composição."
+            }
+          ]
+        },
+        {
+          "sceneId": "recall",
+          "segments": [
+            {
+              "id": "ped-02",
+              "text": "Active Recall cria uma pausa antes de revelar a resposta."
+            }
+          ]
+        },
+        {
+          "sceneId": "quiz",
+          "segments": [
+            {
+              "id": "ped-03",
+              "text": "Quiz apresenta alternativas e destaca a correta no momento definido."
+            }
+          ]
+        },
+        {
+          "sceneId": "error",
+          "segments": [
+            {
+              "id": "ped-04",
+              "text": "Error versus Correct confronta uma ideia errada com o padrão certo."
+            }
+          ]
+        },
+        {
+          "sceneId": "progressive",
+          "segments": [
+            {
+              "id": "ped-05",
+              "text": "Progressive Concept constrói relações passo a passo."
+            }
+          ]
+        },
+        {
+          "sceneId": "checkpoint",
+          "segments": [
+            {
+              "id": "ped-06",
+              "text": "Checkpoint separa o que já foi aprendido do próximo conceito."
+            }
+          ]
+        },
+        {
+          "sceneId": "characters",
+          "segments": [
+            {
+              "id": "ped-07",
+              "text": "Stick Rig acrescenta agente, operador, revisor e humano, com poses e ações."
+            }
+          ]
+        },
+        {
+          "sceneId": "close",
+          "segments": [
+            {
+              "id": "ped-08",
+              "text": "Aprender deixa de ser só assistir. A cena passa a provocar recuperação e decisão."
+            }
+          ]
+        }
+      ]
+    },
+    "assets-audio": {
+      "outputId": "assets-audio",
+      "scenes": [
+        {
+          "sceneId": "intro",
+          "segments": [
+            {
+              "id": "aud-01",
+              "text": "Assets e áudio também fazem parte da fábrica, com contratos verificáveis."
+            }
+          ]
+        },
+        {
+          "sceneId": "assets",
+          "segments": [
+            {
+              "id": "aud-02",
+              "text": "A Asset Library só retorna itens aprovados que combinam com a consulta."
+            }
+          ]
+        },
+        {
+          "sceneId": "procedural",
+          "segments": [
+            {
+              "id": "aud-03",
+              "text": "Vídeo, clique, ambiente e music bed podem ser materializados de forma procedural."
+            }
+          ]
+        },
+        {
+          "sceneId": "mix",
+          "segments": [
+            {
+              "id": "aud-04",
+              "text": "O mix aceita narração, música, efeitos e ambiente em trilhas separadas."
+            }
+          ]
+        },
+        {
+          "sceneId": "ducking",
+          "segments": [
+            {
+              "id": "aud-05",
+              "text": "Quando a narração entra, música e ambiente reduzem o ganho por regra de ducking."
+            }
+          ]
+        },
+        {
+          "sceneId": "qa",
+          "segments": [
+            {
+              "id": "aud-06",
+              "text": "O pipeline verifica stream de áudio, duração e loudness antes da revisão."
+            }
+          ]
+        },
+        {
+          "sceneId": "close",
+          "segments": [
+            {
+              "id": "aud-07",
+              "text": "O áudio deixa de ser pós-produção solta. Ele vira parte governada do spec."
+            }
+          ]
+        }
+      ]
+    },
+    "integrations": {
+      "outputId": "integrations",
+      "scenes": [
+        {
+          "sceneId": "intro",
+          "segments": [
+            {
+              "id": "int-01",
+              "text": "Integração no N4 significa handoff governado, não promessa de automação mágica."
+            }
+          ]
+        },
+        {
+          "sceneId": "adobe",
+          "segments": [
+            {
+              "id": "int-02",
+              "text": "Adobe Express entra como referência visual mais tokens alvo do N4."
+            }
+          ]
+        },
+        {
+          "sceneId": "limits",
+          "segments": [
+            {
+              "id": "int-03",
+              "text": "O bridge declara explicitamente que não existe introspecção de nós, tokens ou paridade pixel perfect."
+            }
+          ]
+        },
+        {
+          "sceneId": "instavar",
+          "segments": [
+            {
+              "id": "int-04",
+              "text": "Instavar VideoSpec um ponto zero entra e sai pelo contrato verificado em nove por dezesseis."
+            }
+          ]
+        },
+        {
+          "sceneId": "importer",
+          "segments": [
+            {
+              "id": "int-05",
+              "text": "O importer escolhe adaptador e revisa dependências, licença, rede e código dinâmico antes de promover uma peça."
+            }
+          ]
+        },
+        {
+          "sceneId": "adapted",
+          "segments": [
+            {
+              "id": "int-06",
+              "text": "O Bounce Headline externo só virou componente aprovado depois de revisão, pin de revisão e evidência visual."
+            }
+          ]
+        },
+        {
+          "sceneId": "explain",
+          "segments": [
+            {
+              "id": "int-07",
+              "text": "Explain existe como companion educacional assistível, sem substituir o compositor Remotion nem gates."
+            }
+          ]
+        },
+        {
+          "sceneId": "close",
+          "segments": [
+            {
+              "id": "int-08",
+              "text": "Integração serve à rastreabilidade. Origem, limites, adaptação e aprovação ficam explícitos."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
