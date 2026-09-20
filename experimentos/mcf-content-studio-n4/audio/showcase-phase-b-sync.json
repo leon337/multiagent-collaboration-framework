@@ -1,0 +1,429 @@
+{
+  "version": "phase-b-1.0",
+  "fps": 30,
+  "leadInFrames": 6,
+  "interCueGapFrames": 3,
+  "sceneTailFrames": 8,
+  "videos": {
+    "ui": {
+      "outputId": "ui",
+      "scenes": [
+        {
+          "sceneId": "title",
+          "segments": [
+            {
+              "id": "ui-01",
+              "text": "No N4, interfaces de software podem ser demonstradas sem screenshots frágeis.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/046693e4-5605-45b4-b1d4-5ec0fb79864d.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "browser",
+          "segments": [
+            {
+              "id": "ui-02",
+              "text": "Browser Window simula navegação, endereço e contexto de produto.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/33024b1d-ebb0-4263-a948-d17e1bea177a.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "vscode",
+          "segments": [
+            {
+              "id": "ui-03",
+              "text": "VS Code Window mostra arquivos e código dentro da própria composição.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f79bd1eb-b2ec-4f95-a660-acb6ff617d8e.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "terminal",
+          "segments": [
+            {
+              "id": "ui-04",
+              "text": "Terminal Window digita comandos e revela a saída no tempo da cena.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/13c5a9d1-be70-4c1b-addb-aa5c55d3519f.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "typing",
+          "segments": [
+            {
+              "id": "ui-05",
+              "text": "Typing Cue transforma texto em uma ação de digitação executável.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/40b55993-d818-467d-a816-e5d9c4a003ae.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "scroll",
+          "segments": [
+            {
+              "id": "ui-06",
+              "text": "Scroll Cue percorre conteúdo longo sem depender de captura externa.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d2611da7-5f87-4d99-bfd2-1eace4f660ce.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "selection",
+          "segments": [
+            {
+              "id": "ui-07",
+              "text": "Selection Cue destaca exatamente o trecho que precisa de atenção.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7adb0ae0-e677-436e-903f-226bb0a70623.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "click",
+          "segments": [
+            {
+              "id": "ui-08",
+              "text": "Click Cue torna a interação visível com posição e feedback animado.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/96e3ea9a-7d65-474e-a3e3-464af79081ba.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "github",
+          "segments": [
+            {
+              "id": "ui-09g",
+              "text": "GitHub Window resume repositório, pull request e estado de revisão.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/437b6a02-8a24-4500-aedd-673964099f7e.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "chat",
+          "segments": [
+            {
+              "id": "ui-10c",
+              "text": "Chat Window mostra a troca entre usuário, agente e ferramenta.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a1be5c8e-e200-4ad3-bda5-957ef21a4560.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "mobile",
+          "segments": [
+            {
+              "id": "ui-11m",
+              "text": "Mobile Window leva o mesmo fluxo para uma interface vertical.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b0110ec8-cc59-4c63-9e55-c743be7ba8a2.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "close",
+          "segments": [
+            {
+              "id": "ui-12z",
+              "text": "Tudo continua editável, reutilizável e renderizado pela mesma fábrica N4.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/890cd1c5-a9e8-436e-a8c6-a71a230968dd.mp3"
+            }
+          ]
+        }
+      ]
+    },
+    "pedagogy": {
+      "outputId": "pedagogy",
+      "scenes": [
+        {
+          "sceneId": "title",
+          "segments": [
+            {
+              "id": "ped-01",
+              "text": "Pedagogia no N4 também é componente executável, não apenas texto no roteiro.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/954b865d-dc89-4e51-90f7-953fa5b0b45a.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "recall",
+          "segments": [
+            {
+              "id": "ped-02",
+              "text": "Active Recall faz a pergunta primeiro e só depois revela a resposta.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/de21393b-a850-4009-83b6-77446d128ea5.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "quiz",
+          "segments": [
+            {
+              "id": "ped-03",
+              "text": "Quiz apresenta alternativas e destaca a opção correta no momento planejado.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/fbad9540-5c8f-4e7a-a018-a4de3c84af78.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "error",
+          "segments": [
+            {
+              "id": "ped-04",
+              "text": "Error versus Correct contrasta o erro comum com a forma recomendada.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/99aae234-46d8-44a7-8575-efffc2713b24.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "progressive",
+          "segments": [
+            {
+              "id": "ped-05",
+              "text": "Progressive Concept conecta ideias em sequência para reduzir carga cognitiva.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/aec0b0c0-4a17-4c8e-b2f4-a737e0878f76.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "checkpoint",
+          "segments": [
+            {
+              "id": "ped-06",
+              "text": "Checkpoint separa o que já foi aprendido do próximo conceito.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b52f620f-8840-476b-9aca-9807e62ff4ed.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "character-roles",
+          "segments": [
+            {
+              "id": "ped-07",
+              "text": "Stick Rig representa agente, operador, revisor e humano com poses e ações.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/603520fd-ca0d-4c80-b42d-3ed75c9142a0.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "character-action",
+          "segments": [
+            {
+              "id": "ped-08",
+              "text": "O personagem pode pensar, apontar, digitar, falar, reagir e celebrar.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c6862ed0-3855-4cab-8baf-a5de8888ef67.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "close",
+          "segments": [
+            {
+              "id": "ped-09",
+              "text": "Assim a fábrica combina explicação, prática e personagem no mesmo sistema visual.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7ff89268-192a-4266-80af-fc7bdbd68af2.mp3"
+            }
+          ]
+        }
+      ]
+    },
+    "audio": {
+      "outputId": "audio",
+      "scenes": [
+        {
+          "sceneId": "title",
+          "segments": [
+            {
+              "id": "aud-01",
+              "text": "A Asset Library do N4 trabalha com assets versionados, licenciados e aprovados.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/10c93f18-10de-4e2d-9dbd-bf46798319f9.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "registry",
+          "segments": [
+            {
+              "id": "aud-02",
+              "text": "O registry atual reúne quinze assets entre ícones, avatares, mockups, vídeo e áudio.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ba8b6436-0a21-4156-9c45-d0b983923c30.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "search",
+          "segments": [
+            {
+              "id": "aud-03",
+              "text": "A busca filtra uso, estilo, orientação, tema e tipo antes da composição.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/efd21e00-3b24-452e-ab53-f31b3d83e474.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "clip-contract",
+          "segments": [
+            {
+              "id": "aud-04",
+              "text": "No áudio, cada clip declara trilha, início, duração, ganho e fades.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/2a8735e7-267d-49fd-b6a0-6b1e96d68ed2.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "tracks",
+          "segments": [
+            {
+              "id": "aud-05",
+              "text": "Narração, efeitos, música e ambiente vivem em trilhas separadas.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/bdb7944f-1875-4b45-aa87-f583868e2462.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "ducking",
+          "segments": [
+            {
+              "id": "aud-06",
+              "text": "Quando a narração entra, as regras de ducking reduzem música e ambiente.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/156a86f0-d9ae-402b-9ae8-7510f6de2495.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "validation",
+          "segments": [
+            {
+              "id": "aud-07",
+              "text": "O pipeline valida duração, ganho, fades e conflitos antes do render.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/8eea4650-9d03-4d50-a6ff-7cdc9902b48e.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "loudness",
+          "segments": [
+            {
+              "id": "aud-08",
+              "text": "Depois do mux, o arquivo final passa por verificação de stream e loudness.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/40b3564a-a458-496f-a2a9-2a456ff2f3a9.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "close",
+          "segments": [
+            {
+              "id": "aud-09",
+              "text": "Asset e áudio deixam de ser anexos soltos e passam a fazer parte da fábrica.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/615aa9c7-a421-4275-94b8-e83952883697.mp3"
+            }
+          ]
+        }
+      ]
+    },
+    "integrations": {
+      "outputId": "integrations",
+      "scenes": [
+        {
+          "sceneId": "title",
+          "segments": [
+            {
+              "id": "int-01",
+              "text": "No N4, integração externa entra como handoff governado, não como atalho para a fábrica.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7d368e63-c993-49a6-a8a6-d8e58e3cbbc2.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "adobe",
+          "segments": [
+            {
+              "id": "int-02",
+              "text": "Adobe Express fornece referência visual e tokens de destino para a composição N4.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/494bc136-4b19-404d-a6e1-f649bfb91ce9.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "adobe-limits",
+          "segments": [
+            {
+              "id": "int-03",
+              "text": "A bridge não promete introspecção de nós, introspecção de tokens ou paridade pixel perfect.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/6b138fd8-4036-421b-8dfe-d063db55d1a6.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "instavar",
+          "segments": [
+            {
+              "id": "int-04",
+              "text": "Instavar VideoSpec um ponto zero pode ser convertido para Technical Lesson Spec.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7531ff73-e7b3-4c28-a54f-daf15bb0eb33.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "instavar-contract",
+          "segments": [
+            {
+              "id": "int-05",
+              "text": "O contrato verificado é vertical nove por dezesseis e aceita timing segmentado de narração.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3fca916f-4443-4c5f-bfe9-3f21267dceba.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "importer",
+          "segments": [
+            {
+              "id": "int-06",
+              "text": "O importador externo extrai candidatos e escolhe um adaptador em vez de copiar o projeto inteiro.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/167063f9-bb21-4214-a715-e1a0fb0197c2.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "evidence",
+          "segments": [
+            {
+              "id": "int-07",
+              "text": "Licença, segurança, performance e testes de adaptação precisam ter evidência.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0a013e03-1eb1-4e2a-b528-3e05ffda7be5.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "risk",
+          "segments": [
+            {
+              "id": "int-08",
+              "text": "Código dinâmico, rede obrigatória ou dependências sem versão fixa exigem revisão.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b92dc9c3-1354-4fa7-a703-c4d4d7a3a712.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "explain",
+          "segments": [
+            {
+              "id": "int-09",
+              "text": "Explain permanece como companion paralelo, sem substituir a composição feita pelo N4.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/964ff20f-129f-49e9-a81c-a6e4cccfbb3e.mp3"
+            }
+          ]
+        },
+        {
+          "sceneId": "close",
+          "segments": [
+            {
+              "id": "int-10",
+              "text": "Integrações ampliam as entradas da fábrica sem remover os gates de governança.",
+              "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f8805608-ebcf-4792-bd92-48c8f1d7fac7.mp3"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
