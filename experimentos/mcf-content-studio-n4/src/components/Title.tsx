@@ -7,9 +7,9 @@ import {Card,SafeFrame} from './shared';
 
 export type TitleProps=CommonProps&{eyebrow?:string;title?:string;subtitle?:string};
 
-const Chip=({label,icon,delay}:{label:string;icon:string;delay:number})=>{
+const Chip=({label,icon,delay,reducedMotion=false}:{label:string;icon:string;delay:number;reducedMotion?:boolean})=>{
   const frame=useCurrentFrame();
-  const p=interpolate(frame,[delay,delay+24],[0,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
+  const p=reducedMotion?1:interpolate(frame,[delay,delay+24],[0,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
   return <div style={{
     width:190,height:150,borderRadius:34,
     background:'linear-gradient(145deg,rgba(255,255,255,.98),rgba(231,241,255,.94))',
@@ -43,11 +43,11 @@ export const Title=({aspect='9:16',reducedMotion=false,eyebrow='CAPÍTULO',title
       </div>
       {aspect!=='9:16'?<div style={{position:'relative',height:620}}>
         <div style={{position:'absolute',left:110,top:185,width:260,height:210,borderRadius:46,background:'linear-gradient(145deg,#7bbdff,#535cff)',boxShadow:'0 30px 70px rgba(69,77,255,.35)',display:'grid',placeItems:'center',color:'white',fontWeight:950,fontSize:72,transform:'rotate(-7deg)'}}>N4</div>
-        <div style={{position:'absolute',left:10,top:20}}><Chip label="SPEC" icon="◇" delay={8}/></div>
-        <div style={{position:'absolute',right:0,top:80}}><Chip label="COMPONENT" icon="⬡" delay={15}/></div>
-        <div style={{position:'absolute',right:50,bottom:35}}><Chip label="REVIEW" icon="✓" delay={22}/></div>
+        <div style={{position:'absolute',left:10,top:20}}><Chip label="SPEC" icon="◇" delay={8} reducedMotion={reducedMotion}/></div>
+        <div style={{position:'absolute',right:0,top:80}}><Chip label="COMPONENT" icon="⬡" delay={15} reducedMotion={reducedMotion}/></div>
+        <div style={{position:'absolute',right:50,bottom:35}}><Chip label="REVIEW" icon="✓" delay={22} reducedMotion={reducedMotion}/></div>
       </div>:<div style={{position:'absolute',right:80,top:260,opacity:.88,transform:'scale(.86)'}}>
-        <Chip label="N4" icon="◇" delay={8}/>
+        <Chip label="N4" icon="◇" delay={8} reducedMotion={reducedMotion}/>
       </div>}
     </div>
   </SafeFrame>;
