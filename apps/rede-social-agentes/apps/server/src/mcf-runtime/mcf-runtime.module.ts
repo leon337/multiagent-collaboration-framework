@@ -54,6 +54,7 @@ import { SocialTimelineController } from './social-timeline.controller.js';
 import { SocialTimelineService } from './social-timeline.service.js';
 import { McfStagingDeployCallbackController } from './staging-deploy-callback.controller.js';
 import { StagingDeployReconciliationService } from './staging-deploy-reconciliation.service.js';
+import { WebNativeReadAdapter } from './web-native-read.adapter.js';
 
 function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
   const config = loadRuntimeConfig();
@@ -144,6 +145,11 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [EvidenceValidator, GitHubExecutionIdentityRegistry],
     },
     {
+      provide: WebNativeReadAdapter,
+      useFactory: (evidence: EvidenceValidator) => new WebNativeReadAdapter(evidence),
+      inject: [EvidenceValidator],
+    },
+    {
       provide: CodeBuddyExecutorAdapter,
       useFactory: (evidence: EvidenceValidator) => {
         const config = codeBuddyExecutorConfig();
@@ -173,6 +179,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         githubCiQuery: GitHubCiQueryAdapter,
         githubBranchPr: GitHubBranchPullRequestAdapter,
         githubPrCollaboration: GitHubPullCollaborationAdapter,
+        webNativeRead: WebNativeReadAdapter,
         codeBuddy: CodeBuddyExecutorAdapter,
         localAgentTeam: LocalAgentTeamAdapter,
       ) =>
@@ -181,6 +188,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           githubCiQuery,
           githubBranchPr,
           githubPrCollaboration,
+          webNativeRead,
           codeBuddy,
           localAgentTeam,
         ]),
@@ -189,6 +197,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         GitHubCiQueryAdapter,
         GitHubBranchPullRequestAdapter,
         GitHubPullCollaborationAdapter,
+        WebNativeReadAdapter,
         CodeBuddyExecutorAdapter,
         LocalAgentTeamAdapter,
       ],
