@@ -1,0 +1,152 @@
+{
+  "lesson": {
+    "id": "showcase-integrations",
+    "title": "N4 Showcase — Integrations",
+    "summary": "Adobe Express, Instavar e importer externo demonstrados com limites e gates explícitos."
+  },
+  "chapters": [
+    "Adobe Express",
+    "Instavar",
+    "Importer"
+  ],
+  "scenes": [
+    {
+      "id": "title",
+      "componentId": "title",
+      "durationFrames": 120,
+      "props": {
+        "eyebrow": "N4 FACTORY SHOWCASE 07",
+        "title": "INTEGRATIONS",
+        "subtitle": "Entradas externas sem bypass de governança."
+      },
+      "motionPreset": "reveal"
+    },
+    {
+      "id": "adobe",
+      "componentId": "code-panel",
+      "durationFrames": 120,
+      "props": {
+        "title": "Adobe Express bridge",
+        "language": "ts",
+        "code": "handoffMode:\\n'visual-reference-plus-n4-target-tokens'"
+      },
+      "motionPreset": "slide"
+    },
+    {
+      "id": "adobe-limits",
+      "componentId": "error-vs-correct",
+      "durationFrames": 120,
+      "props": {
+        "title": "Claims controlados",
+        "wrong": "pixel-perfect / node introspection",
+        "right": "referência visual + target tokens"
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "instavar",
+      "componentId": "code-panel",
+      "durationFrames": 120,
+      "props": {
+        "title": "Instavar VideoSpec 1.0",
+        "language": "ts",
+        "code": "fromInstavarVideoSpec(input)\\n→ TechnicalLessonSpec"
+      },
+      "motionPreset": "scale"
+    },
+    {
+      "id": "instavar-contract",
+      "componentId": "callout",
+      "durationFrames": 120,
+      "props": {
+        "label": "VERIFIED CONTRACT",
+        "title": "9:16 + narration timing",
+        "body": "A bridge aceita o contrato vertical verificado e segmentos temporizados de narração."
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "importer",
+      "componentId": "tree-diagram",
+      "durationFrames": 120,
+      "props": {
+        "title": "Governed importer",
+        "root": "Project Snapshot",
+        "children": [
+          "single component",
+          "Remotion project",
+          "Remotion package"
+        ]
+      },
+      "motionPreset": "slide"
+    },
+    {
+      "id": "evidence",
+      "componentId": "checkpoint",
+      "durationFrames": 120,
+      "props": {
+        "title": "Antes de promover",
+        "known": [
+          "licença revisada",
+          "segurança revisada"
+        ],
+        "next": [
+          "performance + adaptation tests"
+        ]
+      },
+      "motionPreset": "progress"
+    },
+    {
+      "id": "risk",
+      "componentId": "error-vs-correct",
+      "durationFrames": 120,
+      "props": {
+        "title": "Review required",
+        "wrong": "dynamic code / latest deps",
+        "right": "pinned revision + evidence"
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "explain",
+      "componentId": "callout",
+      "durationFrames": 120,
+      "props": {
+        "label": "PARALLEL COMPANION",
+        "title": "Explain fica ao lado da fábrica.",
+        "body": "Companion externo; a composição principal continua sendo N4."
+      },
+      "motionPreset": "slide"
+    },
+    {
+      "id": "close",
+      "componentId": "callout",
+      "durationFrames": 120,
+      "props": {
+        "label": "RESULTADO",
+        "title": "Mais entradas. Os mesmos gates.",
+        "body": "Integração amplia capacidade sem remover governança."
+      },
+      "motionPreset": "progress"
+    }
+  ],
+  "narration": {
+    "cues": []
+  },
+  "visuals": {
+    "aspect": "9:16",
+    "reducedMotion": false
+  },
+  "theme": {
+    "id": "mcf-dark",
+    "background": "#080c14",
+    "accent": "#7c8cff"
+  },
+  "assets": [
+    "mcf-mark",
+    "technical-grid-texture"
+  ],
+  "timings": {
+    "fps": 30
+  }
+}
