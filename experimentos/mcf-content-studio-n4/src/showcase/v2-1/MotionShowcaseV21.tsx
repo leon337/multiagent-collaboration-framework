@@ -1,6 +1,6 @@
 import {AbsoluteFill,Sequence,interpolate,useCurrentFrame} from 'remotion';
 import {CaptionOverlay} from '../../pilot/CaptionOverlay';
-import {showcaseMotionSpec} from '../synced';
+import {motionSync,showcaseMotionSpec} from '../synced';
 import {Chip,Node,Panel,Stage,TimelineTrack,reveal,v21} from './shared';
 
 const cues=showcaseMotionSpec.narration.cues;
@@ -99,12 +99,17 @@ const Close=()=>{
   </Stage>;
 };
 
+const Scene=({id,children}:{id:keyof typeof motionSync.scenes;children:React.ReactNode})=>{
+  const s=motionSync.scenes[id]!;
+  return <Sequence from={s.from} durationInFrames={s.durationFrames}>{children}</Sequence>;
+};
+
 export const MotionShowcaseV21=()=> <AbsoluteFill>
-  <Sequence from={0} durationInFrames={135}><Intro/></Sequence>
-  <Sequence from={135} durationInFrames={180}><Focus/></Sequence>
-  <Sequence from={315} durationInFrames={180}><Relation/></Sequence>
-  <Sequence from={495} durationInFrames={180}><Typing/></Sequence>
-  <Sequence from={675} durationInFrames={180}><Metric/></Sequence>
-  <Sequence from={855} durationInFrames={180}><Close/></Sequence>
+  <Scene id="title"><Intro/></Scene>
+  <Scene id="focus"><Focus/></Scene>
+  <Scene id="relation"><Relation/></Scene>
+  <Scene id="typing"><Typing/></Scene>
+  <Scene id="metric"><Metric/></Scene>
+  <Scene id="close"><Close/></Scene>
   <CaptionOverlay cues={cues}/>
 </AbsoluteFill>;
