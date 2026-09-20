@@ -1,5 +1,5 @@
 import {useCurrentFrame,useVideoConfig} from 'remotion';
-import {captionLayoutFor,designTokens} from '../lib/tokens';
+import {captionLayoutFor} from '../lib/tokens';
 import type {CaptionCue} from './narration';
 
 export const CaptionOverlay=({cues}:{cues:readonly CaptionCue[]})=>{
@@ -18,10 +18,13 @@ export const CaptionOverlay=({cues}:{cues:readonly CaptionCue[]})=>{
       width:'fit-content',maxWidth:layout.maxWidth,
       padding:`${layout.paddingY}px ${layout.paddingX}px`,
       borderRadius:24,
-      background:'rgba(3,5,10,0.95)',border:`1px solid ${designTokens.color.line}`,
-      color:designTokens.color.text,fontSize:layout.fontSize,lineHeight:layout.lineHeight,
-      fontWeight:700,letterSpacing:0.1,textAlign:'center',
-      boxShadow:'0 18px 64px rgba(0,0,0,0.52)',
+      background:'rgba(255,255,255,.94)',
+      border:'1px solid #c7d9ff',
+      color:'#07142f',
+      fontSize:layout.fontSize,lineHeight:layout.lineHeight,
+      fontWeight:800,letterSpacing:0.1,textAlign:'center',
+      boxShadow:'0 18px 54px rgba(44,82,170,.18)',
+      backdropFilter:'blur(18px)',
       textWrap:'balance',
     }}>{cue.text}</div>
   </div>;

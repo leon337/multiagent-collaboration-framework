@@ -8,11 +8,15 @@
   },
   "tokens": {
     "colors": {
-      "background": "#080c14",
-      "surface": "#111827",
-      "text": "#f7f9fc",
-      "muted": "#aab4c6",
-      "accent": "#7c8cff"
+      "background": "#f7faff",
+      "surface": "rgba(255,255,255,.86)",
+      "surfaceStrong": "#edf3ff",
+      "text": "#07142f",
+      "muted": "#63789d",
+      "accent": "#2d5bff",
+      "positive": "#10b981",
+      "negative": "#f04468",
+      "line": "#cfe0ff"
     },
     "spacing": {
       "xs": 8,
