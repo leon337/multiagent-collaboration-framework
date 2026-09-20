@@ -1,0 +1,207 @@
+name: Publish N4 Showcase Pack to Content Hub
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      SOURCE_HEAD: de4e5eeaacee9ec498afcdbc09129df9dee63ed3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Require Content Hub storage credential
+        run: |
+          test -n "$BLOB_READ_WRITE_TOKEN" || {
+            echo "BLOB_READ_WRITE_TOKEN is unavailable in this workflow context."
+            exit 1
+          }
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Download exact-head showcase artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf /tmp/mcf-publish
+          mkdir -p /tmp/mcf-publish/phase-a /tmp/mcf-publish/phase-b /tmp/mcf-publish/tour
+
+          gh run download 35492719724 --repo "$GITHUB_REPOSITORY" \
+            -n n4-showcase-pack-v1 -D /tmp/mcf-publish/phase-a
+          gh run download 35492719779 --repo "$GITHUB_REPOSITORY" \
+            -n n4-showcase-pack-phase-b-v1-4 -D /tmp/mcf-publish/phase-b
+          gh run download 35492719751 --repo "$GITHUB_REPOSITORY" \
+            -n n4-factory-tour-v1-0 -D /tmp/mcf-publish/tour
+
+          for f in \
+            /tmp/mcf-publish/phase-a/01-engine.mp4 \
+            /tmp/mcf-publish/phase-a/02-motion.mp4 \
+            /tmp/mcf-publish/phase-a/03-editor.mp4 \
+            /tmp/mcf-publish/phase-b/04-ui-code.mp4 \
+            /tmp/mcf-publish/phase-b/05-pedagogy.mp4 \
+            /tmp/mcf-publish/phase-b/06-assets-audio.mp4 \
+            /tmp/mcf-publish/phase-b/07-integrations.mp4 \
+            /tmp/mcf-publish/tour/08-factory-tour.mp4; do
+            test -s "$f"
+          done
+
+      - name: Install Content Hub dependencies
+        working-directory: apps/mcf-content-hub
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+          pnpm install --frozen-lockfile=false
+
+      - name: Publish 01-08 to Content Hub REVIEW
+        working-directory: apps/mcf-content-hub
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          duration() {
+            ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$1"
+          }
+
+          publish() {
+            local file="$1"
+            local slug="$2"
+            local title="$3"
+            local version="$4"
+            local run="$5"
+            local tags="$6"
+            local summary="$7"
+            node scripts/publish-content.mjs \
+              --file="$file" \
+              --slug="$slug" \
+              --title="$title" \
+              --summary="$summary" \
+              --version="$version" \
+              --duration="$(duration "$file")" \
+              --mission=MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001 \
+              --issue=279 \
+              --pr=280 \
+              --commit="$SOURCE_HEAD" \
+              --run="$run" \
+              --visual=PASS \
+              --audio=PASS \
+              --captions=PASS \
+              --ci=PASS \
+              --tags="$tags"
+          }
+
+          publish /tmp/mcf-publish/phase-a/01-engine.mp4 \
+            n4-showcase-engine-v1-3 \
+            "N4 Showcase — Engine, Componentes e Registry" \
+            1.3 showcase-v1.3 \
+            "engine,registry,components" \
+            "TechnicalLessonTemplate, componentes reutilizáveis e Registry demonstrados pela própria fábrica."
+
+          publish /tmp/mcf-publish/phase-a/02-motion.mp4 \
+            n4-showcase-motion-v1-3 \
+            "N4 Showcase — Motion System" \
+            1.3 showcase-v1.3 \
+            "motion,semantic,focus-intent" \
+            "Motion presets e focus intents demonstrados em composição real."
+
+          publish /tmp/mcf-publish/phase-a/03-editor.mp4 \
+            n4-showcase-editor-v1-3 \
+            "N4 Showcase — Editor Visual" \
+            1.3 showcase-v1.3 \
+            "editor,timeline,layout" \
+            "Drag, resize, rotate, snap, alinhamento e timeline multitrack."
+
+          publish /tmp/mcf-publish/phase-b/04-ui-code.mp4 \
+            n4-showcase-ui-code-v1-4 \
+            "N4 Showcase — UI + Code Simulation" \
+            1.4 showcase-phase-b-v1.4 \
+            "ui,code,simulation" \
+            "Browser, terminal, GitHub, VSCode, chat e mobile simulados como componentes."
+
+          publish /tmp/mcf-publish/phase-b/05-pedagogy.mp4 \
+            n4-showcase-pedagogy-v1-4 \
+            "N4 Showcase — Pedagogy + Characters" \
+            1.4 showcase-phase-b-v1.4 \
+            "pedagogy,characters,learning" \
+            "Active Recall, Quiz, ErrorVsCorrect, ProgressiveConcept, Checkpoint e StickRig."
+
+          publish /tmp/mcf-publish/phase-b/06-assets-audio.mp4 \
+            n4-showcase-assets-audio-v1-4 \
+            "N4 Showcase — Asset + Audio Factory" \
+            1.4 showcase-phase-b-v1.4 \
+            "assets,audio,ducking" \
+            "Asset Library, narração, música, ambiente, SFX, ducking e QA de áudio."
+
+          publish /tmp/mcf-publish/phase-b/07-integrations.mp4 \
+            n4-showcase-integrations-v1-4 \
+            "N4 Showcase — Integrations" \
+            1.4 showcase-phase-b-v1.4 \
+            "integrations,adobe,instavar,importer" \
+            "Adobe Express, Instavar, importer governado e companion educacional com proveniência explícita."
+
+          publish /tmp/mcf-publish/tour/08-factory-tour.mp4 \
+            n4-factory-tour-v1-0 \
+            "N4 Factory Tour" \
+            1.0 factory-tour-v1.0 \
+            "factory-tour,showcase,n4" \
+            "Síntese de 82 segundos construída a partir dos renders reais dos Showcases 01–07."
+
+      - name: Verify Content Hub private manifest
+        working-directory: apps/mcf-content-hub
+        run: |
+          node --input-type=module <<'NODE'
+          import {get} from '@vercel/blob';
+
+          const expected = [
+            'n4-showcase-engine-v1-3',
+            'n4-showcase-motion-v1-3',
+            'n4-showcase-editor-v1-3',
+            'n4-showcase-ui-code-v1-4',
+            'n4-showcase-pedagogy-v1-4',
+            'n4-showcase-assets-audio-v1-4',
+            'n4-showcase-integrations-v1-4',
+            'n4-factory-tour-v1-0',
+          ];
+
+          const result = await get('mcf-content-hub/manifest.json', {
+            access: 'private',
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+            useCache: false,
+          });
+          if (!result || result.statusCode !== 200) {
+            throw new Error('Content Hub manifest could not be read after publication.');
+          }
+
+          const manifest = await new Response(result.stream).json();
+          const bySlug = new Map(manifest.map((item) => [item.slug, item]));
+          for (const slug of expected) {
+            const item = bySlug.get(slug);
+            if (!item) throw new Error('Missing published slug: ' + slug);
+            if (item.status !== 'REVIEW') {
+              throw new Error(slug + ' has unexpected status ' + item.status);
+            }
+            if (item.commit !== process.env.SOURCE_HEAD) {
+              throw new Error(slug + ' does not point to exact source head.');
+            }
+            if (!item.videoUrl) throw new Error(slug + ' has no private media URL.');
+          }
+
+          console.log(JSON.stringify({
+            status: 'CONTENT_HUB_REVIEW_PUBLISHED',
+            exactHead: process.env.SOURCE_HEAD,
+            publishedCount: expected.length,
+            slugs: expected,
+            manifestCount: manifest.length,
+          }, null, 2));
+          NODE
