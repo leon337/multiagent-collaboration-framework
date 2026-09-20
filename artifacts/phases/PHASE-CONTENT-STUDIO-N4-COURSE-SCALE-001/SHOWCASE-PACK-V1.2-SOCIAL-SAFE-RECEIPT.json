@@ -1,0 +1,82 @@
+{
+  "mission_id": "MCF-CONTENT-STUDIO-N4-SHOWCASE-PACK-001",
+  "issue": 279,
+  "wave": "SHOWCASE-V1.2-SOCIAL-SAFE",
+  "approved_by": "LEANDRO",
+  "objective": "Recompose V1.1 for YouTube Shorts, TikTok and Instagram Reels UI-safe placement before Showcase 04–08.",
+  "baseline_head": "66aedcb225a488c69c080b39ba22c99d6300ff51",
+  "profiles": {
+    "youtube-shorts": {
+      "top": 140,
+      "right": 200,
+      "bottom": 340,
+      "left": 100
+    },
+    "tiktok": {
+      "top": 120,
+      "right": 220,
+      "bottom": 400,
+      "left": 120
+    },
+    "instagram-reels": {
+      "top": 160,
+      "right": 200,
+      "bottom": 400,
+      "left": 110
+    },
+    "universal-social": {
+      "top": 160,
+      "right": 220,
+      "bottom": 420,
+      "left": 120
+    }
+  },
+  "policy": "Profiles are internal conservative MCF production envelopes, not permanent official pixel contracts. Platform UI can change.",
+  "core_content_insets": {
+    "top": 180,
+    "right": 240,
+    "bottom": 650,
+    "left": 140
+  },
+  "caption_lane": {
+    "left": 140,
+    "right": 240,
+    "bottom": 460,
+    "maxWidth": 700,
+    "fontSize": 44,
+    "reservedHeight": 170
+  },
+  "qa": {
+    "videos": [
+      "engine",
+      "motion",
+      "editor"
+    ],
+    "profiles": [
+      "youtube-shorts",
+      "tiktok",
+      "instagram-reels",
+      "universal-social"
+    ],
+    "still_count": 12
+  },
+  "workers": {
+    "kind": "deterministic_sandbox_workers",
+    "cognitive_agent_credit": false,
+    "receipts": [
+      {
+        "worker": "platform_profile_worker",
+        "universal_contains_all": true
+      },
+      {
+        "worker": "caption_worker",
+        "finding": "existing caption cues reached 93 chars; V1.2 chunks captions to short cues"
+      },
+      {
+        "worker": "qa_matrix_worker",
+        "render_count": 12
+      }
+    ]
+  },
+  "gate": "Showcase 04–08 remains paused until V1.2 render + social-safe QA are green and LEANDRO reviews the result."
+}

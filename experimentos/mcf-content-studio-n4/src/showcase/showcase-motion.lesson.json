@@ -90,7 +90,7 @@
       {
         "from": 0,
         "to": 135,
-        "text": "O sistema de motion agora tem dezenove presets executáveis."
+        "text": "O sistema de motion tem 19 presets executáveis."
       },
       {
         "from": 135,
@@ -100,22 +100,37 @@
       {
         "from": 315,
         "to": 495,
-        "text": "Connector e draw arrow explicam relações entre conceitos."
+        "text": "Connector e draw arrow explicam relações."
       },
       {
         "from": 495,
+        "to": 585,
+        "text": "Typewriter, underline, counter e progress"
+      },
+      {
+        "from": 585,
         "to": 675,
-        "text": "Typewriter, underline, counter e progress tornam estados legíveis."
+        "text": "tornam estados legíveis."
       },
       {
         "from": 675,
+        "to": 765,
+        "text": "Com focus intent, a cena declara a intenção."
+      },
+      {
+        "from": 765,
         "to": 855,
-        "text": "Com focus intent, a cena declara a intenção e a engine combina o movimento."
+        "text": "A engine combina o movimento."
       },
       {
         "from": 855,
+        "to": 945,
+        "text": "A animação deixa de ser decoração."
+      },
+      {
+        "from": 945,
         "to": 1035,
-        "text": "A animação deixa de ser decoração e passa a servir à compreensão."
+        "text": "Ela passa a servir à compreensão."
       }
     ]
   },

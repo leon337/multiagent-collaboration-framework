@@ -10,7 +10,7 @@ export const CaptionOverlay=({cues}:{cues:readonly CaptionCue[]})=>{
   const cue=cues.find((item)=>frame>=item.from&&frame<item.to);
   if(!cue) return null;
   return <div style={{
-    position:'absolute',left:layout.side,right:layout.side,bottom:layout.bottom,zIndex:60,
+    position:'absolute',left:layout.left,right:layout.right,bottom:layout.bottom,zIndex:60,
     display:'flex',justifyContent:'center',pointerEvents:'none',
     fontFamily:'Inter, ui-sans-serif, system-ui, sans-serif',
   }}>
@@ -20,7 +20,7 @@ export const CaptionOverlay=({cues}:{cues:readonly CaptionCue[]})=>{
       borderRadius:24,
       background:'rgba(3,5,10,0.95)',border:`1px solid ${designTokens.color.line}`,
       color:designTokens.color.text,fontSize:layout.fontSize,lineHeight:layout.lineHeight,
-      fontWeight:650,letterSpacing:0.1,textAlign:'center',
+      fontWeight:700,letterSpacing:0.1,textAlign:'center',
       boxShadow:'0 18px 64px rgba(0,0,0,0.52)',
       textWrap:'balance',
     }}>{cue.text}</div>

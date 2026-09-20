@@ -7,6 +7,7 @@ import uiCodeLessonData from '../templates/ui-code-agent-flow.lesson.json';
 import showcaseEngineData from '../showcase/showcase-engine.lesson.json';
 import showcaseMotionData from '../showcase/showcase-motion.lesson.json';
 import {EditorFactoryShowcase} from '../showcase/EditorFactoryShowcase';
+import {ShowcaseEngineYouTubeQa,ShowcaseEngineTikTokQa,ShowcaseEngineReelsQa,ShowcaseEngineUniversalQa,ShowcaseMotionYouTubeQa,ShowcaseMotionTikTokQa,ShowcaseMotionReelsQa,ShowcaseMotionUniversalQa,ShowcaseEditorYouTubeQa,ShowcaseEditorTikTokQa,ShowcaseEditorReelsQa,ShowcaseEditorUniversalQa} from '../qa/SocialSafeQaCompositions';
 import instavarFixture from '../../instavar/proof-walkthrough.fixture.json';
 import {fromInstavarVideoSpec,type InstavarVideoSpec} from '../preflight/instavar';
 const technicalLessonDemo=technicalLessonDemoData as TechnicalLessonSpec;
@@ -37,4 +38,16 @@ export const RemotionRoot=()=> <>
  <Composition id="ShowcaseEngineRegistry" component={TechnicalLessonTemplate} durationInFrames={getTechnicalLessonDuration(showcaseEngine)} fps={showcaseEngine.timings.fps} width={1080} height={1920} defaultProps={{spec:showcaseEngine}}/>
  <Composition id="ShowcaseMotionSystem" component={TechnicalLessonTemplate} durationInFrames={getTechnicalLessonDuration(showcaseMotion)} fps={showcaseMotion.timings.fps} width={1080} height={1920} defaultProps={{spec:showcaseMotion}}/>
  <Composition id="ShowcaseVisualEditor" component={EditorFactoryShowcase} durationInFrames={990} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseEngineYouTubeQa" component={ShowcaseEngineYouTubeQa} durationInFrames={getTechnicalLessonDuration(showcaseEngine)} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseEngineTikTokQa" component={ShowcaseEngineTikTokQa} durationInFrames={getTechnicalLessonDuration(showcaseEngine)} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseEngineReelsQa" component={ShowcaseEngineReelsQa} durationInFrames={getTechnicalLessonDuration(showcaseEngine)} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseEngineUniversalQa" component={ShowcaseEngineUniversalQa} durationInFrames={getTechnicalLessonDuration(showcaseEngine)} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseMotionYouTubeQa" component={ShowcaseMotionYouTubeQa} durationInFrames={getTechnicalLessonDuration(showcaseMotion)} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseMotionTikTokQa" component={ShowcaseMotionTikTokQa} durationInFrames={getTechnicalLessonDuration(showcaseMotion)} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseMotionReelsQa" component={ShowcaseMotionReelsQa} durationInFrames={getTechnicalLessonDuration(showcaseMotion)} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseMotionUniversalQa" component={ShowcaseMotionUniversalQa} durationInFrames={getTechnicalLessonDuration(showcaseMotion)} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseEditorYouTubeQa" component={ShowcaseEditorYouTubeQa} durationInFrames={990} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseEditorTikTokQa" component={ShowcaseEditorTikTokQa} durationInFrames={990} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseEditorReelsQa" component={ShowcaseEditorReelsQa} durationInFrames={990} fps={30} width={1080} height={1920}/>
+ <Composition id="ShowcaseEditorUniversalQa" component={ShowcaseEditorUniversalQa} durationInFrames={990} fps={30} width={1080} height={1920}/>
 </>;

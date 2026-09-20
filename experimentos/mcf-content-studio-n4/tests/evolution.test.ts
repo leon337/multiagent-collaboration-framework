@@ -4,6 +4,7 @@ import {getMotionPreset,isSemanticMotion,motionPresets,resolveMotionStyle} from 
 import {resolveSemanticFocus,resolveSemanticFocusPresets} from '../src/motion/semantic';
 import {fitTextSize,isAtMinimumTextSize} from '../src/lib/textFit';
 import {captionLayoutFor,layoutFor} from '../src/lib/tokens';
+import {profileContains,socialCaptionLane,socialCoreContentInsets,socialSafeAreaProfiles} from '../src/lib/socialSafeArea';
 import {stickRigVariants} from '../src/components/StickRig';
 import {searchComponentManifests} from '../src/registry/search';
 import lesson from '../src/templates/runtime-agentico-data-demo.lesson.json';
@@ -37,7 +38,9 @@ describe('N4 evolution foundations',()=>{
   });
   it('exposes a reusable character cast from StickRig variants',()=>{expect(stickRigVariants).toEqual(['agent','operator','reviewer','human']);});
 
-  it('reserves a mobile caption lane with readable text',()=>{const caption=captionLayoutFor('9:16');const layout=layoutFor('9:16');expect(caption.fontSize).toBeGreaterThanOrEqual(40);expect(caption.reservedHeight).toBeGreaterThanOrEqual(280);expect(layout.safeInsets.bottom).toBeGreaterThanOrEqual(caption.reservedHeight);});
+  it('reserves a mobile caption lane above social platform chrome',()=>{const caption=captionLayoutFor('9:16');const layout=layoutFor('9:16');expect(caption.fontSize).toBeGreaterThanOrEqual(44);expect(caption.bottom).toBeGreaterThan(socialSafeAreaProfiles['universal-social'].uiInsets.bottom);expect(layout.safeInsets.bottom).toBeGreaterThan(caption.bottom+caption.reservedHeight-80);});
+
+  it('universal social profile contains all platform envelopes',()=>{expect(profileContains('universal-social','youtube-shorts')).toBe(true);expect(profileContains('universal-social','tiktok')).toBe(true);expect(profileContains('universal-social','instagram-reels')).toBe(true);expect(socialCoreContentInsets.right).toBeGreaterThanOrEqual(socialSafeAreaProfiles['universal-social'].uiInsets.right);expect(socialCaptionLane.right).toBeGreaterThanOrEqual(socialSafeAreaProfiles['universal-social'].uiInsets.right);});
 
   it('fits long text without dropping below the readability floor',()=>{
     const size=fitTextSize({text:'Uma manchete técnica longa que precisa permanecer legível na safe area',preferredPx:76,minPx:52,softCharacterLimit:34});

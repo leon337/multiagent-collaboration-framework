@@ -89,28 +89,53 @@
     "cues": [
       {
         "from": 0,
+        "to": 75,
+        "text": "O MCF Content Studio N4 deixou de ser"
+      },
+      {
+        "from": 75,
         "to": 150,
-        "text": "O MCF Content Studio N4 deixou de ser uma sequência de cenas isoladas."
+        "text": "uma sequência de cenas isoladas."
       },
       {
         "from": 150,
+        "to": 240,
+        "text": "Agora o roteiro alimenta uma engine"
+      },
+      {
+        "from": 240,
         "to": 330,
-        "text": "Agora o roteiro alimenta uma engine com templates parametrizados e componentes reutilizáveis."
+        "text": "com templates e componentes reutilizáveis."
       },
       {
         "from": 330,
+        "to": 435,
+        "text": "O Technical Lesson Template combina"
+      },
+      {
+        "from": 435,
         "to": 540,
-        "text": "O Technical Lesson Template combina peças aprovadas pelo Registry."
+        "text": "peças aprovadas pelo Registry."
       },
       {
         "from": 540,
+        "to": 645,
+        "text": "A biblioteca reúne 45 componentes,"
+      },
+      {
+        "from": 645,
         "to": 750,
-        "text": "Hoje a biblioteca reúne quarenta e cinco componentes, dezenove motions e quinze assets."
+        "text": "19 motions e 15 assets."
       },
       {
         "from": 750,
+        "to": 840,
+        "text": "Menos código repetido."
+      },
+      {
+        "from": 840,
         "to": 930,
-        "text": "Menos código repetido. Mais composição reutilizável."
+        "text": "Mais composição reutilizável."
       }
     ]
   },

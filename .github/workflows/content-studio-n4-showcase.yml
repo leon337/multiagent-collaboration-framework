@@ -33,18 +33,29 @@ jobs:
           curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9a14bc44-5f69-4017-92a8-d3fb61bf4d67.mp3' -o out/showcase/narration/engine.mp3
           curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f2666514-7de0-4d66-9c2c-e95af27dd496.mp3' -o out/showcase/narration/motion.mp3
           curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d654c046-bac2-4877-a4d6-4227afaa2b2f.mp3' -o out/showcase/narration/editor.mp3
+      - name: Verify social-safe layout contracts
+        run: pnpm test -- tests/evolution.test.ts
       - name: Render N4 showcase videos
         run: |
           mkdir -p out/showcase/silent
           pnpm exec remotion render src/remotion/index.ts ShowcaseEngineRegistry out/showcase/silent/01-engine.mp4 --codec=h264 --crf=22 --concurrency=2
           pnpm exec remotion render src/remotion/index.ts ShowcaseMotionSystem out/showcase/silent/02-motion.mp4 --codec=h264 --crf=22 --concurrency=2
           pnpm exec remotion render src/remotion/index.ts ShowcaseVisualEditor out/showcase/silent/03-editor.mp4 --codec=h264 --crf=22 --concurrency=2
-      - name: Render V1.1 QA stills
+      - name: Render V1.2 social-safe QA stills
         run: |
           mkdir -p out/showcase/qa
-          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineRegistry out/showcase/qa/01-engine-tree.png --frame=430
-          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionSystem out/showcase/qa/02-motion-relation.png --frame=390
-          pnpm exec remotion still src/remotion/index.ts ShowcaseVisualEditor out/showcase/qa/03-editor-layout.png --frame=620
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineYouTubeQa out/showcase/qa/01-engine-youtube.png --frame=430
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineTikTokQa out/showcase/qa/01-engine-tiktok.png --frame=430
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineReelsQa out/showcase/qa/01-engine-reels.png --frame=430
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEngineUniversalQa out/showcase/qa/01-engine-universal.png --frame=430
+          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionYouTubeQa out/showcase/qa/02-motion-youtube.png --frame=390
+          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionTikTokQa out/showcase/qa/02-motion-tiktok.png --frame=390
+          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionReelsQa out/showcase/qa/02-motion-reels.png --frame=390
+          pnpm exec remotion still src/remotion/index.ts ShowcaseMotionUniversalQa out/showcase/qa/02-motion-universal.png --frame=390
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEditorYouTubeQa out/showcase/qa/03-editor-youtube.png --frame=620
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEditorTikTokQa out/showcase/qa/03-editor-tiktok.png --frame=620
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEditorReelsQa out/showcase/qa/03-editor-reels.png --frame=620
+          pnpm exec remotion still src/remotion/index.ts ShowcaseEditorUniversalQa out/showcase/qa/03-editor-universal.png --frame=620
 
       - name: Mux narration
         run: |
