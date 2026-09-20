@@ -1,0 +1,175 @@
+{
+  "lesson": {
+    "id": "showcase-ui-code-simulation",
+    "title": "N4 Showcase — UI + Code Simulation",
+    "summary": "Browser, VSCode, Terminal, interaction cues, GitHub, Chat e Mobile renderizados pela fábrica."
+  },
+  "chapters": [
+    "UI Simulation",
+    "Code",
+    "Interaction"
+  ],
+  "scenes": [
+    {
+      "id": "title",
+      "componentId": "title",
+      "durationFrames": 120,
+      "props": {
+        "eyebrow": "N4 FACTORY SHOWCASE 04",
+        "title": "UI + CODE SIMULATION",
+        "subtitle": "Interfaces executáveis dentro da composição."
+      },
+      "motionPreset": "reveal"
+    },
+    {
+      "id": "browser",
+      "componentId": "browser-window",
+      "durationFrames": 120,
+      "props": {
+        "url": "mcf.local/content-hub/review",
+        "headline": "Review Queue",
+        "body": "Uma interface simulada, versionada e independente de screenshot externo."
+      },
+      "motionPreset": "slide"
+    },
+    {
+      "id": "vscode",
+      "componentId": "vscode-window",
+      "durationFrames": 120,
+      "props": {
+        "file": "runtime.ts",
+        "code": "const receipt = await runtime.execute(tool);\\nassert(receipt.status === 'success');"
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "terminal",
+      "componentId": "terminal-window",
+      "durationFrames": 120,
+      "props": {
+        "command": "pnpm test --filter runtime",
+        "output": "✓ runtime contracts verified"
+      },
+      "motionPreset": "scale"
+    },
+    {
+      "id": "typing",
+      "componentId": "typing-cue",
+      "durationFrames": 105,
+      "props": {
+        "text": "await runtime.execute(tool)",
+        "prefix": "> ",
+        "speedFrames": 3
+      },
+      "focusIntent": "text-entry"
+    },
+    {
+      "id": "scroll",
+      "componentId": "scroll-cue",
+      "durationFrames": 105,
+      "props": {
+        "title": "Pipeline",
+        "lines": [
+          "source",
+          "storyboard",
+          "spec",
+          "components",
+          "motion",
+          "render",
+          "review"
+        ],
+        "visibleLines": 4
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "selection",
+      "componentId": "selection-cue",
+      "durationFrames": 105,
+      "props": {
+        "text": "const result = authorize(runtime)",
+        "selection": "authorize"
+      },
+      "focusIntent": "code-block"
+    },
+    {
+      "id": "click",
+      "componentId": "click-cue",
+      "durationFrames": 105,
+      "props": {
+        "label": "Executar",
+        "x": 56,
+        "y": 52
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "github",
+      "componentId": "github-window",
+      "durationFrames": 105,
+      "props": {
+        "repo": "leon337/multiagent-collaboration-framework",
+        "pr": "PR #280",
+        "status": "REVIEW",
+        "summary": "Showcase Pack rastreável ao commit e ao gate."
+      },
+      "motionPreset": "slide"
+    },
+    {
+      "id": "chat",
+      "componentId": "chat-window",
+      "durationFrames": 105,
+      "props": {
+        "title": "Runtime conversation",
+        "messages": [
+          "Usuário: mostre o fluxo.",
+          "Agente: vou executar no runtime.",
+          "Tool: receipt válido."
+        ]
+      },
+      "motionPreset": "reveal"
+    },
+    {
+      "id": "mobile",
+      "componentId": "mobile-window",
+      "durationFrames": 105,
+      "props": {
+        "app": "MCF",
+        "title": "Review Queue",
+        "body": "O mesmo fluxo técnico apresentado em uma superfície vertical de revisão."
+      },
+      "motionPreset": "scale"
+    },
+    {
+      "id": "close",
+      "componentId": "callout",
+      "durationFrames": 120,
+      "props": {
+        "label": "RESULTADO",
+        "title": "Simulação continua sendo código.",
+        "body": "Editável, reutilizável e renderizada pela mesma engine N4."
+      },
+      "motionPreset": "progress"
+    }
+  ],
+  "narration": {
+    "cues": []
+  },
+  "visuals": {
+    "aspect": "9:16",
+    "reducedMotion": false
+  },
+  "theme": {
+    "id": "mcf-dark",
+    "background": "#080c14",
+    "accent": "#7c8cff"
+  },
+  "assets": [
+    "browser-chrome-mockup",
+    "studio-ui-snapshot",
+    "mcf-mark"
+  ],
+  "timings": {
+    "fps": 30
+  }
+}
