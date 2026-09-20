@@ -13,7 +13,7 @@ export const SafeFrame=({aspect='9:16',reducedMotion=false,children,style}:Props
     paddingBottom:layout.safeInsets.bottom,paddingLeft:layout.safeInsets.left,
     boxSizing:'border-box',overflow:'hidden',...style,
   }}>
-    <LightTechBackdrop/>
+    <LightTechBackdrop reducedMotion={reducedMotion}/>
     <div style={{position:'relative',zIndex:2,width:'100%',height:'100%',display:'contents'}}>{children}</div>
   </AbsoluteFill>;
 };
