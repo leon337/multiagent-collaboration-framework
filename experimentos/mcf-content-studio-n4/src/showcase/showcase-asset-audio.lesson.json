@@ -1,0 +1,142 @@
+{
+  "lesson": {
+    "id": "showcase-asset-audio-factory",
+    "title": "N4 Showcase — Asset + Audio Factory",
+    "summary": "Registry de assets, trilhas, ducking e QA de áudio demonstrados pela própria fábrica."
+  },
+  "chapters": [
+    "Assets",
+    "Audio",
+    "QA"
+  ],
+  "scenes": [
+    {
+      "id": "title",
+      "componentId": "title",
+      "durationFrames": 120,
+      "props": {
+        "eyebrow": "N4 FACTORY SHOWCASE 06",
+        "title": "ASSET + AUDIO FACTORY",
+        "subtitle": "Mídia, trilhas e QA como partes do pipeline."
+      },
+      "motionPreset": "reveal"
+    },
+    {
+      "id": "registry",
+      "componentId": "tree-diagram",
+      "durationFrames": 120,
+      "props": {
+        "title": "Asset Library",
+        "root": "15 assets APPROVED",
+        "children": [
+          "Ícones + avatares",
+          "Mockups + visual",
+          "Vídeo + áudio"
+        ]
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "search",
+      "componentId": "code-panel",
+      "durationFrames": 120,
+      "props": {
+        "title": "searchAssets",
+        "language": "ts",
+        "code": "searchAssets({\\n  usage: 'ui',\\n  theme: 'dark',\\n  orientation: 'portrait'\\n});"
+      },
+      "motionPreset": "slide"
+    },
+    {
+      "id": "clip-contract",
+      "componentId": "code-panel",
+      "durationFrames": 120,
+      "props": {
+        "title": "AudioClip",
+        "language": "ts",
+        "code": "{ kind, assetId, startFrame,\\n  durationFrames, gainDb,\\n  fadeInFrames, fadeOutFrames }"
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "tracks",
+      "componentId": "tree-diagram",
+      "durationFrames": 120,
+      "props": {
+        "title": "Trilhas separadas",
+        "root": "AUDIO MIX",
+        "children": [
+          "Narration + SFX",
+          "Music",
+          "Ambient"
+        ]
+      },
+      "motionPreset": "scale"
+    },
+    {
+      "id": "ducking",
+      "componentId": "sound-cue",
+      "durationFrames": 120,
+      "props": {
+        "label": "Narration ducking",
+        "kind": "music",
+        "gainDb": -12
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "validation",
+      "componentId": "error-vs-correct",
+      "durationFrames": 120,
+      "props": {
+        "title": "Fail closed",
+        "wrong": "gainDb > 6 / fade inválido",
+        "right": "mix validado antes do render"
+      },
+      "motionPreset": "slide"
+    },
+    {
+      "id": "loudness",
+      "componentId": "callout",
+      "durationFrames": 120,
+      "props": {
+        "label": "FINAL QA",
+        "title": "Stream + loudness",
+        "body": "Depois do mux, o arquivo final precisa provar áudio codificado e níveis dentro do contrato."
+      },
+      "motionPreset": "focus"
+    },
+    {
+      "id": "close",
+      "componentId": "callout",
+      "durationFrames": 120,
+      "props": {
+        "label": "RESULTADO",
+        "title": "Asset e áudio fazem parte da fábrica.",
+        "body": "Nada fica solto entre roteiro, render e revisão."
+      },
+      "motionPreset": "progress"
+    }
+  ],
+  "narration": {
+    "cues": []
+  },
+  "visuals": {
+    "aspect": "9:16",
+    "reducedMotion": false
+  },
+  "theme": {
+    "id": "mcf-dark",
+    "background": "#080c14",
+    "accent": "#7c8cff"
+  },
+  "assets": [
+    "mcf-background-01",
+    "ui-click",
+    "ambient-pulse",
+    "music-bed"
+  ],
+  "timings": {
+    "fps": 30
+  }
+}
