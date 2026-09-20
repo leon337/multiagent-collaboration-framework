@@ -4,6 +4,12 @@ on:
     paths:
       - 'apps/mcf-content-hub/**'
       - '.github/workflows/content-hub-validation.yml'
+  push:
+    branches:
+      - 'validation/mcf-content-hub-v2-20260919'
+    paths:
+      - 'apps/mcf-content-hub/**'
+      - '.github/workflows/content-hub-validation.yml'
   workflow_dispatch:
 permissions: {contents: read}
 concurrency:
@@ -27,6 +33,8 @@ jobs:
         run: pnpm install --frozen-lockfile=false
       - name: Validate seed manifest
         run: pnpm validate:seed
+      - name: Validate V2 structure
+        run: node scripts/validate-hub-v2.mjs
       - name: Typecheck
         run: pnpm typecheck
       - name: Build
