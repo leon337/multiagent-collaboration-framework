@@ -13,7 +13,7 @@ const Intro=()=>{
     <Panel style={{height:'100%',position:'relative',padding:26}}>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,alignItems:'center',height:'100%'}}>
         {steps.map(([a,b],i)=><div key={a} style={{display:'grid',alignContent:'center',gap:14,opacity:interpolate(p,[i*.12,Math.min(1,i*.12+.5)],[0,1],clamp),transform:`translateY(${(1-p)*12}px)`}}>
-          <Node label={a} value={b} accent={[v21.blue,v21.violet,v21.cyan,v21.green][i]} active/>
+          <Node label={a} value={b} accent={[v21.blue,v21.violet,v21.cyan,v21.green][i]!} active/>
           {i<3?<div style={{fontSize:42,textAlign:'center',color:v21.blue}}>→</div>:null}
         </div>)}
       </div>
