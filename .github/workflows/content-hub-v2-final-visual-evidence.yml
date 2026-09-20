@@ -1,0 +1,58 @@
+name: Content Hub V2 Final Visual Evidence
+on:
+  push:
+    branches:
+      - 'validation/mcf-content-hub-v2-final-visual-20260920'
+permissions: {contents: read}
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mcf-content-hub
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install app
+        run: pnpm install --frozen-lockfile=false
+      - name: Validate and build
+        run: |
+          node scripts/validate-hub-v2.mjs
+          pnpm typecheck
+          pnpm build
+      - name: Install Chromium
+        run: pnpm dlx playwright@1.55.0 install --with-deps chromium
+      - name: Start Content Hub
+        run: |
+          pnpm exec next start -H 127.0.0.1 -p 3000 >/tmp/content-hub.log 2>&1 &
+          echo $! > /tmp/content-hub.pid
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/content-hub.log
+          exit 1
+      - name: Capture desktop
+        run: |
+          mkdir -p screenshots
+          pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/ screenshots/01-overview-desktop.png
+          pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/review screenshots/02-review-desktop.png
+          pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/library screenshots/03-library-desktop.png
+          pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/factory-runs screenshots/04-factory-runs-desktop.png
+          pnpm dlx playwright@1.55.0 screenshot --full-page --viewport-size="1440,1000" http://127.0.0.1:3000/videos/n4-showcase-engine-v1-1 screenshots/05-watch-desktop.png
+      - name: Capture mobile
+        run: |
+          pnpm dlx playwright@1.55.0 screenshot --full-page --browser=chromium --viewport-size="390,844" http://127.0.0.1:3000/ screenshots/06-overview-mobile.png
+          pnpm dlx playwright@1.55.0 screenshot --full-page --browser=chromium --viewport-size="390,844" http://127.0.0.1:3000/review screenshots/07-review-mobile.png
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-hub-v2-final-visual-evidence
+          path: apps/mcf-content-hub/screenshots/*.png
+          if-no-files-found: error
+          retention-days: 7
