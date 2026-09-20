@@ -1,9 +1,9 @@
 import {useCurrentFrame} from 'remotion';
 
-export const LightTechBackdrop=()=>{
+export const LightTechBackdrop=({reducedMotion=false}:{reducedMotion?:boolean})=>{
   const frame=useCurrentFrame();
-  const drift=Math.sin(frame/42)*10;
-  const drift2=Math.cos(frame/55)*12;
+  const drift=reducedMotion?0:Math.sin(frame/42)*10;
+  const drift2=reducedMotion?0:Math.cos(frame/55)*12;
   return <>
     <div style={{
       position:'absolute',inset:0,
