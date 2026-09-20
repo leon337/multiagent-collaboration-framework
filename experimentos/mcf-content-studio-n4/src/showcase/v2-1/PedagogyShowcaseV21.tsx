@@ -12,7 +12,7 @@ const Intro=()=>{
   return <Stage kicker="N4 SHOWCASE 05 · PEDAGOGIA" title="A CENA TAMBÉM CONTROLA COMO A IDEIA É APRENDIDA" subtitle="O viewer não recebe só conteúdo: ele recupera, compara, conecta e decide." proof={['PROMPT','RESPONSE','LEARNING']}>
     <Panel style={{height:'100%',position:'relative',padding:26}}>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,alignItems:'center',height:'100%'}}>
-        {steps.map(([a,b],i)=><div key={a} style={{display:'grid',alignContent:'center',gap:14,opacity:interpolate(p,[i*.12,Math.min(1,i*.12+.5)],[0,1],clamp),transform:\`translateY(\${(1-p)*12}px)\`}}>
+        {steps.map(([a,b],i)=><div key={a} style={{display:'grid',alignContent:'center',gap:14,opacity:interpolate(p,[i*.12,Math.min(1,i*.12+.5)],[0,1],clamp),transform:`translateY(${(1-p)*12}px)`}}>
           <Node label={a} value={b} accent={[v21.blue,v21.violet,v21.cyan,v21.green][i]} active/>
           {i<3?<div style={{fontSize:42,textAlign:'center',color:v21.blue}}>→</div>:null}
         </div>)}
@@ -30,7 +30,7 @@ const Recall=()=>{
         <div><Chip>QUESTION</Chip><div style={{fontSize:28,fontWeight:950,lineHeight:1.1,marginTop:16}}>Quem executa a ação?</div></div>
         <div style={{height:150,borderRadius:24,border:'2px dashed #b8c9ef',background:'#f8fbff',display:'grid',placeItems:'center',fontSize:21,color:v21.muted}}>{revealAnswer?'':'pense antes de revelar…'}</div>
       </Panel>
-      <Panel style={{padding:28,display:'grid',gridTemplateColumns:'1fr auto',alignItems:'center',opacity:revealAnswer?1:.16,transform:\`translateY(\${revealAnswer?0:18}px)\`,borderColor:revealAnswer?'#a5e6cd':v21.line,background:revealAnswer?'#effbf6':'white'}}>
+      <Panel style={{padding:28,display:'grid',gridTemplateColumns:'1fr auto',alignItems:'center',opacity:revealAnswer?1:.16,transform:`translateY(${revealAnswer?0:18}px)`,borderColor:revealAnswer?'#a5e6cd':v21.line,background:revealAnswer?'#effbf6':'white'}}>
         <div><Chip tone="green">ANSWER</Chip><div style={{fontSize:34,fontWeight:950,marginTop:16}}>O runtime autorizado.</div></div>
         <div style={{fontSize:64,color:v21.green}}>✓</div>
       </Panel>
@@ -60,13 +60,13 @@ const ErrorCorrect=()=>{
   const f=useCurrentFrame(); const p=reveal(f,8,32);
   return <Stage kicker="03 · CONTRASTE" title="O ERRO E O MODELO CORRETO DIVIDEM A TELA" subtitle="A comparação reduz ambiguidade porque o viewer vê a diferença no mesmo instante." proof={['WRONG','COMPARE','RIGHT']}>
     <div style={{height:'100%',display:'grid',gridTemplateColumns:'1fr 1fr',gap:18}}>
-      <Panel style={{padding:26,borderColor:'#ffc6d2',background:'#fff8fa',transform:\`translateX(\${(1-p)*-26}px)\`}}>
+      <Panel style={{padding:26,borderColor:'#ffc6d2',background:'#fff8fa',transform:`translateX(${(1-p)*-26}px)`}}>
         <Chip tone="red">EVITE</Chip>
         <div style={{fontSize:44,fontWeight:950,lineHeight:1.05,marginTop:34}}>Capacidade = permissão</div>
         <div style={{marginTop:34,fontSize:80,color:v21.red}}>×</div>
         <div style={{fontSize:19,color:v21.muted}}>Confunde o que pode existir com o que pode ser executado.</div>
       </Panel>
-      <Panel style={{padding:26,borderColor:'#a7e6cd',background:'#f0fbf6',transform:\`translateX(\${(1-p)*26}px)\`}}>
+      <Panel style={{padding:26,borderColor:'#a7e6cd',background:'#f0fbf6',transform:`translateX(${(1-p)*26}px)`}}>
         <Chip tone="green">PREFIRA</Chip>
         <div style={{fontSize:44,fontWeight:950,lineHeight:1.05,marginTop:34}}>Capacidade ≠ permissão</div>
         <div style={{marginTop:34,fontSize:80,color:v21.green}}>✓</div>
@@ -84,11 +84,11 @@ const Progressive=()=>{
     <Panel style={{height:'100%',position:'relative',padding:30,display:'grid',alignItems:'center'}}>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:18}}>
         {concepts.map((c,i)=><div key={c} style={{display:'grid',gap:18,alignContent:'center'}}>
-          <Node label={'0'+(i+1)} value={c} active={i<=active} accent={i===3?v21.green:i===2?v21.violet:v21.blue} style={{opacity:i<=active?1:.22,transform:\`scale(\${i===active?1.06:1})\`}}/>
+          <Node label={'0'+(i+1)} value={c} active={i<=active} accent={i===3?v21.green:i===2?v21.violet:v21.blue} style={{opacity:i<=active?1:.22,transform:`scale(${i===active?1.06:1})`}}/>
           {i<3?<div style={{fontSize:36,textAlign:'center',color:i<active?v21.green:'#b9c7e6'}}>→</div>:null}
         </div>)}
       </div>
-      <div style={{position:'absolute',left:30,right:30,bottom:28,height:9,borderRadius:99,background:'#e9effb',overflow:'hidden'}}><div style={{height:'100%',width:\`\${(active+1)/4*100}%\`,background:'linear-gradient(90deg,#245cff,#48c7ff,#10b981)'}}/></div>
+      <div style={{position:'absolute',left:30,right:30,bottom:28,height:9,borderRadius:99,background:'#e9effb',overflow:'hidden'}}><div style={{height:'100%',width:`${(active+1)/4*100}%`,background:'linear-gradient(90deg,#245cff,#48c7ff,#10b981)'}}/></div>
     </Panel>
   </Stage>;
 };
@@ -97,11 +97,11 @@ const Checkpoint=()=>{
   const f=useCurrentFrame(); const p=reveal(f,8,30);
   return <Stage kicker="05 · CHECKPOINT" title="O VIEWER ENXERGA O QUE JÁ SABE E O QUE AINDA FALTA" subtitle="O estado de aprendizagem vira parte explícita da composição." proof={['KNOWN','NEXT','DECIDE']}>
     <div style={{height:'100%',display:'grid',gridTemplateColumns:'1fr 1fr',gap:18}}>
-      <Panel style={{padding:26,transform:\`translateY(\${(1-p)*16}px)\`}}>
+      <Panel style={{padding:26,transform:`translateY(${(1-p)*16}px)`}}>
         <Chip tone="green">VOCÊ JÁ SABE</Chip>
         {['Fonte antes da narrativa','Runtime executa'].map(x=><div key={x} style={{display:'flex',gap:14,alignItems:'center',fontSize:23,fontWeight:850,marginTop:24}}><span style={{color:v21.green}}>✓</span>{x}</div>)}
       </Panel>
-      <Panel style={{padding:26,transform:\`translateY(\${(1-p)*-16}px)\`}}>
+      <Panel style={{padding:26,transform:`translateY(${(1-p)*-16}px)`}}>
         <Chip>AGORA FALTA</Chip>
         <div style={{display:'flex',gap:14,alignItems:'center',fontSize:25,fontWeight:950,marginTop:24}}><span style={{color:v21.blue}}>○</span>Gate humano decide</div>
         <div style={{marginTop:34,padding:18,borderRadius:18,background:'#eef3ff',fontSize:18,color:v21.muted,lineHeight:1.45}}>A automação para antes da promoção quando a revisão humana ainda está aberta.</div>
