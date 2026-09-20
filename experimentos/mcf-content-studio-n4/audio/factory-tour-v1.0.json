@@ -8,35 +8,35 @@
   "scenes": [
     {
       "sceneId": "intro",
-      "text": "Esta é a fábrica N4 em operação. Sete showcases, compostos pelo próprio sistema, agora viram um único tour."
+      "text": "Esta é a fábrica N4 em operação. Sete showcases reais agora viram um único tour."
     },
     {
       "sceneId": "evidence",
-      "text": "Tudo começa na evidência real. O conteúdo nasce de código, registros, políticas e estados verificáveis, não de uma narrativa inventada."
+      "text": "Tudo começa na evidência. Código, registros, políticas e estados verificáveis vêm antes da narrativa."
     },
     {
       "sceneId": "components",
-      "text": "O spec escolhe componentes e registro. Templates e blocos reutilizáveis transformam intenção editorial em estrutura executável."
+      "text": "O spec escolhe templates, componentes e registry, transformando intenção editorial em estrutura executável."
     },
     {
       "sceneId": "motion",
-      "text": "O sistema de motion adiciona foco, relação, digitação, métricas e progresso como comportamento, não como decoração."
+      "text": "Motion adiciona foco, relação, digitação, métricas e progresso como comportamento funcional."
     },
     {
       "sceneId": "editor",
-      "text": "O editor visual move, redimensiona, rotaciona, alinha, persiste layout e organiza múltiplas trilhas."
+      "text": "O editor move, redimensiona, rotaciona, alinha, persiste layout e organiza múltiplas trilhas."
     },
     {
       "sceneId": "uiPedagogy",
-      "text": "As mesmas cenas simulam browser, terminal e código, ou criam recall, quiz, comparação, progressão e personagens."
+      "text": "As cenas simulam interfaces e código, ou criam recall, quiz, progressão e personagens."
     },
     {
       "sceneId": "assetsAudio",
-      "text": "Assets aprovados entram no pipeline. Narração, música, ambiente e efeitos são mixados com ducking e QA de loudness."
+      "text": "Assets aprovados entram no pipeline. Narração, música, ambiente e efeitos recebem mix, ducking e QA."
     },
     {
       "sceneId": "integrations",
-      "text": "Bridges externos entram com proveniência e limites explícitos. Adobe, Instavar e imports governados não pulam revisão."
+      "text": "Adobe, Instavar e imports externos entram com proveniência, limites explícitos e revisão governada."
     },
     {
       "sceneId": "qa",
@@ -44,7 +44,7 @@
     },
     {
       "sceneId": "close",
-      "text": "O resultado é uma fábrica que transforma evidência em vídeo assistível, rastreável e pronto para revisão. Este é o N4."
+      "text": "O resultado transforma evidência em vídeo assistível, rastreável e pronto para revisão. Este é o N4."
     }
   ]
 }
