@@ -39,3 +39,20 @@ jobs:
         run: pnpm typecheck
       - name: Build
         run: pnpm build
+      - name: Runtime route smoke
+        run: |
+          pnpm start -- -p 3000 >/tmp/mcf-content-hub.log 2>&1 &
+          pid=$!
+          trap 'kill $pid 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          test "$ready" = "1"
+          for route in / /review /library /factory-runs /videos/n4-showcase-engine-v1-1; do
+            curl -fsS "http://127.0.0.1:3000$route" >/dev/null
+          done
