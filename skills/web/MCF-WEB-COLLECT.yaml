@@ -1,0 +1,42 @@
+skill:
+  skill_id: MCF-WEB-COLLECT
+  name: "Coletar conteúdo multi-página"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Coletar um conjunto limitado de páginas de um site ou lista de URLs com deduplicação e evidência por página."
+  owner_agents: [Miriam]
+  supporting_agents: [Rafael, Daniela]
+  trigger_phrases: ["coletar várias páginas", "crawl limitado", "baixar documentação", "ler seção inteira"]
+  required_inputs: [seed_urls_or_site_root, collection_goal]
+  optional_inputs: [max_pages, max_depth, include_paths, exclude_paths, allow_subdomains]
+  preconditions: [network_capability_available, bounded_scope_defined]
+  allowed_tools: [Web_Native, ChatGPT_Work]
+  alternative_tools: [Firecrawl]
+  forbidden_tools: [unbounded_crawl, high_frequency_scraping, access_control_bypass, paid_fallback_without_authorization]
+  permission_profile: READ_ONLY
+  execution_steps: [definir_fronteira, descobrir_urls, ordenar_fila, recuperar_paginas, deduplicar_conteudo, registrar_erros_por_pagina, produzir_manifesto]
+  required_evidence: [scope, provider_used, page_manifest, succeeded_urls, failed_urls, observed_at, coverage_statement]
+  expected_outputs: [collection_manifest, collected_content_refs]
+  acceptance_criteria: [scope_bounded, page_level_provenance, failures_visible, no_complete_claim_without_evidence]
+  failure_modes: [provider_rate_limited, robots_or_policy_block, excessive_scope, partial_collection, content_duplication]
+  fallback:
+    without_primary_tool: "Reduzir para coleção sequencial via MCF-WEB-FETCH e MCF-WEB-MAP, mantendo o limite de páginas."
+    without_any_tool: "Retornar collection_manifest com zero páginas e bloqueio verificável."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Miriam
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: PUBLIC_OR_APPROVED
+    human_gate_triggers: [authenticated_collection]
+    prohibited_actions: [credential_harvesting, rate_limit_bypass, access_control_bypass]
+  tests:
+    positive_scenarios: [bounded_docs_collection, url_list_collection, partial_failure_with_manifest]
+    negative_scenarios: [unbounded_domain_request, auth_required_without_gate, all_pages_failed_but_success_claimed]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED
