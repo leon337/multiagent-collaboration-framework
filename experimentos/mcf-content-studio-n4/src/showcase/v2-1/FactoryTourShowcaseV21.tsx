@@ -13,12 +13,12 @@ const Clip=({file,startSec=0,fit='cover'}:{file:string;startSec?:number;fit?:'co
   const {fps}=useVideoConfig();
   const f=useCurrentFrame();
   const zoom=interpolate(f,[0,180],[1.02,1.08],clamp);
-  return <OffthreadVideo src={source(file)} startFrom={clipStart(startSec,fps)} muted style={{width:'100%',height:'100%',objectFit:fit,transform:\`scale(\${zoom})\`,background:'#eef4ff'}}/>;
+  return <OffthreadVideo src={source(file)} startFrom={clipStart(startSec,fps)} muted style={{width:'100%',height:'100%',objectFit:fit,transform:`scale(${zoom})`,background:'#eef4ff'}}/>;
 };
 
 const Overlay=({kicker,title,subtitle,accent=v21.blue}:{kicker:string;title:string;subtitle?:string;accent?:string})=>{
   const f=useCurrentFrame(); const p=reveal(f,0,20);
-  return <div style={{position:'absolute',left:46,right:46,top:56,zIndex:30,opacity:p,transform:\`translateY(\${(1-p)*16}px)\`}}>
+  return <div style={{position:'absolute',left:46,right:46,top:56,zIndex:30,opacity:p,transform:`translateY(${(1-p)*16}px)`}}>
     <div style={{display:'inline-flex',alignItems:'center',gap:12,padding:'9px 14px',borderRadius:999,background:'rgba(255,255,255,.88)',border:'1px solid rgba(190,210,246,.9)',backdropFilter:'blur(12px)',boxShadow:'0 12px 32px rgba(30,60,130,.08)'}}>
       <span style={{width:9,height:9,borderRadius:99,background:accent}}/><span style={{fontSize:15,letterSpacing:2.3,fontWeight:950,color:accent}}>{kicker}</span>
     </div>
@@ -40,7 +40,7 @@ const Mosaic=({files}:{files:Array<{file:string;startSec:number;label:string}>})
   const f=useCurrentFrame(); const p=reveal(f,0,34);
   return <V21Canvas>
     <div style={{position:'absolute',left:26,right:26,top:26,bottom:120,display:'grid',gridTemplateColumns:'1.15fr .85fr',gridTemplateRows:'1fr 1fr',gap:12}}>
-      {files.slice(0,4).map((item,i)=><div key={item.file} style={{overflow:'hidden',borderRadius:28,border:'1px solid #c5d7ff',boxShadow:'0 22px 58px rgba(35,75,160,.14)',background:'white',opacity:interpolate(p,[i*.1,Math.min(1,i*.1+.5)],[0,1],clamp),transform:\`translateY(\${(1-p)*10}px)\`}}>
+      {files.slice(0,4).map((item,i)=><div key={item.file} style={{overflow:'hidden',borderRadius:28,border:'1px solid #c5d7ff',boxShadow:'0 22px 58px rgba(35,75,160,.14)',background:'white',opacity:interpolate(p,[i*.1,Math.min(1,i*.1+.5)],[0,1],clamp),transform:`translateY(${(1-p)*10}px)`}}>
         <Clip file={item.file} startSec={item.startSec}/>
         <div style={{position:'absolute',margin:14}}><Chip tone={i%2?'violet':'blue'}>{item.label}</Chip></div>
       </div>)}
