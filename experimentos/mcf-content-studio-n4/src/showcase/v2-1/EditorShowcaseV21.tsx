@@ -40,7 +40,7 @@ const EditorUi=({action}:{action:Action})=>{
 
       <div style={{position:'relative',overflow:'hidden',borderRadius:26,border:'1px solid #c7d9ff',background:'linear-gradient(145deg,#ffffff,#eaf2ff)',boxShadow:'inset 0 0 0 1px rgba(255,255,255,.8)'}}>
         <div style={{position:'absolute',inset:24,border:'1px dashed #b6c9ef',borderRadius:18}}/>
-        <div style={{position:'absolute',left:'50%',top:'48%',width:'58%',height:'26%',transform:\`translate(calc(-50% + \${x}px),calc(-50% + \${y}px)) scale(\${scale}) rotate(\${rot}deg)\`,transformOrigin:'center',border:'4px solid '+v21.blue,borderRadius:24,background:'linear-gradient(145deg,#ffffff,#edf4ff)',boxShadow:'0 26px 60px rgba(36,92,255,.20)',display:'grid',placeItems:'center'}}>
+        <div style={{position:'absolute',left:'50%',top:'48%',width:'58%',height:'26%',transform:`translate(calc(-50% + ${x}px),calc(-50% + ${y}px)) scale(${scale}) rotate(${rot}deg)`,transformOrigin:'center',border:'4px solid '+v21.blue,borderRadius:24,background:'linear-gradient(145deg,#ffffff,#edf4ff)',boxShadow:'0 26px 60px rgba(36,92,255,.20)',display:'grid',placeItems:'center'}}>
           <div style={{textAlign:'center'}}>
             <div style={{fontSize:22,fontWeight:950}}>BROWSER WINDOW</div>
             <div style={{fontSize:14,color:v21.muted,marginTop:5}}>Review Queue · reusable component</div>
@@ -50,7 +50,7 @@ const EditorUi=({action}:{action:Action})=>{
           <span style={{position:'absolute',left:'50%',top:-10,width:18,height:18,borderRadius:99,background:v21.blue,border:'3px solid white'}}/>
           <span style={{position:'absolute',left:'50%',bottom:-10,width:18,height:18,borderRadius:99,background:v21.blue,border:'3px solid white'}}/>
         </div>
-        <div style={{position:'absolute',left:\`\${action==='direct'?20+move*48:action==='transform'?62:action==='rotate'?66:action==='align'?42:48}%\`,top:\`\${action==='direct'?62-move*22:action==='transform'?40:action==='rotate'?34:action==='align'?48:52}%\`,fontSize:38,filter:'drop-shadow(0 6px 10px rgba(20,40,90,.22))',opacity:p}}>☝</div>
+        <div style={{position:'absolute',left:`${action==='direct'?20+move*48:action==='transform'?62:action==='rotate'?66:action==='align'?42:48}%`,top:`${action==='direct'?62-move*22:action==='transform'?40:action==='rotate'?34:action==='align'?48:52}%`,fontSize:38,filter:'drop-shadow(0 6px 10px rgba(20,40,90,.22))',opacity:p}}>☝</div>
         {align>0?<><div style={{position:'absolute',left:'50%',top:24,bottom:24,width:2,background:'#ff5b8a',opacity:.6*align}}/><div style={{position:'absolute',top:'48%',left:24,right:24,height:2,background:'#ff5b8a',opacity:.6*align}}/></>:null}
         <div style={{position:'absolute',left:18,bottom:18,display:'flex',gap:8}}>
           <Chip>{action==='rotate'?'snap 15°':action==='align'?'center guides':action==='nudge'?('nudge +'+nudge+'px'):'selected'}</Chip>
