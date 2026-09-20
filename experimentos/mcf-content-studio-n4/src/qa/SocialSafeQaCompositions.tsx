@@ -1,13 +1,12 @@
 import {TechnicalLessonTemplate} from '../templates/TechnicalLessonTemplate';
 import type {TechnicalLessonSpec} from '../templates/types';
-import engineData from '../showcase/showcase-engine.lesson.json';
-import motionData from '../showcase/showcase-motion.lesson.json';
+import {showcaseEngineSpec,showcaseMotionSpec} from '../showcase/synced';
 import {EditorFactoryShowcase} from '../showcase/EditorFactoryShowcase';
 import {SocialSafeAreaOverlay} from '../components/SocialSafeAreaOverlay';
 import type {SocialPlatformProfile} from '../lib/socialSafeArea';
 
-const engine=engineData as TechnicalLessonSpec;
-const motion=motionData as TechnicalLessonSpec;
+const engine=showcaseEngineSpec;
+const motion=showcaseMotionSpec;
 
 const lessonQa=(spec:TechnicalLessonSpec,profile:SocialPlatformProfile)=>()=> <><TechnicalLessonTemplate spec={spec}/><SocialSafeAreaOverlay profile={profile}/></>;
 const editorQa=(profile:SocialPlatformProfile)=>()=> <><EditorFactoryShowcase/><SocialSafeAreaOverlay profile={profile}/></>;

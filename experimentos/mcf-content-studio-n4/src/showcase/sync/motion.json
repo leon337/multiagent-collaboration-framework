@@ -1,0 +1,190 @@
+{
+  "version": "1.3",
+  "fps": 30,
+  "videoId": "motion",
+  "totalFrames": 754,
+  "durationSec": 25.133333,
+  "cues": [
+    {
+      "from": 6,
+      "to": 109,
+      "text": "O sistema de motion tem 19 presets executáveis."
+    },
+    {
+      "from": 123,
+      "to": 210,
+      "text": "Fade, zoom e câmera cuidam do ritmo e do foco."
+    },
+    {
+      "from": 224,
+      "to": 305,
+      "text": "Connector e draw arrow explicam relações."
+    },
+    {
+      "from": 319,
+      "to": 391,
+      "text": "Typewriter, underline, counter e progress"
+    },
+    {
+      "from": 394,
+      "to": 441,
+      "text": "tornam estados legíveis."
+    },
+    {
+      "from": 455,
+      "to": 539,
+      "text": "Com focus intent, a cena declara a intenção."
+    },
+    {
+      "from": 542,
+      "to": 599,
+      "text": "A engine combina o movimento."
+    },
+    {
+      "from": 613,
+      "to": 681,
+      "text": "A animação deixa de ser decoração."
+    },
+    {
+      "from": 684,
+      "to": 746,
+      "text": "Ela passa a servir à compreensão."
+    }
+  ],
+  "scenes": {
+    "title": {
+      "from": 0,
+      "to": 117,
+      "durationFrames": 117,
+      "segmentIds": [
+        "mot-01"
+      ]
+    },
+    "focus": {
+      "from": 117,
+      "to": 218,
+      "durationFrames": 101,
+      "segmentIds": [
+        "mot-02"
+      ]
+    },
+    "relation": {
+      "from": 218,
+      "to": 313,
+      "durationFrames": 95,
+      "segmentIds": [
+        "mot-03"
+      ]
+    },
+    "typing": {
+      "from": 313,
+      "to": 449,
+      "durationFrames": 136,
+      "segmentIds": [
+        "mot-04",
+        "mot-05"
+      ]
+    },
+    "metric": {
+      "from": 449,
+      "to": 607,
+      "durationFrames": 158,
+      "segmentIds": [
+        "mot-06",
+        "mot-07"
+      ]
+    },
+    "close": {
+      "from": 607,
+      "to": 754,
+      "durationFrames": 147,
+      "segmentIds": [
+        "mot-08",
+        "mot-09"
+      ]
+    }
+  },
+  "segments": [
+    {
+      "id": "mot-01",
+      "sceneId": "title",
+      "text": "O sistema de motion tem 19 presets executáveis.",
+      "startFrame": 6,
+      "endFrame": 109,
+      "durationFrames": 103,
+      "durationSec": 3.408
+    },
+    {
+      "id": "mot-02",
+      "sceneId": "focus",
+      "text": "Fade, zoom e câmera cuidam do ritmo e do foco.",
+      "startFrame": 123,
+      "endFrame": 210,
+      "durationFrames": 87,
+      "durationSec": 2.88
+    },
+    {
+      "id": "mot-03",
+      "sceneId": "relation",
+      "text": "Connector e draw arrow explicam relações.",
+      "startFrame": 224,
+      "endFrame": 305,
+      "durationFrames": 81,
+      "durationSec": 2.688
+    },
+    {
+      "id": "mot-04",
+      "sceneId": "typing",
+      "text": "Typewriter, underline, counter e progress",
+      "startFrame": 319,
+      "endFrame": 391,
+      "durationFrames": 72,
+      "durationSec": 2.376
+    },
+    {
+      "id": "mot-05",
+      "sceneId": "typing",
+      "text": "tornam estados legíveis.",
+      "startFrame": 394,
+      "endFrame": 441,
+      "durationFrames": 47,
+      "durationSec": 1.56
+    },
+    {
+      "id": "mot-06",
+      "sceneId": "metric",
+      "text": "Com focus intent, a cena declara a intenção.",
+      "startFrame": 455,
+      "endFrame": 539,
+      "durationFrames": 84,
+      "durationSec": 2.784
+    },
+    {
+      "id": "mot-07",
+      "sceneId": "metric",
+      "text": "A engine combina o movimento.",
+      "startFrame": 542,
+      "endFrame": 599,
+      "durationFrames": 57,
+      "durationSec": 1.872
+    },
+    {
+      "id": "mot-08",
+      "sceneId": "close",
+      "text": "A animação deixa de ser decoração.",
+      "startFrame": 613,
+      "endFrame": 681,
+      "durationFrames": 68,
+      "durationSec": 2.256
+    },
+    {
+      "id": "mot-09",
+      "sceneId": "close",
+      "text": "Ela passa a servir à compreensão.",
+      "startFrame": 684,
+      "endFrame": 746,
+      "durationFrames": 62,
+      "durationSec": 2.064
+    }
+  ]
+}

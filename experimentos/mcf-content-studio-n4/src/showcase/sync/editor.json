@@ -1,0 +1,233 @@
+{
+  "version": "1.3",
+  "fps": 30,
+  "videoId": "editor",
+  "totalFrames": 820,
+  "durationSec": 27.333333,
+  "cues": [
+    {
+      "from": 6,
+      "to": 84,
+      "text": "O Video Lab evoluiu de editor estrutural."
+    },
+    {
+      "from": 98,
+      "to": 177,
+      "text": "Agora permite manipulação visual direta."
+    },
+    {
+      "from": 191,
+      "to": 269,
+      "text": "A cena pode ser movida e redimensionada."
+    },
+    {
+      "from": 283,
+      "to": 353,
+      "text": "Também pode ser rotacionada com snap."
+    },
+    {
+      "from": 367,
+      "to": 431,
+      "text": "Temos alinhamento e ajustes finos."
+    },
+    {
+      "from": 445,
+      "to": 512,
+      "text": "Nudge faz a correção de precisão."
+    },
+    {
+      "from": 526,
+      "to": 572,
+      "text": "O layout fica persistido"
+    },
+    {
+      "from": 586,
+      "to": 635,
+      "text": "no Technical Lesson Spec."
+    },
+    {
+      "from": 649,
+      "to": 712,
+      "text": "A timeline separa cenas e motion."
+    },
+    {
+      "from": 726,
+      "to": 812,
+      "text": "Narração e assets ficam em trilhas próprias."
+    }
+  ],
+  "scenes": {
+    "intro": {
+      "from": 0,
+      "to": 92,
+      "durationFrames": 92,
+      "segmentIds": [
+        "edt-01"
+      ]
+    },
+    "direct": {
+      "from": 92,
+      "to": 185,
+      "durationFrames": 93,
+      "segmentIds": [
+        "edt-02"
+      ]
+    },
+    "transform": {
+      "from": 185,
+      "to": 277,
+      "durationFrames": 92,
+      "segmentIds": [
+        "edt-03"
+      ]
+    },
+    "rotate": {
+      "from": 277,
+      "to": 361,
+      "durationFrames": 84,
+      "segmentIds": [
+        "edt-04"
+      ]
+    },
+    "align": {
+      "from": 361,
+      "to": 439,
+      "durationFrames": 78,
+      "segmentIds": [
+        "edt-05"
+      ]
+    },
+    "nudge": {
+      "from": 439,
+      "to": 520,
+      "durationFrames": 81,
+      "segmentIds": [
+        "edt-06"
+      ]
+    },
+    "persist-a": {
+      "from": 520,
+      "to": 580,
+      "durationFrames": 60,
+      "segmentIds": [
+        "edt-07"
+      ]
+    },
+    "persist-b": {
+      "from": 580,
+      "to": 643,
+      "durationFrames": 63,
+      "segmentIds": [
+        "edt-08"
+      ]
+    },
+    "timeline": {
+      "from": 643,
+      "to": 720,
+      "durationFrames": 77,
+      "segmentIds": [
+        "edt-09"
+      ]
+    },
+    "tracks": {
+      "from": 720,
+      "to": 820,
+      "durationFrames": 100,
+      "segmentIds": [
+        "edt-10"
+      ]
+    }
+  },
+  "segments": [
+    {
+      "id": "edt-01",
+      "sceneId": "intro",
+      "text": "O Video Lab evoluiu de editor estrutural.",
+      "startFrame": 6,
+      "endFrame": 84,
+      "durationFrames": 78,
+      "durationSec": 2.568
+    },
+    {
+      "id": "edt-02",
+      "sceneId": "direct",
+      "text": "Agora permite manipulação visual direta.",
+      "startFrame": 98,
+      "endFrame": 177,
+      "durationFrames": 79,
+      "durationSec": 2.616
+    },
+    {
+      "id": "edt-03",
+      "sceneId": "transform",
+      "text": "A cena pode ser movida e redimensionada.",
+      "startFrame": 191,
+      "endFrame": 269,
+      "durationFrames": 78,
+      "durationSec": 2.568
+    },
+    {
+      "id": "edt-04",
+      "sceneId": "rotate",
+      "text": "Também pode ser rotacionada com snap.",
+      "startFrame": 283,
+      "endFrame": 353,
+      "durationFrames": 70,
+      "durationSec": 2.328
+    },
+    {
+      "id": "edt-05",
+      "sceneId": "align",
+      "text": "Temos alinhamento e ajustes finos.",
+      "startFrame": 367,
+      "endFrame": 431,
+      "durationFrames": 64,
+      "durationSec": 2.112
+    },
+    {
+      "id": "edt-06",
+      "sceneId": "nudge",
+      "text": "Nudge faz a correção de precisão.",
+      "startFrame": 445,
+      "endFrame": 512,
+      "durationFrames": 67,
+      "durationSec": 2.208
+    },
+    {
+      "id": "edt-07",
+      "sceneId": "persist-a",
+      "text": "O layout fica persistido",
+      "startFrame": 526,
+      "endFrame": 572,
+      "durationFrames": 46,
+      "durationSec": 1.512
+    },
+    {
+      "id": "edt-08",
+      "sceneId": "persist-b",
+      "text": "no Technical Lesson Spec.",
+      "startFrame": 586,
+      "endFrame": 635,
+      "durationFrames": 49,
+      "durationSec": 1.608
+    },
+    {
+      "id": "edt-09",
+      "sceneId": "timeline",
+      "text": "A timeline separa cenas e motion.",
+      "startFrame": 649,
+      "endFrame": 712,
+      "durationFrames": 63,
+      "durationSec": 2.088
+    },
+    {
+      "id": "edt-10",
+      "sceneId": "tracks",
+      "text": "Narração e assets ficam em trilhas próprias.",
+      "startFrame": 726,
+      "endFrame": 812,
+      "durationFrames": 86,
+      "durationSec": 2.856
+    }
+  ]
+}

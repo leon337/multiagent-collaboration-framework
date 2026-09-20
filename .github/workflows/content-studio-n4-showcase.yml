@@ -1,8 +1,13 @@
+[Reading 92 lines from start (total: 92 lines, 0 remaining)]
+
 name: Content Studio N4 Showcase Pack
 on:
   pull_request:
     paths:
       - 'experimentos/mcf-content-studio-n4/src/showcase/**'
+      - 'experimentos/mcf-content-studio-n4/audio/showcase-v1.3-sync.json'
+      - 'experimentos/mcf-content-studio-n4/scripts/build-showcase-sync.py'
+      - 'experimentos/mcf-content-studio-n4/scripts/verify-showcase-av-sync.py'
       - 'experimentos/mcf-content-studio-n4/src/remotion/Root.tsx'
       - '.github/workflows/content-studio-n4-showcase.yml'
   workflow_dispatch:
@@ -27,12 +32,14 @@ jobs:
         run: pnpm install --frozen-lockfile=false
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - name: Download natural narration previews
+      - name: Build audio-locked narration timelines
         run: |
-          mkdir -p out/showcase/narration
-          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9a14bc44-5f69-4017-92a8-d3fb61bf4d67.mp3' -o out/showcase/narration/engine.mp3
-          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f2666514-7de0-4d66-9c2c-e95af27dd496.mp3' -o out/showcase/narration/motion.mp3
-          curl -L --fail --retry 3 'https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d654c046-bac2-4877-a4d6-4227afaa2b2f.mp3' -o out/showcase/narration/editor.mp3
+          python scripts/build-showcase-sync.py \
+            --manifest audio/showcase-v1.3-sync.json \
+            --out-dir out/showcase-sync
+          diff -u src/showcase/sync/engine.json out/showcase-sync/timelines/engine.json
+          diff -u src/showcase/sync/motion.json out/showcase-sync/timelines/motion.json
+          diff -u src/showcase/sync/editor.json out/showcase-sync/timelines/editor.json
       - name: Verify social-safe layout contracts
         run: pnpm test -- tests/evolution.test.ts
       - name: Render N4 showcase videos
@@ -57,13 +64,23 @@ jobs:
           pnpm exec remotion still src/remotion/index.ts ShowcaseEditorReelsQa out/showcase/qa/03-editor-reels.png --frame=620
           pnpm exec remotion still src/remotion/index.ts ShowcaseEditorUniversalQa out/showcase/qa/03-editor-universal.png --frame=620
 
-      - name: Mux narration
+      - name: Mux audio-locked narration
         run: |
           for pair in '01-engine engine' '02-motion motion' '03-editor editor'; do
             set -- $pair; name=$1; voice=$2
-            ffmpeg -y -i out/showcase/silent/$name.mp4 -i out/showcase/narration/$voice.mp3               -filter_complex '[0:v]tpad=stop_mode=clone:stop_duration=15[v]'               -map '[v]' -map 1:a -c:v libx264 -crf 22 -preset medium -c:a aac -b:a 192k -shortest out/showcase/$name.mp4
+            ffmpeg -y \
+              -i out/showcase/silent/$name.mp4 \
+              -i out/showcase-sync/audio/$voice.m4a \
+              -map 0:v:0 -map 1:a:0 \
+              -c:v copy -c:a aac -b:a 192k -movflags +faststart \
+              out/showcase/$name.mp4
             python scripts/verify-media-audio.py out/showcase/$name.mp4 --min-duration 20
             python scripts/verify-audio-loudness.py out/showcase/$name.mp4 --min-mean-db -45 --max-mean-db -3 --max-peak-db 0
+            python scripts/verify-showcase-av-sync.py \
+              --media out/showcase/$name.mp4 \
+              --timeline out/showcase-sync/timelines/$voice.json \
+              --max-drift-frames 2 > out/showcase/$name-sync.json
+            cat out/showcase/$name-sync.json
           done
       - name: Build showcase manifest
         run: |
@@ -87,6 +104,11 @@ jobs:
             experimentos/mcf-content-studio-n4/out/showcase/02-motion.mp4
             experimentos/mcf-content-studio-n4/out/showcase/03-editor.mp4
             experimentos/mcf-content-studio-n4/out/showcase/manifest.json
+            experimentos/mcf-content-studio-n4/out/showcase/*-sync.json
+            experimentos/mcf-content-studio-n4/out/showcase-sync/summary.json
+            experimentos/mcf-content-studio-n4/out/showcase-sync/timelines/*.json
             experimentos/mcf-content-studio-n4/out/showcase/qa/*.png
           if-no-files-found: error
           retention-days: 14
+
+[executed on device: leo-N43SM (03d54302-fd3a-4898-812c-4602cd0a54a7)]

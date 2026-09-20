@@ -9,6 +9,7 @@ import {stickRigVariants} from '../src/components/StickRig';
 import {searchComponentManifests} from '../src/registry/search';
 import lesson from '../src/templates/runtime-agentico-data-demo.lesson.json';
 import {getTechnicalLessonDuration,type TechnicalLessonSpec} from '../src/templates/types';
+import {editorSync,engineSync,motionSync,showcaseEngineSpec,showcaseMotionSpec} from '../src/showcase/synced';
 
 describe('N4 evolution foundations',()=>{
   it('finds approved assets by semantic usage metadata',()=>{
@@ -48,4 +49,20 @@ describe('N4 evolution foundations',()=>{
     expect(isAtMinimumTextSize({text:'x'.repeat(500),preferredPx:76,minPx:52,softCharacterLimit:34})).toBe(true);
   });
   it('derives lesson duration from scene data',()=>{expect(getTechnicalLessonDuration(lesson as TechnicalLessonSpec)).toBe(570);});
+  it('locks showcase scene duration to measured narration timelines',()=>{
+    expect(getTechnicalLessonDuration(showcaseEngineSpec)).toBe(engineSync.totalFrames);
+    expect(getTechnicalLessonDuration(showcaseMotionSpec)).toBe(motionSync.totalFrames);
+    expect(editorSync.totalFrames).toBeGreaterThan(editorSync.cues.at(-1)?.to??0);
+  });
+  it('keeps captions monotonic and inside audio-locked timelines',()=>{
+    for(const sync of [engineSync,motionSync,editorSync]){
+      let previous=-1;
+      for(const cue of sync.cues){
+        expect(cue.from).toBeGreaterThanOrEqual(previous);
+        expect(cue.to).toBeGreaterThan(cue.from);
+        expect(cue.to).toBeLessThanOrEqual(sync.totalFrames);
+        previous=cue.to;
+      }
+    }
+  });
 });

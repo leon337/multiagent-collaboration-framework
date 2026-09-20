@@ -2,33 +2,24 @@ import {AbsoluteFill,interpolate,useCurrentFrame} from 'remotion';
 import {designTokens} from '../lib/tokens';
 import {socialCoreContentInsets} from '../lib/socialSafeArea';
 import {CaptionOverlay} from '../pilot/CaptionOverlay';
+import {editorSync} from './synced';
 
 const clamp={extrapolateLeft:'clamp',extrapolateRight:'clamp'} as const;
 const seg=(frame:number,a:number,b:number)=>interpolate(frame,[a,b],[0,1],clamp);
-const cues=[
- {from:0,to:75,text:'O Video Lab evoluiu de editor estrutural.'},
- {from:75,to:150,text:'Agora permite manipulação visual direta.'},
- {from:150,to:255,text:'A cena pode ser movida e redimensionada.'},
- {from:255,to:360,text:'Também pode ser rotacionada com snap.'},
- {from:360,to:465,text:'Temos alinhamento e ajustes finos.'},
- {from:465,to:570,text:'Nudge faz a correção de precisão.'},
- {from:570,to:675,text:'O layout fica persistido'},
- {from:675,to:780,text:'no Technical Lesson Spec.'},
- {from:780,to:885,text:'A timeline separa cenas e motion.'},
- {from:885,to:990,text:'Narração e assets ficam em trilhas próprias.'},
-];
+const cues=editorSync.cues;
 
 export const EditorFactoryShowcase=()=>{
  const f=useCurrentFrame();
- const x=f<180?0:interpolate(f,[180,330],[0,.22],clamp);
- const scale=f<330?1:interpolate(f,[330,450],[1,1.22],clamp);
- const rot=f<450?0:interpolate(f,[450,540],[0,15],clamp);
- const snapPulse=f>520&&f<640?1+Math.sin((f-520)/6)*.03:1;
- const finalX=f>630?interpolate(f,[630,700],[.22,0],clamp):x;
- const finalRot=f>700?interpolate(f,[700,760],[15,0],clamp):rot;
- const play=seg(f,760,990);
- const pointerX=interpolate(f,[150,300,420,540,660],[24,68,72,42,50],clamp);
- const pointerY=interpolate(f,[150,300,420,540,660],[40,34,62,52,44],clamp);
+ const direct=cues[1]!,transform=cues[2]!,rotate=cues[3]!,align=cues[4]!,nudge=cues[5]!,timeline=cues[8]!,tracks=cues[9]!;
+ const x=f<transform.from?0:interpolate(f,[transform.from,transform.to],[0,.22],clamp);
+ const scale=f<transform.from?1:interpolate(f,[transform.from,transform.to],[1,1.22],clamp);
+ const rot=f<rotate.from?0:interpolate(f,[rotate.from,rotate.to],[0,15],clamp);
+ const snapPulse=f>rotate.from&&f<rotate.to?1+Math.sin((f-rotate.from)/6)*.03:1;
+ const finalX=f>align.from?interpolate(f,[align.from,nudge.to],[.22,0],clamp):x;
+ const finalRot=f>align.from?interpolate(f,[align.from,nudge.to],[15,0],clamp):rot;
+ const play=seg(f,timeline.from,tracks.to);
+ const pointerX=interpolate(f,[direct.from,transform.to,rotate.to,align.to,nudge.to],[24,68,72,42,50],clamp);
+ const pointerY=interpolate(f,[direct.from,transform.to,rotate.to,align.to,nudge.to],[40,34,62,52,44],clamp);
  return <AbsoluteFill style={{background:designTokens.color.background,color:designTokens.color.text,fontFamily:'Inter,system-ui,sans-serif',paddingTop:socialCoreContentInsets.top,paddingRight:socialCoreContentInsets.right,paddingBottom:socialCoreContentInsets.bottom,paddingLeft:socialCoreContentInsets.left}}>
    <div style={{fontSize:24,letterSpacing:4,color:designTokens.color.accent,fontWeight:800}}>N4 VIDEO LAB</div>
    <div style={{fontSize:58,fontWeight:900,lineHeight:1.02,marginTop:16}}>EDITOR VISUAL DIRETO</div>
