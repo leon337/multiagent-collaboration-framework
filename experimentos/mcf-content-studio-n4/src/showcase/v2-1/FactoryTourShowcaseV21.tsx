@@ -59,12 +59,12 @@ const Split=({left,right}:{left:{file:string;startSec:number;label:string};right
 
 const Qa=()=> <V21Canvas>
   <div style={{position:'absolute',left:26,right:26,top:26,bottom:120,display:'grid',gridTemplateColumns:'1fr 1fr',gridTemplateRows:'1fr 1fr',gap:12}}>
-    {[
+    {([
       ['qa/01-engine-universal.png','ENGINE'],
       ['qa/04-ui-code-universal.png','UI + CODE'],
       ['qa/06-assets-audio-universal.png','AUDIO'],
       ['qa/07-integrations-universal.png','INTEGRATIONS']
-    ].map(([file,label],i)=><div key={file} style={{position:'relative',overflow:'hidden',borderRadius:28,border:'1px solid #c8d8ff',background:'#fff',boxShadow:'0 18px 48px rgba(35,75,160,.11)'}}>
+    ] as Array<[string,string]>).map(([file,label],i)=><div key={file} style={{position:'relative',overflow:'hidden',borderRadius:28,border:'1px solid #c8d8ff',background:'#fff',boxShadow:'0 18px 48px rgba(35,75,160,.11)'}}>
       <Img src={source(file)} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
       <div style={{position:'absolute',left:14,bottom:14}}><Chip tone={i%2?'violet':'blue'}>{label}</Chip></div>
     </div>)}
