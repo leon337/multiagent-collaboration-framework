@@ -1,0 +1,21 @@
+checkpoint_id: CONTINUITY-RECONCILIATION-20260920
+mission_id: CONTINUITY-RECONCILE-20260920
+observed_at: "2026-09-20T06:23:00-03:00"
+status: PERSISTED_ON_GITHUB_BRANCHES
+branches:
+  cloud_infrastructure:
+    name: mission/oci-paonosso-runtime-20260920
+    revision: 6e53a11289a99d497106ccda375ab3e067d9f78c
+  pao_nosso:
+    name: mission/pao-nosso-context-20260920
+    revision: 44e5296af0e15dfd0fdc17743b43b1e28ba58db5
+  mcf:
+    name: mission/persist-oci-pao-nosso-20260920
+missions:
+  - MCF-20260920-OCI-PAONOSSO-RUNTIME-001
+  - MCF-20260920-PAO-NOSSO-PRODUCTION-001
+blockers:
+  - OCI_A1_AD1_OUT_OF_CAPACITY
+  - MCF_AND_PROJECT_CONTEXT_BRANCHES_NOT_MERGED_TO_MAIN
+next_action: OPEN_DRAFT_PRS_AND_RESUME_OCI_CAPACITY_RETRY
+final_checkpoint: false
