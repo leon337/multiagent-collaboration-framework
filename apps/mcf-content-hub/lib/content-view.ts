@@ -57,8 +57,10 @@ function deriveStages(items:ContentItem[]):FactoryStage[]{
   ];
 }
 
+const factoryRunGroupKey=(run:string)=>run.replace(/-consolidated$/,'');
+
 export function getFactoryRuns(items:ContentItem[]):FactoryRunView[]{
   const groups=new Map<string,ContentItem[]>();
-  for(const item of items){const run=item.factoryRun??'unassigned';groups.set(run,[...(groups.get(run)??[]),item]);}
+  for(const item of items){const run=factoryRunGroupKey(item.factoryRun??'unassigned');groups.set(run,[...(groups.get(run)??[]),item]);}
   return [...groups.entries()].map(([run,runItems])=>({run,items:[...runItems].sort((a,b)=>a.title.localeCompare(b.title)),createdAt:[...runItems].sort((a,b)=>time(b)-time(a))[0].createdAt,stages:deriveStages(runItems)})).sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime());
 }

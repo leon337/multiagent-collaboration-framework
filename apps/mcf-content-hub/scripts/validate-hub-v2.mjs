@@ -6,6 +6,7 @@ const checks=[
   ['library route','app/library/page.tsx',/getContentFamilies/],
   ['overview','app/page.tsx',/Review Queue|Revis[aã]o/],
   ['factory truthfulness','app/factory-runs/page.tsx',/stage\.state/],
+  ['factory consolidated grouping','lib/content-view.ts',/factoryRunGroupKey/],
   ['watch version history','app/videos/[slug]/page.tsx',/getVersionHistory/],
   ['mobile navigation','app/globals.css',/\.site-header nav[\s\S]*overflow-x:auto/],
 ];
