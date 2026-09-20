@@ -54,7 +54,7 @@ export const Stage=({kicker,title,subtitle,children,accent=v21.blue,proof,compac
   </V21Canvas>;
 };
 
-export const ProofRail=({values,accent=v21.blue}:{values:[string,string,string];accent?:string})=>{
+export const ProofRail=({values,accent=v21.blue}:{values:[string,string,string];accent?:string|undefined})=>{
   const frame=useCurrentFrame();
   const p=reveal(frame,8,20);
   return <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,alignItems:'center',opacity:p}}>
@@ -65,7 +65,7 @@ export const ProofRail=({values,accent=v21.blue}:{values:[string,string,string];
   </div>;
 };
 
-export const Panel=({children,style,accent}:{children:ReactNode;style?:CSSProperties;accent?:string})=><div style={{
+export const Panel=({children,style,accent}:{children:ReactNode;style?:CSSProperties;accent?:string|undefined})=><div style={{
   background:v21.panel,border:'1px solid '+(accent??v21.line),borderRadius:28,
   boxShadow:'0 24px 60px rgba(39,76,154,.12)',backdropFilter:'blur(14px)',boxSizing:'border-box',...style,
 }}>{children}</div>;
