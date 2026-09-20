@@ -62,6 +62,39 @@ jobs:
           cp "$B/06-assets-audio.mp4" public/factory-tour/06-assets-audio.mp4
           cp "$B/07-integrations.mp4" public/factory-tour/07-integrations.mp4
 
+          # Hydrate the measured audio-locked timelines produced by the validated runs.
+          # The repository copies for Phase B / Factory Tour are placeholders by design.
+          cp "$(find out/light-tech-v2/source-b -path '*/timelines/ui-code.json' -print -quit)" src/showcase/phase-b/sync/ui-code.json
+          cp "$(find out/light-tech-v2/source-b -path '*/timelines/pedagogy.json' -print -quit)" src/showcase/phase-b/sync/pedagogy.json
+          cp "$(find out/light-tech-v2/source-b -path '*/timelines/assets-audio.json' -print -quit)" src/showcase/phase-b/sync/assets-audio.json
+          cp "$(find out/light-tech-v2/source-b -path '*/timelines/integrations.json' -print -quit)" src/showcase/phase-b/sync/integrations.json
+          cp "$(find out/light-tech-v2/source-tour -path '*/sync/timeline.json' -print -quit)" src/showcase/factory-tour/sync.json
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected={
+            'ui-code':40,
+            'pedagogy':38,
+            'assets-audio':38,
+            'integrations':50,
+            'factory-tour':60,
+          }
+          paths={
+            'ui-code':Path('src/showcase/phase-b/sync/ui-code.json'),
+            'pedagogy':Path('src/showcase/phase-b/sync/pedagogy.json'),
+            'assets-audio':Path('src/showcase/phase-b/sync/assets-audio.json'),
+            'integrations':Path('src/showcase/phase-b/sync/integrations.json'),
+            'factory-tour':Path('src/showcase/factory-tour/sync.json'),
+          }
+          for name,path in paths.items():
+              data=json.loads(path.read_text())
+              duration=float(data['durationSec'])
+              if duration < expected[name]:
+                  raise SystemExit(f'{name}: measured timeline not hydrated ({duration}s)')
+              print(f'{name}: {duration:.3f}s / {data["totalFrames"]} frames')
+          PY
+
       - name: Typecheck and tests
         run: |
           pnpm typecheck
