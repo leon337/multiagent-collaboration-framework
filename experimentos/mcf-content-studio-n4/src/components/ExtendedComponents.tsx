@@ -79,7 +79,7 @@ export type TypingCueProps=CommonProps&{text?:string;prefix?:string;speedFrames?
 export const TypingCue=({aspect='9:16',reducedMotion=false,text='pnpm test',prefix='$ ',speedFrames=3}:TypingCueProps)=>{
   const frame=useCurrentFrame(); const count=reducedMotion?text.length:Math.min(text.length,Math.floor(frame/Math.max(1,speedFrames)));
   return <SafeFrame aspect={aspect} reducedMotion={reducedMotion} style={{justifyContent:'center'}}>
-    <Card style={{background:'#05070c'}}><div style={{fontFamily:'ui-monospace, monospace',fontSize:aspect==='9:16'?34:40}}>{prefix}{text.slice(0,count)}<span style={{opacity:frame%20<10?1:.15}}>▌</span></div></Card>
+    <Card style={{background:'linear-gradient(145deg,#13213d,#0d1830)',borderColor:'#7f9bd2'}}><div style={{fontFamily:'ui-monospace, monospace',fontSize:aspect==='9:16'?34:40,color:'#eef5ff'}}>{prefix}{text.slice(0,count)}<span style={{opacity:frame%20<10?1:.15}}>▌</span></div></Card>
   </SafeFrame>;
 };
 
@@ -95,8 +95,8 @@ export const ScrollCue=({aspect='9:16',reducedMotion=false,title='Scroll',lines=
 export type SelectionCueProps=CommonProps&{text?:string;selection?:string};
 export const SelectionCue=({aspect='9:16',reducedMotion=false,text='const runtime = authorize(tool)',selection='authorize'}:SelectionCueProps)=>{
   const frame=useCurrentFrame(); const on=reducedMotion||frame>24; const parts=text.split(selection);
-  return <SafeFrame aspect={aspect} reducedMotion={reducedMotion} style={{justifyContent:'center'}}><Card style={{background:'#05070c'}}>
-    <div style={{fontFamily:'ui-monospace, monospace',fontSize:aspect==='9:16'?30:36,lineHeight:1.5}}>{parts[0]}<span style={{background:on?designTokens.color.accent:'transparent',color:on?'#080c14':designTokens.color.text,padding:'2px 4px',borderRadius:5}}>{selection}</span>{parts.slice(1).join(selection)}</div>
+  return <SafeFrame aspect={aspect} reducedMotion={reducedMotion} style={{justifyContent:'center'}}><Card style={{background:'linear-gradient(145deg,#13213d,#0d1830)',borderColor:'#7f9bd2'}}>
+    <div style={{fontFamily:'ui-monospace, monospace',fontSize:aspect==='9:16'?30:36,lineHeight:1.5,color:'#eef5ff'}}>{parts[0]}<span style={{background:on?designTokens.color.accent:'transparent',color:on?'#07142f':'#eef5ff',padding:'2px 4px',borderRadius:5}}>{selection}</span>{parts.slice(1).join(selection)}</div>
   </Card></SafeFrame>;
 };
 
