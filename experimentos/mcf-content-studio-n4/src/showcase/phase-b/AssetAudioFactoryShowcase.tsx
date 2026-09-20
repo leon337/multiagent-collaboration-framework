@@ -8,7 +8,7 @@ import {searchAssets} from '../../assets/searchAssets';
 import {assetsAudioSync} from './synced';
 
 const Scene=({id,children}:{id:keyof typeof assetsAudioSync.scenes;children:React.ReactNode})=>{
-  const scene=assetsAudioSync.scenes[id];
+  const scene=assetsAudioSync.scenes[id]!;
   return <Sequence from={scene.from} durationInFrames={scene.durationFrames}>{children}</Sequence>;
 };
 
