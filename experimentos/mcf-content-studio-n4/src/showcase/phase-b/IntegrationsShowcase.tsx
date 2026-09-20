@@ -14,7 +14,7 @@ import type {ImportManifest} from '../../importer/types';
 import {integrationsSync} from './synced';
 
 const Scene=({id,children}:{id:keyof typeof integrationsSync.scenes;children:React.ReactNode})=>{
-  const scene=integrationsSync.scenes[id];
+  const scene=integrationsSync.scenes[id]!;
   return <Sequence from={scene.from} durationInFrames={scene.durationFrames}>{children}</Sequence>;
 };
 
