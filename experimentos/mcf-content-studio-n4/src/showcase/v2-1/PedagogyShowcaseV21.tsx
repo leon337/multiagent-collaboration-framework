@@ -8,7 +8,7 @@ const clamp={extrapolateLeft:'clamp',extrapolateRight:'clamp'} as const;
 
 const Intro=()=>{
   const f=useCurrentFrame(); const p=reveal(f,0,24);
-  const steps=[['ASK','recall'],['COMPARE','quiz'],['CONNECT','concepts'],['DECIDE','checkpoint']];
+  const steps:Array<[string,string]>=[['ASK','recall'],['COMPARE','quiz'],['CONNECT','concepts'],['DECIDE','checkpoint']];
   return <Stage kicker="N4 SHOWCASE 05 · PEDAGOGIA" title="A CENA TAMBÉM CONTROLA COMO A IDEIA É APRENDIDA" subtitle="O viewer não recebe só conteúdo: ele recupera, compara, conecta e decide." proof={['PROMPT','RESPONSE','LEARNING']}>
     <Panel style={{height:'100%',position:'relative',padding:26}}>
       <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,alignItems:'center',height:'100%'}}>
@@ -22,7 +22,7 @@ const Intro=()=>{
 };
 
 const Recall=()=>{
-  const f=useCurrentFrame(); const total=pedagogySync.scenes.recall.durationFrames;
+  const f=useCurrentFrame(); const total=pedagogySync.scenes.recall!.durationFrames;
   const revealAnswer=f>Math.max(20,total*.55);
   return <Stage kicker="01 · ACTIVE RECALL" title="PRIMEIRO RECUPERA. DEPOIS REVELA." subtitle="A pausa cria uma decisão cognitiva antes da resposta." proof={['QUESTION','THINK','REVEAL']}>
     <div style={{height:'100%',display:'grid',gridTemplateRows:'1fr 1fr',gap:18}}>
@@ -39,7 +39,7 @@ const Recall=()=>{
 };
 
 const Quiz=()=>{
-  const f=useCurrentFrame(); const total=pedagogySync.scenes.quiz.durationFrames; const revealAns=f>total*.58;
+  const f=useCurrentFrame(); const total=pedagogySync.scenes.quiz!.durationFrames; const revealAns=f>total*.58;
   const options=['Title','Active Recall','Background'];
   return <Stage kicker="02 · QUIZ" title="UMA ESCOLHA TORNA O MODELO VISÍVEL" subtitle="O estado muda quando a resposta correta é revelada." proof={['OPTIONS','SELECT','FEEDBACK']}>
     <Panel style={{height:'100%',padding:28,display:'grid',gridTemplateRows:'auto 1fr auto',gap:18}}>
@@ -77,7 +77,7 @@ const ErrorCorrect=()=>{
 };
 
 const Progressive=()=>{
-  const f=useCurrentFrame(); const total=pedagogySync.scenes.progressive.durationFrames;
+  const f=useCurrentFrame(); const total=pedagogySync.scenes.progressive!.durationFrames;
   const concepts=['FONTE','MODELO','RUNTIME','GATE'];
   const active=Math.min(concepts.length-1,Math.floor(f/Math.max(1,total/concepts.length)));
   return <Stage kicker="04 · PROGRESSÃO" title="UM CONCEITO ENTRA DE CADA VEZ" subtitle="A sequência preserva a relação causal sem despejar tudo no primeiro frame." proof={['SOURCE','RUNTIME','GATE']}>
@@ -111,7 +111,7 @@ const Checkpoint=()=>{
 };
 
 const Characters=()=>{
-  const f=useCurrentFrame(); const total=pedagogySync.scenes.characters.durationFrames;
+  const f=useCurrentFrame(); const total=pedagogySync.scenes.characters!.durationFrames;
   const active=Math.min(3,Math.floor(f/Math.max(1,total/4)));
   const people=[
     ['AGENTE','propõe',v21.blue],['OPERADOR','executa',v21.violet],['REVISOR','verifica',v21.cyan],['HUMANO','decide',v21.green]
@@ -120,7 +120,7 @@ const Characters=()=>{
     <Panel style={{height:'100%',position:'relative',padding:30}}>
       <Node label="HUMAN_GATE" value="decision" accent={v21.green} active style={{position:'absolute',left:'50%',top:'50%',transform:'translate(-50%,-50%)',width:300}}/>
       {people.map(([a,b,c],i)=>{
-        const pos=[[60,80],[620,80],[60,520],[620,520]][i];
+        const pos=([[60,80],[620,80],[60,520],[620,520]] as Array<[number,number]>)[i]!;
         return <Panel key={String(a)} style={{position:'absolute',left:pos[0],top:pos[1],width:280,padding:22,borderColor:i===active?String(c):v21.line,background:i===active?'#fff':'rgba(255,255,255,.82)',boxShadow:i===active?'0 24px 58px rgba(36,92,255,.17)':'0 14px 34px rgba(39,76,154,.08)',opacity:i<=active?1:.35}}>
           <div style={{width:64,height:64,borderRadius:'50%',background:String(c)+'22',display:'grid',placeItems:'center',fontSize:32}}>◉</div>
           <div style={{fontSize:22,fontWeight:950,marginTop:14}}>{a}</div>
