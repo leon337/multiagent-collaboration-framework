@@ -1,5 +1,5 @@
 export const seedState = {
-  version: 3,
+  version: 4,
   camera: { x: 0, y: 0, zoom: 1 },
   nodes: [
     { id: 'mcf', type: 'project', title: 'MCF', x: 760, y: 390, r: 88, parentId: null, tags: ['framework', 'principal'], messages: [] },
@@ -43,7 +43,16 @@ export function normalizeState(input) {
       title: String(n.title || 'Sem título').slice(0, 80), x: Number(n.x) || 0, y: Number(n.y) || 0,
       r: Number(n.r) || 58, parentId: n.parentId || null,
       tags: Array.isArray(n.tags) ? n.tags.map(String).slice(0, 12) : [],
-      messages: Array.isArray(n.messages) ? n.messages.map(String).slice(-200) : [],
+      messages: Array.isArray(n.messages) ? n.messages.slice(-200).map((m) => {
+        if (typeof m === 'string') return { role: 'user', text: m.slice(0, 12000) };
+        const role = m?.role === 'assistant' ? 'assistant' : 'user';
+        return {
+          role,
+          text: String(m?.text || '').slice(0, 12000),
+          status: m?.status === 'streaming' ? 'streaming' : 'done',
+          at: typeof m?.at === 'string' ? m.at : undefined
+        };
+      }).filter(m => m.text || m.status === 'streaming') : [],
       collapsed: n.type === 'project' ? Boolean(n.collapsed) : false
     };
   });
@@ -72,7 +81,7 @@ export function normalizeState(input) {
     if (parentEdge) node.parentId = parentEdge.source;
   }
 
-  return { version: 3, camera: input.camera || { x: 0, y: 0, zoom: 1 }, nodes, edges };
+  return { version: 4, camera: input.camera || { x: 0, y: 0, zoom: 1 }, nodes, edges };
 }
 
 export function connect(state, source, target, kind = 'related', reason = '') {
