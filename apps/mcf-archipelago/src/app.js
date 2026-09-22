@@ -72,7 +72,7 @@ function renderChatBinding(node) {
     : 'A conversa /c/... nasce na primeira mensagem.';
   box.append(id);
 
-  if (node.chatgptUrl?.includes('/c/')) {
+  if (/\/(?:c|uc)\//.test(node.chatgptUrl || '')) {
     const link = document.createElement('a');
     link.className = 'chat-binding-link';
     link.href = node.chatgptUrl;
