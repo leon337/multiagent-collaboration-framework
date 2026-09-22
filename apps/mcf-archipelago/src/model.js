@@ -28,7 +28,7 @@ export function createNode({ type, title, parentId = null, tags = [], x = 800, y
     id: uid(type), type, title: title.trim(), parentId: parentId || null,
     tags: tags.map(t => t.trim()).filter(Boolean),
     x, y, r: type === 'project' ? 82 : type === 'agent' ? 46 : 58,
-    messages: [], createdAt: new Date().toISOString()
+    messages: [], collapsed: false, createdAt: new Date().toISOString()
   };
 }
 
@@ -43,7 +43,8 @@ export function normalizeState(input) {
       title: String(n.title || 'Sem título').slice(0, 80), x: Number(n.x) || 0, y: Number(n.y) || 0,
       r: Number(n.r) || 58, parentId: n.parentId || null,
       tags: Array.isArray(n.tags) ? n.tags.map(String).slice(0, 12) : [],
-      messages: Array.isArray(n.messages) ? n.messages.map(String).slice(-200) : []
+      messages: Array.isArray(n.messages) ? n.messages.map(String).slice(-200) : [],
+      collapsed: n.type === 'project' ? Boolean(n.collapsed) : false
     };
   });
   const edges = input.edges.filter(e => ids.has(e.source) && ids.has(e.target)).map(e => ({
