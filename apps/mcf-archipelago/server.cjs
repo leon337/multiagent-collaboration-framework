@@ -9,6 +9,7 @@ const root = __dirname;
 const clients = new Set();
 const port = Number(process.env.PORT || 4173);
 const envPath = path.join(root, '.env.local');
+const liveReload = process.env.ARCHIPELAGO_LIVE_RELOAD === '1';
 
 function loadLocalEnv() {
   if (!fs.existsSync(envPath)) return;
@@ -154,7 +155,7 @@ function serveStatic(req, res) {
   fs.readFile(file, (err, buf) => {
     if (err) return json(res, 404, {code:'NOT_FOUND'});
     let body = buf;
-    if (path.extname(file) === '.html') {
+    if (path.extname(file) === '.html' && liveReload) {
       body = Buffer.from(buf.toString().replace(
         '</body>',
         '<script>const es=new EventSource("/__events");es.onmessage=e=>{if(e.data==="reload")location.reload()}</script></body>'
@@ -223,11 +224,14 @@ const server = http.createServer(async (req,res) => {
   }
 });
 
-fs.watch(root,{recursive:false},(event,name)=>{
-  if (name && !['server.cjs','.env.local'].includes(name)) {
+if (liveReload) {
+  fs.watch(root,{recursive:false},(event,name)=>{
+    if (!name) return;
+    const safeName = String(name).replace(/\\/g, '/');
+    if (safeName.startsWith('.archipelago-data') || safeName === '.env.local' || safeName === 'server.cjs') return;
     for(const client of clients) client.write('data: reload\n\n');
-  }
-});
+  });
+}
 
 server.listen(port,'127.0.0.1',()=>{
   console.log(
