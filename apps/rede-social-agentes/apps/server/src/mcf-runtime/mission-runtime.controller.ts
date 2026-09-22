@@ -45,6 +45,50 @@ import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 
 const stringList = z.array(z.string().trim().min(1).max(256)).max(100);
 
+const artifactRefSchema = z.object({
+  artifactType: z.string().trim().min(1).max(128),
+  schemaVersion: z.string().trim().min(1).max(64),
+  projectId: z.string().trim().min(1).max(256),
+  revisionId: z.string().trim().min(1).max(256),
+  path: z.string().trim().min(1).max(1024),
+  contentDigest: z.string().trim().min(1).max(256),
+  repository: z.string().trim().min(1).max(512),
+  commitSha: z
+    .string()
+    .trim()
+    .regex(/^[a-f0-9]{7,64}$/u)
+    .nullable(),
+});
+
+const methodologyPinSchema = z.object({
+  version: z.string().trim().min(1).max(64),
+  immutableRef: z.string().trim().min(1).max(512),
+});
+
+const standingAuthorizationSchema = z.object({
+  authorizationId: z.string().trim().min(1).max(256),
+  projectId: z.string().trim().min(1).max(256),
+  missionId: z.string().uuid().optional(),
+  grantedBy: z.literal('LEANDRO'),
+  grantedAt: z.string().datetime({ offset: true }),
+  actionClasses: stringList,
+  environments: stringList,
+  maximumCost: z
+    .object({
+      currency: z.string().trim().min(1).max(16),
+      amount: z.number().nonnegative(),
+      period: z.string().trim().min(1).max(64).optional(),
+    })
+    .nullable(),
+  reversibleOnly: z.boolean(),
+  expiresAt: z.string().datetime({ offset: true }).optional(),
+  boundary: z.string().trim().min(1).max(512).optional(),
+  exclusions: stringList,
+  evidenceRequirements: stringList,
+  sourceDecisionRef: z.string().trim().min(1).max(512),
+  status: z.enum(['ACTIVE', 'EXPIRED', 'REVOKED']),
+});
+
 const missionContractSchema = z.object({
   title: z.string().trim().min(3).max(160),
   objective: z.string().trim().min(10).max(4_000),
@@ -56,6 +100,16 @@ const missionContractSchema = z.object({
   selectedAgents: stringList.min(1),
   selectedSkills: stringList.min(1),
   sourceOfTruth: stringList,
+  contractSchemaVersion: z.literal('1.1').optional(),
+  projectId: z.string().trim().min(1).max(256).optional(),
+  projectEntryMode: z
+    .enum(['NEW_PROJECT', 'ADOPT_EXISTING_PROJECT', 'RESUME_MCF_PROJECT'])
+    .optional(),
+  methodologyPin: methodologyPinSchema.optional(),
+  alignedPipRef: artifactRefSchema.optional(),
+  projectRealityReportRef: artifactRefSchema.optional(),
+  standingAuthorizations: z.array(standingAuthorizationSchema).max(100).optional(),
+  continuityCheckpointRef: artifactRefSchema.optional(),
   parentMissionId: z.string().uuid().nullable().optional(),
   returnToAgentId: z.string().trim().min(1).max(128).nullable().optional(),
   returnStatus: z.enum(['NOT_APPLICABLE', 'PENDING', 'COMPLETED']).optional(),
