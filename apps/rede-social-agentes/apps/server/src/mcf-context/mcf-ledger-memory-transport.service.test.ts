@@ -141,9 +141,7 @@ function tools() {
   ];
 }
 
-function client(
-  overrides: Partial<McfLedgerMemoryMcpClient> = {},
-): McfLedgerMemoryMcpClient {
+function client(overrides: Partial<McfLedgerMemoryMcpClient> = {}): McfLedgerMemoryMcpClient {
   return {
     connect: vi.fn().mockResolvedValue(undefined),
     listTools: vi.fn().mockResolvedValue({ tools: tools() }),
@@ -163,9 +161,7 @@ function factory(c: McfLedgerMemoryMcpClient): McfLedgerMemoryMcpClientFactory {
 
 describe('governed memory transport configuration', () => {
   it('requires separate credentials and exact /mcp-write endpoint', () => {
-    expect(loadMcfLedgerMemoryConfiguration(env())?.endpoint.pathname).toBe(
-      '/mcp-write',
-    );
+    expect(loadMcfLedgerMemoryConfiguration(env())?.endpoint.pathname).toBe('/mcp-write');
     const invalid = [
       {},
       env({ MCF_COGNITIVE_LEDGER_WRITE_MCP_URL: undefined }),
@@ -303,14 +299,12 @@ describe('McfLedgerMemoryTransportService', () => {
 
     const pending = service.registerExplicit(writeInput());
     await vi.waitFor(() => expect(make).toHaveBeenCalledOnce());
-    await expect(
-      service.inspect('ec-mcf-write-001', 'project:mcf'),
-    ).rejects.toBeInstanceOf(McfLedgerMemoryUnavailableError);
+    await expect(service.inspect('ec-mcf-write-001', 'project:mcf')).rejects.toBeInstanceOf(
+      McfLedgerMemoryUnavailableError,
+    );
     release?.();
     await expect(pending).resolves.toMatchObject({ operation: 'registrar_memoria' });
-    await expect(
-      service.inspect('ec-mcf-write-001', 'project:mcf'),
-    ).resolves.toMatchObject({
+    await expect(service.inspect('ec-mcf-write-001', 'project:mcf')).resolves.toMatchObject({
       evento: { id: 'ec-mcf-write-001' },
     });
   });

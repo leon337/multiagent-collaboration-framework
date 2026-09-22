@@ -118,9 +118,7 @@ const scopeSchema = bounded(512);
 
 export type McfLedgerMemoryInput = z.infer<typeof registerSchema>;
 export type McfLedgerMemoryReceipt = z.infer<typeof receiptSchema>;
-export type McfLedgerMemoryInspection = z.infer<
-  typeof inspectResultSchema
->['memoria'];
+export type McfLedgerMemoryInspection = z.infer<typeof inspectResultSchema>['memoria'];
 
 export interface McfLedgerMemoryConfiguration {
   endpoint: URL;
@@ -170,9 +168,7 @@ export class McfLedgerMemoryInvalidError extends Error {
 
 export class McfLedgerMemoryUnavailableError extends Error {
   constructor() {
-    super(
-      'The governed Cognitive Ledger memory provider is unavailable or failed closed.',
-    );
+    super('The governed Cognitive Ledger memory provider is unavailable or failed closed.');
     this.name = 'McfLedgerMemoryUnavailableError';
   }
 }
@@ -186,21 +182,14 @@ function integer(
   if (value === undefined) return fallback;
   if (!/^\d+$/u.test(value)) return null;
   const parsed = Number(value);
-  return Number.isSafeInteger(parsed) &&
-      parsed >= minimum &&
-      parsed <= maximum
-    ? parsed
-    : null;
+  return Number.isSafeInteger(parsed) && parsed >= minimum && parsed <= maximum ? parsed : null;
 }
 
 function loopback(host: string): boolean {
   return host === '127.0.0.1' || host === '[::1]' || host === '::1';
 }
 
-function parseEndpoint(
-  value: string,
-  nodeEnvironment: string | undefined,
-): URL | null {
+function parseEndpoint(value: string, nodeEnvironment: string | undefined): URL | null {
   let url: URL;
   try {
     url = new URL(value);
@@ -243,11 +232,7 @@ export function loadMcfLedgerMemoryConfiguration(
   const endpointValue = env.MCF_COGNITIVE_LEDGER_WRITE_MCP_URL;
   const bearerToken = env.MCF_COGNITIVE_LEDGER_WRITE_BEARER_TOKEN;
   const ingress = env.MCF_COGNITIVE_LEDGER_WRITE_INGRESS_TOKEN;
-  if (
-    !endpointValue ||
-    !validCredential(bearerToken) ||
-    !validCredential(ingress)
-  ) {
+  if (!endpointValue || !validCredential(bearerToken) || !validCredential(ingress)) {
     return null;
   }
 
@@ -262,12 +247,7 @@ export function loadMcfLedgerMemoryConfiguration(
   if (new Set(credentials).size !== credentials.length) return null;
 
   const endpoint = parseEndpoint(endpointValue, env.NODE_ENV);
-  const timeoutMs = integer(
-    env.MCF_COGNITIVE_LEDGER_WRITE_TIMEOUT_MS,
-    5_000,
-    250,
-    15_000,
-  );
+  const timeoutMs = integer(env.MCF_COGNITIVE_LEDGER_WRITE_TIMEOUT_MS, 5_000, 250, 15_000);
   const inputLimitBytes = integer(
     env.MCF_COGNITIVE_LEDGER_WRITE_INPUT_LIMIT_BYTES,
     65_536,
@@ -280,12 +260,7 @@ export function loadMcfLedgerMemoryConfiguration(
     2_048,
     262_144,
   );
-  const maxConcurrentOperations = integer(
-    env.MCF_COGNITIVE_LEDGER_MAX_CONCURRENT_WRITES,
-    1,
-    1,
-    4,
-  );
+  const maxConcurrentOperations = integer(env.MCF_COGNITIVE_LEDGER_MAX_CONCURRENT_WRITES, 1, 1, 4);
   if (
     endpoint === null ||
     timeoutMs === null ||
@@ -334,8 +309,7 @@ function defaultFactory(
   });
   return {
     connect: () => client.connect(transport as Transport),
-    listTools: () =>
-      client.listTools() as Promise<{ tools: ToolDescriptor[] }>,
+    listTools: () => client.listTools() as Promise<{ tools: ToolDescriptor[] }>,
     callTool: (request) => client.callTool(request) as Promise<ToolResult>,
     close: () => client.close(),
   };
@@ -379,10 +353,7 @@ function deadline<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
   });
 }
 
-async function closeBounded(
-  client: McfLedgerMemoryMcpClient,
-  ms: number,
-): Promise<void> {
+async function closeBounded(client: McfLedgerMemoryMcpClient, ms: number): Promise<void> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   await Promise.race([
     Promise.resolve()
@@ -410,16 +381,11 @@ export class McfLedgerMemoryTransportService {
 
   constructor(
     private readonly configuration: McfLedgerMemoryConfiguration | null,
-    private readonly clientFactory: McfLedgerMemoryMcpClientFactory =
-      defaultFactory,
+    private readonly clientFactory: McfLedgerMemoryMcpClientFactory = defaultFactory,
   ) {}
 
-  static fromEnvironment(
-    env: NodeJS.ProcessEnv = process.env,
-  ): McfLedgerMemoryTransportService {
-    return new McfLedgerMemoryTransportService(
-      loadMcfLedgerMemoryConfiguration(env),
-    );
+  static fromEnvironment(env: NodeJS.ProcessEnv = process.env): McfLedgerMemoryTransportService {
+    return new McfLedgerMemoryTransportService(loadMcfLedgerMemoryConfiguration(env));
   }
 
   async registerExplicit(value: unknown): Promise<McfLedgerMemoryWriteResponse> {
@@ -447,10 +413,7 @@ export class McfLedgerMemoryTransportService {
     });
   }
 
-  async inspect(
-    eventId: string,
-    memoryScope: string,
-  ): Promise<McfLedgerMemoryInspection> {
+  async inspect(eventId: string, memoryScope: string): Promise<McfLedgerMemoryInspection> {
     const id = inspectIdSchema.safeParse(eventId);
     const scope = scopeSchema.safeParse(memoryScope);
     if (!id.success || !scope.success) throw new McfLedgerMemoryInvalidError();
@@ -494,19 +457,13 @@ export class McfLedgerMemoryTransportService {
 
   private assertResponseSize(value: unknown): void {
     if (this.configuration === null) throw new McfLedgerMemoryUnavailableError();
-    if (
-      Buffer.byteLength(JSON.stringify(value), 'utf8') >
-      this.configuration.responseLimitBytes
-    ) {
+    if (Buffer.byteLength(JSON.stringify(value), 'utf8') > this.configuration.responseLimitBytes) {
       throw new McfLedgerMemoryUnavailableError();
     }
   }
 
   private async withClient<T>(
-    operation: (
-      client: McfLedgerMemoryMcpClient,
-      signal: AbortSignal,
-    ) => Promise<T>,
+    operation: (client: McfLedgerMemoryMcpClient, signal: AbortSignal) => Promise<T>,
   ): Promise<T> {
     if (this.configuration === null) throw new McfLedgerMemoryUnavailableError();
     if (this.activeOperations >= this.configuration.maxConcurrentOperations) {
@@ -515,10 +472,7 @@ export class McfLedgerMemoryTransportService {
     this.activeOperations += 1;
 
     const controller = new AbortController();
-    const timer = setTimeout(
-      () => controller.abort(),
-      this.configuration.timeoutMs,
-    );
+    const timer = setTimeout(() => controller.abort(), this.configuration.timeoutMs);
     let client: McfLedgerMemoryMcpClient | undefined;
     try {
       client = this.clientFactory(this.configuration, controller.signal);
@@ -535,10 +489,7 @@ export class McfLedgerMemoryTransportService {
       clearTimeout(timer);
       controller.abort();
       if (client) {
-        await closeBounded(
-          client,
-          Math.min(this.configuration.timeoutMs, 1_000),
-        );
+        await closeBounded(client, Math.min(this.configuration.timeoutMs, 1_000));
       }
       this.activeOperations -= 1;
     }
