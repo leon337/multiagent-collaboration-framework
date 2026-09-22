@@ -102,9 +102,10 @@ function updateProviderUi() {
   if (label) label.textContent = aiReady
     ? 'API Archipelago · OpenAI · ' + (providers.openai.model || 'modelo configurado')
     : 'API Archipelago online · IA ainda não configurada';
-  if ($('#messageInput')) $('#messageInput').disabled = !isChat || chatBusy;
+  const connected = node?.connectionState === 'READY';
+  if ($('#messageInput')) $('#messageInput').disabled = !isChat || !connected || chatBusy;
   if ($('#sendBtn')) {
-    $('#sendBtn').disabled = !isChat || chatBusy;
+    $('#sendBtn').disabled = !isChat || !connected || chatBusy;
     $('#sendBtn').textContent = aiReady ? 'Enviar e responder' : 'Salvar no chat';
   }
   if ($('#dispatchMcfBtn')) $('#dispatchMcfBtn').hidden = !(isChat && providers.mcf?.configured);
@@ -318,7 +319,7 @@ function render() {
       const title = svgEl('text', { y: 3, class: 'title' });
       title.textContent = n.title;
       const sub = svgEl('text', { y: 22, class: 'sub' });
-      sub.textContent = n.type.toUpperCase();
+      sub.textContent = n.type === 'chat' ? ('CHAT · ' + (n.connectionState || 'OFFLINE')) : n.type.toUpperCase();
       g.append(title, sub);
     }
     if (state.camera.zoom > .95 && n.tags?.length) {
