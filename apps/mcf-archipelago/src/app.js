@@ -36,6 +36,53 @@ function selectedNode() {
   return state.nodes.find(n => n.id === selectedId) || null;
 }
 
+function applyChatBinding(node, chat) {
+  if (!node || node.type !== 'chat') return;
+  const binding = chat?.metadata?.chatgpt || {};
+  node.chatgptUrl = binding.url || null;
+  node.chatgptConversationId = binding.conversationId || null;
+  node.chatgptDeliveryState = binding.deliveryState || null;
+  node.chatgptSurfaceState = binding.state || null;
+  if (selectedId === node.id) renderChatBinding(node);
+}
+
+function renderChatBinding(node) {
+  const box = $('#chatBindingBox');
+  if (!box) return;
+  box.innerHTML = '';
+  if (!node || node.type !== 'chat' || node.connectionState !== 'READY') {
+    box.hidden = true;
+    return;
+  }
+  box.hidden = false;
+  const head = document.createElement('div');
+  head.className = 'chat-binding-head';
+  const dot = document.createElement('i');
+  const label = document.createElement('span');
+  label.textContent = node.chatgptConversationId
+    ? 'ChatGPT real vinculado'
+    : 'Superfície ChatGPT READY';
+  head.append(dot, label);
+  box.append(head);
+
+  const id = document.createElement('div');
+  id.className = 'chat-binding-id';
+  id.textContent = node.chatgptConversationId
+    ? 'conversation_id: ' + node.chatgptConversationId
+    : 'A conversa /c/... nasce na primeira mensagem.';
+  box.append(id);
+
+  if (node.chatgptUrl?.includes('/c/')) {
+    const link = document.createElement('a');
+    link.className = 'chat-binding-link';
+    link.href = node.chatgptUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Abrir chat real';
+    box.append(link);
+  }
+}
+
 function stableDeviceId() {
   const key = 'mcf-archipelago-device-id';
   let id = localStorage.getItem(key);
@@ -79,6 +126,7 @@ async function bindNodeAtomically(node) {
   node.connectionState = result.state === 'READY' ? 'READY' : 'OFFLINE';
   node.deviceSessionId = deviceSession.id;
   node.messages = (result.chat.messages || []).map(mapApiMessage);
+  applyChatBinding(node, result.chat);
   saveState(state);
   render();
   updateDeviceUi();
@@ -89,6 +137,7 @@ async function syncNodeChat(node, create = true) {
   if (!node || node.type !== 'chat') return null;
   const chat = create ? await ensureChat(node) : await getChat(node.id);
   node.messages = (chat.messages || []).map(mapApiMessage);
+  applyChatBinding(node, chat);
   saveState(state);
   if (selectedId === node.id) renderMessages(node);
   return chat;
@@ -445,6 +494,7 @@ function openPanel(id) {
   $('#branchChatBtn').hidden = node.type !== 'chat';
   updateDeviceUi();
   updateProviderUi();
+  renderChatBinding(node);
   detailPanel.classList.add('open');
   renderConnections(node);
   renderMessages(node);
@@ -477,6 +527,8 @@ function closePanel() {
   $('#sendBtn').disabled = true;
   $('#messages').innerHTML = '';
   $('#deviceStrip').hidden = true;
+  $('#chatBindingBox').hidden = true;
+  $('#chatBindingBox').innerHTML = '';
   detailPanel.classList.remove('open');
   render();
 }
