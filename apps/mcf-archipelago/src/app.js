@@ -374,6 +374,12 @@ function openPanel(id) {
   renderConnections(node);
   renderMessages(node);
   render();
+  if (node.type === 'chat') {
+    syncNodeChat(node, true).catch(error => {
+      addLocalSystemMessage(node, 'API Archipelago indisponível: ' + error.message);
+      renderMessages(node);
+    });
+  }
 }
 
 function closePanel() {
@@ -475,6 +481,7 @@ function confirmCreate(event) {
   }
   newbornId = node.id;
   persist(`${createType === 'project' ? 'Projeto' : 'Chat'} criado`);
+  if (node.type === 'chat') syncNodeChat(node, true).catch(() => {});
   dialog.close();
   openPanel(node.id);
   setTimeout(() => {
