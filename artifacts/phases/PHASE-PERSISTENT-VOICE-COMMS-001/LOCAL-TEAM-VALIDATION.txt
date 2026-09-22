@@ -1,0 +1,17 @@
+.                                        | [WARN] Unsupported engine: wanted: {"node":">=24.18.0 <25"} (current: {"node":"v22.23.2","pnpm":"11.17.0"})
+
+ RUN  v4.1.10 /home/leo/mcf-persistent-voice-comms-20260922/apps/rede-social-agentes/apps/server
+
+ ✓ src/mcf-runtime/local-agent-team.registry.test.ts > MCF-EXECUTE-LOCAL-TEAM registry contract > loads the local team skill from the canonical registry 23ms
+ ✓ src/mcf-runtime/local-agent-team.adapter.test.ts > LocalAgentTeamAdapter > creates signed child receipts and a verifiable consolidated receipt 40ms
+ ✓ src/mcf-runtime/local-agent-team.adapter.test.ts > LocalAgentTeamAdapter > fails closed when the executor is disabled 8ms
+ ✓ src/mcf-runtime/local-agent-team.adapter.test.ts > NodeLocalAgentTeamHost > runs workers in distinct operating-system processes without a shell 93ms
+ ✓ src/mcf-runtime/local-agent-team.adapter.test.ts > NodeLocalAgentTeamHost > terminates a worker when the bounded timeout is exceeded 11ms
+ ✓ src/mcf-runtime/local-agent-team.runtime-e2e.test.ts > MCF local agent team canonical runtime E2E > executes through MissionRuntimeService and persists governed process/receipt evidence 210ms
+ ✓ src/mcf-runtime/local-agent-team.runtime-e2e.test.ts > MCF local agent team canonical runtime E2E > fails closed through the same runtime path when the executor is disabled 6ms
+
+ Test Files  3 passed (3)
+      Tests  7 passed (7)
+   Start at  01:02:35
+   Duration  1.95s (transform 1.03s, setup 0ms, import 3.23s, tests 406ms, environment 1ms)
+

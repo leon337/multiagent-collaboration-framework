@@ -1,0 +1,108 @@
+mission_contract:
+  mission_id: MCF-PERSISTENT-VOICE-COMMS-001
+  parent_mission_id: null
+  phase_id: PHASE-PERSISTENT-VOICE-COMMS-001
+  title: "Persistir comunicação por voz do MESTRE no MCF"
+  objective: "Tornar checkpoints de voz do MESTRE parte persistente do contrato de missão do MCF, usando VoiceHub com voz clear quando renderizada e TTS como fallback."
+  expected_outcome: "MESTRE comunica progresso audível em fronteiras úteis de execução sem interromper a missão para pedir permissões reversíveis já autorizadas."
+  scope:
+    - "VoiceHub rendered-audio ingress local e fail-closed"
+    - "fila única de áudio/TTS"
+    - "mcf-voice-checkpoint imediato"
+    - "reporter persistente como recovery"
+    - "communication_contract no template unificado"
+    - "receipts e deduplicação"
+    - "deploy local em produção"
+  out_of_scope:
+    - "comprar planos de TTS"
+    - "clonar voz adicional"
+    - "alterar HUMAN_GATEs não autorizados"
+    - "publicar áudio privado ou credenciais"
+  source_of_truth:
+    - "origin/main @ 23107958aa1e9277ce42c820510f85bc62c14548"
+    - "templates/MCF-UNIFIED-MISSION.yaml"
+    - "docs/operations/MCF-VOICE-REPORTER.md"
+    - "voicehub-linux main @ ec0508705693a42ed8c28cd39aa53784e99754ad"
+  acceptance_criteria:
+    - "VoiceHub produção aceita /api/audio/enqueue somente de allowlist local"
+    - "checkpoint clear retorna receipt DONE com agent=MESTRE"
+    - "mcf-voice-checkpoint persiste status e delivery receipt"
+    - "fallback para /api/speech/enqueue é testado"
+    - "template unificado inclui voice_checkpoints habilitado por padrão"
+    - "reporter não duplica checkpoint imediato"
+    - "testes MCF e VoiceHub passam"
+    - "PR MCF mergeado em main e reporter instalado no notebook"
+  authorizations:
+    - "LEANDRO autorizou continuidade sem prompts repetitivos para decisões reversíveis"
+    - "LEANDRO autorizou merge"
+    - "LEANDRO autorizou colocar em produção"
+  prohibitions:
+    - "sem cobrança"
+    - "sem exposição de segredo"
+    - "sem upload externo de áudio além das autorizações já concedidas"
+    - "sem substituir autoridade humana"
+  risk_class: B
+  current_state: EM_EXECUCAO
+  cycle: 1
+  selected_agents:
+    - MESTRE
+    - Augusto
+    - Beatriz
+    - Emily
+    - Julia
+  decision_authority: LEANDRO
+  human_escalation_triggers:
+    - "expansão material de escopo"
+    - "nova cobrança"
+    - "novo compartilhamento externo de dado sensível"
+  phase_artifact_directory: artifacts/phases/PHASE-PERSISTENT-VOICE-COMMS-001
+
+communication_contract:
+  voice_checkpoints:
+    enabled: true
+    speaker_agent: MESTRE
+    transport: voicehub
+    preferred_delivery: rendered_audio
+    preferred_voice_profile: clear
+    fallback_delivery: speech_tts
+    non_blocking: true
+    deduplicate: true
+    emit_on:
+      - mission_started
+      - phase_started
+      - meaningful_progress
+      - blocker
+      - phase_completed
+      - mission_completed
+    require_new_human_permission_for_reversible_steps: false
+    rendered_audio_directory: ~/.cache/voicehub-linux/generated
+    checkpoint_command: mcf-voice-checkpoint
+
+human_delegation_firewall:
+  mode: TEAM_FIRST
+  human_as_executing_agent: false
+  team_execution_attempted: true
+  attempted_actions:
+    - "VoiceHub implementation"
+    - "MCF protocol implementation"
+    - "automated validation"
+  evidence:
+    - "VoiceHub PR #4 merged"
+    - "production rendered_audio receipt DONE"
+  tool_limitation: ""
+  fallback_exhausted: false
+  intervention_required: false
+  leo_approved: true
+  human_action_count: 0
+  return_to_team_defined: true
+
+leo_gate:
+  decision: APROVAR
+  justification: "Autorização explícita no chat para execução, merge e produção."
+  execution_sequence_accepted: true
+  phase_traceability_pack_accepted: true
+  hdf_accepted: true
+  next_state: EM_EXECUCAO
+  next_action: "Concluir QA, merge MCF e deploy do reporter"
+  responsible: MESTRE
+  escalate_to_leandro: false

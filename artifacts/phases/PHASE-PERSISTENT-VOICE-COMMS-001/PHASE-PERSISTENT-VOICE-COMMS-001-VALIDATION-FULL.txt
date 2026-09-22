@@ -1,0 +1,52 @@
+MCF-PERSISTENT-VOICE-COMMS-001 FINAL VALIDATION
+2026-09-22T01:02:22-03:00
+
+[1] py_compile
+PASS py_compile
+
+[2] YAML parse
+PASS MCF-UNIFIED-MISSION.yaml
+PASS MCF-PERSISTENT-VOICE-COMMS-001-MISSION.yaml
+
+[3] reporter tests
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.164s
+
+OK
+
+[4] VoiceHub queue/lock mirror
+{
+  "queue_fifo": true,
+  "max_simultaneous_execute": 1,
+  "identity_required": true,
+  "rendered_audio_queue": true,
+  "rendered_audio_identity_required": true,
+  "cross_process_lock": true,
+  "lock_trace": [
+    {
+      "event": "start",
+      "label": "P1"
+    },
+    {
+      "event": "end",
+      "label": "P1"
+    },
+    {
+      "event": "start",
+      "label": "P2"
+    },
+    {
+      "event": "end",
+      "label": "P2"
+    }
+  ]
+}
+
+[5] diff check
+PASS git diff --check
+
+[6] changed file secret-pattern scan
+SCANNED_FILES 13
+SECRET_PATTERN_HITS 0
+PASS secret-pattern scan

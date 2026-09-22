@@ -53,9 +53,30 @@ assert starts == [
 ], starts
 assert max_active == 1, max_active
 
+audio_meta = {
+    "agent":"MESTRE",
+    "project":"MCF",
+    "mission":"MCF-PERSISTENT-VOICE-COMMS-001",
+    "phase":"qa",
+    "source":"test",
+    "voice_profile":"clear",
+}
+audio_job = q.enqueue_audio("/tmp/mcf-checkpoint.mp3", meta=audio_meta, wait=True, timeout=3)
+assert audio_job["status"] == "DONE", audio_job
+assert audio_job["kind"] == "rendered_audio", audio_job
+assert audio_job["audio_name"] == "mcf-checkpoint.mp3", audio_job
+assert events[-2][1] == "", events
+assert max_active == 1, max_active
+
 try:
     q.enqueue("X", meta={"agent":"TEST"}, identify=True)
     raise AssertionError("missing metadata accepted")
+except ValueError:
+    pass
+
+try:
+    q.enqueue_audio("/tmp/x.mp3", meta={"agent":"MESTRE"})
+    raise AssertionError("rendered audio accepted without mission identity")
 except ValueError:
     pass
 
@@ -93,6 +114,8 @@ print(json.dumps({
     "queue_fifo": True,
     "max_simultaneous_execute": max_active,
     "identity_required": True,
+    "rendered_audio_queue": True,
+    "rendered_audio_identity_required": True,
     "cross_process_lock": True,
     "lock_trace": [{"event":r["event"],"label":r["label"]} for r in rows],
 }, indent=2))

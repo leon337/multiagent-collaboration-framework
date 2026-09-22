@@ -1,0 +1,30 @@
+MCF-PERSISTENT-VOICE-COMMS-001 SMOKE
+
+PASS VoiceHub production /api/audio/enqueue
+  job=7a35a8432c504456ad21a9cc96d6ce50
+  kind=rendered_audio
+  status=DONE
+  agent=MESTRE
+  mission=MCF-PERSISTENT-VOICE-COMMS-001
+  voice_profile=clear
+  fallback=false
+
+PASS mcf-voice-checkpoint worktree E2E
+  job=c9a94e2eebb74cb1aaa3f1728a43fc00
+  phase=MCF-INTEGRATION
+  delivery=rendered_audio
+  status=DONE
+
+PASS checkpoint TEAM-AUDIT
+  job=1c3be7877b1f49b982b9820c179d01f1
+  delivery=rendered_audio
+  status=DONE
+
+PASS checkpoint TRACEABILITY
+  job=e87d9d21a1ae46069f6b4f9aa59848
+  delivery=rendered_audio
+  status=DONE
+
+PASS reporter tests 6/6
+PASS canonical local-team tests 7/7 across 3 files
+PASS secret scan 0 hits across changed files
