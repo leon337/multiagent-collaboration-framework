@@ -18,7 +18,9 @@ test('createNode cria chat com campos mínimos', () => {
 
 test('connect impede duplicata e self-edge', () => {
   const state = normalizeState(structuredClone(seedState));
-  assert.equal(connect(state, 'runtime', 'dual'), true);
+  assert.equal(connect(state, 'runtime', 'dual', 'related', 'compartilham interface'), true);
+  const edge = state.edges.find(e => e.source === 'runtime' && e.target === 'dual');
+  assert.equal(edge.reason, 'compartilham interface');
   assert.equal(connect(state, 'dual', 'runtime'), false);
   assert.equal(connect(state, 'runtime', 'runtime'), false);
 });
