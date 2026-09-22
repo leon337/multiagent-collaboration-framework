@@ -133,7 +133,8 @@ class ChatStore {
   }
 
   #importLegacy(chat, messages) {
-    if (!Array.isArray(messages) || chat.messages.length) return;
+    if (!Array.isArray(messages) || chat.messages.length || messages.length === 0) return;
+    let imported = 0;
     for (const raw of messages.slice(-200)) {
       const role = raw?.role === 'assistant' ? 'assistant' : raw?.role === 'system' ? 'system' : 'user';
       const text = typeof raw === 'string' ? raw : String(raw?.text || '');
@@ -147,9 +148,12 @@ class ChatStore {
         status: 'done',
         createdAt: typeof raw?.at === 'string' ? raw.at : new Date().toISOString()
       });
+      imported += 1;
     }
-    chat.updatedAt = new Date().toISOString();
-    this.#save();
+    if (imported > 0) {
+      chat.updatedAt = new Date().toISOString();
+      this.#save();
+    }
   }
 
   #publicChat(chat, includeMessages) {
