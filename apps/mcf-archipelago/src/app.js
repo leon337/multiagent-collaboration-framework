@@ -15,6 +15,8 @@ let panDrag = null;
 let connectFrom = null;
 let createType = 'chat';
 let listMode = false;
+let newbornId = null;
+let pendingConnectionReason = '';
 
 function persist(status = 'Salvo localmente') {
   saveState(state);
@@ -45,21 +47,59 @@ function screenToWorld(clientX, clientY) {
   return { x: (clientX - rect.left - x) / zoom, y: (clientY - rect.top - y) / zoom };
 }
 
+function renderProjectZones(root) {
+  for (const project of state.nodes.filter(n => n.type === 'project')) {
+    const children = state.nodes.filter(n => n.parentId === project.id);
+    const points = [project, ...children];
+    const maxDx = Math.max(145, ...points.map(n => Math.abs(n.x - project.x) + n.r));
+    const maxDy = Math.max(118, ...points.map(n => Math.abs(n.y - project.y) + n.r));
+    const zone = svgEl('g', { class: 'archipelago-zone', 'data-project-id': project.id });
+    zone.append(
+      svgEl('ellipse', { cx: project.x, cy: project.y, rx: maxDx + 68, ry: maxDy + 54, class: 'zone-water outer' }),
+      svgEl('ellipse', { cx: project.x, cy: project.y, rx: maxDx + 34, ry: maxDy + 24, class: 'zone-water inner' })
+    );
+    if (state.camera.zoom > .5) {
+      const label = svgEl('text', { x: project.x, y: project.y - maxDy - 78, class: 'zone-label' });
+      label.textContent = `${project.title} · ${children.length} contexto${children.length === 1 ? '' : 's'}`;
+      zone.append(label);
+    }
+    root.append(zone);
+  }
+}
+
+function renderEdges(root) {
+  for (const edge of state.edges) {
+    const a = state.nodes.find(n => n.id === edge.source);
+    const b = state.nodes.find(n => n.id === edge.target);
+    if (!a || !b) continue;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const mx = (a.x + b.x) / 2 - dy * .08;
+    const my = (a.y + b.y) / 2 + dx * .08;
+    const pathId = `edge-path-${edge.id}`;
+    const path = svgEl('path', {
+      id: pathId,
+      d: `M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`,
+      class: `edge ${edge.kind === 'contains' ? 'contains' : 'related'}`
+    });
+    root.append(path);
+    if (edge.reason && state.camera.zoom > .85) {
+      const text = svgEl('text', { class: 'edge-label' });
+      const textPath = svgEl('textPath', { href: `#${pathId}`, startOffset: '50%' });
+      textPath.textContent = edge.reason;
+      text.append(textPath);
+      root.append(text);
+    }
+  }
+}
+
 function render() {
   graph.innerHTML = '';
   buildDefs();
   const root = svgEl('g', { transform: `translate(${state.camera.x} ${state.camera.y}) scale(${state.camera.zoom})` });
   graph.append(root);
 
-  for (const edge of state.edges) {
-    const a = state.nodes.find(n => n.id === edge.source);
-    const b = state.nodes.find(n => n.id === edge.target);
-    if (!a || !b) continue;
-    root.append(svgEl('line', {
-      x1: a.x, y1: a.y, x2: b.x, y2: b.y,
-      class: `edge ${edge.kind === 'contains' ? 'contains' : ''}`
-    }));
-  }
+  renderProjectZones(root);
+  renderEdges(root);
 
   const query = $('#searchInput').value || '';
   const matchedIds = new Set(searchNodes(state, query).map(n => n.id));
@@ -68,7 +108,7 @@ function render() {
     const selected = n.id === selectedId;
     const matched = !query || matchedIds.has(n.id);
     const g = svgEl('g', {
-      class: `island ${n.type}${selected ? ' selected' : ''}${matched ? '' : ' dimmed'}`,
+      class: `island ${n.type}${selected ? ' selected' : ''}${matched ? '' : ' dimmed'}${n.id === newbornId ? ' born' : ''}`,
       transform: `translate(${n.x} ${n.y})`,
       tabindex: '0', role: 'button',
       'aria-label': `${n.type}: ${n.title}`,
@@ -76,6 +116,8 @@ function render() {
     });
 
     g.append(
+      svgEl('ellipse', { cx: 0, cy: n.r * .72, rx: n.r * .92, ry: n.r * .28, class: 'island-shadow' }),
+      svgEl('ellipse', { cx: 0, cy: n.r * .52, rx: n.r * 1.12, ry: n.r * .38, class: 'shore-ring' }),
       svgEl('circle', { r: n.r + (selected ? 24 : 16), class: 'halo' }),
       svgEl('path', { d: islandPath(n.r), class: 'land' }),
       svgEl('ellipse', { cx: -n.r*.2, cy: -n.r*.24, rx: n.r*.24, ry: n.r*.12, class: 'shine' })
@@ -99,9 +141,10 @@ function render() {
       e.stopPropagation();
       if (drag?.moved) return;
       if (connectFrom && connectFrom !== n.id) {
-        const ok = connect(state, connectFrom, n.id);
+        const ok = connect(state, connectFrom, n.id, 'related', pendingConnectionReason);
         connectFrom = null;
-        persist(ok ? 'Conexão criada' : 'As ilhas já estão conectadas');
+        pendingConnectionReason = '';
+        persist(ok ? 'Conexão semântica criada' : 'As ilhas já estão conectadas');
         render();
         openPanel(n.id);
         return;
@@ -203,10 +246,17 @@ function confirmCreate(event) {
     x: Number(dialog.dataset.x), y: Number(dialog.dataset.y)
   });
   state.nodes.push(node);
-  if (parentId) connect(state, parentId, node.id, 'contains');
+  if (parentId) connect(state, parentId, node.id, 'contains', 'pertence ao projeto');
+  newbornId = node.id;
   persist(`${createType === 'project' ? 'Projeto' : 'Chat'} criado`);
   dialog.close();
   openPanel(node.id);
+  setTimeout(() => {
+    if (newbornId === node.id) {
+      newbornId = null;
+      render();
+    }
+  }, 900);
 }
 
 function focusNode(node) {
@@ -420,6 +470,7 @@ $('#renameBtn').addEventListener('click', () => {
 $('#connectBtn').addEventListener('click', () => {
   if (!selectedId) return;
   connectFrom = selectedId;
+  pendingConnectionReason = prompt('O que conecta estes dois contextos? (opcional)', 'contextos relacionados')?.trim() || '';
   $('#statusText').textContent = 'Conectar: clique em outra ilha';
 });
 
