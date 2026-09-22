@@ -298,6 +298,51 @@ function assertClosePhaseBoundary(
   }
 }
 
+const dualBrowserForbiddenInputs = new Set([
+  'credential-capture',
+  'secret-access',
+  'access-control-bypass',
+  'physical-pointer',
+  'coordinate-click',
+  'human-as-technical-operator',
+]);
+
+function assertDualBrowserBoundary(
+  skill: McfSkillDefinition,
+  provider: string,
+  operation: string,
+  resource: string,
+  inputs: Record<string, unknown>,
+): void {
+  if (skill.skillId !== 'MCF-OPERATE-DUAL-BROWSER') return;
+  if (skill.permissionProfile !== 'SCOPED_WRITE') {
+    throw new McfPermissionDeniedError('MCF-OPERATE-DUAL-BROWSER must preserve SCOPED_WRITE');
+  }
+  if (
+    provider !== 'internal' ||
+    operation !== 'operate-dual-browser' ||
+    resource !== 'mcf-dual-browser-cockpit'
+  ) {
+    throw new McfPermissionDeniedError(
+      'MCF-OPERATE-DUAL-BROWSER is restricted to internal/operate-dual-browser/mcf-dual-browser-cockpit',
+    );
+  }
+  if (inputs.authorizedScope !== true) {
+    throw new McfPermissionDeniedError('MCF-OPERATE-DUAL-BROWSER requires authorizedScope=true');
+  }
+  for (const [rawKey, value] of Object.entries(inputs)) {
+    const key = canonicalizeToolValue(rawKey);
+    if (
+      dualBrowserForbiddenInputs.has(key) &&
+      value !== false &&
+      value !== null &&
+      value !== undefined
+    ) {
+      throw new McfPermissionDeniedError('MCF-OPERATE-DUAL-BROWSER forbids ' + key);
+    }
+  }
+}
+
 function assertVisualDesktopAuditBoundary(
   skillId: string,
   provider: string,
@@ -407,6 +452,7 @@ export class PermissionEngine {
     assertSecurityReviewBoundary(skill.skillId, provider, operation, resource);
     assertDebugIncidentBoundary(skill, provider, operation, resource, inputs);
     assertClosePhaseBoundary(skill, provider, operation, resource, inputs);
+    assertDualBrowserBoundary(skill, provider, operation, resource, inputs);
     assertVisualDesktopAuditBoundary(skill.skillId, provider, operation, resource);
     assertCodeBuddyBoundary(skill.skillId, provider, operation, tool.resource);
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);

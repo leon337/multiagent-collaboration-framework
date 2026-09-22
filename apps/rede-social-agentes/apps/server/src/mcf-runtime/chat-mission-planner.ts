@@ -43,6 +43,21 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
     internal: false,
     requiredEvidence: ['selected_agents', 'process_ids', 'worker_receipts', 'consolidated_digest'],
   },
+  'MCF-OPERATE-DUAL-BROWSER': {
+    agentId: 'Mestre',
+    handoffTo: 'Beatriz',
+    toolProvider: 'internal',
+    toolOperation: 'operate-dual-browser',
+    internal: false,
+    requiredEvidence: [
+      'target_instance',
+      'interaction_policy',
+      'actions_performed',
+      'capture_evidence',
+      'privacy_disposition',
+      'human_gate_state',
+    ],
+  },
   'MCF-RECOVER-CONTEXT': {
     agentId: 'Miriam',
     handoffTo: 'Mestre',
@@ -185,6 +200,15 @@ const localTeamTerms = [
   'paralelismo',
   'workers',
 ];
+const dualBrowserTerms = [
+  'dual browser',
+  'dual-browser',
+  'mestre workspace',
+  'workspace do mestre',
+  'operar cockpit',
+  'capturar workspace',
+  'captura do workspace',
+];
 const evaluationTerms = [
   'avaliar agentes',
   'avaliar agente',
@@ -266,7 +290,8 @@ function inferRisk(
     selectedSkills.includes('MCF-CLOSE-PHASE') ||
     includesAny(normalized, highRiskTerms)
       ? 'C'
-      : includesAny(normalized, implementationTerms)
+      : selectedSkills.includes('MCF-OPERATE-DUAL-BROWSER') ||
+          includesAny(normalized, implementationTerms)
         ? 'B'
         : 'A';
 
@@ -293,6 +318,14 @@ function inferSkills(
       'MCF-START-MISSION',
       'MCF-SELECT-AGENTS',
       'MCF-EXECUTE-LOCAL-TEAM',
+      'MCF-TRACE-MISSION',
+    ];
+  }
+  if (includesAny(normalized, dualBrowserTerms) && !includesAny(normalized, implementationTerms)) {
+    return [
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-OPERATE-DUAL-BROWSER',
       'MCF-TRACE-MISSION',
     ];
   }
@@ -331,6 +364,7 @@ function inferSkills(
 function resourceFor(skillId: McfExecutableSkillId, repository: string | undefined): string {
   const config = skillConfig[skillId];
   if (skillId === 'MCF-EXECUTE-LOCAL-TEAM') return 'mcf-agent-runtime';
+  if (skillId === 'MCF-OPERATE-DUAL-BROWSER') return 'mcf-dual-browser-cockpit';
   if (config.toolProvider === 'internal') {
     if (skillId === 'MCF-TRACE-MISSION') return 'mcf-mission-timeline';
     return config.internal ? 'mcf-chat-bridge' : 'mcf-agent-runtime';

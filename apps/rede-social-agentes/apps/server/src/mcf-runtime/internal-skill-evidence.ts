@@ -12,6 +12,7 @@ const governedInternalSkillIds = new Set([
   'MCF-SECURITY-REVIEW',
   'MCF-DEBUG-INCIDENT',
   'MCF-CLOSE-PHASE',
+  'MCF-OPERATE-DUAL-BROWSER',
 ]);
 
 const debugEvidencePlaceholders = new Set([
@@ -477,11 +478,107 @@ function requireCloseCheckpoint(
   return value;
 }
 
+function requireDualBrowserInteractionPolicy(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  if (value.semantic_first !== true) {
+    return reject('MCF-OPERATE-DUAL-BROWSER requires semantic_first=true');
+  }
+  if (value.physical_pointer_used !== false) {
+    return reject(
+      'MCF-OPERATE-DUAL-BROWSER requires physical_pointer_used=false when semantic/programmatic action is available',
+    );
+  }
+  requireString(
+    value,
+    'observation_method',
+    'MCF-OPERATE-DUAL-BROWSER requires observation_method evidence',
+  );
+  return value;
+}
+
+function requireDualBrowserPrivacy(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  requireString(
+    value,
+    'classification',
+    'MCF-OPERATE-DUAL-BROWSER requires privacy classification',
+  );
+  if (value.secret_exposed !== false) {
+    return reject('MCF-OPERATE-DUAL-BROWSER requires secret_exposed=false');
+  }
+  if (typeof value.publication_allowed !== 'boolean') {
+    return reject('MCF-OPERATE-DUAL-BROWSER requires publication_allowed boolean evidence');
+  }
+  return value;
+}
+
+function requireDualBrowserHumanGate(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  if (typeof value.required !== 'boolean' || typeof value.resolved !== 'boolean') {
+    return reject('MCF-OPERATE-DUAL-BROWSER requires human gate required/resolved booleans');
+  }
+  if (value.leandro_as_technical_operator !== false) {
+    return reject('MCF-OPERATE-DUAL-BROWSER forbids Leandro as routine technical operator');
+  }
+  if (value.required === true) {
+    requireString(value, 'reason', 'MCF-OPERATE-DUAL-BROWSER human gate requires a reason');
+    if (value.resolved !== true) {
+      return reject('MCF-OPERATE-DUAL-BROWSER cannot complete with unresolved HUMAN_GATE');
+    }
+  }
+  return value;
+}
+
 function validateEvidence(
   skillId: string,
   evidence: Record<string, unknown>,
 ): Record<string, unknown> {
   switch (skillId) {
+    case 'MCF-OPERATE-DUAL-BROWSER':
+      return {
+        target_instance: requireReference(
+          evidence,
+          'target_instance',
+          'MCF-OPERATE-DUAL-BROWSER requires target_instance evidence',
+        ),
+        interaction_policy: requireDualBrowserInteractionPolicy(
+          evidence,
+          'interaction_policy',
+          'MCF-OPERATE-DUAL-BROWSER requires structured interaction_policy evidence',
+        ),
+        actions_performed: requireArray(
+          evidence,
+          'actions_performed',
+          'MCF-OPERATE-DUAL-BROWSER requires non-empty actions_performed evidence',
+        ),
+        capture_evidence: requireReference(
+          evidence,
+          'capture_evidence',
+          'MCF-OPERATE-DUAL-BROWSER requires capture_evidence',
+        ),
+        privacy_disposition: requireDualBrowserPrivacy(
+          evidence,
+          'privacy_disposition',
+          'MCF-OPERATE-DUAL-BROWSER requires structured privacy_disposition evidence',
+        ),
+        human_gate_state: requireDualBrowserHumanGate(
+          evidence,
+          'human_gate_state',
+          'MCF-OPERATE-DUAL-BROWSER requires structured human_gate_state evidence',
+        ),
+      };
     case 'MCF-RECOVER-CONTEXT':
       return {
         source_references: requireArray(

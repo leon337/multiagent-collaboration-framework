@@ -149,7 +149,17 @@ Antes de classificar cada plugin como `APPROVED`, verificar:
 - sobreposição;
 - disponibilidade em chats novos do projeto.
 
-## 12. Atualização
+## 12. Desktop e superfícies de execução
+
+| Ferramenta | Estado observado | Uso principal |
+|---|---|---|
+| MCF Dual Browser Cockpit | AVAILABLE_IN_CURRENT_CONTEXT | Execution Surface local com ChatGPT + MESTRE Workspace, sessão persistente, Agent Bridge loopback, ação semântica e captura nativa |
+| ORCA / AT-SPI | AVAILABLE_IN_CURRENT_CONTEXT | observação semântica read-only da GUI autorizada |
+| Remote Desktop Commander | AVAILABLE_IN_CURRENT_CONTEXT | filesystem/terminal e suporte operacional no computador autorizado |
+
+Evidência validada em 2026-09-22: duas instâncias foram diferenciadas por PID, geometria X11 e porta do Bridge; o Workspace do monitor do notebook foi selecionado sem coordenadas; `/v1/find-click` navegou semanticamente no Meta for Developers; o capturador nativo usou `WebContents.capturePage()`; autenticação e 2FA permaneceram HUMAN_GATE sem captura de credenciais.
+
+## 13. Atualização
 
 Este inventário deve ser revisado quando:
 

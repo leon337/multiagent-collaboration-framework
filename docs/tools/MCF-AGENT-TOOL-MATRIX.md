@@ -13,7 +13,7 @@ A matriz define ferramentas preferenciais, alternativas, perfil de permissão e 
 | Agente | Skills principais | Ferramentas primárias | Alternativas | Permissão | Evidência mínima |
 |---|---|---|---|---|---|
 | Léo | `MCF-SELECT-AGENTS`, gates | Notion, GitHub, Linear | Google Drive | READ_AND_PROPOSE / SCOPED_WRITE no gate | decisão, justificativa, próximo estado |
-| Mestre | `MCF-START-MISSION`, `MCF-SELECT-AGENTS` | Notion, Linear, GitHub | Google Drive | READ_AND_PROPOSE | contrato, seleção, handoff |
+| Mestre | `MCF-START-MISSION`, `MCF-SELECT-AGENTS`, `MCF-OPERATE-DUAL-BROWSER` | MCF Dual Browser Cockpit, Remote Desktop Commander, ORCA/AT-SPI, GitHub | SentinelX, Google Drive | READ_AND_PROPOSE / SCOPED_WRITE no desktop autorizado | contrato, instância-alvo, ações semânticas, captura nativa, privacidade, HUMAN_GATE |
 | Leonardo | `MCF-DEFINE-PRODUCT` | Notion, Linear, Product Design | PostHog, Amplitude, Consensus | READ_AND_PROPOSE | problema, requisitos, aceite |
 | Carlos | `MCF-DEFINE-PRODUCT` | Consensus, Sider Scholar, Notion | PostHog, Amplitude | READ_ONLY | hipóteses, fontes, riscos futuros |
 
@@ -68,6 +68,17 @@ A matriz define ferramentas preferenciais, alternativas, perfil de permissão e 
 | Júlia | `MCF-SECURITY-REVIEW` e governança | AccessOwl, Neura Relay MCP, Notion | Codex Security, MCP Precheck, PrivacyHawk | SENSITIVE_CONTROLLED | permissões, responsabilidade, controles, veredito |
 
 ## 8. Ferramentas compartilhadas por domínio
+
+### Desktop / Cockpit MCF
+
+```yaml
+primary: MCF_Dual_Browser_Cockpit
+observation: ORCA_AT_SPI_READ_ONLY
+control: Agent_Bridge_IPC
+alternative: Remote_Desktop_Commander
+rule: preferir ações semânticas/programáticas; não usar coordenadas físicas quando houver alternativa semântica; usar o capturador nativo do Workspace; HUMAN_GATE apenas para autenticação, 2FA, CAPTCHA ou ação externa irreversível.
+```
+
 
 ### Reuniões e contexto
 
