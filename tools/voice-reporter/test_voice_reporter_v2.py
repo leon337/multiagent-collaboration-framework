@@ -12,6 +12,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parent
 REPORTER_PATH = ROOT / "reporter.py"
 CTL_PATH = ROOT / "mcf-voice-status.py"
+CHECKPOINT_PATH = ROOT / "mcf-voice-checkpoint.py"
 
 spec = importlib.util.spec_from_file_location("mcf_voice_reporter", REPORTER_PATH)
 reporter = importlib.util.module_from_spec(spec)
@@ -164,6 +165,28 @@ class VoiceReporterV3Tests(unittest.TestCase):
             state = json.loads(state_path.read_text(encoding="utf-8"))
             self.assertFalse(state["mission_active"])
             self.assertEqual(state["mission_state"], "COMPLETED")
+
+    def test_checkpoint_imports_reporter_from_installed_layout(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            bin_dir = home / ".local/bin"
+            share_dir = home / ".local/share/mcf-voice-reporter"
+            bin_dir.mkdir(parents=True)
+            share_dir.mkdir(parents=True)
+            installed_checkpoint = bin_dir / "mcf-voice-checkpoint"
+            installed_reporter = share_dir / "reporter.py"
+            installed_checkpoint.write_text(CHECKPOINT_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+            installed_reporter.write_text(REPORTER_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+            env = dict(os.environ, HOME=str(home), PYTHONPATH="")
+            proc = subprocess.run(
+                [sys.executable, str(installed_checkpoint), "--help"],
+                text=True,
+                capture_output=True,
+                env=env,
+                timeout=10,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertIn("checkpoint imediato", proc.stdout)
 
 
 if __name__ == "__main__":
