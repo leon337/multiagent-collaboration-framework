@@ -308,6 +308,7 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           if (!surface?.ok || surface?.conversation?.state !== 'READY') {
             const error = new Error(surface?.error || 'CHATGPT_SURFACE_NOT_READY');
             error.code = surface?.error || 'CHATGPT_SURFACE_NOT_READY';
+            error.delivery = 'NOT_SENT';
             throw error;
           }
 
@@ -345,7 +346,7 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           sse(res, 'delta', { text: responseText });
           sse(res, 'done', { message, conversation });
         } catch (error) {
-          const delivery = error.payload?.delivery === 'NOT_SENT' ? 'NOT_SENT' : 'UNKNOWN';
+          const delivery = error.delivery === 'NOT_SENT' || error.payload?.delivery === 'NOT_SENT' ? 'NOT_SENT' : 'UNKNOWN';
           const conversation = error.payload?.conversation || null;
           const diagnostics = error.payload?.diagnostics || conversation?.diagnostics || null;
           store.update(chatId, {
