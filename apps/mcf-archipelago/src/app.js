@@ -756,25 +756,27 @@ $('#composer').addEventListener('submit', async (e) => {
   const node = selectedNode();
   const input = $('#messageInput');
   const value = input.value.trim();
-  if (!node || !value || chatBusy) return;
-  node.messages ||= [];
-  node.messages.push({
-    role: 'user',
-    text: value.slice(0, 12000),
-    status: 'done',
-    localOnly: false,
-    at: new Date().toISOString()
-  });
+  if (!node || node.type !== 'chat' || !value || chatBusy) return;
+
   input.value = '';
   chatBusy = true;
-  persist('Mensagem enviada para a IA');
   updateProviderUi();
-  renderMessages(node);
+
   try {
-    await askAssistant(node);
+    await syncNodeChat(node, true);
+    await postUserMessage(node.id, value.slice(0, 12000));
+    await syncNodeChat(node, false);
+    persist('Mensagem salva pela API Archipelago');
+
+    if (providers.openai?.configured) {
+      await askAssistant(node);
+    } else {
+      addLocalSystemMessage(node, 'Mensagem salva. Configure a IA para gerar respostas.');
+      renderMessages(node);
+    }
   } catch (error) {
-    addLocalSystemMessage(node, 'IA indisponível: ' + error.message);
-    persist('Falha ao consultar a IA');
+    addLocalSystemMessage(node, 'API/IA indisponível: ' + error.message);
+    persist('Falha na conversa');
     renderMessages(node);
   } finally {
     chatBusy = false;
@@ -782,12 +784,15 @@ $('#composer').addEventListener('submit', async (e) => {
   }
 });
 
-$('#renameBtn').addEventListener('click', () => {
+$('#renameBtn').addEventListener('click', async () => {
   const node = state.nodes.find(n => n.id === selectedId);
   if (!node) return;
   const name = prompt('Novo título:', node.title)?.trim();
   if (!name) return;
   node.title = name.slice(0,80);
+  if (node.type === 'chat') {
+    try { await updateChat(node.id, { title: node.title, projectId: node.parentId || null }); } catch {}
+  }
   persist('Ilha renomeada');
   openPanel(node.id);
 });
@@ -799,10 +804,13 @@ $('#connectBtn').addEventListener('click', () => {
   $('#statusText').textContent = 'Conectar: clique em outra ilha';
 });
 
-$('#deleteBtn').addEventListener('click', () => {
+$('#deleteBtn').addEventListener('click', async () => {
   const node = state.nodes.find(n => n.id === selectedId);
   if (!node) return;
   if (!confirm(`Excluir “${node.title}” e suas conexões?`)) return;
+  if (node.type === 'chat') {
+    try { await deleteChat(node.id); } catch {}
+  }
   removeNode(state, node.id);
   selectedId = null;
   persist('Ilha excluída');
