@@ -14,6 +14,7 @@ test('createNode cria chat com campos mínimos', () => {
   assert.equal(n.parentId, 'mcf');
   assert.deepEqual(n.tags, ['ui']);
   assert.ok(n.id.startsWith('chat-'));
+  assert.equal(n.collapsed, false);
 });
 
 test('connect impede duplicata e self-edge', () => {
@@ -42,6 +43,13 @@ test('searchNodes busca por título e tags', () => {
   const state = normalizeState(structuredClone(seedState));
   assert.equal(searchNodes(state, 'dual').at(0)?.id, 'dual');
   assert.equal(searchNodes(state, 'arquitetura').at(0)?.id, 'sofia');
+});
+
+test('normalizeState preserva estado recolhido de projeto', () => {
+  const raw = structuredClone(seedState);
+  raw.nodes.find(n => n.id === 'mcf').collapsed = true;
+  const state = normalizeState(raw);
+  assert.equal(state.nodes.find(n => n.id === 'mcf').collapsed, true);
 });
 
 test('normalizeState rejeita IDs duplicados', () => {
