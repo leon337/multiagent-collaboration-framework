@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check server.cjs && node --check src/app.js && node --check src/model.js && node --check src/storage.js && node --check src/graph.js",
+    "check": "node --check server.cjs && node --check lib/chat-store.cjs && node --check lib/archipelago-api.cjs && node --check lib/providers/openai.cjs && node --check src/app.js && node --check src/model.js && node --check src/storage.js && node --check src/graph.js",
     "test": "node --test tests/*.test.mjs",
     "ci": "npm run check && npm test",
     "serve": "node server.cjs"
