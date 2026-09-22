@@ -59,11 +59,13 @@ async function connectThisDevice() {
       for (const node of state.nodes.filter(n => n.type === 'chat' && n.deviceSessionId === deviceSession.id)) node.connectionState = 'READY';
       saveState(state);
       render();
+      updateDeviceUi();
       updateProviderUi();
     } catch {
       for (const node of state.nodes.filter(n => n.type === 'chat' && n.deviceSessionId === deviceSession?.id)) node.connectionState = 'OFFLINE';
       saveState(state);
       render();
+      updateDeviceUi();
       updateProviderUi();
     }
   }, deviceSession.heartbeatIntervalMs || 10000);
@@ -80,6 +82,7 @@ async function bindNodeAtomically(node) {
   node.messages = (result.chat.messages || []).map(mapApiMessage);
   saveState(state);
   render();
+  updateDeviceUi();
   return result;
 }
 
@@ -90,6 +93,24 @@ async function syncNodeChat(node, create = true) {
   saveState(state);
   if (selectedId === node.id) renderMessages(node);
   return chat;
+}
+
+function updateDeviceUi() {
+  const node = selectedNode();
+  const strip = $('#deviceStrip');
+  const dot = $('#deviceDot');
+  const label = $('#deviceStatus');
+  if (!node || node.type !== 'chat') {
+    if (strip) strip.hidden = true;
+    return;
+  }
+  if (strip) strip.hidden = false;
+  const stateName = node.connectionState || 'OFFLINE';
+  if (dot) dot.className = 'device-dot ' + stateName.toLowerCase();
+  if (label) label.textContent =
+    stateName === 'READY' ? 'Dispositivo conectado · sessão pronta' :
+    stateName === 'CONNECTING' ? 'Conectando ao dispositivo…' :
+    'Dispositivo desconectado';
 }
 
 function updateProviderUi() {
@@ -419,6 +440,7 @@ function openPanel(id) {
   $('#toggleProjectBtn').hidden = node.type !== 'project';
   if (node.type === 'project') $('#toggleProjectBtn').textContent = node.collapsed ? 'Expandir projeto' : 'Recolher projeto';
   $('#branchChatBtn').hidden = node.type !== 'chat';
+  updateDeviceUi();
   updateProviderUi();
   detailPanel.classList.add('open');
   renderConnections(node);
@@ -451,6 +473,7 @@ function closePanel() {
   $('#messageInput').disabled = true;
   $('#sendBtn').disabled = true;
   $('#messages').innerHTML = '';
+  $('#deviceStrip').hidden = true;
   detailPanel.classList.remove('open');
   render();
 }
