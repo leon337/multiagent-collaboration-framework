@@ -852,6 +852,8 @@ $('#resetBtn').addEventListener('click', () => {
 window.addEventListener('resize', () => render());
 updateStats();
 refreshProviderStatus();
+Promise.allSettled(state.nodes.filter(n => n.type === 'chat').map(n => syncNodeChat(n, true)))
+  .then(() => { saveState(state); render(); });
 
 requestAnimationFrame(() => {
   if (!localStorage.getItem('mcf-archipelago-v1')) fitAll();
