@@ -29,7 +29,7 @@ function decodeId(value) {
   try { return decodeURIComponent(value); } catch { return value; }
 }
 
-function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse }) {
+function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, deviceBroker }) {
   return async function handleArchipelagoApi(req, res, requestUrl) {
     const pathname = requestUrl.pathname;
 
@@ -40,6 +40,65 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse }) {
         version: 1,
         providers: providerConfig().public
       });
+      return true;
+    }
+
+    if (pathname === '/api/v1/device/session' && req.method === 'POST') {
+      try {
+        const body = await readJson(req, 64 * 1024);
+        const session = deviceBroker.connect(body);
+        json(res, 201, { session });
+      } catch (error) {
+        json(res, error.status || 400, { code: error.message || 'DEVICE_CONNECT_FAILED' });
+      }
+      return true;
+    }
+
+    const heartbeatMatch = pathname.match(/^\/api\/v1\/device\/session\/([^/]+)\/heartbeat$/);
+    if (heartbeatMatch && req.method === 'POST') {
+      const session = deviceBroker.heartbeat(decodeId(heartbeatMatch[1]));
+      json(res, session ? 200 : 404, session ? { session } : { code:'DEVICE_SESSION_NOT_FOUND' });
+      return true;
+    }
+
+    const deviceMatch = pathname.match(/^\/api\/v1\/device\/session\/([^/]+)$/);
+    if (deviceMatch && req.method === 'GET') {
+      const session = deviceBroker.get(decodeId(deviceMatch[1]));
+      json(res, session ? 200 : 404, session ? { session } : { code:'DEVICE_SESSION_NOT_FOUND' });
+      return true;
+    }
+
+    if (pathname === '/api/v1/chat-sessions' && req.method === 'POST') {
+      let body;
+      try { body = await readJson(req); }
+      catch (error) { json(res, error.status || 400, { code:error.message || 'INVALID_REQUEST' }); return true; }
+
+      try {
+        const device = deviceBroker.requireConnected(String(body.deviceSessionId || ''));
+        const chat = store.create({
+          id: body.id,
+          islandId: body.islandId,
+          title: body.title,
+          projectId: body.projectId,
+          legacyMessages: body.legacyMessages,
+          metadata: {
+            ...(body.metadata && typeof body.metadata === 'object' ? body.metadata : {}),
+            deviceId: device.deviceId,
+            instanceId: device.instanceId
+          }
+        });
+        const connection = deviceBroker.bindChat(chat.id, device.id);
+        json(res, 201, { chat, connection, state:'READY' });
+      } catch (error) {
+        json(res, error.status || 409, { code:error.message || 'CHAT_SESSION_CREATE_FAILED', state:'OFFLINE' });
+      }
+      return true;
+    }
+
+    const connectionMatch = pathname.match(/^\/api\/v1\/chat-sessions\/([^/]+)\/connection$/);
+    if (connectionMatch && req.method === 'GET') {
+      const connection = deviceBroker.getChatBinding(decodeId(connectionMatch[1]));
+      json(res, connection ? 200 : 404, connection ? { connection } : { code:'CHAT_CONNECTION_NOT_FOUND' });
       return true;
     }
 
@@ -80,6 +139,7 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse }) {
       }
       if (req.method === 'DELETE') {
         const removed = store.remove(chatId);
+        if (removed) deviceBroker.unbindChat(chatId);
         json(res, removed ? 200 : 404, removed ? { ok: true } : { code: 'CHAT_NOT_FOUND' });
         return true;
       }
