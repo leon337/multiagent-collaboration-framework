@@ -11,7 +11,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="brand">
-        <span class="eyebrow">MCF LAB · V1.2.2</span>
+        <span class="eyebrow">MCF LAB · V1.3</span>
         <h1>Archipelago</h1>
         <p>Chats e projetos como ilhas de um grafo navegável.</p>
       </div>
@@ -52,21 +52,27 @@
           <button id="closePanelBtn" class="icon-btn" aria-label="Fechar painel">×</button>
         </div>
         <p id="panelMeta" class="muted">Clique em uma ilha para abrir o contexto.</p>
+        <div class="provider-strip">
+          <span id="providerDot" class="provider-dot offline"></span>
+          <span id="providerStatus">Verificando provider de IA…</span>
+          <button id="refreshProviderBtn" class="provider-refresh" type="button" title="Reverificar provider">↻</button>
+        </div>
         <div id="panelActions" class="panel-actions" hidden>
           <button id="focusProjectBtn" hidden>Focar arquipélago</button>
           <button id="toggleProjectBtn" hidden>Recolher projeto</button>
           <button id="branchChatBtn" hidden>Ramificar chat</button>
           <button id="renameBtn">Renomear</button>
           <button id="connectBtn">Conectar</button>
+          <button id="dispatchMcfBtn" hidden>Despachar ao MCF</button>
           <button id="deleteBtn" class="danger">Excluir</button>
         </div>
         <div id="connectionsBox" class="connections-box" hidden></div>
         <div id="messages" class="messages"></div>
         <form id="composer" class="composer">
           <textarea id="messageInput" rows="3" placeholder="Escreva dentro deste contexto…" disabled></textarea>
-          <button id="sendBtn" class="primary" disabled>Salvar mensagem</button>
+          <button id="sendBtn" class="primary" disabled>Enviar para IA</button>
         </form>
-        <p class="provider-note">V1 mantém mensagens localmente. A camada OpenAI/ChatGPT entra como provider separado após estabilizarmos a experiência do grafo.</p>
+        <p class="provider-note">O histórico da ilha fica no navegador. A chave de API permanece somente no backend local e as chamadas OpenAI usam <code>store:false</code>.</p>
       </aside>
 
       <section id="listFallback" class="list-fallback" hidden aria-label="Visualização alternativa em lista"></section>
