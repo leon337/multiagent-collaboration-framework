@@ -62,7 +62,7 @@ test('normalizeState migra edges legadas em formato array', () => {
     edges: [['p','c']]
   };
   const state = normalizeState(legacy);
-  assert.equal(state.version, 3);
+  assert.equal(state.version, 4);
   assert.equal(state.edges.length, 1);
   assert.equal(state.edges[0].source, 'p');
   assert.equal(state.edges[0].target, 'c');
@@ -76,9 +76,30 @@ test('normalizeState recupera conexões canônicas perdidas no legado', () => {
   broken.edges = [];
   broken.nodes = broken.nodes.map(n => ({ ...n, parentId: null }));
   const state = normalizeState(broken);
-  assert.equal(state.version, 3);
+  assert.equal(state.version, 4);
   assert.equal(state.edges.length, 6);
   assert.equal(state.nodes.find(n => n.id === 'runtime').parentId, 'mcf');
+});
+
+test('normalizeState migra histórico textual legado para mensagens com papel', () => {
+  const raw = structuredClone(seedState);
+  raw.nodes.find(n => n.id === 'runtime').messages = ['olá'];
+  const state = normalizeState(raw);
+  const message = state.nodes.find(n => n.id === 'runtime').messages[0];
+  assert.equal(message.role, 'user');
+  assert.equal(message.text, 'olá');
+  assert.equal(message.localOnly, undefined);
+});
+
+test('normalizeState preserva mensagens locais de sistema sem enviá-las ao provider', () => {
+  const raw = structuredClone(seedState);
+  raw.nodes.find(n => n.id === 'runtime').messages = [
+    { role:'system', text:'provider offline', localOnly:true }
+  ];
+  const state = normalizeState(raw);
+  const message = state.nodes.find(n => n.id === 'runtime').messages[0];
+  assert.equal(message.role, 'system');
+  assert.equal(message.localOnly, true);
 });
 
 test('normalizeState rejeita IDs duplicados', () => {
