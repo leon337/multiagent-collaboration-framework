@@ -97,7 +97,8 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
 
         const surface = await dualBrowserClient.openConversation({
           id: chat.id,
-          title: chat.title
+          title: chat.title,
+          url: existed?.metadata?.chatgpt?.url || null
         });
         if (!surface?.ok || surface?.conversation?.state !== 'READY') {
           const surfaceError = new Error(surface?.error || 'CHATGPT_SURFACE_NOT_READY');
@@ -298,7 +299,11 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           try {
             surface = await dualBrowserClient.getConversation(chatId);
           } catch {
-            surface = await dualBrowserClient.openConversation({ id: chatId, title: chat.title });
+            surface = await dualBrowserClient.openConversation({
+              id: chatId,
+              title: chat.title,
+              url: chatgptMeta.url || null
+            });
           }
           if (!surface?.ok || surface?.conversation?.state !== 'READY') {
             const error = new Error(surface?.error || 'CHATGPT_SURFACE_NOT_READY');
