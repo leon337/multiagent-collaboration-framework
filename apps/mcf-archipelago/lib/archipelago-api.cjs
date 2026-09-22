@@ -106,16 +106,28 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           throw surfaceError;
         }
 
+        const previousChatgpt = existed?.metadata?.chatgpt || {};
+        const surfaceUrl = surface.conversation.chatgptUrl || null;
+        const previousUrl = previousChatgpt.url || null;
+        const resolvedUrl = /\/(?:c|uc)\//.test(surfaceUrl || '')
+          ? surfaceUrl
+          : (/\/(?:c|uc)\//.test(previousUrl || '') ? previousUrl : (surfaceUrl || previousUrl || null));
+        const resolvedConversationId =
+          surface.conversation.chatgptConversationId ||
+          previousChatgpt.conversationId ||
+          null;
+
         const chatWithSurface = store.update(chat.id, {
           metadata: {
             chatgpt: {
+              ...previousChatgpt,
               instanceId: dualBrowserClient.instanceId,
               state: surface.conversation.state,
-              url: surface.conversation.chatgptUrl || null,
-              conversationId: surface.conversation.chatgptConversationId || null,
-              deliveryState: 'READY',
-              pendingUserMessageId: null,
-              lastForwardedUserMessageId: null
+              url: resolvedUrl,
+              conversationId: resolvedConversationId,
+              deliveryState: previousChatgpt.deliveryState || 'READY',
+              pendingUserMessageId: previousChatgpt.pendingUserMessageId || null,
+              lastForwardedUserMessageId: previousChatgpt.lastForwardedUserMessageId || null
             }
           }
         });
