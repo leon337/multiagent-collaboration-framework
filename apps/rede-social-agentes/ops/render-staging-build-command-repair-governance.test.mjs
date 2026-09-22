@@ -44,6 +44,17 @@ test('repair removes only the known failing corepack enable step', async () => {
   assert.equal(value.includes('UNEXPECTED_BUILD_COMMAND'), true);
 });
 
+test('repair workflow pins the verified Render CLI asset and executable name', async () => {
+  const value = await workflow();
+  assert.equal(value.includes('cli_2.22.0_linux_amd64.zip'), true);
+  assert.equal(
+    value.includes('6cdcd11897b7bd7e673317e6f4aaf041b654d818444f3b1efec7240a835f79ec'),
+    true,
+  );
+  assert.equal(value.includes('cli_path="/tmp/render-cli/cli_v2.22.0"'), true);
+  assert.equal(value.includes('chmod +x "$cli_path"'), true);
+});
+
 test('workflow uses the protected Render API key without exposing or accepting it as input', async () => {
   const value = await workflow();
   assert.equal(value.includes('RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}'), true);
