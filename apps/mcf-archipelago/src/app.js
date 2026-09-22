@@ -502,7 +502,7 @@ function openCreateDialog(type, point = null) {
   setTimeout(() => $('#nodeTitleInput').focus(), 0);
 }
 
-function confirmCreate(event) {
+async function confirmCreate(event) {
   event.preventDefault();
   const title = $('#nodeTitleInput').value.trim();
   if (!title) return;
@@ -523,6 +523,7 @@ function confirmCreate(event) {
     type: createType, title, parentId, tags, x, y
   });
   state.nodes.push(node);
+  if (node.type === 'chat') node.connectionState = 'CONNECTING';
   if (parentId) connect(state, parentId, node.id, 'contains', 'pertence ao projeto');
   if (branchFromId) {
     const origin = state.nodes.find(n => n.id === branchFromId);
@@ -531,9 +532,21 @@ function confirmCreate(event) {
   }
   newbornId = node.id;
   persist(`${createType === 'project' ? 'Projeto' : 'Chat'} criado`);
-  if (node.type === 'chat') syncNodeChat(node, true).catch(() => {});
   dialog.close();
   openPanel(node.id);
+  if (node.type === 'chat') {
+    try {
+      await bindNodeAtomically(node);
+      persist('Chat criado e conectado ao dispositivo');
+      openPanel(node.id);
+    } catch (error) {
+      node.connectionState = 'OFFLINE';
+      addLocalSystemMessage(node, 'Falha ao conectar chat ao dispositivo: ' + error.message);
+      persist('Chat criado sem conexão');
+      renderMessages(node);
+      render();
+    }
+  }
   setTimeout(() => {
     if (newbornId === node.id) {
       newbornId = null;
