@@ -45,23 +45,26 @@ async function syncNodeChat(node, create = true) {
 
 function updateProviderUi() {
   const node = selectedNode();
+  const isChat = node?.type === 'chat';
   const aiReady = providers.openai?.configured === true;
   const dot = $('#providerDot');
   const label = $('#providerStatus');
   if (dot) dot.className = 'provider-dot ' + (aiReady ? 'online' : 'offline');
   if (label) label.textContent = aiReady
-    ? 'OpenAI · ' + (providers.openai.model || 'modelo configurado')
-    : 'IA aguardando configuração no backend';
-  if ($('#messageInput')) $('#messageInput').disabled = !node || chatBusy;
-  if ($('#sendBtn')) $('#sendBtn').disabled = !node || !aiReady || chatBusy;
-  if ($('#dispatchMcfBtn')) $('#dispatchMcfBtn').hidden = !(node && node.type === 'chat' && providers.mcf?.configured);
+    ? 'API Archipelago · OpenAI · ' + (providers.openai.model || 'modelo configurado')
+    : 'API Archipelago online · IA ainda não configurada';
+  if ($('#messageInput')) $('#messageInput').disabled = !isChat || chatBusy;
+  if ($('#sendBtn')) {
+    $('#sendBtn').disabled = !isChat || chatBusy;
+    $('#sendBtn').textContent = aiReady ? 'Enviar e responder' : 'Salvar no chat';
+  }
+  if ($('#dispatchMcfBtn')) $('#dispatchMcfBtn').hidden = !(isChat && providers.mcf?.configured);
 }
 
 async function refreshProviderStatus() {
   try {
-    const response = await fetch('/api/provider/status', { cache: 'no-store' });
-    if (!response.ok) throw new Error('backend indisponível');
-    providers = await response.json();
+    const health = await getApiHealth();
+    providers = health.providers;
   } catch {
     providers = { openai: { configured: false, model: null }, mcf: { configured: false } };
   }
