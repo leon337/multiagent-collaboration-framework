@@ -11,7 +11,7 @@ function waitForReady(child) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('server timeout')), 5000);
     child.stdout.on('data', chunk => {
-      if (String(chunk).includes('MCF Archipelago em')) {
+      if (String(chunk).includes('MCF Archipelago API v1 em')) {
         clearTimeout(timer);
         resolve();
       }
@@ -45,6 +45,34 @@ test('backend local falha fechado sem API key', async () => {
     });
     assert.equal(badConfig.status, 400);
     assert.equal((await badConfig.json()).code, 'INVALID_OPENAI_KEY');
+
+    const health = await fetch('http://127.0.0.1:' + port + '/api/v1/health').then(r => r.json());
+    assert.equal(health.api, 'mcf-archipelago');
+    assert.equal(health.version, 1);
+
+    const created = await fetch('http://127.0.0.1:' + port + '/api/v1/chats', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id:'island-test',islandId:'island-test',title:'Chat Teste',projectId:'mcf'})
+    });
+    assert.equal(created.status, 201);
+    assert.equal((await created.json()).chat.id, 'island-test');
+
+    const message = await fetch('http://127.0.0.1:' + port + '/api/v1/chats/island-test/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:'Olá API própria'})
+    });
+    assert.equal(message.status, 201);
+    assert.equal((await message.json()).message.role, 'user');
+
+    const history = await fetch('http://127.0.0.1:' + port + '/api/v1/chats/island-test/messages').then(r => r.json());
+    assert.equal(history.messages.length, 1);
+    assert.equal(history.messages[0].text, 'Olá API própria');
+
+    const noProvider = await fetch('http://127.0.0.1:' + port + '/api/v1/chats/island-test/responses', {method:'POST'});
+    assert.equal(noProvider.status, 503);
+    assert.equal((await noProvider.json()).code, 'OPENAI_NOT_CONFIGURED');
 
     const response = await fetch('http://127.0.0.1:' + port + '/api/chat', {
       method: 'POST',
