@@ -1,0 +1,130 @@
+name: MCF Production Operational Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Exact 40-character production candidate SHA already authorized by LEANDRO in the persisted MCF phase
+        required: true
+        type: string
+      mission_id:
+        description: Persisted MCF mission UUID
+        required: true
+        type: string
+      phase_id:
+        description: Persisted LÉO-owned MCF-DEPLOY-VALIDATE phase UUID
+        required: true
+        type: string
+      decision:
+        description: LÉO operational production-gate decision
+        required: true
+        type: choice
+        options:
+          - APPROVE
+          - REJECT
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcf-production-operational-gate
+  cancel-in-progress: false
+
+jobs:
+  persist-operational-gate:
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate canonical main dispatch
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: |
+          echo 'Production operational gate must be dispatched from refs/heads/main.'
+          exit 1
+
+      - name: Validate bounded gate inputs
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          MISSION_ID: ${{ inputs.mission_id }}
+          PHASE_ID: ${{ inputs.phase_id }}
+          DECISION: ${{ inputs.decision }}
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$MISSION_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$ ]]
+          [[ "$PHASE_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$ ]]
+          [[ "$DECISION" == "APPROVE" || "$DECISION" == "REJECT" ]]
+
+      - name: Persist LÉO operational gate
+        id: gate
+        env:
+          MCF_CONTROL_PLANE_URL: ${{ secrets.MCF_CONTROL_PLANE_URL }}
+          MCF_RUNTIME_TOKEN: ${{ secrets.MCF_RUNTIME_TOKEN }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          MISSION_ID: ${{ inputs.mission_id }}
+          PHASE_ID: ${{ inputs.phase_id }}
+          DECISION: ${{ inputs.decision }}
+          SOURCE_REF: github-actions:${{ github.repository }}:${{ github.run_id }}:${{ github.run_attempt }}
+          EVIDENCE_REF: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          test -n "$MCF_CONTROL_PLANE_URL"
+          test -n "$MCF_RUNTIME_TOKEN"
+          endpoint="${MCF_CONTROL_PLANE_URL%/}/v1/mcf/production-authorization/operational-gate"
+          payload="$(jq -cn \
+            --arg missionId "$MISSION_ID" \
+            --arg phaseId "$PHASE_ID" \
+            --arg releaseSha "$RELEASE_SHA" \
+            --arg decision "$DECISION" \
+            --arg sourceRef "$SOURCE_REF" \
+            --arg evidenceRef "$EVIDENCE_REF" \
+            '{missionId:$missionId,phaseId:$phaseId,releaseSha:$releaseSha,decision:$decision,sourceRef:$sourceRef,evidenceRef:$evidenceRef}')"
+          response="$(mktemp)"
+          status="$(curl --silent --show-error --output "$response" --write-out '%{http_code}' \
+            --connect-timeout 10 \
+            --max-time 60 \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --header "x-mcf-runtime-token: $MCF_RUNTIME_TOKEN" \
+            --data "$payload" \
+            "$endpoint")"
+          cat "$response"
+          [[ "$status" =~ ^2[0-9][0-9]$ ]]
+          jq -e --arg sha "$RELEASE_SHA" \
+            '.accepted == true and .operationalGate == "LEO" and .targetSha == $sha' "$response" >/dev/null
+
+      - name: Verify persisted authorization state
+        if: ${{ inputs.decision == 'APPROVE' }}
+        env:
+          MCF_CONTROL_PLANE_URL: ${{ secrets.MCF_CONTROL_PLANE_URL }}
+          MCF_RUNTIME_TOKEN: ${{ secrets.MCF_RUNTIME_TOKEN }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          MISSION_ID: ${{ inputs.mission_id }}
+          PHASE_ID: ${{ inputs.phase_id }}
+        run: |
+          set -euo pipefail
+          endpoint="${MCF_CONTROL_PLANE_URL%/}/v1/mcf/production-authorization/resolve"
+          payload="$(jq -cn \
+            --arg missionId "$MISSION_ID" \
+            --arg phaseId "$PHASE_ID" \
+            --arg releaseSha "$RELEASE_SHA" \
+            '{missionId:$missionId,phaseId:$phaseId,releaseSha:$releaseSha}')"
+          response="$(mktemp)"
+          status="$(curl --silent --show-error --output "$response" --write-out '%{http_code}' \
+            --connect-timeout 10 \
+            --max-time 60 \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --header "x-mcf-runtime-token: $MCF_RUNTIME_TOKEN" \
+            --data "$payload" \
+            "$endpoint")"
+          cat "$response"
+          [[ "$status" =~ ^2[0-9][0-9]$ ]]
+          jq -e --arg sha "$RELEASE_SHA" '
+            .state == "AUTHORIZED" and
+            .humanAuthority == "LEANDRO" and
+            .operationalGate == "LEO" and
+            .gateDecision == "APPROVE" and
+            .provenance == "MCF_RUNTIME_PERSISTED_AUTHORIZATION" and
+            .targetSha == $sha
+          ' "$response" >/dev/null
