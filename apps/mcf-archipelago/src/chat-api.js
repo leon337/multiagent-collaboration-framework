@@ -108,3 +108,52 @@ export async function streamChatResponse(chatId, handlers = {}) {
     }
   }
 }
+
+
+export async function connectDeviceSession(input = {}) {
+  const response = await fetch('/api/v1/device/session', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(input)
+  });
+  const body = await readJson(response);
+  if (!response.ok) throw new Error(body.code || ('HTTP ' + response.status));
+  return body.session;
+}
+
+export async function heartbeatDeviceSession(sessionId) {
+  const response = await fetch('/api/v1/device/session/' + encodeURIComponent(sessionId) + '/heartbeat', {
+    method:'POST'
+  });
+  const body = await readJson(response);
+  if (!response.ok) throw new Error(body.code || ('HTTP ' + response.status));
+  return body.session;
+}
+
+export async function createAtomicChatSession(node, deviceSessionId) {
+  const response = await fetch('/api/v1/chat-sessions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      id:node.id,
+      islandId:node.id,
+      title:node.title,
+      projectId:node.parentId || null,
+      legacyMessages:node.messages || [],
+      deviceSessionId,
+      metadata:{tags:node.tags || []}
+    })
+  });
+  const body = await readJson(response);
+  if (!response.ok) throw new Error(body.code || ('HTTP ' + response.status));
+  return body;
+}
+
+export async function getChatConnection(chatId) {
+  const response = await fetch('/api/v1/chat-sessions/' + encodeURIComponent(chatId) + '/connection', {
+    cache:'no-store'
+  });
+  const body = await readJson(response);
+  if (!response.ok) throw new Error(body.code || ('HTTP ' + response.status));
+  return body.connection;
+}
