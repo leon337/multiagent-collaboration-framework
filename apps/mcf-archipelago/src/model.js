@@ -1,5 +1,5 @@
 export const seedState = {
-  version: 2,
+  version: 3,
   camera: { x: 0, y: 0, zoom: 1 },
   nodes: [
     { id: 'mcf', type: 'project', title: 'MCF', x: 760, y: 390, r: 88, parentId: null, tags: ['framework', 'principal'], messages: [] },
@@ -52,7 +52,7 @@ export function normalizeState(input) {
     ? { id: uid('e'), source: e[0], target: e[1], kind: projectIds.has(e[0]) ? 'contains' : 'related', reason: '' }
     : e
   );
-  const edges = rawEdges.filter(e => ids.has(e.source) && ids.has(e.target)).map(e => ({
+  let edges = rawEdges.filter(e => ids.has(e.source) && ids.has(e.target)).map(e => ({
     id: e.id || uid('e'),
     source: e.source,
     target: e.target,
@@ -60,13 +60,19 @@ export function normalizeState(input) {
     reason: String(e.reason || '').slice(0, 120)
   }));
 
+  const canonicalIds = ['mcf','runtime','agents','dual','voice','sofia'];
+  const hasCanonicalSeed = canonicalIds.every(id => ids.has(id));
+  if (edges.length === 0 && hasCanonicalSeed && Number(input.version || 1) <= 2) {
+    edges = seedState.edges.map(e => ({ ...e, reason: e.reason || '' }));
+  }
+
   for (const node of nodes) {
     if (node.type === 'project' || node.parentId) continue;
     const parentEdge = edges.find(e => e.target === node.id && projectIds.has(e.source) && e.kind === 'contains');
     if (parentEdge) node.parentId = parentEdge.source;
   }
 
-  return { version: 2, camera: input.camera || { x: 0, y: 0, zoom: 1 }, nodes, edges };
+  return { version: 3, camera: input.camera || { x: 0, y: 0, zoom: 1 }, nodes, edges };
 }
 
 export function connect(state, source, target, kind = 'related', reason = '') {
