@@ -17,6 +17,7 @@ let createType = 'chat';
 let listMode = false;
 let newbornId = null;
 let pendingConnectionReason = '';
+let branchFromId = null;
 
 function persist(status = 'Salvo localmente') {
   saveState(state);
@@ -135,6 +136,12 @@ function render() {
       tags.textContent = n.tags.slice(0, 2).map(t => `#${t}`).join(' ');
       g.append(tags);
     }
+    if ((n.messages?.length || 0) > 0 && state.camera.zoom > .72) {
+      const badge = svgEl('g', { class: 'activity-badge', transform: `translate(${n.r*.62} ${-n.r*.66})` });
+      badge.append(svgEl('circle', { r: 12 }), svgEl('text', { y: 3 }));
+      badge.querySelector('text').textContent = String(Math.min(n.messages.length, 99));
+      g.append(badge);
+    }
 
     g.addEventListener('pointerdown', (e) => startNodeDrag(e, n));
     g.addEventListener('click', (e) => {
@@ -218,6 +225,7 @@ function openPanel(id) {
   $('#panelMeta').textContent = `${node.tags?.length ? node.tags.map(t => `#${t}`).join(' ') + ' · ' : ''}${parent ? `Projeto: ${parent.title}` : 'Sem projeto pai'}`;
   $('#panelActions').hidden = false;
   $('#focusProjectBtn').hidden = node.type !== 'project';
+  $('#branchChatBtn').hidden = node.type !== 'chat';
   $('#messageInput').disabled = false;
   $('#sendBtn').disabled = false;
   detailPanel.classList.add('open');
@@ -233,6 +241,7 @@ function closePanel() {
   $('#panelMeta').textContent = 'Clique em uma ilha para abrir o contexto.';
   $('#panelActions').hidden = true;
   $('#focusProjectBtn').hidden = true;
+  $('#branchChatBtn').hidden = true;
   $('#connectionsBox').hidden = true;
   $('#connectionsBox').innerHTML = '';
   $('#messageInput').disabled = true;
@@ -270,6 +279,10 @@ function openCreateDialog(type, point = null) {
     select.append(opt);
   }
   if (type === 'chat' && state.nodes.some(n => n.id === selectedId && n.type === 'project')) select.value = selectedId;
+  if (branchFromId) {
+    const origin = state.nodes.find(n => n.id === branchFromId);
+    if (origin?.parentId) select.value = origin.parentId;
+  }
   select.disabled = type === 'project';
   dialog.dataset.x = String(point?.x ?? 800);
   dialog.dataset.y = String(point?.y ?? 450);
@@ -299,6 +312,11 @@ function confirmCreate(event) {
   });
   state.nodes.push(node);
   if (parentId) connect(state, parentId, node.id, 'contains', 'pertence ao projeto');
+  if (branchFromId) {
+    const origin = state.nodes.find(n => n.id === branchFromId);
+    if (origin) connect(state, origin.id, node.id, 'branch', `ramificação de ${origin.title}`);
+    branchFromId = null;
+  }
   newbornId = node.id;
   persist(`${createType === 'project' ? 'Projeto' : 'Chat'} criado`);
   dialog.close();
@@ -470,6 +488,7 @@ graph.addEventListener('wheel', (e) => {
 
 graph.addEventListener('dblclick', (e) => {
   if (e.target.closest?.('.island')) return;
+  branchFromId = null;
   openCreateDialog('chat', screenToWorld(e.clientX, e.clientY));
 });
 
@@ -481,13 +500,27 @@ graph.addEventListener('click', (e) => {
   }
 });
 
-$('#newChatBtn').addEventListener('click', () => openCreateDialog('chat'));
-$('#newProjectBtn').addEventListener('click', () => openCreateDialog('project'));
+$('#newChatBtn').addEventListener('click', () => {
+  branchFromId = null;
+  openCreateDialog('chat');
+});
+$('#newProjectBtn').addEventListener('click', () => {
+  branchFromId = null;
+  openCreateDialog('project');
+});
 $('#nodeForm').addEventListener('submit', confirmCreate);
 $('#closePanelBtn').addEventListener('click', closePanel);
 $('#focusProjectBtn').addEventListener('click', () => {
   const node = state.nodes.find(n => n.id === selectedId);
   if (node?.type === 'project') focusProject(node);
+});
+$('#branchChatBtn').addEventListener('click', () => {
+  const origin = state.nodes.find(n => n.id === selectedId);
+  if (!origin || origin.type !== 'chat') return;
+  branchFromId = origin.id;
+  openCreateDialog('chat', { x: origin.x + 155, y: origin.y + 115 });
+  $('#dialogType').textContent = 'RAMIFICAR CONVERSA';
+  $('#dialogTitle').textContent = `Nova ilha a partir de “${origin.title}”`;
 });
 
 $('#autoLayoutBtn').addEventListener('click', () => {
