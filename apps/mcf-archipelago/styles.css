@@ -26,7 +26,8 @@ button,.file-label{border:1px solid #ffffff14;border-radius:11px;padding:10px 13
 .island .sub{font-size:9px;font-weight:750;letter-spacing:.13em;fill:#9ab9c8}.island .tags{font-size:8px;fill:#b9d1dc}
 .detail-panel{position:absolute;z-index:4;right:0;top:0;bottom:0;width:390px;padding:24px;overflow:auto;background:linear-gradient(180deg,#071923,#041018);border-left:1px solid var(--line);box-shadow:-22px 0 55px #0006}
 .panel-header{display:flex;justify-content:space-between;gap:12px}.panel-header h2{font-size:25px;margin:6px 0 0;letter-spacing:-.035em}.muted{color:var(--muted);font-size:12px;line-height:1.5}
-.panel-actions{display:flex;gap:8px;margin:15px 0 7px}.panel-actions button{padding:7px 9px;font-size:11px}
+.panel-actions{display:flex;gap:8px;margin:15px 0 7px;flex-wrap:wrap}.panel-actions button{padding:7px 9px;font-size:11px}
+.connections-box{display:grid;gap:7px;margin:14px 0;padding:12px;border:1px solid #ffffff0e;border-radius:14px;background:#020c1299}.connections-title{font-size:9px;font-weight:850;letter-spacing:.16em;color:#6f9cab}.connection-item{display:grid;grid-template-columns:1fr;gap:2px;text-align:left;padding:9px 10px;background:#ffffff05;border:1px solid #ffffff0b;box-shadow:none}.connection-item strong{font-size:11px;color:#dff5ff}.connection-item span{font-size:9px;color:#6f92a2;font-weight:600}.connection-item:hover{border-color:#6de6ca45;background:#6de6ca0a}
 .messages{min-height:250px;max-height:40vh;overflow:auto;display:flex;flex-direction:column;gap:9px;padding:16px 0}
 .message{border:1px solid #ffffff10;background:#ffffff07;border-radius:13px;padding:11px 13px;font-size:12px;line-height:1.5}.message.user{margin-left:28px;background:#14323e}.message.system{color:#789cad;font-style:italic}
 .composer{display:grid;gap:9px}.composer textarea{width:100%;resize:vertical;min-height:82px;border:1px solid #ffffff16;border-radius:13px;background:#020b12;color:#e8f7ff;padding:12px;outline:none}
