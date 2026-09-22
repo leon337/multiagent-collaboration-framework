@@ -37,6 +37,7 @@ function validInputs(): Record<string, unknown> {
         'used semantic find-click',
       ],
       capture_evidence: {
+        native: true,
         method: 'workspaceView.webContents.capturePage()',
         reference: 'workspace-native-capture.png',
       },
@@ -156,7 +157,56 @@ describe('MCF-OPERATE-DUAL-BROWSER governed execution', () => {
     });
 
     expect(result.phaseState).toBe('RECOVERING');
-    expect(result.rejectionReason).toMatch(/unresolved HUMAN_GATE/u);
+    expect(result.rejectionReason).toMatch(/cannot resolve HUMAN_GATE/u);
+  });
+
+  it('rejects a self-reported resolved HUMAN_GATE without canonical authenticated proof', async () => {
+    const inputs = validInputs();
+    const evidence = inputs.execution_evidence as Record<string, unknown>;
+    evidence.human_gate_state = {
+      required: true,
+      resolved: true,
+      reason: 'two_factor_authentication',
+      leandro_as_technical_operator: false,
+    };
+
+    const result = await createExecutor().execute({
+      skillId: 'MCF-OPERATE-DUAL-BROWSER',
+      agentId: 'Mestre',
+      inputs,
+      tool: {
+        provider: 'internal',
+        operation: 'operate-dual-browser',
+        resource: 'mcf-dual-browser-cockpit',
+      },
+    });
+
+    expect(result.phaseState).toBe('RECOVERING');
+    expect(result.rejectionReason).toMatch(/authenticated canonical human-gate path/u);
+  });
+
+  it('rejects non-native capture evidence', async () => {
+    const inputs = validInputs();
+    const evidence = inputs.execution_evidence as Record<string, unknown>;
+    evidence.capture_evidence = {
+      native: false,
+      method: 'OS screenshot',
+      reference: 'manual-screenshot.png',
+    };
+
+    const result = await createExecutor().execute({
+      skillId: 'MCF-OPERATE-DUAL-BROWSER',
+      agentId: 'Mestre',
+      inputs,
+      tool: {
+        provider: 'internal',
+        operation: 'operate-dual-browser',
+        resource: 'mcf-dual-browser-cockpit',
+      },
+    });
+
+    expect(result.phaseState).toBe('RECOVERING');
+    expect(result.rejectionReason).toMatch(/native=true/u);
   });
 
   it('rejects Leandro as routine technical operator in semantic evidence', async () => {

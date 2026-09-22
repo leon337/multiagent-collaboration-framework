@@ -83,6 +83,7 @@ skill:
         captcha,
         irreversible_external_action,
       ]
+    human_gate_resolution: "A skill nunca resolve HUMAN_GATE por boolean autorrelatado; ao detectar gate material, falha fechado e exige a rota autenticada canônica antes de uma nova fase governada."
     prohibited_actions:
       [
         capture_credentials,

@@ -29,6 +29,26 @@ describe('ChatMissionPlanner MCF-OPERATE-DUAL-BROWSER', () => {
     expect(plan.contract.riskClass).toBe('B');
   });
 
+  it('preserves security-review intent over incidental Dual Browser wording', () => {
+    const plan = new ChatMissionPlanner().plan({
+      objective: 'Executar revisão de segurança e privacidade do dual browser.',
+    });
+
+    expect(plan.contract.selectedSkills).toContain('MCF-SECURITY-REVIEW');
+    expect(plan.contract.selectedSkills).not.toContain('MCF-OPERATE-DUAL-BROWSER');
+    expect(plan.contract.riskClass).toBe('C');
+  });
+
+  it('preserves close-phase intent over incidental Workspace wording', () => {
+    const plan = new ChatMissionPlanner().plan({
+      objective: 'Fechar a fase e consolidar o workspace do mestre.',
+    });
+
+    expect(plan.contract.selectedSkills).toContain('MCF-CLOSE-PHASE');
+    expect(plan.contract.selectedSkills).not.toContain('MCF-OPERATE-DUAL-BROWSER');
+    expect(plan.contract.riskClass).toBe('C');
+  });
+
   it('keeps an explicitly requested Dual Browser operation at Class B or higher', () => {
     const plan = new ChatMissionPlanner().plan({
       objective: 'Use the authorized cockpit surface.',

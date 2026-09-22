@@ -534,10 +534,31 @@ function requireDualBrowserHumanGate(
   }
   if (value.required === true) {
     requireString(value, 'reason', 'MCF-OPERATE-DUAL-BROWSER human gate requires a reason');
-    if (value.resolved !== true) {
-      return reject('MCF-OPERATE-DUAL-BROWSER cannot complete with unresolved HUMAN_GATE');
-    }
+    return reject(
+      'MCF-OPERATE-DUAL-BROWSER cannot resolve HUMAN_GATE from self-reported evidence; use the authenticated canonical human-gate path and resume in a new governed phase',
+    );
   }
+  if (value.resolved !== false) {
+    return reject('MCF-OPERATE-DUAL-BROWSER requires resolved=false when no HUMAN_GATE is pending');
+  }
+  return value;
+}
+
+function requireDualBrowserNativeCapture(
+  record: Record<string, unknown>,
+  key: string,
+  message: string,
+): Record<string, unknown> {
+  const value = asRecord(record[key], message);
+  if (value.native !== true) {
+    return reject('MCF-OPERATE-DUAL-BROWSER requires native=true capture evidence');
+  }
+  if (value.method !== 'workspaceView.webContents.capturePage()') {
+    return reject(
+      'MCF-OPERATE-DUAL-BROWSER requires workspaceView.webContents.capturePage() native capture evidence',
+    );
+  }
+  requireString(value, 'reference', 'MCF-OPERATE-DUAL-BROWSER requires a native capture reference');
   return value;
 }
 
@@ -563,10 +584,10 @@ function validateEvidence(
           'actions_performed',
           'MCF-OPERATE-DUAL-BROWSER requires non-empty actions_performed evidence',
         ),
-        capture_evidence: requireReference(
+        capture_evidence: requireDualBrowserNativeCapture(
           evidence,
           'capture_evidence',
-          'MCF-OPERATE-DUAL-BROWSER requires capture_evidence',
+          'MCF-OPERATE-DUAL-BROWSER requires structured native capture evidence',
         ),
         privacy_disposition: requireDualBrowserPrivacy(
           evidence,

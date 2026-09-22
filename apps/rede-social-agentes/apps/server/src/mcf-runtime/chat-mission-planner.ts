@@ -219,8 +219,11 @@ const evaluationTerms = [
 ];
 const closePhaseTerms = [
   'fechar fase',
+  'fechar a fase',
   'concluir fase',
+  'concluir a fase',
   'encerrar fase',
+  'encerrar a fase',
   'close phase',
   'phase closeout',
   'gerar rastreabilidade',
@@ -321,14 +324,6 @@ function inferSkills(
       'MCF-TRACE-MISSION',
     ];
   }
-  if (includesAny(normalized, dualBrowserTerms) && !includesAny(normalized, implementationTerms)) {
-    return [
-      'MCF-START-MISSION',
-      'MCF-SELECT-AGENTS',
-      'MCF-OPERATE-DUAL-BROWSER',
-      'MCF-TRACE-MISSION',
-    ];
-  }
   if (includesAny(normalized, closePhaseTerms)) {
     return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-CLOSE-PHASE', 'MCF-TRACE-MISSION'];
   }
@@ -343,6 +338,14 @@ function inferSkills(
   }
   if (includesAny(normalized, deploymentTerms)) {
     return ['MCF-START-MISSION', 'MCF-SELECT-AGENTS', 'MCF-DEPLOY-VALIDATE', 'MCF-TRACE-MISSION'];
+  }
+  if (includesAny(normalized, dualBrowserTerms) && !includesAny(normalized, implementationTerms)) {
+    return [
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-OPERATE-DUAL-BROWSER',
+      'MCF-TRACE-MISSION',
+    ];
   }
   if (request.repository || includesAny(normalized, implementationTerms)) {
     return [
