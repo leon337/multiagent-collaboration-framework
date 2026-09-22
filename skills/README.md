@@ -44,7 +44,7 @@ O comando explícito não substitui os requisitos da skill.
 
 ## Pacote Web Research — candidate 2026-09-20
 
-O registro desta branch contém **25 Skills**: **18 já executáveis pelo servidor atual** e **7 novas Skills web em estado EXPERIMENTAL**, prontas para orquestração em ambientes que exponham os providers correspondentes, porém ainda dependentes de um futuro `Web Capability Provider` para execução direta pelo servidor MCF.
+O registro desta branch contém **26 Skills**: **19 executáveis pelo servidor atual** e **7 Skills web em estado EXPERIMENTAL**, prontas para orquestração em ambientes que exponham os providers correspondentes, porém ainda dependentes de um futuro `Web Capability Provider` para execução direta pelo servidor MCF.
 
 As novas Skills são:
 

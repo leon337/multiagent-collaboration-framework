@@ -1,0 +1,104 @@
+skill:
+  skill_id: MCF-OPERATE-DUAL-BROWSER
+  name: "Operar MCF Dual Browser Cockpit"
+  version: 1.0.0
+  status: ACTIVE
+  purpose: "Operar o MESTRE Workspace em desktop autorizado por observação semântica e Agent Bridge/IPC, selecionar a instância correta, capturar evidência nativa e evitar delegar operação técnica rotineira a Leandro."
+  owner_agents: [Mestre]
+  supporting_agents: [Beatriz, Augusto, Ricardo, Bruno]
+  trigger_phrases:
+    - "dual browser"
+    - "workspace do mestre"
+    - "mestre workspace"
+    - "operar cockpit"
+    - "capturar workspace"
+  required_inputs: [interaction_goal, target_surface, authorizedScope]
+  optional_inputs:
+    [preferred_instance, privacy_classification, human_gate_context]
+  preconditions:
+    - "desktop autorizado disponível"
+    - "MCF Dual Browser Cockpit em execução"
+    - "Agent Bridge ativo em loopback"
+  allowed_tools:
+    [Remote_Desktop_Commander, MCF_Dual_Browser_Cockpit, ORCA_AT_SPI]
+  alternative_tools: [SentinelX]
+  forbidden_tools:
+    - credential_capture
+    - secret_exposure
+    - access_control_bypass
+    - physical_pointer_when_semantic_available
+    - human_as_technical_operator
+  permission_profile: SCOPED_WRITE
+  execution_steps:
+    - identificar_instancias
+    - selecionar_instancia_alvo_por_evidencia
+    - observar_semanticamente
+    - preferir_acao_semantica_ou_programatica
+    - executar_interacao_autorizada
+    - capturar_workspace_nativamente
+    - classificar_e_sanitizar_evidencia
+    - registrar_handoff
+  required_evidence:
+    - target_instance
+    - interaction_policy
+    - actions_performed
+    - capture_evidence
+    - privacy_disposition
+    - human_gate_state
+  expected_outputs:
+    - workspace_interaction_result
+    - native_capture_reference
+    - interaction_receipt
+  acceptance_criteria:
+    - correct_instance_selected
+    - semantic_first_preserved
+    - native_capture_used
+    - no_secret_exposure
+    - leandro_not_technical_operator
+  failure_modes:
+    - ambiguous_instance
+    - bridge_unavailable
+    - semantic_target_not_found
+    - login_human_gate
+    - capture_failed
+    - sensitive_data_detected
+  fallback:
+    without_primary_tool: "Usar observação ORCA/AT-SPI somente leitura e alternativa autorizada; não usar coordenadas físicas como substituição silenciosa."
+    without_any_tool: "Falhar fechado e registrar bloqueio; nunca transformar Leandro em operador técnico."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Beatriz
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: INTERNAL
+    human_gate_triggers:
+      [
+        authentication,
+        two_factor_authentication,
+        captcha,
+        irreversible_external_action,
+      ]
+    human_gate_resolution: "A skill nunca resolve HUMAN_GATE por boolean autorrelatado; ao detectar gate material, falha fechado e exige a rota autenticada canônica antes de uma nova fase governada."
+    prohibited_actions:
+      [
+        capture_credentials,
+        expose_secrets,
+        bypass_access_control,
+        routine_technical_handoff_to_leandro,
+      ]
+  tests:
+    positive_scenarios:
+      - "selecionar entre duas instâncias por evidência de processo/janela/bridge"
+      - "clicar semanticamente em alvo dentro de frame"
+      - "capturar o Workspace pelo mesmo caminho nativo do botão visível"
+    negative_scenarios:
+      - "rejeitar uso de pointer quando ação semântica está disponível"
+      - "rejeitar evidência com segredo exposto"
+      - "rejeitar HUMAN_GATE não resolvido"
+    last_evaluated_at: 2026-09-22
+    verdict: PASS

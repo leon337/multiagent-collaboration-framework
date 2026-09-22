@@ -369,6 +369,25 @@ skills:
     fallback: Falhar fechado e retornar ao Mestre sem alegar execução cognitiva independente.
     handoff_to: Mestre
 
+  - skill_id: MCF-OPERATE-DUAL-BROWSER
+    name: Operar MCF Dual Browser Cockpit
+    version: 1.0.0
+    purpose: Operar o MESTRE Workspace em desktop autorizado por observação semântica e Agent Bridge/IPC, selecionar a instância correta, capturar evidência nativa e evitar delegar operação técnica rotineira a Leandro.
+    owner_agents: [Mestre]
+    trigger_phrases: ["dual browser", "workspace do mestre", "mestre workspace", "operar cockpit", "capturar workspace"]
+    required_inputs: [interaction_goal, target_surface, authorizedScope]
+    optional_inputs: [preferred_instance, privacy_classification, human_gate_context]
+    allowed_tools: [Remote_Desktop_Commander, MCF_Dual_Browser_Cockpit, ORCA_AT_SPI]
+    forbidden_tools: [credential_capture, secret_exposure, access_control_bypass, physical_pointer_when_semantic_available, human_as_technical_operator]
+    permission_profile: SCOPED_WRITE
+    execution_steps: [identificar_instancias, selecionar_instancia_alvo_por_evidencia, observar_semanticamente, preferir_acao_semantica_ou_programatica, executar_interacao_autorizada, capturar_workspace_nativamente, classificar_e_sanitizar_evidencia, registrar_handoff]
+    required_evidence: [target_instance, interaction_policy, actions_performed, capture_evidence, privacy_disposition, human_gate_state]
+    expected_outputs: [workspace_interaction_result, native_capture_reference, interaction_receipt]
+    acceptance_criteria: [correct_instance_selected, semantic_first_preserved, native_capture_used, no_secret_exposure, leandro_not_technical_operator]
+    failure_modes: [ambiguous_instance, bridge_unavailable, semantic_target_not_found, login_human_gate, capture_failed, sensitive_data_detected]
+    fallback: Falhar fechado; usar observação ORCA/AT-SPI somente leitura; solicitar HUMAN_GATE apenas para autenticação ou 2FA e nunca transferir operação técnica rotineira para Leandro.
+    handoff_to: Beatriz
+
   # Provider-agnostic web research skills.
   # EXPERIMENTAL: orchestration-ready; server runtime adapter pending.
   - skill_id: MCF-WEB-SEARCH
