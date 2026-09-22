@@ -45,11 +45,12 @@ export function normalizeState(input) {
       tags: Array.isArray(n.tags) ? n.tags.map(String).slice(0, 12) : [],
       messages: Array.isArray(n.messages) ? n.messages.slice(-200).map((m) => {
         if (typeof m === 'string') return { role: 'user', text: m.slice(0, 12000) };
-        const role = m?.role === 'assistant' ? 'assistant' : 'user';
+        const role = m?.role === 'assistant' ? 'assistant' : m?.role === 'system' ? 'system' : 'user';
         return {
           role,
           text: String(m?.text || '').slice(0, 12000),
           status: m?.status === 'streaming' ? 'streaming' : 'done',
+          localOnly: Boolean(m?.localOnly) || role === 'system',
           at: typeof m?.at === 'string' ? m.at : undefined
         };
       }).filter(m => m.text || m.status === 'streaming') : [],
