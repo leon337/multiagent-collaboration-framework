@@ -1,0 +1,11 @@
+{
+  "name": "mcf-archipelago",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/app.js && node --check src/model.js && node --check src/storage.js && node --check src/graph.js",
+    "test": "node --test tests/*.test.mjs",
+    "ci": "npm run check && npm test"
+  }
+}
