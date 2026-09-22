@@ -38,8 +38,8 @@ class DualBrowserClient {
     }
   }
 
-  async openConversation({ id, title }) {
-    return this.#request('POST', '/v1/chatgpt/conversation/open', { id, title }, 45000);
+  async openConversation({ id, title, url = null }) {
+    return this.#request('POST', '/v1/chatgpt/conversation/open', { id, title, url }, 45000);
   }
 
   async getConversation(id) {
