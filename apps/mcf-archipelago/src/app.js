@@ -7,6 +7,7 @@ const graph = $('#graph');
 const detailPanel = $('#detailPanel');
 const minimap = $('#minimap');
 const dialog = $('#nodeDialog');
+const providerDialog = $('#providerDialog');
 
 let state = normalizeState(loadState(seedState));
 saveState(state);
@@ -694,6 +695,39 @@ $('#toggleProjectBtn').addEventListener('click', () => {
   openPanel(node.id);
 });
 $('#refreshProviderBtn').addEventListener('click', refreshProviderStatus);
+$('#providerConfigBtn').addEventListener('click', () => {
+  $('#providerFormStatus').textContent = '';
+  $('#openaiKeyInput').value = '';
+  $('#openaiModelSelect').value = providers.openai?.model || 'gpt-5.6-luna';
+  providerDialog.showModal();
+  setTimeout(() => $('#openaiKeyInput').focus(), 0);
+});
+$('#cancelProviderBtn').addEventListener('click', () => providerDialog.close());
+$('#providerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const key = $('#openaiKeyInput').value.trim();
+  const model = $('#openaiModelSelect').value;
+  $('#providerFormStatus').textContent = 'Salvando localmente…';
+  $('#saveProviderBtn').disabled = true;
+  try {
+    const response = await fetch('/api/provider/configure', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({openaiApiKey:key, openaiModel:model})
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.code || ('HTTP ' + response.status));
+    providers = result;
+    $('#openaiKeyInput').value = '';
+    $('#providerFormStatus').textContent = 'Provider ativado.';
+    updateProviderUi();
+    setTimeout(() => providerDialog.close(), 350);
+  } catch (error) {
+    $('#providerFormStatus').textContent = 'Falha: ' + error.message;
+  } finally {
+    $('#saveProviderBtn').disabled = false;
+  }
+});
 $('#dispatchMcfBtn').addEventListener('click', dispatchSelectedToMcf);
 $('#branchChatBtn').addEventListener('click', () => {
   const origin = state.nodes.find(n => n.id === selectedId);
