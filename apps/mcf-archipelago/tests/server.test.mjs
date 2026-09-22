@@ -192,8 +192,11 @@ test('backend local falha fechado sem API key', async () => {
       })
     });
     assert.equal(rebound.status, 201);
-    assert.equal((await rebound.json()).state, 'READY');
+    const reboundBody = await rebound.json();
+    assert.equal(reboundBody.state, 'READY');
     assert.equal(lastOpenUrl, 'https://chatgpt.com/c/fake-island-test');
+    assert.equal(reboundBody.chat.metadata.chatgpt.deliveryState, 'DELIVERED');
+    assert.ok(reboundBody.chat.metadata.chatgpt.lastForwardedUserMessageId);
 
     const response = await fetch('http://127.0.0.1:' + port + '/api/chat', {
       method: 'POST',
