@@ -425,9 +425,13 @@ function openPanel(id) {
   renderMessages(node);
   render();
   if (node.type === 'chat') {
-    syncNodeChat(node, true).catch(error => {
-      addLocalSystemMessage(node, 'API Archipelago indisponível: ' + error.message);
+    const syncPromise = node.connectionState === 'READY' ? syncNodeChat(node, true) : bindNodeAtomically(node);
+    syncPromise.catch(error => {
+      node.connectionState = 'OFFLINE';
+      addLocalSystemMessage(node, 'Conexão do chat indisponível: ' + error.message);
+      saveState(state);
       renderMessages(node);
+      render();
     });
   }
 }
@@ -915,8 +919,14 @@ $('#resetBtn').addEventListener('click', () => {
 window.addEventListener('resize', () => render());
 updateStats();
 refreshProviderStatus();
-Promise.allSettled(state.nodes.filter(n => n.type === 'chat').map(n => syncNodeChat(n, true)))
-  .then(() => { saveState(state); render(); });
+connectThisDevice()
+  .then(() => Promise.allSettled(state.nodes.filter(n => n.type === 'chat').map(n => bindNodeAtomically(n))))
+  .then(() => { saveState(state); render(); })
+  .catch(() => {
+    for (const node of state.nodes.filter(n => n.type === 'chat')) node.connectionState = 'OFFLINE';
+    saveState(state);
+    render();
+  });
 
 requestAnimationFrame(() => {
   if (!localStorage.getItem('mcf-archipelago-v1')) fitAll();
