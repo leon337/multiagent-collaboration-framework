@@ -139,14 +139,33 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           state:'READY'
         });
       } catch (error) {
+        const code = error.code || error.message || 'CHAT_SESSION_CREATE_FAILED';
+        const authRequired = code === 'chatgpt_auth_required';
         if (createdChatId) {
           try { deviceBroker.unbindChat(createdChatId); } catch {}
-          try { await dualBrowserClient.closeConversation(createdChatId); } catch {}
+          if (authRequired) {
+            const current = store.get(createdChatId, false);
+            const previousChatgpt = current?.metadata?.chatgpt || {};
+            try {
+              store.update(createdChatId, {
+                metadata: {
+                  chatgpt: {
+                    ...previousChatgpt,
+                    instanceId: dualBrowserClient.instanceId,
+                    state: 'AUTH_REQUIRED',
+                    lastError: 'chatgpt_auth_required'
+                  }
+                }
+              });
+            } catch {}
+          } else {
+            try { await dualBrowserClient.closeConversation(createdChatId); } catch {}
+          }
         }
-        if (createdFresh && createdChatId) {
+        if (createdFresh && createdChatId && !authRequired) {
           try { store.remove(createdChatId); } catch {}
         }
-        json(res, error.status || 409, { code:error.code || error.message || 'CHAT_SESSION_CREATE_FAILED', state:'OFFLINE' });
+        json(res, error.status || 409, { code, state: authRequired ? 'AUTH_REQUIRED' : 'OFFLINE' });
       }
       return true;
     }
