@@ -341,12 +341,19 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           sse(res, 'done', { message, conversation });
         } catch (error) {
           const delivery = error.payload?.delivery === 'NOT_SENT' ? 'NOT_SENT' : 'UNKNOWN';
+          const conversation = error.payload?.conversation || null;
+          const diagnostics = error.payload?.diagnostics || conversation?.diagnostics || null;
           store.update(chatId, {
             metadata: {
               chatgpt: {
                 ...chatgptMeta,
+                instanceId: dualBrowserClient.instanceId,
+                state: conversation?.state || chatgptMeta.state || 'READY',
+                url: conversation?.chatgptUrl || chatgptMeta.url || null,
+                conversationId: conversation?.chatgptConversationId || chatgptMeta.conversationId || null,
                 pendingUserMessageId: delivery === 'NOT_SENT' ? null : lastUser.id,
                 deliveryState: delivery,
+                diagnostics,
                 lastError: String(error.message || error).slice(0, 500)
               }
             }
@@ -354,6 +361,8 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           sse(res, 'error', {
             code: error.code || 'CHATGPT_BRIDGE_ERROR',
             delivery,
+            conversation,
+            diagnostics,
             message: String(error.message || error).slice(0, 1600)
           });
         } finally {
