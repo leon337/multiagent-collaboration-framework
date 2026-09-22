@@ -1,6 +1,7 @@
 import { seedState, createNode, normalizeState, connect, removeNode, autoLayout, searchNodes } from './model.js';
 import { loadState, saveState, clearState, downloadState } from './storage.js';
 import { svgEl, islandPath, fitCamera, worldBounds } from './graph.js';
+import { getApiHealth, ensureChat, getChat, postUserMessage, updateChat, deleteChat, streamChatResponse, mapApiMessage } from './chat-api.js';
 
 const $ = (s) => document.querySelector(s);
 const graph = $('#graph');
@@ -31,6 +32,15 @@ function persist(status = 'Salvo localmente') {
 
 function selectedNode() {
   return state.nodes.find(n => n.id === selectedId) || null;
+}
+
+async function syncNodeChat(node, create = true) {
+  if (!node || node.type !== 'chat') return null;
+  const chat = create ? await ensureChat(node) : await getChat(node.id);
+  node.messages = (chat.messages || []).map(mapApiMessage);
+  saveState(state);
+  if (selectedId === node.id) renderMessages(node);
+  return chat;
 }
 
 function updateProviderUi() {
