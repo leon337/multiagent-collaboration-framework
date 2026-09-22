@@ -43,6 +43,18 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
       return true;
     }
 
+    if (req.method === 'DELETE' && pathname === '/api/v1/workspace') {
+      const chats = store.list();
+      for (const chat of chats) {
+        try { await dualBrowserClient.closeConversation(chat.id); } catch {}
+      }
+      const clearedBindings = deviceBroker.clearBindings();
+      const clearedChats = store.clear();
+      try { await dualBrowserClient.openChatSurface('https://chatgpt.com/'); } catch {}
+      json(res, 200, { ok:true, clearedChats, clearedBindings });
+      return true;
+    }
+
     if (pathname === '/api/v1/device/session' && req.method === 'POST') {
       try {
         const body = await readJson(req, 64 * 1024);
@@ -205,6 +217,27 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
         }
         return true;
       }
+    }
+
+    const focusMatch = pathname.match(/^\/api\/v1\/chats\/([^/]+)\/focus$/);
+    if (focusMatch && req.method === 'POST') {
+      const chatId = decodeId(focusMatch[1]);
+      const chat = store.get(chatId, false);
+      if (!chat) {
+        json(res, 404, { code:'CHAT_NOT_FOUND' });
+        return true;
+      }
+      const storedUrl = chat.metadata?.chatgpt?.url || null;
+      const url = /\/(?:c|uc)\//.test(storedUrl || '') ? storedUrl : 'https://chatgpt.com/';
+      try {
+        const result = await dualBrowserClient.openChatSurface(url);
+        json(res, result?.ok ? 200 : 422, result?.ok
+          ? { ok:true, chatId, url:result.url || url }
+          : { code:result?.error || 'CHAT_SURFACE_OPEN_FAILED' });
+      } catch (error) {
+        json(res, error.status || 502, { code:error.code || error.message || 'CHAT_SURFACE_OPEN_FAILED' });
+      }
+      return true;
     }
 
     const chatMatch = pathname.match(/^\/api\/v1\/chats\/([^/]+)$/);

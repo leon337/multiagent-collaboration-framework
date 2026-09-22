@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { seedState, createNode, normalizeState, connect, removeNode, autoLayout, searchNodes } from '../src/model.js';
+import { seedState, emptyState, createNode, normalizeState, connect, removeNode, autoLayout, searchNodes } from '../src/model.js';
 
 test('normalizeState preserva grafo válido', () => {
   const state = normalizeState(structuredClone(seedState));
@@ -106,4 +106,25 @@ test('normalizeState preserva mensagens locais de sistema sem enviá-las ao prov
 test('normalizeState rejeita IDs duplicados', () => {
   const bad = { nodes:[{id:'x',title:'a'},{id:'x',title:'b'}], edges:[] };
   assert.throws(() => normalizeState(bad), /duplicados/);
+});
+
+
+test('emptyState inicia um arquipélago realmente vazio', () => {
+  const state = normalizeState(structuredClone(emptyState));
+  assert.equal(state.nodes.length, 0);
+  assert.equal(state.edges.length, 0);
+  assert.deepEqual(state.camera, { x:0, y:0, zoom:1 });
+});
+
+
+test('um projeto pode conter vários chats independentes', () => {
+  const state = normalizeState(structuredClone(emptyState));
+  const project = createNode({ type:'project', title:'Projeto Zero' });
+  const chatA = createNode({ type:'chat', title:'Chat Principal', parentId:project.id });
+  const chatB = createNode({ type:'chat', title:'Chat Secundário', parentId:project.id });
+  state.nodes.push(project, chatA, chatB);
+  assert.equal(connect(state, project.id, chatA.id, 'contains', 'pertence ao projeto'), true);
+  assert.equal(connect(state, project.id, chatB.id, 'contains', 'pertence ao projeto'), true);
+  assert.deepEqual(state.nodes.filter(n => n.parentId === project.id).map(n => n.id), [chatA.id, chatB.id]);
+  assert.equal(state.edges.filter(e => e.kind === 'contains' && e.source === project.id).length, 2);
 });

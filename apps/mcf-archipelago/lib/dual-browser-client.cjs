@@ -55,6 +55,15 @@ class DualBrowserClient {
     );
   }
 
+  async openChatSurface(url) {
+    return this.#request(
+      'POST',
+      '/v1/chat-surface/open',
+      { url },
+      30000
+    );
+  }
+
   async closeConversation(id) {
     try {
       return await this.#request(

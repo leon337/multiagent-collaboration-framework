@@ -157,3 +157,18 @@ export async function getChatConnection(chatId) {
   if (!response.ok) throw new Error(body.code || ('HTTP ' + response.status));
   return body.connection;
 }
+
+
+export async function focusChatSurface(chatId) {
+  const response = await fetch('/api/v1/chats/' + encodeURIComponent(chatId) + '/focus', { method:'POST' });
+  const body = await readJson(response);
+  if (!response.ok) throw new Error(body.code || ('HTTP ' + response.status));
+  return body;
+}
+
+export async function resetWorkspace() {
+  const response = await fetch('/api/v1/workspace', { method:'DELETE' });
+  const body = await readJson(response);
+  if (!response.ok) throw new Error(body.code || ('HTTP ' + response.status));
+  return body;
+}

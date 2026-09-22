@@ -34,6 +34,8 @@ test('backend local falha fechado sem API key', async () => {
 
   const conversations = new Map();
   let lastOpenUrl = null;
+  let lastFocusedUrl = null;
+  const closedConversationIds = [];
   const bridgeServer = http.createServer(async (req, res) => {
     const u = new URL(req.url || '/', 'http://127.0.0.1');
     const send = (status, body) => {
@@ -58,6 +60,10 @@ test('backend local falha fechado sem API key', async () => {
       conversations.set(body.id, conversation);
       return send(201,{ok:true,conversation});
     }
+    if (req.method === 'POST' && u.pathname === '/v1/chat-surface/open') {
+      lastFocusedUrl = body.url || null;
+      return send(200,{ok:true,url:lastFocusedUrl});
+    }
     const stateMatch = u.pathname.match(/^\/v1\/chatgpt\/conversation\/([^/]+)$/);
     if (req.method === 'GET' && stateMatch) {
       const conversation = conversations.get(decodeURIComponent(stateMatch[1]));
@@ -74,7 +80,9 @@ test('backend local falha fechado sem API key', async () => {
     }
     const closeMatch = u.pathname.match(/^\/v1\/chatgpt\/conversation\/([^/]+)\/close$/);
     if (req.method === 'POST' && closeMatch) {
-      const removed = conversations.delete(decodeURIComponent(closeMatch[1]));
+      const id = decodeURIComponent(closeMatch[1]);
+      closedConversationIds.push(id);
+      const removed = conversations.delete(id);
       return send(removed ? 200 : 404, removed ? {ok:true} : {ok:false,error:'conversation_not_found'});
     }
     send(404,{ok:false,error:'not_found'});
@@ -178,6 +186,12 @@ test('backend local falha fechado sem API key', async () => {
     assert.match(browserStream, /provider":"chatgpt-browser/);
     assert.match(browserStream, /bridge:Olá API própria/);
 
+    const focused = await fetch('http://127.0.0.1:' + port + '/api/v1/chats/island-test/focus', {method:'POST'});
+    assert.equal(focused.status, 200);
+    const focusedBody = await focused.json();
+    assert.equal(focusedBody.url, 'https://chatgpt.com/c/fake-island-test');
+    assert.equal(lastFocusedUrl, 'https://chatgpt.com/c/fake-island-test');
+
     conversations.clear();
     lastOpenUrl = null;
     const rebound = await fetch('http://127.0.0.1:' + port + '/api/v1/chat-sessions', {
@@ -197,6 +211,15 @@ test('backend local falha fechado sem API key', async () => {
     assert.equal(lastOpenUrl, 'https://chatgpt.com/c/fake-island-test');
     assert.equal(reboundBody.chat.metadata.chatgpt.deliveryState, 'DELIVERED');
     assert.ok(reboundBody.chat.metadata.chatgpt.lastForwardedUserMessageId);
+
+    const reset = await fetch('http://127.0.0.1:' + port + '/api/v1/workspace', {method:'DELETE'});
+    assert.equal(reset.status, 200);
+    const resetBody = await reset.json();
+    assert.ok(resetBody.clearedChats >= 2);
+    const afterReset = await fetch('http://127.0.0.1:' + port + '/api/v1/chats').then(r => r.json());
+    assert.equal(afterReset.chats.length, 0);
+    assert.equal(lastFocusedUrl, 'https://chatgpt.com/');
+    assert.ok(closedConversationIds.includes('island-test'));
 
     const response = await fetch('http://127.0.0.1:' + port + '/api/chat', {
       method: 'POST',

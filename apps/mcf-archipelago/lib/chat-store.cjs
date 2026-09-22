@@ -96,6 +96,13 @@ class ChatStore {
     return this.#publicChat(chat, true);
   }
 
+  clear() {
+    const cleared = this.state.chats.length;
+    this.state = { version: 1, chats: [] };
+    this.#save();
+    return cleared;
+  }
+
   remove(id) {
     const index = this.state.chats.findIndex(c => c.id === id);
     if (index < 0) return false;

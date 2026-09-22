@@ -76,6 +76,12 @@ class DeviceSessionBroker {
     return this.chatBindings.delete(chatId);
   }
 
+  clearBindings() {
+    const cleared = this.chatBindings.size;
+    this.chatBindings.clear();
+    return cleared;
+  }
+
   getChatBinding(chatId) {
     const binding = this.chatBindings.get(chatId);
     if (!binding) return null;

@@ -1,3 +1,10 @@
+export const emptyState = {
+  version: 5,
+  camera: { x: 0, y: 0, zoom: 1 },
+  nodes: [],
+  edges: []
+};
+
 export const seedState = {
   version: 5,
   camera: { x: 0, y: 0, zoom: 1 },

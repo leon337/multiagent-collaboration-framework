@@ -1,7 +1,7 @@
-import { seedState, createNode, normalizeState, connect, removeNode, autoLayout, searchNodes } from './model.js';
+import { seedState, emptyState, createNode, normalizeState, connect, removeNode, autoLayout, searchNodes } from './model.js';
 import { loadState, saveState, clearState, downloadState } from './storage.js';
 import { svgEl, islandPath, fitCamera, worldBounds } from './graph.js';
-import { getApiHealth, ensureChat, getChat, postUserMessage, updateChat, deleteChat, streamChatResponse, mapApiMessage, connectDeviceSession, heartbeatDeviceSession, createAtomicChatSession } from './chat-api.js';
+import { getApiHealth, ensureChat, getChat, postUserMessage, updateChat, deleteChat, streamChatResponse, mapApiMessage, connectDeviceSession, heartbeatDeviceSession, createAtomicChatSession, focusChatSurface, resetWorkspace } from './chat-api.js';
 import { deriveChatTitle } from './chat-title.js';
 
 const $ = (s) => document.querySelector(s);
@@ -308,6 +308,9 @@ async function askAssistant(node) {
   });
 
   await syncNodeChat(node, false);
+  if (selectedId === node.id) {
+    try { await focusChatSurface(node.id); } catch {}
+  }
   persist('Resposta sincronizada pela API Archipelago');
 }
 async function dispatchSelectedToMcf() {
@@ -567,13 +570,27 @@ function openPanel(id) {
   render();
   if (node.type === 'chat' && node.connectionState !== 'CONNECTING') {
     const syncPromise = node.connectionState === 'READY' ? syncNodeChat(node, true) : bindNodeAtomically(node);
-    syncPromise.catch(error => {
-      node.connectionState = 'OFFLINE';
-      addLocalSystemMessage(node, 'Conexão do chat indisponível: ' + error.message);
-      saveState(state);
-      renderMessages(node);
-      render();
-    });
+    syncPromise
+      .then(async () => {
+        if (selectedId !== node.id) return;
+        try {
+          await focusChatSurface(node.id);
+          $('#statusText').textContent = node.chatgptConversationId
+            ? 'Chat da ilha aberto no painel ChatGPT'
+            : 'Chat novo aberto no painel ChatGPT';
+        } catch (error) {
+          addLocalSystemMessage(node, 'Não foi possível abrir o chat no painel ChatGPT: ' + error.message);
+          saveState(state);
+          renderMessages(node);
+        }
+      })
+      .catch(error => {
+        node.connectionState = 'OFFLINE';
+        addLocalSystemMessage(node, 'Conexão do chat indisponível: ' + error.message);
+        saveState(state);
+        renderMessages(node);
+        render();
+      });
   }
 }
 
@@ -1059,14 +1076,22 @@ $('#importInput').addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
-$('#resetBtn').addEventListener('click', () => {
-  if (!confirm('Resetar o Archipelago para o estado inicial?')) return;
-  clearState();
-  state = normalizeState(seedState);
-  selectedId = null;
-  fitAll();
-  persist('Mapa resetado');
-  closePanel();
+$('#resetBtn').addEventListener('click', async () => {
+  if (!confirm('Limpar o Archipelago por completo? O mapa e os chats locais serão removidos.')) return;
+  try {
+    await resetWorkspace();
+    clearState();
+    state = normalizeState(structuredClone(emptyState));
+    selectedId = null;
+    listMode = false;
+    branchFromId = null;
+    connectFrom = null;
+    fitAll();
+    persist('Archipelago limpo · crie um projeto para começar');
+    closePanel();
+  } catch (error) {
+    alert('Falha ao limpar o Archipelago: ' + error.message);
+  }
 });
 
 window.addEventListener('resize', () => render());
