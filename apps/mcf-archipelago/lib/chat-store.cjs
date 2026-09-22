@@ -4,7 +4,8 @@ const { randomUUID } = require('crypto');
 
 class ChatStore {
   constructor(rootDir) {
-    this.dir = path.join(rootDir, '.archipelago-data');
+    const configuredDir = String(process.env.ARCHIPELAGO_DATA_DIR || '').trim();
+    this.dir = configuredDir ? path.resolve(configuredDir) : path.join(rootDir, '.archipelago-data');
     this.file = path.join(this.dir, 'chats.json');
     this.state = { version: 1, chats: [] };
     this.#load();
