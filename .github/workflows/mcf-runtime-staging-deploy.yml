@@ -8,6 +8,7 @@ on:
     paths:
       - "apps/rede-social-agentes/**"
       - "skills/**"
+      - ".mcf/**"
       - ".github/workflows/mcf-runtime-staging-deploy.yml"
   workflow_dispatch:
     inputs:
