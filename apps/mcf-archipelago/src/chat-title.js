@@ -1,18 +1,19 @@
 export function deriveChatTitle(input, maxLength = 52) {
   const text = String(input || '')
-    .replace(/[
-	]+/g, ' ')
-    .replace(/s+/g, ' ')
+    .replace(/[\r\n\t]+/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
   if (!text) return 'Novo chat';
 
   const cleaned = text
-    .replace(/^[-#>*d.)s]+/, '')
+    .replace(/^[-#>*\d.)\s]+/, '')
     .replace(/^[“"'‘’]+|[”"'‘’]+$/g, '')
     .trim();
 
-  const firstSentence = cleaned.split(/(?<=[.!?])s+/)[0] || cleaned;
-  if (firstSentence.length <= maxLength) return firstSentence.replace(/[.!?]+$/g, '').trim() || 'Novo chat';
+  const firstSentence = cleaned.split(/(?<=[.!?])\s+/)[0] || cleaned;
+  if (firstSentence.length <= maxLength) {
+    return firstSentence.replace(/[.!?]+$/g, '').trim() || 'Novo chat';
+  }
 
   const words = firstSentence.split(' ');
   let title = '';
@@ -21,5 +22,8 @@ export function deriveChatTitle(input, maxLength = 52) {
     if (next.length > maxLength) break;
     title = next;
   }
-  return (title || firstSentence.slice(0, maxLength)).replace(/[,:;.!?]+$/g, '').trim() || 'Novo chat';
+
+  return (title || firstSentence.slice(0, maxLength))
+    .replace(/[,:;.!?]+$/g, '')
+    .trim() || 'Novo chat';
 }
