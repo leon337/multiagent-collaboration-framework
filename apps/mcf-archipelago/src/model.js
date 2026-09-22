@@ -1,5 +1,5 @@
 export const seedState = {
-  version: 4,
+  version: 5,
   camera: { x: 0, y: 0, zoom: 1 },
   nodes: [
     { id: 'mcf', type: 'project', title: 'MCF', x: 760, y: 390, r: 88, parentId: null, tags: ['framework', 'principal'], messages: [] },
@@ -28,7 +28,7 @@ export function createNode({ type, title, parentId = null, tags = [], x = 800, y
     id: uid(type), type, title: title.trim(), parentId: parentId || null,
     tags: tags.map(t => t.trim()).filter(Boolean),
     x, y, r: type === 'project' ? 82 : type === 'agent' ? 46 : 58,
-    messages: [], collapsed: false, createdAt: new Date().toISOString()
+    messages: [], collapsed: false, connectionState: type === 'chat' ? 'OFFLINE' : null, deviceSessionId: null, createdAt: new Date().toISOString()
   };
 }
 
@@ -54,7 +54,9 @@ export function normalizeState(input) {
           at: typeof m?.at === 'string' ? m.at : undefined
         };
       }).filter(m => m.text || m.status === 'streaming') : [],
-      collapsed: n.type === 'project' ? Boolean(n.collapsed) : false
+      collapsed: n.type === 'project' ? Boolean(n.collapsed) : false,
+      connectionState: n.type === 'chat' && ['CONNECTING','READY','OFFLINE'].includes(n.connectionState) ? n.connectionState : (n.type === 'chat' ? 'OFFLINE' : null),
+      deviceSessionId: n.type === 'chat' && n.deviceSessionId ? String(n.deviceSessionId).slice(0, 160) : null
     };
   });
   const projectIds = new Set(nodes.filter(n => n.type === 'project').map(n => n.id));
@@ -82,7 +84,7 @@ export function normalizeState(input) {
     if (parentEdge) node.parentId = parentEdge.source;
   }
 
-  return { version: 4, camera: input.camera || { x: 0, y: 0, zoom: 1 }, nodes, edges };
+  return { version: 5, camera: input.camera || { x: 0, y: 0, zoom: 1 }, nodes, edges };
 }
 
 export function connect(state, source, target, kind = 'related', reason = '') {
