@@ -34,3 +34,23 @@
 - integração OpenAI/ChatGPT: explicitamente fora desta V1.
 
 A V1 está qualificada como MVP local/branch para iteração visual. Merge e produção permanecem fora deste boundary.
+
+
+## Evolução V1.1 — mundo navegável
+
+Implementada no mesmo boundary reversível, sem merge:
+
+- zonas visuais de arquipélago por projeto;
+- rotas curvas entre ilhas;
+- motivo semântico persistido nas conexões;
+- destaque de rotas da ilha selecionada;
+- minimapa com viewport atual;
+- foco/drill-down de projeto;
+- inspetor de conexões no painel;
+- nascimento animado de novas ilhas;
+- criação de chats já posicionada ao redor do projeto pai;
+- ramificação de chat em nova ilha com rota própria;
+- indicador visual de atividade por quantidade de mensagens;
+- respeito a `prefers-reduced-motion`.
+
+Validação local do checkpoint: Node syntax checks + 7/7 testes PASS + HTTP 200 no Windows.
