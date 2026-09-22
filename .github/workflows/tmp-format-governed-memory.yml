@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   format:
-    if: ${{ !startsWith(github.event.head_commit.message, 'chore(memory): apply prettier') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -23,8 +22,8 @@ jobs:
       - run: corepack prepare pnpm@11.17.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: >-
-          pnpm --dir apps/rede-social-agentes exec prettier --write
-          apps/server/src/mcf-context/mcf-ledger-memory-transport.service.test.ts
+          pnpm exec prettier --write
+          apps/rede-social-agentes/apps/server/src/mcf-context/mcf-ledger-memory-transport.service.test.ts
       - name: Commit formatting if needed
         shell: bash
         run: |
