@@ -1,0 +1,21 @@
+{
+  "artifactType": "INTENT_ALIGNMENT_RECEIPT",
+  "confirmationSourceRef": "MCF-V1.1-DECISION-LEDGER-001#V11-Q20",
+  "confirmedAt": "2026-08-15T13:00:00Z",
+  "contentDigest": "sha256:61385c47b8f09800a4aba2d28cd08c659453f338982e79b16326b1578661a59f",
+  "decision": "PASS",
+  "humanAuthority": "LEANDRO",
+  "pipRef": {
+    "artifactType": "PROJECT_INTENT_PACKAGE",
+    "commitSha": null,
+    "contentDigest": "sha256:4469d5f4d2b0f06e0a834a5cb0874e5df4f59a553e711b76040e30fa2e521371",
+    "path": ".mcf/intent/pip-v1.1-canonical-001.json",
+    "projectId": "multiagent-collaboration-framework",
+    "repository": "leon337/multiagent-collaboration-framework",
+    "revisionId": "v1.1-canonical-001",
+    "schemaVersion": "1.0"
+  },
+  "projectId": "multiagent-collaboration-framework",
+  "receiptId": "alignment-v1.1-canonical-001",
+  "schemaVersion": "1.0"
+}
