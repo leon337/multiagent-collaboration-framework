@@ -56,7 +56,6 @@ async function connectThisDevice() {
   heartbeatTimer = setInterval(async () => {
     try {
       deviceSession = await heartbeatDeviceSession(deviceSession.id);
-      for (const node of state.nodes.filter(n => n.type === 'chat' && n.deviceSessionId === deviceSession.id)) node.connectionState = 'READY';
       saveState(state);
       render();
       updateDeviceUi();
@@ -947,7 +946,17 @@ window.addEventListener('resize', () => render());
 updateStats();
 refreshProviderStatus();
 connectThisDevice()
-  .then(() => Promise.allSettled(state.nodes.filter(n => n.type === 'chat').map(n => bindNodeAtomically(n))))
+  .then(async () => {
+    for (const node of state.nodes.filter(n => n.type === 'chat')) {
+      try {
+        await bindNodeAtomically(node);
+      } catch {
+        node.connectionState = 'OFFLINE';
+        saveState(state);
+        render();
+      }
+    }
+  })
   .then(() => { saveState(state); render(); })
   .catch(() => {
     for (const node of state.nodes.filter(n => n.type === 'chat')) node.connectionState = 'OFFLINE';
