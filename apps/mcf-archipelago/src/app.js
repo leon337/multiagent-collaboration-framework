@@ -446,7 +446,7 @@ function openPanel(id) {
   renderConnections(node);
   renderMessages(node);
   render();
-  if (node.type === 'chat') {
+  if (node.type === 'chat' && node.connectionState !== 'CONNECTING') {
     const syncPromise = node.connectionState === 'READY' ? syncNodeChat(node, true) : bindNodeAtomically(node);
     syncPromise.catch(error => {
       node.connectionState = 'OFFLINE';
