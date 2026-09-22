@@ -5,6 +5,7 @@ const { ChatStore } = require('./lib/chat-store.cjs');
 const { createArchipelagoApi } = require('./lib/archipelago-api.cjs');
 const { streamOpenAIResponse } = require('./lib/providers/openai.cjs');
 const { DeviceSessionBroker } = require('./lib/device-session-broker.cjs');
+const { DualBrowserClient } = require('./lib/dual-browser-client.cjs');
 
 const root = __dirname;
 const clients = new Set();
@@ -25,6 +26,11 @@ function loadLocalEnv() {
   }
 }
 loadLocalEnv();
+
+const dualBrowserClient = new DualBrowserClient({
+  instanceId: process.env.MCF_DUAL_BROWSER_INSTANCE || 'archipelago',
+  descriptorPath: process.env.MCF_DUAL_BROWSER_BRIDGE_FILE || null
+});
 
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -55,6 +61,7 @@ function providerConfig() {
   const model = process.env.OPENAI_MODEL || 'gpt-5.6-luna';
   return {
     public: {
+      chatgptBrowser: dualBrowserClient.publicStatus(),
       openai: { configured: Boolean(process.env.OPENAI_API_KEY), model },
       mcf: { configured: Boolean(process.env.MCF_BASE_URL && process.env.MCF_SESSION_COOKIE) }
     },
@@ -176,7 +183,8 @@ const handleApiV1 = createArchipelagoApi({
   store: chatStore,
   providerConfig,
   streamOpenAIResponse,
-  deviceBroker
+  deviceBroker,
+  dualBrowserClient
 });
 
 const server = http.createServer(async (req,res) => {
