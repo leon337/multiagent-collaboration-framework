@@ -3,8 +3,16 @@ import argparse
 import json
 import os
 import tempfile
+import sys
 from datetime import datetime
 from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+INSTALLED_REPORTER_DIR = Path.home() / ".local/share/mcf-voice-reporter"
+for candidate in (SCRIPT_DIR, INSTALLED_REPORTER_DIR):
+    value = str(candidate)
+    if value not in sys.path:
+        sys.path.insert(0, value)
 
 import reporter
 
