@@ -237,9 +237,135 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
         return true;
       }
 
+      const lastUserIndex = [...chat.messages].map(m => m.role).lastIndexOf('user');
+      if (lastUserIndex < 0) {
+        json(res, 400, { code: 'EMPTY_CHAT' });
+        return true;
+      }
+      const lastUser = chat.messages[lastUserIndex];
+      const chatgptMeta = chat.metadata?.chatgpt || {};
+
+      if (chatgptMeta.pendingUserMessageId === lastUser.id && chatgptMeta.deliveryState === 'UNKNOWN') {
+        json(res, 409, {
+          code: 'CHATGPT_DELIVERY_UNKNOWN',
+          message: 'A entrega anterior ficou em estado incerto. O Archipelago bloqueou o reenvio automático para evitar duplicação.'
+        });
+        return true;
+      }
+
+      if (chatgptMeta.lastForwardedUserMessageId === lastUser.id) {
+        const existing = chat.messages.slice(lastUserIndex + 1).find(m => m.role === 'assistant');
+        if (existing) {
+          res.writeHead(200, {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache, no-store',
+            'Connection': 'keep-alive'
+          });
+          sse(res, 'meta', { chatId, provider:'chatgpt-browser', replay:true });
+          sse(res, 'delta', { text: existing.text });
+          sse(res, 'done', { message: existing, replay:true });
+          res.end();
+          return true;
+        }
+      }
+
+      const browserStatus = dualBrowserClient.publicStatus();
+      if (browserStatus.configured) {
+        store.update(chatId, {
+          metadata: {
+            chatgpt: {
+              ...chatgptMeta,
+              pendingUserMessageId: lastUser.id,
+              deliveryState: 'SENDING',
+              lastError: null
+            }
+          }
+        });
+
+        res.writeHead(200, {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-store',
+          'Connection': 'keep-alive'
+        });
+        sse(res, 'meta', {
+          chatId,
+          provider: 'chatgpt-browser',
+          instanceId: dualBrowserClient.instanceId
+        });
+
+        try {
+          let surface;
+          try {
+            surface = await dualBrowserClient.getConversation(chatId);
+          } catch {
+            surface = await dualBrowserClient.openConversation({ id: chatId, title: chat.title });
+          }
+          if (!surface?.ok || surface?.conversation?.state !== 'READY') {
+            const error = new Error(surface?.error || 'CHATGPT_SURFACE_NOT_READY');
+            error.code = surface?.error || 'CHATGPT_SURFACE_NOT_READY';
+            throw error;
+          }
+
+          const result = await dualBrowserClient.sendMessage(chatId, lastUser.text);
+          const responseText = String(result?.response?.text || '').trim();
+          if (!result?.ok || !responseText) {
+            const error = new Error(result?.error || 'CHATGPT_EMPTY_RESPONSE');
+            error.code = result?.error || 'CHATGPT_EMPTY_RESPONSE';
+            throw error;
+          }
+
+          const message = store.appendMessage(chatId, {
+            role: 'assistant',
+            text: responseText,
+            provider: 'chatgpt-browser',
+            model: 'chatgpt-web-session'
+          });
+          const conversation = result.conversation || surface.conversation || {};
+          store.update(chatId, {
+            metadata: {
+              chatgpt: {
+                ...chatgptMeta,
+                instanceId: dualBrowserClient.instanceId,
+                state: conversation.state || 'READY',
+                url: conversation.chatgptUrl || chatgptMeta.url || null,
+                conversationId: conversation.chatgptConversationId || chatgptMeta.conversationId || null,
+                pendingUserMessageId: null,
+                lastForwardedUserMessageId: lastUser.id,
+                deliveryState: 'DELIVERED',
+                lastError: null
+              }
+            }
+          });
+
+          sse(res, 'delta', { text: responseText });
+          sse(res, 'done', { message, conversation });
+        } catch (error) {
+          store.update(chatId, {
+            metadata: {
+              chatgpt: {
+                ...chatgptMeta,
+                pendingUserMessageId: lastUser.id,
+                deliveryState: 'UNKNOWN',
+                lastError: String(error.message || error).slice(0, 500)
+              }
+            }
+          });
+          sse(res, 'error', {
+            code: error.code || 'CHATGPT_BRIDGE_ERROR',
+            message: String(error.message || error).slice(0, 1600)
+          });
+        } finally {
+          res.end();
+        }
+        return true;
+      }
+
       const config = providerConfig();
       if (!config.secret.apiKey) {
-        json(res, 503, { code: 'OPENAI_NOT_CONFIGURED', message: 'Configure um provider de IA no Archipelago.' });
+        json(res, 503, {
+          code: 'NO_CHAT_PROVIDER',
+          message: 'Dual Browser ChatGPT e OpenAI API estão indisponíveis.'
+        });
         return true;
       }
 
@@ -292,7 +418,6 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
       }
       return true;
     }
-
     return false;
   };
 }
