@@ -101,8 +101,13 @@ class FakeTransport {
     return structuredClone(memory);
   });
 
-  seed(id: string, scope = 'project:mcf', relations: Relation[] = []) {
-    this.memories.set(id, { evento: event(id, scope), relacoes: [...relations] });
+  seed(
+    id: string,
+    scope = 'project:mcf',
+    relations: Relation[] = [],
+    overrides: Record<string, unknown> = {},
+  ) {
+    this.memories.set(id, { evento: event(id, scope, overrides), relacoes: [...relations] });
   }
 }
 
@@ -208,13 +213,24 @@ describe('governed scoped read and current-state resolver', () => {
       },
     ]);
     transport.seed('source-a2');
-    transport.seed('target-b1', 'mission:316', [
+    transport.seed(
+      'target-b1',
+      'mission:316',
+      [
+        {
+          evento_origem_id: 'target-b1',
+          evento_destino_id: 'source-a1',
+          tipo: 'PROPAGATED_FROM',
+        },
+      ],
       {
-        evento_origem_id: 'target-b1',
-        evento_destino_id: 'source-a1',
-        tipo: 'PROPAGATED_FROM',
+        metadados: {
+          memory_scope: 'mission:316',
+          source_scope: 'project:mcf',
+          source_event_id: 'source-a1',
+        },
       },
-    ]);
+    );
 
     await expect(
       service(transport).resolveState('target-b1', 'mission:316'),
