@@ -997,23 +997,19 @@ $('#resetBtn').addEventListener('click', () => {
 window.addEventListener('resize', () => render());
 updateStats();
 refreshProviderStatus();
+for (const node of state.nodes.filter(n => n.type === 'chat')) {
+  node.connectionState = 'OFFLINE';
+}
+saveState(state);
+render();
 connectThisDevice()
-  .then(async () => {
-    for (const node of state.nodes.filter(n => n.type === 'chat')) {
-      try {
-        await bindNodeAtomically(node);
-      } catch {
-        node.connectionState = 'OFFLINE';
-        saveState(state);
-        render();
-      }
-    }
+  .then(() => {
+    $('#statusText').textContent = 'Dispositivo conectado · abra uma ilha para reconectar o chat';
+    updateProviderUi();
   })
-  .then(() => { saveState(state); render(); })
   .catch(() => {
-    for (const node of state.nodes.filter(n => n.type === 'chat')) node.connectionState = 'OFFLINE';
-    saveState(state);
-    render();
+    $('#statusText').textContent = 'Dispositivo offline';
+    updateProviderUi();
   });
 
 requestAnimationFrame(() => {
