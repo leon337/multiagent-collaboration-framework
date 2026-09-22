@@ -13,7 +13,10 @@ Estado validado em 2026-09-18:
 - `voicehub-linux.service` habilitado e ativo;
 - `Restart=always` com `RestartSec=2`;
 - `loginctl Linger=yes` para o usuário local;
-- restauração best-effort do volume na inicialização do serviço.
+- restauração best-effort do volume na inicialização do serviço;
+- fila serializada compartilhada por TTS e áudio pré-renderizado;
+- ingresso de áudio pré-renderizado restrito a `~/.cache/voicehub-linux/generated/`, sem URLs remotas.
+
 ## Boundary de segurança
 
 O VoiceHub permanece um serviço local auxiliar. Este registro:

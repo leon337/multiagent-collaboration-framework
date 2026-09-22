@@ -21,6 +21,36 @@ mission_contract:
   human_escalation_triggers: []
   phase_artifact_directory: artifacts/phases/PHASE-XX-SLUG
 
+communication_contract:
+  voice_checkpoints:
+    enabled: true
+    speaker_agent: MESTRE
+    transport: voicehub
+    preferred_delivery: rendered_audio
+    preferred_voice_profile: clear
+    fallback_delivery: speech_tts
+    non_blocking: true
+    deduplicate: true
+    emit_on:
+      - mission_started
+      - phase_started
+      - meaningful_progress
+      - blocker
+      - phase_completed
+      - mission_completed
+    require_new_human_permission_for_reversible_steps: false
+    rendered_audio_directory: ~/.cache/voicehub-linux/generated
+    checkpoint_command: mcf-voice-checkpoint
+    evidence_fields:
+      - agent
+      - project
+      - mission
+      - phase
+      - voice_profile
+      - delivery
+      - fallback_used
+      - job_id
+
 human_delegation_firewall:
   mode: TEAM_FIRST
   human_as_executing_agent: false

@@ -229,6 +229,19 @@ def _play_file(path):
     if p.returncode != 0:
         raise RuntimeError((p.stderr or "Falha ao reproduzir áudio").strip())
 
+def play_rendered_audio(path, voice_profile="clear"):
+    audio = Path(path)
+    if not audio.exists() or not audio.is_file():
+        raise RuntimeError("Áudio renderizado não encontrado")
+    _play_file(str(audio))
+    profile = str(voice_profile or "rendered").strip() or "rendered"
+    return {
+        "provider": "rendered_audio",
+        "voice": profile,
+        "attempts": [{"provider": "rendered_audio", "result": "ok"}],
+        "fallback": False,
+    }
+
 def speak_rhvoice(text):
     fd, wav = tempfile.mkstemp(prefix="voicehub-rh-", suffix=".wav")
     os.close(fd)

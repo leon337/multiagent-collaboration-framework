@@ -1,5 +1,5 @@
 [Unit]
-Description=MCF AUGUSTO Voice Reporter - mission updates via VoiceHub
+Description=MCF Voice Reporter - persistent mission checkpoints via VoiceHub
 After=voicehub-linux.service
 Wants=voicehub-linux.service
 
@@ -9,7 +9,7 @@ ExecStart=/usr/bin/python3 %h/.local/share/mcf-voice-reporter/reporter.py
 Restart=always
 RestartSec=2
 Environment=MCF_VOICE_REPORTER_INTERVAL=30
-Environment=MCF_VOICEHUB_URL=http://127.0.0.1:8788/api/speak
+Environment=MCF_VOICEHUB_BASE=http://127.0.0.1:8788
 
 [Install]
 WantedBy=default.target

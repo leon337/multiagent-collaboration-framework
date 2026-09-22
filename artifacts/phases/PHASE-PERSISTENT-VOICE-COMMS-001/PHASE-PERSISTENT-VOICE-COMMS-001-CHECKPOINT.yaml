@@ -1,0 +1,31 @@
+mission_id: MCF-PERSISTENT-VOICE-COMMS-001
+phase_id: PHASE-PERSISTENT-VOICE-COMMS-001
+state: READY_FOR_MERGE
+base_sha: 23107958aa1e9277ce42c820510f85bc62c14548
+voicehub_production_sha: ec0508705693a42ed8c28cd39aa53784e99754ad
+voicehub_production:
+  service_active: true
+  service_enabled: true
+  rendered_audio_ingress: true
+  production_receipt:
+    job_id: 7a35a8432c504456ad21a9cc96d6ce50
+    status: DONE
+    agent: MESTRE
+    voice_profile: clear
+mcf_validation:
+  reporter_tests: "6/6 PASS"
+  local_team_tests: "7/7 PASS"
+  local_team_test_files: "3/3 PASS"
+  py_compile: PASS
+  yaml_parse: PASS
+  diff_check: PASS
+  secret_pattern_hits: 0
+known_environment_notes:
+  - "MCF workspace requests Node >=24.18.0 <25; notebook validation used Node 22.23.2."
+pending:
+  - "merge MCF PR"
+  - "install merged reporter/checkpoint tooling"
+  - "validate persistent recovery deduplication after production install"
+authorization:
+  merge: APPROVED_BY_LEANDRO
+  production: APPROVED_BY_LEANDRO

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import queue
 import threading
-import time
 import uuid
 from collections import deque
 from datetime import datetime
+from pathlib import Path
 
 
 class SpeechQueue:
@@ -31,8 +31,9 @@ class SpeechQueue:
     def _public(job):
         if not job:
             return None
-        return {
+        payload = {
             "id": job["id"],
+            "kind": job.get("kind", "speech"),
             "status": job["status"],
             "queued_at": job["queued_at"],
             "started_at": job.get("started_at"),
@@ -42,10 +43,14 @@ class SpeechQueue:
             "mission": job["meta"].get("mission"),
             "phase": job["meta"].get("phase"),
             "source": job["meta"].get("source"),
+            "voice_profile": job["meta"].get("voice_profile"),
             "radio_fx": bool(job["meta"].get("radio_fx")),
             "result": job.get("result"),
             "error": job.get("error"),
         }
+        if job.get("audio_path"):
+            payload["audio_name"] = Path(job["audio_path"]).name
+        return payload
 
     @staticmethod
     def _identity_text(text, meta, identify):
@@ -63,29 +68,16 @@ class SpeechQueue:
             f"Missão {meta['mission']}. Fase {meta['phase']}. {text}"
         )
 
-    def enqueue(self, text, mode=None, meta=None, identify=False, wait=False, timeout=120):
-        meta = dict(meta or {})
-        spoken_text = self._identity_text(str(text).strip(), meta, identify)
-        if not spoken_text:
-            raise ValueError("Texto vazio")
-        job = {
-            "id": uuid.uuid4().hex,
-            "text": spoken_text,
-            "mode": mode,
-            "meta": meta,
-            "status": "QUEUED",
-            "queued_at": self._now(),
-            "_event": threading.Event(),
-        }
+    def _submit(self, job, wait=False, timeout=120):
         with self._lock:
             self._jobs[job["id"]] = job
             queue_position = self._queue.qsize() + (1 if self._current else 0) + 1
         self._queue.put(job)
         self._log(
             "SPEECH_QUEUE enqueue "
-            f"id={job['id']} position={queue_position} "
-            f"agent={meta.get('agent') or '-'} project={meta.get('project') or '-'} "
-            f"mission={meta.get('mission') or '-'} phase={meta.get('phase') or '-'}"
+            f"id={job['id']} kind={job.get('kind', 'speech')} position={queue_position} "
+            f"agent={job['meta'].get('agent') or '-'} project={job['meta'].get('project') or '-'} "
+            f"mission={job['meta'].get('mission') or '-'} phase={job['meta'].get('phase') or '-'}"
         )
         if not wait:
             payload = self._public(job)
@@ -95,6 +87,48 @@ class SpeechQueue:
         payload = self._public(job)
         payload["wait_completed"] = completed
         return payload
+
+    def enqueue(self, text, mode=None, meta=None, identify=False, wait=False, timeout=120):
+        meta = dict(meta or {})
+        spoken_text = self._identity_text(str(text).strip(), meta, identify)
+        if not spoken_text:
+            raise ValueError("Texto vazio")
+        job = {
+            "id": uuid.uuid4().hex,
+            "kind": "speech",
+            "text": spoken_text,
+            "mode": mode,
+            "meta": meta,
+            "status": "QUEUED",
+            "queued_at": self._now(),
+            "_event": threading.Event(),
+        }
+        return self._submit(job, wait=wait, timeout=timeout)
+
+    def enqueue_audio(self, path, meta=None, wait=False, timeout=120):
+        meta = dict(meta or {})
+        audio_path = str(path or "").strip()
+        if not audio_path:
+            raise ValueError("Caminho de áudio vazio")
+        required = ("agent", "project", "mission", "phase")
+        missing = [key for key in required if not str(meta.get(key) or "").strip()]
+        if missing:
+            raise ValueError(
+                "Metadados obrigatórios ausentes para áudio renderizado: "
+                + ", ".join(missing)
+            )
+        job = {
+            "id": uuid.uuid4().hex,
+            "kind": "rendered_audio",
+            "text": "",
+            "audio_path": audio_path,
+            "mode": None,
+            "meta": meta,
+            "status": "QUEUED",
+            "queued_at": self._now(),
+            "_event": threading.Event(),
+        }
+        return self._submit(job, wait=wait, timeout=timeout)
 
     def _run(self):
         while True:
@@ -106,10 +140,16 @@ class SpeechQueue:
                     job["started_at"] = self._now()
                 self._log(
                     "SPEECH_QUEUE start "
-                    f"id={job['id']} agent={job['meta'].get('agent') or '-'} "
+                    f"id={job['id']} kind={job.get('kind', 'speech')} "
+                    f"agent={job['meta'].get('agent') or '-'} "
                     f"project={job['meta'].get('project') or '-'}"
                 )
-                result = self._execute(job["text"], job.get("mode"), job.get("meta"))
+                meta = dict(job.get("meta") or {})
+                if job.get("kind") == "rendered_audio":
+                    meta["rendered_audio_path"] = job["audio_path"]
+                    result = self._execute("", None, meta)
+                else:
+                    result = self._execute(job["text"], job.get("mode"), meta)
                 with self._lock:
                     job["status"] = "DONE"
                     job["result"] = result

@@ -21,8 +21,16 @@ LOG_DIR = APP_DIR / 'logs'
 NEURAL_CFG = HOME / '.config/voicehub-linux/neural.json'
 MODE_CFG = HOME / '.config/voicehub-linux/mode.json'
 ELEVEN_CFG = HOME / '.config/voicehub-linux/elevenlabs.json'
+RENDERED_AUDIO_DIR = HOME / '.cache/voicehub-linux/generated'
+RENDERED_AUDIO_EXTENSIONS = {'.mp3', '.wav', '.ogg', '.m4a', '.flac'}
+RENDERED_AUDIO_MAX_BYTES = 25 * 1024 * 1024
 BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 LOG_DIR.mkdir(parents=True, exist_ok=True)
+RENDERED_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    os.chmod(RENDERED_AUDIO_DIR, 0o700)
+except OSError:
+    pass
 LOG_FILE = LOG_DIR / 'voicehub.log'
 
 BASE_ENV = os.environ.copy()
@@ -92,6 +100,28 @@ def read_text(path):
     try: return path.read_text(encoding='utf-8', errors='replace')
     except Exception: return ''
 
+def resolve_rendered_audio_path(raw_path):
+    value = str(raw_path or '').strip()
+    if not value:
+        raise ValueError('Caminho de áudio vazio')
+    candidate = Path(value).expanduser()
+    if not candidate.is_absolute():
+        raise ValueError('Áudio renderizado exige caminho absoluto')
+    root = RENDERED_AUDIO_DIR.resolve()
+    resolved = candidate.resolve()
+    if resolved == root or root not in resolved.parents:
+        raise ValueError('Áudio fora do diretório allowlist')
+    if resolved.suffix.lower() not in RENDERED_AUDIO_EXTENSIONS:
+        raise ValueError('Formato de áudio não permitido')
+    if not resolved.exists() or not resolved.is_file():
+        raise ValueError('Arquivo de áudio não encontrado')
+    size = resolved.stat().st_size
+    if size < 512:
+        raise ValueError('Arquivo de áudio vazio ou inválido')
+    if size > RENDERED_AUDIO_MAX_BYTES:
+        raise ValueError('Arquivo de áudio excede 25 MB')
+    return resolved
+
 def neural_state():
     if ELEVEN_CFG.exists():
         try:
@@ -142,6 +172,11 @@ def status_payload():
         'backup_count': len(list(BACKUP_DIR.glob('speech-dispatcher-*'))),
         'providers': vhrouter.provider_status(),
         'router': vhrouter.get_router_config(),
+        'rendered_audio_ingress': {
+            'enabled': True,
+            'allowed_extensions': sorted(RENDERED_AUDIO_EXTENSIONS),
+            'max_bytes': RENDERED_AUDIO_MAX_BYTES,
+        },
         'speech_queue': SPEECH_QUEUE.status() if 'SPEECH_QUEUE' in globals() else {'busy':False,'pending_count':0,'current':None,'recent':[]},
     }
 
@@ -266,9 +301,16 @@ def set_speechd_mode(mode):
     log_event(f'Modo VoiceHub alterado para {mode}')
 
 def _execute_queued_speech(text, mode=None, meta=None):
-    radio_fx=bool((meta or {}).get('radio_fx',False))
+    meta = dict(meta or {})
+    radio_fx=bool(meta.get('radio_fx',False))
     if radio_fx: vhfx.play('start')
     try:
+        rendered_audio_path = str(meta.get('rendered_audio_path') or '').strip()
+        if rendered_audio_path:
+            return vhrouter.play_rendered_audio(
+                rendered_audio_path,
+                voice_profile=str(meta.get('voice_profile') or 'clear').strip() or 'clear',
+            )
         return vhrouter.route_speak(text, mode or current_speechd_mode())
     finally:
         if radio_fx: vhfx.play('end')
@@ -367,6 +409,35 @@ class Handler(SimpleHTTPRequestHandler):
                         mode=str(data.get('mode','')).strip() or current_speechd_mode(),
                         meta=meta,
                         identify=True,
+                        wait=wait,
+                        timeout=timeout,
+                    )
+                except ValueError as exc:
+                    return self.send_json({'ok':False,'error':str(exc)},400)
+                code=200 if wait and job.get('status') in ('DONE','FAILED') else 202
+                return self.send_json({'ok':job.get('status')!='FAILED','job':job},code)
+
+            if path == '/api/audio/enqueue':
+                data=self.read_json()
+                try:
+                    audio_path=resolve_rendered_audio_path(data.get('path'))
+                except ValueError as exc:
+                    return self.send_json({'ok':False,'error':str(exc)},400)
+                meta={
+                    'agent': str(data.get('agent','')).strip(),
+                    'project': str(data.get('project','')).strip(),
+                    'mission': str(data.get('mission','')).strip(),
+                    'phase': str(data.get('phase','')).strip(),
+                    'source': str(data.get('source','mcf_rendered_audio')).strip() or 'mcf_rendered_audio',
+                    'voice_profile': str(data.get('voice_profile','clear')).strip() or 'clear',
+                    'radio_fx': bool(data.get('radio_fx',False)),
+                }
+                wait=bool(data.get('wait',False))
+                timeout=max(15,min(int(data.get('timeout',180) or 180),300))
+                try:
+                    job=SPEECH_QUEUE.enqueue_audio(
+                        str(audio_path),
+                        meta=meta,
                         wait=wait,
                         timeout=timeout,
                     )
