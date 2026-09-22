@@ -53,6 +53,38 @@ test('backend local falha fechado sem API key', async () => {
     assert.equal(health.api, 'mcf-archipelago');
     assert.equal(health.version, 1);
 
+    const deviceResponse = await fetch('http://127.0.0.1:' + port + '/api/v1/device/session', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({deviceId:'test-device',instanceId:'archipelago-test',transport:'test-http'})
+    });
+    assert.equal(deviceResponse.status, 201);
+    const device = (await deviceResponse.json()).session;
+    assert.equal(device.status, 'connected');
+
+    const atomic = await fetch('http://127.0.0.1:' + port + '/api/v1/chat-sessions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        id:'atomic-chat',
+        islandId:'atomic-chat',
+        title:'Chat Atômico',
+        projectId:'mcf',
+        deviceSessionId:device.id
+      })
+    });
+    assert.equal(atomic.status, 201);
+    const atomicBody = await atomic.json();
+    assert.equal(atomicBody.state, 'READY');
+    assert.equal(atomicBody.connection.status, 'connected');
+
+    const connection = await fetch('http://127.0.0.1:' + port + '/api/v1/chat-sessions/atomic-chat/connection').then(r => r.json());
+    assert.equal(connection.connection.deviceId, 'test-device');
+    assert.equal(connection.connection.status, 'connected');
+
+    const heartbeat = await fetch('http://127.0.0.1:' + port + '/api/v1/device/session/' + encodeURIComponent(device.id) + '/heartbeat', {method:'POST'});
+    assert.equal(heartbeat.status, 200);
+
     const created = await fetch('http://127.0.0.1:' + port + '/api/v1/chats', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
