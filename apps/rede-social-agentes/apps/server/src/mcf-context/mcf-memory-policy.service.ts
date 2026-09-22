@@ -19,12 +19,7 @@ export interface McfMemoryPolicyDecision {
 }
 
 function validAtom(value: string): boolean {
-  return (
-    value.length > 0 &&
-    value.length <= 512 &&
-    value === value.trim() &&
-    !value.includes('*')
-  );
+  return value.length > 0 && value.length <= 512 && value === value.trim() && !value.includes('*');
 }
 
 export class McfMemoryPolicyService {

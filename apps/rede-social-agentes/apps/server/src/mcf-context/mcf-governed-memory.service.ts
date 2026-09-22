@@ -9,11 +9,7 @@ import type {
 import { McfMemoryPolicyService } from './mcf-memory-policy.service.js';
 
 export type McfGovernedMemoryState =
-  | 'CURRENT'
-  | 'SUPERSEDED'
-  | 'CONFLICTED'
-  | 'STALE'
-  | 'HISTORICAL';
+  'CURRENT' | 'SUPERSEDED' | 'CONFLICTED' | 'STALE' | 'HISTORICAL';
 
 export class McfGovernedMemoryDeniedError extends Error {
   constructor(message = 'Governed memory operation denied.') {
@@ -39,23 +35,16 @@ function memoryScope(event: MemoryEvent): string | null {
 
 function relationOrigin(relation: MemoryRelation): string | null {
   return typeof relation.evento_origem_id === 'string' &&
-      relation.evento_origem_id.trim().length > 0
+    relation.evento_origem_id.trim().length > 0
     ? relation.evento_origem_id
     : null;
 }
 
-function incoming(
-  relations: readonly MemoryRelation[],
-  targetId: string,
-  type: string,
-): string[] {
+function incoming(relations: readonly MemoryRelation[], targetId: string, type: string): string[] {
   return [
     ...new Set(
       relations
-        .filter(
-          (relation) =>
-            relation.tipo === type && relation.evento_destino_id === targetId,
-        )
+        .filter((relation) => relation.tipo === type && relation.evento_destino_id === targetId)
         .map(relationOrigin)
         .filter((value): value is string => value !== null),
     ),
@@ -70,10 +59,7 @@ function outgoingTarget(
   return [
     ...new Set(
       relations
-        .filter(
-          (relation) =>
-            relation.tipo === type && relationOrigin(relation) === originId,
-        )
+        .filter((relation) => relation.tipo === type && relationOrigin(relation) === originId)
         .map((relation) => relation.evento_destino_id),
     ),
   ].sort();
@@ -100,10 +86,7 @@ export class McfGovernedMemoryService {
     private readonly policy: McfMemoryPolicyService,
   ) {}
 
-  async readScoped(
-    eventId: string,
-    scope: string,
-  ): Promise<McfLedgerMemoryInspection> {
+  async readScoped(eventId: string, scope: string): Promise<McfLedgerMemoryInspection> {
     try {
       const memory = await this.transport.inspect(eventId, scope);
       if (memoryScope(memory.evento) !== scope) {
@@ -116,10 +99,7 @@ export class McfGovernedMemoryService {
     }
   }
 
-  async resolveState(
-    eventId: string,
-    scope: string,
-  ): Promise<McfGovernedMemoryStateResult> {
+  async resolveState(eventId: string, scope: string): Promise<McfGovernedMemoryStateResult> {
     const memory = await this.readScoped(eventId, scope);
     const successors = incoming(memory.relacoes, eventId, 'SUPERSEDES');
     if (successors.length > 1) {
@@ -142,11 +122,7 @@ export class McfGovernedMemoryService {
       }
     }
 
-    const propagatedSources = outgoingTarget(
-      memory.relacoes,
-      eventId,
-      'PROPAGATED_FROM',
-    );
+    const propagatedSources = outgoingTarget(memory.relacoes, eventId, 'PROPAGATED_FROM');
     if (propagatedSources.length > 0) {
       const sourceScope = memory.evento.metadados.source_scope;
       if (typeof sourceScope !== 'string' || sourceScope.trim().length === 0) {
@@ -200,9 +176,7 @@ export class McfGovernedMemoryService {
     await this.readScoped(input.sourceEventId, input.memoryScope);
     const state = await this.resolveState(input.sourceEventId, input.memoryScope);
     if (state.status !== 'CURRENT') {
-      throw new McfGovernedMemoryDeniedError(
-        'Only a current memory can be superseded.',
-      );
+      throw new McfGovernedMemoryDeniedError('Only a current memory can be superseded.');
     }
 
     const response = await this.transport.registerExplicit({
