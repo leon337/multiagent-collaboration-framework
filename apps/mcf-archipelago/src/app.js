@@ -101,51 +101,26 @@ function applySseBlock(block, assistant) {
 }
 
 async function askAssistant(node) {
-  const outbound = (node.messages || [])
-    .filter(m => !m.localOnly && m.status !== 'streaming' && ['user','assistant'].includes(m.role))
-    .map(m => ({ role: m.role, text: m.text }));
-  const response = await fetch('/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nodeId: node.id, title: node.title, messages: outbound })
-  });
-  if (!response.ok) {
-    let detail = {};
-    try { detail = await response.json(); } catch {}
-    throw new Error(detail.message || detail.code || ('HTTP ' + response.status));
-  }
-  if (!response.body) throw new Error('Provider não retornou stream.');
-
-  const assistant = {
-    role: 'assistant',
-    text: '',
-    status: 'streaming',
-    localOnly: false,
-    at: new Date().toISOString()
-  };
+  const assistant = { role:'assistant', text:'', status:'streaming', localOnly:false, at:new Date().toISOString() };
+  node.messages ||= [];
   node.messages.push(assistant);
   renderMessages(node);
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  while (true) {
-    const result = await reader.read();
-    if (result.done) break;
-    buffer += decoder.decode(result.value, { stream: true });
-    let cut;
-    while ((cut = buffer.indexOf('\n\n')) >= 0) {
-      const block = buffer.slice(0, cut);
-      buffer = buffer.slice(cut + 2);
-      applySseBlock(block, assistant);
+  await streamChatResponse(node.id, {
+    onDelta: payload => {
+      if (payload.text) assistant.text += payload.text;
+      if (selectedId === node.id) renderMessages(node);
+    },
+    onDone: payload => {
+      if (payload.message) Object.assign(assistant, mapApiMessage(payload.message));
+      else assistant.status = 'done';
       if (selectedId === node.id) renderMessages(node);
     }
-  }
-  assistant.status = 'done';
-  persist('Resposta da IA salva nesta ilha');
-  if (selectedId === node.id) renderMessages(node);
-}
+  });
 
+  await syncNodeChat(node, false);
+  persist('Resposta sincronizada pela API Archipelago');
+}
 async function dispatchSelectedToMcf() {
   const node = selectedNode();
   if (!node || node.type !== 'chat') return;
