@@ -80,7 +80,7 @@ function renderEdges(root) {
     const path = svgEl('path', {
       id: pathId,
       d: `M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`,
-      class: `edge ${edge.kind === 'contains' ? 'contains' : 'related'}${selectedId && (edge.source === selectedId || edge.target === selectedId) ? ' active' : ''}`
+      class: `edge ${edge.kind === 'contains' ? 'contains' : edge.kind === 'branch' ? 'branch' : 'related'}${selectedId && (edge.source === selectedId || edge.target === selectedId) ? ' active' : ''}`
     });
     root.append(path);
     if (edge.reason && state.camera.zoom > .85) {
