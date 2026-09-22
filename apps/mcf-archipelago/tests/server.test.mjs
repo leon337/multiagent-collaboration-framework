@@ -33,6 +33,7 @@ test('backend local falha fechado sem API key', async () => {
   fs.rmSync(dataDir, { recursive:true, force:true });
 
   const conversations = new Map();
+  let lastOpenUrl = null;
   const bridgeServer = http.createServer(async (req, res) => {
     const u = new URL(req.url || '/', 'http://127.0.0.1');
     const send = (status, body) => {
@@ -45,12 +46,14 @@ test('backend local falha fechado sem API key', async () => {
     const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {};
 
     if (req.method === 'POST' && u.pathname === '/v1/chatgpt/conversation/open') {
+      lastOpenUrl = body.url || null;
+      const persistedId = typeof body.url === 'string' ? body.url.match(/\/c\/([^/?#]+)/)?.[1] || null : null;
       const conversation = {
         id: body.id,
         title: body.title,
         state:'READY',
-        chatgptUrl:'https://chatgpt.com/',
-        chatgptConversationId:null
+        chatgptUrl:body.url || 'https://chatgpt.com/',
+        chatgptConversationId:persistedId
       };
       conversations.set(body.id, conversation);
       return send(201,{ok:true,conversation});
@@ -174,6 +177,23 @@ test('backend local falha fechado sem API key', async () => {
     const browserStream = await browserResponse.text();
     assert.match(browserStream, /provider":"chatgpt-browser/);
     assert.match(browserStream, /bridge:Olá API própria/);
+
+    conversations.clear();
+    lastOpenUrl = null;
+    const rebound = await fetch('http://127.0.0.1:' + port + '/api/v1/chat-sessions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        id:'island-test',
+        islandId:'island-test',
+        title:'Chat Teste',
+        projectId:'mcf',
+        deviceSessionId:device.id
+      })
+    });
+    assert.equal(rebound.status, 201);
+    assert.equal((await rebound.json()).state, 'READY');
+    assert.equal(lastOpenUrl, 'https://chatgpt.com/c/fake-island-test');
 
     const response = await fetch('http://127.0.0.1:' + port + '/api/chat', {
       method: 'POST',
