@@ -55,6 +55,7 @@
         <div class="provider-strip">
           <span id="providerDot" class="provider-dot offline"></span>
           <span id="providerStatus">Verificando provider de IA…</span>
+          <button id="providerConfigBtn" class="provider-config" type="button">Configurar IA</button>
           <button id="refreshProviderBtn" class="provider-refresh" type="button" title="Reverificar provider">↻</button>
         </div>
         <div id="panelActions" class="panel-actions" hidden>
@@ -88,6 +89,27 @@
       </div>
     </footer>
   </div>
+
+  <dialog id="providerDialog">
+    <form id="providerForm" class="dialog-form">
+      <span class="eyebrow">PROVIDER LOCAL</span>
+      <h2>Configurar OpenAI</h2>
+      <p class="muted">A chave fica somente neste computador, em <code>.env.local</code>, e não é enviada ao GitHub.</p>
+      <label>API key<input id="openaiKeyInput" type="password" autocomplete="off" placeholder="sk-…" required /></label>
+      <label>Modelo
+        <select id="openaiModelSelect">
+          <option value="gpt-5.6-luna">GPT-5.6 Luna</option>
+          <option value="gpt-5.6-terra">GPT-5.6 Terra</option>
+          <option value="gpt-5.6-sol">GPT-5.6 Sol</option>
+        </select>
+      </label>
+      <p id="providerFormStatus" class="muted"></p>
+      <div class="dialog-actions">
+        <button id="cancelProviderBtn" type="button">Cancelar</button>
+        <button id="saveProviderBtn" type="submit" class="primary">Salvar localmente</button>
+      </div>
+    </form>
+  </dialog>
 
   <dialog id="nodeDialog">
     <form method="dialog" id="nodeForm" class="dialog-form">
