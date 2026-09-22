@@ -15,6 +15,7 @@ test('createNode cria chat com campos mínimos', () => {
   assert.deepEqual(n.tags, ['ui']);
   assert.ok(n.id.startsWith('chat-'));
   assert.equal(n.collapsed, false);
+  assert.equal(n.connectionState, 'OFFLINE');
 });
 
 test('connect impede duplicata e self-edge', () => {
@@ -62,7 +63,7 @@ test('normalizeState migra edges legadas em formato array', () => {
     edges: [['p','c']]
   };
   const state = normalizeState(legacy);
-  assert.equal(state.version, 4);
+  assert.equal(state.version, 5);
   assert.equal(state.edges.length, 1);
   assert.equal(state.edges[0].source, 'p');
   assert.equal(state.edges[0].target, 'c');
@@ -76,7 +77,7 @@ test('normalizeState recupera conexões canônicas perdidas no legado', () => {
   broken.edges = [];
   broken.nodes = broken.nodes.map(n => ({ ...n, parentId: null }));
   const state = normalizeState(broken);
-  assert.equal(state.version, 4);
+  assert.equal(state.version, 5);
   assert.equal(state.edges.length, 6);
   assert.equal(state.nodes.find(n => n.id === 'runtime').parentId, 'mcf');
 });
