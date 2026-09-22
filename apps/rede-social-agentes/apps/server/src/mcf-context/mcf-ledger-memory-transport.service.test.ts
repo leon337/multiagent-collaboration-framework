@@ -31,7 +31,9 @@ function env(overrides: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
   };
 }
 
-function config(overrides: Partial<McfLedgerMemoryConfiguration> = {}): McfLedgerMemoryConfiguration {
+function config(
+  overrides: Partial<McfLedgerMemoryConfiguration> = {},
+): McfLedgerMemoryConfiguration {
   return {
     endpoint: new URL('http://127.0.0.1:33100/mcp-write'),
     bearerToken: memoryBearer,
@@ -63,12 +65,14 @@ function writeInput() {
       proximos_passos: ['read-back'],
       metadados: { proveniencia: 'sintetica', memory_scope: 'project:mcf' },
     },
-    fontes: [{
-      tipo_de_fonte: 'teste',
-      provedor: 'mcf-lab',
-      escopo_da_captura: 'project:mcf',
-      conteudo_bruto: 'SINTETICO',
-    }],
+    fontes: [
+      {
+        tipo_de_fonte: 'teste',
+        provedor: 'mcf-lab',
+        escopo_da_captura: 'project:mcf',
+        conteudo_bruto: 'SINTETICO',
+      },
+    ],
     relacoes: [],
   };
 }
@@ -137,7 +141,9 @@ function tools() {
   ];
 }
 
-function client(overrides: Partial<McfLedgerMemoryMcpClient> = {}): McfLedgerMemoryMcpClient {
+function client(
+  overrides: Partial<McfLedgerMemoryMcpClient> = {},
+): McfLedgerMemoryMcpClient {
   return {
     connect: vi.fn().mockResolvedValue(undefined),
     listTools: vi.fn().mockResolvedValue({ tools: tools() }),
@@ -157,7 +163,9 @@ function factory(c: McfLedgerMemoryMcpClient): McfLedgerMemoryMcpClientFactory {
 
 describe('governed memory transport configuration', () => {
   it('requires separate credentials and exact /mcp-write endpoint', () => {
-    expect(loadMcfLedgerMemoryConfiguration(env())?.endpoint.pathname).toBe('/mcp-write');
+    expect(loadMcfLedgerMemoryConfiguration(env())?.endpoint.pathname).toBe(
+      '/mcp-write',
+    );
     const invalid = [
       {},
       env({ MCF_COGNITIVE_LEDGER_WRITE_MCP_URL: undefined }),
@@ -167,7 +175,10 @@ describe('governed memory transport configuration', () => {
       env({ MCF_COGNITIVE_LEDGER_WRITE_BEARER_TOKEN: readBearer }),
       env({ MCF_COGNITIVE_LEDGER_WRITE_BEARER_TOKEN: memoryIngress }),
       env({ MCF_COGNITIVE_LEDGER_WRITE_MCP_URL: 'http://127.0.0.1:33100/mcp' }),
-      env({ NODE_ENV: 'production', MCF_COGNITIVE_LEDGER_WRITE_MCP_URL: 'http://127.0.0.1:33100/mcp-write' }),
+      env({
+        NODE_ENV: 'production',
+        MCF_COGNITIVE_LEDGER_WRITE_MCP_URL: 'http://127.0.0.1:33100/mcp-write',
+      }),
     ];
     for (const candidate of invalid) {
       expect(loadMcfLedgerMemoryConfiguration(candidate)).toBeNull();
@@ -195,7 +206,9 @@ describe('McfLedgerMemoryTransportService', () => {
     delete (value.evento.metadados as Record<string, unknown>).memory_scope;
     const mcp = client();
     const service = new McfLedgerMemoryTransportService(config(), factory(mcp));
-    await expect(service.registerExplicit(value)).rejects.toBeInstanceOf(McfLedgerMemoryInvalidError);
+    await expect(service.registerExplicit(value)).rejects.toBeInstanceOf(
+      McfLedgerMemoryInvalidError,
+    );
     expect(mcp.connect).not.toHaveBeenCalled();
   });
 
@@ -217,18 +230,32 @@ describe('McfLedgerMemoryTransportService', () => {
     const badInventories = [
       [],
       [tools()[0]],
-      [...tools(), { name: 'apagar_memoria', annotations: {
-        readOnlyHint: false,
-        destructiveHint: true,
-        idempotentHint: false,
-        openWorldHint: false,
-      } }],
-      [tools()[0], { ...tools()[1], annotations: { ...tools()[1].annotations, readOnlyHint: false } }],
+      [
+        ...tools(),
+        {
+          name: 'apagar_memoria',
+          annotations: {
+            readOnlyHint: false,
+            destructiveHint: true,
+            idempotentHint: false,
+            openWorldHint: false,
+          },
+        },
+      ],
+      [
+        tools()[0],
+        {
+          ...tools()[1],
+          annotations: { ...tools()[1].annotations, readOnlyHint: false },
+        },
+      ],
     ];
     for (const inventory of badInventories) {
       const service = new McfLedgerMemoryTransportService(
         config(),
-        factory(client({ listTools: vi.fn().mockResolvedValue({ tools: inventory }) })),
+        factory(
+          client({ listTools: vi.fn().mockResolvedValue({ tools: inventory }) }),
+        ),
       );
       await expect(service.registerExplicit(writeInput())).rejects.toBeInstanceOf(
         McfLedgerMemoryUnavailableError,
@@ -239,11 +266,21 @@ describe('McfLedgerMemoryTransportService', () => {
   it('rejects malformed provider responses and does not leak provider errors', async () => {
     const secret = 'private-memory-fragment';
     for (const c of [
-      client({ callTool: vi.fn().mockResolvedValue({ structuredContent: { estado: 'ok' } }) }),
-      client({ callTool: vi.fn().mockRejectedValue(new Error(`${memoryBearer}:${secret}`)) }),
+      client({
+        callTool: vi
+          .fn()
+          .mockResolvedValue({ structuredContent: { estado: 'ok' } }),
+      }),
+      client({
+        callTool: vi
+          .fn()
+          .mockRejectedValue(new Error(`${memoryBearer}:${secret}`)),
+      }),
     ]) {
       const service = new McfLedgerMemoryTransportService(config(), factory(c));
-      const error = await service.registerExplicit(writeInput()).catch((e: unknown) => e);
+      const error = await service
+        .registerExplicit(writeInput())
+        .catch((e: unknown) => e);
       expect(error).toBeInstanceOf(McfLedgerMemoryUnavailableError);
       expect(String(error)).not.toContain(memoryBearer);
       expect(String(error)).not.toContain(secret);
@@ -253,10 +290,16 @@ describe('McfLedgerMemoryTransportService', () => {
   it('enforces a fail-closed operation bulkhead', async () => {
     let release: (() => void) | undefined;
     const first = client({
-      connect: vi.fn(() => new Promise<void>((resolve) => { release = resolve; })),
+      connect: vi.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            release = resolve;
+          }),
+      ),
     });
     const recovered = client();
-    const make = vi.fn<McfLedgerMemoryMcpClientFactory>()
+    const make = vi
+      .fn<McfLedgerMemoryMcpClientFactory>()
       .mockReturnValueOnce(first)
       .mockReturnValueOnce(recovered);
     const service = new McfLedgerMemoryTransportService(
@@ -266,12 +309,14 @@ describe('McfLedgerMemoryTransportService', () => {
 
     const pending = service.registerExplicit(writeInput());
     await vi.waitFor(() => expect(make).toHaveBeenCalledOnce());
-    await expect(service.inspect('ec-mcf-write-001', 'project:mcf')).rejects.toBeInstanceOf(
-      McfLedgerMemoryUnavailableError,
-    );
+    await expect(
+      service.inspect('ec-mcf-write-001', 'project:mcf'),
+    ).rejects.toBeInstanceOf(McfLedgerMemoryUnavailableError);
     release?.();
     await expect(pending).resolves.toMatchObject({ operation: 'registrar_memoria' });
-    await expect(service.inspect('ec-mcf-write-001', 'project:mcf')).resolves.toMatchObject({
+    await expect(
+      service.inspect('ec-mcf-write-001', 'project:mcf'),
+    ).resolves.toMatchObject({
       evento: { id: 'ec-mcf-write-001' },
     });
   });
