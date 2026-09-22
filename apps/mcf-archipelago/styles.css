@@ -17,11 +17,12 @@ button,.file-label{border:1px solid #ffffff14;border-radius:11px;padding:10px 13
 .map-pane:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at center,transparent 42%,#02080d9a 100%)}
 #graph{display:block;width:100%;height:100%;touch-action:none;cursor:grab}#graph:active{cursor:grabbing}
 .map-help{position:absolute;z-index:4;top:14px;left:14px;background:#05141dcc;border:1px solid #ffffff13;color:#789bad;border-radius:11px;padding:8px 11px;font-size:10px;backdrop-filter:blur(12px)}
-.edge{stroke:#5c91a5;stroke-opacity:.22;stroke-width:2;vector-effect:non-scaling-stroke}.edge.contains{stroke:#71e2c6;stroke-opacity:.34}
-.island{cursor:grab;outline:none;filter:drop-shadow(0 14px 22px #0009);transition:opacity .2s}.island:active{cursor:grabbing}.island.dimmed{opacity:.12}
+.archipelago-zone{pointer-events:none}.zone-water{fill:none;vector-effect:non-scaling-stroke}.zone-water.outer{stroke:#58d9d31f;stroke-width:28;stroke-dasharray:4 18;animation:zoneDrift 18s linear infinite}.zone-water.inner{stroke:#6de6ca24;stroke-width:2;stroke-dasharray:10 12}.zone-label{fill:#79a9b6;font-size:11px;font-weight:800;letter-spacing:.13em;text-anchor:middle;text-transform:uppercase}
+.edge{fill:none;stroke:#5c91a5;stroke-opacity:.26;stroke-width:2;vector-effect:non-scaling-stroke}.edge.contains{stroke:#71e2c6;stroke-opacity:.4;stroke-dasharray:5 7}.edge.related{stroke:#77aee0;stroke-opacity:.34}.edge-label{fill:#769cab;font-size:9px;text-anchor:middle;paint-order:stroke;stroke:#031019;stroke-width:5px;stroke-linejoin:round}.edge-label textPath{text-anchor:middle}
+.island{cursor:grab;outline:none;filter:drop-shadow(0 14px 22px #0009);transition:opacity .2s,filter .2s}.island:active{cursor:grabbing}.island.dimmed{opacity:.12}.island.born{transform-box:fill-box;transform-origin:center;animation:islandBirth .82s cubic-bezier(.18,.88,.22,1.25)}
 .island .halo{opacity:.14;fill:#69d7ff;filter:url(#softGlow)}.island.project .halo{fill:#69ebcb}.island.agent .halo{fill:#cd8cff}.island.selected .halo,.island:hover .halo{opacity:.35}
 .island .land{stroke:#ffffff32;stroke-width:2}.island.project .land{fill:url(#gradProject)}.island.chat .land{fill:url(#gradChat)}.island.agent .land{fill:url(#gradAgent)}
-.shine{fill:#ffffff18}.island text{pointer-events:none;text-anchor:middle;fill:#edf9ff}.island .title{font-size:15px;font-weight:850}.island.project .title{font-size:20px}
+.island-shadow{fill:#00000052;filter:blur(5px)}.shore-ring{fill:#65d7e00f;stroke:#8be8e833;stroke-width:1.3;vector-effect:non-scaling-stroke}.island:hover .shore-ring,.island.selected .shore-ring{fill:#6de6ca19;stroke:#a4fff061}.shine{fill:#ffffff18}.island text{pointer-events:none;text-anchor:middle;fill:#edf9ff}.island .title{font-size:15px;font-weight:850}.island.project .title{font-size:20px}
 .island .sub{font-size:9px;font-weight:750;letter-spacing:.13em;fill:#9ab9c8}.island .tags{font-size:8px;fill:#b9d1dc}
 .detail-panel{position:absolute;z-index:4;right:0;top:0;bottom:0;width:390px;padding:24px;overflow:auto;background:linear-gradient(180deg,#071923,#041018);border-left:1px solid var(--line);box-shadow:-22px 0 55px #0006}
 .panel-header{display:flex;justify-content:space-between;gap:12px}.panel-header h2{font-size:25px;margin:6px 0 0;letter-spacing:-.035em}.muted{color:var(--muted);font-size:12px;line-height:1.5}
@@ -54,3 +55,11 @@ dialog::backdrop{background:#0009;backdrop-filter:blur(4px)}.dialog-form{display
   .topbar{padding:13px;display:grid}.toolbar{justify-content:flex-start}.search-wrap{width:100%}.search-wrap input{width:100%}
   .detail-panel{width:100%}.map-help{display:none}.statusbar{align-items:flex-start}.footer-actions{flex-wrap:wrap;justify-content:flex-end}
 }
+
+@keyframes islandBirth{
+  0%{opacity:0;transform:scale(.18) translateY(36px);filter:drop-shadow(0 0 0 transparent)}
+  55%{opacity:1;transform:scale(1.12) translateY(-4px)}
+  100%{transform:scale(1) translateY(0);filter:drop-shadow(0 14px 22px #0009)}
+}
+@keyframes zoneDrift{to{stroke-dashoffset:-220}}
+@media(prefers-reduced-motion:reduce){.island.born,.zone-water.outer{animation:none}}
