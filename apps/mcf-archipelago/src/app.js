@@ -2,6 +2,7 @@ import { seedState, createNode, normalizeState, connect, removeNode, autoLayout,
 import { loadState, saveState, clearState, downloadState } from './storage.js';
 import { svgEl, islandPath, fitCamera, worldBounds } from './graph.js';
 import { getApiHealth, ensureChat, getChat, postUserMessage, updateChat, deleteChat, streamChatResponse, mapApiMessage, connectDeviceSession, heartbeatDeviceSession, createAtomicChatSession } from './chat-api.js';
+import { deriveChatTitle } from './chat-title.js';
 
 const $ = (s) => document.querySelector(s);
 const graph = $('#graph');
@@ -34,6 +35,71 @@ function persist(status = 'Salvo localmente') {
 
 function selectedNode() {
   return state.nodes.find(n => n.id === selectedId) || null;
+}
+
+function quickChatParentId() {
+  const selected = selectedNode();
+  if (selected?.type === 'project') return selected.id;
+  if (selected?.type === 'chat' && selected.parentId) return selected.parentId;
+  return null;
+}
+
+function quickChatPoint(parentId) {
+  if (parentId) {
+    const parent = state.nodes.find(n => n.id === parentId);
+    const siblings = state.nodes.filter(n => n.parentId === parentId).length;
+    if (parent) {
+      const angle = -Math.PI / 2 + siblings * 1.12;
+      const radius = 190 + (siblings % 2) * 42;
+      return {
+        x: parent.x + Math.cos(angle) * radius,
+        y: parent.y + Math.sin(angle) * radius
+      };
+    }
+  }
+  const rect = graph.getBoundingClientRect();
+  return screenToWorld(rect.left + rect.width / 2, rect.top + rect.height / 2);
+}
+
+async function createQuickChat() {
+  const parentId = quickChatParentId();
+  const point = quickChatPoint(parentId);
+  const node = createNode({
+    type:'chat',
+    title:'Novo chat',
+    parentId,
+    tags:[],
+    x:point.x,
+    y:point.y
+  });
+  node.connectionState = 'CONNECTING';
+  state.nodes.push(node);
+  if (parentId) connect(state, parentId, node.id, 'contains', 'pertence ao projeto');
+  newbornId = node.id;
+  persist('Criando chat e conectando ao ChatGPT…');
+  openPanel(node.id);
+
+  try {
+    await bindNodeAtomically(node);
+    persist('Chat READY · escreva sua primeira mensagem');
+    openPanel(node.id);
+    requestAnimationFrame(() => {
+      if (selectedId === node.id) $('#messageInput')?.focus();
+    });
+  } catch (error) {
+    node.connectionState = 'OFFLINE';
+    addLocalSystemMessage(node, 'Falha ao conectar chat ao dispositivo: ' + error.message);
+    persist('Chat criado sem conexão');
+    renderMessages(node);
+    render();
+  }
+
+  setTimeout(() => {
+    if (newbornId === node.id) {
+      newbornId = null;
+      render();
+    }
+  }, 900);
 }
 
 function applyChatBinding(node, chat) {
@@ -813,9 +879,9 @@ graph.addEventListener('click', (e) => {
   }
 });
 
-$('#newChatBtn').addEventListener('click', () => {
+$('#newChatBtn').addEventListener('click', async () => {
   branchFromId = null;
-  openCreateDialog('chat');
+  await createQuickChat();
 });
 $('#newProjectBtn').addEventListener('click', () => {
   branchFromId = null;
@@ -909,7 +975,16 @@ $('#composer').addEventListener('submit', async (e) => {
 
   try {
     await syncNodeChat(node, true);
+    const shouldAutoTitle = node.title === 'Novo chat' && !(node.messages || []).some(m => m.role === 'user');
     await postUserMessage(node.id, value.slice(0, 12000));
+    if (shouldAutoTitle) {
+      node.title = deriveChatTitle(value);
+      try {
+        await updateChat(node.id, { title: node.title, projectId: node.parentId || null });
+      } catch {}
+      if (selectedId === node.id) $('#panelTitle').textContent = node.title;
+      render();
+    }
     await syncNodeChat(node, false);
     persist('Mensagem salva pela API Archipelago');
 
