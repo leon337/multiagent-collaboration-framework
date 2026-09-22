@@ -1,7 +1,7 @@
 import { seedState, createNode, normalizeState, connect, removeNode, autoLayout, searchNodes } from './model.js';
 import { loadState, saveState, clearState, downloadState } from './storage.js';
 import { svgEl, islandPath, fitCamera, worldBounds } from './graph.js';
-import { getApiHealth, ensureChat, getChat, postUserMessage, updateChat, deleteChat, streamChatResponse, mapApiMessage } from './chat-api.js';
+import { getApiHealth, ensureChat, getChat, postUserMessage, updateChat, deleteChat, streamChatResponse, mapApiMessage, connectDeviceSession, heartbeatDeviceSession, createAtomicChatSession } from './chat-api.js';
 
 const $ = (s) => document.querySelector(s);
 const graph = $('#graph');
@@ -23,6 +23,8 @@ let pendingConnectionReason = '';
 let branchFromId = null;
 let providers = { openai: { configured: false, model: null }, mcf: { configured: false } };
 let chatBusy = false;
+let deviceSession = null;
+let heartbeatTimer = null;
 
 function persist(status = 'Salvo localmente') {
   saveState(state);
@@ -32,6 +34,53 @@ function persist(status = 'Salvo localmente') {
 
 function selectedNode() {
   return state.nodes.find(n => n.id === selectedId) || null;
+}
+
+function stableDeviceId() {
+  const key = 'mcf-archipelago-device-id';
+  let id = localStorage.getItem(key);
+  if (!id) {
+    id = 'browser-' + crypto.randomUUID();
+    localStorage.setItem(key, id);
+  }
+  return id;
+}
+
+async function connectThisDevice() {
+  deviceSession = await connectDeviceSession({
+    deviceId: stableDeviceId(),
+    instanceId: 'archipelago',
+    transport: 'dual-browser-local'
+  });
+  if (heartbeatTimer) clearInterval(heartbeatTimer);
+  heartbeatTimer = setInterval(async () => {
+    try {
+      deviceSession = await heartbeatDeviceSession(deviceSession.id);
+      for (const node of state.nodes.filter(n => n.type === 'chat' && n.deviceSessionId === deviceSession.id)) node.connectionState = 'READY';
+      saveState(state);
+      render();
+      updateProviderUi();
+    } catch {
+      for (const node of state.nodes.filter(n => n.type === 'chat' && n.deviceSessionId === deviceSession?.id)) node.connectionState = 'OFFLINE';
+      saveState(state);
+      render();
+      updateProviderUi();
+    }
+  }, deviceSession.heartbeatIntervalMs || 10000);
+  return deviceSession;
+}
+
+async function bindNodeAtomically(node) {
+  if (!deviceSession || deviceSession.status !== 'connected') await connectThisDevice();
+  node.connectionState = 'CONNECTING';
+  render();
+  const result = await createAtomicChatSession(node, deviceSession.id);
+  node.connectionState = result.state === 'READY' ? 'READY' : 'OFFLINE';
+  node.deviceSessionId = deviceSession.id;
+  node.messages = (result.chat.messages || []).map(mapApiMessage);
+  saveState(state);
+  render();
+  return result;
 }
 
 async function syncNodeChat(node, create = true) {
