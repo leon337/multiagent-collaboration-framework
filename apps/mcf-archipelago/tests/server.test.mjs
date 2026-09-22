@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
+import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -28,10 +29,73 @@ function waitForReady(child) {
 test('backend local falha fechado sem API key', async () => {
   const port = 43000 + (process.pid % 1000);
   const dataDir = path.join(root, '.archipelago-data-test-' + process.pid);
+  const descriptor = path.join(root, '.dual-browser-test-' + process.pid + '.json');
   fs.rmSync(dataDir, { recursive:true, force:true });
+
+  const conversations = new Map();
+  const bridgeServer = http.createServer(async (req, res) => {
+    const u = new URL(req.url || '/', 'http://127.0.0.1');
+    const send = (status, body) => {
+      const text = JSON.stringify(body);
+      res.writeHead(status, {'content-type':'application/json','content-length':Buffer.byteLength(text)});
+      res.end(text);
+    };
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {};
+
+    if (req.method === 'POST' && u.pathname === '/v1/chatgpt/conversation/open') {
+      const conversation = {
+        id: body.id,
+        title: body.title,
+        state:'READY',
+        chatgptUrl:'https://chatgpt.com/',
+        chatgptConversationId:null
+      };
+      conversations.set(body.id, conversation);
+      return send(201,{ok:true,conversation});
+    }
+    const stateMatch = u.pathname.match(/^\/v1\/chatgpt\/conversation\/([^/]+)$/);
+    if (req.method === 'GET' && stateMatch) {
+      const conversation = conversations.get(decodeURIComponent(stateMatch[1]));
+      return conversation ? send(200,{ok:true,conversation}) : send(404,{ok:false,error:'conversation_not_found'});
+    }
+    const sendMatch = u.pathname.match(/^\/v1\/chatgpt\/conversation\/([^/]+)\/send$/);
+    if (req.method === 'POST' && sendMatch) {
+      const id = decodeURIComponent(sendMatch[1]);
+      const conversation = conversations.get(id);
+      if (!conversation) return send(404,{ok:false,error:'conversation_not_found'});
+      conversation.chatgptUrl = 'https://chatgpt.com/c/fake-' + id;
+      conversation.chatgptConversationId = 'fake-' + id;
+      return send(200,{ok:true,conversation,response:{role:'assistant',text:'bridge:' + body.text}});
+    }
+    const closeMatch = u.pathname.match(/^\/v1\/chatgpt\/conversation\/([^/]+)\/close$/);
+    if (req.method === 'POST' && closeMatch) {
+      const removed = conversations.delete(decodeURIComponent(closeMatch[1]));
+      return send(removed ? 200 : 404, removed ? {ok:true} : {ok:false,error:'conversation_not_found'});
+    }
+    send(404,{ok:false,error:'not_found'});
+  });
+  await new Promise(resolve => bridgeServer.listen(0,'127.0.0.1',resolve));
+  const bridgePort = bridgeServer.address().port;
+  fs.writeFileSync(descriptor, JSON.stringify({
+    enabled:true,
+    instanceId:'archipelago',
+    port:bridgePort,
+    token:'test-bridge-token-123456789'
+  }));
+
   const child = spawn(process.execPath, ['server.cjs'], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), OPENAI_API_KEY: '', MCF_BASE_URL: '', MCF_SESSION_COOKIE: '', ARCHIPELAGO_DATA_DIR: dataDir },
+    env: {
+      ...process.env,
+      PORT: String(port),
+      OPENAI_API_KEY: '',
+      MCF_BASE_URL: '',
+      MCF_SESSION_COOKIE: '',
+      ARCHIPELAGO_DATA_DIR: dataDir,
+      MCF_DUAL_BROWSER_BRIDGE_FILE: descriptor
+    },
     stdio: ['ignore', 'pipe', 'pipe']
   });
 
@@ -105,9 +169,11 @@ test('backend local falha fechado sem API key', async () => {
     assert.equal(history.messages.length, 1);
     assert.equal(history.messages[0].text, 'Olá API própria');
 
-    const noProvider = await fetch('http://127.0.0.1:' + port + '/api/v1/chats/island-test/responses', {method:'POST'});
-    assert.equal(noProvider.status, 503);
-    assert.equal((await noProvider.json()).code, 'OPENAI_NOT_CONFIGURED');
+    const browserResponse = await fetch('http://127.0.0.1:' + port + '/api/v1/chats/island-test/responses', {method:'POST'});
+    assert.equal(browserResponse.status, 200);
+    const browserStream = await browserResponse.text();
+    assert.match(browserStream, /provider":"chatgpt-browser/);
+    assert.match(browserStream, /bridge:Olá API própria/);
 
     const response = await fetch('http://127.0.0.1:' + port + '/api/chat', {
       method: 'POST',
@@ -119,6 +185,8 @@ test('backend local falha fechado sem API key', async () => {
     assert.equal(body.code, 'OPENAI_NOT_CONFIGURED');
   } finally {
     child.kill('SIGTERM');
+    await new Promise(resolve => bridgeServer.close(resolve));
     fs.rmSync(dataDir, { recursive:true, force:true });
+    fs.rmSync(descriptor, { force:true });
   }
 });
