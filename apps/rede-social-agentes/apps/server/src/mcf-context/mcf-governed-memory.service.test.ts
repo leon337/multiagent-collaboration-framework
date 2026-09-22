@@ -14,11 +14,7 @@ import type {
 } from './mcf-ledger-memory-transport.service.js';
 import { McfMemoryPolicyService } from './mcf-memory-policy.service.js';
 
-function event(
-  id: string,
-  scope = 'project:mcf',
-  overrides: Record<string, unknown> = {},
-) {
+function event(id: string, scope = 'project:mcf', overrides: Record<string, unknown> = {}) {
   return {
     id,
     timestamp: '2026-09-22T20:00:00-03:00',
@@ -78,9 +74,7 @@ class FakeTransport {
           target.relacoes.push(relation);
         }
       }
-      const eventHash = createHash('sha256')
-        .update(JSON.stringify(input.evento))
-        .digest('hex');
+      const eventHash = createHash('sha256').update(JSON.stringify(input.evento)).digest('hex');
       return {
         schema_version: 1,
         provider_project_id: 'cognitive-ledger',
@@ -137,7 +131,9 @@ describe('governed scoped read and current-state resolver', () => {
   it('resolves current, superseded and conflicting supersession forks deterministically', async () => {
     const currentTransport = new FakeTransport();
     currentTransport.seed('a1');
-    await expect(service(currentTransport).resolveState('a1', 'project:mcf')).resolves.toMatchObject({
+    await expect(
+      service(currentTransport).resolveState('a1', 'project:mcf'),
+    ).resolves.toMatchObject({
       status: 'CURRENT',
       eventId: 'a1',
     });
@@ -220,7 +216,9 @@ describe('governed scoped read and current-state resolver', () => {
       },
     ]);
 
-    await expect(service(transport).resolveState('target-b1', 'mission:316')).resolves.toMatchObject({
+    await expect(
+      service(transport).resolveState('target-b1', 'mission:316'),
+    ).resolves.toMatchObject({
       status: 'STALE',
       staleBecause: 'source-a1',
     });
@@ -246,9 +244,7 @@ describe('memory.supersede', () => {
       expect.objectContaining({
         confirmacao_explicita: true,
         evento: expect.objectContaining({ id: 'a2' }),
-        relacoes: [
-          expect.objectContaining({ evento_destino_id: 'a1', tipo: 'SUPERSEDES' }),
-        ],
+        relacoes: [expect.objectContaining({ evento_destino_id: 'a1', tipo: 'SUPERSEDES' })],
       }),
     );
     await expect(governed.resolveState('a1', 'project:mcf')).resolves.toMatchObject({
