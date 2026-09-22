@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -26,9 +27,11 @@ function waitForReady(child) {
 
 test('backend local falha fechado sem API key', async () => {
   const port = 43000 + (process.pid % 1000);
+  const dataDir = path.join(root, '.archipelago-data-test-' + process.pid);
+  fs.rmSync(dataDir, { recursive:true, force:true });
   const child = spawn(process.execPath, ['server.cjs'], {
     cwd: root,
-    env: { ...process.env, PORT: String(port), OPENAI_API_KEY: '', MCF_BASE_URL: '', MCF_SESSION_COOKIE: '' },
+    env: { ...process.env, PORT: String(port), OPENAI_API_KEY: '', MCF_BASE_URL: '', MCF_SESSION_COOKIE: '', ARCHIPELAGO_DATA_DIR: dataDir },
     stdio: ['ignore', 'pipe', 'pipe']
   });
 
@@ -84,5 +87,6 @@ test('backend local falha fechado sem API key', async () => {
     assert.equal(body.code, 'OPENAI_NOT_CONFIGURED');
   } finally {
     child.kill('SIGTERM');
+    fs.rmSync(dataDir, { recursive:true, force:true });
   }
 });
