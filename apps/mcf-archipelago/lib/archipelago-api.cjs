@@ -340,18 +340,20 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           sse(res, 'delta', { text: responseText });
           sse(res, 'done', { message, conversation });
         } catch (error) {
+          const delivery = error.payload?.delivery === 'NOT_SENT' ? 'NOT_SENT' : 'UNKNOWN';
           store.update(chatId, {
             metadata: {
               chatgpt: {
                 ...chatgptMeta,
-                pendingUserMessageId: lastUser.id,
-                deliveryState: 'UNKNOWN',
+                pendingUserMessageId: delivery === 'NOT_SENT' ? null : lastUser.id,
+                deliveryState: delivery,
                 lastError: String(error.message || error).slice(0, 500)
               }
             }
           });
           sse(res, 'error', {
             code: error.code || 'CHATGPT_BRIDGE_ERROR',
+            delivery,
             message: String(error.message || error).slice(0, 1600)
           });
         } finally {
