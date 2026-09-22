@@ -50,6 +50,25 @@ function providerStatus() {
   };
 }
 
+function isLocalRequest(req) {
+  const remote = req.socket.remoteAddress || '';
+  const origin = req.headers.origin || '';
+  const remoteOk = ['127.0.0.1','::1','::ffff:127.0.0.1'].includes(remote);
+  const originOk = !origin || origin === `http://127.0.0.1:${port}` || origin === `http://localhost:${port}`;
+  return remoteOk && originOk;
+}
+
+function saveOpenAIConfig(input) {
+  const key = String(input.openaiApiKey || '').trim();
+  const model = String(input.openaiModel || 'gpt-5.6-luna').trim();
+  if (!/^sk-[A-Za-z0-9_-]{20,}$/u.test(key)) throw new Error('INVALID_OPENAI_KEY');
+  if (!/^[A-Za-z0-9._:-]{2,80}$/u.test(model)) throw new Error('INVALID_MODEL');
+  fs.writeFileSync(envPath, `OPENAI_API_KEY=${key}\nOPENAI_MODEL=${model}\n`, { encoding:'utf8', mode:0o600 });
+  process.env.OPENAI_API_KEY = key;
+  process.env.OPENAI_MODEL = model;
+  return providerStatus();
+}
+
 function toInput(messages) {
   return (Array.isArray(messages) ? messages : [])
     .filter(m => m && ['user','assistant'].includes(m.role) && typeof m.text === 'string' && m.text.trim())
@@ -142,6 +161,13 @@ const server = http.createServer(async (req,res) => {
       res.write('data: connected\n\n'); clients.add(res); req.on('close',()=>clients.delete(res)); return;
     }
     if (req.method === 'GET' && req.url === '/api/provider/status') return json(res, 200, providerStatus());
+    if (req.method === 'POST' && req.url === '/api/provider/configure') {
+      if (!isLocalRequest(req)) return json(res, 403, {code:'LOCAL_ONLY'});
+      let input;
+      try { input = await readJson(req, 64 * 1024); } catch { return json(res, 400, {code:'INVALID_REQUEST'}); }
+      try { return json(res, 200, saveOpenAIConfig(input)); }
+      catch (error) { return json(res, 400, {code:error.message || 'INVALID_PROVIDER_CONFIG'}); }
+    }
     if (req.method === 'POST' && req.url === '/api/chat') return await handleChat(req,res);
     if (req.method === 'POST' && req.url === '/api/mcf/dispatch') return await handleMcfDispatch(req,res);
     return serveStatic(req,res);
