@@ -79,7 +79,7 @@ function renderEdges(root) {
     const path = svgEl('path', {
       id: pathId,
       d: `M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`,
-      class: `edge ${edge.kind === 'contains' ? 'contains' : 'related'}`
+      class: `edge ${edge.kind === 'contains' ? 'contains' : 'related'}${selectedId && (edge.source === selectedId || edge.target === selectedId) ? ' active' : ''}`
     });
     root.append(path);
     if (edge.reason && state.camera.zoom > .85) {
@@ -365,6 +365,14 @@ function renderMinimap() {
       r:n.type==='project'?4:2.5, class:`mini-node ${n.type}`
     }));
   }
+  const rect = graph.getBoundingClientRect();
+  const viewX = (-state.camera.x / state.camera.zoom - b.minX) * sx;
+  const viewY = (-state.camera.y / state.camera.zoom - b.minY) * sy;
+  const viewW = (rect.width / state.camera.zoom) * sx;
+  const viewH = (rect.height / state.camera.zoom) * sy;
+  miniSvg.append(svgEl('rect', {
+    x:viewX, y:viewY, width:viewW, height:viewH, class:'mini-viewport'
+  }));
   minimap.append(miniSvg);
 }
 
