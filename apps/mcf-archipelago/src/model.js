@@ -46,14 +46,20 @@ export function normalizeState(input) {
       messages: Array.isArray(n.messages) ? n.messages.map(String).slice(-200) : []
     };
   });
-  const edges = input.edges.filter(e => ids.has(e.source) && ids.has(e.target)).map(e => ({ id: e.id || uid('e'), source: e.source, target: e.target, kind: e.kind || 'related' }));
+  const edges = input.edges.filter(e => ids.has(e.source) && ids.has(e.target)).map(e => ({
+    id: e.id || uid('e'),
+    source: e.source,
+    target: e.target,
+    kind: e.kind || 'related',
+    reason: String(e.reason || '').slice(0, 120)
+  }));
   return { version: 1, camera: input.camera || { x: 0, y: 0, zoom: 1 }, nodes, edges };
 }
 
-export function connect(state, source, target, kind = 'related') {
+export function connect(state, source, target, kind = 'related', reason = '') {
   if (!source || !target || source === target) return false;
   if (state.edges.some(e => (e.source === source && e.target === target) || (e.source === target && e.target === source))) return false;
-  state.edges.push({ id: uid('e'), source, target, kind });
+  state.edges.push({ id: uid('e'), source, target, kind, reason: String(reason || '').trim().slice(0, 120) });
   return true;
 }
 
