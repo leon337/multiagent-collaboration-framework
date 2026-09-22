@@ -73,8 +73,12 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
       try { body = await readJson(req); }
       catch (error) { json(res, error.status || 400, { code:error.message || 'INVALID_REQUEST' }); return true; }
 
+      let createdFresh = false;
+      let createdChatId = null;
       try {
         const device = deviceBroker.requireConnected(String(body.deviceSessionId || ''));
+        const requestedId = String(body.id || '').trim();
+        const existed = requestedId ? store.get(requestedId, false) : null;
         const chat = store.create({
           id: body.id,
           islandId: body.islandId,
@@ -87,9 +91,15 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
             instanceId: device.instanceId
           }
         });
+        createdFresh = !existed;
+        createdChatId = chat.id;
         const connection = deviceBroker.bindChat(chat.id, device.id);
         json(res, 201, { chat, connection, state:'READY' });
       } catch (error) {
+        if (createdFresh && createdChatId) {
+          try { store.remove(createdChatId); } catch {}
+          try { deviceBroker.unbindChat(createdChatId); } catch {}
+        }
         json(res, error.status || 409, { code:error.message || 'CHAT_SESSION_CREATE_FAILED', state:'OFFLINE' });
       }
       return true;
