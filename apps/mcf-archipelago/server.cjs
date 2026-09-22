@@ -46,7 +46,7 @@ async function readJson(req, maxBytes = 1024 * 1024) {
 function providerStatus() {
   return {
     openai: { configured: Boolean(process.env.OPENAI_API_KEY), model: process.env.OPENAI_MODEL || 'gpt-5.6-luna' },
-    mcf: { configured: Boolean(process.env.MCF_BASE_URL) }
+    mcf: { configured: Boolean(process.env.MCF_BASE_URL && process.env.MCF_SESSION_COOKIE) }
   };
 }
 
