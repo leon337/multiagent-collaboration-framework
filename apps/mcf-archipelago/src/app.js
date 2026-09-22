@@ -151,6 +151,10 @@ function render() {
       }
       openPanel(n.id);
     });
+    g.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      if (n.type === 'project') focusProject(n);
+    });
     g.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
@@ -171,6 +175,39 @@ function startNodeDrag(e, node) {
   graph.setPointerCapture?.(e.pointerId);
 }
 
+function renderConnections(node) {
+  const box = $('#connectionsBox');
+  const edges = state.edges.filter(e => e.source === node.id || e.target === node.id);
+  box.innerHTML = '';
+  if (!edges.length) {
+    box.hidden = true;
+    return;
+  }
+  box.hidden = false;
+  const label = document.createElement('div');
+  label.className = 'connections-title';
+  label.textContent = 'CONEXÕES';
+  box.append(label);
+  for (const edge of edges) {
+    const otherId = edge.source === node.id ? edge.target : edge.source;
+    const other = state.nodes.find(n => n.id === otherId);
+    if (!other) continue;
+    const btn = document.createElement('button');
+    btn.className = 'connection-item';
+    btn.innerHTML = `<strong>${escapeHtml(other.title)}</strong><span>${escapeHtml(edge.reason || (edge.kind === 'contains' ? 'pertence ao mesmo projeto' : 'contextos relacionados'))}</span>`;
+    btn.addEventListener('click', () => focusNode(other));
+    box.append(btn);
+  }
+}
+
+function focusProject(project) {
+  const cluster = [project, ...state.nodes.filter(n => n.parentId === project.id)];
+  const rect = graph.getBoundingClientRect();
+  state.camera = fitCamera(cluster, rect.width, rect.height);
+  persist(`Foco: ${project.title}`);
+  render();
+}
+
 function openPanel(id) {
   const node = state.nodes.find(n => n.id === id);
   if (!node) return;
@@ -180,9 +217,11 @@ function openPanel(id) {
   const parent = state.nodes.find(n => n.id === node.parentId);
   $('#panelMeta').textContent = `${node.tags?.length ? node.tags.map(t => `#${t}`).join(' ') + ' · ' : ''}${parent ? `Projeto: ${parent.title}` : 'Sem projeto pai'}`;
   $('#panelActions').hidden = false;
+  $('#focusProjectBtn').hidden = node.type !== 'project';
   $('#messageInput').disabled = false;
   $('#sendBtn').disabled = false;
   detailPanel.classList.add('open');
+  renderConnections(node);
   renderMessages(node);
   render();
 }
@@ -193,6 +232,9 @@ function closePanel() {
   $('#panelTitle').textContent = 'Selecione uma ilha';
   $('#panelMeta').textContent = 'Clique em uma ilha para abrir o contexto.';
   $('#panelActions').hidden = true;
+  $('#focusProjectBtn').hidden = true;
+  $('#connectionsBox').hidden = true;
+  $('#connectionsBox').innerHTML = '';
   $('#messageInput').disabled = true;
   $('#sendBtn').disabled = true;
   $('#messages').innerHTML = '';
@@ -241,9 +283,19 @@ function confirmCreate(event) {
   if (!title) return;
   const parentId = createType === 'project' ? null : ($('#nodeParentSelect').value || null);
   const tags = $('#nodeTagsInput').value.split(',').map(s => s.trim()).filter(Boolean);
+  let x = Number(dialog.dataset.x), y = Number(dialog.dataset.y);
+  if (parentId && x === 800 && y === 450) {
+    const parent = state.nodes.find(n => n.id === parentId);
+    const siblings = state.nodes.filter(n => n.parentId === parentId).length;
+    if (parent) {
+      const angle = -Math.PI / 2 + siblings * 1.12;
+      const radius = 190 + (siblings % 2) * 42;
+      x = parent.x + Math.cos(angle) * radius;
+      y = parent.y + Math.sin(angle) * radius;
+    }
+  }
   const node = createNode({
-    type: createType, title, parentId, tags,
-    x: Number(dialog.dataset.x), y: Number(dialog.dataset.y)
+    type: createType, title, parentId, tags, x, y
   });
   state.nodes.push(node);
   if (parentId) connect(state, parentId, node.id, 'contains', 'pertence ao projeto');
@@ -425,6 +477,10 @@ $('#newChatBtn').addEventListener('click', () => openCreateDialog('chat'));
 $('#newProjectBtn').addEventListener('click', () => openCreateDialog('project'));
 $('#nodeForm').addEventListener('submit', confirmCreate);
 $('#closePanelBtn').addEventListener('click', closePanel);
+$('#focusProjectBtn').addEventListener('click', () => {
+  const node = state.nodes.find(n => n.id === selectedId);
+  if (node?.type === 'project') focusProject(node);
+});
 
 $('#autoLayoutBtn').addEventListener('click', () => {
   autoLayout(state);
