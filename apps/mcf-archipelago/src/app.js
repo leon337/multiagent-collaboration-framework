@@ -25,6 +25,12 @@ function persist(status = 'Salvo localmente') {
   updateStats();
 }
 
+function isNodeVisible(node) {
+  if (!node?.parentId) return true;
+  const parent = state.nodes.find(n => n.id === node.parentId);
+  return !(parent?.type === 'project' && parent.collapsed);
+}
+
 function updateStats() {
   const projects = state.nodes.filter(n => n.type === 'project').length;
   const chats = state.nodes.filter(n => n.type === 'chat').length;
@@ -50,7 +56,8 @@ function screenToWorld(clientX, clientY) {
 
 function renderProjectZones(root) {
   for (const project of state.nodes.filter(n => n.type === 'project')) {
-    const children = state.nodes.filter(n => n.parentId === project.id);
+    const allChildren = state.nodes.filter(n => n.parentId === project.id);
+    const children = project.collapsed ? [] : allChildren;
     const points = [project, ...children];
     const maxDx = Math.max(145, ...points.map(n => Math.abs(n.x - project.x) + n.r));
     const maxDy = Math.max(118, ...points.map(n => Math.abs(n.y - project.y) + n.r));
@@ -61,7 +68,9 @@ function renderProjectZones(root) {
     );
     if (state.camera.zoom > .5) {
       const label = svgEl('text', { x: project.x, y: project.y - maxDy - 78, class: 'zone-label' });
-      label.textContent = `${project.title} · ${children.length} contexto${children.length === 1 ? '' : 's'}`;
+      label.textContent = project.collapsed
+        ? `${project.title} · ${allChildren.length} oculto${allChildren.length === 1 ? '' : 's'}`
+        : `${project.title} · ${allChildren.length} contexto${allChildren.length === 1 ? '' : 's'}`;
       zone.append(label);
     }
     root.append(zone);
@@ -72,7 +81,7 @@ function renderEdges(root) {
   for (const edge of state.edges) {
     const a = state.nodes.find(n => n.id === edge.source);
     const b = state.nodes.find(n => n.id === edge.target);
-    if (!a || !b) continue;
+    if (!a || !b || !isNodeVisible(a) || !isNodeVisible(b)) continue;
     const dx = b.x - a.x, dy = b.y - a.y;
     const mx = (a.x + b.x) / 2 - dy * .08;
     const my = (a.y + b.y) / 2 + dx * .08;
@@ -106,6 +115,7 @@ function render() {
   const matchedIds = new Set(searchNodes(state, query).map(n => n.id));
 
   for (const n of state.nodes) {
+    if (!isNodeVisible(n)) continue;
     const selected = n.id === selectedId;
     const matched = !query || matchedIds.has(n.id);
     const g = svgEl('g', {
@@ -225,6 +235,8 @@ function openPanel(id) {
   $('#panelMeta').textContent = `${node.tags?.length ? node.tags.map(t => `#${t}`).join(' ') + ' · ' : ''}${parent ? `Projeto: ${parent.title}` : 'Sem projeto pai'}`;
   $('#panelActions').hidden = false;
   $('#focusProjectBtn').hidden = node.type !== 'project';
+  $('#toggleProjectBtn').hidden = node.type !== 'project';
+  if (node.type === 'project') $('#toggleProjectBtn').textContent = node.collapsed ? 'Expandir projeto' : 'Recolher projeto';
   $('#branchChatBtn').hidden = node.type !== 'chat';
   $('#messageInput').disabled = false;
   $('#sendBtn').disabled = false;
@@ -241,6 +253,7 @@ function closePanel() {
   $('#panelMeta').textContent = 'Clique em uma ilha para abrir o contexto.';
   $('#panelActions').hidden = true;
   $('#focusProjectBtn').hidden = true;
+  $('#toggleProjectBtn').hidden = true;
   $('#branchChatBtn').hidden = true;
   $('#connectionsBox').hidden = true;
   $('#connectionsBox').innerHTML = '';
@@ -330,6 +343,10 @@ function confirmCreate(event) {
 }
 
 function focusNode(node) {
+  if (node.parentId) {
+    const parent = state.nodes.find(n => n.id === node.parentId);
+    if (parent?.type === 'project' && parent.collapsed) parent.collapsed = false;
+  }
   const rect = graph.getBoundingClientRect();
   const zoom = Math.max(state.camera.zoom, 1);
   state.camera.zoom = zoom;
@@ -370,7 +387,7 @@ function renderMinimap() {
   for (const e of state.edges) {
     const a = state.nodes.find(n => n.id === e.source);
     const c = state.nodes.find(n => n.id === e.target);
-    if (!a || !c) continue;
+    if (!a || !c || !isNodeVisible(a) || !isNodeVisible(c)) continue;
     miniSvg.append(svgEl('line', {
       x1: (a.x-b.minX)*sx, y1:(a.y-b.minY)*sy,
       x2:(c.x-b.minX)*sx, y2:(c.y-b.minY)*sy,
@@ -378,6 +395,7 @@ function renderMinimap() {
     }));
   }
   for (const n of state.nodes) {
+    if (!isNodeVisible(n)) continue;
     miniSvg.append(svgEl('circle', {
       cx:(n.x-b.minX)*sx, cy:(n.y-b.minY)*sy,
       r:n.type==='project'?4:2.5, class:`mini-node ${n.type}`
@@ -513,6 +531,13 @@ $('#closePanelBtn').addEventListener('click', closePanel);
 $('#focusProjectBtn').addEventListener('click', () => {
   const node = state.nodes.find(n => n.id === selectedId);
   if (node?.type === 'project') focusProject(node);
+});
+$('#toggleProjectBtn').addEventListener('click', () => {
+  const node = state.nodes.find(n => n.id === selectedId);
+  if (!node || node.type !== 'project') return;
+  node.collapsed = !node.collapsed;
+  persist(node.collapsed ? `Projeto ${node.title} recolhido` : `Projeto ${node.title} expandido`);
+  openPanel(node.id);
 });
 $('#branchChatBtn').addEventListener('click', () => {
   const origin = state.nodes.find(n => n.id === selectedId);
