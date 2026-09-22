@@ -19,11 +19,152 @@ let listMode = false;
 let newbornId = null;
 let pendingConnectionReason = '';
 let branchFromId = null;
+let providers = { openai: { configured: false, model: null }, mcf: { configured: false } };
+let chatBusy = false;
 
 function persist(status = 'Salvo localmente') {
   saveState(state);
   $('#statusText').textContent = status;
   updateStats();
+}
+
+function selectedNode() {
+  return state.nodes.find(n => n.id === selectedId) || null;
+}
+
+function updateProviderUi() {
+  const node = selectedNode();
+  const aiReady = providers.openai?.configured === true;
+  const dot = $('#providerDot');
+  const label = $('#providerStatus');
+  if (dot) dot.className = 'provider-dot ' + (aiReady ? 'online' : 'offline');
+  if (label) label.textContent = aiReady
+    ? 'OpenAI · ' + (providers.openai.model || 'modelo configurado')
+    : 'IA aguardando configuração no backend';
+  if ($('#messageInput')) $('#messageInput').disabled = !node || chatBusy;
+  if ($('#sendBtn')) $('#sendBtn').disabled = !node || !aiReady || chatBusy;
+  if ($('#dispatchMcfBtn')) $('#dispatchMcfBtn').hidden = !(node && node.type === 'chat' && providers.mcf?.configured);
+}
+
+async function refreshProviderStatus() {
+  try {
+    const response = await fetch('/api/provider/status', { cache: 'no-store' });
+    if (!response.ok) throw new Error('backend indisponível');
+    providers = await response.json();
+  } catch {
+    providers = { openai: { configured: false, model: null }, mcf: { configured: false } };
+  }
+  updateProviderUi();
+}
+
+function addLocalSystemMessage(node, text) {
+  node.messages ||= [];
+  node.messages.push({
+    role: 'system',
+    text: String(text || '').slice(0, 12000),
+    status: 'done',
+    localOnly: true,
+    at: new Date().toISOString()
+  });
+}
+
+function applySseBlock(block, assistant) {
+  let event = 'message';
+  let data = '';
+  for (const line of block.split(/\r?\n/)) {
+    if (line.startsWith('event:')) event = line.slice(6).trim();
+    if (line.startsWith('data:')) data += line.slice(5).trim();
+  }
+  if (!data) return;
+  let payload;
+  try { payload = JSON.parse(data); } catch { return; }
+  if (event === 'delta' && payload.text) assistant.text += payload.text;
+  if (event === 'done') {
+    if (!assistant.text && payload.text) assistant.text = payload.text;
+    assistant.status = 'done';
+  }
+  if (event === 'error') throw new Error(payload.message || 'Erro no streaming da IA');
+}
+
+async function askAssistant(node) {
+  const outbound = (node.messages || [])
+    .filter(m => !m.localOnly && m.status !== 'streaming' && ['user','assistant'].includes(m.role))
+    .map(m => ({ role: m.role, text: m.text }));
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nodeId: node.id, title: node.title, messages: outbound })
+  });
+  if (!response.ok) {
+    let detail = {};
+    try { detail = await response.json(); } catch {}
+    throw new Error(detail.message || detail.code || ('HTTP ' + response.status));
+  }
+  if (!response.body) throw new Error('Provider não retornou stream.');
+
+  const assistant = {
+    role: 'assistant',
+    text: '',
+    status: 'streaming',
+    localOnly: false,
+    at: new Date().toISOString()
+  };
+  node.messages.push(assistant);
+  renderMessages(node);
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const result = await reader.read();
+    if (result.done) break;
+    buffer += decoder.decode(result.value, { stream: true });
+    let cut;
+    while ((cut = buffer.indexOf('\n\n')) >= 0) {
+      const block = buffer.slice(0, cut);
+      buffer = buffer.slice(cut + 2);
+      applySseBlock(block, assistant);
+      if (selectedId === node.id) renderMessages(node);
+    }
+  }
+  assistant.status = 'done';
+  persist('Resposta da IA salva nesta ilha');
+  if (selectedId === node.id) renderMessages(node);
+}
+
+async function dispatchSelectedToMcf() {
+  const node = selectedNode();
+  if (!node || node.type !== 'chat') return;
+  const lastUser = [...(node.messages || [])].reverse().find(m => m.role === 'user' && m.text?.trim());
+  if (!lastUser) {
+    addLocalSystemMessage(node, 'Adicione uma mensagem ao chat antes de despachar ao MCF.');
+    persist('Nada para despachar ao MCF');
+    renderMessages(node);
+    return;
+  }
+  try {
+    const response = await fetch('/api/mcf/dispatch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        objective: lastUser.text.length >= 10 ? lastUser.text : ('Executar objetivo: ' + lastUser.text),
+        expectedOutcome: 'Retornar resultado rastreável e evidência verificável para esta ilha do Archipelago.',
+        repository: 'leon337/multiagent-collaboration-framework',
+        sourceOfTruth: ['MCF Archipelago island:' + node.id],
+        requestedRiskClass: 'A'
+      })
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.message || result.code || ('HTTP ' + response.status));
+    const missionId = result.missionId || result.mission?.missionId || result.mission?.id || result.id || 'recebida';
+    addLocalSystemMessage(node, 'MCF: missão despachada (' + missionId + ').');
+    persist('Missão enviada ao MCF');
+    renderMessages(node);
+  } catch (error) {
+    addLocalSystemMessage(node, 'MCF indisponível: ' + error.message);
+    persist('Falha no dispatch MCF');
+    renderMessages(node);
+  }
 }
 
 function isNodeVisible(node) {
@@ -239,8 +380,7 @@ function openPanel(id) {
   $('#toggleProjectBtn').hidden = node.type !== 'project';
   if (node.type === 'project') $('#toggleProjectBtn').textContent = node.collapsed ? 'Expandir projeto' : 'Recolher projeto';
   $('#branchChatBtn').hidden = node.type !== 'chat';
-  $('#messageInput').disabled = false;
-  $('#sendBtn').disabled = false;
+  updateProviderUi();
   detailPanel.classList.add('open');
   renderConnections(node);
   renderMessages(node);
@@ -256,6 +396,7 @@ function closePanel() {
   $('#focusProjectBtn').hidden = true;
   $('#toggleProjectBtn').hidden = true;
   $('#branchChatBtn').hidden = true;
+  $('#dispatchMcfBtn').hidden = true;
   $('#connectionsBox').hidden = true;
   $('#connectionsBox').innerHTML = '';
   $('#messageInput').disabled = true;
@@ -268,11 +409,23 @@ function closePanel() {
 function renderMessages(node) {
   const box = $('#messages');
   const messages = node.messages || [];
-  box.innerHTML = `<div class="message system">Contexto local carregado. ${messages.length ? '' : 'Ainda não há mensagens nesta ilha.'}</div>`;
+  box.innerHTML = '';
+  if (!messages.length) {
+    const empty = document.createElement('div');
+    empty.className = 'message system';
+    empty.textContent = 'Contexto local carregado. Ainda não há mensagens nesta ilha.';
+    box.append(empty);
+  }
   for (const m of messages) {
     const div = document.createElement('div');
-    div.className = 'message user';
-    div.textContent = m;
+    div.className = 'message ' + (m.role || 'user') + (m.status === 'streaming' ? ' streaming' : '');
+    const role = document.createElement('div');
+    role.className = 'message-role';
+    role.textContent = m.role === 'assistant' ? 'IA' : m.role === 'system' ? 'SISTEMA' : 'VOCÊ';
+    const text = document.createElement('div');
+    text.className = 'message-text';
+    text.textContent = m.text || (m.status === 'streaming' ? 'Pensando…' : '');
+    div.append(role, text);
     box.append(div);
   }
   box.scrollTop = box.scrollHeight;
@@ -540,6 +693,8 @@ $('#toggleProjectBtn').addEventListener('click', () => {
   persist(node.collapsed ? `Projeto ${node.title} recolhido` : `Projeto ${node.title} expandido`);
   openPanel(node.id);
 });
+$('#refreshProviderBtn').addEventListener('click', refreshProviderStatus);
+$('#dispatchMcfBtn').addEventListener('click', dispatchSelectedToMcf);
 $('#branchChatBtn').addEventListener('click', () => {
   const origin = state.nodes.find(n => n.id === selectedId);
   if (!origin || origin.type !== 'chat') return;
@@ -567,17 +722,35 @@ $('#searchInput').addEventListener('keydown', (e) => {
   if (results.length) focusNode(results[0]);
 });
 
-$('#composer').addEventListener('submit', (e) => {
+$('#composer').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const node = state.nodes.find(n => n.id === selectedId);
+  const node = selectedNode();
   const input = $('#messageInput');
   const value = input.value.trim();
-  if (!node || !value) return;
+  if (!node || !value || chatBusy) return;
   node.messages ||= [];
-  node.messages.push(value);
+  node.messages.push({
+    role: 'user',
+    text: value.slice(0, 12000),
+    status: 'done',
+    localOnly: false,
+    at: new Date().toISOString()
+  });
   input.value = '';
-  persist('Mensagem salva nesta ilha');
+  chatBusy = true;
+  persist('Mensagem enviada para a IA');
+  updateProviderUi();
   renderMessages(node);
+  try {
+    await askAssistant(node);
+  } catch (error) {
+    addLocalSystemMessage(node, 'IA indisponível: ' + error.message);
+    persist('Falha ao consultar a IA');
+    renderMessages(node);
+  } finally {
+    chatBusy = false;
+    updateProviderUi();
+  }
 });
 
 $('#renameBtn').addEventListener('click', () => {
@@ -641,6 +814,7 @@ $('#resetBtn').addEventListener('click', () => {
 
 window.addEventListener('resize', () => render());
 updateStats();
+refreshProviderStatus();
 
 requestAnimationFrame(() => {
   if (!localStorage.getItem('mcf-archipelago-v1')) fitAll();
