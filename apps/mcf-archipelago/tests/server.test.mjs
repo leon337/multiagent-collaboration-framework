@@ -38,6 +38,14 @@ test('backend local falha fechado sem API key', async () => {
     assert.equal(status.openai.configured, false);
     assert.equal(status.mcf.configured, false);
 
+    const badConfig = await fetch('http://127.0.0.1:' + port + '/api/provider/configure', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Origin':'http://127.0.0.1:' + port},
+      body:JSON.stringify({openaiApiKey:'invalid',openaiModel:'gpt-5.6-luna'})
+    });
+    assert.equal(badConfig.status, 400);
+    assert.equal((await badConfig.json()).code, 'INVALID_OPENAI_KEY');
+
     const response = await fetch('http://127.0.0.1:' + port + '/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
