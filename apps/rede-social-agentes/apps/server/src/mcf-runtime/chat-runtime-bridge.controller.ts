@@ -41,6 +41,7 @@ const executableSkill = z.enum([
   'MCF-RUN-TESTS',
   'MCF-GIT-PR-RELEASE',
   'MCF-DEPLOY-VALIDATE',
+  'MCF-OPERATE-DUAL-BROWSER',
   'MCF-TRACE-MISSION',
 ]);
 
