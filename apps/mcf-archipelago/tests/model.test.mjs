@@ -52,6 +52,24 @@ test('normalizeState preserva estado recolhido de projeto', () => {
   assert.equal(state.nodes.find(n => n.id === 'mcf').collapsed, true);
 });
 
+test('normalizeState migra edges legadas em formato array', () => {
+  const legacy = {
+    version: 1,
+    nodes: [
+      { id:'p', type:'project', title:'Projeto', x:0, y:0, r:80 },
+      { id:'c', type:'chat', title:'Chat', x:100, y:0, r:58 }
+    ],
+    edges: [['p','c']]
+  };
+  const state = normalizeState(legacy);
+  assert.equal(state.version, 2);
+  assert.equal(state.edges.length, 1);
+  assert.equal(state.edges[0].source, 'p');
+  assert.equal(state.edges[0].target, 'c');
+  assert.equal(state.edges[0].kind, 'contains');
+  assert.equal(state.nodes.find(n => n.id === 'c').parentId, 'p');
+});
+
 test('normalizeState rejeita IDs duplicados', () => {
   const bad = { nodes:[{id:'x',title:'a'},{id:'x',title:'b'}], edges:[] };
   assert.throws(() => normalizeState(bad), /duplicados/);
