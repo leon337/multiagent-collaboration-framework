@@ -4,6 +4,7 @@ const path = require('path');
 const { ChatStore } = require('./lib/chat-store.cjs');
 const { createArchipelagoApi } = require('./lib/archipelago-api.cjs');
 const { streamOpenAIResponse } = require('./lib/providers/openai.cjs');
+const { DeviceSessionBroker } = require('./lib/device-session-broker.cjs');
 
 const root = __dirname;
 const clients = new Set();
@@ -170,10 +171,12 @@ function serveStatic(req, res) {
 }
 
 const chatStore = new ChatStore(root);
+const deviceBroker = new DeviceSessionBroker({ ttlMs: Number(process.env.ARCHIPELAGO_DEVICE_TTL_MS || 30000) });
 const handleApiV1 = createArchipelagoApi({
   store: chatStore,
   providerConfig,
-  streamOpenAIResponse
+  streamOpenAIResponse,
+  deviceBroker
 });
 
 const server = http.createServer(async (req,res) => {
