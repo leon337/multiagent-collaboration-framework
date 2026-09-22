@@ -62,12 +62,23 @@ test('normalizeState migra edges legadas em formato array', () => {
     edges: [['p','c']]
   };
   const state = normalizeState(legacy);
-  assert.equal(state.version, 2);
+  assert.equal(state.version, 3);
   assert.equal(state.edges.length, 1);
   assert.equal(state.edges[0].source, 'p');
   assert.equal(state.edges[0].target, 'c');
   assert.equal(state.edges[0].kind, 'contains');
   assert.equal(state.nodes.find(n => n.id === 'c').parentId, 'p');
+});
+
+test('normalizeState recupera conexões canônicas perdidas no legado', () => {
+  const broken = structuredClone(seedState);
+  broken.version = 2;
+  broken.edges = [];
+  broken.nodes = broken.nodes.map(n => ({ ...n, parentId: null }));
+  const state = normalizeState(broken);
+  assert.equal(state.version, 3);
+  assert.equal(state.edges.length, 6);
+  assert.equal(state.nodes.find(n => n.id === 'runtime').parentId, 'mcf');
 });
 
 test('normalizeState rejeita IDs duplicados', () => {
