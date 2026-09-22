@@ -11,7 +11,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="brand">
-        <span class="eyebrow">MCF LAB · V1.4 · API v1</span>
+        <span class="eyebrow">MCF LAB · V1.5 · ATOMIC</span>
         <h1>Archipelago</h1>
         <p>Chats e projetos como ilhas de um grafo navegável.</p>
       </div>
@@ -52,6 +52,10 @@
           <button id="closePanelBtn" class="icon-btn" aria-label="Fechar painel">×</button>
         </div>
         <p id="panelMeta" class="muted">Clique em uma ilha para abrir o contexto.</p>
+        <div id="deviceStrip" class="device-strip" hidden>
+          <span id="deviceDot" class="device-dot offline"></span>
+          <span id="deviceStatus">Dispositivo desconectado</span>
+        </div>
         <div class="provider-strip">
           <span id="providerDot" class="provider-dot offline"></span>
           <span id="providerStatus">Verificando provider de IA…</span>
