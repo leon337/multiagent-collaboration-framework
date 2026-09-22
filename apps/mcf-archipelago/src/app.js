@@ -9,6 +9,7 @@ const minimap = $('#minimap');
 const dialog = $('#nodeDialog');
 
 let state = normalizeState(loadState(seedState));
+saveState(state);
 let selectedId = null;
 let drag = null;
 let panDrag = null;
@@ -66,7 +67,7 @@ function renderProjectZones(root) {
       svgEl('ellipse', { cx: project.x, cy: project.y, rx: maxDx + 68, ry: maxDy + 54, class: 'zone-water outer' }),
       svgEl('ellipse', { cx: project.x, cy: project.y, rx: maxDx + 34, ry: maxDy + 24, class: 'zone-water inner' })
     );
-    if (state.camera.zoom > .5) {
+    if (state.camera.zoom > .38) {
       const label = svgEl('text', { x: project.x, y: project.y - maxDy - 78, class: 'zone-label' });
       label.textContent = project.collapsed
         ? `${project.title} · ${allChildren.length} oculto${allChildren.length === 1 ? '' : 's'}`
@@ -92,7 +93,7 @@ function renderEdges(root) {
       class: `edge ${edge.kind === 'contains' ? 'contains' : edge.kind === 'branch' ? 'branch' : 'related'}${selectedId && (edge.source === selectedId || edge.target === selectedId) ? ' active' : ''}`
     });
     root.append(path);
-    if (edge.reason && state.camera.zoom > .85) {
+    if (edge.reason && state.camera.zoom > .68) {
       const text = svgEl('text', { class: 'edge-label' });
       const textPath = svgEl('textPath', { href: `#${pathId}`, startOffset: '50%' });
       textPath.textContent = edge.reason;
@@ -134,14 +135,14 @@ function render() {
       svgEl('ellipse', { cx: -n.r*.2, cy: -n.r*.24, rx: n.r*.24, ry: n.r*.12, class: 'shine' })
     );
 
-    if (state.camera.zoom > .62) {
+    if (state.camera.zoom > .38) {
       const title = svgEl('text', { y: 3, class: 'title' });
       title.textContent = n.title;
       const sub = svgEl('text', { y: 22, class: 'sub' });
       sub.textContent = n.type.toUpperCase();
       g.append(title, sub);
     }
-    if (state.camera.zoom > 1.15 && n.tags?.length) {
+    if (state.camera.zoom > .95 && n.tags?.length) {
       const tags = svgEl('text', { y: 39, class: 'tags' });
       tags.textContent = n.tags.slice(0, 2).map(t => `#${t}`).join(' ');
       g.append(tags);
