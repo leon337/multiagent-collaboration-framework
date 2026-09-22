@@ -29,7 +29,7 @@
     <main class="workspace">
       <section class="map-pane" aria-label="Mapa de chats e projetos">
         <div class="map-help">Arraste ilhas · arraste o oceano para navegar · roda para zoom · duplo clique no oceano cria chat</div>
-        <svg id="graph" viewBox="0 0 1600 900" role="application" aria-label="Grafo de ilhas do Archipelago"></svg>
+        <svg id="graph" role="application" aria-label="Grafo de ilhas do Archipelago"></svg>
         <div id="minimap" class="minimap" aria-label="Minimapa"></div>
         <div class="map-controls">
           <button id="zoomOutBtn" title="Diminuir zoom">−</button>
@@ -86,7 +86,7 @@
       <label>Título<input id="nodeTitleInput" required maxlength="80" /></label>
       <label>Projeto pai<select id="nodeParentSelect"></select></label>
       <label>Tags<input id="nodeTagsInput" placeholder="ex.: runtime, ui, pesquisa" /></label>
-      <div class="dialog-actions"><button value="cancel">Cancelar</button><button id="confirmNodeBtn" class="primary" value="default">Criar ilha</button></div>
+      <div class="dialog-actions"><button id="cancelNodeBtn" type="button" onclick="document.getElementById('nodeDialog').close()">Cancelar</button><button id="confirmNodeBtn" type="submit" class="primary">Criar ilha</button></div>
     </form>
   </dialog>
 
