@@ -140,8 +140,21 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
 
     const connectionMatch = pathname.match(/^\/api\/v1\/chat-sessions\/([^/]+)\/connection$/);
     if (connectionMatch && req.method === 'GET') {
-      const connection = deviceBroker.getChatBinding(decodeId(connectionMatch[1]));
-      json(res, connection ? 200 : 404, connection ? { connection } : { code:'CHAT_CONNECTION_NOT_FOUND' });
+      const chatId = decodeId(connectionMatch[1]);
+      const connection = deviceBroker.getChatBinding(chatId);
+      let chatgpt = null;
+      try {
+        const result = await dualBrowserClient.getConversation(chatId);
+        chatgpt = result?.conversation || null;
+      } catch {}
+      const ready = connection?.status === 'connected' && chatgpt?.state === 'READY';
+      json(
+        res,
+        connection || chatgpt ? 200 : 404,
+        connection || chatgpt
+          ? { connection, chatgpt, state: ready ? 'READY' : 'OFFLINE' }
+          : { code:'CHAT_CONNECTION_NOT_FOUND' }
+      );
       return true;
     }
 
@@ -182,7 +195,10 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
       }
       if (req.method === 'DELETE') {
         const removed = store.remove(chatId);
-        if (removed) deviceBroker.unbindChat(chatId);
+        if (removed) {
+          deviceBroker.unbindChat(chatId);
+          try { await dualBrowserClient.closeConversation(chatId); } catch {}
+        }
         json(res, removed ? 200 : 404, removed ? { ok: true } : { code: 'CHAT_NOT_FOUND' });
         return true;
       }
