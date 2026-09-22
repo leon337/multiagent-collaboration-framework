@@ -29,7 +29,7 @@ function decodeId(value) {
   try { return decodeURIComponent(value); } catch { return value; }
 }
 
-function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, deviceBroker }) {
+function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, deviceBroker, dualBrowserClient }) {
   return async function handleArchipelagoApi(req, res, requestUrl) {
     const pathname = requestUrl.pathname;
 
@@ -94,13 +94,46 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
         createdFresh = !existed;
         createdChatId = chat.id;
         const connection = deviceBroker.bindChat(chat.id, device.id);
-        json(res, 201, { chat, connection, state:'READY' });
+
+        const surface = await dualBrowserClient.openConversation({
+          id: chat.id,
+          title: chat.title
+        });
+        if (!surface?.ok || surface?.conversation?.state !== 'READY') {
+          const surfaceError = new Error(surface?.error || 'CHATGPT_SURFACE_NOT_READY');
+          surfaceError.status = 422;
+          throw surfaceError;
+        }
+
+        const chatWithSurface = store.update(chat.id, {
+          metadata: {
+            chatgpt: {
+              instanceId: dualBrowserClient.instanceId,
+              state: surface.conversation.state,
+              url: surface.conversation.chatgptUrl || null,
+              conversationId: surface.conversation.chatgptConversationId || null,
+              deliveryState: 'READY',
+              pendingUserMessageId: null,
+              lastForwardedUserMessageId: null
+            }
+          }
+        });
+
+        json(res, 201, {
+          chat: chatWithSurface,
+          connection,
+          chatgpt: surface.conversation,
+          state:'READY'
+        });
       } catch (error) {
+        if (createdChatId) {
+          try { deviceBroker.unbindChat(createdChatId); } catch {}
+          try { await dualBrowserClient.closeConversation(createdChatId); } catch {}
+        }
         if (createdFresh && createdChatId) {
           try { store.remove(createdChatId); } catch {}
-          try { deviceBroker.unbindChat(createdChatId); } catch {}
         }
-        json(res, error.status || 409, { code:error.message || 'CHAT_SESSION_CREATE_FAILED', state:'OFFLINE' });
+        json(res, error.status || 409, { code:error.code || error.message || 'CHAT_SESSION_CREATE_FAILED', state:'OFFLINE' });
       }
       return true;
     }
