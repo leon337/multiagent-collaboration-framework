@@ -67,3 +67,8 @@ dialog::backdrop{background:#0009;backdrop-filter:blur(4px)}.dialog-form{display
 @media(prefers-reduced-motion:reduce){.island.born,.zone-water.outer{animation:none}}
 
 @keyframes typingBlink{50%{opacity:.15}}
+
+.chat-binding-box{display:grid;gap:6px;margin:8px 0 2px;padding:9px 10px;border:1px solid #65d7e01f;border-radius:11px;background:#05202a80;font-size:10px}
+.chat-binding-head{display:flex;align-items:center;gap:7px;color:#a8c8d2;font-weight:800}.chat-binding-head i{width:8px;height:8px;border-radius:50%;background:#6de6ca;box-shadow:0 0 10px #6de6ca88}
+.chat-binding-id{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;color:#7296a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-binding-link{justify-self:start;padding:5px 8px;font-size:9px;background:#6de6ca0d;border-color:#6de6ca2c;box-shadow:none}
