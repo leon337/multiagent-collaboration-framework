@@ -254,7 +254,7 @@ skills:
     name: Implantar e validar ambiente
     version: 1.0.0
     purpose: Executar deploy autorizado, smoke e rollback quando necessário.
-    owner_agents: [Bruno, Gabriel]
+    owner_agents: [Bruno, Gabriel, LÉO]
     trigger_phrases: ["deploy", "publicar", "ambiente", "rollback"]
     required_inputs: [artifact_or_commit, target_environment]
     optional_inputs: [rollback_plan, release_notes]
