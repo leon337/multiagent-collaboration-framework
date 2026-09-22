@@ -21,7 +21,7 @@ let listMode = false;
 let newbornId = null;
 let pendingConnectionReason = '';
 let branchFromId = null;
-let providers = { openai: { configured: false, model: null }, mcf: { configured: false } };
+let providers = { chatgptBrowser:{configured:false}, openai: { configured: false, model: null }, mcf: { configured: false } };
 let chatBusy = false;
 let deviceSession = null;
 let heartbeatTimer = null;
@@ -116,18 +116,22 @@ function updateDeviceUi() {
 function updateProviderUi() {
   const node = selectedNode();
   const isChat = node?.type === 'chat';
-  const aiReady = providers.openai?.configured === true;
+  const browserReady = providers.chatgptBrowser?.configured === true;
+  const openaiReady = providers.openai?.configured === true;
+  const aiReady = browserReady || openaiReady;
   const dot = $('#providerDot');
   const label = $('#providerStatus');
   if (dot) dot.className = 'provider-dot ' + (aiReady ? 'online' : 'offline');
-  if (label) label.textContent = aiReady
-    ? 'API Archipelago · OpenAI · ' + (providers.openai.model || 'modelo configurado')
-    : 'API Archipelago online · IA ainda não configurada';
+  if (label) label.textContent = browserReady
+    ? 'ChatGPT real · Dual Browser · sessão web'
+    : openaiReady
+      ? 'Fallback OpenAI API · ' + (providers.openai.model || 'modelo configurado')
+      : 'Nenhum provider de chat disponível';
   const connected = node?.connectionState === 'READY';
   if ($('#messageInput')) $('#messageInput').disabled = !isChat || !connected || chatBusy;
   if ($('#sendBtn')) {
     $('#sendBtn').disabled = !isChat || !connected || chatBusy;
-    $('#sendBtn').textContent = aiReady ? 'Enviar e responder' : 'Salvar no chat';
+    $('#sendBtn').textContent = browserReady ? 'Enviar ao ChatGPT' : openaiReady ? 'Enviar e responder' : 'Salvar no chat';
   }
   if ($('#dispatchMcfBtn')) $('#dispatchMcfBtn').hidden = !(isChat && providers.mcf?.configured);
 }
@@ -137,7 +141,7 @@ async function refreshProviderStatus() {
     const health = await getApiHealth();
     providers = health.providers;
   } catch {
-    providers = { openai: { configured: false, model: null }, mcf: { configured: false } };
+    providers = { chatgptBrowser:{configured:false}, openai: { configured: false, model: null }, mcf: { configured: false } };
   }
   updateProviderUi();
 }
@@ -858,7 +862,7 @@ $('#composer').addEventListener('submit', async (e) => {
     await syncNodeChat(node, false);
     persist('Mensagem salva pela API Archipelago');
 
-    if (providers.openai?.configured) {
+    if (providers.chatgptBrowser?.configured || providers.openai?.configured) {
       await askAssistant(node);
     } else {
       addLocalSystemMessage(node, 'Mensagem salva. Configure a IA para gerar respostas.');
