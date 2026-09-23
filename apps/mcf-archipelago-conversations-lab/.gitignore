@@ -1,3 +1,5 @@
 .env.local
+.env.lab.local
 .archipelago-key-private.pem
 .archipelago-data/
+.archipelago-data-test-*/
