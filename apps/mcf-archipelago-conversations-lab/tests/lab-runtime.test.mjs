@@ -42,3 +42,13 @@ test('hidrata no grafo chats que já existem no backend', async () => {
   assert.equal(chat.connectionState, 'READY');
   assert.equal(chat.openaiConversationId, 'conv_test');
 });
+
+test('erro do provider remove placeholder Pensando sem apagar mensagens reais', async () => {
+  const runtime = await loadRuntime();
+  assert.ok(runtime, 'lab-runtime precisa existir');
+  const user = { role:'user', text:'Oi', status:'done' };
+  const pending = { role:'assistant', text:'', status:'streaming' };
+  const node = { messages:[user, pending] };
+  runtime.removePendingAssistant(node, pending);
+  assert.deepEqual(node.messages, [user]);
+});

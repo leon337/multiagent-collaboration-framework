@@ -3,7 +3,7 @@ import { loadState, saveState, clearState, downloadState } from './storage.js';
 import { svgEl, islandPath, fitCamera, worldBounds } from './graph.js';
 import { getApiHealth, listChats, ensureChat, getChat, postUserMessage, updateChat, deleteChat, streamChatResponse, mapApiMessage, connectDeviceSession, heartbeatDeviceSession, createAtomicChatSession, focusChatSurface, resetWorkspace } from './chat-api.js';
 import { deriveChatTitle } from './chat-title.js';
-import { stableBrowserId, canCompose, mergeBackendChats } from './lab-runtime.js';
+import { stableBrowserId, canCompose, mergeBackendChats, removePendingAssistant } from './lab-runtime.js';
 
 const $ = (s) => document.querySelector(s);
 const graph = $('#graph');
@@ -320,17 +320,23 @@ async function askAssistant(node) {
   node.messages.push(assistant);
   renderMessages(node);
 
-  await streamChatResponse(node.id, {
-    onDelta: payload => {
-      if (payload.text) assistant.text += payload.text;
-      if (selectedId === node.id) renderMessages(node);
-    },
-    onDone: payload => {
-      if (payload.message) Object.assign(assistant, mapApiMessage(payload.message));
-      else assistant.status = 'done';
-      if (selectedId === node.id) renderMessages(node);
-    }
-  });
+  try {
+    await streamChatResponse(node.id, {
+      onDelta: payload => {
+        if (payload.text) assistant.text += payload.text;
+        if (selectedId === node.id) renderMessages(node);
+      },
+      onDone: payload => {
+        if (payload.message) Object.assign(assistant, mapApiMessage(payload.message));
+        else assistant.status = 'done';
+        if (selectedId === node.id) renderMessages(node);
+      }
+    });
+  } catch (error) {
+    removePendingAssistant(node, assistant);
+    if (selectedId === node.id) renderMessages(node);
+    throw error;
+  }
 
   await syncNodeChat(node, false);
   if (selectedId === node.id && providers.chatgptBrowser?.configured) {

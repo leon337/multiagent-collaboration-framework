@@ -36,3 +36,8 @@ test('OpenAI-only possui caminho de binding sem Device Session', () => {
   assert.match(app, /await ensureChat\(node\)/);
   assert.match(app, /canCompose/);
 });
+
+test('erro de geração limpa resposta assistente pendente', () => {
+  assert.match(app, /removePendingAssistant/);
+  assert.match(app, /catch \(error\) \{[\s\S]{0,220}removePendingAssistant\(node, assistant\)/);
+});

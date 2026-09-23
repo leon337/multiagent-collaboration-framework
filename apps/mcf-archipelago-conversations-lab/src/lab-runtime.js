@@ -50,3 +50,12 @@ export function mergeBackendChats(state, chats = []) {
   }
   return state;
 }
+
+export function removePendingAssistant(node, assistant) {
+  if (!node || !Array.isArray(node.messages)) return node;
+  const index = node.messages.indexOf(assistant);
+  if (index >= 0 && assistant?.role === 'assistant' && assistant?.status === 'streaming') {
+    node.messages.splice(index, 1);
+  }
+  return node;
+}
