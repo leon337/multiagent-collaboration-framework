@@ -1,0 +1,7 @@
+{
+  "name": "mcf-webagent",
+  "version": "0.1.0",
+  "description": "MCF WebAgent MVP: MCP tools for bounded web fetch, provider-based search, and governed asynchronous browser-job foundations.",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}
