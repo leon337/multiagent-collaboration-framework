@@ -36,6 +36,7 @@ test('backend local falha fechado sem API key', async () => {
   let lastOpenUrl = null;
   let lastFocusedUrl = null;
   const closedConversationIds = [];
+  const mestreInbox = [];
   const bridgeServer = http.createServer(async (req, res) => {
     const u = new URL(req.url || '/', 'http://127.0.0.1');
     const send = (status, body) => {
@@ -63,6 +64,10 @@ test('backend local falha fechado sem API key', async () => {
     if (req.method === 'POST' && u.pathname === '/v1/chat-surface/open') {
       lastFocusedUrl = body.url || null;
       return send(200,{ok:true,url:lastFocusedUrl});
+    }
+    if (req.method === 'POST' && u.pathname === '/v1/mestre/inbox') {
+      mestreInbox.push(body);
+      return send(202,{ok:true,deduplicated:false,item:{id:'queue-' + mestreInbox.length,state:'PENDING',...body}});
     }
     const stateMatch = u.pathname.match(/^\/v1\/chatgpt\/conversation\/([^/]+)$/);
     if (req.method === 'GET' && stateMatch) {
@@ -185,6 +190,15 @@ test('backend local falha fechado sem API key', async () => {
     const browserStream = await browserResponse.text();
     assert.match(browserStream, /provider":"chatgpt-browser/);
     assert.match(browserStream, /bridge:Olá API própria/);
+
+    const relayResponse = await fetch('http://127.0.0.1:' + port + '/api/v1/chats/island-test/responses?relay=mestre', {method:'POST'});
+    assert.equal(relayResponse.status, 200);
+    const relayStream = await relayResponse.text();
+    assert.match(relayStream, /event: relay/);
+    assert.equal(mestreInbox.length, 1);
+    assert.equal(mestreInbox[0].fromChatId, 'island-test');
+    assert.equal(mestreInbox[0].text, 'bridge:Olá API própria');
+    assert.ok(mestreInbox[0].messageId);
 
     const focused = await fetch('http://127.0.0.1:' + port + '/api/v1/chats/island-test/focus', {method:'POST'});
     assert.equal(focused.status, 200);

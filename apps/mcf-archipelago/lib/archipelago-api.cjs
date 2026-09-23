@@ -29,6 +29,27 @@ function decodeId(value) {
   try { return decodeURIComponent(value); } catch { return value; }
 }
 
+async function relayAssistantToMestre(dualBrowserClient, chat, message) {
+  return dualBrowserClient.enqueueMestreMessage({
+    messageId: message.id,
+    from: String(chat.title || chat.id || 'ILHA').slice(0, 120),
+    fromChatId: chat.id,
+    text: message.text
+  });
+}
+
+async function emitMestreRelay(res, dualBrowserClient, chat, message) {
+  try {
+    const relay = await relayAssistantToMestre(dualBrowserClient, chat, message);
+    sse(res, 'relay', relay);
+  } catch (error) {
+    sse(res, 'relay_error', {
+      code:error.code || error.message || 'MESTRE_RELAY_FAILED',
+      message:String(error.message || error).slice(0,500)
+    });
+  }
+}
+
 function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, deviceBroker, dualBrowserClient }) {
   return async function handleArchipelagoApi(req, res, requestUrl) {
     const pathname = requestUrl.pathname;
@@ -295,6 +316,7 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
 
     const responseMatch = pathname.match(/^\/api\/v1\/chats\/([^/]+)\/responses$/);
     if (responseMatch && req.method === 'POST') {
+      const relayToMestre = requestUrl.searchParams.get('relay') === 'mestre';
       const chatId = decodeId(responseMatch[1]);
       const chat = store.get(chatId, true);
       if (!chat) {
@@ -328,6 +350,7 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           });
           sse(res, 'meta', { chatId, provider:'chatgpt-browser', replay:true });
           sse(res, 'delta', { text: existing.text });
+          if (relayToMestre) await emitMestreRelay(res, dualBrowserClient, chat, existing);
           sse(res, 'done', { message: existing, replay:true });
           res.end();
           return true;
@@ -408,6 +431,7 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           });
 
           sse(res, 'delta', { text: responseText });
+          if (relayToMestre) await emitMestreRelay(res, dualBrowserClient, chat, message);
           sse(res, 'done', { message, conversation });
         } catch (error) {
           const delivery = error.delivery === 'NOT_SENT' || error.payload?.delivery === 'NOT_SENT' ? 'NOT_SENT' : 'UNKNOWN';
@@ -479,6 +503,7 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           provider: result.provider,
           model: result.model
         });
+        if (relayToMestre) await emitMestreRelay(res, dualBrowserClient, chat, message);
         sse(res, 'done', { message });
       } catch (error) {
         if (partial.trim()) {

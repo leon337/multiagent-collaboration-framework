@@ -64,6 +64,15 @@ class DualBrowserClient {
     );
   }
 
+  async enqueueMestreMessage({ messageId, from, fromChatId, text }) {
+    return this.#request(
+      'POST',
+      '/v1/mestre/inbox',
+      { messageId, from, fromChatId, text },
+      15000
+    );
+  }
+
   async closeConversation(id) {
     try {
       return await this.#request(
