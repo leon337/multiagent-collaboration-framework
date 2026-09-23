@@ -6,6 +6,16 @@ export type ExecuteEnvelopeOptions = {
   errorCode?: string;
 };
 
+export class OperationError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'OperationError';
+  }
+}
+
 export async function executeEnvelope<T>(
   operation: string,
   fn: () => Promise<T> | T,
@@ -31,6 +41,7 @@ export async function executeEnvelope<T>(
   } catch (error) {
     const finishedAt = new Date();
     const message = error instanceof Error ? error.message : 'Unknown operation failure';
+    const code = error instanceof OperationError ? error.code : (options.errorCode ?? 'OPERATION_FAILED');
 
     return {
       ok: false,
@@ -40,10 +51,7 @@ export async function executeEnvelope<T>(
       durationMs: Math.max(0, performance.now() - started),
       evidence: options.evidence ?? [],
       budget: options.budget ?? {},
-      error: {
-        code: options.errorCode ?? 'OPERATION_FAILED',
-        message,
-      },
+      error: { code, message },
     };
   }
 }
