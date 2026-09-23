@@ -1,8 +1,9 @@
 import { seedState, emptyState, createNode, normalizeState, connect, removeNode, autoLayout, searchNodes } from './model.js';
 import { loadState, saveState, clearState, downloadState } from './storage.js';
 import { svgEl, islandPath, fitCamera, worldBounds } from './graph.js';
-import { getApiHealth, ensureChat, getChat, postUserMessage, updateChat, deleteChat, streamChatResponse, mapApiMessage, connectDeviceSession, heartbeatDeviceSession, createAtomicChatSession, focusChatSurface, resetWorkspace } from './chat-api.js';
+import { getApiHealth, listChats, ensureChat, getChat, postUserMessage, updateChat, deleteChat, streamChatResponse, mapApiMessage, connectDeviceSession, heartbeatDeviceSession, createAtomicChatSession, focusChatSurface, resetWorkspace } from './chat-api.js';
 import { deriveChatTitle } from './chat-title.js';
+import { stableBrowserId, canCompose, mergeBackendChats } from './lab-runtime.js';
 
 const $ = (s) => document.querySelector(s);
 const graph = $('#graph');
@@ -105,10 +106,13 @@ async function createQuickChat() {
 function applyChatBinding(node, chat) {
   if (!node || node.type !== 'chat') return;
   const binding = chat?.metadata?.chatgpt || {};
+  const openaiBinding = chat?.metadata?.openai || {};
   node.chatgptUrl = binding.url || null;
   node.chatgptConversationId = binding.conversationId || null;
   node.chatgptDeliveryState = binding.deliveryState || null;
   node.chatgptSurfaceState = binding.state || null;
+  node.openaiConversationId = openaiBinding.conversationId || node.openaiConversationId || null;
+  if (node.openaiConversationId && !providers.chatgptBrowser?.configured) node.connectionState = 'READY';
   if (selectedId === node.id) renderChatBinding(node);
 }
 
@@ -125,17 +129,20 @@ function renderChatBinding(node) {
   head.className = 'chat-binding-head';
   const dot = document.createElement('i');
   const label = document.createElement('span');
+  const conversationId = node.chatgptConversationId || node.openaiConversationId || null;
   label.textContent = node.chatgptConversationId
     ? 'ChatGPT real vinculado'
-    : 'Superfície ChatGPT READY';
+    : node.openaiConversationId
+      ? 'OpenAI Conversation vinculada'
+      : 'Conversa pronta';
   head.append(dot, label);
   box.append(head);
 
   const id = document.createElement('div');
   id.className = 'chat-binding-id';
-  id.textContent = node.chatgptConversationId
-    ? 'conversation_id: ' + node.chatgptConversationId
-    : 'A conversa /c/... nasce na primeira mensagem.';
+  id.textContent = conversationId
+    ? 'conversation_id: ' + conversationId
+    : 'A Conversation nasce quando o chat é persistido.';
   box.append(id);
 
   if (/\/(?:c|uc)\//.test(node.chatgptUrl || '')) {
@@ -150,13 +157,7 @@ function renderChatBinding(node) {
 }
 
 function stableDeviceId() {
-  const key = 'mcf-archipelago-device-id';
-  let id = localStorage.getItem(key);
-  if (!id) {
-    id = 'browser-' + crypto.randomUUID();
-    localStorage.setItem(key, id);
-  }
-  return id;
+  return stableBrowserId(localStorage, globalThis.crypto);
 }
 
 async function connectThisDevice() {
@@ -185,9 +186,24 @@ async function connectThisDevice() {
 }
 
 async function bindNodeAtomically(node) {
-  if (!deviceSession || deviceSession.status !== 'connected') await connectThisDevice();
+  const openaiOnly = providers.openai?.configured === true && providers.chatgptBrowser?.configured !== true;
   node.connectionState = 'CONNECTING';
   render();
+
+  if (openaiOnly) {
+    const chat = await ensureChat(node);
+    node.connectionState = 'READY';
+    node.deviceSessionId = null;
+    node.messages = (chat.messages || []).map(mapApiMessage);
+    applyChatBinding(node, chat);
+    saveState(state);
+    render();
+    updateDeviceUi();
+    updateProviderUi();
+    return { chat, state:'READY', provider:'openai' };
+  }
+
+  if (!deviceSession || deviceSession.status !== 'connected') await connectThisDevice();
   const result = await createAtomicChatSession(node, deviceSession.id);
   node.connectionState = result.state === 'READY' ? 'READY' : 'OFFLINE';
   node.deviceSessionId = deviceSession.id;
@@ -214,7 +230,7 @@ function updateDeviceUi() {
   const strip = $('#deviceStrip');
   const dot = $('#deviceDot');
   const label = $('#deviceStatus');
-  if (!node || node.type !== 'chat') {
+  if (!node || node.type !== 'chat' || providers.chatgptBrowser?.configured !== true) {
     if (strip) strip.hidden = true;
     return;
   }
@@ -241,10 +257,10 @@ function updateProviderUi() {
     : openaiReady
       ? 'Fallback OpenAI API · ' + (providers.openai.model || 'modelo configurado')
       : 'Nenhum provider de chat disponível';
-  const connected = node?.connectionState === 'READY';
-  if ($('#messageInput')) $('#messageInput').disabled = !isChat || !connected || chatBusy;
+  const composerReady = canCompose(node, providers, chatBusy);
+  if ($('#messageInput')) $('#messageInput').disabled = !composerReady;
   if ($('#sendBtn')) {
-    $('#sendBtn').disabled = !isChat || !connected || chatBusy;
+    $('#sendBtn').disabled = !composerReady;
     $('#sendBtn').textContent = browserReady ? 'Enviar ao ChatGPT' : openaiReady ? 'Enviar e responder' : 'Salvar no chat';
   }
   if ($('#dispatchMcfBtn')) $('#dispatchMcfBtn').hidden = !(isChat && providers.mcf?.configured);
@@ -258,6 +274,15 @@ async function refreshProviderStatus() {
     providers = { chatgptBrowser:{configured:false}, openai: { configured: false, model: null }, mcf: { configured: false } };
   }
   updateProviderUi();
+}
+
+async function hydrateBackendChats() {
+  const chats = await listChats();
+  mergeBackendChats(state, chats);
+  saveState(state);
+  render();
+  updateStats();
+  return chats;
 }
 
 function addLocalSystemMessage(node, text) {
@@ -308,7 +333,7 @@ async function askAssistant(node) {
   });
 
   await syncNodeChat(node, false);
-  if (selectedId === node.id) {
+  if (selectedId === node.id && providers.chatgptBrowser?.configured) {
     try { await focusChatSurface(node.id); } catch {}
   }
   persist('Resposta sincronizada pela API Archipelago');
@@ -573,6 +598,14 @@ function openPanel(id) {
     syncPromise
       .then(async () => {
         if (selectedId !== node.id) return;
+        if (!providers.chatgptBrowser?.configured) {
+          $('#statusText').textContent = node.openaiConversationId
+            ? 'OpenAI Conversation READY'
+            : 'Chat persistido e pronto para OpenAI';
+          updateProviderUi();
+          renderChatBinding(node);
+          return;
+        }
         try {
           await focusChatSurface(node.id);
           $('#statusText').textContent = node.chatgptConversationId
@@ -1096,21 +1129,36 @@ $('#resetBtn').addEventListener('click', async () => {
 
 window.addEventListener('resize', () => render());
 updateStats();
-refreshProviderStatus();
 for (const node of state.nodes.filter(n => n.type === 'chat')) {
   node.connectionState = 'OFFLINE';
 }
 saveState(state);
 render();
-connectThisDevice()
-  .then(() => {
-    $('#statusText').textContent = 'Dispositivo conectado · abra uma ilha para reconectar o chat';
-    updateProviderUi();
-  })
-  .catch(() => {
-    $('#statusText').textContent = 'Dispositivo offline';
-    updateProviderUi();
-  });
+
+async function initializeLab() {
+  await refreshProviderStatus();
+  try {
+    await hydrateBackendChats();
+  } catch (error) {
+    $('#statusText').textContent = 'Falha ao hidratar chats: ' + error.message;
+  }
+
+  if (providers.chatgptBrowser?.configured) {
+    try {
+      await connectThisDevice();
+      $('#statusText').textContent = 'Dispositivo conectado · abra uma ilha para reconectar o chat';
+    } catch {
+      $('#statusText').textContent = 'Dispositivo offline';
+    }
+  } else if (providers.openai?.configured) {
+    $('#statusText').textContent = 'OpenAI-only READY · chats sincronizados do backend';
+  }
+  updateDeviceUi();
+  updateProviderUi();
+  render();
+}
+
+initializeLab();
 
 requestAnimationFrame(() => {
   if (!localStorage.getItem('mcf-archipelago-v1')) fitAll();

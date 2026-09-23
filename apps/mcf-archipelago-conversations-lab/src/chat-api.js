@@ -13,6 +13,13 @@ async function readJson(response) {
   return response.json().catch(() => ({}));
 }
 
+export async function listChats() {
+  const response = await fetch('/api/v1/chats', { cache:'no-store' });
+  const body = await readJson(response);
+  if (!response.ok) throw new Error(body.code || ('HTTP ' + response.status));
+  return Array.isArray(body.chats) ? body.chats : [];
+}
+
 export async function getApiHealth() {
   const response = await fetch('/api/v1/health', { cache: 'no-store' });
   const body = await readJson(response);
