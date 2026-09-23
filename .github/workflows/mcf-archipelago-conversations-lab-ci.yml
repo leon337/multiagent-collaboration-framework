@@ -1,0 +1,36 @@
+name: MCF Archipelago Conversations Lab CI
+
+on:
+  push:
+    paths:
+      - 'apps/mcf-archipelago-conversations-lab/**'
+      - '.github/workflows/mcf-archipelago-conversations-lab-ci.yml'
+  pull_request:
+    paths:
+      - 'apps/mcf-archipelago-conversations-lab/**'
+      - '.github/workflows/mcf-archipelago-conversations-lab-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-isolated-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: apps/mcf-archipelago-conversations-lab
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax and tests
+        run: npm run ci
+      - name: Isolation smoke
+        run: |
+          grep -q "Dual Browser desativado" README.md
+          grep -Eq "dispatch.*MCF.*desativado|MCF.*dispatch.*desativado" README.md
+          grep -q "4273" README.md
+          grep -q "LabSurfaceClient" server.cjs
+          ! grep -q "new DualBrowserClient" server.cjs
