@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "mcf_webagent": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["./dist/src/server.js"],
+      "cwd": "."
+    }
+  }
+}
