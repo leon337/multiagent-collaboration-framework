@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { ChatStore } = require('./lib/chat-store.cjs');
 const { createArchipelagoApi } = require('./lib/archipelago-api.cjs');
-const { streamOpenAIResponse } = require('./lib/providers/openai.cjs');
+const { createOpenAIConversation, streamOpenAIResponse } = require('./lib/providers/openai.cjs');
 const { DeviceSessionBroker } = require('./lib/device-session-broker.cjs');
 const { DualBrowserClient } = require('./lib/dual-browser-client.cjs');
 
@@ -182,6 +182,7 @@ const deviceBroker = new DeviceSessionBroker({ ttlMs: Number(process.env.ARCHIPE
 const handleApiV1 = createArchipelagoApi({
   store: chatStore,
   providerConfig,
+  createOpenAIConversation,
   streamOpenAIResponse,
   deviceBroker,
   dualBrowserClient

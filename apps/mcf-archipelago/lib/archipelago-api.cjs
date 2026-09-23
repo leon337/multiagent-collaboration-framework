@@ -50,7 +50,42 @@ async function emitMestreRelay(res, dualBrowserClient, chat, message) {
   }
 }
 
-function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, deviceBroker, dualBrowserClient }) {
+function createArchipelagoApi({ store, providerConfig, createOpenAIConversation, streamOpenAIResponse, deviceBroker, dualBrowserClient }) {
+  async function ensureOpenAIConversation(chat) {
+    const config = providerConfig();
+    const previous = chat?.metadata?.openai || {};
+    const existingId = previous.conversationId || null;
+
+    if (!config.secret.apiKey || existingId) {
+      return { chat, created:false, conversationId:existingId };
+    }
+
+    const conversation = await createOpenAIConversation({
+      apiKey: config.secret.apiKey,
+      chatId: chat.id,
+      title: chat.title,
+      projectId: chat.projectId
+    });
+    const createdAt = conversation.createdAt
+      ? new Date(conversation.createdAt * 1000).toISOString()
+      : new Date().toISOString();
+    const updated = store.update(chat.id, {
+      metadata: {
+        openai: {
+          ...previous,
+          conversationId: conversation.id,
+          createdAt,
+          state: 'READY'
+        }
+      }
+    });
+    return {
+      chat: updated || chat,
+      created: true,
+      conversationId: conversation.id
+    };
+  }
+
   return async function handleArchipelagoApi(req, res, requestUrl) {
     const pathname = requestUrl.pathname;
 
@@ -139,7 +174,10 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           throw surfaceError;
         }
 
-        const previousChatgpt = existed?.metadata?.chatgpt || {};
+        await ensureOpenAIConversation(store.get(chat.id, true) || chat);
+
+        const current = store.get(chat.id, false);
+        const previousChatgpt = current?.metadata?.chatgpt || existed?.metadata?.chatgpt || {};
         const surfaceUrl = surface.conversation.chatgptUrl || null;
         const previousUrl = previousChatgpt.url || null;
         const resolvedUrl = /\/(?:c|uc)\//.test(surfaceUrl || '')
@@ -229,12 +267,22 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
         return true;
       }
       if (req.method === 'POST') {
+        let createdFresh = false;
+        let createdId = null;
         try {
           const body = await readJson(req);
+          const requestedId = String(body.id || '').trim();
+          const existed = requestedId ? store.get(requestedId, false) : null;
           const chat = store.create(body);
-          json(res, 201, { chat });
+          createdFresh = !existed;
+          createdId = chat.id;
+          const binding = await ensureOpenAIConversation(chat);
+          json(res, 201, { chat: binding.chat });
         } catch (error) {
-          json(res, error.status || 400, { code: error.message || 'CHAT_CREATE_FAILED' });
+          if (createdFresh && createdId) {
+            try { store.remove(createdId); } catch {}
+          }
+          json(res, error.status || 400, { code: error.code || error.message || 'CHAT_CREATE_FAILED' });
         }
         return true;
       }
@@ -474,6 +522,18 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
         return true;
       }
 
+      let openaiBinding;
+      try {
+        openaiBinding = await ensureOpenAIConversation(chat);
+      } catch (error) {
+        json(res, error.status || 502, {
+          code: error.code || 'OPENAI_CONVERSATION_CREATE_FAILED',
+          message: String(error.message || error).slice(0, 1600)
+        });
+        return true;
+      }
+      const openaiChat = openaiBinding.chat;
+
       res.writeHead(200, {
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache, no-store',
@@ -482,7 +542,8 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
       sse(res, 'meta', {
         chatId,
         provider: 'openai',
-        model: config.public.openai.model
+        model: config.public.openai.model,
+        conversationId: openaiBinding.conversationId
       });
 
       let partial = '';
@@ -490,8 +551,10 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
         const result = await streamOpenAIResponse({
           apiKey: config.secret.apiKey,
           model: config.public.openai.model,
-          title: chat.title,
-          messages: chat.messages,
+          title: openaiChat.title,
+          messages: openaiChat.messages,
+          conversationId: openaiBinding.conversationId,
+          seedConversation: openaiBinding.created,
           onDelta: async delta => {
             partial += delta;
             sse(res, 'delta', { text: delta });
@@ -503,8 +566,24 @@ function createArchipelagoApi({ store, providerConfig, streamOpenAIResponse, dev
           provider: result.provider,
           model: result.model
         });
-        if (relayToMestre) await emitMestreRelay(res, dualBrowserClient, chat, message);
-        sse(res, 'done', { message });
+        const currentOpenAI = store.get(chatId, false)?.metadata?.openai || {};
+        store.update(chatId, {
+          metadata: {
+            openai: {
+              ...currentOpenAI,
+              conversationId: result.conversationId || openaiBinding.conversationId,
+              lastResponseId: result.responseId || currentOpenAI.lastResponseId || null,
+              lastUsedAt: new Date().toISOString(),
+              state: 'READY'
+            }
+          }
+        });
+        if (relayToMestre) await emitMestreRelay(res, dualBrowserClient, openaiChat, message);
+        sse(res, 'done', {
+          message,
+          conversationId: result.conversationId || openaiBinding.conversationId,
+          responseId: result.responseId || null
+        });
       } catch (error) {
         if (partial.trim()) {
           store.appendMessage(chatId, {
