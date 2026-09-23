@@ -18,11 +18,12 @@ test('hosted shell pins Three.js and exposes world recovery controls', async () 
   assert.match(indexHtml, /id="return-to-world"/);
 });
 
-test('Browser Surface keeps sandbox and safe external-tab behavior', async () => {
+test('Browser Surface keeps a restrictive sandbox and safe external-tab behavior', async () => {
   const browserSurface = await readAppFile('src/browser-surface.js');
   const indexHtml = await readAppFile('index.html');
 
-  assert.match(indexHtml, /sandbox="allow-forms allow-scripts allow-same-origin allow-popups"/);
+  assert.match(indexHtml, /sandbox="allow-forms allow-scripts allow-popups"/);
+  assert.doesNotMatch(indexHtml, /allow-same-origin/);
   assert.match(browserSurface, /noopener,noreferrer/);
   assert.match(browserSurface, /normalizeHttpUrl/);
 });
