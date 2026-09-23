@@ -1,0 +1,19 @@
+mission_id: MCF-ARCHIPELAGO-OPENAI-CONVERSATIONS-001
+phase_id: PHASE-MCF-ARCHIPELAGO-OPENAI-CONVERSATIONS-001
+cycle: 1
+objective_state: IMPLEMENTED_AND_VALIDATED
+branch: feat/archipelago-openai-conversations-20260922
+pull_request: 319
+base_pull_request: 315
+validation:
+  github_actions_run: 35806255838
+  conclusion: success
+  tests: 27
+  pass: 27
+  fail: 0
+open_findings:
+  - browser-first routing remains separate from OpenAI Conversation routing
+  - remote Conversation deletion is intentionally not coupled to local chat deletion
+blockers: []
+next_action: HUMAN_GATE_LEANDRO
+merge_executed: false

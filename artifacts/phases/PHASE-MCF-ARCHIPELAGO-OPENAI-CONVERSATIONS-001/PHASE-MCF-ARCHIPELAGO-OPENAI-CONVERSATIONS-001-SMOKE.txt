@@ -1,0 +1,7 @@
+SMOKE
+- index.html exists: PASS
+- styles.css exists: PASS
+- index contains MCF Archipelago: PASS
+- provider module syntax: PASS
+- Archipelago API syntax: PASS
+- server syntax: PASS

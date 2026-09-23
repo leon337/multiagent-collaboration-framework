@@ -1,0 +1,10 @@
+MCF Archipelago CI
+run_id=35806255838
+status=completed
+conclusion=success
+job=validate
+syntax_and_unit_tests=success
+static_entrypoint_smoke=success
+tests=27
+pass=27
+fail=0

@@ -1,0 +1,12 @@
+Validation source: GitHub Actions run 35806255838
+Node: v24.20.0
+npm run ci => success
+npm run check => success
+node --test tests/*.test.mjs => success
+OpenAI Conversation tests:
+- createOpenAIConversation cria conv_* com metadados do chat => PASS
+- latestUserInput seleciona somente a mensagem humana mais recente => PASS
+- turno persistente usa conversation e envia apenas a nova mensagem => PASS
+- migração inicial semeia o histórico local uma única vez => PASS
+Overall: tests=27 pass=27 fail=0 skipped=0
+Static entrypoint smoke => PASS

@@ -1,0 +1,2 @@
+NAO_APLICAVEL
+Justificativa: os artefatos desta fase foram produzidos diretamente como objetos Git pelo conector GitHub. A integridade canônica é dada pelo tree SHA e commit SHA imutáveis resultantes do commit da fase; não foi calculado um segundo conjunto redundante de hashes locais nesta execução.
