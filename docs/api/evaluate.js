@@ -1,5 +1,6 @@
+import { experimental_evaluate as evaluate } from 'ai';
+
 const MODEL = 'typesafe-ai/jev';
-const ENDPOINT = 'https://ai-gateway.vercel.sh/v1/evaluate';
 
 const defaultQuestions = {
   missionCompleted: {
@@ -46,14 +47,6 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'METHOD_NOT_ALLOWED' });
   }
 
-  const token = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
-  if (!token) {
-    return res.status(503).json({
-      error: 'AI_GATEWAY_AUTH_MISSING',
-      message: 'Configure AI_GATEWAY_API_KEY ou habilite autenticação OIDC da Vercel para o AI Gateway.'
-    });
-  }
-
   const body = normalizeBody(req);
   const state = body.state ?? {
     agent: 'MESTRE',
@@ -67,25 +60,23 @@ export default async function handler(req, res) {
   };
 
   try {
-    const upstream = await fetch(ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ model: MODEL, state, questions: body.questions ?? defaultQuestions })
+    const result = await evaluate({
+      model: MODEL,
+      state,
+      questions: body.questions ?? defaultQuestions
     });
 
-    const raw = await upstream.text();
-    let payload;
-    try { payload = JSON.parse(raw); } catch { payload = { raw }; }
-
-    if (!upstream.ok) {
-      return res.status(upstream.status).json({ error: 'JEV_UPSTREAM_ERROR', status: upstream.status, payload });
-    }
-
-    return res.status(200).json({ ok: true, model: MODEL, evaluatedAt: new Date().toISOString(), state, result: payload });
+    return res.status(200).json({
+      ok: true,
+      model: MODEL,
+      evaluatedAt: new Date().toISOString(),
+      state,
+      answers: result.answers
+    });
   } catch (error) {
-    return res.status(500).json({ error: 'EVALUATION_FAILED', message: error instanceof Error ? error.message : String(error) });
+    return res.status(500).json({
+      error: 'EVALUATION_FAILED',
+      message: error instanceof Error ? error.message : String(error)
+    });
   }
 }
