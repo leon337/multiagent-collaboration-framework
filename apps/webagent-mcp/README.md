@@ -56,6 +56,8 @@ npm run build
 
 The qualification suite requires no API key, paid service, proxy, browser binary, or external login.
 
+The GitHub Actions mission workflow executes the same typecheck/test/build boundary on every application change. The final mission checkpoint records the exact qualified commit and run rather than treating a previous green commit as evidence for a later head.
+
 ## Plugin packaging in this mission
 
 The current local/self-hosted package uses the supported OpenAI compatibility layout:
@@ -84,12 +86,23 @@ A root portable `plugin.json` + `mcp.json` package is intentionally **not** prod
 - Errors returned through the execution envelope do not include stack traces.
 - The baseline package contains no token, password, API key, or paid-provider requirement.
 - No credential vault, persistent authenticated profile, proxy fleet, real browser control, production deployment, or destructive external action is implemented in this mission.
+- The current fetch adapter is not yet hardened as a public hostile-URL gateway (for example, full SSRF/DNS-rebinding and redirect-policy defenses). Do not expose it as an unauthenticated public fetch service before that hardening boundary is implemented.
 
 ## MCP SDK track
 
 The server is implemented against the current published MCP TypeScript v2 packages (`@modelcontextprotocol/server` and the test client package at `2.0.0`). Qualification includes a real in-memory MCP client/server handshake, `listTools()`, and tool invocation.
 
 OpenAI plugin documentation and the upstream MCP SDK can evolve at different speeds. Therefore this mission proves the MCP v2 server contract and local package structure; it does **not** claim that a public ChatGPT plugin has already passed Developer Mode or submission review. That compatibility must be verified against the deployed HTTPS endpoint in the next integration boundary.
+
+## Release hardening still required
+
+Before treating this as a release candidate:
+
+- generate and commit a deterministic dependency lockfile and switch CI from `npm install` to `npm ci`;
+- harden `web_fetch` against public-service SSRF, redirects, DNS rebinding, MIME/content policy and egress abuse;
+- add a real search adapter;
+- add a real browser worker with isolation;
+- expose a remote HTTPS MCP transport and qualify it in the current ChatGPT Developer Mode surface.
 
 ## Next architecture boundary
 
