@@ -30,7 +30,7 @@ jobs:
       - name: Isolation smoke
         run: |
           grep -q "Dual Browser desativado" README.md
-          grep -q "MCF dispatch desativado" README.md
+          grep -Eq "dispatch.*MCF.*desativado|MCF.*dispatch.*desativado" README.md
           grep -q "4273" README.md
           grep -q "LabSurfaceClient" server.cjs
           ! grep -q "new DualBrowserClient" server.cjs
