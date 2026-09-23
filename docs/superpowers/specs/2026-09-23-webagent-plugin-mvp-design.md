@@ -4,32 +4,32 @@ Mission: `MCF-WEBAGENT-PLUGIN-MVP-001` / Issue #322
 
 ## Intent
 
-Create a self-contained TypeScript MCP application that proves the first usable WebAgent vertical slice inside the MCF repository. The application must expose stable web-oriented tool contracts while keeping provider/runtime details replaceable.
-
-The MVP is not a TinyFish clone. It establishes the compatibility floor (`search + fetch + browser job lifecycle`) and the architectural seams needed for later MCF advantages: policy, evidence, replay, budget control, multi-agent/parallel execution and governed authenticated profiles.
+Create a self-contained TypeScript MCP application that proves the first usable WebAgent vertical slice inside the MCF repository. The MVP is not a TinyFish clone: it establishes the compatibility floor (`search + fetch + asynchronous browser-job lifecycle`) and stable seams for later policy, evidence, replay, budgets, parallel execution, profiles, vaults and MCF multi-agent coordination.
 
 ## Scope
 
 ### In scope
 
-- `web_search` tool contract and provider interface;
-- `web_fetch` tool contract and safe bounded HTTP implementation;
-- `browser_run`, `browser_wait`, `browser_cancel` tool contracts;
-- deterministic asynchronous in-memory browser runtime for the MVP;
-- execution envelope carrying status, evidence and budget/runtime metadata;
-- MCP server over stdio for qualification and local clients;
-- plugin package metadata and a workflow skill;
-- unit tests, typecheck and GitHub Actions qualification.
+- `web_search` provider contract and deterministic baseline provider;
+- `web_fetch` safe bounded HTTP implementation;
+- `browser_run`, `browser_wait`, `browser_cancel` contracts;
+- deterministic asynchronous in-memory browser runtime;
+- execution envelopes with evidence, timing, budgets and stable errors;
+- MCP v2 server over stdio for local/self-hosted qualification;
+- OpenAI compatibility plugin manifest, stdio MCP wiring and workflow skill;
+- unit/integration tests, typecheck, build and GitHub Actions qualification.
 
 ### Out of scope
 
-- production deployment;
+- real search provider;
+- real Playwright/Chromium execution;
+- production or public HTTPS deployment;
 - OAuth, vault and real credentials;
 - persistent browser profiles;
-- Playwright/Chromium worker fleet;
-- paid proxies/search APIs;
+- paid proxies/providers;
 - public plugin submission;
-- destructive external actions.
+- destructive external actions;
+- merge to `main` as part of this mission.
 
 ## Architecture
 
@@ -50,14 +50,14 @@ McpServer
                           |
                           v
                     ExecutionEnvelope
-                    evidence + timing
+                    evidence + timing + budget
 ```
 
-Provider interfaces are the primary seam. The MCP layer contains input validation and presentation only; it must not own provider logic.
+Provider interfaces are the primary seam. The MCP layer validates/presents tool calls; it does not own provider/runtime behavior.
 
 ## Deterministic-first rule
 
-The MVP deliberately uses deterministic implementations. A future browser implementation may add Playwright/Stagehand/LLM fallback, but the tool contracts remain stable.
+Use deterministic mechanisms before agentic mechanisms. A future browser implementation may add Playwright, visual understanding, Stagehand or LLM fallback behind `BrowserRuntime`, while the five public MCP tool names remain stable.
 
 ## Tool contracts
 
@@ -68,23 +68,25 @@ Input:
 - `limit?: number` (1..20, default 5)
 
 Output:
-- execution envelope
-- `data.results[]` with `title`, `url`, `snippet`, optional `source`
+- execution envelope;
+- `data.query`;
+- `data.results[]` with `title`, `url`, `snippet`, optional `source`.
 
-The baseline provider is deterministic and local so qualification requires no paid service or secret. It may return a clearly labeled empty result set when no external provider is configured.
+The baseline provider is `local-empty`. It validates the contract and returns a clearly labeled empty result set. It must never be described as a live external search.
 
 ### `web_fetch`
 
 Input:
-- `url: string`
-- `maxBytes?: number` (default 250000, capped at 1000000)
+- `url: string`;
+- `maxBytes?: number` (default 250000, cap 1000000).
 
 Rules:
 - only `http:` and `https:` URLs;
 - reject embedded credentials;
-- bounded response body;
-- 10 second timeout;
-- no claim of clean article extraction in this MVP; output is normalized text plus metadata.
+- stream and bound response bodies;
+- 10-second timeout;
+- return UTF-8 normalized text plus metadata;
+- no claim of article extraction/crawling in this MVP.
 
 Output data:
 - `url`, `status`, `contentType`, `text`, `truncated`.
@@ -92,21 +94,19 @@ Output data:
 ### Browser lifecycle
 
 `browser_run` input:
-- `url`
-- `goal`
-- optional `maxSteps` and `maxDurationMs`
+- `url`;
+- `goal`;
+- optional `maxSteps` and `maxDurationMs`.
 
-`browser_run` returns immediately with `runId` and `PENDING`/`RUNNING` state.
+It returns immediately with a UUID and `PENDING` snapshot. The deterministic runtime later transitions the run to `COMPLETED`, unless it is cancelled first.
 
-`browser_wait` returns the current snapshot for a run.
+`browser_wait` returns the current snapshot.
 
-`browser_cancel` transitions a non-terminal run to `CANCELLED`; cancellation is idempotent for an already-cancelled run and must not convert `COMPLETED` or `FAILED` into another state.
+`browser_cancel` transitions a non-terminal run to `CANCELLED`. Terminal states are preserved.
 
-The MVP runtime does not control a real browser. It executes a deterministic simulated job adapter whose contract can later be replaced by Playwright workers. Responses must label the runtime as `deterministic-mvp` so simulation is never mistaken for external browser execution.
+The runtime is labeled `deterministic-mvp`. It does **not** launch or operate a real browser; its result explicitly says completion occurred without live browser execution.
 
 ## Execution envelope
-
-All provider-facing tool results use:
 
 ```ts
 type ExecutionEnvelope<T> = {
@@ -130,22 +130,33 @@ type ExecutionEnvelope<T> = {
 };
 ```
 
-Invariant: a tool must not return `ok: true` without `data` or terminal runtime evidence appropriate to that operation.
+Stack traces are not emitted in tool results.
 
-## Error model
+## Stable error semantics
 
-Stable error codes for the MVP:
 - `INVALID_URL`
+- `INVALID_ARGUMENT`
 - `FETCH_TIMEOUT`
 - `FETCH_FAILED`
-- `BODY_TOO_LARGE`
 - `RUN_NOT_FOUND`
-- `RUN_CANCELLED`
-- `INVALID_ARGUMENT`
+- fallback `OPERATION_FAILED`
 
-Provider/internal errors are translated at the MCP boundary; stack traces are not returned as tool content.
+Fetch oversize is represented by bounded output plus `truncated: true`; cancellation is represented by the `CANCELLED` run state rather than an error code.
 
-## Files
+## MCP SDK decision
+
+The executed implementation uses the published MCP TypeScript v2 split packages:
+
+- `@modelcontextprotocol/server@2.0.0`;
+- `@modelcontextprotocol/client@2.0.0` in protocol integration tests.
+
+The test suite creates a real in-memory MCP connection, calls `listTools()`, and invokes `web_search` through the protocol boundary.
+
+This proves the local MCP v2 contract. It does not prove a public ChatGPT deployment until a remote HTTPS MCP endpoint is deployed and tested in the current OpenAI integration surface.
+
+## Package boundary
+
+Current local/self-hosted package:
 
 ```text
 apps/webagent-mcp/
@@ -159,10 +170,12 @@ apps/webagent-mcp/
     browser-runtime.ts
     server.ts
   test/
+    execution.test.ts
     search-provider.test.ts
     fetch-provider.test.ts
     browser-runtime.test.ts
-    execution.test.ts
+    server.test.ts
+    plugin-package.test.ts
   .codex-plugin/plugin.json
   .mcp.json
   skills/webagent/SKILL.md
@@ -170,25 +183,29 @@ apps/webagent-mcp/
 .github/workflows/webagent-mcp-qualification.yml
 ```
 
+A portable root `plugin.json` + `mcp.json` package is deferred until the server has a real remote HTTPS endpoint. No placeholder public URL is permitted.
+
 ## Qualification
 
-CI must execute on changes to the application or workflow:
+GitHub Actions runs on Node 22:
 
 ```text
-npm ci
+npm install --no-audit --no-fund
 npm run typecheck
 npm test
 npm run build
 ```
 
-Node 22 is the baseline.
+`npm install` is used for this mission because a deterministic lockfile has not yet been generated/committed. Lockfile hardening is required before a release candidate.
 
-Tests require no internet service, API key, browser binary or paid account. Fetch network behavior is tested with an injected `fetch` implementation.
+Tests require no internet service, API key, live browser binary or paid account. Fetch network behavior is tested with an injected `fetch` implementation.
 
 ## Governance
 
 - exact implementation claims require exact-SHA CI evidence;
-- no merge or deploy is part of this design;
+- no merge/deploy/publication is implied by a green branch;
 - no secret is committed;
-- no real browser control is claimed by the deterministic MVP runtime;
-- external providers are future adapters, not hidden dependencies.
+- no live search is claimed by `local-empty`;
+- no real browser control is claimed by `deterministic-mvp`;
+- external providers and live workers are future adapters, not hidden dependencies;
+- `CLAIM <= EVIDENCE`.
