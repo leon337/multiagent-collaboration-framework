@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MCF Decision Lab · Jev</title>
+  <style>
+    :root{color-scheme:dark;--bg:#090d12;--panel:#111821;--muted:#8ea0b5;--text:#f3f7fb;--line:#243244;--accent:#74d3ff;--ok:#86efac;--warn:#fde68a;--bad:#fca5a5}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#172130 0,transparent 34%),var(--bg);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI";color:var(--text)}
+    main{width:min(1180px,calc(100% - 32px));margin:32px auto 64px}.eyebrow{color:var(--accent);font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:800}.hero{display:flex;gap:24px;align-items:flex-end;justify-content:space-between;margin-bottom:22px}.hero h1{font-size:clamp(30px,5vw,56px);line-height:1;margin:.35rem 0}.hero p{color:var(--muted);max-width:680px;margin:0}.badge{border:1px solid var(--line);background:#0d141d;padding:8px 12px;border-radius:999px;color:#c9d6e5;white-space:nowrap}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}@media(max-width:860px){.grid{grid-template-columns:1fr}.hero{align-items:flex-start;flex-direction:column}.badge{white-space:normal}}
+    .card{background:linear-gradient(180deg,#111821,#0d131b);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 18px 45px #0005}.card h2{font-size:18px;margin:0 0 8px}.card p{color:var(--muted);margin-top:0}
+    textarea{width:100%;min-height:340px;resize:vertical;border:1px solid var(--line);background:#090f16;color:#dce7f3;border-radius:12px;padding:14px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;outline:none}textarea:focus{border-color:#47799a}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}button{border:1px solid var(--line);background:#152231;color:white;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}button.primary{background:#dff4ff;color:#06121a;border-color:#dff4ff}button:hover{filter:brightness(1.08)}button:disabled{opacity:.5;cursor:wait}
+    pre{margin:0;min-height:420px;white-space:pre-wrap;word-break:break-word;background:#090f16;border:1px solid var(--line);border-radius:12px;padding:14px;color:#d7e5f3;overflow:auto}.status{margin:10px 0 12px;color:var(--muted)}.status.ok{color:var(--ok)}.status.err{color:var(--bad)}
+    .samples{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}@media(max-width:680px){.samples{grid-template-columns:1fr}}.sample{font-size:12px;text-align:left;background:#0d141d}
+    footer{color:#64758a;margin-top:16px;font-size:12px}
+  </style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div><div class="eyebrow">MCF · Experimental</div><h1>Jev Decision Lab</h1><p>Laboratório isolado para avaliar estados de missão com decisões tipadas: conclusão, HUMAN_GATE, próxima ação e risco operacional.</p></div>
+    <div class="badge">typesafe-ai/jev · Vercel AI Gateway</div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Estado da missão</h2>
+      <p>Edite o JSON abaixo ou carregue um cenário. Nada aqui executa ações externas; o Jev apenas avalia o estado.</p>
+      <textarea id="state"></textarea>
+      <div class="samples">
+        <button class="sample" data-sample="safe">✅ Seguro / continuar</button>
+        <button class="sample" data-sample="gate">🧑 HUMAN_GATE</button>
+        <button class="sample" data-sample="retry">↻ Retry / falha recuperável</button>
+      </div>
+      <div class="actions"><button class="primary" id="run">Avaliar com Jev</button><button id="reset">Restaurar exemplo</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Resultado</h2>
+      <p>Resposta bruta do endpoint oficial <code>/v1/evaluate</code>, preservada para inspeção.</p>
+      <div id="status" class="status">Pronto para testar.</div>
+      <pre id="output">{}</pre>
+    </div>
+  </section>
+  <footer>Boundary do laboratório: somente avaliação. Nenhuma resposta do Jev é tratada como autorização real do MCF.</footer>
+</main>
+<script>
+const samples = {
+  safe: {agent:'MESTRE',mission:'Validar componente experimental',tests:'passed',ci:'green',externalWrite:false,production:false,humanAuthorizationPresent:false,evidence:['unit-tests:pass','lint:pass'],errors:0},
+  gate: {agent:'MESTRE',mission:'Promover runtime para produção',tests:'passed',ci:'green',externalWrite:true,production:true,humanAuthorizationPresent:false,evidence:['ci:green'],errors:0},
+  retry: {agent:'CARMEM',mission:'Executar validação de integração',tests:'failed',ci:'red',externalWrite:false,production:false,humanAuthorizationPresent:false,evidence:['network-timeout','partial-log'],errors:1,recoverable:true}
+};
+const state = document.querySelector('#state');
+const output = document.querySelector('#output');
+const status = document.querySelector('#status');
+const run = document.querySelector('#run');
+function load(name='safe'){state.value=JSON.stringify(samples[name],null,2)}
+load();
+document.querySelectorAll('[data-sample]').forEach(b=>b.addEventListener('click',()=>load(b.dataset.sample)));
+document.querySelector('#reset').addEventListener('click',()=>load());
+run.addEventListener('click', async()=>{
+  let parsed;
+  try{parsed=JSON.parse(state.value)}catch(e){status.className='status err';status.textContent='JSON inválido: '+e.message;return}
+  run.disabled=true;status.className='status';status.textContent='Avaliando…';output.textContent='{}';
+  try{
+    const r=await fetch('/api/evaluate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:parsed})});
+    const data=await r.json();output.textContent=JSON.stringify(data,null,2);status.className='status '+(r.ok?'ok':'err');status.textContent=r.ok?'Avaliação concluída.':'Falha HTTP '+r.status;
+  }catch(e){status.className='status err';status.textContent='Falha de rede';output.textContent=String(e)}finally{run.disabled=false}
+});
+</script>
+</body>
+</html>
