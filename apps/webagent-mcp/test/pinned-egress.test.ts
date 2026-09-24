@@ -3,7 +3,7 @@ import { createServer as createTcpServer } from 'node:net';
 import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import { AllowAllEgressPolicy } from '../src/egress-policy.js';
-import { createPinnedFetch, type TargetResolver } from '../src/pinned-fetch.js';
+import { createPinnedFetch, PublicTargetResolver, type TargetResolver } from '../src/pinned-fetch.js';
 import { PinnedEgressProxy } from '../src/pinned-proxy.js';
 import { PlaywrightBrowserRuntime } from '../src/browser-runtime.js';
 
@@ -40,14 +40,30 @@ async function httpFixture() {
 }
 
 describe('pinned egress', () => {
-  it('fetch connects to the approved IP while preserving the original Host', async () => {
+  it('fetch connects once to the approved IP while preserving the original Host', async () => {
     const fixture = await httpFixture();
-    const pinnedFetch = createPinnedFetch(loopbackResolver);
+    let resolutions = 0;
+    const resolver: TargetResolver = {
+      async resolve(url) {
+        resolutions += 1;
+        return { hostname: url.hostname, address: '127.0.0.1', family: 4 };
+      },
+    };
+    const pinnedFetch = createPinnedFetch(resolver);
 
     const response = await pinnedFetch(new URL(`http://rebind.example:${fixture.port}/proof`));
     expect(response.status).toBe(200);
     expect(await response.text()).toContain('Pinned transport works.');
     expect(fixture.host()).toBe(`rebind.example:${fixture.port}`);
+    expect(resolutions).toBe(1);
+  });
+
+  it('rejects mixed public and private DNS answers before selecting a pinned target', async () => {
+    const resolver = new PublicTargetResolver(async () => ['93.184.216.34', '127.0.0.1']);
+
+    await expect(resolver.resolve(new URL('https://example.com/'))).rejects.toMatchObject({
+      code: 'EGRESS_BLOCKED',
+    });
   });
 
   it('CONNECT proxy opens the socket to the approved IP instead of resolving the hostname again', async () => {
