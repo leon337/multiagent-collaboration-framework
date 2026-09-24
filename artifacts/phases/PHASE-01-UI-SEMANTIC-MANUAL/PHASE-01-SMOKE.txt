@@ -26,3 +26,9 @@ valid unavailable submit state=PASS
 
 Important boundary:
 This phase proves semantic resolution/manual consistency. It does not yet claim that a generic semantic action endpoint has been implemented. Actual navigation/post-action smoke belongs to the runtime resolver implementation or the controlled fresh-chat preparation step.
+
+R3 after Emily remediation:
+PASS 44/44
+contractVersion=1.0.1
+sha256=1e03880808fa0e9b7cf8f03e663d9a205d079a5ebf4f3db4a3089c7d9da6bd03
+M1/M2 contract changes preserved semantic IDs and read-only resolution behavior.
