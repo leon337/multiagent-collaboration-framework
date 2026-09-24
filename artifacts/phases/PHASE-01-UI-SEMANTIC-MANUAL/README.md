@@ -18,4 +18,10 @@ Canonical outputs:
 - `docs/contracts/MCF-UI-SEMANTIC-CONTRACT.json`
 - local `~/.config/mcf-dual-browser-cockpit/ui-semantic-bindings.json`
 
-Current gate: final Emily audit.
+Current gate: Emily re-audit after R1 remediation.
+
+Additional evidence:
+- PHASE-01-EMILY-AUDIT-R1.txt
+- PHASE-01-CANONICAL-HASHES.sha256
+
+Current contract version: 1.0.1
