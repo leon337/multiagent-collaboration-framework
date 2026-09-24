@@ -1,6 +1,6 @@
 # MCF WebAgent MCP
 
-Current access mission: `MCF-WEBAGENT-ACCESS-004` · Issue #354 · unblocks #348
+Current security mission: `MCF-WEBAGENT-EGRESS-005` · Issue #356
 
 The WebAgent now has two MCP transports over the same five governed tools:
 
@@ -40,8 +40,8 @@ export WEBAGENT_ALLOWED_HOSTS="webagent-staging.example.com"
 export WEBAGENT_ALLOWED_ORIGINS="chatgpt.com"
 
 # Remote non-loopback endpoints keep user-directed open-world fetch/browser
-# networking disabled by default. Do not enable this on an anonymous public
-# endpoint until transport-level egress pinning or an outbound proxy is qualified.
+# networking disabled by default. EGRESS-005 adds pinned transport protection;
+# enabling open-world remains an explicit operator decision.
 export WEBAGENT_REMOTE_OPEN_WORLD="enabled"
 ```
 
@@ -105,9 +105,16 @@ Then use `http://127.0.0.1:3000/mcp` locally, the ephemeral Quick Tunnel `/mcp` 
 
 ### Outbound web plane
 
-The existing `PublicEgressPolicy` rejects embedded credentials, localhost names, loopback/private/link-local IP ranges and hostnames whose preflight DNS answers are blocked. Fetch redirects are validated hop-by-hop and browser HTTP(S) requests pass through the same policy.
+EGRESS-005 closes the previous preflight/connect DNS gap for the current fetch and browser transports:
 
-This does **not** claim complete DNS-rebinding resistance because the transport still resolves independently after preflight. A pinned-connect or controlled outbound proxy remains required before calling an unauthenticated public deployment production-safe.
+- `PublicTargetResolver` resolves a hostname, rejects the whole result if any answer is non-public, and selects an approved IP/family.
+- default `web_fetch` uses Node HTTP/HTTPS with a custom lookup callback that returns only the approved IP while preserving the original Host header and HTTPS SNI/certificate validation.
+- every redirect hop is independently validated and pinned.
+- Playwright runs through a loopback-only `PinnedEgressProxy`; HTTP forwarding and HTTPS CONNECT both open sockets to the approved IP rather than to the hostname.
+- browser request routing still applies `PublicEgressPolicy` as defense in depth.
+- cancellation, timeout and runtime disposal close active proxy sockets.
+
+This addresses the documented DNS-rebinding gap for these transports. It does **not** by itself make an anonymous public WebAgent production-safe: authentication/rate limiting, resource isolation, abuse controls and broader production operations remain separate boundaries.
 
 ## Packaging
 
@@ -130,10 +137,21 @@ The stdio entrypoint remains `node ./dist/src/server.js`. The remote process is 
 - New Render free staging: **BLOCKED_BY_QUOTA** at the Hobby 25-service limit.
 - Named Cloudflare Tunnel: **VIABLE_FUTURE** for a stable URL; requires Cloudflare account/zone credentials.
 
+## Egress-005 result
+
+- pinned Node HTTP/HTTPS fetch: **QUALIFIED on branch**
+- mixed public/private DNS answer rejection: **TESTED**
+- pinned HTTPS CONNECT proxy: **TESTED**
+- real Chromium through pinned proxy: **TESTED**
+- remote open-world default: **still disabled**
+- production-public claim: **not made**
+
+The mission is qualified by the repository WebAgent workflow, which installs Chromium and runs typecheck, the full Vitest suite (including real Chromium through the pinned proxy), and build on the exact branch HEAD.
+
 ## Next boundary
 
-1. use the proven ephemeral workflow for ChatGPT Developer Mode qualification when the product-side app creation UI is available;
-2. move to OpenAI Secure MCP Tunnel or a named Cloudflare Tunnel for a stable long-running development path;
-3. pinned-connect/outbound proxy before any production-public open-world claim;
-4. screenshot/DOM evidence and replay;
-5. action primitives, profiles/vault, parallel workers and MCF orchestration.
+1. screenshot + DOM evidence and replay;
+2. action primitives behind policy gates;
+3. stable long-running Developer Mode path when account-side tunnel/custom-app access is available;
+4. authentication/rate limiting/resource isolation for public operation;
+5. profiles/vault, parallel workers and MCF multi-agent orchestration.

@@ -1,6 +1,7 @@
 import type { ExecutionEnvelope } from './contracts.js';
 import { type EgressPolicy, PublicEgressPolicy } from './egress-policy.js';
 import { executeEnvelope, OperationError } from './execution.js';
+import { createPinnedFetch } from './pinned-fetch.js';
 
 export type FetchRequest = {
   url: string;
@@ -99,7 +100,7 @@ async function readBoundedBody(response: Response, maxBytes: number): Promise<{ 
 
 export class HttpFetchProvider implements FetchProvider {
   constructor(
-    private readonly fetchImpl: FetchLike = globalThis.fetch,
+    private readonly fetchImpl: FetchLike = createPinnedFetch(),
     private readonly egressPolicy: EgressPolicy = new PublicEgressPolicy(),
   ) {}
 
