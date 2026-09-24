@@ -264,7 +264,20 @@
         "stop-generation",
         "unavailable"
       ],
-      "ambiguity": "fail"
+      "ambiguity": "fail",
+      "availability": {
+        "rule": "may-be-absent-when-composer-empty-and-generation-inactive",
+        "validStates": [
+          "send",
+          "stop-generation",
+          "unavailable"
+        ]
+      },
+      "resolutionPolicy": {
+        "zeroMatches": "UNAVAILABLE when composer is empty and generation is inactive; otherwise NOT_FOUND",
+        "oneMatch": "resolve and classify semantic state",
+        "multipleMatches": "AMBIGUOUS"
+      }
     },
     {
       "id": "chatgpt.generation.stop",
