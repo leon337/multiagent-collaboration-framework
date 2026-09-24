@@ -3,6 +3,7 @@ import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import { AllowAllEgressPolicy } from '../src/egress-policy.js';
 import { PlaywrightBrowserRuntime } from '../src/browser-runtime.js';
+import type { TargetResolver } from '../src/pinned-fetch.js';
 
 const runtimes: PlaywrightBrowserRuntime[] = [];
 const servers: ReturnType<typeof createServer>[] = [];
@@ -44,7 +45,15 @@ async function waitForTerminal(runtime: PlaywrightBrowserRuntime, runId: string)
 
 describe('PlaywrightBrowserRuntime', () => {
   it('launches real Chromium and captures page evidence', async () => {
-    const runtime = new PlaywrightBrowserRuntime({ egressPolicy: new AllowAllEgressPolicy() });
+    const targetResolver: TargetResolver = {
+      async resolve(url) {
+        return { hostname: url.hostname, address: '127.0.0.1', family: 4 };
+      },
+    };
+    const runtime = new PlaywrightBrowserRuntime({
+      egressPolicy: new AllowAllEgressPolicy(),
+      targetResolver,
+    });
     runtimes.push(runtime);
 
     const started = runtime.start({ url: await fixtureUrl(), goal: 'inspect the fixture' });
