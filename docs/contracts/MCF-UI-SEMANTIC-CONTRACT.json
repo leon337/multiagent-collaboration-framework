@@ -533,7 +533,14 @@
           "no-persistent-project-state-changed"
         ]
       },
-      "ambiguity": "fail"
+      "ambiguity": "fail",
+      "effectClass": "read-only",
+      "actionPolicy": {
+        "ambiguity": "fail",
+        "staleTarget": "fail",
+        "contextChange": "fail",
+        "retryAfterUnknownEffect": false
+      }
     },
     {
       "id": "chatgpt.project.settings",
@@ -643,11 +650,13 @@
       "id": "chatgpt.project.settings.icon-color",
       "concept": "Project icon and color settings control",
       "surface": "chatgpt",
-      "kind": "stateful-action-control",
+      "kind": "stateful-overlay-control",
       "critical": true,
-      "effectClass": "persistent-mutation",
+      "effectClass": "persistent-mutation-on-selection",
       "allowedOperations": [
-        "inspect"
+        "inspect",
+        "open",
+        "dismiss"
       ],
       "mutationRequiresExplicitAuthority": true,
       "locators": [
@@ -668,7 +677,22 @@
           "expectedMatches": 1
         }
       ],
-      "ambiguity": "fail"
+      "ambiguity": "fail",
+      "overlay": {
+        "portalCapable": true,
+        "expectedRole": "menu",
+        "generatedIdsPersistent": false,
+        "observedChildControls": [
+          {
+            "role": "button",
+            "name": "Cor personalizada"
+          },
+          {
+            "role": "menuitem",
+            "name": "Fechar menu"
+          }
+        ]
+      }
     },
     {
       "id": "chatgpt.project.settings.name",
@@ -736,11 +760,13 @@
       "id": "chatgpt.project.settings.memory",
       "concept": "Project memory settings control",
       "surface": "chatgpt",
-      "kind": "action-control",
+      "kind": "stateful-overlay-control",
       "critical": true,
-      "effectClass": "persistent-mutation",
+      "effectClass": "persistent-mutation-on-selection",
       "allowedOperations": [
-        "inspect"
+        "inspect",
+        "open",
+        "dismiss"
       ],
       "mutationRequiresExplicitAuthority": true,
       "locators": [
@@ -761,7 +787,35 @@
           "expectedMatches": 1
         }
       ],
-      "ambiguity": "fail"
+      "ambiguity": "fail",
+      "states": [
+        "standard",
+        "project-only",
+        "unknown"
+      ],
+      "overlay": {
+        "portalCapable": true,
+        "expectedRole": "menu",
+        "generatedIdsPersistent": false
+      },
+      "stateClassification": {
+        "strategy": "checked-radio-menuitem",
+        "options": [
+          {
+            "semanticValue": "standard",
+            "role": "radio-menuitem",
+            "heading": "Memória padrão",
+            "descriptionContains": "Este projeto pode acessar a memória de chats externos"
+          },
+          {
+            "semanticValue": "project-only",
+            "role": "radio-menuitem",
+            "heading": "Memória somente no projeto",
+            "descriptionContains": "Este projeto só pode acessar a própria memória"
+          }
+        ],
+        "unknown": "VALIDATION_FAILED"
+      }
     },
     {
       "id": "chatgpt.project.settings.delete",
@@ -863,14 +917,6 @@
       "critical": true,
       "effectClass": "navigation",
       "optionalCapability": true,
-      "observedAvailability": {
-        "2026-09-24": {
-          "Emily": false,
-          "Sofia": true,
-          "Patrícia": true,
-          "Rafael": true
-        }
-      },
       "locators": [
         {
           "id": "project-share-menuitem",
@@ -889,43 +935,8 @@
           "expectedMatches": 1
         }
       ],
-      "ambiguity": "fail"
-    },
-    {
-      "id": "chatgpt.project.settings.appearance",
-      "concept": "Project icon and color settings",
-      "surface": "chatgpt",
-      "kind": "stateful-overlay-control",
-      "critical": true,
-      "effectClass": "persistent-write-on-selection",
-      "mutationAllowedByDefault": false,
-      "locators": [
-        {
-          "id": "appearance-button-accessible",
-          "priority": 10,
-          "strategy": "role-name-prefix",
-          "role": "button",
-          "namePrefix": {
-            "pt-BR": "Abrir menu de ícone e cor do projeto"
-          },
-          "scope": "chatgpt.project.settings.dialog",
-          "expectedMatches": 1
-        }
-      ],
-      "overlay": {
-        "rendering": "portal-capable",
-        "role": "menu"
-      },
-      "observedChildControls": [
-        {
-          "role": "button",
-          "name": "Cor personalizada"
-        },
-        {
-          "role": "menuitem",
-          "name": "Fechar menu"
-        }
-      ]
+      "ambiguity": "fail",
+      "note": "Optional capability in the details menu; current workstation availability is evidence-local and must not be embedded in the generic contract."
     }
   ],
   "workflows": [
@@ -972,12 +983,13 @@
     "generatedIds": "runtime-only",
     "physicalDomAncestryRequired": false,
     "requiredEvidence": [
+      "validated current-project identity",
       "validated trigger identity",
-      "current project identity",
       "visible overlay role/name",
       "candidate cardinality",
-      "fresh re-resolution after transition"
+      "fresh re-resolution after each transition"
     ],
-    "criticalActionExecutor": "fail-closed; first-match primitives are not sufficient"
+    "criticalActionExecutor": "fail-closed; first-match primitives are not sufficient",
+    "firstMatchCriticalActionsAllowed": false
   }
 }
