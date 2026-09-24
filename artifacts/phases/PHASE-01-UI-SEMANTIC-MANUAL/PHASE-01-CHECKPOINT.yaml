@@ -4,10 +4,10 @@ phase_id: PHASE-01-UI-SEMANTIC-MANUAL
 class: B
 authority: LEANDRO
 orchestrator: MESTRE
-state: READY_FOR_FINAL_AUDIT
+state: READY_FOR_REAUDIT
 contract:
   schema: mcf-ui-semantic-contract/v1
-  version: 1.0.0
+  version: 1.0.1
 repository_branch: mission/ui-semantic-manual-001
 manual: docs/operations/MCF-UI-OPERATING-MANUAL.md
 machine_contract: docs/contracts/MCF-UI-SEMANTIC-CONTRACT.json
@@ -23,5 +23,18 @@ smoke_r2:
   status: PASS
   passed: 44
   failed: 0
-next_gate: EMILY_FINAL_AUDIT
+next_gate: EMILY_REAUDIT_AFTER_REMEDIATION
 next_operational_step_after_closeout: create fresh chats inside each canonical agent project using the manual
+audit_r1:
+  decision: PASS
+  result_sha256: 9ca3f609f8491703bae28784f695847fb283a31eb543a2fb03d08002a095c51b
+  critical: 0
+  high: 0
+remediation:
+  medium_findings_removed: true
+  low_traceability_removed: true
+smoke_r3:
+  status: PASS
+  passed: 44
+  failed: 0
+  sha256: 1e03880808fa0e9b7cf8f03e663d9a205d079a5ebf4f3db4a3089c7d9da6bd03
