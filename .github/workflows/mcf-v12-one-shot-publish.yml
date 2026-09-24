@@ -1,0 +1,69 @@
+name: MCF v1.2.0 One-Shot Publication
+
+on:
+  push:
+    branches:
+      - ops/mcf-mestre-cross-chat-succession-001
+    paths:
+      - missions/MCF-MESTRE-CROSS-CHAT-SUCCESSION-001/RELEASE_PUBLISH_TRIGGER.md
+
+permissions:
+  contents: write
+
+jobs:
+  publish-v1-2-0:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact qualified main SHA
+        uses: actions/checkout@v4
+        with:
+          ref: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+          fetch-depth: 0
+
+      - name: Verify immutable publication boundary
+        env:
+          TARGET_SHA: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+          TARGET_TREE: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET_SHA"
+          test "$(git rev-parse HEAD^{tree})" = "$TARGET_TREE"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$TARGET_SHA"
+          test -f docs/releases/MCF-v1.2.0.md
+          grep -q '^# MCF v1.2.0' docs/releases/MCF-v1.2.0.md
+
+      - name: Create or verify immutable v1.2.0 tag
+        env:
+          TAG: v1.2.0
+          TARGET_SHA: 5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+        run: |
+          set -euo pipefail
+          existing_ref="$(git ls-remote origin "refs/tags/$TAG" | cut -f1)"
+          if [ -n "$existing_ref" ]; then
+            test "$existing_ref" = "$TARGET_SHA"
+            echo "$TAG already exists at the exact qualified SHA; immutable NOOP."
+          else
+            git tag "$TAG" "$TARGET_SHA"
+            git push origin "refs/tags/$TAG"
+          fi
+          test "$(git ls-remote origin "refs/tags/$TAG" | cut -f1)" = "$TARGET_SHA"
+
+      - name: Create or verify GitHub Release v1.2.0
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          TAG: v1.2.0
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$REPOSITORY" >/dev/null 2>&1; then
+            gh release view "$TAG" --repo "$REPOSITORY" --json tagName,isDraft,isPrerelease --jq 'select(.tagName == "v1.2.0" and .isDraft == false and .isPrerelease == false) | .tagName' | grep -qx "$TAG"
+            echo "$TAG release already exists and is stable; immutable NOOP."
+          else
+            gh release create "$TAG" \
+              --repo "$REPOSITORY" \
+              --verify-tag \
+              --title 'MCF v1.2.0 — Human Control + Visible Copresence' \
+              --notes-file docs/releases/MCF-v1.2.0.md \
+              --latest
+          fi
+          gh release view "$TAG" --repo "$REPOSITORY" --json tagName,isDraft,isPrerelease --jq 'select(.tagName == "v1.2.0" and .isDraft == false and .isPrerelease == false) | .tagName' | grep -qx "$TAG"
