@@ -22,3 +22,17 @@ smoke:
   persistent_mutation_executed: false
 next_gate: EMILY_FINAL_REAUDIT
 next_step_after_closeout: LEANDRO may define the first authorized persistent change through the mapped project settings area
+deep_map_evidence:
+  path: /home/leo/mcf-handoffs/MCF-PROJECT-DETAILS-MAP-EVIDENCE-2026-09-24.json
+  sha256: 215b6cca513bd107c3ad0cf9a723155cafb1de2f07f6e62543edb50d80640a45
+smoke_r3:
+  status: PASS
+  projects: 4
+  failed: 0
+  sha256: 96d8f4643bc70ccf1a8a25a2351fbd10b8478eba14513a80e440c87cb2dbaa48
+  persistent_mutation_observed: false
+memory_observation:
+  Emily: standard
+  Sofia: project-only
+  Patricia: project-only
+  Rafael: project-only
