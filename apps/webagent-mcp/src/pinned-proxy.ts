@@ -1,7 +1,8 @@
 import { createServer, request as httpRequest, type Server as HttpServer } from 'node:http';
 import { request as httpsRequest } from 'node:https';
-import { connect as netConnect, type AddressInfo, type Socket } from 'node:net';
+import { connect as netConnect, type Socket } from 'node:net';
 import { isIP } from 'node:net';
+import type { Duplex } from 'node:stream';
 import { PublicTargetResolver, type TargetResolver } from './pinned-fetch.js';
 
 export type PinnedEgressProxyOptions = {
@@ -123,7 +124,7 @@ export class PinnedEgressProxy {
     }
   }
 
-  private async forwardConnect(authority: string, clientSocket: Socket, head: Buffer): Promise<void> {
+  private async forwardConnect(authority: string, clientSocket: Duplex, head: Buffer): Promise<void> {
     try {
       const url = new URL(`https://${authority}/`);
       const port = Number.parseInt(url.port || '443', 10);
