@@ -1,24 +1,23 @@
 import { describe, expect, it } from 'vitest';
+import type { FetchLike } from '../src/fetch-provider.js';
 import { SearxngSearchProvider } from '../src/search-provider.js';
 
 describe('SearxngSearchProvider', () => {
   it('queries the JSON API and maps bounded results', async () => {
     let requested = '';
-    const provider = new SearxngSearchProvider(
-      'https://search.example/',
-      async (input) => {
-        requested = input.toString();
-        return new Response(
-          JSON.stringify({
-            results: [
-              { title: 'Alpha', url: 'https://a.example/', content: 'First result', engine: 'duckduckgo' },
-              { title: 'Beta', url: 'https://b.example/', content: 'Second result', engine: 'brave' },
-            ],
-          }),
-          { status: 200, headers: { 'content-type': 'application/json' } },
-        );
-      },
-    );
+    const fetchImpl: FetchLike = async (input) => {
+      requested = input.toString();
+      return new Response(
+        JSON.stringify({
+          results: [
+            { title: 'Alpha', url: 'https://a.example/', content: 'First result', engine: 'duckduckgo' },
+            { title: 'Beta', url: 'https://b.example/', content: 'Second result', engine: 'brave' },
+          ],
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    };
+    const provider = new SearxngSearchProvider('https://search.example/', fetchImpl);
 
     const result = await provider.search({ query: '  multi agent systems  ', limit: 1 });
 
