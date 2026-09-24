@@ -214,7 +214,7 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
         ...current,
         status: 'COMPLETED',
         updatedAt: new Date().toISOString(),
-        budget: { ...current.budget, consumedSteps: 1 + (this.actionPlans.get(runId)?.length ?? 0) },
+        budget: { ...current.budget, consumedSteps: 1 },
         result: {
           summary: 'Deterministic MVP completed without live browser execution.',
           evidence: deterministicEvidence(current, new Date().toISOString()),
@@ -290,12 +290,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     this.screenshotMaxBytes = Math.max(50_000, Math.min(options.screenshotMaxBytes ?? 500_000, 1_000_000));
     this.semanticMaxChars = Math.max(1_000, Math.min(options.semanticMaxChars ?? 20_000, 100_000));
     this.maxNetworkRefs = Math.max(1, Math.min(options.maxNetworkRefs ?? 50, 200));
-    this.actionPolicy = options.actionPolicy ?? new (class implements BrowserActionPolicy {
-      private readonly delegate = createDefaultBrowserActionPolicy();
-      assertAllowed(action: BrowserAction): void {
-        this.delegate.assertAllowed(action);
-      }
-    })();
+    this.actionPolicy = options.actionPolicy ?? createDefaultBrowserActionPolicy();
   }
 
   start(request: BrowserRunRequest): BrowserRunSnapshot {
@@ -548,7 +543,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
         ...current,
         status: 'COMPLETED',
         updatedAt: new Date().toISOString(),
-        budget: { ...current.budget, consumedSteps: 1 },
+        budget: { ...current.budget, consumedSteps: 1 + (this.actionPlans.get(runId)?.length ?? 0) },
         result: {
           summary: 'Playwright completed real headless Chromium navigation.',
           title,
