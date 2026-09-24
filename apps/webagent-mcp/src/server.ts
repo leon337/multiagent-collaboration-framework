@@ -3,13 +3,13 @@ import { McpServer } from '@modelcontextprotocol/server';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import * as z from 'zod/v4';
 import type { BrowserRuntime } from './browser-runtime.js';
-import { DeterministicBrowserRuntime } from './browser-runtime.js';
+import { createDefaultBrowserRuntime } from './browser-runtime.js';
 import type { ExecutionEnvelope } from './contracts.js';
 import { executeEnvelope } from './execution.js';
 import type { FetchProvider } from './fetch-provider.js';
 import { HttpFetchProvider } from './fetch-provider.js';
 import type { SearchProvider } from './search-provider.js';
-import { LocalSearchProvider } from './search-provider.js';
+import { createDefaultSearchProvider } from './search-provider.js';
 
 export type WebAgentDependencies = {
   searchProvider?: SearchProvider;
@@ -25,17 +25,17 @@ function toolResult<T>(result: ExecutionEnvelope<T>) {
 }
 
 export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer {
-  const searchProvider = deps.searchProvider ?? new LocalSearchProvider();
+  const searchProvider = deps.searchProvider ?? createDefaultSearchProvider();
   const fetchProvider = deps.fetchProvider ?? new HttpFetchProvider();
-  const browserRuntime = deps.browserRuntime ?? new DeterministicBrowserRuntime();
+  const browserRuntime = deps.browserRuntime ?? createDefaultBrowserRuntime();
 
-  const server = new McpServer({ name: 'mcf-webagent', version: '0.1.0' });
+  const server = new McpServer({ name: 'mcf-webagent', version: '0.2.0' });
 
   server.registerTool(
     'web_search',
     {
       title: 'Web Search',
-      description: 'Search the web through the configured provider. The MVP default provider is local-empty and makes no live search claim.',
+      description: 'Search through the configured provider. WEBAGENT_SEARXNG_URL enables a live self-hostable SearXNG adapter; otherwise local-empty is used.',
       inputSchema: z.object({
         query: z.string().min(1).max(500),
         limit: z.number().int().min(1).max(20).optional(),
@@ -48,7 +48,7 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
     'web_fetch',
     {
       title: 'Web Fetch',
-      description: 'Fetch a bounded HTTP/HTTPS response and return normalized text plus response metadata.',
+      description: 'Fetch bounded public HTTP/HTTPS content with redirect validation and public-egress policy enforcement.',
       inputSchema: z.object({
         url: z.string().min(1),
         maxBytes: z.number().int().min(1).max(1_000_000).optional(),
@@ -61,7 +61,7 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
     'browser_run',
     {
       title: 'Browser Run',
-      description: 'Start an asynchronous browser job. In this MVP the runtime is deterministic-mvp and does not perform live browser execution.',
+      description: 'Start an asynchronous browser job. The default runtime is real headless Chromium through Playwright; deterministic mode remains available by configuration.',
       inputSchema: z.object({
         url: z.string().min(1),
         goal: z.string().min(1).max(2_000),
@@ -77,8 +77,11 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
           evidence: [
             {
               kind: 'runtime',
-              ref: 'browser-runtime:deterministic-mvp',
-              detail: 'No live browser execution in MVP',
+              ref: `browser-runtime:${browserRuntime.kind}`,
+              detail:
+                browserRuntime.kind === 'playwright'
+                  ? 'Real headless Chromium runtime with public-egress policy'
+                  : 'Deterministic fallback runtime',
             },
           ],
           budget: { maxSteps, maxDurationMs, consumedSteps: 0 },

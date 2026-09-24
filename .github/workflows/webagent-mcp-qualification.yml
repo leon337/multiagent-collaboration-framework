@@ -3,7 +3,7 @@ name: WebAgent MCP Qualification
 on:
   push:
     branches:
-      - 'mission/webagent-plugin-mvp-001'
+      - 'mission/webagent-*'
     paths:
       - 'apps/webagent-mcp/**'
       - '.github/workflows/webagent-mcp-qualification.yml'
@@ -30,6 +30,8 @@ jobs:
           cache-dependency-path: apps/webagent-mcp/package.json
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
       - name: Typecheck
         run: npm run typecheck
       - name: Test

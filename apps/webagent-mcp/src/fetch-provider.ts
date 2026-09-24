@@ -1,4 +1,5 @@
 import type { ExecutionEnvelope } from './contracts.js';
+import { type EgressPolicy, PublicEgressPolicy } from './egress-policy.js';
 import { executeEnvelope, OperationError } from './execution.js';
 
 export type FetchRequest = {
@@ -23,6 +24,7 @@ export type FetchLike = (input: string | URL, init?: RequestInit) => Promise<Res
 const DEFAULT_MAX_BYTES = 250_000;
 const MAX_MAX_BYTES = 1_000_000;
 const TIMEOUT_MS = 10_000;
+const MAX_REDIRECTS = 5;
 
 function parseHttpUrl(raw: string): URL {
   let url: URL;
@@ -39,6 +41,10 @@ function parseHttpUrl(raw: string): URL {
     throw new OperationError('INVALID_URL', 'embedded URL credentials are not allowed');
   }
   return url;
+}
+
+function isRedirect(status: number): boolean {
+  return status === 301 || status === 302 || status === 303 || status === 307 || status === 308;
 }
 
 async function readBoundedBody(response: Response, maxBytes: number): Promise<{ bytes: Uint8Array; truncated: boolean }> {
@@ -92,16 +98,18 @@ async function readBoundedBody(response: Response, maxBytes: number): Promise<{ 
 }
 
 export class HttpFetchProvider implements FetchProvider {
-  constructor(private readonly fetchImpl: FetchLike = globalThis.fetch) {}
+  constructor(
+    private readonly fetchImpl: FetchLike = globalThis.fetch,
+    private readonly egressPolicy: EgressPolicy = new PublicEgressPolicy(),
+  ) {}
 
   async fetch(request: FetchRequest): Promise<ExecutionEnvelope<FetchData>> {
-    let sourceRef = request.url;
+    const sourceRef = request.url;
 
     return executeEnvelope(
       'web_fetch',
       async () => {
-        const url = parseHttpUrl(request.url);
-        sourceRef = url.toString();
+        let currentUrl = parseHttpUrl(request.url);
         const maxBytes = request.maxBytes ?? DEFAULT_MAX_BYTES;
         if (!Number.isInteger(maxBytes) || maxBytes < 1 || maxBytes > MAX_MAX_BYTES) {
           throw new OperationError('INVALID_ARGUMENT', `maxBytes must be an integer between 1 and ${MAX_MAX_BYTES}`);
@@ -109,28 +117,52 @@ export class HttpFetchProvider implements FetchProvider {
 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-        let response: Response;
+
         try {
-          response = await this.fetchImpl(url, { signal: controller.signal });
-        } catch (error) {
-          if (controller.signal.aborted) {
-            throw new OperationError('FETCH_TIMEOUT', `fetch exceeded ${TIMEOUT_MS}ms`);
+          let response: Response | undefined;
+
+          for (let redirects = 0; redirects <= MAX_REDIRECTS; redirects += 1) {
+            await this.egressPolicy.assertAllowed(currentUrl);
+
+            try {
+              response = await this.fetchImpl(currentUrl, {
+                signal: controller.signal,
+                redirect: 'manual',
+              });
+            } catch (error) {
+              if (controller.signal.aborted) {
+                throw new OperationError('FETCH_TIMEOUT', `fetch exceeded ${TIMEOUT_MS}ms`);
+              }
+              if (error instanceof OperationError) throw error;
+              throw new OperationError('FETCH_FAILED', error instanceof Error ? error.message : 'fetch failed');
+            }
+
+            if (!isRedirect(response.status)) break;
+
+            const location = response.headers.get('location');
+            if (!location) break;
+            if (redirects === MAX_REDIRECTS) {
+              throw new OperationError('TOO_MANY_REDIRECTS', `fetch exceeded ${MAX_REDIRECTS} redirects`);
+            }
+
+            currentUrl = parseHttpUrl(new URL(location, currentUrl).toString());
           }
-          throw new OperationError('FETCH_FAILED', error instanceof Error ? error.message : 'fetch failed');
+
+          if (!response) throw new OperationError('FETCH_FAILED', 'fetch returned no response');
+
+          const { bytes, truncated } = await readBoundedBody(response, maxBytes);
+          const text = new TextDecoder('utf-8').decode(bytes).replace(/\r\n/g, '\n');
+
+          return {
+            url: currentUrl.toString(),
+            status: response.status,
+            contentType: response.headers.get('content-type') ?? '',
+            text,
+            truncated,
+          };
         } finally {
           clearTimeout(timeout);
         }
-
-        const { bytes, truncated } = await readBoundedBody(response, maxBytes);
-        const text = new TextDecoder('utf-8').decode(bytes).replace(/\r\n/g, '\n');
-
-        return {
-          url: url.toString(),
-          status: response.status,
-          contentType: response.headers.get('content-type') ?? '',
-          text,
-          truncated,
-        };
       },
       {
         evidence: [{ kind: 'source', ref: sourceRef }],
