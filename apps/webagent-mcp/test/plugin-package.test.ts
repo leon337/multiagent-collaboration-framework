@@ -11,7 +11,7 @@ describe('plugin package', () => {
 
     expect(manifest).toMatchObject({
       name: 'mcf-webagent',
-      version: '0.1.0',
+      version: '0.2.0',
       skills: './skills/',
       mcpServers: './.mcp.json',
     });
@@ -32,14 +32,12 @@ describe('plugin package', () => {
     expect(JSON.stringify(config)).not.toMatch(/token|password|secret/i);
   });
 
-  it('ships a skill that states the MVP capability boundaries', async () => {
+  it('ships a skill that states live-runtime and security boundaries', async () => {
     const skill = await readText('../skills/webagent/SKILL.md');
 
     expect(skill).toContain('name: webagent');
-    expect(skill).toContain('web_search');
-    expect(skill).toContain('web_fetch');
-    expect(skill).toContain('browser_run');
-    expect(skill).toContain('deterministic-mvp');
-    expect(skill).toContain('não executa um navegador real');
+    expect(skill).toContain('WEBAGENT_SEARXNG_URL');
+    expect(skill).toContain('Playwright');
+    expect(skill).toContain('DNS rebinding');
   });
 });

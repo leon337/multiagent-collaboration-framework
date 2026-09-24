@@ -1,66 +1,66 @@
 # MCF WebAgent MCP
 
-Mission: `MCF-WEBAGENT-PLUGIN-MVP-001` · Issue #322
+Current runtime mission: `MCF-WEBAGENT-RUNTIME-002` · Issue #346
 
-This application is the first tested vertical slice of the MCF WebAgent platform. It establishes stable MCP contracts for search, bounded fetch, and asynchronous browser-job lifecycle management without pretending that the unfinished capabilities already exist.
+This application exposes five stable MCP tools while moving the original MVP from simulation toward real, self-hostable web execution.
 
-## What exists now
+## Current behavior
 
-The MCP server exposes five tools:
-
-| Tool | Current MVP behavior |
+| Tool | Behavior |
 | --- | --- |
-| `web_search` | Validates a provider-agnostic search contract. The default `local-empty` provider returns an empty result set and does **not** perform live search. |
-| `web_fetch` | Performs bounded HTTP/HTTPS retrieval with a 10-second timeout, response metadata, UTF-8 text normalization, and a 1 MB hard cap. |
-| `browser_run` | Starts an asynchronous `deterministic-mvp` job and returns a run ID. It does **not** launch Chromium or interact with a live page. |
-| `browser_wait` | Reads the current snapshot of a browser job. |
-| `browser_cancel` | Cancels a non-terminal browser job while preserving terminal states. |
+| `web_search` | Uses live SearXNG JSON search when `WEBAGENT_SEARXNG_URL` is configured; otherwise preserves the explicit `local-empty` fallback. |
+| `web_fetch` | Bounded HTTP/HTTPS retrieval with timeout, 1 MB hard cap, public-egress checks and hop-by-hop redirect validation. |
+| `browser_run` | Starts a real asynchronous Playwright/headless-Chromium job by default. |
+| `browser_wait` | Reads job state and, on completion, title, final URL and bounded text excerpt. |
+| `browser_cancel` | Cancels a non-terminal browser job and closes its active browser when possible. |
 
-Every operation returns an execution envelope containing timing, evidence, budget metadata, data or a stable error.
+## Runtime configuration
 
-## Architecture
+```bash
+# Optional live search. Point this at a SearXNG instance with JSON format enabled.
+export WEBAGENT_SEARXNG_URL="https://search.example/"
 
-```text
-MCP Client
-    |
-    v
-McpServer
-    |
-    +-- web_search ----> SearchProvider
-    |
-    +-- web_fetch -----> FetchProvider
-    |
-    +-- browser_* -----> BrowserRuntime
-                           |
-                           v
-                     ExecutionEnvelope
+# Optional fallback for debugging/tests. Default is playwright.
+export WEBAGENT_BROWSER_RUNTIME="deterministic"
 ```
 
-The main design rule is **deterministic first, agentic fallback later**. Provider and runtime interfaces are deliberately replaceable so live search, Playwright workers, policy, replay, profiles, vaults, and multi-agent orchestration can be added without changing the public tool names.
+SearXNG must enable the `json` result format. The provider calls `/search?q=...&format=json`.
 
-## Local qualification
+## Local setup
 
-Requirements:
-
-- Node.js 22+
-- npm
-
-From this directory:
+Requirements: Node.js 22+, npm, and a Chromium binary installed by Playwright.
 
 ```bash
 npm install
+npx playwright install chromium
 npm run typecheck
 npm test
 npm run build
 ```
 
-The qualification suite requires no API key, paid service, proxy, browser binary, or external login.
+CI additionally uses `npx playwright install --with-deps chromium`.
 
-The GitHub Actions mission workflow executes the same typecheck/test/build boundary on every application change. The final mission checkpoint records the exact qualified commit and run rather than treating a previous green commit as evidence for a later head.
+## Egress boundary
 
-## Plugin packaging in this mission
+The default `PublicEgressPolicy` rejects embedded credentials, localhost names, loopback/private/link-local IP ranges and hostnames that DNS resolves to blocked addresses. `web_fetch` validates every redirect target before following it. Playwright routes HTTP(S) requests through the same policy so a public page cannot freely pivot into obvious internal destinations.
 
-The current local/self-hosted package uses the supported OpenAI compatibility layout:
+This is a meaningful SSRF hardening step, but it is not the final public-gateway boundary. DNS is validated before the request, while the underlying transport still performs its own connection-time resolution. Full DNS-rebinding resistance requires a later pinned-connect/proxy boundary.
+
+## Browser evidence
+
+A completed Playwright run returns:
+
+- `runtime: "playwright"`
+- `title`
+- `finalUrl`
+- bounded `textExcerpt`
+- timing/budget metadata through the existing execution envelope.
+
+This stage does not yet implement arbitrary clicking/form filling, authenticated profiles, credential vaults, screenshots/replay, proxy routing, or destructive external actions.
+
+## Packaging
+
+Local/self-hosted compatibility remains:
 
 ```text
 .codex-plugin/plugin.json
@@ -68,52 +68,16 @@ The current local/self-hosted package uses the supported OpenAI compatibility la
 skills/webagent/SKILL.md
 ```
 
-`.mcp.json` launches the built server over stdio with:
+The stdio entrypoint remains `node ./dist/src/server.js`.
 
-```text
-node ./dist/src/server.js
-```
+A public ChatGPT plugin package is still intentionally deferred until a real HTTPS Streamable HTTP MCP endpoint exists and is qualified against the current Developer Mode requirements.
 
-Build the project before loading that local plugin package.
+## Next boundary
 
-A root portable `plugin.json` + `mcp.json` package is intentionally **not** produced yet. Public plugin submission requires a real deployed HTTPS MCP endpoint; inventing a localhost or placeholder endpoint would make the package misleading. The portable/public package belongs to the deployment/integration mission after a real HTTP transport exists.
-
-## Security and scope boundaries
-
-- Only `http:` and `https:` URLs are accepted by fetch/browser inputs.
-- URLs containing embedded username/password credentials are rejected.
-- Fetch response bodies are read as a bounded stream rather than unbounded in-memory downloads.
-- Errors returned through the execution envelope do not include stack traces.
-- The baseline package contains no token, password, API key, or paid-provider requirement.
-- No credential vault, persistent authenticated profile, proxy fleet, real browser control, production deployment, or destructive external action is implemented in this mission.
-- The current fetch adapter is not yet hardened as a public hostile-URL gateway (for example, full SSRF/DNS-rebinding and redirect-policy defenses). Do not expose it as an unauthenticated public fetch service before that hardening boundary is implemented.
-
-## MCP SDK track
-
-The server is implemented against the current published MCP TypeScript v2 packages (`@modelcontextprotocol/server` and the test client package at `2.0.0`). Qualification includes a real in-memory MCP client/server handshake, `listTools()`, and tool invocation.
-
-OpenAI plugin documentation and the upstream MCP SDK can evolve at different speeds. Therefore this mission proves the MCP v2 server contract and local package structure; it does **not** claim that a public ChatGPT plugin has already passed Developer Mode or submission review. That compatibility must be verified against the deployed HTTPS endpoint in the next integration boundary.
-
-## Release hardening still required
-
-Before treating this as a release candidate:
-
-- generate and commit a deterministic dependency lockfile and switch CI from `npm install` to `npm ci`;
-- harden `web_fetch` against public-service SSRF, redirects, DNS rebinding, MIME/content policy and egress abuse;
-- add a real search adapter;
-- add a real browser worker with isolation;
-- expose a remote HTTPS MCP transport and qualify it in the current ChatGPT Developer Mode surface.
-
-## Next architecture boundary
-
-The next implementation stage should replace the deliberate MVP adapters in this order:
-
-1. real search provider routing;
-2. real Playwright/Chromium worker behind `BrowserRuntime`;
-3. Streamable HTTP MCP deployment;
-4. ChatGPT Developer Mode qualification;
-5. screenshots/DOM evidence and replay;
-6. persistent browser profiles and credential vault;
-7. policy engine, budgets, parallel workers, and MCF multi-agent orchestration.
-
-Until those stages are implemented and evidenced, the `local-empty` search provider and `deterministic-mvp` browser runtime must remain clearly labeled as such.
+1. deterministic lockfile and reproducible `npm ci`;
+2. transport-level DNS pinning / outbound proxy boundary;
+3. screenshot + DOM evidence and replay;
+4. action primitives (click/fill/select) behind policy gates;
+5. remote Streamable HTTP MCP deployment over HTTPS;
+6. ChatGPT Developer Mode qualification;
+7. profiles/vault, parallel workers and MCF multi-agent orchestration.
