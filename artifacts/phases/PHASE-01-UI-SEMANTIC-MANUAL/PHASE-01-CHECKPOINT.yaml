@@ -4,7 +4,7 @@ phase_id: PHASE-01-UI-SEMANTIC-MANUAL
 class: B
 authority: LEANDRO
 orchestrator: MESTRE
-state: READY_FOR_REAUDIT
+state: READY_FOR_MERGE
 contract:
   schema: mcf-ui-semantic-contract/v1
   version: 1.0.1
@@ -13,7 +13,7 @@ manual: docs/operations/MCF-UI-OPERATING-MANUAL.md
 machine_contract: docs/contracts/MCF-UI-SEMANTIC-CONTRACT.json
 local_bindings:
   path: ~/.config/mcf-dual-browser-cockpit/ui-semantic-bindings.json
-  sha256: d540428b4f0fab4f241e15a38c450bdaf0b7f0ef5b894b77456bc89256c3f70f
+  sha256: a6c9a71c970974c0284f9c1fc9c632f2e81f2d880c0c8e3eda717b5c15ae9c27
   published: false
 smoke_r1:
   status: FAIL
@@ -23,7 +23,7 @@ smoke_r2:
   status: PASS
   passed: 44
   failed: 0
-next_gate: EMILY_REAUDIT_AFTER_REMEDIATION
+next_gate: MERGE_AFTER_FINAL_CI
 next_operational_step_after_closeout: create fresh chats inside each canonical agent project using the manual
 audit_r1:
   decision: PASS
@@ -38,3 +38,11 @@ smoke_r3:
   passed: 44
   failed: 0
   sha256: 1e03880808fa0e9b7cf8f03e663d9a205d079a5ebf4f3db4a3089c7d9da6bd03
+reaudit_r2:
+  decision: PASS
+  result_sha256: 43d88c9cae103ed8bd97c0ae12fd7b6a9ea861ef5c082fdaecadde637ee58d9a
+  critical: 0
+  high: 0
+  medium_before_closeout: 1
+  medium_resolved_in_closeout: true
+  merge_gate: PASS
