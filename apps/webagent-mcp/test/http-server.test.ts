@@ -1,4 +1,5 @@
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+import { request as httpRequest } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it } from 'vitest';
 import { DeterministicBrowserRuntime } from '../src/browser-runtime.js';
@@ -27,6 +28,31 @@ async function listenTestServer() {
 
   const address = app.address() as AddressInfo;
   return { app, baseUrl: `http://127.0.0.1:${address.port}` };
+}
+
+async function postWithRawHost(url: string, host: string): Promise<number> {
+  const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} });
+
+  return new Promise<number>((resolve, reject) => {
+    const req = httpRequest(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          Host: host,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+      },
+      (res) => {
+        const status = res.statusCode ?? 0;
+        res.resume();
+        res.once('end', () => resolve(status));
+      },
+    );
+    req.once('error', reject);
+    req.end(body);
+  });
 }
 
 describe('WebAgent Streamable HTTP server', () => {
@@ -66,15 +92,8 @@ describe('WebAgent Streamable HTTP server', () => {
   it('rejects an unapproved Host header before MCP handling', async () => {
     const { baseUrl } = await listenTestServer();
 
-    const response = await fetch(`${baseUrl}/mcp`, {
-      method: 'POST',
-      headers: {
-        host: 'evil.example',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }),
-    });
+    const status = await postWithRawHost(`${baseUrl}/mcp`, 'evil.example');
 
-    expect(response.status).toBe(403);
+    expect(status).toBe(403);
   });
 });
