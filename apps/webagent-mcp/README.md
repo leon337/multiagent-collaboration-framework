@@ -1,6 +1,6 @@
 # MCF WebAgent MCP
 
-Current security mission: `MCF-WEBAGENT-EGRESS-005` · Issue #356
+Current mission: `MCF-WEBAGENT-EVIDENCE-006` · Issue #368
 
 The WebAgent now has two MCP transports over the same five governed tools:
 
@@ -18,6 +18,25 @@ The WebAgent now has two MCP transports over the same five governed tools:
 | `browser_cancel` | Cancels a non-terminal browser job and closes its active browser when possible. |
 
 All five tools advertise explicit OpenAI/MCP `readOnlyHint`, `openWorldHint`, and `destructiveHint` values.
+
+## Browser evidence and replay foundation
+
+Completed browser runs now expose a bounded, versioned `result.evidence` bundle through the existing `browser_wait` contract.
+
+For the Playwright runtime, evidence v1 includes:
+
+- a final viewport JPEG screenshot encoded as base64 and capped at 500 KB by default;
+- an AI-oriented ARIA accessibility snapshot, capped at 20,000 characters by default;
+- an ordered lifecycle timeline with stable sequence numbers;
+- requested/final navigation references;
+- a bounded set of HTTP/HTTPS network request references;
+- a replay manifest v1 containing the original URL, goal, budgets, observed lifecycle steps and terminal outcome.
+
+The deterministic fallback emits the same versioned replay/timeline envelope but deliberately omits screenshot and semantic evidence because no live browser was executed.
+
+Evidence is currently **in-memory only**. It is returned to the caller and is not uploaded to object storage or persisted across process restarts. Screenshot and semantic capture are best-effort: failure to capture one artifact does not rewrite an otherwise successful navigation as failed.
+
+This mission establishes the replay **format**, not a replay execution engine. A future boundary can persist bundles and introduce an explicit replay tool without changing the current five-tool surface.
 
 ## Runtime configuration
 
@@ -150,8 +169,8 @@ The mission is qualified by the repository WebAgent workflow, which installs Chr
 
 ## Next boundary
 
-1. screenshot + DOM evidence and replay;
-2. action primitives behind policy gates;
+1. explicit browser action primitives behind policy gates;
+2. persistent evidence storage + replay execution tool;
 3. stable long-running Developer Mode path when account-side tunnel/custom-app access is available;
 4. authentication/rate limiting/resource isolation for public operation;
 5. profiles/vault, parallel workers and MCF multi-agent orchestration.

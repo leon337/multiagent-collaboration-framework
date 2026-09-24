@@ -25,7 +25,9 @@ afterEach(async () => {
 async function fixtureUrl(): Promise<string> {
   const server = createServer((_req, res) => {
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-    res.end('<html><head><title>Runtime Fixture</title></head><body><main>Playwright really opened this page.</main></body></html>');
+    res.end(
+      '<html><head><title>Runtime Fixture</title></head><body><main><h1>Evidence Fixture</h1><button>Inspect</button><p>Playwright really opened this page.</p></main></body></html>',
+    );
   });
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -44,7 +46,7 @@ async function waitForTerminal(runtime: PlaywrightBrowserRuntime, runId: string)
 }
 
 describe('PlaywrightBrowserRuntime', () => {
-  it('launches real Chromium and captures page evidence', async () => {
+  it('launches real Chromium and captures bounded structured evidence + replay', async () => {
     const targetResolver: TargetResolver = {
       async resolve(url) {
         return { hostname: url.hostname, address: '127.0.0.1', family: 4 };
@@ -56,7 +58,8 @@ describe('PlaywrightBrowserRuntime', () => {
     });
     runtimes.push(runtime);
 
-    const started = runtime.start({ url: await fixtureUrl(), goal: 'inspect the fixture' });
+    const url = await fixtureUrl();
+    const started = runtime.start({ url, goal: 'inspect the fixture' });
     expect(started.runtime).toBe('playwright');
 
     const completed = await waitForTerminal(runtime, started.runId);
@@ -64,5 +67,62 @@ describe('PlaywrightBrowserRuntime', () => {
     expect(completed.result?.title).toBe('Runtime Fixture');
     expect(completed.result?.textExcerpt).toContain('Playwright really opened this page.');
     expect(completed.result?.finalUrl).toContain('127.0.0.1');
+
+    const evidence = completed.result?.evidence;
+    expect(evidence?.version).toBe(1);
+
+    expect(evidence?.screenshot?.mimeType).toBe('image/jpeg');
+    expect(evidence?.screenshot?.bytes).toBeGreaterThan(0);
+    expect(evidence?.screenshot?.bytes).toBeLessThanOrEqual(500_000);
+    expect(Buffer.from(evidence?.screenshot?.base64 ?? '', 'base64').byteLength).toBe(
+      evidence?.screenshot?.bytes,
+    );
+
+    expect(evidence?.semantic?.format).toBe('aria-snapshot');
+    expect(evidence?.semantic?.content).toContain('Evidence Fixture');
+    expect(evidence?.semantic?.chars).toBeLessThanOrEqual(20_000);
+
+    expect(evidence?.timeline.length).toBeGreaterThan(3);
+    expect(evidence?.timeline.map((event) => event.seq)).toEqual(
+      evidence?.timeline.map((_event, index) => index + 1),
+    );
+    expect(evidence?.timeline.map((event) => event.type)).toContain('navigation.completed');
+    expect(evidence?.timeline.map((event) => event.type)).toContain('evidence.captured');
+    expect(evidence?.timeline.map((event) => event.type)).toContain('run.completed');
+
+    expect(evidence?.navigation.some((entry) => entry.url === completed.result?.finalUrl)).toBe(true);
+    expect(evidence?.network.some((entry) => entry.url === url)).toBe(true);
+
+    expect(evidence?.replay.version).toBe(1);
+    expect(evidence?.replay.request.url).toBe(url);
+    expect(evidence?.replay.request.goal).toBe('inspect the fixture');
+    expect(evidence?.replay.outcome.status).toBe('COMPLETED');
+    expect(evidence?.replay.observedSteps.length).toBeGreaterThan(0);
+  });
+
+  it('returns deep-cloned evidence so callers cannot mutate stored run state', async () => {
+    const targetResolver: TargetResolver = {
+      async resolve(url) {
+        return { hostname: url.hostname, address: '127.0.0.1', family: 4 };
+      },
+    };
+    const runtime = new PlaywrightBrowserRuntime({
+      egressPolicy: new AllowAllEgressPolicy(),
+      targetResolver,
+    });
+    runtimes.push(runtime);
+
+    const started = runtime.start({ url: await fixtureUrl(), goal: 'capture immutable evidence' });
+    const completed = await waitForTerminal(runtime, started.runId);
+    expect(completed.status).toBe('COMPLETED');
+
+    const first = runtime.get(started.runId);
+    expect(first.result?.evidence?.semantic?.content).toBeTruthy();
+    if (first.result?.evidence?.semantic) {
+      first.result.evidence.semantic.content = 'tampered';
+    }
+
+    const second = runtime.get(started.runId);
+    expect(second.result?.evidence?.semantic?.content).not.toBe('tampered');
   });
 });
