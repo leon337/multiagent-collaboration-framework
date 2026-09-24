@@ -91,16 +91,26 @@ def suggested_asset(row):
 
 def load_results():
     files = sorted(glob.glob(str(BATCH_DIR / "batch-*.json")))
-    if len(files) != 100:
-        raise SystemExit(f"expected 100 batch files, found {len(files)}")
     rows = []
-    for filename in files:
-        with open(filename, "r", encoding="utf-8") as fh:
-            doc = json.load(fh)
-        batch_rows = doc.get("results", [])
-        if len(batch_rows) != 10:
-            raise SystemExit(f"{filename}: expected 10 results, found {len(batch_rows)}")
-        rows.extend(batch_rows)
+    if files:
+        if len(files) != 100:
+            raise SystemExit(f"expected 100 batch files, found {len(files)}")
+        for filename in files:
+            with open(filename, "r", encoding="utf-8") as fh:
+                doc = json.load(fh)
+            batch_rows = doc.get("results", [])
+            if len(batch_rows) != 10:
+                raise SystemExit(f"{filename}: expected 10 results, found {len(batch_rows)}")
+            rows.extend(batch_rows)
+    else:
+        shard_files = sorted(glob.glob(str(ROOT / "shards" / "shard-*.ndjson")))
+        if not shard_files:
+            raise SystemExit("no batch or shard result files found")
+        for filename in shard_files:
+            with open(filename, "r", encoding="utf-8") as fh:
+                for line in fh:
+                    if line.strip():
+                        rows.append(json.loads(line))
     if len(rows) != 1000:
         raise SystemExit(f"expected 1000 results, found {len(rows)}")
     if len({r.get("id") for r in rows}) != 1000:
