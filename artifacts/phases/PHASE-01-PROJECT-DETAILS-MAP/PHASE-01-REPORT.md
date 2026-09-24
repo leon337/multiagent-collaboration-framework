@@ -66,3 +66,26 @@ Observed memory state:
 R1/R2 exposed legitimate UI races. Fixed sleeps were replaced with bounded state waits and already-closed dialog was accepted as a valid terminal close state.
 
 R3: PASS 4/4, no persistent mutation, URL/context stable, Name/Instructions hashes stable, Memory state stable.
+
+## Emily re-audit R2 and remediation
+Emily's persisted re-audit response returned `DECISION: FAIL` for the then-current HEAD.
+
+Removed from the original audit: H1, H2, H3, H4, H6; H5's original High was removed.
+
+Residual findings:
+- H7 High — canonical manual hash mismatch.
+- M1 Medium — invalid ARIA role `radio-menuitem`; executable role is `menuitemradio`.
+
+Remediation:
+- contract patch advanced to `1.1.1`;
+- Memory classifier corrected to `menuitemradio`;
+- local binding synced to `1.1.1`;
+- Share capability reclassified runtime-optional/non-invariant after a second live run showed it absent in all four projects;
+- smoke R2 executed again: 4/4 PASS, zero persistent mutation;
+- canonical hashes and phase manifest are regenerated after all documentation updates.
+
+Smoke R2 evidence SHA-256:
+`f4c68c4a1eba01823697b598d6a740d8d842424dee5510c1f291220093e88dda`
+
+Current local binding SHA-256:
+`c4ae5f2f3904dd547e35635633afba0aad91913b105aa58d1d44cdf84ab50d56`
