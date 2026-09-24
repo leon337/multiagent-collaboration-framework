@@ -1,6 +1,6 @@
 # MCF WebAgent MCP
 
-Current mission: `MCF-WEBAGENT-EVIDENCE-006` · Issue #368
+Current mission: `MCF-WEBAGENT-ACTIONS-007` · Issue #370
 
 The WebAgent now has two MCP transports over the same five governed tools:
 
@@ -38,6 +38,34 @@ Evidence is currently **in-memory only**. It is returned to the caller and is no
 
 This mission establishes the replay **format**, not a replay execution engine. A future boundary can persist bundles and introduce an explicit replay tool without changing the current five-tool surface.
 
+## Governed browser action plans
+
+`browser_run` can now accept a bounded ordered `actions` plan while preserving the existing five-tool MCP surface.
+
+Supported deterministic primitives:
+
+- `navigate` — classified **READ**;
+- `click` — classified **WRITE**;
+- `fill` — classified **WRITE**;
+- `select` — classified **WRITE**;
+- `press` — classified **WRITE**.
+
+The default `ReadOnlyBrowserActionPolicy` allows READ navigation and denies every WRITE action with the stable `ACTION_POLICY_DENIED` error. This is the default for local and remote processes.
+
+Write actions can only be enabled by an explicit operator policy:
+
+```bash
+export WEBAGENT_BROWSER_ACTION_MODE="allow-writes"
+```
+
+That switch is intended for controlled development/private environments. It does not imply that anonymous/public browser writes are production-safe.
+
+Action plans are validated before the browser job starts. Initial navigation consumes one step; every explicit action consumes one additional step. Plans that exceed `maxSteps` fail before execution with `STEP_BUDGET_EXCEEDED`.
+
+Action lifecycle is recorded in the evidence timeline and replay manifest. `fill` and `select` values are replaced with `[REDACTED]` in those audit structures. Page-derived evidence (screenshot, ARIA snapshot and text excerpt) can still reflect whatever the page visibly renders after an action, so those artifacts must not be treated as secret-safe storage.
+
+Explicit `navigate` actions still pass through the existing public-egress policy, and Chromium continues to use the pinned outbound proxy from EGRESS-005. No destructive action primitive exists in this mission.
+
 ## Runtime configuration
 
 ```bash
@@ -46,6 +74,10 @@ export WEBAGENT_SEARXNG_URL="https://search.example/"
 
 # Optional fallback for debugging/tests. Default is playwright.
 export WEBAGENT_BROWSER_RUNTIME="deterministic"
+
+# Optional explicit WRITE capability for controlled/private runs.
+# Default is read-only and denies click/fill/select/press.
+export WEBAGENT_BROWSER_ACTION_MODE="allow-writes"
 
 # Remote MCP process. Defaults to loopback-only.
 export WEBAGENT_HOST="127.0.0.1"
@@ -169,8 +201,9 @@ The mission is qualified by the repository WebAgent workflow, which installs Chr
 
 ## Next boundary
 
-1. explicit browser action primitives behind policy gates;
+1. persistent job queue + isolated browser workers + parallel execution;
 2. persistent evidence storage + replay execution tool;
-3. stable long-running Developer Mode path when account-side tunnel/custom-app access is available;
-4. authentication/rate limiting/resource isolation for public operation;
-5. profiles/vault, parallel workers and MCF multi-agent orchestration.
+3. authentication/rate limiting/resource isolation for public operation;
+4. profiles/vault;
+5. stable long-running Developer Mode path when account-side tunnel/custom-app access is available;
+6. MCF multi-agent orchestration.
