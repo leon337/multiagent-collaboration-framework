@@ -33,3 +33,17 @@ R2 resolved in each pane:
 - submit state non-ambiguous and semantically valid, including unavailable.
 
 No coordinates, pixels or screenshots were used for semantic resolution.
+
+Post-audit evidence:
+Emily R1 result_sha256=9ca3f609f8491703bae28784f695847fb283a31eb543a2fb03d08002a095c51b
+decision=PASS critical=0 high=0 medium=2 low=1
+
+Contract v1.0.1 canonical hashes:
+manual=f87d92f95fe7593c13635cea8eca371d0d914b9b01925b6f2adb094b32991ebb
+contract=42ffc4b2774083fc848d7b7581946f1f5effe609ad580b122cbac98c0781b938
+current_state=aa1c614e4ce43ec907dcdb524be45582df1d94ba3da01575425a59a8888f568c
+
+Smoke R3:
+path=/home/leo/mcf-handoffs/MCF-UI-SEMANTIC-SMOKE-R3-2026-09-24.json
+sha256=1e03880808fa0e9b7cf8f03e663d9a205d079a5ebf4f3db4a3089c7d9da6bd03
+result=PASS 44/44
