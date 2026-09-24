@@ -29,17 +29,22 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
   const fetchProvider = deps.fetchProvider ?? new HttpFetchProvider();
   const browserRuntime = deps.browserRuntime ?? createDefaultBrowserRuntime();
 
-  const server = new McpServer({ name: 'mcf-webagent', version: '0.2.0' });
+  const server = new McpServer({ name: 'mcf-webagent', version: '0.3.0' });
 
   server.registerTool(
     'web_search',
     {
       title: 'Web Search',
-      description: 'Search through the configured provider. WEBAGENT_SEARXNG_URL enables a live self-hostable SearXNG adapter; otherwise local-empty is used.',
+      description: 'Discover public web sources for a query. Use this before fetch when the relevant URL is not already known.',
       inputSchema: z.object({
         query: z.string().min(1).max(500),
         limit: z.number().int().min(1).max(20).optional(),
       }),
+      annotations: {
+        readOnlyHint: true,
+        openWorldHint: true,
+        destructiveHint: false,
+      },
     },
     async ({ query, limit }) => toolResult(await searchProvider.search({ query, limit })),
   );
@@ -48,11 +53,16 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
     'web_fetch',
     {
       title: 'Web Fetch',
-      description: 'Fetch bounded public HTTP/HTTPS content with redirect validation and public-egress policy enforcement.',
+      description: 'Read bounded public HTTP/HTTPS content from a known URL without browser interaction.',
       inputSchema: z.object({
         url: z.string().min(1),
         maxBytes: z.number().int().min(1).max(1_000_000).optional(),
       }),
+      annotations: {
+        readOnlyHint: true,
+        openWorldHint: true,
+        destructiveHint: false,
+      },
     },
     async ({ url, maxBytes }) => toolResult(await fetchProvider.fetch({ url, maxBytes })),
   );
@@ -61,13 +71,18 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
     'browser_run',
     {
       title: 'Browser Run',
-      description: 'Start an asynchronous browser job. The default runtime is real headless Chromium through Playwright; deterministic mode remains available by configuration.',
+      description: 'Start an asynchronous rendered-page job when a real browser is required. This creates runtime state but does not perform destructive external actions.',
       inputSchema: z.object({
         url: z.string().min(1),
         goal: z.string().min(1).max(2_000),
         maxSteps: z.number().int().min(1).max(500).optional(),
         maxDurationMs: z.number().int().min(1).max(900_000).optional(),
       }),
+      annotations: {
+        readOnlyHint: false,
+        openWorldHint: true,
+        destructiveHint: false,
+      },
     },
     async ({ url, goal, maxSteps, maxDurationMs }) => {
       const result = await executeEnvelope(
@@ -95,8 +110,13 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
     'browser_wait',
     {
       title: 'Browser Wait',
-      description: 'Read the current state of an asynchronous browser run.',
+      description: 'Read the current state and evidence of a previously started browser job.',
       inputSchema: z.object({ runId: z.string().min(1) }),
+      annotations: {
+        readOnlyHint: true,
+        openWorldHint: false,
+        destructiveHint: false,
+      },
     },
     async ({ runId }) =>
       toolResult(
@@ -110,8 +130,14 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
     'browser_cancel',
     {
       title: 'Browser Cancel',
-      description: 'Cancel a non-terminal browser run. Terminal states are preserved.',
+      description: 'Cancel a non-terminal browser job. Terminal states are preserved and no external site data is deleted.',
       inputSchema: z.object({ runId: z.string().min(1) }),
+      annotations: {
+        readOnlyHint: false,
+        openWorldHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+      },
     },
     async ({ runId }) =>
       toolResult(
