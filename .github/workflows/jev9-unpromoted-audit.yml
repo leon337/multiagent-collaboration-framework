@@ -1,0 +1,89 @@
+name: Jev9 Unpromoted Delta Audit
+
+on:
+  push:
+    branches:
+      - audit/jev9-actual-20260923
+    paths:
+      - .github/workflows/jev9-unpromoted-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  jev9:
+    name: 9 Jev lanes x 9 candidate PRs
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ENDPOINT: https://mcf-ecosystem-roadmap-git-experimentos-jev-c59048-predix-ai-br.vercel.app/api/evaluate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Execute 81 independent Jev evaluations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p jev9-results/raw
+          cat > /tmp/candidates.json <<'JSON'
+          [
+            {"pr":343,"sha":"4761e4b9c6fa21bdb6dc25a685d5c369626b0e54","kind":"web-first hosted MVP","draft":true,"ci":"MCF World Web CI success on Linux and Windows; Vercel status rate-limited","productionEvidence":"none; PR explicitly says no production deployment","material":false},
+            {"pr":321,"sha":"8b0d7a54a315342926fedf457cd538957f4b0193","kind":"Jev experimental lab","draft":true,"ci":"Jev 500 Actions run 35896794965 success; Vercel status rate-limited after prior preview","productionEvidence":"experimental preview only; no runtime production promotion","material":false},
+            {"pr":320,"sha":"3da167c1463a164fc971a13ccba40322a6ecd2aa","kind":"isolated Archipelago Conversations lab","draft":true,"ci":"dedicated lab CI success; Vercel deployment completed","productionEvidence":"preview/lab deployment only; isolated from principal Archipelago","material":false},
+            {"pr":319,"sha":"ffa13c2cd10e2ae69ef407385d335c5b91fef0b6","kind":"Archipelago OpenAI Conversations persistence","draft":true,"ci":"MCF Archipelago CI run 35806444822 success, 27/27 tests","productionEvidence":"none; PR explicitly excludes production merge","material":true},
+            {"pr":317,"sha":"e8c838f6c729bd700cf5472b995322e8ea9905fc","kind":"governed shared memory phases 1-6","draft":true,"ci":"exact-head workflows include action_required and Vercel rate-limit failure","productionEvidence":"none proven; terminal production gates not closed","material":true},
+            {"pr":315,"sha":"389ee0436ab495b3329ca500deb7d919944eef0d","kind":"MCF Archipelago V1","draft":true,"ci":"dedicated implementation candidate; production explicitly outside boundary","productionEvidence":"none","material":true},
+            {"pr":314,"sha":"56e6849be567e62c7a5d8f12022a282798b6302c","kind":"v1.1 mission HTTP admission follow-up","draft":false,"ci":"local gates reported pass","productionEvidence":"main already contains PR #313 with same mission-contract tree; this follow-up is diverged","material":true},
+            {"pr":312,"sha":"b67cbef497f2fe86b6815872e07afdef498ef032","kind":"Render staging repair direct API","draft":false,"ci":"local governance tests 6/6 pass","productionEvidence":"staging-only workflow; no deploy triggered","material":true},
+            {"pr":304,"sha":"a85eae6d36eb6de97f0c98d7cec5722b7b7982ce","kind":"native web read provider","draft":true,"ci":"Rede Social Foundation failed at formatting before lint/typecheck/test/build","productionEvidence":"none; PR explicitly says no production deploy","material":true}
+          ]
+          JSON
+          cat > /tmp/lanes.json <<'JSON'
+          [
+            {"id":1,"name":"inventory_provenance","focus":"Verify exact SHA lineage, PR state and whether production presence is objectively proven."},
+            {"id":2,"name":"functional_regression","focus":"Assess whether available test evidence is sufficient to continue functional validation without promotion."},
+            {"id":3,"name":"security_authority","focus":"Assess fail-closed security and authority boundaries; no Jev may grant authorization."},
+            {"id":4,"name":"human_gate_semantics","focus":"Distinguish autonomous evidence collection from any material merge, deploy, release or production action requiring human authority."},
+            {"id":5,"name":"production_compatibility","focus":"Assess production compatibility evidence without mutating production."},
+            {"id":6,"name":"ci_workflow_integrity","focus":"Assess exact-head CI, stale-green risk, skipped steps and provider/deployment statuses."},
+            {"id":7,"name":"semantic_divergence","focus":"Look for divergence from MCF contracts: merged is not deployed, CI green is not authorization, preview is not production."},
+            {"id":8,"name":"reliability_latency","focus":"Assess reliability evidence, recoverable provider failures and whether more bounded testing is needed."},
+            {"id":9,"name":"adversarial_audit","focus":"Challenge all evidence and choose the safest justified next action while preserving LEANDRO as final authority."}
+          ]
+          JSON
+          : > jev9-results/results.ndjson
+          for pr in $(jq -r '.[].pr' /tmp/candidates.json); do
+            candidate=$(jq -c --argjson pr "$pr" '.[]|select(.pr==$pr)' /tmp/candidates.json)
+            for lane in $(seq 1 9); do
+              laneobj=$(jq -c --argjson id "$lane" '.[]|select(.id==$id)' /tmp/lanes.json)
+              state=$(jq -nc --argjson c "$candidate" --argjson l "$laneobj" '{mission:"MCF-JEV9-UNPROMOTED-DELTA-AUDIT-20260923",advisoryOnly:true,productionMutation:false,humanFinalAuthority:"LEANDRO",candidate:$c,lane:$l,allowedNextAction:"read-only evidence collection and reversible testing only",forbiddenWithoutHumanGate:["merge","release","deploy production","mutate production","grant authority"]}')
+              payload=$(jq -nc --argjson state "$state" '{state:$state}')
+              out="jev9-results/raw/pr-${pr}-lane-${lane}.json"
+              started=$(date +%s%3N)
+              code=$(curl -sS --max-time 180 -o "$out" -w '%{http_code}' -X POST -H 'Content-Type: application/json' --data "$payload" "$ENDPOINT" || true)
+              ended=$(date +%s%3N)
+              latency=$((ended-started))
+              if [ "$code" = "200" ] && jq -e '.ok == true' "$out" >/dev/null 2>&1; then
+                jq -c --argjson pr "$pr" --argjson lane "$lane" --argjson latency "$latency" '{pr:$pr,lane:$lane,latencyMs:$latency,ok:true,answers:.answers}' "$out" >> jev9-results/results.ndjson
+              else
+                jq -nc --argjson pr "$pr" --argjson lane "$lane" --argjson latency "$latency" --arg code "$code" --arg body "$(cat "$out" 2>/dev/null || true)" '{pr:$pr,lane:$lane,latencyMs:$latency,ok:false,http:$code,error:$body}' >> jev9-results/results.ndjson
+              fi
+            done
+          done
+
+      - name: Aggregate Jev9 evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -s '.' jev9-results/results.ndjson > jev9-results/aggregate.json
+          jq -s '{total:length,successful:map(select(.ok))|length,failed:map(select(.ok|not))|length,decisions:(map(select(.ok)|.answers.nextAction.choice)|group_by(.)|map({decision:.[0],count:length})),humanGateTrue:(map(select(.ok and .answers.requiresHumanGate==true))|length),byPR:(group_by(.pr)|map({pr:.[0].pr,total:length,successful:map(select(.ok))|length,decisions:(map(select(.ok)|.answers.nextAction.choice)|group_by(.)|map({decision:.[0],count:length}))})),latency:{min:(map(.latencyMs)|min),max:(map(.latencyMs)|max),avg:(map(.latencyMs)|add/length)}}' jev9-results/results.ndjson > jev9-results/summary.json
+          cat jev9-results/summary.json >> "$GITHUB_STEP_SUMMARY"
+          test "$(jq '.total' jev9-results/summary.json)" = "81"
+
+      - name: Upload Jev9 audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev9-unpromoted-delta-audit
+          path: jev9-results/
+          retention-days: 14
+          if-no-files-found: error
