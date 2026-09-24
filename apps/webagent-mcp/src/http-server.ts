@@ -3,8 +3,10 @@ import { pathToFileURL } from 'node:url';
 import { toNodeHandler } from '@modelcontextprotocol/node';
 import { createMcpHandler } from '@modelcontextprotocol/server';
 import type { BrowserRuntime } from './browser-runtime.js';
-import { createDefaultBrowserRuntime } from './browser-runtime.js';
-import type { FetchProvider } from './fetch-provider.js';
+import { createDefaultBrowserRuntime, DeterministicBrowserRuntime } from './browser-runtime.js';
+import type { ExecutionEnvelope } from './contracts.js';
+import { executeEnvelope, OperationError } from './execution.js';
+import type { FetchData, FetchProvider, FetchRequest } from './fetch-provider.js';
 import { HttpFetchProvider } from './fetch-provider.js';
 import type { SearchProvider } from './search-provider.js';
 import { createDefaultSearchProvider } from './search-provider.js';
@@ -15,6 +17,7 @@ export type WebAgentHttpServerOptions = {
   port?: number;
   allowedHosts?: string[];
   allowedOrigins?: string[];
+  openWorldEnabled?: boolean;
   dependencies?: WebAgentDependencies;
 };
 
@@ -25,6 +28,24 @@ export type WebAgentHttpServer = {
 };
 
 const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
+
+class RemoteOpenWorldDisabledFetchProvider implements FetchProvider {
+  async fetch(request: FetchRequest): Promise<ExecutionEnvelope<FetchData>> {
+    return executeEnvelope(
+      'web_fetch',
+      async () => {
+        throw new OperationError(
+          'REMOTE_OPEN_WORLD_DISABLED',
+          'remote open-world fetch is disabled until transport-level egress pinning is qualified',
+        );
+      },
+      {
+        evidence: [{ kind: 'policy', ref: 'remote-open-world:disabled', detail: request.url }],
+        errorCode: 'REMOTE_OPEN_WORLD_DISABLED',
+      },
+    );
+  }
+}
 
 function parseCsv(value: string | undefined): string[] | undefined {
   if (!value) return undefined;
@@ -73,13 +94,18 @@ function resolvePort(value: string | undefined): number {
   return parsed;
 }
 
-function createSharedDependencies(deps: WebAgentDependencies = {}): {
+function createSharedDependencies(
+  deps: WebAgentDependencies,
+  openWorldEnabled: boolean,
+): {
   dependencies: Required<WebAgentDependencies>;
   ownedRuntime: BrowserRuntime | undefined;
 } {
   const searchProvider: SearchProvider = deps.searchProvider ?? createDefaultSearchProvider();
-  const fetchProvider: FetchProvider = deps.fetchProvider ?? new HttpFetchProvider();
-  const browserRuntime: BrowserRuntime = deps.browserRuntime ?? createDefaultBrowserRuntime();
+  const fetchProvider: FetchProvider =
+    deps.fetchProvider ?? (openWorldEnabled ? new HttpFetchProvider() : new RemoteOpenWorldDisabledFetchProvider());
+  const browserRuntime: BrowserRuntime =
+    deps.browserRuntime ?? (openWorldEnabled ? createDefaultBrowserRuntime() : new DeterministicBrowserRuntime());
 
   return {
     dependencies: { searchProvider, fetchProvider, browserRuntime },
@@ -107,7 +133,10 @@ export function createWebAgentHttpServer(options: WebAgentHttpServerOptions = {}
   const allowedOrigins = configuredOrigins ?? (LOOPBACK_HOSTS.has(host) ? ['127.0.0.1', 'localhost', '::1'] : []);
   const allowedHostSet = normalizeAllowed(allowedHosts);
   const allowedOriginSet = normalizeAllowed(allowedOrigins);
-  const { dependencies, ownedRuntime } = createSharedDependencies(options.dependencies);
+  const openWorldEnabled =
+    options.openWorldEnabled ??
+    (LOOPBACK_HOSTS.has(host) || process.env.WEBAGENT_REMOTE_OPEN_WORLD?.trim().toLowerCase() === 'enabled');
+  const { dependencies, ownedRuntime } = createSharedDependencies(options.dependencies ?? {}, openWorldEnabled);
 
   const handler = createMcpHandler(() => createWebAgentServer(dependencies));
   const nodeHandler = toNodeHandler(handler, {
@@ -150,6 +179,7 @@ export function createWebAgentHttpServer(options: WebAgentHttpServerOptions = {}
           service: 'mcf-webagent',
           version: '0.3.0',
           transport: 'streamable-http',
+          openWorldEnabled,
         }),
       );
       return;

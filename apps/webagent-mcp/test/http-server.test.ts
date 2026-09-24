@@ -12,12 +12,13 @@ afterEach(async () => {
   while (closers.length) await closers.pop()?.();
 });
 
-async function listenTestServer() {
+async function listenTestServer(options: { openWorldEnabled?: boolean } = {}) {
   const runtime = new DeterministicBrowserRuntime();
   const app = createWebAgentHttpServer({
     host: '127.0.0.1',
     port: 0,
     allowedHosts: ['127.0.0.1', 'localhost'],
+    openWorldEnabled: options.openWorldEnabled,
     dependencies: {
       searchProvider: new LocalSearchProvider(),
       browserRuntime: runtime,
@@ -65,6 +66,7 @@ describe('WebAgent Streamable HTTP server', () => {
       status: 'ok',
       service: 'mcf-webagent',
       transport: 'streamable-http',
+      openWorldEnabled: true,
     });
 
     const missing = await fetch(`${baseUrl}/nope`);
@@ -95,5 +97,23 @@ describe('WebAgent Streamable HTTP server', () => {
     const status = await postWithRawHost(`${baseUrl}/mcp`, 'evil.example');
 
     expect(status).toBe(403);
+  });
+
+  it('can expose protocol staging while disabling anonymous open-world fetch', async () => {
+    const { baseUrl } = await listenTestServer({ openWorldEnabled: false });
+    const client = new Client({ name: 'webagent-restricted-http-test', version: '0.3.0' });
+    await client.connect(new StreamableHTTPClientTransport(new URL(`${baseUrl}/mcp`)));
+    closers.push(() => client.close());
+
+    const response = await client.callTool({
+      name: 'web_fetch',
+      arguments: { url: 'https://example.com/' },
+    });
+
+    expect(response.isError).toBe(true);
+    expect(JSON.stringify(response.content)).toContain('REMOTE_OPEN_WORLD_DISABLED');
+
+    const ready = await fetch(`${baseUrl}/health/ready`);
+    await expect(ready.json()).resolves.toMatchObject({ openWorldEnabled: false });
   });
 });
