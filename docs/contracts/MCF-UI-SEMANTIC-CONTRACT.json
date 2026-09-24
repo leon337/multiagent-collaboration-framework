@@ -936,7 +936,27 @@
         }
       ],
       "ambiguity": "fail",
-      "note": "Optional capability in the details menu; current workstation availability is evidence-local and must not be embedded in the generic contract."
+      "note": "Optional capability in the details menu; current workstation availability is evidence-local and must not be embedded in the generic contract.",
+      "availabilityPolicy": "runtime-optional-non-invariant",
+      "absenceOutcome": "CAPABILITY_ABSENT_NOT_DRIFT",
+      "historicalObservations": [
+        {
+          "observedAt": "2026-09-24",
+          "phase": "R1",
+          "Emily": false,
+          "Sofia": true,
+          "Patrícia": true,
+          "Rafael": true
+        },
+        {
+          "observedAt": "2026-09-24",
+          "phase": "R2",
+          "Emily": false,
+          "Sofia": false,
+          "Patrícia": false,
+          "Rafael": false
+        }
+      ]
     }
   ],
   "workflows": [
