@@ -1,0 +1,19 @@
+MCF-PROJECT-DETAILS-MAP-001 — validation
+
+contract_schema=mcf-ui-semantic-contract/v1
+contract_version=1.1.0
+
+live_projects=4
+details_trigger_unique=4/4
+details_overlay_structural_inventory=4/4
+settings_dialog_inventory=4/4
+
+smoke_status=PASS
+persistent_mutation_executed=false
+
+local_evidence=/home/leo/mcf-handoffs/MCF-PROJECT-DETAILS-MAP-SMOKE-R1-2026-09-24.json
+local_evidence_sha256=a06ef4af9ccafbe346fca4c46ceb7a35c7072a0bb12c5723e5379cb58e347c99
+local_binding_sha256=1cf16dc62dd42e0ea9c528aa68867b76ab8fc42f59fba1215974e0d9eb9ab323
+
+bridge_limitation=v1/interactive_currently_filters_out_menu_menuitem_dialog_roles
+accessibility_fallback=AT-SPI used for structural evidence only
