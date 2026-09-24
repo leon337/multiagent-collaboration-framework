@@ -357,21 +357,19 @@ On 2026-09-24, the accessibility tree exposed the active overlay as:
 menu "Exibir detalhes do projeto"
 ```
 
-Observed menu items:
+The stable/core menu capabilities observed across repeated runs are:
 
-| Project | Share | Project settings | Pin |
-| --- | --- | --- | --- |
-| Emily / EMILLY | absent | present | present |
-| Sofia / SOPHIA | present | present | present |
-| Patrícia / PATRICIA - MCF | present | present | present |
-| Rafael / RAFAEL - MCF | present | present | present |
+```text
+Configurações do projeto
+Fixar projeto | Desafixar projeto
+```
 
-The absence of Share in Emily is a real capability difference in the observed state and must not be normalized by choosing a similar control.
+`Compartilhar` is **optional and runtime-volatile**. In the first inventory it appeared for Sofia, Patrícia and Rafael but not Emily; in the second smoke it appeared for none of the four projects. Its absence is therefore `CAPABILITY_ABSENT_NOT_DRIFT`, not a reason to choose a similar control or fail the core details-menu workflow.
 
 Canonical semantic IDs:
 
 ```text
-chatgpt.project.share
+chatgpt.project.share        # optional capability
 chatgpt.project.settings
 chatgpt.project.pin
 ```
