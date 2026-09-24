@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { chromium, type Browser } from 'playwright';
 import { type EgressPolicy, PublicEgressPolicy } from './egress-policy.js';
 import { OperationError } from './execution.js';
+import { PublicTargetResolver, type TargetResolver } from './pinned-fetch.js';
+import { PinnedEgressProxy } from './pinned-proxy.js';
 
 export type BrowserRunStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 export type BrowserRuntimeKind = 'deterministic-mvp' | 'playwright';
@@ -169,6 +171,7 @@ type ChromiumLaunchOptions = NonNullable<Parameters<typeof chromium.launch>[0]>;
 
 export type PlaywrightBrowserRuntimeOptions = {
   egressPolicy?: EgressPolicy;
+  targetResolver?: TargetResolver;
   launchOptions?: ChromiumLaunchOptions;
   excerptMaxChars?: number;
 };
@@ -177,12 +180,15 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
   readonly kind = 'playwright' as const;
   private readonly runs = new Map<string, BrowserRunSnapshot>();
   private readonly browsers = new Map<string, Browser>();
+  private readonly proxies = new Map<string, PinnedEgressProxy>();
   private readonly egressPolicy: EgressPolicy;
+  private readonly targetResolver: TargetResolver;
   private readonly launchOptions: ChromiumLaunchOptions;
   private readonly excerptMaxChars: number;
 
   constructor(options: PlaywrightBrowserRuntimeOptions = {}) {
     this.egressPolicy = options.egressPolicy ?? new PublicEgressPolicy();
+    this.targetResolver = options.targetResolver ?? new PublicTargetResolver();
     this.launchOptions = { headless: true, ...options.launchOptions };
     this.excerptMaxChars = Math.max(500, Math.min(options.excerptMaxChars ?? 8_000, 50_000));
   }
@@ -216,13 +222,18 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
 
     const browser = this.browsers.get(runId);
     if (browser) void browser.close().catch(() => undefined);
+    const proxy = this.proxies.get(runId);
+    if (proxy) void proxy.close().catch(() => undefined);
     return cloneSnapshot(cancelled);
   }
 
   async dispose(): Promise<void> {
     const browsers = [...this.browsers.values()];
+    const proxies = [...this.proxies.values()];
     this.browsers.clear();
+    this.proxies.clear();
     await Promise.all(browsers.map((browser) => browser.close().catch(() => undefined)));
+    await Promise.all(proxies.map((proxy) => proxy.close().catch(() => undefined)));
   }
 
   private async execute(runId: string): Promise<void> {
@@ -236,6 +247,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     });
 
     let browser: Browser | undefined;
+    let proxy: PinnedEgressProxy | undefined;
     let blockedError: OperationError | undefined;
     const timeout = setTimeout(() => {
       const current = this.runs.get(runId);
@@ -251,6 +263,8 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       });
       const active = this.browsers.get(runId);
       if (active) void active.close().catch(() => undefined);
+      const activeProxy = this.proxies.get(runId);
+      if (activeProxy) void activeProxy.close().catch(() => undefined);
     }, started.budget.maxDurationMs);
 
     try {
@@ -260,7 +274,14 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       const afterEgress = this.runs.get(runId);
       if (!afterEgress || afterEgress.status !== 'RUNNING') return;
 
-      browser = await chromium.launch(this.launchOptions);
+      proxy = new PinnedEgressProxy({ targetResolver: this.targetResolver });
+      await proxy.listen();
+      this.proxies.set(runId, proxy);
+
+      browser = await chromium.launch({
+        ...this.launchOptions,
+        proxy: { server: proxy.proxyUrl() },
+      });
       this.browsers.set(runId, browser);
 
       const afterLaunch = this.runs.get(runId);
@@ -339,7 +360,9 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     } finally {
       clearTimeout(timeout);
       this.browsers.delete(runId);
+      this.proxies.delete(runId);
       if (browser) await browser.close().catch(() => undefined);
+      if (proxy) await proxy.close().catch(() => undefined);
     }
   }
 }
