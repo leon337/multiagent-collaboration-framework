@@ -1,0 +1,35 @@
+MCF-UI-SEMANTIC-MANUAL-001 — expanded validation
+
+Source-of-truth branch:
+mission/ui-semantic-manual-001
+
+Agent result hashes:
+Sofia=e7513431d0505871494b8eeb47c9f9fb767bf5dfa01ba37b55aba46165373529
+Emily=c8239230d28ec37652a6ea7454d6d4931246d2e6614c39a5dc37e61c5879e805
+Patricia=db715df3051974bbf39804c319d1620da44476ccdb977c910051a8e277ddd712
+Rafael=ba32a417f434c40193876ea597e9593e87013498fc0a84d89f5d4f6466062ecb
+
+Local binding evidence:
+path=~/.config/mcf-dual-browser-cockpit/ui-semantic-bindings.json
+sha256=d540428b4f0fab4f241e15a38c450bdaf0b7f0ef5b894b77456bc89256c3f70f
+content is intentionally not published because it contains workstation/account-specific project identifiers.
+
+Smoke R1 evidence:
+path=/home/leo/mcf-handoffs/MCF-UI-SEMANTIC-SMOKE-R1-2026-09-24.json
+sha256=3a2acf726b767edb7c004683f92291910a67ff9eb2e8765c891a8a1243f6dfbf
+result=FAIL 36/40
+
+Smoke R2 evidence:
+path=/home/leo/mcf-handoffs/MCF-UI-SEMANTIC-SMOKE-R2-2026-09-24.json
+sha256=725a4960a37d77614acabb30229283059a388953484c306f2122b94917a01e64
+result=PASS 44/44
+
+R2 resolved in each pane:
+- canonical agent binding;
+- project href + accessible-name identity;
+- current project/conversation context;
+- exactly one new-chat action;
+- exactly one composer;
+- submit state non-ambiguous and semantically valid, including unavailable.
+
+No coordinates, pixels or screenshots were used for semantic resolution.
