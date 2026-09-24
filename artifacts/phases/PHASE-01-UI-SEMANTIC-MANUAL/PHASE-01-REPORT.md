@@ -36,7 +36,7 @@ Across the four panes, MESTRE observed:
 ## Delivered local artifact
 - `~/.config/mcf-dual-browser-cockpit/ui-semantic-bindings.json`
 - mode 0600
-- SHA-256 `d540428b4f0fab4f241e15a38c450bdaf0b7f0ef5b894b77456bc89256c3f70f`
+- Initial/historical SHA-256 before contract-version sync: `d540428b4f0fab4f241e15a38c450bdaf0b7f0ef5b894b77456bc89256c3f70f`
 
 No chat was deleted and no new chat was created in this phase.
 
@@ -53,3 +53,17 @@ Low traceability finding was remediated with `PHASE-01-CANONICAL-HASHES.sha256`.
 Smoke R3 on contract v1.0.1: PASS 44/44.
 Local binding SHA-256 after version sync: `a6c9a71c970974c0284f9c1fc9c632f2e81f2d880c0c8e3eda717b5c15ae9c27`.
 R3 evidence SHA-256: `1e03880808fa0e9b7cf8f03e663d9a205d079a5ebf4f3db4a3089c7d9da6bd03`.
+
+## Emily re-audit R2
+Native retry attempt 2 completed after recovering the interrupted first re-audit attempt.
+
+- decision: PASS
+- result SHA: `43d88c9cae103ed8bd97c0ae12fd7b6a9ea861ef5c082fdaecadde637ee58d9a`
+- M1: removed
+- M2: removed
+- L1: removed
+- Critical: 0
+- High: 0
+- one residual Medium was only historical-vs-current binding hash labeling
+- closeout remediation: checkpoint now contains only the current binding hash; historical hash is explicitly labeled as historical in report/validation evidence
+- merge gate: PASS
