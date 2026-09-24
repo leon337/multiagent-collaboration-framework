@@ -106,7 +106,18 @@ export class PinnedEgressProxy {
           method: req.method,
           headers: sanitizeHeaders(req.headers, url.host),
           servername: url.protocol === 'https:' && isIP(target.hostname) === 0 ? target.hostname : undefined,
-          lookup: (_hostname, _options, callback) => callback(null, target.address, target.family),
+          lookup: (_hostname, options, callback) => {
+            const pinnedCallback = callback as (
+              error: NodeJS.ErrnoException | null,
+              address: string | Array<{ address: string; family: 4 | 6 }>,
+              family?: 4 | 6,
+            ) => void;
+            if (typeof options === 'object' && options !== null && 'all' in options && options.all) {
+              pinnedCallback(null, [{ address: target.address, family: target.family }]);
+            } else {
+              pinnedCallback(null, target.address, target.family);
+            }
+          },
         },
         (upstreamResponse) => {
           res.writeHead(upstreamResponse.statusCode ?? 502, upstreamResponse.statusMessage, upstreamResponse.headers);
