@@ -39,3 +39,17 @@ Across the four panes, MESTRE observed:
 - SHA-256 `d540428b4f0fab4f241e15a38c450bdaf0b7f0ef5b894b77456bc89256c3f70f`
 
 No chat was deleted and no new chat was created in this phase.
+
+## Independent audit R1 and remediation
+Emily final R1: PASS; Critical=0; High=0; Medium=2; Low=1.
+Result SHA: `9ca3f609f8491703bae28784f695847fb283a31eb543a2fb03d08002a095c51b`.
+
+Medium findings were remediated before merge:
+- stop semantic locator now distinguishes `data-testid=stop-button` from DOM `#composer-submit-button`;
+- state predicates for `send / stop-generation / unavailable / unknown` are encoded in contract v1.0.1.
+
+Low traceability finding was remediated with `PHASE-01-CANONICAL-HASHES.sha256`.
+
+Smoke R3 on contract v1.0.1: PASS 44/44.
+Local binding SHA-256 after version sync: `a6c9a71c970974c0284f9c1fc9c632f2e81f2d880c0c8e3eda717b5c15ae9c27`.
+R3 evidence SHA-256: `1e03880808fa0e9b7cf8f03e663d9a205d079a5ebf4f3db4a3089c7d9da6bd03`.
