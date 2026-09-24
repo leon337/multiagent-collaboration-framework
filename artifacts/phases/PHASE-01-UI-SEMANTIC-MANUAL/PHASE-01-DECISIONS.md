@@ -10,3 +10,8 @@
 8. R1 smoke failure is preserved as evidence; contract/test were corrected rather than hiding the failure.
 9. R2 read-only semantic smoke passed 44/44.
 10. Fresh-chat creation is intentionally deferred until after this manual phase is audited and closed.
+
+11. Emily R1: PASS; Critical=0, High=0; two non-blocking Medium consistency findings and one Low traceability finding.
+12. MESTRE accepted the findings and remediated all three before merge.
+13. Contract version advanced to 1.0.1 because locator/state metadata changed without changing semantic IDs.
+14. Smoke R3 passed 44/44 against contract v1.0.1.
