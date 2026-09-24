@@ -35,3 +35,16 @@ R3:
 - Name/Instructions field hashes stable 4/4
 - Memory state stable 4/4
 - persistent mutation observed: NO
+
+R2 after Emily findings:
+contract_version=1.1.1
+Emily=PASS
+Sofia=PASS
+Patrícia=PASS
+Rafael=PASS
+share_required=false
+share_observed=absent_4_of_4
+pin_control=resolved
+settings_open_close=PASS_4_of_4
+persistent_mutation_executed=NO
+evidence_sha256=f4c68c4a1eba01823697b598d6a740d8d842424dee5510c1f291220093e88dda
