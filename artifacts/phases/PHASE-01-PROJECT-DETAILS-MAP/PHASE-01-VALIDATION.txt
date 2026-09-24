@@ -17,3 +17,15 @@ local_binding_sha256=1cf16dc62dd42e0ea9c528aa68867b76ab8fc42f59fba1215974e0d9eb9
 
 bridge_limitation=v1/interactive_currently_filters_out_menu_menuitem_dialog_roles
 accessibility_fallback=AT-SPI used for structural evidence only
+
+deep_map_evidence_sha256=215b6cca513bd107c3ad0cf9a723155cafb1de2f07f6e62543edb50d80640a45
+smoke_r3_sha256=96d8f4643bc70ccf1a8a25a2351fbd10b8478eba14513a80e440c87cb2dbaa48
+smoke_r3_status=PASS
+smoke_r3_projects=4
+field_hashes_stable=4/4
+memory_state_stable=4/4
+persistent_mutation_observed=false
+memory_Emily=standard
+memory_Sofia=project-only
+memory_Patricia=project-only
+memory_Rafael=project-only
