@@ -320,6 +320,7 @@ class Projection:
     tasks: dict[str, dict[str, Any]]
     messages: dict[str, dict[str, Any]]
     delivered_messages: set[str]
+    delivery_attempts: dict[str, dict[str, Any]]
     executions: dict[str, dict[str, Any]]
     tool_calls: dict[str, dict[str, Any]]
     sessions: dict[str, dict[str, Any]]
@@ -351,6 +352,7 @@ def replay(events: Iterable[Event]) -> Projection:
     tasks: dict[str, dict[str, Any]] = {}
     messages: dict[str, dict[str, Any]] = {}
     delivered: set[str] = set()
+    delivery_attempts: dict[str, dict[str, Any]] = {}
     executions: dict[str, dict[str, Any]] = {}
     tool_calls: dict[str, dict[str, Any]] = {}
     sessions: dict[str, dict[str, Any]] = {}
@@ -366,7 +368,14 @@ def replay(events: Iterable[Event]) -> Projection:
             aid = p["agent_id"]
             if aid in agents:
                 raise ProjectionError(f"agent {aid} already exists")
-            agents[aid] = {"agent_id": aid, "name": p["name"], "phase": "provisioning"}
+            if any(agent.get("name") == p["name"] for agent in agents.values()):
+                raise ProjectionError(f"agent name {p['name']} is permanently reserved")
+            agents[aid] = {
+                "agent_id": aid,
+                "name": p["name"],
+                "phase": "provisioning",
+                "executor_ref": p["executor_ref"],
+            }
         elif event.event_type in {"agent/active", "agent/failed"}:
             aid = p["agent_id"]
             prior = agents.get(aid)
@@ -375,6 +384,8 @@ def replay(events: Iterable[Event]) -> Projection:
             prior["phase"] = event.event_type.split("/")[1]
             if "error" in p:
                 prior["error"] = p["error"]
+            if "evidence_ref" in p:
+                prior["evidence_ref"] = p["evidence_ref"]
         elif event.event_type == "task/created":
             tid = p["task_id"]
             if tid in tasks:
@@ -398,7 +409,10 @@ def replay(events: Iterable[Event]) -> Projection:
             if int(p["revision"]) != task["revision"] + 1:
                 raise ProjectionError(f"non-contiguous task revision for {tid}")
             task["revision"] = int(p["revision"])
-            for key in ("status", "subject", "blocked_by", "owner_id", "lease_id", "lease_until"):
+            for key in (
+                "status", "subject", "blocked_by", "owner_id", "lease_id", "lease_until",
+                "priority", "lane", "preemptible", "enqueued_at"
+            ):
                 if key in p:
                     task[key] = p[key]
             _detect_cycle(tasks)
@@ -407,12 +421,56 @@ def replay(events: Iterable[Event]) -> Projection:
             if mid in messages:
                 raise ProjectionError(f"duplicate message {mid}")
             messages[mid] = dict(p)
+        elif event.event_type == "message/delivery_started":
+            mid = p["message_id"]
+            if mid not in messages:
+                raise ProjectionError(f"message {mid} delivery started before queue")
+            if mid in delivered:
+                raise ProjectionError(f"message {mid} delivery started after delivery")
+            prior = delivery_attempts.get(mid)
+            if prior is not None and prior.get("status") == "started":
+                raise ProjectionError(f"message {mid} already has unresolved delivery attempt")
+            delivery_attempts[mid] = {
+                "message_id": mid,
+                "attempt_id": p["attempt_id"],
+                "target_id": p["target_id"],
+                "status": "started",
+                "started_at": event.timestamp,
+            }
+        elif event.event_type == "message/delivery_failed":
+            mid = p["message_id"]
+            attempt = delivery_attempts.get(mid)
+            if (
+                attempt is None
+                or attempt.get("status") != "started"
+                or attempt.get("attempt_id") != p["attempt_id"]
+            ):
+                raise ProjectionError(f"invalid failed delivery transition for {mid}")
+            attempt["status"] = "failed"
+            attempt["failed_at"] = event.timestamp
+            if "error_class" in p:
+                attempt["error_class"] = p["error_class"]
+            if "evidence_ref" in p:
+                attempt["evidence_ref"] = p["evidence_ref"]
         elif event.event_type == "message/delivered":
             mid = p["message_id"]
             if mid not in messages:
                 raise ProjectionError(f"message {mid} delivered before queue")
             if mid in delivered:
                 raise ProjectionError(f"message {mid} delivered twice")
+            attempt_id = p.get("attempt_id")
+            if attempt_id is not None:
+                attempt = delivery_attempts.get(mid)
+                if (
+                    attempt is None
+                    or attempt.get("status") != "started"
+                    or attempt.get("attempt_id") != attempt_id
+                ):
+                    raise ProjectionError(f"invalid delivered transition for {mid}")
+                attempt["status"] = "delivered"
+                attempt["delivered_at"] = event.timestamp
+                if "evidence_ref" in p:
+                    attempt["evidence_ref"] = p["evidence_ref"]
             delivered.add(mid)
         elif event.event_type == "execution/started":
             eid = p["execution_id"]
@@ -423,6 +481,7 @@ def replay(events: Iterable[Event]) -> Projection:
                 "agent_id": p["agent_id"],
                 "task_id": p["task_id"],
                 "executor": p["executor"],
+                "lease_id": p.get("lease_id"),
                 "status": "running",
                 "resource_usage": {},
             }
@@ -508,6 +567,7 @@ def replay(events: Iterable[Event]) -> Projection:
         tasks=tasks,
         messages=messages,
         delivered_messages=delivered,
+        delivery_attempts=delivery_attempts,
         executions=executions,
         tool_calls=tool_calls,
         sessions=sessions,
@@ -522,6 +582,39 @@ class MissionRuntime:
     def projection(self) -> Projection:
         return replay(self.store.events(self.mission_id))
 
+    def _assert_running_execution_authority(
+        self,
+        projection: Projection,
+        execution_id: str,
+    ) -> dict[str, Any]:
+        execution = projection.executions.get(execution_id)
+        if execution is None:
+            raise MissionError(f"unknown execution {execution_id}")
+        if execution.get("status") != "running":
+            raise ConflictError(f"execution {execution_id} is not running")
+
+        agent = projection.agents.get(execution.get("agent_id"))
+        if agent is None or agent.get("phase") != "active":
+            raise ConflictError(
+                f"execution {execution_id} agent is not active"
+            )
+
+        task = projection.tasks.get(execution.get("task_id"))
+        if task is None:
+            raise MissionError(f"execution {execution_id} references unknown task")
+        if (
+            task.get("status") != "leased"
+            or task.get("owner_id") != execution.get("agent_id")
+            or task.get("lease_id") != execution.get("lease_id")
+        ):
+            raise ConflictError(
+                f"execution {execution_id} no longer owns the current task lease"
+            )
+        if task.get("lease_until") is not None and float(task["lease_until"]) <= time.time():
+            raise ConflictError(f"execution {execution_id} task lease has expired")
+
+        return execution
+
     def provision_agent(
         self,
         agent_id: str,
@@ -529,6 +622,16 @@ class MissionRuntime:
         executor_ref: str,
         actor: str,
     ) -> dict[str, Any]:
+        projection = self.projection()
+        existing = projection.agents.get(agent_id)
+        if existing is not None:
+            if existing.get("name") == name and existing.get("executor_ref") == executor_ref:
+                return existing
+            raise ConflictError(f"agent id {agent_id} already reserved")
+        for other in projection.agents.values():
+            if other.get("name") == name:
+                raise ConflictError(f"agent name {name} is permanently reserved")
+
         self.store.append(
             self.mission_id,
             "agent/provisioning",
@@ -544,6 +647,7 @@ class MissionRuntime:
         observed_phase: str,
         actor: str,
         error: str | None = None,
+        evidence_ref: str | None = None,
     ) -> dict[str, Any]:
         if observed_phase not in {"active", "failed"}:
             raise ValueError("observed_phase must be active or failed")
@@ -557,6 +661,8 @@ class MissionRuntime:
         payload = {"agent_id": agent_id}
         if error is not None:
             payload["error"] = error
+        if evidence_ref is not None:
+            payload["evidence_ref"] = evidence_ref
         self.store.append(
             self.mission_id,
             f"agent/{observed_phase}",
@@ -565,6 +671,63 @@ class MissionRuntime:
             idempotency_key=f"agent:settle:{agent_id}:{observed_phase}",
         )
         return self.projection().agents[agent_id]
+
+    def reconcile_provisioning(
+        self,
+        observations: dict[str, dict[str, Any]],
+        actor: str,
+    ) -> dict[str, Any]:
+        projection = self.projection()
+        settled: dict[str, str] = {}
+        pending: list[str] = []
+        already_settled: dict[str, str] = {}
+
+        for agent_id, agent in sorted(projection.agents.items()):
+            observation = observations.get(agent_id)
+            if agent["phase"] != "provisioning":
+                if observation is not None:
+                    observed_phase = observation.get("phase")
+                    if observed_phase is not None and observed_phase != agent["phase"]:
+                        raise ConflictError(
+                            f"agent {agent_id} observed as {observed_phase} "
+                            f"but journal says {agent['phase']}"
+                        )
+                    already_settled[agent_id] = agent["phase"]
+                continue
+
+            if observation is None:
+                pending.append(agent_id)
+                continue
+
+            observed_phase = observation.get("phase")
+            if observed_phase not in {"active", "failed"}:
+                raise ValueError(
+                    f"agent {agent_id} observation phase must be active or failed"
+                )
+            observed_executor = observation.get("executor_ref")
+            if observed_executor is not None and observed_executor != agent.get("executor_ref"):
+                raise ConflictError(
+                    f"agent {agent_id} executor mismatch: "
+                    f"{observed_executor} != {agent.get('executor_ref')}"
+                )
+
+            result = self.settle_agent(
+                agent_id,
+                observed_phase,
+                actor,
+                error=observation.get("error"),
+                evidence_ref=observation.get("evidence_ref"),
+            )
+            settled[agent_id] = result["phase"]
+
+        unknown = sorted(set(observations).difference(projection.agents))
+        return {
+            "schema": "mcf_provisioning_reconcile/v1",
+            "settled": settled,
+            "pending": pending,
+            "already_settled": already_settled,
+            "unknown_observations": unknown,
+        }
 
     def start_execution(
         self,
@@ -575,8 +738,30 @@ class MissionRuntime:
         actor: str,
     ) -> dict[str, Any]:
         p = self.projection()
-        if task_id not in p.tasks:
+        agent = p.agents.get(agent_id)
+        if agent is None:
+            raise MissionError(f"unknown agent {agent_id}")
+        if agent.get("phase") != "active":
+            raise ConflictError(f"agent {agent_id} is not active")
+
+        task = p.tasks.get(task_id)
+        if task is None:
             raise MissionError(f"unknown task {task_id}")
+        if task.get("status") != "leased":
+            raise ConflictError(f"task {task_id} is not leased")
+        if task.get("owner_id") != agent_id:
+            raise ConflictError(
+                f"task {task_id} lease owner {task.get('owner_id')} "
+                f"does not match agent {agent_id}"
+            )
+        if task.get("lease_until") is not None and float(task["lease_until"]) <= time.time():
+            raise ConflictError(f"task {task_id} lease has expired")
+        if any(
+            execution.get("task_id") == task_id and execution.get("status") == "running"
+            for execution in p.executions.values()
+        ):
+            raise ConflictError(f"task {task_id} already has a running execution")
+
         self.store.append(
             self.mission_id,
             "execution/started",
@@ -586,6 +771,7 @@ class MissionRuntime:
                 "agent_id": agent_id,
                 "task_id": task_id,
                 "executor": executor,
+                "lease_id": task.get("lease_id"),
             },
             idempotency_key=f"execution:start:{execution_id}",
         )
@@ -601,11 +787,24 @@ class MissionRuntime:
         artifact_refs: list[str] | None = None,
         resource_usage: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        current = self.projection().executions.get(execution_id)
+        projection = self.projection()
+        current = projection.executions.get(execution_id)
         if current is None:
             raise MissionError(f"unknown execution {execution_id}")
         if current["status"] != "running":
             return current
+        current = self._assert_running_execution_authority(
+            projection,
+            execution_id,
+        )
+        if any(
+            tool.get("execution_id") == execution_id and tool.get("status") == "requested"
+            for tool in projection.tool_calls.values()
+        ):
+            raise ConflictError(
+                f"execution {execution_id} has unresolved tool calls"
+            )
+
         event_type = "execution/completed" if success else "execution/failed"
         self.store.append(
             self.mission_id,
@@ -629,8 +828,15 @@ class MissionRuntime:
         args_sha256: str,
         actor: str,
     ) -> dict[str, Any]:
-        if execution_id not in self.projection().executions:
-            raise MissionError(f"unknown execution {execution_id}")
+        projection = self.projection()
+        execution = self._assert_running_execution_authority(
+            projection,
+            execution_id,
+        )
+        if actor != execution.get("agent_id"):
+            raise ConflictError(
+                f"tool requester {actor} does not own execution {execution_id}"
+            )
         self.store.append(
             self.mission_id,
             "tool/requested",
@@ -654,11 +860,22 @@ class MissionRuntime:
         result_sha256: str | None = None,
         error_class: str | None = None,
     ) -> dict[str, Any]:
-        current = self.projection().tool_calls.get(call_id)
+        projection = self.projection()
+        current = projection.tool_calls.get(call_id)
         if current is None:
             raise MissionError(f"unknown tool call {call_id}")
         if current["status"] != "requested":
             return current
+
+        execution = self._assert_running_execution_authority(
+            projection,
+            current["execution_id"],
+        )
+        if actor != execution.get("agent_id"):
+            raise ConflictError(
+                f"tool finisher {actor} does not own execution {current['execution_id']}"
+            )
+
         event_type = "tool/completed" if success else "tool/failed"
         payload: dict[str, Any] = {"call_id": call_id}
         if result_sha256 is not None:
@@ -712,6 +929,16 @@ class MissionRuntime:
         )
         return self.projection().tasks[task_id]
 
+    def task_ready(self, task_id: str) -> bool:
+        p = self.projection()
+        task = p.tasks.get(task_id)
+        if task is None:
+            raise MissionError(f"unknown task {task_id}")
+        return all(
+            p.tasks.get(dep, {}).get("status") == "completed"
+            for dep in task.get("blocked_by", [])
+        )
+
     def lease_task(
         self,
         task_id: str,
@@ -722,6 +949,8 @@ class MissionRuntime:
     ) -> dict[str, Any]:
         if ttl_seconds <= 0:
             raise ValueError("ttl_seconds must be positive")
+        if not self.task_ready(task_id):
+            raise ConflictError(f"task {task_id} dependencies are not complete")
         lease_id = str(uuid.uuid4())
         return self.update_task(
             task_id, expected_revision, actor,
@@ -770,7 +999,79 @@ class MissionRuntime:
         )
         return self.projection().messages[message_id]
 
-    def ack_message(self, message_id: str, target_id: str, actor: str) -> None:
+    def start_message_delivery(
+        self,
+        message_id: str,
+        target_id: str,
+        attempt_id: str,
+        actor: str,
+    ) -> dict[str, Any]:
+        p = self.projection()
+        msg = p.messages.get(message_id)
+        if msg is None:
+            raise MissionError(f"unknown message {message_id}")
+        if msg["target_id"] != target_id:
+            raise ConflictError("message target mismatch")
+        if message_id in p.delivered_messages:
+            raise ConflictError(f"message {message_id} already delivered")
+        current = p.delivery_attempts.get(message_id)
+        if current is not None and current.get("status") == "started":
+            if current.get("attempt_id") == attempt_id:
+                return current
+            raise ConflictError(f"message {message_id} requires delivery reconciliation")
+        self.store.append(
+            self.mission_id,
+            "message/delivery_started",
+            actor,
+            {
+                "message_id": message_id,
+                "target_id": target_id,
+                "attempt_id": attempt_id,
+            },
+            idempotency_key=f"message:delivery_started:{message_id}:{attempt_id}",
+        )
+        return self.projection().delivery_attempts[message_id]
+
+    def fail_message_delivery(
+        self,
+        message_id: str,
+        attempt_id: str,
+        actor: str,
+        *,
+        error_class: str | None = None,
+        evidence_ref: str | None = None,
+    ) -> dict[str, Any]:
+        current = self.projection().delivery_attempts.get(message_id)
+        if current is None:
+            raise MissionError(f"message {message_id} has no delivery attempt")
+        if current.get("attempt_id") != attempt_id or current.get("status") != "started":
+            raise ConflictError(f"message {message_id} delivery attempt mismatch")
+        payload: dict[str, Any] = {
+            "message_id": message_id,
+            "attempt_id": attempt_id,
+        }
+        if error_class is not None:
+            payload["error_class"] = error_class
+        if evidence_ref is not None:
+            payload["evidence_ref"] = evidence_ref
+        self.store.append(
+            self.mission_id,
+            "message/delivery_failed",
+            actor,
+            payload,
+            idempotency_key=f"message:delivery_failed:{message_id}:{attempt_id}",
+        )
+        return self.projection().delivery_attempts[message_id]
+
+    def ack_message(
+        self,
+        message_id: str,
+        target_id: str,
+        actor: str,
+        *,
+        attempt_id: str | None = None,
+        evidence_ref: str | None = None,
+    ) -> None:
         p = self.projection()
         msg = p.messages.get(message_id)
         if msg is None:
@@ -779,11 +1080,68 @@ class MissionRuntime:
             raise ConflictError("message target mismatch")
         if message_id in p.delivered_messages:
             return
+        if attempt_id is not None:
+            current = p.delivery_attempts.get(message_id)
+            if (
+                current is None
+                or current.get("attempt_id") != attempt_id
+                or current.get("status") != "started"
+            ):
+                raise ConflictError(f"message {message_id} delivery attempt mismatch")
+        payload: dict[str, Any] = {
+            "message_id": message_id,
+            "target_id": target_id,
+        }
+        if attempt_id is not None:
+            payload["attempt_id"] = attempt_id
+        if evidence_ref is not None:
+            payload["evidence_ref"] = evidence_ref
+        suffix = attempt_id or "legacy"
         self.store.append(
-            self.mission_id, "message/delivered", actor,
-            {"message_id": message_id, "target_id": target_id},
-            idempotency_key=f"message:delivered:{message_id}",
+            self.mission_id,
+            "message/delivered",
+            actor,
+            payload,
+            idempotency_key=f"message:delivered:{message_id}:{suffix}",
         )
+
+    def reconcile_message_delivery(
+        self,
+        message_id: str,
+        target_id: str,
+        *,
+        delivered: bool,
+        actor: str,
+        evidence_ref: str,
+        error_class: str = "reconciled_not_delivered",
+    ) -> dict[str, Any]:
+        p = self.projection()
+        msg = p.messages.get(message_id)
+        if msg is None:
+            raise MissionError(f"unknown message {message_id}")
+        if msg["target_id"] != target_id:
+            raise ConflictError("message target mismatch")
+        current = p.delivery_attempts.get(message_id)
+        if current is None or current.get("status") != "started":
+            raise ConflictError(f"message {message_id} has no unresolved delivery attempt")
+        attempt_id = str(current["attempt_id"])
+        if delivered:
+            self.ack_message(
+                message_id,
+                target_id,
+                actor,
+                attempt_id=attempt_id,
+                evidence_ref=evidence_ref,
+            )
+        else:
+            self.fail_message_delivery(
+                message_id,
+                attempt_id,
+                actor,
+                error_class=error_class,
+                evidence_ref=evidence_ref,
+            )
+        return self.projection().delivery_attempts[message_id]
 
 
     def create_session(
