@@ -19,3 +19,9 @@
 16. Fixed sleeps are not sufficient; critical overlay transitions use bounded state waits.
 17. Contract remains generic: local project availability/state evidence belongs in PRF/local evidence, not the generic semantic identity.
 18. Duplicate icon/color IDs were reconciled; `chatgpt.project.settings.icon-color` is canonical.
+
+12. Emily R2 removed H1-H6 as blockers but found H7 (stale manual hash) and M1 (invalid Memory ARIA role).
+13. M1 was corrected by using `menuitemradio`; contract patch version is 1.1.1.
+14. H7 is remediated by regenerating canonical hashes after all semantic/doc changes.
+15. R2 showed Share absent in all four projects, contradicting its earlier three-project appearance; therefore Share is runtime-optional and absence is not semantic drift.
+16. Smoke R2 passed 4/4 with no persistent mutation.
