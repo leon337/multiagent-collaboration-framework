@@ -25,3 +25,6 @@
 14. H7 is remediated by regenerating canonical hashes after all semantic/doc changes.
 15. R2 showed Share absent in all four projects, contradicting its earlier three-project appearance; therefore Share is runtime-optional and absence is not semantic drift.
 16. Smoke R2 passed 4/4 with no persistent mutation.
+
+17. The Vercel commit status failure is classified as EXTERNAL_NON_REQUIRED for this Class B documentation/mapping mission because its target reports a free-plan build-rate-limit, no Vercel deployment is in scope, and the repository's canonical PR gates for this phase are Documentation Validation and MCF Production Readiness.
+18. The Vercel failure remains recorded; it is not rewritten as success and no production/deployment claim is made from it.
