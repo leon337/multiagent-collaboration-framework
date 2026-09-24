@@ -5,7 +5,7 @@ import { OperationError } from '../src/execution.js';
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('DeterministicBrowserRuntime', () => {
-  it('creates a stable run ID and completes asynchronously', async () => {
+  it('creates a stable run ID and completes asynchronously with replay metadata', async () => {
     const runtime = new DeterministicBrowserRuntime(5);
     const started = runtime.start({ url: 'https://example.com/', goal: 'inspect the page' });
 
@@ -18,6 +18,16 @@ describe('DeterministicBrowserRuntime', () => {
     const completed = runtime.get(started.runId);
     expect(completed.status).toBe('COMPLETED');
     expect(completed.result?.summary).toContain('without live browser execution');
+    expect(completed.result?.evidence?.version).toBe(1);
+    expect(completed.result?.evidence?.screenshot).toBeUndefined();
+    expect(completed.result?.evidence?.semantic).toBeUndefined();
+    expect(completed.result?.evidence?.timeline.map((event) => event.type)).toEqual([
+      'run.created',
+      'run.completed',
+    ]);
+    expect(completed.result?.evidence?.replay.version).toBe(1);
+    expect(completed.result?.evidence?.replay.outcome.status).toBe('COMPLETED');
+    expect(completed.result?.evidence?.replay.request.goal).toBe('inspect the page');
   });
 
   it('returns RUN_NOT_FOUND semantics for an unknown run', () => {
