@@ -29,3 +29,15 @@ memory_Emily=standard
 memory_Sofia=project-only
 memory_Patricia=project-only
 memory_Rafael=project-only
+
+post_audit_contract_version=1.1.1
+memory_aria_role=menuitemradio
+invalid_radio_menuitem_remaining=false
+
+smoke_r2_status=PASS
+smoke_r2_projects=4
+smoke_r2_persistent_mutation=false
+smoke_r2_sha256=f4c68c4a1eba01823697b598d6a740d8d842424dee5510c1f291220093e88dda
+current_binding_sha256=c4ae5f2f3904dd547e35635633afba0aad91913b105aa58d1d44cdf84ab50d56
+
+share_policy=runtime-optional-non-invariant
