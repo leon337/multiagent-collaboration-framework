@@ -10,19 +10,6 @@ const closers: Array<() => Promise<void>> = [];
 
 afterEach(async () => {
   while (closers.length) await closers.pop()?.();
-
-  it('allows explicit remote-open-world disable even on loopback', async () => {
-    const previous = process.env.WEBAGENT_REMOTE_OPEN_WORLD;
-    process.env.WEBAGENT_REMOTE_OPEN_WORLD = 'disabled';
-    try {
-      const { baseUrl } = await listenTestServer();
-      const ready = await fetch(`${baseUrl}/health/ready`);
-      await expect(ready.json()).resolves.toMatchObject({ openWorldEnabled: false });
-    } finally {
-      if (previous === undefined) delete process.env.WEBAGENT_REMOTE_OPEN_WORLD;
-      else process.env.WEBAGENT_REMOTE_OPEN_WORLD = previous;
-    }
-  });
 });
 
 async function listenTestServer(options: { openWorldEnabled?: boolean } = {}) {
@@ -128,5 +115,18 @@ describe('WebAgent Streamable HTTP server', () => {
 
     const ready = await fetch(`${baseUrl}/health/ready`);
     await expect(ready.json()).resolves.toMatchObject({ openWorldEnabled: false });
+  });
+
+  it('allows explicit remote-open-world disable even on loopback', async () => {
+    const previous = process.env.WEBAGENT_REMOTE_OPEN_WORLD;
+    process.env.WEBAGENT_REMOTE_OPEN_WORLD = 'disabled';
+    try {
+      const { baseUrl } = await listenTestServer();
+      const ready = await fetch(`${baseUrl}/health/ready`);
+      await expect(ready.json()).resolves.toMatchObject({ openWorldEnabled: false });
+    } finally {
+      if (previous === undefined) delete process.env.WEBAGENT_REMOTE_OPEN_WORLD;
+      else process.env.WEBAGENT_REMOTE_OPEN_WORLD = previous;
+    }
   });
 });
