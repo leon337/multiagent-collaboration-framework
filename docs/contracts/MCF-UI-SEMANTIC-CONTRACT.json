@@ -1,6 +1,6 @@
 {
   "schema": "mcf-ui-semantic-contract/v1",
-  "contractVersion": "1.0.0",
+  "contractVersion": "1.0.1",
   "missionId": "MCF-UI-SEMANTIC-MANUAL-001",
   "surfaces": [
     "chatgpt",
@@ -277,6 +277,57 @@
         "zeroMatches": "UNAVAILABLE when composer is empty and generation is inactive; otherwise NOT_FOUND",
         "oneMatch": "resolve and classify semantic state",
         "multipleMatches": "AMBIGUOUS"
+      },
+      "stateClassification": {
+        "send": {
+          "requires": [
+            "generation.inactive",
+            "composer.nonempty"
+          ],
+          "control": [
+            "#composer-submit-button"
+          ],
+          "accessibleNames": {
+            "pt-BR": [
+              "Enviar prompt",
+              "Enviar"
+            ],
+            "en": [
+              "Send prompt",
+              "Send"
+            ]
+          }
+        },
+        "stop-generation": {
+          "requires": [
+            "generation.active"
+          ],
+          "control": [
+            "#composer-submit-button"
+          ],
+          "accessibleNames": {
+            "pt-BR": [
+              "Parar de responder",
+              "Parar de gerar",
+              "Interromper resposta"
+            ],
+            "en": [
+              "Stop generating",
+              "Stop responding"
+            ]
+          }
+        },
+        "unavailable": {
+          "requires": [
+            "generation.inactive",
+            "composer.empty"
+          ],
+          "matchCount": 0
+        },
+        "unknown": {
+          "outcome": "VALIDATION_FAILED",
+          "actionAllowed": false
+        }
       }
     },
     {
@@ -294,10 +345,18 @@
           "id": "stop-testid",
           "priority": 10,
           "strategy": "testid",
+          "attribute": "data-testid",
           "values": [
-            "stop-button",
-            "composer-submit-button"
+            "stop-button"
           ],
+          "expectedMatches": 1,
+          "requiresState": "generation.active"
+        },
+        {
+          "id": "composer-submit-dom-id",
+          "priority": 15,
+          "strategy": "css-id",
+          "value": "#composer-submit-button",
           "expectedMatches": 1,
           "requiresState": "generation.active"
         },
