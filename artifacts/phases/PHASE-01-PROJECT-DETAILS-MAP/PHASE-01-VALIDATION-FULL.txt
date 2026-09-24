@@ -44,3 +44,34 @@ validate root project
 → verify WebContents URL/project unchanged
 
 No persistent field/control was activated.
+
+Terminal R3 validation:
+status=PASS
+projects=4
+failed=0
+sha256=96d8f4643bc70ccf1a8a25a2351fbd10b8478eba14513a80e440c87cb2dbaa48
+
+Per-project proof:
+- current project URL unchanged before/after
+- details-menu inventory stable
+- Project Name hash stable
+- Instructions hash stable
+- Memory checked state stable
+- persistentMutationObserved=false
+
+Memory state observed:
+Emily=standard
+Sofia=project-only
+Patricia=project-only
+Rafael=project-only
+
+Deep map evidence:
+path=/home/leo/mcf-handoffs/MCF-PROJECT-DETAILS-MAP-EVIDENCE-2026-09-24.json
+sha256=215b6cca513bd107c3ad0cf9a723155cafb1de2f07f6e62543edb50d80640a45
+
+Local semantic bindings:
+sha256=1cf16dc62dd42e0ea9c528aa68867b76ab8fc42f59fba1215974e0d9eb9ab323
+
+Race handling:
+R1/R2 timing failures preserved.
+R3 uses bounded state waits and fail-closed ambiguity handling.
