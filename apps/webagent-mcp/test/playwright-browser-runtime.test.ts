@@ -189,8 +189,10 @@ describe('PlaywrightBrowserRuntime', () => {
         expect.objectContaining({ type: 'click', selector: '#submit', risk: 'WRITE' }),
       ]),
     );
-    expect(JSON.stringify(completed.result?.evidence)).not.toContain('Leandro');
-    expect(JSON.stringify(completed.result?.evidence)).not.toContain('architect');
+    expect(JSON.stringify(completed.result?.evidence.replay)).not.toContain('Leandro');
+    expect(JSON.stringify(completed.result?.evidence.replay)).not.toContain('architect');
+    expect(JSON.stringify(completed.result?.evidence.timeline)).not.toContain('Leandro');
+    expect(JSON.stringify(completed.result?.evidence.timeline)).not.toContain('architect');
   });
 
   it('allows explicit READ navigation under the default policy', async () => {

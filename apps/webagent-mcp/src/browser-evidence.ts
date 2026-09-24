@@ -1,3 +1,5 @@
+import type { SanitizedBrowserAction } from './browser-actions.js';
+
 export type BrowserEvidenceVersion = 1;
 
 export type BrowserTimelineEventType =
@@ -6,6 +8,9 @@ export type BrowserTimelineEventType =
   | 'browser.launch.completed'
   | 'navigation.started'
   | 'navigation.completed'
+  | 'action.started'
+  | 'action.completed'
+  | 'action.denied'
   | 'evidence.captured'
   | 'run.completed';
 
@@ -19,7 +24,7 @@ export type BrowserTimelineEvent = {
 
 export type BrowserNavigationEvidence = {
   at: string;
-  phase: 'requested' | 'final';
+  phase: 'requested' | 'action' | 'final';
   url: string;
 };
 
@@ -50,6 +55,7 @@ export type BrowserReplayRequest = {
   goal: string;
   maxSteps: number;
   maxDurationMs: number;
+  actions?: SanitizedBrowserAction[];
 };
 
 export type BrowserReplayOutcome = {
@@ -124,7 +130,7 @@ export function buildReplayManifest(input: {
   return {
     version: 1,
     runtime: input.runtime,
-    request: { ...input.request },
+    request: structuredClone(input.request),
     observedSteps: input.timeline.map((event) => ({
       seq: event.seq,
       type: event.type,

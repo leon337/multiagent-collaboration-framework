@@ -2,6 +2,7 @@ import { pathToFileURL } from 'node:url';
 import { McpServer } from '@modelcontextprotocol/server';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import * as z from 'zod/v4';
+import type { BrowserAction } from './browser-actions.js';
 import type { BrowserRuntime } from './browser-runtime.js';
 import { createDefaultBrowserRuntime } from './browser-runtime.js';
 import type { ExecutionEnvelope } from './contracts.js';
@@ -16,6 +17,14 @@ export type WebAgentDependencies = {
   fetchProvider?: FetchProvider;
   browserRuntime?: BrowserRuntime;
 };
+
+const browserActionSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('navigate'), url: z.string().min(1) }),
+  z.object({ type: z.literal('click'), selector: z.string().min(1).max(1_000) }),
+  z.object({ type: z.literal('fill'), selector: z.string().min(1).max(1_000), value: z.string().max(10_000) }),
+  z.object({ type: z.literal('select'), selector: z.string().min(1).max(1_000), value: z.string().min(1).max(2_000) }),
+  z.object({ type: z.literal('press'), selector: z.string().min(1).max(1_000), key: z.string().min(1).max(100) }),
+]);
 
 function toolResult<T>(result: ExecutionEnvelope<T>) {
   return {
@@ -77,6 +86,7 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
         goal: z.string().min(1).max(2_000),
         maxSteps: z.number().int().min(1).max(500).optional(),
         maxDurationMs: z.number().int().min(1).max(900_000).optional(),
+        actions: z.array(browserActionSchema).max(100).optional(),
       }),
       annotations: {
         readOnlyHint: false,
@@ -84,10 +94,10 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
         destructiveHint: false,
       },
     },
-    async ({ url, goal, maxSteps, maxDurationMs }) => {
+    async ({ url, goal, maxSteps, maxDurationMs, actions }) => {
       const result = await executeEnvelope(
         'browser_run',
-        () => browserRuntime.start({ url, goal, maxSteps, maxDurationMs }),
+        () => browserRuntime.start({ url, goal, maxSteps, maxDurationMs, actions: actions as BrowserAction[] | undefined }),
         {
           evidence: [
             {

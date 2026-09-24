@@ -1,6 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { chromium, type Browser, type Page } from 'playwright';
 import {
+  createDefaultBrowserActionPolicy,
+  sanitizeBrowserAction,
+  validateBrowserActions,
+  type BrowserAction,
+  type BrowserActionPolicy,
+} from './browser-actions.js';
+import {
   buildReplayManifest,
   createSemanticEvidence,
   createTimelineRecorder,
@@ -22,6 +29,7 @@ export type BrowserRunRequest = {
   goal: string;
   maxSteps?: number;
   maxDurationMs?: number;
+  actions?: BrowserAction[];
 };
 
 export type BrowserRunSnapshot = {
@@ -95,6 +103,7 @@ function validateRequest(request: BrowserRunRequest): {
     throw new OperationError('INVALID_ARGUMENT', 'maxDurationMs must be an integer between 1 and 900000');
   }
 
+  validateBrowserActions(request.actions, maxSteps);
   return { url, goal, maxSteps, maxDurationMs };
 }
 
@@ -117,12 +126,13 @@ function createSnapshot(kind: BrowserRuntimeKind, request: BrowserRunRequest): B
   };
 }
 
-function replayRequest(snapshot: BrowserRunSnapshot) {
+function replayRequest(snapshot: BrowserRunSnapshot, actions: BrowserAction[] = []) {
   return {
     url: snapshot.url,
     goal: snapshot.goal,
     maxSteps: snapshot.budget.maxSteps,
     maxDurationMs: snapshot.budget.maxDurationMs,
+    ...(actions.length ? { actions: actions.map(sanitizeBrowserAction) } : {}),
   };
 }
 
@@ -188,6 +198,12 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
   constructor(private readonly completionDelayMs = 5) {}
 
   start(request: BrowserRunRequest): BrowserRunSnapshot {
+    if (request.actions?.length) {
+      throw new OperationError(
+        'BROWSER_ACTIONS_UNSUPPORTED',
+        'deterministic browser runtime does not execute live action plans',
+      );
+    }
     const snapshot = createSnapshot(this.kind, request);
     this.runs.set(snapshot.runId, snapshot);
 
@@ -198,7 +214,7 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
         ...current,
         status: 'COMPLETED',
         updatedAt: new Date().toISOString(),
-        budget: { ...current.budget, consumedSteps: 1 },
+        budget: { ...current.budget, consumedSteps: 1 + (this.actionPlans.get(runId)?.length ?? 0) },
         result: {
           summary: 'Deterministic MVP completed without live browser execution.',
           evidence: deterministicEvidence(current, new Date().toISOString()),
@@ -248,6 +264,7 @@ export type PlaywrightBrowserRuntimeOptions = {
   screenshotMaxBytes?: number;
   semanticMaxChars?: number;
   maxNetworkRefs?: number;
+  actionPolicy?: BrowserActionPolicy;
 };
 
 export class PlaywrightBrowserRuntime implements BrowserRuntime {
@@ -262,6 +279,8 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
   private readonly screenshotMaxBytes: number;
   private readonly semanticMaxChars: number;
   private readonly maxNetworkRefs: number;
+  private readonly actionPolicy: BrowserActionPolicy;
+  private readonly actionPlans = new Map<string, BrowserAction[]>();
 
   constructor(options: PlaywrightBrowserRuntimeOptions = {}) {
     this.egressPolicy = options.egressPolicy ?? new PublicEgressPolicy();
@@ -271,10 +290,18 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     this.screenshotMaxBytes = Math.max(50_000, Math.min(options.screenshotMaxBytes ?? 500_000, 1_000_000));
     this.semanticMaxChars = Math.max(1_000, Math.min(options.semanticMaxChars ?? 20_000, 100_000));
     this.maxNetworkRefs = Math.max(1, Math.min(options.maxNetworkRefs ?? 50, 200));
+    this.actionPolicy = options.actionPolicy ?? new (class implements BrowserActionPolicy {
+      private readonly delegate = createDefaultBrowserActionPolicy();
+      assertAllowed(action: BrowserAction): void {
+        this.delegate.assertAllowed(action);
+      }
+    })();
   }
 
   start(request: BrowserRunRequest): BrowserRunSnapshot {
     const snapshot = createSnapshot(this.kind, request);
+    const actions = validateBrowserActions(request.actions, snapshot.budget.maxSteps);
+    this.actionPlans.set(snapshot.runId, actions);
     this.runs.set(snapshot.runId, snapshot);
     void this.execute(snapshot.runId);
     return cloneSnapshot(snapshot);
@@ -304,6 +331,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     if (browser) void browser.close().catch(() => undefined);
     const proxy = this.proxies.get(runId);
     if (proxy) void proxy.close().catch(() => undefined);
+    this.actionPlans.delete(runId);
     return cloneSnapshot(cancelled);
   }
 
@@ -312,6 +340,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     const proxies = [...this.proxies.values()];
     this.browsers.clear();
     this.proxies.clear();
+    this.actionPlans.clear();
     await Promise.all(browsers.map((browser) => browser.close().catch(() => undefined)));
     await Promise.all(proxies.map((proxy) => proxy.close().catch(() => undefined)));
   }
@@ -433,6 +462,63 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       const afterNavigation = this.runs.get(runId);
       if (!afterNavigation || afterNavigation.status !== 'RUNNING') return;
 
+      const actions = this.actionPlans.get(runId) ?? [];
+      for (const action of actions) {
+        const beforeAction = this.runs.get(runId);
+        if (!beforeAction || beforeAction.status !== 'RUNNING') return;
+
+        const sanitized = sanitizeBrowserAction(action);
+        const actionUrl = action.type === 'navigate' ? action.url : page.url();
+        timeline.record('action.started', {
+          url: actionUrl,
+          detail: JSON.stringify(sanitized),
+        });
+
+        try {
+          this.actionPolicy.assertAllowed(action);
+        } catch (error) {
+          timeline.record('action.denied', {
+            url: actionUrl,
+            detail: JSON.stringify(sanitized),
+          });
+          throw error;
+        }
+
+        switch (action.type) {
+          case 'navigate': {
+            const target = parseBrowserUrl(action.url);
+            await this.egressPolicy.assertAllowed(target);
+            await page.goto(target.toString(), {
+              waitUntil: 'domcontentloaded',
+              timeout: Math.min(started.budget.maxDurationMs, 120_000),
+            });
+            navigation.push({
+              at: new Date().toISOString(),
+              phase: 'action',
+              url: page.url(),
+            });
+            break;
+          }
+          case 'click':
+            await page.locator(action.selector).click({ timeout: 5_000 });
+            break;
+          case 'fill':
+            await page.locator(action.selector).fill(action.value, { timeout: 5_000 });
+            break;
+          case 'select':
+            await page.locator(action.selector).selectOption(action.value, { timeout: 5_000 });
+            break;
+          case 'press':
+            await page.locator(action.selector).press(action.key, { timeout: 5_000 });
+            break;
+        }
+
+        timeline.record('action.completed', {
+          url: page.url(),
+          detail: JSON.stringify(sanitized),
+        });
+      }
+
       const title = await page.title();
       const bodyText = await page.locator('body').innerText({ timeout: 5_000 }).catch(() => '');
       const textExcerpt = bodyText.replace(/\s+/g, ' ').trim().slice(0, this.excerptMaxChars);
@@ -478,7 +564,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
             network,
             replay: buildReplayManifest({
               runtime: current.runtime,
-              request: replayRequest(current),
+              request: replayRequest(current, this.actionPlans.get(runId) ?? []),
               timeline: timeline.events,
               outcome: { status: 'COMPLETED', title, finalUrl },
             }),
@@ -503,6 +589,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       clearTimeout(timeout);
       this.browsers.delete(runId);
       this.proxies.delete(runId);
+      this.actionPlans.delete(runId);
       if (browser) await browser.close().catch(() => undefined);
       if (proxy) await proxy.close().catch(() => undefined);
     }
@@ -512,5 +599,5 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
 export function createDefaultBrowserRuntime(env: NodeJS.ProcessEnv = process.env): BrowserRuntime {
   return env.WEBAGENT_BROWSER_RUNTIME?.trim().toLowerCase() === 'deterministic'
     ? new DeterministicBrowserRuntime()
-    : new PlaywrightBrowserRuntime();
+    : new PlaywrightBrowserRuntime({ actionPolicy: createDefaultBrowserActionPolicy(env) });
 }
