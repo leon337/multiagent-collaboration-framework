@@ -1,6 +1,6 @@
 {
   "schema": "mcf-ui-semantic-contract/v1",
-  "contractVersion": "1.1.0",
+  "contractVersion": "1.1.1",
   "missionId": "MCF-UI-SEMANTIC-MANUAL-001",
   "surfaces": [
     "chatgpt",
@@ -799,17 +799,17 @@
         "generatedIdsPersistent": false
       },
       "stateClassification": {
-        "strategy": "checked-radio-menuitem",
+        "strategy": "checked-menuitemradio",
         "options": [
           {
             "semanticValue": "standard",
-            "role": "radio-menuitem",
+            "role": "menuitemradio",
             "heading": "Memória padrão",
             "descriptionContains": "Este projeto pode acessar a memória de chats externos"
           },
           {
             "semanticValue": "project-only",
-            "role": "radio-menuitem",
+            "role": "menuitemradio",
             "heading": "Memória somente no projeto",
             "descriptionContains": "Este projeto só pode acessar a própria memória"
           }
