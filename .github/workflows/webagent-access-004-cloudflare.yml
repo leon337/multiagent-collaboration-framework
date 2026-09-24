@@ -1,0 +1,114 @@
+name: WebAgent Access 004 Cloudflare Proof
+
+on:
+  push:
+    branches:
+      - 'mission/webagent-access-004'
+    paths:
+      - 'apps/webagent-mcp/**'
+      - '.github/workflows/webagent-access-004-cloudflare.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prove-quick-tunnel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/webagent-mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install and build WebAgent
+        run: |
+          npm install --no-audit --no-fund
+          npm run typecheck
+          npm test
+          npm run build
+
+      - name: Download cloudflared
+        run: |
+          curl --fail --location --silent --show-error \
+            https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+            --output /tmp/cloudflared
+          chmod +x /tmp/cloudflared
+          /tmp/cloudflared --version
+
+      - name: Start Cloudflare Quick Tunnel
+        run: |
+          nohup /tmp/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:3000 \
+            > /tmp/cloudflared.log 2>&1 &
+          echo "CF_PID=$!" >> "$GITHUB_ENV"
+
+          PUBLIC_URL=""
+          for i in $(seq 1 60); do
+            PUBLIC_URL=$(grep -oE 'https://[-a-z0-9]+\.trycloudflare\.com' /tmp/cloudflared.log | head -n1 || true)
+            if [ -n "$PUBLIC_URL" ]; then break; fi
+            sleep 1
+          done
+
+          if [ -z "$PUBLIC_URL" ]; then
+            cat /tmp/cloudflared.log
+            exit 1
+          fi
+
+          PUBLIC_HOST="${PUBLIC_URL#https://}"
+          echo "PUBLIC_URL=$PUBLIC_URL" >> "$GITHUB_ENV"
+          echo "PUBLIC_HOST=$PUBLIC_HOST" >> "$GITHUB_ENV"
+          echo "### Access-004 public proof" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: $PUBLIC_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "- MCP: $PUBLIC_URL/mcp" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Start restricted WebAgent origin
+        env:
+          WEBAGENT_HOST: 127.0.0.1
+          PORT: 3000
+          WEBAGENT_REMOTE_OPEN_WORLD: disabled
+        run: |
+          export WEBAGENT_ALLOWED_HOSTS="127.0.0.1,localhost,$PUBLIC_HOST"
+          nohup npm start > /tmp/webagent.log 2>&1 &
+          echo "WEBAGENT_PID=$!" >> "$GITHUB_ENV"
+
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/health/ready >/tmp/local-health.json; then break; fi
+            sleep 1
+          done
+          cat /tmp/local-health.json
+
+      - name: Prove public HTTPS readiness
+        run: |
+          for i in $(seq 1 45); do
+            if curl --fail --silent --show-error "$PUBLIC_URL/health/ready" >/tmp/public-health.json; then break; fi
+            sleep 2
+          done
+          cat /tmp/public-health.json
+          node -e "const j=JSON.parse(require('fs').readFileSync('/tmp/public-health.json','utf8')); if(j.status!=='ok'||j.transport!=='streamable-http'||j.openWorldEnabled!==false) process.exit(1)"
+
+      - name: Prove MCP initialize discovery and safe call through public HTTPS
+        run: node ./scripts/verify-remote-mcp.mjs "$PUBLIC_URL"
+
+      - name: Keep proof URL briefly reachable for independent verification
+        run: |
+          echo "Public proof remains reachable for ~2 minutes: $PUBLIC_URL"
+          sleep 120
+
+      - name: Diagnostics
+        if: always()
+        run: |
+          echo "--- cloudflared ---"
+          tail -100 /tmp/cloudflared.log || true
+          echo "--- webagent ---"
+          tail -100 /tmp/webagent.log || true
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ -n "${WEBAGENT_PID:-}" ]; then kill "$WEBAGENT_PID" || true; fi
+          if [ -n "${CF_PID:-}" ]; then kill "$CF_PID" || true; fi
