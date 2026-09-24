@@ -146,6 +146,8 @@ The stdio entrypoint remains `node ./dist/src/server.js`. The remote process is 
 - remote open-world default: **still disabled**
 - production-public claim: **not made**
 
+The mission is qualified by the repository WebAgent workflow, which installs Chromium and runs typecheck, the full Vitest suite (including real Chromium through the pinned proxy), and build on the exact branch HEAD.
+
 ## Next boundary
 
 1. screenshot + DOM evidence and replay;
