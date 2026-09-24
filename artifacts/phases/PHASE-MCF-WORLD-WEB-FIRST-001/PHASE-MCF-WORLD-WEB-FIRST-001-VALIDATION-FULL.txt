@@ -1,0 +1,69 @@
+PHASE=PHASE-MCF-WORLD-WEB-FIRST-001
+
+TDD_RED_1:
+RUN=35897374634
+RUN_NUMBER=1
+CONCLUSION=failure
+EXPECTED_FAILURE=ERR_MODULE_NOT_FOUND apps/mcf-world-web/src/world-domain.js
+
+DOMAIN_GREEN:
+RUN=35897606766
+RUN_NUMBER=2
+CONCLUSION=success
+
+TDD_RED_2:
+RUN=35897682547
+RUN_NUMBER=3
+CONCLUSION=failure
+PASS=6
+FAIL=4
+EXPECTED_FAILURES=index.html,browser-surface.js,main.js,three-scene.js absent
+
+HOSTED_UI_GREEN:
+RUN=35897938109
+RUN_NUMBER=8
+CONCLUSION=success
+
+TDD_RED_3:
+RUN=35898020518
+RUN_NUMBER=9
+CONCLUSION=failure
+PASS=10
+FAIL=2
+EXPECTED_FAILURE=apps/mcf-world-web/serve.mjs absent
+
+SERVER_GREEN:
+RUN=35898164125
+RUN_NUMBER=11
+CONCLUSION=success
+
+FINAL_GREEN:
+RUN=35898459514
+RUN_NUMBER=14
+CONCLUSION=success
+UBUNTU_JOB=107308207630 success
+WINDOWS_JOB=107308207774 success
+
+FINAL_UBUNTU_EXCERPT:
+portable preview server serves HTML and JavaScript with correct content types = PASS
+portable preview server blocks path traversal = PASS
+hosted shell pins Three.js and exposes world recovery controls = PASS
+Browser Surface keeps a restrictive sandbox and safe external-tab behavior = PASS
+tests=12
+pass=12
+fail=0
+
+FINAL_DOC_VALIDATION:
+RUN=35898459517
+RUN_NUMBER=1477
+CONCLUSION=success
+
+FINAL_PRODUCTION_READINESS:
+RUN=35898459510
+RUN_NUMBER=991
+CONCLUSION=success
+
+BOUNDARY:
+No provider deployment, release, tag or production promotion was performed.
+Visual WebGL behavior in a real browser is not claimed by Node tests.
+Offline Electron Task 6 is not claimed reconciled.
