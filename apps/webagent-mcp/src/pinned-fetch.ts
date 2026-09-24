@@ -138,8 +138,17 @@ export function createPinnedFetch(targetResolver: TargetResolver = new PublicTar
           method: init.method ?? 'GET',
           headers: Object.fromEntries(headers.entries()),
           servername: url.protocol === 'https:' && isIP(target.hostname) === 0 ? target.hostname : undefined,
-          lookup: (_hostname, _options, callback) => {
-            callback(null, target.address, target.family);
+          lookup: (_hostname, options, callback) => {
+            const pinnedCallback = callback as (
+              error: NodeJS.ErrnoException | null,
+              address: string | Array<{ address: string; family: 4 | 6 }>,
+              family?: 4 | 6,
+            ) => void;
+            if (typeof options === 'object' && options !== null && 'all' in options && options.all) {
+              pinnedCallback(null, [{ address: target.address, family: target.family }]);
+            } else {
+              pinnedCallback(null, target.address, target.family);
+            }
           },
         },
         (response) => {
