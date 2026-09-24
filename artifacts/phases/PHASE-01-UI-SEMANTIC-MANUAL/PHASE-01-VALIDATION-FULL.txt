@@ -11,7 +11,7 @@ Rafael=ba32a417f434c40193876ea597e9593e87013498fc0a84d89f5d4f6466062ecb
 
 Local binding evidence:
 path=~/.config/mcf-dual-browser-cockpit/ui-semantic-bindings.json
-sha256=d540428b4f0fab4f241e15a38c450bdaf0b7f0ef5b894b77456bc89256c3f70f
+initial_historical_sha256=d540428b4f0fab4f241e15a38c450bdaf0b7f0ef5b894b77456bc89256c3f70f
 content is intentionally not published because it contains workstation/account-specific project identifiers.
 
 Smoke R1 evidence:
@@ -47,3 +47,15 @@ Smoke R3:
 path=/home/leo/mcf-handoffs/MCF-UI-SEMANTIC-SMOKE-R3-2026-09-24.json
 sha256=1e03880808fa0e9b7cf8f03e663d9a205d079a5ebf4f3db4a3089c7d9da6bd03
 result=PASS 44/44
+
+Current local binding after contract-version sync:
+current_sha256=a6c9a71c970974c0284f9c1fc9c632f2e81f2d880c0c8e3eda717b5c15ae9c27
+
+Emily re-audit R2:
+decision=PASS
+result_sha256=43d88c9cae103ed8bd97c0ae12fd7b6a9ea861ef5c082fdaecadde637ee58d9a
+critical=0
+high=0
+merge_gate=PASS
+residual_medium=historical_vs_current_binding_hash_labeling
+closeout_remediation=APPLIED
