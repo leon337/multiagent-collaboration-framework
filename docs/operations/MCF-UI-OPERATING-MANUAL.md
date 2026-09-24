@@ -300,7 +300,7 @@ An implementation claiming compliance must prove:
 
 Mission: `MCF-PROJECT-DETAILS-MAP-001`  
 Issue: #363  
-Contract extension: `mcf-ui-semantic-contract/v1` version `1.1.0`.
+Contract extension: `mcf-ui-semantic-contract/v1` version `1.1.1`.
 
 ### 14.1 Canonical trigger
 
