@@ -133,9 +133,14 @@ export function createWebAgentHttpServer(options: WebAgentHttpServerOptions = {}
   const allowedOrigins = configuredOrigins ?? (LOOPBACK_HOSTS.has(host) ? ['127.0.0.1', 'localhost', '::1'] : []);
   const allowedHostSet = normalizeAllowed(allowedHosts);
   const allowedOriginSet = normalizeAllowed(allowedOrigins);
+  const remoteOpenWorld = process.env.WEBAGENT_REMOTE_OPEN_WORLD?.trim().toLowerCase();
   const openWorldEnabled =
     options.openWorldEnabled ??
-    (LOOPBACK_HOSTS.has(host) || process.env.WEBAGENT_REMOTE_OPEN_WORLD?.trim().toLowerCase() === 'enabled');
+    (remoteOpenWorld === 'enabled'
+      ? true
+      : remoteOpenWorld === 'disabled'
+        ? false
+        : LOOPBACK_HOSTS.has(host));
   const { dependencies, ownedRuntime } = createSharedDependencies(options.dependencies ?? {}, openWorldEnabled);
 
   const handler = createMcpHandler(() => createWebAgentServer(dependencies));
