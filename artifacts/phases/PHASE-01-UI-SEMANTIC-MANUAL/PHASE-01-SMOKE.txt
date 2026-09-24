@@ -1,0 +1,28 @@
+MCF-UI-SEMANTIC-MANUAL-001 — semantic smoke
+
+Mode: READ-ONLY
+Mutation: NONE
+
+R1:
+FAIL 36/40
+Four failures were identical: submit button absent with empty composer.
+Classification: TEST/CONTRACT MODEL ERROR, not UI failure.
+
+R2 after remediation:
+PASS 44/44
+
+Coverage:
+Emily project=PASS
+Sofia project=PASS
+Patricia project=PASS
+Rafael project=PASS
+agent/pane bindings=PASS
+current project context=PASS
+current conversation URL=PASS
+new-chat semantic resolution=PASS
+composer semantic resolution=PASS
+submit ambiguity guard=PASS
+valid unavailable submit state=PASS
+
+Important boundary:
+This phase proves semantic resolution/manual consistency. It does not yet claim that a generic semantic action endpoint has been implemented. Actual navigation/post-action smoke belongs to the runtime resolver implementation or the controlled fresh-chat preparation step.
