@@ -1,0 +1,23 @@
+MCF-UI-SEMANTIC-MANUAL-001 — Emily final audit R1
+mission=MCF-UI-MANUAL-EMILY-FINAL-R1
+envelope=f7642e55-a3ba-4b80-9ce6-c686fe3e4308
+state=COMPLETED
+result_sha256=9ca3f609f8491703bae28784f695847fb283a31eb543a2fb03d08002a095c51b
+decision=PASS
+critical=0
+high=0
+medium=2
+low=1
+
+M1=stop locator mixed data-testid stop-button with DOM id composer-submit-button
+M2=machine-readable submit state predicates were incomplete
+L1=canonical output hashes not duplicated in PRF
+
+canonical_use_gate=PASS
+manual_apt_for_future_sessions=true
+boundary=documentation/manual/contract only; no generic resolver/action implementation claim
+
+Remediation after audit:
+- M1 corrected: stop-button remains testid; #composer-submit-button is separate css-id locator.
+- M2 corrected: send/stop-generation/unavailable/unknown predicates encoded in contract v1.0.1.
+- L1 corrected: canonical hashes file added to PRF.
