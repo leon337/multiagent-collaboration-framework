@@ -75,3 +75,23 @@ sha256=1cf16dc62dd42e0ea9c528aa68867b76ab8fc42f59fba1215974e0d9eb9ab323
 Race handling:
 R1/R2 timing failures preserved.
 R3 uses bounded state waits and fail-closed ambiguity handling.
+
+Post-audit R2 remediation:
+contract_version=1.1.1
+Memory state classifier role=menuitemradio
+Share availability policy=runtime-optional-non-invariant
+
+Second live smoke:
+Emily=PASS
+Sofia=PASS
+Patrícia=PASS
+Rafael=PASS
+core menu capability=Configurações do projeto + Pin action
+Share=optional, absent in all four R2 observations
+settings open/close=PASS 4/4
+project context final=matched local binding 4/4
+persistent mutation executed=NO
+
+R2 evidence:
+path=/home/leo/mcf-handoffs/MCF-PROJECT-DETAILS-MAP-SMOKE-R2-2026-09-24.json
+sha256=f4c68c4a1eba01823697b598d6a740d8d842424dee5510c1f291220093e88dda
