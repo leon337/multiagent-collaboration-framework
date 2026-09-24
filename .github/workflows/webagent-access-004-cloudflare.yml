@@ -8,6 +8,12 @@ on:
       - 'apps/webagent-mcp/**'
       - '.github/workflows/webagent-access-004-cloudflare.yml'
   workflow_dispatch:
+    inputs:
+      hold_seconds:
+        description: 'Seconds to keep the ephemeral HTTPS endpoint alive for Developer Mode testing'
+        required: false
+        default: '600'
+        type: string
 
 permissions:
   contents: read
@@ -91,20 +97,37 @@ jobs:
 
       - name: Prove public HTTPS readiness
         run: |
+          mkdir -p proof
           for i in $(seq 1 45); do
-            if curl --fail --silent --show-error "$PUBLIC_URL/health/ready" >/tmp/public-health.json; then break; fi
+            if curl --fail --silent --show-error "$PUBLIC_URL/health/ready" >proof/public-health.json; then break; fi
             sleep 2
           done
-          cat /tmp/public-health.json
-          node -e "const j=JSON.parse(require('fs').readFileSync('/tmp/public-health.json','utf8')); if(j.status!=='ok'||j.transport!=='streamable-http'||j.openWorldEnabled!==false) process.exit(1)"
+          cat proof/public-health.json
+          node -e "const j=JSON.parse(require('fs').readFileSync('proof/public-health.json','utf8')); if(j.status!=='ok'||j.transport!=='streamable-http'||j.openWorldEnabled!==false) process.exit(1)"
 
       - name: Prove MCP initialize discovery and safe call through public HTTPS
-        run: node ./scripts/verify-remote-mcp.mjs "$PUBLIC_URL"
+        run: node ./scripts/verify-remote-mcp.mjs "$PUBLIC_URL" | tee proof/mcp-proof.json
+
+      - name: Upload transport proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: webagent-access-004-proof-${{ github.run_id }}
+          path: |
+            apps/webagent-mcp/proof/public-health.json
+            apps/webagent-mcp/proof/mcp-proof.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Keep proof URL briefly reachable for independent verification
+        env:
+          HOLD_SECONDS: ${{ github.event_name == 'workflow_dispatch' && inputs.hold_seconds || '120' }}
         run: |
-          echo "Public proof remains reachable for ~2 minutes: $PUBLIC_URL"
-          sleep 120
+          case "$HOLD_SECONDS" in
+            ''|*[!0-9]*) echo "hold_seconds must be numeric"; exit 1 ;;
+          esac
+          if [ "$HOLD_SECONDS" -gt 1800 ]; then HOLD_SECONDS=1800; fi
+          echo "Public proof remains reachable for $HOLD_SECONDS seconds: $PUBLIC_URL"
+          sleep "$HOLD_SECONDS"
 
       - name: Diagnostics
         if: always()

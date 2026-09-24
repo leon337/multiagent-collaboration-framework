@@ -1,6 +1,6 @@
 # MCF WebAgent MCP
 
-Current remote mission: `MCF-WEBAGENT-REMOTE-003` · Issue #348
+Current access mission: `MCF-WEBAGENT-ACCESS-004` · Issue #354 · unblocks #348
 
 The WebAgent now has two MCP transports over the same five governed tools:
 
@@ -76,7 +76,13 @@ Current OpenAI Developer Mode accepts either:
 1. a public HTTPS Streamable HTTP endpoint, usually ending in `/mcp`; or
 2. Secure MCP Tunnel to a private stdio/HTTP server.
 
-For this mission, the public Render endpoint is a **protocol staging** surface with remote open-world networking disabled. Secure MCP Tunnel remains the path for exercising the fully capable local runtime before the DNS-rebinding boundary is closed.
+A zero-cost HTTPS protocol path is now reproducible through the repository workflow **WebAgent Access 004 Cloudflare Proof**. It creates an ephemeral Cloudflare Quick Tunnel, forces `WEBAGENT_REMOTE_OPEN_WORLD=disabled`, verifies readiness through public HTTPS, performs MCP initialize/tool discovery/tool invocation with the real SDK client, and publishes the temporary URL to Issue #354.
+
+Quick Tunnels are development-only: the hostname changes every run, there is no SLA, and Cloudflare documents that Quick Tunnels do not support SSE. The current WebAgent request/response tool surface has been proven through this path, but it is not a production endpoint or Plugin Directory endpoint.
+
+For an interactive Developer Mode window, manually dispatch the workflow and use its `hold_seconds` input (default 600 seconds, capped at 1800). The workflow comments the live `/mcp` URL on Issue #354 while it is reachable.
+
+OpenAI Secure MCP Tunnel remains the preferred private long-running route when Platform tunnel permissions, a `tunnel_id`, and a runtime tunnel credential are available.
 
 Before connecting ChatGPT, verify with MCP Inspector:
 
@@ -84,7 +90,7 @@ Before connecting ChatGPT, verify with MCP Inspector:
 npx @modelcontextprotocol/inspector@latest
 ```
 
-Then use `http://127.0.0.1:3000/mcp` locally or the HTTPS staging `/mcp` endpoint.
+Then use `http://127.0.0.1:3000/mcp` locally, the ephemeral Quick Tunnel `/mcp` URL for development qualification, or an OpenAI Secure MCP Tunnel when account-side tunnel access is available.
 
 ## Security boundaries
 
@@ -115,12 +121,19 @@ skills/webagent/SKILL.md
 
 The stdio entrypoint remains `node ./dist/src/server.js`. The remote process is `node ./dist/src/http-server.js`.
 
+## Access-004 result
+
+- Cloudflare Quick Tunnel: **PROVEN** for zero-cost, ephemeral public HTTPS protocol qualification.
+- External health verification: **PROVEN** with HTTP 200 and `openWorldEnabled: false`.
+- Real MCP client through the tunnel: **PROVEN** for initialize, five-tool discovery, annotations, `web_search`, and blocked `web_fetch`.
+- OpenAI Secure MCP Tunnel: **BLOCKED_BY_ACCOUNT_SURFACE** until a Platform `tunnel_id` and runtime credential are available.
+- New Render free staging: **BLOCKED_BY_QUOTA** at the Hobby 25-service limit.
+- Named Cloudflare Tunnel: **VIABLE_FUTURE** for a stable URL; requires Cloudflare account/zone credentials.
+
 ## Next boundary
 
-1. exact-head remote-transport qualification;
-2. dedicated free HTTPS protocol-staging service;
-3. external readiness + MCP handshake/tool discovery;
-4. ChatGPT Developer Mode connection attempt;
-5. pinned-connect/outbound proxy before any production-public open-world claim;
-6. screenshot/DOM evidence and replay;
-7. action primitives, profiles/vault, parallel workers and MCF orchestration.
+1. use the proven ephemeral workflow for ChatGPT Developer Mode qualification when the product-side app creation UI is available;
+2. move to OpenAI Secure MCP Tunnel or a named Cloudflare Tunnel for a stable long-running development path;
+3. pinned-connect/outbound proxy before any production-public open-world claim;
+4. screenshot/DOM evidence and replay;
+5. action primitives, profiles/vault, parallel workers and MCF orchestration.
