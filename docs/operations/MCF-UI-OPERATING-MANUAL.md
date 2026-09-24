@@ -472,3 +472,72 @@ unknown effect → UNKNOWN → ZERO ACTION
 
 After any action with possible persistent effect, do not retry until the postcondition proves whether the effect occurred.
 
+
+
+### 14.8 Child settings overlays
+
+The settings dialog exposes additional portalled surfaces. They are separate semantic surfaces and must be resolved again after opening.
+
+#### Icon/color
+
+Canonical control:
+
+`chatgpt.project.settings.icon-color`
+
+Observed on 2026-09-24:
+
+```text
+button "Abrir menu de ícone e cor do projeto. ..."
+  → menu with the same accessible context
+    → button "Cor personalizada"
+    → menu item "Fechar menu"
+```
+
+Selecting an icon/color is a persistent mutation and is **not** allowed by a mapping-only mission. Opening/dismissing the overlay is inspection.
+
+#### Memory
+
+Canonical control:
+
+`chatgpt.project.settings.memory`
+
+Observed memory values:
+
+```text
+radio menu item "Memória padrão ..."
+radio menu item "Memória somente no projeto ..."
+```
+
+Semantic states:
+
+- `standard`: project may access external chat memory and vice-versa;
+- `project-only`: project can access only its own memory; its memory is hidden from external chats.
+
+The checked radio item is the state source. The visible button text `Memória` alone does not prove the selected state.
+
+Current workstation observation on 2026-09-24:
+
+| Project | Observed memory state |
+| --- | --- |
+| Emily / EMILLY | `standard` |
+| Sofia / SOPHIA | `project-only` |
+| Patrícia / PATRICIA - MCF | `project-only` |
+| Rafael / RAFAEL - MCF | `project-only` |
+
+This table is dated evidence, not a permanent contract invariant. Always resolve the live checked radio state before relying on isolation assumptions.
+
+### 14.9 Scope discipline for future mutations
+
+Opening/dismissing project menus, settings dialogs and child overlays is transient inspection.
+
+The following require an explicit mutation mission and human authority:
+
+- pin/unpin;
+- change project name;
+- change instructions;
+- choose icon/color;
+- change memory mode;
+- destructive project deletion;
+- any share action that changes access or membership.
+
+For these controls, do not use `/v1/find-click` as an authority because its current behavior is first matching element. A critical action must count candidates, revalidate the project/pane immediately before activation and prove the postcondition afterward.
