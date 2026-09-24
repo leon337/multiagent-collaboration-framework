@@ -35,40 +35,26 @@ jobs:
           test -n "$RENDER_STAGING_SERVICE_ID"
           test "$RENDER_STAGING_SERVICE_ID" = "$EXPECTED_SERVICE_ID"
 
-      - name: Install pinned Render CLI
-        run: |
-          set -euo pipefail
-          curl --fail --silent --show-error --location \
-            --output /tmp/render-cli.zip \
-            https://github.com/render-oss/cli/releases/download/v2.22.0/cli_2.22.0_linux_amd64.zip
-          echo '6cdcd11897b7bd7e673317e6f4aaf041b654d818444f3b1efec7240a835f79ec  /tmp/render-cli.zip' | sha256sum --check
-          unzip -q /tmp/render-cli.zip -d /tmp/render-cli
-          cli_path="/tmp/render-cli/cli_v2.22.0"
-          test -f "$cli_path"
-          chmod +x "$cli_path"
-          "$cli_path" --version
-          echo "RENDER_CLI=$cli_path" >> "$GITHUB_ENV"
-
-      - name: Select exact staging workspace
-        run: |
-          set -euo pipefail
-          "$RENDER_CLI" workspace set "$EXPECTED_WORKSPACE_ID" --confirm --output json >/tmp/workspace.json
-
-      - name: Verify current service configuration
+      - name: Read exact staging service
         id: before
         run: |
           set -euo pipefail
-          "$RENDER_CLI" services --confirm --output json >/tmp/services-before.json
-          current="$(jq -er --arg id "$EXPECTED_SERVICE_ID" '
-            [ .[] | select(.id == $id) ] as $matches |
-            if ($matches|length) != 1 then error("expected exactly one staging service") else
-              $matches[0].serviceDetails.envSpecificDetails.buildCommand
-            end
-          ' /tmp/services-before.json)"
-          auto_deploy="$(jq -er --arg id "$EXPECTED_SERVICE_ID" '
-            [ .[] | select(.id == $id) ][0].autoDeploy
-          ' /tmp/services-before.json)"
-          test "$auto_deploy" = "no"
+          endpoint="https://api.render.com/v1/services/$EXPECTED_SERVICE_ID"
+          status="$(curl --silent --show-error --output /tmp/service-before.json --write-out '%{http_code}' \
+            --connect-timeout 10 \
+            --max-time 60 \
+            --header 'Accept: application/json' \
+            --header "Authorization: Bearer $RENDER_API_KEY" \
+            "$endpoint")"
+          test "$status" = "200"
+          jq -e --arg id "$EXPECTED_SERVICE_ID" --arg owner "$EXPECTED_WORKSPACE_ID" '
+            .id == $id and
+            .ownerId == $owner and
+            .name == "mcf-runtime-staging-api" and
+            .branch == "main" and
+            .autoDeploy == "no"
+          ' /tmp/service-before.json >/dev/null
+          current="$(jq -er '.serviceDetails.envSpecificDetails.buildCommand' /tmp/service-before.json)"
           if [ "$current" = "$DESIRED_BUILD_COMMAND" ]; then
             echo "already_repaired=true" >> "$GITHUB_OUTPUT"
           elif [ "$current" = "$BROKEN_BUILD_COMMAND" ]; then
@@ -78,24 +64,44 @@ jobs:
             exit 1
           fi
 
-      - name: Repair build command
+      - name: Repair build command through exact Render API resource
         if: steps.before.outputs.already_repaired != 'true'
         run: |
           set -euo pipefail
-          "$RENDER_CLI" services update "$EXPECTED_SERVICE_ID" \
-            --build-command "$DESIRED_BUILD_COMMAND" \
-            --confirm \
-            --output json >/tmp/update.json
+          endpoint="https://api.render.com/v1/services/$EXPECTED_SERVICE_ID"
+          jq -cn --arg desired "$DESIRED_BUILD_COMMAND"             '{serviceDetails:{envSpecificDetails:{buildCommand:$desired}}}' >/tmp/update-payload.json
+          status="$(curl --silent --show-error --output /tmp/update-response.json --write-out '%{http_code}' \
+            --connect-timeout 10 \
+            --max-time 60 \
+            --request PATCH \
+            --header 'Accept: application/json' \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer $RENDER_API_KEY" \
+            --data-binary @/tmp/update-payload.json \
+            "$endpoint")"
+          test "$status" = "200"
+          jq -e --arg id "$EXPECTED_SERVICE_ID" --arg expected "$DESIRED_BUILD_COMMAND" '
+            .id == $id and
+            .serviceDetails.envSpecificDetails.buildCommand == $expected
+          ' /tmp/update-response.json >/dev/null
 
       - name: Verify exact repaired configuration
         run: |
           set -euo pipefail
-          "$RENDER_CLI" services --confirm --output json >/tmp/services-after.json
-          jq -e --arg id "$EXPECTED_SERVICE_ID" --arg expected "$DESIRED_BUILD_COMMAND" '
-            [ .[] | select(.id == $id) ] as $matches |
-            ($matches|length) == 1 and
-            $matches[0].autoDeploy == "no" and
-            $matches[0].branch == "main" and
-            $matches[0].serviceDetails.envSpecificDetails.buildCommand == $expected
-          ' /tmp/services-after.json >/dev/null
+          endpoint="https://api.render.com/v1/services/$EXPECTED_SERVICE_ID"
+          status="$(curl --silent --show-error --output /tmp/service-after.json --write-out '%{http_code}' \
+            --connect-timeout 10 \
+            --max-time 60 \
+            --header 'Accept: application/json' \
+            --header "Authorization: Bearer $RENDER_API_KEY" \
+            "$endpoint")"
+          test "$status" = "200"
+          jq -e --arg id "$EXPECTED_SERVICE_ID" --arg owner "$EXPECTED_WORKSPACE_ID" --arg expected "$DESIRED_BUILD_COMMAND" '
+            .id == $id and
+            .ownerId == $owner and
+            .name == "mcf-runtime-staging-api" and
+            .branch == "main" and
+            .autoDeploy == "no" and
+            .serviceDetails.envSpecificDetails.buildCommand == $expected
+          ' /tmp/service-after.json >/dev/null
           echo "Staging build command repaired and verified; no deploy was triggered by this workflow."
