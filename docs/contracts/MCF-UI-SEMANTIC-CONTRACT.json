@@ -1,6 +1,6 @@
 {
   "schema": "mcf-ui-semantic-contract/v1",
-  "contractVersion": "1.0.1",
+  "contractVersion": "1.1.0",
   "missionId": "MCF-UI-SEMANTIC-MANUAL-001",
   "surfaces": [
     "chatgpt",
@@ -467,6 +467,429 @@
           "expectedMatches": 1
         }
       ]
+    },
+    {
+      "id": "chatgpt.project.details-menu",
+      "concept": "Current project details/options menu trigger and overlay",
+      "surface": "chatgpt",
+      "kind": "stateful-overlay-control",
+      "critical": true,
+      "localBindingRequired": true,
+      "preconditions": [
+        "pane.ready",
+        "current-project.matches-local-binding",
+        "project-context.stable"
+      ],
+      "states": [
+        "closed",
+        "opening",
+        "open",
+        "closing",
+        "unknown"
+      ],
+      "locators": [
+        {
+          "id": "project-details-trigger-accessible-name",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "button",
+          "names": {
+            "pt-BR": [
+              "Exibir detalhes do projeto"
+            ],
+            "en": [
+              "Show project details"
+            ]
+          },
+          "scope": "current-project-header",
+          "expectedMatches": 1
+        }
+      ],
+      "overlay": {
+        "portalCapable": true,
+        "generatedIdsPersistent": false,
+        "correlation": "validated-project + validated-trigger + active-visible-menu + fresh-runtime-relation",
+        "expectedRole": "menu",
+        "expectedAccessibleNameBinding": "trigger-accessible-name"
+      },
+      "allowedOperations": [
+        "inspect",
+        "open",
+        "dismiss"
+      ],
+      "forbiddenOperations": [
+        "blind-toggle"
+      ],
+      "postconditions": {
+        "open": [
+          "current-project.matches-local-binding",
+          "exactly-one-correlated-active-menu",
+          "pane.unchanged"
+        ],
+        "dismiss": [
+          "no-correlated-active-menu",
+          "current-project.matches-local-binding",
+          "pane.unchanged",
+          "no-persistent-project-state-changed"
+        ]
+      },
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.settings",
+      "concept": "Open current project settings surface",
+      "surface": "chatgpt",
+      "kind": "action-control",
+      "critical": true,
+      "entrySurface": "chatgpt.project.details-menu",
+      "effectClass": "navigation",
+      "preconditions": [
+        "current-project.matches-local-binding",
+        "chatgpt.project.details-menu.open"
+      ],
+      "locators": [
+        {
+          "id": "project-settings-menuitem-name",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "menuitem",
+          "names": {
+            "pt-BR": [
+              "Configurações do projeto"
+            ],
+            "en": [
+              "Project settings"
+            ]
+          },
+          "scope": "correlated-project-details-menu",
+          "expectedMatches": 1
+        }
+      ],
+      "action": {
+        "operation": "activate"
+      },
+      "postconditions": [
+        "exactly-one-project-settings-dialog",
+        "dialog.belongs-to-current-project",
+        "current-project.matches-local-binding",
+        "no-persistent-project-field-changed"
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.settings.dialog",
+      "concept": "Current project settings dialog",
+      "surface": "chatgpt",
+      "kind": "overlay-surface",
+      "critical": true,
+      "locators": [
+        {
+          "id": "project-settings-dialog-role-name",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "dialog",
+          "names": {
+            "pt-BR": [
+              "Configurações do projeto"
+            ],
+            "en": [
+              "Project settings"
+            ]
+          },
+          "expectedMatches": 1
+        }
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.settings.close",
+      "concept": "Close current project settings dialog",
+      "surface": "chatgpt",
+      "kind": "action-control",
+      "critical": true,
+      "effectClass": "read-only",
+      "preconditions": [
+        "chatgpt.project.settings.dialog.open"
+      ],
+      "locators": [
+        {
+          "id": "project-settings-close-role-name",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "button",
+          "names": {
+            "pt-BR": [
+              "Fechar"
+            ],
+            "en": [
+              "Close"
+            ]
+          },
+          "scope": "chatgpt.project.settings.dialog",
+          "expectedMatches": 1
+        }
+      ],
+      "action": {
+        "operation": "activate"
+      },
+      "postconditions": [
+        "project-settings-dialog.closed",
+        "current-project.matches-local-binding",
+        "no-persistent-project-field-changed"
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.settings.icon-color",
+      "concept": "Project icon and color settings control",
+      "surface": "chatgpt",
+      "kind": "stateful-action-control",
+      "critical": true,
+      "effectClass": "persistent-mutation",
+      "allowedOperations": [
+        "inspect"
+      ],
+      "mutationRequiresExplicitAuthority": true,
+      "locators": [
+        {
+          "id": "project-icon-color-accessible-prefix",
+          "priority": 10,
+          "strategy": "role-name-prefix",
+          "role": "button",
+          "names": {
+            "pt-BR": [
+              "Abrir menu de ícone e cor do projeto."
+            ],
+            "en": [
+              "Open project icon and color menu."
+            ]
+          },
+          "scope": "chatgpt.project.settings.dialog",
+          "expectedMatches": 1
+        }
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.settings.name",
+      "concept": "Project name field",
+      "surface": "chatgpt",
+      "kind": "input",
+      "critical": true,
+      "effectClass": "persistent-mutation",
+      "allowedOperations": [
+        "inspect"
+      ],
+      "mutationRequiresExplicitAuthority": true,
+      "locators": [
+        {
+          "id": "project-name-entry",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "textbox",
+          "names": {
+            "pt-BR": [
+              "Nome do projeto"
+            ],
+            "en": [
+              "Project name"
+            ]
+          },
+          "scope": "chatgpt.project.settings.dialog",
+          "expectedMatches": 1
+        }
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.settings.instructions",
+      "concept": "Project instructions field",
+      "surface": "chatgpt",
+      "kind": "input",
+      "critical": true,
+      "effectClass": "persistent-mutation",
+      "allowedOperations": [
+        "inspect"
+      ],
+      "mutationRequiresExplicitAuthority": true,
+      "locators": [
+        {
+          "id": "project-instructions-entry",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "textbox",
+          "names": {
+            "pt-BR": [
+              "Instruções"
+            ],
+            "en": [
+              "Instructions"
+            ]
+          },
+          "scope": "chatgpt.project.settings.dialog",
+          "expectedMatches": 1
+        }
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.settings.memory",
+      "concept": "Project memory settings control",
+      "surface": "chatgpt",
+      "kind": "action-control",
+      "critical": true,
+      "effectClass": "persistent-mutation",
+      "allowedOperations": [
+        "inspect"
+      ],
+      "mutationRequiresExplicitAuthority": true,
+      "locators": [
+        {
+          "id": "project-memory-role-name",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "button",
+          "names": {
+            "pt-BR": [
+              "Memória"
+            ],
+            "en": [
+              "Memory"
+            ]
+          },
+          "scope": "chatgpt.project.settings.dialog",
+          "expectedMatches": 1
+        }
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.settings.delete",
+      "concept": "Delete current project",
+      "surface": "chatgpt",
+      "kind": "destructive-action-control",
+      "critical": true,
+      "effectClass": "destructive",
+      "allowedOperations": [
+        "inspect"
+      ],
+      "mutationRequiresExplicitAuthority": true,
+      "locators": [
+        {
+          "id": "project-delete-role-name",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "button",
+          "names": {
+            "pt-BR": [
+              "Excluir projeto?"
+            ],
+            "en": [
+              "Delete project?"
+            ]
+          },
+          "scope": "chatgpt.project.settings.dialog",
+          "expectedMatches": 1
+        }
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.pin",
+      "concept": "Current project pinned state control",
+      "surface": "chatgpt",
+      "kind": "stateful-action-control",
+      "critical": true,
+      "effectClass": "persistent-mutation",
+      "states": [
+        "pinned",
+        "unpinned",
+        "unknown"
+      ],
+      "desiredOperations": [
+        "setPinned(true)",
+        "setPinned(false)"
+      ],
+      "blindToggleForbidden": true,
+      "allowedOperations": [
+        "inspect"
+      ],
+      "mutationRequiresExplicitAuthority": true,
+      "locators": [
+        {
+          "id": "project-pin-action-role-name",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "menuitem",
+          "names": {
+            "pt-BR": [
+              "Fixar projeto",
+              "Desafixar projeto"
+            ],
+            "en": [
+              "Pin project",
+              "Unpin project"
+            ]
+          },
+          "scope": "correlated-project-details-menu",
+          "expectedMatches": 1
+        }
+      ],
+      "stateClassification": {
+        "Fixar projeto": {
+          "currentState": "unpinned",
+          "effect": "pinned"
+        },
+        "Desafixar projeto": {
+          "currentState": "pinned",
+          "effect": "unpinned"
+        },
+        "Pin project": {
+          "currentState": "unpinned",
+          "effect": "pinned"
+        },
+        "Unpin project": {
+          "currentState": "pinned",
+          "effect": "unpinned"
+        }
+      },
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.share",
+      "concept": "Share current project",
+      "surface": "chatgpt",
+      "kind": "capability-action-control",
+      "critical": true,
+      "effectClass": "navigation",
+      "optionalCapability": true,
+      "observedAvailability": {
+        "2026-09-24": {
+          "Emily": false,
+          "Sofia": true,
+          "Patrícia": true,
+          "Rafael": true
+        }
+      },
+      "locators": [
+        {
+          "id": "project-share-menuitem",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "menuitem",
+          "names": {
+            "pt-BR": [
+              "Compartilhar"
+            ],
+            "en": [
+              "Share"
+            ]
+          },
+          "scope": "correlated-project-details-menu",
+          "expectedMatches": 1
+        }
+      ],
+      "ambiguity": "fail"
     }
   ],
   "workflows": [
