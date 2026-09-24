@@ -1,0 +1,52 @@
+MCF-UI-SEMANTIC-MANUAL-001 — PHASE-01 validation
+
+Agent architecture/design submissions: 4/4 COMPLETED
+
+Manual file: CREATED
+Machine-readable contract: CREATED
+Current-state pointer: CREATED
+Local bindings: CREATED mode=0600
+
+Smoke R1:
+status=FAIL
+passed=36
+failed=4
+sha256=3a2acf726b767edb7c004683f92291910a67ff9eb2e8765c891a8a1243f6dfbf
+finding=submit control was incorrectly required while composer was empty
+
+Remediation:
+contract models chatgpt.composer.submit state "unavailable"
+0 matches is valid only when composer is empty and generation inactive
+>1 remains AMBIGUOUS/fail-closed
+
+Smoke R2:
+status=PASS
+passed=44
+failed=0
+sha256=725a4960a37d77614acabb30229283059a388953484c306f2122b94917a01e64
+
+Mutation during smoke:
+NONE
+mode=read-only semantic resolution
+
+Emily R1:
+decision=PASS
+critical=0
+high=0
+medium=2
+low=1
+
+Contract remediation:
+version=1.0.1
+M1=REMOVED
+M2=REMOVED
+L1=REMOVED
+
+Smoke R3:
+status=PASS
+passed=44
+failed=0
+sha256=1e03880808fa0e9b7cf8f03e663d9a205d079a5ebf4f3db4a3089c7d9da6bd03
+
+Local binding after version sync:
+sha256=a6c9a71c970974c0284f9c1fc9c632f2e81f2d880c0c8e3eda717b5c15ae9c27

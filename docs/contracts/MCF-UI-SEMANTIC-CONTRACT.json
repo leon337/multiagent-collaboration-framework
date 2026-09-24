@@ -1,0 +1,512 @@
+{
+  "schema": "mcf-ui-semantic-contract/v1",
+  "contractVersion": "1.0.1",
+  "missionId": "MCF-UI-SEMANTIC-MANUAL-001",
+  "surfaces": [
+    "chatgpt",
+    "cockpit"
+  ],
+  "principles": {
+    "ambiguity": "fail-closed",
+    "runtimeLocatorPersistence": "forbidden",
+    "screenshotPrimaryLocator": false,
+    "coordinatesPrimaryLocator": false,
+    "postActionValidationRequired": true
+  },
+  "driftStates": [
+    "RESOLVED",
+    "NOT_FOUND",
+    "AMBIGUOUS",
+    "STALE_TARGET",
+    "NOT_ACTIONABLE",
+    "CONTEXT_CHANGED",
+    "VALIDATION_FAILED",
+    "UI_SEMANTIC_DRIFT"
+  ],
+  "elements": [
+    {
+      "id": "chatgpt.project.emily",
+      "concept": "Canonical Emily project",
+      "surface": "chatgpt",
+      "kind": "navigation-target",
+      "critical": true,
+      "localBindingRequired": true,
+      "preconditions": [
+        "pane.ready"
+      ],
+      "locators": [
+        {
+          "id": "project-certified-href",
+          "priority": 10,
+          "strategy": "local-binding-href",
+          "expectedMatches": 1
+        },
+        {
+          "id": "project-accessible-name",
+          "priority": 20,
+          "strategy": "role-name",
+          "role": "link",
+          "nameBinding": "projectAccessibleName",
+          "scope": "project-navigation",
+          "expectedMatches": 1
+        }
+      ],
+      "action": {
+        "operation": "activate"
+      },
+      "postconditions": [
+        "current-project.matches-local-binding"
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.sofia",
+      "concept": "Canonical Sofia project",
+      "surface": "chatgpt",
+      "kind": "navigation-target",
+      "critical": true,
+      "localBindingRequired": true,
+      "preconditions": [
+        "pane.ready"
+      ],
+      "locators": [
+        {
+          "id": "project-certified-href",
+          "priority": 10,
+          "strategy": "local-binding-href",
+          "expectedMatches": 1
+        },
+        {
+          "id": "project-accessible-name",
+          "priority": 20,
+          "strategy": "role-name",
+          "role": "link",
+          "nameBinding": "projectAccessibleName",
+          "scope": "project-navigation",
+          "expectedMatches": 1
+        }
+      ],
+      "action": {
+        "operation": "activate"
+      },
+      "postconditions": [
+        "current-project.matches-local-binding"
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.patricia",
+      "concept": "Canonical Patrícia project",
+      "surface": "chatgpt",
+      "kind": "navigation-target",
+      "critical": true,
+      "localBindingRequired": true,
+      "preconditions": [
+        "pane.ready"
+      ],
+      "locators": [
+        {
+          "id": "project-certified-href",
+          "priority": 10,
+          "strategy": "local-binding-href",
+          "expectedMatches": 1
+        },
+        {
+          "id": "project-accessible-name",
+          "priority": 20,
+          "strategy": "role-name",
+          "role": "link",
+          "nameBinding": "projectAccessibleName",
+          "scope": "project-navigation",
+          "expectedMatches": 1
+        }
+      ],
+      "action": {
+        "operation": "activate"
+      },
+      "postconditions": [
+        "current-project.matches-local-binding"
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.rafael",
+      "concept": "Canonical Rafael project",
+      "surface": "chatgpt",
+      "kind": "navigation-target",
+      "critical": true,
+      "localBindingRequired": true,
+      "preconditions": [
+        "pane.ready"
+      ],
+      "locators": [
+        {
+          "id": "project-certified-href",
+          "priority": 10,
+          "strategy": "local-binding-href",
+          "expectedMatches": 1
+        },
+        {
+          "id": "project-accessible-name",
+          "priority": 20,
+          "strategy": "role-name",
+          "role": "link",
+          "nameBinding": "projectAccessibleName",
+          "scope": "project-navigation",
+          "expectedMatches": 1
+        }
+      ],
+      "action": {
+        "operation": "activate"
+      },
+      "postconditions": [
+        "current-project.matches-local-binding"
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.action.new-chat",
+      "concept": "Start a fresh conversation",
+      "surface": "chatgpt",
+      "kind": "action-control",
+      "critical": true,
+      "preconditions": [
+        "pane.ready"
+      ],
+      "locators": [
+        {
+          "id": "new-chat-accessible-name",
+          "priority": 10,
+          "strategy": "role-name",
+          "role": "link-or-button",
+          "names": {
+            "pt-BR": [
+              "Novo chat"
+            ],
+            "en": [
+              "New chat"
+            ]
+          },
+          "expectedMatches": 1
+        }
+      ],
+      "action": {
+        "operation": "activate"
+      },
+      "postconditions": [
+        "conversation.changed-or-fresh",
+        "composer.available"
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.composer.primary",
+      "concept": "Primary conversation composer",
+      "surface": "chatgpt",
+      "kind": "input",
+      "critical": true,
+      "invariants": [
+        "visible",
+        "editable"
+      ],
+      "locators": [
+        {
+          "id": "prompt-textarea-id",
+          "priority": 10,
+          "strategy": "css-id",
+          "value": "#prompt-textarea",
+          "expectedMatches": 1
+        },
+        {
+          "id": "composer-role-name",
+          "priority": 20,
+          "strategy": "role-name",
+          "role": "textbox",
+          "names": {
+            "pt-BR": [
+              "Converse com o ChatGPT"
+            ],
+            "en": [
+              "Message ChatGPT"
+            ]
+          },
+          "scope": "composer-region",
+          "expectedMatches": 1
+        }
+      ],
+      "allowedOperations": [
+        "focus",
+        "type",
+        "clear"
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.composer.submit",
+      "concept": "Stateful primary composer submit control",
+      "surface": "chatgpt",
+      "kind": "stateful-action-control",
+      "critical": true,
+      "preconditions": [
+        "composer.present"
+      ],
+      "locators": [
+        {
+          "id": "composer-submit-id",
+          "priority": 10,
+          "strategy": "css-id",
+          "value": "#composer-submit-button",
+          "expectedMatches": 1
+        }
+      ],
+      "states": [
+        "send",
+        "stop-generation",
+        "unavailable"
+      ],
+      "ambiguity": "fail",
+      "availability": {
+        "rule": "may-be-absent-when-composer-empty-and-generation-inactive",
+        "validStates": [
+          "send",
+          "stop-generation",
+          "unavailable"
+        ]
+      },
+      "resolutionPolicy": {
+        "zeroMatches": "UNAVAILABLE when composer is empty and generation is inactive; otherwise NOT_FOUND",
+        "oneMatch": "resolve and classify semantic state",
+        "multipleMatches": "AMBIGUOUS"
+      },
+      "stateClassification": {
+        "send": {
+          "requires": [
+            "generation.inactive",
+            "composer.nonempty"
+          ],
+          "control": [
+            "#composer-submit-button"
+          ],
+          "accessibleNames": {
+            "pt-BR": [
+              "Enviar prompt",
+              "Enviar"
+            ],
+            "en": [
+              "Send prompt",
+              "Send"
+            ]
+          }
+        },
+        "stop-generation": {
+          "requires": [
+            "generation.active"
+          ],
+          "control": [
+            "#composer-submit-button"
+          ],
+          "accessibleNames": {
+            "pt-BR": [
+              "Parar de responder",
+              "Parar de gerar",
+              "Interromper resposta"
+            ],
+            "en": [
+              "Stop generating",
+              "Stop responding"
+            ]
+          }
+        },
+        "unavailable": {
+          "requires": [
+            "generation.inactive",
+            "composer.empty"
+          ],
+          "matchCount": 0
+        },
+        "unknown": {
+          "outcome": "VALIDATION_FAILED",
+          "actionAllowed": false
+        }
+      }
+    },
+    {
+      "id": "chatgpt.generation.stop",
+      "concept": "Stop active assistant generation",
+      "surface": "chatgpt",
+      "kind": "action-control",
+      "critical": true,
+      "preconditions": [
+        "generation.active",
+        "conversation.current"
+      ],
+      "locators": [
+        {
+          "id": "stop-testid",
+          "priority": 10,
+          "strategy": "testid",
+          "attribute": "data-testid",
+          "values": [
+            "stop-button"
+          ],
+          "expectedMatches": 1,
+          "requiresState": "generation.active"
+        },
+        {
+          "id": "composer-submit-dom-id",
+          "priority": 15,
+          "strategy": "css-id",
+          "value": "#composer-submit-button",
+          "expectedMatches": 1,
+          "requiresState": "generation.active"
+        },
+        {
+          "id": "stop-role-name",
+          "priority": 20,
+          "strategy": "role-name",
+          "role": "button",
+          "names": {
+            "pt-BR": [
+              "Parar de responder",
+              "Parar de gerar",
+              "Interromper resposta"
+            ],
+            "en": [
+              "Stop generating",
+              "Stop responding"
+            ]
+          },
+          "expectedMatches": 1
+        }
+      ],
+      "action": {
+        "operation": "activate"
+      },
+      "postconditions": [
+        "generation.inactive"
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.conversation.current",
+      "concept": "Current conversation identity",
+      "surface": "chatgpt",
+      "kind": "runtime-identity",
+      "critical": true,
+      "locators": [
+        {
+          "id": "conversation-url",
+          "priority": 10,
+          "strategy": "url-pattern",
+          "pattern": "/c/<conversationId>",
+          "expectedMatches": 1
+        }
+      ],
+      "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.message.user",
+      "concept": "User message turn",
+      "surface": "chatgpt",
+      "kind": "content-identity",
+      "critical": true,
+      "locators": [
+        {
+          "id": "user-message-role",
+          "priority": 10,
+          "strategy": "attribute",
+          "attribute": "data-message-author-role",
+          "value": "user"
+        }
+      ]
+    },
+    {
+      "id": "chatgpt.message.assistant",
+      "concept": "Assistant message turn",
+      "surface": "chatgpt",
+      "kind": "content-identity",
+      "critical": true,
+      "locators": [
+        {
+          "id": "assistant-message-role",
+          "priority": 10,
+          "strategy": "attribute",
+          "attribute": "data-message-author-role",
+          "value": "assistant"
+        }
+      ]
+    },
+    {
+      "id": "cockpit.pane.chat",
+      "concept": "Cockpit chat pane",
+      "surface": "cockpit",
+      "kind": "runtime-pane",
+      "critical": true,
+      "locators": [
+        {
+          "id": "pane-binding-chat",
+          "priority": 1,
+          "strategy": "runtime-pane-binding",
+          "value": "chat",
+          "expectedMatches": 1
+        }
+      ]
+    },
+    {
+      "id": "cockpit.pane.workspace",
+      "concept": "Cockpit workspace pane",
+      "surface": "cockpit",
+      "kind": "runtime-pane",
+      "critical": true,
+      "locators": [
+        {
+          "id": "pane-binding-workspace",
+          "priority": 1,
+          "strategy": "runtime-pane-binding",
+          "value": "workspace",
+          "expectedMatches": 1
+        }
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "id": "chatgpt.open-project",
+      "parameters": [
+        "projectSemanticId"
+      ],
+      "steps": [
+        "resolve projectSemanticId",
+        "require exactly one candidate",
+        "revalidate identity",
+        "activate",
+        "validate current-project.matches-local-binding"
+      ]
+    },
+    {
+      "id": "chatgpt.start-fresh-chat-in-project",
+      "parameters": [
+        "projectSemanticId"
+      ],
+      "steps": [
+        "chatgpt.open-project",
+        "resolve chatgpt.action.new-chat",
+        "require exactly one candidate",
+        "activate",
+        "validate conversation.changed-or-fresh",
+        "validate chatgpt.composer.primary"
+      ]
+    },
+    {
+      "id": "chatgpt.send-message",
+      "steps": [
+        "validate current conversation and pane",
+        "validate chatgpt.composer.primary",
+        "type exact payload",
+        "resolve chatgpt.composer.submit in send state",
+        "activate",
+        "validate new user turn / conversation advance"
+      ]
+    }
+  ]
+}

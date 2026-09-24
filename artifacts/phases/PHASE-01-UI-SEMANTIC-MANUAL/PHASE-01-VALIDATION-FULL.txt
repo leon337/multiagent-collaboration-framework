@@ -1,0 +1,61 @@
+MCF-UI-SEMANTIC-MANUAL-001 — expanded validation
+
+Source-of-truth branch:
+mission/ui-semantic-manual-001
+
+Agent result hashes:
+Sofia=e7513431d0505871494b8eeb47c9f9fb767bf5dfa01ba37b55aba46165373529
+Emily=c8239230d28ec37652a6ea7454d6d4931246d2e6614c39a5dc37e61c5879e805
+Patricia=db715df3051974bbf39804c319d1620da44476ccdb977c910051a8e277ddd712
+Rafael=ba32a417f434c40193876ea597e9593e87013498fc0a84d89f5d4f6466062ecb
+
+Local binding evidence:
+path=~/.config/mcf-dual-browser-cockpit/ui-semantic-bindings.json
+initial_historical_sha256=d540428b4f0fab4f241e15a38c450bdaf0b7f0ef5b894b77456bc89256c3f70f
+content is intentionally not published because it contains workstation/account-specific project identifiers.
+
+Smoke R1 evidence:
+path=/home/leo/mcf-handoffs/MCF-UI-SEMANTIC-SMOKE-R1-2026-09-24.json
+sha256=3a2acf726b767edb7c004683f92291910a67ff9eb2e8765c891a8a1243f6dfbf
+result=FAIL 36/40
+
+Smoke R2 evidence:
+path=/home/leo/mcf-handoffs/MCF-UI-SEMANTIC-SMOKE-R2-2026-09-24.json
+sha256=725a4960a37d77614acabb30229283059a388953484c306f2122b94917a01e64
+result=PASS 44/44
+
+R2 resolved in each pane:
+- canonical agent binding;
+- project href + accessible-name identity;
+- current project/conversation context;
+- exactly one new-chat action;
+- exactly one composer;
+- submit state non-ambiguous and semantically valid, including unavailable.
+
+No coordinates, pixels or screenshots were used for semantic resolution.
+
+Post-audit evidence:
+Emily R1 result_sha256=9ca3f609f8491703bae28784f695847fb283a31eb543a2fb03d08002a095c51b
+decision=PASS critical=0 high=0 medium=2 low=1
+
+Contract v1.0.1 canonical hashes:
+manual=f87d92f95fe7593c13635cea8eca371d0d914b9b01925b6f2adb094b32991ebb
+contract=42ffc4b2774083fc848d7b7581946f1f5effe609ad580b122cbac98c0781b938
+current_state=aa1c614e4ce43ec907dcdb524be45582df1d94ba3da01575425a59a8888f568c
+
+Smoke R3:
+path=/home/leo/mcf-handoffs/MCF-UI-SEMANTIC-SMOKE-R3-2026-09-24.json
+sha256=1e03880808fa0e9b7cf8f03e663d9a205d079a5ebf4f3db4a3089c7d9da6bd03
+result=PASS 44/44
+
+Current local binding after contract-version sync:
+current_sha256=a6c9a71c970974c0284f9c1fc9c632f2e81f2d880c0c8e3eda717b5c15ae9c27
+
+Emily re-audit R2:
+decision=PASS
+result_sha256=43d88c9cae103ed8bd97c0ae12fd7b6a9ea861ef5c082fdaecadde637ee58d9a
+critical=0
+high=0
+merge_gate=PASS
+residual_medium=historical_vs_current_binding_hash_labeling
+closeout_remediation=APPLIED

@@ -1,0 +1,32 @@
+MCF-UI-SEMANTIC-MANUAL-001 — Emily re-audit R2
+
+mission_id=MCF-UI-MANUAL-EMILY-REAUDIT-R2
+attempt=2
+envelope_id=498e1246-c648-4d67-8c82-d7325e991386
+retry_of_envelope_id=500ee919-0809-449c-83d5-956fa4386fde
+state=COMPLETED
+result_sha256=43d88c9cae103ed8bd97c0ae12fd7b6a9ea861ef5c082fdaecadde637ee58d9a
+decision=PASS
+
+Verified:
+M1=REMOVED
+M2=REMOVED
+L1=REMOVED
+contract_version=1.0.1
+smoke_r3=PASS_44_44
+documentation_validation=SUCCESS
+production_readiness=SUCCESS
+critical=0
+high=0
+
+Residual before closeout:
+medium=historical vs current local binding hash labeling
+
+Emily merge gate:
+PASS
+
+Closeout remediation:
+- checkpoint uses current binding hash only
+- report/validation label d540... as initial/historical
+- current binding hash is a6c9...
+- no new smoke required for this documentation-only labeling correction

@@ -28,6 +28,18 @@ Classificações:
 - `HISTORICAL` — verdade preservada de um boundary anterior;
 - `SUPERSEDED` — substituído por decisão/evidência posterior.
 
+## 1.1. Manual operacional da interface ChatGPT/Cockpit
+
+Para qualquer sessão do MESTRE que opere o Dual Browser Cockpit ou a UI do ChatGPT, ler antes da navegação:
+
+- `docs/operations/MCF-UI-OPERATING-MANUAL.md`;
+- `docs/contracts/MCF-UI-SEMANTIC-CONTRACT.json`;
+- o perfil local autorizado `~/.config/mcf-dual-browser-cockpit/ui-semantic-bindings.json`, quando existir.
+
+Regra operacional: usar IDs semânticos canônicos e validação pós-ação. Não redescobrir controles críticos por screenshot, coordenadas, classes CSS efêmeras ou `first match wins`.
+
+O contrato genérico é versionado no repositório; IDs/hrefs específicos de projetos pertencem ao perfil local e não devem ser publicados no contrato genérico.
+
 ## 2. Snapshot reconciliado em 2026-08-20
 
 ```yaml
