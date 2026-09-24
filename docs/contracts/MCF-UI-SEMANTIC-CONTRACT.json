@@ -890,6 +890,42 @@
         }
       ],
       "ambiguity": "fail"
+    },
+    {
+      "id": "chatgpt.project.settings.appearance",
+      "concept": "Project icon and color settings",
+      "surface": "chatgpt",
+      "kind": "stateful-overlay-control",
+      "critical": true,
+      "effectClass": "persistent-write-on-selection",
+      "mutationAllowedByDefault": false,
+      "locators": [
+        {
+          "id": "appearance-button-accessible",
+          "priority": 10,
+          "strategy": "role-name-prefix",
+          "role": "button",
+          "namePrefix": {
+            "pt-BR": "Abrir menu de ícone e cor do projeto"
+          },
+          "scope": "chatgpt.project.settings.dialog",
+          "expectedMatches": 1
+        }
+      ],
+      "overlay": {
+        "rendering": "portal-capable",
+        "role": "menu"
+      },
+      "observedChildControls": [
+        {
+          "role": "button",
+          "name": "Cor personalizada"
+        },
+        {
+          "role": "menuitem",
+          "name": "Fechar menu"
+        }
+      ]
     }
   ],
   "workflows": [
@@ -931,5 +967,17 @@
         "validate new user turn / conversation advance"
       ]
     }
-  ]
+  ],
+  "portalResolutionPolicy": {
+    "generatedIds": "runtime-only",
+    "physicalDomAncestryRequired": false,
+    "requiredEvidence": [
+      "validated trigger identity",
+      "current project identity",
+      "visible overlay role/name",
+      "candidate cardinality",
+      "fresh re-resolution after transition"
+    ],
+    "criticalActionExecutor": "fail-closed; first-match primitives are not sufficient"
+  }
 }
