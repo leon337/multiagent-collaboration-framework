@@ -46,3 +46,13 @@ audit_r2:
   high: 1
   medium: 1
   findings_remediated: true
+external_statuses:
+  vercel:
+    state: failure
+    reason: free_plan_build_rate_limit
+    disposition: EXTERNAL_NON_REQUIRED
+    deployment_in_scope: false
+required_pr_gates:
+  - Documentation validation
+  - MCF Production Readiness
+  - Emily independent final gate
