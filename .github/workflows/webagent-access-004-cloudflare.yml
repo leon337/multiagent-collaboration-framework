@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   prove-quick-tunnel:
@@ -65,6 +66,12 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- URL: $PUBLIC_URL" >> "$GITHUB_STEP_SUMMARY"
           echo "- MCP: $PUBLIC_URL/mcp" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish live proof URL to mission issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment 354 --repo "$GITHUB_REPOSITORY" --body "ACCESS-004 live proof for \`$GITHUB_SHA\`: $PUBLIC_URL/health/ready (MCP: $PUBLIC_URL/mcp). Ephemeral Quick Tunnel; expected lifetime is only this workflow run."
 
       - name: Start restricted WebAgent origin
         env:
