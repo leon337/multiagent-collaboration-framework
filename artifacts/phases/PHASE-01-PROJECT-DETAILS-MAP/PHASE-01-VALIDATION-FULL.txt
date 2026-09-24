@@ -1,0 +1,97 @@
+MCF-PROJECT-DETAILS-MAP-001 — expanded validation
+
+Trigger evidence:
+role=button
+accessible_name=Exibir detalhes do projeto
+cardinality=1 in each of 4 project roots
+
+Overlay evidence:
+role=menu
+accessible_name=Exibir detalhes do projeto
+
+Emily menu:
+- Configurações do projeto
+- Fixar projeto
+
+Sofia/Patrícia/Rafael menu:
+- Compartilhar
+- Configurações do projeto
+- Fixar projeto
+
+Settings dialog 4/4:
+role=dialog
+name=Configurações do projeto
+
+Required visible controls 4/4:
+- role=button name=Fechar
+- role=button name starts with "Abrir menu de ícone e cor do projeto."
+- role=entry name=Nome do projeto
+- role=entry name=Instruções
+- role=button name=Memória
+- role=button name=Excluir projeto?
+
+Smoke sequence executed in each project:
+validate root project
+→ require exactly one details trigger
+→ open details menu
+→ require exactly one active correlated menu
+→ verify exact expected menu items
+→ activate Configurações do projeto only
+→ require exactly one settings dialog
+→ verify required controls
+→ close settings dialog
+→ require dialog closed
+→ verify WebContents URL/project unchanged
+
+No persistent field/control was activated.
+
+Terminal R3 validation:
+status=PASS
+projects=4
+failed=0
+sha256=96d8f4643bc70ccf1a8a25a2351fbd10b8478eba14513a80e440c87cb2dbaa48
+
+Per-project proof:
+- current project URL unchanged before/after
+- details-menu inventory stable
+- Project Name hash stable
+- Instructions hash stable
+- Memory checked state stable
+- persistentMutationObserved=false
+
+Memory state observed:
+Emily=standard
+Sofia=project-only
+Patricia=project-only
+Rafael=project-only
+
+Deep map evidence:
+path=/home/leo/mcf-handoffs/MCF-PROJECT-DETAILS-MAP-EVIDENCE-2026-09-24.json
+sha256=215b6cca513bd107c3ad0cf9a723155cafb1de2f07f6e62543edb50d80640a45
+
+Local semantic bindings:
+sha256=1cf16dc62dd42e0ea9c528aa68867b76ab8fc42f59fba1215974e0d9eb9ab323
+
+Race handling:
+R1/R2 timing failures preserved.
+R3 uses bounded state waits and fail-closed ambiguity handling.
+
+Post-audit R2 remediation:
+contract_version=1.1.1
+Memory state classifier role=menuitemradio
+Share availability policy=runtime-optional-non-invariant
+
+Second live smoke:
+Emily=PASS
+Sofia=PASS
+Patrícia=PASS
+Rafael=PASS
+core menu capability=Configurações do projeto + Pin action
+Share=optional, absent in all four R2 observations
+settings open/close=PASS 4/4
+project context final=matched local binding 4/4
+persistent mutation executed=NO
+
+R2 evidence:
+path=/home/leo/mcf-handoffs/MCF-PROJECT-DETAILS-MAP-SMOKE-R2-2026-09-24.json
+sha256=f4c68c4a1eba01823697b598d6a740d8d842424dee5510c1f291220093e88dda

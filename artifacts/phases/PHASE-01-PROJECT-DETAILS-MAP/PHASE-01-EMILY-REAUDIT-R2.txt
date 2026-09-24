@@ -1,0 +1,38 @@
+MCF-PROJECT-DETAILS-MAP-001 — Emily re-audit R2 (recovered from persisted conversation)
+
+mission_id=MCF-PROJECT-DETAILS-EMILY-FINAL-R2
+attempt=2
+envelope_id=4b5c2323-58fb-4f7f-aea6-e2006d77495b
+lifecycle_state=UNVERIFIED
+conversation_persisted=true
+decision=FAIL
+
+H1=REMOVED
+H2=REMOVED
+H3=REMOVED
+H4=REMOVED
+H5=HIGH_REMOVED_WITH_MEDIUM_RESIDUAL
+H6=REMOVED
+
+critical=0
+high=1
+medium=1
+low=0
+
+H7=canonical manual hash mismatch
+recorded_manual_sha256=212628982d246bb2ba2f7ce650a24021a01a3e660caa0567cdb396b78d219c5a
+actual_manual_sha256=110bbb28542a1464022d1874a4fc078526eacf7639f0def3cca2e9f0c47d9ff6
+
+M1=invalid ARIA role radio-menuitem in Memory state classifier
+correct_role=menuitemradio
+
+Additional gate note:
+Vercel status was failing due external/free-plan deployment limit while Documentation validation and MCF Production Readiness were green. Policy disposition must be checked before merge.
+
+Remediation applied after this audit:
+- contract patched to 1.1.1
+- Memory role fixed to menuitemradio
+- canonical hashes scheduled for full regeneration
+- local binding synced to 1.1.1
+- project Share classified runtime-optional/non-invariant after R2 drift observation
+- smoke R2 rerun 4/4 PASS with zero persistent mutation

@@ -294,3 +294,248 @@ An implementation claiming compliance must prove:
 - adversarial ambiguity test with zero clicks;
 - real smoke in Emily, Sofia, Patrícia and Rafael projects;
 - no Critical/High residual finding from independent audit.
+
+
+## 14. Project details and settings surface
+
+Mission: `MCF-PROJECT-DETAILS-MAP-001`  
+Issue: #363  
+Contract extension: `mcf-ui-semantic-contract/v1` version `1.1.1`.
+
+### 14.1 Canonical trigger
+
+Semantic ID:
+
+```text
+chatgpt.project.details-menu
+```
+
+Observed trigger in all four certified project pages:
+
+```text
+role/button
+accessible name = "Exibir detalhes do projeto"
+```
+
+The runtime CSS IDs observed in the four panes were different `#radix-*` values. They are runtime-only and must never be persisted as canonical identity.
+
+Resolution rules:
+
+```text
+validate instance/pane/project
+→ resolve exactly one project-details trigger
+→ revalidate current project
+→ activate
+→ resolve the active portalled menu
+→ validate menu belongs to the same project invocation
+```
+
+A click on the trigger is not success by itself.
+
+### 14.2 Portal model
+
+The project menu is rendered as a portal-capable overlay. Do **not** require the menu to be a DOM descendant of the trigger.
+
+The semantic relation is:
+
+```text
+validated project
+  → validated details trigger
+    → active correlated menu overlay
+      → menu items
+```
+
+Generated Radix IDs, `aria-controls` values and concrete DOM nodes may be used only as ephemeral runtime evidence.
+
+After every open/close/submenu transition, discard old runtime handles and resolve again.
+
+### 14.3 Current 4/4 inventory
+
+On 2026-09-24, the accessibility tree exposed the active overlay as:
+
+```text
+menu "Exibir detalhes do projeto"
+```
+
+The stable/core menu capabilities observed across repeated runs are:
+
+```text
+Configurações do projeto
+Fixar projeto | Desafixar projeto
+```
+
+`Compartilhar` is **optional and runtime-volatile**. In the first inventory it appeared for Sofia, Patrícia and Rafael but not Emily; in the second smoke it appeared for none of the four projects. Its absence is therefore `CAPABILITY_ABSENT_NOT_DRIFT`, not a reason to choose a similar control or fail the core details-menu workflow.
+
+Canonical semantic IDs:
+
+```text
+chatgpt.project.share        # optional capability
+chatgpt.project.settings
+chatgpt.project.pin
+```
+
+### 14.4 Project settings
+
+Opening `chatgpt.project.settings` is an inspection/navigation action in this mission. It must resolve exactly one menu item named `Configurações do projeto` inside the correlated details menu.
+
+Postcondition:
+
+```text
+exactly one dialog "Configurações do projeto"
+AND current project unchanged
+AND no persistent project field changed
+```
+
+Observed 4/4 settings surface:
+
+```text
+dialog "Configurações do projeto"
+├── button "Fechar"
+├── button "Abrir menu de ícone e cor do projeto. ..."
+├── entry "Nome do projeto"
+├── entry "Instruções"
+├── button "Memória"
+└── button "Excluir projeto?"
+```
+
+Canonical semantic IDs:
+
+```text
+chatgpt.project.settings.dialog
+chatgpt.project.settings.close
+chatgpt.project.settings.icon-color
+chatgpt.project.settings.name
+chatgpt.project.settings.instructions
+chatgpt.project.settings.memory
+chatgpt.project.settings.delete
+```
+
+Effect classification:
+
+| Semantic ID | Effect class | Allowed in mapping/smoke |
+| --- | --- | --- |
+| `chatgpt.project.details-menu` | transient UI state | inspect/open/dismiss |
+| `chatgpt.project.settings` | navigation | inspect/open |
+| `chatgpt.project.settings.close` | read-only | activate |
+| `chatgpt.project.share` | navigation/capability | inspect only in this mission |
+| `chatgpt.project.pin` | persistent mutation | inspect only |
+| `chatgpt.project.settings.icon-color` | persistent mutation | inspect only |
+| `chatgpt.project.settings.name` | persistent mutation | inspect only |
+| `chatgpt.project.settings.instructions` | persistent mutation | inspect only |
+| `chatgpt.project.settings.memory` | persistent mutation | inspect only |
+| `chatgpt.project.settings.delete` | destructive | inspect only |
+
+Unknown controls default to `UNKNOWN → NO ACTION`.
+
+### 14.5 Pin state
+
+Do not expose a blind `togglePin()` operation.
+
+Use desired state:
+
+```text
+setPinned(true)
+setPinned(false)
+```
+
+Observed action labels classify the current state:
+
+```text
+"Fixar projeto"    → current state unpinned → effect pinned
+"Desafixar projeto" → current state pinned   → effect unpinned
+```
+
+If the state cannot be proven, return `VALIDATION_FAILED` and perform no action.
+
+### 14.6 Current Bridge limitation
+
+The current `/v1/interactive` snapshot filters interactive nodes to anchors, buttons, inputs, textarea/select, role=button/link and contenteditable nodes. It does not currently expose `role=menu`, `role=menuitem` or `role=dialog`.
+
+Therefore, for this mapping mission, portal/menu/dialog structure was verified through the desktop accessibility tree (AT-SPI) while the WebContents URL and project binding remained the primary project-context evidence.
+
+This is acceptable as evidence, but a future critical-action implementation should add a dedicated portal-aware semantic resolver instead of using `/v1/find-click` or first-match behavior.
+
+### 14.7 Fail-closed behavior
+
+For all project-details controls:
+
+```text
+0 candidates → documented fallback or NOT_FOUND
+1 candidate  → validate invariants and current project
+>1 candidates → AMBIGUOUS → ZERO ACTION
+stale node → STALE_TARGET → ZERO ACTION
+project/pane changed → CONTEXT_CHANGED → ZERO ACTION
+unknown effect → UNKNOWN → ZERO ACTION
+```
+
+After any action with possible persistent effect, do not retry until the postcondition proves whether the effect occurred.
+
+
+
+### 14.8 Child settings overlays
+
+The settings dialog exposes additional portalled surfaces. They are separate semantic surfaces and must be resolved again after opening.
+
+#### Icon/color
+
+Canonical control:
+
+`chatgpt.project.settings.icon-color`
+
+Observed on 2026-09-24:
+
+```text
+button "Abrir menu de ícone e cor do projeto. ..."
+  → menu with the same accessible context
+    → button "Cor personalizada"
+    → menu item "Fechar menu"
+```
+
+Selecting an icon/color is a persistent mutation and is **not** allowed by a mapping-only mission. Opening/dismissing the overlay is inspection.
+
+#### Memory
+
+Canonical control:
+
+`chatgpt.project.settings.memory`
+
+Observed memory values:
+
+```text
+radio menu item "Memória padrão ..."
+radio menu item "Memória somente no projeto ..."
+```
+
+Semantic states:
+
+- `standard`: project may access external chat memory and vice-versa;
+- `project-only`: project can access only its own memory; its memory is hidden from external chats.
+
+The checked radio item is the state source. The visible button text `Memória` alone does not prove the selected state.
+
+Current workstation observation on 2026-09-24:
+
+| Project | Observed memory state |
+| --- | --- |
+| Emily / EMILLY | `standard` |
+| Sofia / SOPHIA | `project-only` |
+| Patrícia / PATRICIA - MCF | `project-only` |
+| Rafael / RAFAEL - MCF | `project-only` |
+
+This table is dated evidence, not a permanent contract invariant. Always resolve the live checked radio state before relying on isolation assumptions.
+
+### 14.9 Scope discipline for future mutations
+
+Opening/dismissing project menus, settings dialogs and child overlays is transient inspection.
+
+The following require an explicit mutation mission and human authority:
+
+- pin/unpin;
+- change project name;
+- change instructions;
+- choose icon/color;
+- change memory mode;
+- destructive project deletion;
+- any share action that changes access or membership.
+
+For these controls, do not use `/v1/find-click` as an authority because its current behavior is first matching element. A critical action must count candidates, revalidate the project/pane immediately before activation and prove the postcondition afterward.

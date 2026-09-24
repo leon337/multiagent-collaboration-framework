@@ -40,6 +40,8 @@ Regra operacional: usar IDs semânticos canônicos e validação pós-ação. N�
 
 O contrato genérico é versionado no repositório; IDs/hrefs específicos de projetos pertencem ao perfil local e não devem ser publicados no contrato genérico.
 
+Estado atual do contrato de UI: `mcf-ui-semantic-contract/v1` versão `1.1.1`. A partir desta versão, a área de Detalhes do projeto e Configurações do projeto também possui IDs semânticos canônicos documentados no manual.
+
 ## 2. Snapshot reconciliado em 2026-08-20
 
 ```yaml

@@ -1,0 +1,50 @@
+MCF-PROJECT-DETAILS-MAP-001 — read-only smoke
+
+Emily=PASS
+Sofia=PASS
+Patrícia=PASS
+Rafael=PASS
+
+Coverage:
+project binding/context=PASS 4/4
+details trigger unique=PASS 4/4
+details menu open=PASS 4/4
+menu inventory=PASS 4/4
+settings open=PASS 4/4
+settings controls=PASS 4/4
+settings close=PASS 4/4
+project context unchanged=PASS 4/4
+persistent mutation executed=NO
+
+Evidence SHA-256:
+a06ef4af9ccafbe346fca4c46ceb7a35c7072a0bb12c5723e5379cb58e347c99
+
+## Smoke lineage refinement
+
+R1: 3/4 passed; Rafael cleanup race after child overlay dismissal; no persistent mutation observed.
+R2: 3/4 passed; Rafael settings materialization race; no persistent mutation observed.
+Remediation: fixed sleeps replaced with bounded waits; ambiguous/multiple candidates remain fail-closed; already-closed dialog is an acceptable terminal close state.
+
+R3:
+- status: PASS
+- passed: 4
+- failed: 0
+- SHA-256: `96d8f4643bc70ccf1a8a25a2351fbd10b8478eba14513a80e440c87cb2dbaa48`
+- project URL stable 4/4
+- details inventory stable 4/4
+- Name/Instructions field hashes stable 4/4
+- Memory state stable 4/4
+- persistent mutation observed: NO
+
+R2 after Emily findings:
+contract_version=1.1.1
+Emily=PASS
+Sofia=PASS
+Patrícia=PASS
+Rafael=PASS
+share_required=false
+share_observed=absent_4_of_4
+pin_control=resolved
+settings_open_close=PASS_4_of_4
+persistent_mutation_executed=NO
+evidence_sha256=f4c68c4a1eba01823697b598d6a740d8d842424dee5510c1f291220093e88dda

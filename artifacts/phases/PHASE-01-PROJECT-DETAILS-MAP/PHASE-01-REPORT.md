@@ -1,0 +1,101 @@
+# PHASE-01 Report — Project Details Map
+
+## Team results
+- Sofia: COMPLETED — `72a024906d427bb2954b8f8a5642acfb868757ff2415907ea5e5c87bc00ee159`
+- Emily initial audit: COMPLETED/BLOCKED pending evidence — `f69c7997cc96387a332b95e221a17f514c5980f44f207371e2da4540aa00e663`
+- Patrícia: COMPLETED — `2fe596ad135b388ce4e9fd6480ac9f8e588a2741778f0e02f92c500750535ffa`
+- Rafael: COMPLETED — `6157a8484d9238c968e677fbb40879f9a161bd883a443cf556b08049b8a1c6c2`
+
+## Live findings
+All four project roots expose exactly one `button` with accessible name `Exibir detalhes do projeto`.
+
+Observed runtime CSS IDs differ per pane and are treated as ephemeral Radix IDs.
+
+The current Bridge `/v1/interactive` selector does not include `role=menu`, `role=menuitem` or `role=dialog`. The portal/menu/dialog structure was therefore independently verified through the desktop accessibility tree while project identity remained anchored to the Bridge WebContents URL/local binding.
+
+## 4/4 menu inventory
+- Emily: Project settings; Pin project.
+- Sofia: Share; Project settings; Pin project.
+- Patrícia: Share; Project settings; Pin project.
+- Rafael: Share; Project settings; Pin project.
+
+The missing Share capability on Emily is preserved as an observed difference.
+
+## 4/4 settings dialog inventory
+All four expose:
+- dialog `Configurações do projeto`
+- Close
+- icon/color control
+- Project name
+- Instructions
+- Memory
+- Delete project
+
+## Canonical decisions
+- contract version advanced from 1.0.1 to 1.1.0;
+- `chatgpt.project.details-menu` is portal-aware and stateful;
+- `chatgpt.project.settings` remains semantically independent from the menu surface;
+- pin is desired-state based; blind toggle is forbidden;
+- icon/color, name, instructions, memory and pin are persistent-mutation controls;
+- delete is destructive;
+- unknown or ambiguous controls execute zero action;
+- `/v1/find-click` is not approved for critical project-details actions because it is first-match behavior.
+
+## Boundary
+No title, instructions, memory, icon/color, pin state, share configuration or deletion state was changed.
+
+## Deep inventory and terminal smoke
+
+Additional local evidence:
+- deep map evidence SHA-256: `215b6cca513bd107c3ad0cf9a723155cafb1de2f07f6e62543edb50d80640a45`
+- R3 smoke SHA-256: `96d8f4643bc70ccf1a8a25a2351fbd10b8478eba14513a80e440c87cb2dbaa48`
+- local bindings SHA-256: `1cf16dc62dd42e0ea9c528aa68867b76ab8fc42f59fba1215974e0d9eb9ab323`
+
+Deep AT-SPI inspection confirmed:
+- portalled details menu role/name and menuitems;
+- identical Project Settings dialog controls 4/4;
+- icon/color child overlay;
+- Memory child overlay with checked radio-menuitem state.
+
+Observed memory state:
+- Emily: `standard`;
+- Sofia: `project-only`;
+- Patrícia: `project-only`;
+- Rafael: `project-only`.
+
+R1/R2 exposed legitimate UI races. Fixed sleeps were replaced with bounded state waits and already-closed dialog was accepted as a valid terminal close state.
+
+R3: PASS 4/4, no persistent mutation, URL/context stable, Name/Instructions hashes stable, Memory state stable.
+
+## Emily re-audit R2 and remediation
+Emily's persisted re-audit response returned `DECISION: FAIL` for the then-current HEAD.
+
+Removed from the original audit: H1, H2, H3, H4, H6; H5's original High was removed.
+
+Residual findings:
+- H7 High — canonical manual hash mismatch.
+- M1 Medium — invalid ARIA role `radio-menuitem`; executable role is `menuitemradio`.
+
+Remediation:
+- contract patch advanced to `1.1.1`;
+- Memory classifier corrected to `menuitemradio`;
+- local binding synced to `1.1.1`;
+- Share capability reclassified runtime-optional/non-invariant after a second live run showed it absent in all four projects;
+- smoke R2 executed again: 4/4 PASS, zero persistent mutation;
+- canonical hashes and phase manifest are regenerated after all documentation updates.
+
+Smoke R2 evidence SHA-256:
+`f4c68c4a1eba01823697b598d6a740d8d842424dee5510c1f291220093e88dda`
+
+Current local binding SHA-256:
+`c4ae5f2f3904dd547e35635633afba0aad91913b105aa58d1d44cdf84ab50d56`
+
+## External status disposition
+The exact candidate SHA may carry a Vercel commit status of `failure` whose target points to a free-plan/build-rate-limit upgrade page.
+
+For this Class B UI documentation/mapping mission:
+- no Vercel deployment is in scope;
+- no production deployment is claimed;
+- the status is retained as external evidence;
+- it is classified `EXTERNAL_NON_REQUIRED`, not silently ignored;
+- merge qualification remains conditioned on the repository's canonical `Documentation validation` and `MCF Production Readiness` workflows passing on the exact final HEAD, plus Emily's independent gate.
