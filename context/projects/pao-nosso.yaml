@@ -1,0 +1,30 @@
+schema_version: 1
+
+project:
+  id: pao-nosso
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/meu_primeiro_agente
+  aliases:
+    - Pão Nosso
+    - Pao Nosso
+    - Pão Nosso WhatsApp
+    - Pao Nosso WhatsApp AI
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - .mcf/mission.yaml
+    - docs/MCF-PN-WA-STATE.md
+    - README.md
+    - app/bakery.py
+    - app/server.py
+    - app/whatsapp_audit.py
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE

@@ -1,0 +1,17 @@
+checkpoint_id: PHASE-PAO-NOSSO-PRODUCTION-001-CHECKPOINT-20260920
+mission_id: MCF-20260920-PAO-NOSSO-PRODUCTION-001
+phase_id: PHASE-PAO-NOSSO-PRODUCTION-001
+observed_at: "2026-09-20T06:19:47-03:00"
+status: ACTIVE_WAITING_FOR_INFRASTRUCTURE
+progress:
+  whatsapp_integration_operational: true
+  bakery_agent_present: true
+  supabase_business_tools_present: true
+  whatsapp_audit_present: true
+  operational_revision: 1cb59e3cf99a420357ffa9d0fa7476ef8cbacee2
+  oci_target_running: false
+blockers:
+  - SIBLING_MISSION_OCI_A1_CAPACITY
+next_action: KEEP_CURRENT_PRODUCTION_THEN_DEPLOY_VALIDATE_ON_OCI
+return_to: MESTRE
+final_checkpoint: false

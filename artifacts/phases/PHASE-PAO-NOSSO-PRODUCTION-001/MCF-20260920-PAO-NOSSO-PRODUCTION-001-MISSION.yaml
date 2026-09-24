@@ -1,0 +1,66 @@
+mission_contract:
+  mission_id: MCF-20260920-PAO-NOSSO-PRODUCTION-001
+  parent_mission_id: null
+  phase_id: PHASE-PAO-NOSSO-PRODUCTION-001
+  title: "PÃO NOSSO — produção, WhatsApp IA e migração de runtime"
+  objective: >-
+    Preservar o serviço PÃO NOSSO funcional e evoluir seu runtime de forma
+    auditável, com migração para OCI somente após validação completa.
+  expected_outcome: >-
+    WhatsApp IA, catálogo, pedidos, status e auditoria operacionais com
+    infraestrutura persistente, observável e com rollback.
+  scope:
+    - Meta WhatsApp webhook
+    - BakeryChatService
+    - Gemini
+    - Supabase catalog/order/status/audit
+    - deployment validation
+    - OCI runtime migration after infrastructure readiness
+  out_of_scope:
+    - breaking production cutover
+    - secrets in repository
+    - unrelated AEP executive tools
+  inputs:
+    - leon337/meu_primeiro_agente@feat/pn-wa-audit-persistence
+    - MCF project capsule for pao-nosso
+    - sibling mission MCF-20260920-OCI-PAONOSSO-RUNTIME-001
+  source_of_truth:
+    - context/projects/pao-nosso.yaml
+    - leon337/meu_primeiro_agente@mission/pao-nosso-context-20260920
+  assumptions:
+    - current WhatsApp production path remains available until controlled cutover
+  acceptance_criteria:
+    - existing WhatsApp path remains functional during migration
+    - catalog lookup uses real Supabase data
+    - create_order and customer_order_status validate end-to-end
+    - audit trail remains persistent
+    - OCI target passes health and webhook verification before cutover
+    - rollback path exists before any production endpoint switch
+  authorizations:
+    - Persist PÃO NOSSO mission/context authorized by LEANDRO on 2026-09-20
+  prohibitions:
+    - no secret material in Git
+    - no production Meta callback change before validation and explicit gate
+    - no silent replacement of operational lineage with repository main
+  risk_class: C
+  current_state: EM_EXECUCAO
+  cycle: 1
+  selected_agents:
+    - Mestre
+    - Augusto
+    - Miriam
+    - Julia
+  decision_authority: LEANDRO
+  human_escalation_triggers:
+    - production webhook cutover
+    - billing or paid infrastructure
+    - identity/MFA
+    - destructive data migration
+  phase_artifact_directory: artifacts/phases/PHASE-PAO-NOSSO-PRODUCTION-001
+
+current_checkpoint:
+  operational_code_revision: 1cb59e3cf99a420357ffa9d0fa7476ef8cbacee2
+  operational_branch: feat/pn-wa-audit-persistence
+  whatsapp_user_reported_state: WORKING
+  oci_sibling_state: BLOCKED_PROVIDER_CAPACITY
+  next_action: PRESERVE_PRODUCTION_AND_RESUME_AFTER_OCI_RUNNING

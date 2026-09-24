@@ -1,0 +1,17 @@
+{
+  "mission_id": "MCF-20260920-PAO-NOSSO-PRODUCTION-001",
+  "risk_class": "C",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "execution_topology": "PARALLEL_FAN_OUT_FAN_IN",
+  "execution_boundary": "PAO_NOSSO_PRODUCTION_AND_STAGING",
+  "subagent_credit_requires_real_execution": true,
+  "tool_call_evidence_required": true,
+  "live_mutation_authorized": false,
+  "persistent_source_of_truth": "GitHub/MCF+meu_primeiro_agente",
+  "persistent_project": "pao-nosso",
+  "canonical_project_descriptor": "context/projects/pao-nosso.yaml",
+  "mission_artifact": "artifacts/phases/PHASE-PAO-NOSSO-PRODUCTION-001/MCF-20260920-PAO-NOSSO-PRODUCTION-001-MISSION.yaml",
+  "resume_checkpoint": "artifacts/phases/PHASE-PAO-NOSSO-PRODUCTION-001/PHASE-PAO-NOSSO-PRODUCTION-001-CHECKPOINT.yaml",
+  "sandbox_persistent": false
+}

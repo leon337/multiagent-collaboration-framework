@@ -1,0 +1,19 @@
+checkpoint_id: PHASE-OCI-PAONOSSO-RUNTIME-001-CHECKPOINT-20260920
+mission_id: MCF-20260920-OCI-PAONOSSO-RUNTIME-001
+phase_id: PHASE-OCI-PAONOSSO-RUNTIME-001
+observed_at: "2026-09-20T06:19:47-03:00"
+status: BLOCKED_PROVIDER_CAPACITY
+progress:
+  oracle_account_active: true
+  home_region_confirmed: sa-vinhedo-1
+  always_free_shape_confirmed: VM.Standard.A1.Flex
+  ocpus: 2
+  memory_gb: 12
+  ubuntu_arm64_selected: true
+  ssh_public_key_prepared: true
+  instance_created: false
+blockers:
+  - OCI_A1_AD1_OUT_OF_CAPACITY
+next_action: RETRY_A1_2OCPU_12GB_WHILE_PRESERVING_ALWAYS_FREE
+return_to: MESTRE
+final_checkpoint: false
