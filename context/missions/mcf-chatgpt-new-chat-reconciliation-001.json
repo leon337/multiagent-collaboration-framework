@@ -1,0 +1,79 @@
+{
+  "schema": "mcf-mission-context/v1",
+  "mission_id": "MCF-CHATGPT-NEW-CHAT-RECONCILIATION-001",
+  "parent_mission_id": "MCF-CHATGPT-UI-LIFECYCLE-RACE-001",
+  "title": "Reconciliar bootstrap de novo chat com efeitos reais no ChatGPT",
+  "issue": 372,
+  "issue_url": "https://github.com/leon337/multiagent-collaboration-framework/issues/372",
+  "risk_class": "B",
+  "current_state": "PLANEJADO",
+  "release_gate": "BLOCKED",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "primary_executor": {
+    "agent_id": "Rafael",
+    "role": "Engenharia de Software"
+  },
+  "reviewers": [
+    {
+      "agent_id": "Renato",
+      "role": "Qualidade e Testes"
+    },
+    {
+      "agent_id": "Emily",
+      "role": "Auditoria Independente"
+    }
+  ],
+  "objective": "Corrigir o fluxo de criação/rebootstrap de novos chats para que o estado interno do runtime reconcilie efeitos externos tardios e nunca permaneça ERROR quando evidência correlacionada comprovar que o attempt original criou a conversa, entregou o user turn e recebeu o marker esperado.",
+  "problem": {
+    "observed": "Em smoke real de seis agentes, Sofia reproduziu message_send_unconfirmed e runtime ERROR/handshakeVerified=false, embora uma conversa nova no projeto SOPHIA tenha sido criada e tenha produzido resposta válida. Em paralelo, dois panes da mesma instância competem pelo lock do Bridge e um pode receber automation_busy.",
+    "core_invariant": "message_send_unconfirmed nao prova nao-entrega; representa incerteza e exige reconciliacao antes de qualquer retry.",
+    "duplicate_prevention": "Nenhum retry pode reenviar bootstrap enquanto existir possibilidade de o attempt original ter produzido efeito externo."
+  },
+  "scope": [
+    "late positive evidence reconciliation for identity bootstrap/new-chat",
+    "recovery of original attempt to READY when correlated evidence is proven",
+    "same-instance pane serialization or equivalent deterministic queuing",
+    "parallel execution across independent instances",
+    "restart-safe reconciliation before resend",
+    "deterministic six-agent smoke"
+  ],
+  "out_of_scope": [
+    "weaken canonical agentId/role/contractRef/contractDigest validation",
+    "mark READY from timeout, silence or nominal state alone",
+    "change ChatGPT project memory isolation",
+    "blind resend after message_send_unconfirmed",
+    "unrelated release or production changes"
+  ],
+  "source_of_truth": [
+    "templates/MCF-UNIFIED-MISSION.yaml",
+    "docs/decisions/LEO-DEC-006-APROVACAO-DO-BOOTSTRAP-DE-CHATS.md",
+    "docs/decisions/MCF-DEC-007-PROTOCOLO-DE-INICIALIZACAO-DE-NOVO-CHAT-E-PROJETO.md",
+    "docs/operations/MCF-CHATGPT-NEW-CHAT-RECONCILIATION-KNOWLEDGE.md",
+    "https://github.com/leon337/multiagent-collaboration-framework/issues/372"
+  ],
+  "acceptance_criteria": [
+    "six of six agents create exactly one new conversation in the correct ChatGPT project",
+    "six of six final identities are READY with handshakeVerified=true",
+    "zero duplicate bootstrap sends",
+    "zero terminal unrecovered automation_busy outcomes",
+    "delayed-but-real delivery recovers the original attempt rather than creating a replacement attempt",
+    "genuinely unproven delivery remains fail-closed",
+    "restart during uncertain bootstrap reconciles before any resend",
+    "npm run check passes in the implementation repository",
+    "npm test passes in the implementation repository",
+    "git diff --check passes",
+    "final evidence records candidate SHA and HANDSHAKE_VERIFIED proof for all six agents"
+  ],
+  "required_tests": [
+    "delayed conversation URL plus original user turn plus expected ready marker recovers READY without resend",
+    "persisted message_send_unconfirmed can recover after restart from correlated positive evidence",
+    "wrong project, wrong agent marker or unrelated conversation cannot recover READY",
+    "no evidence keeps the state fail-closed",
+    "two simultaneous panes in one instance are serialized or queued deterministically",
+    "three independent instances may execute concurrently",
+    "six-agent end-to-end smoke completes without manual intervention"
+  ],
+  "knowledge_rule_for_future_masters": "Reconcile before retry. Treat external ChatGPT effects as possibly committed even when delivery confirmation times out.",
+  "created_at": "2026-09-24T19:53:08Z"
+}
