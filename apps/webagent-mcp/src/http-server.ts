@@ -40,7 +40,7 @@ class RemoteOpenWorldDisabledFetchProvider implements FetchProvider {
         );
       },
       {
-        evidence: [{ kind: 'policy', ref: 'remote-open-world:disabled', detail: request.url }],
+        evidence: [{ kind: 'runtime', ref: 'remote-open-world:disabled', detail: request.url }],
         errorCode: 'REMOTE_OPEN_WORLD_DISABLED',
       },
     );
