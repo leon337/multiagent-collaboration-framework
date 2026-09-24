@@ -7,6 +7,8 @@ description: Use the MCF WebAgent tools for governed public-web search, bounded 
 
 Use this skill when the user asks to research public web information, read a URL, or run/check/cancel a browser job through the bundled MCP server.
 
+The same five tools may be reached over local stdio or remote Streamable HTTP; transport choice must not change their semantics.
+
 ## Preferred tool order
 
 1. Use `web_search` to discover candidate sources. Configure `WEBAGENT_SEARXNG_URL` to enable the live self-hostable SearXNG provider; without it, search remains `local-empty`.
@@ -21,6 +23,7 @@ Prefer the least agentic operation that satisfies the task. Preserve evidence, t
 - Browser request routing applies the egress policy to page requests and subresources.
 - `web_fetch` validates redirects hop-by-hop and caps the redirect chain.
 - The SearXNG backend URL is operator configuration, not user-controlled navigation, and may point to a self-hosted service.
+- The Streamable HTTP control plane requires an allowed Host and validates any present Origin before MCP handling.
 - This stage performs real page navigation and text/title capture, but it does not yet implement arbitrary form filling, login, credential vaults, persistent browser profiles or destructive actions.
 - Preflight DNS validation reduces SSRF exposure but does **not** claim complete DNS rebinding protection until the network transport pins connections to validated addresses.
 - Never expose secrets in tool input, output, logs, plugin files or evidence.
