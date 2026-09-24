@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { chromium, type Browser, type BrowserTypeLaunchOptions } from 'playwright';
+import { chromium, type Browser } from 'playwright';
 import { type EgressPolicy, PublicEgressPolicy } from './egress-policy.js';
 import { OperationError } from './execution.js';
 
@@ -165,9 +165,11 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
   }
 }
 
+type ChromiumLaunchOptions = NonNullable<Parameters<typeof chromium.launch>[0]>;
+
 export type PlaywrightBrowserRuntimeOptions = {
   egressPolicy?: EgressPolicy;
-  launchOptions?: BrowserTypeLaunchOptions;
+  launchOptions?: ChromiumLaunchOptions;
   excerptMaxChars?: number;
 };
 
@@ -176,7 +178,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
   private readonly runs = new Map<string, BrowserRunSnapshot>();
   private readonly browsers = new Map<string, Browser>();
   private readonly egressPolicy: EgressPolicy;
-  private readonly launchOptions: BrowserTypeLaunchOptions;
+  private readonly launchOptions: ChromiumLaunchOptions;
   private readonly excerptMaxChars: number;
 
   constructor(options: PlaywrightBrowserRuntimeOptions = {}) {
@@ -255,8 +257,14 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       const initialUrl = new URL(started.url);
       await this.egressPolicy.assertAllowed(initialUrl);
 
+      const afterEgress = this.runs.get(runId);
+      if (!afterEgress || afterEgress.status !== 'RUNNING') return;
+
       browser = await chromium.launch(this.launchOptions);
       this.browsers.set(runId, browser);
+
+      const afterLaunch = this.runs.get(runId);
+      if (!afterLaunch || afterLaunch.status !== 'RUNNING') return;
 
       const context = await browser.newContext();
       await context.route('**/*', async (route) => {
