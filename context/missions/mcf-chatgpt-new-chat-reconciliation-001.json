@@ -6,7 +6,7 @@
   "issue": 372,
   "issue_url": "https://github.com/leon337/multiagent-collaboration-framework/issues/372",
   "risk_class": "B",
-  "current_state": "PLANEJADO",
+  "current_state": "EM_EXECUCAO",
   "release_gate": "BLOCKED",
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
@@ -75,5 +75,58 @@
     "six-agent end-to-end smoke completes without manual intervention"
   ],
   "knowledge_rule_for_future_masters": "Reconcile before retry. Treat external ChatGPT effects as possibly committed even when delivery confirmation times out.",
-  "created_at": "2026-09-24T19:53:08Z"
+  "created_at": "2026-09-24T19:53:08Z",
+  "execution_started_at": "2026-09-24T20:02:15Z",
+  "selected_agents": [
+    {
+      "agent_id": "Sofia",
+      "role": "Arquitetura de Software",
+      "mission_id": "MCF-CHATGPT-NEW-CHAT-RECONCILIATION-001-SOFIA-ARCH",
+      "channel": "direct_bridge_fallback",
+      "status": "DISPATCHED",
+      "note": "runtime identity remained ERROR from the defect under investigation; direct message preserved architecture participation without blind rebootstrap"
+    },
+    {
+      "agent_id": "Patrícia",
+      "role": "Debugging e Análise de Falhas",
+      "mission_id": "MCF-CHATGPT-NEW-CHAT-RECONCILIATION-001-PATRICIA-ROOTCAUSE",
+      "status": "WORKING"
+    },
+    {
+      "agent_id": "Rafael",
+      "role": "Engenharia de Software",
+      "mission_id": "MCF-CHATGPT-NEW-CHAT-RECONCILIATION-001-RAFAEL-IMPLEMENT",
+      "status": "QUEUED_OR_WORKING"
+    },
+    {
+      "agent_id": "Renato",
+      "role": "Qualidade e Testes",
+      "mission_id": "MCF-CHATGPT-NEW-CHAT-RECONCILIATION-001-RENATO-TESTPLAN",
+      "status": "WORKING"
+    },
+    {
+      "agent_id": "Eduardo",
+      "role": "Engenharia Backend",
+      "mission_id": "MCF-CHATGPT-NEW-CHAT-RECONCILIATION-001-EDUARDO-CONCURRENCY",
+      "status": "QUEUED_OR_WORKING"
+    },
+    {
+      "agent_id": "Emily",
+      "role": "Auditoria Independente",
+      "mission_id": "MCF-CHATGPT-NEW-CHAT-RECONCILIATION-001-EMILY-PREGATE",
+      "status": "DISPATCH_FAILED",
+      "note": "failure during dispatch is additional evidence that the delivery-confirmation defect is not Sofia-specific; final audit must be retried only after candidate fix"
+    }
+  ],
+  "new_evidence": [
+    "Emily pre-gate mission dispatch failed in the same operational area, strengthening the hypothesis that the defect is not agent-specific.",
+    "Sofia architecture mission was delivered successfully through the Bridge direct-message fallback with deliveryConfirmed=true, avoiding blind identity rebootstrap."
+  ],
+  "orchestration": {
+    "strategy": "parallel_across_instances_serialized_within_instance",
+    "merge_authority": "LEANDRO",
+    "orchestrator": "MESTRE",
+    "release_gate": "Emily final independent audit after candidate + deterministic 6/6 smoke",
+    "no_merge_before_gate": true
+  }
 }
