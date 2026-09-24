@@ -43,3 +43,26 @@ All four expose:
 
 ## Boundary
 No title, instructions, memory, icon/color, pin state, share configuration or deletion state was changed.
+
+## Deep inventory and terminal smoke
+
+Additional local evidence:
+- deep map evidence SHA-256: `215b6cca513bd107c3ad0cf9a723155cafb1de2f07f6e62543edb50d80640a45`
+- R3 smoke SHA-256: `96d8f4643bc70ccf1a8a25a2351fbd10b8478eba14513a80e440c87cb2dbaa48`
+- local bindings SHA-256: `1cf16dc62dd42e0ea9c528aa68867b76ab8fc42f59fba1215974e0d9eb9ab323`
+
+Deep AT-SPI inspection confirmed:
+- portalled details menu role/name and menuitems;
+- identical Project Settings dialog controls 4/4;
+- icon/color child overlay;
+- Memory child overlay with checked radio-menuitem state.
+
+Observed memory state:
+- Emily: `standard`;
+- Sofia: `project-only`;
+- Patrícia: `project-only`;
+- Rafael: `project-only`.
+
+R1/R2 exposed legitimate UI races. Fixed sleeps were replaced with bounded state waits and already-closed dialog was accepted as a valid terminal close state.
+
+R3: PASS 4/4, no persistent mutation, URL/context stable, Name/Instructions hashes stable, Memory state stable.
