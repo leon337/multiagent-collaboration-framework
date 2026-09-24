@@ -89,3 +89,13 @@ Smoke R2 evidence SHA-256:
 
 Current local binding SHA-256:
 `c4ae5f2f3904dd547e35635633afba0aad91913b105aa58d1d44cdf84ab50d56`
+
+## External status disposition
+The exact candidate SHA may carry a Vercel commit status of `failure` whose target points to a free-plan/build-rate-limit upgrade page.
+
+For this Class B UI documentation/mapping mission:
+- no Vercel deployment is in scope;
+- no production deployment is claimed;
+- the status is retained as external evidence;
+- it is classified `EXTERNAL_NON_REQUIRED`, not silently ignored;
+- merge qualification remains conditioned on the repository's canonical `Documentation validation` and `MCF Production Readiness` workflows passing on the exact final HEAD, plus Emily's independent gate.
