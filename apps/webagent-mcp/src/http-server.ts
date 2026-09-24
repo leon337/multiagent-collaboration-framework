@@ -90,7 +90,10 @@ function createSharedDependencies(deps: WebAgentDependencies = {}): {
 export function createWebAgentHttpServer(options: WebAgentHttpServerOptions = {}): WebAgentHttpServer {
   const host = options.host ?? process.env.WEBAGENT_HOST?.trim() ?? '127.0.0.1';
   const port = options.port ?? resolvePort(process.env.PORT);
-  const configuredHosts = options.allowedHosts ?? parseCsv(process.env.WEBAGENT_ALLOWED_HOSTS);
+  const configuredHosts =
+    options.allowedHosts ??
+    parseCsv(process.env.WEBAGENT_ALLOWED_HOSTS) ??
+    (process.env.RENDER_EXTERNAL_HOSTNAME?.trim() ? [process.env.RENDER_EXTERNAL_HOSTNAME.trim()] : undefined);
   const configuredOrigins = options.allowedOrigins ?? parseCsv(process.env.WEBAGENT_ALLOWED_ORIGINS);
 
   const allowedHosts =
