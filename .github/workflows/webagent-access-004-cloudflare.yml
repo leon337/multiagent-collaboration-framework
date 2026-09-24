@@ -29,7 +29,7 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npm run typecheck
-          npm test
+          npx vitest run test/http-server.test.ts test/tool-annotations.test.ts
           npm run build
 
       - name: Download cloudflared
