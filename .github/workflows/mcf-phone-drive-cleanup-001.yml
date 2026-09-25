@@ -1,0 +1,45 @@
+name: MCF Phone Drive Cleanup 001
+
+on:
+  push:
+    branches:
+      - mission/phone-drive-cleanup-001
+    paths:
+      - ops/mcf-phone-drive-cleanup-001.py
+      - .github/workflows/mcf-phone-drive-cleanup-001.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcf-phone-drive-cleanup-001
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    runs-on: self-hosted
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout mission branch
+        uses: actions/checkout@v4
+
+      - name: Verify authorized host
+        shell: bash
+        run: |
+          set -euo pipefail
+          HOSTNAME_NOW="$(hostname)"
+          case "$HOSTNAME_NOW" in
+            leo-N43SM*) ;;
+            *)
+              echo "Wrong self-hosted runner: $HOSTNAME_NOW"
+              exit 20
+              ;;
+          esac
+
+      - name: Execute MCF phone Drive cleanup mission
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 ops/mcf-phone-drive-cleanup-001.py
