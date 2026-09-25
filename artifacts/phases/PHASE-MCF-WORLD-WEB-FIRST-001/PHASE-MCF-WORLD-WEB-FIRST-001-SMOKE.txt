@@ -1,0 +1,13 @@
+PHASE=PHASE-MCF-WORLD-WEB-FIRST-001
+
+HTTP_SMOKE=PASS
+EVIDENCE=server integration tests start serve.mjs as a child process, fetch / and /src/world-domain.js, assert HTTP 200/MIME types, and assert path traversal is blocked.
+
+BROWSER_SOURCE_CONTRACT_SMOKE=PASS
+EVIDENCE=static contract validates import map/Three.js pin, recovery UI, restrictive iframe sandbox, safe external-tab behavior, keyboard inputs and WebGL failure callback.
+
+REAL_BROWSER_WEBGL_VISUAL_SMOKE=NAO_APLICAVEL_IN_CURRENT_RUNTIME
+JUSTIFICATION=no preview/public host or authorized GUI browser was available in the connector execution runtime; no production deployment is permitted by this mission.
+
+LOCAL_ELECTRON_SMOKE=BLOCKED_BY_HOST_OFFLINE
+JUSTIFICATION=the authoritative Task 6 Electron workspace exists only on the offline host and must not be reconstructed from memory.
