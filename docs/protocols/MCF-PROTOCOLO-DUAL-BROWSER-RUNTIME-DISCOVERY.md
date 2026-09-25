@@ -1,8 +1,8 @@
 # Protocolo de Discovery do MCF Dual Browser para o MESTRE
 
-**Classificação:** REGRA NORMATIVA OPERACIONAL  
-**Aplicação:** missões executadas em MCF Dual Browser, Agent Bridge ou Agent Session  
-**Autoridade humana final:** LEANDRO  
+**Classificação:** REGRA NORMATIVA OPERACIONAL
+**Aplicação:** missões executadas em MCF Dual Browser, Agent Bridge ou Agent Session
+**Autoridade humana final:** LEANDRO
 **Orquestrador:** MESTRE
 
 ## 1. Finalidade
