@@ -9,6 +9,7 @@ Este diretório reúne documentação normativa, operacional, histórica, experi
 3. [`runtime/README.md`](runtime/README.md) — arquitetura/runtime executável, skills, adapters e evidências.
 4. [`protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`](protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md) — protocolo operacional vigente.
 5. [`agentes/README.md`](agentes/README.md) — composição documental dos 29 agentes nomeados.
+6. [`protocols/MCF-PROTOCOLO-DUAL-BROWSER-RUNTIME-DISCOVERY.md`](protocols/MCF-PROTOCOLO-DUAL-BROWSER-RUNTIME-DISCOVERY.md) — discovery obrigatório para MESTRE em Dual Browser/Agent Session.
 6. [`../CHANGELOG.md`](../CHANGELOG.md) — marcos históricos verificáveis.
 
 Para valores voláteis — branch head, SHA de branch, estado de PR/Issue, `latest`, metadados mutáveis de Release, workflow e SHA reportado por deploy — **GitHub/provider live prevalece sobre qualquer snapshot documental**. Identidades protegidas de RC3/stable podem ser fatos duráveis; status GitHub e deploy não são.

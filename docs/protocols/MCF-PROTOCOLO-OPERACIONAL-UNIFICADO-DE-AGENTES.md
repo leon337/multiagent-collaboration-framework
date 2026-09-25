@@ -426,3 +426,24 @@ Quando uma missão de sucessão cross-chat incluir copresença visual em GUI aut
 A extensão está integrada em `main` e formaliza critérios testáveis para identidade distinta de sessão e superfície, preservação da superfície predecessora até equivalência + handoff, fechamento do predecessor como ação separada, verdade sobre o mecanismo de input, monitor-aware placement e regressão de copresença.
 
 A integração em `main` formaliza a regra normativa, mas não autoriza publicação: tag, release e número de versão permanecem sujeitos a gates separados, qualificação contra o SHA final aplicável e autoridade humana explícita.
+
+## 18. Extensão — discovery obrigatório do MCF Dual Browser
+
+Quando a missão usar MCF Dual Browser, Agent Bridge ou Agent Session, o MESTRE deve aplicar antes da primeira ação operacional:
+
+`docs/protocols/MCF-PROTOCOLO-DUAL-BROWSER-RUNTIME-DISCOVERY.md`
+
+Regra mínima:
+
+```text
+LER DESCRIPTOR
+→ GET /v1/discovery
+→ INVENTARIAR PANES / AGENTES / AGENT SESSIONS
+→ RECONCILIAR WARNINGS
+→ ESCOLHER MECANISMO
+→ EXECUTAR
+```
+
+Texto ainda presente no composer não é evidência de envio. Uma Agent Session só pode ser tratada como conversa criada quando existir turno real de usuário, o bootstrap tiver saído do composer e houver identidade `/c/<conversation-id>`.
+
+O discovery descreve capacidades e estado; não amplia autoridade nem substitui gates do MCF.
