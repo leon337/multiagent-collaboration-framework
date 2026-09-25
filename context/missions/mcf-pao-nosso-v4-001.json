@@ -18,10 +18,12 @@
   "roadmap": "ROADMAP.md",
   "checklist": "CHECKLIST.md",
   "phase_artifact_directory": "artifacts/phases/PHASE-PN-V4-00-FOUNDATION",
-  "live_mutation_authorized": true,
-  "authorization_scope": "User explicitly authorized creation and registration of the mission and routine implementation work without repeated confirmation, subject to MCF escalation triggers.",
+  "live_mutation_authorized": false,
+  "authorization_scope": "LEANDRO authorized mission creation, roadmap/checklist setup, and routine implementation without repeated confirmation. Production promotion, payment activation, irreversible external changes, or new material cost remain governed by phase acceptance and applicable MCF gates.",
   "known_gaps": [
     "storefront_source_not_reconciled_with_canonical_git"
   ],
-  "next_action": "Reconcile storefront source, validate reproducible deploy path, complete V4.0 smoke, then advance to V4.1."
+  "next_action": "Reconcile storefront source, validate reproducible deploy path, complete V4.0 smoke, then advance to V4.1.",
+  "implementation_authorized": true,
+  "production_changes_require_phase_gate": true
 }
