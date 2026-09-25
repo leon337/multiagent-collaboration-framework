@@ -1,0 +1,72 @@
+name: MCF Jev Adversarial State Machine 5000
+
+on:
+  push:
+    branches:
+      - experimentos/jev-vercel-decision-lab-20260923
+    paths:
+      - .github/workflows/jev-adversarial-state-machine-5000.yml
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  ENDPOINT: https://mcf-ecosystem-roadmap-git-experimentos-jev-c59048-predix-ai-br.vercel.app/api/evaluate
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/generate_jev_adversarial_state_machine_5000.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev-asm-5000-source
+          path: jev-adversarial-state-machine-results/
+
+  evaluate:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: mcf-jev-asm-5000-source
+          path: jev-adversarial-state-machine-results
+      - run: |
+          mkdir -p jev-adversarial-state-machine-results/shards
+          python3 scripts/run_jev_redteam_shard.py --cases jev-adversarial-state-machine-results/cases.json --endpoint "$ENDPOINT" --shard "${{ matrix.shard }}" --shards 10 --out "jev-adversarial-state-machine-results/shards/shard-${{ matrix.shard }}.ndjson"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev-asm-5000-shard-${{ matrix.shard }}
+          path: jev-adversarial-state-machine-results/shards/
+
+  harvest:
+    needs: evaluate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: mcf-jev-asm-5000-source
+          path: jev-adversarial-state-machine-results
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mcf-jev-asm-5000-shard-*
+          path: jev-adversarial-state-machine-results/shards
+          merge-multiple: true
+      - run: |
+          test "$(cat jev-adversarial-state-machine-results/shards/shard-*.ndjson | wc -l)" = "5000"
+          python3 scripts/aggregate_jev_adversarial_state_machine_5000.py
+          cat jev-adversarial-state-machine-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev-adversarial-state-machine-5000
+          path: jev-adversarial-state-machine-results/
+          retention-days: 14
