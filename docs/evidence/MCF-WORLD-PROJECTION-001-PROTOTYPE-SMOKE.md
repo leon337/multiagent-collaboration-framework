@@ -18,9 +18,9 @@ Observed result:
     PASS fixture covers STALE
     PASS relations resolve
     PASS events resolve
-    PASS deterministic rebuild fixture
-    PASS no write fetch
-    PASS no Dual Browser mutation route
+    PASS deterministic fixture serialization round-trip
+    PASS bounded static check: no enumerated write fetch
+    PASS bounded static check: no enumerated Dual Browser mutation route
     PASS no 3D dependency
     entities=12 relations=11 events=6
 
@@ -34,7 +34,7 @@ Observed:
 - fixture resolved as MCF-WORLD-PROJECTION-001;
 - 12 entities;
 - 11 typed relations;
-- 6 causal/temporal events.
+- 6 temporally ordered fixture events; no causality claim.
 
 ## Real browser smoke
 
@@ -52,7 +52,7 @@ Observed:
     selection_persists agent:sofia
     BROWSER_SMOKE PASS
 
-This validates that changing projection does not implicitly change the selected entity.
+This validates cross-view selection persistence within one browser session. It does not prove deep-link/reload restoration or semantic convergence of every field.
 
 ## Responsive smoke
 
@@ -72,7 +72,7 @@ The fixture is explicitly marked REPRESENTATIVE_FIXTURE. It does not claim live 
 
 The prototype contains:
 
-- no write path;
+- the audited source exposes fixture loading and local UI interaction only; the static verifier detects the currently enumerated mutation patterns but is not a general proof of absence of all possible external effects;
 - no active Dual Browser command;
 - no production action;
 - no 3D dependency;
@@ -82,4 +82,26 @@ The prototype contains:
 
 ## Remaining gate
 
-This evidence proves implementation mechanics for the read-only fixture boundary. It does not yet prove product value versus the linear baseline. The A/B context-recovery experiment in docs/experiments/MCF-WORLD-PROJECTION-001-VERTICAL.md remains required before expanding World scope.
+This evidence proves implementation mechanics for the representative read-only fixture boundary. The JSON round-trip is not a WPP rebuild proof; canonical-source-to-read-model reconstruction remains UNKNOWN/PENDING. It does not yet prove product value versus the linear baseline. The A/B context-recovery experiment in docs/experiments/MCF-WORLD-PROJECTION-001-VERTICAL.md remains required before expanding World scope.
+
+## Semantic corrections after independent review
+
+- Timeline is temporal reconstruction only; fixture seq does not prove causality.
+- Every relation is marked REPRESENTATIVE_FIXTURE with explicit fixture provenance.
+- The Draft PR entity is an observed artifact, not a canonical receipt.
+- fixture.json is a materialized projection fixture, not an implemented adapter layer or persistence/API schema.
+- The global observedAt is labeled as fixture snapshot time, not per-entity or live observation.
+
+## Browser network audit
+
+A clean headless Chrome target enabled CDP Network observation before loading the prototype, then exercised Timeline, Graph, Baseline, Cockpit and entity selection.
+
+Observed:
+
+    methods [GET]
+    http://127.0.0.1:4173/
+    http://127.0.0.1:4173/favicon.ico
+    http://127.0.0.1:4173/fixture.json
+    NETWORK_AUDIT PASS requests=3
+
+Within this audited interaction sequence, only local GET requests were observed. This is execution evidence for this smoke path, not a universal proof about arbitrary future code.

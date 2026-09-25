@@ -27,3 +27,9 @@ Views:
 - Inspector — canonical ref, trust, freshness and relations.
 
 The fixture is explicitly representative and does not claim live telemetry.
+
+## Semantic limits
+
+fixture.json is a MATERIALIZED_PROJECTION_FIXTURE for the UX experiment. It is not a WPP persistence schema, source adapter, domain adapter, canonical event stream, or live telemetry contract. Timeline order follows fixture seq only and does not claim causation.
+
+The verifier performs bounded static checks; it is not a general proof that arbitrary future code can never cause an external effect.
