@@ -1,0 +1,66 @@
+schema_version: 1
+
+project:
+  id: pao-nosso
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/meu_primeiro_agente
+  aliases:
+    - Pão Nosso
+    - Pão Nosso V4
+    - Pao Nosso Platform
+    - Padaria Pão Nosso
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - ROADMAP.md
+    - CHECKLIST.md
+    - docs/PAO_NOSSO_ARCHITECTURE.md
+    - docs/PAO_NOSSO_SERVICE_MAP.md
+    - docs/PAO_NOSSO_OPERATIONS.md
+    - .mcf/mission.yaml
+    - .mcf/project-capsule.yaml
+
+scope:
+  product: pao-nosso
+  active_surface: digital-commerce-and-whatsapp-operations
+  active_mission: MCF-PAO-NOSSO-V4-001
+  product_issue: leon337/meu_primeiro_agente#19
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
+
+governance:
+  framework: MCF
+  human_authority: LEANDRO
+  coordinator: MESTRE
+  operational_gate: LEO
+  risk_class: C
+  automatic_merge: false
+  false_green_allowed: false
+
+hosting:
+  storefront:
+    provider: Vercel
+    url: https://paonosso-v3.vercel.app
+    source_reconciliation: REQUIRED
+  backend:
+    provider: Vercel
+    url: https://meu-primeiro-agente-indol.vercel.app
+  database:
+    provider: Supabase
+    project: paonosso-v3
+    region: sa-east-1
+  messaging:
+    provider: Meta WhatsApp Cloud API
+
+tracking:
+  mcf_issue: 375
+  project_issue: 19
