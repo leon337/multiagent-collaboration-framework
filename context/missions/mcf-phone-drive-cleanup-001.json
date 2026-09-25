@@ -1,0 +1,45 @@
+{
+  "schema": "mcf-mission/v1",
+  "mission_id": "MCF-PHONE-DRIVE-CLEANUP-001",
+  "title": "Confirmar 50 uploads, apagar locais e liberar 5 GB",
+  "authority": "LEANDRO",
+  "orchestrator": "MESTRE",
+  "executor": "MESTRE",
+  "state": "BLOCKED_RETRYABLE",
+  "authorization": {
+    "execution_authorized": true,
+    "additional_confirmation_required": false
+  },
+  "issue": 377,
+  "target": {
+    "host": "leo-N43SM",
+    "phone": "realme 9i",
+    "adb_serial": "9a179f5d",
+    "drive_account": "eiasophia25@gmail.com"
+  },
+  "objective": {
+    "uploaded_batch_count": 50,
+    "delete_only_after_drive_confirmation": true,
+    "minimum_free_space_gb": 5
+  },
+  "safety_invariants": [
+    "Nunca apagar arquivo sem confirmação correspondente no Google Drive",
+    "Não apagar arquivos fora do lote confirmado",
+    "Verificar ausência local após exclusão",
+    "CLAIM <= EVIDENCE"
+  ],
+  "last_known_state": {
+    "user_reported_50_uploaded": true,
+    "free_space_gb_approx": 3.2,
+    "sentinelx_control_plane": "INTERNAL_ERROR",
+    "phone_cleanup_completed": false
+  },
+  "resume_rule": "Retomar automaticamente quando o canal SentinelX voltar, sem pedir nova autorização a LEANDRO.",
+  "terminal_acceptance": [
+    "50/50 arquivos do lote tratados com correspondência auditável",
+    "zero exclusões sem confirmação no Drive",
+    "zero exclusões fora do lote",
+    "espaço livre final medido",
+    ">= 5 GB livres ou blocker externo terminal documentado"
+  ]
+}
