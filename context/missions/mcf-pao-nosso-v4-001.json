@@ -1,0 +1,27 @@
+{
+  "mission_id": "MCF-PAO-NOSSO-V4-001",
+  "title": "Pão Nosso V4 — Central Operacional e Evolução Contínua",
+  "risk_class": "C",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "decision_authority": "LEO",
+  "current_state": "EM_EXECUCAO",
+  "persistent_source_of_truth": "GitHub/MCF + provider live",
+  "persistent_project": "pao-nosso",
+  "canonical_project_descriptor": "context/projects/pao-nosso.yaml",
+  "canonical_repository": "leon337/meu_primeiro_agente",
+  "active_branch": "mission/pao-nosso-v4-001",
+  "project_issue": 19,
+  "mcf_issue": 375,
+  "current_phase": "PHASE-PN-V4-00-FOUNDATION",
+  "current_phase_issue": 20,
+  "roadmap": "ROADMAP.md",
+  "checklist": "CHECKLIST.md",
+  "phase_artifact_directory": "artifacts/phases/PHASE-PN-V4-00-FOUNDATION",
+  "live_mutation_authorized": true,
+  "authorization_scope": "User explicitly authorized creation and registration of the mission and routine implementation work without repeated confirmation, subject to MCF escalation triggers.",
+  "known_gaps": [
+    "storefront_source_not_reconciled_with_canonical_git"
+  ],
+  "next_action": "Reconcile storefront source, validate reproducible deploy path, complete V4.0 smoke, then advance to V4.1."
+}
