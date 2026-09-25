@@ -5,13 +5,13 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "EM_EXECUCAO",
+  "current_state": "PROTOTYPE_READ_ONLY_IMPLEMENTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
   "active_branch": "mission/mcf-world-projection-001",
   "mcf_issue": 379,
-  "current_phase": "DISCOVERY_TO_READ_ONLY_PROTOTYPE",
+  "current_phase": "READ_ONLY_PROTOTYPE_VALIDATION",
   "protocol": "docs/proposals/MCF-WORLD-PROJECTION-PROTOCOL-v0.1.md",
   "vertical_experiment": "docs/experiments/MCF-WORLD-PROJECTION-001-VERTICAL.md",
   "decision_record": "docs/decisions/MCF-WORLD-PROJECTION-001-ADR.md",
@@ -23,5 +23,7 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "Implement the read-only vertical only after this proposal boundary is reviewed; measure context recovery and comparison against the linear baseline before expanding scope."
+  "next_action": "Independent Sofia/Emily implementation review, then run the defined linear-vs-structured context-recovery experiment before any scope expansion.",
+  "prototype_path": "apps/mcf-world-projection",
+  "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md"
 }
