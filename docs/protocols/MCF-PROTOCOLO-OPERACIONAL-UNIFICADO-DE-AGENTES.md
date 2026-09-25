@@ -447,4 +447,3 @@ LER DESCRIPTOR
 Texto ainda presente no composer não é evidência de envio. Uma Agent Session só pode ser tratada como conversa criada quando existir turno real de usuário, o bootstrap tiver saído do composer e houver identidade `/c/<conversation-id>`.
 
 O discovery descreve capacidades e estado; não amplia autoridade nem substitui gates do MCF.
-
