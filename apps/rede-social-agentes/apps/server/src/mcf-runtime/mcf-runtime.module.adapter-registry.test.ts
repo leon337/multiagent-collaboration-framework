@@ -14,6 +14,7 @@ import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapte
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { LocalAgentTeamAdapter } from './local-agent-team.adapter.js';
 import { McfRuntimeModule } from './mcf-runtime.module.js';
+import { WebNativeReadAdapter } from './web-native-read.adapter.js';
 
 type FactoryProvider = {
   provide?: unknown;
@@ -47,6 +48,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       GitHubCiQueryAdapter,
       GitHubBranchPullRequestAdapter,
       GitHubPullCollaborationAdapter,
+      WebNativeReadAdapter,
       CodeBuddyExecutorAdapter,
       LocalAgentTeamAdapter,
     ]);
@@ -56,12 +58,14 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       stub('github-ci-query-read-v1'),
       stub('github-branch-pr-write-v1'),
       stub('github-pr-collaboration-write-v1'),
+      stub('web-native-read-v1'),
       stub('codebuddy-implement-change-local-v1'),
       stub('local-agent-team-process-v1'),
     ) as AdapterRegistry;
 
     expect(registry.listAdapterIds()).toContain('github-branch-pr-write-v1');
     expect(registry.listAdapterIds()).toContain('github-pr-collaboration-write-v1');
+    expect(registry.listAdapterIds()).toContain('web-native-read-v1');
     expect(registry.listAdapterIds()).toContain('codebuddy-implement-change-local-v1');
     expect(registry.listAdapterIds()).toContain('local-agent-team-process-v1');
   });
