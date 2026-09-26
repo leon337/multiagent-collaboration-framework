@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "HUMAN_FINDABILITY_R_REVIEWED",
+  "current_state": "SEMANTIC_VISUAL_LANGUAGE_V0_1_IMPLEMENTED_PENDING_GATE",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Design and gate Semantic Visual Language v0.1 as a read-only UX iteration across Cockpit/Timeline/Graph, with minimal legend/onboarding and no semantic or authority changes. Then run a targeted human validation before broader comparison.",
+  "world_model_next_action": "Obtain Laura/Leonardo/Emily exact-SHA gate for Semantic Visual Language v0.1. Do not run human validation until the UX/evidence gate passes.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -258,5 +258,10 @@
   },
   "product_go": "NOT_AUTHORIZED",
   "3d": "DEFERRED",
-  "mutation": "NOT_AUTHORIZED"
+  "mutation": "NOT_AUTHORIZED",
+  "semantic_visual_language_v0_1": "apps/mcf-world-projection/semantic-visual-world.html",
+  "semantic_visual_fixture_s": "apps/mcf-world-projection/semantic-visual-fixture-s.json",
+  "semantic_visual_language_v0_1_spec": "docs/contracts/MCF-WORLD-SEMANTIC-VISUAL-LANGUAGE-v0.1.md",
+  "semantic_visual_language_v0_1_proof": "docs/evidence/MCF-WORLD-SEMANTIC-VISUAL-LANGUAGE-V0.1-PROOF.md",
+  "semantic_visual_language_v0_1_gate": "PENDING_EXACT_SHA_REVIEW"
 }
