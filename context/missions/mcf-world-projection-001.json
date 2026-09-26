@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Obtain Laura/Leonardo/Emily exact-SHA gate for Semantic Visual Language v0.1. Do not run human validation until the UX/evidence gate passes.",
+  "world_model_next_action": "Obtain Laura/Leonardo/Emily exact-SHA re-gate after focus-symbol remediation and Fixture S provenance namespace correction. Human microtest remains blocked until gate passes.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -263,5 +263,11 @@
   "semantic_visual_fixture_s": "apps/mcf-world-projection/semantic-visual-fixture-s.json",
   "semantic_visual_language_v0_1_spec": "docs/contracts/MCF-WORLD-SEMANTIC-VISUAL-LANGUAGE-v0.1.md",
   "semantic_visual_language_v0_1_proof": "docs/evidence/MCF-WORLD-SEMANTIC-VISUAL-LANGUAGE-V0.1-PROOF.md",
-  "semantic_visual_language_v0_1_gate": "PENDING_EXACT_SHA_REVIEW"
+  "semantic_visual_language_v0_1_gate": "PENDING_REVIEW_AFTER_FOCUS_REMEDIATION",
+  "semantic_visual_language_v0_1_remediation": {
+    "agent_symbol": "● reserved for AGENT",
+    "focus_encoding": "cyan border/halo + explicit Selected text; no agent icon",
+    "generic_operational_state": "neutral semantic pill",
+    "fixture_namespace": "fixture:semantic-visual-s:*"
+  }
 }

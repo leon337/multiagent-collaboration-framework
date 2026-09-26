@@ -23,6 +23,11 @@ for fn in ["function cockpit()","function timeline()","function graph()"]:
 assert html.count("semanticFresh(")>=7
 assert 'aria-hidden="true"' in html
 assert "typeTag" in html and "typeIcon" in html
+assert "● selecionado / foco" not in html
+assert "Selecionado / foco" in html
+assert "● FOCO" not in html
+assert "semantic neutral" in html
+assert '<span class="semantic current">Selecionado</span>' in html
 for forbidden in ["localStorage","WebSocket","XMLHttpRequest","POST","PUT","PATCH"]:
     assert forbidden not in html, forbidden
 assert html.count('fetch("./semantic-visual-fixture-s.json"')==1

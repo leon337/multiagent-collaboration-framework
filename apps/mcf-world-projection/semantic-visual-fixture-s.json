@@ -8,7 +8,7 @@
     {
       "id": "project:mcf",
       "kind": "project",
-      "canonicalRef": "fixture:findability-r:project/mcf",
+      "canonicalRef": "fixture:semantic-visual-s:project/mcf",
       "label": "Project Nova",
       "state": "ACTIVE",
       "freshness": "FRESH",
@@ -18,7 +18,7 @@
     {
       "id": "mission:world",
       "kind": "mission",
-      "canonicalRef": "fixture:findability-r:mission/world",
+      "canonicalRef": "fixture:semantic-visual-s:mission/world",
       "label": "NOVA-AUDIT-031",
       "state": "BLOCKED",
       "freshness": "FRESH",
@@ -28,7 +28,7 @@
     {
       "id": "agent:mestre",
       "kind": "agent",
-      "canonicalRef": "fixture:findability-r:agent/mestre",
+      "canonicalRef": "fixture:semantic-visual-s:agent/mestre",
       "label": "MESTRE",
       "state": "ORCHESTRATING",
       "freshness": "FRESH",
@@ -38,7 +38,7 @@
     {
       "id": "agent:leonardo",
       "kind": "agent",
-      "canonicalRef": "fixture:findability-r:agent/leonardo",
+      "canonicalRef": "fixture:semantic-visual-s:agent/leonardo",
       "label": "Bruna",
       "state": "COMPLETED",
       "freshness": "FRESH",
@@ -48,7 +48,7 @@
     {
       "id": "agent:laura",
       "kind": "agent",
-      "canonicalRef": "fixture:findability-r:agent/laura",
+      "canonicalRef": "fixture:semantic-visual-s:agent/laura",
       "label": "Diego",
       "state": "COMPLETED",
       "freshness": "FRESH",
@@ -58,7 +58,7 @@
     {
       "id": "agent:sofia",
       "kind": "agent",
-      "canonicalRef": "fixture:findability-r:agent/sofia",
+      "canonicalRef": "fixture:semantic-visual-s:agent/sofia",
       "label": "Helena",
       "state": "COMPLETED",
       "freshness": "FRESH",
@@ -68,7 +68,7 @@
     {
       "id": "agent:emily",
       "kind": "agent",
-      "canonicalRef": "fixture:findability-r:agent/emily",
+      "canonicalRef": "fixture:semantic-visual-s:agent/emily",
       "label": "Rafael",
       "state": "COMPLETED",
       "freshness": "FRESH",
@@ -78,7 +78,7 @@
     {
       "id": "artifact:wpp",
       "kind": "artifact",
-      "canonicalRef": "fixture:findability-r:artifact/wpp",
+      "canonicalRef": "fixture:semantic-visual-s:artifact/wpp",
       "label": "Control Matrix v3",
       "state": "CANDIDATE",
       "freshness": "FRESH",
@@ -88,7 +88,7 @@
     {
       "id": "gate:read-only",
       "kind": "human_gate",
-      "canonicalRef": "fixture:findability-r:gate/read-only",
+      "canonicalRef": "fixture:semantic-visual-s:gate/read-only",
       "label": "Approval Gate",
       "state": "HUMAN_REVIEW_REQUIRED",
       "freshness": "FRESH",
@@ -98,7 +98,7 @@
     {
       "id": "effect:pr380",
       "kind": "artifact",
-      "canonicalRef": "fixture:findability-r:effect/pr380",
+      "canonicalRef": "fixture:semantic-visual-s:effect/pr380",
       "label": "Build #1142",
       "state": "OBSERVED",
       "freshness": "FRESH",
@@ -108,7 +108,7 @@
     {
       "id": "evidence:rebuild",
       "kind": "evidence",
-      "canonicalRef": "fixture:findability-r:evidence/rebuild",
+      "canonicalRef": "fixture:semantic-visual-s:evidence/rebuild",
       "label": "Signature receipt",
       "state": "PENDING",
       "freshness": "UNKNOWN",
@@ -118,7 +118,7 @@
     {
       "id": "gate:future",
       "kind": "human_gate",
-      "canonicalRef": "fixture:findability-r:gate/future",
+      "canonicalRef": "fixture:semantic-visual-s:gate/future",
       "label": "Runtime snapshot",
       "state": "NOT_AUTHORIZED",
       "freshness": "STALE",
@@ -133,7 +133,7 @@
       "to": "mission:world",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:1"
+        "fixture:semantic-visual-s:relation:1"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -143,7 +143,7 @@
       "to": "agent:mestre",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:2"
+        "fixture:semantic-visual-s:relation:2"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -153,7 +153,7 @@
       "to": "agent:leonardo",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:3"
+        "fixture:semantic-visual-s:relation:3"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -163,7 +163,7 @@
       "to": "agent:laura",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:4"
+        "fixture:semantic-visual-s:relation:4"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -173,7 +173,7 @@
       "to": "agent:sofia",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:5"
+        "fixture:semantic-visual-s:relation:5"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -183,7 +183,7 @@
       "to": "agent:emily",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:6"
+        "fixture:semantic-visual-s:relation:6"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -193,7 +193,7 @@
       "to": "artifact:wpp",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:7"
+        "fixture:semantic-visual-s:relation:7"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -203,7 +203,7 @@
       "to": "gate:read-only",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:8"
+        "fixture:semantic-visual-s:relation:8"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -213,7 +213,7 @@
       "to": "effect:pr380",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:9"
+        "fixture:semantic-visual-s:relation:9"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -223,7 +223,7 @@
       "to": "evidence:rebuild",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:10"
+        "fixture:semantic-visual-s:relation:10"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     },
@@ -233,7 +233,7 @@
       "to": "gate:future",
       "trust": "REPRESENTATIVE_FIXTURE",
       "sourceRefs": [
-        "fixture:findability-r:relation:11"
+        "fixture:semantic-visual-s:relation:11"
       ],
       "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
     }
@@ -250,7 +250,7 @@
       "ordering": "FIXTURE_SEQUENCE",
       "causationClaimed": false,
       "sourceRefs": [
-        "fixture:findability-r:event:1"
+        "fixture:semantic-visual-s:event:1"
       ]
     },
     {
@@ -264,7 +264,7 @@
       "ordering": "FIXTURE_SEQUENCE",
       "causationClaimed": false,
       "sourceRefs": [
-        "fixture:findability-r:event:2"
+        "fixture:semantic-visual-s:event:2"
       ]
     },
     {
@@ -278,7 +278,7 @@
       "ordering": "FIXTURE_SEQUENCE",
       "causationClaimed": false,
       "sourceRefs": [
-        "fixture:findability-r:event:3"
+        "fixture:semantic-visual-s:event:3"
       ]
     },
     {
@@ -292,7 +292,7 @@
       "ordering": "FIXTURE_SEQUENCE",
       "causationClaimed": false,
       "sourceRefs": [
-        "fixture:findability-r:event:4"
+        "fixture:semantic-visual-s:event:4"
       ]
     },
     {
@@ -306,7 +306,7 @@
       "ordering": "FIXTURE_SEQUENCE",
       "causationClaimed": false,
       "sourceRefs": [
-        "fixture:findability-r:event:5"
+        "fixture:semantic-visual-s:event:5"
       ]
     },
     {
@@ -320,7 +320,7 @@
       "ordering": "FIXTURE_SEQUENCE",
       "causationClaimed": false,
       "sourceRefs": [
-        "fixture:findability-r:event:6"
+        "fixture:semantic-visual-s:event:6"
       ]
     }
   ],

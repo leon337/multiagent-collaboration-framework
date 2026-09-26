@@ -60,7 +60,7 @@ Types use icon + explicit label:
 
 ## Channel 3 — Operational position / focus
 
-Current selection/focus uses cyan border/halo and explicit focus semantics without replacing freshness state.
+Current selection/focus uses cyan border/halo plus explicit text when explained; it uses no icon reserved for an object type and does not replace freshness state.
 
 Timeline is visually receded to communicate historical position while preserving each object's freshness/type encoding.
 

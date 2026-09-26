@@ -82,3 +82,9 @@ This proves implementation consistency of the visual language.
 It does not prove improved human performance, reduced completion time, reduced cognitive load, accessibility for all users, superiority over the prior UI or Product GO.
 
 Those require later human evaluation.
+
+## Pre-human gate remediation
+
+Laura identified one semantic collision in the first gate: the bullet symbol was used for both AGENT and FOCUS. Before human validation, FOCUS was changed to ciano border/halo + explicit text only; the bullet symbol remains exclusive to AGENT. Fixture S provenance strings were also moved from the findability-r textual namespace to fixture:semantic-visual-s. No entity IDs, expected semantics or functional behavior changed.
+
+Laura remediation follow-up: removed the remaining bullet icon from the FOCUS legend and separated generic operational state into a neutral semantic pill. Cyan CURRENT/FOCUS is now reserved for selection/focus only.
