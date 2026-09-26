@@ -17,7 +17,7 @@ expected=[
 ("Qual item ainda não foi confirmado?","Signature receipt","evidence:rebuild"),
 ("Qual item precisa ser revalidado porque pode ter mudado?","Runtime snapshot","gate:future"),
 ("Qual objeto foi observado pelo provider, mas não é o receipt/evidence canônico?","Build #1142","effect:pr380"),
-("Qual objeto é um Gate?","Approval Gate","gate:read-only"),
+("Abra Relações e selecione Control Matrix v3. Qual tipo a interface atribui a esse objeto?","ARTIFACT","artifact:wpp"),
 ("Qual é o estado atual da missão?","BLOCKED","mission:world"),
 ("Abra Relações, selecione Rafael e observe o painel de detalhe. Qual rótulo confirma que ele está em foco?","Selecionado","agent:emily")
 ]
@@ -25,6 +25,7 @@ for q,a,eid in expected:
     assert q in html
     assert 'expected:"'+a+'"' in html
     assert 'expectedEntityId:"'+eid+'"' in html
+    assert a.lower() not in q.lower(), (q,a,"lexical answer leakage")
 
 for metric in ["firstTargetCorrect","wrongObjectOpens","surfaceSwitches","activeSurfaceAtAnswer","interactionCount","interactions"]:
     assert metric in html, metric

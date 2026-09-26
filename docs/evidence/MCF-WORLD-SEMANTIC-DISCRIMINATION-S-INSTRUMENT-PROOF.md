@@ -43,7 +43,7 @@ Six open-interface tasks:
 1. UNKNOWN object — expected: Signature receipt
 2. STALE/revalidation object — expected: Runtime snapshot
 3. provider-observed artifact that is not canonical receipt/evidence — expected: Build #1142
-4. object type Gate — expected: Approval Gate
+4. object-type reading — select Control Matrix v3; expected type: ARTIFACT
 5. current mission state — expected: BLOCKED
 6. selection/focus semantics — select Rafael; expected label: Selecionado
 
@@ -134,3 +134,11 @@ It cannot by itself establish:
 - accessibility universality;
 - Product GO;
 - 3D value.
+
+## Pre-human UX gate remediation
+
+Laura identified lexical answer leakage in the original task 4: the question asked which object was a Gate and one answer label was Approval Gate. That could be solved by word matching without reading the visual type encoding.
+
+Only task 4 was changed. It now asks the participant to open Relations, select Control Matrix v3, and report the type assigned by the interface. Expected answer: ARTIFACT. Alternatives: ARTIFACT / GATE / EVIDENCE / MISSION.
+
+Control Matrix v3 does not lexically expose its object type. The frozen visual prototype and Fixture S are unchanged.

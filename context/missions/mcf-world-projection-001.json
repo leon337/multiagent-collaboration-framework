@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Obtain Laura/Leonardo/Emily exact-SHA gate for Semantic Discrimination Microtest S instrument. Do not run the human session before PASS.",
+  "world_model_next_action": "Obtain Laura/Leonardo/Emily exact-SHA final re-gate of Semantic Discrimination Microtest S after task-4 lexical leakage remediation. Human run remains blocked until PASS.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -278,5 +278,13 @@
   "semantic_discrimination_microtest_s_instrumented_world": "apps/mcf-world-projection/semantic-visual-world-test-s.html",
   "semantic_discrimination_microtest_s_verifier": "apps/mcf-world-projection/verify-semantic-discrimination-test.py",
   "semantic_discrimination_microtest_s_proof": "docs/evidence/MCF-WORLD-SEMANTIC-DISCRIMINATION-S-INSTRUMENT-PROOF.md",
-  "semantic_discrimination_microtest_s_gate": "PENDING_EXACT_SHA_REVIEW"
+  "semantic_discrimination_microtest_s_gate": "PENDING_FINAL_REGATE_AFTER_LEXICAL_LEAK_FIX",
+  "semantic_discrimination_microtest_s_remediation": {
+    "task4_old": "Which object is a Gate? -> Approval Gate",
+    "task4_problem": "lexical answer leakage",
+    "task4_new": "Select Control Matrix v3 and identify its type",
+    "task4_expected": "ARTIFACT",
+    "frozen_visual_prototype_changed": false,
+    "fixture_s_changed": false
+  }
 }
