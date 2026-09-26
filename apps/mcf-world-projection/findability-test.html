@@ -4,17 +4,18 @@
 <style>
 :root{color-scheme:dark;font:16px system-ui;background:#080d12;color:#eef3f8}
 *{box-sizing:border-box}body{margin:0}.wrap{max-width:1180px;margin:auto;padding:16px}
-.head,.task,.result{background:#111923;border:1px solid #2a3848;border-radius:14px;padding:16px;margin-bottom:12px}
-.head h1{margin:.2rem 0}.muted{color:#94a4b8}.task{position:sticky;top:0;z-index:5;box-shadow:0 6px 20px #0008}
-.task h2{margin:6px 0 10px}.answers{display:flex;gap:7px;flex-wrap:wrap}.answers label{border:1px solid #40536a;border-radius:9px;padding:8px 10px;cursor:pointer}
+.head,.questionBar,.answerPanel,.result{background:#111923;border:1px solid #2a3848;border-radius:14px;padding:16px;margin-bottom:12px}
+.head h1{margin:.2rem 0}.muted{color:#94a4b8}.questionBar{position:sticky;top:0;z-index:5;box-shadow:0 6px 20px #0008}
+.questionBar h2{margin:6px 0 0;font-size:20px}.answerPanel h3{margin:0 0 10px}.answers{display:flex;gap:7px;flex-wrap:wrap}.answers label{border:1px solid #40536a;border-radius:9px;padding:8px 10px;cursor:pointer}
 button{font:inherit;color:inherit;background:#1a2734;border:1px solid #42556c;border-radius:9px;padding:9px 13px;cursor:pointer}
 iframe{width:100%;height:720px;border:1px solid #2a3848;border-radius:14px;background:#090d12}.result pre{white-space:pre-wrap;overflow:auto;background:#080d12;padding:12px;border-radius:9px}
-@media(max-width:720px){.wrap{padding:8px}.task{top:0}.answers{display:grid;grid-template-columns:1fr}iframe{height:650px}}
+@media(max-width:720px){.wrap{padding:8px}.questionBar{top:0;padding:10px 12px}.questionBar h2{font-size:17px;line-height:1.2}.answers{display:grid;grid-template-columns:1fr}.answerPanel{margin-top:10px}iframe{height:68vh;min-height:480px}}
 </style></head>
 <body><div class="wrap">
 <div class="head"><div class="muted">OPEN-INTERFACE FINDABILITY TEST · FIXTURE R</div><h1>Encontre usando a interface</h1><p>A interface fica disponível o tempo todo. Você pode navegar, consultar e voltar. Não memorize: use a ferramenta.</p><button id="start">Iniciar teste</button><button id="last">Ver último resultado salvo</button></div>
-<div id="task"></div>
+<div id="question"></div>
 <iframe id="world" src="./findability-world.html" title="World Projection Findability R"></iframe>
+<div id="answerArea"></div>
 </div>
 <script>
 const tasks=[
@@ -24,7 +25,7 @@ const tasks=[
  {q:"Qual artefato foi observado pelo provider, mas NÃO é receipt canônico?",a:"Build #908",opts:["Build #908","Signature receipt","Ops Matrix v2","Review Gate"]},
  {q:"Quem executou a auditoria independente?",a:"Marcos",opts:["Ana","Caio","Júlia","Marcos"]}
 ];
-const taskBox=document.querySelector("#task"),frame=document.querySelector("#world");
+const questionBox=document.querySelector("#question"),answerArea=document.querySelector("#answerArea"),frame=document.querySelector("#world");
 let run=null,currentEvents=[];
 const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
@@ -55,10 +56,12 @@ frame.addEventListener("load",()=>{attachInstrumentation();setTimeout(attachInst
 
 function renderTask(){
  const t=tasks[run.i];currentEvents=[];
- taskBox.className="task";
- taskBox.innerHTML='<div class="muted">Tarefa '+(run.i+1)+'/'+tasks.length+'</div><h2>'+esc(t.q)+'</h2><div class="answers">'+
+ questionBox.className="questionBar";
+ questionBox.innerHTML='<div class="muted">Tarefa '+(run.i+1)+'/'+tasks.length+'</div><h2>'+esc(t.q)+'</h2>';
+ answerArea.className="answerPanel";
+ answerArea.innerHTML='<h3>Responder</h3><div class="answers">'+
  t.opts.map(o=>'<label><input type="radio" name="a" value="'+esc(o)+'"> '+esc(o)+'</label>').join("")+
- '</div><p><button id="answer">Responder</button></p>';
+ '</div><p><button id="answer">Confirmar resposta</button></p>';
  run.taskStarted=performance.now();
  document.querySelector("#answer").onclick=answer;
 }
@@ -83,9 +86,10 @@ function finish(){
  show(o);
 }
 function show(o){
- taskBox.className="result";
- taskBox.innerHTML='<h2>Resultado salvo</h2><p><strong>'+o.correct+'/'+o.total+'</strong> corretas · '+(o.totalMs/1000).toFixed(1)+' s de tarefas.</p><p class="muted">A interface permaneceu disponível durante toda a execução.</p><pre>'+esc(JSON.stringify(o,null,2))+'</pre>';
+ questionBox.className="result";
+ questionBox.innerHTML='<h2>Resultado salvo</h2><p><strong>'+o.correct+'/'+o.total+'</strong> corretas · '+(o.totalMs/1000).toFixed(1)+' s de tarefas.</p><p class="muted">A interface permaneceu disponível durante toda a execução.</p><pre>'+esc(JSON.stringify(o,null,2))+'</pre>';
+ answerArea.innerHTML='';
 }
 document.querySelector("#start").onclick=()=>{run={i:0,rows:[],startedAt:new Date().toISOString(),taskStarted:0};renderTask()};
-document.querySelector("#last").onclick=()=>{const x=localStorage.getItem("mcf-world-findability-r-result");if(x)show(JSON.parse(x));else taskBox.innerHTML='<div class="result">Nenhum resultado salvo ainda.</div>'};
+document.querySelector("#last").onclick=()=>{const x=localStorage.getItem("mcf-world-findability-r-result");if(x)show(JSON.parse(x));else questionBox.innerHTML='<div class="result">Nenhum resultado salvo ainda.</div>'};
 </script></body></html>

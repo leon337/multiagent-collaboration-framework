@@ -38,3 +38,20 @@ PASS:
 - latest result persisted in browser localStorage.
 
 Automated 5/5 and millisecond timing are control-only and must not be treated as human evidence.
+
+## Mobile layout correction
+
+Laura identified a mobile-only contamination risk in the first harness layout: sticky question + stacked answers could consume too much viewport and reduce the visible World surface.
+
+Correction:
+- sticky area now contains only task number + question;
+- World iframe remains directly below and occupies 68vh with a 480px minimum on mobile;
+- answer options are below the World surface;
+- tasks/fixture/metrics were not changed.
+
+Mobile smoke at 390x844:
+- sticky question height: ~70px;
+- visible World iframe height: 480px;
+- World remains the dominant viewport surface.
+
+PASS mobile layout smoke.

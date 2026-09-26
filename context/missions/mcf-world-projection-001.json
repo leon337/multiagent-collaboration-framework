@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "OPEN_INTERFACE_FINDABILITY_R_IMPLEMENTED",
+  "current_state": "OPEN_INTERFACE_FINDABILITY_R_MOBILE_FIXED",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -23,7 +23,7 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "Obtain UX and independent methodology gate on the open-interface findability R instrument. If PASS, run one human task-completion session with the interface continuously available.",
+  "next_action": "Obtain final Laura/Emily re-gate on the mobile-fixed findability R harness SHA. If PASS, freeze and run one human findability/task-completion session.",
   "prototype_path": "apps/mcf-world-projection",
   "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md",
   "implementation_regate": "docs/reviews/MCF-WORLD-PROJECTION-001-IMPLEMENTATION-RE-GATE.md",
@@ -31,7 +31,7 @@
   "context_recovery_dryrun": "docs/evidence/MCF-WORLD-PROJECTION-001-CONTEXT-RECOVERY-DRYRUN.md",
   "experiment_harness": "apps/mcf-world-projection/experiment.html",
   "harness_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-HARNESS-GATE.md",
-  "product_value_gate": "BLOCKED_PENDING_FINDABILITY_HUMAN_GATE",
+  "product_value_gate": "BLOCKED_PENDING_FINDABILITY_FINAL_GATE",
   "pilot_design": "A(X)_vs_B(Y)_ISOMORPHIC_FIXTURES",
   "methodology_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-METHODOLOGY-GATE.md",
   "methodology_gate_status": "PASS_EXPLORATORY_SINGLE_PARTICIPANT",
@@ -96,5 +96,6 @@
     "activeSurfaceAtAnswer",
     "interactionCount",
     "interactionPath"
-  ]
+  ],
+  "findability_mobile_layout": "QUESTION_STICKY_WORLD_PRIMARY_ANSWERS_BELOW"
 }
