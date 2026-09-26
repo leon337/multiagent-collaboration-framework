@@ -3,7 +3,30 @@ set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
 TOOLS="$ROOT/tools/world-model"
-TMP="$(mktemp -d)"
+TMP_PARENT="$(python3 -c 'import os; print(os.environ.get("TMPDIR","/tmp"))')"
+MIN_FREE_BYTES="$(python3 -c 'import os; print(os.environ.get("MCF_WORLD_MIN_FREE_BYTES","67108864"))')"
+
+if ! [[ "$MIN_FREE_BYTES" =~ ^[0-9]+$ ]]; then
+  echo "FAIL: MCF_WORLD_MIN_FREE_BYTES must be a non-negative integer" >&2
+  exit 2
+fi
+
+AVAILABLE_BYTES="$(df -PB1 "$TMP_PARENT" | awk 'NR==2 {print $4}')"
+if ! [[ "$AVAILABLE_BYTES" =~ ^[0-9]+$ ]]; then
+  echo "FAIL: could not determine free bytes for $TMP_PARENT" >&2
+  exit 2
+fi
+
+echo "preflight_tmp_parent=$TMP_PARENT"
+echo "preflight_free_bytes=$AVAILABLE_BYTES"
+echo "preflight_min_free_bytes=$MIN_FREE_BYTES"
+
+if (( AVAILABLE_BYTES < MIN_FREE_BYTES )); then
+  echo "FAIL: insufficient free space for read-only checkpoint: available=$AVAILABLE_BYTES required=$MIN_FREE_BYTES path=$TMP_PARENT" >&2
+  exit 3
+fi
+
+TMP="$(mktemp -d "$TMP_PARENT/mcf-world-readonly-v051.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 
 MISSION="$ROOT/context/missions/mcf-world-projection-001.json"
