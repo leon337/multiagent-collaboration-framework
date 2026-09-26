@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_OPERATIONAL_CONTEXT_V0_1_GATED",
+  "parallel_architecture_state": "WORLD_CONTEXT_NAVIGATION_V0_3_IMPLEMENTED",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Build operational evidence navigation read-only: Decision -> supported_by -> Evidence -> provenance/revision/source -> return to context, using only already-selected Operational Context objects. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Obtain Leonardo/Sofia/Emily exact-SHA gate for read-only operational evidence navigation v0.3. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -186,5 +186,9 @@
     "missing_evidence_relation": "NONE"
   },
   "world_operational_context_gate_doc": "docs/reviews/MCF-WORLD-OPERATIONAL-CONTEXT-v0.1-GATE.md",
-  "world_operational_context_audited_sha": "b7ee91aa5f5fba54fc61df7df6ff328eda49f1f2"
+  "world_operational_context_audited_sha": "b7ee91aa5f5fba54fc61df7df6ff328eda49f1f2",
+  "world_context_navigation_v0_3": "tools/world-model/context_consumer_v03.py",
+  "world_context_navigation_v0_3_tests": "tools/world-model/test_context_navigation_v03.py",
+  "world_context_navigation_v0_3_evidence": "docs/evidence/MCF-WORLD-CONTEXT-NAVIGATION-V0.3-PROOF.md",
+  "world_context_navigation_v0_3_gate": "PENDING_EXACT_SHA_REVIEW"
 }
