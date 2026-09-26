@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MCF World Projection v0.2.2</title>
+<title>MCF World Projection v0.2.1</title>
 <style>
 :root{color-scheme:dark;font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#090d12;color:#eef3f8;--panel:#111923;--panel2:#151f2b;--line:#2a3848;--muted:#94a4b8}
 *{box-sizing:border-box}body{margin:0;background:#090d12;color:#eef3f8}button,input{font:inherit;color:inherit}button:focus-visible,input:focus-visible{outline:2px solid #fff;outline-offset:2px}
@@ -15,7 +15,7 @@
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px}.panel{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:16px}.inspector{position:sticky;top:14px}
 .hero{display:grid;grid-template-columns:1.3fr .7fr;gap:12px;margin-bottom:12px}.stateHero,.gateHero{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--panel2)}
 .stateHero h2{font-size:clamp(28px,4vw,48px);line-height:1;margin:8px 0 10px}.gateHero strong{font-size:20px;display:block;margin:8px 0}.why{font-size:16px;max-width:760px}
-.statusGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.statusCard{border:1px solid var(--line);border-radius:12px;padding:14px;background:#131d28;min-height:150px}.statusCard h3{margin:7px 0;font-size:19px}.statusCard p{margin:6px 0}.criticalItem{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}.criticalItem .kind{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--muted)}.criticalItem .name{font-size:23px;font-weight:900;line-height:1.05;margin:5px 0}.criticalItem .binding{font-weight:800;margin-top:7px}.criticalItem .whyState{font-size:13px;color:var(--muted);margin-top:4px}.statePill{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:3px 7px;font-size:11px;font-weight:900;letter-spacing:.06em}.statusCard.unknown{border-style:dashed}.statusCard.stale{border-style:double;border-width:3px}
+.statusGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.statusCard{border:1px solid var(--line);border-radius:12px;padding:14px;background:#131d28;min-height:150px}.statusCard h3{margin:7px 0;font-size:19px}.statusCard p{margin:6px 0}.statusCard.unknown{border-style:dashed}.statusCard.stale{border-style:double;border-width:3px}
 .explain{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.quick .card{border:1px solid var(--line);background:#151f2b;border-radius:10px;padding:12px}.quick strong{display:block;margin-top:5px}
 .muted{color:var(--muted)}.entity{background:transparent;border:1px solid #3a4b60;border-radius:8px;padding:8px;text-align:left;cursor:pointer}.entity small{display:block;color:var(--muted)}
 .timeline{list-style:none;padding:0}.timeline li{display:grid;grid-template-columns:160px 1fr;gap:10px;margin-bottom:10px}.timeline button{background:#17212e;border:1px solid var(--line);border-radius:9px;text-align:left;padding:10px;cursor:pointer}
@@ -42,12 +42,12 @@ function baseline(){const q=state.q.toLowerCase(),items=data.entities.filter(e=>
 function cockpit(){
  const m=byId.get("mission:world"),last=data.events.at(-1),unknown=data.entities.filter(e=>e.freshness==="UNKNOWN"),stale=data.entities.filter(e=>e.freshness==="STALE"),gate=byId.get("gate:read-only");
  const currentWorkers=data.entities.filter(e=>e.kind==="agent"&&ACTIVE_STATUSES.has(e.state));
- return '<section class="panel"><div class="ey">AGORA · RESUMO OPERACIONAL</div><h2>Cockpit v0.2.2</h2>'+
+ return '<section class="panel"><div class="ey">AGORA · RESUMO OPERACIONAL</div><h2>Cockpit v0.2.1</h2>'+
  '<div class="hero"><div class="stateHero"><div class="ey">ESTADO ATUAL DA MISSÃO</div><h2>'+esc(m.state)+'</h2><div class="why">'+esc(m.summary)+'</div><div class="explain">Isto é o agora. Histórico fica na Timeline.</div></div>'+
  '<div class="gateHero"><div class="ey">GATE ATUAL / LIMITE</div><strong>'+esc(gate.state)+'</strong><p>'+esc(gate.summary)+'</p><div class="explain">Este fixture não comprova decisão humana pendente. Gate resolvido não é próxima decisão.</div></div></div>'+
  '<div class="statusGrid"><article class="statusCard"><div class="ey">QUEM ESTÁ ATUANDO</div><h3>'+esc(currentWorkers.map(x=>x.label).join(", ")||"Ninguém ativo")+'</h3><p>'+esc(currentWorkers.map(x=>x.state).join(" · ")||"Sem agente em execução")+'</p></article>'+
- '<article class="statusCard unknown"><div class="ey">❓ O QUE AINDA NÃO SABEMOS</div><h3>'+unknown.length+' item(ns)</h3>'+unknown.map(e=>'<div class="criticalItem"><div class="kind">'+esc(e.kind).toUpperCase()+'</div><div class="name">'+esc(e.label)+'</div><span class="statePill">UNKNOWN</span><div class="binding">Ainda não confirmada</div><div class="whyState">'+esc(e.summary)+'</div></div>').join("")+'<div class="explain">UNKNOWN = ainda não conseguimos confirmar.</div></article>'+
- '<article class="statusCard stale"><div class="ey">↻ O QUE PODE TER MUDADO</div><h3>'+stale.length+' item(ns)</h3>'+stale.map(e=>'<div class="criticalItem"><div class="kind">'+esc(e.kind).toUpperCase()+'</div><div class="name">'+esc(e.label)+'</div><span class="statePill">STALE</span><div class="binding">Precisa ser revalidado</div><div class="whyState">'+esc(e.summary)+'</div></div>').join("")+'<div class="explain">STALE = já sabíamos, mas pode estar desatualizado.</div></article></div>'+
+ '<article class="statusCard unknown"><div class="ey">❓ O QUE AINDA NÃO SABEMOS</div><h3>'+unknown.length+' item(ns)</h3>'+unknown.map(e=>'<p><strong>'+esc(e.label)+'</strong><br>'+esc(e.summary)+'</p>').join("")+'<div class="explain">UNKNOWN = ainda não conseguimos confirmar.</div></article>'+
+ '<article class="statusCard stale"><div class="ey">↻ O QUE PODE TER MUDADO</div><h3>'+stale.length+' item(ns)</h3>'+stale.map(e=>'<p><strong>'+esc(e.label)+'</strong><br>'+esc(e.summary)+'</p>').join("")+'<div class="explain">STALE = já sabíamos, mas pode estar desatualizado.</div></article></div>'+
  '<div class="quick"><div class="card"><div class="ey">ÚLTIMO ACONTECIMENTO</div><strong>'+esc(last.summary)+'</strong><span class="muted">'+esc(last.type)+'</span></div><div class="card"><div class="ey">MISSÃO</div><strong>'+esc(m.label)+'</strong><span class="muted">'+esc(m.canonicalRef)+'</span></div><div class="card"><div class="ey">LEITURA RECOMENDADA</div><strong>Comece aqui. Abra Timeline ou Relações apenas quando precisar.</strong></div></div>'+
  '<div class="legend"><div><strong>FRESH</strong><p class="muted">Informação atualmente confirmada.</p></div><div><strong>UNKNOWN</strong><p class="muted">Ainda não sabemos / não confirmamos.</p></div><div><strong>STALE</strong><p class="muted">Já soubemos, mas pode ter mudado.</p></div></div></section>';
 }
@@ -57,7 +57,7 @@ function graph(){const lines=data.relations.map(r=>{const a=pos[r.from],b=pos[r.
 function surface(){return state.view==="baseline"?baseline():state.view==="timeline"?timeline():state.view==="graph"?graph():cockpit()}
 function render(){
  const m=byId.get("mission:world"),u=data.entities.filter(e=>e.freshness==="UNKNOWN").length,st=data.entities.filter(e=>e.freshness==="STALE").length;
- app.innerHTML='<header class="top"><div><div class="ey">MCF-WORLD-PROJECTION-001</div><h1>World Projection v0.2.2</h1></div><div class="flag">REPRESENTATIVE FIXTURE · READ-ONLY</div></header>'+
+ app.innerHTML='<header class="top"><div><div class="ey">MCF-WORLD-PROJECTION-001</div><h1>World Projection v0.2.1</h1></div><div class="flag">REPRESENTATIVE FIXTURE · READ-ONLY</div></header>'+
  '<div class="meta"><span>'+esc(data.sourceRevision)+'</span><span>observado: '+esc(data.observedAt)+'</span><span>'+data.entities.length+' entidades</span></div>'+
  '<div class="statebar"><div><div class="ey">MISSÃO · AGORA</div><strong>'+esc(m.state)+'</strong></div><div><div class="ey">AINDA NÃO SABEMOS</div><strong>'+u+' UNKNOWN</strong></div><div><div class="ey">PODE TER MUDADO</div><strong>'+st+' STALE</strong></div></div>'+
  '<nav class="tabs">'+[["cockpit","Agora"],["timeline","Timeline"],["graph","Relações"],["baseline","Lista / busca"]].map(v=>'<button class="'+(state.view===v[0]?'on':'')+'" data-view="'+v[0]+'">'+v[1]+'</button>').join("")+'</nav><main class="layout">'+surface()+inspector()+'</main>';

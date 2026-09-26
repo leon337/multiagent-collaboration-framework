@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "FOCUSED_HUMAN_RESULT_CAPTURED",
+  "current_state": "EXPLICIT_STATE_BINDING_V0_2_2_IMPLEMENTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -23,7 +23,7 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "Review the v0.2.1 human result with UX and independent audit. Focus on why concept meaning improved while concrete UNKNOWN/STALE item identification still failed. Do not expand to 3D or mutation.",
+  "next_action": "Validate and independently re-gate v0.2.2. Then run one short object-state identification microtest. Keep 3D, mutation and production deferred.",
   "prototype_path": "apps/mcf-world-projection",
   "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md",
   "implementation_regate": "docs/reviews/MCF-WORLD-PROJECTION-001-IMPLEMENTATION-RE-GATE.md",
@@ -31,7 +31,7 @@
   "context_recovery_dryrun": "docs/evidence/MCF-WORLD-PROJECTION-001-CONTEXT-RECOVERY-DRYRUN.md",
   "experiment_harness": "apps/mcf-world-projection/experiment.html",
   "harness_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-HARNESS-GATE.md",
-  "product_value_gate": "PENDING_FOCUSED_RESULT_REVIEW",
+  "product_value_gate": "PENDING_OBJECT_STATE_BINDING_TEST",
   "pilot_design": "A(X)_vs_B(Y)_ISOMORPHIC_FIXTURES",
   "methodology_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-METHODOLOGY-GATE.md",
   "methodology_gate_status": "PASS_EXPLORATORY_SINGLE_PARTICIPANT",
@@ -69,5 +69,10 @@
   "focused_human_errors": [
     "UNKNOWN_ITEM_IDENTIFICATION",
     "STALE_ITEM_IDENTIFICATION"
-  ]
+  ],
+  "human_v0_2_1_review": "docs/reviews/MCF-WORLD-PROJECTION-001-V0.2.1-HUMAN-RESULT-REVIEW.md",
+  "primary_remaining_problem": "STATE_TO_OBJECT_BINDING",
+  "ux_v0_2_2": "apps/mcf-world-projection/index.html",
+  "ux_v0_2_1_snapshot": "apps/mcf-world-projection/index-v0.2.1.html",
+  "object_state_microtest": "apps/mcf-world-projection/object-state-test.html"
 }
