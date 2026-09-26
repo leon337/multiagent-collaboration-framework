@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_CONTEXT_NAVIGATION_V0_3_GATED",
+  "parallel_architecture_state": "WORLD_SOURCE_PREVIEW_V0_4_IMPLEMENTED",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Build Contextual Evidence Source Preview v0.4, limited to sources already referenced by selected Evidence, with digest/location and Context -> Decision -> Evidence -> Source breadcrumb. No repository discovery/search. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Obtain Leonardo/Sofia/Emily exact-SHA gate for Contextual Evidence Source Preview v0.4. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -192,5 +192,10 @@
   "world_context_navigation_v0_3_evidence": "docs/evidence/MCF-WORLD-CONTEXT-NAVIGATION-V0.3-PROOF.md",
   "world_context_navigation_v0_3_gate": "PASS",
   "world_context_navigation_v0_3_gate_doc": "docs/reviews/MCF-WORLD-CONTEXT-NAVIGATION-v0.3-GATE.md",
-  "world_context_navigation_v0_3_audited_sha": "b39d31cb7b56c2f30503be017e66379e7644413d"
+  "world_context_navigation_v0_3_audited_sha": "b39d31cb7b56c2f30503be017e66379e7644413d",
+  "world_source_preview_v0_4": "tools/world-model/source_preview_v01.py",
+  "world_context_consumer_v0_4": "tools/world-model/context_consumer_v04.py",
+  "world_source_preview_v0_4_tests": "tools/world-model/test_source_preview_v04.py",
+  "world_source_preview_v0_4_evidence": "docs/evidence/MCF-WORLD-SOURCE-PREVIEW-V0.4-PROOF.md",
+  "world_source_preview_v0_4_gate": "PENDING_EXACT_SHA_REVIEW"
 }
