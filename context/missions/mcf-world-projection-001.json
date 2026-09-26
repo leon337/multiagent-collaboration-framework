@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "SEMANTIC_VISUAL_LANGUAGE_V0_1_IMPLEMENTED_PENDING_GATE",
+  "current_state": "SEMANTIC_VISUAL_LANGUAGE_V0_1_GATED",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -85,7 +85,7 @@
   "test_validity_review": "docs/reviews/MCF-WORLD-PROJECTION-001-TEST-VALIDITY-REASSESSMENT.md",
   "v0_2_2_test_validity": "CONSTRUCT_MISMATCH_FOR_PRIMARY_JTBD",
   "primary_jtbd": "Use the interface as an external cognitive aid to locate and interpret mission state without rereading the full linear history.",
-  "next_experiment": "SEMANTIC_VISUAL_LANGUAGE_V0_1",
+  "next_experiment": "SEMANTIC_DISCRIMINATION_MICROTEST_S",
   "findability_fixture": "apps/mcf-world-projection/findability-fixture-r.json",
   "findability_world": "apps/mcf-world-projection/findability-world.html",
   "findability_test": "apps/mcf-world-projection/findability-test.html",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Obtain Laura/Leonardo/Emily exact-SHA re-gate after focus-symbol remediation and Fixture S provenance namespace correction. Human microtest remains blocked until gate passes.",
+  "world_model_next_action": "Build and gate one open-interface Semantic Discrimination Microtest S without modifying the gated semantic visual prototype or Fixture S.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -263,11 +263,14 @@
   "semantic_visual_fixture_s": "apps/mcf-world-projection/semantic-visual-fixture-s.json",
   "semantic_visual_language_v0_1_spec": "docs/contracts/MCF-WORLD-SEMANTIC-VISUAL-LANGUAGE-v0.1.md",
   "semantic_visual_language_v0_1_proof": "docs/evidence/MCF-WORLD-SEMANTIC-VISUAL-LANGUAGE-V0.1-PROOF.md",
-  "semantic_visual_language_v0_1_gate": "PENDING_REVIEW_AFTER_FOCUS_REMEDIATION",
+  "semantic_visual_language_v0_1_gate": "PASS",
   "semantic_visual_language_v0_1_remediation": {
     "agent_symbol": "● reserved for AGENT",
     "focus_encoding": "cyan border/halo + explicit Selected text; no agent icon",
     "generic_operational_state": "neutral semantic pill",
     "fixture_namespace": "fixture:semantic-visual-s:*"
-  }
+  },
+  "semantic_visual_language_v0_1_gate_doc": "docs/reviews/MCF-WORLD-SEMANTIC-VISUAL-LANGUAGE-v0.1-GATE.md",
+  "semantic_visual_language_v0_1_audited_sha": "34c68563907027b166543b9e7d296fd61a0094bd",
+  "semantic_discrimination_microtest_s": "AUTHORIZED_NOT_YET_BUILT"
 }
