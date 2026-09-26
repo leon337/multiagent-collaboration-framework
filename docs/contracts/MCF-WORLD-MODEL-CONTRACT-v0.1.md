@@ -101,6 +101,38 @@ Rules:
 - Ambiguity MUST produce an unresolved diagnostic, never heuristic identity selection.
 - A WorldRef MUST NOT contain authority, status, permissions or arbitrary domain metadata.
 
+## 4.1 v0.1 materialization profile
+
+The protocol vocabulary may reference all WorldKind values, but the v0.1 product implementation MUST deeply materialize only:
+
+- Mission
+- Context
+- Decision
+- Evidence
+- Action
+
+Agent, handoff, human_gate, artifact, receipt and conversation MAY appear as opaque WorldRef values when required for interoperability/evidence reachability, but v0.1 does not require dedicated product payloads, views or navigation for them.
+
+Core product relations for v0.1 are:
+
+- contains
+- continues_to
+- supported_by
+- depends_on
+
+Other relation types may remain protocol vocabulary without becoming mandatory product features.
+
+Default ContextSlice inclusion rule:
+
+~~~text
+include(x) =
+  contributes_to_primary_orientation_question(x)
+  OR
+  required_for_evidence_reachability(x)
+~~~
+
+If neither condition is met, omit/defer/deep-link instead of adding catalog density.
+
 ## 5. ProjectedObject
 
 ~~~ts
@@ -130,8 +162,12 @@ Trust:
 - VERIFIED_EXTERNAL
 - UNTRUSTED_EXTERNAL
 - REPRESENTATIVE_FIXTURE
+- PROJECTION_DERIVED
+- PROJECTION_DERIVED
 
 Freshness and trust are independent dimensions.
+
+For relations produced by DERIVED/INFERRED projection rules, PROJECTION_DERIVED makes the status of the resulting relation explicit. Canonical source inputs do not make an inferred relation itself canonical. INFERRED or PROPOSED relations MUST NOT use CANONICAL_SOURCE as the relation-result trust class.
 
 Examples:
 

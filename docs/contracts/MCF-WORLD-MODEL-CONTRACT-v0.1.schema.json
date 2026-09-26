@@ -6,66 +6,122 @@
     "worldRef": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "kind", "canonicalRef"],
+      "required": [
+        "id",
+        "kind",
+        "canonicalRef"
+      ],
       "properties": {
-        "id": {"type": "string", "minLength": 1},
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
         "kind": {
           "enum": [
-            "project", "mission", "context", "agent", "decision",
-            "handoff", "human_gate", "artifact", "receipt",
-            "evidence", "conversation", "action"
+            "project",
+            "mission",
+            "context",
+            "agent",
+            "decision",
+            "handoff",
+            "human_gate",
+            "artifact",
+            "receipt",
+            "evidence",
+            "conversation",
+            "action"
           ]
         },
-        "canonicalRef": {"type": "string", "minLength": 1}
+        "canonicalRef": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "sourceRef": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source", "ref"],
+      "required": [
+        "source",
+        "ref"
+      ],
       "properties": {
-        "source": {"type": "string", "minLength": 1},
-        "ref": {"type": "string", "minLength": 1}
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "sourceRevision": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source", "value"],
+      "required": [
+        "source",
+        "value"
+      ],
       "properties": {
-        "source": {"type": "string", "minLength": 1},
-        "value": {"type": "string", "minLength": 1}
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "revisionVectorEntry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source", "revision"],
+      "required": [
+        "source",
+        "revision"
+      ],
       "properties": {
-        "source": {"type": "string", "minLength": 1},
-        "revision": {"type": "string", "minLength": 1}
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "trust": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["class"],
+      "required": [
+        "class"
+      ],
       "properties": {
         "class": {
           "enum": [
             "CANONICAL_SOURCE",
             "VERIFIED_EXTERNAL",
             "UNTRUSTED_EXTERNAL",
-            "REPRESENTATIVE_FIXTURE"
+            "REPRESENTATIVE_FIXTURE",
+            "PROJECTION_DERIVED"
           ]
         },
-        "reason": {"type": "string"}
+        "reason": {
+          "type": "string"
+        }
       }
     },
     "diagnostic": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "severity", "message", "sourceRefs"],
+      "required": [
+        "type",
+        "severity",
+        "message",
+        "sourceRefs"
+      ],
       "properties": {
         "type": {
           "enum": [
@@ -77,121 +133,283 @@
             "PROJECTION_ERROR"
           ]
         },
-        "severity": {"enum": ["INFO", "WARNING", "ERROR"]},
-        "message": {"type": "string", "minLength": 1},
-        "subjectRef": {"$ref": "#/$defs/worldRef"},
+        "severity": {
+          "enum": [
+            "INFO",
+            "WARNING",
+            "ERROR"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subjectRef": {
+          "$ref": "#/$defs/worldRef"
+        },
         "sourceRefs": {
           "type": "array",
-          "items": {"$ref": "#/$defs/sourceRef"}
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
         }
       }
     },
     "provenance": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["mode", "sourceRefs"],
+      "required": [
+        "mode",
+        "sourceRefs"
+      ],
       "properties": {
-        "mode": {"enum": ["EXPLICIT", "DERIVED", "INFERRED", "PROPOSED"]},
+        "mode": {
+          "enum": [
+            "EXPLICIT",
+            "DERIVED",
+            "INFERRED",
+            "PROPOSED"
+          ]
+        },
         "sourceRefs": {
           "type": "array",
-          "items": {"$ref": "#/$defs/sourceRef"}
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
         },
-        "ruleId": {"type": "string"}
+        "ruleId": {
+          "type": "string"
+        }
       }
     },
     "relation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "type", "from", "to", "provenance", "freshness", "trust"],
+      "required": [
+        "id",
+        "type",
+        "from",
+        "to",
+        "provenance",
+        "freshness",
+        "trust"
+      ],
       "properties": {
-        "id": {"type": "string", "minLength": 1},
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
         "type": {
           "enum": [
-            "contains", "continues_to", "supported_by", "produced",
-            "assigned_to", "gated_by", "depends_on", "handed_off_to"
+            "contains",
+            "continues_to",
+            "supported_by",
+            "produced",
+            "assigned_to",
+            "gated_by",
+            "depends_on",
+            "handed_off_to"
           ]
         },
-        "from": {"$ref": "#/$defs/worldRef"},
-        "to": {"$ref": "#/$defs/worldRef"},
-        "provenance": {"$ref": "#/$defs/provenance"},
-        "freshness": {"enum": ["FRESH", "STALE", "UNKNOWN"]},
-        "trust": {"$ref": "#/$defs/trust"}
-      }
+        "from": {
+          "$ref": "#/$defs/worldRef"
+        },
+        "to": {
+          "$ref": "#/$defs/worldRef"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "freshness": {
+          "enum": [
+            "FRESH",
+            "STALE",
+            "UNKNOWN"
+          ]
+        },
+        "trust": {
+          "$ref": "#/$defs/trust"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "provenance": {
+                "properties": {
+                  "mode": {
+                    "enum": [
+                      "INFERRED",
+                      "PROPOSED"
+                    ]
+                  }
+                },
+                "required": [
+                  "mode"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "trust": {
+                "properties": {
+                  "class": {
+                    "not": {
+                      "const": "CANONICAL_SOURCE"
+                    }
+                  }
+                },
+                "required": [
+                  "class"
+                ]
+              }
+            }
+          }
+        }
+      ]
     },
     "contextEntry": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "subject", "category", "content", "provenance",
-        "freshness", "trust", "revision"
+        "id",
+        "subject",
+        "category",
+        "content",
+        "provenance",
+        "freshness",
+        "trust",
+        "revision"
       ],
       "properties": {
-        "id": {"type": "string", "minLength": 1},
-        "subject": {"$ref": "#/$defs/worldRef"},
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subject": {
+          "$ref": "#/$defs/worldRef"
+        },
         "category": {
           "enum": [
-            "STATE", "GOAL", "DECISION", "CONSTRAINT", "BLOCKER",
-            "ARTIFACT", "EVIDENCE", "OPEN_QUESTION", "NEXT_ACTION"
+            "STATE",
+            "GOAL",
+            "DECISION",
+            "CONSTRAINT",
+            "BLOCKER",
+            "ARTIFACT",
+            "EVIDENCE",
+            "OPEN_QUESTION",
+            "NEXT_ACTION"
           ]
         },
-        "content": {"type": "string"},
-        "provenance": {"$ref": "#/$defs/provenance"},
-        "freshness": {"enum": ["FRESH", "STALE", "UNKNOWN"]},
-        "trust": {"$ref": "#/$defs/trust"},
-        "revision": {"$ref": "#/$defs/sourceRevision"}
+        "content": {
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "freshness": {
+          "enum": [
+            "FRESH",
+            "STALE",
+            "UNKNOWN"
+          ]
+        },
+        "trust": {
+          "$ref": "#/$defs/trust"
+        },
+        "revision": {
+          "$ref": "#/$defs/sourceRevision"
+        }
       }
     },
     "contextSlice": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "schema", "scope", "revisionVector", "generatedAt", "focus",
-        "entries", "relations", "unknownRefs", "staleRefs",
-        "sourceRefs", "diagnostics"
+        "schema",
+        "scope",
+        "revisionVector",
+        "generatedAt",
+        "focus",
+        "entries",
+        "relations",
+        "unknownRefs",
+        "staleRefs",
+        "sourceRefs",
+        "diagnostics"
       ],
       "properties": {
-        "schema": {"const": "world-context-slice/v1"},
+        "schema": {
+          "const": "world-context-slice/v1"
+        },
         "scope": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "project": {"$ref": "#/$defs/worldRef"},
-            "mission": {"$ref": "#/$defs/worldRef"},
-            "context": {"$ref": "#/$defs/worldRef"}
+            "project": {
+              "$ref": "#/$defs/worldRef"
+            },
+            "mission": {
+              "$ref": "#/$defs/worldRef"
+            },
+            "context": {
+              "$ref": "#/$defs/worldRef"
+            }
           }
         },
         "revisionVector": {
           "type": "array",
-          "items": {"$ref": "#/$defs/revisionVectorEntry"}
+          "items": {
+            "$ref": "#/$defs/revisionVectorEntry"
+          }
         },
-        "generatedAt": {"type": "string", "minLength": 1},
+        "generatedAt": {
+          "type": "string",
+          "minLength": 1
+        },
         "focus": {
           "type": "array",
-          "items": {"$ref": "#/$defs/worldRef"}
+          "items": {
+            "$ref": "#/$defs/worldRef"
+          }
         },
         "entries": {
           "type": "array",
-          "items": {"$ref": "#/$defs/contextEntry"}
+          "items": {
+            "$ref": "#/$defs/contextEntry"
+          }
         },
         "relations": {
           "type": "array",
-          "items": {"$ref": "#/$defs/relation"}
+          "items": {
+            "$ref": "#/$defs/relation"
+          }
         },
         "unknownRefs": {
           "type": "array",
-          "items": {"$ref": "#/$defs/worldRef"}
+          "items": {
+            "$ref": "#/$defs/worldRef"
+          }
         },
         "staleRefs": {
           "type": "array",
-          "items": {"$ref": "#/$defs/worldRef"}
+          "items": {
+            "$ref": "#/$defs/worldRef"
+          }
         },
         "sourceRefs": {
           "type": "array",
-          "items": {"$ref": "#/$defs/sourceRef"}
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
         },
         "diagnostics": {
           "type": "array",
-          "items": {"$ref": "#/$defs/diagnostic"}
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
         }
       }
     },
@@ -199,45 +417,569 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "schema", "packetId", "generatedAt", "recipient", "scope",
-        "objective", "constraints", "currentState", "decisions",
-        "blockers", "nextActions", "relevantArtifacts",
-        "relevantEvidence", "openQuestions", "revisionVector",
-        "sourceRefs", "diagnostics"
+        "schema",
+        "packetId",
+        "generatedAt",
+        "recipient",
+        "scope",
+        "objective",
+        "constraints",
+        "currentState",
+        "decisions",
+        "blockers",
+        "nextActions",
+        "relevantArtifacts",
+        "relevantEvidence",
+        "openQuestions",
+        "revisionVector",
+        "sourceRefs",
+        "diagnostics"
       ],
       "properties": {
-        "schema": {"const": "mcf-agent-context-packet/v1"},
-        "packetId": {"type": "string", "minLength": 1},
-        "generatedAt": {"type": "string", "minLength": 1},
-        "recipient": {"$ref": "#/$defs/worldRef"},
+        "schema": {
+          "const": "mcf-agent-context-packet/v1"
+        },
+        "packetId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generatedAt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recipient": {
+          "$ref": "#/$defs/worldRef"
+        },
         "scope": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["mission"],
+          "required": [
+            "mission"
+          ],
           "properties": {
-            "project": {"$ref": "#/$defs/worldRef"},
-            "mission": {"$ref": "#/$defs/worldRef"},
-            "context": {"$ref": "#/$defs/worldRef"}
+            "project": {
+              "$ref": "#/$defs/worldRef"
+            },
+            "mission": {
+              "$ref": "#/$defs/worldRef"
+            },
+            "context": {
+              "$ref": "#/$defs/worldRef"
+            }
           }
         },
-        "objective": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
-        "constraints": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
-        "currentState": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
-        "decisions": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
-        "blockers": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
-        "nextActions": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
-        "relevantArtifacts": {"type": "array", "items": {"$ref": "#/$defs/worldRef"}},
-        "relevantEvidence": {"type": "array", "items": {"$ref": "#/$defs/worldRef"}},
-        "openQuestions": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
-        "revisionVector": {"type": "array", "items": {"$ref": "#/$defs/revisionVectorEntry"}},
-        "sourceRefs": {"type": "array", "items": {"$ref": "#/$defs/sourceRef"}},
-        "diagnostics": {"type": "array", "items": {"$ref": "#/$defs/diagnostic"}},
-        "authorityRef": {"type": "string"}
+        "objective": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contextEntry"
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contextEntry"
+          }
+        },
+        "currentState": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contextEntry"
+          }
+        },
+        "decisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contextEntry"
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contextEntry"
+          }
+        },
+        "nextActions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contextEntry"
+          }
+        },
+        "relevantArtifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/worldRef"
+          }
+        },
+        "relevantEvidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/worldRef"
+          }
+        },
+        "openQuestions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contextEntry"
+          }
+        },
+        "revisionVector": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/revisionVectorEntry"
+          }
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        },
+        "authorityRef": {
+          "type": "string"
+        }
       }
+    },
+    "projectedMission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "revision",
+        "observedAt",
+        "freshness",
+        "trust",
+        "payload",
+        "sourceRefs"
+      ],
+      "properties": {
+        "ref": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/worldRef"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "mission"
+                }
+              }
+            }
+          ]
+        },
+        "revision": {
+          "$ref": "#/$defs/sourceRevision"
+        },
+        "observedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "freshness": {
+          "enum": [
+            "FRESH",
+            "STALE",
+            "UNKNOWN"
+          ]
+        },
+        "trust": {
+          "$ref": "#/$defs/trust"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "state"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            },
+            "objective": {
+              "type": "string"
+            }
+          }
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "projectedContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "revision",
+        "observedAt",
+        "freshness",
+        "trust",
+        "payload",
+        "sourceRefs"
+      ],
+      "properties": {
+        "ref": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/worldRef"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "context"
+                }
+              }
+            }
+          ]
+        },
+        "revision": {
+          "$ref": "#/$defs/sourceRevision"
+        },
+        "observedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "freshness": {
+          "enum": [
+            "FRESH",
+            "STALE",
+            "UNKNOWN"
+          ]
+        },
+        "trust": {
+          "$ref": "#/$defs/trust"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label",
+            "purpose"
+          ],
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "purpose": {
+              "type": "string"
+            },
+            "state": {
+              "type": "string"
+            }
+          }
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "projectedDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "revision",
+        "observedAt",
+        "freshness",
+        "trust",
+        "payload",
+        "sourceRefs"
+      ],
+      "properties": {
+        "ref": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/worldRef"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "decision"
+                }
+              }
+            }
+          ]
+        },
+        "revision": {
+          "$ref": "#/$defs/sourceRevision"
+        },
+        "observedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "freshness": {
+          "enum": [
+            "FRESH",
+            "STALE",
+            "UNKNOWN"
+          ]
+        },
+        "trust": {
+          "$ref": "#/$defs/trust"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "statement",
+            "status"
+          ],
+          "properties": {
+            "statement": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "decidedAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "projectedEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "revision",
+        "observedAt",
+        "freshness",
+        "trust",
+        "payload",
+        "sourceRefs"
+      ],
+      "properties": {
+        "ref": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/worldRef"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "evidence"
+                }
+              }
+            }
+          ]
+        },
+        "revision": {
+          "$ref": "#/$defs/sourceRevision"
+        },
+        "observedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "freshness": {
+          "enum": [
+            "FRESH",
+            "STALE",
+            "UNKNOWN"
+          ]
+        },
+        "trust": {
+          "$ref": "#/$defs/trust"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "evidenceType",
+            "summary"
+          ],
+          "properties": {
+            "evidenceType": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            }
+          }
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "projectedAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "revision",
+        "observedAt",
+        "freshness",
+        "trust",
+        "payload",
+        "sourceRefs"
+      ],
+      "properties": {
+        "ref": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/worldRef"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "const": "action"
+                }
+              }
+            }
+          ]
+        },
+        "revision": {
+          "$ref": "#/$defs/sourceRevision"
+        },
+        "observedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "freshness": {
+          "enum": [
+            "FRESH",
+            "STALE",
+            "UNKNOWN"
+          ]
+        },
+        "trust": {
+          "$ref": "#/$defs/trust"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "description",
+            "status"
+          ],
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "responsible": {
+              "$ref": "#/$defs/worldRef"
+            },
+            "dependsOn": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/worldRef"
+              }
+            }
+          }
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sourceRef"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "projectedObject": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/projectedMission"
+        },
+        {
+          "$ref": "#/$defs/projectedContext"
+        },
+        {
+          "$ref": "#/$defs/projectedDecision"
+        },
+        {
+          "$ref": "#/$defs/projectedEvidence"
+        },
+        {
+          "$ref": "#/$defs/projectedAction"
+        }
+      ]
     }
   },
   "oneOf": [
-    {"$ref": "#/$defs/contextSlice"},
-    {"$ref": "#/$defs/agentContextPacket"}
+    {
+      "$ref": "#/$defs/contextSlice"
+    },
+    {
+      "$ref": "#/$defs/agentContextPacket"
+    },
+    {
+      "$ref": "#/$defs/projectedObject"
+    }
   ]
 }

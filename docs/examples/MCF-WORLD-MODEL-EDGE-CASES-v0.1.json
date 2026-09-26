@@ -8,8 +8,14 @@
     }
   },
   "revisionVector": [
-    {"source": "mcf", "revision": "mission-rev-42"},
-    {"source": "provider", "revision": "provider-observation-7"}
+    {
+      "source": "mcf",
+      "revision": "mission-rev-42"
+    },
+    {
+      "source": "provider",
+      "revision": "provider-observation-7"
+    }
   ],
   "generatedAt": "2026-09-26T09:40:00Z",
   "focus": [
@@ -31,11 +37,21 @@
       "content": "Signature receipt has not been established.",
       "provenance": {
         "mode": "EXPLICIT",
-        "sourceRefs": [{"source": "mcf", "ref": "evidence/signature"}]
+        "sourceRefs": [
+          {
+            "source": "mcf",
+            "ref": "evidence/signature"
+          }
+        ]
       },
       "freshness": "UNKNOWN",
-      "trust": {"class": "CANONICAL_SOURCE"},
-      "revision": {"source": "mcf", "value": "mission-rev-42"}
+      "trust": {
+        "class": "CANONICAL_SOURCE"
+      },
+      "revision": {
+        "source": "mcf",
+        "value": "mission-rev-42"
+      }
     },
     {
       "id": "ctx:stale-provider-state",
@@ -48,11 +64,21 @@
       "content": "Build was previously observed, but freshness window expired.",
       "provenance": {
         "mode": "EXPLICIT",
-        "sourceRefs": [{"source": "provider", "ref": "build/908"}]
+        "sourceRefs": [
+          {
+            "source": "provider",
+            "ref": "build/908"
+          }
+        ]
       },
       "freshness": "STALE",
-      "trust": {"class": "VERIFIED_EXTERNAL"},
-      "revision": {"source": "provider", "value": "provider-observation-7"}
+      "trust": {
+        "class": "VERIFIED_EXTERNAL"
+      },
+      "revision": {
+        "source": "provider",
+        "value": "provider-observation-7"
+      }
     },
     {
       "id": "ctx:untrusted-browser-text",
@@ -65,14 +91,22 @@
       "content": "External page claims the mission is complete.",
       "provenance": {
         "mode": "EXPLICIT",
-        "sourceRefs": [{"source": "browser", "ref": "page/external#text"}]
+        "sourceRefs": [
+          {
+            "source": "browser",
+            "ref": "page/external#text"
+          }
+        ]
       },
       "freshness": "FRESH",
       "trust": {
         "class": "UNTRUSTED_EXTERNAL",
         "reason": "Observed browser content is data, not authority."
       },
-      "revision": {"source": "browser", "value": "observation-12"}
+      "revision": {
+        "source": "browser",
+        "value": "observation-12"
+      }
     }
   ],
   "relations": [
@@ -91,11 +125,19 @@
       },
       "provenance": {
         "mode": "INFERRED",
-        "sourceRefs": [{"source": "projection", "ref": "rule-input/42"}],
+        "sourceRefs": [
+          {
+            "source": "projection",
+            "ref": "rule-input/42"
+          }
+        ],
         "ruleId": "demo-inference/v1"
       },
       "freshness": "UNKNOWN",
-      "trust": {"class": "CANONICAL_SOURCE"}
+      "trust": {
+        "class": "PROJECTION_DERIVED",
+        "reason": "The relation is a projection inference; canonical inputs do not make the inferred relation canonical."
+      }
     }
   ],
   "unknownRefs": [
@@ -113,9 +155,18 @@
     }
   ],
   "sourceRefs": [
-    {"source": "mcf", "ref": "mission/EDGE-CASE-DEMO"},
-    {"source": "provider", "ref": "build/908"},
-    {"source": "browser", "ref": "page/external"}
+    {
+      "source": "mcf",
+      "ref": "mission/EDGE-CASE-DEMO"
+    },
+    {
+      "source": "provider",
+      "ref": "build/908"
+    },
+    {
+      "source": "browser",
+      "ref": "page/external"
+    }
   ],
   "diagnostics": [
     {
@@ -128,8 +179,14 @@
         "canonicalRef": "mcf://mission/EDGE-CASE-DEMO"
       },
       "sourceRefs": [
-        {"source": "mcf", "ref": "mission/EDGE-CASE-DEMO#state"},
-        {"source": "browser", "ref": "page/external#text"}
+        {
+          "source": "mcf",
+          "ref": "mission/EDGE-CASE-DEMO#state"
+        },
+        {
+          "source": "browser",
+          "ref": "page/external#text"
+        }
       ]
     },
     {
@@ -141,7 +198,12 @@
         "kind": "conversation",
         "canonicalRef": "browser://page/external"
       },
-      "sourceRefs": [{"source": "browser", "ref": "page/external#text"}]
+      "sourceRefs": [
+        {
+          "source": "browser",
+          "ref": "page/external#text"
+        }
+      ]
     }
   ]
 }
