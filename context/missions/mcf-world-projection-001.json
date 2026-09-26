@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Obtain Sofia/Emily exact-SHA gate for the full architecture pipeline. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Re-gate the full pipeline after explicit source ownership/competence remediation. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -155,5 +155,7 @@
   "world_arch_source_adapter": "tools/world-model/architecture_source_adapter_v01.py",
   "world_full_pipeline_test": "tools/world-model/test_full_pipeline_v01.py",
   "world_full_pipeline_evidence": "docs/evidence/MCF-WORLD-FULL-PIPELINE-V0.1-PROOF.md",
-  "world_full_pipeline_gate": "PENDING_EXACT_SHA_REVIEW"
+  "world_full_pipeline_gate": "PENDING_REMEDIATION_REGATE",
+  "world_source_ownership_contract": "docs/contracts/MCF-WORLD-SOURCE-OWNERSHIP-v0.1.md",
+  "world_source_competence_rule": "EXPLICIT_FACTKEY_OWNERSHIP_NOT_TRUST_RANKING"
 }

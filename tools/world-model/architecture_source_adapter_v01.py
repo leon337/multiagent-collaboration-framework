@@ -39,10 +39,10 @@ def entry_from_fact(fact, subject):
         "revision": fact["revision"],
     }
 
-def resolve_group(group, subject):
+def resolve_group(group, subject, policy):
     label = group[0]["label"]
     refs = [x["sourceRef"] for x in group]
-    observation_only = all(x.get("observationOnly") for x in group)
+    observation_only = bool(policy.get("observationOnly"))
     if observation_only:
         fact = group[0]
         return {
@@ -55,66 +55,83 @@ def resolve_group(group, subject):
             "observationOnly": True,
         }
 
-    competent = [x for x in group if x["trust"]["class"] in COMPETENT and x.get("value") is not None]
-    untrusted = [x for x in group if x["trust"]["class"] == "UNTRUSTED_EXTERNAL"]
-
-    if not competent:
-        diags = [diagnostic(
-            "MISSING_CANONICAL_VALUE",
-            label + " could not be established from competent sources.",
-            subject,
-            refs,
-        )]
-        if untrusted:
-            diags.append(diagnostic(
-                "UNTRUSTED_INPUT",
-                label + " has only untrusted observations; they remain data, not authority.",
-                subject,
-                [x["sourceRef"] for x in untrusted],
-            ))
+    authoritative_sources = set(policy.get("authoritativeSources", []))
+    if not authoritative_sources:
         return {
             "value": None,
             "freshness": "UNKNOWN",
-            "trust": {"class": "PROJECTION_DERIVED", "reason": "No competent source established a value."},
+            "trust": {"class": "PROJECTION_DERIVED", "reason": "No source ownership policy exists for this fact."},
             "revision": group[0]["revision"],
             "sourceRefs": refs,
-            "diagnostics": diags,
-            "observationOnly": False,
-        }
-
-    values = {json.dumps(x["value"], sort_keys=True) for x in competent}
-    if len(values) > 1:
-        return {
-            "value": None,
-            "freshness": "UNKNOWN",
-            "trust": {"class": "PROJECTION_DERIVED", "reason": "Competent sources conflict; no silent winner selected."},
-            "revision": competent[0]["revision"],
-            "sourceRefs": [x["sourceRef"] for x in competent],
             "diagnostics": [diagnostic(
-                "SOURCE_CONFLICT",
-                "Conflicting competent values for " + label + "; no silent winner selected.",
+                "MISSING_CANONICAL_VALUE",
+                label + " has no declared authoritative source; World will not infer competence from trust.",
                 subject,
-                [x["sourceRef"] for x in competent],
+                refs,
             )],
             "observationOnly": False,
         }
 
-    fact = competent[0]
-    diags = []
-    for x in untrusted:
-        if x.get("value") != fact.get("value"):
-            diags.append(diagnostic(
-                "UNTRUSTED_INPUT",
-                "Untrusted observation differs from the established " + label + " and does not override it.",
+    authoritative = [
+        x for x in group
+        if x["sourceRef"]["source"] in authoritative_sources and x.get("value") is not None
+    ]
+    non_authoritative = [
+        x for x in group
+        if x["sourceRef"]["source"] not in authoritative_sources and x.get("value") is not None
+    ]
+
+    if not authoritative:
+        return {
+            "value": None,
+            "freshness": "UNKNOWN",
+            "trust": {"class": "PROJECTION_DERIVED", "reason": "Declared authoritative sources did not establish a value."},
+            "revision": group[0]["revision"],
+            "sourceRefs": refs,
+            "diagnostics": [diagnostic(
+                "MISSING_CANONICAL_VALUE",
+                label + " could not be established by its declared authoritative source(s).",
                 subject,
-                [fact["sourceRef"], x["sourceRef"]],
+                refs,
+            )],
+            "observationOnly": False,
+        }
+
+    values = {json.dumps(x["value"], sort_keys=True) for x in authoritative}
+    if len(values) > 1:
+        return {
+            "value": None,
+            "freshness": "UNKNOWN",
+            "trust": {"class": "PROJECTION_DERIVED", "reason": "Declared co-authoritative sources conflict; no silent winner selected."},
+            "revision": authoritative[0]["revision"],
+            "sourceRefs": [x["sourceRef"] for x in authoritative],
+            "diagnostics": [diagnostic(
+                "SOURCE_CONFLICT",
+                "Declared co-authoritative sources disagree on " + label + "; no winner selected.",
+                subject,
+                [x["sourceRef"] for x in authoritative],
+            )],
+            "observationOnly": False,
+        }
+
+    fact = authoritative[0]
+    authoritative_refs = [x["sourceRef"] for x in authoritative]
+    diags = []
+    for x in non_authoritative:
+        if x.get("value") != fact.get("value"):
+            dtype = "UNTRUSTED_INPUT" if x["trust"]["class"] == "UNTRUSTED_EXTERNAL" else "SOURCE_CONFLICT"
+            diags.append(diagnostic(
+                dtype,
+                "Non-authoritative observation differs from declared owner for " + label + "; authoritative value retained explicitly.",
+                subject,
+                authoritative_refs + [x["sourceRef"]],
             ))
     return {
         "value": fact["value"],
         "freshness": fact["freshness"],
         "trust": fact["trust"],
         "revision": fact["revision"],
-        "sourceRefs": [fact["sourceRef"]],
+        "sourceRefs": authoritative_refs,
         "diagnostics": diags,
         "observationOnly": False,
     }
@@ -137,7 +154,8 @@ def build_source_bundle(src, generated_at):
     relevant_evidence = []
     projected_objects = []
 
-    state_result = resolve_group(groups["mission.state"], mission_ref)
+    policies = src.get("factPolicies", {})
+    state_result = resolve_group(groups["mission.state"], mission_ref, policies.get("mission.state", {}))
     diagnostics.extend(state_result["diagnostics"])
     mission_state = state_result["value"] if state_result["value"] is not None else "UNKNOWN"
 
@@ -184,7 +202,7 @@ def build_source_bundle(src, generated_at):
         if fact_key == "mission.state":
             continue
         subject = subjects[fact_key]
-        result = resolve_group(group, subject)
+        result = resolve_group(group, subject, policies.get(fact_key, {}))
         diagnostics.extend(result["diagnostics"])
 
         if result["observationOnly"]:

@@ -151,6 +151,83 @@
         "source": "deployment-provider",
         "value": "provider-r11"
       }
+    },
+    {
+      "id": "fact:joint-release-a",
+      "factKey": "joint.release-state",
+      "subject": {
+        "kind": "evidence",
+        "canonicalRef": "mcf://evidence/ARCH-S-joint-release"
+      },
+      "category": "OPEN_QUESTION",
+      "label": "Joint release state",
+      "value": "APPROVED",
+      "freshness": "FRESH",
+      "trust": {
+        "class": "CANONICAL_SOURCE"
+      },
+      "sourceRef": {
+        "source": "fixture-canonical",
+        "ref": "arch-s/release#joint-state"
+      },
+      "revision": {
+        "source": "fixture-canonical",
+        "value": "release-r3"
+      }
+    },
+    {
+      "id": "fact:joint-release-b",
+      "factKey": "joint.release-state",
+      "subject": {
+        "kind": "evidence",
+        "canonicalRef": "mcf://evidence/ARCH-S-joint-release"
+      },
+      "category": "OPEN_QUESTION",
+      "label": "Joint release state",
+      "value": "REJECTED",
+      "freshness": "FRESH",
+      "trust": {
+        "class": "VERIFIED_EXTERNAL"
+      },
+      "sourceRef": {
+        "source": "governance-provider",
+        "ref": "arch-s/governance#joint-state"
+      },
+      "revision": {
+        "source": "governance-provider",
+        "value": "governance-r8"
+      }
     }
-  ]
+  ],
+  "factPolicies": {
+    "mission.state": {
+      "authoritativeSources": [
+        "fixture-canonical"
+      ]
+    },
+    "signature.receipt": {
+      "authoritativeSources": [
+        "fixture-canonical"
+      ]
+    },
+    "runtime.snapshot": {
+      "authoritativeSources": [
+        "runtime-provider"
+      ]
+    },
+    "external.completion-claim": {
+      "observationOnly": true
+    },
+    "deployment.region": {
+      "authoritativeSources": [
+        "fixture-canonical"
+      ]
+    },
+    "joint.release-state": {
+      "authoritativeSources": [
+        "fixture-canonical",
+        "governance-provider"
+      ]
+    }
+  }
 }

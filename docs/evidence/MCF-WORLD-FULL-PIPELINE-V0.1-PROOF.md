@@ -92,3 +92,18 @@ Headless Chrome PASS:
 No World service, database, event store, network sync, write-back, MCF mutation, local authority engine, Dual Browser action, production effect or 3D dependency.
 
 All generated outputs are disposable and reconstructible.
+
+## Source competence remediation
+
+Sofia's first architecture gate identified that trust.class was incorrectly being used as a proxy for domain competence.
+
+Remediation:
+
+- source competence is now explicit per factKey through factPolicies.authoritativeSources;
+- VERIFIED_EXTERNAL does not become authoritative merely because it is trusted;
+- deployment.region keeps the value from its declared owner and emits a diagnostic when a non-authoritative observation disagrees;
+- a separate joint.release-state case explicitly declares two co-authoritative sources and correctly becomes UNKNOWN + SOURCE_CONFLICT when they disagree;
+- no generic trust ranking or policy engine was introduced.
+
+Browser smoke after remediation preserved the same ownership/conflict semantics in both human and MESTRE views.
+

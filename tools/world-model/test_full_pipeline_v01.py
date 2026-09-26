@@ -25,6 +25,19 @@ assert any(d["type"]=="SOURCE_CONFLICT" for d in sl["diagnostics"])
 assert any(d["type"]=="MISSING_CANONICAL_VALUE" for d in sl["diagnostics"])
 assert any(x["trust"]["class"]=="PROJECTION_DERIVED" and x["category"]=="NEXT_ACTION" for x in sl["entries"])
 
+# VERIFIED_EXTERNAL is not automatically domain-authoritative.
+region = next(x for x in sl["entries"] if x["subject"]["canonicalRef"]=="mcf://evidence/ARCH-S-region")
+assert region["content"].endswith("region-a"), region
+assert region["freshness"]=="FRESH"
+assert region["trust"]["class"]=="CANONICAL_SOURCE"
+assert any("Deployment region" in d["message"] and d["type"]=="SOURCE_CONFLICT" for d in sl["diagnostics"])
+
+# When two sources are explicitly declared co-authoritative, disagreement is UNKNOWN.
+joint = next(x for x in sl["entries"] if x["subject"]["canonicalRef"]=="mcf://evidence/ARCH-S-joint-release")
+assert joint["freshness"]=="UNKNOWN"
+assert joint["trust"]["class"]=="PROJECTION_DERIVED"
+assert any("co-authoritative" in d["message"] for d in sl["diagnostics"])
+
 slice_by_id={x["id"]:x for x in sl["entries"]}
 for key in ["objective","constraints","currentState","decisions","blockers","nextActions","openQuestions"]:
     for item in packet[key]:
