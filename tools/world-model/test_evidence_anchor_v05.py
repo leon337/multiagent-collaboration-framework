@@ -134,4 +134,35 @@ assert evidence["id"] not in da["anchors"]
 assert other_evidence["id"] not in da["anchors"]
 assert any(d["type"]=="ANCHOR_ID_CONFLICT" for d in da["diagnostics"])
 
+# Runtime/schema alignment: reject wrong schema, extra fields and non repo-file sources.
+wrong_schema=copy.deepcopy(metadata)
+wrong_schema["schema"]="world-evidence-anchor-metadata/v999"
+ws=build_anchors(bundle,wrong_schema,ROOT)
+assert not ws["anchors"]
+assert any(d["type"]=="ANCHOR_METADATA_INVALID" and d.get("field")=="schema" for d in ws["diagnostics"])
+
+extra_top=copy.deepcopy(metadata)
+extra_top["unexpected"]=True
+et=build_anchors(bundle,extra_top,ROOT)
+assert not et["anchors"]
+assert any(d["type"]=="ANCHOR_METADATA_INVALID" and d.get("field")=="documentShape" for d in et["diagnostics"])
+
+extra_anchor=copy.deepcopy(metadata)
+extra_anchor["anchors"][0]["unexpected"]="x"
+ea=build_anchors(bundle,extra_anchor,ROOT)
+assert not ea["anchors"]
+assert any(d["type"]=="ANCHOR_METADATA_INVALID" for d in ea["diagnostics"])
+
+wrong_source=copy.deepcopy(metadata)
+wrong_source["anchors"][0]["sourceRef"]["source"]="filesystem"
+wsrc=build_anchors(bundle,wrong_source,ROOT)
+assert not wsrc["anchors"]
+assert any(d["type"]=="ANCHOR_METADATA_INVALID" for d in wsrc["diagnostics"])
+
+extra_declared=copy.deepcopy(metadata)
+extra_declared["anchors"][0]["declaredBy"]["extra"]="x"
+ed=build_anchors(bundle,extra_declared,ROOT)
+assert not ed["anchors"]
+assert any(d["type"]=="ANCHOR_METADATA_INVALID" for d in ed["diagnostics"])
+
 print("EVIDENCE_ANCHOR_V05_HARDENING PASS")

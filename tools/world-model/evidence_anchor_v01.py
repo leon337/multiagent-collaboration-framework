@@ -28,6 +28,21 @@ def build_anchors(bundle, metadata, repo_root, context_before=2, context_after=2
     results={}
     diagnostics=[]
 
+    allowed_top={"schema","metadataRevision","anchors"}
+    if not isinstance(metadata,dict):
+        return {
+            "schema":"world-evidence-anchor/v1",
+            "anchors":{},
+            "diagnostics":[{"type":"ANCHOR_METADATA_INVALID","field":"documentShape"}]
+        }
+
+    if metadata.get("schema") != "world-evidence-anchor-metadata/v1":
+        return {
+            "schema":"world-evidence-anchor/v1",
+            "anchors":{},
+            "diagnostics":[{"type":"ANCHOR_METADATA_INVALID","field":"schema"}]
+        }
+
     metadata_revision=metadata.get("metadataRevision")
     if not isinstance(metadata_revision,str) or not metadata_revision.strip():
         return {
@@ -36,12 +51,19 @@ def build_anchors(bundle, metadata, repo_root, context_before=2, context_after=2
             "diagnostics":[{"type":"ANCHOR_METADATA_INVALID","field":"metadataRevision"}]
         }
 
-    raw_anchors=metadata.get("anchors",[])
+    raw_anchors=metadata.get("anchors")
     if not isinstance(raw_anchors,list):
         return {
             "schema":"world-evidence-anchor/v1",
             "anchors":{},
             "diagnostics":[{"type":"ANCHOR_METADATA_INVALID","field":"anchors"}]
+        }
+
+    if set(metadata.keys()) != allowed_top:
+        return {
+            "schema":"world-evidence-anchor/v1",
+            "anchors":{},
+            "diagnostics":[{"type":"ANCHOR_METADATA_INVALID","field":"documentShape"}]
         }
 
     anchor_id_owners=defaultdict(set)
@@ -57,12 +79,15 @@ def build_anchors(bundle, metadata, repo_root, context_before=2, context_after=2
         start=a.get("lineStart")
         end=a.get("lineEnd")
         valid=(
+            set(a.keys()) == {"anchorId","evidenceCanonicalRef","sourceRef","lineStart","lineEnd","declaredBy"} and
             isinstance(anchor_id,str) and bool(anchor_id.strip()) and
             isinstance(canonical_ref,str) and bool(canonical_ref.strip()) and
-            isinstance(src,dict) and isinstance(src.get("source"),str) and bool(src.get("source")) and
-            isinstance(src.get("ref"),str) and bool(src.get("ref")) and
-            isinstance(declared,dict) and isinstance(declared.get("source"),str) and bool(declared.get("source")) and
-            isinstance(declared.get("ref"),str) and bool(declared.get("ref")) and
+            isinstance(src,dict) and set(src.keys()) == {"source","ref"} and
+            src.get("source") == "repo-file" and
+            isinstance(src.get("ref"),str) and bool(src.get("ref").strip()) and
+            isinstance(declared,dict) and set(declared.keys()) == {"source","ref"} and
+            isinstance(declared.get("source"),str) and bool(declared.get("source").strip()) and
+            isinstance(declared.get("ref"),str) and bool(declared.get("ref").strip()) and
             type(start) is int and type(end) is int
         )
         if not valid:

@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_READONLY_STACK_V0_5_1_KNOWN_GOOD_HOLD",
+  "parallel_architecture_state": "WORLD_EVIDENCE_ANCHOR_V0_5_2_SCHEMA_RUNTIME_ALIGNMENT_PENDING_GATE",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "HOLD product feature expansion. Maintain known-good read-only baseline with hardening/regressions/security/documentation only until LEANDRO is alert for later human context/evidence/source navigation validation. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Technical re-gate of Evidence Anchor v0.5.2 schema/runtime alignment. Functional expansion remains HOLD pending human validation; Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -220,5 +220,7 @@
   "world_readonly_stack_v0_5_1_checkpoint_gate": "docs/reviews/MCF-WORLD-READONLY-STACK-v0.5.1-CHECKPOINT-GATE.md",
   "world_readonly_stack_v0_5_1_baseline_sha": "931877e4afbddf7f975073d878f6786e8415b842",
   "world_readonly_stack_v0_5_1_status": "PASS_REPRODUCIBLE_REGRESSION_BASELINE_FROZEN_INPUTS",
-  "world_readonly_stack_v0_5_1_execution_fingerprint": "ad58e6485ddf7110ea389681ca75cc14b8771628283a2d493f05cbe7c68b2db2"
+  "world_readonly_stack_v0_5_1_execution_fingerprint": "ad58e6485ddf7110ea389681ca75cc14b8771628283a2d493f05cbe7c68b2db2",
+  "world_evidence_anchor_v0_5_2_hardening": "docs/evidence/MCF-WORLD-EVIDENCE-ANCHOR-V0.5.2-SCHEMA-RUNTIME-ALIGNMENT.md",
+  "world_evidence_anchor_v0_5_2_gate": "PENDING_TECHNICAL_REGATE"
 }
