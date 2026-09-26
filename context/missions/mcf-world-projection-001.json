@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_CONTEXT_CONSUMER_V0_2_CONSISTENCY_IMPLEMENTED",
+  "parallel_architecture_state": "WORLD_FULL_PIPELINE_V0_1_IMPLEMENTED",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Obtain Sofia/Emily exact-SHA gate for consumer v0.2 provenance, diagnostics and human-agent semantic consistency. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Obtain Sofia/Emily exact-SHA gate for the full architecture pipeline. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -150,5 +150,10 @@
   "world_context_consumer_v0_2_tests": "tools/world-model/test_consumer_v02.py",
   "world_context_consistency_fixture": "docs/examples/MCF-WORLD-CONSISTENCY-FIXTURE-v0.1.json",
   "world_context_consistency_evidence": "docs/evidence/MCF-WORLD-CONTEXT-CONSUMER-V0.2-CONSISTENCY-PROOF.md",
-  "world_context_consumer_v0_2_gate": "PENDING_EXACT_SHA_REVIEW"
+  "world_context_consumer_v0_2_gate": "PENDING_EXACT_SHA_REVIEW",
+  "world_arch_source_fixture": "docs/examples/MCF-WORLD-ARCH-SOURCE-BUNDLE-v0.1.json",
+  "world_arch_source_adapter": "tools/world-model/architecture_source_adapter_v01.py",
+  "world_full_pipeline_test": "tools/world-model/test_full_pipeline_v01.py",
+  "world_full_pipeline_evidence": "docs/evidence/MCF-WORLD-FULL-PIPELINE-V0.1-PROOF.md",
+  "world_full_pipeline_gate": "PENDING_EXACT_SHA_REVIEW"
 }

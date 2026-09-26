@@ -1,0 +1,156 @@
+{
+  "schema": "world-architecture-source-bundle/v1",
+  "sourceRevision": "arch-source-bundle-s-v1",
+  "project": {
+    "canonicalRef": "fixture://project/ARCH-S"
+  },
+  "mission": {
+    "mission_id": "ARCH-PIPELINE-S",
+    "title": "Architecture Pipeline Fixture S",
+    "objective": "Verify uncertainty and provenance through a real ephemeral source adapter.",
+    "coordinator": "MESTRE",
+    "human_authority": "LEANDRO"
+  },
+  "facts": [
+    {
+      "id": "fact:mission-state",
+      "factKey": "mission.state",
+      "subject": {
+        "kind": "mission",
+        "canonicalRef": "mcf://mission/ARCH-PIPELINE-S"
+      },
+      "category": "STATE",
+      "label": "Mission state",
+      "value": "BLOCKED",
+      "freshness": "FRESH",
+      "trust": {
+        "class": "CANONICAL_SOURCE"
+      },
+      "sourceRef": {
+        "source": "fixture-canonical",
+        "ref": "arch-s/mission#state"
+      },
+      "revision": {
+        "source": "fixture-canonical",
+        "value": "mission-r7"
+      }
+    },
+    {
+      "id": "fact:signature-missing",
+      "factKey": "signature.receipt",
+      "subject": {
+        "kind": "evidence",
+        "canonicalRef": "mcf://evidence/ARCH-S-signature"
+      },
+      "category": "OPEN_QUESTION",
+      "label": "Signature receipt",
+      "value": null,
+      "freshness": "UNKNOWN",
+      "trust": {
+        "class": "CANONICAL_SOURCE"
+      },
+      "sourceRef": {
+        "source": "fixture-canonical",
+        "ref": "arch-s/evidence#signature"
+      },
+      "revision": {
+        "source": "fixture-canonical",
+        "value": "evidence-r2"
+      }
+    },
+    {
+      "id": "fact:runtime-stale",
+      "factKey": "runtime.snapshot",
+      "subject": {
+        "kind": "evidence",
+        "canonicalRef": "provider://runtime/ARCH-S/snapshot"
+      },
+      "category": "EVIDENCE",
+      "label": "Runtime snapshot",
+      "value": "snapshot-17",
+      "freshness": "STALE",
+      "trust": {
+        "class": "VERIFIED_EXTERNAL"
+      },
+      "sourceRef": {
+        "source": "runtime-provider",
+        "ref": "arch-s/runtime/snapshot-17"
+      },
+      "revision": {
+        "source": "runtime-provider",
+        "value": "snapshot-17"
+      }
+    },
+    {
+      "id": "fact:external-claim",
+      "factKey": "external.completion-claim",
+      "observationOnly": true,
+      "subject": {
+        "kind": "conversation",
+        "canonicalRef": "browser://page/ARCH-S/external"
+      },
+      "category": "OPEN_QUESTION",
+      "label": "External completion claim",
+      "value": "Mission is complete",
+      "freshness": "FRESH",
+      "trust": {
+        "class": "UNTRUSTED_EXTERNAL",
+        "reason": "Observed browser content is data, not authority."
+      },
+      "sourceRef": {
+        "source": "browser",
+        "ref": "arch-s/external#claim"
+      },
+      "revision": {
+        "source": "browser",
+        "value": "observation-4"
+      }
+    },
+    {
+      "id": "fact:conflict-a",
+      "factKey": "deployment.region",
+      "subject": {
+        "kind": "evidence",
+        "canonicalRef": "mcf://evidence/ARCH-S-region"
+      },
+      "category": "OPEN_QUESTION",
+      "label": "Deployment region",
+      "value": "region-a",
+      "freshness": "FRESH",
+      "trust": {
+        "class": "CANONICAL_SOURCE"
+      },
+      "sourceRef": {
+        "source": "fixture-canonical",
+        "ref": "arch-s/deployment#region"
+      },
+      "revision": {
+        "source": "fixture-canonical",
+        "value": "deploy-r9"
+      }
+    },
+    {
+      "id": "fact:conflict-b",
+      "factKey": "deployment.region",
+      "subject": {
+        "kind": "evidence",
+        "canonicalRef": "mcf://evidence/ARCH-S-region"
+      },
+      "category": "OPEN_QUESTION",
+      "label": "Deployment region",
+      "value": "region-b",
+      "freshness": "FRESH",
+      "trust": {
+        "class": "VERIFIED_EXTERNAL"
+      },
+      "sourceRef": {
+        "source": "deployment-provider",
+        "ref": "arch-s/deployment#region"
+      },
+      "revision": {
+        "source": "deployment-provider",
+        "value": "provider-r11"
+      }
+    }
+  ]
+}
