@@ -25,11 +25,69 @@ def build_anchors(bundle, metadata, repo_root, context_before=2, context_after=2
     }
     supported=supported_evidence(bundle)
     groups=defaultdict(list)
-    for a in metadata.get("anchors",[]):
-        groups[a["evidenceCanonicalRef"]].append(a)
-
     results={}
     diagnostics=[]
+
+    metadata_revision=metadata.get("metadataRevision")
+    if not isinstance(metadata_revision,str) or not metadata_revision.strip():
+        return {
+            "schema":"world-evidence-anchor/v1",
+            "anchors":{},
+            "diagnostics":[{"type":"ANCHOR_METADATA_INVALID","field":"metadataRevision"}]
+        }
+
+    raw_anchors=metadata.get("anchors",[])
+    if not isinstance(raw_anchors,list):
+        return {
+            "schema":"world-evidence-anchor/v1",
+            "anchors":{},
+            "diagnostics":[{"type":"ANCHOR_METADATA_INVALID","field":"anchors"}]
+        }
+
+    anchor_id_owners=defaultdict(set)
+    valid_anchor_records=[]
+    for idx,a in enumerate(raw_anchors):
+        if not isinstance(a,dict):
+            diagnostics.append({"type":"ANCHOR_METADATA_INVALID","index":idx,"field":"anchor"})
+            continue
+        anchor_id=a.get("anchorId")
+        canonical_ref=a.get("evidenceCanonicalRef")
+        src=a.get("sourceRef")
+        declared=a.get("declaredBy")
+        start=a.get("lineStart")
+        end=a.get("lineEnd")
+        valid=(
+            isinstance(anchor_id,str) and bool(anchor_id.strip()) and
+            isinstance(canonical_ref,str) and bool(canonical_ref.strip()) and
+            isinstance(src,dict) and isinstance(src.get("source"),str) and bool(src.get("source")) and
+            isinstance(src.get("ref"),str) and bool(src.get("ref")) and
+            isinstance(declared,dict) and isinstance(declared.get("source"),str) and bool(declared.get("source")) and
+            isinstance(declared.get("ref"),str) and bool(declared.get("ref")) and
+            type(start) is int and type(end) is int
+        )
+        if not valid:
+            diagnostics.append({
+                "type":"ANCHOR_METADATA_INVALID",
+                "index":idx,
+                "anchorId":anchor_id,
+                "evidenceCanonicalRef":canonical_ref
+            })
+            continue
+        anchor_id_owners[anchor_id].add(canonical_ref)
+        valid_anchor_records.append(a)
+
+    duplicate_anchor_ids={aid for aid,owners in anchor_id_owners.items() if len(owners)>1}
+    for aid in sorted(duplicate_anchor_ids):
+        diagnostics.append({
+            "type":"ANCHOR_ID_CONFLICT",
+            "anchorId":aid,
+            "evidenceCanonicalRefs":sorted(anchor_id_owners[aid])
+        })
+
+    for a in valid_anchor_records:
+        if a["anchorId"] in duplicate_anchor_ids:
+            continue
+        groups[a["evidenceCanonicalRef"]].append(a)
 
     for canonical_ref, anchors in groups.items():
         obj=by_canonical.get(canonical_ref)
@@ -77,7 +135,7 @@ def build_anchors(bundle, metadata, repo_root, context_before=2, context_after=2
 
         start=a.get("lineStart"); end=a.get("lineEnd")
         lines=raw.decode("utf-8",errors="replace").splitlines()
-        valid=isinstance(start,int) and isinstance(end,int) and start>=1 and end>=start and end<=len(lines)
+        valid=type(start) is int and type(end) is int and start>=1 and end>=start and end<=len(lines)
         if not valid:
             results[eid]={
                 "status":"RANGE_INVALID","evidenceId":eid,"anchorId":a.get("anchorId"),
@@ -93,7 +151,7 @@ def build_anchors(bundle, metadata, repo_root, context_before=2, context_after=2
             "anchorId":a["anchorId"],
             "sourceRef":src,
             "sourceRevision":observed,
-            "metadataRevision":metadata.get("metadataRevision"),
+            "metadataRevision":metadata_revision,
             "declaredBy":a["declaredBy"],
             "lineStart":start,
             "lineEnd":end,

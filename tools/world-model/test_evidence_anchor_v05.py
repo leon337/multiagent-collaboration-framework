@@ -83,3 +83,55 @@ assert rr["status"]=="REVISION_MISMATCH" and rr["content"] is None
 
 print("EVIDENCE_ANCHOR_V05 PASS")
 print("anchor",a["anchorId"],a["lineStart"],a["lineEnd"])
+
+# Hardening: missing/invalid metadata must fail closed without crashing.
+missing_revision=copy.deepcopy(metadata)
+missing_revision.pop("metadataRevision",None)
+mr=build_anchors(bundle,missing_revision,ROOT)
+assert not mr["anchors"]
+assert any(d["type"]=="ANCHOR_METADATA_INVALID" and d.get("field")=="metadataRevision" for d in mr["diagnostics"])
+
+bad_declared=copy.deepcopy(metadata)
+bad_declared["anchors"][0].pop("declaredBy",None)
+bd=build_anchors(bundle,bad_declared,ROOT)
+assert not bd["anchors"]
+assert any(d["type"]=="ANCHOR_METADATA_INVALID" for d in bd["diagnostics"])
+
+# Python bool is an int subclass; booleans must not be accepted as line numbers.
+bool_range=copy.deepcopy(metadata)
+bool_range["anchors"][0]["lineStart"]=True
+bool_range["anchors"][0]["lineEnd"]=True
+br=build_anchors(bundle,bool_range,ROOT)
+assert not br["anchors"]
+assert any(d["type"]=="ANCHOR_METADATA_INVALID" for d in br["diagnostics"])
+
+# Same anchorId reused for different Evidence identities must fail closed globally.
+other_evidence=resolver.resolve("evidence","mcf://evidence/ANCHOR-FIXTURE-SECOND")
+duplicate_bundle=copy.deepcopy(bundle)
+duplicate_bundle["projectedObjects"].append({
+  "ref":other_evidence,"revision":{"source":"repo-file","value":digest},
+  "observedAt":"2026-09-26T12:00:00Z","freshness":"FRESH",
+  "trust":{"class":"PROJECTION_DERIVED","reason":"Representative second evidence."},
+  "payload":{"evidenceType":"gate-review","summary":"Second anchor fixture evidence"},
+  "sourceRefs":[{"source":"repo-file","ref":"docs/examples/MCF-WORLD-ANCHOR-SOURCE-v0.1.md"}],
+  "diagnostics":[]
+})
+duplicate_bundle["contextSlice"]["relations"].append(
+  relation("rel:anchor-demo-second","supported_by",decision,other_evidence,"EXPLICIT",
+           [source_ref("fixture","anchor/demo#evidence-second")],
+           trust_class="PROJECTION_DERIVED",reason="Representative second support relation.")
+)
+dupmeta=copy.deepcopy(metadata)
+dupmeta["anchors"].append({
+  "anchorId":dupmeta["anchors"][0]["anchorId"],
+  "evidenceCanonicalRef":other_evidence["canonicalRef"],
+  "sourceRef":{"source":"repo-file","ref":"docs/examples/MCF-WORLD-ANCHOR-SOURCE-v0.1.md"},
+  "lineStart":9,"lineEnd":11,
+  "declaredBy":{"source":"fixture-anchor-metadata","ref":"anchor/demo-second"}
+})
+da=build_anchors(duplicate_bundle,dupmeta,ROOT)
+assert evidence["id"] not in da["anchors"]
+assert other_evidence["id"] not in da["anchors"]
+assert any(d["type"]=="ANCHOR_ID_CONFLICT" for d in da["diagnostics"])
+
+print("EVIDENCE_ANCHOR_V05_HARDENING PASS")
