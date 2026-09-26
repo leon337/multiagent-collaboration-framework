@@ -232,3 +232,22 @@ The mission may advance beyond read-only discovery only after capturing:
 - usability observations;
 - Emily audit against the tested revision.
 
+
+## 16. Single-participant pilot methodology amendment
+
+The original same-dataset A/B design is suitable for counterbalanced multi-participant testing, but it creates a practice/carryover confound when the same initial participant answers the same factual questions twice.
+
+For the initial LEANDRO exploratory pilot:
+
+- Condition A uses representative Experiment Fixture X.
+- Condition B uses isomorphic representative Experiment Fixture Y.
+- X and Y preserve the same structural complexity: 12 entities, 11 typed relations, 6 temporal fixture events, one current gate, one provider-observed artifact that is not a canonical receipt, one UNKNOWN evidence item and one STALE item.
+- X and Y use factually different labels, states and expected answers.
+- The two question sets exercise parallel competencies rather than reusing the same factual answers.
+- Timing starts only after the condition and current question are visible.
+- Results record condition, fixture ID, answer, expected answer, correctness and elapsedMs.
+- Fixtures and answer keys are frozen before observing the human result.
+
+This pilot is exploratory intra-individual evidence. It may support a statement about LEANDRO's observed performance in this controlled run; it must not be generalized into a population-level performance claim.
+
+A later confirmatory experiment should counterbalance fixture/condition assignment across multiple participants or fresh matched fixture pairs to separate interface effect from fixture effect.

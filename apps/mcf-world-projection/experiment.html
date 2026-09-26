@@ -21,9 +21,9 @@ code{overflow-wrap:anywhere}@media(max-width:780px){.grid{grid-template-columns:
 <header>
 <div class="muted">MCF-WORLD-PROJECTION-001 · READ-ONLY EXPERIMENT HARNESS</div>
 <h1>Context Recovery A/B</h1>
-<p>O mesmo fixture alimenta as duas condições. O harness mede tempo por tarefa e acurácia. Não grava estado canônico, não chama Dual Browser e não executa efeitos externos.</p>
+<p>As condições usam fixtures isomórficos, mas factualmente distintos, para reduzir carryover/practice effect no piloto com um único participante. O harness mede tempo por tarefa e acurácia. Não grava estado canônico, não chama Dual Browser e não executa efeitos externos.</p>
 <label>Condição:
-<select id="condition"><option value="baseline">A — Linear</option><option value="structured">B — Estruturada</option></select>
+<select id="condition"><option value="baseline">A — Linear · Fixture X</option><option value="structured">B — Estruturada · Fixture Y</option></select>
 </label>
 <button id="start">Iniciar rodada</button>
 </header>
@@ -33,16 +33,30 @@ code{overflow-wrap:anywhere}@media(max-width:780px){.grid{grid-template-columns:
 const $ = (s) => document.querySelector(s);
 let data = null;
 let run = null;
-const questions = [
- {q:"Qual é o estado atual da missão?",a:"WORKING",opts:["ACTIVE","WORKING","COMPLETED","UNKNOWN"]},
- {q:"Quem orquestra a missão?",a:"MESTRE",opts:["MESTRE","Leonardo","Sofia","Emily"]},
- {q:"Quem auditou a missão?",a:"Emily",opts:["Laura","Sofia","Emily","MESTRE"]},
- {q:"Qual gate está vigente para o protótipo?",a:"GO_READ_ONLY",opts:["NOT_AUTHORIZED","GO_READ_ONLY","PRODUCTION","UNKNOWN"]},
- {q:"O Draft PR #380 é receipt canônico?",a:"NÃO",opts:["SIM","NÃO","UNKNOWN"]},
- {q:"Qual evidência está UNKNOWN?",a:"Rebuild proof",opts:["WPP v0.1","Rebuild proof","Draft PR #380","Emily Gate"]},
- {q:"Qual item está STALE?",a:"Gate futuro",opts:["Gate futuro","Emily Gate","WPP v0.1","MCF"]},
- {q:"O que ocorreu imediatamente antes do Draft PR #380 na sequência temporal do fixture?",a:"GO somente para protótipo read-only",opts:["WPP consolidado","GO somente para protótipo read-only","Issue #379 criada","Product brief definiu o vertical"]}
-];
+const questionSets = {
+ baseline: [
+  {q:"Qual é o estado atual da missão?",a:"WORKING",opts:["ACTIVE","WORKING","COMPLETED","UNKNOWN"]},
+  {q:"Quem produziu o artefato principal WPP v0.1?",a:"Sofia",opts:["Leonardo","Laura","Sofia","Emily"]},
+  {q:"Quem auditou a missão?",a:"Emily",opts:["Laura","Sofia","Emily","MESTRE"]},
+  {q:"Qual gate está vigente para o protótipo?",a:"GO_READ_ONLY",opts:["NOT_AUTHORIZED","GO_READ_ONLY","PRODUCTION","UNKNOWN"]},
+  {q:"O Draft PR #380 é receipt canônico?",a:"NÃO",opts:["SIM","NÃO","UNKNOWN"]},
+  {q:"Qual evidência está UNKNOWN?",a:"Rebuild proof",opts:["WPP v0.1","Rebuild proof","Draft PR #380","Emily Gate"]},
+  {q:"Qual item está STALE?",a:"Gate futuro",opts:["Gate futuro","Emily Gate","WPP v0.1","MCF"]},
+  {q:"O que ocorreu imediatamente antes do Draft PR #380 na sequência temporal do fixture?",a:"GO somente para protótipo read-only",opts:["WPP consolidado","GO somente para protótipo read-only","Issue #379 criada","Product brief definiu o vertical"]}
+ ],
+ structured: [
+  {q:"Qual é o estado atual da missão?",a:"BLOCKED",opts:["ACTIVE","WORKING","BLOCKED","UNKNOWN"]},
+  {q:"Quem produziu o artefato principal Recovery Map v0.2?",a:"Eduardo",opts:["Rafael","Renato","Eduardo","Patrícia"]},
+  {q:"Quem fez a revisão independente?",a:"Patrícia",opts:["Renato","Eduardo","Patrícia","MESTRE"]},
+  {q:"Qual gate está vigente no cenário?",a:"HUMAN_REVIEW_REQUIRED",opts:["NOT_AUTHORIZED","GO_READ_ONLY","HUMAN_REVIEW_REQUIRED","UNKNOWN"]},
+  {q:"Preview #812 é receipt canônico?",a:"NÃO",opts:["SIM","NÃO","UNKNOWN"]},
+  {q:"Qual evidência está UNKNOWN?",a:"Provider confirmation",opts:["Recovery Map v0.2","Provider confirmation","Preview #812","Review Gate"]},
+  {q:"Qual item está STALE?",a:"Dependency snapshot",opts:["Dependency snapshot","Review Gate","Recovery Map v0.2","Project Helix"]},
+  {q:"O que ocorreu imediatamente antes de Preview #812 na sequência temporal do fixture?",a:"Patrícia marcou revisão humana como necessária",opts:["Eduardo produziu Recovery Map v0.2","Patrícia marcou revisão humana como necessária","Missão criada","Rafael mapeou o cenário"]}
+ ]
+};
+let questions = [];
+let datasets = {};
 function esc(v){return String(v==null?"":v).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 function mapById(){return new Map(data.entities.map((e)=>[e.id,e]));}
 function baseline(){
@@ -91,12 +105,17 @@ function finish(){
  run.totalMs=run.results.reduce((s,x)=>s+x.elapsedMs,0);
  run.correct=run.results.filter((x)=>x.correct).length;
  run.accuracy=run.correct/run.results.length;
- const output={schema:"mcf-world-context-recovery-run/v1",fixtureRevision:data.sourceRevision,condition:run.condition,startedAt:run.startedAt,finishedAt:run.finishedAt,totalMs:run.totalMs,correct:run.correct,total:run.results.length,accuracy:run.accuracy,results:run.results,claimsBoundary:"Non-canonical local experiment result; no product GO by itself."};
+ const output={schema:"mcf-world-context-recovery-run/v1",fixtureId:data.experimentFixtureId,fixtureRevision:data.sourceRevision,condition:run.condition,startedAt:run.startedAt,finishedAt:run.finishedAt,totalMs:run.totalMs,correct:run.correct,total:run.results.length,accuracy:run.accuracy,results:run.results,claimsBoundary:"Non-canonical local experiment result; no product GO by itself."};
  $("#app").innerHTML='<section class="panel"><h2>Rodada concluída</h2><p><b>'+run.correct+'/'+run.results.length+'</b> corretas · '+(run.totalMs/1000).toFixed(1)+' s somados nas tarefas.</p><p class="muted">O JSON abaixo é exibido para captura de evidência. Nada é persistido automaticamente.</p><div class="result">'+esc(JSON.stringify(output,null,2))+'</div></section>';
  window.__MCF_EXPERIMENT_RESULT__=output;
 }
-$("#start").onclick=()=>{run={condition:$("#condition").value,index:0,results:[],startedAt:new Date().toISOString(),taskStarted:0};render();};
-data=await fetch("./fixture.json",{cache:"no-store"}).then((r)=>r.json());
+$("#start").onclick=()=>{const condition=$("#condition").value;data=datasets[condition];questions=questionSets[condition];run={condition,index:0,results:[],startedAt:new Date().toISOString(),taskStarted:0};render();};
+[datasets.baseline,datasets.structured]=await Promise.all([
+ fetch("./experiment-fixture-x.json",{cache:"no-store"}).then((r)=>r.json()),
+ fetch("./experiment-fixture-y.json",{cache:"no-store"}).then((r)=>r.json())
+]);
+data=datasets.baseline;
+questions=questionSets.baseline;
 </script>
 </body>
 </html>

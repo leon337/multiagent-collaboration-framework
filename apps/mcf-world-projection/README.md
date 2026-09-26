@@ -44,3 +44,12 @@ experiment.html runs the A/B task harness over the same local representative fix
 - Per-task elapsed time and accuracy remain only in page memory.
 - The result JSON is displayed for evidence capture; it is not persisted or submitted automatically.
 - This harness is read-only and is not itself a human-study result.
+
+### Single-participant carryover control
+
+For the initial LEANDRO pilot, the harness now uses two isomorphic but factually distinct representative fixtures:
+
+- Condition A uses experiment-fixture-x.json.
+- Condition B uses experiment-fixture-y.json.
+
+The question sets are parallel but require different factual answers. This reduces direct answer memorization between rounds. The pilot remains exploratory and cannot establish population-level superiority.

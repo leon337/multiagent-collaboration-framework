@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "HUMAN_CONTEXT_RECOVERY_EXPERIMENT_READY",
+  "current_state": "METHODOLOGY_REMEDIATION_IMPLEMENTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -23,7 +23,7 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "Execute the instrumented human A/B context-recovery experiment with LEANDRO using the same fixture; capture exact results, then obtain independent product-value audit before any scope expansion.",
+  "next_action": "Obtain Emily methodology re-gate on the counterbalanced harness SHA, then execute the LEANDRO exploratory A(X) vs B(Y) human pilot and independently review the captured evidence.",
   "prototype_path": "apps/mcf-world-projection",
   "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md",
   "implementation_regate": "docs/reviews/MCF-WORLD-PROJECTION-001-IMPLEMENTATION-RE-GATE.md",
@@ -31,5 +31,6 @@
   "context_recovery_dryrun": "docs/evidence/MCF-WORLD-PROJECTION-001-CONTEXT-RECOVERY-DRYRUN.md",
   "experiment_harness": "apps/mcf-world-projection/experiment.html",
   "harness_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-HARNESS-GATE.md",
-  "product_value_gate": "PENDING_HUMAN_EVIDENCE"
+  "product_value_gate": "PENDING_HUMAN_EVIDENCE",
+  "pilot_design": "A(X)_vs_B(Y)_ISOMORPHIC_FIXTURES"
 }
