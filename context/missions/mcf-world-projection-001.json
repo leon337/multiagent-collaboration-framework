@@ -5,13 +5,13 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "SEMANTIC_VISUAL_LANGUAGE_V0_1_GATED",
+  "current_state": "SEMANTIC_DISCRIMINATION_MICROTEST_S_GATED",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
   "active_branch": "mission/mcf-world-projection-001",
   "mcf_issue": 379,
-  "current_phase": "EVIDENCE_DRIVEN_UX_REFINEMENT",
+  "current_phase": "HUMAN_SEMANTIC_VALIDATION",
   "protocol": "docs/proposals/MCF-WORLD-PROJECTION-PROTOCOL-v0.1.md",
   "vertical_experiment": "docs/experiments/MCF-WORLD-PROJECTION-001-VERTICAL.md",
   "decision_record": "docs/decisions/MCF-WORLD-PROJECTION-001-ADR.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Obtain Laura/Leonardo/Emily exact-SHA final re-gate of Semantic Discrimination Microtest S after task-4 lexical leakage remediation. Human run remains blocked until PASS.",
+  "world_model_next_action": "Run exactly one frozen human Semantic Discrimination Microtest S session locally on the notebook; preserve the raw result regardless of score and review before any further product expansion.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -278,7 +278,7 @@
   "semantic_discrimination_microtest_s_instrumented_world": "apps/mcf-world-projection/semantic-visual-world-test-s.html",
   "semantic_discrimination_microtest_s_verifier": "apps/mcf-world-projection/verify-semantic-discrimination-test.py",
   "semantic_discrimination_microtest_s_proof": "docs/evidence/MCF-WORLD-SEMANTIC-DISCRIMINATION-S-INSTRUMENT-PROOF.md",
-  "semantic_discrimination_microtest_s_gate": "PENDING_FINAL_REGATE_AFTER_LEXICAL_LEAK_FIX",
+  "semantic_discrimination_microtest_s_gate": "PASS",
   "semantic_discrimination_microtest_s_remediation": {
     "task4_old": "Which object is a Gate? -> Approval Gate",
     "task4_problem": "lexical answer leakage",
@@ -286,5 +286,9 @@
     "task4_expected": "ARTIFACT",
     "frozen_visual_prototype_changed": false,
     "fixture_s_changed": false
-  }
+  },
+  "semantic_discrimination_microtest_s_gate_doc": "docs/reviews/MCF-WORLD-SEMANTIC-DISCRIMINATION-S-GATE.md",
+  "semantic_discrimination_microtest_s_audited_sha": "770a10c73e3cfbec9a70aad7a15c8c5f7a9824e4",
+  "semantic_visual_frozen_sha": "34c68563907027b166543b9e7d296fd61a0094bd",
+  "human_semantic_discrimination_s_status": "AUTHORIZED_NOT_STARTED"
 }
