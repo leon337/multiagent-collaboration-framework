@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mcf-world-model-contract-v0.1",
+  "title": "MCF World Model Contract v0.1",
+  "$defs": {
+    "worldRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "canonicalRef"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "kind": {
+          "enum": [
+            "project", "mission", "context", "agent", "decision",
+            "handoff", "human_gate", "artifact", "receipt",
+            "evidence", "conversation", "action"
+          ]
+        },
+        "canonicalRef": {"type": "string", "minLength": 1}
+      }
+    },
+    "sourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "ref"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "sourceRevision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "value"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "value": {"type": "string", "minLength": 1}
+      }
+    },
+    "revisionVectorEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "revision"],
+      "properties": {
+        "source": {"type": "string", "minLength": 1},
+        "revision": {"type": "string", "minLength": 1}
+      }
+    },
+    "trust": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["class"],
+      "properties": {
+        "class": {
+          "enum": [
+            "CANONICAL_SOURCE",
+            "VERIFIED_EXTERNAL",
+            "UNTRUSTED_EXTERNAL",
+            "REPRESENTATIVE_FIXTURE"
+          ]
+        },
+        "reason": {"type": "string"}
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "severity", "message", "sourceRefs"],
+      "properties": {
+        "type": {
+          "enum": [
+            "IDENTITY_AMBIGUITY",
+            "SOURCE_CONFLICT",
+            "MISSING_CANONICAL_VALUE",
+            "STALE_OBSERVATION",
+            "UNTRUSTED_INPUT",
+            "PROJECTION_ERROR"
+          ]
+        },
+        "severity": {"enum": ["INFO", "WARNING", "ERROR"]},
+        "message": {"type": "string", "minLength": 1},
+        "subjectRef": {"$ref": "#/$defs/worldRef"},
+        "sourceRefs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceRef"}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "sourceRefs"],
+      "properties": {
+        "mode": {"enum": ["EXPLICIT", "DERIVED", "INFERRED", "PROPOSED"]},
+        "sourceRefs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceRef"}
+        },
+        "ruleId": {"type": "string"}
+      }
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "from", "to", "provenance", "freshness", "trust"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "type": {
+          "enum": [
+            "contains", "continues_to", "supported_by", "produced",
+            "assigned_to", "gated_by", "depends_on", "handed_off_to"
+          ]
+        },
+        "from": {"$ref": "#/$defs/worldRef"},
+        "to": {"$ref": "#/$defs/worldRef"},
+        "provenance": {"$ref": "#/$defs/provenance"},
+        "freshness": {"enum": ["FRESH", "STALE", "UNKNOWN"]},
+        "trust": {"$ref": "#/$defs/trust"}
+      }
+    },
+    "contextEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "subject", "category", "content", "provenance",
+        "freshness", "trust", "revision"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "subject": {"$ref": "#/$defs/worldRef"},
+        "category": {
+          "enum": [
+            "STATE", "GOAL", "DECISION", "CONSTRAINT", "BLOCKER",
+            "ARTIFACT", "EVIDENCE", "OPEN_QUESTION", "NEXT_ACTION"
+          ]
+        },
+        "content": {"type": "string"},
+        "provenance": {"$ref": "#/$defs/provenance"},
+        "freshness": {"enum": ["FRESH", "STALE", "UNKNOWN"]},
+        "trust": {"$ref": "#/$defs/trust"},
+        "revision": {"$ref": "#/$defs/sourceRevision"}
+      }
+    },
+    "contextSlice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "scope", "revisionVector", "generatedAt", "focus",
+        "entries", "relations", "unknownRefs", "staleRefs",
+        "sourceRefs", "diagnostics"
+      ],
+      "properties": {
+        "schema": {"const": "world-context-slice/v1"},
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "project": {"$ref": "#/$defs/worldRef"},
+            "mission": {"$ref": "#/$defs/worldRef"},
+            "context": {"$ref": "#/$defs/worldRef"}
+          }
+        },
+        "revisionVector": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/revisionVectorEntry"}
+        },
+        "generatedAt": {"type": "string", "minLength": 1},
+        "focus": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/worldRef"}
+        },
+        "entries": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/contextEntry"}
+        },
+        "relations": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/relation"}
+        },
+        "unknownRefs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/worldRef"}
+        },
+        "staleRefs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/worldRef"}
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sourceRef"}
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/diagnostic"}
+        }
+      }
+    },
+    "agentContextPacket": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema", "packetId", "generatedAt", "recipient", "scope",
+        "objective", "constraints", "currentState", "decisions",
+        "blockers", "nextActions", "relevantArtifacts",
+        "relevantEvidence", "openQuestions", "revisionVector",
+        "sourceRefs", "diagnostics"
+      ],
+      "properties": {
+        "schema": {"const": "mcf-agent-context-packet/v1"},
+        "packetId": {"type": "string", "minLength": 1},
+        "generatedAt": {"type": "string", "minLength": 1},
+        "recipient": {"$ref": "#/$defs/worldRef"},
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mission"],
+          "properties": {
+            "project": {"$ref": "#/$defs/worldRef"},
+            "mission": {"$ref": "#/$defs/worldRef"},
+            "context": {"$ref": "#/$defs/worldRef"}
+          }
+        },
+        "objective": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
+        "constraints": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
+        "currentState": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
+        "decisions": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
+        "blockers": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
+        "nextActions": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
+        "relevantArtifacts": {"type": "array", "items": {"$ref": "#/$defs/worldRef"}},
+        "relevantEvidence": {"type": "array", "items": {"$ref": "#/$defs/worldRef"}},
+        "openQuestions": {"type": "array", "items": {"$ref": "#/$defs/contextEntry"}},
+        "revisionVector": {"type": "array", "items": {"$ref": "#/$defs/revisionVectorEntry"}},
+        "sourceRefs": {"type": "array", "items": {"$ref": "#/$defs/sourceRef"}},
+        "diagnostics": {"type": "array", "items": {"$ref": "#/$defs/diagnostic"}},
+        "authorityRef": {"type": "string"}
+      }
+    }
+  },
+  "oneOf": [
+    {"$ref": "#/$defs/contextSlice"},
+    {"$ref": "#/$defs/agentContextPacket"}
+  ]
+}

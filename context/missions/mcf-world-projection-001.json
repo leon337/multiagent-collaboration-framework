@@ -102,5 +102,15 @@
   "findability_r_gate_status": "PASS",
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
-  "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics."
+  "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
+  "parallel_architecture_state": "WORLD_MODEL_CONTRACT_V0_1_DRAFTED",
+  "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
+  "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
+  "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
+  "world_model_rebuild_spec": "docs/architecture/MCF-WORLD-MODEL-REBUILD-v0.1.md",
+  "world_model_example": "docs/examples/MCF-WORLD-MODEL-EXAMPLE-v0.1.json",
+  "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
+  "world_model_verifier": "tools/world-model/verify_contract.py",
+  "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
+  "world_model_next_action": "Obtain exact-SHA Sofia/Leonardo/Emily re-gate of the World Model Contract. Keep Findability R frozen and deferred."
 }
