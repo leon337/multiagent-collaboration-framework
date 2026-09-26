@@ -33,3 +33,14 @@ The fixture is explicitly representative and does not claim live telemetry.
 fixture.json is a MATERIALIZED_PROJECTION_FIXTURE for the UX experiment. It is not a WPP persistence schema, source adapter, domain adapter, canonical event stream, or live telemetry contract. Timeline order follows fixture seq only and does not claim causation.
 
 The verifier performs bounded static checks; it is not a general proof that arbitrary future code can never cause an external effect.
+
+## Context-recovery experiment harness
+
+experiment.html runs the A/B task harness over the same local representative fixture.
+
+- Condition A: linear presentation.
+- Condition B: structured Cockpit + Timeline + focused relations.
+- Eight identical objective questions.
+- Per-task elapsed time and accuracy remain only in page memory.
+- The result JSON is displayed for evidence capture; it is not persisted or submitted automatically.
+- This harness is read-only and is not itself a human-study result.

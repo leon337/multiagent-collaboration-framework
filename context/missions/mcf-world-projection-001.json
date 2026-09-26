@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "PROTOTYPE_READ_ONLY_GATE_PASS",
+  "current_state": "CONTEXT_RECOVERY_HARNESS_READY",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -23,9 +23,11 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "Run the defined linear-vs-structured context-recovery experiment; do not expand to mutation, production or 3D before evidence.",
+  "next_action": "Run the instrumented human linear-vs-structured context-recovery experiment and capture evidence; do not expand to mutation, production or 3D before the product gate.",
   "prototype_path": "apps/mcf-world-projection",
   "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md",
   "implementation_regate": "docs/reviews/MCF-WORLD-PROJECTION-001-IMPLEMENTATION-RE-GATE.md",
-  "audited_sha": "6b57dcee8ab38373b1396654999502aedfc7b962"
+  "audited_sha": "6b57dcee8ab38373b1396654999502aedfc7b962",
+  "context_recovery_dryrun": "docs/evidence/MCF-WORLD-PROJECTION-001-CONTEXT-RECOVERY-DRYRUN.md",
+  "experiment_harness": "apps/mcf-world-projection/experiment.html"
 }

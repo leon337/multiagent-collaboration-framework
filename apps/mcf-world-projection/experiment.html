@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCF World Projection — Context Recovery Experiment</title>
+<style>
+:root{color-scheme:dark;font:15px system-ui;background:#0b0f14;color:#e7edf4}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:1180px;margin:auto;padding:24px}
+header,.panel{background:#111821;border:1px solid #263241;border-radius:14px;padding:18px;margin-bottom:16px}
+h1,h2,h3{margin:.2rem 0 .8rem}.muted{color:#91a0b2}.grid{display:grid;grid-template-columns:1.3fr .7fr;gap:16px}
+button,select{background:#1b2634;color:#fff;border:1px solid #3b4d63;border-radius:9px;padding:10px 13px}
+button{cursor:pointer}.event,.relation{padding:9px 0;border-bottom:1px solid #24303d}
+.answers label{display:block;padding:9px;border:1px solid #293747;border-radius:8px;margin:7px 0;cursor:pointer}
+.result{white-space:pre-wrap;background:#0a0e13;border-radius:8px;padding:12px;overflow:auto}
+code{overflow-wrap:anywhere}@media(max-width:780px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="muted">MCF-WORLD-PROJECTION-001 · READ-ONLY EXPERIMENT HARNESS</div>
+<h1>Context Recovery A/B</h1>
+<p>O mesmo fixture alimenta as duas condições. O harness mede tempo por tarefa e acurácia. Não grava estado canônico, não chama Dual Browser e não executa efeitos externos.</p>
+<label>Condição:
+<select id="condition"><option value="baseline">A — Linear</option><option value="structured">B — Estruturada</option></select>
+</label>
+<button id="start">Iniciar rodada</button>
+</header>
+<div id="app"></div>
+</div>
+<script type="module">
+const $ = (s) => document.querySelector(s);
+let data = null;
+let run = null;
+const questions = [
+ {q:"Qual é o estado atual da missão?",a:"WORKING",opts:["ACTIVE","WORKING","COMPLETED","UNKNOWN"]},
+ {q:"Quem orquestra a missão?",a:"MESTRE",opts:["MESTRE","Leonardo","Sofia","Emily"]},
+ {q:"Quem auditou a missão?",a:"Emily",opts:["Laura","Sofia","Emily","MESTRE"]},
+ {q:"Qual gate está vigente para o protótipo?",a:"GO_READ_ONLY",opts:["NOT_AUTHORIZED","GO_READ_ONLY","PRODUCTION","UNKNOWN"]},
+ {q:"O Draft PR #380 é receipt canônico?",a:"NÃO",opts:["SIM","NÃO","UNKNOWN"]},
+ {q:"Qual evidência está UNKNOWN?",a:"Rebuild proof",opts:["WPP v0.1","Rebuild proof","Draft PR #380","Emily Gate"]},
+ {q:"Qual item está STALE?",a:"Gate futuro",opts:["Gate futuro","Emily Gate","WPP v0.1","MCF"]},
+ {q:"O que ocorreu imediatamente antes do Draft PR #380 na sequência temporal do fixture?",a:"GO somente para protótipo read-only",opts:["WPP consolidado","GO somente para protótipo read-only","Issue #379 criada","Product brief definiu o vertical"]}
+];
+function esc(v){return String(v==null?"":v).replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function mapById(){return new Map(data.entities.map((e)=>[e.id,e]));}
+function baseline(){
+ const rows = [];
+ data.entities.forEach((e)=>rows.push(e.label+": tipo="+e.kind+"; estado="+e.state+"; freshness="+e.freshness+"; "+e.summary));
+ data.events.forEach((e)=>rows.push("Evento "+e.seq+": "+e.summary+" Ator="+e.actor+". Assunto="+e.subject+"."));
+ data.relations.forEach((r)=>rows.push("Relação: "+r.from+" "+r.type+" "+r.to+"."));
+ return '<section class="panel"><h2>Condição A — Linear</h2><p class="muted">Lista sequencial dos mesmos fatos.</p>'+rows.map((x)=>'<div class="event">'+esc(x)+'</div>').join("")+'</section>';
+}
+function structured(){
+ const m=mapById(), mission=m.get("mission:world"), gate=m.get("gate:read-only"), ev=m.get("evidence:rebuild"), stale=m.get("gate:future"), pr=m.get("effect:pr380");
+ let h='<section class="panel"><h2>Condição B — Estruturada</h2><h3>Cockpit</h3>';
+ h+='<div class="event">Missão <b>'+esc(mission.label)+'</b> · estado <b>'+esc(mission.state)+'</b></div>';
+ h+='<div class="event">Gate <b>'+esc(gate.label)+'</b> · <b>'+esc(gate.state)+'</b> · '+esc(gate.freshness)+'</div>';
+ h+='<div class="event">'+esc(ev.label)+' · '+esc(ev.state)+' · <b>'+esc(ev.freshness)+'</b></div>';
+ h+='<div class="event">'+esc(stale.label)+' · '+esc(stale.state)+' · <b>'+esc(stale.freshness)+'</b></div>';
+ h+='<div class="event">'+esc(pr.label)+' · '+esc(pr.state)+' · '+esc(pr.summary)+'</div><h3>Timeline</h3>';
+ data.events.forEach((e)=>{h+='<div class="event">'+e.seq+' · '+esc(e.summary)+' — '+esc((m.get(e.actor)||{}).label||e.actor)+'</div>';});
+ h+='<h3>Grafo focado</h3>';
+ data.relations.forEach((r)=>{h+='<div class="relation">'+esc((m.get(r.from)||{}).label||r.from)+' <code>'+esc(r.type)+'</code> '+esc((m.get(r.to)||{}).label||r.to)+'</div>';});
+ return h+'</section>';
+}
+function render(){
+ if(!run){$("#app").innerHTML="";return;}
+ const q=questions[run.index];
+ const surface = run.condition==="baseline" ? baseline() : structured();
+ let a='<div class="answers">';
+ q.opts.forEach((o)=>{a+='<label><input type="radio" name="a" value="'+esc(o)+'"> '+esc(o)+'</label>';});
+ a+='</div><button id="answer">Responder</button>';
+ $("#app").innerHTML='<div class="grid"><div>'+surface+'</div><aside class="panel"><div class="muted">Tarefa '+(run.index+1)+'/'+questions.length+'</div><h2>'+esc(q.q)+'</h2>'+a+'</aside></div>';
+ $("#answer").onclick=answer;
+ run.taskStarted=performance.now();
+}
+function answer(){
+ const picked=document.querySelector('input[name=a]:checked');
+ if(!picked)return;
+ const q=questions[run.index];
+ const elapsed=performance.now()-run.taskStarted;
+ run.results.push({task:run.index+1,question:q.q,answer:picked.value,expected:q.a,correct:picked.value===q.a,elapsedMs:Math.round(elapsed)});
+ run.index++;
+ if(run.index>=questions.length){finish();return;}
+ render();
+}
+function finish(){
+ run.finishedAt=new Date().toISOString();
+ run.totalMs=run.results.reduce((s,x)=>s+x.elapsedMs,0);
+ run.correct=run.results.filter((x)=>x.correct).length;
+ run.accuracy=run.correct/run.results.length;
+ const output={schema:"mcf-world-context-recovery-run/v1",fixtureRevision:data.sourceRevision,condition:run.condition,startedAt:run.startedAt,finishedAt:run.finishedAt,totalMs:run.totalMs,correct:run.correct,total:run.results.length,accuracy:run.accuracy,results:run.results,claimsBoundary:"Non-canonical local experiment result; no product GO by itself."};
+ $("#app").innerHTML='<section class="panel"><h2>Rodada concluída</h2><p><b>'+run.correct+'/'+run.results.length+'</b> corretas · '+(run.totalMs/1000).toFixed(1)+' s somados nas tarefas.</p><p class="muted">O JSON abaixo é exibido para captura de evidência. Nada é persistido automaticamente.</p><div class="result">'+esc(JSON.stringify(output,null,2))+'</div></section>';
+ window.__MCF_EXPERIMENT_RESULT__=output;
+}
+$("#start").onclick=()=>{run={condition:$("#condition").value,index:0,results:[],startedAt:new Date().toISOString(),taskStarted:0};render();};
+data=await fetch("./fixture.json",{cache:"no-store"}).then((r)=>r.json());
+</script>
+</body>
+</html>
