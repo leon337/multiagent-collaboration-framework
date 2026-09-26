@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "METHODOLOGY_REMEDIATION_IMPLEMENTED",
+  "current_state": "HUMAN_PILOT_READY",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -23,7 +23,7 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "Obtain Emily methodology re-gate on the counterbalanced harness SHA, then execute the LEANDRO exploratory A(X) vs B(Y) human pilot and independently review the captured evidence.",
+  "next_action": "LEANDRO executes the read-only A(X) then B(Y) pilot in the local harness. Capture the two result JSON objects and obtain independent evidence audit before any product or scope decision.",
   "prototype_path": "apps/mcf-world-projection",
   "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md",
   "implementation_regate": "docs/reviews/MCF-WORLD-PROJECTION-001-IMPLEMENTATION-RE-GATE.md",
@@ -32,5 +32,8 @@
   "experiment_harness": "apps/mcf-world-projection/experiment.html",
   "harness_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-HARNESS-GATE.md",
   "product_value_gate": "PENDING_HUMAN_EVIDENCE",
-  "pilot_design": "A(X)_vs_B(Y)_ISOMORPHIC_FIXTURES"
+  "pilot_design": "A(X)_vs_B(Y)_ISOMORPHIC_FIXTURES",
+  "methodology_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-METHODOLOGY-GATE.md",
+  "methodology_gate_status": "PASS_EXPLORATORY_SINGLE_PARTICIPANT",
+  "methodology_audited_sha": "56e20cb38951213814b8ca804a89c9e176d732a1"
 }
