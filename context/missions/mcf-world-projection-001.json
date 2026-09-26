@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "STRUCTURED_UX_V0_2_1_IMPLEMENTED",
+  "current_state": "FOCUSED_HUMAN_TEST_READY",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -23,7 +23,7 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "Obtain Laura/Sofia/Emily re-gate on UX v0.2.1. If PASS, freeze the SHA and offer LEANDRO a short focused comprehension test. Do not expand to 3D or mutation.",
+  "next_action": "LEANDRO executes one short read-only v0.2.1 focused comprehension test. Preserve the local result immediately and audit it before any further scope decision.",
   "prototype_path": "apps/mcf-world-projection",
   "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md",
   "implementation_regate": "docs/reviews/MCF-WORLD-PROJECTION-001-IMPLEMENTATION-RE-GATE.md",
@@ -31,7 +31,7 @@
   "context_recovery_dryrun": "docs/evidence/MCF-WORLD-PROJECTION-001-CONTEXT-RECOVERY-DRYRUN.md",
   "experiment_harness": "apps/mcf-world-projection/experiment.html",
   "harness_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-HARNESS-GATE.md",
-  "product_value_gate": "NOT_YET_PRODUCT_GO",
+  "product_value_gate": "PENDING_FOCUSED_HUMAN_RESULT",
   "pilot_design": "A(X)_vs_B(Y)_ISOMORPHIC_FIXTURES",
   "methodology_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-METHODOLOGY-GATE.md",
   "methodology_gate_status": "PASS_EXPLORATORY_SINGLE_PARTICIPANT",
@@ -58,5 +58,8 @@
   "focused_comprehension_harness": "apps/mcf-world-projection/comprehension-test.html",
   "ux_v0_2_1": "apps/mcf-world-projection/index.html",
   "focused_test_design": "EXPLORE_THEN_RECALL",
-  "focused_result_persistence": "BROWSER_LOCAL_STORAGE_NON_CANONICAL"
+  "focused_result_persistence": "BROWSER_LOCAL_STORAGE_NON_CANONICAL",
+  "ux_v0_2_1_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-V0.2.1-GATE.md",
+  "ux_v0_2_1_gate_status": "PASS",
+  "ux_v0_2_1_audited_sha": "dedab817ff6a1f57fabbb7d852e1bdf854c1ffda"
 }
