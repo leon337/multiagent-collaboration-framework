@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_SOURCE_PREVIEW_V0_4_GATED",
+  "parallel_architecture_state": "WORLD_SOURCE_PREVIEW_V0_4_HARDENED_GATED",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Harden Source Preview v0.4 to use a single byte read for digest + preview, then exact-SHA re-gate. Human Findability R remains frozen/deferred.",
+  "world_model_next_action": "Resolve the next non-human read-only step with Leonardo/Sofia/Emily: either Evidence Relevance Anchor v0.5 or hold for later human evidence/source navigation validation. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -199,5 +199,6 @@
   "world_source_preview_v0_4_evidence": "docs/evidence/MCF-WORLD-SOURCE-PREVIEW-V0.4-PROOF.md",
   "world_source_preview_v0_4_gate": "PASS",
   "world_source_preview_v0_4_gate_doc": "docs/reviews/MCF-WORLD-SOURCE-PREVIEW-v0.4-GATE.md",
-  "world_source_preview_v0_4_audited_sha": "64ac8b520c8f3bbe26e76ac6fc1635d6dc7833df"
+  "world_source_preview_v0_4_audited_sha": "74a37c60a2e5a7aff9ef846c9f708dfeb6eeaf5a",
+  "world_source_preview_v0_4_toctou_gate_doc": "docs/reviews/MCF-WORLD-SOURCE-PREVIEW-v0.4-TOCTOU-GATE.md"
 }
