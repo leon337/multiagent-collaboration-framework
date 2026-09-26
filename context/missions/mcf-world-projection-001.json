@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "HUMAN_FINDABILITY_R_DEFERRED_PARTICIPANT_FATIGUE",
+  "current_state": "HUMAN_FINDABILITY_R_RESULT_CAPTURED",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -31,7 +31,7 @@
   "context_recovery_dryrun": "docs/evidence/MCF-WORLD-PROJECTION-001-CONTEXT-RECOVERY-DRYRUN.md",
   "experiment_harness": "apps/mcf-world-projection/experiment.html",
   "harness_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-HARNESS-GATE.md",
-  "product_value_gate": "PENDING_HUMAN_FINDABILITY_R_RESULT",
+  "product_value_gate": "PENDING_FINDABILITY_R_TEAM_REVIEW",
   "pilot_design": "A(X)_vs_B(Y)_ISOMORPHIC_FIXTURES",
   "methodology_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-METHODOLOGY-GATE.md",
   "methodology_gate_status": "PASS_EXPLORATORY_SINGLE_PARTICIPANT",
@@ -101,7 +101,7 @@
   "findability_r_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-FINDABILITY-R-GATE.md",
   "findability_r_gate_status": "PASS",
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
-  "human_findability_r_status": "NOT_STARTED_DEFERRED",
+  "human_findability_r_status": "COMPLETED_RESULT_CAPTURED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
   "parallel_architecture_state": "WORLD_READONLY_STACK_HARDENED_KNOWN_GOOD_HOLD",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "HOLD functional expansion. Resume product work only with later human validation. Until then, only targeted hardening/regression/security/documentation in response to a concrete identified risk. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Laura/Leonardo/Emily review exact human Findability R evidence and qualitative semantic-visual feedback. Do not implement new product feature until review.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -242,5 +242,10 @@
   "world_readonly_checkpoint_filesystem_preflight_gate": "PASS",
   "world_readonly_checkpoint_filesystem_preflight_gate_doc": "docs/reviews/MCF-WORLD-READONLY-CHECKPOINT-FILESYSTEM-PREFLIGHT-GATE.md",
   "world_readonly_checkpoint_filesystem_preflight_audited_sha": "1fba6a814d5541f3a9f04c0eb6caf48451ab050b",
-  "world_readonly_checkpoint_filesystem_preflight_status": "PASS_EARLY_POSIX_ENVIRONMENT_GUARD"
+  "world_readonly_checkpoint_filesystem_preflight_status": "PASS_EARLY_POSIX_ENVIRONMENT_GUARD",
+  "human_findability_r_result": "docs/evidence/MCF-WORLD-PROJECTION-001-HUMAN-FINDABILITY-R.json",
+  "human_findability_r_summary": "docs/evidence/MCF-WORLD-PROJECTION-001-HUMAN-FINDABILITY-R-SUMMARY.md",
+  "human_findability_r_qualitative_feedback": "docs/evidence/MCF-WORLD-PROJECTION-001-HUMAN-FINDABILITY-R-QUALITATIVE-FEEDBACK.md",
+  "human_findability_r_score": "3/5",
+  "human_findability_r_total_ms": 403977
 }
