@@ -152,3 +152,42 @@ No:
 - 3D dependency.
 
 The operational output is disposable and reconstructible.
+
+## Gate remediation after SHA 659135a2
+
+Sofia and Emily identified two semantic issues in the first gate pass:
+
+1. a missing/UNKNOWN gate evidence target still received a supported_by relation;
+2. an observed/digested gate-review file was classified as CANONICAL_SOURCE.
+
+Remediation:
+
+- gate-review Evidence objects are now PROJECTION_DERIVED, with an explicit reason that file existence/digest proves observed bytes and reachability, not independent canonical truth;
+- supported_by relations are created only when the evidence target is materially observed (freshness != UNKNOWN);
+- supported_by relation trust is PROJECTION_DERIVED;
+- missing evidence remains:
+  - Evidence UNKNOWN;
+  - MISSING_CANONICAL_VALUE;
+  - ContextSlice.unknownRefs;
+  - AgentContextPacket.attention.unknownRefs;
+  - AgentContextPacket.relevantEvidence;
+  - no supported_by assertion.
+
+Regression results after remediation:
+
+    OPERATIONAL_CONTEXT_V01 PASS
+    CONTEXT_CONSUMER_V02_CONSISTENCY PASS
+    FULL_PIPELINE_V01 PASS
+    REAL_SOURCE_ADAPTER_V01 PASS
+    ADAPTER SCHEMA PASS for ContextSlice, AgentContextPacket and all 16 ProjectedObjects
+
+Nominal current output:
+
+- 15 ContextEntries;
+- 16 ProjectedObjects;
+- 6 relations;
+- 8 relevant evidence refs;
+- 8 revision-vector entries;
+- 0 diagnostics;
+- all repo-file gate-review objects: PROJECTION_DERIVED;
+- all supported_by relations: PROJECTION_DERIVED.

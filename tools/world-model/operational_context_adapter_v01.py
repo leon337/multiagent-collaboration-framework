@@ -199,10 +199,13 @@ def build_operational_context(base_bundle, mission, repo_root, repo):
                     "revision":{"source":"repo-file","value":dg},
                     "observedAt":out["generatedAt"],
                     "freshness":"FRESH",
-                    "trust":trust("CANONICAL_SOURCE"),
+                    "trust":trust(
+                        "PROJECTION_DERIVED",
+                        "Referenced gate-review bytes were observed and digested; existence/integrity does not make the file an independent canonical truth source."
+                    ),
                     "payload":{
                         "evidenceType":"gate-review",
-                        "summary":"Gate evidence for "+spec["name"]+"; audited SHA="+str(audited_sha or "not-recorded")
+                        "summary":"Referenced gate evidence for "+spec["name"]+"; audited SHA="+str(audited_sha or "not-recorded")
                     },
                     "sourceRefs":[source_ref("repo-file",doc)],
                     "diagnostics":[]
@@ -231,17 +234,21 @@ def build_operational_context(base_bundle, mission, repo_root, repo):
             out["projectedObjects"].append(evidence_obj)
             if evidence_ref not in packet["relevantEvidence"]:
                 packet["relevantEvidence"].append(evidence_ref)
-            sl["relations"].append(relation(
-                "rel:gate:"+spec["name"]+":supported-by",
-                "supported_by",
-                decision_ref,
-                evidence_ref,
-                "EXPLICIT",
-                [source_ref("mission-record","context/missions/mcf-world-projection-001.json#"+spec["docField"])],
-                freshness=evidence_obj["freshness"],
-                trust_class=evidence_obj["trust"]["class"],
-                reason=evidence_obj["trust"].get("reason")
-            ))
+
+            # supported_by asserts observed support. A missing/UNKNOWN target is only
+            # an expected evidence reference and MUST NOT create this relation.
+            if evidence_obj["freshness"] != "UNKNOWN":
+                sl["relations"].append(relation(
+                    "rel:gate:"+spec["name"]+":supported-by",
+                    "supported_by",
+                    decision_ref,
+                    evidence_ref,
+                    "EXPLICIT",
+                    [source_ref("mission-record","context/missions/mcf-world-projection-001.json#"+spec["docField"])],
+                    freshness=evidence_obj["freshness"],
+                    trust_class="PROJECTION_DERIVED",
+                    reason="Support relation is projected from the mission-record gate-doc reference plus observed file availability; file content is not independently promoted to canonical truth."
+                ))
 
     if evidence_revisions:
         sl["revisionVector"].extend(evidence_revisions)

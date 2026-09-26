@@ -32,8 +32,10 @@ for spec in GATES:
     ev_ref="repo-file://leon337/multiagent-collaboration-framework/"+doc
     ev_obj=next(x for x in a["projectedObjects"] if x["ref"]["canonicalRef"]==ev_ref)
     assert ev_obj["freshness"]=="FRESH"
+    assert ev_obj["trust"]["class"]=="PROJECTION_DERIVED"
     assert ev_obj["revision"]["value"]==digest_file(ROOT/doc)
-    assert any(r["type"]=="supported_by" and r["from"]==dec["subject"] and r["to"]==ev_obj["ref"] for r in sl["relations"])
+    support=next(r for r in sl["relations"] if r["type"]=="supported_by" and r["from"]==dec["subject"] and r["to"]==ev_obj["ref"])
+    assert support["trust"]["class"]=="PROJECTION_DERIVED"
     assert ev_obj["ref"] in packet["relevantEvidence"]
 
 assert packet["attention"]["unknownRefs"]==sl["unknownRefs"]
@@ -47,6 +49,10 @@ x=build_operational_context(base,bad,ROOT,"leon337/multiagent-collaboration-fram
 assert any(d["type"]=="MISSING_CANONICAL_VALUE" and "DOES-NOT-EXIST" in d["message"] for d in x["contextSlice"]["diagnostics"])
 missing_ref=next(r for r in x["contextSlice"]["unknownRefs"] if "DOES-NOT-EXIST" in r["canonicalRef"])
 assert missing_ref in x["agentContextPacket"]["attention"]["unknownRefs"]
+assert not any(
+    r["type"]=="supported_by" and r["to"]==missing_ref
+    for r in x["contextSlice"]["relations"]
+), "UNKNOWN/missing evidence must not assert supported_by"
 
 # Mixed revisions are preserved, not collapsed into one fake canonical revision.
 repo_file_revs=[r for r in sl["revisionVector"] if r["source"].startswith("repo-file:")]
@@ -61,7 +67,7 @@ for spec in GATES:
 assert page.count("data-supported-by-ref=") >= len(GATES)
 
 for marker in [
-    "WORLD_REAL_SOURCE_INTEGRATION_V0_1_GATED",
+    mission["parallel_architecture_state"],
     "NOT_STARTED_DEFERRED",
     "world-model-contract gate: PASS",
     "real-source-v0.1 gate: PASS"

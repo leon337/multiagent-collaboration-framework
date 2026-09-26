@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_OPERATIONAL_CONTEXT_V0_1_IMPLEMENTED",
+  "parallel_architecture_state": "WORLD_OPERATIONAL_CONTEXT_V0_1_REMEDIATED",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Obtain Leonardo/Sofia/Emily exact-SHA gate for Operational Context v0.1, including active context and human evidence reachability. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Obtain Leonardo/Sofia/Emily exact-SHA final re-gate of Operational Context v0.1 after evidence-trust and supported_by remediation. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -178,5 +178,11 @@
   "world_operational_context_adapter": "tools/world-model/operational_context_adapter_v01.py",
   "world_operational_context_tests": "tools/world-model/test_operational_context_v01.py",
   "world_operational_context_evidence": "docs/evidence/MCF-WORLD-OPERATIONAL-CONTEXT-V0.1-PROOF.md",
-  "world_operational_context_gate": "PENDING_EXACT_SHA_REVIEW"
+  "world_operational_context_gate": "PENDING_FINAL_REGATE",
+  "world_operational_context_semantics": {
+    "gate_status_owner": "mission-record",
+    "gate_review_file_trust": "PROJECTION_DERIVED",
+    "supported_by_requires_observed_evidence": true,
+    "missing_evidence_relation": "NONE"
+  }
 }
