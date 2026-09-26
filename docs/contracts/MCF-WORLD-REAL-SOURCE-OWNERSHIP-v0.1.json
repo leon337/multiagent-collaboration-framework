@@ -1,0 +1,45 @@
+{
+  "schema": "mcf-world-real-source-ownership/v1",
+  "factPolicies": {
+    "project.canonical_repository": {
+      "owner": "project_registry",
+      "source": "context/projects/multiagent-collaboration-framework.yaml#identity.canonical_repository"
+    },
+    "mission.current_state": {
+      "owner": "mission_record",
+      "source": "context/missions/mcf-world-projection-001.json#current_state"
+    },
+    "mission.product_value_gate": {
+      "owner": "mission_record",
+      "source": "context/missions/mcf-world-projection-001.json#product_value_gate"
+    },
+    "mission.architecture_class": {
+      "owner": "mission_record",
+      "source": "context/missions/mcf-world-projection-001.json#world_model_architecture_class"
+    },
+    "github.issue379.state": {
+      "owner": "github_issue_379",
+      "source": "github://leon337/multiagent-collaboration-framework/issues/379"
+    },
+    "github.pr380.state": {
+      "owner": "github_pr_380",
+      "source": "github://leon337/multiagent-collaboration-framework/pull/380"
+    },
+    "github.pr380.draft": {
+      "owner": "github_pr_380",
+      "source": "github://leon337/multiagent-collaboration-framework/pull/380"
+    },
+    "github.pr380.head_sha": {
+      "owner": "github_pr_380",
+      "source": "github://leon337/multiagent-collaboration-framework/pull/380"
+    },
+    "git.local.branch": {
+      "owner": "local_git",
+      "source": "git://local/mission/mcf-world-projection-001"
+    },
+    "git.local.head_sha": {
+      "owner": "local_git",
+      "source": "git://local/mission/mcf-world-projection-001"
+    }
+  }
+}
