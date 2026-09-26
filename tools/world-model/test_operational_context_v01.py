@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import copy
 import json
+import os
 import tempfile
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from operational_context_adapter_v01 import build_operational_context, GATES, di
 from context_consumer_v02 import render
 
 ROOT=Path(__file__).resolve().parents[2]
-BASE=Path("/tmp/mcf-world-operational-base.json")
+BASE=Path(os.environ.get("MCF_WORLD_OPERATIONAL_BASE","/tmp/mcf-world-operational-base.json"))
 if not BASE.exists():
     raise SystemExit("base bundle missing: "+str(BASE))
 base=json.loads(BASE.read_text())
