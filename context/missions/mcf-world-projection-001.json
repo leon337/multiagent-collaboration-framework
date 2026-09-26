@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_REAL_SOURCE_INTEGRATION_V0_1_REMEDIATED",
+  "parallel_architecture_state": "WORLD_REAL_SOURCE_INTEGRATION_V0_1_GATED",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Obtain Sofia/Emily exact-SHA re-gate for source-specific revisions, snapshot freshness and AgentContextPacket attention. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Build a richer read-only Operational Context Slice from real MCF mission/gate/evidence/provider sources with explicit ownership and mixed-revision tests. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -163,9 +163,11 @@
   "world_real_source_adapter": "tools/world-model/real_source_adapter_v01.py",
   "world_real_source_tests": "tools/world-model/test_real_source_adapter_v01.py",
   "world_real_source_evidence": "docs/evidence/MCF-WORLD-REAL-SOURCE-INTEGRATION-V0.1-PROOF.md",
-  "world_real_source_gate": "PENDING_FINAL_REGATE",
+  "world_real_source_gate": "PASS",
   "world_real_source_remediation": "docs/reviews/MCF-WORLD-REAL-SOURCE-REMEDIATION-v0.1.md",
   "world_real_source_revision_semantics": "SOURCE_SPECIFIC_SHA256_DIGESTS_PLUS_INPUT_SET_DIGEST",
   "world_real_source_freshness_semantics": "SNAPSHOT_OBSERVED_AT_PLUS_TTL_PLUS_EXPLICIT_EVALUATION_TIME",
-  "agent_context_attention": "MIRROR_CONTEXTSLICE_UNKNOWN_AND_STALE_REFS"
+  "agent_context_attention": "MIRROR_CONTEXTSLICE_UNKNOWN_AND_STALE_REFS",
+  "world_real_source_gate_doc": "docs/reviews/MCF-WORLD-REAL-SOURCE-INTEGRATION-v0.1-GATE.md",
+  "world_real_source_audited_sha": "c26cbe8261d8fdc791ea00103fa807d1c6fb83d3"
 }
