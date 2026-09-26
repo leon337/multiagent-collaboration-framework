@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCF World — Semantic Discrimination Microtest S</title>
+<style>
+:root{color-scheme:dark;font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#080d12;color:#eef3f8;--panel:#111923;--line:#2a3848;--muted:#94a4b8}
+*{box-sizing:border-box}body{margin:0;background:#080d12;color:#eef3f8}.wrap{max-width:1450px;margin:auto;padding:12px}
+.head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:10px}.head h1{margin:2px 0;font-size:clamp(22px,3vw,36px)}.ey{font-size:11px;letter-spacing:.12em;color:var(--muted);font-weight:800}.flag{border:1px solid #61758d;border-radius:999px;padding:5px 8px;font-size:11px}
+.questionBar{position:sticky;top:0;z-index:20;background:#0d151e;border:1px solid #40536a;border-radius:12px;padding:11px 13px;margin-bottom:8px;box-shadow:0 8px 28px #0008}.questionBar strong{font-size:18px;display:block;margin-top:3px}
+.world{width:100%;height:66vh;min-height:500px;border:1px solid var(--line);border-radius:12px;background:#090d12}.world.pending{pointer-events:none;opacity:.65}
+.answerPanel,.result,.qual{margin-top:10px;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px}.answers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.answers button,.qual button,.finish{font:inherit;color:inherit;background:#17212e;border:1px solid #3b4d61;border-radius:9px;padding:11px;cursor:pointer;text-align:left}.answers button:hover,.qual button:hover{border-color:#8fa8c0}.progress{color:var(--muted);font-size:12px;margin-bottom:5px}.hint{color:var(--muted);margin:6px 0 0}.qualRow{display:grid;grid-template-columns:1.1fr repeat(3,.6fr);gap:8px;align-items:center;margin:10px 0}.qualRow button{text-align:center}.qualRow button.on{background:#eef3f8;color:#081019}.qual textarea{width:100%;min-height:80px;background:#0b1219;color:#eef3f8;border:1px solid #3b4d61;border-radius:9px;padding:9px}.finish{display:block;width:100%;text-align:center;font-weight:900;margin-top:10px}.result pre{white-space:pre-wrap;overflow:auto;background:#070b10;border-radius:9px;padding:10px}.saveState{font-weight:800}
+[hidden]{display:none!important}
+@media(max-width:800px){.answers{grid-template-columns:1fr}.qualRow{grid-template-columns:1fr 1fr 1fr}.qualRow>span{grid-column:1/-1}.world{height:62vh;min-height:470px}.head{align-items:start;flex-direction:column}}
+</style>
+</head>
+<body><div class="wrap">
+<header class="head">
+  <div><div class="ey">MCF-WORLD-PROJECTION-001 · HUMAN VALIDATION</div><h1>Semantic Discrimination Microtest S</h1></div>
+  <div class="flag">OPEN INTERFACE · READ-ONLY · FIXTURE S</div>
+</header>
+
+<section id="test">
+  <div class="questionBar"><div id="progress" class="progress"></div><strong id="question"></strong><p id="hint" class="hint"></p></div>
+  <iframe id="world" class="world pending" src="./semantic-visual-world-test-s.html" title="MCF World Semantic Visual Language v0.1"></iframe>
+  <section class="answerPanel"><div class="ey">RESPOSTA</div><div id="answers" class="answers"></div></section>
+</section>
+
+<section id="qual" class="qual" hidden>
+  <div class="ey">FEEDBACK QUALITATIVO · NÃO ALTERA O SCORE</div>
+  <h2>Como foi ler a nova linguagem visual?</h2>
+  <div class="qualRow" data-q="legend_helpful"><span>A legenda ajudou?</span><button data-v="sim">Sim</button><button data-v="parcial">Parcial</button><button data-v="nao">Não</button></div>
+  <div class="qualRow" data-q="visual_language_easy_to_learn"><span>A linguagem visual parece fácil de aprender?</span><button data-v="sim">Sim</button><button data-v="parcial">Parcial</button><button data-v="nao">Não</button></div>
+  <label>Algum sinal visual ainda confundiu você?<textarea id="confusingSignals" placeholder="Opcional"></textarea></label>
+  <button id="finish" class="finish">Finalizar e salvar resultado</button>
+</section>
+
+<section id="result" class="result" hidden>
+  <div class="ey">RESULTADO SALVO</div>
+  <h2 id="score"></h2>
+  <p id="saveState" class="saveState"></p>
+  <pre id="json"></pre>
+</section>
+</div>
+
+<script>
+const tasks=[
+ {task:1,question:"Qual item ainda não foi confirmado?",hint:"Use a interface normalmente; não memorize.",expected:"Signature receipt",expectedEntityId:"evidence:rebuild",answers:["Signature receipt","Approval Gate","Build #1142","Runtime snapshot"]},
+ {task:2,question:"Qual item precisa ser revalidado porque pode ter mudado?",hint:"Freshness e tipo são dimensões diferentes.",expected:"Runtime snapshot",expectedEntityId:"gate:future",answers:["Approval Gate","Runtime snapshot","Control Matrix v3","Signature receipt"]},
+ {task:3,question:"Qual objeto foi observado pelo provider, mas não é o receipt/evidence canônico?",hint:"Procure distinguir Artifact observado de Evidence pendente.",expected:"Build #1142",expectedEntityId:"effect:pr380",answers:["Build #1142","Signature receipt","Control Matrix v3","Approval Gate"]},
+ {task:4,question:"Qual objeto é um Gate?",hint:"Use ícone + rótulo de tipo.",expected:"Approval Gate",expectedEntityId:"gate:read-only",answers:["Approval Gate","Control Matrix v3","Rafael","Project Nova"]},
+ {task:5,question:"Qual é o estado atual da missão?",hint:"Estado operacional não é freshness.",expected:"BLOCKED",expectedEntityId:"mission:world",answers:["BLOCKED","FRESH","UNKNOWN","HUMAN_REVIEW_REQUIRED"]},
+ {task:6,question:"Abra Relações, selecione Rafael e observe o painel de detalhe. Qual rótulo confirma que ele está em foco?",hint:"Esta tarefa mede seleção/foco, não truth.",expected:"Selecionado",expectedEntityId:"agent:emily",answers:["Selecionado","FRESH","AGENT","COMPLETED"]}
+];
+
+const resultKey="mcf-world-semantic-discrimination-s-result";
+const prototypeRevision="git:mission/mcf-world-projection-001@34c68563907027b166543b9e7d296fd61a0094bd";
+const fixtureRevision="fixture:world-projection-semantic-visual-s:v1";
+const world=document.querySelector("#world");
+const qEl=document.querySelector("#question"),hintEl=document.querySelector("#hint"),progEl=document.querySelector("#progress"),answersEl=document.querySelector("#answers");
+let idx=0, startedAt=null, taskStarted=null, activeSurface="cockpit", taskInteractions=[], results=[];
+let testStarted=false;
+
+function nowRel(){return Math.round(performance.now()-taskStarted)}
+window.__mcfRecordInteraction=function(kind,value){
+  if(!testStarted || taskStarted===null) return;
+  if(kind==="view") activeSurface=value||activeSurface;
+  taskInteractions.push({atMs:nowRel(),kind:kind,value:value});
+};
+
+function attachWorldInstrumentation(){
+  const child=world.contentWindow;
+  if(!child || child.__mcfInstrumentationReady!==true) return false;
+  world.classList.remove("pending");
+  if(!testStarted){
+    testStarted=true;
+    startedAt=new Date().toISOString();
+    renderTask();
+  }
+  return true;
+}
+world.addEventListener("load",attachWorldInstrumentation);
+const instrumentTimer=setInterval(function(){if(attachWorldInstrumentation())clearInterval(instrumentTimer)},50);
+
+function taskMetrics(t){
+  const entityClicks=taskInteractions.filter(x=>x.kind==="entity");
+  const first=entityClicks.length?entityClicks[0].value:null;
+  const wrong=t.expectedEntityId?entityClicks.filter(x=>x.value!==t.expectedEntityId).length:0;
+  return {
+    firstTargetCorrect:first===null?null:first===t.expectedEntityId,
+    wrongObjectOpens:wrong,
+    surfaceSwitches:taskInteractions.filter(x=>x.kind==="view").length
+  };
+}
+
+function renderTask(){
+  const t=tasks[idx];
+  progEl.textContent="Tarefa "+(idx+1)+" de "+tasks.length;
+  qEl.textContent=t.question;
+  hintEl.textContent=t.hint;
+  answersEl.innerHTML="";
+  t.answers.forEach(function(a){
+    const b=document.createElement("button");
+    b.textContent=a;
+    b.onclick=function(){answer(a)};
+    answersEl.appendChild(b);
+  });
+  taskStarted=performance.now();
+  taskInteractions=[];
+}
+
+function answer(value){
+  const t=tasks[idx];
+  const metrics=taskMetrics(t);
+  results.push({
+    task:t.task,
+    question:t.question,
+    answer:value,
+    expected:t.expected,
+    correct:value===t.expected,
+    elapsedMs:Math.round(performance.now()-taskStarted),
+    expectedEntityId:t.expectedEntityId,
+    activeSurfaceAtAnswer:activeSurface==="cockpit"?"Agora":activeSurface==="timeline"?"Timeline":activeSurface==="graph"?"Relações":"Lista / busca",
+    firstTargetCorrect:metrics.firstTargetCorrect,
+    wrongObjectOpens:metrics.wrongObjectOpens,
+    surfaceSwitches:metrics.surfaceSwitches,
+    interactionCount:taskInteractions.length,
+    interactions:taskInteractions.slice()
+  });
+  idx++;
+  if(idx<tasks.length) renderTask();
+  else {
+    document.querySelector("#test").hidden=true;
+    document.querySelector("#qual").hidden=false;
+  }
+}
+
+const qualitative={legend_helpful:null,visual_language_easy_to_learn:null,confusing_signals:""};
+document.querySelectorAll(".qualRow button").forEach(function(b){
+  b.onclick=function(){
+    const row=b.closest(".qualRow");
+    qualitative[row.dataset.q]=b.dataset.v;
+    row.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+  };
+});
+
+document.querySelector("#finish").onclick=async function(){
+  qualitative.confusing_signals=document.querySelector("#confusingSignals").value.trim();
+  const finishedAt=new Date().toISOString();
+  const correct=results.filter(x=>x.correct).length;
+  const totalMs=results.reduce((s,x)=>s+x.elapsedMs,0);
+  const payload={
+    schema:"mcf-world-semantic-discrimination/v1",
+    prototype:"semantic-visual-language-v0.1",
+    prototypeRevision,
+    fixtureId:"S",
+    fixtureRevision,
+    startedAt,
+    finishedAt,
+    correct,
+    total:tasks.length,
+    totalMs,
+    results,
+    qualitative,
+    claimsBoundary:"Targeted intra-participant semantic discrimination evidence only; not Product GO or general usability."
+  };
+  localStorage.setItem(resultKey,JSON.stringify(payload));
+  let serverSaved=false,serverError=null;
+  try{
+    const res=await fetch("/result",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    serverSaved=res.ok;
+    if(!res.ok) serverError="HTTP "+res.status;
+  }catch(e){serverError=String(e)}
+  document.querySelector("#qual").hidden=true;
+  document.querySelector("#result").hidden=false;
+  document.querySelector("#score").textContent=correct+"/"+tasks.length+" corretas";
+  document.querySelector("#saveState").textContent=serverSaved?"Salvo automaticamente no notebook.":"Salvo no navegador; falha ao salvar no servidor local: "+serverError;
+  document.querySelector("#json").textContent=JSON.stringify(payload,null,2);
+};
+
+progEl.textContent="Inicializando";
+qEl.textContent="Preparando a interface e a instrumentação…";
+hintEl.textContent="O teste começará automaticamente quando o World estiver pronto.";
+</script>
+</body>
+</html>

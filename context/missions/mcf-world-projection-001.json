@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Build and gate one open-interface Semantic Discrimination Microtest S without modifying the gated semantic visual prototype or Fixture S.",
+  "world_model_next_action": "Obtain Laura/Leonardo/Emily exact-SHA gate for Semantic Discrimination Microtest S instrument. Do not run the human session before PASS.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -272,5 +272,11 @@
   },
   "semantic_visual_language_v0_1_gate_doc": "docs/reviews/MCF-WORLD-SEMANTIC-VISUAL-LANGUAGE-v0.1-GATE.md",
   "semantic_visual_language_v0_1_audited_sha": "34c68563907027b166543b9e7d296fd61a0094bd",
-  "semantic_discrimination_microtest_s": "AUTHORIZED_NOT_YET_BUILT"
+  "semantic_discrimination_microtest_s": "IMPLEMENTED_PENDING_GATE",
+  "semantic_discrimination_microtest_s_harness": "apps/mcf-world-projection/semantic-discrimination-test.html",
+  "semantic_discrimination_microtest_s_server": "apps/mcf-world-projection/semantic-discrimination-server.py",
+  "semantic_discrimination_microtest_s_instrumented_world": "apps/mcf-world-projection/semantic-visual-world-test-s.html",
+  "semantic_discrimination_microtest_s_verifier": "apps/mcf-world-projection/verify-semantic-discrimination-test.py",
+  "semantic_discrimination_microtest_s_proof": "docs/evidence/MCF-WORLD-SEMANTIC-DISCRIMINATION-S-INSTRUMENT-PROOF.md",
+  "semantic_discrimination_microtest_s_gate": "PENDING_EXACT_SHA_REVIEW"
 }
