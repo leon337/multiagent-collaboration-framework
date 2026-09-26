@@ -62,7 +62,8 @@ def build_source_previews(bundle, repo_root):
         if not path.is_file():
             errors.append({"evidenceId":tid,"type":"SOURCE_MISSING","message":"Source file unavailable: "+rel_path})
             continue
-        digest=sha256_file(path)
+        raw=path.read_bytes()
+        digest="sha256:" + hashlib.sha256(raw).hexdigest()
         expected=obj.get("revision",{}).get("value")
         if digest != expected:
             previews[tid]={
@@ -77,7 +78,7 @@ def build_source_previews(bundle, repo_root):
                 "content":None,
             }
             continue
-        text=path.read_text(encoding="utf-8",errors="replace")
+        text=raw.decode("utf-8",errors="replace")
         line_start,line_end,content=first_section(text)
         previews[tid]={
             "evidenceId":tid,
