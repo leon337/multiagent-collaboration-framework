@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_REAL_SOURCE_INTEGRATION_V0_1_GATED",
+  "parallel_architecture_state": "WORLD_OPERATIONAL_CONTEXT_V0_1_IMPLEMENTED",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Build richer Operational Context Slice v0.1 using reconciled real mission metadata, real local artifacts/gates, local Git and current captured GitHub provider snapshot. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Obtain Leonardo/Sofia/Emily exact-SHA gate for Operational Context v0.1, including active context and human evidence reachability. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -174,5 +174,9 @@
   "world_context_consumer_v0_2_audited_sha": "649d3bcaa8bc189a5e6bddde2afa7961fd90281e",
   "world_full_pipeline_gate_doc": "docs/reviews/MCF-WORLD-FULL-PIPELINE-v0.1-GATE.md",
   "world_full_pipeline_audited_sha": "075cd9b234eb70c2be8a8aeedbb7b4f44709dfa5",
-  "world_latest_provider_snapshot": "docs/evidence/MCF-WORLD-REAL-PROVIDER-SNAPSHOT-20260926T095409Z.json"
+  "world_latest_provider_snapshot": "docs/evidence/MCF-WORLD-REAL-PROVIDER-SNAPSHOT-20260926T095409Z.json",
+  "world_operational_context_adapter": "tools/world-model/operational_context_adapter_v01.py",
+  "world_operational_context_tests": "tools/world-model/test_operational_context_v01.py",
+  "world_operational_context_evidence": "docs/evidence/MCF-WORLD-OPERATIONAL-CONTEXT-V0.1-PROOF.md",
+  "world_operational_context_gate": "PENDING_EXACT_SHA_REVIEW"
 }

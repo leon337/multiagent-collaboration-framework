@@ -37,13 +37,43 @@ def proof_block(x):
     rows.append(source_refs(prov.get("sourceRefs", [])))
     return '<details><summary>Por que estou vendo isso?</summary><div class="proof">'+''.join(rows)+'</div></details>'
 
-def entry_card(x):
+def relation_block(subject, relations, objects_by_id):
+    links=[]
+    for r in relations:
+        if r.get("type") != "supported_by" or r.get("from") != subject:
+            continue
+        target=r["to"]
+        obj=objects_by_id.get(target["id"])
+        freshness=obj["freshness"] if obj else r["freshness"]
+        trust_class=obj["trust"]["class"] if obj else r["trust"]["class"]
+        detail=[
+            '<div><b>Relation provenance:</b> '+e(r["provenance"]["mode"])+'</div>',
+            source_refs(r["provenance"].get("sourceRefs",[]))
+        ]
+        if obj:
+            detail.insert(0,'<div><b>Evidence revision:</b> <code>'+e(obj["revision"]["source"])+'@'+e(obj["revision"]["value"])+'</code></div>')
+            detail.append(source_refs(obj.get("sourceRefs",[])))
+        links.append(
+            '<li data-supported-by-ref="'+e(target["id"])+'">'
+            '<code>'+e(target["canonicalRef"])+'</code> '
+            '<span class="meta">'+e(freshness)+' · '+e(trust_class)+'</span>'
+            '<details><summary>Relação / fonte</summary><div class="proof">'+''.join(detail)+'</div></details>'
+            '</li>'
+        )
+    if not links:
+        return ''
+    return '<div class="evidence-links"><div class="cat">SUSTENTADO POR</div><ul class="refs">'+''.join(links)+'</ul></div>'
+
+def entry_card(x, relations=None, objects_by_id=None):
+    relations=relations or []
+    objects_by_id=objects_by_id or {}
     return (
         '<article class="card" data-entry-id="'+e(x["id"])+'" data-freshness="'+e(x["freshness"])+'" data-trust="'+e(x["trust"]["class"])+'">'
         '<div class="row"><div><div class="cat">'+e(x["category"])+'</div><div class="content">'+e(x["content"])+'</div></div>'
         '<div class="badges"><span>'+e(x["freshness"])+'</span><span>'+e(x["trust"]["class"])+'</span></div></div>'
-        + proof_block(x) +
-        '</article>'
+        + proof_block(x)
+        + relation_block(x["subject"], relations, objects_by_id)
+        + '</article>'
     )
 
 def hero_entry(x, label, state_style=False, fallback="Não estabelecido"):
@@ -75,7 +105,15 @@ def render(bundle):
     all_entries = sl["entries"]
     state = next((x for x in all_entries if x["category"]=="STATE"), None)
     goal = next((x for x in all_entries if x["category"]=="GOAL"), None)
+    active_context_ref = sl.get("scope", {}).get("context")
+    active_context_obj = None
+    if active_context_ref:
+        active_context_obj = next(
+            (x for x in bundle.get("projectedObjects", []) if x.get("ref") == active_context_ref),
+            None
+        )
     packet_ids = packet_entry_ids(packet)
+    objects_by_id = {x["ref"]["id"]: x for x in bundle.get("projectedObjects", [])}
 
     categories = [
         ("CONSTRAINT","Limites / constraints"),
@@ -88,10 +126,26 @@ def render(bundle):
     sections = []
     for category,title in categories:
         items=[x for x in all_entries if x["category"]==category]
-        body=''.join(entry_card(x) for x in items) if items else '<div class="empty">Nenhum item</div>'
+        body=''.join(entry_card(x, sl.get("relations",[]), objects_by_id) for x in items) if items else '<div class="empty">Nenhum item</div>'
         sections.append('<section class="panel"><h2>'+e(title)+'</h2>'+body+'</section>')
 
     diagnostics=''.join(diagnostic_card(d) for d in sl.get("diagnostics",[])) or '<div class="empty">Nenhum diagnóstico</div>'
+
+    if active_context_obj:
+        cp = active_context_obj["payload"]
+        context_block = (
+            '<section class="panel" data-active-context-id="'+e(active_context_obj["ref"]["id"])+'">'
+            '<div class="cat">CONTEXTO ATIVO</div><h2>'+e(cp.get("label",""))+'</h2>'
+            '<div class="content">'+e(cp.get("purpose",""))+'</div>'
+            '<div class="meta">'+e(active_context_obj["freshness"])+' · '+e(active_context_obj["trust"]["class"])+'</div>'
+            '<details><summary>Identidade / fonte</summary><div class="proof">'
+            '<div><b>Canonical ref:</b> <code>'+e(active_context_obj["ref"]["canonicalRef"])+'</code></div>'
+            '<div><b>Revision:</b> <code>'+e(active_context_obj["revision"]["source"])+'@'+e(active_context_obj["revision"]["value"])+'</code></div>'
+            +source_refs(active_context_obj.get("sourceRefs",[]))+
+            '</div></details></section>'
+        )
+    else:
+        context_block = ""
 
     tpl = Template(r'''<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -108,6 +162,7 @@ h1,h2{margin:.2rem 0 .7rem}.muted,.meta{color:var(--muted)}.hero,.attention{disp
 
 <section id="human" class="view">
 <div class="hero">$hero_state$hero_goal</div>
+$context_block
 <section class="panel"><h2>Atenção explícita</h2><div class="attention">
 <div><div class="cat">UNKNOWN</div>$unknown_refs</div>
 <div><div class="cat">STALE</div>$stale_refs</div>
@@ -137,6 +192,7 @@ document.querySelectorAll("[data-view]").forEach(function(b){
     return tpl.substitute(
         hero_state=hero_entry(state,"MISSÃO · ESTADO",True,"UNKNOWN"),
         hero_goal=hero_entry(goal,"OBJETIVO",False,"Não estabelecido"),
+        context_block=context_block,
         unknown_refs=refs_list(sl.get("unknownRefs",[])),
         stale_refs=refs_list(sl.get("staleRefs",[])),
         sections=''.join(sections),
