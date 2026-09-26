@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Build a richer read-only Operational Context Slice from real MCF mission/gate/evidence/provider sources with explicit ownership and mixed-revision tests. Findability R remains frozen/deferred.",
+  "world_model_next_action": "Build richer Operational Context Slice v0.1 using reconciled real mission metadata, real local artifacts/gates, local Git and current captured GitHub provider snapshot. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -150,12 +150,12 @@
   "world_context_consumer_v0_2_tests": "tools/world-model/test_consumer_v02.py",
   "world_context_consistency_fixture": "docs/examples/MCF-WORLD-CONSISTENCY-FIXTURE-v0.1.json",
   "world_context_consistency_evidence": "docs/evidence/MCF-WORLD-CONTEXT-CONSUMER-V0.2-CONSISTENCY-PROOF.md",
-  "world_context_consumer_v0_2_gate": "PENDING_EXACT_SHA_REVIEW",
+  "world_context_consumer_v0_2_gate": "PASS",
   "world_arch_source_fixture": "docs/examples/MCF-WORLD-ARCH-SOURCE-BUNDLE-v0.1.json",
   "world_arch_source_adapter": "tools/world-model/architecture_source_adapter_v01.py",
   "world_full_pipeline_test": "tools/world-model/test_full_pipeline_v01.py",
   "world_full_pipeline_evidence": "docs/evidence/MCF-WORLD-FULL-PIPELINE-V0.1-PROOF.md",
-  "world_full_pipeline_gate": "PENDING_REMEDIATION_REGATE",
+  "world_full_pipeline_gate": "PASS",
   "world_source_ownership_contract": "docs/contracts/MCF-WORLD-SOURCE-OWNERSHIP-v0.1.md",
   "world_source_competence_rule": "EXPLICIT_FACTKEY_OWNERSHIP_NOT_TRUST_RANKING",
   "world_real_provider_snapshot": "docs/evidence/MCF-WORLD-REAL-PROVIDER-SNAPSHOT-20260926T094030Z.json",
@@ -169,5 +169,10 @@
   "world_real_source_freshness_semantics": "SNAPSHOT_OBSERVED_AT_PLUS_TTL_PLUS_EXPLICIT_EVALUATION_TIME",
   "agent_context_attention": "MIRROR_CONTEXTSLICE_UNKNOWN_AND_STALE_REFS",
   "world_real_source_gate_doc": "docs/reviews/MCF-WORLD-REAL-SOURCE-INTEGRATION-v0.1-GATE.md",
-  "world_real_source_audited_sha": "c26cbe8261d8fdc791ea00103fa807d1c6fb83d3"
+  "world_real_source_audited_sha": "c26cbe8261d8fdc791ea00103fa807d1c6fb83d3",
+  "world_context_consumer_v0_2_gate_doc": "docs/reviews/MCF-WORLD-CONTEXT-CONSUMER-v0.2-GATE.md",
+  "world_context_consumer_v0_2_audited_sha": "649d3bcaa8bc189a5e6bddde2afa7961fd90281e",
+  "world_full_pipeline_gate_doc": "docs/reviews/MCF-WORLD-FULL-PIPELINE-v0.1-GATE.md",
+  "world_full_pipeline_audited_sha": "075cd9b234eb70c2be8a8aeedbb7b4f44709dfa5",
+  "world_latest_provider_snapshot": "docs/evidence/MCF-WORLD-REAL-PROVIDER-SNAPSHOT-20260926T095409Z.json"
 }
