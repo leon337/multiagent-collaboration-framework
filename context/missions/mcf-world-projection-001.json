@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "HUMAN_FINDABILITY_R_READY",
+  "current_state": "HUMAN_FINDABILITY_R_DEFERRED_PARTICIPANT_FATIGUE",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -23,7 +23,7 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "LEANDRO executes one open-interface Findability R session on mobile. Preserve result and interaction paths immediately, then audit product-value evidence before any scope expansion.",
+  "next_action": "Run the already-gated Findability R session only when LEANDRO feels sufficiently alert. Use the same frozen instrument and fixture unless the team later determines exposure occurred.",
   "prototype_path": "apps/mcf-world-projection",
   "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md",
   "implementation_regate": "docs/reviews/MCF-WORLD-PROJECTION-001-IMPLEMENTATION-RE-GATE.md",
@@ -100,5 +100,7 @@
   "findability_mobile_layout": "QUESTION_STICKY_WORLD_PRIMARY_ANSWERS_BELOW",
   "findability_r_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-FINDABILITY-R-GATE.md",
   "findability_r_gate_status": "PASS",
-  "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4"
+  "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
+  "human_findability_r_status": "NOT_STARTED_DEFERRED",
+  "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics."
 }
