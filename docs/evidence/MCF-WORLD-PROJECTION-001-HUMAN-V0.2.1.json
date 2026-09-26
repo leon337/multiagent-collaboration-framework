@@ -1,0 +1,19 @@
+{
+  "schema": "mcf-world-focused-comprehension/v1",
+  "prototype": "v0.2.1",
+  "fixtureRevision": "github:leon337/multiagent-collaboration-framework:mission/mcf-world-projection-001@44ed701b",
+  "startedAt": "2026-09-26T08:24:41.342Z",
+  "finishedAt": "2026-09-26T08:25:56.703Z",
+  "correct": 4,
+  "total": 6,
+  "totalMs": 75332,
+  "results": [
+    {"task":1,"question":"Qual é o estado atual da missão?","answer":"WORKING","expected":"WORKING","correct":true,"elapsedMs":4487},
+    {"task":2,"question":"Qual item ainda não foi confirmado?","answer":"Draft PR #380","expected":"Rebuild proof","correct":false,"elapsedMs":10779},
+    {"task":3,"question":"Se Rebuild proof aparece em “O que ainda não sabemos”, o sistema está dizendo que:","answer":"Ainda não foi confirmado","expected":"Ainda não foi confirmado","correct":true,"elapsedMs":23340},
+    {"task":4,"question":"Qual item pode ter mudado desde a última confirmação?","answer":"WPP v0.1","expected":"Gate futuro","correct":false,"elapsedMs":12977},
+    {"task":5,"question":"Podemos tratar Gate futuro como estado atual confirmado?","answer":"Não","expected":"Não","correct":true,"elapsedMs":11095},
+    {"task":6,"question":"Ao retornar a uma missão longa, onde a interface recomenda começar?","answer":"Agora / Cockpit","expected":"Agora / Cockpit","correct":true,"elapsedMs":12654}
+  ],
+  "claimsBoundary": "Focused human comprehension result only; not Product GO."
+}
