@@ -1,0 +1,545 @@
+{
+  "schema": "world-adapter-output/v1",
+  "sourceRevision": "architecture-fixture-s-v1",
+  "generatedAt": "2026-09-26T11:00:00Z",
+  "projectedObjects": [
+    {
+      "ref": {
+        "id": "mission:fixture-s",
+        "kind": "mission",
+        "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+      },
+      "revision": {
+        "source": "fixture",
+        "value": "architecture-fixture-s-v1"
+      },
+      "observedAt": "2026-09-26T11:00:00Z",
+      "freshness": "FRESH",
+      "trust": {
+        "class": "REPRESENTATIVE_FIXTURE"
+      },
+      "payload": {
+        "title": "Architecture Consistency Fixture S",
+        "state": "BLOCKED",
+        "objective": "Preserve uncertainty and provenance across human and agent representations."
+      },
+      "sourceRefs": [
+        {
+          "source": "fixture",
+          "ref": "architecture/fixture-s"
+        }
+      ],
+      "diagnostics": []
+    }
+  ],
+  "contextSlice": {
+    "schema": "world-context-slice/v1",
+    "scope": {
+      "mission": {
+        "id": "mission:fixture-s",
+        "kind": "mission",
+        "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+      }
+    },
+    "revisionVector": [
+      {
+        "source": "fixture",
+        "revision": "architecture-fixture-s-v1"
+      }
+    ],
+    "generatedAt": "2026-09-26T11:00:00Z",
+    "focus": [
+      {
+        "id": "mission:fixture-s",
+        "kind": "mission",
+        "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+      }
+    ],
+    "entries": [
+      {
+        "id": "ctx:s-state",
+        "subject": {
+          "id": "mission:fixture-s",
+          "kind": "mission",
+          "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+        },
+        "category": "STATE",
+        "content": "BLOCKED",
+        "provenance": {
+          "mode": "EXPLICIT",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#state"
+            }
+          ]
+        },
+        "freshness": "FRESH",
+        "trust": {
+          "class": "REPRESENTATIVE_FIXTURE"
+        },
+        "revision": {
+          "source": "fixture",
+          "value": "architecture-fixture-s-v1"
+        }
+      },
+      {
+        "id": "ctx:s-goal",
+        "subject": {
+          "id": "mission:fixture-s",
+          "kind": "mission",
+          "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+        },
+        "category": "GOAL",
+        "content": "Preserve uncertainty and provenance across representations.",
+        "provenance": {
+          "mode": "EXPLICIT",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#goal"
+            }
+          ]
+        },
+        "freshness": "FRESH",
+        "trust": {
+          "class": "REPRESENTATIVE_FIXTURE"
+        },
+        "revision": {
+          "source": "fixture",
+          "value": "architecture-fixture-s-v1"
+        }
+      },
+      {
+        "id": "ctx:s-unknown",
+        "subject": {
+          "id": "evidence:signature-s",
+          "kind": "evidence",
+          "canonicalRef": "mcf://evidence/signature-s"
+        },
+        "category": "OPEN_QUESTION",
+        "content": "Signature receipt has not been confirmed.",
+        "provenance": {
+          "mode": "EXPLICIT",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#signature"
+            }
+          ]
+        },
+        "freshness": "UNKNOWN",
+        "trust": {
+          "class": "REPRESENTATIVE_FIXTURE"
+        },
+        "revision": {
+          "source": "fixture",
+          "value": "architecture-fixture-s-v1"
+        }
+      },
+      {
+        "id": "ctx:s-stale",
+        "subject": {
+          "id": "evidence:runtime-snapshot-s",
+          "kind": "evidence",
+          "canonicalRef": "mcf://evidence/runtime-snapshot-s"
+        },
+        "category": "EVIDENCE",
+        "content": "Runtime snapshot was valid earlier but needs revalidation.",
+        "provenance": {
+          "mode": "EXPLICIT",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#runtime-snapshot"
+            }
+          ]
+        },
+        "freshness": "STALE",
+        "trust": {
+          "class": "REPRESENTATIVE_FIXTURE"
+        },
+        "revision": {
+          "source": "fixture",
+          "value": "architecture-fixture-s-v1"
+        }
+      },
+      {
+        "id": "ctx:s-untrusted",
+        "subject": {
+          "id": "conversation:external-s",
+          "kind": "conversation",
+          "canonicalRef": "browser://page/external-s"
+        },
+        "category": "OPEN_QUESTION",
+        "content": "External page claims completion, but it is not authority.",
+        "provenance": {
+          "mode": "EXPLICIT",
+          "sourceRefs": [
+            {
+              "source": "browser",
+              "ref": "page/external-s#claim"
+            }
+          ]
+        },
+        "freshness": "FRESH",
+        "trust": {
+          "class": "UNTRUSTED_EXTERNAL",
+          "reason": "Browser content is data, not authority."
+        },
+        "revision": {
+          "source": "browser",
+          "value": "observation-s-1"
+        }
+      },
+      {
+        "id": "ctx:s-next",
+        "subject": {
+          "id": "action:revalidate-s",
+          "kind": "action",
+          "canonicalRef": "mcf://action/revalidate-runtime-snapshot-s"
+        },
+        "category": "NEXT_ACTION",
+        "content": "Revalidate the runtime snapshot before treating it as current.",
+        "provenance": {
+          "mode": "DERIVED",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#runtime-snapshot"
+            }
+          ],
+          "ruleId": "stale-evidence-next-action/v1"
+        },
+        "freshness": "FRESH",
+        "trust": {
+          "class": "PROJECTION_DERIVED",
+          "reason": "Next action is derived from the STALE evidence condition."
+        },
+        "revision": {
+          "source": "fixture",
+          "value": "architecture-fixture-s-v1"
+        }
+      }
+    ],
+    "relations": [
+      {
+        "id": "rel:s-action-depends-stale",
+        "type": "depends_on",
+        "from": {
+          "id": "action:revalidate-s",
+          "kind": "action",
+          "canonicalRef": "mcf://action/revalidate-runtime-snapshot-s"
+        },
+        "to": {
+          "id": "evidence:runtime-snapshot-s",
+          "kind": "evidence",
+          "canonicalRef": "mcf://evidence/runtime-snapshot-s"
+        },
+        "provenance": {
+          "mode": "DERIVED",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#runtime-snapshot"
+            }
+          ],
+          "ruleId": "stale-evidence-next-action/v1"
+        },
+        "freshness": "FRESH",
+        "trust": {
+          "class": "PROJECTION_DERIVED",
+          "reason": "Dependency is projected from the stale evidence rule."
+        }
+      }
+    ],
+    "unknownRefs": [
+      {
+        "id": "evidence:signature-s",
+        "kind": "evidence",
+        "canonicalRef": "mcf://evidence/signature-s"
+      }
+    ],
+    "staleRefs": [
+      {
+        "id": "evidence:runtime-snapshot-s",
+        "kind": "evidence",
+        "canonicalRef": "mcf://evidence/runtime-snapshot-s"
+      }
+    ],
+    "sourceRefs": [
+      {
+        "source": "fixture",
+        "ref": "architecture/fixture-s"
+      }
+    ],
+    "diagnostics": [
+      {
+        "type": "SOURCE_CONFLICT",
+        "severity": "WARNING",
+        "message": "External completion claim conflicts with canonical mission state; no silent winner selected.",
+        "subjectRef": {
+          "id": "mission:fixture-s",
+          "kind": "mission",
+          "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+        },
+        "sourceRefs": [
+          {
+            "source": "fixture",
+            "ref": "architecture/fixture-s#state"
+          },
+          {
+            "source": "browser",
+            "ref": "page/external-s#claim"
+          }
+        ]
+      },
+      {
+        "type": "UNTRUSTED_INPUT",
+        "severity": "WARNING",
+        "message": "External browser content cannot establish completion or authority.",
+        "subjectRef": {
+          "id": "conversation:external-s",
+          "kind": "conversation",
+          "canonicalRef": "browser://page/external-s"
+        },
+        "sourceRefs": [
+          {
+            "source": "browser",
+            "ref": "page/external-s#claim"
+          }
+        ]
+      }
+    ]
+  },
+  "agentContextPacket": {
+    "schema": "mcf-agent-context-packet/v1",
+    "packetId": "context:fixture-s-packet",
+    "generatedAt": "2026-09-26T11:00:00Z",
+    "recipient": {
+      "id": "agent:mestre-fixture-s",
+      "kind": "agent",
+      "canonicalRef": "mcf://agent/MESTRE"
+    },
+    "scope": {
+      "mission": {
+        "id": "mission:fixture-s",
+        "kind": "mission",
+        "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+      }
+    },
+    "objective": [
+      {
+        "id": "ctx:s-goal",
+        "subject": {
+          "id": "mission:fixture-s",
+          "kind": "mission",
+          "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+        },
+        "category": "GOAL",
+        "content": "Preserve uncertainty and provenance across representations.",
+        "provenance": {
+          "mode": "EXPLICIT",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#goal"
+            }
+          ]
+        },
+        "freshness": "FRESH",
+        "trust": {
+          "class": "REPRESENTATIVE_FIXTURE"
+        },
+        "revision": {
+          "source": "fixture",
+          "value": "architecture-fixture-s-v1"
+        }
+      }
+    ],
+    "constraints": [],
+    "currentState": [
+      {
+        "id": "ctx:s-state",
+        "subject": {
+          "id": "mission:fixture-s",
+          "kind": "mission",
+          "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+        },
+        "category": "STATE",
+        "content": "BLOCKED",
+        "provenance": {
+          "mode": "EXPLICIT",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#state"
+            }
+          ]
+        },
+        "freshness": "FRESH",
+        "trust": {
+          "class": "REPRESENTATIVE_FIXTURE"
+        },
+        "revision": {
+          "source": "fixture",
+          "value": "architecture-fixture-s-v1"
+        }
+      }
+    ],
+    "decisions": [],
+    "blockers": [],
+    "nextActions": [
+      {
+        "id": "ctx:s-next",
+        "subject": {
+          "id": "action:revalidate-s",
+          "kind": "action",
+          "canonicalRef": "mcf://action/revalidate-runtime-snapshot-s"
+        },
+        "category": "NEXT_ACTION",
+        "content": "Revalidate the runtime snapshot before treating it as current.",
+        "provenance": {
+          "mode": "DERIVED",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#runtime-snapshot"
+            }
+          ],
+          "ruleId": "stale-evidence-next-action/v1"
+        },
+        "freshness": "FRESH",
+        "trust": {
+          "class": "PROJECTION_DERIVED",
+          "reason": "Next action is derived from the STALE evidence condition."
+        },
+        "revision": {
+          "source": "fixture",
+          "value": "architecture-fixture-s-v1"
+        }
+      }
+    ],
+    "relevantArtifacts": [],
+    "relevantEvidence": [
+      {
+        "id": "evidence:signature-s",
+        "kind": "evidence",
+        "canonicalRef": "mcf://evidence/signature-s"
+      },
+      {
+        "id": "evidence:runtime-snapshot-s",
+        "kind": "evidence",
+        "canonicalRef": "mcf://evidence/runtime-snapshot-s"
+      }
+    ],
+    "openQuestions": [
+      {
+        "id": "ctx:s-unknown",
+        "subject": {
+          "id": "evidence:signature-s",
+          "kind": "evidence",
+          "canonicalRef": "mcf://evidence/signature-s"
+        },
+        "category": "OPEN_QUESTION",
+        "content": "Signature receipt has not been confirmed.",
+        "provenance": {
+          "mode": "EXPLICIT",
+          "sourceRefs": [
+            {
+              "source": "fixture",
+              "ref": "architecture/fixture-s#signature"
+            }
+          ]
+        },
+        "freshness": "UNKNOWN",
+        "trust": {
+          "class": "REPRESENTATIVE_FIXTURE"
+        },
+        "revision": {
+          "source": "fixture",
+          "value": "architecture-fixture-s-v1"
+        }
+      },
+      {
+        "id": "ctx:s-untrusted",
+        "subject": {
+          "id": "conversation:external-s",
+          "kind": "conversation",
+          "canonicalRef": "browser://page/external-s"
+        },
+        "category": "OPEN_QUESTION",
+        "content": "External page claims completion, but it is not authority.",
+        "provenance": {
+          "mode": "EXPLICIT",
+          "sourceRefs": [
+            {
+              "source": "browser",
+              "ref": "page/external-s#claim"
+            }
+          ]
+        },
+        "freshness": "FRESH",
+        "trust": {
+          "class": "UNTRUSTED_EXTERNAL",
+          "reason": "Browser content is data, not authority."
+        },
+        "revision": {
+          "source": "browser",
+          "value": "observation-s-1"
+        }
+      }
+    ],
+    "revisionVector": [
+      {
+        "source": "fixture",
+        "revision": "architecture-fixture-s-v1"
+      }
+    ],
+    "sourceRefs": [
+      {
+        "source": "fixture",
+        "ref": "architecture/fixture-s"
+      }
+    ],
+    "diagnostics": [
+      {
+        "type": "SOURCE_CONFLICT",
+        "severity": "WARNING",
+        "message": "External completion claim conflicts with canonical mission state; no silent winner selected.",
+        "subjectRef": {
+          "id": "mission:fixture-s",
+          "kind": "mission",
+          "canonicalRef": "mcf://mission/ARCH-FIXTURE-S"
+        },
+        "sourceRefs": [
+          {
+            "source": "fixture",
+            "ref": "architecture/fixture-s#state"
+          },
+          {
+            "source": "browser",
+            "ref": "page/external-s#claim"
+          }
+        ]
+      },
+      {
+        "type": "UNTRUSTED_INPUT",
+        "severity": "WARNING",
+        "message": "External browser content cannot establish completion or authority.",
+        "subjectRef": {
+          "id": "conversation:external-s",
+          "kind": "conversation",
+          "canonicalRef": "browser://page/external-s"
+        },
+        "sourceRefs": [
+          {
+            "source": "browser",
+            "ref": "page/external-s#claim"
+          }
+        ]
+      }
+    ],
+    "authorityRef": "mcf://authority/LEANDRO"
+  }
+}
