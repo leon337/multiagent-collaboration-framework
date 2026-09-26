@@ -53,3 +53,22 @@ For the initial LEANDRO pilot, the harness now uses two isomorphic but factually
 - Condition B uses experiment-fixture-y.json.
 
 The question sets are parallel but require different factual answers. This reduces direct answer memorization between rounds. The pilot remains exploratory and cannot establish population-level superiority.
+
+## Structured UX v0.2
+
+The v0.2 iteration responds directly to the human pilot evidence.
+
+Changes:
+
+- Cockpit is now the default Agora surface.
+- Current mission state is the primary visual object.
+- Current gate / next decision is separated from mission history.
+- UNKNOWN is phrased as O que ainda nao sabemos.
+- STALE is phrased as O que pode ter mudado.
+- UNKNOWN and STALE have distinct visual semantics and plain-language explanations.
+- Timeline is explicitly historical.
+- Graph is explicitly relational, not a source for current state.
+- Linear list is demoted to search/reference.
+- Detail/provenance remains available in the inspector on demand.
+
+A focused comprehension harness is available at comprehension-test.html. It tests only current state, UNKNOWN and STALE and persists the latest result in browser localStorage so a completed run is not lost on page refresh.

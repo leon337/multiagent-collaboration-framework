@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "EARLY_POSITIVE_SIGNAL_2D_ITERATION",
+  "current_state": "STRUCTURED_UX_V0_2_IMPLEMENTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -23,7 +23,7 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "Iterate the structured 2D prototype so current state, UNKNOWN and STALE are unmistakable; then run a focused human comprehension test with immediate result persistence. Do not expand to 3D or mutation yet.",
+  "next_action": "Run implementation smoke and obtain Laura/Sofia/Emily re-review of structured UX v0.2. If the gate passes, execute a short human comprehension test focused only on current state, UNKNOWN and STALE. Do not expand to 3D or mutation.",
   "prototype_path": "apps/mcf-world-projection",
   "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md",
   "implementation_regate": "docs/reviews/MCF-WORLD-PROJECTION-001-IMPLEMENTATION-RE-GATE.md",
@@ -52,5 +52,8 @@
   "qualitative_signal": "LINEAR_HIGHER_COGNITIVE_LOAD_FOR_LEANDRO",
   "human_evidence_review": "docs/reviews/MCF-WORLD-PROJECTION-001-HUMAN-EVIDENCE-REVIEW.md",
   "evidence_gate": "CONDITIONAL_EARLY_POSITIVE_SIGNAL",
-  "three_d_gate": "DEFERRED"
+  "three_d_gate": "DEFERRED",
+  "ux_v0_2": "apps/mcf-world-projection/index.html",
+  "ux_v0_1_snapshot": "apps/mcf-world-projection/index-v0.1.html",
+  "focused_comprehension_harness": "apps/mcf-world-projection/comprehension-test.html"
 }
