@@ -26,6 +26,8 @@ for packet_key,category in mapping.items():
         assert item["category"] == category
 
 assert packet["diagnostics"] == sl["diagnostics"], "diagnostics diverged"
+assert packet["attention"]["unknownRefs"] == sl["unknownRefs"], "UNKNOWN attention diverged"
+assert packet["attention"]["staleRefs"] == sl["staleRefs"], "STALE attention diverged"
 assert {x["id"] for x in sl["unknownRefs"]} <= {x["id"] for x in packet["relevantEvidence"]}, "UNKNOWN evidence missing from packet reachability"
 assert {x["id"] for x in sl["staleRefs"]} <= {x["id"] for x in packet["relevantEvidence"]}, "STALE evidence missing from packet reachability"
 

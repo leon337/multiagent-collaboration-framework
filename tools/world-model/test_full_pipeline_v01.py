@@ -43,6 +43,8 @@ for key in ["objective","constraints","currentState","decisions","blockers","nex
     for item in packet[key]:
         assert item == slice_by_id[item["id"]]
 assert packet["diagnostics"]==sl["diagnostics"]
+assert packet["attention"]["unknownRefs"]==sl["unknownRefs"]
+assert packet["attention"]["staleRefs"]==sl["staleRefs"]
 
 for marker in ["BLOCKED","UNKNOWN","STALE","UNTRUSTED_EXTERNAL","SOURCE_CONFLICT","MISSING_CANONICAL_VALUE","PROJECTION_DERIVED"]:
     assert marker in page, marker

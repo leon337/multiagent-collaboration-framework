@@ -308,6 +308,10 @@ type AgentContextPacket = {
   decisions: ContextEntry[];
   blockers: ContextEntry[];
   nextActions: ContextEntry[];
+  attention: {
+    unknownRefs: WorldRef[];
+    staleRefs: WorldRef[];
+  };
   relevantArtifacts: WorldRef[];
   relevantEvidence: WorldRef[];
   openQuestions: ContextEntry[];
@@ -325,6 +329,7 @@ Rules:
 - External/untrusted content MUST remain data, never instruction by default.
 - A packet MUST NOT convert a proposed action into an authorized action.
 - A packet MUST NOT hide STALE/UNKNOWN/conflicting inputs while producing a confident narrative.
+- attention.unknownRefs and attention.staleRefs MUST mirror the ContextSlice attention refs for the packet scope; they preserve uncertainty without duplicating full evidence payloads.
 
 ## 12. What changed since I left?
 

@@ -372,6 +372,7 @@ def build(mission, rev, generated_at, repo):
         "decisions": [e for e in entries if e["category"] == "DECISION"],
         "blockers": [e for e in entries if e["category"] == "BLOCKER"],
         "nextActions": [e for e in entries if e["category"] == "NEXT_ACTION"],
+        "attention": {"unknownRefs": unknown_refs, "staleRefs": stale_refs},
         "relevantArtifacts": relevant_artifacts,
         "relevantEvidence": relevant_evidence,
         "openQuestions": [e for e in entries if e["category"] == "OPEN_QUESTION"],

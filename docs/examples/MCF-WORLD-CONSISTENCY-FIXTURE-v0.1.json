@@ -540,6 +540,22 @@
         ]
       }
     ],
-    "authorityRef": "mcf://authority/LEANDRO"
+    "authorityRef": "mcf://authority/LEANDRO",
+    "attention": {
+      "unknownRefs": [
+        {
+          "id": "evidence:signature-s",
+          "kind": "evidence",
+          "canonicalRef": "mcf://evidence/signature-s"
+        }
+      ],
+      "staleRefs": [
+        {
+          "id": "evidence:runtime-snapshot-s",
+          "kind": "evidence",
+          "canonicalRef": "mcf://evidence/runtime-snapshot-s"
+        }
+      ]
+    }
   }
 }

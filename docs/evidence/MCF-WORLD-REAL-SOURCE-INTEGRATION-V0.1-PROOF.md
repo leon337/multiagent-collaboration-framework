@@ -131,3 +131,70 @@ There is no:
 - 3D dependency.
 
 Provider snapshots and generated views are disposable observations/read models, not canonical mission truth.
+
+## Remediation: source-specific revisions
+
+The initial gate found that mission-record facts incorrectly borrowed local Git HEAD as their revision.
+
+This was removed.
+
+Current revision model:
+
+- mission-record revision = SHA-256 digest of the exact mission JSON bytes read;
+- project-registry revision = SHA-256 digest of the exact registry YAML bytes read;
+- GitHub snapshot revision = SHA-256 digest of the exact captured provider snapshot bytes;
+- local Git evidence retains its own branch/HEAD revision;
+- top-level sourceRevision is an input-set digest over the revision vector, and is not presented as a canonical source revision.
+
+No source borrows another source's revision identity.
+
+## Remediation: deterministic snapshot freshness
+
+The ownership contract now declares deterministic snapshot freshness policies:
+
+- GitHub provider snapshot TTL = 300 seconds;
+- captured local Git snapshot TTL = 300 seconds;
+- freshness basis = snapshot.observedAt;
+- evaluationTime is an explicit adapter input.
+
+Controlled tests:
+
+Fresh evaluation:
+- observedAt: 2026-09-26T09:40:30Z
+- evaluationTime: 2026-09-26T09:44:30Z
+- Issue #379 = FRESH
+- PR #380 = FRESH
+- local Git = FRESH
+
+Expired evaluation:
+- evaluationTime: 2026-09-26T09:46:31Z
+- Issue #379 = STALE
+- PR #380 = STALE
+- local Git = STALE
+
+The values remain inspectable when STALE; they are not presented as current confirmed observations.
+
+The build remains offline/read-only and deterministic for fixed inputs and evaluationTime.
+
+## Remediation: machine-readable uncertainty attention
+
+The AgentContextPacket contract now includes:
+
+    attention:
+      unknownRefs: []
+      staleRefs: []
+
+These arrays MUST mirror ContextSlice unknownRefs/staleRefs within packet scope.
+
+This prevents the human view from knowing that an evidence ref is STALE/UNKNOWN while MESTRE receives only an unqualified evidence reference.
+
+The packet still references evidence rather than duplicating full evidence payloads.
+
+Executed checks:
+
+- fresh snapshot: packet staleRefs empty;
+- expired snapshot: packet staleRefs contains exactly Issue #379, PR #380 and local Git refs;
+- ContextSlice staleRefs and AgentContextPacket attention.staleRefs are equal;
+- both FRESH and STALE generated bundles pass JSON Schema validation;
+- stale browser smoke shows the same three stale refs in the human view and MESTRE packet.
+

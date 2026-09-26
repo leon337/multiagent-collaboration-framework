@@ -428,6 +428,7 @@
         "decisions",
         "blockers",
         "nextActions",
+        "attention",
         "relevantArtifacts",
         "relevantEvidence",
         "openQuestions",
@@ -542,6 +543,28 @@
         },
         "authorityRef": {
           "type": "string"
+        },
+        "attention": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "unknownRefs",
+            "staleRefs"
+          ],
+          "properties": {
+            "unknownRefs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/worldRef"
+              }
+            },
+            "staleRefs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/worldRef"
+              }
+            }
+          }
         }
       }
     },

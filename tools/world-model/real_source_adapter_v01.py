@@ -1,10 +1,29 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
+from datetime import datetime
 from pathlib import Path
 import yaml
 
 from adapter_v01 import IdentityResolver, provenance, source_ref, stable_world_id, trust
+
+
+def parse_ts(value):
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+def snapshot_freshness(observed_at, evaluation_time, ttl_seconds):
+    age = (parse_ts(evaluation_time) - parse_ts(observed_at)).total_seconds()
+    if age < 0:
+        age = 0
+    return "FRESH" if age <= ttl_seconds else "STALE"
+
+def sha256_file(path):
+    return "sha256:" + hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+def input_set_revision(revision_vector):
+    raw = json.dumps(revision_vector, sort_keys=True, separators=(",", ":")).encode()
+    return "input-set:" + hashlib.sha256(raw).hexdigest()
 
 def diag(kind, message, subject, refs):
     return {
@@ -50,7 +69,7 @@ def projected_evidence(ref, summary, freshness, trust_value, revision, observed_
         "diagnostics": diagnostics or [],
     }
 
-def build_real_sources(mission, project_registry, snapshot, ownership):
+def build_real_sources(mission, project_registry, snapshot, ownership, source_revisions, evaluation_time):
     policies = ownership["factPolicies"]
     resolver = IdentityResolver()
     repo = project_registry["identity"]["canonical_repository"]
@@ -74,6 +93,10 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
     local_git_ref = resolver.resolve("evidence", "git://local/" + snapshot.get("localGit",{}).get("branch","unknown"))
 
     observed_at = snapshot["observedAt"]
+    github_ttl = ownership["freshnessPolicies"]["githubProviderSnapshot"]["ttlSeconds"]
+    local_git_ttl = ownership["freshnessPolicies"]["localGitSnapshot"]["ttlSeconds"]
+    github_freshness = snapshot_freshness(observed_at, evaluation_time, github_ttl)
+    local_git_freshness = snapshot_freshness(observed_at, evaluation_time, local_git_ttl)
     local_sha = snapshot.get("localGit",{}).get("headSha")
     local_branch = snapshot.get("localGit",{}).get("branch")
     gh = snapshot.get("github",{})
@@ -81,7 +104,9 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
     pr = gh.get("pr380")
     diagnostics = []
 
-    mission_revision = {"source":"git","value":local_sha or "UNKNOWN"}
+    mission_revision = {"source":"mission-record","value":source_revisions["missionRecord"]}
+    project_revision = {"source":"project-registry","value":source_revisions["projectRegistry"]}
+    snapshot_revision = {"source":"github-snapshot","value":source_revisions["providerSnapshot"]}
     entries = [
         entry(
             "ctx:real-mission-state", mission_ref, "STATE",
@@ -120,7 +145,7 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
             "Canonical repository: " + repo,
             "FRESH",
             trust("CANONICAL_SOURCE"),
-            {"source":"project-registry","value":project_registry["project"]["id"]},
+            project_revision,
             [source_ref("project-registry","context/projects/multiagent-collaboration-framework.yaml#identity.canonical_repository")]
         )
     ]
@@ -128,7 +153,7 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
     projected = [{
         "ref": mission_ref,
         "revision": mission_revision,
-        "observedAt": observed_at,
+        "observedAt": evaluation_time,
         "freshness": "FRESH" if mission.get("current_state") else "UNKNOWN",
         "trust": trust("CANONICAL_SOURCE"),
         "payload": {
@@ -146,12 +171,12 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
         issue_rev={"source":"github-issue-379","value":issue["updatedAt"]}
         issue_summary="GitHub Issue #379 state: " + issue["state"]
         issue_entry=entry(
-            "ctx:real-issue379",issue_ref,"EVIDENCE",issue_summary,"FRESH",
+            "ctx:real-issue379",issue_ref,"EVIDENCE",issue_summary,github_freshness,
             trust("VERIFIED_EXTERNAL"),issue_rev,
             [source_ref("github-issue-379",issue["url"])]
         )
         entries.append(issue_entry); evidence_refs.append(issue_ref)
-        projected.append(projected_evidence(issue_ref,issue_summary,"FRESH",trust("VERIFIED_EXTERNAL"),issue_rev,observed_at,issue_entry["provenance"]["sourceRefs"]))
+        projected.append(projected_evidence(issue_ref,issue_summary,github_freshness,trust("VERIFIED_EXTERNAL"),issue_rev,observed_at,issue_entry["provenance"]["sourceRefs"]))
     else:
         issue_entry=entry(
             "ctx:real-issue379",issue_ref,"EVIDENCE","GitHub Issue #379 state: UNKNOWN","UNKNOWN",
@@ -168,7 +193,7 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
         pr_rev={"source":"github-pr-380","value":pr["updatedAt"]+"|"+pr["headSha"]}
         pr_summary="GitHub PR #380 state: "+pr["state"]+"; draft="+str(pr["draft"]).lower()+"; merged="+str(pr["merged"]).lower()+"; head="+pr["headSha"]
         pr_entry=entry(
-            "ctx:real-pr380",pr_ref,"EVIDENCE",pr_summary,"FRESH",
+            "ctx:real-pr380",pr_ref,"EVIDENCE",pr_summary,github_freshness,
             trust("VERIFIED_EXTERNAL"),pr_rev,
             [source_ref("github-pr-380",pr["url"])]
         )
@@ -177,7 +202,7 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
         if snapshot.get("repository") != repo:
             d=diag("SOURCE_CONFLICT","GitHub provider snapshot repository differs from project registry canonical_repository.",pr_ref,[source_ref("project-registry",repo),source_ref("github-pr-380",snapshot.get("repository","UNKNOWN"))])
             diagnostics.append(d);pr_diags.append(d)
-        projected.append(projected_evidence(pr_ref,pr_summary,"FRESH",trust("VERIFIED_EXTERNAL"),pr_rev,observed_at,pr_entry["provenance"]["sourceRefs"],pr_diags))
+        projected.append(projected_evidence(pr_ref,pr_summary,github_freshness,trust("VERIFIED_EXTERNAL"),pr_rev,observed_at,pr_entry["provenance"]["sourceRefs"],pr_diags))
     else:
         pr_entry=entry(
             "ctx:real-pr380",pr_ref,"EVIDENCE","GitHub PR #380 state: UNKNOWN","UNKNOWN",
@@ -194,12 +219,12 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
         local_rev={"source":"local-git","value":local_sha}
         local_summary="Local Git branch: "+local_branch+"; HEAD="+local_sha
         local_entry=entry(
-            "ctx:real-local-git",local_git_ref,"EVIDENCE",local_summary,"FRESH",
+            "ctx:real-local-git",local_git_ref,"EVIDENCE",local_summary,local_git_freshness,
             trust("CANONICAL_SOURCE"),local_rev,
             [source_ref("local-git","git://local/"+local_branch+"@"+local_sha)]
         )
         entries.append(local_entry); evidence_refs.append(local_git_ref)
-        projected.append(projected_evidence(local_git_ref,local_summary,"FRESH",trust("CANONICAL_SOURCE"),local_rev,observed_at,local_entry["provenance"]["sourceRefs"]))
+        projected.append(projected_evidence(local_git_ref,local_summary,local_git_freshness,trust("CANONICAL_SOURCE"),local_rev,observed_at,local_entry["provenance"]["sourceRefs"]))
     else:
         d=diag("MISSING_CANONICAL_VALUE","Local Git owner data unavailable.",local_git_ref,[source_ref("local-git","git://local/unknown")])
         diagnostics.append(d)
@@ -225,11 +250,11 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
         "schema":"world-context-slice/v1",
         "scope":{"project":project_ref,"mission":mission_ref},
         "revisionVector":[
-            {"source":"mission-record","revision":local_sha or "UNKNOWN"},
-            {"source":"project-registry","revision":project_registry["project"]["id"]},
-            {"source":"github-snapshot","revision":observed_at}
+            {"source":"mission-record","revision":source_revisions["missionRecord"]},
+            {"source":"project-registry","revision":source_revisions["projectRegistry"]},
+            {"source":"github-snapshot","revision":source_revisions["providerSnapshot"]}
         ],
-        "generatedAt":observed_at,
+        "generatedAt":evaluation_time,
         "focus":[mission_ref],
         "entries":entries,
         "relations":[],
@@ -247,7 +272,7 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
     packet={
         "schema":"mcf-agent-context-packet/v1",
         "packetId":stable_world_id("context","packet://real-sources/"+mission_id+"/"+observed_at),
-        "generatedAt":observed_at,
+        "generatedAt":evaluation_time,
         "recipient":recipient,
         "scope":{"project":project_ref,"mission":mission_ref},
         "objective":[x for x in entries if x["category"]=="GOAL"],
@@ -256,6 +281,7 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
         "decisions":[x for x in entries if x["category"]=="DECISION"],
         "blockers":[x for x in entries if x["category"]=="BLOCKER"],
         "nextActions":[x for x in entries if x["category"]=="NEXT_ACTION"],
+        "attention": {"unknownRefs": unknown_refs, "staleRefs": stale_refs},
         "relevantArtifacts":[],
         "relevantEvidence":evidence_refs,
         "openQuestions":[x for x in entries if x["category"]=="OPEN_QUESTION"],
@@ -267,8 +293,8 @@ def build_real_sources(mission, project_registry, snapshot, ownership):
 
     return {
         "schema":"world-adapter-output/v1",
-        "sourceRevision":local_sha or observed_at,
-        "generatedAt":observed_at,
+        "sourceRevision":input_set_revision(slice_doc["revisionVector"]),
+        "generatedAt":evaluation_time,
         "projectedObjects":projected,
         "contextSlice":slice_doc,
         "agentContextPacket":packet
@@ -280,13 +306,19 @@ def main():
     ap.add_argument("--project-registry",required=True)
     ap.add_argument("--provider-snapshot",required=True)
     ap.add_argument("--ownership",required=True)
+    ap.add_argument("--evaluation-time",required=True)
     ap.add_argument("--output",required=True)
     args=ap.parse_args()
     mission=json.loads(Path(args.mission_file).read_text())
     project=yaml.safe_load(Path(args.project_registry).read_text())
     snapshot=json.loads(Path(args.provider_snapshot).read_text())
     ownership=json.loads(Path(args.ownership).read_text())
-    out=build_real_sources(mission,project,snapshot,ownership)
+    source_revisions={
+        "missionRecord":sha256_file(args.mission_file),
+        "projectRegistry":sha256_file(args.project_registry),
+        "providerSnapshot":sha256_file(args.provider_snapshot),
+    }
+    out=build_real_sources(mission,project,snapshot,ownership,source_revisions,args.evaluation_time)
     Path(args.output).write_text(json.dumps(out,ensure_ascii=False,indent=2)+"\n")
     print(args.output)
 

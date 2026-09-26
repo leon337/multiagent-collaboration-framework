@@ -41,5 +41,15 @@
       "owner": "local_git",
       "source": "git://local/mission/mcf-world-projection-001"
     }
+  },
+  "freshnessPolicies": {
+    "githubProviderSnapshot": {
+      "ttlSeconds": 300,
+      "basis": "snapshot.observedAt"
+    },
+    "localGitSnapshot": {
+      "ttlSeconds": 300,
+      "basis": "snapshot.observedAt"
+    }
   }
 }

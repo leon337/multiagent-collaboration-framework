@@ -320,6 +320,7 @@ def build_source_bundle(src, generated_at):
         "decisions": [x for x in entries if x["category"] == "DECISION"],
         "blockers": [x for x in entries if x["category"] == "BLOCKER"],
         "nextActions": [x for x in entries if x["category"] == "NEXT_ACTION"],
+        "attention": {"unknownRefs": unknown_refs, "staleRefs": stale_refs},
         "relevantArtifacts": [],
         "relevantEvidence": relevant_evidence,
         "openQuestions": [x for x in entries if x["category"] == "OPEN_QUESTION"],
