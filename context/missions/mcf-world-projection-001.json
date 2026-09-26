@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_READONLY_CHECKPOINT_DISK_PREFLIGHT_HARDENING_PENDING_GATE",
+  "parallel_architecture_state": "WORLD_READONLY_STACK_HARDENED_HOLD",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Technical re-gate of checkpoint disk preflight hardening only. Functional expansion remains HOLD pending human validation; Findability R remains frozen/deferred.",
+  "world_model_next_action": "HOLD functional expansion. No additional product increment is authorized. Continue only targeted hardening/regression/security/documentation when a concrete risk is identified. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -232,5 +232,9 @@
   "world_readonly_checkpoint_disk_preflight": "docs/evidence/MCF-WORLD-READONLY-CHECKPOINT-DISK-PREFLIGHT-HARDENING.md",
   "world_readonly_checkpoint_preflight_test": "tools/world-model/test_readonly_checkpoint_preflight.sh",
   "world_readonly_checkpoint_min_free_bytes_default": 67108864,
-  "world_readonly_checkpoint_disk_preflight_gate": "PENDING_TECHNICAL_REGATE"
+  "world_readonly_checkpoint_disk_preflight_gate": "PASS",
+  "world_readonly_checkpoint_disk_preflight_gate_doc": "docs/reviews/MCF-WORLD-READONLY-CHECKPOINT-DISK-PREFLIGHT-GATE.md",
+  "world_readonly_checkpoint_disk_preflight_audited_sha": "57719a5db58a595d82bfc3de64acc88b7477dd77",
+  "world_readonly_checkpoint_disk_preflight_baseline": "docs/evidence/MCF-WORLD-READONLY-CHECKPOINT-DISK-PREFLIGHT-BASELINE.md",
+  "world_readonly_checkpoint_disk_preflight_status": "PASS_EARLY_ENVIRONMENTAL_GUARD"
 }
