@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_CONTEXT_CONSUMER_V0_1_IMPLEMENTED",
+  "parallel_architecture_state": "WORLD_CONTEXT_CONSUMER_V0_1_GATED",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Obtain exact-SHA architecture/audit gate for the read-only context consumer. Keep Findability R frozen and deferred.",
+  "world_model_next_action": "Deepen read-only consumer provenance/diagnostics and semantic-consistency tests using separate architectural fixtures. Findability R remains frozen/deferred until LEANDRO is alert.",
   "world_model_contract_gate": "PASS",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -141,5 +141,9 @@
   "world_context_consumer": "tools/world-model/context_consumer_v01.py",
   "world_context_consumer_tests": "tools/world-model/test_consumer_v01.py",
   "world_context_consumer_evidence": "docs/evidence/MCF-WORLD-CONTEXT-CONSUMER-V0.1-PROOF.md",
-  "world_context_consumer_boundary": "STATIC_READ_ONLY_SAME_MODEL_TWO_REPRESENTATIONS"
+  "world_context_consumer_boundary": "STATIC_READ_ONLY_SAME_MODEL_TWO_REPRESENTATIONS",
+  "world_context_consumer_gate": "PASS",
+  "world_context_consumer_gate_doc": "docs/reviews/MCF-WORLD-CONTEXT-CONSUMER-v0.1-GATE.md",
+  "world_context_consumer_audited_sha": "6cf09d909964661444d225bdf69b7ff727b6d268",
+  "world_model_pipeline": "CANONICAL_STATE_TO_EPHEMERAL_ADAPTER_TO_DISPOSABLE_BUNDLE_TO_HUMAN_AND_AGENT_VIEWS"
 }
