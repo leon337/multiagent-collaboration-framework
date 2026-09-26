@@ -103,7 +103,7 @@
   "findability_r_audited_sha": "2ee4ead043ebf5a518a47ff4269d6307cbd54ee4",
   "human_findability_r_status": "NOT_STARTED_DEFERRED",
   "human_findability_r_deferral_reason": "Participant reported mental fatigue/sleepiness before test execution; session deferred to avoid confounding attention, speed, navigation, and error metrics.",
-  "parallel_architecture_state": "WORLD_MODEL_CONTRACT_V0_1_REMEDIATED",
+  "parallel_architecture_state": "WORLD_MODEL_ADAPTER_V0_1_IMPLEMENTED",
   "world_model_contract": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.md",
   "world_model_schema": "docs/contracts/MCF-WORLD-MODEL-CONTRACT-v0.1.schema.json",
   "world_model_ownership_matrix": "docs/architecture/MCF-WORLD-MODEL-OWNERSHIP-MATRIX-v0.1.md",
@@ -112,7 +112,7 @@
   "world_model_edge_cases": "docs/examples/MCF-WORLD-MODEL-EDGE-CASES-v0.1.json",
   "world_model_verifier": "tools/world-model/verify_contract.py",
   "world_model_architecture_class": "PROTOCOL_READ_MODEL_ONLY",
-  "world_model_next_action": "Final exact-SHA re-gate after ProjectedObject schema, global identity invariants, inference trust constraint and product-scope cuts.",
+  "world_model_next_action": "Obtain exact-SHA independent re-gate of adapter v0.1, deterministic rebuild and executed negative cases. Findability R remains frozen/deferred.",
   "world_model_contract_gate": "PENDING_FINAL_REGATE",
   "world_model_materialized_kinds_v0_1": [
     "mission",
@@ -126,5 +126,11 @@
     "continues_to",
     "supported_by",
     "depends_on"
-  ]
+  ],
+  "world_model_adapter": "tools/world-model/adapter_v01.py",
+  "world_model_adapter_tests": "tools/world-model/test_adapter_v01.py",
+  "world_model_rebuild_proof": "tools/world-model/prove_rebuild_v01.py",
+  "world_model_adapter_schema_verifier": "tools/world-model/verify_adapter_output.js",
+  "world_model_adapter_evidence": "docs/evidence/MCF-WORLD-MODEL-ADAPTER-V0.1-PROOF.md",
+  "world_model_adapter_boundary": "EPHEMERAL_READ_ONLY_NO_SERVICE_NO_DB"
 }

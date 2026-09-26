@@ -163,7 +163,6 @@ Trust:
 - UNTRUSTED_EXTERNAL
 - REPRESENTATIVE_FIXTURE
 - PROJECTION_DERIVED
-- PROJECTION_DERIVED
 
 Freshness and trust are independent dimensions.
 
