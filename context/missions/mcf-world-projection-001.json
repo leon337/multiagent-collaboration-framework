@@ -5,13 +5,13 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "SALVAGE_BASELINE_HUMAN_READY",
+  "current_state": "HUMAN_PILOT_EVIDENCE_CAPTURED",
   "persistent_source_of_truth": "GitHub/MCF + canonical providers",
   "persistent_project": "multiagent-collaboration-framework",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
   "active_branch": "mission/mcf-world-projection-001",
   "mcf_issue": 379,
-  "current_phase": "CONTEXT_RECOVERY_EXPERIMENT",
+  "current_phase": "CONTEXT_RECOVERY_ANALYSIS",
   "protocol": "docs/proposals/MCF-WORLD-PROJECTION-PROTOCOL-v0.1.md",
   "vertical_experiment": "docs/experiments/MCF-WORLD-PROJECTION-001-VERTICAL.md",
   "decision_record": "docs/decisions/MCF-WORLD-PROJECTION-001-ADR.md",
@@ -23,7 +23,7 @@
   "world_is_runtime": false,
   "three_d_required_for_mvp": false,
   "authorization_scope": "LEANDRO authorized MESTRE to create and execute this mission and coordinate agents without repeated routine confirmation. Production, irreversible external effects, new material cost, secrets, or bypass of MCF gates remain outside this authorization.",
-  "next_action": "LEANDRO executes the frozen baseline A(Z) at apps/mcf-world-projection/salvage-baseline.html. Capture result immediately and independently audit B(Y) versus A(Z) as exploratory evidence only.",
+  "next_action": "Have UX/Product and independent audit review the captured human evidence, identify concrete UX changes, and decide whether to iterate the structured projection before any 3D or mutation work.",
   "prototype_path": "apps/mcf-world-projection",
   "prototype_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-PROTOTYPE-SMOKE.md",
   "implementation_regate": "docs/reviews/MCF-WORLD-PROJECTION-001-IMPLEMENTATION-RE-GATE.md",
@@ -31,7 +31,7 @@
   "context_recovery_dryrun": "docs/evidence/MCF-WORLD-PROJECTION-001-CONTEXT-RECOVERY-DRYRUN.md",
   "experiment_harness": "apps/mcf-world-projection/experiment.html",
   "harness_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-HARNESS-GATE.md",
-  "product_value_gate": "PENDING_A_Z_HUMAN_RESULT",
+  "product_value_gate": "PENDING_TEAM_EVIDENCE_REVIEW",
   "pilot_design": "A(X)_vs_B(Y)_ISOMORPHIC_FIXTURES",
   "methodology_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-METHODOLOGY-GATE.md",
   "methodology_gate_status": "PASS_EXPLORATORY_SINGLE_PARTICIPANT",
@@ -42,5 +42,12 @@
   "salvage_harness": "apps/mcf-world-projection/salvage-baseline.html",
   "salvage_freeze_gate": "docs/reviews/MCF-WORLD-PROJECTION-001-SALVAGE-FREEZE-GATE.md",
   "salvage_freeze_gate_status": "PASS",
-  "salvage_frozen_sha": "345e3aa02ffa2982dca83fbce94883a20ae09184"
+  "salvage_frozen_sha": "345e3aa02ffa2982dca83fbce94883a20ae09184",
+  "human_feedback_evidence": "docs/evidence/MCF-WORLD-PROJECTION-001-HUMAN-FEEDBACK-20260926.md",
+  "human_reported_linear_scores": {
+    "A_X": "3/8",
+    "A_Z": "3/8"
+  },
+  "verified_structured_score": "5/8",
+  "qualitative_signal": "LINEAR_HIGHER_COGNITIVE_LOAD_FOR_LEANDRO"
 }
