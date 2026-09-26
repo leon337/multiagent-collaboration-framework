@@ -5,25 +5,50 @@ ROOT="$(git rev-parse --show-toplevel)"
 TOOLS="$ROOT/tools/world-model"
 TMP_PARENT="$(python3 -c 'import os; print(os.environ.get("TMPDIR","/tmp"))')"
 MIN_FREE_BYTES="$(python3 -c 'import os; print(os.environ.get("MCF_WORLD_MIN_FREE_BYTES","67108864"))')"
+MIN_FREE_INODES="$(python3 -c 'import os; print(os.environ.get("MCF_WORLD_MIN_FREE_INODES","128"))')"
 
 if ! [[ "$MIN_FREE_BYTES" =~ ^[0-9]+$ ]]; then
   echo "FAIL: MCF_WORLD_MIN_FREE_BYTES must be a non-negative integer" >&2
   exit 2
 fi
+if ! [[ "$MIN_FREE_INODES" =~ ^[0-9]+$ ]]; then
+  echo "FAIL: MCF_WORLD_MIN_FREE_INODES must be a non-negative integer" >&2
+  exit 2
+fi
+
+if [[ ! -d "$TMP_PARENT" ]]; then
+  echo "FAIL: temporary parent is not a directory: $TMP_PARENT" >&2
+  exit 2
+fi
+if [[ ! -w "$TMP_PARENT" || ! -x "$TMP_PARENT" ]]; then
+  echo "FAIL: temporary parent is not writable/searchable: $TMP_PARENT" >&2
+  exit 2
+fi
 
 AVAILABLE_BYTES="$(df -PB1 "$TMP_PARENT" | awk 'NR==2 {print $4}')"
+AVAILABLE_INODES="$(df -Pi "$TMP_PARENT" | awk 'NR==2 {print $4}')"
 if ! [[ "$AVAILABLE_BYTES" =~ ^[0-9]+$ ]]; then
   echo "FAIL: could not determine free bytes for $TMP_PARENT" >&2
+  exit 2
+fi
+if ! [[ "$AVAILABLE_INODES" =~ ^[0-9]+$ ]]; then
+  echo "FAIL: could not determine free inodes for $TMP_PARENT" >&2
   exit 2
 fi
 
 echo "preflight_tmp_parent=$TMP_PARENT"
 echo "preflight_free_bytes=$AVAILABLE_BYTES"
 echo "preflight_min_free_bytes=$MIN_FREE_BYTES"
+echo "preflight_free_inodes=$AVAILABLE_INODES"
+echo "preflight_min_free_inodes=$MIN_FREE_INODES"
 
 if (( AVAILABLE_BYTES < MIN_FREE_BYTES )); then
   echo "FAIL: insufficient free space for read-only checkpoint: available=$AVAILABLE_BYTES required=$MIN_FREE_BYTES path=$TMP_PARENT" >&2
   exit 3
+fi
+if (( AVAILABLE_INODES < MIN_FREE_INODES )); then
+  echo "FAIL: insufficient free inodes for read-only checkpoint: available=$AVAILABLE_INODES required=$MIN_FREE_INODES path=$TMP_PARENT" >&2
+  exit 4
 fi
 
 TMP="$(mktemp -d "$TMP_PARENT/mcf-world-readonly-v051.XXXXXX")"
