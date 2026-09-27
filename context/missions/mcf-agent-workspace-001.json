@@ -5,8 +5,8 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEO",
-  "current_state": "PHASE_3_E1_REAL_EXPERIMENT_CANDIDATE_PREPARED_PENDING_GATE",
-  "current_phase": "AGENT_OPERATIONS_E1_REAL_EXPERIMENT_CANDIDATE",
+  "current_state": "PHASE_3_E1_REAL_EXPERIMENT_SUCCESSOR_CANDIDATE_PREPARATION",
+  "current_phase": "AGENT_OPERATIONS_E1_REAL_EXPERIMENT_SUCCESSOR",
   "persistent_source_of_truth": "GitHub/MCF + canonical agent/session providers",
   "persistent_project": "mcf-agent-workspace",
   "canonical_repository": "leon337/mcf-agent-workspace",
@@ -41,7 +41,7 @@
   "bootstrap_evidence": "docs/evidence/MCF-AGENT-WORKSPACE-001-BOOTSTRAP-SMOKE.md",
   "phase_1_gate": "PASS_READ_ONLY_BASELINE",
   "roadmap_source": "leon337/mcf-agent-workspace:docs/ROADMAP.md",
-  "next_action": "Run the exact-SHA E1 REAL_EXPERIMENT IMPLEMENTATION/AUTHORIZATION GATE on product SHA 7823927100edc3ef5af0f219510978d74d60f24b using the committed synthetic/adversarial evidence. The gate must decide whether the non-HTTP send-containment Medium is closed. Do not execute execCommand against ChatGPT, mutate the real composer, show an effect-authorizing real modal, enable E1 operationally, or perform E2/Enter/Send before a separate explicit PASS.",
+  "next_action": "Prepare one successor E1 real-experiment implementation candidate in experimental/e1-real only. Close the three exact Mediums from the 7823927 gate, keep normal Agent Workspace hard-disabled, keep the real effect unreachable until a new exact-SHA gate, and prove a real Patrícia read-only rehearsal through SEALED_CONFIRMED with zero stage/effect, followed by process exit, zero handles and exact fallback recovery. Do not execute real execCommand or mutate the real composer.",
   "product_remediated_sha": "a846e163b3f6570a7a65d94e024ce46e16d0d66f",
   "phase_1_initial_gate": "docs/reviews/MCF-AGENT-WORKSPACE-001-PHASE1-INITIAL-GATE.md",
   "phase_1_remediation_evidence": "docs/evidence/MCF-AGENT-WORKSPACE-001-PHASE1-REMEDIATION.md",
@@ -58,7 +58,7 @@
   "real_session_attachment": "PASS_EXACT_LEGACY_SCOPE_ONLY",
   "dual_browser_status": "BOOTSTRAP_FALLBACK",
   "cutover": "NOT_AUTHORIZED",
-  "product_current_sha": "7823927100edc3ef5af0f219510978d74d60f24b",
+  "product_current_sha": "b729f78d36bbb4e4c251f91b7f892ce552cc0c52",
   "session_attachment_authorized_scope": "notebook-team2 / Patrícia + Rafael / compatibility-contract:mcf-dual-browser-0.6.2/exact-binding-v1 only",
   "phase_2_main_ui_gate": "PASS_EXACT_LEGACY_SCOPE_ONLY",
   "session_store_lease_model": "PROCESS_LIFETIME_EXPLICIT_LEASE",
@@ -112,5 +112,27 @@
   "e1_real_experiment_candidate_tests": "74/74 PASS",
   "e1_real_experiment_runner_state": "NOT_AUTHORIZED_HARD_DISABLED_EXIT_73",
   "e1_real_experiment_synthetic_gate": "PASS_HTTP_AND_WEBSOCKET_CONTAINMENT_FIXTURE",
-  "e1_real_experiment_egress_candidate": "WEBREQUEST_CANCEL + BLACKHOLE_PROXY + CLOSE_ALL_CONNECTIONS"
+  "e1_real_experiment_egress_candidate": "WEBREQUEST_CANCEL + BLACKHOLE_PROXY + CLOSE_ALL_CONNECTIONS",
+  "e1_real_experiment_exact_sha_gate_candidate": "7823927100edc3ef5af0f219510978d74d60f24b",
+  "e1_real_experiment_exact_sha_gate": "CONDITIONAL_NOT_AUTHORIZED",
+  "e1_real_experiment_transport_medium": "SUBSTANTIVELY_CLOSED_AT_ARCHITECTURE_CANDIDATE_LEVEL",
+  "e1_real_experiment_remaining_mediums": [
+    "SEAL_CONFIRMATION_MUST_BE_FAIL_CLOSED",
+    "COMPOSER_EMPTY_PREDICATE_MUST_BE_STRUCTURAL_AND_CONSERVATIVE",
+    "EFFECT_ATTEMPT_EVIDENCE_MUST_BE_MONOTONIC"
+  ],
+  "e1_real_experiment_persistence_requirement": "INCOMPLETE_SKIPPED_UNREADABLE_MUST_NOT_BE_REPORTED_AS_NO_HIT",
+  "orchestration_model": "MESTRE_GOVERNANCE_ONLY",
+  "mestre_role": [
+    "orchestration",
+    "governance",
+    "gate_decisions",
+    "cross_agent_coordination",
+    "canonical_mission_state",
+    "integration_review"
+  ],
+  "mestre_direct_implementation": "PROHIBITED_BY_HUMAN_INSTRUCTION",
+  "implementation_policy": "DELEGATE_TO_SPECIALIST_AGENTS_AND_REVIEW_RESULTS",
+  "parallelization_policy": "USE_MULTIPLE_AGENTS_IN_PARALLEL_WHEN_WORKSTREAMS_ARE_INDEPENDENT",
+  "human_operational_note": "LEANDRO may use Notepad independently; this does not imply mission interruption or require MESTRE to stop."
 }
