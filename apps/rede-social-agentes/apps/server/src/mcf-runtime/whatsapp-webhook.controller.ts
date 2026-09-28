@@ -4,6 +4,7 @@ import {
   Get,
   Headers,
   HttpCode,
+  Inject,
   Post,
   Query,
   Req,
@@ -19,7 +20,7 @@ interface RequestWithRawBody {
 
 @Controller('v1/mcf/channels/whatsapp/webhook')
 export class WhatsAppWebhookController {
-  constructor(private readonly webhook: WhatsAppWebhookService) {}
+  constructor(@Inject(WhatsAppWebhookService) private readonly webhook: WhatsAppWebhookService) {}
 
   @Get()
   verify(
