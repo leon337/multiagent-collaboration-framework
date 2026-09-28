@@ -60,4 +60,66 @@ describe('WhatsAppWebhookService', () => {
     });
     expect(JSON.stringify(summary)).not.toContain('private text');
   });
+  it('extracts only valid inbound messages into normalized envelopes', () => {
+    const service = new WhatsAppWebhookService(config);
+    const messages = service.extractInboundMessages({
+      object: 'whatsapp_business_account',
+      entry: [
+        {
+          changes: [
+            {
+              field: 'messages',
+              value: {
+                metadata: { phone_number_id: '123456789012345' },
+                messages: [
+                  {
+                    id: 'wamid.INBOUND123456',
+                    from: '5581999999999',
+                    timestamp: '1790597000',
+                    type: 'text',
+                    text: { body: '  Oi, Mestre  ' },
+                    context: { id: 'wamid.PARENT123456' },
+                  },
+                  {
+                    id: 'wamid.AUDIO1234567',
+                    from: '5581888888888',
+                    timestamp: '1790597001',
+                    type: 'audio',
+                    audio: { id: 'media-1' },
+                  },
+                  {
+                    id: 'bad',
+                    from: 'not-a-number',
+                    type: 'text',
+                    text: { body: 'ignored' },
+                  },
+                ],
+                statuses: [{ id: 'wamid.STATUS', status: 'delivered' }],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    expect(messages).toHaveLength(2);
+    expect(messages[0]).toMatchObject({
+      messageId: 'wamid.INBOUND123456',
+      phoneNumberId: '123456789012345',
+      senderWaId: '5581999999999',
+      messageType: 'text',
+      textBody: 'Oi, Mestre',
+      metadata: {
+        webhookField: 'messages',
+        contextMessageId: 'wamid.PARENT123456',
+      },
+    });
+    expect(messages[0]?.providerTimestamp).toBeInstanceOf(Date);
+    expect(messages[1]).toMatchObject({
+      messageId: 'wamid.AUDIO1234567',
+      senderWaId: '5581888888888',
+      messageType: 'audio',
+      textBody: null,
+    });
+  });
 });

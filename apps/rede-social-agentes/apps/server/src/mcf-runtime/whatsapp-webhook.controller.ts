@@ -10,6 +10,7 @@ import {
   Req,
 } from '@nestjs/common';
 
+import { WhatsAppInboxRepository } from './whatsapp-inbox.repository.js';
 import { WhatsAppWebhookService } from './whatsapp-webhook.service.js';
 
 interface RequestWithRawBody {
@@ -20,7 +21,10 @@ interface RequestWithRawBody {
 
 @Controller('v1/mcf/channels/whatsapp/webhook')
 export class WhatsAppWebhookController {
-  constructor(@Inject(WhatsAppWebhookService) private readonly webhook: WhatsAppWebhookService) {}
+  constructor(
+    @Inject(WhatsAppWebhookService) private readonly webhook: WhatsAppWebhookService,
+    @Inject(WhatsAppInboxRepository) private readonly inbox: WhatsAppInboxRepository,
+  ) {}
 
   @Get()
   verify(
@@ -37,14 +41,16 @@ export class WhatsAppWebhookController {
 
   @Post()
   @HttpCode(200)
-  receive(
+  async receive(
     @Req() request: RequestWithRawBody,
     @Headers('x-hub-signature-256') signature: string | undefined,
-  ): { received: true } {
+  ): Promise<{ received: true }> {
     if (!this.webhook.verifySignature(request.rawBody, signature)) {
       throw new ForbiddenException('WhatsApp webhook signature is invalid');
     }
 
+    const messages = this.webhook.extractInboundMessages(request.body);
+    const inboxResult = await this.inbox.persist(messages);
     const summary = this.webhook.summarize(request.body);
     console.info(
       JSON.stringify({
@@ -53,6 +59,8 @@ export class WhatsAppWebhookController {
         component: 'whatsapp-webhook',
         event: 'whatsapp_webhook_received',
         correlationId: request.id ?? null,
+        inboxInserted: inboxResult.inserted,
+        inboxDuplicates: inboxResult.duplicates,
         ...summary,
       }),
     );

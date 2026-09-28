@@ -2,6 +2,8 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
 
+import type { WhatsAppInboundEnvelope } from './whatsapp-channel.contracts.js';
+
 export interface WhatsAppWebhookConfig {
   enabled: boolean;
   verifyToken: string;
@@ -64,6 +66,82 @@ export class WhatsAppWebhookService {
     const expected =
       'sha256=' + createHmac('sha256', this.config.appSecret).update(rawBody).digest('hex');
     return equalDigest(expected, signature);
+  }
+
+  extractInboundMessages(payload: unknown): WhatsAppInboundEnvelope[] {
+    const root = asRecord(payload);
+    const result: WhatsAppInboundEnvelope[] = [];
+
+    for (const entry of asArray(root?.entry)) {
+      const entryRecord = asRecord(entry);
+      for (const change of asArray(entryRecord?.changes)) {
+        const changeRecord = asRecord(change);
+        const value = asRecord(changeRecord?.value);
+        if (!value) continue;
+
+        const metadata = asRecord(value.metadata);
+        const phoneNumberId = metadata?.phone_number_id;
+        if (typeof phoneNumberId !== 'string' || !/^\d{5,32}$/u.test(phoneNumberId)) {
+          continue;
+        }
+
+        for (const message of asArray(value.messages)) {
+          const record = asRecord(message);
+          if (!record) continue;
+
+          const messageId = record.id;
+          const senderWaId = record.from;
+          const messageType = record.type;
+          if (
+            typeof messageId !== 'string' ||
+            messageId.length < 8 ||
+            messageId.length > 512 ||
+            typeof senderWaId !== 'string' ||
+            !/^\d{5,20}$/u.test(senderWaId) ||
+            typeof messageType !== 'string' ||
+            !/^[a-z0-9_]{1,64}$/u.test(messageType)
+          ) {
+            continue;
+          }
+
+          let textBody: string | null = null;
+          if (messageType === 'text') {
+            const body = asRecord(record.text)?.body;
+            if (typeof body === 'string') {
+              const normalized = body.trim();
+              if (normalized.length > 0 && normalized.length <= 4096) {
+                textBody = normalized;
+              }
+            }
+          }
+
+          let providerTimestamp: Date | null = null;
+          if (typeof record.timestamp === 'string' && /^\d{1,16}$/u.test(record.timestamp)) {
+            const milliseconds = Number(record.timestamp) * 1000;
+            if (Number.isFinite(milliseconds)) {
+              const candidate = new Date(milliseconds);
+              if (!Number.isNaN(candidate.getTime())) providerTimestamp = candidate;
+            }
+          }
+
+          const contextMessageId = asRecord(record.context)?.id;
+          result.push({
+            messageId,
+            phoneNumberId,
+            senderWaId,
+            messageType,
+            textBody,
+            providerTimestamp,
+            metadata: {
+              webhookField: typeof changeRecord?.field === 'string' ? changeRecord.field : null,
+              contextMessageId: typeof contextMessageId === 'string' ? contextMessageId : null,
+            },
+          });
+        }
+      }
+    }
+
+    return result;
   }
 
   summarize(payload: unknown): WhatsAppWebhookSummary {

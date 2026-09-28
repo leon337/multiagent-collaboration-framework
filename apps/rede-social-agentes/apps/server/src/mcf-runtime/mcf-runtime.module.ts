@@ -55,6 +55,8 @@ import { SocialTimelineService } from './social-timeline.service.js';
 import { McfStagingDeployCallbackController } from './staging-deploy-callback.controller.js';
 import { StagingDeployReconciliationService } from './staging-deploy-reconciliation.service.js';
 import { WhatsAppCloudAdapter, WhatsAppCloudClient } from './whatsapp-cloud.adapter.js';
+import { WhatsAppInboxController } from './whatsapp-inbox.controller.js';
+import { WhatsAppInboxRepository } from './whatsapp-inbox.repository.js';
 import { WhatsAppWebhookController } from './whatsapp-webhook.controller.js';
 import { WhatsAppWebhookService } from './whatsapp-webhook.service.js';
 
@@ -81,6 +83,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     ProductionAuthorizationController,
     MissionControlController,
     WhatsAppWebhookController,
+    WhatsAppInboxController,
   ],
   providers: [
     SkillRegistryLoader,
@@ -188,6 +191,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         new WhatsAppCloudAdapter(evidence, client),
       inject: [EvidenceValidator, WhatsAppCloudClient],
     },
+    WhatsAppInboxRepository,
     {
       provide: WhatsAppWebhookService,
       useFactory: () => {
