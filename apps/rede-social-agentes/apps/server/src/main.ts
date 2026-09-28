@@ -30,6 +30,7 @@ async function bootstrap(): Promise<void> {
 
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, adapter, {
     bufferLogs: true,
+    rawBody: true,
   });
 
   const fastify = app.getHttpAdapter().getInstance() as FastifyInstance;

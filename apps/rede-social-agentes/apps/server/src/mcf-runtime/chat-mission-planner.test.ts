@@ -114,6 +114,29 @@ describe('ChatMissionPlanner', () => {
     ]);
   });
 
+  it('routes an authorized WhatsApp request through the governed external adapter', () => {
+    const plan = planner.plan({
+      objective: 'Enviar uma mensagem no WhatsApp para um contato autorizado.',
+    });
+
+    expect(plan.contract.riskClass).toBe('B');
+    expect(plan.contract.selectedSkills).toEqual([
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-WHATSAPP-COMMUNICATE',
+      'MCF-TRACE-MISSION',
+    ]);
+    expect(plan.steps[2]).toMatchObject({
+      skillId: 'MCF-WHATSAPP-COMMUNICATE',
+      agentId: 'Mestre',
+      handoffTo: 'Mestre',
+      toolProvider: 'whatsapp',
+      toolOperation: 'send-text',
+      toolResource: 'whatsapp-cloud-api',
+      state: 'READY_EXTERNAL',
+    });
+  });
+
   it('selects deployment validation only when the objective requires an environment action', () => {
     const plan = planner.plan({
       objective: 'Executar deploy no ambiente de staging e validar rollback.',

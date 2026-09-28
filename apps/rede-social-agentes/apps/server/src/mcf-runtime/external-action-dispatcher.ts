@@ -20,6 +20,7 @@ const durableExecutionBoundaryAdapters = new Set([
   'github-actions-staging-deploy-v1',
   'render-production-promotion-v1',
   'codebuddy-implement-change-local-v1',
+  'whatsapp-cloud-send-text-v1',
 ]);
 const unknownPersistenceAttempts = 3;
 
