@@ -1,48 +1,40 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
-import type { DatabaseRow } from '@rsa/database';
+import type { DatabaseRow, DatabaseTransaction } from '@rsa/database';
 
 import { DatabaseService } from '../database.service.js';
 import type {
   WhatsAppInboundEnvelope,
   WhatsAppInboxMessage,
-  WhatsAppInboxState,
 } from './whatsapp-channel.contracts.js';
 
-interface InboxRow extends DatabaseRow {
+const AGGREGATE_TYPE = 'MCF_WHATSAPP_INBOX';
+const RECEIVED_EVENT = 'WHATSAPP_INBOX_RECEIVED';
+const CLAIMED_EVENT = 'WHATSAPP_INBOX_CLAIMED';
+const PROCESSED_EVENT = 'WHATSAPP_INBOX_PROCESSED';
+const CLAIM_LEASE = "interval '5 minutes'";
+
+interface ReceivedEventRow extends DatabaseRow {
   messageId: string;
+  payload: unknown;
+  receivedAt: Date;
+}
+
+interface ClaimEventRow extends DatabaseRow {
+  payload: unknown;
+  claimedAt: Date;
+}
+
+interface ReceivedPayload {
   phoneNumberId: string;
   senderWaId: string;
   senderHash: string;
   messageType: string;
   textBody: string | null;
-  providerTimestamp: Date | null;
-  metadata: unknown;
-  state: string;
-  claimOwner: string | null;
-  claimedAt: Date | null;
-  processedAt: Date | null;
-  receivedAt: Date;
-  updatedAt: Date;
+  providerTimestamp: string | null;
+  metadata: Record<string, unknown>;
 }
-
-const inboxColumns = `
-  inbox."message_id" as "messageId",
-  inbox."phone_number_id" as "phoneNumberId",
-  inbox."sender_wa_id" as "senderWaId",
-  inbox."sender_hash" as "senderHash",
-  inbox."message_type" as "messageType",
-  inbox."text_body" as "textBody",
-  inbox."provider_timestamp" as "providerTimestamp",
-  inbox."metadata",
-  inbox."state",
-  inbox."claim_owner" as "claimOwner",
-  inbox."claimed_at" as "claimedAt",
-  inbox."processed_at" as "processedAt",
-  inbox."received_at" as "receivedAt",
-  inbox."updated_at" as "updatedAt"
-`;
 
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -50,27 +42,91 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
-function mapRow(row: InboxRow): WhatsAppInboxMessage {
+function asReceivedPayload(value: unknown): ReceivedPayload | null {
+  const payload = asRecord(value);
+  const phoneNumberId = payload.phoneNumberId;
+  const senderWaId = payload.senderWaId;
+  const senderHash = payload.senderHash;
+  const messageType = payload.messageType;
+  const textBody = payload.textBody;
+  const providerTimestamp = payload.providerTimestamp;
+  const metadata = payload.metadata;
+
+  if (
+    typeof phoneNumberId !== 'string' ||
+    typeof senderWaId !== 'string' ||
+    typeof senderHash !== 'string' ||
+    typeof messageType !== 'string' ||
+    !(textBody === null || typeof textBody === 'string') ||
+    !(providerTimestamp === null || typeof providerTimestamp === 'string')
+  ) {
+    return null;
+  }
+
   return {
-    messageId: row.messageId,
-    phoneNumberId: row.phoneNumberId,
-    senderWaId: row.senderWaId,
-    senderHash: row.senderHash,
-    messageType: row.messageType,
-    textBody: row.textBody,
-    providerTimestamp: row.providerTimestamp,
-    metadata: asRecord(row.metadata),
-    state: row.state as WhatsAppInboxState,
-    claimOwner: row.claimOwner,
-    claimedAt: row.claimedAt,
-    processedAt: row.processedAt,
-    receivedAt: row.receivedAt,
-    updatedAt: row.updatedAt,
+    phoneNumberId,
+    senderWaId,
+    senderHash,
+    messageType,
+    textBody,
+    providerTimestamp,
+    metadata: asRecord(metadata),
   };
 }
 
 function hashSender(senderWaId: string): string {
   return createHash('sha256').update(senderWaId).digest('hex');
+}
+
+function deterministicEventId(prefix: string, messageId: string): string {
+  const digest = createHash('sha256').update(messageId).digest('hex');
+  return `wa-inbox-${prefix}-${digest}`;
+}
+
+function toClaimedMessage(
+  row: ReceivedEventRow,
+  consumer: string,
+  claimedAt: Date,
+): WhatsAppInboxMessage | null {
+  const payload = asReceivedPayload(row.payload);
+  if (!payload) return null;
+  return {
+    messageId: row.messageId,
+    phoneNumberId: payload.phoneNumberId,
+    senderWaId: payload.senderWaId,
+    senderHash: payload.senderHash,
+    messageType: payload.messageType,
+    textBody: payload.textBody,
+    providerTimestamp: payload.providerTimestamp ? new Date(payload.providerTimestamp) : null,
+    metadata: payload.metadata,
+    state: 'CLAIMED',
+    claimOwner: consumer,
+    claimedAt,
+    processedAt: null,
+    receivedAt: row.receivedAt,
+    updatedAt: claimedAt,
+  };
+}
+
+async function lockReceivedEvent(
+  client: DatabaseTransaction,
+  messageId: string,
+): Promise<ReceivedEventRow | null> {
+  const result = await client.query<ReceivedEventRow>(
+    `select
+       "aggregate_id" as "messageId",
+       "payload",
+       "occurred_at" as "receivedAt"
+     from "audit_events"
+     where "aggregate_type" = $1
+       and "aggregate_id" = $2
+       and "event_type" = $3
+     order by "occurred_at" asc
+     limit 1
+     for update`,
+    [AGGREGATE_TYPE, messageId, RECEIVED_EVENT],
+  );
+  return result.rows[0] ?? null;
 }
 
 @Injectable()
@@ -83,24 +139,32 @@ export class WhatsAppInboxRepository {
     if (messages.length === 0) return { inserted: 0, duplicates: 0 };
 
     let inserted = 0;
+    const receivedAt = new Date();
     await this.database.transaction(async (client) => {
       for (const message of messages) {
         const result = await client.query(
-          `insert into "mcf_whatsapp_inbox" (
-            "message_id", "phone_number_id", "sender_wa_id", "sender_hash",
-            "message_type", "text_body", "provider_timestamp", "metadata"
-          ) values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
-          on conflict ("message_id") do nothing
-          returning "message_id"`,
+          `insert into "audit_events" (
+            "id", "actor_id", "actor_type", "event_type", "aggregate_type",
+            "aggregate_id", "correlation_id", "payload", "occurred_at"
+          ) values ($1, null, 'SYSTEM', $2, $3, $4, $5, $6::jsonb, $7)
+          on conflict ("id") do nothing
+          returning "id"`,
           [
+            deterministicEventId('received', message.messageId),
+            RECEIVED_EVENT,
+            AGGREGATE_TYPE,
             message.messageId,
-            message.phoneNumberId,
-            message.senderWaId,
-            hashSender(message.senderWaId),
-            message.messageType,
-            message.textBody,
-            message.providerTimestamp,
-            JSON.stringify(message.metadata),
+            message.messageId,
+            JSON.stringify({
+              phoneNumberId: message.phoneNumberId,
+              senderWaId: message.senderWaId,
+              senderHash: hashSender(message.senderWaId),
+              messageType: message.messageType,
+              textBody: message.textBody,
+              providerTimestamp: message.providerTimestamp?.toISOString() ?? null,
+              metadata: message.metadata,
+            }),
+            receivedAt,
           ],
         );
         if (result.rowCount === 1) inserted += 1;
@@ -112,47 +176,109 @@ export class WhatsAppInboxRepository {
 
   async claimPending(consumer: string, limit: number): Promise<WhatsAppInboxMessage[]> {
     return this.database.transaction(async (client) => {
-      const result = await client.query<InboxRow>(
-        `with candidates as (
-          select "message_id"
-          from "mcf_whatsapp_inbox"
-          where
-            "state" = 'RECEIVED'
-            or (
-              "state" = 'CLAIMED'
-              and "claimed_at" < now() - interval '5 minutes'
-            )
-          order by "received_at" asc, "message_id" asc
-          for update skip locked
-          limit $1
-        )
-        update "mcf_whatsapp_inbox" as inbox
-        set
-          "state" = 'CLAIMED',
-          "claim_owner" = $2,
-          "claimed_at" = now(),
-          "updated_at" = now()
-        from candidates
-        where inbox."message_id" = candidates."message_id"
-        returning ${inboxColumns}`,
-        [limit, consumer],
+      const candidates = await client.query<ReceivedEventRow>(
+        `select
+           received."aggregate_id" as "messageId",
+           received."payload",
+           received."occurred_at" as "receivedAt"
+         from "audit_events" as received
+         where received."aggregate_type" = $1
+           and received."event_type" = $2
+           and not exists (
+             select 1
+             from "audit_events" as processed
+             where processed."aggregate_type" = received."aggregate_type"
+               and processed."aggregate_id" = received."aggregate_id"
+               and processed."event_type" = $3
+           )
+           and not exists (
+             select 1
+             from "audit_events" as claimed
+             where claimed."aggregate_type" = received."aggregate_type"
+               and claimed."aggregate_id" = received."aggregate_id"
+               and claimed."event_type" = $4
+               and claimed."occurred_at" >= now() - ${CLAIM_LEASE}
+           )
+         order by received."occurred_at" asc, received."aggregate_id" asc
+         limit $5
+         for update of received skip locked`,
+        [AGGREGATE_TYPE, RECEIVED_EVENT, PROCESSED_EVENT, CLAIMED_EVENT, limit],
       );
-      return result.rows.map(mapRow);
+
+      const claimed: WhatsAppInboxMessage[] = [];
+      for (const candidate of candidates.rows) {
+        const claimedAt = new Date();
+        await client.query(
+          `insert into "audit_events" (
+            "id", "actor_id", "actor_type", "event_type", "aggregate_type",
+            "aggregate_id", "correlation_id", "payload", "occurred_at"
+          ) values ($1, null, 'SYSTEM', $2, $3, $4, $5, $6::jsonb, $7)`,
+          [
+            `wa-inbox-claim-${randomUUID()}`,
+            CLAIMED_EVENT,
+            AGGREGATE_TYPE,
+            candidate.messageId,
+            candidate.messageId,
+            JSON.stringify({ consumer }),
+            claimedAt,
+          ],
+        );
+        const mapped = toClaimedMessage(candidate, consumer, claimedAt);
+        if (mapped) claimed.push(mapped);
+      }
+      return claimed;
     });
   }
 
   async acknowledge(messageId: string, consumer: string): Promise<boolean> {
-    const result = await this.database.query(
-      `update "mcf_whatsapp_inbox"
-       set
-         "state" = 'PROCESSED',
-         "processed_at" = now(),
-         "updated_at" = now()
-       where "message_id" = $1
-         and "state" = 'CLAIMED'
-         and "claim_owner" = $2`,
-      [messageId, consumer],
-    );
-    return result.rowCount === 1;
+    return this.database.transaction(async (client) => {
+      const received = await lockReceivedEvent(client, messageId);
+      if (!received) return false;
+
+      const processed = await client.query(
+        `select 1
+         from "audit_events"
+         where "aggregate_type" = $1
+           and "aggregate_id" = $2
+           and "event_type" = $3
+         limit 1`,
+        [AGGREGATE_TYPE, messageId, PROCESSED_EVENT],
+      );
+      if ((processed.rowCount ?? 0) > 0) return false;
+
+      const latestClaim = await client.query<ClaimEventRow>(
+        `select
+           "payload",
+           "occurred_at" as "claimedAt"
+         from "audit_events"
+         where "aggregate_type" = $1
+           and "aggregate_id" = $2
+           and "event_type" = $3
+         order by "occurred_at" desc
+         limit 1`,
+        [AGGREGATE_TYPE, messageId, CLAIMED_EVENT],
+      );
+      const claim = latestClaim.rows[0];
+      if (!claim || claim.claimedAt.getTime() < Date.now() - 5 * 60 * 1_000) return false;
+      if (asRecord(claim.payload).consumer !== consumer) return false;
+
+      const result = await client.query(
+        `insert into "audit_events" (
+          "id", "actor_id", "actor_type", "event_type", "aggregate_type",
+          "aggregate_id", "correlation_id", "payload", "occurred_at"
+        ) values ($1, null, 'SYSTEM', $2, $3, $4, $5, $6::jsonb, now())
+        on conflict ("id") do nothing
+        returning "id"`,
+        [
+          deterministicEventId('processed', messageId),
+          PROCESSED_EVENT,
+          AGGREGATE_TYPE,
+          messageId,
+          messageId,
+          JSON.stringify({ consumer }),
+        ],
+      );
+      return result.rowCount === 1;
+    });
   }
 }
