@@ -1,0 +1,75 @@
+checkpoint_id: CP-V1-3-0-RELEASE-PUBLICATION-20260828-01
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+recorded_date: 2026-08-28
+status: PUBLISHED_STABLE_VERIFIED
+
+authorization:
+  authority: LEANDRO
+  decision: APPROVE_V1_3_0_PUBLICATION
+  tag_authorized: true
+  release_publication_authorized: true
+  production_deploy_authorized: false
+  pr_176_merge_authorized: false
+
+source_of_truth_before_publication:
+  main_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  main_tree_sha: 3e52ad4e39486c76743d39310de2afcacfc7c6d5
+  prior_latest_stable: v1.2.0
+  prior_latest_stable_release_id: 377709546
+  v1_3_0_tag_existed: false
+
+prepublication_qualification:
+  exact_main_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  workflows:
+    mcf_v1_1_qualification:
+      run_id: 33192330234
+      result: SUCCESS
+    mcf_production_readiness:
+      run_id: 33192332452
+      result: SUCCESS
+    rede_social_foundation:
+      run_id: 33192334548
+      result: SUCCESS
+    rede_social_container_smoke:
+      run_id: 33192336957
+      result: SUCCESS
+  server_suite:
+    passed: 904
+    skipped: 3
+    failed: 0
+
+publication:
+  version: v1.3.0
+  release_name: MCF v1.3.0 — Authenticated Human Control + Governed Succession
+  tag_ref: refs/tags/v1.3.0
+  tag_target_sha: 2a264b283d976bd1b392052fa928d076debfc7fb
+  release_id: 378639945
+  release_url: https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.3.0
+  draft: false
+  prerelease: false
+  published_at_utc: 2026-08-28T17:13:56Z
+  release_notes_sha256: f4980bc4745d90e87112224ee1c8cb1d4d119756cf0420292b5fa98e8166687c
+
+postpublication_verification:
+  latest_release: v1.3.0
+  latest_release_id: 378639945
+  tag_points_to_authorized_sha: true
+  main_sha_unchanged: true
+  main_sha_after_publication: 2a264b283d976bd1b392052fa928d076debfc7fb
+  release_event_workflows_triggered: 0
+  production_deploy_workflow_run_triggered_by_gate: false
+  production_deploy_performed_by_gate: false
+
+scope_limits:
+  human_control_runtime_wiring: REMEDIATED_IN_CHAT_RUNTIME_BOUNDARY
+  universal_persistent_pause_resume: NOT_CLAIMED
+  universal_absence_of_legacy_helper_usage: NOT_VERIFIED
+  nextgen_planning_is_runtime_implementation: false
+  pr_176_merge_authorized: false
+
+governance:
+  v1_3_0_is_latest_stable: true
+  publication_gate_consumed: true
+  deployment_remains_separate_human_gate: true
+
+next_action: STOP_BEFORE_PRODUCTION_DEPLOY_UNLESS_SEPARATELY_AUTHORIZED
