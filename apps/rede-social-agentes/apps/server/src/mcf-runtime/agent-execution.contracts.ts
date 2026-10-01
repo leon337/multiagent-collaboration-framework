@@ -39,6 +39,7 @@ export interface AuthorityEnvelope {
   authorityId: string;
   issuer: 'HUMAN' | 'MISSION';
   missionId: string;
+  runId: string;
   allowedActions: readonly string[];
   providerScope: readonly string[];
   expiresAt: string | null;
@@ -52,6 +53,7 @@ export interface AgentExecutionRequest {
   provider: ExecutionProviderContract;
   authority: AuthorityEnvelope;
   prompt: string;
+  requestedAction: string;
   requestedCapabilities: readonly AgentExecutionCapability[];
   metadata?: Readonly<Record<string, unknown>>;
 }
@@ -106,6 +108,14 @@ export function assertAuthorityEnvelope(
 ): void {
   if (request.authority.missionId !== request.missionId) {
     throw new Error('authority envelope missionId does not match execution missionId');
+  }
+
+  if (!request.authority.allowedActions.includes(request.requestedAction)) {
+    throw new Error('authority envelope does not authorize the requested action');
+  }
+
+  if (request.authority.runId !== request.runId) {
+    throw new Error('authority envelope runId does not match execution runId');
   }
 
   if (
