@@ -12,16 +12,17 @@ The MCF control plane owns mission identity, authority, requested capabilities, 
 
 ## Implemented invariants
 
-1. missionId in the authority envelope must match the execution request.
-2. A provider outside providerScope is rejected.
-3. Expired authority is rejected.
-4. Human approval cannot be represented as a non-human issuer.
-5. Requested provider capabilities must be explicitly advertised.
-6. Provider execution receives durable missionId + runId.
-7. Interrupt/cancel remain explicit lifecycle states.
-8. Uncertain side effects are represented as EFFECT_UNKNOWN; they are not silently converted to success or failure.
-9. Provider evidence carries provenance and is returned as evidence, not authorization.
-10. Provider selection is deterministic: zero matches or multiple matches fail closed.
+1. missionId and runId in the authority envelope must match the execution request.
+2. The requested action must be explicitly present in allowedActions.
+3. A provider outside providerScope is rejected.
+4. Expired authority is rejected.
+5. Human approval cannot be represented as a non-human issuer.
+6. Requested provider capabilities must be explicitly advertised.
+7. Provider execution receives durable missionId + runId.
+8. Interrupt/cancel remain explicit lifecycle states.
+9. Uncertain side effects are represented as EFFECT_UNKNOWN; they are not silently converted to success or failure.
+10. Provider evidence carries provenance and is returned as evidence, not authorization.
+11. Provider selection is deterministic: zero matches or multiple matches fail closed.
 
 ## Deliberately not implemented in this phase
 
