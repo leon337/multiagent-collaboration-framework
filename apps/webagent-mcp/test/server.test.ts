@@ -23,6 +23,8 @@ describe('createWebAgentServer', () => {
     expect(listed.tools.map((tool) => tool.name).sort()).toEqual(
       ['browser_cancel', 'browser_run', 'browser_wait', 'web_fetch', 'web_search'].sort(),
     );
+    const browserRun = listed.tools.find((tool) => tool.name === 'browser_run');
+    expect(browserRun?.inputSchema).toHaveProperty('properties.actions');
   });
 
   it('executes web_search through the MCP boundary', async () => {
