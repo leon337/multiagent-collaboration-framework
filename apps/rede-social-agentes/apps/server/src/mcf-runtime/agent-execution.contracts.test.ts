@@ -30,12 +30,14 @@ function request(overrides: Partial<AgentExecutionRequest> = {}): AgentExecution
       authorityId: 'authority-1',
       issuer: 'MISSION',
       missionId: 'mission-1',
+      runId: 'run-1',
       allowedActions: ['research'],
       providerScope: ['test-provider'],
       expiresAt: null,
       approvalRequired: false,
     },
     prompt: 'test',
+    requestedAction: 'research',
     requestedCapabilities: ['PERSISTENT_CONTEXT'],
     ...overrides,
   };
@@ -60,6 +62,27 @@ describe('provider-independent agent execution contract', () => {
         }),
       ),
     ).toThrow(/missionId/);
+  });
+
+  it('rejects an action outside the authority envelope', () => {
+    expect(() =>
+      assertAuthorityEnvelope(
+        request({ requestedAction: 'deploy' }),
+      ),
+    ).toThrow(/requested action/);
+  });
+
+  it('rejects an authority envelope bound to another run', () => {
+    expect(() =>
+      assertAuthorityEnvelope(
+        request({
+          authority: {
+            ...request().authority,
+            runId: 'other-run',
+          },
+        }),
+      ),
+    ).toThrow(/runId/);
   });
 
   it('rejects provider outside the authority scope', () => {
