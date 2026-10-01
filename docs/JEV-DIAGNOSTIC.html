@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MCF · Jev Diagnostic</title><style>body{font-family:system-ui,sans-serif;background:#090b10;color:#eef2ff;margin:0}main{max-width:980px;margin:auto;padding:24px}button{padding:14px 18px;border:0;border-radius:10px;font-weight:800}pre{white-space:pre-wrap;word-break:break-word;background:#05070b;border:1px solid #263148;border-radius:12px;padding:16px;max-height:75vh;overflow:auto}.muted{color:#9aa7bd}</style></head>
+<body><main><h1>Jev Feature Diagnostic</h1><p class="muted">Executa cinco probes sintéticos para isolar baseline, boolean criteria, score, ZDR e combinação completa.</p><button id="run">Executar diagnóstico</button><span id="status" class="muted"></span><pre id="out">Aguardando.</pre></main>
+<script>
+const run=document.getElementById('run'),out=document.getElementById('out'),status=document.getElementById('status');
+run.onclick=async()=>{run.disabled=true;status.textContent=' Executando…';try{const r=await fetch('/api/jev-diagnostic',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});const d=await r.json();out.textContent=JSON.stringify(d,null,2);status.textContent=` HTTP ${r.status}`;}catch(e){out.textContent=JSON.stringify({error:String(e)},null,2);status.textContent=' falhou';}finally{run.disabled=false;}};
+</script></body></html>

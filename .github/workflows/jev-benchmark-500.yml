@@ -1,0 +1,72 @@
+name: Jev Benchmark 500 Experimental
+
+on:
+  push:
+    branches:
+      - experimentos/jev-vercel-decision-lab-20260923
+    paths:
+      - .github/workflows/jev-benchmark-500.yml
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Run 500 synthetic Jev evaluations
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ENDPOINT: https://mcf-ecosystem-roadmap-git-experimentos-jev-c59048-predix-ai-br.vercel.app/api/benchmark-500-batch
+    steps:
+      - name: Checkout experimental branch
+        uses: actions/checkout@v4
+
+      - name: Execute 50 persisted batches
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p jev-results/batches
+          for i in $(seq 0 49); do
+            echo "=== batch ${i}/49 ==="
+            target="jev-results/batches/batch-$(printf '%02d' "$i").json"
+            tmp="${target}.tmp"
+            ok=0
+            for attempt in 1 2 3; do
+              echo "attempt ${attempt}/3"
+              code=$(curl -sS --max-time 240 \
+                -o "$tmp" \
+                -w '%{http_code}' \
+                -X POST \
+                -H 'Content-Type: application/json' \
+                --data "{\"batchIndex\":${i}}" \
+                "$ENDPOINT" || true)
+              if [ "$code" = "200" ] && jq -e '.results | length == 10' "$tmp" >/dev/null 2>&1; then
+                mv "$tmp" "$target"
+                jq -c '{batchIndex,batchNumber,ok,summary:{total:.summary.total,successful:.summary.successful,failed:.summary.failed,matched:.summary.matched,matchRate:.summary.matchRate}}' "$target"
+                ok=1
+                break
+              fi
+              echo "batch ${i} attempt ${attempt} failed; HTTP=${code}"
+              if [ -f "$tmp" ]; then cat "$tmp" || true; fi
+              sleep $((attempt * 5))
+            done
+            if [ "$ok" -ne 1 ]; then
+              echo "batch ${i} failed after 3 attempts"
+              exit 1
+            fi
+          done
+
+      - name: Aggregate and validate 500 results
+        run: |
+          python3 scripts/aggregate_jev_benchmark.py
+          test "$(jq '.summary.total' jev-results/aggregate.json)" = "500"
+          test "$(jq '.results | length' jev-results/aggregate.json)" = "500"
+          cat jev-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload benchmark evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev-benchmark-500
+          path: jev-results/
+          retention-days: 7
+          if-no-files-found: error
