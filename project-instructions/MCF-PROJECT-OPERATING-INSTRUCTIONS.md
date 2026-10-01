@@ -68,7 +68,8 @@ Documentos históricos devem ser preservados, mas não prevalecem sobre decisõe
 - `docs/decisions/MCF-DEC-053-INICIALIZACAO-AUTOMATICA-DE-CHATS-DO-PROJETO.md`;
 - `docs/decisions/MCF-DEC-065-CONTROLE-HUMANO-COPRESENCA-VISIVEL-E-GUI-AUTORIZADA.md`;
 - `docs/decisions/MCF-DEC-066-SOBRIEDADE-EPISTEMICA-E-ANTI-SYCOPHANCY.md`;
-- `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`.
+- `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md`;
+- `docs/protocols/MCF-PROTOCOLO-CONTINUIDADE-MULTI-IA-V1.2.md`;
 
 ### Equipe
 
@@ -107,6 +108,27 @@ Em toda missão concreta, executar:
 ```
 
 Em uma saudação sem missão, responder normalmente e aguardar objetivo, sem recitar o protocolo inteiro.
+
+
+### 5.1. Continuidade de projeto novo ou cliente fresco
+
+Para continuar um projeto registrado a partir de um cliente fresco, executar exatamente a sequência normativa abaixo, sem substituir etapas por memória do chat e sem confluir estado canônico remoto com estado local/live:
+
+```text
+1. identify project
+2. locate registry
+3. read project capsule
+4. read canonical entrypoints
+5. inspect open work
+6. re-observe live state when required
+7. detect stale/conflict
+8. open mission contract
+9. continue from next executable gate
+```
+
+A resolução de autoridade é por domínio: o MCF governa continuidade, governança e descoberta; o projeto registrado permanece autoridade da verdade técnica específica; e runtime-live fornece somente observações operacionais correntes. Antes de abrir o contrato da missão, registrar pendências de canonicalização e conflitos detectados. Aprovação humana sem persistência e verificação objetiva permanece `CANONICALIZATION_PENDING`; não tratar memória de chat como fonte autoritativa. O protocolo universal aplicável é `docs/protocols/MCF-PROTOCOLO-CONTINUIDADE-MULTI-IA-V1.2.md`, que permanece complementar ao protocolo existente de sucessão cross-chat e controle de janelas.
+
+Após a recuperação, abrir o mission contract com objetivo, escopo, fontes, critérios de aceite, autorizações e proibições; então continuar do próximo gate executável, sem reiniciar a missão.
 
 ## 6. Contrato da missão
 

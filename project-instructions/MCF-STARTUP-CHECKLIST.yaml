@@ -12,6 +12,12 @@ startup_checklist:
 
   source_loading:
     canonical_instruction_located: false
+    project_registry_resolved: false
+    authority_by_domain_resolved: false
+    remote_canonical_and_local_live_separated: false
+    remote_local_freshness_checked: false
+    canonicalization_pending_checked: false
+    conflict_detection_before_mutation_or_publication: false
     active_decisions_located: []
     operational_protocol_located: false
     skill_registry_located: false
