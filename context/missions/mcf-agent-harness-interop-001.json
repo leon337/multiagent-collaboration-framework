@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "IMPLEMENTATION_AUTHORIZED",
+  "current_state": "IMPLEMENTATION_COMPLETE_PENDING_MERGE_GATE",
   "persistent_source_of_truth": "GitHub/MCF + provider live",
   "persistent_project": "mcf",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -14,13 +14,13 @@
   "live_mutation_authorized": false,
   "implementation_authorized": true,
   "authorization_scope": "LEANDRO explicitly authorized implementation after PHASE-00. Implementation is authorized only within the mission boundary: provider-independent Agent Contract, Authority Envelope, Provider Adapter Layer, lifecycle/evidence semantics and conformance tests. Production deployment, external provider activation and unrelated runtime changes remain separately governed.",
-  "next_action": "Implement and validate the provider-independent execution contracts and adapter boundary, then run CI/conformance and reconcile evidence before any production promotion.",
+  "next_action": "Human review of PR #386 and separate merge/release authorization; provider-specific adapters remain future scoped work.",
   "known_gaps": [
-    "provider-independent Agent Contract not yet formally established",
-    "provider adapter boundary requires architectural validation",
-    "persistent/background agent lifecycle implications require research",
-    "cross-provider evidence and authority interoperability requires validation"
+    "concrete Dots/Work/Codex provider adapters are not activated",
+    "provider-run handles are not yet durably persisted",
+    "live cross-provider execution reconciliation is not yet wired",
+    "production deployment and provider activation remain separately governed"
   ],
-  "required_gate": "HUMAN_GATE for production promotion or scope expansion",
+  "required_gate": "HUMAN_GATE for merge/release or provider activation",
   "implementation_boundary": "IMPLEMENTATION_AUTHORIZED_FOR_MCF-AGENT-HARNESS-INTEROP-001"
 }
