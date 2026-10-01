@@ -56,6 +56,11 @@ import { SocialTimelineController } from './social-timeline.controller.js';
 import { SocialTimelineService } from './social-timeline.service.js';
 import { McfStagingDeployCallbackController } from './staging-deploy-callback.controller.js';
 import { StagingDeployReconciliationService } from './staging-deploy-reconciliation.service.js';
+import { WhatsAppCloudAdapter, WhatsAppCloudClient } from './whatsapp-cloud.adapter.js';
+import { WhatsAppInboxController } from './whatsapp-inbox.controller.js';
+import { WhatsAppInboxRepository } from './whatsapp-inbox.repository.js';
+import { WhatsAppWebhookController } from './whatsapp-webhook.controller.js';
+import { WhatsAppWebhookService } from './whatsapp-webhook.service.js';
 
 function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
   const config = loadRuntimeConfig();
@@ -79,6 +84,8 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     SocialTimelineController,
     ProductionAuthorizationController,
     MissionControlController,
+    WhatsAppWebhookController,
+    WhatsAppInboxController,
   ],
   providers: [
     AgentExecutionService,
@@ -171,6 +178,36 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [EvidenceValidator],
     },
     {
+      provide: WhatsAppCloudClient,
+      useFactory: () => {
+        const config = loadRuntimeConfig();
+        return new WhatsAppCloudClient({
+          enabled: config.MCF_WHATSAPP_ENABLED,
+          apiVersion: config.MCF_WHATSAPP_API_VERSION,
+          phoneNumberId: config.MCF_WHATSAPP_PHONE_NUMBER_ID,
+          accessToken: config.MCF_WHATSAPP_ACCESS_TOKEN,
+        });
+      },
+    },
+    {
+      provide: WhatsAppCloudAdapter,
+      useFactory: (evidence: EvidenceValidator, client: WhatsAppCloudClient) =>
+        new WhatsAppCloudAdapter(evidence, client),
+      inject: [EvidenceValidator, WhatsAppCloudClient],
+    },
+    WhatsAppInboxRepository,
+    {
+      provide: WhatsAppWebhookService,
+      useFactory: () => {
+        const config = loadRuntimeConfig();
+        return new WhatsAppWebhookService({
+          enabled: config.MCF_WHATSAPP_ENABLED,
+          verifyToken: config.MCF_WHATSAPP_VERIFY_TOKEN,
+          appSecret: config.MCF_WHATSAPP_APP_SECRET,
+        });
+      },
+    },
+    {
       provide: AdapterRegistry,
       useFactory: (
         githubReview: GitHubCodeReviewAdapter,
@@ -179,6 +216,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         githubPrCollaboration: GitHubPullCollaborationAdapter,
         codeBuddy: CodeBuddyExecutorAdapter,
         localAgentTeam: LocalAgentTeamAdapter,
+        whatsappCloud: WhatsAppCloudAdapter,
       ) =>
         new AdapterRegistry([
           githubReview,
@@ -187,6 +225,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           githubPrCollaboration,
           codeBuddy,
           localAgentTeam,
+          whatsappCloud,
         ]),
       inject: [
         GitHubCodeReviewAdapter,
@@ -195,6 +234,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         GitHubPullCollaborationAdapter,
         CodeBuddyExecutorAdapter,
         LocalAgentTeamAdapter,
+        WhatsAppCloudAdapter,
       ],
     },
     {
