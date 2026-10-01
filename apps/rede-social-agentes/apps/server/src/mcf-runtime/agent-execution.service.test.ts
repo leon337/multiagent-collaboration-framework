@@ -28,12 +28,14 @@ const request: AgentExecutionRequest = {
     authorityId: 'authority-1',
     issuer: 'HUMAN',
     missionId: 'mission-1',
+    runId: 'run-1',
     allowedActions: ['research'],
     providerScope: ['test-provider'],
     expiresAt: null,
     approvalRequired: true,
   },
   prompt: 'test',
+  requestedAction: 'research',
   requestedCapabilities: ['PERSISTENT_CONTEXT'],
 };
 
