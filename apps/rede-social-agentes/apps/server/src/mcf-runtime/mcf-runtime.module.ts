@@ -5,6 +5,8 @@ import { DatabaseModule } from '../database.module.js';
 import { DatabaseService } from '../database.service.js';
 import { IdentityModule } from '../identity/identity.module.js';
 import { AdapterRegistry } from './adapter-registry.js';
+import { AgentExecutionService } from './agent-execution.service.js';
+import { ProviderAdapterRegistry } from './provider-adapter.registry.js';
 import { BoundStagingDeployReconciliationService } from './bound-staging-deploy-reconciliation.service.js';
 import { CanonicalExternalActionLedger } from './canonical-external-action-ledger.js';
 import { ChatMissionPlanner } from './chat-mission-planner.js';
@@ -79,6 +81,8 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     MissionControlController,
   ],
   providers: [
+    AgentExecutionService,
+    ProviderAdapterRegistry,
     SkillRegistryLoader,
     PermissionEngine,
     EvidenceValidator,
@@ -331,6 +335,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     SocialTimelineService,
   ],
   exports: [
+    AgentExecutionService,
     MissionRuntimeService,
     MissionObservabilityService,
     ContinuityRecoveryService,

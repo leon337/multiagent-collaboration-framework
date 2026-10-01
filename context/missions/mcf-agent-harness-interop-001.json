@@ -1,0 +1,26 @@
+{
+  "mission_id": "MCF-AGENT-HARNESS-INTEROP-001",
+  "title": "Provider-independent Agent Contract e Control Plane",
+  "risk_class": "B",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "decision_authority": "LEANDRO",
+  "current_state": "IMPLEMENTATION_COMPLETE_PENDING_MERGE_GATE",
+  "persistent_source_of_truth": "GitHub/MCF + provider live",
+  "persistent_project": "mcf",
+  "canonical_repository": "leon337/multiagent-collaboration-framework",
+  "mcf_issue": 385,
+  "current_phase": "PHASE-01-CONTRACTS",
+  "live_mutation_authorized": false,
+  "implementation_authorized": true,
+  "authorization_scope": "LEANDRO explicitly authorized implementation after PHASE-00. Implementation is authorized only within the mission boundary: provider-independent Agent Contract, Authority Envelope, Provider Adapter Layer, lifecycle/evidence semantics and conformance tests. Production deployment, external provider activation and unrelated runtime changes remain separately governed.",
+  "next_action": "Human review of PR #386 and separate merge/release authorization; provider-specific adapters remain future scoped work.",
+  "known_gaps": [
+    "concrete Dots/Work/Codex provider adapters are not activated",
+    "provider-run handles are not yet durably persisted",
+    "live cross-provider execution reconciliation is not yet wired",
+    "production deployment and provider activation remain separately governed"
+  ],
+  "required_gate": "HUMAN_GATE for merge/release or provider activation",
+  "implementation_boundary": "IMPLEMENTATION_AUTHORIZED_FOR_MCF-AGENT-HARNESS-INTEROP-001"
+}
