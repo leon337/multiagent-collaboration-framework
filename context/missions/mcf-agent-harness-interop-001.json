@@ -5,22 +5,22 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "RESEARCH_AUTHORIZED",
+  "current_state": "IMPLEMENTATION_AUTHORIZED",
   "persistent_source_of_truth": "GitHub/MCF + provider live",
   "persistent_project": "mcf",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
   "mcf_issue": 385,
-  "current_phase": "PHASE-00-DISCOVERY",
+  "current_phase": "PHASE-01-CONTRACTS",
   "live_mutation_authorized": false,
-  "implementation_authorized": false,
-  "authorization_scope": "LEANDRO authorized creation and execution of the architectural research mission. Research, comparison, conceptual testing and architecture artifacts are permitted. Runtime/schema/provider/production/deploy/merge changes require a separate authorization and applicable MCF gates.",
-  "next_action": "Reconcile current MCF architecture with primary-source provider capabilities and produce the capability matrix, gap analysis and Agent Contract/Provider Adapter options.",
+  "implementation_authorized": true,
+  "authorization_scope": "LEANDRO explicitly authorized implementation after PHASE-00. Implementation is authorized only within the mission boundary: provider-independent Agent Contract, Authority Envelope, Provider Adapter Layer, lifecycle/evidence semantics and conformance tests. Production deployment, external provider activation and unrelated runtime changes remain separately governed.",
+  "next_action": "Implement and validate the provider-independent execution contracts and adapter boundary, then run CI/conformance and reconcile evidence before any production promotion.",
   "known_gaps": [
     "provider-independent Agent Contract not yet formally established",
     "provider adapter boundary requires architectural validation",
     "persistent/background agent lifecycle implications require research",
     "cross-provider evidence and authority interoperability requires validation"
   ],
-  "required_gate": "HUMAN_GATE before any implementation authorization",
-  "implementation_boundary": "RESEARCH_AND_DESIGN_ONLY"
+  "required_gate": "HUMAN_GATE for production promotion or scope expansion",
+  "implementation_boundary": "IMPLEMENTATION_AUTHORIZED_FOR_MCF-AGENT-HARNESS-INTEROP-001"
 }
