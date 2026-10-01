@@ -1,88 +1,67 @@
-# Agent execution provider options
+# Agent execution provider options — zero-cost recovery
 
 Mission: `MCF-MEMORY-LIVE-NEXT-STABLE-001`
-Owner of this artifact: Mestre
-Purpose: unblock real named-agent execution without simulating roles
-Status: `EVALUATED / AUTHORIZATION GATE FOR EXTERNAL PROVIDER`
+Owner: Mestre
+Purpose: obtain real, distinguishable named-agent execution without role simulation and without new paid cost.
+Status: `ZERO_COST_ROUTE_SELECTED / CI_PROOF_PENDING`
 
 ## Constraint
 
-The mission requires 29 real, distinguishable agent executions and agent-owned artifacts. The current MCF runtime is an orchestrator/evidence ledger, not a cognitive-agent originator. The current ChatGPT tool surface has no native subagent dispatch namespace. Therefore a real execution provider is required before non-Mestre roles can receive credit.
+The MCF runtime already validates mission/skill/agent/evidence/Receipt semantics, but governed cognitive skills require execution evidence originating from the selected agent. Coordinator-authored prose cannot be submitted as Sofia/Miriam/Ricardo/etc. evidence.
 
-## Option A — Extend MCF runtime with a native agent executor
+LEANDRO additionally established a zero-new-cost constraint. Therefore any route that is billable, requires paid API calls or pushes technical operation onto LEANDRO is out of scope.
 
-Build an execution adapter inside or beside the MCF runtime that instantiates role-bound agents, runs a mission work packet, writes the artifact, and returns evidence to the existing runtime.
+## Option A — Native MCF cognitive executor
 
-### Strengths
-- strongest architectural ownership and provenance;
-- no long-term dependency on a mission-only third party;
-- can bind directly to MCF skills, mission IDs, evidence schema and receipts;
-- can enforce role prompts, capability constraints and artifact contracts centrally.
+Build a provider abstraction behind MCF that can execute role-bound agents and return evidence directly to the runtime.
 
-### Weaknesses
-- implementing it now would itself be product code before the architecture phase has passed the design gate;
-- it requires model-provider credentials, evaluation, security and deployment work;
-- it cannot be used to generate the independent specialist architecture that should precede its own implementation without creating a circular dependency.
+Verdict: `PREFERRED PRODUCT DIRECTION`, but not the immediate Phase 2 harness because implementing the product executor before the architecture gate would create a circular dependency.
 
-### Verdict
-`PREFERRED PRODUCT-DIRECTION CANDIDATE`, but not usable as the immediate architecture-team executor before design approval.
+## Option B — Brainbase managed-agent tasks
 
-## Option B — Use an external managed-agent execution provider only as a mission execution harness
+Brainbase can provide distinguishable managed identities and task runs. The identities were materialized during investigation, but actual task runs are billable.
 
-Plugin discovery found **Brainbase MCP** as an available but not currently installed integration. Its advertised capabilities include creating, inspecting, testing and running managed AI agents, orchestrations and task runs through OAuth.
+Verdict: `REJECTED FOR THIS MISSION` under the zero-new-cost invariant. PR #169 was closed without merge. No task run executed and no private memory/secrets were sent.
 
-The harness would be mission tooling, not a production dependency of Cognitive Ledger. It would receive only the minimum public/technical mission context needed for architecture and validation work. Real personal Ledger contents, provider secrets and private source text remain excluded.
+## Option C — LEANDRO workstation OpenClaw/Ollama
 
-### Strengths
-- can provide distinguishable managed agent identities and task runs without pretending this coordinator is all 29 roles;
-- can generate role-owned artifacts before MCF itself gains a native cognitive executor;
-- OAuth connection creates an explicit authorization boundary;
-- allows the MCF runtime to remain the canonical evidence/orchestration ledger while the external harness supplies actual cognitive execution.
+The ecosystem already contains a local runner pattern in `leon337/predixai-platform` using OpenClaw local mode and `ollama/qwen2.5:1.5b`, explicitly without paid API requirement.
 
-### Weaknesses
-- introduces a third-party service into mission execution;
-- requires explicit account/plugin authorization by the human authority;
-- capability, cost, retention and evidence-export behavior must be verified after connection before any sensitive data is allowed;
-- cannot be silently installed or connected by the coordinator.
+Verdict: `VALID TECHNICAL PRECEDENT`, but not used as the mission execution path because this ChatGPT surface cannot invoke LEANDRO's workstation directly and the Human Delegation Firewall forbids turning him into the technical operator.
 
-### Verdict
-`RECOMMENDED IMMEDIATE UNBLOCKER`, subject to explicit connection authorization and a no-sensitive-data execution policy.
+## Option D — Standard public GitHub Actions runner + local Ollama
 
-## Option C — Use OpenAI Agents SDK/Codex as a mission-only executor
+Current GitHub documentation states that standard GitHub-hosted runners are free for public repositories. The MCF repository is public. A standard `ubuntu-latest` runner can install Ollama, pull an open local model and execute role-bound local model subprocesses without paid model APIs.
 
-The available OpenAI Developers Agents SDK skill supports building, running, evaluating and deploying real agents, but the skill is designed for Codex workflows and requires an OpenAI API credential gate before calls to the API.
+The branch adds:
 
-### Strengths
-- strong control over role identity, handoffs, tools, structured outputs and evals;
-- can evolve into the native MCF executor architecture if selected later;
-- clear path to deterministic artifact/evidence envelopes.
+- `.github/workflows/mcf-zero-cost-agent-harness.yml`;
+- `ops/mission-agent-harness/zero_cost_phase2_agents.py`.
 
-### Weaknesses
-- current ChatGPT session has no Codex/subagent runtime exposed for direct invocation;
-- building/deploying this executor is implementation work and needs the architecture/design gate first;
-- requires API credential authorization and potentially cost.
+Each selected agent execution receives:
 
-### Verdict
-`STRONG IMPLEMENTATION CANDIDATE AFTER ARCHITECTURE`, not an immediate executor in this ChatGPT surface.
+- named MCF role and competence-aligned work packet;
+- fresh local `ollama run` subprocess;
+- unique UUID;
+- start/end timing;
+- non-empty Markdown artifact with required ESEV headings;
+- SHA-256 of output;
+- explicit handoff marker in the workflow log.
 
-## Decision
+No personal memory, raw private source, secret or provider token is included in prompts.
 
-For the **immediate architecture-team execution gap**, Option B is the only discovered route that can potentially provide real separate agent runs without first implementing the product that those agents are supposed to design.
+Verdict: `SELECTED IMMEDIATE ZERO_COST MISSION HARNESS`, pending real CI execution evidence.
 
-For the **product architecture**, Option A/C hybrid remains the preferred direction to evaluate: MCF-owned execution/evidence semantics with a supported model/agent runtime behind a narrow provider interface.
+## Selected Phase 2 chain
 
-## Human Delegation Firewall treatment
+`Miriam -> Sofia -> Manoel -> Daniela -> Ricardo -> Júlia -> Tiago -> Rafael -> Eduardo -> Bruno -> Renato -> Beatriz -> Augusto -> Emily -> Léo`
 
-Connecting a third-party agent provider is an authorization/security boundary, not technical implementation work. If Option B is used, Leandro's role is limited to approving/connecting the integration in the product UI. He must not be asked to provision secrets, run commands, configure agents manually, or operate the provider.
+This is a phase-specific selection, not a decorative full-roster run. Other official agents remain available in the 29-agent pool and enter only when their competence has concrete work.
 
-## Privacy boundary for any external mission executor
+## Acceptance
 
-Until Júlia/Ricardo review and the provider contract is verified:
+`GATE-RUNTIME-REALITY` is not satisfied merely because the harness code exists. It passes for a named agent only after the CI run contains attributable subprocess evidence and a valid artifact. If Ollama/model execution fails, the agent remains unexecuted and CAF applies.
 
-- public MCF/Cognitive Ledger code and technical architecture context only;
-- synthetic examples only;
-- no real memory contents;
-- no Supabase service role or provider secrets;
-- no raw `fontes.conteudo_bruto`;
-- no production OAuth tokens;
-- all returned artifacts must be copied into the MCF PRF with origin metadata/digest.
+## Long-term note
+
+The mission harness is not a production dependency and must not become the permanent MCF executor by accident. The final product architecture may reuse the provider abstraction idea while keeping the mission's release feature focused on governed Cognitive Ledger memory.
