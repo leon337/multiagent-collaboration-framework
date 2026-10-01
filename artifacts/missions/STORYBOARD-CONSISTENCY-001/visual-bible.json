@@ -1,0 +1,67 @@
+{
+  "mission": "STORYBOARD-CONSISTENCY-001",
+  "status": "LOCKED_FOR_V3",
+  "characters": {
+    "Lia": {
+      "anchors": [
+        "s05",
+        "s07",
+        "s15",
+        "s21"
+      ],
+      "rules": [
+        "same face and age range",
+        "dark curly hair",
+        "recurring copper pendant",
+        "intimate natural emotional tone"
+      ]
+    },
+    "Pai": {
+      "anchors": [
+        "s06",
+        "s14"
+      ],
+      "rules": [
+        "same face and beard",
+        "warm presence",
+        "warm-light memory treatment"
+      ]
+    }
+  },
+  "world": {
+    "vale_portal": {
+      "anchors": [
+        "s02",
+        "s03",
+        "s11",
+        "s17",
+        "s25"
+      ],
+      "rules": [
+        "red road",
+        "two suns",
+        "circular portal",
+        "golden dawn plus deep blue"
+      ]
+    },
+    "oficina_bicicleta": {
+      "anchors": [
+        "s22",
+        "s23",
+        "s24"
+      ],
+      "rules": [
+        "warm domestic workshop",
+        "recurring bicycle",
+        "father memory without identity drift"
+      ]
+    }
+  },
+  "global_rules": [
+    "do not reinvent character faces",
+    "do not replace recurring objects",
+    "keep gold/blue/earth palette",
+    "keep cinematic magical-realist language",
+    "approved storyboard is canonical"
+  ]
+}
