@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "IMPLEMENTATION_COMPLETE_PENDING_MERGE_GATE",
+  "current_state": "RELEASED",
   "persistent_source_of_truth": "GitHub/MCF + provider live",
   "persistent_project": "mcf",
   "canonical_repository": "leon337/multiagent-collaboration-framework",
@@ -13,14 +13,14 @@
   "current_phase": "PHASE-01-CONTRACTS",
   "live_mutation_authorized": false,
   "implementation_authorized": true,
-  "authorization_scope": "LEANDRO explicitly authorized implementation after PHASE-00. Implementation is authorized only within the mission boundary: provider-independent Agent Contract, Authority Envelope, Provider Adapter Layer, lifecycle/evidence semantics and conformance tests. Production deployment, external provider activation and unrelated runtime changes remain separately governed.",
-  "next_action": "Human review of PR #386 and separate merge/release authorization; provider-specific adapters remain future scoped work.",
+  "authorization_scope": "LEANDRO explicitly authorized implementation and later approved merge/release. The released scope is limited to the provider-independent Agent Contract, Authority Envelope, Provider Adapter Layer, lifecycle/evidence semantics and conformance tests. Production provider activation, concrete external-provider adapters and unrelated runtime changes remain separately governed.",
+  "next_action": "Future provider-specific adapter work and provider activation require separate scoped authorization and live integration evidence.",
   "known_gaps": [
     "concrete Dots/Work/Codex provider adapters are not activated",
     "provider-run handles are not yet durably persisted",
     "live cross-provider execution reconciliation is not yet wired",
-    "production deployment and provider activation remain separately governed"
+    "production provider activation remains separately governed"
   ],
-  "required_gate": "HUMAN_GATE for merge/release or provider activation",
-  "implementation_boundary": "IMPLEMENTATION_AUTHORIZED_FOR_MCF-AGENT-HARNESS-INTEROP-001"
+  "required_gate": "HUMAN_GATE for provider activation or further production-scope changes",
+  "implementation_boundary": "IMPLEMENTATION_RELEASED_FOR_MCF-AGENT-HARNESS-INTEROP-001"
 }
