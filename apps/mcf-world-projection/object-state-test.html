@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>World Projection v0.2.2 — Object State Microtest</title>
+<style>
+:root{color-scheme:dark;font:16px system-ui;background:#0a0f14;color:#eef3f8}body{margin:0}.w{max-width:1100px;margin:auto;padding:22px}.p{background:#111923;border:1px solid #2a3848;border-radius:14px;padding:18px;margin-bottom:14px}button{font:inherit;color:inherit;background:#1a2734;border:1px solid #42556c;border-radius:9px;padding:10px 14px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.obj{border:1px solid #34465a;border-radius:12px;padding:14px}.obj .kind{font-size:11px;letter-spacing:.12em;color:#94a4b8;font-weight:800}.obj .name{font-size:21px;font-weight:900;margin:5px 0}.pill{display:inline-block;border:1px solid currentColor;border-radius:999px;padding:3px 7px;font-size:11px;font-weight:900}.answers label{display:block;border:1px solid #2d3b4c;border-radius:9px;padding:10px;margin:8px 0}.r{white-space:pre-wrap;overflow:auto;background:#080c11;padding:12px;border-radius:9px}.muted{color:#94a4b8}@media(max-width:760px){.grid{grid-template-columns:1fr}}</style></head>
+<body><div class="w"><div class="p"><div class="muted">OBJECT-STATE MICROTEST · v0.2.2</div><h1>Qual objeto está em qual estado?</h1><p>Fase 1: observe os objetos. Fase 2: a lista some e você responde cinco perguntas. O resultado fica salvo neste navegador.</p><button id="begin">Explorar objetos</button><button id="last">Ver último resultado</button></div><div id="app"></div></div>
+<script>
+const items=[
+ {kind:"EVIDÊNCIA",name:"Rebuild proof",status:"UNKNOWN",why:"Ainda não confirmada"},
+ {kind:"GATE",name:"Gate futuro",status:"STALE",why:"Precisa ser revalidado"},
+ {kind:"ARTEFATO",name:"Draft PR #380",status:"FRESH",why:"Observado pelo provider"},
+ {kind:"PROTOCOLO",name:"WPP v0.1",status:"FRESH",why:"Artefato atual do branch"},
+ {kind:"GATE",name:"Emily Gate",status:"FRESH",why:"Gate atual conhecido"},
+ {kind:"PROJETO",name:"MCF",status:"FRESH",why:"Projeto canônico"}
+];
+const qs=[
+ {q:"Qual objeto está UNKNOWN?",a:"Rebuild proof",opts:["Rebuild proof","Draft PR #380","Emily Gate","WPP v0.1"]},
+ {q:"Qual objeto está STALE?",a:"Gate futuro",opts:["Gate futuro","WPP v0.1","Draft PR #380","MCF"]},
+ {q:"Qual objeto precisa ser revalidado?",a:"Gate futuro",opts:["Gate futuro","Rebuild proof","Emily Gate","MCF"]},
+ {q:"Qual objeto ainda não foi confirmado?",a:"Rebuild proof",opts:["Draft PR #380","Rebuild proof","WPP v0.1","Emily Gate"]},
+ {q:"Draft PR #380 está em qual estado de freshness?",a:"FRESH",opts:["FRESH","UNKNOWN","STALE","ERROR"]}
+];
+let run=null;const app=document.querySelector("#app");
+const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function explore(){app.innerHTML='<div class="p"><h2>Fase 1 — Observe os vínculos</h2><div class="grid">'+items.map(x=>'<div class="obj"><div class="kind">'+esc(x.kind)+'</div><div class="name">'+esc(x.name)+'</div><span class="pill">'+esc(x.status)+'</span><p>'+esc(x.why)+'</p></div>').join("")+'</div><p><button id="ready">Estou pronto</button></p></div>';document.querySelector("#ready").onclick=start}
+function start(){run={i:0,rows:[],startedAt:new Date().toISOString()};question()}
+function question(){const q=qs[run.i];app.innerHTML='<div class="p"><div class="muted">Pergunta '+(run.i+1)+'/5</div><h2>'+esc(q.q)+'</h2><div class="answers">'+q.opts.map(o=>'<label><input type="radio" name="a" value="'+esc(o)+'"> '+esc(o)+'</label>').join("")+'</div><button id="go">Responder</button></div>';run.t=performance.now();document.querySelector("#go").onclick=answer}
+function answer(){const p=document.querySelector('input[name=a]:checked');if(!p)return;const q=qs[run.i];run.rows.push({task:run.i+1,question:q.q,answer:p.value,expected:q.a,correct:p.value===q.a,elapsedMs:Math.round(performance.now()-run.t)});run.i++;if(run.i===qs.length)return finish();question()}
+function finish(){const o={schema:"mcf-world-object-state-test/v1",prototype:"v0.2.2",finishedAt:new Date().toISOString(),correct:run.rows.filter(x=>x.correct).length,total:qs.length,totalMs:run.rows.reduce((a,b)=>a+b.elapsedMs,0),results:run.rows,claimsBoundary:"Object-state binding microtest only; not Product GO."};localStorage.setItem("mcf-world-v022-object-state",JSON.stringify(o));show(o)}
+function show(o){app.innerHTML='<div class="p"><h2>Resultado salvo</h2><p><strong>'+o.correct+'/'+o.total+'</strong> corretas · '+(o.totalMs/1000).toFixed(1)+' s de resposta.</p><div class="r">'+esc(JSON.stringify(o,null,2))+'</div></div>'}
+document.querySelector("#begin").onclick=explore;document.querySelector("#last").onclick=()=>{const x=localStorage.getItem("mcf-world-v022-object-state");if(x)show(JSON.parse(x));else app.innerHTML='<div class="p">Nenhum resultado salvo ainda.</div>'}
+</script></body></html>

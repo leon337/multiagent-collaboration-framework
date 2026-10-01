@@ -1,0 +1,96 @@
+{
+  "schema": "world-context-slice/v1",
+  "scope": {
+    "project": {
+      "id": "project:mcf",
+      "kind": "project",
+      "canonicalRef": "github://leon337/multiagent-collaboration-framework"
+    },
+    "mission": {
+      "id": "mission:mcf-world-projection-001",
+      "kind": "mission",
+      "canonicalRef": "mcf://mission/MCF-WORLD-PROJECTION-001"
+    }
+  },
+  "revisionVector": [
+    {
+      "source": "github",
+      "revision": "270c17ca8396381a218e54f97abeb97201ae1920"
+    }
+  ],
+  "generatedAt": "2026-09-26T09:30:00Z",
+  "focus": [
+    {
+      "id": "mission:mcf-world-projection-001",
+      "kind": "mission",
+      "canonicalRef": "mcf://mission/MCF-WORLD-PROJECTION-001"
+    }
+  ],
+  "entries": [
+    {
+      "id": "ctx:mission-state",
+      "subject": {
+        "id": "mission:mcf-world-projection-001",
+        "kind": "mission",
+        "canonicalRef": "mcf://mission/MCF-WORLD-PROJECTION-001"
+      },
+      "category": "STATE",
+      "content": "HUMAN_FINDABILITY_R_DEFERRED_PARTICIPANT_FATIGUE",
+      "provenance": {
+        "mode": "EXPLICIT",
+        "sourceRefs": [
+          {
+            "source": "github",
+            "ref": "context/missions/mcf-world-projection-001.json"
+          }
+        ]
+      },
+      "freshness": "FRESH",
+      "trust": {
+        "class": "CANONICAL_SOURCE"
+      },
+      "revision": {
+        "source": "github",
+        "value": "270c17ca8396381a218e54f97abeb97201ae1920"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel:project-mcf:contains:mission-world",
+      "type": "contains",
+      "from": {
+        "id": "project:mcf",
+        "kind": "project",
+        "canonicalRef": "github://leon337/multiagent-collaboration-framework"
+      },
+      "to": {
+        "id": "mission:mcf-world-projection-001",
+        "kind": "mission",
+        "canonicalRef": "mcf://mission/MCF-WORLD-PROJECTION-001"
+      },
+      "provenance": {
+        "mode": "EXPLICIT",
+        "sourceRefs": [
+          {
+            "source": "github",
+            "ref": "context/missions/mcf-world-projection-001.json#persistent_project"
+          }
+        ]
+      },
+      "freshness": "FRESH",
+      "trust": {
+        "class": "CANONICAL_SOURCE"
+      }
+    }
+  ],
+  "unknownRefs": [],
+  "staleRefs": [],
+  "sourceRefs": [
+    {
+      "source": "github",
+      "ref": "context/missions/mcf-world-projection-001.json"
+    }
+  ],
+  "diagnostics": []
+}

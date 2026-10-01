@@ -1,0 +1,28 @@
+{
+  "ref": {
+    "id": "mission:mcf-world-projection-001",
+    "kind": "mission",
+    "canonicalRef": "mcf://mission/MCF-WORLD-PROJECTION-001"
+  },
+  "revision": {
+    "source": "github",
+    "value": "f3de9718973878ad5cc7e13236e34749b7e98894"
+  },
+  "observedAt": "2026-09-26T09:55:00Z",
+  "freshness": "FRESH",
+  "trust": {
+    "class": "CANONICAL_SOURCE"
+  },
+  "payload": {
+    "title": "World Projection Protocol e Experimento Vertical",
+    "state": "HUMAN_FINDABILITY_R_DEFERRED_PARTICIPANT_FATIGUE",
+    "objective": "Continue non-contaminating World Model architecture while the human experiment remains deferred."
+  },
+  "sourceRefs": [
+    {
+      "source": "github",
+      "ref": "context/missions/mcf-world-projection-001.json"
+    }
+  ],
+  "diagnostics": []
+}
