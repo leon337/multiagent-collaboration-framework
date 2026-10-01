@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "mission": "RENDER-MULTIVOICE-001",
+  "title": "O Chamado do Amanhecer — V2 Multi-voz",
+  "format": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "speakers": {
+    "Narrador": {
+      "voice": "clear"
+    },
+    "Lia": {
+      "voice": "delicate"
+    },
+    "Pai": {
+      "voice": "deep"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s01",
+      "speaker": "Narrador",
+      "title": "O sonho começa",
+      "text": "Durante sete noites, Lia sonhou com o mesmo lugar.",
+      "visual": "Quarto antes do amanhecer; Lia dorme inquieta; luz azul pela janela.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ffb4e11e-5c3a-462e-b30d-434c952ecb91.mp3"
+    },
+    {
+      "id": "s02",
+      "speaker": "Narrador",
+      "title": "Dois sóis",
+      "text": "No sonho, dois sóis surgiam sobre uma estrada vermelha.",
+      "visual": "Horizonte com dois sóis sobre terra vermelha.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0b6e9777-f346-4b88-9f68-0d2cbe94f15e.mp3"
+    },
+    {
+      "id": "s03",
+      "speaker": "Narrador",
+      "title": "A estrada impossível",
+      "text": "Ela caminhava, mas nunca alcançava o fim.",
+      "visual": "Estrada vermelha longa; Lia vista de costas.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e3cddf07-2bd1-418a-8d89-72dd590ab185.mp3"
+    },
+    {
+      "id": "s04",
+      "speaker": "Pai",
+      "title": "A voz",
+      "text": "Filha, continue andando.",
+      "visual": "Horizonte do sonho; presença sugerida apenas por luz.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c350e540-4bb7-4f0e-80e8-0b5ff77aa368.mp3"
+    },
+    {
+      "id": "s05",
+      "speaker": "Lia",
+      "title": "Lia desperta",
+      "text": "Eu conheço essa voz.",
+      "visual": "Lia desperta segurando o pingente de cobre.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c6869f12-2abf-4d28-9d54-87a32f847aa7.mp3"
+    },
+    {
+      "id": "s06",
+      "speaker": "Narrador",
+      "title": "Um ano antes",
+      "text": "Havia um ano, o pai morrera após uma ligação perdida.",
+      "visual": "Celular apagado sobre mesa; fotografia de pai e filha.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/2870cae1-0093-4ff2-a31f-8e1276edcaaf.mp3"
+    },
+    {
+      "id": "s07",
+      "speaker": "Lia",
+      "title": "Reconhecimento",
+      "text": "É o lugar do meu sonho.",
+      "visual": "Lia observa uma fotografia antiga do destino.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e7b13fe3-522f-45bf-987c-cd43e2486056.mp3"
+    },
+    {
+      "id": "s08",
+      "speaker": "Narrador",
+      "title": "Partida",
+      "text": "Na manhã seguinte, Lia comprou uma passagem e partiu.",
+      "visual": "Mochila pequena e bilhete de viagem.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/07256e99-1ac7-4a6c-ae62-db33783cb5b4.mp3"
+    },
+    {
+      "id": "s09",
+      "speaker": "Narrador",
+      "title": "A viagem",
+      "text": "A estrada parecia saída do sonho.",
+      "visual": "Lia no ônibus; reflexo na janela; estrada do Planalto Central.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/936368b6-adff-4c7c-8129-11541803cf31.mp3"
+    },
+    {
+      "id": "s10",
+      "speaker": "Lia",
+      "title": "Chegada",
+      "text": "Eu realmente estive aqui?",
+      "visual": "Lia diante do destino; sensação de déjà vu.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/925a631c-eb16-40c2-8af9-4dbee45f417e.mp3"
+    },
+    {
+      "id": "s11",
+      "speaker": "Narrador",
+      "title": "O portal",
+      "text": "No portal, o sonho ganhou forma.",
+      "visual": "Portal estilizado e caminhos simétricos ao amanhecer.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7fae4b7a-31d9-45be-9aef-317b0dfb50a8.mp3"
+    },
+    {
+      "id": "s12",
+      "speaker": "Narrador",
+      "title": "A lembrança",
+      "text": "Uma lembrança atravessou Lia como luz.",
+      "visual": "Feixe de luz atravessa salão e toca o chão.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/449f77d3-9be5-4a1e-b0c8-536decebd4cb.mp3"
+    },
+    {
+      "id": "s13",
+      "speaker": "Pai",
+      "title": "A mensagem",
+      "text": "Filha, tá tudo bem.",
+      "visual": "Lia escuta uma mensagem no celular.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f34603eb-3c3e-4fba-96ab-669384060140.mp3"
+    },
+    {
+      "id": "s14",
+      "speaker": "Pai",
+      "title": "Depois eu te ligo",
+      "text": "Depois eu te ligo.",
+      "visual": "Tela de áudio; memória do pai sem despedida.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9ad9a25e-a11c-467e-8263-3f31efa37cc0.mp3"
+    },
+    {
+      "id": "s15",
+      "speaker": "Lia",
+      "title": "A compreensão",
+      "text": "Ele não estava me culpando.",
+      "visual": "Close em Lia chorando com alívio.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/87c4ab27-22f2-4ac9-8a0c-fb2bfe901e29.mp3"
+    },
+    {
+      "id": "s16",
+      "speaker": "Narrador",
+      "title": "A culpa muda",
+      "text": "A culpa começou a perder força.",
+      "visual": "Sombra de Lia diminuindo sob a luz do amanhecer.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c59f6c66-161e-4898-99e4-ec95f72aa0f3.mp3"
+    },
+    {
+      "id": "s17",
+      "speaker": "Narrador",
+      "title": "Três caminhos",
+      "text": "À frente, três caminhos levavam ao mesmo centro.",
+      "visual": "Jardim com três caminhos convergentes.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a4c78ec5-80f0-4484-a07d-bdfdc4da734c.mp3"
+    },
+    {
+      "id": "s18",
+      "speaker": "Lia",
+      "title": "A escolha",
+      "text": "Eu vou seguir.",
+      "visual": "Lia dá um passo em direção ao caminho central.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3a2d1e0e-e675-4168-a571-5c7319fd32bf.mp3"
+    },
+    {
+      "id": "s19",
+      "speaker": "Narrador",
+      "title": "O reflexo",
+      "text": "No espelho, havia apenas Lia.",
+      "visual": "Espelho no jardim refletindo Lia adulta.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e9acaac7-f69e-42e5-bb11-07173f14e7c2.mp3"
+    },
+    {
+      "id": "s20",
+      "speaker": "Narrador",
+      "title": "Sem resposta final",
+      "text": "O mistério podia permanecer.",
+      "visual": "Céu clareando sobre o jardim silencioso.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c69e0ee6-f63c-4de2-bbe1-326f4caaa859.mp3"
+    },
+    {
+      "id": "s21",
+      "speaker": "Lia",
+      "title": "Dois sóis na janela",
+      "text": "Dois sóis... e eu não tenho mais medo.",
+      "visual": "Sol real e reflexo duplicado na janela do ônibus.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/861dd83c-aac9-4f1f-bf17-801371837521.mp3"
+    },
+    {
+      "id": "s22",
+      "speaker": "Narrador",
+      "title": "De volta",
+      "text": "Em casa, algo a esperava.",
+      "visual": "Porta fechada da oficina antiga.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/94edd490-8025-4aff-836f-20d4fa16bc03.mp3"
+    },
+    {
+      "id": "s23",
+      "speaker": "Lia",
+      "title": "A oficina aberta",
+      "text": "Vamos terminar isso.",
+      "visual": "Lia abre a oficina e encara a bicicleta inacabada.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c2c66e4e-c56a-40f4-b8db-1e6775977d99.mp3"
+    },
+    {
+      "id": "s24",
+      "speaker": "Narrador",
+      "title": "A bicicleta",
+      "text": "A roda voltou a girar.",
+      "visual": "Roda da bicicleta gira sob luz da manhã.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/94c3826d-0bfa-4b4c-9e9c-b1cbee6fff4d.mp3"
+    },
+    {
+      "id": "s25",
+      "speaker": "Narrador",
+      "title": "A passagem",
+      "text": "Ao amanhecer, Lia seguiu em frente.",
+      "visual": "Lia pedala em direção ao amanhecer.",
+      "audio_url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/aaf987ab-c5e3-405c-b670-de643d6a1189.mp3"
+    }
+  ]
+}
