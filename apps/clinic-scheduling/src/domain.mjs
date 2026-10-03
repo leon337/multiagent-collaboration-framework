@@ -42,11 +42,31 @@ export function assertAppointmentReschedulable(status){
   if(status!=="SCHEDULED"&&status!=="CONFIRMED")throw new DomainError("INVALID_STATE_TRANSITION","Only SCHEDULED or CONFIRMED appointments can be rescheduled.");
 }
 
+export function parseTimeOfDay(value,field="time"){
+  if(typeof value!=="string"||!/^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(value))throw new DomainError("VALIDATION_ERROR",field+" must be HH:MM.",422);
+  return value;
+}
+
+export function parseWeekday(value){
+  if(!Number.isInteger(value)||value<0||value>6)throw new DomainError("VALIDATION_ERROR","weekday must be an integer from 0 to 6.",422);
+  return value;
+}
+
+export function parseAvailabilityDateRange(validFrom,validUntil){
+  const from=parseLocalDate(validFrom);
+  const until=validUntil==null||validUntil===""?null:parseLocalDate(validUntil);
+  if(until&&Temporal.PlainDate.compare(until,from)<0)throw new DomainError("VALIDATION_ERROR","validUntil must be greater than or equal to validFrom.",422);
+  return{from,until};
+}
+
 export function normalizeIntervals(intervals){
   if(!Array.isArray(intervals))throw new DomainError("VALIDATION_ERROR","Intervals must be an array.",422);
   const sorted=intervals.map(x=>{
-    if(!x?.start||!x?.end||x.start>=x.end)throw new DomainError("VALIDATION_ERROR","Availability intervals must be ordered and non-empty.",422);
-    return{start:x.start,end:x.end};
+    if(!x?.start||!x?.end)throw new DomainError("VALIDATION_ERROR","Availability intervals must be ordered and non-empty.",422);
+    const start=parseTimeOfDay(x.start,"interval.start");
+    const end=parseTimeOfDay(x.end,"interval.end");
+    if(start>=end)throw new DomainError("VALIDATION_ERROR","Availability intervals must be ordered and non-empty.",422);
+    return{start,end};
   }).sort((a,b)=>a.start.localeCompare(b.start));
   const out=[];
   for(const item of sorted){
