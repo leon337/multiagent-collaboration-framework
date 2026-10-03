@@ -1,7 +1,21 @@
 import {Temporal} from "@js-temporal/polyfill";
 import {DomainError,assertAppointmentReschedulable,assertTransition,interval,isFullyCovered,normalizeIntervals,parseRfc3339,requireRole,validateIanaTimezone} from "./domain.mjs";
 import {appendAudit} from "./audit.mjs";
-import {withTx,isScheduleConflict,isUniqueViolation,clinicById,professionalByTenant,serviceByTenant,referencesInTenant,appointmentByTenant,appointmentWithService,availabilityRules,availabilityExceptions,blocksForInterval,insertAppointment,updateAppointmentInterval,updateAppointmentState,insertAvailabilityRule,insertAvailabilityException,insertBlock,blockByTenant,deleteBlock,listEntity,createEntity,scheduleForDay} from "./repository.mjs";
+import {withTx,isScheduleConflict,isUniqueViolation,clinicById,professionalByTenant,serviceByTenant,referencesInTenant,appointmentByTenant,appointmentWithService,availabilityRules,availabilityExceptions,blocksForInterval,appointmentsForInterval,appointmentsForClinicInterval,lockScheduleScope,insertAppointment,updateAppointmentInterval,updateAppointmentState,insertAvailabilityRule,insertAvailabilityException,insertBlock,blockByTenant,deleteBlock,listEntity,createEntity,scheduleForDay} from "./repository.mjs";
+
+function parseLocalDate(value){
+  if(typeof value!=="string"||!/^(\\d{4})-(\\d{2})-(\\d{2})$/.test(value))throw new DomainError("VALIDATION_ERROR","localDate must be YYYY-MM-DD.",422);
+  try{return Temporal.PlainDate.from(value);}catch{throw new DomainError("VALIDATION_ERROR","localDate must be a valid calendar date.",422);}
+}
+
+function localDayInterval(localDate,timezone){
+  try{
+    const s=Temporal.ZonedDateTime.from({timeZone:timezone,year:localDate.year,month:localDate.month,day:localDate.day,hour:0,minute:0},{disambiguation:"reject"});
+    const next=localDate.add({days:1});
+    const e=Temporal.ZonedDateTime.from({timeZone:timezone,year:next.year,month:next.month,day:next.day,hour:0,minute:0},{disambiguation:"reject"});
+    return{startAtUtc:new Date(Number(s.epochMilliseconds)),endAtUtc:new Date(Number(e.epochMilliseconds))};
+  }catch{throw new DomainError("INVALID_DATETIME","Local calendar day is invalid or ambiguous for the clinic timezone.",400);}
+}
 
 function datesFor(start,end,timezone){
   const a=Temporal.Instant.from(start.toISOString()).toZonedDateTimeISO(timezone).toPlainDate();
@@ -50,6 +64,7 @@ export async function createAppointment(pool,ctx,input){
     const clinic=(await clinicById(db,ctx.clinicId))[0];
     if(!clinic)throw new DomainError("NOT_FOUND","Clinic was not found.",404);
     if(!await referencesInTenant(db,{clinicId:ctx.clinicId,professionalId:input.professionalId,patientId:input.patientId,serviceId:input.serviceId}))throw new DomainError("NOT_FOUND","One or more referenced resources were not found in the tenant.",404);
+    await lockScheduleScope(db,ctx.clinicId,input.professionalId);
     const service=(await serviceByTenant(db,input.serviceId,ctx.clinicId))[0];
     if(!service)throw new DomainError("NOT_FOUND","Service was not found.",404);
     const x=interval(start,service.duration_minutes);
@@ -68,6 +83,7 @@ export async function rescheduleAppointment(pool,ctx,input){
     const a=(await appointmentWithService(db,input.appointmentId,ctx.clinicId))[0];
     if(!a)throw new DomainError("NOT_FOUND","Appointment was not found.",404);
     assertAppointmentReschedulable(a.status);
+    await lockScheduleScope(db,ctx.clinicId,a.professional_id);
     const x=interval(start,a.duration_minutes);
     await assertAvailable(db,ctx,a.professional_id,x.startAtUtc,x.endAtUtc);
     try{
@@ -96,7 +112,7 @@ export async function getSchedule(pool,ctx,input){
   const p=(await professionalByTenant(pool,input.professionalId,ctx.clinicId))[0];
   if(!p)throw new DomainError("NOT_FOUND","Professional was not found.",404);
   const c=(await clinicById(pool,ctx.clinicId))[0];
-  return scheduleForDay(pool,ctx.clinicId,input.professionalId,c.timezone,input.localDate);
+  return scheduleForDay(pool,ctx.clinicId,input.professionalId,c.timezone,localDate.toString());
 }
 
 export async function createAvailabilityRule(pool,ctx,input){
@@ -107,6 +123,7 @@ export async function createAvailabilityRule(pool,ctx,input){
     if(!clinic)throw new DomainError("NOT_FOUND","Clinic was not found.",404);
     if(clinic.timezone!==input.timezone)throw new DomainError("VALIDATION_ERROR","AvailabilityRule timezone must equal the clinic IANA timezone.",422);
     if(!(await professionalByTenant(db,input.professionalId,ctx.clinicId))[0])throw new DomainError("NOT_FOUND","Professional was not found.",404);
+    await lockScheduleScope(db,ctx.clinicId,input.professionalId);
     const r=(await insertAvailabilityRule(db,[ctx.clinicId,input.professionalId,input.weekday,input.localStartTime,input.localEndTime,input.timezone,input.validFrom,input.validUntil||null]))[0];
     await appendAudit(db,{actorId:ctx.actorId,actorType:ctx.actorType,clinicId:ctx.clinicId,action:"AVAILABILITY_CHANGED",entityType:"AvailabilityRule",entityId:r.id,requestId:ctx.requestId,correlationId:ctx.correlationId,after:r});
     return r;
@@ -117,10 +134,18 @@ export async function createAvailabilityException(pool,ctx,input){
   requireRole(ctx);
   if(!["OPEN","CLOSED"].includes(input.type))throw new DomainError("VALIDATION_ERROR","Exception type must be OPEN or CLOSED.",422);
   const intervals=input.type==="OPEN"?normalizeIntervals(input.intervals):[];
+  const localDate=parseLocalDate(input.localDate);
   return withTx(pool,async db=>{
+    const clinic=(await clinicById(db,ctx.clinicId))[0];
+    if(!clinic)throw new DomainError("NOT_FOUND","Clinic was not found.",404);
     if(!(await professionalByTenant(db,input.professionalId,ctx.clinicId))[0])throw new DomainError("NOT_FOUND","Professional was not found.",404);
+    await lockScheduleScope(db,ctx.clinicId,input.professionalId);
+    if(input.type==="CLOSED"){
+      const day=localDayInterval(localDate,clinic.timezone);
+      if((await appointmentsForInterval(db,ctx.clinicId,input.professionalId,day.startAtUtc,day.endAtUtc))[0])throw new DomainError("AVAILABILITY_VIOLATION","The closed exception conflicts with an existing appointment.");
+    }
     try{
-      const r=(await insertAvailabilityException(db,[ctx.clinicId,input.professionalId,input.localDate,input.type,JSON.stringify(intervals),input.reason||null]))[0];
+      const r=(await insertAvailabilityException(db,[ctx.clinicId,input.professionalId,localDate.toString(),input.type,JSON.stringify(intervals),input.reason||null]))[0];
       await appendAudit(db,{actorId:ctx.actorId,actorType:ctx.actorType,clinicId:ctx.clinicId,action:"AVAILABILITY_EXCEPTION_CHANGED",entityType:"AvailabilityException",entityId:r.id,requestId:ctx.requestId,correlationId:ctx.correlationId,after:r});
       return r;
     }catch(e){if(isUniqueViolation(e,"availability_exceptions_clinic_id_professional_id_local_date_key"))throw new DomainError("VALIDATION_ERROR","An availability exception already exists for this clinic, professional and local date.",422);throw e;}
@@ -135,6 +160,12 @@ export async function createBlock(pool,ctx,input){
   const start=parseRfc3339(input.startAt),end=parseRfc3339(input.endAt);if(end<=start)throw new DomainError("VALIDATION_ERROR","Block interval must be non-empty.",422);
   return withTx(pool,async db=>{
     if(input.professionalId&&!(await professionalByTenant(db,input.professionalId,ctx.clinicId))[0])throw new DomainError("NOT_FOUND","Professional was not found.",404);
+    if(input.scopeType==="CLINIC")await lockScheduleScope(db,ctx.clinicId,null,{clinicExclusive:true});
+    else await lockScheduleScope(db,ctx.clinicId,input.professionalId);
+    const conflicting=input.scopeType==="CLINIC"
+      ? await appointmentsForClinicInterval(db,ctx.clinicId,start,end)
+      : await appointmentsForInterval(db,ctx.clinicId,input.professionalId,start,end);
+    if(conflicting[0])throw new DomainError("SCHEDULE_CONFLICT","The block interval conflicts with an existing appointment.");
     const b=(await insertBlock(db,[ctx.clinicId,input.scopeType,input.professionalId||null,start,end,input.reason||null,ctx.actorId]))[0];
     await appendAudit(db,{actorId:ctx.actorId,actorType:ctx.actorType,clinicId:ctx.clinicId,action:"SCHEDULE_BLOCK_CREATED",entityType:"ScheduleBlock",entityId:b.id,requestId:ctx.requestId,correlationId:ctx.correlationId,after:b});
     return b;
@@ -146,6 +177,8 @@ export async function removeBlock(pool,ctx,id){
   return withTx(pool,async db=>{
     const b=(await blockByTenant(db,id,ctx.clinicId))[0];
     if(!b)throw new DomainError("NOT_FOUND","Schedule block was not found.",404);
+    if(b.scope_type==="CLINIC")await lockScheduleScope(db,ctx.clinicId,null,{clinicExclusive:true});
+    else await lockScheduleScope(db,ctx.clinicId,b.professional_id);
     await deleteBlock(db,id,ctx.clinicId);
     await appendAudit(db,{actorId:ctx.actorId,actorType:ctx.actorType,clinicId:ctx.clinicId,action:"SCHEDULE_BLOCK_REMOVED",entityType:"ScheduleBlock",entityId:id,requestId:ctx.requestId,correlationId:ctx.correlationId,before:b});
     return b;
