@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import {DomainError} from "./domain.mjs";
 import {authenticateRequest} from "./auth.mjs";
-import {createAppointment,rescheduleAppointment,transitionAppointment,getSchedule,crudEntity,createAvailabilityRule,createAvailabilityException,createBlock,removeBlock} from "./application.mjs";
+import {createAppointment,rescheduleAppointment,transitionAppointment,getSchedule,getContext,crudEntity,createAvailabilityRule,createAvailabilityException,createBlock,removeBlock} from "./application.mjs";
 
 const json=(res,status,body)=>{res.writeHead(status,{"content-type":"application/json; charset=utf-8"});res.end(JSON.stringify(body));};
 async function body(req){let s="";for await(const c of req)s+=c;if(!s)return{};try{return JSON.parse(s)}catch{throw new DomainError("INVALID_REQUEST","Request body must be valid JSON.",400)}}
