@@ -1,10 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {assertTransition,parseLocalDate,parseRfc3339,interval,isFullyCovered,normalizeIntervals,validateIanaTimezone} from "../src/domain.mjs";
+import {assertTransition,parseAvailabilityDateRange,parseLocalDate,parseRfc3339,parseTimeOfDay,parseWeekday,interval,isFullyCovered,normalizeIntervals,validateIanaTimezone} from "../src/domain.mjs";
 
 test("rejects semantically invalid local calendar dates",()=>{
   assert.throws(()=>parseLocalDate("2026-02-31"),/valid calendar date/);
   assert.equal(parseLocalDate("2026-02-28").toString(),"2026-02-28");
+});
+test("availability validation rejects invalid dates, weekday, date ranges and times",()=>{
+  assert.throws(()=>parseLocalDate("2026-02-31"),/valid calendar date/);
+  assert.throws(()=>parseWeekday(7),/weekday must be/);
+  assert.throws(()=>parseWeekday("1"),/weekday must be/);
+  assert.throws(()=>parseAvailabilityDateRange("2026-10-10","2026-10-09"),/greater than or equal/);
+  assert.throws(()=>parseTimeOfDay("9:00","localStartTime"),/HH:MM/);
+  assert.throws(()=>parseTimeOfDay("25:00","localStartTime"),/HH:MM/);
 });
 test("requires explicit RFC3339 offset",()=>assert.throws(()=>parseRfc3339("2026-10-03T10:00:00"),/Timestamp must be RFC 3339/));
 test("duration produces semi-open interval",()=>{const s=parseRfc3339("2026-10-03T10:00:00-03:00"),x=interval(s,30);assert.equal(x.endAtUtc.getTime()-x.startAtUtc.getTime(),1800000);});
