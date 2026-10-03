@@ -15,7 +15,7 @@ export function requireRole(ctx,allowed=[...ROLES]){
 }
 
 export function parseLocalDate(value){
-  if(typeof value!=="string"||!/^(\\d{4})-(\\d{2})-(\\d{2})$/.test(value))throw new DomainError("VALIDATION_ERROR","localDate must be YYYY-MM-DD.",422);
+  if(typeof value!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(value))throw new DomainError("VALIDATION_ERROR","localDate must be YYYY-MM-DD.",422);
   try{return Temporal.PlainDate.from(value);}catch{throw new DomainError("VALIDATION_ERROR","localDate must be a valid calendar date.",422);}
 }
 
