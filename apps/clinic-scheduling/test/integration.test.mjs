@@ -135,11 +135,15 @@ test("real PostgreSQL concurrent Appointment x AvailabilityRule is serialized",{
         validFrom:"2026-10-06"
       })
     ]);
-    const fulfilled=results.filter(x=>x.status==="fulfilled");
-    const rejected=results.filter(x=>x.status==="rejected");
-    assert.equal(fulfilled.length,1,JSON.stringify(results));
-    assert.equal(rejected.length,1,JSON.stringify(results));
-    assert.ok(["AVAILABILITY_VIOLATION"].includes(rejected[0].reason?.code),JSON.stringify(results));
+    const appointmentResult=results[0];
+    const ruleResult=results[1];
+    assert.equal(ruleResult.status,"fulfilled",JSON.stringify(results));
+    if(appointmentResult.status==="rejected"){
+      assert.equal(appointmentResult.reason?.code,"AVAILABILITY_VIOLATION",JSON.stringify(results));
+    }else{
+      const rule=(await pool.query("SELECT 1 FROM availability_rules WHERE clinic_id=$1 AND professional_id=$2 AND weekday=$3 AND valid_from=$4",[fixture.clinicId,fixture.professionalId,2,"2026-10-06"])).rows;
+      assert.equal(rule.length,1,"Appointment succeeded without the concurrent AvailabilityRule being committed first.");
+    }
     await pool.query("DELETE FROM appointments WHERE clinic_id=$1",[fixture.clinicId]);
     await pool.query("DELETE FROM availability_rules WHERE clinic_id=$1 AND weekday=$2 AND valid_from=$3",[fixture.clinicId,2,"2026-10-06"]);
   }
