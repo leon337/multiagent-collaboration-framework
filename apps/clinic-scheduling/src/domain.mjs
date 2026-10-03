@@ -43,7 +43,7 @@ export function assertAppointmentReschedulable(status){
 }
 
 export function parseTimeOfDay(value,field="time"){
-  if(typeof value!=="string"||!/^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(value))throw new DomainError("VALIDATION_ERROR",field+" must be HH:MM.",422);
+  if(typeof value!=="string"||!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value))throw new DomainError("VALIDATION_ERROR",field+" must be HH:MM.",422);
   return value;
 }
 
