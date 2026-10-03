@@ -51,6 +51,11 @@ test("R2 frontend calls the real API and covers required UX states",()=>{
   assert.match(ui,/confirm\("Cancelar este agendamento/);
   assert.doesNotMatch(ui,/\/api\/state/);
 });
+test("frontend JavaScript is syntactically valid",()=>{
+  const script=(ui.match(/<script>([\s\S]*?)<\/script>/)||[])[1];
+  assert.ok(script);
+  assert.doesNotThrow(()=>new Function(script));
+});
 test("server serves the R2 frontend",()=>{
   assert.match(server,/serveStatic/);
   assert.match(server,/\.\.\/public/);
