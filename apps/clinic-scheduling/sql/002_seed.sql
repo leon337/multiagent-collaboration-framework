@@ -1,0 +1,20 @@
+INSERT INTO clinics(id,name,timezone) VALUES
+('00000000-0000-4000-8000-000000000010','Clínica Demo Recife','America/Recife')
+ON CONFLICT(id) DO NOTHING;
+
+INSERT INTO professionals(id,clinic_id,name) VALUES
+('00000000-0000-4000-8000-000000000011','00000000-0000-4000-8000-000000000010','Dra. Ana Lima')
+ON CONFLICT(id) DO NOTHING;
+
+INSERT INTO patients(id,clinic_id,name) VALUES
+('00000000-0000-4000-8000-000000000012','00000000-0000-4000-8000-000000000010','Paciente Demo')
+ON CONFLICT(id) DO NOTHING;
+
+INSERT INTO services(id,clinic_id,name,duration_minutes) VALUES
+('00000000-0000-4000-8000-000000000013','00000000-0000-4000-8000-000000000010','Consulta clínica',30)
+ON CONFLICT(id) DO NOTHING;
+
+INSERT INTO availability_rules(clinic_id,professional_id,weekday,local_start_time,local_end_time,timezone,valid_from)
+SELECT '00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000011',d,'08:00','17:00','America/Recife',CURRENT_DATE
+FROM generate_series(1,5) d
+ON CONFLICT DO NOTHING;
