@@ -2,9 +2,9 @@
 
 Estado: AGUARDANDO_QA_REVALIDATION.
 
-Bloqueadores anteriores de timezone da clínica e IDs de auditoria foram corrigidos; aguardando revalidação independente.
+Bloqueadores anteriores de timezone da clínica, IDs de auditoria e rota de contexto foram corrigidos; npm test 14/14 PASS no host de validação; workflow clinic-scheduling-backend PASS; revalidação independente do HEAD permanece em andamento.
 
-Último artefato: e3db75ab8bc840bbf98a32980f829dbd0b5a8808.
+Último artefato: f822fb114454823e5552f24c0ac8e2af53d1f4fa.
 
 Próximo gate: Rafael → Renato → Patrícia → Renato → Emily final → MESTRE → LÉO.
 
