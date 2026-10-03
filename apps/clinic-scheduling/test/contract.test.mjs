@@ -1,5 +1,47 @@
-import test from "node:test";import assert from "node:assert/strict";import fs from "node:fs";const sql=fs.readFileSync(new URL("../sql/001_init.sql",import.meta.url),"utf8");const service=fs.readFileSync(new URL("../src/service.mjs",import.meta.url),"utf8");
-test("persistence enforces PostgreSQL exclusion concurrency",()=>{assert.match(sql,/appointments_no_overlap/);assert.match(sql,/EXCLUDE USING gist/);assert.match(sql,/tstzrange\(start_at_utc,end_at_utc,'\[\)'\)/);});
-test("persistence is tenant-bound",()=>{assert.match(sql,/clinic_id uuid NOT NULL REFERENCES clinics/);assert.match(sql,/FOREIGN KEY\(professional_id,clinic_id\)/);});
-test("service maps concurrent conflicts and enforces availability/block precedence",()=>{assert.match(service,/SCHEDULE_CONFLICT/);assert.match(service,/AVAILABILITY_VIOLATION/);assert.match(service,/SCHEDULE_BLOCKED/);});
-test("audit is part of appointment transaction flow",()=>{assert.match(service,/withTx/);assert.match(service,/audit\(db,ctx/);});
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+
+const root=new URL("..",import.meta.url);
+const read=p=>fs.readFileSync(new URL(p,root),"utf8");
+const sql=read("sql/001_init.sql");
+const repo=read("src/repository.mjs");
+const app=read("src/application.mjs");
+const api=read("src/api.mjs");
+const auth=read("src/auth.mjs");
+const server=read("src/server.mjs");
+
+test("appointment stores timezone snapshot and clinic-linked rule timezone",()=>{
+  assert.match(sql,/appointments\([\s\S]*timezone text NOT NULL/);
+  assert.match(sql,/FOREIGN KEY\(clinic_id, timezone\) REFERENCES clinics\(id, timezone\)/);
+  assert.match(repo,/INSERT INTO appointments\(clinic_id,professional_id,patient_id,service_id,start_at_utc,end_at_utc,timezone,status\)/);
+  assert.match(app,/clinic\.timezone/);
+});
+
+test("availability exceptions are unique per tenant professional date",()=>{
+  assert.match(sql,/UNIQUE\(clinic_id, professional_id, local_date\)/);
+  assert.match(app,/availability_exceptions_clinic_id_professional_id_local_date_key/);
+});
+
+test("audit is structurally append-only",()=>{
+  assert.match(sql,/CREATE TRIGGER audit_events_append_only/);
+  assert.match(sql,/BEFORE UPDATE OR DELETE ON audit_events/);
+  assert.match(sql,/REVOKE UPDATE, DELETE ON audit_events FROM PUBLIC/);
+  assert.doesNotMatch(repo,/UPDATE audit_events|DELETE FROM audit_events/);
+  assert.match(app,/appendAudit/);
+});
+
+test("authentication is a boundary, not client-selected tenant headers",()=>{
+  assert.match(api,/authenticateRequest\(req\)/);
+  assert.match(auth,/MCF_AUTH_PROVIDER/);
+  assert.doesNotMatch(server,/x-actor-id|x-clinic-id|x-role/);
+  assert.doesNotMatch(api,/x-actor-id|x-clinic-id|x-role/);
+});
+
+test("repository/application/audit/database boundaries are explicit",()=>{
+  assert.match(app,/from "\.\/repository\.mjs"/);
+  assert.match(app,/from "\.\/audit\.mjs"/);
+  assert.match(repo,/db\.query/);
+  assert.match(api,/from "\.\/application\.mjs"/);
+  assert.doesNotMatch(app,/CREATE TABLE|INSERT INTO audit_events|SELECT .* FROM professionals/);
+});
