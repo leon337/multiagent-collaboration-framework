@@ -49,8 +49,8 @@ async function effectiveAvailability(db,ctx,professionalId,start,end){
 }
 
 async function assertAvailable(db,ctx,professionalId,start,end){
-  if(!isFullyCovered(start,end,await effectiveAvailability(db,ctx,professionalId,start,end)))throw new DomainError("AVAILABILITY_VIOLATION","The requested interval is outside effective availability.");
   if((await blocksForInterval(db,ctx.clinicId,professionalId,start,end))[0])throw new DomainError("SCHEDULE_BLOCKED","The requested interval is blocked.");
+  if(!isFullyCovered(start,end,await effectiveAvailability(db,ctx,professionalId,start,end)))throw new DomainError("AVAILABILITY_VIOLATION","The requested interval is outside effective availability.");
 }
 
 export async function createAppointment(pool,ctx,input){
