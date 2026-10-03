@@ -50,7 +50,7 @@ async function assertAvailable(db,ctx,professionalId,start,end){
   if((await blocksForInterval(db,ctx.clinicId,professionalId,start,end))[0])throw new DomainError("SCHEDULE_BLOCKED","The requested interval is blocked.");
 }
 
-export async function createAppointment(pool,ctx,input){
+export async function getContext(pool,ctx){\n  const clinic=(await clinicById(pool,ctx.clinicId))[0];\n  if(!clinic)throw new DomainError("NOT_FOUND","Clinic was not found.",404);\n  return {clinicId:clinic.id,name:clinic.name,timezone:clinic.timezone};\n}\n\nexport async function createAppointment(pool,ctx,input){
   requireRole(ctx);const startInput=input.localDate&&input.localTime?{local:true}:input.startAt;const start=startInput.local?null:parseRfc3339(input.startAt);
   return withTx(pool,async db=>{
     const clinic=(await clinicById(db,ctx.clinicId))[0];
