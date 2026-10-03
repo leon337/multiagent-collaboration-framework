@@ -1,90 +1,114 @@
 # MCF-CLINIC-SCHEDULING-001 — Arquitetura MVP
 
-> Artefato arquitetural materializado pelo MESTRE a partir do desenho conceitual apresentado por Sofia na Execution Surface. Este arquivo não representa implementação.
+> Remediação arquitetural do desenho apresentado por Sofia e dos gaps identificados pela auditoria independente de Emily. Define o contrato necessário para Eduardo implementar o MVP sem preencher lacunas estruturais por suposição.
 
-## Objetivo
+## 1. Objetivo e escopo
+MVP local de agendamento para uma clínica/unidade, cobrindo Clinic, Professional, Patient, Service, Availability, ScheduleBlock e Appointment; criação, consulta, reagendamento e cancelamento.
 
-Definir o boundary técnico mínimo para o MVP de agendamento de clínicas da Issue #393.
+Fora do MVP: pagamentos, convênios, prontuário, prescrição, telemedicina, notificações transacionais reais, multi-clínica avançado, IA clínica e integrações externas irreversíveis.
 
-## Domínio
+## 2. Domínio
+Clinic: identidade e timezone operacional da unidade.
+Professional: pertence a uma Clinic e possui agenda própria.
+Patient: pertence ao contexto da Clinic.
+Service: define duração positiva.
+Availability: janela recorrente ou exceção de disponibilidade de um Professional.
+ScheduleBlock: bloqueio aplicável a um Professional ou à Clinic.
+Appointment: reserva um Service para um Patient com um Professional.
 
-- Clinic
-- Professional
-- Patient
-- Service
-- Availability
-- ScheduleBlock
-- Appointment
+## 3. Boundaries
+API: autenticação/contexto, autorização, validação, serialização e transporte.
+Application/Scheduling: CreateAppointment, RescheduleAppointment, CancelAppointment e GetSchedule; orquestra transação e domínio.
+Domain: proprietário das invariantes de disponibilidade, duração, bloqueios, conflito e transições.
+Repository: persistência e consultas.
+Database: integridade, constraints e proteção contra corrida.
+Audit: registro imutável das operações críticas.
+Controllers não contêm regras de negócio.
 
-## Boundaries
+## 4. Tempo e timezone
+- startAt/endAt representam instantes absolutos.
+- Persistência usa UTC/timestamps com timezone.
+- Cada Clinic possui timezone IANA.
+- Entrada aceita ISO-8601 com offset ou UTC explícito.
+- Visualização converte para o timezone da Clinic.
+- Disponibilidade recorrente é interpretada no timezone da Clinic antes de virar instantes.
+- Horários inexistentes por DST são rejeitados; horários ambíguos exigem offset explícito.
+- Duração é calculada em minutos sobre [startAt, endAt).
 
-### API
-Responsável por autenticação/contexto, validação de entrada e transporte.
+## 5. Estados de Appointment
+Estados MVP: SCHEDULED, CANCELLED, COMPLETED.
+Transições:
+- inexistente -> SCHEDULED na criação;
+- SCHEDULED -> SCHEDULED no reagendamento, com auditoria;
+- SCHEDULED -> CANCELLED no cancelamento;
+- SCHEDULED -> COMPLETED na conclusão;
+- CANCELLED e COMPLETED são terminais.
+Não editar silenciosamente Appointment terminal.
 
-### Application / Scheduling
-Responsável pelos casos de uso e orquestração:
-- CreateAppointment
-- RescheduleAppointment
-- CancelAppointment
-- GetSchedule
+## 6. Availability
+- Recorrência: dia da semana + janela local.
+- Exceções: data local que abre ou fecha janela.
+- Exceção prevalece sobre regra recorrente.
+- start < end.
+- Appointment deve estar integralmente coberto pela disponibilidade efetiva.
+- Intervalos são semiabertos [startAt, endAt).
 
-### Domain
-Responsável pelas invariantes e regras de negócio.
+## 7. ScheduleBlock
+Escopos: PROFESSIONAL ou CLINIC.
+Appointment é recusado quando intersecta qualquer bloqueio aplicável.
 
-### Repository
-Responsável pela persistência.
+## 8. Concorrência e dupla reserva
+Criação/reagendamento ocorrem em transação.
+Estratégia de referência para persistência relacional PostgreSQL:
+- instantes UTC;
+- range temporal [startAt,endAt);
+- constraint de exclusão por Professional para impedir sobreposição entre Appointments não cancelados;
+- disponibilidade e ScheduleBlock validados na mesma transação;
+- em corrida, uma transação confirma e a concorrente recebe conflito sem estado parcial.
+A constraint do banco é a última barreira; a regra de domínio permanece obrigatória.
 
-### Database
-Responsável por integridade transacional e suporte à concorrência.
+## 9. Persistência
+IDs estáveis.
+Cancelamento não remove Appointment; histórico permanece.
+Integridade mínima:
+- Service.duration > 0;
+- startAt < endAt;
+- Professional pertence à Clinic;
+- Patient pertence ao contexto da Clinic;
+- referências válidas;
+- estado terminal não retorna a SCHEDULED;
+- não sobreposição conforme seção de concorrência.
 
-### Audit
-Responsável pelo registro de operações críticas.
+## 10. Auditoria
+Registro imutável com auditId, occurredAt, clinicId, actorId, action, entityType, entityId, before, after e correlationId.
+Eventos mínimos: AppointmentCreated, AppointmentRescheduled, AppointmentCancelled, AppointmentCompleted e AppointmentConflictRejected.
 
-Regra: regras de negócio não devem ser colocadas em controllers ou componentes de apresentação.
+## 11. Autorização e tenancy
+Todo request autenticado carrega contexto de Clinic.
+O usuário só lê/modifica dados da Clinic autorizada.
+Professional, Patient, Service, Availability, ScheduleBlock e Appointment são filtrados por clinicId.
+Operações administrativas exigem permissão administrativa; operações de agenda exigem permissão de agendamento.
+Sem contexto/autorização: negar acesso, nunca retornar dados de outra Clinic.
 
-## Invariantes
+## 12. Contrato de erros
+Payload uniforme com code, message e correlationId.
+Códigos mínimos:
+VALIDATION_ERROR=400; UNAUTHORIZED=401; FORBIDDEN=403; NOT_FOUND=404; APPOINTMENT_CONFLICT=409; OUTSIDE_AVAILABILITY=409; SCHEDULE_BLOCKED=409; INVALID_STATE_TRANSITION=409; CONCURRENT_BOOKING_CONFLICT=409.
+Não expor stack trace ou detalhes internos.
 
-O backend é proprietário das invariantes de:
-- disponibilidade;
-- bloqueios;
-- duração do serviço;
-- conflito de horários.
+## 13. Contratos de aplicação
+CreateAppointment: clinic context, professionalId, patientId, serviceId, startAt -> Appointment SCHEDULED; valida tenancy, duração, timezone, disponibilidade, bloqueios e conflito.
+RescheduleAppointment: appointmentId, novo startAt -> Appointment SCHEDULED; revalida todas as regras na mesma transação.
+CancelAppointment: appointmentId/context -> Appointment CANCELLED; preserva histórico e audita.
+GetSchedule: professionalId + intervalo -> appointments e bloqueios no timezone da Clinic.
 
-Intervalos de agenda devem ser tratados como semiabertos: [startAt, endAt).
+## 14. Verificabilidade
+Testes obrigatórios: conflito simples e concorrente; duração; disponibilidade recorrente e exceção; bloqueio profissional e clínico; DST/offset; transições de estado; cancelamento preservando histórico; tenancy; erros; auditoria.
 
-Criação e reagendamento precisam revalidar as regras e ser atomicamente seguros contra concorrência.
+## 15. Proveniência
+Este artefato deriva do desenho conceitual apresentado por Sofia e foi remediado pelo MESTRE para fechar os gaps explicitamente apontados por Emily.
+A reauditoria independente deve ocorrer sobre este SHA antes da liberação de Eduardo.
 
-Cancelamento preserva o registro e seu histórico/status.
-
-## Lacunas obrigatórias antes da implementação
-
-1. política de timezone para startAt/endAt;
-2. máquina de estados de Appointment e transições permitidas;
-3. disponibilidade recorrente e exceções;
-4. escopo dos ScheduleBlock (profissional, unidade ou ambos);
-5. estratégia concreta de proteção contra concorrência;
-6. schema mínimo de auditoria;
-7. autorização/tenancy da clínica/unidade;
-8. contrato de erros da API.
-
-Essas lacunas devem ser fechadas sem alterar os boundaries ou invariantes sem nova revisão arquitetural.
-
-## Fora do MVP
-
-- pagamentos/cobrança;
-- convênios;
-- prontuário;
-- prescrição;
-- telemedicina;
-- notificações transacionais reais;
-- multi-clínica avançado;
-- IA clínica;
-- integrações externas irreversíveis.
-
-## Critério de passagem
-
-Este artefato habilita a auditoria independente de Emily. A implementação backend por Eduardo permanece condicionada à auditoria e ao fechamento das lacunas obrigatórias acima.
-
-## Referência
-
-Issue #393 — MCF-CLINIC-SCHEDULING-001.
+## 16. Critério de passagem
+Eduardo só implementa quando Emily confirmar, por artefato versionado e SHA vinculável, que os gaps estão suficientemente fechados.
+Nenhuma implementação amplia escopo ou altera boundary/invariantes sem nova revisão arquitetural.
