@@ -1,12 +1,7 @@
 import {Temporal} from "@js-temporal/polyfill";
-import {DomainError,assertAppointmentReschedulable,assertTransition,interval,isFullyCovered,normalizeIntervals,parseRfc3339,requireRole,validateIanaTimezone} from "./domain.mjs";
+import {DomainError,assertAppointmentReschedulable,assertTransition,interval,isFullyCovered,normalizeIntervals,parseLocalDate,parseRfc3339,requireRole,validateIanaTimezone} from "./domain.mjs";
 import {appendAudit} from "./audit.mjs";
 import {withTx,isScheduleConflict,isUniqueViolation,clinicById,professionalByTenant,serviceByTenant,referencesInTenant,appointmentByTenant,appointmentWithService,availabilityRules,availabilityExceptions,blocksForInterval,appointmentsForInterval,appointmentsForClinicInterval,lockScheduleScope,insertAppointment,updateAppointmentInterval,updateAppointmentState,insertAvailabilityRule,insertAvailabilityException,insertBlock,blockByTenant,deleteBlock,listEntity,createEntity,scheduleForDay} from "./repository.mjs";
-
-function parseLocalDate(value){
-  if(typeof value!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(value))throw new DomainError("VALIDATION_ERROR","localDate must be YYYY-MM-DD.",422);
-  try{return Temporal.PlainDate.from(value);}catch{throw new DomainError("VALIDATION_ERROR","localDate must be a valid calendar date.",422);}
-}
 
 function localDayInterval(localDate,timezone){
   try{
