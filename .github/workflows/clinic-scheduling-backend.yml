@@ -1,0 +1,23 @@
+name: clinic-scheduling-backend
+on:
+  push:
+    paths:
+      - "apps/clinic-scheduling/**"
+      - ".github/workflows/clinic-scheduling-backend.yml"
+  pull_request:
+    paths:
+      - "apps/clinic-scheduling/**"
+      - ".github/workflows/clinic-scheduling-backend.yml"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/clinic-scheduling
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --ignore-scripts
+      - run: npm test
