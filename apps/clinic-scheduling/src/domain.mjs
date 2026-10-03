@@ -1,3 +1,5 @@
+import {Temporal} from "@js-temporal/polyfill";
+
 export const APPOINTMENT_STATES=Object.freeze(["SCHEDULED","CONFIRMED","COMPLETED","CANCELLED"]);
 export const ACTIVE_APPOINTMENT_STATES=new Set(["SCHEDULED","CONFIRMED"]);
 export const ROLES=new Set(["CLINIC_ADMIN","STAFF"]);
@@ -10,6 +12,11 @@ export function requireRole(ctx,allowed=[...ROLES]){
   if(!ctx?.actorId||!ctx?.clinicId)throw new DomainError("UNAUTHENTICATED","Authenticated tenant context is required.",401);
   if(!ROLES.has(ctx.role)||!allowed.includes(ctx.role))throw new DomainError("FORBIDDEN","The actor is not permitted to perform this operation.",403);
   return ctx;
+}
+
+export function parseLocalDate(value){
+  if(typeof value!=="string"||!/^(\\d{4})-(\\d{2})-(\\d{2})$/.test(value))throw new DomainError("VALIDATION_ERROR","localDate must be YYYY-MM-DD.",422);
+  try{return Temporal.PlainDate.from(value);}catch{throw new DomainError("VALIDATION_ERROR","localDate must be a valid calendar date.",422);}
 }
 
 export function parseRfc3339(value){
