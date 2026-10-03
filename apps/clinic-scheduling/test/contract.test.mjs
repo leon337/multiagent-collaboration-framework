@@ -16,6 +16,8 @@ test("appointment stores timezone snapshot and clinic-linked rule timezone",()=>
   assert.match(sql,/FOREIGN KEY\(clinic_id, timezone\) REFERENCES clinics\(id, timezone\)/);
   assert.match(repo,/INSERT INTO appointments\(clinic_id,professional_id,patient_id,service_id,start_at_utc,end_at_utc,timezone,status\)/);
   assert.match(app,/clinic\.timezone/);
+  assert.match(app,/localWallClockToInstant/);
+  assert.match(app,/disambiguation:"reject"/);
 });
 test("availability exceptions are unique per tenant professional date",()=>{
   assert.match(sql,/UNIQUE\(clinic_id, professional_id, local_date\)/);
@@ -31,6 +33,8 @@ test("audit is structurally append-only",()=>{
 test("authentication is a boundary, not client-selected tenant headers",()=>{
   assert.match(api,/authenticateRequest\(req\)/);
   assert.match(auth,/MCF_AUTH_PROVIDER/);
+  assert.match(auth,/normalizeUuid/);
+  assert.match(auth,/crypto\.randomUUID/);
   assert.doesNotMatch(server,/x-actor-id|x-clinic-id|x-role/);
   assert.doesNotMatch(api,/x-actor-id|x-clinic-id|x-role/);
 });
