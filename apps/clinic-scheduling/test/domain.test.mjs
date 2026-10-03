@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {assertTransition,parseRfc3339,interval,isFullyCovered,normalizeIntervals,validateIanaTimezone} from "../src/domain.mjs";
+import {assertTransition,parseLocalDate,parseRfc3339,interval,isFullyCovered,normalizeIntervals,validateIanaTimezone} from "../src/domain.mjs";
 
+test("rejects semantically invalid local calendar dates",()=>{
+  assert.throws(()=>parseLocalDate("2026-02-31"),/valid calendar date/);
+  assert.equal(parseLocalDate("2026-02-28").toString(),"2026-02-28");
+});
 test("requires explicit RFC3339 offset",()=>assert.throws(()=>parseRfc3339("2026-10-03T10:00:00"),/Timestamp must be RFC 3339/));
 test("duration produces semi-open interval",()=>{const s=parseRfc3339("2026-10-03T10:00:00-03:00"),x=interval(s,30);assert.equal(x.endAtUtc.getTime()-x.startAtUtc.getTime(),1800000);});
 test("state machine rejects completed to cancelled",()=>assert.throws(()=>assertTransition("COMPLETED","CANCELLED"),/not allowed/));
