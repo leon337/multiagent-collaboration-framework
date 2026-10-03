@@ -7,6 +7,15 @@ export async function withTx(pool,fn){
   finally{client.release();}
 }
 
+export const lockClinicShared=(db,clinicId)=>q(db,"SELECT pg_advisory_xact_lock_shared(hashtextextended($1,0))",["clinic:"+clinicId]);
+export const lockClinicExclusive=(db,clinicId)=>q(db,"SELECT pg_advisory_xact_lock(hashtextextended($1,0))",["clinic:"+clinicId]);
+export const lockProfessionalExclusive=(db,clinicId,professionalId)=>q(db,"SELECT pg_advisory_xact_lock(hashtextextended($1,0))",["professional:"+clinicId+":"+professionalId]);
+export const lockScheduleScope=async(db,clinicId,professionalId,{clinicExclusive=false}={})=>{
+  if(clinicExclusive)return lockClinicExclusive(db,clinicId);
+  await lockClinicShared(db,clinicId);
+  return lockProfessionalExclusive(db,clinicId,professionalId);
+};
+
 export function isScheduleConflict(error){return error?.code==="23P01"&&error?.constraint==="appointments_no_overlap";}
 
 export function isUniqueViolation(error,constraint){return error?.code==="23505"&&error?.constraint===constraint;}
@@ -28,6 +37,9 @@ export const appointmentWithService=(db,id,clinicId)=>q(db,"SELECT a.*,s.duratio
 export const availabilityRules=(db,clinicId,professionalId)=>q(db,"SELECT weekday,local_start_time,local_end_time,timezone,valid_from,valid_until FROM availability_rules WHERE clinic_id=$1 AND professional_id=$2",[clinicId,professionalId]);
 export const availabilityExceptions=(db,clinicId,professionalId)=>q(db,"SELECT local_date,type,intervals FROM availability_exceptions WHERE clinic_id=$1 AND professional_id=$2 ORDER BY local_date",[clinicId,professionalId]);
 export const blocksForInterval=(db,clinicId,professionalId,start,end)=>q(db,"SELECT 1 FROM schedule_blocks WHERE clinic_id=$1 AND start_at_utc<$3 AND end_at_utc>$2 AND(scope_type='CLINIC' OR(scope_type='PROFESSIONAL' AND professional_id=$4)) LIMIT 1",[clinicId,start,end,professionalId]);
+
+export const appointmentsForInterval=(db,clinicId,professionalId,start,end)=>q(db,"SELECT id FROM appointments WHERE clinic_id=$1 AND professional_id=$2 AND start_at_utc<$4 AND end_at_utc>$3 AND status IN('SCHEDULED','CONFIRMED') LIMIT 1",[clinicId,professionalId,start,end]);
+export const appointmentsForClinicInterval=(db,clinicId,start,end)=>q(db,"SELECT id FROM appointments WHERE clinic_id=$1 AND start_at_utc<$3 AND end_at_utc>$2 AND status IN('SCHEDULED','CONFIRMED') LIMIT 1",[clinicId,start,end]);
 
 export const insertAppointment=(db,p)=>q(db,"INSERT INTO appointments(clinic_id,professional_id,patient_id,service_id,start_at_utc,end_at_utc,timezone,status) VALUES($1,$2,$3,$4,$5,$6,$7,'SCHEDULED') RETURNING *",p);
 export const updateAppointmentInterval=(db,p)=>q(db,"UPDATE appointments SET start_at_utc=$1,end_at_utc=$2,updated_at=now() WHERE id=$3 AND clinic_id=$4 RETURNING *",p);
