@@ -4,7 +4,7 @@ import {appendAudit} from "./audit.mjs";
 import {withTx,isScheduleConflict,isUniqueViolation,clinicById,professionalByTenant,serviceByTenant,referencesInTenant,appointmentByTenant,appointmentWithService,availabilityRules,availabilityExceptions,blocksForInterval,insertAppointment,updateAppointmentInterval,updateAppointmentState,insertAvailabilityRule,insertAvailabilityException,insertBlock,blockByTenant,deleteBlock,listEntity,createEntity,scheduleForDay} from "./repository.mjs";
 
 function localWallClockToInstant(date,time,timezone){
-  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!/^\\d{2}:\\d{2}$/.test(time))throw new DomainError("INVALID_DATETIME","Local date/time must use YYYY-MM-DD and HH:MM.",400);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time))throw new DomainError("INVALID_DATETIME","Local date/time must use YYYY-MM-DD and HH:MM.",400);
   try{return new Date(Number(Temporal.ZonedDateTime.from(`${date}T${time}:00[${timezone}]`,{disambiguation:"reject"}).epochMilliseconds));}
   catch(e){throw new DomainError("INVALID_DATETIME","Local date/time is invalid or ambiguous for the clinic timezone.",400);}
 }
