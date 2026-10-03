@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import crypto from "node:crypto";
 import {Pool} from "pg";
-import {createAppointment,createBlock,createAvailabilityException,createAvailabilityRule} from "../src/application.mjs";
+import {createAppointment,createBlock,createAvailabilityException,createAvailabilityRule,transitionAppointment} from "../src/application.mjs";
 import {createApi} from "../src/api.mjs";
 
 const DATABASE_URL=process.env.DATABASE_URL;
@@ -317,7 +317,7 @@ test("cross-tenant access is rejected and CRUD/HTTP smoke completes end-to-end",
     const aid=JSON.parse(ap.body).data.id;
     const sched=await httpJson(api,"GET","/api/v1/schedule?professionalId="+pid+"&localDate="+day);
     assert.equal(sched.status,200);
-    const block=await httpJson(api,"POST","/api/v1/schedule-blocks",{scopeType:"PROFESSIONAL",professionalId:pid,startAt:day+"T11:00:00-03:00",endAt:day+"T11:30:00-03:00",reason:"smoke"});
+    const block=await httpJson(api,"POST","/api/v1/schedule-blocks",{scopeType:"PROFESSIONAL",professionalId:pid,startAt:day+"T10:00:00-03:00",endAt:day+"T10:30:00-03:00",reason:"smoke"});
     assert.equal(block.status,409);
     const cancel=await httpJson(api,"POST","/api/v1/appointments/"+aid+"/cancel",{reason:"smoke"});
     assert.equal(cancel.status,200);
