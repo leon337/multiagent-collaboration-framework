@@ -44,8 +44,9 @@ export function assertAppointmentReschedulable(status){
 
 export function normalizeIntervals(intervals){
   if(!Array.isArray(intervals))throw new DomainError("VALIDATION_ERROR","Intervals must be an array.",422);
+  const time=/^(?:[01]\d|2[0-3]):[0-5]\d$/;
   const sorted=intervals.map(x=>{
-    if(!x?.start||!x?.end||x.start>=x.end)throw new DomainError("VALIDATION_ERROR","Availability intervals must be ordered and non-empty.",422);
+    if(!x?.start||!x?.end||!time.test(x.start)||!time.test(x.end)||x.start>=x.end)throw new DomainError("VALIDATION_ERROR","Availability intervals must use HH:MM and be ordered and non-empty.",422);
     return{start:x.start,end:x.end};
   }).sort((a,b)=>a.start.localeCompare(b.start));
   const out=[];
@@ -69,6 +70,10 @@ export function isFullyCovered(targetStart,targetEnd,windows){
 
 export function validateIanaTimezone(timezone){
   if(typeof timezone!=="string"||!timezone.trim())throw new DomainError("VALIDATION_ERROR","timezone must be an IANA timezone identifier.",422);
-  try{new Intl.DateTimeFormat("en-US",{timeZone:timezone}).format();}catch{throw new DomainError("VALIDATION_ERROR","timezone must be a valid IANA timezone identifier.",422);}
-  return timezone;
+  const value=timezone.trim();
+  const supported=typeof Intl.supportedValuesOf==="function"?new Set(Intl.supportedValuesOf("timeZone")):null;
+  if(value!=="UTC" && supported && !supported.has(value))throw new DomainError("VALIDATION_ERROR","timezone must be a canonical IANA timezone identifier.",422);
+  if(!supported && !value.includes("/"))throw new DomainError("VALIDATION_ERROR","timezone must be a canonical IANA timezone identifier.",422);
+  try{new Intl.DateTimeFormat("en-US",{timeZone:value}).format();}catch{throw new DomainError("VALIDATION_ERROR","timezone must be a valid IANA timezone identifier.",422);}
+  return value;
 }
