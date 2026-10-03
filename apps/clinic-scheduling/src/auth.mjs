@@ -1,6 +1,8 @@
+import crypto from "node:crypto";
 import {DomainError} from "./domain.mjs";
 
 function providerError(message){return new DomainError("UNAUTHENTICATED",message,401);}
+function normalizeUuid(value){return typeof value==="string"&&/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)?value:crypto.randomUUID();}
 
 export async function authenticateRequest(req){
   const providerPath=process.env.MCF_AUTH_PROVIDER;
@@ -16,7 +18,7 @@ export async function authenticateRequest(req){
     clinicId:principal.clinicId,
     role:principal.role,
     actorType:principal.actorType??"USER",
-    requestId:principal.requestId??req.headers["x-request-id"]??null,
-    correlationId:principal.correlationId??req.headers["x-correlation-id"]??null
+    requestId:normalizeUuid(principal.requestId??req.headers["x-request-id"]),
+    correlationId:principal.correlationId?normalizeUuid(principal.correlationId):null
   });
 }
