@@ -8,10 +8,11 @@ async function body(req){let s="";for await(const c of req)s+=c;if(!s)return{};t
 
 export function createApi(pool){
   return async function handle(req,res){
+    const requestId=crypto.randomUUID();
     try{
       const u=new URL(req.url,"http://localhost"),p=u.pathname.split("/").filter(Boolean);
       if(req.method==="GET"&&p[0]==="health")return json(res,200,{ok:true});
-      if(p[0]!=="api"||p[1]!=="v1")return json(res,404,{error:{code:"NOT_FOUND",message:"Route not found."}});
+      if(p[0]!=="api"||p[1]!=="v1")return json(res,404,{error:{code:"NOT_FOUND",message:"Route not found.",requestId}});
       const ctx=await authenticateRequest(req);
       if(req.method==="POST"&&p[2]==="appointments"&&p.length===3)return json(res,201,{data:await createAppointment(pool,ctx,await body(req))});
       if(req.method==="POST"&&p[2]==="appointments"&&p[4]==="reschedule")return json(res,200,{data:await rescheduleAppointment(pool,ctx,{appointmentId:p[3],...(await body(req))})});
@@ -27,10 +28,10 @@ export function createApi(pool){
         const entity=p[2].slice(0,-1);
         return json(res,req.method==="POST"?201:200,{data:await crudEntity(pool,ctx,entity,req.method==="GET"?"list":"create",req.method==="POST"?await body(req):{})});
       }
-      return json(res,404,{error:{code:"NOT_FOUND",message:"Route not found."}});
+      return json(res,404,{error:{code:"NOT_FOUND",message:"Route not found.",requestId}});
     }catch(e){
       const de=e instanceof DomainError?e:new DomainError("INTERNAL_ERROR","Unexpected server error.",500);
-      return json(res,de.status,{error:{code:de.code,message:de.message,requestId:e?.requestId??null,details:de.details}});
+      return json(res,de.status,{error:{code:de.code,message:de.message,requestId,details:de.details}});
     }
   };
 }
