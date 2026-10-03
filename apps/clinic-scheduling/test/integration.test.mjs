@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import {Pool} from "pg";
 import {createAppointment,createBlock,createAvailabilityException,createAvailabilityRule} from "../src/application.mjs";
 import {createApi} from "../src/api.mjs";
+import {validateIanaTimezone} from "../src/domain.mjs";
 
 const DATABASE_URL=process.env.DATABASE_URL;
 const enabled=Boolean(DATABASE_URL);
@@ -63,7 +64,15 @@ test.before(async()=>{
 
 test.after(cleanup);
 
-test("HTTP GetSchedule rejects a calendrically invalid YYYY-MM-DD with 422 VALIDATION_ERROR",{skip:!enabled},async()=>{
+test("strict IANA timezone validation rejects ambiguous abbreviations",{skip:!enabled},async()=>{
+  assert.throws(()=>validateIanaTimezone("CST"),/IANA timezone/i);
+  assert.throws(()=>validateIanaTimezone("EST"),/IANA timezone/i);
+  assert.throws(()=>validateIanaTimezone("PST"),/IANA timezone/i);
+  assert.doesNotThrow(()=>validateIanaTimezone("America/Recife"));
+  assert.doesNotThrow(()=>validateIanaTimezone("UTC"));
+});
+
+test("HTTP GetSchedule rejects a calendrically invalid YYYY-MM-DD with 422 VALIDATION_ERROR and UUID requestId",{skip:!enabled},async()=>{
   const provider="data:text/javascript,export default async()=>({actorId:"+JSON.stringify(crypto.randomUUID())+",clinicId:"+JSON.stringify(fixture.clinicId)+",role:'CLINIC_ADMIN'})";
   const previous=process.env.MCF_AUTH_PROVIDER;
   process.env.MCF_AUTH_PROVIDER=provider;
@@ -77,11 +86,48 @@ test("HTTP GetSchedule rejects a calendrically invalid YYYY-MM-DD with 422 VALID
       };
       Promise.resolve(api(req,res)).catch(reject);
     });
+    const payload=JSON.parse(response.body);
     assert.equal(response.status,422);
-    assert.equal(JSON.parse(response.body).error.code,"VALIDATION_ERROR");
+    assert.equal(payload.error.code,"VALIDATION_ERROR");
+    assert.match(payload.error.requestId,/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
   }finally{
     if(previous===undefined)delete process.env.MCF_AUTH_PROVIDER;else process.env.MCF_AUTH_PROVIDER=previous;
   }
+});
+
+test("AvailabilityRule invalid inputs are rejected before persistence",{skip:!enabled},async()=>{
+  const before=(await pool.query("SELECT count(*)::int AS count FROM availability_rules WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count;
+  await assert.rejects(
+    createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:7,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:"2026-10-06"}),
+    e=>e?.code==="VALIDATION_ERROR"
+  );
+  await assert.rejects(
+    createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:2,localStartTime:"8:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:"2026-10-06"}),
+    e=>e?.code==="VALIDATION_ERROR"
+  );
+  await assert.rejects(
+    createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:2,localStartTime:"08:00",localEndTime:"18:00",timezone:"CST",validFrom:"2026-10-06"}),
+    e=>e?.code==="VALIDATION_ERROR"
+  );
+  await assert.rejects(
+    createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:2,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:"2026-10-06",validUntil:"2026-10-05"}),
+    e=>e?.code==="VALIDATION_ERROR"
+  );
+  const after=(await pool.query("SELECT count(*)::int AS count FROM availability_rules WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count;
+  assert.equal(after,before);
+});
+
+test("audit_events rejects UPDATE and DELETE at PostgreSQL level",{skip:!enabled},async()=>{
+  const auditId=crypto.randomUUID();
+  const entityId=crypto.randomUUID();
+  await pool.query(
+    "INSERT INTO audit_events(id,actor_id,actor_type,clinic_id,action,entity_type,entity_id,request_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
+    [auditId,fixture.actorId,"USER",fixture.clinicId,"TEST","Appointment",entityId,crypto.randomUUID()]
+  );
+  await assert.rejects(pool.query("UPDATE audit_events SET action='MUTATED' WHERE id=$1",[auditId]));
+  await assert.rejects(pool.query("DELETE FROM audit_events WHERE id=$1",[auditId]));
+  const row=(await pool.query("SELECT action FROM audit_events WHERE id=$1",[auditId])).rows[0];
+  assert.equal(row.action,"TEST");
 });
 
 test("real PostgreSQL concurrent Appointment x ScheduleBlock leaves exactly one committed and never an invalid overlap",{skip:!enabled},async()=>{
