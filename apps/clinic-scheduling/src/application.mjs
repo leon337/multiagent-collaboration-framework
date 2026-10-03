@@ -111,15 +111,21 @@ export async function getSchedule(pool,ctx,input){
 }
 
 export async function createAvailabilityRule(pool,ctx,input){
-  requireRole(ctx);validateIanaTimezone(input.timezone);normalizeIntervals([{start:input.localStartTime,end:input.localEndTime}]);
-  const d=Temporal.PlainDate.from(input.validFrom);localInterval(d,{start:input.localStartTime,end:input.localEndTime},input.timezone);
+  requireRole(ctx);
+  const timezone=validateIanaTimezone(input.timezone);
+  const validFrom=parseLocalDate(input.validFrom);
+  const validUntil=input.validUntil?parseLocalDate(input.validUntil):null;
+  if(validUntil&&Temporal.PlainDate.compare(validUntil,validFrom)<0)throw new DomainError("VALIDATION_ERROR","validUntil must be on or after validFrom.",422);
+  if(!Number.isInteger(input.weekday)||input.weekday<0||input.weekday>6)throw new DomainError("VALIDATION_ERROR","weekday must be an integer between 0 and 6.",422);
+  normalizeIntervals([{start:input.localStartTime,end:input.localEndTime}]);
+  localInterval(validFrom,{start:input.localStartTime,end:input.localEndTime},timezone);
   return withTx(pool,async db=>{
     const clinic=(await clinicById(db,ctx.clinicId))[0];
     if(!clinic)throw new DomainError("NOT_FOUND","Clinic was not found.",404);
-    if(clinic.timezone!==input.timezone)throw new DomainError("VALIDATION_ERROR","AvailabilityRule timezone must equal the clinic IANA timezone.",422);
+    if(clinic.timezone!==timezone)throw new DomainError("VALIDATION_ERROR","AvailabilityRule timezone must equal the clinic IANA timezone.",422);
     if(!(await professionalByTenant(db,input.professionalId,ctx.clinicId))[0])throw new DomainError("NOT_FOUND","Professional was not found.",404);
     await lockScheduleScope(db,ctx.clinicId,input.professionalId);
-    const r=(await insertAvailabilityRule(db,[ctx.clinicId,input.professionalId,input.weekday,input.localStartTime,input.localEndTime,input.timezone,input.validFrom,input.validUntil||null]))[0];
+    const r=(await insertAvailabilityRule(db,[ctx.clinicId,input.professionalId,input.weekday,input.localStartTime,input.localEndTime,timezone,validFrom.toString(),validUntil?.toString()||null]))[0];
     await appendAudit(db,{actorId:ctx.actorId,actorType:ctx.actorType,clinicId:ctx.clinicId,action:"AVAILABILITY_CHANGED",entityType:"AvailabilityRule",entityId:r.id,requestId:ctx.requestId,correlationId:ctx.correlationId,after:r});
     return r;
   });
