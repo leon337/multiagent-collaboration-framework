@@ -221,3 +221,97 @@ test("real PostgreSQL transaction advisory lock is held until commit",{skip:!ena
     await pool.query("DELETE FROM schedule_blocks WHERE clinic_id=$1",[fixture.clinicId]);
   }finally{holder.release();}
 });
+
+
+test("error responses always include a non-null requestId",{skip:!enabled},async()=>{
+  const previous=process.env.MCF_AUTH_PROVIDER;
+  process.env.MCF_AUTH_PROVIDER="data:text/javascript,export default async()=>({actorId:"+JSON.stringify(crypto.randomUUID())+",clinicId:"+JSON.stringify(fixture.clinicId)+",role:'CLINIC_ADMIN'})";
+  try{
+    const response=await httpJson(createApi(pool),"POST","/api/v1/availability/rules",{professionalId:fixture.professionalId,weekday:7,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:"2026-10-05"});
+    const body=JSON.parse(response.body);
+    assert.equal(response.status,422);
+    assert.equal(body.error.code,"VALIDATION_ERROR");
+    assert.match(body.error.requestId,/^[0-9a-f-]{36}$/);
+  }finally{
+    if(previous===undefined)delete process.env.MCF_AUTH_PROVIDER;else process.env.MCF_AUTH_PROVIDER=previous;
+  }
+});
+
+test("audit_events rejects runtime UPDATE and DELETE",{skip:!enabled},async()=>{
+  const row=(await pool.query("INSERT INTO audit_events(actor_id,actor_type,clinic_id,action,entity_type,entity_id,request_id) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id",[fixture.actorId,"USER",fixture.clinicId,"QA_AUDIT_MUTATION","Professional",fixture.professionalId,crypto.randomUUID()])).rows[0];
+  await assert.rejects(()=>pool.query("UPDATE audit_events SET action='MUTATED' WHERE id=$1",[row.id]),/audit_events is append-only/);
+  await assert.rejects(()=>pool.query("DELETE FROM audit_events WHERE id=$1",[row.id]),/audit_events is append-only/);
+  assert.equal((await pool.query("SELECT action FROM audit_events WHERE id=$1",[row.id])).rows[0].action,"QA_AUDIT_MUTATION");
+});
+
+test("appendAudit failure rolls back appointment and audit atomically",{skip:!enabled},async()=>{
+  const beforeAppointments=Number((await pool.query("SELECT count(*) FROM appointments WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count);
+  const beforeAudit=Number((await pool.query("SELECT count(*) FROM audit_events WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count);
+  process.env.MCF_TEST_FAIL_APPEND_AUDIT="1";
+  try{
+    await assert.rejects(()=>createAppointment(pool,ctx(),{professionalId:fixture.professionalId,patientId:fixture.patientId,serviceId:fixture.serviceId,startAt:"2026-10-05T15:00:00-03:00"}),/MCF_TEST_APPEND_AUDIT_FAILURE/);
+  }finally{delete process.env.MCF_TEST_FAIL_APPEND_AUDIT;}
+  assert.equal(Number((await pool.query("SELECT count(*) FROM appointments WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count),beforeAppointments);
+  assert.equal(Number((await pool.query("SELECT count(*) FROM audit_events WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count),beforeAudit);
+});
+
+test("ScheduleBlock has precedence over CLOSED exception and rule for booking",{skip:!enabled},async()=>{
+  const day="2026-10-12";
+  await createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:1,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:day});
+  await createAvailabilityException(pool,ctx(),{professionalId:fixture.professionalId,localDate:day,type:"CLOSED",intervals:[]});
+  await createBlock(pool,ctx(),{scopeType:"PROFESSIONAL",professionalId:fixture.professionalId,startAt:day+"T10:00:00-03:00",endAt:day+"T10:30:00-03:00",reason:"precedence"});
+  await assert.rejects(()=>createAppointment(pool,ctx(),{professionalId:fixture.professionalId,patientId:fixture.patientId,serviceId:fixture.serviceId,startAt:day+"T10:00:00-03:00"}),e=>e.code==="SCHEDULE_BLOCKED");
+  await pool.query("DELETE FROM schedule_blocks WHERE clinic_id=$1",[fixture.clinicId]);
+  await pool.query("DELETE FROM availability_exceptions WHERE clinic_id=$1",[fixture.clinicId]);
+  await pool.query("DELETE FROM availability_rules WHERE clinic_id=$1 AND valid_from=$2",[fixture.clinicId,day]);
+});
+
+test("DST gap and overlap are rejected and timezone snapshot is stored on appointment",{skip:!enabled},async()=>{
+  await assert.rejects(()=>createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:0,localStartTime:"02:30",localEndTime:"03:30",timezone:"America/New_York",validFrom:"2026-03-08"}),e=>e.code==="INVALID_DATETIME");
+  await assert.rejects(()=>createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:0,localStartTime:"01:30",localEndTime:"02:30",timezone:"America/New_York",validFrom:"2026-11-01"}),e=>e.code==="INVALID_DATETIME");
+  const day="2026-10-13";
+  await createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:2,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:day});
+  const a=await createAppointment(pool,ctx(),{professionalId:fixture.professionalId,patientId:fixture.patientId,serviceId:fixture.serviceId,startAt:day+"T10:00:00-03:00"});
+  assert.equal(a.timezone,"America/Recife");
+  await pool.query("DELETE FROM appointments WHERE id=$1",[a.id]);
+  await pool.query("DELETE FROM availability_rules WHERE clinic_id=$1 AND valid_from=$2",[fixture.clinicId,day]);
+});
+
+test("cross-tenant access is rejected and CRUD/HTTP smoke completes end-to-end",{skip:!enabled},async()=>{
+  const tenant2={clinicId:crypto.randomUUID(),professionalId:crypto.randomUUID(),patientId:crypto.randomUUID(),serviceId:crypto.randomUUID(),actorId:crypto.randomUUID()};
+  await pool.query("INSERT INTO clinics(id,name,timezone) VALUES($1,$2,$3)",[tenant2.clinicId,"Tenant 2","America/Recife"]);
+  await pool.query("INSERT INTO professionals(id,clinic_id,name) VALUES($1,$2,$3)",[tenant2.professionalId,tenant2.clinicId,"T2 Professional"]);
+  await pool.query("INSERT INTO patients(id,clinic_id,name) VALUES($1,$2,$3)",[tenant2.patientId,tenant2.clinicId,"T2 Patient"]);
+  await pool.query("INSERT INTO services(id,clinic_id,name,duration_minutes) VALUES($1,$2,$3,$4)",[tenant2.serviceId,tenant2.clinicId,"T2 Service",30]);
+  const foreignCtx={actorId:fixture.actorId,actorType:"USER",clinicId:fixture.clinicId,role:"CLINIC_ADMIN",requestId:crypto.randomUUID(),correlationId:crypto.randomUUID()};
+  await assert.rejects(()=>createAppointment(pool,foreignCtx,{professionalId:tenant2.professionalId,patientId:tenant2.patientId,serviceId:tenant2.serviceId,startAt:"2026-10-05T16:00:00-03:00"}),e=>e.code==="NOT_FOUND");
+  const previous=process.env.MCF_AUTH_PROVIDER;
+  process.env.MCF_AUTH_PROVIDER="data:text/javascript,export default async()=>({actorId:"+JSON.stringify(fixture.actorId)+",clinicId:"+JSON.stringify(fixture.clinicId)+",role:'CLINIC_ADMIN'})";
+  try{
+    const api=createApi(pool);
+    const pro=await httpJson(api,"POST","/api/v1/professionals",{name:"Smoke Professional"});
+    const pat=await httpJson(api,"POST","/api/v1/patients",{name:"Smoke Patient"});
+    const svc=await httpJson(api,"POST","/api/v1/services",{name:"Smoke Service",durationMinutes:30});
+    assert.equal(pro.status,201);assert.equal(pat.status,201);assert.equal(svc.status,201);
+    const pid=JSON.parse(pro.body).data.id,patid=JSON.parse(pat.body).data.id,sid=JSON.parse(svc.body).data.id;
+    const day="2026-10-19";
+    const rule=await httpJson(api,"POST","/api/v1/availability/rules",{professionalId:pid,weekday:1,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:day});
+    assert.equal(rule.status,201);
+    const ap=await httpJson(api,"POST","/api/v1/appointments",{professionalId:pid,patientId:patid,serviceId:sid,startAt:day+"T10:00:00-03:00"});
+    assert.equal(ap.status,201);
+    const aid=JSON.parse(ap.body).data.id;
+    const sched=await httpJson(api,"GET","/api/v1/schedule?professionalId="+pid+"&localDate="+day);
+    assert.equal(sched.status,200);
+    const block=await httpJson(api,"POST","/api/v1/schedule-blocks",{scopeType:"PROFESSIONAL",professionalId:pid,startAt:day+"T11:00:00-03:00",endAt:day+"T11:30:00-03:00",reason:"smoke"});
+    assert.equal(block.status,409);
+    const cancel=await httpJson(api,"POST","/api/v1/appointments/"+aid+"/cancel",{reason:"smoke"});
+    assert.equal(cancel.status,200);
+    const block2=await httpJson(api,"POST","/api/v1/schedule-blocks",{scopeType:"PROFESSIONAL",professionalId:pid,startAt:day+"T11:00:00-03:00",endAt:day+"T11:30:00-03:00",reason:"smoke"});
+    assert.equal(block2.status,201);
+    const bid=JSON.parse(block2.body).data.id;
+    const del=await httpJson(api,"DELETE","/api/v1/schedule-blocks/"+bid);
+    assert.equal(del.status,200);
+  }finally{
+    if(previous===undefined)delete process.env.MCF_AUTH_PROVIDER;else process.env.MCF_AUTH_PROVIDER=previous;
+  }
+});
