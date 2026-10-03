@@ -5,7 +5,7 @@
 Implementation evidence is green for the executable MVP surface and backend candidate.
 
 - Backend candidate: PR #394, HEAD `04d31654f83e81f409a3d63e13ced40d1dda3e05`
-- MVP UI: PR #397, HEAD `12288016fd4768155d9b19361baa89ee0680764a`
+- MVP UI: PR #397, HEAD `8222473206d0e0327f25175b19984f979ef6540f`
 - Automated tests: 11/11
 - Live PostgreSQL smoke: PASS
 - Production/deployment: NOT PERFORMED
