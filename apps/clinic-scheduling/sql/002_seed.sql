@@ -17,4 +17,9 @@ ON CONFLICT(id) DO NOTHING;
 INSERT INTO availability_rules(clinic_id,professional_id,weekday,local_start_time,local_end_time,timezone,valid_from)
 SELECT '00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000011',d,'08:00','17:00','America/Recife',CURRENT_DATE
 FROM generate_series(1,5) d
-ON CONFLICT DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM availability_rules r
+  WHERE r.clinic_id='00000000-0000-4000-8000-000000000010'
+    AND r.professional_id='00000000-0000-4000-8000-000000000011'
+    AND r.weekday=d AND r.valid_from=CURRENT_DATE
+);
