@@ -17,7 +17,7 @@
 <script>
 const app=document.getElementById("app"),modal=document.getElementById("modal");
 let state={patients:[],professionals:[],services:[],appointments:[],loading:false,error:null,clinicTimezone:"UTC"};
-const today=()=>new Date().toISOString().slice(0,10);
+function today(){const parts=new Intl.DateTimeFormat("en-CA",{timeZone:state.clinicTimezone,year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());const m=Object.fromEntries(parts.map(x=>[x.type,x.value]));return `${m.year}-${m.month}-${m.day}`;}
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 const fmt=d=>new Date(d).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short",timeZone:state.clinicTimezone});
 const name=(xs,id)=>xs.find(x=>x.id===id)?.name||"—";
