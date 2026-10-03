@@ -8,11 +8,13 @@ async function body(req){let s="";for await(const c of req)s+=c;if(!s)return{};t
 
 export function createApi(pool){
   return async function handle(req,res){
+    let requestId=crypto.randomUUID();
     try{
       const u=new URL(req.url,"http://localhost"),p=u.pathname.split("/").filter(Boolean);
       if(req.method==="GET"&&p[0]==="health")return json(res,200,{ok:true});
       if(p[0]!=="api"||p[1]!=="v1")return json(res,404,{error:{code:"NOT_FOUND",message:"Route not found."}});
       const ctx=await authenticateRequest(req);
+      requestId=ctx.requestId;
       if(req.method==="POST"&&p[2]==="appointments"&&p.length===3)return json(res,201,{data:await createAppointment(pool,ctx,await body(req))});
       if(req.method==="POST"&&p[2]==="appointments"&&p[4]==="reschedule")return json(res,200,{data:await rescheduleAppointment(pool,ctx,{appointmentId:p[3],...(await body(req))})});
       if(req.method==="POST"&&p[2]==="appointments"&&p[4]==="cancel"){const b=await body(req);return json(res,200,{data:await transitionAppointment(pool,ctx,{appointmentId:p[3],to:"CANCELLED",reason:b.reason||null})});}
@@ -30,7 +32,7 @@ export function createApi(pool){
       return json(res,404,{error:{code:"NOT_FOUND",message:"Route not found."}});
     }catch(e){
       const de=e instanceof DomainError?e:new DomainError("INTERNAL_ERROR","Unexpected server error.",500);
-      return json(res,de.status,{error:{code:de.code,message:de.message,requestId:e?.requestId??null,details:de.details}});
+      return json(res,de.status,{error:{code:de.code,message:de.message,requestId:e?.requestId??requestId,details:de.details}});
     }
   };
 }
