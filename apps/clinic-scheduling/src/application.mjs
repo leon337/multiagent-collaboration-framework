@@ -3,6 +3,12 @@ import {DomainError,assertAppointmentReschedulable,assertTransition,interval,isF
 import {appendAudit} from "./audit.mjs";
 import {withTx,isScheduleConflict,isUniqueViolation,clinicById,professionalByTenant,serviceByTenant,referencesInTenant,appointmentByTenant,appointmentWithService,availabilityRules,availabilityExceptions,blocksForInterval,insertAppointment,updateAppointmentInterval,updateAppointmentState,insertAvailabilityRule,insertAvailabilityException,insertBlock,blockByTenant,deleteBlock,listEntity,createEntity,scheduleForDay} from "./repository.mjs";
 
+function localWallClockToInstant(date,time,timezone){
+  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date)||!/^\\d{2}:\\d{2}$/.test(time))throw new DomainError("INVALID_DATETIME","Local date/time must use YYYY-MM-DD and HH:MM.",400);
+  try{return new Date(Number(Temporal.ZonedDateTime.from(`${date}T${time}:00[${timezone}]`,{disambiguation:"reject"}).epochMilliseconds));}
+  catch(e){throw new DomainError("INVALID_DATETIME","Local date/time is invalid or ambiguous for the clinic timezone.",400);}
+}
+
 function datesFor(start,end,timezone){
   const a=Temporal.Instant.from(start.toISOString()).toZonedDateTimeISO(timezone).toPlainDate();
   const b=Temporal.Instant.from(end.toISOString()).toZonedDateTimeISO(timezone).toPlainDate();
@@ -45,14 +51,15 @@ async function assertAvailable(db,ctx,professionalId,start,end){
 }
 
 export async function createAppointment(pool,ctx,input){
-  requireRole(ctx);const start=parseRfc3339(input.startAt);
+  requireRole(ctx);const startInput=input.localDate&&input.localTime?{local:true}:input.startAt;const start=startInput.local?null:parseRfc3339(input.startAt);
   return withTx(pool,async db=>{
     const clinic=(await clinicById(db,ctx.clinicId))[0];
     if(!clinic)throw new DomainError("NOT_FOUND","Clinic was not found.",404);
+    const effectiveStart=startInput.local?localWallClockToInstant(input.localDate,input.localTime,clinic.timezone):start;
     if(!await referencesInTenant(db,{clinicId:ctx.clinicId,professionalId:input.professionalId,patientId:input.patientId,serviceId:input.serviceId}))throw new DomainError("NOT_FOUND","One or more referenced resources were not found in the tenant.",404);
     const service=(await serviceByTenant(db,input.serviceId,ctx.clinicId))[0];
     if(!service)throw new DomainError("NOT_FOUND","Service was not found.",404);
-    const x=interval(start,service.duration_minutes);
+    const x=interval(effectiveStart,service.duration_minutes);
     await assertAvailable(db,ctx,input.professionalId,x.startAtUtc,x.endAtUtc);
     try{
       const a=(await insertAppointment(db,[ctx.clinicId,input.professionalId,input.patientId,input.serviceId,x.startAtUtc,x.endAtUtc,clinic.timezone]))[0];
@@ -63,12 +70,15 @@ export async function createAppointment(pool,ctx,input){
 }
 
 export async function rescheduleAppointment(pool,ctx,input){
-  requireRole(ctx);const start=parseRfc3339(input.newStartAt);
+  requireRole(ctx);const startInput=input.localDate&&input.localTime?{local:true}:input.newStartAt;const start=startInput.local?null:parseRfc3339(input.newStartAt);
   return withTx(pool,async db=>{
     const a=(await appointmentWithService(db,input.appointmentId,ctx.clinicId))[0];
     if(!a)throw new DomainError("NOT_FOUND","Appointment was not found.",404);
     assertAppointmentReschedulable(a.status);
-    const x=interval(start,a.duration_minutes);
+    const clinic=(await clinicById(db,ctx.clinicId))[0];
+    if(!clinic)throw new DomainError("NOT_FOUND","Clinic was not found.",404);
+    const effectiveStart=startInput.local?localWallClockToInstant(input.localDate,input.localTime,clinic.timezone):start;
+    const x=interval(effectiveStart,a.duration_minutes);
     await assertAvailable(db,ctx,a.professional_id,x.startAtUtc,x.endAtUtc);
     try{
       const updated=(await updateAppointmentInterval(db,[x.startAtUtc,x.endAtUtc,a.id,ctx.clinicId]))[0];
