@@ -13,6 +13,7 @@ export function createApi(pool){
       if(req.method==="GET"&&p[0]==="health")return json(res,200,{ok:true});
       if(p[0]!=="api"||p[1]!=="v1")return json(res,404,{error:{code:"NOT_FOUND",message:"Route not found."}});
       const ctx=await authenticateRequest(req);
+      if(req.method==="GET"&&p[2]==="context")return json(res,200,{data:{actorId:ctx.actorId,clinicId:ctx.clinicId,role:ctx.role,actorType:ctx.actorType}});
       if(req.method==="POST"&&p[2]==="appointments"&&p.length===3)return json(res,201,{data:await createAppointment(pool,ctx,await body(req))});
       if(req.method==="POST"&&p[2]==="appointments"&&p[4]==="reschedule")return json(res,200,{data:await rescheduleAppointment(pool,ctx,{appointmentId:p[3],...(await body(req))})});
       if(req.method==="POST"&&p[2]==="appointments"&&p[4]==="cancel"){const b=await body(req);return json(res,200,{data:await transitionAppointment(pool,ctx,{appointmentId:p[3],to:"CANCELLED",reason:b.reason||null})});}

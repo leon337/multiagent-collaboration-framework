@@ -3,7 +3,7 @@ import {DomainError} from "./domain.mjs";
 function providerError(message){return new DomainError("UNAUTHENTICATED",message,401);}
 
 export async function authenticateRequest(req){
-  const providerPath=process.env.MCF_AUTH_PROVIDER;
+  const providerPath=process.env.MCF_DEMO_MODE==="1"?"./demo-auth.mjs":process.env.MCF_AUTH_PROVIDER;
   if(!providerPath)throw providerError("Authenticated context provider is not configured.");
   let provider;
   try{provider=(await import(providerPath)).default ?? (await import(providerPath)).authenticateRequest;}catch{throw providerError("Authenticated context provider is unavailable.");}
