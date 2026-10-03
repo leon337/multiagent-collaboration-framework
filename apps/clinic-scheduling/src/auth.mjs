@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import {DomainError} from "./domain.mjs";
 
 function providerError(message){return new DomainError("UNAUTHENTICATED",message,401);}
@@ -16,7 +17,7 @@ export async function authenticateRequest(req){
     clinicId:principal.clinicId,
     role:principal.role,
     actorType:principal.actorType??"USER",
-    requestId:principal.requestId??req.headers["x-request-id"]??null,
+    requestId:principal.requestId??req.headers["x-request-id"]??crypto.randomUUID(),
     correlationId:principal.correlationId??req.headers["x-correlation-id"]??null
   });
 }
