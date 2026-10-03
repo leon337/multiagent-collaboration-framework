@@ -84,6 +84,58 @@ test("HTTP GetSchedule rejects a calendrically invalid YYYY-MM-DD with 422 VALID
   }
 });
 
+async function httpJson(api,method,path,bodyValue){
+  const req={
+    method,
+    url:path,
+    headers:{"content-type":"application/json"},
+    async *[Symbol.asyncIterator](){if(bodyValue)yield JSON.stringify(bodyValue);}
+  };
+  return new Promise((resolve,reject)=>{
+    const res={writeHead(status){this.status=status;},end(body){this.body=body;resolve(this);}};
+    Promise.resolve(api(req,res)).catch(reject);
+  });
+}
+
+test("HTTP availability validation rejects invalid inputs with 422 VALIDATION_ERROR",{skip:!enabled},async()=>{
+  const previous=process.env.MCF_AUTH_PROVIDER;
+  process.env.MCF_AUTH_PROVIDER="data:text/javascript,export default async()=>({actorId:"+JSON.stringify(crypto.randomUUID())+",clinicId:"+JSON.stringify(fixture.clinicId)+",role:'CLINIC_ADMIN'})";
+  try{
+    const api=createApi(pool);
+    const cases=[
+      ["invalid validFrom",{professionalId:fixture.professionalId,weekday:1,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:"2026-02-31"}],
+      ["invalid weekday",{professionalId:fixture.professionalId,weekday:7,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:"2026-10-05"}],
+      ["validUntil before validFrom",{professionalId:fixture.professionalId,weekday:1,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:"2026-10-10",validUntil:"2026-10-09"}]
+    ];
+    for(const [label,payload] of cases){
+      const response=await httpJson(api,"POST","/api/v1/availability/rules",payload);
+      assert.equal(response.status,422,label+" "+response.body);
+      assert.equal(JSON.parse(response.body).error.code,"VALIDATION_ERROR",label);
+    }
+    const invalidOpen=[
+      {professionalId:fixture.professionalId,localDate:"2026-10-05",type:"OPEN",intervals:[{start:"9:00",end:"10:00"}]},
+      {professionalId:fixture.professionalId,localDate:"2026-10-06",type:"OPEN",intervals:[{start:"08:00",end:"25:00"}]},
+      {professionalId:fixture.professionalId,localDate:"2026-10-07",type:"OPEN",intervals:[{start:"11:00",end:"10:00"}]}
+    ];
+    for(const payload of invalidOpen){
+      const response=await httpJson(api,"POST","/api/v1/availability/exceptions",payload);
+      assert.equal(response.status,422,response.body);
+      assert.equal(JSON.parse(response.body).error.code,"VALIDATION_ERROR");
+    }
+  }finally{
+    if(previous===undefined)delete process.env.MCF_AUTH_PROVIDER;else process.env.MCF_AUTH_PROVIDER=previous;
+  }
+});
+
+test("invalid availability inputs do not persist rows",{skip:!enabled},async()=>{
+  const rulesBefore=Number((await pool.query("SELECT count(*) FROM availability_rules WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count);
+  const exceptionsBefore=Number((await pool.query("SELECT count(*) FROM availability_exceptions WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count);
+  await assert.rejects(()=>createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:7,localStartTime:"08:00",localEndTime:"18:00",timezone:"America/Recife",validFrom:"2026-02-31"}),e=>e.code==="VALIDATION_ERROR"&&e.status===422);
+  await assert.rejects(()=>createAvailabilityException(pool,ctx(),{professionalId:fixture.professionalId,localDate:"2026-10-08",type:"OPEN",intervals:[{start:"8:00",end:"09:00"}]}),e=>e.code==="VALIDATION_ERROR"&&e.status===422);
+  assert.equal(Number((await pool.query("SELECT count(*) FROM availability_rules WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count),rulesBefore);
+  assert.equal(Number((await pool.query("SELECT count(*) FROM availability_exceptions WHERE clinic_id=$1",[fixture.clinicId])).rows[0].count),exceptionsBefore);
+});
+
 test("real PostgreSQL concurrent Appointment x ScheduleBlock leaves exactly one committed and never an invalid overlap",{skip:!enabled},async()=>{
   const startAt="2026-10-05T10:00:00-03:00";
   const endAt="2026-10-05T10:30:00-03:00";
