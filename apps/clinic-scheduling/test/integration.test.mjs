@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import crypto from "node:crypto";
 import {Pool} from "pg";
-import {createAppointment,createBlock,createAvailabilityException} from "../src/application.mjs";
+import {createAppointment,createBlock,createAvailabilityException,createAvailabilityRule} from "../src/application.mjs";
 import {createApi} from "../src/api.mjs";
 
 const DATABASE_URL=process.env.DATABASE_URL;
@@ -118,6 +118,30 @@ test("real PostgreSQL concurrent Appointment x CLOSED AvailabilityException leav
     assert.ok(["AVAILABILITY_VIOLATION","SCHEDULE_CONFLICT"].includes(rejected[0].reason?.code),JSON.stringify(results));
     await pool.query("DELETE FROM appointments WHERE clinic_id=$1",[fixture.clinicId]);
     await pool.query("DELETE FROM availability_exceptions WHERE clinic_id=$1",[fixture.clinicId]);
+  }
+});
+
+test("real PostgreSQL concurrent Appointment x AvailabilityRule is serialized",{skip:!enabled},async()=>{
+  const startAt="2026-10-06T11:00:00-03:00";
+  for(let round=0;round<12;round++){
+    const results=await Promise.allSettled([
+      createAppointment(pool,ctx(),{professionalId:fixture.professionalId,patientId:fixture.patientId,serviceId:fixture.serviceId,startAt}),
+      createAvailabilityRule(pool,ctx(),{
+        professionalId:fixture.professionalId,
+        weekday:2,
+        localStartTime:"08:00",
+        localEndTime:"18:00",
+        timezone:"America/Recife",
+        validFrom:"2026-10-06"
+      })
+    ]);
+    const fulfilled=results.filter(x=>x.status==="fulfilled");
+    const rejected=results.filter(x=>x.status==="rejected");
+    assert.equal(fulfilled.length,1,JSON.stringify(results));
+    assert.equal(rejected.length,1,JSON.stringify(results));
+    assert.ok(["AVAILABILITY_VIOLATION"].includes(rejected[0].reason?.code),JSON.stringify(results));
+    await pool.query("DELETE FROM appointments WHERE clinic_id=$1",[fixture.clinicId]);
+    await pool.query("DELETE FROM availability_rules WHERE clinic_id=$1 AND weekday=$2 AND valid_from=$3",[fixture.clinicId,2,"2026-10-06"]);
   }
 });
 
