@@ -38,6 +38,14 @@ test("authentication is a boundary, not client-selected tenant headers",()=>{
   assert.doesNotMatch(api,/x-actor-id|x-clinic-id|x-role/);
 });
 
+test("schedule mutations use PostgreSQL transaction advisory locks for cross-entity races",()=>{
+  assert.match(repo,/pg_advisory_xact_lock_shared/);
+  assert.match(repo,/pg_advisory_xact_lock\(/);
+  assert.match(app,/lockScheduleScope/);
+  assert.match(app,/appointmentsForInterval/);
+  assert.match(app,/appointmentsForClinicInterval/);
+});
+
 test("repository/application/audit/database boundaries are explicit",()=>{
   assert.match(app,/from "\.\/repository\.mjs"/);
   assert.match(app,/from "\.\/audit\.mjs"/);
