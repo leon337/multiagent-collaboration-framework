@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { DomainError } from "./domain.mjs";
 
 export function resolveAuthContext(req){
