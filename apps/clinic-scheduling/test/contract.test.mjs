@@ -16,7 +16,7 @@ test("appointment stores timezone snapshot and clinic-linked rule timezone",()=>
   assert.match(sql,/FOREIGN KEY\(clinic_id, timezone\) REFERENCES clinics\(id, timezone\)/);
   assert.match(repo,/INSERT INTO appointments\(clinic_id,professional_id,patient_id,service_id,start_at_utc,end_at_utc,timezone,status\)/);
   assert.match(app,/clinic\.timezone/);
-  assert.match(app,/localWallClockToInstant/);
+  assert.match(app,/localWallClockToInstant/);\n  assert.match(app,/export async function getContext/);\n  assert.match(api,/p\[2\]===\"context\"/);
   assert.match(app,/disambiguation:"reject"/);
 });
 test("availability exceptions are unique per tenant professional date",()=>{
