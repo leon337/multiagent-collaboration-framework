@@ -1,8 +1,10 @@
 # CHECKPOINT
 
-Estado: AGUARDANDO_DEPENDENCIA_EXTERNA.
+Estado: AGUARDANDO_QA_REVALIDATION.
 
-Último artefato: 39de66e2.
+Bloqueadores anteriores de timezone da clínica e IDs de auditoria foram corrigidos; aguardando revalidação independente.
+
+Último artefato: e3db75ab8bc840bbf98a32980f829dbd0b5a8808.
 
 Próximo gate: Rafael → Renato → Patrícia → Renato → Emily final → MESTRE → LÉO.
 
