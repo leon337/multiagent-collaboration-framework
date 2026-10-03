@@ -266,6 +266,21 @@ test("ScheduleBlock has precedence over CLOSED exception and rule for booking",{
   await pool.query("DELETE FROM availability_rules WHERE clinic_id=$1 AND valid_from=$2",[fixture.clinicId,day]);
 });
 
+test("OPEN exception overrides Rule and remains below ScheduleBlock precedence",{skip:!enabled},async()=>{
+  const day="2026-10-14";
+  await createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:3,localStartTime:"08:00",localEndTime:"12:00",timezone:"America/Recife",validFrom:day});
+  await createAvailabilityException(pool,ctx(),{professionalId:fixture.professionalId,localDate:day,type:"OPEN",intervals:[{start:"13:00",end:"15:00"}]});
+  const openAppointment=await createAppointment(pool,ctx(),{professionalId:fixture.professionalId,patientId:fixture.patientId,serviceId:fixture.serviceId,startAt:day+"T14:00:00-03:00"});
+  assert.equal(openAppointment.status,"SCHEDULED");
+  await transitionAppointment(pool,ctx(),{appointmentId:openAppointment.id,to:"CANCELLED",reason:"precedence-test"});
+  const block=await createBlock(pool,ctx(),{scopeType:"PROFESSIONAL",professionalId:fixture.professionalId,startAt:day+"T14:00:00-03:00",endAt:day+"T14:30:00-03:00",reason:"precedence"});
+  assert.ok(block.id);
+  await assert.rejects(()=>createAppointment(pool,ctx(),{professionalId:fixture.professionalId,patientId:fixture.patientId,serviceId:fixture.serviceId,startAt:day+"T14:00:00-03:00"}),e=>e.code==="SCHEDULE_BLOCKED");
+  await pool.query("DELETE FROM schedule_blocks WHERE id=$1",[block.id]);
+  await pool.query("DELETE FROM availability_exceptions WHERE clinic_id=$1 AND local_date=$2",[fixture.clinicId,day]);
+  await pool.query("DELETE FROM availability_rules WHERE clinic_id=$1 AND valid_from=$2",[fixture.clinicId,day]);
+});
+
 test("DST gap and overlap are rejected and timezone snapshot is stored on appointment",{skip:!enabled},async()=>{
   await assert.rejects(()=>createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:0,localStartTime:"02:30",localEndTime:"03:30",timezone:"America/New_York",validFrom:"2026-03-08"}),e=>e.code==="INVALID_DATETIME");
   await assert.rejects(()=>createAvailabilityRule(pool,ctx(),{professionalId:fixture.professionalId,weekday:0,localStartTime:"01:30",localEndTime:"02:30",timezone:"America/New_York",validFrom:"2026-11-01"}),e=>e.code==="INVALID_DATETIME");
