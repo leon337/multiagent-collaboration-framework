@@ -1,5 +1,5 @@
 import {Temporal} from "@js-temporal/polyfill";
-import {DomainError,assertAppointmentReschedulable,assertTransition,interval,isFullyCovered,normalizeIntervals,parseLocalDate,parseRfc3339,requireRole,validateIanaTimezone} from "./domain.mjs";
+import {DomainError,assertAppointmentReschedulable,assertTransition,interval,isFullyCovered,normalizeIntervals,parseAvailabilityDateRange,parseLocalDate,parseRfc3339,parseTimeOfDay,parseWeekday,requireRole,validateIanaTimezone} from "./domain.mjs";
 import {appendAudit} from "./audit.mjs";
 import {withTx,isScheduleConflict,isUniqueViolation,clinicById,professionalByTenant,serviceByTenant,referencesInTenant,appointmentByTenant,appointmentWithService,availabilityRules,availabilityExceptions,blocksForInterval,appointmentsForInterval,appointmentsForClinicInterval,lockScheduleScope,insertAppointment,updateAppointmentInterval,updateAppointmentState,insertAvailabilityRule,insertAvailabilityException,insertBlock,blockByTenant,deleteBlock,listEntity,createEntity,scheduleForDay} from "./repository.mjs";
 
@@ -111,15 +111,21 @@ export async function getSchedule(pool,ctx,input){
 }
 
 export async function createAvailabilityRule(pool,ctx,input){
-  requireRole(ctx);validateIanaTimezone(input.timezone);normalizeIntervals([{start:input.localStartTime,end:input.localEndTime}]);
-  const d=Temporal.PlainDate.from(input.validFrom);localInterval(d,{start:input.localStartTime,end:input.localEndTime},input.timezone);
+  requireRole(ctx);
+  validateIanaTimezone(input.timezone);
+  const weekday=parseWeekday(input.weekday);
+  parseTimeOfDay(input.localStartTime,"localStartTime");
+  parseTimeOfDay(input.localEndTime,"localEndTime");
+  normalizeIntervals([{start:input.localStartTime,end:input.localEndTime}]);
+  const {from,until}=parseAvailabilityDateRange(input.validFrom,input.validUntil);
+  localInterval(from,{start:input.localStartTime,end:input.localEndTime},input.timezone);
   return withTx(pool,async db=>{
     const clinic=(await clinicById(db,ctx.clinicId))[0];
     if(!clinic)throw new DomainError("NOT_FOUND","Clinic was not found.",404);
     if(clinic.timezone!==input.timezone)throw new DomainError("VALIDATION_ERROR","AvailabilityRule timezone must equal the clinic IANA timezone.",422);
     if(!(await professionalByTenant(db,input.professionalId,ctx.clinicId))[0])throw new DomainError("NOT_FOUND","Professional was not found.",404);
     await lockScheduleScope(db,ctx.clinicId,input.professionalId);
-    const r=(await insertAvailabilityRule(db,[ctx.clinicId,input.professionalId,input.weekday,input.localStartTime,input.localEndTime,input.timezone,input.validFrom,input.validUntil||null]))[0];
+    const r=(await insertAvailabilityRule(db,[ctx.clinicId,input.professionalId,weekday,input.localStartTime,input.localEndTime,input.timezone,from.toString(),until?.toString()||null]))[0];
     await appendAudit(db,{actorId:ctx.actorId,actorType:ctx.actorType,clinicId:ctx.clinicId,action:"AVAILABILITY_CHANGED",entityType:"AvailabilityRule",entityId:r.id,requestId:ctx.requestId,correlationId:ctx.correlationId,after:r});
     return r;
   });
