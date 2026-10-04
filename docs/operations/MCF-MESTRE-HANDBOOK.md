@@ -173,25 +173,36 @@ Baseline conhecido:
 - Content Factory local funcional;
 - Meta Instagram/Facebook oficial validado;
 - retry idempotente validado;
-- notebook ainda era dependência operacional no início da missão.
+- notebook era a dependência operacional no início da missão.
 
 P0: COMPLETE.
 P1: COMPLETE.
 P2: COMPLETE — Data Plane cloud provisionado e protegido.
-P3: IN_PROGRESS — Application Plane.
+P3: COMPLETE — superfície cloud validada com o Flask local desligado.
+P4: COMPLETE — worker durável + pg_cron comprovados.
+P5: COMPLETE — OAuth Meta cloud pronto e credenciais fora do Git.
+P6: COMPLETE — geração de cartão no navegador, sem Gemini WebView, visualmente validada.
+P7: OPEN — public hosting gate.
 
 Estado cloud comprovado:
-- Supabase project `ypocndnfbujvxwglrnzc` ACTIVE_HEALTHY;
+- Supabase project ypocndnfbujvxwglrnzc ACTIVE_HEALTHY;
 - Postgres + RLS ativos;
-- Storage privado `content-factory-media`;
-- Edge Function `content-factory-api` v10 ativa;
+- Storage privado content-factory-media;
+- Edge Function content-factory-api v11 ativa;
+- Worker content-factory-worker v4 ativo;
 - security advisors: 0 lints;
-- Vercel recebeu as referências públicas do Data Plane.
-- Web cloud validada visualmente com Flask local parado e zero requisições para localhost.
-- Worker `content-factory-worker` v4 ativo.
-- `pg_cron` job `content-factory-worker-every-minute` ativo e primeira execução comprovada com HTTP 200.
+- pg_cron job content-factory-worker-every-minute ativo e primeira execução comprovada com HTTP 200;
+- migração física staged: 13 arquivos / 5.567.224 bytes / 7 registros de biblioteca / 6 publicações;
+- Meta App credentials estão no Vault; token Meta anteriormente autorizado foi validado via pg_net com HTTP 200, sem publicação;
+- UI cloud validada com Flask local parado e zero requisições para localhost.
 
-P3/P4/P5 avançaram: Data Plane, web cloud, worker e OAuth Meta estão prontos. Próxima ação: primeiro login real para claim idempotente; depois mover geração e publicação Meta para workers cloud.
+Hosting gate:
+- Vercel: limite diário de deployments atingido; relink/alias também bloqueados por permissão.
+- Render: limite Hobby de 25 serviços atingido.
+- Supabase: Edge Functions/Storage não servem HTML executável.
+- GitHub Pages: primeira execução encontrou Pages desabilitado; segunda, com enablement=true, retornou Resource not accessible by integration.
+
+Próxima ação: obter host público auto-deployável para main; depois executar primeiro login real, claim idempotente, novo E2E Meta e prova final com notebook fora do caminho funcional.
 
 ## 18. Mandamento do MESTRE
 
