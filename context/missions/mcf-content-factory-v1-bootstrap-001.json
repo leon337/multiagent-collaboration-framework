@@ -6,7 +6,7 @@
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
   "current_state": "EM_EXECUCAO",
-  "execution_status": "ACTIVE_EVOLUTION_META_FB_FLOW_HARDENED; INSTAGRAM_API_PUBLISH_VALIDATED",
+  "execution_status": "ACTIVE_EVOLUTION_META_FB_FLOW_HARDENED; INSTAGRAM_API_PUBLISH_VALIDATED; MEDIA_TRANSPORT_VERIFIED",
   "persistent_source_of_truth": "GitHub/MCF + project repository + provider live",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -27,7 +27,7 @@
   ],
   "evidence": {
     "project_repo": "https://github.com/leon337/content-factory-v1",
-    "repo_head": "b9f270e",
+    "repo_head": "40e296130e7b2ec6d6d007d68c02bb96cda737d2",
     "vercel_project": "predix-ai-br/content-factory-v1",
     "vercel_url": "https://content-factory-v1.vercel.app",
     "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8VHfHeaRUzGxppFCe7ohWmDz5Sf8",
@@ -36,14 +36,15 @@
     "public_smoke": "PASS",
     "secret_tracking": "PASS",
     "mcf_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/398",
-    "vercel_latest_deployment": "https://content-factory-v1-6ydaiolq7-predix-ai-br.vercel.app",
+    "vercel_latest_deployment": "https://content-factory-v1-617qrykao-predix-ai-br.vercel.app",
     "public_root": "HTTP 200",
     "public_ping": "HTTP 200",
     "public_health": "HTTP 200; VoiceHub intentionally unavailable from Vercel",
     "meta_publish_readiness": "PASS",
-    "meta_media_transport": "PASS; public HTTPS media served from Vercel; staging deploy automation added",
+    "meta_media_transport": "PASS; public HTTPS media served by Vercel and externally verified",
     "meta_instagram_container": "18149260657515103; FINISHED",
-    "meta_instagram_publish": "18120127616052014; published to @predixai.br"
+    "meta_instagram_publish": "18120127616052014; published to @predixai.br",
+    "meta_facebook_publish": "NOT_EXECUTED; publication action remains explicit"
   },
   "mcf_gate": {
     "status": "BLOCKED_BY_EXISTING_REPOSITORY_READINESS_FAILURE",
@@ -125,7 +126,9 @@
       "secrets": "local only; excluded from repository",
       "publish_transport": "Vercel HTTPS media staging",
       "instagram_publish_test": "PASS",
-      "last_published_media_id": "18120127616052014"
+      "last_published_media_id": "18120127616052014",
+      "media_public_verification": "PASS; pub-000003.jpg loads over public HTTPS",
+      "facebook_publish_test": "NOT_EXECUTED"
     },
     "linkedin": {
       "configured": false,
@@ -142,7 +145,7 @@
     "vercel": {
       "status": "READY",
       "production_url": "https://content-factory-v1.vercel.app",
-      "latest_deployment": "https://content-factory-v1-oipeyjpf8-predix-ai-br.vercel.app",
+      "latest_deployment": "https://content-factory-v1-617qrykao-predix-ai-br.vercel.app",
       "sso_protection": "DISABLED",
       "public_root_http": 200,
       "public_ping_http": 200,
@@ -156,7 +159,7 @@
     "Social publishing executed only under current LEANDRO authorization; test publication recorded",
     "No fake server deployment of Electron/local-filesystem runtime"
   ],
-  "final_phase": "P9-META-INSTAGRAM-PUBLISH-VALIDATED",
-  "next_action": "Executar o teste Facebook autorizado no fluxo explícito e depois configurar LinkedIn; staging/deploy Vercel já possui endpoint interno controlado.",
-  "completion_status_for_user_request": "ACTIVE_WITH_META_INSTAGRAM_PUBLISH_VALIDATED_AND_MCF_CANONICALIZATION_GATE_REMAINING"
+  "final_phase": "P10-META-FB-TRANSPORT-VERIFIED",
+  "next_action": "Integrar e validar o acionamento explícito da publicação Facebook dentro da Central de Publicação, sem publicação automática; depois configurar LinkedIn.",
+  "completion_status_for_user_request": "ACTIVE_WITH_META_INSTAGRAM_VALIDATED_FACEBOOK_TRANSPORT_VERIFIED_AND_MCF_CANONICALIZATION_GATE_REMAINING"
 }
