@@ -1,0 +1,38 @@
+schema_version: 1
+
+project:
+  id: content-factory-v1
+  lifecycle: ACTIVE
+
+identity:
+  canonical_repository: leon337/content-factory-v1
+  local_workspace: /home/leo/projetos/content_factory_v1
+  aliases:
+    - Content Factory V1
+    - Content Factory
+    - VoiceHub Content Factory V1
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - .mcf/project-capsule.yaml
+    - app/main.py
+    - electron/main.js
+    - electron/preload.js
+    - config/publication.env.example
+
+current_objective:
+  statement: >-
+    Transformar o Content Factory V1, atualmente funcional como aplicação
+    Electron + Flask local, em um projeto persistente e versionado no MCF,
+    criar seu repositório oficial, preparar/publicar uma superfície web
+    compatível na Vercel sem quebrar a aplicação desktop, e manter a evolução
+    das integrações oficiais de publicação (Meta primeiro, LinkedIn depois).
+
+freshness:
+  project_identity: DURABLE
+  operational_state: LIVE_REQUIRED
