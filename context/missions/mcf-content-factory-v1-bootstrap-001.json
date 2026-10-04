@@ -6,7 +6,7 @@
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
   "current_state": "EM_EXECUCAO",
-  "execution_status": "REQUESTED_SCOPE_EXECUTED; ACTIVE_EVOLUTION_META_AND_WEB",
+  "execution_status": "ACTIVE_EVOLUTION_META_AND_WEB; INSTAGRAM_API_PUBLISH_VALIDATED",
   "persistent_source_of_truth": "GitHub/MCF + project repository + provider live",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -27,7 +27,7 @@
   ],
   "evidence": {
     "project_repo": "https://github.com/leon337/content-factory-v1",
-    "repo_head": "15afac6",
+    "repo_head": "8771e46",
     "vercel_project": "predix-ai-br/content-factory-v1",
     "vercel_url": "https://content-factory-v1.vercel.app",
     "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8VHfHeaRUzGxppFCe7ohWmDz5Sf8",
@@ -36,10 +36,14 @@
     "public_smoke": "PASS",
     "secret_tracking": "PASS",
     "mcf_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/398",
-    "vercel_latest_deployment": "https://content-factory-v1-oipeyjpf8-predix-ai-br.vercel.app",
+    "vercel_latest_deployment": "https://content-factory-v1-196vcptwp-predix-ai-br.vercel.app",
     "public_root": "HTTP 200",
     "public_ping": "HTTP 200",
-    "public_health": "HTTP 200; VoiceHub intentionally unavailable from Vercel"
+    "public_health": "HTTP 200; VoiceHub intentionally unavailable from Vercel",
+    "meta_publish_readiness": "PASS",
+    "meta_media_transport": "PASS; public HTTPS media served from Vercel",
+    "meta_instagram_container": "18149260657515103; FINISHED",
+    "meta_instagram_publish": "18120127616052014; published to @predixai.br"
   },
   "mcf_gate": {
     "status": "BLOCKED_BY_EXISTING_REPOSITORY_READINESS_FAILURE",
@@ -118,7 +122,10 @@
       },
       "blocker": "Nenhum blocker de asset. Próximo bloco técnico: transporte público/HTTPS da mídia para o fluxo oficial de publicação.",
       "official_api_only": true,
-      "secrets": "local only; excluded from repository"
+      "secrets": "local only; excluded from repository",
+      "publish_transport": "Vercel HTTPS media staging",
+      "instagram_publish_test": "PASS",
+      "last_published_media_id": "18120127616052014"
     },
     "linkedin": {
       "configured": false,
@@ -146,10 +153,10 @@
     "No existing Content Factory data deleted",
     "No direct MCF main write",
     "No secrets or OAuth tokens committed",
-    "No social content published",
+    "Social publishing executed only under current LEANDRO authorization; test publication recorded",
     "No fake server deployment of Electron/local-filesystem runtime"
   ],
-  "final_phase": "P8-META-PUBLISH-TRANSPORT",
-  "next_action": "Implementar transporte seguro da mídia publicada (URL HTTPS pública/armazenamento compatível) sem expor biblioteca privada, depois validar criação de container e publicação Meta por API oficial; LinkedIn permanece após Meta.",
-  "completion_status_for_user_request": "EXECUTED_WITH_MCF_CANONICALIZATION_GATE_REMAINING"
+  "final_phase": "P9-META-INSTAGRAM-PUBLISH-VALIDATED",
+  "next_action": "Completar a camada de publicação de Facebook Page no mesmo fluxo oficial, transformar staging/deploy de mídia em operação interna automatizada e depois configurar LinkedIn.",
+  "completion_status_for_user_request": "ACTIVE_WITH_META_INSTAGRAM_PUBLISH_VALIDATED_AND_MCF_CANONICALIZATION_GATE_REMAINING"
 }
