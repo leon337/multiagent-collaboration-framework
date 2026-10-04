@@ -5,8 +5,8 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "P3_CLOUD_SURFACE_PROVEN_P4_WORKER_INFRA_READY",
-  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; P2_DATA_PLANE_COMPLETE; P3_CLOUD_SURFACE_PROVEN; P4_WORKER_INFRA_READY; AUTHENTICATED_CLAIM_PENDING; SUCCESSION_MEMORY_PERSISTED",
+  "current_state": "P5_META_OAUTH_READY_AUTH_CLAIM_PENDING",
+  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; P2_DATA_PLANE_COMPLETE; P3_CLOUD_SURFACE_PROVEN; P4_WORKER_INFRA_READY; P5_META_OAUTH_READY; AUTHENTICATED_CLAIM_PENDING; SUCCESSION_MEMORY_PERSISTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical Content Factory repository + provider live state",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -235,10 +235,10 @@
     "Authenticated migration claim cannot be completed until a real Supabase user session exists."
   ],
   "definition_of_done": "Content Factory V1 é um serviço web persistente que pode ser operado por navegador em outro dispositivo, com backend, dados, mídia, jobs, OAuth e integrações funcionando fora do notebook, e com E2E comprovado com o notebook fora do caminho funcional.",
-  "next_action": "Executar P4/P5: após o primeiro login real, validar claim idempotente do acervo, depois mover OAuth, geração e publicação social para workers cloud; manter a build preview como superfície cloud até o alias de produção poder ser promovido por rota autorizada.",
+  "next_action": "Executar primeiro login real no Content Factory para o claim idempotente do acervo e, em seguida, concluir o worker Meta de publicação e a migração da geração de conteúdo para cloud.",
   "required_validation_for_next_action": "Login real cria sessão; claim retorna claimed=true sem duplicação; biblioteca, 13 mídias e 6 publicações migradas ficam vinculadas ao workspace; workers processam jobs sem notebook.",
   "current_progress": {
-    "completed_phase": "P4_WORKER_INFRA",
+    "completed_phase": "P5_META_OAUTH",
     "status": "IN_PROGRESS",
     "evidence": {
       "content_factory_inventory": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P0-INVENTORY.md",
@@ -255,7 +255,7 @@
       "supabase_project_status": "ACTIVE_HEALTHY",
       "supabase_storage_bucket": "content-factory-media",
       "supabase_api_function": "content-factory-api",
-      "supabase_api_function_version": 6,
+      "supabase_api_function_version": 8,
       "supabase_security_advisors": "0 lints",
       "supabase_migrations": "20261004213508 content_factory_v1_data_plane; 20261004213540 content_factory_v1_security_fix; subsequent security hardening/policy access/workspace bootstrap migrations",
       "vercel_project_id": "prj_0uvg7XxVa6PgyotFCv2rx0t5X7hK",
@@ -286,7 +286,19 @@
       "cron_job_active": true,
       "cron_first_run_status": "succeeded",
       "cron_worker_http_status": 200,
-      "vercel_production_alias_attempt": "403 Forbidden"
+      "vercel_production_alias_attempt": "403 Forbidden",
+      "supabase_worker_version": 2,
+      "vault_acl": "service_role only",
+      "meta_vault_credentials": "stored",
+      "oauth_state_table": "active",
+      "meta_oauth_start_endpoint": "/connections/meta/start",
+      "meta_oauth_callback_endpoint": "/oauth/meta/callback",
+      "migration_claim_endpoint": "/bootstrap/claim-migration",
+      "durable_worker": "content-factory-worker v2 ACTIVE",
+      "cron_job": "content-factory-worker-every-minute active",
+      "web_independence_test": "PASS with local Flask stopped",
+      "local_backend_port": "8765 free",
+      "local_request_count": "0"
     },
     "identified_critical_dependencies": [
       "Electron",
@@ -300,7 +312,7 @@
       "in-memory card jobs",
       "local Meta connection/token store"
     ],
-    "next_phase": "P5_INTEGRATIONS",
+    "next_phase": "P6_CLOUD_GENERATION_AND_PUBLISHING",
     "architecture_evidence": {
       "content_factory_architecture": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P1-ARCHITECTURE.md",
       "project_branch": "mission/notebook-independence-001",
