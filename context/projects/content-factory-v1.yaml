@@ -38,14 +38,14 @@ delivery:
   repository:
     canonical: leon337/content-factory-v1
     visibility: PRIVATE
-    current_main_head: 3c5830d
+    current_main_head: 0e220d0
     status: CREATED_AND_PUSHED
   vercel:
     project: predix-ai-br/content-factory-v1
     production_url: https://content-factory-v1.vercel.app
     deployment_status: READY
     deployment_model: FLASK_PYTHON_SERVERLESS_WEB_SURFACE
-    latest_deployment: https://content-factory-v1-apciw3fhj-predix-ai-br.vercel.app
+    latest_deployment: https://content-factory-v1-kvl498aao-predix-ai-br.vercel.app
     sso_protection: DISABLED
     cli_version: 59.17.0
 
@@ -73,8 +73,17 @@ today_verified:
   meta_facebook_transport_hardened: PASS
   meta_facebook_publish_test: PASS
   meta_media_public_verification: PASS
-  meta_facebook_publish_test: NOT_EXECUTED
+  meta_facebook_media_binding_fix: PASS
   media_deploy_automation: PASS
+  e2e_content_generation: PASS
+  e2e_card_id: card-000007
+  e2e_instagram_publication: PASS
+  e2e_instagram_media_id: 18632882776034536
+  e2e_instagram_permalink: https://www.instagram.com/p/DeFgwaMGpU0/
+  e2e_facebook_publication: PASS
+  e2e_facebook_post_id: 1361411827052419_122093972841509198
+  e2e_retry_idempotency: PASS
+  pillow_dependency: 12.3.0
   linkedin: NOT_CONFIGURED
 
 freshness:
