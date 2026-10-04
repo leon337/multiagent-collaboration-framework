@@ -6,7 +6,7 @@
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
   "current_state": "EM_EXECUCAO",
-  "execution_status": "ACTIVE_EVOLUTION_META_FB_FLOW_HARDENED; INSTAGRAM_API_PUBLISH_VALIDATED; MEDIA_TRANSPORT_VERIFIED",
+  "execution_status": "META_INSTAGRAM_OPERATIONAL; META_FACEBOOK_OPERATIONAL; UI_VALIDATED; SUCCESSION_HANDBOOK_PERSISTED",
   "persistent_source_of_truth": "GitHub/MCF + project repository + provider live",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -27,7 +27,7 @@
   ],
   "evidence": {
     "project_repo": "https://github.com/leon337/content-factory-v1",
-    "repo_head": "40e296130e7b2ec6d6d007d68c02bb96cda737d2",
+    "repo_head": "3c5830d226045ba652bba02b7ec5f50a6323c43b",
     "vercel_project": "predix-ai-br/content-factory-v1",
     "vercel_url": "https://content-factory-v1.vercel.app",
     "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8VHfHeaRUzGxppFCe7ohWmDz5Sf8",
@@ -36,7 +36,7 @@
     "public_smoke": "PASS",
     "secret_tracking": "PASS",
     "mcf_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/398",
-    "vercel_latest_deployment": "https://content-factory-v1-617qrykao-predix-ai-br.vercel.app",
+    "vercel_latest_deployment": "https://content-factory-v1-apciw3fhj-predix-ai-br.vercel.app",
     "public_root": "HTTP 200",
     "public_ping": "HTTP 200",
     "public_health": "HTTP 200; VoiceHub intentionally unavailable from Vercel",
@@ -44,8 +44,9 @@
     "meta_media_transport": "PASS; public HTTPS media served by Vercel and externally verified",
     "meta_instagram_container": "18149260657515103; FINISHED",
     "meta_instagram_publish": "18120127616052014; published to @predixai.br",
-    "meta_facebook_publish": "NOT_EXECUTED; publication action remains explicit",
-    "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md"
+    "meta_facebook_publish": "PASS; post_id 1361411827052419_122093918373509198",
+    "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md",
+    "meta_facebook_retry": "PASS; second call returned already_published=true with same post_id"
   },
   "mcf_gate": {
     "status": "BLOCKED_BY_EXISTING_REPOSITORY_READINESS_FAILURE",
@@ -129,7 +130,9 @@
       "instagram_publish_test": "PASS",
       "last_published_media_id": "18120127616052014",
       "media_public_verification": "PASS; pub-000003.jpg loads over public HTTPS",
-      "facebook_publish_test": "PASS; post_id 1361411827052419_122093918373509198; retry no-op verified"
+      "facebook_publish_test": "PASS",
+      "facebook_post_id": "1361411827052419_122093918373509198",
+      "facebook_retry": "PASS; no duplicate created"
     },
     "linkedin": {
       "configured": false,
@@ -146,13 +149,14 @@
     "vercel": {
       "status": "READY",
       "production_url": "https://content-factory-v1.vercel.app",
-      "latest_deployment": "https://content-factory-v1-617qrykao-predix-ai-br.vercel.app",
+      "latest_deployment": "https://content-factory-v1-apciw3fhj-predix-ai-br.vercel.app",
       "sso_protection": "DISABLED",
       "public_root_http": 200,
       "public_ping_http": 200,
       "public_health_http": 200
     },
-    "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md"
+    "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md",
+    "ui_validation": "PASS; Central de Publicação and explicit action visible above the fold"
   },
   "safety_invariants": [
     "No existing Content Factory data deleted",
@@ -161,7 +165,16 @@
     "Social publishing executed only under current LEANDRO authorization; test publication recorded",
     "No fake server deployment of Electron/local-filesystem runtime"
   ],
-  "final_phase": "P11-META-FACEBOOK-PUBLISHED-IDEMPOTENT",
-  "next_action": "Validar o estado visual final da Central no Electron, persistir o closeout da fase e então avaliar o gate do PR #398; LinkedIn permanece posterior.",
-  "completion_status_for_user_request": "OBJECTIVE_OPERATIONALLY_MET_FOR_META_INSTAGRAM_AND_FACEBOOK; MCF_CANONICALIZATION_GATE_REMAINS_OPEN"
+  "final_phase": "P11-META-FACEBOOK-PUBLISHED-IDEMPOTENT-UI-VALIDATED",
+  "next_action": "Após closeout do Meta, iniciar a integração oficial do LinkedIn quando essa fase for priorizada; antes de executar qualquer novo canal, recuperar o estado live pelo protocolo do MCF.",
+  "completion_status_for_user_request": "OBJECTIVE_MET; INSTAGRAM_AND_FACEBOOK_OFFICIAL_PUBLICATION_OPERATIONAL; SUCCESSION_MEMORY_PERSISTED; MCF_PR_GATE_REMAINS",
+  "external_posting_record": {
+    "provider": "Meta",
+    "platform": "Facebook Page",
+    "page_id": "1361411827052419",
+    "page_name": "Predix AI Br",
+    "post_id": "1361411827052419_122093918373509198",
+    "publication_id": "pub-000003",
+    "duplicate_protection": "PASS"
+  }
 }
