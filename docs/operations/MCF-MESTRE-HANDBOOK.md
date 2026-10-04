@@ -173,22 +173,25 @@ Baseline conhecido:
 - Content Factory local funcional;
 - Meta Instagram/Facebook oficial validado;
 - retry idempotente validado;
-- Vercel companion publicado;
-- notebook ainda é dependência operacional.
+- notebook ainda era dependência operacional no início da missão.
 
 P0: COMPLETE.
 P1: COMPLETE.
-P2: PREPARAÇÃO COMPLETE / IMPLEMENTAÇÃO BLOQUEADA POR INFRAESTRUTURA.
+P2: COMPLETE — Data Plane cloud provisionado e protegido.
+P3: IN_PROGRESS — Application Plane.
 
-Estado atual:
-- Data Plane cloud especificado e persistido no Content Factory;
-- destino Vercel Blob identificado, mas o provisionamento retornou 403 Forbidden;
-- não repetir a mesma operação enquanto a permissão efetiva não mudar;
-- nenhum dado local foi migrado e nenhum runtime foi removido.
+Estado cloud comprovado:
+- Supabase project `ypocndnfbujvxwglrnzc` ACTIVE_HEALTHY;
+- Postgres + RLS ativos;
+- Storage privado `content-factory-media`;
+- Edge Function `content-factory-api` v2 ativa;
+- security advisors: 0 lints;
+- Vercel recebeu as referências públicas do Data Plane.
 
-Próxima ação: provisionar um data plane cloud autorizado e executar P2 — schema, storage, checkpoints, migração, reconciliação e teste de restart.
+Próxima ação: concluir o cutover funcional da web/API e mover progressivamente conteúdo, biblioteca, mídia, jobs, OAuth, geração e publicação para fora do notebook.
 
 ## 18. Mandamento do MESTRE
+
 
 `Não trabalhar para parecer que avançou. Trabalhar até que o objetivo esteja comprovadamente mais próximo.`
 
