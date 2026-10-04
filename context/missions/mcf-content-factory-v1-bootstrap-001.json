@@ -6,13 +6,13 @@
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
   "current_state": "EM_EXECUCAO",
-  "execution_status": "META_INSTAGRAM_OPERATIONAL; META_FACEBOOK_OPERATIONAL; UI_VALIDATED; SUCCESSION_HANDBOOK_PERSISTED",
+  "execution_status": "E2E_CONTENT_GENERATION_TO_META_PUBLICATION_PASS; INSTAGRAM_AND_FACEBOOK_OPERATIONAL; RETRY_IDEMPOTENT; SUCCESSION_MEMORY_PERSISTED",
   "persistent_source_of_truth": "GitHub/MCF + project repository + provider live",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
   "local_workspace": "/home/leo/projetos/content_factory_v1",
   "mission_objective": "Preservar integralmente o Content Factory V1 já construído, registrar projeto e missão no MCF para continuidade persistente, criar repositório oficial do projeto, publicar superfície Vercel compatível usando Vercel CLI no notebook e documentar o estado real das integrações oficiais, sem regressões ou destruição do trabalho existente.",
-  "user_authorization": "LEANDRO autorizou explicitamente a execução ponta a ponta, criação do repositório e publicação na Vercel. Não há autorização implícita para publicação social de conteúdo.",
+  "user_authorization": "LEANDRO autorizou explicitamente nesta execução o teste ponta a ponta de produção e publicação do novo conteúdo no Instagram e Facebook.",
   "requested_scope_completed": [
     "preservação do aplicativo desktop existente",
     "registro persistente do projeto e missão em branch dedicado do MCF",
@@ -27,7 +27,7 @@
   ],
   "evidence": {
     "project_repo": "https://github.com/leon337/content-factory-v1",
-    "repo_head": "3c5830d226045ba652bba02b7ec5f50a6323c43b",
+    "repo_head": "0e220d0fd3e9afbe78c591bea2e11e46eff2802c",
     "vercel_project": "predix-ai-br/content-factory-v1",
     "vercel_url": "https://content-factory-v1.vercel.app",
     "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8VHfHeaRUzGxppFCe7ohWmDz5Sf8",
@@ -36,7 +36,7 @@
     "public_smoke": "PASS",
     "secret_tracking": "PASS",
     "mcf_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/398",
-    "vercel_latest_deployment": "https://content-factory-v1-apciw3fhj-predix-ai-br.vercel.app",
+    "vercel_latest_deployment": "https://content-factory-v1-kvl498aao-predix-ai-br.vercel.app",
     "public_root": "HTTP 200",
     "public_ping": "HTTP 200",
     "public_health": "HTTP 200; VoiceHub intentionally unavailable from Vercel",
@@ -46,7 +46,13 @@
     "meta_instagram_publish": "18120127616052014; published to @predixai.br",
     "meta_facebook_publish": "PASS; post_id 1361411827052419_122093918373509198",
     "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md",
-    "meta_facebook_retry": "PASS; second call returned already_published=true with same post_id"
+    "meta_facebook_retry": "PASS; second call returned already_published=true with same post_id",
+    "content_generation": "PASS; item 91 via Gemini embutido, source_job/card-000007, registrado na Biblioteca",
+    "e2e_card": "card-000007; IA que economiza tempo",
+    "e2e_instagram": "PASS; publication_id pub-000006; media_id 18632882776034536; permalink https://www.instagram.com/p/DeFgwaMGpU0/",
+    "e2e_facebook": "PASS; publication_id pub-000007; post_id 1361411827052419_122093972841509198",
+    "e2e_retry": "PASS; pub-000006 and pub-000007 returned already_published=true on repeated calls",
+    "e2e_media_deploy": "PASS; immutable Vercel deployment URL used for pub-000007 after detecting production alias race"
   },
   "mcf_gate": {
     "status": "BLOCKED_BY_EXISTING_REPOSITORY_READINESS_FAILURE",
@@ -132,7 +138,22 @@
       "media_public_verification": "PASS; pub-000003.jpg loads over public HTTPS",
       "facebook_publish_test": "PASS",
       "facebook_post_id": "1361411827052419_122093918373509198",
-      "facebook_retry": "PASS; no duplicate created"
+      "facebook_retry": "PASS; no duplicate created",
+      "e2e_test": {
+        "instagram": {
+          "publication_id": "pub-000006",
+          "media_id": "18632882776034536",
+          "status": "published",
+          "permalink": "https://www.instagram.com/p/DeFgwaMGpU0/"
+        },
+        "facebook": {
+          "publication_id": "pub-000007",
+          "post_id": "1361411827052419_122093972841509198",
+          "status": "published"
+        },
+        "retry": "PASS; no duplicate created"
+      },
+      "media_binding_fix": "PASS; publication media is bound to the immutable Vercel deployment URL returned by the CLI"
     },
     "linkedin": {
       "configured": false,
@@ -156,7 +177,18 @@
       "public_health_http": 200
     },
     "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md",
-    "ui_validation": "PASS; Central de Publicação and explicit action visible above the fold"
+    "ui_validation": "PASS; Central de Publicação and explicit action visible above the fold",
+    "content_generation": {
+      "item": 91,
+      "card_id": "card-000007",
+      "title": "IA que economiza tempo",
+      "topic": "IA prática para pequenos negócios",
+      "style": "Profissional e moderno",
+      "format": "Instagram · post quadrado 1080x1080",
+      "library_persisted": true,
+      "visual_validation": "PASS"
+    },
+    "pillow": "12.3.0 installed and versioned in requirements.txt"
   },
   "safety_invariants": [
     "No existing Content Factory data deleted",
@@ -165,9 +197,9 @@
     "Social publishing executed only under current LEANDRO authorization; test publication recorded",
     "No fake server deployment of Electron/local-filesystem runtime"
   ],
-  "final_phase": "P11-META-FACEBOOK-PUBLISHED-IDEMPOTENT-UI-VALIDATED",
-  "next_action": "Após closeout do Meta, iniciar a integração oficial do LinkedIn quando essa fase for priorizada; antes de executar qualquer novo canal, recuperar o estado live pelo protocolo do MCF.",
-  "completion_status_for_user_request": "OBJECTIVE_MET; INSTAGRAM_AND_FACEBOOK_OFFICIAL_PUBLICATION_OPERATIONAL; SUCCESSION_MEMORY_PERSISTED; MCF_PR_GATE_REMAINS",
+  "final_phase": "P12-CONTENT-GENERATION-TO-META-PUBLICATION-E2E-PASS",
+  "next_action": "Usar este fluxo validado como baseline para próximos conteúdos/canais; recuperar estado live antes de qualquer nova publicação.",
+  "completion_status_for_user_request": "OBJECTIVE_MET; NEW_CONTENT_GENERATED_IN_CONTENT_FACTORY_AND_PUBLISHED_TO_INSTAGRAM_AND_FACEBOOK; RETRY_IDEMPOTENT; MCF_STATE_PERSISTED",
   "external_posting_record": {
     "provider": "Meta",
     "platform": "Facebook Page",
