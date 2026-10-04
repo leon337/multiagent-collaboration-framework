@@ -46,12 +46,18 @@ delivery:
     deployment_model: STATIC_WEB_COMPANION
     cli_version: 59.17.0
 
+mcf_registration:
+  branch: feat/content-factory-v1-mission-20261004
+  pull_request: 398
+  pr_status: OPEN
+  canonical_main_merge: BLOCKED_BY_PRODUCTION_READINESS_CHECK
+
 today_verified:
   desktop_local_health: PASS
   python_compile: PASS
   public_vercel_smoke: PASS
   secret_tracking_check: PASS
-  oauth_meta: CONNECTED_ASSET_BLOCKED
+  meta_oauth: CONNECTED_ASSET_BLOCKED
   linkedin: NOT_CONFIGURED
 
 freshness:
