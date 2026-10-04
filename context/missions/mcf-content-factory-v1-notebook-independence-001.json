@@ -5,8 +5,8 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "P7_HOSTING_GATE_OPEN_AUTH_CLAIM_PENDING",
-  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; P2_DATA_PLANE_COMPLETE; P3_CLOUD_SURFACE_PROVEN; P4_WORKER_INFRA_READY; P5_META_OAUTH_READY; P6_CLOUD_GENERATION_PROVEN; P7_HOSTING_GATE_OPEN; AUTHENTICATED_CLAIM_PENDING; SUCCESSION_MEMORY_PERSISTED",
+  "current_state": "P8_AUTHENTICATED_CLAIM_PENDING",
+  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; P2_DATA_PLANE_COMPLETE; P3_CLOUD_SURFACE_PROVEN; P4_WORKER_INFRA_READY; P5_META_OAUTH_READY; P6_CLOUD_GENERATION_PROVEN; P7_HOSTING_COMPLETE; P8_AUTHENTICATED_CLAIM_PENDING; SUCCESSION_MEMORY_PERSISTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical Content Factory repository + provider live state",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -212,15 +212,8 @@
       "id": "AUTH-BOOTSTRAP-001",
       "type": "REAL_USER_AUTHENTICATION",
       "status": "OPEN",
-      "evidence": "Supabase auth.users is still empty; migration staging exists and claim endpoint is implemented.",
-      "consequence": "The real user's identity is required to claim the migrated workspace without inventing ownership."
-    },
-    {
-      "id": "HOST-001",
-      "type": "PUBLIC_WEB_HOST",
-      "status": "OPEN",
-      "evidence": "Vercel deployment daily quota is exhausted and relink/alias operations are permission-blocked; Render Hobby has reached 25 services; Supabase HTML hosting is unsupported; GitHub Pages enablement returned Resource not accessible by integration.",
-      "consequence": "The latest main UI is versioned and tested but does not yet have a clean automatically deployed public web URL."
+      "evidence": "Supabase auth.users is 0; migration staging is closed and claim endpoint is ready.",
+      "consequence": "Need a real authenticated user session to claim the migrated workspace without inventing ownership."
     }
   ],
   "known_risks": [
@@ -230,10 +223,10 @@
     "Historical Meta publication IDs must never be reused as a new E2E item."
   ],
   "definition_of_done": "Content Factory V1 é um serviço web persistente que pode ser operado por navegador em outro dispositivo, com backend, dados, mídia, jobs, OAuth e integrações funcionando fora do notebook, e com E2E comprovado com o notebook fora do caminho funcional.",
-  "next_action": "Obter uma superfície web pública automaticamente implantável para a revisão main atual; em seguida executar primeiro login real, claim idempotente, novo teste Meta e prova E2E final.",
-  "required_validation_for_next_action": "Public host serves current main UI; authenticated claim succeeds once; browser-generated content persists; a new Meta publication succeeds via durable worker; retry does not duplicate; notebook has no serving/runtime process.",
+  "next_action": "Executar primeiro login real no Content Factory, claim idempotente do acervo, criar novo conteúdo e nova publicação Meta, validar worker/retry sem duplicidade e executar prova final com notebook fora do caminho.",
+  "required_validation_for_next_action": "Authenticated claim succeeds once; staged migration becomes owned by the real user; a new Meta publication succeeds via durable worker; retry is idempotent; notebook has no serving/runtime process.",
   "current_progress": {
-    "completed_phase": "P7_HOSTING_GATE",
+    "completed_phase": "P7_HOSTING",
     "status": "IN_PROGRESS",
     "evidence": {
       "content_factory_inventory": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P0-INVENTORY.md",
@@ -321,7 +314,13 @@
       "local_flask": "stopped; 127.0.0.1:8765 free",
       "github_pages_run_1": "failed: Pages site not enabled",
       "github_pages_run_2": "failed: Resource not accessible by integration when enablement=true",
-      "github_pages_status": "blocked_by_github_integration_permissions"
+      "github_pages_status": "blocked_by_github_integration_permissions",
+      "canonical_production_domain": "https://content-factory-v1.vercel.app/",
+      "canonical_production_deployment": "dpl_B27mPoRqwBw7q1fNrEQpvYrCCXn8",
+      "canonical_production_target": "production",
+      "canonical_production_ui_validation": "PASS",
+      "canonical_production_local_requests": 0,
+      "vercel_git_reconnect": "ACTIVE"
     },
     "identified_critical_dependencies": [
       "Electron",
