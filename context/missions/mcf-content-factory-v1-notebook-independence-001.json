@@ -5,8 +5,8 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "P5_META_OAUTH_READY_AUTH_CLAIM_PENDING",
-  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; P2_DATA_PLANE_COMPLETE; P3_CLOUD_SURFACE_PROVEN; P4_WORKER_INFRA_READY; P5_META_OAUTH_READY; AUTHENTICATED_CLAIM_PENDING; SUCCESSION_MEMORY_PERSISTED",
+  "current_state": "P7_HOSTING_GATE_OPEN_AUTH_CLAIM_PENDING",
+  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; P2_DATA_PLANE_COMPLETE; P3_CLOUD_SURFACE_PROVEN; P4_WORKER_INFRA_READY; P5_META_OAUTH_READY; P6_CLOUD_GENERATION_PROVEN; P7_HOSTING_GATE_OPEN; AUTHENTICATED_CLAIM_PENDING; SUCCESSION_MEMORY_PERSISTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical Content Factory repository + provider live state",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -212,33 +212,28 @@
       "id": "AUTH-BOOTSTRAP-001",
       "type": "REAL_USER_AUTHENTICATION",
       "status": "OPEN",
-      "evidence": "Supabase auth.users count is 0; migration batch is staged closed and claim endpoint is ready",
-      "consequence": "The real user's identity is required before claiming the migrated workspace without inventing an owner."
+      "evidence": "Supabase auth.users is still empty; migration staging exists and claim endpoint is implemented.",
+      "consequence": "The real user's identity is required to claim the migrated workspace without inventing ownership."
     },
     {
-      "id": "VERCEL-PROD-ALIAS-001",
-      "type": "PROVIDER_PERMISSION",
+      "id": "HOST-001",
+      "type": "PUBLIC_WEB_HOST",
       "status": "OPEN",
-      "evidence": "request_promote and assign_alias returned 404/403 for the Vercel project scope",
-      "consequence": "Cloud-first build is available on the ready preview URL, but canonical production alias has not been switched by this connector."
+      "evidence": "Vercel daily deployment quota is exhausted; Vercel project relink/alias operations return permission errors; Render Hobby is at 25 services; Supabase HTML hosting is unsupported; GitHub Pages is 404.",
+      "consequence": "The latest main UI is versioned and tested but does not yet have a clean, automatically deployed public web URL."
     }
   ],
   "known_risks": [
-    "Gemini hoje está acoplado a WebView Electron local.",
-    "OAuth atual usa callback localhost.",
-    "Parte do estado e da biblioteca depende do filesystem local.",
-    "VoiceHub é local e pode estar acoplado a fluxos de interface/comunicação.",
-    "A superfície Vercel existente não equivale ao runtime completo do Electron.",
-    "Vercel Blob não foi usado como Data Plane; Supabase Storage é a fonte cloud adotada.",
-    "Deployment automático pós-commit Git precisa de validação no Vercel; último deployment comprovado veio do GitHub.",
-    "Canonical production alias is not switched because the Vercel connector returns 403 on alias/promotion; the independent preview remains available.",
-    "Authenticated migration claim cannot be completed until a real Supabase user session exists."
+    "Final public host for latest main UI is not yet available because current Vercel/Render/GitHub Pages routes are blocked by provider limits or permissions.",
+    "Real user authentication is required before claiming the migrated workspace.",
+    "Legacy Gemini WebView code remains only as fallback and must not re-enter the production path.",
+    "Historical Meta publication IDs must never be reused as a new E2E item."
   ],
   "definition_of_done": "Content Factory V1 é um serviço web persistente que pode ser operado por navegador em outro dispositivo, com backend, dados, mídia, jobs, OAuth e integrações funcionando fora do notebook, e com E2E comprovado com o notebook fora do caminho funcional.",
-  "next_action": "Executar primeiro login real no Content Factory para o claim idempotente do acervo e, em seguida, concluir o worker Meta de publicação e a migração da geração de conteúdo para cloud.",
-  "required_validation_for_next_action": "Login real cria sessão; claim retorna claimed=true sem duplicação; biblioteca, 13 mídias e 6 publicações migradas ficam vinculadas ao workspace; workers processam jobs sem notebook.",
+  "next_action": "Obter/usar uma superfície web pública com auto-deploy para o main atual sem depender do notebook; então executar primeiro login real, claim idempotente, novo teste Meta e prova E2E final.",
+  "required_validation_for_next_action": "Public host serves current main UI; authenticated claim succeeds once; browser-generated content persists; new Meta publication succeeds via durable worker; retry does not duplicate; notebook has no serving/runtime process.",
   "current_progress": {
-    "completed_phase": "P5_META_OAUTH",
+    "completed_phase": "P7_HOSTING_GATE",
     "status": "IN_PROGRESS",
     "evidence": {
       "content_factory_inventory": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P0-INVENTORY.md",
@@ -253,8 +248,8 @@
       "supabase_project_id": "ypocndnfbujvxwglrnzc",
       "supabase_project_region": "sa-east-1",
       "supabase_project_status": "ACTIVE_HEALTHY",
-      "supabase_storage_bucket": "content-factory-media",
-      "supabase_api_function": "content-factory-api",
+      "supabase_storage_bucket": "content-factory-media private",
+      "supabase_api_function": "content-factory-api v10",
       "supabase_api_function_version": 8,
       "supabase_security_advisors": "0 lints",
       "supabase_migrations": "20261004213508 content_factory_v1_data_plane; 20261004213540 content_factory_v1_security_fix; subsequent security hardening/policy access/workspace bootstrap migrations",
@@ -298,7 +293,28 @@
       "cron_job": "content-factory-worker-every-minute active",
       "web_independence_test": "PASS with local Flask stopped",
       "local_backend_port": "8765 free",
-      "local_request_count": "0"
+      "local_request_count": "0",
+      "content_factory_main_merged_sha": "228aaefa1a32958abf6884212dcec55ef01e73c4",
+      "content_factory_latest_main_web_commit": "742dfa2ea8c43d1fd0c415bdf2e16f8a30de3d52",
+      "content_factory_current_main_capsule_commit": "3b7b868648a9f5dab6d3026228fa154a1d7071ba",
+      "content_factory_current_main_readme_commit": "35b749c8899ad7d2ab1203c829e0eab5c7eda665",
+      "supabase_worker_function": "content-factory-worker v4",
+      "durable_worker_schedule": "pg_cron job 1 active",
+      "durable_worker_first_run": "succeeded; worker HTTP 200",
+      "migration_staging": "13 files / 5,567,224 bytes / 7 library records / 6 publication records",
+      "meta_oauth": "cloud callback ready; Meta App credentials stored in Supabase Vault",
+      "browser_canvas_generation": "implemented and visually validated; no Gemini WebView dependency for card generation",
+      "local_flask_during_proof": "stopped; 127.0.0.1:8765 free",
+      "local_requests_during_web_proof": 0,
+      "web_js_validation": "PAGE_ERRORS []",
+      "temporary_local_server_after_cleanup": "18765 free",
+      "untracked_legacy_media_preserved": true,
+      "vercel_provider_limit": "api-deployments-free-per-day",
+      "vercel_relink_status": "not supported by current connector/project configuration",
+      "vercel_alias_status": "403 permission denied",
+      "render_service_limit": "25 services",
+      "supabase_html_hosting": "unsupported",
+      "github_pages": "404"
     },
     "identified_critical_dependencies": [
       "Electron",
@@ -312,7 +328,7 @@
       "in-memory card jobs",
       "local Meta connection/token store"
     ],
-    "next_phase": "P6_CLOUD_GENERATION_AND_PUBLISHING",
+    "next_phase": "P8_AUTHENTICATED_E2E",
     "architecture_evidence": {
       "content_factory_architecture": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P1-ARCHITECTURE.md",
       "project_branch": "mission/notebook-independence-001",
