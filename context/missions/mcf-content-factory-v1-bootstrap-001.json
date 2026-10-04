@@ -44,7 +44,8 @@
     "meta_media_transport": "PASS; public HTTPS media served by Vercel and externally verified",
     "meta_instagram_container": "18149260657515103; FINISHED",
     "meta_instagram_publish": "18120127616052014; published to @predixai.br",
-    "meta_facebook_publish": "NOT_EXECUTED; publication action remains explicit"
+    "meta_facebook_publish": "NOT_EXECUTED; publication action remains explicit",
+    "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md"
   },
   "mcf_gate": {
     "status": "BLOCKED_BY_EXISTING_REPOSITORY_READINESS_FAILURE",
@@ -128,7 +129,7 @@
       "instagram_publish_test": "PASS",
       "last_published_media_id": "18120127616052014",
       "media_public_verification": "PASS; pub-000003.jpg loads over public HTTPS",
-      "facebook_publish_test": "NOT_EXECUTED"
+      "facebook_publish_test": "PASS; post_id 1361411827052419_122093918373509198; retry no-op verified"
     },
     "linkedin": {
       "configured": false,
@@ -150,7 +151,8 @@
       "public_root_http": 200,
       "public_ping_http": 200,
       "public_health_http": 200
-    }
+    },
+    "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md"
   },
   "safety_invariants": [
     "No existing Content Factory data deleted",
@@ -159,7 +161,7 @@
     "Social publishing executed only under current LEANDRO authorization; test publication recorded",
     "No fake server deployment of Electron/local-filesystem runtime"
   ],
-  "final_phase": "P10-META-FB-TRANSPORT-VERIFIED",
-  "next_action": "Integrar e validar o acionamento explícito da publicação Facebook dentro da Central de Publicação, sem publicação automática; depois configurar LinkedIn.",
-  "completion_status_for_user_request": "ACTIVE_WITH_META_INSTAGRAM_VALIDATED_FACEBOOK_TRANSPORT_VERIFIED_AND_MCF_CANONICALIZATION_GATE_REMAINING"
+  "final_phase": "P11-META-FACEBOOK-PUBLISHED-IDEMPOTENT",
+  "next_action": "Validar o estado visual final da Central no Electron, persistir o closeout da fase e então avaliar o gate do PR #398; LinkedIn permanece posterior.",
+  "completion_status_for_user_request": "OBJECTIVE_OPERATIONALLY_MET_FOR_META_INSTAGRAM_AND_FACEBOOK; MCF_CANONICALIZATION_GATE_REMAINS_OPEN"
 }
