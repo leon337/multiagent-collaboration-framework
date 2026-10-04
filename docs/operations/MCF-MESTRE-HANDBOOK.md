@@ -169,12 +169,6 @@ Estados finais permitidos:
 
 ## 17. Regra atual do MCF-CONTENT-FACTORY-V1-NOTEBOOK-INDEPENDENCE-001
 
-Baseline conhecido:
-- Content Factory local funcional;
-- Meta Instagram/Facebook oficial validado;
-- retry idempotente validado;
-- notebook era a dependência operacional no início da missão.
-
 P0: COMPLETE.
 P1: COMPLETE.
 P2: COMPLETE — Data Plane cloud provisionado e protegido.
@@ -182,27 +176,28 @@ P3: COMPLETE — superfície cloud validada com o Flask local desligado.
 P4: COMPLETE — worker durável + pg_cron comprovados.
 P5: COMPLETE — OAuth Meta cloud pronto e credenciais fora do Git.
 P6: COMPLETE — geração de cartão no navegador, sem Gemini WebView, visualmente validada.
-P7: COMPLETE — canonical Vercel production host validated.
+P7: COMPLETE — host público Vercel estável em https://content-factory-v1.vercel.app/; artefato público GitHub Pages também ativo em https://leon337.github.io/content-factory-v1-web/.
+P8: PENDING — autenticação real + claim + E2E final.
 
 Estado cloud comprovado:
-- Supabase project ypocndnfbujvxwglrnzc ACTIVE_HEALTHY;
-- Postgres + RLS ativos;
-- Storage privado content-factory-media;
-- Edge Function content-factory-api v11 ativa;
-- Worker content-factory-worker v4 ativo;
-- security advisors: 0 lints;
-- pg_cron job content-factory-worker-every-minute ativo e primeira execução comprovada com HTTP 200;
-- migração física staged: 13 arquivos / 5.567.224 bytes / 7 registros de biblioteca / 6 publicações;
-- Meta App credentials estão no Vault; token Meta anteriormente autorizado foi validado via pg_net com HTTP 200, sem publicação;
-- UI cloud validada com Flask local parado e zero requisições para localhost.
+- Supabase project ypocndnfbujvxwglrnzc ACTIVE_HEALTHY.
+- Edge Function content-factory-api v11.
+- Worker content-factory-worker v4.
+- security advisors: 0 lints.
+- pg_cron job content-factory-worker-every-minute ativo e primeira execução comprovada.
+- migração staged: 13 arquivos / 5.567.224 bytes / 7 registros de biblioteca / 6 publicações.
+- Meta App credentials no Vault.
+- Token Meta anteriormente autorizado validado via pg_net com HTTP 200, sem publicação.
+- UI de produção validada em navegador independente: gerador Canvas, Meta, Biblioteca, Publicações e status cloud presentes; nenhum erro de JavaScript visível.
+- Flask 127.0.0.1:8765 desligado durante a validação; nenhum localhost observado.
 
-Hosting gate:
-- Vercel: Git integration resetado e auto-deploy comprovado; canonical production domain READY.
-- Render: limite Hobby de 25 serviços atingido.
-- Supabase: Edge Functions/Storage não servem HTML executável.
-- GitHub Pages: primeira execução encontrou Pages desabilitado; segunda, com enablement=true, retornou Resource not accessible by integration.
+Hosting:
+- Produção Vercel atual: dpl_B27mPoRqwBw7q1fNrEQpvYrCCXn8, source=git, target=production, aliases incluem content-factory-v1.vercel.app.
+- Artefato público separado: leon337/content-factory-v1-web, Pages workflow run 37242529275 SUCCESS.
+- GitHub Pages do repositório privado principal permanece bloqueado por plano/permissão; não é o host funcional da aplicação.
 
-Próxima ação: obter host público auto-deployável para main; depois executar primeiro login real, claim idempotente, novo E2E Meta e prova final com notebook fora do caminho funcional.
+Próxima ação:
+login real -> claim idempotente -> novo item de teste -> publicação Meta via worker durável -> retry sem duplicidade -> E2E final com notebook fora do caminho.
 
 ## 18. Mandamento do MESTRE
 
