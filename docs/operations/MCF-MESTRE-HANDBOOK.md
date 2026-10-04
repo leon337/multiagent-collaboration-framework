@@ -182,7 +182,7 @@ P3: COMPLETE — superfície cloud validada com o Flask local desligado.
 P4: COMPLETE — worker durável + pg_cron comprovados.
 P5: COMPLETE — OAuth Meta cloud pronto e credenciais fora do Git.
 P6: COMPLETE — geração de cartão no navegador, sem Gemini WebView, visualmente validada.
-P7: OPEN — public hosting gate.
+P7: COMPLETE — canonical Vercel production host validated.
 
 Estado cloud comprovado:
 - Supabase project ypocndnfbujvxwglrnzc ACTIVE_HEALTHY;
@@ -197,7 +197,7 @@ Estado cloud comprovado:
 - UI cloud validada com Flask local parado e zero requisições para localhost.
 
 Hosting gate:
-- Vercel: limite diário de deployments atingido; relink/alias também bloqueados por permissão.
+- Vercel: Git integration resetado e auto-deploy comprovado; canonical production domain READY.
 - Render: limite Hobby de 25 serviços atingido.
 - Supabase: Edge Functions/Storage não servem HTML executável.
 - GitHub Pages: primeira execução encontrou Pages desabilitado; segunda, com enablement=true, retornou Resource not accessible by integration.
