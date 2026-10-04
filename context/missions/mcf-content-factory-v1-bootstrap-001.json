@@ -27,7 +27,7 @@
   ],
   "evidence": {
     "project_repo": "https://github.com/leon337/content-factory-v1",
-    "repo_head": "0e220d0fd3e9afbe78c591bea2e11e46eff2802c",
+    "repo_head": "d0e63af5ada997849aff3d94def22838fdc7fe59",
     "vercel_project": "predix-ai-br/content-factory-v1",
     "vercel_url": "https://content-factory-v1.vercel.app",
     "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8VHfHeaRUzGxppFCe7ohWmDz5Sf8",
@@ -49,10 +49,14 @@
     "meta_facebook_retry": "PASS; second call returned already_published=true with same post_id",
     "content_generation": "PASS; item 91 via Gemini embutido, source_job/card-000007, registrado na Biblioteca",
     "e2e_card": "card-000007; IA que economiza tempo",
-    "e2e_instagram": "PASS; publication_id pub-000006; media_id 18632882776034536; permalink https://www.instagram.com/p/DeFgwaMGpU0/",
-    "e2e_facebook": "PASS; publication_id pub-000007; post_id 1361411827052419_122093972841509198",
-    "e2e_retry": "PASS; pub-000006 and pub-000007 returned already_published=true on repeated calls",
-    "e2e_media_deploy": "PASS; immutable Vercel deployment URL used for pub-000007 after detecting production alias race"
+    "e2e_instagram": "PASS; pub-000006; media 18632882776034536; https://www.instagram.com/p/DeFgwaMGpU0/",
+    "e2e_facebook": "PASS; pub-000007; post 1361411827052419_122093972841509198",
+    "e2e_retry": "PASS; pub-000006 and pub-000007 returned already_published=true",
+    "e2e_media_deploy": "PASS; immutable Vercel deployment URL used for pub-000007 after detecting production alias race",
+    "code_fix_commit": "0e220d0fd3e9afbe78c591bea2e11e46eff2802c",
+    "docs_closeout_commit": "d0e63af5ada997849aff3d94def22838fdc7fe59",
+    "latest_ready_vercel_deployment": "dpl_2BYC14njXc6rP1wk2mKnfsoyX6gd",
+    "pending_auto_deployment": "dpl_F8JyBfnQj1o1zF7fftBLv3niR7GM; BUILDING; docs-only commit"
   },
   "mcf_gate": {
     "status": "BLOCKED_BY_EXISTING_REPOSITORY_READINESS_FAILURE",
@@ -153,7 +157,19 @@
         },
         "retry": "PASS; no duplicate created"
       },
-      "media_binding_fix": "PASS; publication media is bound to the immutable Vercel deployment URL returned by the CLI"
+      "media_binding_fix": "PASS; publication media is bound to the immutable Vercel deployment URL returned by the CLI",
+      "e2e_instagram": {
+        "publication_id": "pub-000006",
+        "media_id": "18632882776034536",
+        "status": "published",
+        "permalink": "https://www.instagram.com/p/DeFgwaMGpU0/"
+      },
+      "e2e_facebook": {
+        "publication_id": "pub-000007",
+        "post_id": "1361411827052419_122093972841509198",
+        "status": "published"
+      },
+      "e2e_retry": "PASS; no duplicate"
     },
     "linkedin": {
       "configured": false,
@@ -174,7 +190,10 @@
       "sso_protection": "DISABLED",
       "public_root_http": 200,
       "public_ping_http": 200,
-      "public_health_http": 200
+      "public_health_http": 200,
+      "latest_ready_deployment": "https://content-factory-v1-kvl498aao-predix-ai-br.vercel.app",
+      "latest_auto_deployment": "https://content-factory-v1-2sbfc6mys-predix-ai-br.vercel.app",
+      "latest_auto_deployment_state": "BUILDING"
     },
     "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md",
     "ui_validation": "PASS; Central de Publicação and explicit action visible above the fold",
@@ -186,7 +205,8 @@
       "style": "Profissional e moderno",
       "format": "Instagram · post quadrado 1080x1080",
       "library_persisted": true,
-      "visual_validation": "PASS"
+      "visual_validation": "PASS",
+      "library_card": "card-000007"
     },
     "pillow": "12.3.0 installed and versioned in requirements.txt"
   },
@@ -198,7 +218,7 @@
     "No fake server deployment of Electron/local-filesystem runtime"
   ],
   "final_phase": "P12-CONTENT-GENERATION-TO-META-PUBLICATION-E2E-PASS",
-  "next_action": "Usar este fluxo validado como baseline para próximos conteúdos/canais; recuperar estado live antes de qualquer nova publicação.",
+  "next_action": "Baseline validado. Antes de qualquer novo conteúdo/publicação, recuperar o estado live; não repetir pub-000006/pub-000007.",
   "completion_status_for_user_request": "OBJECTIVE_MET; NEW_CONTENT_GENERATED_IN_CONTENT_FACTORY_AND_PUBLISHED_TO_INSTAGRAM_AND_FACEBOOK; RETRY_IDEMPOTENT; MCF_STATE_PERSISTED",
   "external_posting_record": {
     "provider": "Meta",
