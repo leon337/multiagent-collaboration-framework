@@ -6,7 +6,7 @@
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
   "current_state": "EM_EXECUCAO",
-  "execution_status": "REQUESTED_SCOPE_EXECUTED; FINAL_MCF_CANONICALIZATION_GATE",
+  "execution_status": "REQUESTED_SCOPE_EXECUTED; ACTIVE_EVOLUTION_META_AND_WEB",
   "persistent_source_of_truth": "GitHub/MCF + project repository + provider live",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -27,15 +27,19 @@
   ],
   "evidence": {
     "project_repo": "https://github.com/leon337/content-factory-v1",
-    "repo_head": "f70b062bed1894abe524d7621a759fa27959be70",
+    "repo_head": "15afac6",
     "vercel_project": "predix-ai-br/content-factory-v1",
     "vercel_url": "https://content-factory-v1.vercel.app",
-    "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8MAfDpKGxbqX7TfdmULY8fyys17M",
+    "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8VHfHeaRUzGxppFCe7ohWmDz5Sf8",
     "local_ping": "PASS",
     "python_compile": "PASS",
     "public_smoke": "PASS",
     "secret_tracking": "PASS",
-    "mcf_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/398"
+    "mcf_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/398",
+    "vercel_latest_deployment": "https://content-factory-v1-oipeyjpf8-predix-ai-br.vercel.app",
+    "public_root": "HTTP 200",
+    "public_ping": "HTTP 200",
+    "public_health": "HTTP 200; VoiceHub intentionally unavailable from Vercel"
   },
   "mcf_gate": {
     "status": "BLOCKED_BY_EXISTING_REPOSITORY_READINESS_FAILURE",
@@ -87,7 +91,7 @@
       "failed"
     ],
     "publication_test": "create -> schedule -> queue -> next",
-    "runtime": "Electron + Flask local; 127.0.0.1:8765; Electron CDP 9222; Brave CDP 9224; VoiceHub 127.0.0.1:8788",
+    "runtime": "Electron + Flask local; 127.0.0.1:8765; Electron CDP 9222; Brave CDP 9224 when MCF Dual Browser is running; VoiceHub 127.0.0.1:8788",
     "gemini": "embedded Electron webview; no Gemini API",
     "meta": {
       "app_id": "920266500921182",
@@ -97,8 +101,22 @@
       "redirect_uri": "http://localhost:8765/oauth/meta/callback",
       "oauth": "SUCCESS",
       "connection": "CONNECTED",
-      "asset_identification": "PENDING",
-      "blocker": "/me/accounts returned HTTP 200 with no pages and owned_pages returned HTTP 200 empty; no Facebook Page is exposed under the authenticated business portfolio.",
+      "asset_identification": "COMPLETE",
+      "facebook_page": {
+        "id": "1361411827052419",
+        "name": "Predix AI Br",
+        "category": "Empresa de tecnologia da informação"
+      },
+      "instagram_professional": {
+        "id": "17841415453072064",
+        "username": "predixai.br",
+        "linked_to_facebook_page": true
+      },
+      "other_user_page_detected": {
+        "id": "1319734624562599",
+        "name": "Predixai BR"
+      },
+      "blocker": "Nenhum blocker de asset. Próximo bloco técnico: transporte público/HTTPS da mídia para o fluxo oficial de publicação.",
       "official_api_only": true,
       "secrets": "local only; excluded from repository"
     },
@@ -113,6 +131,15 @@
       "github": "leon337",
       "vercel_cli": "59.17.0",
       "filesystem_observed_free": "~1.2 GB"
+    },
+    "vercel": {
+      "status": "READY",
+      "production_url": "https://content-factory-v1.vercel.app",
+      "latest_deployment": "https://content-factory-v1-oipeyjpf8-predix-ai-br.vercel.app",
+      "sso_protection": "DISABLED",
+      "public_root_http": 200,
+      "public_ping_http": 200,
+      "public_health_http": 200
     }
   },
   "safety_invariants": [
@@ -122,7 +149,7 @@
     "No social content published",
     "No fake server deployment of Electron/local-filesystem runtime"
   ],
-  "final_phase": "P7-TRACE / MCF-CANONICALIZATION",
-  "next_action": "A governed MCF main update still requires resolution of the pre-existing production-candidate-readiness dependency gate. Continue Meta asset attachment and LinkedIn in a subsequent mission.",
+  "final_phase": "P8-META-PUBLISH-TRANSPORT",
+  "next_action": "Implementar transporte seguro da mídia publicada (URL HTTPS pública/armazenamento compatível) sem expor biblioteca privada, depois validar criação de container e publicação Meta por API oficial; LinkedIn permanece após Meta.",
   "completion_status_for_user_request": "EXECUTED_WITH_MCF_CANONICALIZATION_GATE_REMAINING"
 }

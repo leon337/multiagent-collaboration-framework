@@ -37,13 +37,15 @@ delivery:
   repository:
     canonical: leon337/content-factory-v1
     visibility: PRIVATE
-    current_main_head: f70b062bed1894abe524d7621a759fa27959be70
+    current_main_head: 15afac6
     status: CREATED_AND_PUSHED
   vercel:
     project: predix-ai-br/content-factory-v1
     production_url: https://content-factory-v1.vercel.app
     deployment_status: READY
-    deployment_model: STATIC_WEB_COMPANION
+    deployment_model: FLASK_PYTHON_SERVERLESS_WEB_SURFACE
+    latest_deployment: https://content-factory-v1-oipeyjpf8-predix-ai-br.vercel.app
+    sso_protection: DISABLED
     cli_version: 59.17.0
 
 mcf_registration:
@@ -57,7 +59,11 @@ today_verified:
   python_compile: PASS
   public_vercel_smoke: PASS
   secret_tracking_check: PASS
-  meta_oauth: CONNECTED_ASSET_BLOCKED
+  meta_oauth: CONNECTED
+  meta_asset_identification: COMPLETE
+  meta_facebook_page: "Predix AI Br / 1361411827052419"
+  meta_instagram_professional: "@predixai.br / 17841415453072064"
+  vercel_public_web_surface: PASS
   linkedin: NOT_CONFIGURED
 
 freshness:
