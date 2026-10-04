@@ -37,14 +37,14 @@ delivery:
   repository:
     canonical: leon337/content-factory-v1
     visibility: PRIVATE
-    current_main_head: 8771e46
+    current_main_head: b9f270e
     status: CREATED_AND_PUSHED
   vercel:
     project: predix-ai-br/content-factory-v1
     production_url: https://content-factory-v1.vercel.app
     deployment_status: READY
     deployment_model: FLASK_PYTHON_SERVERLESS_WEB_SURFACE
-    latest_deployment: https://content-factory-v1-196vcptwp-predix-ai-br.vercel.app
+    latest_deployment: https://content-factory-v1-6ydaiolq7-predix-ai-br.vercel.app
     sso_protection: DISABLED
     cli_version: 59.17.0
 
@@ -67,6 +67,8 @@ today_verified:
   meta_media_transport: PASS
   meta_instagram_container: PASS
   meta_instagram_publish_test: PASS
+  meta_facebook_transport_hardened: PASS
+  media_deploy_automation: PASS
   linkedin: NOT_CONFIGURED
 
 freshness:
