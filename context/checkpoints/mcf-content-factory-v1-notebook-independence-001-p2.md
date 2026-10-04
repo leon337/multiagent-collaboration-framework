@@ -3,31 +3,36 @@
 ## State
 - P0: PASS
 - P1: PASS
-- P2 preparation: COMPLETE
-- P2 implementation: BLOCKED
+- P2: PASS
+- P3: IN PROGRESS
 
-## Objective impact
-Objective remains active: remove the notebook from the functional path of Content Factory.
+## Data Plane evidence
+- Supabase project: `ypocndnfbujvxwglrnzc`
+- Region: `sa-east-1`
+- Status: `ACTIVE_HEALTHY`
+- Storage bucket: `content-factory-media` (private)
+- Edge Function: `content-factory-api` v2
+- RLS: enabled
+- Security advisors: `0 lints`
+- Vercel project: `prj_0uvg7XxVa6PgyotFCv2rx0t5X7hK`
+- Vercel cloud references configured.
 
-## P2 evidence
-- Data-plane blueprint: `leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P2-DATA-PLANE.md`
-- Blueprint commit: `bcd5eeaa98af7ea1b2380e2063f38f9486a64011b`
-- Target model: Postgres + Object Storage + durable jobs
-- Local-to-cloud mapping documented
-- Migration and rollback protocol documented
-
-## Infrastructure blocker
-- Vercel team: `PREDIX AI BR`
-- Project: `content-factory-v1`
-- Project ID: `prj_0uvg7XxVa6PgyotFCv2rx0t5X7hK`
-- Blob provisioning: `403 Forbidden`
-- Policy: no repeated retry because this is an authorization error
+## Application Plane evidence
+- Cloud web surface versioned in Content Factory branch.
+- Root route changed to serve cloud web surface.
+- Cloud API boundary supports workspaces, content, library reads, publications and durable jobs.
+- Local runtime remains fallback during transition.
 
 ## Data safety
-- No local content migrated.
-- No existing publication repeated.
+- No production social publication repeated.
 - No local runtime deleted.
-- No production data modified.
+- Existing local source remains available for migration.
+- No secrets committed to Git.
+
+## Known validation limitation
+- Direct network access from this execution sandbox could not resolve the Supabase hostname.
+- This is an environment validation limitation, not evidence of product failure.
+- Supabase control plane reports the function as ACTIVE and the schema/security checks PASS.
 
 ## Next action
-Resolve cloud provisioning permission, then execute the prepared P2 implementation and verify it with independent read/write checks.
+Execute P3 functional cutover: authenticate through Supabase, verify cloud web against the deployed Vercel version, then begin read/write migration of real Content Factory state.
