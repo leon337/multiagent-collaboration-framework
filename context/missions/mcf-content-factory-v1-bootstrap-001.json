@@ -6,23 +6,24 @@
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
   "current_state": "EM_EXECUCAO",
-  "execution_status": "REQUESTED_SCOPE_EXECUTED; MCF_CANONICAL_MERGE_PENDING",
+  "execution_status": "REQUESTED_SCOPE_EXECUTED; FINAL_MCF_CANONICALIZATION_GATE",
   "persistent_source_of_truth": "GitHub/MCF + project repository + provider live",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
   "local_workspace": "/home/leo/projetos/content_factory_v1",
-  "mission_objective": "Preservar integralmente o Content Factory V1 já construído, registrar projeto e missão no MCF para continuidade persistente, criar repositório oficial do projeto, publicar uma superfície Vercel compatível usando Vercel CLI no notebook e documentar o estado real das integrações oficiais, sem regressões ou destruição do trabalho existente.",
+  "mission_objective": "Preservar integralmente o Content Factory V1 já construído, registrar projeto e missão no MCF para continuidade persistente, criar repositório oficial do projeto, publicar superfície Vercel compatível usando Vercel CLI no notebook e documentar o estado real das integrações oficiais, sem regressões ou destruição do trabalho existente.",
   "user_authorization": "LEANDRO autorizou explicitamente a execução ponta a ponta, criação do repositório e publicação na Vercel. Não há autorização implícita para publicação social de conteúdo.",
   "requested_scope_completed": [
     "preservação do aplicativo desktop existente",
-    "registro persistente do projeto/missão no MCF branch dedicado",
+    "registro persistente do projeto e missão em branch dedicado do MCF",
     "criação do repositório privado leon337/content-factory-v1",
-    "snapshot Git inicial e push para origin/main",
-    "criação de .mcf/project-capsule.yaml",
-    "documentação durável de estado em docs/PROJECT-STATE-2026-10-04.md",
-    "criação de superfície web compatível em web/index.html",
-    "publicação em produção na Vercel via CLI",
-    "smoke test público e regressão local"
+    "baseline Git criado e enviado para origin/main",
+    "project capsule criada em .mcf/project-capsule.yaml",
+    "estado durável criado em docs/PROJECT-STATE-2026-10-04.md",
+    "superfície web compatível criada em web/index.html",
+    "publicação em produção na Vercel via Vercel CLI",
+    "smoke test público e regressão local concluídos",
+    "checagem de versionamento confirmou ausência de tokens/App Secret/perfis/storage privado"
   ],
   "evidence": {
     "project_repo": "https://github.com/leon337/content-factory-v1",
@@ -30,9 +31,26 @@
     "vercel_project": "predix-ai-br/content-factory-v1",
     "vercel_url": "https://content-factory-v1.vercel.app",
     "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8MAfDpKGxbqX7TfdmULY8fyys17M",
-    "local_ping": "Content Factory V1 /api/ping PASS",
+    "local_ping": "PASS",
     "python_compile": "PASS",
-    "secret_tracking": "No OAuth token/App Secret/browser profile/storage state tracked"
+    "public_smoke": "PASS",
+    "secret_tracking": "PASS",
+    "mcf_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/398"
+  },
+  "mcf_gate": {
+    "status": "BLOCKED_BY_EXISTING_REPOSITORY_READINESS_FAILURE",
+    "pr_number": 398,
+    "failing_check": "production-candidate-readiness",
+    "job_id": 111392370431,
+    "result": "failure",
+    "failure_scope": "MCF baseline dependency vulnerability gate; 25 vulnerabilities total, 16 moderate and 9 high",
+    "relevant_findings": [
+      "fast-uri vulnerabilities",
+      "@nestjs/platform-fastify <11.2.4 vulnerability",
+      "fastify <5.12.2 vulnerabilities"
+    ],
+    "interpretation": "The check failed before formatting/lint/typecheck/test/build steps. The failure is not caused by Content Factory files and must not be bypassed merely to canonicalize this registration.",
+    "action_taken": "No bypass, no direct main write, no unrelated dependency upgrade. PR remains open."
   },
   "today_state": {
     "ui_version": "ui5",
@@ -99,23 +117,12 @@
   },
   "safety_invariants": [
     "No existing Content Factory data deleted",
-    "No MCF main write performed directly",
+    "No direct MCF main write",
     "No secrets or OAuth tokens committed",
     "No social content published",
-    "Electron/local filesystem runtime not falsely deployed as Vercel server runtime"
+    "No fake server deployment of Electron/local-filesystem runtime"
   ],
-  "remaining_work": [
-    "Canonicalize the MCF project/mission records into main through the governed PR path.",
-    "Attach/expose the intended Facebook Page in Predix AI Br and complete Meta asset identification.",
-    "Configure LinkedIn after Meta.",
-    "Future evolution may replace the static web companion with a full hosted web architecture; desktop core remains intact until separately authorized."
-  ],
-  "current_phase": "P7-TRACE",
-  "next_action": "Reconcile the final mission records, open the MCF PR, and stop only at the applicable canonicalization gate.",
-  "completion_requirements": [
-    "requested project repo and Vercel execution complete",
-    "final evidence recorded",
-    "MCF registration delivered through governed PR path",
-    "no regressions or secret leakage"
-  ]
+  "final_phase": "P7-TRACE / MCF-CANONICALIZATION",
+  "next_action": "A governed MCF main update still requires resolution of the pre-existing production-candidate-readiness dependency gate. Continue Meta asset attachment and LinkedIn in a subsequent mission.",
+  "completion_status_for_user_request": "EXECUTED_WITH_MCF_CANONICALIZATION_GATE_REMAINING"
 }
