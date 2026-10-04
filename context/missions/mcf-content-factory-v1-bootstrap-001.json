@@ -6,7 +6,7 @@
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
   "current_state": "EM_EXECUCAO",
-  "execution_status": "ACTIVE_EVOLUTION_META_AND_WEB; INSTAGRAM_API_PUBLISH_VALIDATED",
+  "execution_status": "ACTIVE_EVOLUTION_META_FB_FLOW_HARDENED; INSTAGRAM_API_PUBLISH_VALIDATED",
   "persistent_source_of_truth": "GitHub/MCF + project repository + provider live",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -27,7 +27,7 @@
   ],
   "evidence": {
     "project_repo": "https://github.com/leon337/content-factory-v1",
-    "repo_head": "8771e46",
+    "repo_head": "b9f270e",
     "vercel_project": "predix-ai-br/content-factory-v1",
     "vercel_url": "https://content-factory-v1.vercel.app",
     "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8VHfHeaRUzGxppFCe7ohWmDz5Sf8",
@@ -36,12 +36,12 @@
     "public_smoke": "PASS",
     "secret_tracking": "PASS",
     "mcf_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/398",
-    "vercel_latest_deployment": "https://content-factory-v1-196vcptwp-predix-ai-br.vercel.app",
+    "vercel_latest_deployment": "https://content-factory-v1-6ydaiolq7-predix-ai-br.vercel.app",
     "public_root": "HTTP 200",
     "public_ping": "HTTP 200",
     "public_health": "HTTP 200; VoiceHub intentionally unavailable from Vercel",
     "meta_publish_readiness": "PASS",
-    "meta_media_transport": "PASS; public HTTPS media served from Vercel",
+    "meta_media_transport": "PASS; public HTTPS media served from Vercel; staging deploy automation added",
     "meta_instagram_container": "18149260657515103; FINISHED",
     "meta_instagram_publish": "18120127616052014; published to @predixai.br"
   },
@@ -120,7 +120,7 @@
         "id": "1319734624562599",
         "name": "Predixai BR"
       },
-      "blocker": "Nenhum blocker de asset. Próximo bloco técnico: transporte público/HTTPS da mídia para o fluxo oficial de publicação.",
+      "blocker": "Nenhum blocker de asset. Facebook transport is ready with explicit publish separation; production App Review/advanced access may still be required before broad production use.",
       "official_api_only": true,
       "secrets": "local only; excluded from repository",
       "publish_transport": "Vercel HTTPS media staging",
@@ -157,6 +157,6 @@
     "No fake server deployment of Electron/local-filesystem runtime"
   ],
   "final_phase": "P9-META-INSTAGRAM-PUBLISH-VALIDATED",
-  "next_action": "Completar a camada de publicação de Facebook Page no mesmo fluxo oficial, transformar staging/deploy de mídia em operação interna automatizada e depois configurar LinkedIn.",
+  "next_action": "Executar o teste Facebook autorizado no fluxo explícito e depois configurar LinkedIn; staging/deploy Vercel já possui endpoint interno controlado.",
   "completion_status_for_user_request": "ACTIVE_WITH_META_INSTAGRAM_PUBLISH_VALIDATED_AND_MCF_CANONICALIZATION_GATE_REMAINING"
 }
