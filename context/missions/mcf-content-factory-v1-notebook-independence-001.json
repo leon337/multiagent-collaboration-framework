@@ -5,8 +5,8 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "P0_COMPLETE_P1_READY",
-  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; DEPENDENCY_MATRIX_PERSISTED; SUCCESSION_MEMORY_PERSISTED; IMPLEMENTATION_NOT_STARTED",
+  "current_state": "P1_COMPLETE_P2_READY",
+  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; SUCCESSION_MEMORY_PERSISTED; IMPLEMENTATION_NOT_STARTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical Content Factory repository + provider live state",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -216,10 +216,10 @@
     "A superfície Vercel existente não equivale ao runtime completo do Electron."
   ],
   "definition_of_done": "Content Factory V1 é um serviço web persistente que pode ser operado por navegador em outro dispositivo, com backend, dados, mídia, jobs, OAuth e integrações funcionando fora do notebook, e com E2E comprovado com o notebook fora do caminho funcional.",
-  "next_action": "Definir P1 — arquitetura cloud target e plano de migração antes de alterar o caminho funcional de produção.",
-  "required_validation_for_next_action": "A arquitetura deve substituir todos os acoplamentos do P0, preservar estado/IDs/idempotência e permitir deploy/execução sem o notebook.",
+  "next_action": "Executar P2 — provisionar armazenamento persistente cloud e criar o esquema inicial de migração, mantendo o runtime local como fallback.",
+  "required_validation_for_next_action": "Database/object storage devem estar externos ao notebook, com RLS/segredos/ownership definidos e migração reversível.",
   "current_progress": {
-    "completed_phase": "P0",
+    "completed_phase": "P1",
     "status": "PASS",
     "evidence": {
       "content_factory_inventory": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P0-INVENTORY.md",
@@ -242,6 +242,11 @@
       "in-memory card jobs",
       "local Meta connection/token store"
     ],
-    "next_phase": "P1_ARCHITECTURE"
+    "next_phase": "P2_DATA_PLANE",
+    "architecture_evidence": {
+      "content_factory_architecture": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P1-ARCHITECTURE.md",
+      "project_branch": "mission/notebook-independence-001",
+      "architecture_commit": "23b5b4a564e935ac4bf64cdfaa43c1a48f01d11a"
+    }
   }
 }
