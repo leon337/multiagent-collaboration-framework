@@ -1,0 +1,94 @@
+schema_version: 1
+
+project:
+  id: content-factory-v1
+  lifecycle: ACTIVE
+
+identity:
+  canonical_repository: leon337/content-factory-v1
+  local_workspace: /home/leo/projetos/content_factory_v1
+  aliases:
+    - Content Factory V1
+    - Content Factory
+    - VoiceHub Content Factory V1
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  mestre_handbook: docs/operations/MCF-MESTRE-HANDBOOK.md
+  canonical_entrypoints:
+    - README.md
+    - .mcf/project-capsule.yaml
+    - docs/PROJECT-STATE-2026-10-04.md
+    - app/main.py
+    - electron/main.js
+    - electron/preload.js
+    - config/publication.env.example
+
+current_objective:
+  statement: >-
+    Preservar o Content Factory V1 funcional, manter contexto persistente no MCF,
+    versionar o código em repositório próprio, publicar uma superfície web
+    compatível na Vercel sem quebrar a aplicação desktop e continuar a evolução
+    das integrações oficiais de publicação com Meta primeiro e LinkedIn depois.
+
+delivery:
+  repository:
+    canonical: leon337/content-factory-v1
+    visibility: PRIVATE
+    current_main_head: d0e63af
+    status: CREATED_AND_PUSHED
+  vercel:
+    project: predix-ai-br/content-factory-v1
+    production_url: https://content-factory-v1.vercel.app
+    deployment_status: READY
+    deployment_model: FLASK_PYTHON_SERVERLESS_WEB_SURFACE
+    latest_deployment: https://content-factory-v1-kvl498aao-predix-ai-br.vercel.app
+    latest_ready_deployment_id: dpl_2BYC14njXc6rP1wk2mKnfsoyX6gd
+    pending_auto_deployment_id: dpl_F8JyBfnQj1o1zF7fftBLv3niR7GM
+    pending_auto_deployment_state: BUILDING
+    sso_protection: DISABLED
+    cli_version: 59.17.0
+
+mcf_registration:
+  branch: feat/content-factory-v1-mission-20261004
+  pull_request: 398
+  pr_status: OPEN
+  canonical_main_merge: BLOCKED_BY_PRODUCTION_READINESS_CHECK
+
+today_verified:
+  desktop_local_health: PASS
+  python_compile: PASS
+  public_vercel_smoke: PASS
+  secret_tracking_check: PASS
+  meta_oauth: CONNECTED
+  meta_asset_identification: COMPLETE
+  meta_facebook_page: "Predix AI Br / 1361411827052419"
+  meta_instagram_professional: "@predixai.br / 17841415453072064"
+  vercel_public_web_surface: PASS
+  meta_media_transport: PASS
+  meta_instagram_container: PASS
+  meta_instagram_publish_test: PASS
+  meta_facebook_post_id: 1361411827052419_122093918373509198
+  meta_facebook_retry: PASS
+  meta_facebook_transport_hardened: PASS
+  meta_facebook_publish_test: PASS
+  meta_media_public_verification: PASS
+  meta_facebook_media_binding_fix: PASS
+  media_deploy_automation: PASS
+  e2e_content_generation: PASS
+  e2e_card_id: card-000007
+  e2e_instagram_publication: PASS
+  e2e_instagram_media_id: 18632882776034536
+  e2e_instagram_permalink: https://www.instagram.com/p/DeFgwaMGpU0/
+  e2e_facebook_publication: PASS
+  e2e_facebook_post_id: 1361411827052419_122093972841509198
+  e2e_retry_idempotency: PASS
+  pillow_dependency: 12.3.0
+  linkedin: NOT_CONFIGURED
+
+freshness:
+  project_identity: DURABLE
+  operational_state: LIVE_REQUIRED

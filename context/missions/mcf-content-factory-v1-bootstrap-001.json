@@ -1,0 +1,232 @@
+{
+  "mission_id": "MCF-CONTENT-FACTORY-V1-BOOTSTRAP-001",
+  "title": "Content Factory V1 — Persistência MCF, Repositório e Publicação Vercel",
+  "risk_class": "B",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "decision_authority": "LEANDRO",
+  "current_state": "EM_EXECUCAO",
+  "execution_status": "E2E_CONTENT_GENERATION_TO_META_PUBLICATION_PASS; INSTAGRAM_AND_FACEBOOK_OPERATIONAL; RETRY_IDEMPOTENT; SUCCESSION_MEMORY_PERSISTED",
+  "persistent_source_of_truth": "GitHub/MCF + project repository + provider live",
+  "persistent_project": "content-factory-v1",
+  "canonical_repository": "leon337/content-factory-v1",
+  "local_workspace": "/home/leo/projetos/content_factory_v1",
+  "mission_objective": "Preservar integralmente o Content Factory V1 já construído, registrar projeto e missão no MCF para continuidade persistente, criar repositório oficial do projeto, publicar superfície Vercel compatível usando Vercel CLI no notebook e documentar o estado real das integrações oficiais, sem regressões ou destruição do trabalho existente.",
+  "user_authorization": "LEANDRO autorizou explicitamente nesta execução o teste ponta a ponta de produção e publicação do novo conteúdo no Instagram e Facebook.",
+  "requested_scope_completed": [
+    "preservação do aplicativo desktop existente",
+    "registro persistente do projeto e missão em branch dedicado do MCF",
+    "criação do repositório privado leon337/content-factory-v1",
+    "baseline Git criado e enviado para origin/main",
+    "project capsule criada em .mcf/project-capsule.yaml",
+    "estado durável criado em docs/PROJECT-STATE-2026-10-04.md",
+    "superfície web compatível criada em web/index.html",
+    "publicação em produção na Vercel via Vercel CLI",
+    "smoke test público e regressão local concluídos",
+    "checagem de versionamento confirmou ausência de tokens/App Secret/perfis/storage privado"
+  ],
+  "evidence": {
+    "project_repo": "https://github.com/leon337/content-factory-v1",
+    "repo_head": "d0e63af5ada997849aff3d94def22838fdc7fe59",
+    "vercel_project": "predix-ai-br/content-factory-v1",
+    "vercel_url": "https://content-factory-v1.vercel.app",
+    "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8VHfHeaRUzGxppFCe7ohWmDz5Sf8",
+    "local_ping": "PASS",
+    "python_compile": "PASS",
+    "public_smoke": "PASS",
+    "secret_tracking": "PASS",
+    "mcf_pr": "https://github.com/leon337/multiagent-collaboration-framework/pull/398",
+    "vercel_latest_deployment": "https://content-factory-v1-kvl498aao-predix-ai-br.vercel.app",
+    "public_root": "HTTP 200",
+    "public_ping": "HTTP 200",
+    "public_health": "HTTP 200; VoiceHub intentionally unavailable from Vercel",
+    "meta_publish_readiness": "PASS",
+    "meta_media_transport": "PASS; public HTTPS media served by Vercel and externally verified",
+    "meta_instagram_container": "18149260657515103; FINISHED",
+    "meta_instagram_publish": "18120127616052014; published to @predixai.br",
+    "meta_facebook_publish": "PASS; post_id 1361411827052419_122093918373509198",
+    "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md",
+    "meta_facebook_retry": "PASS; second call returned already_published=true with same post_id",
+    "content_generation": "PASS; item 91 via Gemini embutido, source_job/card-000007, registrado na Biblioteca",
+    "e2e_card": "card-000007; IA que economiza tempo",
+    "e2e_instagram": "PASS; pub-000006; media 18632882776034536; https://www.instagram.com/p/DeFgwaMGpU0/",
+    "e2e_facebook": "PASS; pub-000007; post 1361411827052419_122093972841509198",
+    "e2e_retry": "PASS; pub-000006 and pub-000007 returned already_published=true",
+    "e2e_media_deploy": "PASS; immutable Vercel deployment URL used for pub-000007 after detecting production alias race",
+    "code_fix_commit": "0e220d0fd3e9afbe78c591bea2e11e46eff2802c",
+    "docs_closeout_commit": "d0e63af5ada997849aff3d94def22838fdc7fe59",
+    "latest_ready_vercel_deployment": "dpl_2BYC14njXc6rP1wk2mKnfsoyX6gd",
+    "pending_auto_deployment": "dpl_F8JyBfnQj1o1zF7fftBLv3niR7GM; BUILDING; docs-only commit"
+  },
+  "mcf_gate": {
+    "status": "BLOCKED_BY_EXISTING_REPOSITORY_READINESS_FAILURE",
+    "pr_number": 398,
+    "failing_check": "production-candidate-readiness",
+    "job_id": 111392370431,
+    "result": "failure",
+    "failure_scope": "MCF baseline dependency vulnerability gate; 25 vulnerabilities total, 16 moderate and 9 high",
+    "relevant_findings": [
+      "fast-uri vulnerabilities",
+      "@nestjs/platform-fastify <11.2.4 vulnerability",
+      "fastify <5.12.2 vulnerabilities"
+    ],
+    "interpretation": "The check failed before formatting/lint/typecheck/test/build steps. The failure is not caused by Content Factory files and must not be bypassed merely to canonicalize this registration.",
+    "action_taken": "No bypass, no direct main write, no unrelated dependency upgrade. PR remains open."
+  },
+  "today_state": {
+    "ui_version": "ui5",
+    "layout": "BIBLIOTECA 20% | WORKSPACE 40% | GEMINI 40%",
+    "workspace_vertical_split": "CHAT 50% | CARTÃO 50%",
+    "card_generator_item": 91,
+    "card_formats": [
+      "Instagram square 1080x1080",
+      "Instagram portrait",
+      "Instagram story",
+      "Facebook post",
+      "LinkedIn post"
+    ],
+    "card_styles": [
+      "Profissional e moderno",
+      "Minimalista",
+      "Impactante",
+      "Tecnológico"
+    ],
+    "library": [
+      "cards",
+      "images",
+      "videos",
+      "audio",
+      "documents",
+      "other"
+    ],
+    "publication_queue": [
+      "draft",
+      "scheduled",
+      "queued",
+      "publishing",
+      "published",
+      "failed"
+    ],
+    "publication_test": "create -> schedule -> queue -> next",
+    "runtime": "Electron + Flask local; 127.0.0.1:8765; Electron CDP 9222; Brave CDP 9224 when MCF Dual Browser is running; VoiceHub 127.0.0.1:8788",
+    "gemini": "embedded Electron webview; no Gemini API",
+    "meta": {
+      "app_id": "920266500921182",
+      "business_portfolio": "Predix AI Br",
+      "business_id": "1314936787249884",
+      "instagram_app_id": "1633011034857391",
+      "redirect_uri": "http://localhost:8765/oauth/meta/callback",
+      "oauth": "SUCCESS",
+      "connection": "CONNECTED",
+      "asset_identification": "COMPLETE",
+      "facebook_page": {
+        "id": "1361411827052419",
+        "name": "Predix AI Br",
+        "category": "Empresa de tecnologia da informação"
+      },
+      "instagram_professional": {
+        "id": "17841415453072064",
+        "username": "predixai.br",
+        "linked_to_facebook_page": true
+      },
+      "other_user_page_detected": {
+        "id": "1319734624562599",
+        "name": "Predixai BR"
+      },
+      "blocker": "Nenhum blocker de asset. Facebook transport is ready with explicit publish separation; production App Review/advanced access may still be required before broad production use.",
+      "official_api_only": true,
+      "secrets": "local only; excluded from repository",
+      "publish_transport": "Vercel HTTPS media staging",
+      "instagram_publish_test": "PASS",
+      "last_published_media_id": "18120127616052014",
+      "media_public_verification": "PASS; pub-000003.jpg loads over public HTTPS",
+      "facebook_publish_test": "PASS",
+      "facebook_post_id": "1361411827052419_122093918373509198",
+      "facebook_retry": "PASS; no duplicate created",
+      "e2e_test": {
+        "instagram": {
+          "publication_id": "pub-000006",
+          "media_id": "18632882776034536",
+          "status": "published",
+          "permalink": "https://www.instagram.com/p/DeFgwaMGpU0/"
+        },
+        "facebook": {
+          "publication_id": "pub-000007",
+          "post_id": "1361411827052419_122093972841509198",
+          "status": "published"
+        },
+        "retry": "PASS; no duplicate created"
+      },
+      "media_binding_fix": "PASS; publication media is bound to the immutable Vercel deployment URL returned by the CLI",
+      "e2e_instagram": {
+        "publication_id": "pub-000006",
+        "media_id": "18632882776034536",
+        "status": "published",
+        "permalink": "https://www.instagram.com/p/DeFgwaMGpU0/"
+      },
+      "e2e_facebook": {
+        "publication_id": "pub-000007",
+        "post_id": "1361411827052419_122093972841509198",
+        "status": "published"
+      },
+      "e2e_retry": "PASS; no duplicate"
+    },
+    "linkedin": {
+      "configured": false,
+      "oauth_complete": false,
+      "order": "after Meta"
+    },
+    "notebook": {
+      "os": "Linux Mint",
+      "host": "leo-N43SM",
+      "github": "leon337",
+      "vercel_cli": "59.17.0",
+      "filesystem_observed_free": "~1.2 GB"
+    },
+    "vercel": {
+      "status": "READY",
+      "production_url": "https://content-factory-v1.vercel.app",
+      "latest_deployment": "https://content-factory-v1-apciw3fhj-predix-ai-br.vercel.app",
+      "sso_protection": "DISABLED",
+      "public_root_http": 200,
+      "public_ping_http": 200,
+      "public_health_http": 200,
+      "latest_ready_deployment": "https://content-factory-v1-kvl498aao-predix-ai-br.vercel.app",
+      "latest_auto_deployment": "https://content-factory-v1-2sbfc6mys-predix-ai-br.vercel.app",
+      "latest_auto_deployment_state": "BUILDING"
+    },
+    "mestre_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md",
+    "ui_validation": "PASS; Central de Publicação and explicit action visible above the fold",
+    "content_generation": {
+      "item": 91,
+      "card_id": "card-000007",
+      "title": "IA que economiza tempo",
+      "topic": "IA prática para pequenos negócios",
+      "style": "Profissional e moderno",
+      "format": "Instagram · post quadrado 1080x1080",
+      "library_persisted": true,
+      "visual_validation": "PASS",
+      "library_card": "card-000007"
+    },
+    "pillow": "12.3.0 installed and versioned in requirements.txt"
+  },
+  "safety_invariants": [
+    "No existing Content Factory data deleted",
+    "No direct MCF main write",
+    "No secrets or OAuth tokens committed",
+    "Social publishing executed only under current LEANDRO authorization; test publication recorded",
+    "No fake server deployment of Electron/local-filesystem runtime"
+  ],
+  "final_phase": "P12-CONTENT-GENERATION-TO-META-PUBLICATION-E2E-PASS",
+  "next_action": "Baseline validado. Antes de qualquer novo conteúdo/publicação, recuperar o estado live; não repetir pub-000006/pub-000007.",
+  "completion_status_for_user_request": "OBJECTIVE_MET; NEW_CONTENT_GENERATED_IN_CONTENT_FACTORY_AND_PUBLISHED_TO_INSTAGRAM_AND_FACEBOOK; RETRY_IDEMPOTENT; MCF_STATE_PERSISTED",
+  "external_posting_record": {
+    "provider": "Meta",
+    "platform": "Facebook Page",
+    "page_id": "1361411827052419",
+    "page_name": "Predix AI Br",
+    "post_id": "1361411827052419_122093918373509198",
+    "publication_id": "pub-000003",
+    "duplicate_protection": "PASS"
+  }
+}
