@@ -219,8 +219,8 @@
       "id": "HOST-001",
       "type": "PUBLIC_WEB_HOST",
       "status": "OPEN",
-      "evidence": "Vercel daily deployment quota is exhausted; Vercel project relink/alias operations return permission errors; Render Hobby is at 25 services; Supabase HTML hosting is unsupported; GitHub Pages is 404.",
-      "consequence": "The latest main UI is versioned and tested but does not yet have a clean, automatically deployed public web URL."
+      "evidence": "Vercel deployment daily quota is exhausted and relink/alias operations are permission-blocked; Render Hobby has reached 25 services; Supabase HTML hosting is unsupported; GitHub Pages enablement returned Resource not accessible by integration.",
+      "consequence": "The latest main UI is versioned and tested but does not yet have a clean automatically deployed public web URL."
     }
   ],
   "known_risks": [
@@ -230,8 +230,8 @@
     "Historical Meta publication IDs must never be reused as a new E2E item."
   ],
   "definition_of_done": "Content Factory V1 é um serviço web persistente que pode ser operado por navegador em outro dispositivo, com backend, dados, mídia, jobs, OAuth e integrações funcionando fora do notebook, e com E2E comprovado com o notebook fora do caminho funcional.",
-  "next_action": "Obter/usar uma superfície web pública com auto-deploy para o main atual sem depender do notebook; então executar primeiro login real, claim idempotente, novo teste Meta e prova E2E final.",
-  "required_validation_for_next_action": "Public host serves current main UI; authenticated claim succeeds once; browser-generated content persists; new Meta publication succeeds via durable worker; retry does not duplicate; notebook has no serving/runtime process.",
+  "next_action": "Obter uma superfície web pública automaticamente implantável para a revisão main atual; em seguida executar primeiro login real, claim idempotente, novo teste Meta e prova E2E final.",
+  "required_validation_for_next_action": "Public host serves current main UI; authenticated claim succeeds once; browser-generated content persists; a new Meta publication succeeds via durable worker; retry does not duplicate; notebook has no serving/runtime process.",
   "current_progress": {
     "completed_phase": "P7_HOSTING_GATE",
     "status": "IN_PROGRESS",
@@ -249,7 +249,7 @@
       "supabase_project_region": "sa-east-1",
       "supabase_project_status": "ACTIVE_HEALTHY",
       "supabase_storage_bucket": "content-factory-media private",
-      "supabase_api_function": "content-factory-api v10",
+      "supabase_api_function": "content-factory-api v11",
       "supabase_api_function_version": 8,
       "supabase_security_advisors": "0 lints",
       "supabase_migrations": "20261004213508 content_factory_v1_data_plane; 20261004213540 content_factory_v1_security_fix; subsequent security hardening/policy access/workspace bootstrap migrations",
@@ -302,8 +302,8 @@
       "durable_worker_schedule": "pg_cron job 1 active",
       "durable_worker_first_run": "succeeded; worker HTTP 200",
       "migration_staging": "13 files / 5,567,224 bytes / 7 library records / 6 publication records",
-      "meta_oauth": "cloud callback ready; Meta App credentials stored in Supabase Vault",
-      "browser_canvas_generation": "implemented and visually validated; no Gemini WebView dependency for card generation",
+      "meta_oauth": "cloud callback ready; Meta App credentials in Vault",
+      "browser_canvas_generation": "implemented and visually validated; no Gemini/WebView dependency",
       "local_flask_during_proof": "stopped; 127.0.0.1:8765 free",
       "local_requests_during_web_proof": 0,
       "web_js_validation": "PAGE_ERRORS []",
@@ -314,7 +314,14 @@
       "vercel_alias_status": "403 permission denied",
       "render_service_limit": "25 services",
       "supabase_html_hosting": "unsupported",
-      "github_pages": "404"
+      "github_pages": "404",
+      "content_factory_current_state_doc_commit": "f07efee80f6233276799a8053548bde008702ab7",
+      "cron_worker_job": "job 1 active; first run succeeded; worker returned HTTP 200",
+      "meta_token_migration": "previously authorized Meta user token validated via Supabase pg_net with HTTP 200 and pages Predix AI Br + Predixai BR",
+      "local_flask": "stopped; 127.0.0.1:8765 free",
+      "github_pages_run_1": "failed: Pages site not enabled",
+      "github_pages_run_2": "failed: Resource not accessible by integration when enablement=true",
+      "github_pages_status": "blocked_by_github_integration_permissions"
     },
     "identified_critical_dependencies": [
       "Electron",
