@@ -5,8 +5,8 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "P1_COMPLETE_P2_READY",
-  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; SUCCESSION_MEMORY_PERSISTED; IMPLEMENTATION_NOT_STARTED",
+  "current_state": "P2_BLOCKED_BY_CLOUD_PROVISIONING_PERMISSION",
+  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; P2_DATA_PLANE_PREPARED; CLOUD_PROVISIONING_BLOCKED; SUCCESSION_MEMORY_PERSISTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical Content Factory repository + provider live state",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
@@ -207,20 +207,29 @@
     "Não chamar uma superfície web de independente enquanto backend, dados ou workers ainda dependem do notebook.",
     "Toda transição crítica precisa de evidência e rollback."
   ],
-  "current_blockers": [],
+  "current_blockers": [
+    {
+      "id": "INFRA-BLOB-PROVISIONING-001",
+      "type": "PROVIDER_PERMISSION",
+      "status": "OPEN",
+      "evidence": "Vercel Blob create request returned 403 Forbidden",
+      "consequence": "P2 cannot perform actual media migration until an authorized persistent storage destination exists"
+    }
+  ],
   "known_risks": [
     "Gemini hoje está acoplado a WebView Electron local.",
     "OAuth atual usa callback localhost.",
     "Parte do estado e da biblioteca depende do filesystem local.",
     "VoiceHub é local e pode estar acoplado a fluxos de interface/comunicação.",
-    "A superfície Vercel existente não equivale ao runtime completo do Electron."
+    "A superfície Vercel existente não equivale ao runtime completo do Electron.",
+    "P2 está bloqueado por permissão de provisionamento de Blob; não repetir a mesma chamada sem mudança de autorização."
   ],
   "definition_of_done": "Content Factory V1 é um serviço web persistente que pode ser operado por navegador em outro dispositivo, com backend, dados, mídia, jobs, OAuth e integrações funcionando fora do notebook, e com E2E comprovado com o notebook fora do caminho funcional.",
-  "next_action": "Executar P2 — provisionar armazenamento persistente cloud e criar o esquema inicial de migração, mantendo o runtime local como fallback.",
-  "required_validation_for_next_action": "Database/object storage devem estar externos ao notebook, com RLS/segredos/ownership definidos e migração reversível.",
+  "next_action": "Resolver a permissão de provisionamento do data plane cloud e então executar P2 — schema, storage, checkpoints, migração e reconciliação.",
+  "required_validation_for_next_action": "Confirmar um destino cloud persistente autorizado para banco e storage antes de mover qualquer dado real.",
   "current_progress": {
-    "completed_phase": "P1",
-    "status": "PASS",
+    "completed_phase": "P2_PREPARATION",
+    "status": "BLOCKED",
     "evidence": {
       "content_factory_inventory": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P0-INVENTORY.md",
       "content_factory_branch": "mission/notebook-independence-001",
@@ -228,7 +237,9 @@
       "mcf_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md",
       "mcf_checkpoint": "context/checkpoints/mcf-content-factory-v1-notebook-independence-001-p0.json",
       "mcf_handbook_commit": "b41695f9be9ea1fc58929672694e6af3bfa129ea",
-      "mcf_checkpoint_commit": "1f3b5706aed7e1a81301b7edb9ae1f845c8174b7"
+      "mcf_checkpoint_commit": "1f3b5706aed7e1a81301b7edb9ae1f845c8174b7",
+      "content_factory_p2_blueprint": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P2-DATA-PLANE.md",
+      "content_factory_p2_commit": "bcd5eeaa98af7ea1b2380e2063f38f9486a64011b"
     },
     "identified_critical_dependencies": [
       "Electron",
@@ -242,11 +253,19 @@
       "in-memory card jobs",
       "local Meta connection/token store"
     ],
-    "next_phase": "P2_DATA_PLANE",
+    "next_phase": "P2_DATA_PLANE_IMPLEMENTATION",
     "architecture_evidence": {
       "content_factory_architecture": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P1-ARCHITECTURE.md",
       "project_branch": "mission/notebook-independence-001",
       "architecture_commit": "23b5b4a564e935ac4bf64cdfaa43c1a48f01d11a"
+    },
+    "infrastructure_blocker": {
+      "provider": "Vercel Blob",
+      "project_id": "prj_0uvg7XxVa6PgyotFCv2rx0t5X7hK",
+      "team_id": "team_D45x1LavGkCy2ifRlrShm2WJ",
+      "result": "403 Forbidden — no permission to create the blob",
+      "retry_policy": "NO_RETRY; authorization failure",
+      "effect": "Object storage cannot yet be provisioned through the connected account."
     }
   }
 }
