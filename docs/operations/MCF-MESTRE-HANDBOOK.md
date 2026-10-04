@@ -184,14 +184,14 @@ Estado cloud comprovado:
 - Supabase project `ypocndnfbujvxwglrnzc` ACTIVE_HEALTHY;
 - Postgres + RLS ativos;
 - Storage privado `content-factory-media`;
-- Edge Function `content-factory-api` v6 ativa;
+- Edge Function `content-factory-api` v8 ativa;
 - security advisors: 0 lints;
 - Vercel recebeu as referências públicas do Data Plane.
 - Web cloud validada visualmente com Flask local parado e zero requisições para localhost.
-- Worker `content-factory-worker` v1 ativo.
+- Worker `content-factory-worker` v2 ativo.
 - `pg_cron` job `content-factory-worker-every-minute` ativo e primeira execução comprovada com HTTP 200.
 
-Próxima ação: concluir o cutover funcional da web/API e mover progressivamente conteúdo, biblioteca, mídia, jobs, OAuth, geração e publicação para fora do notebook.
+P3/P4/P5 avançaram: Data Plane, web cloud, worker e OAuth Meta estão prontos. Próxima ação: primeiro login real para claim idempotente; depois mover geração e publicação Meta para workers cloud.
 
 ## 18. Mandamento do MESTRE
 
