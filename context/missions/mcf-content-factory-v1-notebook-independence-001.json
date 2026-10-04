@@ -5,7 +5,7 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "P8_AUTHENTICATED_E2E_PENDING",
+  "current_state": "P8_AUTHENTICATED_E2E_PENDING_REAL_EMAIL",
   "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; P2_DATA_PLANE_COMPLETE; P3_CLOUD_SURFACE_PROVEN; P4_WORKER_INFRA_READY; P5_META_OAUTH_READY; P6_CLOUD_GENERATION_PROVEN; P7_HOSTING_COMPLETE; P8_AUTHENTICATED_E2E_PENDING; SUCCESSION_MEMORY_PERSISTED",
   "persistent_source_of_truth": "GitHub/MCF + canonical Content Factory repository + provider live state",
   "persistent_project": "content-factory-v1",
@@ -212,8 +212,8 @@
       "id": "AUTH-BOOTSTRAP-001",
       "type": "REAL_USER_AUTHENTICATION",
       "status": "OPEN",
-      "evidence": "Supabase auth.users remains empty; public production host is live; migration claim endpoint is ready.",
-      "consequence": "Final user-owned migration claim and publication E2E require a real authenticated session."
+      "evidence": "Supabase Auth requires email confirmation; disposable-mail E2E could not complete, and the temporary test account was removed. auth.users is back to 0.",
+      "consequence": "Final user-owned migration claim and Meta E2E cannot be completed without a permanent/real email capable of receiving the magic link."
     }
   ],
   "known_risks": [
@@ -223,8 +223,8 @@
     "Historical Meta publication IDs must never be reused as a new E2E item."
   ],
   "definition_of_done": "Content Factory V1 é um serviço web persistente que pode ser operado por navegador em outro dispositivo, com backend, dados, mídia, jobs, OAuth e integrações funcionando fora do notebook, e com E2E comprovado com o notebook fora do caminho funcional.",
-  "next_action": "Executar login real no host público, claim idempotente do acervo, criar novo item de teste, publicar via worker Meta, repetir o mesmo comando e provar ausência de duplicidade; então executar o E2E final com notebook fora do caminho.",
-  "required_validation_for_next_action": "Real authenticated session; claim succeeds once; browser-generated content persists; new Meta publication succeeds via durable worker; retry is no-op; notebook has no serving/runtime process.",
+  "next_action": "Use a permanent/real email for the production magic-link login, then claim migration idempotently, create a new test item, publish through the durable Meta worker, retry once, and prove no duplicate; finish with notebook-off E2E.",
+  "required_validation_for_next_action": "One authenticated session; claim returns claimed=true once and is stable on retry; staged 13-file migration and 7 library/6 publication records become owner-scoped; new Meta publication succeeds; second queue/publish attempt is a no-op; no local runtime required.",
   "current_progress": {
     "completed_phase": "P8_HOSTING_COMPLETE",
     "status": "IN_PROGRESS",
@@ -333,7 +333,14 @@
       "vercel_production_source": "git",
       "vercel_production_local_requests": 0,
       "meta_token_validation": "HTTP 200 via Supabase pg_net; pages Predix AI Br and Predixai BR confirmed",
-      "browser_generation": "Canvas 2D; visually validated"
+      "browser_generation": "Canvas 2D; visually validated",
+      "auth_mode": "Supabase magic link",
+      "auth_mailer_autoconfirm": false,
+      "auth_e2e_test": "DISPOSABLE_EMAIL_FAILED_NO_SESSION",
+      "auth_e2e_test_account": "REMOVED",
+      "auth_users_after_cleanup": 0,
+      "auth_e2e_no_content_created": true,
+      "auth_e2e_no_social_publication": true
     },
     "identified_critical_dependencies": [
       "Electron",

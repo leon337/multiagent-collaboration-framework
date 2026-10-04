@@ -179,6 +179,14 @@ P6: COMPLETE — geração de cartão no navegador, sem Gemini WebView, visualme
 P7: COMPLETE — host público Vercel estável em https://content-factory-v1.vercel.app/; artefato público GitHub Pages também ativo em https://leon337.github.io/content-factory-v1-web/.
 P8: PENDING — autenticação real + claim + E2E final.
 
+Regra do gate Auth:
+- O produto usa Supabase magic link.
+- mailer_autoconfirm=false; verificação de e-mail é obrigatória.
+- E-mail descartável não deve ser usado como bypass.
+- O teste E2E técnico com e-mail descartável falhou e a conta técnica foi removida; auth.users voltou a 0.
+- Não afrouxar Auth apenas para fechar a missão.
+- O próximo teste deve usar e-mail permanente/real com capacidade de receber o magic link.
+
 Estado cloud comprovado:
 - Supabase project ypocndnfbujvxwglrnzc ACTIVE_HEALTHY.
 - Edge Function content-factory-api v11.
