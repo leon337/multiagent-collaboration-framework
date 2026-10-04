@@ -17,6 +17,7 @@ ownership:
 
 context:
   capsule_path: .mcf/project-capsule.yaml
+  mestre_handbook: docs/operations/MCF-MESTRE-HANDBOOK.md
   canonical_entrypoints:
     - README.md
     - .mcf/project-capsule.yaml
