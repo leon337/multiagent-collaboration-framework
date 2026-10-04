@@ -177,8 +177,16 @@ Baseline conhecido:
 - notebook ainda é dependência operacional.
 
 P0: COMPLETE.
+P1: COMPLETE.
+P2: PREPARAÇÃO COMPLETE / IMPLEMENTAÇÃO BLOQUEADA POR INFRAESTRUTURA.
 
-Próxima ação: P1 — definir a arquitetura cloud target e o plano de migração antes de modificar o caminho de produção.
+Estado atual:
+- Data Plane cloud especificado e persistido no Content Factory;
+- destino Vercel Blob identificado, mas o provisionamento retornou 403 Forbidden;
+- não repetir a mesma operação enquanto a permissão efetiva não mudar;
+- nenhum dado local foi migrado e nenhum runtime foi removido.
+
+Próxima ação: provisionar um data plane cloud autorizado e executar P2 — schema, storage, checkpoints, migração, reconciliação e teste de restart.
 
 ## 18. Mandamento do MESTRE
 
