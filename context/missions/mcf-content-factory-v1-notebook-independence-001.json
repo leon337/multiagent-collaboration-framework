@@ -1,0 +1,334 @@
+{
+  "mission_id": "MCF-CONTENT-FACTORY-V1-NOTEBOOK-INDEPENDENCE-001",
+  "title": "Content Factory V1 — eliminar dependência operacional do notebook",
+  "risk_class": "B",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "decision_authority": "LEANDRO",
+  "current_state": "P5_META_OAUTH_READY_AUTH_CLAIM_PENDING",
+  "execution_status": "MISSION_CREATED; P0_BASELINE_COMPLETE; P1_ARCHITECTURE_DEFINED; P2_DATA_PLANE_COMPLETE; P3_CLOUD_SURFACE_PROVEN; P4_WORKER_INFRA_READY; P5_META_OAUTH_READY; AUTHENTICATED_CLAIM_PENDING; SUCCESSION_MEMORY_PERSISTED",
+  "persistent_source_of_truth": "GitHub/MCF + canonical Content Factory repository + provider live state",
+  "persistent_project": "content-factory-v1",
+  "canonical_repository": "leon337/content-factory-v1",
+  "related_mcf_issue": 399,
+  "related_mcf_registration": {
+    "bootstrap_pr": 398,
+    "bootstrap_branch": "feat/content-factory-v1-mission-20261004"
+  },
+  "mission_objective": "Evoluir o Content Factory V1 para serviço operacional independente do notebook de LEANDRO. O notebook deve deixar de ser servidor, banco, armazenamento obrigatório, ponte de OAuth, runtime do backend ou componente necessário para geração e publicação. O usuário deverá conseguir acessar e operar a aplicação por navegador a partir de outro dispositivo.",
+  "target_architecture": {
+    "flow": "QUALQUER_DISPOSITIVO -> WEB_APP -> CLOUD_BACKEND -> DATABASE + OBJECT_STORAGE + QUEUE/WORKERS -> EXTERNAL_PROVIDERS",
+    "notebook_role_after_mission": [
+      "desenvolvimento",
+      "manutenção",
+      "backup operacional temporário durante migração"
+    ],
+    "notebook_must_not_be_required_for": [
+      "acesso à aplicação",
+      "backend",
+      "banco de dados",
+      "armazenamento de mídia",
+      "fila de jobs",
+      "OAuth callback",
+      "geração de conteúdo",
+      "publicação social",
+      "consulta do histórico"
+    ]
+  },
+  "baseline": {
+    "current_architecture": "Electron + Flask local + filesystem local + VoiceHub local + Gemini embutido em Electron webview + OAuth callback localhost + Vercel como superfície web compatível",
+    "local_runtime": "127.0.0.1:8765",
+    "voicehub_runtime": "127.0.0.1:8788",
+    "electron_cdp": 9222,
+    "gemini_mode": "embedded Electron webview; no Gemini API",
+    "oauth_callback": "http://localhost:8765/oauth/meta/callback",
+    "vercel_role": "web surface / public HTTPS media staging; not equivalent to full Electron runtime",
+    "current_content_factory_head": "d0e63af5ada997849aff3d94def22838fdc7fe59",
+    "existing_e2e": {
+      "card_id": "card-000007",
+      "instagram_publication_id": "pub-000006",
+      "instagram_media_id": "18632882776034536",
+      "facebook_publication_id": "pub-000007",
+      "facebook_post_id": "1361411827052419_122093972841509198",
+      "retry_idempotency": "PASS"
+    }
+  },
+  "scope": [
+    "Inventariar todas as dependências locais e classificá-las como eliminar, substituir, manter apenas para desenvolvimento ou tornar opcionais.",
+    "Definir arquitetura cloud-first com frontend web, backend, banco persistente, object storage, fila/workers, observabilidade e gestão de segredos.",
+    "Migrar estado, biblioteca, mídia, publicações e evidências sem perder IDs externos nem proteção contra duplicidade.",
+    "Substituir qualquer caminho funcional baseado em localhost, filesystem do notebook ou processo Electron.",
+    "Substituir o Gemini embutido em WebView local por integração de produção apropriada ou mecanismo cloud aprovado.",
+    "Mover OAuth para callback público seguro.",
+    "Executar publicação social oficialmente por API, preservando idempotência.",
+    "Estabelecer CI/CD e operações reproduzíveis sem comandos manuais no notebook.",
+    "Manter o runtime local como fallback durante a migração até a prova final de independência.",
+    "Executar E2E com o notebook fora do caminho operacional."
+  ],
+  "non_goals": [
+    "Reescrever o MCF inteiro.",
+    "Trocar Meta API oficial por automação visual.",
+    "Apagar imediatamente o runtime local existente.",
+    "Considerar somente a hospedagem do frontend como prova de independência.",
+    "Colocar segredos ou tokens no repositório."
+  ],
+  "phases": [
+    {
+      "phase_id": "P0",
+      "name": "BASELINE",
+      "objective": "Mapear dependências reais e congelar o estado conhecido antes da migração.",
+      "exit_criteria": [
+        "Matriz completa notebook -> serviço cloud/alternativa.",
+        "Todos os fluxos críticos identificados.",
+        "Dados e IDs que precisam ser preservados definidos."
+      ]
+    },
+    {
+      "phase_id": "P1",
+      "name": "ARCHITECTURE",
+      "objective": "Definir e registrar a arquitetura cloud target e o plano de migração.",
+      "exit_criteria": [
+        "Arquitetura aprovada no MCF.",
+        "Componentes, limites, segredos e responsabilidades definidos.",
+        "Plano de rollback definido."
+      ]
+    },
+    {
+      "phase_id": "P2",
+      "name": "DATA_PLANE",
+      "objective": "Tornar estado, biblioteca e mídia persistentes fora do notebook.",
+      "exit_criteria": [
+        "Banco cloud operacional.",
+        "Object storage operacional.",
+        "Migração reproduzível.",
+        "Integridade do estado e IDs externos comprovada."
+      ]
+    },
+    {
+      "phase_id": "P3",
+      "name": "APPLICATION_PLANE",
+      "objective": "Disponibilizar aplicação web e backend sem runtime Electron/Flask local.",
+      "exit_criteria": [
+        "Frontend acessível por navegador.",
+        "Backend cloud operacional.",
+        "Nenhum localhost é requisito funcional.",
+        "Funções essenciais executam sem filesystem local."
+      ]
+    },
+    {
+      "phase_id": "P4",
+      "name": "JOBS_AND_MEDIA",
+      "objective": "Mover geração, preparação de mídia, fila e workers para ambiente independente.",
+      "exit_criteria": [
+        "Fila persiste durante restart.",
+        "Workers processam jobs sem notebook.",
+        "Mídia fica disponível por URL pública estável quando exigida por provider."
+      ]
+    },
+    {
+      "phase_id": "P5",
+      "name": "INTEGRATIONS",
+      "objective": "Migrar OAuth, geração e publicação para integrações de produção.",
+      "exit_criteria": [
+        "OAuth não usa localhost.",
+        "Instagram publicado por ambiente cloud.",
+        "Facebook publicado por ambiente cloud.",
+        "Geração de conteúdo não depende do Gemini em WebView local.",
+        "Segredos ficam fora do Git."
+      ]
+    },
+    {
+      "phase_id": "P6",
+      "name": "CUTOVER",
+      "objective": "Trocar a operação principal para cloud sem perder o fallback local.",
+      "exit_criteria": [
+        "Cloud torna-se caminho operacional principal.",
+        "Rollback testado.",
+        "Observabilidade e health checks ativos."
+      ]
+    },
+    {
+      "phase_id": "P7",
+      "name": "INDEPENDENCE_PROOF",
+      "objective": "Provar que o notebook não participa do caminho funcional.",
+      "exit_criteria": [
+        "Notebook desligado ou completamente fora da execução.",
+        "Outro dispositivo acessa a aplicação.",
+        "Novo conteúdo é criado.",
+        "Conteúdo é armazenado e processado.",
+        "Publicação autorizada é concluída.",
+        "Resultado externo e estado persistido são comprovados.",
+        "Retry do mesmo item não cria duplicata.",
+        "Reinício de serviços cloud não perde o estado."
+      ]
+    }
+  ],
+  "acceptance_criteria": {
+    "runtime": [
+      "Aplicação principal funciona sem Electron local.",
+      "Backend de produção roda fora do notebook.",
+      "Banco e object storage são externos e persistentes.",
+      "Nenhum arquivo em /home/leo é requisito funcional.",
+      "Nenhum serviço em 127.0.0.1 é requisito funcional."
+    ],
+    "integrations": [
+      "OAuth de produção não depende de localhost.",
+      "Instagram funciona por ambiente cloud.",
+      "Facebook funciona por ambiente cloud.",
+      "Geração de conteúdo funciona sem Gemini WebView local.",
+      "Credenciais e tokens não são versionados."
+    ],
+    "continuity": [
+      "Celular consegue acessar funções essenciais.",
+      "Outro computador consegue acessar a aplicação.",
+      "Fila e histórico sobrevivem a restart.",
+      "Estado pode ser recuperado sem o notebook.",
+      "Operação normal não exige processo residente no notebook."
+    ],
+    "governance": [
+      "Proteção contra publicação duplicada permanece ativa.",
+      "Estados intermediários são explícitos.",
+      "Ações irreversíveis deixam evidência persistente.",
+      "Rollback existe durante a migração.",
+      "MCF registra estado, evidência, blockers e próxima ação."
+    ],
+    "final_proof": [
+      "E2E completo executado com notebook fora do caminho.",
+      "IDs externos, logs e estados persistentes registrados.",
+      "Sucessor consegue retomar a operação apenas pelo ambiente cloud.",
+      "Missão não é encerrada apenas porque a interface foi hospedada."
+    ]
+  },
+  "safety_invariants": [
+    "Não apagar o runtime local antes da prova final.",
+    "Não migrar publicação social sem preservar idempotência.",
+    "Não duplicar posts para testar.",
+    "Não colocar tokens ou App Secrets no Git.",
+    "Não chamar uma superfície web de independente enquanto backend, dados ou workers ainda dependem do notebook.",
+    "Toda transição crítica precisa de evidência e rollback."
+  ],
+  "current_blockers": [
+    {
+      "id": "AUTH-BOOTSTRAP-001",
+      "type": "REAL_USER_AUTHENTICATION",
+      "status": "OPEN",
+      "evidence": "Supabase auth.users count is 0; migration batch is staged closed and claim endpoint is ready",
+      "consequence": "The real user's identity is required before claiming the migrated workspace without inventing an owner."
+    },
+    {
+      "id": "VERCEL-PROD-ALIAS-001",
+      "type": "PROVIDER_PERMISSION",
+      "status": "OPEN",
+      "evidence": "request_promote and assign_alias returned 404/403 for the Vercel project scope",
+      "consequence": "Cloud-first build is available on the ready preview URL, but canonical production alias has not been switched by this connector."
+    }
+  ],
+  "known_risks": [
+    "Gemini hoje está acoplado a WebView Electron local.",
+    "OAuth atual usa callback localhost.",
+    "Parte do estado e da biblioteca depende do filesystem local.",
+    "VoiceHub é local e pode estar acoplado a fluxos de interface/comunicação.",
+    "A superfície Vercel existente não equivale ao runtime completo do Electron.",
+    "Vercel Blob não foi usado como Data Plane; Supabase Storage é a fonte cloud adotada.",
+    "Deployment automático pós-commit Git precisa de validação no Vercel; último deployment comprovado veio do GitHub.",
+    "Canonical production alias is not switched because the Vercel connector returns 403 on alias/promotion; the independent preview remains available.",
+    "Authenticated migration claim cannot be completed until a real Supabase user session exists."
+  ],
+  "definition_of_done": "Content Factory V1 é um serviço web persistente que pode ser operado por navegador em outro dispositivo, com backend, dados, mídia, jobs, OAuth e integrações funcionando fora do notebook, e com E2E comprovado com o notebook fora do caminho funcional.",
+  "next_action": "Executar primeiro login real no Content Factory para o claim idempotente do acervo e, em seguida, concluir o worker Meta de publicação e a migração da geração de conteúdo para cloud.",
+  "required_validation_for_next_action": "Login real cria sessão; claim retorna claimed=true sem duplicação; biblioteca, 13 mídias e 6 publicações migradas ficam vinculadas ao workspace; workers processam jobs sem notebook.",
+  "current_progress": {
+    "completed_phase": "P5_META_OAUTH",
+    "status": "IN_PROGRESS",
+    "evidence": {
+      "content_factory_inventory": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P0-INVENTORY.md",
+      "content_factory_branch": "mission/notebook-independence-001",
+      "content_factory_capsule_update_commit": "c2b9ce76a301c01804537cab0baf54213f13653b",
+      "mcf_handbook": "docs/operations/MCF-MESTRE-HANDBOOK.md",
+      "mcf_checkpoint": "context/checkpoints/mcf-content-factory-v1-notebook-independence-001-p0.json",
+      "mcf_handbook_commit": "b41695f9be9ea1fc58929672694e6af3bfa129ea",
+      "mcf_checkpoint_commit": "1f3b5706aed7e1a81301b7edb9ae1f845c8174b7",
+      "content_factory_p2_blueprint": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P2-DATA-PLANE.md",
+      "content_factory_p2_commit": "bcd5eeaa98af7ea1b2380e2063f38f9486a64011b",
+      "supabase_project_id": "ypocndnfbujvxwglrnzc",
+      "supabase_project_region": "sa-east-1",
+      "supabase_project_status": "ACTIVE_HEALTHY",
+      "supabase_storage_bucket": "content-factory-media",
+      "supabase_api_function": "content-factory-api",
+      "supabase_api_function_version": 8,
+      "supabase_security_advisors": "0 lints",
+      "supabase_migrations": "20261004213508 content_factory_v1_data_plane; 20261004213540 content_factory_v1_security_fix; subsequent security hardening/policy access/workspace bootstrap migrations",
+      "vercel_project_id": "prj_0uvg7XxVa6PgyotFCv2rx0t5X7hK",
+      "vercel_env_configured": [
+        "CONTENT_FACTORY_SUPABASE_URL",
+        "CONTENT_FACTORY_API_URL",
+        "CONTENT_FACTORY_SUPABASE_PUBLISHABLE_KEY"
+      ],
+      "content_factory_cloud_ui_commit": "21e949b2d911b75d6f901de0b6edd4c324b2c795",
+      "content_factory_vercel_routing_commit": "a61744db1fc5ad39057718a9f97b08b084faa3c3",
+      "supabase_migration_helper": "content-factory-migrate v2",
+      "migration_batch_id": "648f735d-4be6-4c97-97c6-ad72044bcb2f",
+      "migration_file_count": 13,
+      "migration_total_bytes": 5567224,
+      "migration_library_records": 7,
+      "migration_publication_records": 6,
+      "cloud_staging_reconciled": true,
+      "cloud_preview_deployment_id": "dpl_HsGuPr5zxLmQvmM55dafjsb6qfHF",
+      "cloud_preview_deployment_state": "READY",
+      "cloud_preview_url": "https://content-factory-v1-f5fvtcl8e-predix-ai-br.vercel.app",
+      "local_flask_port_8765": "STOPPED",
+      "local_request_count_from_cloud_ui": 0,
+      "visual_validation": "PASS",
+      "durable_worker_function": "content-factory-worker v1 ACTIVE",
+      "durable_worker_function_id": "b584a3d7-7519-4e18-8d85-4adf58389698",
+      "cron_job_name": "content-factory-worker-every-minute",
+      "cron_job_id": 1,
+      "cron_job_active": true,
+      "cron_first_run_status": "succeeded",
+      "cron_worker_http_status": 200,
+      "vercel_production_alias_attempt": "403 Forbidden",
+      "supabase_worker_version": 2,
+      "vault_acl": "service_role only",
+      "meta_vault_credentials": "stored",
+      "oauth_state_table": "active",
+      "meta_oauth_start_endpoint": "/connections/meta/start",
+      "meta_oauth_callback_endpoint": "/oauth/meta/callback",
+      "migration_claim_endpoint": "/bootstrap/claim-migration",
+      "durable_worker": "content-factory-worker v2 ACTIVE",
+      "cron_job": "content-factory-worker-every-minute active",
+      "web_independence_test": "PASS with local Flask stopped",
+      "local_backend_port": "8765 free",
+      "local_request_count": "0"
+    },
+    "identified_critical_dependencies": [
+      "Electron",
+      "Flask localhost",
+      "local filesystem state",
+      "VoiceHub localhost",
+      "Gemini persistent browser/WebView",
+      "Electron IPC image storage",
+      "OAuth localhost callback",
+      "local Vercel CLI media deployment",
+      "in-memory card jobs",
+      "local Meta connection/token store"
+    ],
+    "next_phase": "P6_CLOUD_GENERATION_AND_PUBLISHING",
+    "architecture_evidence": {
+      "content_factory_architecture": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-P1-ARCHITECTURE.md",
+      "project_branch": "mission/notebook-independence-001",
+      "architecture_commit": "23b5b4a564e935ac4bf64cdfaa43c1a48f01d11a"
+    },
+    "infrastructure_blocker": null,
+    "cloud_validation": {
+      "schema_rls": "PASS",
+      "security_advisors": "PASS 0 lints",
+      "storage_bucket": "PASS_PRIVATE",
+      "edge_function": "ACTIVE",
+      "worker_function": "ACTIVE",
+      "cron_scheduler": "ACTIVE",
+      "no_local_request_from_web_ui": "PASS",
+      "local_backend_after_stop": "PORT_8765_FREE",
+      "visual_validation": "PASS"
+    }
+  }
+}

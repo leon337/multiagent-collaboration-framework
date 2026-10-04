@@ -1,0 +1,65 @@
+# MCF-CONTENT-FACTORY-V1-NOTEBOOK-INDEPENDENCE-001 — P0 CHECKPOINT
+
+## Mission
+MCF-CONTENT-FACTORY-V1-NOTEBOOK-INDEPENDENCE-001
+
+## Phase
+P0 — BASELINE
+
+## Objective
+Eliminar a dependência operacional do notebook do Content Factory sem destruir o runtime atual durante a migração.
+
+## Current state
+P0_COMPLETE / P1_READY
+
+## Evidence
+- Repository: `leon337/content-factory-v1`
+- Baseline main head: `d0e63af5ada997849aff3d94def22838fdc7fe59`
+- P0 inventory: `docs/migration/NOTEBOOK-INDEPENDENCE-P0-INVENTORY.md`
+- Project capsule updated with active mission.
+- MCF Issue: #399
+- MCF mission branch: `mission/content-factory-v1-notebook-independence-001`
+
+## Proven local dependencies
+- Electron shell
+- Flask backend at 127.0.0.1:8765
+- local filesystem storage
+- VoiceHub at 127.0.0.1:8788
+- Gemini persistent browser/WebView flow
+- Electron IPC for image capture/storage
+- OAuth callback on localhost
+- local Vercel CLI media deployment
+- in-memory card jobs
+- local Meta connection/token store
+
+## Proven behavior to preserve
+- official Meta API only;
+- Instagram publication;
+- Facebook publication;
+- external publication IDs;
+- duplicate protection / idempotent retry;
+- library registration;
+- explicit publication states;
+- public HTTPS media transport;
+- local runtime as migration fallback.
+
+## Ambiguities
+- Exact production provider for content/image generation has not yet been selected.
+- Exact cloud database/storage/queue composition has not yet been selected.
+- VoiceHub replacement strategy has not yet been selected.
+
+## Blockers
+None for P0 completion. P1 requires architecture selection and resource/configuration decisions.
+
+## Duplicate risk
+LOW for P0 because no external publication was created during inventory.
+
+## Next action
+Execute P1 — define the target cloud architecture, service boundaries, data model, secret handling, queue/workers, provider boundaries and rollback strategy.
+
+## Required validation for P1
+- architecture covers all dependencies in the P0 matrix;
+- no hidden localhost/filesystem requirement remains;
+- migration preserves existing external IDs and idempotency;
+- target architecture is deployable independently of the notebook;
+- cutover and rollback are explicit.
