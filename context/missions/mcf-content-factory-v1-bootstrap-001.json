@@ -5,201 +5,117 @@
   "coordinator": "MESTRE",
   "human_authority": "LEANDRO",
   "decision_authority": "LEANDRO",
-  "current_state": "EXECUTING",
+  "current_state": "EM_EXECUCAO",
+  "execution_status": "REQUESTED_SCOPE_EXECUTED; MCF_CANONICAL_MERGE_PENDING",
   "persistent_source_of_truth": "GitHub/MCF + project repository + provider live",
   "persistent_project": "content-factory-v1",
   "canonical_repository": "leon337/content-factory-v1",
   "local_workspace": "/home/leo/projetos/content_factory_v1",
-  "started_at": "2026-10-04T07:00:00Z",
-  "mission_objective": "Preservar integralmente o Content Factory V1 já construído, registrar o projeto e esta missão no MCF para continuidade persistente, criar o repositório oficial do projeto, publicar uma superfície Vercel compatível usando o Vercel CLI autenticado no notebook e deixar documentado o estado real das integrações oficiais de publicação, sem introduzir regressões ou destruir o trabalho existente.",
-  "expected_outcome": "Projeto registrado no MCF com contexto persistente; repositório GitHub criado e contendo apenas código/documentação segura; aplicação desktop preservada; superfície web Vercel publicada e verificada quando tecnicamente compatível; Meta documentada com OAuth funcionando e blocker real de asset explicitado; LinkedIn mantido como próxima integração.",
-  "user_authorization": "LEANDRO autorizou explicitamente nesta missão a execução ponta a ponta, criação do repositório do projeto e publicação na Vercel. Essa autorização não autoriza alterações no main do MCF, nem publicação social de conteúdo.",
-  "source_of_truth": [
-    "leon337/multiagent-collaboration-framework",
-    "GitHub provider live",
-    "Content Factory local workspace /home/leo/projetos/content_factory_v1",
-    "Vercel provider live"
+  "mission_objective": "Preservar integralmente o Content Factory V1 já construído, registrar projeto e missão no MCF para continuidade persistente, criar repositório oficial do projeto, publicar uma superfície Vercel compatível usando Vercel CLI no notebook e documentar o estado real das integrações oficiais, sem regressões ou destruição do trabalho existente.",
+  "user_authorization": "LEANDRO autorizou explicitamente a execução ponta a ponta, criação do repositório e publicação na Vercel. Não há autorização implícita para publicação social de conteúdo.",
+  "requested_scope_completed": [
+    "preservação do aplicativo desktop existente",
+    "registro persistente do projeto/missão no MCF branch dedicado",
+    "criação do repositório privado leon337/content-factory-v1",
+    "snapshot Git inicial e push para origin/main",
+    "criação de .mcf/project-capsule.yaml",
+    "documentação durável de estado em docs/PROJECT-STATE-2026-10-04.md",
+    "criação de superfície web compatível em web/index.html",
+    "publicação em produção na Vercel via CLI",
+    "smoke test público e regressão local"
   ],
-  "selected_agents": [
-    "MESTRE",
-    "Leonardo",
-    "Sofia",
-    "Rafael",
-    "Renato",
-    "Ricardo",
-    "Gabriel",
-    "Bruno",
-    "Carmem",
-    "Emily"
-  ],
-  "selected_skills": [
-    "MCF-START-MISSION",
-    "MCF-SELECT-AGENTS",
-    "MCF-IMPLEMENT-CHANGE",
-    "MCF-REVIEW-CODE",
-    "MCF-RUN-TESTS",
-    "MCF-GIT-PR-RELEASE",
-    "MCF-DEPLOY-VALIDATE",
-    "MCF-TRACE-MISSION"
-  ],
-  "project_state_today": {
-    "ui": {
-      "version": "ui5",
-      "layout": "BIBLIOTECA 20% | WORKSPACE 40% | GEMINI 40%",
-      "workspace_vertical_split": "CHAT 50% | CARTÃO 50%",
-      "grid_css": "grid-template-columns:minmax(190px,20%) minmax(320px,40%) minmax(360px,40%)",
-      "gemini_mode": "embedded Electron webview, not external tab"
+  "evidence": {
+    "project_repo": "https://github.com/leon337/content-factory-v1",
+    "repo_head": "f70b062bed1894abe524d7621a759fa27959be70",
+    "vercel_project": "predix-ai-br/content-factory-v1",
+    "vercel_url": "https://content-factory-v1.vercel.app",
+    "vercel_inspect": "https://vercel.com/predix-ai-br/content-factory-v1/8MAfDpKGxbqX7TfdmULY8fyys17M",
+    "local_ping": "Content Factory V1 /api/ping PASS",
+    "python_compile": "PASS",
+    "secret_tracking": "No OAuth token/App Secret/browser profile/storage state tracked"
+  },
+  "today_state": {
+    "ui_version": "ui5",
+    "layout": "BIBLIOTECA 20% | WORKSPACE 40% | GEMINI 40%",
+    "workspace_vertical_split": "CHAT 50% | CARTÃO 50%",
+    "card_generator_item": 91,
+    "card_formats": [
+      "Instagram square 1080x1080",
+      "Instagram portrait",
+      "Instagram story",
+      "Facebook post",
+      "LinkedIn post"
+    ],
+    "card_styles": [
+      "Profissional e moderno",
+      "Minimalista",
+      "Impactante",
+      "Tecnológico"
+    ],
+    "library": [
+      "cards",
+      "images",
+      "videos",
+      "audio",
+      "documents",
+      "other"
+    ],
+    "publication_queue": [
+      "draft",
+      "scheduled",
+      "queued",
+      "publishing",
+      "published",
+      "failed"
+    ],
+    "publication_test": "create -> schedule -> queue -> next",
+    "runtime": "Electron + Flask local; 127.0.0.1:8765; Electron CDP 9222; Brave CDP 9224; VoiceHub 127.0.0.1:8788",
+    "gemini": "embedded Electron webview; no Gemini API",
+    "meta": {
+      "app_id": "920266500921182",
+      "business_portfolio": "Predix AI Br",
+      "business_id": "1314936787249884",
+      "instagram_app_id": "1633011034857391",
+      "redirect_uri": "http://localhost:8765/oauth/meta/callback",
+      "oauth": "SUCCESS",
+      "connection": "CONNECTED",
+      "asset_identification": "PENDING",
+      "blocker": "/me/accounts returned HTTP 200 with no pages and owned_pages returned HTTP 200 empty; no Facebook Page is exposed under the authenticated business portfolio.",
+      "official_api_only": true,
+      "secrets": "local only; excluded from repository"
     },
-    "card_generator": {
-      "item": 91,
-      "formats": [
-        "Instagram square 1080x1080",
-        "Instagram portrait",
-        "Instagram story",
-        "Facebook post",
-        "LinkedIn post"
-      ],
-      "styles": [
-        "Profissional e moderno",
-        "Minimalista",
-        "Impactante",
-        "Tecnológico"
-      ],
-      "fields": [
-        "Tema",
-        "Texto principal",
-        "Texto secundário",
-        "CTA",
-        "Marca/nome"
-      ],
-      "button": "🎨 Gerar no Gemini",
-      "known_generated_files": [
-        "card-000001.png",
-        "card-000004.png"
-      ]
-    },
-    "library": {
-      "root": "storage/library",
-      "subfolders": [
-        "cards",
-        "images",
-        "videos",
-        "audio",
-        "documents",
-        "other"
-      ],
-      "index": "storage/database/library_index.json",
-      "search_and_filters": true
-    },
-    "publication_queue": {
-      "file": "storage/database/publication_queue.json",
-      "channels": [
-        "instagram",
-        "facebook",
-        "linkedin"
-      ],
-      "statuses": [
-        "draft",
-        "scheduled",
-        "queued",
-        "publishing",
-        "published",
-        "failed"
-      ],
-      "tested_flow": "create → schedule → queue → next"
-    },
-    "runtime": {
-      "backend": "Flask",
-      "host": "127.0.0.1",
-      "port": 8765,
-      "desktop_url": "http://127.0.0.1:8765/desktop-workspace?v=ui5",
-      "electron_cdp_port": 9222,
-      "brave_cdp_port": 9224,
-      "voicehub_url": "http://127.0.0.1:8788"
-    },
-    "integrations": {
-      "gemini": {
-        "mode": "embedded webview",
-        "api_usage": false,
-        "purpose": "card generation"
-      },
-      "meta": {
-        "app_name": "Content Factory",
-        "app_id": "920266500921182",
-        "business_portfolio": "Predix AI Br",
-        "business_id": "1314936787249884",
-        "instagram_app_id": "1633011034857391",
-        "app_status": "unpublished",
-        "business_verification": "not verified",
-        "redirect_uri": "http://localhost:8765/oauth/meta/callback",
-        "oauth_result": "successful; callback returned Meta connected",
-        "connection_status": "connected",
-        "account_identity": "not yet identified",
-        "live_graph_checks": "/me/accounts returned 200 with no pages; /me/businesses returned Predix AI Br; owned_pages returned 200 with empty data",
-        "current_blocker": "No Facebook Page is attached/exposed under the authenticated business portfolio.",
-        "official_api_only": true,
-        "secret_storage": "local config/publication.env only; secret excluded from persistent artifacts"
-      },
-      "linkedin": {
-        "configured": false,
-        "client_credentials_present": false,
-        "oauth_complete": false,
-        "execution_order": "after Meta"
-      }
+    "linkedin": {
+      "configured": false,
+      "oauth_complete": false,
+      "order": "after Meta"
     },
     "notebook": {
       "os": "Linux Mint",
       "host": "leo-N43SM",
-      "remote_device_id": "03d54302-fd3a-4898-812c-4602cd0a54a7",
-      "github_account": "leon337",
-      "vercel_cli_version": "59.17.0",
-      "vercel_authenticated_as": "leon337",
-      "disk_state": "~1.2 GB free; filesystem at 100% usage when inspected",
-      "mcf_runtime_health": "127.0.0.1:3000/health/ready returned status ok"
+      "github": "leon337",
+      "vercel_cli": "59.17.0",
+      "filesystem_observed_free": "~1.2 GB"
     }
   },
-  "blockers": [
-    "Content Factory does not yet have a Git repository or GitHub remote.",
-    "Meta OAuth is connected but no publishable Facebook Page is exposed under the authenticated business portfolio.",
-    "LinkedIn is not configured yet.",
-    "The current Electron + local Flask + local filesystem + embedded Gemini runtime cannot be transplanted unchanged into Vercel; web publication must be a compatible web surface/companion.",
-    "Notebook root filesystem is critically full; avoid large installs/clones/build artifacts."
+  "safety_invariants": [
+    "No existing Content Factory data deleted",
+    "No MCF main write performed directly",
+    "No secrets or OAuth tokens committed",
+    "No social content published",
+    "Electron/local filesystem runtime not falsely deployed as Vercel server runtime"
   ],
-  "milestones": [
-    "P0 preserve current local state",
-    "P1 register persistent MCF project and mission",
-    "P2 create secure project Git repository",
-    "P3 write durable project capsule/context",
-    "P4 prepare Vercel-compatible web surface without changing desktop core",
-    "P5 deploy and verify with Vercel CLI",
-    "P6 record Meta/LinkedIn continuation state",
-    "P7 final trace and handoff"
+  "remaining_work": [
+    "Canonicalize the MCF project/mission records into main through the governed PR path.",
+    "Attach/expose the intended Facebook Page in Predix AI Br and complete Meta asset identification.",
+    "Configure LinkedIn after Meta.",
+    "Future evolution may replace the static web companion with a full hosted web architecture; desktop core remains intact until separately authorized."
   ],
-  "execution_boundary": {
-    "allowed": [
-      "preserve local app",
-      "create project repository",
-      "create safe git history",
-      "publish compatible web surface to Vercel via CLI",
-      "document and verify current integration state"
-    ],
-    "forbidden": [
-      "delete existing application data",
-      "overwrite unrelated MCF work",
-      "write to MCF main",
-      "publish social content",
-      "expose secrets",
-      "commit OAuth tokens or environment secrets",
-      "force a fake Vercel deployment of the Electron/local-filesystem runtime"
-    ]
-  },
-  "current_phase": "P0/P1",
-  "next_action": "Create the project repository safely, persist its capsule, then prepare and verify only a Vercel-compatible web surface.",
+  "current_phase": "P7-TRACE",
+  "next_action": "Reconcile the final mission records, open the MCF PR, and stop only at the applicable canonicalization gate.",
   "completion_requirements": [
-    "No pre-existing local project content lost",
-    "GitHub repository exists without secrets/tokens/browser state",
-    "MCF project and mission records persist on a dedicated branch with PR",
-    "Vercel deployment succeeds with evidence or is documented as technically blocked",
-    "Final mission state reconciled against live provider state"
+    "requested project repo and Vercel execution complete",
+    "final evidence recorded",
+    "MCF registration delivered through governed PR path",
+    "no regressions or secret leakage"
   ]
 }
