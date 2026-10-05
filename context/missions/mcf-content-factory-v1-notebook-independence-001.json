@@ -212,19 +212,19 @@
       "id": "AUTH-BOOTSTRAP-001",
       "type": "REAL_USER_AUTHENTICATION",
       "status": "OPEN",
-      "evidence": "Supabase Auth requires email confirmation; disposable-mail E2E could not complete, and the temporary test account was removed. auth.users is back to 0.",
-      "consequence": "Final user-owned migration claim and Meta E2E cannot be completed without a permanent/real email capable of receiving the magic link."
+      "evidence": "Supabase auth.users is 0. mailer_autoconfirm=false. Independent-browser disposable-email E2E failed; temporary technical account was removed.",
+      "consequence": "The legitimate user-owned migration claim and final Meta E2E require a permanent/real email capable of receiving the Supabase magic link."
     }
   ],
   "known_risks": [
-    "Final public host for latest main UI is not yet available because current Vercel/Render/GitHub Pages routes are blocked by provider limits or permissions.",
-    "Real user authentication is required before claiming the migrated workspace.",
+    "Real user authentication is required before claiming the staged workspace.",
     "Legacy Gemini WebView code remains only as fallback and must not re-enter the production path.",
-    "Historical Meta publication IDs must never be reused as a new E2E item."
+    "Historical Meta publication IDs must never be reused as a new E2E item.",
+    "GitHub Pages is unavailable for the private source repository through the current integration; the canonical functional host is Vercel."
   ],
   "definition_of_done": "Content Factory V1 é um serviço web persistente que pode ser operado por navegador em outro dispositivo, com backend, dados, mídia, jobs, OAuth e integrações funcionando fora do notebook, e com E2E comprovado com o notebook fora do caminho funcional.",
-  "next_action": "Use a permanent/real email for the production magic-link login, then claim migration idempotently, create a new test item, publish through the durable Meta worker, retry once, and prove no duplicate; finish with notebook-off E2E.",
-  "required_validation_for_next_action": "One authenticated session; claim returns claimed=true once and is stable on retry; staged 13-file migration and 7 library/6 publication records become owner-scoped; new Meta publication succeeds; second queue/publish attempt is a no-op; no local runtime required.",
+  "next_action": "Use a permanent/real email on the canonical production host, complete the Supabase magic-link session, claim migration idempotently, create one NEW test item, publish through the durable Meta worker, retry the same operation once, and prove no duplicate; then run the final no-notebook E2E.",
+  "required_validation_for_next_action": "Authenticated session; claim returns claimed=true once and is stable on retry; staged 13-file migration and 7 library/6 publication records become owner-scoped; new Meta publication succeeds; second queue/publication attempt is a no-op; notebook has no Content Factory runtime listening.",
   "current_progress": {
     "completed_phase": "P8_HOSTING_COMPLETE",
     "status": "IN_PROGRESS",
@@ -340,7 +340,12 @@
       "auth_e2e_test_account": "REMOVED",
       "auth_users_after_cleanup": 0,
       "auth_e2e_no_content_created": true,
-      "auth_e2e_no_social_publication": true
+      "auth_e2e_no_social_publication": true,
+      "canonical_production_host": "https://content-factory-v1.vercel.app/",
+      "auth_gate_live": "2026-10-04: auth.users=0; disposable test account removed; staging preserved; no content/social publication created by auth test.",
+      "notebook_runtime_live": "2026-10-04: Content Factory/Electron absent; 127.0.0.1:8765 FREE; local HTTP connection refused; shared VoiceHub 127.0.0.1:8788 intentionally preserved.",
+      "cloud_integrity_live": "2026-10-04: exposed public tables RLS-enabled; cf_migration_batches=1; cf_migration_files=13; security advisors=0 lints; content-factory-api v11 ACTIVE; content-factory-worker v4 ACTIVE.",
+      "content_factory_state_doc": "leon337/content-factory-v1/docs/migration/NOTEBOOK-INDEPENDENCE-CURRENT-STATE.md merged to main at f92f92e6ef3b96441666852167cd1a142ad05e69"
     },
     "identified_critical_dependencies": [
       "Electron",

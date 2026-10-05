@@ -203,6 +203,7 @@ Hosting:
 - Produção Vercel atual: dpl_B27mPoRqwBw7q1fNrEQpvYrCCXn8, source=git, target=production, aliases incluem content-factory-v1.vercel.app.
 - Artefato público separado: leon337/content-factory-v1-web, Pages workflow run 37242529275 SUCCESS.
 - GitHub Pages do repositório privado principal permanece bloqueado por plano/permissão; não é o host funcional da aplicação.
+- Snapshot live 2026-10-04: auth.users=0; migration staging permanece em 13 arquivos/7 library/6 publications; 127.0.0.1:8765 está livre; Content Factory/Electron não está rodando; VoiceHub 8788 é compartilhado e foi preservado.
 
 Próxima ação:
 login real -> claim idempotente -> novo item de teste -> publicação Meta via worker durável -> retry sem duplicidade -> E2E final com notebook fora do caminho.
