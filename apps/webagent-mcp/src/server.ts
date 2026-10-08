@@ -166,9 +166,7 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
             const events = browserRuntime.events(runId, { afterSeq, types, limit });
             return {
               events,
-              cursor: browserRuntime.events(runId, { limit: 1 }).length
-                ? Math.max(...events.map((event) => event.seq), afterSeq ?? 0)
-                : afterSeq ?? 0,
+              cursor: events.length ? events[events.length - 1].seq : afterSeq ?? 0,
             };
           },
           { evidence: [{ kind: 'runtime', ref: `browser-run-events:${runId}` }] },
