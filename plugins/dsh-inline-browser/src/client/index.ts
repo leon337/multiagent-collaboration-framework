@@ -9,6 +9,6 @@ export function apply(ctx: Context): void {
   ctx.slots.inject('tool.call.toolview', () =>
     ctx.slots.register({
       name: 'tool.call.toolview',
-      key: 'browser_goto',
+      key: 'browser_open',
     }, BrowserInlineRow))
 }

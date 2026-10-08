@@ -4,7 +4,7 @@ This plugin reuses the existing `dsh-builtin-browser` BrowserRuntime. It does no
 
 Architecture:
 
-`DSH session → browser_goto → dsh-builtin-browser BrowserRuntime → conversation-owned browser session → tabs → SSE live view → tool card`
+`DSH session → browser_open → dsh-builtin-browser BrowserRuntime → conversation-owned browser session → tabs → SSE live view → tool card`
 
 The live stream is bound to both the tool call id and the owning DSH session id. Chat A cannot subscribe to Chat B's browser stream.
 
