@@ -21,6 +21,16 @@ import {
 } from './mcf-ledger-read-api.service.js';
 import { McfLedgerReadController } from './mcf-ledger-read.controller.js';
 import {
+  loadMcfLedgerWriteConfiguration,
+  McfLedgerWriteApiService,
+} from './mcf-ledger-write-api.service.js';
+import { McfLedgerWriteController } from './mcf-ledger-write.controller.js';
+import {
+  loadMcfLedgerWriteIngressToken,
+  MCF_LEDGER_WRITE_INGRESS_TOKEN,
+  McfLedgerWriteTokenGuard,
+} from './mcf-ledger-write-token.guard.js';
+import {
   loadMcfLedgerReadIngressToken,
   MCF_LEDGER_READ_INGRESS_TOKEN,
   McfLedgerReadTokenGuard,
@@ -32,6 +42,7 @@ import {
     McfCloudContextReadController,
     McfContextRecoveryController,
     McfLedgerReadController,
+    McfLedgerWriteController,
   ],
   providers: [
     {
@@ -51,6 +62,17 @@ import {
       useFactory: () => McfLedgerReadApiService.fromEnvironment(process.env),
     },
     {
+      provide: McfLedgerWriteApiService,
+      useFactory: () => McfLedgerWriteApiService.fromEnvironment(process.env),
+    },
+    {
+      provide: MCF_LEDGER_WRITE_INGRESS_TOKEN,
+      useFactory: () =>
+        loadMcfLedgerWriteConfiguration(process.env) === null
+          ? null
+          : loadMcfLedgerWriteIngressToken(process.env),
+    },
+    {
       provide: MCF_LEDGER_READ_INGRESS_TOKEN,
       useFactory: () =>
         loadMcfLedgerReadConfiguration(process.env) === null
@@ -68,7 +90,13 @@ import {
     McfCloudContextIngressTokenGuard,
     McfContextReadTokenGuard,
     McfLedgerReadTokenGuard,
+    McfLedgerWriteTokenGuard,
   ],
-  exports: [McfCapabilityRegistryApiService, McfContextRecoveryApiService, McfLedgerReadApiService],
+  exports: [
+    McfCapabilityRegistryApiService,
+    McfContextRecoveryApiService,
+    McfLedgerReadApiService,
+    McfLedgerWriteApiService,
+  ],
 })
 export class McfContextModule {}
