@@ -450,6 +450,30 @@ skills:
     fallback: Usar busca site-scoped e páginas-semente, marcando cobertura PARCIAL; nunca alegar inventário completo sem evidência.
     handoff_to: Miriam
 
+  - skill_id: MCF-WEB-EVENTS
+    name: Observar eventos web em tempo real
+    version: 0.1.0
+    status: EXPERIMENTAL
+    purpose: Feedback incremental por eventos para agentes de navegador sem polling de snapshots.
+    owner_agents: [Mestre, Rafael]
+    supporting_agents: [Emily, Beatriz, Miriam]
+    allowed_tools: [WebAgent_MCP]
+    permission_profile: READ_ONLY
+    global_agent_capability: true
+    acceptance_criteria: [event_driven_wait, bounded_delta, cursor_monotonic, no_full_snapshot_polling]
+
+  - skill_id: MCF-WEB-FAST-NAV
+    name: Navegação web rápida orientada a eventos
+    version: 0.1.0
+    status: EXPERIMENTAL
+    purpose: Rota curta, estado incremental, eventos em tempo real e recuperação limitada para decisões rápidas.
+    owner_agents: [Mestre, Rafael, Emily, Beatriz]
+    supporting_agents: [Ricardo, Miriam]
+    allowed_tools: [WebAgent_MCP]
+    permission_profile: READ_ONLY
+    global_agent_capability: true
+    acceptance_criteria: [shortest_route_attempted, event_feedback_used_when_waiting, minimal_verification, bounded_steps, bounded_time]
+
   - skill_id: MCF-WEB-COLLECT
     status: EXPERIMENTAL
     name: Coletar conteúdo multi-página
