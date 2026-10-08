@@ -39,9 +39,13 @@ routing:
     alternatives: [ChatGPT_Work]
     optional_fallbacks: [Firecrawl]
   interactive_navigation:
-    primary: [ChatGPT_Work]
-    alternatives: [Remote_Desktop_Commander]
+    primary: [WebAgent_MCP]
+    alternatives: [ChatGPT_Work, Remote_Desktop_Commander]
     optional_fallbacks: [Firecrawl]
+  interactive_navigation_feedback:
+    primary: [WebAgent_MCP.browser_next_event, WebAgent_MCP.browser_events]
+    alternatives: [WebAgent_MCP.browser_wait]
+    optional_fallbacks: []
   monitoring:
     primary: [Automations]
     alternatives: []

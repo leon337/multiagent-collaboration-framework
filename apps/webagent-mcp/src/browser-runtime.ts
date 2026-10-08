@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { BrowserEventStream, type BrowserEvent, type BrowserEventQuery, type BrowserEventWait } from './browser-events.js';
 import { chromium, type Browser, type Page } from 'playwright';
 import {
   createDefaultBrowserActionPolicy,
@@ -62,6 +63,8 @@ export interface BrowserRuntime {
   readonly kind: BrowserRuntimeKind;
   start(request: BrowserRunRequest): BrowserRunSnapshot;
   get(runId: string): BrowserRunSnapshot;
+  events(runId: string, query?: BrowserEventQuery): BrowserEvent[];
+  nextEvent(runId: string, query?: BrowserEventWait): Promise<BrowserEvent[]>;
   cancel(runId: string): BrowserRunSnapshot;
   dispose?(): Promise<void>;
 }
@@ -194,6 +197,7 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
   readonly kind = 'deterministic-mvp' as const;
   private readonly runs = new Map<string, BrowserRunSnapshot>();
   private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
+  private readonly eventStreams = new Map<string, BrowserEventStream>();
 
   constructor(private readonly completionDelayMs = 5) {}
 
@@ -205,11 +209,16 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
       );
     }
     const snapshot = createSnapshot(this.kind, request);
+    const stream = new BrowserEventStream();
+    this.eventStreams.set(snapshot.runId, stream);
+    stream.record('navigation.started', { url: snapshot.url });
     this.runs.set(snapshot.runId, snapshot);
 
     const timer = setTimeout(() => {
       const current = this.runs.get(snapshot.runId);
       if (!current || current.status !== 'PENDING') return;
+      const stream = this.eventStreams.get(snapshot.runId);
+      stream?.record('navigation.completed', { url: snapshot.url });
       this.runs.set(snapshot.runId, {
         ...current,
         status: 'COMPLETED',
@@ -233,6 +242,18 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
     return cloneSnapshot(snapshot);
   }
 
+  events(runId: string, query: BrowserEventQuery = {}): BrowserEvent[] {
+    const stream = this.eventStreams.get(runId);
+    if (!stream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
+    return structuredClone(stream.read(query));
+  }
+
+  nextEvent(runId: string, query: BrowserEventWait = {}): Promise<BrowserEvent[]> {
+    const stream = this.eventStreams.get(runId);
+    if (!stream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
+    return stream.wait(query);
+  }
+
   cancel(runId: string): BrowserRunSnapshot {
     const current = this.runs.get(runId);
     if (!current) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
@@ -244,6 +265,7 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
     if (timer) clearTimeout(timer);
     this.timers.delete(runId);
 
+    this.eventStreams.get(runId)?.record('navigation.completed', { url: current.url, data: { terminal: true, status: 'CANCELLED' } });
     const cancelled: BrowserRunSnapshot = {
       ...current,
       status: 'CANCELLED',
@@ -281,6 +303,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
   private readonly maxNetworkRefs: number;
   private readonly actionPolicy: BrowserActionPolicy;
   private readonly actionPlans = new Map<string, BrowserAction[]>();
+  private readonly eventStreams = new Map<string, BrowserEventStream>();
 
   constructor(options: PlaywrightBrowserRuntimeOptions = {}) {
     this.egressPolicy = options.egressPolicy ?? new PublicEgressPolicy();
@@ -295,6 +318,9 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
 
   start(request: BrowserRunRequest): BrowserRunSnapshot {
     const snapshot = createSnapshot(this.kind, request);
+    const eventStream = new BrowserEventStream();
+    this.eventStreams.set(snapshot.runId, eventStream);
+    eventStream.record('navigation.started', { url: snapshot.url });
     const actions = validateBrowserActions(request.actions, snapshot.budget.maxSteps);
     this.actionPlans.set(snapshot.runId, actions);
     this.runs.set(snapshot.runId, snapshot);
@@ -306,6 +332,18 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     const snapshot = this.runs.get(runId);
     if (!snapshot) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
     return cloneSnapshot(snapshot);
+  }
+
+  events(runId: string, query: BrowserEventQuery = {}): BrowserEvent[] {
+    const stream = this.eventStreams.get(runId);
+    if (!stream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
+    return structuredClone(stream.read(query));
+  }
+
+  nextEvent(runId: string, query: BrowserEventWait = {}): Promise<BrowserEvent[]> {
+    const stream = this.eventStreams.get(runId);
+    if (!stream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
+    return stream.wait(query);
   }
 
   cancel(runId: string): BrowserRunSnapshot {
@@ -336,6 +374,8 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     this.browsers.clear();
     this.proxies.clear();
     this.actionPlans.clear();
+    for (const stream of this.eventStreams.values()) stream.close();
+    this.eventStreams.clear();
     await Promise.all(browsers.map((browser) => browser.close().catch(() => undefined)));
     await Promise.all(proxies.map((proxy) => proxy.close().catch(() => undefined)));
   }
@@ -357,6 +397,8 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     const navigation: BrowserNavigationEvidence[] = [];
     const network: BrowserNetworkEvidence[] = [];
     const networkKeys = new Set<string>();
+    const eventStream = this.eventStreams.get(runId);
+    if (!eventStream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
     timeline.record('run.created', {
       at: started.createdAt,
       url: started.url,
@@ -365,6 +407,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     const timeout = setTimeout(() => {
       const current = this.runs.get(runId);
       if (!current || current.status === 'COMPLETED' || current.status === 'FAILED' || current.status === 'CANCELLED') return;
+      eventStream.record('page.error', { url: current.url, data: { code: 'BROWSER_TIMEOUT' } });
       this.runs.set(runId, {
         ...current,
         status: 'FAILED',
@@ -387,6 +430,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       const afterEgress = this.runs.get(runId);
       if (!afterEgress || afterEgress.status !== 'RUNNING') return;
 
+      eventStream.record('navigation.started', { url: started.url, data: { phase: 'browser-launch' } });
       timeline.record('browser.launch.started', { url: started.url });
       proxy = new PinnedEgressProxy({ targetResolver: this.targetResolver });
       await proxy.listen();
@@ -397,6 +441,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
         proxy: { server: proxy.proxyUrl() },
       });
       this.browsers.set(runId, browser);
+      eventStream.record('navigation.committed', { url: started.url, data: { phase: 'browser-launch-complete' } });
       timeline.record('browser.launch.completed', { url: started.url });
 
       const afterLaunch = this.runs.get(runId);
@@ -443,6 +488,66 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       });
 
       const page = await context.newPage();
+      await page.exposeFunction('__mcfBrowserDomChanged', (count: number) => {
+        eventStream.record('dom.changed', {
+          url: page.url(),
+          data: { mutations: count },
+        });
+      });
+      await page.addInitScript(() => {
+        let pending = 0;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const flush = () => {
+          if (pending <= 0) return;
+          const count = pending;
+          pending = 0;
+          window.dispatchEvent(new CustomEvent('__mcf-browser-dom-changed', { detail: count }));
+        };
+        const observer = new MutationObserver((mutations) => {
+          pending += mutations.length;
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(flush, 200);
+        });
+        observer.observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: false });
+        window.addEventListener('__mcf-browser-dom-changed', (event) => {
+          const count = Number((event as CustomEvent).detail) || 0;
+          void (window as Window & { __mcfBrowserDomChanged?: (count: number) => Promise<void> }).__mcfBrowserDomChanged?.(count);
+        });
+      });
+      page.on('framenavigated', (frame) => {
+        if (frame === page.mainFrame()) eventStream.record('url.changed', { url: frame.url() });
+      });
+      page.on('domcontentloaded', () => eventStream.record('domcontentloaded', { url: page.url() }));
+      page.on('load', () => eventStream.record('load', { url: page.url() }));
+      page.on('requestfailed', (request) =>
+        eventStream.record('request.failed', {
+          url: request.url(),
+          data: { method: request.method(), resourceType: request.resourceType() },
+        }),
+      );
+      page.on('response', (response) => {
+        if (response.status() >= 400) {
+          eventStream.record('response.error', {
+            url: response.url(),
+            data: { status: response.status(), resourceType: response.request().resourceType() },
+          });
+        }
+      });
+      page.on('pageerror', () => eventStream.record('page.error', { url: page.url() }));
+      page.on('console', (message) => {
+        const type = message.type();
+        if (type === 'error') eventStream.record('console.error', { url: page.url() });
+        else if (type === 'warning') eventStream.record('console.warning', { url: page.url() });
+      });
+      page.on('dialog', (dialog) =>
+        eventStream.record('dialog.opened', { url: page.url(), data: { type: dialog.type() } }),
+      );
+      page.on('popup', (popup) =>
+        eventStream.record('popup.opened', { url: popup.url() }),
+      );
+      page.on('download', (download) =>
+        eventStream.record('download.started', { url: download.url() }),
+      );
       timeline.record('navigation.started', { url: started.url });
       navigation.push({
         at: new Date().toISOString(),
@@ -454,6 +559,8 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
         timeout: Math.min(started.budget.maxDurationMs, 120_000),
       });
 
+      eventStream.record('navigation.committed', { url: page.url() });
+      eventStream.record('domcontentloaded', { url: page.url() });
       const afterNavigation = this.runs.get(runId);
       if (!afterNavigation || afterNavigation.status !== 'RUNNING') return;
 
@@ -464,6 +571,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
 
         const sanitized = sanitizeBrowserAction(action);
         const actionUrl = action.type === 'navigate' ? action.url : page.url();
+        eventStream.record('action.started', { url: actionUrl, data: { action: action.type } });
         timeline.record('action.started', {
           url: actionUrl,
           detail: JSON.stringify(sanitized),
@@ -472,6 +580,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
         try {
           this.actionPolicy.assertAllowed(action);
         } catch (error) {
+          eventStream.record('action.denied', { url: actionUrl, data: { action: action.type } });
           timeline.record('action.denied', {
             url: actionUrl,
             detail: JSON.stringify(sanitized),
@@ -508,12 +617,14 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
             break;
         }
 
+        eventStream.record('action.completed', { url: page.url(), data: { action: action.type } });
         timeline.record('action.completed', {
           url: page.url(),
           detail: JSON.stringify(sanitized),
         });
       }
 
+      eventStream.record('navigation.completed', { url: page.url() });
       const title = await page.title();
       const bodyText = await page.locator('body').innerText({ timeout: 5_000 }).catch(() => '');
       const textExcerpt = bodyText.replace(/\s+/g, ' ').trim().slice(0, this.excerptMaxChars);
@@ -539,6 +650,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
 
       const current = this.runs.get(runId);
       if (!current || current.status !== 'RUNNING') return;
+      eventStream.record('load', { url: finalUrl });
       this.runs.set(runId, {
         ...current,
         status: 'COMPLETED',
@@ -585,6 +697,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       this.browsers.delete(runId);
       this.proxies.delete(runId);
       this.actionPlans.delete(runId);
+      if (this.runs.get(runId)?.status !== 'RUNNING') this.eventStreams.get(runId)?.close();
       if (browser) await browser.close().catch(() => undefined);
       if (proxy) await proxy.close().catch(() => undefined);
     }
