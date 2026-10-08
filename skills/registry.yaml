@@ -390,9 +390,9 @@ skills:
 
   - skill_id: MCF-DSH-BROWSER-OPERATE
     name: Operar Browser do DeepSeek Harness
-    version: 1.0.0
+    version: 1.1.0
     status: EXPERIMENTAL
-    purpose: Ensinar o agente a escolher e operar o dsh-builtin-browser como ferramenta primária para interação web, com verificação obrigatória, visão complementar e fallback controlado para Computer Use.
+    purpose: Ensinar o agente a escolher e operar o dsh-builtin-browser como ferramenta primária para interação web, com navegação rápida orientada ao objetivo, verificação obrigatória, visão complementar e fallback controlado para Computer Use.
     owner_agents: [Mestre]
     trigger_phrases: ["usar browser do DSH", "operar navegador no DSH", "browser use", "navegar com DSH"]
     required_inputs: [target_url, interaction_goal, authorizedScope]
@@ -400,10 +400,10 @@ skills:
     allowed_tools: [dsh-builtin-browser, dsh-vision-router, dsh-vision-toolkit, dsh-tool-computer]
     forbidden_tools: [curl, wget, requests, playwright_substitution, selenium_substitution, credential_capture, secret_exposure, access_control_bypass]
     permission_profile: SCOPED_WRITE
-    execution_steps: [classificar_tarefa, validar_escopo, carregar_skill, abrir_url_com_browser, observar_estado, executar_acao_autorizada, verificar_resultado, registrar_evidencia]
+    execution_steps: [classificar_tarefa, definir_rota_mais_curta, validar_escopo, carregar_skill, abrir_url_com_browser, reutilizar_observacao_e_seletores, executar_acoes_em_lote_quando_aplicavel, esperar_somente_conteudo_assincrono, verificar_resultado, registrar_evidencia]
     required_evidence: [provider_used, target_url, actions_performed, observed_result, side_effects, observed_at, human_gate_state]
     expected_outputs: [browser_interaction_result, browser_interaction_receipt]
-    acceptance_criteria: [dsh_browser_preferred, browser_action_observed, result_verified, no_secret_exposure, no_gate_bypass]
+    acceptance_criteria: [dsh_browser_preferred, shortest_route_attempted, observation_not_duplicated_without_reason, selectors_reused_when_available, result_verified, no_secret_exposure, no_gate_bypass]
     failure_modes: [browser_unavailable, provider_crash, login_required, captcha_or_2fa, semantic_target_not_found, scope_insufficient, verification_failed]
     fallback: Usar visão para compreender a superfície e dsh-tool-computer somente quando o Browser não for suficiente; para leitura estática, degradar para MCF-WEB-FETCH. Nunca contornar autenticação ou controles do site.
     handoff_to: Beatriz
