@@ -1,0 +1,33 @@
+skill:
+  skill_id: MCF-DSH-INLINE-BROWSER
+  name: "Browser inline na conversa do DSH"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Renderizar a visão ao vivo do Browser compartilhado diretamente no card da chamada browser_goto dentro do transcript da conversa."
+  owner_agents: [Mestre, Rafael, Emily, Beatriz]
+  supporting_agents: [Miriam]
+  trigger_phrases: ["abrir browser na conversa", "browser dentro do chat", "navegar dentro da conversa", "browser inline", "tinyfish"]
+  required_inputs: [navigation_goal]
+  optional_inputs: [target_url]
+  preconditions: [dsh_browser_agent_loaded, dsh_web_client_loaded]
+  allowed_tools: [dsh-browser-agent]
+  permission_profile: READ_ONLY
+  client_surface:
+    slot: tool.call.toolview
+    wire_tool: browser_goto
+    live_feed: /browser-pane/stream
+  execution_steps: [browser_goto, render_inline_live_card, continue_browser_actions, update_live_view, verify_goal]
+  expected_outputs: [inline_browser_view]
+  acceptance_criteria: [view_appears_in_transcript, uses_shared_browser_stream, no_second_browser, follows_agent_tab]
+  failure_modes: [browser_stream_unavailable, plugin_not_loaded, wrong_browser_tab]
+  fallback:
+    without_primary_tool: "Usar o Browser Pane do DSH."
+    without_any_tool: "Bloquear e registrar AGUARDANDO_DEPENDENCIA_EXTERNA."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+  governance:
+    data_classification: SENSITIVE_POSSIBLE
+    human_gate_triggers: [public_post, purchase, payment, account_change, irreversible_action]
+    prohibited_actions: [credential_capture, access_control_bypass]
