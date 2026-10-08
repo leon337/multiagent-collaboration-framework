@@ -476,6 +476,34 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       });
 
       const page = await context.newPage();
+      let domMutationTimer: ReturnType<typeof setTimeout> | undefined;
+      let domMutationCount = 0;
+      await page.exposeFunction('__mcfBrowserDomChanged', (count: number) => {
+        eventStream.record('dom.changed', {
+          url: page.url(),
+          data: { mutations: count },
+        });
+      });
+      await page.addInitScript(() => {
+        let pending = 0;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const flush = () => {
+          if (pending <= 0) return;
+          const count = pending;
+          pending = 0;
+          window.dispatchEvent(new CustomEvent('__mcf-browser-dom-changed', { detail: count }));
+        };
+        const observer = new MutationObserver((mutations) => {
+          pending += mutations.length;
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(flush, 200);
+        });
+        observer.observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: false });
+        window.addEventListener('__mcf-browser-dom-changed', (event) => {
+          const count = Number((event as CustomEvent).detail) || 0;
+          void (window as Window & { __mcfBrowserDomChanged?: (count: number) => Promise<void> }).__mcfBrowserDomChanged?.(count);
+        });
+      });
       page.on('framenavigated', (frame) => {
         if (frame === page.mainFrame()) eventStream.record('url.changed', { url: frame.url() });
       });
