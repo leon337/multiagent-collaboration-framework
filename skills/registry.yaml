@@ -388,6 +388,27 @@ skills:
     fallback: Falhar fechado; usar observação ORCA/AT-SPI somente leitura; solicitar HUMAN_GATE apenas para autenticação ou 2FA e nunca transferir operação técnica rotineira para Leandro.
     handoff_to: Beatriz
 
+  - skill_id: MCF-DSH-INLINE-BROWSER
+    status: EXPERIMENTAL
+    name: Browser inline na conversa do DSH
+    version: 0.1.0
+    purpose: Renderizar a visão ao vivo do Browser compartilhado no próprio transcript quando o agente inicia navegação com browser_goto.
+    owner_agents: [Mestre, Rafael, Emily, Beatriz]
+    supporting_agents: [Miriam]
+    trigger_phrases: ["browser dentro do chat", "browser inline", "abrir browser na conversa", "navegar dentro da conversa"]
+    required_inputs: [navigation_goal]
+    optional_inputs: [target_url]
+    allowed_tools: [dsh-browser-agent]
+    forbidden_tools: [second_browser_engine, duplicate_browser_session]
+    permission_profile: READ_ONLY
+    execution_steps: [browser_goto, render_live_card, continue_browser_actions, verify_goal]
+    required_evidence: [inline_card_rendered, shared_stream_active]
+    expected_outputs: [inline_browser_view]
+    acceptance_criteria: [view_appears_in_transcript, uses_existing_dsh_browser_stream, no_second_browser]
+    failure_modes: [stream_unavailable, browser_agent_missing, wrong_active_tab]
+    fallback: Usar o Browser Pane do DSH e manter a navegação pelo dsh-browser-agent.
+    handoff_to: Beatriz
+
   # Provider-agnostic web research skills.
   # EXPERIMENTAL: orchestration-ready; server runtime adapter pending.
   - skill_id: MCF-WEB-SEARCH
