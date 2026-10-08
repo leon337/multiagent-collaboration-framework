@@ -1,0 +1,16 @@
+diff --git a/lib/browser-electron/host-main.js b/lib/browser-electron/host-main.js
+--- a/lib/browser-electron/host-main.js
++++ b/lib/browser-electron/host-main.js
+@@ -830,7 +830,11 @@ async function handle(op, msg) {
+                     win.window.restore();
+                 }
+                 catch { /* not minimized */ }
+-                win.window.focus();
++                // IMPORTANT: capture is also used by the MCF inline live-view.
++                // Focusing the browser window here steals keyboard focus from the
++                // DSH composer every capture tick. capturePage() can capture the
++                // visible WebContentsView without making the browser the active OS
++                // window, so never focus as a side effect of a screenshot.
+                 let base64 = '';
+                 let renderedSize;
+                 try {
