@@ -16,6 +16,14 @@ Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live,
 
 - Main reconciliation lineage now includes PR #415 and PR #416.
 - Release publication is automated by version tags through the GitHub Actions release publisher introduced in PR #416.
+## [v1.5.1 — DSH Browser Composer Focus Safety] — 2026-10-08
+
+- Composer focus regression fixed: passive Browser screenshot capture no longer calls `BrowserWindow.focus()`.
+- DSH 3081 verified after restart; Browser session remains visible while the DSH conversation remains the active OS window.
+- Composer regression test passed: `FOCUS_OK` stayed in the DSH composer during Browser refresh.
+- Canonical runtime patch: `plugins/dsh-inline-browser/runtime/dsh-builtin-browser-0.4.5-focusless-capture.patch`.
+- GitHub main: `69db48bd36e75fb0ff0d80d07f0a9b73801df8f4`.
+
 ## [v1.5.0 — DSH Browser Navigation Reconciliation] — release candidate
 
 - PR #409 merged: event-driven WebAgent browser navigation with `browser_events` / `browser_next_event`, tab-scoped event handling and Fast Navigation support.
@@ -28,8 +36,9 @@ Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live,
 ### Release boundary
 
 - Canonical `main` reconciliation: COMPLETE at the merge lineage ending in `489a483669a1c2dcd2855816e776996891db3854`.
-- GitHub Release/tag publication: PENDING because the connected GitHub action surface available to this run exposes repository/PR writes but no release/tag publication operation.
-- DSH inline browser production activation: PENDING Issue #413.
+- GitHub Release/tag publication: COMPLETE — v1.5.0 published at `https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.5.0`.
+- DSH inline browser production activation: COMPLETE via PR #415; Issue #413 CLOSED/COMPLETED.
+- v1.5.1 supersedes v1.5.0 for the composer-focus regression fix.
 
 
 ### Planejamento NextGen reconciliado — iniciado em 2026-08-24, atualizado em 2026-08-28
