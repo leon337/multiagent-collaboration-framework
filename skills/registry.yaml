@@ -388,6 +388,30 @@ skills:
     fallback: Falhar fechado; usar observação ORCA/AT-SPI somente leitura; solicitar HUMAN_GATE apenas para autenticação ou 2FA e nunca transferir operação técnica rotineira para Leandro.
     handoff_to: Beatriz
 
+  - skill_id: MCF-DSH-BROWSER-OPERATE
+    name: Operar Browser do DeepSeek Harness
+    version: 1.0.0
+    status: EXPERIMENTAL
+    purpose: Ensinar o agente a escolher e operar o dsh-builtin-browser como ferramenta primária para interação web, com verificação obrigatória, visão complementar e fallback controlado para Computer Use.
+    owner_agents: [Mestre]
+    trigger_phrases: ["usar browser do DSH", "operar navegador no DSH", "browser use", "navegar com DSH"]
+    required_inputs: [target_url, interaction_goal, authorizedScope]
+    optional_inputs: [allowed_actions, forbidden_actions, account_context]
+    allowed_tools: [dsh-builtin-browser, dsh-vision-router, dsh-vision-toolkit, dsh-tool-computer]
+    forbidden_tools: [curl, wget, requests, playwright_substitution, selenium_substitution, credential_capture, secret_exposure, access_control_bypass]
+    permission_profile: SCOPED_WRITE
+    execution_steps: [classificar_tarefa, validar_escopo, carregar_skill, abrir_url_com_browser, observar_estado, executar_acao_autorizada, verificar_resultado, registrar_evidencia]
+    required_evidence: [provider_used, target_url, actions_performed, observed_result, side_effects, observed_at, human_gate_state]
+    expected_outputs: [browser_interaction_result, browser_interaction_receipt]
+    acceptance_criteria: [dsh_browser_preferred, browser_action_observed, result_verified, no_secret_exposure, no_gate_bypass]
+    failure_modes: [browser_unavailable, provider_crash, login_required, captcha_or_2fa, semantic_target_not_found, scope_insufficient, verification_failed]
+    fallback: Usar visão para compreender a superfície e dsh-tool-computer somente quando o Browser não for suficiente; para leitura estática, degradar para MCF-WEB-FETCH. Nunca contornar autenticação ou controles do site.
+    handoff_to: Beatriz
+    governance:
+      data_classification: SENSITIVE_POSSIBLE
+      human_gate_triggers: [authentication, two_factor_authentication, captcha, public_post, account_change, purchase, payment, irreversible_action]
+      prohibited_actions: [capture_credentials, expose_secrets, bypass_access_control, bypass_captcha, autonomous_public_post_without_gate]
+
   # Provider-agnostic web research skills.
   # EXPERIMENTAL: orchestration-ready; server runtime adapter pending.
   - skill_id: MCF-WEB-SEARCH
@@ -529,4 +553,3 @@ skills:
     failure_modes: [scheduler_unavailable, provider_quota, invalid_schedule, target_unreachable, duplicate_monitor]
     fallback: Usar provider alternativo aprovado; se nenhum existir, registrar plano não executado e dependência externa.
     handoff_to: Augusto
-
