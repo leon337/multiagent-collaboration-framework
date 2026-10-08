@@ -36,6 +36,46 @@ health_check() {
   curl -fsS --max-time 4 "$ROUTER_URL/api/health" >/dev/null 2>&1
 }
 
+ensure_round_robin_runtime() {
+  local chunk="$HOME/.nvm/versions/node/v22.23.2/lib/node_modules/9router/app/.next-cli-build/server/chunks/4884.js"
+  [ -f "$chunk" ] || { echo "✗ 9Router runtime bundle not found: $chunk"; return 1; }
+
+  if grep -q '"lastUsedAt","errorCode","consecutiveUseCount"' "$chunk"; then
+    echo "✓ 9Router round-robin persistence fix: already installed"
+    return 0
+  fi
+
+  echo "• 9Router runtime lacks lastUsedAt persistence; repairing..."
+  local backup="$ROUTER_HOME/db/backups/9router-chunk-4884-before-roundrobin-helper-$(date -u +%Y%m%dT%H%M%SZ).js"
+  mkdir -p "$(dirname "$backup")"
+  cp -a "$chunk" "$backup"
+
+  python3 - "$chunk" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
+s = p.read_text()
+old = '"lastTested","lastError","lastErrorAt","rateLimitedUntil","expiresIn","errorCode","consecutiveUseCount","idToken","lastRefreshAt"'
+new = '"lastTested","lastError","lastErrorAt","rateLimitedUntil","expiresIn","lastUsedAt","errorCode","consecutiveUseCount","idToken","lastRefreshAt"'
+if old not in s:
+    raise SystemExit("round-robin patch target not found")
+p.write_text(s.replace(old, new, 1))
+PY
+
+  echo "✓ runtime repaired"
+  echo "✓ runtime backup: $backup"
+
+  if health_check; then
+    echo "• Restarting the running 9Router so the repair takes effect..."
+    local pids
+    pids="$(fuser -t 20128/tcp 2>/dev/null || true)"
+    if [ -n "$pids" ]; then
+      kill $pids 2>/dev/null || true
+      sleep 2
+    fi
+  fi
+}
+
 ensure_server() {
   if health_check; then
     echo "✓ 9Router health: OK"
@@ -159,6 +199,7 @@ validate_runtime() {
   [ -f "$DB" ] || { echo "✗ DB não encontrado: $DB"; return 1; }
   sqlite3 "$DB" "PRAGMA integrity_check;" | grep -qx 'ok' || {
     echo "✗ integridade SQLite falhou"; return 1; }
+  ensure_round_robin_runtime
   ensure_server
   connections_report
   local strategy sticky

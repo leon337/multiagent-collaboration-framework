@@ -23,3 +23,9 @@ O helper nunca solicita nem imprime senha, access token, refresh token, API key 
 ## Alinhamento ao MCF v1.4.0
 
 O MCF continua como camada de governança. O helper não cria provider adapter, não altera o execution contract e não ativa produção dentro do core do MCF; ele apenas opera a infraestrutura externa 9Router.
+
+## Correção do Round Robin
+
+O 9Router 0.5.95 já tinha a lógica de seleção `round-robin`, mas o bundle instalado não persistia o campo `lastUsedAt` no repositório de conexões. Sem esse campo, a seleção voltava sempre para a conta de menor prioridade.
+
+O helper agora detecta essa condição, faz backup do bundle e aplica automaticamente a correção antes de iniciar o servidor. A correção foi validada com tráfego real: 9 solicitações resultaram em distribuição de 3 solicitações por conta entre as 3 contas Kilo ativas.
