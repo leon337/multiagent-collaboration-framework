@@ -1,6 +1,6 @@
 ---
 name: mcf-dsh-browser-operate
-description: Ensina o agente a usar o dsh-builtin-browser como ferramenta primária para navegar, interagir e verificar páginas web com uma política rápida, orientada ao objetivo e com recuperação limitada.
+description: Ensina o agente a usar o dsh-browser-agent como ferramenta primária para navegar, interagir e verificar páginas web com uma política rápida, orientada ao objetivo e com recuperação limitada.
 whenToUse: Use quando a tarefa exigir abrir, navegar, clicar, digitar, selecionar, inspecionar ou verificar uma página web interativa; não use para leitura estática quando uma skill web de leitura for suficiente.
 metadata:
   mcf_skill_id: MCF-DSH-BROWSER-OPERATE
@@ -15,7 +15,7 @@ disable-model-invocation: false
 
 ## Regra principal
 
-Quando a tarefa exigir interação com uma página web, o dsh-builtin-browser é a ferramenta primária.
+Quando a tarefa exigir interação com uma página web, o dsh-browser-agent é a ferramenta primária.
 
 A navegação deve ser orientada ao objetivo: escolher o menor caminho observável até o resultado, minimizar chamadas de ferramenta e verificar somente o que é necessário.
 
@@ -186,7 +186,7 @@ uma chamada que resolve vários itens > várias chamadas unitárias.
 
 ## Seleção de ferramenta
 
-- Primária: dsh-builtin-browser
+- Primária: dsh-browser-agent
 - Estrutura: browser_a11y ou browser_snapshot
 - Extração em lote: browser_scrape
 - Formulários em lote: browser_fill
@@ -195,12 +195,12 @@ uma chamada que resolve vários itens > várias chamadas unitárias.
 - Computer Use: dsh-tool-computer somente quando o Browser não for suficiente.
 - Shell/rede: não use para substituir o Browser.
 
-## Fluxo operacional
+## Disponibilidade global\n\nEsta skill é model-invocable no perfil global do DSH. Agentes e novas sessões devem reconhecer o Browser compartilhado automaticamente a partir do catálogo de skills, sem depender de explicação manual do usuário.\n\n## Fluxo operacional
 
 1. Classifique a tarefa.
 2. Carregue esta skill antes da primeira ação de navegador.
 3. Defina o estado final e a rota mais curta.
-4. Use dsh-builtin-browser.
+4. Use dsh-browser-agent.
 5. Abra diretamente a URL conhecida.
 6. Aproveite o snapshot já devolvido.
 7. Quando necessário, obtenha uma única estrutura semântica por etapa.
@@ -256,7 +256,7 @@ Considere a tarefa concluída somente quando houver evidência de que:
 
 Se houver várias ferramentas parecidas, escolha:
 
-1. dsh-builtin-browser;
+1. dsh-browser-agent;
 2. estrutura semântica;
 3. ação semântica;
 4. visão quando pixels forem necessários;
@@ -278,7 +278,7 @@ Para testar a skill sem side effect externo:
 
 Registre:
 
-- provider_used: dsh-builtin-browser;
+- provider_used: dsh-browser-agent;
 - URL-alvo;
 - ações realizadas;
 - resultado observado;
