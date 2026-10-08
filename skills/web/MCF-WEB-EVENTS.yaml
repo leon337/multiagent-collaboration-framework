@@ -1,0 +1,38 @@
+skill:
+  skill_id: MCF-WEB-EVENTS
+  name: "Observar eventos web em tempo real"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Fornecer feedback incremental e orientado a eventos para agentes de navegador, evitando polling e snapshots completos desnecessários."
+  owner_agents: [Mestre, Rafael]
+  supporting_agents: [Emily, Beatriz, Miriam]
+  trigger_phrases: ["esperar mudança na página", "aguardar evento web", "acompanhar navegação", "feedback em tempo real", "monitorar estado do navegador"]
+  required_inputs: [run_id, observation_goal]
+  optional_inputs: [after_seq, event_types, timeout_ms, max_events]
+  preconditions: [interactive_browser_available]
+  allowed_tools: [WebAgent_MCP]
+  alternative_tools: [Remote_Desktop_Commander]
+  forbidden_tools: [polling_full_snapshot, secret_capture, access_control_bypass]
+  permission_profile: READ_ONLY
+  execution_steps: [obter_cursor, assinar_eventos_relevantes, aguardar_evento, atualizar_estado_incremental, decidir_proxima_acao, registrar_evidencia]
+  event_priority: [navigation.completed, url.changed, domcontentloaded, load, dialog.opened, popup.opened, request.failed, response.error, page.error, console.error, console.warning, download.started]
+  expected_outputs: [browser_event_delta, next_cursor]
+  acceptance_criteria: [event_driven_wait, bounded_delta, cursor_monotonic, no_full_snapshot_polling, no_secret_exposure]
+  failure_modes: [event_stream_unavailable, run_not_found, event_timeout, stale_cursor]
+  fallback:
+    without_primary_tool: "Usar browser_wait apenas quando não houver stream de eventos; preferir espera específica por seletor/URL."
+    without_any_tool: "Bloquear e retornar dependência externa."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: PUBLIC_OR_APPROVED
+    human_gate_triggers: []
+    prohibited_actions: [secret_capture, credential_logging, access_control_bypass]
+  tests:
+    positive_scenarios: [wait_for_navigation, wait_for_popup, request_failure_signal, cursor_delta]
+    negative_scenarios: [polling_full_snapshot, malformed_cursor, run_not_found]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED
