@@ -413,6 +413,27 @@ skills:
       human_gate_triggers: [authentication, two_factor_authentication, captcha, public_post, account_change, purchase, payment, irreversible_action]
       prohibited_actions: [capture_credentials, expose_secrets, bypass_access_control, bypass_captcha, autonomous_public_post_without_gate]
 
+  - skill_id: MCF-DSH-INLINE-BROWSER
+    status: EXPERIMENTAL
+    name: Browser inline na conversa do DSH
+    version: 0.1.0
+    purpose: Renderizar a visão ao vivo do Browser compartilhado no próprio transcript quando o agente inicia navegação com browser_goto.
+    owner_agents: [Mestre, Rafael, Emily, Beatriz]
+    supporting_agents: [Miriam]
+    trigger_phrases: ["browser dentro do chat", "browser inline", "abrir browser na conversa", "navegar dentro da conversa"]
+    required_inputs: [navigation_goal]
+    optional_inputs: [target_url]
+    allowed_tools: [dsh-browser-agent]
+    forbidden_tools: [second_browser_engine, duplicate_browser_session]
+    permission_profile: READ_ONLY
+    execution_steps: [browser_goto, render_live_card, continue_browser_actions, verify_goal]
+    required_evidence: [inline_card_rendered, shared_stream_active]
+    expected_outputs: [inline_browser_view]
+    acceptance_criteria: [view_appears_in_transcript, uses_existing_dsh_browser_stream, no_second_browser]
+    failure_modes: [stream_unavailable, browser_agent_missing, wrong_active_tab]
+    fallback: Usar o Browser Pane do DSH e manter a navegação pelo dsh-browser-agent.
+    handoff_to: Beatriz
+
   # Provider-agnostic web research skills.
   # EXPERIMENTAL: orchestration-ready; server runtime adapter pending.
   - skill_id: MCF-WEB-SEARCH
