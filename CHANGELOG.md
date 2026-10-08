@@ -3,6 +3,21 @@
 Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live, tags/releases e PRFs prevalecem para detalhes operacionais. Estados antigos como `BLOCKED`, `NOT_PUBLISHED` e `NOT_APPROVED` descrevem o momento histórico correspondente quando aparecem em artifacts anteriores.
 
 ## [Não publicado]
+## [v1.5.0 — DSH Browser Navigation Reconciliation] — release candidate
+
+- PR #409 merged: event-driven WebAgent browser navigation with `browser_events` / `browser_next_event`, tab-scoped event handling and Fast Navigation support.
+- PR #412 merged: `MCF-DSH-BROWSER-OPERATE` v1.2.0 reconciled into the canonical skill registry.
+- PR #408 superseded/closed after reconciliation; no duplicate skill entry remains in `main`.
+- DSH 3081 service verified active on `127.0.0.1:3081` after reboot; the runtime is live, but the inline-browser plugin remains experimental pending per-conversation isolation proof.
+- Experimental branch `feat/dsh-inline-browser` preserved and tracked by Issue #413; it is not claimed as stable or production-live.
+- Existing GitHub production-readiness failures were traced to pre-existing repository gates (dependency vulnerabilities and unrelated server/typecheck failures), not silently treated as green.
+
+### Release boundary
+
+- Canonical `main` reconciliation: COMPLETE at the merge lineage ending in `489a483669a1c2dcd2855816e776996891db3854`.
+- GitHub Release/tag publication: PENDING because the connected GitHub action surface available to this run exposes repository/PR writes but no release/tag publication operation.
+- DSH inline browser production activation: PENDING Issue #413.
+
 
 ### Planejamento NextGen reconciliado — iniciado em 2026-08-24, atualizado em 2026-08-28
 
