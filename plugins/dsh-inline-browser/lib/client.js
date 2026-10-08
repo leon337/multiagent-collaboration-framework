@@ -49,7 +49,7 @@ function BrowserFixedView({ sessionId }) {
 function apply(ctx) {
   ctx.slots.inject("conversation.composer.dock", () => ctx.slots.register(
     { name: "conversation.composer.dock", id: "mcf-browser-fixed", order: -100 },
-    ({ session }) => React.createElement(BrowserFixedView, { sessionId: session.id })
+    ({ sessionId }) => React.createElement(BrowserFixedView, { sessionId })
   ));
 }
 exports.inject = ["slots"];
