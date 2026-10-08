@@ -476,8 +476,6 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       });
 
       const page = await context.newPage();
-      let domMutationTimer: ReturnType<typeof setTimeout> | undefined;
-      let domMutationCount = 0;
       await page.exposeFunction('__mcfBrowserDomChanged', (count: number) => {
         eventStream.record('dom.changed', {
           url: page.url(),
