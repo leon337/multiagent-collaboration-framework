@@ -1,0 +1,4 @@
+# Mount the inline Browser tool-view plugin in the Web profile.
+- insert:
+    - id: mcf-dsh-inline-browser
+      name: mcf-dsh-inline-browser
