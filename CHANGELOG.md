@@ -3,6 +3,19 @@
 Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live, tags/releases e PRFs prevalecem para detalhes operacionais. Estados antigos como `BLOCKED`, `NOT_PUBLISHED` e `NOT_APPROVED` descrevem o momento histórico correspondente quando aparecem em artifacts anteriores.
 
 ## [Não publicado]
+
+### DSH inline Browser — composer focus fix
+
+- PR #415 reconciled the native DSH Browser into the conversation transcript with per-session live cards and no functional dependency on external Chrome 9222.
+- Runtime verification on DSH 3081 found a remaining focus regression: the 0.4.5 native screenshot host called `BrowserWindow.focus()` on every live-frame capture.
+- The exact 0.4.5 runtime patch is preserved at `plugins/dsh-inline-browser/runtime/dsh-builtin-browser-0.4.5-focusless-capture.patch`.
+- Verified on Linux: clicking the composer keeps the DSH window active during live Browser refresh; typed `FOCUS_OK` remained in the composer.
+- The external `chrome-dsh-test` / 9222 test process was removed from the runtime.
+
+### Release state
+
+- Main reconciliation lineage now includes PR #415 and PR #416.
+- Release publication is automated by version tags through the GitHub Actions release publisher introduced in PR #416.
 ## [v1.5.0 — DSH Browser Navigation Reconciliation] — release candidate
 
 - PR #409 merged: event-driven WebAgent browser navigation with `browser_events` / `browser_next_event`, tab-scoped event handling and Fast Navigation support.
