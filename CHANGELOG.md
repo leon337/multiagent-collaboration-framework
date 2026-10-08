@@ -22,7 +22,8 @@ Marcos materiais do **MCF — Multiagent Collaboration Framework**. GitHub live,
 - DSH 3081 verified after restart; Browser session remains visible while the DSH conversation remains the active OS window.
 - Composer regression test passed: `FOCUS_OK` stayed in the DSH composer during Browser refresh.
 - Canonical runtime patch: `plugins/dsh-inline-browser/runtime/dsh-builtin-browser-0.4.5-focusless-capture.patch`.
-- GitHub main: `69db48bd36e75fb0ff0d80d07f0a9b73801df8f4`.
+- Focus-fix implementation commit: `69db48bd36e75fb0ff0d80d07f0a9b73801df8f4`.
+- v1.5.1 release/main publication commit: `0f327a277968296204e9765a7fbc0f72ecad07d6`.
 
 ## [v1.5.0 — DSH Browser Navigation Reconciliation] — release candidate
 
