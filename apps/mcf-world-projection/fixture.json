@@ -1,0 +1,330 @@
+{
+  "schema": "mcf-world-fixture/v1",
+  "mode": "REPRESENTATIVE_FIXTURE",
+  "missionId": "MCF-WORLD-PROJECTION-001",
+  "sourceRevision": "github:leon337/multiagent-collaboration-framework:mission/mcf-world-projection-001@44ed701b",
+  "observedAt": "2026-09-25T23:39:04Z",
+  "entities": [
+    {
+      "id": "project:mcf",
+      "kind": "project",
+      "canonicalRef": "github:leon337/multiagent-collaboration-framework",
+      "label": "MCF",
+      "state": "ACTIVE",
+      "freshness": "FRESH",
+      "trust": "CANONICAL",
+      "summary": "Projeto canônico."
+    },
+    {
+      "id": "mission:world",
+      "kind": "mission",
+      "canonicalRef": "github:leon337/multiagent-collaboration-framework#379",
+      "label": "MCF-WORLD-PROJECTION-001",
+      "state": "WORKING",
+      "freshness": "FRESH",
+      "trust": "CANONICAL",
+      "summary": "Missão World Projection."
+    },
+    {
+      "id": "agent:mestre",
+      "kind": "agent",
+      "canonicalRef": "docs/agentes/MESTRE.md",
+      "label": "MESTRE",
+      "state": "ORCHESTRATING",
+      "freshness": "FRESH",
+      "trust": "CANONICAL",
+      "summary": "Orquestração."
+    },
+    {
+      "id": "agent:leonardo",
+      "kind": "agent",
+      "canonicalRef": "docs/agentes/LEONARDO.md",
+      "label": "Leonardo",
+      "state": "COMPLETED",
+      "freshness": "FRESH",
+      "trust": "CANONICAL",
+      "summary": "Produto e requisitos."
+    },
+    {
+      "id": "agent:laura",
+      "kind": "agent",
+      "canonicalRef": "docs/agentes/LAURA.md",
+      "label": "Laura",
+      "state": "COMPLETED",
+      "freshness": "FRESH",
+      "trust": "CANONICAL",
+      "summary": "UX."
+    },
+    {
+      "id": "agent:sofia",
+      "kind": "agent",
+      "canonicalRef": "docs/agentes/SOFIA.md",
+      "label": "Sofia",
+      "state": "COMPLETED",
+      "freshness": "FRESH",
+      "trust": "CANONICAL",
+      "summary": "Arquitetura."
+    },
+    {
+      "id": "agent:emily",
+      "kind": "agent",
+      "canonicalRef": "docs/agentes/EMILY.md",
+      "label": "Emily",
+      "state": "COMPLETED",
+      "freshness": "FRESH",
+      "trust": "CANONICAL",
+      "summary": "Auditoria."
+    },
+    {
+      "id": "artifact:wpp",
+      "kind": "artifact",
+      "canonicalRef": "docs/proposals/MCF-WORLD-PROJECTION-PROTOCOL-v0.1.md",
+      "label": "WPP v0.1",
+      "state": "CANDIDATE",
+      "freshness": "FRESH",
+      "trust": "BRANCH_ARTIFACT",
+      "summary": "Protocolo candidato."
+    },
+    {
+      "id": "gate:read-only",
+      "kind": "human_gate",
+      "canonicalRef": "docs/reviews/MCF-WORLD-PROJECTION-001-EMILY-GATE.md",
+      "label": "Emily Gate",
+      "state": "GO_READ_ONLY",
+      "freshness": "FRESH",
+      "trust": "BRANCH_ARTIFACT",
+      "summary": "GO somente read-only."
+    },
+    {
+      "id": "effect:pr380",
+      "kind": "artifact",
+      "canonicalRef": "github:leon337/multiagent-collaboration-framework#380",
+      "label": "Draft PR #380",
+      "state": "OBSERVED",
+      "freshness": "FRESH",
+      "trust": "PROVIDER_OBSERVATION",
+      "summary": "Provider observation: o Draft PR #380 existe. Isto não é um receipt canônico."
+    },
+    {
+      "id": "evidence:rebuild",
+      "kind": "evidence",
+      "canonicalRef": "fixture:test:rebuild",
+      "label": "Rebuild proof",
+      "state": "PENDING",
+      "freshness": "UNKNOWN",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "summary": "Evidência a produzir."
+    },
+    {
+      "id": "gate:future",
+      "kind": "human_gate",
+      "canonicalRef": "fixture:gate:future",
+      "label": "Gate futuro",
+      "state": "NOT_AUTHORIZED",
+      "freshness": "STALE",
+      "trust": "SIMULATED_FOR_EXPERIMENT",
+      "summary": "Cenário simulado para STALE."
+    }
+  ],
+  "relations": [
+    {
+      "type": "contains",
+      "from": "project:mcf",
+      "to": "mission:world",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r1:contains"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "orchestrated_by",
+      "from": "mission:world",
+      "to": "agent:mestre",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r2:orchestrated_by"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "contributed_by",
+      "from": "mission:world",
+      "to": "agent:leonardo",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r3:contributed_by"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "contributed_by",
+      "from": "mission:world",
+      "to": "agent:laura",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r4:contributed_by"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "contributed_by",
+      "from": "mission:world",
+      "to": "agent:sofia",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r5:contributed_by"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "audited_by",
+      "from": "mission:world",
+      "to": "agent:emily",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r6:audited_by"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "produced",
+      "from": "agent:sofia",
+      "to": "artifact:wpp",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r7:produced"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "gated_by",
+      "from": "artifact:wpp",
+      "to": "gate:read-only",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r8:gated_by"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "materialized_as",
+      "from": "mission:world",
+      "to": "effect:pr380",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r9:materialized_as"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "requires_evidence",
+      "from": "artifact:wpp",
+      "to": "evidence:rebuild",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r10:requires_evidence"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    },
+    {
+      "type": "future_gate",
+      "from": "mission:world",
+      "to": "gate:future",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "sourceRefs": [
+        "fixture:relation:r11:future_gate"
+      ],
+      "derivation": "REPRESENTATIVE_FIXTURE_SYNTHESIS"
+    }
+  ],
+  "events": [
+    {
+      "seq": 1,
+      "type": "MISSION_CREATED",
+      "subject": "mission:world",
+      "actor": "agent:mestre",
+      "at": "2026-09-25T23:29:24Z",
+      "summary": "Issue #379 criada.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "github:leon337/multiagent-collaboration-framework#379"
+      ]
+    },
+    {
+      "seq": 2,
+      "type": "PRODUCT",
+      "subject": "agent:leonardo",
+      "actor": "agent:leonardo",
+      "at": "2026-09-25T23:32:00Z",
+      "summary": "Product brief definiu o vertical.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "agent-session:508f9365-fb65-4d95-bbe3-b943aa5ebb7e"
+      ]
+    },
+    {
+      "seq": 3,
+      "type": "UX",
+      "subject": "agent:laura",
+      "actor": "agent:laura",
+      "at": "2026-09-25T23:33:00Z",
+      "summary": "UX definiu Cockpit/Timeline/Grafo.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "agent-session:95299ec3-1f76-4b6b-9cd0-45779fb4dbcf"
+      ]
+    },
+    {
+      "seq": 4,
+      "type": "ARCHITECTURE",
+      "subject": "artifact:wpp",
+      "actor": "agent:sofia",
+      "at": "2026-09-25T23:35:00Z",
+      "summary": "WPP consolidado como projeção reconstruível.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "docs/proposals/MCF-WORLD-PROJECTION-PROTOCOL-v0.1.md"
+      ]
+    },
+    {
+      "seq": 5,
+      "type": "AUDIT_GATE",
+      "subject": "gate:read-only",
+      "actor": "agent:emily",
+      "at": "2026-09-25T23:36:00Z",
+      "summary": "GO somente para protótipo read-only.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "docs/reviews/MCF-WORLD-PROJECTION-001-EMILY-GATE.md"
+      ]
+    },
+    {
+      "seq": 6,
+      "type": "EXTERNAL_EFFECT_CONFIRMED",
+      "subject": "effect:pr380",
+      "actor": "agent:mestre",
+      "at": "2026-09-25T23:39:04Z",
+      "summary": "Draft PR #380 confirmado.",
+      "trust": "REPRESENTATIVE_FIXTURE",
+      "ordering": "FIXTURE_SEQUENCE",
+      "causationClaimed": false,
+      "sourceRefs": [
+        "github:leon337/multiagent-collaboration-framework#380"
+      ]
+    }
+  ],
+  "fixtureRole": "MATERIALIZED_PROJECTION_FIXTURE",
+  "adapterLayerImplemented": false,
+  "snapshotLabel": "Representative fixture snapshot — not live telemetry"
+}

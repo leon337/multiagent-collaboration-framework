@@ -1,0 +1,79 @@
+{
+  "schema": "mcf-world-context-recovery-run/v1",
+  "fixtureId": "Y",
+  "fixtureRevision": "fixture:world-projection-experiment-y:v1",
+  "condition": "structured",
+  "startedAt": "2026-09-26T07:21:43.444Z",
+  "finishedAt": "2026-09-26T07:26:40.168Z",
+  "totalMs": 296717,
+  "correct": 5,
+  "total": 8,
+  "accuracy": 0.625,
+  "results": [
+    {
+      "task": 1,
+      "question": "Qual é o estado atual da missão?",
+      "answer": "WORKING",
+      "expected": "BLOCKED",
+      "correct": false,
+      "elapsedMs": 130313
+    },
+    {
+      "task": 2,
+      "question": "Quem produziu o artefato principal Recovery Map v0.2?",
+      "answer": "Eduardo",
+      "expected": "Eduardo",
+      "correct": true,
+      "elapsedMs": 22023
+    },
+    {
+      "task": 3,
+      "question": "Quem fez a revisão independente?",
+      "answer": "Patrícia",
+      "expected": "Patrícia",
+      "correct": true,
+      "elapsedMs": 17447
+    },
+    {
+      "task": 4,
+      "question": "Qual gate está vigente no cenário?",
+      "answer": "HUMAN_REVIEW_REQUIRED",
+      "expected": "HUMAN_REVIEW_REQUIRED",
+      "correct": true,
+      "elapsedMs": 21592
+    },
+    {
+      "task": 5,
+      "question": "Preview #812 é receipt canônico?",
+      "answer": "NÃO",
+      "expected": "NÃO",
+      "correct": true,
+      "elapsedMs": 42439
+    },
+    {
+      "task": 6,
+      "question": "Qual evidência está UNKNOWN?",
+      "answer": "Recovery Map v0.2",
+      "expected": "Provider confirmation",
+      "correct": false,
+      "elapsedMs": 20424
+    },
+    {
+      "task": 7,
+      "question": "Qual item está STALE?",
+      "answer": "Review Gate",
+      "expected": "Dependency snapshot",
+      "correct": false,
+      "elapsedMs": 29504
+    },
+    {
+      "task": 8,
+      "question": "O que ocorreu imediatamente antes de Preview #812 na sequência temporal do fixture?",
+      "answer": "Patrícia marcou revisão humana como necessária",
+      "expected": "Patrícia marcou revisão humana como necessária",
+      "correct": true,
+      "elapsedMs": 12975
+    }
+  ],
+  "claimsBoundary": "Non-canonical local experiment result; no product GO by itself."
+}
