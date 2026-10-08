@@ -390,9 +390,9 @@ skills:
 
   - skill_id: MCF-DSH-BROWSER-OPERATE
     name: Operar Browser do DeepSeek Harness
-    version: 1.1.0
+    version: 1.2.0
     status: EXPERIMENTAL
-    purpose: Ensinar o agente a escolher e operar o dsh-builtin-browser como ferramenta primária para interação web, com navegação rápida orientada ao objetivo, verificação obrigatória, visão complementar e fallback controlado para Computer Use.
+    purpose: Ensinar o agente a escolher e operar o dsh-browser-agent como ferramenta primária para interação web, com navegação rápida orientada ao objetivo, verificação obrigatória, visão complementar e fallback controlado para Computer Use.
     owner_agents: [Mestre]
     trigger_phrases: ["usar browser do DSH", "operar navegador no DSH", "browser use", "navegar com DSH"]
     required_inputs: [target_url, interaction_goal, authorizedScope]
@@ -407,6 +407,7 @@ skills:
     failure_modes: [browser_unavailable, provider_crash, login_required, captcha_or_2fa, semantic_target_not_found, scope_insufficient, verification_failed]
     fallback: Usar visão para compreender a superfície e dsh-tool-computer somente quando o Browser não for suficiente; para leitura estática, degradar para MCF-WEB-FETCH. Nunca contornar autenticação ou controles do site.
     handoff_to: Beatriz
+    global_dsh_session_default: true
     governance:
       data_classification: SENSITIVE_POSSIBLE
       human_gate_triggers: [authentication, two_factor_authentication, captcha, public_post, account_change, purchase, payment, irreversible_action]
