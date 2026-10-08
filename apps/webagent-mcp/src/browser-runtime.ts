@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { BrowserEventStream, type BrowserEvent, type BrowserEventQuery, type BrowserEventType, type BrowserEventWait } from './browser-events.js';
+import { BrowserEventStream, type BrowserEvent, type BrowserEventQuery, type BrowserEventWait } from './browser-events.js';
 import { chromium, type Browser, type Page } from 'playwright';
 import {
   createDefaultBrowserActionPolicy,
@@ -482,6 +482,41 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       });
 
       const page = await context.newPage();
+      page.on('framenavigated', (frame) => {
+        if (frame === page.mainFrame()) eventStream.record('url.changed', { url: frame.url() });
+      });
+      page.on('domcontentloaded', () => eventStream.record('domcontentloaded', { url: page.url() }));
+      page.on('load', () => eventStream.record('load', { url: page.url() }));
+      page.on('requestfailed', (request) =>
+        eventStream.record('request.failed', {
+          url: request.url(),
+          data: { method: request.method(), resourceType: request.resourceType() },
+        }),
+      );
+      page.on('response', (response) => {
+        if (response.status() >= 400) {
+          eventStream.record('response.error', {
+            url: response.url(),
+            data: { status: response.status(), resourceType: response.request().resourceType() },
+          });
+        }
+      });
+      page.on('pageerror', () => eventStream.record('page.error', { url: page.url() }));
+      page.on('console', (message) => {
+        const type = message.type();
+        if (type === 'error') eventStream.record('console.error', { url: page.url() });
+        else if (type === 'warning' || type === 'warn') eventStream.record('console.warning', { url: page.url() });
+      });
+      page.on('dialog', (dialog) =>
+        eventStream.record('dialog.opened', { url: page.url(), data: { type: dialog.type() } }),
+      );
+      page.on('popup', (popup) =>
+        eventStream.record('popup.opened', { url: popup.url() }),
+      );
+      page.on('download', (download) =>
+        eventStream.record('download.started', { url: download.url() }),
+      );
+      eventStream.record('navigation.started', { url: started.url });
       timeline.record('navigation.started', { url: started.url });
       navigation.push({
         at: new Date().toISOString(),
