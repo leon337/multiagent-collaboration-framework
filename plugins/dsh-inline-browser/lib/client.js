@@ -51,8 +51,6 @@ function BrowserInlineRow({ block, callId, sessionId }) {
   );
 }
 function apply(ctx) {
-  if (typeof document !== "undefined") document.documentElement.dataset.mcfInlineLoaded = "1";
-  console.log("[mcf-dsh-inline-browser] client apply");
   ctx.slots.inject("tool.call.toolview", () => ctx.slots.register({ name: "tool.call.toolview", key: "browser_open" }, BrowserInlineRow));
 }
 exports.inject = ["slots"];

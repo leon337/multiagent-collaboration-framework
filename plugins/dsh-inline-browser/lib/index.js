@@ -57,20 +57,6 @@ export function apply(ctx) {
     if (session !== undefined) registry.bindCall(exec.callId, task, session);
   });
 
-  const disposeDebug = ctx.webServer.register({
-    kind: "exact",
-    path: "/mcf-dsh-inline-browser/debug",
-    handler: (_req, res) => {
-      const providers = browser.providers instanceof Map ? [...browser.providers.values()] : [];
-      const sessions = [];
-      for (const provider of providers) {
-        if (!(provider?.sessions instanceof Map)) continue;
-        for (const [id, session] of provider.sessions) sessions.push({ provider: provider.id, id, label: session?.label, tabs: session?.tabs?.length ?? 0 });
-      }
-      json(res, 200, { sessions });
-    },
-  });
-
   const disposeStream = ctx.webServer.register({
     kind: "exact",
     path: "/mcf-dsh-inline-browser/stream",
@@ -78,7 +64,11 @@ export function apply(ctx) {
       const requestUrl = new URL(req.url ?? "/mcf-dsh-inline-browser/stream", "http://127.0.0.1");
       const callId = requestUrl.searchParams.get("callId") ?? "";
       const agentId = requestUrl.searchParams.get("sessionId") ?? "";
-      const session = registry.resolveCall(callId, agentId);
+      let session = registry.resolveCall(callId, agentId);
+      if (session === undefined) {
+        session = registry.findExisting(agentId);
+        if (session !== undefined) registry.bindCall(callId, agentId, session);
+      }
       if (session === undefined) { json(res, 404, { ok: false, error: "INLINE_BROWSER_SESSION_NOT_FOUND" }); return; }
 
       res.writeHead(200, {
@@ -123,7 +113,6 @@ export function apply(ctx) {
 
   ctx.effect(() => () => {
     clearInterval(cleanupTimer);
-    disposeDebug();
     disposeStream();
   }, "mcf-dsh-inline-browser cleanup");
 }
