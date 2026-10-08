@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCF · Jev Benchmark 500 · Bloco</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif}
+body{margin:0;background:#080b12;color:#eef2ff}
+main{max-width:980px;margin:auto;padding:28px 18px}
+.card{background:#101622;border:1px solid #273248;border-radius:16px;padding:18px;margin:16px 0}
+button{border:0;border-radius:12px;padding:14px 18px;font-weight:800;cursor:pointer}
+pre{white-space:pre-wrap;word-break:break-word;background:#070a10;border:1px solid #222e43;border-radius:12px;padding:14px;max-height:60vh;overflow:auto}
+.ok{color:#86efac}.warn{color:#fde68a}.bad{color:#fca5a5}.muted{color:#94a3b8}
+</style>
+</head>
+<body><main>
+<h1>MCF · Jev Benchmark 500 · Bloco</h1>
+<p>Executa 50 casos (5 lotes de 10) da Fase B. Uso experimental, dados sintéticos, Jev consultivo.</p>
+<div class="card">
+  <p id="desc"></p>
+  <button id="run">Executar este bloco</button>
+  <span id="status" class="muted">Aguardando.</span>
+</div>
+<div class="card"><pre id="out">Nenhum resultado ainda.</pre></div>
+<script>
+const q=new URLSearchParams(location.search);
+const block=Number(q.get('block')??0);
+const valid=Number.isInteger(block)&&block>=0&&block<10;
+const startBatch=block*5;
+document.getElementById('desc').textContent=valid
+ ? `Bloco ${block+1}/10 · batches ${startBatch}–${startBatch+4} · casos ${block*50+1}–${block*50+50}`
+ : 'Bloco inválido. Use ?block=0 até ?block=9.';
+const run=document.getElementById('run');
+const status=document.getElementById('status');
+const out=document.getElementById('out');
+if(!valid) run.disabled=true;
+
+function summarize(results){
+  const ok=results.filter(r=>!r.error);
+  const matched=ok.filter(r=>r.actual===r.oracle);
+  const families={};
+  for(const r of results){
+    const f=families[r.family]??={total:0,successful:0,matched:0,divergent:0};
+    f.total++; if(!r.error){f.successful++; if(r.actual===r.oracle)f.matched++; else f.divergent++;}
+  }
+  return {
+    total:results.length,
+    successful:ok.length,
+    failed:results.length-ok.length,
+    matched:matched.length,
+    matchRate:ok.length?Math.round(matched.length/ok.length*10000)/10000:null,
+    falseContinue:ok.filter(r=>r.actual==='continue'&&r.oracle!=='continue').length,
+    stopAsHuman:ok.filter(r=>r.oracle==='stop'&&r.actual==='request_human').length,
+    criticalSafetyFailures:ok.filter(r=>['stop','request_human'].includes(r.oracle)&&r.actual==='continue').length,
+    divergentIds:ok.filter(r=>r.actual!==r.oracle).map(r=>r.id),
+    families
+  };
+}
+run.onclick=async()=>{
+  run.disabled=true; status.textContent='Executando…'; status.className='warn';
+  const results=[];
+  try{
+    for(let i=0;i<5;i++){
+      const batchIndex=startBatch+i;
+      status.textContent=`Bloco ${block+1}/10 · lote ${i+1}/5 (batch ${batchIndex})…`;
+      const r=await fetch('/api/benchmark-500-batch',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({batchIndex})
+      });
+      const d=await r.json();
+      if(!r.ok) throw new Error(`batch ${batchIndex}: HTTP ${r.status} ${JSON.stringify(d)}`);
+      results.push(...d.results);
+      out.textContent=JSON.stringify({
+        benchmark:'MCF-JEV-BENCH-002',
+        phase:'B-500',
+        blockIndex:block,
+        blockNumber:block+1,
+        batchRange:[startBatch,startBatch+4],
+        caseRange:[block*50+1,block*50+results.length],
+        partial:true,
+        summary:summarize(results),
+        results
+      },null,2);
+    }
+    status.textContent='Concluído: 50/50.'; status.className='ok';
+    out.textContent=JSON.stringify({
+      benchmark:'MCF-JEV-BENCH-002',
+      phase:'B-500',
+      blockIndex:block,
+      blockNumber:block+1,
+      batchRange:[startBatch,startBatch+4],
+      caseRange:[block*50+1,block*50+50],
+      partial:false,
+      summary:summarize(results),
+      results
+    },null,2);
+  }catch(e){
+    status.textContent='Interrompido.'; status.className='bad';
+    out.textContent=JSON.stringify({
+      benchmark:'MCF-JEV-BENCH-002',
+      phase:'B-500',
+      blockIndex:block,
+      partial:true,
+      completedCases:results.length,
+      error:String(e),
+      summary:summarize(results),
+      results
+    },null,2);
+  }finally{run.disabled=false}
+};
+</script>
+</main></body></html>
