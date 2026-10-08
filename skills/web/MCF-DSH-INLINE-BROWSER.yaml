@@ -1,33 +1,37 @@
 skill:
   skill_id: MCF-DSH-INLINE-BROWSER
   name: "Browser inline na conversa do DSH"
-  version: 0.1.0
+  version: 0.2.0
   status: EXPERIMENTAL
-  purpose: "Renderizar a visão ao vivo do Browser compartilhado diretamente no card da chamada browser_goto dentro do transcript da conversa."
-  owner_agents: [Mestre, Rafael, Emily, Beatriz]
-  supporting_agents: [Miriam]
-  trigger_phrases: ["abrir browser na conversa", "browser dentro do chat", "navegar dentro da conversa", "browser inline", "tinyfish"]
+  purpose: "Renderizar a visão ao vivo do Browser nativo do DSH diretamente no card da chamada browser_open, usando a sessão própria da conversa."
+  owner_agents: [Mestre]
+  supporting_agents: [Rafael, Emily, Beatriz, Miriam]
+  trigger_phrases: ["abrir browser na conversa", "browser dentro do chat", "navegar dentro da conversa", "browser inline"]
   required_inputs: [navigation_goal]
   optional_inputs: [target_url]
-  preconditions: [dsh_browser_agent_loaded, dsh_web_client_loaded]
-  allowed_tools: [dsh-browser-agent]
+  preconditions: [dsh_builtin_browser_loaded, dsh_web_client_loaded, dsh_web_service_active]
+  allowed_tools: [mcf-dsh-inline-browser, dsh-builtin-browser]
+  forbidden_tools: [dsh-browser-agent, external_chrome_9222, second_browser_engine, duplicate_browser_session]
   permission_profile: READ_ONLY
   client_surface:
     slot: tool.call.toolview
-    wire_tool: browser_goto
-    live_feed: /browser-pane/stream
-  execution_steps: [browser_goto, render_inline_live_card, continue_browser_actions, update_live_view, verify_goal]
+    wire_tool: browser_open
+    live_feed: /mcf-dsh-inline-browser/stream
+  execution_steps: [resolve_conversation_session, browser_open, bind_call_to_session, render_inline_live_card, continue_browser_actions, verify_goal]
   expected_outputs: [inline_browser_view]
-  acceptance_criteria: [view_appears_in_transcript, uses_shared_browser_stream, no_second_browser, follows_agent_tab]
-  failure_modes: [browser_stream_unavailable, plugin_not_loaded, wrong_browser_tab]
+  required_evidence: [conversation_session_id, browser_runtime_provider, browser_session_id, call_id, stream_session_match]
+  acceptance_criteria: [view_appears_in_transcript, uses_dsh_builtin_browser_runtime, browser_session_owned_by_conversation, chat_isolation, event_isolation, no_external_9222_attachment, no_second_browser]
+  failure_modes: [browser_runtime_unavailable, stream_unavailable, plugin_not_loaded, session_binding_mismatch, browser_provider_crash]
   fallback:
-    without_primary_tool: "Usar o Browser Pane do DSH."
+    without_primary_tool: "Usar dsh-builtin-browser diretamente, mantendo a mesma conversa e sessão; não usar @try-works/dsh-browser-agent."
     without_any_tool: "Bloquear e registrar AGUARDANDO_DEPENDENCIA_EXTERNA."
     external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
   observability:
     record_tool_use: true
     record_failure_and_recovery: true
+    record_session_identity: true
+    record_stream_identity: true
   governance:
     data_classification: SENSITIVE_POSSIBLE
-    human_gate_triggers: [public_post, purchase, payment, account_change, irreversible_action]
-    prohibited_actions: [credential_capture, access_control_bypass]
+    human_gate_triggers: [authentication, two_factor_authentication, captcha, public_post, purchase, payment, account_change, irreversible_action]
+    prohibited_actions: [credential_capture, access_control_bypass, external_9222_browser_attachment, cross_chat_browser_reuse]

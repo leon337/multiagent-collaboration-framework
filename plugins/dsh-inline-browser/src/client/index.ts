@@ -1,6 +1,8 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-client-ui-tool'
 
+import { BrowserInlineRow } from './BrowserInlineRow.js'
+
 export const inject = ['slots'] as const
 
 export function apply(ctx: Context): void {

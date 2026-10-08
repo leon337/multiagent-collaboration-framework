@@ -1,23 +1,13 @@
 # MCF DSH Inline Browser
 
-Renderiza o Browser compartilhado do DSH **dentro do card da conversa** quando o agente executa `browser_goto`.
+This plugin reuses the existing `dsh-builtin-browser` BrowserRuntime. It does not create a second browser engine and does not use `connectUrl: http://127.0.0.1:9222`.
 
-O motor continua sendo `@try-works/dsh-browser-agent`. O plugin apenas reutiliza o feed SSE/CDP existente em `/browser-pane/stream` e o registra no slot `tool.call.toolview`.
+Architecture:
 
-## Resultado
+`DSH session → browser_goto → dsh-builtin-browser BrowserRuntime → conversation-owned browser session → tabs → SSE live view → tool card`
 
-```text
-mensagem do agente
-   ↓
-browser_goto
-   ↓
-┌─────────────────────────────────┐
-│ Browser ao vivo                 │
-│ Executando no Browser           │
-│ https://site...                 │
-│                                 │
-│      [ visão ao vivo ]          │
-└─────────────────────────────────┘
-```
+The live stream is bound to both the tool call id and the owning DSH session id. Chat A cannot subscribe to Chat B's browser stream.
 
-Não é um segundo navegador e não duplica cookies/sessão.
+The MCF inline profile must not mount `@try-works/dsh-browser-agent`; that legacy path is the source of the external 9222 Chrome attachment.
+
+Acceptance gates: HARNESS_OWNED_BROWSER, INLINE_BROWSER_VIEW, CHAT_ISOLATION, EVENT_ISOLATION, DUAL_CHAT_E2E, DSH_3081_PROOF.

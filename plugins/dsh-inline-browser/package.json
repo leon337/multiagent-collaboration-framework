@@ -1,36 +1,15 @@
 {
   "name": "mcf-dsh-inline-browser",
-  "version": "0.1.0",
-  "description": "MCF plugin that renders the DSH shared live browser directly inside the conversation's browser tool card.",
+  "version": "0.2.0",
+  "description": "MCF DSH Browser adapter using dsh-builtin-browser sessions with an inline live view.",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
-  "exports": {
-    ".": "./lib/index.js",
-    "./client": "./lib/client.js",
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "lib/index.js",
-    "lib/client.js",
-    "cordis.patch.yml",
-    "src",
-    "README.md"
-  ],
+  "exports": { ".": "./lib/index.js", "./client": "./lib/client.js", "./package.json": "./package.json" },
+  "files": ["lib", "src", "cordis.patch.yml", "README.md"],
   "dsh": {
-    "client": {
-      "platform": "web",
-      "inject": [
-        "@deepseek-ai/dsh-client-runtime",
-        "@deepseek-ai/dsh-client-ui-tool",
-        "@deepseek-ai/dsh-client-ui-renderer"
-      ]
-    },
-    "bundle": {
-      "patch": "./cordis.patch.yml"
-    }
+    "client": { "platform": "web", "inject": ["@deepseek-ai/dsh-client-runtime", "@deepseek-ai/dsh-client-ui-slots", "@deepseek-ai/dsh-client-ui-tool", "@deepseek-ai/dsh-client-ui-renderer"] },
+    "bundle": { "patch": "./cordis.patch.yml" }
   },
-  "peerDependencies": {
-    "@deepseek-ai/cordis": "*"
-  }
+  "peerDependencies": { "@deepseek-ai/cordis": "*", "@deepseek-ai/dsh-tools": "*", "dsh-builtin-browser": "*" }
 }

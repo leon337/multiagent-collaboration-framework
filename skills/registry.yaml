@@ -392,18 +392,18 @@ skills:
     name: Operar Browser do DeepSeek Harness
     version: 1.2.0
     status: EXPERIMENTAL
-    purpose: Ensinar o agente a escolher e operar o dsh-browser-agent como ferramenta primária para interação web, com navegação rápida orientada ao objetivo, verificação obrigatória, visão complementar e fallback controlado para Computer Use.
+    purpose: Ensinar o agente a operar o Browser nativo do DSH por sessão de conversa, usando dsh-builtin-browser como runtime primário e browser_open para a visão inline, com navegação rápida, verificação obrigatória e fallback controlado para Computer Use.
     owner_agents: [Mestre]
     trigger_phrases: ["usar browser do DSH", "operar navegador no DSH", "browser use", "navegar com DSH"]
     required_inputs: [target_url, interaction_goal, authorizedScope]
     optional_inputs: [allowed_actions, forbidden_actions, account_context]
-    allowed_tools: [dsh-builtin-browser, dsh-vision-router, dsh-vision-toolkit, dsh-tool-computer]
+    allowed_tools: [dsh-builtin-browser, mcf-dsh-inline-browser, dsh-vision-router, dsh-vision-toolkit, dsh-tool-computer]
     forbidden_tools: [curl, wget, requests, playwright_substitution, selenium_substitution, credential_capture, secret_exposure, access_control_bypass]
     permission_profile: SCOPED_WRITE
-    execution_steps: [classificar_tarefa, definir_rota_mais_curta, validar_escopo, carregar_skill, abrir_url_com_browser, reutilizar_observacao_e_seletores, executar_acoes_em_lote_quando_aplicavel, esperar_somente_conteudo_assincrono, verificar_resultado, registrar_evidencia]
-    required_evidence: [provider_used, target_url, actions_performed, observed_result, side_effects, observed_at, human_gate_state]
-    expected_outputs: [browser_interaction_result, browser_interaction_receipt]
-    acceptance_criteria: [dsh_browser_preferred, shortest_route_attempted, observation_not_duplicated_without_reason, selectors_reused_when_available, result_verified, no_secret_exposure, no_gate_bypass]
+    execution_steps: [classificar_tarefa, definir_rota_mais_curta, validar_escopo, carregar_skill, usar_browser_open_para_visao_inline, reutilizar_observacao_e_seletores, executar_acoes_em_lote_quando_aplicavel, esperar_somente_conteudo_assincrono, verificar_resultado, registrar_evidencia]
+    required_evidence: [provider_used, target_url, actions_performed, observed_result, side_effects, observed_at, human_gate_state, conversation_session_id]
+    expected_outputs: [browser_interaction_result, browser_interaction_receipt, inline_browser_view]
+    acceptance_criteria: [dsh_builtin_browser_preferred, harness_owned_session, shortest_route_attempted, observation_not_duplicated_without_reason, selectors_reused_when_available, result_verified, no_external_9222_attachment, no_secret_exposure, no_gate_bypass]
     failure_modes: [browser_unavailable, provider_crash, login_required, captcha_or_2fa, semantic_target_not_found, scope_insufficient, verification_failed]
     fallback: Usar visão para compreender a superfície e dsh-tool-computer somente quando o Browser não for suficiente; para leitura estática, degradar para MCF-WEB-FETCH. Nunca contornar autenticação ou controles do site.
     handoff_to: Beatriz
@@ -416,22 +416,22 @@ skills:
   - skill_id: MCF-DSH-INLINE-BROWSER
     status: EXPERIMENTAL
     name: Browser inline na conversa do DSH
-    version: 0.1.0
-    purpose: Renderizar a visão ao vivo do Browser compartilhado no próprio transcript quando o agente inicia navegação com browser_goto.
-    owner_agents: [Mestre, Rafael, Emily, Beatriz]
-    supporting_agents: [Miriam]
+    version: 0.2.0
+    purpose: Renderizar a visão ao vivo do Browser nativo do DSH diretamente no card da chamada browser_open, usando a sessão própria da conversa.
+    owner_agents: [Mestre]
+    supporting_agents: [Rafael, Emily, Beatriz, Miriam]
     trigger_phrases: ["browser dentro do chat", "browser inline", "abrir browser na conversa", "navegar dentro da conversa"]
     required_inputs: [navigation_goal]
     optional_inputs: [target_url]
-    allowed_tools: [dsh-browser-agent]
-    forbidden_tools: [second_browser_engine, duplicate_browser_session]
+    allowed_tools: [mcf-dsh-inline-browser, dsh-builtin-browser]
+    forbidden_tools: [dsh-browser-agent, external_chrome_9222, second_browser_engine, duplicate_browser_session]
     permission_profile: READ_ONLY
-    execution_steps: [browser_goto, render_live_card, continue_browser_actions, verify_goal]
-    required_evidence: [inline_card_rendered, shared_stream_active]
+    execution_steps: [resolve_conversation_session, browser_open, bind_call_to_session, render_inline_live_card, continue_browser_actions, verify_goal]
+    required_evidence: [conversation_session_id, browser_runtime_provider, browser_session_id, call_id, stream_session_match]
     expected_outputs: [inline_browser_view]
-    acceptance_criteria: [view_appears_in_transcript, uses_existing_dsh_browser_stream, no_second_browser]
-    failure_modes: [stream_unavailable, browser_agent_missing, wrong_active_tab]
-    fallback: Usar o Browser Pane do DSH e manter a navegação pelo dsh-browser-agent.
+    acceptance_criteria: [view_appears_in_transcript, uses_dsh_builtin_browser_runtime, browser_session_owned_by_conversation, chat_isolation, event_isolation, no_external_9222_attachment, no_second_browser]
+    failure_modes: [browser_runtime_unavailable, stream_unavailable, plugin_not_loaded, session_binding_mismatch, browser_provider_crash]
+    fallback: Usar dsh-builtin-browser diretamente, mantendo a mesma conversa e sessão; não usar @try-works/dsh-browser-agent.
     handoff_to: Beatriz
 
   # Provider-agnostic web research skills.
