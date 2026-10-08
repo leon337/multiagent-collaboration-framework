@@ -13,7 +13,9 @@ The same five tools may be reached over local stdio or remote Streamable HTTP; t
 
 1. Use `web_search` to discover candidate sources. Configure `WEBAGENT_SEARXNG_URL` to enable the live self-hostable SearXNG provider; without it, search remains `local-empty`.
 2. Use `web_fetch` for direct HTTP/HTTPS retrieval when browser execution is unnecessary.
-3. Use `browser_run` for workflows that need a real page render. The default runtime uses Playwright with headless Chromium; use `browser_wait` for state/result and `browser_cancel` to stop a non-terminal job.
+3. Use `browser_run` for workflows that need a real page render. The default runtime uses Playwright with headless Chromium.
+4. After starting a browser run, prefer `browser_next_event` for real-time state changes and `browser_events` for compact deltas. Use `browser_wait` only when you need the complete run snapshot/evidence or when an event stream is unavailable.
+5. Maintain an event cursor (`afterSeq`) and request only relevant event types. Do not poll full snapshots in a loop.
 
 Prefer the least agentic operation that satisfies the task. Preserve evidence, timing, budget, runtime, final URL and error metadata.
 
