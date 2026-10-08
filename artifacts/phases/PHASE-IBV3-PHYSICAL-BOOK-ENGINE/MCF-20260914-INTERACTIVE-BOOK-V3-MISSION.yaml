@@ -1,0 +1,247 @@
+mission_contract:
+  mission_id: MCF-20260914-INTERACTIVE-BOOK-V3
+  parent_mission_id: null
+  phase_id: PHASE-IBV3-PHYSICAL-BOOK-ENGINE
+  title: "Interactive Book V3 — Physical Book Engine"
+  objective: "Entregar um prototipo interativo de livro digital fisico, validavel dentro do ChatGPT, com virada por arraste, curvatura visual, audio reativo, navegacao, acessibilidade e regressao controlada."
+  expected_outcome: "Prototipo V3 funcional e validado pelo LEANDRO dentro do ChatGPT, pronto para um gate humano posterior de publicacao externa."
+  scope:
+    - page curl visual deformavel por segmentos
+    - arraste por bordas e cantos com acompanhamento em tempo real
+    - sombras dinamicas durante a dobra
+    - Web Audio API reativa a velocidade e progresso
+    - controle de som e volume
+    - pilha visual de paginas lidas e restantes
+    - corner lift e feedback de manipulacao
+    - capa e contracapa
+    - navegacao por capitulos
+    - marcador, progresso e retomada local
+    - selecao de texto sem conflito com gesto
+    - acessibilidade, teclado e reduced motion
+    - layout desktop e mobile
+    - pagina de fontes e versao
+    - validacao de regressao antes de publicacao
+  out_of_scope:
+    - deploy Vercel antes do HUMAN_GATE
+    - merge em main antes da validacao humana
+    - APIs pagas
+    - telemetria remota
+  inputs:
+    - prototipo V2 criado nesta conversa
+    - auditoria de melhorias acordada com LEANDRO
+    - artigo oficial OpenAI sobre navegador padrao no ChatGPT Android
+  source_of_truth:
+    - project-instructions/MCF-PROJECT-OPERATING-INSTRUCTIONS.md
+    - templates/MCF-UNIFIED-MISSION.yaml
+    - artifacts/phases/PHASE-IBV3-PHYSICAL-BOOK-ENGINE/CHECKLIST.md
+    - experimentos/interactive-book-v3/index.html
+  assumptions:
+    - o prototipo sera validado primeiro na superficie inline do ChatGPT
+    - Web Audio depende de interacao do usuario para desbloqueio no navegador
+  acceptance_criteria:
+    - a folha acompanha mouse ou toque durante o arraste
+    - arraste abaixo do limiar retorna; acima completa a virada
+    - dobra possui curvatura visual e sombra progressiva
+    - som de papel reage a velocidade do gesto e pode ser silenciado
+    - texto continua selecionavel fora das zonas de pega
+    - desktop e mobile apresentam conteudo sem corte critico
+    - navegacao por botoes, teclado e capitulos funciona
+    - estado de leitura pode ser retomado localmente
+    - nenhuma publicacao externa ocorre sem autorizacao humana explicita
+  authorizations:
+    - LEANDRO autorizou criar a missao, checklist vivo e implementar o prototipo V3
+    - LEANDRO autorizou validacao dentro do ChatGPT
+  prohibitions:
+    - nao publicar externamente antes do HUMAN_GATE
+    - nao fazer merge em main sem decisao humana posterior
+    - nao simular validacao que nao tenha sido realmente executada
+  risk_class: B
+  current_state: EM_EXECUCAO
+  cycle: 1
+  selected_agents:
+    - Mestre
+  decision_authority: Leo
+  human_escalation_triggers:
+    - publicacao externa
+    - merge em main
+    - mudanca material de escopo
+  phase_artifact_directory: artifacts/phases/PHASE-IBV3-PHYSICAL-BOOK-ENGINE
+
+human_delegation_firewall:
+  mode: TEAM_FIRST
+  human_as_executing_agent: false
+  team_execution_attempted: true
+  attempted_actions:
+    - registrar missao e checklist por conector GitHub
+    - implementar prototipo na branch isolada
+  evidence:
+    - branch mission/interactive-book-v3-physical-engine-20260914 criada a partir de main
+  tool_limitation: "Validacao perceptual final exige interacao do LEANDRO na superficie inline do ChatGPT."
+  fallback_exhausted: false
+  intervention_required: false
+  intervention_contract: templates/MCF-HUMAN-INTERVENTION-REQUEST.yaml
+  leo_approved: false
+  human_action_count: 0
+  return_to_team_defined: true
+
+selection:
+  available_agents: 29
+  selected:
+    - Mestre
+  justifications:
+    - "Mestre mantem mapa da missao, implementacao, evidencia e entrega unica neste ciclo."
+  initial_execution_order:
+    - Mestre
+  control_agents:
+    Augusto:
+      required: false
+      reason: "Prototipo local/inline sem runtime remoto."
+    Beatriz:
+      required: false
+      reason: "Validacao funcional sera registrada no checklist e smoke da fase."
+    Miriam:
+      required: true
+      reason: "Preservar fonte de verdade e continuidade da missao."
+    Julia:
+      required: true
+      reason: "Garantir que publicacao e merge permaneçam atras do HUMAN_GATE."
+
+chronological_execution:
+  - sequence: 1
+    cycle: 1
+    agent: Mestre
+    activity_title: Abrir contrato e fase
+    input_received: "LEANDRO definiu que o Goal e entregar o prototipo pronto."
+    action_executed: "Criou branch isolada e registrou contrato da missao."
+    tool_or_resource: "GitHub connector"
+    evidence_observed:
+      - "main base: 6c3d0f22cb35471b5d823fd83f7950ea67ad66aa"
+      - "branch: mission/interactive-book-v3-physical-engine-20260914"
+    result_and_analysis: "A missao agora possui fronteira clara: implementar e validar V3 antes de deploy/merge."
+    decision_and_delivery:
+      - "seguir para implementacao e checklist vivo"
+    handoff_id: H-001
+
+handoffs:
+  - handoff_id: H-001
+    mission_id: MCF-20260914-INTERACTIVE-BOOK-V3
+    parent_mission_id: null
+    phase_id: PHASE-IBV3-PHYSICAL-BOOK-ENGINE
+    cycle: 1
+    from: Mestre
+    to: Mestre
+    objective_state: EM_EXECUCAO
+    delivered:
+      - contrato da missao
+      - branch isolada
+    evidence:
+      - branch criada a partir do main vigente
+    decisions:
+      - validacao inline antes de publicacao
+    open_findings: []
+    blockers: []
+    next_action: "Implementar V3 e atualizar checklist vivo."
+    acceptance_for_next_action: "Prototipo renderizavel e interativo."
+    return_to: Mestre
+    continue_in_same_response: true
+
+objective_cycles:
+  - cycle: 1
+    hypothesis_or_task: "Um motor de pagina segmentada em CSS 3D pode entregar curvatura perceptual sem dependencias externas."
+    action: "Implementar prototipo autocontido."
+    evidence: []
+    result: "EM_EXECUCAO"
+    progress_against_acceptance: []
+    remaining_gaps:
+      - implementacao
+      - smoke tecnico
+      - validacao humana inline
+    next_decision: "HUMAN_GATE somente apos validacao inline."
+
+phase_traceability_pack:
+  directory: artifacts/phases/PHASE-IBV3-PHYSICAL-BOOK-ENGINE
+  required_files:
+    plan:
+      path: PHASE-IBV3-PLAN.md
+      status: EM_EXECUCAO
+    report:
+      path: PHASE-IBV3-REPORT.md
+      status: PENDENTE
+    validation:
+      path: PHASE-IBV3-VALIDATION.txt
+      status: PENDENTE
+    validation_full:
+      path: PHASE-IBV3-VALIDATION-FULL.txt
+      status: PENDENTE
+    smoke:
+      path: PHASE-IBV3-SMOKE.txt
+      status: PENDENTE
+    checkpoint:
+      path: PHASE-IBV3-CHECKPOINT.yaml
+      status: EM_EXECUCAO
+    decisions:
+      path: PHASE-IBV3-DECISIONS.md
+      status: EM_EXECUCAO
+    manifest:
+      path: PHASE-IBV3-ARTIFACT-MANIFEST.sha256
+      status: PENDENTE
+    readme:
+      path: README.md
+      status: EM_EXECUCAO
+  conditional_files: []
+  integrity_verified: false
+  package_delivery_reference: ""
+
+governance:
+  agent: Julia
+  applicable: true
+  risk_classification: B
+  responsibilities:
+    - bloquear deploy e merge antes do HUMAN_GATE
+  permissions_and_limits:
+    - branch isolada autorizada
+    - validacao inline autorizada
+    - deploy externo nao autorizado nesta fase
+  supervision_requirements:
+    - LEANDRO valida experiencia final
+  hdf_compliance: EM_EXECUCAO
+  compliance_findings: []
+  verdict: EM_EXECUCAO
+
+audit:
+  agent: Emily
+  applicable: false
+  evidence_reviewed: []
+  execution_sequence_verified: false
+  phase_pack_verified: false
+  hdf_verified: false
+  findings: []
+  verdict: NAO_APLICAVEL
+
+leo_gate:
+  decision: PENDENTE
+  justification: "Aguardando prototipo e validacao."
+  execution_sequence_accepted: false
+  phase_traceability_pack_accepted: false
+  hdf_accepted: false
+  next_state: "EM_EXECUCAO"
+  next_action: "Concluir prototipo V3."
+  responsible: Mestre
+  escalate_to_leandro: false
+
+mission_closeout:
+  mission_id: MCF-20260914-INTERACTIVE-BOOK-V3
+  phase_id: PHASE-IBV3-PHYSICAL-BOOK-ENGINE
+  final_state: EM_EXECUCAO
+  objective_met: false
+  acceptance_results: []
+  artifacts: []
+  phase_traceability_pack: []
+  evidence: []
+  unresolved_findings: []
+  blockers: []
+  leo_decision: ""
+  human_action_required: false
+  human_action_count: 0
+  next_action: "Implementar e validar prototipo"
+  checkpoint_recipient: Mestre
