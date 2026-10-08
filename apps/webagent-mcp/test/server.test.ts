@@ -9,7 +9,7 @@ afterEach(async () => {
 });
 
 describe('createWebAgentServer', () => {
-  it('advertises the five MVP tools over an MCP connection', async () => {
+  it('advertises browser event tools over an MCP connection', async () => {
     const server = createWebAgentServer();
     const client = new Client({ name: 'webagent-test', version: '0.1.0' });
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
@@ -21,7 +21,7 @@ describe('createWebAgentServer', () => {
 
     const listed = await client.listTools();
     expect(listed.tools.map((tool) => tool.name).sort()).toEqual(
-      ['browser_cancel', 'browser_run', 'browser_wait', 'web_fetch', 'web_search'].sort(),
+      ['browser_cancel', 'browser_events', 'browser_next_event', 'browser_run', 'browser_wait', 'web_fetch', 'web_search'].sort(),
     );
     const browserRun = listed.tools.find((tool) => tool.name === 'browser_run');
     expect(browserRun?.inputSchema).toHaveProperty('properties.actions');
@@ -46,3 +46,31 @@ describe('createWebAgentServer', () => {
     );
   });
 });
+
+
+  it('reads compact browser events without returning a full browser snapshot', async () => {
+    const server = createWebAgentServer();
+    const client = new Client({ name: 'webagent-test', version: '0.1.0' });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+    closers.push(async () => client.close());
+    closers.push(async () => server.close());
+
+    const browserRun = await client.callTool({
+      name: 'browser_run',
+      arguments: { url: 'https://example.com/', goal: 'open example' },
+    });
+    expect(browserRun.isError).not.toBe(true);
+
+    const payload = JSON.parse((browserRun.content?.[0] as { text: string }).text);
+    const runId = payload.data.runId as string;
+
+    const events = await client.callTool({
+      name: 'browser_events',
+      arguments: { runId, afterSeq: 0, types: ['navigation.started'], limit: 5 },
+    });
+    expect(events.isError).not.toBe(true);
+    expect((events.content?.[0] as { text: string }).text).toContain('"navigation.started"');
+  });
