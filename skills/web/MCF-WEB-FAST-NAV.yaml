@@ -1,0 +1,50 @@
+skill:
+  skill_id: MCF-WEB-FAST-NAV
+  name: "Navegação web rápida orientada a eventos"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Reduzir latência e custo cognitivo do agente usando rota curta, estado incremental, eventos em tempo real e ações determinísticas."
+  owner_agents: [Mestre, Rafael, Emily, Beatriz]
+  supporting_agents: [Ricardo, Miriam]
+  trigger_phrases: ["navegar rápido", "decisão rápida no navegador", "executar browser com baixa latência", "navegação eficiente"]
+  required_inputs: [navigation_goal]
+  optional_inputs: [target_url, run_id, max_steps, max_duration_ms]
+  preconditions: [interactive_browser_available]
+  allowed_tools: [WebAgent_MCP]
+  alternative_tools: [Remote_Desktop_Commander]
+  forbidden_tools: [unbounded_polling, repeated_full_snapshots, secret_capture, access_control_bypass]
+  permission_profile: READ_ONLY
+  routing_order: [direct_url, known_selector, live_event, focused_semantic_observation, visual_fallback]
+  operating_loop: [choose_shortest_route, observe_once, act, await_relevant_event, verify_minimal_state, continue_or_finish]
+  anti_latency_rules:
+    - browser_open_result_is_initial_observation
+    - prefer_browser_next_event_over_repeated_browser_wait
+    - never_sleep_arbitrarily
+    - reuse_selectors_and_cursor
+    - batch_actions_when_safe
+    - switch_strategy_after_two_failures
+    - finish_immediately_when_goal_is_verified
+  budgets:
+    event_wait_timeout_ms_default: 5000
+    event_wait_timeout_ms_max: 30000
+    max_event_batch: 20
+  expected_outputs: [navigation_result, latency_receipt]
+  acceptance_criteria: [shortest_route_attempted, event_feedback_used_when_waiting, minimal_verification, bounded_steps, bounded_time]
+  failure_modes: [provider_unavailable, browser_disconnected, event_stream_timeout, selector_stale, anti_bot_block]
+  fallback:
+    without_primary_tool: "Usar browser_wait com espera específica e mínimo de observação."
+    without_any_tool: "Bloquear e registrar AGUARDANDO_DEPENDENCIA_EXTERNA."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: SENSITIVE_POSSIBLE
+    human_gate_triggers: [public_post, purchase, payment, account_change, irreversible_action]
+    prohibited_actions: [credential_capture, secret_logging, access_control_bypass]
+  tests:
+    positive_scenarios: [direct_url_fast_path, event_driven_navigation, minimal_verification, bounded_recovery]
+    negative_scenarios: [polling_loop, repeated_snapshot_without_state_change, unbounded_wait]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED
