@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcf.local/schemas/continuity_capsule/v1",
+  "title": "MCF AGENT-CONTINUITY-CAPSULE v1 — prototype",
+  "description": "Documentation/validation prototype only. No runtime implementation is authorized.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema","identity","mission","authority","repository_anchors","decisions","pending_items","artifacts","events","uncertainties","provenance","authenticity","integrity"],
+  "properties": {
+    "schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id","capsule_id","created_at_utc","state_as_of_utc","classification","storage_target_class"],
+      "properties": {
+        "id": {"const": "continuity_capsule/v1"},
+        "capsule_id": {"type": "string", "minLength": 1, "maxLength": 200},
+        "created_at_utc": {"type": "string", "format": "date-time"},
+        "state_as_of_utc": {"type": "string", "format": "date-time"},
+        "classification": {"enum": ["public","internal","private"]},
+        "storage_target_class": {"enum": ["public","internal","private"]},
+        "publication_policy_ref": {"type": ["string","null"]},
+        "supersedes_capsule_id": {"type": ["string","null"]},
+        "supersedes_payload_sha256": {"anyOf": [{"type":"null"},{"$ref":"#/$defs/sha256"}]}
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["agent_id","agent_role","agent_contract_version","agent_contract_sha256","agent_identity_fingerprint","identity_fingerprint_algorithm","source_session_id","source_session_evidence_class"],
+      "properties": {
+        "agent_id": {"type":"string","minLength":1},
+        "display_name": {"type":["string","null"]},
+        "agent_role": {"type":"string","minLength":1},
+        "agent_contract_version": {"type":"string","minLength":1},
+        "agent_contract_sha256": {"$ref":"#/$defs/sha256"},
+        "skills_manifest_sha256": {"anyOf":[{"type":"null"},{"$ref":"#/$defs/sha256"}]},
+        "agent_identity_fingerprint": {"$ref":"#/$defs/sha256"},
+        "identity_fingerprint_algorithm": {"const":"MCF_AGENT_IDENTITY_V1+SHA256"},
+        "source_session_id": {"type":"string","minLength":1},
+        "source_session_evidence_class": {"type":"string","minLength":1},
+        "preset_or_profile": {"type":["string","null"]},
+        "skills_manifest_ref": {"type":["string","null"]},
+        "runtime_persona_ref": {"type":["string","null"]}
+      }
+    },
+    "mission": {
+      "type":"object","additionalProperties":false,
+      "required":["mission_id","current_goal","current_state","status","next_action","return_to"],
+      "properties":{
+        "mission_id":{"type":"string","minLength":1},
+        "phase_id":{"type":["string","null"]},
+        "current_goal":{"type":"string","minLength":1},
+        "current_state":{"type":"string","minLength":1},
+        "status":{"enum":["ACTIVE","WAITING_DEPENDENCY","WAITING_HUMAN_GATE","SAFE_HOLD","READY_FOR_HANDOFF","COMPLETED_WITH_PENDING","COMPLETED"]},
+        "next_action":{"type":"string","minLength":1},
+        "return_to":{"type":["string","null"]}
+      }
+    },
+    "authority": {
+      "type":"object","additionalProperties":false,
+      "required":["final_human_authority","orchestrator","standing_authorizations","active_gates","prohibited_actions"],
+      "properties":{
+        "final_human_authority":{"type":"string","minLength":1},
+        "orchestrator":{"type":"string","minLength":1},
+        "standing_authorizations":{"type":"array","maxItems":200,"items":{"$ref":"#/$defs/authorization"}},
+        "active_gates":{"type":"array","maxItems":200,"items":{"$ref":"#/$defs/gate"}},
+        "prohibited_actions":{"type":"array","maxItems":200,"items":{"type":"string","minLength":1}}
+      }
+    },
+    "runtime_snapshot": {"anyOf":[{"type":"null"},{"$ref":"#/$defs/runtime"}]},
+    "repository_anchors": {"type":"array","maxItems":500,"items":{"$ref":"#/$defs/repository_anchor"}},
+    "decisions": {"type":"array","maxItems":500,"items":{"$ref":"#/$defs/decision"}},
+    "pending_items": {"type":"array","maxItems":500,"items":{"$ref":"#/$defs/pending"}},
+    "artifacts": {"type":"array","maxItems":1000,"items":{"$ref":"#/$defs/artifact"}},
+    "events": {"type":"array","maxItems":2000,"items":{"$ref":"#/$defs/event"}},
+    "uncertainties": {"type":"array","maxItems":500,"items":{"$ref":"#/$defs/uncertainty"}},
+    "provenance": {"$ref":"#/$defs/provenance"},
+    "memory_refs": {"type":"array","maxItems":200,"items":{"$ref":"#/$defs/memory_ref"}},
+    "trusted_sources": {"type":"array","maxItems":200,"items":{"$ref":"#/$defs/trusted_source"}},
+    "trusted_source_policy_ref": {"type":["string","null"]},
+    "authenticity": {
+      "type":"object","additionalProperties":false,
+      "required":["method","evidence_refs","verified_at_utc","verifier"],
+      "properties":{
+        "method":{"enum":["NONE","AUTHENTICATED_TRANSPORT_RECEIPT","GIT_ATTESTATION","SIGNATURE"]},
+        "evidence_refs":{"type":"array","items":{"type":"string","minLength":1}},
+        "verified_at_utc":{"type":["string","null"],"format":"date-time"},
+        "verifier":{"type":["string","null"]}
+      }
+    },
+    "integrity": {
+      "type":"object","additionalProperties":false,
+      "required":["canonicalization","canonicalization_id","payload_sha256","producer_fingerprint","verification_status"],
+      "properties":{
+        "canonicalization":{"type":"string","minLength":1},
+        "canonicalization_id":{"enum":["MCF_FIXTURE_SORTED_JSON_V0"]},
+        "payload_sha256":{"$ref":"#/$defs/sha256"},
+        "file_sha256":{"anyOf":[{"type":"null"},{"$ref":"#/$defs/sha256"}]},
+        "producer_fingerprint":{"type":"string","minLength":1},
+        "verification_status":{"type":"string","minLength":1}
+      }
+    }
+  },
+  "allOf": [
+    {"if":{"properties":{"schema":{"properties":{"classification":{"const":"private"}}}}},"then":{"properties":{"schema":{"properties":{"storage_target_class":{"const":"private"}}}}}},
+    {"if":{"properties":{"schema":{"properties":{"classification":{"const":"internal"}}}}},"then":{"properties":{"schema":{"properties":{"storage_target_class":{"enum":["internal","private"]}}}}}}
+  ],
+  "$defs": {
+    "sha256": {"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "authorization": {
+      "type":"object","additionalProperties":false,
+      "required":["authorization_id","scope","granted_by","granted_at_utc","evidence_ref","freshness"],
+      "properties":{
+        "authorization_id":{"type":"string","minLength":1},"scope":{"type":"string","minLength":1},"granted_by":{"type":"string","minLength":1},"granted_at_utc":{"type":"string","format":"date-time"},"expires_at_utc":{"type":["string","null"],"format":"date-time"},"evidence_ref":{"type":"string","minLength":1},"superseded_by":{"type":["string","null"]},"freshness":{"enum":["SNAPSHOT","RECONCILE_ON_RECOVERY"]}
+      }
+    },
+    "gate": {
+      "type":"object","additionalProperties":false,"required":["gate_id","description","owner","freshness"],
+      "properties":{"gate_id":{"type":"string","minLength":1},"description":{"type":"string","minLength":1},"owner":{"type":"string","minLength":1},"freshness":{"enum":["SNAPSHOT","RECONCILE_ON_RECOVERY"]},"evidence_ref":{"type":["string","null"]}}
+    },
+    "runtime": {
+      "type":"object","additionalProperties":false,"required":["runtime_type","runtime_version","host_id_or_ref","workspace_ref","provider","model","session_id","observed_at_utc"],
+      "properties":{"runtime_type":{"type":"string"},"runtime_version":{"type":"string"},"host_id_or_ref":{"type":"string"},"workspace_ref":{"type":"string"},"provider":{"type":"string"},"model":{"type":"string"},"session_id":{"type":"string"},"observed_at_utc":{"type":"string","format":"date-time"},"host_boot_id_or_boot_time":{"type":["string","null"]},"health_snapshot":{"type":["string","null"]},"tool_profile":{"type":["string","null"]},"network_surface":{"type":["string","null"]},"context_pressure":{"type":["number","null"],"minimum":0,"maximum":1}}
+    },
+    "repository_anchor": {
+      "type":"object","additionalProperties":false,"required":["repository","ref_type","ref","observed_at_utc","verification_method","freshness"],
+      "properties":{"repository":{"type":"string"},"ref_type":{"enum":["branch","tag","commit","pr","issue","file"]},"ref":{"type":"string"},"sha":{"type":["string","null"]},"observed_at_utc":{"type":"string","format":"date-time"},"verification_method":{"type":"string"},"freshness":{"enum":["SNAPSHOT","RECONCILE_ON_RECOVERY"]},"trusted_source_ref":{"type":["string","null"]}}
+    },
+    "decision": {
+      "type":"object","additionalProperties":false,"required":["decision_id","statement","status","made_by","made_at_utc","evidence_refs"],
+      "properties":{"decision_id":{"type":"string"},"statement":{"type":"string"},"status":{"enum":["ACTIVE","SUPERSEDED","DEFERRED","REJECTED"]},"made_by":{"type":"string"},"made_at_utc":{"type":"string","format":"date-time"},"evidence_refs":{"type":"array","items":{"type":"string"}},"supersedes":{"type":"array","items":{"type":"string"}},"requires_gate":{"type":["string","null"]}}
+    },
+    "pending": {
+      "type":"object","additionalProperties":false,"required":["pending_id","description","owner","priority","state","next_action","acceptance_criteria","evidence_refs"],
+      "properties":{"pending_id":{"type":"string"},"description":{"type":"string"},"owner":{"type":"string"},"priority":{},"state":{"enum":["OPEN","BLOCKED","WAITING_GATE","DONE","SUPERSEDED"]},"next_action":{"type":"string"},"acceptance_criteria":{"type":"string"},"evidence_refs":{"type":"array","items":{"type":"string"}},"blocker":{"type":["string","null"]},"gate_id":{"type":["string","null"]}}
+    },
+    "artifact": {
+      "type":"object","additionalProperties":false,"required":["artifact_id","path_or_uri","media_type","size_bytes","sha256","producer","produced_at_utc","evidence_class","transport_state","verification"],
+      "properties":{"artifact_id":{"type":"string"},"path_or_uri":{"type":"string"},"media_type":{"type":"string"},"size_bytes":{"type":"integer","minimum":0},"sha256":{"$ref":"#/$defs/sha256"},"producer":{"type":"string"},"produced_at_utc":{"type":"string","format":"date-time"},"evidence_class":{"enum":["DIRECT_RUNTIME_EVIDENCE","DIRECT_VISUAL_EVIDENCE","INDIRECT_VISUAL_EVIDENCE","MACHINE_DIRECT","HUMAN_RELAYED","DISK_ARTIFACT","REMOTE_API_EVIDENCE"]},"transport_state":{"type":"string"},"remote_ref":{"type":["string","null"]},"verification":{"type":"string"},"reference_policy_ref":{"type":["string","null"]}}
+    },
+    "event": {
+      "type":"object","additionalProperties":false,"required":["event_id","ts_utc","actor","role","surface","carrier_class","payload_ref","evidence_class","verification","state_as_of"],
+      "properties":{"event_id":{"type":"string"},"ts_utc":{"type":"string","format":"date-time"},"actor":{"type":"string"},"role":{"type":"string"},"surface":{"type":"string"},"carrier_class":{"enum":["HUMAN_RELAYED","MACHINE_DIRECT","DISK_ARTIFACT"]},"payload_ref":{"type":"string"},"payload_sha256":{"anyOf":[{"type":"null"},{"$ref":"#/$defs/sha256"}]},"evidence_class":{"type":"string"},"order_ref":{"type":["string","null"]},"verification":{"type":"string"},"state_as_of":{"type":"string","format":"date-time"},"host_snapshot_ref":{"type":["string","null"]},"supersedes":{"type":["string","null"]}}
+    },
+    "uncertainty": {
+      "type":"object","additionalProperties":false,"required":["uncertainty_id","claim_or_question","class","last_observed_at_utc","evidence_refs","required_verification","impact_if_wrong"],
+      "properties":{"uncertainty_id":{"type":"string"},"claim_or_question":{"type":"string"},"class":{"enum":["DOUBT","UNKNOWN","UNVERIFIED","STALE"]},"last_observed_at_utc":{"type":"string","format":"date-time"},"evidence_refs":{"type":"array","items":{"type":"string"}},"required_verification":{"type":"string"},"impact_if_wrong":{"type":"string"}}
+    },
+    "provenance": {
+      "type":"object","additionalProperties":false,"required":["producer_agent_id","producer_session_id","generation_method","source_refs","created_on_host_ref","verification_notes"],
+      "properties":{"producer_agent_id":{"type":"string"},"producer_session_id":{"type":"string"},"generation_method":{"type":"string"},"source_refs":{"type":"array","items":{"type":"string"}},"operator_identity":{"type":["string","null"]},"git_author_identity":{"type":["string","null"]},"created_on_host_ref":{"type":"string"},"verification_notes":{"type":"string"}}
+    },
+    "memory_ref": {
+      "type":"object","additionalProperties":false,"required":["memory_scope","memory_ref","provider_class","read_authorization_ref","provenance_ref","required_for_recovery"],
+      "properties":{"memory_scope":{"type":"string"},"memory_ref":{"type":"string"},"provider_class":{"type":"string"},"read_authorization_ref":{"type":"string"},"provenance_ref":{"type":"string"},"required_for_recovery":{"type":"boolean"}}
+    },
+    "trusted_source": {
+      "type":"object","additionalProperties":false,"required":["source_id","source_type","scope","authentication_or_verification_method","allowed_claim_classes","freshness_policy"],
+      "properties":{"source_id":{"type":"string"},"source_type":{"type":"string"},"scope":{"type":"string"},"authentication_or_verification_method":{"type":"string"},"allowed_claim_classes":{"type":"array","items":{"type":"string"}},"freshness_policy":{"type":"string"}}
+    }
+  }
+}
