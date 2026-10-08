@@ -46,10 +46,6 @@ export function apply(ctx) {
   const registry = new InlineBrowserSessionRegistry(browser);
   const cleanupTimer = setInterval(() => registry.prune(), 6e4);
 
-  // dsh-builtin-browser owns the authoritative per-conversation session map.
-  // We observe the completed browser_open call and resolve that exact session
-  // from the BrowserRuntime provider state. No browser.open() call is made here,
-  // so the inline adapter can never create a duplicate browser session.
   ctx.on("tools/result", (exec, result) => {
     if (exec.name !== "browser_open" || exec.agent?.id === undefined || result.isError) return;
     const task = taskKey(exec);
@@ -57,29 +53,18 @@ export function apply(ctx) {
     if (session !== undefined) registry.bindCall(exec.callId, task, session);
   });
 
-  const disposeDebug = ctx.webServer.register({
-    kind: "exact",
-    path: "/mcf-dsh-inline-browser/debug",
-    handler: (_req, res) => {
-      const providers = browser.providers instanceof Map ? [...browser.providers.values()] : [];
-      const sessions = [];
-      for (const provider of providers) {
-        if (!(provider?.sessions instanceof Map)) continue;
-        for (const [id, session] of provider.sessions) sessions.push({ provider: provider.id, id, label: session?.label, tabs: session?.tabs?.length ?? 0 });
-      }
-      json(res, 200, { sessions });
-    },
-  });
-
   const disposeStream = ctx.webServer.register({
     kind: "exact",
     path: "/mcf-dsh-inline-browser/stream",
     handler: (req, res) => {
       const requestUrl = new URL(req.url ?? "/mcf-dsh-inline-browser/stream", "http://127.0.0.1");
+      const sessionId = requestUrl.searchParams.get("sessionId") ?? "";
       const callId = requestUrl.searchParams.get("callId") ?? "";
-      const agentId = requestUrl.searchParams.get("sessionId") ?? "";
-      const session = registry.resolveCall(callId, agentId);
-      if (session === undefined) { json(res, 404, { ok: false, error: "INLINE_BROWSER_SESSION_NOT_FOUND" }); return; }
+
+      if (!sessionId && !callId) {
+        json(res, 400, { ok: false, error: "INLINE_BROWSER_SESSION_ID_REQUIRED" });
+        return;
+      }
 
       res.writeHead(200, {
         "content-type": "text/event-stream; charset=utf-8",
@@ -93,28 +78,65 @@ export function apply(ctx) {
       let busy = false;
       let previousUrl = "";
       let previousTabs = "";
+      let previousSession = "";
+
+      const resolveSession = () => {
+        if (callId && sessionId) {
+          const bound = registry.resolveCall(callId, sessionId);
+          if (bound !== undefined) return bound;
+        }
+        return sessionId ? registry.findExisting(sessionId) : undefined;
+      };
+
       const pump = async () => {
         if (closed || busy) return;
         busy = true;
         try {
+          const session = resolveSession();
+          if (session === undefined) {
+            if (previousSession !== "none") {
+              send(res, "state", { sessionId, status: "waiting", tabCount: 0, url: "", message: "Aguardando o navegador desta conversa…" });
+              previousSession = "none";
+              previousUrl = "";
+              previousTabs = "";
+            }
+            return;
+          }
+
           const tabs = await browser.listTabs(session);
           const active = tabs.find(tab => tab.active) ?? tabs[0];
           const shot = await browser.screenshot(session, { format: "jpeg", maxWidth: 1280, maxHeight: 720 });
-          const state = { sessionId: agentId, browserSession: session, url: active?.url ?? "", tabId: active?.id ?? "", tabCount: tabs.length };
+          const state = {
+            sessionId,
+            browserSession: session,
+            status: "ready",
+            url: active?.url ?? "",
+            tabId: active?.id ?? "",
+            tabCount: tabs.length
+          };
           const tabsKey = JSON.stringify(tabs);
-          if (state.url !== previousUrl || tabsKey !== previousTabs) {
+          if (state.url !== previousUrl || tabsKey !== previousTabs || session !== previousSession) {
             send(res, "state", state);
             send(res, "tabs", tabs);
             previousUrl = state.url;
             previousTabs = tabsKey;
+            previousSession = session;
           }
-          send(res, "frame", { sessionId: agentId, browserSession: session, url: state.url, width: shot.width, height: shot.height, data: shot.dataUrl.replace(/^data:image\/[^;]+;base64,/, "") });
+          send(res, "frame", {
+            sessionId,
+            browserSession: session,
+            url: state.url,
+            width: shot.width,
+            height: shot.height,
+            data: shot.dataUrl.replace(/^data:image\/[^;]+;base64,/, "")
+          });
         } catch (error) {
-          send(res, "state", { sessionId: agentId, error: error instanceof Error ? error.message : String(error) });
+          send(res, "state", { sessionId, status: "error", error: error instanceof Error ? error.message : String(error) });
         } finally {
           busy = false;
         }
       };
+
       void pump();
       const timer = setInterval(() => void pump(), FRAME_MS);
       req.on("close", () => { closed = true; clearInterval(timer); });
@@ -123,7 +145,6 @@ export function apply(ctx) {
 
   ctx.effect(() => () => {
     clearInterval(cleanupTimer);
-    disposeDebug();
     disposeStream();
   }, "mcf-dsh-inline-browser cleanup");
 }
