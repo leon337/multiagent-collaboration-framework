@@ -60,6 +60,25 @@ skills:
     fallback: Ampliar equipe por lacuna objetiva e registrar motivo.
     handoff_to: selected_domain_agent
 
+  - skill_id: MCF-WHATSAPP-COMMUNICATE
+    name: Comunicar pelo WhatsApp oficial
+    version: 1.0.0
+    purpose: Enviar mensagens autorizadas pela WhatsApp Business Platform com recibo verificável.
+    owner_agents: [Mestre]
+    trigger_phrases: ["enviar no WhatsApp", "responder no WhatsApp", "falar pelo WhatsApp"]
+    required_inputs: [to, body, authorizedScope]
+    optional_inputs: [conversation_reference]
+    allowed_tools: [WhatsApp]
+    forbidden_tools: [bulk_broadcast, credential_capture, secret_exposure]
+    permission_profile: SCOPED_WRITE
+    execution_steps: [validar_destino, validar_escopo, enviar_cloud_api, registrar_recibo]
+    required_evidence: [provider_message_id, accepted_by_provider]
+    expected_outputs: [whatsapp_send_receipt]
+    acceptance_criteria: [provider_accepted_message, receipt_signed]
+    failure_modes: [authentication_required, rate_limited, provider_rejected]
+    fallback: Usar o canal ADB somente quando a Cloud API estiver indisponível e o escopo humano continuar autorizado.
+    handoff_to: Mestre
+
   - skill_id: MCF-RECOVER-CONTEXT
     name: Recuperar contexto e fonte de verdade
     version: 1.0.0

@@ -69,6 +69,20 @@ describe('parseMcfSkillRegistry', () => {
     });
   });
 
+  it('loads the governed WhatsApp communication skill from the canonical registry', async () => {
+    const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
+    const content = await readFile(registryPath, 'utf8');
+    const skills = parseMcfSkillRegistry(content);
+
+    expect(skills.find((skill) => skill.skillId === 'MCF-WHATSAPP-COMMUNICATE')).toMatchObject({
+      ownerAgents: ['Mestre'],
+      requiredInputs: ['to', 'body', 'authorizedScope'],
+      allowedTools: ['WhatsApp'],
+      permissionProfile: 'SCOPED_WRITE',
+      handoffTo: 'Mestre',
+    });
+  });
+
   it('loads the canonical implementation skill as patch evidence with a test handoff', async () => {
     const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
     const content = await readFile(registryPath, 'utf8');

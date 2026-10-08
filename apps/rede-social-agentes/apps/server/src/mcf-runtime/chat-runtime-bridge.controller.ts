@@ -42,6 +42,7 @@ const executableSkill = z.enum([
   'MCF-GIT-PR-RELEASE',
   'MCF-DEPLOY-VALIDATE',
   'MCF-OPERATE-DUAL-BROWSER',
+  'MCF-WHATSAPP-COMMUNICATE',
   'MCF-TRACE-MISSION',
 ]);
 
