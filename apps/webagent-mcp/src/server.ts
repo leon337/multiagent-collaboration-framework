@@ -26,6 +26,30 @@ const browserActionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('press'), selector: z.string().min(1).max(1_000), key: z.string().min(1).max(100) }),
 ]);
 
+const browserEventTypes = [
+  'navigation.started',
+  'navigation.committed',
+  'navigation.completed',
+  'domcontentloaded',
+  'load',
+  'url.changed',
+  'request.failed',
+  'response.error',
+  'page.error',
+  'console.error',
+  'console.warning',
+  'dialog.opened',
+  'popup.opened',
+  'download.started',
+  'tab.created',
+  'tab.changed',
+  'tab.closed',
+  'dom.changed',
+  'action.started',
+  'action.completed',
+  'action.denied',
+] as const;
+
 function toolResult<T>(result: ExecutionEnvelope<T>) {
   return {
     isError: !result.ok,
@@ -38,7 +62,7 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
   const fetchProvider = deps.fetchProvider ?? new HttpFetchProvider();
   const browserRuntime = deps.browserRuntime ?? createDefaultBrowserRuntime();
 
-  const server = new McpServer({ name: 'mcf-webagent', version: '0.3.0' });
+  const server = new McpServer({ name: 'mcf-webagent', version: '0.4.0' });
 
   server.registerTool(
     'web_search',
@@ -114,6 +138,83 @@ export function createWebAgentServer(deps: WebAgentDependencies = {}): McpServer
       );
       return toolResult(result);
     },
+  );
+
+  server.registerTool(
+    'browser_events',
+    {
+      title: 'Browser Events',
+      description:
+        'Read compact real-time browser signals after a cursor. Use this instead of polling browser_wait when you need to know what changed. Events are bounded and do not include page text or secrets.',
+      inputSchema: z.object({
+        runId: z.string().min(1),
+        afterSeq: z.number().int().min(0).optional(),
+        types: z.array(z.enum(browserEventTypes)).max(10).optional(),
+        limit: z.number().int().min(1).max(100).optional(),
+      }),
+      annotations: {
+        readOnlyHint: true,
+        openWorldHint: false,
+        destructiveHint: false,
+      },
+    },
+    async ({ runId, afterSeq, types, limit }) =>
+      toolResult(
+        await executeEnvelope(
+          'browser_events',
+          () => {
+            const events = browserRuntime.events(runId, { afterSeq, types, limit });
+            return {
+              events,
+              cursor: browserRuntime.events(runId, { limit: 1 }).length
+                ? Math.max(...events.map((event) => event.seq), afterSeq ?? 0)
+                : afterSeq ?? 0,
+            };
+          },
+          { evidence: [{ kind: 'runtime', ref: `browser-run-events:${runId}` }] },
+        ),
+      ),
+  );
+
+  server.registerTool(
+    'browser_next_event',
+    {
+      title: 'Browser Next Event',
+      description:
+        'Wait for the next compact browser event after a cursor. This is the preferred event-driven feedback mechanism for fast agent decisions; it avoids repeated snapshots and polling.',
+      inputSchema: z.object({
+        runId: z.string().min(1),
+        afterSeq: z.number().int().min(0).optional(),
+        types: z.array(z.enum(browserEventTypes)).max(10).optional(),
+        timeoutMs: z.number().int().min(50).max(30_000).optional(),
+        limit: z.number().int().min(1).max(20).optional(),
+      }),
+      annotations: {
+        readOnlyHint: true,
+        openWorldHint: false,
+        destructiveHint: false,
+      },
+    },
+    async ({ runId, afterSeq, types, timeoutMs, limit }) =>
+      toolResult(
+        await executeEnvelope(
+          'browser_next_event',
+          async () => {
+            const events = await browserRuntime.nextEvent(runId, {
+              afterSeq,
+              types,
+              timeoutMs,
+              limit,
+            });
+            return {
+              events,
+              cursor: events.length ? events[events.length - 1].seq : afterSeq ?? 0,
+              timedOut: events.length === 0,
+            };
+          },
+          { evidence: [{ kind: 'runtime', ref: `browser-run-events:${runId}` }] },
+        ),
+      ),
   );
 
   server.registerTool(
