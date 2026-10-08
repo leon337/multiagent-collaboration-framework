@@ -254,18 +254,6 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
     return stream.wait(query);
   }
 
-  events(runId: string, query: BrowserEventQuery = {}): BrowserEvent[] {
-    const stream = this.eventStreams.get(runId);
-    if (!stream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
-    return structuredClone(stream.read(query));
-  }
-
-  nextEvent(runId: string, query: BrowserEventWait = {}): Promise<BrowserEvent[]> {
-    const stream = this.eventStreams.get(runId);
-    if (!stream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
-    return stream.wait(query);
-  }
-
   cancel(runId: string): BrowserRunSnapshot {
     const current = this.runs.get(runId);
     if (!current) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
@@ -277,7 +265,7 @@ export class DeterministicBrowserRuntime implements BrowserRuntime {
     if (timer) clearTimeout(timer);
     this.timers.delete(runId);
 
-    this.eventStreams.get(runId)?.record('action.completed', { data: { terminal: true } });
+    this.eventStreams.get(runId)?.record('navigation.completed', { url: current.url, data: { terminal: true, status: 'CANCELLED' } });
     const cancelled: BrowserRunSnapshot = {
       ...current,
       status: 'CANCELLED',
@@ -374,6 +362,8 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     this.browsers.clear();
     this.proxies.clear();
     this.actionPlans.clear();
+    for (const stream of this.eventStreams.values()) stream.close();
+    this.eventStreams.clear();
     await Promise.all(browsers.map((browser) => browser.close().catch(() => undefined)));
     await Promise.all(proxies.map((proxy) => proxy.close().catch(() => undefined)));
   }
@@ -395,6 +385,8 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     const navigation: BrowserNavigationEvidence[] = [];
     const network: BrowserNetworkEvidence[] = [];
     const networkKeys = new Set<string>();
+    const eventStream = this.eventStreams.get(runId);
+    if (!eventStream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
     timeline.record('run.created', {
       at: started.createdAt,
       url: started.url,
@@ -403,7 +395,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     const timeout = setTimeout(() => {
       const current = this.runs.get(runId);
       if (!current || current.status === 'COMPLETED' || current.status === 'FAILED' || current.status === 'CANCELLED') return;
-      eventStream.record('page.error', { data: { code: normalized.code } });
+      eventStream.record('page.error', { url: current.url, data: { code: 'BROWSER_TIMEOUT' } });
       this.runs.set(runId, {
         ...current,
         status: 'FAILED',
@@ -426,6 +418,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       const afterEgress = this.runs.get(runId);
       if (!afterEgress || afterEgress.status !== 'RUNNING') return;
 
+      eventStream.record('navigation.started', { url: started.url, data: { phase: 'browser-launch' } });
       timeline.record('browser.launch.started', { url: started.url });
       proxy = new PinnedEgressProxy({ targetResolver: this.targetResolver });
       await proxy.listen();
@@ -436,6 +429,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
         proxy: { server: proxy.proxyUrl() },
       });
       this.browsers.set(runId, browser);
+      eventStream.record('navigation.committed', { url: started.url, data: { phase: 'browser-launch-complete' } });
       timeline.record('browser.launch.completed', { url: started.url });
 
       const afterLaunch = this.runs.get(runId);
@@ -516,7 +510,6 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       page.on('download', (download) =>
         eventStream.record('download.started', { url: download.url() }),
       );
-      eventStream.record('navigation.started', { url: started.url });
       timeline.record('navigation.started', { url: started.url });
       navigation.push({
         at: new Date().toISOString(),
