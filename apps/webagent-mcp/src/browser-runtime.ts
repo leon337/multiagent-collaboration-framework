@@ -334,6 +334,18 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
     return cloneSnapshot(snapshot);
   }
 
+  events(runId: string, query: BrowserEventQuery = {}): BrowserEvent[] {
+    const stream = this.eventStreams.get(runId);
+    if (!stream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
+    return structuredClone(stream.read(query));
+  }
+
+  nextEvent(runId: string, query: BrowserEventWait = {}): Promise<BrowserEvent[]> {
+    const stream = this.eventStreams.get(runId);
+    if (!stream) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
+    return stream.wait(query);
+  }
+
   cancel(runId: string): BrowserRunSnapshot {
     const current = this.runs.get(runId);
     if (!current) throw new OperationError('RUN_NOT_FOUND', `browser run not found: ${runId}`);
@@ -525,7 +537,7 @@ export class PlaywrightBrowserRuntime implements BrowserRuntime {
       page.on('console', (message) => {
         const type = message.type();
         if (type === 'error') eventStream.record('console.error', { url: page.url() });
-        else if (type === 'warning' || type === 'warn') eventStream.record('console.warning', { url: page.url() });
+        else if (type === 'warning') eventStream.record('console.warning', { url: page.url() });
       });
       page.on('dialog', (dialog) =>
         eventStream.record('dialog.opened', { url: page.url(), data: { type: dialog.type() } }),
