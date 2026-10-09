@@ -17,7 +17,7 @@
 | HTTP RPC `subagent.prompt` | PASS limitado | Aceitou mensagem em subagente continuável; histórico subsequente contém eventos de turno terminal. A resposta exata do modelo não foi usada como único critério de sucesso. |
 | HTTP RPC `subagent.interrupt` | PASS de contrato, comportamento limitado | Retornou `accepted:true` quando o subagente já estava inativo. Isso não comprova interrupção de trabalho ativo. |
 | Subagente nativo | EXECUTADO, qualidade insuficiente | Uma sessão filha real foi criada, mas a resposta continha falso positivo sobre o estado do host. Exigir validação independente de afirmações do agente. |
-| Kilo pela UI do Harness | NÃO VERIFICADO | Automação falhou ao localizar o item do seletor; nenhum prompt Kilo foi enviado nessa tentativa. Testes diretos de API anteriores não substituem E2E pela UI. |
+| Kilo pela UI do Harness | PASS | Uma sessão nova selecionou `Kilo - Cohere North Mini Code Free`, enviou `KILO_HARNESS_E2E_R3_PASS`; `session.history` confirmou `assistant/message` exato, `turn/end` concluído e replay state `provider=kilo`, `model=cohere/north-mini-code:free`; `session.list` confirmou `running=false`. O primeiro teste DOM foi tratado como insuficiente porque também via o texto do prompt. |
 
 ## Procedimento operacional correto
 
@@ -27,10 +27,15 @@
 4. Considere a execução encerrada somente após evidência terminal (`turn/end`) cruzada com `running=false` em `session.list` ou equivalente.
 5. Trate saída de agentes como hipótese até validar fatos operacionais por ferramenta independente.
 6. Para `subagent.interrupt`, o ACK `accepted:true` sozinho não prova que um turno ativo foi interrompido; validar o estado final do filho.
-7. O teste Kilo pela UI continua separado da verificação direta da API e deve ser marcado como não verificado até o marcador ser recebido dentro da UI.
+7. Para Kilo pela UI, não conte o texto ecoado do prompt como resultado; valide `assistant/message` no histórico persistido, `turn/end`, provider/model no replay state e `running=false`. Esse gate passou nesta execução para `cohere/north-mini-code:free`.
 
 ## Limites e persistência de aprendizado
 
 - O relatório operacional local está em `/home/leo/Projetos/nvidia-api-lab/mcf-dsh-parallel-report.md`; scripts de teste locais não são artefatos públicos desta evidência.
 - A capability oficial `cognitive-ledger.memory.read` é READ_ONLY e proíbe `memory.mutate`. O adapter de leitura declara `memory_payload_persisted_by_mcf: false`; não use esse endpoint como se gravasse memórias.
 - A persistência oficial no Cognitive Ledger exige a capability write governada e seus gates próprios. Esta evidência documental não substitui essa integração nem registra conteúdo pessoal no repositório público.
+
+
+### Atualização pós-teste (2026-10-09)
+
+A verificação Kilo inicialmente detectou o marcador apenas no texto do usuário e foi considerada insuficiente. A inspeção posterior do histórico persistido da sessão confirmou que a mensagem do assistente continha o marcador exato, que o turno terminou com `reason.kind=completed`, que o replay state identificou o provider Kilo e o modelo `cohere/north-mini-code:free`, e que `session.list` retornou `running=false`. E2E pela UI: PASS.
