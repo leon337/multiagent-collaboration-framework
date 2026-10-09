@@ -27,7 +27,7 @@ Público: futuros chats MESTRE (ou operadores autorizados) que precisem reproduz
 ```text
 ┌────────────────────┐   canal humano/prog.   ┌──────────────────────────┐   execução real    ┌─────────────────┐
 │ MESTRE (ChatGPT)   │ ─────────────────────► │ DeepSeek Harness (DSH)   │ ─────────────────► │ Modelo/Provider │
-│ coordenação MCF    │   HTTP/SSE + túnel     │ execution provider       │   roteamento LLM   │ (ex.:           │
+│ coordenação MCF    │   HTTP JSON-RPC + WebSocket + túnel     │ execution provider       │   roteamento LLM   │ (ex.:           │
 │ contrato + mapa    │ ◄───────────────────── │ sessões/ferramentas/     │ ◄───────────────── │  x-preview-f-   │
 │ da missão          │   eventos turn/*       │ sandbox/evidência        │   chunks/tokens    │  free)          │
 └────────────────────┘                        └──────────────────────────┘                    └─────────────────┘
@@ -41,7 +41,7 @@ Público: futuros chats MESTRE (ou operadores autorizados) que precisem reproduz
 | Camada | Responsabilidade | Não é responsável por |
 |---|---|---|
 | **MCF** (metodologia + runtime próprio) | autoridades, contrato de missão, risco A/B/C, gates, ESEV, handoffs, CAF, evidência, auditabilidade | executar o agente cognitivo; rotear LLM; prover sandbox de arquivos |
-| **DeepSeek Harness (DSH)** | criar/retomar sessões de agente; expor API HTTP + SSE; executar ferramentas (bash, fs, edit…); aplicar sandbox/approvals; persistir eventos; rotear para provider | definir autoridade de missão; decidir gates humanos; substituir a governança MCF |
+| **DeepSeek Harness (DSH)** | criar/retomar sessões de agente; expor API HTTP JSON-RPC + WebSocket downlinks; executar ferramentas (bash, fs, edit…); aplicar sandbox/approvals; persistir eventos; rotear para provider | definir autoridade de missão; decidir gates humanos; substituir a governança MCF |
 | **Modelo/Provider** | gerar os turnos cognitivos do agente (ex.: `x-preview-f-free` via grupo `opencode-zen-direct`) | guardar estado de conversa (isso é da sessão no DSH); autorizar nada |
 
 Precedência documental do MCF não muda neste canal: `project-instructions/MCF-HUMAN-DELEGATION-FIREWALL.md`
@@ -122,14 +122,13 @@ Canais fora do envelope POST:
 
 | Endpoint | Método | Função |
 |---|---|---|
-| `/api/events.mux` | GET SSE | frames por sessão: eventos, approvals, questions, fila |
-| `/api/events.host` | GET SSE | frames globais do host: sessões adicionadas/removidas, `running`, erros |
+| `/api/events.mux` | WebSocket upgrade (downlink) | frames por sessão: eventos, approvals, questions, fila |
+| `/api/events.host` | WebSocket upgrade (downlink) | frames globais do host: sessões adicionadas/removidas, `running`, erros |
 | `/api/respond` | POST | entrega `client-response` (respostas de approval/question pendentes) |
 | `/api/session.export?sessionId=...` | GET/HEAD | download do log da sessão (query param validado por schema) |
 
-Frames SSE chegam como `data: <json>` contendo a forma cheia
-`{"type":"server-request","rpcId":"...","method":"<frame-type>","payload":{...}}`;
-na abertura o servidor emite o comentário `: connected` (mantém proxies vivos).
+Frames WebSocket chegam como mensagens de texto JSON contendo a forma cheia
+`{"type":"server-request","rpcId":"...","method":"<frame-type>","payload":{...}}`. O cliente WebSocket de downlink não envia mensagens de aplicação. No pacote instalado `@deepseek-ai/dsh-client-connection` 0.1.1-rc.2, um GET HTTP comum para esses endpoints retorna **426 Upgrade Required** por exigir upgrade WebSocket; o codec SSE existe apenas no carrier interno `toFetchHandler`. Portanto, 426 em `curl GET` não prova defeito no canal de eventos. Ver evidência de execução em [paralelismo e transporte WebSocket](evidence/MCF-HARNESS-MESTRE-OX-PARALLEL-20261009.md).
 
 ### 5.2 Métodos usados pelo canal (subconjunto operacional)
 
@@ -222,11 +221,11 @@ POST /api/session.prompt
 - Prompt enquanto turno ativo sem steerear entra na fila (frames `session/queue`).
 - Imagens: `{type:"image", mediaType:"image/png"|"image/jpeg"|"image/webp"|"image/gif", data:<base64>}`.
 
-### 6.4 Monitorar execução (SSE + regra terminal)
+### 6.4 Monitorar execução (WebSocket + regra terminal)
 
-Conecte **uma vez** em `GET /api/events.mux` (por sessão relevante) e acompanhe os frames:
+Abra **uma conexão WebSocket** em `/api/events.mux` e acompanhe os frames; o servidor emite `session/subscribed` para as sessões disponíveis na conexão:
 
-| Frame (`method` do envelope SSE) | Significado |
+| Frame (`method` do envelope WebSocket) | Significado |
 |---|---|
 | `session/subscribed` | confirmação de inscrição; traz `lastSeq` (−1 = log vazio) |
 | `session/event` → evento interno `turn/start` | novo turno do agente iniciou |
@@ -242,7 +241,7 @@ Conecte **uma vez** em `GET /api/events.mux` (por sessão relevante) e acompanhe
 | `session/jobs`, `session/queue`, `session/projection` | tarefas background, fila, projeções |
 | `stream/error` | falha do stream (reconectar) |
 
-No stream global `GET /api/events.host`: `host/session-status {running:true|false}`,
+No downlink global WebSocket `/api/events.host`: `host/session-status {running:true|false}`,
 `host/session-added/removed`, `host/agent-error {message}`, mudanças de workspace.
 
 Tipos internos válidos de `session/event` na versão testada estão enumerados em
@@ -257,7 +256,7 @@ Tipos internos válidos de `session/event` na versão testada estão enumerados 
 > classificável. Observador que estoura timeout deve reconectar/rechecar, nunca declarar morte.
 > Nunca repita o mesmo prompt sem mudança objetiva (regra CAF do protocolo).
 
-Reconexão: refaça o GET SSE (o servidor reenvia `session/subscribed` com `lastSeq`) e recupere o
+Reconexão: reabra o WebSocket (o servidor reenvia `session/subscribed` com `lastSeq`) e recupere o
 que faltou via `session.history` paginando por `beforeSeq` até cobrir a lacuna.
 
 ### 6.5 HUMAN_GATE: approvals e questions
@@ -309,7 +308,7 @@ curl -fsS -m 10 -X POST "$BASE/api/session.list" -H 'content-type: application/j
    `session.history` (última página) que a sessão é a certa; se `running=false`, siga.
 2. **Missão nova:** `session.create` com `cwd` do clone + `agentPreset:"mcf"` (§6.1); registre a id.
 3. Envie a missão com `session.prompt` (§6.3), prefixo `[MESTRE → OX | <MISSION_ID>]`.
-4. Abra o SSE `events.mux` **antes** do primeiro prompt da rodada; acompanhe `turn/*`, `tool/*`.
+4. Abra o WebSocket `events.mux` **antes** do primeiro prompt da rodada; acompanhe `turn/*`, `tool/*`.
 5. Termine somente por §6.4 (estado terminal comprovado). Colete resultado via `session.history`.
 6. Feche o ciclo MCF: checkpoint/handoff do lado MESTRE com `sessionId`, faixa de `seq`,
    timestamps e artefatos produzidos; evidências datadas vão para
@@ -344,7 +343,7 @@ curl -fsS -m 10 -X POST "$BASE/api/session.list" -H 'content-type: application/j
 | `session-conflict` | mesmo sessionId, `cwd` diferente | usar o `existingCwd` indicado ou id nova deliberada |
 | `agent-busy` | turno em curso | usar `mode:"steer"` ou aguardar `turn/end`; não duplicar prompt |
 | provider `503`/timeout/`model-unavailable` | provider/modelo indisponível | CAF: aguardar `llm/retry-*` ou escolher modelo via `session.selectModel`; não relançar prompt igual às cegas |
-| `running=true` sem `turn/end` longo | turno vivo, stream morto ou trabalho longo | reconectar SSE; cruzar com `session.history` (novos `seq`?) e `session.list`; só `session.cancel` com autoridade |
+| `running=true` sem `turn/end` longo | turno vivo, stream morto ou trabalho longo | reconectar WebSocket; cruzar com `session.history` (novos `seq`?) e `session.list`; só `session.cancel` com autoridade |
 | preset divergente (`cordis` selecionado) | sessão criada sem PRE-1 | antes do 1º prompt: `agentPreset.select "mcf"`; se `agent-preset-locked`, abrir sessão nova conforme §6.1 e registrar incidente |
 | `session.search` retorna erro `internal` (index `openAt "never"`) | busca global desabilitada nesta install | usar `session.list` + `history`; não tratar como falha de rede |
 
@@ -367,8 +366,7 @@ declaração de sucesso exige evidência verificável (logs por `seq`, receipts,
   é por `session.list`/histórico.
 - Momento exato do lock de preset após o primeiro prompt: **NÃO VERIFICADO** (regra conservadora
   no PRE-2).
-- `subagent.*`, `goal.*`, `workspace.*` existem na API e são plausíveis para o canal, mas o fluxo
-  MESTRE↔Ox provado até 2026-08-25 não os exercita — marcar qualquer uso novo como experimento.
+- `subagent.list`, `subagent.history`, `subagent.prompt` e `subagent.interrupt` foram exercitados por HTTP RPC no deployment DSH 0.1.1-rc.2 em 2026-10-09. `list/history` são consultas; `prompt` aceitou uma mensagem em filho continuável e o histórico mostrou evento terminal, enquanto `interrupt` respondeu `accepted:true` quando o filho já estava inativo — isso valida os contratos RPC, mas **não** prova cancelamento efetivo de um turno ativo. Manter interrupção de turno ativo como NÃO VERIFICADA até teste controlado dedicado. `goal.*` e `workspace.*` permanecem não verificados.
 - Fallback local (`localhost:3080` no leo-N43SM) é procedimento autorizado; execução completa de
   missão nesse modo ainda sem evidência registrada — registrar evidência no primeiro uso real.
 - Latência/limites de throughput do túnel SSH não quantificados.
