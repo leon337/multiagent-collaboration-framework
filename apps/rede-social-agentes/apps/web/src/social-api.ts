@@ -50,12 +50,15 @@ export function createSocialApi(baseUrl: string, fetcher: FetchLike = fetch) {
 
     let response: Response;
     try {
-      response = await fetcher(`${normalizedBaseUrl}${path}`, {
+      const init: RequestInit = {
         method: options.method ?? 'GET',
         headers,
-        body: options.body === undefined ? undefined : JSON.stringify(options.body),
         cache: 'no-store',
-      });
+      };
+      if (options.body !== undefined) {
+        init.body = JSON.stringify(options.body);
+      }
+      response = await fetcher(`${normalizedBaseUrl}${path}`, init);
     } catch {
       throw new SocialApiError(
         'Não foi possível conectar à API. Tente novamente em instantes.',
