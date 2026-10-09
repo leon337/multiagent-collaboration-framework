@@ -21,7 +21,9 @@ describe('social API client', () => {
       expect.objectContaining({ method: 'GET', cache: 'no-store' }),
     );
     const init = fetcher.mock.calls[0]?.[1];
-    expect(new Headers(init?.headers).get('authorization')).toBe('Bearer session-token');
+    expect(new Headers(init?.headers).get('authorization')).toBe(
+      'Bearer session-token',
+    );
   });
 
   it('sends credentials as JSON when creating a session', async () => {
@@ -44,22 +46,25 @@ describe('social API client', () => {
     );
     const api = createSocialApi('https://social.example.test', fetcher);
 
-    await api.createSession('person@example.test', 'correct-horse-battery');
+    await api.createSession('person@example.test', 'test-password-only');
 
     const init = fetcher.mock.calls[0]?.[1];
     expect(new Headers(init?.headers).get('content-type')).toBe('application/json');
     expect(JSON.parse(String(init?.body))).toEqual({
       email: 'person@example.test',
-      password: 'correct-horse-battery',
+      password: 'test-password-only',
     });
   });
 
   it('preserves API error codes and messages', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(JSON.stringify({ code: 'INVALID_SESSION', message: 'Sessão inválida.' }), {
-        status: 401,
-        headers: { 'content-type': 'application/json' },
-      }),
+      new Response(
+        JSON.stringify({ code: 'INVALID_SESSION', message: 'Sessão inválida.' }),
+        {
+          status: 401,
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
     );
     const api = createSocialApi('https://social.example.test', fetcher);
 
