@@ -26,12 +26,21 @@ describe('social API client', () => {
 
   it('sends credentials as JSON when creating a session', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(JSON.stringify({
-        sessionId: 'session-1',
-        token: 'token-1',
-        expiresAt: '2030-01-01T00:00:00.000Z',
-        account: { id: 'account-1', email: 'person@example.test', displayName: 'Pessoa', status: 'ACTIVE', createdAt: '2026-01-01T00:00:00.000Z' },
-      }), { status: 200, headers: { 'content-type': 'application/json' } }),
+      new Response(
+        JSON.stringify({
+          sessionId: 'session-1',
+          token: 'token-1',
+          expiresAt: '2030-01-01T00:00:00.000Z',
+          account: {
+            id: 'account-1',
+            email: 'person@example.test',
+            displayName: 'Pessoa',
+            status: 'ACTIVE',
+            createdAt: '2026-01-01T00:00:00.000Z',
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
     );
     const api = createSocialApi('https://social.example.test', fetcher);
 
