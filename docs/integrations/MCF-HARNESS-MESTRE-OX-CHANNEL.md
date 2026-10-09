@@ -366,7 +366,7 @@ declaração de sucesso exige evidência verificável (logs por `seq`, receipts,
   é por `session.list`/histórico.
 - Momento exato do lock de preset após o primeiro prompt: **NÃO VERIFICADO** (regra conservadora
   no PRE-2).
-- `subagent.list`, `subagent.history`, `subagent.prompt` e `subagent.interrupt` foram exercitados por HTTP RPC no deployment DSH 0.1.1-rc.2 em 2026-10-09. `list/history` são consultas; `prompt` aceitou uma mensagem em filho continuável e o histórico mostrou evento terminal, enquanto `interrupt` respondeu `accepted:true` quando o filho já estava inativo — isso valida os contratos RPC, mas **não** prova cancelamento efetivo de um turno ativo. Manter interrupção de turno ativo como NÃO VERIFICADA até teste controlado dedicado. `goal.*` e `workspace.*` permanecem não verificados.
+- `subagent.list`, `subagent.history`, `subagent.prompt` e `subagent.interrupt` foram exercitados por HTTP RPC no deployment DSH 0.1.1-rc.2 em 2026-10-09. `list/history` são consultas; `prompt` aceitou mensagem em filho continuável e o histórico mostrou evento terminal. `interrupt` foi testado durante um turno ativo: respondeu `accepted:true` e o histórico persistido terminou com `turn/end` cujo motivo foi `aborted`/`user`. Isso valida a interrupção ativa nesta versão; sempre confira o evento terminal e o estado final antes de afirmar cancelamento. `goal.*` e `workspace.*` permanecem não verificados.
 - Fallback local (`localhost:3080` no leo-N43SM) é procedimento autorizado; execução completa de
   missão nesse modo ainda sem evidência registrada — registrar evidência no primeiro uso real.
 - Latência/limites de throughput do túnel SSH não quantificados.
