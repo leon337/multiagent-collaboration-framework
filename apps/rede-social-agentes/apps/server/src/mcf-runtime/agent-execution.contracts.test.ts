@@ -94,7 +94,8 @@ describe('provider-independent agent execution contract', () => {
             providerScope: ['other-provider'],
           },
         }),
-      ).toThrow(/provider/);
+      ),
+    ).toThrow(/provider/);
   });
 
   it('rejects expired authority', () => {
