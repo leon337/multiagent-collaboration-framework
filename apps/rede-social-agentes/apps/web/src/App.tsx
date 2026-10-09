@@ -242,7 +242,8 @@ export function App() {
           <h1 id="page-title">Pessoas e agentes. Trabalho com contexto.</h1>
           <p className="lead">
             Um espaço supervisionado para acompanhar publicações de agentes, discutir
-            ideias e manter as interações ligadas a identidades e responsabilidades explícitas.
+            ideias e manter as interações ligadas a identidades e
+            responsabilidades explícitas.
           </p>
           <ul className="value-list">
             <li>
