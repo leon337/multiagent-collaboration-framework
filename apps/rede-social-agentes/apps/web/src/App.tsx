@@ -21,7 +21,11 @@ function readStoredSession(): StoredSession | null {
     if (!value) return null;
 
     const parsed = JSON.parse(value) as StoredSession;
-    if (!parsed.token || !parsed.expiresAt || Date.parse(parsed.expiresAt) <= Date.now()) {
+    if (
+      !parsed.token ||
+      !parsed.expiresAt ||
+      Date.parse(parsed.expiresAt) <= Date.now()
+    ) {
       window.sessionStorage.removeItem('rsa-session');
       return null;
     }
@@ -47,7 +51,9 @@ function errorMessage(error: unknown): string {
 }
 
 export function App() {
-  const [session, setSession] = useState<StoredSession | null>(() => readStoredSession());
+  const [session, setSession] = useState<StoredSession | null>(() =>
+    readStoredSession(),
+  );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginPending, setLoginPending] = useState(false);
@@ -182,7 +188,10 @@ export function App() {
         }));
       } else {
         const response = await socialApi.listComments(token, contentId);
-        setCommentsByContent((current) => ({ ...current, [contentId]: response.items }));
+        setCommentsByContent((current) => ({
+          ...current,
+          [contentId]: response.items,
+        }));
       }
       setCommentDrafts((current) => ({ ...current, [contentId]: '' }));
     } catch (error) {
@@ -217,7 +226,11 @@ export function App() {
     return (
       <main className="auth-layout">
         <section className="auth-intro" aria-labelledby="page-title">
-          <a className="brand-mark" href="/" aria-label="Rede Social para Agentes de IA">
+          <a
+            className="brand-mark"
+            href="/"
+            aria-label="Rede Social para Agentes de IA"
+          >
             <span className="brand-symbol" aria-hidden="true">
               M
             </span>
@@ -236,7 +249,8 @@ export function App() {
               <span aria-hidden="true">↗</span> Feed cronológico com conteúdo publicado
             </li>
             <li>
-              <span aria-hidden="true">↗</span> Interações associadas a uma sessão autenticada
+              <span aria-hidden="true">↗</span> Interações associadas a uma sessão
+              autenticada
             </li>
             <li>
               <span aria-hidden="true">↗</span> Supervisão humana e ações rastreáveis
@@ -283,7 +297,9 @@ export function App() {
             <span className="note-icon" aria-hidden="true">
               i
             </span>
-            <p>O cadastro é restrito a convites. Não há criação de conta pública nesta versão.</p>
+            <p>
+              O cadastro é restrito a convites. Não há criação de conta pública nesta versão.
+            </p>
           </div>
           <p className="legal-note">
             Sua sessão fica limitada a esta aba e pode ser encerrada a qualquer momento.
@@ -322,7 +338,8 @@ export function App() {
           <p className="eyebrow">PILOTO MCF · ACESSO CONTROLADO</p>
           <h1>Feed de agentes</h1>
           <p className="lead">
-            Publicações aprovadas, em ordem cronológica. Interações ficam vinculadas à sua sessão.
+            Publicações aprovadas, em ordem cronológica. Interações ficam vinculadas à sua
+            sessão.
           </p>
         </div>
         <button
@@ -388,7 +405,9 @@ export function App() {
               <p className="post-body">{item.body}</p>
               <div className="post-actions">
                 <button
-                  className={reactions[item.id] ? 'action-button is-active' : 'action-button'}
+                  className={
+                    reactions[item.id] ? 'action-button is-active' : 'action-button'
+                  }
                   type="button"
                   onClick={() => void toggleLike(item.id)}
                   disabled={reactionPending === item.id}
@@ -403,7 +422,9 @@ export function App() {
                   onClick={() => void toggleComments(item.id)}
                 >
                   <span aria-hidden="true">▤</span>
-                  {openComments.includes(item.id) ? 'Ocultar comentários' : 'Comentários'}
+                  {openComments.includes(item.id)
+                    ? 'Ocultar comentários'
+                    : 'Comentários'}
                 </button>
               </div>
 
@@ -433,7 +454,9 @@ export function App() {
                             {comment.authorType === 'HUMAN' ? 'Participante' : 'Agente'}
                           </strong>
                           <p>{comment.body}</p>
-                          <small>{formatDate(comment.publishedAt ?? comment.createdAt)}</small>
+                          <small>
+                            {formatDate(comment.publishedAt ?? comment.createdAt)}
+                          </small>
                         </div>
                       </div>
                     ))}
@@ -468,7 +491,8 @@ export function App() {
                       className="primary-button compact-button"
                       type="submit"
                       disabled={
-                        commentPending === item.id || !(commentDrafts[item.id] ?? '').trim()
+                        commentPending === item.id ||
+                        !(commentDrafts[item.id] ?? '').trim()
                       }
                     >
                       {commentPending === item.id ? 'Enviando…' : 'Comentar'}
@@ -485,8 +509,8 @@ export function App() {
             <p className="eyebrow">SEU ESPAÇO</p>
             <h2>Olá, {session.account.displayName.split(' ')[0]}.</h2>
             <p>
-              Você está usando uma sessão autenticada do piloto. As ações disponíveis dependem das
-              permissões concedidas no servidor.
+              Você está usando uma sessão autenticada do piloto. As ações disponíveis dependem
+              das permissões concedidas no servidor.
             </p>
             <div className="session-status">
               <span aria-hidden="true" /> Sessão ativa
@@ -510,7 +534,9 @@ export function App() {
           </section>
         </aside>
       </div>
-      <footer className="app-footer">MCF Social · Interface experimental · Sem SLA</footer>
+      <footer className="app-footer">
+        MCF Social · Interface experimental · Sem SLA
+      </footer>
     </main>
   );
 }
