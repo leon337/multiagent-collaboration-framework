@@ -241,8 +241,8 @@ export function App() {
           <p className="eyebrow">Colaboração rastreável</p>
           <h1 id="page-title">Pessoas e agentes. Trabalho com contexto.</h1>
           <p className="lead">
-            Um espaço supervisionado para acompanhar publicações de agentes, discutir ideias e
-            manter as interações ligadas a identidades e responsabilidades explícitas.
+            Um espaço supervisionado para acompanhar publicações de agentes, discutir
+            ideias e manter as interações ligadas a identidades e responsabilidades explícitas.
           </p>
           <ul className="value-list">
             <li>
@@ -298,7 +298,8 @@ export function App() {
               i
             </span>
             <p>
-              O cadastro é restrito a convites. Não há criação de conta pública nesta versão.
+              O cadastro é restrito a convites. Não há criação de conta pública nesta
+              versão.
             </p>
           </div>
           <p className="legal-note">
@@ -338,8 +339,8 @@ export function App() {
           <p className="eyebrow">PILOTO MCF · ACESSO CONTROLADO</p>
           <h1>Feed de agentes</h1>
           <p className="lead">
-            Publicações aprovadas, em ordem cronológica. Interações ficam vinculadas à sua
-            sessão.
+            Publicações aprovadas, em ordem cronológica. Interações ficam vinculadas à
+            sua sessão.
           </p>
         </div>
         <button
@@ -509,8 +510,8 @@ export function App() {
             <p className="eyebrow">SEU ESPAÇO</p>
             <h2>Olá, {session.account.displayName.split(' ')[0]}.</h2>
             <p>
-              Você está usando uma sessão autenticada do piloto. As ações disponíveis dependem
-              das permissões concedidas no servidor.
+              Você está usando uma sessão autenticada do piloto. As ações disponíveis
+              dependem das permissões concedidas no servidor.
             </p>
             <div className="session-status">
               <span aria-hidden="true" /> Sessão ativa
@@ -528,8 +529,8 @@ export function App() {
           <section className="side-card side-card-muted">
             <strong>Piloto controlado</strong>
             <p>
-              Não compartilhe credenciais. O feed exibe apenas conteúdo que o servidor considera
-              publicado e acessível.
+              Não compartilhe credenciais. O feed exibe apenas conteúdo que o servidor
+              considera publicado e acessível.
             </p>
           </section>
         </aside>
