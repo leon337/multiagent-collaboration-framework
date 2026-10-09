@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   font-family:
     Inter,
     ui-sans-serif,
@@ -7,20 +8,37 @@
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  color: #172033;
-  background: #f4f7fb;
+  color: #f5f7fb;
+  background: #050505;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  --surface: #0d0d0f;
+  --surface-raised: #141417;
+  --border: #29292f;
+  --text-primary: #f5f7fb;
+  --text-secondary: #a1a1aa;
+  --accent: #a3e635;
+  --accent-strong: #bef264;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: #050505;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 50% -20%, rgb(163 230 53 / 9%), transparent 55%),
+    #050505;
+  color: var(--text-primary);
 }
 
 button,
@@ -29,6 +47,11 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+::selection {
+  color: #050505;
+  background: var(--accent);
 }
 
 .page-shell {
@@ -40,22 +63,37 @@ select {
 .hero,
 .foundation,
 .pilot-limits {
-  border: 1px solid #d8e0ec;
+  border: 1px solid var(--border);
   border-radius: 1.25rem;
-  background: #ffffff;
-  box-shadow: 0 1rem 3rem rgb(33 50 80 / 8%);
+  background: linear-gradient(145deg, rgb(20 20 23 / 98%), rgb(10 10 12 / 98%));
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 35%);
 }
 
 .hero {
+  position: relative;
+  overflow: hidden;
   padding: clamp(1.5rem, 5vw, 4rem);
+}
+
+.hero::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 50%;
+  background: rgb(163 230 53 / 5%);
+  content: '';
+  filter: blur(2rem);
+  pointer-events: none;
 }
 
 .eyebrow {
   margin: 0 0 0.75rem;
-  color: #3157a4;
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
@@ -68,17 +106,21 @@ h1 {
   max-width: 18ch;
   margin: 0;
   font-size: clamp(2.25rem, 7vw, 4.75rem);
+  font-weight: 750;
+  letter-spacing: -0.055em;
 }
 
 h2 {
   margin-top: 0;
   font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
 }
 
 .lead {
   max-width: 62ch;
   margin: 1.5rem 0;
-  color: #45536d;
+  color: var(--text-secondary);
   font-size: clamp(1rem, 2vw, 1.25rem);
   line-height: 1.7;
 }
@@ -88,10 +130,10 @@ h2 {
   align-items: center;
   gap: 0.625rem;
   padding: 0.75rem 1rem;
-  border: 1px solid #b8c8e5;
+  border: 1px solid #3f4d2c;
   border-radius: 999px;
-  background: #edf3ff;
-  color: #203d77;
+  background: rgb(163 230 53 / 8%);
+  color: var(--accent-strong);
   font-weight: 700;
 }
 
@@ -111,10 +153,10 @@ h2 {
   max-width: 44rem;
   margin-top: 1rem;
   padding: 1rem;
-  border: 1px solid #d8e0ec;
+  border: 1px solid var(--border);
   border-radius: 1rem;
-  background: #f8faff;
-  color: #45536d;
+  background: #101013;
+  color: var(--text-secondary);
 }
 
 .api-state strong,
@@ -123,7 +165,7 @@ h2 {
 }
 
 .api-state strong {
-  color: #172033;
+  color: var(--text-primary);
 }
 
 .api-state small {
@@ -132,16 +174,16 @@ h2 {
 }
 
 .api-state--ready {
-  border-color: #9ac9ac;
-  background: #f0faf4;
-  color: #1e6b3a;
+  border-color: #365522;
+  background: rgb(101 163 13 / 9%);
+  color: #bef264;
 }
 
 .api-state--warming,
 .api-state--checking {
-  border-color: #e7c77d;
-  background: #fff9eb;
-  color: #8a5a00;
+  border-color: #66501f;
+  background: rgb(202 138 4 / 9%);
+  color: #facc15;
 }
 
 .foundation,
@@ -162,16 +204,27 @@ h2 {
 .foundation li {
   min-height: 7rem;
   padding: 1.25rem;
-  border: 1px solid #d8e0ec;
+  border: 1px solid var(--border);
   border-radius: 1rem;
-  background: #f8faff;
+  background: var(--surface-raised);
+  color: #e4e4e7;
   line-height: 1.55;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    background-color 160ms ease;
+}
+
+.foundation li:hover {
+  transform: translateY(-2px);
+  border-color: #526d2e;
+  background: #171a13;
 }
 
 .pilot-limits ul {
   margin: 0;
   padding-left: 1.25rem;
-  color: #45536d;
+  color: var(--text-secondary);
   line-height: 1.7;
 }
 
@@ -180,8 +233,21 @@ h2 {
 }
 
 :focus-visible {
-  outline: 0.2rem solid #1c55b8;
+  outline: 0.2rem solid var(--accent);
   outline-offset: 0.2rem;
+}
+
+@media (max-width: 480px) {
+  .page-shell {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .hero,
+  .foundation,
+  .pilot-limits {
+    border-radius: 1rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
