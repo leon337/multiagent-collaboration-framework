@@ -1,0 +1,36 @@
+# MCF ↔ DSH — evidência de paralelismo e transporte WebSocket
+
+**Data:** 2026-10-09
+**Deployment testado:** DeepSeek Harness 0.1.1-rc.2, API local em loopback no notebook autorizado.
+**Escopo:** validar RPC, sessões paralelas, downlinks de eventos e operações de subagentes sem expor credenciais nem conteúdo privado.
+
+## Resultados
+
+| Verificação | Resultado | Evidência |
+|---|---|---|
+| RPC de sessões (`session.create`, `session.prompt`, `session.list`, `session.history`) | PASS | Três sessões independentes do preset MCF concluíram; cada uma tinha `turn/end` no histórico e `running=false`. |
+| Preset/skills MCF | PASS | `agentPreset.list` listou o preset de usuário `mcf`; `skill.list` listou `mcf-start-mission` e `mcf-operating-protocol`. |
+| WebSocket `/api/events.mux` | PASS | Upgrade aberto, `session/subscribed` recebido e `turn/end` observado ao vivo para uma sessão de teste nova. |
+| WebSocket `/api/events.host` | PASS | Upgrade aberto com sucesso. |
+| HTTP GET para `/api/events.mux` | 426 esperado | O endpoint exige WebSocket upgrade; não deve ser diagnosticado como SSE quebrado. |
+| HTTP RPC `subagent.list` / `subagent.history` | PASS | RPC read-only retornou `ok:true`; histórico filho recuperado. |
+| HTTP RPC `subagent.prompt` | PASS limitado | Aceitou mensagem em subagente continuável; histórico subsequente contém eventos de turno terminal. A resposta exata do modelo não foi usada como único critério de sucesso. |
+| HTTP RPC `subagent.interrupt` | PASS de contrato, comportamento limitado | Retornou `accepted:true` quando o subagente já estava inativo. Isso não comprova interrupção de trabalho ativo. |
+| Subagente nativo | EXECUTADO, qualidade insuficiente | Uma sessão filha real foi criada, mas a resposta continha falso positivo sobre o estado do host. Exigir validação independente de afirmações do agente. |
+| Kilo pela UI do Harness | NÃO VERIFICADO | Automação falhou ao localizar o item do seletor; nenhum prompt Kilo foi enviado nessa tentativa. Testes diretos de API anteriores não substituem E2E pela UI. |
+
+## Procedimento operacional correto
+
+1. Consulte os schemas da versão instalada em `@deepseek-ai/dsh-host-apiproxy/lib/types/api` antes de inferir payloads.
+2. Use HTTP JSON RPC em `POST /api/<method>` para operações unárias, com envelope `client-request` e `rpcId` único.
+3. Use WebSocket em `/api/events.mux` para eventos por sessão e `/api/events.host` para eventos globais. Não use um GET SSE como teste de saúde desses endpoints.
+4. Considere a execução encerrada somente após evidência terminal (`turn/end`) cruzada com `running=false` em `session.list` ou equivalente.
+5. Trate saída de agentes como hipótese até validar fatos operacionais por ferramenta independente.
+6. Para `subagent.interrupt`, o ACK `accepted:true` sozinho não prova que um turno ativo foi interrompido; validar o estado final do filho.
+7. O teste Kilo pela UI continua separado da verificação direta da API e deve ser marcado como não verificado até o marcador ser recebido dentro da UI.
+
+## Limites e persistência de aprendizado
+
+- O relatório operacional local está em `/home/leo/Projetos/nvidia-api-lab/mcf-dsh-parallel-report.md`; scripts de teste locais não são artefatos públicos desta evidência.
+- A capability oficial `cognitive-ledger.memory.read` é READ_ONLY e proíbe `memory.mutate`. O adapter de leitura declara `memory_payload_persisted_by_mcf: false`; não use esse endpoint como se gravasse memórias.
+- A persistência oficial no Cognitive Ledger exige a capability write governada e seus gates próprios. Esta evidência documental não substitui essa integração nem registra conteúdo pessoal no repositório público.
