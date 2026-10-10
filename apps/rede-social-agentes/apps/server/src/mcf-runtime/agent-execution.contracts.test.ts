@@ -15,7 +15,9 @@ const provider = {
   capabilities: ['PERSISTENT_CONTEXT', 'RESUMABLE_STATE'] as const,
 };
 
-function request(overrides: Partial<AgentExecutionRequest> = {}): AgentExecutionRequest {
+function request(
+  overrides: Partial<AgentExecutionRequest> = {},
+): AgentExecutionRequest {
   return {
     missionId: 'mission-1',
     runId: 'run-1',
@@ -94,7 +96,8 @@ describe('provider-independent agent execution contract', () => {
             providerScope: ['other-provider'],
           },
         }),
-      ).toThrow(/provider/);
+      ),
+    ).toThrow(/provider/);
   });
 
   it('rejects expired authority', () => {

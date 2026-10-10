@@ -1,7 +1,7 @@
 import type {
   AgentExecutionCapability,
   AgentExecutionProviderAdapter,
-  AgentExecutionProviderContract,
+  ExecutionProviderContract,
 } from './agent-execution.contracts.js';
 
 export interface ProviderSelection {
@@ -42,7 +42,7 @@ export class ProviderAdapterRegistry {
       );
     }
 
-    return candidates[0];
+    return candidates[0]!;
   }
 
   listProviders(): readonly ExecutionProviderContract[] {
