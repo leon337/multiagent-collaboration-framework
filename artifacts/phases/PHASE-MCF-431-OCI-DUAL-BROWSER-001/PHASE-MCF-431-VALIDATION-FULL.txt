@@ -1,0 +1,28 @@
+Expanded validation evidence — MCF-431
+
+Source of truth read:
+- docs/MCF-CURRENT-STATE.md (SHA fetched: 5c67f4958c67296cc497bece192043b855202ff1; volatile facts require live confirmation).
+- docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md (SHA: 22b318926dc11a3ebf2558b283ec1366432329f2).
+- docs/operations/MCF-UI-OPERATING-MANUAL.md (SHA: e9dc3a5b284b0af64812d6512e21163c9519949d).
+- docs/protocols/MCF-PROTOCOLO-DUAL-BROWSER-RUNTIME-DISCOVERY.md (live GitHub read completed).
+
+Local Bridge read-only measurements:
+- GET /v1/discovery ~262 ms on first request, HTTP 200.
+- GET /v1/state?pane=workspace ~1.6 ms, HTTP 200.
+- GET /v1/text?pane=workspace ~5.8 ms, HTTP 200.
+- GET /v1/interactive?pane=workspace ~26.3 ms, HTTP 200.
+- GET /v1/live/snapshot ~39.3 ms, HTTP 200.
+- GET /v1/live/stream?after=<snapshot highWatermark> ~2.8 ms to HTTP headers, HTTP 200; first SSE event `channel.ready`.
+- Missing Authorization bearer: HTTP 401.
+- Wrong X-MCF-Instance: HTTP 409.
+
+These are single-sample local measurements, not a statistically valid performance benchmark and not measurements of the OCI remote browser.
+
+Repository isolation:
+- Original worktree `/var/lib/sentinelx/mcf-labs/leo-deepseek-harness/workspaces/multiagent-collaboration-framework` was dirty with unrelated staged/unstaged/untracked changes. No changes were made to those files.
+- An isolated worktree was created at `/var/lib/sentinelx/mcf-labs/leo-deepseek-harness/workspaces/mcf-431-oracle-browser`, branch `mission/mcf-431-oracle-browser`, starting from freshly fetched `origin/main` commit `460d6e6f`.
+
+Security:
+- Bridge token was used transiently and not written to the report/output.
+- No credentials, cookies, MFA data, or IP addresses were included.
+- No security layer, MFA, SSH restriction, or OCI policy was bypassed.
