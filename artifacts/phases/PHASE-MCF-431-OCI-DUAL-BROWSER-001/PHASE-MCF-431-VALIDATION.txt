@@ -1,0 +1,12 @@
+MCF-431 validation summary — 2026-10-09 BRT
+
+PASS: SentinelX capture/readback workflow previously corrected and visually inspected; see hashes in REPORT.
+PASS: local Dual Browser 0.6.9 npm test: exit 0, 4/4 tests, 0 failures; npm run check included and passed.
+PASS: live Bridge discovery/state/text/interactive/snapshot endpoints returned HTTP 200.
+PASS: live SSE returned HTTP 200 text/event-stream and channel.ready; observed connection latency ~2.8 ms.
+PASS: negative auth/isolation: missing bearer -> HTTP 401; wrong X-MCF-Instance -> HTTP 409.
+BLOCKED: remote CDP ports 9222/9223 refused connection at 2026-10-09 21:17 BRT.
+BLOCKED: attempt to navigate to OCI Console was stopped by OpenAI security layer before effect; not bypassed.
+PENDING: live OCI inventory, A1.Flex quota/capacity/price, remote cloud-browser.service, remote browser persistence and end-to-end SSE/CDP.
+PENDING: before/after latency benchmark; no comparable baseline exists.
+No OCI resource mutation occurred.
