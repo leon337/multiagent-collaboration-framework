@@ -13,7 +13,7 @@ verified:
   local_cockpit_0_6_9: PASS
   bridge_readonly_routes: PASS
   live_sse_local: PASS
-  local_tests_4_of_4: PASS
+  local_tests_5_of_5: PASS
   auth_negative_tests: PASS
 pending:
   oracle_inventory_live: true
