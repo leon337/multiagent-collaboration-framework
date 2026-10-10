@@ -15,7 +15,7 @@
 - **BLOCKED — validação OCI live atual:** uma tentativa de navegação programática à Console OCI foi bloqueada pela camada de segurança antes de produzir efeito. Não foi repetida por caminho alternativo para contornar o bloqueio.
 - **PENDING — A1.Flex:** cota, capacidade regional/AD/FD, elegibilidade Always Free e custo não foram verificados live nesta retomada. Não afirmar indisponibilidade sem evidência da Console/API.
 - **PENDING — VM remota:** estado atual de `cloud-browser.service` dentro da VM, SSH, target CDP correto, persistência de sessão e E2E remoto não foram validados.
-- **PENDING — benchmark:** não há baseline comparável de latência real antes/depois; só foram medidas latências pontuais da Bridge local.
+- **PENDING — benchmark antes/depois:** existe agora uma baseline local repetível de 30 amostras por rota e 10 conexões SSE (ver `PHASE-MCF-431-VALIDATION-FULL.txt`), mas não há baseline histórica comparável anterior nem medição pelo túnel OCI; não inferir desempenho remoto.
 - Nenhuma VM foi criada, excluída, redimensionada ou submetida a mutação nesta retomada.
 
 ## Recomendações técnicas recebidas do Claude
