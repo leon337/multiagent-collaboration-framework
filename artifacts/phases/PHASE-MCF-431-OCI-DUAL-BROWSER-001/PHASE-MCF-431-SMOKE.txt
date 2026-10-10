@@ -1,0 +1,10 @@
+Smoke checklist
+[PASS] SentinelX ping/capabilities available.
+[PASS] Cockpit CDP 127.0.0.1:9334 responds; Agent Bridge 127.0.0.1:47831 responds.
+[PASS] Bridge discovery and read-only routes authenticate and respond.
+[PASS] Live SSE emits channel.ready and validates instance identity.
+[PASS] Missing token and wrong instance are rejected (401/409).
+[PASS] npm test 5/5 and syntax check pass on local 0.6.9 inspection source; regression test protects canonical event sequence/identity. Patch not yet deployed to active AppImage.
+[BLOCKED] Remote CDP 9222/9223 unavailable.
+[BLOCKED] OCI Console navigation attempt blocked before effect by security layer.
+[NOT RUN] Remote service health, VM quota/capacity/cost, remote persistence, remote end-to-end browser/SSE.
