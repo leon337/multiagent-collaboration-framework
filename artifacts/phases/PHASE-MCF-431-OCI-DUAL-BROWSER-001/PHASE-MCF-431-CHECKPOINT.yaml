@@ -1,0 +1,32 @@
+mission_id: MCF-431
+phase_id: PHASE-MCF-431-OCI-DUAL-BROWSER-001
+cycle: 2
+state: IN_PROGRESS
+objective_met: false
+last_verified_at: "2026-10-09T21:25:00-03:00"
+worktree:
+  path: /var/lib/sentinelx/mcf-labs/leo-deepseek-harness/workspaces/mcf-431-oracle-browser
+  branch: mission/mcf-431-oracle-browser
+  base_sha: 460d6e6f
+verified:
+  sentinelx_visual_readback: PASS
+  local_cockpit_0_6_9: PASS
+  bridge_readonly_routes: PASS
+  live_sse_local: PASS
+  local_tests_4_of_4: PASS
+  auth_negative_tests: PASS
+pending:
+  oracle_inventory_live: true
+  a1_flex_quota_capacity_cost: true
+  remote_ssh_and_cloud_browser_service: true
+  remote_cdp_tunnel: true
+  remote_browser_via_dual_browser: true
+  secure_session_persistence: true
+  end_to_end_remote_streaming: true
+  before_after_latency_benchmark: true
+blockers:
+  - remote_cdp_ports_9222_9223_refused
+  - oci_console_navigation_blocked_before_effect_by_security_layer
+infrastructure_mutations: none
+human_action_required: false
+next_action: "Continue read-only OCI discovery through an authorized UI/API path; do not bypass tool security restrictions."
