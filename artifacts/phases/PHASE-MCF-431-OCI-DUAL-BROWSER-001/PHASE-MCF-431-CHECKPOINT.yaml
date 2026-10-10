@@ -29,5 +29,5 @@ blockers:
   - oci_console_navigation_blocked_before_effect_by_security_layer
   - ssh_host_key_changed_requires_out_of_band_verification_before_tunnel
 infrastructure_mutations: none
-human_action_required: false
-next_action: "Continue read-only OCI discovery through an authorized UI/API path; do not bypass tool security restrictions."
+human_action_required: true
+next_action: "Operator must verify the current ED25519 fingerprint via a trusted OCI console/serial-console path before re-enabling SSH tunnel; do not accept the endpoint key or bypass StrictHostKeyChecking." 
