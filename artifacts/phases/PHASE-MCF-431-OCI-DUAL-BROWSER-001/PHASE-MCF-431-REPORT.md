@@ -36,3 +36,9 @@ Continuar IN_PROGRESS. Não excluir a VM atual e não criar recursos OCI enquant
 - ACL mínima aplicada para que o agente SentinelX possa executar operações já permitidas pelo allowlist em `/home/leo/Aplicativos`: travessia (`--x`) em `/home/leo` e `rwx` no diretório `Aplicativos`; entradas de ACL preservadas para evitar recorrência do erro de permissão. Não houve alteração recursiva de permissões nos projetos restantes.
 - Verificação após limpeza: raiz passou de 99%/2,3 GiB livres para 92%/~11 GiB livres. O Cockpit 0.6.9 continua em execução; CDP `127.0.0.1:9334/json/version` retornou HTTP 200 e o Bridge continua negando acesso sem bearer (HTTP 401). Nenhum dado pessoal de Downloads/Imagens/Documentos foi removido.
 - Esta limpeza reduz o bloqueio de espaço, mas não valida o túnel OCI nem a sessão remota; missão permanece IN_PROGRESS.
+
+
+## Túnel SSH — bloqueio de integridade do host (2026-10-09 21:55 BRT)
+- Corrigido o allowlist do SentinelX para gerenciar `oracle-cloud-browser-tunnel` (ações status/start/stop/restart) e reiniciado o agente para carregar a política. O serviço iniciou, mas a conexão SSH recusou corretamente por divergência de host key: `Host key for 193.123.119.196 has changed` com `StrictHostKeyChecking=yes`.
+- Fingerprint ED25519 apresentado pelo endpoint atual: `SHA256:R7b5zeCEBFT1EJF6qOc1fIcJGqOS5LogZmQyUHr10VU`. O `known_hosts` contém uma chave ECDSA anterior distinta (`SHA256:LLgh0PkaRLetbcPXTG0if1H9qCYAMclYN7JdSn3xumI`). Não foi removida nem substituída a chave confiável, não foi desabilitado `StrictHostKeyChecking` e não foi aceita a nova chave sem confirmação fora de banda.
+- O serviço `oracle-cloud-browser-tunnel` foi parado após a falha de verificação, para impedir um loop de reinícios/logs. CDP remoto permanece BLOCKED. É necessária confirmação da fingerprint atual por canal confiável (por exemplo, console serial/metadata de instância OCI já autenticada) antes de atualizar `known_hosts` e retomar o túnel.
