@@ -18,7 +18,7 @@
 8. PHASE-01-ARTIFACT-MANIFEST.sha256
 
 ## Resultado resumido
-A bridge responde e a discovery autenticada confirma a instância `principal`. Porém, os panes Emily/chat e Sofia/workspace estão `UNBOUND`, o snapshot atual não contém missões e o helper canônico aponta para um caminho de repositório inexistente. O adapter de socket legado está sem listener. A UI DSH responde, mas nenhuma API externa de despacho foi confirmada. Não houve envio de prompts.
+A bridge responde e a discovery autenticada confirma a instância `principal`. Porém, os panes Emily/chat e Sofia/workspace estão `UNBOUND`, o snapshot atual não contém missões e o helper canônico aponta para um caminho de repositório inexistente. Os clones locais disponíveis não foram aceitos como fonte atual para runtime: um está sujo e 282 commits atrás; outro está limpo, mas usa refs/remote de setembro; o clone de continuidade está numa branch histórica. O adapter de socket legado está sem listener. A UI DSH responde, mas nenhuma API externa de despacho foi confirmada. Não houve envio de prompts.
 
 ## Retomada
 Determinar o checkout canônico atualizado sem tocar em working trees sujas/históricas. Definir a configuração do helper por mecanismo suportado e localizar o adapter parado, preservando o processo atual. Só depois executar teste neutro com evidência de turno real, identidade e conversation URL.
