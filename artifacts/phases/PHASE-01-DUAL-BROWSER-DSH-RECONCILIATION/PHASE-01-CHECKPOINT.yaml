@@ -1,0 +1,31 @@
+mission_id: MCF-CUIDABEM-002
+github_issue: 434
+phase_id: PHASE-01-DUAL-BROWSER-DSH-RECONCILIATION
+cycle: 1
+as_of: "2026-10-11"
+phase_state: "DIAGNOSTICO_PARCIAL"
+mission_state: "AGUARDANDO_DEPENDENCIA_EXTERNA"
+objective_met: false
+evidence:
+  - "Agent Bridge /health HTTP 200 on 127.0.0.1:47831"
+  - "Protected discovery, agent-sessions and live-snapshot routes return HTTP 401 without credentials"
+  - "agent-bridge.json not found under /home/leo"
+  - "Cockpit source test suite: 6 passed, 0 failed"
+  - "DSH web root HTTP 200 on 127.0.0.1:3091"
+  - "Common DSH REST probes return 404"
+  - "Active CDP observed on 9224; notebook launcher documents 9334"
+completed:
+  - "Read current MCF state and mandatory protocols"
+  - "Inspect bridge source and source test suite"
+  - "Run non-mutating health and route probes"
+  - "Record evidence and safety boundaries"
+blocked:
+  - "Authenticated discovery without supported descriptor/token path"
+  - "End-to-end message send/receive without a confirmed external DSH message API"
+risks:
+  - "Restarting Cockpit could lose session state because persistent profile state could not be verified"
+  - "Do not infer API endpoints from client bundle internals"
+next_action: "Identify supported way to restore descriptor persistence or confirm the correct active instance; then rerun authenticated discovery."
+responsible: "MESTRE"
+human_action_required: false
+secrets_in_artifacts: false
