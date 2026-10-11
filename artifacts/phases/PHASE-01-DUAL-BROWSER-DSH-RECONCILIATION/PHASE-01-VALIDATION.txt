@@ -1,0 +1,17 @@
+PHASE-01 VALIDATION — 2026-10-11 (checkpoint 4)
+
+PASS — MCF current-state and mandatory protocols previously consulted; DSH channel contract confirmed.
+PASS — Current Agent Bridge /health and authenticated discovery revalidated.
+PASS — Current pane titles/loading state revalidated without pane interaction.
+PASS — Current identities remain Emily/chat and Sofia/workspace, both UNBOUND / handshakeVerified=false.
+PASS — Helper source confirms default repository path is nonexistent in the observed host layout.
+PASS — Cockpit source confirms helper-path and environment resolution; process environment lacks MCF_REPO_PATH and MCF_AGENT_SESSION_TOOL.
+PASS — Identity runtime source inspected; no agent-identities.json state file exists in principal userData.
+PASS — Bootstrap route and restore-safe startup policy inspected; no bootstrap was invoked.
+PASS — DSH neutral JSON-RPC + WebSocket E2E smoke previously verified.
+PASS — No prompt sent to restored panes; no configuration or Git settings changed; no process restarted.
+BLOCKED — Canonical main cannot yet be obtained through the host's current SSH alias because host-key verification failed; no alternative authenticated host path validated.
+BLOCKED — No clean local checkout validated against current canonical main SHA.
+BLOCKED — Safe runtime helper configuration and pane identity binding remain unexecuted.
+BLOCKED — dual_browser_ai adapter has no active listener.
+NOT_APPLICABLE — Production deploy remains outside scope.

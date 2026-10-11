@@ -1,0 +1,45 @@
+mission_id: MCF-CUIDABEM-002
+github_issue: 434
+github_pr: 435
+phase_id: PHASE-01-DUAL-BROWSER-DSH-RECONCILIATION
+cycle: 4
+as_of: "2026-10-11"
+phase_state: "DIAGNOSTICO_PARCIAL"
+mission_state: "AGUARDANDO_DEPENDENCIA_EXTERNA"
+objective_met: false
+evidence:
+  - "Agent Bridge /health HTTP 200; authenticated /v1/discovery and /v1/agents HTTP 200"
+  - "Current instance principal, profile audit-architecture, paused=false, busy=false, queueDepth=0"
+  - "Current panes ChatGPT/Teste de integração MCF and Claude/MCF Dual Browser Cockpit evolution - Claude"
+  - "Emily/chat and Sofia/workspace remain UNBOUND; handshakeVerified=false"
+  - "Current missions list is empty"
+  - "Helper reads MCF_REPO_PATH or defaults to nonexistent ~/Documentos/GitHub/multiagent-collaboration-framework"
+  - "Cockpit source uses MCF_AGENT_SESSION_TOOL if present, otherwise ~/.local/bin/mcf-agent-session; subprocess inherits process.env"
+  - "MCF_REPO_PATH and MCF_AGENT_SESSION_TOOL absent from observed running process environment"
+  - "agent-identities.json is absent in principal instance userData"
+  - "Bootstrap route can create/open a fresh conversation and send identity envelope; restored-pane startup policy defers automatic bootstrap"
+  - "No bootstrap route called; no prompts sent to restored panes"
+  - "Clean local MCF clone remains on 47315de9; SSH remote alias github-mcf-leo failed host-key verification; no Git config changed"
+  - "dual_browser_ai socket file exists but no listener; authorized discovery previously returned connection refused"
+  - "Neutral DSH E2E smoke passed in session session-a2c17442-8f20-4a59-84f5-74074a1d6688; marker verified, turn/end completed, running=false, zero tool calls/results"
+completed:
+  - "Revalidate bridge health and current discovery"
+  - "Inspect helper path resolution and inherited environment"
+  - "Inspect identity runtime bootstrap, handshake and restored-conversation startup policy"
+  - "Confirm identity state file absent without reading secrets"
+  - "Preserve current panes by not invoking bootstrap or restarting processes"
+blocked:
+  - "Obtain authenticated, host-verified access to canonical GitHub main on the host"
+  - "Prepare a clean checkout validated against current canonical main SHA"
+  - "Select supported helper configuration mechanism without disrupting active process"
+  - "Bind restored pane identities with canonical digest, real session, delivery proof and handshake"
+  - "Determine supported lifecycle for the stopped dual_browser_ai adapter"
+risks:
+  - "Bootstrap may create/open a fresh conversation and send a message; unsafe to invoke against restored panes without a preservation decision"
+  - "Changing only shell environment does not update the already-running Cockpit process environment"
+  - "Stale or dirty checkout can provide incorrect canonical contract digests"
+  - "Do not infer current open windows or message delivery from historical session records"
+next_action: "Acquire a host-verified authenticated path to canonical MCF main, validate an isolated clean checkout, then design a controlled helper configuration and pane-preservation plan before any mutating call."
+responsible: "MESTRE"
+human_action_required: true
+secrets_in_artifacts: false
