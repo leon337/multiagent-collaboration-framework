@@ -1,0 +1,11 @@
+PHASE-01 SMOKE — leitura somente
+
+PASS: GET http://127.0.0.1:47831/health → HTTP 200.
+PASS: GET http://127.0.0.1:3091/ → HTTP 200.
+PASS: GET http://127.0.0.1:47831/v1/discovery sem credenciais → HTTP 401 (auth guard ativa).
+PASS: GET http://127.0.0.1:47831/v1/agent-sessions sem credenciais → HTTP 401.
+PASS: GET http://127.0.0.1:47831/v1/live/snapshot sem credenciais → HTTP 401.
+PASS: probes REST DSH testadas → HTTP 404, sem mutações.
+PASS: npm test na fonte do Cockpit → 6/6.
+NOT RUN: discovery autenticado — descriptor ausente.
+NOT RUN: envio/recebimento E2E — endpoint e sessão não comprovados.
