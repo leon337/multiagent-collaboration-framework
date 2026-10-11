@@ -1,13 +1,16 @@
-PHASE-01 SMOKE — leitura somente (checkpoint 2)
+PHASE-01 SMOKE — leitura somente (checkpoint 3)
 
 PASS: GET http://127.0.0.1:47831/health → HTTP 200.
 PASS: GET http://127.0.0.1:3091/ → HTTP 200.
 PASS: discovery autenticada GET /v1/discovery → HTTP 200, schema esperado.
 PASS: GET /v1/agents → HTTP 200; panes presentes, identidades UNBOUND.
-PASS: GET /v1/agent-sessions → HTTP 200; 92 registros históricos, todos windowOpen=false.
+PASS: GET /v1/agent-sessions → HTTP 200; 92 registros históricos antes do teste, todos windowOpen=false.
 PASS: GET /v1/live/snapshot → HTTP 200; 0 eventos, 2 agentes, 0 missões.
-PASS: probes REST DSH testadas → HTTP 404, sem mutações.
-PASS: npm test na fonte do Cockpit → 6/6 (não é E2E).
+PASS: probes REST DSH não documentadas → HTTP 404, sem mutações.
+PASS: DSH JSON-RPC documentado → session.create/session.prompt aceitos com preset mcf.
+PASS: DSH WebSocket /api/events.mux → conexão aberta e eventos de sessão recebidos.
+PASS: DSH E2E smoke → marcador em assistant/message; turn/end completed; running=false; zero tool calls/results.
+PASS: npm test na fonte do Cockpit → 6/6 (não é E2E do DSH).
 BLOCKED: identidade/handshake dos panes → UNBOUND / handshakeVerified=false.
 BLOCKED: adapter dual_browser_ai → socket existe, conexão recusada, sem listener.
-BLOCKED: despacho/recebimento E2E → API externa DSH e entrega verificada não confirmadas.
+BLOCKED: Dual Browser ↔ DSH → pane identities permanecem UNBOUND; nenhum prompt enviado aos panes restaurados.
