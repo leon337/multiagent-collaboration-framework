@@ -1,4 +1,4 @@
-PHASE-01 VALIDATION — 2026-10-11 (checkpoint 2)
+PHASE-01 VALIDATION — 2026-10-11 (checkpoint 3)
 
 PASS — MCF-CURRENT-STATE e protocolos obrigatórios lidos.
 PASS — Issue #431 revisada como missão relacionada, sem misturar escopos.
@@ -9,9 +9,12 @@ PASS — /v1/agents e /v1/agent-sessions responderam HTTP 200; estado atual foi 
 PASS — DSH web root respondeu HTTP 200.
 PASS — Probes REST DSH não mutáveis responderam 404 nos caminhos testados.
 PASS — npm test na fonte do Cockpit: 6 testes aprovados, 0 falhas (não é E2E).
-PASS — Nenhum POST de envio foi realizado; nenhum prompt enviado; nenhum processo reiniciado.
+PASS — DSH JSON-RPC: agentPreset.list, session.list e session.create/session.prompt funcionaram com o envelope documentado.
+PASS — DSH WebSocket /api/events.mux abriu e entregou eventos de sessão.
+PASS — Smoke E2E neutro: marcador confirmado em assistant/message; turn/end completed; running=false; zero tool calls/results.
+PASS — Nenhum prompt enviado aos panes restaurados/Emily/Sofia; o único prompt foi o marcador neutro da sessão de teste DSH. Nenhum processo reiniciado.
 BLOCKED — Identidades dos panes seguem UNBOUND e handshakeVerified=false.
 BLOCKED — Helper canônico usa caminho padrão inexistente; checkout canônico local ainda não reconciliado.
 BLOCKED — Socket do adapter dual_browser_ai existe sem listener; chamada de discovery retorna connection refused.
-BLOCKED — Envio/recebimento ponta a ponta: API externa DSH e entrega verificada não comprovadas.
+BLOCKED — Reconciliação Dual Browser ↔ DSH dos panes ainda não comprovada.
 NOT_APPLICABLE — Deploy/produção: explicitamente fora de escopo.
