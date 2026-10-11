@@ -2,9 +2,10 @@
 
 - **Mission:** MCF-CUIDABEM-002
 - **Issue:** https://github.com/leon337/multiagent-collaboration-framework/issues/434
+- **Draft PR:** https://github.com/leon337/multiagent-collaboration-framework/pull/435
 - **Phase:** PHASE-01-DUAL-BROWSER-DSH-RECONCILIATION
-- **Result:** diagnóstico parcial; missão aguarda dependência externa.
-- **Security:** sem segredos, sem mensagens enviadas, sem alterações locais.
+- **Result:** discovery autenticada concluída; reconciliação E2E ainda bloqueada.
+- **Security:** token usado apenas em memória para GET autenticados; sem mensagens enviadas, mudanças de configuração ou reinícios.
 
 ## Ordem de leitura
 1. PHASE-01-PLAN.md
@@ -17,7 +18,7 @@
 8. PHASE-01-ARTIFACT-MANIFEST.sha256
 
 ## Resultado resumido
-A bridge e a interface DSH estão respondendo, mas discovery autenticado e envio/recebimento E2E não foram comprovados. O descriptor esperado não foi localizado; o runtime ativo difere da configuração de launcher documentada. A API externa de mensagens do DSH não foi identificada. Não foram feitas alterações nem enviados prompts.
+A bridge responde e a discovery autenticada confirma a instância `principal`. Porém, os panes Emily/chat e Sofia/workspace estão `UNBOUND`, o snapshot atual não contém missões e o helper canônico aponta para um caminho de repositório inexistente. O adapter de socket legado está sem listener. A UI DSH responde, mas nenhuma API externa de despacho foi confirmada. Não houve envio de prompts.
 
 ## Retomada
-Revalidar primeiro o processo/instância ativa e a persistência do descriptor por caminho suportado. Preservar o processo atual até haver plano de sessão segura. Após obter discovery autenticado, reconciliar panes/agentes/sessões e só então considerar um teste neutro de envio com critério de validação de turno real e identidade da conversa.
+Determinar o checkout canônico atualizado sem tocar em working trees sujas/históricas. Definir a configuração do helper por mecanismo suportado e localizar o adapter parado, preservando o processo atual. Só depois executar teste neutro com evidência de turno real, identidade e conversation URL.
