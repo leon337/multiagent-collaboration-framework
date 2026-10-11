@@ -17,6 +17,7 @@ evidence:
   - "Canonical helper default repository path does not exist; MCF_REPO_PATH absent in DSH process"
   - "Explicit MCF_REPO_PATH makes 29 canonical agents discoverable in local clones"
   - "Available workspace clone is 282 commits behind origin/main and has local changes; continuity clone is on historical mission branch"
+  - "Clean local main clone is at 47315de9 from 2026-09-18; its origin/main ref is 23107958 from 2026-09-20 and its SSH alias is not the current GitHub main SHA 460d6e6f"
   - "dual-browser-ai socket file exists but no listener; adapter discovery returns connection refused"
   - "DSH web root HTTP 200; common REST probes return 404"
   - "Cockpit source suite previously passed: 6 passed, 0 failed; not an E2E result"
