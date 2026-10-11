@@ -1,31 +1,41 @@
 mission_id: MCF-CUIDABEM-002
 github_issue: 434
+github_pr: 435
 phase_id: PHASE-01-DUAL-BROWSER-DSH-RECONCILIATION
-cycle: 1
+cycle: 2
 as_of: "2026-10-11"
 phase_state: "DIAGNOSTICO_PARCIAL"
 mission_state: "AGUARDANDO_DEPENDENCIA_EXTERNA"
 objective_met: false
 evidence:
   - "Agent Bridge /health HTTP 200 on 127.0.0.1:47831"
-  - "Protected discovery, agent-sessions and live-snapshot routes return HTTP 401 without credentials"
-  - "agent-bridge.json not found under /home/leo"
-  - "Cockpit source test suite: 6 passed, 0 failed"
-  - "DSH web root HTTP 200 on 127.0.0.1:3091"
-  - "Common DSH REST probes return 404"
-  - "Active CDP observed on 9224; notebook launcher documents 9334"
+  - "Authenticated /v1/discovery HTTP 200; schema mcf-dual-browser-runtime-discovery/v1"
+  - "Descriptor exists under instances/principal; secret used only in memory, not emitted"
+  - "Current pane identities Emily/chat and Sofia/workspace are UNBOUND; handshakeVerified=false"
+  - "Current missions list is empty; live snapshot has 0 events, 2 agents, 0 missions"
+  - "92 historical agent sessions: 28 PENDING_OPEN, 47 OPEN, 17 FAILED; all windowOpen=false"
+  - "Canonical helper default repository path does not exist; MCF_REPO_PATH absent in DSH process"
+  - "Explicit MCF_REPO_PATH makes 29 canonical agents discoverable in local clones"
+  - "Available workspace clone is 282 commits behind origin/main and has local changes; continuity clone is on historical mission branch"
+  - "dual-browser-ai socket file exists but no listener; adapter discovery returns connection refused"
+  - "DSH web root HTTP 200; common REST probes return 404"
+  - "Cockpit source suite previously passed: 6 passed, 0 failed; not an E2E result"
 completed:
   - "Read current MCF state and mandatory protocols"
-  - "Inspect bridge source and source test suite"
   - "Run non-mutating health and route probes"
+  - "Perform authenticated read-only discovery"
+  - "Inspect current panes, pane identity bindings, mission snapshot and historical session states"
+  - "Identify canonical helper default-path failure"
   - "Record evidence and safety boundaries"
 blocked:
-  - "Authenticated discovery without supported descriptor/token path"
-  - "End-to-end message send/receive without a confirmed external DSH message API"
+  - "Select a reconciled canonical local MCF checkout for runtime configuration"
+  - "Confirm a supported DSH message-dispatch contract"
+  - "End-to-end message send/receive with verified delivery evidence"
 risks:
-  - "Restarting Cockpit could lose session state because persistent profile state could not be verified"
-  - "Do not infer API endpoints from client bundle internals"
-next_action: "Identify supported way to restore descriptor persistence or confirm the correct active instance; then rerun authenticated discovery."
+  - "Restarting Cockpit before a session-preservation plan could disrupt restored panes"
+  - "Pointing runtime helper at a stale or dirty clone could bind identities against incorrect contracts"
+  - "Do not infer current open windows or message delivery from historical session records"
+next_action: "Reconcile canonical checkout and runtime helper environment without changing the active Cockpit process; then confirm the supported DSH dispatch path."
 responsible: "MESTRE"
 human_action_required: false
 secrets_in_artifacts: false
