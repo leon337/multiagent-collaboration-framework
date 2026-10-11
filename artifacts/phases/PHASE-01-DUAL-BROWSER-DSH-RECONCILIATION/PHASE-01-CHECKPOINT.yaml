@@ -2,7 +2,7 @@ mission_id: MCF-CUIDABEM-002
 github_issue: 434
 github_pr: 435
 phase_id: PHASE-01-DUAL-BROWSER-DSH-RECONCILIATION
-cycle: 2
+cycle: 3
 as_of: "2026-10-11"
 phase_state: "DIAGNOSTICO_PARCIAL"
 mission_state: "AGUARDANDO_DEPENDENCIA_EXTERNA"
@@ -13,13 +13,16 @@ evidence:
   - "Descriptor exists under instances/principal; secret used only in memory, not emitted"
   - "Current pane identities Emily/chat and Sofia/workspace are UNBOUND; handshakeVerified=false"
   - "Current missions list is empty; live snapshot has 0 events, 2 agents, 0 missions"
-  - "92 historical agent sessions: 28 PENDING_OPEN, 47 OPEN, 17 FAILED; all windowOpen=false"
+  - "92 historical agent sessions before smoke: 28 PENDING_OPEN, 47 OPEN, 17 FAILED; all windowOpen=false"
   - "Canonical helper default repository path does not exist; MCF_REPO_PATH absent in DSH process"
   - "Explicit MCF_REPO_PATH makes 29 canonical agents discoverable in local clones"
   - "Available workspace clone is 282 commits behind origin/main and has local changes; continuity clone is on historical mission branch"
   - "Clean local main clone is at 47315de9 from 2026-09-18; its origin/main ref is 23107958 from 2026-09-20 and its SSH alias is not the current GitHub main SHA 460d6e6f"
   - "dual-browser-ai socket file exists but no listener; adapter discovery returns connection refused"
   - "DSH web root HTTP 200; common REST probes return 404"
+  - "Official MCF DSH contract documents POST /api/<method> JSON-RPC and WebSocket /api/events.mux"
+  - "Neutral DSH E2E smoke passed in session session-a2c17442-8f20-4a59-84f5-74074a1d6688, cwd /tmp, preset mcf"
+  - "Marker MCF_CUIDABEM_002_DSH_E2E_ACK_20261011 found in assistant/message; turn/end seq=58 reason=completed; running=false; 0 tool calls/results"
   - "Cockpit source suite previously passed: 6 passed, 0 failed; not an E2E result"
 completed:
   - "Read current MCF state and mandatory protocols"
@@ -27,16 +30,18 @@ completed:
   - "Perform authenticated read-only discovery"
   - "Inspect current panes, pane identity bindings, mission snapshot and historical session states"
   - "Identify canonical helper default-path failure"
+  - "Validate documented DSH JSON-RPC methods and WebSocket event stream"
+  - "Run neutral DSH E2E smoke and verify persisted assistant marker, turn/end and running=false"
   - "Record evidence and safety boundaries"
 blocked:
+  - "Reconcile restored pane identities Emily/chat and Sofia/workspace without repurposing existing conversations"
   - "Select a reconciled canonical local MCF checkout for runtime configuration"
-  - "Confirm a supported DSH message-dispatch contract"
-  - "End-to-end message send/receive with verified delivery evidence"
+  - "Decide whether the stopped dual_browser_ai adapter is required for this path"
 risks:
   - "Restarting Cockpit before a session-preservation plan could disrupt restored panes"
   - "Pointing runtime helper at a stale or dirty clone could bind identities against incorrect contracts"
   - "Do not infer current open windows or message delivery from historical session records"
-next_action: "Reconcile canonical checkout and runtime helper environment without changing the active Cockpit process; then confirm the supported DSH dispatch path."
+next_action: "Reconcile canonical checkout/helper configuration and pane identity bindings without changing the active Cockpit process; then validate the intended Dual Browser ↔ DSH handoff."
 responsible: "MESTRE"
-human_action_required: false
+human_action_required: true
 secrets_in_artifacts: false
