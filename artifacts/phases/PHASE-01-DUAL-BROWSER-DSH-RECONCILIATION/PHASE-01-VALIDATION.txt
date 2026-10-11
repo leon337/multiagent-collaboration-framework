@@ -1,15 +1,17 @@
-PHASE-01 VALIDATION — 2026-10-11
+PHASE-01 VALIDATION — 2026-10-11 (checkpoint 2)
 
 PASS — MCF-CURRENT-STATE e protocolos obrigatórios lidos.
 PASS — Issue #431 revisada como missão relacionada, sem misturar escopos.
 PASS — Agent Bridge /health respondeu HTTP 200.
+PASS — Descriptor local encontrado na instância principal; segredo não impresso nem registrado.
+PASS — Discovery autenticada /v1/discovery respondeu HTTP 200 e retornou schema esperado.
+PASS — /v1/agents e /v1/agent-sessions responderam HTTP 200; estado atual foi distinguido de registros históricos.
 PASS — DSH web root respondeu HTTP 200.
-PASS — Rotas protegidas responderam HTTP 401 sem credenciais; nenhum bypass tentado.
-PASS — Build-fonte: node --check passou para arquivos configurados pela suíte.
-PASS — npm test: 6 testes aprovados, 0 falhas.
 PASS — Probes REST DSH não mutáveis responderam 404 nos caminhos testados.
-PASS — Nenhum token, cookie ou segredo publicado.
-PASS — Nenhuma mensagem enviada, configuração alterada ou processo reiniciado.
-BLOCKED — Discovery autenticado: descriptor/token não localizado por caminho suportado.
-BLOCKED — Envio/recebimento ponta a ponta: API externa de mensagens e sessão destinatária não comprovadas.
+PASS — npm test na fonte do Cockpit: 6 testes aprovados, 0 falhas (não é E2E).
+PASS — Nenhum POST de envio foi realizado; nenhum prompt enviado; nenhum processo reiniciado.
+BLOCKED — Identidades dos panes seguem UNBOUND e handshakeVerified=false.
+BLOCKED — Helper canônico usa caminho padrão inexistente; checkout canônico local ainda não reconciliado.
+BLOCKED — Socket do adapter dual_browser_ai existe sem listener; chamada de discovery retorna connection refused.
+BLOCKED — Envio/recebimento ponta a ponta: API externa DSH e entrega verificada não comprovadas.
 NOT_APPLICABLE — Deploy/produção: explicitamente fora de escopo.
