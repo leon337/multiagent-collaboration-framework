@@ -1,66 +1,40 @@
-PHASE-01 VALIDATION FULL — evidência expandida (checkpoint 3)
+PHASE-01 VALIDATION FULL — checkpoint 4
 
-1. MCF
-- Documento consultado: docs/MCF-CURRENT-STATE.md.
-- Protocolo operacional: docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md, v1.1.
-- Discovery: docs/protocols/MCF-PROTOCOLO-DUAL-BROWSER-RUNTIME-DISCOVERY.md.
-- Contrato oficial DSH consultado: docs/integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md no main@460d6e6f.
-- O protocolo exige ler descriptor e executar GET /v1/discovery antes de operar agentes/sessões; texto no composer não é evidência de entrega.
+1. Current runtime
+- Agent Bridge /health returned HTTP 200.
+- Authenticated /v1/discovery returned schema mcf-dual-browser-runtime-discovery/v1.
+- Instance principal, profile audit-architecture, paused=false, busy=false, queueDepth=0.
+- Panes are ChatGPT title "Teste de integração MCF" and Claude title "MCF Dual Browser Cockpit evolution - Claude", both loading=false.
+- Emily/chat and Sofia/workspace remain UNBOUND with handshakeVerified=false; /v1/missions returned zero missions.
 
-2. Agent Bridge
-- GET /health em 127.0.0.1:47831 → HTTP 200; serviço mcf-dual-browser-agent-bridge, versão 1.
-- Descriptor presente em /home/leo/.config/mcf-dual-browser-cockpit/instances/principal/agent-bridge.json; versão 0.6.9, enabled=true, instanceId=principal, agentProfile=audit-architecture.
-- Token usado somente em memória para GET autenticados; valor não foi impresso nem incluído em artefatos.
-- GET /v1/discovery autenticado → HTTP 200; schema mcf-dual-browser-runtime-discovery/v1.
-- GET /v1/agents → HTTP 200: Emily/chat e Sofia/workspace; ambos UNBOUND, handshakeVerified=false.
-- GET /v1/missions → HTTP 200, lista vazia.
-- GET /v1/live/snapshot → HTTP 200, zero eventos, dois agentes e zero missões.
-- GET /v1/agent-sessions → HTTP 200, 92 registros históricos antes do teste: 28 PENDING_OPEN, 47 OPEN, 17 FAILED. Todos tinham windowOpen=false; os 47 registros marcados OPEN/bootstrap não eram prova de janelas abertas agora.
-- Panes ativos: ChatGPT, título “Teste de integração MCF”; Claude, título “MCF Dual Browser Cockpit evolution - Claude”. Não houve interação.
+2. Helper configuration
+- Source main.mjs chooses MCF_AGENT_SESSION_TOOL if set; otherwise ~/.local/bin/mcf-agent-session.
+- runAgentSessionTool executes the selected helper with env copied from process.env.
+- The helper uses MCF_REPO_PATH if set; otherwise DEFAULT_REPO = ~/Documentos/GitHub/multiagent-collaboration-framework.
+- The default path does not exist on this host; MCF_REPO_PATH and MCF_AGENT_SESSION_TOOL were absent from the observed process environment.
+- A shell-local environment change cannot update the already-running process environment. No runtime environment or helper file was modified.
 
-3. Helper canônico e registry
-- /home/leo/.local/bin/mcf-agent-session usa DEFAULT_REPO=/home/leo/Documentos/GitHub/multiagent-collaboration-framework, caminho inexistente.
-- O processo DSH na porta 3091 não tem MCF_REPO_PATH configurado.
-- Executar o helper read-only com MCF_REPO_PATH explícito para clones locais retorna 29 agentes.
-- O clone workspaces/multiagent-collaboration-framework está 282 commits atrás de origin/main e tem alterações locais; o clone de continuidade está numa branch de missão histórica.
-- Outro clone limpo em /home/leo/mcf-workspaces/leo/multiagent-collaboration-framework está em 47315de9 (2026-09-18); seu origin/main local é 23107958 (2026-09-20), 33 commits à frente. O remote usa alias SSH github-mcf-leo e não foi tratado como fonte canônica atual: o main do GitHub consultado está em 460d6e6f (2026-10-09).
-- Nenhum clone local foi escolhido para reconfigurar o runtime.
-- Não alterar/reiniciar o Cockpit até reconciliar o checkout canônico e planejar preservação das sessões.
+3. Identity state and safety
+- agent-identities.json is absent in the protected userData directory for instance principal.
+- Source profile audit-architecture statically maps chat to Emily and workspace to Sofia; this alone is not a verified binding.
+- The runtime requires canonical agent match, contract digest, session/trace identifiers, confirmed bootstrap delivery and exact MCF_AGENT_READY handshake.
+- POST /v1/agents/bootstrap invokes runtime bootstrap. When there is no reusable session, the runtime can open a fresh conversation and send an identity envelope. Startup policy explicitly defers automatic bootstrap for restored conversations.
+- Therefore the mutating bootstrap endpoint was not called. Existing restored panes were not interacted with.
 
-4. Adapter dual_browser_ai
-- O socket /home/leo/.config/dual-browser-ai/sentinel.sock existe.
-- A chamada autorizada SentinelX dual_browser_ai.discovery retorna endpoint_unreachable / connect failed: [Errno 111] Connection refused.
-- ss -xlp não mostra listener Unix correspondente.
+4. Canonical checkout
+- The local clean clone previously identified is main@47315de9; its local origin/main ref was from September and its remote uses SSH alias github-mcf-leo.
+- A read-only attempt to query that SSH remote failed host-key verification. No SSH known_hosts, Git config, refs or working trees were changed by this attempt.
+- No alternative host-authenticated path to the current GitHub main SHA has been validated. No clone was selected for runtime configuration.
 
-5. DSH JSON-RPC + WebSocket
-- GET / em 127.0.0.1:3091 → HTTP 200.
-- Pacote local @deepseek-ai/dsh: versão 0.1.1-rc.2.
-- Probes REST não documentados /api/health, /openapi.json, /api/openapi.json, /health e /v1/models → HTTP 404; esses resultados não testam o contrato oficial.
-- Contrato documenta POST /api/<method> com envelope client-request JSON-RPC e WebSocket downlinks /api/events.mux e /api/events.host.
-- agentPreset.list → HTTP 200, result.ok=true; o preset mcf está disponível e não marcado broken.
-- session.list → HTTP 200, 10 sessões existentes antes do teste, todas running=false.
-- skill.list sem sessionId retornou erro de validação bad-request; não foi repetido com parâmetros inferidos.
-- WebSocket /api/events.mux abriu; durante janela de observação read-only recebeu três frames session/subscribed.
-- WebSocket /api/events.host abriu; não emitiu frames durante a janela de cinco segundos.
+5. Adapter
+- dual_browser_ai socket file exists but has no active listener; authorized discovery previously returned connection refused.
+- No service was started and no socket or process state was changed.
 
-6. Smoke E2E neutro do DSH
-- Sessão de teste: session-a2c17442-8f20-4a59-84f5-74074a1d6688; cwd=/tmp; agentPreset=mcf.
-- Prompt único pediu apenas o marcador MCF_CUIDABEM_002_DSH_E2E_ACK_20261011, sem ferramentas, arquivos ou ações externas.
-- session.prompt respondeu accepted=true.
-- /api/events.mux recebeu eventos de sessão e o evento terminal.
-- session.history retornou 59 eventos, um assistant/message contendo o marcador, turn/end no seq=58 com reason.kind=completed e hasMore=false.
-- session.list confirmou running=false. Zero eventos tool/call e zero tool/result.
-- A sessão de teste permanece registrada como concluída no histórico do DSH.
-- Isso valida o transporte DSH nesta instância, não a vinculação de identidades dos panes Dual Browser.
+6. DSH transport smoke (separate proof)
+- Session session-a2c17442-8f20-4a59-84f5-74074a1d6688, cwd=/tmp, preset mcf.
+- Marker MCF_CUIDABEM_002_DSH_E2E_ACK_20261011 appears in assistant/message; turn/end completed; running=false; zero tool calls/results.
+- This validates the DSH transport in its test session, not identity binding of the Dual Browser panes.
 
-7. Build-fonte e segurança
-- Artefato: MCF Dual Browser Cockpit-0.6.9-streaming-orca-linux-x86_64.AppImage.
-- SHA-256 observado: 9c56e750db058a76f86d23d95ecb950c4f0884588a6e2f8b0b16171b3140bc3a.
-- npm test: 6 testes aprovados, 0 falhas. A suíte cobre eventos SSE, replay por cursor e identidade/ordenação; não é E2E DSH.
-- Nenhum prompt foi enviado aos panes restaurados ou a Emily/Sofia; o único prompt foi o marcador neutro da sessão DSH de teste.
-- Nenhuma configuração operacional editada; nenhum processo reiniciado.
-- Não inferir estado atual a partir de sessões históricas nem declarar entrega sem turno real e URL de conversa verificados.
-
-8. Estado
-- DIAGNOSTICO_PARCIAL / AGUARDANDO_DEPENDENCIA_EXTERNA.
-- Bloqueios: checkout canônico do helper, adapter sem listener e identidade dos panes não vinculada. O transporte DSH foi validado separadamente.
+7. State and next action
+- Mission remains DIAGNOSTICO_PARCIAL / AGUARDANDO_DEPENDENCIA_EXTERNA.
+- Obtain host-verified authenticated access to canonical main, validate a fresh isolated checkout, then plan helper configuration and pane preservation before any mutating operation.
