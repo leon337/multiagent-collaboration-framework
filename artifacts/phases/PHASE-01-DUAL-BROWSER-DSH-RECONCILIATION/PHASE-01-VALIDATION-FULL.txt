@@ -22,7 +22,9 @@ PHASE-01 VALIDATION FULL — evidência expandida (checkpoint 2)
 - /home/leo/.local/bin/mcf-agent-session usa DEFAULT_REPO=/home/leo/Documentos/GitHub/multiagent-collaboration-framework, caminho inexistente.
 - O processo DSH na porta 3091 não tem MCF_REPO_PATH configurado.
 - Executar o helper read-only com MCF_REPO_PATH explícito para clones locais retorna 29 agentes.
-- O clone workspaces/multiagent-collaboration-framework está 282 commits atrás de origin/main e tem alterações locais; o clone de continuidade está numa branch de missão histórica. Nenhum foi escolhido para reconfigurar o runtime.
+- O clone workspaces/multiagent-collaboration-framework está 282 commits atrás de origin/main e tem alterações locais; o clone de continuidade está numa branch de missão histórica.
+- Outro clone limpo em /home/leo/mcf-workspaces/leo/multiagent-collaboration-framework está em 47315de9 (2026-09-18); seu origin/main local é 23107958 (2026-09-20), 33 commits à frente. O remote usa alias SSH github-mcf-leo e não foi tratado como fonte canônica atual: o main do GitHub consultado está em 460d6e6f (2026-10-09).
+- Nenhum clone local foi escolhido para reconfigurar o runtime.
 - Não alterar/reiniciar o Cockpit até reconciliar o checkout canônico e planejar preservação das sessões.
 
 4. Adapter dual_browser_ai
