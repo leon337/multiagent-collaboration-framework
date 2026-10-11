@@ -1,0 +1,37 @@
+PHASE-01 VALIDATION FULL — evidência expandida
+
+1. MCF
+- Documento consultado: docs/MCF-CURRENT-STATE.md.
+- Protocolo operacional: docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md, v1.1.
+- Discovery: docs/protocols/MCF-PROTOCOLO-DUAL-BROWSER-RUNTIME-DISCOVERY.md.
+- Manual/contrato de UI consultados.
+- O protocolo exige ler descriptor e executar GET /v1/discovery antes de operar agentes/sessões; texto no composer não é evidência de entrega.
+
+2. Agent Bridge
+- GET /health em 127.0.0.1:47831 → 200; corpo identificou mcf-dual-browser-agent-bridge, versão 1.
+- GET /v1/discovery sem Authorization → 401 {"ok":false,"error":"unauthorized"}.
+- GET /v1/agent-sessions sem Authorization → 401.
+- GET /v1/live/snapshot sem Authorization → 401.
+- Esses resultados são probes negativas de autenticação, não chamadas autenticadas.
+- Busca por agent-bridge.json sob /home/leo não encontrou arquivo.
+- O código-fonte inspecionado persiste o descriptor sob app.getPath('userData')/agent-bridge.json.
+- O caminho do renderer observado contém instances/principal; o launcher notebook especifica instance notebook e porta CDP 9334, enquanto o processo observado expõe CDP 9224. Não foi reiniciado o processo para evitar perda de sessão não descartada.
+
+3. Build-fonte
+- Artefato: MCF Dual Browser Cockpit-0.6.9-streaming-orca-linux-x86_64.AppImage.
+- SHA-256 observado: 9c56e750db058a76f86d23d95ecb950c4f0884588a6e2f8b0b16171b3140bc3a.
+- npm test: 6 testes aprovados, 0 falhas. A suíte cobre eventos SSE, replay por cursor e identidade/ordenação de eventos; não é E2E do DSH.
+
+4. DSH
+- GET / em 127.0.0.1:3091 → 200.
+- Pacote local @deepseek-ai/dsh: versão 0.1.1-rc.2.
+- GET /api, /api/health, /openapi.json, /api/openapi.json, /health, /v1/models e /v1/chat/completions → 404 nos probes executados.
+- HTML serve dsh-client-modules e dsh-client-runtime. O bundle runtime contém envelopes internos client-request/server-response e chamadas internas de sessão/subagente; não foi encontrada documentação que autorize chamá-los como API externa.
+- Logs filtrados indicam serviço web iniciado; mensagens de ausência de X server em processos browser-host foram observadas, sem usá-las como prova sobre o canal de mensagens.
+
+5. Integridade e segurança
+- Nenhuma credencial foi lida ou copiada.
+- Nenhum POST de envio foi realizado.
+- Nenhuma mensagem foi enviada.
+- Nenhum perfil, cookie, sessão, ACL ou processo foi alterado.
+- O estado terminal é limitado pelo descriptor ausente e pela falta de API de mensagens confirmada.
