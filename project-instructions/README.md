@@ -10,7 +10,7 @@ Este diretório contém o pacote necessário para inicializar chats novos do pro
 | `MCF-PROJECT-OPERATING-INSTRUCTIONS.md` | Fonte canônica de comportamento e precedência |
 | `MCF-STARTUP-CHECKLIST.yaml` | Checklist executado no início de missões concretas |
 | `MCF-CHAT-BOOTSTRAP-TESTS.md` | Testes em chat totalmente novo |
-| `README.md` | Instalação, atualização e validação |
+| `MANUAL-DO-AGENTE-GPT-GLOBAL-INSTRUCTION.txt` | Trecho para adicionar às instruções gerais da conta ChatGPT |\n| `README.md` | Instalação, atualização e validação |
 
 ## Instalação no projeto ChatGPT
 
@@ -23,6 +23,10 @@ MCF-CHATGPT-PROJECT-INSTRUCTIONS.txt
 ```
 
 Cole no campo de Instruções do projeto “troca de conversa entre agentes”.
+
+### Instruções gerais da conta ChatGPT
+
+Copie o conteúdo de `MANUAL-DO-AGENTE-GPT-GLOBAL-INSTRUCTION.txt` para as instruções gerais/personalizadas da conta se desejar usar a base operacional também fora do projeto MCF. Esse arquivo é uma referência versionada; o GitHub não altera automaticamente as configurações da conta ChatGPT. A colagem nas configurações é manual.
 
 ### Etapa 2 — Arquivos do projeto
 
@@ -54,7 +58,7 @@ Execute os cenários de `MCF-CHAT-BOOTSTRAP-TESTS.md` sem corrigir o chat durant
 
 ## Atualização
 
-Quando o MCF mudar:
+Quando o MCF ou a integração do Manual do Agente GPT mudar:
 
 1. atualizar o arquivo canônico;
 2. avaliar se a instrução curta precisa mudar;
