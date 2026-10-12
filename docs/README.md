@@ -148,6 +148,7 @@ Envelope genérico ou Decision Inbox.
 | Propostas/discovery     | `proposals/`, branches de planejamento                                                                                                                                                                                                                                            |
 | NextGen reconciliado    | `MCF-NEXTGEN-RECONCILIATION-ROADMAP.md`, `architecture/`, `superpowers/plans/`, PRF da fase                                                                                                                                                                                       |
 | Promoção do ecossistema | [`roadmap/checklist`](integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md), [`checkpoint`](integrations/evidence/MCF-ECOSYSTEM-ALIGNMENT-CHECKPOINT-20260828.md), [`recovery final 4/4`](integrations/evidence/MCF-ECOSYSTEM-RECOVERY-4OF4-20260828.md), `integrations/gates/` |
+| Base operacional externa | [Integração do Manual do Agente GPT](integrations/MANUAL-DO-AGENTE-GPT.md) — descoberta, leitura, escrita autorizada e validação |
 
 ## Regra de continuidade
 

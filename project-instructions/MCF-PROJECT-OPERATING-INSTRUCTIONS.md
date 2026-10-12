@@ -2,7 +2,7 @@
 
 ```yaml
 document: MCF_PROJECT_OPERATING_INSTRUCTIONS
-version: 1.2.0
+version: 1.3.0
 status: ACTIVE
 authority_human: Leandro
 authority_operational: Leo
@@ -88,6 +88,16 @@ Documentos históricos devem ser preservados, mas não prevalecem sobre decisõe
 - `templates/MCF-UNIFIED-MISSION.yaml`;
 - `templates/MCF-SKILL-CONTRACT.yaml`;
 - `templates/phase-traceability/`.
+
+### Base operacional externa — Manual do Agente GPT
+
+- Guia MCF: `docs/integrations/MANUAL-DO-AGENTE-GPT.md`;
+- Índice para agentes: https://manual-do-agente-gpt.vercel.app/llms.txt;
+- API REST: https://manual-do-agente-gpt.vercel.app/api/manuals;
+- MCP Streamable HTTP (somente leitura): https://manual-do-agente-gpt.vercel.app/mcp;
+- Procedimento canônico de escrita: DEP-002 — https://manual-do-agente-gpt.vercel.app/manuais/criar-e-publicar-novas-deps.
+
+Antes de uma tarefa operacional, pesquisar e ler o manual completo relevante. A API REST pública e o MCP não gravam conteúdo. Uma solicitação “salvar no manual” exige verificação de duplicatas, código/slug únicos, acesso autorizado ao Neon e sincronização de `db/seed.sql` no repositório `leon337/manual-do-agente-gpt`. Depois, validar a descoberta e leitura pela API e por MCP quando disponível. Sem permissão de escrita, entregar um rascunho claramente identificado; nunca afirmar publicação sem evidência. Esta base externa é referência e não altera a precedência de autoridade do MCF.
 
 ## 5. Startup do chat
 
