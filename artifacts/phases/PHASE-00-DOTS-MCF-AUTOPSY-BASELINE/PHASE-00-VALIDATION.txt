@@ -8,7 +8,7 @@ PASS — PR #438 returned open / not merged; head and base recorded.
 PASS — MCF operational protocol and unified mission template read from main.
 PASS — Manual repository README read; read-only REST/MCP boundary documented.
 PASS — Mission Issue #441 created and linked.
-PENDING — DEP-002 full text not yet retrieved; do not publish Manual content.
+PASS — DEP-002 full text retrieved from versioned db/seed.sql (blob SHA 27ec9c4696cac15764e37d65ea051709055843c2). Live Neon/deployment equivalence still unverified; do not publish Manual content.
 PENDING — No code tests run; phase currently documents baseline only.
 PENDING — Independent review not yet performed.
 LIMITATION — This record proves only the listed reads/actions, not the overall health or completeness of the MCF or Manual services.
