@@ -10,7 +10,8 @@ checkpoint:
     state: open
     draft: true
     merged: false
-    head_sha: ebb17d9feff78a70f668b615a8e1651cdfc7ec70
+    head_sha_at_last_completed_readiness: ebb17d9feff78a70f668b615a8e1651cdfc7ec70
+    branch_head_before_this_checkpoint_update: 16a87d0bf039967ea3c147631b646b13881c2707
     base_sha: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
   manual_draft_pr:
     number: 1
@@ -35,6 +36,8 @@ checkpoint:
     mcf_vercel_contexts: success
     mcf_production_readiness_run: "38341370591"
     job_id: "115112876849"
+    conclusion: failure
+    later_doc_head_checks: pending
     vulnerability_counts:
       moderate: 16
       high: 10
