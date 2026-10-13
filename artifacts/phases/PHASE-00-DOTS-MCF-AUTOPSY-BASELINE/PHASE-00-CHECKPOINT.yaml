@@ -22,7 +22,7 @@ checkpoint:
       - "MCF operational protocol and mission template read"
       - "Manual README states REST/MCP are read-only"
     unknown:
-      - "DEP-002 full text not yet retrieved"
+      - "Live DEP-002/Neon record equivalence not yet verified"
       - "Manual live health not verified"
       - "full historical audit not started"
   mutations:
@@ -30,7 +30,7 @@ checkpoint:
     production: false
     permissions: false
     manual_database: false
-  next_action: "Retrieve and read DEP-002 via an authorized source; then inspect PR #438 files/checks and begin MCF history inventory."
+  next_action: "Compare versioned DEP-002 against live REST/MCP if available; inspect PR #438 files/checks and begin MCF history inventory."
   acceptance:
     baseline_recorded: true
     traceability_pack_complete: false
