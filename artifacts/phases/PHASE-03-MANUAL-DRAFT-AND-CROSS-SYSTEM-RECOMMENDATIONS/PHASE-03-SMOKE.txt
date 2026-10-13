@@ -4,4 +4,4 @@ PASS — Manual draft PR opened; Vercel preview status success.
 PASS — MCF Vercel contexts success at observed HEAD ebb17d9feff78a70f668b615a8e1651cdfc7ec70.
 BLOCKED — MCF Production Readiness run 38341370591 failed at dependency audit (1 critical, 10 high, 16 moderate): https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341370591.
 NOT RUN — Local tests/build, MCP, production mutation, independent review.
-No production or database writes occurred.
+No production or database writes occurred. Readiness run 38341370591 applies to the prior documentation HEAD; later documentation commits were still awaiting checks at the latest lookup.
