@@ -1,0 +1,56 @@
+checkpoint:
+  mission_id: MCF-20261013-DOTS-MCF-AUTOPSY-001
+  issue: 441
+  phase_id: PHASE-03-MANUAL-DRAFT-AND-CROSS-SYSTEM-RECOMMENDATIONS
+  phase_status: IN_PROGRESS
+  recorded_at_utc: "2026-10-13"
+  mcf_audit_pr:
+    number: 442
+    url: https://github.com/leon337/multiagent-collaboration-framework/pull/442
+    state: open
+    draft: true
+    merged: false
+    head_sha: 646921c157b4c35c0722772be94db8e77bd55c22
+    base_sha: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
+  manual_draft_pr:
+    number: 1
+    url: https://github.com/leon337/manual-do-agente-gpt/pull/1
+    state: open
+    draft: true
+    merged: false
+    head_sha: b5d41c2bf2d4027389dbd137a228beb3053a063c
+    changed_file: db/seed.sql
+    record_code: DEP-003
+    record_status_in_seed: draft
+    live_neon_write: false
+  neon_duplicate_check:
+    method: "read-only SELECT across all current manual rows"
+    codes_seen:
+      - AGT-001
+      - DEP-001
+      - DEP-002
+    dep003_or_candidate_slug_present: false
+    content_fields_read: false
+  ci:
+    mcf_vercel_contexts: success
+    mcf_production_readiness_run: "38340120253"
+    vulnerability_counts:
+      moderate: 16
+      high: 10
+      critical: 1
+    blocker_issue: 427
+    manual_pr_vercel_context: success
+    manual_npm_tests: NOT_RUN
+  mutations:
+    neon: false
+    production: false
+    mcf_runtime: false
+    merge: false
+    deploy: false
+  unresolved:
+    - "Manual PR review and npm test/build"
+    - "MCF dependency-audit remediation outside this mission"
+    - "MCP conformance"
+    - "Independent review"
+    - "Live runtime validation"
+  next_action: "Review manual draft and audit diffs; retain PRs as drafts until tests and human review, continue the MCF/Dots historical validation."

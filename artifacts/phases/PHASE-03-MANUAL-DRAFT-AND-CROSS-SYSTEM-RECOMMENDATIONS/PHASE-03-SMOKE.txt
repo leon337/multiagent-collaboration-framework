@@ -1,0 +1,7 @@
+PHASE-03 SMOKE
+PASS — Neon code/slug/status inventory: read-only SELECT only.
+PASS — Manual draft PR opened; Vercel preview status success.
+PASS — MCF Vercel contexts success at observed HEAD.
+BLOCKED — MCF Production Readiness: vulnerability audit failed (1 critical, 10 high, 16 moderate).
+NOT RUN — Local tests/build, MCP, production mutation, independent review.
+No production or database writes occurred.
