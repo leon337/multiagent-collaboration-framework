@@ -13,10 +13,15 @@ HEAD: b5d41c2bf2d4027389dbd137a228beb3053a063c.
 Alteração: somente db/seed.sql; inclui code DEP-003, slug arquitetural único, category agentes-ia e status draft. Foi criado idempotentemente e não foi inserido no Neon.
 O deployment Vercel de preview reportou success no último status check consultado. Isso não prova que npm test/build passaram; eles não foram executados por esta missão.
 
-## I-03 — Auditoria MCF permanece draft
-**VERIFIED_FACT.** MCF PR #442 OPEN/DRAFT/NOT MERGED: https://github.com/leon337/multiagent-collaboration-framework/pull/442
-HEAD atual no último snapshot: ebb17d9feff78a70f668b615a8e1651cdfc7ec70, base main 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615.
-Vercel contexts observados em success nesse HEAD. A execução concluída de MCF Production Readiness associada ao mesmo SHA falhou no dependency audit (run/job: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341370591/job/115112876849). O log registra 27 vulnerabilidades: 16 moderadas, 10 altas e 1 crítica, incluindo GHSA-jqcg-44mw-7w3h (proxy-addr), GHSA-qw65-cvwx-89v3 e GHSA-58mr-gqgx-xq4g (fast-uri), GHSA-9c5c-9qcx-q35q (@nestjs/platform-fastify), GHSA-667r-xxjv-c9mm, GHSA-p68q-wchp-6fh7, GHSA-hwr6-493r-vm6h e GHSA-9q9j-q6p8-xq58 (fastify), e GHSA-6qxp-vccf-f47h (@modelcontextprotocol/sdk). Os passos posteriores não foram executados. Issue #427 já rastreia o bloqueio; PR #426 permanece aberta e não mesclada.
+## I-03 — Estado atual da auditoria MCF e readiness
+**VERIFIED_FACT.** MCF PR #442 segue OPEN / DRAFT / NOT MERGED: https://github.com/leon337/multiagent-collaboration-framework/pull/442
+O workflow MCF Production Readiness #38341765114 foi concluído com FAILURE no commit auditado fcf4512de443e508c763475e88e17e0a0df41a0c: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341765114
+Job production-candidate-readiness, ID 115114119458: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341765114/job/115114119458
+Falha na etapa Dependency vulnerability gate, comando pnpm audit --prod --audit-level high. O log conta 27 vulnerabilidades: 16 moderadas, 10 altas e 1 crítica. Os passos de formatação, lint, typecheck, migrations, bootstrap, sandbox, tests, build, restore e release-contract foram SKIPPED; não passaram nem foram avaliados nesse run. Issue #427 rastreia o bloqueio de dependências. Esta auditoria não alterou dependências nem afrouxou o gate.
+
+Advisories observados incluem GHSA-jqcg-44mw-7w3h (proxy-addr), GHSA-qw65-cvwx-89v3 e GHSA-58mr-gqgx-xq4g (fast-uri), GHSA-9c5c-9qcx-q35q (@nestjs/platform-fastify), GHSA-667r-xxjv-c9mm, GHSA-p68q-wchp-6fh7, GHSA-hwr6-493r-vm6h e GHSA-9q9j-q6p8-xq58 (fastify), e GHSA-6qxp-vccf-f47h (@modelcontextprotocol/sdk).
+
+O resultado Vercel está dividido no último snapshot: um contexto passou e o contexto mcf-ecosystem-roadmap falhou; o link de destino aponta para uma página com upgradeToPro=build-rate-limit. A causa-raiz não está confirmada, então esse status não deve ser tratado como diagnóstico de falha de código sem evidência adicional.
 
 ## I-04 — Recomendações prioritárias
 1. **P0 — fechar o dependency audit em trilha própria:** atualizar dependências/lockfile com análise de compatibilidade, executar regressões e só liberar readiness após auditoria verde. Não silenciar o gate.
