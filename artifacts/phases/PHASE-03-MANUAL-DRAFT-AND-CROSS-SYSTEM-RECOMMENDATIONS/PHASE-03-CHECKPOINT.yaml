@@ -79,7 +79,7 @@ checkpoint:
     phase_00_manifest: "8/8 verified in prior checkpoint"
     phase_01_manifest: "10/10 reported verified after adding test map"
     phase_02_manifest: "10/10 verified in prior checkpoint"
-    phase_03_manifest: "will be recalculated against exact UTF-8 contents after this update"
+    phase_03_manifest: "8/8 SHA-256 entries recomputed and manifest read-back verified after this checkpoint update"
   verified_facts_and_limits:
     - "The production-readiness workflow failed at dependency auditing; later steps were skipped, not passed."
     - "The MCF runtime inventory contains 126 test/spec files; this audit did not execute the suite."
