@@ -1,0 +1,22 @@
+# Full validation ledger — PHASE-00
+
+## Reads performed
+- GitHub recursive tree for MCF main: returned SHA 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615; not truncated.
+- GitHub branch main: SHA 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615; protected=true.
+- GitHub PR #438: open, not merged, base main, head docs/manual-do-agente-gpt-integration, head SHA 51fccc737048437f6516ba8cc0ed1a405eba29cc.
+- GitHub Issue #441: created and open.
+- MCF docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md: read.
+- MCF templates/MCF-UNIFIED-MISSION.yaml: read.
+- MCF docs/decisions/MCF-DEC-007-PROTOCOLO-DE-INICIALIZACAO-DE-NOVO-CHAT-E-PROJETO.md: read.
+- Manual repo README.md and db/seed.sql: read.
+
+## Not yet performed
+- No CI, build, unit, integration, E2E or smoke test execution.
+- No live application health check successfully completed in this phase.
+- No full read of DEP-002.
+- No independent agent audit.
+- No runtime/database/provider mutation.
+- No manual publication.
+
+## Reproducibility
+All GitHub resources above are linked in Issue #441 and can be re-fetched. Re-read mutable resources before relying on the snapshot.
