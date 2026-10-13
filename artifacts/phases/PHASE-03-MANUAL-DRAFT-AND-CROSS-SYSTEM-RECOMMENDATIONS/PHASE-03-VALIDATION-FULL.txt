@@ -16,22 +16,29 @@
 - HEAD b5d41c2bf2d4027389dbd137a228beb3053a063c
 - Single file db/seed.sql, 204 additions, status=draft, idempotent check by code OR slug.
 - PR remained open and draft, not merged.
-- Vercel status reported success at the latest recorded check. Unit/build tests remain unrun.
+- Vercel preview status reported success at the latest recorded check. Unit/build tests remain unrun.
 
 ## MCF PR and CI
 - https://github.com/leon337/multiagent-collaboration-framework/pull/442
-- Base main SHA 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615. Latest completed readiness run is on audit HEAD ebb17d9feff78a70f668b615a8e1651cdfc7ec70; subsequent documentation-only commits remained pending checks at the latest lookup.
-- Vercel contexts reported success.
-- MCF Production Readiness job: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341370591/job/115112876849
-- Failed step pnpm audit --prod --audit-level high; 16 moderate, 10 high, 1 critical. Downstream steps skipped. Subsequent documentation-only commits advanced the audit branch; at this checkpoint their Vercel contexts are pending and no readiness run for the latest HEAD was yet returned by GitHub.
-- Issue #427 remains the established tracking item.
+- Branch: mission/dots-mcf-autopsy-001. Branch head observed before this checkpoint update: fcf4512de443e508c763475e88e17e0a0df41a0c. The document-only checkpoint commits that follow are not covered by the run below unless a new run is explicitly confirmed.
+- Base main SHA at baseline: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615.
+- Latest readiness run checked: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341765114
+- Job: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341765114/job/115114119458
+- Tested commit fcf4512de443e508c763475e88e17e0a0df41a0c. Failed step: pnpm audit --prod --audit-level high (Dependency vulnerability gate).
+- Reported count: 27 vulnerabilities (16 moderate, 10 high, 1 critical). Downstream formatting, lint, typecheck, migrations, bootstrap, sandbox, test, build, restore and release-contract steps were skipped.
+- Selected advisories: GHSA-jqcg-44mw-7w3h, GHSA-qw65-cvwx-89v3, GHSA-58mr-gqgx-xq4g, GHSA-9c5c-9qcx-q35q, GHSA-667r-xxjv-c9mm, GHSA-p68q-wchp-6fh7, GHSA-hwr6-493r-vm6h, GHSA-9q9j-q6p8-xq58, GHSA-6qxp-vccf-f47h.
+- Issue #427 remains the established tracking item; remediation is outside the scope of this documentation audit.
+- Vercel contexts were split: one success, one failed (mcf-ecosystem-roadmap). The failed context's target points to a page with upgradeToPro=build-rate-limit; root cause is unknown and not proven to be a code problem.
 
-## Not run
-- npm test, npm run build, MCP read/search conformance.
-- MCF local test/build/runtime.
-- second independent reviewer.
-- Live Dots agent operation or benchmark reproduction.
-- Neon insert/update, merge or deployment.
+## Static test inventory and limitations
+- 126 test/spec files were inventoried under the MCF runtime tree in the baseline. This is a file count, not evidence of a passing suite.
+- Representative tests and assertions were inspected statically only.
+- No MCF local test/build/runtime, no live action test, no MCP read/search conformance, no second independent reviewer, no Dots live operation/benchmark replication.
+
+## Mutations
+- No Neon insert/update.
+- No runtime, dependency, workflow, permissions or production changes by this mission.
+- No merge or production deployment.
 
 ## Conclusion
-Reviewable source artifacts were created. The new manual is not published. The workflow cannot be declared production-ready while the dependency-audit gate remains failed.
+The audit artifacts are reviewable, but the MCF cannot be declared production-ready while the dependency-audit gate fails. Keep both PRs as drafts until remaining checks and review are completed.
