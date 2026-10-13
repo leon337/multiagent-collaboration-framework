@@ -1,0 +1,39 @@
+checkpoint:
+  mission_id: MCF-20261013-DOTS-MCF-AUTOPSY-001
+  issue: 441
+  phase_id: PHASE-02-DOTS-PUBLIC-SOURCES
+  phase_status: IN_PROGRESS
+  recorded_at_utc: "2026-10-13"
+  working_branch: mission/dots-mcf-autopsy-001
+  audit_pr: 442
+  sources:
+    product_overview: https://openai.com/index/introducing-dots/
+    safety_architecture: https://openai.com/index/how-we-build-safety-security-and-privacy-into-dots/
+    help_center_faq: https://help.openai.com/en/articles/20001529-dots-privacy-security-and-safety-faqs
+    system_card: https://deploymentsafety.openai.com/gpt-6-astra/change-log
+  verified_claims:
+    - "Dots public overview describes persistent agents, own cloud computer/browser, connected tools and cross-channel continuity"
+    - "Proactive research tools are described as read-only and cannot directly mutate apps or control a browser/computer"
+    - "Auto-review checks certain planned external actions and required checks cannot be turned off by the dot"
+    - "Memory flows between dots and ChatGPT; disabling future sharing does not erase context already received"
+    - "System card publishes finite evaluations for prompt injection and scope boundaries"
+  selected_metrics:
+    injection_bulk_rollouts: 100
+    bulk_emails: 50000
+    generated_attack_emails: 16600
+    bulk_scored_successes: 0
+    iterative_valid_attempts: 2638
+    iterative_scored_successes: 0
+    changing_permission_pass_rate: 0.918
+    changing_permission_episodes: 49
+    chained_tasks_flags_5_intervening: 0.086
+    chained_tasks_flags_10_intervening: 0.197
+  unknown:
+    - "Full proprietary Dots runtime implementation"
+    - "Complete schema/protocol of internal subagents and scheduler"
+    - "Exact production generalization of finite public evaluations"
+  tests:
+    independent_metric_reproduction: NOT_RUN
+    live_dot_actions: NOT_RUN
+    independent_review: NOT_RUN
+  next_action: "Finish cross-system comparison and recommendations; then review whether knowledge belongs as a draft Manual DEP without publishing to production."

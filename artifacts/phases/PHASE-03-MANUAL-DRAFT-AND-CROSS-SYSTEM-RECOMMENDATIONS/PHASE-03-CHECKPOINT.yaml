@@ -1,0 +1,111 @@
+checkpoint:
+  mission_id: MCF-20261013-DOTS-MCF-AUTOPSY-001
+  issue: 441
+  phase_id: PHASE-03-MANUAL-DRAFT-AND-CROSS-SYSTEM-RECOMMENDATIONS
+  phase_status: IN_PROGRESS
+  recorded_at_utc: "2026-10-13"
+  checkpoint_purpose: "Resume after confirming the latest MCF Production Readiness workflow failure."
+  mcf_audit_pr:
+    number: 442
+    url: https://github.com/leon337/multiagent-collaboration-framework/pull/442
+    state: open
+    draft: true
+    merged: false
+    branch: mission/dots-mcf-autopsy-001
+    observed_branch_head_before_checkpoint_commits: fcf4512de443e508c763475e88e17e0a0df41a0c
+    base_sha_at_baseline: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
+    scope: "documentation and audit artifacts only; no runtime/config/workflow/dependency change"
+  latest_readiness:
+    workflow: "MCF Production Readiness"
+    run_id: "38341765114"
+    run_url: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341765114
+    run_number: 1357
+    job_id: "115114119458"
+    job_name: production-candidate-readiness
+    job_url: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341765114/job/115114119458
+    tested_commit_sha: fcf4512de443e508c763475e88e17e0a0df41a0c
+    conclusion: failure
+    failed_step: "Dependency vulnerability gate"
+    command: "pnpm audit --prod --audit-level high"
+    vulnerability_counts:
+      moderate: 16
+      high: 10
+      critical: 1
+      total: 27
+    downstream_format_lint_typecheck_migrations_tests_build_restore_release_contracts: skipped
+    blocker_issue: 427
+    selected_advisories:
+      - "GHSA-jqcg-44mw-7w3h (proxy-addr)"
+      - "GHSA-qw65-cvwx-89v3 (fast-uri)"
+      - "GHSA-58mr-gqgx-xq4g (fast-uri)"
+      - "GHSA-9c5c-9qcx-q35q (@nestjs/platform-fastify)"
+      - "GHSA-667r-xxjv-c9mm (fastify)"
+      - "GHSA-p68q-wchp-6fh7 (fastify)"
+      - "GHSA-hwr6-493r-vm6h (fastify)"
+      - "GHSA-9q9j-q6p8-xq58 (fastify)"
+      - "GHSA-6qxp-vccf-f47h (@modelcontextprotocol/sdk)"
+  previous_readiness:
+    run_id: "38341370591"
+    conclusion: failure
+    same_dependency_audit_gate: true
+  mcf_vercel_contexts:
+    regular_app_context: success
+    mcf_ecosystem_roadmap_context: failure
+    roadmap_target_note: "Target points to upgradeToPro=build-rate-limit; root cause is unknown and this is not sufficient evidence of a code failure."
+  manual_draft_pr:
+    number: 1
+    url: https://github.com/leon337/manual-do-agente-gpt/pull/1
+    branch: docs/draft-dep-003-dots-mcf-architecture
+    state: open
+    draft: true
+    merged: false
+    head_sha: b5d41c2bf2d4027389dbd137a228beb3053a063c
+    changed_file: db/seed.sql
+    record_code: DEP-003
+    record_status_in_seed: draft
+    preview_status: success
+    npm_test_build: NOT_RUN
+    live_neon_write: false
+  neon_duplicate_check:
+    method: "read-only SELECT across current manual metadata"
+    codes_seen:
+      - AGT-001
+      - DEP-001
+      - DEP-002
+    dep003_or_candidate_slug_present: false
+    content_fields_read: false
+    write_performed: false
+  artifact_integrity:
+    phase_00_manifest: "8/8 verified in prior checkpoint"
+    phase_01_manifest: "10/10 reported verified after adding test map"
+    phase_02_manifest: "10/10 verified in prior checkpoint"
+    phase_03_manifest: "8/8 SHA-256 entries recomputed and manifest read-back verified after this checkpoint update"
+  verified_facts_and_limits:
+    - "The production-readiness workflow failed at dependency auditing; later steps were skipped, not passed."
+    - "The MCF runtime inventory contains 126 test/spec files; this audit did not execute the suite."
+    - "The source tests were inspected statically only; evidence is not equivalent to a passing run."
+    - "Dots internal implementation details not present in official public sources remain UNKNOWN."
+    - "No independent second-auditor review has occurred."
+  mutations:
+    neon: false
+    production: false
+    mcf_runtime: false
+    dependency_changes: false
+    workflow_changes: false
+    merge: false
+    deploy: false
+  unresolved:
+    - "Handle dependency audit via issue #427 or explicitly scoped security-remediation work; do not suppress the gate."
+    - "Review MCF audit PR #442 and Manual DEP-003 draft PR #1."
+    - "Run Manual npm test/build."
+    - "Run MCF tests/build/runtime checks in an authorized environment after dependency blocker is resolved."
+    - "Check MCP read/search conformance."
+    - "Obtain a real independent technical review."
+    - "Review the MCF Vercel roadmap failure separately; build-rate-limit page is only an observed target, not a confirmed root cause."
+    - "Keep DEP-003 unpublished until approved workflow, tests and review."
+  resume_instructions:
+    - "Start from MCF PR #442, compare the current branch HEAD with the tested commit SHA above."
+    - "Do not assume this failed run covers any later checkpoint-only commits."
+    - "Continue documentation-only work unless runtime/security remediation receives a separate explicit scope."
+    - "Keep PR #442 and Manual PR #1 open as drafts; PR #438 remains untouched."
+  next_action: "Present this checkpoint to the mission owner and take their architectural idea as an additional input before extending recommendations or changing implementation scope."
