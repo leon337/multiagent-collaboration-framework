@@ -13,7 +13,8 @@
 ## Not yet performed
 - No CI, build, unit, integration, E2E or smoke test execution.
 - No live application health check successfully completed in this phase.
-- No full read of DEP-002.
+- DEP-002 was read in full from versioned `db/seed.sql` at blob SHA `27ec9c4696cac15764e37d65ea051709055843c2`.
+- The live public DEP-002 record was not yet verified against this version.
 - No independent agent audit.
 - No runtime/database/provider mutation.
 - No manual publication.
