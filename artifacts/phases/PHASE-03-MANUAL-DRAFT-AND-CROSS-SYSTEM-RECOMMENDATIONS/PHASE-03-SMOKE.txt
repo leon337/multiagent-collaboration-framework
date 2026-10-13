@@ -1,7 +1,8 @@
 PHASE-03 SMOKE
-PASS — Neon code/slug/status inventory: read-only SELECT only.
-PASS — Manual draft PR opened; Vercel preview status success.
-PASS — MCF Vercel contexts success at observed HEAD ebb17d9feff78a70f668b615a8e1651cdfc7ec70.
-BLOCKED — MCF Production Readiness run 38341370591 failed at dependency audit (1 critical, 10 high, 16 moderate): https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341370591.
-NOT RUN — Local tests/build, MCP, production mutation, independent review.
-No production or database writes occurred. Readiness run 38341370591 applies to the prior documentation HEAD; later documentation commits were still awaiting checks at the latest lookup.
+PASS — Neon code/slug/status inventory used a read-only SELECT only.
+PASS — Manual DEP-003 draft PR opened; Vercel preview status success.
+BLOCKED — MCF Production Readiness run 38341765114 failed at Dependency vulnerability gate on tested commit fcf4512de443e508c763475e88e17e0a0df41a0c (1 critical, 10 high, 16 moderate): https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341765114.
+SKIPPED — MCF format/lint/typecheck/migrations/tests/build/restore/release-contract stages after dependency gate failure.
+PARTIAL — MCF Vercel statuses split: one success, mcf-ecosystem-roadmap failure with target upgradeToPro=build-rate-limit; root cause unknown.
+NOT RUN — Local Manual tests/build, MCP, production mutation, independent review.
+No production or database writes occurred. The readiness result applies to the tested commit SHA shown above; checkpoint-only documentation commits are not assumed to be covered.
