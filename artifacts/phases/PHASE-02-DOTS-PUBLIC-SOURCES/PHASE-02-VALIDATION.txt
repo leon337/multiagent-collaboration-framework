@@ -1,0 +1,11 @@
+PHASE-02 VALIDATION — OFFICIAL SOURCES
+Date accessed: 2026-10-13 UTC
+PASS — Official product overview read: Introducing dots.
+PASS — Official safety/security/privacy architecture article read.
+PASS — Official Help Center privacy/security/safety FAQs read.
+PASS — GPT-6 Astra System Card, including dots-specific appendix, read.
+PASS — Claims separated between product descriptions, published evaluations, inference and UNKNOWN.
+PASS — Sample sizes/conditions and non-generalization caveats recorded for selected metrics.
+NOT RUN — Independent reproduction of OpenAI evaluations (not possible from public page data).
+NOT RUN — Internal Dots code/API analysis; not publicly established in sources reviewed.
+LIMITATION — Public summaries and selected benchmark results do not expose complete production implementation.
