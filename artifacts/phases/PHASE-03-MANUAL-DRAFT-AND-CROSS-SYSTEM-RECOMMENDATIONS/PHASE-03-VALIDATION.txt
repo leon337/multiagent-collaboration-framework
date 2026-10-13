@@ -3,6 +3,6 @@ PASS — Read-only SQL returned metadata for every current Neon manual (AGT-001,
 PASS — DEP-003 code and proposed slug were absent across all statuses in that read-only query.
 PASS — Manual PR #1 open/draft/unmerged; seed-only change on separate branch; manual record status draft.
 PASS — MCF PR #442 open/draft/unmerged at source snapshot.
-PASS — Latest observed MCF preview contexts succeeded; Production Readiness job failed at dependency audit.
+PASS — MCF Vercel contexts succeeded on the most recent completed audit HEAD ebb17d9feff78a70f668b615a8e1651cdfc7ec70; the documentation commits since then are still awaiting checks.
 PASS — No database write, merge, production deployment, or runtime mutation.
 NOT RUN — npm test/build, MCP conformance, MCF local tests, live agent action tests, independent review.
