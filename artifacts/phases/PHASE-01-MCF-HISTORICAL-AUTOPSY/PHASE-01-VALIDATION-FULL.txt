@@ -1,0 +1,46 @@
+# PHASE-01 — Full validation ledger
+
+## Decisions and protocol blobs
+- DEC-007: a34af4639820f2055bcf1a0d305bcd9f54ec714c.
+- DEC-050: 3baab348f1c2e1e86409fee9d354fd29cc6c68cd.
+- DEC-051: af1566ee286adfe5542d2928baefc40e96eb1095.
+- DEC-066: 70d5f07c66fb3f6fbf4b03b9918185e385cf6c53.
+- Unified protocol: 22b318926dc11a3ebf2558b283ec1366432329f2.
+
+## Current code blob SHAs
+- mission-runtime.controller.ts: d14c6a4366bf710168c0bab2549597b4c083d56f.
+- chat-runtime-bridge.service.ts: f2b140ba5394fbad96ca136105891cc68509939f.
+- skill-executor.ts: a60686ae63335a497fc1f1d5069f24546bccfd5f.
+- evidence-validator.ts: 8ee6f1372920a4cedd0206785763d911057affb7.
+- external-action-ledger.ts: ec2d51aae9c80c359ace65432ef3e6e97bea37ec.
+- agent-execution.service.ts: 607e009c38c888176356167341d15b197f6f9cd7.
+- human-control-policy.ts: a8ef2f4ca5c3276594c1c184ec73575c090affa6.
+- apps/server package.json: d18e6e46c256fe7a5147062e640eeed9b2bf33b4.
+- mcf-production-readiness.yml: e56bb7e6ec4d6d830f2f9ae4e980dcf89c022833.
+
+## Releases/commits
+- v1.0.0-RC1 (2026-08-12): https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.0.0-RC1
+- v1.0.0 (2026-08-14): https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.0.0
+- v1.1.0 (2026-08-16): https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.1.0
+- v1.2.0 (2026-08-27): https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.2.0
+- v1.3.0 (2026-08-28): https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.3.0
+- v1.4.0 (2026-10-01): https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.4.0
+- v1.5.0 (2026-10-08): https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.5.0
+- v1.5.1 (2026-10-08): https://github.com/leon337/multiagent-collaboration-framework/releases/tag/v1.5.1
+- ESEV/PRF commit: https://github.com/leon337/multiagent-collaboration-framework/commit/b5047b99907797e6c709350d730d9af4dd4c00e3
+- Runtime commit: https://github.com/leon337/multiagent-collaboration-framework/commit/3bd149ef159d46e82dbe2396f9e5991822f14327
+- Dual Browser discovery: https://github.com/leon337/multiagent-collaboration-framework/commit/84c4444fc6fbac664e9c6b3c1aaee98838465b9f
+
+## Readiness evidence
+- Workflow run 1338: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38338884830
+- Issue #427: https://github.com/leon337/multiagent-collaboration-framework/issues/427
+- pnpm audit failed; 16 moderate, 10 high, 1 critical. Downstream tests/build were skipped.
+
+## Evidence class
+Verified: source contents, decision dates, release entries, workflow state.
+Inference: progression toward explicit execution/evidence control plane.
+Secondary: historical audit and roadmap bound to earlier main/deployment snapshots.
+Unknown: current production runtime, provider equivalence, results of skipped tests, private Dots internals.
+
+## Limits
+Selective read only; no all-tree semantic analysis, no tests, no writes, no deployment validation, no independent second-auditor run.

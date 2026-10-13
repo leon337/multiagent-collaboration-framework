@@ -1,0 +1,37 @@
+checkpoint:
+  mission_id: MCF-20261013-DOTS-MCF-AUTOPSY-001
+  issue: 441
+  phase_id: PHASE-01-MCF-HISTORICAL-AUTOPSY
+  phase_status: IN_PROGRESS
+  recorded_at_utc: "2026-10-13"
+  source_repo: leon337/multiagent-collaboration-framework
+  source_ref: main
+  source_sha_snapshot: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
+  working_branch: mission/dots-mcf-autopsy-001
+  audit_pr: 442
+  findings:
+    verified:
+      - "Current tree contains mission API, skill execution, evidence validation, action state and provider-independent execution files"
+      - "Readiness workflow fails at dependency audit before downstream checks"
+      - "Issue #427 tracks the readiness blocker"
+    inference:
+      - "MCF evolved toward a more explicit execution/evidence control plane"
+    secondary_evidence:
+      - "Historical memory audit is bound to older main SHA 08fef949c49496050596e9681aaf011259e51f77"
+    unknown:
+      - "All runtime paths pass on current HEAD"
+      - "Current deployment exactly matches current source"
+      - "External cognition/evidence proven for every skill"
+  tests:
+    local_tests: NOT_RUN
+    build: NOT_RUN
+    runtime_smoke: NOT_RUN
+    independent_review: NOT_RUN
+  mutations:
+    runtime: false
+    production: false
+    permissions: false
+    database: false
+    merge: false
+    deploy: false
+  next_action: "Continue deeper historical cross-checks; then catalogue official Dots sources and create Dots x MCF comparison matrix."
