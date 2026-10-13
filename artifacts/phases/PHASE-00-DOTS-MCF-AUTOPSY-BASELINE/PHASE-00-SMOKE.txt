@@ -1,0 +1,6 @@
+PHASE-00 SMOKE
+Status: NOT RUN / DOCUMENTATION-ONLY BASELINE
+Reason: this phase has not changed application code or runtime.
+Manual service live smoke: NOT VERIFIED.
+MCF runtime smoke: NOT RUN.
+Next safe smoke: test public read-only Manual REST/MCP health and read endpoints without credentials or writes, once an authorized retrieval route is available.
