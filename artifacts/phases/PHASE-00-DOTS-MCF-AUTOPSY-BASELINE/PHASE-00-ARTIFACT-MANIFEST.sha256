@@ -1,5 +1,6 @@
 # SHA-256 manifest
-# Hashes cover exact UTF-8 content of current files; manifest does not hash itself.
+# SHA-256 implementation validated with standard empty-string and abc vectors.
+# Hashes cover exact UTF-8 content; manifest does not hash itself.
 6fd43a228f576c3742c75116b6ff20df661161788b434adb984cbe6b804d2f42  PHASE-00-CHECKPOINT.yaml
 d42242f34bf3d3e460dc0adc750dc13ee3fb69a782bd1c945599a25ea8d2214c  PHASE-00-DECISIONS.md
 0d8da6972778bab5a5241773a5b47849e8db7b515498d7e69887fc3849b70256  PHASE-00-PLAN.md
