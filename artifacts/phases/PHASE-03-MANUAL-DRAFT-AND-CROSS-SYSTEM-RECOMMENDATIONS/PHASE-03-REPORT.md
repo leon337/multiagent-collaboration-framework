@@ -15,8 +15,8 @@ O deployment Vercel de preview reportou success no último status check consulta
 
 ## I-03 — Auditoria MCF permanece draft
 **VERIFIED_FACT.** MCF PR #442 OPEN/DRAFT/NOT MERGED: https://github.com/leon337/multiagent-collaboration-framework/pull/442
-HEAD atual no último snapshot: 646921c157b4c35c0722772be94db8e77bd55c22, base main 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615.
-Vercel contexts observados em success; a execução MCF Production Readiness de 2026-10-13 falhou no dependency audit (run/job: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38340120253/job/115108981849). O log registra 27 vulnerabilidades: 16 moderadas, 10 altas e 1 crítica. Steps posteriores foram ignorados. Issue #427 já rastreia esse bloqueio.
+HEAD atual no último snapshot: ebb17d9feff78a70f668b615a8e1651cdfc7ec70, base main 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615.
+Vercel contexts observados em success nesse HEAD. A execução concluída de MCF Production Readiness associada ao mesmo SHA falhou no dependency audit (run/job: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341370591/job/115112876849). O log registra 27 vulnerabilidades: 16 moderadas, 10 altas e 1 crítica, incluindo GHSA-jqcg-44mw-7w3h (proxy-addr), GHSA-qw65-cvwx-89v3 e GHSA-58mr-gqgx-xq4g (fast-uri), GHSA-9c5c-9qcx-q35q (@nestjs/platform-fastify), GHSA-667r-xxjv-c9mm, GHSA-p68q-wchp-6fh7, GHSA-hwr6-493r-vm6h e GHSA-9q9j-q6p8-xq58 (fastify), e GHSA-6qxp-vccf-f47h (@modelcontextprotocol/sdk). Os passos posteriores não foram executados. Issue #427 já rastreia o bloqueio; PR #426 permanece aberta e não mesclada.
 
 ## I-04 — Recomendações prioritárias
 1. **P0 — fechar o dependency audit em trilha própria:** atualizar dependências/lockfile com análise de compatibilidade, executar regressões e só liberar readiness após auditoria verde. Não silenciar o gate.
