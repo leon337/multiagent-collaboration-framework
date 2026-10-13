@@ -1,0 +1,4 @@
+# SHA-256 manifest — pending finalization
+This manifest is intentionally not populated until the phase artifacts are finalized and hashes can be calculated from the exact committed file bytes.
+Do not interpret an empty manifest as integrity verification.
+status: PENDING
