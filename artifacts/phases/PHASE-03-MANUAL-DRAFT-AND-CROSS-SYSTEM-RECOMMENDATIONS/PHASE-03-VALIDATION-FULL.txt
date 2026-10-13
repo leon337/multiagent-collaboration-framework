@@ -22,7 +22,7 @@
 - https://github.com/leon337/multiagent-collaboration-framework/pull/442
 - HEAD 646921c157b4c35c0722772be94db8e77bd55c22, base main SHA 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615.
 - Vercel contexts reported success.
-- MCF Production Readiness job: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38340120253/job/115108981849
+- MCF Production Readiness job: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38341370591/job/115112876849
 - Failed step pnpm audit --prod --audit-level high; 16 moderate, 10 high, 1 critical. Downstream steps skipped.
 - Issue #427 remains the established tracking item.
 
