@@ -1,0 +1,38 @@
+checkpoint:
+  mission_id: MCF-20261013-DOTS-MCF-AUTOPSY-001
+  issue: 441
+  phase_id: PHASE-00-DOTS-MCF-AUTOPSY-BASELINE
+  phase_status: IN_PROGRESS
+  recorded_at_utc: "2026-10-13"
+  repository: leon337/multiagent-collaboration-framework
+  baseline_branch: main
+  baseline_sha: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
+  working_branch: mission/dots-mcf-autopsy-001
+  pr_438:
+    state: open
+    merged: false
+    base: main
+    head: docs/manual-do-agente-gpt-integration
+    head_sha: 51fccc737048437f6516ba8cc0ed1a405eba29cc
+  mission_issue_url: https://github.com/leon337/multiagent-collaboration-framework/issues/441
+  findings:
+    verified:
+      - "main SHA and branch protection observed live"
+      - "PR #438 open and not merged"
+      - "MCF operational protocol and mission template read"
+      - "Manual README states REST/MCP are read-only"
+    unknown:
+      - "DEP-002 full text not yet retrieved"
+      - "Manual live health not verified"
+      - "full historical audit not started"
+  mutations:
+    runtime: false
+    production: false
+    permissions: false
+    manual_database: false
+  next_action: "Retrieve and read DEP-002 via an authorized source; then inspect PR #438 files/checks and begin MCF history inventory."
+  acceptance:
+    baseline_recorded: true
+    traceability_pack_complete: false
+    independent_review: false
+    manual_published: false
