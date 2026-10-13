@@ -11,7 +11,7 @@
 3. **VERIFIED_FACT — Manual do Agente GPT:** repositório separado `leon337/manual-do-agente-gpt`; README descreve REST e MCP de leitura, sem ferramenta pública MCP de escrita.
 4. **VERIFIED_FACT — Protocolo MCF:** `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md` exige contrato de missão/fase, evidência cronológica, handoffs reais, PRF e pacote de rastreabilidade.
 5. **VERIFIED_FACT — Template MCF:** `templates/MCF-UNIFIED-MISSION.yaml` lista os artefatos obrigatórios por fase: plano, relatório, validação, validação completa, smoke, checkpoint, decisões, manifesto de artefatos e README.
-6. **UNKNOWN — DEP-002 integral:** a URL canônica foi identificada no PR #438, mas o acesso pelo leitor web usado nesta sessão retornou erro de acesso. O conteúdo integral ainda deve ser lido por um canal autorizado antes de qualquer publicação no Manual.
+6. **VERIFIED_FACT — DEP-002 integral:** o conteúdo completo do manual foi recuperado do `db/seed.sql` do repositório `leon337/manual-do-agente-gpt` (blob SHA `27ec9c4696cac15764e37d65ea051709055843c2`). O procedimento exige pesquisa de duplicatas, unicidade real de código/slug, revisão, status draft durante revisão quando possível, sincronização entre Neon e seed, fluxo Git e validação REST/MCP após publicação. A leitura do seed comprova o conteúdo versionado, não comprova que a versão live no Neon/deployment seja idêntica.
 7. **VERIFIED_FACT — Missão criada:** Issue [#441](https://github.com/leon337/multiagent-collaboration-framework/issues/441) foi criada para controlar objetivo, fases, evidências, critérios de aceite e continuidade.
 
 ## Limites do baseline
@@ -21,7 +21,7 @@
 - Ainda não foi realizada autópsia completa de commits, código, testes, workflows ou arquitetura Dots.
 
 ## Próximas verificações
-1. Recuperar DEP-002 integral por fonte autorizada.
+1. Comparar o conteúdo versionado DEP-002 com a API pública e, se possível, o registro live; não escrever no Manual.
 2. Examinar o conteúdo completo do PR #438, incluindo arquivos alterados e checks.
 3. Catalogar protocolos, decisões, checkpoints e auditorias históricas relevantes.
 4. Iniciar inventário de fontes oficiais Dots com datas e limites de cada afirmação.
