@@ -8,31 +8,68 @@ checkpoint:
   baseline_branch: main
   baseline_sha: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
   working_branch: mission/dots-mcf-autopsy-001
+  audit_pr: 442
+  prior_audit_head: f702c6cd5bc6d72ea3721b8e32067fc6aa64111e
   pr_438:
     state: open
     merged: false
     base: main
     head: docs/manual-do-agente-gpt-integration
     head_sha: 51fccc737048437f6516ba8cc0ed1a405eba29cc
-  mission_issue_url: https://github.com/leon337/multiagent-collaboration-framework/issues/441
-  findings:
-    verified:
-      - "main SHA and branch protection observed live"
-      - "PR #438 open and not merged"
-      - "MCF operational protocol and mission template read"
-      - "Manual README states REST/MCP are read-only"
-    unknown:
-      - "Live DEP-002/Neon record equivalence not yet verified"
-      - "Manual live health not verified"
-      - "full historical audit not started"
+    documentation_validation_run_1712: success
+    production_readiness_run_1335: failure
+    finding: "project-instructions/README.md contains literal backslash-n between table rows"
+  manual:
+    repo: leon337/manual-do-agente-gpt
+    source_file: db/seed.sql
+    source_blob_sha: 27ec9c4696cac15764e37d65ea051709055843c2
+    live_health: "status=ok; database=connected"
+    dep_code: DEP-002
+    dep_slug: criar-e-publicar-novas-deps
+    dep_version: 1
+    dep_category: Desenvolvimento
+    updated_at: "2026-10-12T09:55:09.145Z"
+    source_and_live_chars: 7374
+    exact_content_match_after_crlf_normalization: true
+    markdown_route: passed
+    llms_index: passed
+    mcp_tested: false
+    database_write_performed: false
+  ci:
+    audit_pr_vercel_statuses: success
+    production_readiness_run_1338: failure
+    failing_step: "pnpm audit --prod --audit-level high"
+    vulnerabilities_reported:
+      moderate: 16
+      high: 10
+      critical: 1
+    tracking_issue: 427
+    later_steps_skipped: true
   mutations:
     runtime: false
     production: false
     permissions: false
     manual_database: false
-  next_action: "Compare versioned DEP-002 against live REST/MCP if available; inspect PR #438 files/checks and begin MCF history inventory."
+    merge: false
+    deploy: false
+  findings:
+    verified:
+      - "MCF main SHA and branch-protection snapshot recorded"
+      - "PR #438 open and unmerged; branch not modified"
+      - "Manual REST health and public read endpoints returned valid content"
+      - "Live published DEP-002 content matches versioned seed content exactly"
+      - "Read-only REST smoke only; MCP not tested"
+      - "PR #438 contains literal backslash-n Markdown table defect"
+      - "Readiness workflow blocked by dependency audit in issue #427"
+    unknown:
+      - "Full correctness of MCF runtime behavior"
+      - "MCP live conformance"
+      - "Full MCF history / all architecture divergences"
+      - "Internal Dots implementation beyond public sources"
+  next_action: "Continue PHASE-01 historical autopsy with current source, decisions, release tags, CI and older audits."
   acceptance:
-    baseline_recorded: true
-    traceability_pack_complete: false
+    live_baseline_recorded: true
+    manual_rest_health_and_seed_match: true
     independent_review: false
-    manual_published: false
+    full_historical_audit: false
+    dots_comparison: false

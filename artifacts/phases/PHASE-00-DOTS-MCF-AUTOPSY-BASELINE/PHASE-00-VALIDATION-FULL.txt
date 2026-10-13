@@ -1,23 +1,39 @@
 # Full validation ledger — PHASE-00
 
-## Reads performed
-- GitHub recursive tree for MCF main: returned SHA 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615; not truncated.
-- GitHub branch main: SHA 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615; protected=true.
-- GitHub PR #438: open, not merged, base main, head docs/manual-do-agente-gpt-integration, head SHA 51fccc737048437f6516ba8cc0ed1a405eba29cc.
-- GitHub Issue #441: created and open.
-- MCF docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md: read.
-- MCF templates/MCF-UNIFIED-MISSION.yaml: read.
-- MCF docs/decisions/MCF-DEC-007-PROTOCOLO-DE-INICIALIZACAO-DE-NOVO-CHAT-E-PROJETO.md: read.
-- Manual repo README.md and db/seed.sql: read.
+## GitHub snapshot
+- MCF main SHA: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615; branch protection reported enabled.
+- PR #438: open, not merged, base main, head docs/manual-do-agente-gpt-integration, SHA 51fccc737048437f6516ba8cc0ed1a405eba29cc.
+- PR #438 checks: two Vercel contexts success, Documentation validation run 1712 success, MCF Production Readiness run 1335 failure.
+- PR #442: open, draft, not merged, base main SHA 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615. Observed head before this update f702c6cd5bc6d72ea3721b8e32067fc6aa64111e.
+- Two Vercel contexts on that audit HEAD returned success; MCF Production Readiness run 1338 failed.
 
-## Not yet performed
-- No CI, build, unit, integration, E2E or smoke test execution.
-- No live application health check successfully completed in this phase.
-- DEP-002 was read in full from versioned `db/seed.sql` at blob SHA `27ec9c4696cac15764e37d65ea051709055843c2`.
-- The live public DEP-002 record was not yet verified against this version.
-- No independent agent audit.
-- No runtime/database/provider mutation.
-- No manual publication.
+## Manual REST smoke
+- GET https://manual-do-agente-gpt.vercel.app/api/health -> {"status":"ok","database":"connected"}.
+- GET https://manual-do-agente-gpt.vercel.app/api/manuals/criar-e-publicar-novas-deps -> DEP-002, version 1, category Desenvolvimento, updated_at 2026-10-12T09:55:09.145Z.
+- db/seed.sql blob 27ec9c4696cac15764e37d65ea051709055843c2 has matching record; source block and live content_md are both 7,374 chars and exactly match after CRLF normalization.
+- GET .../api/manuals/criar-e-publicar-novas-deps?format=markdown returned full content.
+- GET https://manual-do-agente-gpt.vercel.app/llms.txt returned the agent discovery index.
+- MCP not connected/called; no database writes.
 
-## Reproducibility
-All GitHub resources above are linked in Issue #441 and can be re-fetched. Re-read mutable resources before relying on the snapshot.
+## CI / readiness
+- Run https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38338884830, workflow MCF Production Readiness, run 1338, job id 115105165456.
+- First failing gate: pnpm audit --prod --audit-level high. Log reports 27 vulnerabilities: 16 moderate, 10 high and 1 critical. Example affected package families include proxy-addr, fast-uri, @nestjs/platform-fastify, fastify and @modelcontextprotocol/sdk.
+- Formatting, lint, typecheck, migrations, tests, sandbox setup, build and backup/restore were skipped after the audit step failed.
+- Issue #427 tracks this blocker and earlier related defects. It is not caused by the audit-docs PR.
+
+## Source-level document defect
+- PR #438 project-instructions/README.md includes literal characters \n between adjacent table rows.
+- This is a Markdown source-formatting defect; it has not been changed by this mission.
+
+## Evidence sources
+- MCF commit: https://github.com/leon337/multiagent-collaboration-framework/commit/460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
+- PR #438: https://github.com/leon337/multiagent-collaboration-framework/pull/438
+- PR #442: https://github.com/leon337/multiagent-collaboration-framework/pull/442
+- Issue #427: https://github.com/leon337/multiagent-collaboration-framework/issues/427
+- Manual health: https://manual-do-agente-gpt.vercel.app/api/health
+- DEP-002 JSON: https://manual-do-agente-gpt.vercel.app/api/manuals/criar-e-publicar-novas-deps
+- DEP-002 Markdown: https://manual-do-agente-gpt.vercel.app/api/manuals/criar-e-publicar-novas-deps?format=markdown
+- Source seed: https://github.com/leon337/manual-do-agente-gpt/blob/main/db/seed.sql
+
+## Limits
+No local CI/build/test was run. The workflow state is read from GitHub. Only public read-only REST was tested; MCP was not. Live services are mutable.

@@ -1,6 +1,13 @@
-PHASE-00 SMOKE
-Status: NOT RUN / DOCUMENTATION-ONLY BASELINE
-Reason: this phase has not changed application code or runtime.
-Manual service live smoke: NOT VERIFIED.
-MCF runtime smoke: NOT RUN.
-Next safe smoke: test public read-only Manual REST/MCP health and read endpoints without credentials or writes, once an authorized retrieval route is available.
+PHASE-00 SMOKE — READ-ONLY
+Date: 2026-10-13 UTC
+
+PASS — GET Manual /api/health: status=ok, database=connected.
+PASS — GET DEP-002 JSON: expected identity and metadata returned.
+PASS — GET DEP-002 Markdown: manual body returned.
+PASS — GET /llms.txt: public agent-discovery document returned.
+PASS — Seed-vs-live content comparison: exact match, 7,374 characters, CRLF normalized.
+PASS — GitHub Vercel status contexts observed as success for audit PR and integration PR.
+BLOCKED — MCF Production Readiness run #1338 stopped at dependency audit (1 critical, 10 high, 16 moderate vulnerability findings).
+NOT RUN — MCP, live MCF runtime, local build/tests, Neon writes, deployment mutation.
+
+Conclusion: this covers read-only Manual REST only. It is not an MCF runtime smoke test nor a production-readiness approval.

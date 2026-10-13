@@ -1,27 +1,46 @@
-# PHASE-00 — Relatório inicial de baseline
+# PHASE-00 — Relatório de baseline atualizado
 
-**Estado:** parcial; não representa auditoria concluída.  
-**Issue canônica:** [#441](https://github.com/leon337/multiagent-collaboration-framework/issues/441)  
-**Data do registro:** 2026-10-13 UTC.
+**Status:** IN_PROGRESS — baseline consolidado; auditoria histórica e revisão independente pendentes.
+**Consulta:** 2026-10-13 UTC.
+**Issue:** https://github.com/leon337/multiagent-collaboration-framework/issues/441
+**PR:** https://github.com/leon337/multiagent-collaboration-framework/pull/442
 
-## Achados confirmados
+## B-01 — Fonte de verdade MCF
+**VERIFIED_FACT.** SHA observado em main: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615; GitHub reportou branch protegida. O commit corrigiu o contrato WebSocket DSH e preservou a fronteira read-only para Cognitive Ledger.
+Fonte: https://github.com/leon337/multiagent-collaboration-framework/commit/460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
+Limite: snapshot mutável, não garantia futura.
 
-1. **VERIFIED_FACT — MCF main:** o endpoint GitHub consultado retornou `main@460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615`; a branch foi reportada como protegida.
-2. **VERIFIED_FACT — PR #438:** aberto, não merged, base `main`, head `docs/manual-do-agente-gpt-integration`, head SHA `51fccc737048437f6516ba8cc0ed1a405eba29cc`. O escopo declarado é documentação da integração com o Manual; não alterar nem absorver silenciosamente esse trabalho.
-3. **VERIFIED_FACT — Manual do Agente GPT:** repositório separado `leon337/manual-do-agente-gpt`; README descreve REST e MCP de leitura, sem ferramenta pública MCP de escrita.
-4. **VERIFIED_FACT — Protocolo MCF:** `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md` exige contrato de missão/fase, evidência cronológica, handoffs reais, PRF e pacote de rastreabilidade.
-5. **VERIFIED_FACT — Template MCF:** `templates/MCF-UNIFIED-MISSION.yaml` lista os artefatos obrigatórios por fase: plano, relatório, validação, validação completa, smoke, checkpoint, decisões, manifesto de artefatos e README.
-6. **VERIFIED_FACT — DEP-002 integral:** o conteúdo completo do manual foi recuperado do `db/seed.sql` do repositório `leon337/manual-do-agente-gpt` (blob SHA `27ec9c4696cac15764e37d65ea051709055843c2`). O procedimento exige pesquisa de duplicatas, unicidade real de código/slug, revisão, status draft durante revisão quando possível, sincronização entre Neon e seed, fluxo Git e validação REST/MCP após publicação. A leitura do seed comprova o conteúdo versionado, não comprova que a versão live no Neon/deployment seja idêntica.
-7. **VERIFIED_FACT — Missão criada:** Issue [#441](https://github.com/leon337/multiagent-collaboration-framework/issues/441) foi criada para controlar objetivo, fases, evidências, critérios de aceite e continuidade.
+## B-02 — PR #438 preservada
+**VERIFIED_FACT.** Aberta, não mesclada, base main, head docs/manual-do-agente-gpt-integration, SHA 51fccc737048437f6516ba8cc0ed1a405eba29cc. Os dois contexts Vercel consultados estavam success e Documentation validation run 1712 passou. MCF Production Readiness run 1335 falhou.
+Fonte: https://github.com/leon337/multiagent-collaboration-framework/pull/438
+Esta missão não alterou aquela branch.
 
-## Limites do baseline
-- A leitura de README/árvore de arquivos não comprova saúde live da aplicação.
-- Não foi realizada mutação no runtime, banco, permissões ou produção.
-- O estado do PR #438 e o SHA de `main` são snapshots da consulta; devem ser relidos em futuras retomadas.
-- Ainda não foi realizada autópsia completa de commits, código, testes, workflows ou arquitetura Dots.
+## B-03 — Defeito de formatação em PR #438
+**VERIFIED_FACT.** project-instructions/README.md contém a sequência literal \n entre a linha da tabela para MANUAL-DO-AGENTE-GPT-GLOBAL-INSTRUCTION.txt e a linha de README.md, no lugar de uma quebra de linha real. Isso tende a quebrar a tabela Markdown. Não foi aplicado fix para manter o escopo isolado.
+Fonte: https://github.com/leon337/multiagent-collaboration-framework/blob/docs/manual-do-agente-gpt-integration/project-instructions/README.md
+O achado não contradiz o resultado pass do workflow de validação documental: esse check não detectou este detalhe semântico.
 
-## Próximas verificações
-1. Comparar o conteúdo versionado DEP-002 com a API pública e, se possível, o registro live; não escrever no Manual.
-2. Examinar o conteúdo completo do PR #438, incluindo arquivos alterados e checks.
-3. Catalogar protocolos, decisões, checkpoints e auditorias históricas relevantes.
-4. Iniciar inventário de fontes oficiais Dots com datas e limites de cada afirmação.
+## B-04 — Health do Manual
+**VERIFIED_FACT.** GET https://manual-do-agente-gpt.vercel.app/api/health retornou {"status":"ok","database":"connected"}.
+Limite: comprova aquela consulta de health, não disponibilidade contínua ou todas as rotas.
+
+## B-05 — DEP-002 publicado igual ao seed
+**VERIFIED_FACT.** GET /api/manuals/criar-e-publicar-novas-deps retornou code DEP-002, slug criar-e-publicar-novas-deps, version 1, categoria Desenvolvimento e updated_at 2026-10-12T09:55:09.145Z. O content_md live é idêntico ao bloco correspondente em db/seed.sql (blob SHA 27ec9c4696cac15764e37d65ea051709055843c2): ambos 7.374 caracteres depois de normalizar CRLF para LF. A rota Markdown também devolveu o manual.
+Fontes: https://manual-do-agente-gpt.vercel.app/api/manuals/criar-e-publicar-novas-deps ; https://manual-do-agente-gpt.vercel.app/api/manuals/criar-e-publicar-novas-deps?format=markdown ; https://github.com/leon337/manual-do-agente-gpt/blob/main/db/seed.sql
+Limite: drafts/arquivados e MCP não foram verificados.
+
+## B-06 — MCP
+**UNKNOWN / NOT RUN.** Documentação identifica o endpoint MCP e ferramentas read-only, mas nenhum cliente MCP foi conectado. Não declarar MCP validado.
+Fonte: https://github.com/leon337/manual-do-agente-gpt/blob/main/README.md
+
+## B-07 — Gate de readiness MCF
+**VERIFIED_FACT.** No audit HEAD f702c6cd5bc6d72ea3721b8e32067fc6aa64111e, os dois contexts Vercel consultados estavam success. Separadamente, MCF Production Readiness run 1338 falhou em pnpm audit --prod --audit-level high, antes de format/lint/typecheck/test/build. Log: 27 vulnerabilidades (16 moderadas, 10 altas, 1 crítica). Issue #427 já rastreia esse bloqueio.
+Fontes: https://github.com/leon337/multiagent-collaboration-framework/issues/427 ; https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38338884830
+Os passos posteriores foram ignorados; não podem ser tratados como passing. O bloqueio não foi introduzido pela documentação da missão.
+
+## B-08 — Contrato normativo do MCF
+**VERIFIED_FACT.** Protocolo Operacional Unificado v1.1 exige contrato mission/phase, ESEV, handoffs verificáveis e PRF de nove artefatos. DEC-050/051 fundam a padronização; DEC-066 exige sobriedade epistêmica.
+Fontes: https://github.com/leon337/multiagent-collaboration-framework/blob/main/docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md ; https://github.com/leon337/multiagent-collaboration-framework/blob/main/docs/decisions/MCF-DEC-050-QUATRO-AGENTES-DE-CONTROLE-E-PADRAO-OPERACIONAL-UNIFICADO.md ; https://github.com/leon337/multiagent-collaboration-framework/blob/main/docs/decisions/MCF-DEC-051-EXECUCAO-SEQUENCIAL-VISIVEL-E-RASTREABILIDADE-POR-FASE.md ; https://github.com/leon337/multiagent-collaboration-framework/blob/main/docs/decisions/MCF-DEC-066-SOBRIEDADE-EPISTEMICA-E-ANTI-SYCOPHANCY.md
+
+## Alterações e pendências
+Somente documentação em branch própria. Nenhuma mudança em runtime, produção, permissão ou banco; sem merge/deploy. Pendentes: MCP, testes de runtime, auditoria completa dos commits e fontes Dots, revisão independente e remediação de dependências separada na Issue #427.

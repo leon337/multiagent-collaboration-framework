@@ -1,8 +1,9 @@
-# PHASE-00 — Dots × MCF Baseline
+# PHASE-00 — Dots × MCF baseline
 
-Missão: [Issue #441](https://github.com/leon337/multiagent-collaboration-framework/issues/441)
+Mission: [Issue #441](https://github.com/leon337/multiagent-collaboration-framework/issues/441)
+Audit PR: [PR #442](https://github.com/leon337/multiagent-collaboration-framework/pull/442)
 
-Arquivos:
+## Artefatos
 - [Plano](PHASE-00-PLAN.md)
 - [Relatório](PHASE-00-REPORT.md)
 - [Validação](PHASE-00-VALIDATION.txt)
@@ -10,6 +11,7 @@ Arquivos:
 - [Smoke](PHASE-00-SMOKE.txt)
 - [Checkpoint](PHASE-00-CHECKPOINT.yaml)
 - [Decisões](PHASE-00-DECISIONS.md)
-- [Manifesto](PHASE-00-ARTIFACT-MANIFEST.sha256)
+- [Manifesto SHA-256](PHASE-00-ARTIFACT-MANIFEST.sha256)
 
-Status: baseline parcial. Não é auditoria final. DEP-002 e a verificação live da aplicação Manual continuam pendentes.
+## Estado
+Baseline read-only consolidado. Health do Manual passou e o DEP-002 publicado coincide com seed. MCP e testes de runtime não foram exercitados. O workflow MCF Production Readiness está bloqueado pelo audit de dependências rastreado na Issue #427. Fase ainda em andamento.
