@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmod, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -181,14 +181,40 @@ export class LocalCodexOracleBridgeClient implements OracleBridgeClient {
       throw new Error('INVALID_ORACLE_LOCAL_REQUEST');
     }
     await chmod(resolve(this.settings.stateRoot), 0o700);
+    const envelopes = join(resolve(this.settings.stateRoot), 'request-envelopes');
+    await mkdir(envelopes, { recursive: true, mode: 0o700 });
+    await chmod(envelopes, 0o700);
+    const key = createHash('sha256')
+      .update(JSON.stringify([request.missionId, request.requestId]))
+      .digest('hex');
+    const durableEnvelope = join(envelopes, key + '.json');
+    const proposed = modelInput(request, this.settings.timeoutSeconds);
+    let stableInput: string;
+    try {
+      stableInput = JSON.stringify(proposed);
+      // The deadline and request digest must NOT change on process restart.
+      // An exclusive creation prevents two clients from overwriting the same
+      // logical request with a new expiration or a different prompt.
+      await writeFile(durableEnvelope, stableInput, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      stableInput = await readFile(durableEnvelope, 'utf8');
+      const previous = JSON.parse(stableInput) as ReturnType<typeof modelInput>;
+      if (
+        previous.mission_id !== proposed.mission_id ||
+        previous.request_id !== proposed.request_id ||
+        previous.objective !== proposed.objective ||
+        previous.idempotency_key !== proposed.idempotency_key ||
+        previous.session_epoch !== proposed.session_epoch
+      ) {
+        throw new Error('ORACLE_BRIDGE_DURABLE_REQUEST_CONFLICT');
+      }
+    }
     const work = await mkdtemp(join(tmpdir(), 'mcf-oracle-input-'));
     await chmod(work, 0o700);
     try {
       const requestFile = join(work, 'request.json');
-      await writeFile(requestFile, JSON.stringify(modelInput(request, this.settings.timeoutSeconds)), {
-        encoding: 'utf8',
-        mode: 0o600,
-      });
+      await writeFile(requestFile, stableInput, { encoding: 'utf8', mode: 0o600 });
       return await invokeBridge(this.settings, requestFile);
     } finally {
       await rm(work, { recursive: true, force: true });
