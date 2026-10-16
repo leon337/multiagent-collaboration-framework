@@ -86,16 +86,18 @@ function testProvider(onStart?: () => void): AgentExecutionProviderAdapter {
       providerState: 'running',
       effectState: 'NONE_OBSERVED',
     }),
-    collectEvidence: async (handle) => [{
-      evidenceId: 'p0-evidence',
-      providerId: provider.providerId,
-      providerExecutionId: handle.providerExecutionId,
-      kind: 'TRACE',
-      sourceRef: 'test://mcf-oracle-001/p0',
-      observedAt: '2026-10-16T00:00:00.000Z',
-      digest: null,
-      metadata: { testOnly: true, noCognitiveExecutor: true },
-    }],
+    collectEvidence: async (handle) => [
+      {
+        evidenceId: 'p0-evidence',
+        providerId: provider.providerId,
+        providerExecutionId: handle.providerExecutionId,
+        kind: 'TRACE',
+        sourceRef: 'test://mcf-oracle-001/p0',
+        observedAt: '2026-10-16T00:00:00.000Z',
+        digest: null,
+        metadata: { testOnly: true, noCognitiveExecutor: true },
+      },
+    ],
   };
 }
 
@@ -103,7 +105,11 @@ describe('MCF-ORACLE-001 P0 — execute real MCF provider lifecycle without a li
   it('starts a bounded mission, resumes it and collects typed provider evidence', async () => {
     let started = 0;
     const runtime = new AgentExecutionService(
-      new ProviderAdapterRegistry([testProvider(() => { started += 1; })]),
+      new ProviderAdapterRegistry([
+        testProvider(() => {
+          started += 1;
+        }),
+      ]),
     );
     const handle = await runtime.start(request);
     expect(started).toBe(1);
@@ -117,50 +123,66 @@ describe('MCF-ORACLE-001 P0 — execute real MCF provider lifecycle without a li
       lifecycle: 'RUNNING',
       effectState: 'NONE_OBSERVED',
     });
-    expect(await runtime.collectEvidence(handle)).toMatchObject([{
-      kind: 'TRACE',
-      metadata: { testOnly: true, noCognitiveExecutor: true },
-    }]);
+    expect(await runtime.collectEvidence(handle)).toMatchObject([
+      {
+        kind: 'TRACE',
+        metadata: { testOnly: true, noCognitiveExecutor: true },
+      },
+    ]);
   });
 
   it('blocks action outside the mission authority envelope before invoking a provider', async () => {
     let started = 0;
     const runtime = new AgentExecutionService(
-      new ProviderAdapterRegistry([testProvider(() => { started += 1; })]),
+      new ProviderAdapterRegistry([
+        testProvider(() => {
+          started += 1;
+        }),
+      ]),
     );
-    await expect(runtime.start({
-      ...request,
-      requestedAction: 'deploy-production',
-    })).rejects.toThrow('does not authorize the requested action');
+    await expect(
+      runtime.start({
+        ...request,
+        requestedAction: 'deploy-production',
+      }),
+    ).rejects.toThrow('does not authorize the requested action');
     expect(started).toBe(0);
   });
 
   it('blocks wrong-mission scope and an expired authority envelope', async () => {
     const runtime = new AgentExecutionService(new ProviderAdapterRegistry([testProvider()]));
-    await expect(runtime.start({
-      ...request,
-      authority: { ...request.authority, missionId: 'some-other-mission' },
-    })).rejects.toThrow('missionId does not match');
-    await expect(runtime.start({
-      ...request,
-      authority: { ...request.authority, expiresAt: '2020-01-01T00:00:00.000Z' },
-    })).rejects.toThrow('expired or invalid');
+    await expect(
+      runtime.start({
+        ...request,
+        authority: { ...request.authority, missionId: 'some-other-mission' },
+      }),
+    ).rejects.toThrow('missionId does not match');
+    await expect(
+      runtime.start({
+        ...request,
+        authority: { ...request.authority, expiresAt: '2020-01-01T00:00:00.000Z' },
+      }),
+    ).rejects.toThrow('expired or invalid');
   });
 
   it('requires the human authority issuer for actions flagged as requiring approval', async () => {
     const runtime = new AgentExecutionService(new ProviderAdapterRegistry([testProvider()]));
-    await expect(runtime.start({
-      ...request,
-      authority: { ...request.authority, approvalRequired: true },
-    })).rejects.toThrow('human approval is required');
+    await expect(
+      runtime.start({
+        ...request,
+        authority: { ...request.authority, approvalRequired: true },
+      }),
+    ).rejects.toThrow('human approval is required');
   });
 
   it('fails closed if no eligible execution provider supports the requested capabilities', async () => {
     const runtime = new AgentExecutionService(new ProviderAdapterRegistry([testProvider()]));
-    await expect(runtime.start({
-      ...request,
-      requestedCapabilities: ['COMPUTER_USE'],
-    })).rejects.toThrow('lacks capabilities');
+    await expect(
+      runtime.start({
+        ...request,
+        requestedCapabilities: ['COMPUTER_USE'],
+      }),
+    ).rejects.toThrow('lacks capabilities');
     await expect(
       new AgentExecutionService(new ProviderAdapterRegistry()).start(request),
     ).rejects.toThrow('No execution provider adapter');

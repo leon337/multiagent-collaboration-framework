@@ -10,9 +10,7 @@ export interface ProviderSelection {
 }
 
 export class ProviderAdapterRegistry {
-  constructor(
-    private readonly adapters: readonly AgentExecutionProviderAdapter[] = [],
-  ) {}
+  constructor(private readonly adapters: readonly AgentExecutionProviderAdapter[] = []) {}
 
   resolve(selection: ProviderSelection): AgentExecutionProviderAdapter {
     const candidates = this.adapters.filter((adapter) => {

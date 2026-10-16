@@ -65,11 +65,9 @@ describe('provider-independent agent execution contract', () => {
   });
 
   it('rejects an action outside the authority envelope', () => {
-    expect(() =>
-      assertAuthorityEnvelope(
-        request({ requestedAction: 'deploy' }),
-      ),
-    ).toThrow(/requested action/);
+    expect(() => assertAuthorityEnvelope(request({ requestedAction: 'deploy' }))).toThrow(
+      /requested action/,
+    );
   });
 
   it('rejects an authority envelope bound to another run', () => {
@@ -175,9 +173,7 @@ describe('provider-independent agent execution contract', () => {
     };
 
     const registry = new ProviderAdapterRegistry([adapter]);
-    expect(
-      registry.resolve({ requiredCapabilities: ['PERSISTENT_CONTEXT'] }),
-    ).toBe(adapter);
+    expect(registry.resolve({ requiredCapabilities: ['PERSISTENT_CONTEXT'] })).toBe(adapter);
     expect(registry.listProviders()).toEqual([provider]);
   });
 });

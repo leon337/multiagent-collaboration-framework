@@ -102,10 +102,7 @@ export interface AgentExecutionProviderAdapter {
   collectEvidence(handle: AgentExecutionHandle): Promise<readonly AgentExecutionEvidence[]>;
 }
 
-export function assertAuthorityEnvelope(
-  request: AgentExecutionRequest,
-  now = new Date(),
-): void {
+export function assertAuthorityEnvelope(request: AgentExecutionRequest, now = new Date()): void {
   if (request.authority.missionId !== request.missionId) {
     throw new Error('authority envelope missionId does not match execution missionId');
   }
@@ -132,17 +129,12 @@ export function assertAuthorityEnvelope(
     }
   }
 
-  if (
-    request.authority.approvalRequired &&
-    request.authority.issuer !== 'HUMAN'
-  ) {
+  if (request.authority.approvalRequired && request.authority.issuer !== 'HUMAN') {
     throw new Error('human approval is required but the authority issuer is not HUMAN');
   }
 }
 
-export function assertRequestedCapabilities(
-  request: AgentExecutionRequest,
-): void {
+export function assertRequestedCapabilities(request: AgentExecutionRequest): void {
   const available = new Set(request.provider.capabilities);
   const missing = request.requestedCapabilities.filter((capability) => !available.has(capability));
   if (missing.length > 0) {

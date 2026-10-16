@@ -142,8 +142,11 @@ export class CodexOracleProviderAdapter implements AgentExecutionProviderAdapter
       providerId: this.provider.providerId,
       providerExecutionId: handle.providerExecutionId,
       kind: 'TRACE',
-      sourceRef: 'local-oracle-bridge://decision/' + encodeURIComponent(request.missionId)
-        + '/' + encodeURIComponent(request.runId),
+      sourceRef:
+        'local-oracle-bridge://decision/' +
+        encodeURIComponent(request.missionId) +
+        '/' +
+        encodeURIComponent(request.runId),
       observedAt: new Date().toISOString(),
       digest: decisionDigest,
       metadata: {
@@ -157,7 +160,9 @@ export class CodexOracleProviderAdapter implements AgentExecutionProviderAdapter
       },
     };
     this.completed.set(key, {
-      handle, evidence, decisionId: output.decision.decision_id,
+      handle,
+      evidence,
+      decisionId: output.decision.decision_id,
     });
     return handle;
   }
@@ -165,7 +170,8 @@ export class CodexOracleProviderAdapter implements AgentExecutionProviderAdapter
   async status(handle: AgentExecutionHandle): Promise<AgentExecutionStatus> {
     this.assertedHandle(handle);
     const completed = this.completed.get(this.key(handle.missionId, handle.runId));
-    const known = !!completed && completed.handle.providerExecutionId === handle.providerExecutionId;
+    const known =
+      !!completed && completed.handle.providerExecutionId === handle.providerExecutionId;
     return {
       handle,
       lifecycle: known ? 'COMPLETED' : 'EFFECT_UNKNOWN',
