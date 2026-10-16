@@ -41,6 +41,7 @@ import {
 } from './mcf-runtime.errors.js';
 import type { AuthenticatedHumanExecutionProof } from './human-authority-proof.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
+import { MissionV11ContextError } from './mission-v11-context.guard.js';
 import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 
 const stringList = z.array(z.string().trim().min(1).max(256)).max(100);
@@ -89,31 +90,67 @@ const standingAuthorizationSchema = z.object({
   status: z.enum(['ACTIVE', 'EXPIRED', 'REVOKED']),
 });
 
-const missionContractSchema = z.object({
-  title: z.string().trim().min(3).max(160),
-  objective: z.string().trim().min(10).max(4_000),
-  expectedOutcome: z.string().trim().min(5).max(4_000),
-  scope: stringList.min(1),
-  outOfScope: stringList,
-  acceptanceCriteria: stringList.min(1),
-  riskClass: z.enum(['A', 'B', 'C']),
-  selectedAgents: stringList.min(1),
-  selectedSkills: stringList.min(1),
-  sourceOfTruth: stringList,
-  contractSchemaVersion: z.literal('1.1').optional(),
-  projectId: z.string().trim().min(1).max(256).optional(),
-  projectEntryMode: z
-    .enum(['NEW_PROJECT', 'ADOPT_EXISTING_PROJECT', 'RESUME_MCF_PROJECT'])
-    .optional(),
-  methodologyPin: methodologyPinSchema.optional(),
-  alignedPipRef: artifactRefSchema.optional(),
-  projectRealityReportRef: artifactRefSchema.optional(),
-  standingAuthorizations: z.array(standingAuthorizationSchema).max(100).optional(),
-  continuityCheckpointRef: artifactRefSchema.optional(),
-  parentMissionId: z.string().uuid().nullable().optional(),
-  returnToAgentId: z.string().trim().min(1).max(128).nullable().optional(),
-  returnStatus: z.enum(['NOT_APPLICABLE', 'PENDING', 'COMPLETED']).optional(),
-});
+const missionContractSchema = z
+  .object({
+    title: z.string().trim().min(3).max(160),
+    objective: z.string().trim().min(10).max(4_000),
+    expectedOutcome: z.string().trim().min(5).max(4_000),
+    scope: stringList.min(1),
+    outOfScope: stringList,
+    acceptanceCriteria: stringList.min(1),
+    riskClass: z.enum(['A', 'B', 'C']),
+    selectedAgents: stringList.min(1),
+    selectedSkills: stringList.min(1),
+    sourceOfTruth: stringList,
+    contractSchemaVersion: z.literal('1.1').optional(),
+    projectId: z.string().trim().min(1).max(256).optional(),
+    projectEntryMode: z
+      .enum(['NEW_PROJECT', 'ADOPT_EXISTING_PROJECT', 'RESUME_MCF_PROJECT'])
+      .optional(),
+    methodologyPin: methodologyPinSchema.optional(),
+    alignedPipRef: artifactRefSchema.optional(),
+    projectRealityReportRef: artifactRefSchema.optional(),
+    standingAuthorizations: z.array(standingAuthorizationSchema).max(100).optional(),
+    continuityCheckpointRef: artifactRefSchema.optional(),
+    parentMissionId: z.string().uuid().nullable().optional(),
+    returnToAgentId: z.string().trim().min(1).max(128).nullable().optional(),
+    returnStatus: z.enum(['NOT_APPLICABLE', 'PENDING', 'COMPLETED']).optional(),
+  })
+  .superRefine((contract, context) => {
+    const hasV11Extension =
+      contract.contractSchemaVersion !== undefined ||
+      contract.projectId !== undefined ||
+      contract.projectEntryMode !== undefined ||
+      contract.methodologyPin !== undefined ||
+      contract.alignedPipRef !== undefined ||
+      contract.projectRealityReportRef !== undefined ||
+      contract.standingAuthorizations !== undefined ||
+      contract.continuityCheckpointRef !== undefined;
+
+    if (!hasV11Extension) return;
+
+    if (contract.contractSchemaVersion !== '1.1') {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['contractSchemaVersion'],
+        message: 'v1.1 mission context requires contractSchemaVersion=1.1',
+      });
+    }
+    for (const [field, value] of [
+      ['projectId', contract.projectId],
+      ['projectEntryMode', contract.projectEntryMode],
+      ['methodologyPin', contract.methodologyPin],
+      ['alignedPipRef', contract.alignedPipRef],
+    ] as const) {
+      if (value === undefined) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [field],
+          message: `v1.1 mission context requires ${field}`,
+        });
+      }
+    }
+  });
 
 const createMissionSchema = z.object({ contract: missionContractSchema });
 
@@ -191,7 +228,8 @@ function rethrowRuntimeError(error: unknown, correlationId: string): never {
     error instanceof McfSkillInputError ||
     error instanceof McfSkillNotFoundError ||
     error instanceof McfSkillNotExecutableError ||
-    error instanceof McfEvidenceRejectedError
+    error instanceof McfEvidenceRejectedError ||
+    error instanceof MissionV11ContextError
   ) {
     throw new UnprocessableEntityException({
       code: 'MCF_EXECUTION_REJECTED',
