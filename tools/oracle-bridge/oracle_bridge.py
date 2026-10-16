@@ -143,6 +143,21 @@ def validate_request(value: Any) -> dict[str, Any]:
         raise BridgeFailure("INVALID_REQUEST_CONTRACT")
     if value["schema_version"] != "1.0.0":
         raise BridgeFailure("UNSUPPORTED_REQUEST_SCHEMA")
+    if set(value) - (REQUIRED_REQUEST | {"evidence_references"}):
+        raise BridgeFailure("UNRECOGNIZED_REQUEST_FIELD")
+    if len(json.dumps(value, ensure_ascii=False).encode("utf-8")) > MAX_BYTES // 2:
+        raise BridgeFailure("REQUEST_SIZE_LIMIT_EXCEEDED")
+    try:
+        deadline_text = value["deadline_utc"]
+        if not isinstance(deadline_text, str):
+            raise ValueError("invalid deadline")
+        deadline = datetime.fromisoformat(deadline_text.replace("Z", "+00:00"))
+        if deadline.tzinfo is None:
+            raise ValueError("deadline requires timezone")
+    except (TypeError, ValueError) as exc:
+        raise BridgeFailure("INVALID_REQUEST_DEADLINE") from exc
+    if deadline <= datetime.now(timezone.utc):
+        raise BridgeFailure("REQUEST_DEADLINE_EXPIRED")
     check_id(value.get("mission_id"), "MISSION_ID")
     check_id(value.get("request_id"), "REQUEST_ID")
     if not isinstance(value.get("session_epoch"), int) or value["session_epoch"] <= 0:
