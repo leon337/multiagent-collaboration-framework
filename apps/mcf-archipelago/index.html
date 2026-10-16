@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#041018" />
+  <title>MCF Archipelago — V1</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="eyebrow">MCF LAB · V1.7 · QUICK CHAT</span>
+        <h1>Archipelago</h1>
+        <p>Chats e projetos como ilhas de um grafo navegável.</p>
+      </div>
+      <div class="toolbar" aria-label="Ações principais">
+        <label class="search-wrap">
+          <span class="sr-only">Buscar ilhas</span>
+          <input id="searchInput" type="search" placeholder="Buscar chats, projetos ou agentes…" autocomplete="off" />
+        </label>
+        <button id="newChatBtn" class="primary" title="Cria uma ilha e conecta ao ChatGPT em um clique">+ Chat</button>
+        <button id="newProjectBtn">+ Projeto</button>
+        <button id="autoLayoutBtn" title="Organizar o arquipélago">Organizar</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="map-pane" aria-label="Mapa de chats e projetos">
+        <div class="map-help">Arraste ilhas · arraste o oceano para navegar · roda para zoom · duplo clique no oceano cria chat</div>
+        <svg id="graph" role="application" aria-label="Grafo de ilhas do Archipelago"></svg>
+        <div id="minimap" class="minimap" aria-label="Minimapa"></div>
+        <div class="map-controls">
+          <button id="zoomOutBtn" title="Diminuir zoom">−</button>
+          <button id="fitBtn" title="Enquadrar todas as ilhas">◎</button>
+          <button id="zoomInBtn" title="Aumentar zoom">+</button>
+        </div>
+        <div class="legend" aria-label="Legenda">
+          <span><i class="dot project"></i>Projeto</span>
+          <span><i class="dot chat"></i>Chat</span>
+          <span><i class="dot agent"></i>Agente</span>
+        </div>
+      </section>
+
+      <aside id="detailPanel" class="detail-panel" aria-live="polite">
+        <div class="panel-header">
+          <div>
+            <span id="panelType" class="eyebrow">CONTEXTO</span>
+            <h2 id="panelTitle">Selecione uma ilha</h2>
+          </div>
+          <button id="closePanelBtn" class="icon-btn" aria-label="Fechar painel">×</button>
+        </div>
+        <p id="panelMeta" class="muted">Clique em uma ilha para abrir o contexto.</p>
+        <div id="deviceStrip" class="device-strip" hidden>
+          <span id="deviceDot" class="device-dot offline"></span>
+          <span id="deviceStatus">Dispositivo desconectado</span>
+        </div>
+        <div id="chatBindingBox" class="chat-binding-box" hidden></div>
+        <div class="provider-strip">
+          <span id="providerDot" class="provider-dot offline"></span>
+          <span id="providerStatus">Verificando provider de IA…</span>
+          <button id="providerConfigBtn" class="provider-config" type="button">Configurar IA</button>
+          <button id="refreshProviderBtn" class="provider-refresh" type="button" title="Reverificar provider">↻</button>
+        </div>
+        <div id="panelActions" class="panel-actions" hidden>
+          <button id="focusProjectBtn" hidden>Focar arquipélago</button>
+          <button id="toggleProjectBtn" hidden>Recolher projeto</button>
+          <button id="branchChatBtn" hidden>Ramificar chat</button>
+          <button id="renameBtn">Renomear</button>
+          <button id="connectBtn">Conectar</button>
+          <button id="dispatchMcfBtn" hidden>Despachar ao MCF</button>
+          <button id="deleteBtn" class="danger">Excluir</button>
+        </div>
+        <div id="connectionsBox" class="connections-box" hidden></div>
+        <div id="messages" class="messages"></div>
+        <form id="composer" class="composer">
+          <textarea id="messageInput" rows="3" placeholder="Escreva dentro deste contexto…" disabled></textarea>
+          <button id="sendBtn" class="primary" disabled>Enviar para IA</button>
+        </form>
+        <p class="provider-note">O mapa fica no navegador; o histórico canônico fica na API Archipelago. Quando o Dual Browser está READY, cada ilha conversa com um chat real do ChatGPT por trás.</p>
+      </aside>
+
+      <section id="listFallback" class="list-fallback" hidden aria-label="Visualização alternativa em lista"></section>
+    </main>
+
+    <footer class="statusbar">
+      <div><span id="statusText">Pronto</span><span class="sep">•</span><span id="statsText"></span></div>
+      <div class="footer-actions">
+        <button id="listViewBtn" class="text-btn">Lista acessível</button>
+        <button id="exportBtn" class="text-btn">Exportar JSON</button>
+        <label class="text-btn file-label">Importar JSON<input id="importInput" type="file" accept="application/json" hidden /></label>
+        <button id="resetBtn" class="text-btn danger-text">Resetar</button>
+      </div>
+    </footer>
+  </div>
+
+  <dialog id="providerDialog">
+    <form id="providerForm" class="dialog-form">
+      <span class="eyebrow">PROVIDER LOCAL</span>
+      <h2>Configurar OpenAI</h2>
+      <p class="muted">A chave fica somente neste computador, em <code>.env.local</code>, e não é enviada ao GitHub.</p>
+      <label>API key<input id="openaiKeyInput" type="password" autocomplete="off" placeholder="sk-…" required /></label>
+      <label>Modelo
+        <select id="openaiModelSelect">
+          <option value="gpt-5.6-luna">GPT-5.6 Luna</option>
+          <option value="gpt-5.6-terra">GPT-5.6 Terra</option>
+          <option value="gpt-5.6-sol">GPT-5.6 Sol</option>
+        </select>
+      </label>
+      <p id="providerFormStatus" class="muted"></p>
+      <div class="dialog-actions">
+        <button id="cancelProviderBtn" type="button">Cancelar</button>
+        <button id="saveProviderBtn" type="submit" class="primary">Salvar localmente</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="nodeDialog">
+    <form method="dialog" id="nodeForm" class="dialog-form">
+      <span class="eyebrow" id="dialogType">NOVA ILHA</span>
+      <h2 id="dialogTitle">Criar contexto</h2>
+      <label>Título<input id="nodeTitleInput" required maxlength="80" /></label>
+      <label>Projeto pai<select id="nodeParentSelect"></select></label>
+      <label>Tags<input id="nodeTagsInput" placeholder="ex.: runtime, ui, pesquisa" /></label>
+      <div class="dialog-actions"><button id="cancelNodeBtn" type="button" onclick="document.getElementById('nodeDialog').close()">Cancelar</button><button id="confirmNodeBtn" type="submit" class="primary">Criar ilha</button></div>
+    </form>
+  </dialog>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
