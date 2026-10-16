@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MCF · Jev Benchmark 30</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    body { margin: 0; background: #090b10; color: #eef2ff; }
+    main { max-width: 1120px; margin: 0 auto; padding: 28px 18px 60px; }
+    h1 { margin: 0 0 8px; font-size: clamp(26px, 5vw, 44px); }
+    p { color: #aeb8cc; line-height: 1.55; }
+    .card { background: #111621; border: 1px solid #253047; border-radius: 16px; padding: 18px; margin: 16px 0; }
+    button { border: 0; border-radius: 12px; padding: 14px 18px; font-weight: 800; cursor: pointer; background: #dbeafe; color: #08111f; }
+    button:disabled { opacity: .55; cursor: wait; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .metric { background: #0b1019; border: 1px solid #202a3c; border-radius: 12px; padding: 12px; }
+    .metric b { display: block; font-size: 22px; margin-top: 5px; }
+    pre { white-space: pre-wrap; word-break: break-word; background: #070a0f; border: 1px solid #202a3c; border-radius: 12px; padding: 14px; max-height: 70vh; overflow: auto; }
+    .ok { color: #86efac; } .bad { color: #fca5a5; } .muted { color: #94a3b8; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>MCF · Jev Benchmark 30</h1>
+  <p>Missão <strong>MCF-JEV-BENCH-001</strong>. Executa 30 estados sintéticos contra <code>typesafe-ai/jev</code>. Jev é apenas consultivo; este painel não promove produção, não escreve em sistemas externos e não concede HUMAN_GATE.</p>
+
+  <div class="card">
+    <button id="run">Executar os 30 testes</button>
+    <span id="status" class="muted" style="margin-left:12px">Aguardando execução.</span>
+  </div>
+
+  <div class="card">
+    <h2>Resumo</h2>
+    <div class="grid" id="metrics"></div>
+  </div>
+
+  <div class="card">
+    <h2>JSON bruto</h2>
+    <pre id="out">Nenhum resultado ainda.</pre>
+  </div>
+</main>
+<script>
+  const btn = document.getElementById('run');
+  const status = document.getElementById('status');
+  const out = document.getElementById('out');
+  const metrics = document.getElementById('metrics');
+
+  const metric = (label, value) => `<div class="metric"><span class="muted">${label}</span><b>${value}</b></div>`;
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    status.textContent = 'Executando 30 avaliações…';
+    metrics.innerHTML = '';
+    out.textContent = 'Aguardando Jev…';
+    try {
+      const response = await fetch('/api/benchmark-30', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const data = await response.json();
+      out.textContent = JSON.stringify(data, null, 2);
+      const s = data.summary || {};
+      metrics.innerHTML = [
+        metric('Total', s.total ?? '—'),
+        metric('Sucesso API', s.successful ?? '—'),
+        metric('Falhas API', s.failed ?? '—'),
+        metric('Matches oracle', s.oracleMatches ?? '—'),
+        metric('Match rate', s.oracleMatchRate == null ? '—' : `${Math.round(s.oracleMatchRate * 100)}%`),
+        metric('Duração', data.durationMs == null ? '—' : `${data.durationMs} ms`)
+      ].join('');
+      status.textContent = response.ok ? 'Execução concluída.' : `HTTP ${response.status}`;
+      status.className = response.ok ? 'ok' : 'bad';
+    } catch (error) {
+      out.textContent = JSON.stringify({ error: String(error) }, null, 2);
+      status.textContent = 'Falha na execução.';
+      status.className = 'bad';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

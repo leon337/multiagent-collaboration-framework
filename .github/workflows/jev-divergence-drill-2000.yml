@@ -1,0 +1,164 @@
+name: MCF Jev Divergence Drill 2000
+
+on:
+  push:
+    branches:
+      - experimentos/jev-vercel-decision-lab-20260923
+    paths:
+      - .github/workflows/jev-divergence-drill-2000.yml
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  ENDPOINT: https://mcf-ecosystem-roadmap-git-experimentos-jev-c59048-predix-ai-br.vercel.app/api/evaluate
+  SOURCE_RUN_ID: "35965596145"
+  SOURCE_ARTIFACT: mcf-jev-harvest-redteam-1000
+
+jobs:
+  prepare:
+    name: Recover 192 divergences + generate 2,000 probes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download exact REDTEAM 1000 terminal artifact
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p source-redteam
+          gh run download "$SOURCE_RUN_ID" -n "$SOURCE_ARTIFACT" -D source-redteam
+          find source-redteam -maxdepth 3 -type f -print | sort
+          LEDGER="$(find source-redteam -type f -name divergence-ledger.json -print -quit)"
+          test -n "$LEDGER"
+          cp "$LEDGER" source-divergence-ledger.json
+
+      - name: Generate exact 2,000-case divergence drill
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p jev-divergence-drill-results
+          python3 scripts/generate_jev_divergence_drill_2000.py             --ledger source-divergence-ledger.json             --out jev-divergence-drill-results/cases.json
+          test "$(jq 'length' jev-divergence-drill-results/cases.json)" = "2000"
+          test "$(jq '.sourceSemanticDivergences' jev-divergence-drill-results/probe-manifest.json)" = "192"
+
+      - name: Upload drill source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev-divergence-drill-source
+          path: |
+            source-divergence-ledger.json
+            jev-divergence-drill-results/cases.json
+            jev-divergence-drill-results/probe-manifest.json
+          retention-days: 14
+          if-no-files-found: error
+
+  drill:
+    name: Divergence drill shard ${{ matrix.shard }} / 5
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download drill source package
+        uses: actions/download-artifact@v4
+        with:
+          name: mcf-jev-divergence-drill-source
+          path: .
+
+      - name: Verify temporary Jev evaluator endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 12); do
+            code=$(curl -sS --max-time 15 -o /tmp/endpoint.txt -w '%{http_code}' "$ENDPOINT" || true)
+            if [ "$code" = "405" ] || [ "$code" = "200" ]; then
+              echo "Jev evaluator endpoint reachable (HTTP=$code)"
+              exit 0
+            fi
+            echo "endpoint attempt $attempt/12 returned HTTP=$code"
+            sleep 10
+          done
+          echo "Evaluator endpoint unavailable"
+          cat /tmp/endpoint.txt || true
+          exit 1
+
+      - name: Execute 400 boundary probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p jev-divergence-drill-results/shards
+          python3 scripts/run_jev_redteam_shard.py             --cases jev-divergence-drill-results/cases.json             --endpoint "$ENDPOINT"             --shard "${{ matrix.shard }}"             --shards 5             --out "jev-divergence-drill-results/shards/shard-${{ matrix.shard }}.ndjson"
+          test "$(wc -l < "jev-divergence-drill-results/shards/shard-${{ matrix.shard }}.ndjson")" = "400"
+
+      - name: Upload shard evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev-divergence-drill-shard-${{ matrix.shard }}
+          path: jev-divergence-drill-results/shards/shard-${{ matrix.shard }}.ndjson
+          retention-days: 7
+          if-no-files-found: error
+
+  harvest:
+    name: Frontier synthesis + 9-Jev replay
+    needs: drill
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download source package
+        uses: actions/download-artifact@v4
+        with:
+          name: mcf-jev-divergence-drill-source
+          path: .
+
+      - name: Download all drill shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: mcf-jev-divergence-drill-shard-*
+          path: jev-divergence-drill-results/shards
+          merge-multiple: true
+
+      - name: Aggregate 2,000 boundary probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cat jev-divergence-drill-results/shards/shard-*.ndjson | wc -l)" = "2000"
+          python3 scripts/aggregate_jev_divergence_drill_2000.py
+          test "$(jq '.total' jev-divergence-drill-results/summary.json)" = "2000"
+          test "$(jq 'length' jev-divergence-drill-results/selected-for-jev9.json)" = "16"
+
+      - name: Replay 16 highest-value boundary probes with 9 Jev evaluations each
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/run_jev9_replay.py             --selected jev-divergence-drill-results/selected-for-jev9.json             --endpoint "$ENDPOINT"             --out jev-divergence-drill-results/jev9-replay.ndjson
+          test "$(wc -l < jev-divergence-drill-results/jev9-replay.ndjson)" = "144"
+
+      - name: Final frontier synthesis
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/aggregate_jev_divergence_drill_2000.py
+          test -s jev-divergence-drill-results/frontier-map.json
+          test -s jev-divergence-drill-results/mismatch-ledger.json
+          test -s jev-divergence-drill-results/jev9-consensus.json
+          cat jev-divergence-drill-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload terminal divergence drill evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcf-jev-divergence-drill-2000
+          path: jev-divergence-drill-results/
+          retention-days: 14
+          if-no-files-found: error
