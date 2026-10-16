@@ -43,6 +43,8 @@ jobs:
         run: |
           cd ../../artifacts/phases/PHASE-ORACLE-001-DISCOVERY
           sha256sum --check PHASE-ORACLE-001-ARTIFACT-MANIFEST.sha256
+      - name: Test portable Codex bridge (mock only; no tokens or paid APIs)
+        run: python3 -m unittest discover -s ../../tools/oracle-bridge -p 'test_*.py' -v
       - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
