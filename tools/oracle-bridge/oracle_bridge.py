@@ -327,6 +327,11 @@ def run_consult(args: argparse.Namespace) -> dict[str, Any]:
                 write_private_json(state_path, state)
                 raise
 
+        # Persist a validated thread reference BEFORE the response receipt, so
+        # a crash between receipt and READY can be reconciled without another
+        # cognitive turn. In-flight calls with no pending thread remain UNKNOWN.
+        state["pending_thread_id"] = thread or state.get("thread_id")
+        write_private_json(state_path, state)
         write_private_json(responses / (request_id + ".json"), decision)
         state["processed"][request_id] = {
             "fingerprint": fingerprint,
@@ -338,11 +343,65 @@ def run_consult(args: argparse.Namespace) -> dict[str, Any]:
         }
         state.update({"status": "READY", "thread_id": thread or state["thread_id"],
                       "last_completed": utc_now(), "last_error": None,
-                      "inflight_request": None, "inflight_fingerprint": None})
+                      "inflight_request": None, "inflight_fingerprint": None,
+                      "pending_thread_id": None})
         write_private_json(state_path, state)
         return {"status": "COMPLETED", "mission_id": mission,
                 "session_epoch": state["session_epoch"],
                 "decision": decision}
+
+
+def run_reconcile(args: argparse.Namespace) -> dict[str, Any]:
+    """Recover ONLY a locally validated post-turn receipt; never re-call a model."""
+    try:
+        request = validate_request(json.loads(Path(args.request).read_text(encoding="utf-8")))
+    except (OSError, ValueError) as exc:
+        raise BridgeFailure("INVALID_RECONCILIATION_REQUEST") from exc
+    root = Path(args.state_root).expanduser()
+    mission_id = check_id(request["mission_id"], "MISSION_ID")
+    mission_root = root / mission_id
+    if not mission_root.is_dir() or mission_root.is_symlink():
+        raise BridgeFailure("RECONCILIATION_STATE_MISSING")
+    with open(mission_root / ".lock", "a+", encoding="utf-8") as lock:
+        try:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as exc:
+            raise BridgeFailure("MISSION_SESSION_BUSY") from exc
+        state_path = mission_root / "state.json"
+        state = load_state(state_path, mission_id)
+        if state.get("status") not in ("IN_FLIGHT", "UNKNOWN"):
+            raise BridgeFailure("RECONCILIATION_NOT_REQUIRED")
+        rid = check_id(request["request_id"], "REQUEST_ID")
+        fingerprint = digest(json.dumps(request, sort_keys=True, ensure_ascii=False,
+                                        separators=(",", ":")).encode())
+        if (state.get("inflight_request") != rid
+            or state.get("inflight_fingerprint") != fingerprint
+            or state.get("session_epoch") != request["session_epoch"]):
+            raise BridgeFailure("RECONCILIATION_REQUEST_MISMATCH")
+        thread = state.get("pending_thread_id")
+        if not isinstance(thread, str) or not thread:
+            raise BridgeFailure("RECONCILIATION_THREAD_UNPROVEN")
+        path = mission_root / "responses" / (rid + ".json")
+        if not path.is_file() or path.is_symlink():
+            raise BridgeFailure("RECONCILIATION_RECEIPT_MISSING")
+        try:
+            decision = validate_decision(json.loads(path.read_text(encoding="utf-8")), request)
+        except (OSError, ValueError) as exc:
+            raise BridgeFailure("RECONCILIATION_RECEIPT_INVALID") from exc
+        state["processed"][rid] = {
+            "fingerprint": fingerprint,
+            "idempotency_key": request["idempotency_key"],
+            "decision_id": decision["decision_id"],
+            "result_sha256": digest(json.dumps(decision, ensure_ascii=False,
+                                               sort_keys=True).encode()),
+        }
+        state.update({"thread_id": thread, "pending_thread_id": None,
+                      "status": "READY", "last_error": None,
+                      "inflight_request": None, "inflight_fingerprint": None,
+                      "last_reconciled": utc_now()})
+        write_private_json(state_path, state)
+        return {"status": "RECOVERED", "mission_id": mission_id,
+                "session_epoch": state["session_epoch"], "decision": decision}
 
 
 def run_status(args: argparse.Namespace) -> dict[str, Any]:
@@ -369,6 +428,8 @@ def main() -> int:
     consult.add_argument("--request", required=True)
     consult.add_argument("--decision-schema", required=True)
     consult.add_argument("--timeout", type=int, default=180)
+    reconcile = sub.add_parser("reconcile", help="Recover proven local receipt without re-calling model")
+    reconcile.add_argument("--request", required=True)
     status = sub.add_parser("status", help="Inspect state without exposing Codex tokens/thread ids")
     status.add_argument("--mission-id", required=True)
     args = parser.parse_args()
@@ -377,6 +438,8 @@ def main() -> int:
             if not 1 <= args.timeout <= 600:
                 raise BridgeFailure("INVALID_TIMEOUT")
             output = run_consult(args)
+        elif args.command == "reconcile":
+            output = run_reconcile(args)
         else:
             output = run_status(args)
         print(json.dumps(output, ensure_ascii=False))
