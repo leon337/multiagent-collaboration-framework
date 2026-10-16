@@ -383,7 +383,8 @@ Esta seção identifica **as ferramentas realmente acionadas para implementar e 
 | Ferramentas Linux (via shell remoto) | systemctl, journalctl, ss, ps, free, uptime, loginctl, xinput | Diagnóstico nativo do ambiente |
 | Navegador Chrome headless (via shell) | Abertura de páginas, screenshot, dump-dom e impressão para PDF | Validar layout e registrar evidência |
 | Ferramentas de PDF (via shell) | pdfinfo, pdftotext, pdfimages e pdftoppm | Conferir páginas, texto, imagens e renderização |
-| Vercel (publicação separada) | Implantação de arquivos estáticos e consulta de status | Gerar um URL HTTPS público para o PDF revisado |
+| Vercel (conector) | Descoberta de contexto; criação do projeto recusada com HTTP 403 | Registrar limitação e não afirmar implantação concluída |
+| GitHub (conector) | create_branch, create_file, create_blob, create_tree, create_commit, update_ref | Publicar PDF sanitizado em uma branch isolada do repositório público MCF |
 
 **Não foi executada uma sequência autônoma dentro do OpenClaw por outro agente para construir este painel.** O acesso remoto não se confunde com um “agente inteligente novo”; é uma capacidade de executar instruções autorizadas na máquina.
 
@@ -461,7 +462,7 @@ O código do observador possui cópias das versões anteriores a algumas mudanç
 
 O relatório disponível no notebook originalmente foi servido por uma rota HTTP acessível **somente localmente**. Esse endereço não é um link público adequado para o telefone quando o usuário está fora de casa.
 
-Para cumprir a entrega externa, foi escolhida uma **publicação estática por HTTPS** em uma plataforma de hospedagem, contendo apenas o documento revisado e eventualmente uma página de apresentação. Não se publica o código do Gateway, banco SQLite, API interna, scripts com credenciais ou logs brutos.
+Para cumprir a entrega externa, foi escolhida a **publicação estática por HTTPS em um repositório GitHub público**, por meio de uma branch documental isolada. A criação de um projeto independente na Vercel foi tentada, mas retornou HTTP 403; não houve implantação na Vercel. O Git remoto local também não tinha autorização de push não interativo. O conector GitHub autorizado foi a rota efetivamente utilizada. Não se publica o código do Gateway, banco SQLite, API interna, scripts com credenciais ou logs brutos.
 
 ### Diferença entre as URLs
 
@@ -469,7 +470,7 @@ Para cumprir a entrega externa, foi escolhida uma **publicação estática por H
 |---|---|---|
 | HTTP local do Observer | Métricas ao vivo do notebook | Não; restrita ao próprio computador |
 | HTTP local /relatorio | PDF detalhado armazenado no notebook | Não; também restrita ao computador |
-| HTTPS público /relatorio.pdf | Cópia estática compartilhável | Sim; legível por quem possuir a URL |
+| HTTPS público do GitHub, caminho do PDF na branch documental | Cópia estática compartilhável | Sim; legível por quem possuir a URL |
 
 ### Segurança e privacidade do arquivo público
 
@@ -479,6 +480,16 @@ A publicação usa criptografia TLS para a transmissão. Isso não significa con
 
 O relatório relaciona seus achados a quatro fontes de evidência: código do Observer, serviço systemd, snapshots e screenshots pós-reboot, e mensagens do journal. No notebook, as imagens originais e arquivos JSON permitem revisitar as provas. A cópia pública apresenta o que pode ser divulgado, sem anexar dados operacionais brutos.
 
+
+
+
+### Registro das falhas e recuperação na publicação
+
+- O serviço Vercel apresentou o contexto de uma equipe, mas a tentativa de criar o projeto recebeu resposta HTTP 403 por falta de permissão. Não é apropriado anunciar essa implantação como concluída.
+- O notebook não possuía a CLI vercel instalada. Foi possível consultar o repositório público por Git sem autenticação, mas um push HTTPS não interativo não tinha credenciais locais.
+- O procedimento de publicação foi então reconduzido ao **conector GitHub autorizado**: criada branch documental, texto Markdown, blob do PDF, árvore, commit e atualização do ref.
+- A branch documental evita mudar a branch principal do MCF. A publicação só é considerada concluída após conferir o arquivo em URL pública, sem sessão de login.
+- A compactação com Ghostscript reduz o tamanho do PDF disponibilizado; o original de maior qualidade permanece no notebook.
 
 # 18 — Próximo ciclo de engenharia (proposto, ainda não executado)
 
