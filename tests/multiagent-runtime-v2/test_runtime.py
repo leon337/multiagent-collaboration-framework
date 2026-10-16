@@ -86,6 +86,7 @@ class RuntimeV2Tests(unittest.TestCase):
         self.rt.provision_agent("a1", "worker", "sandbox:one", "mestre")
         self.rt.settle_agent("a1", "active", "mestre")
         task = self.rt.create_task("t1", "work", [], "mestre")
+        task = self.rt.lease_task("t1", task["revision"], "a1", 30, "a1")
         execution = self.rt.start_execution("e1", "a1", "t1", "sandbox", "mestre")
         self.assertEqual(execution["status"], "running")
         tool = self.rt.request_tool("c1", "e1", "repo_read", "a" * 64, "a1")
