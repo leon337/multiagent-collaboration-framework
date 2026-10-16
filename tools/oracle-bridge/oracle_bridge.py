@@ -164,7 +164,8 @@ def validate_request(value: Any) -> dict[str, Any]:
         raise BridgeFailure("INVALID_SESSION_EPOCH")
     if not isinstance(value.get("objective"), str) or not value["objective"].strip():
         raise BridgeFailure("INVALID_OBJECTIVE")
-    if not isinstance(value.get("idempotency_key"), str) or len(value["idempotency_key"]) < 6:
+    if (not isinstance(value.get("idempotency_key"), str)
+            or not 6 <= len(value["idempotency_key"]) <= 128):
         raise BridgeFailure("INVALID_IDEMPOTENCY_KEY")
     if not isinstance(value.get("authorized_context"), dict):
         raise BridgeFailure("INVALID_AUTHORIZED_CONTEXT")
@@ -172,7 +173,7 @@ def validate_request(value: Any) -> dict[str, Any]:
 
 
 def validate_decision(value: Any, request: dict[str, Any]) -> dict[str, Any]:
-    if not isinstance(value, dict) or not REQUIRED_DECISION.issubset(value):
+    if not isinstance(value, dict) or set(value) != REQUIRED_DECISION:
         raise BridgeFailure("INVALID_ORACLE_SCHEMA")
     if value.get("schema_version") != "1.0.0":
         raise BridgeFailure("INVALID_ORACLE_SCHEMA")
@@ -182,8 +183,19 @@ def validate_decision(value: Any, request: dict[str, Any]) -> dict[str, Any]:
         raise BridgeFailure("INVALID_ORACLE_STATUS")
     if not isinstance(value.get("needs_human_approval"), bool):
         raise BridgeFailure("INVALID_ORACLE_APPROVAL_FLAG")
-    for field in ("strategy", "specialists", "gates", "acceptance_evidence"):
-        if not isinstance(value[field], list):
+    if (not isinstance(value.get("decision_id"), str) or not value["decision_id"]
+        or not isinstance(value.get("rationale"), str) or not value["rationale"]):
+        raise BridgeFailure("INVALID_ORACLE_SCHEMA")
+    for field in ("specialists", "gates", "acceptance_evidence"):
+        if not isinstance(value[field], list) or not all(
+            isinstance(entry, str) for entry in value[field]
+        ):
+            raise BridgeFailure("INVALID_ORACLE_SCHEMA")
+    if not isinstance(value["strategy"], list):
+        raise BridgeFailure("INVALID_ORACLE_SCHEMA")
+    for item in value["strategy"]:
+        if (not isinstance(item, dict) or set(item) != {"step", "competence", "deliverable"}
+            or not all(isinstance(v, str) and v for v in item.values())):
             raise BridgeFailure("INVALID_ORACLE_SCHEMA")
     return value
 
@@ -230,6 +242,14 @@ def run_consult(args: argparse.Namespace) -> dict[str, Any]:
                 raise BridgeFailure("IDEMPOTENT_RESULT_MISSING")
             return {"status": "CACHED", "mission_id": mission,
                     "decision": json.loads(result_path.read_text(encoding="utf-8"))}
+        # Request IDs bind a single exact payload. Independently, an idempotency
+        # key must not silently authorize a second request or model turn.
+        if any(
+            previous.get("idempotency_key") == request["idempotency_key"]
+            for previous in state["processed"].values()
+            if isinstance(previous, dict)
+        ):
+            raise BridgeFailure("IDEMPOTENCY_KEY_CONFLICT")
         if state.get("status") not in ("NEW", "READY"):
             raise BridgeFailure("MISSION_RECONCILIATION_REQUIRED")
         if request["session_epoch"] != state.get("session_epoch"):
@@ -309,7 +329,9 @@ def run_consult(args: argparse.Namespace) -> dict[str, Any]:
 
         write_private_json(responses / (request_id + ".json"), decision)
         state["processed"][request_id] = {
-            "fingerprint": fingerprint, "decision_id": decision["decision_id"],
+            "fingerprint": fingerprint,
+            "idempotency_key": request["idempotency_key"],
+            "decision_id": decision["decision_id"],
             "result_sha256": digest(
                 json.dumps(decision, ensure_ascii=False, sort_keys=True).encode()
             ),
