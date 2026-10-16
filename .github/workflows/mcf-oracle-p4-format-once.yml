@@ -6,6 +6,8 @@ on:
       - mission/mcf-oracle-001-runtime-preflight
     paths:
       - .github/workflows/mcf-oracle-p4-format-once.yml
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/codex-oracle-cli.client*.ts'
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/codex-oracle-provider.adapter*.ts'
 
 permissions:
   contents: write
@@ -31,11 +33,13 @@ jobs:
           version: '11.17.0'
       - name: Install locked toolchain
         run: pnpm install --frozen-lockfile
-      - name: Format only the seven confirmed gate failures
+      - name: Format only the Oracle candidate and previously confirmed gate failures
         run: |
           pnpm exec prettier --write \
             apps/server/src/mcf-runtime/agent-execution.contracts.test.ts \
             apps/server/src/mcf-runtime/agent-execution.contracts.ts \
+            apps/server/src/mcf-runtime/codex-oracle-cli.client.ts \
+            apps/server/src/mcf-runtime/codex-oracle-cli.client.test.ts \
             apps/server/src/mcf-runtime/codex-oracle-provider.adapter.test.ts \
             apps/server/src/mcf-runtime/codex-oracle-provider.adapter.ts \
             apps/server/src/mcf-runtime/oracle-runtime-preflight.test.ts \
@@ -51,6 +55,8 @@ jobs:
           git add \
             apps/server/src/mcf-runtime/agent-execution.contracts.test.ts \
             apps/server/src/mcf-runtime/agent-execution.contracts.ts \
+            apps/server/src/mcf-runtime/codex-oracle-cli.client.ts \
+            apps/server/src/mcf-runtime/codex-oracle-cli.client.test.ts \
             apps/server/src/mcf-runtime/codex-oracle-provider.adapter.test.ts \
             apps/server/src/mcf-runtime/codex-oracle-provider.adapter.ts \
             apps/server/src/mcf-runtime/oracle-runtime-preflight.test.ts \
