@@ -61,6 +61,7 @@ jobs:
         run: |
           pnpm --filter @rsa/server exec vitest run \
             src/mcf-runtime/oracle-runtime-preflight.test.ts \
+            src/mcf-runtime/codex-oracle-provider.adapter.test.ts \
             src/mcf-runtime/agent-execution.contracts.test.ts \
             src/mcf-runtime/agent-execution.service.test.ts \
             src/mcf-runtime/local-agent-team.adapter.test.ts \
