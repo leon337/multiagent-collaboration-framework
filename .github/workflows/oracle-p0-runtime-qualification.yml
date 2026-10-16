@@ -35,6 +35,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://mcf-test:mcf-test@127.0.0.1:5432/mcf_test
       NODE_ENV: test
+      MCF_SKILL_REGISTRY_PATH: ${{ github.workspace }}/skills/registry.yaml
     steps:
       - name: Checkout exact test candidate
         uses: actions/checkout@v4
@@ -62,9 +63,9 @@ jobs:
         run: pnpm --filter @rsa/database db:migrate
       - name: Execute canonical MissionRuntimeService with 8 OS workers and durable PostgreSQL receipts
         run: |
-          pnpm --filter @rsa/server exec vitest run \\
-            src/mcf-runtime/local-agent-team.runtime-e2e.test.ts \\
-            src/mcf-runtime/local-agent-team.runtime-postgres.integration.test.ts \\
+          pnpm --filter @rsa/server exec vitest run \
+            src/mcf-runtime/local-agent-team.runtime-e2e.test.ts \
+            src/mcf-runtime/local-agent-team.runtime-postgres.integration.test.ts \
             --reporter=verbose
       - name: Typecheck server (runtime integration)
         run: pnpm --filter @rsa/server typecheck
