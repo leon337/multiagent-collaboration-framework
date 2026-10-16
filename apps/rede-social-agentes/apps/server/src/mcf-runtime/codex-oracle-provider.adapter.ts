@@ -37,7 +37,7 @@ export interface OracleBridgeDecision {
 }
 
 export interface OracleBridgeResult {
-  status: 'COMPLETED';
+  status: 'COMPLETED' | 'CACHED';
   mission_id: string;
   session_epoch: number;
   decision: OracleBridgeDecision;
@@ -113,7 +113,7 @@ export class CodexOracleProviderAdapter implements AgentExecutionProviderAdapter
       prompt: request.prompt,
     });
     if (
-      output.status !== 'COMPLETED' ||
+      !['COMPLETED', 'CACHED'].includes(output.status) ||
       output.mission_id !== request.missionId ||
       output.session_epoch !== 1 ||
       !output.decision ||
