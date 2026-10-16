@@ -6,6 +6,7 @@ on:
       - '.github/workflows/oracle-p0-runtime-qualification.yml'
       - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/**'
       - 'artifacts/phases/PHASE-ORACLE-001-DISCOVERY/**'
+      - 'artifacts/phases/PHASE-ORACLE-001-P1-P4-PREFLIGHT/**'
   workflow_dispatch:
 
 permissions:
