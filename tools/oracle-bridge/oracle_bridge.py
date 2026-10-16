@@ -240,8 +240,15 @@ def run_consult(args: argparse.Namespace) -> dict[str, Any]:
             result_path = responses / (request_id + ".json")
             if not result_path.is_file() or result_path.is_symlink():
                 raise BridgeFailure("IDEMPOTENT_RESULT_MISSING")
+            try:
+                cached = validate_decision(json.loads(result_path.read_text(encoding="utf-8")), request)
+            except (OSError, ValueError) as exc:
+                raise BridgeFailure("IDEMPOTENT_RECEIPT_INVALID") from exc
+            checksum = digest(json.dumps(cached, ensure_ascii=False, sort_keys=True).encode())
+            if not previous.get("result_sha256") or previous["result_sha256"] != checksum:
+                raise BridgeFailure("IDEMPOTENT_RECEIPT_CHECKSUM_MISMATCH")
             return {"status": "CACHED", "mission_id": mission,
-                    "decision": json.loads(result_path.read_text(encoding="utf-8"))}
+                    "session_epoch": state["session_epoch"], "decision": cached}
         # Request IDs bind a single exact payload. Independently, an idempotency
         # key must not silently authorize a second request or model turn.
         if any(
