@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=MCF — 2 Workspaces VPS
+Comment=Open two independent VPS sessions, one on each local display
+Exec=/path/to/mcf-vps-dual-workspace-launcher
+Icon=video-display
+Terminal=false
+Categories=Network;RemoteAccess;
+StartupNotify=true
+
+# Copy this file into the user's XDG Desktop directory and replace Exec with
+# the local visible-terminal wrapper. Keep authentication/passphrases outside
+# this file.
