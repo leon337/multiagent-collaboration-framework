@@ -15,6 +15,20 @@ jobs:
   oracle-p0-runtime:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: mcf-test
+          POSTGRES_PASSWORD: mcf-test
+          POSTGRES_DB: mcf_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mcf-test -d mcf_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: apps/rede-social-agentes
@@ -43,6 +57,14 @@ jobs:
             src/mcf-runtime/agent-execution.contracts.test.ts \
             src/mcf-runtime/agent-execution.service.test.ts \
             src/mcf-runtime/local-agent-team.adapter.test.ts \
+            --reporter=verbose
+      - name: Apply real PostgreSQL migration in ephemeral GitHub runner
+        run: pnpm --filter @rsa/database db:migrate
+      - name: Execute canonical MissionRuntimeService with 8 OS workers and durable PostgreSQL receipts
+        run: |
+          pnpm --filter @rsa/server exec vitest run \\
+            src/mcf-runtime/local-agent-team.runtime-e2e.test.ts \\
+            src/mcf-runtime/local-agent-team.runtime-postgres.integration.test.ts \\
             --reporter=verbose
       - name: Typecheck server (runtime integration)
         run: pnpm --filter @rsa/server typecheck
