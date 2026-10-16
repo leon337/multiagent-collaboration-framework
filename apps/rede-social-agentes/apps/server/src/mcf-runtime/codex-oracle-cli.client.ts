@@ -224,7 +224,7 @@ export class LocalCodexOracleBridgeClient implements OracleBridgeClient {
         previous.idempotency_key !== proposed.idempotency_key ||
         previous.session_epoch !== proposed.session_epoch
       ) {
-        throw new Error('ORACLE_BRIDGE_DURABLE_REQUEST_CONFLICT');
+        throw new Error('ORACLE_BRIDGE_DURABLE_REQUEST_CONFLICT', { cause: error });
       }
     }
     const work = await mkdtemp(join(tmpdir(), 'mcf-oracle-input-'));
