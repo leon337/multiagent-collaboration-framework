@@ -1,0 +1,90 @@
+PHASE VALIDATION FULL — GUI / WINDOW CONTROL FORMALIZATION
+
+Source of truth:
+repo=leon337/multiagent-collaboration-framework
+candidate_branch=ops/mcf-gui-window-control-clean-candidate
+candidate_pr=179
+candidate_pr_state=DRAFT
+candidate_head=3a2545237ca1449b4ac2ba44d781c3e4e01be339
+candidate_tree=2c1e907612610376a9d7b99d729ab06001ddc59e
+main_base=5c7f9832f037f374ec3fe2d4160342a5f2cf8a06
+
+Recovery trace:
+- PR #178 exposed contaminated ancestry from audit branch.
+- PR #178 closed unmerged as INVALID_CANDIDATE_ANCESTRY.
+- clean branch recreated directly from main.
+- clean RED repeated before implementation.
+
+Qualification log assertions on final HEAD:
+- required protocol/schema/fixture artifacts exist;
+- MAINTAIN_WITH_GAP token present;
+- SUCCESSOR_SESSION_CREATED != SUCCESSOR_WINDOW_CREATED present;
+- OPEN_NEW_WINDOW and OPEN_NEW_CHAT present;
+- PREDECESSOR_SURFACE_PRESERVED present;
+- SUCCESSION_EQUIVALENCE + EXPLICIT_HANDOFF present;
+- PREDECESSOR_CLOSE separately governed;
+- VISUAL_ASSERTION present;
+- X11_SYNTHETIC_EVENT != DEVICE_LEVEL_INPUT_EVENT present;
+- MONITOR_AWARE present;
+- HUMANO NO CONTROLE precedence present;
+- schema id/title/top-level required fields verified;
+- valid fixture accepted.
+
+Individual negative regressions:
+01 session-identity: PASS rejection
+02 window-identity: PASS rejection
+03 predecessor-preservation: PASS rejection
+04 equivalence: PASS rejection
+05 explicit-handoff: PASS rejection
+06 separate-close-gate: PASS rejection
+07 open-new-window: PASS rejection
+08 open-new-chat: PASS rejection
+09 visual-assertion: PASS rejection
+10 monitor-aware-placement: PASS rejection
+11 monitor-identities: PASS rejection
+12 input-mechanism-enum: PASS rejection
+13 x11-truthfulness: PASS rejection
+14 shortcut-observability: PASS rejection
+15 copresence-regression: PASS rejection
+
+Composite invalid fixture:
+- successor window surface shared: rejected
+- predecessor surface not preserved: rejected
+- X11 synthetic claimed equivalent to physical input: rejected
+
+Canonical CI on final HEAD:
+- 33103543742 MCF GUI Window Control Qualification / push / SUCCESS
+- 33103547722 MCF GUI Window Control Qualification / pull_request / SUCCESS
+- 33103547784 Documentation validation / pull_request / SUCCESS
+- 33103547736 MCF Production Readiness / pull_request / SUCCESS
+
+Production Readiness stages:
+setup PASS
+containers PASS
+exact candidate checkout PASS
+immutable boundary verification PASS
+Node/pnpm PASS
+frozen lockfile PASS
+dependency vulnerability gate PASS
+format PASS
+lint PASS
+typecheck PASS
+migrations twice PASS
+tests PASS
+build PASS
+PostgreSQL client PASS
+backup + isolated restore PASS
+release-readiness contract tests PASS
+cleanup PASS
+
+Independent Emily:
+route=NVIDIA NIM/minimaxai/minimax-m3
+initial verdict=CONDITIONALLY_ACCEPTABLE only pending Production Readiness
+revalidation after unchanged-head readiness success:
+REVALIDATION_VERDICT=PASS
+EVIDENCE_SUFFICIENCY=SUFFICIENT
+BLOCKING_FINDINGS=NONE
+CANDIDATE_QUALIFICATION=QUALIFIED
+RELEASE_GATE=HELD
+
+No evidence in this phase authorizes merge/tag/release/version.

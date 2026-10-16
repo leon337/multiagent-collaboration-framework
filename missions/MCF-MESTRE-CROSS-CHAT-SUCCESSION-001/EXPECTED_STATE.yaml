@@ -1,0 +1,48 @@
+schema: mcf/succession-expected-state/v1
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+
+expected:
+  identity:
+    role: MESTRE
+    human_final_authority: LEANDRO
+  mission:
+    current: cross_chat_successor_then_complete_v1_2_0
+    predecessor_should_not_finish_release_before_successor_proof: true
+  release_candidate:
+    pr: 175
+    version: v1.2.0
+    head: 43b0cccab4b29a2ed4c77abd824b652521c2b8c1
+    tree: 262289cdf54ed4024aad24482ad18e8e1cdccf4e
+  qualification:
+    focused_tests: 34/34_PASS
+    canonical_ci: 5/5_SUCCESS
+    critical_high_blockers: NONE
+  gates:
+    human_control_semantics: IMMEDIATE_SUSPENSION
+    merge_and_release: AUTHORIZED_AFTER_VALIDATION
+  pending_sequence:
+    - persist_final_reviews
+    - check_main_drift
+    - merge_pr_175_exact_head
+    - verify_post_merge_tree
+    - post_merge_qualification
+    - tag_v1_2_0
+    - publish_github_release
+    - verify_tag_sha_release
+    - persist_final_receipt
+  truthfulness:
+    missionruntime_universal_pause_resume_claimed: false
+
+challenge_required_fields:
+  - identity
+  - mission
+  - human_authority
+  - pr
+  - version
+  - qualified_head
+  - qualified_tree
+  - gate_state
+  - pending_sequence
+  - known_limitation
+
+success_condition: SUCCESSION_EQUIVALENCE_PASS

@@ -1,0 +1,117 @@
+checkpoint_id: CP-GUI-NEXT-RELEASE-REVIEW-20260827-01
+mission_id: MCF-MESTRE-CROSS-CHAT-SUCCESSION-001
+date: 2026-08-27
+status: IN_PROGRESS
+human_authority: LEANDRO
+coordinator: MESTRE_SUCCESSOR
+
+source:
+  branch: ops/mcf-mestre-cross-chat-succession-001
+  finding_commit: 9dffa205304fcbd9021b23d325c40182240b9f08
+  finding_artifact: missions/MCF-MESTRE-CROSS-CHAT-SUCCESSION-001/GUI_WINDOW_CONTROL_FINDING_20260827.md
+  prior_team_review_commit: ccbeca7fd7fb9860570c2fd0dd60207adee7838e
+  resumed_review_receipt_commit: f0cb191d45d495fab5ff54e6a3add21a4a278c70
+  resumed_review_receipt: missions/MCF-MESTRE-CROSS-CHAT-SUCCESSION-001/TEAM_REVIEW_RESUMPTION_20260827.md
+
+release_state:
+  latest_stable: v1.2.0
+  next_version: NOT_DECIDED
+  next_release_scope_candidate: true
+  protocol_mutation_authorized: false
+  main_mutation: NONE
+  merge_authorized: false
+  tag_authorized: false
+  release_authorized: false
+
+finding:
+  persisted: PASS
+  predecessor_surface_preserved_after_fix: PASS
+  successor_separate_window_after_fix: PASS
+  keyboard_tiling_after_fix: PASS
+  candidate_invariants:
+    - SUCCESSOR_SESSION_CREATED != SUCCESSOR_WINDOW_CREATED
+    - PRESERVE_PREDECESSOR_UNTIL_EQUIVALENCE_AND_HANDOFF
+    - PREDECESSOR_CLOSE_IS_SEPARATE_GOVERNED_ACTION
+    - X11_SYNTHETIC_EVENT != DEVICE_LEVEL_INPUT_EVENT
+    - MONITOR_AWARE_WINDOW_PLACEMENT
+
+reviews:
+  leo:
+    source: prior_team_review
+    verdict: APPROVE
+    severity: MEDIUM-HIGH
+    retrospective_position: CONCEPTUALLY_INCOMPLETE_FOR_NEW_INVARIANT
+  beatriz:
+    source: prior_team_review
+    verdict: ADOPT_WITH_CONDITIONS
+    severity: MEDIUM
+    retrospective_position: DO_NOT_INVALIDATE_HISTORICAL_PASS
+  renato:
+    source: resumed_independent_model_route
+    model_route: oc/laguna-s-2.1-free
+    verdict: ADOPT_WITH_CONDITIONS
+    severity: MEDIUM-HIGH
+    retrospective_position: MAINTAIN_WITH_GAP
+    vote_valid: true
+    observed_cost: 0
+  augusto:
+    source: resumed_independent_model_route
+    model_route: oc/mimo-v2.5-free
+    verdict: CONDITIONAL_PASS_WITH_DOCUMENTED_INVARIANT
+    severity: MEDIUM
+    retrospective_position: MAINTAIN_WITH_GAP
+    vote_valid: true
+    observed_cost: 0
+  emily:
+    role: INDEPENDENT_AUDIT
+    verdict: NOT_CAST
+    vote_valid: false
+    status: BLOCKED_BY_RUNTIME
+    blockers:
+      - prior_provider_429
+      - resumed_vps_transport_disconnect
+      - local_router_auth_route_unavailable
+      - local_headless_timeout
+
+reconciliation:
+  status: PROVISIONAL_NOT_NORMATIVE
+  historical_dimension: ORIGINAL_PASS_SATISFIED_CRITERIA_THEN_IN_FORCE
+  new_coverage_dimension: GUI_WINDOW_SURFACE_INVARIANT_NOT_TESTED_IN_ORIGINAL_RUN
+  candidate_formula: HISTORICAL_PASS_MAINTAINED_WITH_DISCOVERED_GAP
+  leo_beatriz_reconciled_by_dimension: true
+  note: >-
+    LEO's incompleteness concern applies to coverage of the newly discovered
+    invariant; BEATRIZ's non-invalidation position applies to retrospective
+    validity under the original acceptance criteria. RENATO and AUGUSTO support
+    MAINTAIN_WITH_GAP. This is not an official reclassification until all gates pass.
+
+candidate_regression_gates:
+  - OPEN_NEW_WINDOW_EXPLICIT
+  - PREDECESSOR_SURFACE_PRESERVED
+  - SUCCESSOR_SESSION_ID_DISTINCT
+  - SUCCESSOR_WINDOW_SURFACE_ID_DISTINCT
+  - TWO_WINDOW_VISUAL_ASSERTION
+  - EXPLICIT_PREDECESSOR_CLOSE_ACTION
+  - DEVICE_LEVEL_INPUT_TRUTHFULNESS
+  - MONITOR_AWARE_TILING
+  - OBSERVABLE_SHORTCUT_EXECUTION
+  - SIMULTANEOUS_COPRESENCE_REGRESSION
+
+team_gate:
+  team_consensus: PENDING
+  blocking_reason: VALID_INDEPENDENT_EMILY_AUDIT_MISSING
+  human_gate: NOT_OPENED_YET
+  human_gate_authority: LEANDRO
+  human_gate_precondition: TEAM_CONSENSUS_PASS
+
+security_and_evidence:
+  secrets_exposed: false
+  missing_votes_inferred: false
+  failed_runtime_attempts_recorded: true
+  evidence_before_claim: enforced
+
+next_action:
+  - obtain_valid_independent_emily_audit
+  - reconcile_final_team_consensus
+  - if_and_only_if_team_consensus_pass_then_open_human_gate_for_leandro
+  - no_merge_no_tag_no_release_before_both_gates
