@@ -1,36 +1,21 @@
-# MCF-ORACLE-001 — P0: preflight de runtime canônico
+# PHASE-ORACLE-001-DISCOVERY — PRF da Fase P0
 
-- **Issue:** #443
-- **Classificação:** Classe C; **somente descoberta, leitura e testes isolados nesta fase**.
-- **Ambiente preferencial:** GitHub Actions / runner efêmero.
-- **Baseline:** `main` na criação da branch `mission/mcf-oracle-001-runtime-preflight`; conferir SHA live ao revisar.
-- **Gate humano:** permanece exigido antes de modificar autoridade, catálogo, policy, produção ou integrar o ORÁCULO como executor material.
-- **Nenhuma alteração em `main` ou produção está implícita neste PR.**
+**Missão:** MCF-ORACLE-001 (Issue #443), **draft PR #444**.
+**Estado técnico P0:** EXECUTADO E VALIDADO EM GITHUB ACTIONS; **Oracle cognitivo: NÃO VERIFICADO**.
+**Evidência principal:** https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38948847194
+**SHA testado:** `fff73690c629a99446eaffcf6dcb156e052c02ba`.
 
-## Execução real vs simulação
+## Leitura
+- `PHASE-ORACLE-001-PLAN.md`: escopo, riscos e autorização.
+- `PHASE-ORACLE-001-REPORT.md`: ações, falhas corrigidas e estado real.
+- `PHASE-ORACLE-001-VALIDATION.txt`: resumo 25/25 PASS.
+- `PHASE-ORACLE-001-VALIDATION-FULL.txt`: comandos, fases e evidência ampliada.
+- `PHASE-ORACLE-001-SMOKE.txt`: percurso E2E.
+- `PHASE-ORACLE-001-CHECKPOINT.yaml`: estado transferível e bloqueios.
+- `PHASE-ORACLE-001-DECISIONS.md`: decisões cronológicas.
+- `PHASE-ORACLE-001-ARTIFACT-MANIFEST.sha256`: digests SHA256 (exclui o próprio manifesto).
 
-O teste `oracle-runtime-preflight.test.ts` **executa código real** de `AgentExecutionService` e `ProviderAdapterRegistry`. O executor de teste é um **adapter determinístico in-process**; isso verifica o contrato existente de lifecycle, autorização e fail-closed, mas **não executa o ORÁCULO cognitivo, não seleciona GPT-6 Astra e não cria uma missão na base PostgreSQL canônica**.
+## Transparência
+Os testes **executaram o próprio código do MissionRuntimeService em GitHub Actions**, com oito processos OS e recibos persistidos durante a execução do PostgreSQL efêmero. Não há evidência de oito agentes cognitivos independentes ou de uma sessão Codex/GPT-6 Astra operacional. O Codex CLI está instalado no notebook, mas login `Not logged in`. `main` e produção permanecem intocados.
 
-Não confundir:
-1. Teste real de componentes MCF (prova a integração contratual);
-2. MissionRuntime/DB E2E (não executado por este preflight);
-3. Sessão Codex autenticada (não provada por este preflight);
-4. Execução multiagente cognitiva independente (não alegada).
-
-## Host Codex: verificação
-
-Em Linux Mint 22.1, o pacote oficial `@openai/codex@0.163.0` foi instalado em prefixo **de usuário** (`~/.local/bin/codex`). `codex --version` retornou `codex-cli 0.163.0`. `codex login status` retornou `Not logged in`. Portanto o **OAuth/ChatGPT Plus, modelo-alvo e primeira sessão Oracle estão pendentes**, sem usar chave de API comercial nem divulgar segredos.
-
-## Etapas seguintes, condicionadas a evidência
-
-1. Rodar o teste de lifecycle e o conjunto existente de testes do MCF em runner GitHub Actions, registrar check/run/SHA.
-2. Reconciliar catálogo oficial (29 agentes), modelo de autoridade de LÉO, matriz e protocolo ESEV antes de formalizar o contrato ORÁCULO.
-3. Provar autenticação ChatGPT/Codex pelo fluxo suportado. Não importar cookies/chaves nem contornar login/MFA.
-4. Submeter mudança de autoridade em revisão exata para **APROVAR ou REJEITAR**; sem presumir autorização por este documento.
-5. Somente depois do gate de autoridade, implantar o bridge real e testar uma sessão ORÁCULO por missão com receipts.
-
-## Política de custo e credenciais
-
-- `paid_ai_api = false`, `paid_fallback = false`, `max_paid_ai_cost = 0`.
-- Runners GitHub e conectores externos devem permanecer em cotas já autorizadas; uma operação desconhecida é bloqueada, não considerada grátis por inferência.
-- Segredos não entram em prompts, Issues, artefatos ou logs de CI.
+Este PRF representa apenas a fase P0; a missão maior #443 segue aberta para arquitetura e integração governada.

@@ -1,0 +1,39 @@
+mission_id: MCF-ORACLE-001
+github_issue: 443
+phase_id: PHASE-ORACLE-001-DISCOVERY
+risk_class: C
+state: P0_RUNTIME_TESTED_ORACLE_AUTH_PENDING
+executed_as: github_actions_real_mcf_code_and_os_child_processes
+execution_not_claimed: independent_cognitive_agent_team
+source_branch: mission/mcf-oracle-001-runtime-preflight
+qualified_test_sha: fff73690c629a99446eaffcf6dcb156e052c02ba
+qualified_run_id: 38948847194
+qualified_job_id: 117134792530
+test_summary:
+  targeted_passed: 25
+  targeted_failed: 0
+  ephemeral_postgres_migration: PASS
+  canonical_mission_runtime_e2e: PASS
+  independent_os_workers: 8
+  typecheck: PASS
+  overall_ci_green: false
+codex:
+  installed: true
+  version: 0.163.0
+  host: leo-N43SM
+  authenticated: false
+  model_gpt6_astra_selected: NOT_VERIFIED
+security:
+  paid_ai_api_used: false
+  credentials_exported: false
+  production_changed: false
+  main_merged: false
+  authority_contract_changed: false
+open_blockers:
+  - Codex ChatGPT account authorization not completed by supported CLI flow
+  - Oracle provider not integrated in the hosted runtime
+  - Existing unrelated global CI checks fail and are tracked in issue 427
+next:
+  - restore Codex authentication through supported human OAuth gate as needed
+  - author exact Oracle strategic role, governance and model binding proposal
+  - only then seek required approval for constitutional modification

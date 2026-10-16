@@ -1,0 +1,5 @@
+P0 SMOKE — GitHub Actions 38948847194
+Smoke unit/contract (real code): 22/22 PASS.
+Smoke de fase MCF real: MissionRuntimeService -> SkillRegistryLoader -> PermissionEngine -> SkillExecutor -> ExternalActionDispatcher -> LocalAgentTeamAdapter -> EvidenceValidator -> receipt, eventos e ledger. 2/2 PASS.
+Smoke durável PostgreSQL: criada missão efêmera, executados oito processos OS distintos, gravados attempts/receipts com status VALID e EVIDENCE_VALIDATED, eventos incluindo MISSION_CREATED/TOOL_RECEIPT_RECORDED/EVIDENCE_VALIDATED/PHASE_COMPLETED, removido após teste. 1/1 PASS.
+Limite: objetivo da missão real no teste foi demonstração do runtime, não inferência estratégica ORÁCULO. Nenhuma invocação LLM no smoke.

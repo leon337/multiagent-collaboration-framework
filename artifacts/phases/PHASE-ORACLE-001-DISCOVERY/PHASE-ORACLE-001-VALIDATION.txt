@@ -1,0 +1,22 @@
+MCF-ORACLE-001 / P0 — VALIDAÇÃO RESUMIDA
+SOURCE=GitHub Actions
+HEAD_TESTED=fff73690c629a99446eaffcf6dcb156e052c02ba
+RUN=38948847194
+JOB=117134792530
+RUN_URL=https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38948847194
+RESULT=SUCCESS
+
+AgentExecutionService/ProviderAdapterRegistry/LocalAgentTeamAdapter: 4 files, 22 tests PASS
+MissionRuntimeService (in-memory and real ephemeral PostgreSQL): 2 files, 3 tests PASS
+TOTAL=25/25 PASS (targeted)
+POSTGRES_MIGRATION=PASS
+SERVER_TYPECHECK=PASS
+OS_WORKERS=8 distinct child processes in E2E; NOT independent cognitive agents
+RECEIPT=EvidenceValidator and PostgreSQL attempt/receipt/event checks pass
+PAID_OPENAI_API=NOT USED
+CODEX_CLI=INSTALLED_v0.163.0
+CODEX_LOGIN=NOT_LOGGED_IN
+ORACLE_MODEL_EXECUTION=NOT_VERIFIED
+GLOBAL_CI=FAIL (tracked separately #427 and non-formatting baseline)
+PRODUCTION_DEPLOY=NOT_ATTEMPTED
+MAIN_MERGE=NOT_ATTEMPTED
