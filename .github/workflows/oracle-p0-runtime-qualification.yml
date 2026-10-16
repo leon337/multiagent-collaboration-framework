@@ -46,6 +46,12 @@ jobs:
         run: |
           cd ../../artifacts/phases/PHASE-ORACLE-001-DISCOVERY
           sha256sum --check PHASE-ORACLE-001-ARTIFACT-MANIFEST.sha256
+      - name: Verify portable clean-room bootstrap in ephemeral HOME
+        run: |
+          bash -n ../../tools/oracle-bridge/bootstrap-linux-mint.sh
+          mkdir -p "${RUNNER_TEMP}/mcf-oracle-cleanroom"
+          HOME="${RUNNER_TEMP}/mcf-oracle-cleanroom" bash ../../tools/oracle-bridge/bootstrap-linux-mint.sh --staging-only
+          HOME="${RUNNER_TEMP}/mcf-oracle-cleanroom" python3 "${RUNNER_TEMP}/mcf-oracle-cleanroom/.local/share/mcf-oracle-bridge/tools/oracle-bridge/oracle_bridge.py" status --mission-id MCF-ORACLE-001
       - name: Test portable Codex bridge (mock only; no tokens or paid APIs)
         run: python3 -m unittest discover -s ../../tools/oracle-bridge -p 'test_*.py' -v
       - name: Setup Node 24
