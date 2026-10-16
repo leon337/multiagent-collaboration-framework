@@ -1,0 +1,27 @@
+MCF-ORACLE-001 / P0 — EVIDÊNCIA DE EXECUÇÃO
+
+Runner: GitHub Actions ubuntu-latest, Node 24.18.0, pnpm 11.17.0, postgres:16 test service.
+Branch: mission/mcf-oracle-001-runtime-preflight
+SHA original qualificado: fff73690c629a99446eaffcf6dcb156e052c02ba
+PR: https://github.com/leon337/multiagent-collaboration-framework/pull/444
+Run: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/38948847194
+
+Etapa 1 — Build shared contracts: SUCCESS.
+Etapa 2 — Teste código real AgentExecutionService e OS workers: SUCCESS, 4 files, 22 PASS.
+Arquivos: oracle-runtime-preflight.test.ts; agent-execution.contracts.test.ts; agent-execution.service.test.ts; local-agent-team.adapter.test.ts.
+Teste de identidade de agente distinta do provider, envelope missão/ação/run/expiry, fail-closed e lifecycle.
+Etapa 3 — Migration PostgreSQL 16 via pnpm --filter @rsa/database db:migrate: SUCCESS.
+Etapa 4 — MissionRuntimeService real:
+- local-agent-team.runtime-e2e.test.ts: cenário COMPLETED com oito workers e recibos, teste negativo disabled fail-closed: 2 PASS.
+- local-agent-team.runtime-postgres.integration.test.ts: mission creation, external attempt, receipt, evidence, events, PostgreSQL e teardown: 1 PASS.
+Etapa 5 — pnpm --filter @rsa/server typecheck: SUCCESS.
+
+Histórico de falhas e correções no mesmo branch:
+- Workflows iniciais falharam em sintaxe TS preexistente, tipo importado incorreto e outros gates.
+- Primeiro E2E erroneamente escapava shell com dois backslashes e resultou em full suite não intencional. Corrigido.
+- Segundo E2E encontrou skill registry inexistente no cwd. Definido MCF_SKILL_REGISTRY_PATH apontando para raiz.
+- Terceiro E2E detectou registry invalidada por duas skills EXPERIMENTAL sem fallback/handoff. Adicionados apenas fallback fail-closed + handoff Beatriz sem habilitar executor.
+- Quarto E2E atingiu SUCCESS no run 38948847194.
+
+Restrições:
+A aprovação de CI significa apenas que testes executaram o código de runtime nos limites daquele runner e SHA. Não atesta nova arquitetura Oracle instalada, persistência em produção, runtime multiagente cognitivo ou ambiente do notebook além do CLI instalado.

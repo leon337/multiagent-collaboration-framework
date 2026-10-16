@@ -1,0 +1,37 @@
+mission_id: MCF-ORACLE-001
+phase_id: PHASE-ORACLE-001-P1-P4-PREFLIGHT
+state: P3_EXPERIMENTAL_BRIDGE_VERIFIED_P4_PARTIAL
+github_issue: 443
+github_pr: 444
+qualification_commit: daccd4640368d74ec530a69aa5670826157fc18a
+qualification_run_id: 38953974919
+execution_classification:
+  oracle_cli_real: true
+  oracle_model_requested: gpt-6-astra
+  oracle_cli_authenticated_by_chatgpt: true
+  oracle_session_resumed: true
+  bridge_real_smoke: true
+  independent_cognitive_team: false
+  hosted_runtime_to_local_bridge: NOT_VERIFIED
+tests:
+  python_bridge_mock: {passed: 12, failed: 0}
+  vitest_contract_and_adapter: {passed: 28, failed: 0}
+  vitest_canonical_runtime_with_postgres: {passed: 3, failed: 0}
+  targeted_total: {passed: 43, failed: 0}
+  local_python_mock: {passed: 12, failed: 0}
+  postgres_migration: PASS
+  server_typecheck: PASS
+production:
+  oracle_agent_catalog_registration: NOT_ATTEMPTED
+  oracle_adapter_enabled: false
+  human_gate: PENDING
+  main_merged: false
+  deploy_issued: false
+finance:
+  commercial_ai_api_used: false
+  paid_fallback_enabled: false
+open:
+  - hosted MCF transport integration into authenticated local Codex Bridge
+  - crash/retry distributed reconciliation with canonical MissionRuntime
+  - three general CI gates failing tracked in issue 427
+  - formal constitutional approval before activation

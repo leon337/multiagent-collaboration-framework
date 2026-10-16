@@ -1,0 +1,88 @@
+name: MCF Oracle P0 Runtime Qualification
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/oracle-p0-runtime-qualification.yml'
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/**'
+      - 'artifacts/phases/PHASE-ORACLE-001-DISCOVERY/**'
+      - 'artifacts/phases/PHASE-ORACLE-001-P1-P4-PREFLIGHT/**'
+      - 'tools/oracle-bridge/**'
+      - 'schemas/mcf-oracle-*.schema.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  oracle-p0-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: mcf-test
+          POSTGRES_PASSWORD: mcf-test
+          POSTGRES_DB: mcf_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mcf-test -d mcf_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: apps/rede-social-agentes
+    env:
+      DATABASE_URL: postgresql://mcf-test:mcf-test@127.0.0.1:5432/mcf_test
+      NODE_ENV: test
+      MCF_SKILL_REGISTRY_PATH: ${{ github.workspace }}/skills/registry.yaml
+    steps:
+      - name: Checkout exact test candidate
+        uses: actions/checkout@v4
+      - name: Validate P0 PRF artifact SHA256 manifest
+        run: |
+          cd ../../artifacts/phases/PHASE-ORACLE-001-DISCOVERY
+          sha256sum --check PHASE-ORACLE-001-ARTIFACT-MANIFEST.sha256
+      - name: Verify portable clean-room bootstrap in ephemeral HOME
+        run: |
+          bash -n ../../tools/oracle-bridge/bootstrap-linux-mint.sh
+          mkdir -p "${RUNNER_TEMP}/mcf-oracle-cleanroom"
+          HOME="${RUNNER_TEMP}/mcf-oracle-cleanroom" bash ../../tools/oracle-bridge/bootstrap-linux-mint.sh --staging-only
+          HOME="${RUNNER_TEMP}/mcf-oracle-cleanroom" python3 "${RUNNER_TEMP}/mcf-oracle-cleanroom/.local/share/mcf-oracle-bridge/tools/oracle-bridge/oracle_bridge.py" status --mission-id MCF-ORACLE-001
+      - name: Test portable Codex bridge (mock only; no tokens or paid APIs)
+        run: python3 -m unittest discover -s ../../tools/oracle-bridge -p 'test_*.py' -v
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.18.0'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '11.17.0'
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build shared contracts
+        run: pnpm build:packages
+      - name: Exercise real MCF AgentExecutionService and operating-system agent workers
+        run: |
+          pnpm --filter @rsa/server exec vitest run \
+            src/mcf-runtime/oracle-runtime-preflight.test.ts \
+            src/mcf-runtime/codex-oracle-provider.adapter.test.ts \
+            src/mcf-runtime/codex-oracle-cli.client.test.ts \
+            src/mcf-runtime/agent-execution.contracts.test.ts \
+            src/mcf-runtime/agent-execution.service.test.ts \
+            src/mcf-runtime/local-agent-team.adapter.test.ts \
+            --reporter=verbose
+      - name: Apply real PostgreSQL migration in ephemeral GitHub runner
+        run: pnpm --filter @rsa/database db:migrate
+      - name: Execute canonical MissionRuntimeService with 8 OS workers and durable PostgreSQL receipts
+        run: |
+          pnpm --filter @rsa/server exec vitest run \
+            src/mcf-runtime/local-agent-team.runtime-e2e.test.ts \
+            src/mcf-runtime/local-agent-team.runtime-postgres.integration.test.ts \
+            --reporter=verbose
+      - name: Typecheck server (runtime integration)
+        run: pnpm --filter @rsa/server typecheck

@@ -507,6 +507,8 @@ skills:
     permission_profile: READ_ONLY
     global_agent_capability: true
     acceptance_criteria: [event_driven_wait, bounded_delta, cursor_monotonic, no_full_snapshot_polling]
+    fallback: Falhar fechado quando o stream de eventos não estiver disponível; manter apenas leitura e transferir a validação sem presumir conexão ou execução.
+    handoff_to: Beatriz
 
   - skill_id: MCF-WEB-FAST-NAV
     name: Navegação web rápida orientada a eventos
@@ -519,6 +521,8 @@ skills:
     permission_profile: READ_ONLY
     global_agent_capability: true
     acceptance_criteria: [shortest_route_attempted, event_feedback_used_when_waiting, minimal_verification, bounded_steps, bounded_time]
+    fallback: Falhar fechado se o navegador ou o canal de eventos não estiverem elegíveis; não alterar ambiente nem contornar controle de acesso.
+    handoff_to: Beatriz
 
   - skill_id: MCF-WEB-COLLECT
     status: EXPERIMENTAL

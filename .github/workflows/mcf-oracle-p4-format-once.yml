@@ -1,0 +1,66 @@
+name: MCF Oracle P4 Format Gate Repair
+
+on:
+  push:
+    branches:
+      - mission/mcf-oracle-001-runtime-preflight
+    paths:
+      - .github/workflows/mcf-oracle-p4-format-once.yml
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/codex-oracle-cli.client*.ts'
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/codex-oracle-provider.adapter*.ts'
+
+permissions:
+  contents: write
+
+jobs:
+  format-candidate:
+    if: github.repository == 'leon337/multiagent-collaboration-framework' && github.ref == 'refs/heads/mission/mcf-oracle-001-runtime-preflight'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/rede-social-agentes
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.18.0'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '11.17.0'
+      - name: Install locked toolchain
+        run: pnpm install --frozen-lockfile
+      - name: Format only the Oracle candidate and previously confirmed gate failures
+        run: |
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/agent-execution.contracts.test.ts \
+            apps/server/src/mcf-runtime/agent-execution.contracts.ts \
+            apps/server/src/mcf-runtime/codex-oracle-cli.client.ts \
+            apps/server/src/mcf-runtime/codex-oracle-cli.client.test.ts \
+            apps/server/src/mcf-runtime/codex-oracle-provider.adapter.test.ts \
+            apps/server/src/mcf-runtime/codex-oracle-provider.adapter.ts \
+            apps/server/src/mcf-runtime/oracle-runtime-preflight.test.ts \
+            apps/server/src/mcf-runtime/provider-adapter.registry.ts \
+            apps/web/src/styles.css
+      - name: Commit isolated formatting in mission branch only
+        run: |
+          if git diff --quiet; then
+            echo "No formatting differences"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            apps/server/src/mcf-runtime/agent-execution.contracts.test.ts \
+            apps/server/src/mcf-runtime/agent-execution.contracts.ts \
+            apps/server/src/mcf-runtime/codex-oracle-cli.client.ts \
+            apps/server/src/mcf-runtime/codex-oracle-cli.client.test.ts \
+            apps/server/src/mcf-runtime/codex-oracle-provider.adapter.test.ts \
+            apps/server/src/mcf-runtime/codex-oracle-provider.adapter.ts \
+            apps/server/src/mcf-runtime/oracle-runtime-preflight.test.ts \
+            apps/server/src/mcf-runtime/provider-adapter.registry.ts \
+            apps/web/src/styles.css
+          git commit -m "style(mcf): pass Oracle mission formatting gate"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

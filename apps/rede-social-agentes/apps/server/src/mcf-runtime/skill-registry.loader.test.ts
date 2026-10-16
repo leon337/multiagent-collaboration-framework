@@ -95,9 +95,11 @@ describe('parseMcfSkillRegistry', () => {
     const webSkills = skills.filter((skill) => skill.skillId.startsWith('MCF-WEB-'));
     const byId = new Map(webSkills.map((skill) => [skill.skillId, skill]));
 
-    expect(webSkills).toHaveLength(7);
+    expect(webSkills).toHaveLength(9);
     expect(webSkills.map((skill) => skill.skillId).sort()).toEqual([
       'MCF-WEB-COLLECT',
+      'MCF-WEB-EVENTS',
+      'MCF-WEB-FAST-NAV',
       'MCF-WEB-FETCH',
       'MCF-WEB-INTERACT',
       'MCF-WEB-MAP',
@@ -105,6 +107,12 @@ describe('parseMcfSkillRegistry', () => {
       'MCF-WEB-RESEARCH',
       'MCF-WEB-SEARCH',
     ]);
+    for (const skillId of ['MCF-WEB-EVENTS', 'MCF-WEB-FAST-NAV']) {
+      expect(byId.get(skillId)).toMatchObject({
+        handoffTo: 'Beatriz',
+        permissionProfile: 'READ_ONLY',
+      });
+    }
     expect(byId.get('MCF-WEB-SEARCH')).toMatchObject({
       permissionProfile: 'READ_ONLY',
       handoffTo: 'Miriam',

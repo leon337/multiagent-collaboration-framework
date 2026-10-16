@@ -1,7 +1,7 @@
 import type {
   AgentExecutionCapability,
   AgentExecutionProviderAdapter,
-  AgentExecutionProviderContract,
+  ExecutionProviderContract,
 } from './agent-execution.contracts.js';
 
 export interface ProviderSelection {
@@ -10,9 +10,7 @@ export interface ProviderSelection {
 }
 
 export class ProviderAdapterRegistry {
-  constructor(
-    private readonly adapters: readonly AgentExecutionProviderAdapter[] = [],
-  ) {}
+  constructor(private readonly adapters: readonly AgentExecutionProviderAdapter[] = []) {}
 
   resolve(selection: ProviderSelection): AgentExecutionProviderAdapter {
     const candidates = this.adapters.filter((adapter) => {
@@ -42,7 +40,11 @@ export class ProviderAdapterRegistry {
       );
     }
 
-    return candidates[0];
+    const selected = candidates[0];
+    if (!selected) {
+      throw new Error('Provider resolution failed despite a non-empty candidate list');
+    }
+    return selected;
   }
 
   listProviders(): readonly ExecutionProviderContract[] {

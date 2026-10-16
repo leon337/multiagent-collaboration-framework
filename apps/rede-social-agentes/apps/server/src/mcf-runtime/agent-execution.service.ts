@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import {
   assertAuthorityEnvelope,
@@ -12,7 +12,10 @@ import { ProviderAdapterRegistry } from './provider-adapter.registry.js';
 
 @Injectable()
 export class AgentExecutionService {
-  constructor(private readonly providers: ProviderAdapterRegistry) {}
+  constructor(
+    @Inject(ProviderAdapterRegistry)
+    private readonly providers: ProviderAdapterRegistry,
+  ) {}
 
   async start(request: AgentExecutionRequest): Promise<AgentExecutionHandle> {
     assertAuthorityEnvelope(request);
