@@ -1,0 +1,127 @@
+{
+  "schema": "mcf-world-semantic-discrimination/v1",
+  "prototype": "semantic-visual-language-v0.1",
+  "prototypeRevision": "git:mission/mcf-world-projection-001@34c68563907027b166543b9e7d296fd61a0094bd",
+  "fixtureId": "S",
+  "fixtureRevision": "fixture:world-projection-semantic-visual-s:v1",
+  "startedAt": "2026-09-26T13:33:41.840Z",
+  "finishedAt": "2026-09-26T13:49:02.468Z",
+  "correct": 3,
+  "total": 6,
+  "totalMs": 749053,
+  "results": [
+    {
+      "task": 1,
+      "question": "Qual item ainda não foi confirmado?",
+      "answer": "Runtime snapshot",
+      "expected": "Signature receipt",
+      "correct": false,
+      "elapsedMs": 619303,
+      "expectedEntityId": "evidence:rebuild",
+      "activeSurfaceAtAnswer": "Agora",
+      "firstTargetCorrect": null,
+      "wrongObjectOpens": 0,
+      "surfaceSwitches": 0,
+      "interactionCount": 0,
+      "interactions": []
+    },
+    {
+      "task": 2,
+      "question": "Qual item precisa ser revalidado porque pode ter mudado?",
+      "answer": "Runtime snapshot",
+      "expected": "Runtime snapshot",
+      "correct": true,
+      "elapsedMs": 20702,
+      "expectedEntityId": "gate:future",
+      "activeSurfaceAtAnswer": "Agora",
+      "firstTargetCorrect": null,
+      "wrongObjectOpens": 0,
+      "surfaceSwitches": 0,
+      "interactionCount": 0,
+      "interactions": []
+    },
+    {
+      "task": 3,
+      "question": "Qual objeto foi observado pelo provider, mas não é o receipt/evidence canônico?",
+      "answer": "Signature receipt",
+      "expected": "Build #1142",
+      "correct": false,
+      "elapsedMs": 45800,
+      "expectedEntityId": "effect:pr380",
+      "activeSurfaceAtAnswer": "Agora",
+      "firstTargetCorrect": null,
+      "wrongObjectOpens": 0,
+      "surfaceSwitches": 0,
+      "interactionCount": 0,
+      "interactions": []
+    },
+    {
+      "task": 4,
+      "question": "Abra Relações e selecione Control Matrix v3. Qual tipo a interface atribui a esse objeto?",
+      "answer": "ARTIFACT",
+      "expected": "ARTIFACT",
+      "correct": true,
+      "elapsedMs": 37296,
+      "expectedEntityId": "artifact:wpp",
+      "activeSurfaceAtAnswer": "Relações",
+      "firstTargetCorrect": true,
+      "wrongObjectOpens": 0,
+      "surfaceSwitches": 1,
+      "interactionCount": 2,
+      "interactions": [
+        {
+          "atMs": 10992,
+          "kind": "view",
+          "value": "graph"
+        },
+        {
+          "atMs": 17184,
+          "kind": "entity",
+          "value": "artifact:wpp"
+        }
+      ]
+    },
+    {
+      "task": 5,
+      "question": "Qual é o estado atual da missão?",
+      "answer": "BLOCKED",
+      "expected": "BLOCKED",
+      "correct": true,
+      "elapsedMs": 4616,
+      "expectedEntityId": "mission:world",
+      "activeSurfaceAtAnswer": "Relações",
+      "firstTargetCorrect": null,
+      "wrongObjectOpens": 0,
+      "surfaceSwitches": 0,
+      "interactionCount": 0,
+      "interactions": []
+    },
+    {
+      "task": 6,
+      "question": "Abra Relações, selecione Rafael e observe o painel de detalhe. Qual rótulo confirma que ele está em foco?",
+      "answer": "AGENT",
+      "expected": "Selecionado",
+      "correct": false,
+      "elapsedMs": 21336,
+      "expectedEntityId": "agent:emily",
+      "activeSurfaceAtAnswer": "Relações",
+      "firstTargetCorrect": true,
+      "wrongObjectOpens": 0,
+      "surfaceSwitches": 0,
+      "interactionCount": 1,
+      "interactions": [
+        {
+          "atMs": 6456,
+          "kind": "entity",
+          "value": "agent:emily"
+        }
+      ]
+    }
+  ],
+  "qualitative": {
+    "legend_helpful": "parcial",
+    "visual_language_easy_to_learn": "nao",
+    "confusing_signals": "A estrutura das informações não estão bem definidas, requer um esforço cognitivo meu pra entender o que se relaciona com o que mas aparentemente já teve uma boa evolução pois acho que ficou um pouco mais intuitivo, quando você me apontou onde procurar a informação, como se trata de algo novo, entendo que ainda é um pouco prematuro acertar tudo na primeira tentiva, mas já percebi uma boa evolução"
+  },
+  "claimsBoundary": "Targeted intra-participant semantic discrimination evidence only; not Product GO or general usability."
+}

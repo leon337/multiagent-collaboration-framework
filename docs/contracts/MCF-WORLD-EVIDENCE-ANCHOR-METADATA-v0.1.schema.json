@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mcf-world-evidence-anchor-metadata-v0.1",
+  "title": "MCF World Evidence Anchor Metadata v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "metadataRevision", "anchors"],
+  "properties": {
+    "schema": {"const": "world-evidence-anchor-metadata/v1"},
+    "metadataRevision": {"type": "string", "minLength": 1},
+    "anchors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "anchorId",
+          "evidenceCanonicalRef",
+          "sourceRef",
+          "lineStart",
+          "lineEnd",
+          "declaredBy"
+        ],
+        "properties": {
+          "anchorId": {"type": "string", "minLength": 1},
+          "evidenceCanonicalRef": {"type": "string", "minLength": 1},
+          "sourceRef": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source", "ref"],
+            "properties": {
+              "source": {"const": "repo-file"},
+              "ref": {"type": "string", "minLength": 1}
+            }
+          },
+          "lineStart": {"type": "integer", "minimum": 1},
+          "lineEnd": {"type": "integer", "minimum": 1},
+          "declaredBy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source", "ref"],
+            "properties": {
+              "source": {"type": "string", "minLength": 1},
+              "ref": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "mcf-world-real-provider-snapshot/v1",
+  "observedAt": "2026-09-26T09:40:30Z",
+  "repository": "leon337/multiagent-collaboration-framework",
+  "github": {
+    "issue379": {
+      "number": 379,
+      "state": "open",
+      "title": "MCF-WORLD-PROJECTION-001 — World Projection Protocol e Experimento Vertical",
+      "updatedAt": "2026-09-25T23:29:24Z",
+      "url": "https://github.com/leon337/multiagent-collaboration-framework/issues/379"
+    },
+    "pr380": {
+      "number": 380,
+      "state": "open",
+      "draft": true,
+      "merged": false,
+      "mergeable": true,
+      "head": "mission/mcf-world-projection-001",
+      "headSha": "075cd9b234eb70c2be8a8aeedbb7b4f44709dfa5",
+      "base": "main",
+      "baseSha": "fa17fd4565430c92bd045c220c3155a1ad6aa7ea",
+      "updatedAt": "2026-09-26T09:38:14Z",
+      "url": "https://github.com/leon337/multiagent-collaboration-framework/pull/380"
+    }
+  },
+  "localGit": {
+    "branch": "mission/mcf-world-projection-001",
+    "headSha": "075cd9b234eb70c2be8a8aeedbb7b4f44709dfa5"
+  }
+}
