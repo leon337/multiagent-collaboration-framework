@@ -391,6 +391,38 @@ function assertCodeBuddyBoundary(
   }
 }
 
+function assertWhatsAppBoundary(
+  skill: McfSkillDefinition,
+  provider: string,
+  operation: string,
+  resource: string,
+  inputs: Record<string, unknown>,
+): void {
+  if (skill.skillId !== 'MCF-WHATSAPP-COMMUNICATE') return;
+  if (skill.permissionProfile !== 'SCOPED_WRITE') {
+    throw new McfPermissionDeniedError('MCF-WHATSAPP-COMMUNICATE must preserve SCOPED_WRITE');
+  }
+  if (provider !== 'whatsapp' || operation !== 'send-text' || resource !== 'whatsapp-cloud-api') {
+    throw new McfPermissionDeniedError(
+      'MCF-WHATSAPP-COMMUNICATE is restricted to whatsapp/send-text/whatsapp-cloud-api',
+    );
+  }
+  if (inputs.authorizedScope !== true) {
+    throw new McfPermissionDeniedError('MCF-WHATSAPP-COMMUNICATE requires authorizedScope=true');
+  }
+  if (typeof inputs.to !== 'string' || !/^\+[1-9]\d{7,14}$/u.test(inputs.to)) {
+    throw new McfPermissionDeniedError('WhatsApp destination must use E.164 format');
+  }
+  if (
+    typeof inputs.body !== 'string' ||
+    inputs.body.length === 0 ||
+    inputs.body !== inputs.body.trim() ||
+    inputs.body.length > 4096
+  ) {
+    throw new McfPermissionDeniedError('WhatsApp text body must be 1-4096 trimmed characters');
+  }
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [
   ...readOperations,
@@ -457,6 +489,7 @@ export class PermissionEngine {
     assertCodeBuddyBoundary(skill.skillId, provider, operation, tool.resource);
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);
     assertLocalAgentTeamBoundary(skill.skillId, provider, operation, resource);
+    assertWhatsAppBoundary(skill, provider, operation, resource, inputs);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');

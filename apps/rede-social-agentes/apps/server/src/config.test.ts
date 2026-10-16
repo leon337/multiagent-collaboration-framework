@@ -116,6 +116,57 @@ describe('loadRuntimeConfig', () => {
     });
   });
 
+  it('keeps WhatsApp Cloud API disabled by default', () => {
+    expect(loadRuntimeConfig(baseEnvironment)).toMatchObject({
+      MCF_WHATSAPP_ENABLED: false,
+      MCF_WHATSAPP_API_VERSION: 'v26.0',
+      MCF_WHATSAPP_PHONE_NUMBER_ID: '',
+      MCF_WHATSAPP_ACCESS_TOKEN: '',
+      MCF_WHATSAPP_VERIFY_TOKEN: '',
+      MCF_WHATSAPP_APP_SECRET: '',
+    });
+  });
+
+  it('requires the complete WhatsApp Cloud API secret set when enabled', () => {
+    expect(() =>
+      loadRuntimeConfig({
+        ...baseEnvironment,
+        MCF_WHATSAPP_ENABLED: 'true',
+      }),
+    ).toThrow(/WHATSAPP/u);
+
+    expect(
+      loadRuntimeConfig({
+        ...baseEnvironment,
+        MCF_WHATSAPP_ENABLED: 'true',
+        MCF_WHATSAPP_API_VERSION: 'v26.0',
+        MCF_WHATSAPP_PHONE_NUMBER_ID: '123456789012345',
+        MCF_WHATSAPP_ACCESS_TOKEN: 'access-token-long-enough',
+        MCF_WHATSAPP_VERIFY_TOKEN: 'verify-token-long-enough',
+        MCF_WHATSAPP_APP_SECRET: 'app-secret-long-enough',
+      }),
+    ).toMatchObject({
+      MCF_WHATSAPP_ENABLED: true,
+      MCF_WHATSAPP_API_VERSION: 'v26.0',
+      MCF_WHATSAPP_PHONE_NUMBER_ID: '123456789012345',
+    });
+  });
+
+  it('rejects WhatsApp credentials reused across protected boundaries in production', () => {
+    expect(() =>
+      loadRuntimeConfig({
+        ...productionEnvironment,
+        ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+        MCF_WHATSAPP_ENABLED: 'true',
+        MCF_WHATSAPP_API_VERSION: 'v26.0',
+        MCF_WHATSAPP_PHONE_NUMBER_ID: '123456789012345',
+        MCF_WHATSAPP_ACCESS_TOKEN: productionEnvironment.MCF_RUNTIME_TOKEN,
+        MCF_WHATSAPP_VERIFY_TOKEN: 'verify-token-long-enough',
+        MCF_WHATSAPP_APP_SECRET: 'app-secret-long-enough',
+      }),
+    ).toThrow(/WhatsApp credentials must be distinct/u);
+  });
+
   it('keeps the local agent team executor disabled by default', () => {
     expect(loadRuntimeConfig(baseEnvironment)).toMatchObject({
       MCF_LOCAL_AGENT_TEAM_ENABLED: false,

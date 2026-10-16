@@ -56,6 +56,15 @@ const runtimeConfigSchema = z
     MCF_LOCAL_AGENT_TEAM_ENABLED: booleanEnvironmentValue,
     MCF_LOCAL_AGENT_TEAM_TIMEOUT_MS: z.coerce.number().int().min(500).max(120_000).default(10_000),
     MCF_LOCAL_AGENT_TEAM_MAX_PARALLELISM: z.coerce.number().int().min(1).max(8).default(4),
+    MCF_WHATSAPP_ENABLED: booleanEnvironmentValue,
+    MCF_WHATSAPP_API_VERSION: z
+      .string()
+      .regex(/^v\d+\.\d+$/u)
+      .default('v26.0'),
+    MCF_WHATSAPP_PHONE_NUMBER_ID: z.string().default(''),
+    MCF_WHATSAPP_ACCESS_TOKEN: z.string().default(''),
+    MCF_WHATSAPP_VERIFY_TOKEN: z.string().default(''),
+    MCF_WHATSAPP_APP_SECRET: z.string().default(''),
   })
   .superRefine((config, context) => {
     if (config.MCF_LOCAL_AGENT_TEAM_ENABLED && config.NODE_ENV === 'production') {
@@ -64,6 +73,36 @@ const runtimeConfigSchema = z
         path: ['MCF_LOCAL_AGENT_TEAM_ENABLED'],
         message: 'Local agent team executor cannot be enabled in production.',
       });
+    }
+    if (config.MCF_WHATSAPP_ENABLED) {
+      if (!/^\d{5,32}$/u.test(config.MCF_WHATSAPP_PHONE_NUMBER_ID)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_WHATSAPP_PHONE_NUMBER_ID'],
+          message: 'MCF_WHATSAPP_PHONE_NUMBER_ID must be configured when WhatsApp is enabled.',
+        });
+      }
+      if (config.MCF_WHATSAPP_ACCESS_TOKEN.trim().length < 20) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_WHATSAPP_ACCESS_TOKEN'],
+          message: 'MCF_WHATSAPP_ACCESS_TOKEN must be configured when WhatsApp is enabled.',
+        });
+      }
+      if (config.MCF_WHATSAPP_VERIFY_TOKEN.trim().length < 16) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_WHATSAPP_VERIFY_TOKEN'],
+          message: 'MCF_WHATSAPP_VERIFY_TOKEN must contain at least 16 characters when enabled.',
+        });
+      }
+      if (config.MCF_WHATSAPP_APP_SECRET.trim().length < 16) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_WHATSAPP_APP_SECRET'],
+          message: 'MCF_WHATSAPP_APP_SECRET must be configured when WhatsApp is enabled.',
+        });
+      }
     }
     if (config.MCF_CODEBUDDY_EXECUTOR_ENABLED) {
       const workspaceRoot = config.MCF_CODEBUDDY_WORKSPACE_ROOT.trim();
@@ -120,6 +159,31 @@ const runtimeConfigSchema = z
           path: ['MCF_MISSION_CONTROL_TOKEN'],
           message: 'Mission Control, runtime, receipt and rate-limit secrets must be distinct.',
         });
+      }
+
+      if (config.MCF_WHATSAPP_ENABLED) {
+        const whatsappSecrets = [
+          config.MCF_WHATSAPP_ACCESS_TOKEN,
+          config.MCF_WHATSAPP_VERIFY_TOKEN,
+          config.MCF_WHATSAPP_APP_SECRET,
+        ];
+        const protectedSecrets = [
+          config.RATE_LIMIT_KEY_SECRET,
+          config.MCF_RECEIPT_SECRET,
+          config.MCF_RUNTIME_TOKEN,
+          config.MCF_MISSION_CONTROL_TOKEN,
+        ];
+        if (
+          new Set(whatsappSecrets).size !== whatsappSecrets.length ||
+          whatsappSecrets.some((secret) => protectedSecrets.includes(secret))
+        ) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['MCF_WHATSAPP_ACCESS_TOKEN'],
+            message:
+              'WhatsApp credentials must be distinct from each other and all MCF boundary secrets.',
+          });
+        }
       }
 
       if (!config.RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID) {

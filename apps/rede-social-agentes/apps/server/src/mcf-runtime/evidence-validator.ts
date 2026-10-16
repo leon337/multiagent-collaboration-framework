@@ -887,6 +887,56 @@ function validatePullRequestReceipt(receipt: McfToolReceipt): void {
   requireString(receipt.metadata, 'prState', 'pull request evidence requires prState');
 }
 
+function validateWhatsAppReceipt(
+  receipt: McfToolReceipt,
+  inputs: Readonly<Record<string, unknown>> = {},
+): void {
+  if (canonicalizeProvider(receipt.provider) !== 'whatsapp' || !receipt.externalId) {
+    reject('WhatsApp evidence requires provider whatsapp and a provider message id');
+  }
+  const messageId = requireString(
+    receipt.metadata,
+    'messageId',
+    'WhatsApp evidence requires messageId',
+  );
+  if (receipt.externalId !== messageId) {
+    reject('WhatsApp evidence messageId must match the external provider id');
+  }
+  if (receipt.metadata.acceptedByProvider !== true) {
+    reject('WhatsApp evidence requires acceptedByProvider=true');
+  }
+  if (typeof receipt.metadata.deliveryConfirmed !== 'boolean') {
+    reject('WhatsApp evidence requires deliveryConfirmed boolean');
+  }
+  const recipientHash = requireString(
+    receipt.metadata,
+    'recipientHash',
+    'WhatsApp evidence requires recipientHash',
+  );
+  if (!/^[a-f0-9]{64}$/u.test(recipientHash)) {
+    reject('WhatsApp evidence recipientHash must be a SHA-256 digest');
+  }
+  const bodyDigest = requireString(
+    receipt.metadata,
+    'bodyDigest',
+    'WhatsApp evidence requires bodyDigest',
+  );
+  if (!/^[a-f0-9]{64}$/u.test(bodyDigest)) {
+    reject('WhatsApp evidence bodyDigest must be a SHA-256 digest');
+  }
+  const bodyLength = requireNonNegativeInteger(
+    receipt.metadata,
+    'bodyLength',
+    'WhatsApp evidence requires bodyLength',
+  );
+  if (bodyLength < 1 || bodyLength > 4096) {
+    reject('WhatsApp evidence bodyLength must be between 1 and 4096');
+  }
+  if (typeof inputs.body === 'string' && inputs.body.length !== bodyLength) {
+    reject('WhatsApp evidence bodyLength must match the current message body');
+  }
+}
+
 function validateVisualDesktopAuditReceipt(
   receipt: McfToolReceipt,
   inputs: Readonly<Record<string, unknown>> = {},
@@ -1361,6 +1411,9 @@ export class EvidenceValidator {
         break;
       case 'MCF-DEPLOY-VALIDATE':
         validateDeploymentReceipt(receipt);
+        break;
+      case 'MCF-WHATSAPP-COMMUNICATE':
+        validateWhatsAppReceipt(receipt, inputs);
         break;
       case 'MCF-AUDIT-VISUAL-DESKTOP':
         validateVisualDesktopAuditReceipt(receipt, inputs);

@@ -14,6 +14,7 @@ import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapte
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { LocalAgentTeamAdapter } from './local-agent-team.adapter.js';
 import { McfRuntimeModule } from './mcf-runtime.module.js';
+import { WhatsAppCloudAdapter } from './whatsapp-cloud.adapter.js';
 
 type FactoryProvider = {
   provide?: unknown;
@@ -49,6 +50,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       GitHubPullCollaborationAdapter,
       CodeBuddyExecutorAdapter,
       LocalAgentTeamAdapter,
+      WhatsAppCloudAdapter,
     ]);
 
     const registry = registryProvider?.useFactory?.(
@@ -58,12 +60,14 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       stub('github-pr-collaboration-write-v1'),
       stub('codebuddy-implement-change-local-v1'),
       stub('local-agent-team-process-v1'),
+      stub('whatsapp-cloud-send-text-v1'),
     ) as AdapterRegistry;
 
     expect(registry.listAdapterIds()).toContain('github-branch-pr-write-v1');
     expect(registry.listAdapterIds()).toContain('github-pr-collaboration-write-v1');
     expect(registry.listAdapterIds()).toContain('codebuddy-implement-change-local-v1');
     expect(registry.listAdapterIds()).toContain('local-agent-team-process-v1');
+    expect(registry.listAdapterIds()).toContain('whatsapp-cloud-send-text-v1');
   });
 });
 

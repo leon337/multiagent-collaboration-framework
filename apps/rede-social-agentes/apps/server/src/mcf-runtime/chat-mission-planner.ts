@@ -58,6 +58,14 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
       'human_gate_state',
     ],
   },
+  'MCF-WHATSAPP-COMMUNICATE': {
+    agentId: 'Mestre',
+    handoffTo: 'Mestre',
+    toolProvider: 'whatsapp',
+    toolOperation: 'send-text',
+    internal: false,
+    requiredEvidence: ['provider_message_id', 'accepted_by_provider'],
+  },
   'MCF-RECOVER-CONTEXT': {
     agentId: 'Miriam',
     handoffTo: 'Mestre',
@@ -200,6 +208,12 @@ const localTeamTerms = [
   'paralelismo',
   'workers',
 ];
+const whatsappTerms = [
+  'whatsapp',
+  'mensagem no whatsapp',
+  'responder no whatsapp',
+  'falar pelo whatsapp',
+];
 const dualBrowserTerms = [
   'dual browser',
   'dual-browser',
@@ -294,6 +308,7 @@ function inferRisk(
     includesAny(normalized, highRiskTerms)
       ? 'C'
       : selectedSkills.includes('MCF-OPERATE-DUAL-BROWSER') ||
+          selectedSkills.includes('MCF-WHATSAPP-COMMUNICATE') ||
           includesAny(normalized, implementationTerms)
         ? 'B'
         : 'A';
@@ -321,6 +336,14 @@ function inferSkills(
       'MCF-START-MISSION',
       'MCF-SELECT-AGENTS',
       'MCF-EXECUTE-LOCAL-TEAM',
+      'MCF-TRACE-MISSION',
+    ];
+  }
+  if (includesAny(normalized, whatsappTerms) && !includesAny(normalized, implementationTerms)) {
+    return [
+      'MCF-START-MISSION',
+      'MCF-SELECT-AGENTS',
+      'MCF-WHATSAPP-COMMUNICATE',
       'MCF-TRACE-MISSION',
     ];
   }
@@ -368,6 +391,7 @@ function resourceFor(skillId: McfExecutableSkillId, repository: string | undefin
   const config = skillConfig[skillId];
   if (skillId === 'MCF-EXECUTE-LOCAL-TEAM') return 'mcf-agent-runtime';
   if (skillId === 'MCF-OPERATE-DUAL-BROWSER') return 'mcf-dual-browser-cockpit';
+  if (skillId === 'MCF-WHATSAPP-COMMUNICATE') return 'whatsapp-cloud-api';
   if (config.toolProvider === 'internal') {
     if (skillId === 'MCF-TRACE-MISSION') return 'mcf-mission-timeline';
     return config.internal ? 'mcf-chat-bridge' : 'mcf-agent-runtime';

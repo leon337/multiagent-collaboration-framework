@@ -489,6 +489,7 @@ export type McfExecutableSkillId =
   | 'MCF-SELECT-AGENTS'
   | 'MCF-EXECUTE-LOCAL-TEAM'
   | 'MCF-OPERATE-DUAL-BROWSER'
+  | 'MCF-WHATSAPP-COMMUNICATE'
   | 'MCF-RECOVER-CONTEXT'
   | 'MCF-DEFINE-PRODUCT'
   | 'MCF-DESIGN-EXPERIENCE'
@@ -512,7 +513,8 @@ export type McfExecutableToolProvider =
   | 'vercel'
   | 'cloudflare'
   | 'codebuddy'
-  | 'local-agent-runtime';
+  | 'local-agent-runtime'
+  | 'whatsapp';
 
 export interface McfChatDispatchRequest {
   objective: string;
