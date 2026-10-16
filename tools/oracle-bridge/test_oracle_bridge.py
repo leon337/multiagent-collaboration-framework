@@ -179,6 +179,70 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(blocked.returncode,2)
         self.assertEqual(json.loads(blocked.stdout)["reason"],"INVALID_ORACLE_SCHEMA")
 
+    def test_crash_after_local_receipt_is_reconciled_without_model_replay(self):
+        p=self.request()
+        first=self.consult(p)
+        self.assertEqual(first.returncode,0,first.stdout)
+        mission=self.state/"MCF-ORACLE-001"
+        statepath=mission/"state.json"
+        s=json.loads(statepath.read_text())
+        original_thread=s["thread_id"]
+        self.assertEqual(len(s["processed"]),1)
+        import hashlib
+        payload=json.dumps(json.loads(p.read_text()),sort_keys=True,ensure_ascii=False,
+                           separators=(",",":")).encode()
+        s["processed"]={}
+        s["status"]="IN_FLIGHT"
+        s["inflight_request"]="req-001"
+        s["inflight_fingerprint"]=hashlib.sha256(payload).hexdigest()
+        s["pending_thread_id"]=original_thread
+        s["thread_id"]=None
+        statepath.write_text(json.dumps(s))
+        out=self.run_bridge("reconcile","--request",str(p))
+        self.assertEqual(out.returncode,0,out.stdout)
+        self.assertEqual(json.loads(out.stdout)["status"],"RECOVERED")
+        after=json.loads(statepath.read_text())
+        self.assertEqual(after["thread_id"],original_thread)
+        self.assertEqual(after["status"],"READY")
+        self.assertEqual(len(after["processed"]),1)
+        self.assertEqual(json.loads(self.consult(p).stdout)["status"],"CACHED")
+
+    def test_inflight_unproven_thread_never_autoretries(self):
+        p=self.request()
+        self.assertEqual(self.consult(p).returncode,0)
+        path=self.state/"MCF-ORACLE-001"/"state.json"
+        s=json.loads(path.read_text())
+        s["status"]="UNKNOWN"
+        s["inflight_request"]="req-001"
+        s["pending_thread_id"]=None
+        import hashlib
+        s["inflight_fingerprint"]=hashlib.sha256(
+            json.dumps(json.loads(p.read_text()),sort_keys=True,ensure_ascii=False,
+                       separators=(",",":")).encode()).hexdigest()
+        path.write_text(json.dumps(s))
+        result=self.run_bridge("reconcile","--request",str(p))
+        self.assertEqual(result.returncode,2)
+        self.assertEqual(json.loads(result.stdout)["reason"],"RECONCILIATION_THREAD_UNPROVEN")
+
+    def test_reconcile_with_wrong_request_never_unlocks_unknown(self):
+        p=self.request()
+        self.assertEqual(self.consult(p).returncode,0)
+        statepath=self.state/"MCF-ORACLE-001"/"state.json"
+        s=json.loads(statepath.read_text())
+        s["status"]="UNKNOWN"
+        s["inflight_request"]="req-001"
+        s["pending_thread_id"]=s["thread_id"]
+        import hashlib
+        s["inflight_fingerprint"]=hashlib.sha256(
+            json.dumps(json.loads(p.read_text()),sort_keys=True,ensure_ascii=False,
+                       separators=(",",":")).encode()).hexdigest()
+        statepath.write_text(json.dumps(s))
+        other=self.request(request="req-002")
+        result=self.run_bridge("reconcile","--request",str(other))
+        self.assertEqual(result.returncode,2)
+        self.assertEqual(json.loads(result.stdout)["reason"],"RECONCILIATION_REQUEST_MISMATCH")
+        self.assertEqual(json.loads(statepath.read_text())["status"],"UNKNOWN")
+
     def test_expired_and_malformed_deadlines_fail_before_model(self):
         p=self.request()
         value=json.loads(p.read_text())
