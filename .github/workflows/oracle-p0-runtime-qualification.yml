@@ -39,6 +39,10 @@ jobs:
     steps:
       - name: Checkout exact test candidate
         uses: actions/checkout@v4
+      - name: Validate P0 PRF artifact SHA256 manifest
+        run: |
+          cd ../../artifacts/phases/PHASE-ORACLE-001-DISCOVERY
+          sha256sum --check PHASE-ORACLE-001-ARTIFACT-MANIFEST.sha256
       - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
