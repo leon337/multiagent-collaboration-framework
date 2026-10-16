@@ -24,21 +24,35 @@ export interface LocalOracleCliSettings {
 const ID = /^[A-Za-z0-9][A-Za-z0-9._-]{2,79}$/u;
 const MAX_STDOUT = 2_000_000;
 const ENV_ALLOWLIST = [
-  'HOME', 'USER', 'LOGNAME', 'PATH', 'LANG', 'LC_ALL', 'LC_CTYPE',
-  'TERM', 'XDG_RUNTIME_DIR', 'XDG_CONFIG_HOME', 'XDG_CACHE_HOME',
-  'XDG_DATA_HOME', 'NO_COLOR', 'SSL_CERT_FILE',
+  'HOME',
+  'USER',
+  'LOGNAME',
+  'PATH',
+  'LANG',
+  'LC_ALL',
+  'LC_CTYPE',
+  'TERM',
+  'XDG_RUNTIME_DIR',
+  'XDG_CONFIG_HOME',
+  'XDG_CACHE_HOME',
+  'XDG_DATA_HOME',
+  'NO_COLOR',
+  'SSL_CERT_FILE',
 ] as const;
 
 function requiredId(value: string, field: string): void {
   if (!ID.test(value)) throw new Error(`INVALID_${field}`);
 }
 
-function modelInput(request: {
-  missionId: string;
-  requestId: string;
-  prompt: string;
-  sessionEpoch: number;
-}, timeoutSeconds: number) {
+function modelInput(
+  request: {
+    missionId: string;
+    requestId: string;
+    prompt: string;
+    sessionEpoch: number;
+  },
+  timeoutSeconds: number,
+) {
   const idempotencyKey = createHash('sha256')
     .update(JSON.stringify([request.missionId, request.requestId, request.prompt]))
     .digest('hex');
@@ -98,11 +112,14 @@ async function invokeBridge(
     // private prompt content or URLs with auth callback parameters.
     child.stderr?.resume();
     let finished = false;
-    const timer = setTimeout(() => {
-      child.kill('SIGTERM');
-      const backup = setTimeout(() => child.kill('SIGKILL'), 1500);
-      backup.unref();
-    }, (settings.timeoutSeconds + 20) * 1000);
+    const timer = setTimeout(
+      () => {
+        child.kill('SIGTERM');
+        const backup = setTimeout(() => child.kill('SIGKILL'), 1500);
+        backup.unref();
+      },
+      (settings.timeoutSeconds + 20) * 1000,
+    );
     timer.unref();
     child.stdout?.setEncoding('utf8');
     child.stdout?.on('data', (chunk: string) => {
