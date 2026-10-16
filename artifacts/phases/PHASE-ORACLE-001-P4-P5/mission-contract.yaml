@@ -1,0 +1,59 @@
+mission_id: MCF-ORACLE-001
+parent_mission_id: null
+phase_id: MCF-ORACLE-001-P4-P5
+title: Oracle Bridge Hardening and Pre-Gate Qualification
+objective: Integrar tecnicamente o ORÁCULO via ponte local autenticada e produzir pacote constitucional sem ativar autoridade.
+expected_outcome: CI e testes de ligação canônica e sessões, evidências, riscos e revisão exata para aprovação/rejeição.
+scope:
+  - Python bridge com sessões por missão e reconciliação idempotente.
+  - Cliente Node MCF para execução local do bridge em processo, por adapter experimentado.
+  - Validação real Codex no notebook apenas para smoke, e GitHub CI para testes.
+  - Plano portável Linux e revisão constitucional proposta.
+out_of_scope:
+  - Merge main, produção, mudanças normativas sem gate.
+  - APIs de IA comerciais pagas, despesas novas, importação de OAuth entre hosts.
+  - Criação de segundo MissionRuntime, storage canônico paralelo e permissões novas.
+inputs:
+  - Issue GitHub 443, PR draft 444 e recibos das decisões ORÁCULO DEC-002/003/004.
+source_of_truth:
+  - docs/MCF-CURRENT-STATE.md
+  - docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md
+  - docs/agentes/README.md
+  - skills/registry.yaml
+  - GitHub PR 444 e GitHub Actions associados ao SHA exato.
+assumptions:
+  - Codex CLI 0.163.0 autenticado no host conforme prova de login anterior; verificar novamente ao consultar.
+  - Modelo gpt-6-astra selecionável na CLI; sem garantia contratual de disponibilidade futura.
+acceptance_criteria:
+  - Testar autenticação real, sessão e retomada sem API comercial paga.
+  - Exercitar via CI os módulos canônicos MCF e bridge real com executor cognitivo mock.
+  - Testar resiliência de crash/UNKNOWN, replays e diretório privado.
+  - Provar bootstrap clean-room; SSD secundário como limitação declarada se não testado.
+  - Obter readiness global green ou bloqueio explicito sem promoção.
+  - Reunir delta constitucional e gate binário vinculado ao SHA.
+authorizations:
+  - Leitura, especificação, branch/PR draft, testes CI e bootstrap Codex user-local consentidos.
+prohibitions:
+  - Executar operações pagas de IA ou contornar autenticação.
+  - Modificar main, produção ou contrato constitucional sem aprovação humana.
+  - Expor secrets, tokens, URLs de callback ou payloads privados.
+risk_class: C
+current_state: EM_EXECUCAO
+cycle: 2
+selected_agents:
+  - Mestre
+  - Leonardo
+  - Sofia
+  - Gabriel
+  - Ricardo
+  - Renato
+  - Beatriz
+  - Emily
+  - Júlia
+  - Augusto
+  - Léo
+decision_authority: Leo
+human_escalation_triggers:
+  - Mudança constitucional de autoridade e catálogo, para Leandro.
+  - Autorizações novas de serviços externos, quota paga ou decisão material reservada.
+phase_artifact_directory: artifacts/phases/PHASE-ORACLE-001-P4-P5
