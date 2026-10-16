@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/leon337/multiagent-collaboration-framework/blob/main/schemas/mcf-oracle-request.v1.schema.json",
+  "title": "MCF Oracle strategic request, candidate v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "mission_id", "request_id", "idempotency_key", "session_epoch", "objective", "authorized_context", "deadline_utc", "policy_version"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "mission_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,79}$"},
+    "request_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,79}$"},
+    "idempotency_key": {"type": "string", "minLength": 6, "maxLength": 128},
+    "session_epoch": {"type": "integer", "minimum": 1},
+    "objective": {"type": "string", "minLength": 1, "maxLength": 32000},
+    "authorized_context": {"type": "object", "additionalProperties": true},
+    "evidence_references": {"type": "array", "items": {"type": "string"}, "maxItems": 40},
+    "deadline_utc": {"type": "string", "format": "date-time"},
+    "policy_version": {"type": "string", "minLength": 1, "maxLength": 40}
+  }
+}

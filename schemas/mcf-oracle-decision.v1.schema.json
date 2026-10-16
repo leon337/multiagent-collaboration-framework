@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/leon337/multiagent-collaboration-framework/blob/main/schemas/mcf-oracle-decision.v1.schema.json",
+  "title": "MCF Oracle strategic decision, candidate v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "mission_id", "request_id", "decision_id", "status", "rationale", "strategy", "specialists", "gates", "acceptance_evidence", "needs_human_approval"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "mission_id": {"type": "string", "minLength": 3},
+    "request_id": {"type": "string", "minLength": 3},
+    "decision_id": {"type": "string", "minLength": 3},
+    "status": {"enum": ["PROPOSED", "BLOCKED", "REPLAN", "REVIEW"]},
+    "rationale": {"type": "string", "minLength": 1},
+    "strategy": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["step", "competence", "deliverable"], "properties": {"step": {"type": "string"}, "competence": {"type": "string"}, "deliverable": {"type": "string"}}}},
+    "specialists": {"type": "array", "items": {"type": "string"}},
+    "gates": {"type": "array", "items": {"type": "string"}},
+    "acceptance_evidence": {"type": "array", "items": {"type": "string"}},
+    "needs_human_approval": {"type": "boolean"}
+  }
+}
