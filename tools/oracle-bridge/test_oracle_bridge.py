@@ -151,6 +151,34 @@ class BridgeTests(unittest.TestCase):
         again=self.consult(self.request(request="req-002"))
         self.assertEqual(json.loads(again.stdout)["reason"],"MISSION_RECONCILIATION_REQUIRED")
 
+    def test_reuse_of_logical_idempotency_key_with_new_request_id_is_blocked(self):
+        first=self.request()
+        completed=self.consult(first)
+        self.assertEqual(completed.returncode,0,completed.stdout)
+        second=self.request(request="req-002")
+        value=json.loads(second.read_text())
+        value["idempotency_key"]="idem-req-001"
+        second.write_text(json.dumps(value))
+        blocked=self.consult(second)
+        self.assertEqual(blocked.returncode,2)
+        self.assertEqual(json.loads(blocked.stdout)["reason"],"IDEMPOTENCY_KEY_CONFLICT")
+        state=json.loads((self.state/"MCF-ORACLE-001"/"state.json").read_text())
+        self.assertEqual(len(state["processed"]),1)
+
+    def test_invalid_typed_model_output_fails_closed(self):
+        # The fake Codex can emit a syntactically valid JSON decision with
+        # extra properties; the bridge must reject it before persisting.
+        content=self.fake.read_text()
+        content=content.replace(
+            'out=pathlib.Path(args[args.index("--output-last-message")+1])',
+            'response["extra_override"]=True\n'
+            'out=pathlib.Path(args[args.index("--output-last-message")+1])'
+        )
+        self.fake.write_text(content)
+        blocked=self.consult(self.request())
+        self.assertEqual(blocked.returncode,2)
+        self.assertEqual(json.loads(blocked.stdout)["reason"],"INVALID_ORACLE_SCHEMA")
+
     def test_expired_and_malformed_deadlines_fail_before_model(self):
         p=self.request()
         value=json.loads(p.read_text())
