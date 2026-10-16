@@ -1,0 +1,42 @@
+name: MCF World Desktop CI
+
+on:
+  pull_request:
+    paths:
+      - 'apps/mcf-world-desktop/**'
+      - '.github/workflows/mcf-world-desktop-ci.yml'
+      - 'artifacts/missions/MCF-WORLD-WEB-FIRST-2026-09-23/ELECTRON-RECONCILIATION.md'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+    defaults:
+      run:
+        working-directory: apps/mcf-world-desktop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.2'
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Test MCF World Desktop
+        run: npm test
