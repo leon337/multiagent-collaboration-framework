@@ -115,7 +115,7 @@ def minimal_env() -> dict[str, str]:
 
 
 def codex_run(binary: str, args: list[str], prompt: str,
-              cwd: Path, timeout: int) -> tuple[int, str]:
+              cwd: Path, timeout: int) -> tuple[int, str, str]:
     """Argv-only invocation; no shell, no forwarded API tokens, bounded output."""
     try:
         proc = subprocess.Popen(
@@ -134,7 +134,8 @@ def codex_run(binary: str, args: list[str], prompt: str,
         raise BridgeFailure("CODEX_TIMEOUT_EFFECT_UNKNOWN") from exc
     if len(stdout) > MAX_BYTES or len(stderr) > MAX_BYTES:
         raise BridgeFailure("CODEX_OUTPUT_LIMIT_EXCEEDED")
-    return proc.returncode, stdout.decode("utf-8", errors="replace")
+    return (proc.returncode, stdout.decode("utf-8", errors="replace"),
+            stderr.decode("utf-8", errors="replace"))
 
 
 def validate_request(value: Any) -> dict[str, Any]:
@@ -174,10 +175,10 @@ def validate_decision(value: Any, request: dict[str, Any]) -> dict[str, Any]:
 
 def cli_auth_ok(binary: str, workspace: Path) -> bool:
     try:
-        status, output = codex_run(binary, ["login", "status"], "", workspace, 12)
+        status, output, diagnostic = codex_run(binary, ["login", "status"], "", workspace, 12)
     except BridgeFailure:
         return False
-    return status == 0 and "Logged in using ChatGPT" in output
+    return status == 0 and "Logged in using ChatGPT" in (output + "\n" + diagnostic)
 
 
 def run_consult(args: argparse.Namespace) -> dict[str, Any]:
@@ -255,7 +256,7 @@ def run_consult(args: argparse.Namespace) -> dict[str, Any]:
                 + json.dumps(request, ensure_ascii=False, sort_keys=True)
             )
             try:
-                code, events = codex_run(args.codex, command, prompt, workspace, args.timeout)
+                code, events, _diagnostic = codex_run(args.codex, command, prompt, workspace, args.timeout)
                 if code != 0:
                     raise BridgeFailure("CODEX_EXEC_FAILED_EFFECT_UNKNOWN")
                 thread = None
