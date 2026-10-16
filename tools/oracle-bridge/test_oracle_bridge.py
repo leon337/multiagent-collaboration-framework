@@ -8,6 +8,8 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import fcntl
+from datetime import datetime, timedelta, timezone
 import unittest
 
 BRIDGE = Path(__file__).with_name("oracle_bridge.py")
@@ -69,7 +71,8 @@ class BridgeTests(unittest.TestCase):
             "schema_version":"1.0.0", "mission_id":mission, "request_id":request,
             "idempotency_key":"idem-"+request, "session_epoch":1,
             "objective":objective, "authorized_context":{},
-            "deadline_utc":"2026-10-16T23:59:59Z", "policy_version":"MCF-1"
+            "deadline_utc":(datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+            "policy_version":"MCF-1"
         }
         p=self.root / (mission+"-"+request+".json")
         p.write_text(json.dumps(value))
@@ -147,6 +150,61 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(json.loads(first.stdout)["reason"],"CODEX_TIMEOUT_EFFECT_UNKNOWN")
         again=self.consult(self.request(request="req-002"))
         self.assertEqual(json.loads(again.stdout)["reason"],"MISSION_RECONCILIATION_REQUIRED")
+
+    def test_expired_and_malformed_deadlines_fail_before_model(self):
+        p=self.request()
+        value=json.loads(p.read_text())
+        value["deadline_utc"]="2020-01-01T00:00:00Z"
+        p.write_text(json.dumps(value))
+        self.assertEqual(
+            json.loads(self.consult(p).stdout)["reason"], "REQUEST_DEADLINE_EXPIRED"
+        )
+        value["deadline_utc"]="2026-10-16"
+        p.write_text(json.dumps(value))
+        self.assertEqual(
+            json.loads(self.consult(p).stdout)["reason"], "INVALID_REQUEST_DEADLINE"
+        )
+
+    def test_unknown_fields_are_rejected_before_model(self):
+        p=self.request()
+        value=json.loads(p.read_text())
+        value["bypass_human_gate"]=True
+        p.write_text(json.dumps(value))
+        self.assertEqual(
+            json.loads(self.consult(p).stdout)["reason"], "UNRECOGNIZED_REQUEST_FIELD"
+        )
+
+    def test_stale_in_flight_state_requires_reconciliation(self):
+        p=self.request()
+        root=self.state/"MCF-ORACLE-001"
+        root.mkdir(parents=True)
+        (root/"state.json").write_text(json.dumps({
+            "mission_id":"MCF-ORACLE-001", "session_epoch":1,
+            "thread_id":None, "status":"IN_FLIGHT", "processed":{},
+        }))
+        self.assertEqual(
+            json.loads(self.consult(p).stdout)["reason"],
+            "MISSION_RECONCILIATION_REQUIRED",
+        )
+
+    def test_concurrent_calls_to_same_session_fail_without_waiting(self):
+        root=self.state/"MCF-ORACLE-001"
+        root.mkdir(parents=True)
+        p=self.request()
+        with (root/".lock").open("a+") as handle:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            out=self.consult(p)
+            self.assertEqual(out.returncode,2)
+            self.assertEqual(json.loads(out.stdout)["reason"],"MISSION_SESSION_BUSY")
+
+    def test_wrong_session_epoch_is_rejected(self):
+        p=self.request()
+        value=json.loads(p.read_text())
+        value["session_epoch"]=2
+        p.write_text(json.dumps(value))
+        out=self.consult(p)
+        self.assertEqual(out.returncode,2)
+        self.assertEqual(json.loads(out.stdout)["reason"],"SESSION_EPOCH_MISMATCH")
 
     def test_auth_and_model_are_required_without_paid_fallback(self):
         p=self.request()
