@@ -60,6 +60,9 @@ const executableSkills = new Set([
   'MCF-DEBUG-INCIDENT',
   'MCF-CLOSE-PHASE',
   'MCF-AUDIT-VISUAL-DESKTOP',
+  'MCF-WEB-FETCH',
+  'MCF-WEB-MAP',
+  'MCF-WEB-COLLECT',
 ]);
 
 const internalSkills = new Set([
