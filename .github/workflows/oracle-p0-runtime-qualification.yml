@@ -1,0 +1,48 @@
+name: MCF Oracle P0 Runtime Qualification
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/oracle-p0-runtime-qualification.yml'
+      - 'apps/rede-social-agentes/apps/server/src/mcf-runtime/**'
+      - 'artifacts/phases/PHASE-ORACLE-001-DISCOVERY/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  oracle-p0-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/rede-social-agentes
+    env:
+      DATABASE_URL: postgresql://mcf-test:mcf-test@127.0.0.1:5432/mcf_test
+      NODE_ENV: test
+    steps:
+      - name: Checkout exact test candidate
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.18.0'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '11.17.0'
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build shared contracts
+        run: pnpm build:packages
+      - name: Exercise real MCF AgentExecutionService and operating-system agent workers
+        run: |
+          pnpm --filter @rsa/server exec vitest run \
+            src/mcf-runtime/oracle-runtime-preflight.test.ts \
+            src/mcf-runtime/agent-execution.contracts.test.ts \
+            src/mcf-runtime/agent-execution.service.test.ts \
+            src/mcf-runtime/local-agent-team.adapter.test.ts \
+            --reporter=verbose
+      - name: Typecheck server (runtime integration)
+        run: pnpm --filter @rsa/server typecheck
