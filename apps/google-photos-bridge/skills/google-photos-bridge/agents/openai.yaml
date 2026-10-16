@@ -1,0 +1,7 @@
+dependencies:
+  tools:
+    - type: mcp
+      value: google-photos-bridge
+      description: Select and retrieve user-authorized Google Photos media through the official Picker.
+      transport: streamable_http
+      url: https://mcf-google-photos-bridge.onrender.com/mcp

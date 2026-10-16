@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "google-photos-bridge": {
+      "type": "streamable-http",
+      "url": "https://mcf-google-photos-bridge.onrender.com/mcp"
+    }
+  }
+}

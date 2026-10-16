@@ -1,0 +1,60 @@
+mission_id: GOOGLE-PHOTOS-BRIDGE-MCP-APP-001
+runtime_id: GOOGLE-PHOTOS-BRIDGE-MISSION-RUNTIME-001
+brainbase_orchestration:
+  id: f77c9508-584a-446b-87ac-63f4a605568b
+  name: GOOGLE-PHOTOS-BRIDGE-MISSION-001
+  team_id: 81c606c4-68fb-4e70-9d68-93fd3d0ddf78
+  human_authority: LEANDRO
+  orchestrator: MESTRE
+  billable_task_runs_started: false
+  staging_mcp: https://mcf-google-photos-bridge.onrender.com/mcp
+
+subagents:
+  - id: 50868169-b375-41dc-9c8e-01fb889d13dc
+    name: GPB-A1 — Arquitetura e Integração
+    responsibility: architecture_and_integration
+  - id: 75e2d669-57c7-4c88-b00c-7f9ed0dccaa3
+    name: GPB-A2 — Google OAuth e Photos Picker
+    responsibility: google_oauth_and_picker
+  - id: 14fc0769-c9e2-46a5-9bef-49dc969673a2
+    name: GPB-A3 — MCP App e UX Mobile
+    responsibility: mcp_app_and_mobile_ux
+  - id: a8405688-0896-4195-874b-1b33eea9c128
+    name: GPB-A4 — Segurança e Privacidade
+    responsibility: security_and_privacy
+  - id: 1ead5ecc-fbd8-4a8d-955e-2cf7e982ec91
+    name: GPB-A5 — QA e Validação de Deploy
+    responsibility: qa_and_deploy_validation
+
+flow:
+  - GPB-A1 -> GPB-A2
+  - GPB-A1 -> GPB-A3
+  - GPB-A1 -> GPB-A4
+  - GPB-A2 -> GPB-A5
+  - GPB-A3 -> GPB-A5
+  - GPB-A4 -> GPB-A5
+
+notes:
+  - Subagents are mission-specific and do not replace the 29 official MCF agents.
+  - All subagents have the isolated Google Photos Bridge staging MCP attached.
+  - No Brainbase task execution was started because task runs can be billable.
+
+
+execution_state:
+  attempted_at: 2026-09-18
+  authorized_by: LEANDRO
+  initial_runs:
+    GPB-A1: 08aadd99-606c-5de9-a94d-e169ed5160f6
+    GPB-A2: fdaf1c75-5232-5ada-b025-3719ae16c71e
+    GPB-A3: 6413ff23-d147-57f2-a79c-dd02b6898e06
+    GPB-A4: 6d563cd0-2e1a-5405-9808-b49913d67b91
+  retry_performed: true
+  result: BLOCKED_BY_BRAINBASE_BILLING_UNAVAILABLE
+  provider_error: BILLING_UNAVAILABLE
+  http_status: 503
+  work_executed: false
+  GPB-A5_started: false
+  next_action: >-
+    Do not create duplicate Brainbase tasks. Retry the existing task IDs only
+    after Brainbase billing authorization becomes available, then start GPB-A5
+    after upstream specialist outputs exist.
