@@ -30,6 +30,10 @@ jobs:
       - name: Run unit tests
         run: |
           python3 -m unittest discover -s tests/bubble-executor -p 'test_*.py' -v
+      - name: Verify offline Git Bundle importer
+        run: |
+          bash -n ops/bubble-executor/import-git-bundle.sh tests/bubble-executor/test-import-git-bundle.sh
+          bash tests/bubble-executor/test-import-git-bundle.sh
       - name: Verify fail-closed doctor
         run: |
           python3 ops/bubble-executor/bubble_executor.py doctor
