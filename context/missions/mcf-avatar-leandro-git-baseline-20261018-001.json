@@ -1,0 +1,139 @@
+{
+  "mission_id": "MCF-AVATAR-LEANDRO-GIT-BASELINE-20261018-001",
+  "parent_mission_id": null,
+  "title": "AVATAR LEANDRO — registrar etapa de baseline Git local no MCF",
+  "objective": "Registrar o marco Git local do Estúdio de Voz e seus artefatos em registro de projeto e missão do MCF, preservando fonte de verdade e limites de acesso.",
+  "expected_outcome": "Issue e draft PR documentais com descritor do projeto, mission context e rastreabilidade sem alteração de main ou deploy.",
+  "risk_class": "B",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "decision_authority": "LEO",
+  "current_state": "REGISTRATION_PROPOSED_PENDING_REVIEW",
+  "persisted_to_main": false,
+  "persistent_source_of_truth": "MCF GitHub Issue #447 e PR de registro; milestone verificado no Git local do notebook autorizado, não publicado externamente.",
+  "persistent_project": "avatar-leandro",
+  "canonical_project_descriptor": "context/projects/avatar-leandro.yaml",
+  "canonical_repository": null,
+  "repository_scope": "LOCAL_ONLY",
+  "local_commit": {
+    "branch": "main",
+    "short_sha": "1f6fb9e",
+    "tracked_files": 16,
+    "working_tree": "CLEAN",
+    "source": "Verified on notebook via authorized Remote Desktop Commander on 2026-10-18"
+  },
+  "evidence": [
+    {
+      "kind": "local_file",
+      "path": "Relatorio_Desenvolvimento_AVATAR_LEANDRO_2026-10-18.md",
+      "tracked_by_local_git": true
+    },
+    {
+      "kind": "local_file",
+      "path": "AVATAR_LEANDRO_Colab_Diagnostico.ipynb",
+      "tracked_by_local_git": true
+    },
+    {
+      "kind": "local_file",
+      "path": "MOTOR_VOZ/app.py",
+      "tracked_by_local_git": true
+    },
+    {
+      "kind": "local_file",
+      "path": "MOTOR_VOZ/static/index.html",
+      "tracked_by_local_git": true
+    },
+    {
+      "kind": "local_file",
+      "path": "MOTOR_VOZ/design/BRIEF_STITCH_MOBILE_FIRST.txt",
+      "tracked_by_local_git": true
+    },
+    {
+      "kind": "github_issue",
+      "url": "https://github.com/leon337/multiagent-collaboration-framework/issues/447"
+    }
+  ],
+  "observed_snapshot": {
+    "colab": "diagnostic-NVIDIA-T4-confirmed-no-voice-cloning",
+    "tts": "Chatterbox pt-BR demonstration WAV generation via HF Free authenticated",
+    "gui": "teleprompter and Gravar/Ouvir/Gerar/Baixar implemented, mobile UX not homologated",
+    "stitch": "4 mobile draft screens, export pending",
+    "user_voice_cloning": "NOT_VALIDATED",
+    "local_repo_remote": "NONE"
+  },
+  "authorized_actions": [
+    "Create MCF GitHub issue",
+    "Create dedicated GitHub branch and draft pull request containing documentary registration",
+    "Read local Git state and documentation for evidence",
+    "Do not alter product code"
+  ],
+  "prohibitions": [
+    "No MCF main merge without review/gates",
+    "No public deployment",
+    "No purchases, billing, or paid GPU",
+    "No uploading personal voice samples, generated audio, tokens, or private configurations",
+    "No fictional independent agent or LEO gate approval",
+    "No automatic push of local AVATAR LEANDRO repository"
+  ],
+  "phase_id": "PHASE-AL-01-GIT-BASELINE",
+  "current_phase": "PHASE-AL-01-GIT-BASELINE",
+  "phase_artifact_directory": "artifacts/phases/PHASE-AL-01-GIT-BASELINE",
+  "selected_skills": [
+    "MCF-START-MISSION",
+    "MCF-RECOVER-CONTEXT",
+    "MCF-TRACE-MISSION"
+  ],
+  "executed_by": [
+    "MESTRE using actual connectors and authorized notebook access"
+  ],
+  "not_executed_by": [
+    "LEO independent agent",
+    "Emily independent auditor",
+    "other MCF agents"
+  ],
+  "gate": {
+    "leo": "PENDING",
+    "human_authority": "EXPLICITLY_AUTHORIZED_REGISTRATION_ONLY",
+    "merge": "NOT_AUTHORIZED_BY_THIS_MISSION",
+    "production": "NOT_AUTHORIZED_BY_THIS_MISSION"
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "Existing local Git milestone and report verified",
+      "status": "PASS"
+    },
+    {
+      "criterion": "Issue created",
+      "status": "PASS",
+      "issue_number": 447
+    },
+    {
+      "criterion": "Project registry and mission context proposed on dedicated branch",
+      "status": "PASS"
+    },
+    {
+      "criterion": "Draft PR opened and linked to Issue",
+      "status": "PASS",
+      "pr_number": 448
+    },
+    {
+      "criterion": "MCF gate and merge into main",
+      "status": "PENDING_SEPARATE_REVIEW"
+    }
+  ],
+  "mcf_issue": 447,
+  "project_issue": null,
+  "active_branch": "mission/avatar-leandro-git-baseline-20261018-001",
+  "production_changes_require_phase_gate": true,
+  "implementation_authorized": false,
+  "human_action_count": 0,
+  "known_gaps": [
+    "User voice recording similarity not tested",
+    "Stitch design not exported/integrated",
+    "Mobile device and Window Resizer acceptance not completed",
+    "Local product Git lacks external remote"
+  ],
+  "next_action": "Review draft PR #448 and verify documentary gate before merge. Do not merge without separately valid authorization.",
+  "mcf_pr": 448,
+  "mcf_pr_url": "https://github.com/leon337/multiagent-collaboration-framework/pull/448"
+}
