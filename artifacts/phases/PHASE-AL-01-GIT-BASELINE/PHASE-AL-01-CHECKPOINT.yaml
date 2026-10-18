@@ -1,0 +1,30 @@
+checkpoint:
+  date: 2026-10-18
+  mission_id: MCF-AVATAR-LEANDRO-GIT-BASELINE-20261018-001
+  phase_id: PHASE-AL-01-GIT-BASELINE
+  cycle: 1
+  actor_observed: MESTRE
+  human_authority: LEANDRO
+  decision_authority: LEO
+  source_of_truth:
+    - GitHub MCF Issue 447
+    - GitHub draft PR (reference to be linked on creation)
+    - local product git commit 1f6fb9e (not remote)
+  state: PROPOSED_PENDING_REVIEW
+  delivered:
+    - Issue 447
+    - context/projects/avatar-leandro.yaml
+    - context/missions/mcf-avatar-leandro-git-baseline-20261018-001.json
+    - phase traceability pack
+  evidence:
+    - local git branch main, clean, 16 tracked, no remotes
+    - report and Colab notebook tracked locally
+  prohibited:
+    - GitHub main merge without gate
+    - production deploy
+    - costs and purchases
+    - tokens or private voice audio in MCF
+  validation_status: DOCUMENTARY_ONLY
+  leo_gate: PENDING
+  independent_audit: NOT_EXECUTED
+  next_action: review draft PR and verify documentary gate before merge
