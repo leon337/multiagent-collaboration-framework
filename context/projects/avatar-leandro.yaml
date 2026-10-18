@@ -80,6 +80,6 @@ governance:
 
 tracking:
   mcf_issue: 447
-  mcf_registry_pr: PENDING_CREATION
+  mcf_registry_pr: 448
   project_issue: null
   phase_id: PHASE-AL-01-GIT-BASELINE
