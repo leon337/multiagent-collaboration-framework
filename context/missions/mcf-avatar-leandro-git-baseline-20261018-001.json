@@ -109,11 +109,12 @@
     },
     {
       "criterion": "Project registry and mission context proposed on dedicated branch",
-      "status": "IN_PROGRESS"
+      "status": "PASS"
     },
     {
       "criterion": "Draft PR opened and linked to Issue",
-      "status": "PENDING"
+      "status": "PASS",
+      "pr_number": 448
     },
     {
       "criterion": "MCF gate and merge into main",
@@ -132,5 +133,7 @@
     "Mobile device and Window Resizer acceptance not completed",
     "Local product Git lacks external remote"
   ],
-  "next_action": "Open draft PR and request independent review/gate; do not merge in this mission without separate permission."
+  "next_action": "Review draft PR #448 and verify documentary gate before merge. Do not merge without separately valid authorization.",
+  "mcf_pr": 448,
+  "mcf_pr_url": "https://github.com/leon337/multiagent-collaboration-framework/pull/448"
 }
