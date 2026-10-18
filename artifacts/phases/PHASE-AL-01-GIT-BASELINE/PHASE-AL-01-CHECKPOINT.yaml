@@ -8,7 +8,7 @@ checkpoint:
   decision_authority: LEO
   source_of_truth:
     - GitHub MCF Issue 447
-    - GitHub draft PR (reference to be linked on creation)
+    - GitHub draft PR 448 (open, unmerged)
     - local product git commit 1f6fb9e (not remote)
   state: PROPOSED_PENDING_REVIEW
   delivered:
