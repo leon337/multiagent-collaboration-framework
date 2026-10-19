@@ -283,7 +283,7 @@ def test_default_zero_cost_never_calls_router(monkeypatch):
     import asyncio
     result = asyncio.run(main._model_response("Oi"))
     assert "gratuito" in result.lower()
-    assert "não está habilitada" in result.lower()
+    assert "não está autorizada" in result.lower()
 
 
 def test_signed_voice_webhook_zero_cost_fallback(client, monkeypatch):
@@ -300,3 +300,81 @@ def test_signed_voice_webhook_zero_cost_fallback(client, monkeypatch):
     response = client.post("/voice/respond", data=data, headers={"X-Twilio-Signature": sig})
     assert response.status_code == 200
     assert "gratuito" in ET.fromstring(response.text).find("Gather/Say").text.lower()
+
+
+
+def test_free_allowlisted_local_route_mock_success(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "0")
+    monkeypatch.setenv("ZERO_COST_ONLY", "1")
+    monkeypatch.setenv("MODEL_NAME", "oc/mimo-v2.6-flash-free")
+    monkeypatch.setenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1")
+    monkeypatch.setenv("NINEROUTER_API_KEY", "fake-local-test-key")
+    original = httpx.AsyncClient
+    def handler(request):
+        assert str(request.url) == "http://127.0.0.1:20128/v1/chat/completions"
+        assert request.headers["authorization"] == "Bearer fake-local-test-key"
+        assert request.method == "POST"
+        assert request.content.find(b'oc/mimo-v2.6-flash-free') >= 0
+        return httpx.Response(200, json={"choices": [{"message": {"content": "Resposta gratuita simulada."}}]})
+    monkeypatch.setattr(main.httpx, "AsyncClient", lambda **kwargs: original(transport=httpx.MockTransport(handler), **kwargs))
+    import asyncio
+    assert asyncio.run(main._model_response("Olá")) == "Resposta gratuita simulada."
+
+
+@pytest.mark.parametrize("not_allowed", [
+    "deepseek/deepseek-chat",
+    "oc/deepseek-v4.1-flash-free",
+    "oc/glm-5.3-flash-free",
+    "oc/minimax-m3.1-flash-free",
+    "oc/mimo-v2.6-flash-free:paid",
+])
+def test_zero_cost_rejects_unapproved_models_without_network(monkeypatch, not_allowed):
+    monkeypatch.setenv("DEMO_MODE", "0")
+    monkeypatch.setenv("ZERO_COST_ONLY", "1")
+    monkeypatch.setenv("MODEL_NAME", not_allowed)
+    monkeypatch.setenv("NINEROUTER_API_KEY", "fake-local-test-key")
+    monkeypatch.setattr(main.httpx, "AsyncClient", lambda **kwargs: (_ for _ in ()).throw(AssertionError("Network forbidden")))
+    import asyncio
+    assert "não está autorizada" in asyncio.run(main._model_response("Oi"))
+
+
+def test_zero_cost_rejects_remote_gateway_even_for_approved_model(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "0")
+    monkeypatch.setenv("ZERO_COST_ONLY", "1")
+    monkeypatch.setenv("MODEL_NAME", "oc/mimo-v2.6-flash-free")
+    monkeypatch.setenv("NINEROUTER_BASE_URL", "https://api.9router.com/v1")
+    monkeypatch.setenv("NINEROUTER_API_KEY", "fake-local-test-key")
+    monkeypatch.setattr(main.httpx, "AsyncClient", lambda **kwargs: (_ for _ in ()).throw(AssertionError("Network forbidden")))
+    import asyncio
+    assert "não está autorizada" in asyncio.run(main._model_response("Oi"))
+
+
+def test_zero_cost_approved_model_still_requires_key(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "0")
+    monkeypatch.setenv("ZERO_COST_ONLY", "1")
+    monkeypatch.setenv("MODEL_NAME", "oc/mimo-v2.6-flash-free")
+    monkeypatch.setenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1")
+    monkeypatch.delenv("NINEROUTER_API_KEY", raising=False)
+    monkeypatch.setattr(main.httpx, "AsyncClient", lambda **kwargs: (_ for _ in ()).throw(AssertionError("Network forbidden")))
+    import asyncio
+    assert "não foi configurado" in asyncio.run(main._model_response("Oi"))
+
+
+
+@pytest.mark.parametrize("content", [None, "", "   "])
+def test_model_null_or_empty_content_falls_back(monkeypatch, content):
+    monkeypatch.setenv("DEMO_MODE", "0")
+    monkeypatch.setenv("ZERO_COST_ONLY", "1")
+    monkeypatch.setenv("MODEL_NAME", "oc/mimo-v2.6-flash-free")
+    monkeypatch.setenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1")
+    monkeypatch.setenv("NINEROUTER_API_KEY", "fake-local-key")
+    original = httpx.AsyncClient
+    monkeypatch.setattr(
+        main.httpx,
+        "AsyncClient",
+        lambda **kwargs: original(transport=httpx.MockTransport(
+            lambda req: httpx.Response(200, json={"choices": [{"message": {"content": content}}]})), **kwargs),
+    )
+    import asyncio
+    result = asyncio.run(main._model_response("Oi"))
+    assert result == "Não consegui formular uma resposta."
