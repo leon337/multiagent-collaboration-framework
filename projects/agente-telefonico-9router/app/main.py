@@ -43,7 +43,7 @@ def _twiml(message: str, *, gather: bool = False, next_action: str = "/voice/res
     if gather:
         node = SubElement(
             root, "Gather",
-            {"input": "speech", "language": "pt-BR", "speechModel": "phone_call", "speechTimeout": "auto",
+            {"input": "speech", "language": "pt-BR", "speechModel": "phone_call", "speechTimeout": "2",
              "action": next_action, "method": "POST", "timeout": "6"},
         )
         SubElement(node, "Say", {"language": "pt-BR", "voice": "Polly.Ricardo"}).text = _clean(message, MAX_RESPONSE)
@@ -148,9 +148,9 @@ async def _model_response(text: str, history: list[dict] | None = None) -> str:
     key = os.getenv("NINEROUTER_API_KEY", "")
     if not key:
         return "O serviço de inteligência artificial ainda não foi configurado."
-    base = os.getenv("NINEROUTER_BASE_URL", "https://api.9router.com/v1").rstrip("/")
+    base = os.getenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1").rstrip("/")
     parts = urllib.parse.urlsplit(base)
-    if parts.scheme != "https" or not parts.netloc or parts.username or parts.password or parts.query:
+    if (not (parts.scheme == "https" or (parts.scheme == "http" and parts.hostname == "127.0.0.1" and parts.port == 20128)) or not parts.netloc or parts.username or parts.password or parts.query or parts.fragment):
         return "O serviço de inteligência artificial não está disponível."
     messages = [
         {"role": "system", "content": "Você é um agente de atendimento telefônico em português do Brasil. "
