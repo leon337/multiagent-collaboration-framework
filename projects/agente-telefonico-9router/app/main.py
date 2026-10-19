@@ -25,6 +25,10 @@ MAX_HISTORY_PAIRS = 3
 CALL_TTL = 900
 MAX_TURNS = 6
 
+# Strictly approved 0-price model IDs, supported by official OpenCode Zen pricing.
+ZERO_COST_MODELS = frozenset({"oc/mimo-v2.6-flash-free", "oc/longcat-2.5-preview-free", "oc/nemotron-3.5-lightning-free"})
+ZERO_COST_LOCAL_BASE = "http://127.0.0.1:20128/v1"
+
 # Ephemeral in-process context: never store this in logs/files. Resets on restart.
 _sessions: OrderedDict[str, dict] = OrderedDict()
 
@@ -145,12 +149,15 @@ async def incoming(request: Request):
 async def _model_response(text: str, history: list[dict] | None = None) -> str:
     if demo_mode():
         return "Modo demonstração. Você disse: " + text[:160]
+    selected_model = os.getenv("MODEL_NAME", "deepseek/deepseek-chat")
+    base = os.getenv("NINEROUTER_BASE_URL", ZERO_COST_LOCAL_BASE).rstrip("/")
     if os.getenv("ZERO_COST_ONLY", "1") != "0":
-        return "Atendimento gratuito ativo. A inteligência artificial externa não está habilitada neste modo."
+        # Fail closed: no paid model, arbitrary provider, remote gateway or fallback.
+        if selected_model not in ZERO_COST_MODELS or base != ZERO_COST_LOCAL_BASE:
+            return "Atendimento gratuito ativo. A rota de IA ainda não está autorizada neste modo."
     key = os.getenv("NINEROUTER_API_KEY", "")
     if not key:
         return "O serviço de inteligência artificial ainda não foi configurado."
-    base = os.getenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1").rstrip("/")
     parts = urllib.parse.urlsplit(base)
     if (not (parts.scheme == "https" or (parts.scheme == "http" and parts.hostname == "127.0.0.1" and parts.port == 20128)) or not parts.netloc or parts.username or parts.password or parts.query or parts.fragment):
         return "O serviço de inteligência artificial não está disponível."
@@ -166,11 +173,13 @@ async def _model_response(text: str, history: list[dict] | None = None) -> str:
             result = await client.post(
                 base + "/chat/completions",
                 headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
-                json={"model": os.getenv("MODEL_NAME", "deepseek/deepseek-chat"),
+                json={"model": selected_model,
                       "messages": messages, "max_tokens": 150, "temperature": 0.4},
             )
             result.raise_for_status()
-            answer = result.json()["choices"][0]["message"]["content"]
+            answer = result.json()["choices"][0]["message"].get("content")
+            if not isinstance(answer, str):
+                return "Não consegui formular uma resposta."
             return _clean(answer, MAX_RESPONSE) or "Não consegui formular uma resposta."
     except (httpx.HTTPError, KeyError, ValueError, TypeError, IndexError):
         return "Ocorreu uma falha temporária no atendimento. Tente novamente mais tarde."
