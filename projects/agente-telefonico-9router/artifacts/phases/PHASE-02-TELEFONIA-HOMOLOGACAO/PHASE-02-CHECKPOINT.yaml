@@ -1,0 +1,11 @@
+mission_id: MCF-20261019-AGENTE-TELEFONICO-9ROUTER
+phase_id: PHASE-02-TELEFONIA-HOMOLOGACAO
+status: MVP_CPU_COLAB_HOMOLOGADO
+verified_tests: 29
+production_ready: false
+human_gate: true
+blockers:
+  - credenciais_novas_twilio_e_9router
+  - homologacao_telefonia_real_e_custos
+  - deploy_publico_e_lgpd
+next_action: validar_homologacao_real_apos_autorizacao_humana
