@@ -1,7 +1,7 @@
 mission_id: MCF-20261019-AGENTE-TELEFONICO-9ROUTER
 phase_id: PHASE-02-TELEFONIA-HOMOLOGACAO
 status: MVP_CPU_COLAB_HOMOLOGADO
-verified_tests: 29
+verified_tests: 30
 production_ready: false
 human_gate: true
 blockers:
