@@ -1,0 +1,1 @@
+LOCAL: 29 passed (1 warning). COLAB CPU: 29 passed (0.97s). Session mcf449-v2-cpu-verification READY -> EXECUTED -> terminated. Exit 0. NO calls, costs, public endpoints, live Twilio, real STT/TTS or 9Router calls.
