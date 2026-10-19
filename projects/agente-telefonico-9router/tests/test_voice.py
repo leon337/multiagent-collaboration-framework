@@ -189,6 +189,7 @@ def test_unsafe_public_url_is_rejected(client, monkeypatch):
 
 
 def _fake_httpx(monkeypatch, handler):
+    monkeypatch.setenv("NINEROUTER_BASE_URL", "https://api.9router.com/v1")
     original = httpx.AsyncClient
     def factory(**kwargs):
         return original(transport=httpx.MockTransport(handler), **kwargs)
@@ -240,6 +241,7 @@ def test_twiml_uses_supported_male_brazilian_voice(client):
     assert say.attrib["language"] == "pt-BR"
     gather = ET.fromstring(result.text).find("Gather")
     assert gather.attrib["speechModel"] == "phone_call"
+    assert gather.attrib["speechTimeout"] == "2"
 
 
 def test_secure_end_to_end_twilio_to_mock_9router(client, monkeypatch):
@@ -258,3 +260,12 @@ def test_secure_end_to_end_twilio_to_mock_9router(client, monkeypatch):
     response = client.post("/voice/respond", data=p2, headers={"X-Twilio-Signature": sig2})
     assert response.status_code == 200
     assert "resposta mockada" in ET.fromstring(response.text).find("Gather/Say").text
+
+
+def test_9router_local_loopback_supported(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "0")
+    monkeypatch.setenv("NINEROUTER_API_KEY", "fake-local-key")
+    _fake_httpx(monkeypatch, lambda req: httpx.Response(200, json={"choices": [{"message": {"content": "Teste local."}}]}))
+    monkeypatch.setenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1")
+    import asyncio
+    assert asyncio.run(main._model_response("Oi")) == "Teste local."
