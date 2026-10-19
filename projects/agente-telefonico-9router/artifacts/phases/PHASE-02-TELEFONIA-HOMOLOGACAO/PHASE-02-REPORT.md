@@ -6,3 +6,5 @@
 5. Teste online Colab deve ser registrado após execução real. Não simular agentes independentes ou testes externos.
 
 6. CPU Colab CLI v2 completed with 29 passing tests, returned MCF449_V2_CPU_COLAB_PASS and confirmed session terminated, exit 0.
+
+Correção CAF: speechModel=phone_call exige speechTimeout numérico; configurado 2s (documentação Twilio vigente). Integração 9Router admite endpoint local 127.0.0.1:20128; URL remota fornecida não homologada. 30 testes locais aprovados.
