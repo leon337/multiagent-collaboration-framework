@@ -30,3 +30,7 @@ Antes da produção: HTTPS público seguro, proteção contra replay, limitaçã
 Fonte: https://www.twilio.com/docs/voice/twiml/gather
 Vozes: https://www.twilio.com/docs/voice/twiml/say/text-speech
 Missão: https://github.com/leon337/multiagent-collaboration-framework/issues/449
+
+Compatibilidade Twilio Gather: speechModel=phone_call exige speechTimeout numerico positivo, configurado como 2 segundos; nao usar auto.
+
+9Router local validado por GET /v1/models em 127.0.0.1:20128. Backend suporta HTTP apenas no loopback nessa porta, e HTTPS remoto quando explicitamente configurado. A URL api.9router.com/v1/models respondeu 404 e nao deve ser presumida operacional. Nenhuma inferencia de sucesso em chat completions real.
