@@ -1,0 +1,18 @@
+mission_id: MCF-20261019-AGENTE-TELEFONICO-9ROUTER
+phase_id: PHASE-05-TWILIO-REAL-CALL-TRIAL
+status: TELEFONIA_TRIAL_COMPLETED_AUDIO_UNVERIFIED
+budget_brl: 0
+call_trials_triggered_in_phase: 1
+twilio_call_direction: outbound
+twilio_call_status: Completed
+twilio_call_duration_seconds: 38
+twilio_trial_minutes_before: 75
+twilio_trial_minutes_after: 74
+transcription_available: false
+public_webhook_deployed: false
+llm_talking_in_call_verified: false
+production_ready: false
+human_gate:
+  - confirm_actual_audio_heard_and_spoken_phrase
+  - consent_and_privacy_for_public_webhook_trial
+next_action: ask_human_audio_confirmation_without_redial
