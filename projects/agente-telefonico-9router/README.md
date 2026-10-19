@@ -34,3 +34,6 @@ Missão: https://github.com/leon337/multiagent-collaboration-framework/issues/44
 Compatibilidade Twilio Gather: speechModel=phone_call exige speechTimeout numerico positivo, configurado como 2 segundos; nao usar auto.
 
 9Router local validado por GET /v1/models em 127.0.0.1:20128. Backend suporta HTTP apenas no loopback nessa porta, e HTTPS remoto quando explicitamente configurado. A URL api.9router.com/v1/models respondeu 404 e nao deve ser presumida operacional. Nenhuma inferencia de sucesso em chat completions real.
+
+## Teto financeiro inegociável: R$0
+ZERO_COST_ONLY=1 por padrão bloqueia qualquer chamada LLM, mesmo com chave configurada. Só desligar essa trava mediante validação verificável do provedor gratuito e autorização humana específica; o identificador de um modelo no catálogo 9Router não comprova ativação nem gratuidade. A base SQLite local apresentou 0 providerConnections e 0 usageHistory na inspeção; o teste Voice trial realizado com destino verificado terminou No answer, duração 0s. Não considerar telefonia homologada.
