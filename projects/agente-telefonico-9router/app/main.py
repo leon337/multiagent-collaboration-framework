@@ -145,6 +145,8 @@ async def incoming(request: Request):
 async def _model_response(text: str, history: list[dict] | None = None) -> str:
     if demo_mode():
         return "Modo demonstração. Você disse: " + text[:160]
+    if os.getenv("ZERO_COST_ONLY", "1") != "0":
+        return "Atendimento gratuito ativo. A inteligência artificial externa não está habilitada neste modo."
     key = os.getenv("NINEROUTER_API_KEY", "")
     if not key:
         return "O serviço de inteligência artificial ainda não foi configurado."
