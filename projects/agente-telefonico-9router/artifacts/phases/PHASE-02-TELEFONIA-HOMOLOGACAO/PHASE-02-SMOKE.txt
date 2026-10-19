@@ -1,0 +1,1 @@
+LOCAL HTTP MOCK: signed Twilio incoming + signed respond -> 9Router MockTransport -> TwiML Say/Gather; 29 tests passed. COLAB CPU real isolated runtime: 29 tests passed, marker MCF449_V2_CPU_COLAB_PASS, session terminated. No telephone audio or public webhook.
