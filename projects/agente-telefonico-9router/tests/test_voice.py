@@ -20,6 +20,7 @@ WEBHOOK = "https://voice.example.test"
 def isolate(monkeypatch):
     main._sessions.clear()
     monkeypatch.setenv("DEMO_MODE", "1")
+    monkeypatch.setenv("ZERO_COST_ONLY", "0")  # MockTransport tests only; never charged
     monkeypatch.delenv("TWILIO_AUTH_TOKEN", raising=False)
     monkeypatch.delenv("NINEROUTER_API_KEY", raising=False)
     monkeypatch.delenv("ENABLE_CALL_CONTEXT", raising=False)
@@ -269,3 +270,33 @@ def test_9router_local_loopback_supported(monkeypatch):
     monkeypatch.setenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1")
     import asyncio
     assert asyncio.run(main._model_response("Oi")) == "Teste local."
+
+
+
+def test_default_zero_cost_never_calls_router(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "0")
+    monkeypatch.delenv("ZERO_COST_ONLY", raising=False)
+    monkeypatch.setenv("NINEROUTER_API_KEY", "fake-test-key")
+    def forbidden(**kwargs):
+        raise AssertionError("Zero-cost mode must not send billable LLM requests")
+    monkeypatch.setattr(main.httpx, "AsyncClient", forbidden)
+    import asyncio
+    result = asyncio.run(main._model_response("Oi"))
+    assert "gratuito" in result.lower()
+    assert "não está habilitada" in result.lower()
+
+
+def test_signed_voice_webhook_zero_cost_fallback(client, monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "0")
+    monkeypatch.setenv("ZERO_COST_ONLY", "1")
+    monkeypatch.setenv("TWILIO_AUTH_TOKEN", "test-token-only")
+    monkeypatch.setenv("PUBLIC_BASE_URL", WEBHOOK)
+    monkeypatch.setenv("NINEROUTER_API_KEY", "fake-test-key")
+    def forbidden(**kwargs):
+        raise AssertionError("Signed zero-cost webhook must not call external AI")
+    monkeypatch.setattr(main.httpx, "AsyncClient", forbidden)
+    data = {"CallSid": SID, "SpeechResult": "Olá, quero falar"}
+    sig = RequestValidator("test-token-only").compute_signature(WEBHOOK + "/voice/respond", data)
+    response = client.post("/voice/respond", data=data, headers={"X-Twilio-Signature": sig})
+    assert response.status_code == 200
+    assert "gratuito" in ET.fromstring(response.text).find("Gather/Say").text.lower()
