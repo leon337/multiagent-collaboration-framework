@@ -1,1 +1,3 @@
-LOCAL HTTP MOCK: signed Twilio incoming + signed respond -> 9Router MockTransport -> TwiML Say/Gather; 29 tests passed. COLAB CPU real isolated runtime: 29 tests passed, marker MCF449_V2_CPU_COLAB_PASS, session terminated. No telephone audio or public webhook.
+LOCAL HTTP MOCK: signed Twilio incoming + signed respond -> 9Router MockTransport -> TwiML Say/Gather; 30 tests passed. COLAB CPU real isolated runtime: 30 tests passed, marker MCF449_V2_CPU_COLAB_PASS, session terminated. No telephone audio or public webhook.
+
+Correção CAF: speechModel=phone_call exige speechTimeout numérico; configurado 2s (documentação Twilio vigente). Integração 9Router admite endpoint local 127.0.0.1:20128; URL remota fornecida não homologada. 30 testes locais aprovados.
