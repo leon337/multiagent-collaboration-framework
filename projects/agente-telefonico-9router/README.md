@@ -37,3 +37,6 @@ Compatibilidade Twilio Gather: speechModel=phone_call exige speechTimeout numeri
 
 ## Teto financeiro inegociável: R$0
 ZERO_COST_ONLY=1 por padrão bloqueia qualquer chamada LLM, mesmo com chave configurada. Só desligar essa trava mediante validação verificável do provedor gratuito e autorização humana específica; o identificador de um modelo no catálogo 9Router não comprova ativação nem gratuidade. A base SQLite local apresentou 0 providerConnections e 0 usageHistory na inspeção; o teste Voice trial realizado com destino verificado terminou No answer, duração 0s. Não considerar telefonia homologada.
+
+### 9Router zero-cost allowlist (R$ 0)
+Ajustar MODEL_NAME=oc/mimo-v2.6-flash-free e ZERO_COST_ONLY=1, com NINEROUTER_BASE_URL=http://127.0.0.1:20128/v1. Apenas IDs na allowlist e endpoint local são aceitos nesse modo; o padrão pago deepseek/deepseek-chat permanece bloqueado. Os preços gratuitos são atestados na tabela oficial https://docs.opencode.ai/docs/zen/, mas a franquia pode mudar e a execução real deve validar registros de custo antes/depois. Sem API key local válida o sistema falha fechado. Não utilizar provedores que imitem fingerprints ou burlem limites da plataforma.
