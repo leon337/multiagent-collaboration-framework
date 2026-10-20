@@ -169,7 +169,8 @@ async def _model_response(text: str, history: list[dict] | None = None) -> str:
     messages.extend(history or [])
     messages.append({"role": "user", "content": text})
     try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(12.0, connect=4.0), follow_redirects=False) as client:
+        # Twilio Trial fetches TwiML with a 5-second limit; always return in time.
+        async with httpx.AsyncClient(timeout=httpx.Timeout(3.0, connect=1.0), follow_redirects=False) as client:
             result = await client.post(
                 base + "/chat/completions",
                 headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"},
