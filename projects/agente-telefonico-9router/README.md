@@ -40,3 +40,10 @@ ZERO_COST_ONLY=1 por padrão bloqueia qualquer chamada LLM, mesmo com chave conf
 
 ### 9Router zero-cost allowlist (R$ 0)
 Ajustar MODEL_NAME=oc/mimo-v2.6-flash-free e ZERO_COST_ONLY=1, com NINEROUTER_BASE_URL=http://127.0.0.1:20128/v1. Apenas IDs na allowlist e endpoint local são aceitos nesse modo; o padrão pago deepseek/deepseek-chat permanece bloqueado. Os preços gratuitos são atestados na tabela oficial https://docs.opencode.ai/docs/zen/, mas a franquia pode mudar e a execução real deve validar registros de custo antes/depois. Sem API key local válida o sistema falha fechado. Não utilizar provedores que imitem fingerprints ou burlem limites da plataforma.
+
+## Fase 06 — Webhook HTTPS temporário, somente homologação
+A Twilio trial impõe timeout de até 5 segundos para recuperar TwiML. Por isso o cliente 9Router no backend usa 3 segundos de timeout HTTP (conexão 1 segundo), retornando fallback falado se o modelo não responder.
+O `tools/temporary_https_smoke.py` cria Cloudflare Quick Tunnel temporário, chave HMAC sintética, e testa assinatura, TwiML e isolamento. O script encerra todo túnel e servidor que criou. A chamada REAL da Twilio somente funciona com TWILIO_AUTH_TOKEN verdadeiro armazenado localmente, não com o token do smoke.
+O Quick Tunnel não deve ter autenticação humana Cloudflare Access, pois a Twilio precisa alcançar o endpoint; acesso a /voice/incoming e /voice/respond é protegido com assinatura Twilio e não há logs de request/voz. URLs aleatórias sem assinatura são rejeitadas. Sem proteção de assinatura verdadeira, não iniciar ensaio real.
+A documentação trial https://www.twilio.com/docs/usage/trials/try-out-voice limita o Create Call REST a 4 URLs de templates; não afirmar que a demonstração faz chamadas ao backend FastAPI. Inbound Custom TwiML pode ser avaliado apenas na opção Custom permitida da Console, após confirmação e configuração da Twilio.
+Bloqueio HUMAN_GATE: a GUI Cinnamon está bloqueada. O token real da Twilio não foi obtido ou armazenado, e o painel de inbound custom não foi configurado. Não contornar bloqueio de tela ou de acesso a credenciais.
