@@ -1,0 +1,19 @@
+mission_id: MCF-20261019-AGENTE-TELEFONICO-9ROUTER
+phase_id: PHASE-06-HTTPS-TRIAL-GATE
+risk: C
+status: PUBLIC_HTTPS_SIGNATURE_SMOKE_PASSED_REAL_TWILIO_GATE_PENDING
+budget_brl: 0
+local_tests_passed: 44
+https_live_smoke:
+  ephemeral_tunnel_proven: true
+  endpoint_responded: 200
+  missing_signature_rejected: 403
+  synthetic_twilio_signature_accepted: 200
+  processes_terminated: true
+twilio_auth_token_real_present: false
+phone_call_started: false
+ai_external_requests: false
+production_published: false
+human_gate: unlock notebook Cinnamon GUI for authenticated credential retrieval
+colab_tests_passed: 44
+colab_session_terminated: true

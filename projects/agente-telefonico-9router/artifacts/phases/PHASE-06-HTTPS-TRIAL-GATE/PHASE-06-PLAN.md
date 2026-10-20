@@ -1,0 +1,3 @@
+# MCF #449 Fase 06 — HTTPS temporário seguro
+Autorização expressa de Leandro: endpoint HTTPS público temporário para homologação Twilio, verificação assinaturas, processamento de sua voz por serviços envolvidos, sem gravar falas no backend, orçamento R$0. NÃO autorizados: publicar produção, comprar números, plano pago, chamar sem nova coordenação.
+Contrato: validar Quick Tunnel com chave sintética e fechar explicitamente; instalar segredo real da Twilio por GUI autenticada sem expô-lo no ChatGPT; só então integrar Custom TwiML e executar teste real com janela de segurança definida. Risco C na fase de voz real.

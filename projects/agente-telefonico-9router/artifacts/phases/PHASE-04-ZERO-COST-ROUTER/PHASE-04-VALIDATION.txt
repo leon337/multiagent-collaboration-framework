@@ -1,0 +1,2 @@
+LOCAL: pytest tests -> 43 passed, 1 warning (Starlette testclient). API real 9Router local: HTTP 200, status ok, 1 novo registro, custo_delta 0.0; texto não comprovado. Nenhum teste de voz/STT/TTS reais nesta fase.
+COLAB CPU: 43 passed (1.03s), marker MCF449_V2_CPU_COLAB_PASS; sessão terminated; exit 0. Real LLM: 200, record cost delta=0.0, sem conteúdo textual, não homologar áudio.

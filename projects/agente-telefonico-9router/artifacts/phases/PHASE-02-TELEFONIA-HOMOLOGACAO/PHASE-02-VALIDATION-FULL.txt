@@ -1,0 +1,3 @@
+VALIDATED: contrato TwiML, TTS voz Polly.Ricardo, Gather speechModel phone_call pt-BR, limites 12KB, UTF-8, campos duplicados, CallSid, expiração e histórico de chamadas em RAM, Twilio HMAC comparado com SDK oficial, HTTP MockTransport de 9Router, fallback, assinaturas positivas e negativas, integração simulada. NÃO VALIDADO: telefonia/STT/TTS reais, custos, deploy e dados pessoais.
+
+Correção CAF: speechModel=phone_call exige speechTimeout numérico; configurado 2s (documentação Twilio vigente). Integração 9Router admite endpoint local 127.0.0.1:20128; URL remota fornecida não homologada. 30 testes locais aprovados.
