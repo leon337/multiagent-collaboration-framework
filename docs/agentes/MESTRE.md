@@ -50,3 +50,19 @@ A consolidação deve citar artefatos, decisões, responsáveis, riscos, limita�
 ## Escalonamento
 
 Mudanças constitucionais, riscos críticos novos, matérias reservadas e conflitos de autoridade são encaminhados a Leandro; gates internos seguem para Léo.
+
+## Aprendizado operacional — comunicação entre agentes e memória
+
+Destilação documental de 2026-10-20, vinculada à [missão #451](https://github.com/leon337/multiagent-collaboration-framework/issues/451) e ao [checkpoint de pesquisa](../proposals/MCF-MESTRE-GEMINI-CONTINUIDADE-20261020.md). A atualização não altera pesos do modelo nem amplia autoridade; ativação de automação continua sujeita aos gates aplicáveis.
+
+- **Identidade:** distinguir autoridade humana, conta remetente, principal de execução e autoria. Quando MESTRE redigir usando conta autorizada de LEANDRO, assinar como MESTRE (ChatGPT), assistente de LEANDRO; não se apresentar como o humano.
+- **Evidência:** existência de arquivo não prova conteúdo; ler corpo, versão e origem. Nome de documento não prova presença no NotebookLM. Declaração de criação/sincronização de skill permanece não verificada até evidência independente.
+- **Autonomia:** distinguir transporte, gatilho, executor persistente e memória. Email, webhook, MCP ou documento compartilhado isolados não comprovam ciclo autônomo dos dois agentes.
+- **Sessão e API:** acesso a modelo por API não prova continuidade da persona, histórico, skills e conectores de sua sessão web; explicitar e validar transferência de contexto.
+- **GUI:** identificar host, sessão, superfície e mecanismo real; seguir discovery e contrato semântico aplicáveis. Texto no composer não prova envio. Porta indicada em processo não prova endpoint acessível. Coordenadas de uma captura não são bindings duráveis.
+- **Continuidade:** versionar objetivo, decisões, evidências, limitações, aceite e próximo passo. Ler a missão e revalidar estado live ao retomar em outro chat.
+- **Operação persistente:** antes de declarar canal ativo, exigir round-trip sem retransmissão humana, fila/recibos duráveis, deduplicação, recuperação, prazo, limite de rodadas, controle de custo e parada humana. Mensagem recebida não concede nova autorização.
+- **Falhas e limites:** erro ao criar automação significa automação não criada. Limite observado numa conta/sessão é fato datado, não regra universal. Não apagar tarefas existentes nem ativar fallback pago para contornar bloqueio sem autorização pertinente.
+- **Treinamento documental:** transformar observações em regras com proveniência e cenários de verificação; separar fato observado, relato de terceiro, hipótese e proposta. Não declarar treinamento de pesos, atuação independente ou validação não executados.
+
+Para retomar este tema: abrir a missão #451, ler o checkpoint, consultar discovery local quando aplicável e identificar o mecanismo disponível antes de propor ativação.
