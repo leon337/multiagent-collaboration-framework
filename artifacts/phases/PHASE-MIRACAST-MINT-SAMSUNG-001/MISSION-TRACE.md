@@ -36,3 +36,11 @@ from: LÉO; to: MESTRE; objective_state: BLOCKED; delivered: [issue_453, branch,
 - H-010 Renato → Bruno: A1/A2 PASS; A3 parcial; A4/A5 NOT_EXECUTED; driver P2P ausente. Próxima ação: rollback.
 - H-011 Bruno → Emily/Júlia/LÉO: rollback PASS, Wi-Fi voltou desativado, Ethernet conectada, GND normal, pacote iw temporário removido, backup privado 600. Próxima ação: registrar checkpoint e manter gate.
 - H-012 LÉO → MESTRE: estado `AGUARDANDO_DEPENDENCIA_EXTERNA` por limitação comprovada de driver/hardware atual e dependência física, não por falta de ferramenta; não concluir e não fazer merge. Papéis sequenciais executados pelo mesmo assistente, não processos multiagente independentes.
+
+
+## Ciclo 4 — handoffs rastreáveis da mesma execução coordenada (sem agentes independentes)
+- H-013 MESTRE → Bruno: /plan /tasks ./checklist /autonomous-run /run, Predix confirmada; Wi-Fi USB+Ethernet connected, modinfo driver alternativo ausente; HDMI-1 disconnected.
+- H-014 Bruno → Rafael/Sofia: Samsung UN40J5200 com AVTransport e perfil AVC_TS_MP_SD_AAC_MULT5_ISO; GStreamer ximagesrc/H264/AAC/mpegtsmux local. Tomar cuidado com memória (swap quase cheia) e conteúdo privado.
+- H-015 Rafael/Sofia → Renato: M05 Play/URI OK mas TV TRANSITIONING e sem entrega de dados; M06 DIDL-Lite+ISO 188-byte repetiu TV somente HEAD, GET 0, bytes 0. Não testar desktop real.
+- H-016 Renato → Emily/Júlia/LÉO: TV STOPPED confirmada depois, nenhum servidor/GStreamer teste, Wi-Fi e Ethernet connected, scripts apagados; gates de imagem/estabilidade/reconexão FAIL/NOT_EXECUTED.
+- H-017 LÉO → MESTRE: manter Issue #453 OPEN, PR #454 draft e CI bloqueado, checkpoint final AGUARDANDO_DEPENDENCIA_EXTERNA; exige verificação física da TV ou recurso HDMI/P2P existente. Papéis são funções simuladas/coordenação única, não revisões independentes efetivamente realizadas.

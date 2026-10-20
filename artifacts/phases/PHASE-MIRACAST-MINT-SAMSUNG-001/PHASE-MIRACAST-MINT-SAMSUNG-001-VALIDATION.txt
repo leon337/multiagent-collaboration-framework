@@ -33,3 +33,14 @@ PARTIAL — A3: manual Screen Mirroring da série, mas nenhum receptor P2P físi
 BLOCKED_NOT_EXECUTED — A4/A5: conexão Miracast/imagem/10 minutos/reconexão/desconexão (driver sem P2P).
 NOT_EXECUTED — TV desligada, reboot e teste físico. Não converter em PASS.
 NOT_PASSED — Gate de merge do PR #454 (Production Readiness falhou na auditoria de dependências).
+
+
+CICLO_4_2026-10-20_PREDIX
+PASS: rádio Wi-Fi e Ethernet connected; outra opção de driver kernel não instalada; HDMI existe mas desconectada.
+PASS: Samsung UN40J5200 SOAP GetProtocolInfo e AVTransport; 287 perfis sink, MPEG-TS H.264+AAC anunciado.
+PASS_LOCAL_ONLY: GStreamer 480x270 TS H.264+AAC criado e decodificado sem gravação persistente; OpenH264 imprime cmInitParaError (aviso).
+M05_SOAP_CONTROL=PASS; TV_STREAMED_IMAGE=NO; HTTP request sem transferência de bytes.
+M06_SOAP_CONTROL=PASS; TV_HTTP_HEAD=1; TV_HTTP_GET=0; BYTES=0; TV_TRANSITIONING durante teste.
+PASS_CLEANUP: TV retornou STOPPED após timeout (sem confirmação visual da fonte), teste HTTP/processos encerrados, scripts temporários removidos, rede preservada.
+NOT_PASSED: A4/A5 image, 10 min stability, reconnect, complete mirroring.
+CI_GATE=BLOCKED, PR_454_DRAFT, ISSUE_453_OPEN.

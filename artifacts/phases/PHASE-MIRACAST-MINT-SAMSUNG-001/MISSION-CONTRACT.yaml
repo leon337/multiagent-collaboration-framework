@@ -79,3 +79,7 @@ mission_closeout:
   human_action_count: 0
   next_action: "Avaliar hardware/protocolo existente e gate se novo driver/kernel necessário; não fingir teste Miracast"
   checkpoint_recipient: MESTRE
+
+# Ciclo 4 2026-10-20 — Solicitação explícita /plan /tasks ./checklist /autonomous-run /run executada de modo síncrono por Predix.
+# Miracast permanece sem P2P no driver rtl8xxxu. Via alternativa LAN/UPnP M05/M06 não validou vídeo (TV HEAD sem GET, 0 bytes).
+# GetTransportInfo da Samsung retornou STOPPED após testes. Nenhuma captura da tela privada/10min/reconexão; sem merge nem troca de driver.

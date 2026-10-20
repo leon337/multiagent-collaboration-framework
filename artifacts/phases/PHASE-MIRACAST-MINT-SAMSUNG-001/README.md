@@ -1,5 +1,20 @@
 # PHASE-MIRACAST-MINT-SAMSUNG-001
 
+## Ciclo 4 — execução autônoma delimitada 2026-10-20
+- Solicitação humana `/plan /tasks ./checklist /autonomous-run /run` efetivada por ações síncronas e auditadas, na conta **Predix**. Não foi criado agente/processo persistente ou agendamento.
+- Revalidação: Linux Mint 22.1/X11; TP-Link TL-WN821N v5/v6 RTL8192EU `rtl8xxxu`, Wi-Fi convencional e Ethernet conectados, LED verde confirmado por foto do usuário anteriormente; não existe driver alternativo `8192eu` instalado nem outro adaptador Wi-Fi USB identificado.
+- Miracast/GNOME Network Displays permanece BLOQUEADO pelo **driver atual sem P2P**, confirmado em `iw phy` na rodada anterior; nenhuma imagem Miracast.
+- HDMI-1 existe mas desconectado; LVDS e VGA conectados. Sem prova de cabo HDMI disponível.
+- Samsung UN40J5200 ofereceu `ConnectionManager`, `AVTransport` e 287 perfis Sink, inclusive MPEG-TS H.264+AAC `AVC_TS_MP_SD_AAC_MULT5_ISO`; GetTransportInfo inicialmente `NO_MEDIA_PRESENT`/depois `STOPPED`. UPnP é diferente de Miracast.
+- GStreamer local suporta `ximagesrc`, `openh264enc`, `mpegtsmux`, `voaacenc`, `openh264dec`: teste padrão 480×270/10 fps criou TS contendo H.264 + AAC detectados por `gst-discoverer-1.0` e vídeo decodificado localmente; `openh264enc` emitiu warning `cmInitParaError` ao EOS, logo robustez não provada.
+- **M05**: TV aceitou ações SOAP `SetAVTransportURI` e `Play` com imagem sintética, mas TV permaneceu `TRANSITIONING`; HTTP recebeu 1 requisição sem enviar bytes de vídeo; retorno subsequente TV `STOPPED`, servidor encerrado.
+- **M06**: segunda tentativa única controlada com `video/mpeg` ISO TS 188-byte, metadados `DIDL-Lite`, perfil declarado pela Samsung, teste sintético 640×360/15 fps. SOAP `SetAVTransportURI` e `Play` = OK, porém TV só fez HTTP `HEAD` (nenhum `GET`), bytes transmitidos = **0**, quatro amostras `TRANSITIONING`. Pedidos Stop durante TRANSITIONING retornaram HTTP 500; após encerrar servidor, nova consulta encontrou a TV `STOPPED`. **Sem imagem ou espelhamento confirmados**.
+- Testes limitados a padrão artificial, sem capturar e enviar a tela real; sem instalação, driver ou firmware modificados. Scripts M05/M06 removidos e nenhum encoder/servidor de teste persistente. Rede Ethernet e Wi-Fi permaneceram conectadas. O retorno à fonte anterior da TV **não foi verificado** visualmente.
+- Limite de recursos observado: `MemAvailable` ~824–883 MiB, swap praticamente todo usado (2 GiB); não elevar bitrate/resolução ou criar processo contínuo.
+- Terceiro pesquisado `debugging-in-prod/tv-cast` demonstra arquitetura DLNA/GStreamer, **mas não foi instalado ou executado**; requer portal ScreenCast inexistente neste Cinnamon (X11 deve ser adaptado para ximagesrc). Pesquisa: https://github.com/debugging-in-prod/tv-cast e README GND https://github.com/GNOME/gnome-network-displays/blob/master/README.md.
+- Resultado A4/A5 **NOT_PASSED**. Próxima dependência: teste visual do usuário na TV, cabo HDMI já disponível ou outro hardware P2P existente e comprovado; sem compra ou troca de kernel/driver não autorizada. PR permanece draft sem merge; CI gate não verde.
+
+
 ## ESTADO ATUAL — diagnóstico real Predix, 2026-10-20
 Atenção: seções mais antigas sobre cota de Desktop Commander e "nenhum comando local" são snapshots históricos de uma conta diferente (**Potiguar**). A execução posterior na conta correta **Predix** supersede esse bloqueio. A missão agora está `BLOCKED_NO_P2P_IN_CURRENT_RTL8XXXU_DRIVER`, e não bloqueada por falta de acesso à máquina. **Rollback local já passou**. A Issue #453 é o checklist vivo.
 
