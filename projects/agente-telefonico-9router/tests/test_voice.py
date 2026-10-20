@@ -378,3 +378,21 @@ def test_model_null_or_empty_content_falls_back(monkeypatch, content):
     import asyncio
     result = asyncio.run(main._model_response("Oi"))
     assert result == "Não consegui formular uma resposta."
+
+
+
+def test_ai_uses_short_timeout_for_twilio_trial(monkeypatch):
+    monkeypatch.setenv("DEMO_MODE", "0")
+    monkeypatch.setenv("ZERO_COST_ONLY", "1")
+    monkeypatch.setenv("MODEL_NAME", "oc/mimo-v2.6-flash-free")
+    monkeypatch.setenv("NINEROUTER_BASE_URL", "http://127.0.0.1:20128/v1")
+    monkeypatch.setenv("NINEROUTER_API_KEY", "fake-only")
+    original = httpx.AsyncClient
+    def mock_client(**kwargs):
+        timeout = kwargs["timeout"]
+        assert timeout.read <= 3.0
+        assert timeout.connect <= 1.0
+        return original(transport=httpx.MockTransport(lambda request: httpx.Response(200, json={"choices": [{"message": {"content": "Oi"}}]})), **kwargs)
+    monkeypatch.setattr(main.httpx, "AsyncClient", mock_client)
+    import asyncio
+    assert asyncio.run(main._model_response("Olá")) == "Oi"
