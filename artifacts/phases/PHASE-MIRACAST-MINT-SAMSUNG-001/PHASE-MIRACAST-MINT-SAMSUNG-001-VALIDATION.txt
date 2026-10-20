@@ -14,3 +14,9 @@ BLOCKED_NOT_EXECUTED — modelo/recepção Wi-Fi Display.
 BLOCKED_NOT_EXECUTED — descoberta, pareamento, imagem e 10 minutos de estabilidade.
 BLOCKED_NOT_EXECUTED — reconexão, término, TV desligada e pós-reboot.
 CLAIM <= EVIDENCE. Nenhum aceite técnico A1–A8 aprovado.
+
+CI / HEAD e34db3a (antes deste checkpoint documental):
+PASS — check Vercel Preview Comments, conclusão success (somente esse check).
+FAIL — MCF Production Readiness, job production-candidate-readiness, step Dependency vulnerability gate: 27 issues (1 critical/10 high/16 moderate), exit 1.
+SKIPPED — format, lint, typecheck, test, build e demais steps após audit. NÃO computar como PASS.
+BLOCKED — merge/gate de integração da PR #454.

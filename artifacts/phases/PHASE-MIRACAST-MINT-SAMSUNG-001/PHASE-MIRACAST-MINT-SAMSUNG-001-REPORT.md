@@ -11,3 +11,6 @@
 
 ## Efeito e recuperação CAF
 Falha: cota mensal Desktop Commander. Classe: dependência de ferramenta externa / acesso. Efeito confirmado: impedimento de inspeção, **sem** alteração local. Recuperação: não repetir, não reconectar, preparar plano e checkpoint no repositório. Próximo ciclo: aguardar liberação legítima de executor e iniciar T03. Risco: instalar/trocar driver sem diagnóstico causa perda de rede. Contramedida: nenhuma alteração até inventário.
+
+## Ciclo 2 — CI do PR draft (2026-10-20)
+Gabriel/Renato verificaram PR #454 em `e34db3a`: `Vercel Preview Comments` SUCCESS, `MCF Production Readiness` FAILURE. Log do job 118593934363: `Dependency vulnerability gate` falhou com exit 1 e 27 vulnerabilidades (1 crítica, 10 altas, 16 moderadas). Formatação, lint, testes e build do workflow ficaram SKIPPED. A missão alterou somente 12 arquivos documentais, nenhum arquivo de dependência, de forma que nenhuma correção de lockfile foi tentada neste escopo. Gate de merge permanece BLOCKED. Link: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/39412646655

@@ -25,3 +25,6 @@
 - `MISSION-TRACE.md`: ESEV/handoffs.
 - `PHASE-MIRACAST-MINT-SAMSUNG-001-ARTIFACT-MANIFEST.sha256`: integridade deste pacote no commit.
 Não há artefato de notebook ou confirmação física ainda. Nenhum merge ou publicação de produção autorizados.
+
+## Observação de gate pós-PR
+No commit inicial do PR #454 (`e34db3a`), `MCF Production Readiness` falhou no `Dependency vulnerability gate` antes de formato/lint/test/build: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/39412646655. A correção de dependências fica fora desta missão de Miracast; PR segue draft. A falha não é prova de defeito dos artefatos documentais.

@@ -37,3 +37,8 @@ responsible: Bruno
 checkpoint_recipient: MESTRE
 human_gate: NOT_YET_REQUIRED
 human_physical_action: "Poderá ser necessário ativar Screen Mirroring na TV e confirmar imagem presencialmente; adiar até T03 e descoberta sem intervenção"
+github_ci_previous_sha: e34db3a076a6409e66d3c3a0f8323fc22d21f8de
+github_ci_previous_run: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/39412646655
+github_ci_previous_status: FAILURE_DEPENDENCY_VULNERABILITY_GATE
+github_ci_findings: "pnpm audit: 27 vulnerabilities (1 critical, 10 high, 16 moderate); format/lint/tests/build SKIPPED"
+merge_authorized: false

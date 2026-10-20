@@ -14,3 +14,6 @@
 [UPSTREAM] https://github.com/GNOME/gnome-network-displays/blob/master/README.md — requer Wi-Fi Display e P2P; `nmcli device`, `iw dev` e capacidade `wpa_supplicant` ajudam a diagnosticar; X11 fallback; H.264 obrigatório. Afirmações sobre dispositivo real: NOT_VERIFIED.
 [SAFETY] Segredos e SSID/MAC/IP/serial não coletados; nada publicado a respeito.
 [REMAINING] Evidência real de SO/driver/TV/codecs/logs, testes físicos, estabilidade, conexões, reversão.
+
+[CI HEAD e34db3a] GitHub Actions run 39412646655, job 118593934363, `production-candidate-readiness`: FAILURE no `Dependency vulnerability gate` por `pnpm audit`, exit 1; 27 vulnerabilidades, 1 critical/10 high/16 moderate. Os testes posteriores foram SKIPPED. URL https://github.com/leon337/multiagent-collaboration-framework/actions/runs/39412646655 . Status Vercel Preview Comments SUCCESS e dois status Vercel SUCCESS não aprovam o CI integral nem autorizam produção.
+[CAUSALIDADE] Diff do PR contém documentação da missão, sem alteração de lockfile/dependências; não atribuir a vulnerabilidade a este PR sem evidência adicional. Correção não realizada por ser outra frente de segurança.
