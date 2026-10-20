@@ -1,44 +1,58 @@
 mission_id: MCF-20261020-MIRACAST-MINT-SAMSUNG-001
 issue: https://github.com/leon337/multiagent-collaboration-framework/issues/453
+pr: https://github.com/leon337/multiagent-collaboration-framework/pull/454
 phase_id: PHASE-MIRACAST-MINT-SAMSUNG-001
 date: 2026-10-20
-main_baseline_sha: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
 branch: mission/20261020-miracast-mint-samsung
-risk_class: B
 authority_human: LEANDRO
 orchestrator: MESTRE
 decision_authority: LÉO
+risk_class: B
 current_state: BLOCKED
 final_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+blocker: "Driver rtl8xxxu com RTL8192EU não anuncia P2P-client/P2P-GO/P2P-device no kernel atual"
 objective_met: false
-cycle: 1
-last_success: "Repo/protocolo/skills/templates verificados; Issue #453 e branch documentais criadas"
-failure: "Desktop Commander monthly usage limit: no retry or reconnect"
-failure_class: EXTERNAL_CONNECTOR_QUOTA
-effect_confirmed: "zero comandos executados no notebook; zero alterações locais; zero testes na TV"
-recovery: "não repetir o conector suspenso; manter PRF/Issue; obter executor legitimamente disponível antes de T03"
-hardware:
-  os_version: UNKNOWN_NOT_INSPECTED
-  desktop: UNKNOWN_NOT_INSPECTED
-  session_type: UNKNOWN_NOT_INSPECTED
-  tp_link_vid_pid_revision: UNKNOWN_NOT_INSPECTED
-  tp_link_chipset: UNKNOWN_NOT_INSPECTED
-  driver_firmware: UNKNOWN_NOT_INSPECTED
-  wifi_p2p: UNKNOWN_NOT_INSPECTED
-  gnome_network_displays_version: USER_CLAIM_INSTALLED_NOT_VERIFIED
-  samsung_tv_model: UNKNOWN_NOT_INSPECTED
-local_changes: []
-local_backups: []
-local_tests_passed: []
-physical_tests_passed: []
-github_issue_created: 453
-next_action: "Retomar T03 com executor de notebook autorizado e disponível; só depois avaliar configuração ou ação física na TV"
-responsible: Bruno
-checkpoint_recipient: MESTRE
-human_gate: NOT_YET_REQUIRED
-human_physical_action: "Poderá ser necessário ativar Screen Mirroring na TV e confirmar imagem presencialmente; adiar até T03 e descoberta sem intervenção"
-github_ci_previous_sha: e34db3a076a6409e66d3c3a0f8323fc22d21f8de
-github_ci_previous_run: https://github.com/leon337/multiagent-collaboration-framework/actions/runs/39412646655
-github_ci_previous_status: FAILURE_DEPENDENCY_VULNERABILITY_GATE
-github_ci_findings: "pnpm audit: 27 vulnerabilities (1 critical, 10 high, 16 moderate); format/lint/tests/build SKIPPED"
+cycle: 3
+connection_used: Predix
+other_connection: "Potiguar - quota 0%; não usar como conta desta missão"
+notebook: leo-N43SM
+os: "Linux Mint 22.1 Xia"
+kernel: "6.8.0-147-generic"
+desktop: Cinnamon
+session_type: x11
+usb_vid_pid: "2357:0107"
+adapter: "TP-Link TL-WN821N v5/v6"
+chipset: "RTL8192EU rev B (SMIC)"
+driver: rtl8xxxu
+firmware: "rtlwifi/rtl8192eu_nic.bin rev 35.7"
+wifi_interface: wlxd03745975502
+p2p_advertised_modes: []
+other_advertised_modes: [managed, AP, AP-VLAN, monitor]
+p2p_device_in_networkmanager: false
+gnome_network_displays: "0.92.1-2build2"
+network_manager: "1.46.0"
+wpa_supplicant: "2.10"
+screencast_portal: "missing in initial debug; X11 fallback upstream"
+encoder: openh264enc
+tv_model_lan: UN40J5200
+tv_evidence: "3 SSDP/UPnP descriptors (Samsung Electronics); Screen Mirroring on J5200 manual"
+tv_physical_miracast_test: NOT_EXECUTED
+native_connection_test: NOT_EXECUTED
+stability_test: NOT_EXECUTED
+reconnect_test: NOT_EXECUTED
+ethernet_state_after_rollback: connected
+wifi_radio_after_rollback: disabled
+wifi_soft_block_after_rollback: true
+gnome_network_displays_after_rollback: normal_process_running
+iw_system_installation: none
+private_evidence_directory: "~/.local/state/mcf/MCF-20261020-MIRACAST-MINT-SAMSUNG-001"
+private_artifacts: [wifi-radio-before.txt, network-displays-debug.log]
+private_artifacts_permissions: "600; directory 700"
+local_changes_remaining: []
+local_rollback_verified: true
 merge_authorized: false
+ci_20261020: "MCF Production Readiness failed dependency vulnerability gate (27 issues); do not merge"
+leo_gate: "BLOQUEAR objetivo completo; aceitar descoberta e rollback parciais apenas"
+human_gate_required_for: "novo gasto, substituição arriscada de driver/kernel ou firmware, ação irreversível"
+next_action: "Avaliar opções existentes HDMI/adaptador P2P já disponível; se escopo exigir novo driver, registrar gate explícito e riscos. Não recomprar nem anunciar sucesso."
+checkpoint_recipient: MESTRE

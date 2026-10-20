@@ -1,14 +1,16 @@
-# SMOKE — teste end-to-end da missão
-STATE=NOT_EXECUTED
-CAUSE=EXTERNAL_CONNECTOR_USAGE_QUOTA; hardware/sessão/TV ainda não inspecionados.
-REQUIRED=
-  - descobrir sink Wi-Fi Display com GNOME Network Displays;
-  - conectar e ver espelhamento no painel Samsung;
-  - observar 10 minutos de transmissão contínua;
-  - desconectar e reconectar (duas conexões comprovadas);
-  - encerrar sem perda de rede;
-  - validar TV desligada;
-  - validar rollback se houver alteração;
-  - reiniciar notebook apenas se seguro e viável.
-REAL_EVIDENCE=NONE
-ACCEPTED=false
+# SMOKE — espelhamento Linux Mint -> Samsung, atualização 2026-10-20
+RESULT=BLOCKED_NOT_EXECUTED
+OBJECTIVE_MET=false
+DEVICE=TP-Link TL-WN821N v5/v6 USB 2357:0107 RTL8192EU; driver rtl8xxxu
+BLOCKING_EVIDENCE=iw phy no current driver: managed,AP,AP-VLAN,monitor; no P2P-client/P2P-GO/P2P-device; NetworkManager sem p2p-dev.
+TV_DISCOVERED_ON_LAN=Samsung UN40J5200 via SSDP, não Miracast/WFD discovery.
+LOCAL_CONFIG_TESTS=PASS: wifi radio on conectado, backup anterior, rollback wifi off e app normal restaurados, Ethernet connected.
+STREAMING_ATTEMPT=NOT_EXECUTED: sem interface P2P detectável, portanto nenhum sink WFD descoberto/clicado.
+IMAGE_TV=NOT_EXECUTED
+STABILITY_10_MIN=NOT_EXECUTED
+RECONNECT=NOT_EXECUTED
+STOP_STREAM=NOT_EXECUTED
+TV_OFF_CASE=NOT_EXECUTED
+REBOOT=NOT_EXECUTED
+ROLLBACK_LOCAL=PASS
+NOTE=Não confundir SSDP/DIAL/UPnP na LAN com Miracast. Não marcar objetivo atendido.

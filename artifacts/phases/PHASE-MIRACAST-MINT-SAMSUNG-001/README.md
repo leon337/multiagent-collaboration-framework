@@ -1,5 +1,18 @@
 # PHASE-MIRACAST-MINT-SAMSUNG-001
 
+## ESTADO ATUAL — diagnóstico real Predix, 2026-10-20
+Atenção: seções mais antigas sobre cota de Desktop Commander e "nenhum comando local" são snapshots históricos de uma conta diferente (**Potiguar**). A execução posterior na conta correta **Predix** supersede esse bloqueio. A missão agora está `BLOCKED_NO_P2P_IN_CURRENT_RTL8XXXU_DRIVER`, e não bloqueada por falta de acesso à máquina. **Rollback local já passou**. A Issue #453 é o checklist vivo.
+
+- Linux Mint 22.1 Xia, Cinnamon/X11, kernel 6.8.0-147.
+- Adaptador TP-Link TL-WN821N v5/v6 USB 2357:0107 / RTL8192EU rev B, rtl8xxxu, firmware rtl8192eu_nic.bin rev 35.7.
+- `iw phy` executado de binário oficial 6.7-1build1, SHA-256 conferido, sem instalação: modos managed/AP/AP-VLAN/monitor, **SEM P2P-client, P2P-GO ou P2P-device**. Nenhum `p2p-dev-*` em `nmcli`.
+- Samsung **UN40J5200** encontrada na LAN via SSDP e três descritores UPnP de Samsung Electronics. Manual da linha J5200 documenta Screen Mirroring (modelo/região podem variar). Nenhuma recepção física testada.
+- GNOME Network Displays v0.92.1-2build2; NM 1.46.0; wpa_supplicant 2.10; openh264enc presente, x264enc ausente; portal ScreenCast indisponível no Cinnamon, upstream prevê fallback X11; `Got NMClient` mas sem provedor P2P.
+- `nmcli radio wifi on` após backup privado fez interface Wi-Fi conectar; sem P2P. **Rollback comprovado:** `nmcli radio wifi off`, Wi-Fi disabled/soft blocked yes, USB unavailable, Ethernet connected. GNOME Network Displays reiniciado normalmente; extratos privados do `iw` removidos, nenhum pacote global instalado. Log/backup privados preservados modo 600.
+- Nenhuma conexão Miracast, imagem ou teste de estabilidade/reconexão: **NOT_EXECUTED/BLOCKED** por falta de requisito P2P no driver **atual**; não concluir que outro driver nunca poderia funcionar.
+- PR #454 DRAFT e sem merge. O workflow Production Readiness foi reprovado em auditoria de dependências não alteradas neste PR; não corrigir lockfile nesta missão.
+
+
 **Missão:** MCF-20261020-MIRACAST-MINT-SAMSUNG-001 · **Issue:** #453  
 **Estado:** BLOCKED_EXTERNAL_CONNECTOR_QUOTA · **Objetivo entregue:** NÃO · **Classe:** B  
 **Notebook/TV:** configuração real NÃO INSPECIONADA. Nenhum comando de sistema executado.

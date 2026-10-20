@@ -43,3 +43,7 @@ Evidência = comando exato + retorno + data + status + linhas relevantes **anoni
 
 ## Bloqueio atual
 Desktop Commander listou notebook online, mas negou comandos com limite mensal e instrução explícita de não repetir/reconectar. TRIGGERcmd retornou `No computers found for this user.`; sem alternativa remota executável comprovada. Zero comandos no notebook. Fonte técnica: https://github.com/GNOME/gnome-network-displays/blob/master/README.md
+
+
+## Revisão pós-inspeção (Predix, 2026-10-20)
+T03/T04 concluídos com evidência real. O driver rtl8xxxu do RTL8192EU no kernel 6.8 somente expõe managed, AP, AP/VLAN, monitor; GNOME Network Displays exige Wi-Fi P2P e NetworkManager p2p-dev. Veredicto: caminho nativo BLOQUEADO PELO DRIVER ATUAL, sem alegar incapacidade universal do chipset. Não substituir módulo/firmware, não usar sudo ou instalar globalmente sem gate/segurança. M01 foi revertida e provada. A TV modelo UN40J5200 está na LAN e há documentação Screen Mirroring; isso não comprova sink ativo. A4/A5/A6 físicos permanecem pendentes. Contexto temporal de cotas anterior era da conta Potiguar, não Predix.
