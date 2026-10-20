@@ -1,0 +1,2 @@
+LOCAL: pytest 44 passed, 1 warning. HTTPS_PUBLIC_TEMP: health 200; invalid incoming signature 403; valid signed webhook 200 + TwiML Gather pt-BR; invalid SpeechResult signature 403. PROCESSES_STOPPED true. REAL_TWILIO_AUTH_TOKEN false. PUBLIC_DEPLOY_ACTIVE false. CALLS_PLACED 0. LLM_CALLS 0.
+COLAB_CPU: 44 passed em 0.98s; marker MCF449_V2_CPU_COLAB_PASS; session terminated; exit 0.
