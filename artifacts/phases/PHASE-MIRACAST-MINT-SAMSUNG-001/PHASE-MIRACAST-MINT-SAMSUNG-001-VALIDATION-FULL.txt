@@ -1,0 +1,42 @@
+# VALIDATION-FULL — evidências verificáveis / lacunas
+
+[REPO] GitHub connector get_repo(owner/name):
+- Repository: leon337/multiagent-collaboration-framework
+- default_branch=main; archived=false; push=true.
+[HEAD] fetch GET /repos/leon337/multiagent-collaboration-framework/git/ref/heads/main:
+- refs/heads/main -> 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615.
+[DUPLICATE CHECK] GitHub search_issues(query repo + Miracast), search_issues(query repo + "GNOME Network Displays"), search_issues(query repo + Samsung espelhamento), search_prs(query repo + Miracast): lists empty for those queries. Não alegar auditoria exaustiva de todas as Issues.
+[LOCAL CONNECTOR] Desktop Commander list_devices:
+- device leo-N43SM online; a listagem não comprova SO, chipset ou sessão.
+[LOCAL COMMAND REQUEST] start_process with harmless read-only calls (`cat /etc/os-release`, `uname -r`, `lsusb`, `nmcli`, `iw`, pacote GNOME Network Displays), mas o serviço retornou **usage limit before execution**. Não há stdout, exit code ou logs do notebook.
+[ERROR] `You've reached this month's Desktop Commander usage, so tool calls are paused. Your device remains connected and paired — do not retry or reconnect.`
+[FALLBACK] TRIGGERcmd list_commands: `No computers found for this user.`; nenhum comando foi executado.
+[UPSTREAM] https://github.com/GNOME/gnome-network-displays/blob/master/README.md — requer Wi-Fi Display e P2P; `nmcli device`, `iw dev` e capacidade `wpa_supplicant` ajudam a diagnosticar; X11 fallback; H.264 obrigatório. Afirmações sobre dispositivo real: NOT_VERIFIED.
+[SAFETY] Segredos e SSID/MAC/IP/serial não coletados; nada publicado a respeito.
+[REMAINING] Evidência real de SO/driver/TV/codecs/logs, testes físicos, estabilidade, conexões, reversão.
+
+[CI HEAD e34db3a] GitHub Actions run 39412646655, job 118593934363, `production-candidate-readiness`: FAILURE no `Dependency vulnerability gate` por `pnpm audit`, exit 1; 27 vulnerabilidades, 1 critical/10 high/16 moderate. Os testes posteriores foram SKIPPED. URL https://github.com/leon337/multiagent-collaboration-framework/actions/runs/39412646655 . Status Vercel Preview Comments SUCCESS e dois status Vercel SUCCESS não aprovam o CI integral nem autorizam produção.
+[CAUSALIDADE] Diff do PR contém documentação da missão, sem alteração de lockfile/dependências; não atribuir a vulnerabilidade a este PR sem evidência adicional. Correção não realizada por ser outra frente de segurança.
+
+
+[PREDIX ACCOUNT] who_am_i -> Predix cota 93% inicialmente, device leo-N43SM online. Alterar diagnóstico anterior de cota: era Potiguar, não Predix.
+[OS] PRETTY_NAME="Linux Mint 22.1", kernel 6.8.0-147-generic, XDG_CURRENT_DESKTOP=X-Cinnamon, XDG_SESSION_TYPE=x11.
+[USB] lsusb -> 2357:0107 TP-Link TL-WN821N v5/v6 [RTL8192EU]; sysfs ID_REVISION=0200; dmesg RTL8192EU rev B (SMIC) 2T2R, firmware rtlwifi/rtl8192eu_nic.bin revision 35.7; ethtool -i driver rtl8xxxu.
+[ORIGINAL RADIO] nmcli radio WIFI=desabilitado, rfkill Soft blocked=yes, Hard blocked=no; nmcli USB unavailable; Ethernet connected.
+[TEMP RADIO] nmcli radio wifi on; after asynchronous state update WIFI=habilitado, Soft blocked=no; interface Wi-Fi connected, Ethernet connected.
+[IW] apt-get download iw 6.7-1build1 (114 kB) only, sha256sum confirmed 0765ce9fbf01b421be44333926648bcef433003979fd6416dd51a649a6734fd0 against apt-cache metadata; extracted privately; iw phy: managed, AP, AP/VLAN, monitor. Missing P2P-client, P2P-GO and P2P-device. iw dev managed only. dpkg-query iw absent after removing temporary files.
+[GND] existing process restarted in debug and returned to normal; Gnd-DEBUG NdNMDeviceRegistry: Got NMClient; no P2P provider; warning org.freedesktop.portal.ScreenCast absent. Upstream states X11 fallback; not independently tested. Software package gnome-network-displays 0.92.1-2build2.
+[SAMSUNG] SSDP unique response types 12, Samsung UPnP SDK, Samsung Electronics modelName UN40J5200 present in MediaRenderer, DIAL and RemoteControlReceiver descriptions. This is LAN discovery, not P2P sink discovery. No private IP/MAC/SSID in public record.
+[ROLLBACK] nmcli radio wifi off + 2 seconds: WIFI=desabilitado, Soft blocked=yes, Hard blocked=no, USB unavailable, Ethernet connected; GND normal PID 275675; extracted iw files removed, dpkg iw not installed; private backup and debug log mode 600.
+[NOT EXECUTED] Miracast connection, streamed image, stable 10 min, reconnection, TV off, reboot. Do not infer passes.
+
+
+[CYCLE 4 PREDIX — /plan /tasks ./checklist /autonomous-run /run]
+[READ] uname/os/USB/Mint, wifi+ethernet connected; modinfo 8192eu/rtl8192eu not found; DKMS only Nvidia; no alternative wifi USB; xrandr HDMI-1 disconnected.
+[UPNP READ] Samsung UN40J5200, MediaRenderer ConnectionManager/GetProtocolInfo 287 Sink entries, including AVC_TS_MP_SD_AAC_MULT5_ISO (video/mpeg), AVTransport GetTransportInfo NO_MEDIA_PRESENT/STOPPED. No TV private address/URI logged publicly.
+[LOCAL GST] videotestsrc + openh264enc/h264parse + voaacenc/aacparse + mpegtsmux 480x270 10fps produced 59220-byte test file; gst-discoverer identified H264 Constrained Baseline + AAC; openh264dec accepted video. Test file removed. Encoder emitted cmInitParaError; no assumption of perfect video.
+[M05] only synthetic ball test pattern, no desktop. SOAP SetAVTransportURI OK, Play OK, TRANSITIONING, HTTP 1 request zero bytes. Stop and clear during transition HTTP error; subsequent read TV STOPPED. HTTP server ended and script deleted.
+[M06] synthetic pattern again, ISO TS 188 bytes with video/mpeg AVC_TS_MP_SD_AAC_MULT5_ISO, DIDL-Lite metadata and matching DLNA headers; SOAP Set URI OK, Play OK, 4 samples TRANSITIONING, HTTP only HEAD, no GET, BYTES=0. Stop HTTP 500 during transition; server shut down, test script deleted; fresh GetTransportInfo TV STOPPED.
+[STDOUT SANITY] local gst-launch to stdout emitted 3948 TS bytes; exit 141 was expected SIGPIPE after head limit. Memory available under 1GiB with swap nearly exhausted; no sustained high-res trial.
+[ROLLBACK] network manager / driver unchanged this cycle, both Ethernet & Wi-Fi remain connected; no gst-launch or MCF HTTP processes; physical TV source not visually checked.
+[NO CLAIM] Not successful mirroring; no captured user desktop bytes transmitted to TV; tv-cast upstream studied only, not executed.
