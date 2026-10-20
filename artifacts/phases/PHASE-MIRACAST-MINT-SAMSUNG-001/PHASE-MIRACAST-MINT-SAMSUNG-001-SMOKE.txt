@@ -1,0 +1,14 @@
+# SMOKE — teste end-to-end da missão
+STATE=NOT_EXECUTED
+CAUSE=EXTERNAL_CONNECTOR_USAGE_QUOTA; hardware/sessão/TV ainda não inspecionados.
+REQUIRED=
+  - descobrir sink Wi-Fi Display com GNOME Network Displays;
+  - conectar e ver espelhamento no painel Samsung;
+  - observar 10 minutos de transmissão contínua;
+  - desconectar e reconectar (duas conexões comprovadas);
+  - encerrar sem perda de rede;
+  - validar TV desligada;
+  - validar rollback se houver alteração;
+  - reiniciar notebook apenas se seguro e viável.
+REAL_EVIDENCE=NONE
+ACCEPTED=false

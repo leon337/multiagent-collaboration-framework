@@ -1,0 +1,16 @@
+# VALIDATION-FULL — evidências verificáveis / lacunas
+
+[REPO] GitHub connector get_repo(owner/name):
+- Repository: leon337/multiagent-collaboration-framework
+- default_branch=main; archived=false; push=true.
+[HEAD] fetch GET /repos/leon337/multiagent-collaboration-framework/git/ref/heads/main:
+- refs/heads/main -> 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615.
+[DUPLICATE CHECK] GitHub search_issues(query repo + Miracast), search_issues(query repo + "GNOME Network Displays"), search_issues(query repo + Samsung espelhamento), search_prs(query repo + Miracast): lists empty for those queries. Não alegar auditoria exaustiva de todas as Issues.
+[LOCAL CONNECTOR] Desktop Commander list_devices:
+- device leo-N43SM online; a listagem não comprova SO, chipset ou sessão.
+[LOCAL COMMAND REQUEST] start_process with harmless read-only calls (`cat /etc/os-release`, `uname -r`, `lsusb`, `nmcli`, `iw`, pacote GNOME Network Displays), mas o serviço retornou **usage limit before execution**. Não há stdout, exit code ou logs do notebook.
+[ERROR] `You've reached this month's Desktop Commander usage, so tool calls are paused. Your device remains connected and paired — do not retry or reconnect.`
+[FALLBACK] TRIGGERcmd list_commands: `No computers found for this user.`; nenhum comando foi executado.
+[UPSTREAM] https://github.com/GNOME/gnome-network-displays/blob/master/README.md — requer Wi-Fi Display e P2P; `nmcli device`, `iw dev` e capacidade `wpa_supplicant` ajudam a diagnosticar; X11 fallback; H.264 obrigatório. Afirmações sobre dispositivo real: NOT_VERIFIED.
+[SAFETY] Segredos e SSID/MAC/IP/serial não coletados; nada publicado a respeito.
+[REMAINING] Evidência real de SO/driver/TV/codecs/logs, testes físicos, estabilidade, conexões, reversão.

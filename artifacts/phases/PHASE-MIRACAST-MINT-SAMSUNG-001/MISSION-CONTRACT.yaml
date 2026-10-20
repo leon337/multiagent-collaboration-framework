@@ -1,0 +1,81 @@
+mission_contract:
+  mission_id: MCF-20261020-MIRACAST-MINT-SAMSUNG-001
+  parent_mission_id: null
+  phase_id: PHASE-MIRACAST-MINT-SAMSUNG-001
+  title: "GNOME Network Displays: espelhamento Linux Mint para TV Samsung via TP-Link USB"
+  objective: "Obter espelhamento Miracast sem fio, funcional e repetível, com hardware atual"
+  expected_outcome: "Imagem estável por 10 minutos, reconexão, encerramento limpo e rollback demonstráveis"
+  scope:
+    - "Diagnóstico USB/driver/firmware/Wi-Fi P2P"
+    - "Sessão X11/Wayland, GNOME Network Displays, codecs, NM/wpa_supplicant"
+    - "TV Samsung modelo/capacidade/sink"
+    - "Ajustes mínimos reversíveis, pareamento e testes reais"
+  out_of_scope:
+    - "Firmware, compras, serviços pagos e mudanças irreversíveis"
+    - "Troca de driver/NetworkManager sem evidência"
+    - "Publicação de credenciais, rede privada ou deploy"
+  inputs:
+    - "Declaração de LEANDRO: Linux Mint, TP-Link USB conectado, GNOME Network Displays instalado, TV Samsung"
+  source_of_truth:
+    - "GitHub live e docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md"
+    - "tools/terminal autorizados do notebook, se disponíveis"
+    - "Modelo oficial da TV e README upstream de GNOME Network Displays"
+  assumptions:
+    - "Hardware e versão de software ainda não observados"
+  acceptance_criteria:
+    - A1_SO_USB_P2P_COM_PROVA
+    - A2_SOFTWARE_COM_PROVA
+    - A3_TV_DISCOVERY_COM_PROVA
+    - A4_10_MIN_ESPELHAMENTO
+    - A5_RECONEXAO_E_STOP
+    - A6_TV_INDISPONIVEL_ROLLBACK_REBOOT_SE_SEGURO
+    - A7_PRF_CHECKLIST_INSTRUCOES
+    - A8_AUTORIDADE_E_PRIVACIDADE
+  authorizations:
+    - "LEANDRO autorizou diagnosticar/testar/alterar somente opções seguras e reversíveis dentro do objetivo"
+  prohibitions:
+    - "Não comprar nem alterar firmware"
+    - "Não registrar credenciais no código"
+    - "Não enviar mensagens ou publicar produção"
+    - "Não publicar evidências privadas no GitHub público"
+  risk_class: B
+  current_state: BLOCKED
+  cycle: 1
+  selected_agents: [MESTRE, LÉO, Miriam, Augusto, Sofia, Rafael, Bruno, Patrícia, Renato, Carmem, Emily, Júlia, Gabriel]
+  decision_authority: LÉO
+  human_escalation_triggers:
+    - "Custo, credencial excepcional, firmware, ação irreversível, mudança estratégica ou lançamento público"
+    - "Ação física essencial na TV, apenas depois de esforços independentes viáveis"
+  phase_artifact_directory: artifacts/phases/PHASE-MIRACAST-MINT-SAMSUNG-001
+human_delegation_firewall:
+  mode: TEAM_FIRST
+  human_as_executing_agent: false
+  team_execution_attempted: true
+  attempted_actions: [github_read, connector_device_listing, remote_readonly_command_attempt, triggercmd_listing]
+  evidence: [issue_453, external_connector_usage_limit]
+  tool_limitation: "Desktop Commander monthly quota; do not retry or reconnect"
+  fallback_exhausted: true
+  intervention_required: false
+  leo_approved: false
+  human_action_count: 0
+  return_to_team_defined: true
+phase_traceability_pack:
+  directory: artifacts/phases/PHASE-MIRACAST-MINT-SAMSUNG-001
+  integrity_verified: false
+leo_gate:
+  decision: BLOQUEAR
+  justification: "Critérios A1-A8 dependem de evidência de notebook/TV indisponível"
+  next_state: BLOCKED
+  next_action: "Executar T03 ao desbloquear executor legítimo"
+  responsible: Bruno
+mission_closeout:
+  mission_id: MCF-20261020-MIRACAST-MINT-SAMSUNG-001
+  phase_id: PHASE-MIRACAST-MINT-SAMSUNG-001
+  final_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  objective_met: false
+  evidence: [github_read, issue_453, connector_usage_error]
+  blockers: [desktop_commander_usage_quota, tv_uninspected]
+  human_action_required: false
+  human_action_count: 0
+  next_action: "Retomar T03 com acesso autorizado e disponível ao notebook"
+  checkpoint_recipient: MESTRE

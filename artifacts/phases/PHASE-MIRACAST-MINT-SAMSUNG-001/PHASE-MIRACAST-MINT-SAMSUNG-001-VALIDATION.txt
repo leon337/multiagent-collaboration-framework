@@ -1,0 +1,16 @@
+# VALIDATION — teste e estado factual em 2026-10-20
+AUTOMATED / GitHub:
+PASS — get_repo: repository_full_name correto, permissões de escrita GitHub e default_branch=main.
+PASS — GET git/ref/heads/main: SHA 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615.
+PASS — busca GitHub específica por Miracast, GNOME Network Displays e Samsung: nenhuma correspondência direta nas consultas (busca não é prova exaustiva).
+PASS — issue #453 criada; branch de documentação criada.
+NOT_EXECUTED — CI/document linter/shellcheck: não há resultado disponível neste momento.
+LOCAL_CONFIG / notebook:
+BLOCKED_NOT_EXECUTED — distribuição, sessão, USB/chipset/driver/firmware/P2P.
+BLOCKED_NOT_EXECUTED — app/versão, codecs, NetworkManager e wpa_supplicant.
+BLOCKED_NOT_EXECUTED — alteração e validação do rollback; zero alterações realizadas.
+PHYSICAL_TV:
+BLOCKED_NOT_EXECUTED — modelo/recepção Wi-Fi Display.
+BLOCKED_NOT_EXECUTED — descoberta, pareamento, imagem e 10 minutos de estabilidade.
+BLOCKED_NOT_EXECUTED — reconexão, término, TV desligada e pós-reboot.
+CLAIM <= EVIDENCE. Nenhum aceite técnico A1–A8 aprovado.

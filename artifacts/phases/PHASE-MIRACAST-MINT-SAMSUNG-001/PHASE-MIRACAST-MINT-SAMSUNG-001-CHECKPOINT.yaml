@@ -1,0 +1,39 @@
+mission_id: MCF-20261020-MIRACAST-MINT-SAMSUNG-001
+issue: https://github.com/leon337/multiagent-collaboration-framework/issues/453
+phase_id: PHASE-MIRACAST-MINT-SAMSUNG-001
+date: 2026-10-20
+main_baseline_sha: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
+branch: mission/20261020-miracast-mint-samsung
+risk_class: B
+authority_human: LEANDRO
+orchestrator: MESTRE
+decision_authority: LÉO
+current_state: BLOCKED
+final_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+objective_met: false
+cycle: 1
+last_success: "Repo/protocolo/skills/templates verificados; Issue #453 e branch documentais criadas"
+failure: "Desktop Commander monthly usage limit: no retry or reconnect"
+failure_class: EXTERNAL_CONNECTOR_QUOTA
+effect_confirmed: "zero comandos executados no notebook; zero alterações locais; zero testes na TV"
+recovery: "não repetir o conector suspenso; manter PRF/Issue; obter executor legitimamente disponível antes de T03"
+hardware:
+  os_version: UNKNOWN_NOT_INSPECTED
+  desktop: UNKNOWN_NOT_INSPECTED
+  session_type: UNKNOWN_NOT_INSPECTED
+  tp_link_vid_pid_revision: UNKNOWN_NOT_INSPECTED
+  tp_link_chipset: UNKNOWN_NOT_INSPECTED
+  driver_firmware: UNKNOWN_NOT_INSPECTED
+  wifi_p2p: UNKNOWN_NOT_INSPECTED
+  gnome_network_displays_version: USER_CLAIM_INSTALLED_NOT_VERIFIED
+  samsung_tv_model: UNKNOWN_NOT_INSPECTED
+local_changes: []
+local_backups: []
+local_tests_passed: []
+physical_tests_passed: []
+github_issue_created: 453
+next_action: "Retomar T03 com executor de notebook autorizado e disponível; só depois avaliar configuração ou ação física na TV"
+responsible: Bruno
+checkpoint_recipient: MESTRE
+human_gate: NOT_YET_REQUIRED
+human_physical_action: "Poderá ser necessário ativar Screen Mirroring na TV e confirmar imagem presencialmente; adiar até T03 e descoberta sem intervenção"
