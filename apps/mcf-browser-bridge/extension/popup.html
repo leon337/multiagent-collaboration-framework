@@ -1,8 +1,10 @@
 <!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>MCF Bridge</title>
 <link rel="stylesheet" href="popup.css">
-<h1>MCF Browser Bridge</h1><p>MCF-BROWSER-BRIDGE-001 · PHASE-02</p>
+<h1>MCF Browser Bridge</h1><p>MCF-BROWSER-BRIDGE-001 · PHASE-02 / PHASE-03 local</p>
 <p>Somente a fixture sintética na aba atual. Consentimento dura até 60 s ou até fechar este popup. Sem screenshots.</p>
 <label><input id="consent" type="checkbox"> Autorizo ler a fixture sintética nesta aba.</label>
 <p><button id="connect">Selecionar aba atual e conectar</button> <button id="summary" disabled>Ler resumo</button> <button id="stop">Parar / desconectar</button></p>
+<label><input id="agent-consent" type="checkbox" disabled> Autorizar leitura local pelo MESTRE nesta fixture</label>
+<p id="agent-state" role="status">agent read allowed: false · REVOKED</p>
 <pre id="status" role="status">DESCONECTADO</pre><p>Diagnóstico: valide arquivo da fixture, permissão de acesso a arquivos e instalação manual do host. Nenhuma leitura automática.</p>
 <script src="popup.js" type="module"></script></html>

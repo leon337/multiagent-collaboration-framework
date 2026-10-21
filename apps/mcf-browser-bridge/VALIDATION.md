@@ -1,3 +1,49 @@
+# PHASE-03 — correção de regressão GUI e governança, 2026-10-21
+
+O MESTRE relatou duas execuções reais bloqueadas em `SUMMARY_ENABLED_TIMEOUT` após CONNECTED. Causa confirmada: o reset inicial emitia REVOKED e o popup desmarcava o consentimento humano. Essa evidência é FAIL para o diff anterior PHASE-03; não altera a evidência histórica PHASE-02.
+
+Correção: connect invalida a lease/generation, limpa timer, desliga delegação e desconecta o port antigo, mas notifica `SESSION_RESET`. O popup limpa/desabilita controles de leitura durante o reset sem desmarcar o consentimento humano. STOP, fechamento, drift, erro e expiração continuam em REVOKED. `tests/popup.test.js` executa o código real de popup em VM ligado ao worker real com APIs Chrome simuladas: consentimento → connect → resumo habilitado → leitura; opt-in seguido de reconexão desconecta o host anterior e elimina delegação; STOP e troca de aba desmarcam consentimento/desabilitam leitura. Não houve alteração do harness para ignorar disabled.
+
+Governança adicional: `agent_read_denied` tem schema estrito e enum de códigos, sem mensagens arbitrárias. Broker encaminha negação correspondente para IPC sem encerrar stdio; respostas válidas stale/duplicadas são ignoradas. Resposta no limite do deadline vira TIMEOUT. Callback do timer verifica identidade do pending para não limpar outro pedido. Worker só envia negação se a lease ainda é a atual; depois de revogação já processada não envia resposta. Revogação do broker nega pedido pendente, limpa token/socket próprios e permite flush de saída limitada antes de fechar clientes, sem manter listener ativo. Mensagens malformadas/desconhecidas continuam fail-closed.
+
+Resultados após correção:
+
+- `npm test`: PASS, **18 testes: 17 PASS, 1 skipped NOT_RUN**, 0 falhas. Inclui testes negativos de denial schema/código, stale/duplicate, timeout/revoke, drift com negação tipada e supressão após revogação.
+- `npm run check`: PASS.
+- `npm run smoke:host`: NOT_RUN, exit 1 por `spawnSync /usr/bin/node EPERM` antes de executar o host.
+- Probe isolado `Xvfb -displayfd 1 -screen 0 800x600x24 -nolisten tcp`: setup não qualificado, `spawnSync` retornou `ENOBUFS`, status null, SIGTERM. Não se atribui causa sem diagnóstico adicional. `e2e:brave` e `e2e:agent`: **NOT_RUN nesta correção**, conforme orientação de só tentar após Xvfb permitido/funcional. MESTRE deve reexecutar ambos fora deste ambiente.
+- IPC real: continua NOT_RUN por negação do listen Unix no sandbox. Testes reais adicionais de negação, duplicação e timeout foram acrescentados mas não são contados como executados.
+
+Arquivos desta correção: `extension/background.js`, `extension/popup.js`, `extension/agent-contract.js`, `host/agent-broker.js`, `tests/agent.test.js`, `tests/worker.test.js`, novo `tests/popup.test.js`, `README.md`, `VALIDATION.md`. Sem instalação, conta/perfil pessoal, commit ou push. Aceitação GUI PHASE-03 permanece pendente até novo PASS real do MESTRE.
+
+---
+
+# PHASE-03 — validação atual, 2026-10-21
+
+Branch `feat/mcf-browser-bridge-001-local-agent`, base informada `c343069343259b03165340101b5ba73d897beb99`. Alterações limitadas a `apps/mcf-browser-bridge`. Sem commit, push, instalação, alteração de perfil/manifesto pessoal ou dependências/lockfile. A evidência histórica real Brave/CI da PR #458 abaixo é preservada; **não qualifica este diff PHASE-03**.
+
+| Comando / prova | Resultado desta execução Codex |
+| --- | --- |
+| `npm test` | PASS: 16 testes, 15 PASS, 0 falhas, 1 skipped explicitamente NOT_RUN |
+| `npm run check` | PASS: sintaxe JS/CJS, permissões MV3 e template JSON |
+| Unix IPC real em `tests/agent.test.js` | NOT_RUN: sandbox negou `listen` em socket Unix (EPERM/EACCES); não é prova de transporte |
+| `npm run smoke:host` | NOT_RUN: `spawnSync /usr/bin/node EPERM`, exit 1 no primeiro caso |
+| `npm run e2e:brave` | NOT_RUN: `OPTIONAL_PUPPETEER_CORE_UNAVAILABLE`, exit 1, checks vazios |
+| `npm run e2e:agent` | NOT_RUN: mesma dependência opcional indisponível, exit 1, checks vazios |
+| Qualificação externa PHASE-03 / revisão independente | PENDENTE, reservada ao MESTRE |
+
+Nenhum safeguard foi desabilitado e nenhum pacote foi instalado para contornar os bloqueios. Testes de schema/gate sintético usam a mesma função de autorização chamada pelo receptor real. Cobrem ausência/revogação do grant, token forjado, replay, expiração, concorrência, writes e campos extras. Testes de diretório cobrem modo inseguro, symlink, caminho não normalizado, ausência de arquivos antes de allow e preservação de entrada existente. Framing cobre JSON/UTF-8 inválidos, oversize e truncamento. O teste real de socket contém asserções de modo 0600, roteamento, token/replay/busy/expiry, payload malformado/oversize e cleanup, mas não executou essas asserções neste sandbox.
+
+Worker simulado: testes controlados suspendem sondagem de contexto e retorno de snapshot, revogam via STOP/fechamento/troca de aba e só depois liberam a Promise. Antes de agendar: zero snapshots; após agendar: resultado suprimido. Incluem pedido antes de opt-in, consentRef falso, prazo vencido, replay, concorrência, schema extra e sucesso sintético. RPC é testado separadamente: mensagem espontânea tipada não resolve/rejeita RPC pendente; tipo desconhecido, schema malformado e origem HTTP são rejeitados. Os dez testes anteriores continuam na suíte sem remoção de safeguards.
+
+Arquivos novos: `extension/agent-contract.js`, `host/agent-broker.js`, `scripts/agent-read-fixture.cjs`, `tests/agent.test.js`. Arquivos modificados: `extension/background.js`, `extension/contract.js`, `extension/popup.html`, `extension/popup.js`, `host/host.js`, `package.json`, `scripts/e2e-brave-disposable.cjs`, `scripts/smoke-host.js`, `tests/worker.test.js`, `README.md`, `VALIDATION.md`.
+
+Revisão necessária: lifecycle real de popup/MV3/Native Messaging, startup/EOF durante bind, permissões e cleanup de Unix socket no sistema real, roteamento e deadlines com CLI real. Mesmo UID malicioso fora de escopo; symlink/inode checks não garantem ausência de todas as corridas de pathname. SIGKILL/energia podem deixar artefatos e não há stale-socket recovery automática. Não há autenticação forte de host contra processo local do mesmo UID. Resumo é não confiável, redação heurística e 4000 caracteres referem-se ao campo text; título/metadados são separados. STOP não desfaz snapshot já agendado. Sem autorização para contas reais, produção, transporte remoto ou registro no runtime.
+
+MESTRE deve executar todos os comandos da seção PHASE-03 do README fora do sandbox, revisar todos os diffs e só então preparar PR draft; este trabalho não cria PR. A CLI e o harness opcional estão implementados, **a prova E2E PHASE-03 ainda não foi obtida**.
+
+---
+
 # Validação local — 2026-10-21
 
 Ambiente Codex: Node v24.22.0; branch `feat/mcf-browser-bridge-001-mvp`.

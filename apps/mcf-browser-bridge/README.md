@@ -24,7 +24,7 @@ npm run smoke:host
 - `extension/contract.js`: contrato v1 com JSDoc, validação e decisão pura reutilizável. Vincula missionId/phaseId/actionId, tabId/documentId/URL/origin, sessão, prazo e orçamento. Só aceita `hello`, `capabilities`, `read-summary`. Pedido extra/desconhecido é negado.
 - `host/session.js`: hello vincula alvo e fornece ID aleatório de sessão; requisições seguintes exigem este ID, alvo idêntico e actionId novo. Nova sessão/reinício exige novo hello; não há replay automático. Não é pareamento criptográfico persistente.
 - Resultado estruturado: protocolVersion/actionId, state VALIDATED ou DENIED, failureCode, retryable=false; sucesso inclui sessionId, observedTarget, prazo, capabilities e effects=NONE. VALIDATED significa validação local do pedido, **não** receipt canônico MCF nem prova de leitura do browser.
-- O host autoriza metadados antes da leitura; **o DOM não passa pelo host**. Só o popup recebe o resumo. O host confia nos metadados da extensão e não observa diretamente a aba.
+- O host autoriza metadados antes da leitura; **no modo manual PHASE-02 o DOM não passa pelo host**. Só o popup recebe o resumo. O host confia nos metadados da extensão e não observa diretamente a aba.
 
 Reutiliza os princípios de PermissionEngine, ExternalActionDispatcher, AdapterRegistry e browser-actions/evidence, sem importar dependências nem criar MissionRuntime/Registry/Ledger. Futuro adapter poderá mapear contexto para ExternalActionRequest e gerar McfToolReceipt através do dispatcher/evidence canônicos; esta fase não registra provider, skill ou adapter. Sem writes, retries automáticos ou alegação de durable execution.
 
@@ -60,7 +60,7 @@ Essas etapas modificam perfil e são **gate humano futuro**, não operações au
 4. Após gate humano, no Linux, colocar esse manifesto como `com.mcf.browser_bridge.json` em `~/.config/BraveSoftware/Brave-Browser/NativeMessagingHosts/` (ou diretório de configuração efetivo do Brave conforme distribuição). Chrome futuro usa `~/.config/google-chrome/NativeMessagingHosts/`. Confirmar diretório com documentação da instalação antes de copiar; não sobrescrever manifesto existente.
 5. Reiniciar/recarregar apenas a extensão de teste conforme necessário. Abrir fixture e executar fluxo explícito. Host ausente/config inválida produz DENIED e diagnóstico genérico no popup. Não mostrar paths, URLs integrais ou mensagens arbitrárias de erro.
 
-Native Messaging é transporte **local**, não permite que um serviço cloud envie comandos ao notebook. allowed_origins e argumento de origem conferido são necessários, mas um atacante local capaz de executar Node/ler arquivos pode falsificar argv e executar o host. O token de sessão limita mistura/replay na conexão; **não autentica contra atacante local**. Autenticação forte/chaves/rotação e integração MCF continuam pendentes. Nenhuma fonte externa independente de comandos é exposta pelo host.
+Native Messaging é transporte **local**, não permite que um serviço cloud envie comandos ao notebook. allowed_origins e argumento de origem conferido são necessários, mas um atacante local capaz de executar Node/ler arquivos pode falsificar argv e executar o host. O token de sessão limita mistura/replay na conexão; **não autentica contra atacante local**. Autenticação forte/chaves/rotação e integração MCF continuam pendentes. No modo padrão, nenhuma fonte externa independente de comandos é exposta pelo host. A exceção opt-in fixture-only PHASE-03 está descrita abaixo.
 
 ## Privacidade, ameaças e limitações
 
@@ -97,3 +97,48 @@ O popup deve ser aberto pelo atalho real via XTest com a janela Brave em foco. `
 O sucesso exige CONNECTED, resumo VALIDATED com título/texto público sintético, `[REDACTED_EMAIL]`, ausência de todos os marcadores privados e STOPPED com resumo desabilitado/consentimento desmarcado. A saída é JSON com estados e nomes de checks, sem DOM integral, segredos ou logs arbitrários de subprocessos. `PASS` só após todas as asserções e cleanup; dependência ausente/permissão de processo negada produz NOT_RUN e exit nonzero; falha de setup/asserção produz FAIL e exit nonzero. Casos de política e entrada inválida permanecem em `npm test`/`npm run smoke:host`, separadamente.
 
 O MESTRE informou sucesso real prévio em Brave 155 com harness de referência e perfil efêmero; isso é evidência atribuída ao MESTRE, não execução deste novo script. Consulte VALIDATION.md para o resultado local atual e não confunda sucesso anterior com qualificação automática de versões futuras. As afirmações NOT_RUN das seções PHASE-02 anteriores descrevem a execução original, antes desta continuação autorizada.
+
+
+## PHASE-03 — LOCAL MESTRE IPC, fixture-only (protótipo)
+
+Esta seção descreve a implementação local atual. As instruções e evidências PHASE-02 acima são históricas. Não é um adapter aprovado de produção, não registra ExternalActionAdapter e não altera PermissionEngine, Agent Registry, runtime, ledger ou receipts. O token concede somente leitura do snapshot fixo da fixture, sem scripts, URLs ou comandos fornecidos pelo agente. Não há HTTP/TCP/transporte remoto, elevação, shell, writes de browser ou screenshot. A única persistência do protocolo é o arquivo temporário de capacidade, sem texto da página.
+
+Estados: `DISCONNECTED → PAIRED → AGENT_ALLOWED → READING → AGENT_ALLOWED`; STOP, fechamento do popup, troca/navegação/remoção da aba, desconexão, erro de protocolo, reinício do worker ou expiração levam a `REVOKED`. A lease continua limitada aos 60 s da sessão original, sem renovação. O opt-in separado **Autorizar leitura local pelo MESTRE nesta fixture** inicia desmarcado e só fica disponível depois do pareamento ordinário; o popup precisa permanecer aberto. O estado `agent read allowed` e sua revogação são visíveis no popup. Desmarcar a autorização revoga a sessão toda. Reabrir/reiniciar exige novo pareamento e novo opt-in.
+
+Sem `MCF_BRIDGE_AGENT_SOCKET_DIR`, o host mantém somente stdio e a leitura manual. Mesmo com a variável definida, nenhum socket nem arquivo de token é criado antes do opt-in. A variável deve apontar para diretório absoluto existente, normalizado, de caminho curto (até 70 bytes UTF-8), pertencente ao UID atual e com modo exatamente 0700. Componentes symlink são recusados; o inode do diretório é conferido antes de criar/limpar arquivos. Os ancestrais podem incluir `/tmp`; a exigência 0700 é para o diretório privado final. São reservados `mcf-agent.sock` e `mcf-agent-capability.json`; qualquer entrada existente nesses nomes impede a ativação, sem overwrite ou recuperação automática de socket antigo. Socket e arquivo são criados 0600, com token aleatório de 256 bits somente durante a lease. Cleanup explícito só remove entradas cujos device/inode correspondem aos criados pelo broker. Após SIGKILL/queda podem sobrar arquivos: usar outro diretório descartável, sem apagar entradas desconhecidas.
+
+CLI → host: frame Native Messaging uint32 LE + JSON estrito, missionId `MCF-BROWSER-BRIDGE-001`, phaseId `PHASE-03`, actionId UUID novo, somente `read-summary`, token e prazo até 5 s. O host verifica capacidade, TTL, replay e single-flight, e envia `agent_read_request` no port existente com alvo exato, consentRef aleatório vinculado à capacidade e budget fixo (4000 caracteres/2000 nós). O worker separa mensagens espontâneas do RPC, rejeita mensagens desconhecidas/malformadas, exige `agentDelegation`, revalida lease/aba/documento/origem antes de agendar snapshot e após cada await, e retorna `agent_read_result`. O host aceita apenas o resultado correspondente, dentro do prazo e schema, e entrega à CLI. Não há replay automático, retry ou execução arbitrária. Leitura manual e delegada compartilham o bloqueio de captura; concorrência no worker revoga a sessão de forma conservadora.
+
+A CLI usa apenas Node core, um pedido por conexão e prazo total de 5 s; imprime somente o resumo validado (`text` até 4000 caracteres, `untrusted=true`) em stdout. Falhas produzem diagnóstico genérico em stderr e exit 1. O token nunca deve ser impresso ou anexado a logs/issues. Conteúdo continua não confiável e a redação continua heurística. **Malware local do mesmo UID está fora do modelo de ameaça:** esse usuário pode ler a capacidade e interferir nos arquivos/processos. As verificações de inode/symlink não são uma garantia contra esse adversário nem uma implementação race-free de openat/openat2. O host e a extensão continuam sendo componentes locais confiáveis, e a identidade nativa não é autenticação forte contra processos do mesmo usuário.
+
+Para a qualificação descartável pelo MESTRE, sem instalar dependências:
+
+```bash
+cd apps/mcf-browser-bridge
+npm test
+npm run check
+npm run smoke:host
+PUPPETEER_CORE_PATH=/caminho/existente/puppeteer-core npm run e2e:brave
+PUPPETEER_CORE_PATH=/caminho/existente/puppeteer-core npm run e2e:agent
+```
+
+`e2e:agent` usa o mesmo Xvfb/Metacity/perfil/HOME/XDG descartáveis e shortcut real Alt+Shift+M. Configura um diretório IPC 0700 apenas na árvore temporária, pareia, confirma ausência de socket antes do opt-in, aciona o checkbox do popup, executa a CLI enquanto ele fica aberto e verifica texto sintético, redação e exclusões. Depois clica STOP, espera remoção dos arquivos e exige negação da próxima CLI. A saída do harness contém só nomes de checks; o resumo da CLI é capturado em memória e não impresso. O modo `e2e:brave` remove qualquer variável IPC herdada e mantém a qualificação manual original.
+
+Para invocar uma leitura durante uma sessão **descartável** preparada pelo MESTRE (o host deve herdar a mesma variável antes do lançamento do Brave):
+
+```bash
+MCF_BRIDGE_AGENT_SOCKET_DIR=/tmp/diretorio-privado-descartavel \
+  node scripts/agent-read-fixture.cjs
+# Alternativamente: node scripts/agent-read-fixture.cjs /tmp/diretorio-privado-descartavel
+```
+
+O diretório precisa já existir 0700; isso não inicia host/browser nem concede consentimento. Abra a fixture no Brave descartável, pareie e marque a autorização separada no popup. O harness completo faz essas etapas e remove tudo ao terminar; não permite anexar a perfis pessoais.
+
+Limites: revogação lógica no worker é síncrona quando o evento é processado; a remoção do socket acompanha a desconexão/EOF do transporte, não uma garantia de latência zero do sistema operacional. STOP descarta resultados de coleta em curso, sem alegar cancelamento de executeScript já agendado. Renderer travado/event loop suspenso pode atrasar timers, mas cada novo agendamento/resultado verifica o prazo. O prazo de 5 s da CLI não garante preempção do renderer. Mudanças no conteúdo do mesmo documento continuam sem detecção transacional. Qualificação real PHASE-03 e revisão independente são gates pendentes, detalhados em VALIDATION.md.
+
+
+### Correção de conexão e falhas PHASE-03
+
+`SESSION_RESET` invalida integralmente a sessão anterior ao reconectar, preservando apenas o checkbox humano recém-marcado; delegação nunca é herdada. `REVOKED` continua desmarcando consentimento em STOP/drift/fechamento/expiração. O teste de integração popup/worker carrega o popup real, incluindo a lógica de habilitação dos botões.
+
+`agent_read_denied` retorna somente códigos enumerados (`CONSENT_REQUIRED`, `CONTEXT_CHANGED`, `EXPIRED`, `INVALID_RESULT`, `BUSY`, `TIMEOUT`). Broker encaminha a negação para o pedido IPC correspondente sem falhar stdio; respostas válidas atrasadas/duplicadas são ignoradas. Deadline vencido não aceita summary. Revogação do broker nega o pending e remove seus artefatos; mensagens inválidas continuam encerrando a sessão. Consulte a correção mais recente em VALIDATION.md: os testes locais passam, mas a regressão GUI relatada pelo MESTRE ainda exige nova qualificação real.
