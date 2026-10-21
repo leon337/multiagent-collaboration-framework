@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "MCF Browser Bridge — Local Fixture MVP",
+  "version": "0.1.0",
+  "minimum_chrome_version": "106",
+  "permissions": ["activeTab", "scripting", "nativeMessaging"],
+  "background": {"service_worker": "background.js", "type": "module"},
+  "action": {"default_popup": "popup.html"},
+  "content_security_policy": {"extension_pages": "script-src 'self'; object-src 'none'"}
+}

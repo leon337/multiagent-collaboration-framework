@@ -1,0 +1,35 @@
+name: MCF Browser Bridge Fixture Qualification
+
+on:
+  pull_request:
+    paths:
+      - 'apps/mcf-browser-bridge/**'
+      - '.github/workflows/mcf-browser-bridge-mvp-qualification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    name: fixture-only-unit-and-native-host
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/mcf-browser-bridge
+    steps:
+      - name: Checkout revision
+        uses: actions/checkout@v4
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate JavaScript syntax and MV3 manifest
+        run: npm run check
+      - name: Run unit and mocked worker suite
+        run: npm test
+      - name: Run disposable Node Native Messaging host smoke
+        run: npm run smoke:host
+      - name: Document real browser scope
+        run: echo 'Brave GUI E2E must run separately on a disposable Linux profile, never in this headless job.'
