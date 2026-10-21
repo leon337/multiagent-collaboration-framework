@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 const root = new URL('../', import.meta.url);
 for (const dir of ['extension','host','tests','scripts']) for (const name of readdirSync(new URL(dir + '/', root))) {
-  if (!name.endsWith('.js')) continue;
+  if (!/\.(?:js|cjs)$/.test(name)) continue;
   const r = spawnSync(process.execPath, ['--check', new URL(dir + '/' + name, root).pathname], { encoding: 'utf8' });
   if (r.status !== 0) { process.stderr.write(r.stderr); process.exit(1); }
 }

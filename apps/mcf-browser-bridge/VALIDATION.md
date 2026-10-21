@@ -41,3 +41,28 @@ Resultado informado: **4/4 PASS**. Atribuição: relato direto do MESTRE nesta c
 - Sem contas, rede, adaptação do runtime, instalação, commits ou push.
 
 Leia README para riscos residuais e instalação/rollback manuais futuros. Não há alegação de certificação ou revisão independente do código.
+
+## PHASE-02B — harness E2E Brave descartável
+
+Evidência externa informada pelo MESTRE nesta continuação: E2E real bem-sucedido em Brave 155, Linux Mint leo-N43SM, Xvfb/Metacity, perfil efêmero e XDG_CONFIG_HOME temporário. O atalho de teste `_execute_action` Alt+Shift+M concedeu activeTab real; popup CONNECTED, resumo VALIDATED com catálogo/caderno sintético e e-mail redigido, seguido de STOPPED. Nenhum perfil ou manifesto pessoal foi alterado, conforme relato do MESTRE. O script `/home/leo/.cache/mcf-browser-e2e-v10.cjs` foi lido somente como referência; não foi alterado/executado pelo Codex. Este relato atualiza o histórico NOT_RUN de browser da PHASE-02, mas não prova execução do novo harness.
+
+Implementação nova: `scripts/e2e-brave-disposable.cjs`, exposta por `npm run e2e:brave`, opcional e fora da suíte unitária/CI. Zero dependências de produção novas. Clones, perfil, HOME/XDG, host/config e manifesto ficam somente na árvore temporária. O script usa shortcut real e CDP do popup por pipe, sem modificar comportamento da extensão de produção. Testa CONNECTED → VALIDATED/redação/exclusões → STOPPED/resumo desabilitado. Timeout e cleanup de processos próprios/temporários estão implementados.
+
+Tentativa Codex do novo comando com módulo Puppeteer já disponível (sem instalação): **setup FAIL**, exit 1, JSON `phase=isolated-display`, `reason=XVFB_EXITED`, checks vazios. Xvfb encerrou antes de fornecer o número de display; a segunda tentativa com captura/classificação de stderr também não forneceu diagnóstico de permissão. **Casos de browser do novo harness: NOT_RUN**; Brave não chegou a ser lançado. Não se afirma causa sandbox sem diagnóstico que a comprove, nem sucesso desta execução. Nenhuma proteção foi desabilitada. MESTRE poderá executar o comando documentado em seu ambiente autorizado externo ao sandbox.
+
+Verificações locais após implementação: `npm test` PASS (10/10); `npm run check` PASS, agora incluindo sintaxe `.cjs`; `node --check scripts/e2e-brave-disposable.cjs` PASS. Nenhum workflow criado, pacote instalado, commit ou push feito pelo Codex.
+
+## MESTRE — QUALIFICAÇÃO GUI REAL NO BRAVE (evidência pós-Codex, 21/10/2026)
+
+O MESTRE executou diretamente no `leo-N43SM`, fora do sandbox do Codex, o script versionável novo `npm run e2e:brave` com `PUPPETEER_CORE_PATH` apontando para o `puppeteer-core` já disponível no notebook (nenhuma instalação nova). **Resultado executado: PASS / exit 0.**
+
+Saída estruturada observada (identificador sintético, sem credenciais):
+```json
+{"test":"e2e-brave-disposable","status":"PASS","disposable":true,"checks":["CONNECTED","VALIDATED","SYNTHETIC_PUBLIC_TEXT","REDACTED_EMAIL","NO_SENSITIVE_SENTINELS","STOPPED","SUMMARY_DISABLED"],"browser":"Chrome/155.0.8059.80"}
+```
+
+* A execução usou o Brave (Chromium 155) de verdade, com display Xvfb dinâmico, Metacity, perfil e HOME/XDG/NativeMessagingHosts descartáveis; a extensão carregada foi um clone com atalho de teste para conceder `activeTab` por gesto real. O worker, a UI do popup e o processo Native Messaging do projeto foram exercitados. Nenhuma página autenticada, sessão pessoal, tunnel ou site externo foi acessado.
+* As 7 verificações **PASS** referem-se apenas à fixture sintética. A mensagem adversarial apareceu como texto `untrusted`, sem execução; o endereço sintético foi redigido; conteúdo de formulário e marcadores privados não vazaram na resposta.
+* O novo script encerrou os processos próprios e removeu seus dados temporários. Também foram eliminadas as dez árvores temporárias **criadas exclusivamente pelos testes diagnósticos anteriores do MESTRE**, após confirmação de propriedade e inexistência de instâncias em execução. Nenhum perfil pessoal foi apagado.
+* A tentativa anterior do Codex com o mesmo harness sob sandbox, marcada `NOT_RUN` acima por encerramento prematuro do Xvfb, permanece registrada como evento histórico. **O teste real repetido fora do sandbox passou**. Não se deve confundir essas duas execuções.
+* Limites: não há ainda receipt no ledger canônico, adapter habilitado, controle remoto cloud→host, homologação no perfil real do usuário ou autorização de produção. Este resultado não aprova automação em contas reais.

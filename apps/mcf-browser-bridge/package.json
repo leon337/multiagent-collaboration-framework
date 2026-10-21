@@ -9,6 +9,7 @@
   "scripts": {
     "test": "node --test --test-isolation=none tests/*.test.js",
     "check": "node scripts/check.js",
-    "smoke:host": "node scripts/smoke-host.js"
+    "smoke:host": "node scripts/smoke-host.js",
+    "e2e:brave": "node scripts/e2e-brave-disposable.cjs"
   }
 }

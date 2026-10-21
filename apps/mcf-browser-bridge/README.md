@@ -75,3 +75,25 @@ Testes de sanitizer usam DOM sintético mínimo em VM; APIs Chromium, activeTab 
 Clicar Parar, fechar popup e remover apenas extensão de teste no perfil descartável. Remover somente manifesto `com.mcf.browser_bridge.json` criado para este projeto no diretório NativeMessagingHosts e `host/config.local.json` correspondente. Não apagar diretório de perfil, outros manifests ou arquivos existentes. Processo stdio termina ao desconectar/EOF ou em até 60 s. Sem serviços, portas, bancos, registro do runtime ou dependências para desfazer.
 
 Referências locais obrigatórias: `../../docs/architecture/MCF-BROWSER-BRIDGE-001-ARCHITECTURE.md`, `../../docs/security/MCF-BROWSER-BRIDGE-001-THREAT-MODEL.md`, `../../docs/superpowers/plans/2026-10-21-mcf-browser-bridge-mvp-plan.md` e `../../artifacts/phases/PHASE-01-BROWSER-BRIDGE-DISCOVERY/`. Não foram consultados GitHub/rede nesta execução.
+
+## PHASE-02B — E2E Brave descartável e opcional
+
+`npm run e2e:brave` executa `scripts/e2e-brave-disposable.cjs`, fora da suíte unitária/CI. Requer Linux, Node 24, Brave com suporte a extensão unpacked, Xvfb com `-displayfd`, Metacity, wmctrl e Python3 com Xlib/XTest. `puppeteer-core` é dependência **opcional já existente**, resolvida por `PUPPETEER_CORE_PATH` (caminho para módulo exportado/instalado) ou `require('puppeteer-core')`. O projeto não instala pacotes nem adiciona dependências de produção. Defina `BRAVE_EXECUTABLE_PATH` se o executável não estiver em `/usr/bin/brave-browser`.
+
+Exemplo, usando uma instalação previamente autorizada do módulo:
+
+```bash
+cd apps/mcf-browser-bridge
+PUPPETEER_CORE_PATH=/caminho/para/node_modules/puppeteer-core \
+BRAVE_EXECUTABLE_PATH=/caminho/para/brave npm run e2e:brave
+```
+
+O harness cria exclusivamente uma árvore `mkdtemp` em `/tmp`: perfil Brave novo, HOME e diretórios XDG isolados, clones da extensão/fixture/host, configuração de ID e manifesto Native Messaging em `XDG_CONFIG_HOME/BraveSoftware/Brave-Browser/NativeMessagingHosts`. O ID exato é obtido do service worker real. Não copia config.local.json do repositório e não toca perfis ou manifests pessoais. O clone do host usa shebang com o Node atual. Xvfb reserva atomicamente um display livre, com TCP desabilitado; Metacity e a simulação de teclas usam apenas esse DISPLAY. O script fecha browser, encerra os processos próprios e remove a árvore temporária em sucesso/falha/sinais tratáveis. SIGKILL, queda do host ou energia não permitem garantir cleanup; não há opção de preservar perfil. Prazo global: 90 s, mais cleanup limitado; processos auxiliares e etapas têm timeouts próprios. Nenhum flag de desativação do sandbox é utilizado.
+
+A única alteração no clone da extensão é o comando `_execute_action` com `Alt+Shift+M`; o código da extensão de produção permanece intacto. Um marcador visível `FORM_SECRET` é acrescentado somente dentro do form da fixture clonada para testar exclusão. Se necessário, o harness habilita explicitamente acesso a file:// na tela de detalhes da extensão **nesse perfil descartável**; recusa continuar se não conseguir comprovar a permissão. Mudanças de UI Chromium podem exigir atualizar esse seletor de teste.
+
+O popup deve ser aberto pelo atalho real via XTest com a janela Brave em foco. `chrome.action.openPopup()` programático **não concede activeTab** e não é usado como prova de E2E. Como Target.page() pode retornar null, o script usa `target.createCDPSession()` e `Runtime.evaluate` para operar o DOM do popup. CDP é ferramenta exclusiva deste harness de teste (transporte Puppeteer por pipe, sem listener CDP); não é adicionado ao bridge/host. Nenhuma URL HTTP é navegada/fetched pelo teste; a fixture é file:// e não há login, conta, screenshot ou upload. Flags reduzem tráfego de background do browser, sem alegação de isolamento de rede do sistema operacional.
+
+O sucesso exige CONNECTED, resumo VALIDATED com título/texto público sintético, `[REDACTED_EMAIL]`, ausência de todos os marcadores privados e STOPPED com resumo desabilitado/consentimento desmarcado. A saída é JSON com estados e nomes de checks, sem DOM integral, segredos ou logs arbitrários de subprocessos. `PASS` só após todas as asserções e cleanup; dependência ausente/permissão de processo negada produz NOT_RUN e exit nonzero; falha de setup/asserção produz FAIL e exit nonzero. Casos de política e entrada inválida permanecem em `npm test`/`npm run smoke:host`, separadamente.
+
+O MESTRE informou sucesso real prévio em Brave 155 com harness de referência e perfil efêmero; isso é evidência atribuída ao MESTRE, não execução deste novo script. Consulte VALIDATION.md para o resultado local atual e não confunda sucesso anterior com qualificação automática de versões futuras. As afirmações NOT_RUN das seções PHASE-02 anteriores descrevem a execução original, antes desta continuação autorizada.
