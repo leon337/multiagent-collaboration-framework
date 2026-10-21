@@ -1,0 +1,24 @@
+MCF Browser Bridge PHASE 01 FULL VALIDATION
+GitHub canonical repo: https://github.com/leon337/multiagent-collaboration-framework
+Main SHA: 460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615
+Tree: e7b26c4239176b8af3851d601623576b3b4c405a
+Mission issue: https://github.com/leon337/multiagent-collaboration-framework/issues/455
+Related: #365 lifecycle, #367 WebAgent checklist, #427 security readiness, #381 workspace, #434/435 dual browser reconciliation, #439/440 cockpit documentation.
+Authorized host: leo-N43SM, online on Predix Remote Desktop Commander link.
+OS: Linux Mint 22.1; kernel 6.8.0-147-generic.
+Node: 24.22.0; npm: 11.19.1; git: 2.43.0; gh: 2.102.0.
+Memory: 7.7 GiB; root partition free: 72 GB.
+Brave binary: /opt/brave.com/brave/brave (executable and active), reported 1.97.57.
+Google Chrome: dpkg status deinstall ok config-files, last package version 155.0.8059.79-1, no executable /opt/google/chrome/chrome, /usr/bin/google-chrome or /usr/bin/google-chrome-stable.
+NativeMessagingHosts directories: ~/.config/google-chrome/NativeMessagingHosts and ~/.config/BraveSoftware/Brave-Browser/NativeMessagingHosts; each has zero files at time inspected.
+MCF clone under home: not found with maxdepth=4 search; cannot infer no clone elsewhere.
+Dual Browser instance/auth descriptor: not identified; /v1/discovery NOT_CALLED, no token read.
+Browser visual test: NOT_RUN.
+Source files:
+- apps/rede-social-agentes/apps/server/src/mcf-runtime/{permission-engine,external-action-dispatcher,external-action.contracts,adapter-registry,skill-executor,mcf-runtime.module}.ts
+- apps/webagent-mcp/src/{browser-actions,browser-runtime,browser-evidence,server}.ts
+- .github/workflows/webagent-mcp-qualification.yml
+Chrome Native Messaging documentation: https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging
+Chromium local security FAQ: https://github.com/chromium/chromium/blob/main/extensions/docs/security_faq.md
+Secrets, session cookies, personal browsing content and auth tokens were not collected.
+Do not claim current production status/CI from historical issue narratives.

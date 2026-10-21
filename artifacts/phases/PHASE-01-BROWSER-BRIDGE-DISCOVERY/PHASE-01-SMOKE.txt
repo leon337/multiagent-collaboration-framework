@@ -1,0 +1,16 @@
+MCF-BROWSER-BRIDGE-001 PHASE-01 SMOKE
+Status: NOT_RUN (browser extension and host not implemented; planning gate only).
+Environment checks: PASS — authorized host responds; Brave executable present; Chrome executable absent; GitHub main SHA identified.
+No DOM read, screen screenshot, native messaging exchange, automation, form fill or receipt validation performed.
+
+Future smoke (REQUIRES SEPARATE AUTHORIZATION):
+S01 isolate benign local test profile and fixture.
+S02 install temporary MV3 in Brave; explicit user gesture/allowed tab; verify extension ID.
+S03 register host manifest with restricted allowed_origins and test authenticated handshake.
+S04 OBSERVE/READ_DOM/CAPTURE with bounded sanitized evidence.
+S05 deny WRITE by default; drift/cross-tab, duplicated selector, invalid message and prompt-injection tests.
+S06 disconnect host; observe UNKNOWN status, reconcile rather than repeat action.
+S07 revoke permission and stop; verify no further operations.
+S08 uninstall only project-owned host files/extension; do not delete browser profiles.
+S09 Chrome compatibility once installed through separately governed action.
+Mark every smoke item NOT_RUN until tool evidence of execution exists.
