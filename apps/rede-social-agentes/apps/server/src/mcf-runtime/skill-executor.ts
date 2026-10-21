@@ -189,7 +189,12 @@ export class SkillExecutor {
 
   async execute(input: ExecuteSkillInput): Promise<ExecuteSkillOutcome> {
     const skill = await this.registry.load(input.skillId);
-    if (!executableSkills.has(skill.skillId)) {
+    const fixtureEnabled = process.env.MCF_BROWSER_BRIDGE_SKILL_ENABLED === 'true' &&
+      process.env.MCF_BROWSER_BRIDGE_ENABLED === 'true' && process.env.MCF_BROWSER_BRIDGE_SAME_HOST === 'true' &&
+      process.env.NODE_ENV !== 'production' && skill.skillId === 'MCF-WEB-INTERACT' &&
+      canonicalizeProvider(input.tool.provider) === 'mcf-browser-bridge' &&
+      input.tool.operation === 'read-local-fixture' && input.tool.resource === 'mcf-synthetic-fixture';
+    if (!executableSkills.has(skill.skillId) && !fixtureEnabled) {
       throw new McfSkillNotExecutableError(skill.skillId);
     }
 

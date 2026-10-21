@@ -10,6 +10,7 @@
     "test": "node --test --test-isolation=none tests/*.test.js",
     "check": "node scripts/check.js",
     "smoke:host": "node scripts/smoke-host.js",
+    "e2e:canonical": "node scripts/e2e-brave-disposable.cjs --canonical",
     "e2e:agent": "node scripts/e2e-brave-disposable.cjs --agent",
     "e2e:brave": "node scripts/e2e-brave-disposable.cjs"
   }

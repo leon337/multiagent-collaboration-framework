@@ -142,3 +142,43 @@ Limites: revogação lógica no worker é síncrona quando o evento é processad
 `SESSION_RESET` invalida integralmente a sessão anterior ao reconectar, preservando apenas o checkbox humano recém-marcado; delegação nunca é herdada. `REVOKED` continua desmarcando consentimento em STOP/drift/fechamento/expiração. O teste de integração popup/worker carrega o popup real, incluindo a lógica de habilitação dos botões.
 
 `agent_read_denied` retorna somente códigos enumerados (`CONSENT_REQUIRED`, `CONTEXT_CHANGED`, `EXPIRED`, `INVALID_RESULT`, `BUSY`, `TIMEOUT`). Broker encaminha a negação para o pedido IPC correspondente sem falhar stdio; respostas válidas atrasadas/duplicadas são ignoradas. Deadline vencido não aceita summary. Revogação do broker nega o pending e remove seus artefatos; mensagens inválidas continuam encerrando a sessão. Consulte a correção mais recente em VALIDATION.md: os testes locais passam, mas a regressão GUI relatada pelo MESTRE ainda exige nova qualificação real.
+
+## Phase04B — local canonical protocol v2 (draft)
+
+The legacy Phase03 CLI and `e2e:agent` still return the original summary JSON.
+`npm run e2e:canonical` exercises a separate typed v2 envelope in disposable
+Brave/Xvfb, including denial after STOP. No personal profile or real account.
+The fixed Node CLI accepts ordered `--canonical-action-id`, `--canonical-mission`,
+`--canonical-phase`, `--mission-version` arguments. Mission/phase are restricted
+to `MCF-BROWSER-BRIDGE-001`/`PHASE-04`; the trusted adapter generates a fresh UUID
+and supplies the canonical execution context version. Action inputs cannot set
+these flags, socket directory, executable or target.
+
+The broker binds that identity to its human-opt-in consentRef, pending deadline
+and paired fixture document; the worker validates delegation/lease/document and
+returns the identity. Broker and CLI revalidate before emitting the bounded
+`{protocolVersion:2,actionId,status,canonical,consentRef,expiresAt,target,summary}`.
+Tokens remain only in ephemeral 0600 capability files and IPC, never stdout/logs.
+The adapter signs only correlated metadata and a SHA256 of the sanitized summary,
+without raw URL, text or capability. `untrusted:true` describes page data even
+when the receipt's transport provenance is verified.
+
+Runtime registration requires `MCF_BROWSER_BRIDGE_ENABLED=true`,
+`MCF_BROWSER_BRIDGE_SAME_HOST=true`, nonproduction NODE_ENV and a trusted local
+`MCF_BROWSER_BRIDGE_SOCKET_DIR` (existing 0700 directory, same UID, no symlinks).
+Execution additionally requires `MCF_BROWSER_BRIDGE_SKILL_ENABLED=true` and the
+exact experimental skill/provider/operation/resource boundary. All flags default
+off; setting them does not launch a browser or grant consent.
+
+Native Messaging launches a host on the browser's machine. A cloud/remote MCF
+server cannot reach this notebook's Unix socket. A separate host-initiated channel
+would require a separately reviewed protocol; remote integration is not delivered.
+Same-UID malicious processes are outside this local capability trust boundary;
+Unix permissions exclude other ordinary UIDs, not root.
+
+See [validation](../../docs/validation/MCF-BROWSER-BRIDGE-001-PHASE04-VALIDATION.md).
+This draft is not production activation or completed real-browser qualification.
+
+### Evidência posterior à execução do Codex — MESTRE
+
+A ressalva histórica de `NOT_RUN` acima refere-se exclusivamente ao sandbox do Codex. O MESTRE executou no notebook autorizado a suíte local **21/21**, o host smoke **4/4**, e os três E2E descartáveis no Brave (`e2e:brave`, `e2e:agent`, `e2e:canonical`), todos **PASS**. O adapter canônico teve testes Vitest de regressão **60/60 PASS** e typecheck isolado **PASS**. O typecheck global está bloqueado por erro sintático preexistente em outro arquivo; detalhes e fontes de evidência em `docs/validation/MCF-BROWSER-BRIDGE-001-PHASE04-VALIDATION.md`. Ainda não houve integração em produção ou prova de operação de conta real.

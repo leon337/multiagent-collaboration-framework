@@ -23,6 +23,17 @@ export function canonicalizeProvider(value: string): string {
   return normalized === 'github-actions' ? 'github' : normalized;
 }
 
+export function assertBrowserBridgeBoundary(skill: McfSkillDefinition, provider: string, operation: string, resource: string, inputs: Record<string, unknown>): void {
+  if (provider !== 'mcf-browser-bridge') return;
+  if (skill.skillId !== 'MCF-WEB-INTERACT' || skill.permissionProfile !== 'SCOPED_WRITE' ||
+      operation !== 'read-local-fixture' || resource !== 'mcf-synthetic-fixture' ||
+      inputs.authorizedScope !== true || inputs.target_url !== 'file:///[LOCAL_FIXTURE]' ||
+      inputs.interaction_goal !== 'read-local-fixture' ||
+      Object.keys(inputs).some(k => !['authorizedScope','target_url','interaction_goal'].includes(k))) {
+    throw new McfPermissionDeniedError('Browser bridge is restricted to the synthetic fixture');
+  }
+}
+
 function operationMatches(operation: string, allowedPrefixes: string[]): boolean {
   const normalized = canonicalizeToolValue(operation);
   return allowedPrefixes.some(
@@ -449,6 +460,7 @@ export class PermissionEngine {
       );
     }
 
+    assertBrowserBridgeBoundary(skill, provider, operation, resource, inputs);
     assertSecurityReviewBoundary(skill.skillId, provider, operation, resource);
     assertDebugIncidentBoundary(skill, provider, operation, resource, inputs);
     assertClosePhaseBoundary(skill, provider, operation, resource, inputs);

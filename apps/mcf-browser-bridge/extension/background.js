@@ -26,12 +26,12 @@ async function agentRead(r, l, ticket) {
     await current(l, ticket);
     assertLease(l, ticket);
     if (Date.now() >= r.expiresAt || result.length !== 1 || result[0].documentId !== l.target.documentId || !validSummary(result[0].result)) throw Error('INVALID_RESULT');
-    l.port.postMessage({ type: 'agent_read_result', protocolVersion: 1, actionId: r.actionId, consentRef: l.consentRef, summary: result[0].result });
+    l.port.postMessage({ type: 'agent_read_result', protocolVersion: r.protocolVersion, ...(r.canonical ? { canonical: r.canonical } : {}), actionId: r.actionId, consentRef: l.consentRef, summary: result[0].result });
     notify('AGENT_READ_COMPLETED');
   } catch (error) {
     if (lease === l) {
       // Never send after a revocation already processed by the worker.
-      try { l.port.postMessage({ type: 'agent_read_denied', protocolVersion: 1, actionId: r.actionId, consentRef: r.consentRef, failureCode: ['CONTEXT_CHANGED','EXPIRED','INVALID_RESULT'].includes(error.message) ? error.message : 'CONSENT_REQUIRED' }); } catch {}
+      try { l.port.postMessage({ type: 'agent_read_denied', protocolVersion: r.protocolVersion, ...(r.canonical ? { canonical: r.canonical } : {}), actionId: r.actionId, consentRef: r.consentRef, failureCode: ['CONTEXT_CHANGED','EXPIRED','INVALID_RESULT'].includes(error.message) ? error.message : 'CONSENT_REQUIRED' }); } catch {}
       stop();
     }
   } finally { busy = false; }
