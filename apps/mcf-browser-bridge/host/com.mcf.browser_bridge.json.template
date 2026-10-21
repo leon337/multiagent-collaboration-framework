@@ -1,0 +1,7 @@
+{
+  "name": "com.mcf.browser_bridge",
+  "description": "Local fixture-only MCF Browser Bridge prototype",
+  "path": "/ABSOLUTE/PATH/TO/apps/mcf-browser-bridge/host/host.js",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://REPLACE_WITH_EXACT_32_CHARACTER_EXTENSION_ID/"]
+}

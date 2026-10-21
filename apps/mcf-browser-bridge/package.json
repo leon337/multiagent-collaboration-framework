@@ -1,0 +1,14 @@
+{
+  "name": "mcf-browser-bridge-mvp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test --test-isolation=none tests/*.test.js",
+    "check": "node scripts/check.js",
+    "smoke:host": "node scripts/smoke-host.js"
+  }
+}
