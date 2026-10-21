@@ -7,12 +7,15 @@ const { spawn, execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const assert = require('node:assert/strict');
 const exec = promisify(execFile);
-const agentMode = process.argv.includes('--agent');
+const canonicalMode = process.argv.includes('--canonical');
+const agentMode = canonicalMode || process.argv.includes('--agent');
+const canonical = { missionId: 'MCF-BROWSER-BRIDGE-001', phaseId: 'PHASE-04', actionId: require('node:crypto').randomUUID(), missionVersion: 1 };
+const canonicalArgs = canonicalMode ? ['--canonical-action-id', canonical.actionId, '--canonical-mission', canonical.missionId, '--canonical-phase', canonical.phaseId, '--mission-version', String(canonical.missionVersion)] : [];
 const base = path.resolve(__dirname, '..');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const children = [];
 let temporary, browser, closing = false, phase = 'prerequisites';
-let evidence = { test: agentMode ? 'e2e-agent-disposable' : 'e2e-brave-disposable', status: 'FAIL', disposable: true, checks: [] };
+let evidence = { test: canonicalMode ? 'e2e-canonical-disposable' : agentMode ? 'e2e-agent-disposable' : 'e2e-brave-disposable', status: 'FAIL', disposable: true, checks: [] };
 function bounded(promise, ms, label) {
   let timer;
   return Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(Error(label + '_TIMEOUT')), ms); })]).finally(() => clearTimeout(timer));
@@ -222,8 +225,16 @@ d.sync(); d.close()
     await evaluate('document.querySelector("#agent-consent").click()', true);
     await poll(() => evaluate('document.querySelector("#agent-state").textContent.includes("agent read allowed: true")'), 'AGENT_ALLOWED');
     phase = 'agent-cli';
-    const cli = await exec(process.execPath, [path.join(base, 'scripts/agent-read-fixture.cjs'), socketDir], { env, timeout: 6000, maxBuffer: 32768 });
-    const agentSummary = JSON.parse(cli.stdout);
+    const cli = await exec(process.execPath, [path.join(base, 'scripts/agent-read-fixture.cjs'), socketDir, ...canonicalArgs], { env, timeout: 6000, maxBuffer: 32768 });
+    const envelope = JSON.parse(cli.stdout);
+    if (canonicalMode) {
+      assert.equal(envelope.protocolVersion, 2); assert.equal(envelope.status, 'VALIDATED');
+      assert.deepEqual(envelope.canonical, canonical); assert.equal(envelope.actionId, canonical.actionId);
+      assert.match(envelope.consentRef, /^[0-9a-f-]{36}$/); assert.ok(envelope.expiresAt > Date.now());
+      assert.equal(envelope.target, 'file:///[LOCAL_FIXTURE]'); assert.equal(Object.hasOwn(envelope, 'token'), false);
+      evidence.checks.push('CANONICAL_REAL_CLI_CORRELATION');
+    }
+    const agentSummary = canonicalMode ? envelope.summary : envelope;
     assert.equal(agentSummary.untrusted, true);
     assert.equal(agentSummary.title, 'Fixture sintética MCF');
     assert.ok(agentSummary.text.length <= 4000);
@@ -240,7 +251,7 @@ d.sync(); d.close()
   if (agentMode) {
     await poll(() => !fs.existsSync(path.join(socketDir, 'mcf-agent-capability.json')) && !fs.existsSync(path.join(socketDir, 'mcf-agent.sock')), 'AGENT_REVOKED');
     let denied = false;
-    try { await exec(process.execPath, [path.join(base, 'scripts/agent-read-fixture.cjs'), socketDir], { env, timeout: 6000 }); } catch (e) { denied = e.code === 1 && e.stdout === ''; }
+    try { await exec(process.execPath, [path.join(base, 'scripts/agent-read-fixture.cjs'), socketDir, ...canonicalArgs], { env, timeout: 6000 }); } catch (e) { denied = e.code === 1 && e.stdout === ''; }
     assert.equal(denied, true);
     evidence.checks.push('AGENT_DENIED_AFTER_STOP');
   }

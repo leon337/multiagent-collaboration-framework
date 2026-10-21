@@ -1335,6 +1335,26 @@ export class EvidenceValidator {
   ): void {
     this.verify(receipt, expected);
 
+    if (canonicalizeProvider(expected.provider) === 'mcf-browser-bridge') {
+      const m = receipt.metadata, c = current?.executionContext;
+      const uuid = (v: unknown) => typeof v === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(v);
+      if (skill.skillId !== 'MCF-WEB-INTERACT' || !current || !['Mestre','Rafael'].includes(current.agentId) ||
+          !skill.ownerAgents.includes(current.agentId) || skill.permissionProfile !== 'SCOPED_WRITE' ||
+          canonicalizeToolValue(expected.operation) !== 'read-local-fixture' || expected.resource !== 'mcf-synthetic-fixture' ||
+          inputs?.authorizedScope !== true || inputs.target_url !== 'file:///[LOCAL_FIXTURE]' || inputs.interaction_goal !== 'read-local-fixture' ||
+          Object.keys(inputs).some(k => !['authorizedScope','target_url','interaction_goal'].includes(k)) ||
+          !c || c.missionId !== 'MCF-BROWSER-BRIDGE-001' || c.phaseId !== 'PHASE-04' ||
+          m.missionId !== c.missionId || m.phaseId !== c.phaseId || m.missionVersion !== c.expectedMissionVersion ||
+          !Number.isSafeInteger(m.missionVersion) || Number(m.missionVersion) < 0 ||
+          !uuid(m.actionId) || !uuid(m.consentRef) || receipt.externalId !== m.actionId ||
+          typeof m.expiresAt !== 'number' || !Number.isSafeInteger(m.expiresAt) || m.expiresAt <= Date.now() || m.expiresAt > Date.now() + 5000 ||
+          m.origin !== 'file://' || typeof m.title !== 'string' || m.title.length > 160 || m.untrusted !== true ||
+          typeof m.summaryDigest !== 'string' || !/^[a-f0-9]{64}$/.test(m.summaryDigest) || receipt.commitSha !== m.summaryDigest ||
+          receipt.status !== 'SUCCEEDED' || Object.keys(m).sort().join(',') !== ['missionId','phaseId','actionId','missionVersion','consentRef','expiresAt','origin','title','summaryDigest','untrusted'].sort().join(',')) {
+        reject('invalid canonical browser bridge evidence');
+      }
+    }
+
     const operation = canonicalizeToolValue(expected.operation);
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       reject('query-ci evidence is restricted to MCF-RUN-TESTS');

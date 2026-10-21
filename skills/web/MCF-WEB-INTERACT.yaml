@@ -10,7 +10,7 @@ skill:
   required_inputs: [target_url, interaction_goal, authorizedScope]
   optional_inputs: [allowed_actions, forbidden_actions, account_context]
   preconditions: [interactive_browser_available, explicit_scope]
-  allowed_tools: [ChatGPT_Work, Remote_Desktop_Commander]
+  allowed_tools: [ChatGPT_Work, Remote_Desktop_Commander, MCF_Browser_Bridge]
   alternative_tools: [Firecrawl]
   forbidden_tools: [credential_capture, payment_without_human_gate, destructive_external_action, access_control_bypass]
   permission_profile: SCOPED_WRITE

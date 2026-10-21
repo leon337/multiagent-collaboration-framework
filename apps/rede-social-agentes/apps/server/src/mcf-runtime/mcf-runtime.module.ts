@@ -1,3 +1,4 @@
+import { McfBrowserBridgeAdapter } from './mcf-browser-bridge.adapter.js';
 import { Module } from '@nestjs/common';
 
 import { loadRuntimeConfig } from '../config.js';
@@ -181,6 +182,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         localAgentTeam: LocalAgentTeamAdapter,
       ) =>
         new AdapterRegistry([
+          ...(process.env.MCF_BROWSER_BRIDGE_ENABLED === 'true' && process.env.MCF_BROWSER_BRIDGE_SAME_HOST === 'true' && process.env.NODE_ENV !== 'production' ? [new McfBrowserBridgeAdapter({ enabled: true, socketDir: process.env.MCF_BROWSER_BRIDGE_SOCKET_DIR ?? '' })] : []),
           githubReview,
           githubCiQuery,
           githubBranchPr,

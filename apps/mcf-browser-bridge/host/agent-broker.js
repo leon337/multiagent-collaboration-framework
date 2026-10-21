@@ -3,7 +3,7 @@ import net from 'node:net';
 import path from 'node:path';
 import { randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { FrameParser, encode } from './framing.js';
-import { exact, validAgentRead, validSummary, agentId, AGENT_FAILURE_CODES } from '../extension/agent-contract.js';
+import { exact, validAgentRead, validSummary, agentId, AGENT_FAILURE_CODES, validCanonical, sameCanonical } from '../extension/agent-contract.js';
 // Same-UID malware is out of scope. Pin directory inode and refuse all symlink components.
 export function privateDirectory(dir) {
   if (typeof dir !== 'string' || !path.isAbsolute(dir) || path.normalize(dir) !== dir || Buffer.byteLength(dir) > 70) throw Error('UNSAFE_DIRECTORY');
@@ -25,11 +25,38 @@ export function authorizeAgentRead(r, { grant, seen, pending, now }) {
 }
 // Valid stale/duplicate replies are data to discard, never a process failure.
 export function routeAgentResult(r, { grant, pending, now }) {
+  if (r?.protocolVersion === 2) {
+    if (!validCanonical(r.canonical)) throw Error('INVALID_CANONICAL_RESULT');
+    const { canonical, ...legacy } = r;
+    // Validate the complete legacy envelope and match the active action first.
+    // A delayed response with a different actionId is stale, not an attack on
+    // the current action's canonical identity. Only a matching action can be
+    // checked against the pending canonical binding.
+    const result = routeAgentResult({ ...legacy, protocolVersion: 1 }, {
+      grant, pending: pending ? { ...pending, canonical: null } : null, now,
+    });
+    if (!result) return null;
+    if (!pending?.canonical || !sameCanonical(canonical, pending.canonical)) throw Error('INVALID_CANONICAL_RESULT');
+    return result.status === 'VALIDATED'
+      ? { ...result, protocolVersion: 2, canonical, consentRef: grant.ref, expiresAt: pending.deadline, target: 'file:///[LOCAL_FIXTURE]' }
+      : result;
+  }
   const denied = r?.type === 'agent_read_denied';
-  if (!exact(r, ['type','protocolVersion','actionId','consentRef', denied ? 'failureCode' : 'summary']) || !['agent_read_result','agent_read_denied'].includes(r.type) || r.protocolVersion !== 1 || !agentId(r.actionId) || !agentId(r.consentRef) || (denied ? !AGENT_FAILURE_CODES.includes(r.failureCode) : !validSummary(r.summary))) throw Error('INVALID_AGENT_RESULT');
+  if (!exact(r, ['type','protocolVersion','actionId','consentRef', denied ? 'failureCode' : 'summary']) ||
+      !['agent_read_result','agent_read_denied'].includes(r.type) || r.protocolVersion !== 1 ||
+      !agentId(r.actionId) || !agentId(r.consentRef) ||
+      (denied ? !AGENT_FAILURE_CODES.includes(r.failureCode) : !validSummary(r.summary))) {
+    throw Error('INVALID_AGENT_RESULT');
+  }
   if (!grant || !pending || r.actionId !== pending.id || r.consentRef !== grant.ref) return null;
-  if (now >= pending.deadline || now >= grant.expiresAt) return { protocolVersion: 1, actionId: r.actionId, status: 'DENIED', failureCode: 'TIMEOUT', retryable: false };
-  return denied ? { protocolVersion: 1, actionId: r.actionId, status: 'DENIED', failureCode: r.failureCode, retryable: false } : { protocolVersion: 1, actionId: r.actionId, status: 'VALIDATED', summary: r.summary };
+  // A matching legacy response must never satisfy an active canonical request.
+  if (pending.canonical) throw Error('INVALID_CANONICAL_RESULT');
+  if (now >= pending.deadline || now >= grant.expiresAt) {
+    return { protocolVersion: 1, actionId: r.actionId, status: 'DENIED', failureCode: 'TIMEOUT', retryable: false };
+  }
+  return denied
+    ? { protocolVersion: 1, actionId: r.actionId, status: 'DENIED', failureCode: r.failureCode, retryable: false }
+    : { protocolVersion: 1, actionId: r.actionId, status: 'VALIDATED', summary: r.summary };
 }
 export function createAgentBroker(dir, send, now = Date.now) {
   const pinned = privateDirectory(dir), socketPath = path.join(dir, 'mcf-agent.sock'), tokenPath = path.join(dir, 'mcf-agent-capability.json');
@@ -73,14 +100,14 @@ export function createAgentBroker(dir, send, now = Date.now) {
         const deny = () => client.end(encode({ protocolVersion: 1, status: 'DENIED', retryable: false }));
         if (!authorizeAgentRead(r, { grant, seen, pending, now: now() })) { deny(); return; }
         const deadline = Math.min(r.expiresAt, now() + r.timeoutMs, grant.expiresAt);
-        const p = { id: r.actionId, client, deadline, timer: null };
+        const p = { id: r.actionId, canonical: r.canonical, client, deadline, timer: null };
         pending = p;
         p.timer = setTimeout(() => {
           if (pending !== p) return;
           pending = null;
           if (!client.destroyed) client.end(encode({ protocolVersion: 1, actionId: p.id, status: 'DENIED', failureCode: 'TIMEOUT', retryable: false }));
         }, Math.max(1, deadline - now()));
-        try { send({ type: 'agent_read_request', protocolVersion: 1, missionId: 'MCF-BROWSER-BRIDGE-001', phaseId: 'PHASE-03', actionId: r.actionId, consentRef: grant.ref, expiresAt: deadline, target: grant.target, budget: { maxChars: 4000, maxNodes: 2000, timeoutMs: Math.min(r.timeoutMs, deadline - now()) } }); } catch { revoke(); }
+        try { send({ type: 'agent_read_request', protocolVersion: r.protocolVersion, ...(r.canonical ? { canonical: r.canonical } : {}), missionId: r.missionId, phaseId: r.phaseId, actionId: r.actionId, consentRef: grant.ref, expiresAt: deadline, target: grant.target, budget: { maxChars: 4000, maxNodes: 2000, timeoutMs: Math.min(r.timeoutMs, deadline - now()) } }); } catch { revoke(); }
       });
       client.on('data', chunk => { try { parser.push(chunk); } catch { client.destroy(); } });
       client.on('end', () => { try { parser.end(); } catch { client.destroy(); } });

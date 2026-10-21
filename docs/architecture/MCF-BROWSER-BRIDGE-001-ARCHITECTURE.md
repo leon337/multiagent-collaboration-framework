@@ -63,3 +63,38 @@ M5 Chrome compatibility, explicit real-account gate.
 Rollback: feature flag OFF, revoke pairing, unregister only project-owned host manifest, uninstall extension, preserve existing browser profile and audited receipts. All gates tied to exact commit SHA.
 
 References: Issue #455; #365; #367; #381; #434; #439; docs/protocols/MCF-PROTOCOLO-DUAL-BROWSER-RUNTIME-DISCOVERY.md; developer.chrome.com/docs/extensions/develop/concepts/native-messaging.
+
+## Phase04B local canonical integration (draft, 2026-10-21)
+
+The existing canonical adapter, PermissionEngine, EvidenceValidator, SkillExecutor
+and adapter registry are reused. No parallel runtime/ledger or dynamic actions.
+Only `MCF-WEB-INTERACT / mcf-browser-bridge / read-local-fixture /
+mcf-synthetic-fixture` is enabled by the separate default-off skill flag, with
+Mestre/Rafael ownership, SCOPED_WRITE and authorizedScope=true. The skill stays
+EXPERIMENTAL. Runtime DI also requires explicit same-host/nonproduction flags.
+
+Protocol v2 carries adapter-generated UUID, fixed mission/phase and canonical
+mission version through Node CLI, private Unix socket, host-created consentRef,
+MV3 lease/document checks and worker response. Broker compares the pending binding
+before returning the typed envelope; CLI and adapter independently validate it.
+Phase02/manual and Phase03 summary-only interfaces remain unchanged.
+
+Only after validation does EvidenceValidator.createTrustedReceipt sign metadata:
+identity/version, actionId, consentRef, expiry, sanitized fixture origin/title,
+summaryDigest SHA256 and untrusted=true. ExternalId binds actionId; commitSha
+carries the same summary digest for consistency checking. verifyForSkill checks
+signature, exact metadata fields, context, scope, expiry and digest equality.
+The summary itself is not retained, so later verification checks the signed digest
+binding rather than recomputing unavailable page content. Same-UID compromise or
+a compromised trusted adapter/host is outside this provenance model.
+
+STOP/popup close/tab drift invalidate the worker lease and host disconnection
+revokes capability files. Pending results cannot outlive their consent/deadline.
+The 0700 directory/0600 socket and token confine ordinary access to the owning UID.
+No token is printed or persistently logged. No autonomous write or real website.
+
+Native Messaging is local to the browser host. Remote/cloud MCF cannot reach a
+notebook Unix socket; a separate host-initiated channel is not implemented here.
+Actual validation gates and NOT_RUN results are recorded in
+`docs/validation/MCF-BROWSER-BRIDGE-001-PHASE04-VALIDATION.md`. No production,
+deployment, merge, commit or push is part of this draft.

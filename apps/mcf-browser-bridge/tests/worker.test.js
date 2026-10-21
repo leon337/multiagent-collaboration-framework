@@ -99,7 +99,7 @@ test('revocation during either awaited current() prevents scheduling any snapsho
 });
 
 test('agent worker: opt-in and deferred revocation before/after snapshot; malformed/replay/busy deny', { timeout: 5000 }, async () => {
-  for (const scenario of ['before-opt-in','stop','popup-close','tab-switch','expiry','after-snapshot','success','replay','busy','malformed','wrong-ref','document-drift']) {
+  for (const version of [1, 2]) for (const scenario of ['before-opt-in','stop','popup-close','tab-switch','expiry','after-snapshot','success','replay','busy','malformed','wrong-ref','document-drift']) {
     const onMessage = event(), onConnect = event(), activated = event();
     const reached = deferred(), resume = deferred();
     let native, armed = false, snapshots = 0;
@@ -132,7 +132,7 @@ test('agent worker: opt-in and deferred revocation before/after snapshot; malfor
     } } };
     globalThis.chrome = chrome;
     try {
-      await import(`../extension/background.js?agent-${scenario}`);
+      await import(`../extension/background.js?agent-${version}-${scenario}`);
       const sender = { id: chrome.runtime.id, url: chrome.runtime.getURL('popup.html') };
       const send = command => new Promise(resolve => [...onMessage.handlers][0]({ command }, sender, resolve));
       const popup = { name: 'popup', sender, onDisconnect: event() }; onConnect.fire(popup);
@@ -140,6 +140,10 @@ test('agent worker: opt-in and deferred revocation before/after snapshot; malfor
       if (scenario !== 'before-opt-in') assert.equal((await send('agent-allow')).agentReadAllowed, true);
       armed = true;
       const r = { type: 'agent_read_request', protocolVersion: 1, missionId: 'MCF-BROWSER-BRIDGE-001', phaseId: 'PHASE-03', actionId: 'agent-1', consentRef: scenario === 'wrong-ref' ? 'forged' : 'consent-1', expiresAt: Date.now() + (scenario === 'expiry' ? -1 : 4500), target: { tabId: tab.id, documentId: 'doc-1', url: tab.url, origin: 'file://' }, budget: { maxChars: 4000, maxNodes: 2000, timeoutMs: 4500 } };
+      if (version === 2) {
+        r.protocolVersion = 2; r.phaseId = 'PHASE-04'; r.actionId = crypto.randomUUID();
+        r.canonical = { missionId: r.missionId, phaseId: r.phaseId, actionId: r.actionId, missionVersion: 1 };
+      }
       delete r.target.id;
       if (scenario === 'malformed') r.extra = true;
       native.onMessage.fire(r);
@@ -147,7 +151,7 @@ test('agent worker: opt-in and deferred revocation before/after snapshot; malfor
         await reached.promise;
         if (scenario === 'popup-close') popup.onDisconnect.fire();
         else if (scenario === 'tab-switch') activated.fire();
-        else if (scenario === 'busy') native.onMessage.fire({ ...r, actionId: 'agent-2' });
+        else if (scenario === 'busy') native.onMessage.fire(version === 2 ? { ...r, actionId: r.actionId } : { ...r, actionId: 'agent-2' });
         else await send('stop');
         resume.resolve();
       }
@@ -155,6 +159,8 @@ test('agent worker: opt-in and deferred revocation before/after snapshot; malfor
       for (let i = 0; i < 30; i++) await Promise.resolve();
       if (['success','replay'].includes(scenario)) {
         assert.equal(results.length, 1); assert.equal(snapshots, 1);
+        assert.equal(results[0].protocolVersion, version);
+        if (version === 2) assert.deepEqual(results[0].canonical, r.canonical);
         if (scenario === 'replay') { native.onMessage.fire(r); for (let i = 0; i < 10; i++) await Promise.resolve(); assert.equal(results.length, 1); assert.equal(native.disconnected, true); }
       } else {
         assert.equal(results.length, 0, scenario);

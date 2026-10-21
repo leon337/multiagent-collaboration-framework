@@ -71,6 +71,15 @@ test('real Unix IPC: opt-in, forged token, replay, concurrent, malformed, result
     const timed = request(cap.token, { timeoutMs: 20 });
     assert.equal((await exchange(dir, timed)).failureCode, 'TIMEOUT');
     assert.doesNotThrow(() => broker.result({ ...denial, actionId: timed.actionId }));
+    const canonical = { missionId: 'MCF-BROWSER-BRIDGE-001', phaseId: 'PHASE-04', actionId: randomUUID(), missionVersion: 1 };
+    const canonicalRequest = request(cap.token, { protocolVersion: 2, phaseId: 'PHASE-04', actionId: canonical.actionId, canonical });
+    const canonicalReached = new Promise(resolve => { wake = resolve; });
+    const canonicalReading = exchange(dir, canonicalRequest); await canonicalReached; wake = null;
+    assert.deepEqual(forwarded.at(-1).canonical, canonical);
+    broker.result({ type: 'agent_read_result', protocolVersion: 2, canonical, actionId: canonical.actionId, consentRef: grant.consentRef, summary });
+    const envelope = await canonicalReading;
+    assert.deepEqual(envelope.canonical, canonical); assert.equal(envelope.consentRef, grant.consentRef);
+    assert.equal((await exchange(dir, canonicalRequest)).status, 'DENIED');
     clock += 60001;
     assert.equal((await exchange(dir, request(cap.token))).status, 'DENIED');
     broker.revoke();
