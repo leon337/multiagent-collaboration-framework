@@ -15,10 +15,20 @@ function rpc(port, request) {
     try { port.postMessage(request); } catch { finish('HOST_UNAVAILABLE'); }
   });
 }
-async function current(target) {
+// Check synchronously before dispatch and after every asynchronous boundary.
+// No await may separate the final consent check from scheduling a DOM operation.
+function assertLease(l, ticket, paired = true) {
+  if (!l || lease !== l || generation !== ticket) throw Error('STOPPED');
+  if (paired && (!l.sessionId || Date.now() >= l.expiresAt)) throw Error('CONSENT_REQUIRED');
+}
+async function current(l, ticket, paired = true) {
+  assertLease(l, ticket, paired);
+  const target = l.target;
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  assertLease(l, ticket, paired);
   if (!tab || tab.id !== target.tabId || tab.url !== target.url || safeOrigin(tab.url) !== target.origin) throw Error('CONTEXT_CHANGED');
   const result = await chrome.scripting.executeScript({ target: { tabId: tab.id, documentIds: [target.documentId] }, func: () => location.href });
+  assertLease(l, ticket, paired);
   if (result.length !== 1 || result[0].documentId !== target.documentId || result[0].result !== target.url) throw Error('CONTEXT_CHANGED');
 }
 function request(action, l) { return { protocolVersion: 1, missionId: 'MCF-BROWSER-BRIDGE-001', phaseId: 'PHASE-02', actionId: crypto.randomUUID(), action, sessionId: action === 'hello' ? null : l.sessionId, expiresAt: Date.now() + 5000, target: l.target, budget: { maxChars: 4000, maxNodes: 2000, timeoutMs: 5000 } }; }
@@ -27,31 +37,40 @@ async function run(command) {
   if (command === 'connect') {
     stop(); const ticket = generation;
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (generation !== ticket) throw Error('STOPPED');
     if (!tab || safeOrigin(tab.url) !== 'file://') throw Error('LOCAL_FIXTURE_ONLY');
     const results = await chrome.scripting.executeScript({ target: { tabId: tab.id, frameIds: [0] }, func: () => ({ url: location.href, fixture: document.documentElement.hasAttribute('data-mcf-synthetic-fixture') }) });
     if (results.length !== 1 || !results[0].result?.fixture || results[0].result.url !== tab.url || !results[0].documentId || generation !== ticket) throw Error('CONTEXT_CHANGED');
     const port = chrome.runtime.connectNative('com.mcf.browser_bridge');
     const l = { port, target: { tabId: tab.id, documentId: results[0].documentId, url: tab.url, origin: 'file://' }, sessionId: null, expiresAt: 0 };
     lease = l; port.onDisconnect.addListener(() => { void chrome.runtime.lastError; if (lease === l) stop(); });
-    await current(l.target);
+    await current(l, ticket, false);
+    assertLease(l, ticket, false);
     const hello = await rpc(port, request('hello', l));
-    if (lease !== l || generation !== ticket || !/^[\w-]{1,80}$/.test(hello.sessionId) || !Number.isSafeInteger(hello.expiresAt)) throw Error('INVALID_SESSION');
+    assertLease(l, ticket, false);
+    if (!/^[\w-]{1,80}$/.test(hello.sessionId) || !Number.isSafeInteger(hello.expiresAt)) throw Error('INVALID_SESSION');
     l.sessionId = hello.sessionId; l.expiresAt = hello.expiresAt;
+    assertLease(l, ticket);
     const capabilities = await rpc(port, request('capabilities', l));
-    await current(l.target);
-    if (lease !== l) throw Error('STOPPED');
+    assertLease(l, ticket);
+    await current(l, ticket);
+    assertLease(l, ticket);
     return { status: 'CONNECTED', mission: 'MCF-BROWSER-BRIDGE-001 / PHASE-02', capabilities: capabilities.capabilities, screenshot: false };
   }
   if (command !== 'summary') throw Error('UNKNOWN_COMMAND');
-  const l = lease;
-  if (!l || Date.now() >= l.expiresAt) throw Error('CONSENT_REQUIRED');
-  await current(l.target);
+  const l = lease, ticket = generation;
+  assertLease(l, ticket);
+  await current(l, ticket);
+  assertLease(l, ticket);
   await rpc(l.port, request('read-summary', l));
-  if (lease !== l) throw Error('STOPPED');
-  await current(l.target);
+  assertLease(l, ticket);
+  await current(l, ticket);
+  assertLease(l, ticket);
   const result = await chrome.scripting.executeScript({ target: { tabId: l.target.tabId, documentIds: [l.target.documentId] }, func: snapshot, args: [4000, 2000] });
-  await current(l.target);
-  if (lease !== l || Date.now() >= l.expiresAt || result.length !== 1 || result[0].documentId !== l.target.documentId || !result[0].result) throw Error('CONTEXT_CHANGED');
+  assertLease(l, ticket);
+  await current(l, ticket);
+  assertLease(l, ticket);
+  if (result.length !== 1 || result[0].documentId !== l.target.documentId || !result[0].result) throw Error('CONTEXT_CHANGED');
   return { status: 'VALIDATED', summary: result[0].result };
 }
 let busy = false;

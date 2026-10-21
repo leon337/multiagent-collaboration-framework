@@ -39,3 +39,61 @@ test('mocked worker: consent, read, STOP, missing permission, tab/document swaps
   onMessage.handlers.clear(); await import('../extension/background.js?worker-restarted'); assert.equal((await send('summary')).status, 'DENIED');
   delete globalThis.chrome;
 });
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return { promise, resolve };
+}
+test('revocation during either awaited current() prevents scheduling any snapshot', { timeout: 3000 }, async () => {
+  // Exercise both current() calls preceding capture, including the final one
+  // after host authorization. Resolve the pending probe only after revocation.
+  for (const revoke of ['stop', 'popup-close', 'tab-switch']) for (const checkpoint of [1, 2]) {
+    const onMessage = event(), onConnect = event(), activated = event();
+    const reached = deferred(), resume = deferred();
+    let armed = false, probes = 0, snapshots = 0;
+    const tab = { id: 1, url: 'file:///tmp/fixtures/bridge-fixture.html' };
+    const chrome = { runtime: {
+      id: 'a'.repeat(32), getURL: path => `chrome-extension://${'a'.repeat(32)}/${path}`,
+      onMessage, onConnect,
+      connectNative: () => {
+        const handle = createSession();
+        return { onMessage: event(), onDisconnect: event(),
+          disconnect() { this.onDisconnect.fire(); },
+          postMessage(r) { queueMicrotask(() => this.onMessage.fire(handle(r))); } };
+      },
+    }, tabs: { onActivated: activated, onUpdated: event(), onRemoved: event(), query: async () => [tab] },
+    scripting: { executeScript: async spec => {
+      if (spec.func.name === 'snapshot') {
+        snapshots++;
+        return [{ documentId: 'doc-1', result: { text: 'Synthetic', untrusted: true } }];
+      }
+      if (spec.target.frameIds) return [{ documentId: 'doc-1', result: { url: tab.url, fixture: true } }];
+      if (armed && ++probes === checkpoint) { reached.resolve(); await resume.promise; }
+      return [{ documentId: 'doc-1', result: tab.url }];
+    } } };
+    globalThis.chrome = chrome;
+    try {
+      await import(`../extension/background.js?revocation-${revoke}-${checkpoint}`);
+      const sender = { id: chrome.runtime.id, url: chrome.runtime.getURL('popup.html') };
+      const send = command => new Promise(resolve => { [...onMessage.handlers][0]({ command }, sender, resolve); });
+      const popup = { name: 'popup', sender, onDisconnect: event() }; onConnect.fire(popup);
+      assert.equal((await send('connect')).status, 'CONNECTED');
+      armed = true;
+      const reading = send('summary');
+      await reached.promise;
+      assert.equal(snapshots, 0);
+      if (revoke === 'stop') assert.equal((await send('stop')).status, 'STOPPED');
+      else if (revoke === 'popup-close') popup.onDisconnect.fire();
+      else activated.fire();
+      resume.resolve();
+      assert.equal((await reading).status, 'DENIED', `${revoke} at probe ${checkpoint}`);
+      assert.equal(snapshots, 0, `no snapshot scheduled after ${revoke} at probe ${checkpoint}`);
+      assert.equal((await send('summary')).status, 'DENIED');
+      assert.equal(snapshots, 0);
+    } finally {
+      resume.resolve();
+      delete globalThis.chrome;
+    }
+  }
+});
