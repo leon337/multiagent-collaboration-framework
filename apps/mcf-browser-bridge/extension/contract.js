@@ -1,6 +1,6 @@
 // Prototype contract, not a canonical MCF permission engine or receipt/ledger.
 export const VERSION = 1;
-export const ACTIONS = ['hello', 'capabilities', 'read-summary'];
+export const ACTIONS = ['hello', 'capabilities', 'read-summary', 'agent-allow'];
 const id = v => typeof v === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(v);
 const exact = (v, keys) => v && typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v, k));
 export function safeOrigin(raw) {
@@ -14,7 +14,7 @@ export function safeOrigin(raw) {
 /** @typedef {{protocolVersion:1,missionId:string,phaseId:string,actionId:string,action:string,sessionId:string|null,expiresAt:number,target:{tabId:number,documentId:string,url:string,origin:string},budget:{maxChars:number,maxNodes:number,timeoutMs:number}}} BridgeRequest */
 export function validateRequest(r) {
   if (!exact(r, ['protocolVersion','missionId','phaseId','actionId','action','sessionId','expiresAt','target','budget'])) return 'INVALID_SCHEMA';
-  if (r.protocolVersion !== VERSION || r.missionId !== 'MCF-BROWSER-BRIDGE-001' || r.phaseId !== 'PHASE-02' || !id(r.actionId)) return 'INVALID_SCHEMA';
+  if (r.protocolVersion !== VERSION || r.missionId !== 'MCF-BROWSER-BRIDGE-001' || r.phaseId !== (r.action === 'agent-allow' ? 'PHASE-03' : 'PHASE-02') || !id(r.actionId)) return 'INVALID_SCHEMA';
   if (!ACTIONS.includes(r.action)) return 'ACTION_POLICY_DENIED';
   if (r.action === 'hello' ? r.sessionId !== null : !id(r.sessionId)) return 'INVALID_SESSION';
   if (!Number.isSafeInteger(r.expiresAt)) return 'INVALID_SCHEMA';

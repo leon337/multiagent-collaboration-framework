@@ -25,7 +25,7 @@ function request(action = 'hello') {
 }
 function launch(caller, input) {
   const child = spawnSync(process.execPath, [join(temporary, 'host/host.js'), caller], {
-    cwd: temporary, input, timeout: 5000, killSignal: 'SIGKILL', maxBuffer: 65536,
+    cwd: temporary, env: { ...process.env, MCF_BRIDGE_AGENT_SOCKET_DIR: '' }, input, timeout: 5000, killSignal: 'SIGKILL', maxBuffer: 65536,
     stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true,
   });
   assert.ifError(child.error); // EACCES/EPERM/timeout is not a passing denial.
@@ -51,7 +51,7 @@ let currentCase = 'temporary setup';
 try {
   for (const dir of ['host', 'extension']) mkdirSync(join(temporary, dir));
   // Explicit allowlist: never copy a repository config, secrets or browser manifests.
-  for (const file of ['package.json', 'host/host.js', 'host/framing.js', 'host/session.js', 'extension/contract.js']) {
+  for (const file of ['package.json', 'host/host.js', 'host/framing.js', 'host/session.js', 'host/agent-broker.js', 'extension/contract.js', 'extension/agent-contract.js']) {
     copyFileSync(join(source, file), join(temporary, file));
   }
   currentCase = 'missing config';

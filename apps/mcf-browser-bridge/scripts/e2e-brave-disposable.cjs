@@ -7,11 +7,12 @@ const { spawn, execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const assert = require('node:assert/strict');
 const exec = promisify(execFile);
+const agentMode = process.argv.includes('--agent');
 const base = path.resolve(__dirname, '..');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const children = [];
 let temporary, browser, closing = false, phase = 'prerequisites';
-let evidence = { test: 'e2e-brave-disposable', status: 'FAIL', disposable: true, checks: [] };
+let evidence = { test: agentMode ? 'e2e-agent-disposable' : 'e2e-brave-disposable', status: 'FAIL', disposable: true, checks: [] };
 function bounded(promise, ms, label) {
   let timer;
   return Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(Error(label + '_TIMEOUT')), ms); })]).finally(() => clearTimeout(timer));
@@ -67,8 +68,12 @@ async function main() {
   const xdg = path.join(temporary, 'xdg');
   const runtime = path.join(temporary, 'runtime');
   fs.mkdirSync(xdg); fs.mkdirSync(runtime, { mode: 0o700 });
+  const socketDir = path.join(temporary, 'ipc');
+  if (agentMode) fs.mkdirSync(socketDir, { mode: 0o700 });
   const env = { ...process.env, HOME: temporary, TMPDIR: temporary, XDG_CONFIG_HOME: xdg, XDG_RUNTIME_DIR: runtime,
     XDG_CACHE_HOME: path.join(temporary, 'cache'), XDG_DATA_HOME: path.join(temporary, 'data'), XDG_STATE_HOME: path.join(temporary, 'state') };
+  delete env.MCF_BRIDGE_AGENT_SOCKET_DIR;
+  if (agentMode) env.MCF_BRIDGE_AGENT_SOCKET_DIR = socketDir;
   for (const key of ['DISPLAY', 'WAYLAND_DISPLAY', 'XAUTHORITY', 'DBUS_SESSION_BUS_ADDRESS', 'SESSION_MANAGER']) delete env[key];
   phase = 'isolated-display';
   // X server atomically selects/reserves an unused display; never reuse user DISPLAY.
@@ -109,7 +114,7 @@ async function main() {
   fs.writeFileSync(fixture, fs.readFileSync(path.join(base, 'fixtures/bridge-fixture.html'), 'utf8').replace('<form>', '<form><p>FORM_SECRET</p>'));
   const hostRoot = path.join(temporary, 'native');
   for (const folder of ['host', 'extension']) fs.mkdirSync(path.join(hostRoot, folder), { recursive: true });
-  for (const file of ['package.json','host/host.js','host/framing.js','host/session.js','extension/contract.js']) fs.copyFileSync(path.join(base, file), path.join(hostRoot, file));
+  for (const file of ['package.json','host/host.js','host/framing.js','host/session.js','host/agent-broker.js','extension/contract.js','extension/agent-contract.js']) fs.copyFileSync(path.join(base, file), path.join(hostRoot, file));
   const hostFile = path.join(hostRoot, 'host/host.js');
   // Use current Node executable explicitly, independent of desktop/browser PATH.
   const hostCode = fs.readFileSync(hostFile, 'utf8');
@@ -211,11 +216,34 @@ d.sync(); d.close()
   const serialized = JSON.stringify(result.summary);
   for (const marker of ['FORM_SECRET','MARKED_SECRET','HIDDEN_SECRET','CSS_HIDDEN_SECRET','FRAME_SECRET','SYNTHETIC_SECRET_ONLY','NOT_A_REAL_PASSWORD','teste@example.invalid']) assert.ok(!serialized.includes(marker), 'SANITIZER_SENTINEL_LEAK');
   evidence.checks.push('VALIDATED', 'SYNTHETIC_PUBLIC_TEXT', 'REDACTED_EMAIL', 'NO_SENSITIVE_SENTINELS');
+  if (agentMode) {
+    phase = 'agent-opt-in';
+    assert.equal(fs.existsSync(path.join(socketDir, 'mcf-agent.sock')), false);
+    await evaluate('document.querySelector("#agent-consent").click()', true);
+    await poll(() => evaluate('document.querySelector("#agent-state").textContent.includes("agent read allowed: true")'), 'AGENT_ALLOWED');
+    phase = 'agent-cli';
+    const cli = await exec(process.execPath, [path.join(base, 'scripts/agent-read-fixture.cjs'), socketDir], { env, timeout: 6000, maxBuffer: 32768 });
+    const agentSummary = JSON.parse(cli.stdout);
+    assert.equal(agentSummary.untrusted, true);
+    assert.equal(agentSummary.title, 'Fixture sintética MCF');
+    assert.ok(agentSummary.text.length <= 4000);
+    assert.match(agentSummary.text, /Produto fictício: caderno azul/);
+    assert.match(agentSummary.text, /\[REDACTED_EMAIL\]/);
+    for (const marker of ['FORM_SECRET','MARKED_SECRET','HIDDEN_SECRET','CSS_HIDDEN_SECRET','FRAME_SECRET','SYNTHETIC_SECRET_ONLY','NOT_A_REAL_PASSWORD','teste@example.invalid']) assert.ok(!JSON.stringify(agentSummary).includes(marker), 'AGENT_SANITIZER_SENTINEL_LEAK');
+    evidence.checks.push('AGENT_REAL_CLI_SUMMARY', 'AGENT_SANITIZED');
+  }
   phase = 'stop';
   await evaluate('document.querySelector("#stop").click()', true);
   await status('STOPPED');
   assert.equal(await evaluate('document.querySelector("#summary").disabled && !document.querySelector("#consent").checked'), true);
   evidence.checks.push('STOPPED', 'SUMMARY_DISABLED');
+  if (agentMode) {
+    await poll(() => !fs.existsSync(path.join(socketDir, 'mcf-agent-capability.json')) && !fs.existsSync(path.join(socketDir, 'mcf-agent.sock')), 'AGENT_REVOKED');
+    let denied = false;
+    try { await exec(process.execPath, [path.join(base, 'scripts/agent-read-fixture.cjs'), socketDir], { env, timeout: 6000 }); } catch (e) { denied = e.code === 1 && e.stdout === ''; }
+    assert.equal(denied, true);
+    evidence.checks.push('AGENT_DENIED_AFTER_STOP');
+  }
   evidence.browser = await browser.version();
   evidence.status = 'PASS';
 }
