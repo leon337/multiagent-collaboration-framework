@@ -1,0 +1,13 @@
+{
+  "name": "@mcf/agent-studio-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MVP de edição conversacional e visual, com rascunhos seguros para presets DeepSeek Harness",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check server.mjs && node --check public/app.js"
+  }
+}
