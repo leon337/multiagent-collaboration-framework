@@ -1,0 +1,12 @@
+mission: MCF-20261023-AGENT-BUILDER-GUIDED-001
+risk_class: B
+technical_status: ENTREGUE
+step_count: 6
+workspace_isolation: true
+dsh_mentor_real: true
+dsh_mentor_persistent: true
+draft_preview: 360
+review_handoff: true
+automatic_publication: false
+test_count: 9
+governance_gate: PENDENTE

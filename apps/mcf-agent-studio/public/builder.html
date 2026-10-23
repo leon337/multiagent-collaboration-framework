@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a1220">
+<meta name="description" content="MCF Agent Architect — crie e evolua agentes passo a passo, com orientação da IA e workspaces separados.">
+<title>MCF Agent Architect • Construtor guiado</title>
+<link rel="stylesheet" href="/builder.css">
+<script defer src="/builder.js"></script>
+</head>
+<body>
+<div class="builder-shell">
+<aside class="builder-sidebar" aria-label="Navegação do construtor">
+  <a href="/" class="brand"><span class="brand-icon">✳</span><span><strong>MCF Agent Studio</strong><small>Agent Architect</small></span></a>
+  <section class="side-section" aria-label="Seus agentes">
+    <div class="eyebrow">SEUS WORKSPACES</div>
+    <div id="workspaceList" class="workspace-list" aria-live="polite">
+      <p class="aside-note">Carregando workspaces…</p>
+    </div>
+    <button id="startAnother" type="button" class="sidebar-add">＋ Novo workspace</button>
+  </section>
+  <nav class="side-links">
+    <a href="/">↗ Editor técnico</a>
+    <a href="/lab">◎ Chat de testes no DSH</a>
+  </nav>
+  <div class="side-footer">Seus rascunhos não alteram os agentes publicados automaticamente.</div>
+</aside>
+<main class="builder-main">
+  <header class="topbar">
+    <div><span class="eyebrow">MCF / AGENT BUILDER</span><div class="top-title">Criação assistida <span>de agentes</span></div></div>
+    <div class="connection" id="mentorConnection" role="status"><span class="dot"></span> Verificando DSH</div>
+  </header>
+  <div class="page">
+    <section id="startScreen" class="start-screen">
+      <div class="intro">
+        <div class="eyebrow">CONSTRUA COM ORIENTAÇÃO, NÃO COM CÓDIGO</div>
+        <h1>Seu próximo agente começa com uma ideia.</h1>
+        <p>O MCF Agent Architect orienta você desde o objetivo até os testes. Cada projeto recebe seu próprio workspace, histórico de versões e uma área de simulação segura.</p>
+      </div>
+      <div class="choice-grid">
+        <button class="choice" id="createChoice" type="button">
+          <span class="choice-icon">＋</span><strong>Criar novo agente</strong>
+          <span>Defina função, personalidade e ferramentas em seis etapas.</span><b>Começar criação →</b>
+        </button>
+        <button class="choice" id="modifyChoice" type="button">
+          <span class="choice-icon">✧</span><strong>Evoluir Hello World</strong>
+          <span>Importe um ponto de partida do Studio, simule melhorias e analise resultados sem alterar o agente ativo.</span><b>Começar evolução →</b>
+        </button>
+      </div>
+      <section class="native-workspaces" aria-label="Workspaces nativos do DSH">
+        <div class="native-header">
+          <div><div class="eyebrow">ISOLAMENTO REAL POR PRESET</div><h2>Workspaces no DeepSeek Harness</h2></div>
+          <button type="button" id="refreshNativeWorkspaces" class="button secondary">Atualizar estado</button>
+        </div>
+        <p id="nativeSummary" class="native-summary" role="status" aria-live="polite">Consultando o DSH…</p>
+        <div id="nativeWorkspaceGrid" class="native-grid"></div>
+        <p class="field-hint">Cada preset usa um diretório e workspaceId próprio. Sessões antigas continuam preservadas em Legado; os agentes se comunicam por chamadas explícitas, não por pastas compartilhadas.</p>
+      </section>
+      <section class="recent-workspaces" aria-label="Retomar trabalhos existentes">
+       <div><span class="eyebrow">CONTINUAR DE ONDE PAROU</span><h2>Workspaces recentes</h2></div>
+       <div id="recentWorkspaces" class="recent-grid"></div>
+      </section>
+      <div class="safety"><span>◇</span><p><b>Modo seguro ativado.</b> Nenhum agente será publicado ou sobrescrito durante o fluxo guiado. A publicação real do Hello World continua governada pelo Studio.</p></div>
+    </section>
+    <section id="wizardScreen" class="wizard-screen hidden" aria-label="Construtor passo a passo">
+      <div class="wizard-top">
+        <div><div class="eyebrow" id="wizardKind">WORKSPACE DE AGENTE</div><h1 id="wizardTitle">Seu agente</h1><p id="wizardSubtitle">Configure seu agente em etapas simples.</p></div>
+        <div class="revision"><span class="dot"></span><span id="revisionBadge">Rascunho • r1</span></div>
+      </div>
+      <div class="step-track" id="stepTrack" aria-label="Etapas de configuração"></div>
+      <div class="workspace-grid">
+        <div class="form-panel">
+          <div class="step-label" id="stepLabel">ETAPA 1 DE 6</div>
+          <h2 id="stepTitle">Defina o objetivo</h2>
+          <p class="step-desc" id="stepDescription">Explique o que seu agente deverá fazer.</p>
+          <form id="wizardForm">
+            <div id="fields"></div>
+            <div class="form-footer">
+              <button id="backButton" class="button secondary" type="button">← Voltar</button>
+              <button id="nextButton" class="button primary" type="submit">Salvar e continuar →</button>
+            </div>
+          </form>
+        </div>
+        <aside class="architect-panel" aria-label="Orientador Agent Architect">
+          <div class="architect-title"><span class="architect-avatar">✳</span><span><strong>MCF Agent Architect</strong><small>Orientação pelo DSH • modo seguro</small></span></div>
+          <div class="architect-scroll">
+            <p class="coach-hint" id="coachHint">Vou ajudar você a transformar sua ideia em requisitos objetivos.</p>
+            <div id="coachMessages" class="coach-messages" aria-live="polite" role="log"></div>
+            <div id="coachSuggestions" class="coach-suggestions"></div>
+          </div>
+          <form id="coachForm" class="coach-form">
+            <label for="coachInput" class="sr-only">Pergunte ao Agent Architect</label>
+            <textarea id="coachInput" rows="2" maxlength="700" placeholder="Pergunte ao orientador…"></textarea>
+            <button id="coachSend" class="button ghost" type="submit">Perguntar ↗</button>
+          </form>
+          <div class="coach-footer">O orientador sugere; só você aprova mudanças no rascunho.</div>
+        </aside>
+      </div>
+      <div class="bottom-hint" id="bottomHint">As alterações deste workspace são independentes do perfil DSH ativo.</div>
+    </section>
+  </div>
+</main>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+</div>
+</body>
+</html>

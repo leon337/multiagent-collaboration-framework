@@ -1,0 +1,66 @@
+{
+  "steps": {
+    "connection": {
+      "ai": true,
+      "connected": "true",
+      "description": "● Sessão DSH conectada — modelo e autenticação gerenciados pelo Harness"
+    },
+    "proposal": {
+      "shown": true,
+      "diff": "RespostaANTESHello World!DEPOISMCF E2E 2026 OK",
+      "origin": "Resposta fixa atualizada • origem: sessão DSH",
+      "toast": ""
+    },
+    "apply": {
+      "response": "MCF E2E 2026 OK",
+      "revision": "r2"
+    },
+    "preview": "oiMCF E2E 2026 OKResposta do rascunho",
+    "review": {
+      "shown": true,
+      "summary": "Preset: preset-hello-world-agent. Revisão: r2. Modo: fixed. Resposta: MCF E2E 2026 OK. Ferramentas: nenhuma.",
+      "toast": "Alteração salva no rascunho."
+    },
+    "invalidGate": {
+      "shown": true,
+      "toast": "Digite a confirmação exatamente como solicitado."
+    },
+    "commit": {
+      "ok": true,
+      "rev": 2,
+      "toast": "Publicação confirmada em uma nova sessão real do DSH."
+    },
+    "tablet": {
+      "innerWidth": 768,
+      "scrollWidth": 753,
+      "nav": "flex",
+      "publishStatus": "Verificado no DSH"
+    },
+    "mobile": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "nav": "flex",
+      "publishStatus": "Verificado no DSH"
+    },
+    "small": {
+      "innerWidth": 320,
+      "scrollWidth": 320,
+      "nav": "flex",
+      "publishStatus": "Verificado no DSH"
+    },
+    "realAgent": {
+      "status": 200,
+      "preset": "hello-world-agent",
+      "sessionId": "session-6abc0cc4-4a1b-4766-bd52-7574af497938",
+      "answer": "MCF E2E 2026 OK"
+    },
+    "rollback": {
+      "restored": true,
+      "toast": "Publicação confirmada em uma nova sessão real do DSH."
+    }
+  },
+  "errors": [],
+  "complete": true,
+  "profileRestored": true,
+  "userDraftUnchanged": true
+}

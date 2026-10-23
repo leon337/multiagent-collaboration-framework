@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "date": "2026-10-23T14:04:13.785Z",
+  "presets": {
+    "hello-world-agent": {
+      "id": "f7ce7536-16a6-4def-b84e-16f61f36d282",
+      "path": "/home/leo/MCF MISSIONS/mcf-chatgpt-workspace/apps/mcf-agent-studio/.data/dsh-preset-workspaces/hello-world-agent",
+      "count": 2
+    },
+    "mcf-studio-brain": {
+      "id": "f8016dcd-1d15-4d61-a15a-056746e3037a",
+      "path": "/home/leo/MCF MISSIONS/mcf-chatgpt-workspace/apps/mcf-agent-studio/.data/dsh-preset-workspaces/mcf-studio-brain",
+      "count": 2
+    },
+    "mcf-studio-preview": {
+      "id": "0aad07dc-effc-4e5d-969a-e177b9d17856",
+      "path": "/home/leo/MCF MISSIONS/mcf-chatgpt-workspace/apps/mcf-agent-studio/.data/dsh-preset-workspaces/mcf-studio-preview",
+      "count": 1
+    }
+  },
+  "migrated": {
+    "plannerSessionId": "session-0339844a-491b-4c6e-a330-cadb0283fe1d",
+    "labSessionId": "session-dbc07a0a-2652-4003-ae20-1b3748603999",
+    "plannerInCorrectWorkspace": true,
+    "labInCorrectWorkspace": true,
+    "preservedLabMessages": 64
+  },
+  "legacyCount": 17,
+  "legacyUnaccounted": 0,
+  "probes": []
+}

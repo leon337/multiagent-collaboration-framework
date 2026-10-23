@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131b">
+  <title>Agent Studio — MCF</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="Início do Agent Studio">
+      <span class="brandmark">✳</span>
+      <span><strong>Agent Studio</strong><small>MCF • laboratório local</small></span>
+    </a>
+    <div class="sidegroup">
+      <div class="sidetitle">WORKSPACE</div>
+      <a href="#studio" class="sidenav active"><span>◈</span> Estúdio <b>01</b></a>
+      <a href="#versions" class="sidenav"><span>◷</span> Versões</a>
+      <a href="#test" class="sidenav"><span>◇</span> Testes</a>
+      <a href="#publish" class="sidenav"><span>↗</span> Publicar</a>
+      <a href="/builder" class="sidenav"><span>✧</span> Criar ou evoluir agente</a>
+      <a href="/lab" class="sidenav"><span>◎</span> Conversar com agente</a>
+    </div>
+    <div class="sidegroup">
+      <div class="sidetitle">MEUS AGENTES</div>
+      <div class="agentlink"><span class="agenticon">H</span><span><strong>Hello World Agent</strong><small>preset • rascunho</small></span><span class="dot"></span></div>
+      <p class="sidehint">Edição e publicação controladas apenas para o Hello World Agent.</p>
+    </div>
+    <div class="sidebottom">
+      <div class="safe"><span>●</span> Ambiente isolado</div>
+      <p>As edições ficam no rascunho até você confirmar uma publicação. Backup e reversão disponíveis.</p>
+      <a class="issue" href="https://github.com/leon337/multiagent-collaboration-framework/issues/467" target="_blank" rel="noopener noreferrer">Missão MCF #467 ↗</a>
+    </div>
+  </aside>
+  <div class="stage">
+    <header class="topbar">
+      <div class="breadcrumbs">MCF <span>/</span> Agent Studio <span>/</span> <b>Hello World</b></div>
+      <nav class="mobile-nav" aria-label="Navegação do Agent Studio">
+        <a href="#studio">Estúdio</a><a href="#versions">Versões</a><a href="#test">Testes</a><a href="#publish">Publicar</a><a href="/builder">Builder guiado</a><a href="/lab">Chat real</a>
+      </nav>
+      <div class="topactions">
+        <span class="statuspill"><i></i> <span id="serverStatus">Carregando…</span></span>
+        <button class="button ghost small" id="exportBtn">↓ Exportar</button>
+      </div>
+    </header>
+    <main id="studio">
+      <section class="welcome">
+        <div class="eyebrow">AMBIENTE DE DESENVOLVIMENTO DE AGENTES <span>• MVP 0.1</span></div>
+        <h1>Desenvolva agentes <em>conversando.</em></h1>
+        <p>Descreva mudanças em português, visualize a proposta, teste, salve e publique no Harness sem editar YAML ou JavaScript.</p><a href="#promptInput" class="quick-jump">Começar a editar <span aria-hidden="true">↗</span></a>
+        <div class="metrics">
+          <div><span class="metricicon">▣</span><span><strong>01</strong><small>Agente de referência</small></span></div>
+          <div><span class="metricicon">⌁</span><span><strong id="revisionMetric">—</strong><small>Revisão do rascunho</small></span></div>
+          <div><span class="metricicon">◇</span><span><strong>02</strong><small>Ferramentas permitidas</small></span></div>
+        </div>
+      </section>
+      <div class="workgrid">
+        <div class="primary">
+          <section class="panel" aria-label="Chat de edição">
+            <div class="panelhead">
+              <div><span class="eyebrow subtle">VIBE CODING</span><h2>Descreva a evolução do agente</h2><p>Seu pedido gera uma proposta — nunca uma alteração automática.</p><p id="dshSessionStatus" class="dsh-connect-status" role="status" aria-live="polite">Verificando sessão do DeepSeek Harness…</p></div>
+              <span class="iconplate">✦</span>
+            </div>
+            <div class="dialog">
+              <div class="message assistant"><div class="avatar">✳</div><div class="bubble"><b>Assistente de desenvolvimento</b><p>O Hello World está pronto. O que você quer mudar no comportamento dele?</p></div></div>
+              <div id="chatLog" role="log" aria-label="Mensagens de desenvolvimento" aria-live="polite" aria-relevant="additions"></div>
+            </div>
+            <div class="suggestions" aria-label="Exemplos rápidos">
+              <button type="button" data-prompt='Altere a resposta para "Bom dia!"'>Trocar resposta ↗</button>
+              <button type="button" data-prompt="Adicione a ferramenta calculadora">Adicionar calculadora ↗</button>
+              <button type="button" data-prompt="Mude para modo eco">Ativar modo eco ↗</button>
+            </div>
+            <form id="promptForm" class="composer">
+              <label for="promptInput" class="sr-only">Descreva uma alteração</label>
+              <textarea id="promptInput" placeholder='Ex.: Altere a resposta para "Olá, eu sou o seu agente!"' rows="3" maxlength="2000" required></textarea>
+              <div class="composerfooter"><label class="checkline"><input type="checkbox" id="aiSwitch" checked> <span>Usar IA pela sessão do DSH</span></label><button type="submit" class="button primary" id="proposeBtn">Gerar proposta <span>↗</span></button></div>
+            </form>
+          </section>
+          <section class="panel proposal-panel hidden" id="proposalPanel" aria-label="Revisão das alterações">
+            <div class="panelhead compact"><div><span class="eyebrow subtle">REVISÃO CONTROLADA</span><h2>Proposta de alteração</h2><p id="proposalExplanation">Revise antes de aplicar ao rascunho.</p></div><span class="proposed">Pendente</span></div>
+            <div id="diffList" class="difflist"></div>
+            <div class="proposalactions"><button type="button" class="button ghost" id="discardBtn">Descartar</button><button type="button" class="button primary" id="applyBtn">Aplicar ao rascunho <span>✓</span></button></div>
+          </section>
+          <section class="panel" id="versions">
+            <div class="panelhead compact"><div><span class="eyebrow subtle">RASTREABILIDADE</span><h2>Histórico de versões</h2><p>Restaurar cria uma nova revisão sem apagar o histórico.</p></div><span class="iconplate smallplate">◷</span></div>
+            <div id="versionList" class="versions"></div>
+          </section>
+        </div>
+        <div class="secondary">
+          <section class="panel editor">
+            <div class="panelhead compact"><div><span class="eyebrow subtle">CONFIGURAÇÃO</span><h2>Painel visual</h2></div><span class="drafttag">Rascunho</span></div>
+            <form id="visualForm">
+              <label>Nome do agente<input id="nameField" maxlength="80" required></label>
+              <label>Modo de resposta<select id="modeField"><option value="fixed">Resposta fixa</option><option value="echo">Eco da mensagem</option><option value="instructed">Conversacional com IA</option></select><small class="fieldhint">Para testar o comportamento real, publique e abra uma nova sessão no DSH. A prévia conversacional utiliza uma sessão isolada do DSH.</small></label>
+              <label>Resposta padrão<input id="responseField" maxlength="400" required></label>
+              <label>Instruções do agente<textarea id="instructionsField" rows="4" maxlength="2500"></textarea></label>
+              <div class="formsub">Ferramentas de laboratório</div>
+              <label class="toggle"><span><b>Calculadora</b><small>Operações numéricas locais</small></span><input type="checkbox" id="calculatorField"></label>
+              <label class="toggle"><span><b>Relógio</b><small>Data e hora locais</small></span><input type="checkbox" id="clockField"></label>
+              <button class="button outline wide" type="submit">Revisar mudanças visuais</button>
+            </form>
+          </section>
+          <section class="panel publish" id="publish" aria-label="Publicação no DeepSeek Harness">
+            <div class="panelhead compact"><div><span class="eyebrow subtle">INTEGRAÇÃO REAL</span><h2>Publicar no Harness</h2><p>Altere apenas o Hello World Agent. Um backup permite desfazer.</p></div><span class="drafttag" id="publishStatus">Não publicado</span></div>
+            <div class="publish-inner">
+              <p id="publishMessage" class="publish-explain" role="status" aria-live="polite">A publicação altera o preset real. Novas conversas do Harness recebem a atualização.</p>
+              <button type="button" class="button outline wide" id="publishPlanBtn">Revisar publicação no DSH</button>
+              <div id="publishPlanPanel" class="publish-confirm hidden">
+                <h3>Confirmar alteração do preset real</h3>
+                <p id="publishSummary"></p>
+                <p class="risk">A publicação não altera as conversas existentes. Teste abrindo uma nova conversa no DeepSeek Harness.</p>
+                <label for="publishConfirmation">Digite <code>PUBLICAR HELLO WORLD</code> para confirmar:</label>
+                <input id="publishConfirmation" autocomplete="off" spellcheck="false" placeholder="PUBLICAR HELLO WORLD"/>
+                <div class="publish-actions"><button type="button" id="publishCancelBtn" class="button ghost">Cancelar</button><button type="button" id="publishConfirmBtn" class="button primary">Publicar agora</button></div>
+              </div>
+              <button type="button" class="button ghost wide" id="publishUndoBtn">↶ Reverter última publicação</button>
+              <p class="fineprint">Não gera ou executa código arbitrário. Somente comportamento, instruções e ferramentas aprovadas.</p>
+            </div>
+          </section>
+          <section class="panel testpanel" id="test">
+            <div class="panelhead compact"><div><span class="eyebrow subtle">SANDBOX</span><h2>Teste imediato</h2><p>Use a versão salva ou a proposta pendente.</p></div><span class="iconplate smallplate">▷</span></div>
+            <div id="testHistory" class="testhistory" aria-live="polite"><div class="emptytest">Nenhum teste nesta sessão.<small>Experimente enviar “oi” ou “calcule 8*7”.</small></div></div>
+            <form id="testForm" class="testform"><label for="testInput" class="sr-only">Mensagem para testar o agente</label><input id="testInput" placeholder='Digite "oi"…' maxlength="2000" required><button type="submit" class="button primary square" aria-label="Enviar teste">➜</button></form>
+          </section>
+          <section class="panel provider" id="provider">
+            <div class="panelhead compact"><div><span class="eyebrow subtle">PROVEDOR OPCIONAL</span><h2>9Router</h2><p>Opcional para testes conversacionais. As propostas por IA usam a sessão DSH, sem chave adicional.</p></div><span class="providerdot" id="providerDot"></span></div>
+            <details><summary>Configurar conexão <span>⌄</span></summary><form id="providerForm">
+              <label>ID do modelo<input id="providerModel" list="routerModels" placeholder="ollama/gpt-oss:120b"><datalist id="routerModels"></datalist><small class="fieldhint" id="modelsHint">Modelos locais carregados do 9Router.</small></label>
+              <label>Chave de acesso (somente memória)<input id="providerKey" type="password" placeholder="Cole sua chave para este processo" autocomplete="off"></label>
+              <div class="provideractions"><button type="button" class="button ghost small" id="clearKeyBtn">Limpar chave</button><button type="submit" class="button outline small" id="saveProviderBtn">Salvar e testar conexão</button></div>
+              <p class="fieldhint" id="providerTestState" role="status" aria-live="polite">Insira a chave aqui. Ela não será exibida nem salva no projeto.</p>
+            </form></details>
+          </section>
+        </div>
+      </div>
+      <footer class="footer"><span>MCF Agent Studio • Issue #467</span><span>Desenvolvimento local · Publicação explícita com backup</span></footer>
+    </main>
+  </div>
+</div>
+<div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

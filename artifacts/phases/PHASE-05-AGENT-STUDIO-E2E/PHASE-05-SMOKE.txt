@@ -1,0 +1,9 @@
+Smoke status:
+Studio localhost:4317 active; health HTTP 200.
+Harness web localhost:3080 running.
+Bridge localhost:4319 with restricted local token.
+DSH planner native conversation: PASS.
+DSH preview conversation without second API key: PASS.
+Hello World Agent after live publication: MCF E2E 2026 OK.
+Profile rollback SHA: f0fc69d6bc74d143781af54ef98f150644ef498c6210fdf981b9a1e673214147.
+No mutation of main draft.
