@@ -55,3 +55,6 @@
 
 .publish .button{min-height:44px;font-size:13px}
 .publish-confirm input{min-height:44px}
+
+.dsh-connect-status{display:flex;gap:7px;align-items:center;margin-top:12px!important;color:#a5d9ce!important;font-size:12px!important;line-height:1.45}
+.dsh-connect-status[data-connected="false"]{color:#e0b48d!important}

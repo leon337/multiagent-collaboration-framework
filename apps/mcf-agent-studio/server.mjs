@@ -13,6 +13,13 @@ const PROFILE = process.env.AGENT_STUDIO_PROFILE || '/home/leo/.dsh/profiles/web
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.AGENT_STUDIO_PORT || 4317);
 const ROUTER_BASE = process.env.AGENT_STUDIO_ROUTER_BASE || 'http://127.0.0.1:20128/v1';
+const DSH_BRIDGE = process.env.AGENT_STUDIO_DSH_BRIDGE || 'http://127.0.0.1:4319';
+const DSH_BRIDGE_TOKEN_FILE = process.env.AGENT_STUDIO_DSH_TOKEN_FILE || join(APP_DIR, '.data', 'dsh-bridge-token');
+const dshBridgeUrl = new URL(DSH_BRIDGE);
+if (dshBridgeUrl.protocol !== 'http:' || !['127.0.0.1', 'localhost'].includes(dshBridgeUrl.hostname)) {
+  throw Error('Ponte DSH aceita apenas conexão local.');
+}
+
 const routerBaseUrl = new URL(ROUTER_BASE);
 if (routerBaseUrl.protocol !== 'http:' || routerBaseUrl.hostname !== '127.0.0.1' && routerBaseUrl.hostname !== 'localhost') {
   throw Error('Somente gateways locais são permitidos no Agent Studio');
@@ -101,6 +108,29 @@ function guidedInterpret(input, current) {
   if (!Object.keys(changes).length) fail('Não reconheci uma alteração segura. Use, por exemplo: Altere a resposta para "Bom dia", adicione calculadora ou mude para modo eco.', 422);
   return { changes, explanation: 'Interpretação local baseada em comandos reconhecidos.', source: 'guided' };
 }
+async function dshSessionCall(path, payload) {
+  let token;
+  try { token = (await readFile(DSH_BRIDGE_TOKEN_FILE, 'utf8')).trim(); }
+  catch { fail('Ponte DSH indisponível. Verifique o perfil Web do Harness.', 503); }
+  if (!/^[a-f0-9]{64}$/.test(token)) fail('Token local da ponte DSH inválido', 503);
+  let res;
+  try {
+    res = await fetch(DSH_BRIDGE.replace(/\/$/, '') + path, {
+      method: payload === undefined ? 'GET' : 'POST',
+      headers: { 'X-Agent-Studio-Bridge': token, ...(payload === undefined ? {} : { 'Content-Type': 'application/json' }) },
+      ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
+      signal: AbortSignal.timeout(path === '/chat' ? 90000 : 4000)
+    });
+  } catch (e) {
+    fail('Sessão DSH desconectada: ' + (e.name === 'TimeoutError' ? 'tempo excedido' : 'ponte local não responde'), 503);
+  }
+  let result;
+  try { result = await res.json(); }
+  catch { fail('Ponte DSH retornou dados inválidos', 502); }
+  if (!res.ok) fail('Sessão DSH: ' + String(result.error || 'falha desconhecida').slice(0,260), res.status === 409 ? 409 : 502);
+  return result;
+}
+
 async function aiRequest(messages, jsonMode = false) {
   if (!provider.key) fail('Configure uma chave do 9Router para usar IA. O modo guiado funciona sem chave.', 422);
   const ctrl = new AbortController();
@@ -123,9 +153,12 @@ async function aiRequest(messages, jsonMode = false) {
     throw e;
   } finally { clearTimeout(timeout); }
 }
-async function aiInterpret(prompt, current) {
+async function aiInterpret(prompt, current, backend = 'dsh') {
   const sys = 'Você é um planejador de edição de agente. Responda SOMENTE um JSON com: {"changes":{},"explanation":"..."}. Campos autorizados em changes: name (string até 80), mode ("fixed","echo","instructed"), response (string até 400), instructions (string até 2500), tools (array de "calculator" e/ou "clock"). Não gere código e não execute nada. Preserve os campos não solicitados. Nunca solicite outras ferramentas. Modos: fixed resposta exata; echo repete; instructed conversa via IA. Formate em JSON válido.';
-  const raw = await aiRequest([{ role: 'system', content: sys }, { role: 'user', content: 'Estado atual: ' + JSON.stringify(current) + '\nPedido: ' + prompt }], true);
+  const request = 'Estado atual: ' + JSON.stringify(current) + '\nPedido: ' + prompt;
+  const raw = backend === '9router'
+    ? await aiRequest([{ role: 'system', content: sys }, { role: 'user', content: request }], true)
+    : await dshSessionCall('/chat', { prompt: sys + '\n' + request }).then(result => result.answer);
   let parsed;
   try { parsed = JSON.parse(raw.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim()); }
   catch { fail('Modelo retornou uma proposta que não é JSON válido.', 502); }
@@ -198,6 +231,12 @@ async function route(req, res) {
       res.writeHead(200, { 'content-type': contentType + '; charset=utf-8', 'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'", 'x-content-type-options': 'nosniff', 'cache-control': 'no-store' }); res.end(raw); return;
     }
     if (req.method === 'GET' && path === '/health') return json(res, 200, { ok: true, service: 'agent-studio', revision: state.revision });
+    if (req.method === 'GET' && path === '/api/dsh/status') {
+      try {
+        const connection = await dshSessionCall('/status');
+        return json(res, 200, { connected: connection.ready === true, sessionId: connection.sessionId, preset: connection.agentPreset, running: connection.running });
+      } catch (e) { return json(res, 200, { connected: false, error: e.message }); }
+    }
     if (req.method === 'GET' && path === '/api/models') {
       try {
         const response = await fetch(ROUTER_BASE.replace(/\/$/, '') + '/models', { signal: AbortSignal.timeout(3500) });
@@ -260,7 +299,7 @@ async function route(req, res) {
       if (x.direct) proposal = { changes: x.direct, explanation: 'Alteração editada pelo painel visual', source: 'visual' };
       else if (typeof x.prompt === 'string' && x.prompt.trim()) {
         if (x.prompt.length > 2000) fail('Instrução grande demais');
-        proposal = (x.useAi === true) ? await aiInterpret(x.prompt, state.current) : guidedInterpret(x.prompt, state.current);
+        proposal = (x.useAi === true) ? await aiInterpret(x.prompt, state.current, x.backend === '9router' ? '9router' : 'dsh') : guidedInterpret(x.prompt, state.current);
       } else fail('Escreva uma alteração');
       const next = applyChanges(state.current, proposal.changes);
       if (same(next, state.current)) fail('A proposta não altera o agente', 422);

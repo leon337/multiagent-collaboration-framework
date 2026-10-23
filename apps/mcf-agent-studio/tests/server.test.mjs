@@ -88,7 +88,7 @@ test('MVP end-to-end: criar proposta, validar, salvar, testar e restaurar', asyn
   assert.equal(blocked.status, 400);
   const unknown = await call('/api/propose', 'POST', { prompt: 'execute rm -rf' });
   assert.equal(unknown.status, 422);
-  const missingKey = await call('/api/propose', 'POST', { prompt: 'faça isso', useAi: true });
+  const missingKey = await call('/api/propose', 'POST', { prompt: 'faça isso', useAi: true, backend: '9router' });
   assert.equal(missingKey.status, 422);
   const unauthorizedTest = await call('/api/provider/test', 'POST', {});
   assert.equal(unauthorizedTest.status, 422, 'test requires an authorized key');

@@ -59,7 +59,7 @@
         <div class="primary">
           <section class="panel" aria-label="Chat de edição">
             <div class="panelhead">
-              <div><span class="eyebrow subtle">VIBE CODING</span><h2>Descreva a evolução do agente</h2><p>Seu pedido gera uma proposta — nunca uma alteração automática.</p></div>
+              <div><span class="eyebrow subtle">VIBE CODING</span><h2>Descreva a evolução do agente</h2><p>Seu pedido gera uma proposta — nunca uma alteração automática.</p><p id="dshSessionStatus" class="dsh-connect-status" role="status" aria-live="polite">Verificando sessão do DeepSeek Harness…</p></div>
               <span class="iconplate">✦</span>
             </div>
             <div class="dialog">
@@ -74,7 +74,7 @@
             <form id="promptForm" class="composer">
               <label for="promptInput" class="sr-only">Descreva uma alteração</label>
               <textarea id="promptInput" placeholder='Ex.: Altere a resposta para "Olá, eu sou o seu agente!"' rows="3" maxlength="2000" required></textarea>
-              <div class="composerfooter"><label class="checkline"><input type="checkbox" id="aiSwitch"> <span>Usar IA via 9Router</span></label><button type="submit" class="button primary" id="proposeBtn">Gerar proposta <span>↗</span></button></div>
+              <div class="composerfooter"><label class="checkline"><input type="checkbox" id="aiSwitch" checked> <span>Usar IA pela sessão do DSH</span></label><button type="submit" class="button primary" id="proposeBtn">Gerar proposta <span>↗</span></button></div>
             </form>
           </section>
           <section class="panel proposal-panel hidden" id="proposalPanel" aria-label="Revisão das alterações">
@@ -92,7 +92,7 @@
             <div class="panelhead compact"><div><span class="eyebrow subtle">CONFIGURAÇÃO</span><h2>Painel visual</h2></div><span class="drafttag">Rascunho</span></div>
             <form id="visualForm">
               <label>Nome do agente<input id="nameField" maxlength="80" required></label>
-              <label>Modo de resposta<select id="modeField"><option value="fixed">Resposta fixa</option><option value="echo">Eco da mensagem</option><option value="instructed">Conversacional com IA</option></select><small class="fieldhint">O modo conversacional precisa de um modelo configurado no 9Router.</small></label>
+              <label>Modo de resposta<select id="modeField"><option value="fixed">Resposta fixa</option><option value="echo">Eco da mensagem</option><option value="instructed">Conversacional com IA</option></select><small class="fieldhint">Para testar o comportamento real, publique e abra uma nova sessão no DSH. A prévia conversacional local ainda utiliza o 9Router.</small></label>
               <label>Resposta padrão<input id="responseField" maxlength="400" required></label>
               <label>Instruções do agente<textarea id="instructionsField" rows="4" maxlength="2500"></textarea></label>
               <div class="formsub">Ferramentas de laboratório</div>
@@ -124,7 +124,7 @@
             <form id="testForm" class="testform"><label for="testInput" class="sr-only">Mensagem para testar o agente</label><input id="testInput" placeholder='Digite "oi"…' maxlength="2000" required><button type="submit" class="button primary square" aria-label="Enviar teste">➜</button></form>
           </section>
           <section class="panel provider" id="provider">
-            <div class="panelhead compact"><div><span class="eyebrow subtle">PROVEDOR OPCIONAL</span><h2>9Router</h2><p>IA para propostas e conversação. Modo guiado funciona offline.</p></div><span class="providerdot" id="providerDot"></span></div>
+            <div class="panelhead compact"><div><span class="eyebrow subtle">PROVEDOR OPCIONAL</span><h2>9Router</h2><p>Opcional para testes conversacionais. As propostas por IA usam a sessão DSH, sem chave adicional.</p></div><span class="providerdot" id="providerDot"></span></div>
             <details open><summary>Configurar conexão <span>⌄</span></summary><form id="providerForm">
               <label>ID do modelo<input id="providerModel" list="routerModels" placeholder="ollama/gpt-oss:120b"><datalist id="routerModels"></datalist><small class="fieldhint" id="modelsHint">Modelos locais carregados do 9Router.</small></label>
               <label>Chave de acesso (somente memória)<input id="providerKey" type="password" placeholder="Cole sua chave para este processo" autocomplete="off"></label>

@@ -110,6 +110,7 @@ async function refresh() {
   $('providerModel').value = snapshot.provider.model;
   renderVersions(snapshot.history);
   await refreshPublication();
+  await refreshDshConnection();
   if (!snapshot.integration.profileReadable || !snapshot.integration.sourceReadable) {
     notify('Confira os caminhos do arquivo de agente e do perfil DSH.', 'error');
   }
@@ -121,7 +122,7 @@ function setBusy(button, value) {
 }
 function showProposal(proposal) {
   pending = proposal;
-  $('proposalExplanation').textContent = proposal.explanation + ' • origem: ' + (proposal.source === 'ai' ? '9Router' : proposal.source === 'guided' ? 'modo guiado' : 'painel visual');
+  $('proposalExplanation').textContent = proposal.explanation + ' • origem: ' + (proposal.source === 'ai' ? 'sessão DSH' : proposal.source === 'guided' ? 'modo guiado' : 'painel visual');
   renderDiff(snapshot.current, proposal.next);
   $('proposalPanel').classList.remove('hidden');
   $('proposalPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -135,7 +136,7 @@ $('promptForm').addEventListener('submit', async (ev) => {
   try {
     const proposal = await api('/api/propose', 'POST', { prompt, useAi: $('aiSwitch').checked });
     const changed = Object.keys(proposal.next).filter(key => JSON.stringify(proposal.next[key]) !== JSON.stringify(snapshot.current[key])).length;
-    assistantMessage('Proposta gerada', 'Preparei ' + changed + (changed === 1 ? ' alteração' : ' alterações') + '. Revise o comparativo abaixo antes de salvar.');
+    assistantMessage('Proposta gerada', 'Preparei ' + changed + (changed === 1 ? ' alteração' : ' alterações') + (proposal.source === 'ai' ? ' pela sessão do DSH.' : '.') + ' Revise antes de salvar.');
     showProposal(proposal); $('promptInput').value = '';
   } catch (err) {
     assistantMessage('Não foi possível interpretar', err.message);
@@ -312,3 +313,18 @@ api('/api/models').then(data => {
     $('modelsHint').textContent = '9Router offline. Informe o ID manualmente e verifique a conexão.';
   }
 }).catch(() => { $('modelsHint').textContent = 'Não foi possível consultar o 9Router.'; });
+
+async function refreshDshConnection() {
+  const el = $('dshSessionStatus');
+  if (!el) return;
+  try {
+    const status = await api('/api/dsh/status');
+    el.textContent = status.connected
+      ? '● Sessão DSH conectada — modelo e autenticação gerenciados pelo Harness'
+      : '○ Sessão DSH desconectada — ' + (status.error || 'Verifique o DSH Web');
+    el.dataset.connected = status.connected ? 'true' : 'false';
+  } catch (e) {
+    el.textContent = '○ Não foi possível consultar a sessão DSH.';
+    el.dataset.connected = 'false';
+  }
+}

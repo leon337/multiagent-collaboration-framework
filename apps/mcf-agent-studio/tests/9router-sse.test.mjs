@@ -76,7 +76,7 @@ test('end-to-end API: 9Router-compatible SSE authentication, AI proposal and con
   assert.deepEqual({status:r.status,ok:r.data.ok,received:r.data.replyReceived},{status:200,ok:true,received:true});
   r=await call('/api/state');
   assert.equal(r.data.provider.verified,true,'verified only after real streamed completion');
-  r=await call('/api/propose','POST',{prompt:'Altere a resposta com IA.',useAi:true});
+  r=await call('/api/propose','POST',{prompt:'Altere a resposta com IA.',useAi:true,backend:'9router'});
   assert.equal(r.status,200);
   assert.equal(r.data.next.response,'Nova resposta com IA!');
   assert.equal(r.data.source,'ai');

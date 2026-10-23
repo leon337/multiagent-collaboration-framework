@@ -46,6 +46,19 @@ Ferramentas implementadas: `agent_studio_calculator` (operações aritméticas r
 
 **Evidências reais:** [Relatório de integração](../../docs/missions/MCF-20261022-AGENT-STUDIO-REAL-INTEGRATION.md). Foram observados no Harness a resposta modificada `MCF Agent Studio integrado!`, o resultado `30` por chamada real da calculadora e bloqueio real de `list_agents`.
 
+## IA pela sessão do DeepSeek Harness — padrão (sem nova chave)
+
+O Agent Studio agora utiliza uma **sessão de IA dedicada dentro do DSH** para interpretar as solicitações em linguagem natural. O modelo, a autenticação e o roteamento continuam administrados pelo próprio Harness. Não é necessário fornecer uma segunda chave.
+
+- Plugin DSH: `dsh-session-bridge.mjs`, montado com `sessionController` no perfil Web.
+- Preset: `mcf-studio-brain`, isolado dos agentes de trabalho.
+- Ponte HTTP local: `127.0.0.1:4319`, acessível mediante token aleatório em `.data/dsh-bridge-token` (não versionado).
+- Studio: `POST /api/propose` com `useAi:true` envia a instrução à sessão DSH; `GET /api/dsh/status` exibe a conexão.
+- Interação: o checkbox **Usar IA pela sessão do DSH** já inicia marcado.
+- Qualquer proposta continua exigindo revisão e aceite no rascunho antes de ser publicada.
+
+**Teste fim a fim real:** `POST /api/propose` retornou proposta com `source=ai` e a resposta modificada solicitada, em ~1 s; verificado também no Brave via DOM, sem posições absolutas e sem exceções JS. O DSH continuou intacto até uma publicação explícita.
+
 ## 9Router opcional (edição por IA)
 
 O Studio consulta modelos do 9Router local em `127.0.0.1:20128/v1/models` (129 IDs na auditoria realizada, sujeitos a mudança). No painel **Configurar conexão**, insira ID de modelo e sua própria chave para usar **Usar IA via 9Router**. A chave é mantida apenas na memória do processo; reiniciar o serviço apaga essa configuração. O modo guiado funciona sem chave. Para configurar, abra o painel **Configurar conexão**, selecione um dos IDs listados, informe a chave do 9Router no campo protegido e clique **Salvar e testar conexão**. O teste de autenticação chama o endpoint real de chat do 9Router; somente depois de receber resposta o indicador de conexão fica ativo. O botão não declara sucesso apenas por salvar a chave. **Não compartilhe a chave no chat do MCF, no GitHub nem em arquivos do projeto.** O serviço apaga a chave ao reiniciar.
