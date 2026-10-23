@@ -106,7 +106,7 @@ async function refresh() {
   fillForm(snapshot.current);
   $('revisionMetric').textContent = 'r' + snapshot.revision;
   $('serverStatus').textContent = 'Ambiente local';
-  $('providerDot').classList.toggle('online', snapshot.provider.configured);
+  $('providerDot').classList.toggle('online', snapshot.provider.verified === true);
   $('providerModel').value = snapshot.provider.model;
   renderVersions(snapshot.history);
   await refreshPublication();
@@ -193,14 +193,25 @@ $('testForm').addEventListener('submit', async ev => {
 });
 $('providerForm').addEventListener('submit', async ev => {
   ev.preventDefault();
+  const button = $('saveProviderBtn');
+  setBusy(button, true);
+  const status = $('providerTestState');
+  status.textContent = 'Validando credencial e modelo no 9Router…';
   try {
     const data = { model: $('providerModel').value.trim() };
     if ($('providerKey').value.trim()) data.key = $('providerKey').value.trim();
     await api('/api/provider', 'POST', data);
     $('providerKey').value = '';
+    const test = await api('/api/provider/test', 'POST', {});
     await refresh();
-    notify('Configuração do 9Router atualizada em memória.', 'success');
-  } catch (err) { notify(err.message, 'error'); }
+    status.textContent = '✓ Conexão confirmada: ' + test.model + '. Você já pode ativar "Usar IA via 9Router".';
+    notify('9Router autenticado e testado com uma chamada real.', 'success');
+  } catch (err) {
+    $('providerKey').value = '';
+    status.textContent = 'Conexão não validada: ' + err.message;
+    await refresh().catch(() => {});
+    notify('Falha no teste do 9Router: ' + err.message, 'error');
+  } finally { setBusy(button, false); }
 });
 $('clearKeyBtn').addEventListener('click', async () => {
   try { await api('/api/provider', 'POST', { clear: true }); await refresh(); notify('Chave descartada da memória do servidor.'); }

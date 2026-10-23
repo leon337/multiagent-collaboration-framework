@@ -90,6 +90,10 @@ test('MVP end-to-end: criar proposta, validar, salvar, testar e restaurar', asyn
   assert.equal(unknown.status, 422);
   const missingKey = await call('/api/propose', 'POST', { prompt: 'faça isso', useAi: true });
   assert.equal(missingKey.status, 422);
+  const unauthorizedTest = await call('/api/provider/test', 'POST', {});
+  assert.equal(unauthorizedTest.status, 422, 'test requires an authorized key');
+  const missingCredentialState = (await call('/api/state')).body.provider;
+  assert.equal(missingCredentialState.verified, false, 'no connection is claimed without a real API call');
   const badOrigin = await call('/api/propose', 'POST', { prompt: 'abc' }, { origin: 'http://attacker.example' });
   assert.equal(badOrigin.status, 403);
   const pathTraversal = await fetch(origin + '/../../etc/passwd');

@@ -128,7 +128,8 @@
             <details><summary>Configurar conexão <span>⌄</span></summary><form id="providerForm">
               <label>ID do modelo<input id="providerModel" list="routerModels" placeholder="ollama/gpt-oss:120b"><datalist id="routerModels"></datalist><small class="fieldhint" id="modelsHint">Modelos locais carregados do 9Router.</small></label>
               <label>Chave de acesso (somente memória)<input id="providerKey" type="password" placeholder="Cole sua chave para este processo" autocomplete="off"></label>
-              <div class="provideractions"><button type="button" class="button ghost small" id="clearKeyBtn">Limpar chave</button><button type="submit" class="button outline small">Salvar conexão</button></div>
+              <div class="provideractions"><button type="button" class="button ghost small" id="clearKeyBtn">Limpar chave</button><button type="submit" class="button outline small" id="saveProviderBtn">Salvar e testar conexão</button></div>
+              <p class="fieldhint" id="providerTestState" role="status" aria-live="polite">Insira a chave aqui. Ela não será exibida nem salva no projeto.</p>
             </form></details>
           </section>
         </div>

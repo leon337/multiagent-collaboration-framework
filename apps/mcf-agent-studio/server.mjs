@@ -13,7 +13,7 @@ const HOST = '127.0.0.1';
 const PORT = Number(process.env.AGENT_STUDIO_PORT || 4317);
 const MODES = ['fixed', 'echo', 'instructed'];
 const TOOLS = ['calculator', 'clock'];
-let provider = { key: process.env.AGENT_STUDIO_API_KEY || process.env.NINEROUTER_API_KEY || '', model: process.env.AGENT_STUDIO_MODEL || 'ollama/gpt-oss:120b' };
+let provider = { key: process.env.AGENT_STUDIO_API_KEY || process.env.NINEROUTER_API_KEY || '', model: process.env.AGENT_STUDIO_MODEL || 'ollama/gpt-oss:120b', verified: false };
 const pending = new Map();
 
 const DEFAULT = { name: 'Hello World Agent', mode: 'fixed', response: 'Hello World!', instructions: 'Responda somente com a resposta fixa.', tools: [] };
@@ -218,18 +218,34 @@ async function route(req, res) {
       return json(res, 200, {
         revision: state.revision, current: state.current, history: state.history.map(({ config, ...h }) => h),
         integration: { profile: PROFILE, agentSource: AGENT_SOURCE, profileReadable: await fileExists(PROFILE), sourceReadable: await fileExists(AGENT_SOURCE), ...publication, published: publication.effective },
-        provider: { configured: Boolean(provider.key), model: provider.model }, capabilities: TOOLS
+        provider: { configured: Boolean(provider.key), verified: provider.verified, model: provider.model }, capabilities: TOOLS
       });
     }
     if (req.method === 'POST' && path === '/api/provider') {
       const x = await inputJson(req);
-      if (x.clear === true) provider.key = '';
-      else if (typeof x.key === 'string' && x.key.length <= 300) provider.key = x.key.trim();
+      if (x.clear === true) { provider.key = ''; provider.verified = false; }
+      else if (typeof x.key === 'string' && x.key.length <= 300) {
+        provider.key = x.key.trim();
+        provider.verified = false;
+      }
       if (x.model !== undefined) {
         if (typeof x.model !== 'string' || x.model.length > 100 || !/^[a-zA-Z0-9_./:-]+$/.test(x.model)) fail('Modelo inválido');
+        if (provider.model !== x.model) provider.verified = false;
         provider.model = x.model;
       }
-      return json(res, 200, { configured: Boolean(provider.key), model: provider.model });
+      return json(res, 200, { configured: Boolean(provider.key), verified: provider.verified, model: provider.model });
+    }
+    if (req.method === 'POST' && path === '/api/provider/test') {
+      const x = await inputJson(req);
+      if (Object.keys(x).length) fail('O teste usa somente a configuração salva na memória');
+      if (!provider.key) fail('Informe uma chave no painel 9Router antes de testar', 422);
+      provider.verified = false;
+      const reply = await aiRequest([
+        { role: 'system', content: 'Teste de conectividade. Responda de forma curta.' },
+        { role: 'user', content: 'Responda com OK.' }
+      ]);
+      provider.verified = true;
+      return json(res, 200, { ok: true, model: provider.model, replyReceived: Boolean(reply) });
     }
     if (req.method === 'POST' && path === '/api/propose') {
       const x = await inputJson(req);

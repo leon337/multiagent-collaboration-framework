@@ -41,3 +41,8 @@ O 9Router respondeu à lista de modelos, mas a chamada de geração sem chave re
 O MVP não é um IDE irrestrito, nem escreve código arbitrário sugerido por LLM, nem faz deploy público. Não houve teste WCAG formal com leitor de tela. A cópia no sandbox ChatGPT /mnt/data não foi possível devido a bloqueio de acesso externo; os testes reais foram feitos em navegador de QA e no DSH do notebook.
 
 **Status de aceite:** publicação/reversão, alteração real de comportamento, ferramenta funcional e guarda de permissão aprovadas. Teste de geração pelo 9Router através do Studio e WCAG formal não aprovados.
+
+
+## Checkpoint de configuração do 9Router
+
+O 9Router local respondeu com HTTP 200 em /v1/models e disponibilizou 129 IDs na inspeção. O Studio expõe o modelo ollama/gpt-oss:120b, mantém a chave somente em memória e agora tem botão Salvar e testar conexão, que realiza chamada verdadeira a /v1/chat/completions. Sem credencial, POST /api/provider/test respondeu HTTP 422 com mensagem explícita. A credencial existente no cofre do Harness não foi copiada: a operação foi bloqueada pela proteção do ambiente. A conclusão da configuração requer que LEANDRO informe uma chave autorizada diretamente na interface do Studio. Nenhum teste com credencial real foi declarado. 

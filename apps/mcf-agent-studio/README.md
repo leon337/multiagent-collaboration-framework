@@ -48,7 +48,7 @@ Ferramentas implementadas: `agent_studio_calculator` (operações aritméticas r
 
 ## 9Router opcional (edição por IA)
 
-O Studio consulta modelos do 9Router local em `127.0.0.1:20128/v1/models` (129 IDs na auditoria realizada, sujeitos a mudança). No painel **Configurar conexão**, insira ID de modelo e sua própria chave para usar **Usar IA via 9Router**. A chave é mantida apenas na memória do processo; reiniciar o serviço apaga essa configuração. O modo guiado funciona sem chave.
+O Studio consulta modelos do 9Router local em `127.0.0.1:20128/v1/models` (129 IDs na auditoria realizada, sujeitos a mudança). No painel **Configurar conexão**, insira ID de modelo e sua própria chave para usar **Usar IA via 9Router**. A chave é mantida apenas na memória do processo; reiniciar o serviço apaga essa configuração. O modo guiado funciona sem chave. Para configurar, abra o painel **Configurar conexão**, selecione um dos IDs listados, informe a chave do 9Router no campo protegido e clique **Salvar e testar conexão**. O teste de autenticação chama o endpoint real de chat do 9Router; somente depois de receber resposta o indicador de conexão fica ativo. O botão não declara sucesso apenas por salvar a chave. **Não compartilhe a chave no chat do MCF, no GitHub nem em arquivos do projeto.** O serviço apaga a chave ao reiniciar.
 
 **Limitação validada:** foi verificada a listagem de modelos, mas a geração sem credencial retornou HTTP 401. Não foi concluído um teste fim a fim de proposta gerada por LLM a partir do Studio. Isso não altera os ensaios do agente real no DSH, cujo modelo já estava configurado.
 
