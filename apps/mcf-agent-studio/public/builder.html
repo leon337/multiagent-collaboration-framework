@@ -48,6 +48,15 @@
           <span>Importe um ponto de partida do Studio, simule melhorias e analise resultados sem alterar o agente ativo.</span><b>Começar evolução →</b>
         </button>
       </div>
+      <section class="native-workspaces" aria-label="Workspaces nativos do DSH">
+        <div class="native-header">
+          <div><div class="eyebrow">ISOLAMENTO REAL POR PRESET</div><h2>Workspaces no DeepSeek Harness</h2></div>
+          <button type="button" id="refreshNativeWorkspaces" class="button secondary">Atualizar estado</button>
+        </div>
+        <p id="nativeSummary" class="native-summary" role="status" aria-live="polite">Consultando o DSH…</p>
+        <div id="nativeWorkspaceGrid" class="native-grid"></div>
+        <p class="field-hint">Cada preset usa um diretório e workspaceId próprio. Sessões antigas continuam preservadas em Legado; os agentes se comunicam por chamadas explícitas, não por pastas compartilhadas.</p>
+      </section>
       <section class="recent-workspaces" aria-label="Retomar trabalhos existentes">
        <div><span class="eyebrow">CONTINUAR DE ONDE PAROU</span><h2>Workspaces recentes</h2></div>
        <div id="recentWorkspaces" class="recent-grid"></div>

@@ -145,3 +145,12 @@ O Builder não é disponibilizado pelo proxy remoto Tailscale, que continua limi
 ## Workspace nativo do DSH (correção de Ungrouped)
 
 Além do workspace privado de dados por agente, o Agent Studio deve estar registrado no Workspace Registry do próprio DeepSeek Harness. A ponte dsh-session-bridge-v3.mjs permite a auditoria e o registro nativos por endpoints locais autenticados com o token do Bridge. Após o registro inicial, utiliza workspaceId em sessionController.create, para que as próximas sessões sejam associadas diretamente ao grupo MCF Agent Studio — Agentes. A alteração não edita diretamente headers de sessão ou a base persistente do Harness. Diagnóstico, evidências e escopo em docs/missions/MCF-20261023-DSH-NATIVE-WORKSPACE-CORRECTION.md.
+
+
+## Phase-10: workspace nativo separado por preset
+
+A ponte de sessões agora mapeia os três presets hello-world-agent, mcf-studio-brain e mcf-studio-preview para subpastas físicas e workspaces nativos separados. Sessões antigas conservam cwd e histórico em MCF Agent Studio — Legado. No Lab o histórico visual de 64 mensagens foi preservado, e a tela avisa que a nova sessão não herda o contexto da antiga.
+
+O Agent Architect em http://127.0.0.1:4317/builder mostra três cartões com workspaceId, diretório, contagem e teste nativo de sessão. API local GET /api/dsh/workspaces e POST /api/dsh/workspaces/probe; ambas ausentes da allowlist remota Tailscale. Para validar sem mutações, executar npm run verify:workspaces. Para criar três sessões de teste DSH sem chamadas ao modelo, npm run verify:workspaces -- --probe.
+
+A implementação atende a sessões originadas pelo Agent Studio; sessões manuais iniciadas na GUI do DSH ainda permitem escolher workspace segundo a própria funcionalidade do produto.

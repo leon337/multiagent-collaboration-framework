@@ -350,6 +350,17 @@ async function route(req, res) {
       if(body.confirmation!=='NOVA CONVERSA') fail('Confirmação de nova conversa inválida',403);
       return json(res,200,await dshSessionCall('/lab/reset',{}));
     }
+    // Read-only DSH native Workspace inspector for the Guided Builder.
+    // The mobile Tailnet proxy does not expose this administrative route.
+    if (req.method === 'GET' && path === '/api/dsh/workspaces') {
+      return json(res,200,await dshSessionCall('/workspace/status'));
+    }
+    if (req.method === 'POST' && path === '/api/dsh/workspaces/probe') {
+      const body=await inputJson(req);
+      if(!['hello-world-agent','mcf-studio-brain','mcf-studio-preview'].includes(body.preset))
+        fail('Preset não permitido',422);
+      return json(res,200,await dshSessionCall('/workspace/probe',{preset:body.preset}));
+    }
     if (req.method === 'GET' && path === '/api/dsh/status') {
       try {
         const connection = await dshSessionCall('/status');

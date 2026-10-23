@@ -1,0 +1,43 @@
+{
+  "initial": {
+    "titles": [
+      "Hello World Agent",
+      "Agent Studio Brain",
+      "Agent Studio Preview"
+    ],
+    "ids": [
+      "Workspace ID: f7ce7536-16a6-4def-b84e-16f61f36d282",
+      "Workspace ID: f8016dcd-1d15-4d61-a15a-056746e3037a",
+      "Workspace ID: 0aad07dc-effc-4e5d-969a-e177b9d17856"
+    ],
+    "valid": "true",
+    "state": "✓ Três presets isolados, cada um com workspaceId e diretório próprios.",
+    "buttons": 3,
+    "legacy": "Histórico anterior: 17 sessões preservadas em MCF Agent Studio — Legado (sessões anteriores)."
+  },
+  "screens": {
+    "desktop": {
+      "viewport": 1360,
+      "document": 1345,
+      "body": 1345,
+      "cardCount": 3,
+      "cols": "292.125px 292.138px 292.125px"
+    },
+    "mobile": {
+      "viewport": 390,
+      "document": 390,
+      "body": 390,
+      "cardCount": 3,
+      "cols": "328.8px"
+    },
+    "small": {
+      "viewport": 320,
+      "document": 320,
+      "body": 320,
+      "cardCount": 3,
+      "cols": "266.4px"
+    }
+  },
+  "errors": [],
+  "pass": true
+}

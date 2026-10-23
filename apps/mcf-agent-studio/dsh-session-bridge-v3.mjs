@@ -20,6 +20,15 @@ const LAB_FILE=join(DATA,'dsh-trainee-session.json');
 const PORT=4319;
 const HOST='127.0.0.1';
 const PRESET='mcf-studio-brain';
+const WS_ROOT=join(DATA,'dsh-preset-workspaces');
+const WORKSPACES=Object.freeze({
+ 'hello-world-agent':{name:'MCF • Hello World Agent',folder:'hello-world-agent'},
+ 'mcf-studio-brain':{name:'MCF • Agent Studio Brain',folder:'mcf-studio-brain'},
+ 'mcf-studio-preview':{name:'MCF • Agent Studio Preview',folder:'mcf-studio-preview'}
+});
+const LEGACY_NAME='MCF Agent Studio — Legado (sessões anteriores)';
+const LEGACY_STATE=join(DATA,'dsh-workspace-legacy-ids.json');
+
 
 function sessionEventText(event) {
   if(event.type!=='assistant/message')return '';
@@ -68,82 +77,133 @@ export function apply(ctx){
       lab={sessionId:existing.sessionId,messages:existing.messages.slice(-80)
         .filter(m=>typeof m.text==='string'&&['user','agent'].includes(m.role))
         .map(m=>({role:m.role,text:m.text.slice(0,4000),at:m.at})),
-        startedAt:existing.startedAt||null,updatedAt:existing.updatedAt||null};
+        startedAt:existing.startedAt||null,updatedAt:existing.updatedAt||null,legacySessionId:existing.legacySessionId||null,contextMigratedAt:existing.contextMigratedAt||null};
     }
   } catch {}
   const persistLab=()=>writeFile(LAB_FILE,JSON.stringify(lab,null,2)+'\n',{mode:0o600});
 
-  // DSH Workspaces are registry entities, not arbitrary folders.
-  // A Session only joins a workspace when its stored cwd equals the
-  // canonical workspace path AND its id is attached to the registry account.
-  // Never rewrite DSH session headers or edit registry persistence directly.
+
+  function presetPath(preset){
+    const item=WORKSPACES[preset];
+    if(!item)throw Error('Preset não autorizado: '+preset);
+    return join(WS_ROOT,item.folder);
+  }
+  async function native(preset){
+    return ctx.workspaceRegistry.resolveByPath(presetPath(preset));
+  }
+  async function location(preset){
+    const row=await native(preset);
+    if(!row)throw Error('Workspace do preset não registrado no DSH: '+preset);
+    return {workspaceId:row.id};
+  }
+  async function rememberLegacy(preset,id){
+    if(!id)return;
+    let record={};
+    try{record=JSON.parse(await readFile(LEGACY_STATE,'utf8'))}catch{}
+    if(record[preset]===id)return;
+    record[preset]=id;record.savedAt=new Date().toISOString();
+    await writeFile(LEGACY_STATE,JSON.stringify(record,null,2)+'\n',{mode:0o600});
+  }
   async function workspaceInspection(){
-    const entity=await ctx.workspaceRegistry.resolveByPath(HOME);
-    const sessions=await ctx.sessionController.list({});
-    const match=sessions.items.filter(row=>row.cwd===HOME&&row.origin!=='subagent');
-    const ids=new Set(entity?.sessionIds??[]);
-    return {
-      workspace:entity?{id:entity.id,title:entity.title,path:entity.path,sessionIds:[...entity.sessionIds]}:null,
-      matching:match.map(row=>({id:row.sessionId,accounted:ids.has(row.sessionId),running:row.running})),
-      otherPathsCount:sessions.items.filter(row=>row.cwd!==HOME).length,
-      totalSessions:sessions.items.length,
-      expected:{plannerSessionId:sessionId,labSessionId:lab.sessionId},
-      nativeRegistry:true
+    const sessions=(await ctx.sessionController.list({})).items;
+    const legacy=await ctx.workspaceRegistry.resolveByPath(HOME);
+    const presets={};
+    for(const [preset,item] of Object.entries(WORKSPACES)){
+      const entity=await native(preset),folder=presetPath(preset);
+      const rows=sessions.filter(row=>row.cwd===folder&&row.origin!=='subagent');
+      const accounted=new Set(entity?.sessionIds??[]);
+      presets[preset]={
+        id:entity?.id??null,title:entity?.title??item.name,path:folder,
+        sessionIds:[...(entity?.sessionIds??[])],
+        sessions:rows.map(row=>({sessionId:row.sessionId,accounted:accounted.has(row.sessionId)})),
+        ready:Boolean(entity)&&rows.every(row=>accounted.has(row.sessionId))
+      };
+    }
+    const old=sessions.filter(row=>row.cwd===HOME&&row.origin!=='subagent');
+    const oldMembers=new Set(legacy?.sessionIds??[]);
+    const ids=Object.values(presets).map(x=>x.id),paths=Object.values(presets).map(x=>x.path);
+    const isolationValid=ids.every(Boolean)&&new Set(ids).size===3
+      &&new Set(paths).size===3&&Object.values(presets).every(x=>x.ready);
+    return {isolationValid,presets,
+      legacy:legacy?{id:legacy.id,title:legacy.title,path:legacy.path,
+        sessionIds:[...legacy.sessionIds],
+        count:old.length,unaccounted:old.filter(row=>!oldMembers.has(row.sessionId)).length}:null,
+      current:{plannerSessionId:sessionId,labSessionId:lab.sessionId,
+        plannerInCorrectWorkspace:presets[PRESET].sessionIds.includes(sessionId),
+        labInCorrectWorkspace:presets['hello-world-agent'].sessionIds.includes(lab.sessionId),
+        preservedLabMessages:lab.messages.length},
+      totalSessions:sessions.length,nativeRegistry:true
     };
   }
   async function workspaceEnsure(){
-    // Idempotent native Workspace Controller, existing real directory only.
-    const registered=await ctx.workspaceController.create({path:HOME});
-    const workspaceId=registered.workspace.workspaceId;
-    if(registered.created){
-      await ctx.workspaceController.rename({
-        workspaceId,title:'MCF Agent Studio — Agentes'
-      });
+    await mkdir(WS_ROOT,{recursive:true,mode:0o700});
+    const created=[];
+    for(const [preset,item] of Object.entries(WORKSPACES)){
+      const path=presetPath(preset);
+      await mkdir(path,{recursive:true,mode:0o700});
+      const readme=join(path,'README.md');
+      if(!existsSync(readme)){
+        const text='# '+item.name+'\n\nPreset exclusivo: '+preset+
+          '\n\nWorkspace DSH nativo e diretório de trabalho isolado.'+
+          '\nComunicação entre agentes: somente pela orquestração explícita, não por acesso a pastas alheias.\n';
+        await writeFile(readme,text,{flag:'wx',mode:0o600});
+      }
+      const registered=await ctx.workspaceController.create({path});
+      const entity=ctx.workspaceRegistry.get(registered.workspace.workspaceId);
+      if(!entity)throw Error('DSH não confirmou '+preset);
+      if(entity.title!==item.name)
+        await ctx.workspaceController.rename({workspaceId:entity.id,title:item.name});
+      created.push({preset,id:entity.id,path,created:registered.created});
     }
-    const entity=ctx.workspaceRegistry.get(workspaceId);
-    if(!entity)throw Error('DSH não confirmou o registro do Workspace');
-    const sessions=await ctx.sessionController.list({});
-    const matches=sessions.items.filter(row=>row.cwd===HOME&&row.origin!=='subagent');
-    const attached=[];
-    for(const row of matches){
-      // attachSession checks persisted header cwd against canonical path.
-      await entity.attachSession(row.sessionId);
-      attached.push(row.sessionId);
-    }
-    const inspected=await workspaceInspection();
-    const missing=attached.filter(id=>!inspected.workspace.sessionIds.includes(id));
-    if(missing.length)throw Error('Registro DSH não confirmou '+missing.length+' sessões: '+missing.join(','));
-    return {...inspected,created:registered.created,attachedSessionIds:attached};
+    const old=await ctx.workspaceRegistry.resolveByPath(HOME);
+    if(old&&old.title!==LEGACY_NAME)
+      await ctx.workspaceController.rename({workspaceId:old.id,title:LEGACY_NAME});
+    // Migrate the active Studio endpoints without modifying persisted
+    // legacy DSH session headers. Old Lab history stays readable.
+    await ensureSession();
+    await ensureLab();
+    const state=await workspaceInspection();
+    if(!state.isolationValid||!state.current.plannerInCorrectWorkspace||
+       !state.current.labInCorrectWorkspace)
+      throw Error('DSH não confirmou cada sessão no respectivo workspace');
+    return {...state,created};
   }
-  async function sessionLocation(){
-    const workspace=await ctx.workspaceRegistry.resolveByPath(HOME);
-    if(!workspace)throw Error('MCF Agent Studio sem workspace registrado no DSH; use a recuperação nativa antes de criar sessões.');
-    return {workspaceId:workspace.id};
+  async function ensureScoped(preset,saved){
+    let id=saved;
+    if(id){
+      const items=(await ctx.sessionController.list({})).items;
+      const previous=items.find(row=>row.sessionId===id);
+      if(!previous||previous.cwd!==presetPath(preset)){
+        await rememberLegacy(preset,id);
+        id=null;
+      }
+    }
+    const result=await ctx.sessionController.create({
+      ...(id?{sessionId:id}:{}),...(await location(preset)),agentPreset:preset
+    });
+    if(!result?.sessionId||result.agentPreset!==preset)
+      throw Error('Sessão DSH montada com preset incorreto: '+preset);
+    return result.sessionId;
   }
 
   async function ensureLab(){
-    const created=await ctx.sessionController.create({
-      ...(lab.sessionId?{sessionId:lab.sessionId}:{}),
-      ...(await sessionLocation()),agentPreset:'hello-world-agent'
-    });
-    if(!created?.sessionId||created.agentPreset!=='hello-world-agent')
-      throw Error('DSH não montou o Hello World Agent');
-    lab.sessionId=created.sessionId;
-    lab.startedAt ||= new Date().toISOString();
+    const old=lab.sessionId;
+    const id=await ensureScoped('hello-world-agent',old);
+    if(old&&id!==old){
+      lab.legacySessionId=old;
+      lab.contextMigratedAt=new Date().toISOString();
+    }
+    lab.sessionId=id;
+    lab.startedAt||=new Date().toISOString();
     lab.updatedAt=new Date().toISOString();
     await persistLab();
-    return created.sessionId;
+    return id;
   }
-
-
-  async function ensureSession() {
-    const result=await ctx.sessionController.create({
-      ...(sessionId?{sessionId}:{}),...(await sessionLocation()),agentPreset:PRESET
-    });
-    if(!result?.sessionId)throw Error('DSH não criou uma sessão válida');
-    if(result.agentPreset!==PRESET)throw Error('Preset inesperado na sessão do DSH');
-    sessionId=result.sessionId;
-    await writeFile(SESSION_FILE,JSON.stringify({sessionId,preset:PRESET},null,2)+'\n',{mode:0o600});
+  async function ensureSession(){
+    sessionId=await ensureScoped(PRESET,sessionId);
+    await writeFile(SESSION_FILE,JSON.stringify({
+      sessionId,preset:PRESET,workspaceId:(await location(PRESET)).workspaceId
+    },null,2)+'\n',{mode:0o600});
     connected=true;
     return sessionId;
   }
@@ -161,7 +221,7 @@ export function apply(ctx){
       } else if (preset === 'hello-world-agent' || preset === 'mcf-studio-preview') {
         // A fresh session is mandatory to validate the mounted preset revision.
         const created = await ctx.sessionController.create({
-          ...(await sessionLocation()), agentPreset: preset
+          ...(await location(preset)), agentPreset: preset
         });
         if (!created?.sessionId || created.agentPreset !== preset)
           throw Error('DSH não montou o preset solicitado');
@@ -207,14 +267,27 @@ export function apply(ctx){
         return response(res,200,await workspaceInspection());
       if(req.method==='POST'&&req.url==='/workspace/ensure')
         return response(res,200,await workspaceEnsure());
+      if(req.method==='POST'&&req.url==='/workspace/probe'){
+        const body=await json(req);
+        if(!Object.hasOwn(WORKSPACES,body.preset))return reject(res,422,'Preset inválido');
+        const result=await ctx.sessionController.create({
+          ...(await location(body.preset)),agentPreset:body.preset
+        });
+        const status=await workspaceInspection();
+        const row=status.presets[body.preset];
+        if(result.agentPreset!==body.preset||!row.sessionIds.includes(result.sessionId))
+          throw Error('Probe nativo não confirmou sessão no workspace');
+        return response(res,200,{preset:body.preset,sessionId:result.sessionId,
+          workspaceId:row.id,accounted:true});
+      }
       if(req.method==='GET'&&req.url==='/lab/status'){
         return response(res,200,{ready:true,preset:'hello-world-agent',
           sessionId:lab.sessionId,startedAt:lab.startedAt,updatedAt:lab.updatedAt,
-          messages:lab.messages,running});
+          messages:lab.messages,running,historyContextMigrated:Boolean(lab.legacySessionId)});
       }
       if(req.method==='POST'&&req.url==='/lab/reset'){
         if(running)return reject(res,409,'Aguarde o término da resposta atual');
-        lab={sessionId:null,messages:[],startedAt:null,updatedAt:null};
+        lab={sessionId:null,messages:[],startedAt:null,updatedAt:null,legacySessionId:null};
         await persistLab();
         return response(res,200,{reset:true,sessionId:null,messages:[]});
       }

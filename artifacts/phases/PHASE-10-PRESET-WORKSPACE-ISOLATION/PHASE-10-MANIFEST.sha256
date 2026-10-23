@@ -1,0 +1,9 @@
+007f9f6c233a0eac89ad8111c4ad1c63aa95818e8bc7ab6db9e7b67e9c6df228  artifacts/phases/PHASE-10-PRESET-WORKSPACE-ISOLATION/PHASE-10-CHECKPOINT.yaml
+8fb2ea0007bd8043b87253b66a290674abba74ea445bc860492dabee91c086a1  artifacts/phases/PHASE-10-PRESET-WORKSPACE-ISOLATION/PHASE-10-DECISIONS.md
+e96ff4af99bdae37fbd10efbe4c46325ea6480c810f0e10f651c4356fe1d8baf  artifacts/phases/PHASE-10-PRESET-WORKSPACE-ISOLATION/PHASE-10-VALIDATION.md
+f1eedd260c8b1f0e0337d173f7f155ad605ed460f8a15a849ee2becf30a97078  docs/missions/evidence/phase10-preset-workspaces/browser-qa.json
+3e62a210a307e0832f4ec978661f92a84234644cc5c3f065d9748209c714eafa  docs/missions/evidence/phase10-preset-workspaces/native-probe-results.json
+defdbca20c97bdc0025591fe8aed20bac14bf387f26b35f58dbb7371fa64c470  docs/missions/evidence/phase10-preset-workspaces/native-registry-after-restart.json
+7ddbef11745939553c0e347c2163201c07530651d0f289c4dcc1bc0eb0f159ff  docs/missions/evidence/phase10-preset-workspaces/workspaces-desktop.png
+4fa127d1358dbd99ec3f526d580b93948c28a0e1c79cfea8f7ec6273e8ce5d5e  docs/missions/evidence/phase10-preset-workspaces/workspaces-mobile.png
+6ef398890ecac53dd23c85b030920bc9b4724533adf7cd08ae678e98188e0d1c  docs/missions/evidence/phase10-preset-workspaces/workspaces-small.png

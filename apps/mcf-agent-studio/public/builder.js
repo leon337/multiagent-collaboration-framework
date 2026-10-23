@@ -209,6 +209,51 @@ function renderList(){
   }
  }
 }
+const presetNames={
+ 'hello-world-agent':'Hello World Agent',
+ 'mcf-studio-brain':'Agent Studio Brain',
+ 'mcf-studio-preview':'Agent Studio Preview'
+};
+async function renderNativeWorkspaces(){
+ const root=$('nativeWorkspaceGrid'),summary=$('nativeSummary');
+ root.replaceChildren();summary.textContent='Verificando registros nativos do DSH…';
+ try{
+  const data=await api('/api/dsh/workspaces');
+  summary.textContent=data.isolationValid
+   ?'✓ Três presets isolados, cada um com workspaceId e diretório próprios.'
+   :'⚠ O DSH ainda não confirmou o isolamento completo.';
+  summary.dataset.valid=String(data.isolationValid);
+  for(const [preset,info] of Object.entries(data.presets||{})){
+   const card=node('article','native-card');
+   card.append(node('strong','',presetNames[preset]||preset),
+    node('span','native-state',info.ready?'Workspace nativo ativo':'Registro pendente'),
+    node('small','',info.title),
+    node('code','native-id','Workspace ID: '+(info.id||'não registrado')),
+    node('small','native-path',info.path),
+    node('small','',String(info.sessionIds?.length||0)+' sessões próprias'));
+   const test=node('button','button secondary','Validar sessão no DSH');
+   test.type='button';test.disabled=!info.ready;
+   test.addEventListener('click',async()=>{
+    test.disabled=true;test.textContent='Validando…';
+    try{
+      const result=await api('/api/dsh/workspaces/probe','POST',{preset});
+      toast('Sessão criada e registrada no workspace correto: '+result.sessionId);
+      await renderNativeWorkspaces();
+    }catch(e){toast(e.message,true)}
+    finally{test.disabled=false;test.textContent='Validar sessão no DSH'}
+   });
+   card.append(test);root.append(card);
+  }
+  if(data.legacy){
+   const old=node('p','native-legacy','Histórico anterior: '+data.legacy.count+' sessões preservadas em '+data.legacy.title+'.');
+   root.append(old);
+  }
+ }catch(err){
+  summary.textContent='Não foi possível verificar o DSH: '+err.message;
+  summary.dataset.valid='false';
+ }
+}
+$('refreshNativeWorkspaces').addEventListener('click',renderNativeWorkspaces);
 async function listWorkspaces(){
  const data=await api('/api/builder/workspaces');
  workspaceList=data.items;renderList();
@@ -317,7 +362,7 @@ $('coachForm').addEventListener('submit',e=>{
 });
 (async()=>{
  try{
-  const [status]=await Promise.all([api('/api/dsh/status'),listWorkspaces()]);
+  const [status]=await Promise.all([api('/api/dsh/status'),listWorkspaces(),renderNativeWorkspaces()]);
   const resume=new URLSearchParams(location.search).get('workspace');
   if(resume&&/^agent-[a-f0-9-]{36}$/.test(resume))await openWorkspace(resume);
   $('mentorConnection').dataset.online=String(status.connected);

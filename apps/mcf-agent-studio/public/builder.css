@@ -37,3 +37,21 @@
 .recent-item strong{font-size:13px;overflow-wrap:anywhere}
 .recent-item small{font-size:11px;color:#a4d8ca}
 .recent-item:hover{border-color:#93caff;background:#203950}
+
+/* Native workspace verification - all layouts use responsive grid, no absolute positioning. */
+.native-workspaces{margin-top:26px;border:1px solid #36516c;border-radius:16px;background:#111f30;padding:clamp(14px,2vw,24px)}
+.native-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.native-header h2{font-size:18px;letter-spacing:-.02em;margin:6px 0}
+.native-summary{font-size:12px;color:#c2edda;margin:10px 0 16px}
+.native-summary[data-valid=false]{color:#f3d3aa}
+.native-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.native-card{display:grid;align-content:start;gap:8px;border:1px solid #344c67;border-radius:12px;background:#172b42;padding:14px;min-width:0}
+.native-card strong{font-size:14px}
+.native-card small{color:#9fb7cf;overflow-wrap:anywhere}
+.native-card .native-path{font-size:10px;color:#a3d7c6}
+.native-id{font-family:ui-monospace,monospace;font-size:10px;overflow-wrap:anywhere;background:#112338;border-radius:6px;padding:6px}
+.native-state{font-size:11px;color:#8fdec6}
+.native-card .button{margin-top:5px;white-space:normal}
+.native-legacy{grid-column:1/-1;color:#b5c2d6;font-size:11px;margin:0}
+@media(max-width:1100px){.native-grid{grid-template-columns:1fr}}
+@media(min-width:1101px) and (max-width:1340px){.native-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

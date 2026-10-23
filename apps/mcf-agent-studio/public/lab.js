@@ -31,9 +31,12 @@ function updateMeta(snapshot={}){
  $('messageCount').textContent=String(state.messages.length);
  if(snapshot.draftRevision!==undefined){
   $('draftRevision').textContent='r'+snapshot.draftRevision;
-  $('noticeText').textContent=snapshot.draftPublished
+  const baseNotice=snapshot.draftPublished
    ? 'Você está testando o agente publicado no DSH. Para aplicar futuras alterações, inicie uma nova conversa.'
    : 'Este chat usa o preset publicado no DSH. Há um rascunho no Studio que pode ser diferente; alterações só chegam aqui após publicar e abrir nova conversa.';
+  $('noticeText').textContent=snapshot.historyContextMigrated
+   ? 'Migração de workspace concluída. As mensagens anteriores foram preservadas para consulta, mas a nova sessão usa um contexto independente no workspace Hello World Agent. '+baseNotice
+   : baseNotice;
  }
 }
 function scrollBottom(){
