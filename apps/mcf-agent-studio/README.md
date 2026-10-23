@@ -103,3 +103,13 @@ A prévia conversacional isolada (`mcf-studio-preview`) utiliza a autenticação
 Pendentes fora do MVP: teste com credencial real no modo 9Router do Studio, auditoria WCAG formal, publicação pública, generalização do editor para agentes arbitrários e instalação de ferramentas desconhecidas.
 
 Não houve merge na `main`. Código e evidências permanecem na branch `feat/mcf-agent-studio-mvp-001` para revisão.
+
+## Chat de Testes — Laboratório do agente real
+
+Acesse a aplicação web em http://127.0.0.1:4317/lab ou pelo atalho "MCF - Chat do Agente" na área de trabalho. A interface é separada do editor. Ela conversa por uma sessão DSH persistente do preset publicado Hello World Agent, sem precisar de chave adicional do 9Router.
+
+O navegador chama somente o backend Studio (`/api/lab/status`, `/api/lab/message`, `/api/lab/reset`), que se comunica com `dsh-session-bridge-v3.mjs` no próprio DSH. O token privado da ponte nunca vai para a interface. ID da sessão e últimas 80 mensagens são persistidos no arquivo não versionado `.data/dsh-trainee-session.json` (0600). O histórico retorna ao recarregar a página e a sessão pode continuar depois do reinício do DSH.
+
+Para testar uma alteração: edite e publique no Agent Studio; depois use **Novo chat** para carregar a nova versão no DSH. Rascunho não publicado não modifica o comportamento do agente testado. A interface foi verificada em 1440/768/390/320 px e em conversas reais. Testes automatizados: `npm test`, 7/7 aprovados na entrega.
+
+A configuração de comportamento e ferramentas é um ajuste de preset, **não** fine-tuning de pesos do modelo. Relatório: `docs/missions/MCF-20261023-AGENT-LAB-LIVE-CHAT.md`.

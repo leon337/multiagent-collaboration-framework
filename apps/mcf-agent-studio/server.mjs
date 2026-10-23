@@ -259,13 +259,30 @@ async function route(req, res) {
     assertLocal(req);
     const url = new URL(req.url, 'http://' + req.headers.host);
     const path = url.pathname;
-    if (req.method === 'GET' && (path === '/' || path === '/style.css' || path === '/app.js')) {
-      const asset = path === '/' ? 'index.html' : path.slice(1);
+    if (req.method === 'GET' && ['/', '/style.css', '/app.js', '/lab', '/lab.css', '/lab.js'].includes(path)) {
+      const asset = path === '/' ? 'index.html' : path === '/lab' ? 'lab.html' : path.slice(1);
       const raw = await readFile(join(APP_DIR, 'public', asset));
-      const contentType = path === '/' ? 'text/html' : path.endsWith('.css') ? 'text/css' : 'text/javascript';
+      const contentType = path === '/' || path === '/lab' ? 'text/html' : path.endsWith('.css') ? 'text/css' : 'text/javascript';
       res.writeHead(200, { 'content-type': contentType + '; charset=utf-8', 'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'", 'x-content-type-options': 'nosniff', 'cache-control': 'no-store' }); res.end(raw); return;
     }
     if (req.method === 'GET' && path === '/health') return json(res, 200, { ok: true, service: 'agent-studio', revision: state.revision });
+    if (req.method === 'GET' && path === '/api/lab/status') {
+      const [lab,publication]=await Promise.all([dshSessionCall('/lab/status'),publisher.status()]);
+      return json(res,200,{...lab,agentName:'Hello World Agent',draftRevision:state.revision,
+        draftPublished:publication.effective&&publication.last?.revision===state.revision,
+        latestPublishedVerified:publication.last?.runtimeVerified===true});
+    }
+    if (req.method === 'POST' && path === '/api/lab/message') {
+      const body=await inputJson(req);
+      if(typeof body.text!=='string'||!body.text.trim()||body.text.length>2000)
+        fail('Digite uma mensagem de até 2000 caracteres',422);
+      return json(res,200,await dshSessionCall('/lab/message',{text:body.text.trim()}));
+    }
+    if (req.method === 'POST' && path === '/api/lab/reset') {
+      const body=await inputJson(req);
+      if(body.confirmation!=='NOVA CONVERSA') fail('Confirmação de nova conversa inválida',403);
+      return json(res,200,await dshSessionCall('/lab/reset',{}));
+    }
     if (req.method === 'GET' && path === '/api/dsh/status') {
       try {
         const connection = await dshSessionCall('/status');
