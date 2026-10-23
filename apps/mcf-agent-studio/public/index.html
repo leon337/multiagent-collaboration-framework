@@ -123,9 +123,9 @@
             <div id="testHistory" class="testhistory" aria-live="polite"><div class="emptytest">Nenhum teste nesta sessão.<small>Experimente enviar “oi” ou “calcule 8*7”.</small></div></div>
             <form id="testForm" class="testform"><label for="testInput" class="sr-only">Mensagem para testar o agente</label><input id="testInput" placeholder='Digite "oi"…' maxlength="2000" required><button type="submit" class="button primary square" aria-label="Enviar teste">➜</button></form>
           </section>
-          <section class="panel provider">
+          <section class="panel provider" id="provider">
             <div class="panelhead compact"><div><span class="eyebrow subtle">PROVEDOR OPCIONAL</span><h2>9Router</h2><p>IA para propostas e conversação. Modo guiado funciona offline.</p></div><span class="providerdot" id="providerDot"></span></div>
-            <details><summary>Configurar conexão <span>⌄</span></summary><form id="providerForm">
+            <details open><summary>Configurar conexão <span>⌄</span></summary><form id="providerForm">
               <label>ID do modelo<input id="providerModel" list="routerModels" placeholder="ollama/gpt-oss:120b"><datalist id="routerModels"></datalist><small class="fieldhint" id="modelsHint">Modelos locais carregados do 9Router.</small></label>
               <label>Chave de acesso (somente memória)<input id="providerKey" type="password" placeholder="Cole sua chave para este processo" autocomplete="off"></label>
               <div class="provideractions"><button type="button" class="button ghost small" id="clearKeyBtn">Limpar chave</button><button type="submit" class="button outline small" id="saveProviderBtn">Salvar e testar conexão</button></div>
