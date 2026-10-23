@@ -37,3 +37,21 @@
  .welcome>p{font-size:13px}
  .metrics>div{min-height:59px}
 }
+
+/* Publicação real, explícita e reversível — sem posições absolutas. */
+.publish-inner{padding:0 22px 22px}
+.publish-explain{color:#c8d8ed;font-size:12px;line-height:1.6}
+.publish-confirm{margin-top:15px;border:1px solid #596e8c;background:#1b293b;border-radius:12px;padding:15px;display:grid;gap:11px}
+.publish-confirm h3{font-size:15px}
+.publish-confirm p{font-size:12px;color:#bed0e6;line-height:1.6;overflow-wrap:anywhere}
+.publish-confirm .risk{border-left:3px solid #e6ae64;padding-left:10px;color:#f1d4a8}
+.publish-confirm label{font-size:12px;line-height:1.6}
+.publish-confirm code{background:#36465b;color:#fff2c9;padding:3px 5px;border-radius:4px;font-size:11px;white-space:normal;overflow-wrap:anywhere}
+.publish-confirm input{background:#111d2b;color:white;border:1px solid #596d85;border-radius:8px;padding:11px;width:100%}
+.publish-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.publish .fineprint{font-size:11px;color:#9cacc4;line-height:1.6;margin-top:12px}
+.publish #publishUndoBtn{margin-top:10px}
+@media(max-width:600px){.publish-inner{padding:0 17px 20px}.publish-actions .button{flex:1}}
+
+.publish .button{min-height:44px;font-size:13px}
+.publish-confirm input{min-height:44px}

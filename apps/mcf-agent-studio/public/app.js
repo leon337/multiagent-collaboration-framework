@@ -109,6 +109,7 @@ async function refresh() {
   $('providerDot').classList.toggle('online', snapshot.provider.configured);
   $('providerModel').value = snapshot.provider.model;
   renderVersions(snapshot.history);
+  await refreshPublication();
   if (!snapshot.integration.profileReadable || !snapshot.integration.sourceReadable) {
     notify('Confira os caminhos do arquivo de agente e do perfil DSH.', 'error');
   }
@@ -219,3 +220,84 @@ refresh().catch(err => {
   $('serverStatus').textContent = 'Conexão indisponível';
   notify(err.message, 'error');
 });
+
+/* Publicação real no DeepSeek Harness (ação explícita, prévia e confirmação). */
+let publishPlan = null;
+async function refreshPublication() {
+  const status = await api('/api/publish/status');
+  const badge = $('publishStatus');
+  const msg = $('publishMessage');
+  if (status.effective && status.last?.revision === snapshot.revision) {
+    badge.textContent = 'Gravado no perfil';
+    msg.textContent = 'A revisão r' + snapshot.revision + ' foi escrita no preset real. O carregamento e a resposta devem ser verificados em uma NOVA conversa do Harness.';
+  } else if (status.managed) {
+    badge.textContent = 'Revisão diferente';
+    msg.textContent = 'O Harness possui uma configuração anterior; este rascunho ainda não foi publicado. Revise a alteração antes de publicar.';
+  } else {
+    badge.textContent = 'Não publicado';
+    msg.textContent = 'O preset original está ativo. Gere uma prévia e confirme para atualizar o Hello World Agent.';
+  }
+  $('publishUndoBtn').disabled = !status.last?.matchesProfile;
+}
+$('publishPlanBtn').addEventListener('click', async () => {
+  const btn = $('publishPlanBtn'); setBusy(btn, true);
+  try {
+    const plan = await api('/api/publish/plan', 'POST', {});
+    publishPlan = plan;
+    $('publishSummary').textContent = 'Preset: ' + plan.changedPreset +
+      '. Revisão: r' + plan.revision + '. Modo: ' + plan.preview.mode +
+      '. Resposta: ' + plan.preview.response +
+      '. Ferramentas: ' + (plan.preview.tools.join(', ') || 'nenhuma') + '.';
+    $('publishConfirmation').value = '';
+    $('publishPlanPanel').classList.remove('hidden');
+    $('publishPlanPanel').scrollIntoView({block:'nearest',behavior:'smooth'});
+  } catch(e) { notify(e.message,'error'); }
+  finally { setBusy(btn, false); }
+});
+$('publishCancelBtn').addEventListener('click', () => {
+  publishPlan = null;
+  $('publishPlanPanel').classList.add('hidden');
+  notify('Publicação cancelada.');
+});
+$('publishConfirmBtn').addEventListener('click', async () => {
+  if (!publishPlan) return;
+  const confirmation = $('publishConfirmation').value.trim();
+  if (confirmation !== 'PUBLICAR HELLO WORLD') { notify('Digite a confirmação exatamente como solicitado.','error'); return; }
+  const btn = $('publishConfirmBtn'); setBusy(btn, true);
+  try {
+    const result = await api('/api/publish/commit','POST',{id:publishPlan.id,confirmation});
+    publishPlan = null;
+    $('publishPlanPanel').classList.add('hidden');
+    await refresh();
+    await refreshPublication();
+    notify('Perfil do DSH atualizado com backup. Valide em uma nova conversa!','success');
+    assistantMessage('Publicação gravada', 'O preset Hello World foi atualizado no perfil Web. Teste em uma nova conversa do Harness. A publicação tem backup para reversão.');
+  } catch(e) { notify(e.message,'error'); }
+  finally { setBusy(btn,false); }
+});
+$('publishUndoBtn').addEventListener('click', async () => {
+  const confirmation = prompt('Reverter o último estado publicado no Harness? Digite REVERTER HELLO WORLD para confirmar:');
+  if (confirmation === null) return;
+  const btn = $('publishUndoBtn'); setBusy(btn,true);
+  try {
+    await api('/api/publish/rollback','POST',{confirmation:confirmation.trim()});
+    await refresh();
+    await refreshPublication();
+    notify('Perfil anterior restaurado. Teste em nova conversa no Harness.','success');
+  } catch(e) { notify(e.message,'error'); }
+  finally { setBusy(btn,false); }
+});
+
+
+/* Discover local 9Router model IDs without reading API secrets. */
+api('/api/models').then(data => {
+  const list = $('routerModels');
+  if (data.available && Array.isArray(data.ids)) {
+    for (const id of data.ids) {
+      const o = document.createElement('option'); o.value = id; list.append(o);
+    }
+    $('modelsHint').textContent = data.ids.length + ' modelos disponíveis no 9Router. Selecione um ID válido.';
+  } else {
+    $('modelsHint').textContent = '9Router offline. Informe o ID manualmente e verifique a conexão.';
+  }
+}).catch(() => { $('modelsHint').textContent = 'Não foi possível consultar o 9Router.'; });

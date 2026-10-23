@@ -49,3 +49,13 @@ Construir primeiro MVP do Agent Studio, aplicação que edita por conversa e pai
 
 ## Continuidade
 Próximo incremento possível: geração de bundle DSH, dry-run isolado, validação de montagem, diff de código e gate de publicação controlado por LEANDRO.
+
+## Checkpoint adicional — integração real do DSH (2026-10-22)
+
+A limitação inicial de rascunhos foi removida **somente para o preset Hello World do perfil Web**. Novo adaptador Cordis dsh-plugin-v2.mjs; publicação controlada por proposta, revisão, confirmação, SHA256 e backup íntegro; nova sessão DeepSeek Harness lê revisão publicada via HMR. Foi comprovada a mudança de resposta Hello World! para MCF Agent Studio integrado! e, em etapa posterior, execução real da ferramenta agent_studio_calculator retornando 30 para (8+7)*2. Uma chamada não aprovada a list_agents foi bloqueada em runtime. Publicação e reversão foram verificadas pela interface com CDP.
+
+- Evidência: docs/missions/MCF-20261022-AGENT-STUDIO-REAL-INTEGRATION.md
+- Serviço: mcf-agent-studio.service, somente 127.0.0.1:4317, habilitado e ativo.
+- Aplicação: testes Node e browser com cenários de rollback, guard e publicação.
+- Não afirmar finalização de geração por 9Router no Studio: /v1/models listou 129 IDs, mas geração necessita chave própria informada pelo operador. O DSH usou seu modelo já configurado.
+- O PR #468 permanece em rascunho, sem autorização de merge ou exposição pública.

@@ -3,6 +3,7 @@ import { readFile, writeFile, rename, mkdir, access } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
+import { createPublisher } from './publisher.mjs';
 
 const APP_DIR = dirname(fileURLToPath(import.meta.url));
 const STORAGE = process.env.AGENT_STUDIO_DATA || join(APP_DIR, '.data', 'state.json');
@@ -12,11 +13,12 @@ const HOST = '127.0.0.1';
 const PORT = Number(process.env.AGENT_STUDIO_PORT || 4317);
 const MODES = ['fixed', 'echo', 'instructed'];
 const TOOLS = ['calculator', 'clock'];
-let provider = { key: process.env.AGENT_STUDIO_API_KEY || process.env.NINEROUTER_API_KEY || '', model: process.env.AGENT_STUDIO_MODEL || 'ollama/minimax-m3.1-flash' };
+let provider = { key: process.env.AGENT_STUDIO_API_KEY || process.env.NINEROUTER_API_KEY || '', model: process.env.AGENT_STUDIO_MODEL || 'ollama/gpt-oss:120b' };
 const pending = new Map();
 
 const DEFAULT = { name: 'Hello World Agent', mode: 'fixed', response: 'Hello World!', instructions: 'Responda somente com a resposta fixa.', tools: [] };
 let state;
+const publisher = createPublisher({profile: PROFILE, store: join(dirname(STORAGE), 'publish'), getDraft: () => state});
 
 function fail(message, code = 400) {
   const e = new Error(message);
@@ -189,11 +191,36 @@ async function route(req, res) {
       res.writeHead(200, { 'content-type': contentType + '; charset=utf-8', 'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'", 'x-content-type-options': 'nosniff', 'cache-control': 'no-store' }); res.end(raw); return;
     }
     if (req.method === 'GET' && path === '/health') return json(res, 200, { ok: true, service: 'agent-studio', revision: state.revision });
-    if (req.method === 'GET' && path === '/api/state') return json(res, 200, {
-      revision: state.revision, current: state.current, history: state.history.map(({ config, ...h }) => h),
-      integration: { profile: PROFILE, agentSource: AGENT_SOURCE, profileReadable: await fileExists(PROFILE), sourceReadable: await fileExists(AGENT_SOURCE), published: false },
-      provider: { configured: Boolean(provider.key), model: provider.model }, capabilities: TOOLS
-    });
+    if (req.method === 'GET' && path === '/api/models') {
+      try {
+        const response = await fetch('http://127.0.0.1:20128/v1/models', { signal: AbortSignal.timeout(3500) });
+        if (!response.ok) throw new Error('9Router indisponível');
+        const models = await response.json();
+        const ids = (Array.isArray(models.data) ? models.data : [])
+          .map(m => m?.id).filter(id => typeof id === 'string' && id.length < 110).slice(0, 200);
+        return json(res, 200, { available: true, ids });
+      } catch {
+        return json(res, 200, { available: false, ids: [] });
+      }
+    }
+    if (req.method === 'GET' && path === '/api/publish/status') return json(res, 200, await publisher.status());
+    if (req.method === 'POST' && path === '/api/publish/plan') return json(res, 200, await publisher.plan());
+    if (req.method === 'POST' && path === '/api/publish/commit') {
+      const x = await inputJson(req);
+      return json(res, 200, await publisher.publish(x.id, x.confirmation));
+    }
+    if (req.method === 'POST' && path === '/api/publish/rollback') {
+      const x = await inputJson(req);
+      return json(res, 200, await publisher.rollback(x.confirmation));
+    }
+    if (req.method === 'GET' && path === '/api/state') {
+      const publication = await publisher.status();
+      return json(res, 200, {
+        revision: state.revision, current: state.current, history: state.history.map(({ config, ...h }) => h),
+        integration: { profile: PROFILE, agentSource: AGENT_SOURCE, profileReadable: await fileExists(PROFILE), sourceReadable: await fileExists(AGENT_SOURCE), ...publication, published: publication.effective },
+        provider: { configured: Boolean(provider.key), model: provider.model }, capabilities: TOOLS
+      });
+    }
     if (req.method === 'POST' && path === '/api/provider') {
       const x = await inputJson(req);
       if (x.clear === true) provider.key = '';
@@ -240,7 +267,7 @@ async function route(req, res) {
     }
     if (req.method === 'GET' && path === '/api/export') return json(res, 200, {
       filename: 'hello-world-agent.draft.json', config: state.current, revision: state.revision,
-      warning: 'Exportação do rascunho; não é um preset instalado no Harness. Publicação exige etapa separada.'
+      warning: 'Exportação do rascunho; não é um preset instalado. Use Revisar publicação para publicar no Harness.'
     });
     return json(res, 404, { error: 'Rota inexistente' });
   } catch (e) {
@@ -251,4 +278,4 @@ async function route(req, res) {
 }
 await init();
 const server = createServer(route);
-server.listen(PORT, HOST, () => console.log('[MCF Agent Studio] http://' + HOST + ':' + PORT + ' | r' + state.revision + ' | perfil DSH somente leitura'));
+server.listen(PORT, HOST, () => console.log('[MCF Agent Studio] http://' + HOST + ':' + PORT + ' | r' + state.revision + ' | perfil DSH com publicacao confirmada e backup'));
