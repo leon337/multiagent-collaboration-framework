@@ -3,12 +3,15 @@
 - **Mission:** MCF-TRUST-BOUNDARY-RESEARCH-001
 - **Issue:** #469
 - **Class:** C
-- **State:** EXECUTING_RESEARCH
+- **State:** RESEARCH_COMPLETE / INTEGRATION_BLOCKED
 - **Human authority:** LEANDRO
 - **Orchestrator:** MESTRE
 - **Baseline:** `main@460d6e6fc4c5ac8dc8b0962bcf76a62c059a1615`
+- **Qualified research head:** `6e79bd00b2e3058d9f5b71d57de663718ce8d432`
 - **Working branch:** `research/mcf-trust-boundary-001`
-- **Production mutation:** FORBIDDEN
+- **Draft PR:** #470
+- **Follow-up:** #471
+- **Production mutation:** NONE
 - **Merge authorization:** NOT_GRANTED
 
 ## Objective
@@ -19,84 +22,152 @@ Qualify three trust-boundary hypotheses without changing canonical runtime seman
 2. production authorization must remain exactly bound to the governed candidate;
 3. authenticated-account-to-mission binding must be characterized before multi-tenant assumptions are made.
 
-## Experiments
+## Exact qualification evidence
 
-### MCF-PROVENANCE-COMPACTION-001
+Dedicated workflow:
 
-**Method:** inject attacker-controlled text that claims LEANDRO approval into ordinary content/evidence fields and verify that the current structured authority checks do not treat the text as authority.
+- workflow: `MCF Trust Boundary Research`
+- run: `39897827058`
+- head: `6e79bd00b2e3058d9f5b71d57de663718ce8d432`
+- formatting: **PASS**
+- targeted test file: **1 PASS**
+- targeted tests: **13/13 PASS**
+- provider mutation: **NONE**
 
-**Acceptance:**
-- textual claims do not satisfy `HUMAN_GATE`;
-- text in `evidenceRefs` does not replace a structured human decision;
-- a structured-looking decision without canonical account provenance is rejected.
+The broad repository workflows are not usable as a clean verdict for this mission because the current baseline contains known unrelated blockers. On the research PR they failed before the normal test phase due to:
 
-**Interpretation boundary:** the canonical runtime currently has no general context-compaction pipeline, so this experiment tests the authority boundary, not an absent compactor implementation.
+- pre-existing syntax error in `agent-execution.contracts.test.ts`;
+- pre-existing type errors in `provider-adapter.registry.ts`;
+- dependency audit findings already tracked by Issue #427.
 
-### MCF-ADMISSION-BINDING-001
+PR #470 changes only:
 
-**Method:** start from a valid persisted production authorization and mutate one binding dimension at a time.
+1. `.github/workflows/mcf-trust-boundary-research.yml`;
+2. `apps/rede-social-agentes/apps/server/src/mcf-runtime/trust-boundary-research.test.ts`;
+3. this phase artifact.
 
-Mutations:
+Therefore the dedicated exact-head workflow is the admissible focused evidence for the three experiments, while Issue #427 remains the blocker for broad repository qualification.
+
+## Experiment 1 — MCF-PROVENANCE-COMPACTION-001
+
+### Result: PASS — current structured authority path resists authority-by-text
+
+Verified cases:
+
+- attacker-controlled text containing `LEANDRO approved` does not satisfy a `HUMAN_GATE`;
+- fake authority claims inside `evidenceRefs` do not replace a structured human gate decision;
+- a structured-looking approval without canonical account provenance is rejected.
+
+### Architectural interpretation
+
+The current canonical runtime does not contain a general context-compaction pipeline. This experiment therefore proves the **authority boundary**, not safety of a compactor that does not exist.
+
+The remaining NextGen/DSH concern stands: any future compaction or cognitive execution path must preserve typed provenance and may not translate external text into human authority.
+
+**Finding F-001:** `NO_AUTHORITY_BY_TEXT` is supported by current structured gates.
+
+## Experiment 2 — MCF-ADMISSION-BINDING-001
+
+### Result: PASS — production boundary fails closed under candidate mutation
+
+Starting from a valid persisted production authorization, the test mutated each dimension independently:
+
 - project;
 - mission;
 - action class;
 - environment;
-- release-SHA boundary;
+- exact release-SHA boundary;
 - reserved human account;
 - persisted phase skill;
 - LÉO gate target SHA.
 
-**Acceptance:** every mutated candidate fails closed before provider mutation.
+All mutated candidates were rejected.
 
-### MCF-MISSION-TENANCY-001
+### Architectural interpretation
 
-**Method:** inspect and execute the current mission APIs using an authenticated identity that is not represented in the persisted mission record.
+The production path is materially stronger than a generic boolean `ALLOW`. It binds persisted human provenance and LÉO gate evidence to the governed mission/phase and exact SHA.
 
-**Current structural observation:** `McfMissionRecord` contains no account/tenant ownership field, `getMission()` accepts only `missionId`, and ordinary `executePhase()` uses authenticated-human provenance only for reserved human-gate canonicalization.
+**Finding F-002:** `NO_EXECUTION_WITHOUT_EXACT_BINDING` is supported for the current production-promotion boundary.
 
-**Important:** the characterization test records current behavior; it does **not** declare that behavior desirable or safe for a multi-user deployment.
+This finding must **not** be generalized automatically to every `SCOPED_WRITE`, `SENSITIVE_CONTROLLED` or `HUMAN_GATE` path.
 
-## Initial findings
+## Experiment 3 — MCF-MISSION-TENANCY-001
 
-### F-001 — Text is not authority in the current structured gate path
+### Result: CHARACTERIZATION CONFIRMED — account ownership is not part of the current mission model
 
-Expected classification if tests pass: **PASS / CURRENT CONTROL PRESENT**.
+The test reproduced both current behaviors:
 
-The existing Human Delegation Guard and production authorization path require structured provenance beyond a textual statement.
+1. `getMission(missionId)` has no authenticated-account operand at the service boundary;
+2. ordinary `executePhase(..., authenticatedHuman)` does not bind the supplied authenticated human identity to ownership of the persisted mission.
 
-### F-002 — Production exact-binding is materially stronger than a generic ALLOW
+The persisted `McfMissionRecord` contains no `ownerAccountId` or `tenantId`.
 
-Expected classification if tests pass: **PASS / STRONG BOUNDARY**.
+### Security interpretation
 
-The production path binds mission/phase/project/action/environment/SHA/human authority/LÉO gate and re-observes provider state.
+This is a **real architectural gap**, but exploit severity depends on reachable deployment semantics.
 
-### F-003 — Generic mission tenancy is not represented in the mission record
+- If MissionRuntime is deliberately single-authority/single-tenant, that invariant must be explicit and mechanically enforced at ingress/deployment.
+- If more than one ordinary authenticated human can reach MissionRuntime, the finding becomes horizontal-authorization exposure and should be treated as P0.
 
-Expected classification if characterization reproduces: **OPEN SECURITY/PRODUCT BOUNDARY**.
+The follow-up design issue is **#471 — MCF-MISSION-TENANCY-002**.
 
-Before calling this a vulnerability, resolve intended deployment semantics:
-- deliberately single-authority/single-tenant runtime; or
-- multi-user runtime requiring horizontal authorization.
+**Finding F-003:** account ↔ mission tenancy binding is **NOT IMPLEMENTED** in the inspected runtime boundary.
 
-If multi-user, this becomes a P0 authorization defect. If deliberately single-tenant, the invariant must be explicit, enforced at ingress/deployment, and regression-tested.
+## Governance conclusions
+
+### Preserved
+
+- LEANDRO remains final human authority.
+- Production exact-SHA authorization remains unchanged.
+- Cognitive Ledger write boundary remains unchanged/read-only from the inspected MCF capability.
+- No provider or production mutation occurred.
+- No NextGen Authority Envelope was implemented.
+- No runtime semantics were changed by this research branch.
+
+### Not authorized by this mission
+
+- merge of PR #470;
+- tenancy schema migration;
+- generic Authority Envelope implementation;
+- production deployment;
+- public release;
+- weakening of Issue #427 dependency/security gates.
 
 ## Checklist
 
 - [x] Mission Issue created
-- [x] Isolated branch created
-- [x] Provenance authority-text test added
+- [x] Isolated branch created from exact baseline
+- [x] Provenance authority-text tests added
 - [x] Exact-binding mutation tests added
 - [x] Mission-tenancy characterization added
-- [ ] Focused tests executed by CI
-- [ ] Full relevant CI observed
-- [ ] Reachability/deployment assumption classified
-- [ ] Independent audit completed
-- [ ] LÉO gate decision recorded
-- [ ] Closeout/checkpoint written
+- [x] Dedicated exact-head CI created
+- [x] Research-file formatting PASS
+- [x] 13/13 targeted tests PASS
+- [x] Broad CI blockers separated from mission diff
+- [x] Tenancy finding preserved in follow-up Issue #471
+- [ ] Independent named-agent audit with attributable execution evidence
+- [ ] LÉO integration gate
+- [ ] Merge authorization
+- [ ] Any runtime hardening implementation
 
-## Governance
+## Checkpoint
 
-This branch is a research surface. No failing or permissive characterization is eligible for merge merely because it is reproducible.
+```yaml
+mission: MCF-TRUST-BOUNDARY-RESEARCH-001
+state: RESEARCH_COMPLETE
+integration_state: BLOCKED
+qualified_head: 6e79bd00b2e3058d9f5b71d57de663718ce8d432
+targeted_tests: 13
+targeted_tests_passed: 13
+provenance_text_authority: PASS_FAIL_CLOSED
+production_exact_binding: PASS_FAIL_CLOSED
+mission_tenancy_binding: NOT_IMPLEMENTED
+follow_up_issue: 471
+baseline_ci_blocker: 427
+merge_authorized: false
+production_touched: false
+next_action: decide tenancy contract before authorizing runtime hardening
+```
 
 `CLAIM <= EVIDENCE`
 
