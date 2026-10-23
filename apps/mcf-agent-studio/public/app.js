@@ -122,7 +122,7 @@ function setBusy(button, value) {
 }
 function showProposal(proposal) {
   pending = proposal;
-  $('proposalExplanation').textContent = proposal.explanation + ' • origem: ' + (proposal.source === 'ai' ? 'sessão DSH' : proposal.source === 'guided' ? 'modo guiado' : 'painel visual');
+  $('proposalExplanation').textContent = proposal.explanation + ' • origem: ' + (proposal.source === 'ai' ? 'sessão DSH' : proposal.source === 'guided' ? 'modo guiado' : proposal.source === 'guided-builder' ? 'Agent Architect' : 'painel visual');
   renderDiff(snapshot.current, proposal.next);
   $('proposalPanel').classList.remove('hidden');
   $('proposalPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -228,9 +228,20 @@ $('exportBtn').addEventListener('click', async () => {
     notify('Rascunho exportado. Não foi publicado no Harness.');
   } catch (err) { notify(err.message, 'error'); }
 });
-refresh().catch(err => {
+refresh().then(async()=>{
+  // Guided Builder sends only an unapproved proposal to the existing review.
+  const id=new URLSearchParams(location.search).get('proposal');
+  if(!id)return;
+  try{
+    if(!/^[a-f0-9-]{36}$/.test(id))throw Error('ID inválido');
+    const proposal=await api('/api/builder/handoff/'+id);
+    showProposal(proposal);
+    assistantMessage('Agent Architect','Revise a proposta recebida do workspace isolado antes de aplicar ao rascunho. A publicação é uma etapa separada.');
+    history.replaceState({},'',location.pathname+location.hash);
+  }catch(err){notify('Falha ao abrir proposta guiada: '+err.message,'error')}
+}).catch(err=>{
   $('serverStatus').textContent = 'Conexão indisponível';
-  notify(err.message, 'error');
+  notify(err.message,'error');
 });
 
 /* Publicação real no DeepSeek Harness (ação explícita, prévia e confirmação). */

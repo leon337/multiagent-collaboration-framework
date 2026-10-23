@@ -128,3 +128,16 @@ A configuração de comportamento e ferramentas é um ajuste de preset, **não**
 **Compatibilidade com navegador integrado no Android:** parâmetros de rastreamento adicionados ao URL, por exemplo `/lab?u=...` e `/lab?utm_source=...`, são ignorados pelo proxy somente em GETs permitidos. O acesso a APIs administrativas continua bloqueado e requisições POST não aceitam query string. Correção validada em 23/10/2026 após erro HTTP 400 apresentado pelo Android.
 
 **Formatação das respostas do agente:** o chat suporta negrito, itálico, código inline e expressões matemáticas simples em LaTeX convertidas para texto matemático legível, sem usar `innerHTML` ou executar tags fornecidas pela LLM. O parser é intencionalmente limitado: não é um renderizador científico completo (KaTeX/MathJax). O histórico existente é reformatado ao atualizar a página, sem alterar dados armazenados no DSH.
+
+
+## Agent Architect — Guided Builder
+
+Abrir localmente em http://127.0.0.1:4317/builder.
+
+Criação e evolução de agentes em seis etapas: objetivo, comportamento, ferramentas, workspace, testes e revisão. O orientador usa a sessão DSH autenticada, sem segunda chave API, e guarda as recomendações dentro do workspace. Cada projeto possui pasta privada em .data/agent-workspaces/agent-UUID, configuração agent.json, README.md e versões.
+
+Criar agente novo gera apenas um rascunho; este MVP não instala novos presets arbitrários. Evoluir Hello World permite simular alterações e encaminhar uma proposta para revisão no editor principal, sem aplicar ou publicar automaticamente.
+
+Demonstração persistida: http://127.0.0.1:4317/builder?workspace=agent-f99e2930-8c4d-47e2-a024-cf76d79ea7cc
+
+O Builder não é disponibilizado pelo proxy remoto Tailscale, que continua limitado ao chat do Agent Lab. Evidências e relatório em docs/missions/MCF-20261023-AGENT-BUILDER-GUIDED-MVP.md. Nove testes automatizados e teste completo de navegador aprovados.

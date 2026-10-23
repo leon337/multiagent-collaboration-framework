@@ -4,10 +4,12 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { createPublisher } from './publisher.mjs';
+import { createWorkspaceStore } from './workspace-store.mjs';
 import { parseChatCompletion } from './response-parser.mjs';
 
 const APP_DIR = dirname(fileURLToPath(import.meta.url));
 const STORAGE = process.env.AGENT_STUDIO_DATA || join(APP_DIR, '.data', 'state.json');
+const workspaces = createWorkspaceStore(process.env.AGENT_STUDIO_WORKSPACES || join(dirname(STORAGE),'agent-workspaces'));
 const AGENT_SOURCE = process.env.AGENT_STUDIO_AGENT || '/home/leo/Documentos/deepseek-harness/default-workspace/AGENT-HELLO-WORD/hello-world-agent/index.js';
 const PROFILE = process.env.AGENT_STUDIO_PROFILE || '/home/leo/.dsh/profiles/web/cordis.patch.yml';
 const HOST = '127.0.0.1';
@@ -259,13 +261,78 @@ async function route(req, res) {
     assertLocal(req);
     const url = new URL(req.url, 'http://' + req.headers.host);
     const path = url.pathname;
-    if (req.method === 'GET' && ['/', '/style.css', '/app.js', '/lab', '/lab.css', '/lab.js'].includes(path)) {
-      const asset = path === '/' ? 'index.html' : path === '/lab' ? 'lab.html' : path.slice(1);
+    if (req.method === 'GET' && ['/', '/style.css', '/app.js', '/lab', '/lab.css', '/lab.js', '/builder', '/builder.css', '/builder.js'].includes(path)) {
+      const asset = path === '/' ? 'index.html' : path === '/lab' ? 'lab.html' : path === '/builder' ? 'builder.html' : path.slice(1);
       const raw = await readFile(join(APP_DIR, 'public', asset));
-      const contentType = path === '/' || path === '/lab' ? 'text/html' : path.endsWith('.css') ? 'text/css' : 'text/javascript';
+      const contentType = path === '/' || path === '/lab' || path === '/builder' ? 'text/html' : path.endsWith('.css') ? 'text/css' : 'text/javascript';
       res.writeHead(200, { 'content-type': contentType + '; charset=utf-8', 'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'", 'x-content-type-options': 'nosniff', 'cache-control': 'no-store' }); res.end(raw); return;
     }
     if (req.method === 'GET' && path === '/health') return json(res, 200, { ok: true, service: 'agent-studio', revision: state.revision });
+    // Guided Builder: all writes are confined to a private workspace store.
+    // A guided handoff is only a reviewable proposal. No automatic mutation.
+    const handoffRead=path.match(/^\/api\/builder\/handoff\/([a-f0-9-]{36})$/);
+    if(req.method==='GET'&&handoffRead){
+      const proposal=pending.get(handoffRead[1]);
+      if(!proposal||proposal.source!=='guided-builder')fail('Proposta guiada expirada',404);
+      if(proposal.baseRevision!==state.revision)fail('O rascunho mudou. Gere outra proposta.',409);
+      return json(res,200,proposal);
+    }
+    if (req.method === 'GET' && path === '/api/builder/workspaces')
+      return json(res,200,{items:await workspaces.list()});
+    if (req.method === 'POST' && path === '/api/builder/workspaces') {
+      const body=await inputJson(req);
+      const seed=body.kind==='modify'?state.current:undefined;
+      return json(res,201,await workspaces.create({...body,seed}));
+    }
+    const builderPath=path.match(/^\/api\/builder\/workspaces\/(agent-[a-f0-9-]{36})(?:\/(test|mentor|handoff))?$/);
+    if(builderPath){
+      const id=builderPath[1],operation=builderPath[2];
+      if(req.method==='POST'&&operation==='handoff'){
+        const w=await workspaces.get(id);
+        if(w.kind!=='modify'||w.source!=='hello-world-agent')
+          fail('Instalação de agentes novos ainda não permitida no MVP',422);
+        if(!w.config.objective||!w.config.instructions||w.tests.length===0)
+          fail('Complete objetivo, instruções e pelo menos um teste antes de ir ao editor',422);
+        const next=sanitizeConfig({name:w.config.name,mode:w.config.mode,
+          response:w.config.response,instructions:w.config.instructions,tools:w.config.tools});
+        if(same(next,state.current))fail('A proposta não modifica o agente ativo',422);
+        const proposalId=randomUUID();
+        pending.clear();pending.set(proposalId,{id:proposalId,baseRevision:state.revision,
+          next,explanation:'Revisão assistida do workspace '+w.config.name+' (r'+w.revision+'). Proposta ainda não aplicada.',
+          source:'guided-builder'});
+        return json(res,200,{proposalId,redirect:'/?proposal='+proposalId,
+          applied:false,published:false,revision:state.revision});
+      }
+
+      if(req.method==='GET'&&!operation)return json(res,200,await workspaces.get(id));
+      if(req.method==='PATCH'&&!operation){
+        const body=await inputJson(req);
+        return json(res,200,await workspaces.update(id,body));
+      }
+      if(req.method==='POST'&&operation==='test'){
+        const body=await inputJson(req);
+        const prompt=body.message;
+        if(typeof prompt!=='string'||!prompt.trim()||prompt.length>1000)
+          fail('Mensagem de teste inválida',422);
+        return json(res,200,await workspaces.test(id,prompt,preview));
+      }
+      if(req.method==='POST'&&operation==='mentor'){
+        const body=await inputJson(req);
+        const question=body.question;
+        if(typeof question!=='string'||!question.trim()||question.length>700)
+          fail('Pergunta muito longa para o orientador',422);
+        const w=await workspaces.get(id);
+        const instruction='Você é o MCF Agent Architect. Analise somente esta configuração de RASCUNHO, e oriente o usuário. Responda em português brasileiro com no máximo 5 frases úteis. NÃO crie arquivos, execute comandos, faça alterações nem alegue que um preset foi publicado. Se suas regras exigem JSON, use {"changes":{},"explanation":"sua orientação"}. Etapa atual: '+w.step+'; dados: '+JSON.stringify(w.config)+'; pergunta: '+question;
+        const raw=(await dshSessionCall('/chat',{prompt:instruction})).answer;
+        let advice=String(raw).slice(0,1000);
+        try{
+          const data=JSON.parse(advice.replace(/^```(?:json)?/i,'').replace(/```$/,'').trim());
+          if(typeof data.explanation==='string')advice=data.explanation.slice(0,1000);
+        }catch{}
+        await workspaces.addGuidance(id,question,advice);
+        return json(res,200,{advice,origin:'dsh-session',sessionId:(await dshSessionCall('/status')).sessionId});
+      }
+    }
     if (req.method === 'GET' && path === '/api/lab/status') {
       const [lab,publication]=await Promise.all([dshSessionCall('/lab/status'),publisher.status()]);
       return json(res,200,{...lab,agentName:'Hello World Agent',draftRevision:state.revision,

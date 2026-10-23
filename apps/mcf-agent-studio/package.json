@@ -10,6 +10,6 @@
   "scripts": {
     "start": "node server.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check server.mjs && node --check public/app.js && node --check public/lab.js && node --check dsh-session-bridge-v3.mjs && node --check mobile-lab-proxy.mjs"
+    "check": "node --check server.mjs && node --check public/app.js && node --check public/lab.js && node --check dsh-session-bridge-v3.mjs && node --check mobile-lab-proxy.mjs && node --check workspace-store.mjs && node --check public/builder.js"
   }
 }
