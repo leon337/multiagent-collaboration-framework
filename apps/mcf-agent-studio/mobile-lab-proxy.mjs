@@ -42,7 +42,12 @@ const server=createServer(async(req,res)=>{
   let url;
   try{url=new URL(req.url||'/',UPSTREAM);}
   catch{return respond(res,400,'URL inválida');}
-  if(url.search||url.hash)return respond(res,400,'Parâmetros não aceitos');
+  // In-app browsers can append tracking parameters to links. Ignore query
+  // strings ONLY for allowlisted GET resources; never forward them upstream.
+  // Keep POST strict and preserve the path/method allowlist below.
+  if((req.url||'').length > 4096)return respond(res,414,'URL muito longa');
+  if(req.method!=='GET' && (url.search||url.hash))
+    return respond(res,400,'Parâmetros não aceitos em operações de escrita');
   const path=url.pathname==='/'?'/lab':url.pathname;
   const allowed=req.method==='GET'?READ_PATHS.has(path):req.method==='POST'&&WRITE_PATHS.has(path);
   if(!allowed)return respond(res,404,'Recurso não disponível neste acesso remoto');

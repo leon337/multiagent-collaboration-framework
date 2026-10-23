@@ -37,6 +37,17 @@ test('mobile Lab proxy: tailnet-origin-only writes, whitelist and no editor expo
  for(let i=0;i<45;i++){try{if((await fetch('http://127.0.0.1:43581/lab')).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,80));}
  assert.equal(ready,true);
  const base='http://127.0.0.1:43581';
+ // ChatGPT mobile/browser may append ?utm_source or ?u to link URLs.
+ // Allowed GET routes must ignore these; blocked paths stay blocked.
+ const tracked=await fetch(base+'/lab?u=chatgpt-test&utm_source=app');
+ assert.equal(tracked.status,200,'mobile tracking query does not break chat');
+ assert.match(await tracked.text(),/somente no notebook/);
+ assert.equal((await fetch(base+'/lab.js?cache=123')).status,200);
+ assert.equal((await fetch(base+'/api/lab/status?u=abc')).status,200);
+ assert.equal((await fetch(base+'/api/state?u=abc')).status,404);
+ assert.equal((await fetch(base+'/api/publish/status?u=abc')).status,404);
+ assert.equal((await fetch(base+'/api/lab/message?u=abc',{method:'POST',headers:{origin:publicOrigin,'content-type':'application/json'},body:JSON.stringify({text:'oi'})})).status,400);
+
  const page=await fetch(base+'/lab');
  assert.equal(page.status,200);
  const markup=await page.text();

@@ -27,3 +27,13 @@ The localhost URL of the Agent Studio refers to the mobile device itself when op
 
 ## Risk and governance
 No internet Funnel, no unrestricted reverse proxy, no credential movement, no merge to main. PR remains in draft. Independent governance review remains pending. No claim of validated access from Android while that node is offline.
+
+## Correção da falha real observada no Android
+
+O usuário apresentou capturas do navegador do Android com URL `...:8492/lab?u...` e corpo `Parâmetros não aceitos`. As capturas comprovam que a requisição chegou ao proxy HTTPS privado: não era falha da VPN ou do DNS. O proxy móvel negava quaisquer query strings, inclusive parâmetros adicionados pelo navegador integrado do ChatGPT.
+
+**Correção:** aceitar e ignorar parâmetros apenas em rotas GET expressamente permitidas, encaminhando somente o pathname ao Studio. Bloquear query em operações POST, rejeitar URL longa, preservar allowlist de rotas e cabeçalhos de segurança. Não mudou o escopo remoto da publicação/administração.
+
+**Resultados após atualização e restart:** GET `/lab?u=chatgpt` HTTP 200; GET `/lab?utm_source=chatgpt.com` HTTP 200; GET `/lab.js?v=1` HTTP 200; GET `/api/lab/status?u=xyz` HTTP 200; GET `/api/state?u=xyz` HTTP 404. `npm test` 8/8 e `npm run check` aprovados. Serviço em `mcf-agent-lab-mobile.service` ativo; Tailscale Serve HTTPS 8492 continua `tailnet only`. Peer Android realme-9i passou a constar como online no Tailscale durante o diagnóstico.
+
+**Limite de evidência:** o servidor passou no teste com a query problemática, mas ainda não foi recebida uma captura da interface do laboratório carregada após esta correção no navegador do celular.
