@@ -35,6 +35,9 @@
   <div class="stage">
     <header class="topbar">
       <div class="breadcrumbs">MCF <span>/</span> Agent Studio <span>/</span> <b>Hello World</b></div>
+      <nav class="mobile-nav" aria-label="Navegação do Agent Studio">
+        <a href="#studio">Estúdio</a><a href="#versions">Versões</a><a href="#test">Testes</a>
+      </nav>
       <div class="topactions">
         <span class="statuspill"><i></i> <span id="serverStatus">Carregando…</span></span>
         <button class="button ghost small" id="exportBtn">↓ Exportar</button>
@@ -44,9 +47,9 @@
       <section class="welcome">
         <div class="eyebrow">AMBIENTE DE DESENVOLVIMENTO DE AGENTES <span>• MVP 0.1</span></div>
         <h1>Desenvolva agentes <em>conversando.</em></h1>
-        <p>Descreva mudanças em português, visualize a proposta e teste antes de salvar. Sem editar YAML ou JavaScript manualmente.</p>
+        <p>Descreva mudanças em português, visualize a proposta e teste antes de salvar. Sem editar YAML ou JavaScript manualmente.</p><a href="#promptInput" class="quick-jump">Começar a editar <span aria-hidden="true">↗</span></a>
         <div class="metrics">
-          <div><span class="metricicon">▣</span><span><strong>01</strong><small>Agente conectado</small></span></div>
+          <div><span class="metricicon">▣</span><span><strong>01</strong><small>Agente de referência</small></span></div>
           <div><span class="metricicon">⌁</span><span><strong id="revisionMetric">—</strong><small>Revisão do rascunho</small></span></div>
           <div><span class="metricicon">◇</span><span><strong>02</strong><small>Ferramentas permitidas</small></span></div>
         </div>
@@ -60,7 +63,7 @@
             </div>
             <div class="dialog">
               <div class="message assistant"><div class="avatar">✳</div><div class="bubble"><b>Assistente de desenvolvimento</b><p>O Hello World está pronto. O que você quer mudar no comportamento dele?</p></div></div>
-              <div id="chatLog" aria-live="polite"></div>
+              <div id="chatLog" role="log" aria-label="Mensagens de desenvolvimento" aria-live="polite" aria-relevant="additions"></div>
             </div>
             <div class="suggestions" aria-label="Exemplos rápidos">
               <button type="button" data-prompt='Altere a resposta para "Bom dia!"'>Trocar resposta ↗</button>
@@ -88,7 +91,7 @@
             <div class="panelhead compact"><div><span class="eyebrow subtle">CONFIGURAÇÃO</span><h2>Painel visual</h2></div><span class="drafttag">Rascunho</span></div>
             <form id="visualForm">
               <label>Nome do agente<input id="nameField" maxlength="80" required></label>
-              <label>Modo de resposta<select id="modeField"><option value="fixed">Resposta fixa</option><option value="echo">Eco da mensagem</option><option value="instructed">Conversacional com IA</option></select></label>
+              <label>Modo de resposta<select id="modeField"><option value="fixed">Resposta fixa</option><option value="echo">Eco da mensagem</option><option value="instructed">Conversacional com IA</option></select><small class="fieldhint">O modo conversacional precisa de um modelo configurado no 9Router.</small></label>
               <label>Resposta padrão<input id="responseField" maxlength="400" required></label>
               <label>Instruções do agente<textarea id="instructionsField" rows="4" maxlength="2500"></textarea></label>
               <div class="formsub">Ferramentas de laboratório</div>

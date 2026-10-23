@@ -133,7 +133,8 @@ $('promptForm').addEventListener('submit', async (ev) => {
   humanMessage(prompt);
   try {
     const proposal = await api('/api/propose', 'POST', { prompt, useAi: $('aiSwitch').checked });
-    assistantMessage('Proposta gerada', 'Preparei ' + Object.keys(proposal.next).length + ' campos de configuração. Revise o comparativo abaixo antes de salvar.');
+    const changed = Object.keys(proposal.next).filter(key => JSON.stringify(proposal.next[key]) !== JSON.stringify(snapshot.current[key])).length;
+    assistantMessage('Proposta gerada', 'Preparei ' + changed + (changed === 1 ? ' alteração' : ' alterações') + '. Revise o comparativo abaixo antes de salvar.');
     showProposal(proposal); $('promptInput').value = '';
   } catch (err) {
     assistantMessage('Não foi possível interpretar', err.message);
