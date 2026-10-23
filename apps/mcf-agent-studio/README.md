@@ -141,3 +141,7 @@ Criar agente novo gera apenas um rascunho; este MVP não instala novos presets a
 Demonstração persistida: http://127.0.0.1:4317/builder?workspace=agent-f99e2930-8c4d-47e2-a024-cf76d79ea7cc
 
 O Builder não é disponibilizado pelo proxy remoto Tailscale, que continua limitado ao chat do Agent Lab. Evidências e relatório em docs/missions/MCF-20261023-AGENT-BUILDER-GUIDED-MVP.md. Nove testes automatizados e teste completo de navegador aprovados.
+
+## Workspace nativo do DSH (correção de Ungrouped)
+
+Além do workspace privado de dados por agente, o Agent Studio deve estar registrado no Workspace Registry do próprio DeepSeek Harness. A ponte dsh-session-bridge-v3.mjs permite a auditoria e o registro nativos por endpoints locais autenticados com o token do Bridge. Após o registro inicial, utiliza workspaceId em sessionController.create, para que as próximas sessões sejam associadas diretamente ao grupo MCF Agent Studio — Agentes. A alteração não edita diretamente headers de sessão ou a base persistente do Harness. Diagnóstico, evidências e escopo em docs/missions/MCF-20261023-DSH-NATIVE-WORKSPACE-CORRECTION.md.

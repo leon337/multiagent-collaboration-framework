@@ -10,7 +10,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 
 export const name='mcf-agent-studio-session-bridge';
-export const inject=['sessionController'];
+export const inject=['sessionController','workspaceController','workspaceRegistry'];
 
 const HOME='/home/leo/MCF MISSIONS/mcf-chatgpt-workspace/apps/mcf-agent-studio';
 const DATA=join(HOME,'.data');
@@ -72,9 +72,59 @@ export function apply(ctx){
     }
   } catch {}
   const persistLab=()=>writeFile(LAB_FILE,JSON.stringify(lab,null,2)+'\n',{mode:0o600});
+
+  // DSH Workspaces are registry entities, not arbitrary folders.
+  // A Session only joins a workspace when its stored cwd equals the
+  // canonical workspace path AND its id is attached to the registry account.
+  // Never rewrite DSH session headers or edit registry persistence directly.
+  async function workspaceInspection(){
+    const entity=await ctx.workspaceRegistry.resolveByPath(HOME);
+    const sessions=await ctx.sessionController.list({});
+    const match=sessions.items.filter(row=>row.cwd===HOME&&row.origin!=='subagent');
+    const ids=new Set(entity?.sessionIds??[]);
+    return {
+      workspace:entity?{id:entity.id,title:entity.title,path:entity.path,sessionIds:[...entity.sessionIds]}:null,
+      matching:match.map(row=>({id:row.sessionId,accounted:ids.has(row.sessionId),running:row.running})),
+      otherPathsCount:sessions.items.filter(row=>row.cwd!==HOME).length,
+      totalSessions:sessions.items.length,
+      expected:{plannerSessionId:sessionId,labSessionId:lab.sessionId},
+      nativeRegistry:true
+    };
+  }
+  async function workspaceEnsure(){
+    // Idempotent native Workspace Controller, existing real directory only.
+    const registered=await ctx.workspaceController.create({path:HOME});
+    const workspaceId=registered.workspace.workspaceId;
+    if(registered.created){
+      await ctx.workspaceController.rename({
+        workspaceId,title:'MCF Agent Studio — Agentes'
+      });
+    }
+    const entity=ctx.workspaceRegistry.get(workspaceId);
+    if(!entity)throw Error('DSH não confirmou o registro do Workspace');
+    const sessions=await ctx.sessionController.list({});
+    const matches=sessions.items.filter(row=>row.cwd===HOME&&row.origin!=='subagent');
+    const attached=[];
+    for(const row of matches){
+      // attachSession checks persisted header cwd against canonical path.
+      await entity.attachSession(row.sessionId);
+      attached.push(row.sessionId);
+    }
+    const inspected=await workspaceInspection();
+    const missing=attached.filter(id=>!inspected.workspace.sessionIds.includes(id));
+    if(missing.length)throw Error('Registro DSH não confirmou '+missing.length+' sessões: '+missing.join(','));
+    return {...inspected,created:registered.created,attachedSessionIds:attached};
+  }
+  async function sessionLocation(){
+    const workspace=await ctx.workspaceRegistry.resolveByPath(HOME);
+    if(!workspace)throw Error('MCF Agent Studio sem workspace registrado no DSH; use a recuperação nativa antes de criar sessões.');
+    return {workspaceId:workspace.id};
+  }
+
   async function ensureLab(){
     const created=await ctx.sessionController.create({
-      ...(lab.sessionId?{sessionId:lab.sessionId}:{}),cwd:HOME,agentPreset:'hello-world-agent'
+      ...(lab.sessionId?{sessionId:lab.sessionId}:{}),
+      ...(await sessionLocation()),agentPreset:'hello-world-agent'
     });
     if(!created?.sessionId||created.agentPreset!=='hello-world-agent')
       throw Error('DSH não montou o Hello World Agent');
@@ -87,9 +137,8 @@ export function apply(ctx){
 
 
   async function ensureSession() {
-    const cwd=HOME;
     const result=await ctx.sessionController.create({
-      ...(sessionId?{sessionId}:{}),cwd,agentPreset:PRESET
+      ...(sessionId?{sessionId}:{}),...(await sessionLocation()),agentPreset:PRESET
     });
     if(!result?.sessionId)throw Error('DSH não criou uma sessão válida');
     if(result.agentPreset!==PRESET)throw Error('Preset inesperado na sessão do DSH');
@@ -112,7 +161,7 @@ export function apply(ctx){
       } else if (preset === 'hello-world-agent' || preset === 'mcf-studio-preview') {
         // A fresh session is mandatory to validate the mounted preset revision.
         const created = await ctx.sessionController.create({
-          cwd: HOME, agentPreset: preset
+          ...(await sessionLocation()), agentPreset: preset
         });
         if (!created?.sessionId || created.agentPreset !== preset)
           throw Error('DSH não montou o preset solicitado');
@@ -154,6 +203,10 @@ export function apply(ctx){
       ||req.headers.host!=='127.0.0.1:'+PORT
       ||req.headers['x-agent-studio-bridge']!==token) return reject(res,403,'Acesso restrito ao Agent Studio local');
     try{
+      if(req.method==='GET'&&req.url==='/workspace/status')
+        return response(res,200,await workspaceInspection());
+      if(req.method==='POST'&&req.url==='/workspace/ensure')
+        return response(res,200,await workspaceEnsure());
       if(req.method==='GET'&&req.url==='/lab/status'){
         return response(res,200,{ready:true,preset:'hello-world-agent',
           sessionId:lab.sessionId,startedAt:lab.startedAt,updatedAt:lab.updatedAt,
