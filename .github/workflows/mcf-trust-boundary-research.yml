@@ -37,7 +37,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check research-file formatting
-        continue-on-error: true
         run: pnpm exec prettier --check apps/server/src/mcf-runtime/trust-boundary-research.test.ts
 
       - name: Run trust-boundary experiments only
@@ -45,10 +44,3 @@ jobs:
           pnpm --filter @rsa/server exec vitest run
           src/mcf-runtime/trust-boundary-research.test.ts
           --reporter=verbose
-
-      - name: Print Prettier-normalized research source
-        if: always()
-        run: |
-          echo "__PRETTIER_BEGIN__"
-          pnpm exec prettier apps/server/src/mcf-runtime/trust-boundary-research.test.ts
-          echo "__PRETTIER_END__"
