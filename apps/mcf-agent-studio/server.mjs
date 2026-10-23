@@ -131,6 +131,35 @@ async function dshSessionCall(path, payload) {
   return result;
 }
 
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * The DSH HMR watcher waits for approximately 2 seconds of stable profile
+ * writes. Verify in a NEW mounted agent session before acknowledging publish.
+ */
+async function verifyLivePreset(config) {
+  const prompt = config.mode === 'echo' ? 'MCF_E2E_ECHO_VERIFICATION'
+    : config.mode === 'fixed' ? 'oi'
+    : 'oi';
+  let reason = 'Resposta inesperada';
+  await delay(3200);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const live = await dshSessionCall('/validate-hello-world', { prompt });
+      const response = typeof live.answer === 'string' ? live.answer : '';
+      const expected = config.mode === 'fixed' ? config.response :
+        config.mode === 'echo' ? prompt : null;
+      const ok = live.preset === 'hello-world-agent' && response.trim() &&
+        (expected === null || response === expected);
+      if (ok) return { sessionId: live.sessionId, answer: response, verified: true };
+      reason = expected === null ? 'O DSH não carregou o agente de teste' : 'O agente DSH ainda utiliza a versão anterior';
+    } catch (e) {
+      reason = String(e.message || 'Falha na sessão DSH').slice(0,220);
+    }
+    if (attempt === 0) await delay(2200);
+  }
+  fail('A publicação não foi confirmada no DSH: ' + reason, 502);
+}
 async function aiRequest(messages, jsonMode = false) {
   if (!provider.key) fail('Configure uma chave do 9Router para usar IA. O modo guiado funciona sem chave.', 422);
   const ctrl = new AbortController();
@@ -199,8 +228,14 @@ async function preview(message, config) {
   }
   if (config.mode === 'fixed') return { answer: config.response, tool: null, channel: 'local' };
   if (config.mode === 'echo') return { answer: trimmed, tool: null, channel: 'local' };
-  const answer = await aiRequest([{ role: 'system', content: config.instructions || 'Converse em português do Brasil.' }, { role: 'user', content: trimmed }]);
-  return { answer, tool: null, channel: '9router' };
+  const envelope = JSON.stringify({
+    instructions: config.instructions || 'Converse naturalmente em português do Brasil.',
+    message: trimmed,
+    constraint: 'Simule a resposta do agente configurado. Responda apenas à mensagem, sem JSON ou comentários sobre a simulação.'
+  });
+  const simulated = await dshSessionCall('/preview-chat', { prompt: envelope });
+  return { answer: simulated.answer, tool: null, channel: 'dsh-preview',
+    sessionId: simulated.sessionId };
 }
 function json(res, status, payload) {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
@@ -253,11 +288,36 @@ async function route(req, res) {
     if (req.method === 'POST' && path === '/api/publish/plan') return json(res, 200, await publisher.plan());
     if (req.method === 'POST' && path === '/api/publish/commit') {
       const x = await inputJson(req);
-      return json(res, 200, await publisher.publish(x.id, x.confirmation));
+      const savedRevision = state.revision;
+      const savedConfig = clone(state.current);
+      const written = await publisher.publish(x.id, x.confirmation);
+      try {
+        const live = await verifyLivePreset(savedConfig);
+        await publisher.markVerified(savedRevision,live.sessionId);
+        return json(res, 200, {
+          ...written, runtimeVerified: true, verificationSessionId: live.sessionId,
+          verifiedPreset: 'hello-world-agent', verifiedRevision: savedRevision
+        });
+      } catch (e) {
+        // The profile was written but not verified. Restore the exact backup
+        // rather than presenting an unverified update as successfully published.
+        try {
+          await publisher.rollback('REVERTER HELLO WORLD');
+          await delay(3000);
+          fail('DSH não confirmou a mudança. Perfil anterior restaurado automaticamente. ' + e.message, 502);
+        } catch (rollbackError) {
+          if (rollbackError.status === 502) throw rollbackError;
+          fail('A validação do DSH falhou e a reversão automática também. ' +
+            'Confira os backups do Studio antes de repetir.', 502);
+        }
+      }
     }
     if (req.method === 'POST' && path === '/api/publish/rollback') {
       const x = await inputJson(req);
-      return json(res, 200, await publisher.rollback(x.confirmation));
+      const undo = await publisher.rollback(x.confirmation);
+      // Wait for the configuration HMR watcher to settle before responding.
+      await delay(3200);
+      return json(res, 200, { ...undo, hmrWaited: true });
     }
     if (req.method === 'GET' && path === '/api/state') {
       const publication = await publisher.status();

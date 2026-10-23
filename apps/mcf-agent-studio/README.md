@@ -90,6 +90,12 @@ Endpoints adicionais: `GET /api/models`, `GET /api/publish/status`, `POST /api/p
 
 Os dados, backups e registros de publicação ficam em `.data/`, ignorados pelo Git. O servidor escuta exclusivamente em localhost e valida Host/Origin, entradas e ferramentas. Não há autenticação multiusuário: **não exponha a porta 4317 diretamente na rede**. Publicações futuras devem manter autorização e isolamento.
 
+## Publicação verificada automaticamente
+
+O botão **Publicar** não confirma apenas escrita de YAML: respeita a janela de estabilização da configuração HMR do DSH, abre uma **nova sessão real** do preset Hello World Agent, valida a resposta esperada nos modos fixo e eco, registra `runtimeVerified` e a identidade da sessão de teste. Se não conseguir comprovar a ativação, restaura automaticamente o backup e informa o erro; nunca declara sucesso prematuramente. Reverter também espera a estabilização do HMR. O selo **Verificado no DSH** só aparece quando existe registro persistido dessa confirmação.
+
+A prévia conversacional isolada (`mcf-studio-preview`) utiliza a autenticação já existente no DSH e não publica alterações. A opção de 9Router direto é secundária e fica recolhida na interface.
+
 ## Testes e limites
 
 `npm test` cobre proposta, salvar, restaurar, versão, publicação, negação de confirmação, proteção contra conflito de edição, backup, reversão e registro de ferramentas. Testes de navegador cobriram desktop, tablet e celular sem overflow horizontal. O relatório guarda capturas reais do DSH.

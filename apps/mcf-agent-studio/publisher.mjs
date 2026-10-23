@@ -60,7 +60,10 @@ export function createPublisher({profile,store,getDraft}) {
       const src=await readProfile(),meta=await record(),currentHash=hash(src);
       return {profile,managed:src.includes(TAGS[1]),profileHash:currentHash,
         last:meta?{revision:meta.revision,date:meta.date,publishedHash:meta.publishedHash,
-          matchesProfile:meta.publishedHash===currentHash,mode:meta.mode,tools:meta.tools}:null,
+          matchesProfile:meta.publishedHash===currentHash,mode:meta.mode,tools:meta.tools,
+          runtimeVerified:meta.runtimeVerified===true,
+          verifiedAt:meta.verifiedAt||null,
+          verificationSessionId:meta.verificationSessionId||null}:null,
         effective:!!meta&&meta.revision!==null&&meta.publishedHash===currentHash};
     },
     async plan(){
@@ -91,6 +94,15 @@ export function createPublisher({profile,store,getDraft}) {
       pending=null;
       return {written:true,revision:meta.revision,changedPreset:ROW,backup,profileHash:nextHash,
         runtimeVerified:false,note:'Gravado no perfil. Teste em uma NOVA sessao DSH.'};
+    })},
+    async markVerified(revision, sessionId){return exclusive(async()=>{
+      if (!/^session-[a-f0-9-]{36}$/.test(String(sessionId))) fail('ID de sessão de verificação inválido',409);
+      const meta=await record(),src=await readProfile();
+      if(!meta || meta.revision!==revision || hash(src)!==meta.publishedHash)
+        fail('A publicação mudou durante a validação. Certificação bloqueada.',409);
+      await atomic(recordPath,JSON.stringify({...meta,runtimeVerified:true,
+        verifiedAt:new Date().toISOString(),verificationSessionId:sessionId},null,2)+'\n');
+      return true;
     })},
     async rollback(confirmation){return exclusive(async()=>{
       if(confirmation!=='REVERTER HELLO WORLD')fail('Confirmacao de reversao invalida',403);

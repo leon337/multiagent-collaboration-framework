@@ -186,7 +186,7 @@ $('testForm').addEventListener('submit', async ev => {
     const entry = el('div', 'testentry');
     entry.append(el('div', 'question', message));
     const answer = el('div', 'answer', result.answer);
-    answer.append(el('small', '', result.tool ? 'Ferramenta: ' + result.tool : result.channel === '9router' ? 'Resposta via 9Router' : pending ? 'Prévia da proposta' : 'Resposta do rascunho'));
+    answer.append(el('small', '', result.tool ? 'Ferramenta: ' + result.tool : result.channel === 'dsh-preview' ? 'Simulação pela sessão DSH' : result.channel === '9router' ? 'Resposta via 9Router' : pending ? 'Prévia da proposta' : 'Resposta do rascunho'));
     entry.append(answer); box.append(entry);
     box.scrollTop = box.scrollHeight;
     input.value = '';
@@ -239,9 +239,12 @@ async function refreshPublication() {
   const status = await api('/api/publish/status');
   const badge = $('publishStatus');
   const msg = $('publishMessage');
-  if (status.effective && status.last?.revision === snapshot.revision) {
-    badge.textContent = 'Gravado no perfil';
-    msg.textContent = 'A revisão r' + snapshot.revision + ' foi escrita no preset real. O carregamento e a resposta devem ser verificados em uma NOVA conversa do Harness.';
+  if (status.effective && status.last?.revision === snapshot.revision && status.last?.runtimeVerified) {
+    badge.textContent = 'Verificado no DSH';
+    msg.textContent = 'A revisão r' + snapshot.revision + ' foi publicada e validada automaticamente em uma nova sessão real do Hello World Agent.';
+  } else if (status.effective && status.last?.revision === snapshot.revision) {
+    badge.textContent = 'Aguardando validação';
+    msg.textContent = 'A configuração está gravada, mas sua ativação no Harness ainda não foi comprovada.';
   } else if (status.managed) {
     badge.textContent = 'Revisão diferente';
     msg.textContent = 'O Harness possui uma configuração anterior; este rascunho ainda não foi publicado. Revise a alteração antes de publicar.';
@@ -282,9 +285,9 @@ $('publishConfirmBtn').addEventListener('click', async () => {
     $('publishPlanPanel').classList.add('hidden');
     await refresh();
     await refreshPublication();
-    notify('Perfil do DSH atualizado com backup. Valide em uma nova conversa!','success');
-    assistantMessage('Publicação gravada', 'O preset Hello World foi atualizado no perfil Web. Teste em uma nova conversa do Harness. A publicação tem backup para reversão.');
-  } catch(e) { notify(e.message,'error'); }
+    notify(result.runtimeVerified ? 'Publicação confirmada em uma nova sessão real do DSH.' : 'Perfil gravado; validação da sessão pendente.', 'success');
+    assistantMessage('Publicação validada no DSH', result.runtimeVerified ? 'A atualização foi confirmada automaticamente em uma nova sessão real do Hello World Agent. O backup está disponível para reversão.' : 'Perfil atualizado; validação do runtime pendente.');
+  } catch(e) { await refreshPublication().catch(() => {}); notify(e.message,'error'); }
   finally { setBusy(btn,false); }
 });
 $('publishUndoBtn').addEventListener('click', async () => {
@@ -295,7 +298,7 @@ $('publishUndoBtn').addEventListener('click', async () => {
     await api('/api/publish/rollback','POST',{confirmation:confirmation.trim()});
     await refresh();
     await refreshPublication();
-    notify('Perfil anterior restaurado. Teste em nova conversa no Harness.','success');
+    notify('Perfil anterior restaurado; recarregamento do DSH aguardado.','success');
   } catch(e) { notify(e.message,'error'); }
   finally { setBusy(btn,false); }
 });
@@ -328,3 +331,5 @@ async function refreshDshConnection() {
     el.dataset.connected = 'false';
   }
 }
+
+/* Keep tool provenance readable below its associated answer. */

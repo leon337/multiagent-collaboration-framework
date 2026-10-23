@@ -41,6 +41,10 @@ test('publisher real writes exactly permitted preset; conflict, backup and rollb
   assert.match(written,/dsh-plugin-v2\.mjs/);
   assert.match(written,/id: example/);
   assert.equal((await pub.status()).effective,true);
+  assert.equal((await pub.status()).last.runtimeVerified,false,'file write is not runtime proof');
+  await pub.markVerified(rev,'session-01234567-89ab-4cde-8f01-23456789abcd');
+  assert.equal((await pub.status()).last.runtimeVerified,true);
+  assert.equal((await pub.status()).last.verificationSessionId,'session-01234567-89ab-4cde-8f01-23456789abcd');
   rev++; configured.response='Outro teste';
   const second=await pub.plan();
   await writeFile(file,written+'\n# external mutation\n');

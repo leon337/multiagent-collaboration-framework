@@ -1,0 +1,18 @@
+mission_id: MCF-20261022-AGENT-STUDIO-MVP-001
+phase_id: PHASE-05-AGENT-STUDIO-E2E
+risk_class: B
+technical_state: ENTREGUE
+governance_state: PENDENTE_AUDITORIA_INDEPENDENTE
+source_branch: feat/mcf-agent-studio-mvp-001
+pull_request: 468
+native_dsh_session: session-6abc0cc4-4a1b-4766-bd52-7574af497938
+expected_response: MCF E2E 2026 OK
+actual_response: MCF E2E 2026 OK
+profile_sha256_after_rollback: f0fc69d6bc74d143781af54ef98f150644ef498c6210fdf981b9a1e673214147
+profile_restored: true
+user_main_draft_preserved: true
+user_main_draft_revision: 6
+independent_audit_completed: false
+leo_gate_completed: false
+human_intervention_needed_for_local_mvp: false
+next_safe_action: independent_mcf_governance_review_before_merge

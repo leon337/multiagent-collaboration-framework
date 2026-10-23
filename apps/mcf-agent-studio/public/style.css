@@ -58,3 +58,7 @@
 
 .dsh-connect-status{display:flex;gap:7px;align-items:center;margin-top:12px!important;color:#a5d9ce!important;font-size:12px!important;line-height:1.45}
 .dsh-connect-status[data-connected="false"]{color:#e0b48d!important}
+\n.testentry .answer small{display:block;margin-top:5px;line-height:1.35}\n
+/* Keep preview answer separate from its provenance on small screens. */
+.testentry .answer{display:grid;gap:5px;font-size:13px;line-height:1.5}
+.testentry .answer small{display:block;margin:0;color:#bbcfdb;opacity:.85;font-size:10px}

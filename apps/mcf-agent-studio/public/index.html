@@ -92,7 +92,7 @@
             <div class="panelhead compact"><div><span class="eyebrow subtle">CONFIGURAÇÃO</span><h2>Painel visual</h2></div><span class="drafttag">Rascunho</span></div>
             <form id="visualForm">
               <label>Nome do agente<input id="nameField" maxlength="80" required></label>
-              <label>Modo de resposta<select id="modeField"><option value="fixed">Resposta fixa</option><option value="echo">Eco da mensagem</option><option value="instructed">Conversacional com IA</option></select><small class="fieldhint">Para testar o comportamento real, publique e abra uma nova sessão no DSH. A prévia conversacional local ainda utiliza o 9Router.</small></label>
+              <label>Modo de resposta<select id="modeField"><option value="fixed">Resposta fixa</option><option value="echo">Eco da mensagem</option><option value="instructed">Conversacional com IA</option></select><small class="fieldhint">Para testar o comportamento real, publique e abra uma nova sessão no DSH. A prévia conversacional utiliza uma sessão isolada do DSH.</small></label>
               <label>Resposta padrão<input id="responseField" maxlength="400" required></label>
               <label>Instruções do agente<textarea id="instructionsField" rows="4" maxlength="2500"></textarea></label>
               <div class="formsub">Ferramentas de laboratório</div>
@@ -125,7 +125,7 @@
           </section>
           <section class="panel provider" id="provider">
             <div class="panelhead compact"><div><span class="eyebrow subtle">PROVEDOR OPCIONAL</span><h2>9Router</h2><p>Opcional para testes conversacionais. As propostas por IA usam a sessão DSH, sem chave adicional.</p></div><span class="providerdot" id="providerDot"></span></div>
-            <details open><summary>Configurar conexão <span>⌄</span></summary><form id="providerForm">
+            <details><summary>Configurar conexão <span>⌄</span></summary><form id="providerForm">
               <label>ID do modelo<input id="providerModel" list="routerModels" placeholder="ollama/gpt-oss:120b"><datalist id="routerModels"></datalist><small class="fieldhint" id="modelsHint">Modelos locais carregados do 9Router.</small></label>
               <label>Chave de acesso (somente memória)<input id="providerKey" type="password" placeholder="Cole sua chave para este processo" autocomplete="off"></label>
               <div class="provideractions"><button type="button" class="button ghost small" id="clearKeyBtn">Limpar chave</button><button type="submit" class="button outline small" id="saveProviderBtn">Salvar e testar conexão</button></div>
