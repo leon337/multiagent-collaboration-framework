@@ -4,6 +4,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { createPublisher } from './publisher.mjs';
+import { parseChatCompletion } from './response-parser.mjs';
 
 const APP_DIR = dirname(fileURLToPath(import.meta.url));
 const STORAGE = process.env.AGENT_STUDIO_DATA || join(APP_DIR, '.data', 'state.json');
@@ -11,6 +12,11 @@ const AGENT_SOURCE = process.env.AGENT_STUDIO_AGENT || '/home/leo/Documentos/dee
 const PROFILE = process.env.AGENT_STUDIO_PROFILE || '/home/leo/.dsh/profiles/web/cordis.patch.yml';
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.AGENT_STUDIO_PORT || 4317);
+const ROUTER_BASE = process.env.AGENT_STUDIO_ROUTER_BASE || 'http://127.0.0.1:20128/v1';
+const routerBaseUrl = new URL(ROUTER_BASE);
+if (routerBaseUrl.protocol !== 'http:' || routerBaseUrl.hostname !== '127.0.0.1' && routerBaseUrl.hostname !== 'localhost') {
+  throw Error('Somente gateways locais são permitidos no Agent Studio');
+}
 const MODES = ['fixed', 'echo', 'instructed'];
 const TOOLS = ['calculator', 'clock'];
 let provider = { key: process.env.AGENT_STUDIO_API_KEY || process.env.NINEROUTER_API_KEY || '', model: process.env.AGENT_STUDIO_MODEL || 'ollama/gpt-oss:120b', verified: false };
@@ -100,17 +106,18 @@ async function aiRequest(messages, jsonMode = false) {
   const ctrl = new AbortController();
   const timeout = setTimeout(() => ctrl.abort(), 18000);
   try {
-    const result = await fetch('http://127.0.0.1:20128/v1/chat/completions', {
+    const result = await fetch(ROUTER_BASE.replace(/\/$/, '') + '/chat/completions', {
       method: 'POST', signal: ctrl.signal,
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + provider.key },
       body: JSON.stringify({ model: provider.model, temperature: 0.2, max_tokens: 500, messages, ...(jsonMode ? { response_format: { type: 'json_object' } } : {}) })
     });
     const body = await result.text();
     if (!result.ok) fail('9Router: HTTP ' + result.status + '. Verifique o modelo e a chave.', 502);
-    const json = JSON.parse(body);
-    const answer = json.choices?.[0]?.message?.content;
-    if (typeof answer !== 'string' || !answer.trim()) fail('9Router retornou uma resposta vazia', 502);
-    return answer;
+    try {
+      return parseChatCompletion(body, result.headers.get('content-type') || '');
+    } catch (e) {
+      fail('Resposta do 9Router inválida: ' + e.message, 502);
+    }
   } catch (e) {
     if (e.name === 'AbortError') fail('9Router não respondeu dentro do limite.', 504);
     throw e;
@@ -193,7 +200,7 @@ async function route(req, res) {
     if (req.method === 'GET' && path === '/health') return json(res, 200, { ok: true, service: 'agent-studio', revision: state.revision });
     if (req.method === 'GET' && path === '/api/models') {
       try {
-        const response = await fetch('http://127.0.0.1:20128/v1/models', { signal: AbortSignal.timeout(3500) });
+        const response = await fetch(ROUTER_BASE.replace(/\/$/, '') + '/models', { signal: AbortSignal.timeout(3500) });
         if (!response.ok) throw new Error('9Router indisponível');
         const models = await response.json();
         const ids = (Array.isArray(models.data) ? models.data : [])

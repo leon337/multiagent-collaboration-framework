@@ -52,6 +52,14 @@ O Studio consulta modelos do 9Router local em `127.0.0.1:20128/v1/models` (129 I
 
 **Limitação validada:** foi verificada a listagem de modelos, mas a geração sem credencial retornou HTTP 401. Não foi concluído um teste fim a fim de proposta gerada por LLM a partir do Studio. Isso não altera os ensaios do agente real no DSH, cujo modelo já estava configurado.
 
+## Compatibilidade com respostas 9Router (JSON e streaming)
+
+Alguns modelos 9Router devolvem Server-Sent Events (linhas iniciadas por `data:`) mesmo quando a requisição não marca `stream: true`. O backend agora interpreta tanto JSON OpenAI quanto chunks SSE e recompõe `choices[].delta.content`, rejeitando eventos inválidos com erro HTTP 502 legível, em vez do genérico "Erro interno".
+
+Reprodução automatizada sem expor chaves: `tests/9router-sse.test.mjs` inicia um gateway HTTP local simulado que produz SSE em vários chunks. O teste chama `/api/provider/test` e `/api/propose` com chave de laboratório, confirma autenticação e extração da proposta IA, e garante que o rascunho não muda sem aprovação. `npm test` executa essa suíte juntamente com os testes de publicação e de reversão.
+
+**Depois de reiniciar o serviço**, informe novamente a chave no painel de configuração, pois ela permanece somente em memória e não é persistida no disco. Esse teste com modelo real depende da credencial inserida pelo operador.
+
 ## Arquitetura e segurança
 
 ```text
