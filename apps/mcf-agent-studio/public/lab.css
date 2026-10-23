@@ -17,3 +17,11 @@
 @media(max-width:700px){.shell{display:block}.sidebar{padding:13px 16px;border-right:0;border-bottom:1px solid var(--border);gap:8px}.brand{font-size:13px}.brand-symbol{width:33px;height:33px;font-size:19px;border-radius:11px}.sidebar .side-section,.sidebar .side-links{display:none}.workspace{height:calc(100dvh - 62px);min-height:480px}.topbar{padding:17px 16px 12px;gap:13px}.headline h1{font-size:22px}.headline p{font-size:12px}.top-actions{width:100%;justify-content:space-between;gap:8px}.online{font-size:11px;padding:7px 10px}.button-outline{min-height:39px;padding:8px 12px}.notice{padding:9px 16px;font-size:11px;gap:6px}.chat-scroll{padding:12px 16px}.empty{padding:22px 0}.empty-symbol{margin-bottom:13px;width:60px;height:60px;font-size:30px}.empty h2{font-size:21px}.empty>p:not(.eyebrow){font-size:12px}.examples{gap:8px}.examples button{font-size:11px;padding:9px}.composer-wrap{padding:8px 12px 14px}.composer{padding:6px}.composer textarea{font-size:13px}.send-button{min-width:50px;width:51px;min-height:48px;padding:8px}.send-button span:last-child{display:none}.message{max-width:100%}.message .bubble{font-size:13px}.composer-footer{font-size:10px}}
 @media(max-width:370px){.notice a{display:none}.headline p{display:none}.chat-scroll{padding:9px}.topbar{padding:12px}.message{gap:6px}.message .avatar{width:28px;height:28px}.message .bubble{padding:10px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+
+/* Safe structured model-answer formatting. User text remains literal. */
+.message.agent:not(.pending) .bubble{white-space:normal}
+.lab-paragraph{white-space:pre-wrap;overflow-wrap:anywhere}
+.lab-paragraph+.lab-paragraph{margin-top:.8em}
+.lab-paragraph strong{font-weight:750;color:#f7fbff}
+.lab-paragraph code{font:inherit;font-size:.93em;background:#27384d;border-radius:4px;padding:.1em .3em;overflow-wrap:anywhere}
+.lab-math{font-variant-numeric:tabular-nums;white-space:normal;color:#d4eafe;line-height:1.8}

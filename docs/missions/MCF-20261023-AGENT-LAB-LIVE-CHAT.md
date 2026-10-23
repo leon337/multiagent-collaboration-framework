@@ -39,3 +39,11 @@ O identificador e até 80 mensagens ficam em `.data/dsh-trainee-session.json` co
 O Laboratório conversa com o comportamento **publicado no Harness**. Mudanças no editor só chegarão a uma **nova sessão** após a publicação explícita. Configuração de prompt/ferramentas não constitui fine-tuning dos pesos do LLM.
 
 **Aceite:** aplicativo local funcionando e testado ponta a ponta, com atalho de área de trabalho. PR permanece draft, sem merge em main. Nenhuma auditoria independente Emily/Beatriz ou gate delegado de Léo é afirmado como executado.
+
+## Checkpoint UX no celular — captura real de 07:08
+
+O usuário compartilhou captura do Android com Agent Lab carregado por Tailscale HTTPS, botão Novo chat, status DSH conectado, input funcional e conversação de estudo preservada. A tela prova que a conexão móvel foi estabelecida e que o agente respondeu a perguntas reais.
+
+Falha visual identificada: o renderer anterior usava `textContent` puro e mostrava marcadores Markdown `**...**` e fórmula LaTeX `\(...\)` literalmente. O Lab foi corrigido para apresentar **negrito e expressões aritméticas legíveis**, com criação exclusiva de nós DOM e `textContent` (sem aceitar HTML/JavaScript gerado pelo agente). Exemplo reproduzido: `123 dias × 15 h/dia = 1 845 horas`, negrito correto e HTML malicioso preservado como texto. Teste Brave CDP: 12 mensagens reais carregadas, `strong` e `.lab-math` presentes, nenhuma tag `img` executada, zero exceções JS, viewports 390 e 320 sem overflow horizontal. Regra restrita a mensagens do agente, preservando o texto digitado pelo usuário.
+
+O rótulo secundário de publicação foi retirado apenas da interface remota mobile para a faixa informativa não comprimir o texto em largura estreita; APIs administrativas continuam bloqueadas. `npm test`: **8/8 aprovados**; ambos os serviços locais ativos. Nenhuma sessão de usuário foi alterada durante o teste de formatação.

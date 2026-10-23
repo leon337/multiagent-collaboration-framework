@@ -39,12 +39,59 @@ function updateMeta(snapshot={}){
 function scrollBottom(){
  const area=$('chatScroll');area.scrollTop=area.scrollHeight;
 }
+
+// Safe Markdown/math subset: DOM text nodes only, never model-generated HTML.
+function plainMath(input){
+ return input
+   .replace(/\\(?:text|mathrm|operatorname)\s*\{([^{}]*)\}/g,'$1')
+   .replace(/\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g,'($1 ÷ $2)')
+   .replace(/\\sqrt\s*\{([^{}]*)\}/g,'√($1)')
+   .replace(/\\times\b/g,'×').replace(/\\cdot\b/g,'·')
+   .replace(/\\div\b/g,'÷').replace(/\\approx\b/g,'≈')
+   .replace(/\\leq\b/g,'≤').replace(/\\geq\b/g,'≥')
+   .replace(/\\neq\b/g,'≠').replace(/\\pi\b/g,'π')
+   .replace(/\\(?:left|right)\b/g,'')
+   .replace(/\\[,;!]/g,' ')
+   .replace(/[ \t]{2,}/g,' ').trim();
+}
+function formattedAgentText(element,text){
+ const source=String(text??'').replace(/\r\n?/g,'\n');
+ for(const part of source.slice(0,16000).split(/\n{2,}/)){
+   const paragraph=document.createElement('div');
+   paragraph.className='lab-paragraph';
+   const tokens=/\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]|\*\*([^\n*]+)\*\*|\x60([^\x60\n]+)\x60|\*([^\n*]+)\*/g;
+   let cursor=0,match;
+   while((match=tokens.exec(part))!==null){
+     if(match.index>cursor)paragraph.append(document.createTextNode(part.slice(cursor,match.index)));
+     let node;
+     if(match[1]!==undefined||match[2]!==undefined){
+       node=document.createElement('span');
+       node.className='lab-math';
+       node.textContent=plainMath(match[1]??match[2]);
+       node.setAttribute('aria-label','Expressão matemática');
+     }else if(match[3]!==undefined){
+       node=document.createElement('strong');node.textContent=match[3];
+     }else if(match[4]!==undefined){
+       node=document.createElement('code');node.textContent=match[4];
+     }else{
+       node=document.createElement('em');node.textContent=match[5];
+     }
+     paragraph.append(node);
+     cursor=tokens.lastIndex;
+   }
+   if(cursor<part.length)paragraph.append(document.createTextNode(part.slice(cursor)));
+   element.append(paragraph);
+ }
+}
+
 function addMessage(item,temporary=false){
  const node=document.createElement('article');node.className='message '+item.role+(temporary?' pending':'');
  const avatar=document.createElement('span');avatar.className='avatar';avatar.textContent=item.role==='user'?'Você'.slice(0,1):'✳';avatar.setAttribute('aria-hidden','true');
  const body=document.createElement('div');body.className='content';
  const who=document.createElement('div');who.className='who';who.textContent=item.role==='user'?'Você':'Hello World Agent';
- const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=item.text;
+ const bubble=document.createElement('div');bubble.className='bubble';
+ if(item.role==='agent'&&!temporary)formattedAgentText(bubble,item.text);
+ else bubble.textContent=item.text;
  const meta=document.createElement('div');meta.className='meta';meta.textContent=temporary?'Processando na sessão DSH':dateTime(item.at);
  body.append(who,bubble,meta);node.append(avatar,body);$('messages').append(node);
  $('emptyState').classList.toggle('hidden',true);

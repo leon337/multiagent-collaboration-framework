@@ -126,3 +126,5 @@ A configuração de comportamento e ferramentas é um ajuste de preset, **não**
 - Para desativar apenas este compartilhamento no notebook: tailscale serve --https=8492 off
 
 **Compatibilidade com navegador integrado no Android:** parâmetros de rastreamento adicionados ao URL, por exemplo `/lab?u=...` e `/lab?utm_source=...`, são ignorados pelo proxy somente em GETs permitidos. O acesso a APIs administrativas continua bloqueado e requisições POST não aceitam query string. Correção validada em 23/10/2026 após erro HTTP 400 apresentado pelo Android.
+
+**Formatação das respostas do agente:** o chat suporta negrito, itálico, código inline e expressões matemáticas simples em LaTeX convertidas para texto matemático legível, sem usar `innerHTML` ou executar tags fornecidas pela LLM. O parser é intencionalmente limitado: não é um renderizador científico completo (KaTeX/MathJax). O histórico existente é reformatado ao atualizar a página, sem alterar dados armazenados no DSH.

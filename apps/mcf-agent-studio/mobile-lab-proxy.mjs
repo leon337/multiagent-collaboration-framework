@@ -32,7 +32,7 @@ function htmlForMobile(html){
     '<span class="lab-access-note">Editor do agente: somente no notebook</span>'
   ).replace(
     '<a href="/#publish">Publicação ↗</a>',
-    '<span class="lab-access-note">Publicação somente no notebook</span>'
+    ''
   );
 }
 const server=createServer(async(req,res)=>{
