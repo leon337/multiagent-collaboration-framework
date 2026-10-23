@@ -113,3 +113,14 @@ O navegador chama somente o backend Studio (`/api/lab/status`, `/api/lab/message
 Para testar uma alteração: edite e publique no Agent Studio; depois use **Novo chat** para carregar a nova versão no DSH. Rascunho não publicado não modifica o comportamento do agente testado. A interface foi verificada em 1440/768/390/320 px e em conversas reais. Testes automatizados: `npm test`, 7/7 aprovados na entrega.
 
 A configuração de comportamento e ferramentas é um ajuste de preset, **não** fine-tuning de pesos do modelo. Relatório: `docs/missions/MCF-20261023-AGENT-LAB-LIVE-CHAT.md`.
+
+## Acessar o Chat de Testes no celular (Tailscale)
+
+- No notebook: http://127.0.0.1:4317/lab
+- No celular Android conectado à mesma rede Tailscale: https://mcf-leo-n43sm.tail582305.ts.net:8492/lab
+- Ative a VPN pelo aplicativo Tailscale no Android; realme-9i apareceu offline durante a auditoria.
+- O proxy exclusivo do laboratório usa 127.0.0.1:4323 e mcf-agent-lab-mobile.service habilitado no Linux.
+- O acesso remoto é privado da tailnet (não Funnel público). Editor, publicação, chaves, tokens e serviços internos NÃO estão liberados pelo endereço móvel.
+- A API de escrita exige Origin HTTPS da tailnet; endpoints fora da lista são negados.
+- Teste em nó Android real não foi possível enquanto o celular estava offline. Acesso local e testes automatizados foram validados.
+- Para desativar apenas este compartilhamento no notebook: tailscale serve --https=8492 off
