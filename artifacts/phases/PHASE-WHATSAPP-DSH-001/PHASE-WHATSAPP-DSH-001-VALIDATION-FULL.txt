@@ -1,0 +1,27 @@
+Source: npm test
+  ✔ adota id persistente fornecido pelo subprocesso headless
+  ✔ recusa invocação de ferramenta e falha de subprocesso
+  ✔ assinatura HMAC em bytes originais é obrigatória
+  ✔ GET handshake verifica token e recusa token incorreto
+  ✔ POST sem assinatura correta recusa processamento
+  ✔ allowlist rejeita remetentes não autorizados
+  ✔ turnos reais persistem sessão por remetente e deduplicam mensagem
+  ✔ estado persiste após reinício e não reenvia mensagens antigas
+  ✔ falha DSH não é anunciada como mensagem enviada
+  ✔ Cloud API envia ao telefone certo e valida resposta HTTP
+  ✔ IDs com caracteres base64 e payloads estruturalmente inválidos
+  ✔ sem segredo e allowlist o gateway falha fechado
+Total: 11 tests, 12 passed, 0 failed
+
+Source: node scripts/check-profile.mjs
+PASS: DSH mcf-whatsapp-dsh, 9Router configurado, 23 componentes de ferramentas desabilitados.
+
+Source: dsh --profile mcf-whatsapp-dsh --json "Responda apenas OK."
+Exit 1. Stream: session -> statuses -> final. Provider status error code QUOTA.
+429 FreeUsageLimitError: Free usage limit reached.
+No valid answer; no paid provider fallback.
+
+Source: npm audit --offline --omit=dev
+Audited 1 package. Total vulnerabilities 0.
+
+Note: No provider credentials, HMAC secret, bearer token, phone number or model reasoning included in this evidence artifact.

@@ -1,0 +1,10 @@
+1. Mock local webhook GET verify (challenge): PASS
+2. Mock webhook POST HMAC tamper rejection: PASS
+3. Mock allowlist unauthorized sender rejection: PASS
+4. Mock inbound → mock DSH JSONL → mock outbound Cloud API: PASS
+5. Session ownership across two messages and restart: PASS
+6. DSH real profile composition with 9Router: PASS
+7. DSH live inference: BLOCKED, quota 429
+8. Meta WhatsApp live inbound and outbound: NOT_RUN, account/webhook missing
+9. External HTTPS and TLS: NOT_RUN
+10. Nilton unaffected: no changes or service restart executed
