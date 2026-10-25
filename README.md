@@ -1,8 +1,110 @@
 # MCF — Multiagent Collaboration Framework
 
-O **MCF** é um framework para coordenação governada de agentes de IA, com papéis explícitos, seleção por competência, execução rastreável, handoffs, skills versionadas, runtime persistente, evidência verificável, recuperação de falhas e gates de autoridade.
+O **MCF** coordena agentes de IA por contratos de missão, competências, permissões, evidências, handoffs e recuperação. Possui metodologia de governança e implementações executáveis com limites distintos.
 
-> **Estado documental:** o mapa canônico está em [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md). Branch heads, `latest`, estados de PR/Issue, workflows, metadados mutáveis de Release e SHAs/status reportados por providers são valores voláteis e devem ser lidos no GitHub/provider live.
+**Comece por este mapa.** Persistência, pausa e retomada estão distribuídas entre continuidade de projeto via GitHub, runtime PostgreSQL, Bubble Executor e Harness V2. Nenhum desses mecanismos deve ser deduzido somente do resumo histórico de outro.
+
+## Primeira leitura de um novo chat
+
+1. Ler as [instruções canônicas de inicialização](project-instructions/MCF-PROJECT-OPERATING-INSTRUCTIONS.md) e o [protocolo operacional](docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md). **LEANDRO** é a autoridade humana; **LÉO**, o agente com autoridade operacional delegada; **MESTRE**, o orquestrador.
+2. Identificar a missão existente por Issue/PR/contrato/checkpoint e consultar seu estado live no [GitHub](https://github.com/leon337/multiagent-collaboration-framework). Novo chat não implica nova missão. Sem identidade suficiente, fazer descoberta antes de executar.
+3. Escolher o mecanismo na tabela abaixo e ler **contrato + código + testes** correspondentes. Consultar também [skills](skills/registry.yaml), [agentes](docs/agentes/README.md) e [ferramentas/permissões](docs/tools/MCF-AGENT-TOOL-MATRIX.md).
+4. Validar checkpoint, fontes autoritativas, metodologia, gates pendentes e estado live. Selecionar `FAST_RESUME`, `RECONCILE` ou `RECOVER_MCF_PROJECT` conforme a política de continuidade.
+5. Verificar as capacidades reais do executor e continuar da próxima ação autorizada. Registrar evidências e persistir o próximo checkpoint na fonte durável; arquivo apenas no sandbox não comprova transferência.
+
+O [mapa de estado](docs/MCF-CURRENT-STATE.md) e o [índice documental completo](docs/README.md) fornecem contexto, mas seus snapshots não substituem código nem GitHub/provider live. Ausência de resultados em busca textual não prova ausência de capacidade: procurar também em `project-instructions/`, `apps/`, `ops/`, `tests/`, `context/` e `.github/workflows/`.
+
+## Persistência, pausa e retomada: escolha o mecanismo
+
+| Necessidade / gatilho | Fonte direta | Implementação e evidência | Limite a preservar |
+| --- | --- | --- | --- |
+| Pausa planejada, troca de chat/ambiente, decisão ou mudança material | [Decisão Q17 de continuidade](docs/proposals/MCF-V1.1-DECISION-LEDGER-001.md) e [checkpoint CAF](templates/CAF-FLOW-CHECKPOINT.yaml) | [ContinuityRecoveryService](apps/rede-social-agentes/apps/server/src/mcf-runtime/continuity-recovery.service.ts), [testes](apps/rede-social-agentes/apps/server/src/mcf-runtime/continuity-recovery.service.test.ts), [qualificação Q19](apps/rede-social-agentes/apps/server/src/qualification/mcf-v11-q19.e2e.test.ts) | Policy implementada constrói/classifica checkpoints; recebe SHA e verificações do chamador. Não faz fetch/push GitHub nem suspende worker por si só. Q17 preserva o estado histórico da decisão, não a ausência atual de código. |
+| Recuperar a missão em outro chat/sandbox | [Contrato Bubble Executor](docs/runtime/MCF-BUBBLE-EXECUTOR-CONTRACT.md), [contrato versionado de exemplo](context/missions/mcf-memory-live-next-stable.json) | [CLI](ops/bubble-executor/bubble_executor.py), [teste com dois diretórios novos](tests/bubble-executor/test_bubble_executor_cli_integration.py), [workflow](.github/workflows/mcf-bubble-executor-validation.yml) | Importa contrato e emite checkpoint local com digest. O orquestrador precisa obter/persistir a fonte GitHub/MCF. O teste usa o contrato do checkout, não prova transporte GitHub live nem restauração de toda execução. |
+| Ordem humana de interrupção e retomada explícita | [Instruções §15.1](project-instructions/MCF-PROJECT-OPERATING-INSTRUCTIONS.md), [Human Delegation Firewall](project-instructions/MCF-HUMAN-DELEGATION-FIREWALL.md), [testes operacionais de GUI](project-instructions/MCF-VISIBLE-EXECUTION-GUI-TESTS.md) | [Gate de entrada do chat](apps/rede-social-agentes/apps/server/src/mcf-runtime/chat-runtime-bridge.service.ts), [testes](apps/rede-social-agentes/apps/server/src/mcf-runtime/chat-runtime-bridge.service.test.ts) | `HUMANO NO CONTROLE` impede novas ações e exige checkpoint/retomada humana. O gate pré-bootstrap não é um endpoint geral de suspensão persistente de missão em curso. |
+| Criar missão, executar fase, registrar evidência e consultar estado durável | [Especificação](docs/runtime/MCF-RUNTIME-SPECIFICATION.md), [API](docs/runtime/MCF-RUNTIME-API.md) | [MissionRuntimeService](apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.service.ts), [repositório PostgreSQL](apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.ts), [integração](apps/rede-social-agentes/apps/server/src/mcf-runtime/postgres-mcf-runtime.repository.integration.test.ts) | Estado/ledger PostgreSQL são diferentes dos arquivos GitHub. Ler uma Issue não instancia uma missão nesse runtime. |
+| Fase aguarda resultado externo; GitHub Actions entrega resultado | [Recuperação CAF](docs/runtime/MCF-RUNTIME-RECOVERY.md), [API de callback](docs/runtime/MCF-RUNTIME-API.md) | [Workflow de integração](.github/workflows/mcf-runtime-integration.yml), método `acceptCiCallback` no [runtime](apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.service.ts) | `workflow_dispatch` / `repository_dispatch: mcf-run-tests` levam IDs da missão/fase e SHA; callback autenticado registra resultado. Sucesso retoma estado de execução; falha vai a recuperação. Requer configuração e runtime acessível; não é retomada automática de qualquer pausa humana. |
+| Submissão termina e devolve controle à missão-pai | [DEC-059](docs/decisions/MCF-DEC-059-HIERARQUIA-PERSISTENTE-E-RETORNO-A-MISSAO-PAI.md) | [Testes da hierarquia](apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-hierarchy.integration.test.ts) e [pilha](apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-hierarchy-stack.integration.test.ts) | Filho pendente suspende avanço normal do pai; checkpoint capturado sob lock é restaurado somente quando seguro. Ver [migrations de hierarquia](apps/rede-social-agentes/packages/database/migrations/0016_mcf_hierarchy_gate_hardening.sql). |
+| Interromper/retomar sessão de agente e recuperar journal em outro armazenamento | [PRF do protótipo Harness V2](artifacts/phases/PHASE-02-MCF-HARNESS-V2-PROTOTYPE/) | [Runtime SQLite/eventos](ops/multiagent-runtime-v2/runtime.py), [export/import e plano de retomada](ops/multiagent-runtime-v2/recovery_bundle.py), [testes de sessão](tests/multiagent-runtime-v2/test_sessions.py), [testes de recovery](tests/multiagent-runtime-v2/test_recovery_bundle.py) | `checkpoint_session`, `interrupt_session`, `resume_session` preservam estado de sessão e mailbox. É implementação do protótipo local; não confundir com ativação no servidor PostgreSQL ou em produção. |
+
+### Gatilhos de checkpoint implementados
+
+A lista exata de `ContinuityRecoveryService.shouldCreateCheckpoint` é:
+
+- `MATERIAL_HUMAN_DECISION` — decisão humana material;
+- `PHASE_OR_MISSION_BOUNDARY` — mudança de fase ou limite de missão;
+- `MATERIAL_MISSION_CONTRACT_CHANGE` — mudança material do contrato;
+- `MATERIAL_STATE_CHANGE` — mudança material de estado;
+- `IMPORTANT_HANDOFF` — passagem de bastão relevante;
+- `HUMAN_GATE_MATERIAL_CHANGE` — mudança material de gate humano;
+- `PLANNED_PAUSE` — pausa planejada;
+- `PLANNED_CHAT_TRANSFER` — transferência planejada de chat;
+- `PLANNED_EXECUTION_ENVIRONMENT_TRANSFER` — transferência de ambiente;
+- `MATERIAL_CONTEXT_LOSS_RISK` — risco material de perda de contexto.
+
+Esses eventos são reconhecidos pela policy; a existência da lista não comprova que toda interface os emita automaticamente. O checkpoint é orientado a eventos materiais, não a cada mensagem ou principalmente a um temporizador.
+
+### Quando persistir no GitHub
+
+A [decisão Q2 — LOCAL_FIRST_REMOTE_CHECKPOINTED](docs/proposals/MCF-V1.1-DISCOVERY-CHECKPOINT-002.md) registra estes limites para checkpoint remoto: `PHASE_OR_SUBMISSION_COMPLETED`, `LONG_PAUSE_OR_SESSION_END`, `BEFORE_HUMAN_GATE`, `BEFORE_INDEPENDENT_REVIEW`, `MATERIAL_VALIDATION_PASS`, `BEFORE_HIGH_RISK_BOUNDARY`, `AGENT_HANDOFF` e `INTEGRATION_CANDIDATE`.
+
+São critérios operacionais documentados, distintos dos eventos reconhecidos pela policy acima. **Editar ≠ commit ≠ push ≠ PR**: commit local não prova persistência remota; push confirmado estabelece checkpoint remoto; PR serve à revisão/integração. Q2 registra trabalho local reversível de baixo risco com dívida de checkpoint quando o remoto está indisponível, mas bloqueio em limite material/governado. Isso não autoriza ignorar gates nem comprova um publicador automático implementado.
+
+### Como a continuidade via GitHub é verificada
+
+O checkpoint reúne projeto/missão, fase, objetivo/estado, referência de metodologia, contrato, repositório/branch/SHA, decisões, evidências, achados, gates, autorizações vigentes, próxima ação, responsável e instruções de retomada. O **Resume Card** é uma visão derivada; o checkpoint canônico prevalece.
+
+| Condição na policy | Resultado |
+| --- | --- |
+| SHA remoto declarado disponível e nenhum estado local sem checkpoint | `TRANSFERABLE` ao construir o checkpoint; a existência remota precisa ser verificada pelo chamador. |
+| Trabalho apenas local ou sem SHA de checkpoint | `BLOCKED_LOCAL_ONLY_STATE`; não declarar transferido. |
+| Checkpoint transferível e íntegro, fontes resolvidas, metodologia válida e repositório/branch/SHA iguais ao live | `FAST_RESUME`. |
+| Mesmo repositório, pré-condições válidas e divergência de branch/SHA explicável | `RECONCILE`. |
+| Checkpoint/live ausente, integridade/metodologia/fonte inválida, outro repositório ou divergência inexplicável | `RECOVER_MCF_PROJECT`. |
+
+Uma rota de retomada não aprova gates pendentes. A sequência operacional é recuperar os registros, verificar estado live, reconciliar e só então continuar a ação autorizada. Sem confirmação de gravação remota, um checkpoint local não é prova de persistência no GitHub.
+
+### Comandos humanos e esperas não são equivalentes
+
+- `PAUSAR PROJETO MCF` e `RETOMAR PROJETO MCF` aparecem nos [comandos auxiliares da DEC-007](docs/decisions/MCF-DEC-007-PROTOCOLO-DE-INICIALIZACAO-DE-NOVO-CHAT-E-PROJETO.md). Esse documento é histórico: sua composição antiga e identidade não substituem as instruções atuais; os comandos não provam um parser universal no runtime.
+- `HUMANO NO CONTROLE`, como instrução independente de LEANDRO, suspende novas ações, preserva efeitos concluídos e interrompe uma operação em curso no próximo ponto seguro. Registrar checkpoint e aguardar retomada explícita de LEANDRO; menção da frase em documentação não dispara o gate.
+- `WAITING_EXTERNAL` / `WAITING_EVIDENCE` expressam espera por evidência; `RECOVERING` expressa recuperação. O [CAF](docs/runtime/MCF-RUNTIME-RECOVERY.md) explica callbacks idempotentes, concorrência e preservação da identidade da missão.
+- `PAUSED_TRANSFERABLE` é uma classificação do contrato conceitual Q17; não presumir que seja um valor do enum de estados do servidor. Interrupção de sessão do Harness V2, pausa do reporter de voz e gate humano têm escopos diferentes.
+
+## Mapa dos demais componentes do runtime
+
+| Componente | Contrato / fonte de verdade | Código, teste ou operação |
+| --- | --- | --- |
+| Anatomia, seleção e handoff da missão | [Protocolo](docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md), [template](templates/MCF-UNIFIED-MISSION.yaml) | [Runtime](apps/rede-social-agentes/apps/server/src/mcf-runtime/), [PRFs](artifacts/phases/) |
+| Contexto de projeto e admissão v1.1 | [Schemas](schemas/), [artefatos de projeto](apps/rede-social-agentes/apps/server/src/project-artifacts/) | [Context guard](apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-v11-context.guard.ts), [testes](apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-v11-context.guard.test.ts) |
+| Skills e permissionamento | [Registry](skills/registry.yaml), [permissões](docs/tools/MCF-PLUGIN-PERMISSIONS.yaml), [HDF](project-instructions/MCF-HUMAN-DELEGATION-FIREWALL.md) | [PermissionEngine](apps/rede-social-agentes/apps/server/src/mcf-runtime/permission-engine.ts), [SkillExecutor](apps/rede-social-agentes/apps/server/src/mcf-runtime/skill-executor.ts) |
+| Ações externas, idempotência e evidências | [Recuperação](docs/runtime/MCF-RUNTIME-RECOVERY.md) | [Dispatcher](apps/rede-social-agentes/apps/server/src/mcf-runtime/external-action-dispatcher.ts), [EvidenceValidator](apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts) |
+| Observabilidade e fechamento | [Observabilidade](docs/runtime/MCF-RUNTIME-OBSERVABILITY.md), [PRF](templates/phase-traceability/) | [Completion policy](apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-completion-policy.ts) |
+| Controle de missão via GPT Action | [Contrato staging](docs/integrations/MCF-MISSION-CONTROL-GPT-ACTION.md), [OpenAPI](docs/integrations/MCF-MISSION-CONTROL-GPT-ACTION.openapi.yaml) | [MissionControlService](apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-control.service.ts); não confundir com todo o produto Mission Control proposto. |
+| Bubble, DSH e executores | [Bubble](docs/runtime/MCF-BUBBLE-EXECUTOR-CONTRACT.md), [DSH Agent Teams](docs/runtime/MCF-DEEPSEEK-HARNESS-AGENT-TEAMS-EXECUTOR.md), [canal MESTRE–Ox](docs/integrations/MCF-HARNESS-MESTRE-OX-CHANNEL.md) | [Executores](ops/bubble-executor/), [evidência DSH de 2026-10-09](docs/integrations/evidence/MCF-HARNESS-MESTRE-OX-PARALLEL-20261009.md) |
+| Dual Browser, Agent Bridge e sucessão visual | [Discovery obrigatório](docs/protocols/MCF-PROTOCOLO-DUAL-BROWSER-RUNTIME-DISCOVERY.md), [manual UI](docs/operations/MCF-UI-OPERATING-MANUAL.md), [sucessão cross-chat](docs/protocols/MCF-PROTOCOLO-SUCESSAO-CROSS-CHAT-E-CONTROLE-DE-JANELAS.md) | [Contrato semântico UI](docs/contracts/MCF-UI-SEMANTIC-CONTRACT.json); discovery live antes de operar. |
+| Context Fabric, Ledger e Cloud | [Roadmap de integração](docs/MCF-ECOSYSTEM-INTEGRATION-ROADMAP.html), [gates de promoção](docs/integrations/MCF-ECOSYSTEM-PROMOTION-GATES-20260828.md) | [Evidências](docs/integrations/evidence/); recuperar contexto não ativa provider nem concede escrita. |
+| CI, staging e produção | [Workflows](.github/workflows/), [autorização de produção](apps/rede-social-agentes/apps/server/src/mcf-runtime/production-authorization.service.ts) | [Staging](.github/workflows/mcf-runtime-staging-deploy.yml), [promoção governada](.github/workflows/mcf-runtime-production-deploy.yml); autorização + gate + SHA exato. |
+| Evolução, releases e histórico | [NextGen](docs/MCF-NEXTGEN-RECONCILIATION-ROADMAP.md), [decisões](docs/decisions/), [releases](docs/releases/), [changelog](CHANGELOG.md) | [GitHub live](https://github.com/leon337/multiagent-collaboration-framework); proposta, merge, release e produção são estados distintos. |
+
+Existem **29 agentes nomeados**, selecionados por competência. Isso descreve contratos/papéis, não prova 29 modelos independentes executados. LEANDRO não entra nessa contagem. Crédito de agente exige execução atribuível; o [experimento telefone-sem-fio](experimentos/telefone-sem-fio-001/RESULTADO_FINAL.md) preserva seus limites metodológicos.
+
+## Regras de leitura e verificação
+
+- `CURRENT_IMPLEMENTED`, `EXPERIMENTAL`, `PLANNED`, `UNDER_STUDY`, `HISTORICAL` e `SUPERSEDED` devem ser usados conforme a evidência do componente, não por associação com o nome MCF.
+- Código/teste presente não prova configuração, execução recente, conexão externa ou deploy. Resultados de testes abaixo, quando citados em documentos, pertencem ao SHA e ambiente registrados.
+- Antes de afirmar estado atual de branch, PR, Issue, workflow, release, `latest` ou produção, consultar GitHub/provider live. Nunca inferir produção a partir de `main` nem autorização de produção a partir de CI verde.
+- O [README do servidor](docs/runtime/README.md) contém snapshots do RUNTIME-006; suas contagens e descrições históricas não inventariam todos os executores posteriores. Para skills, consultar o [registry](skills/registry.yaml) e o código do executor pertinente.
+
+## Diagnóstico da navegação corrigida
+
+A consulta anterior seguiu README → resumo do runtime → mapa de estado e generalizou a ressalva do gate pré-bootstrap para pausa/retomada em geral. Não leu a policy de continuidade, Q17/Q19, Bubble Executor nem Harness V2. Buscas sem resultados também não foram complementadas por uma busca na árvore completa.
+
+O README não oferecia links diretos para esses mecanismos, e documentos de snapshots distintos misturavam capacidades implementadas, propostas e estados históricos. O mapa acima corrige esse caminho: cada mecanismo tem entrada direta, implementação, evidência e limite. A limitação do gate pré-bootstrap continua verdadeira no seu escopo; ela não invalida os demais mecanismos de continuidade.
+
+<details>
+<summary>Referências e snapshots do README anterior — contexto histórico, não estado live</summary>
+
+Os trechos abaixo preservam o histórico documental. Em divergência, consultar as fontes diretas do mapa acima e o estado live. Contagens, status de PR/Issue e versões de transporte citados aqui podem ter sido superados.
 
 ## O que existe hoje
 
@@ -319,3 +421,5 @@ Antes de afirmar estado atual de branch, SHA, PR, Issue, workflow, produção, `
 3. use [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md) como mapa;
 4. confira código/testes/workflows/evidências do boundary ativo;
 5. nunca inferir produção a partir do HEAD de `main`.
+
+</details>
