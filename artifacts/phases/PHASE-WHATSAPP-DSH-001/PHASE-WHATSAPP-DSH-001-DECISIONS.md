@@ -15,3 +15,8 @@
 10. **LEANDRO:** autorizou explicitamente a utilização do número de teste da Meta para este agente. Sem autorização de número remetente real, publicação pública ou gasto.
 11. **MESTRE:** confirmação a partir do ledger local DSH: sessão iniciada, `turn_end` de provedor `QUOTA` e `INVALID_REQUEST`; corrigir parser de razão final, sem pagar e sem mascarar erro.
 12. **MESTRE:** configurar arquivo privado modo teste com token de verificação e preservar Funnel existente sem novas rotas públicas.
+
+13. **LEANDRO:** determinou Step 5 Preview via 9Router, acesso à Meta pelo navegador Cockpit e Funnel HTTPS.
+14. **MESTRE:** perfil DSH WhatsApp isolado usa Step 5, enquanto o perfil web e Nilton continuam inalterados; timeout não constitui aprovação de modelo.
+15. **MESTRE:** expor publicamente só /webhook com handshake; portal privado em Tailscale Serve, nunca o Cockpit.
+16. **MESTRE:** impedir ativação do chat até presença de credenciais Meta, número de teste verificado e inferência real Step 5.

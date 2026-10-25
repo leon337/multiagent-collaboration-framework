@@ -64,3 +64,7 @@ curl -s http://127.0.0.1:38764/health  # depois que o serviço estiver iniciado
 O serviço não está habilitado no boot até a conexão WhatsApp e o modelo estarem validados. Para interromper a aplicação, encerre apenas o processo `node src/main.mjs` desse projeto. Para rollback do perfil: pare a aplicação e remova apenas `~/.dsh/profiles/mcf-whatsapp-dsh` após verificar a propriedade. Não reinicie nem altere os serviços `mcf-dsh-runtime` ou `nilton-dsh-lab`.
 
 Casos incompletos deliberadamente: resposta incerta depois de falha de transporte (exige reconciliação manual), retenção histórica definida por operação, autenticação e TLS do proxy público, credenciais Meta e setup da conta. Nenhum desses itens foi declarado aprovado.
+
+## Continuidade Step 5 + Meta Funnel (25/10/2026)
+
+Leia [META-TEST-STEP5-HANDOFF.md](META-TEST-STEP5-HANDOFF.md). O callback público HTTPS em `/webhook` passou no desafio de validação Meta; o portal de configuração no Tailscale Serve HTTPS :8498 tem autenticação local validada, mas alcance a partir do celular ainda depende de teste. O perfil DSH exclusivo seleciona Step 5 Preview via 9Router e as chamadas chegaram ao upstream NVIDIA; o modelo não respondeu nos limites de 60s e 130s. Enquanto isso, a recepção/resposta de WhatsApp permanece em modo bootstrap sem processamento. Testes locais: 15/15 aprovados. O PR continua em rascunho.

@@ -112,7 +112,7 @@ export async function createService(cfg) {
         for (const row of Object.values(state.messages)) counts[row.status] = (counts[row.status] || 0) + 1;
         return reply(res, 200, { service: 'mcf-whatsapp-dsh', status: 'ready', working, sessions: Object.keys(state.sessions).length, messages: counts });
       }
-      if (parsed.pathname !== '/webhook') return reply(res, 404, { error: 'not_found' });
+      if (parsed.pathname !== '/webhook' && parsed.pathname !== '/') return reply(res, 404, { error: 'not_found' }); // Funnel mount may strip /webhook prefix
       if (req.method === 'GET') {
         if (parsed.searchParams.get('hub.mode') !== 'subscribe' ||
             parsed.searchParams.get('hub.verify_token') !== cfg.verifyToken ||

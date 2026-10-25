@@ -43,3 +43,7 @@ LEANDRO deve indicar conta/número que deseja usar e habilitar Cloud API/credenc
 ## Autorização adicional — 2026-10-25
 
 LEANDRO autorizou utilizar o número **de teste da Meta** como remetente do novo agente. Não autorizou converter o WhatsApp pessoal em número business/cloud, nem utilização de modelos pagos, publicação pública ou merge. A obtenção de tokens e a verificação de destinatário seguem pendentes.
+
+## Adendo de escopo — ciclo 3
+
+Por solicitação de LEANDRO, adicionados Step 5 Preview via 9Router, Cockpit Agent Bridge autenticado e Funnel HTTPS apenas para verificação da Meta. O portal administrativo permanece somente na tailnet, com token de acesso e proteção de origem. O navegador e os serviços do 9Router não são expostos publicamente. O chat do WhatsApp só pode ser habilitado após prova do modelo e da API Meta.

@@ -1,0 +1,20 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
+
+const dir=join(homedir(),'.config/mcf-whatsapp-dsh');
+const access=(await readFile(join(dir,'setup-token'),'utf8')).trim();
+const server='http://127.0.0.1:38765';
+const anonymous=await fetch(server+'/api/status');
+if(anonymous.status!==401)throw Error('portal_missing_auth_guard');
+const r=await fetch(server+'/api/status',{headers:{authorization:'Bearer '+access}});
+if(r.status!==200)throw Error('portal_authorized_check_failed_'+r.status);
+const data=await r.json();
+if(!data.ok || !data.verifyToken || !Array.isArray(data.missing))throw Error('portal_invalid_status');
+const env=await readFile(join(dir,'env'),'utf8');
+if(!env.includes('WA_VERIFY_TOKEN='+data.verifyToken))throw Error('verify_token_mismatch');
+const wrongOrigin=await fetch(server+'/api/save',{method:'POST',headers:{authorization:'Bearer '+access,'content-type':'application/json',origin:'https://evil.example.com'},body:'{}'});
+if(wrongOrigin.status!==403)throw Error('portal_origin_guard_failed');
+const bad = await fetch(server + '/api/save', {method:'POST',headers:{authorization:'Bearer '+access,'content-type':'application/json',origin:server},body:JSON.stringify({WA_APP_SECRET:'bad',WA_ACCESS_TOKEN:'x',WA_PHONE_NUMBER_ID:'abc',WA_GRAPH_API_VERSION:'x',WA_ALLOW_FROM:'abc'})});
+if(bad.status!==422)throw Error('portal_rejected_invalid_credentials');
+console.log('PASS: private setup portal authenticates, rejects anonymous and cross-origin access; Meta token never printed.');

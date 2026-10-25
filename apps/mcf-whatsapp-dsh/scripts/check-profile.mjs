@@ -6,7 +6,7 @@ const dsh = process.env.DSH_BIN || join(homedir(), 'Aplicativos/dsh/node_modules
 const p = spawnSync(dsh, ['--profile', 'mcf-whatsapp-dsh', '--dump-config'], { encoding: 'utf8', timeout: 30000, maxBuffer: 2_000_000 });
 if (p.error || p.status !== 0 || p.stderr.trim()) throw Error('dsh_profile_composition_failed');
 const config = p.stdout;
-if (!config.includes('mcf-9router') || !config.includes('agente de conversação do MCF')) throw Error('dsh_model_or_persona_missing');
+if (!config.includes('mcf-9router') || !config.includes('model: nvidia/stepfun-ai/step-5-preview') || !config.includes('agente de conversação do MCF')) throw Error('dsh_model_or_persona_missing');
 const required = [
   'tool-plugin-manager','tool-bash','tool-pwsh','tool-jobs','tool-fs','tool-fs-search',
   'tool-skill','tool-subagent','tool-subagent-control','tool-subagent-list-agents',

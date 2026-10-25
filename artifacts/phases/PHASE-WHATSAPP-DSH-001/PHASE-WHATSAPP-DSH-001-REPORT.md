@@ -33,3 +33,12 @@ Não houve envio WhatsApp verdadeiro, teste público HTTPS, revisão multiagente
 11. Foram inspecionados os registros locais do DSH das tentativas (sem revelar segredos): quatro `turn/end` com `QUOTA`/429 e uma com `INVALID_REQUEST`/400, `Model is unavailable`. Portanto o modelo foi efetivamente chamado pelo DSH, mas os provedores recusaram resposta.
 12. Corrigiu-se `src/dsh-runner.mjs`, que consultava incorretamente `event.status.error.code`: o contrato do DSH utiliza `event.phase=turn_end` e `event.reason.error.code`. Adicionados casos de teste simulando erros reais. 12/12 testes continuam aprovados.
 13. Nenhuma Meta app test ID, token temporário, segredo ou número de destinatário foi identificado neste novo projeto. Sem esses dados, o webhook oficial e a conversa real permanecem pendentes.
+
+## Ciclo 3 — Step 5, Cockpit e Meta Funnel (25/10/2026)
+
+14. LEANDRO solicitou Step 5 Preview, API local 9Router, uso do Cockpit Agent Bridge e Funnel; a implementação foi mantida em branch isolada.
+15. O endpoint autenticado GET /v1/discovery do Agent Bridge confirmou instância notebook e panes. O navegador workspace foi aberto primeiro na Meta Developers e depois no login Facebook, que exige titular. Warnings de Agent Sessions ausentes não impedem automação direta de pane.
+16. O perfil WhatsApp passou a selecionar nvidia/stepfun-ai/step-5-preview via mcf-9router, preservando web e nilton-lab. Logs do 9Router confirmam requisições STREAM encaminhadas ao upstream NVIDIA, mas chamadas DSH terminaram em timeout de 60s e 130s. Um POST manual ao 9Router sem chave gerou HTTP 401, caso separado da chamada DSH autenticada.
+17. Funnel novo HTTPS 443 com mount único /webhook criado sem alterar o Funnel preexistente 10000. Callback respondeu ao desafio de verificação em HTTPS público com token privado e negou requisição sem token HTTP 403. POST bootstrap HTTP 503.
+18. Serviços user systemd novos: mcf-whatsapp-meta-test.service (porta local 38764) e mcf-whatsapp-meta-setup.service (porta local 38765). Portal setup Tailscale Serve HTTPS 8498 é tailnet-only, token de acesso separado, checagem de Origin e armazenamento privado; nenhuma credencial Meta foi adicionada. Teste local do portal PASS, teste remoto a partir do telefone ainda não realizado; self-test no notebook expirou.
+19. Modo WA_ACTIVATE_CHAT permanece desligado até modelo e Meta E2E comprovados. Testes focados 15/15 PASS. Nenhum merge, implantação pública do agente ou modificação Nilton.

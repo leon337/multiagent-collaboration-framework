@@ -136,6 +136,16 @@ test('IDs com caracteres base64 e payloads estruturalmente inválidos', async t 
   const no = await s.post({ object: 'whatsapp_business_account', entry: { not: 'array' } });
   assert.equal((await no.json()).accepted, 0);
 });
+test('Funnel mount stripping forwards webhook at root only with valid HMAC', async t => {
+  const s = await setup(t);
+  const p = payload('mount123');
+  const text = JSON.stringify(p);
+  const ok = await fetch(s.url + '/', {method:'POST',headers:{'x-hub-signature-256':signed(text),'content-type':'application/json'},body:text});
+  assert.equal(ok.status, 200);
+  await until(() => s.state.messages['wamid.mount123']?.status === 'sent');
+  const denied = await fetch(s.url + '/not-webhook', {method:'POST',headers:{'x-hub-signature-256':signed(text)},body:text});
+  assert.equal(denied.status, 404);
+});
 test('sem segredo e allowlist o gateway falha fechado', async () => {
   await assert.rejects(createService({}), /not_configured/);
 });

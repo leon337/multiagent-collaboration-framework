@@ -31,3 +31,7 @@ DSH durable log inspection, workspace mcf-whatsapp-dsh:
 - 1 session ended reason.kind=error, reason.error.code=INVALID_REQUEST (HTTP 400 model unavailable)
 - Fix: parse JSONL status phase=turn_end reason.error, not status.error.
 - Meta test-only local env created, token values hidden, WA fields incomplete.
+
+2026-10-25 Step 5 routed evidence: 9Router journal confirmed POST requests to nvidia/stepfun-ai/step-5-preview, streamed via NVIDIA account. No completed assistant response before 60 or 130 second timeouts.
+2026-10-25 Tailscale Funnel: public HTTPS callback accepted exact numeric challenge with private verify token and returned 200; unauthenticated GET returned 403; bootstrap POST returned 503.
+2026-10-25 Meta configuration portal: 127.0.0.1:38765 GET HTML 200; anonymous API GET 401; authorized API GET 200; cross-origin POST 403; invalid form POST 422. All credentials private.
