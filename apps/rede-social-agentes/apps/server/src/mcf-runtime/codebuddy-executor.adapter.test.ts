@@ -153,7 +153,7 @@ describe('LocalCodeBuddyHost', () => {
       tools: ['Read', 'Edit'],
     });
 
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode, `Sandbox stderr: ${result.stderr}; stdout: ${result.stdout}`).toBe(0);
     expect(result.stdout).toContain('--agent cli');
   });
 
