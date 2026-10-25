@@ -143,18 +143,26 @@ describe('LocalCodeBuddyHost', () => {
   });
 
   it('forces the Standard cli agent for headless execution', async () => {
-    const host = new LocalCodeBuddyHost();
-    const result = await host.execute({
-      binary: '/bin/echo',
-      cwd: process.cwd(),
-      model: 'cx/gpt-5.6-sol',
-      prompt: 'smoke',
-      timeoutMs: 1000,
-      tools: ['Read', 'Edit'],
-    });
+    const dir = await mkdtemp(join(tmpdir(), 'mcf-codebuddy-args-'));
+    const binary = join(dir, 'fake-codebuddy');
+    await writeFile(binary, '#!/bin/sh\nprintf "%s " "$@"\n');
+    await chmod(binary, 0o700);
+    try {
+      const host = new LocalCodeBuddyHost();
+      const result = await host.execute({
+        binary,
+        cwd: dir,
+        model: 'cx/gpt-5.6-sol',
+        prompt: 'smoke',
+        timeoutMs: 1000,
+        tools: ['Read', 'Edit'],
+      });
 
-    expect(result.exitCode, `Sandbox stderr: ${result.stderr}; stdout: ${result.stdout}`).toBe(0);
-    expect(result.stdout).toContain('--agent cli');
+      expect(result.exitCode, `Sandbox stderr: ${result.stderr}; stdout: ${result.stdout}`).toBe(0);
+      expect(result.stdout).toContain('--agent cli');
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 
   it('does not inherit unrelated environment variables into the CodeBuddy subprocess', async () => {
