@@ -25,3 +25,9 @@ Source: npm audit --offline --omit=dev
 Audited 1 package. Total vulnerabilities 0.
 
 Note: No provider credentials, HMAC secret, bearer token, phone number or model reasoning included in this evidence artifact.
+
+DSH durable log inspection, workspace mcf-whatsapp-dsh:
+- 4 sessions ended reason.kind=error, reason.error.code=QUOTA (HTTP 429 upstream)
+- 1 session ended reason.kind=error, reason.error.code=INVALID_REQUEST (HTTP 400 model unavailable)
+- Fix: parse JSONL status phase=turn_end reason.error, not status.error.
+- Meta test-only local env created, token values hidden, WA fields incomplete.

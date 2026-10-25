@@ -8,3 +8,5 @@
 8. Meta WhatsApp live inbound and outbound: NOT_RUN, account/webhook missing
 9. External HTTPS and TLS: NOT_RUN
 10. Nilton unaffected: no changes or service restart executed
+11. Local Meta test env prepared, sensitive token hidden: PASS
+12. DSH 429 / 400 event classification after parser fix: PASS in tests; real account limit persists

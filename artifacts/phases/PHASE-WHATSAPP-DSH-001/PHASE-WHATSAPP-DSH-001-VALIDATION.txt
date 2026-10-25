@@ -13,3 +13,7 @@ Offline npm audit: 0 known vulnerabilities / 1 package
 Production deployment: NOT_RUN
 Nilton profile: NOT_TOUCHED
 Final phase status: AGUARDANDO_DEPENDENCIA_EXTERNA
+Post-authorization local profile: PASS
+Meta test mode: ON, credentials missing (fail-closed)
+Persistent DSH session evidence: 4 QUOTA/429 and 1 MODEL_UNAVAILABLE/400
+Error parser updated to use turn_end.reason.error.code; 12/12 tests PASS

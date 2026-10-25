@@ -11,3 +11,7 @@
 9. **Emily, LÉO e especialistas independentes:** revisões externas NÃO executadas; nenhuma decisão atribuída falsamente.
 
 **Próximo gate:** envio/recebimento WhatsApp real após configuração Meta e quota/modelo, com evidência e privacidade.
+
+10. **LEANDRO:** autorizou explicitamente a utilização do número de teste da Meta para este agente. Sem autorização de número remetente real, publicação pública ou gasto.
+11. **MESTRE:** confirmação a partir do ledger local DSH: sessão iniciada, `turn_end` de provedor `QUOTA` e `INVALID_REQUEST`; corrigir parser de razão final, sem pagar e sem mascarar erro.
+12. **MESTRE:** configurar arquivo privado modo teste com token de verificação e preservar Funnel existente sem novas rotas públicas.

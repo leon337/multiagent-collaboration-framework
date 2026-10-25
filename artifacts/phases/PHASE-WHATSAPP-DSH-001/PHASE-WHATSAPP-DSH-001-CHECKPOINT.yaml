@@ -1,7 +1,7 @@
 mission_id: MCF-WHATSAPP-DSH-001
 phase_id: PHASE-WHATSAPP-DSH-001
 current_state: AGUARDANDO_DEPENDENCIA_EXTERNA
-cycle: 1
+cycle: 2
 date: 2026-10-25
 repository: leon337/multiagent-collaboration-framework
 branch: feat/mcf-whatsapp-dsh-20261025
@@ -14,7 +14,7 @@ dsh_tool_restrictions: 23
 local_tests_passed: 12
 local_tests_failed: 0
 external_dependency:
-  - meta_whatsapp_cloud_api_credentials_and_phone_number
+  - meta_test_phone_id_app_secret_temporary_token_and_verified_recipient
   - public_https_webhook_callback
   - free_9router_model_quota_or_another_validated_free_route
 authorization:
@@ -23,3 +23,13 @@ authorization:
   modify_nilton: false
 human_gate_required: true
 next_action: Configure Meta Cloud API secrets locally and validate a free model; perform live WhatsApp round-trip without enabling unsafe tools.
+
+meta_test_number_authorized: true
+private_local_env_prepared: true
+private_env_path: ~/.config/mcf-whatsapp-dsh/env
+meta_credentials_available: false
+real_dsh_error_evidence:
+  observed_turns_quota_429: 4
+  observed_turns_model_unavailable_400: 1
+  actual_model_reply_received: false
+  provider_error_parser_fixed: true

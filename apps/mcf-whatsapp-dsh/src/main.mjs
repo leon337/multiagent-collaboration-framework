@@ -4,6 +4,7 @@ import { createService } from './gateway.mjs';
 import { cloudSender } from './whatsapp-cloud.mjs';
 import { invokeDeepSeek } from './dsh-runner.mjs';
 
+if (process.env.WA_META_TEST_MODE !== '1') throw Error('meta_test_mode_required');
 const base = process.env.MCF_WHATSAPP_DATA_DIR || join(homedir(), '.local/share/mcf-whatsapp-dsh');
 const appRoot = new URL('..', import.meta.url).pathname;
 const dsh = {

@@ -17,5 +17,6 @@ test('recusa invocação de ferramenta e falha de subprocesso', async () => {
   await assert.rejects(invokeDeepSeek('FAIL_TOOL', null, config), /tool_boundary_broken/);
   await assert.rejects(invokeDeepSeek('FAIL_EXIT', null, config), /dsh_failed/);
   await assert.rejects(invokeDeepSeek('FAIL_QUOTA', null, config), /dsh_quota_exhausted/);
+  await assert.rejects(invokeDeepSeek('FAIL_UNAVAILABLE', null, config), /dsh_model_unavailable/);
   await assert.rejects(invokeDeepSeek('', null, config), /invalid_prompt/);
 });

@@ -26,3 +26,10 @@
 ## Limites
 
 Não houve envio WhatsApp verdadeiro, teste público HTTPS, revisão multiagente independente, implantação nem merge. A configuração externa permanece bloqueada até acesso legítimo às credenciais Meta e ao modelo.
+
+## Continuidade / ciclo 2 — autorização número teste
+
+10. LEANDRO autorizou o número de teste da Meta. Criou-se a configuração privada `~/.config/mcf-whatsapp-dsh/env` com modo teste e token de verificação aleatório (0600); campos de API não foram inventados. Tailscale Funnel está disponível no notebook, mas não se abriu nova exposição pública e não se alteraram os demais serviços.
+11. Foram inspecionados os registros locais do DSH das tentativas (sem revelar segredos): quatro `turn/end` com `QUOTA`/429 e uma com `INVALID_REQUEST`/400, `Model is unavailable`. Portanto o modelo foi efetivamente chamado pelo DSH, mas os provedores recusaram resposta.
+12. Corrigiu-se `src/dsh-runner.mjs`, que consultava incorretamente `event.status.error.code`: o contrato do DSH utiliza `event.phase=turn_end` e `event.reason.error.code`. Adicionados casos de teste simulando erros reais. 12/12 testes continuam aprovados.
+13. Nenhuma Meta app test ID, token temporário, segredo ou número de destinatário foi identificado neste novo projeto. Sem esses dados, o webhook oficial e a conversa real permanecem pendentes.

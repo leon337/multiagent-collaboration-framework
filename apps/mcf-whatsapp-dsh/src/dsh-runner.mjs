@@ -1,5 +1,4 @@
 import { spawn } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
 
 export async function invokeDeepSeek(text, sessionId, cfg) {
   if (typeof text !== 'string' || text.length < 1 || text.length > 4000) throw Error('invalid_prompt');
@@ -13,7 +12,7 @@ export async function invokeDeepSeek(text, sessionId, cfg) {
     stdio: ['pipe', 'pipe', 'pipe'],
     windowsHide: true
   });
-  let output = '', stderrBytes = 0, tooLarge = false, timedOut = false;
+  let output = '', tooLarge = false, timedOut = false;
   const timeout = setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, cfg.timeoutMs ?? 120000);
   const finished = new Promise((resolve, reject) => {
     child.once('error', reject);
@@ -23,21 +22,14 @@ export async function invokeDeepSeek(text, sessionId, cfg) {
     output += chunk.toString('utf8');
     if (output.length > 1024 * 1024) { tooLarge = true; child.kill('SIGKILL'); }
   });
-  child.stderr.on('data', chunk => { stderrBytes += chunk.length; }); // never persist model reasoning
+  child.stderr.on('data', () => {}); // never persist model reasoning or credentials
   child.stdin.on('error', () => {});
   child.stdin.end(text);
   let code;
   try { code = await finished; } finally { clearTimeout(timeout); }
   if (timedOut) throw Error('dsh_timeout');
   if (tooLarge) throw Error('dsh_output_limit');
-  if (code !== 0) {
-    let quota = false;
-    for (const line of output.split('\n')) {
-      try { const event = JSON.parse(line); if (event.type === 'status' && event.status?.error?.code === 'QUOTA') quota = true; } catch {}
-    }
-    throw Error(quota ? 'dsh_quota_exhausted' : 'dsh_failed');
-  }
-  let id = null, answer = null, toolsSeen = false, statusError = false;
+  let id = null, answer = null, toolsSeen = false, statusError = false, finalReason = null;
   for (const line of output.split('\n')) {
     if (!line.trim()) continue;
     let event;
@@ -46,8 +38,20 @@ export async function invokeDeepSeek(text, sessionId, cfg) {
     if (event.type === 'final') answer = event.text;
     if (event.type === 'error') statusError = true;
     if (event.type === 'tool_call') toolsSeen = true;
+    if (event.type === 'status' && event.phase === 'turn_end') finalReason = event.reason;
   }
-  if (statusError || toolsSeen) throw Error(toolsSeen ? 'dsh_tool_boundary_broken' : 'dsh_reported_error');
+  if (toolsSeen) throw Error('dsh_tool_boundary_broken');
+  if (finalReason?.kind === 'error') {
+    const errorCode = finalReason.error?.code;
+    if (errorCode === 'QUOTA') throw Error('dsh_quota_exhausted');
+    if (errorCode === 'INVALID_REQUEST' && /model is unavailable/i.test(finalReason.error?.message || '')) {
+      throw Error('dsh_model_unavailable');
+    }
+    if (errorCode === 'INVALID_REQUEST') throw Error('dsh_invalid_request');
+    throw Error('dsh_provider_error');
+  }
+  if (code !== 0 || statusError) throw Error('dsh_failed');
+  if (finalReason?.kind !== 'completed') throw Error('dsh_incomplete_turn');
   if (!/^session-[a-zA-Z0-9-]{8,100}$/.test(id || '') || (sessionId && id !== sessionId)) throw Error('dsh_session_mismatch');
   if (typeof answer !== 'string' || !answer.trim()) throw Error('dsh_empty_answer');
   return { sessionId: id, answer: answer.slice(0, 3900) };

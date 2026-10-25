@@ -32,11 +32,11 @@ npm test
 
 O instalador lê apenas as seções de provedor/modelo da configuração DSH `web` existente e cria `~/.dsh/profiles/mcf-whatsapp-dsh`, sem editar o `web` nem o `nilton-lab`. O perfil privado tem permissão 0600.
 
-### Configuração Meta (não realizada automaticamente)
+### Meta — número de teste autorizado; aguardando credenciais da conta
 
-É necessária uma conta de desenvolvedor Meta com WhatsApp Business Platform/Cloud API, número apto para uso, token do sistema, App Secret, Phone Number ID e versão de Graph API suportada. É possível iniciar com o número de teste disponível na conta de desenvolvedor, conforme elegibilidade.
+Em 25/10/2026, LEANDRO autorizou exclusivamente o **número de teste fornecido pela Meta**, sem migrar seu número pessoal. É necessária uma conta Meta for Developers com caso de uso WhatsApp, número remetente de teste, token de acesso temporário, App Secret, Phone Number ID de teste e versão de Graph API suportada. O telefone pessoal é apenas destinatário autorizado de teste e precisa ser verificado no painel Meta (até cinco destinatários em modo teste).
 
-Crie um arquivo privado fora do repositório (ex.: `~/.config/mcf-whatsapp-dsh/env`) com os campos de `.env.example`. `WA_ALLOW_FROM` deve conter **somente** o número autorizado em formato internacional, dígitos apenas (Brasil: 55 + DDD + número). Não envie esses segredos pelo chat nem faça commit.
+O arquivo privado `~/.config/mcf-whatsapp-dsh/env` já foi criado no notebook, com `WA_META_TEST_MODE=1` e token aleatório de verificação; permanecem vazios apenas os campos que exigem o cadastro Meta. Execute `node scripts/prepare-meta-test.mjs` para revisar os nomes dos campos pendentes sem exibir segredos. **Não use um número real como remetente nesta fase.** `WA_ALLOW_FROM` deve conter **somente** o número autorizado em formato internacional, dígitos apenas (Brasil: 55 + DDD + número). Não envie esses segredos pelo chat nem faça commit.
 
 Exemplo para iniciar manualmente com o arquivo privado:
 
@@ -57,7 +57,7 @@ node scripts/check-profile.mjs   # valida restrições efetivas do perfil DSH in
 curl -s http://127.0.0.1:38764/health  # depois que o serviço estiver iniciado
 ```
 
-**Os testes offline não substituem** um teste real de resposta da IA via 9Router e um teste real de entrega WhatsApp. A rota free atualmente selecionada `oc/nemotron-3.5-super-vl-free` respondeu com quota 429 em 25/10/2026; nenhuma rota paga foi selecionada para contornar a cota.
+**Os testes offline não substituem** um teste real de resposta da IA via 9Router e um teste real de entrega WhatsApp. Os logs de sessão do DSH mostram erro de provedor `QUOTA / HTTP 429 / FreeUsageLimitError` para os modelos gratuitos `oc/` e `INVALID_REQUEST / HTTP 400 / Model is unavailable` para a alternativa `ocg/space-bunny-free`. A sessão e a requisição **foram criadas no DSH real**, mas **nenhum modelo retornou resposta**. O adaptador foi corrigido para ler `status.phase=turn_end` e `reason.error.code` e distinguir ​`dsh_quota_exhausted` de `dsh_model_unavailable`. Nenhuma rota paga foi selecionada para contornar a cota.
 
 ## Limites e rollback
 

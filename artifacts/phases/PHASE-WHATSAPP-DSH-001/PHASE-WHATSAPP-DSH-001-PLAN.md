@@ -39,3 +39,7 @@ MESTRE — execução técnica e rastreabilidade, com ferramentas de GitHub e Re
 ## Dependências / HUMAN_GATE
 
 LEANDRO deve indicar conta/número que deseja usar e habilitar Cloud API/credenciais oficiais em armazenamento local privado. Escolher modelo sem custo cujo limite ainda esteja disponível; se houver custo, solicitar autorização expressa antes de utilizá-lo. Somente ativar exposição pública depois de testes e governança.
+
+## Autorização adicional — 2026-10-25
+
+LEANDRO autorizou utilizar o número **de teste da Meta** como remetente do novo agente. Não autorizou converter o WhatsApp pessoal em número business/cloud, nem utilização de modelos pagos, publicação pública ou merge. A obtenção de tokens e a verificação de destinatário seguem pendentes.
