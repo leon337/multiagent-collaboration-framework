@@ -117,3 +117,25 @@ local_natural_conversation_20261026:
   no_new_autotest_endpoint: true
   local_bridge_tests_passed: 21
   detailed_evidence: MCF-LOCAL-WHATSAPP-20261026.md
+
+reboot_recovery_20261026:
+  notebook_online_after_restart: true
+  mcf_9router_service_active: true
+  mcf_dsh_web_service_active: true
+  whatsapp_baileys_session_connected: true
+  brave_session_restored_without_qr: true
+  dedicated_brave_autostart_service_enabled: true
+  future_full_boot_test_completed: false
+  reader_restored_after_brave_start: true
+  owner_identity_alias_guard_fixed: true
+  third_party_destinations_forbidden: true
+  live_self_chat_status_transport_pass: true
+  llm_step5_inference_after_restart: NOT_TESTED
+  cumulative_processed_counter: 14
+  cumulative_failed_counter: 3
+  newly_discovered_failed_turns_after_restart: 2
+  tests_passed: 30
+  tests_failed: 0
+  npm_audit_known_vulnerabilities: 0
+  git_branch: feat/mcf-whatsapp-dsh-20261025
+  evidence: MCF-BOOT-RECOVERY-20261026.md

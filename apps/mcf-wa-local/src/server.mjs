@@ -6,6 +6,9 @@ import qrcode from 'qrcode';
 import pino from 'pino';
 import { PrivateState } from './state.mjs';
 import { GuardedConversation } from './conversation.mjs';
+import { BraveSelfChatSender } from './browser-sender.mjs';
+import { BraveSelfChatInbox } from './browser-inbox.mjs';
+import { isOwnChat } from './policy.mjs';
 import { loadAdminToken, makePortal } from './portal.mjs';
 import { invokeDeepSeek } from '../../mcf-whatsapp-dsh/src/dsh-runner.mjs';
 
@@ -25,6 +28,14 @@ const config = {
   timeoutMs: 240000
 };
 const runtime = { phase:'starting', qr:null, qrPNG:null, connected:false, socket:null, startedAt:Date.now(), retries:0, shuttingDown:false };
+const ownIdentities = () => {
+  const sock = runtime.socket;
+  return [sock?.user?.id, sock?.user?.lid, sock?.authState?.creds?.me?.id, sock?.authState?.creds?.me?.lid].filter(Boolean);
+};
+const browserSender = new BraveSelfChatSender({
+  getOwnJid: () => runtime.socket?.user?.id,
+  getOwnAliases: ownIdentities
+});
 const safeLog = tag => {
   const event = String(tag).replace(/[^a-zA-Z0-9_:.-]/g, '').slice(0, 110);
   // Keep only allowlisted event names; never persist Baileys/Signal debug objects.
@@ -35,7 +46,9 @@ const conversation = new GuardedConversation({
   invoke: (text,sessionId) => invokeDeepSeek(text,sessionId,config),
   send: async (jid,text) => {
     if (!runtime.connected || !runtime.socket) throw Error('not_connected');
-    return runtime.socket.sendMessage(jid,{ text });
+    // Baileys transport is receive-only. Its encrypted outgoing messages were
+    // not consistently readable on the owner's phone. Use the official web UI.
+    return browserSender.send(jid,text);
   },
   getIdentity: () => {
     const sock=runtime.socket;
@@ -44,10 +57,16 @@ const conversation = new GuardedConversation({
   getConnectedAt: () => runtime.startedAt,
   log: safeLog
 });
+const browserInbox = new BraveSelfChatInbox({
+  getOwnJid: () => runtime.socket?.user?.id,
+  onEvent: event => conversation.receive(event),
+  log: safeLog
+});
 const portal = makePortal({
   token:adminToken,
   getStatus:() => ({
     phase:runtime.phase,connected:runtime.connected,qrAvailable:!!runtime.qrPNG,
+    replyTransport:'brave_web',
     armed:state.data.armed,processed:state.data.processed,failed:state.data.failed,
     processing:conversation.current
   }),
@@ -94,6 +113,7 @@ async function connect() {
         runtime.qr=null;runtime.qrPNG=null;
         runtime.retries=0;
         runtime.startedAt=Date.now();
+        browserInbox.start();
         safeLog('whatsapp_linked');
       }
       if(update.connection==='close'){
@@ -115,6 +135,9 @@ async function connect() {
     });
     sock.ev.on('messages.upsert',evt=>{
       if(!runtime.connected || runtime.socket!==sock) return;
+      const identities = [sock.user?.id,sock.user?.lid,sock.authState?.creds?.me?.id,sock.authState?.creds?.me?.lid].filter(Boolean);
+      const selfCount = (evt.messages || []).filter(m => m?.key?.fromMe === true && isOwnChat(m.key?.remoteJid, identities)).length;
+      if (selfCount) safeLog('self_chat_upsert_' + String(evt.type || 'unknown'));
       void conversation.receive(evt).catch(()=>safeLog('message_handler_failure'));
     });
   } catch(err) {
@@ -127,6 +150,7 @@ await connect();
 async function shutdown() {
   runtime.shuttingDown=true;
   clearTimeout(reconnectTimer);
+  browserInbox.stop();
   runtime.connected=false;runtime.qr=null;runtime.qrPNG=null;
   try {runtime.socket?.ws?.close();}catch{}
   portal.close();

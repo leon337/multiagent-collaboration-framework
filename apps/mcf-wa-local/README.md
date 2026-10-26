@@ -55,9 +55,26 @@ Credenciais locais: `~/.local/share/mcf-wa-local/auth/` (Signal) e `~/.config/mc
 
 ## Provas e limitações
 
-- 21/21 testes de contrato e segurança, incluindo self-JID, replay/histórico, isolamento grupos/contatos, STOP, autorização e proteção do QR, além da confirmação de processamento e ausência de mensagem tardia após resposta rápida.
+- 30/30 testes de contrato e segurança, incluindo self-JID, replay/histórico, isolamento grupos/contatos, STOP, autorização e proteção do QR, além da confirmação de processamento e ausência de mensagem tardia após resposta rápida.
 - `npm audit --omit=dev`: 0 vulnerabilidades registradas no módulo no momento da validação.
 - QR de pareamento WhatsApp real gerado na máquina; portal local 200 e QR não autenticado administrativo 401; Host proxy remoto recebe 401.
 - **PASS conversacional (26/10/2026):** QR escaneado pelo titular; WhatsApp conectado, comandos reais recebidos e respondidos com `reply_success`, e sessão DSH persistida. Após corrigir o modo natural, o serviço registrou **7 respostas concluídas, 1 falha histórica por `dsh_timeout`** e reconexão automática. O Step 5 continua sujeito a latência variável; não afirmar disponibilidade garantida.\n- **Segurança:** o serviço foi configurado com `StandardOutput=null` e `StandardError=null` para impedir que dumps criptográficos da biblioteca entrem no journal; somente eventos mínimos e higienizados são armazenados em `~/.local/share/mcf-wa-local/events.log` (0600). Históricos anteriores do journal não foram apagados para não impactar outros serviços.
 
 Projeto em branch `feat/mcf-whatsapp-dsh-20261025`, PR #476 **draft**.
+
+## Recuperação automática do WhatsApp Web — 26/10/2026
+
+**Arquitetura atual:** Baileys mantém o dispositivo vinculado e fornece eventos próprios; o MCF também recebe comandos da própria conversa pelo DOM do WhatsApp Web no Brave. A saída das respostas ocorre somente pelo Brave autenticado, com destinatário comprovado como o próprio titular. As bibliotecas e a automação do navegador não são uma API oficial WhatsApp; a Meta pode mudar sua compatibilidade.
+
+O navegador dedicado usa o perfil privado `~/.config/mcf-wa-browser` e CDP exclusivo de loopback em `127.0.0.1:9227`. O `mcf-wa-brave.service` foi habilitado para garantir que a sessão volte a abrir automaticamente após o próximo reinício. Ele é independente de outros navegadores do usuário. O `mcf-wa-local-link.service` acompanha a conexão do agente. Nenhuma porta de depuração deve ser publicada em Tailscale Serve/Funnel.
+
+Diagnóstico rápido após reiniciar:
+
+```sh
+systemctl --user is-active mcf-wa-brave.service mcf-wa-local-link.service mcf-9router.service mcf-dsh-runtime.service
+curl -fsS http://127.0.0.1:38766/api/local-status
+```
+
+Teste após reinício em 26/10: comando `/mestre status` enviado exclusivamente no chat `Mensagem para você`; recebido pelo MCF e resposta nova confirmada no WhatsApp Web. **A inferência Step 5 ainda não foi testada depois desse reinício** e continua sujeita a limites e atrasos do 9Router. Históricos antigos de criptografia `Aguardando mensagem` não são reparados por esta atualização.
+
+A falha `browser_target_not_self` foi corrigida para reconhecer apenas aliases PN/LID provenientes da identidade autenticada do próprio dispositivo, mantendo a verificação do número e `'(você)'` na interface antes do envio. O leitor também reduz a repetição de erros quando o navegador não está disponível. Os 30 testes locais passaram; o reinício futuro completo ainda deve ser observado. Detalhes em `artifacts/phases/PHASE-WHATSAPP-DSH-001/MCF-BOOT-RECOVERY-20261026.md`.

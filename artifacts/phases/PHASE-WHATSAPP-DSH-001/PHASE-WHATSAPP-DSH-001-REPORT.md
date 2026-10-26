@@ -70,3 +70,11 @@ Não houve envio WhatsApp verdadeiro, teste público HTTPS, revisão multiagente
 35. Confirmadas 7 respostas concluídas, 1 timeout histórico, zero novas falhas após correção. Serviço reconectado automaticamente após reinício autorizado somente em estado ocioso.
 36. 21/21 testes passaram. Sonda de modelo oc/deepseek-v4.1-flash-free: UNKNOWN_MODEL no perfil DSH; oc/nemotron-3.5-lightning-free: QUOTA. Step 5 Preview mantido, sem modelo pago.
 37. Autoenvio de mensagem de diagnóstico bloqueado por política do conector remoto; funcionalidade extra retirada. MCF segue com ponte mínima. Evidência detalhada no MCF-LOCAL-WHATSAPP-20261026.md.
+
+## Ciclo 8 — reinício do notebook e recuperação (26/10/2026)
+
+38. Notebook e serviços DSH/9Router/WhatsApp reiniciaram, mas Brave dedicado não; leitor DOM gerava repetidos `fetchfailed`. Sessão do WhatsApp Web persistente, retomada sem QR.
+39. Criados `mcf-wa-brave.service` habilitado no systemd user e `scripts/ensure-browser.sh` que aguarda desktop, evita múltiplas abas e monitora a porta CDP loopback 9227.
+40. Detectadas duas falhas `browser_target_not_self` provocadas por identificadores alternativos PN/LID do mesmo titular; corrigida validação com aliases exclusivamente autenticados pelo próprio socket, mantendo proibição absoluta de contatos/grupos.
+41. Recuperação de leitura WhatsApp DOM, logs repetitivos reduzidos, 30/30 testes PASS, npm audit sem vulnerabilidades registradas.
+42. Teste presencial somente autochat: envio `/mestre status` seguido de resposta nova confirmada no WhatsApp Web (PASS transporte). Step 5 não foi reexecutado neste ciclo. PR segue sem merge. Evidências: `MCF-BOOT-RECOVERY-20261026.md`.
