@@ -1,0 +1,10 @@
+{
+  "name": "mcf-wa-local",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Guarded local WhatsApp companion bridge for an isolated DSH profile",
+  "engines": {"node": ">=20"},
+  "scripts": {"test": "node --test test/*.test.mjs", "check": "node --check src/server.mjs && node --check src/policy.mjs"},
+  "dependencies": {"@whiskeysockets/baileys": "6.7.24", "qrcode": "1.5.4", "pino": "9.9.5"}
+}

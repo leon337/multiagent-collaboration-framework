@@ -74,3 +74,27 @@ vonage_sandbox_authorized_phone: false
 twilio_sandbox_trial_account_created: false
 whatsapp_real_e2e_approved: false
 alternatives_evidence_file: PHASE-WHATSAPP-DSH-001-ALTERNATIVAS-20261025.md
+
+local_companion_bridge_20261026:
+  service: mcf-wa-local-link.service
+  service_enabled: true
+  phase: connected
+  whatsapp_session_linked: true
+  only_self_chat_with_prefix: /mestre
+  meta_or_paid_provider_required: false
+  integration_type: unofficial_whatsapp_web_protocol
+  first_message_handled_and_sent: true
+  first_dsh_session_persisted: true
+  second_message_timed_out: true
+  second_message_timeout_seconds: 240
+  end_to_end_delivery_receipt_from_phone: NOT_VERIFIED
+  automated_tests_passed: 18
+  automated_tests_failed: 0
+  npm_audit_known_vulnerabilities: 0
+  delayed_processing_ack_seconds: 12
+  processing_ack_live_validated: false
+  local_service_reconnected_after_restart: true
+  event_log_file_private_mode: "0600"
+  stdout_stderr_to_systemd_journal: false
+  private_credential_files_versioned: false
+  governance_report: MCF-LOCAL-WHATSAPP-20261026.md

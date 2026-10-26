@@ -56,3 +56,11 @@ Não houve envio WhatsApp verdadeiro, teste público HTTPS, revisão multiagente
 25. Timeout padrão do gateway dedicado alterado de 120 para 240s (validado entre 120-300s), mantendo todas as restrições DSH e sem ativar o canal Meta. Testes locais 15/15 PASS, teste público de challenge HTTPS PASS.
 26. Identificada rota para prova de conversa WhatsApp sem WABA Meta: Vonage Messages API Sandbox 100 msgs/mês e WhatsApp opt-in, ou Twilio trial 100 msgs/30 dias como fallback. Vonage login foi aberto no Cockpit; não há credenciais/titular autenticado nesse provedor, nenhuma mensagem foi enviada e nenhum sandbox foi criado.
 27. Relatório comparativo e próximos gates: `PHASE-WHATSAPP-DSH-001-ALTERNATIVAS-20261025.md`.
+
+## Ciclo 6 — 26/10/2026 — bridge própria WhatsApp local
+28. MCF implementou bridge própria `apps/mcf-wa-local` com Baileys (WhatsApp Web não oficial), persistência privada e isolamento exclusivo de self-chat para comandos `/mestre`. Nenhum fornecedor novo, número ou Meta WABA exigido.
+29. WhatsApp pareado pelo titular via QR local no Cockpit; primeira mensagem processada e `sendMessage` resolveu: `reply_success`, sessão DSH persistida (PASS inicial). Não foi verificado recibo de leitura WhatsApp pelo telefone.
+30. Segunda mensagem aceita pelo DSH, mas Step 5 excedeu 240 segundos e gerou `reply_failed:dsh_timeout` (FAIL de confiabilidade). O serviço não caiu e permaneceu conectado.
+31. Adicionada confirmação após 12s de processamento + mensagem de timeout; 18/18 testes locais PASS. Atualização reiniciada e WhatsApp reconectou sem QR, contador preservado. Esse fluxo melhorado ainda não foi testado com terceira mensagem real.
+32. Identificado log bruto de estado criptográfico da biblioteca WhatsApp na execução inicial. Bloqueadas stdout/stderr para journald no serviço, eventos próprios sanitizados em arquivo privado 0600; nenhum journal compartilhado foi apagado. Removida necessidade de fornecedor externo, mas riscos de protocolo WhatsApp não oficial permanecem.
+33. Evidência detalhada: `MCF-LOCAL-WHATSAPP-20261026.md`; PR #476 permanece draft, sem merge, sem alteração no Nilton.
