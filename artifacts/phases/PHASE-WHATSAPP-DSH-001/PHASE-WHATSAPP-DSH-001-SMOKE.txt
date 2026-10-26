@@ -17,3 +17,9 @@
 16. Meta setup portal local authorization+origin/validation: PASS
 17. Remote phone access to private Serve port 8498: NOT_VERIFIED
 18. WhatsApp end-to-end: NOT_RUN; Meta test credentials absent and model response missing
+
+20. Step 5 REAL DSH inference via 9Router, prompt OK, final OK, reason completed: PASS (~78 seconds)
+21. Meta official OAuth MCP business read: PASS Cheap Delivery; messaging accounts list=0
+22. Vonage sandbox account/phone joined: NOT_DONE (requires authorized human provider signup)
+23. Meta real WhatsApp inbound/outbound: NOT_RUN (no sender/Phone Number ID)
+24. Dedicated gateway 240s new default, unit tests 15/15, TLS callback PASS

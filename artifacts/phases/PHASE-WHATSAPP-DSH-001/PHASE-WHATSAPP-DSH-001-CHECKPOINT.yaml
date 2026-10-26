@@ -1,7 +1,7 @@
 mission_id: MCF-WHATSAPP-DSH-001
 phase_id: PHASE-WHATSAPP-DSH-001
 current_state: AGUARDANDO_DEPENDENCIA_EXTERNA
-cycle: 4
+cycle: 5
 date: 2026-10-25
 repository: leon337/multiagent-collaboration-framework
 branch: feat/mcf-whatsapp-dsh-20261025
@@ -16,7 +16,7 @@ local_tests_failed: 0
 external_dependency:
   - meta_test_phone_id_app_secret_temporary_token_and_verified_recipient
   - meta_app_subscription_of_verified_public_webhook
-  - step5_upstream_response_after_confirmed_9router_forwarding
+  - vonage_or_twilio_trial_account_and_sender_opt_in_if_meta_remains_blocked
 authorization:
   production_deploy: false
   paid_model_fallback: false
@@ -31,21 +31,21 @@ meta_credentials_available: false
 real_dsh_error_evidence:
   observed_turns_quota_429: 4
   observed_turns_model_unavailable_400: 1
-  actual_model_reply_received: false
+  actual_model_reply_received: true
   provider_error_parser_fixed: true
 
 step5_model_authorized: nvidia/stepfun-ai/step-5-preview
 step5_model_selected: true
 step5_nvidia_upstream_request_logged: true
-step5_model_reply_validated: false
+step5_model_reply_validated: true
 step5_timeouts_seconds: [60, 130]
 meta_webhook_funnel_url: https://mcf-leo-n43sm.tail582305.ts.net/webhook
 meta_public_challenge: PASS
 meta_setup_portal_tailnet_url: https://mcf-leo-n43sm.tail582305.ts.net:8498/
 meta_setup_portal_local_auth: PASS
 meta_setup_portal_phone_connectivity: NOT_VERIFIED
-meta_account_login: HUMAN_REQUIRED
-meta_authentication_complete: false
+meta_account_login: COMPLETED
+meta_authentication_complete: true
 whatsapp_chat_activated: false
 extra_systemd_units:
   - mcf-whatsapp-meta-test.service
@@ -59,3 +59,18 @@ meta_test_phone_number_id_obtained: false
 meta_live_whatsapp_conversation: false
 meta_bug_tool_app_selector_empty: true
 meta_test_provisioning_research_note: PHASE-WHATSAPP-DSH-001-META-NUMERO-TESTE-20261025.md
+
+step5_real_dsh_final_reply: OK
+step5_real_dsh_turn_completed: true
+step5_real_dsh_elapsed_seconds: 78.72
+step5_model_current_effective: nvidia/stepfun-ai/step-5-preview
+step5_gateway_timeout_default_ms: 240000
+meta_mcp_official_authenticated: true
+meta_mcp_businesses_found: [Cheap Delivery]
+meta_mcp_cheap_delivery_messaging_accounts_count: 0
+meta_mcp_phone_numbers_tool: UNAVAILABLE_IN_CLIENT_BETA
+vonage_sandbox_trial_account_created: false
+vonage_sandbox_authorized_phone: false
+twilio_sandbox_trial_account_created: false
+whatsapp_real_e2e_approved: false
+alternatives_evidence_file: PHASE-WHATSAPP-DSH-001-ALTERNATIVAS-20261025.md

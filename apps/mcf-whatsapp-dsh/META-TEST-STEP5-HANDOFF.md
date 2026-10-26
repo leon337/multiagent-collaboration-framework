@@ -45,3 +45,7 @@ Não envie credenciais Meta para o ChatGPT ou GitHub. O portal privado é a inte
 - Parar serviços: systemctl --user stop mcf-whatsapp-meta-test.service mcf-whatsapp-meta-setup.service
 - Não usar tailscale reset, nem reiniciar serviços de Nilton, nem publicar o Cockpit na internet.
 - GitHub PR #476 permanece draft e não autorizado a merge/produção.
+
+## Atualização verificada de 25/10/2026 — ciclo 5
+
+O comando DSH `--profile mcf-whatsapp-dsh --json -` recebeu uma resposta real final `OK` com `turn_end:completed` após ~78 segundos via Step5/9Router; problema anterior de timeout foi intermitente. O gateway passa a admitir `MCF_DSH_TIMEOUT_MS` 120000–300000, padrão 240000. Isso NÃO conclui a entrega pelo WhatsApp, pois a Meta recusou duas vezes a criação do remetente grátis. OAuth do Meta WhatsApp Business Tools MCP oficial concluiu no cliente isolado; WhatsApp Messaging Accounts do Cheap Delivery retornaram 0. Para prova por WhatsApp sem WABA própria, investigar Vonage Sandbox (cadastro/opt-in do titular) ou Twilio Sandbox, sem cobrança automática. Detalhes no dossiê de alternativas do PRF.

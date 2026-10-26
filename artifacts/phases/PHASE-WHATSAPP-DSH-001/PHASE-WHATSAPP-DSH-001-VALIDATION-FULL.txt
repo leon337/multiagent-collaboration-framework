@@ -35,3 +35,7 @@ DSH durable log inspection, workspace mcf-whatsapp-dsh:
 2026-10-25 Step 5 routed evidence: 9Router journal confirmed POST requests to nvidia/stepfun-ai/step-5-preview, streamed via NVIDIA account. No completed assistant response before 60 or 130 second timeouts.
 2026-10-25 Tailscale Funnel: public HTTPS callback accepted exact numeric challenge with private verify token and returned 200; unauthenticated GET returned 403; bootstrap POST returned 503.
 2026-10-25 Meta configuration portal: 127.0.0.1:38765 GET HTML 200; anonymous API GET 401; authorized API GET 200; cross-origin POST 403; invalid form POST 422. All credentials private.
+
+2026-10-25 23:42 BRT: DSH `--profile mcf-whatsapp-dsh --json -` prompted `Responda em uma única palavra: OK` produced JSON events session, status turn_start, step_start, step_end, turn_end reason=completed, final text=OK in 78.72 seconds, command exit code 0. Source actual notebook process output.
+2026-10-25: Meta official `whatsapp_business_tools` MCP OAuth completed in isolated Codex config. Discovery businesses returned Cheap Delivery business_id=117417843155171; accounts returned 0 Messaging Accounts. Phone tool not exposed in Codex beta session. No secrets printed.
+2026-10-25: Meta public callback verification TLS tested PASS, 15 focused unit tests PASS. Dedicated DSH model left Step5, service fail closed.

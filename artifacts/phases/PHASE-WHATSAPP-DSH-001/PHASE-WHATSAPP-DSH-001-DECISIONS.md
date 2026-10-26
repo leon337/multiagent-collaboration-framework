@@ -20,3 +20,7 @@
 14. **MESTRE:** perfil DSH WhatsApp isolado usa Step 5, enquanto o perfil web e Nilton continuam inalterados; timeout não constitui aprovação de modelo.
 15. **MESTRE:** expor publicamente só /webhook com handshake; portal privado em Tailscale Serve, nunca o Cockpit.
 16. **MESTRE:** impedir ativação do chat até presença de credenciais Meta, número de teste verificado e inferência real Step 5.
+
+17. **MESTRE:** reclassificar Step5 como REAL_INFERENCE_PASS depois de output terminal `final OK`, sem confundir com WhatsApp E2E ou prometer latência curta.
+18. **MESTRE:** oferecer Vonage Messages API Sandbox como rota principal temporária (100 msgs/mês), Twilio Sandbox como segundo recurso; ambos dependem de cadastro/opt-in legítimo, sem pagamentos automáticos.
+19. **MESTRE:** OAuth da Meta MCP autorizado em cliente isolado; usar somente descobertas READ-ONLY até evidenciar titular e elegibilidade; nenhum fluxo de pagamento ou de número real por conta própria.

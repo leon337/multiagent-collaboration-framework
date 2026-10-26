@@ -47,3 +47,7 @@ LEANDRO autorizou utilizar o número **de teste da Meta** como remetente do novo
 ## Adendo de escopo — ciclo 3
 
 Por solicitação de LEANDRO, adicionados Step 5 Preview via 9Router, Cockpit Agent Bridge autenticado e Funnel HTTPS apenas para verificação da Meta. O portal administrativo permanece somente na tailnet, com token de acesso e proteção de origem. O navegador e os serviços do 9Router não são expostos publicamente. O chat do WhatsApp só pode ser habilitado após prova do modelo e da API Meta.
+
+## Adendo de escopo — ciclo 5
+
+Com o teste real Step5 aprovado e erro Meta de número teste reproduzido, priorizar sandbox oficial de provedor terceiro, mantendo gateway Meta em bootstrap fail-closed. Critério de sucesso próximo: telefone de teste associado ao sandbox, webhook autenticado e resposta DSH real, sem cartão, número de produção ou mudança de perfis antigos. Opções e evidência no novo dossiê de alternativas.

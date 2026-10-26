@@ -57,14 +57,22 @@ node scripts/check-profile.mjs   # valida restrições efetivas do perfil DSH in
 curl -s http://127.0.0.1:38764/health  # depois que o serviço estiver iniciado
 ```
 
-**Os testes offline não substituem** um teste real de resposta da IA via 9Router e um teste real de entrega WhatsApp. Os logs de sessão do DSH mostram erro de provedor `QUOTA / HTTP 429 / FreeUsageLimitError` para os modelos gratuitos `oc/` e `INVALID_REQUEST / HTTP 400 / Model is unavailable` para a alternativa `ocg/space-bunny-free`. A sessão e a requisição **foram criadas no DSH real**, mas **nenhum modelo retornou resposta**. O adaptador foi corrigido para ler `status.phase=turn_end` e `reason.error.code` e distinguir ​`dsh_quota_exhausted` de `dsh_model_unavailable`. Nenhuma rota paga foi selecionada para contornar a cota.
+**Os testes offline não substituem** testes reais de inferência e entrega WhatsApp. **Atualização 25/10/2026:** uma chamada REAL do DSH via Step 5 Preview/9Router retornou `OK` com `turn_end:completed` e exit 0 em 78,72s. A entrega real no WhatsApp permanece NÃO TESTADA por falta de remetente aprovado. Os logs de sessão do DSH mostram erro de provedor `QUOTA / HTTP 429 / FreeUsageLimitError` para os modelos gratuitos `oc/` e `INVALID_REQUEST / HTTP 400 / Model is unavailable` para a alternativa `ocg/space-bunny-free`. A sessão e a requisição **foram criadas no DSH real**, mas **nenhum modelo retornou resposta**. O adaptador foi corrigido para ler `status.phase=turn_end` e `reason.error.code` e distinguir ​`dsh_quota_exhausted` de `dsh_model_unavailable`. Nenhuma rota paga foi selecionada para contornar a cota.
 
 ## Limites e rollback
 
-O serviço não está habilitado no boot até a conexão WhatsApp e o modelo estarem validados. Para interromper a aplicação, encerre apenas o processo `node src/main.mjs` desse projeto. Para rollback do perfil: pare a aplicação e remova apenas `~/.dsh/profiles/mcf-whatsapp-dsh` após verificar a propriedade. Não reinicie nem altere os serviços `mcf-dsh-runtime` ou `nilton-dsh-lab`.
+Atualização 25/10/2026: os serviços `mcf-whatsapp-meta-test.service` e `mcf-whatsapp-meta-setup.service` estão habilitados no systemd --user, **apenas bootstrap do challenge e portal privado**, sem ativar chat. Para interromper sem afetar terceiros: `systemctl --user stop mcf-whatsapp-meta-test.service mcf-whatsapp-meta-setup.service`. Para rollback do perfil: pare a aplicação e remova apenas `~/.dsh/profiles/mcf-whatsapp-dsh` após verificar a propriedade. Não reinicie nem altere os serviços `mcf-dsh-runtime` ou `nilton-dsh-lab`.
 
 Casos incompletos deliberadamente: resposta incerta depois de falha de transporte (exige reconciliação manual), retenção histórica definida por operação, autenticação e TLS do proxy público, credenciais Meta e setup da conta. Nenhum desses itens foi declarado aprovado.
 
 ## Continuidade Step 5 + Meta Funnel (25/10/2026)
 
 Leia [META-TEST-STEP5-HANDOFF.md](META-TEST-STEP5-HANDOFF.md). O callback público HTTPS em `/webhook` passou no desafio de validação Meta; o portal de configuração no Tailscale Serve HTTPS :8498 tem autenticação local validada, mas alcance a partir do celular ainda depende de teste. O perfil DSH exclusivo seleciona Step 5 Preview via 9Router e as chamadas chegaram ao upstream NVIDIA; o modelo não respondeu nos limites de 60s e 130s. Enquanto isso, a recepção/resposta de WhatsApp permanece em modo bootstrap sem processamento. Testes locais: 15/15 aprovados. O PR continua em rascunho.
+
+## Ciclo 5 — alternativas verificadas e inferência real (25/10/2026)
+
+- **DSH com Step 5 via 9Router: PASS REAL.** Prompt `OK` recebeu `final: OK` em ~78s; histórico de 60s/130s de timeout permanece evidência de variabilidade. Modelo autorizado mantido e timeout do gateway ajustado para padrão de 240s, limitado a 120–300s por `MCF_DSH_TIMEOUT_MS`. A alteração só afetará o gateway quando o chat for explicitamente habilitado.
+- **Meta WhatsApp Business Tools MCP oficial:** OAuth concluído em projeto isolado; `whatsapp_biz_businesses` encontrou `Cheap Delivery` e `whatsapp_biz_accounts` retornou **zero Messaging Accounts**; lista de números indisponível na sessão beta.
+- **Meta teste:** a etapa de reivindicar número no app legado Caldinho da Lu retorna erro da Meta e nenhum Phone Number ID. O gateway Meta permanece fail-closed (`WA_ACTIVATE_CHAT=0`).
+- **Alternativa externa preferida:** Vonage Messages API Sandbox 100 mensagens/mês sem WABA própria, exigindo cadastro e opt-in do telefone. **Fallback:** Twilio WhatsApp Sandbox (100 mensagens de trial e limite 30 dias). Nenhuma conta/sandbox vinculada ainda; não inferir funcionamento.
+- Matriz completa: `artifacts/phases/PHASE-WHATSAPP-DSH-001/PHASE-WHATSAPP-DSH-001-ALTERNATIVAS-20261025.md`.

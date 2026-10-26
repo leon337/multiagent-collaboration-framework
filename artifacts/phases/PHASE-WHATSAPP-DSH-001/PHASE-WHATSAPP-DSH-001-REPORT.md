@@ -48,3 +48,11 @@ Não houve envio WhatsApp verdadeiro, teste público HTTPS, revisão multiagente
 20. LEANDRO aceitou os termos Meta no aplicativo Caldinho da Lu. A Etapa 1 abriu com Cheap Delivery associado. Duas chamadas do botão Reivindicar número de teste produziram erro genérico do provedor. Recarregamento posterior confirma ausência de Phone Number ID, WABA teste e token.
 21. O app teladeloginsocial foi restaurado para comparação mas não oferece produto WhatsApp. Não se tentou registro de número real nem ativação de pagamento.
 22. O bug report oficial foi aberto em modo somente leitura, mas o seletor de aplicativos ativos apareceu vazio; não foi enviada notificação associada ao aplicativo errado. Registros detalhados no documento de investigação separado.
+
+## Ciclo 5 — exploração de alternativas e resposta real do modelo
+
+23. Validado endpoint MCP oficial Meta WhatsApp Business Tools (streamable HTTP e OAuth), conexão autenticada via Codex isolado. `whatsapp_biz_businesses(action=list)` retornou Cheap Delivery 117417843155171; `whatsapp_biz_accounts(business_id=117417843155171)` retornou 0 Messaging Accounts. `whatsapp_biz_phone_numbers` indisponível na sessão beta; isso não prova número de WAAC zero em qualquer outro sistema.
+24. Teste **real** do modelo Step5 via DSH CLI resultou em `status turn_end reason completed`, `final OK`, exit 0, 78,72s. O log 9Router confirma rota Step5 para upstream NVIDIA. Os testes anteriores de timeout não provam indisponibilidade permanente; latência extrema pode afetar UX.
+25. Timeout padrão do gateway dedicado alterado de 120 para 240s (validado entre 120-300s), mantendo todas as restrições DSH e sem ativar o canal Meta. Testes locais 15/15 PASS, teste público de challenge HTTPS PASS.
+26. Identificada rota para prova de conversa WhatsApp sem WABA Meta: Vonage Messages API Sandbox 100 msgs/mês e WhatsApp opt-in, ou Twilio trial 100 msgs/30 dias como fallback. Vonage login foi aberto no Cockpit; não há credenciais/titular autenticado nesse provedor, nenhuma mensagem foi enviada e nenhum sandbox foi criado.
+27. Relatório comparativo e próximos gates: `PHASE-WHATSAPP-DSH-001-ALTERNATIVAS-20261025.md`.

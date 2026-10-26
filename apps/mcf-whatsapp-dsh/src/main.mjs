@@ -19,11 +19,17 @@ if (missing.length > 0 || process.env.WA_ACTIVATE_CHAT !== '1') {
 } else {
   const base = process.env.MCF_WHATSAPP_DATA_DIR || join(homedir(), '.local/share/mcf-whatsapp-dsh');
   const appRoot = new URL('..', import.meta.url).pathname;
+  // NVIDIA Step 5 Preview completed a real DSH turn in ~78s; earlier 120-130s probes timed out.
+  // Keep a bounded per-message cap without changing the existing profile or enabling paid fallbacks.
+  const dshTimeoutMs = Number(process.env.MCF_DSH_TIMEOUT_MS || 240000);
+  if (!Number.isSafeInteger(dshTimeoutMs) || dshTimeoutMs < 120000 || dshTimeoutMs > 300000) {
+    throw Error('invalid_dsh_timeout');
+  }
   const dsh = {
     command: process.env.DSH_BIN || join(homedir(), 'Aplicativos/dsh/node_modules/.bin/dsh'),
     profile: 'mcf-whatsapp-dsh',
     cwd: process.env.DSH_WORKSPACE || join(appRoot, 'workspace'),
-    timeoutMs: 120000
+    timeoutMs: dshTimeoutMs
   };
   const config = {
     secret: process.env.WA_APP_SECRET,

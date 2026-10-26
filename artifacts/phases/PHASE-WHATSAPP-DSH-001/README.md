@@ -13,3 +13,5 @@ Todos os testes offline passaram; DeepSeek Harness alcançou 9Router mas quota f
 Continuity 2026-10-25: LEANDRO authorized Meta test sender only; private test env prepared. DSH error decoder corrected after durable log verification.
 
 Ciclo 4: termos Meta aceitos, 2 tentativas reais de número teste falharam por erro do provedor. Veja PHASE-WHATSAPP-DSH-001-META-NUMERO-TESTE-20261025.md; nenhum número ou token recebido.
+
+Ciclo 5: alternativa Vonage/Twilio documentada, MCP Meta OAuth autenticado (Cheap Delivery com zero Messaging Accounts) e TESTE REAL Step5 via DSH concluído em ~78s com resposta OK. Ainda não há remetente WhatsApp operacional; PR continua draft.
