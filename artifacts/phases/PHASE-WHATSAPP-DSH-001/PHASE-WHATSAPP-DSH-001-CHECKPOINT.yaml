@@ -88,7 +88,7 @@ local_companion_bridge_20261026:
   second_message_timed_out: true
   second_message_timeout_seconds: 240
   end_to_end_delivery_receipt_from_phone: NOT_VERIFIED
-  automated_tests_passed: 18
+  automated_tests_passed: 21
   automated_tests_failed: 0
   npm_audit_known_vulnerabilities: 0
   delayed_processing_ack_seconds: 12
@@ -98,3 +98,22 @@ local_companion_bridge_20261026:
   stdout_stderr_to_systemd_journal: false
   private_credential_files_versioned: false
   governance_report: MCF-LOCAL-WHATSAPP-20261026.md
+
+local_natural_conversation_20261026:
+  initial_explicit_mestre_required_once: true
+  natural_follow_up_self_chat_allowed: true
+  other_chats_and_groups_ignored: true
+  ignore_bot_outgoing_prefix: "MESTRE:"
+  persists_across_restart: true
+  state_naturalMode: true
+  last_verified_completed_turns: 7
+  historical_failed_turns: 1
+  new_failures_after_fix: 0
+  linked_wa_session_active: true
+  step5_primary_retained: true
+  free_model_probes: [UNKNOWN_MODEL, QUOTA]
+  paid_fallback_enabled: false
+  local_autotest_blocked_by_connector: true
+  no_new_autotest_endpoint: true
+  local_bridge_tests_passed: 21
+  detailed_evidence: MCF-LOCAL-WHATSAPP-20261026.md

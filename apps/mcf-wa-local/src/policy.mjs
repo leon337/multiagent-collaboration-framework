@@ -25,24 +25,28 @@ export function readPlainText(message) {
   return typeof plain === 'string' ? plain : '';
 }
 
-export function inspectMessage(msg, { identities, connectedAt, sentIds = new Set() } = {}) {
+export function inspectMessage(msg, { identities, connectedAt, sentIds = new Set(), naturalMode = false } = {}) {
   if (!msg || msg.key?.fromMe !== true) return { kind: 'ignore', reason: 'not_self_sent' };
   if (!isOwnChat(msg.key.remoteJid, identities)) return { kind: 'ignore', reason: 'not_own_chat' };
   if (typeof msg.key.id !== 'string' || !/^[\w.-]{5,180}$/.test(msg.key.id)) return { kind: 'ignore', reason: 'invalid_id' };
   if (sentIds.has(msg.key.id)) return { kind: 'ignore', reason: 'self_generated' };
   const ts = Number(msg.messageTimestamp?.low ?? msg.messageTimestamp ?? 0) * 1000;
   if (!Number.isFinite(ts) || ts < connectedAt - 5000 || ts > Date.now() + 60000) return { kind: 'ignore', reason: 'stale_or_invalid_timestamp' };
-  const body = readPlainText(msg);
-  if (!body.toLowerCase().startsWith(PREFIX)) return { kind: 'ignore', reason: 'no_command' };
+  const body = readPlainText(msg).trim();
+  // All bot messages use this marker, including replies emitted before their send ID is known.
+  if (/^MESTRE:/i.test(body)) return { kind: 'ignore', reason: 'own_bot_reply' };
+  const explicit = /^\/mestre(?:\s|$)/i.test(body);
+  // Conversation mode is activated by an explicit command on this self-chat only.
+  if (!explicit && !naturalMode) return { kind: 'ignore', reason: 'no_command' };
   if (body.length > 950) return { kind: 'ignore', reason: 'too_long' };
-  const value = body.slice(PREFIX.length).trim();
+  const value = (explicit ? body.replace(/^\/mestre(?:\s|$)/i, '') : body).trim();
   if (!value) return { kind: 'ignore', reason: 'empty_command' };
   if (value.length > 800) return { kind: 'ignore', reason: 'too_long' };
   const cmd = value.toLocaleLowerCase('pt-BR');
-  if (cmd === 'parar' || cmd === 'stop') return { kind: 'stop', id: msg.key.id };
-  if (cmd === 'iniciar' || cmd === 'start') return { kind: 'start', id: msg.key.id };
-  if (cmd === 'status' || cmd === 'ping') return { kind: 'status', id: msg.key.id };
-  return { kind: 'prompt', id: msg.key.id, text: value };
+  if (explicit && (cmd === 'parar' || cmd === 'stop')) return { kind: 'stop', id: msg.key.id };
+  if (explicit && (cmd === 'iniciar' || cmd === 'start')) return { kind: 'start', id: msg.key.id };
+  if (explicit && (cmd === 'status' || cmd === 'ping')) return { kind: 'status', id: msg.key.id };
+  return { kind: 'prompt', id: msg.key.id, text: value, explicit };
 }
 
 export function enforceRate(times, now, { count = 3, intervalMs = 60000 } = {}) {

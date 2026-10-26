@@ -42,3 +42,14 @@ Estabelecer canal direto entre o WhatsApp do celular do titular e o perfil DSH i
 - O serviço `mcf-whatsapp-meta-test.service` e todos os outros perfis continuam isolados.
 
 **Sem fornecedores comerciais, pagamentos, envios em massa, publicações ou operações destrutivas.**
+
+## Ciclo 7 — 26/10/2026, correção de conversação natural
+- **Causa operacional reproduzida:** o filtro anterior exigia prefixo `/mestre` em TODA mensagem. Exemplo `Oi mestre` era ignorado com `no_command`, mesmo em `Mensagem para você`, contrariando UX desejada.
+- **Correção em produção no serviço local:** uma solicitação inicial explícita `/mestre` ativa `naturalMode=true`; a partir daí, texto simples enviado pelo próprio titular no chat de auto-mensagens é aceito, sem prefixo, até `/mestre parar`. Migração do estado antigo realizada com base em sessão DSH preexistente e interação explícita já validada. Modo persiste após reinício.
+- **Segurança preservada:** contatos, grupos, listas e mensagens recebidas de terceiros continuam fora de escopo; respostas do bot `MESTRE:` são descartadas de modo independente do ID, evitando loops até em caso de corrida no envio. IDs deduplicados e histórico sincronizado continuam filtrados.
+- **Atenção à privacidade:** enquanto naturalMode estiver ativo, novas mensagens de texto que o titular guardar no chat pessoal `Mensagem para você` podem ser enviadas ao modelo externo. Pausar com `/mestre parar`; reativar com `/mestre iniciar`.
+- **Prova após correção:** eventos `accepted_prompt` e `reply_success` sucessivos, total **7 solicitações concluídas e 1 falha histórica**, sem falhas adicionais durante a validação. Gateway conectado após dois reinícios governados com ociosidade confirmada antes de reiniciar; não houve novo QR.
+- **21/21 testes aprovados**, incluindo conversa natural, migração de sessão, STOP, grupos/contatos e proteção contra eco.
+- **Modelo:** Step 5 Preview permanece como principal via 9Router. Teste isolado de outro modelo gratuito listado retornou `UNKNOWN_MODEL` (não registrado no perfil DSH); outro modelo gratuito previamente cadastrado retornou `QUOTA`. Nenhum fallback pago ou não validado foi habilitado.
+- **Autoteste externo:** a tentativa de disparar um diagnóstico próprio via acesso remoto foi bloqueada pelo mecanismo de segurança do conector; essa operação não foi executada. O endpoint extra de autoteste foi retirado do código, e o serviço reiniciado na versão enxuta.
+- **Estado:** SELF-CHAT NATURAL CONVERSATION PASS, com latência ainda dependente da disponibilidade de Step 5; não declarar homologaçao WhatsApp oficial.

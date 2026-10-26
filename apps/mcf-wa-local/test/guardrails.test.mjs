@@ -206,3 +206,49 @@ test('finished short model turn does not emit delayed acknowledgement',async t=>
  await new Promise(r=>setTimeout(r,45));
  assert.deepEqual(sent,['MESTRE: Rápido']);
 });
+
+test('natural conversation after opt-in works only in the owner self-chat',()=>{
+ const opted={...config(),naturalMode:true};
+ assert.deepEqual(inspectMessage(message('hello12345','Oi mestre'),opted),{kind:'prompt',id:'hello12345',text:'Oi mestre',explicit:false});
+ assert.equal(inspectMessage(message('reply12345','Tudo bem?'),opted).kind,'prompt');
+ assert.equal(inspectMessage(message('status1234','status'),opted).kind,'prompt');
+ assert.equal(inspectMessage(message('mestre0001','MESTRE: resposta do agente'),opted).reason,'own_bot_reply');
+ assert.equal(inspectMessage(message('fakegroup01','Oi mestre',{jid:'12345@g.us'}),opted).kind,'ignore');
+ assert.equal(inspectMessage(message('fakeother01','Oi mestre',{jid:'5521999999999@s.whatsapp.net'}),opted).kind,'ignore');
+ assert.equal(inspectMessage(message('fakefrom01','Oi mestre',{fromMe:false}),opted).kind,'ignore');
+ assert.equal(inspectMessage(message('fakehist01','Oi mestre',{seconds:Math.floor(Date.now()/1000)-3600}),opted).kind,'ignore');
+});
+test('explicit slash prompt enables natural mode and survives restart',async t=>{
+ const {dir,state}=await fixture(t);
+ const sent=[],requests=[];
+ const c=new GuardedConversation({
+  state,invoke:async(text)=>{requests.push(text);return {answer:'Oi!',sessionId:'session-abcdefgh'};},
+  send:async(_jid,reply)=>{sent.push(reply);return {key:{id:'sentreply'+sent.length+'abc'}};},
+  getIdentity:()=>[mine],getConnectedAt:()=>Date.now()-4000
+ });
+ await c.receive({type:'notify',messages:[message('start01234','/mestre oi')]});
+ await wait(()=>state.data.processed===1);
+ assert.equal(state.data.naturalMode,true);
+ await c.receive({type:'notify',messages:[message('next00001','Tudo bem?')]});
+ await wait(()=>state.data.processed===2);
+ assert.deepEqual(requests,['oi','Tudo bem?']);
+ const reopened=new PrivateState(join(dir,'state.json'));await reopened.load();
+ assert.equal(reopened.data.naturalMode,true);
+ assert.equal(sent.length,2);
+});
+test('explicit STOP still stops normal conversation after opt-in',async t=>{
+ const {state}=await fixture(t);await state.setNaturalMode(true);
+ let calls=0;const sent=[];
+ const c=new GuardedConversation({
+  state,invoke:async()=>{calls++;return {answer:'Merecido',sessionId:'session-abcdefgh'};},
+  send:async(_jid,text)=>{sent.push(text);return {key:{id:'sentreplyxxxx'}};},
+  getIdentity:()=>[mine],getConnectedAt:()=>Date.now()-2000
+ });
+ await c.receive({type:'notify',messages:[message('stopp0001','/mestre parar')]});
+ assert.equal(state.data.armed,false);
+ await c.receive({type:'notify',messages:[message('stopp0002','Oi mestre')]});
+ assert.equal(calls,0);
+ await c.receive({type:'notify',messages:[message('stopp0003','/mestre iniciar')]});
+ assert.equal(state.data.armed,true);
+ assert.equal(sent.length,2);
+});

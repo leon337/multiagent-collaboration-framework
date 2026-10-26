@@ -4,7 +4,7 @@ import { dirname } from 'node:path';
 export class PrivateState {
   constructor(path) {
     this.path = path;
-    this.data = { version: 1, armed: true, seen: [], sessionId: null, processed: 0, failed: 0 };
+    this.data = { version: 1, armed: true, naturalMode: false, seen: [], sessionId: null, processed: 0, failed: 0 };
     this.pendingWrite = Promise.resolve();
   }
   async load() {
@@ -13,6 +13,11 @@ export class PrivateState {
       const stored = JSON.parse(await readFile(this.path, 'utf8'));
       if (stored?.version !== 1 || !Array.isArray(stored.seen)) throw Error('bad_state');
       this.data = { ...this.data, ...stored, seen: stored.seen.slice(-500) };
+      // Previous successful /mestre dialogue is explicit opt-in to this self-chat.
+      if (!Object.hasOwn(stored, 'naturalMode') && stored.sessionId && stored.processed > 0) {
+        this.data.naturalMode = true;
+        await this.save();
+      }
     } catch (error) { if (error.code !== 'ENOENT') throw error; }
     return this.data;
   }
@@ -34,6 +39,10 @@ export class PrivateState {
   }
   async arm(value) {
     this.data.armed = Boolean(value);
+    await this.save();
+  }
+  async setNaturalMode(value) {
+    this.data.naturalMode = Boolean(value);
     await this.save();
   }
   async complete(sessionId) {

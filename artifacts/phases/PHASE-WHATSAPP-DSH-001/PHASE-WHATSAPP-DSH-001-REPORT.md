@@ -64,3 +64,9 @@ Não houve envio WhatsApp verdadeiro, teste público HTTPS, revisão multiagente
 31. Adicionada confirmação após 12s de processamento + mensagem de timeout; 18/18 testes locais PASS. Atualização reiniciada e WhatsApp reconectou sem QR, contador preservado. Esse fluxo melhorado ainda não foi testado com terceira mensagem real.
 32. Identificado log bruto de estado criptográfico da biblioteca WhatsApp na execução inicial. Bloqueadas stdout/stderr para journald no serviço, eventos próprios sanitizados em arquivo privado 0600; nenhum journal compartilhado foi apagado. Removida necessidade de fornecedor externo, mas riscos de protocolo WhatsApp não oficial permanecem.
 33. Evidência detalhada: `MCF-LOCAL-WHATSAPP-20261026.md`; PR #476 permanece draft, sem merge, sem alteração no Nilton.
+
+## Ciclo 7 — MCF WhatsApp conversa natural (26/10/2026)
+34. Descoberta falha UX na bridge que ignorava qualquer mensagem do autochat sem `/mestre`. Implementado estado naturalMode persistente após primeiro comando explícito, com exclusão de mensagens do bot (`MESTRE:`) e preservação de isolamento de contatos/grupos/histórico.
+35. Confirmadas 7 respostas concluídas, 1 timeout histórico, zero novas falhas após correção. Serviço reconectado automaticamente após reinício autorizado somente em estado ocioso.
+36. 21/21 testes passaram. Sonda de modelo oc/deepseek-v4.1-flash-free: UNKNOWN_MODEL no perfil DSH; oc/nemotron-3.5-lightning-free: QUOTA. Step 5 Preview mantido, sem modelo pago.
+37. Autoenvio de mensagem de diagnóstico bloqueado por política do conector remoto; funcionalidade extra retirada. MCF segue com ponte mínima. Evidência detalhada no MCF-LOCAL-WHATSAPP-20261026.md.

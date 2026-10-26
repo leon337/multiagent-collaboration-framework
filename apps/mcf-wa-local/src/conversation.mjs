@@ -27,10 +27,12 @@ export class GuardedConversation {
       const data = inspectMessage(msg, {
         identities: this.getIdentity(),
         connectedAt: this.getConnectedAt(),
-        sentIds: this.sentIds
+        sentIds: this.sentIds,
+        naturalMode: this.state.data.naturalMode
       });
       if (data.kind === 'ignore') continue;
       if (!await this.state.record(data.id)) continue;
+      this.log('accepted_' + data.kind);
       const jid = msg.key.remoteJid;
       if (data.kind === 'stop') {
         this.generation++;
@@ -41,7 +43,8 @@ export class GuardedConversation {
       }
       if (data.kind === 'start') {
         await this.state.arm(true);
-        await this.reply(jid, 'Ativo. Comandos apenas nesta conversa: /mestre status, /mestre parar e /mestre sua pergunta.');
+        await this.state.setNaturalMode(true);
+        await this.reply(jid, 'Ativo. Pode conversar normalmente aqui. Para pausar: /mestre parar. Para conferir: /mestre status.');
         this.log('started');
         continue;
       }
@@ -50,6 +53,7 @@ export class GuardedConversation {
         continue;
       }
       if (!this.state.data.armed) continue;
+      if (data.explicit && !this.state.data.naturalMode) await this.state.setNaturalMode(true);
       if (this.current) {
         await this.reply(jid, 'Já estou processando uma mensagem. Repita seu comando depois da resposta.');
         continue;

@@ -14,11 +14,13 @@ O endpoint vincula a sessão exclusivamente por **loopback**. Não publicar esse
 
 No celular, abra WhatsApp → **Dispositivos conectados** → **Conectar dispositivo**, e leia o QR exibido no notebook. O painel passa a indicar **WhatsApp conectado** quando o protocolo confirma o pareamento. Nenhuma senha ou código é solicitado em chat.
 
-Depois, abra o próprio chat **Mensagem para você** no WhatsApp, envie:
+Depois, abra o próprio chat **Mensagem para você** no WhatsApp e, pela primeira vez, envie:
 
 ```text
 /mestre oi
 ```
+
+**Depois, converse normalmente**, com mensagens como `Oi mestre` ou `Tudo bem?`, sem repetir `/mestre`. O modo conversacional permanece ativo até `/mestre parar`. Enquanto estiver ativo, **qualquer nova mensagem de texto enviada por você para essa conversa pessoal pode ser encaminhada ao modelo remoto**. Não use essa conversa para guardar notas ou segredos que não deseja enviar à IA.
 
 A resposta é gerada pelo DSH com o perfil `mcf-whatsapp-dsh`, modelo `nvidia/stepfun-ai/step-5-preview` via 9Router, e aparece **nesse mesmo chat**. O modelo já retornou uma resposta real em 78 segundos pelo DSH; a latência pode variar, com limite de 240 segundos por chamada.
 
@@ -28,7 +30,7 @@ Ao receber uma pergunta demorada, a bridge envia uma confirmação automática a
 
 - Processo: `mcf-wa-local-link.service`, Node + `@whiskeysockets/baileys@6.7.24`, escuta só `127.0.0.1:38766`.
 - A Baileys cria uma sessão **dispositivo vinculado**, não um novo número WhatsApp. A autenticação do WhatsApp permanece sob o controle do titular.
-- **Somente** comandos originados de dispositivos do próprio titular no chat `Mensagem para você` podem acionar o agente. Entradas de contatos, grupos, listas de transmissão, histórico sincronizado e mensagens sem prefixo são descartadas antes da inferência.
+- **Somente** mensagens originadas de dispositivos do próprio titular no chat `Mensagem para você` podem acionar o agente. O primeiro `/mestre` habilita a conversa natural; depois desse comando, novas mensagens enviadas por você nesse chat são encaminhadas à IA enquanto o modo está ativo. Contatos, grupos, listas, histórico sincronizado e mensagens próprias do bot (`MESTRE:`) são descartados antes da inferência.
 - A biblioteca recebe eventos WhatsApp para manter a sessão, mas o MCF não encaminha nem armazena conteúdo de terceiros. Persistimos apenas IDs deduplicados, status de pausa, métricas de processamento e ID da sessão DSH.
 - Cada mensagem é reconhecida uma vez, inclusive após reinicialização; não há disparo ou broadcast e nunca há envio a terceiros.
 - Limite **3 prompts/minuto**, uma solicitação de modelo em andamento, texto limitado a 800 caracteres, resposta até 2.500 caracteres, timeout DSH 240 segundos. O DSH tem 23 ferramentas perigosas desativadas.
@@ -53,9 +55,9 @@ Credenciais locais: `~/.local/share/mcf-wa-local/auth/` (Signal) e `~/.config/mc
 
 ## Provas e limitações
 
-- 18/18 testes de contrato e segurança, incluindo self-JID, replay/histórico, isolamento grupos/contatos, STOP, autorização e proteção do QR, além da confirmação de processamento e ausência de mensagem tardia após resposta rápida.
+- 21/21 testes de contrato e segurança, incluindo self-JID, replay/histórico, isolamento grupos/contatos, STOP, autorização e proteção do QR, além da confirmação de processamento e ausência de mensagem tardia após resposta rápida.
 - `npm audit --omit=dev`: 0 vulnerabilidades registradas no módulo no momento da validação.
 - QR de pareamento WhatsApp real gerado na máquina; portal local 200 e QR não autenticado administrativo 401; Host proxy remoto recebe 401.
-- **PASS inicial:** QR escaneado pelo titular; WhatsApp conectado, um comando real foi recebido e respondido com `reply_success`, e ID de sessão DSH persistiu. A segunda solicitação foi recebida, mas falhou com `dsh_timeout`; reconhecer **latência e confiabilidade do Step 5 ainda não resolvidas**.\n- **Segurança:** o serviço foi configurado com `StandardOutput=null` e `StandardError=null` para impedir que dumps criptográficos da biblioteca entrem no journal; somente eventos mínimos e higienizados são armazenados em `~/.local/share/mcf-wa-local/events.log` (0600). Históricos anteriores do journal não foram apagados para não impactar outros serviços.
+- **PASS conversacional (26/10/2026):** QR escaneado pelo titular; WhatsApp conectado, comandos reais recebidos e respondidos com `reply_success`, e sessão DSH persistida. Após corrigir o modo natural, o serviço registrou **7 respostas concluídas, 1 falha histórica por `dsh_timeout`** e reconexão automática. O Step 5 continua sujeito a latência variável; não afirmar disponibilidade garantida.\n- **Segurança:** o serviço foi configurado com `StandardOutput=null` e `StandardError=null` para impedir que dumps criptográficos da biblioteca entrem no journal; somente eventos mínimos e higienizados são armazenados em `~/.local/share/mcf-wa-local/events.log` (0600). Históricos anteriores do journal não foram apagados para não impactar outros serviços.
 
 Projeto em branch `feat/mcf-whatsapp-dsh-20261025`, PR #476 **draft**.
