@@ -11,3 +11,5 @@ Artefato funcional: [apps/mcf-whatsapp-dsh](../../../apps/mcf-whatsapp-dsh/READM
 Todos os testes offline passaram; DeepSeek Harness alcançou 9Router mas quota free devolveu 429. Credenciais e webhook HTTPS da Meta não estão configurados. Não há prova de conversa WhatsApp real.
 
 Continuity 2026-10-25: LEANDRO authorized Meta test sender only; private test env prepared. DSH error decoder corrected after durable log verification.
+
+Ciclo 4: termos Meta aceitos, 2 tentativas reais de número teste falharam por erro do provedor. Veja PHASE-WHATSAPP-DSH-001-META-NUMERO-TESTE-20261025.md; nenhum número ou token recebido.

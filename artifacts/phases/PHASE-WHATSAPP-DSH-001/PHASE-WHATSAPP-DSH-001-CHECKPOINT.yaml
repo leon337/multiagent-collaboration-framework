@@ -1,7 +1,7 @@
 mission_id: MCF-WHATSAPP-DSH-001
 phase_id: PHASE-WHATSAPP-DSH-001
 current_state: AGUARDANDO_DEPENDENCIA_EXTERNA
-cycle: 3
+cycle: 4
 date: 2026-10-25
 repository: leon337/multiagent-collaboration-framework
 branch: feat/mcf-whatsapp-dsh-20261025
@@ -50,3 +50,12 @@ whatsapp_chat_activated: false
 extra_systemd_units:
   - mcf-whatsapp-meta-test.service
   - mcf-whatsapp-meta-setup.service
+
+meta_terms_accepted_by_human: true
+meta_app_whatsapp_product_enabled: true
+meta_test_number_claim_attempts: 2
+meta_test_number_claim_result: META_ERROR_CREATING_TEST_ACCOUNT
+meta_test_phone_number_id_obtained: false
+meta_live_whatsapp_conversation: false
+meta_bug_tool_app_selector_empty: true
+meta_test_provisioning_research_note: PHASE-WHATSAPP-DSH-001-META-NUMERO-TESTE-20261025.md

@@ -42,3 +42,9 @@ Não houve envio WhatsApp verdadeiro, teste público HTTPS, revisão multiagente
 17. Funnel novo HTTPS 443 com mount único /webhook criado sem alterar o Funnel preexistente 10000. Callback respondeu ao desafio de verificação em HTTPS público com token privado e negou requisição sem token HTTP 403. POST bootstrap HTTP 503.
 18. Serviços user systemd novos: mcf-whatsapp-meta-test.service (porta local 38764) e mcf-whatsapp-meta-setup.service (porta local 38765). Portal setup Tailscale Serve HTTPS 8498 é tailnet-only, token de acesso separado, checagem de Origin e armazenamento privado; nenhuma credencial Meta foi adicionada. Teste local do portal PASS, teste remoto a partir do telefone ainda não realizado; self-test no notebook expirou.
 19. Modo WA_ACTIVATE_CHAT permanece desligado até modelo e Meta E2E comprovados. Testes focados 15/15 PASS. Nenhum merge, implantação pública do agente ou modificação Nilton.
+
+## Continuidade — ciclo 4, provisionamento Meta
+
+20. LEANDRO aceitou os termos Meta no aplicativo Caldinho da Lu. A Etapa 1 abriu com Cheap Delivery associado. Duas chamadas do botão Reivindicar número de teste produziram erro genérico do provedor. Recarregamento posterior confirma ausência de Phone Number ID, WABA teste e token.
+21. O app teladeloginsocial foi restaurado para comparação mas não oferece produto WhatsApp. Não se tentou registro de número real nem ativação de pagamento.
+22. O bug report oficial foi aberto em modo somente leitura, mas o seletor de aplicativos ativos apareceu vazio; não foi enviada notificação associada ao aplicativo errado. Registros detalhados no documento de investigação separado.
