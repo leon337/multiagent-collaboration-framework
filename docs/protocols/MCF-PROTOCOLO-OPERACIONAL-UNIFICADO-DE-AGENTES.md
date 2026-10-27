@@ -447,3 +447,7 @@ LER DESCRIPTOR
 Texto ainda presente no composer não é evidência de envio. Uma Agent Session só pode ser tratada como conversa criada quando existir turno real de usuário, o bootstrap tiver saído do composer e houver identidade `/c/<conversation-id>`.
 
 O discovery descreve capacidades e estado; não amplia autoridade nem substitui gates do MCF.
+
+## 19. Extensão — Mecanismo A (subagentes nativos)
+
+Quando houver delegação nativa disponível nesta atividade ChatGPT, o MESTRE deve aplicar `docs/protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md` após capability discovery. Agentes só são considerados ativos com identificador e estado retornados pela ferramenta nativa; persona, Codex CLI, worktree, pane ou conversa externa não contam como invocação nativa. Sem ferramenta disponível, estado `AGUARDANDO_EXECUTOR_NATIVO`; jamais inventar execução. A extensão preserva ESEV, CAF, PRF, HDF, STOP, EMILY, LÉO e LEANDRO.
