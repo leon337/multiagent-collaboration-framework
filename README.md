@@ -319,3 +319,7 @@ Antes de afirmar estado atual de branch, SHA, PR, Issue, workflow, produção, `
 3. use [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md) como mapa;
 4. confira código/testes/workflows/evidências do boundary ativo;
 5. nunca inferir produção a partir do HEAD de `main`.
+
+## Mecanismo A — delegação nativa no ChatGPT
+
+Para usar subagentes nativos com comprovação de invocação, estado, handoff e retomada cross-chat, leia [Mecanismo A](docs/protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md) e [Issue #478](https://github.com/leon337/multiagent-collaboration-framework/issues/478). Um novo MESTRE deve fazer discovery da capacidade disponível; persona, CLI Codex e painéis Dual Browser não equivalem a subagente nativo.
