@@ -722,3 +722,7 @@ Ao retomar o projeto:
 5. confira código, testes, workflows e evidências do SHA aplicável;
 6. mantenha propostas não implementadas como `PLANNED` ou `UNDER_STUDY`;
 7. nunca inferir produção a partir de `main` — leia o provider e o boundary de autorização separadamente.
+
+## Extensão Mecanismo A — estado documental (2026-10-27)
+
+A [Issue #478](https://github.com/leon337/multiagent-collaboration-framework/issues/478) registra a adoção do Mecanismo A para subagentes nativos. Quando integrada à main, a norma de descoberta, convocação verificável, distinção CLI/Cockpit e cold-start estará em [docs/protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md](protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md). A presença desse protocolo não garante que ferramentas nativas estejam expostas em qualquer novo chat; o MESTRE deve verificar a disponibilidade real. Nenhum runtime/produção foi alterado por essa extensão documental.
