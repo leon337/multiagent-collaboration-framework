@@ -154,3 +154,7 @@ Envelope genérico ou Decision Inbox.
 Ao retomar uma missão, não use este índice como prova de estado live. Consulte GitHub/provider, depois o `MCF-CURRENT-STATE.md`, a decisão/PRF do boundary ativo e o código/testes/workflows pertinentes.
 
 No notebook `leo-N43SM`, a seleção do workspace local está documentada em [`operations/MCF-LOCAL-WORKSPACE-CANONICALIZATION.md`](operations/MCF-LOCAL-WORKSPACE-CANONICALIZATION.md). Para execução do MESTRE dentro do ChatGPT, o boundary canônico do Harness V2 é `CHATGPT_BUBBLE_LOCAL_SANDBOX`; essa política não substitui GitHub live nem o Project Registry.
+
+## Mecanismo A — subagentes nativos
+
+[Protocolo de convocação, prova de atividade e retomada para futuros MESTRES](protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md). **Use somente quando a capacidade nativa estiver realmente disponível.** Diferencie subagentes nativos de CLI Codex e Dual Browser; consulte [Issue #478](https://github.com/leon337/multiagent-collaboration-framework/issues/478) e estados GitHub live.
