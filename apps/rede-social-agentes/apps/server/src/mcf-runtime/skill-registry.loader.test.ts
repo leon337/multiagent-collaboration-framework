@@ -95,9 +95,11 @@ describe('parseMcfSkillRegistry', () => {
     const webSkills = skills.filter((skill) => skill.skillId.startsWith('MCF-WEB-'));
     const byId = new Map(webSkills.map((skill) => [skill.skillId, skill]));
 
-    expect(webSkills).toHaveLength(7);
+    expect(webSkills).toHaveLength(9);
     expect(webSkills.map((skill) => skill.skillId).sort()).toEqual([
       'MCF-WEB-COLLECT',
+      'MCF-WEB-EVENTS',
+      'MCF-WEB-FAST-NAV',
       'MCF-WEB-FETCH',
       'MCF-WEB-INTERACT',
       'MCF-WEB-MAP',
@@ -105,6 +107,15 @@ describe('parseMcfSkillRegistry', () => {
       'MCF-WEB-RESEARCH',
       'MCF-WEB-SEARCH',
     ]);
+    // These experimental skills are part of the actual registry, not a separate permission expansion.
+    expect(byId.get('MCF-WEB-EVENTS')).toMatchObject({
+      permissionProfile: 'READ_ONLY',
+      handoffTo: 'Mestre',
+    });
+    expect(byId.get('MCF-WEB-FAST-NAV')).toMatchObject({
+      permissionProfile: 'READ_ONLY',
+      handoffTo: 'Mestre',
+    });
     expect(byId.get('MCF-WEB-SEARCH')).toMatchObject({
       permissionProfile: 'READ_ONLY',
       handoffTo: 'Miriam',

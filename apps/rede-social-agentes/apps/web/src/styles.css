@@ -35,9 +35,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background:
-    radial-gradient(ellipse at 50% -20%, rgb(163 230 53 / 9%), transparent 55%),
-    #050505;
+  background: radial-gradient(ellipse at 50% -20%, rgb(163 230 53 / 9%), transparent 55%), #050505;
   color: var(--text-primary);
 }
 

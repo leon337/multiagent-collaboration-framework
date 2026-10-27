@@ -507,6 +507,8 @@ skills:
     permission_profile: READ_ONLY
     global_agent_capability: true
     acceptance_criteria: [event_driven_wait, bounded_delta, cursor_monotonic, no_full_snapshot_polling]
+    fallback: Bloquear e registrar dependência externa; sem stream de eventos, usar browser_wait apenas em alvo autorizado.
+    handoff_to: Mestre
 
   - skill_id: MCF-WEB-FAST-NAV
     name: Navegação web rápida orientada a eventos
@@ -519,6 +521,8 @@ skills:
     permission_profile: READ_ONLY
     global_agent_capability: true
     acceptance_criteria: [shortest_route_attempted, event_feedback_used_when_waiting, minimal_verification, bounded_steps, bounded_time]
+    fallback: Bloquear e registrar dependência externa; sem rota rápida, degradar para navegação autorizada com verificações limitadas.
+    handoff_to: Mestre
 
   - skill_id: MCF-WEB-COLLECT
     status: EXPERIMENTAL
