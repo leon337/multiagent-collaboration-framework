@@ -1,0 +1,64 @@
+schema_version: 1
+
+project:
+  id: vital-familia
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/vital-familia-pwa
+  aliases:
+    - Vital Família
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  canonical_entrypoints:
+    - README.md
+    - docs/ROADMAP.md
+    - docs/CI_CD.md
+  mcf_roadmap: docs/projects/vital-familia/ROADMAP.md
+  mcf_checklist: docs/projects/vital-familia/CHECKLIST.md
+
+scope:
+  product: vital-familia
+  active_surface: Governança documental e validação com identidades sintéticas
+  active_mission: MCF-VITAL-FAMILIA-001
+  product_issue: leon337/vital-familia-pwa#2
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
+
+governance:
+  framework: MCF
+  human_authority: LEANDRO
+  coordinator: MESTRE
+  coordinator_scope: Somente coordenação
+  architect: SOFIA
+  engineer: RAFAEL
+  qa: RENATO
+  independent_auditor: EMILY
+  operational_gate: LEO
+  risk_class: C
+  automatic_merge: false
+  clinical_use_authorized: false
+  deploy_authorized: false
+  false_green_allowed: false
+
+hosting:
+  application:
+    provider: Vercel
+  database:
+    provider: Neon PostgreSQL
+  authentication:
+    provider: Managed Better Auth
+    identity_provider: Google
+  ocr:
+    execution: Local
+  architecture_note: Supabase não é a escolha atual.
+
+tracking:
+  mcf_issue: 477
+  project_issue: 2
+  a6_issue: 22
