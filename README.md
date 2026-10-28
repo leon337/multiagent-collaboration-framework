@@ -323,3 +323,7 @@ Antes de afirmar estado atual de branch, SHA, PR, Issue, workflow, produção, `
 ## Mecanismo A — delegação nativa no ChatGPT
 
 Para usar subagentes nativos com comprovação de invocação, estado, handoff e retomada cross-chat, leia [Mecanismo A](docs/protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md) e [Issue #478](https://github.com/leon337/multiagent-collaboration-framework/issues/478). Um novo MESTRE deve fazer discovery da capacidade disponível; persona, CLI Codex e painéis Dual Browser não equivalem a subagente nativo.
+
+## Gate P0 de conclusão coletiva — Issue #483
+
+O MESTRE não pode declarar `ENTREGUE` antes de todos os agentes **realmente convocados** terminarem, produzirem evidência verificável e entregarem handoffs recebidos/validados; uma sessão Cockpit não é um subagente nativo, e a conclusão de EMILY não substitui a de SOFIA. Progresso, STOP/PAUSE e bloqueio recuperável não são conclusão. Ver [contrato P0](docs/protocols/MCF-GATE-CONCLUSAO-COLETIVA.md) e [Issue #483](https://github.com/leon337/multiagent-collaboration-framework/issues/483). **Limite:** o gate de runtime proposto depende de roster/adapters; ainda não cobre automaticamente a interface ChatGPT ou o Cockpit externo. Não alegar integração/aceite sem prova.
