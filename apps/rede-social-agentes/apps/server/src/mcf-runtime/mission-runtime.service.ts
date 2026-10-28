@@ -25,6 +25,7 @@ import {
 } from './mcf-runtime.errors.js';
 import { HumanDelegationGuard } from './human-delegation-guard.js';
 import { resolveMissionState } from './mission-completion-policy.js';
+import { assertCollectiveCloseoutReady, type CollectiveCloseoutReader } from './collective-closeout-gate.js';
 import {
   MCF_RUNTIME_REPOSITORY,
   type McfEventInput,
@@ -86,6 +87,7 @@ export class MissionRuntimeService {
     private readonly evidence: EvidenceValidator,
     private readonly v11Context?: MissionV11ContextGuard,
     private readonly reservedHumanAuthorityAccountId?: string,
+    private readonly agentExecutionReader?: CollectiveCloseoutReader,
   ) {}
 
   async createMission(request: CreateMcfMissionRequest): Promise<McfMissionResponse> {
@@ -182,6 +184,11 @@ export class MissionRuntimeService {
         ? { ...canonicalInputs, mission_selected_agents: [...mission.contract.selectedAgents] }
         : canonicalInputs;
     const phaseId = request.phaseId ?? randomUUID();
+    const collectiveFinalization =
+      request.skillId === 'MCF-CLOSE-PHASE' ||
+      (request.skillId === 'MCF-TRACE-MISSION' && effectiveInputs.final_checkpoint === true);
+    if (collectiveFinalization)
+      await assertCollectiveCloseoutReady(missionId, mission.contract, this.agentExecutionReader);
     const outcome = await this.executor.execute({
       skillId: request.skillId,
       agentId: request.agentId,
@@ -386,6 +393,10 @@ export class MissionRuntimeService {
         }),
       );
     }
+
+    // Fail closed after all execution awaits, immediately before the versioned persistence.
+    if (collectiveFinalization && outcome.phaseState === 'COMPLETED')
+      await assertCollectiveCloseoutReady(missionId, mission.contract, this.agentExecutionReader);
 
     const persisted = await this.repository.persistExecution({
       missionId,
