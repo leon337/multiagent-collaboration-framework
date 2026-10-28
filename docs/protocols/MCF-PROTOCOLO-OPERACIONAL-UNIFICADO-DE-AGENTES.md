@@ -213,7 +213,7 @@ O Mestre apresenta na mesma resposta:
 11. decisão de Léo;
 12. fechamento do Mestre e transferência do checkpoint.
 
-Resposta única não significa condensar tudo numa lista retrospectiva.
+Resposta única não significa condensar tudo numa lista retrospectiva. Uma atualização de progresso não equivale a conclusão: aplicar o [gate coletivo P0](MCF-GATE-CONCLUSAO-COLETIVA.md) e não consolidar `ENTREGUE` com agente obrigatório `requested|running|unknown` ou sem handoff verificado.
 
 A resposta somente pode terminar em:
 
@@ -416,6 +416,10 @@ mission_closeout:
 ```
 
 `final_state: ENTREGUE` exige objetivo atendido, ausência de ação pendente no ciclo e rastreabilidade da fase disponível.
+
+### Gate coletivo P0 para encerramento
+
+A pré-condição inclui todas as execuções realmente convocadas (IDs, superfície, contrato e missão), status terminal corroborado por execução, artefatos/recibos e handoff **recebido e verificado**. `completed` não significa `accepted`. Falha, cancelamento, ausência de sinal, estado `unknown`, pausa ou timeout bloqueiam finalização: aplicar CAF, checkpoint recuperável, reatribuição ou STOP/PAUSE conforme o caso. O controlador deve revalidar após awaits e antes de persistir fechamento; não criar segundo ledger. Sem possibilidade de aguardar, comunicar `AGUARDANDO_AGENTE` / `BLOQUEADO_COM_CHECKPOINT` com pendências e próxima ação, sem falsear sucesso. [Contrato e limites de implementação](MCF-GATE-CONCLUSAO-COLETIVA.md).
 
 ## 17. Extensão — sucessão cross-chat com GUI/window control
 
