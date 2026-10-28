@@ -296,6 +296,16 @@ export type McfEventType =
   | 'MISSION_BLOCKED_ALERT_RAISED'
   | 'CI_CALLBACK_RECEIVED';
 
+/** One invocation on one provider/surface, not a role or a different session. */
+export interface McfRequiredAgentExecution {
+  agentId: string;
+  runId: string;
+  providerId: string;
+  providerExecutionId: string;
+  surface: 'NATIVE_SUBAGENT' | 'COCKPIT_SESSION' | 'EXTERNAL_EXECUTOR';
+  contractRef: string;
+}
+
 export interface McfMissionContract extends McfMissionContractV11Extension {
   title: string;
   objective: string;
@@ -306,6 +316,9 @@ export interface McfMissionContract extends McfMissionContractV11Extension {
   riskClass: McfRiskClass;
   selectedAgents: string[];
   selectedSkills: string[];
+  /** Fail-closed closing for externally/natively delegated tasks; register all required runs. */
+  collectiveCloseoutRequired?: boolean | undefined;
+  requiredAgentExecutions?: McfRequiredAgentExecution[] | undefined;
   sourceOfTruth: string[];
   parentMissionId?: string | null | undefined;
   returnToAgentId?: string | null | undefined;
