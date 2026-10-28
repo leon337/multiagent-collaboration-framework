@@ -242,7 +242,6 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           repository,
           gateStore,
           loadRuntimeConfig().RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID,
-          agentExecutions,
         ),
       inject: [MCF_RUNTIME_REPOSITORY, PRODUCTION_GATE_EVENT_STORE],
     },
@@ -273,6 +272,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           evidence,
           v11Context,
           loadRuntimeConfig().RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID,
+          agentExecutions,
         ),
       inject: [
         MCF_RUNTIME_REPOSITORY,

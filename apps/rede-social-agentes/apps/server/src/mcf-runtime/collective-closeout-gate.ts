@@ -27,20 +27,36 @@ function boundEvidence(
   p: McfRequiredAgentExecution,
 ): boolean {
   const same = (e: AgentExecutionEvidence) =>
-    e.providerId === p.providerId && e.providerExecutionId === p.providerExecutionId &&
-    typeof e.sourceRef === 'string' && e.sourceRef.trim().length > 0 &&
-    typeof e.digest === 'string' && e.digest.trim().length > 0;
-  return evidence.some((e) => same(e) && e.kind === 'ARTIFACT') &&
-    evidence.some((e) => same(e) && e.kind === 'RECEIPT' &&
-      e.metadata.missionId === missionId && e.metadata.runId === p.runId &&
-      e.metadata.agentId === p.agentId && e.metadata.surface === p.surface &&
-      e.metadata.contractRef === p.contractRef &&
-      e.metadata.handoffReceived === true && e.metadata.handoffVerified === true);
+    e.providerId === p.providerId &&
+    e.providerExecutionId === p.providerExecutionId &&
+    typeof e.sourceRef === 'string' &&
+    e.sourceRef.trim().length > 0 &&
+    typeof e.digest === 'string' &&
+    e.digest.trim().length > 0;
+  return (
+    evidence.some((e) => same(e) && e.kind === 'ARTIFACT') &&
+    evidence.some(
+      (e) =>
+        same(e) &&
+        e.kind === 'RECEIPT' &&
+        e.metadata.missionId === missionId &&
+        e.metadata.runId === p.runId &&
+        e.metadata.agentId === p.agentId &&
+        e.metadata.surface === p.surface &&
+        e.metadata.contractRef === p.contractRef &&
+        e.metadata.handoffReceived === true &&
+        e.metadata.handoffVerified === true,
+    )
+  );
 }
 
 function sameHandle(a: AgentExecutionHandle, b: AgentExecutionHandle): boolean {
-  return a.missionId === b.missionId && a.runId === b.runId &&
-    a.providerId === b.providerId && a.providerExecutionId === b.providerExecutionId;
+  return (
+    a.missionId === b.missionId &&
+    a.runId === b.runId &&
+    a.providerId === b.providerId &&
+    a.providerExecutionId === b.providerExecutionId
+  );
 }
 
 export async function assertCollectiveCloseoutReady(
@@ -52,17 +68,25 @@ export async function assertCollectiveCloseoutReady(
   // Backward-compatible with contracts which do not request delegated closeout.
   if (!contract.collectiveCloseoutRequired && required.length === 0) return;
   if (required.length === 0)
-    throw new McfPermissionDeniedError('AGUARDANDO_AGENTE: required execution roster missing; retain checkpoint');
+    throw new McfPermissionDeniedError(
+      'AGUARDANDO_AGENTE: required execution roster missing; retain checkpoint',
+    );
   if (!reader)
-    throw new McfPermissionDeniedError('AGUARDANDO_AGENTE: agent provider unavailable; retain checkpoint');
+    throw new McfPermissionDeniedError(
+      'AGUARDANDO_AGENTE: agent provider unavailable; retain checkpoint',
+    );
 
   const pending: string[] = [];
   const seen = new Set<string>();
   for (const p of required) {
-    if (!p || !['NATIVE_SUBAGENT', 'COCKPIT_SESSION', 'EXTERNAL_EXECUTOR'].includes(p.surface) ||
-      ![p.agentId, p.runId, p.providerId, p.providerExecutionId, p.contractRef]
-        .every((s) => typeof s === 'string' && s.trim().length > 0) ||
-      !contract.selectedAgents.includes(p.agentId)) {
+    if (
+      !p ||
+      !['NATIVE_SUBAGENT', 'COCKPIT_SESSION', 'EXTERNAL_EXECUTOR'].includes(p.surface) ||
+      ![p.agentId, p.runId, p.providerId, p.providerExecutionId, p.contractRef].every(
+        (s) => typeof s === 'string' && s.trim().length > 0,
+      ) ||
+      !contract.selectedAgents.includes(p.agentId)
+    ) {
       pending.push('INVALID_REQUIRED_EXECUTION');
       continue;
     }
@@ -73,7 +97,9 @@ export async function assertCollectiveCloseoutReady(
     }
     seen.add(key);
     const handle: AgentExecutionHandle = {
-      missionId, runId: p.runId, providerId: p.providerId,
+      missionId,
+      runId: p.runId,
+      providerId: p.providerId,
       providerExecutionId: p.providerExecutionId,
     };
     try {
@@ -96,5 +122,7 @@ export async function assertCollectiveCloseoutReady(
     }
   }
   if (pending.length > 0)
-    throw new McfPermissionDeniedError('AGUARDANDO_AGENTE: ' + pending.join('; ') + '; retain checkpoint');
+    throw new McfPermissionDeniedError(
+      'AGUARDANDO_AGENTE: ' + pending.join('; ') + '; retain checkpoint',
+    );
 }

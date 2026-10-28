@@ -25,7 +25,10 @@ import {
 } from './mcf-runtime.errors.js';
 import { HumanDelegationGuard } from './human-delegation-guard.js';
 import { resolveMissionState } from './mission-completion-policy.js';
-import { assertCollectiveCloseoutReady, type CollectiveCloseoutReader } from './collective-closeout-gate.js';
+import {
+  assertCollectiveCloseoutReady,
+  type CollectiveCloseoutReader,
+} from './collective-closeout-gate.js';
 import {
   MCF_RUNTIME_REPOSITORY,
   type McfEventInput,
