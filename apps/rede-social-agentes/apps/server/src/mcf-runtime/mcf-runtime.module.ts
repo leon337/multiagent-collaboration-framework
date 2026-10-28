@@ -242,6 +242,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           repository,
           gateStore,
           loadRuntimeConfig().RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID,
+          agentExecutions,
         ),
       inject: [MCF_RUNTIME_REPOSITORY, PRODUCTION_GATE_EVENT_STORE],
     },
@@ -263,6 +264,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         registry: SkillRegistryLoader,
         evidence: EvidenceValidator,
         v11Context: MissionV11ContextGuard,
+        agentExecutions: AgentExecutionService,
       ) =>
         new MissionRuntimeService(
           repository,
@@ -278,6 +280,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         SkillRegistryLoader,
         EvidenceValidator,
         MissionV11ContextGuard,
+        AgentExecutionService,
       ],
     },
     {
