@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { McfMissionContract } from '@rsa/contracts';
+import type { AgentExecutionHandle } from './agent-execution.contracts.js';
 
 import { DatabaseService } from '../database.service.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
@@ -50,7 +51,7 @@ suite('Issue #483 — canonical Postgres checkpoint and contract CAS', () => {
     database = new DatabaseService();
     repo = new OrderedMcfRuntimeRepository(database, new PostgresMcfRuntimeRepository(database));
     const reader = {
-      status: vi.fn(async (handle: any) => ({
+      status: vi.fn(async (handle: AgentExecutionHandle) => ({
         handle,
         lifecycle: handle.runId === 'run-sofia' ? 'RUNNING' : 'COMPLETED',
         observedAt: new Date().toISOString(),

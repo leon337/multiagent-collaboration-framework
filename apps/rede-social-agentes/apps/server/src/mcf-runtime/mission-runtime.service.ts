@@ -232,7 +232,9 @@ export class MissionRuntimeService {
       } catch (error) {
         if (!(error instanceof McfPermissionDeniedError)) throw error;
         if (!this.repository.recordCloseoutBlock) {
-          throw new Error('collective closeout checkpoint persistence unavailable');
+          throw new Error('collective closeout checkpoint persistence unavailable', {
+            cause: error,
+          });
         }
         await this.repository.recordCloseoutBlock({
           missionId,

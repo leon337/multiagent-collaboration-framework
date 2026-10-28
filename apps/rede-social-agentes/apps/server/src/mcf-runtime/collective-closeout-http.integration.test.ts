@@ -6,6 +6,13 @@ import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { McfMissionContract, McfRequiredAgentExecution } from '@rsa/contracts';
+import type { AgentExecutionHandle } from './agent-execution.contracts.js';
+import type {
+  CollectiveCloseoutBlockInput,
+  CreateMcfMissionInput,
+  McfMissionRecord,
+  McfEventRecord,
+} from './mcf-runtime.repository.js';
 import type { FastifyInstance } from 'fastify';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -49,7 +56,7 @@ const contract: McfMissionContract = {
 };
 
 async function setup() {
-  const store = new Map<string, { mission: any; events: any[] }>();
+  const store = new Map<string, { mission: McfMissionRecord; events: McfEventRecord[] }>();
   const executor = {
     execute: vi.fn(async () => {
       throw Error('EXECUTOR_REACHED');
@@ -58,7 +65,7 @@ async function setup() {
   const persisted = vi.fn(async () => {
     throw Error('PERSISTENCE_REACHED');
   });
-  const recordCloseoutBlock = vi.fn(async (input: any) => {
+  const recordCloseoutBlock = vi.fn(async (input: CollectiveCloseoutBlockInput) => {
     const record = store.get(input.missionId)!;
     const key = [
       input.missionId,
@@ -85,7 +92,7 @@ async function setup() {
     });
   });
   const repository = {
-    createMission: vi.fn(async (input: any) => {
+    createMission: vi.fn(async (input: CreateMcfMissionInput) => {
       store.set(input.mission.id, { mission: input.mission, events: [input.event] });
       return input.mission;
     }),
@@ -95,7 +102,7 @@ async function setup() {
     persistExecution: persisted,
   };
   const reader = {
-    status: vi.fn(async (handle: any) => ({
+    status: vi.fn(async (handle: AgentExecutionHandle) => ({
       handle,
       lifecycle: handle.runId === 'run-sofia' ? 'RUNNING' : 'COMPLETED',
       observedAt: new Date().toISOString(),
@@ -184,7 +191,7 @@ describe('Issue #483 — authenticated REST closure bypass regression', () => {
       const mission = created.json();
       expect(mission.contract.requiredAgentExecutions).toEqual([sofia, emily]);
       expect(mission.contract.rosterRevision).toBe(1);
-      const createdEvent = h.store.get(mission.id)!.events[0];
+      const createdEvent = h.store.get(mission.id)!.events[0]!;
       expect(createdEvent.payload.rosterFingerprint).toMatch(/^[a-f0-9]{64}$/);
       for (let i = 0; i < 2; i++) {
         const denied = await h.close(mission.id);
@@ -195,7 +202,9 @@ describe('Issue #483 — authenticated REST closure bypass regression', () => {
       expect(h.persisted).not.toHaveBeenCalled();
       expect(h.recordCloseoutBlock).toHaveBeenCalledTimes(2);
       const events = (await h.timeline(mission.id)).json().events;
-      expect(events.filter((event: any) => event.eventType === 'GATE_REJECTED')).toHaveLength(1);
+      expect(
+        events.filter((event: { eventType: string }) => event.eventType === 'GATE_REJECTED'),
+      ).toHaveLength(1);
       expect(events.at(-1).payload).toMatchObject({ state: 'AGUARDANDO_AGENTE' });
     } finally {
       await h.app.close();
