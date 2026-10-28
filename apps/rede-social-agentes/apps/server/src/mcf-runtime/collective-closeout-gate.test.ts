@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { McfMissionContract, McfRequiredAgentExecution } from '@rsa/contracts';
 import {
   assertCollectiveCloseoutReady,
+  rosterFingerprint,
   type CollectiveCloseoutReader,
 } from './collective-closeout-gate.js';
 
@@ -112,6 +113,58 @@ function reader(
     collectEvidence: vi.fn(async (h) => evidenceFor(participant(h))),
   } as unknown as CollectiveCloseoutReader;
 }
+
+describe('collective roster JSONB canonical fingerprint (#483)', () => {
+  const reorderObjectKeys = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(reorderObjectKeys);
+    if (value !== null && typeof value === 'object') {
+      return Object.fromEntries(
+        Object.entries(value as Record<string, unknown>)
+          .reverse()
+          .map(([key, entry]) => [key, reorderObjectKeys(entry)]),
+      );
+    }
+    return value;
+  };
+
+  it('preserves the digest through recursive JSONB-like key reordering', () => {
+    const reordered = reorderObjectKeys(contract) as McfMissionContract;
+    expect(JSON.stringify(reordered.requiredAgentExecutions)).not.toBe(
+      JSON.stringify(contract.requiredAgentExecutions),
+    );
+    expect(rosterFingerprint(reordered)).toBe(rosterFingerprint(contract));
+    expect(rosterFingerprint(JSON.parse(JSON.stringify(reordered)) as McfMissionContract)).toBe(
+      rosterFingerprint(contract),
+    );
+  });
+
+  it.each([
+    ['provider execution identity', { providerExecutionId: 'task-other' }],
+    ['provider identity', { providerId: 'other-provider' }],
+    ['run identity', { runId: 'run-other' }],
+    ['surface identity', { surface: 'COCKPIT_SESSION' }],
+    ['contract identity', { contractRef: 'arch@replaced' }],
+  ])('invalidates the digest on %s mutation', (_label, mutation) => {
+    expect(
+      rosterFingerprint({
+        ...contract,
+        requiredAgentExecutions: [{ ...sofia, ...mutation }, emily] as McfRequiredAgentExecution[],
+      }),
+    ).not.toBe(rosterFingerprint(contract));
+  });
+
+  it('invalidates the digest when a required participant is dropped', () => {
+    expect(rosterFingerprint({ ...contract, requiredAgentExecutions: [emily] })).not.toBe(
+      rosterFingerprint(contract),
+    );
+  });
+
+  it('keeps logical roster digest independent of participant ordering', () => {
+    expect(rosterFingerprint({ ...contract, requiredAgentExecutions: [emily, sofia] })).toBe(
+      rosterFingerprint(contract),
+    );
+  });
+});
 
 describe('collective completion gate (#483)', () => {
   it('allows only both terminal executions with corroborated artifacts + received/verified handoffs', async () => {

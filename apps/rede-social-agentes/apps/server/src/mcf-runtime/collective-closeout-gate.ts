@@ -38,6 +38,26 @@ export function isProvenNonDelegated(contract: McfMissionContract): boolean {
     contract.selectedSkills[0] === 'MCF-CLOSE-PHASE'
   );
 }
+/**
+ * JSONB reorders object properties when persisting the mission and creation event.
+ * Canonicalize every object recursively (arrays keep their semantic order) so the
+ * roster digest identifies values, not JS insertion order. No permissive fallback:
+ * missing/replaced participant bindings must still alter the digest.
+ */
+function canonicalJson(value: unknown): string {
+  return JSON.stringify(value, (_key, item: unknown) => {
+    if (item !== null && typeof item === 'object' && !Array.isArray(item)) {
+      const record = item as Record<string, unknown>;
+      return Object.fromEntries(
+        Object.keys(record)
+          .sort()
+          .map((key) => [key, record[key]]),
+      );
+    }
+    return item;
+  });
+}
+
 export function rosterFingerprint(contract: McfMissionContract): string {
   const entries = [...(contract.requiredAgentExecutions ?? [])].sort((a, b) =>
     [a.agentId, a.providerId, a.providerExecutionId, a.runId]
@@ -46,7 +66,7 @@ export function rosterFingerprint(contract: McfMissionContract): string {
   );
   return createHash('sha256')
     .update(
-      JSON.stringify({
+      canonicalJson({
         selectedAgents: [...contract.selectedAgents].sort(),
         rosterRevision: contract.rosterRevision,
         participants: entries,

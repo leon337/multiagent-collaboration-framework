@@ -54,3 +54,13 @@ Relações incorretas, duplicatas, estado não terminal, evidência insuficiente
 4. O emissor **ChatGPT MESTRE** fora deste NestJS pode responder sem consultar `assertCollectiveCloseoutReady`. Não se pode comprovar proteção ponta a ponta nem dar aceite à Issue até existir gate neste emissor real, respeitando os limites de ferramentas.
 
 **Não criar segundo ledger, não fazer merge, não acionar deploy.** EMILY deve revisar de novo o HEAD exato e executar matriz A01–A14, com RENATO QA e decisão LÉO quando pertinente.
+
+### Restart epoch 2 — correção JSONB/CI do PR #484 (Issue #483)
+
+O Postgres armazena `mcf_missions.contract` e `mcf_events.payload` em `jsonb`, que não preserva a ordem de inserção das chaves de objetos JS. A implementação anterior fazia `JSON.stringify` do roster com os objetos originais: hashes distintos para o mesmo conjunto de bindings depois do round-trip JSONB. Resultado verificável do SHA `904aef47...`: Foundation #40610621304, Qualification #40610621282, Production Readiness #40610621300 reprovaram o teste `collective-closeout-postgres.integration.test.ts:95` por falso bloqueio `persisted immutable roster snapshot missing or changed`, mesmo com SOFIA em RUNNING.
+
+**Correção candidata:** serialização canônica recursiva das chaves de objetos para o SHA-256, preservando arrays/identidades; registro do `parentMissionId` no evento de criação; confronto do SHA tanto com os bindings salvos no evento como com o contrato atual. Sem fallback que transforme hash divergente, identidade adulterada ou roster omitido em aprovação.
+
+**Regressão:** teste unitário prova invariância sob reordenação recursiva das chaves (com campos e ordem de inserção diferentes); testes adversariais alteram provider ID, execution ID, run ID, superfície, referência de contrato e omissão de agente e exigem hash diferente. Teste HTTP rejeita payload do ledger adulterado com digest antigo. Testes PostgreSQL executados em CI com `DATABASE_URL` verificam round-trip JSONB, preservação dos identificadores originais, negação `SOFIA RUNNING`, checkpoint idempotente e corrida determinística pós-await em que a mutação de `providerExecutionId` dispara CAS, sem `MISSION_COMPLETED`.
+
+**Limites mantidos:** não demonstra convocação real fora do NestJS nem controla a emissão textual de MESTRE/Bridge. Reconciliar gateway Issue #12 e review EMILY/QA RENATO sobre HEAD exato antes de qualquer integração; não rearmar STOP/PAUSE, não ativar transporte tri não qualificado.

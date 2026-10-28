@@ -7,7 +7,9 @@ import type {
   McfCiCallbackRequest,
   McfCiCallbackResponse,
   McfEventType,
+  McfMissionContract,
   McfMissionEventResponse,
+  McfRequiredAgentExecution,
   McfMissionResponse,
   McfMissionTimelineResponse,
   McfPhaseExecutionResponse,
@@ -145,6 +147,7 @@ export class MissionRuntimeService {
                 collectiveCloseoutRequired: true,
                 rosterRevision: request.contract.rosterRevision,
                 rosterFingerprint: rosterFingerprint(request.contract),
+                parentMissionId: request.contract.parentMissionId ?? null,
                 requiredAgentExecutions: request.contract.requiredAgentExecutions,
               }
             : {}),
@@ -219,9 +222,29 @@ export class MissionRuntimeService {
           const events = await this.repository.listEvents(missionId);
           const creation = events.find((item) => item.eventType === 'MISSION_CREATED');
           if (
-            creation?.payload.rosterFingerprint !== rosterFingerprint(mission.contract) ||
-            creation?.payload.rosterRevision !== mission.contract.rosterRevision ||
-            creation?.payload.collectiveCloseoutRequired !== true
+            creation?.payload.collectiveCloseoutRequired !== true ||
+            creation.payload.rosterRevision !== mission.contract.rosterRevision ||
+            creation.payload.parentMissionId !== (mission.contract.parentMissionId ?? null) ||
+            !Array.isArray(creation.payload.selectedAgents) ||
+            !creation.payload.selectedAgents.every((agent) => typeof agent === 'string') ||
+            !Array.isArray(creation.payload.requiredAgentExecutions)
+          ) {
+            throw new McfPermissionDeniedError(
+              'AGUARDANDO_AGENTE: persisted immutable roster snapshot missing or changed',
+            );
+          }
+          // Bind both the *recorded* dispatch-intent snapshot and current contract
+          // to the SAME digest; never trust a claimed hash without its identity data.
+          const recordedContract: McfMissionContract = {
+            ...mission.contract,
+            selectedAgents: creation.payload.selectedAgents as string[],
+            requiredAgentExecutions: creation.payload
+              .requiredAgentExecutions as McfRequiredAgentExecution[],
+          };
+          assertCompleteRoster(recordedContract);
+          if (
+            creation.payload.rosterFingerprint !== rosterFingerprint(recordedContract) ||
+            creation.payload.rosterFingerprint !== rosterFingerprint(mission.contract)
           ) {
             throw new McfPermissionDeniedError(
               'AGUARDANDO_AGENTE: persisted immutable roster snapshot missing or changed',

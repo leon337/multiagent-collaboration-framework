@@ -257,6 +257,26 @@ describe('Issue #483 — authenticated REST closure bypass regression', () => {
     }
   });
 
+  it('rejects a creation ledger roster changed without changing its claimed SHA-256', async () => {
+    const h = await setup();
+    try {
+      const created = await h.create(contract);
+      expect(created.statusCode).toBe(201);
+      const id = created.json().id;
+      const event = h.store.get(id)!.events[0]!;
+      event.payload.requiredAgentExecutions = [
+        { ...sofia, providerExecutionId: 'forged-task' },
+        emily,
+      ];
+      const denied = await h.close(id);
+      expect(denied.statusCode).toBe(403);
+      expect(denied.json().message).toContain('snapshot');
+      expect(h.persisted).not.toHaveBeenCalled();
+    } finally {
+      await h.app.close();
+    }
+  });
+
   it('rejects a roster changed in storage without matching immutable creation event', async () => {
     const h = await setup();
     try {
