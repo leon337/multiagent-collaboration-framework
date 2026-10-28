@@ -1,0 +1,93 @@
+{
+  "schema_version": "mcf.evaluation_case.v0",
+  "status": "GOVERNANCE_PROPOSAL_ONLY",
+  "case_id": "MCF-LEARNING-001-VITAL-PR25-AUDIT-20261028",
+  "captured_at": "2026-10-28",
+  "created_by_role": "MESTRE_GOVERNANCE",
+  "dataset_approved": false,
+  "training_authorized": false,
+  "contains_patient_or_personal_data": false,
+  "case_type": "CI_FAILURE_FEEDS_NEXT_EVALUATION",
+  "evidence": [
+    {
+      "kind": "github_workflow",
+      "repository": "leon337/vital-familia-pwa",
+      "pr_number": 25,
+      "head_sha": "ccddb5c529613f87b86562122c798a260ea02661",
+      "run_id": 40626593040,
+      "job_id": 122612863317,
+      "step": "Auditoria de dependências de produção",
+      "command": "npm audit --omit=dev --audit-level=high",
+      "outcome": "FAILURE",
+      "aggregate_report": {
+        "low": 8,
+        "critical": 1
+      },
+      "other_steps": [
+        "ESLint success",
+        "TypeScript success",
+        "Vitest success",
+        "Next.js build success"
+      ],
+      "source_url": "https://github.com/leon337/vital-familia-pwa/actions/runs/40626593040"
+    },
+    {
+      "kind": "dependency_advisory",
+      "id": "GHSA-44jh-23m7-hpcf",
+      "package": "@better-auth/drizzle-adapter",
+      "affected_in_report": "1.6.17 - 1.7.6",
+      "upstream_severity": "LOW",
+      "source_url": "https://github.com/advisories/GHSA-44jh-23m7-hpcf"
+    },
+    {
+      "kind": "dependency_advisory",
+      "id": "GHSA-gcqx-w48m-w2h4",
+      "package": "deepmerge",
+      "affected_in_report": ">=4.2.0",
+      "source_url": "https://github.com/advisories/GHSA-gcqx-w48m-w2h4"
+    },
+    {
+      "kind": "existing_mitigation",
+      "issue": "https://github.com/leon337/vital-familia-pwa/issues/17",
+      "draft_pr": "https://github.com/leon337/vital-familia-pwa/pull/18",
+      "status": "NOT_MERGED_NOT_VERIFIED_AGAINST_PR25"
+    }
+  ],
+  "feedback": {
+    "observation": "Security audit failed even though lint, typecheck, tests and build succeeded.",
+    "error_pattern": "False-green risk when non-audit CI checks are mistaken for complete release approval.",
+    "human_preference_proposed": "prefer remediation of full dependency graph with exact-SHA security and auth regression tests over waivers or force update",
+    "annotator": "UNASSIGNED",
+    "human_label_approved": false
+  },
+  "next_inputs": [
+    {
+      "owner": "SOFIA",
+      "task": "Reconcile vulnerability applicability, nested dependency versions and prior security PR #18 without bypassing auth/Neon"
+    },
+    {
+      "owner": "RAFAEL",
+      "task": "Implement a minimal compatible patch in a dedicated branch, no --force, no main edits"
+    },
+    {
+      "owner": "RENATO",
+      "task": "Verify npm ci, full npm audit, OAuth/RLS synthetic regressions on immutable SHA"
+    },
+    {
+      "owner": "EMILY",
+      "task": "Independent code and evidence review on immutable SHA"
+    },
+    {
+      "owner": "LEO",
+      "task": "Decide release gate only after QA and independent audit; no clinical permission by inheritance"
+    }
+  ],
+  "gates": {
+    "phase": "STOP_INTEGRATION",
+    "clinical_data": "NO_GO",
+    "autotraining": "DISABLED",
+    "merge": "REQUIRES_INDEPENDENT_REVIEW",
+    "deploy": "NOT_AUTHORIZED_BY_THIS_CASE"
+  },
+  "anti_poisoning": "This record is an observation and proposed evaluation case. It is NOT an RLHF preference pair or reward. Training may require separate human approval, redaction, and fixed dataset split."
+}
