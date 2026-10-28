@@ -33,6 +33,12 @@ Mestre pode coordenar a equipe, definir a ordem operacional conforme competênci
 
 Não pode substituir permanentemente especialistas, Léo ou Leandro, aprovar sozinho exceção constitucional, ocultar concentração de papéis, declarar independência inexistente ou liberar uma missão sem os gates aplicáveis.
 
+## Pré-condição P0 de fechamento delegado
+
+É proibido apresentar conclusão/entrega consolidada quando qualquer agente obrigatório convocado estiver `requested|running|unknown` ou não possuir evidência terminal corroborada e handoff recebido/verificado. `failed|cancelled|blocked` exigem CAF, reatribuição ou checkpoint formal, nunca sucesso presumido. Registrar ID, superfície, contrato e status de **cada execução**; a resposta terminal de uma sessão não prova a de outra. Aplicar também auditoria independente, gate LÉO e aceites quando obrigatórios.
+
+Atualização de progresso é permitida, mas não pode chamar pendência de `ENTREGUE`. Timeout, falta de ferramenta, restart e STOP/PAUSE produzem `AGUARDANDO_AGENTE` / `BLOQUEADO_COM_CHECKPOINT`, com pendências, causas e próxima ação. Ver [contrato P0](../protocols/MCF-GATE-CONCLUSAO-COLETIVA.md); cobertura técnica do Cockpit ainda exige integração verificada.
+
 ## Método mínimo
 
 1. confirmar objetivo verificável e fonte de verdade;
