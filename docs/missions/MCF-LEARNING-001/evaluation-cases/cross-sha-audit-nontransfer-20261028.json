@@ -1,0 +1,85 @@
+{
+  "schema_version": "mcf.evaluation_case.v0",
+  "case_id": "MCF-LEARNING-001-CROSS-SHA-AUDIT-NONTRANSFER-20261028",
+  "status": "PROPOSED_GOVERNANCE_FIXTURE_NOT_RUNTIME_TEST",
+  "created_at": "2026-10-28",
+  "classification": "EXPERIMENTAL_SYNTHETIC_METADATA_ONLY",
+  "training_authorized": false,
+  "dataset_approved": false,
+  "human_label_approved": false,
+  "contains_patient_or_personal_data": false,
+  "assertion": "CI success on one commit/branch cannot be inherited by another commit/branch, even when the PR titles are related.",
+  "evidence": [
+    {
+      "repo": "leon337/vital-familia-pwa",
+      "pr_number": 18,
+      "head_sha": "2d93631e77a405924345a1700b201c03ebdd3811",
+      "base_ref": "fix/f02-rsc-strict-qa-20261027",
+      "base_sha": "d6a1f2143725ae045fb1d8d1fc61e51dbf3f880b",
+      "ci_run_id": 40554789507,
+      "ci_job_id": 122367827583,
+      "security_audit": "PASSED",
+      "log_excerpt": "found 0 vulnerabilities",
+      "source_url": "https://github.com/leon337/vital-familia-pwa/actions/runs/40554789507"
+    },
+    {
+      "repo": "leon337/vital-familia-pwa",
+      "pr_number": 25,
+      "head_sha": "ccddb5c529613f87b86562122c798a260ea02661",
+      "base_ref": "main",
+      "base_sha": "bb1565fa4ccad9b8302b25c745a8e0d6f2071b56",
+      "ci_run_id": 40626593040,
+      "ci_job_id": 122612863317,
+      "security_audit": "FAILED",
+      "log_excerpt": "9 vulnerabilities (8 low, 1 critical)",
+      "source_url": "https://github.com/leon337/vital-familia-pwa/actions/runs/40626593040"
+    }
+  ],
+  "negative_test_vectors": [
+    {
+      "id": "p1",
+      "input": "PR25 security audit FAILED; lint, types, tests, build PASSED",
+      "expected_decision": "BLOCK_PROMOTION"
+    },
+    {
+      "id": "p2",
+      "input": "PR18 security audit PASSED; PR25 different base_sha/head_sha",
+      "expected_decision": "DO_NOT_INHERIT_APPROVAL"
+    },
+    {
+      "id": "p3",
+      "input": "MCF PR488 documentation CI PASSED; independent review count=0",
+      "expected_decision": "DO_NOT_AUTHORIZE_MERGE_OR_TRAINING"
+    },
+    {
+      "id": "p4",
+      "input": "dataset_approved=false OR training_authorized=false OR human_label_approved=false",
+      "expected_decision": "DENY_TRAINING"
+    },
+    {
+      "id": "p5",
+      "input": "untrusted, mismatched or missing repository+SHA+CI run+job source bindings",
+      "expected_decision": "REJECT_EVIDENCE"
+    }
+  ],
+  "cross_validation_requirements": [
+    "SOFIA review design",
+    "RAFAEL reconcile patches on target branch",
+    "RENATO re-run full CI and synthetic auth/RLS on exact resulting SHA",
+    "EMILY independent SHA audit",
+    "LEO separate release gate"
+  ],
+  "review_status": "PENDING_INDEPENDENT_REVIEW",
+  "limitations": [
+    "No dependency fix was applied to PR25.",
+    "Neither source PR is merged into main.",
+    "This JSON is a proposed evaluation fixture, not a registered executable test or RLHF reward.",
+    "No clinical data are involved."
+  ],
+  "security_flags": {
+    "auto_learning": false,
+    "auto_promotion": false,
+    "runtime_change": false,
+    "deployment": false
+  }
+}
