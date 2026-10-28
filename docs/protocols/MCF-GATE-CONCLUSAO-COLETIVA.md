@@ -23,7 +23,7 @@ Relações incorretas, duplicatas, estado não terminal, evidência insuficiente
 
 ## Cobertura e limites obrigatórios
 
-**Proteção condicional:** contratos legados sem o flag e sem roster preservam o comportamento anterior. A orquestração confiável precisa registrar todo agente obrigatório efetivamente convocado. Os adapters do ChatGPT nativo e Cockpit devem ser ligados a este contrato com provas autenticadas — **não demonstrado** neste PR. O Cockpit externo e a geração da resposta textual do MESTRE não estão sob controle do `MissionRuntimeService` desta aplicação; portanto não alegar bug resolvido ponta a ponta. Também falta persistir automaticamente o motivo de `AGUARDANDO_AGENTE` como checkpoint/recibo, tratamento de reinício/idempotência de rosters dinâmicos e testar concorrência interprocesso. A verificação de recibos depende da confiabilidade real dos adapters e NÃO substitui revisão independente.
+**Proteção fail-closed para delegação:** contratos sem roster não podem fechar missões multiagente; apenas execução interna não delegada demonstrável por conjunto restrito de skills e contrato sem missão-pai usa a compatibilidade legada. A orquestração confiável precisa registrar todo agente obrigatório efetivamente convocado. Os adapters do ChatGPT nativo e Cockpit devem ser ligados a este contrato com provas autenticadas — **não demonstrado** neste PR. O Cockpit externo e a geração da resposta textual do MESTRE não estão sob controle do `MissionRuntimeService` desta aplicação; portanto não alegar bug resolvido ponta a ponta. Também falta persistir automaticamente o motivo de `AGUARDANDO_AGENTE` como checkpoint/recibo, tratamento de reinício/idempotência de rosters dinâmicos e testar concorrência interprocesso. A verificação de recibos depende da confiabilidade real dos adapters e NÃO substitui revisão independente.
 
 ## Plano mínimo de aceite
 
@@ -36,3 +36,21 @@ Relações incorretas, duplicatas, estado não terminal, evidência insuficiente
 - [ ] RENATO QA, EMILY auditoria independente do SHA exato, CI verde; merge e pós-merge são missão posterior e exigem autorização.
 
 **Fontes:** [Issue #483](https://github.com/leon337/multiagent-collaboration-framework/issues/483), `docs/agentes/MESTRE.md`, `docs/protocols/MCF-PROTOCOLO-OPERACIONAL-UNIFICADO-DE-AGENTES.md` e `docs/protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md`.
+
+## Correções após review independente EMILY (Issue #483 / PR #484)
+
+**Estado: implementado somente no candidato NestJS, sujeito a CI, revisão EMILY nova e gates.**
+- `missionContractSchema.strict()` no HTTP inclui flag, `rosterRevision`, identificadores e superfícies; não descarta campos desconhecidos.
+- Regra independente de opt-in do cliente: missões multiagente ou com skill delegadora não podem fechar sem roster completo. Só preserva legado de uma execução interna comprovável (incluindo `Carmem→Mestre` estritamente `MCF-CLOSE-PHASE`). Um `false` malicioso não ignora delegação.
+- O roster versão 1 é registrado no evento `MISSION_CREATED` com SHA-256 dos bindings e `selectedAgents`; entradas faltantes, duplicadas e substituições não autorizadas são recusadas. Revisão de roster/reatribuição futura exige mecanismo governado não incluído aqui: permanecer bloqueado em vez de remover agente pendente.
+- Negação do fechamento produz `GATE_REJECTED` no `mcf_events` original sob lock/version e idempotência; preserva agentes obrigatórios, motivo, roster hash, fase e próxima ação. `persistExecution` compara ainda o JSONB integral do contrato no UPDATE versionado (CAS contra edição silenciosa durante awaits).
+- Rejeita `COMPLETED` com `observedAt` defasado (>60s), evidencia sem artefato, handoff sem ACK separado, sessão/attempt diferente, timeout e provider indisponível.
+- Testes: HTTP real Nest/Fastify com autenticação e `fastify.inject` exercitam criação, rota de fechamento, resposta 403, não execução, checkpoint idempotente, subset e alteração silenciosa. Testes Postgres em CI cobrem replay durável e comparação transacional do contrato; sem Postgres local são explicitamente SKIPPED.
+
+### Gaps que permanecem bloqueantes
+1. `MISSION_CREATED` demonstra **snapshot de intenção contratual**, **não** prova de dispatch real. Não há adapter nativo/Cockpit registrado no servidor nem reconciliação confiável das convocações que ocorreram fora do runtime. Um agente omitido também de `selectedAgents` permanece invisível: essa limitação exige integração efetiva do bridge e telemetria de dispatch, não pode ser corrigida apenas pelo parser HTTP.
+2. O ACK separado no `AgentExecutionEvidence` é estrutural, **não tem assinatura/autenticidade independente demonstrada**; ainda exige validação pelo adaptador de origem e prova do receptor na superfície real.
+3. O Cockpit tem repositório próprio `leon337/mcf-web-panel-gateway`. Em `main`, `agent-lifecycle.mjs::parentMissionStatus` computa `closable` sobre **somente invocações registradas**, sem handoff/aceite/auditoria; `agent-runtime.mjs::getRecoveryCheckpoint` é por pane e `bridge.mjs::/v1/message` valida recovery mas não gate coletivo. Existe o candidato **draft PR #11** (P0-ARCH-03) neste repositório, ainda não integrado e com `triOperationalSendQualified=false`. Exigir proteção de emissão de `ENTREGUE`, roster persistido antes de dispatch, CAS do epoch do roster e ACK do receptor em `bridge.sendMessage` / HTTP / IPC e `TriHandoffDispatcher` sob teste Electron, sem ativar transporte real antes da revisão.
+4. O emissor **ChatGPT MESTRE** fora deste NestJS pode responder sem consultar `assertCollectiveCloseoutReady`. Não se pode comprovar proteção ponta a ponta nem dar aceite à Issue até existir gate neste emissor real, respeitando os limites de ferramentas.
+
+**Não criar segundo ledger, não fazer merge, não acionar deploy.** EMILY deve revisar de novo o HEAD exato e executar matriz A01–A14, com RENATO QA e decisão LÉO quando pertinente.

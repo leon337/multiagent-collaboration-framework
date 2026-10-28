@@ -89,31 +89,47 @@ const standingAuthorizationSchema = z.object({
   status: z.enum(['ACTIVE', 'EXPIRED', 'REVOKED']),
 });
 
-const missionContractSchema = z.object({
-  title: z.string().trim().min(3).max(160),
-  objective: z.string().trim().min(10).max(4_000),
-  expectedOutcome: z.string().trim().min(5).max(4_000),
-  scope: stringList.min(1),
-  outOfScope: stringList,
-  acceptanceCriteria: stringList.min(1),
-  riskClass: z.enum(['A', 'B', 'C']),
-  selectedAgents: stringList.min(1),
-  selectedSkills: stringList.min(1),
-  sourceOfTruth: stringList,
-  contractSchemaVersion: z.literal('1.1').optional(),
-  projectId: z.string().trim().min(1).max(256).optional(),
-  projectEntryMode: z
-    .enum(['NEW_PROJECT', 'ADOPT_EXISTING_PROJECT', 'RESUME_MCF_PROJECT'])
-    .optional(),
-  methodologyPin: methodologyPinSchema.optional(),
-  alignedPipRef: artifactRefSchema.optional(),
-  projectRealityReportRef: artifactRefSchema.optional(),
-  standingAuthorizations: z.array(standingAuthorizationSchema).max(100).optional(),
-  continuityCheckpointRef: artifactRefSchema.optional(),
-  parentMissionId: z.string().uuid().nullable().optional(),
-  returnToAgentId: z.string().trim().min(1).max(128).nullable().optional(),
-  returnStatus: z.enum(['NOT_APPLICABLE', 'PENDING', 'COMPLETED']).optional(),
-});
+const requiredAgentExecutionSchema = z
+  .object({
+    agentId: z.string().trim().min(1).max(128),
+    runId: z.string().trim().min(1).max(256),
+    providerId: z.string().trim().min(1).max(128),
+    providerExecutionId: z.string().trim().min(1).max(256),
+    surface: z.enum(['NATIVE_SUBAGENT', 'COCKPIT_SESSION', 'EXTERNAL_EXECUTOR']),
+    contractRef: z.string().trim().min(1).max(512),
+  })
+  .strict();
+
+const missionContractSchema = z
+  .object({
+    title: z.string().trim().min(3).max(160),
+    objective: z.string().trim().min(10).max(4_000),
+    expectedOutcome: z.string().trim().min(5).max(4_000),
+    scope: stringList.min(1),
+    outOfScope: stringList,
+    acceptanceCriteria: stringList.min(1),
+    riskClass: z.enum(['A', 'B', 'C']),
+    selectedAgents: stringList.min(1),
+    selectedSkills: stringList.min(1),
+    collectiveCloseoutRequired: z.boolean().optional(),
+    rosterRevision: z.number().int().positive().optional(),
+    requiredAgentExecutions: z.array(requiredAgentExecutionSchema).min(1).max(100).optional(),
+    sourceOfTruth: stringList,
+    contractSchemaVersion: z.literal('1.1').optional(),
+    projectId: z.string().trim().min(1).max(256).optional(),
+    projectEntryMode: z
+      .enum(['NEW_PROJECT', 'ADOPT_EXISTING_PROJECT', 'RESUME_MCF_PROJECT'])
+      .optional(),
+    methodologyPin: methodologyPinSchema.optional(),
+    alignedPipRef: artifactRefSchema.optional(),
+    projectRealityReportRef: artifactRefSchema.optional(),
+    standingAuthorizations: z.array(standingAuthorizationSchema).max(100).optional(),
+    continuityCheckpointRef: artifactRefSchema.optional(),
+    parentMissionId: z.string().uuid().nullable().optional(),
+    returnToAgentId: z.string().trim().min(1).max(128).nullable().optional(),
+    returnStatus: z.enum(['NOT_APPLICABLE', 'PENDING', 'COMPLETED']).optional(),
+  })
+  .strict();
 
 const createMissionSchema = z.object({ contract: missionContractSchema });
 

@@ -222,6 +222,8 @@ A resposta somente pode terminar em:
 - `BLOQUEADO_POR_RISCO`;
 - `CANCELADO_PELA_AUTORIDADE`.
 
+`AGUARDANDO_AGENTE` e `BLOQUEADO_COM_CHECKPOINT` são **subestados persistidos de checkpoint**, não novos estados de resposta final: mapear formalmente para `AGUARDANDO_DEPENDENCIA_EXTERNA` / `BLOQUEADO_POR_RISCO` conforme a causa. Atualização de progresso não é fechamento.
+
 ## 9. Trabalho silencioso
 
 ```yaml

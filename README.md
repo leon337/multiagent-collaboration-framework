@@ -327,3 +327,5 @@ Para usar subagentes nativos com comprovação de invocação, estado, handoff e
 ## Gate P0 de conclusão coletiva — Issue #483
 
 O MESTRE não pode declarar `ENTREGUE` antes de todos os agentes **realmente convocados** terminarem, produzirem evidência verificável e entregarem handoffs recebidos/validados; uma sessão Cockpit não é um subagente nativo, e a conclusão de EMILY não substitui a de SOFIA. Progresso, STOP/PAUSE e bloqueio recuperável não são conclusão. Ver [contrato P0](docs/protocols/MCF-GATE-CONCLUSAO-COLETIVA.md) e [Issue #483](https://github.com/leon337/multiagent-collaboration-framework/issues/483). **Limite:** o gate de runtime proposto depende de roster/adapters; ainda não cobre automaticamente a interface ChatGPT ou o Cockpit externo. Não alegar integração/aceite sem prova.
+
+**Revisão da Issue #483:** a rota REST agora preserva o roster no Zod e missões multiagente não podem finalizar com roster ausente/limitado. O ledger canônico registra checkpoint idempotente de negação; ainda dependem de integração do Cockpit, recibos/ACK autenticados e revisão independente antes de afirmar gate end-to-end.

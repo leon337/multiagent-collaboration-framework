@@ -33,6 +33,7 @@ const contract: McfMissionContract = {
   selectedSkills: ['MCF-TRACE-MISSION'],
   sourceOfTruth: [],
   collectiveCloseoutRequired: true,
+  rosterRevision: 1,
   requiredAgentExecutions: [sofia, emily],
 };
 function makeHandle(p: McfRequiredAgentExecution) {
@@ -51,7 +52,7 @@ function receipt(p: McfRequiredAgentExecution) {
       providerExecutionId: p.providerExecutionId,
       kind: 'ARTIFACT',
       sourceRef: 'artifact:' + p.runId,
-      observedAt: '2026-10-27T21:00:00Z',
+      observedAt: new Date().toISOString(),
       digest: 'abc123',
       metadata: {},
     },
@@ -61,7 +62,7 @@ function receipt(p: McfRequiredAgentExecution) {
       providerExecutionId: p.providerExecutionId,
       kind: 'RECEIPT',
       sourceRef: 'receipt:' + p.runId,
-      observedAt: '2026-10-27T21:00:00Z',
+      observedAt: new Date().toISOString(),
       digest: 'def456',
       metadata: {
         missionId: 'mission-483',
@@ -71,6 +72,26 @@ function receipt(p: McfRequiredAgentExecution) {
         contractRef: p.contractRef,
         handoffReceived: true,
         handoffVerified: true,
+        handoffId: 'handoff-' + p.runId,
+        handoffToAgentId: 'Mestre',
+      },
+    },
+    {
+      evidenceId: 'ack-' + p.runId,
+      providerId: 'cockpit-receiver',
+      providerExecutionId: 'mestre-session',
+      kind: 'RECEIPT',
+      sourceRef: 'ack:' + p.runId,
+      observedAt: new Date().toISOString(),
+      digest: 'abcdef',
+      metadata: {
+        receiptType: 'HANDOFF_ACK',
+        missionId: 'mission-483',
+        handoffId: 'handoff-' + p.runId,
+        handoffReceiptId: 'receipt-' + p.runId,
+        ackForRunId: p.runId,
+        ackByAgentId: 'Mestre',
+        ackSessionId: 'mestre-session',
       },
     },
   ];
@@ -84,7 +105,7 @@ function reader(
     status: vi.fn(async (h) => ({
       handle: makeHandle(participant(h)),
       lifecycle: states[h.runId] ?? 'COMPLETED',
-      observedAt: '2026-10-27T21:00:00Z',
+      observedAt: new Date().toISOString(),
       providerState: null,
       effectState: 'EFFECT_OBSERVED',
     })),
@@ -149,7 +170,7 @@ describe('collective completion gate (#483)', () => {
     r.status = vi.fn(async () => ({
       handle: makeHandle(emily),
       lifecycle: 'COMPLETED',
-      observedAt: '2026-10-27T21:00:00Z',
+      observedAt: new Date().toISOString(),
       providerState: null,
       effectState: 'EFFECT_OBSERVED',
     })) as unknown as CollectiveCloseoutReader['status'];
@@ -176,7 +197,7 @@ describe('collective completion gate (#483)', () => {
         },
         reader(),
       ),
-    ).rejects.toThrow('roster missing');
+    ).rejects.toThrow('version-1 roster');
   });
   it('refuses duplicate provider execution IDs', async () => {
     await expect(
@@ -195,7 +216,7 @@ describe('collective completion gate (#483)', () => {
         },
         reader(),
       ),
-    ).rejects.toThrow('duplicate execution');
+    ).rejects.toThrow('duplicate provider execution');
   });
   it('rechecks after await and refuses an execution that becomes non-terminal', async () => {
     const r = reader();
@@ -203,7 +224,7 @@ describe('collective completion gate (#483)', () => {
     r.status = vi.fn(async (h) => ({
       handle: makeHandle(h.runId === 'run-sofia' ? sofia : emily),
       lifecycle: ++calls === 2 ? 'RUNNING' : 'COMPLETED',
-      observedAt: '2026-10-27T21:00:00Z',
+      observedAt: new Date().toISOString(),
       providerState: null,
       effectState: 'EFFECT_OBSERVED',
     })) as unknown as CollectiveCloseoutReader['status'];
@@ -211,12 +232,93 @@ describe('collective completion gate (#483)', () => {
       'changed/unknown',
     );
   });
+  it('refuses missing receiver ACK even with self-declared handoff verified', async () => {
+    await expect(
+      assertCollectiveCloseoutReady(
+        'mission-483',
+        contract,
+        reader({}, (p) => receipt(p).filter((e) => e.metadata.receiptType !== 'HANDOFF_ACK')),
+      ),
+    ).rejects.toThrow('missing verified artifact/handoff');
+  });
+
+  it('refuses receiver ACK attached to the wrong handoff identity', async () => {
+    await expect(
+      assertCollectiveCloseoutReady(
+        'mission-483',
+        contract,
+        reader({}, (p) =>
+          receipt(p).map((e) =>
+            e.metadata.receiptType === 'HANDOFF_ACK'
+              ? { ...e, metadata: { ...e.metadata, handoffReceiptId: 'other-run' } }
+              : e,
+          ),
+        ),
+      ),
+    ).rejects.toThrow('missing verified artifact/handoff');
+  });
+
+  it('rejects stale terminal provider observation (restart/replay)', async () => {
+    const r = reader();
+    r.status = vi.fn(async (h) => ({
+      handle: makeHandle(h.runId === 'run-sofia' ? sofia : emily),
+      lifecycle: 'COMPLETED' as const,
+      observedAt: new Date(Date.now() - 180_000).toISOString(),
+      providerState: null,
+      effectState: 'EFFECT_OBSERVED' as const,
+    }));
+    await expect(assertCollectiveCloseoutReady('mission-483', contract, r)).rejects.toThrow(
+      /Sofia/,
+    );
+  });
+
+  it('rejects an incomplete roster (SOFIA omitted but EMILY completed)', async () => {
+    await expect(
+      assertCollectiveCloseoutReady(
+        'mission-483',
+        {
+          ...contract,
+          requiredAgentExecutions: [emily],
+        },
+        reader(),
+      ),
+    ).rejects.toThrow(/Sofia/);
+  });
+
+  it('rejects an unpinned roster revision change', async () => {
+    await expect(
+      assertCollectiveCloseoutReady(
+        'mission-483',
+        {
+          ...contract,
+          rosterRevision: 2,
+        },
+        reader(),
+      ),
+    ).rejects.toThrow('version-1 roster');
+  });
+
+  it('rejects a single selected agent with external/delegating skill without roster', async () => {
+    await expect(
+      assertCollectiveCloseoutReady('mission-483', {
+        ...contract,
+        selectedAgents: ['Mestre'],
+        selectedSkills: ['MCF-EXECUTE-LOCAL-TEAM'],
+        collectiveCloseoutRequired: false,
+        rosterRevision: undefined,
+        requiredAgentExecutions: undefined,
+      }),
+    ).rejects.toThrow('version-1 roster');
+  });
+
   it('does not change legacy nondelegated mission behavior', async () => {
     await expect(
       assertCollectiveCloseoutReady('mission-483', {
         ...contract,
         collectiveCloseoutRequired: undefined,
+        rosterRevision: undefined,
         requiredAgentExecutions: undefined,
+        selectedAgents: ['Carmem'],
       }),
     ).resolves.toBeUndefined();
   });

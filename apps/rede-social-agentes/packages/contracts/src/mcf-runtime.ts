@@ -318,6 +318,8 @@ export interface McfMissionContract extends McfMissionContractV11Extension {
   selectedSkills: string[];
   /** Fail-closed closing for externally/natively delegated tasks; register all required runs. */
   collectiveCloseoutRequired?: boolean | undefined;
+  /** Immutable creation-time collective roster revision; starts at 1. */
+  rosterRevision?: number | undefined;
   requiredAgentExecutions?: McfRequiredAgentExecution[] | undefined;
   sourceOfTruth: string[];
   parentMissionId?: string | null | undefined;
