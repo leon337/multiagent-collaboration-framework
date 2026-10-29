@@ -1,0 +1,40 @@
+{
+  "mission_id": "MCF-AGENTE-CODEBUDDY-001",
+  "title": "Agente CodeBuddy — registro persistente, repositório independente e continuidade",
+  "risk_class": "B",
+  "coordinator": "MESTRE",
+  "human_authority": "LEANDRO",
+  "decision_authority": "LEANDRO",
+  "current_state": "REGISTRO_E_HANDOFF__AGUARDANDO_PROXIMA_INSTRUCAO",
+  "persistent_source_of_truth": "GitHub/MCF + repositório privado do projeto; verificar live a cada retomada",
+  "persistent_project": "agente-codebuddy",
+  "canonical_project_descriptor": "context/projects/agente-codebuddy.yaml",
+  "canonical_repository": "leon337/agente-codebuddy",
+  "project_capsule": ".mcf/project-capsule.yaml",
+  "mcf_issue": 493,
+  "project_branch": "main",
+  "reference_project_sha": "4368ab4efe7b4964bd5d952da3777e7cba83d019",
+  "current_phase": "F0-REGISTRO",
+  "roadmap": "docs/ROADMAP.md",
+  "checklist": "docs/CHECKLIST.md",
+  "implementation_authorized": false,
+  "live_mutation_authorized": false,
+  "authorization_scope": "LEANDRO autorizou criar repositório GitHub separado, fazer push do projeto local, registrar projeto no catálogo de contexto MCF e criar missão persistente. Não autorizou iniciar implementação do agente, conectar MCP, cadastrar chave de API, iniciar tarefa CodeBuddy, deploy, bypass de governança ou operações destrutivas.",
+  "next_action": "Confirmar status da PR de cadastro e eventual merge, verificar ao vivo issue #493, repo e commits; então aguardar o próximo comando de LEANDRO para definir o escopo da próxima fase.",
+  "known_gaps": [
+    "Registro MCF em context/projects e context/missions pode estar apenas em PR; não tratar como integrado sem merge verificado.",
+    "Repositório do projeto é privado: chats/agentes futuros precisam de autorização GitHub para ler.",
+    "Nenhum agente operacional foi implementado e nenhuma execução end-to-end de modelo CodeBuddy foi comprovada.",
+    "Pesquisa anterior: interface observada com Playwright/CDP e erro 403 request illegal ainda sem diagnóstico conclusivo.",
+    "Factory de conteúdo de vídeo é distinta do catálogo canônico de contexto dos projetos do MCF."
+  ],
+  "handoff": [
+    "https://github.com/leon337/multiagent-collaboration-framework/issues/493",
+    "https://github.com/leon337/agente-codebuddy",
+    "README.md",
+    ".mcf/project-capsule.yaml",
+    "docs/CURRENT_STATE.md",
+    "docs/ROADMAP.md",
+    "docs/CHECKLIST.md"
+  ]
+}
