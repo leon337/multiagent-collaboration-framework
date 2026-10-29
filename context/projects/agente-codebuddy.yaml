@@ -1,0 +1,29 @@
+schema_version: 1
+
+project:
+  id: agente-codebuddy
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/agente-codebuddy
+  aliases:
+    - Agente CodeBuddy
+    - CodeBuddy Agent
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - .mcf/project-capsule.yaml
+    - docs/CURRENT_STATE.md
+    - docs/ROADMAP.md
+    - docs/CHECKLIST.md
+    - docs/ARCHITECTURE_CANDIDATES.md
+    - docs/REVERSE_ENGINEERING.md
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE
