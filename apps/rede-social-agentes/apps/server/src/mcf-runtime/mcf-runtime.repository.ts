@@ -66,6 +66,8 @@ export interface CreateMcfMissionInput {
 export interface PersistMcfExecutionInput {
   missionId: string;
   expectedMissionVersion: number;
+  /** CAS on complete mission contract for finalization even if version is not bumped. */
+  expectedMissionContract?: McfMissionContract | undefined;
   externalAttemptId?: string | null;
   phase: McfPhaseRecord;
   permissionProfile: McfPermissionProfile;
@@ -121,7 +123,19 @@ export interface CompleteMcfPendingPhaseResult {
   evidenceStatus: McfEvidenceValidationStatus;
 }
 
+export interface CollectiveCloseoutBlockInput {
+  missionId: string;
+  expectedMissionVersion: number;
+  phaseSkillId: string;
+  reason: string;
+  rosterRevision: number | null;
+  rosterFingerprint: string;
+  requiredAgentIds: string[];
+}
+
 export interface McfRuntimeRepository {
+  /** Version-scoped, idempotent checkpoint in canonical event ledger. */
+  recordCloseoutBlock?(input: CollectiveCloseoutBlockInput): Promise<void>;
   createMission(input: CreateMcfMissionInput): Promise<McfMissionRecord>;
   findMission(missionId: string): Promise<McfMissionRecord | null>;
   findPhase(missionId: string, phaseId: string): Promise<McfPhaseRecord | null>;

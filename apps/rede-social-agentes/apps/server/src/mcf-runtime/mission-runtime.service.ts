@@ -7,7 +7,9 @@ import type {
   McfCiCallbackRequest,
   McfCiCallbackResponse,
   McfEventType,
+  McfMissionContract,
   McfMissionEventResponse,
+  McfRequiredAgentExecution,
   McfMissionResponse,
   McfMissionTimelineResponse,
   McfPhaseExecutionResponse,
@@ -25,6 +27,13 @@ import {
 } from './mcf-runtime.errors.js';
 import { HumanDelegationGuard } from './human-delegation-guard.js';
 import { resolveMissionState } from './mission-completion-policy.js';
+import {
+  assertCollectiveCloseoutReady,
+  assertCompleteRoster,
+  isProvenNonDelegated,
+  rosterFingerprint,
+  type CollectiveCloseoutReader,
+} from './collective-closeout-gate.js';
 import {
   MCF_RUNTIME_REPOSITORY,
   type McfEventInput,
@@ -86,6 +95,7 @@ export class MissionRuntimeService {
     private readonly evidence: EvidenceValidator,
     private readonly v11Context?: MissionV11ContextGuard,
     private readonly reservedHumanAuthorityAccountId?: string,
+    private readonly agentExecutionReader?: CollectiveCloseoutReader,
   ) {}
 
   async createMission(request: CreateMcfMissionRequest): Promise<McfMissionResponse> {
@@ -96,6 +106,15 @@ export class MissionRuntimeService {
       await this.v11Context.validate(request.contract);
     }
     this.humanDelegation.assertMissionAgents(request.contract.selectedAgents);
+    // Any declared collective roster is immutable from the first mission event onward.
+    // Incomplete/false opt-out for multi-agent missions may be created as PLANNED, but
+    // may NEVER be finalized without a complete immutable snapshot.
+    if (
+      request.contract.requiredAgentExecutions?.length ||
+      request.contract.collectiveCloseoutRequired === true
+    ) {
+      assertCompleteRoster(request.contract);
+    }
 
     const now = new Date();
     const missionId = randomUUID();
@@ -122,6 +141,16 @@ export class MissionRuntimeService {
           riskClass: request.contract.riskClass,
           selectedAgents: request.contract.selectedAgents,
           selectedSkills: request.contract.selectedSkills,
+          ...(!isProvenNonDelegated(request.contract) &&
+          request.contract.requiredAgentExecutions?.length
+            ? {
+                collectiveCloseoutRequired: true,
+                rosterRevision: request.contract.rosterRevision,
+                rosterFingerprint: rosterFingerprint(request.contract),
+                parentMissionId: request.contract.parentMissionId ?? null,
+                requiredAgentExecutions: request.contract.requiredAgentExecutions,
+              }
+            : {}),
           ...(request.contract.contractSchemaVersion === '1.1'
             ? {
                 contractSchemaVersion: '1.1',
@@ -182,6 +211,67 @@ export class MissionRuntimeService {
         ? { ...canonicalInputs, mission_selected_agents: [...mission.contract.selectedAgents] }
         : canonicalInputs;
     const phaseId = request.phaseId ?? randomUUID();
+    const collectiveFinalization =
+      request.skillId === 'MCF-CLOSE-PHASE' ||
+      (request.skillId === 'MCF-TRACE-MISSION' && effectiveInputs.final_checkpoint === true);
+    // A creation-time immutable event is necessary; caller JSON alone is insufficient.
+    const enforceCollectiveGate = async (): Promise<void> => {
+      try {
+        assertCompleteRoster(mission.contract);
+        if (!isProvenNonDelegated(mission.contract)) {
+          const events = await this.repository.listEvents(missionId);
+          const creation = events.find((item) => item.eventType === 'MISSION_CREATED');
+          if (
+            creation?.payload.collectiveCloseoutRequired !== true ||
+            creation.payload.rosterRevision !== mission.contract.rosterRevision ||
+            creation.payload.parentMissionId !== (mission.contract.parentMissionId ?? null) ||
+            !Array.isArray(creation.payload.selectedAgents) ||
+            !creation.payload.selectedAgents.every((agent) => typeof agent === 'string') ||
+            !Array.isArray(creation.payload.requiredAgentExecutions)
+          ) {
+            throw new McfPermissionDeniedError(
+              'AGUARDANDO_AGENTE: persisted immutable roster snapshot missing or changed',
+            );
+          }
+          // Bind both the *recorded* dispatch-intent snapshot and current contract
+          // to the SAME digest; never trust a claimed hash without its identity data.
+          const recordedContract: McfMissionContract = {
+            ...mission.contract,
+            selectedAgents: creation.payload.selectedAgents as string[],
+            requiredAgentExecutions: creation.payload
+              .requiredAgentExecutions as McfRequiredAgentExecution[],
+          };
+          assertCompleteRoster(recordedContract);
+          if (
+            creation.payload.rosterFingerprint !== rosterFingerprint(recordedContract) ||
+            creation.payload.rosterFingerprint !== rosterFingerprint(mission.contract)
+          ) {
+            throw new McfPermissionDeniedError(
+              'AGUARDANDO_AGENTE: persisted immutable roster snapshot missing or changed',
+            );
+          }
+        }
+        await assertCollectiveCloseoutReady(missionId, mission.contract, this.agentExecutionReader);
+      } catch (error) {
+        if (!(error instanceof McfPermissionDeniedError)) throw error;
+        if (!this.repository.recordCloseoutBlock) {
+          throw new Error('collective closeout checkpoint persistence unavailable', {
+            cause: error,
+          });
+        }
+        await this.repository.recordCloseoutBlock({
+          missionId,
+          expectedMissionVersion: mission.version,
+          phaseSkillId: request.skillId,
+          reason: error.message,
+          rosterRevision: mission.contract.rosterRevision ?? null,
+          rosterFingerprint: rosterFingerprint(mission.contract),
+          requiredAgentIds: mission.contract.selectedAgents.filter((name) => name !== 'Mestre'),
+        });
+        throw error;
+      }
+    };
+    if (collectiveFinalization) await enforceCollectiveGate();
     const outcome = await this.executor.execute({
       skillId: request.skillId,
       agentId: request.agentId,
@@ -387,9 +477,13 @@ export class MissionRuntimeService {
       );
     }
 
+    // Fail closed after all execution awaits, immediately before the versioned persistence.
+    if (collectiveFinalization && outcome.phaseState === 'COMPLETED') await enforceCollectiveGate();
+
     const persisted = await this.repository.persistExecution({
       missionId,
       expectedMissionVersion: request.expectedMissionVersion,
+      expectedMissionContract: collectiveFinalization ? mission.contract : undefined,
       externalAttemptId: outcome.externalAction?.attemptId ?? null,
       phase,
       permissionProfile: outcome.skill.permissionProfile,
