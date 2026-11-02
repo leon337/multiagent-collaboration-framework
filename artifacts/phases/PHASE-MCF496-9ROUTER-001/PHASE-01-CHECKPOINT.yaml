@@ -1,0 +1,15 @@
+mission_id: MCF-9ROUTER-GATEWAY-20261102
+issue: https://github.com/leon337/multiagent-collaboration-framework/issues/496
+phase_id: PHASE-MCF496-9ROUTER-001
+state: ISOLATED_MVP_HEALTH_PASS_MODEL_UNCONFIGURED
+branch: feat/mcf-496-9router-gateway-mvp
+remote_service: mcf-9router.service [systemctl --user on OCI Relay]
+remote_api: http://127.0.0.1:20128/v1
+laptop_private_tunnel: http://127.0.0.1:20129/v1
+browser_mission_id: MCF-9ROUTER-BROWSER-20261102
+browser_request_id: 04804257185e4f0b
+browser_status: CONFLICT_WITH_OCI_CHATGPT_MAIN_MISSION
+enabled_in_mcf_production: false
+free_models_verified: []
+human_gate: revoke_or_finish_prior_OCI_browser_mission_in_Electron_then_approve_new
+next_action: verify_free_provider_credentials_and_cost_then_connect_pilot_agent_with_review

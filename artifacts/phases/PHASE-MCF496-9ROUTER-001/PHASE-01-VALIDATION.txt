@@ -1,0 +1,9 @@
+PASS - 9Router npm package 0.5.112, SHA256 400738c191b0faab73a22f0990b7ebea0e6c935818071c589ca7942390caaee1
+PASS - Node 22.23.4, archive SHA256 verificado conforme SHASUMS oficial.
+PASS - OCI Relay user-service active, Linger=yes, bind somente 127.0.0.1:20128.
+PASS - Túnel do notebook ativo, bind somente 127.0.0.1:20129.
+PASS - health HTTP 200 por ambas as rotas.
+PASS - HTTP 401 sem API key.
+PASS - Node test: 8 testes, 8 passaram, 0 falharam.
+BLOCKED - Browser Control mission: conflito com autorização OCI antiga.
+PENDING - Free provider, integração MCF, teste de inferência real, auditoria, PR review, full typecheck, teste pós-reboot.
