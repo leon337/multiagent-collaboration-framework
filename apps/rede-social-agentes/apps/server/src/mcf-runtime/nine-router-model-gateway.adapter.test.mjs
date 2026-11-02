@@ -64,7 +64,7 @@ test('synthetic authorized request carries no prompt or key in telemetry', async
   let received;
   const fakeFetch = async (url, options) => {
     received = { url: url.href, options };
-    return new Response(
+    return new globalThis.Response(
       JSON.stringify({
         model: req.model,
         choices: [{ message: { content: 'OK' } }],
@@ -94,7 +94,7 @@ test('unverified upstream fallback model is rejected', async () => {
   const g = new NineRouterModelGateway({
     ...base,
     fetchImpl: async () =>
-      new Response(
+      new globalThis.Response(
         JSON.stringify({
           model: 'paid/other-model',
           choices: [{ message: { content: 'cannot be credited' } }],
@@ -107,7 +107,7 @@ test('unverified upstream fallback model is rejected', async () => {
 test('401 sanitized: never reflect upstream key or body', async () => {
   const g = new NineRouterModelGateway({
     ...base,
-    fetchImpl: async () => new Response('secret key leaked', { status: 401 }),
+    fetchImpl: async () => new globalThis.Response('secret key leaked', { status: 401 }),
   });
   await assert.rejects(
     () => g.infer(req),
@@ -125,7 +125,7 @@ test('network/timeout errors map to safe codes', async () => {
   const b = new NineRouterModelGateway({
     ...base,
     fetchImpl: async () => {
-      throw new DOMException('timeout', 'TimeoutError');
+      throw new globalThis.DOMException('timeout', 'TimeoutError');
     },
   });
   await errorCode(() => b.infer(req), 'TIMEOUT');
