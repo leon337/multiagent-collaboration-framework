@@ -205,7 +205,7 @@ export class NineRouterModelGateway {
     if (Number(response.headers.get('content-length') ?? 0) > 1024 * 1024) {
       throw new NineRouterGatewayError('INVALID_UPSTREAM_RESPONSE');
     }
-    let result: any;
+    let result: unknown;
     try {
       const text = await response.text();
       if (text.length > 1024 * 1024) throw Error('too_large');
@@ -213,8 +213,13 @@ export class NineRouterModelGateway {
     } catch {
       throw new NineRouterGatewayError('INVALID_UPSTREAM_RESPONSE');
     }
-    const content = result?.choices?.[0]?.message?.content;
-    const reportedModel = result?.model;
+    const payload = result as {
+      choices?: Array<{ message?: { content?: unknown } }>;
+      model?: unknown;
+      usage?: { prompt_tokens?: unknown; completion_tokens?: unknown };
+    } | null;
+    const content = payload?.choices?.[0]?.message?.content;
+    const reportedModel = payload?.model;
     if (
       typeof content !== 'string' ||
       typeof reportedModel !== 'string' ||
@@ -235,8 +240,8 @@ export class NineRouterModelGateway {
         requestedModel: input.model,
         reportedModel,
         latencyMs: Math.max(0, Date.now() - startedAt),
-        inputTokens: tokens(result.usage?.prompt_tokens),
-        outputTokens: tokens(result.usage?.completion_tokens),
+        inputTokens: tokens(payload?.usage?.prompt_tokens),
+        outputTokens: tokens(payload?.usage?.completion_tokens),
         outcome: 'TRANSPORT_OK',
       },
     };
