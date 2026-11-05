@@ -1,0 +1,27 @@
+name: Colab on-demand experimental contract
+
+on:
+  pull_request:
+    paths:
+      - "tools/colab_on_demand.py"
+      - "tests/test_colab_on_demand.py"
+      - ".github/workflows/colab-on-demand-experimental.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-colab-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Syntax
+        run: python -m py_compile tools/colab_on_demand.py tests/test_colab_on_demand.py
+      - name: Offline unit contracts
+        run: python -m unittest discover -s tests -p 'test_colab_on_demand.py' -v
+      # Never use Colab credentials in CI; hardware evidence is human-reviewed.
