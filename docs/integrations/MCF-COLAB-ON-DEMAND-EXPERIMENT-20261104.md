@@ -10,7 +10,7 @@
 
 Objetivo: avaliar a viabilidade de executar *um* experimento Python sob demanda no Google Colab e transmitir evidências para MCF sem substituir o runtime persistente. Os comandos utilizam o CLI local existente, sem Chrome/CDP, reautenticação ou extensão de privilégios. MBC é usado para inspecionar a sessão web da outra conta, nunca como substituto do CLI para executar scripts.
 
-**Restrições:** a FAQ do Colab (https://research.google.com/colaboratory/intl/pt-BR/faq.html) estabelece recursos não garantidos, limites variáveis e restrições ao uso de workers distribuídos na modalidade gratuita sem unidades computacionais positivas. **Proibido** executar este protótipo como serviço contínuo, pool multicon­tas, worker de computação distribuída, bypass de quotas ou manter VMs ociosas. Agendamento, retry automático, lançamento por agente em loops, autenticação multiusuário e produção estão FORA do escopo. Para infraestrutura contínua, avaliar VPS com GPU, GCP dedicado ou Colab Enterprise com contrato adequado.
+**Restrições:** a FAQ do Colab (https://research.google.com/colaboratory/intl/pt-BR/faq.html) estabelece recursos não garantidos, limites variáveis e restrições ao uso de workers distribuídos na modalidade gratuita sem unidades computacionais positivas. **Proibido** executar este protótipo como serviço contínuo, pool multicontas, worker de computação distribuída, bypass de quotas ou manter VMs ociosas. Agendamento, retry automático, lançamento por agente em loops, autenticação multiusuário e produção estão FORA do escopo. Para infraestrutura contínua, avaliar VPS com GPU, GCP dedicado ou Colab Enterprise com contrato adequado.
 
 ## Auditoria sem troca de autenticação
 
@@ -31,6 +31,7 @@ Não assumir que identidade do Brave = identidade do CLI; não usar múltiplas c
 
 - Script Python local existente; nome de sessão restrito a letras minúsculas, números e hífens, com 3 a 49 caracteres.
 - Acelerador selecionável: CPU (padrão) ou T4; timeout máximo de 120 segundos e espera local máxima de 240 segundos.
+- Pré-verificação `colab sessions`: se o inventário falhar ou a sessão nomeada já existir, execução é recusada (não encerra sessão preexistente).
 - Uma execução explícita, **sem retries automáticos**.
 - `finally` invoca `colab stop --session NAME` mesmo após falha/timeout; nenhuma sessão é mantida de propósito.
 - Recibo JSON `mcf-colab-on-demand/v1`, criado em modo `0600`, sem stdout/stderr, caminho imutável e dados de autenticação omitidos.

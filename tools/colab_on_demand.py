@@ -39,6 +39,13 @@ def run_once(script: Path, session: str, *, gpu: bool = False,
     if output is not None and output.exists():
         raise FileExistsError("Output path already exists; never overwrite evidence")
 
+    # Refuse to collide with an existing runtime; never stop somebody else's work.
+    preflight = invoke(["colab", "sessions"], 20)
+    if preflight.returncode != 0:
+        raise RuntimeError("Cannot verify remote session inventory; refusing execution")
+    if re.search(r"(?<![a-z0-9-])" + re.escape(session) + r"(?![a-z0-9-])", preflight.stdout):
+        raise RuntimeError("Named session already exists; refusing execution")
+
     cmd = ["colab", "run", "--session", session, "--timeout", str(timeout)]
     if gpu:
         cmd += ["--gpu", "T4"]
@@ -99,7 +106,7 @@ def main() -> int:
     try:
         outcome = run_once(args.script, args.session, gpu=args.gpu_t4,
                            timeout=args.timeout, output=args.receipt)
-    except (ValueError, OSError, FileNotFoundError) as exc:
+    except (ValueError, OSError, FileNotFoundError, RuntimeError) as exc:
         print(f"Invalid experiment: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 2
     # stdout is available to the caller only, never written into receipts.
