@@ -25,6 +25,7 @@ import {
 } from './mcf-runtime.errors.js';
 import { HumanDelegationGuard } from './human-delegation-guard.js';
 import { resolveMissionState } from './mission-completion-policy.js';
+import { selectMcfModel } from './google-model-routing.js';
 import {
   MCF_RUNTIME_REPOSITORY,
   type McfEventInput,
@@ -124,6 +125,10 @@ export class MissionRuntimeService {
           selectedSkills: request.contract.selectedSkills,
           ...(request.contract.contractSchemaVersion === '1.1'
             ? {
+                // Only v1.1 missions carry model-routing metadata.
+                // Keep legacy v1.0 MISSION_CREATED payload unchanged.
+                // The adapter must separately verify catalog, quota and tools.
+                modelRouting: selectMcfModel('text_agent', null),
                 contractSchemaVersion: '1.1',
                 projectId: request.contract.projectId,
                 projectEntryMode: request.contract.projectEntryMode,
