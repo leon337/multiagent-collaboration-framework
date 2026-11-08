@@ -4,6 +4,13 @@ O **MCF** é um framework para coordenação governada de agentes de IA, com pap
 
 > **Estado documental:** o mapa canônico está em [`docs/MCF-CURRENT-STATE.md`](docs/MCF-CURRENT-STATE.md). Branch heads, `latest`, estados de PR/Issue, workflows, metadados mutáveis de Release e SHAs/status reportados por providers são valores voláteis e devem ser lidos no GitHub/provider live.
 
+
+## Modelos Google: memória reutilizável do MESTRE
+
+A seleção inicial de modelos para novos projetos e agentes está documentada em [MCF-GOOGLE-MODEL-ROUTING](docs/operations/MCF-GOOGLE-MODEL-ROUTING.md). O arquivo [AGENTS.md](AGENTS.md) orienta novas sessões que carreguem as instruções do repositório a consultar essa política antes de escolher o provedor.
+
+O padrão de chat nativo permanece **Gemini 3.8 Flash para agentes textuais com ferramentas**, mas a preferência operacional de LEANDRO para **MESTRE Live no DSH** é **Gemini 3.1 Flash Live** (ID `gemini-3.1-flash-live-preview`), com **Gemini 2.5 Flash Native Audio** como alternativa. **Gemini 3.8 Live/Extended Thinking** fica opcional devido às limitações relatadas no projeto; transcrição e tradução 3.5 têm modos especializados sem ferramentas. Essas escolhas são condicionais à capacidade e disponibilidade atuais da API; não estabelecem automaticamente uma integração com o runtime e não fixam quotas do AI Studio.
+
 ## O que existe hoje
 
 ### `CURRENT_IMPLEMENTED`
