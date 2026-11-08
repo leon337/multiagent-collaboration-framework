@@ -16,7 +16,7 @@
 
 Padrões iniciais **condicionais à disponibilidade e ao tipo de tarefa**:
 
-- **Agente executor, código, raciocínio e ferramentas:** `gemini-3.8-flash`; fallback compatível previamente validado.
+- **Agente executor textual em geral:** `gemini-3.8-flash` (somente quando compatível e com quota). **Exceção na instância nativa DSH do MESTRE:** usar o provedor `mcf-live` com `gemini-3.1-flash-live-preview` via adaptador local 3100; alternativa `gemini-2.5-flash-native-audio-preview-12-2025`. Não enviar IDs Live diretamente ao endpoint textual Google.
 - **Conversa de voz em tempo real (MESTRE/DSH de LEANDRO):** `gemini-3.1-flash-live-preview` (rótulo “Gemini 3 Flash Live” do AI Studio); alternativa `gemini-2.5-flash-native-audio-preview-12-2025`. 3.8 Live não é padrão nesse projeto.
 - **Voz com planejamento e raciocínio mais profundo:** `gemini-3.8-live-extended-thinking`, somente por escolha explícita após verificar quota.
 - **Transcrição ao vivo:** `gemini-3.5-transcribe-live`.
