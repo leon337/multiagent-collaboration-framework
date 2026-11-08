@@ -1,6 +1,8 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, chmodSync } from 'node:fs';
-const DIR='/home/leo/.local/share/mcf-gemini38-agent/observability';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
+const DIR=join(process.env.MCF_DSH_LIVE_ROOT||join(homedir(),'.local','share','mcf-gemini38-agent'),'observability');
 mkdirSync(DIR,{recursive:true,mode:0o700});
 const db=new DatabaseSync(DIR+'/events.sqlite',{timeout:1000});
 chmodSync(DIR+'/events.sqlite',0o600);
