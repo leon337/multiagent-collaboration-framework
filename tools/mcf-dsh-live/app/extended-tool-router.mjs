@@ -5,16 +5,6 @@ import { randomUUID } from 'node:crypto';
 import { Modality } from '@google/genai';
 
 export const TOOL_PLANNER_MODEL='gemini-3.8-live';
-const INTENT=/(?:\b(?:tool|tools|function|mcf_shared_|bash|shell|terminal|github|git|browser|navega|clique|clicar|abrir|acesse|acessar|buscar|search|inspect|open|click|execute|execu|ferrament|inspec|pesquis|consult|verific|chec|ler\s+(?:arquivo|página|pagina)|leia\s+(?:arquivo|página|pagina)|instal|implemen|corrig|editar|criar\s+(?:arquivo|projeto|issue)|login|autentica|cadastro|download|upload)\w*)/i;
-const textual=m=>{
-  if(typeof m?.content==='string')return m.content;
-  if(Array.isArray(m?.content))return m.content.map(v=>
-    typeof v==='string'?v:typeof v?.text==='string'?v.text:
-    typeof v?.content==='string'?v.content:'').filter(Boolean).join('\n');
-  if(typeof m?.content?.text==='string')return m.content.text;
-  if(Array.isArray(m?.parts))return m.parts.map(v=>v?.text||'').join('\n');
-  return typeof m?.text==='string'?m.text:'';
-};
 const asArgs=v=>{
   try {
     const o=typeof v==='string'?JSON.parse(v):v;
