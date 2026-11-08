@@ -27,6 +27,11 @@ Padrões iniciais **condicionais à disponibilidade e ao tipo de tarefa**:
 
 Se a fonte de verdade estiver indisponível, declarar a limitação; não inventar um modelo, ID, disponibilidade ou fallback.
 
+
+### DSH nativo — ferramentas com Extended Thinking (implementação local de 2026-11-08)
+
+Na instância MESTRE do notebook, selecionar `gemini-3.8-live` como padrão operacional para novas sessões. O modelo `gemini-3.8-live-extended-thinking` também está disponível. Para missões com ferramentas sob Extended, usar a **orquestração híbrida testada**: Gemini 3.8 Live seleciona a chamada de função, o DSH executa conforme seus controles existentes, e Extended Thinking sintetiza o resultado. Não afirmar que a chamada de ferramenta foi emitida nativamente pelo Extended. A implementação está na **PR #501**, pasta `tools/mcf-dsh-live/`, e no serviço local `mcf-dsh-live-native-adapter.service` na porta 3100. Evidência: `mcf_shared_inspect` executada no DSH e resposta final Extended em ~10 s; 22/22 testes locais. Não assumir deploy do runtime MCF central, cobertura de ações destrutivas nem quota ilimitada.
+
 ## Operação governada
 
 Seguir os contratos de permissão, handoff, HUMAN_GATE, memória, validação e evidências do MCF. Para navegação no ChatGPT/Cockpit, consultar também [MCF-UI-OPERATING-MANUAL](docs/operations/MCF-UI-OPERATING-MANUAL.md).
