@@ -1,0 +1,11 @@
+# Local secrets and runtime data must never be committed.
+secrets/
+observability/
+node_modules/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+.env
+.env.*
+*.log
+*.log.*
