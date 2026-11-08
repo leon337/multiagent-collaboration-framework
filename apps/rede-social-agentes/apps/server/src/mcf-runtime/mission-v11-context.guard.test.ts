@@ -236,6 +236,11 @@ describe('MissionRuntimeService v1.1 integration', () => {
     expect(guard.validate).toHaveBeenCalledWith(contract);
     expect(captured[0]?.event.eventType).toBe('MISSION_CREATED');
     expect(captured[0]?.event.payload).toMatchObject({
+      modelRouting: {
+        status: 'PENDING_VERIFICATION',
+        selectedModel: null,
+        requestedModel: 'gemini-3.8-flash',
+      },
       contractSchemaVersion: '1.1',
       projectId: contract.projectId,
       projectEntryMode: contract.projectEntryMode,
