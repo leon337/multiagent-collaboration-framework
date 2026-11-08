@@ -46,3 +46,12 @@ O DSH possui agora um provedor próprio `mcf-live` com dois modelos válidos par
 **Risco residual:** uma geração de título de sessão na primeira validação sofreu timeout de 26 s e foi recuperada por retry. Foi adicionada finalização por inatividade após transcrição, mas testes de carga, usuários simultâneos e estabilidade prolongada ainda faltam. Nenhuma ação destrutiva, integração de login Google ou merge/deploy foi feita.
 
 O código de adaptação executável permanece no notebook; este PR documenta a implementação e não contém, por ora, um pacote instalável do adaptador. **Não declarar a integração como implantada em todas as instâncias MCF.**
+
+## Atualização operacional DSH nativo — preferência 3.8 Live (2026-11-08)
+
+Conforme a instrução explícita mais recente de LEANDRO, o DSH instalado no notebook deve usar `gemini-3.8-live` como padrão e disponibilizar `gemini-3.8-live-extended-thinking` no seletor nativo. As opções 3.1 Flash Live e 2.5 Native Audio são alternativas, preservando os modelos Google textuais.
+
+**Implementado localmente (sem commit do adaptador no repo):** o provedor `mcf-live` envia Chat Completions do DSH ao adaptador HTTP `127.0.0.1:3100/v1`, que usa sessões Live. Configuração persistida em `dsh/settings.yaml`, `dsh/profiles/web/cordis.patch.yml`; o inicializador preserva a preferência Live verificada no catálogo. Gemini 3.8 Live requer ferramentas síncronas `BLOCKING`; Extended declara `NON_BLOCKING`, `thinkingConfig.thinkingLevel=low` e considera `interactionStatus`.
+
+**Evidência:** os dois modelos responderam no chat nativo DSH; 3.8 Live chamou `mcf_shared_inspect` e usou o retorno, validando ferramentas. **Limitação não resolvida:** Extended Thinking conecta e conversa, mas não produziu `toolCall` nos testes de ferramenta via DSH nem em dois testes diretos (somente `IN_PROGRESS` e emissão de áudio intermediário). Não declarar execução de ferramentas do Extended validada. Usar 3.8 Live para tarefas instrumentadas até resolver. Retry do provedor limitado a 1; timeout categorizado. 15 testes locais passaram, porém não representam CI do repositório nem release do runtime central.
+
