@@ -87,3 +87,12 @@ Consultar sempre estas fontes oficiais antes de decidir:
 - Modelos de áudio/música e outros IDs: https://ai.google.dev/gemini-api/docs/models e https://ai.google.dev/gemini-api/docs/interactions-overview
 
 **Manutenção:** revisar após mudanças de catálogo, prefixos/IDs, SDKs, limites ou política do Google. Se houver divergência entre esta memória e a API atual, registrar a divergência e seguir a fonte oficial verificável. Não codificar valores de quota nem API keys dentro desta memória.
+
+## Atualização de preferência: DSH nativo com Gemini 3.8 Live (2026-11-08)
+
+**Ordem explícita mais recente de LEANDRO:** no **seletor nativo do DSH MESTRE**, preferir `gemini-3.8-live` como **modelo padrão** e oferecer `gemini-3.8-live-extended-thinking` para raciocínio avançado. Esta decisão **substitui a preferência anterior pelo 3.1 Flash Live no DSH nativo**, mas não remove 3.1 e 2.5 como alternativas. A distinção entre chat nativo DSH e painel de microfone MESTRE Live continua válida.
+
+A instância local usa o provedor `mcf-live` e um adaptador privado de `openai-completions` ↔ Google Live API em `127.0.0.1:3100`. Gemini 3.8 Live deve omitir `thinkingConfig` e usar `behavior: BLOCKING` quando as funções retornam resultados síncronos; Gemini 3.8 Live Extended Thinking deve usar `thinkingConfig.thinkingLevel=low|medium|high`, `behavior: NON_BLOCKING`, e respeitar `interactionStatus=IDLE` para encerrar a resposta, não apenas `turnComplete`. O DSH continua exibindo as ferramentas e recebendo resultados por protocolo Chat Completions, com aprovação humana mantida.
+
+**Evidência:** ambos os modelos abriram sessões Live Google com áudio/transcrição, sem erro no teste. Os dois apareceram no seletor nativo do DSH e concluíram testes de chat real. Não confundir ausência de RPM explícito no AI Studio com quota ilimitada; `429`, concorrência e TPM permanecem possíveis. A execução está restrita à instância local: não é deploy do runtime central MCF.
+
