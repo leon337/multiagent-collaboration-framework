@@ -55,3 +55,14 @@ Conforme a instrução explícita mais recente de LEANDRO, o DSH instalado no no
 
 **Evidência:** os dois modelos responderam no chat nativo DSH; 3.8 Live chamou `mcf_shared_inspect` e usou o retorno, validando ferramentas. **Limitação não resolvida:** Extended Thinking conecta e conversa, mas não produziu `toolCall` nos testes de ferramenta via DSH nem em dois testes diretos (somente `IN_PROGRESS` e emissão de áudio intermediário). Não declarar execução de ferramentas do Extended validada. Usar 3.8 Live para tarefas instrumentadas até resolver. Retry do provedor limitado a 1; timeout categorizado. 15 testes locais passaram, porém não representam CI do repositório nem release do runtime central.
 
+
+## Correção comprovada do Extended Thinking por orquestração híbrida (2026-11-08)
+
+**Problema:** o Gemini 3.8 Live Extended Thinking apresentava resposta intermediária com `IN_PROGRESS`, mas não emitia `toolCall` no adaptador, ocasionando timeouts de ~52 s quando o DSH solicitava ferramentas. A configuração `NON_BLOCKING` e o controle de `interactionStatus` foram necessários, mas insuficientes.
+
+**Solução local implementada e versionada neste PR:** `tools/mcf-dsh-live/app/extended-tool-router.mjs`, `app/dsh-native-adapter.mjs`, `app/observability.mjs`, testes e README de execução. **Gemini 3.8 Live** seleciona a chamada de função solicitada e o **DSH** executa sob as permissões normais; o resultado alimenta **Gemini 3.8 Live Extended Thinking** para sintetizar a resposta. O planejador não executa ferramentas e só pode emitir nomes declarados pelo DSH. Chamadas já concluídas são deduplicadas, concorrência limitada a 2, sem retries automáticos de ações, e modo híbrido registrado em `extended_tool_planner`. A resposta de modelo continua explicitamente registrada como delegação híbrida, não função chamada nativamente pelo Extended.
+
+**Evidência no notebook:** DSH nativo mostrou `mcf_shared_inspect · {}`, executou a inspeção e o Extended respondeu em ~10,4 s; planejador selecionou a ferramenta em ~1,5 s. Perguntas conceituais foram concluídas sem executar ferramentas. 22/22 testes locais passaram após os ajustes, incluindo testes com sessão falsa para chamadas válidas, desconhecidas e repetidas. Serviços 3098/3099/3100 ativos, sem mudanças em chaves nem perfis preexistentes. No entanto, o teste não demonstra ainda operações destrutivas, autenticação Google, alta concorrência, microfone real ou confiabilidade prolongada.
+
+**Risco operacional:** disco do notebook atingiu ~96% de uso; não houve limpeza destrutiva. O pacote da PR é snapshot do serviço já implantado, ainda não parametrizado para outras máquinas e não implantado como runtime central; consulte `tools/mcf-dsh-live/README.md` antes de reutilizar.
+
