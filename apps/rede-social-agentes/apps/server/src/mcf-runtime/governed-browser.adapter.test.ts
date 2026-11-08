@@ -12,7 +12,6 @@ import {
   GovernedBrowserExternalAdapter,
   parseBrowserMissionInputs,
   browserEvidenceDigest,
-  verifyBrowserMissionResult,
   type BrowserMissionInput,
   type BrowserMissionResult,
 } from './governed-browser.adapter.js';
