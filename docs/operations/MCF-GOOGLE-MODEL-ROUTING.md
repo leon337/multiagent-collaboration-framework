@@ -18,8 +18,8 @@ Ao iniciar um novo projeto ou chat do MESTRE, **consultar esta memória antes de
 | Necessidade | Modelo prioritário | ID para investigar/validar | Observações |
 | --- | --- | --- | --- |
 | Agentes com ferramentas, programação, automação, execução e planejamento | Gemini 3.8 Flash | `gemini-3.8-flash` | **Padrão para DSH/executor textual**, não para conversa de voz via Live API; testar tool calling real. |
-| Conversação natural, baixa latência e áudio bidirecional | Gemini 3.8 Live | `gemini-3.8-live` | **Padrão para voz**; a configuração `thinkingLevel` não é suportada nesse modelo. |
-| Voz com raciocínio prolongado, planejamento e ferramentas assíncronas | Gemini 3.8 Live Extended Thinking | `gemini-3.8-live-extended-thinking` | Usar quando a complexidade justificar; `thinkingLevel`: low, medium ou high. Maior processamento pode alterar latência e consumo. |
+| Conversação natural, baixa latência e áudio bidirecional | Gemini 3.1 Flash Live Preview | `gemini-3.1-flash-live-preview` | **Padrão operacional MESTRE/DSH de LEANDRO** por preferência explícita, condicionado a quota/catálogo. Legado preview; chamada de função síncrona. Alternativa: `gemini-2.5-flash-native-audio-preview-12-2025`. |
+| Voz com raciocínio prolongado, planejamento e ferramentas assíncronas | Gemini 3.8 Live Extended Thinking | `gemini-3.8-live-extended-thinking` | **Somente escolha explícita/verificação de quota:** recurso avançado opcional, não padrão no DSH de LEANDRO. `thinkingLevel`: low, medium ou high. |
 | Transcrição streaming de áudio para texto | Gemini 3.5 Transcribe Live | `gemini-3.5-transcribe-live` | Serviço especializado de transcrição, **não** orquestrador autônomo. |
 | Tradução oral bidirecional de baixa latência | Gemini 3.5 Live Translate | `gemini-3.5-live-translate-preview` | Prévia; validar par de idiomas, latência e limites. |
 | Experimentos de áudio nativo em sistema legado | Gemini 2.5 Flash Native Audio | `gemini-2.5-flash-native-audio-preview-12-2025` | Legado/preview; preferir 3.8 Live em sistemas novos. |
@@ -28,6 +28,16 @@ Ao iniciar um novo projeto ou chat do MESTRE, **consultar esta memória antes de
 | Fallback textual de geração de conteúdo | Gemini 3.7 Flash / Gemini 3.5 Flash / Gemini 2.5 Flash | `gemini-3.7-flash`, `gemini-3.5-flash`, `gemini-2.5-flash` | Validar disponibilidade, capacidade de ferramentas e custos; não trocar sem registrar justificativa e evidência. |
 | Alternativa de modelos abertos/serviço hospedado | Gemma 4 26B A4B / 31B | `gemma-4-26b-a4b-it`, `gemma-4-31b-it` | Não presumir compatibilidade com Live API ou ferramentas nativas; requisitos de hardware importam quando auto-hospedado. |
 | Geração de música (não substitui LLM de agente) | Lyria 3 Clip / Pro | `lyria-3-clip-preview`, `lyria-3-pro-preview` | Modelos especializados; validar acesso e licença. |
+
+## Preferência operacional explícita de LEANDRO (MESTRE + DSH)
+
+A partir de 2026-11-08, o **MESTRE Live dentro do DSH** deve priorizar o modelo mostrado no AI Studio como “Gemini 3 Flash Live”, cujo **ID real é `gemini-3.1-flash-live-preview`**. O fallback de conversação é `gemini-2.5-flash-native-audio-preview-12-2025`. Não selecionar automaticamente os endpoints 3.8 Live quando esse projeto estiver enfrentando limitações de quota; mantê-los disponíveis como opt-in sujeito a verificação.
+
+Os modelos `gemini-3.5-transcribe-live` (áudio → texto) e `gemini-3.5-live-translate-preview` (tradução de áudio) devem ser **modos separados**, sem acesso a ferramentas de navegador nem prompt de agente. Transcribe utiliza resposta `TEXT`; Translate utiliza resposta `AUDIO` e `translationConfig.targetLanguageCode`.
+
+**Importante:** o chat **nativo textual** do DSH ainda usa `gemini-3.8-flash` com quotas próprias, que não herda os limites dos modelos Live. A Live API bidirecional requer adapter específico; não apontar o provider OpenAI-compatible diretamente para IDs Live. Para usar esses modelos em comandos textuais supervisionados, utilizar o painel MESTRE Live integrado. A captura “0 / ilimitado” indica apresentação de uma métrica no AI Studio, **não ausência de limites de tokens, concorrência, projetos ou custos**.
+
+**Evidência local:** a API do projeto listou os quatro IDs de áudio em `bidiGenerateContent`; Flash Live 3.1 e 2.5 produziram áudio e transcrições em teste; conexões de Transcribe/Translate foram aceitas; navegação supervisionada via gateway Live passou, com bloqueio de comandos no modo especializado. Áudio real por microfone e tradução real de conversa ainda requerem validação humana. Os modelos 3.1 e 2.5 são *previews/legado* segundo o catálogo Google: reavaliar periodicamente.
 
 ## Sequência obrigatória de seleção antes de cada missão
 
