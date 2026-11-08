@@ -1,11 +1,13 @@
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import { GoogleGenAI, Modality } from '@google/genai';
 import { record as observe, errorCode as classify } from './observability.mjs';
 import { shouldDelegateExtended, chooseToolsWithFastLive, TOOL_PLANNER_MODEL } from './extended-tool-router.mjs';
 
-const ROOT='/home/leo/.local/share/mcf-gemini38-agent';
+const ROOT=process.env.MCF_DSH_LIVE_ROOT||join(homedir(),'.local','share','mcf-gemini38-agent');
 const PORT=3100;
 const MODELS=new Set([
  'gemini-3.8-live','gemini-3.8-live-extended-thinking',
