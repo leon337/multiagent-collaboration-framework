@@ -1,0 +1,16 @@
+{
+  "name": "@mcf/dsh-live-native-adapter",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node app/dsh-native-adapter.mjs",
+    "test": "node --test app/tests/extended-router.test.mjs"
+  },
+  "dependencies": {
+    "@google/genai": "2.32.0"
+  }
+}
