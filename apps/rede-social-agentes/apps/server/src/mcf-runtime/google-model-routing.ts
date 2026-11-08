@@ -8,11 +8,7 @@
 export const MCF_GOOGLE_MODEL_ROUTING_POLICY = 'MCF-GOOGLE-MODEL-ROUTING/v1' as const;
 
 export type McfModelTaskClass =
-  | 'text_agent'
-  | 'realtime_voice'
-  | 'thinking_voice'
-  | 'transcription'
-  | 'translation';
+  'text_agent' | 'realtime_voice' | 'thinking_voice' | 'transcription' | 'translation';
 
 export interface McfCatalogModel {
   name: string;
@@ -87,6 +83,7 @@ export function selectMcfModel(
     endpointVerified: !!selectedModel,
     toolsVerified: false,
     quotaCheckedAt: null,
-    fallbackReason: selectedModel && selectedModel !== requestedModel ? 'NOT_IN_VERIFIED_CATALOG' : null,
+    fallbackReason:
+      selectedModel && selectedModel !== requestedModel ? 'NOT_IN_VERIFIED_CATALOG' : null,
   };
 }
