@@ -1,0 +1,19 @@
+skill:
+  skill_id: MCF-AUTONOMOUS-BROWSER-RESEARCH
+  name: "Navegacao autonomica governada no Agent Bridge"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  owner_agents: [Mestre]
+  permission_profile: READ_AND_PROPOSE
+  purpose: "Executor semantico deterministico de leitura publica; qualquer acao sensivel exige outro contrato e HUMAN_GATE."
+  allowed_tools: [mcf-agent-bridge]
+  preconditions: [approved_scope, local_bridge_descriptor, discovery_live, authorized_workspace]
+  execution_steps: [planejar_passos, observar_links, validar_host_e_identidade, navegar, verificar_poscondicoes, persistir_evidencia, recuperar_sem_replay_cego, restaurar_workspace]
+  governance:
+    data_classification: PUBLIC_ONLY
+    human_gate_triggers: [authentication, captcha, form_submit, posting, account_change, purchase, destructive_action]
+    prohibited_actions: [credential_capture, bypass_access_control, bypass_captcha, automatic_public_post]
+  required_evidence: [verified_navigation_steps, text_sha256, completion_digest, workspace_restored]
+  failure_modes: [semantic_ambiguity, navigation_unknown, in_flight_reconciliation, recovery_required]
+  acceptance_criteria: [verified_without_false_green, no_private_hosts, no_raw_page_content_in_receipt]
+  fallback: "Reconciliar a ultima pagina verificada ou interromper a missao preservando o checkpoint."

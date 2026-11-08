@@ -1222,6 +1222,94 @@ function validateDeploymentReceipt(receipt: McfToolReceipt): void {
   }
 }
 
+function validateGovernedBrowserReceipt(
+  receipt: McfToolReceipt,
+  inputs: Readonly<Record<string, unknown>> | undefined,
+): void {
+  const expectedMission = inputs?.missionId;
+  const expectedInstance = inputs?.instanceId;
+  const waypoints = inputs?.waypoints;
+  if (
+    typeof expectedMission !== 'string' ||
+    typeof expectedInstance !== 'string' ||
+    !Array.isArray(waypoints) ||
+    waypoints.some((w) => typeof w !== 'string')
+  ) {
+    reject('Governed browser verification requires exact approved mission inputs');
+  }
+  const metadata = receipt.metadata;
+  if (
+    receipt.status !== 'SUCCEEDED' ||
+    receipt.externalId !== expectedMission ||
+    metadata.missionId !== expectedMission ||
+    metadata.instanceId !== expectedInstance ||
+    metadata.verified !== true ||
+    metadata.restored !== true ||
+    metadata.publicReadOnly !== true ||
+    metadata.conclusion !== 'COMPLETED' ||
+    metadata.executionMode !== 'BOUNDED_SEMANTIC_BROWSER' ||
+    metadata.waypointCount !== waypoints.length ||
+    metadata.completedSteps !== waypoints.length + 1 ||
+    typeof metadata.evidenceDigest !== 'string' ||
+    !/^[a-f0-9]{64}$/u.test(metadata.evidenceDigest)
+  ) {
+    reject('Governed browser receipt lacks verified completion and restoration');
+  }
+  const events = requireArray(metadata, 'events', 'Governed browser events must be present');
+  if (events.length > 100) reject('Governed browser events exceed budget');
+  const verified = events.filter(
+    (e) =>
+      typeof e === 'object' &&
+      e !== null &&
+      !Array.isArray(e) &&
+      (e as Record<string, unknown>).kind === 'NAVIGATION_VERIFIED',
+  );
+  const planned = events.filter(
+    (e) =>
+      typeof e === 'object' &&
+      e !== null &&
+      !Array.isArray(e) &&
+      (e as Record<string, unknown>).kind === 'SEMANTIC_PLAN',
+  );
+  const restored = events.some(
+    (e) =>
+      typeof e === 'object' &&
+      e !== null &&
+      !Array.isArray(e) &&
+      (e as Record<string, unknown>).kind === 'WORKSPACE_RESTORED',
+  );
+  if (
+    verified.length !== waypoints.length + 1 ||
+    planned.length !== waypoints.length ||
+    !restored
+  ) {
+    reject('Governed browser receipt has incomplete navigation evidence');
+  }
+  for (let index = 0; index < verified.length; index += 1) {
+    const event = requireRecord(verified[index], 'Governed browser verified step missing');
+    if (
+      event.step !== index ||
+      typeof event.url !== 'string' ||
+      typeof event.textDigest !== 'string' ||
+      !/^[a-f0-9]{64}$/u.test(event.textDigest) ||
+      typeof event.textLength !== 'number' ||
+      !Number.isInteger(event.textLength) ||
+      event.textLength <= 0
+    ) {
+      reject('Governed browser verified step is malformed');
+    }
+  }
+  for (let index = 0; index < planned.length; index += 1) {
+    const event = requireRecord(planned[index], 'Governed browser semantic plan missing');
+    if (event.step !== index + 1 || event.targetLabel !== waypoints[index]) {
+      reject('Governed browser planned target differs from mission scope');
+    }
+  }
+  if (requireRecord(verified[0], 'Governed browser start step missing').url !== inputs?.startUrl) {
+    reject('Governed browser start page differs from approved mission');
+  }
+}
+
 @Injectable()
 export class EvidenceValidator {
   private readonly secret: string;
@@ -1364,6 +1452,9 @@ export class EvidenceValidator {
         break;
       case 'MCF-AUDIT-VISUAL-DESKTOP':
         validateVisualDesktopAuditReceipt(receipt, inputs);
+        break;
+      case 'MCF-AUTONOMOUS-BROWSER-RESEARCH':
+        validateGovernedBrowserReceipt(receipt, inputs);
         break;
       default:
         break;

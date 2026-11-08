@@ -29,6 +29,7 @@ import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapte
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime.repository.js';
 import { LocalAgentTeamAdapter } from './local-agent-team.adapter.js';
+import { GovernedBrowserExternalAdapter } from './governed-browser.adapter.js';
 import { MissionObservabilityController } from './mission-observability.controller.js';
 import { MissionControlController } from './mission-control.controller.js';
 import { MissionControlRepository } from './mission-control.repository.js';
@@ -171,6 +172,18 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [EvidenceValidator],
     },
     {
+      provide: GovernedBrowserExternalAdapter,
+      useFactory: (evidence: EvidenceValidator) => {
+        const config = loadRuntimeConfig();
+        return new GovernedBrowserExternalAdapter(evidence, {
+          enabled: config.MCF_AGENT_BRIDGE_GOVERNED_ENABLED,
+          scriptPath: config.MCF_AGENT_BRIDGE_MISSION_SCRIPT,
+          timeoutMs: config.MCF_AGENT_BRIDGE_TIMEOUT_MS,
+        });
+      },
+      inject: [EvidenceValidator],
+    },
+    {
       provide: AdapterRegistry,
       useFactory: (
         githubReview: GitHubCodeReviewAdapter,
@@ -179,6 +192,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         githubPrCollaboration: GitHubPullCollaborationAdapter,
         codeBuddy: CodeBuddyExecutorAdapter,
         localAgentTeam: LocalAgentTeamAdapter,
+        governedBrowser: GovernedBrowserExternalAdapter,
       ) =>
         new AdapterRegistry([
           githubReview,
@@ -187,6 +201,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           githubPrCollaboration,
           codeBuddy,
           localAgentTeam,
+          governedBrowser,
         ]),
       inject: [
         GitHubCodeReviewAdapter,
@@ -195,6 +210,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         GitHubPullCollaborationAdapter,
         CodeBuddyExecutorAdapter,
         LocalAgentTeamAdapter,
+        GovernedBrowserExternalAdapter,
       ],
     },
     {

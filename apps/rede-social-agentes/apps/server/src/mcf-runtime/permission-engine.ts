@@ -391,6 +391,41 @@ function assertCodeBuddyBoundary(
   }
 }
 
+function assertGovernedBrowserBoundary(
+  skill: McfSkillDefinition,
+  provider: string,
+  operation: string,
+  resource: string,
+  inputs: Record<string, unknown>,
+): void {
+  const selectsBrowser =
+    skill.skillId === 'MCF-AUTONOMOUS-BROWSER-RESEARCH' ||
+    provider === 'mcf-agent-bridge' ||
+    operation === 'inspect-governed-browser';
+  if (!selectsBrowser) return;
+  if (
+    skill.skillId !== 'MCF-AUTONOMOUS-BROWSER-RESEARCH' ||
+    skill.permissionProfile !== 'READ_AND_PROPOSE' ||
+    provider !== 'mcf-agent-bridge' ||
+    operation !== 'inspect-governed-browser' ||
+    resource !== 'local-workspace'
+  ) {
+    throw new McfPermissionDeniedError(
+      'Governed browser is restricted to MCF-AUTONOMOUS-BROWSER-RESEARCH/inspect-governed-browser/local-workspace',
+    );
+  }
+  if (inputs.authorizedScope !== true || inputs.restoreWorkspace !== true) {
+    throw new McfPermissionDeniedError(
+      'Governed browser requires authorized scope and restoration',
+    );
+  }
+  if (inputs.humanGateApproved === true || inputs.sensitiveAuthorization === true) {
+    throw new McfPermissionDeniedError(
+      'Governed browser cannot self-assert human gate or sensitive authority',
+    );
+  }
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [
   ...readOperations,
@@ -457,6 +492,7 @@ export class PermissionEngine {
     assertCodeBuddyBoundary(skill.skillId, provider, operation, tool.resource);
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);
     assertLocalAgentTeamBoundary(skill.skillId, provider, operation, resource);
+    assertGovernedBrowserBoundary(skill, provider, operation, resource, inputs);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');

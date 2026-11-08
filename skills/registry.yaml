@@ -388,6 +388,26 @@ skills:
     fallback: Falhar fechado; usar observação ORCA/AT-SPI somente leitura; solicitar HUMAN_GATE apenas para autenticação ou 2FA e nunca transferir operação técnica rotineira para Leandro.
     handoff_to: Beatriz
 
+  - skill_id: MCF-AUTONOMOUS-BROWSER-RESEARCH
+    status: EXPERIMENTAL
+    name: Investigar paginas publicas por navegador governado
+    version: 0.1.0
+    purpose: Planejar e observar navegacao publica delimitada com allowlist, recuperacao e receipts assinados pelo runtime.
+    owner_agents: [Mestre]
+    trigger_phrases: ["pesquisa autonoma browser", "navegacao governada", "investigar paginas com agente"]
+    required_inputs: [missionId, instanceId, objective, startUrl, allowedHosts, waypoints, maxSteps, authorizedScope, restoreWorkspace]
+    optional_inputs: []
+    allowed_tools: [mcf-agent-bridge]
+    forbidden_tools: [credential_capture, login, public_post, form_submit, purchase, account_mutation, arbitrary_js, coordinate_click]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps: [validar_escopo, ler_runtime_discovery, planejar_links_semanticos, verificar_precondicoes, navegar_publico, validar_texto_e_url, persistir_checkpoints, restaurar_workspace, emitir_receipt]
+    required_evidence: [mission_id, instance_id, step_receipts, text_digests, verified_restoration, consolidated_digest]
+    expected_outputs: [governed_browser_result, canonical_signed_receipt]
+    acceptance_criteria: [bounded_steps, semantic_target_unique, public_hosts_only, no_human_gate_bypass, no_false_green, workspace_restored]
+    failure_modes: [bridge_unavailable, ambiguous_link, redirect_out_of_scope, recovery_required, navigation_timeout, unsafe_input]
+    fallback: Falhar fechado, reter checkpoint e diagnosticar sem retentar efeitos desconhecidos.
+    handoff_to: Mestre
+
   - skill_id: MCF-DSH-BROWSER-OPERATE
     name: Operar Browser do DeepSeek Harness
     version: 1.2.0
