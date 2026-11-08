@@ -27,3 +27,22 @@ O MESTRE Live oferece escolha explícita na UI entre `gemini-3.8-live` (voz de b
 - Testes de seleção: 6 casos locais + 6 casos de smoke do módulo de runtime.
 - Ações sensíveis continuam exigindo HUMAN_GATE e não podem ser autorizadas pela seleção de modelo.
 - O runtime MCF em produção não foi alterado, e seleção efetiva de modelos em cada adapter de execução ainda não foi implementada. Não declarar `CURRENT_IMPLEMENTED` até despacho real, receipts e CI.
+
+## Atualização local — modelos Live no seletor nativo do DSH (2026-11-08)
+
+**Status: implementado e validado somente no notebook MESTRE, não integrado ao runtime MCF em produção.** Esta atualização substitui a descrição anterior de que os modelos Live estariam restritos ao painel lateral.
+
+O DSH possui agora um provedor próprio `mcf-live` com dois modelos válidos para chat e ferramentas:
+
+- `gemini-3.1-flash-live-preview` — **Gemini 3 Flash Live (MCF nativo)**, padrão para novas sessões.
+- `gemini-2.5-flash-native-audio-preview-12-2025` — **Gemini 2.5 Native Audio (MCF nativo)**, alternativa.
+
+**Implementação local:** `app/dsh-native-adapter.mjs`, serviço persistente `mcf-dsh-live-native-adapter.service` ouvindo somente em `127.0.0.1:3100`. O adaptador traduz Chat Completions do DSH para `bidiGenerateContent` via Google GenAI Live e devolve texto transcrito, SSE e `tool_calls` ao DSH. Usa token interno local em permissões `0600`, distinto da chave da API Google, e não registra prompts nos eventos de observabilidade. O registro do provedor e dos modelos está em `dsh/settings.yaml` e `dsh/profiles/web/cordis.patch.yml`, preservando os cinco modelos textuais Google existentes.
+
+**Escopo de suporte:** o chat nativo do DSH recebe apenas texto, respostas e chamadas de funções; o áudio/microfone continua no painel MESTRE Live (3099). Modelos `gemini-3.5-transcribe-live` e `gemini-3.5-live-translate-preview` **não** são adicionados ao chat textual, pois são serviços de áudio especializados. A ausência de um limite RPM visível no AI Studio não autoriza assumir uso ilimitado: continuar tratando `429`, TPM, concorrência e gasto.
+
+**Evidências verificadas:** duas opções exibidas no seletor nativo junto aos cinco modelos anteriores; teste real do DSH com Gemini 3 Flash Live chamando `mcf_shared_inspect` e retornando o resultado (~12 s); teste real do DSH com Gemini 2.5 Native Audio recebendo e respondendo mensagem (~3 s); chamadas diretas de texto, streaming SSE e função no adaptador; 15 testes locais de regressão aprovados; recusas por falta de autenticação (401), modelo incompatível (404) e imagem no endpoint textual (422). Os serviços DSH (3098), Live (3099) e adaptador (3100) estão ativos.
+
+**Risco residual:** uma geração de título de sessão na primeira validação sofreu timeout de 26 s e foi recuperada por retry. Foi adicionada finalização por inatividade após transcrição, mas testes de carga, usuários simultâneos e estabilidade prolongada ainda faltam. Nenhuma ação destrutiva, integração de login Google ou merge/deploy foi feita.
+
+O código de adaptação executável permanece no notebook; este PR documenta a implementação e não contém, por ora, um pacote instalável do adaptador. **Não declarar a integração como implantada em todas as instâncias MCF.**
