@@ -8,7 +8,7 @@
 
 O módulo `apps/rede-social-agentes/apps/server/src/mcf-runtime/google-model-routing.ts` fornece um seletor determinístico por capacidade com catálogo verificado pelo provedor. As classes disponíveis são `text_agent`, `realtime_voice`, `thinking_voice`, `transcription` e `translation`.
 
-Ao criar uma missão, `MissionRuntimeService` registra a decisão inicial em `MISSION_CREATED.payload.modelRouting`, com `status=PENDING_VERIFICATION`, `selectedModel=null`, `toolsVerified=false` e `quotaCheckedAt=null`. **Não representa despacho nem confirmação de execução de um modelo.** Isto evita atribuir um executor Google à força a um provedor previamente escolhido pelo contrato.
+Ao criar uma missão **v1.1**, `MissionRuntimeService` registra a decisão inicial em `MISSION_CREATED.payload.modelRouting`, com `status=PENDING_VERIFICATION`, `selectedModel=null`, `toolsVerified=false` e `quotaCheckedAt=null`. **Não representa despacho nem confirmação de execução de um modelo.** **não altera o evento legado `MISSION_CREATED` do contrato v1.0**. Isto evita atribuir um executor Google à força a um provedor previamente escolhido pelo contrato.
 
 Para selecionar um modelo real, o executor/adaptador autorizado deve consultar o catálogo do projeto, passar os resultados a `selectMcfModel(taskClass, catalog)`, verificar cota e capacidade de ferramentas e persistir receipt verificado, mantendo os gates normais. Integração com dispatch de cada provedor é etapa posterior; não há fallback silencioso em 429.
 
