@@ -25,6 +25,7 @@ import {
 } from './mcf-runtime.errors.js';
 import { HumanDelegationGuard } from './human-delegation-guard.js';
 import { resolveMissionState } from './mission-completion-policy.js';
+import { selectMcfModel } from './google-model-routing.js';
 import {
   MCF_RUNTIME_REPOSITORY,
   type McfEventInput,
@@ -122,6 +123,9 @@ export class MissionRuntimeService {
           riskClass: request.contract.riskClass,
           selectedAgents: request.contract.selectedAgents,
           selectedSkills: request.contract.selectedSkills,
+          // Routing is recorded at mission creation, not applied to an unverified
+          // provider. The execution adapter must validate catalog, quota and tools.
+          modelRouting: selectMcfModel('text_agent', null),
           ...(request.contract.contractSchemaVersion === '1.1'
             ? {
                 contractSchemaVersion: '1.1',
