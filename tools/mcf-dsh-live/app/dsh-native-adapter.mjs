@@ -126,8 +126,8 @@ async function chat(req,res,body){
   return json(res,422,{error:{message:'Adapter supports text chat only; use MESTRE Live panel for audio and images',code:'UNSUPPORTED_MODALITY'}});
  const history=buildHistory(body.messages),tools=liveTools(body.tools,model);
  const wantsDelegation=shouldDelegateExtended({model,messages:body.messages,tools:body.tools});
- if(isExtended(model)){
-   // Never log prompts, tool arguments or the user's private conversation.
+ if(isExtended(model)&&process.env.MCF_DSH_MODEL_ROUTER_DEBUG==='1'){
+   // Opt-in metadata-only diagnostic; never log prompts, tool arguments or credentials.
    console.log('MCF_EXTENDED_REQUEST_META',JSON.stringify({
      model,declaredTools:Array.isArray(body.tools)?body.tools.length:0,
      parsedTools:tools.flatMap(x=>x.functionDeclarations||[]).length,
