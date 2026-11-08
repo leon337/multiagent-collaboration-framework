@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:http';
+import { createHash } from 'node:crypto';
+import { once } from 'node:events';
 import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
@@ -23,18 +26,40 @@ test('MVP end-to-end: criar proposta, validar, salvar, testar e restaurar', asyn
   root = await mkdtemp(join(tmpdir(), 'mcf-agent-studio-test-'));
   profile = join(root, 'cordis.patch.yml');
   const source = join(root, 'index.js');
-  const initialProfile = 'id: preset-hello-world-agent\nresponse: Hello World!\n';
+  const initialProfile = '# MCF/Hello World: fixture\n- insert:\n    - id: preset-hello-world-agent\n';
+  const tokenFile = join(root, 'bridge-token');
+  const token = 'a'.repeat(64);
+  let verificationAttempts = 0;
+  const bridge = createServer((req, res) => {
+    if (req.url === '/validate-hello-world' && req.headers['x-agent-studio-bridge'] === token) {
+      verificationAttempts++;
+      res.writeHead(503).end(JSON.stringify({ error: 'Falha de ativação simulada' }));
+      return;
+    }
+    res.writeHead(404).end('{}');
+  });
+  t.after(async () => {
+    if (child && child.exitCode === null && child.signalCode === null) {
+      const exited = once(child, 'exit');
+      child.kill('SIGTERM');
+      await exited;
+    }
+    if (bridge.listening) await new Promise(resolve => bridge.close(resolve));
+    await rm(root, { recursive: true, force: true });
+  });
+  bridge.listen(0, '127.0.0.1');
+  await once(bridge, 'listening');
+  await writeFile(tokenFile, token, { mode: 0o600 });
   await writeFile(profile, initialProfile);
   await writeFile(source, 'export const RESPONSE = "Hello World!";\n');
   child = spawn(process.execPath, [join(base, 'server.mjs')], {
     cwd: base, env: { ...process.env, AGENT_STUDIO_PORT: String(port),
+      AGENT_STUDIO_DSH_BRIDGE: 'http://127.0.0.1:' + bridge.address().port,
+      AGENT_STUDIO_DSH_TOKEN_FILE: tokenFile,
+      AGENT_STUDIO_WORKSPACES: join(root, 'workspaces'),
       AGENT_STUDIO_DATA: join(root, 'state.json'), AGENT_STUDIO_PROFILE: profile,
       AGENT_STUDIO_AGENT: source, AGENT_STUDIO_API_KEY: '', NINEROUTER_API_KEY: ''
     }, stdio: ['ignore', 'pipe', 'pipe']
-  });
-  t.after(async () => {
-    child.kill('SIGTERM');
-    await rm(root, { recursive: true, force: true });
   });
   let ready = false;
   for (let i = 0; i < 45; i++) {
@@ -103,4 +128,33 @@ test('MVP end-to-end: criar proposta, validar, salvar, testar e restaurar', asyn
   assert.match(await doc.text(), /Agent Studio/);
   assert.equal((await fetch(origin + '/app.js')).status, 200);
   assert.equal((await fetch(origin + '/style.css')).status, 200);
+  const plan = await call('/api/publish/plan', 'POST', {});
+  assert.equal(plan.status, 200);
+  const planned = { id: plan.body.id };
+  assert.ok(planned.id);
+
+  for (const payload of [planned, { ...planned, confirmation: 'inválida' }]) {
+    const rejected = await call('/api/publish/commit', 'POST', payload);
+    assert.equal(rejected.status, 403);
+    assert.equal(await readFile(profile, 'utf8'), initialProfile);
+    assert.equal((await call('/api/publish/status')).body.last, null);
+  }
+  assert.equal(verificationAttempts, 0);
+
+  const draftBefore = await readFile(join(root, 'state.json'));
+  const failed = await call('/api/publish/commit', 'POST', {
+    ...planned, confirmation: 'PUBLICAR HELLO WORLD'
+  });
+  assert.equal(failed.status, 502);
+  assert.match(failed.body.error, /restaurado automaticamente/);
+  assert.equal(verificationAttempts, 2);
+
+  const status = (await call('/api/publish/status')).body;
+  const originalHash = createHash('sha256').update(initialProfile).digest('hex');
+  assert.equal(status.profileHash, originalHash);
+  assert.equal(await readFile(profile, 'utf8'), initialProfile);
+  assert.equal(status.effective, false);
+  assert.equal(status.last.runtimeVerified, false);
+  assert.equal(status.last.verificationSessionId, null);
+  assert.deepEqual(await readFile(join(root, 'state.json')), draftBefore);
 });
