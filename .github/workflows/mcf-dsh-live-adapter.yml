@@ -1,0 +1,40 @@
+name: DSH Gemini Live Adapter
+
+on:
+  pull_request:
+    paths:
+      - 'tools/mcf-dsh-live/**'
+      - '.github/workflows/mcf-dsh-live-adapter.yml'
+  push:
+    paths:
+      - 'tools/mcf-dsh-live/**'
+      - '.github/workflows/mcf-dsh-live-adapter.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  adapter-unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: tools/mcf-dsh-live
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/mcf-dsh-live/package-lock.json
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Syntax check
+        run: |
+          node --check app/dsh-native-adapter.mjs
+          node --check app/extended-tool-router.mjs
+          node --check app/observability.mjs
+      - name: Unit tests (no external keys)
+        run: npm test
