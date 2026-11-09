@@ -15,9 +15,11 @@ describe('MissionRuntimeController v1.1 validation response', () => {
     'METHODOLOGY_PIN_MISMATCH',
   ] as const)('returns 422 (not 500) for %s without leaking error details', async (code) => {
     const runtime = {
-      createMission: vi.fn().mockRejectedValue(
-        new MissionV11ContextError(code, 'Sensitive internal test path must not leak'),
-      ),
+      createMission: vi
+        .fn()
+        .mockRejectedValue(
+          new MissionV11ContextError(code, 'Sensitive internal test path must not leak'),
+        ),
     } as unknown as MissionRuntimeService;
 
     const controller = new MissionRuntimeController(runtime);
