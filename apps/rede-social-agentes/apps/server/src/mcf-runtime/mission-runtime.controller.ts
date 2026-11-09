@@ -41,6 +41,7 @@ import {
 } from './mcf-runtime.errors.js';
 import type { AuthenticatedHumanExecutionProof } from './human-authority-proof.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
+import { MissionV11ContextError } from './mission-v11-context.guard.js';
 import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 
 const stringList = z.array(z.string().trim().min(1).max(256)).max(100);
@@ -175,6 +176,15 @@ function rethrowRuntimeError(error: unknown, correlationId: string): never {
     throw new ConflictException({
       code: 'MCF_VERSION_CONFLICT',
       message: error.message,
+      correlationId,
+    });
+  }
+
+  if (error instanceof MissionV11ContextError) {
+    throw new UnprocessableEntityException({
+      code: 'MCF_V11_CONTEXT_REJECTED',
+      contextCode: error.code,
+      message: 'A missão v1.1 exige contexto de projeto e alinhamento de intenção verificados.',
       correlationId,
     });
   }
