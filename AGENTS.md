@@ -37,3 +37,12 @@ Na instância MESTRE do notebook, selecionar `gemini-3.8-live` como padrão oper
 Seguir os contratos de permissão, handoff, HUMAN_GATE, memória, validação e evidências do MCF. Para navegação no ChatGPT/Cockpit, consultar também [MCF-UI-OPERATING-MANUAL](docs/operations/MCF-UI-OPERATING-MANUAL.md).
 
 **Alcance desta mudança:** documenta uma preferência durável e seu ponto de leitura; não implementa roteamento automático no runtime, não provisiona quota e não substitui instruções de um sistema externo que não carregue este arquivo.
+
+## Acesso remoto doméstico
+
+Antes de configurar ou recuperar noVNC, Tailscale ou acesso pelo celular sem
+digitação repetida de senha, ler
+[MCF Acesso Remoto Doméstico](skills/desktop/mcf-acesso-remoto-domestico/SKILL.md).
+O contrato MCF-REMOTE-ACCESS-HOME está no catálogo como EXPERIMENTAL:
+procedimento reutilizável pelo MESTRE, sem executor novo no runtime.
+Reutilizar autorização vigente, preservar autenticação e validar o desktop real.

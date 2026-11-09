@@ -604,3 +604,23 @@ skills:
     fallback: Usar provider alternativo aprovado; se nenhum existir, registrar plano não executado e dependência externa.
     handoff_to: Augusto
 
+
+  - skill_id: MCF-REMOTE-ACCESS-HOME
+    status: EXPERIMENTAL
+    name: Acesso remoto doméstico
+    version: 1.0.0
+    purpose: Recuperar e configurar acesso remoto privado sem digitação repetida de credenciais.
+    owner_agents: [Mestre]
+    trigger_phrases: ["acesso remoto doméstico", "noVNC", "não precisar digitar senha", "acessar computador pelo celular"]
+    required_inputs: [target_device, connection_direction, authorizedScope]
+    optional_inputs: [existing_session, private_network, persistence_requirement]
+    allowed_tools: [Remote_Desktop_Commander, Tailscale, SSH, Browser]
+    forbidden_tools: [public_vnc, access_control_bypass, secret_exposure, destructive_write]
+    permission_profile: SENSITIVE_CONTROLLED
+    execution_steps: [ler_procedimento, identificar_dispositivo, diagnosticar_camadas, preservar_backup, aplicar_mudanca_autorizada, validar_conexao_real, registrar_limitacoes]
+    required_evidence: [target_identity, authorization_scope, root_cause, changed_files, auth_checks, desktop_observation, reconnect_result, persistence_scope, rollback]
+    expected_outputs: [private_access_link, sanitized_validation_report]
+    acceptance_criteria: [authorized_identity_only, authenticated_desktop_observed, no_secret_in_repository_or_url, unrelated_routes_preserved, persistence_truthful]
+    failure_modes: [device_unreachable, proxy_502, invalid_credentials, premature_sendCredentials, missing_authorized_channel]
+    fallback: Avaliar canal autorizado alternativo conforme skills/desktop/mcf-acesso-remoto-domestico/SKILL.md; sem canal registrar AGUARDANDO_DEPENDENCIA_EXTERNA.
+    handoff_to: Mestre
