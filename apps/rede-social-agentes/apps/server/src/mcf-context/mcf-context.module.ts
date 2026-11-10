@@ -9,6 +9,11 @@ import {
   MCF_CLOUD_CONTEXT_INGRESS_TOKEN,
   McfCloudContextIngressTokenGuard,
 } from './mcf-cloud-context-ingress-token.guard.js';
+import {
+  loadMcfAppHubReadToken,
+  MCF_APPHUB_READ_TOKEN,
+  McfAppHubInventoryReadTokenGuard,
+} from './mcf-apphub-inventory-read-token.guard.js';
 import { McfAppHubInventoryReadController } from './mcf-apphub-inventory-read.controller.js';
 import { McfAppHubInventoryReadService } from './mcf-apphub-inventory-read.service.js';
 import { McfCloudContextReadController } from './mcf-cloud-context-read.controller.js';
@@ -37,6 +42,8 @@ import {
     McfLedgerReadController,
   ],
   providers: [
+    { provide: MCF_APPHUB_READ_TOKEN, useFactory: () => loadMcfAppHubReadToken(process.env) },
+    McfAppHubInventoryReadTokenGuard,
     {
       provide: McfAppHubInventoryReadService,
       useFactory: () => McfAppHubInventoryReadService.fromEnvironment(process.env),

@@ -29,7 +29,7 @@ scope:
 
 governance:
   authorization_state: AUTHORIZED
-  required_gate: LOCAL_GCLOUD_AUTH_CONTEXT_TOKEN_NO_PRODUCTION_NO_PROVIDER_WRITE
+  required_gate: LOCAL_GCLOUD_AUTH_DEDICATED_APPHUB_TOKEN_NO_PRODUCTION_NO_PROVIDER_WRITE
   expiration: null
 
 lifecycle:

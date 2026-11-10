@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { McfContextReadTokenGuard } from './mcf-context-read-token.guard.js';
+import { McfAppHubInventoryReadTokenGuard } from './mcf-apphub-inventory-read-token.guard.js';
 import {
   McfAppHubInventoryReadService,
   McfAppHubInventoryUnavailableError,
@@ -19,7 +19,7 @@ import {
 } from './mcf-apphub-inventory-read.service.js';
 
 @Controller('v1/mcf/context')
-@UseGuards(McfContextReadTokenGuard)
+@UseGuards(McfAppHubInventoryReadTokenGuard)
 export class McfAppHubInventoryReadController {
   constructor(
     @Inject(McfAppHubInventoryReadService)

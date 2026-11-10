@@ -14,11 +14,11 @@
 - **HUMAN_GATE:** autorização explícita anterior para piloto isolado e solicitação de continuidade; não equivale a autorização de merge/deploy
 - **Proibições:** nenhum segredo em documentação ou histórico; nenhum efeito Google Cloud além de GET; runtime desabilitado por padrão e em produção
 - **Estado:** CANDIDATE_READY_FOR_INDEPENDENT_REVIEW
-- **Revisor independente:** PENDENTE (não alegar auditoria independente sem artefato do revisor)
+- **Revisor independente:** Codex CLI; parecer PASS na árvore local corrigida, evidenciado em `docs/audits/2026-11-10-apphub-context-fabric-pr512-independent-review.md`. Revisão por GPU complementar, sem fundamentação suficiente para ser parecer principal.
 
 ## Implementação
 
-- `GET /v1/mcf/context/cloud/apphub` com token do Context Fabric, projeto fixo, sem query params
+- `GET /v1/mcf/context/cloud/apphub` com token dedicado e distinto para o App Hub, projeto fixo, sem query params
 - Nenhuma persistência do payload Google pelo novo adaptador; snapshot retornado somente na resposta
 - Token OAuth derivado do gcloud autenticado local via `execFile` sem shell
 - GET fixos: applications, discoveredServices e discoveredWorkloads, paginação limitada e projeção estrita
@@ -40,8 +40,8 @@
 
 ## Gate para merge
 
-- CI no commit exato da PR
-- Auditoria independente de código e segurança, incluindo interpretação do output `evidence_only`
+- CI no commit exato da PR (novo SHA após correção de token dedicado)
+- Auditoria independente de código e segurança, incluindo interpretação do output `evidence_only`: Codex CLI PASS no escopo declarado; verificar mudança de SHA e riscos remanescentes
 - Revisão da configuração do Context Fabric pelo responsável, sem ativação acidental
 - Sem mudança em infraestrutura remota ou produção em razão do merge
 - Mesmo após merge, o mecanismo continua disabled-by-default; execução externa exige autorização e configuração do boundary específico

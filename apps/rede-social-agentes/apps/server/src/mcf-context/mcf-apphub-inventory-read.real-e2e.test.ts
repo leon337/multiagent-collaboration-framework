@@ -20,8 +20,8 @@ describe('App Hub real local Context Fabric HTTP smoke', () => {
     async () => {
       // This is an opt-in local test; never run it with CI or production credentials.
       const token = randomBytes(48).toString('hex');
-      const oldToken = process.env.MCF_CONTEXT_READ_TOKEN;
-      process.env.MCF_CONTEXT_READ_TOKEN = token;
+      const oldToken = process.env.MCF_APPHUB_READ_TOKEN;
+      process.env.MCF_APPHUB_READ_TOKEN = token;
       class LocalTestModule {}
       Module({ imports: [McfContextModule] })(LocalTestModule);
 
@@ -32,14 +32,14 @@ describe('App Hub real local Context Fabric HTTP smoke', () => {
         const endpoint = `${await app.getUrl()}/v1/mcf/context/cloud/apphub`;
         const unauthorized = await fetch(endpoint);
         const injected = await fetch(endpoint + '?project=other-project', {
-          headers: { 'x-mcf-context-token': token },
+          headers: { 'x-mcf-apphub-read-token': token },
         });
         const mutation = await fetch(endpoint, {
           method: 'POST',
-          headers: { 'x-mcf-context-token': token },
+          headers: { 'x-mcf-apphub-read-token': token },
         });
         const response = await fetch(endpoint, {
-          headers: { 'x-mcf-context-token': token },
+          headers: { 'x-mcf-apphub-read-token': token },
         });
         const body: unknown = await response.json();
         expect(unauthorized.status).toBe(401);
@@ -61,7 +61,7 @@ describe('App Hub real local Context Fabric HTTP smoke', () => {
         });
       } finally {
         if (app) await app.close();
-        if (oldToken === undefined) delete process.env.MCF_CONTEXT_READ_TOKEN;
+        if (oldToken === undefined) delete process.env.MCF_APPHUB_READ_TOKEN;
         else process.env.MCF_CONTEXT_READ_TOKEN = oldToken;
       }
     },
