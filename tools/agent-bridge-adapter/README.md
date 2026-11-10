@@ -152,8 +152,8 @@ python3 tools/agent-bridge-adapter/social_interaction_cli.py plan \
   --source /home/leo/agent-sandbox/artifacts/instagram-mnt_visionario-2026-11-10-engajamento-dry-run.json
 ```
 
-`execute_one` é um núcleo testável por injeção de adaptador: exige capability
-externa, um alvo inequívoco, journal `PREPARED` e pós-condição semântica;
+`execute_one` é um núcleo testável por injeção de adaptador: exige grant HMAC-SHA256
+escopado para conta, publicação e operação, um alvo inequívoco, journal `PREPARED` e pós-condição semântica;
 qualquer falha de execução ou verificação fica `UNKNOWN` e não tem retry cego.
 **Não é uma integração de escrita com o runtime:** apenas o
 `PermissionEngine`/dispatcher canônico poderá, futuramente, emitir um grant

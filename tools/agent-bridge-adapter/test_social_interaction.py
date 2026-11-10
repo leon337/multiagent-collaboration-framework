@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Offline tests: semantic discrimination, policy, uncertainty, idempotency."""
+import hashlib
+import hmac
 import json
+import time
 from pathlib import Path
 import os
 import stat
@@ -10,6 +13,7 @@ import unittest
 from social_interaction import (
     Action, ActionJournal, InteractionBlocked, InteractionUncertain,
     build_review_plan, control_preflight, execute_one, validate_post_url,
+    SignedGrantVerifier,
 )
 
 POST = "https://www.instagram.com/mnt_visionario/p/DJR_x-nubA5/"
@@ -43,7 +47,10 @@ class FakeAdapter:
 
     def observe(self, action):
         return {"url": POST, "accessibility": ax(liked=self.liked),
-                "likedByMe": self.liked, "ownComments": list(self.comments)}
+                "actorId": action.actor_id,
+                "likedByMe": self.liked,
+                "ownComments": [{"authorId": action.actor_id, "text": c,
+                                 "published": True} for c in self.comments]}
 
     def perform(self, action, control):
         self.calls += 1
@@ -62,6 +69,36 @@ class SocialInteractionTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.path = Path(self.tmp.name) / "ledger" / "actions.jsonl"
+        self.key = bytes(range(32))
+        self.now = int(time.time())
+        self.verifier = SignedGrantVerifier(self.key, now=lambda: self.now)
+
+    def grant(self, action: Action, *, actor=None, text_digest=None, expiry=None):
+        claims = {
+            "schema": SignedGrantVerifier.SCHEMA,
+            "issuer": "MCF-MissionRuntime",
+            "audience": "mcf-social-executor",
+            "actorId": actor or action.actor_id,
+            "profile": action.profile,
+            "postUrl": action.url,
+            "kind": action.kind,
+            "commentDigest": text_digest or hashlib.sha256(
+                (action.text or "").encode("utf-8")
+            ).hexdigest(),
+            "issuedAt": self.now,
+            "expiresAt": expiry or self.now + 60,
+            "nonce": "0123456789abcdef0123456789abcdef",
+        }
+        canonical = json.dumps(claims, sort_keys=True, separators=(",", ":")).encode()
+        return {
+            "claims": claims,
+            "signature": hmac.new(self.key, canonical, hashlib.sha256).hexdigest(),
+        }
+
+    def perform(self, action, adapter, grant=None):
+        return execute_one(action, adapter, self.journal(),
+                           grant if grant is not None else self.grant(action),
+                           self.verifier)
 
     def journal(self):
         return ActionJournal(self.path)
@@ -73,10 +110,10 @@ class SocialInteractionTests(unittest.TestCase):
         self.assertEqual(result["commentEditorNode"], "editor")
 
     def test_existing_like_no_write(self):
-        a = Action("mnt_visionario", POST, "like")
+        a = Action("mnt_visionario", POST, "like", actor_id="test_actor")
         b = FakeAdapter(a)
         b.liked = True
-        self.assertEqual(execute_one(a, b, self.journal(), True), "ALREADY_LIKED_NO_WRITE")
+        self.assertEqual(self.perform(a, b), "ALREADY_LIKED_NO_WRITE")
         self.assertEqual(b.calls, 0)
         self.assertFalse(self.path.exists())
 
@@ -110,60 +147,138 @@ class SocialInteractionTests(unittest.TestCase):
             with self.assertRaises(InteractionBlocked):
                 validate_post_url(url, "mnt_visionario")
         with self.assertRaisesRegex(InteractionBlocked, "invalid_comment"):
-            Action("mnt_visionario", POST, "comment", "oi").checked()
+            Action("mnt_visionario", POST, "comment", "oi", actor_id="test_actor").checked()
 
     def test_write_capability_required(self):
+        a = Action("mnt_visionario", POST, "like", actor_id="test_actor")
+        b = FakeAdapter(a)
+        with self.assertRaisesRegex(InteractionBlocked, "grant"):
+            self.perform(a, b, grant=False)
+        self.assertEqual(b.calls, 0)
+
+    def test_false_boolean_and_forged_grants_rejected(self):
+        a = Action("mnt_visionario", POST, "like", actor_id="test_actor")
+        b = FakeAdapter(a)
+        with self.assertRaisesRegex(InteractionBlocked, "grant"):
+            self.perform(a, b, grant=True)
+        forged = self.grant(a)
+        forged["signature"] = "0" * 64
+        with self.assertRaisesRegex(InteractionBlocked, "grant"):
+            self.perform(a, b, grant=forged)
+        self.assertEqual(b.calls, 0)
+        self.assertFalse(self.path.exists())
+
+    def test_wrong_actor_and_comment_scope_rejected(self):
+        a = Action("mnt_visionario", POST, "comment",
+                   "Qual uma boa meta semanal para iniciar?", actor_id="test_actor")
+        b = FakeAdapter(a)
+        for grant in (
+            self.grant(a, actor="different_account"),
+            self.grant(a, text_digest="0" * 64),
+            self.grant(a, expiry=self.now - 1),
+        ):
+            with self.assertRaisesRegex(InteractionBlocked, "grant"):
+                self.perform(a, b, grant=grant)
+        self.assertEqual(b.calls, 0)
+
+    def test_authenticated_actor_mismatch_no_write(self):
+        a = Action("mnt_visionario", POST, "like", actor_id="test_actor")
+        b = FakeAdapter(a)
+        b.observe = lambda _: {
+            "url": POST, "actorId": "wrong_account",
+            "accessibility": ax(liked=False)
+        }
+        with self.assertRaisesRegex(InteractionBlocked, "actor_mismatch"):
+            self.perform(a, b)
+        self.assertEqual(b.calls, 0)
+
+    def test_missing_actor_blocks(self):
         a = Action("mnt_visionario", POST, "like")
         b = FakeAdapter(a)
-        with self.assertRaisesRegex(InteractionBlocked, "capability"):
-            execute_one(a, b, self.journal(), False)
+        with self.assertRaisesRegex(InteractionBlocked, "actor_required"):
+            self.perform(a, b)
         self.assertEqual(b.calls, 0)
 
     def test_like_verification_and_duplicate_lock(self):
-        a = Action("mnt_visionario", POST, "like")
+        a = Action("mnt_visionario", POST, "like", actor_id="test_actor")
         b = FakeAdapter(a)
-        self.assertEqual(execute_one(a, b, self.journal(), True), "VERIFIED")
+        self.assertEqual(self.perform(a, b), "VERIFIED")
         rows = [json.loads(x) for x in self.path.read_text().splitlines()]
         self.assertEqual([x["status"] for x in rows], ["PREPARED", "VERIFIED"])
         self.assertEqual(stat.S_IMODE(self.path.stat().st_mode), 0o600)
         self.assertEqual(stat.S_IMODE(self.path.parent.stat().st_mode), 0o700)
-        self.assertEqual(execute_one(a, b, self.journal(), True), "ALREADY_LIKED_NO_WRITE")
+        self.assertEqual(self.perform(a, b), "ALREADY_LIKED_NO_WRITE")
         self.assertEqual(b.calls, 1)
 
     def test_comment_verification(self):
         a = Action("mnt_visionario", POST, "comment",
-                   "A proposta de começar com uma ação pequena é interessante.")
+                   "A proposta de começar com uma ação pequena é interessante.", actor_id="test_actor")
         b = FakeAdapter(a)
-        self.assertEqual(execute_one(a, b, self.journal(), True), "VERIFIED")
+        self.assertEqual(self.perform(a, b), "VERIFIED")
         self.assertEqual(b.comments, [a.text])
-        self.assertEqual(execute_one(a, b, self.journal(), True), "ALREADY_COMMENTED_NO_WRITE")
+        self.assertEqual(self.perform(a, b), "ALREADY_COMMENTED_NO_WRITE")
 
     def test_uncertain_never_retries(self):
         a = Action("mnt_visionario", POST, "comment",
-                   "Uma meta semanal poderia tornar o exercício mais concreto.")
+                   "Uma meta semanal poderia tornar o exercício mais concreto.", actor_id="test_actor")
         b = FakeAdapter(a, fail=True)
         with self.assertRaisesRegex(InteractionUncertain, "unknown"):
-            execute_one(a, b, self.journal(), True)
+            self.perform(a, b)
         self.assertEqual(
             [json.loads(x)["status"] for x in self.path.read_text().splitlines()],
             ["PREPARED", "UNKNOWN"])
         with self.assertRaisesRegex(InteractionBlocked, "reconcile"):
-            execute_one(a, b, self.journal(), True)
+            self.perform(a, b)
         self.assertEqual(b.calls, 1)
 
+    def test_other_authors_comment_does_not_count(self):
+        a = Action("mnt_visionario", POST, "comment",
+                   "Como você acompanha seus resultados?", actor_id="test_actor")
+        b = FakeAdapter(a)
+        b.observe = lambda _: {
+            "url": POST, "actorId": "test_actor", "accessibility": ax(),
+            "ownComments": [{"authorId": "someone_else", "text": a.text,
+                             "published": True}],
+        }
+        self.assertFalse(self.path.exists())
+        # Other people's same text must not satisfy the postcondition.
+        with self.assertRaises(InteractionUncertain):
+            self.perform(a, b)
+        self.assertEqual(b.calls, 1)
+        self.assertIn('"UNKNOWN"', self.path.read_text())
+
+    def test_draft_is_not_published_evidence(self):
+        a = Action("mnt_visionario", POST, "comment",
+                   "Como identificar uma mudança de hábito?", actor_id="test_actor")
+        b = FakeAdapter(a)
+        b.observe = lambda _: {
+            "url": POST, "actorId": "test_actor", "accessibility": ax(),
+            "ownComments": [{"authorId": "test_actor", "text": a.text,
+                             "published": False}],
+        }
+        with self.assertRaises(InteractionUncertain):
+            self.perform(a, b)
+        self.assertEqual(b.calls, 1)
+        self.assertIn('"UNKNOWN"', self.path.read_text())
+
+    def test_journal_rejects_unexpected_status(self):
+        a = Action("mnt_visionario", POST, "like", actor_id="test_actor")
+        with self.assertRaisesRegex(InteractionBlocked, "invalid_journal_status"):
+            self.journal().record(a, "SUCCESS")
+
     def test_missing_postcondition_never_green(self):
-        a = Action("mnt_visionario", POST, "like")
+        a = Action("mnt_visionario", POST, "like", actor_id="test_actor")
         b = FakeAdapter(a, no_postcondition=True)
         with self.assertRaises(InteractionUncertain):
-            execute_one(a, b, self.journal(), True)
+            self.perform(a, b)
         self.assertIn('"UNKNOWN"', self.path.read_text())
 
     def test_wrong_page_no_mutation(self):
-        a = Action("mnt_visionario", POST, "like")
+        a = Action("mnt_visionario", POST, "like", actor_id="test_actor")
         b = FakeAdapter(a)
         b.observe = lambda _: {"url": "https://www.instagram.com/other/"}
         with self.assertRaisesRegex(InteractionBlocked, "wrong_page"):
-            execute_one(a, b, self.journal(), True)
+            self.perform(a, b)
         self.assertEqual(b.calls, 0)
 
     def test_plan_from_drafts_and_no_autopublish(self):

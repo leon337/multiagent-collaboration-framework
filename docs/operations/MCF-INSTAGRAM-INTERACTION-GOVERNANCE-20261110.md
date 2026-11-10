@@ -80,13 +80,21 @@ que discovery é descritivo, **não transfere autorização** e
 reclassificação de uma falha como sucesso. O adaptador de leitura **não** concede
 direitos de escrita.
 
-O núcleo `execute_one` somente pode ser usado por um runtime com capability
-externa validada, contendo a vinculação entre conta, perfil, postagem, operação
-e política. Ele aceita um único passo por invocação e usa um adaptador injetado;
-não se conecta diretamente a endpoints de escrita. O booleano recebido por
-`execute_one` é apenas um sinal passado pelo runtime que o chama e **não
-substitui** uma verificação criptográfica nem a emissão do gate canônico.
-Enquanto a integração canônica não existir, uso real permanece BLOQUEADO.
+O núcleo `execute_one` exige `SignedGrantVerifier` para um grant HMAC-SHA256
+de curta duração, vinculado à conta autenticada, perfil, publicação, operação
+e digest do comentário. Booleano, token sem assinatura, vencido ou vinculado
+a outra conta são rejeitados. Este módulo **não emite grants**; a emissão e
+a validação de política devem ocorrer no runtime canônico.
+
+A verificação exige que a identidade da conta observada seja igual à do
+grant antes e depois da ação. Para comentário, apenas um registro publicado
+atribuído ao autor correto conta como evidência; texto no editor ou cópia
+de terceiro não confirma publicação. O journal registra `PREPARED`,
+`VERIFIED` ou `UNKNOWN`. Falhas e resultados ambíguos impedem retries cegos.
+
+A chave HMAC usada nos testes é **fictícia**, não é uma credencial de
+produção. Sem emissor canônico e adaptador autorizado de escrita,
+a execução real permanece **não habilitada**.
 
 Critério de evidência para LIKE: confirmação de `likedByMe` **e** mudança de
 botão primário de `Curtir` para `Descurtir`. Para COMMENT: texto publicado
@@ -111,3 +119,35 @@ ambiguidade de UI.
 
 **Não executado:** curtidas ou comentários automáticos em massa, manipulação
 das configurações da conta, update da AppImage em execução, merge e deploy.
+
+## Rodada incremental de segurança
+
+- O diagnóstico de 10/11/2026 revelou que a tentativa anterior de
+  `/v1/click` procurou um `svg[aria-label='Curtir']`. O código legado
+  chama `el.click()` diretamente; em certos elementos SVG esse método
+  pode não existir. Trata-se de uma hipótese consistente com o
+  `internal_error`, mas **não confirmada por stack trace**.
+- Nenhuma abordagem alternativa para contornar a restrição de interação da
+  ferramenta foi aplicada.
+- Testes adicionais rejeitam `True` como grant, tokens forjados/vencidos,
+  identificador de conta divergente, comentário de terceiro e rascunho
+  não publicado.
+- O próximo E2E autenticado só poderá usar um adaptador de escrita
+  submetido aos gates canônicos e à política da ferramenta de execução.
+
+
+## Validação de lote em memória (sem Instagram)
+
+Foram processadas as 31 URLs coletadas usando um adaptador inteiramente
+simulado. Resultado: **31 curtidas simuladas + 27 comentários simulados**
+com 58 pares PREPARED/VERIFIED no journal de teste, zero exceções e quatro
+publicações sem texto suficiente para gerar comentário. Esse resultado não
+é prova de curtida nem comentário no Instagram: os contadores reais
+permanecem zero.
+
+Relatório local:
+/home/leo/agent-sandbox/artifacts/instagram-mnt_visionario-2026-11-10-e2e-simulado.json
+
+A execução ao vivo depende de um executor de escrita permitido pelo
+ambiente e da integração canônica de emissão e validação do grant.
+Nenhum mecanismo de bloqueio da ferramenta foi contornado.
