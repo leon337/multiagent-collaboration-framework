@@ -127,3 +127,36 @@ Executar a partir de `apps/rede-social-agentes/apps/server` com dependências de
 - O planejador é de links de texto exato, não um agente LLM que inventa ações ou caminhos; essa limitação é deliberada nesta versão.
 - A classificação de público não inspeciona automaticamente cada byte da página, embora o receipt guarde somente digest e metadados. Não usar em páginas autenticadas ou privadas.
 - O `ExternalActionDispatcher` prepara reconciliação durable quando conectado ao ledger real; o E2E atual verifica o fluxo com ledger simulado. Nenhum merge, publicação ou deploy de produção é realizado por este pacote.
+
+
+## Preflight social (Instagram) — observacional e testável
+
+O módulo `social_interaction.py` corrige a ambiguidade de quatro botões
+`Curtir` (publicação + comentários) usando `GET /v1/accessibility`: identifica
+um único botão do post pelo conjunto `Curtir/Descurtir → Comentar → Compartilhar`.
+Não envia cliques nem comentários ao navegador em modo CLI.
+
+Diagnóstico da publicação aberta na instância correta:
+
+```bash
+python3 tools/agent-bridge-adapter/social_interaction_cli.py diagnose \
+  --instance notebook-team2 --profile mnt_visionario \
+  --url https://www.instagram.com/mnt_visionario/p/DJR_x-nubA5/
+```
+
+Validar rascunhos existentes, sem escrever na rede:
+
+```bash
+python3 tools/agent-bridge-adapter/social_interaction_cli.py plan \
+  --profile mnt_visionario \
+  --source /home/leo/agent-sandbox/artifacts/instagram-mnt_visionario-2026-11-10-engajamento-dry-run.json
+```
+
+`execute_one` é um núcleo testável por injeção de adaptador: exige capability
+externa, um alvo inequívoco, journal `PREPARED` e pós-condição semântica;
+qualquer falha de execução ou verificação fica `UNKNOWN` e não tem retry cego.
+**Não é uma integração de escrita com o runtime:** apenas o
+`PermissionEngine`/dispatcher canônico poderá, futuramente, emitir um grant
+efetivo e acionar adaptador autorizado. Este código não oferece bypass nem
+autopostagem. Ver
+`docs/operations/MCF-INSTAGRAM-INTERACTION-GOVERNANCE-20261110.md`.

@@ -30,6 +30,7 @@ ROUTES = {
     "snapshot": "/v1/live/snapshot",
     "text": "/v1/text",
     "interactive": "/v1/interactive",
+    "accessibility": "/v1/accessibility",
 }
 TOOL_DOCS = {
     "discovery": "Discover live instance, panes, agents and supported mechanisms (read-only).",
@@ -40,6 +41,7 @@ TOOL_DOCS = {
     "snapshot": "Read the live-event snapshot; do not start the SSE stream.",
     "text": "Read current workspace page text without modifying the page.",
     "interactive": "Inspect current interactive elements, without clicking or typing.",
+    "accessibility": "Read the Chromium accessibility tree for semantic preflight; no interactions.",
 }
 
 
