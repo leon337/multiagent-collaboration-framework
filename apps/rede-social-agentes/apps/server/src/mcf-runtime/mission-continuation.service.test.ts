@@ -17,6 +17,7 @@ const EVIDENCE = 'a'.repeat(64);
 class InMemoryStore implements McfMissionContinuationStore {
   private rows = new Map<string, McfMissionContinuation>();
   private keys = new Map<string, string>();
+  private seenFingerprints = new Set<string>();
   async register(input: CreateReadOnlyContinuation) {
     const existing = this.keys.get(input.dedupeKey);
     if (existing) return this.rows.get(existing) as McfMissionContinuation;
@@ -45,6 +46,9 @@ class InMemoryStore implements McfMissionContinuationStore {
     const old = this.rows.get(input.id);
     if (!old) return null;
     if (old.state === 'SUPERSEDED' || old.state === 'CANCELLED') return old;
+    const fingerprintKey = old.id + ':' + input.progressFingerprint;
+    const firstSeen = !this.seenFingerprints.has(fingerprintKey);
+    this.seenFingerprints.add(fingerprintKey);
     const row: McfMissionContinuation = {
       ...old,
       state: input.state,
@@ -52,11 +56,7 @@ class InMemoryStore implements McfMissionContinuationStore {
       progressFingerprint: input.progressFingerprint,
       evidenceDigest: input.evidenceDigest,
       version: old.version + 1,
-      notificationCount:
-        old.notificationCount +
-        (input.blockers.length > 0 && old.progressFingerprint !== input.progressFingerprint
-          ? 1
-          : 0),
+      notificationCount: old.notificationCount + (input.blockers.length > 0 && firstSeen ? 1 : 0),
       observedAt: new Date(),
     };
     this.rows.set(row.id, row);
@@ -121,6 +121,23 @@ describe('MCF MissionContinuationService (read-only production boundary)', () =>
     });
     expect(b?.progressFingerprint).toBe(a?.progressFingerprint);
     expect(b?.notificationCount).toBe(1);
+  });
+
+  it('replay A-B-A does not re-notify A', async () => {
+    const s = new MissionContinuationService(new InMemoryStore());
+    const r = await s.register({
+      goal: GOAL,
+      releaseSha: SHA,
+      targetBindingId: 'PRODUCTION_UNBOUND',
+    });
+    await s.observe({ continuationId: r.id, blockers: ['CAUSE_A'], evidenceDigest: EVIDENCE });
+    await s.observe({ continuationId: r.id, blockers: ['CAUSE_B'], evidenceDigest: EVIDENCE });
+    const replay = await s.observe({
+      continuationId: r.id,
+      blockers: ['CAUSE_A'],
+      evidenceDigest: EVIDENCE,
+    });
+    expect(replay?.notificationCount).toBe(2);
   });
 
   it('resume after service restart with same durable repository', async () => {

@@ -63,13 +63,24 @@ export class PostgresMissionContinuationRepository implements McfMissionContinua
 
   async observe(input: PersistReadOnlyObservation): Promise<McfMissionContinuation | null> {
     const result = await this.db.query<Row>(
-      `update mcf_mission_continuations set
+      `with first_seen as (
+         insert into mcf_mission_continuation_fingerprints
+           (continuation_id, fingerprint)
+         select $1, $3 where exists (
+           select 1 from mcf_mission_continuations
+           where id = $1 and state not in ('SUPERSEDED','CANCELLED')
+         )
+         on conflict do nothing
+         returning fingerprint
+       )
+       update mcf_mission_continuations set
          state = $2,
          progress_fingerprint = $3,
          blockers = $4::jsonb,
          evidence_digest = $5,
          notification_count = notification_count
-           + case when $6::boolean and progress_fingerprint is distinct from $3 then 1 else 0 end,
+           + case when $6::boolean and exists (select 1 from first_seen)
+                  then 1 else 0 end,
          version = version + 1,
          observed_at = now(),
          changed_at = case

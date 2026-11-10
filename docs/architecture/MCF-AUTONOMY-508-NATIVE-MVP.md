@@ -32,3 +32,15 @@ A persistência de `mcf_mission_continuations` **não** é a fonte de verdade pa
 4. E2E reiniciar o servidor oficial e verificar a persistência do mesmo registro. Antes de deploy real, resolver Issue #506, gates, backup e rollback.
 
 **Este PR altera o código no repositório, mas não foi promovido ao contêiner oficial, que permanece saudável na imagem antiga.**
+
+### QP-018 e replay
+
+A QP-018 da matriz v1.1 proíbe um segundo estado de projeto. O verificador
+estrutural anterior rejeitava indiscriminadamente qualquer migration.
+Agora somente os bytes hash-pinned da migration observacional 0032 são
+considerados runtime-only; toda outra mudança de schema/projeto permanece
+bloqueada. A regra e os casos negativos são testados no próprio qualificador.
+
+O histórico de fingerprints impede duplicar notificação para A → B → A.
+Isso não implementa um outbox de entrega garantida e não resolve ordenação
+de observações fora de ordem; esses requisitos continuam em fases futuras.

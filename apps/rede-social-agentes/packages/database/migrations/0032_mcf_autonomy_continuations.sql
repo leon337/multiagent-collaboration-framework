@@ -41,3 +41,13 @@ CREATE TABLE "mcf_mission_continuations" (
 
 CREATE INDEX "mcf_mission_continuations_state_idx"
   ON "mcf_mission_continuations" ("state", "changed_at");
+
+
+-- Fingerprint history is a derived observation ledger, never an authority
+-- grant. Replayed A -> B -> A cannot emit A twice.
+CREATE TABLE "mcf_mission_continuation_fingerprints" (
+  "continuation_id" uuid NOT NULL REFERENCES "mcf_mission_continuations"("id") ON DELETE CASCADE,
+  "fingerprint" char(64) NOT NULL CHECK ("fingerprint" ~ '^[a-f0-9]{64}$'),
+  "first_seen_at" timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY ("continuation_id", "fingerprint")
+);

@@ -47,6 +47,17 @@ describeDb('PostgresMissionContinuationRepository isolated transactional integra
       expect(after?.version).toBe(101);
       await service.observe({
         continuationId: one.id,
+        blockers: ['TARGET_CHANGED'],
+        evidenceDigest: 'b'.repeat(64),
+      });
+      const replay = await service.observe({
+        continuationId: one.id,
+        blockers: ['MISSING_SECRETS'],
+        evidenceDigest: 'b'.repeat(64),
+      });
+      expect(replay?.notificationCount).toBe(2);
+      await service.observe({
+        continuationId: one.id,
         blockers: [],
         evidenceDigest: 'b'.repeat(64),
       });
