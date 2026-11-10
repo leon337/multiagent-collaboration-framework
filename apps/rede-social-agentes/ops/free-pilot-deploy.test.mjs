@@ -24,6 +24,8 @@ test('Render blueprint provisions the free API, bootstrap issuer and static web 
   assert.doesNotMatch(blueprint, /dockerCommand:/u);
   assert.match(dockerfile, /node packages\/database\/scripts\/migrate\.mjs/u);
   assert.match(dockerfile, /MCF_BOOTSTRAP_ISSUER/u);
+  assert.match(dockerfile, /COPY schemas \/workspace\/schemas/u);
+  assert.doesNotMatch(dockerfile, /COPY\s+(?:\.mcf|\.\s+)\/workspace\/\.mcf/u);
   assert.match(dockerfile, /apps\/server\/dist\/bootstrap-main\.js/u);
   assert.match(dockerfile, /else exec node apps\/server\/dist\/main\.js/u);
   assert.doesNotMatch(blueprint, /preDeployCommand:/u);

@@ -2,17 +2,13 @@ import { randomUUID } from 'node:crypto';
 
 import {
   Body,
-  ConflictException,
   Controller,
-  ForbiddenException,
   Get,
   HttpCode,
   Inject,
-  NotFoundException,
   Param,
   Post,
   Req,
-  UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
 import type {
@@ -29,18 +25,9 @@ import { z } from 'zod';
 import { parseBody } from '../http/parse-body.js';
 import type { AuthenticatedHumanRequest } from '../identity/authenticated-request.js';
 import { SessionAuthGuard } from '../identity/session-auth.guard.js';
-import {
-  McfEvidenceRejectedError,
-  McfMissionNotFoundError,
-  McfMissionVersionConflictError,
-  McfPermissionDeniedError,
-  McfPhaseNotFoundError,
-  McfSkillInputError,
-  McfSkillNotExecutableError,
-  McfSkillNotFoundError,
-} from './mcf-runtime.errors.js';
 import type { AuthenticatedHumanExecutionProof } from './human-authority-proof.js';
 import { MissionRuntimeService } from './mission-runtime.service.js';
+import { rethrowRuntimeError } from './mcf-runtime.http-error.js';
 import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 
 const stringList = z.array(z.string().trim().min(1).max(256)).max(100);
@@ -161,47 +148,6 @@ const ciCallbackSchema = z.object({
   conclusion: z.enum(['success', 'failure', 'cancelled', 'timed_out', 'skipped']),
   completedAt: z.string().datetime({ offset: true }),
 });
-
-function rethrowRuntimeError(error: unknown, correlationId: string): never {
-  if (error instanceof McfMissionNotFoundError || error instanceof McfPhaseNotFoundError) {
-    throw new NotFoundException({
-      code: 'MCF_RESOURCE_NOT_FOUND',
-      message: error.message,
-      correlationId,
-    });
-  }
-
-  if (error instanceof McfMissionVersionConflictError) {
-    throw new ConflictException({
-      code: 'MCF_VERSION_CONFLICT',
-      message: error.message,
-      correlationId,
-    });
-  }
-
-  if (error instanceof McfPermissionDeniedError) {
-    throw new ForbiddenException({
-      code: 'MCF_PERMISSION_DENIED',
-      message: error.message,
-      correlationId,
-    });
-  }
-
-  if (
-    error instanceof McfSkillInputError ||
-    error instanceof McfSkillNotFoundError ||
-    error instanceof McfSkillNotExecutableError ||
-    error instanceof McfEvidenceRejectedError
-  ) {
-    throw new UnprocessableEntityException({
-      code: 'MCF_EXECUTION_REJECTED',
-      message: error.message,
-      correlationId,
-    });
-  }
-
-  throw error;
-}
 
 @Controller('v1/mcf/missions')
 @UseGuards(SessionAuthGuard)

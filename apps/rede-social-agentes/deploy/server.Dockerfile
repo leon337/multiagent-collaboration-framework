@@ -7,6 +7,10 @@ RUN corepack enable \
 
 COPY apps/rede-social-agentes /workspace/apps/rede-social-agentes
 COPY skills /workspace/skills
+# The v1.1 admission guard resolves validated schemas from /workspace/schemas.
+# Canonical .mcf intent/receipt artifacts are NOT baked into the image; production
+# must provide explicitly approved paired artifacts through a governed mount.
+COPY schemas /workspace/schemas
 
 RUN pnpm install --frozen-lockfile \
   && pnpm build:packages \

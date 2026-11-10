@@ -344,4 +344,38 @@ MCF_VERSION_CONFLICT         409
 MCF_PERMISSION_DENIED        403
 MCF_EXECUTION_REJECTED       422
 MCF_RUNTIME_AUTHENTICATION_FAILED 401
+MCF_V11_CONTEXT_REJECTED   422 (contexto v1.1 do cliente rejeitado)
+MCF_V11_CONTEXT_UNAVAILABLE 503 (schemas/artefatos indisponíveis no servidor)
 ```
+
+### Contrato público de rejeição de contexto v1.1
+
+Erros de validação do PIP/PRR são rejeitados **antes da persistência da missão**
+com HTTP 422 e corpo seguro (sem caminhos ou mensagens internas):
+
+```json
+{
+  "code": "MCF_V11_CONTEXT_REJECTED",
+  "contextCode": "ALIGNED_PIP_REQUIRED",
+  "message": "A missão v1.1 exige contexto de projeto e alinhamento de intenção verificados.",
+  "correlationId": "request-correlation-id"
+}
+```
+
+Tipo publicado em @rsa/contracts: McfMissionV11ContextRejectionResponse.
+Valores públicos do contextCode: V11_CONTEXT_INCOMPLETE,
+ALIGNED_PIP_REQUIRED, ALIGNED_PIP_PAIR_INVALID, PROJECT_CONTEXT_MISMATCH,
+METHODOLOGY_PIN_MISMATCH, PRR_REF_INVALID, PRR_NOT_CONFIRMED e
+REMOTE_CONTEXT_READER_REQUIRED.
+
+A falha de infraestrutura PROJECT_ARTIFACT_ROOT_UNAVAILABLE **não é um
+contextCode 422**. Ela produz HTTP 503 com code MCF_V11_CONTEXT_UNAVAILABLE,
+mensagem fixa e correlationId, sem expor caminhos ou códigos internos.
+Erros inesperados não são reinterpretados como rejeições do cliente.
+
+O server.Dockerfile empacota os schemas canônicos em /workspace/schemas,
+mas **não inclui** os PIPs/recibos de decisão humana armazenados sob .mcf/.
+Qualquer execução de v1.1 no runtime oficial exige provisionamento governado
+do par exato PIP + Intent Alignment Receipt, por volume dedicado à raiz
+/workspace/.mcf, com disponibilidade verificável e proteção das decisões
+autorizadas. Nunca copiar PIP/recibo de staging como autorização de produção.
