@@ -19,6 +19,29 @@ O MCF registra missões/fases/recibos e governa operações externas, mas o obje
 - Auditoria externa [Claude.ai](https://claude.ai/chat/ef3be621-cc47-4850-9ce6-22e80e8efcd1), leitura do SHA, identificou o ciclo de bootstrap e recomendou B-lite. As severidades propostas são hipóteses de revisão, não vulnerabilidades exploradas.
 - Codex CLI atingiu quota; Gemini CLI e DSH headless exigiram credenciais não disponíveis nas respectivas rotas. Não foram usados como revisores concluídos e nenhuma senha foi movida para o chat.
 
+## Compatibilidade com a arquitetura NextGen vigente
+
+A especificação-alvo
+[MCF NextGen Formal Target Architecture](MCF-NEXTGEN-FORMAL-TARGET-ARCHITECTURE-001.md)
+já prevê missão persistente, execução cognitiva admitida, recuperação entre
+sessões e ledger auditável. Esta ADR **não** redefine os agentes, a
+governança ou o NextGen; propõe apenas a implementação incremental da
+continuação que ainda não foi demonstrada ponta a ponta. Preservar:
+
+- `ONE_CANONICAL_MATERIAL_WRITER_PER_EXECUTION_BOUNDARY`: reconciliador propõe
+  e reserva; a mutação efetiva passa pelo writer/ledger autorizado existente.
+- `STATE_TRANSITION_AND_LEDGER_APPEND_ATOMIC_OR_EQUIVALENT`, `UNKNOWN != PASS`,
+  `STALE != CURRENT`: nenhuma inferência de sucesso com base em UI ou CI.
+- `AGENT != MODEL`, `AGENT_ID_SUPPLIED != PROVEN_EXECUTION_IDENTITY`: modelos
+  e executores precisam ter origem/permite/quota atestadas. Workers locais
+  determinísticos não contam como avaliação cognitiva independente.
+- `PAID_AI_API = FORBIDDEN` e `PAID_AI_API_FALLBACK = FORBIDDEN`: um
+  provider sem quota ou credencial deve bloquear ou degradar para uma
+  capacidade efetivamente verificada e permitida, nunca gerar despesa
+  ou usar chave alheia.
+- `MERGE != RELEASE != PRODUCTION_DEPLOY`: a autorização do bootstrap
+  de destino não equivale a standing authorization para releases futuros.
+
 ## Alternativas consideradas
 
 | Alternativa | Benefício | Limite | Disposição |
