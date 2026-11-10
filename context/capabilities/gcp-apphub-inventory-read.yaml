@@ -1,0 +1,52 @@
+schema_version: 1
+
+capability:
+  id: gcp.apphub.inventory.read
+  provider_project_id: cloud-infrastructure
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: READ_ONLY
+
+contract:
+  protocol: MCF_APPHUB_CONTEXT_FABRIC_READ_V1
+  allowed_operations:
+    - inventory.list
+  prohibited_operations:
+    - cloud.resource.mutate
+    - apphub.application.create
+    - apphub.application.update
+    - apphub.service.register
+    - apphub.workload.register
+    - iam.policy.write
+    - billing.enable
+    - production.mutate
+
+scope:
+  environments:
+    - lab
+  resources:
+    - gcp-project/mcf-potiguar-gemini-261109/apphub/global
+
+governance:
+  authorization_state: AUTHORIZED
+  required_gate: LOCAL_GCLOUD_AUTH_CONTEXT_TOKEN_NO_PRODUCTION_NO_PROVIDER_WRITE
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: DISCONNECTED
+  runtime_state: INACTIVE
+  verification_state: HISTORICALLY_VERIFIED
+  last_verified_at: "2026-11-10T03:41:28Z"
+
+evidence:
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/mcf-context/mcf-apphub-inventory-read.service.ts
+    source_revision: feat/mcf-apphub-context-fabric-read-20261110
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/mcf-context/mcf-apphub-inventory-read.service.test.ts
+    source_revision: feat/mcf-apphub-context-fabric-read-20261110
+
+  - source_ref: gcp-apphub://projects/mcf-potiguar-gemini-261109/locations/global
+    source_revision: LIVE_READ_2026-11-10T03:41Z
+    observed_at: "2026-11-10T03:41:28Z"
+
+freshness: LIVE_REQUIRED

@@ -9,6 +9,8 @@ import {
   MCF_CLOUD_CONTEXT_INGRESS_TOKEN,
   McfCloudContextIngressTokenGuard,
 } from './mcf-cloud-context-ingress-token.guard.js';
+import { McfAppHubInventoryReadController } from './mcf-apphub-inventory-read.controller.js';
+import { McfAppHubInventoryReadService } from './mcf-apphub-inventory-read.service.js';
 import { McfCloudContextReadController } from './mcf-cloud-context-read.controller.js';
 import { McfCloudContextReadService } from './mcf-cloud-context-read.service.js';
 import { McfCapabilityRegistryApiService } from './mcf-capability-registry-api.service.js';
@@ -29,11 +31,16 @@ import {
 @Module({
   controllers: [
     McfCapabilityRegistryController,
+    McfAppHubInventoryReadController,
     McfCloudContextReadController,
     McfContextRecoveryController,
     McfLedgerReadController,
   ],
   providers: [
+    {
+      provide: McfAppHubInventoryReadService,
+      useFactory: () => McfAppHubInventoryReadService.fromEnvironment(process.env),
+    },
     {
       provide: McfCapabilityRegistryApiService,
       useFactory: () => McfCapabilityRegistryApiService.fromEnvironment(process.env),
