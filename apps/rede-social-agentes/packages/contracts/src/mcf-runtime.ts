@@ -32,6 +32,33 @@ export interface McfArtifactRef {
   commitSha: string | null;
 }
 
+/** Public v1.1 admission rejections (HTTP 422). Infrastructure codes are excluded. */
+export type McfMissionV11ValidationContextCode =
+  | 'V11_CONTEXT_INCOMPLETE'
+  | 'ALIGNED_PIP_REQUIRED'
+  | 'ALIGNED_PIP_PAIR_INVALID'
+  | 'PROJECT_CONTEXT_MISMATCH'
+  | 'METHODOLOGY_PIN_MISMATCH'
+  | 'PRR_REF_INVALID'
+  | 'PRR_NOT_CONFIRMED'
+  | 'REMOTE_CONTEXT_READER_REQUIRED';
+
+export type McfMissionV11ContextCode =
+  McfMissionV11ValidationContextCode | 'PROJECT_ARTIFACT_ROOT_UNAVAILABLE';
+
+export interface McfMissionV11ContextRejectionResponse {
+  code: 'MCF_V11_CONTEXT_REJECTED';
+  contextCode: McfMissionV11ValidationContextCode;
+  message: string;
+  correlationId: string;
+}
+
+export interface McfMissionV11ContextUnavailableResponse {
+  code: 'MCF_V11_CONTEXT_UNAVAILABLE';
+  message: string;
+  correlationId: string;
+}
+
 export type IntentDimensionState =
   'CLEAR' | 'PARTIAL' | 'UNKNOWN' | 'CONFLICTING' | 'NOT_APPLICABLE';
 

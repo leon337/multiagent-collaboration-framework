@@ -165,6 +165,21 @@ describe('MCF v1.1 mission context guard', () => {
     ).rejects.toMatchObject({ code: 'METHODOLOGY_PIN_MISMATCH' });
   });
 
+  it('does not misclassify a transient PRR filesystem outage as client 422', async () => {
+    const { artifacts, alignment, alignedPip, prr } = await harness();
+    const verifiedPair = await alignment.verifyAlignmentPair(alignedPip.reference);
+    expect(verifiedPair.state).toBe('PASS_VERIFIED');
+    const unavailable = Object.assign(new Error('transient disk permission failure'), {
+      code: 'EACCES',
+    });
+    vi.spyOn(artifacts, 'loadLocal').mockRejectedValue(unavailable);
+    const guarded = new MissionV11ContextGuard(artifacts, {
+      verifyAlignmentPair: vi.fn().mockResolvedValue(verifiedPair),
+    } as unknown as IntentAlignmentService);
+
+    await expect(guarded.validate(v11Contract(alignedPip, prr))).rejects.toBe(unavailable);
+  });
+
   it('rejects a referenced PRR that is not Reality Confirmed', async () => {
     const { artifacts, alignedPip, guard } = await harness();
     const fixture = JSON.parse(await readFile(prrFixturePath, 'utf8')) as ProjectRealityReportV1;

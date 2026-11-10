@@ -1,24 +1,21 @@
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-import type { McfArtifactRef, McfMissionContract, ProjectRealityReportV1 } from '@rsa/contracts';
+import type {
+  McfArtifactRef,
+  McfMissionContract,
+  McfMissionV11ContextCode,
+  ProjectRealityReportV1,
+} from '@rsa/contracts';
 
 import {
+  ProjectArtifactError,
   RepositoryProjectArtifactStore,
   type CanonicalArtifactRef,
 } from '../project-artifacts/repository-project-artifact.store.js';
 import { IntentAlignmentService } from '../project-intake/intent-alignment.service.js';
 
-export type MissionV11ContextErrorCode =
-  | 'V11_CONTEXT_INCOMPLETE'
-  | 'ALIGNED_PIP_REQUIRED'
-  | 'ALIGNED_PIP_PAIR_INVALID'
-  | 'PROJECT_CONTEXT_MISMATCH'
-  | 'METHODOLOGY_PIN_MISMATCH'
-  | 'PRR_REF_INVALID'
-  | 'PRR_NOT_CONFIRMED'
-  | 'REMOTE_CONTEXT_READER_REQUIRED'
-  | 'PROJECT_ARTIFACT_ROOT_UNAVAILABLE';
+export type MissionV11ContextErrorCode = McfMissionV11ContextCode;
 
 export class MissionV11ContextError extends Error {
   constructor(
@@ -193,7 +190,15 @@ export class MissionV11ContextGuard {
         await artifacts.loadLocal(reference as CanonicalArtifactRef<'PROJECT_REALITY_REPORT'>)
       ).artifact;
     } catch (error) {
-      fail('PRR_REF_INVALID', `projectRealityReportRef could not be verified: ${String(error)}`);
+      // A bad reference is a client validation error. Unexpected I/O and server
+      // failures must propagate as 5xx, not be mislabeled as a 422 PRR error.
+      if (
+        error instanceof ProjectArtifactError ||
+        (error instanceof Error && 'code' in error && error.code === 'ENOENT')
+      ) {
+        fail('PRR_REF_INVALID', 'projectRealityReportRef could not be verified');
+      }
+      throw error;
     }
     if (
       loaded.realityConfirmation.status !== 'CONFIRMED' &&

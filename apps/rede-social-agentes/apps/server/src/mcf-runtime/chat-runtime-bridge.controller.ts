@@ -1,16 +1,4 @@
-import {
-  Body,
-  ConflictException,
-  Controller,
-  ForbiddenException,
-  HttpCode,
-  Inject,
-  NotFoundException,
-  Post,
-  Req,
-  UnprocessableEntityException,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Inject, Post, Req, UseGuards } from '@nestjs/common';
 import type { McfChatDispatchRequest } from '@rsa/contracts';
 import { z } from 'zod';
 
@@ -21,16 +9,7 @@ import {
   ChatRuntimeBridgeService,
   type McfChatRuntimeDispatchResult,
 } from './chat-runtime-bridge.service.js';
-import {
-  McfEvidenceRejectedError,
-  McfMissionNotFoundError,
-  McfMissionVersionConflictError,
-  McfPermissionDeniedError,
-  McfPhaseNotFoundError,
-  McfSkillInputError,
-  McfSkillNotExecutableError,
-  McfSkillNotFoundError,
-} from './mcf-runtime.errors.js';
+import { rethrowRuntimeError } from './mcf-runtime.http-error.js';
 
 const sourceList = z.array(z.string().trim().min(1).max(512)).max(100);
 const executableSkill = z.enum([
@@ -58,43 +37,6 @@ const chatDispatchSchema = z.object({
   requestedSkills: z.array(executableSkill).min(1).max(8).optional(),
 });
 
-function rethrowBridgeError(error: unknown, correlationId: string): never {
-  if (error instanceof McfMissionNotFoundError || error instanceof McfPhaseNotFoundError) {
-    throw new NotFoundException({
-      code: 'MCF_RESOURCE_NOT_FOUND',
-      message: error.message,
-      correlationId,
-    });
-  }
-  if (error instanceof McfMissionVersionConflictError) {
-    throw new ConflictException({
-      code: 'MCF_VERSION_CONFLICT',
-      message: error.message,
-      correlationId,
-    });
-  }
-  if (error instanceof McfPermissionDeniedError) {
-    throw new ForbiddenException({
-      code: 'MCF_PERMISSION_DENIED',
-      message: error.message,
-      correlationId,
-    });
-  }
-  if (
-    error instanceof McfSkillInputError ||
-    error instanceof McfSkillNotFoundError ||
-    error instanceof McfSkillNotExecutableError ||
-    error instanceof McfEvidenceRejectedError
-  ) {
-    throw new UnprocessableEntityException({
-      code: 'MCF_EXECUTION_REJECTED',
-      message: error.message,
-      correlationId,
-    });
-  }
-  throw error;
-}
-
 @Controller('v1/mcf/chat')
 @UseGuards(SessionAuthGuard)
 export class ChatRuntimeBridgeController {
@@ -114,7 +56,7 @@ export class ChatRuntimeBridgeController {
         authenticatedAccountId: request.authenticatedHuman.accountId,
       });
     } catch (error) {
-      rethrowBridgeError(error, request.id);
+      rethrowRuntimeError(error, request.id);
     }
   }
 }
