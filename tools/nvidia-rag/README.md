@@ -8,7 +8,7 @@ Adaptador **local, opt-in**, sem integração automática no runtime de produç�
 cd tools/nvidia-rag
 python3 -m unittest -v test_rag.py
 python3 rag.py probe
-python3 rag.py index ../../docs/MCF-CURRENT-STATE.md --db /tmp/mcf-nim-rag.sqlite
+python3 rag.py index ../../docs/MCF-CURRENT-STATE.md --approved-root ../../docs --db /tmp/mcf-nim-rag.sqlite
 python3 rag.py search 'Como funcionam os gates do MCF?' --db /tmp/mcf-nim-rag.sqlite
 ```
 
@@ -22,3 +22,7 @@ Por padrão, a chave é lida em `~/.config/codebuddy/nvidia-nim.env` **somente s
 - Não executa ferramentas de agente, nem escreve no MCF runtime, 9router ou DSH.
 - Integração no dispatcher do MCF exige revisão independente, contrato de autorização, isolamento por missão, política de retenção, observabilidade e gates antes de deploy.
 - Roteamento DSH → 9router → NVIDIA deve ser provado separadamente; provider configurado não equivale a tráfego E2E.
+
+## Skill governada (candidata)
+
+Contrato: `skills/knowledge/MCF-NVIDIA-SEMANTIC-RETRIEVAL.yaml`; registro declarativo em `skills/registry.yaml`. A skill **não** está habilitada no `McfExecutableSkillId`/`SkillExecutor` do servidor. O adaptador local permanece opt-in; ativação no runtime exige contrato tipado, permission engine, ledger, testes negativos e revisão independente.

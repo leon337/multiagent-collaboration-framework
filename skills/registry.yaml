@@ -604,3 +604,23 @@ skills:
     fallback: Usar provider alternativo aprovado; se nenhum existir, registrar plano não executado e dependência externa.
     handoff_to: Augusto
 
+
+  - skill_id: MCF-NVIDIA-SEMANTIC-RETRIEVAL
+    status: EXPERIMENTAL
+    name: Recuperar conhecimento por embeddings NVIDIA NIM
+    version: 0.1.0
+    purpose: Busca semântica opt-in de fontes autorizadas com proveniência; adaptador local ainda não executável pelo servidor MCF.
+    owner_agents: [Miriam]
+    trigger_phrases: ["pesquisar conhecimento do MCF", "recuperar contexto semântico"]
+    required_inputs: [query, mission_id, authorized_scope, approved_sources]
+    optional_inputs: [model, top_k, index_path]
+    allowed_tools: [NVIDIA_NIM_Embeddings, Local_SQLite]
+    forbidden_tools: [unbounded_filesystem_crawl, production_write, credential_capture, automatic_paid_fallback]
+    permission_profile: READ_ONLY
+    execution_steps: [validar_escopo, consultar_indice, registrar_proveniencia, entregar_context_package]
+    required_evidence: [mission_id, model_id, source_paths, source_hashes, query_hash, returned_chunk_ids, similarity_scores, observed_at, limitations]
+    expected_outputs: [context_package, source_ledger, retrieval_receipt]
+    acceptance_criteria: [approved_sources_only, no_secret_exposure, provenance_preserved, failures_declared]
+    failure_modes: [missing_key, provider_unavailable, unapproved_source, stale_index]
+    fallback: Degradar para busca literal em fontes autorizadas e registrar indisponibilidade da NVIDIA.
+    handoff_to: Mestre

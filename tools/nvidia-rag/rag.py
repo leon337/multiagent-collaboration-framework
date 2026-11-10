@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """MCF experimental read-only NVIDIA embeddings + local SQLite vector retrieval."""
-import argparse, hashlib, json, math, os, pathlib, sqlite3, sys, urllib.error, urllib.request
+import argparse, hashlib, json, math, os, pathlib, sqlite3, sys, urllib.error, urllib.request, stat
 
 MODELS = {"nvidia/nemotron-3.5-embed-1b", "nvidia/nemotron-3.5-embed-8b", "nvidia/nemotron-3-embed-1b"}
 API = "https://integrate.api.nvidia.com/v1/embeddings"
@@ -55,8 +55,23 @@ def cosine(a,b):
 def chunks(text, size=1100):
     return [text[i:i+size] for i in range(0,len(text),size)]
 
-def index_file(db,key,model,path):
-    path=pathlib.Path(path).resolve(strict=True)
+def approved_source(path, approved_root):
+    if not approved_root:
+        raise ValueError("Indexação exige --approved-root explícito")
+    root = pathlib.Path(approved_root).expanduser().resolve(strict=True)
+    path = pathlib.Path(path).expanduser().resolve(strict=True)
+    if not path.is_relative_to(root) or not path.is_file():
+        raise ValueError("Fonte fora do escopo aprovado")
+    if path.is_symlink() or path.stat().st_mode & (stat.S_IWGRP | stat.S_IWOTH):
+        raise ValueError("Fonte com permissões inseguras")
+    if any(part.startswith('.') for part in path.relative_to(root).parts):
+        raise ValueError("Fonte oculta não permitida")
+    if any(part.lower() in ('secrets', 'credentials', 'private', 'node_modules') for part in path.parts):
+        raise ValueError("Fonte potencialmente sensível")
+    return path
+
+def index_file(db,key,model,path,approved_root=None):
+    path=approved_source(path, approved_root)
     if not path.is_file() or path.suffix.lower() not in (".md",".txt",".py",".ts",".tsx",".js",".json",".yaml",".yml") or path.stat().st_size>300000:
         raise ValueError("Arquivo não permitido ou muito grande")
     content=path.read_text(encoding="utf-8")
@@ -86,6 +101,7 @@ def main():
     p.add_argument("--db",default="./rag.sqlite")
     p.add_argument("--key-file",default="~/.config/codebuddy/nvidia-nim.env")
     p.add_argument("--top-k",type=int,default=3)
+    p.add_argument("--approved-root",help="Diretório raiz de fontes explicitamente aprovadas")
     args=p.parse_args()
     if args.top_k<1 or args.top_k>20:p.error("top-k deve ser de 1 a 20")
     db=connect(args.db)
@@ -96,7 +112,7 @@ def main():
         v=embed(["Teste de recuperação semântica do MCF"],key,args.model,"query")
         print(json.dumps({"ok":True,"model":args.model,"dimensions":len(v[0])}));return
     if not args.value:p.error("value é obrigatório")
-    if args.action=="index":print(json.dumps({"indexed_chunks":index_file(db,key,args.model,args.value)}))
+    if args.action=="index":print(json.dumps({"indexed_chunks":index_file(db,key,args.model,args.value,args.approved_root)}))
     elif args.action=="search":print(json.dumps(search(db,key,args.model,args.value,args.top_k),ensure_ascii=False,indent=2))
 
 if __name__=="__main__":
