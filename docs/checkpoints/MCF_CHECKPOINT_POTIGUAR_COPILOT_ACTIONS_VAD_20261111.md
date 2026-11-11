@@ -11,11 +11,11 @@ Este registro é uma ponte entre o MCF e o repositório do produto. **Não redef
 ## Repositório do produto e documentos canônicos
 
 - Produto: [leon337/reconhecimento_facial](https://github.com/leon337/reconhecimento_facial).
-- [Checkpoint técnico completo do produto](https://github.com/leon337/reconhecimento_facial/blob/feat/copilot-actions-vad-20261111/docs/copilot/checkpoints/2026-11-11-CHECKPOINT-COPILOTO-VAD-ACOES.md)
-- [Handoff para outra sessão](https://github.com/leon337/reconhecimento_facial/blob/feat/copilot-actions-vad-20261111/docs/copilot/checkpoints/2026-11-11-HANDOFF-PROXIMA-SESSAO.md)
-- [Índice atual do Copiloto](https://github.com/leon337/reconhecimento_facial/blob/feat/copilot-actions-vad-20261111/docs/copilot/CURRENT_CHECKPOINT.md)
+- [Checkpoint técnico completo do produto](https://github.com/leon337/reconhecimento_facial/blob/216c4295e2c46dbdec73bd69ad8c0dcb4cf0a20b/docs/copilot/checkpoints/2026-11-11-CHECKPOINT-COPILOTO-VAD-ACOES.md)
+- [Handoff para outra sessão](https://github.com/leon337/reconhecimento_facial/blob/216c4295e2c46dbdec73bd69ad8c0dcb4cf0a20b/docs/copilot/checkpoints/2026-11-11-HANDOFF-PROXIMA-SESSAO.md)
+- [Índice atual do Copiloto](https://github.com/leon337/reconhecimento_facial/blob/216c4295e2c46dbdec73bd69ad8c0dcb4cf0a20b/docs/copilot/CURRENT_CHECKPOINT.md)
 - [PR #41 — cadastro assistido/VAD](https://github.com/leon337/reconhecimento_facial/pull/41)
-- [ADR-002](https://github.com/leon337/reconhecimento_facial/blob/feat/copilot-actions-vad-20261111/docs/copilot/ADR-002-ACOES-ASSISTIDAS-VAD.md) e [evidências](https://github.com/leon337/reconhecimento_facial/blob/feat/copilot-actions-vad-20261111/docs/copilot/2026-11-11_ACTIONS_VAD_TESTS.md).
+- [ADR-002](https://github.com/leon337/reconhecimento_facial/blob/216c4295e2c46dbdec73bd69ad8c0dcb4cf0a20b/docs/copilot/ADR-002-ACOES-ASSISTIDAS-VAD.md) e [evidências](https://github.com/leon337/reconhecimento_facial/blob/216c4295e2c46dbdec73bd69ad8c0dcb4cf0a20b/docs/copilot/2026-11-11_ACTIONS_VAD_TESTS.md).
 
 ## Reconciliado nesta sessão
 
@@ -31,7 +31,7 @@ Este registro é uma ponte entre o MCF e o repositório do produto. **Não redef
 | Segurança externa | `trycloudflare.com` temporário atrás de HTTP Basic Auth + login Flask; anônimo HTTP 401 |
 | MCF `main` no início deste checkpoint | `0bcea848934ada8593a9ff8be86ea3a41157e546` |
 
-O **commit documental** no PR #41 faz os checks daquele commit correrem novamente; **não reutilizar os 4 checks verdes do SHA anterior** como evidência suficiente para merge do novo HEAD.
+Os links de arquivo acima apontam para o commit imutável do checkpoint. O **commit documental** no PR #41 faz os checks daquele commit correrem novamente; **não reutilizar os 4 checks verdes do SHA anterior** como evidência suficiente para merge do novo HEAD.
 
 ## Decisões arquiteturais já tomadas
 
