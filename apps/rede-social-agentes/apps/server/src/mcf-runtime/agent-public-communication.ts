@@ -62,19 +62,20 @@ export function publicAgentLabel(agent: AgentRoleContract, humanPrincipal: strin
   const role = required(agent.role, 'agent.role');
   const principal = required(humanPrincipal, 'humanPrincipal');
   // Public name is not an authority, permission, corporate office or legal signature.
-  const title = id.toUpperCase() === 'MESTRE'
-    ? 'Agente Digital de Operações'
-    : 'Agente Digital — ' + role;
+  const isMestre = id.toUpperCase() === 'MESTRE';
+  const title = isMestre ? 'Agente Digital de Operações' : 'Agente Digital — ' + role;
   return id.toUpperCase() + ', ' + title + ' do ' + principal;
 }
 
 export function recifeGreeting(now: Date): string {
   if (Number.isNaN(now.getTime())) throw new Error('now must be a valid Date');
-  const hour = Number(new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'America/Recife',
-    hour: '2-digit',
-    hourCycle: 'h23',
-  }).format(now));
+  const hour = Number(
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'America/Recife',
+      hour: '2-digit',
+      hourCycle: 'h23',
+    }).format(now),
+  );
   return hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
 }
 
@@ -104,14 +105,23 @@ export function composeMcfAgentPublicMessage(
     emailNotice = '\nO e-mail "' + subject + '" foi enviado de ' + from + ' para ' + to + '.';
   }
 
-  const signature = request.agent.agentId.toUpperCase() === 'MESTRE'
-    ? 'MESTRE — Agente Digital de Operações'
-    : request.agent.agentId.toUpperCase() + ' — Agente Digital';
-  const message = recifeGreeting(request.now) + ', ' + recipient + '!\n\n' +
-    'Sou ' + label + '. Atuo como agente digital, sob a responsabilidade humana de ' +
-    principal + '.\n\n' +
-    'A pedido dele, entro em contato sobre: ' + purpose + '.' + details + emailNotice +
-    '\n\nPor gentileza, confirme o recebimento quando possível.\n\n' + signature;
+  let signature = request.agent.agentId.toUpperCase() + ' — Agente Digital';
+  if (request.agent.agentId.toUpperCase() === 'MESTRE') {
+    signature = 'MESTRE — Agente Digital de Operações';
+  }
+  const greeting = recifeGreeting(request.now) + ', ' + recipient + '!';
+  const introduction = 'Sou ' + label + '. Atuo como agente digital.';
+  const accountability = 'Atuo sob a responsabilidade humana de ' + principal + '.';
+  const subjectLine = 'A pedido dele, entro em contato sobre: ' + purpose + '.';
+  const closing = 'Por gentileza, confirme o recebimento quando possível.';
+  const message = [
+    greeting,
+    introduction,
+    accountability,
+    subjectLine + details + emailNotice,
+    closing,
+    signature,
+  ].join('\n\n');
 
   return {
     policy: MCF_AGENT_PUBLIC_COMMUNICATION,
