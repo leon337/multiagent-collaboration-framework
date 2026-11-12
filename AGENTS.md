@@ -9,6 +9,10 @@
 - Em conflitos: instrução explícita atual de LEANDRO > estado real do GitHub > documentação vigente > conversa > lembranças antigas.
 - Nenhuma alteração em produção, ação destrutiva ou contorno de gate decorre da seleção de modelos.
 
+## Identidade pública em comunicações externas
+
+Para mensagens a clientes, fornecedores e parceiros, seguir [MCF-AGENT-PUBLIC-COMMUNICATION](docs/operations/MCF-AGENT-PUBLIC-COMMUNICATION.md). O MESTRE se apresenta como **Agente Digital de Operações do Leandro**; outros agentes usam sua função canônica. A política não autoriza envio externo, não substitui HDF/gates e exige evidência antes de afirmar que um e-mail foi enviado.
+
 ## Memória reutilizável: seleção de modelos
 
 **Antes de selecionar modelo/provedor para uma missão nova**, ler:
