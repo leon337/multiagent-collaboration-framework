@@ -8,8 +8,12 @@ import {
 } from './agent-public-communication.js';
 
 const mestre: AgentRoleContract = {
-  agentId: 'MESTRE', role: 'Ponte oficial e orquestração', version: '1', capabilities: [],
+  agentId: 'MESTRE',
+  role: 'Ponte oficial e orquestração',
+  version: '1',
+  capabilities: [],
 };
+
 const base = {
   agent: mestre,
   humanPrincipal: 'Leandro',
@@ -42,29 +46,57 @@ describe('MCF public communication v1', () => {
       },
     });
     expect(draft.referencedEmailMessageId).toBe('1a1d119534a13a9a');
-    expect(draft.text).toContain('foi enviado de potiguaradm23@gmail.com para potiguarengenharia.pe@gmail.com');
+    expect(draft.text).toContain(
+      'foi enviado de potiguaradm23@gmail.com para potiguarengenharia.pe@gmail.com',
+    );
   });
 
   it('rejects absent or malformed evidence data', () => {
-    expect(() => composeMcfAgentPublicMessage({
-      ...base, sentEmail: { messageId: '', from: 'a@example.com', to: 'b@example.com', subject: 'Teste' },
-    })).toThrow('sentEmail.messageId');
-    expect(() => composeMcfAgentPublicMessage({
-      ...base, sentEmail: { messageId: 'x', from: 'not-email', to: 'b@example.com', subject: 'Teste' },
-    })).toThrow('sentEmail.from');
+    const missingId = {
+      ...base,
+      sentEmail: {
+        messageId: '',
+        from: 'a@example.com',
+        to: 'b@example.com',
+        subject: 'Teste',
+      },
+    };
+    const wrongSender = {
+      ...base,
+      sentEmail: {
+        messageId: 'x',
+        from: 'not-email',
+        to: 'b@example.com',
+        subject: 'Teste',
+      },
+    };
+    expect(() => composeMcfAgentPublicMessage(missingId)).toThrow('sentEmail.messageId');
+    expect(() => composeMcfAgentPublicMessage(wrongSender)).toThrow('sentEmail.from');
   });
 
   it('does not reuse an email-send confirmation in the email drafting channel', () => {
-    expect(() => composeMcfAgentPublicMessage({
-      ...base, channel: 'email',
-      sentEmail: { messageId: 'x', from: 'a@example.com', to: 'b@example.com', subject: 'Teste' },
-    })).toThrow('only supported');
+    const invalid = {
+      ...base,
+      channel: 'email' as const,
+      sentEmail: {
+        messageId: 'x',
+        from: 'a@example.com',
+        to: 'b@example.com',
+        subject: 'Teste',
+      },
+    };
+    expect(() => composeMcfAgentPublicMessage(invalid)).toThrow('only supported');
   });
 
   it('derives specialists from their canonical role instead of inventing offices', () => {
-    expect(publicAgentLabel({
-      ...mestre, agentId: 'SOFIA', role: 'Arquitetura de Software',
-    }, 'Leandro')).toBe('SOFIA, Agente Digital — Arquitetura de Software do Leandro');
+    const specialist = {
+      ...mestre,
+      agentId: 'SOFIA',
+      role: 'Arquitetura de Software',
+    };
+    expect(publicAgentLabel(specialist, 'Leandro')).toBe(
+      'SOFIA, Agente Digital — Arquitetura de Software do Leandro',
+    );
   });
 
   it('uses Recife local hour for morning, afternoon and evening', () => {
@@ -74,7 +106,9 @@ describe('MCF public communication v1', () => {
   });
 
   it('rejects blank and multiline recipients', () => {
-    expect(() => composeMcfAgentPublicMessage({ ...base, recipientName: ' ' })).toThrow('recipientName');
-    expect(() => composeMcfAgentPublicMessage({ ...base, recipientName: 'Robson\nBCC:' })).toThrow('recipientName');
+    const blank = { ...base, recipientName: ' ' };
+    const multiline = { ...base, recipientName: 'Robson\\nBCC:' };
+    expect(() => composeMcfAgentPublicMessage(blank)).toThrow('recipientName');
+    expect(() => composeMcfAgentPublicMessage(multiline)).toThrow('recipientName');
   });
 });
