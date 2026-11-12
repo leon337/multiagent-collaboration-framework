@@ -107,7 +107,7 @@ describe('MCF public communication v1', () => {
 
   it('rejects blank and multiline recipients', () => {
     const blank = { ...base, recipientName: ' ' };
-    const multiline = { ...base, recipientName: 'Robson\\nBCC:' };
+    const multiline = { ...base, recipientName: 'Robson\nBCC:' };
     expect(() => composeMcfAgentPublicMessage(blank)).toThrow('recipientName');
     expect(() => composeMcfAgentPublicMessage(multiline)).toThrow('recipientName');
   });
