@@ -43,7 +43,11 @@ export interface McfAgentPublicMessageDraft {
 
 function required(value: string, field: string): string {
   const trimmed = value.trim();
-  if (!trimmed || /[\u0000-\u001f\u007f]/u.test(trimmed)) {
+  const containsControl = Array.from(trimmed).some((char) => {
+    const code = char.charCodeAt(0);
+    return code <= 31 || code === 127;
+  });
+  if (!trimmed || containsControl) {
     throw new Error(field + ' must be non-empty, single-line printable text');
   }
   return trimmed;
