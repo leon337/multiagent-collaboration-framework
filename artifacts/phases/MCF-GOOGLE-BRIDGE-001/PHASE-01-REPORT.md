@@ -25,3 +25,6 @@ Revisão isolada do Codex CLI identificou 3 pontos P2, todos corrigidos em códi
 
 ## Revisão pós-correção (2026-11-13)
 Uma segunda análise do Codex reportou incompatibilidade entre models/ prefix no discovery Gemini e generate; corrigida com normalização, validação e teste mock. Testes locais 15/15 PASS. Nenhuma geração Gemini real foi realizada.
+
+## Revisão de inicialização concorrente e callback (2026-11-13)
+Revisão separada reportou 2 novos pontos P2: chave AES criada com janela de gravação parcial e callback OAuth com falha em URL malformada; corrigidos com links atômicos e tratamento HTTP 400. O token Bearer local recebeu a mesma proteção preventiva. Testes finais: 16/16 PASS.

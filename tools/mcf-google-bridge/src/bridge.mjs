@@ -1,5 +1,5 @@
 import { randomBytes, createCipheriv, createDecipheriv, randomUUID, timingSafeEqual } from 'node:crypto';
-import { mkdir, readFile, writeFile, appendFile, stat, rename, unlink } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, appendFile, stat, rename, unlink, link } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { GoogleAuth } from 'google-auth-library';
@@ -61,10 +61,23 @@ async function getStoreKey() {
   await ensureDir();
   const file=path.join(stateDir(),'key');
   let value=await secureRead(file);
-  if (value) { if (value.length!==32) throw new BridgeError('INVALID_STORE_KEY',500); return value; }
+  if(value!==null) {
+    if(value.length!==32) throw new BridgeError('INVALID_STORE_KEY',500);
+    return value;
+  }
+  const temporary=path.join(stateDir(),'.key-'+randomUUID()+'.tmp');
   value=randomBytes(32);
-  try { await writeFile(file,value,{flag:'wx',mode:0o600}); return value; }
-  catch(e) { if(e.code!=='EEXIST') throw e; return (await secureRead(file)); }
+  try {
+    await writeFile(temporary,value,{flag:'wx',mode:0o600});
+    // Hard-link is atomic and fails on EEXIST: no reader can see a half-written key.
+    try { await link(temporary,file); return value; }
+    catch(e) { if(e.code!=='EEXIST') throw e; }
+    const existing=await secureRead(file);
+    if(!existing || existing.length!==32) throw new BridgeError('INVALID_STORE_KEY',500);
+    return existing;
+  } finally {
+    await unlink(temporary).catch(e=>{if(e.code!=='ENOENT') throw e;});
+  }
 }
 export async function saveOauthTokens(tokens) {
   if (!tokens || typeof tokens.refresh_token!=='string' || !tokens.refresh_token) throw new BridgeError('NO_REFRESH_TOKEN');
@@ -211,14 +224,23 @@ export async function invoke(op,args={}) {
   }
 }
 export async function getLocalHttpToken() {
-  await ensureDir();const f=path.join(stateDir(),'http-token');
-  let b=await secureRead(f);
-  if(!b) {
-    try { await writeFile(f,randomBytes(32).toString('hex')+'\n',{flag:'wx',mode:0o600}); }
-    catch(e) { if(e.code!=='EEXIST') throw e; }
-    b=await secureRead(f);
+  await ensureDir();
+  const file=path.join(stateDir(),'http-token');
+  let value=await secureRead(file);
+  if(value===null) {
+    const temporary=path.join(stateDir(),'.http-token-'+randomUUID()+'.tmp');
+    try {
+      await writeFile(temporary,randomBytes(32).toString('hex')+'\n',{flag:'wx',mode:0o600});
+      try { await link(temporary,file); }
+      catch(e) { if(e.code!=='EEXIST') throw e; }
+    } finally {
+      await unlink(temporary).catch(e=>{if(e.code!=='ENOENT') throw e;});
+    }
+    value=await secureRead(file);
   }
-  return b.toString('utf8').trim();
+  const token=value?.toString('utf8').trim();
+  if(!token || !/^[0-9a-f]{64}$/.test(token)) throw new BridgeError('INVALID_HTTP_TOKEN',500);
+  return token;
 }
 export function tokenMatches(a,b) {
   if(typeof a!=='string'||typeof b!=='string') return false;

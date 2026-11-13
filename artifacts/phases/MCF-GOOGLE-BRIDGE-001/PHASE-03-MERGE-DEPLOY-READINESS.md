@@ -13,15 +13,20 @@ Problemas encontrados antes do merge:
 2. P2: corpo HTTP montado por chunk.toString('utf8') poderia corromper multibytes entre chunks. Corrigido para acumular buffers com limite em bytes e decodificação única.
 3. P2: unidade systemd versionada apontava para worktree descartável. Corrigida para usar a instalação estável em ~/.local/share/mcf-google-bridge.
 4. P2 da segunda revisão: o nome models/<id> descoberto pelo Gemini era rejeitado na geração. Corrigido: normalizar o prefixo models/ ao montar endpoint e validar ID; teste com fetch simulado sem consumir quota.
+5. P2 da revisão subsequente: criação concorrente da chave AES expondo arquivo parcial. Corrigido: gravação privada em temporário seguida de hardlink sem sobrescrita, com validação de chave vencedora.
+6. P2 da revisão subsequente: URL malformada no callback OAuth podia provocar exceção não tratada. Corrigido: catch de erro de parse e resposta HTTP 400, mantendo consentimento vivo.
+7. Endurecimento preventivo: Bearer local criado atomicamente com hardlink, validado antes do uso.
 
 ## Testes adicionais no novo commit
 - npm run check: PASS.
-- npm test: 15/15 PASS (antes 10/10).
+- npm test: 16/16 PASS (antes 10/10).
 - Gravações/leitura concorrentes de tokens: PASS.
 - UTF-8 fragmentado entre chunks: PASS.
 - Limite HTTP por bytes: PASS.
 - Identidade de modelo retornada por discovery aceita na chamada opcional generate: PASS (mock).
 - Consistência dos caminhos da unidade systemd: PASS.
+- Criação concorrente de key AES e Bearer em diretório novo: PASS.
+- Callback OAuth malformado não derruba o processo: PASS.
 - npm audit --omit=dev: 0 vulnerabilidades reportadas.
 - Sem arquivos de tokens/segredos versionados.
 - Teste real de Gmail, Drive e Calendar após consentimento: HTTP 200 em cada operação; comprovado na Fase 02.

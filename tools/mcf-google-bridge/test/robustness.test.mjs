@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 import { mkdtemp, readdir, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { saveOauthTokens, loadOauthTokens, invoke } from '../src/bridge.mjs';
+import { saveOauthTokens, loadOauthTokens, getLocalHttpToken, invoke } from '../src/bridge.mjs';
 import { readJsonBody } from '../src/http.mjs';
 
 test('token store remains valid during concurrent atomic writes and reads',async()=>{
@@ -73,5 +73,29 @@ test('Gemini generation accepts models/ prefix returned by discovery without rea
     if(old.generation===undefined) delete process.env.GOOGLE_BRIDGE_ALLOW_GENERATION; else process.env.GOOGLE_BRIDGE_ALLOW_GENERATION=old.generation;
     if(old.key===undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY=old.key;
     if(old.googleKey===undefined) delete process.env.GOOGLE_API_KEY; else process.env.GOOGLE_API_KEY=old.googleKey;
+  }
+});
+
+test('fresh key and HTTP bearer publication is atomic under parallel initialization',async()=>{
+  const dir=await mkdtemp(path.join(tmpdir(),'mcf-bridge-bootstrap-'));
+  const old=process.env.MCF_GOOGLE_BRIDGE_STATE_DIR;
+  process.env.MCF_GOOGLE_BRIDGE_STATE_DIR=dir;
+  try {
+    const tokens=await Promise.all([
+      ...Array.from({length:32},(_,i)=>saveOauthTokens({refresh_token:'init-'+i})),
+      ...Array.from({length:32},()=>getLocalHttpToken())
+    ]);
+    const bearerTokens=tokens.filter(x=>typeof x==='string');
+    assert.equal(bearerTokens.length,32);
+    assert.equal(new Set(bearerTokens).size,1);
+    assert.match(bearerTokens[0],/^[0-9a-f]{64}$/);
+    assert.match((await loadOauthTokens()).refresh_token,/^init-\d+$/);
+    assert.equal((await readFile(path.join(dir,'key'))).length,32);
+    const files=await readdir(dir);
+    assert.equal(files.some(x=>x.startsWith('.key-')||x.startsWith('.http-token-')),false);
+  } finally {
+    if(old===undefined) delete process.env.MCF_GOOGLE_BRIDGE_STATE_DIR;
+    else process.env.MCF_GOOGLE_BRIDGE_STATE_DIR=old;
+    await rm(dir,{recursive:true,force:true});
   }
 });

@@ -20,7 +20,11 @@ export async function authorizeDesktop({out=process.stderr,timeoutMs=180000}={})
       error?reject(error):resolve(result);
     }
     const server=createServer(async(req,res)=>{
-      const url=new URL(req.url||'/', 'http://127.0.0.1');
+      let url;
+      try { url=new URL(req.url||'/', 'http://127.0.0.1'); }
+      catch {
+        res.writeHead(400);res.end('Invalid callback path');return;
+      }
       if(url.pathname!=='/oauth/callback' || req.method!=='GET') {
         res.writeHead(404);res.end('Not found');return;
       }

@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { connect } from 'node:net';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -38,6 +39,15 @@ test('OAuth Desktop PKCE checks state and encrypts mock token',async()=>{
     const url=new URL(await linkReady);
     assert.equal(url.searchParams.get('code_challenge_method'),'S256');
     const callback=new URL(url.searchParams.get('redirect_uri'));
+    const malformedResponse=await new Promise((resolve,reject)=>{
+      const socket=connect({host:'127.0.0.1',port:Number(callback.port)});
+      let received='';
+      socket.on('connect',()=>socket.write('GET //[ HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n'));
+      socket.on('data',bytes=>received+=bytes.toString('latin1'));
+      socket.on('end',()=>resolve(received));
+      socket.on('error',reject);
+    });
+    assert.match(malformedResponse,/HTTP\/1\.1 400/);
     callback.searchParams.set('state','invalid');
     callback.searchParams.set('code','test-auth-code');
     const bad=await realFetch(callback);
