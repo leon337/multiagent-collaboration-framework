@@ -17,7 +17,36 @@ The registry resolves the repository-local `.mcf/project-capsule.yaml`, then `PR
 
 ## Current implementation boundary
 
-Task 1 is accepted at `18d8c3b9be30a1bcdd7bc2743f95294e6d8be974`. Task 2 OAuth is locally GREEN (26/26 tests, typecheck and diff-check PASS) but still requires independent specification and quality/security review before its planned commit. Tasks 3-15 have not started.
+Task 1 is accepted at `18d8c3b9be30a1bcdd7bc2743f95294e6d8be974`. The local
+gateway and a dedicated Keycloak/PostgreSQL stack are running on loopback.
+OAuth with client credentials and a real access token were verified on the
+workstation. The formal task closure and remote checkpoint remain pending.
+
+## MESTRE in ChatGPT
+
+The [Capability Registry entry](../../../context/capabilities/workstation-mcp-status-read.yaml)
+tracks `workstation.mcp.status.read`. Its only operation is
+`workstation_status`, which returns CPU, available RAM, and root filesystem
+capacity. The authenticated MCP tool listing and call passed locally, and an
+unauthenticated call returned HTTP 401. The local evidence can be reproduced
+with `python3 tests/e2e/local-oauth.py` in the provider worktree.
+
+For ChatGPT, associate a Secure MCP Tunnel with the target Platform
+organization and ChatGPT workspace. Keep the gateway on loopback. Configure a
+separate OAuth client for authorization code with PKCE S256, with the exact
+callback shown by ChatGPT and a token audience matching the protected resource.
+The OAuth issuer must be reachable by the user during login and by the
+components performing discovery and token exchange. The existing loopback
+issuer and client-credentials flow only qualify local access.
+
+In ChatGPT web, add and install the custom MCP plugin using the tunnel and
+link the user account. Promote the capability after MESTRE calls
+`workstation_status` from a chat and receives the actual workstation metrics.
+Read live connection and authorization state before offering the tool in a new
+session.
+
+References: [Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels)
+and [OpenAI MCP authentication](https://developers.openai.com/plugins/build/auth).
 
 ## Promotion condition
 
