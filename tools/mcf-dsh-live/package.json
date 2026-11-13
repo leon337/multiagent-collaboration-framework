@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node app/dsh-native-adapter.mjs",
-    "test": "node --test app/tests/extended-router.test.mjs"
+    "test": "node --test app/tests/*.test.mjs"
   },
   "dependencies": {
     "@google/genai": "2.32.0"

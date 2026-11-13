@@ -68,7 +68,7 @@ def systemd_environment() -> dict[str, str]:
     return env
 
 
-def codebuddy_environment() -> dict[str, str]:
+def codebuddy_environment(model: str | None = None) -> dict[str, str]:
     env = os.environ.copy()
     node_bins = list((Path.home() / ".nvm" / "versions" / "node").glob("*/bin/node"))
     def key(node: Path) -> tuple[int, ...]:
@@ -79,6 +79,24 @@ def codebuddy_environment() -> dict[str, str]:
     if node_bins:
         best = max(node_bins, key=key)
         env["PATH"] = str(best.parent) + os.pathsep + env.get("PATH", "")
+    gemini_ids = {"gemini-3.8-flash", "gemini-3.8-live", "gemini-3.8-live-extended-thinking",
+                  "custom-local:gemini-3.8-flash", "custom-local:gemini-3.8-live",
+                  "custom-local:gemini-3.8-live-extended-thinking"}
+    if model in gemini_ids:
+        credentials = Path.home() / ".config/codebuddy/mcf-gemini38.env"
+        if not credentials.is_file() or credentials.stat().st_mode & 0o077:
+            raise PermissionError("Arquivo privado de credenciais Gemini 3.8 indisponível")
+        expected = {"MCF_CODEBUDDY_GEMINI_API_KEY", "MCF_CODEBUDDY_LIVE_TOKEN"}
+        for line in credentials.read_text(encoding="utf-8").splitlines():
+            key_name, separator, value = line.partition("=")
+            if not separator or key_name not in expected:
+                raise ValueError("Formato inválido de credenciais Gemini 3.8")
+            secret = json.loads(value)
+            if not isinstance(secret, str) or not secret:
+                raise ValueError("Credencial Gemini 3.8 inválida")
+            env[key_name] = secret
+        if not expected.issubset(env):
+            raise PermissionError("Credenciais Gemini 3.8 incompletas")
     return env
 
 
@@ -187,7 +205,7 @@ def build_prompt_command(binary: Path, message: str, model: str,
     if not MODEL_PATTERN.fullmatch(model):
         raise ValueError("Model ID inválido")
     args = [str(binary), "--print", "--output-format", "json", "--permission-mode", "dontAsk",
-            "--model", model]
+            "--agent", "cli", "--model", model]
     if resume is not None:
         args += ["--resume", resume]
     return args + [message]
@@ -201,7 +219,7 @@ def execute_prompt(message: str, model: str, cwd: str | None,
     directory = trusted_workdir(Path(cwd) if cwd else repo_path(), settings)
     command = build_prompt_command(find_codebuddy(), message, model, resume)
     try:
-        result = subprocess.run(command, cwd=directory, env=codebuddy_environment(),
+        result = subprocess.run(command, cwd=directory, env=codebuddy_environment(model),
                                 text=True, capture_output=True, timeout=timeout, check=False)
         return safe_result(result.stdout, result.stderr, result.returncode)
     except subprocess.TimeoutExpired:

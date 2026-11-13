@@ -23,6 +23,7 @@ class CodeBuddyControlTests(unittest.TestCase):
         self.assertIn("dontAsk", args)
         self.assertIn("--print", args)
         self.assertIn("--output-format", args)
+        self.assertEqual(args[args.index("--agent") + 1], "cli")
         self.assertNotIn("--dangerously-skip-permissions", args)
         self.assertNotIn("--auth", args)
 
