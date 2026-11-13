@@ -41,3 +41,7 @@ Na instância MESTRE do notebook, selecionar `gemini-3.8-live` como padrão oper
 Seguir os contratos de permissão, handoff, HUMAN_GATE, memória, validação e evidências do MCF. Para navegação no ChatGPT/Cockpit, consultar também [MCF-UI-OPERATING-MANUAL](docs/operations/MCF-UI-OPERATING-MANUAL.md).
 
 **Alcance desta mudança:** documenta uma preferência durável e seu ponto de leitura; não implementa roteamento automático no runtime, não provisiona quota e não substitui instruções de um sistema externo que não carregue este arquivo.
+
+## CodeBuddy Code local — capability de execução governada
+
+No host `leo-N43SM`, o MESTRE pode controlar CodeBuddy por CLI usando o Remote Desktop Commander/SentinelX e o wrapper `/home/leo/agent-sandbox/bin/mcf-codebuddy`. Antes de invocar, ler `docs/operations/MCF-CODEBUDDY-CONTROL.md` e executar `mcf-codebuddy doctor`. A versão local testada usa gateway `127.0.0.1:46514` com autenticação por senha e modelo `fast-model` (a configuração global permanece separada). **Não** usar `--auth none`, `--dangerously-skip-permissions`, não divulgar segredos e não afirmar que integração local equivale a adapter do MissionRuntime. Usar PR/gate governado para mudanças remotas sensíveis. A documentação só é `LOCAL_IMPLEMENTED` mediante evidência live de `ready:true`.

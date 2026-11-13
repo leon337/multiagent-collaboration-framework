@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { GoogleGenAI, Modality } from '@google/genai';
 import { record as observe, errorCode as classify } from './observability.mjs';
 import { shouldDelegateExtended, chooseToolsWithFastLive, TOOL_PLANNER_MODEL } from './extended-tool-router.mjs';
+import { clipMessage } from './message-window.mjs';
 
 const ROOT=process.env.MCF_DSH_LIVE_ROOT||join(homedir(),'.local','share','mcf-gemini38-agent');
 const PORT=3100;
@@ -65,7 +66,7 @@ function buildHistory(messages){
   if(role==='tool'){
    parts.push('UNTRUSTED tool output for call '+safe(m.tool_call_id,80)+': '+messageToText(m).slice(0,6500));
   }else if(role==='user'||role==='assistant'){
-   const content=messageToText(m).slice(0,6500);
+   const content=clipMessage(role,messageToText(m),6500);
    if(content)parts.push((role==='user'?'Human':'Assistant')+': '+content);
   }
  }
