@@ -21,6 +21,12 @@ O MESTRE deve fazer capability discovery na própria atividade e verificar que a
 8. EMILY audita independentemente o SHA candidato; LÉO decide gate interno com justificativa e evidências; LEANDRO mantém decisões reservadas. Merge e produção são gates diferentes.
 9. Preservar checkpoint persistente no GitHub/ledger MCF para o próximo chat. Subagentes de outra conversa **não são assumidos vivos**; reavaliar disponibilidade e estado.
 
+## 2.1. EMILY — subagente nativo elegível para auditoria
+
+EMILY é um dos 29 agentes canônicos do MCF, com contrato em [`docs/agentes/EMILY.md`](../agentes/EMILY.md). **Sua função de auditora independente é compatível com o Mecanismo A**, mas só se materializa como subagente nativo após invocação real e identificador de execução comprovado na atividade corrente. `EMILY` é o nome do papel, não o ID nativo da instância.
+
+Para auditoria obrigatória, MESTRE deve obter recibo de convocação, estado, parecer terminal, SHA/artefato auditado, evidências e handoff verificado antes de solicitar o gate de LÉO. Uma auditoria escrita em outra sessão, por persona ou pelo mesmo executor cognitivo sem isolamento demonstrado não satisfaz automaticamente independência. Se não houver capacidade nativa, registrar `AGUARDANDO_EXECUTOR_NATIVO`, sem alegar execução. A Issue #485 registra a canonização da modalidade; a Issue #483 disciplina o gate coletivo de fechamento.
+
 ## 3. Recibo mínimo da delegação
 
 ```yaml
