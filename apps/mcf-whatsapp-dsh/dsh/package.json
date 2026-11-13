@@ -1,0 +1,9 @@
+{
+  "name": "dsh-profile-mcf-whatsapp-dsh",
+  "private": true,
+  "dependencies": {},
+  "dsh": { "profile": { "bundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-headless"
+  ] } }
+}

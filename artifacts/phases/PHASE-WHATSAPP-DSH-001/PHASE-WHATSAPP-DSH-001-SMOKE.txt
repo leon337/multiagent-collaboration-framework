@@ -1,0 +1,25 @@
+1. Mock local webhook GET verify (challenge): PASS
+2. Mock webhook POST HMAC tamper rejection: PASS
+3. Mock allowlist unauthorized sender rejection: PASS
+4. Mock inbound → mock DSH JSONL → mock outbound Cloud API: PASS
+5. Session ownership across two messages and restart: PASS
+6. DSH real profile composition with 9Router: PASS
+7. DSH live inference: BLOCKED, quota 429
+8. Meta WhatsApp live inbound and outbound: NOT_RUN, account/webhook missing
+9. External HTTPS and TLS: NOT_RUN
+10. Nilton unaffected: no changes or service restart executed
+11. Local Meta test env prepared, sensitive token hidden: PASS
+12. DSH 429 / 400 event classification after parser fix: PASS in tests; real account limit persists
+
+13. Step 5 DSH profile composition: PASS; real inference remains TIMEOUT
+14. Agent Bridge Cockpit discovery and navigation: PASS; Meta logged out
+15. HTTPS Funnel /webhook verified challenge and rejects anonymous requests: PASS
+16. Meta setup portal local authorization+origin/validation: PASS
+17. Remote phone access to private Serve port 8498: NOT_VERIFIED
+18. WhatsApp end-to-end: NOT_RUN; Meta test credentials absent and model response missing
+
+20. Step 5 REAL DSH inference via 9Router, prompt OK, final OK, reason completed: PASS (~78 seconds)
+21. Meta official OAuth MCP business read: PASS Cheap Delivery; messaging accounts list=0
+22. Vonage sandbox account/phone joined: NOT_DONE (requires authorized human provider signup)
+23. Meta real WhatsApp inbound/outbound: NOT_RUN (no sender/Phone Number ID)
+24. Dedicated gateway 240s new default, unit tests 15/15, TLS callback PASS

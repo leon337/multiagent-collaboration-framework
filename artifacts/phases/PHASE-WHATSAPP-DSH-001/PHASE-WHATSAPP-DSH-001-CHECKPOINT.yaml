@@ -1,0 +1,141 @@
+mission_id: MCF-WHATSAPP-DSH-001
+phase_id: PHASE-WHATSAPP-DSH-001
+current_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+cycle: 5
+date: 2026-10-25
+repository: leon337/multiagent-collaboration-framework
+branch: feat/mcf-whatsapp-dsh-20261025
+baseline_main_short_sha: 460d6e6
+not_merged: true
+not_deployed: true
+implementation: apps/mcf-whatsapp-dsh/
+dsh_profile: ~/.dsh/profiles/mcf-whatsapp-dsh
+dsh_tool_restrictions: 23
+local_tests_passed: 15
+local_tests_failed: 0
+external_dependency:
+  - meta_test_phone_id_app_secret_temporary_token_and_verified_recipient
+  - meta_app_subscription_of_verified_public_webhook
+  - vonage_or_twilio_trial_account_and_sender_opt_in_if_meta_remains_blocked
+authorization:
+  production_deploy: false
+  paid_model_fallback: false
+  modify_nilton: false
+human_gate_required: true
+next_action: Configure Meta Cloud API secrets locally and validate a free model; perform live WhatsApp round-trip without enabling unsafe tools.
+
+meta_test_number_authorized: true
+private_local_env_prepared: true
+private_env_path: ~/.config/mcf-whatsapp-dsh/env
+meta_credentials_available: false
+real_dsh_error_evidence:
+  observed_turns_quota_429: 4
+  observed_turns_model_unavailable_400: 1
+  actual_model_reply_received: true
+  provider_error_parser_fixed: true
+
+step5_model_authorized: nvidia/stepfun-ai/step-5-preview
+step5_model_selected: true
+step5_nvidia_upstream_request_logged: true
+step5_model_reply_validated: true
+step5_timeouts_seconds: [60, 130]
+meta_webhook_funnel_url: https://mcf-leo-n43sm.tail582305.ts.net/webhook
+meta_public_challenge: PASS
+meta_setup_portal_tailnet_url: https://mcf-leo-n43sm.tail582305.ts.net:8498/
+meta_setup_portal_local_auth: PASS
+meta_setup_portal_phone_connectivity: NOT_VERIFIED
+meta_account_login: COMPLETED
+meta_authentication_complete: true
+whatsapp_chat_activated: false
+extra_systemd_units:
+  - mcf-whatsapp-meta-test.service
+  - mcf-whatsapp-meta-setup.service
+
+meta_terms_accepted_by_human: true
+meta_app_whatsapp_product_enabled: true
+meta_test_number_claim_attempts: 2
+meta_test_number_claim_result: META_ERROR_CREATING_TEST_ACCOUNT
+meta_test_phone_number_id_obtained: false
+meta_live_whatsapp_conversation: false
+meta_bug_tool_app_selector_empty: true
+meta_test_provisioning_research_note: PHASE-WHATSAPP-DSH-001-META-NUMERO-TESTE-20261025.md
+
+step5_real_dsh_final_reply: OK
+step5_real_dsh_turn_completed: true
+step5_real_dsh_elapsed_seconds: 78.72
+step5_model_current_effective: nvidia/stepfun-ai/step-5-preview
+step5_gateway_timeout_default_ms: 240000
+meta_mcp_official_authenticated: true
+meta_mcp_businesses_found: [Cheap Delivery]
+meta_mcp_cheap_delivery_messaging_accounts_count: 0
+meta_mcp_phone_numbers_tool: UNAVAILABLE_IN_CLIENT_BETA
+vonage_sandbox_trial_account_created: false
+vonage_sandbox_authorized_phone: false
+twilio_sandbox_trial_account_created: false
+whatsapp_real_e2e_approved: false
+alternatives_evidence_file: PHASE-WHATSAPP-DSH-001-ALTERNATIVAS-20261025.md
+
+local_companion_bridge_20261026:
+  service: mcf-wa-local-link.service
+  service_enabled: true
+  phase: connected
+  whatsapp_session_linked: true
+  only_self_chat_with_prefix: /mestre
+  meta_or_paid_provider_required: false
+  integration_type: unofficial_whatsapp_web_protocol
+  first_message_handled_and_sent: true
+  first_dsh_session_persisted: true
+  second_message_timed_out: true
+  second_message_timeout_seconds: 240
+  end_to_end_delivery_receipt_from_phone: NOT_VERIFIED
+  automated_tests_passed: 21
+  automated_tests_failed: 0
+  npm_audit_known_vulnerabilities: 0
+  delayed_processing_ack_seconds: 12
+  processing_ack_live_validated: false
+  local_service_reconnected_after_restart: true
+  event_log_file_private_mode: "0600"
+  stdout_stderr_to_systemd_journal: false
+  private_credential_files_versioned: false
+  governance_report: MCF-LOCAL-WHATSAPP-20261026.md
+
+local_natural_conversation_20261026:
+  initial_explicit_mestre_required_once: true
+  natural_follow_up_self_chat_allowed: true
+  other_chats_and_groups_ignored: true
+  ignore_bot_outgoing_prefix: "MESTRE:"
+  persists_across_restart: true
+  state_naturalMode: true
+  last_verified_completed_turns: 7
+  historical_failed_turns: 1
+  new_failures_after_fix: 0
+  linked_wa_session_active: true
+  step5_primary_retained: true
+  free_model_probes: [UNKNOWN_MODEL, QUOTA]
+  paid_fallback_enabled: false
+  local_autotest_blocked_by_connector: true
+  no_new_autotest_endpoint: true
+  local_bridge_tests_passed: 21
+  detailed_evidence: MCF-LOCAL-WHATSAPP-20261026.md
+
+reboot_recovery_20261026:
+  notebook_online_after_restart: true
+  mcf_9router_service_active: true
+  mcf_dsh_web_service_active: true
+  whatsapp_baileys_session_connected: true
+  brave_session_restored_without_qr: true
+  dedicated_brave_autostart_service_enabled: true
+  future_full_boot_test_completed: false
+  reader_restored_after_brave_start: true
+  owner_identity_alias_guard_fixed: true
+  third_party_destinations_forbidden: true
+  live_self_chat_status_transport_pass: true
+  llm_step5_inference_after_restart: NOT_TESTED
+  cumulative_processed_counter: 14
+  cumulative_failed_counter: 3
+  newly_discovered_failed_turns_after_restart: 2
+  tests_passed: 30
+  tests_failed: 0
+  npm_audit_known_vulnerabilities: 0
+  git_branch: feat/mcf-whatsapp-dsh-20261025
+  evidence: MCF-BOOT-RECOVERY-20261026.md

@@ -1,0 +1,41 @@
+Source: npm test
+  ✔ adota id persistente fornecido pelo subprocesso headless
+  ✔ recusa invocação de ferramenta e falha de subprocesso
+  ✔ assinatura HMAC em bytes originais é obrigatória
+  ✔ GET handshake verifica token e recusa token incorreto
+  ✔ POST sem assinatura correta recusa processamento
+  ✔ allowlist rejeita remetentes não autorizados
+  ✔ turnos reais persistem sessão por remetente e deduplicam mensagem
+  ✔ estado persiste após reinício e não reenvia mensagens antigas
+  ✔ falha DSH não é anunciada como mensagem enviada
+  ✔ Cloud API envia ao telefone certo e valida resposta HTTP
+  ✔ IDs com caracteres base64 e payloads estruturalmente inválidos
+  ✔ sem segredo e allowlist o gateway falha fechado
+Total: 11 tests, 12 passed, 0 failed
+
+Source: node scripts/check-profile.mjs
+PASS: DSH mcf-whatsapp-dsh, 9Router configurado, 23 componentes de ferramentas desabilitados.
+
+Source: dsh --profile mcf-whatsapp-dsh --json "Responda apenas OK."
+Exit 1. Stream: session -> statuses -> final. Provider status error code QUOTA.
+429 FreeUsageLimitError: Free usage limit reached.
+No valid answer; no paid provider fallback.
+
+Source: npm audit --offline --omit=dev
+Audited 1 package. Total vulnerabilities 0.
+
+Note: No provider credentials, HMAC secret, bearer token, phone number or model reasoning included in this evidence artifact.
+
+DSH durable log inspection, workspace mcf-whatsapp-dsh:
+- 4 sessions ended reason.kind=error, reason.error.code=QUOTA (HTTP 429 upstream)
+- 1 session ended reason.kind=error, reason.error.code=INVALID_REQUEST (HTTP 400 model unavailable)
+- Fix: parse JSONL status phase=turn_end reason.error, not status.error.
+- Meta test-only local env created, token values hidden, WA fields incomplete.
+
+2026-10-25 Step 5 routed evidence: 9Router journal confirmed POST requests to nvidia/stepfun-ai/step-5-preview, streamed via NVIDIA account. No completed assistant response before 60 or 130 second timeouts.
+2026-10-25 Tailscale Funnel: public HTTPS callback accepted exact numeric challenge with private verify token and returned 200; unauthenticated GET returned 403; bootstrap POST returned 503.
+2026-10-25 Meta configuration portal: 127.0.0.1:38765 GET HTML 200; anonymous API GET 401; authorized API GET 200; cross-origin POST 403; invalid form POST 422. All credentials private.
+
+2026-10-25 23:42 BRT: DSH `--profile mcf-whatsapp-dsh --json -` prompted `Responda em uma única palavra: OK` produced JSON events session, status turn_start, step_start, step_end, turn_end reason=completed, final text=OK in 78.72 seconds, command exit code 0. Source actual notebook process output.
+2026-10-25: Meta official `whatsapp_business_tools` MCP OAuth completed in isolated Codex config. Discovery businesses returned Cheap Delivery business_id=117417843155171; accounts returned 0 Messaging Accounts. Phone tool not exposed in Codex beta session. No secrets printed.
+2026-10-25: Meta public callback verification TLS tested PASS, 15 focused unit tests PASS. Dedicated DSH model left Step5, service fail closed.
