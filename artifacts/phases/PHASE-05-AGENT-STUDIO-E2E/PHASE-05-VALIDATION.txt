@@ -1,0 +1,15 @@
+Result: PASS — operational E2E MVP on real DSH
+Timestamp: 2026-10-23T01:58:52-03:00
+Automated tests: 6 passed, 0 failed
+Native DSH test preset: hello-world-agent
+Native session ID: session-6abc0cc4-4a1b-4766-bd52-7574af497938
+Expected answer: MCF E2E 2026 OK
+Actual answer: MCF E2E 2026 OK
+Browser JS exceptions: 0
+Responsive widths: desktop, 768, 390, 320; no horizontal overflow
+Invalid publish confirmation: rejected
+Verified receipt: present before confirmation to user
+Rollback file: SHA-256 f0fc69d6bc74d143781af54ef98f150644ef498c6210fdf981b9a1e673214147, byte-identical to baseline
+Original user draft r6: unchanged
+LLM from direct 9Router: not required for core flows
+Formal independent MCF gate: not performed

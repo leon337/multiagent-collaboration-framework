@@ -1,0 +1,67 @@
+{
+  "steps": {
+    "start": {
+      "visible": true,
+      "connected": "true",
+      "choices": 2
+    },
+    "workspace": {
+      "opened": true,
+      "title": "Evolução do Hello World",
+      "step": "ETAPA 1 DE 6"
+    },
+    "preview": {
+      "step": "ETAPA 5 DE 6",
+      "response": "local • 23/10/2026, 09:02:30calcule 12*6*5360"
+    },
+    "review": {
+      "step": "ETAPA 6 DE 6",
+      "body": "ObjetivoCalcular ganhos de horas trabalhadas com variáveis informadas pelo usuário, mantendo explicações passo a passo e conferindo os resultados.ModoConversacionalComportamentoVocê ajuda a calcular ganhos por horas trabalhadas. Pergunte as variáveis ausentes. Confirme dias trabalhados e valor-hora antes do cálculo. Explique os passos com fórmula legível. Não invente dados.FerramentascalculatorTestes realizados1Histórico de versõesr1 → r7Este workspace é uma simulação isolada de evolução do Hello World. O preset ativo continua intacto. A publicação real só pode ser executada no editor técnico, com confirmação e verificação do DSH.Abrir editor técnico ↗Conversar com o agente publicado ↗"
+    },
+    "mentor": {
+      "count": 1,
+      "text": "1. Teste o agente com entradas cujos resultados você já conhece e compare a resposta exibida.  \n2. Observe se, antes de calcular, ele solicita explicitamente todas as variáveis (dias trabalhados, valor‑hora, etc.).  \n3. Use o `testPrompt` fornecido (“calcule 12*6*5”) e verifique se o valor retornado corresponde exatamente a 360.  \n4. Revise a saída do agente para garantir que ele inclua a fórmula usada e o passo‑a‑passo, sem acrescentar números não solicitados.  \n5. Caso encontre valores diferentes dos esperados, ajuste as instruções para reforçar “não invente dados” e repita os testes."
+    },
+    "resume": {
+      "name": "Hello World — Orçamentos e Cálculos",
+      "opened": true,
+      "step": "ETAPA 6 DE 6"
+    },
+    "saved": {
+      "id": "agent-639f916e-d2ed-42ae-a076-57103e7657de",
+      "revision": 8,
+      "history": 1,
+      "completed": [
+        "objetivo",
+        "comportamento",
+        "ferramentas",
+        "workspace",
+        "testes"
+      ],
+      "source": "hello-world-agent"
+    },
+    "tablet": {
+      "viewport": 768,
+      "document": 753,
+      "body": 753,
+      "stepButtons": 6,
+      "coachVisible": true
+    },
+    "mobile": {
+      "viewport": 390,
+      "document": 390,
+      "body": 390,
+      "stepButtons": 6,
+      "coachVisible": true
+    },
+    "small": {
+      "viewport": 320,
+      "document": 320,
+      "body": 320,
+      "stepButtons": 6,
+      "coachVisible": true
+    }
+  },
+  "errors": [],
+  "completed": true
+}

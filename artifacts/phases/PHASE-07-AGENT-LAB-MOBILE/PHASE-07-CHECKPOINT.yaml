@@ -1,0 +1,11 @@
+mission: MCF-20261022-AGENT-STUDIO-MVP-001
+phase: PHASE-07-AGENT-LAB-MOBILE
+risk_class: B
+technical_status: TAILNET_ACCESS_CONFIGURED
+mobile_status: PENDING_ANDROID_CONNECTION
+funnel_public: false
+tailnet_https_port: 8492
+local_proxy_port: 4323
+admin_exposed: false
+unit_tests_passed: 8
+governance_status: DRAFT_PR_REVIEW_PENDING

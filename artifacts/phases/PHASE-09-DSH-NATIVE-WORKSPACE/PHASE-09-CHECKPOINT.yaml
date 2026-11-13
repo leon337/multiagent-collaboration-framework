@@ -1,0 +1,16 @@
+mission: MCF-20261023-AGENT-BUILDER-GUIDED-001
+phase: PHASE-09-DSH-NATIVE-WORKSPACE
+native_workspace_registered: true
+workspace_name: "MCF Agent Studio — Agentes"
+workspace_id: d1f80e29-577c-4e87-a38c-9954c3c1f44c
+sessions_attached: 15
+studio_sessions_ungrouped: 0
+other_sessions_unchanged: 36
+restart_persistence_verified: true
+ui_verified: true
+session_create_with_workspace_id: true
+no_silent_fallback_to_ungrouped: true
+dsh_service_managed: true
+tests_passed: 9
+agent_publication_unchanged: true
+governance_gate: DRAFT_PR_PENDING_INDEPENDENT_REVIEW

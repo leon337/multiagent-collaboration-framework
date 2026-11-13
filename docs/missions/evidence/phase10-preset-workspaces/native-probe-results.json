@@ -1,0 +1,20 @@
+[
+  {
+    "preset": "hello-world-agent",
+    "sessionId": "session-915a05b0-e103-46c8-9613-a941afe47120",
+    "workspaceId": "f7ce7536-16a6-4def-b84e-16f61f36d282",
+    "accounted": true
+  },
+  {
+    "preset": "mcf-studio-brain",
+    "sessionId": "session-12368a0d-a84c-4c65-82fd-63d1f8a9a412",
+    "workspaceId": "f8016dcd-1d15-4d61-a15a-056746e3037a",
+    "accounted": true
+  },
+  {
+    "preset": "mcf-studio-preview",
+    "sessionId": "session-081ae619-db0b-4052-909f-be9e4fa9bdbb",
+    "workspaceId": "0aad07dc-effc-4e5d-969a-e177b9d17856",
+    "accounted": true
+  }
+]

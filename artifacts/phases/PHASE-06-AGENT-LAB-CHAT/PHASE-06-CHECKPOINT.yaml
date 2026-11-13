@@ -1,0 +1,16 @@
+mission_id: MCF-20261022-AGENT-STUDIO-MVP-001
+phase_id: PHASE-06-AGENT-LAB-CHAT
+risk_class: B
+technical_result: ENTREGUE
+governance_state: PENDENTE_AUDITORIA_INDEPENDENTE
+app_url: http://127.0.0.1:4317/lab
+agent_preset: hello-world-agent
+session_type: persistent_dsh_native
+model_key_reused_from_dsh: true
+user_draft_revision: 6
+user_draft_changed: false
+browser_test_passed: true
+browser_js_exceptions: 0
+automated_tests_passed: 7
+formal_loe_gate: pending
+merged_to_main: false

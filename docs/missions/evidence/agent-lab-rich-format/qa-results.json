@@ -1,0 +1,47 @@
+{
+  "original": {
+    "connected": "true",
+    "count": 20,
+    "headings": 4,
+    "lists": 3,
+    "quotes": 1,
+    "math": 4,
+    "raw": false,
+    "mathSamples": [
+      "Ganho semanal = ganho diário × dias na semana",
+      "Ganho semanal = R$40,00 × 5 dias = R$200,00"
+    ]
+  },
+  "dims": {
+    "desktop": {
+      "viewport": 1360,
+      "scroll": 1345,
+      "body": 1345,
+      "container": 1055,
+      "content": 1055
+    },
+    "phone": {
+      "viewport": 390,
+      "scroll": 390,
+      "body": 390,
+      "container": 390,
+      "content": 390
+    },
+    "small": {
+      "viewport": 320,
+      "scroll": 320,
+      "body": 320,
+      "container": 320,
+      "content": 320
+    }
+  },
+  "security": {
+    "heading": 1,
+    "list": 1,
+    "quotes": 1,
+    "images": 0,
+    "literal": true
+  },
+  "errors": [],
+  "pass": true
+}

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0d1420">
+  <meta name="description" content="Laboratório de conversação com o agente real do DeepSeek Harness.">
+  <title>Laboratório do Agente · MCF</title>
+  <link rel="stylesheet" href="/lab.css">
+  <script defer src="/lab.js"></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" aria-label="Painel do agente">
+    <a class="brand" href="/"><span class="brand-symbol">✳</span><span><strong>MCF Agent Studio</strong><small>Laboratório conectado ao DSH</small></span></a>
+    <div class="side-section">
+      <p class="eyebrow">AGENTE EM TESTE</p>
+      <div class="agent-profile">
+        <span class="agent-avatar">H</span>
+        <div><strong>Hello World Agent</strong><small>Preset real · DeepSeek Harness</small></div>
+      </div>
+      <div class="connection" id="connection" role="status" aria-live="polite"><span class="pulse"></span><span id="connectionLabel">Conectando à sessão…</span></div>
+    </div>
+    <div class="side-section">
+      <p class="eyebrow">SESSÃO DE CONVERSA</p>
+      <dl class="session-data">
+        <div><dt>Identificação</dt><dd id="sessionId">Nova sessão</dd></div>
+        <div><dt>Mensagens</dt><dd id="messageCount">0</dd></div>
+        <div><dt>Rascunho no Studio</dt><dd id="draftRevision">Carregando</dd></div>
+      </dl>
+      <button id="newConversationSide" class="button-outline" type="button">＋ Nova conversa</button>
+    </div>
+    <div class="side-section note">
+      <p class="eyebrow">COMO FUNCIONA</p>
+      <p>Você conversa diretamente com o <strong>agente publicado no DSH</strong>. A mesma sessão conserva o contexto entre mensagens.</p>
+      <p>Mudou o comportamento no Studio? <strong>Publique e inicie uma nova conversa</strong> para carregar a nova versão.</p>
+    </div>
+    <nav class="side-links" aria-label="Navegação">
+      <a href="/">↗ Editar comportamento no Studio</a>
+      <a href="https://github.com/leon337/multiagent-collaboration-framework/issues/467" target="_blank" rel="noopener noreferrer">↗ Missão MCF #467</a>
+    </nav>
+  </aside>
+  <main class="workspace">
+    <header class="topbar">
+      <div class="headline">
+        <div class="eyebrow">CONVERSA REAL • SEM SEGUNDA CHAVE API</div>
+        <h1>Teste seu agente <span>em tempo real.</span></h1>
+        <p>Envie mensagens e observe como o DeepSeek Harness executa o comportamento publicado.</p>
+      </div>
+      <div class="top-actions">
+        <span class="online" id="liveBadge"><span class="pulse"></span> Conectando</span>
+        <button id="newConversation" type="button" class="button-outline">＋ Novo chat</button>
+      </div>
+    </header>
+    <div class="notice" id="publicationNotice" role="status" aria-live="polite">
+      <span class="notice-icon">ⓘ</span><span id="noticeText">Conferindo versão do agente…</span><a href="/#publish">Publicação ↗</a>
+    </div>
+    <section class="chat" aria-label="Conversa com o agente">
+      <div class="chat-scroll" id="chatScroll">
+        <div class="empty" id="emptyState">
+          <div class="empty-symbol">✳</div>
+          <p class="eyebrow">LABORATÓRIO ATIVO</p>
+          <h2>O agente está pronto para conversar.</h2>
+          <p>As respostas vêm de uma sessão real do DSH, não de um simulador. Escolha um exemplo ou escreva sua mensagem.</p>
+          <div class="examples">
+            <button type="button" data-example="Oi! Qual é a sua função?">👋 Testar saudação</button>
+            <button type="button" data-example="Calcule (8+7)*2 usando sua calculadora.">∑ Testar calculadora</button>
+            <button type="button" data-example="Quais ferramentas você possui?">⚙ Testar ferramentas</button>
+          </div>
+        </div>
+        <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Histórico de conversa"></div>
+      </div>
+      <div class="composer-wrap">
+        <form id="chatForm" class="composer">
+          <label for="messageInput" class="sr-only">Sua mensagem para o agente</label>
+          <textarea id="messageInput" rows="2" maxlength="2000" placeholder="Digite uma mensagem para o agente…" required></textarea>
+          <button class="send-button" id="sendButton" type="submit" aria-label="Enviar mensagem"><span aria-hidden="true">➤</span><span>Enviar</span></button>
+        </form>
+        <div class="composer-footer"><span>Enter envia · Shift+Enter quebra linha</span><span id="chars">0 / 2000</span></div>
+        <div class="error-message hidden" id="errorMessage" role="alert"></div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

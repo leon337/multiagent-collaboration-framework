@@ -1,0 +1,15 @@
+d46bce9a52fd622c713518967ba7ec1b02b11801f74a96d6cec8685b784697c2  artifacts/phases/PHASE-05-AGENT-STUDIO-E2E/PHASE-05-CHECKPOINT.yaml
+ad056153a6a15526cdef8858e19475960cefe353f1f6ecf505c36bb548f15bc1  artifacts/phases/PHASE-05-AGENT-STUDIO-E2E/PHASE-05-DECISIONS.md
+722c69a3b1fed97c99bc3d5b02b538037e9a9f0689333cbaa6990533507e2534  artifacts/phases/PHASE-05-AGENT-STUDIO-E2E/PHASE-05-PLAN.md
+233e5fe38e157d4f86317cb3ba014d433e4a5458f754d036b62e6ebb3d21fe05  artifacts/phases/PHASE-05-AGENT-STUDIO-E2E/PHASE-05-REPORT.md
+83e05103b8e0eb16fa5bd015e9c5b92d077272aa9474e87f7d337f4ce102b63e  artifacts/phases/PHASE-05-AGENT-STUDIO-E2E/PHASE-05-SMOKE.txt
+b7e0618256eb1010f2fba3b2710811855256d3d481e8500ba9f451f826f5c9d9  artifacts/phases/PHASE-05-AGENT-STUDIO-E2E/PHASE-05-VALIDATION-FULL.txt
+a2f49b7a2ef44e0459ec288b3962e0ee2cda2c7eec32276c0dd6dfe380217061  artifacts/phases/PHASE-05-AGENT-STUDIO-E2E/PHASE-05-VALIDATION.txt
+e81f6cc6c9c2d521c05e4b16ce8ad87ee001bd6c882bdac51d9881b0398c2ba9  artifacts/phases/PHASE-05-AGENT-STUDIO-E2E/README.md
+82da6eb69d0850e2452183076eae25a1298fff7a0bba394cbdb19a8868ba8607  docs/missions/evidence/agent-studio-e2e-20261023/01-dsh-connected.png
+b9f32cebb236759500a768a1aa43bc9bf7eac65b78ea47feb700c04fd8b56eac  docs/missions/evidence/agent-studio-e2e-20261023/02-dsh-proposal.png
+a633eb676738e9555b2115ead9d23156d3069e7543870c4a71d2d5f53859a3f0  docs/missions/evidence/agent-studio-e2e-20261023/04-publish-review.png
+3f0e68dae9c76346b0d003a88989ca1baabc029ee904c2afcca1610edb851ad8  docs/missions/evidence/agent-studio-e2e-20261023/05-runtime-verified.png
+45d38d67c761d547281d1d4c39162a6ee93e8189ea1224871af37fbb69cf38bb  docs/missions/evidence/agent-studio-e2e-20261023/06-mobile-runtime-verified.png
+d2897a2e6b70f4b65e1b379f0b3817dc96ccfc3d990ba8bac03b71e4c9a0b4aa  docs/missions/evidence/agent-studio-e2e-20261023/07-rollback.png
+b7e0618256eb1010f2fba3b2710811855256d3d481e8500ba9f451f826f5c9d9  docs/missions/evidence/agent-studio-e2e-20261023/e2e-run.json

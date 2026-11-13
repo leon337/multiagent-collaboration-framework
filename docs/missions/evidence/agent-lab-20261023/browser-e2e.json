@@ -1,0 +1,65 @@
+{
+  "ui": {
+    "desktop": {
+      "viewport": 1440,
+      "scroll": 1425,
+      "title": "Laboratório do Agente · MCF",
+      "composer": 850,
+      "inputEnabled": true
+    },
+    "tablet": {
+      "viewport": 768,
+      "scroll": 768,
+      "title": "Laboratório do Agente · MCF",
+      "composer": 491.57501220703125,
+      "inputEnabled": true
+    },
+    "mobile": {
+      "viewport": 390,
+      "scroll": 390,
+      "title": "Laboratório do Agente · MCF",
+      "composer": 366.3999938964844,
+      "inputEnabled": true
+    },
+    "small": {
+      "viewport": 320,
+      "scroll": 320,
+      "title": "Laboratório do Agente · MCF",
+      "composer": 296,
+      "inputEnabled": true
+    }
+  },
+  "e2e": {
+    "initial": {
+      "ready": "true",
+      "badge": "DSH conectado",
+      "count": 4,
+      "status": "Este chat usa o preset publicado no DSH. Há um rascunho no Studio que pode ser diferente; alterações só chegam aqui após publicar e abrir nova conversa.",
+      "sessionId": "session-8c513286-927f-46e7-87c3-34f31673a7f4"
+    },
+    "message": {
+      "count": 6,
+      "answer": "40",
+      "error": "",
+      "sessionId": "session-8c513286-927f-46e7-87c3-34f31673a7f4"
+    },
+    "persisted": {
+      "count": 6,
+      "answer": "40",
+      "sessionId": "session-8c513286-927f-46e7-87c3-34f31673a7f4"
+    },
+    "newChat": {
+      "count": 0,
+      "sessionId": "Ainda não iniciada"
+    },
+    "freshSession": {
+      "count": 2,
+      "answer": "6",
+      "sessionId": "session-d657da5f-c951-42f1-bbfd-2abd58bb60ea",
+      "error": ""
+    },
+    "finalCleared": true
+  },
+  "errors": [],
+  "success": true
+}

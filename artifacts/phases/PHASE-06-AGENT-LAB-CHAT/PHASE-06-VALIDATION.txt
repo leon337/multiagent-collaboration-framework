@@ -1,0 +1,12 @@
+RESULT: PASS — Real agent chat application
+DATE: 2026-10-23T02:39:14-03:00
+DSH: hello-world-agent, native sessionController
+CORE E2E: same session responses 30 and 27
+UI E2E: browser request answered 40; refresh restored transcript; reset changed session ID; new message answered 6
+RESTART RESILIENCE: same DSH session restored after process restart, response 42
+RESPONSIVE: 1440, 768, 390, 320; horizontal overflow 0
+JS EXCEPTIONS: 0
+BACKEND AUTOMATED: 7 passed, 0 failed
+DSH BRIDGE SECURITY: no-token HTTP 403
+USER DRAFT: r6 untouched
+RUNNING AT: localhost:4317/lab, auto-start systemd
