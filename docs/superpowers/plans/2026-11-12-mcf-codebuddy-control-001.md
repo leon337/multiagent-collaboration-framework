@@ -21,7 +21,7 @@
 - [x] Testes unitários da configuração, segurança, construção de comando e inspeção.
 - [x] Teste headless real controlado com resposta de marcador; registrar resultado sem segredos.
 - [x] Documentar capability operacional no MCF, critérios de aceite, rollback e limitações.
-- [ ] Validar serviço persistente após `restart` controlado e status final, commit isolado e eventual PR sem merge.
+- [x] Validar serviço persistente após `restart` controlado e status final, commit isolado e eventual PR sem merge.
 
 ## Critérios de aceite
 
@@ -42,3 +42,11 @@
 ## Agentes funcionais
 
 MESTRE coordena; Sofia (arquitetura), Rafael (engenharia), Renato (QA) e Emily (auditoria) são responsabilidades propostas de revisão — sem atribuir ações ou aprovações fictícias a agentes não invocados.
+
+
+## Encerramento de implementação local
+
+- Commit inicial: b368a9e070caae700ae6f720a89b4a0ee673cb8d
+- PR: https://github.com/leon337/multiagent-collaboration-framework/pull/521
+- Revisão humana/CI e merge continuam sob gates do MCF; o PR foi aberto como draft.
+- Capability local implantada e testada em leo-N43SM, sem merge nem deploy de produção.

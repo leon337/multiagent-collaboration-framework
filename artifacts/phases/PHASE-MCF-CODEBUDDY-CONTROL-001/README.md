@@ -17,3 +17,6 @@
 **Rollback:** `bash tools/mcf-codebuddy-control/rollback-local.sh --baseline`.
 
 **Atualização QA:** login PWA e espelhamento de prompts/respostas CLI verificados por screenshot do CodeBuddy; modelo Fast visível. Controle alternativo por SentinelX MCP validado E2E com resposta MCF_SENTINEL_MCP_OK; wrapper resolveu Node v22 contra Node v18. Instalação idempotente aprovada após correção do healthcheck.
+
+
+**PR de revisão:** https://github.com/leon337/multiagent-collaboration-framework/pull/521 (draft, sem merge). Validação de branch/CI consultada ao vivo; integração em main permanece condicionada aos gates aplicáveis.
