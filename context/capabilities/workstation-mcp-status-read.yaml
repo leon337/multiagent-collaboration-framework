@@ -1,0 +1,42 @@
+schema_version: 1
+
+capability:
+  id: workstation.mcp.status.read
+  provider_project_id: leandro-workstation-mcp
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: READ_ONLY
+
+contract:
+  protocol: MCP_STREAMABLE_HTTP_OAUTH
+  allowed_operations:
+    - workstation_status
+  prohibited_operations:
+    - shell.execute
+    - filesystem.write
+    - privilege.elevate
+
+scope:
+  environments:
+    - lab
+  resources:
+    - workstation/cpu-ram-root-filesystem-metrics
+
+governance:
+  authorization_state: AUTHORIZED
+  required_gate: CHATGPT_OAUTH_ACCOUNT_LINK
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: DISCONNECTED
+  runtime_state: BLOCKED
+  verification_state: NOT_VERIFIED
+  last_verified_at: null
+
+evidence:
+  - source_ref: local://leandro-workstation-mcp/tests/e2e/local-oauth.py
+    source_revision: sha256:a481e6bf97c8137d703552dcbb369dbebce95131d513eb4332492834cc806452
+    observed_at: "2026-11-13T02:42:24Z"
+
+freshness: LIVE_REQUIRED
