@@ -6,13 +6,17 @@ import { selectAbusePolicy, type AbusePolicy } from './abuse-policy.js';
 import { RateLimitService } from './rate-limit.service.js';
 
 const MCF_CLOUD_CONTEXT_LOCAL_READ_POLICY = 'mcf-cloud-context-local-read';
+const MCF_APPHUB_LOCAL_READ_POLICY = 'mcf-apphub-inventory-local-read';
 
 function routeUrl(request: FastifyRequest): string {
   return request.routeOptions?.url ?? request.url.split('?')[0] ?? '/unknown';
 }
 
 function subjectFor(request: FastifyRequest, policy: AbusePolicy): string {
-  if (policy.name === MCF_CLOUD_CONTEXT_LOCAL_READ_POLICY) {
+  if (
+    policy.name === MCF_CLOUD_CONTEXT_LOCAL_READ_POLICY ||
+    policy.name === MCF_APPHUB_LOCAL_READ_POLICY
+  ) {
     // This route authenticates with x-mcf-cloud-context-token, not Authorization.
     // Bind its bucket to the direct socket peer so arbitrary Bearer/X-Forwarded-For
     // values cannot split the 10/minute limit. Missing peer identity collapses into
