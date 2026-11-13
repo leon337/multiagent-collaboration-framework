@@ -158,3 +158,11 @@ No notebook `leo-N43SM`, a seleção do workspace local está documentada em [`o
 ## Mecanismo A — subagentes nativos
 
 [Protocolo de convocação, prova de atividade e retomada para futuros MESTRES](protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md). **Use somente quando a capacidade nativa estiver realmente disponível.** Diferencie subagentes nativos de CLI Codex e Dual Browser; consulte [Issue #478](https://github.com/leon337/multiagent-collaboration-framework/issues/478) e estados GitHub live.
+
+
+## CodeBuddy local — controle CLI/MCP
+
+A capability LOCAL_IMPLEMENTED no notebook leo-N43SM está documentada em
+[MCF-CODEBUDDY-CONTROL](operations/MCF-CODEBUDDY-CONTROL.md).
+Não confundir com adapter publicado no MissionRuntime, nem com autorização para
+merge/deploy. A evidência operacional e as instruções de rollback acompanham a missão.
