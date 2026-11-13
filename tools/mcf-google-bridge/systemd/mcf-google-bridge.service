@@ -1,0 +1,18 @@
+[Unit]
+Description=MCF Google Bridge local HTTP service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/leo/.nvm/versions/node/v22.23.2/bin/node /home/leo/mcf-workspaces/mcf-google-bridge-001/tools/mcf-google-bridge/src/http.mjs
+WorkingDirectory=/home/leo/mcf-workspaces/mcf-google-bridge-001/tools/mcf-google-bridge
+Environment=NODE_ENV=production
+EnvironmentFile=-%h/.config/mcf-google-bridge/bridge.env
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

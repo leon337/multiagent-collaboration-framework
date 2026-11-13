@@ -1,0 +1,10 @@
+# Pacote de Rastreabilidade — MCF-GOOGLE-BRIDGE-001
+- PHASE-01-PLAN.md — contrato, escopo e aceite
+- PHASE-01-REPORT.md — resultado real da execucao
+- PHASE-01-VALIDATION.txt — resumo de validacoes
+- PHASE-01-VALIDATION-FULL.txt — saida integral de testes locais
+- PHASE-01-SMOKE.txt — verificacoes do servico e integracoes
+- PHASE-01-CHECKPOINT.yaml — estado transferivel
+- PHASE-01-DECISIONS.md — decisoes de seguranca e escopo
+- PHASE-01-ARTIFACT-MANIFEST.sha256 — integridade dos artefatos
+- Documentacao de uso: tools/mcf-google-bridge/README.md

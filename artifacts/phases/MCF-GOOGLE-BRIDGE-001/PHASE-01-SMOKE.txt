@@ -1,0 +1,15 @@
+MCF-GOOGLE-BRIDGE-001 — Smoke local
+systemd user service: ActiveState=active, UnitFileState=enabled
+service restart: PASS (health posterior)
+GET http://127.0.0.1:8755/healthz: HTTP 200, state=running
+POST /v1/execute sem Bearer: HTTP 401
+POST /v1/execute google.status com Bearer: HTTP 200, policy=read-only-default
+POST /v1/execute google.gemini.models: HTTP 401 GEMINI_AUTH_NOT_CONFIGURED
+POST /v1/execute google.gmail.search: HTTP 401 WORKSPACE_OAUTH_REQUIRED
+POST /v1/execute google.gemini.generate: HTTP 403 OPERATION_DISABLED
+Token HTTP: arquivo modo 0600
+Porta HTTP: 127.0.0.1:8755, sem bind externo
+LIMITACAO: chamadas reais aos Google APIs nao foram testadas por falta de credenciais da Bridge.
+MCP instalado em .local/share: tools/list=7, google.status sucesso.
+Codex mcp get mcf-google-bridge: enabled=true, stdio.
+npm audit --omit=dev: total=0.

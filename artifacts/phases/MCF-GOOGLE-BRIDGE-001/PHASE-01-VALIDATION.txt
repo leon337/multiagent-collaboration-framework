@@ -1,0 +1,2 @@
+MCF Google Bridge validation: 10/10 PASS, npm check PASS, MCP installed handshake PASS, HTTP service restart PASS, audit 0 vulnerabilities.
+OAuth test uses Google token endpoint MOCK; no live OAuth client ID or Gemini key present. No real Google API success claimed.
