@@ -70,3 +70,13 @@ The Bridge token stays in process memory and is supplied only in the local Autho
 ## Tests
 
 `npm test` executes `node --test` without dependency installation. All tests use temporary, synthetic descriptors and fake tokens; no real secret is needed.
+
+## Optional AMD/other GPU Linux smoke
+
+On authorized Linux workstations with EGL/GLES and DRM render device, run:
+
+```bash
+npm run smoke:gpu-linux
+```
+
+The optional script uses a 64x64 EGL pbuffer, GL color clear, GPU readback and renderer check against software fallback. It does not require a browser login, model weights or cloud API. This is **a GPU graphics hardware check**, not a speedup for Node.js/MCP unit tests. Never enable it as a mandatory check on GitHub-hosted CPU-only CI runners.

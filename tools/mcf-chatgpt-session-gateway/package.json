@@ -2,9 +2,12 @@
   "name": "@mcf/chatgpt-session-gateway",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "test": "node --test ./test/*.test.mjs",
-    "smoke": "node ./src/cli.mjs discover"
+    "smoke": "node ./src/cli.mjs discover",
+    "smoke:gpu-linux": "python3 ./scripts/gpu-smoke-linux.py"
   }
 }
