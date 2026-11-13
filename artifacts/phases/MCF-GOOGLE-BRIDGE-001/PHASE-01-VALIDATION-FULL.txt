@@ -1,0 +1,76 @@
+command: npm test
+exit_code: 0
+
+> @mcf/google-bridge@0.1.0 test
+> node --test test/*.test.mjs
+
+TAP version 13
+# Subtest: PKCE has correct S256 shape
+ok 1 - PKCE has correct S256 shape
+  ---
+  duration_ms: 2.522893
+  type: 'test'
+  ...
+# Subtest: only explicit operations are registered
+ok 2 - only explicit operations are registered
+  ---
+  duration_ms: 0.804884
+  type: 'test'
+  ...
+# Subtest: generation disabled without explicit opt-in
+ok 3 - generation disabled without explicit opt-in
+  ---
+  duration_ms: 0.275508
+  type: 'test'
+  ...
+# Subtest: local authorization token compare is exact
+ok 4 - local authorization token compare is exact
+  ---
+  duration_ms: 0.443041
+  type: 'test'
+  ...
+# Subtest: status excludes credential values
+ok 5 - status excludes credential values
+  ---
+  duration_ms: 0.74501
+  type: 'test'
+  ...
+# Subtest: MCP handshake, tools/list and status tool
+ok 6 - MCP handshake, tools/list and status tool
+  ---
+  duration_ms: 403.249375
+  type: 'test'
+  ...
+# Subtest: HTTP loopback authenticates and denies unsupported actions
+ok 7 - HTTP loopback authenticates and denies unsupported actions
+  ---
+  duration_ms: 75.019078
+  type: 'test'
+  ...
+# Subtest: OAuth Desktop PKCE checks state and encrypts mock token
+ok 8 - OAuth Desktop PKCE checks state and encrypts mock token
+  ---
+  duration_ms: 65.890839
+  type: 'test'
+  ...
+# Subtest: OAuth token store is encrypted, private and roundtrips
+ok 9 - OAuth token store is encrypted, private and roundtrips
+  ---
+  duration_ms: 15.834964
+  type: 'test'
+  ...
+# Subtest: Gemini model list uses allowlisted Google API and does not log the key
+ok 10 - Gemini model list uses allowlisted Google API and does not log the key
+  ---
+  duration_ms: 34.576646
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 967.539845

@@ -1,0 +1,11 @@
+# MCF-GOOGLE-BRIDGE-001 — Plano Fase 01
+- Autoridade humana: LEANDRO
+- Coordenacao: MESTRE
+- Classe de risco: B (software local, credenciais e integracoes).
+- Objetivo: instalar bridge Google local reutilizavel sem concessao automatica de permissoes.
+- Escopo: MCP stdio, HTTP local autenticado, Gemini catalogo, Workspace read-only, GCP ADC, OAuth PKCE, auditoria, systemd, testes.
+- Fora do escopo: credenciais de terceiros, IAM, billing, escrita, publicacao, merge, deploy em producao, token harvesting, bypass de HUMAN_GATE.
+- Contratos: AGENTS.md, docs/MCF-CURRENT-STATE.md, docs/operations/MCF-GOOGLE-MODEL-ROUTING.md e protocolo operacional MCF.
+- Criterios de aceite: MCP handshake e tools/list, operacoes negadas fail-closed, HTTP loopback seguro, OAuth com PKCE validado por simulacao, persistencia systemd, ausencia de segredos em codigo e logs.
+- Dependencias externas: OAuth client Desktop para Workspace, consentimento da conta Google, auth key Gemini restrita, ADC com IAM para GCP.
+- Papéis de revisao independente (Sofia/Emily/Renato) nao foram simulados como agentes executados; os testes locais foram executados pelo MESTRE.

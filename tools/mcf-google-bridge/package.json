@@ -1,0 +1,25 @@
+{
+  "name": "@mcf/google-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MCF Google Bridge: Google API adapters and governed local MCP",
+  "scripts": {
+    "start": "node --env-file-if-exists=/home/leo/.config/mcf-google-bridge/bridge.env src/index.mjs",
+    "serve": "node --env-file-if-exists=/home/leo/.config/mcf-google-bridge/bridge.env src/http.mjs",
+    "auth": "node --env-file-if-exists=/home/leo/.config/mcf-google-bridge/bridge.env src/oauth.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check src/bridge.mjs && node --check src/index.mjs && node --check src/http.mjs && node --check src/oauth.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "google-auth-library": "^11.3.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0"
+  }
+}
