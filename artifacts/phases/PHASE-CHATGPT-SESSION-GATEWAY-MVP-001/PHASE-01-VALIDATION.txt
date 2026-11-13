@@ -1,0 +1,7 @@
+VALIDATION — MCF-CHATGPT-SESSION-GATEWAY-MVP-001
+node --test ./test/*.test.mjs: PASS 12/12 (0 failed)
+node --check src/gateway.mjs: PASS
+node --check src/cli.mjs: PASS
+Real Bridge discovery: PASS (2/2 instances)
+Live mission dispatch: NOT_RUN (identity not READY)
+Live independent-session bootstrap: NOT_RUN (avoid modifying existing sessions)
