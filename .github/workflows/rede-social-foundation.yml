@@ -80,9 +80,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y bubblewrap apparmor-profiles
-          profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
-          test -f "$profile"
-          sudo install -m 0644 "$profile" /etc/apparmor.d/bwrap-userns-restrict
+          # Ubuntu 25.04+ ships this profile in /etc; older runners use extra-profiles.
+          if test ! -f /etc/apparmor.d/bwrap-userns-restrict; then
+            legacy_profile=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+            test -f "$legacy_profile"
+            sudo install -m 0644 "$legacy_profile" /etc/apparmor.d/bwrap-userns-restrict
+          fi
           sudo apparmor_parser -r /etc/apparmor.d/bwrap-userns-restrict
           bwrap --version
           bwrap --unshare-user --unshare-pid --die-with-parent --ro-bind / / -- /bin/true
