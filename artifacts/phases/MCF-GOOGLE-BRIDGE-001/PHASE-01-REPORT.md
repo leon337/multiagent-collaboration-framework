@@ -22,3 +22,6 @@ OAuth Desktop autorizado pelo titular; testes reais de Gmail, Drive e Calendar c
 
 ## Pré-merge (2026-11-13)
 Revisão isolada do Codex CLI identificou 3 pontos P2, todos corrigidos em código e cobertos por regressões; 14/14 testes locais e npm audit de produção com 0 findings. Ver PHASE-03-MERGE-DEPLOY-READINESS.md.
+
+## Revisão pós-correção (2026-11-13)
+Uma segunda análise do Codex reportou incompatibilidade entre models/ prefix no discovery Gemini e generate; corrigida com normalização, validação e teste mock. Testes locais 15/15 PASS. Nenhuma geração Gemini real foi realizada.

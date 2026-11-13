@@ -154,9 +154,11 @@ async function dispatch(op,args={}) {
       }))};
     }
     case 'google.gemini.generate': {
-      if(!validString(args.model,80) || !/^[a-z0-9][a-z0-9._-]*$/.test(args.model)) throw new BridgeError('INVALID_MODEL');
+      // Discovery reports names as "models/<id>"; accept either that or the bare ID.
+      const model=typeof args.model==='string' && args.model.startsWith('models/')?args.model.slice(7):args.model;
+      if(!validString(args.model,80) || !validString(model,73) || !/^[a-z0-9][a-z0-9._-]*$/.test(model)) throw new BridgeError('INVALID_MODEL');
       if(!validString(args.prompt,3000)) throw new BridgeError('INVALID_PROMPT');
-      const data=await googleRequest('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(args.model)+':generateContent','gemini',{
+      const data=await googleRequest('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent','gemini',{
         method:'POST', body:JSON.stringify({contents:[{parts:[{text:args.prompt}]}],generationConfig:{maxOutputTokens:256}})
       });
       return {model:args.model, text:(data.candidates||[]).flatMap(c=>(c.content?.parts||[]).map(p=>p.text||'')).join('\n').slice(0,12000)};

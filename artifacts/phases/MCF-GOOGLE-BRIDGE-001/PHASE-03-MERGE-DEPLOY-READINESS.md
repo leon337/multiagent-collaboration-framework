@@ -12,13 +12,15 @@ Problemas encontrados antes do merge:
 1. P2: saveOauthTokens truncava o arquivo de tokens em gravações concorrentes. Corrigido com gravação 0600 em arquivo temporário de nome aleatório + rename atômico; limpeza de temporário.
 2. P2: corpo HTTP montado por chunk.toString('utf8') poderia corromper multibytes entre chunks. Corrigido para acumular buffers com limite em bytes e decodificação única.
 3. P2: unidade systemd versionada apontava para worktree descartável. Corrigida para usar a instalação estável em ~/.local/share/mcf-google-bridge.
+4. P2 da segunda revisão: o nome models/<id> descoberto pelo Gemini era rejeitado na geração. Corrigido: normalizar o prefixo models/ ao montar endpoint e validar ID; teste com fetch simulado sem consumir quota.
 
 ## Testes adicionais no novo commit
 - npm run check: PASS.
-- npm test: 14/14 PASS (antes 10/10).
+- npm test: 15/15 PASS (antes 10/10).
 - Gravações/leitura concorrentes de tokens: PASS.
 - UTF-8 fragmentado entre chunks: PASS.
 - Limite HTTP por bytes: PASS.
+- Identidade de modelo retornada por discovery aceita na chamada opcional generate: PASS (mock).
 - Consistência dos caminhos da unidade systemd: PASS.
 - npm audit --omit=dev: 0 vulnerabilidades reportadas.
 - Sem arquivos de tokens/segredos versionados.

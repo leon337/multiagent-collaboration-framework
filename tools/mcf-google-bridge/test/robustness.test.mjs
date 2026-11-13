@@ -4,7 +4,7 @@ import { Readable } from 'node:stream';
 import { mkdtemp, readdir, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { saveOauthTokens, loadOauthTokens } from '../src/bridge.mjs';
+import { saveOauthTokens, loadOauthTokens, invoke } from '../src/bridge.mjs';
 import { readJsonBody } from '../src/http.mjs';
 
 test('token store remains valid during concurrent atomic writes and reads',async()=>{
@@ -51,4 +51,27 @@ test('committed systemd unit uses stable installed path, not worktree',async()=>
   assert.match(unit,/ExecStart=\/home\/leo\/\.nvm\/versions\/node\/[^ ]+\/bin\/node \/home\/leo\/\.local\/share\/mcf-google-bridge\/src\/http\.mjs/);
   assert.match(unit,/WorkingDirectory=\/home\/leo\/\.local\/share\/mcf-google-bridge/);
   assert.doesNotMatch(unit,/mcf-workspaces/);
+});
+
+test('Gemini generation accepts models/ prefix returned by discovery without real API call',async()=>{
+  const old={generation:process.env.GOOGLE_BRIDGE_ALLOW_GENERATION,key:process.env.GEMINI_API_KEY,googleKey:process.env.GOOGLE_API_KEY};
+  const realFetch=globalThis.fetch;
+  process.env.GOOGLE_BRIDGE_ALLOW_GENERATION='true';
+  process.env.GEMINI_API_KEY='dummy-only-for-test';
+  delete process.env.GOOGLE_API_KEY;
+  globalThis.fetch=async(url,opts)=>{
+    assert.equal(url,'https://generativelanguage.googleapis.com/v1beta/models/gemini-test:generateContent');
+    assert.equal(opts.headers['x-goog-api-key'],'dummy-only-for-test');
+    return Response.json({candidates:[{content:{parts:[{text:'mock-ok'}]}}]});
+  };
+  try {
+    const result=await invoke('google.gemini.generate',{model:'models/gemini-test',prompt:'ping'});
+    assert.equal(result.result.text,'mock-ok');
+    await assert.rejects(invoke('google.gemini.generate',{model:'models/../bad',prompt:'ping'}),e=>e.code==='INVALID_MODEL');
+  } finally {
+    globalThis.fetch=realFetch;
+    if(old.generation===undefined) delete process.env.GOOGLE_BRIDGE_ALLOW_GENERATION; else process.env.GOOGLE_BRIDGE_ALLOW_GENERATION=old.generation;
+    if(old.key===undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY=old.key;
+    if(old.googleKey===undefined) delete process.env.GOOGLE_API_KEY; else process.env.GOOGLE_API_KEY=old.googleKey;
+  }
 });
