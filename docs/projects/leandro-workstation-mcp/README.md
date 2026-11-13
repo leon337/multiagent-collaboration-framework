@@ -25,28 +25,32 @@ workstation. The formal task closure and remote checkpoint remain pending.
 ## MESTRE in ChatGPT
 
 The [Capability Registry entry](../../../context/capabilities/workstation-mcp-status-read.yaml)
-tracks `workstation.mcp.status.read`. Its only operation is
-`workstation_status`, which returns CPU, available RAM, and root filesystem
-capacity. The authenticated MCP tool listing and call passed locally, and an
-unauthenticated call returned HTTP 401. The local evidence can be reproduced
-with `python3 tests/e2e/local-oauth.py` in the provider worktree.
+tracks `workstation.mcp.status.read`. It reads CPU, available RAM, and root
+filesystem capacity through the authenticated MCP tool `workstation_status`.
 
-For ChatGPT, associate a Secure MCP Tunnel with the target Platform
-organization and ChatGPT workspace. Keep the gateway on loopback. Configure a
-separate OAuth client for authorization code with PKCE S256, with the exact
-callback shown by ChatGPT and a token audience matching the protected resource.
-The OAuth issuer must be reachable by the user during login and by the
-components performing discovery and token exchange. The existing loopback
-issuer and client-credentials flow only qualify local access.
+### Invoke through the workstation bridge
 
-In ChatGPT web, add and install the custom MCP plugin using the tunnel and
-link the user account. Promote the capability after MESTRE calls
-`workstation_status` from a chat and receives the actual workstation metrics.
-Read live connection and authorization state before offering the tool in a new
-session.
+1. Discover Remote Desktop Commander in the current chat and confirm the
+   authorized device `leo-N43SM` is online.
+2. On that device, use the connector to run the fixed local client:
 
-References: [Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels)
-and [OpenAI MCP authentication](https://developers.openai.com/plugins/build/auth).
+   ```sh
+   python3 /home/leo/leandro-workstation-mcp/.worktrees/remote-workstation-mcp/scripts/workstation-status.py
+   ```
+
+3. Use the returned JSON as the current observation. If the bridge, device or
+   gateway is unavailable, report the failure and check live access before retrying.
+
+The client obtains a short-lived Keycloak token on the workstation, calls
+the loopback MCP endpoint, and returns only the metrics to the chat. OAuth
+credentials and the bearer token stay on the workstation. This capability
+is limited to the fixed read operation above. Shell execution as a general
+MCF capability, file writes and privilege elevation are outside its scope.
+
+Verified from a MESTRE chat using the bridge on 2026-11-12 (Recife).
+The capability depends on the authorized connector being available in the
+current chat. It uses the bridge as transport and is separate from a native
+ChatGPT MCP plugin. The gateway and OAuth issuer remain on loopback.
 
 ## Promotion condition
 
