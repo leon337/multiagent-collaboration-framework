@@ -11,3 +11,5 @@ Pacote de rastreabilidade experimental (Classe B). Implementação: `tools/mcf-c
 - ARTIFACT-MANIFEST: checksums SHA-256.
 
 Não equivale a aprovação de merge, autorização de deploy ou validação E2E cognitiva.
+
+- PHASE-02-LIVE-QUALIFICATION: adendo de missão ChatGPT real via recuperação semântica; Gateway canônico ainda não qualificado.
