@@ -1,0 +1,46 @@
+skill:
+  skill_id: MCF-NVIDIA-SEMANTIC-RETRIEVAL
+  name: "Recuperar conhecimento por embeddings NVIDIA NIM"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Recuperar trechos de fontes locais explicitamente autorizadas usando embeddings NVIDIA e índice SQLite isolado, com proveniência verificável."
+  owner_agents: [Miriam]
+  supporting_agents: [Rafael, Emily]
+  trigger_phrases: ["pesquisar conhecimento do MCF", "buscar decisões anteriores", "recuperar contexto semântico"]
+  required_inputs: [query, mission_id, authorized_scope, approved_sources]
+  optional_inputs: [model, top_k, index_path]
+  preconditions: [human_approved_source_scope, nvidia_credential_local, approved_data_classification, explicit_opt_in]
+  allowed_tools: [NVIDIA_NIM_Embeddings, Local_SQLite]
+  forbidden_tools: [unbounded_filesystem_crawl, production_write, destructive_write, credential_capture, secret_exfiltration, automatic_external_provider_fallback]
+  permission_profile: READ_ONLY
+  execution_steps: [validar_escopo_e_classificacao, confirmar_fontes, indexar_apenas_fontes_autorizadas, gerar_embedding_da_pergunta, recuperar_trechos, registrar_proveniencia_e_limites, entregar_context_package]
+  required_evidence: [mission_id, model_id, source_paths, source_hashes, query_hash, returned_chunk_ids, similarity_scores, observed_at, provider_http_status, index_location, limitations]
+  expected_outputs: [context_package, source_ledger, retrieval_receipt]
+  acceptance_criteria: [sources_within_scope, no_secret_exposure, source_provenance_preserved, model_and_dimensions_consistent, read_only_retrieval, failures_declared]
+  failure_modes: [missing_api_key, provider_unavailable, unapproved_source, dimension_mismatch, empty_index, stale_source, confidential_data]
+  fallback:
+    without_primary_tool: "Degradar para busca local literal nos mesmos arquivos autorizados, registrando que não houve recuperação semântica."
+    without_any_tool: "Declarar dependência externa e entregar somente referências já verificadas."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Mestre
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: PUBLIC_OR_EXPLICITLY_APPROVED
+    human_gate_triggers: [new_sensitive_source, provider_change, production_enablement, data_publication]
+    prohibited_actions: [unapproved_data_transfer, credential_logging, automatic_deploy, unreviewed_runtime_registration]
+  implementation:
+    kind: LOCAL_EXPERIMENTAL_ADAPTER
+    entrypoint: tools/nvidia-rag/rag.py
+    executable_in_server_runtime: false
+    activation: EXPLICIT_ONLY
+  tests:
+    positive_scenarios: [approved_markdown_source, vector_retrieval_with_provenance, local_sqlite_isolation]
+    negative_scenarios: [unapproved_source, invalid_model, missing_credentials, empty_index]
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED_IN_SERVER_RUNTIME
