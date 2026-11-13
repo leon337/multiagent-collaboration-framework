@@ -1,6 +1,19 @@
 import http from 'node:http';
 import { invoke, status, getLocalHttpToken, tokenMatches, BridgeError } from './bridge.mjs';
 
+export async function readJsonBody(req,maxBytes=16000) {
+  const parts=[];
+  let total=0;
+  for await(const chunk of req) {
+    const bytes=Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk);
+    total+=bytes.length;
+    if(total>maxBytes) throw new BridgeError('PAYLOAD_TOO_LARGE',413);
+    parts.push(bytes);
+  }
+  // Decode only after concatenation: UTF-8 characters can span TCP chunks.
+  return JSON.parse(Buffer.concat(parts,total).toString('utf8'));
+}
+
 export async function startHttp({port=Number(process.env.GOOGLE_BRIDGE_PORT||8755)}={}) {
   const secret=await getLocalHttpToken();
   const server=http.createServer(async(req,res)=>{
@@ -22,13 +35,7 @@ export async function startHttp({port=Number(process.env.GOOGLE_BRIDGE_PORT||875
       json(401,{error:'UNAUTHORIZED'});return;
     }
     try {
-      let body='',overflow=false;
-      for await(const chunk of req) {
-        body+=chunk.toString('utf8');
-        if(body.length>16000) {overflow=true;break;}
-      }
-      if(overflow) {json(413,{error:'PAYLOAD_TOO_LARGE'});return;}
-      const parsed=JSON.parse(body);
+      const parsed=await readJsonBody(req);
       if(!parsed || typeof parsed.operation!=='string' || typeof parsed.args!=='object' || Array.isArray(parsed.args) || parsed.args===null) {
         json(400,{error:'INVALID_REQUEST'});return;
       }

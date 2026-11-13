@@ -19,3 +19,6 @@
 
 ## Fase 02 concluída (2026-11-13)
 OAuth Desktop autorizado pelo titular; testes reais de Gmail, Drive e Calendar com HTTP 200, reinício e revalidação PASS. Veja PHASE-02-OAUTH-LIVE-VALIDATION.md. Os bloqueios de autenticação descritos acima correspondem ao estado da Fase 01, anterior ao consentimento.
+
+## Pré-merge (2026-11-13)
+Revisão isolada do Codex CLI identificou 3 pontos P2, todos corrigidos em código e cobertos por regressões; 14/14 testes locais e npm audit de produção com 0 findings. Ver PHASE-03-MERGE-DEPLOY-READINESS.md.

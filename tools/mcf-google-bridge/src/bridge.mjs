@@ -1,5 +1,5 @@
 import { randomBytes, createCipheriv, createDecipheriv, randomUUID, timingSafeEqual } from 'node:crypto';
-import { mkdir, readFile, writeFile, appendFile, stat } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, appendFile, stat, rename, unlink } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { GoogleAuth } from 'google-auth-library';
@@ -73,7 +73,14 @@ export async function saveOauthTokens(tokens) {
   const encoded=Buffer.concat([cipher.update(JSON.stringify(tokens),'utf8'),cipher.final()]);
   const blob=Buffer.concat([Buffer.from([1]),iv,cipher.getAuthTag(),encoded]);
   const file=path.join(stateDir(),'workspace-tokens.enc');
-  await writeFile(file,blob,{mode:0o600,flag:'w'});
+  const temporary=path.join(stateDir(),'.workspace-tokens-'+randomUUID()+'.tmp');
+  try {
+    // Never truncate the live token store: readers must see either complete version.
+    await writeFile(temporary,blob,{mode:0o600,flag:'wx'});
+    await rename(temporary,file);
+  } finally {
+    await unlink(temporary).catch(e=>{if(e.code!=='ENOENT') throw e;});
+  }
 }
 export async function loadOauthTokens() {
   const blob=await secureRead(path.join(stateDir(),'workspace-tokens.enc'));

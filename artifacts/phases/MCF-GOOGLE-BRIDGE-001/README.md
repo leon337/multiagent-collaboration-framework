@@ -9,3 +9,4 @@
 - PHASE-01-ARTIFACT-MANIFEST.sha256 — integridade dos artefatos
 - Documentacao de uso: tools/mcf-google-bridge/README.md
 - PHASE-02-OAUTH-LIVE-VALIDATION.md — autenticação OAuth e smoke real pós-reinício (sem conteúdo pessoal)
+- PHASE-03-MERGE-DEPLOY-READINESS.md — correções da revisão independente, critérios de promoção e rollback.
