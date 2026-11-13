@@ -56,8 +56,27 @@ const runtimeConfigSchema = z
     MCF_LOCAL_AGENT_TEAM_ENABLED: booleanEnvironmentValue,
     MCF_LOCAL_AGENT_TEAM_TIMEOUT_MS: z.coerce.number().int().min(500).max(120_000).default(10_000),
     MCF_LOCAL_AGENT_TEAM_MAX_PARALLELISM: z.coerce.number().int().min(1).max(8).default(4),
+    MCF_AGENT_BRIDGE_GOVERNED_ENABLED: booleanEnvironmentValue,
+    MCF_AGENT_BRIDGE_MISSION_SCRIPT: z.string().default(''),
+    MCF_AGENT_BRIDGE_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(120_000).default(90_000),
   })
   .superRefine((config, context) => {
+    if (config.MCF_AGENT_BRIDGE_GOVERNED_ENABLED) {
+      if (config.NODE_ENV === 'production') {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_AGENT_BRIDGE_GOVERNED_ENABLED'],
+          message: 'Local governed browser must remain disabled in production.',
+        });
+      }
+      if (!isAbsolute(config.MCF_AGENT_BRIDGE_MISSION_SCRIPT)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_AGENT_BRIDGE_MISSION_SCRIPT'],
+          message: 'Governed browser runner must be an absolute script path.',
+        });
+      }
+    }
     if (config.MCF_LOCAL_AGENT_TEAM_ENABLED && config.NODE_ENV === 'production') {
       context.addIssue({
         code: z.ZodIssueCode.custom,

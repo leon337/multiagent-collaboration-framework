@@ -58,6 +58,14 @@ const skillConfig: Record<McfExecutableSkillId, SkillPlanConfig> = {
       'human_gate_state',
     ],
   },
+  'MCF-AUTONOMOUS-BROWSER-RESEARCH': {
+    agentId: 'Mestre',
+    handoffTo: 'Mestre',
+    toolProvider: 'mcf-agent-bridge',
+    toolOperation: 'inspect-governed-browser',
+    internal: false,
+    requiredEvidence: ['mission_id', 'step_receipts', 'text_digests', 'verified_restoration'],
+  },
   'MCF-RECOVER-CONTEXT': {
     agentId: 'Miriam',
     handoffTo: 'Mestre',
@@ -368,6 +376,7 @@ function resourceFor(skillId: McfExecutableSkillId, repository: string | undefin
   const config = skillConfig[skillId];
   if (skillId === 'MCF-EXECUTE-LOCAL-TEAM') return 'mcf-agent-runtime';
   if (skillId === 'MCF-OPERATE-DUAL-BROWSER') return 'mcf-dual-browser-cockpit';
+  if (skillId === 'MCF-AUTONOMOUS-BROWSER-RESEARCH') return 'local-workspace';
   if (config.toolProvider === 'internal') {
     if (skillId === 'MCF-TRACE-MISSION') return 'mcf-mission-timeline';
     return config.internal ? 'mcf-chat-bridge' : 'mcf-agent-runtime';

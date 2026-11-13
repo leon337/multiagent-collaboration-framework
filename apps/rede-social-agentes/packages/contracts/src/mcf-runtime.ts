@@ -516,6 +516,7 @@ export type McfExecutableSkillId =
   | 'MCF-SELECT-AGENTS'
   | 'MCF-EXECUTE-LOCAL-TEAM'
   | 'MCF-OPERATE-DUAL-BROWSER'
+  | 'MCF-AUTONOMOUS-BROWSER-RESEARCH'
   | 'MCF-RECOVER-CONTEXT'
   | 'MCF-DEFINE-PRODUCT'
   | 'MCF-DESIGN-EXPERIENCE'
@@ -539,7 +540,8 @@ export type McfExecutableToolProvider =
   | 'vercel'
   | 'cloudflare'
   | 'codebuddy'
-  | 'local-agent-runtime';
+  | 'local-agent-runtime'
+  | 'mcf-agent-bridge';
 
 export interface McfChatDispatchRequest {
   objective: string;

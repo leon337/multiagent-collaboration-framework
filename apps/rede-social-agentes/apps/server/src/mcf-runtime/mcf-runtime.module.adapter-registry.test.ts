@@ -13,6 +13,7 @@ import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js'
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
 import { GitHubActionsStagingDeployAdapter } from './github-staging-deploy.adapter.js';
 import { LocalAgentTeamAdapter } from './local-agent-team.adapter.js';
+import { GovernedBrowserExternalAdapter } from './governed-browser.adapter.js';
 import { McfRuntimeModule } from './mcf-runtime.module.js';
 
 type FactoryProvider = {
@@ -49,6 +50,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       GitHubPullCollaborationAdapter,
       CodeBuddyExecutorAdapter,
       LocalAgentTeamAdapter,
+      GovernedBrowserExternalAdapter,
     ]);
 
     const registry = registryProvider?.useFactory?.(
@@ -58,12 +60,14 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       stub('github-pr-collaboration-write-v1'),
       stub('codebuddy-implement-change-local-v1'),
       stub('local-agent-team-process-v1'),
+      stub('mcf-governed-browser-local-v1'),
     ) as AdapterRegistry;
 
     expect(registry.listAdapterIds()).toContain('github-branch-pr-write-v1');
     expect(registry.listAdapterIds()).toContain('github-pr-collaboration-write-v1');
     expect(registry.listAdapterIds()).toContain('codebuddy-implement-change-local-v1');
     expect(registry.listAdapterIds()).toContain('local-agent-team-process-v1');
+    expect(registry.listAdapterIds()).toContain('mcf-governed-browser-local-v1');
   });
 });
 
