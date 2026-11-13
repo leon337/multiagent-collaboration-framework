@@ -17,3 +17,14 @@ next_actions:
   - Configurar auth key Gemini restrita e ADC se desejado.
   - Executar smoke real de API sem escrita.
   - Revisar independentemente o codigo antes de qualquer integracao ao dispatcher central.
+
+phase_02_oauth:
+  state: LIVE_VALIDATED
+  google_project: mcf-potiguar-gemini-261109
+  oauth_consent: completed
+  gmail_read: HTTP_200
+  drive_read: HTTP_200
+  calendar_read: HTTP_200
+  restart_persistence: PASS
+  token_refresh_after_expiry: NOT_VALIDATED
+  public_app_published: false

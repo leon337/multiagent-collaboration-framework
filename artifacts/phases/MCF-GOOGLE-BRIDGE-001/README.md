@@ -8,3 +8,4 @@
 - PHASE-01-DECISIONS.md — decisoes de seguranca e escopo
 - PHASE-01-ARTIFACT-MANIFEST.sha256 — integridade dos artefatos
 - Documentacao de uso: tools/mcf-google-bridge/README.md
+- PHASE-02-OAUTH-LIVE-VALIDATION.md — autenticação OAuth e smoke real pós-reinício (sem conteúdo pessoal)

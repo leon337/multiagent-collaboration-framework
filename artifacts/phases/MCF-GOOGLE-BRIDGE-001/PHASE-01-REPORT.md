@@ -16,3 +16,6 @@
 - Codex MCP habilitado com --env-file-if-exists para configuracao privada compartilhada com systemd.
 - Smoke do MCP instalado: 7 ferramentas; google.status OK.
 - npm audit --omit=dev: 0 vulnerabilidades reportadas (2026-11-13).
+
+## Fase 02 concluída (2026-11-13)
+OAuth Desktop autorizado pelo titular; testes reais de Gmail, Drive e Calendar com HTTP 200, reinício e revalidação PASS. Veja PHASE-02-OAUTH-LIVE-VALIDATION.md. Os bloqueios de autenticação descritos acima correspondem ao estado da Fase 01, anterior ao consentimento.
