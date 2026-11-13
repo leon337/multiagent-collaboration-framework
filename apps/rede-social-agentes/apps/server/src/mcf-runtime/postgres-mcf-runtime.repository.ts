@@ -1,3 +1,5 @@
+import { createHash, randomUUID } from 'node:crypto';
+
 import { Injectable } from '@nestjs/common';
 import type {
   McfEventType,
@@ -16,6 +18,7 @@ import {
   McfPhaseNotFoundError,
 } from './mcf-runtime.errors.js';
 import type {
+  CollectiveCloseoutBlockInput,
   CompleteMcfPendingPhaseInput,
   CompleteMcfPendingPhaseResult,
   CreateMcfMissionInput,
@@ -215,6 +218,51 @@ async function loadPhaseWithClient(
 export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
   constructor(private readonly database: DatabaseService) {}
 
+  async recordCloseoutBlock(input: CollectiveCloseoutBlockInput): Promise<void> {
+    await this.database.transaction(async (client) => {
+      const mission = await client.query<{ version: number }>(
+        'select "version" from "mcf_missions" where "id" = $1 for update',
+        [input.missionId],
+      );
+      if (!mission.rows[0]) throw new McfMissionNotFoundError(input.missionId);
+      if (mission.rows[0].version !== input.expectedMissionVersion) {
+        throw new McfMissionVersionConflictError(input.missionId, input.expectedMissionVersion);
+      }
+      const idempotencyKey =
+        'collective-block:' +
+        input.missionId +
+        ':' +
+        input.expectedMissionVersion +
+        ':' +
+        createHash('sha256')
+          .update(JSON.stringify([input.phaseSkillId, input.reason, input.rosterFingerprint]))
+          .digest('hex');
+      await client.query(
+        `insert into "mcf_events"
+           ("id","mission_id","phase_id","agent_id","event_type","payload","idempotency_key","occurred_at")
+         values ($1,$2,null,null,'GATE_REJECTED',$3::jsonb,$4,now())
+         on conflict ("idempotency_key") do nothing`,
+        [
+          randomUUID(),
+          input.missionId,
+          JSON.stringify({
+            gate: 'COLLECTIVE_CLOSEOUT',
+            state: 'AGUARDANDO_AGENTE',
+            reason: input.reason,
+            rosterRevision: input.rosterRevision,
+            rosterFingerprint: input.rosterFingerprint,
+            requiredAgentIds: input.requiredAgentIds,
+            phaseSkillId: input.phaseSkillId,
+            nextAction:
+              'Reconcilie cada execução obrigatória, recibo e handoff; preserve STOP/PAUSE',
+            expectedMissionVersion: input.expectedMissionVersion,
+          }),
+          idempotencyKey,
+        ],
+      );
+    });
+  }
+
   async createMission(input: CreateMcfMissionInput): Promise<McfMissionRecord> {
     return this.database.transaction(async (client) => {
       const inserted = await client.query<MissionRow>(
@@ -275,6 +323,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
              "updated_at" = $4
          where "id" = $5
            and "version" = $6
+           and ($9::jsonb is null or "contract" = $9::jsonb)
            and (
              ($7::text is null and "active_external_attempt_id" is null)
              or (
@@ -312,6 +361,7 @@ export class PostgresMcfRuntimeRepository implements McfRuntimeRepository {
           input.expectedMissionVersion,
           input.externalAttemptId ?? null,
           input.evidenceStatus,
+          input.expectedMissionContract ? JSON.stringify(input.expectedMissionContract) : null,
         ],
       );
 

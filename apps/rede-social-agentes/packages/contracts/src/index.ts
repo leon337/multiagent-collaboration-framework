@@ -283,6 +283,7 @@ export type {
   McfProjectRecoveryRoute,
   McfResumeRoute,
   McfRiskClass,
+  McfRequiredAgentExecution,
   McfSkillDefinition,
   McfSocialCandidateResponse,
   McfSocialTimelineResponse,

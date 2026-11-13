@@ -4,6 +4,7 @@ import type { DatabaseRow } from '@rsa/database';
 import type { DatabaseService } from '../database.service.js';
 import { McfMissionNotFoundError } from './mcf-runtime.errors.js';
 import type {
+  CollectiveCloseoutBlockInput,
   CompleteMcfPendingPhaseInput,
   CompleteMcfPendingPhaseResult,
   CreateMcfMissionInput,
@@ -36,6 +37,13 @@ export class OrderedMcfRuntimeRepository implements McfRuntimeRepository {
     private readonly database: DatabaseService,
     private readonly delegate: McfRuntimeRepository,
   ) {}
+
+  recordCloseoutBlock(input: CollectiveCloseoutBlockInput): Promise<void> {
+    if (!this.delegate.recordCloseoutBlock) {
+      throw new Error('collective closeout checkpoint persistence not supported by delegate');
+    }
+    return this.delegate.recordCloseoutBlock(input);
+  }
 
   createMission(input: CreateMcfMissionInput): Promise<McfMissionRecord> {
     return this.delegate.createMission(input);
