@@ -1,0 +1,16 @@
+VALIDATION — MCF-PET-GEMINI-LIVE-001
+
+[PASS] Python byte compilation of backend and installer.
+[PASS] Node --check of pet-live.js and pet-live-worklet.js.
+[PASS] 12/12 dedicated security/installer unit tests.
+[PASS] 48/48 existing Service Hub unit tests.
+[PASS] Installer --check prior to changes, applied with rollback backup and signing-key validation.
+[PASS] Services mestre-agent, mcf-service-hub, Pet, VoiceHub, DSH, 9Router, Ollama, Open WebUI, Agent Studio remain active.
+[PASS] Loopback endpoints :8878 and :8898 respond and remain bound only to 127.0.0.1.
+[PASS] Gemini 3.8 Live authenticated setup, 9 audio chunks, transcript, completed turn.
+[PASS] Invalid/missing ticket and replay blocked.
+[PASS] Playwright start/stop with fake microphone, real Gemini audio and desktop/mobile display; zero HTTP or JS errors.
+[PASS] Existing Tailscale Serve configuration unchanged.
+[BLOCKED] Tailnet public-self access: host reported Network is unreachable; remote WSS not externally confirmed.
+[PENDING] Physical user microphone with continuous mode; automated test used fake audio device.
+[PENDING] CI/PR merge evidence, will update after actions.
