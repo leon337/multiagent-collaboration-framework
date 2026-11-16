@@ -9,9 +9,16 @@
 
 - **Já operacional:** a Issue #527 contém tarefas `- [ ]` clicáveis no GitHub, com IDs estáveis `F0.1` a `F4.6`, que podem ser editadas e vinculadas a comentários, PRs, testes, SHAs, receipts e decisões.
 - **Atualização humana/agêntica governada:** a cada PR, falha, evidência, gate ou decisão, o responsável atualiza a Issue com status e referências. A atualização deve ocorrer durante o mesmo ciclo de execução, não só em um resumo retrospectivo.
-- **Automação futura (F0.7):** sincronizador de sinais CI/PR e reconciliação de status; **não implementado na abertura da missão**. Automação não poderá marcar `[x]` porque um workflow está verde.
+- **Automação F0.7 implementada em branch:** script `ops/gemini-live/checklist-sync.mjs` (dry-run por padrão), 9/9 testes e workflow com publicação de comentário somente por opt-in. **Ainda não habilitada em main**. Nunca marca `[x]` por CI verde.
 - **Regra de veracidade:** o campo marcado indica `VALIDADO` e evidência vinculada. Um item em execução continua desmarcado e recebe comentário `EM_EXECUCAO`.
 - **Sem duplicação:** não manter um segundo checklist com progresso contraditório em arquivos Markdown/JSON/Notion.
+
+## Estado técnico registrado em 2026-11-16
+
+- E2E F0 com mídia sintética: 15/15 PASS; sincronizador: 9/9 PASS; segurança: 12 controles PASS, 3 gaps conhecidos.
+- PRF em `artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/`, com manifest SHA-256 conferido 8/8.
+- F0.8 está `GATE_PENDENTE`: auditoria Emily e decisão LÉO não executadas; sem encerramento formal ou merge.
+- A Issue #527 continua a única fonte de verdade para os checkboxes, e pode conter atualizações posteriores.
 
 ## Contrato de atualização
 
