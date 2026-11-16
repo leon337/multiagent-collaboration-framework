@@ -1,0 +1,12 @@
+MCF-PET-SESSION-RECOVERY-001 — EVIDÊNCIA
+
+Root cause verified: backend SESSION_TTL=3600 and in-memory _sessions; frontend created session only once on load.
+Implementation: versioned frontend/pet-conversation.js; on-demand refresh, bounded retry exclusively after HTTP 403 INVALID_SESSION.
+Node VM tests: 5/5 PASS (expired STT, forbidden Origin, repeated 403, network error); same recording Blob verified after recovery, proactive renewal before TTL.
+Existing Gemini Live package tests: 12/12 PASS.
+Live Chrome Playwright: initial cookie/session, restart MCF Service Hub, POST /state yields expected 403, browser auto-creates new session, same browser POST /stt returns HTTP 200, 0 JS exceptions.
+Synthetic microphone contained no recognizable words; empty transcription is not an authentication failure.
+Initial stress test stopped recording during restart and received a transient connection refused: failure deliberately not retried as network outcomes are ambiguous. Post-readiness recovery test PASS.
+Exact JS SHA256 of locally installed file matches served asset: 751e9715ba53136dac0f759b05bb548d7efdeb3307aee3251a8506b666b731e1.
+Rollback backup: /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-20261116T211759Z/
+Hardware microphone speech content not captured or asserted by automated tests.

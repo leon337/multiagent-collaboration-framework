@@ -33,6 +33,9 @@ jobs:
         run: |
           node --check frontend/pet-live.js
           node --check frontend/pet-live-worklet.js
+          node --check frontend/pet-conversation.js
+      - name: Exercise expired browser-session recovery
+        run: node --test frontend/pet-session-recovery.test.mjs
       - name: Verify no credentials committed to package
         run: |
           if grep -RInE '(^|[[:space:]])(AIza[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9_-]{20,})' backend frontend tests; then

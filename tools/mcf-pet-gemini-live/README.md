@@ -31,3 +31,11 @@ O backend aceita uma sessão Live por vez; origens estritamente allowlisted, tic
 ## Rollback
 
 Backups em ~/.local/share/mcf-service-hub/backups/mcf-pet-live-<timestamp>/; restaurar somente arquivos alterados do backup verificado e reiniciar as duas unidades locais após confirmar que não houve outras alterações. Não alterar o ledger MCF nem deploy central. Testes e evidências são requisitos de merge e deploy.
+
+## Correção de sessão de voz do Pet (2026-11-16)
+
+A versão anterior criava a sessão do Pet somente no carregamento da página; o backend expira essa sessão em 3600 segundos e reinícios descartam sessões em memória. O navegador continuava usando o token expirado em /api/pet-voice/stt, recebendo HTTP 403 INVALID_SESSION.
+
+Agora frontend/pet-conversation.js é parte versionada do pacote e da instalação reversível. A autenticação compartilhada renova a sessão antes da expiração ou, ao receber **exatamente** HTTP 403 INVALID_SESSION, faz uma renovação e **uma única repetição** do mesmo POST, incluindo o mesmo Blob de microfone ou request_id. Falhas de origem, rede, provedor, 429 e 5xx não são repetidas automaticamente. A mesma rotina atende transcrição, chat, TTS e estado do Pet, preservando CSRF/cookie e limites existentes. Sem microfone contínuo nem ferramentas adicionais.
+
+Validar com node --test frontend/pet-session-recovery.test.mjs, testes Python e Playwright com página previamente carregada e servidor reiniciado. Correção restrita ao painel; o MissionRuntime permanece intocado. python3 install_local.py --apply guarda backup antes de instalar.
