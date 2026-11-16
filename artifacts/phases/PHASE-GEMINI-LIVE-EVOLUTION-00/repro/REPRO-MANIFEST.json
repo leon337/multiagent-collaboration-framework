@@ -1,0 +1,105 @@
+{
+  "schema": "mcf-gemini-f0-sanitized-source-manifest/v1",
+  "generated_at_utc": "2026-11-16T19:55:47.859673+00:00",
+  "source_host": "leo-N43SM",
+  "historical_source_git_sha": "a33bdf9c4681ace0cb582621801bb6608415692a",
+  "historical_snapshot_sha256": "af54e8a3d4ee64652e6b4ef9a1dc6ac8ce0bbee114a318834b9fcb63656b0162",
+  "description": "Post-test reference of sanitized bytes, not cryptographic attestation of bytes at the time of 15/15 E2E. Baseline JSON and scripts are separate artifacts.",
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "ee84034ddde2a1b2e464c9eb952a16e68dd74a86d616bdbf3fa8be90bfd621e2",
+      "bytes": 58
+    },
+    {
+      "path": "README.md",
+      "sha256": "f1b3ef5eea52d45c63c5253dd9be9ac83eb302d597cd9d451fc7231a80c52798",
+      "bytes": 902
+    },
+    {
+      "path": "README.source.md",
+      "sha256": "44b0df3974b37fa0faeb705e857efbc463b5a51b0d6541c340bb7c8b5ac811fe",
+      "bytes": 2147
+    },
+    {
+      "path": "f0/BASELINE-TESTS.json",
+      "sha256": "a8b1b9340ba84dd476cdf149bc6bf440c4610aa1942a701d2cc2af4f7411ef36",
+      "bytes": 2583
+    },
+    {
+      "path": "f0/MODEL-PROBE.json",
+      "sha256": "221ba8674cbc10c6261f8172d52b3eb73bd395bfd948c45744323a70e82ca2a0",
+      "bytes": 1180
+    },
+    {
+      "path": "f0/SECURITY-CHECKS.json",
+      "sha256": "6a747aaae001f482f326a797dcd72236eecc06183b13ca97179eb7b1743dfffe",
+      "bytes": 2198
+    },
+    {
+      "path": "f0/SNAPSHOT.json",
+      "sha256": "af54e8a3d4ee64652e6b4ef9a1dc6ac8ce0bbee114a318834b9fcb63656b0162",
+      "bytes": 2274
+    },
+    {
+      "path": "f0/baseline-smoke.cjs",
+      "sha256": "4004bd24770de465a0b635137aa82b96080a129a3582630481d8af9d44b71da2",
+      "bytes": 6415
+    },
+    {
+      "path": "f0/probe-models.cjs",
+      "sha256": "9f58f3c99e3abb5f18a184346a28d88a4cd94352fc3056965f6a399e6f272c7f",
+      "bytes": 1441
+    },
+    {
+      "path": "f0/security-check.cjs",
+      "sha256": "abc8e10388842f2f577ae55f031ee0f28ac329fbce0f6ca0d7c60c1ce37dae47",
+      "bytes": 2596
+    },
+    {
+      "path": "f0/snapshot.py",
+      "sha256": "ecd690da9feaada0453e24b3408c0d06d822a0a341a8f7172c88e6b1a6731cff",
+      "bytes": 2289
+    },
+    {
+      "path": "live-connection-test.cjs",
+      "sha256": "2ecac5c3fa94b30df88ebef6d18af2cf480b5d5ef79548c45448b7b9910443fa",
+      "bytes": 1162
+    },
+    {
+      "path": "public/app.js",
+      "sha256": "c8c3af4469037709b8e4293451ee0603996ca9754bfc685a6d65283800b37804",
+      "bytes": 23497
+    },
+    {
+      "path": "public/index.html",
+      "sha256": "b60201074c56f0531f62553eb12d52995121c73f44659aa1cfd110058b4593ab",
+      "bytes": 12248
+    },
+    {
+      "path": "public/style.css",
+      "sha256": "d5953009b4a5cb2f6492818d042f2a56f3ef02a66aef351ebacd25a2cfa3aa24",
+      "bytes": 13879
+    },
+    {
+      "path": "public/telemetry.js",
+      "sha256": "9ab89b220fc70c23db1082fc31e6ae780282af588d24a2c7791cabf0d9862bf7",
+      "bytes": 1822
+    },
+    {
+      "path": "server.js",
+      "sha256": "75b7965efa8e0affafaf4990e26c6d40ec5af34c6cfc93e2f3e17df3ed4f020b",
+      "bytes": 4959
+    },
+    {
+      "path": "start.sh",
+      "sha256": "2304a8f7a267f9e836fa7a3da11ef154ca65835a8c17ca5931d16ef9fe856980",
+      "bytes": 528
+    },
+    {
+      "path": "ui-test.cjs",
+      "sha256": "986bed2fed64b6bc12236989cc3a1324e35b96a6d88c64c601910960a10e088c",
+      "bytes": 2039
+    }
+  ]
+}

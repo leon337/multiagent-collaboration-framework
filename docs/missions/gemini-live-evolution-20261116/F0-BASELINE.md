@@ -76,4 +76,7 @@ Fontes externas: [Live capabilities](https://ai.google.dev/gemini-api/docs/live-
 
 A revisão externa no SHA `6a714e4` identificou que os logs/scripts locais não estavam disponíveis no PR. Foram incorporados **somente** os arquivos sanitizados `artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/` (servidor, frontend, scripts F0, resultados JSON e hash manifest). A cópia não inclui credencial, tokens, mídia ou estado de navegador. Reproduzir testes de mídia/API em outro ambiente exige dispositivo sintético, Chrome e chave **do próprio auditor**, nunca uma chave publicada.
 
-O histórico `15/15 PASS` corresponde à execução original local; código e resultados agora são inspecionáveis. Testes de dispositivo físico e rotação de chave seguem pendentes. Ver [parecer externo](../../artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/PHASE-00-EXTERNAL-REVIEW-CODEX.md).
+O histórico `15/15 PASS` corresponde à execução original local; código e resultados agora são inspecionáveis. Testes de dispositivo físico e rotação de chave seguem pendentes. Ver [parecer externo](../../../artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/PHASE-00-EXTERNAL-REVIEW-CODEX.md).
+
+
+**Nota de rastreabilidade:** o `SNAPSHOT.json` histórico precede alterações posteriores no código local. Portanto seu inventário não deve ser apresentado como hash idêntico ao `repro/` final. O [REPRO-MANIFEST.json](../../../artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/REPRO-MANIFEST.json) lista os hashes **da versão sanitizada efetivamente publicada**; não prova sozinho que esses bytes foram usados no teste de 15/15.
