@@ -36,11 +36,10 @@
     // Only fixed allowlisted state names are ever sent to the Pet.
     const valid=["ocioso","ouvindo","raciocinando","executando","concluido","erro"];
     if(!valid.includes(state))return;
-    const auth=window.McfPetAuth?.getCsrf?.();
-    if(!auth)return;
-    fetch("/api/pet-voice/state",{
-      method:"POST",credentials:"same-origin",
-      headers:{"Content-Type":"application/json","X-MCF-Pet-CSRF":auth},
+    const auth=window.McfPetAuth;
+    if(typeof auth?.request!=="function")return;
+    auth.request("state",{
+      method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({state}),cache:"no-store"
     }).catch(()=>{});
   }
@@ -206,16 +205,23 @@
       source.connect(worklet);
       worklet.connect(silent);
       silent.connect(ctx.destination);
-      const csrf=window.McfPetAuth?.getCsrf?.();
-      if(!csrf)throw Error("A sessão protegida do Pet ainda não está pronta.");
-      const response=await fetch("/api/pet-voice/live-ticket",{
-        method:"POST",credentials:"same-origin",cache:"no-store",
-        headers:{"Content-Type":"application/json","X-MCF-Pet-CSRF":csrf},
-        body:"{}"
+      const auth=window.McfPetAuth;
+      if(typeof auth?.request!=="function")
+        throw Error("A sessão protegida do Pet ainda não está pronta.");
+      const response=await auth.request("live-ticket",{
+        method:"POST",cache:"no-store",
+        headers:{"Content-Type":"application/json"},body:"{}"
       });
-      const body=await response.json();
-      if(!response.ok||body.ready!==true||typeof body.ticket!=="string")
-        throw Error("O Gemini Live está indisponível. Use a conversa por turnos.");
+      const body=await response.json().catch(()=>({}));
+      if(!response.ok){
+        if(response.status===403)
+          throw Error("Autenticação do Pet rejeitada. Reabra o painel para recuperar a sessão.");
+        if(response.status===503)
+          throw Error("Gateway Gemini Live indisponível. Utilize a conversa por turnos.");
+        throw Error("Não foi possível validar a sessão Gemini Live.");
+      }
+      if(body.ready!==true||typeof body.ticket!=="string")
+        throw Error("O gateway não retornou um ticket Live válido.");
       const choice=$("petLiveVoice").value;
       const voice=["Fenrir","Puck","Kore","Aoede","Zephyr"].includes(choice)?choice:"Fenrir";
       socket=new WebSocket(remoteURL()+"?voice="+encodeURIComponent(voice),

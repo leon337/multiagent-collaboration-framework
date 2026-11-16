@@ -39,3 +39,20 @@ A versão anterior criava a sessão do Pet somente no carregamento da página; o
 Agora frontend/pet-conversation.js é parte versionada do pacote e da instalação reversível. A autenticação compartilhada renova a sessão antes da expiração ou, ao receber **exatamente** HTTP 403 INVALID_SESSION, faz uma renovação e **uma única repetição** do mesmo POST, incluindo o mesmo Blob de microfone ou request_id. Falhas de origem, rede, provedor, 429 e 5xx não são repetidas automaticamente. A mesma rotina atende transcrição, chat, TTS e estado do Pet, preservando CSRF/cookie e limites existentes. Sem microfone contínuo nem ferramentas adicionais.
 
 Validar com node --test frontend/pet-session-recovery.test.mjs, testes Python e Playwright com página previamente carregada e servidor reiniciado. Correção restrita ao painel; o MissionRuntime permanece intocado. python3 install_local.py --apply guarda backup antes de instalar.
+
+## Correção multissessão e observabilidade do Pet (2026-11-16)
+
+Motivação: duas abas da Central MCF sobrescreviam o mesmo cookie HttpOnly. O modo Gemini Live usava o token antigo diretamente ao solicitar um ticket e exibia "Gemini Live está indisponível" mesmo com o modelo saudável. O modo de conversa por turnos também podia exibir "Sessão inválida" sob concorrência entre abas.
+
+Correção:
+- Cada instância da página gera identificador aleatório de aba (hexadecimal, 32 caracteres, não persistido). Um cookie HttpOnly mcfpet_tab_<id> fica isolado do restante das abas, mantendo SameSite=Strict, CSRF e validação de origem. O cookie legado mcfpet_session continua compatível até que abas antigas sejam recarregadas.
+- GET /api/pet-voice/session recebe X-MCF-Pet-Tab e emite cookie com nome segregado; endpoints autenticam pelo par cookie+CSRF+id da aba, sem enfraquecer autorização.
+- Gemini Live obtém ticket e envia estados usando window.McfPetAuth.request, a mesma renovação segura por 403 INVALID_SESSION, sem repetição em falhas de rede, 429/5xx ou Origin inválida.
+- O Pet pode ser iniciado pelo desktop em vez do systemd. A observabilidade reconhece somente o processo que combina UID local, executável autorizado, caminho exato do script, PID do arquivo 0600, telemetria recente e UDP loopback. A interface informa "Pet aberto manualmente" quando systemd está inativo, sem criar segundo mascote nem encerrar processo legítimo.
+- O código de observação continua somente leitura; não captura transcrições ou áudio.
+
+Verificações: 48 testes Python do pacote, 5 testes JS de renovação e Playwright real com duas abas: cookies diferentes, ambos POST de estado HTTP 200, Gemini Live ticket HTTP 200 com áudio, segunda aba continua autorizada e microfone liberado ao encerrar. Chat clássico com outra aba aberta também respondeu HTTP 200 e não apresentou falha de sessão.
+
+Deploy/rollback: instalador python3 install_local.py --apply guarda backup de arquivos tocados em ~/.local/share/mcf-service-hub/backups/mcf-pet-live-<timestamp>/. Nesta correção reiniciou-se apenas Service Hub, sem alterar MissionRuntime, credenciais Google, rede ou outros serviços.
+
+Gates externos: testes automatizados usam microfone simulado; a conversa física com LEANDRO no Brave real não foi reexecutada. A rota Tailscale remota pelo celular continua sem verificação externa.

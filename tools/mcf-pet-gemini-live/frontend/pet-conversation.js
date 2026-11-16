@@ -4,10 +4,16 @@
 (() => {
   const $ = id => document.getElementById(id);
   const path = "/api/pet-voice/";
+  // A page instance owns a distinct HttpOnly session cookie. A second tab
+  // must never replace the cookie for this page, even when the tab is cloned.
+  const tabId = crypto.randomUUID().replace(/-/g, "");
   let csrf = "";
   let sessionExpiresAt = 0;
   let sessionRefresh = null;
-  window.McfPetAuth = Object.freeze({getCsrf: () => csrf});
+  window.McfPetAuth = Object.freeze({
+    getCsrf: () => csrf,
+    request: (endpoint, options) => authenticatedFetch(endpoint, options)
+  });
 
   // The server issues sessions valid for one hour. A page may outlive this
   // interval or the server can restart and lose its in-memory session map.
@@ -16,7 +22,8 @@
     if (sessionRefresh) return sessionRefresh;
     sessionRefresh = (async () => {
       const response = await fetch(path + "session", {
-        method: "GET", credentials: "same-origin", cache: "no-store"
+        method: "GET", credentials: "same-origin", cache: "no-store",
+        headers: {"X-MCF-Pet-Tab": tabId}
       });
       if (!response.ok) throw new Error("Não foi possível renovar a sessão segura.");
       const data = await response.json();
@@ -48,7 +55,8 @@
     const submit = () => fetch(path + endpoint, {
       ...options,
       credentials: "same-origin",
-      headers: {...options.headers, "X-MCF-Pet-CSRF": csrf}
+      headers: {...options.headers, "X-MCF-Pet-CSRF": csrf,
+                "X-MCF-Pet-Tab": tabId}
     });
     const first = await submit();
     if (first.status !== 403) return first;

@@ -1,0 +1,16 @@
+b0abe40f0bf83454a7bc2a45f6fbe79b187d433b234a05a0afe0aed1e2f26d93  .github/workflows/mcf-pet-gemini-live.yml
+c81d8774ce03942c1e13fbf353ab7f94acf7dad7475a431a4552d661908970ec  tools/mcf-pet-gemini-live/README.md
+50cd88ddd1484cc525c9da3af1448cb30bf5aca0aa0594531663b9294c3445b0  tools/mcf-pet-gemini-live/install_local.py
+986625ef510327c49ad6a8c6b344d3a6532c190bc41e98cab0c7a4657f048962  tools/mcf-pet-gemini-live/backend/pet_conversation.py
+b6ec30b0ca0261e51a86d0c37b1102c5b18f576b78d921cc439207a57c40753e  tools/mcf-pet-gemini-live/backend/pet_observer.py
+8024a6b514790b6db5c2697eb02193472ab567d22f9a0d34b349a05204e7c81d  tools/mcf-pet-gemini-live/frontend/pet-conversation.js
+565b1f6345236149827d80b62d7438ada6ee1634f772073cb8b700a42e0aa81a  tools/mcf-pet-gemini-live/frontend/pet-live.js
+3406b85f59833f0782a0ff1156ccd303bf9caceb3fae3b2fb532670f77ae0c5c  tools/mcf-pet-gemini-live/frontend/pet-hub.js
+ed8e91d45076f4c2305b8e5f747c5c5bdad5794347c654ed3c3db6b2eee50746  tools/mcf-pet-gemini-live/tests/test_pet_conversation.py
+c5512e1910a8dc4389b334d258075b8f0e26dc8774a6c1df12a7abdf1bf94158  tools/mcf-pet-gemini-live/tests/test_pet_observer.py
+e7eab96d0a79d652bc53e5d724d36496ccb7f19f88ff57d9a99b85472f73bbfb  tools/mcf-pet-gemini-live/tests/test_pet_tab_desktop.py
+b9387af0bac116d831abb0cbd445c4580d2b4f1d6a0a93b487e7dd8c26f23ebf  artifacts/phases/PHASE-MCF-PET-TAB-SESSION-PRESENCE-001/PHASE-PLAN.md
+14a41297c315ebc8f5c53992c24d0a3554284f1e9dd125e264ee37eabe9815f1  artifacts/phases/PHASE-MCF-PET-TAB-SESSION-PRESENCE-001/PHASE-VALIDATION.txt
+9a812a755cad793d04351e8e408131263215bf1bff0acd3bd042dccc0cdbee07  artifacts/phases/PHASE-MCF-PET-TAB-SESSION-PRESENCE-001/PHASE-DECISIONS.md
+4dcd51ee085b323f1c66226926e5d5972f26d5fa2626b0ddfc3879d69925e51a  artifacts/phases/PHASE-MCF-PET-TAB-SESSION-PRESENCE-001/PHASE-CHECKPOINT.yaml
+c51e721c6ba6fb375d0c647159a8ba16cad18079367ece4498c6e3794399ea65  artifacts/phases/PHASE-MCF-PET-TAB-SESSION-PRESENCE-001/README.md
