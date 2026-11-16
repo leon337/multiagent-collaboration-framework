@@ -34,7 +34,15 @@ evidence:
   induced_network_reconnect: PASS
   emily_external_review_old_sha: RETORNAR_PARA_CORRECAO
   a1_a3_local_adversarial: 4_PASS
-  long_10min: PENDING
+  long_10min: PASS_632_SECONDS
+  real_goaway_count: 1
+  real_reconnect_success_count: 1
+  long_qa_completed_turns: 10
+  long_audio_underrun_events: 9
+  semantic_resume: PASS_SYNTHETIC_SINGLE_CASE
+  physical_speaker_audibility: UNVERIFIED
+  ui_backoff_cancel_test: PASS
+  emily_external_rereview: RETORNAR_FOR_CLOSEOUT
   leo_external_profile_gate: PENDING
   offline_worklet_tests: 6
   offline_telemetry_tests: 6

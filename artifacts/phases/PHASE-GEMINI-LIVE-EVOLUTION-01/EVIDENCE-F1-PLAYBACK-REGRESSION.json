@@ -1,6 +1,6 @@
 {
   "schema": "mcf-f1-playback-regression/v1",
-  "utc": "2026-11-16T21:56:36.162Z",
+  "utc": "2026-11-16T22:55:27.434Z",
   "origin": "http://127.0.0.1:18372/",
   "synthetic_pcm": true,
   "cases": [
@@ -81,7 +81,7 @@
   "passed": 8,
   "failed": 0,
   "source_sha256": {
-    "public/app.js": "da7d001e08b79ef3fd966cbc4e95598b8b717d9f390d57cfff1fd5a6019c2883",
+    "public/app.js": "11666aabc15b690c560d0e72b33d34dd7386e839c6eab16371db55e712296eeb",
     "public/index.html": "6ca78eae5d17861c87dd5b8485b2243743fc8d86c29a8c3dbb78e1c519faf038"
   }
 }

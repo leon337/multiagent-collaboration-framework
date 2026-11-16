@@ -29,3 +29,12 @@ F1 QUALIFICATION CONTINUATION (actual device / reliability):
 - Emily-profile independent external audit (old SHA ea96781): RETORNAR_PARA_CORRECAO due A1–A4.
 - MESTRE local A1–A3 recovery regressions: 4/4 PASS; official independent re-review still required.
 - Long >600s session and LEO-profile delegated gate: PENDING.
+
+TERMINAL F1.4 10+ MINUTE RUN: 632s, 10 completed model turns, 1 real GoAway, 1 successful session reconnect, 43/43 connected heartbeat samples, 9 audio underrun events, 0 active media/WS/retry after cleanup.
+SEMANTIC RESUMPTION: positive on one synthetic keyword after reconnection (not a general guarantee).
+BROWSER CURRENT SHA: 17/17 PASS with matching source/script hashes.
+PLAYBACK CURRENT SHA: 8/8 PASS with source hashes.
+ADVERSARIAL CURRENT SHA: 5/5 PASS with source/script hashes; stop button available during reconnect backoff.
+PHYSICAL MIC: PASS actual PCM path; PHYSICAL SPEAKER AUDIBILITY: NOT VERIFIED, analog sink-monitor returned 0 samples.
+SLO FIRST AUDIO FROM END OF HUMAN SPEECH: NOT MEASURED; no stable 30+ sample p95. COST: NOT METERED.
+EXTERNAL EMILY REVIEWS: RETORNAR old/reviewed SHA; final CLI LEO gate PENDING. F0.8 PENDING.

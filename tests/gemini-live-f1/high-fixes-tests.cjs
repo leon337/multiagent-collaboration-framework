@@ -1,7 +1,8 @@
 'use strict';
 const puppeteer=require('/home/leo/.npm/_npx/4b4c857f6efdfb61/node_modules/puppeteer');
-const fs=require('node:fs');
-const result={schema:'mcf-f1-high-fixes-adversarial/v1',utc:new Date().toISOString(),tests:[],noSecretsSaved:true};
+const fs=require('node:fs'),crypto=require('node:crypto');
+const digest=path=>crypto.createHash('sha256').update(fs.readFileSync(path)).digest('hex');
+const result={schema:'mcf-f1-high-fixes-adversarial/v1',utc:new Date().toISOString(),tests:[],noSecretsSaved:true,sourceAppSha256:digest('/home/leo/Projetos/gemini-live-studio-f1/public/app.js'),testScriptSha256:digest(__filename)};
 (async()=>{
  const browser=await puppeteer.launch({headless:true,executablePath:'/usr/bin/google-chrome',args:['--no-sandbox','--disable-dev-shm-usage']});
  const add=(id,pass,metrics)=>{result.tests.push({id,pass,metrics});console.log(id,pass?'PASS':'FAIL',JSON.stringify(metrics));};
@@ -57,6 +58,15 @@ const result={schema:'mcf-f1-high-fixes-adversarial/v1',utc:new Date().toISOStri
   const o={accepted,reconnectHistory:state.reconnectHistory.length,budgetExhausted:MCFLiveTelemetry.snapshot().events.some(x=>x.event==='reconnect_budget_exhausted')};
   disconnect();$('resumption').checked=old;
   return {pass:accepted===6&&o.reconnectHistory===6,observed:o};
+ });
+ await scenario('CANCEL_BACKOFF_WITH_NO_AUDIO',()=>{
+   state.wantConnected=true;state.connected=false;state.connecting=false;state.sources.clear();
+   state.reconnectTimer=setTimeout(()=>{},30000);
+   setButtons(false);
+   const enabled=!ui.stop.disabled;
+   ui.stop.click();
+   const o={enabled,stopped:!state.wantConnected,retryCleared:!state.reconnectTimer,buttonDisabled:ui.stop.disabled};
+   return {pass:o.enabled&&o.stopped&&o.retryCleared&&o.buttonDisabled,observed:o};
  });
  await browser.close();
  result.pass=result.tests.filter(x=>x.pass).length;result.fail=result.tests.filter(x=>!x.pass).length;

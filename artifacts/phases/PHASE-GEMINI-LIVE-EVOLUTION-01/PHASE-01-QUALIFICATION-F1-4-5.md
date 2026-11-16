@@ -1,18 +1,24 @@
-# F1.4 and F1.5 — Qualification and current blockers
+# F1.4 and F1.5: qualification observations
 
-**Status:** IMPLEMENTED/TESTED IN STAGING; GATE NOT SATISFIED.
+## Actual session stability
+A live Gemini 2.5 Native Audio WebSocket remained connected during a verified 632-second session (10m32s) with compression and sessionResumption enabled. It completed 10 short turns and received one genuine provider GoAway; reconnection succeeded once with a resume handle available. There were no disconnected heartbeats among 43 checks. End cleanup: no socket, microphone, screen, camera, playback queue or retry timer.
+This test recorded 9 audio underrun events. A counter does not independently verify audible stutter, but it precludes claiming perfect audio quality.
+The long test source-app SHA is 7b41ed8a2c94e7d11f6e7edfdd8e55fa41b26ce74d42c2ec5f953b05f2d6483b, while the final candidate after a one-line backoff stop-button correction is 11666aabc15b690c560d0e72b33d34dd7386e839c6eab16371db55e712296eeb. This distinction is retained deliberately, without claiming the complete final SHA had a 632-second replay.
 
-## F1.5 Hardware
-The real USB microphone was accessed by PipeWire and by the Chrome AudioWorklet. The browser observed 64 PCM frames / 40,960 samples at 16 kHz. Privacy: recorded PCM discarded immediately; no speech transcript, image or raw waveform saved.
-The analog output sink accepted a 660 Hz short low-volume diagnostic tone, but both sink-monitor attempts returned 0 samples. This is not proof sound was audible through the speakers. No user-dependent 30–60 second speech-quality assessment or acoustic barge-in was performed.
+## Semantic context resumption
+After provider-issued resume handle and a deliberate WebSocket close, Gemini was asked to recall a purely fictional diagnostic word previously supplied in the same session. It returned the expected word using new model transcription fragments after reconnection. Result: semanticResumeConfirmed true, reconnected true. The test does not prove arbitrary conversation/memory retention, just this case.
 
-## F1.4 Measured reliability
-The first 180s benchmark had 3 attempts and only 2 generationComplete events; because the test ignored turnComplete, the 2/3 ratio is invalid as the provider completion rate. It measured 2,269–2,668 ms sendPrompt to first audio with n=3, exploratory only.
-The corrected 6-turn diagnostic observed six terminal completions (generationComplete OR turnComplete); one was turnComplete-only, which explained the previous false negative. An intentional offline/close recovery reconnected using a resumable handle; no context-equivalence test was performed. There are insufficient end-of-speech-to-first-reproduced-audio measurements for p50/p95 or new cost estimates.
-The additional long session test has been started but remains unverified until its terminal evidence is attached.
+## Reliability and p50/p95
+A flawed initial 180-second harness counted only generationComplete; it reported 2/3 and should not be used as the actual provider completion rate. A corrected six-turn diagnostic used either generationComplete or turnComplete, obtained 6/6, and induced a successful reconnect. The first exploratory run sampled sendPrompt-to-first-audio about 2.3–2.7s on only three turns. There is no validated 30+ sample voice-to-first-playback p50/p95, nor comparable before/after headset measurement. Cost is not independently metered by modality.
+The new long test duration does not in itself establish p95 performance or guarantee low-latency speech.
 
-## Independent audit and fixes
-A Codex CLI thread read the normative Emily contract as an independent external reviewer of PR SHA ea96781: RETORNAR_PARA_CORRECAO. It found A1 (audio controls disabled after socket close), A2 (no 12s token/15s setup watchdog), A3 (no cumulative reconnect budget) and A4 (missing quality gate evidence). A1–A3 were fixed in local staging: playback controls remain enabled while queue exists, token/setup timeouts are bounded and reconnects are limited to six in 120s. Four targeted adversarial tests passed. A4 remains partial by design.
+## Physical I/O
+The Microsoft USB camera microphone and physical default ALSA/PipeWire sink were investigated. PipeWire direct capture returned 32,000 samples/2s, browser real getUserMedia + AudioWorklet returned 64 PCM16 frames (40,960 samples) with live media track. No raw PCM or transcript was persisted.
+Paplay successfully submitted a low-volume test tone to the analog sink, but capture from the sink monitor yielded zero samples. Audibility through a physical headset or loudspeaker is therefore NOT VERIFIED. Human natural barge-in, intelligibility and echo still require a supervised physical acceptance test.
 
-## Gate caveats
-F0.8 remains open. Previously shared key rotation was postponed by LEANDRO and is still a risk. Neither external profile-based Codex reviewer nor profile-based LEO session is an authenticated native MCF Agent Session. Real LEO-profile outcome must have an exact SHA, input evidence and final decision, not assumed approval. No merge/deploy/public release.
+## Audiovisual and security QA
+17/17 browser E2E against the corrected code, 8/8 playback and 12/12 offline capture/telemetry tests passed; five targeted adversarial tests passed for post-close playback control, token watchdog, setup watchdog, cumulative reconnect budget and backoff cancellation.
+An independent read-only Codex CLI under the Emily normative profile first returned RETORNAR on SHA ea96781. A second external review on SHA bef121c confirmed the three high issues fixed and identified a medium backoff-button issue. That issue was corrected and included in the 5/5 tests. Neither external reviewer is an authenticated native Emily agent.
+
+## Gate state
+F0.8 remains open. Physical output is unverified. Other medium findings include anti-alias filtering, UI Worklet port backlog controls and a statistically adequate latency/cost benchmark. LEANDRO postponed old-key rotation; that risk is recorded but not waived for public production. These constraints must be visible to the LEO-profile Codex gate.

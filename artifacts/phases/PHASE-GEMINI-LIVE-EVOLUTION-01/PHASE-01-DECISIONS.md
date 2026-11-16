@@ -22,3 +22,7 @@ Human action later: revoke old shared key and enter replacement in the local app
 2026-11-16 / LEANDRO requested all remaining F1.5 physical, F1.4 benchmark and F1.6, specifically Codex CLI running a distinct agent with the official LEO profile for the delegated gate. This authorizes a read-only external Codex execution after QA, not impersonation of a native authenticated runtime agent.
 
 2026-11-16 / MESTRE: preserve original local server, use staging 18372, produce evidence without raw user media; keep external Emily RETORNAR_PARA_CORRECAO; apply high-priority fixes A1–A3 and submit them for independent LEO-profile evaluation. Unresolved key rotation and F0 gate remain explicit and cannot be overridden by test pass.
+
+2026-11-16 / MESTRE: qualified a real 632-second Gemini Live audio session, successful natural GoAway/reconnect and a separate synthetic semantic memory check, retaining nine underruns as an open quality signal. Confirmed that physical speaker monitor and subjective audio remain unverified. Accepted no shortcuts on F0.8 or key rotation.
+
+2026-11-16 / MESTRE: remediated independent audit medium finding of non-cancelable retry backoff; stop button now remains enabled when wantConnected is true. A fifth adversarial test confirmed a pending retry can be canceled. This patch happened after the long test and is explicitly distinguished in source hashes.

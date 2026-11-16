@@ -51,3 +51,11 @@ F1.5 HARDWARE EVIDENCE: qa/EVIDENCE-PHYSICAL-IO.json: 32,000 samples in 2 second
 F1.4 RELIABILITY: qa/EVIDENCE-180S-EXPLORATORY.json is flawed instrumentation: counts only generationComplete, not turnComplete. Its 2/3 completion count must NOT be represented as 1 failed provider turn. qa/EVIDENCE-DIAGNOSTIC-6-TURNS.json uses both signals, 6/6 completions and one successful reconnect after induced network transition. Timing p50/p95 at n<=6 exploratory only, no voice endpoint metric. Long duration >600s verification still pending.
 
 EMILY EXTERNAL: qa/EMILY-EXTERNAL-REVIEW-EA96781.md applies normative Emily profile to an independent read-only CLI session, shows 12/12 unit tests and 17/17+10/10 hashes, and RETORNAR_PARA_CORRECAO due A1-A4. A1-A3 fixes pending gate review validated by 4/4 browser adversarial tests in qa/EVIDENCE-HIGH-FIXES-4.json. Medium issues remain scoped for next cycle. No native Emily identity or receipt.
+
+## Terminal F1.4/5 QA artifacts
+
+See QA-F1-20261116/EVIDENCE-LONG-SESSION.json: 632s, 10 turns, GoAway 1, reconnection 1, audioUnderruns 9, connected 43 heartbeat intervals, no residual tracks/sockets. The long-run script embeds its app.js SHA. A subsequent one-line fix to stop-button availability during backoff changes that SHA, so long-run performance is specific to its original source, not a false same-SHA claim.
+
+See QA-F1-20261116/EVIDENCE-SEMANTIC-RESUME.json: a fictional keyword in the earlier turn was recovered by the model in new output transcripts after reconnect with a handle. Limited single-case semantic check.
+See QA-F1-20261116/EVIDENCE-HIGH-FIXES-5.json: five adversarial regression passes, with SHA-256 of current application code and test script.
+Current QA benchmark: 17/17 browser and 8/8 playback, both linked to current app.js SHA. Audio real hardware was captured without persistence but output monitoring yielded 0 samples; human-audible quality still unverified. End-of-human-speech latency, robust p95 and cost classification are not measured.

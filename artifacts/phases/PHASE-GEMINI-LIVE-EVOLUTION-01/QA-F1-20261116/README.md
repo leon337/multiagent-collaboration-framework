@@ -12,9 +12,17 @@ Gate requested: Codex CLI under LEO external profile (not a native Agent Session
 - EVIDENCE-DIAGNOSTIC-6-TURNS.json: test with generationComplete OR turnComplete, 6/6 completed; induced network disconnection recovered; handle present. Semantic context continuity not proven.
 - EVIDENCE-HIGH-FIXES-4.json: 4/4 adversarial tests of playback controls after close, token timeout, setup watchdog and reconnect budget.
 - EMILY-EXTERNAL-REVIEW-EA96781.md: independent external Codex CLI audit against old HEAD; verdict RETORNAR_PARA_CORRECAO.
-- EVIDENCE-LONG-SESSION.json: reserved until 600s+ test is verified.
-- LEO-PROFILE-GATE.md: reserved for genuine Codex CLI profile-based gate output.
+- EVIDENCE-LONG-SESSION.json: confirmed as 632s real Live with GoAway and recovery.
+- LEO-PROFILE-GATE.md: pending genuine Codex CLI profile-based gate output.
 
 ## Unsupported conclusions
 Physical subjective listening, spontaneous human barge-in, final-speech-to-first-playback latency and reliable p95 cost/SLO were not validated. No release or public exposure. Rotation of previously exposed key explicitly postponed by user.
 External CLI agent profiles are not authenticated native MCF agent sessions.
+
+## Terminal evidence added
+EVIDENCE-LONG-SESSION.json: 632-second real Live session, 1 GoAway, 1 resumed connection, 10 completed turns, 9 underruns.
+EVIDENCE-SEMANTIC-RESUME.json: synthetic keyword after reconnect (positive case).
+EVIDENCE-HIGH-FIXES-5.json: 5/5 adversarial checks with app and test hashes at execution.
+EVIDENCE-BROWSER-E2E-CURRENT.json: 17/17 browser checks with source and script hashes.
+EMILY-EXTERNAL-REREVIEW-BEF121C.md: external re-review, confirms A1–A3 fixed but additional medium cancel-backoff issue (now patched).
+LEO-PROFILE-GATE.md: pending exact decision from external Codex CLI.

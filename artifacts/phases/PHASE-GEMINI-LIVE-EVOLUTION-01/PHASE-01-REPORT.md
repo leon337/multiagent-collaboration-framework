@@ -42,3 +42,13 @@ Initial 180-second reliability test provided 3 first-audio responses, 2 generati
 Independent external Codex CLI with Emily contract on SHA ea96781 issued RETORNAR_PARA_CORRECAO: high issues A1 (cannot stop playing after socket close), A2 (missing token/open/setup deadlines), A3 (unbounded repeated reconnect cycles) and A4 (incomplete physical/long session/gates). MESTRE corrected A1-A3 locally with minimal fixes and 4/4 adversarial tests, without mixing this executor with native Emily identity. A4 remains pending/partially qualified.
 
 A real connection over 10 minutes with compression/resumption is running under separate test process; do not mark it successful until a terminal report exists. Next independent gate: Codex CLI with the official LEO profile, explicitly external and not a native Agent Session. It must consider this entire history, unresolved F0.8 and eventual long-session evidence. No automatic merge/deploy.
+
+## Final execution of F1.4/F1.5 qualification, current cycle
+
+The actual 632-second Gemini Live session ended with 10 completed turns, one genuine provider GoAway and one successful resumption. Compression and session resumption were enabled, a handle was available and all media/sockets/queues cleaned up at exit. There were nine numerical audio underruns. A separate synthetic keyword memory test passed after reconnect. Both results are stored with primary metadata under QA-F1-20261116.
+
+Physical USB microphone and browser AudioWorklet capture passed the I/O route. Physical output audibility remained unverified: paplay accepted the tone while the analog sink monitor yielded zero samples. No recorded voice or image was retained.
+
+Initial independent Emily-profile CLI audit returned RETORNAR on ea96781. The second audit returned RETORNAR on bef121c, acknowledged A1/A2/A3 remediated, and flagged medium inability to stop reconnect during backoff. MESTRE corrected that one-line UI state and verified 5/5 adversarial tests. These are external CLI reviews; no native Emily session has been authenticated.
+
+Handoff: MESTRE -> Codex CLI separate LEO-profile executor for actual scoped gate output on exact final branch SHA, including unresolved F0.8 and physical headset QA. No automatic merge or deploy.

@@ -31,3 +31,6 @@ Hardware speaker measurement inconclusive: paplay 0, no sink monitor samples.
 Six live audio conversation turns completed when detecting generationComplete OR turnComplete; successful induced network reconnection.
 Four adversarial security/reliability fixes passed in Chrome: output remains stoppable after socket close; token timeout; setup watchdog; cumulative reconnect limit.
 Long 10+ minute test not yet concluded; no claims of full gate success.
+
+TEN-MINUTE LIVE SESSION: 632 seconds, one genuine GoAway and one resumed WebSocket, 10 turns, resource cleanup clean. Transcript keyword semantic recall PASS after resumed session, single synthetic case. Nine underrun counters were seen; no assertion of audible perfection.
+PHYSICAL INPUT: 32,000 PipeWire + 40,960 browser worklet samples, no PCM storage. PHYSICAL OUTPUT: NOT VERIFIED by monitor (0 samples). Five adversarial UI/retry fixes PASS.
