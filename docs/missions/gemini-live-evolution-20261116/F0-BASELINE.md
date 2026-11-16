@@ -80,3 +80,6 @@ O histórico `15/15 PASS` corresponde à execução original local; código e re
 
 
 **Nota de rastreabilidade:** o `SNAPSHOT.json` histórico precede alterações posteriores no código local. Portanto seu inventário não deve ser apresentado como hash idêntico ao `repro/` final. O [REPRO-MANIFEST.json](../../../artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/REPRO-MANIFEST.json) lista os hashes **da versão sanitizada efetivamente publicada**; não prova sozinho que esses bytes foram usados no teste de 15/15.
+
+
+**Novo reteste forte:** [PHASE-00-SMOKE-STRONG.md](../../../artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/PHASE-00-SMOKE-STRONG.md), com 13/13 asserções reais/sintéticas e hashes de fonte gravados durante o teste. Não substitui hardware físico nem a decisão do gate.

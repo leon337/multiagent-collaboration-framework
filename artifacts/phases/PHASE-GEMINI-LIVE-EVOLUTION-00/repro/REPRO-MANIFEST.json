@@ -1,10 +1,13 @@
 {
-  "schema": "mcf-gemini-f0-sanitized-source-manifest/v1",
-  "generated_at_utc": "2026-11-16T19:55:47.859673+00:00",
+  "schema": "mcf-gemini-f0-sanitized-source-manifest/v2",
+  "generated_at_utc": "2026-11-16T19:58:51.579193+00:00",
   "source_host": "leo-N43SM",
   "historical_source_git_sha": "a33bdf9c4681ace0cb582621801bb6608415692a",
-  "historical_snapshot_sha256": "af54e8a3d4ee64652e6b4ef9a1dc6ac8ce0bbee114a318834b9fcb63656b0162",
-  "description": "Post-test reference of sanitized bytes, not cryptographic attestation of bytes at the time of 15/15 E2E. Baseline JSON and scripts are separate artifacts.",
+  "test_run_at_utc": "2026-11-16T19:57:50.464Z",
+  "test_name": "mcf-f0-strong-e2e/v1",
+  "e2e_pass": 13,
+  "e2e_fail": 0,
+  "run_source_attestation": "All five source digests and the test-script digest equal the published files. This is a self-reported local attestation, not a signed independent provider receipt.",
   "files": [
     {
       "path": ".gitignore",
@@ -20,6 +23,11 @@
       "path": "README.source.md",
       "sha256": "44b0df3974b37fa0faeb705e857efbc463b5a51b0d6541c340bb7c8b5ac811fe",
       "bytes": 2147
+    },
+    {
+      "path": "f0/BASELINE-STRONG.json",
+      "sha256": "206035447bac030cd3382ae844b94699965ffaa02c9209a4c458f9fd161a04c6",
+      "bytes": 2798
     },
     {
       "path": "f0/BASELINE-TESTS.json",
@@ -45,6 +53,11 @@
       "path": "f0/baseline-smoke.cjs",
       "sha256": "4004bd24770de465a0b635137aa82b96080a129a3582630481d8af9d44b71da2",
       "bytes": 6415
+    },
+    {
+      "path": "f0/baseline-strong.cjs",
+      "sha256": "70a0396c079de7994208559d671d76e293b8165215844ba7778dc90a2e483c4d",
+      "bytes": 8725
     },
     {
       "path": "f0/probe-models.cjs",
