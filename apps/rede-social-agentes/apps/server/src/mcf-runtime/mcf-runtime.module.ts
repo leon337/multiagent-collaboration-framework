@@ -34,6 +34,7 @@ import { MissionControlController } from './mission-control.controller.js';
 import { MissionControlRepository } from './mission-control.repository.js';
 import { MissionControlService } from './mission-control.service.js';
 import { McfMissionControlTokenGuard } from './mission-control-token.guard.js';
+import { McfMissionControlReadTokenGuard } from './mission-control-read-token.guard.js';
 import { MissionObservabilityRepository } from './mission-observability.repository.js';
 import { MissionObservabilityService } from './mission-observability.service.js';
 import { McfCiCallbackController, MissionRuntimeController } from './mission-runtime.controller.js';
@@ -92,6 +93,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     },
     McfRuntimeTokenGuard,
     McfMissionControlTokenGuard,
+    McfMissionControlReadTokenGuard,
     MissionControlRepository,
     MissionV11ContextGuard,
     ContinuityRecoveryService,

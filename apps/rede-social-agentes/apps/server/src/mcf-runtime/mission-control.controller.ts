@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { parseBody } from '../http/parse-body.js';
 import { MissionControlService } from './mission-control.service.js';
 import { McfMissionControlTokenGuard } from './mission-control-token.guard.js';
+import { McfMissionControlReadTokenGuard } from './mission-control-read-token.guard.js';
 
 const executableSkill = z.enum([
   'MCF-START-MISSION',
@@ -47,11 +48,11 @@ const repositorySchema = z
   .regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u);
 
 @Controller('v1/mcf/mission-control')
-@UseGuards(McfMissionControlTokenGuard)
 export class MissionControlController {
   constructor(@Inject(MissionControlService) private readonly service: MissionControlService) {}
 
   @Post('dispatch')
+  @UseGuards(McfMissionControlTokenGuard)
   @HttpCode(201)
   async dispatch(@Body() body: unknown, @Req() request: FastifyRequest) {
     const parsed = parseBody<
@@ -63,6 +64,7 @@ export class MissionControlController {
   }
 
   @Get('latest')
+  @UseGuards(McfMissionControlTokenGuard)
   async latest(
     @Query('repository') repository: string | undefined,
     @Req() request: FastifyRequest,
@@ -84,5 +86,14 @@ export class MissionControlController {
       });
     }
     return snapshot;
+  }
+
+  @Get('read/latest')
+  @UseGuards(McfMissionControlReadTokenGuard)
+  async latestReadOnly(
+    @Query('repository') repository: string | undefined,
+    @Req() request: FastifyRequest,
+  ) {
+    return this.latest(repository, request);
   }
 }

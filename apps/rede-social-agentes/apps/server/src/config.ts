@@ -45,6 +45,10 @@ const runtimeConfigSchema = z
       .string()
       .min(32)
       .default('development-only-mission-control-token-0001'),
+    MCF_MISSION_CONTROL_READ_TOKEN: z.preprocess(
+      (value) => value === '' ? undefined : value,
+      z.string().min(32).optional(),
+    ),
     ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:5173'),
     REGISTRATION_ALLOWLIST: z.string().default(''),
     RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID: z.string().uuid().optional(),
@@ -96,6 +100,22 @@ const runtimeConfigSchema = z
         'development-only-mission-control-token-0001',
       ],
     ];
+
+    if (
+      config.MCF_MISSION_CONTROL_READ_TOKEN &&
+      [
+        config.RATE_LIMIT_KEY_SECRET,
+        config.MCF_RECEIPT_SECRET,
+        config.MCF_RUNTIME_TOKEN,
+        config.MCF_MISSION_CONTROL_TOKEN,
+      ].includes(config.MCF_MISSION_CONTROL_READ_TOKEN)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['MCF_MISSION_CONTROL_READ_TOKEN'],
+        message: 'Mission Control read credential must not reuse a control or runtime secret.',
+      });
+    }
 
     if (config.NODE_ENV === 'production') {
       for (const [name, value, insecureDefault] of insecureProductionSecrets) {

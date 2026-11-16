@@ -1,0 +1,26 @@
+VALIDATION — MCF-MISSION-CONTROL-READ-141-001
+
+CANONICAL BACKEND
+- Branch base: b88ccda900a477fd5490a8897bd663069354f6cd
+- pnpm install --offline --frozen-lockfile --ignore-scripts: PASS
+- pnpm --filter @rsa/contracts build: PASS
+- pnpm --filter @rsa/database build: PASS
+- pnpm --filter @rsa/server exec vitest run src/config.test.ts src/mcf-runtime/mission-control-read-token.guard.test.ts src/mcf-runtime/mission-control-read-boundary.test.ts src/mcf-runtime/mission-control-token.guard.test.ts: 39/39 PASS
+- pnpm --filter @rsa/server typecheck: PASS
+- git diff --check: PASS
+- Guard proof: reader token denied for dispatch; control token denied for read route; no config fails closed.
+
+SERVICE HUB LOCAL
+- python3 -m unittest discover -s tests -v: 18/18 PASS
+- python3 -m py_compile server.py monitor.py mission_observer.py: PASS
+- node --check hub.js and mission-hub.js: PASS
+- GET /api/v1/mcf/observation: HTTP 200, AUTH_NOT_CONFIGURED, mission=null, events=[]
+- GET /api/inventory: HTTP 200
+- GET /: HTTP 200
+- Screenshot: headless Chrome rendered status and placeholder correctly, no JS exception observed.
+
+LIMITS
+- No canonical read E2E completed because staging runtime database is missing/unavailable.
+- No live credential configured or deployed.
+- No restore executed without verified dump.
+- Not qualified for merge, production, or full Mission Control.

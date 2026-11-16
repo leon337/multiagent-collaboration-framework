@@ -55,6 +55,33 @@ describe('loadRuntimeConfig', () => {
     ).toThrow();
   });
 
+  it('rejects reuse of the dedicated read credential by a control token', () => {
+    expect(() =>
+      loadRuntimeConfig({
+        ...productionEnvironment,
+        MCF_MISSION_CONTROL_READ_TOKEN: productionEnvironment.MCF_MISSION_CONTROL_TOKEN,
+      }),
+    ).toThrow();
+  });
+
+  it('treats an empty read-only token as disabled', () => {
+    expect(loadRuntimeConfig({
+      ...productionEnvironment,
+      MCF_MISSION_CONTROL_READ_TOKEN: '',
+      ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+    }).MCF_MISSION_CONTROL_READ_TOKEN).toBeUndefined();
+  });
+
+  it('accepts a distinct optional read-only credential', () => {
+    expect(
+      loadRuntimeConfig({
+        ...productionEnvironment,
+        MCF_MISSION_CONTROL_READ_TOKEN: 'distinct-observer-token-with-at-least-32-characters',
+        ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+      }).MCF_MISSION_CONTROL_READ_TOKEN,
+    ).toBe('distinct-observer-token-with-at-least-32-characters');
+  });
+
   it('rejects production without controlled registration invitations', () => {
     expect(() =>
       loadRuntimeConfig({
