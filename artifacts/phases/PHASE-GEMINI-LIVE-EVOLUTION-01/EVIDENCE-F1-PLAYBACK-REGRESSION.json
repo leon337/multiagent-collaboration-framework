@@ -1,0 +1,76 @@
+{
+  "schema": "mcf-f1-playback-regression/v1",
+  "utc": "2026-11-16T21:46:22.434Z",
+  "origin": "http://127.0.0.1:18372/",
+  "synthetic_pcm": true,
+  "cases": [
+    {
+      "id": "ALL_200_CHUNKS_ACCEPTED",
+      "passed": true,
+      "observed": {
+        "count": 200,
+        "stopped": 0,
+        "pending": 200,
+        "queueSeconds": 20.120000000000093,
+        "samples": 480000
+      }
+    },
+    {
+      "id": "SAMPLE_EXACT_CONTIGUOUS_TIMELINE",
+      "passed": true,
+      "observed": {
+        "overlap": 0,
+        "gaps": 0,
+        "duration": 20.120000000000093
+      }
+    },
+    {
+      "id": "GENERATION_COMPLETE_DOES_NOT_TRUNCATE",
+      "passed": true,
+      "observed": {
+        "stopped": 0,
+        "pending": 200,
+        "queueSeconds": 20.120000000000093
+      }
+    },
+    {
+      "id": "SPEAKER_ECHO_DOES_NOT_SELF_INTERRUPT",
+      "passed": true,
+      "observed": {
+        "stopped": 0,
+        "pending": 200
+      }
+    },
+    {
+      "id": "SERVER_INTERRUPTED_STOPS_AUDIO",
+      "passed": true,
+      "observed": {
+        "stopped": 200,
+        "pending": 0,
+        "nextPlay": 0
+      }
+    },
+    {
+      "id": "NEXT_TURN_CAN_START_CLEANLY",
+      "passed": true,
+      "observed": {
+        "start": 5.12,
+        "stopped": 200,
+        "pending": 1
+      }
+    },
+    {
+      "id": "NO_BROWSER_EXCEPTIONS",
+      "passed": true,
+      "observed": {
+        "errors": 0
+      }
+    }
+  ],
+  "passed": 7,
+  "failed": 0,
+  "source_sha256": {
+    "public/app.js": "6ea09058645206e317dcfc0ce6ca1b9b346d9f6ef7cc310492d3791a83a09c50",
+    "public/index.html": "6ca78eae5d17861c87dd5b8485b2243743fc8d86c29a8c3dbb78e1c519faf038"
+  }
+}

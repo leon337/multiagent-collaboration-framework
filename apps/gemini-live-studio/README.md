@@ -8,7 +8,7 @@
 - Captura **AudioWorklet** PCM 16 kHz mono, blocos de 640 amostras / 40 ms, resampling contínuo 44,1/48 kHz → 16 kHz. Sem `ScriptProcessorNode`.
 - VAD **automático no Gemini** por padrão com parâmetros configuráveis; modo alternativo com detecção local por RMS, pré-roll e eventos de atividade.
 - Reação ao `interrupted` do servidor e ao indício local de fala (barge-in): interrompe reprodução pendente.
-- Reprodução PCM 24 kHz ordenada, fila limitada a 1,6 s, métrica de underrun e descarte quando congestionado.
+- Reprodução PCM 24 kHz ordenada e sem descarte do backlog; a interrupção só ocorre por evento confirmado ou ação explícita.
 - Retomada quando o provedor fornece `sessionResumptionUpdate.newHandle`; reconexão limitada com backoff, proteção contra reenvio automático de turnos; eventos `GoAway` e `generationComplete`.
 - Telemetria **só em memória**, whitelist de metadados, sem áudio ou tokens no dashboard.
 - Mantém o servidor em `127.0.0.1`, `/api/token` efêmero e permissão do navegador para mídia.
@@ -44,3 +44,5 @@ O teste E2E opcional `tests/gemini-live-f1/browser-e2e.cjs` requer Puppeteer, Ch
 ## Governança
 
 Este pacote de código acompanha a F1 em uma branch baseada na branch draft da F0. F0.8 permanece sem gate. Implementar e testar localmente **não equivale a liberar F1**. A promoção requer PRF, auditoria Emily e decisão LÉO; merge e deploy exigem autorização separada.
+
+Hotfix de áudio F1: toda resposta é reproduzida na ordem recebida. Interrupção local imediata está desligada por padrão para evitar eco do alto-falante.

@@ -22,15 +22,15 @@ const add=(id,ok,detail)=>{result.cases.push({id,result:ok?'PASS':'FAIL',detail}
   add('BROWSER_WORKLET_CAPABILITY',mode.worklet,'AudioWorkletNode='+mode.worklet);
   add('F1_DASHBOARD_RENDERED',await page.$eval('#f1Metrics',x=>!!x),'F1 diagnostics in UI');
   const manual=await page.evaluate(()=>{
-   const oldSocket=state.socket,oldConnected=state.connected,oldStream=state.micStream,oldVad=$('vad').checked;
+   const oldSocket=state.socket,oldConnected=state.connected,oldStream=state.micStream,oldVad=$('vad').checked,oldMode=state.sessionVadAuto;
    const sent=[];state.socket={readyState:1,bufferedAmount:0,send:v=>sent.push(JSON.parse(v))};
-   state.connected=true;state.micStream={getTracks:()=>[]};$('vad').checked=false;
+   state.connected=true;state.micStream={getTracks:()=>[]};state.sessionVadAuto=false;$('vad').checked=false;
    state.manualVadStarted=false;state.micSpeechFrames=0;state.micSilenceMs=0;state.preRoll=[];state.micActive=false;
    const buf=new Int16Array(640).buffer;
    for(let i=0;i<4;i++)processAudioFrame({buffer:buf,rms:.08,samples:640});
    for(let i=0;i<25;i++)processAudioFrame({buffer:buf,rms:.001,samples:640});
    const stats={started:sent.filter(x=>x.realtimeInput?.activityStart).length,ended:sent.filter(x=>x.realtimeInput?.activityEnd).length,pcm:sent.filter(x=>x.realtimeInput?.audio).length,after:state.manualVadStarted};
-   $('vad').checked=oldVad;state.socket=oldSocket;state.connected=oldConnected;state.micStream=oldStream;
+   $('vad').checked=oldVad;state.socket=oldSocket;state.connected=oldConnected;state.micStream=oldStream;state.sessionVadAuto=oldMode;
    state.manualVadStarted=false;state.preRoll=[];state.micSpeechFrames=0;state.micSilenceMs=0;
    return stats;
   });
@@ -61,7 +61,7 @@ const add=(id,ok,detail)=>{result.cases.push({id,result:ok?'PASS':'FAIL',detail}
     await state.audioCtx?.close();state.audioCtx=null;
     return {drops,queueSec:Number(queue.toFixed(2)),cleared:state.sources.size===0};
   });
-  add('PLAYBACK_QUEUE_BACKLOG_BOUNDED',playback.drops>=1&&playback.queueSec<=2.2&&playback.cleared,JSON.stringify(playback));
+  add('PLAYBACK_BURST_SCHEDULED_WITHOUT_TRUNCATION',playback.drops===0&&playback.queueSec>=4.8&&playback.queueSec<=5.6&&playback.cleared,JSON.stringify(playback));
   const generation=await page.evaluate(()=>{const old=MCFLiveTelemetry.snapshot().events.filter(x=>x.event==='generation_complete').length;handleMessage({serverContent:{generationComplete:true}});return MCFLiveTelemetry.snapshot().events.filter(x=>x.event==='generation_complete').length===old+1;});
   add('GENERATION_COMPLETE_SIGNAL',generation,'counted without replay');
   await page.select('#model','gemini-2.5-flash-native-audio-preview-12-2025');

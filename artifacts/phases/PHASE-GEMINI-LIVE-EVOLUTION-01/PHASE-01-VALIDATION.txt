@@ -17,3 +17,5 @@ Audit Emily: PENDING. Gate LÉO: PENDING.
 F0.8: PENDING. Key rotation: POSTPONED BY USER (risk open).
 Merge/deploy: NOT PERFORMED.
 Result: TECHNICAL IMPLEMENTATION TESTED IN STAGING; NO PHASE ACCEPTANCE.
+
+F1 HOTFIX: 7/7 synthetic output regression PASS; Gemini 2.5 actual playback 41.48 seconds / 1014 chunks PASS; Gemini 3.8 actual playback 37.68 seconds / 112 chunks PASS; F1 browser 17/17 PASS; adversarial races 6/6 PASS; 12/12 offline unit tests PASS. Physical listening NOT TESTED.

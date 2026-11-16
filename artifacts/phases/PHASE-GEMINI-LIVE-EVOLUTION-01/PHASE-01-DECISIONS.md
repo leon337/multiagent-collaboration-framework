@@ -16,3 +16,5 @@ Emily official independent audit: PENDING (no agent execution receipt).
 LÉO official gate: PENDING (no delegated decision receipt).
 Release/deploy: NOT AUTHORIZED.
 Human action later: revoke old shared key and enter replacement in the local app; no need to send it through chat.
+
+2026-11-16: LEANDRO reported clipped/overlapping output. MESTRE corrected local F1 player, preferring complete ordered playback over low queued latency, and disabled local RMS echo barge-in by default. No new merge/deploy authorization.

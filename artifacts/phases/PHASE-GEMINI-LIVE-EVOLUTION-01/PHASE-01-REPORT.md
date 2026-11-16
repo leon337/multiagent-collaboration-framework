@@ -27,3 +27,6 @@ Key rotation explicitly postponed by human, not a claim of remediation; do not w
 
 ## Handoff
 MESTRE -> QA/Emily (pending real independent agent execution): review source, tests and residual risks. Then -> LÉO decision. Until receipts exist, phase not closed.
+
+## F1 playback incident correction
+LEANDRO reported incomplete, overlapping voice. Removed destructive playback-backlog threshold and made local fast barge-in opt-in. Two real-provider playback drains (2.5 and 3.8) and synthetic 20-second burst verified no scheduling gaps or unsolicited stops. See PHASE-01-AUDIO-INCIDENT.md.

@@ -28,6 +28,13 @@ evidence:
   offline_worklet_tests: 6
   offline_telemetry_tests: 6
   browser_f1_pass: 17
+  audio_hotfix_playback_regression_pass: 7
+  audio_hotfix_adversarial_regression_pass: 6
+  audio_25_real_duration_seconds_drained: 41.48
+  audio_25_real_nodes_drained: 1014
+  audio_38_real_duration_seconds_drained: 37.68
+  audio_38_real_nodes_drained: 112
+  physical_speaker_audition: NOT_TESTED
   browser_f1_fail: 0
   f0_compatibility_pass: 13
   source_digest_verified: true

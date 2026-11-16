@@ -42,3 +42,6 @@ The source manifest and PRF manifest can be checked independently with sha256sum
 - Client VAD uses RMS threshold rather than a speech classifier; false positives require device-specific tuning.
 - F0.8 remains pending and old previously exposed API key is intentionally unrotated by user decision. Do not publish server or gate release.
 - No external agent Emily/LÉO is claimed to have executed; this PRF is a request for their real review, not a signed acceptance.
+
+## F1 playback hotfix evidence
+EVIDENCE-F1-PLAYBACK-REGRESSION.json validates 200 consecutive chunks / 20 seconds with no overlap, gap or premature stop. EVIDENCE-F1-AUDIO-DRAIN-25.json validates 1014 sources / 41.48 seconds of live 2.5 audio. EVIDENCE-F1-AUDIO-DRAIN-38.json validates 112 sources / 37.68 seconds of 3.8 Live audio. All source node start/ended counts match and no stop calls are logged. These measurements do not establish physical speaker quality.

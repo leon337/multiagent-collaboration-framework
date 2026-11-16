@@ -12,7 +12,11 @@ Order of review:
 7. PHASE-01-CHECKPOINT.yaml — Handoff / next steps.
 8. EVIDENCE-F1-BROWSER.json — Sanitized primary browser test output.
 9. PHASE-01-SOURCE-MANIFEST.sha256 — App/test checksums.
-10. PHASE-01-ARTIFACT-MANIFEST.sha256 — PRF document integrity.
+10. PHASE-01-AUDIO-INCIDENT.md - playback truncation issue and fix.
+11. EVIDENCE-F1-PLAYBACK-REGRESSION.json - synthetic 20 second burst.
+12. EVIDENCE-F1-AUDIO-DRAIN-25.json - real Gemini 2.5 41.48 second playback.
+13. EVIDENCE-F1-AUDIO-DRAIN-38.json - real Gemini 3.8 37.68 second playback.
+14. PHASE-01-ARTIFACT-MANIFEST.sha256 — PRF document integrity.
 
 Live checklist: https://github.com/leon337/multiagent-collaboration-framework/issues/527
 F1 draft PR: https://github.com/leon337/multiagent-collaboration-framework/pull/529
