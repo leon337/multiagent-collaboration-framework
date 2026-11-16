@@ -1,0 +1,15 @@
+1747765ec9e1a05b8d51625bf7f0628e44ef6516d25fe195bd67ad957a6ff0a2  apps/rede-social-agentes/apps/server/src/config.test.ts
+4678275608f29ac83c3cb692a0d1ad8bbfa093cd3e85b37277c1a8e3edcf388c  apps/rede-social-agentes/apps/server/src/config.ts
+0c40a3db1aa3551603f13fb4b6cee93cb4ddbea30dbc4d28df11ff3238d89811  apps/rede-social-agentes/apps/server/src/mcf-runtime/mcf-runtime.module.ts
+229bcab33f6554110709c60409162fc6e6196d8c6445b319cef6e93517bbeee3  apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-control.controller.ts
+99b37480b6e63eebcb1a014153932c1e8e854f3f2262e3f06a322c2531c52804  apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-control-read-boundary.test.ts
+2b56c3e28c4cdc180bf1cea1372dd50c3a9222f33dfbabacfd664d62538d6413  apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-control-read-token.guard.test.ts
+ffc56c0c3fdff130e7ff40b205e6936f4c62349dce0ad1d180d8ae4bcbcc4ad0  apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-control-read-token.guard.ts
+ae2277a9014a32b68b5a0ea72b3973afeee91c0ccdec9589c751247e52978b22  apps/rede-social-agentes/.env.example
+5725ea2c0d1d9f9e2e9914cf5f1567483debd3f81bb7ec636812dc7e6228d1c0  artifacts/phases/PHASE-MCF-MISSION-CONTROL-READ-141-001/PHASE-CHECKPOINT.yaml
+043f157396fd313c18e124c3deb537786a4a6d3b38d1beb298a124eafb1f52b5  artifacts/phases/PHASE-MCF-MISSION-CONTROL-READ-141-001/PHASE-DECISIONS.md
+7f4b34c4252477397cefa77ed2a2b65ff9c365c2c8bd7c19479af0d7551c4992  artifacts/phases/PHASE-MCF-MISSION-CONTROL-READ-141-001/PHASE-PLAN.md
+9c156159e5019a9bdaa8ebd30fa24d571eecb1c0c43a7826b659bdd2ffcb2a6c  artifacts/phases/PHASE-MCF-MISSION-CONTROL-READ-141-001/PHASE-REPORT.md
+7d2a3fd2dfd5accbd27756f3f8a775a65366a88e69b73595061eed4dd910f58e  artifacts/phases/PHASE-MCF-MISSION-CONTROL-READ-141-001/PHASE-VALIDATION.txt
+855fe1848ec585d9950bfac2964edff3d191dea95009d43902756dbde921044c  artifacts/phases/PHASE-MCF-MISSION-CONTROL-READ-141-001/README.md
+5ca38c9ab36e1b5abd1c9ead4b729efc50064c214f5e5bb27646df08e874bf3c  docs/integrations/MCF-MISSION-CONTROL-READ-BOUNDARY-141.md
