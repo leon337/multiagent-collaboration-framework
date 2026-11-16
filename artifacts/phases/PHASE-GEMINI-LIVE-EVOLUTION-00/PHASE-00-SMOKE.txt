@@ -1,0 +1,23 @@
+SMOKE F0 — Gemini Live Studio Evolution
+Date: 2026-11-16
+Browser: Headless Chrome with synthetic mic and camera, mocked screen share; no real user media collected.
+Google API: Real WebSocket Live connectivity tested (not a model mock).
+Outcome: 15/15 pass in last baseline regression:
+- GET /api/status + auth presence
+- strict Origin negative test (403)
+- static .private exposure denial (404)
+- Gemini 2.5 Native Audio setupComplete
+- synthetic PCM media path
+- synthetic camera JPEG frames
+- simulated screen frames
+- telemetry installed with numeric-only signals
+- privacy scan for key / token URL / prompt in telemetry
+- prompt sent; model session remains connected
+- function calling get_current_time returned valid tool response
+- audio output / output transcript / turn complete signal observed
+- on disconnect all media tracks cleared
+- Gemini 3.8 Live setupComplete
+- zero browser JavaScript exceptions
+Separate: Gemini 3.8 Live Extended Thinking setupComplete PASS.
+Caveat: physical microphone, real camera and screen recording were not tested; audio generation signal does not prove quality through speakers.
+Follow-up: physical hardware and stability/latency benchmark in F1 with consent/evidence.
