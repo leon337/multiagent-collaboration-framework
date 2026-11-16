@@ -19,3 +19,13 @@ Merge/deploy: NOT PERFORMED.
 Result: TECHNICAL IMPLEMENTATION TESTED IN STAGING; NO PHASE ACCEPTANCE.
 
 F1 HOTFIX: 8/8 synthetic output regression PASS; Gemini 2.5 actual playback 41.48 seconds / 1014 chunks PASS; Gemini 3.8 actual playback 37.68 seconds / 112 chunks PASS; F1 browser 17/17 PASS; adversarial races 6/6 PASS; 12/12 offline unit tests PASS. Physical listening NOT TESTED.
+
+F1 QUALIFICATION CONTINUATION (actual device / reliability):
+- USB microphone system path: 32,000 physical samples / 2s — PASS signal detection.
+- Chrome real microphone getUserMedia + Worklet: 64 frames/40,960 PCM samples — PASS hardware-path, not speech intelligibility.
+- Analog speaker sink accepted tone playback (paplay exit 0), sink monitor returned 0 samples — NOT PROVEN physically audible.
+- Reliability 180s exploratory had a harness issue (only generationComplete counted); NOT a valid provider failure rate.
+- Corrected diagnostic: 6/6 terminal provider turns and 1 successful induced network reconnection — PASS, n too small for robust SLO.
+- Emily-profile independent external audit (old SHA ea96781): RETORNAR_PARA_CORRECAO due A1–A4.
+- MESTRE local A1–A3 recovery regressions: 4/4 PASS; official independent re-review still required.
+- Long >600s session and LEO-profile delegated gate: PENDING.

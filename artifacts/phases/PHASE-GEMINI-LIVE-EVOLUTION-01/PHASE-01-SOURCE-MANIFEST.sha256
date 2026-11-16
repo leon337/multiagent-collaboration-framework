@@ -1,8 +1,8 @@
 34795d5098f7cce63779d39317455b38968f860b26057f82ae31b66872566a1b  ../../../apps/gemini-live-studio/server.js
-da7d001e08b79ef3fd966cbc4e95598b8b717d9f390d57cfff1fd5a6019c2883  ../../../apps/gemini-live-studio/public/app.js
+7b41ed8a2c94e7d11f6e7edfdd8e55fa41b26ce74d42c2ec5f953b05f2d6483b  ../../../apps/gemini-live-studio/public/app.js
 6ca78eae5d17861c87dd5b8485b2243743fc8d86c29a8c3dbb78e1c519faf038  ../../../apps/gemini-live-studio/public/index.html
 7f1e1d69087f28c3334ba39b7e8759791304cbe9863b12f64caf5c688327064e  ../../../apps/gemini-live-studio/public/style.css
-279ecb08f9d3029dbd5675e0f820a108a96abf7afba336aece90af6e48d065da  ../../../apps/gemini-live-studio/public/telemetry.js
+608fcaa8637e2b0daff01980c70340d15dd9b9330300130a344f01076fd22e71  ../../../apps/gemini-live-studio/public/telemetry.js
 2900615b2f72180eb222f3f0835bb5ad2b20a741e2f4b231b13f17b060f6bac2  ../../../apps/gemini-live-studio/public/capture-worklet.js
 cb4d349268bf91908526def439be54a752b33f7c854bbd5b277ffb44ba88b7ac  ../../../tests/gemini-live-f1/capture-worklet.test.mjs
 36c2ee0d3baff3c79ab701c0591995020bedd4759e8d4d23bf9dafe0868a3bd4  ../../../tests/gemini-live-f1/telemetry.test.mjs
@@ -15,3 +15,9 @@ ffd6105b080ad47d0ecd7e5ea1319c94d73244c303322684b2dd3c51d0ef0548  EVIDENCE-F1-AD
 2a22c1364861b000bf4bea9f80e49b1857e593b38a93387568520e8c21ced73a  EVIDENCE-F1-PLAYBACK-REGRESSION.json
 14757d881162aa5b4e0624c734ac07bf1afe61d21da1a95e711addd394fa2d27  EVIDENCE-F1-AUDIO-DRAIN-25.json
 3d8f5456a6a2e9e67a62377e9dc121b8df877a893f9ad6cc35aaa49d18f25359  EVIDENCE-F1-AUDIO-DRAIN-38.json
+01c650ef12fdad134fb694d71dd99d753cc89a89fc750ed6ee4cf5a305cd1c28  ../../../tests/gemini-live-f1/speaker-monitor-probe.py
+5d183a9efffda44d38b5cb9134e04db07dc2b9cb4c513f80e5b0d17eb6eaf281  ../../../tests/gemini-live-f1/physical-audio-probe.py
+390ebba56a476e4c4d0dce9b3547c23f235557f867fd5e96cf46f2b3a991ebaa  ../../../tests/gemini-live-f1/physical-browser.cjs
+efd9d30dab25e965db6432c06efcd47f18632bec23aee220d2563f7db5bd14c3  ../../../tests/gemini-live-f1/reliability-diagnostic.cjs
+b60b38fa065327c2ee0e0720a93e1e5360728a024564c065d01c9b97d6406a61  ../../../tests/gemini-live-f1/high-fixes-tests.cjs
+de7f60fb246d4e865a2b5632013c134e12efbcee2f3b63b9bdccfa84b03ef51f  ../../../tests/gemini-live-f1/long-session.cjs

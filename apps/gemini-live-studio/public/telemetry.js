@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const items=[],LIMIT=500;
-const accepted=new Set(['connect_attempt','ws_open','setup_complete','first_audio','disconnect','text_sent','tool_call','tokens','browser_error','reconnect_attempt','reconnect_success','audio_underrun','playback_queue_ms','barge_in','input_dropped','vad_start','vad_end','go_away','generation_complete','audio_rx_bytes']);
+const accepted=new Set(['connect_attempt','ws_open','setup_complete','first_audio','disconnect','text_sent','tool_call','tokens','browser_error','reconnect_attempt','reconnect_success','audio_underrun','playback_queue_ms','barge_in','input_dropped','vad_start','vad_end','go_away','generation_complete','audio_rx_bytes','reconnect_budget_exhausted']);
 function record(event,fields={}){
  if(!accepted.has(event))return;
  const allowed={};

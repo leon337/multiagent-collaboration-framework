@@ -24,3 +24,10 @@ Additional regression: F0 13/13 strong multimodal E2E against staging, 3 model h
 Unsupported conclusion: no proof of physical audio comfort, audible latency, headset echo, Bluetooth/wired hardware, prolonged connection or resilience to provider rate limits.
 
 F1 HOTFIX: prior test expecting queued speech to be deleted is deprecated. Replacement playback burst test preserved 5.12 seconds queued. 200-chunk synthetic test and two live model playback-drain tests PASS. No physical speaker assessment completed.
+
+ADDITIONAL F1 QA:
+Physical microphone signals measured in PipeWire and Chrome AudioWorklet only, without user speech storage.
+Hardware speaker measurement inconclusive: paplay 0, no sink monitor samples.
+Six live audio conversation turns completed when detecting generationComplete OR turnComplete; successful induced network reconnection.
+Four adversarial security/reliability fixes passed in Chrome: output remains stoppable after socket close; token timeout; setup watchdog; cumulative reconnect limit.
+Long 10+ minute test not yet concluded; no claims of full gate success.

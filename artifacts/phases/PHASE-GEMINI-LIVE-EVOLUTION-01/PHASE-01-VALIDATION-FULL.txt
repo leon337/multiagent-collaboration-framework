@@ -45,3 +45,9 @@ The source manifest and PRF manifest can be checked independently with sha256sum
 
 ## F1 playback hotfix evidence
 EVIDENCE-F1-PLAYBACK-REGRESSION.json validates 200 consecutive chunks / 20 seconds with no overlap, gap or premature stop. EVIDENCE-F1-AUDIO-DRAIN-25.json validates 1014 sources / 41.48 seconds of live 2.5 audio. EVIDENCE-F1-AUDIO-DRAIN-38.json validates 112 sources / 37.68 seconds of 3.8 Live audio. All source node start/ended counts match and no stop calls are logged. These measurements do not establish physical speaker quality.
+
+F1.5 HARDWARE EVIDENCE: qa/EVIDENCE-PHYSICAL-IO.json: 32,000 samples in 2 seconds from a real USB camera microphone; qa/EVIDENCE-PHYSICAL-BROWSER.json: real getUserMedia source, Chrome AudioWorklet 48kHz to 16kHz, 64 PCM frames 40,960 samples, no media stored. qa/EVIDENCE-SPEAKER-MONITOR.json: output to physical default PipeWire sink accepted by paplay, but monitor provided zero samples: NOT proof of audible speaker output.
+
+F1.4 RELIABILITY: qa/EVIDENCE-180S-EXPLORATORY.json is flawed instrumentation: counts only generationComplete, not turnComplete. Its 2/3 completion count must NOT be represented as 1 failed provider turn. qa/EVIDENCE-DIAGNOSTIC-6-TURNS.json uses both signals, 6/6 completions and one successful reconnect after induced network transition. Timing p50/p95 at n<=6 exploratory only, no voice endpoint metric. Long duration >600s verification still pending.
+
+EMILY EXTERNAL: qa/EMILY-EXTERNAL-REVIEW-EA96781.md applies normative Emily profile to an independent read-only CLI session, shows 12/12 unit tests and 17/17+10/10 hashes, and RETORNAR_PARA_CORRECAO due A1-A4. A1-A3 fixes pending gate review validated by 4/4 browser adversarial tests in qa/EVIDENCE-HIGH-FIXES-4.json. Medium issues remain scoped for next cycle. No native Emily identity or receipt.

@@ -6,13 +6,15 @@ const MODEL_25='gemini-2.5-flash-native-audio-preview-12-2025';
 const MODEL_38='gemini-3.8-live';
 const MODEL_EXT='gemini-3.8-live-extended-thinking';
 const WS='wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=';
-const state={socket:null,connected:false,connecting:false,wantConnected:false,micStream:null,micCtx:null,micNode:null,micSource:null,cameraStream:null,screenStream:null,frameTimer:null,frameSource:null,audioCtx:null,nextPlay:0,sources:new Set(),muted:false,micRms:0,started:0,timer:null,events:[],transcript:[],tools:0,tokens:0,notes:[],resumeHandle:null,retries:0,pendingMic:false,micGain:null,micActive:false,micGeneration:0,micStarting:false,connectionGeneration:0,connectAbort:null,sessionVadAuto:null,micSpeechFrames:0,micSilenceMs:0,preRoll:[],reconnectTimer:null,goAwayTimer:null,goAwayCount:0,playDropCount:0,playUnderruns:0,playbackEpoch:0,playScheduledSamples:0,playFinishedSamples:0,playWarnAt:0,lastRxAudioAt:0,lastAudioLogAt:0};
+const state={socket:null,connected:false,connecting:false,wantConnected:false,micStream:null,micCtx:null,micNode:null,micSource:null,cameraStream:null,screenStream:null,frameTimer:null,frameSource:null,audioCtx:null,nextPlay:0,sources:new Set(),muted:false,micRms:0,started:0,timer:null,events:[],transcript:[],tools:0,tokens:0,notes:[],resumeHandle:null,retries:0,pendingMic:false,micGain:null,micActive:false,micGeneration:0,micStarting:false,connectionGeneration:0,connectAbort:null,setupWatchdog:null,reconnectHistory:[],sessionVadAuto:null,micSpeechFrames:0,micSilenceMs:0,preRoll:[],reconnectTimer:null,goAwayTimer:null,goAwayCount:0,playDropCount:0,playUnderruns:0,playbackEpoch:0,playScheduledSamples:0,playFinishedSamples:0,playWarnAt:0,lastRxAudioAt:0,lastAudioLogAt:0};
 const ui={model:$('model'),btn:$('connect'),stop:$('disconnect'),mic:$('mic'),camera:$('camera'),screen:$('screen'),mute:$('mute'),msg:$('messages')};
 function toast(text){$('toast').textContent=text;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3600);}
 function log(type,detail){const e={at:new Date().toISOString(),type,detail:String(detail)};state.events.push(e);if(state.events.length>2000)state.events.shift();const div=document.createElement('div');div.className='event';const t=document.createElement('time');t.textContent=new Date(e.at).toLocaleTimeString('pt-BR');const strong=document.createElement('strong');strong.textContent=type;const s=document.createElement('span');s.textContent=e.detail;div.append(t,strong,s);$('events').prepend(div);while($('events').children.length>450)$('events').lastElementChild.remove();}
 function bubble(role,text){if(!text?.trim())return;const welcome=ui.msg.querySelector('.welcome');if(welcome)welcome.remove();const div=document.createElement('div');div.className='bubble '+role;const who=document.createElement('span');who.className='who';who.textContent=role==='user'?'VOCÊ':role==='model'?'GEMINI':'SISTEMA';div.append(who,document.createTextNode(text.trim()));ui.msg.append(div);ui.msg.scrollTop=ui.msg.scrollHeight;state.transcript.push({at:new Date().toISOString(),role,text:text.trim()});}
 function status(text,color){const s=$('connectionStatus');s.replaceChildren();const dot=document.createElement('i');dot.className='dot '+color;s.append(dot,document.createTextNode(text));$('orbStatus').textContent=text;$('metricSession').textContent=text.toUpperCase();$('voiceOrb').classList.toggle('active',color==='green');}
-function setButtons(ready){state.connected=ready;ui.btn.disabled=ready||state.connecting;ui.stop.disabled=!ready&&!state.connecting;for(const el of [ui.mic,ui.camera,ui.screen,ui.mute,$('send'),$('uploadImage')])el.disabled=!ready;ui.model.disabled=ready||state.connecting;$('vad').disabled=ready||state.connecting;$('silence').disabled=ready||state.connecting;updateStreamMetrics();}
+function setButtons(ready){state.connected=ready;ui.btn.disabled=ready||state.connecting;ui.stop.disabled=!ready&&!state.connecting&&state.sources.size===0;
+ for(const el of [ui.mic,ui.camera,ui.screen,$('send'),$('uploadImage')])el.disabled=!ready;
+ ui.mute.disabled=!ready&&state.sources.size===0;ui.model.disabled=ready||state.connecting;$('vad').disabled=ready||state.connecting;$('silence').disabled=ready||state.connecting;updateStreamMetrics();}
 function updateStreamMetrics(){const n=Number(!!state.micStream)+Number(!!state.cameraStream)+Number(!!state.screenStream);$('metricStreams').textContent=n+' / 3';for(const [el,on] of [[ui.mic,!!state.micStream],[ui.camera,!!state.cameraStream],[ui.screen,!!state.screenStream],[ui.mute,state.muted]]){el.classList.toggle('on',on);el.querySelector('small').textContent=el===ui.mute?(on?'OFF':'ON'):(on?'ON':'OFF');}}
 function send(data){if(!state.socket||state.socket.readyState!==WebSocket.OPEN||!state.connected)return false;const media=!!data?.realtimeInput?.audio||!!data?.realtimeInput?.video;if(media&&state.socket.bufferedAmount>320000){f1tel('input_dropped',{count:1});if(Date.now()-state.lastAudioLogAt>2500){log('REDE','Congestionamento: frame descartado para preservar latência.');state.lastAudioLogAt=Date.now();}return false;}try{state.socket.send(JSON.stringify(data));return true;}catch(e){log('REDE','Falha ao enviar mensagem WebSocket.');return false;}}
 function bytesToBase64(bytes){let str='';for(let i=0;i<bytes.length;i+=8192)str+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(str);}
@@ -48,6 +50,15 @@ function setupConfig(){
 }
 function scheduleReconnect(reason='network'){
  if(!state.wantConnected||!$('resumption').checked||state.retries>=4)return false;
+ // Budget includes repeated cycles which temporarily reach setupComplete.
+ const windowMs=120000,now=Date.now();
+ state.reconnectHistory=state.reconnectHistory.filter(t=>now-t<windowMs);
+ if(state.reconnectHistory.length>=6){
+  log('REDE','Limite de 6 reconexões em 2 minutos atingido: pare e verifique a rede.');
+  f1tel('reconnect_budget_exhausted',{count:1});
+  return false;
+ }
+ state.reconnectHistory.push(now);
  clearTimeout(state.reconnectTimer);
  state.retries++;
  const delay=Math.min(15000,800*2**(state.retries-1))+Math.floor(Math.random()*250);
@@ -60,22 +71,38 @@ function scheduleReconnect(reason='network'){
 }
 async function connect(retry=false){
  if(state.connecting||state.connected)return;
- if(!retry){state.wantConnected=true;state.retries=0;state.resumeHandle=null;}
+ if(!retry){state.wantConnected=true;state.retries=0;state.resumeHandle=null;state.reconnectHistory=[];}
  if(!state.wantConnected)return;
  clearTimeout(state.reconnectTimer);state.reconnectTimer=null;
  const generation=++state.connectionGeneration;
  const controller=new AbortController();state.connectAbort=controller;
+ const tokenTimeout=setTimeout(()=>controller.abort(),12000);
  state.f0ConnectAt=performance.now();f0tel('connect_attempt',{model:ui.model.value});
  state.connecting=true;setButtons(false);
  status(retry?'Reconectando...':'Autenticando...','amber');
  $('orbSub').textContent='Solicitando token temporário';
  const active=()=>state.wantConnected&&generation===state.connectionGeneration;
  try{
-  const {token}=await api('/api/token','POST',undefined,{signal:controller.signal});
+  let token;
+  try{({token}=await api('/api/token','POST',undefined,{signal:controller.signal}));}
+  finally{clearTimeout(tokenTimeout);}
   if(!active())return;
   state.connectAbort=null;
   const ws=new WebSocket(WS+encodeURIComponent(token));state.socket=ws;
   const current=()=>active()&&state.socket===ws;
+  // Watch both WebSocket opening and waiting for provider setupComplete.
+  clearTimeout(state.setupWatchdog);
+  state.setupWatchdog=setTimeout(()=>{
+   if(!current()||state.connected)return;
+   log('REDE','Timeout de negociação Live; encerrando conexão sem setupComplete.');
+   state.socket=null;state.connecting=false;
+   try{ws.close(1000,'Setup timeout');}catch{}
+   setButtons(false);
+   if(!scheduleReconnect('setup-timeout')){
+    state.wantConnected=false;state.resumeHandle=null;
+    status('Tempo excedido na conexão','amber');
+   }
+  },15000);
   ws.onopen=()=>{
    if(!current()){ws.close(1000,'Conexão obsoleta');return;}
    try{
@@ -97,6 +124,7 @@ async function connect(retry=false){
   ws.onerror=()=>{if(current())log('ERRO','Erro na conexão WebSocket (verifique rede/chave/modelo).');};
   ws.onclose=e=>{
    if(!current())return;
+   clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
    state.socket=null;state.connecting=false;state.connected=false;
    clearTimeout(state.goAwayTimer);state.goAwayTimer=null;
    stopMic();stopCamera();stopScreen();setButtons(false);
@@ -120,7 +148,7 @@ async function connect(retry=false){
  }
 }
 function handleMessage(msg){
- if(msg.setupComplete){f0tel('setup_complete',{latency_ms:performance.now()-state.f0ConnectAt});if(state.retries)f1tel('reconnect_success',{count:state.retries});state.connecting=false;state.connected=true;state.retries=0;setButtons(true);status('Sessão ao vivo','green');$('orbSub').textContent='Interaja por voz, texto ou imagem';if(!state.started)state.started=Date.now();log('SESSÃO','Configuração aceita · '+ui.model.value);return;}
+ if(msg.setupComplete){clearTimeout(state.setupWatchdog);state.setupWatchdog=null;f0tel('setup_complete',{latency_ms:performance.now()-state.f0ConnectAt});if(state.retries)f1tel('reconnect_success',{count:state.retries});state.connecting=false;state.connected=true;state.retries=0;setButtons(true);status('Sessão ao vivo','green');$('orbSub').textContent='Interaja por voz, texto ou imagem';if(!state.started)state.started=Date.now();log('SESSÃO','Configuração aceita · '+ui.model.value);return;}
  const update=msg.sessionResumptionUpdate;
  if(update?.resumable===false)state.resumeHandle=null;
  else if(update?.resumable===true&&update?.newHandle)state.resumeHandle=update.newHandle;
@@ -195,6 +223,7 @@ function playAudio(base64){
    state.sources.delete(source);
    try{source.disconnect();}catch{}
    if(state.playbackEpoch===epoch)state.playFinishedSamples+=frames;
+   if(state.sources.size===0&&!state.connected)setButtons(false);
   };
   state.lastRxAudioAt=performance.now();
   f1tel('audio_rx_bytes',{bytes:raw.byteLength});
@@ -323,12 +352,13 @@ function stopScreen(){state.screenStream?.getTracks().forEach(t=>t.stop());state
 function disconnect(){
  state.wantConnected=false;state.connectionGeneration++;state.connectAbort?.abort();state.connectAbort=null;clearTimeout(state.reconnectTimer);clearTimeout(state.goAwayTimer);
  state.reconnectTimer=null;state.goAwayTimer=null;
+ clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
  stopMic();stopCamera();stopScreen();clearPlay();
  state.connected=false;state.connecting=false;state.resumeHandle=null;state.started=0;
  state.socket?.close(1000,'Encerrado pelo usuário');state.socket=null;
  setButtons(false);status('Desconectado','gray');$('orbSub').textContent='Inicie uma nova sessão';log('SESSÃO','Sessão encerrada pelo usuário.');
 }
-ui.btn.onclick=()=>{prepareAudioOutput();connect(false);};ui.stop.onclick=disconnect;ui.mic.onclick=()=>state.micStream||state.micStarting?stopMic():startMic();ui.camera.onclick=()=>state.cameraStream?stopCamera():startCamera();ui.screen.onclick=()=>state.screenStream?stopScreen():startScreen();ui.mute.onclick=()=>{state.muted=!state.muted;if(state.muted)clearPlay();else prepareAudioOutput();updateStreamMetrics();};
+ui.btn.onclick=()=>{prepareAudioOutput();connect(false);};ui.stop.onclick=disconnect;ui.mic.onclick=()=>state.micStream||state.micStarting?stopMic():startMic();ui.camera.onclick=()=>state.cameraStream?stopCamera():startCamera();ui.screen.onclick=()=>state.screenStream?stopScreen():startScreen();ui.mute.onclick=()=>{state.muted=!state.muted;if(state.muted)clearPlay();else prepareAudioOutput();setButtons(state.connected);updateStreamMetrics();};
 function sendPrompt(text){prepareAudioOutput();const clean=String(text||'').trim();if(!clean)return;if(!state.connected)return toast('Inicie uma sessão.');if(!send({clientContent:{turns:[{role:'user',parts:[{text:clean}]}],turnComplete:true}}))return toast('Não foi possível enviar.');state.f0LastPromptAt=performance.now();f0tel('text_sent',{bytes:clean.length});bubble('user',clean);$('prompt').value='';log('TEXTO','Mensagem enviada ('+clean.length+' caracteres)');}
 $('uploadImage').onclick=()=>$('imageFile').click();
 $('imageFile').onchange=async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;if(!state.connected)return toast('Inicie uma sessão primeiro.');if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>12*1024*1024)return toast('Escolha uma imagem PNG, JPEG ou WebP de até 12 MB.');try{const blobURL=URL.createObjectURL(f);const img=new Image();await new Promise((ok,fail)=>{img.onload=ok;img.onerror=fail;img.src=blobURL;});URL.revokeObjectURL(blobURL);const scale=Math.min(1,1024/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);const data=c.toDataURL('image/jpeg',.77).split(',')[1];const prompt='Analise esta imagem enviada pelo usuário.';if(send({clientContent:{turns:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data}},{text:prompt}]}],turnComplete:true}})){bubble('user','[Imagem: '+f.name+'] '+prompt);log('IMAGEM','Arquivo enviado: '+f.name+' ('+c.width+'x'+c.height+')');}else toast('Falha ao enviar imagem.');}catch(err){toast('Não foi possível ler a imagem.');log('ERRO',err.message);}};

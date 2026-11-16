@@ -23,3 +23,4 @@ F1 draft PR: https://github.com/leon337/multiagent-collaboration-framework/pull/
 F0 draft PR: https://github.com/leon337/multiagent-collaboration-framework/pull/528
 
 Independence boundaries: only MESTRE implementation and tests are recorded. No Emily or LÉO review receipt and no F0.8 gate. Hardware and key rotation remain pending. Do not merge, deploy or expose publicly.
+\nFurther acceptance evidence (hardware, latency, external audit and gated return): QA-F1-20261116/README.md. It does NOT replace the original PRF acceptance gates.\n

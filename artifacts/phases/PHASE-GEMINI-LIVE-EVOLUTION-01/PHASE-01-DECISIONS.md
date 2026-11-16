@@ -18,3 +18,7 @@ Release/deploy: NOT AUTHORIZED.
 Human action later: revoke old shared key and enter replacement in the local app; no need to send it through chat.
 
 2026-11-16: LEANDRO reported clipped/overlapping output. MESTRE corrected local F1 player, preferring complete ordered playback over low queued latency, and disabled local RMS echo barge-in by default. No new merge/deploy authorization.
+
+2026-11-16 / LEANDRO requested all remaining F1.5 physical, F1.4 benchmark and F1.6, specifically Codex CLI running a distinct agent with the official LEO profile for the delegated gate. This authorizes a read-only external Codex execution after QA, not impersonation of a native authenticated runtime agent.
+
+2026-11-16 / MESTRE: preserve original local server, use staging 18372, produce evidence without raw user media; keep external Emily RETORNAR_PARA_CORRECAO; apply high-priority fixes A1–A3 and submit them for independent LEO-profile evaluation. Unresolved key rotation and F0 gate remain explicit and cannot be overridden by test pass.

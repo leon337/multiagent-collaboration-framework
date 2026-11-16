@@ -30,3 +30,15 @@ MESTRE -> QA/Emily (pending real independent agent execution): review source, te
 
 ## F1 playback incident correction
 LEANDRO reported incomplete, overlapping voice. Removed destructive playback-backlog threshold and made local fast barge-in opt-in. Two real-provider playback drains (2.5 and 3.8) and synthetic 20-second burst verified no scheduling gaps or unsolicited stops. See PHASE-01-AUDIO-INCIDENT.md.
+
+## Continuation: F1.4/F1.5 and profile-based gate request, 2026-11-16
+
+MESTRE reconciled Issue #527, draft PR #529 SHA ea96781, normative contracts LEO.md and EMILY.md and MCF-DEC-017/050. User explicitly authorized F1.5 physical audio tests, F1.4 reliability benchmark and LEO gate via an isolated Codex CLI agent with the official profile. User retained earlier decision to postpone key rotation, not a waiver for release.
+
+Physical QA used the USB LifeCam microphone and analog output path. No speech or PCM media persisted. System capture returned 32,000 real samples in 2 seconds; Chrome AudioWorklet returned 64 frames and 40,960 samples from a real input track. PipeWire analog sink accepted a low-volume synthetic tone, but sink-monitor capture yielded no samples, so audible physical playback is not certified.
+
+Initial 180-second reliability test provided 3 first-audio responses, 2 generationComplete events and an eventual disconnect. The harness incorrectly interpreted only generationComplete as terminal, despite the provider's separate turnComplete signal. An independent short diagnostic using either completion signal finished 6/6 turns and successfully reconnected with handle present after a network interruption.
+
+Independent external Codex CLI with Emily contract on SHA ea96781 issued RETORNAR_PARA_CORRECAO: high issues A1 (cannot stop playing after socket close), A2 (missing token/open/setup deadlines), A3 (unbounded repeated reconnect cycles) and A4 (incomplete physical/long session/gates). MESTRE corrected A1-A3 locally with minimal fixes and 4/4 adversarial tests, without mixing this executor with native Emily identity. A4 remains pending/partially qualified.
+
+A real connection over 10 minutes with compression/resumption is running under separate test process; do not mark it successful until a terminal report exists. Next independent gate: Codex CLI with the official LEO profile, explicitly external and not a native Agent Session. It must consider this entire history, unresolved F0.8 and eventual long-session evidence. No automatic merge/deploy.
