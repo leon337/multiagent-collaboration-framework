@@ -1,0 +1,21 @@
+mission_id: MCF-PET-SESSION-RECOVERY-001
+phase_id: PHASE-MCF-PET-SESSION-RECOVERY-001
+date: 2026-11-16
+state: LOCAL_FIX_DEPLOYED_PR_PENDING
+user_error: "Falha na transcrição: Sessão inválida"
+root_cause: SERVER_SESSION_EXPIRED_OR_LOST_ON_RESTART
+session_ttl_seconds: 3600
+mode: REQUEST_TIME_REFRESH_PLUS_ONE_RETRY_ON_EXACT_403_INVALID_SESSION
+preserves_audio_blob: true
+retry_on_network_failures: false
+retry_on_origin_forbidden: false
+new_tcp_ports: false
+mcf_mission_runtime_modified: false
+node_regression_tests: 5/5_PASS
+existing_gateway_tests: 12/12_PASS
+playwright_session_restart_e2e: PASS
+stt_after_renewal_http: 200
+microphone_test_method: SYNTHETIC_ONLY
+host: leo-N43SM
+service_hub: mcf-service-hub.service
+rollback: /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-20261116T211759Z/

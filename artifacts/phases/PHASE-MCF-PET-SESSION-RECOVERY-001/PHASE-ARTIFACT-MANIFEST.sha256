@@ -1,0 +1,10 @@
+726f8b317d981f875cc1be70a41f01da855cfa1ca06e4136f6573aa7a2feb03e  .github/workflows/mcf-pet-gemini-live.yml
+d7f45e98c1179ebffcbc794a5426f6ce6f95a2f83ed2c7cc794a4ccbc5c8a4f9  tools/mcf-pet-gemini-live/README.md
+3d9da84625f0a900a80831a121b3526c8f9b3b8fb6e1c68e59647a0b9bb53d22  tools/mcf-pet-gemini-live/install_local.py
+751e9715ba53136dac0f759b05bb548d7efdeb3307aee3251a8506b666b731e1  tools/mcf-pet-gemini-live/frontend/pet-conversation.js
+005c472046cd7236370cd622380e41b8a8e2c71dacff14eb287fc8fc2b8d1d67  tools/mcf-pet-gemini-live/frontend/pet-session-recovery.test.mjs
+d2cdfd3819a1388125e3cf1b0ab4cd99e527462fad53c8872366884c86c4f98e  artifacts/phases/PHASE-MCF-PET-SESSION-RECOVERY-001/PHASE-PLAN.md
+bb3f30c1e4bda54c77f7a29f694da902f411360205c296dfb9164f5e42025168  artifacts/phases/PHASE-MCF-PET-SESSION-RECOVERY-001/PHASE-VALIDATION.txt
+0f3e19e61dbf48adf6400ad0ba68a02c983234c07733bda1f3218f4357aac710  artifacts/phases/PHASE-MCF-PET-SESSION-RECOVERY-001/PHASE-CHECKPOINT.yaml
+106814180d4e42e168001a7759ad3cacf2b51a7c8598eb1f9e56dff52c9489ba  artifacts/phases/PHASE-MCF-PET-SESSION-RECOVERY-001/PHASE-DECISIONS.md
+ffc19a02b29ce9c358719eb902a3ee173a42fe5eef398e2ec41d15d895f39771  artifacts/phases/PHASE-MCF-PET-SESSION-RECOVERY-001/README.md

@@ -28,6 +28,8 @@ ASSETS={
     "frontend/pet-live.js":[HUB/"pet-live.js"],
     "frontend/pet-live.css":[HUB/"pet-live.css"],
     "frontend/pet-live-worklet.js":[HUB/"pet-live-worklet.js"],
+    # Version the classical Pet UI too; sessions can expire during recording.
+    "frontend/pet-conversation.js":[HUB/"pet-conversation.js"],
 }
 APP_IMPORT="from pet_live_gateway import router as pet_live_router\napp.include_router(pet_live_router)"
 LIVE_CSP="connect-src 'self' ws://127.0.0.1:8878 ws://localhost:8878 wss://mcf-leo-n43sm.tail582305.ts.net:8466;"
@@ -146,7 +148,6 @@ def plan() -> dict[Path,bytes]:
         (AGENT/"app.py",patch_agent),
         (HUB/"server.py",patch_hub),
         (HUB/"index.html",patch_index),
-        (HUB/"pet-conversation.js",patch_classic),
     ):
         payload[source]=patch(source.read_text(encoding="utf-8")).encode("utf-8")
     return payload
