@@ -1,0 +1,24 @@
+F1 SMOKE — Browser/headless, synthetic media, real Gemini endpoint
+Expected: no capture of user microphone, screen or camera. Token/key values omitted.
+
+Worklet PCM16: PASS; browser 48kHz input, 16kHz output, 40ms frames.
+Local VAD: PASS; 1 start, 1 end, 22 PCM frames, short preroll.
+Interruption: PASS; playback sources stopped and queue cleared.
+Backpressure: PASS; frame drop when WebSocket bufferedAmount >320000.
+Output bounded queue: PASS; stale sources cleared when backlog >1.6s, simulated output queue 1.04s.
+GenerationComplete: PASS; recognized without duplicating turn.
+Real model Gemini 2.5 setup: PASS.
+Real Worklet frames: PASS; 38-39 chunks / ~49k bytes in 1.55s (virtual mic).
+Worklet cleanup: PASS; no leftover AudioWorkletNode or mic context.
+Real WebSocket reconnect: PASS; session resumed connection after deliberate socket close.
+No repeated user turns: PASS.
+SessionResumptionUpdate handle: PRESENT; full context equivalence NOT TESTED.
+GoAway signal handler: PASS via injected protocol event; real timed expiry NOT TESTED.
+Final media and retry cleanup: PASS.
+Runtime JS errors: 0.
+Total browser cases: 17/17 PASS.
+Details: EVIDENCE-F1-BROWSER.json; tests/gemini-live-f1/browser-e2e.cjs.
+
+Additional regression: F0 13/13 strong multimodal E2E against staging, 3 model handshakes.
+
+Unsupported conclusion: no proof of physical audio comfort, audible latency, headset echo, Bluetooth/wired hardware, prolonged connection or resilience to provider rate limits.

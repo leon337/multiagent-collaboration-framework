@@ -1,0 +1,43 @@
+schema: mcf-phase-checkpoint/v1
+mission_id: MCF-GEMINI-LIVE-EVOLUTION-20261116-001
+parent_mission_id: null
+phase_id: PHASE-01-AUDIO-RELIABILITY
+risk_class: C
+cycle: 1
+orchestrator: MESTRE
+authority_human_final: LEANDRO
+operational_gate_authority: LEO
+state: EM_REVISAO_TECNICA
+phase_closed: false
+prerequisite_f0:
+  state: EM_CORRECAO
+  gate_f0_8: PENDING
+repository:
+  repo: leon337/multiagent-collaboration-framework
+  issue: 527
+  f0_draft_pr: 528
+  f1_draft_pr: 529
+  branch: feat/gemini-live-audio-f1-20261116
+staging:
+  host: leo-N43SM
+  app_dir: /home/leo/Projetos/gemini-live-studio-f1
+  url: http://127.0.0.1:18372
+  original_url: http://127.0.0.1:18371
+  credential: EXISTING_LOCAL_FILE_REFERENCED_NOT_COPIED
+evidence:
+  offline_worklet_tests: 6
+  offline_telemetry_tests: 6
+  browser_f1_pass: 17
+  browser_f1_fail: 0
+  f0_compatibility_pass: 13
+  source_digest_verified: true
+  physical_audio: NOT_TESTED
+  long_sessions: NOT_TESTED
+  real_goaway: NOT_OBSERVED
+  semantic_context_resume: NOT_INDEPENDENTLY_VERIFIED
+  key_rotation: POSTPONED_BY_HUMAN_RISK_OPEN
+  emily_audit: PENDING
+  leo_gate: PENDING
+next_action: "Revisar PR #529 por executor independente, testar áudio físico e longa duração, reconciliar F0.8 e solicitar gate oficial LÉO."
+prohibitions: [NO_MERGE, NO_PRODUCTION_DEPLOY, NO_PUBLIC_EXPOSURE, NO_SECRET_PUBLICATION]
+checkpoint_recipient: MESTRE

@@ -47,3 +47,8 @@ jobs:
                   assert not re.search(pattern,s), 'Potential credential in '+f
           print('F1 app files scanned:',len(tracked))
           PY
+      - name: Verify F1 source and traceability package SHA-256 manifests
+        working-directory: artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-01
+        run: |
+          sha256sum -c PHASE-01-SOURCE-MANIFEST.sha256
+          sha256sum -c PHASE-01-ARTIFACT-MANIFEST.sha256

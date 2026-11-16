@@ -1,0 +1,10 @@
+34795d5098f7cce63779d39317455b38968f860b26057f82ae31b66872566a1b  ../../../apps/gemini-live-studio/server.js
+16238275b08597a12b12fae62b9b8978e963255dfbebbea5da54b47a1a402700  ../../../apps/gemini-live-studio/public/app.js
+092f6249abcd77bf462928c759fb36024d69b85a9ae8762bbb310239c3640353  ../../../apps/gemini-live-studio/public/index.html
+7f1e1d69087f28c3334ba39b7e8759791304cbe9863b12f64caf5c688327064e  ../../../apps/gemini-live-studio/public/style.css
+279ecb08f9d3029dbd5675e0f820a108a96abf7afba336aece90af6e48d065da  ../../../apps/gemini-live-studio/public/telemetry.js
+2900615b2f72180eb222f3f0835bb5ad2b20a741e2f4b231b13f17b060f6bac2  ../../../apps/gemini-live-studio/public/capture-worklet.js
+cb4d349268bf91908526def439be54a752b33f7c854bbd5b277ffb44ba88b7ac  ../../../tests/gemini-live-f1/capture-worklet.test.mjs
+36c2ee0d3baff3c79ab701c0591995020bedd4759e8d4d23bf9dafe0868a3bd4  ../../../tests/gemini-live-f1/telemetry.test.mjs
+3da41eb77a1ff93bf5ebe98c789e6dce8a834963983e1cca77f4e7085e507a89  ../../../tests/gemini-live-f1/browser-e2e.cjs
+cef53a80a33d66edee1eeace9dd831ccedd4c7cd25d5794810d2a3aa34178f2a  EVIDENCE-F1-BROWSER.json

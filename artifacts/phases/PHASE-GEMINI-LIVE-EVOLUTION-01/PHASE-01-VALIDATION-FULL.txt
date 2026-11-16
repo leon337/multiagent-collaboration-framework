@@ -1,0 +1,44 @@
+# PHASE 01 — Expanded validation
+
+Original F1 test result at EVIDENCE-F1-BROWSER.json. Source and script hashes appear in that JSON.
+Browser: Chrome 156 / virtual mic and camera / simulated screen; Google Live API WebSocket real.
+
+## All browser cases
+- BROWSER_WORKLET_CAPABILITY: PASS — AudioWorkletNode=true
+- F1_DASHBOARD_RENDERED: PASS — F1 diagnostics in UI
+- MANUAL_VAD_START_END: PASS — {"started":1,"ended":1,"pcm":22,"after":false}
+- MANUAL_VAD_PREROLL_AND_PCM: PASS — PCM frames=22
+- INTERRUPTION_CLEARS_PLAYBACK: PASS — {"stops":1,"empty":true,"nextPlay":0}
+- BACKPRESSURE_DROPS_FRAMES: PASS — {"sent":false,"writes":0,"metrics":1}
+- PLAYBACK_QUEUE_BACKLOG_BOUNDED: PASS — {"drops":2,"queueSec":1.04,"cleared":true}
+- GENERATION_COMPLETE_SIGNAL: PASS — counted without replay
+- LIVE_SETUP_REAL: PASS — setupComplete
+- WORKLET_AUDIO_SENT_REAL: PASS — {"frames":39,"bytes":49959,"worklet":true,"sampleRate":48000,"streamLive":true}
+- WORKLET_STOP_CLEAN: PASS — no dangling input stream or context
+- WEBSOCKET_RECONNECT_REAL: PASS — reconnected to Google Live API
+- NO_DUPLICATE_USER_TURNS_AFTER_RECONNECT: PASS — user turns before/after=1/1
+- RESUMPTION_HANDLE_PRESENT: PASS — handle available; context preservation not independently attested
+- GOAWAY_SIGNAL_RECOGNIZED: PASS — event counted, no raw token logged
+- FINAL_RESOURCE_CLEANUP: PASS — no active media or retry
+- NO_JS_RUNTIME_ERRORS: PASS — pageErrors=0
+
+## Offline worklet and telemetry contract
+Command: node --test tests/gemini-live-f1/capture-worklet.test.mjs tests/gemini-live-f1/telemetry.test.mjs
+Results: 12/12 PASS, 0 FAIL, on Node.js 24.22.2.
+Worklet coverage: fixed 40ms/640 sample/1280byte frames, 48k and 44.1k resampling, phase continuity across 128-sample quantum boundaries, silence in output, RMS, stopping.
+Telemetry coverage: schema/memory, reconnect/barged-in counters, underrun/drop/bytes, secret stripping, numeric sanitization and 500-event cap.
+
+## Runtime and source hashes
+Result: browser 17/17 PASS on local 127.0.0.1:18372; F0 compatibility regression 13/13 PASS.
+5 SHA-256 source hashes in browser result match code committed to apps/gemini-live-studio (checked via local Python); 1 test script SHA matches the versioned browser test.
+The source manifest and PRF manifest can be checked independently with sha256sum -c.
+
+## Honest limitations and remaining quality checks
+- Audio signal and provider return tested with virtual input only; no real microphone, headset, echo cancellation or visible camera evidence.
+- Browser playback queue bound simulated; no measured human-perceived jitter, underruns in production, p50/p95 robust samples or A/B physical benchmark.
+- Real deliberate socket reconnect passed and received a resumable handle; equivalence of previous model context was not independently validated.
+- GoAway signal tested by injection, not observed at the provider's natural connection timeout.
+- HTTP 429/backoff, prolonged 10+min streaming and provider cost were not stress tested.
+- Client VAD uses RMS threshold rather than a speech classifier; false positives require device-specific tuning.
+- F0.8 remains pending and old previously exposed API key is intentionally unrotated by user decision. Do not publish server or gate release.
+- No external agent Emily/LÉO is claimed to have executed; this PRF is a request for their real review, not a signed acceptance.

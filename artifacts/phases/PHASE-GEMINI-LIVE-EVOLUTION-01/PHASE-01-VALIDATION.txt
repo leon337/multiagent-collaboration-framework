@@ -1,0 +1,19 @@
+F1 — SUMMARY VALIDATION, 2026-11-16
+Mission: MCF-GEMINI-LIVE-EVOLUTION-20261116-001
+Phase: PHASE-01-AUDIO-RELIABILITY
+Branch: feat/gemini-live-audio-f1-20261116 (stacked on F0 branch)
+Draft PR: #529
+Old version: 127.0.0.1:18371, HTTP 200, untouched
+Staging version: 127.0.0.1:18372, HTTP 200, AudioWorklet file 200
+Offline unit tests: 6 capture-worklet PASS + 6 telemetry PASS = 12/12
+F0 compatibility E2E on staging: 13/13 PASS
+F1 browser E2E: 17/17 PASS, 0 FAIL, with Google Live real and synthetic media
+F1 source SHA in EVIDENCE-F1-BROWSER.json: 5 files; matches published files 5/5
+F1 E2E test SHA in result: 1 file; matches published script 1/1
+Source key patterns scanner: 0 matches
+Hardware microphone/headset: NOT TESTED; physical GoAway/long session: NOT TESTED
+Resumption handle: PRESENT; real reconnect: PASS; full context continuity: NOT INDEPENDENTLY VERIFIED
+Audit Emily: PENDING. Gate LÉO: PENDING.
+F0.8: PENDING. Key rotation: POSTPONED BY USER (risk open).
+Merge/deploy: NOT PERFORMED.
+Result: TECHNICAL IMPLEMENTATION TESTED IN STAGING; NO PHASE ACCEPTANCE.
