@@ -46,3 +46,5 @@ O teste E2E opcional `tests/gemini-live-f1/browser-e2e.cjs` requer Puppeteer, Ch
 Este pacote de código acompanha a F1 em uma branch baseada na branch draft da F0. F0.8 permanece sem gate. Implementar e testar localmente **não equivale a liberar F1**. A promoção requer PRF, auditoria Emily e decisão LÉO; merge e deploy exigem autorização separada.
 
 Hotfix de áudio F1: toda resposta é reproduzida na ordem recebida. Interrupção local imediata está desligada por padrão para evitar eco do alto-falante.
+
+Em desconexão inesperada do WebSocket, os blocos de áudio já recebidos continuam até o fim. Parar manualmente ainda encerra e limpa a reprodução.

@@ -62,6 +62,41 @@ function record(id,passed,observed){cases.push({id,passed,observed});console.log
   record('SPEAKER_ECHO_DOES_NOT_SELF_INTERRUPT',r.echo.stopped===0&&r.echo.pending===200,r.echo);
   record('SERVER_INTERRUPTED_STOPS_AUDIO',r.afterInterrupt.stopped===200&&r.afterInterrupt.pending===0&&r.afterInterrupt.nextPlay===0,r.afterInterrupt);
   record('NEXT_TURN_CAN_START_CLEANLY',r.afterRestart.pending===1&&r.afterRestart.start>=5.1,r.afterRestart);
+  const netClose=await page.evaluate(async()=>{
+   const realFetch=window.fetch,RealWS=window.WebSocket,ctxBefore=state.audioCtx;
+   const nodes=[],stops=[];
+   try{
+    window.fetch=async(input,opts)=>String(input).includes('/api/token')?
+      {ok:true,status:200,json:async()=>({token:'fake-token-not-real'})}:realFetch(input,opts);
+    class FakeWebSocket{
+     static OPEN=1;
+     constructor(){this.readyState=1;}
+     send(){}
+     close(){this.readyState=3;}
+    }
+    window.WebSocket=FakeWebSocket;
+    await connect(false);
+    const ws=state.socket;
+    await ws.onmessage({data:JSON.stringify({setupComplete:{}})});
+    state.audioCtx={state:'running',currentTime:3,resume:async()=>{},destination:{},
+      createBuffer(n,frames,rate){return {duration:frames/rate,getChannelData:()=>new Float32Array(frames)};},
+      createBufferSource(){return {buffer:null,onended:null,connect(){},disconnect(){},
+        start(when){nodes.push(when);},stop(){stops.push(1);}};}
+    };
+    const chunk=bytesToBase64(new Uint8Array(4800));
+    for(let i=0;i<20;i++)playAudio(chunk);
+    const before=state.sources.size;
+    ws.onclose({code:1006});
+    const after=state.sources.size;
+    const observed={before,after,stopCalls:stops.length,socketClosed:state.socket===null,
+      stillQueuedSeconds:Number((state.nextPlay-3).toFixed(2))};
+    disconnect();
+    return {pass:before===20&&after===20&&observed.stopCalls===0&&observed.socketClosed,observed};
+   }finally{
+    state.audioCtx=ctxBefore;window.WebSocket=RealWS;window.fetch=realFetch;
+   }
+  });
+  record('WEBSOCKET_CLOSE_DRAINS_ALREADY_RECEIVED_AUDIO',netClose.pass,netClose.observed);
   record('NO_BROWSER_EXCEPTIONS',errors.length===0,{errors:errors.length});
  }catch(e){record('TEST_EXCEPTION',false,{name:e.name,message:e.message.slice(0,140)});}
  finally{

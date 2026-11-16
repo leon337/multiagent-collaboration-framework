@@ -20,7 +20,7 @@ Status: corrected and tested on localhost staging, formal gate pending.
 
 ## Evidence
 
-- EVIDENCE-F1-PLAYBACK-REGRESSION.json: 7/7 PASS, 200 chunks x 100ms = 20 seconds and 480,000 samples, zero gaps, overlaps, stops or unintended cancellation, including echo simulation.
+- EVIDENCE-F1-PLAYBACK-REGRESSION.json: 8/8 PASS, 200 chunks x 100ms = 20 seconds and 480,000 samples, zero gaps, overlaps, stops or unintended cancellation, including echo simulation.
 - EVIDENCE-F1-AUDIO-DRAIN-25.json: real Gemini 2.5 response, 41.48 s / 1,014 nodes: every node started and ended, zero stop calls, gap or overlap.
 - EVIDENCE-F1-AUDIO-DRAIN-38.json: real Gemini 3.8 Live response, 37.68 s / 112 nodes: every node started and ended, zero stop calls, gap or overlap.
 - EVIDENCE-F1-BROWSER.json: 17/17 PASS after replacing the old truncation expectation with an intact 5.12-second buffered queue.
@@ -32,3 +32,6 @@ Status: corrected and tested on localhost staging, formal gate pending.
 These are numerical scheduling, audio-source callback and cleanup checks in Chrome headless. Human physical listening, headset echo, quality and real-time latency evaluation remain pending. No output audio or private transcript recorded in Git.
 The previously disclosed key rotation was explicitly postponed by the user; no release, merge or public exposure is authorized.
 Official Emily audit and LEO gate remain pending; F0.8 remains open.
+
+## Additional WS close safeguard
+WebSocket onclose used to unconditionally clear the entire playback queue even for network failure or provider disconnect. It now preserves already received audio; voluntary disconnect/mute and API-confirmed interruption still clear it. The new browser test WEBSOCKET_CLOSE_DRAINS_ALREADY_RECEIVED_AUDIO PASS verifies 20 queued chunks remain after a simulated failed close. Real provider drains were run before this narrow onclose safeguard; all code and evidence hashes are revalidated for the final hotfix.

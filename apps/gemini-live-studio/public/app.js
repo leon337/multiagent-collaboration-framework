@@ -99,7 +99,8 @@ async function connect(retry=false){
    if(!current())return;
    state.socket=null;state.connecting=false;state.connected=false;
    clearTimeout(state.goAwayTimer);state.goAwayTimer=null;
-   stopMic();stopCamera();stopScreen();clearPlay();setButtons(false);
+   stopMic();stopCamera();stopScreen();setButtons(false);
+   if(state.sources.size)log('ÁUDIO','WebSocket encerrado; blocos já recebidos continuarão tocando até o fim.');
    log('CONEXÃO','WebSocket encerrado: código '+e.code);f0tel('disconnect',{code:e.code});
    const retryable=![1008,1003,4401,4403].includes(e.code);
    if(!retryable||!scheduleReconnect('socket-close')){

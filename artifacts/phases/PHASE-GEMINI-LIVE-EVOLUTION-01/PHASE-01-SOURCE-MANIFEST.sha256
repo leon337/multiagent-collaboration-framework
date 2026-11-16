@@ -1,5 +1,5 @@
 34795d5098f7cce63779d39317455b38968f860b26057f82ae31b66872566a1b  ../../../apps/gemini-live-studio/server.js
-6ea09058645206e317dcfc0ce6ca1b9b346d9f6ef7cc310492d3791a83a09c50  ../../../apps/gemini-live-studio/public/app.js
+da7d001e08b79ef3fd966cbc4e95598b8b717d9f390d57cfff1fd5a6019c2883  ../../../apps/gemini-live-studio/public/app.js
 6ca78eae5d17861c87dd5b8485b2243743fc8d86c29a8c3dbb78e1c519faf038  ../../../apps/gemini-live-studio/public/index.html
 7f1e1d69087f28c3334ba39b7e8759791304cbe9863b12f64caf5c688327064e  ../../../apps/gemini-live-studio/public/style.css
 279ecb08f9d3029dbd5675e0f820a108a96abf7afba336aece90af6e48d065da  ../../../apps/gemini-live-studio/public/telemetry.js
@@ -8,10 +8,10 @@ cb4d349268bf91908526def439be54a752b33f7c854bbd5b277ffb44ba88b7ac  ../../../tests
 36c2ee0d3baff3c79ab701c0591995020bedd4759e8d4d23bf9dafe0868a3bd4  ../../../tests/gemini-live-f1/telemetry.test.mjs
 66f26e3abae23282ab046b4b8a28507491b47b31c5ffc243e48295af525529be  ../../../tests/gemini-live-f1/browser-e2e.cjs
 036d68ea7481bf5b9bb8a9e3fb0935b42a1877b898af8186516d24ed7096359f  ../../../tests/gemini-live-f1/adversarial-browser.cjs
-6bc713916752b9c7cb577d58becdebaecc77f5ff95f82ea2f04568ef67ece882  ../../../tests/gemini-live-f1/playback-regression.cjs
+3e6e470b57f98ede68a1c3d9a42104a6b75ef043519f8d2295690a4b5fd80f99  ../../../tests/gemini-live-f1/playback-regression.cjs
 434daf7b204e9b17d565251df7f15beb0ab2e18571ce0ed06aaf8633046791c2  ../../../tests/gemini-live-f1/audio-drain.cjs
-73a9cbdae018daaa379828ae15e26c569844fa986f1e2b6f7464f47c83d296eb  EVIDENCE-F1-BROWSER.json
+f8f9f9d81afb233b98a5fccaf6c84eaf5c14ce910ef6865894cc6d027980a51f  EVIDENCE-F1-BROWSER.json
 ffd6105b080ad47d0ecd7e5ea1319c94d73244c303322684b2dd3c51d0ef0548  EVIDENCE-F1-ADVERSARIAL.json
-efbb7e5e9d01fb3eae92b683b3eaa9eff3da897b35ccbb656b8fc415f1ffbdd5  EVIDENCE-F1-PLAYBACK-REGRESSION.json
+2a22c1364861b000bf4bea9f80e49b1857e593b38a93387568520e8c21ced73a  EVIDENCE-F1-PLAYBACK-REGRESSION.json
 14757d881162aa5b4e0624c734ac07bf1afe61d21da1a95e711addd394fa2d27  EVIDENCE-F1-AUDIO-DRAIN-25.json
 3d8f5456a6a2e9e67a62377e9dc121b8df877a893f9ad6cc35aaa49d18f25359  EVIDENCE-F1-AUDIO-DRAIN-38.json

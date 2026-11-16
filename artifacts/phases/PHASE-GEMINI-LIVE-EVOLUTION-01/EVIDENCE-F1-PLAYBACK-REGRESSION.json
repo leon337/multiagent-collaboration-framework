@@ -1,6 +1,6 @@
 {
   "schema": "mcf-f1-playback-regression/v1",
-  "utc": "2026-11-16T21:46:22.434Z",
+  "utc": "2026-11-16T21:56:36.162Z",
   "origin": "http://127.0.0.1:18372/",
   "synthetic_pcm": true,
   "cases": [
@@ -60,6 +60,17 @@
       }
     },
     {
+      "id": "WEBSOCKET_CLOSE_DRAINS_ALREADY_RECEIVED_AUDIO",
+      "passed": true,
+      "observed": {
+        "before": 20,
+        "after": 20,
+        "stopCalls": 0,
+        "socketClosed": true,
+        "stillQueuedSeconds": 2.12
+      }
+    },
+    {
       "id": "NO_BROWSER_EXCEPTIONS",
       "passed": true,
       "observed": {
@@ -67,10 +78,10 @@
       }
     }
   ],
-  "passed": 7,
+  "passed": 8,
   "failed": 0,
   "source_sha256": {
-    "public/app.js": "6ea09058645206e317dcfc0ce6ca1b9b346d9f6ef7cc310492d3791a83a09c50",
+    "public/app.js": "da7d001e08b79ef3fd966cbc4e95598b8b717d9f390d57cfff1fd5a6019c2883",
     "public/index.html": "6ca78eae5d17861c87dd5b8485b2243743fc8d86c29a8c3dbb78e1c519faf038"
   }
 }
