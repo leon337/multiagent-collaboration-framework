@@ -1,0 +1,23 @@
+/* MCF Pet Gemini Live — session explicitly started by the human. */
+.pet-live-zone{margin:14px 0 18px;padding:18px;border:1px solid #9d7a40;border-radius:15px;background:linear-gradient(145deg,#2c2437,#182338 65%,#172633);position:relative}
+.pet-live-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pet-live-header h3{font-size:17px;margin:0 0 5px;color:#ffe2a4}
+.pet-live-header p{font-size:11px;color:#b6bbd4;max-width:780px;line-height:1.6;margin:0}
+.pet-live-tag{border:1px solid #ac8652;color:#f9d797;background:#473528;border-radius:20px;padding:6px 9px;font-size:10px;font-weight:800}
+.pet-live-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:15px 0 9px}
+.pet-live-actions button{border-radius:9px;border:1px solid #c69c56;background:#e2a943;color:#241b19;padding:11px 14px;font-size:12px;font-weight:800;cursor:pointer}
+.pet-live-actions button.negative{background:#442a32;color:#ffd7d7;border-color:#915a61}
+.pet-live-actions button.secondary{background:#272d40;color:#d1dbef;border-color:#536781}
+.pet-live-actions button:disabled{opacity:.48;cursor:default}
+.pet-live-actions label{margin-left:auto;display:flex;align-items:center;gap:7px;color:#cfdbeb;font-size:11px}
+.pet-live-actions select{background:#141d2c;color:#f5e5c4;border:1px solid #686078;border-radius:7px;padding:9px;font-size:11px}
+.pet-live-presence{display:flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid #685a67;border-radius:9px;background:#181e30;color:#f4ce92;font-size:12px;font-weight:700}
+.pet-live-presence[data-state=listening]{color:#77f1c5;border-color:#367968;background:#142a29}
+.pet-live-presence[data-state=speaking]{color:#ffce8b;border-color:#b48348;background:#352722}
+.pet-live-presence[data-state=thinking]{color:#bdc8ff;border-color:#535ea0;background:#232748}
+.pet-live-transcript{max-height:160px;overflow:auto;border:1px solid #393e5b;background:rgba(9,14,24,.45);border-radius:10px;padding:8px 11px;margin-top:11px;min-height:58px}
+.pet-live-transcript p{margin:6px 0;font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;color:#dce4f4}
+.pet-live-transcript strong{color:#f6ce8c}
+.pet-live-diagnostic{font-size:10px;color:#9daeca;margin:8px 0 0}
+.pet-live-warning{margin:11px 0 0;font-size:11px;color:#d7be93;line-height:1.6}
+@media(max-width:760px){.pet-live-actions label{margin-left:0}.pet-live-zone{padding:13px}}

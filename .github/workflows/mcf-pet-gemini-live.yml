@@ -1,0 +1,42 @@
+name: MCF Pet Gemini Live — isolated checks
+on:
+  pull_request:
+    paths:
+      - "tools/mcf-pet-gemini-live/**"
+      - ".github/workflows/mcf-pet-gemini-live.yml"
+  push:
+    branches: [main]
+    paths:
+      - "tools/mcf-pet-gemini-live/**"
+      - ".github/workflows/mcf-pet-gemini-live.yml"
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/mcf-pet-gemini-live
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Compile Python without secrets
+        run: python -m compileall -q backend install_local.py tests
+      - name: Test HMAC and one-time ticket
+        run: python -m unittest discover -s tests -v
+      - name: Validate browser module syntax
+        run: |
+          node --check frontend/pet-live.js
+          node --check frontend/pet-live-worklet.js
+      - name: Verify no credentials committed to package
+        run: |
+          if grep -RInE '(^|[[:space:]])(AIza[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9_-]{20,})' backend frontend tests; then
+            echo "Potential credential found" >&2
+            exit 1
+          fi
+          echo "No embedded credentials detected"
