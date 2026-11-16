@@ -1,0 +1,50 @@
+{
+  "verified_at_utc": "2026-11-16T18:58:59.398Z",
+  "backend": "v1beta/models/{id}",
+  "models": [
+    {
+      "model": "gemini-2.5-flash-native-audio-preview-12-2025",
+      "metadata_http_status": "200",
+      "methods": [
+        "countTokens",
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "model": "gemini-3.8-live",
+      "metadata_http_status": "200",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "model": "gemini-3.8-live-extended-thinking",
+      "metadata_http_status": "200",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "model": "gemini-3.1-flash-live-preview",
+      "metadata_http_status": "200",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "model": "gemini-3.5-transcribe-live",
+      "metadata_http_status": "200",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    },
+    {
+      "model": "gemini-3.5-live-translate-preview",
+      "metadata_http_status": "200",
+      "methods": [
+        "bidiGenerateContent"
+      ]
+    }
+  ],
+  "classification": "Public model metadata per credential; 200 does not guarantee all modalities/function calls."
+}

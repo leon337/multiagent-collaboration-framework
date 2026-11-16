@@ -1,0 +1,114 @@
+{
+  "checked_at_utc": "2026-11-16T19:08:15.409Z",
+  "tests": [
+    {
+      "id": "LOOPBACK_SERVER",
+      "pass": true,
+      "observed": {
+        "host": "127.0.0.1",
+        "port": 18371
+      }
+    },
+    {
+      "id": "NO_STATIC_/.private/api-key.json",
+      "pass": true,
+      "observed": {
+        "http": 404
+      }
+    },
+    {
+      "id": "NO_STATIC_/server.log",
+      "pass": true,
+      "observed": {
+        "http": 404
+      }
+    },
+    {
+      "id": "NO_STATIC_/server.js",
+      "pass": true,
+      "observed": {
+        "http": 404
+      }
+    },
+    {
+      "id": "NO_STATIC_/.git/config",
+      "pass": true,
+      "observed": {
+        "http": 404
+      }
+    },
+    {
+      "id": "ORIGIN_DENY_GET",
+      "pass": true,
+      "observed": {
+        "http": 403
+      }
+    },
+    {
+      "id": "ORIGIN_DENY_POST",
+      "pass": true,
+      "observed": {
+        "http": 403
+      }
+    },
+    {
+      "id": "CSP_ENABLED",
+      "pass": true,
+      "observed": {
+        "set": true
+      }
+    },
+    {
+      "id": "NO_REFERRER",
+      "pass": true,
+      "observed": {
+        "value": "no-referrer"
+      }
+    },
+    {
+      "id": "KEY_FILE_MODE",
+      "pass": true,
+      "observed": {
+        "file_mode": "600"
+      }
+    },
+    {
+      "id": "KEY_DIR_MODE",
+      "pass": true,
+      "observed": {
+        "dir_mode": "700"
+      }
+    },
+    {
+      "id": "GIT_IGNORE_SECRET",
+      "pass": true,
+      "observed": {
+        "present": true
+      }
+    },
+    {
+      "id": "AUTHENTICATED_BACKEND",
+      "pass": false,
+      "observed": {
+        "reason": "No user authentication middleware: local loopback + origin check only; high-risk for future remote exposure"
+      }
+    },
+    {
+      "id": "TOKEN_MODEL_BOUND",
+      "pass": false,
+      "observed": {
+        "reason": "Ephemeral token currently uses=1, but model/config constraints absent"
+      }
+    },
+    {
+      "id": "KEY_ENCRYPTED_AT_REST",
+      "pass": false,
+      "observed": {
+        "reason": "0600 plaintext JSON; encryption/vault not yet implemented"
+      }
+    }
+  ],
+  "pass": 12,
+  "fail": 3,
+  "classification": "Fails include known security gaps, not necessarily regressions"
+}
