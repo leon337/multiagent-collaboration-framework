@@ -79,3 +79,7 @@ Na regressão local `f0/baseline-smoke.cjs` houve **15/15 PASS**: telemetria pre
 **Próximo passo F1:** benchmark com amostragem real, captura PCM via AudioWorklet, correlação turn/audio, p50/p95 por modelo e dispositivo e queda de rede induzida.
 
 **Fontes:** [Google Live best practices](https://ai.google.dev/gemini-api/docs/live-api/best-practices), [Session management](https://ai.google.dev/gemini-api/docs/live-api/session-management).
+
+
+## Adendo de verificabilidade
+O código exato da telemetria está versionado como `artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/public/telemetry.js`; os testes de contrato estão em `ops/gemini-live/f0-telemetry.test.mjs` (**9/9 PASS local**). O teste confirma whitelist, limite de 500 entradas, amostras e ausência de texto de prompt nos eventos de telemetria. **Não certifica o export completo de conversa nem resolve retenção**, que permanece em F2.

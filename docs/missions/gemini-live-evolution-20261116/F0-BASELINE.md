@@ -70,3 +70,10 @@ Em 2026-11-16 a aba aberta do Google AI Studio exibia **Nível gratuito**, janel
 Fontes externas: [Live capabilities](https://ai.google.dev/gemini-api/docs/live-api/capabilities), [Session management](https://ai.google.dev/gemini-api/docs/live-api/session-management), [Ephemeral tokens](https://ai.google.dev/gemini-api/docs/live-api/ephemeral-tokens).
 
 **Não houve merge, deploy nem integração do runtime de produção.**
+
+
+## Adendo de correção — evidência primária para auditoria externa
+
+A revisão externa no SHA `6a714e4` identificou que os logs/scripts locais não estavam disponíveis no PR. Foram incorporados **somente** os arquivos sanitizados `artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/` (servidor, frontend, scripts F0, resultados JSON e hash manifest). A cópia não inclui credencial, tokens, mídia ou estado de navegador. Reproduzir testes de mídia/API em outro ambiente exige dispositivo sintético, Chrome e chave **do próprio auditor**, nunca uma chave publicada.
+
+O histórico `15/15 PASS` corresponde à execução original local; código e resultados agora são inspecionáveis. Testes de dispositivo físico e rotação de chave seguem pendentes. Ver [parecer externo](../../artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/PHASE-00-EXTERNAL-REVIEW-CODEX.md).

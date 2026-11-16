@@ -9,15 +9,18 @@
 
 - **Já operacional:** a Issue #527 contém tarefas `- [ ]` clicáveis no GitHub, com IDs estáveis `F0.1` a `F4.6`, que podem ser editadas e vinculadas a comentários, PRs, testes, SHAs, receipts e decisões.
 - **Atualização humana/agêntica governada:** a cada PR, falha, evidência, gate ou decisão, o responsável atualiza a Issue com status e referências. A atualização deve ocorrer durante o mesmo ciclo de execução, não só em um resumo retrospectivo.
-- **Automação F0.7 implementada em branch:** script `ops/gemini-live/checklist-sync.mjs` (dry-run por padrão), 9/9 testes e workflow com publicação de comentário somente por opt-in. **Ainda não habilitada em main**. Nunca marca `[x]` por CI verde.
+- **Implementação técnica parcial de F0.7:** script `ops/gemini-live/checklist-sync.mjs` (dry-run por padrão), agora 21/21 testes, revalidação de HEAD/paginação/reconciliação de POST, e workflow com publicação de comentário somente por opt-in. **Não está habilitado em main nem cobre todos os eventos e gates do roadmap**. Nunca marca `[x]` por CI verde.
 - **Regra de veracidade:** o campo marcado indica `VALIDADO` e evidência vinculada. Um item em execução continua desmarcado e recebe comentário `EM_EXECUCAO`.
 - **Sem duplicação:** não manter um segundo checklist com progresso contraditório em arquivos Markdown/JSON/Notion.
 
-## Estado técnico registrado em 2026-11-16
+## Estado técnico reconciliado em 2026-11-16
 
-- E2E F0 com mídia sintética: 15/15 PASS; sincronizador: 9/9 PASS; segurança: 12 controles PASS, 3 gaps conhecidos.
-- PRF em `artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/`, com manifest SHA-256 conferido 8/8.
-- F0.8 está `GATE_PENDENTE`: auditoria Emily e decisão LÉO não executadas; sem encerramento formal ou merge.
+- Parecer externo Codex CLI sobre SHA `6a714e4`: **RETORNAR_PARA_CORRECAO**; a auditoria sob contrato Emily não representa identidade/canal nativo autenticado.
+- Issue #527 reabriu F0.2–F0.7 (`EM_CORRECAO`) pela ausência inicial de evidência primária; somente F0.1 permanece validado na Issue até reteste independente.
+- E2E local prévio: 15/15 PASS em mídia sintética; segurança: 12 PASS/3 gaps conhecidos. **Não confundir com validação de dispositivo físico.**
+- Resposta às correções: fonte e JSONs sanitizados em `artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/`; 21 testes de sync e 9 de telemetria passaram localmente, CI de verificação também passou.
+- PRF original permanece com manifest SHA-256 8/8; adendo de correção separado. Gate oficial Emily/LÉO **não executado**.
+- A rotação da chave anteriormente compartilhada não foi comprovada; nenhum merge ou deploy de produção autorizado.
 - A Issue #527 continua a única fonte de verdade para os checkboxes, e pode conter atualizações posteriores.
 
 ## Contrato de atualização
@@ -70,10 +73,10 @@ checklist_event:
 
 ## Requisitos do sincronizador F0.7 (roadmap, ainda não implementado)
 
-- GitHub App/Action com `issues:write` escopado à Issue e leitura restrita de PR/workflow, sem alteração de código nem deploy.
-- Consumo de eventos `pull_request`, `check_suite`, `workflow_run` e comentários/gates que realmente possuam evidence refs.
+- GitHub Action com `issues:write` no job opt-in e lógica de postagem limitada à Issue #527 (o token GitHub não permite restringir permissão por Issue).
+- `pull_request` atualmente dispara testes; publicação de sinais exige `workflow_dispatch` com opt-in. Consumo de `check_suite`, `workflow_run`, recibos/auditorias permanece **fora do MVP atual**, sem aprovação do escopo reduzido.
 - Emissões de **propostas** de mudança quando não houver gate; só `[x]` após evidência validada e decisão de autoridade compatível.
-- Operações idempotentes e `expected_head_sha`/versão da Issue antes de editar para prevenir perda de edição humana.
+- Operações de comentário idempotentes por hash do conjunto de checks e rechecagem de SHA do PR. **Não há edição do corpo da Issue pelo sincronizador**; controle de concorrência de edição do corpo não se aplica.
 - Audit trail com `event_id`, `source_sha`, `item_id`, `checked_by`, `evidence_refs` e diffs.
 - Testes negativos: resultado stale, CI de outro branch, PR reaberto, gate bloqueado, receipt inválido, commit rebaseado, falha de rede após update e ação duplicada.
 - Segredos do sincronizador apenas em armazenamento oficial; nenhuma chave de Gemini no workflow.
