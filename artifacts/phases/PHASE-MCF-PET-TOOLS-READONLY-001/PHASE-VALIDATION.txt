@@ -1,0 +1,18 @@
+VALIDATION — MCF-PET-TOOLS-READONLY-001
+
+PASS: 67 Python tests, including denylist, HMAC scope, audit, sanitization.
+PASS: 5/5 existing JavaScript session-recovery tests.
+PASS: compileall, node --check, installer --check and code import.
+PASS: five real local read-only functions returned receipts; browser_click blocked.
+OBSERVED: mission observer returned AUTH_NOT_CONFIGURED, not canonical data.
+PASS: normal ticket cannot enable read_only; malformed scope HTTP400.
+PASS: Google Gemini 3.8 Live invoked mcf_system_status, returned verified receipt.
+PASS: after bounded silent-turn recovery, Gemini generated 34 audio chunks and
+      a spoken transcription, completing the user turn.
+PASS: Chrome Playwright default checkbox OFF; opt-in tool receipt visible,
+      model audio, mic stopped, no HTTP/JS errors, mobile 390px no overflow.
+PASS: normal conversation scope returned 12 audio chunks and zero tools.
+PASS: local service deployment with backups, live APIs responded HTTP200.
+PENDING: physical mic with tool checkbox on in user's Brave.
+PENDING: remote Tailnet from independent device.
+OUT OF SCOPE: tool writes, browser actions, HUMAN_GATE, MissionRuntime deployment.

@@ -56,3 +56,57 @@ Verificações: 48 testes Python do pacote, 5 testes JS de renovação e Playwri
 Deploy/rollback: instalador python3 install_local.py --apply guarda backup de arquivos tocados em ~/.local/share/mcf-service-hub/backups/mcf-pet-live-<timestamp>/. Nesta correção reiniciou-se apenas Service Hub, sem alterar MissionRuntime, credenciais Google, rede ou outros serviços.
 
 Gates externos: testes automatizados usam microfone simulado; a conversa física com LEANDRO no Brave real não foi reexecutada. A rota Tailscale remota pelo celular continua sem verificação externa.
+
+
+## MCF Pet tools READ_ONLY — 2026-11-16
+
+This is a governed extension of the existing MESTRE Agent and Pet. It does not
+create a new agent, bypass MissionRuntime or authorize privileged operations.
+Official sources: AGENTS.md, MCF-DEC-052 (tool permissions),
+MCF-DEC-055 (Human Delegation Firewall) and
+docs/operations/MCF-GOOGLE-MODEL-ROUTING.md.
+
+Capabilities:
+- mcf_system_status: sampled CPU, RAM, disk, swap and GPU from the local Hub.
+- mcf_service_status: fixed allowlist of eight MCF services, process status and port.
+- mcf_pet_status: validated Pet state and presence.
+- mcf_mission_status: canonical mission observer state; never invent success
+  when it is disconnected (actual observer returned AUTH_NOT_CONFIGURED).
+- mcf_tool_catalog: available permission profile and capabilities.
+
+The user must check the read-only tools option before starting Gemini Live.
+Unchecked is the default; the checkbox is locked during the session. A tool
+scope is HMAC-bound into each one-time 30-second ticket. Legacy tickets are
+accepted for conversation only and cannot escalate to READ_ONLY.
+
+All tools read five fixed local GET endpoints on 127.0.0.1:8898, with strict
+parameter and service allowlists. No shell, filesystem editing, write API,
+generic network access, browser operation, email, deployment, HUMAN_GATE
+approval, payments or credential read. Limits: 12 calls/session, four
+calls/message, bounded result and timeout. Errors fail closed. When a Google
+Live tool-call turn ends silently, a maximum of three speech continuation
+prompts may be used; no execution privilege is gained.
+
+Audit receipts are written to
+~/.local/state/mcf-pet-tools/read-only-receipts.jsonl, private mode 0600.
+Only tool name, time, status, duration and receipt ID are recorded, not user
+prompts, raw arguments, response bodies or audio. Full/unwritable logs block
+the tool result.
+
+Privacy: audio goes to Google Gemini while Live is active. When tools are
+enabled, a filtered infrastructure snapshot also goes to Google to support
+a spoken answer. Existing MESTRE Agent SQLite continues to store conversation
+text. The tool registry does not store audio or duplicate chat memory.
+
+Tests: 67/67 Python tests and 5/5 session tests. Real Gemini tool calling
+executed mcf_system_status, produced receipt, returned 34 audio chunks and
+completed. Chrome Playwright: opt-in, UI receipt, audio, mic released, 390px
+layout, zero HTTP/JS errors. Conversation-only mode: 12 audio chunks, zero
+tool calls. The human's physical microphone and external Tailnet access
+were not retested in this phase.
+
+Local backup:
+~/.local/share/mcf-service-hub/backups/mcf-pet-live-20261116T222738Z/
+No canonical MCF production deployment or merge authorization is implied.
+A separate phase is needed to design READ_AND_PROPOSE, SCOPED_WRITE and
+HUMAN_GATE through MCF PermissionEngine and HDF.

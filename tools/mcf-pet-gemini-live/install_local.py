@@ -27,6 +27,7 @@ ASSETS={
     "backend/pet_observer.py":[HUB/"pet_observer.py"],
     "frontend/pet-hub.js":[HUB/"pet-hub.js"],
     "backend/pet_live_gateway.py":[AGENT/"pet_live_gateway.py"],
+    "backend/pet_readonly_tools.py":[AGENT/"pet_readonly_tools.py"],
     "backend/pet_live_ticket.py":[HUB/"pet_live_ticket.py"],
     "frontend/pet-live.js":[HUB/"pet-live.js"],
     "frontend/pet-live.css":[HUB/"pet-live.css"],
@@ -111,6 +112,8 @@ PANEL='''<!-- MCF-PET-GEMINI-LIVE-START -->
           </select>
         </label>
       </div>
+      <label class="pet-live-tool-permission"><input type="checkbox" id="petLiveAllowTools"> 🔎 Permitir consultas de infraestrutura (somente leitura) nesta sessão</label>
+      <p class="pet-live-tool-status" id="petLiveToolStatus" aria-live="polite">Ferramentas desligadas · nenhum comando operacional será executado. Ao habilitar consultas, resultados filtrados de CPU, GPU e serviços serão enviados ao Google Gemini para compor a resposta, sem credenciais.</p>
       <p class="pet-live-presence" id="petLiveStatus" data-state="idle" role="status" aria-live="polite">● Desligado · sem captura de microfone</p>
       <p class="pet-live-diagnostic" id="petLiveAudioStatus">Nenhuma sessão de áudio em andamento.</p>
       <div id="petLiveTranscript" class="pet-live-transcript" role="log" aria-label="Transcrição da sessão de voz"></div>
@@ -118,6 +121,30 @@ PANEL='''<!-- MCF-PET-GEMINI-LIVE-START -->
     </section>
 <!-- MCF-PET-GEMINI-LIVE-END -->
 '''
+
+def patch_tool_controls(data: str) -> str:
+    if 'id="petLiveAllowTools"' in data:
+        # The checkbox may already be deployed; keep its disclosure current
+        # without duplicating the element or changing other dashboard areas.
+        old_notice="Ferramentas desligadas · nenhum comando operacional será executado."
+        new_notice=(old_notice+" Ao habilitar consultas, resultados filtrados "
+                    "do sistema serão enviados ao Google Gemini para compor "
+                    "a resposta, sem credenciais.")
+        if "Ao habilitar consultas" not in data:
+            data=replace_once(data,old_notice,new_notice,
+                              "permissão de envio de telemetria")
+        return data
+    anchor='      <p class="pet-live-presence" id="petLiveStatus"'
+    controls='''      <label class="pet-live-tool-permission">
+        <input type="checkbox" id="petLiveAllowTools">
+        🔎 Permitir consultas de infraestrutura (somente leitura) nesta sessão
+      </label>
+      <p class="pet-live-tool-status" id="petLiveToolStatus" aria-live="polite">
+        Ferramentas desligadas · nenhum comando operacional será executado. Ao habilitar consultas, resultados filtrados do sistema serão enviados ao Google Gemini para compor a resposta, sem credenciais.
+      </p>
+'''
+    return replace_once(data,anchor,controls+anchor,"Pet tools checkbox")
+
 
 def patch_index(data: str) -> str:
     if '<link rel="stylesheet" href="/pet-live.css">' not in data:
@@ -132,7 +159,37 @@ def patch_index(data: str) -> str:
             '    <section class="pet-talk-zone" id="petTalkZone"',
             PANEL+'\n    <section class="pet-talk-zone" id="petTalkZone"',
             "live panel insertion")
+    data=patch_tool_controls(data)
     return data
+
+def patch_read_only_ticket(data: str) -> str:
+    old='''                if self.headers.get("Content-Length") != "2":
+                    raise pet_voice.ConversationError(400,"INVALID_LENGTH","Corpo inválido.")
+                if self.rfile.read(2) != b"{}":
+                    raise pet_voice.ConversationError(400,"INVALID_JSON","Corpo inválido.")
+                code, info = pet_ticket.ticket_response()
+'''
+    new='''                length = self.headers.get("Content-Length","")
+                if not length.isascii() or not length.isdigit():
+                    raise pet_voice.ConversationError(411,"INVALID_LENGTH","Corpo inválido.")
+                size=int(length)
+                if size<2 or size>48:
+                    raise pet_voice.ConversationError(413,"INVALID_LENGTH","Corpo inválido.")
+                try:
+                    req=json.loads(self.rfile.read(size))
+                except (UnicodeDecodeError,ValueError):
+                    raise pet_voice.ConversationError(400,"INVALID_JSON","Corpo inválido.")
+                if not isinstance(req,dict) or set(req)-{"scope"}:
+                    raise pet_voice.ConversationError(400,"INVALID_SCOPE","Escopo inválido.")
+                scope=req.get("scope","conversation")
+                if scope not in ("conversation","read_only"):
+                    raise pet_voice.ConversationError(400,"INVALID_SCOPE","Escopo inválido.")
+                code, info = pet_ticket.ticket_response(scope)
+'''
+    if new in data:
+        return data
+    return replace_once(data,old,new,"read-only ticket scope")
+
 
 def patch_tab_session_route(data: str) -> str:
     old='data, cookie = pet_voice.make_session(self.headers.get("Host",""))'
@@ -157,7 +214,8 @@ def plan() -> dict[Path,bytes]:
         for dest in dests:payload[dest]=content
     for source,patch in (
         (AGENT/"app.py",patch_agent),
-        (HUB/"server.py",lambda data: patch_tab_session_route(patch_hub(data))),
+        (HUB/"server.py",lambda data: patch_read_only_ticket(
+            patch_tab_session_route(patch_hub(data)))),
         (HUB/"index.html",patch_index),
     ):
         payload[source]=patch(source.read_text(encoding="utf-8")).encode("utf-8")

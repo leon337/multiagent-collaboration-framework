@@ -8,7 +8,9 @@
   if(!start||!stop||!test)return;
   let active=false,ready=false,starting=false,stream=null,ctx=null,source=null;
   let worklet=null,silent=null,socket=null,timer=null,playback=null,lastStart=0;
-  let sent=0,received=0;
+  let sent=0,received=0,toolInvocations=0;
+  const toolStatus=$("petLiveToolStatus");
+  const toolsToggle=$("petLiveAllowTools");
   const allowedState={idle:"● Desligado",starting:"◌ Conectando",listening:"● Ouvindo",
     thinking:"◌ Raciocinando",speaking:"● Falando",interrupted:"↪ Interrompido"};
   const $state=$("petLiveStatus");
@@ -141,6 +143,12 @@
     switch(message.type){
       case "ready":
         ready=true;
+        if(toolStatus){
+          const enabled=message.tool_scope==="read_only";
+          toolStatus.textContent=enabled
+            ? "🔎 Consultas operacionais habilitadas: somente leitura"
+            : "🔒 Ferramentas desligadas nesta conversa";
+        }
         test.disabled=false;
         status("listening");
         stateHint("ouvindo");
@@ -149,6 +157,23 @@
       case "audio":
         received++;
         playback?.push(message.data);
+        break;
+      case "tool_started":
+        if(toolStatus){
+          const name=String(message.name||"").slice(0,55);
+          toolStatus.textContent="🔎 Consultando "+name+"…";
+        }
+        break;
+      case "tool_result":
+        toolInvocations++;
+        if(toolStatus){
+          const name=String(message.name||"").slice(0,55);
+          const label=message.ok===true?"verificada":"indisponível";
+          const rid=String(message.receipt_id||"").slice(0,24);
+          toolStatus.textContent="🔎 "+name+": "+label+
+            (rid?" · evidência "+rid:"");
+          toolStatus.dataset.lastOutcome=message.ok===true?"pass":"fail";
+        }
         break;
       case "user_text":
         line(message.text,"user");
@@ -188,6 +213,9 @@
     starting=true;active=true;ready=false;
     start.disabled=true;stop.disabled=false;test.disabled=true;
     setOtherButtons(true);
+    if(toolsToggle)toolsToggle.disabled=true;
+    toolInvocations=0;
+    if(toolStatus)toolStatus.textContent="Preparando conexão segura de leitura…";
     status("starting");
     try{
       // Audio context created during direct click, allowing autoplay on mobile.
@@ -208,9 +236,11 @@
       const auth=window.McfPetAuth;
       if(typeof auth?.request!=="function")
         throw Error("A sessão protegida do Pet ainda não está pronta.");
+      const toolScope=toolsToggle?.checked===true?"read_only":"conversation";
       const response=await auth.request("live-ticket",{
         method:"POST",cache:"no-store",
-        headers:{"Content-Type":"application/json"},body:"{}"
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({scope:toolScope})
       });
       const body=await response.json().catch(()=>({}));
       if(!response.ok){
@@ -224,7 +254,10 @@
         throw Error("O gateway não retornou um ticket Live válido.");
       const choice=$("petLiveVoice").value;
       const voice=["Fenrir","Puck","Kore","Aoede","Zephyr"].includes(choice)?choice:"Fenrir";
-      socket=new WebSocket(remoteURL()+"?voice="+encodeURIComponent(voice),
+      if(body.tool_scope!==toolScope || body.tools_enabled!==(toolScope==="read_only"))
+        throw Error("O ticket não confirmou a permissão solicitada.");
+      socket=new WebSocket(remoteURL()+"?voice="+encodeURIComponent(voice)+
+            "&scope="+encodeURIComponent(toolScope),
             ["mcf-pet-live","ticket."+body.ticket]);
       socket.onmessage=e=>onMessage(e.data);
       socket.onerror=()=>{if(active){status("idle","Falha na conexão Live");end(false)}};
@@ -252,6 +285,7 @@
     stream=null;worklet=source=silent=null;
     if(ctx){ctx.close().catch(()=>{});ctx=null}
     start.disabled=false;stop.disabled=true;test.disabled=true;
+    if(toolsToggle)toolsToggle.disabled=false;
     setOtherButtons(false);
     stateHint("ocioso");
     playerTitle.textContent="Áudio encerrado. O microfone foi desligado.";
@@ -272,5 +306,8 @@
     // Never keep the mic capturing after changing tabs/screen.
     if(document.hidden&&active)end(false);
   });
-  window.McfPetLiveStatus=()=>({active,ready,pcmFramesSent:sent,pcmAudioChunks:received});
+  window.McfPetLiveStatus=()=>({
+    active,ready,pcmFramesSent:sent,pcmAudioChunks:received,
+    toolInvocations,readOnlyToolsSelected:toolsToggle?.checked===true
+  });
 })();
