@@ -52,3 +52,6 @@ Physical USB microphone and browser AudioWorklet capture passed the I/O route. P
 Initial independent Emily-profile CLI audit returned RETORNAR on ea96781. The second audit returned RETORNAR on bef121c, acknowledged A1/A2/A3 remediated, and flagged medium inability to stop reconnect during backoff. MESTRE corrected that one-line UI state and verified 5/5 adversarial tests. These are external CLI reviews; no native Emily session has been authenticated.
 
 Handoff: MESTRE -> Codex CLI separate LEO-profile executor for actual scoped gate output on exact final branch SHA, including unresolved F0.8 and physical headset QA. No automatic merge or deploy.
+
+## Codex CLI external LEO-profile gate decision
+On 2026-11-16 a distinct external Codex CLI process with LEO normative profile (thread 01a1e697-23c5-7af1-a68f-05d56083e38c) reviewed SHA 361a08b730b24b7fe0ba88e5917634dd3a947d64 and emitted RETORNAR_PARA_CORRECAO. It independently verified 12/12 offline tests, 24/24 source hashes, 26/26 PRF hashes. F1.1-F1.4 partial; F1.5 insufficient; F1.6 partial. This is NOT a native MCF Agent Session. F0.8 remains open and no merge/deploy is approved. Primary receipt in QA-F1-20261116/LEO-PROFILE-GATE.md.

@@ -59,3 +59,6 @@ See QA-F1-20261116/EVIDENCE-LONG-SESSION.json: 632s, 10 turns, GoAway 1, reconne
 See QA-F1-20261116/EVIDENCE-SEMANTIC-RESUME.json: a fictional keyword in the earlier turn was recovered by the model in new output transcripts after reconnect with a handle. Limited single-case semantic check.
 See QA-F1-20261116/EVIDENCE-HIGH-FIXES-5.json: five adversarial regression passes, with SHA-256 of current application code and test script.
 Current QA benchmark: 17/17 browser and 8/8 playback, both linked to current app.js SHA. Audio real hardware was captured without persistence but output monitoring yielded 0 samples; human-audible quality still unverified. End-of-human-speech latency, robust p95 and cost classification are not measured.
+
+## Codex CLI external LEO-profile gate decision
+On 2026-11-16 a distinct external Codex CLI process with LEO normative profile (thread 01a1e697-23c5-7af1-a68f-05d56083e38c) reviewed SHA 361a08b730b24b7fe0ba88e5917634dd3a947d64 and emitted RETORNAR_PARA_CORRECAO. It independently verified 12/12 offline tests, 24/24 source hashes, 26/26 PRF hashes. F1.1-F1.4 partial; F1.5 insufficient; F1.6 partial. This is NOT a native MCF Agent Session. F0.8 remains open and no merge/deploy is approved. Primary receipt in QA-F1-20261116/LEO-PROFILE-GATE.md.

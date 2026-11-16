@@ -18,3 +18,7 @@ return_to: MESTRE
 continue_in_same_response: true
 
 Scope note: the external CLI Codex profile does not create or authenticate a native MCF Agent Session. This gate output is an external delegate assessment at LEANDRO's explicit request.
+
+## Return from LEO external profile to MESTRE
+On 2026-11-16 a distinct external Codex CLI process with LEO normative profile (thread 01a1e697-23c5-7af1-a68f-05d56083e38c) reviewed SHA 361a08b730b24b7fe0ba88e5917634dd3a947d64 and emitted RETORNAR_PARA_CORRECAO. It independently verified 12/12 offline tests, 24/24 source hashes, 26/26 PRF hashes. F1.1-F1.4 partial; F1.5 insufficient; F1.6 partial. This is NOT a native MCF Agent Session. F0.8 remains open and no merge/deploy is approved. Primary receipt in QA-F1-20261116/LEO-PROFILE-GATE.md.
+Next action: finish physical audibility QA, voice latency/cost benchmark and class C governance, reconcile F0.8 and resubmit SHA final.

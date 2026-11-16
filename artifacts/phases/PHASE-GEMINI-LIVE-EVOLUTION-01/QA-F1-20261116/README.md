@@ -25,4 +25,4 @@ EVIDENCE-SEMANTIC-RESUME.json: synthetic keyword after reconnect (positive case)
 EVIDENCE-HIGH-FIXES-5.json: 5/5 adversarial checks with app and test hashes at execution.
 EVIDENCE-BROWSER-E2E-CURRENT.json: 17/17 browser checks with source and script hashes.
 EMILY-EXTERNAL-REREVIEW-BEF121C.md: external re-review, confirms A1–A3 fixed but additional medium cancel-backoff issue (now patched).
-LEO-PROFILE-GATE.md: pending exact decision from external Codex CLI.
+LEO-PROFILE-GATE.md: real external profile-based Codex gate RETORNAR_PARA_CORRECAO, SHA 361a08b730b24b7fe0ba88e5917634dd3a947d64, thread 01a1e697-23c5-7af1-a68f-05d56083e38c.

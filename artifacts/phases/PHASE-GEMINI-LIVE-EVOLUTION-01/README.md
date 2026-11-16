@@ -24,3 +24,6 @@ F0 draft PR: https://github.com/leon337/multiagent-collaboration-framework/pull/
 
 Independence boundaries: only MESTRE implementation and tests are recorded. No Emily or LÉO review receipt and no F0.8 gate. Hardware and key rotation remain pending. Do not merge, deploy or expose publicly.
 \nFurther acceptance evidence (hardware, latency, external audit and gated return): QA-F1-20261116/README.md. It does NOT replace the original PRF acceptance gates.\n
+
+## LEO-profile gate
+On 2026-11-16 a distinct external Codex CLI process with LEO normative profile (thread 01a1e697-23c5-7af1-a68f-05d56083e38c) reviewed SHA 361a08b730b24b7fe0ba88e5917634dd3a947d64 and emitted RETORNAR_PARA_CORRECAO. It independently verified 12/12 offline tests, 24/24 source hashes, 26/26 PRF hashes. F1.1-F1.4 partial; F1.5 insufficient; F1.6 partial. This is NOT a native MCF Agent Session. F0.8 remains open and no merge/deploy is approved. Primary receipt in QA-F1-20261116/LEO-PROFILE-GATE.md.
