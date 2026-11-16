@@ -23,6 +23,9 @@ SECRET=HOME/".config/mcf-service-hub/pet-live-signing-key"
 
 ASSETS={
     "backend/pet_live_auth.py":[AGENT/"pet_live_auth.py",HUB/"pet_live_auth.py"],
+    "backend/pet_conversation.py":[HUB/"pet_conversation.py"],
+    "backend/pet_observer.py":[HUB/"pet_observer.py"],
+    "frontend/pet-hub.js":[HUB/"pet-hub.js"],
     "backend/pet_live_gateway.py":[AGENT/"pet_live_gateway.py"],
     "backend/pet_live_ticket.py":[HUB/"pet_live_ticket.py"],
     "frontend/pet-live.js":[HUB/"pet-live.js"],
@@ -131,6 +134,14 @@ def patch_index(data: str) -> str:
             "live panel insertion")
     return data
 
+def patch_tab_session_route(data: str) -> str:
+    old='data, cookie = pet_voice.make_session(self.headers.get("Host",""))'
+    new='data, cookie = pet_voice.make_session(self.headers.get("Host",""), self.headers.get("X-MCF-Pet-Tab"))'
+    if new in data:
+        return data
+    return replace_once(data,old,new,"per-tab session creation")
+
+
 def patch_classic(data: str) -> str:
     if "window.McfPetAuth = Object.freeze" in data:return data
     return replace_once(data,'  let csrf = "";',
@@ -146,7 +157,7 @@ def plan() -> dict[Path,bytes]:
         for dest in dests:payload[dest]=content
     for source,patch in (
         (AGENT/"app.py",patch_agent),
-        (HUB/"server.py",patch_hub),
+        (HUB/"server.py",lambda data: patch_tab_session_route(patch_hub(data))),
         (HUB/"index.html",patch_index),
     ):
         payload[source]=patch(source.read_text(encoding="utf-8")).encode("utf-8")

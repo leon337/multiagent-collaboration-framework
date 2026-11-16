@@ -1,0 +1,30 @@
+VALIDAÇÃO — MCF-PET-TAB-SESSION-PRESENCE-001
+
+CAUSAS REPRODUZIDAS
+- Playwright com duas abas: cada aba recebeu CSRF diferente mas compartilhou o mesmo cookie; o ticket Gemini Live da primeira retornou HTTP 403 INVALID_SESSION.
+- A UI mascarava o erro como "Gemini Live está indisponível", mesmo com MESTRE Agent /api/pet-live/status disponível.
+- O Pet original estava visível na área de trabalho sob Cinnamon, processo PID 1201439, mas agente-dominante-pet.service estava inativo; o observador antigo só aceitava PID do systemd.
+
+CORREÇÃO LOCAL APLICADA
+- Um cookie HttpOnly e CSRF por instância da página, nome mcfpet_tab_<id>, com tab-id aleatório e X-MCF-Pet-Tab, mantendo Origin/Host, SameSite Strict e fallback legado.
+- Ticket Gemini Live e estados usam a mesma autenticação do chat clássico, com renovação apenas para 403 INVALID_SESSION.
+- A observabilidade admite o Pet de desktop somente quando UID, executável, script absoluto, arquivo 0600, PID, estado fresco e UDP local são confirmados.
+- Nenhum Pet foi fechado, duplicado ou reiniciado. Somente mcf-service-hub.service foi reiniciado.
+
+TESTES
+- Python: 48/48 PASS (12 originais do gateway, 16 da conversa, 14 do observador, 6 novos).
+- Node: 5/5 testes do recovery do token PASS.
+- JS syntax / Python compileall / installer --check PASS.
+- API Pet local: status online, service_active false, process_source desktop, pid 1201439, state_verified true, UDP true, state ocioso.
+- Playwright Chrome: duas abas, dois cookies independentes; tab 1 POST state HTTP 200; tab 2 POST state HTTP 200.
+- Gemini Live: ticket HTTP 200, WebSocket ready, envio de frames PCM, 3 chunks de áudio recebidos, segunda aba permaneceu autorizada, mic parado pelo botão Encerrar; 0 erros de JS.
+- Classic chat: com duas abas abertas, POST /api/pet-voice/chat HTTP 200, resposta de 147 caracteres, 0 "Sessão inválida", 0 erros de JS.
+- Arquivos frontend implantados iguais ao worktree.
+- Não foi captado microfone físico do usuário no E2E; Chrome usou dispositivo falso.
+
+LIMITAÇÕES
+- O Pet continua fora do systemd, em execução manual, mas a observabilidade reflete essa condição real. Não se afirmou supervisão pelo systemd.
+- A página antiga aberta no Brave deve ser recarregada para carregar scripts corrigidos.
+- A rota Tailscale externa ainda não foi confirmada. Nenhum firewall/rota foi alterado.
+- Erros transitórios de rede/timeout não são repetidos automaticamente porque a operação pode já ter sido processada.
+- Brave headless (Brave instalado, perfil isolado): duas abas, dois cookies HttpOnly separados, ambos POST /api/pet-voice/live-ticket retornaram HTTP 200 com ticket válido, zero erros de JavaScript; PASS.
