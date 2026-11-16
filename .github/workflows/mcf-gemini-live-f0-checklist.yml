@@ -1,14 +1,15 @@
-name: Gemini Live F0 — checklist integrity
+name: Gemini Live F0 — reproducibility and checklist integrity
 on:
   pull_request:
     paths:
       - "ops/gemini-live/**"
+      - "artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/**"
       - ".github/workflows/mcf-gemini-live-f0-checklist.yml"
       - "docs/missions/gemini-live-evolution-20261116/**"
   workflow_dispatch:
     inputs:
       publish_status_comment:
-        description: "Opt in: publish PR/CI signal as comment on Issue #527 (never checkboxes)"
+        description: "Opt in: publish PR/CI signal as a comment on Issue #527 (never change checkboxes)"
         type: boolean
         default: false
 permissions:
@@ -23,7 +24,37 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - run: node --test ops/gemini-live/checklist-sync.test.mjs
+      - name: Validate opt-in CI/PR observer
+        run: node --test ops/gemini-live/checklist-sync.test.mjs
+      - name: Validate browser telemetry contract
+        run: node --test ops/gemini-live/f0-telemetry.test.mjs
+      - name: Verify reproducible source syntax (without API key)
+        run: |
+          node --check artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/server.js
+          node --check artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/public/app.js
+          node --check artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/public/telemetry.js
+          node --check artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/f0/baseline-smoke.cjs
+          node --check artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/f0/probe-models.cjs
+          node --check artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro/f0/security-check.cjs
+      - name: Verify PRF hashes
+        working-directory: artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00
+        run: sha256sum -c PHASE-00-ARTIFACT-MANIFEST.sha256
+      - name: Assert no credential or secret files are tracked in reproduction
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,subprocess
+          root=Path('artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/repro')
+          tracked=subprocess.check_output(['git','ls-files',str(root)],text=True).splitlines()
+          assert tracked, 'repro sources missing'
+          bad_names=['.private/','/server.log','/.env','/node_modules/','.pem','.key']
+          for name in tracked:
+              assert not any(z in name for z in bad_names), 'Unexpected secret-bearing path'
+              data=Path(name).read_text(errors='replace')
+              for rgx in [r'AIza[A-Za-z0-9_-]{25,}',r'AQ\.[A-Za-z0-9_-]{20,}',r'sk-[A-Za-z0-9_-]{25,}']:
+                  assert not re.search(rgx,data), 'Potential credential in '+name
+          print('Public snapshot checked:',len(tracked),'files; no credential patterns')
+          PY
   publish_signal:
     if: github.event_name == 'workflow_dispatch' && inputs.publish_status_comment == true
     needs: verify
@@ -38,7 +69,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - name: Post a factual PR/CI signal (no checkbox changes)
+      - name: Post evidence-only PR/CI status (no checkbox changes)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MCF_CHECKLIST_APPLY: "1"
