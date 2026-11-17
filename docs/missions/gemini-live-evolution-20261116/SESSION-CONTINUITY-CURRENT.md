@@ -29,7 +29,7 @@ Arquivos do candidato:
 
 ## PR de reconciliação
 
-[PR #546 — portabilidade seletiva da autorização por voz](https://github.com/leon337/multiagent-collaboration-framework/pull/546). Branch criada a partir da main atual; não foi feito merge. Os workflows F0, F1, F2.1, F3 e Documentation validation passaram no HEAD submetido. Production Readiness ainda está em execução. Os checks Vercel de dois projetos externos falharam por limite diário de deploys e não representam falha de teste do Studio.
+[PR #546 — portabilidade seletiva da autorização por voz](https://github.com/leon337/multiagent-collaboration-framework/pull/546). Branch criada a partir da main atual; não foi feito merge. No SHA de código `93cba8b2ef7ccaa5be370aacd30e1b57194f9cab`, os workflows F0, F1, F2.1, F3 e Documentation validation passaram. O F3 executou 25 testes (25 PASS, 0 FAIL), incluindo a regressão de hostname com ponto final. Production Readiness ainda está em execução. Os checks Vercel de dois projetos externos falharam por limite diário de deploys e não representam falha de teste do Studio.
 
 ## Limites e segurança
 
