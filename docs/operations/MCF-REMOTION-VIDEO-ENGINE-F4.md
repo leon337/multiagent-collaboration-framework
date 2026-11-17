@@ -22,3 +22,16 @@ O adapter não foi registrado no ExternalActionDispatcher de produção. A conex
 2. Exigir autorização canônica e validação real do PermissionEngine para operações com efeitos; não aceitar booleanos fornecidos pelo modelo.
 3. E2E de tentativa de escrita sem gate, gate inválido, idempotência após timeout, cancelamento, retomada e recibo íntegro.
 4. PR e revisão independente, sem merge/deploy automático.
+
+## Demonstração 002 — composição cinematográfica com áudio (2026-11-17)
+
+A engine local demonstrou `CinematicMCF`: vídeo vertical de 30 segundos, 900 quadros, 720×1280, H.264 High (AMD VA-API), áudio AAC-LC estéreo e trilha musical original com narração neural pt-BR. A renderização foi submetida por cliente MCP moderno e persistida na fila SQLite.
+
+- Projeto: `mcf-cinematic-002`
+- Job: `3ee28041-1f1a-4f56-9a5a-e3a4ae2b948b`
+- Estado: `completed`, 100%, 1 tentativa
+- SHA-256: `e6c04091eab40300f86a5ab9b240dc85b4da33c873c28788d8eb53794c3b6634`
+- Arquivo local: `~/Vídeos/MCF_Cinematic_002_30s_Narrado.mp4`
+- Verificação: ffprobe confirmou quadros, duração, dois fluxos e a decodificação completa por FFmpeg passou sem erros; inspeção visual de seis cenas concluída
+
+Isto é **evidência do worker local**, não prova de registro como ferramenta nativa do ChatGPT nem de autorização de escrita pelo PermissionEngine do MCF central. O PR continua em draft.
