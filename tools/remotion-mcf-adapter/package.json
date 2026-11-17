@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "node --test ./tests/*.test.mjs",
-    "smoke": "node ./smoke.mjs"
+    "smoke": "node ./smoke.mjs",
+    "discover": "node ./discover.mjs",
+    "reconcile": "node ./reconcile.mjs"
   },
   "keywords": [],
   "author": "",

@@ -41,3 +41,11 @@ Na instância MESTRE do notebook, selecionar `gemini-3.8-live` como padrão oper
 Seguir os contratos de permissão, handoff, HUMAN_GATE, memória, validação e evidências do MCF. Para navegação no ChatGPT/Cockpit, consultar também [MCF-UI-OPERATING-MANUAL](docs/operations/MCF-UI-OPERATING-MANUAL.md).
 
 **Alcance desta mudança:** documenta uma preferência durável e seu ponto de leitura; não implementa roteamento automático no runtime, não provisiona quota e não substitui instruções de um sistema externo que não carregue este arquivo.
+
+## Descoberta de vídeo e voz Gemini (candidate, 2026-11-17)
+
+Ao receber pedido de criação de vídeos, narração, Remotion, Radeon RX 580 ou Gemini Native Audio, descobrir a skill EXPERIMENTAL MCF-REMOTION-VIDEO-PRODUCE no catálogo skills/registry.yaml; ler skills/video/mcf-remotion-produce/SKILL.md, context/capabilities/remotion-video-engine-local.yaml e docs/operations/MCF-REMOTION-CAPABILITY-DISCOVERY.md.
+
+Código recuperável via repositórios GitHub privados leon337/mcf-remotion-studio e leon337/mcf-remotion-mcp. Verificar acesso e SHAs live, dispositivo online, MCP autenticado, GPU e quota antes de afirmar capacidade. Uma sessão ChatGPT somente descobre o contrato através destas fontes quando tem acesso ao GitHub/repositório; documentação NÃO instala automaticamente um plugin nem uma conexão MCP.
+
+A skill é documental/experimental. O adapter central do MCF permanece read-only e bloqueia escrita sem HDF/PermissionEngine. Não tratar autorização de operação local, criação de PR ou green tests como ativação de produção. PR candidata #543; conferir estado do GitHub ao vivo.

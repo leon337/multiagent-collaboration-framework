@@ -100,3 +100,7 @@ RESTRICTED: uso com limitações
 DEPRECATED: substituída
 RETIRED: não utilizar
 ```
+
+## Vídeo Remotion e voz Gemini (discovery EXPERIMENTAL)
+
+MCF-REMOTION-VIDEO-PRODUCE existe como contrato de descoberta em video/mcf-remotion-produce/SKILL.md e video/MCF-REMOTION-VIDEO-PRODUCE.yaml, com manifesto em ../context/capabilities/remotion-video-engine-local.yaml. Os dois projetos fonte estão em repositórios PRIVADOS. Esse registro não altera a lista McfExecutableSkillId nem concede escrita no runtime MCF: consultar HDF/PermissionEngine antes de qualquer side effect. Ver guia: ../docs/operations/MCF-REMOTION-CAPABILITY-DISCOVERY.md.
