@@ -1,6 +1,6 @@
 {
   "schema": "mcf-gemini-live-session-continuity/v1",
-  "observed_at_utc": "2026-11-17T05:12:23Z",
+  "observed_at_utc": "2026-11-17T05:19:38Z",
   "mission_id": "MCF-GEMINI-LIVE-EVOLUTION-20261116-001",
   "human_authority": "LEANDRO",
   "orchestrator": "MESTRE",
@@ -17,13 +17,17 @@
   },
   "branches": {
     "main": {
-      "sha": "e5c0abf60a2e85adc0dee30340a64bf30cc20ec9",
-      "studio_in_branch": false
+      "sha": "ca84c9132459e37ecd8ba79a965b33e554f6200a",
+      "studio_in_branch": true,
+      "studio_voice_challenge_in_branch": false,
+      "merged_pr": 544
     },
     "F0": {
       "sha": "b573121715f55f2275ef671f50119436cd8f9ea1",
       "pr": 528,
-      "draft": true
+      "draft": false,
+      "merged": true,
+      "merged_at_utc": "2026-11-17T05:06:13Z"
     },
     "F1": {
       "sha": "8cffb50f00175443d7954b039d908b26a6f26650",
@@ -43,9 +47,12 @@
     "F3_main_candidate": {
       "sha": "55538d198795a1b45a2f100c3613bcb9796ac39c",
       "pr": 544,
-      "draft": true,
+      "draft": false,
       "common_ancestor_of_F3_branches": "d56d701e54bd26f460b6a76117a8e3863af74ee1",
-      "relation": "DIVERGENT_NOT_SUPERSET_OF_CURRENT_VOICE_BRANCH"
+      "relation": "MERGED_IN_MAIN_WITHOUT_VOICE_CHALLENGE",
+      "merged": true,
+      "merged_at_utc": "2026-11-17T05:06:11Z",
+      "merge_commit": "ca84c9132459e37ecd8ba79a965b33e554f6200a"
     },
     "F1_wip_saved": {
       "sha": "142cd99f7519512849c43ded619ee63b884ee87e",
@@ -90,6 +97,15 @@
       "PR540_f2_visual": "PASS",
       "PR544_production_candidate_readiness": "PASS_CI_ONLY_NOT_HUMAN_GATE",
       "vercel_other_projects": "RATE_LIMITED"
+    },
+    "main_policy_local": {
+      "passed": 19,
+      "failed": 0
+    },
+    "main_prf_hashes": {
+      "sources": 50,
+      "artifacts": 12,
+      "passed": true
     }
   },
   "local_services": [
@@ -128,6 +144,14 @@
       "mode": "F3_ALTERNATIVE_PR544",
       "configured": true,
       "bind": "127.0.0.1"
+    },
+    {
+      "port": 18377,
+      "mode": "MAIN_PR544_SYSTEMD",
+      "configured": true,
+      "bind": "127.0.0.1",
+      "active": true,
+      "enabled": true
     }
   ],
   "gates": {
@@ -147,12 +171,19 @@
     "F3_PR_BRANCHES_DIVERGED",
     "CREDENTIAL_ROTATION_NOT_VERIFIED",
     "F1_WIP_NOT_IN_F1_PR",
-    "THIRTEEN_UNTRACKED_OLD_F0_REVIEW_FILES_LOCAL_ONLY"
+    "THIRTEEN_UNTRACKED_OLD_F0_REVIEW_FILES_LOCAL_ONLY",
+    "MAIN_LACKS_VOICE_CHALLENGE",
+    "MAIN_MERGED_WITH_FORMAL_GATES_OPEN"
   ],
   "production": {
-    "main_merge_executed": false,
+    "main_merge_executed": true,
     "public_deploy_executed": false,
-    "api_key_in_git": false
+    "api_key_in_git": false,
+    "main_merge_by": "leon337",
+    "main_merge_commit": "ca84c9132459e37ecd8ba79a965b33e554f6200a",
+    "local_systemd_service_active": true,
+    "local_systemd_service_enabled": true,
+    "local_systemd_service_port": 18377
   },
   "handoff": {
     "durable_context_ready": true,
@@ -160,6 +191,6 @@
     "successor_equivalence": "NOT_TESTED",
     "explicit_handoff": false,
     "predecessor_window_closed": false,
-    "next_action": "Comparar e integrar com seguranca as divergencias entre PRs 540 e 544 em branch reversivel"
+    "next_action": "Criar branch reversivel desde main ca84c91 para portar apenas o diferencial de voz PR540, preservar fixes do PR544 e auditar SHA"
   }
 }

@@ -5,7 +5,7 @@ tranche: PLAYWRIGHT_MCP_PUBLIC_HTTPS_AND_OPT_IN_VOICE
 state: EM_EXECUCAO_LOCAL
 authority: LEANDRO
 orchestrator: MESTRE
-updated_at_utc: "2026-11-17T05:12:23Z"
+updated_at_utc: "2026-11-17T05:19:38Z"
 source_branch: feat/gemini-live-playwright-mcp-gateway-20261117
 source_snapshot_sha: 5e0118b6a4b8f6047a9b19eddc8c8236abfb9545
 github_pr: 540
@@ -13,7 +13,7 @@ github_pr_state: OPEN_DRAFT
 source_base: feat/gemini-live-f2-multimodal-consent-20261116
 parallel_integration_pr: 544
 parallel_integration_sha: 55538d198795a1b45a2f100c3613bcb9796ac39c
-parallel_integration_relation: DIVERGENT_NOT_SUPERSET
+parallel_integration_relation: MERGED_IN_MAIN_WITHOUT_VOICE_CHALLENGE
 reconciliation_document: docs/missions/gemini-live-evolution-20261116/SESSION-CONTINUITY-CURRENT.md
 mcf_native_hdf: NOT_CONNECTED
 local_permission_dialog: ENABLED_WITH_ONE_SHOT_RECEIPT
@@ -48,6 +48,13 @@ f3_source_manifest_before_handoff: 55_PASS
 f3_artifact_manifest_before_handoff: 14_PASS
 f0_f1_f2_formal_gate: OPEN
 f3_formal_gate: OPEN
-production_main_merge: NOT_EXECUTED_GATE_BLOCKED
+production_main_merge: PR544_MERGED_WITH_FORMAL_GATES_OPEN
 public_deploy: NOT_EXECUTED_SECURITY_BLOCKED
-next_action: RECONCILE_DIVERGENT_F3_BRANCHES_AND_AUDIT_FINAL_SHA
+main_sha_verified: ca84c9132459e37ecd8ba79a965b33e554f6200a
+main_has_studio: true
+main_has_voice_challenge: false
+pr_544_merged_at_utc: "2026-11-17T05:06:11Z"
+main_systemd_service_port: 18377
+main_systemd_service_active: true
+public_deploy_verified: false
+next_action: PORT_VOICE_DIFF_FROM_PR540_TO_BRANCH_FROM_MAIN_AND_AUDIT

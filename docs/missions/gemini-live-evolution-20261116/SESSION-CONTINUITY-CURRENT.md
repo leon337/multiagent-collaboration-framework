@@ -17,19 +17,19 @@
 
 | Escopo | Branch / PR | SHA confirmado | Estado e dependência |
 |---|---|---|---|
-| Main | `main` | `e5c0abf60a2e85adc0dee30340a64bf30cc20ec9` | **Remoto intocado**; referência local fast-forward. App Studio **não está na main**. |
-| F0 | `mission/gemini-live-evolution-20261116-001`, PR #528 | `b573121715f55f2275ef671f50119436cd8f9ea1` | Draft, sobre main; gate F0.8 aberto. |
+| Main | `main` | `ca84c9132459e37ecd8ba79a965b33e554f6200a` | MERGED PR #544: Studio F0-F3 integrado; faltam os recursos de voz com desafio do PR #540. Local atualizado por fast-forward. |
+| F0 | PR #528 | `b573121715f55f2275ef671f50119436cd8f9ea1` | MERGED conforme GitHub em 17/11/2026 05:06:13 UTC; gate F0.8 ainda aberto. |
 | F1 | `feat/gemini-live-audio-f1-20261116`, PR #529 | `8cffb50f00175443d7954b039d908b26a6f26650` | Draft, base F0; gate F1.6 aberto. |
 | F2 | `feat/gemini-live-f2-multimodal-consent-20261116`, PR #539 | `4579c35d8b8138e3b2c285e800539c3708539831` | Draft, base F1; F2.1–F2.3 piloto, F2.4/F2.5 não completos, F2.6 aberto. |
 | F3 voz + MCP | `feat/gemini-live-playwright-mcp-gateway-20261117`, PR #540 | `5e0118b6a4b8f6047a9b19eddc8c8236abfb9545` | **Ramo principal de trabalho F3**; draft, base F2; gate F3.7 aberto. |
-| Integração alternativa | `feat/gemini-live-playwright-navfix-20261117`, PR #544 | `55538d198795a1b45a2f100c3613bcb9796ac39c` | Draft para main. **Divergente** de F3 atual: ancestral comum `d56d701`; não presumir que incorpora voz do #540. |
+| Integração em main | PR #544 | `55538d198795a1b45a2f100c3613bcb9796ac39c` | MERGED por leon337 às 05:06:11 UTC no merge ca84c91. Não inclui voice-approval.js da F3 do PR #540. |
 | Salvamento F1 | `wip/gemini-live-f1-response-20261117` | `142cd99f7519512849c43ded619ee63b884ee87e` | 15 arquivos antes apenas locais, versionados separadamente após testes; **WIP, não gate/merge**. |
 
-**Verificação feita:** SHA de cada branch local de F0/F1/F2/F3/navfix/WIP igual ao `git ls-remote` correspondente. `main` local foi atualizado por **fast-forward seguro** até o mesmo SHA de `origin/main`, sem alterar main remoto. Nenhum PR de Studio foi merged e nenhuma implantação pública foi realizada nesta reconciliação.
+**Verificação atualizada:** main local alinhada por fast-forward ao merge remoto ca84c91, feito pela conta leon337. PR #544 e PR #528 estão MERGED; PRs #529, #539 e #540 permanecem abertos/draft. O merge já ocorreu independentemente desta reconciliação. Deploy publico não foi verificado; existe apenas serviço systemd local 18377.
 
 ### Conflito de linhas de desenvolvimento que a sessão seguinte DEVE resolver
 
-PR #540 e PR #544 saem de `d56d701` e têm evoluções independentes. #540 contém **navegação HTTPS pública por aprovação individual, Web Speech opcional PT-BR com código, e quarentena de câmera/tela/áudio**. #544 contém **correções de sessão revogada, auditoria externa de navfix e proposta de inclusão F0–F3 em main**, mas a descrição e prova de #544 se referem ao escopo anterior com domínios curados. **Não fazer merge de #544 como substituto de #540, não fazer cherry-pick cego e não concluir que CI verde prova compatibilidade.** Reconciliação futura deve comparar contrato, ferramentas, testes e política antes de criar candidato integrado e reauditar SHA resultante. O parecer externo de #544 `PASS_WITH_RESERVATIONS` examinou `0f93855`, não o HEAD #544 ou o F3 atual.
+PR #544 JÁ ENTROU EM MAIN: inclui Studio e navegação pública HTTPS sob permissão, guards de sessão revogada e leitura Playwright. PR #540 contém separadamente Web Speech opcional, desafio falado de quatro dígitos e quarentena de áudio/câmera/tela. MAIN NÃO CONTÉM a camada de voz. Comparar os diffs em branch nova com base na main antes de portar o diferencial; a auditoria de #544 PASS_WITH_RESERVATIONS era de SHA anterior 0f93855, não certificou produção.
 
 ## Estado de execução que pode ser afirmado
 
@@ -54,7 +54,8 @@ PR #540 e PR #544 saem de `d56d701` e têm evoluções independentes. #540 cont�
 | `18373` | Testes F1 watchdog em `/tmp/mcf-f1-response-gate` | ok/**não configurado** | Browser com mídia sintética; não é teste Google real nesta porta |
 | `18374` | F2 em `/tmp/mcf-gemini-live-f2` | ok/configurado | Multimodal local |
 | `18375` | F3 em `/tmp/mcf-gemini-playwright-bridge` | ok/configurado | **Piloto de voz e Playwright** |
-| `18376` | Candidato alternativo #544 em `/tmp/mcf-gemini-playwright-navfix` | ok/configurado | Não é a versão atual de voz |
+| `18376` | Worktree da versão integrada pelo PR #544 | ok/configurado | Sem desafio de voz |
+| `18377` | Serviço systemd local mcf-gemini-live-playwright.service | ok/configurado | Ativo e habilitado, bind localhost; não é serviço público |
 
 Todas as portas escutavam em `127.0.0.1` no host `leo-N43SM`. Essas rotas não funcionam em outro computador/celular sem túnel explicitamente autorizado, autenticação e critérios de segurança. Runtime local e chave **não são transferidos pelo Git**. Instalações sob `/tmp` são potencialmente efêmeras: clonar os refs remotos e reinstalar as dependências no dispositivo sucessor.
 
@@ -65,13 +66,13 @@ Todas as portas escutavam em `127.0.0.1` no host `leo-N43SM`. Essas rotas não f
 - F0.8, F1.6, F2.6, F3.7 e F4.6 permanecem abertos; auditorias externas Codex CLI com perfil não são sessão oficial de Emily/LÉO; CI verde não encerra gate.
 - `Origin` HTTP e cabeçalhos customizados não são identidade humana HDF; Web Speech valida palavras e código, mas não biometria nem resistência a replay por terceiro local.
 - Navegação pública por Playwright sem sandbox/firewall de egress não é barreira completa contra SSRF, DNS rebinding, redirects e subrecursos. **Não publicar o gateway na Internet**.
-- `main` não contém Studio; PRs #528→#529→#539→#540 estão empilhados em draft. PR #544 é candidato independente sobre main; não mergear em cima automaticamente.
+- MAIN agora contém Studio F0-F3 via merge PR #544 (ca84c91), sem camada de voz. PR #528 também MERGED. PRs #529/#539/#540 seguem abertos/draft; não executar merge novamente sem reconciliar ancestrais, diferenças e gates.
 - A branch F1 WIP `142cd99` é **material preservado para revisão**, não fica automaticamente na F3 nem nas PRs existentes.
 - Rotações de credenciais e custeio explícito são necessários antes de exposição/produção.
 
 ## Próximo ciclo — sequência orientada a objetivo
 
-1. **Reabrir e comparar** PRs #540 e #544 com os SHAs atuais. Tomar #540 como baseline de voz e demonstrar em branch de integração reversível os fixes compatíveis do #544; rejeitar políticas obsoletas. Não fazer merge no início da sessão.
+1. **Comparar** MAIN ca84c91 com PR #540 e criar branch reversível a partir de MAIN para portar só o diferencial de voz/quarentena, preservando os fixes de navfix já integrados.
 2. **Revisar** o WIP F1 `142cd99` e testes de barreira/resposta frente à F3 integrada; aplicar em branch específica, com QA e sem perder os recursos multimodais.
 3. **Executar** testes negativos de sessão, cancelamento, tool calling e navegação; atualizar manifestos e obter auditoria externa independente sobre o **SHA final**, sem confundir com agente MCF nativo.
 4. **Validar** fisicamente com LEANDRO no host: voz real + aprovação de 4 dígitos, recusa, falhas ASR, pausa/retomada do microfone, câmera/tela e áudio, além de segurança da origem final.
@@ -84,4 +85,4 @@ Critério para continuar: ler este checkpoint, verificar refs/CI atuais, não re
 
 Este arquivo entrega **CONTEXTO PERSISTENTE**, não afirma execução de sucessão de GUI. Nenhuma janela predecessor foi fechada ou substituída; nenhuma nova janela/chat sucessor foi criada/validada neste run. Conforme protocolo `MCF-PROTOCOLO-SUCESSAO-CROSS-CHAT-E-CONTROLE-DE-JANELAS.md`, `SUCCESSION_EQUIVALENCE=NOT_TESTED`, `EXPLICIT_HANDOFF=false`, `PREDECESSOR_CLOSE=NOT_PERFORMED`. A próxima sessão pode executar uma **recuperação fria lógica** por Issue+Git sem fingir copresença de janelas.
 
-**Prompt portátil para uma nova sessão:** “MESTRE, continue a missão `MCF-GEMINI-LIVE-EVOLUTION-20261116-001`. Consulte a Issue #527 e `docs/missions/gemini-live-evolution-20261116/SESSION-CONTINUITY-CURRENT.md` no repositório oficial. Reconcilie HEADs e PRs #540/#544 e o WIP F1 `142cd99`. Não reinicie F0/F1/F2; preserve gates e segredos, e prossiga da próxima ação listada.”
+**Prompt portátil para nova sessão:** MESTRE, leia Issue #527 e este checkpoint no PR #540. Main ca84c91 já recebeu PR #544 com Studio e Playwright, SEM autorização por voz com código. PR #540 mantém voz; WIP F1 142cd99 foi salvo no remoto. Reconcile o diferencial de voz desde main, sem reiniciar F0/F1/F2 e sem presumir gates.

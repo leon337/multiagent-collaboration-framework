@@ -9,9 +9,9 @@
 
 O único checklist com caixas selecionáveis permanece a [Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527). O desenvolvimento local avançou às F1/F2/F3 **sem aprovação automática dos gates anteriores**. Estado técnico verificado, refs exatas, PRs divergentes e próximo ciclo: [SESSION-CONTINUITY-CURRENT.md](./SESSION-CONTINUITY-CURRENT.md) · [JSON de reconciliação](./STATE-RECONCILIATION-20261117.json).
 
-O repositório foi reconciliado com `main e5c0abf`, F0 `b573121`, F1 `8cffb50`, F2 `4579c35` e F3 `5e0118b`; todos iguais aos HEADs remotos observados. Corrigidas por fast-forward as referências locais de main/F0/F1. As 15 alterações WIP de F1 foram preservadas no remoto `wip/gemini-live-f1-response-20261117` (`142cd99`). Não houve merge para main nem deploy público.
+O estado atualizado é MAIN `ca84c91` (PR #544 MERGED por leon337 às 05:06:11 UTC; Studio no ramo principal, sem desafio de voz), F0 PR #528 também MERGED, F1 `8cffb50`, F2 `4579c35` e F3 voz PR #540 `5e0118b` (código). O WIP F1 `142cd99` está salvo. Main local sincronizada por fast-forward; systemd local 18377 ativo, sem deploy público comprovado.
 
-F3 é piloto **local** com Playwright MCP, leitura de HTTPS público mediante permissão humana, voz opcional com desafio de quatro dígitos e isolamento da mídia durante autorização; escrita só em TodoMVC. Reexecução: **118/118 Node**, voz 8/8 Chrome mock, interface 9/9 Chrome, MCP real 2/2 (resultados históricos por mídia apropriada); microfone físico não testado. PR #540 e PR #544 **divergem**, não confundir a PR #544 baseada em main com a versão atual do assistente que usa voz.
+F3 tem duas variantes: a versão MAIN oriunda do PR #544 navega via MCP com aprovação individual, mas não possui a voz por código; o PR #540 continua draft com Web Speech e quarentena de mídia. Testes do PR #540: 118/118 Node, voz 8/8 browser simulado, 9/9 agent browser e 2/2 MCP real. MAIN passou 19/19 de policy local. Microfone físico e HDF formal pendentes.
 
 F0.8, F1.6, F2.6, F3.7 e F4.6 permanecem abertos. Não marcar checkboxes por CI, reviews externas não autenticadas ou simples funcionamento do staging. `Origin` e voz não constituem HDF, e faltam sandbox real de rede e gate de segurança para exposição pública.
 
@@ -19,7 +19,7 @@ F0.8, F1.6, F2.6, F3.7 e F4.6 permanecem abertos. Não marcar checkboxes por CI,
 
 - **Já operacional:** a Issue #527 contém tarefas `- [ ]` clicáveis no GitHub, com IDs estáveis `F0.1` a `F4.6`, que podem ser editadas e vinculadas a comentários, PRs, testes, SHAs, receipts e decisões.
 - **Atualização humana/agêntica governada:** a cada PR, falha, evidência, gate ou decisão, o responsável atualiza a Issue com status e referências. A atualização deve ocorrer durante o mesmo ciclo de execução, não só em um resumo retrospectivo.
-- **Implementação técnica parcial de F0.7:** script `ops/gemini-live/checklist-sync.mjs` (dry-run por padrão), agora 21/21 testes, revalidação de HEAD/paginação/reconciliação de POST, e workflow com publicação de comentário somente por opt-in. **Não está habilitado em main nem cobre todos os eventos e gates do roadmap**. Nunca marca `[x]` por CI verde.
+- **Implementação técnica parcial de F0.7:** script `ops/gemini-live/checklist-sync.mjs` (dry-run por padrão), agora 21/21 testes, revalidação de HEAD/paginação/reconciliação de POST, e workflow com publicação de comentário somente por opt-in. **O código está versionado em main após PR #544, mas a publicação de sinais segue opt-in e não está automaticamente habilitada; não cobre todos os eventos e gates do roadmap**. Nunca marca `[x]` por CI verde.
 - **Regra de veracidade:** o campo marcado indica `VALIDADO` e evidência vinculada. Um item em execução continua desmarcado e recebe comentário `EM_EXECUCAO`.
 - **Sem duplicação:** não manter um segundo checklist com progresso contraditório em arquivos Markdown/JSON/Notion.
 
