@@ -6,11 +6,12 @@ import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/cli
 
 const READ = new Set([
   "remotion_health","remotion_list_compositions","remotion_get_project",
-  "remotion_job_status","remotion_list_jobs",
+  "remotion_job_status","remotion_list_jobs","remotion_voice_providers",
 ]);
 const WRITE = new Set([
   "remotion_create_project","remotion_edit_scene","remotion_preview",
   "remotion_render","remotion_enqueue_job","remotion_cancel_job",
+  "remotion_voice_synthesize","remotion_voice_build_track",
 ]);
 const defaultToken = join(homedir(),"Projetos","remotion-mcp",".secrets","mcp-token");
 

@@ -35,3 +35,13 @@ A engine local demonstrou `CinematicMCF`: vídeo vertical de 30 segundos, 900 qu
 - Verificação: ffprobe confirmou quadros, duração, dois fluxos e a decodificação completa por FFmpeg passou sem erros; inspeção visual de seis cenas concluída
 
 Isto é **evidência do worker local**, não prova de registro como ferramenta nativa do ChatGPT nem de autorização de escrita pelo PermissionEngine do MCF central. O PR continua em draft.
+
+## Gemini Native Audio Dialog — provedor adicional (2026-11-17)
+
+- Modelo Live: gemini-2.5-flash-native-audio-preview-12-2025.
+- Credencial: arquivo local com permissao 0600, somente no host, nunca adicionado ao repositorio.
+- Capacidade local: geracao de clipes WAV 24 kHz com voz pt-BR, transcricao de saida, composicao de trilha WAV com timestamps e fundo musical original; fila de renderizacao aceita voiceTrackId pinado em hash.
+- MCP: remotion_voice_providers (leitura), remotion_voice_synthesize e remotion_voice_build_track (escrita e consumo de API).
+- Gates: no adaptador MCF, ferramentas de voz com efeitos permanecem BLOQUEADAS sem PermissionEngine/HDF. Nenhum deploy, registro em producao ou liberacao remota e implicito.
+- O modelo Live e generativo: transcricoes devem ser comparadas com o roteiro. Para leitura estritamente literal, avaliar Flash TTS separadamente.
+- Um teste E2E local autenticado ja substituiu audio de um MP4 pelo Gemini com VA-API, preservando hashes e jobs.

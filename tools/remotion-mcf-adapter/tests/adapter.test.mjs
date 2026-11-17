@@ -14,3 +14,11 @@ test("deny unregistered MCP operations",async()=>{
  instance.client={callTool:async()=>{throw new Error("must not execute")}};
  await assert.rejects(()=>instance.dispatch({operation:"shell_execute",args:{}}),/OPERATION_NOT_ALLOWLISTED/);
 });
+
+test("Gemini voice generation requires a real MCF permission gate",async()=>{
+ const instance=new McfRemotionAdapter();
+ instance.client={callTool:async()=>{throw new Error("must not execute")}};
+ await assert.rejects(
+   ()=>instance.dispatch({operation:"remotion_voice_build_track",args:{projectId:"primeiro-video-mcf"}}),
+   /MCF_HDF_PERMISSION_ENGINE_NOT_CONNECTED/);
+});

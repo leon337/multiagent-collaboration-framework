@@ -15,11 +15,16 @@ contract:
     - remotion_get_project
     - remotion_list_jobs
     - remotion_job_status
+    - remotion_voice_providers
   candidate_write_operations:
     - remotion_create_project
     - remotion_edit_scene
+    - remotion_preview
+    - remotion_render
     - remotion_enqueue_job
     - remotion_cancel_job
+    - remotion_voice_synthesize
+    - remotion_voice_build_track
   prohibited_operations:
     - production.publish
     - shell.execute
