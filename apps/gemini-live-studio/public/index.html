@@ -45,7 +45,8 @@
           <button id="screen" class="action" disabled><span>▣</span> Tela <small>OFF</small></button>
           <button id="mute" class="action" disabled><span>◖</span> Som <small>ON</small></button>
         </div>
-        <div class="visual-indicator" role="status" aria-live="polite"><span id="visualStatus" data-sharing="false">Sem transmissão visual</span><button id="stopVisual" class="secondary" disabled hidden>■ Parar câmera/tela</button></div>\n        <div class="stage-foot"><span>◈ WebSocket</span><span>🔊 AudioWorklet · PCM16 · 40 ms</span><span id="f1AudioHealth">Fila: 0 ms</span><span>PT-BR</span></div>
+        <div class="visual-indicator" role="status" aria-live="polite"><span id="visualStatus" data-sharing="false">Sem transmissão visual</span><button id="stopVisual" class="secondary" disabled hidden>■ Parar câmera/tela</button></div>
+        <div class="stage-foot"><span>◈ WebSocket</span><span>🔊 AudioWorklet · PCM16 · 40 ms</span><span id="f1AudioHealth">Fila: 0 ms</span><span>PT-BR</span></div>
       </div>
       <div class="conversation panel">
         <div class="panel-header"><span>▤ &nbsp; TRANSMISSÃO &amp; TRANSCRIÇÃO</span><button class="mini" id="clearChat">Limpar</button></div>
@@ -59,6 +60,25 @@
       <div class="stat"><div class="stat-label">CHAMADAS DE FERRAMENTAS</div><strong id="metricTools">0</strong><small>Executadas localmente</small></div>
       <div class="stat"><div class="stat-label">ENTRADA MULTIMODAL</div><strong id="metricStreams">0 / 3</strong><small>Microfone · câmera · tela</small></div>
     </div>
+    <section class="playwright-panel panel" aria-labelledby="playwrightTitle">
+      <div class="panel-header"><span id="playwrightTitle">⌘ F3 · MCP PLAYWRIGHT — NAVEGADOR CONTROLADO</span><span class="vision-beta">REAL MCP · CHROME ISOLADO</span></div>
+      <div class="vision-content">
+        <p>O Gemini pode pedir navegação, snapshots de acessibilidade e busca de texto. Cliques, digitação, navegação e encerramento exigem autorização por ação. Navegação para sites HTTPS públicos requer aprovação individual. Cliques e digitação estão restritos à demonstração TodoMVC enquanto o gate F3 estiver aberto. O navegador MCP não reutiliza seus perfis, cookies ou sessões do Brave.</p>
+        <div class="playwright-toolbar">
+          <span id="playwrightStatus" role="status" aria-live="polite">Verificando Playwright MCP...</span>
+          <button type="button" id="playwrightRefresh" class="secondary">Atualizar estado</button>
+          <button type="button" id="playwrightStop" class="secondary">■ Encerrar navegador MCP</button>
+        </div>
+        <div id="playwrightRuntime" class="vision-trace">Ferramentas em execução isolada, sem acesso arbitrário a comandos do sistema.</div>
+        <div class="playwright-voice-config">
+          <label class="toggle"><input id="playwrightVoiceEnabled" type="checkbox"><span>Aprovar abertura de sites por voz</span></label>
+          <span id="playwrightVoiceAvailability" class="vision-trace">A voz será usada somente quando você ativar este recurso.</span>
+        </div>
+
+        <div id="playwrightReceipts" aria-label="Recibos de execução MCP" class="playwright-receipts"></div>
+        <p class="vision-disclaimer">Recurso experimental F3: não permite executar código da página, fazer upload de arquivos nem usar o navegador autenticado existente. Dados de páginas são externos e não confiáveis. Sem automação de publicação ou compras.</p>
+      </div>
+    </section>
     <section class="vision-panel panel" aria-labelledby="visionTitle">
       <div class="panel-header"><span id="visionTitle">▧ F2.2 · ANÁLISE ESPECIALIZADA DE IMAGEM E VÍDEO</span><span class="vision-beta">GEMINI GENERATECONTENT · SEPARADA DO LIVE</span></div>
       <div class="vision-content">
@@ -96,7 +116,7 @@
       <div class="panel feature-card"><div class="feature-icon">◷</div><h3>Transcrição</h3><p>Legendas de fala de entrada e de saída.</p><label class="toggle"><input type="checkbox" id="transIn" checked><span>Entrada de áudio</span></label><label class="toggle"><input type="checkbox" id="transOut" checked><span>Resposta do modelo</span></label></div>
       <div class="panel feature-card"><div class="feature-icon">⟁</div><h3>Raciocínio</h3><p>Controle opcional, específico do modelo.</p><label for="thinking">Perfil de pensamento</label><select id="thinking"><option value="default">Padrão</option><option value="low">Baixo / rápido</option><option value="medium">Médio</option><option value="high">Alto</option></select><small id="thinkingHint" class="constraint">Gemini 2.5: orçamento em tokens</small></div>
       <div class="panel feature-card"><div class="feature-icon">☷</div><h3>Detecção de voz</h3><p>Interrupções naturais e limite de silêncio.</p><label for="silence">Silêncio (ms): <b id="silenceValue">700</b></label><input id="silence" type="range" min="300" max="2000" step="100" value="700"><label class="toggle"><input type="checkbox" id="vad" checked><span>VAD automático no servidor</span></label><label class="toggle"><input type="checkbox" id="fastBargeIn"><span>Interrupção local imediata (experimental)</span></label><small>Desativada por padrão para evitar que o eco dos alto-falantes corte a resposta. Interrupção confirmada pelo servidor continua ativa.</small><small>Desativado: VAD local experimental com pré-buffer e início/fim de fala explícitos.</small></div>
-      <div class="panel feature-card"><div class="feature-icon">✺</div><h3>Ferramentas do agente</h3><p>Funções demonstrativas seguras e Pesquisa Google.</p><label class="toggle"><input type="checkbox" id="tools" checked><span>Ferramentas locais</span></label><label class="toggle"><input type="checkbox" id="grounding"><span>Pesquisa Google</span></label></div>
+      <div class="panel feature-card"><div class="feature-icon">✺</div><h3>Ferramentas do agente</h3><p>Ferramentas locais, MCP Playwright em navegador isolado e Pesquisa Google.</p><label class="toggle"><input type="checkbox" id="tools" checked><span>Ferramentas locais</span></label><label class="toggle"><input type="checkbox" id="playwrightTools" checked><span>Habilitar MCP Playwright nesta sessão (ações por aprovação)</span></label><label class="toggle"><input type="checkbox" id="grounding"><span>Pesquisa Google</span></label><small class="constraint">Ativar ou desativar muda o conjunto de ferramentas na próxima conexão.</small></div>
       <div class="panel feature-card"><div class="feature-icon">▧</div><h3>Sessão estendida</h3><p>Compressão de contexto e retomada após desconexão.</p><label class="toggle"><input type="checkbox" id="compression" checked><span>Compressão de contexto</span></label><label class="toggle"><input type="checkbox" id="resumption" checked><span>Retomada automática</span></label></div>
     </div>
     <div class="info-line">◈ Alterações passam a valer na próxima conexão. O navegador solicita permissões para câmera, microfone e tela somente ao ativar cada recurso.</div>
@@ -104,6 +124,25 @@
   <section id="view-history" class="view"><div class="pagehead"><div><div class="eyebrow">SESSION DIAGNOSTICS</div><h1>Eventos & observabilidade<span class="accent">.</span></h1><p>Visibilidade dos eventos, transcrições, ferramentas e consumo de tokens.</p></div><button id="export" class="secondary">↓ Exportar JSON</button></div><div class="panel f1-diagnostics"><div class="panel-header">F1 · DIAGNÓSTICO DE ÁUDIO</div><div class="f1-metrics" id="f1Metrics" aria-live="polite">Conecte uma sessão para acompanhar reconexões, interrupções e consumo.</div><div class="f1-note">Os valores são exploratórios: não constituem benchmark de hardware nem estimativa de custos.</div></div><div class="panel log-panel"><div class="panel-header">EVENT STREAM <button class="mini" id="clearEvents">Limpar eventos</button></div><div id="events" class="events"></div></div></section>
   <section id="view-settings" class="view"><div class="pagehead"><div><div class="eyebrow">LOCAL CONTROL CENTER</div><h1>Configurações<span class="accent">.</span></h1><p>A chave de API nunca é incorporada no JavaScript público da aplicação.</p></div></div><div class="panel settings-box"><div class="setting-icon">🔐</div><h2>Cofre local de credenciais</h2><p>A chave é validada com o Google e mantida em um arquivo protegido no seu computador. O navegador recebe apenas um token temporário por sessão.</p><div class="setting-state" id="keyState">Verificando chave...</div><div class="setting-buttons"><button class="primary" id="openKeySettings">Configurar chave API</button><button class="secondary danger" id="deleteKey">Remover chave</button></div><p class="footnote">Uso local: 127.0.0.1:18371 · Não disponibilize esta aplicação diretamente na internet sem autenticação adicional e TLS.</p></div></section>
 </main></div>
+<dialog id="playwrightApprovalDialog" class="visual-consent" aria-labelledby="playwrightApprovalTitle" aria-describedby="playwrightApprovalSummary">
+ <h2 id="playwrightApprovalTitle">Aprovação humana · MCP Playwright</h2>
+ <p id="playwrightApprovalSummary">A ação do agente precisa ser aprovada.</p>
+ <p id="playwrightApprovalMeta" class="vision-trace"></p>
+ <div id="playwrightVoiceChallenge" class="playwright-voice-challenge" hidden>
+  <p>Autorize por voz dizendo exatamente:</p>
+  <strong id="playwrightVoicePhrase" aria-live="polite"></strong>
+  <p id="playwrightVoiceStatus" role="status" aria-live="polite">Aguardando microfone...</p>
+  <p class="visual-warning">Durante a confirmação, interrompemos a câmera/tela compartilhada e o áudio do Gemini. A captura visual não volta automaticamente.</p>
+  <button type="button" id="playwrightListen" class="secondary">🎙️ Ouvir autorização novamente</button>
+  <p class="vision-disclaimer">O reconhecimento de fala é separado do Gemini. Esta confirmação não identifica biometricamente quem está falando. O áudio pode ser processado pelo serviço de reconhecimento do navegador.</p>
+ </div>
+
+ <p class="visual-warning">Esta autorização permite UMA ação específica no navegador isolado. O modelo não pode se autoaprovar. Revise o destino e o tipo de interação.</p>
+ <div class="dialog-actions">
+  <button type="button" class="secondary" id="playwrightDeny">Recusar</button>
+  <button type="button" class="primary" id="playwrightApprove">Autorizar esta ação</button>
+ </div>
+</dialog>
 <dialog id="visionConsentDialog" class="visual-consent" aria-label="Confirmar análise externa">
  <h2>Confirmar envio ao Google Gemini</h2>
  <p id="visionConsentText"></p>
@@ -123,5 +162,5 @@
 </dialog>
 <dialog id="keyDialog"><form id="keyForm"><div class="dialog-mark">◈</div><h2>Conectar ao Google AI Studio</h2><p>Insira sua API Key. Ela será enviada somente ao servidor local para validação e armazenamento protegido.</p><label for="apiKey">CHAVE DA API GEMINI</label><div class="secret-row"><input id="apiKey" type="password" placeholder="AIza..." required minlength="30" autocomplete="off" spellcheck="false"><button id="toggleSecret" type="button" class="mini">Mostrar</button></div><div id="keyFeedback" class="feedback" aria-live="polite"></div><div class="dialog-actions"><button type="button" id="closeKey" class="secondary">Cancelar</button><button type="submit" id="saveKey" class="primary">Validar e salvar</button></div><a href="https://aistudio.google.com/api-keys" target="_blank" rel="noreferrer">Onde obter minha chave? ↗</a></form></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="/telemetry.js" defer></script><script src="/media-policy.js" defer></script><script src="/app.js" defer></script><script src="/vision-ui.js" defer></script>
+<script src="/telemetry.js" defer></script><script src="/media-policy.js" defer></script><script src="/voice-approval.js" defer></script><script src="/playwright-tools.js" defer></script><script src="/app.js" defer></script><script src="/vision-ui.js" defer></script>
 </body></html>

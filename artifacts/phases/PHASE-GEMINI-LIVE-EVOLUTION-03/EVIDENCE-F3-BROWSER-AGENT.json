@@ -1,0 +1,118 @@
+{
+  "schema": "mcf-f3-playwright-mcp-agent-e2e-v1",
+  "date": "2026-11-17T04:59:08.020Z",
+  "provider": "real_@playwright/mcp_0.0.85",
+  "browserProfile": "isolated",
+  "model": "simulatedGeminiToolCall",
+  "results": [
+    {
+      "id": "GEMINI_FUNCTION_DECLARATIONS_INCLUDE_SCOPED_MCP_TOOLS",
+      "pass": true,
+      "observed": {
+        "tools": [
+          "get_current_time",
+          "remember_session_note",
+          "list_session_notes",
+          "get_session_state",
+          "playwright_navigate",
+          "playwright_snapshot",
+          "playwright_find",
+          "playwright_click",
+          "playwright_type",
+          "playwright_tabs",
+          "playwright_close"
+        ],
+        "runtime": true,
+        "toggle": true,
+        "separatePage": true
+      }
+    },
+    {
+      "id": "MODEL_NAVIGATION_STOPS_AT_HUMAN_GATE",
+      "pass": true,
+      "observed": {
+        "open": true,
+        "title": "NAVEGAR no navegador isolado para https://example.com. URL completa: https://example.com/",
+        "resultPackets": 0
+      }
+    },
+    {
+      "id": "HUMAN_APPROVED_NAVIGATION_RETURNS_GEMINI_TOOL_RESPONSE",
+      "pass": true,
+      "observed": {
+        "id": "nav-1",
+        "status": "SUCCESS",
+        "hasReceipt": true,
+        "providerContent": true
+      }
+    },
+    {
+      "id": "SAFE_SNAPSHOT_AUTOMATIC_WITH_UNTRUSTED_LABEL",
+      "pass": true,
+      "observed": {
+        "id": "read-1",
+        "status": "SUCCESS",
+        "untrusted": true,
+        "containsHeading": true,
+        "approvalOpen": false
+      }
+    },
+    {
+      "id": "CLOSE_DOES_NOT_RUN_WITHOUT_HUMAN_CONFIRMATION",
+      "pass": true,
+      "observed": {
+        "packetCount": 2,
+        "summary": "ENCERRAR navegador isolado e descartar perfil da sessão."
+      }
+    },
+    {
+      "id": "DENIED_CLOSE_RETURNS_RECEIPT_WITHOUT_EXECUTION",
+      "pass": true,
+      "observed": {
+        "id": "close-1",
+        "status": "DENIED",
+        "receipts": 3
+      }
+    },
+    {
+      "id": "MODEL_CANCEL_PREVENTS_REMAINING_TOOL_BATCH_ACTIONS",
+      "pass": true,
+      "observed": {
+        "before": 0,
+        "after": 1,
+        "packets": 3,
+        "open": false,
+        "tools": [
+          "playwright_snapshot → a55bc88b-0ffd-420f-a1c0-6772a7e74300",
+          "playwright_close → d015f5b7-4790-4e56-98ba-83def625b2e0",
+          "Cancelamento de chamada pelo modelo; encerrando contexto MCP experimental."
+        ]
+      }
+    },
+    {
+      "id": "DISCONNECT_CLEANS_ISOLATED_PLAYWRIGHT_SESSION",
+      "pass": true,
+      "observed": {
+        "status": "Sessão encerrada. O navegador MCP isolado não será reutilizado.",
+        "websocket": true
+      }
+    },
+    {
+      "id": "NO_UNCAUGHT_JS_ERRORS",
+      "pass": true,
+      "observed": {
+        "errors": []
+      }
+    }
+  ],
+  "rawPersonalDataPersisted": false,
+  "hashes": {
+    "public/app.js": "664bc57201448ce9eb825c3e15d44397975344af910dae276ab4fdcb7cf5bef9",
+    "public/playwright-tools.js": "b1b82657ace30040614917ee3326452adddcc872c7a0fcaf9baf759dd9dd90bf",
+    "public/index.html": "016320048f3215f45a4863162bdeb997450f9a4127bea55a43c2e221eb62af44",
+    "mcp-playwright-gateway.cjs": "4ff91f7e4d98db47886b4d8f5300b8cf17612456acc21571dc85549682cbb508",
+    "server.js": "97dc44bad81b057f469e96d744469daf20ad3218bc762f6f5777cf6e27d51624"
+  },
+  "pass": 9,
+  "fail": 0
+}

@@ -5,12 +5,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {makeVisionAdapter}=require('./vision-adapter.cjs');
 const {fetchCatalog}=require('./capability-router.cjs');
+const {BrowserGateway}=require('./mcp-playwright-gateway.cjs');
 const ROOT=__dirname, PUBLIC=path.join(ROOT,'public'), PRIVATE=path.join(ROOT,'.private');
 const KEY_FILE=path.join(PRIVATE,'api-key.json');
 const PORT=Number(process.env.PORT||18371), HOST='127.0.0.1';
 const TYPES={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'};
-const safeFiles={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/telemetry.js':'telemetry.js','/media-policy.js':'media-policy.js','/vision-ui.js':'vision-ui.js','/capture-worklet.js':'capture-worklet.js','/style.css':'style.css'};
+const safeFiles={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/telemetry.js':'telemetry.js','/media-policy.js':'media-policy.js','/vision-ui.js':'vision-ui.js','/playwright-tools.js':'playwright-tools.js','/voice-approval.js':'voice-approval.js','/capture-worklet.js':'capture-worklet.js','/style.css':'style.css'};
 let actionAt=0,visionBusy=false,visionAt=0,catalogCache=null;
+const browserBridge=new BrowserGateway();
+
 function scopedCatalog(key){
  const fingerprint=require('node:crypto').createHash('sha256').update(key).digest('hex');
  if(catalogCache&&catalogCache.fingerprint===fingerprint&&Date.now()-catalogCache.at<180000)
@@ -48,6 +51,28 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='GET'&&u.pathname==='/api/status')return json(res,200,{ok:true,configured:!!getKey(),host:HOST,port:PORT});
   if(req.method==='POST'&&u.pathname==='/api/key'){try{const b=await body(req);const key=String(b.key||'').trim();if(!/^[A-Za-z0-9._-]{20,512}$/.test(key))return json(res,400,{error:'A chave deve ter entre 20 e 512 caracteres, sem espaços ou caracteres especiais não permitidos.'});await google('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1',key);fs.mkdirSync(PRIVATE,{recursive:true,mode:0o700});fs.chmodSync(PRIVATE,0o700);fs.writeFileSync(KEY_FILE,JSON.stringify({key}),{mode:0o600});fs.chmodSync(KEY_FILE,0o600);return json(res,200,{ok:true,configured:true});}catch(e){return json(res,e.status||400,{error:e.message});}}
   if(req.method==='DELETE'&&u.pathname==='/api/key'){try{fs.rmSync(KEY_FILE,{force:true});return json(res,200,{ok:true,configured:false});}catch(e){return json(res,500,{error:e.message});}}
+  // Experimental F3 browser gateway. Never bind to non-loopback interfaces.
+  // Model supplies request data; only the human-facing UI may approve mutations.
+  if(req.method==='GET'&&u.pathname==='/api/browser/status')
+   return json(res,200,{...browserBridge.status(),runtime:'MCP Playwright 0.0.85 isolated'});
+  if(req.method==='POST'&&u.pathname.startsWith('/api/browser/')){
+   if(req.headers.origin!==('http://'+HOST+':'+PORT)&&req.headers.origin!==('http://localhost:'+PORT))
+    return json(res,403,{error:'Confirmação MCP exige a origem local da interface.'});
+   if(req.headers['content-type']!=='application/json')
+    return json(res,415,{error:'Content-Type deve ser application/json.'});
+   if(req.headers['x-mcf-ui-intent']!=='playwright-mcp-tool')
+    return json(res,403,{error:'Requisição MCP sem intenção declarada da interface.'});
+   try{
+    const data=await boundedJson(req,8192);
+    if(u.pathname==='/api/browser/prepare')
+     return json(res,200,browserBridge.prepare(data));
+    if(u.pathname==='/api/browser/decision')
+     return json(res,200,await browserBridge.decide(data));
+    if(u.pathname==='/api/browser/end')
+     return json(res,200,{closed:await browserBridge.endSession(data.sessionId)});
+   }catch(e){return json(res,[400,403,404,409,410,415,503].includes(e.status)?e.status:502,
+     {error:e.message||'Falha na ferramenta MCP Playwright.'});}
+  }
   if(req.method==='GET'&&u.pathname==='/api/vision/models'){
    const key=getKey();if(!key)return json(res,401,{error:'Configure uma chave Gemini.'});
    try{
@@ -81,3 +106,5 @@ const server=http.createServer(async(req,res)=>{
  json(res,404,{error:'Não encontrado'});
 });
 server.listen(PORT,HOST,()=>console.log('Gemini Live Studio http://'+HOST+':'+PORT));
+process.once('SIGTERM',()=>{browserBridge.close().finally(()=>server.close());});
+process.once('SIGINT',()=>{browserBridge.close().finally(()=>server.close());});

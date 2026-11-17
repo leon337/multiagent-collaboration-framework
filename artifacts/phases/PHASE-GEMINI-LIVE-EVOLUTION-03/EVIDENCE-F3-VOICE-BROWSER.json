@@ -1,0 +1,84 @@
+{
+  "schema": "mcf-f3-navigation-voice-consent-browser-e2e-v1",
+  "recordedAt": "2026-11-17T04:59:04.413Z",
+  "speechEngine": "simulated_Chrome_WebSpeech_API",
+  "sourceHashes": {
+    "public/voice-approval.js": "b50188239f50003226f26a1584426e58c880b4e0a83c5256b60f594617b2751e",
+    "public/playwright-tools.js": "b1b82657ace30040614917ee3326452adddcc872c7a0fcaf9baf759dd9dd90bf",
+    "public/index.html": "016320048f3215f45a4863162bdeb997450f9a4127bea55a43c2e221eb62af44",
+    "mcp-playwright-gateway.cjs": "4ff91f7e4d98db47886b4d8f5300b8cf17612456acc21571dc85549682cbb508"
+  },
+  "results": [
+    {
+      "name": "SPEECH_RECOGNITION_ADAPTER_AVAILABLE",
+      "pass": true,
+      "details": {
+        "supports": true,
+        "exposed": true,
+        "scriptLoaded": true
+      }
+    },
+    {
+      "name": "VOICE_PROMPT_BOUNDS_TO_REQUEST_WITH_FRESH_CHALLENGE",
+      "pass": true,
+      "details": {
+        "codeLength": 4,
+        "decisions": 0
+      }
+    },
+    {
+      "name": "VOICE_GATE_QUARANTINES_GEMINI_AUDIO_AND_VISUAL_BEFORE_CODE",
+      "pass": true,
+      "details": {
+        "gateActive": true,
+        "visualStopCalls": 1,
+        "audioDropped": true,
+        "playingSources": 0,
+        "pendingMicCanceled": true
+      }
+    },
+    {
+      "name": "VOICE_NEGATED_PHRASE_NEVER_GRANTS",
+      "pass": true,
+      "details": {
+        "dialog": true,
+        "decisions": 0
+      }
+    },
+    {
+      "name": "WRONG_VOICE_CODE_CANNOT_GRANT",
+      "pass": true,
+      "details": {
+        "decisionCount": 0
+      }
+    },
+    {
+      "name": "EXACT_VOICE_CHALLENGE_TRIGGERS_ONE_APPROVED_TOOL_DECISION",
+      "pass": true,
+      "details": {
+        "approved": true,
+        "toolResult": "SUCCESS",
+        "receipt": true,
+        "challengeCleared": true,
+        "quarantineReleased": true
+      }
+    },
+    {
+      "name": "SPOKEN_REFUSAL_PREVENTS_SECOND_NAVIGATION",
+      "pass": true,
+      "details": {
+        "approved": false,
+        "status": "DENIED"
+      }
+    },
+    {
+      "name": "NO_BROWSER_SCRIPT_ERRORS",
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    }
+  ],
+  "passed": 8,
+  "failed": 0
+}

@@ -1,0 +1,20 @@
+{
+  "name": "mcf-gemini-live-studio-gateway",
+  "version": "0.1.0",
+  "description": "MCP Playwright governado para staging Gemini Live Studio / MCF",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test ../../tests/gemini-live-f3/mcp-playwright-gateway.test.cjs",
+    "test:gateway": "node --test ../../tests/gemini-live-f3/mcp-playwright-gateway.test.cjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "private": true,
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "@playwright/mcp": "0.0.85"
+  }
+}

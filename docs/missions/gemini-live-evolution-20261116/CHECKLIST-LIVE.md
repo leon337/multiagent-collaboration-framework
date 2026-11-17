@@ -1,19 +1,29 @@
 # Checklist vivo — contrato de operação e evidências
 
-**Missão:** `MCF-GEMINI-LIVE-EVOLUTION-20261116-001`  
-**Board único e editável:** [GitHub Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527)  
-**Roadmap:** [ROADMAP.md](./ROADMAP.md)  
+**Missão:** `MCF-GEMINI-LIVE-EVOLUTION-20261116-001`
+**Board único e editável:** [GitHub Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527)
+**Roadmap:** [ROADMAP.md](./ROADMAP.md)
 **Estado vigente:** ler a Issue e as evidências live; este documento **não é** um espelho estático do checklist.
+
+## Checkpoint vigente para recuperação fria (17/11/2026)
+
+O único checklist com caixas selecionáveis permanece a [Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527). O desenvolvimento local avançou às F1/F2/F3 **sem aprovação automática dos gates anteriores**. Estado técnico verificado, refs exatas, PRs divergentes e próximo ciclo: [SESSION-CONTINUITY-CURRENT.md](./SESSION-CONTINUITY-CURRENT.md) · [JSON de reconciliação](./STATE-RECONCILIATION-20261117.json).
+
+O estado atualizado é MAIN `ca84c91` (PR #544 MERGED por leon337 às 05:06:11 UTC; Studio no ramo principal, sem desafio de voz), F0 PR #528 também MERGED, F1 `8cffb50`, F2 `4579c35` e F3 voz PR #540 `5e0118b` (código). O WIP F1 `142cd99` está salvo. Main local sincronizada por fast-forward; systemd local 18377 ativo, sem deploy público comprovado.
+
+F3 tem duas variantes: a versão MAIN oriunda do PR #544 navega via MCP com aprovação individual, mas não possui a voz por código; o PR #540 continua draft com Web Speech e quarentena de mídia. Testes do PR #540: 118/118 Node, voz 8/8 browser simulado, 9/9 agent browser e 2/2 MCP real. MAIN passou 19/19 de policy local. Microfone físico e HDF formal pendentes.
+
+F0.8, F1.6, F2.6, F3.7 e F4.6 permanecem abertos. Não marcar checkboxes por CI, reviews externas não autenticadas ou simples funcionamento do staging. `Origin` e voz não constituem HDF, e faltam sandbox real de rede e gate de segurança para exposição pública.
 
 ## O que significa "vivo" nesta missão
 
 - **Já operacional:** a Issue #527 contém tarefas `- [ ]` clicáveis no GitHub, com IDs estáveis `F0.1` a `F4.6`, que podem ser editadas e vinculadas a comentários, PRs, testes, SHAs, receipts e decisões.
 - **Atualização humana/agêntica governada:** a cada PR, falha, evidência, gate ou decisão, o responsável atualiza a Issue com status e referências. A atualização deve ocorrer durante o mesmo ciclo de execução, não só em um resumo retrospectivo.
-- **Implementação técnica parcial de F0.7:** script `ops/gemini-live/checklist-sync.mjs` (dry-run por padrão), agora 21/21 testes, revalidação de HEAD/paginação/reconciliação de POST, e workflow com publicação de comentário somente por opt-in. **Não está habilitado em main nem cobre todos os eventos e gates do roadmap**. Nunca marca `[x]` por CI verde.
+- **Implementação técnica parcial de F0.7:** script `ops/gemini-live/checklist-sync.mjs` (dry-run por padrão), agora 21/21 testes, revalidação de HEAD/paginação/reconciliação de POST, e workflow com publicação de comentário somente por opt-in. **O código está versionado em main após PR #544, mas a publicação de sinais segue opt-in e não está automaticamente habilitada; não cobre todos os eventos e gates do roadmap**. Nunca marca `[x]` por CI verde.
 - **Regra de veracidade:** o campo marcado indica `VALIDADO` e evidência vinculada. Um item em execução continua desmarcado e recebe comentário `EM_EXECUCAO`.
 - **Sem duplicação:** não manter um segundo checklist com progresso contraditório em arquivos Markdown/JSON/Notion.
 
-## Estado técnico reconciliado em 2026-11-16
+## Registro histórico de 2026-11-16 (superado pelo checkpoint acima)
 
 - Parecer externo Codex CLI sobre SHA `6a714e4`: **RETORNAR_PARA_CORRECAO**; a auditoria sob contrato Emily não representa identidade/canal nativo autenticado.
 - Issue #527 reabriu F0.2–F0.7 (`EM_CORRECAO`) pela ausência inicial de evidência primária; somente F0.1 permanece validado na Issue até reteste independente.
@@ -95,7 +105,7 @@ O `ROADMAP.md` contém objetivos e dependências; os artefatos da fase Class C f
 - `MANIFEST.sha256` — integridade do pacote;
 - `README` — ordem de leitura.
 
-**O ato de criar a Issue e a documentação não encerra F0.** A missão permanece PLANEJADO até que baseline e governança sejam verificadas.
+**O ato de criar a Issue e a documentação não encerra F0 nem concede gates.** A engenharia local F1/F2/F3 está em andamento com os checkboxes canônicos ainda abertos.
 
 ## Links de controle
 

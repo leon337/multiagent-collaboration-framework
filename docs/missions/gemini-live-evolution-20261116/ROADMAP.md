@@ -1,6 +1,6 @@
 # Roadmap — Gemini Live Studio Evolution (V1.1 → V2.1)
 
-**Mission:** `MCF-GEMINI-LIVE-EVOLUTION-20261116-001` · **Fase corrente:** `F0` · **Estado executivo e checklist:** [Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527).
+**Mission:** `MCF-GEMINI-LIVE-EVOLUTION-20261116-001` · **Gate formal mais antigo pendente:** `F0.8` · **Engenharia:** F1–F3 local, Studio básico em main via PR #544; voz por desafio ainda no PR #540 · **Estado executivo e checklist:** [Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527).
 
 **Natureza:** plano técnico versionado. Este roadmap não é prova de que uma funcionalidade foi implementada. **Fases ordenadas por dependência e gates, não por datas prometidas.** Só atualizar estado real na Issue com evidência.
 

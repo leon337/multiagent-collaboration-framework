@@ -1,8 +1,3 @@
-.private/
-*.log
 node_modules/
-f0/
-*.env
-.env*
-*.pem
-*.key
+.private/
+.playwright-mcp/

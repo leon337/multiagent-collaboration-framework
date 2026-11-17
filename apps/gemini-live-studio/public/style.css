@@ -32,3 +32,20 @@
 .vision-result{white-space:pre-wrap;overflow-wrap:anywhere;max-height:380px;overflow:auto;background:#0c1420;border:1px solid #26364e;border-radius:9px;padding:15px;color:#e9f0ff;font-size:12px;line-height:1.6}
 .vision-content .vision-disclaimer{color:#d5b782}
 @media(max-width:900px){.vision-fields{grid-template-columns:1fr}}
+
+/* F3 browser MCP: visible approval, status and receipts */
+.playwright-panel{margin-top:20px}
+.playwright-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.playwright-toolbar #playwrightStatus{font-size:12px;color:#a7e5ca;flex:1;min-width:230px}
+.playwright-toolbar button{font-size:11px}
+.playwright-receipts{display:flex;flex-direction:column;gap:5px;max-height:155px;overflow:auto}
+.playwright-receipt{font:11px/1.5 monospace;color:#aebdda;background:#111b2d;padding:7px 10px;border:1px solid #29354d;border-radius:6px;overflow-wrap:anywhere}
+#playwrightApprovalDialog{max-width:min(520px,94vw)}
+
+/* F3 opt-in, voice challenge for navigation only */
+.playwright-voice-config{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0;border-top:1px solid #29354d}
+.playwright-voice-config .toggle{font-size:12px}
+.playwright-voice-challenge{padding:10px 12px;border:1px solid #806ba8;border-radius:10px;background:#1b2035}
+.playwright-voice-challenge strong{display:block;font-size:18px;letter-spacing:.04em;padding:8px 0;color:#e7d9ff}
+.playwright-voice-challenge p{line-height:1.5}
+#playwrightVoiceStatus{font-size:12px;color:#b3d9d1}

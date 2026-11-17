@@ -1,0 +1,70 @@
+{
+  "schema": "mcf-gemini-playwright-mcp-pilot/v1",
+  "date": "2026-11-17",
+  "provider": "@playwright/mcp@0.0.85",
+  "sdk": "@modelcontextprotocol/sdk@1.32.2",
+  "mcp_tools_discovered": 25,
+  "mcp_tools_exposed_to_model": 7,
+  "browser_isolated": true,
+  "inherited_brave_or_authenticated_user_cookies": false,
+  "playwright_tools": [
+    "playwright_navigate",
+    "playwright_snapshot",
+    "playwright_find",
+    "playwright_click",
+    "playwright_type",
+    "playwright_tabs",
+    "playwright_close"
+  ],
+  "results": {
+    "node_policy": {
+      "passed": 13,
+      "failed": 0
+    },
+    "real_http_mcp": {
+      "passed": 2,
+      "failed": 0
+    },
+    "real_todomvc_demo_click_and_type": {
+      "passed": 1,
+      "failed": 0
+    },
+    "browser_ui_gemini_simulation": {
+      "passed": 8,
+      "failed": 0
+    },
+    "real_gemini_live_2_5_function_call": {
+      "passed": true,
+      "tool": "playwright_navigate",
+      "model_selected_snapshot": false,
+      "model_answered_title_correctly": true
+    },
+    "offline_aggregate_f0_f1_f2_f3": {
+      "passed": 106,
+      "failed": 0
+    },
+    "npm_prod_dependency_high_vulnerability_audit": {
+      "reported": 0
+    }
+  },
+  "security": {
+    "action_approval_ttl_seconds": 45,
+    "one_time_decision": true,
+    "click_and_type_allowed_only": "https://demo.playwright.dev",
+    "read_navigate_curated_public_https_only": true,
+    "no_arbitrary_js": true,
+    "no_file_upload": true,
+    "no_user_cookie_reuse": true,
+    "no_unknown_host_navigation": true,
+    "raw_page_content_persisted_in_receipts": false
+  },
+  "boundary": "LOCAL_EXPERIMENTAL_NOT_NATIVE_MCF_GATE_OR_PUBLIC_PRODUCTION",
+  "unresolved": [
+    "browser egress network isolation is not a formal SSRF boundary",
+    "HTTP Origin is not proof of human identity",
+    "permission engine and HDF native integration pending",
+    "no commercial or authenticated browser actions enabled",
+    "previous formal F0 F1 F2 gates open",
+    "independent F3 audit pending"
+  ]
+}
