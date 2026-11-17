@@ -19,6 +19,7 @@ from websockets.asyncio.client import connect
 
 from gemini_tts import secret as google_secret
 from pet_live_auth import subprotocol_ticket, validate_ticket
+from pet_readonly_tools import TOOL_DECLARATIONS, TOOL_NAMES, dispatch as run_read_tool
 
 router = APIRouter(prefix="/api/pet-live", tags=["pet-mestre-live"])
 MODEL="gemini-3.8-live"
@@ -33,6 +34,8 @@ VOICE_NAMES=frozenset(("Fenrir","Puck","Kore","Aoede","Zephyr"))
 MAX_SESSION=300
 MAX_INPUT_PACKETS=18000
 MAX_AUDIO_BASE64=14500
+MAX_TOOL_CALLS=12
+MAX_TOOL_REQUESTS_IN_MESSAGE=4
 _busy=asyncio.Semaphore(1)
 log=logging.getLogger("mcf.pet_live")
 
@@ -42,6 +45,8 @@ def status():
     return {"available":bool(google_secret()),"model":MODEL,
             "max_session_seconds":MAX_SESSION,
             "requires_user_gesture":True,"execution_tools":False,
+            "read_only_tools_available":True,
+            "read_only_tool_count":len(TOOL_DECLARATIONS),
             "audio_in":"pcm16/16000","audio_out":"pcm16/24000"}
 
 def _state(name: str):
@@ -75,10 +80,13 @@ def _context():
         "LEANDRO é humano e autoridade final; LÉO é outro agente. "
         "Responda sempre em português brasileiro, de forma objetiva, natural "
         "e breve, por voz. Interrompa a fala quando o usuário começar a falar. "
-        "Esta é uma conversa de voz SEM ferramentas. Nunca diga que executou "
-        "comandos, acessou navegador, modificou missões, aprovou HUMAN_GATE, "
-        "enviou mensagens ou salvou memória. Se solicitado a agir, explique "
-        "que esta sessão só conversa e a ação requer fluxo governado separado. "
+        "Esta sessão não possui ferramentas de EXECUÇÃO. Nunca diga que "
+        "executou comandos, acessou navegador, modificou missões, aprovou "
+        "HUMAN_GATE ou enviou mensagens. Quando ferramentas de consulta de "
+        "status estiverem habilitadas pelo humano, use somente o resultado "
+        "de leitura recebido; cite a origem e a data de coleta. Se o "
+        "observador não estiver conectado, deixe isso explícito. "
+        "Outras ações exigem fluxo governado separado. "
         "Não invente resultados de serviços ou acesso a dados em tempo real. "
         "Seja cuidadoso com informações técnicas desconhecidas.\n"
         + identity[:1800] +
@@ -108,7 +116,12 @@ async def pet_ws(ws: WebSocket):
     origin=ws.headers.get("origin","")
     proto=ws.headers.get("sec-websocket-protocol","")
     ticket=subprotocol_ticket(proto)
-    if origin not in ALLOWED_ORIGINS or not ticket or not validate_ticket(ticket):
+    scope=ws.query_params.get("scope","conversation")
+    if scope not in ("conversation","read_only"):
+        await ws.close(code=1008)
+        return
+    if origin not in ALLOWED_ORIGINS or not ticket or not validate_ticket(
+            ticket,expected_scope=scope):
         await ws.close(code=1008)
         return
     key=google_secret()
@@ -122,6 +135,8 @@ async def pet_ws(ws: WebSocket):
     async with _busy:
         await ws.accept(subprotocol="mcf-pet-live")
         begin=time.monotonic()
+        tool_calls_used=0
+        tool_speech_followups=0
         voice=ws.query_params.get("voice","Fenrir")
         if voice not in VOICE_NAMES:voice="Fenrir"
         setup={"setup":{
@@ -140,8 +155,12 @@ async def pet_ws(ws: WebSocket):
             },
             "systemInstruction":{"parts":[{"text":_context()}]},
             "inputAudioTranscription":{},"outputAudioTranscription":{},
-            # Deliberately omit 'tools': this endpoint must never execute actions.
+            # No browser, shell or privileged tool can be declared. A separate
+            # HMAC ticket must carry the READ_ONLY scope before these are added.
         }}
+        if scope=="read_only":
+            setup["setup"]["tools"]=[{"functionDeclarations":TOOL_DECLARATIONS}]
+
         async def send(kind: str, **kwargs):
             try:await ws.send_json({"type":kind,**kwargs})
             except (WebSocketDisconnect,RuntimeError,OSError):pass
@@ -179,16 +198,76 @@ async def pet_ws(ws: WebSocket):
                     await google.send(json.dumps({"realtimeInput":{"audioStreamEnd":True}}))
 
         async def from_google(google):
+            nonlocal tool_calls_used,tool_speech_followups
             user=""
             assistant=""
+            pending_readonly_speech=False
+            tool_audio_count=0
+            latest_verified_results=[]
             async for raw in google:
                 if time.monotonic()-begin>MAX_SESSION:return
                 try:message=json.loads(raw)
                 except (ValueError,TypeError):continue
                 if not isinstance(message,dict):continue
-                if message.get("toolCall"):
-                    await send("error",message="Ferramentas de execução não estão autorizadas nesta sessão.")
-                    return
+                tool_request=message.get("toolCall")
+                if tool_request:
+                    if scope!="read_only":
+                        await send("error",message="Esta sessão não autoriza ferramentas.")
+                        return
+                    if not isinstance(tool_request,dict):
+                        await send("error",message="Solicitação de ferramenta inválida.")
+                        return
+                    calls=tool_request.get("functionCalls")
+                    if not isinstance(calls,list) or len(calls)>MAX_TOOL_REQUESTS_IN_MESSAGE:
+                        await send("error",message="Limite de ferramentas por turno excedido.")
+                        return
+                    responses=[]
+                    latest_verified_results=[]
+                    tool_audio_count=0
+                    pending_readonly_speech=True
+                    for call in calls:
+                        tool_calls_used+=1
+                        name=call.get("name") if isinstance(call,dict) else ""
+                        args=call.get("args") if isinstance(call,dict) else {}
+                        call_id=call.get("id") if isinstance(call,dict) else None
+                        if tool_calls_used>MAX_TOOL_CALLS:
+                            outcome={"ok":False,"status":"SESSION_TOOL_LIMIT",
+                                     "receipt_id":None,"read_only":True,
+                                     "result":{"error":"SESSION_TOOL_LIMIT","executed":False}}
+                        elif not isinstance(name,str) or name not in TOOL_NAMES:
+                            outcome={"ok":False,"status":"TOOL_NOT_ALLOWLISTED",
+                                     "receipt_id":None,"read_only":True,
+                                     "result":{"error":"TOOL_NOT_ALLOWLISTED","executed":False}}
+                        else:
+                            await send("tool_started",name=name)
+                            try:
+                                outcome=await asyncio.wait_for(
+                                    asyncio.to_thread(run_read_tool,name,args),timeout=8)
+                            except (asyncio.TimeoutError,RuntimeError):
+                                outcome={"ok":False,"status":"TOOL_TIMEOUT",
+                                         "receipt_id":None,"read_only":True,
+                                         "result":{"error":"TOOL_TIMEOUT","executed":False}}
+                        await send("tool_result",name=name if isinstance(name,str) else "",
+                                   status=str(outcome.get("status"))[:55],
+                                   ok=outcome.get("ok") is True,
+                                   receipt_id=outcome.get("receipt_id"))
+                        if len(latest_verified_results)<3:
+                            latest_verified_results.append({
+                                "tool":name if isinstance(name,str) else "",
+                                "status":str(outcome.get("status"))[:55],
+                                "result":outcome.get("result")
+                            })
+                        response_obj={"name":name if isinstance(name,str) and name else "unknown",
+                                      "response":{"result":outcome.get("result"),
+                                                  "status":outcome.get("status"),
+                                                  "read_only":True}}
+                        if isinstance(call_id,str) and len(call_id)<180:
+                            response_obj["id"]=call_id
+                        responses.append(response_obj)
+                    await google.send(json.dumps(
+                        {"toolResponse":{"functionResponses":responses}},
+                        ensure_ascii=False))
+                    continue
                 if message.get("goAway"):
                     await send("notice",message="A conexão será encerrada pelo provedor.")
                 if message.get("error"):
@@ -198,12 +277,17 @@ async def pet_ws(ws: WebSocket):
                 if not isinstance(content,dict):continue
                 if content.get("interrupted"):
                     assistant=""
+                    pending_readonly_speech=False
+                    tool_audio_count=0
+                    latest_verified_results=[]
                     _state("ouvindo")
                     await send("interrupted")
                 for part in ((content.get("modelTurn") or {}).get("parts") or []):
                     if not isinstance(part,dict):continue
                     encoded=(part.get("inlineData") or {}).get("data")
                     if isinstance(encoded,str) and 4 < len(encoded) <= 3_000_000:
+                        if pending_readonly_speech:
+                            tool_audio_count+=1
                         _state("executando")
                         await send("audio",data=encoded)
                 utterance=(content.get("inputTranscription") or {}).get("text")
@@ -216,6 +300,34 @@ async def pet_ws(ws: WebSocket):
                     assistant+=reply[:450]
                     await send("assistant_text",text=reply[:450])
                 if content.get("turnComplete"):
+                    if (pending_readonly_speech and not tool_audio_count
+                            and tool_speech_followups<3):
+                        # Some Gemini Live tool-call turns end before any
+                        # spoken output. Ask once for a normal AUDIO response
+                        # with only the sanitised result already returned.
+                        pending_readonly_speech=False
+                        tool_speech_followups+=1
+                        await send("notice",message=(
+                            "Consulta concluída. Preparando a resposta em voz."))
+                        details=json.dumps(latest_verified_results,
+                                           ensure_ascii=False)[:1600]
+                        prompt=(
+                            "Atualização técnica do adaptador, não é uma nova "
+                            "solicitação humana. A ferramenta READ_ONLY foi "
+                            "consultada. Responda AGORA EM VOZ, em português "
+                            "brasileiro, à pergunta anterior usando apenas o "
+                            "resultado verificado abaixo. Não chame ferramentas "
+                            "novamente. Se os dados não estiverem disponíveis, "
+                            "explique a limitação em voz. Dados: "+details)
+                        await google.send(json.dumps({
+                            "clientContent":{
+                                "turns":[{"role":"user",
+                                          "parts":[{"text":prompt[:2300]}]}],
+                                "turnComplete":True
+                            }
+                        },ensure_ascii=False))
+                        continue
+                    pending_readonly_speech=False
                     _save_turn(user,assistant)
                     user=assistant=""
                     _state("concluido")
@@ -233,7 +345,9 @@ async def pet_ws(ws: WebSocket):
                 if "setupComplete" not in first:
                     await send("error",message="O provedor recusou esta sessão Gemini Live.")
                     return
-                await send("ready",model=MODEL,voice=voice,max_seconds=MAX_SESSION)
+                await send("ready",model=MODEL,voice=voice,max_seconds=MAX_SESSION,
+                           tool_scope=scope,read_only_tool_count=(
+                               len(TOOL_DECLARATIONS) if scope=="read_only" else 0))
                 _state("ouvindo")
                 input_task=asyncio.create_task(in_audio(google))
                 output_task=asyncio.create_task(from_google(google))

@@ -1,0 +1,16 @@
+cfb957370c70df7eb6c034c39fd57f416ded0a79aebcfa9bfc738e0da2ca3fa4  tools/mcf-pet-gemini-live/README.md
+23d78e79d356c9428eb686fc2f9d0b9dc772683f06e52912d9bdf9d97be41e88  tools/mcf-pet-gemini-live/install_local.py
+a81e5ad5590a664eb853227223946466c7df13ebec990f70d8a4d12363ca1b24  tools/mcf-pet-gemini-live/backend/pet_live_auth.py
+e11d2870e9624709574f96a699e3f217b42f65a62bad0c0d57296832e73e98c8  tools/mcf-pet-gemini-live/backend/pet_live_gateway.py
+791a95ddc9cfa22afb40e3743d888ff4655ac08a51c229f4e15051feb35edfe4  tools/mcf-pet-gemini-live/backend/pet_live_ticket.py
+b3f7b063726a9ad5526a9b1994701c646c4f4b169815aa51e9a0ceb725729dba  tools/mcf-pet-gemini-live/backend/pet_readonly_tools.py
+7170fdae7c0a65d2df2d14c5efd479ba3333a3bd51b0c52fcccbae2ab3c2b058  tools/mcf-pet-gemini-live/frontend/pet-live.js
+14398c9b8dcc95369feb9f935c72de01dc53a2e646e865f504a75abc1b4cc004  tools/mcf-pet-gemini-live/frontend/pet-live.css
+41eb2b797433e3b347286d19a231e052276628fc5edb6fa6268a361760b0f41b  tools/mcf-pet-gemini-live/tests/test_installer.py
+bac633b3c435b0a1a276ff950d56e70f9186470e8a0caeb27fb18a50eb5b72c9  tools/mcf-pet-gemini-live/tests/test_pet_readonly_tools.py
+1d70383936a602b001b052433a357115bc1a63b458e120a28094da56ebc6e81c  artifacts/phases/PHASE-MCF-PET-TOOLS-READONLY-001/PHASE-PLAN.md
+80a43f54742a179202656df4a1e89bf628e018cba1fadd227ef82d49d4c837bd  artifacts/phases/PHASE-MCF-PET-TOOLS-READONLY-001/PHASE-DECISIONS.md
+b6c7b117562f7e6ee056d73af2a0828e84ca592e579d2db18c064fcd02b1acac  artifacts/phases/PHASE-MCF-PET-TOOLS-READONLY-001/PHASE-VALIDATION.txt
+bdba30b5b67c6873d8d31b9be8fcba5efb463d71495485cc42e3148c4fe2f9cc  artifacts/phases/PHASE-MCF-PET-TOOLS-READONLY-001/PHASE-CHECKLIST.md
+8113e13398009621f1e2f21b8c1fdc65f078f96903a6198ed4f5454c4626ec98  artifacts/phases/PHASE-MCF-PET-TOOLS-READONLY-001/PHASE-CHECKPOINT.yaml
+503c0a0bd5b59a0ba9baa243b4c90dcff6f28fe82d4aab8d9b1758ebb09f338f  artifacts/phases/PHASE-MCF-PET-TOOLS-READONLY-001/README.md

@@ -16,7 +16,9 @@ import time
 
 KEY_FILE = Path.home()/".config/mcf-service-hub/pet-live-signing-key"
 MAX_AGE_SECONDS = 30
-TOKEN = re.compile(r"^v1\.([0-9]{10})\.([A-Za-z0-9_-]{22,60})\.([0-9a-f]{64})$")
+TOKEN = re.compile(r"^v2\.([0-9]{10})\.([A-Za-z0-9_-]{22,60})\.(conversation|read_only)\.([0-9a-f]{64})$")
+LEGACY = re.compile(r"^v1\.([0-9]{10})\.([A-Za-z0-9_-]{22,60})\.([0-9a-f]{64})$")
+SCOPES=frozenset(("conversation","read_only"))
 _seen: dict[str,float] = {}
 _lock = threading.Lock()
 
@@ -35,28 +37,46 @@ def secret(path: Path = KEY_FILE) -> bytes:
     finally:
         os.close(fd)
 
-def signature(key: bytes, timestamp: str, nonce: str) -> str:
-    data=f"mcf-pet-live/v1:{timestamp}:{nonce}".encode("ascii")
+def signature(key: bytes, timestamp: str, nonce: str, scope: str="conversation",
+              legacy: bool=False) -> str:
+    if scope not in SCOPES:
+        raise ValueError("Scope not allowed")
+    data=(f"mcf-pet-live/v1:{timestamp}:{nonce}" if legacy else
+          f"mcf-pet-live/v2:{timestamp}:{nonce}:{scope}").encode("ascii")
     return hmac.new(key,data,hashlib.sha256).hexdigest()
 
-def issue_ticket(key_file: Path = KEY_FILE, now: float | None = None) -> str:
+def issue_ticket(key_file: Path = KEY_FILE, now: float | None = None,
+                 scope: str="conversation") -> str:
+    if scope not in SCOPES:
+        raise ValueError("Scope not allowed")
     clock=int(time.time() if now is None else now)
     nonce=secrets.token_urlsafe(20)
     ts=str(clock)
-    return f"v1.{ts}.{nonce}.{signature(secret(key_file),ts,nonce)}"
+    return f"v2.{ts}.{nonce}.{scope}.{signature(secret(key_file),ts,nonce,scope)}"
 
-def validate_ticket(ticket: str, key_file: Path=KEY_FILE, now: float | None=None) -> bool:
-    if not isinstance(ticket,str) or len(ticket)>180:
+def validate_ticket(ticket: str, key_file: Path=KEY_FILE,
+                    now: float | None=None, expected_scope: str="conversation") -> bool:
+    if expected_scope not in SCOPES or not isinstance(ticket,str) or len(ticket)>180:
         return False
     match=TOKEN.fullmatch(ticket)
-    if not match:return False
-    timestamp, nonce, presented=match.groups()
+    legacy=False
+    if match:
+        timestamp,nonce,scope,presented=match.groups()
+    else:
+        old=LEGACY.fullmatch(ticket)
+        if not old:
+            return False
+        timestamp,nonce,presented=old.groups()
+        scope="conversation"
+        legacy=True
+    if scope != expected_scope:
+        return False
     clock=int(time.time() if now is None else now)
     try:
         ts=int(timestamp)
         if not (0 <= clock-ts <= MAX_AGE_SECONDS):
             return False
-        expected=signature(secret(key_file),timestamp,nonce)
+        expected=signature(secret(key_file),timestamp,nonce,scope,legacy=legacy)
     except (OSError,ValueError):
         return False
     if not hmac.compare_digest(expected,presented):

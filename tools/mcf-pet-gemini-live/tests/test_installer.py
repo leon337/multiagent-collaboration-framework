@@ -27,7 +27,10 @@ class InstallerTests(unittest.TestCase):
         source=path.read_text()
         self.assertNotIn('"tools":[',source)
         self.assertNotIn('"tools": [',source)
-        self.assertIn('if message.get("toolCall"):',source)
+        self.assertIn('if tool_request:',source)
+        self.assertIn('if scope!="read_only":',source)
+        self.assertIn('name not in TOOL_NAMES:',source)
+        self.assertIn('run_read_tool,name,args',source)
         self.assertIn('execution_tools":False',source.replace(" ",""))
 
     def test_agent_patch_is_idempotent(self):
