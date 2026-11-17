@@ -51,3 +51,26 @@
 O arquivo `ops/deployment-provider-routing.mjs` contém um resolvedor de rota **puro**. Seus testes verificam que: Neon nunca é tratado como runtime; publicação de docs usa GitHub; limitação Vercel não libera produção; alterações em registry seguem boundary de runtime; SHA inválido bloqueia; mesmo com gates válidos, o resolver **não executa** deploy.
 
 **Princípio:** `VERCEL_RATE_LIMIT != NEON_PRODUCTION_HOST` e `DOCUMENTATION_PUBLISHED != RUNTIME_PRODUCTION_DEPLOYED`.
+
+## 6. Correção da origem da limitação Vercel (após reconciliação de propriedade)
+
+O GitHub pode publicar documentação sem a Vercel e o Render pode publicar frontend/API, mas os **status checks Vercel existentes só deixarão de aparecer como falha recorrente** quando a integração dos projetos afetados deixar de tentar builds bloqueados. Não ocultar nem alterar status de CI manualmente.
+
+A Vercel documenta, oficialmente, a opção `git.deploymentEnabled` em `vercel.json` para desativar automações por branch ou por projeto. Exemplo **somente ilustrativo**, a ser aplicado no **rootDirectory confirmado do projeto Vercel correto**:
+
+```json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": { "deploymentEnabled": false }
+}
+```
+
+**Requisitos antes de aplicar:** (a) conectar a conta/team que de fato é proprietária de `mcf-ecosystem-roadmap` e `mcf-rede-social-agentes-web`; (b) verificar a URL e rootDirectory de cada projeto; (c) confirmar que Render `rsa-web-free` serve o frontend destinado ao público; (d) verificar que desativar builds não desliga outro serviço ativo. **Não** inserir `vercel.json` na raiz compartilhada do repositório sem essa descoberta: poderia desativar automações de outros projetos que usam o mesmo root.
+
+Alternativa para manter a Vercel como redundância: habilitar no projeto a detecção de mudanças relevantes em monorepo e a opção de não construir projetos inalterados. A Vercel informou em 21/10/2026 que deployments de monorepo pulados automaticamente não contam mais contra os limites de taxa; isso **não garante** a recuperação de uma quota já esgotada.
+
+Referências oficiais:
+- https://vercel.com/docs/project-configuration/git-configuration
+- https://vercel.com/changelog/skipped-monorepo-deployments-no-longer-count-against-limits
+
+**Observação desta missão:** o conector Vercel disponível não enumerou os dois projetos na conta conectada, logo **nenhuma configuração de Vercel foi alterada**. A solução de publicação do conhecimento pelo GitHub é efetiva; a remoção definitiva dos antigos checks de quota depende de acesso à conexão proprietária.
