@@ -12,7 +12,7 @@ A [Issue #527](https://github.com/leon337/multiagent-collaboration-framework/iss
 - O Studio foi integrado anteriormente pelo PR #544 no commit `ca84c9132459e37ecd8ba79a965b33e554f6200a`; o PR #543 não alterou arquivos em `apps/gemini-live-studio`.
 - PR #540 permanece aberto/draft, branch `feat/gemini-live-playwright-mcp-gateway-20261117`, HEAD `76f86b09c254e5fb3adf5b127c1d1ed8e2e2b36a`. A implementação de voz/quarentena está no commit `5e0118b6a4b8f6047a9b19eddc8c8236abfb9545`.
 - WIP F1 preservado sem rebase/cherry-pick: `wip/gemini-live-f1-response-20261117`, commit `142cd99f7519512849c43ded619ee63b884ee87e`, baseado em `8cffb50f00175443d7954b039d908b26a6f26650`.
-- Candidato de reconciliação criado a partir da main: `reconcile/gemini-live-voice-approval-main-20261117`. O candidato não foi integrado à main.
+- Candidato de reconciliação criado a partir da main: `reconcile/gemini-live-voice-approval-main-20261117`. O candidato não foi integrado à main. O PR draft #546 está aberto contra main; a CI F0/F1/F2/F3 e a validação documental passaram no HEAD submetido. O workflow Production Readiness permanece em execução.
 
 ## Estratégia de integração
 
@@ -26,6 +26,10 @@ Arquivos do candidato:
 - Testes de parser e harness de browser; workflow F3 ampliado para validar o helper.
 
 **Preservado da main:** o arquivo `mcp-playwright-gateway.cjs` não foi substituído pelo PR #540. Permanecem os guards de sessão revogada, cancelamento e validação de redirecionamento da linha integrada pelo PR #544. O código de UI da main também mantém as verificações de resultado obsoleto e a mensagem de política de navegação existentes.
+
+## PR de reconciliação
+
+[PR #546 — portabilidade seletiva da autorização por voz](https://github.com/leon337/multiagent-collaboration-framework/pull/546). Branch criada a partir da main atual; não foi feito merge. Os workflows F0, F1, F2.1, F3 e Documentation validation passaram no HEAD submetido. Production Readiness ainda está em execução. Os checks Vercel de dois projetos externos falharam por limite diário de deploys e não representam falha de teste do Studio.
 
 ## Limites e segurança
 
