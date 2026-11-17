@@ -9,13 +9,21 @@ const BAD=new Set(['failure','timed_out','cancelled','action_required','startup_
 // This allowlist is intentionally specific to the official repository.
 const TRUSTED_RECEIPT_AUTHORS=new Map([['leon337','User'],['github-actions[bot]','Bot']]);
 const UTC_TIME=/^- Consultado em: (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z)$/;
+function validUtcStamp(value){
+ const match=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?Z$/.exec(value);
+ if(!match)return false;
+ const [year,month,day,hour,minute,second]=match.slice(1).map(Number);
+ if(year<1970||month<1||month>12||hour>23||minute>59||second>59||day<1)return false;
+ const lastDay=new Date(Date.UTC(year,month,0)).getUTCDate();
+ return day<=lastDay&&Number.isFinite(Date.parse(value));
+}
 function canonicalReceipt(body){
  if(typeof body!=='string')return null;
  const lines=body.split('\n');
  const indices=lines.flatMap((line,index)=>line.startsWith('- Consultado em: ')?[index]:[]);
  if(indices.length!==1)return null;
  const index=indices[0],match=UTC_TIME.exec(lines[index]);
- if(!match||!Number.isFinite(Date.parse(match[1])))return null;
+ if(!match||!validUtcStamp(match[1]))return null;
  lines[index]='- Consultado em: <timestamp>';
  // No trim(): any extra text, whitespace or maliciously altered lines fail.
  return lines.join('\n');

@@ -185,3 +185,17 @@ test('trusted login with impossible user type cannot prove a receipt',()=>{
  assert.equal(isTrustedReceipt({body:o.comment,user:{login:'github-actions[bot]',type:'User'}},o),false);
  assert.equal(isTrustedReceipt({body:o.comment,user:{login:'leon337',type:'Bot'}},o),false);
 });
+
+test('rejects invalid UTC calendar dates including February 30 and hour 24',()=>{
+ const obs=buildObservation(pr,[one,two],issue.body);
+ const trusted={login:'github-actions[bot]',type:'Bot'};
+ for(const stamp of ['2026-02-30T00:00:00Z','2026-11-16T24:00:00Z','2026-13-01T12:00:00Z','2026-12-01T12:60:00Z','2026-11-16T12:12:60Z']){
+  const forged=obs.comment.replace('2026-11-16T00:00:00Z',stamp);
+  assert.equal(isTrustedReceipt({body:forged,user:trusted},obs),false,stamp);
+ }
+});
+test('accepts valid leap-day UTC receipt under trusted actor',()=>{
+ const obs=buildObservation(pr,[one,two],issue.body);
+ const accepted=obs.comment.replace('2026-11-16T00:00:00Z','2024-02-29T12:30:00.123Z');
+ assert.equal(isTrustedReceipt({body:accepted,user:{login:'leon337',type:'User'}},obs),true);
+});
