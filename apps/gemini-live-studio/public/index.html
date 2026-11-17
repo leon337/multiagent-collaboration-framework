@@ -59,6 +59,33 @@
       <div class="stat"><div class="stat-label">CHAMADAS DE FERRAMENTAS</div><strong id="metricTools">0</strong><small>Executadas localmente</small></div>
       <div class="stat"><div class="stat-label">ENTRADA MULTIMODAL</div><strong id="metricStreams">0 / 3</strong><small>Microfone · câmera · tela</small></div>
     </div>
+    <section class="vision-panel panel" aria-labelledby="visionTitle">
+      <div class="panel-header"><span id="visionTitle">▧ F2.2 · ANÁLISE ESPECIALIZADA DE IMAGEM E VÍDEO</span><span class="vision-beta">GEMINI GENERATECONTENT · SEPARADA DO LIVE</span></div>
+      <div class="vision-content">
+        <p>Inicie uma análise pontual de imagem ou vídeo. Nenhum arquivo é compartilhado automaticamente com a conversa por voz. Para vídeos, usamos a Files API do Google e tentamos excluir o arquivo após o processamento.</p>
+        <div class="vision-fields">
+          <label>Arquivo (imagem até 8 MB · vídeo até 24 MB)
+            <input id="visionFile" type="file" accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"/>
+          </label>
+          <label>Modelo verificado para generateContent
+            <select id="visionModel" aria-label="Modelo de análise"><option value="">Carregando catálogo...</option></select>
+          </label>
+        </div>
+        <div class="vision-summary" id="visionFileInfo">Nenhum arquivo selecionado</div>
+        <label class="vision-question">Pergunta sobre o arquivo
+          <textarea id="visionPrompt" rows="3" maxlength="2200">Descreva o conteúdo desta mídia em português do Brasil, identifique os elementos e eventos relevantes e indique incertezas.</textarea>
+        </label>
+        <div class="vision-actions">
+          <button id="visionRefreshModels" type="button" class="secondary">Atualizar modelos</button>
+          <button id="visionAnalyze" type="button" class="primary" disabled>▶ Analisar arquivo</button>
+          <button id="visionShareToLive" type="button" class="secondary" disabled>Compartilhar apenas o resultado com Live</button>
+        </div>
+        <div id="visionStatus" class="vision-status" role="status" aria-live="polite">Modelo e arquivo dependem do consentimento e da disponibilidade da API.</div>
+        <div id="visionTrace" class="vision-trace" aria-live="polite"></div>
+        <pre id="visionResult" class="vision-result">Nenhuma análise nesta sessão.</pre>
+        <p class="vision-disclaimer">Modelo listado ≠ suporte visual comprovado. Custos, cotas e disponibilidade são decididos pelo Google; não há fallback automático, nem mudança de chave. Vídeos enviados ao Google podem permanecer no provedor se a exclusão remota falhar.</p>
+      </div>
+    </section>
   </section>
   <section id="view-features" class="view">
     <div class="pagehead"><div><div class="eyebrow">CAPABILITY EXPLORER</div><h1>Laboratório de recursos<span class="accent">.</span></h1><p>Configure a experiência antes de iniciar uma nova sessão. Recursos dependem do modelo.</p></div></div>
@@ -77,6 +104,14 @@
   <section id="view-history" class="view"><div class="pagehead"><div><div class="eyebrow">SESSION DIAGNOSTICS</div><h1>Eventos & observabilidade<span class="accent">.</span></h1><p>Visibilidade dos eventos, transcrições, ferramentas e consumo de tokens.</p></div><button id="export" class="secondary">↓ Exportar JSON</button></div><div class="panel f1-diagnostics"><div class="panel-header">F1 · DIAGNÓSTICO DE ÁUDIO</div><div class="f1-metrics" id="f1Metrics" aria-live="polite">Conecte uma sessão para acompanhar reconexões, interrupções e consumo.</div><div class="f1-note">Os valores são exploratórios: não constituem benchmark de hardware nem estimativa de custos.</div></div><div class="panel log-panel"><div class="panel-header">EVENT STREAM <button class="mini" id="clearEvents">Limpar eventos</button></div><div id="events" class="events"></div></div></section>
   <section id="view-settings" class="view"><div class="pagehead"><div><div class="eyebrow">LOCAL CONTROL CENTER</div><h1>Configurações<span class="accent">.</span></h1><p>A chave de API nunca é incorporada no JavaScript público da aplicação.</p></div></div><div class="panel settings-box"><div class="setting-icon">🔐</div><h2>Cofre local de credenciais</h2><p>A chave é validada com o Google e mantida em um arquivo protegido no seu computador. O navegador recebe apenas um token temporário por sessão.</p><div class="setting-state" id="keyState">Verificando chave...</div><div class="setting-buttons"><button class="primary" id="openKeySettings">Configurar chave API</button><button class="secondary danger" id="deleteKey">Remover chave</button></div><p class="footnote">Uso local: 127.0.0.1:18371 · Não disponibilize esta aplicação diretamente na internet sem autenticação adicional e TLS.</p></div></section>
 </main></div>
+<dialog id="visionConsentDialog" class="visual-consent" aria-label="Confirmar análise externa">
+ <h2>Confirmar envio ao Google Gemini</h2>
+ <p id="visionConsentText"></p>
+ <div class="dialog-actions">
+  <button id="visionConsentReject" class="secondary" type="button">Não enviar</button>
+  <button id="visionConsentApprove" class="primary" type="button">Autorizar envio e análise</button>
+ </div>
+</dialog>
 <dialog id="visualConsentDialog" aria-labelledby="visualConsentTitle" aria-describedby="visualConsentDetails" class="visual-consent">
  <h2 id="visualConsentTitle">Autorizar mídia visual</h2>
  <p id="visualConsentDetails">A imagem será compartilhada somente após sua confirmação.</p>
@@ -88,5 +123,5 @@
 </dialog>
 <dialog id="keyDialog"><form id="keyForm"><div class="dialog-mark">◈</div><h2>Conectar ao Google AI Studio</h2><p>Insira sua API Key. Ela será enviada somente ao servidor local para validação e armazenamento protegido.</p><label for="apiKey">CHAVE DA API GEMINI</label><div class="secret-row"><input id="apiKey" type="password" placeholder="AIza..." required minlength="30" autocomplete="off" spellcheck="false"><button id="toggleSecret" type="button" class="mini">Mostrar</button></div><div id="keyFeedback" class="feedback" aria-live="polite"></div><div class="dialog-actions"><button type="button" id="closeKey" class="secondary">Cancelar</button><button type="submit" id="saveKey" class="primary">Validar e salvar</button></div><a href="https://aistudio.google.com/api-keys" target="_blank" rel="noreferrer">Onde obter minha chave? ↗</a></form></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="/telemetry.js" defer></script><script src="/media-policy.js" defer></script><script src="/app.js" defer></script>
+<script src="/telemetry.js" defer></script><script src="/media-policy.js" defer></script><script src="/app.js" defer></script><script src="/vision-ui.js" defer></script>
 </body></html>

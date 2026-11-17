@@ -25,3 +25,6 @@ LEANDRO pediu explicitamente avançar o desenvolvimento para a F2, evitando novo
 Não há teste com câmera/tela física operada por LEANDRO nem comprovação de quadros ingeridos pelo Google Live neste commit. É F2.1 implementada em staging de desenvolvimento local, não gate concluído de F2.
 F2.2-F2.6 ainda não executadas. Gate F0/F1 permanece aberto; chave compartilhada anteriormente não rotacionada por adiamento humano: não expor publicamente nem implantar produção.
 Original 18371, F1 testada 18372 preservados. F2 staging 18374.
+
+## F2.2/F2.3 — análise especializada e router
+O pacote F2-2-F2-3-QA.md cobre Gemini generateContent para imagem e vídeo (Files API), exclusão de arquivos, consentimento, trace ID, tokens e núcleo do roteador por modelos.list. Sucesso real com arquivos sintéticos (HTTP 200 imagem e vídeo). Modelos adicionais, preço, cotas, vídeos >24MiB e gates continuam pendentes.

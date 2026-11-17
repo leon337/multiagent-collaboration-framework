@@ -1,6 +1,6 @@
 {
   "schema": "mcf-f2-visual-consent-browser/v1",
-  "timestamp": "2026-11-17T02:34:55.267Z",
+  "timestamp": "2026-11-17T03:02:49.585Z",
   "url": "http://127.0.0.1:18374/",
   "results": [
     {
@@ -107,7 +107,7 @@
   "sourceSha256": {
     "public/app.js": "db0be64390092c636cb33af84e262999c9c651f43985c8d588bfcae0dbd69dfd",
     "public/media-policy.js": "8294dd368fafb56f648266f60054cda577629db2fdafc639a59327827ac9a851",
-    "public/index.html": "33c457cc71f395379b8a9c8c2b448062ba425af4df1d0ed40620b4bd04155137"
+    "public/index.html": "a200e89ad2823a31e5cae298174c6b81e6c9119dae00e54568c4211b66c501b6"
   },
   "captureBytesPersisted": false,
   "passed": 11,

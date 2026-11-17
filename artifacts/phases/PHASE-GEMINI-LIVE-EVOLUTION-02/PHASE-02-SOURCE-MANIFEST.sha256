@@ -1,8 +1,13 @@
 8294dd368fafb56f648266f60054cda577629db2fdafc639a59327827ac9a851  ../../../apps/gemini-live-studio/public/media-policy.js
 db0be64390092c636cb33af84e262999c9c651f43985c8d588bfcae0dbd69dfd  ../../../apps/gemini-live-studio/public/app.js
-33c457cc71f395379b8a9c8c2b448062ba425af4df1d0ed40620b4bd04155137  ../../../apps/gemini-live-studio/public/index.html
-7d14da2333fd4f39d1ac2ab0294b66083e38b9c160061b6bd6c78ab7244a42b2  ../../../apps/gemini-live-studio/public/style.css
-f1110ce3976b97e437d49ee9e555bf27df1c88555ab57c7f24d3d22a30d2c841  ../../../apps/gemini-live-studio/server.js
+a200e89ad2823a31e5cae298174c6b81e6c9119dae00e54568c4211b66c501b6  ../../../apps/gemini-live-studio/public/index.html
+36c990cc94c09d1ff74925cbbcff60cd87c19044abf3a5ab763b68f3e36b41c3  ../../../apps/gemini-live-studio/public/style.css
+0060f5af67e040795f315a7cc8dc0184b3ea82e5d87e22815fad330a5d479dc7  ../../../apps/gemini-live-studio/server.js
 6f9f9c907334c2d2c05f7febc4040f65b6d33b64e45cf445034b673085388d8c  ../../../tests/gemini-live-f2/media-policy.test.cjs
 0757596ed5b0029e9fb2d02f4d3b7263a3e7d740290e6d4e5293b6c3bae89ee4  ../../../tests/gemini-live-f2/browser-visual-consent.cjs
-1412f6d870ad5674efc4f1b8870e2200763b14730862a95dae456f88b0f5b7f4  ../../../.github/workflows/mcf-gemini-live-f2.yml
+0659b987222598752f3a8bfe390ad8709f96eabb49f48e8e41e6243c53933bd4  ../../../.github/workflows/mcf-gemini-live-f2.yml
+51f8a6320bcce6bb83882794e245ed435f9205264a357196b0a8a591f4591b60  ../../../apps/gemini-live-studio/capability-router.cjs
+5dff316f0f3873aa229f5dafa82de93a02c66e95241cb4fbe7cae702457b9437  ../../../apps/gemini-live-studio/vision-adapter.cjs
+88ddebea2b97696d2052967a92a28253ca26c1ddf7c5c7e23df4269ec3bb208a  ../../../apps/gemini-live-studio/public/vision-ui.js
+8b05919cb16a14fe2c21d8dd06b868680f154527096c43f2b248b8a8bb55fd59  ../../../tests/gemini-live-f2/vision-adapter.test.cjs
+360e222e534ae8e4a950fa4d1e85818da1311e256f33bd37b03f2c10b8ca5f5a  ../../../tests/gemini-live-f2/browser-vision-e2e.cjs

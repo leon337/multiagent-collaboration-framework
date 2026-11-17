@@ -1,0 +1,106 @@
+{
+  "schema": "mcf-f2-2-browser-qa-v1",
+  "url": "http://127.0.0.1:18374/",
+  "at": "2026-11-17T03:02:52.733Z",
+  "mockProvider": true,
+  "noRawMediaPersisted": true,
+  "results": [
+    {
+      "name": "ANALYSIS_PANEL_AND_VERIFIED_CATALOG",
+      "pass": true,
+      "observed": {
+        "panel": true,
+        "catalog": 1,
+        "options": 3
+      }
+    },
+    {
+      "name": "IMAGE_FILE_ADMISSION_ENABLED",
+      "pass": true,
+      "observed": {
+        "button": false,
+        "info": "scene.png · 0.00 MB · imagem"
+      }
+    },
+    {
+      "name": "CONFIRMATION_REQUIRED_BEFORE_MEDIA_TRANSFER",
+      "pass": true,
+      "observed": {
+        "open": true,
+        "requests": 0
+      }
+    },
+    {
+      "name": "USER_DENIAL_SENDS_ZERO_MEDIA",
+      "pass": true,
+      "observed": {
+        "requests": 0,
+        "status": "Análise cancelada antes do envio; nada foi transmitido."
+      }
+    },
+    {
+      "name": "IMAGE_ANALYSIS_USES_EXPLICIT_CONSENT_AND_MODEL",
+      "pass": true,
+      "observed": {
+        "kind": "image",
+        "model": "gemini-3.5-flash",
+        "mime": "image/png",
+        "consent": true,
+        "bytes": 120,
+        "hasRaw": true,
+        "header": "yes"
+      }
+    },
+    {
+      "name": "ANALYSIS_RESULT_TRACE_NO_AUTO_LIVE_SHARE",
+      "pass": true,
+      "observed": {
+        "trace": "Trace 11111111-2222-3333-4444-555555555555 · gemini-3.5-flash · 12 tokens",
+        "shareEnabled": true
+      }
+    },
+    {
+      "name": "LIVE_SUMMARY_REQUIRES_SEPARATE_ACTION_WITH_UNTRUSTED_LABEL",
+      "pass": true,
+      "observed": {
+        "count": 1,
+        "last": {
+          "untrusted": true,
+          "fileIncluded": false
+        }
+      }
+    },
+    {
+      "name": "VIDEO_UPLOAD_EXECUTES_ONLY_AFTER_EXPLICIT_CONSENT",
+      "pass": true,
+      "observed": {
+        "kind": "video",
+        "mime": "video/mp4",
+        "status": "Análise concluída. O texto não foi transmitido automaticamente à sessão Live."
+      }
+    },
+    {
+      "name": "QUOTA_ERROR_EXPLICIT_NO_SILENT_MODEL_FALLBACK",
+      "pass": true,
+      "observed": {
+        "status": "Falha na análise: Limite de cota. Não houve fallback.",
+        "calls": 3
+      }
+    },
+    {
+      "name": "NO_UNCAUGHT_BROWSER_ERRORS",
+      "pass": true,
+      "observed": {
+        "errors": []
+      }
+    }
+  ],
+  "sourceSha256": {
+    "public/vision-ui.js": "88ddebea2b97696d2052967a92a28253ca26c1ddf7c5c7e23df4269ec3bb208a",
+    "public/index.html": "a200e89ad2823a31e5cae298174c6b81e6c9119dae00e54568c4211b66c501b6",
+    "public/app.js": "db0be64390092c636cb33af84e262999c9c651f43985c8d588bfcae0dbd69dfd",
+    "server.js": "0060f5af67e040795f315a7cc8dc0184b3ea82e5d87e22815fad330a5d479dc7"
+  },
+  "pass": 10,
+  "fail": 0
+}

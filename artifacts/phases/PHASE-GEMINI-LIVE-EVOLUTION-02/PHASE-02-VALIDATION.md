@@ -17,3 +17,15 @@
 | Ingestão de imagem na API Google real | PENDENTE |
 
 Evidências sanitizadas em EVIDENCE-F2-1-CHROME-CONSENT.json.
+
+## F2.2/F2.3
+| Teste | Resultado |
+|---|---|
+| Vision adapter Node | 13/13 PASS |
+| Browser análise com provedor mock | 10/10 PASS |
+| Google imagem sintética 64x64 | HTTP 200 |
+| Google vídeo MP4 2 segundos / Files API | HTTP 200; exclusão confirmada |
+| Modelos.list com esta chave | 37 modelos generateContent, suporte visual restante desconhecido |
+| HTTP negativos | 403 / 415 / 400 |
+| Testes Node F0 + F1 + F2 | 88/88 PASS |
+| Vídeo maior que 24MiB, custo/cota por modelo | PENDENTE |

@@ -6,3 +6,7 @@
 - PHASE-02-DECISIONS.md: escopo.
 - EVIDENCE-F2-1-CHROME-CONSENT.json: 11 testes browser, hashes de fonte.
 - PHASE-02-SOURCE-MANIFEST.sha256 e PHASE-02-ARTIFACT-MANIFEST.sha256.
+
+- F2-2-F2-3-QA.md: implementação, testes e riscos do pipeline.
+- EVIDENCE-F2-2-3-BROWSER.json: 10 testes UI em Chrome com mock.
+- EVIDENCE-F2-2-3-REAL-PROVIDER.json: imagem+vídeo sintéticos via Google real, sem dados brutos.

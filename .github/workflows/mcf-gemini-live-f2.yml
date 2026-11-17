@@ -25,8 +25,12 @@ jobs:
           node --check apps/gemini-live-studio/public/app.js
           node --check apps/gemini-live-studio/public/media-policy.js
           node --check apps/gemini-live-studio/server.js
+          node --check apps/gemini-live-studio/capability-router.cjs
+          node --check apps/gemini-live-studio/vision-adapter.cjs
+          node --check apps/gemini-live-studio/public/vision-ui.js
           node --check tests/gemini-live-f2/browser-visual-consent.cjs
-          node --test tests/gemini-live-f2/media-policy.test.cjs
+          node --check tests/gemini-live-f2/browser-vision-e2e.cjs
+          node --test tests/gemini-live-f2/*.test.cjs
       - name: Verify F2 evidence hashes
         working-directory: artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-02
         run: |

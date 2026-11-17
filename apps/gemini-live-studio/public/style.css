@@ -17,3 +17,18 @@
 .visual-consent p{line-height:1.7;font-size:12px;color:#b4c1d3;margin:10px 0}
 .visual-consent .visual-warning{border-left:3px solid #e8b663;padding-left:11px;color:#e5c994}
 .visual-consent .dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+
+/* F2.2 specialized media analysis — separate from audio Live */
+.vision-panel{margin-top:20px}.vision-beta{font-size:9px;color:#a3a9d0}
+.vision-content{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.vision-content p{color:#aab6c9;font-size:12px;line-height:1.65}
+.vision-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.vision-fields label,.vision-question{font-size:11px;font-weight:700;color:#afbeda;display:flex;flex-direction:column;gap:7px}
+.vision-fields input,.vision-fields select,.vision-question textarea{background:#111a2b;color:#edf3ff;border:1px solid #344158;border-radius:9px;padding:10px;min-width:0}
+.vision-question textarea{resize:vertical;font:13px/1.6 inherit;min-height:75px}
+.vision-summary,.vision-status,.vision-trace{font-size:11px;color:#91a4c0;overflow-wrap:anywhere}
+.vision-status{border-left:3px solid #675baa;padding:7px 10px;background:#131a2c}
+.vision-actions{display:flex;gap:10px;flex-wrap:wrap}
+.vision-result{white-space:pre-wrap;overflow-wrap:anywhere;max-height:380px;overflow:auto;background:#0c1420;border:1px solid #26364e;border-radius:9px;padding:15px;color:#e9f0ff;font-size:12px;line-height:1.6}
+.vision-content .vision-disclaimer{color:#d5b782}
+@media(max-width:900px){.vision-fields{grid-template-columns:1fr}}
