@@ -1,0 +1,56 @@
+schema_version: 1
+
+capability:
+  id: mcf.cloud-project-recovery.v1
+  provider_project_id: estudio-binaural-3d
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: BOUNDED_WRITE
+
+contract:
+  protocol: MCF_CLOUD_PROJECT_RECOVERY_RUNBOOK_V1
+  allowed_operations:
+    - recovery.discover
+    - recovery.plan
+    - recovery.verify
+    - recovery.backup_with_explicit_authorization
+    - recovery.restore_with_explicit_authorization
+  prohibited_operations:
+    - recovery.replace_without_explicit_authorization
+    - recovery.claim_auto_execution_without_adapter
+    - credential.export_to_git
+    - oauth.bypass
+    - mission.execute_without_gate
+    - production.deploy
+
+scope:
+  environments:
+    - dev
+    - lab
+    - staging
+  resources:
+    - repo://leon337/estudio-binaural-3d
+    - repo://leon337/multiagent-collaboration-framework/skills/cloud/MCF-RECOVER-CLOUD-PROJECT.yaml
+    - repo://leon337/multiagent-collaboration-framework/docs/operations/MCF-CLOUD-PROJECT-RECOVERY.md
+
+governance:
+  authorization_state: NOT_AUTHORIZED
+  required_gate: PROJECT_OWNER_SCOPED_WRITE_AND_HUMAN_GATE_FOR_AUTH_OR_REPLACEMENT
+  expiration: null
+
+lifecycle:
+  implementation_state: DECLARED
+  connection_state: DISCONNECTED
+  runtime_state: BLOCKED
+  verification_state: NOT_VERIFIED
+  last_verified_at: null
+
+evidence:
+  - source_ref: repo://leon337/estudio-binaural-3d/docs/RECUPERACAO_GOOGLE_DRIVE_V58.md
+    source_revision: ed3ffda603527817d62bb427c8566d94b9fe7232
+    observed_at: "2026-11-17T04:18:52Z"
+  - source_ref: repo://leon337/estudio-binaural-3d/scripts/remote-state.mjs
+    source_revision: ed3ffda603527817d62bb427c8566d94b9fe7232
+    observed_at: "2026-11-17T04:18:52Z"
+
+freshness: LIVE_REQUIRED

@@ -11,6 +11,10 @@ A seleção inicial de modelos para novos projetos e agentes está documentada e
 
 O padrão de chat nativo permanece **Gemini 3.8 Flash para agentes textuais com ferramentas**, mas a preferência operacional de LEANDRO para **MESTRE Live no DSH** é **Gemini 3.1 Flash Live** (ID `gemini-3.1-flash-live-preview`), com **Gemini 2.5 Flash Native Audio** como alternativa. **Gemini 3.8 Live/Extended Thinking** fica opcional devido às limitações relatadas no projeto; transcrição e tradução 3.5 têm modos especializados sem ferramentas. Essas escolhas são condicionais à capacidade e disponibilidade atuais da API; não estabelecem automaticamente uma integração com o runtime e não fixam quotas do AI Studio.
 
+## Recuperação de projetos entre computadores: capability declarativa
+
+Para iniciar uma missão de migração/restauração GitHub + Google Drive, consultar MCF-RECOVER-CLOUD-PROJECT no [registry](skills/registry.yaml), o [procedimento do MESTRE](skills/cloud/mcf-project-recovery/SKILL.md) e o [runbook](docs/operations/MCF-CLOUD-PROJECT-RECOVERY.md). O caso implementado de referência é o Estúdio Binaural; a capability MCF está DECLARED / NOT_VERIFIED, não equivale a permissão nem a execução automática pelo runtime.
+
 ## O que existe hoje
 
 ### `CURRENT_IMPLEMENTED`

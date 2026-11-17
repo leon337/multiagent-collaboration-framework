@@ -15,6 +15,13 @@ Esta pasta contém contratos reutilizáveis para impedir execução improvisada 
 
 O `registry.yaml` define contrato, owner, entradas, ferramentas, permissão, evidência, fallback e handoff. A capacidade de uma skill ser executada pelo runtime não é representada por um campo `executable` no registry: ela é limitada pelo contrato tipado `McfExecutableSkillId`, pelo `SkillExecutor`, pelas permissões e pelos validadores de evidência do runtime.
 
+## Recuperação portável de projetos: discovery para novas sessões
+
+- Skill candidata MCF-RECOVER-CLOUD-PROJECT@0.1.0: [contrato](cloud/MCF-RECOVER-CLOUD-PROJECT.yaml), [procedimento para MESTRE](cloud/mcf-project-recovery/SKILL.md) e [runbook](../docs/operations/MCF-CLOUD-PROJECT-RECOVERY.md).
+- Declaração mcf.cloud-project-recovery.v1: [capability no registry](../context/capabilities/cloud-project-recovery.yaml).
+- Status EXPERIMENTAL; o runtime central ainda não implementa esse skill_id no McfExecutableSkillId / SkillExecutor. Não incrementar contagens de skills executáveis nem autorizar escritas externas.
+- Provider de referência: repositório privado leon337/estudio-binaural-3d (v5.8); verificar sempre adapter e SHA atuais.
+
 ## Fluxo obrigatório
 
 ```text

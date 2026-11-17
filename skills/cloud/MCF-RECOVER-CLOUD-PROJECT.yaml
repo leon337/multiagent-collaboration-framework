@@ -1,0 +1,105 @@
+skill:
+  skill_id: MCF-RECOVER-CLOUD-PROJECT
+  name: Recuperar projeto entre computadores com GitHub e cofre Google Drive
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: Descobrir, verificar e aplicar de forma governada o padrão de recuperação de código e backups cifrados com credenciais OAuth locais.
+  owner_agents: [Mestre]
+  supporting_agents: [Miriam, Sofia, Rafael, Renato, Emily]
+  trigger_phrases:
+    - "recuperar projeto em outro computador"
+    - "migrar projeto entre computadores"
+    - "reconciliar backup GitHub Google Drive"
+    - "restaurar projeto sem copiar chave"
+    - "capability recuperação na nuvem"
+    - "cofre de recuperação Google Drive"
+    - "reconciliar projeto com estado local e remoto"
+    - "sincronizar projeto para outro computador"
+  required_inputs: [project_reference, recovery_goal, authorized_scope]
+  optional_inputs: [target_device, environment, repository_ref, expected_restore_point, backup_artifact_ref]
+  preconditions:
+    - "consultar AGENTS.md, docs/MCF-CURRENT-STATE.md e o runbook desta skill"
+    - "verificar GitHub e identidade do projeto alvo ao vivo"
+    - "validar ferramentas, conta autorizada e permissão antes de ação externa"
+    - "confirmar que o projeto implementa os adaptadores de backup e restore exigidos"
+  allowed_tools: [GitHub, Google_Drive, Remote_Desktop_Commander, Git_CLI, GitHub_CLI]
+  alternative_tools: [ChatGPT_Work, Browser]
+  forbidden_tools:
+    - secret_in_git_or_logs
+    - cross_account_oauth_reuse
+    - oauth_gate_bypass
+    - unaudited_database_overwrite
+    - auto_deploy_or_merge
+    - assume_project_compatibility
+  permission_profile: SCOPED_WRITE
+  execution_steps:
+    - descobrir_contrato_e_projeto_alvo
+    - verificar_provider_e_sha_ao_vivo
+    - reconciliar_codigo_estado_e_backup
+    - classificar_autorizacoes_e_gates
+    - qualificar_pre_requisitos_e_conta_google
+    - executar_backup_ou_restauracao_somente_se_autorizado
+    - verificar_manifesto_cifragem_sqlite_e_projetos
+    - registrar_receipt_sem_segredos_e_handoff
+  required_evidence:
+    - project_reference
+    - project_sha_and_backup_ref
+    - provider_and_tool_availability
+    - identity_and_permission_checks
+    - scoped_authorization_receipt
+    - action_receipts
+    - integrity_and_restore_evidence
+    - limitations_and_handoff
+  expected_outputs: [recovery_plan, verified_restore_or_blocker, evidence_receipt, continuation_handoff]
+  acceptance_criteria:
+    - project_source_of_truth_verified
+    - no_secret_exposed
+    - recoverable_without_original_machine_when_cloud_accounts_authorized
+    - restore_verified_or_truthfully_blocked
+    - no_overwrite_without_gate
+    - no_claim_of_runtime_execution_from_registry_only
+  failure_modes:
+    - cloud_account_unavailable
+    - missing_oauth_permission
+    - missing_or_incompatible_backup_adapter
+    - key_backup_mismatch
+    - remote_state_stale_or_missing
+    - cross_device_conflict
+    - runtime_adapter_unavailable
+  fallback:
+    without_primary_tool: "Usar outro conector autorizado; sem acesso autenticado, somente roteiro de execução e bloqueio."
+    without_any_tool: "Registrar contexto mínimo, links canônicos e dependência externa sem alegar restore."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Renato
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: SENSITIVE
+    human_gate_triggers:
+      - oauth_consent_or_login
+      - backup_publication_outside_existing_scope
+      - restore_replacing_existing_data
+      - credential_rotation_or_recovery
+      - external_access_grant
+    prohibited_actions:
+      - publish_plaintext_backups
+      - commit_keys_or_refresh_tokens
+      - bypass_human_identity_checks
+      - assume_account_index_from_another_machine
+      - fabricate_verification_receipt
+  tests:
+    positive_scenarios:
+      - "descobrir instruções em AGENTS, registry e contrato de capability"
+      - "verificar integridade de backup sem ler chave em texto no chat"
+      - "restaurar snapshot em máquina-alvo autorizada sem sobrescrever dados"
+    negative_scenarios:
+      - "negar substituição de SQLite com produção ativa ou sem gate"
+      - "falhar quando Google/GitHub não autenticar o projeto certo"
+      - "não registrar a skill como executável no SkillExecutor sem adapter testado"
+    last_evaluated_at: null
+    verdict: NOT_EVALUATED
