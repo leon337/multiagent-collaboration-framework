@@ -9,3 +9,4 @@
 - [ ] Validar gate LEO/HDF, E2E de execucao reversivel real e auditoria.
 - [ ] Revisao independente, CI e merge.
 - [x] E2E do dry-run em HTTP, CSRF, path e ausência de escrita.
+- [x] Resolver P2 Codex: shared root privado + operações por dir_fd verificado.

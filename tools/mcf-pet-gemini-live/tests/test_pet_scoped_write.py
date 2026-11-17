@@ -97,6 +97,23 @@ class ScopedWriteTest(unittest.TestCase):
         with self.assertRaises(sw.ScopedWriteDenied):
             self.apply()
 
+    def test_create_fails_closed_after_parent_directory_swap(self):
+        outside=Path(self.tmp.name)/"outside-target"
+        outside.mkdir(mode=0o700)
+        original=sw._mode_private
+        switched=[False]
+        def replace_directory(path,mode=0o700):
+            original(path,mode)
+            if path==self.notes/MISSION and not switched[0]:
+                switched[0]=True
+                path.rename(self.notes/(MISSION+"-preserved"))
+                path.symlink_to(outside,target_is_directory=True)
+        with patch.object(sw,"_mode_private",side_effect=replace_directory):
+            with self.assertRaises(sw.ScopedWriteDenied):
+                self.apply()
+        self.assertTrue(switched[0])
+        self.assertFalse((outside/(NOTE+".md")).exists())
+
     def test_denied_gate_expired_or_wrong_scope(self):
         for kwargs in ({"gate":"PENDING"},{"allow":False},{"expire":True}):
             def fake(mid,operation,resource,parameters=kwargs):
@@ -118,6 +135,49 @@ class ScopedWriteTest(unittest.TestCase):
         again=sw.rollback_note(MISSION,created["receipt_id"],
             verifier=self.allow,notes_root=self.notes,db_path=self.receipts)
         self.assertTrue(again["idempotent"])
+
+    def test_shared_default_layout_bootstraps_private_root_under_umask_022(self):
+        from unittest.mock import patch
+        import stat
+        root=Path(self.tmp.name)/"state"/"pet-scoped"
+        note_root=root/"notes"
+        db=root/"receipts.sqlite3"
+        # Force a common user umask that used to create shared ROOT 0755.
+        previous=os.umask(0o022)
+        try:
+            with (patch.object(sw,"ROOT",root),
+                  patch.object(sw,"NOTES",note_root),
+                  patch.object(sw,"JOURNAL",db)):
+                record=sw.create_note(MISSION,NOTE,ACTION,self.content,
+                    verifier=self.allow,notes_root=note_root,db_path=db)
+                self.assertEqual(record["status"],"APPLIED")
+                self.assertEqual(stat.S_IMODE(root.stat().st_mode),0o700)
+                self.assertEqual(stat.S_IMODE(note_root.stat().st_mode),0o700)
+                self.assertEqual(stat.S_IMODE(db.stat().st_mode),0o600)
+                result=sw.rollback_note(MISSION,record["receipt_id"],
+                    verifier=self.allow,notes_root=note_root,db_path=db)
+                self.assertEqual(result["status"],"ROLLED_BACK")
+        finally:
+            os.umask(previous)
+
+    def test_mission_directory_symlink_cannot_redirect_rollback(self):
+        record=self.apply()
+        directory=self.notes/MISSION
+        saved=self.notes/(MISSION+"-original")
+        directory.rename(saved)
+        outside=Path(self.tmp.name)/"elsewhere"
+        outside.mkdir(mode=0o700)
+        target=outside/(NOTE+".md")
+        target.write_text(self.content)
+        target.chmod(0o600)
+        directory.symlink_to(outside,target_is_directory=True)
+        with self.assertRaises(sw.ScopedWriteDenied) as result:
+            sw.rollback_note(MISSION,record["receipt_id"],
+                verifier=self.allow,notes_root=self.notes,db_path=self.receipts)
+        self.assertIn(result.exception.code,
+            ("UNSAFE_STORAGE_DIRECTORY","UNSAFE_WORKSPACE_DIRECTORY"))
+        self.assertEqual(target.read_text(),self.content)
+        self.assertTrue((saved/(NOTE+".md")).is_file())
 
     def test_rollback_detects_outside_modification(self):
         created=self.apply()

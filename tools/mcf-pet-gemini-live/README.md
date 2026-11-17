@@ -260,3 +260,13 @@ receipts, idempotency and rollback with SHA256 and a temporary tombstone;
 path traversal, out-of-band edits and expired/wrong grants are rejected.
 No real host-wide write, service restart, browser click or deploy is
 authorized by this package.
+
+### Code-review remediation for PR #537
+
+Two P2 findings were fixed: default shared storage root now explicitly
+bootstraps with 0700 under a common umask 022, and both note creation and
+rollback are anchored to verified O_DIRECTORY/O_NOFOLLOW file descriptors.
+File read, rename and unlink use the dir_fd rather than following a
+swapped mission directory path. Tests prove no write/delete outside the
+workspace when an attacker substitutes a directory symlink, and test
+the default sibling NOTES/JOURNAL layout. Permissions remain fail-closed.
