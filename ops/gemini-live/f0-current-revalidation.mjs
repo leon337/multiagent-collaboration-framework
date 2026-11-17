@@ -48,12 +48,17 @@ export async function probeModels(key,request=fetch){
 export function parseListeners(ssText,port){
  const matches=[];
  for(const line of String(ssText||'').split('\n')){
-  const match=/^\s*LISTEN\s+\d+\s+\d+\s+(\S+)\s+\S+.*?pid=(\d+)/.exec(line);
+  // Every listener counts, including sockets where ss cannot reveal PID.
+  // Silently dropping an unknown-PID socket can hide 0.0.0.0 exposure.
+  const match=/^\s*LISTEN\s+\d+\s+\d+\s+(\S+)\s+\S+(.*)$/.exec(line);
   if(!match)continue;
   const token=':'+port;
-  if(match[1].endsWith(token))matches.push({address:match[1].slice(0,-token.length),pid:Number(match[2])});
+  if(!match[1].endsWith(token))continue;
+  const pidMatch=/pid=(\d+)/.exec(match[2]);
+  matches.push({address:match[1].slice(0,-token.length),pid:pidMatch?Number(pidMatch[1]):null});
  }
- return {matches,loopback_only:matches.length===1&&matches[0].address==='127.0.0.1'};
+ return {matches,loopback_only:matches.length===1&&matches[0].address==='127.0.0.1'
+  &&Number.isSafeInteger(matches[0].pid)&&matches[0].pid>0};
 }
 function inspectListener(liveDir,port){
  try {

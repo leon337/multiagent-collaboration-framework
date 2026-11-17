@@ -39,6 +39,16 @@ test('literal 0.0.0.0:port or IPv6 dual-stack cannot pass loopback-only criterio
  assert.equal(parseListeners(withPid('127.0.0.1'),18377).loopback_only,true);
  assert.equal(parseListeners(withPid('127.0.0.1')+'\n'+withPid('0.0.0.0'),18377).loopback_only,false);
 });
+test('all listeners count even if PID is not disclosed by ss',()=>{
+ const known='LISTEN 0 511 127.0.0.1:18377 0.0.0.0:* users:(("node",pid=1788,fd=25))';
+ const noPid='LISTEN 0 511 0.0.0.0:18377 0.0.0.0:*';
+ const result=parseListeners(known+'\n'+noPid,18377);
+ assert.equal(result.matches.length,2);
+ assert.equal(result.loopback_only,false);
+ assert.equal(parseListeners(noPid,18377).loopback_only,false);
+ const loopNoPid='LISTEN 0 511 127.0.0.1:18377 0.0.0.0:*';
+ assert.equal(parseListeners(loopNoPid,18377).loopback_only,false);
+});
 test('invalid live path and port fail closed',async()=>{
  await assert.rejects(revalidate({liveDir:null}),/LIVE_DIRECTORY_MISSING/);
  await assert.rejects(revalidate({liveDir:'/tmp',servicePort:0}),/INVALID_LOCAL_PORT/);

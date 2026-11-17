@@ -1,7 +1,7 @@
 {
   "schema": "mcf-f0-live-revalidation/v1",
-  "observed_at_utc": "2026-11-17T17:56:53.605Z",
-  "source_commit_sha": "a163a9a1f71bfe1a176d6c556e49ab0d658b1663",
+  "observed_at_utc": "2026-11-17T18:00:57.499Z",
+  "source_commit_sha": "87af04c7288c392621bd4852cd0d6a2e928e030c",
   "environment": "authorized_local_linux_host",
   "application": {
     "name": "mcf-gemini-live-studio-gateway",
