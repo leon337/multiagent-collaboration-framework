@@ -12,3 +12,6 @@ On approval, scope F2 to opt-in camera/screen consent and capability inventory f
 
 ## F1 response watchdog — candidate
 QA-F1-RESPONSE-20261116/REPORT.md includes 10/10 adversarial, 17/17 real API virtual-media E2E, 22/22 offline, ~60s physical mic no Worklet drop. Audible output and 30 speech-end→ear measurements remain unverified; F0.8/F1.6 gates are still pending. Only preparation of F2 is authorized under prior scoped LEO profile gate.
+
+## F1 response watchdog — candidate
+QA-F1-RESPONSE-20261116/REPORT.md includes 13/13 adversarial, 17/17 real API virtual-media E2E, 23/23 offline, ~60s physical mic no Worklet drop. Audible output and 30 speech-end→ear measurements remain unverified; F0.8/F1.6 gates are still pending. Only preparation of F2 is authorized under prior scoped LEO profile gate.

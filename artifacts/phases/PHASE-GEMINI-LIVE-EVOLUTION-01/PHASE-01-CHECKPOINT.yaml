@@ -27,9 +27,9 @@ staging:
 evidence:
   voice_response_timeout_warning: PASS_NOTIFY_ONLY
   voice_response_manual_recovery: PASS_HUMAN_CONFIRMED_NO_AUTORETRY
-  voice_response_browser_adversarial: 10_PASS
+  voice_response_browser_adversarial: 13_PASS
   voice_response_real_google_e2e: 17_PASS
-  voice_response_node_offline: 22_PASS
+  voice_response_node_offline: 23_PASS
   voice_response_mic_60s_frames: 1493
   voice_response_mic_60s_drops: 0
   voice_response_physical_mouth_to_ear_p95: NOT_MEASURED

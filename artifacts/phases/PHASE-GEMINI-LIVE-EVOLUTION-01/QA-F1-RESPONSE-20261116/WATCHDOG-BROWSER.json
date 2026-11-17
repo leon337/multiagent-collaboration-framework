@@ -1,11 +1,11 @@
 {
   "schema": "mcf-f1-response-watchdog-browser-v1",
-  "utc": "2026-11-17T01:31:58.890Z",
+  "utc": "2026-11-17T01:43:33.684Z",
   "url": "http://127.0.0.1:18373",
   "sourceSha256": {
-    "public/app.js": "ed7f841238b4e6ebe29985cd7a871347a51d242dd5a346a70de7337ab789c493",
-    "public/index.html": "0011ac0145d361b5ad6018ffce7fb69841840e8a3d3c5c25c9c93f60be4c2b9e",
-    "public/telemetry.js": "87c5348e1fbbf1718e941f3576dbbb5a181d44a79ca8e7cfe27ef5170cf7f176"
+    "public/app.js": "71e37658f0dab2d86b64092a288060e85eca04196c05b01f78dfa23cdd87d487",
+    "public/index.html": "1dba2ff9898a2f7db77b91aadb8ce5b91ae254161841e7528369aef0bddf0cb9",
+    "public/telemetry.js": "79baef57e715a2e3c8e5c92e5ff4b00db8befa712c1e3aac916c5a56e5cf564a"
   },
   "results": [
     {
@@ -58,13 +58,13 @@
       }
     },
     {
-      "id": "MANUAL_RECOVERY_NEEDS_EXPLICIT_CONFIRM_AND_ONE_SEND",
+      "id": "MANUAL_RECOVERY_REQUIRES_CONFIRM_AND_RESTARTS_WITHOUT_REPLAY",
       "pass": true,
       "observed": {
         "rejected": true,
         "accepted": {
-          "writes": 1,
-          "kind": "text",
+          "writes": 0,
+          "disconnected": true,
           "buttonHidden": true
         }
       }
@@ -76,6 +76,34 @@
         "disconnected": false,
         "after": 1,
         "stillPending": false
+      }
+    },
+    {
+      "id": "INCOMPATIBLE_OR_ODD_PCM_CANNOT_ACK_RESPONSE",
+      "pass": true,
+      "observed": {
+        "wrongMime": false,
+        "odd": false,
+        "pending": true,
+        "invalid": 2
+      }
+    },
+    {
+      "id": "TEXT_BLOCKED_WHILE_VOICE_RESPONSE_PENDING",
+      "pass": true,
+      "observed": {
+        "writes": 0,
+        "kind": "voice",
+        "pending": true
+      }
+    },
+    {
+      "id": "EARLY_MODEL_RESPONSE_PREVENTS_FALSE_POST_SILENCE_TIMER",
+      "pass": true,
+      "observed": {
+        "pending": false,
+        "kind": null,
+        "earlyReplySeen": true
       }
     },
     {
@@ -97,6 +125,6 @@
   "realProvider": false,
   "realSpeaker": false,
   "mediaPersisted": false,
-  "pass": 10,
+  "pass": 13,
   "fail": 0
 }

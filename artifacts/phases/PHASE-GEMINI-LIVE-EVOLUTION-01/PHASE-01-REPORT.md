@@ -79,3 +79,7 @@ Evidence and justification: QA-F1-Q3-AUDIO-20261116/LEO-PROFILE-GATE-Q3-CLOCK.md
 
 ## Evidência suplementar F1 — turnos de voz
 QA-F1-RESPONSE-20261116/REPORT.md contém a correção para monitor de voz, recuperação exclusivamente manual, testes com API real/virtual e mic físico sem PCM salvo. O gate formal não foi emitido neste SHA e a latência física de 30 amostras não foi reivindicada.
+
+
+## Auditoria pós-correção de turnos
+O primeiro candidato 3aa foi devolvido por auditoria independente. Novo ciclo com correlação conservadora de turnos, reinício explícito e validação PCM está documentado em QA-F1-RESPONSE-20261116/REMEDIATION-CYCLE2.md. Gate ainda pendente.

@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-17T01:34:18.442Z",
+  "date": "2026-11-17T01:43:55.824Z",
   "origin": "http://127.0.0.1:18373/",
   "virtual_media": true,
   "real_api": true,
@@ -52,7 +52,7 @@
     {
       "id": "WORKLET_AUDIO_SENT_REAL",
       "result": "PASS",
-      "detail": "{\"frames\":38,\"bytes\":48678,\"worklet\":true,\"sampleRate\":48000,\"streamLive\":true}"
+      "detail": "{\"frames\":39,\"bytes\":49959,\"worklet\":true,\"sampleRate\":48000,\"streamLive\":true}"
     },
     {
       "id": "WORKLET_STOP_CLEAN",
@@ -97,9 +97,9 @@
   "errors": [],
   "source_sha256": {
     "server.js": "34795d5098f7cce63779d39317455b38968f860b26057f82ae31b66872566a1b",
-    "public/app.js": "ed7f841238b4e6ebe29985cd7a871347a51d242dd5a346a70de7337ab789c493",
-    "public/index.html": "0011ac0145d361b5ad6018ffce7fb69841840e8a3d3c5c25c9c93f60be4c2b9e",
-    "public/telemetry.js": "87c5348e1fbbf1718e941f3576dbbb5a181d44a79ca8e7cfe27ef5170cf7f176",
+    "public/app.js": "71e37658f0dab2d86b64092a288060e85eca04196c05b01f78dfa23cdd87d487",
+    "public/index.html": "1dba2ff9898a2f7db77b91aadb8ce5b91ae254161841e7528369aef0bddf0cb9",
+    "public/telemetry.js": "79baef57e715a2e3c8e5c92e5ff4b00db8befa712c1e3aac916c5a56e5cf564a",
     "public/capture-worklet.js": "6e5e31176beb66b3a54548e8c00f67f2d87af96dce327b60ba2ba0dffe15fe6a"
   },
   "test_script_sha256": "66f26e3abae23282ab046b4b8a28507491b47b31c5ffc243e48295af525529be",

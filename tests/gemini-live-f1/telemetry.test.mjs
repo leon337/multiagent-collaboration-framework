@@ -77,3 +77,9 @@ test('disconnects before a response have a separate numeric indicator',()=>{
  assert.equal(t.snapshot().metrics.response_interrupted,1);
  assert.ok(!JSON.stringify(t.snapshot()).includes('SECRET'));
 });
+
+test('invalid provider audio is count-only and never contains payload',()=>{
+ const t=make();t.record('audio_invalid',{count:1,content:'RAW_WAV_PRIVATE'});
+ const m=t.snapshot().metrics;assert.equal(m.audio_invalid,1);
+ assert.ok(!JSON.stringify(t.snapshot()).includes('RAW_WAV_PRIVATE'));
+});

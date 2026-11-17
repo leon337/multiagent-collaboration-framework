@@ -22,17 +22,17 @@ const report={schema:'mcf-f1-response-watchdog-browser-v1',utc:new Date().toISOS
    const speechEnd=state.pendingTurnStartedAt;
    playAudio(btoa(String.fromCharCode(...new Uint8Array(640))));
    const after={pending:state.pendingPromptAudio,voiceProxyRecorded:MCFLiveTelemetry.snapshot().metrics.voice_to_audio_proxy_ms.samples-before,speechEndWasFinite:Number.isFinite(speechEnd)};
-   clearPendingTurn();state.muted=prior.muted;state.socket=prior.socket;state.connected=prior.connected;state.micStream=prior.stream;state.micCtx=prior.ctx;state.sessionVadAuto=prior.auto;
+   handleMessage({serverContent:{turnComplete:true}});clearPendingTurn();state.muted=prior.muted;state.socket=prior.socket;state.connected=prior.connected;state.micStream=prior.stream;state.micCtx=prior.ctx;state.sessionVadAuto=prior.auto;
    return {armed,after};
   });
   check('VOICE_AUTO_SILENCE_ARMS_WATCHDOG',voice.armed.pending&&voice.armed.kind==='voice'&&voice.armed.writes>=24,voice.armed);
   check('MODEL_AUDIO_DISARMS_VOICE_AND_RECORDS_PROXY',!voice.after.pending&&voice.after.voiceProxyRecorded===1&&voice.after.speechEndWasFinite,voice.after);
   const invalid=await page.evaluate(()=>{
-   const oldConnected=state.connected;state.connected=true;
+   const oldConnected=state.connected;state.connected=true;state.awaitingTerminal=false;state.voiceResponseSeen=false;
    watchResponse('voice');
    playAudio('@@invalid-base64@@');
    const pending=state.pendingPromptAudio;
-   clearPendingTurn();state.connected=oldConnected;
+   clearPendingTurn();state.awaitingTerminal=false;state.connected=oldConnected;
    return {pending};
   });
   check('INVALID_PROVIDER_AUDIO_KEEPS_WATCHDOG_ACTIVE',invalid.pending,invalid);
@@ -42,7 +42,7 @@ const report={schema:'mcf-f1-response-watchdog-browser-v1',utc:new Date().toISOS
    state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(){writes++;}};state.connected=true;
    window.setTimeout=(fn,ms,...args)=>oldTimer.call(window,fn,ms===20000||ms===16000?35:ms,...args);
    const before=MCFLiveTelemetry.snapshot().metrics.response_timeouts;
-   watchResponse('voice');
+   state.awaitingTerminal=false;state.voiceResponseSeen=false;watchResponse('voice');
    await new Promise(resolve=>oldTimer.call(window,resolve,85));
    const a={timeouts:MCFLiveTelemetry.snapshot().metrics.response_timeouts-before,writes,pending:state.pendingPromptAudio,
     recoveryShown:!document.getElementById('recoverLastTurn').hidden};
@@ -54,28 +54,64 @@ const report={schema:'mcf-f1-response-watchdog-browser-v1',utc:new Date().toISOS
   check('VOICE_TIMEOUT_WARNING_NO_AUTOMATIC_REPLAY',timeout.a.timeouts===1&&timeout.a.writes===0&&timeout.a.recoveryShown,timeout.a);
   check('SILENT_TERMINAL_NO_DOUBLE_COUNT_AND_MANUAL_RECOVERY',timeout.b.afterPending===false&&timeout.b.silentTurns>=1&&timeout.b.recoveryShown,timeout.b);
   const recovery=await page.evaluate(()=>{
-   const old={socket:state.socket,connected:state.connected,confirm:window.confirm};
+   const old={socket:state.socket,connected:state.connected,confirm:window.confirm,wantConnected:state.wantConnected};
    let writes=0;
-   state.connected=true;
-   state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(){writes++;}};
+   state.connected=true;state.wantConnected=true;
+   state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(){writes++;},close(){}};
    const b=document.getElementById('recoverLastTurn');b.hidden=false;b.disabled=false;
    window.confirm=()=>false;b.click();
    const rejected=writes===0;
    window.confirm=()=>true;b.click();
-   const accepted={writes,kind:state.pendingTurnKind,buttonHidden:b.hidden};
-   clearPendingTurn();state.socket=old.socket;state.connected=old.connected;window.confirm=old.confirm;
+   const accepted={writes,disconnected:!state.connected,buttonHidden:b.hidden};
+   clearPendingTurn();state.socket=old.socket;state.connected=old.connected;state.wantConnected=old.wantConnected;window.confirm=old.confirm;
    return {rejected,accepted};
   });
-  check('MANUAL_RECOVERY_NEEDS_EXPLICIT_CONFIRM_AND_ONE_SEND',recovery.rejected&&recovery.accepted.writes===1&&recovery.accepted.kind==='text'&&recovery.accepted.buttonHidden,recovery);
+  check('MANUAL_RECOVERY_REQUIRES_CONFIRM_AND_RESTARTS_WITHOUT_REPLAY',recovery.rejected&&recovery.accepted.writes===0&&recovery.accepted.disconnected&&recovery.accepted.buttonHidden,recovery);
   const shutdown=await page.evaluate(()=>{
    const before=MCFLiveTelemetry.snapshot().metrics.response_interrupted;
-   watchResponse('text'); // disconnected: should not arm.
+   state.awaitingTerminal=false;watchResponse('text'); // disconnected: should not arm.
    const disconnected=state.pendingPromptAudio;
-   state.connected=true;watchResponse('text');state.connected=false;
+   state.connected=true;state.awaitingTerminal=false;watchResponse('text');state.connected=false;
    clearPendingTurn('socket_closed');
    return {disconnected,after:MCFLiveTelemetry.snapshot().metrics.response_interrupted-before,stillPending:state.pendingPromptAudio};
   });
   check('DISCONNECT_CANCELS_PENDING_WITHOUT_REPLAY',!shutdown.disconnected&&shutdown.after===1&&!shutdown.stillPending,shutdown);
+  const format=await page.evaluate(()=>{
+   const old=state.connected;state.connected=true;state.awaitingTerminal=false;state.voiceResponseSeen=false;
+   watchResponse('text');
+   const wrongMime=playAudio('AAAA','audio/wav');
+   const odd=playAudio('AAAA','audio/pcm;rate=24000'); // base64 yields 3 bytes, invalid PCM16
+   const pending=state.pendingPromptAudio;
+   const invalid=MCFLiveTelemetry.snapshot().metrics.audio_invalid;
+   clearPendingTurn();state.awaitingTerminal=false;state.connected=old;
+   return {wrongMime,odd,pending,invalid};
+  });
+  check('INCOMPATIBLE_OR_ODD_PCM_CANNOT_ACK_RESPONSE',format.wrongMime===false&&format.odd===false&&format.pending&&format.invalid>=2,format);
+  const overlap=await page.evaluate(()=>{
+   const old={socket:state.socket,connected:state.connected,stream:state.micStream};
+   let writes=0;state.connected=true;state.awaitingTerminal=false;state.voiceResponseSeen=false;state.micStream=null;
+   state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(){writes++;}};
+   watchResponse('voice');sendPrompt('O texto não deve ser enviado sobre uma geração pendente.');
+   const snap={writes,kind:state.pendingTurnKind,pending:state.pendingPromptAudio};
+   clearPendingTurn();state.awaitingTerminal=false;state.socket=old.socket;state.connected=old.connected;state.micStream=old.stream;
+   return snap;
+  });
+  check('TEXT_BLOCKED_WHILE_VOICE_RESPONSE_PENDING',overlap.writes===0&&overlap.kind==='voice'&&overlap.pending,overlap);
+  const early=await page.evaluate(()=>{
+   const old={socket:state.socket,connected:state.connected,stream:state.micStream,ctx:state.micCtx,auto:state.sessionVadAuto,muted:state.muted};
+   state.connected=true;state.awaitingTerminal=false;state.voiceResponseSeen=false;state.voiceInSpeech=false;state.voiceCandidateFrames=0;state.voiceSilenceMs=0;
+   state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(){}};
+   state.micStream={getTracks:()=>[]};state.micCtx={currentTime:45};state.sessionVadAuto=true;state.muted=true;
+   const frame=rms=>({type:'pcm',buffer:new Int16Array(640).buffer,rms,samples:640,rate:16000,captureTimeSec:44.98,droppedFrames:0});
+   for(let i=0;i<4;i++)processAudioFrame(frame(.05));
+   const audio=btoa(String.fromCharCode(...new Uint8Array(640)));
+   handleMessage({serverContent:{modelTurn:{parts:[{inlineData:{mimeType:'audio/pcm;rate=24000',data:audio}}]},generationComplete:true,turnComplete:true}});
+   for(let i=0;i<20;i++)processAudioFrame(frame(.001));
+   const out={pending:state.pendingPromptAudio,kind:state.pendingTurnKind,earlyReplySeen:state.voiceResponseSeen};
+   clearPendingTurn();state.awaitingTerminal=false;state.socket=old.socket;state.connected=old.connected;state.micStream=old.stream;state.micCtx=old.ctx;state.sessionVadAuto=old.auto;state.muted=old.muted;
+   return out;
+  });
+  check('EARLY_MODEL_RESPONSE_PREVENTS_FALSE_POST_SILENCE_TIMER',!early.pending&&early.earlyReplySeen,early);
   const stopping=await page.evaluate(()=>{
    const old={connected:state.connected,wantConnected:state.wantConnected,socket:state.socket,stream:state.micStream,voice:state.voiceInSpeech};
    state.connected=true;state.wantConnected=false;state.voiceInSpeech=true;

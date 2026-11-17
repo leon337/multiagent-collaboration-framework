@@ -1,11 +1,11 @@
 34795d5098f7cce63779d39317455b38968f860b26057f82ae31b66872566a1b  ../../../apps/gemini-live-studio/server.js
-ed7f841238b4e6ebe29985cd7a871347a51d242dd5a346a70de7337ab789c493  ../../../apps/gemini-live-studio/public/app.js
-0011ac0145d361b5ad6018ffce7fb69841840e8a3d3c5c25c9c93f60be4c2b9e  ../../../apps/gemini-live-studio/public/index.html
+71e37658f0dab2d86b64092a288060e85eca04196c05b01f78dfa23cdd87d487  ../../../apps/gemini-live-studio/public/app.js
+1dba2ff9898a2f7db77b91aadb8ce5b91ae254161841e7528369aef0bddf0cb9  ../../../apps/gemini-live-studio/public/index.html
 7f1e1d69087f28c3334ba39b7e8759791304cbe9863b12f64caf5c688327064e  ../../../apps/gemini-live-studio/public/style.css
-87c5348e1fbbf1718e941f3576dbbb5a181d44a79ca8e7cfe27ef5170cf7f176  ../../../apps/gemini-live-studio/public/telemetry.js
+79baef57e715a2e3c8e5c92e5ff4b00db8befa712c1e3aac916c5a56e5cf564a  ../../../apps/gemini-live-studio/public/telemetry.js
 6e5e31176beb66b3a54548e8c00f67f2d87af96dce327b60ba2ba0dffe15fe6a  ../../../apps/gemini-live-studio/public/capture-worklet.js
 13fe11f0a5dc968be47777cf38890a050de15630f9bd6ff2214f887f81bac46d  ../../../tests/gemini-live-f1/capture-worklet.test.mjs
-962de200e424ebf1c774387b86ef92e85765b9a8e74290d51c2d859d7f8dcf61  ../../../tests/gemini-live-f1/telemetry.test.mjs
+75fdc3fd2d0504806c9c2631c8cfbc5bf8da4080dd6ee952c905ecc88cc0b5a1  ../../../tests/gemini-live-f1/telemetry.test.mjs
 66f26e3abae23282ab046b4b8a28507491b47b31c5ffc243e48295af525529be  ../../../tests/gemini-live-f1/browser-e2e.cjs
 036d68ea7481bf5b9bb8a9e3fb0935b42a1877b898af8186516d24ed7096359f  ../../../tests/gemini-live-f1/adversarial-browser.cjs
 3e6e470b57f98ede68a1c3d9a42104a6b75ef043519f8d2295690a4b5fd80f99  ../../../tests/gemini-live-f1/playback-regression.cjs
@@ -27,5 +27,5 @@ fcafbceb54acec3b19ec03d2e4ca4c78d844ca9d901246535de2c860bd637c6e  ../../../tests
 bbdf92a81330a125e79577b02fc874fa2653f2dff988d156e17b189731405f45  ../../../tests/gemini-live-f1/physical-mic-60.cjs
 d812dd1ee4ce327effaff0cf6d570faa840406fa00d9089a8b921e1d4423acab  ../../../tests/gemini-live-f1/q3-stale-watchdog.cjs
 4a08fc910a13e8d8da7a13406b030df15c32f1a7fc77bb74d0956e98604f925a  ../../../tests/gemini-live-f1/clock-origin-integration.cjs
-d9b300205785b914f51251dbdc599d93c8f0b7527a55178712977cd3e55247b0  ../../../tests/gemini-live-f1/response-watchdog-browser.cjs
-2ec9db28bdb9c1105060b2f8fd871c8b8aa9e6b51fc7033168ba1578bcbc382b  ../../../.github/workflows/mcf-gemini-live-f1.yml
+f44d59998f73c31cd56310650c6bf1d627ad359097ffc50b8221efcfde7fdc61  ../../../tests/gemini-live-f1/response-watchdog-browser.cjs
+0c972322b035b1c4442e03ec4d49e945750e6372b0bc47b2ad18bacf775d55f1  ../../../.github/workflows/mcf-gemini-live-f1.yml
