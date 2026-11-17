@@ -87,7 +87,7 @@ skill:
     human_gate_triggers: [paid_voice_generation, external_publication, production_deploy]
     prohibited_actions: [credential_exfiltration, HDF_bypass, ungoverned_remote_MCP, public_repository_runner_registration]
   tests:
-    positive_scenarios: [mcp_read_health, voice_provider_discovery, remote_sha_parity, private_runner_online]
+    positive_scenarios: [mcp_read_health, voice_provider_discovery, remote_sha_parity, private_runner_online, read_only_health_workflow_pass]
     negative_scenarios: [no_host, write_without_gate, invalid_credential, runner_registered_on_public_repo, untrusted_workflow_dispatch]
     last_evaluated_at: 2026-11-17T06:00:57Z
     verdict: PRIVATE_RUNNER_HEALTH_E2E_PASS_MCF_RUNTIME_NOT_WIRED
