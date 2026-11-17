@@ -29,3 +29,17 @@
 .pet-live-tool-status{color:#bcd9fb;font-size:11px;margin:8px 0 0;padding:8px;
   border:1px solid #384663;border-radius:7px;background:#192337;overflow-wrap:anywhere}
 .pet-live-tool-status[data-last-outcome=fail]{color:#ffcdaf;border-color:#8a6754}
+
+/* Background audio is OFF by default. The websocket remains connected. */
+.pet-live-background-permission{display:flex;gap:8px;align-items:center;
+  flex-wrap:wrap;line-height:1.5;border:1px solid #786442;border-radius:9px;
+  background:#273044;padding:9px 11px;font-size:11px;color:#f4dab2;
+  margin:10px 0 5px}
+.pet-live-background-permission input{accent-color:#e0b562}
+.pet-live-background-permission input:disabled{opacity:.5}
+.pet-live-background-status{font-size:11px;color:#b4d8e8;padding:7px 11px;
+  border:1px solid #435875;border-radius:8px;margin:4px 0 9px;line-height:1.5}
+.pet-live-background-status[data-state=background-muted]{color:#efd19e;
+  border-color:#95734e;background:#332d30}
+.pet-live-background-status[data-state=background-on]{color:#9ff0ca;
+  border-color:#3c8d70;background:#19322e}

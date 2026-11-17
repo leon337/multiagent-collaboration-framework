@@ -1,0 +1,23 @@
+VALIDAÇÃO — MCF-PET-LIVE-BACKGROUND-001
+
+PASS: 82/82 testes Python.
+PASS: 5/5 testes Node de recuperação de sessão.
+PASS: 4/4 testes Node de visibilidade e privacidade.
+PASS: Compilação de JS e Python; instalador idempotente.
+PASS: Deploy local com backup e HTTP200 para JS/CSS/health/Pet API.
+PASS: Google Chrome com WebSocket Gemini real durante ocultação simulada:
+      active=true, ready=true, readyState=1, trilha silenciada sem
+      consentimento e 0 pacotes PCM enviados enquanto oculto.
+PASS: Google Chrome com opt-in e ocultação simulada:
+      conexão aberta e 37 pacotes PCM enviados em fundo.
+PASS: Brave com WebSocket Gemini real: mesmos controles,
+      0 pacotes sem opt-in, 38 com opt-in, conexão aberta.
+PASS: Ambos navegadores sem erros de JavaScript; ao retornar,
+      microfone habilitado; Stop limpa o opt-in por sessão.
+PASS: Layout Brave mobile em 390px sem overflow e aviso visível.
+LIMITAÇÃO: headless e Xvfb mantiveram ambas as páginas com
+      visibilityState visible; os testes de ocultação usam evento
+      DOM simulado, mas conexão/mídia reais com Gemini Live.
+PENDENTE: alternância física de abas no perfil pessoal do usuário.
+PENDENTE: sono de sistema operacional ou suspensão móvel.
+NÃO FEITO: merge/deploy MissionRuntime central, ações externas.

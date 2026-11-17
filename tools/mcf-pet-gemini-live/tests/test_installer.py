@@ -69,6 +69,8 @@ ASSETS = {
         self.assertIn('id="petLiveTranscript"',once)
         self.assertIn('id="petLiveAllowProposals"',once)
         self.assertIn('id="petProposalZone"',once)
+        self.assertIn('id="petLiveBackgroundAudio"',once)
+        self.assertIn('id="petLiveBackgroundStatus"',once)
         self.assertIn('/pet-proposals.js',once)
         self.assertEqual(once.count('id="petProposalZone"'),1)
         self.assertEqual(installer.patch_index(once),once)
