@@ -199,3 +199,28 @@ test('accepts valid leap-day UTC receipt under trusted actor',()=>{
  const accepted=obs.comment.replace('2026-11-16T00:00:00Z','2024-02-29T12:30:00.123Z');
  assert.equal(isTrustedReceipt({body:accepted,user:{login:'leon337',type:'User'}},obs),true);
 });
+
+const CURRENT_TARGET={number:554,branch:'audit/gemini-live-f0-gate-requalification-20261117'};
+test('reconciles only explicit current F0 validation target #554',async()=>{
+ const livePr={...pr,number:554,head:{...pr.head,ref:CURRENT_TARGET.branch}};
+ const f=fake();
+ const original=f.t.get;
+ f.t.get=async(path,...args)=>path==='/pulls/554'?livePr:original(path,...args);
+ const r=await reconcile({transport:f.t,target:CURRENT_TARGET});
+ assert.equal(r.action,'DRY_RUN');
+ assert.equal(r.changedCheckboxes,false);
+ assert.match(r.marker,/mcf-f0-sync:554:/);
+ assert.match(r.comment,/pull\/554/);
+ assert.equal(f.posts.length,0);
+});
+test('rejects wrong branch or PR despite matching unrelated check run',async()=>{
+ const f=fake();
+ const original=f.t.get;
+ f.t.get=async(path,...args)=>path==='/pulls/554'?pr:original(path,...args);
+ await assert.rejects(reconcile({transport:f.t,target:CURRENT_TARGET}),/unexpected-pr/);
+});
+test('invalid target is rejected before network calls',async()=>{
+ const f=fake();
+ await assert.rejects(reconcile({transport:f.t,target:{number:0,branch:'fake/branch'}}),/invalid-target/);
+ assert.equal(f.calls.length,0);
+});
