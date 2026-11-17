@@ -71,7 +71,7 @@
         </div>
         <div id="playwrightRuntime" class="vision-trace">Ferramentas em execução isolada, sem acesso arbitrário a comandos do sistema.</div>
         <div class="playwright-voice-config">
-          <label class="toggle"><input id="playwrightVoiceEnabled" type="checkbox"><span>Aprovar abertura de sites por voz</span></label>
+          <label class="toggle"><input id="playwrightVoiceEnabled" type="checkbox"><span>Conferir por voz e confirmar a autorização no botão</span></label>
           <span id="playwrightVoiceAvailability" class="vision-trace">A voz será usada somente quando você ativar este recurso.</span>
         </div>
         <div id="playwrightReceipts" aria-label="Recibos de execução MCP" class="playwright-receipts"></div>
@@ -128,12 +128,12 @@
  <p id="playwrightApprovalSummary">A ação do agente precisa ser aprovada.</p>
  <p id="playwrightApprovalMeta" class="vision-trace"></p>
  <div id="playwrightVoiceChallenge" class="playwright-voice-challenge" hidden>
-  <p>Autorize por voz dizendo exatamente:</p>
-  <strong id="playwrightVoicePhrase" aria-live="polite"></strong>
+  <p>Confira o código visual. Após iniciar a escuta, diga "autorizo" e os quatro dígitos. A fala não executa a ação: confirme também no botão.</p>
+  <strong id="playwrightVoicePhrase" aria-live="off" aria-label="Código visual de quatro dígitos"></strong>
   <p id="playwrightVoiceStatus" role="status" aria-live="polite">Aguardando microfone...</p>
   <p class="visual-warning">Durante a confirmação, interrompemos a câmera/tela compartilhada e o áudio do Gemini. A captura visual não volta automaticamente.</p>
-  <button type="button" id="playwrightListen" class="secondary">🎙️ Ouvir autorização novamente</button>
-  <p class="vision-disclaimer">O reconhecimento de fala é separado do Gemini. Esta confirmação não identifica biometricamente quem está falando. O áudio pode ser processado pelo serviço de reconhecimento do navegador.</p>
+  <button type="button" id="playwrightListen" class="secondary">🎙️ Iniciar escuta para conferir a frase</button>
+  <p class="vision-disclaimer">O reconhecimento de fala é separado do Gemini. A fala apenas confere o código e não autoriza a navegação. Uma aprovação final por clique/teclado é obrigatória. Não há verificação biométrica. O áudio pode ser processado pelo serviço de reconhecimento do navegador.</p>
  </div>
  <p class="visual-warning">Esta autorização permite UMA ação específica no navegador isolado. O modelo não pode se autoaprovar. Revise o destino e o tipo de interação.</p>
  <div class="dialog-actions">

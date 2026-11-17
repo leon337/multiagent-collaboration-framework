@@ -1,0 +1,116 @@
+{
+  "schema": "mcf-f3-navigation-voice-consent-browser-e2e-v1",
+  "recordedAt": "2026-11-17T06:56:27.503Z",
+  "speechEngine": "simulated_Chrome_WebSpeech_API",
+  "sourceHashes": {
+    "public/voice-approval.js": "b50188239f50003226f26a1584426e58c880b4e0a83c5256b60f594617b2751e",
+    "public/playwright-tools.js": "45ba2c60a347057ab4307af2b6de8dcbb548fc6c0994d847462c1478c688429a",
+    "public/index.html": "c896fff3e329fcf8e3e1fb3a3d250b8bd56f3917165a890c60da7c03d0e98f40",
+    "public/app.js": "35c069291778700183bbeea7e5ca1e131532682d7bc1f4d5fbc2858282aab92b",
+    "public/style.css": "1f21e3112a7cfeab27be3306a4dd22b37762f9edbc0311ed352ffec484fd2382",
+    "server.js": "97dc44bad81b057f469e96d744469daf20ad3218bc762f6f5777cf6e27d51624",
+    "mcp-playwright-gateway.cjs": "c4b24a7a0b9046f9ad45c593e3501dcfdbf966c906919d7a8517183cdc218bc9"
+  },
+  "results": [
+    {
+      "name": "SPEECH_RECOGNITION_ADAPTER_AVAILABLE",
+      "pass": true,
+      "details": {
+        "supports": true,
+        "exposed": true,
+        "scriptLoaded": true
+      }
+    },
+    {
+      "name": "VOICE_PROMPT_BOUNDS_TO_REQUEST_WITH_FRESH_CHALLENGE",
+      "pass": true,
+      "details": {
+        "codeLength": 4,
+        "decisions": 0,
+        "starts": 0,
+        "ariaLive": "off"
+      }
+    },
+    {
+      "name": "VOICE_GATE_QUARANTINES_GEMINI_AUDIO_AND_VISUAL_BEFORE_CODE",
+      "pass": true,
+      "details": {
+        "gateActive": true,
+        "visualStopCalls": 1,
+        "audioDropped": true,
+        "playingSources": 0,
+        "pendingMicCanceled": true
+      }
+    },
+    {
+      "name": "DELAYED_SCREEN_READER_ECHO_CANNOT_ARM_OR_APPROVE",
+      "pass": true,
+      "details": {
+        "dialog": true,
+        "decisions": 0,
+        "starts": 0
+      }
+    },
+    {
+      "name": "VOICE_NEGATED_PHRASE_NEVER_GRANTS",
+      "pass": true,
+      "details": {
+        "dialog": true,
+        "decisions": 0
+      }
+    },
+    {
+      "name": "WRONG_VOICE_CODE_CANNOT_GRANT",
+      "pass": true,
+      "details": {
+        "decisionCount": 0
+      }
+    },
+    {
+      "name": "CORRECT_VOICE_OR_SCREEN_READER_ECHO_REQUIRES_FINAL_CLICK",
+      "pass": true,
+      "details": {
+        "dialog": true,
+        "decisions": 0,
+        "status": "Código conferido por voz. A ação NÃO está autorizada. Revise o destino e pressione Autorizar esta ação."
+      }
+    },
+    {
+      "name": "VOICE_PLUS_FINAL_LOCAL_CLICK_TRIGGERS_ONE_APPROVED_TOOL_DECISION",
+      "pass": true,
+      "details": {
+        "approved": true,
+        "toolResult": "SUCCESS",
+        "receipt": true,
+        "challengeCleared": true,
+        "quarantineReleased": true
+      }
+    },
+    {
+      "name": "SPOKEN_REFUSAL_PREVENTS_SECOND_NAVIGATION",
+      "pass": true,
+      "details": {
+        "approved": false,
+        "status": "DENIED"
+      }
+    },
+    {
+      "name": "NO_BROWSER_SCRIPT_ERRORS",
+      "pass": true,
+      "details": {
+        "errors": []
+      }
+    }
+  ],
+  "passed": 10,
+  "failed": 0,
+  "executionEvidence": {
+    "environment": "authorized Linux host, isolated clone /tmp, Chrome 156 headless",
+    "localPort": "127.0.0.1:18677 (temporary, closed after test)",
+    "speechEngine": "simulated Chrome Web Speech API, NOT human voice authentication",
+    "physicalMicrophoneAndScreenReader": "NOT_TESTED",
+    "automation": "Puppeteer browser harness",
+    "mission": "MCF-GEMINI-LIVE-EVOLUTION-20261116-001",
+    "codeHeadDuringRun": "e82973e7558814e48b83c46a2c049b5065738a44"
+  }
+}

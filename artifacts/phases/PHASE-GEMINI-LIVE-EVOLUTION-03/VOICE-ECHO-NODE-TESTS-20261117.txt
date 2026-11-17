@@ -1,0 +1,36 @@
+✔ publicUrl rejects local, private, file and credential URL before MCP (2.786151ms)
+✔ allowlist exposes no arbitrary JS, filesystem, upload or network introspection (0.768924ms)
+✔ requests are scoped to one user session and need one-time approval (3.914933ms)
+✔ explicit denial cannot execute a navigation (0.417565ms)
+✔ expired request never executes (0.564942ms)
+✔ read-only snapshot has no approval, but is blocked before navigation (1.01185ms)
+✔ suspicious origin redirect closes isolated browser and returns no page contents (0.750354ms)
+✔ typed arguments never enter sanitized receipts (1.300019ms)
+✔ browser_close requires explicit approval and ends context (0.384106ms)
+✔ session close aborts pending approvals and allows new session (0.775556ms)
+✔ validation truncates snapshot depth and rejects excess typed content (1.274368ms)
+✔ click and type are restricted to public demo playground before F3 gate (0.877927ms)
+✔ new public HTTPS sites require approval, not a static domain allowlist (0.679778ms)
+✔ unknown domain without permission is denied with zero browser calls (0.265498ms)
+✔ HIGH regression: endSession during MCP connect prevents subsequent callTool (0.930383ms)
+✔ HIGH regression: endSession during in-flight call never returns SUCCESS (10.302023ms)
+✔ abandoned approval expires on next prepare and records expiry (0.478ms)
+✔ page scope blocks selectors and click outside exact TodoMVC path (0.850769ms)
+✔ review MEDIUM: late prepare cannot resurrect a revoked session or block next session (0.372319ms)
+✔ normalizes Brazilian Portuguese accents (2.852285ms)
+✔ accepts strict, one-time spoken four-digit approval phrase (0.582412ms)
+✔ never accepts model narration, incidental yes, substring or ambiguous transcript (0.379529ms)
+✔ denial is separate and never interpreted as grant (0.303107ms)
+✔ nonce comes from crypto.getRandomValues, never Math.random (5.151767ms)
+✔ malformed nonce must be rejected, even if spoken (0.24405ms)
+✔ screen reader echo and synthetic click cannot grant without trusted final button (40.502498ms)
+✔ incorrect phrase cannot grant; manual fallback uses trusted click (3.589199ms)
+✔ spoken denial fails closed without any confirmation click (4.566732ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 316.583211
