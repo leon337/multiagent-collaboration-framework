@@ -12,3 +12,4 @@
 - [ ] Comprovar leitura canônica READY no ambiente de staging.
 - [ ] Implantar canal de importação com sessão humana real no runtime.
 - [ ] Validar via CI, revisão independente e merge.
+- [x] E2E HTTP de sessão/CSRF e interface Brave desktop/mobile.
