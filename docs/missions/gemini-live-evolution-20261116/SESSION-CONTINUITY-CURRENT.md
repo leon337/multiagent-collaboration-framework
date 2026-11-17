@@ -6,6 +6,15 @@
 
 A [Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527) permanece como **único checklist canônico**. Este documento registra reconciliação técnica; não aprova gates, não substitui auditoria e não autoriza produção.
 
+## Estado de fases preservado
+
+- F0.1 é o único checkbox validado; F0.8 permanece aberto.
+- F1 segue em revisão técnica/desenvolvimento; F1.6 permanece aberto.
+- PR #539 continua aberto/draft, baseado na branch F1 e com F2.1 e partes de F2.2/F2.3; F2.4–F2.6 continuam pendentes.
+- PR #540 continua aberto/draft sobre a base F2; não foi fechado ou integrado.
+- F3.7 e F4.6 permanecem abertos; F4 não está implementada.
+- A Issue #527 contém trechos narrativos de checkpoints diferentes. Os gates/checkboxes explícitos são preservados; não inferir fechamento a partir de texto histórico.
+
 ## Estado Git verificado
 
 - `main`: `97d79ee8152ead27564d2bf634ad63df5cc284e6` — merge do PR #543.
