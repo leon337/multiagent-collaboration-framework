@@ -15,3 +15,4 @@
 - [ ] Validar o microfone físico e review manual na sessão do usuário.
 - [ ] Integrar ao Capability Registry e PermissionEngine mediante gate.
 - [ ] Confirmar robustez de solicitações multi-ferramenta longas.
+- [x] Resolver dois comentários P2 do Codex: validação de prioridade e paginação.

@@ -292,9 +292,15 @@ def patch_proposal_routes(data: str) -> str:
                 if not isinstance(item,dict):
                     raise pet_voice.ConversationError(400,"INVALID_JSON","Objeto obrigatório.")
                 if path.endswith("/list"):
-                    if item!={}:
-                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros não aceitos.")
-                    payload={"ok":True,"proposals":pet_drafts.list_proposals(25)}
+                    if set(item)-{"offset","limit"}:
+                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros inválidos.")
+                    offset=item.get("offset",0)
+                    limit=item.get("limit",25)
+                    rows=pet_drafts.list_proposals(limit,offset=offset)
+                    counts=pet_drafts.proposal_counts()
+                    payload={"ok":True,"proposals":rows,"total":counts["total"],
+                             "pending_count":counts["pending"],
+                             "offset":offset,"has_more":offset+len(rows)<counts["total"]}
                 else:
                     if set(item)-{"proposal_id","decision","version","note"}:
                         raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros inválidos.")

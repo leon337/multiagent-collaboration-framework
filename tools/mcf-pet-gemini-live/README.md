@@ -153,3 +153,11 @@ Chrome com consentimento cancelado e UI mobile sem overflow.
 O microfone físico do usuário e a rota externa Tailnet não foram
 revalidados nesta missão. Um pedido complexo de duas ferramentas atingiu
 timeout em teste inicial; o pedido de proposta isolado foi validado.
+
+### P2 review remediation (PR #534)
+
+- The review queue is paginated (max 40 per API page, 25 in UI) with pending
+  proposals shown first and explicit pending_count/total values.
+  Earlier pending drafts remain available via Carregar mais propostas.
+- Priority validation checks the Python type before enum membership; malformed
+  arrays/maps from Gemini cannot raise an uncaught TypeError in the tool turn.
