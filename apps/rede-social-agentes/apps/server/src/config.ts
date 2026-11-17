@@ -45,6 +45,9 @@ const runtimeConfigSchema = z
       .string()
       .min(32)
       .default('development-only-mission-control-token-0001'),
+    // A missing read token disables the Pet observer endpoint; it must never
+    // inherit the more powerful Mission Control dispatch credential.
+    MCF_MISSION_CONTROL_READ_TOKEN: z.string().min(32).optional(),
     ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:5173'),
     REGISTRATION_ALLOWLIST: z.string().default(''),
     RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID: z.string().uuid().optional(),
@@ -96,6 +99,25 @@ const runtimeConfigSchema = z
         'development-only-mission-control-token-0001',
       ],
     ];
+
+    if (config.MCF_MISSION_CONTROL_READ_TOKEN !== undefined) {
+      const candidate = config.MCF_MISSION_CONTROL_READ_TOKEN;
+      if (
+        candidate === 'development-only-mission-control-read-token-0001' ||
+        [
+          config.MCF_MISSION_CONTROL_TOKEN,
+          config.MCF_RUNTIME_TOKEN,
+          config.MCF_RECEIPT_SECRET,
+          config.RATE_LIMIT_KEY_SECRET,
+        ].includes(candidate)
+      ) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['MCF_MISSION_CONTROL_READ_TOKEN'],
+          message: 'Mission Control read credential must not share another authority boundary.',
+        });
+      }
+    }
 
     if (config.NODE_ENV === 'production') {
       for (const [name, value, insecureDefault] of insecureProductionSecrets) {

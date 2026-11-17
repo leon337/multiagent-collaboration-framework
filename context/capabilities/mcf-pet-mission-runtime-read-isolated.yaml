@@ -1,0 +1,52 @@
+schema_version: 1
+
+capability:
+  id: mcf.pet.mission.read.isolated
+  provider_project_id: multiagent-collaboration-framework
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: READ_ONLY
+
+contract:
+  protocol: MCF_PET_READ_ONLY_RUNTIME_V1
+  allowed_operations:
+    - mission.observe_latest
+    - mission.context.preflight
+    - proposal.reviewed.export_local_draft
+  prohibited_operations:
+    - mission.dispatch
+    - mission.create
+    - mission.execute
+    - scoped_write.execute
+    - credential.forward
+    - permission.grant
+    - human_gate.approve
+    - production.deploy
+
+scope:
+  environments:
+    - lab
+    - staging
+  resources:
+    - /v1/mcf/mission-control/read/latest
+    - /v1/mcf/mission-contracts/preflight
+    - mcf-pet-workspace:*
+
+governance:
+  authorization_state: NOT_AUTHORIZED
+  required_gate: DEDICATED_READ_TOKEN_AND_CANONICAL_HUMAN_SESSION
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: DISCONNECTED
+  runtime_state: INACTIVE
+  verification_state: HISTORICALLY_VERIFIED
+  last_verified_at: "2026-11-17T02:30:00Z"
+
+evidence:
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-control-read.controller.ts
+    source_revision: 577e25356a66dd7798f040e695523282e1f8ad71
+    observed_at: "2026-11-17T02:30:00Z"
+
+freshness: LIVE_REQUIRED

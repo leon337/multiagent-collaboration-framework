@@ -1,0 +1,22 @@
+# Checklist
+
+- [x] Auditar rotas, guards, controller e configuração do MissionRuntime.
+- [x] Separar credencial de leitura da credencial de despacho.
+- [x] Impedir leitura fora do repositório canônico.
+- [x] Testar negação por token ausente, inválido ou indevidamente reutilizado.
+- [x] Expor preflight de contexto v1.1 sob sessão humana autenticada.
+- [x] Verificar PIP + recibo do repositório com guard canônico.
+- [x] Persistir cache local privado e temporário, sem autorizar execução.
+- [x] Consumir contexto validado em rascunhos novos do Pet.
+- [x] Testar cache adulterado, ausente, vencido, symlink e sem permissão.
+- [x] Registrar Capability Registry com estado INACTIVE/DISCONNECTED.
+- [ ] Confirmar workspace Render em HUMAN_GATE de LEANDRO.
+- [ ] Configurar credencial read-only dedicada nos dois extremos.
+- [ ] Implantar em staging após CI, revisão e gates de integração.
+- [ ] Validar observação canônica READY e token sem autoridade de dispatch.
+- [ ] Executar preflight v1.1 no runtime autenticado, sem criar missão.
+- [ ] Implementar prova assinada e verificável de PermissionEngine/LÉO/HDF.
+- [ ] Validar SCOPED_WRITE reversível em missão real e auditada.
+- [ ] Aprovar merge e promoção conforme governança do repositório.
+- [x] Migrar rota do Hub existente em vez de apenas inseri-la quando ausente.
+- [x] Validar exportação HTTP idempotente com PIP verificado em novo rascunho.

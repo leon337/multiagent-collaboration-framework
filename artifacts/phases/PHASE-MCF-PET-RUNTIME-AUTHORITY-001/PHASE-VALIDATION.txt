@@ -1,0 +1,35 @@
+VALIDAÇÃO LOCAL — PHASE-MCF-PET-RUNTIME-AUTHORITY-001
+
+PASS: TypeScript build, typecheck, prettier e ESLint nas alterações.
+PASS: 35 testes TypeScript direcionados de config, isolamento de token,
+      controller de observação e pré-validação autenticada de contrato.
+PASS: PIP oficial v1.1-canonical-001 com recibo alinhado: PASS_VERIFIED
+      em IntentAlignmentService.verifyAlignmentPair() e
+      MissionV11ContextGuard.validate() do próprio runtime.
+PASS: script Node cria cache privado 0600 no diretório 0700,
+      TTL de 30min; sem criar missão ou aprovação.
+PASS: 118 testes Python cobrindo contrato local, idempotência, contextos
+      inexistentes, vencidos, adulterados, inseguros e com symlink.
+PENDENTE: token distinto configurado em staging e no arquivo protegido
+      do Service Hub; observação permanece AUTH_NOT_CONFIGURED.
+PENDENTE: preflight efetivo no runtime de staging com sessão humana válida.
+PENDENTE: emissor/verificador canônico de recibos de PermissionEngine
+      e gate de LÉO/HDF; no Pet continua deny-by-default.
+PROIBIDO: usar token de dispatch, suprimir HDF ou injetar
+      authorizedScope=true vindo do diálogo.
+ADDITIONAL REGRESSION (2026-11-17):
+PASS: 119 Python tests, including installer upgrade for an existing
+      Mission Bridge handler instead of silently leaving old route code.
+PASS: reinstalled locally with reversible backup:
+      /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-20261117T023351Z/
+PASS: HTTP anonymous/invalid-CSRF requests rejected with HTTP403.
+PASS: authenticated local draft export HTTP200 from an independently
+      reviewed proposal; methodologyPin and alignedPipRef present and pinned.
+PASS: export is idempotent on retry and returns same handoff_id.
+PASS: local_context_verified=true, remote preflight PENDING,
+      import_ready=false, execution_authorized=false, human_gate=false.
+PASS: injected force_authorize parameter rejected HTTP400.
+PASS: observed runtime still returns AUTH_NOT_CONFIGURED.
+PRESERVED: older handoffs are immutable; no silent rewrite/migration of
+      historic drafts was attempted.
+NO PROOF: actual remote runtime authentication/deploy or PermissionEngine gate.

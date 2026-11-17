@@ -55,6 +55,38 @@ describe('loadRuntimeConfig', () => {
     ).toThrow();
   });
 
+  it('keeps read-only Mission Control access disabled when no dedicated token exists', () => {
+    expect(loadRuntimeConfig(baseEnvironment).MCF_MISSION_CONTROL_READ_TOKEN).toBeUndefined();
+  });
+
+  it('rejects sharing the Mission Control read token with dispatch or runtime credentials', () => {
+    for (const shared of [
+      productionEnvironment.MCF_MISSION_CONTROL_TOKEN,
+      productionEnvironment.MCF_RUNTIME_TOKEN,
+      productionEnvironment.MCF_RECEIPT_SECRET,
+    ]) {
+      expect(() =>
+        loadRuntimeConfig({
+          ...productionEnvironment,
+          MCF_MISSION_CONTROL_READ_TOKEN: shared,
+          ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+        }),
+      ).toThrow();
+    }
+  });
+
+  it('accepts an independently provisioned read-only token in production', () => {
+    const value = loadRuntimeConfig({
+      ...productionEnvironment,
+      MCF_MISSION_CONTROL_READ_TOKEN:
+        'distinct-readonly-mission-control-token-of-40-plus-characters',
+      ALLOWED_ORIGINS: 'https://rsa-pilot.pages.dev',
+    });
+    expect(value.MCF_MISSION_CONTROL_READ_TOKEN).toBe(
+      'distinct-readonly-mission-control-token-of-40-plus-characters',
+    );
+  });
+
   it('rejects production without controlled registration invitations', () => {
     expect(() =>
       loadRuntimeConfig({

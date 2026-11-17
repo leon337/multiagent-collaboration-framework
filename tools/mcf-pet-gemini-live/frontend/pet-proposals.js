@@ -142,9 +142,10 @@
             const handoff=result.handoff||{};
             const receipt=label("p","pet-proposal-guard",
               "Rascunho local "+String(handoff.handoff_id||"").slice(0,32)+
-              ". Contrato local com contexto incompleto (methodologyPin "+
-              "e alignedPipRef devem ser verificados). "+
-              "Aguardando autenticação humana e gates do MCF. "+
+              (handoff.local_context_verified===true
+                ? ". PIP/alinhamento verificados localmente; preflight remoto pendente. "
+                : ". Contexto incompleto (methodologyPin/alignedPipRef). ")+
+              "Autenticação e gates canônicos ainda necessários. "+
               "Nenhuma missão foi criada no runtime.");
             entry.append(receipt);
             notice("Contrato local preparado. Não enviado ao MissionRuntime.");
