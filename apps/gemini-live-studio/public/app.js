@@ -71,6 +71,7 @@ function scheduleReconnect(reason='network'){
 }
 async function connect(retry=false){
  if(state.connecting||state.connected)return;
+ if(!retry)window.MCFVisionUI?.resetSession();
  if(!retry){state.wantConnected=true;state.retries=0;state.resumeHandle=null;state.reconnectHistory=[];}
  if(!state.wantConnected)return;
  clearTimeout(state.reconnectTimer);state.reconnectTimer=null;
@@ -124,6 +125,7 @@ async function connect(retry=false){
   ws.onerror=()=>{if(current())log('ERRO','Erro na conexão WebSocket (verifique rede/chave/modelo).');};
   ws.onclose=e=>{
    if(!current())return;
+   window.MCFVisionUI?.resetSession();
    clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
    state.socket=null;state.connecting=false;state.connected=false;state.playbackTurnOpen=false;
    clearPendingTurn('socket_closed');state.awaitingTerminal=false;state.voiceResponseSeen=false;state.voiceInSpeech=false;state.voiceCandidateFrames=0;
@@ -548,6 +550,7 @@ function stopAllVisual(){
  updateVisualIndicator();
 }
 function disconnect(){
+ window.MCFVisionUI?.resetSession();
  state.wantConnected=false;state.connectionGeneration++;state.connectAbort?.abort();state.connectAbort=null;clearTimeout(state.reconnectTimer);clearTimeout(state.goAwayTimer);
  state.reconnectTimer=null;state.goAwayTimer=null;
  clearTimeout(state.setupWatchdog);state.setupWatchdog=null;

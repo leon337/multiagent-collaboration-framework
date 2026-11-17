@@ -10,3 +10,7 @@
 - F2-2-F2-3-QA.md: implementação, testes e riscos do pipeline.
 - EVIDENCE-F2-2-3-BROWSER.json: 10 testes UI em Chrome com mock.
 - EVIDENCE-F2-2-3-REAL-PROVIDER.json: imagem+vídeo sintéticos via Google real, sem dados brutos.
+
+- EMILY-EXTERNAL-PRE-REMEDIATION.md: independent Codex review of a1a51d5, RETURN_FOR_CORRECTION.
+- REMEDIATION-AUDIT-CYCLE1.md: security and lifecycle fixes, regression matrix.
+- EVIDENCE-F2-2-3-POST-REMEDIATION.json: Google synthetic image/video after fixes, sha of adapter.

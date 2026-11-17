@@ -9,11 +9,11 @@ const makePayload=(kind='image')=>({consent:true,kind,model:'gemini-3.5-flash',
  mimeType:kind==='image'?'image/png':'video/mp4',
  prompt:'Descreva o arquivo em português do Brasil.',base64:(kind==='image'?PNG:MP4).toString('base64')});
 const successful=(data,headers={})=>({ok:true,status:200,headers:{get:k=>headers[k.toLowerCase()]||null},json:async()=>data});
-function mockGoogle({badGenerationStatus=0,badUploadUrl=false,deleteFails=false,processing=false}={}){
+function mockGoogle({badGenerationStatus=0,badUploadUrl=false,deleteFails=false,processing=false,invalidFileUri=false,finalizeFails=false}={}){
  const calls=[];
  async function fetchFn(url,options={}){
   const u=String(url),method=options.method||'GET';
-  calls.push({url:u,method,headers:options.headers,body:options.body});
+  calls.push({url:u,method,headers:options.headers,body:options.body,redirect:options.redirect});
   if(u.includes('/models?pageSize='))return successful({models:[
    {name:'models/gemini-3.5-flash',supportedGenerationMethods:['generateContent'],inputTokenLimit:9000},
    {name:'models/gemini-3.8-live',supportedGenerationMethods:['bidiGenerateContent']},
@@ -22,7 +22,7 @@ function mockGoogle({badGenerationStatus=0,badUploadUrl=false,deleteFails=false,
   if(u.endsWith('/upload/v1beta/files')&&method==='POST')
    return successful({}, {'x-goog-upload-url':badUploadUrl?'https://example.org/evil':'https://generativelanguage.googleapis.com/upload/finalize?id=1'});
   if(u.includes('/upload/finalize')&&method==='POST')
-   return successful({file:{name:'files/abc123',uri:'https://generativelanguage.googleapis.com/v1beta/files/abc123',state:processing?'PROCESSING':'ACTIVE'}});
+   return finalizeFails?{ok:false,status:503}:successful({file:{name:'files/abc123',uri:invalidFileUri?'https://attacker.invalid/media':'https://generativelanguage.googleapis.com/v1beta/files/abc123',state:processing?'PROCESSING':'ACTIVE'}});
   if(u.includes('/v1beta/files/abc123')&&method==='GET')return successful({name:'files/abc123',state:'ACTIVE'});
   if(u.includes('/v1beta/files/abc123')&&method==='DELETE')
    return deleteFails?{ok:false,status:500}:successful({});
@@ -118,4 +118,28 @@ test('no base64/media bodies in output metadata',async()=>{
  const r=await vision.makeVisionAdapter({fetchFn:m.fetchFn}).analyze(makePayload(),'secret');
  assert.ok(!JSON.stringify(r).includes(PNG.toString('base64')));
  assert.ok(!JSON.stringify(r).includes('secret'));
+});
+
+test('all requests to Google fail closed on HTTP redirects',async()=>{
+ const m=mockGoogle();
+ await vision.makeVisionAdapter({fetchFn:m.fetchFn}).analyze(makePayload('video'),'secret');
+ const requests=m.calls.filter(c=>c.url.startsWith('https://generativelanguage.googleapis.com/'));
+ assert.ok(requests.length>=5);
+ assert.ok(requests.every(x=>x.headers&&x.headers['x-goog-api-key']==='secret'));
+ assert.ok(requests.every(x=>x.redirect==='error'));
+});
+test('video invalid file URI with valid name must delete remote file',async()=>{
+ const m=mockGoogle({invalidFileUri:true});
+ await assert.rejects(()=>vision.makeVisionAdapter({fetchFn:m.fetchFn}).analyze(makePayload('video'),'secret'),/URI inválida/);
+ assert.equal(m.calls.some(x=>x.method==='DELETE'),true);
+});
+test('failed generation and failed delete must disclose cleanup uncertainty',async()=>{
+ const m=mockGoogle({badGenerationStatus:429,deleteFails:true});
+ await assert.rejects(()=>vision.makeVisionAdapter({fetchFn:m.fetchFn}).analyze(makePayload('video'),'secret'),
+  e=>e.status===429&&e.message.includes('não confirmada'));
+});
+test('ambiguous finalize error warns remote retention is unknown',async()=>{
+ const m=mockGoogle({finalizeFails:true});
+ await assert.rejects(()=>vision.makeVisionAdapter({fetchFn:m.fetchFn}).analyze(makePayload('video'),'secret'),
+  /sem exclusão confirmada/);
 });

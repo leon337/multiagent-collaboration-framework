@@ -31,7 +31,7 @@ async function fetchCatalog(key,{fetchFn=fetch,timeoutMs=12500,maxPages=3}={}){
   const u=new URL(BASE+'/models');
   u.searchParams.set('pageSize','100');
   if(token)u.searchParams.set('pageToken',token);
-  const res=await fetchFn(u.toString(),{headers:{'x-goog-api-key':key},signal:AbortSignal.timeout(timeoutMs)});
+  const res=await fetchFn(u.toString(),{headers:{'x-goog-api-key':key},signal:AbortSignal.timeout(timeoutMs),redirect:'error'});
   if(!res.ok)throw Object.assign(Error('Não foi possível consultar o catálogo do Google ('+res.status+').'),{status:res.status===429?429:502});
   const data=await res.json();
   all.push(...(Array.isArray(data.models)?data.models:[]));

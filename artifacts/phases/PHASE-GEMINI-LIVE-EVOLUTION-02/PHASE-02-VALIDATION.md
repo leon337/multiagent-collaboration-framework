@@ -29,3 +29,13 @@ Evidências sanitizadas em EVIDENCE-F2-1-CHROME-CONSENT.json.
 | HTTP negativos | 403 / 415 / 400 |
 | Testes Node F0 + F1 + F2 | 88/88 PASS |
 | Vídeo maior que 24MiB, custo/cota por modelo | PENDENTE |
+
+## Segurança F2.2 pós-auditoria
+| Teste | Resultado |
+|---|---|
+| Node vision adaptador/roteador | 17/17 PASS |
+| Chrome visão e isolamento de sessão | 14/14 PASS |
+| Chrome F2.1 mídia visual | 11/11 PASS |
+| Testes Node acumulados | 92/92 PASS |
+| Google imagem/vídeo sintéticos no adaptador corrigido | HTTP 200 x2; DELETE video confirmado |
+| Auditoria externa do SHA anterior | RETURN_FOR_CORRECTION, corrigido em novo candidato; novo gate pendente |

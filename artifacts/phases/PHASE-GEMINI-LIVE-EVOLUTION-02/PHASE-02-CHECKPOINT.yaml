@@ -36,12 +36,18 @@ f2_2_verified_real_model: gemini-3.5-flash
 f2_2_real_synthetic_image: HTTP_200
 f2_2_real_synthetic_video: HTTP_200_FILES_DELETED
 f2_2_media_cap_bytes: IMAGE_8MiB_VIDEO_24MiB
-f2_2_3_node_unit: 13_PASS
-f2_2_3_browser_ui: 10_PASS
-f0_f1_f2_combined_node: 88_PASS
+f2_2_3_node_unit: 17_PASS
+f2_2_3_browser_ui: 14_PASS
+f0_f1_f2_combined_node: 92_PASS
 f2_3_models_with_generateContent_listed: 37
 f2_3_quota_by_model: NOT_VERIFIED
 f2_3_price_estimate: NOT_IMPLEMENTED
 f2_4_memory: NOT_STARTED
 f2_5_translation: NOT_STARTED
 f2_6_gate: PENDING
+
+f2_2_3_external_audit_original_sha: a1a51d54e215254632dcce7538bc8a34d504a44e
+f2_2_3_external_audit_original_result: RETURN_FOR_CORRECTION
+f2_2_3_remediation: FIVE_FINDINGS_CORRECTED_IN_LOCAL_CANDIDATE
+f2_2_3_postfix_real_google: IMAGE_VIDEO_HTTP_200_DELETE_CONFIRMED
+f2_2_3_final_independent_rereview: PENDING

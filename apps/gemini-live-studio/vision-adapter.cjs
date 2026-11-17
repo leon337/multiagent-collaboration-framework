@@ -36,7 +36,7 @@ function validatePayload(v){
 async function apiFetch(fetchFn,url,options,timeout=25000){
  if(!url.startsWith(ROOT+'/'))throw requestError('Destino do provedor não autorizado.',500);
  let response;
- try{response=await fetchFn(url,{...options,signal:AbortSignal.timeout(timeout)});}
+ try{response=await fetchFn(url,{...options,signal:AbortSignal.timeout(timeout),redirect:'error'});}
  catch(e){throw requestError('Falha de comunicação com Gemini ('+(e?.name==='TimeoutError'?'timeout':'rede')+').',502);}
  if(!response.ok){throw requestError(
   response.status===429?'Limite de uso da chave/projeto (429). Nenhuma troca de modelo ou chave foi feita.':
@@ -54,19 +54,25 @@ async function uploadVideo({fetchFn,key,mime,bytes}){
   body:JSON.stringify({file:{display_name:'mcf-f2-temporary-analysis'}})
  },22000);
  const uploadUrl=start.headers.get('x-goog-upload-url')||'';
- // A resumable URL is a bearer capability. Never send it to browser, logs or other hosts.
- if(!uploadUrl.startsWith(ROOT+'/')||!/^https:\/\/generativelanguage\.googleapis\.com\//.test(uploadUrl))
+ if(!uploadUrl.startsWith(ROOT+'/'))
   throw requestError('URL de upload do provedor não confiável.',502);
- const done=await apiFetch(fetchFn,uploadUrl,{
-  method:'POST',headers:{'x-goog-api-key':key,'Content-Type':mime,
-   'X-Goog-Upload-Offset':'0','X-Goog-Upload-Command':'upload, finalize'},body:bytes
- },120000);
- const info=await done.json();
+ let done;
+ try{
+  done=await apiFetch(fetchFn,uploadUrl,{
+   method:'POST',headers:{'x-goog-api-key':key,'Content-Type':mime,
+    'X-Goog-Upload-Offset':'0','X-Goog-Upload-Command':'upload, finalize'},body:bytes
+  },120000);
+ }catch(e){
+  throw requestError('Finalização do vídeo incerta: arquivo remoto pode ter sido criado sem exclusão confirmada. '+e.message,e.status||502);
+ }
+ const info=await done.json().catch(()=>({}));
  const file=info.file||{};
- if(!/^files\/[A-Za-z0-9_-]{2,200}$/.test(String(file.name||''))||
-   !/^https:\/\/generativelanguage\.googleapis\.com\//.test(String(file.uri||'')))
-  throw requestError('Upload sem identificador de arquivo válido.',502);
- return {name:file.name,uri:file.uri,state:String(file.state||''),mime};
+ if(!/^files\/[A-Za-z0-9_-]{2,200}$/.test(String(file.name||'')))
+  throw requestError('Upload sem identificador remoto válido; exclusão não pode ser confirmada.',502);
+ const uri=String(file.uri||'');
+ const safeUri=uri.startsWith(ROOT+'/')?uri:null;
+ // Retain validated file name so outer finally can delete even on invalid URI.
+ return {name:file.name,uri:safeUri,state:String(file.state||''),mime};
 }
 async function awaitActive({fetchFn,key,file,maxPolls=45}){
  for(let i=0;i<maxPolls;i++){
@@ -83,7 +89,7 @@ async function deleteRemote({fetchFn,key,file}){
  if(!file?.name)return false;
  try{
   const resp=await fetchFn(ROOT+'/v1beta/'+file.name,{
-   method:'DELETE',headers:{'x-goog-api-key':key},signal:AbortSignal.timeout(12000)
+   method:'DELETE',headers:{'x-goog-api-key':key},signal:AbortSignal.timeout(12000),redirect:'error'
   });
   return resp.ok;
  }catch{return false;}
@@ -115,15 +121,21 @@ function makeVisionAdapter({fetchFn=fetch,catalogFn=router.fetchCatalog}={}){
    const input=validatePayload(raw);
    const catalog=await catalogFn(key,{fetchFn});
    const decision=router.route({model:input.model,kind:input.kind,catalog});
-   const traceId=crypto.randomUUID();let uploaded=null,deleted=null,generated=null;
+   const traceId=crypto.randomUUID();let uploaded=null,deleted=null,generated=null,failure=null;
    try{
     if(input.kind==='video'){
      uploaded=await uploadVideo({fetchFn,key,mime:input.mime,bytes:input.bytes});
+     if(!uploaded.uri)throw requestError('O Google retornou URI inválida; exclusão remota será tentada.',502);
      await awaitActive({fetchFn,key,file:uploaded});
     }
     generated=await generate({...input,key,fetchFn,file:uploaded});
+   }catch(e){failure=e;
    }finally{
     if(uploaded)deleted=await deleteRemote({fetchFn,key,file:uploaded});
+   }
+   if(failure){
+    if(uploaded&&!deleted)failure.message+=' ATENÇÃO: exclusão do arquivo remoto não confirmada.';
+    throw failure;
    }
    return {traceId,model:decision.model,kind:input.kind,
     capability:'verified_for_this_request',verificationScope:'this_request_only',source:'Gemini generateContent (not Live)',

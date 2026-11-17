@@ -28,3 +28,6 @@ Original 18371, F1 testada 18372 preservados. F2 staging 18374.
 
 ## F2.2/F2.3 — análise especializada e router
 O pacote F2-2-F2-3-QA.md cobre Gemini generateContent para imagem e vídeo (Files API), exclusão de arquivos, consentimento, trace ID, tokens e núcleo do roteador por modelos.list. Sucesso real com arquivos sintéticos (HTTP 200 imagem e vídeo). Modelos adicionais, preço, cotas, vídeos >24MiB e gates continuam pendentes.
+
+## F2 audit remediation
+External Code CLI review on a1a51d5 returned RETURN_FOR_CORRECTION for 5 issues. Local fixes include reject HTTP redirects, remote deletion uncertainty warnings, explicit model selection, single-flight catalog and session-local analysis results. Post-fix QA: 17/17 vision Node, 14/14 vision Chrome, 92/92 combined Node; provider synthetic image/video retested. Details in REMEDIATION-AUDIT-CYCLE1.md. Formal F2.6 gate remains pending.
