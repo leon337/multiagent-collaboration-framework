@@ -19,3 +19,6 @@ A política é local com token de sessão efêmero e requestId de uso único, ex
 MCP inicia sob demanda via processo stdio do SDK oficial com Chrome headless e perfil isolado; arquivos temporários permanecem em diretório /tmp modo 0700 e são eliminados ao encerrar. Browser não compartilha Brave, cookies de outros perfis ou chave Gemini. Lista curta de sites públicos de laboratório e documentação, expansão exige gate.
 
 Instalação: executar npm ci em apps/gemini-live-studio, iniciar PORT=18375 node server.js em loopback, abrir http://127.0.0.1:18375, selecionar Laboratório e habilitar Ferramentas locais + MCP Playwright antes de conectar. O frontend exige aprovações por ação e mostra receipts.
+
+## Navegacao e voz sob consentimento
+Navegacao aceita dominios HTTPS publicos sob aprovacao unica. A API Web Speech reconhece autorizacao em PT-BR independentemente do Gemini, com codigo de quatro digitos e TTS do navegador. Os sites e as falas nunca concedem autoridade ao modelo. Escrita fora do TodoMVC continua bloqueada.

@@ -22,16 +22,17 @@ const MAP=Object.freeze({
 const READ=new Set(['playwright_snapshot','playwright_find','playwright_tabs']);
 const REQUIRES_APPROVAL=new Set(['playwright_navigate','playwright_click','playwright_type','playwright_close']);
 const TTL_MS=45000,RESULT_LIMIT=6500,RECEIPT_LIMIT=80;
-const DEFAULT_NAV_ORIGINS=Object.freeze([
- 'https://example.com','https://demo.playwright.dev',
- 'https://playwright.dev','https://github.com','https://ai.google.dev',
- 'https://developer.mozilla.org'
-]);
+// Navigate to any HTTPS public website only after a one-time human approval.
+// No domain is implicitly granted by a hard-coded allowlist. Real network
+// isolation is NOT provided by the Playwright --allowed-origins convenience flag.
+
 const reportError=(message,status=400)=>Object.assign(Error(message),{status});
 const restrictedHost=h=>{
  const host=String(h||'').toLowerCase().replace(/^\[|\]$/g,'');
  if(!host||host==='localhost'||host.endsWith('.localhost')||host.endsWith('.local')||
-    host.endsWith('.internal')||host.endsWith('.test')||host.endsWith('.invalid'))return true;
+    host.endsWith('.internal')||host.endsWith('.test')||host.endsWith('.invalid')||
+    host.endsWith('.lan')||host.endsWith('.home')||host.endsWith('.corp')||
+    host.endsWith('.arpa')||host.endsWith('.onion'))return true;
  if(/^\d+\.\d+\.\d+\.\d+$/.test(host)){
   const octets=host.split('.').map(Number);
   return octets.length!==4||octets.some(x=>x>255)||
@@ -54,6 +55,13 @@ function publicUrl(value){
   throw reportError('A navegação F3 aceita apenas HTTPS público sem credenciais ou porta customizada.');
  if(u.href.length>1500)throw reportError('URL longa demais.');
  return u;
+}
+function samePublicWebsite(observed,requested){
+ try{
+  const o=publicUrl(observed.href),r=publicUrl(requested.href);
+  const host=h=>h.toLowerCase().replace(/^www\./,'');
+  return o.origin===r.origin||host(o.hostname)===host(r.hostname);
+ }catch{return false;}
 }
 function cleanText(value,limit=RESULT_LIMIT){
  return String(value||'').replace(/AIza[A-Za-z0-9_-]{25,}/g,'[GOOGLE_KEY_REDACTED]')
@@ -113,19 +121,18 @@ function observedUrl(text){
  try{return new URL(m[1]);}catch{return null;}
 }
 class BrowserGateway{
- constructor({clientFactory,transportFactory,clock=()=>Date.now(),interactionOrigins,navigationOrigins}={}){
+ constructor({clientFactory,transportFactory,clock=()=>Date.now(),interactionOrigins}={}){
   this.clock=clock;this.clientFactory=clientFactory;this.transportFactory=transportFactory;
   // Interaction allowed only in a synthetic playground before F3 gate.
   this.interactionOrigins=new Set(interactionOrigins||['https://demo.playwright.dev']);
-  // An allowlist for the experimental pilot. Unknown hosts require a
-  // separately reviewed scope extension; an approval popup alone is not enough.
-  this.navigationOrigins=new Set(navigationOrigins||DEFAULT_NAV_ORIGINS);
-  this.client=null;this.transport=null;this.starting=null;this.outputDir=null;
-  this.activeOrigin=null;this.pending=new Map();this.busy=false;
-  this.receipts=[];this.calls=0;this.session=null;
+  // Navigation has no static allowlist. Every destination is validated and
+  // requires explicit approval; click/type remain TodoMVC-only.
+  this.client=null;this.transport=null;this.starting=null;this.startingClient=null;this.outputDir=null;
+  this.activeOrigin=null;this.currentUrl=null;this.pending=new Map();this.busy=false;
+  this.receipts=[];this.calls=0;this.session=null;this.epoch=0;this.currentUrl=null;
  }
  status(){return {provider:'@playwright/mcp',mode:'isolated_headless_local',
-  ready:!!this.client,activeOrigin:this.activeOrigin,approvedSites:[...this.navigationOrigins],
+  ready:!!this.client,activeOrigin:this.activeOrigin,navigationPolicy:'public_https_per_request',approvedSites:null,
   toolNames:Object.keys(MAP),disabledTools:['browser_evaluate','browser_run_code_unsafe','browser_file_upload','browser_network_request','browser_network_requests'],
   approvalsPending:this.pending.size,receiptCount:this.receipts.length};
  }
@@ -137,16 +144,20 @@ class BrowserGateway{
  async start(){
   if(this.client)return;
   if(this.starting)return this.starting;
+  const epoch=this.epoch;
   this.starting=(async()=>{
-   this.outputDir=fs.mkdtempSync(path.join(os.tmpdir(),'mcf-playwright-mcp-'));fs.chmodSync(this.outputDir,0o700);
+   const ownDir=fs.mkdtempSync(path.join(os.tmpdir(),'mcf-playwright-mcp-'));
+   this.outputDir=ownDir;fs.chmodSync(ownDir,0o700);
    const client=this.clientFactory?this.clientFactory():
     new Client({name:'mcf-gemini-live-playwright-gateway',version:'0.1.0'},{capabilities:{}});
+   this.startingClient=client;
    const transport=this.transportFactory?this.transportFactory():new StdioClientTransport({
     command:process.execPath,
     args:[path.join(__dirname,'node_modules/@playwright/mcp/cli.js'),
      '--headless','--isolated','--browser=chrome','--block-service-workers',
      '--image-responses=omit','--idle-timeout=60000',
-     '--allowed-origins',Array.from(this.navigationOrigins).join(';'),
+     // MCP allowed-origins is not a security boundary and would prevent
+     // user-approved domains. Keep validation and human consent in gateway.
      '--output-dir',this.outputDir],
     cwd:this.outputDir,
     env:{PATH:process.env.PATH||'/usr/bin:/bin',HOME:process.env.HOME||'/tmp',
@@ -157,10 +168,15 @@ class BrowserGateway{
     const list=await client.listTools();
     const names=new Set(list.tools.map(t=>t.name));
     for(const n of Object.values(MAP))if(!names.has(n))throw Error('MCP Playwright sem ferramenta requerida: '+n);
+    if(epoch!==this.epoch)throw reportError('MCP cancelado durante a inicialização.',409);
     this.client=client;this.transport=transport;
+    if(this.startingClient===client)this.startingClient=null;
    }catch(e){
-    await client.close().catch(()=>{});fs.rmSync(this.outputDir,{recursive:true,force:true});this.outputDir=null;
-    throw reportError('Falha de inicialização MCP Playwright: '+cleanText(e.message,180),503);
+    await client.close().catch(()=>{});
+    if(this.startingClient===client)this.startingClient=null;
+    if(this.outputDir===ownDir)this.outputDir=null;
+    fs.rmSync(ownDir,{recursive:true,force:true});
+    throw reportError('Falha ou cancelamento MCP: '+cleanText(e.message,150),e.status===409?409:503);
    }
   })().finally(()=>this.starting=null);
   return this.starting;
@@ -168,12 +184,23 @@ class BrowserGateway{
  prepare({sessionId,name,args}){
   if(typeof sessionId!=='string'||!/^[a-f0-9-]{36}$/i.test(sessionId))throw reportError('Sessão inválida.',403);
   if(this.session&&sessionId!==this.session)throw reportError('Outra sessão já controla o navegador isolado.',409);
+  // Expire abandoned approvals when a new request arrives, independent of
+  // whether the user ever returns to click the old dialog.
+  for(const [id,p] of this.pending){
+   if(this.clock()-p.created>TTL_MS){
+    this.pending.delete(id);
+    this._receipt({tool:p.name,status:'EXPIRED',session:'scoped',origin:this.activeOrigin});
+   }
+  }
   if(this.pending.size>0||this.busy)throw reportError('Outra ação está aguardando aprovação ou execução.',409);
   const values=argumentsFor(name,args);
-  if(name==='playwright_navigate'&&!this.navigationOrigins.has(new URL(values.url).origin))
-   throw reportError('Domínio fora do escopo MCP aprovado. Solicite revisão da lista de origens antes de navegar.',403);
-  if((name==='playwright_click'||name==='playwright_type')&&!this.interactionOrigins.has(this.activeOrigin))
-   throw reportError('Interações de clique/digitação restritas à demonstração TodoMVC até gate F3.',403);
+  if(name==='playwright_click'||name==='playwright_type'){
+   const url=this.currentUrl&&new URL(this.currentUrl);
+   if(!this.interactionOrigins.has(this.activeOrigin)||!url||!/^\/todomvc\/?$/.test(url.pathname))
+    throw reportError('Clique/digitação limitados à página /todomvc/ do laboratório.',403);
+   if(!/^e\d{1,5}$/.test(values.target))
+    throw reportError('O alvo deve ser uma referência de snapshot, não um seletor arbitrário.',403);
+  }
   if(name!=='playwright_navigate'&&!this.activeOrigin&&name!=='playwright_close')
    throw reportError('Navegue primeiro para um endereço aprovado.',409);
   const requestId=crypto.randomUUID();
@@ -193,31 +220,50 @@ class BrowserGateway{
   }
   if(this.busy)throw reportError('Browser ocupado.',409);
   this.busy=true;let resultText='',status='ERROR',error=null,start=this.clock();
+  const epoch=this.epoch;
+  const current=()=>epoch===this.epoch&&this.session===sessionId;
   try{
-   if(p.name==='playwright_navigate')this.activeOrigin=null;
+   if(p.name==='playwright_navigate'){this.activeOrigin=null;this.currentUrl=null;}
    if(p.name!=='playwright_close'||this.client)await this.start();
+   if(!current())throw reportError('A sessão MCP foi cancelada antes do envio.',409);
    let outcome;
    if(p.name==='playwright_close'){
     await this.close();
     status='SUCCESS';resultText='Navegador isolado encerrado. O perfil desta sessão foi descartado.';
    }else{
+    // Read actual page before a mutating tool. Model-supplied description
+    // and page URL from a previous navigation are not authorization.
+    if(p.name==='playwright_click'||p.name==='playwright_type'){
+     const preflight=await this.client.callTool({name:'browser_snapshot',arguments:{depth:7}},undefined,{timeout:12000});
+     if(!current())throw reportError('Sessão cancelada antes do preflight.',409);
+     const raw=outputText(preflight),actual=observedUrl(raw);
+     if(preflight?.isError||!actual||actual.origin!=='https://demo.playwright.dev'||!/^\/todomvc\/?$/.test(actual.pathname))
+      throw reportError('Página mudou: interação cancelada por escopo inválido.',403);
+     const matching=raw.split('\n').find(line=>line.includes('[ref='+p.args.target+']'));
+     if(!matching||!/^e\d{1,5}$/.test(p.args.target))
+      throw reportError('Ref não está presente no snapshot atual.',409);
+     if(/password|senha|token|secret|api.?key|credit|pagamento|email/i.test(matching))
+      throw reportError('Campo sensível no snapshot; operação bloqueada.',403);
+     this.currentUrl=actual.href;
+    }
     outcome=await this.client.callTool({name:MAP[p.name],arguments:p.args},undefined,{timeout:25000});
+    if(!current())throw reportError('O resultado chegou depois do cancelamento; efeito indeterminado.',409);
     resultText=outputText(outcome);
     status=outcome?.isError?'ERROR':'SUCCESS';
     if(status==='SUCCESS'){
      if(p.name==='playwright_navigate'){
       const observed=observedUrl(resultText);
       const expected=publicUrl(p.args.url);
-      if(!observed||observed.origin!==expected.origin){
+      if(!observed||!samePublicWebsite(observed,expected)){
        await this.close();
        status='BLOCKED';resultText='Redirecionamento não autorizado. Navegador isolado encerrado sem retornar conteúdo.';
-      }else{this.activeOrigin=observed.origin;}
+      }else{this.activeOrigin=observed.origin;this.currentUrl=observed.href;}
      }else if(this.activeOrigin){
       const observed=observedUrl(resultText);
       if(observed&&observed.origin!==this.activeOrigin){
        await this.close();
        status='BLOCKED';resultText='Página navegou fora da origem aprovada. Navegador isolado encerrado.';
-      }
+      }else if(observed){this.currentUrl=observed.href;}
      }
     }
    }
@@ -241,9 +287,12 @@ class BrowserGateway{
   return false;
  }
  async close(){
-  const old=this.client;this.client=null;this.transport=null;
-  this.pending.clear();this.activeOrigin=null;
+  this.epoch++;
+  const old=this.client,starting=this.startingClient;
+  this.client=null;this.transport=null;this.startingClient=null;
+  this.pending.clear();this.activeOrigin=null;this.currentUrl=null;
   if(old)await old.close().catch(()=>{});
+  if(starting&&starting!==old)await starting.close().catch(()=>{});
   if(this.outputDir){fs.rmSync(this.outputDir,{recursive:true,force:true});this.outputDir=null;}
  }
 }

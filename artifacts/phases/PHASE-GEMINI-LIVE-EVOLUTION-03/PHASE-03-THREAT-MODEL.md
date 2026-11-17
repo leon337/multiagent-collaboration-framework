@@ -12,3 +12,6 @@ Lacunas importantes:
 7. Perfil isolado não é sandbox antimalware: pacote MCP e transitive deps estão pinados e receberam audit de dependências, mas exigem revisão contínua.
 
 Status: SOMENTE PILOTO LOCAL, SEM F3 GATE APROVADO, SEM MERGE/DEPLOY.
+
+## Riscos adicionais de voz e egress
+O Playwright sem lista estatica de origens ainda nao possui isolamento de rede contra SSRF, DNS rebinding ou redirecionamento intermediario. Voice recognition nao prova pessoa nem liveness; outros usuarios ou replays sao riscos. Web Speech API pode usar processamento online. Nunca usar a voz como autenticacao HDF para dinheiro, publicacao ou contas.

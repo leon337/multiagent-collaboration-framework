@@ -12,3 +12,8 @@
 - Evidence JSON e hashes SHA-256 neste PRF. Sem chave de API, cookies, transcrição pessoal, arquivos de mídia ou snapshots sensíveis armazenados no repo.
 - F2 source manifest é histórico do SHA F2 base; o F3 modifica apps e workflow. F3 source manifest valida novo estado, e F2 artifact manifest é preservado.
 - Pendente: auditoria independente F3 e gate LÉO normativo, HDF, rede em sandbox, política para novos domínios, revisão de autenticação, gates F0/F1/F2.
+
+## Requalificacao da navegacao e voz
+25/25 policy Node, 7/7 browser voz simulada, 9/9 agent browser, 2/2 real MCP site publico e recusas, 118/118 offline geral. Microfone fisico do usuario nao testado. Ver PHASE-03-VOICE-NAVIGATION.md e evidencias JSON.
+
+Browser UI evidence updated after changes: 9/9 cases in current source SHA, including model-side cancellation and one-time approval. Historical Gemini real E2E remains tied to its original source SHA; user microphone ASR is not physically tested.

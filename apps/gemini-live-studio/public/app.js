@@ -7,6 +7,7 @@ const MODEL_38='gemini-3.8-live';
 const MODEL_EXT='gemini-3.8-live-extended-thinking';
 const WS='wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=';
 const state={socket:null,connected:false,connecting:false,wantConnected:false,micStream:null,micCtx:null,micNode:null,micSource:null,cameraStream:null,screenStream:null,frameTimer:null,frameSource:null,audioCtx:null,nextPlay:0,sources:new Set(),muted:false,micRms:0,started:0,timer:null,events:[],transcript:[],tools:0,tokens:0,notes:[],resumeHandle:null,retries:0,pendingMic:false,micGain:null,micActive:false,micGeneration:0,micStarting:false,connectionGeneration:0,connectAbort:null,setupWatchdog:null,reconnectHistory:[],sessionVadAuto:null,micSpeechFrames:0,micSilenceMs:0,preRoll:[],reconnectTimer:null,goAwayTimer:null,goAwayCount:0,playDropCount:0,playUnderruns:0,playbackEpoch:0,playScheduledSamples:0,playFinishedSamples:0,playWarnAt:0,lastRxAudioAt:0,lastAudioLogAt:0,playbackTurnOpen:false,playbackIdleResumes:0,workletDrops:0,staleInputDrops:0,lastMicWarningAt:0,pendingTurnTimeout:null,pendingPromptAudio:false,pendingTurnSeq:0,pendingTurnKind:null,pendingTurnStartedAt:null,pendingTurnTimedOut:false,voiceInSpeech:false,voiceSilenceMs:0,voiceCandidateFrames:0,voiceResponseSeen:false,awaitingTerminal:false,lastTerminalAt:0};
+state.mcpEpoch=0; // cancels pending and queued MCP operations without replacing Live generation
 const ui={model:$('model'),btn:$('connect'),stop:$('disconnect'),mic:$('mic'),camera:$('camera'),screen:$('screen'),mute:$('mute'),msg:$('messages')};
 function toast(text){$('toast').textContent=text;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3600);}
 function log(type,detail){const e={at:new Date().toISOString(),type,detail:String(detail)};state.events.push(e);if(state.events.length>2000)state.events.shift();const div=document.createElement('div');div.className='event';const t=document.createElement('time');t.textContent=new Date(e.at).toLocaleTimeString('pt-BR');const strong=document.createElement('strong');strong.textContent=type;const s=document.createElement('span');s.textContent=e.detail;div.append(t,strong,s);$('events').prepend(div);while($('events').children.length>450)$('events').lastElementChild.remove();}
@@ -82,6 +83,7 @@ function scheduleReconnect(reason='network'){
 async function connect(retry=false){
  if(state.connecting||state.connected)return;
  if(!retry){
+  state.mcpEpoch++;
   window.MCFVisionUI?.resetSession();
   await window.MCFPlaywrightTools?.endSession();
   window.MCFPlaywrightTools?.beginSession();
@@ -139,6 +141,8 @@ async function connect(retry=false){
   ws.onerror=()=>{if(current())log('ERRO','Erro na conexão WebSocket (verifique rede/chave/modelo).');};
   ws.onclose=e=>{
    if(!current())return;
+   state.mcpEpoch++;
+   window.MCFPlaywrightTools?.endSession();
    window.MCFVisionUI?.resetSession();
    clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
    state.socket=null;state.connecting=false;state.connected=false;state.playbackTurnOpen=false;
@@ -220,7 +224,11 @@ function handleMessage(msg){
  }
  if(msg.usageMetadata){state.tokens=msg.usageMetadata.totalTokenCount??state.tokens;$('metricTokens').textContent=Number(state.tokens).toLocaleString('pt-BR');f0tel('tokens',{total_tokens:Number(state.tokens)});}
  if(msg.toolCall)handleTools(msg.toolCall).catch(e=>log('ERRO','Ferramenta MCP: '+String(e.message).slice(0,120)));
- if(msg.toolCallCancellation)log('FERRAMENTA','Chamadas canceladas pelo modelo.');
+ if(msg.toolCallCancellation){
+  state.mcpEpoch++;
+  log('FERRAMENTA','Cancelamento de chamada pelo modelo; encerrando contexto MCP experimental.');
+  window.MCFPlaywrightTools?.endSession();
+ }
  if(msg.serverContent){
   const content=msg.serverContent;
   if(content.interrupted){clearPendingTurn('interrupted');state.awaitingTerminal=false;state.voiceResponseSeen=true;clearPlay();state.playbackTurnOpen=false;f1tel('barge_in',{count:1});log('ÁUDIO','Interrupção confirmada pela API Live; apenas neste caso a fila foi cancelada.');}
@@ -244,9 +252,11 @@ function handleMessage(msg){
  if(msg.error)log('ERRO',JSON.stringify(msg.error));
 }
 async function handleTools(call){
- const generation=state.connectionGeneration;
+ const generation=state.connectionGeneration,mcpEpoch=state.mcpEpoch;
+ const active=()=>generation===state.connectionGeneration&&mcpEpoch===state.mcpEpoch&&state.connected;
  const results=[];
  for(const c of call.functionCalls||[]){
+  if(!active())break;
   let response;
   try{
    if(c.name?.startsWith('playwright_')){
@@ -258,6 +268,7 @@ async function handleTools(call){
  case 'get_session_state':response={model:ui.model.value,microphone:!!state.micStream,camera:!!state.cameraStream,screen:!!state.screenStream,notes:state.notes.length};break;
  default:response={error:'Função não autorizada nesta aplicação.'};
   }}catch(e){response={error:String(e.message).slice(0,180)};}
+  if(!active())break;
   state.tools++;f0tel('tool_call',{count:1});$('metricTools').textContent=String(state.tools);
   const visible=c.name?.startsWith('playwright_')?
    String(response?.receipt_id||response?.code||response?.status||'SEM_RECIBO'):
@@ -265,7 +276,7 @@ async function handleTools(call){
   log('FERRAMENTA',c.name+' → '+visible);
   results.push({id:c.id,name:c.name,response});
  }
- if(results.length&&generation===state.connectionGeneration&&state.connected)
+ if(results.length&&active())
   send({toolResponse:{functionResponses:results}});
 }
 function prepareAudioOutput(){
@@ -582,6 +593,7 @@ function stopAllVisual(){
  updateVisualIndicator();
 }
 function disconnect(){
+ state.mcpEpoch++;
  window.MCFPlaywrightTools?.endSession();
  window.MCFVisionUI?.resetSession();
  state.wantConnected=false;state.connectionGeneration++;state.connectAbort?.abort();state.connectAbort=null;clearTimeout(state.reconnectTimer);clearTimeout(state.goAwayTimer);

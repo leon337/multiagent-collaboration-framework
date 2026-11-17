@@ -1,0 +1,28 @@
+{
+  "schema": "mcf-playwright-mcp-public-navigation-test/v1",
+  "observedDate": "2026-11-17",
+  "testFile": "tests/gemini-live-f3/http-public-site.test.cjs",
+  "results": [
+    {
+      "name": "unlisted public HTTPS destination",
+      "result": "SUCCESS",
+      "url": "https://www.python.org/",
+      "title": "Welcome to Python.org",
+      "receiptProduced": true,
+      "approvalSource": "test_fixture_NOT_REAL_HUMAN_VOICE"
+    },
+    {
+      "name": "reject loopback",
+      "url": "https://127.0.0.1/",
+      "result": "HTTP_400"
+    },
+    {
+      "name": "deny unknown destination",
+      "url": "https://www.rust-lang.org/",
+      "result": "DENIED"
+    }
+  ],
+  "passed": 2,
+  "failed": 0,
+  "physicalMicrophoneTest": "NOT_PERFORMED"
+}

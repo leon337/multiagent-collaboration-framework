@@ -63,13 +63,18 @@
     <section class="playwright-panel panel" aria-labelledby="playwrightTitle">
       <div class="panel-header"><span id="playwrightTitle">⌘ F3 · MCP PLAYWRIGHT — NAVEGADOR CONTROLADO</span><span class="vision-beta">REAL MCP · CHROME ISOLADO</span></div>
       <div class="vision-content">
-        <p>O Gemini pode pedir navegação, snapshots de acessibilidade e busca de texto. Cliques, digitação, navegação e encerramento exigem autorização por ação. Navegação está limitada a domínios de teste/documentação permitidos. Cliques e digitação estão restritos à demonstração TodoMVC enquanto o gate F3 estiver aberto. O navegador MCP não reutiliza seus perfis, cookies ou sessões do Brave.</p>
+        <p>O Gemini pode pedir navegação, snapshots de acessibilidade e busca de texto. Cliques, digitação, navegação e encerramento exigem autorização por ação. Navegação para sites HTTPS públicos requer aprovação individual. Cliques e digitação estão restritos à demonstração TodoMVC enquanto o gate F3 estiver aberto. O navegador MCP não reutiliza seus perfis, cookies ou sessões do Brave.</p>
         <div class="playwright-toolbar">
           <span id="playwrightStatus" role="status" aria-live="polite">Verificando Playwright MCP...</span>
           <button type="button" id="playwrightRefresh" class="secondary">Atualizar estado</button>
           <button type="button" id="playwrightStop" class="secondary">■ Encerrar navegador MCP</button>
         </div>
         <div id="playwrightRuntime" class="vision-trace">Ferramentas em execução isolada, sem acesso arbitrário a comandos do sistema.</div>
+        <div class="playwright-voice-config">
+          <label class="toggle"><input id="playwrightVoiceEnabled" type="checkbox"><span>Aprovar abertura de sites por voz</span></label>
+          <span id="playwrightVoiceAvailability" class="vision-trace">A voz será usada somente quando você ativar este recurso.</span>
+        </div>
+
         <div id="playwrightReceipts" aria-label="Recibos de execução MCP" class="playwright-receipts"></div>
         <p class="vision-disclaimer">Recurso experimental F3: não permite executar código da página, fazer upload de arquivos nem usar o navegador autenticado existente. Dados de páginas são externos e não confiáveis. Sem automação de publicação ou compras.</p>
       </div>
@@ -123,6 +128,14 @@
  <h2 id="playwrightApprovalTitle">Aprovação humana · MCP Playwright</h2>
  <p id="playwrightApprovalSummary">A ação do agente precisa ser aprovada.</p>
  <p id="playwrightApprovalMeta" class="vision-trace"></p>
+ <div id="playwrightVoiceChallenge" class="playwright-voice-challenge" hidden>
+  <p>Autorize por voz dizendo exatamente:</p>
+  <strong id="playwrightVoicePhrase" aria-live="polite"></strong>
+  <p id="playwrightVoiceStatus" role="status" aria-live="polite">Aguardando microfone...</p>
+  <button type="button" id="playwrightListen" class="secondary">🎙️ Ouvir autorização novamente</button>
+  <p class="vision-disclaimer">O reconhecimento de fala é separado do Gemini. Esta confirmação não identifica biometricamente quem está falando. O áudio pode ser processado pelo serviço de reconhecimento do navegador.</p>
+ </div>
+
  <p class="visual-warning">Esta autorização permite UMA ação específica no navegador isolado. O modelo não pode se autoaprovar. Revise o destino e o tipo de interação.</p>
  <div class="dialog-actions">
   <button type="button" class="secondary" id="playwrightDeny">Recusar</button>
@@ -148,5 +161,5 @@
 </dialog>
 <dialog id="keyDialog"><form id="keyForm"><div class="dialog-mark">◈</div><h2>Conectar ao Google AI Studio</h2><p>Insira sua API Key. Ela será enviada somente ao servidor local para validação e armazenamento protegido.</p><label for="apiKey">CHAVE DA API GEMINI</label><div class="secret-row"><input id="apiKey" type="password" placeholder="AIza..." required minlength="30" autocomplete="off" spellcheck="false"><button id="toggleSecret" type="button" class="mini">Mostrar</button></div><div id="keyFeedback" class="feedback" aria-live="polite"></div><div class="dialog-actions"><button type="button" id="closeKey" class="secondary">Cancelar</button><button type="submit" id="saveKey" class="primary">Validar e salvar</button></div><a href="https://aistudio.google.com/api-keys" target="_blank" rel="noreferrer">Onde obter minha chave? ↗</a></form></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="/telemetry.js" defer></script><script src="/media-policy.js" defer></script><script src="/playwright-tools.js" defer></script><script src="/app.js" defer></script><script src="/vision-ui.js" defer></script>
+<script src="/telemetry.js" defer></script><script src="/media-policy.js" defer></script><script src="/voice-approval.js" defer></script><script src="/playwright-tools.js" defer></script><script src="/app.js" defer></script><script src="/vision-ui.js" defer></script>
 </body></html>

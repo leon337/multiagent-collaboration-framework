@@ -8,3 +8,6 @@
 - EVIDENCE-F3-BROWSER-AGENT.json: E2E do fluxo de aprovação.
 - EVIDENCE-F3-GEMINI-REAL.json: chamada real do Gemini.
 - PHASE-03-SOURCE-MANIFEST.sha256, PHASE-03-ARTIFACT-MANIFEST.sha256.
+
+## Nova capacidade de voz
+PHASE-03-VOICE-NAVIGATION.md: arquitetura, testes e limites. EVIDENCE-F3-VOICE-BROWSER.json: testes com Web Speech simulado. EVIDENCE-F3-PUBLIC-NAVIGATION.json: MCP real em Python.org.

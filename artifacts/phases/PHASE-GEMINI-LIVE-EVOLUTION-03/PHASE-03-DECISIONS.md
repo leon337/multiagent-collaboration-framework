@@ -6,3 +6,6 @@
 4. Escopo escrito apenas no TodoMVC, egress restrito por lista de origens; proibir reutilização de perfis Brave e cookies autenticados nesta fase.
 5. A aprovação local não equivale ao HUMAN_GATE/HDF nativo MCF. Produção depende de PermissionEngine, identidade, isolamento de rede, receipts duráveis, idempotência e revisão independente.
 6. Revisão LÉO e passos de F3 restantes são gates separados; nenhum merge ou deploy público automático.
+
+## Autorizacao humana e dominios
+Por autorizacao explicita de LEANDRO, navegar para sites HTTPS publicos exige consentimento por destino, por voz opcional ou botao. A frase com codigo reduz erro de consentimento, mas nao e identidade biometrica ou gate normativo. Escrita continua so no laboratorio.

@@ -25,3 +25,19 @@ mcf_native_hdf: NOT_CONNECTED
 f0_f1_f2_formal_gate: OPEN
 f3_formal_gate: PENDING
 next_action: INDEPENDENT_SECURITY_REVIEW_AND_GATE
+
+
+navigation_policy: PUBLIC_HTTPS_WITH_ONE_TIME_APPROVAL
+navigation_static_allowlist: REMOVED
+voice_approval_mode: OPT_IN_SEPARATE_WEB_SPEECH_PT_BR
+voice_challenge: FOUR_RANDOM_DIGITS_UI_ONLY
+voice_browser_mock_qa: 7_PASS
+voice_physical_microphone: NOT_TESTED
+voice_biometric_authentication: false
+public_unlisted_site_real_mcp: PYTHON_ORG_SUCCESS
+private_network_blocked: PASS
+new_node_policy_voice: 25_PASS
+agent_browser_retest: 9_PASS
+f0_f1_f2_f3_offline_units: 118_PASS
+current_security_gate: OPEN
+production_release: BLOCKED
