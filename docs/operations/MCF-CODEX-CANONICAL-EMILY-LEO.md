@@ -98,6 +98,14 @@ python3 ops/codex/run_role.py --role emily   --mission-id MCF-GEMINI-LIVE-EVOLUT
 python3 ops/codex/run_role.py --role leo   --mission-id MCF-GEMINI-LIVE-EVOLUTION-20261116-001   --phase-id F3 --target-sha "$SHA"   --emily-receipt /CAMINHO/DO/RECIBO-EMILY.json --execute
 ```
 
+Os recibos externos têm **assinatura HMAC-SHA256 local** com chave gerada e
+mantida somente no host autorizado (`0600`), e vínculo ao resumo de
+integridade do log JSONL, missão, fase, SHA, papel e evidência de conclusão
+real. Um recibo falso, de outra fase, log alterado, worktree suja ou parecer
+vazio é rejeitado. A HMAC local prova apenas integridade sob a conta do
+executor, **não autentica uma Agent Session MCF nem protege contra um
+atacante com acesso à própria conta/chave**.
+
 Omissão de `--execute` executa somente **dry-run** sem chamar o modelo.
 Falhas, SHA divergente ou recibo ausente interrompem o processo (**fail closed**).
 A pasta padrão `~/.cache/mcf-codex/role-receipts` contém logs privados,

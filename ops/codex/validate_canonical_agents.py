@@ -6,6 +6,13 @@ Nao representa invocacao real nem gate da missao.
 """
 from __future__ import annotations
 import pathlib
+import hashlib
+import json
+import os
+import runpy
+import tempfile
+from types import SimpleNamespace
+from unittest.mock import patch
 import subprocess
 import sys
 import tomllib
@@ -134,6 +141,75 @@ class CanonicalCodexAgentsTest(unittest.TestCase):
         leo=subprocess.run(cmd+["--role", "leo"], capture_output=True, text=True)
         self.assertNotEqual(leo.returncode, 0)
         self.assertIn("recibo real de Emily", leo.stderr)
+
+    def test_signed_receipt_checks_mission_phase_and_log_provenance(self):
+        src=runpy.run_path(str(ROOT / "ops/codex/run_role.py"))
+        sha=subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+                           capture_output=True, text=True, check=True).stdout.strip()
+        thread="11111111-1111-4111-8111-111111111111"
+        with tempfile.TemporaryDirectory(prefix="mcf-codex-test-") as td:
+            folder=pathlib.Path(td)
+            log=folder / "codex-emily.jsonl"
+            final="CODEX_EMILY_TECHNICAL_REVIEW target_sha: "+sha
+            lines=[
+                {"type":"thread.started","thread_id":thread},
+                {"type":"item.completed","item":{"type":"agent_message","text":final}},
+                {"type":"turn.completed"}
+            ]
+            log.write_text("".join(json.dumps(x)+"\n" for x in lines))
+            log.chmod(0o600)
+            prior={
+                "schema":"mcf-codex-external-role-receipt/v1",
+                "agent_name":"emily",
+                "execution_surface":"CODEX_EXTERNAL_ROLE_SESSION",
+                "mission_id":"MCF-CANONICAL-AGENTS",
+                "phase_id":"F3",
+                "target_sha":sha,
+                "status":"completed",
+                "turn_completed":True,
+                "formal_mcf_gate":"PENDING",
+                "mcf_authenticated_agent_session":False,
+                "codex_thread_id":thread,
+                "raw_local_log":str(log),
+                "raw_log_sha256":hashlib.sha256(log.read_bytes()).hexdigest(),
+                "last_message":final,
+            }
+            key=src["signing_key"](folder,True)
+            prior["local_hmac_sha256"]=src["receipt_mac"](prior,key)
+            rp=folder / "receipt.json"
+            rp.write_text(json.dumps(prior))
+            rp.chmod(0o600)
+            args=SimpleNamespace(receipt_dir=folder,emily_receipt=rp,
+                                 mission_id="MCF-CANONICAL-AGENTS",phase_id="F3",target_sha=sha)
+            src["verify_emily_receipt"](prior,args)
+            tampered=dict(prior,mission_id="ANOTHER-MISSION")
+            with self.assertRaisesRegex(ValueError,"assinatura"):
+                src["verify_emily_receipt"](tampered,args)
+            prior["mission_id"]="ANOTHER-MISSION"
+            prior["local_hmac_sha256"]=src["receipt_mac"](prior,key)
+            with self.assertRaisesRegex(ValueError,"missao/fase"):
+                src["verify_emily_receipt"](prior,args)
+            prior["mission_id"]=args.mission_id
+            prior["local_hmac_sha256"]=src["receipt_mac"](prior,key)
+            log.write_text(log.read_text()+"\n")
+            with self.assertRaisesRegex(ValueError,"integridade"):
+                src["verify_emily_receipt"](prior,args)
+
+    def test_dirty_checkout_and_empty_verdict_fail_closed(self):
+        src=runpy.run_path(str(ROOT / "ops/codex/run_role.py"))
+        sha="f"*40
+        responses=(SimpleNamespace(stdout=sha+"\n"),SimpleNamespace(stdout=" M AGENTS.md\n"))
+        with patch("subprocess.run",side_effect=responses):
+            with self.assertRaisesRegex(ValueError,"sujo"):
+                src["assert_checkout"](sha)
+        with tempfile.TemporaryDirectory(prefix="mcf-codex-events-") as td:
+            log=pathlib.Path(td)/"log.jsonl"
+            log.write_text(json.dumps({"type":"thread.started","thread_id":"abcd"})+"\n"+
+                           json.dumps({"type":"turn.completed"})+"\n")
+            thread,finished,final=src["parse_events"](log)
+            self.assertEqual(thread,"abcd")
+            self.assertTrue(finished)
+            self.assertFalse(src["eligible_deliverable"]("emily",sha,final))
 
     def test_ci_follows_project_changes(self):
         wf = (ROOT / ".github/workflows/mcf-codex-agent-profiles.yml").read_text(encoding="utf-8")
