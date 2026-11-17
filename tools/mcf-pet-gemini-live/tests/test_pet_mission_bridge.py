@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import datetime, timedelta, timezone
 import json
 import os
 from pathlib import Path
@@ -113,6 +114,127 @@ class MissionBridgeTest(unittest.TestCase):
                               (self.source["id"],0)):
             with self.subTest(ident=ident,version=version),self.assertRaises(bridge.BridgeError):
                 bridge.export_reviewed_proposal(ident,version,self.db,self.proposals)
+
+    def context_proof(self) -> tuple[Path,dict]:
+        cache=self.handoff_dir/"verified-project-context.json"
+        now=datetime.now(timezone.utc)
+        ref={
+            "artifactType":"PROJECT_INTENT_PACKAGE","schemaVersion":"1.0",
+            "projectId":bridge.PROJECT_ID,"revisionId":bridge.PIP_REVISION,
+            "path":".mcf/intent/pip-"+bridge.PIP_REVISION+".json",
+            "contentDigest":bridge.PIP_DIGEST,"repository":bridge.REPOSITORY,
+            "commitSha":None,
+        }
+        document={
+            "schemaVersion":1,"authority":"LOCAL_VERIFIED_CANONICAL_ARTIFACTS",
+            "state":"PASS_VERIFIED_LOCAL","repository":bridge.REPOSITORY,
+            "projectId":bridge.PROJECT_ID,
+            "methodologyPin":bridge.METHODOLOGY_PIN,"alignedPipRef":ref,
+            "alignmentReceiptRef":{
+                "artifactType":"INTENT_ALIGNMENT_RECEIPT",
+                "projectId":bridge.PROJECT_ID,
+                "contentDigest":bridge.RECEIPT_DIGEST,
+            },
+            "verifiedAt":now.isoformat(),
+            "expiresAt":(now+timedelta(minutes=30)).isoformat(),
+            "remoteRuntimeAdmissionVerified":False,
+            "missionCreated":False,"executionAuthorized":False,
+            "humanGateApproved":False,
+        }
+        cache.write_text(json.dumps(document))
+        cache.chmod(0o600)
+        return cache,document
+
+    def test_exact_verified_local_context_adds_pinned_refs_but_no_execution(self):
+        path,proof=self.context_proof()
+        loaded=bridge.load_verified_project_context(path)
+        self.assertEqual(loaded["alignedPipRef"]["contentDigest"],bridge.PIP_DIGEST)
+        p=self.review()
+        draft=bridge.export_reviewed_proposal(
+            p["id"],p["version"],self.db,self.proposals,context_file=path)
+        self.assertTrue(draft["local_context_verified"])
+        self.assertEqual(draft["validation_status"],"LOCAL_PIP_VERIFIED_REMOTE_PENDING")
+        self.assertFalse(draft["import_ready"])
+        self.assertIsNone(draft["runtime_mission_id"])
+        self.assertIn("REMOTE_V11_CONTEXT_PREFLIGHT_REQUIRED",draft["runtime_import_blockers"])
+        self.assertFalse(draft["execution_authorized"])
+        contract=draft["request"]["contract"]
+        self.assertEqual(contract["methodologyPin"],bridge.METHODOLOGY_PIN)
+        self.assertEqual(contract["alignedPipRef"]["contentDigest"],bridge.PIP_DIGEST)
+        self.assertNotIn("standingAuthorizations",contract)
+
+    def test_replay_after_context_proof_expired_keeps_existing_verified_contract(self):
+        path,doc=self.context_proof()
+        p=self.review()
+        first=bridge.export_reviewed_proposal(
+            p["id"],p["version"],self.db,self.proposals,context_file=path)
+        doc["expiresAt"]=(datetime.now(timezone.utc)-timedelta(seconds=3)).isoformat()
+        path.write_text(json.dumps(doc));path.chmod(0o600)
+        with patch.object(bridge,"load_verified_project_context",
+                          side_effect=AssertionError("should not load transient cache")):
+            again=bridge.export_reviewed_proposal(
+                p["id"],p["version"],self.db,self.proposals,context_file=path)
+        self.assertEqual(again["handoff_id"],first["handoff_id"])
+        self.assertEqual(again["payload_sha256"],first["payload_sha256"])
+        self.assertTrue(again["local_context_verified"])
+        self.assertEqual(again["request"],first["request"])
+        self.assertEqual(len(bridge.list_handoffs(self.db)),1)
+
+    def test_replay_after_new_context_appears_preserves_old_incomplete_draft(self):
+        p=self.review()
+        first=bridge.export_reviewed_proposal(
+            p["id"],p["version"],self.db,self.proposals,
+            context_file=self.handoff_dir/"absent.json")
+        path,_=self.context_proof()
+        with patch.object(bridge,"load_verified_project_context",
+                          side_effect=AssertionError("must preserve immutable draft")):
+            again=bridge.export_reviewed_proposal(
+                p["id"],p["version"],self.db,self.proposals,context_file=path)
+        self.assertEqual(again["handoff_id"],first["handoff_id"])
+        self.assertEqual(again["payload_sha256"],first["payload_sha256"])
+        self.assertFalse(again["local_context_verified"])
+        self.assertEqual(again["request"],first["request"])
+        self.assertEqual(len(bridge.list_handoffs(self.db)),1)
+
+    def test_corrupt_handoff_digest_is_rejected_on_retry(self):
+        p=self.review()
+        first=bridge.export_reviewed_proposal(
+            p["id"],p["version"],self.db,self.proposals)
+        import sqlite3
+        conn=sqlite3.connect(self.db)
+        conn.execute("UPDATE handoffs SET contract_sha256=? WHERE id=?",
+                     ("0"*64,first["handoff_id"]))
+        conn.commit();conn.close()
+        with self.assertRaises(bridge.BridgeError) as err:
+            bridge.export_reviewed_proposal(
+                p["id"],p["version"],self.db,self.proposals)
+        self.assertEqual(err.exception.code,"HANDOFF_INTEGRITY_FAILED")
+
+    def test_unverified_expired_or_unsafe_cache_never_grants_context(self):
+        path,doc=self.context_proof()
+        doc["methodologyPin"]={"version":"9.9.9","immutableRef":"git:fake"}
+        path.write_text(json.dumps(doc));path.chmod(0o600)
+        with self.assertRaises(bridge.BridgeError) as invalid:
+            bridge.load_verified_project_context(path)
+        self.assertEqual(invalid.exception.code,"INVALID_CONTEXT_CACHE")
+        path,doc=self.context_proof()
+        doc["expiresAt"]=(datetime.now(timezone.utc)-timedelta(seconds=3)).isoformat()
+        path.write_text(json.dumps(doc));path.chmod(0o600)
+        self.assertIsNone(bridge.load_verified_project_context(path))
+        path,doc=self.context_proof()
+        path.chmod(0o644)
+        with self.assertRaises(bridge.BridgeError) as unsafe:
+            bridge.load_verified_project_context(path)
+        self.assertEqual(unsafe.exception.code,"UNSAFE_CONTEXT_CACHE")
+
+    def test_missing_or_symlinked_cache_cannot_be_used(self):
+        self.assertIsNone(bridge.load_verified_project_context(
+            self.handoff_dir/"absent.json"))
+        file,doc=self.context_proof()
+        link=self.handoff_dir/"context-symlink.json"
+        link.symlink_to(file)
+        with self.assertRaises(bridge.BridgeError):
+            bridge.load_verified_project_context(link)
 
     def test_unavailable_observer_explicitly_denies_canonical_claim(self):
         snapshot={"source":"MCF_MISSION_CONTROL_READ_ONLY",

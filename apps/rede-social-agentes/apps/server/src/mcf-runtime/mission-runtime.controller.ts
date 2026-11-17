@@ -102,7 +102,7 @@ const missionContractSchema = z.object({
   returnStatus: z.enum(['NOT_APPLICABLE', 'PENDING', 'COMPLETED']).optional(),
 });
 
-const createMissionSchema = z.object({ contract: missionContractSchema });
+export const createMissionSchema = z.object({ contract: missionContractSchema });
 
 const receiptSchema = z.object({
   receiptId: z.string().uuid(),

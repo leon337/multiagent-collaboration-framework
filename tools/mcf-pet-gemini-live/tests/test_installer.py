@@ -110,6 +110,22 @@ class Fake:
         self.assertNotIn('pet_scope.rollback_note(',patched)
         self.assertEqual(installer.patch_scoped_write_preview(patched),patched)
 
+    def test_existing_mission_bridge_route_upgrades_without_duplicate_handler(self):
+        old_source='''import pet_mission_bridge as pet_missions
+class Fake:
+    def do_POST(self):
+        path = urlparse(self.path).path
+        if path in {"/api/pet-voice/mission-bridge/status",
+                    "/api/pet-voice/mission-bridge/export",
+                    "/api/pet-voice/mission-bridge/list"}:
+            response={"ok":True,"handoff":pet_missions.export_reviewed_proposal(
+                        item["proposal_id"],item["expected_version"])}
+'''
+        current=installer.patch_mission_bridge_routes(old_source)
+        self.assertIn("context_file=pet_missions.CONTEXT_FILE",current)
+        self.assertEqual(current.count('if path in {"/api/pet-voice/mission-bridge/status",'),1)
+        self.assertEqual(installer.patch_mission_bridge_routes(current),current)
+
     def test_mission_bridge_is_only_an_authenticated_draft_handoff(self):
         from unittest.mock import patch
         dummy='''import pet_proposals as pet_drafts

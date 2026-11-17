@@ -363,7 +363,15 @@ def patch_mission_bridge_routes(data: str) -> str:
                           "import pet_mission_bridge as pet_missions",
                           "mission bridge import")
     if 'if path in {"/api/pet-voice/mission-bridge/status",' in data:
-        return data
+        # Upgrade an already deployed handler rather than treating the
+        # presence of its route as proof that its implementation is current.
+        old_export='''                        item["proposal_id"],item["expected_version"])}'''
+        new_export='''                        item["proposal_id"],item["expected_version"],
+                        context_file=pet_missions.CONTEXT_FILE)}'''
+        if new_export in data:
+            return data
+        return replace_once(data,old_export,new_export,
+                            "verified mission context route upgrade")
     anchor='''        if path in {"/api/pet-voice/proposals/list",
 '''
     handler='''        if path in {"/api/pet-voice/mission-bridge/status",
@@ -401,7 +409,8 @@ def patch_mission_bridge_routes(data: str) -> str:
                     if set(item)!={"proposal_id","expected_version"}:
                         raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros inválidos.")
                     response={"ok":True,"handoff":pet_missions.export_reviewed_proposal(
-                        item["proposal_id"],item["expected_version"])}
+                        item["proposal_id"],item["expected_version"],
+                        context_file=pet_missions.CONTEXT_FILE)}
                 return self._send(json.dumps(response,ensure_ascii=False).encode("utf-8"),
                                   "application/json; charset=utf-8")
             except pet_voice.ConversationError as err:

@@ -31,6 +31,9 @@ import { MCF_RUNTIME_REPOSITORY, type McfRuntimeRepository } from './mcf-runtime
 import { LocalAgentTeamAdapter } from './local-agent-team.adapter.js';
 import { MissionObservabilityController } from './mission-observability.controller.js';
 import { MissionControlController } from './mission-control.controller.js';
+import { MissionControlReadController } from './mission-control-read.controller.js';
+import { MissionContractPreflightController } from './mission-contract-preflight.controller.js';
+import { McfMissionControlReadTokenGuard } from './mission-control-read-token.guard.js';
 import { MissionControlRepository } from './mission-control.repository.js';
 import { MissionControlService } from './mission-control.service.js';
 import { McfMissionControlTokenGuard } from './mission-control-token.guard.js';
@@ -79,6 +82,8 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     SocialTimelineController,
     ProductionAuthorizationController,
     MissionControlController,
+    MissionControlReadController,
+    MissionContractPreflightController,
   ],
   providers: [
     AgentExecutionService,
@@ -92,6 +97,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     },
     McfRuntimeTokenGuard,
     McfMissionControlTokenGuard,
+    McfMissionControlReadTokenGuard,
     MissionControlRepository,
     MissionV11ContextGuard,
     ContinuityRecoveryService,

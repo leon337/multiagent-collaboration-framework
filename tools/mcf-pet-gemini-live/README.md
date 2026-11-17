@@ -270,3 +270,21 @@ File read, rename and unlink use the dir_fd rather than following a
 swapped mission directory path. Tests prove no write/delete outside the
 workspace when an attacker substitutes a directory symlink, and test
 the default sibling NOTES/JOURNAL layout. Permissions remain fail-closed.
+
+## MCF Pet runtime authority isolation — next governed milestone
+
+- New read-only Mission Control endpoint uses an independent Bearer token,
+  restricted to the canonical repository and never shared with dispatch.
+- Runtime v1.1 preflight is protected by the real SessionAuthGuard and
+  validates the exact aligned PIP + receipt using MissionV11ContextGuard.
+  A PASS_VERIFIED preflight is not a HUMAN_GATE and creates no mission.
+- The offline CLI scripts/verify-project-context.mjs verifies the checked-out
+  canonical PIP/receipt and writes private 0600, 30-minute local proof.
+  New Pet draft exports can include pinned methodologyPin/alignedPipRef,
+  but report LOCAL_PIP_VERIFIED_REMOTE_PENDING, import_ready=false.
+- The executor remains disabled: no verifier connected to PermissionEngine,
+  no LÉO gate receipt, no real SCOPED_WRITE in Gemini Live.
+- Deployment requires the Render workspace to be confirmed by LEANDRO,
+  an independently provisioned read-only secret, staging QA and gates.
+
+PRF: artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/
