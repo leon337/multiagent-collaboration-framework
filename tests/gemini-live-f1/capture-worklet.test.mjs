@@ -4,17 +4,20 @@ import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import vm from 'node:vm';
 const source=readFileSync(join(import.meta.dirname,'../../apps/gemini-live-studio/public/capture-worklet.js'),'utf8');
-function make(rate=48000,size=640,autoAck=true){
+function make(rate=48000,size=640,autoAck=true,ctxStart=0){
  let Type;
  class FakeProcessor{
   constructor(){const self=this;this.port={onmessage:null,posted:[],postMessage(data,transfer){self.port.posted.push({data,transfer});if(autoAck&&data?.type==='pcm')self.port.onmessage?.({data:{type:'ack'}});}};}
  }
- vm.runInNewContext(source,{AudioWorkletProcessor:FakeProcessor,sampleRate:rate,registerProcessor:(name,t)=>{assert.equal(name,'pcm16-capture');Type=t;},Float32Array,Int16Array,Number,Math});
- const processor=new Type({processorOptions:{frameSamples:size}});return processor;
+ const sandbox={AudioWorkletProcessor:FakeProcessor,sampleRate:rate,currentTime:ctxStart,registerProcessor:(name,t)=>{assert.equal(name,'pcm16-capture');Type=t;},Float32Array,Int16Array,Number,Math};
+ vm.runInNewContext(source,sandbox);
+ const processor=new Type({processorOptions:{frameSamples:size}});
+ processor.__clock=sandbox;processor.__clockStart=ctxStart;return processor;
 }
 function feed(proc,seconds=1,rate=48000,wave=t=>Math.sin(2*Math.PI*1000*t)*0.5){
  const count=Math.round(seconds*rate),input=new Float32Array(128),output=new Float32Array(128);
  for(let start=0;start<count;start+=128){
+  if(proc.__clock)proc.__clock.currentTime=proc.__clockStart+start/rate;
   input.fill(0);
   for(let i=0;i<128&&start+i<count;i++)input[i]=wave((start+i)/rate);
   proc.process([[input]],[[output]]);
@@ -90,4 +93,14 @@ test('all transmitted frames are acknowledged to preserve realtime throughput',(
  assert.ok(p.port.posted.length>=74);
  assert.equal(p.droppedFrames,0);
  assert.equal(p.pendingFrames,0);
+});
+
+test('Worklet timestamp uses AudioContext clock even after delayed initialization',()=>{
+ const p=make(48000,640,true,.6);feed(p,.25,48000,()=>.2);
+ const packets=p.port.posted;assert.ok(packets.length>=6);
+ const first=packets[0].data.captureTimeSec;const last=packets.at(-1).data.captureTimeSec;
+ assert.ok(first>.635&&first<.655,'first sample contextTime='+first);
+ assert.ok(last>first+.18);
+ // A fresh packet received ~50ms later is not stale under 350ms guard.
+ assert.ok((first+.05-first)*1000<350);
 });

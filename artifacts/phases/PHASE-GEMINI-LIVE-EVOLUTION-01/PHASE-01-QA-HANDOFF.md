@@ -30,3 +30,6 @@ evidence: QA-F1-Q3-AUDIO-20261116 (browser 17/17, physical mic 63 frames, resamp
 historic_gate: LEO-profile Codex external RETORNAR at SHA 361a08b; not a new native gate
 open_findings: 16-second nonterminal response, voice mouth-to-ear p95, natural barge-in, hardware acoustic quality, F0.8, unrotated key
 next_action: external Emily-profile reviewer on new exact commit, then external LEO-profile delegated gate; gate must not be represented as native Agent Session.
+
+## F1 Q3 cycle 3 clock origin
+The external Codex CLI Emily-profile reviewer at ae9f76a found a P1 clock-domain mismatch causing fresh mic frames to be dropped after delayed worklet startup. MESTRE fixed Worklet timestamps to use AudioContext clock and added a VM delayed init test. 20/20 Node tests, 17/17 real Gemini browser E2E, and 60 frames/zero stale drops in a browser with deliberately delayed addModule passed with source hashes. The one previous real Google nonterminal turn in 19 attempts is NOT fixed by a 16s watchdog warning, and human voice/headset gate/F0.8 remain OPEN. Reports in QA-F1-Q3-AUDIO-20261116/Q3-CLOCK-REMEDIATION.md.

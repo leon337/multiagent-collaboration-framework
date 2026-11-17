@@ -55,7 +55,7 @@ class PCM16CaptureProcessor extends AudioWorkletProcessor {
     this.pendingFrames++;
     this.port.postMessage({
      type:'pcm',buffer:payload,rms:Math.sqrt(this.sumsq/this.frameSamples),
-     samples:this.frameSamples,rate:this.targetRate,droppedFrames:this.droppedFrames,captureTimeSec:this.inputIndex/this.inputRate
+     samples:this.frameSamples,rate:this.targetRate,droppedFrames:this.droppedFrames,captureTimeSec:this.captureContextTime
     },[payload]);
     this.droppedFrames=0;
    }else this.droppedFrames++;
@@ -70,6 +70,11 @@ class PCM16CaptureProcessor extends AudioWorkletProcessor {
   if(!data)return true;
   for(let i=0;i<data.length;i++){
    const index=++this.inputIndex;
+   // Use AudioWorkletGlobalScope.currentTime (AudioContext clock), NOT a
+   // counter relative to processor startup. Otherwise loading addModule late
+   // could make every fresh frame look stale in the UI.
+   this.captureContextTime=typeof currentTime==='number'&&Number.isFinite(currentTime)
+    ?currentTime+i/this.inputRate:index/this.inputRate;
    const sample=Number.isFinite(data[i])?data[i]:0;
    if(index===0)this.firstSample=sample;
    this.ring[index&127]=sample;

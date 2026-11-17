@@ -16,3 +16,10 @@ Cycle 2 findings and validation:
 - STALE-WATCHDOG.json — 3/3 adversarial validation of stale mic rejection, frame count and no-auto-retry timeout.
 - BROWSER-REAL-API.json updated to final source: 17/17 PASS.
 The LATENCY-TURNS.json remains historical for previous Q3 source, not a retest on cycle2.
+
+## Q3 cycle3 clock origin
+- Q3-CLOCK-REMEDIATION.md describes clock mismatch and fix.
+- CLOCK-ORIGIN-CHROME.json tests actual getUserMedia -> Worklet -> app -> local fake WebSocket with module delay, no audio retained.
+- BROWSER-REAL-API-FINAL.json is actual Gemini API E2E on updated source.
+- AUDIO-DRAIN-PRIOR-Q3.json proves the playback drain on an earlier Q3 source, not the current capture code.
+- Two independent external Emily-profile Codex reports: EMILY-EXTERNAL-Q3-SHA4E5F331.md and EMILY-EXTERNAL-Q3-CYCLE2.md.

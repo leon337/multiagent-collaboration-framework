@@ -3,8 +3,8 @@ c46a42cace0683612a638258e0cecd83811e3f5d1e49aa4d4d81085cd0a85710  ../../../apps/
 6ca78eae5d17861c87dd5b8485b2243743fc8d86c29a8c3dbb78e1c519faf038  ../../../apps/gemini-live-studio/public/index.html
 7f1e1d69087f28c3334ba39b7e8759791304cbe9863b12f64caf5c688327064e  ../../../apps/gemini-live-studio/public/style.css
 b9e1b4d463fd8133d40bf624a7238f975cedc4e9b3fb5979c42ae8359242ae11  ../../../apps/gemini-live-studio/public/telemetry.js
-d5c40e8f753eabe3e9ed26f8ccc4f106cde0ce8dfa82d8b154eeb6b0f3fcc90e  ../../../apps/gemini-live-studio/public/capture-worklet.js
-ba59e2178cd652c35d165498c9bb527070b9dfb49f9ce830b5e53f10eda0cfa3  ../../../tests/gemini-live-f1/capture-worklet.test.mjs
+6e5e31176beb66b3a54548e8c00f67f2d87af96dce327b60ba2ba0dffe15fe6a  ../../../apps/gemini-live-studio/public/capture-worklet.js
+13fe11f0a5dc968be47777cf38890a050de15630f9bd6ff2214f887f81bac46d  ../../../tests/gemini-live-f1/capture-worklet.test.mjs
 b0e97728a0b0a31548443470893d1cefdd130d90e477f9d7b7aee1ab14ce4d96  ../../../tests/gemini-live-f1/telemetry.test.mjs
 66f26e3abae23282ab046b4b8a28507491b47b31c5ffc243e48295af525529be  ../../../tests/gemini-live-f1/browser-e2e.cjs
 036d68ea7481bf5b9bb8a9e3fb0935b42a1877b898af8186516d24ed7096359f  ../../../tests/gemini-live-f1/adversarial-browser.cjs
@@ -26,3 +26,4 @@ fcafbceb54acec3b19ec03d2e4ca4c78d844ca9d901246535de2c860bd637c6e  ../../../tests
 52689dd8a29f1ce2702496cd9c2760f9a13cc91d061a59f54621e1be84751d0a  ../../../tests/gemini-live-f1/latency-benchmark.cjs
 f71396a87783c9abdebedee2cb19764804701bc3d649c26787d59178afc2a527  ../../../tests/gemini-live-f1/physical-mic-60.cjs
 d812dd1ee4ce327effaff0cf6d570faa840406fa00d9089a8b921e1d4423acab  ../../../tests/gemini-live-f1/q3-stale-watchdog.cjs
+4a08fc910a13e8d8da7a13406b030df15c32f1a7fc77bb74d0956e98604f925a  ../../../tests/gemini-live-f1/clock-origin-integration.cjs
