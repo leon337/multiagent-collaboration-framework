@@ -1,0 +1,165 @@
+{
+  "schema": "mcf-gemini-live-session-continuity/v1",
+  "observed_at_utc": "2026-11-17T05:12:23Z",
+  "mission_id": "MCF-GEMINI-LIVE-EVOLUTION-20261116-001",
+  "human_authority": "LEANDRO",
+  "orchestrator": "MESTRE",
+  "gate_agent": "LEO",
+  "canonical_issue": "https://github.com/leon337/multiagent-collaboration-framework/issues/527",
+  "source_of_truth": "github_live_then_mcf_repository_docs",
+  "repository": "https://github.com/leon337/multiagent-collaboration-framework",
+  "phase_state": {
+    "F0": "EM_CORRECAO_GATE_F0_8_PENDENTE",
+    "F1": "IMPLEMENTADO_LOCAL_GATE_F1_6_PENDENTE",
+    "F2": "PARCIAL_LOCAL_GATE_F2_6_PENDENTE",
+    "F3": "PLAYWRIGHT_VOICE_LOCAL_GATE_F3_7_PENDENTE",
+    "F4": "NOT_IMPLEMENTED"
+  },
+  "branches": {
+    "main": {
+      "sha": "e5c0abf60a2e85adc0dee30340a64bf30cc20ec9",
+      "studio_in_branch": false
+    },
+    "F0": {
+      "sha": "b573121715f55f2275ef671f50119436cd8f9ea1",
+      "pr": 528,
+      "draft": true
+    },
+    "F1": {
+      "sha": "8cffb50f00175443d7954b039d908b26a6f26650",
+      "pr": 529,
+      "draft": true
+    },
+    "F2": {
+      "sha": "4579c35d8b8138e3b2c285e800539c3708539831",
+      "pr": 539,
+      "draft": true
+    },
+    "F3": {
+      "sha": "5e0118b6a4b8f6047a9b19eddc8c8236abfb9545",
+      "pr": 540,
+      "draft": true
+    },
+    "F3_main_candidate": {
+      "sha": "55538d198795a1b45a2f100c3613bcb9796ac39c",
+      "pr": 544,
+      "draft": true,
+      "common_ancestor_of_F3_branches": "d56d701e54bd26f460b6a76117a8e3863af74ee1",
+      "relation": "DIVERGENT_NOT_SUPERSET_OF_CURRENT_VOICE_BRANCH"
+    },
+    "F1_wip_saved": {
+      "sha": "142cd99f7519512849c43ded619ee63b884ee87e",
+      "branch": "wip/gemini-live-f1-response-20261117",
+      "gate_approved": false
+    }
+  },
+  "local_checks": {
+    "F3_node_offline": {
+      "pass": 118,
+      "fail": 0,
+      "verified_this_reconciliation": true
+    },
+    "F3_voice_browser_mock": {
+      "pass": 8,
+      "real_human_microphone": false
+    },
+    "F3_tool_browser_mock": {
+      "pass": 9
+    },
+    "F3_mcp_http_real": {
+      "pass": 2,
+      "approval_source": "test_fixture"
+    },
+    "F3_manifest_before_handoff": {
+      "sources": 55,
+      "artifacts": 14,
+      "pass": true
+    },
+    "F1_wip_watchdog_browser": {
+      "pass": 18,
+      "fail": 0,
+      "verified_this_reconciliation": true
+    },
+    "F1_wip_manifests": {
+      "sources": 31,
+      "artifacts": 54,
+      "pass": true
+    },
+    "github_ci": {
+      "PR540_f3_playwright_mcp": "PASS",
+      "PR540_f2_visual": "PASS",
+      "PR544_production_candidate_readiness": "PASS_CI_ONLY_NOT_HUMAN_GATE",
+      "vercel_other_projects": "RATE_LIMITED"
+    }
+  },
+  "local_services": [
+    {
+      "port": 18371,
+      "mode": "ORIGINAL",
+      "configured": true,
+      "bind": "127.0.0.1"
+    },
+    {
+      "port": 18372,
+      "mode": "F1",
+      "configured": true,
+      "bind": "127.0.0.1"
+    },
+    {
+      "port": 18373,
+      "mode": "F1_WIP_TEST",
+      "configured": false,
+      "bind": "127.0.0.1"
+    },
+    {
+      "port": 18374,
+      "mode": "F2",
+      "configured": true,
+      "bind": "127.0.0.1"
+    },
+    {
+      "port": 18375,
+      "mode": "F3_VOICE_PLAYWRIGHT",
+      "configured": true,
+      "bind": "127.0.0.1"
+    },
+    {
+      "port": 18376,
+      "mode": "F3_ALTERNATIVE_PR544",
+      "configured": true,
+      "bind": "127.0.0.1"
+    }
+  ],
+  "gates": {
+    "F0.8": "PENDING",
+    "F1.6": "PENDING",
+    "F2.6": "PENDING",
+    "F3.7": "PENDING",
+    "F4.6": "PENDING",
+    "formal_mcf_HDF": false,
+    "external_Codex_reviews_do_not_substitute_native_gate": true
+  },
+  "risks": [
+    "F3_NO_NETWORK_EGRESS_SANDBOX",
+    "HTTP_ORIGIN_IS_NOT_HUMAN_AUTH",
+    "VOICE_NOT_BIOMETRIC",
+    "PHYSICAL_MIC_QA_PENDING",
+    "F3_PR_BRANCHES_DIVERGED",
+    "CREDENTIAL_ROTATION_NOT_VERIFIED",
+    "F1_WIP_NOT_IN_F1_PR",
+    "THIRTEEN_UNTRACKED_OLD_F0_REVIEW_FILES_LOCAL_ONLY"
+  ],
+  "production": {
+    "main_merge_executed": false,
+    "public_deploy_executed": false,
+    "api_key_in_git": false
+  },
+  "handoff": {
+    "durable_context_ready": true,
+    "successor_session_created": false,
+    "successor_equivalence": "NOT_TESTED",
+    "explicit_handoff": false,
+    "predecessor_window_closed": false,
+    "next_action": "Comparar e integrar com seguranca as divergencias entre PRs 540 e 544 em branch reversivel"
+  }
+}

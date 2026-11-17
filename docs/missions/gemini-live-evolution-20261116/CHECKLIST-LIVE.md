@@ -1,9 +1,19 @@
 # Checklist vivo — contrato de operação e evidências
 
-**Missão:** `MCF-GEMINI-LIVE-EVOLUTION-20261116-001`  
-**Board único e editável:** [GitHub Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527)  
-**Roadmap:** [ROADMAP.md](./ROADMAP.md)  
+**Missão:** `MCF-GEMINI-LIVE-EVOLUTION-20261116-001`
+**Board único e editável:** [GitHub Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527)
+**Roadmap:** [ROADMAP.md](./ROADMAP.md)
 **Estado vigente:** ler a Issue e as evidências live; este documento **não é** um espelho estático do checklist.
+
+## Checkpoint vigente para recuperação fria (17/11/2026)
+
+O único checklist com caixas selecionáveis permanece a [Issue #527](https://github.com/leon337/multiagent-collaboration-framework/issues/527). O desenvolvimento local avançou às F1/F2/F3 **sem aprovação automática dos gates anteriores**. Estado técnico verificado, refs exatas, PRs divergentes e próximo ciclo: [SESSION-CONTINUITY-CURRENT.md](./SESSION-CONTINUITY-CURRENT.md) · [JSON de reconciliação](./STATE-RECONCILIATION-20261117.json).
+
+O repositório foi reconciliado com `main e5c0abf`, F0 `b573121`, F1 `8cffb50`, F2 `4579c35` e F3 `5e0118b`; todos iguais aos HEADs remotos observados. Corrigidas por fast-forward as referências locais de main/F0/F1. As 15 alterações WIP de F1 foram preservadas no remoto `wip/gemini-live-f1-response-20261117` (`142cd99`). Não houve merge para main nem deploy público.
+
+F3 é piloto **local** com Playwright MCP, leitura de HTTPS público mediante permissão humana, voz opcional com desafio de quatro dígitos e isolamento da mídia durante autorização; escrita só em TodoMVC. Reexecução: **118/118 Node**, voz 8/8 Chrome mock, interface 9/9 Chrome, MCP real 2/2 (resultados históricos por mídia apropriada); microfone físico não testado. PR #540 e PR #544 **divergem**, não confundir a PR #544 baseada em main com a versão atual do assistente que usa voz.
+
+F0.8, F1.6, F2.6, F3.7 e F4.6 permanecem abertos. Não marcar checkboxes por CI, reviews externas não autenticadas ou simples funcionamento do staging. `Origin` e voz não constituem HDF, e faltam sandbox real de rede e gate de segurança para exposição pública.
 
 ## O que significa "vivo" nesta missão
 
@@ -13,7 +23,7 @@
 - **Regra de veracidade:** o campo marcado indica `VALIDADO` e evidência vinculada. Um item em execução continua desmarcado e recebe comentário `EM_EXECUCAO`.
 - **Sem duplicação:** não manter um segundo checklist com progresso contraditório em arquivos Markdown/JSON/Notion.
 
-## Estado técnico reconciliado em 2026-11-16
+## Registro histórico de 2026-11-16 (superado pelo checkpoint acima)
 
 - Parecer externo Codex CLI sobre SHA `6a714e4`: **RETORNAR_PARA_CORRECAO**; a auditoria sob contrato Emily não representa identidade/canal nativo autenticado.
 - Issue #527 reabriu F0.2–F0.7 (`EM_CORRECAO`) pela ausência inicial de evidência primária; somente F0.1 permanece validado na Issue até reteste independente.
@@ -95,7 +105,7 @@ O `ROADMAP.md` contém objetivos e dependências; os artefatos da fase Class C f
 - `MANIFEST.sha256` — integridade do pacote;
 - `README` — ordem de leitura.
 
-**O ato de criar a Issue e a documentação não encerra F0.** A missão permanece PLANEJADO até que baseline e governança sejam verificadas.
+**O ato de criar a Issue e a documentação não encerra F0 nem concede gates.** A engenharia local F1/F2/F3 está em andamento com os checkboxes canônicos ainda abertos.
 
 ## Links de controle
 

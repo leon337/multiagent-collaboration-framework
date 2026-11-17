@@ -19,6 +19,9 @@ b1b82657ace30040614917ee3326452adddcc872c7a0fcaf9baf759dd9dd90bf  ../../../apps/
 b50188239f50003226f26a1584426e58c880b4e0a83c5256b60f594617b2751e  ../../../apps/gemini-live-studio/public/voice-approval.js
 97dc44bad81b057f469e96d744469daf20ad3218bc762f6f5777cf6e27d51624  ../../../apps/gemini-live-studio/server.js
 ad168c8429d505c3141fba06da0f7357de1cb93ac5c4c8cf2f489295064de550  ../../../apps/gemini-live-studio/vision-adapter.cjs
+0df460a0548ee990a1be7d4915bc74be574e38acafc857fb2db224e00a68294d  ../../../docs/missions/gemini-live-evolution-20261116/CHECKLIST-LIVE.md
+9363bdfffed82e7dfcf01c373e769d512f1656d45ae7477b24a175a2f00517eb  ../../../docs/missions/gemini-live-evolution-20261116/SESSION-CONTINUITY-CURRENT.md
+189737f9c1c340f39656d55cc79f21220490e67ea25531c3bed97fb8c4157306  ../../../docs/missions/gemini-live-evolution-20261116/STATE-RECONCILIATION-20261117.json
 73d4c4941ff8ca660af3ef85484058da23924496171a4c8686b12982840df176  ../../../ops/gemini-live/checklist-sync.mjs
 f95ed791addb566cca9bca45d0e1138dceab5aeb739f3847778f4f6c1ed04d71  ../../../ops/gemini-live/checklist-sync.test.mjs
 427d08a50b5ce565b1b986f69bf0edb987c432095ef22976f7348e08e9c78191  ../../../ops/gemini-live/f0-telemetry.test.mjs
