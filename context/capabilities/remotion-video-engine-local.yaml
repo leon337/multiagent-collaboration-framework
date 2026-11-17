@@ -80,7 +80,7 @@ execution:
   execution_user: leo
   dedicated_os_account: false
   status: ONLINE
-  observed_at: 2026-11-17T05:45:46Z
+  observed_at: 2026-11-17T06:01:51Z
   workflow:
     path: .github/workflows/remotion-gpu-worker-health.yml
     repository: leon337/mcf-remotion-mcp
