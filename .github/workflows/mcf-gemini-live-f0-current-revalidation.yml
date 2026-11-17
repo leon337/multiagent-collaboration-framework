@@ -1,0 +1,40 @@
+name: MCF Gemini Live F0 current baseline revalidation
+
+on:
+  pull_request:
+    paths:
+      - 'ops/gemini-live/f0-current-revalidation*'
+      - 'docs/missions/gemini-live-evolution-20261116/F0-REVALIDATION-20261117.md'
+      - 'artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/F0-CURRENT-LIVE-REVALIDATION-20261117.json'
+      - '.github/workflows/mcf-gemini-live-f0-current-revalidation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-readonly-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run F0 offline regression tests, including no-secret metadata
+        run: node --test ops/gemini-live/*.test.mjs
+      - name: Verify source syntax
+        run: node --check ops/gemini-live/f0-current-revalidation.mjs
+      - name: Validate evidence is scoped, read-only and sanitized
+        run: |
+          node - <<'JS'
+          const fs=require('fs');
+          const f=fs.readFileSync('artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/F0-CURRENT-LIVE-REVALIDATION-20261117.json','utf8');
+          const r=JSON.parse(f);
+          if(r.schema!=='mcf-f0-live-revalidation/v1')throw Error('schema');
+          if(r.model_metadata.results.length!==6)throw Error('metadata missing');
+          if(!r.F0_2_technical_pass||!r.F0_3_metadata_pass)throw Error('source verification failed');
+          if(r.F0_8_formal_gate_pass!==false||r.F0_4_full_security_pass!==false)throw Error('false acceptance');
+          if(/AIza[A-Za-z0-9_-]{25,}|sk-[A-Za-z0-9_-]{25,}|AQ\.[A-Za-z0-9_-]{20,}/.test(f))throw Error('SECRET_IN_EVIDENCE');
+          console.log('Revalidation evidence structured, sanitized; formal gate remains open');
+          JS
