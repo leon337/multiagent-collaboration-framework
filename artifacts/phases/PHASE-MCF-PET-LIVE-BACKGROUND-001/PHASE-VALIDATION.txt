@@ -21,3 +21,9 @@ LIMITAÇÃO: headless e Xvfb mantiveram ambas as páginas com
 PENDENTE: alternância física de abas no perfil pessoal do usuário.
 PENDENTE: sono de sistema operacional ou suspensão móvel.
 NÃO FEITO: merge/deploy MissionRuntime central, ações externas.
+
+REVIEW REMEDIATION (2026-11-16):
+PASS: PR #535 Codex P2: on foreground->muted visibility transition, send
+audio_stream_end to Gemini Live so pending speech is flushed.
+PASS: duplicate hidden events do not send duplicate audio_stream_end.
+PASS: Node background tests 5/5, all Python tests still passing.

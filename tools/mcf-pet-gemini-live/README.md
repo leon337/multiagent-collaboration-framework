@@ -189,3 +189,11 @@ de aba física no Brave do usuário ainda depende de validação humana.
 Backup local: /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-20261117T005804Z/
 PR dependente do PR #534, que depende do PR #533; sem merge automático
 ou deploy do MissionRuntime central.
+
+### Background audio flush — PR #535 review remediation
+
+When the foreground tab becomes hidden without opt-in, the browser sends
+the audio_stream_end event once before muting the microphone. Gemini Live
+receives audioStreamEnd so a partially spoken utterance can be completed
+without relying on trailing silence. The event is not repeated while the
+page stays muted. No additional audio PCM is transmitted without opt-in.

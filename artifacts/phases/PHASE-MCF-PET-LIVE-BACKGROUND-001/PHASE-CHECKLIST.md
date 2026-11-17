@@ -13,3 +13,4 @@
 - [ ] Usuário confirmar mudança física de abas no Brave.
 - [ ] Abrir PR e validar CI; revisão independente antes do merge.
 - [ ] Testar cenários de navegador ou SO suspenso, se necessários.
+- [x] Resolver P2 Codex: áudio pendente finalizado ao silenciar aba.
