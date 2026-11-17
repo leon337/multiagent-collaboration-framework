@@ -128,7 +128,7 @@ async function connect(retry=false){
    state.socket=null;state.connecting=false;state.connected=false;state.playbackTurnOpen=false;
    clearPendingTurn('socket_closed');state.awaitingTerminal=false;state.voiceResponseSeen=false;state.voiceInSpeech=false;state.voiceCandidateFrames=0;
    clearTimeout(state.goAwayTimer);state.goAwayTimer=null;
-   stopMic();stopCamera();stopScreen();setButtons(false);
+   stopMic();stopAllVisual();setButtons(false);
    if(state.sources.size)log('ÁUDIO','WebSocket encerrado; blocos já recebidos continuarão tocando até o fim.');
    log('CONEXÃO','WebSocket encerrado: código '+e.code);f0tel('disconnect',{code:e.code});
    const retryable=![1008,1003,4401,4403].includes(e.code);
@@ -459,23 +459,105 @@ function stopMic(){
  state.micSpeechFrames=0;state.micSilenceMs=0;state.voiceInSpeech=false;state.voiceSilenceMs=0;state.voiceCandidateFrames=0;updateStreamMetrics();
 }
 const frameCanvas=document.createElement('canvas');frameCanvas.width=640;frameCanvas.height=360;const frameCtx=frameCanvas.getContext('2d');
-function videoFrame(){if(!state.connected||!state.frameSource||state.frameSource.readyState<2)return;try{frameCtx.drawImage(state.frameSource,0,0,640,360);const jpg=frameCanvas.toDataURL('image/jpeg',.62).split(',')[1];send({realtimeInput:{video:{mimeType:'image/jpeg',data:jpg}}});}catch(e){log('ERRO','Frame: '+e.message);}}
-function selectVideo(){const stream=state.screenStream||state.cameraStream;if(!stream){clearInterval(state.frameTimer);state.frameTimer=null;state.frameSource=null;$('mediaFrame').hidden=true;return;}$('preview').srcObject=stream;state.frameSource=$('preview');$('mediaFrame').hidden=false;$('mediaLabel').textContent=state.screenStream?'TELA':'CÂMERA';if(!state.frameTimer)state.frameTimer=setInterval(videoFrame,1000);}
-async function startCamera(){if(!state.connected)return;try{const stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:false});state.cameraStream=stream;stream.getTracks().forEach(t=>t.onended=stopCamera);selectVideo();updateStreamMetrics();log('MÍDIA','Câmera ativada · JPEG 1 frame/s');}catch(e){log('ERRO','Câmera: '+e.message);toast('Câmera: '+e.message);}}
-function stopCamera(){state.cameraStream?.getTracks().forEach(t=>t.stop());state.cameraStream=null;selectVideo();updateStreamMetrics();}
-async function startScreen(){if(!state.connected)return;try{const stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:1},audio:false});state.screenStream=stream;stream.getTracks().forEach(t=>t.onended=stopScreen);selectVideo();updateStreamMetrics();log('MÍDIA','Compartilhamento de tela ativado · JPEG 1 frame/s');}catch(e){log('ERRO','Tela: '+e.message);toast('Tela: '+e.message);}}
-function stopScreen(){state.screenStream?.getTracks().forEach(t=>t.stop());state.screenStream=null;selectVideo();updateStreamMetrics();}
+function videoFrame(){
+ const activeStream=state.screenStream||state.cameraStream;
+ if(!state.connected||!activeStream||!state.frameSource||state.frameSource.srcObject!==activeStream||state.frameSource.readyState<2)return;
+ if(!activeStream.getVideoTracks().some(t=>t.readyState==='live')){stopAllVisual();return;}
+ try{
+  frameCtx.drawImage(state.frameSource,0,0,640,360);
+  const jpg=frameCanvas.toDataURL('image/jpeg',.62).split(',')[1];
+  if(state.connected&&state.frameSource.srcObject===activeStream)
+   send({realtimeInput:{video:{mimeType:'image/jpeg',data:jpg}}});
+ }catch(e){log('ERRO','Frame: '+e.message);}
+}
+function selectVideo(){
+ const stream=state.screenStream||state.cameraStream;
+ const preview=$('preview');
+ if(!stream){
+  clearInterval(state.frameTimer);state.frameTimer=null;state.frameSource=null;
+  preview.srcObject=null;$('mediaFrame').hidden=true;return;
+ }
+ preview.srcObject=stream;state.frameSource=preview;
+ $('mediaFrame').hidden=false;$('mediaLabel').textContent=state.screenStream?'TELA':'CÂMERA';
+ // Conservative 1 FPS until provider limits and cost are empirically verified.
+ if(!state.frameTimer)state.frameTimer=setInterval(videoFrame,1000);
+}
+function updateVisualIndicator(){
+ const kind=state.screenStream?'Tela':state.cameraStream?'Câmera':null;
+ const indicator=$('visualStatus'),stop=$('stopVisual');
+ indicator.textContent=kind?'● '+kind+' transmitida à API Gemini · 1 FPS':'Sem transmissão visual';
+ indicator.classList.toggle('active',!!kind);indicator.setAttribute('data-sharing',kind?'true':'false');
+ stop.disabled=!kind;stop.hidden=!kind;
+}
+function visualConsent(kind){
+ return new Promise(resolve=>{
+  if(!state.connected)return resolve(false);
+  const dialog=$('visualConsentDialog');
+  if(dialog.open)return resolve(false);
+  const label=kind==='screen'?'Compartilhar tela':'Ativar câmera';
+  $('visualConsentTitle').textContent=label;
+  $('visualConsentDetails').textContent=kind==='screen'
+   ?'A região escolhida na janela do sistema será enviada à API Gemini como imagem JPEG, até 1 quadro por segundo. Não selecionamos a tela automaticamente.'
+   :'A imagem da câmera será enviada à API Gemini como JPEG, até 1 quadro por segundo. O microfone não é incluído nesta autorização.';
+  let finished=false;
+  const finish=allowed=>{
+   if(finished)return;finished=true;
+   dialog.removeEventListener('cancel',cancel);
+   $('visualConsentApprove').onclick=null;$('visualConsentReject').onclick=null;
+   state.visualConsentResolve=null;
+   if(dialog.open)dialog.close();
+   resolve(allowed);
+  };
+  const cancel=e=>{e.preventDefault();finish(false);};
+  state.visualConsentResolve=finish;
+  dialog.addEventListener('cancel',cancel);
+  $('visualConsentApprove').onclick=()=>finish(true);
+  $('visualConsentReject').onclick=()=>finish(false);
+  dialog.showModal();
+ });
+}
+const visualPolicy=MCFMediaPolicy.createMediaController({
+ isConnected:()=>state.connected&&state.wantConnected,
+ requestConsent:visualConsent,
+ requestCamera:()=>navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:false}),
+ requestScreen:()=>navigator.mediaDevices.getDisplayMedia({video:{frameRate:1},audio:false}),
+ onStart:(kind,stream)=>{
+  state[kind==='camera'?'cameraStream':'screenStream']=stream;
+  selectVideo();updateStreamMetrics();updateVisualIndicator();
+  f1tel('visual_started',{count:1});
+  log('MÍDIA',(kind==='camera'?'Câmera':'Tela')+' autorizada · até 1 FPS · streaming visível');
+ },
+ onStop:kind=>{
+  state[kind==='camera'?'cameraStream':'screenStream']=null;
+  selectVideo();updateStreamMetrics();updateVisualIndicator();
+  f1tel('visual_stopped',{count:1});
+  log('MÍDIA',(kind==='camera'?'Câmera':'Tela')+' interrompida');
+ },
+ onError:(kind,error)=>{
+  log('ERRO','Captura visual '+kind+': '+error.message);
+  toast('Não foi possível ativar '+(kind==='camera'?'câmera':'tela')+'.');
+ }
+});
+function startCamera(){return visualPolicy.start('camera');}
+function stopCamera(){return visualPolicy.stop('camera');}
+function startScreen(){return visualPolicy.start('screen');}
+function stopScreen(){return visualPolicy.stop('screen');}
+function stopAllVisual(){
+ if(state.visualConsentResolve)state.visualConsentResolve(false);
+ visualPolicy.stopAll();
+ updateVisualIndicator();
+}
 function disconnect(){
  state.wantConnected=false;state.connectionGeneration++;state.connectAbort?.abort();state.connectAbort=null;clearTimeout(state.reconnectTimer);clearTimeout(state.goAwayTimer);
  state.reconnectTimer=null;state.goAwayTimer=null;
  clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
  clearPendingTurn('disconnect');state.awaitingTerminal=false;state.voiceResponseSeen=false;
- stopMic();stopCamera();stopScreen();clearPlay();
+ stopMic();stopAllVisual();clearPlay();
  state.connected=false;state.connecting=false;state.resumeHandle=null;state.started=0;
  state.socket?.close(1000,'Encerrado pelo usuário');state.socket=null;
  setButtons(false);status('Desconectado','gray');$('orbSub').textContent='Inicie uma nova sessão';log('SESSÃO','Sessão encerrada pelo usuário.');
 }
-ui.btn.onclick=()=>{prepareAudioOutput();connect(false);};ui.stop.onclick=disconnect;ui.mic.onclick=()=>state.micStream||state.micStarting?stopMic():startMic();ui.camera.onclick=()=>state.cameraStream?stopCamera():startCamera();ui.screen.onclick=()=>state.screenStream?stopScreen():startScreen();ui.mute.onclick=()=>{state.muted=!state.muted;if(state.muted)clearPlay();else prepareAudioOutput();setButtons(state.connected);updateStreamMetrics();};
+ui.btn.onclick=()=>{prepareAudioOutput();connect(false);};ui.stop.onclick=disconnect;ui.mic.onclick=()=>state.micStream||state.micStarting?stopMic():startMic();ui.camera.onclick=()=>state.cameraStream?stopCamera():startCamera();ui.screen.onclick=()=>state.screenStream?stopScreen():startScreen();$('stopVisual').onclick=stopAllVisual;ui.mute.onclick=()=>{state.muted=!state.muted;if(state.muted)clearPlay();else prepareAudioOutput();setButtons(state.connected);updateStreamMetrics();};
 function sendPrompt(text){
  prepareAudioOutput();
  const clean=String(text||'').trim();
@@ -520,5 +602,5 @@ function updateF1Dashboard(){
 }
 setInterval(updateF1Dashboard,1000);
 setInterval(()=>{if(state.started&&state.wantConnected){const sec=Math.floor((Date.now()-state.started)/1000);$('sessionTimer').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');}else $('sessionTimer').textContent='00:00';},1000);
-window.addEventListener('beforeunload',()=>{state.wantConnected=false;state.socket?.close();stopMic();stopCamera();stopScreen();});
+window.addEventListener('beforeunload',()=>{state.wantConnected=false;state.socket?.close();stopMic();stopAllVisual();});
 refreshKey();status('Desconectado','gray');log('SISTEMA','Gemini Live Studio pronto. Nenhuma mídia é capturada até solicitação do usuário.');

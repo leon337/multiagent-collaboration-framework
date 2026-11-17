@@ -1,0 +1,8 @@
+8294dd368fafb56f648266f60054cda577629db2fdafc639a59327827ac9a851  ../../../apps/gemini-live-studio/public/media-policy.js
+db0be64390092c636cb33af84e262999c9c651f43985c8d588bfcae0dbd69dfd  ../../../apps/gemini-live-studio/public/app.js
+33c457cc71f395379b8a9c8c2b448062ba425af4df1d0ed40620b4bd04155137  ../../../apps/gemini-live-studio/public/index.html
+7d14da2333fd4f39d1ac2ab0294b66083e38b9c160061b6bd6c78ab7244a42b2  ../../../apps/gemini-live-studio/public/style.css
+f1110ce3976b97e437d49ee9e555bf27df1c88555ab57c7f24d3d22a30d2c841  ../../../apps/gemini-live-studio/server.js
+6f9f9c907334c2d2c05f7febc4040f65b6d33b64e45cf445034b673085388d8c  ../../../tests/gemini-live-f2/media-policy.test.cjs
+0757596ed5b0029e9fb2d02f4d3b7263a3e7d740290e6d4e5293b6c3bae89ee4  ../../../tests/gemini-live-f2/browser-visual-consent.cjs
+1412f6d870ad5674efc4f1b8870e2200763b14730862a95dae456f88b0f5b7f4  ../../../.github/workflows/mcf-gemini-live-f2.yml

@@ -7,7 +7,7 @@ const ROOT=__dirname, PUBLIC=path.join(ROOT,'public'), PRIVATE=path.join(ROOT,'.
 const KEY_FILE=path.join(PRIVATE,'api-key.json');
 const PORT=Number(process.env.PORT||18371), HOST='127.0.0.1';
 const TYPES={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8'};
-const safeFiles={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/telemetry.js':'telemetry.js','/capture-worklet.js':'capture-worklet.js','/style.css':'style.css'};
+const safeFiles={'/':'index.html','/index.html':'index.html','/app.js':'app.js','/telemetry.js':'telemetry.js','/media-policy.js':'media-policy.js','/capture-worklet.js':'capture-worklet.js','/style.css':'style.css'};
 let actionAt=0;
 function getKey(){try{const k=JSON.parse(fs.readFileSync(KEY_FILE,'utf8')).key;return typeof k==='string'?k:null;}catch{return null;}}
 function json(res,status,obj){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(obj));}
