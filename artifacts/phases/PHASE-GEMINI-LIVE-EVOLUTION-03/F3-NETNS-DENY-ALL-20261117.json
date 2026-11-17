@@ -1,0 +1,46 @@
+{
+  "checks": [
+    {
+      "check": "host_loopback_ipv4",
+      "elapsed_ms": 0,
+      "errno": 101,
+      "result": "BLOCKED"
+    },
+    {
+      "check": "metadata_link_local_ipv4",
+      "elapsed_ms": 0,
+      "errno": 101,
+      "result": "BLOCKED"
+    },
+    {
+      "check": "private_ipv4",
+      "elapsed_ms": 0,
+      "errno": 101,
+      "result": "BLOCKED"
+    },
+    {
+      "check": "public_ipv4",
+      "elapsed_ms": 0,
+      "errno": 101,
+      "result": "BLOCKED"
+    },
+    {
+      "check": "host_loopback_ipv6",
+      "elapsed_ms": 0,
+      "errno": 99,
+      "result": "BLOCKED"
+    }
+  ],
+  "child_namespace": "net:[4026533078]",
+  "execution_surface": "LINUX_USER_NETWORK_NAMESPACE",
+  "hdf_identity_qualified": false,
+  "host_listener_received_connection": false,
+  "host_namespace": "net:[4026531840]",
+  "mode": "deny_all_only",
+  "namespace_separated": true,
+  "passed": true,
+  "physical_microphone_tested": false,
+  "public_https_navigation_supported": false,
+  "schema": "mcf-netns-egress-probe/v1",
+  "ssrf_dns_rebinding_protection_qualified": false
+}
