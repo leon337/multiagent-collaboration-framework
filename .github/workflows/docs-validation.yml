@@ -310,3 +310,8 @@ jobs:
               print('\n'.join(failures))
               sys.exit(1)
           PY
+
+      - name: Verify provider-independent deployment routing policy
+        shell: bash
+        run: |
+          node --test ops/deployment-provider-routing.test.mjs
