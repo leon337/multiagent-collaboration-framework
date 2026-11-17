@@ -15,3 +15,12 @@ Eliminada a lista estatica de dominios. A ferramenta Playwright_navigate aceita 
 
 ## Verificacao
 25 testes Node de politica + parser de voz, 7 Chrome com reconhecimento de voz simulado e aprovacao/recusa, 9 Chrome fluxo do agente, 2 testes HTTP MCP real com site Python.org antes bloqueado por whitelist, bloqueio de IP privado e recusa. Total F0/F1/F2/F3 Node: 118 PASS. O reconhecimento de microfone fisico de LEANDRO ainda requer QA humano. Nao publicar em main/producao sem autenticacao, isolamento de egress e revisao independente.
+
+
+## Auditoria externa e correcoes posteriores
+A auditoria externa do SHA 7e38d7b obteve RETURN_FOR_CORRECTION:
+- HIGH: codigo de voz poderia aparecer na captura de tela e audio de Gemini podia continuar tocando enquanto ASR escutava. Corrigido suspendendo toda captura visual e audio do modelo ANTES de gerar/exibir o codigo, impedindo reativacao visual durante dialogo e testando que PCM de Gemini nao toca enquanto o gate esta ativo. O codigo permanece apenas na interface local. Camera/tela devem ser reativadas manualmente depois.
+- MEDIUM: microfone Gemini iniciando em paralelo poderia terminar setup enquanto ASR escutava; retomada era vinculada apenas a qualquer sessao. Corrigido: startMic recusa durante gate, micGeneration e invalidada inclusive durante inicializacao pendente; retomada condicionada ao mesmo sessionId, generation e mcpEpoch, com intencao de conexao ativa.
+- MEDIUM: localhost. e service.internal. contornavam a checagem de sufixos. Corrigido removendo trailing dot antes da classificacao, com testes unitarios.
+- MEDIUM: manifestos F3 nao cobriam fontes historicas F1/F2 que substituem. Corrigido com manifesto F3 ampliado ao conjunto de arquivos do modulo e dos testes F0/F1/F2/F3 e workflows.
+A auditoria anterior permanece preservada, NAO sendo uma aprovacao do novo commit. Reconhecimento de voz fisico e isolamento de rede permanecem pendentes.

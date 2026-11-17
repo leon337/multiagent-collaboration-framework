@@ -9,3 +9,6 @@
 
 ## Autorizacao humana e dominios
 Por autorizacao explicita de LEANDRO, navegar para sites HTTPS publicos exige consentimento por destino, por voz opcional ou botao. A frase com codigo reduz erro de consentimento, mas nao e identidade biometrica ou gate normativo. Escrita continua so no laboratorio.
+
+## Correction of model self-approval route
+Code must never be rendered while Live visual/audio egress is active. Enforce capture shutdown before code creation, drop new model audio during ASR and enforce exact-session microphone resumption. Any physical audio replay risk keeps production blocked.

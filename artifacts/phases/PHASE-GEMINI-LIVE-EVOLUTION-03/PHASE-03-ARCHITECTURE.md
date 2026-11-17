@@ -22,3 +22,6 @@ Instalação: executar npm ci em apps/gemini-live-studio, iniciar PORT=18375 nod
 
 ## Navegacao e voz sob consentimento
 Navegacao aceita dominios HTTPS publicos sob aprovacao unica. A API Web Speech reconhece autorizacao em PT-BR independentemente do Gemini, com codigo de quatro digitos e TTS do navegador. Os sites e as falas nunca concedem autoridade ao modelo. Escrita fora do TodoMVC continua bloqueada.
+
+## Isolation while voice approval is active
+Camera/screen capture and model playback are stopped before generating the UI challenge. Pending mic setup is invalidated by micGeneration and the voice gate guards startMic. Mic can resume only in the same Live generation; visual capture does not auto-resume.

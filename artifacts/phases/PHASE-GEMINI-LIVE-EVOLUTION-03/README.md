@@ -11,3 +11,5 @@
 
 ## Nova capacidade de voz
 PHASE-03-VOICE-NAVIGATION.md: arquitetura, testes e limites. EVIDENCE-F3-VOICE-BROWSER.json: testes com Web Speech simulado. EVIDENCE-F3-PUBLIC-NAVIGATION.json: MCP real em Python.org.
+
+- EMILY-EXTERNAL-VOICE-PRE-REMEDIATION.md - independent read-only audit of previous SHA, return for correction. Changes recorded in PHASE-03-VOICE-NAVIGATION.md.

@@ -1,12 +1,12 @@
 {
   "schema": "mcf-f3-navigation-voice-consent-browser-e2e-v1",
-  "recordedAt": "2026-11-17T04:50:11.968Z",
+  "recordedAt": "2026-11-17T04:59:04.413Z",
   "speechEngine": "simulated_Chrome_WebSpeech_API",
   "sourceHashes": {
     "public/voice-approval.js": "b50188239f50003226f26a1584426e58c880b4e0a83c5256b60f594617b2751e",
-    "public/playwright-tools.js": "91149510bc97b66d5f2e9f1bac62cf4430f7f6515b5d081f8220e24249e98a30",
-    "public/index.html": "2f6629228e0abc7715ba712bb012dcf2d2308566346442120fb8475800985c86",
-    "mcp-playwright-gateway.cjs": "57450d03d081edb578a060ce580c7a9e1d3dbbc36e375c2be61ceed68b6a937b"
+    "public/playwright-tools.js": "b1b82657ace30040614917ee3326452adddcc872c7a0fcaf9baf759dd9dd90bf",
+    "public/index.html": "016320048f3215f45a4863162bdeb997450f9a4127bea55a43c2e221eb62af44",
+    "mcp-playwright-gateway.cjs": "4ff91f7e4d98db47886b4d8f5300b8cf17612456acc21571dc85549682cbb508"
   },
   "results": [
     {
@@ -24,6 +24,17 @@
       "details": {
         "codeLength": 4,
         "decisions": 0
+      }
+    },
+    {
+      "name": "VOICE_GATE_QUARANTINES_GEMINI_AUDIO_AND_VISUAL_BEFORE_CODE",
+      "pass": true,
+      "details": {
+        "gateActive": true,
+        "visualStopCalls": 1,
+        "audioDropped": true,
+        "playingSources": 0,
+        "pendingMicCanceled": true
       }
     },
     {
@@ -48,7 +59,8 @@
         "approved": true,
         "toolResult": "SUCCESS",
         "receipt": true,
-        "challengeCleared": true
+        "challengeCleared": true,
+        "quarantineReleased": true
       }
     },
     {
@@ -67,6 +79,6 @@
       }
     }
   ],
-  "passed": 7,
+  "passed": 8,
   "failed": 0
 }

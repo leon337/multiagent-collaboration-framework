@@ -15,3 +15,7 @@ Status: SOMENTE PILOTO LOCAL, SEM F3 GATE APROVADO, SEM MERGE/DEPLOY.
 
 ## Riscos adicionais de voz e egress
 O Playwright sem lista estatica de origens ainda nao possui isolamento de rede contra SSRF, DNS rebinding ou redirecionamento intermediario. Voice recognition nao prova pessoa nem liveness; outros usuarios ou replays sao riscos. Web Speech API pode usar processamento online. Nunca usar a voz como autenticacao HDF para dinheiro, publicacao ou contas.
+
+
+## Mitigacao anti-autoaprovacao de voz
+Durante dialogo de voz, qualquer captura de tela/camera via Gemini e encerrada antes de criar o codigo e nao e retomada automaticamente. Nenhum bloco PCM de saida do modelo e reproduzido enquanto o ASR escuta. Entrada de audio Gemini e invalidada mesmo quando getUserMedia ou AudioWorklet ainda estao pendentes; a retomada so ocorre na mesma sessao/geracao e com intencao de conexao. O audio do computador/terceiros continua possivel e o ASR nao comprova identidade. HTTP local pode ser forjado por outro processo local; isolamento de egress e HDF sao pendencias de gate.

@@ -5,6 +5,7 @@
 (function(){
  const el=id=>document.getElementById(id);
  let sessionId=null,pendingApproval=null,busy=false;
+ let voiceGateActive=false;
  const SpeechCtor=window.SpeechRecognition||window.webkitSpeechRecognition;
 
  const declarations=[
@@ -41,13 +42,24 @@
     ' · autorização única, expira em '+p.expiresInSec+'s';
    const voice=el('playwrightVoiceEnabled')?.checked===true&&
     p.name==='playwright_navigate'&&!!SpeechCtor;
+   // CRITICAL: stop model visual/audio egress BEFORE generating/rendering the
+   // local spoken code, otherwise Gemini could see it via screen-share and
+   // speak an approval while Web Speech listens.
+   if(voice){
+    voiceGateActive=true;
+    if(typeof stopAllVisual==='function')stopAllVisual();
+    if(typeof clearPlay==='function')clearPlay();
+   }
    const code=voice?MCFVoiceApproval.challenge(window.crypto):null;
    const challenge=el('playwrightVoiceChallenge');
    challenge.hidden=!voice;
    el('playwrightVoicePhrase').textContent=voice?'autorizo '+code.split('').join(' '):'';
    el('playwrightVoiceStatus').textContent=voice?'Preparando reconhecimento de voz em português...':'';
    let resolved=false,recognizer=null,ttsWatch=null,expiration=null,speaking=false;
-   const hadGeminiMic=voice&&typeof state==='object'&&!!state.micStream;
+   const hadGeminiMic=voice&&typeof state==='object'&&
+    !!(state.micStream||state.micStarting);
+   const liveSessionAtGate=sessionId,liveGenerationAtGate=state.connectionGeneration,
+    mcpEpochAtGate=state.mcpEpoch;
    const status=text=>{el('playwrightVoiceStatus').textContent=text;};
    const stopVoice=()=>{
     if(ttsWatch){clearTimeout(ttsWatch);ttsWatch=null;}
@@ -71,11 +83,15 @@
     if(dialog.open)dialog.close();
     challenge.hidden=true;
     el('playwrightVoicePhrase').textContent=''; // never persist the challenge
+    voiceGateActive=false;
     if(hadGeminiMic){
      // Avoid simultaneous capture by Gemini and browser SpeechRecognition.
      setTimeout(()=>{
-      if(sessionId&&state.connected&&!state.micStream&&!state.micStarting&&
-         typeof startMic==='function')startMic().catch(()=>{});
+      if(sessionId===liveSessionAtGate&&
+         state.connectionGeneration===liveGenerationAtGate&&
+         state.mcpEpoch===mcpEpochAtGate&&state.connected&&state.wantConnected&&
+         !state.micStream&&!state.micStarting&&typeof startMic==='function')
+       startMic().catch(()=>{});
      },250);
     }
     resolve(approved);
@@ -129,7 +145,6 @@
    // Only navigation is voice-approvable. The 4-digit challenge remains
    // UI-only; neither the Gemini toolCall nor Gemini audio contains it.
    if(hadGeminiMic&&typeof stopMic==='function')stopMic();
-   if(typeof clearPlay==='function')clearPlay();
    const hostname=(()=>{
     try{return new URL(p.summary.match(/https:\/\/[^\s]+/)?.[0]||'https://site-publico.example').hostname;}
     catch{return 'site solicitado';}
@@ -224,6 +239,6 @@
    headers:{'Content-Type':'application/json','X-MCF-UI-Intent':'playwright-mcp-tool'},
    body:JSON.stringify({sessionId})}).catch(()=>{});
  });
- window.MCFPlaywrightTools=Object.freeze({declarations,beginSession,endSession,run,refresh});
+ window.MCFPlaywrightTools=Object.freeze({declarations,beginSession,endSession,run,refresh,isVoiceApprovalActive:()=>voiceGateActive});
  refresh();
 })();

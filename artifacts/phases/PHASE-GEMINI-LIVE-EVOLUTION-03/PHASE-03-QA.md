@@ -17,3 +17,7 @@
 25/25 policy Node, 7/7 browser voz simulada, 9/9 agent browser, 2/2 real MCP site publico e recusas, 118/118 offline geral. Microfone fisico do usuario nao testado. Ver PHASE-03-VOICE-NAVIGATION.md e evidencias JSON.
 
 Browser UI evidence updated after changes: 9/9 cases in current source SHA, including model-side cancellation and one-time approval. Historical Gemini real E2E remains tied to its original source SHA; user microphone ASR is not physically tested.
+
+
+## Seguimento de auditoria de voz
+25/25 tests Node policy+voice; browser voz 8/8 (simulado) incluindo shutdown visual/audio do Gemini, cancelamento de mic pendente e codigo unico; browser agent 9/9; HTTP MCP real publico 2/2 em execucao isolada. A suite HTTP sequencial pode receber 409 enquanto outra sessao ainda esta sendo encerrada: os testes devem aguardar sessao livre. Auditoria externa pre-remediacao RETURN_FOR_CORRECTION e artefato preservado. Gate do novo commit pendente.

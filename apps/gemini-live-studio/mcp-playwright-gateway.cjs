@@ -28,7 +28,7 @@ const TTL_MS=45000,RESULT_LIMIT=6500,RECEIPT_LIMIT=80;
 
 const reportError=(message,status=400)=>Object.assign(Error(message),{status});
 const restrictedHost=h=>{
- const host=String(h||'').toLowerCase().replace(/^\[|\]$/g,'');
+ const host=String(h||'').toLowerCase().replace(/^\[|\]$/g,'').replace(/\.+$/,'');
  if(!host||host==='localhost'||host.endsWith('.localhost')||host.endsWith('.local')||
     host.endsWith('.internal')||host.endsWith('.test')||host.endsWith('.invalid')||
     host.endsWith('.lan')||host.endsWith('.home')||host.endsWith('.corp')||

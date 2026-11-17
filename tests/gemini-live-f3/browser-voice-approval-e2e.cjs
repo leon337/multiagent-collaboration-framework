@@ -67,6 +67,12 @@ function assert(name,ok,data){
   await page.click('#playwrightVoiceEnabled');
   await page.evaluate(()=>{
    MCFPlaywrightTools.beginSession();
+   // Reproduce getUserMedia/AudioWorklet startup still in progress.
+   state.micStarting=true;state.micGeneration=14;
+   window.__micGenerationBeforeGate=state.micGeneration;
+   window.__visualStops=0;
+   const originalStop=window.stopAllVisual;
+   window.stopAllVisual=function(){window.__visualStops++;return originalStop();};
    window.__nav=MCFPlaywrightTools.run('playwright_navigate',{url:'https://www.python.org/'});
   });
   await page.waitForFunction(()=>document.getElementById('playwrightApprovalDialog').open);
@@ -75,12 +81,25 @@ function assert(name,ok,data){
    code:document.getElementById('playwrightVoicePhrase').textContent,
    spoken:window.__voiceRequests.spoken[0],
    decisions:window.__voiceRequests.decision.length,
-   summary:document.getElementById('playwrightApprovalSummary').textContent
+   summary:document.getElementById('playwrightApprovalSummary').textContent,
+   gateActive:window.MCFPlaywrightTools.isVoiceApprovalActive(),
+   visualStopCalls:window.__visualStops,
+   audioDropped:playAudio('AAAAAA==')===false,
+   playingSources:state.sources.size,
+   cameraActive:!!state.cameraStream,screenActive:!!state.screenStream,
+   pendingMicCanceled:state.micStarting===false&&state.micGeneration>window.__micGenerationBeforeGate
   }));
   const four=(before.code.match(/\d/g)||[]).join('');
   assert('VOICE_PROMPT_BOUNDS_TO_REQUEST_WITH_FRESH_CHALLENGE',
    four.length===4&&before.summary.includes('www.python.org')&&before.decisions===0&&
     !before.spoken.includes(four),{codeLength:four.length,decisions:before.decisions});
+  assert('VOICE_GATE_QUARANTINES_GEMINI_AUDIO_AND_VISUAL_BEFORE_CODE',
+   before.gateActive&&before.visualStopCalls>=1&&before.audioDropped&&
+    before.playingSources===0&&!before.cameraActive&&!before.screenActive&&
+    before.pendingMicCanceled,
+   {gateActive:before.gateActive,visualStopCalls:before.visualStopCalls,
+    audioDropped:before.audioDropped,playingSources:before.playingSources,
+    pendingMicCanceled:before.pendingMicCanceled});
   await page.evaluate(code=>window.__say('não autorizo '+code),four);
   await new Promise(r=>setTimeout(r,100));
   const neg=await page.evaluate(()=>({
@@ -101,10 +120,12 @@ function assert(name,ok,data){
    const res=await window.__nav;
    return {approved:window.__voiceRequests.decision[0].allow,
     toolResult:res.status,receipt:!!res.receipt_id,
-    challengeCleared:document.getElementById('playwrightVoicePhrase').textContent===''};
+    challengeCleared:document.getElementById('playwrightVoicePhrase').textContent==='',
+    quarantineReleased:!window.MCFPlaywrightTools.isVoiceApprovalActive()};
   });
   assert('EXACT_VOICE_CHALLENGE_TRIGGERS_ONE_APPROVED_TOOL_DECISION',
-   allowed.approved===true&&allowed.toolResult==='SUCCESS'&&allowed.receipt&&allowed.challengeCleared,allowed);
+   allowed.approved===true&&allowed.toolResult==='SUCCESS'&&allowed.receipt&&
+   allowed.challengeCleared&&allowed.quarantineReleased,allowed);
   await page.evaluate(()=>{
    window.__other=MCFPlaywrightTools.run('playwright_navigate',{url:'https://www.rust-lang.org/'});
   });
