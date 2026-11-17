@@ -31,10 +31,17 @@ jobs:
           node --check tests/gemini-live-f2/browser-visual-consent.cjs
           node --check tests/gemini-live-f2/browser-vision-e2e.cjs
           node --test tests/gemini-live-f2/*.test.cjs
-      - name: Verify F2 evidence hashes
+      - name: Verify F2 evidence and F3 source boundary
         working-directory: artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-02
         run: |
-          sha256sum -c PHASE-02-SOURCE-MANIFEST.sha256
+          # F2 source manifest is pinned to the F2 commit; F3 intentionally
+          # changes app.js/server.js/UI. Its own complete source manifest is
+          # validated by mcf-gemini-live-f3.yml, never relabel F2 E2E as F3.
+          if [ -f ../PHASE-GEMINI-LIVE-EVOLUTION-03/PHASE-03-SOURCE-MANIFEST.sha256 ]; then
+            echo "F2 source manifest is historical; current source is verified by F3 source manifest"
+          else
+            sha256sum -c PHASE-02-SOURCE-MANIFEST.sha256
+          fi
           sha256sum -c PHASE-02-ARTIFACT-MANIFEST.sha256
       - name: Scan new F2 files for secrets
         run: |

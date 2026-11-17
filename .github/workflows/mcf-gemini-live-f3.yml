@@ -1,0 +1,57 @@
+name: MCF Gemini Live F3 Playwright MCP Gateway
+
+on:
+  pull_request:
+    paths:
+      - 'apps/gemini-live-studio/**'
+      - 'tests/gemini-live-f3/**'
+      - 'artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-03/**'
+      - '.github/workflows/mcf-gemini-live-f3.yml'
+  push:
+    branches:
+      - feat/gemini-live-playwright-mcp-gateway-20261117
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  f3-playwright-mcp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned official MCP server and SDK
+        run: npm ci --prefix apps/gemini-live-studio --ignore-scripts --no-audit --no-fund
+      - name: Validate syntax and governed tool declarations
+        run: |
+          node --check apps/gemini-live-studio/server.js
+          node --check apps/gemini-live-studio/mcp-playwright-gateway.cjs
+          node --check apps/gemini-live-studio/public/playwright-tools.js
+          node --check apps/gemini-live-studio/public/app.js
+          node --check tests/gemini-live-f3/mcp-playwright-gateway.test.cjs
+          node --check tests/gemini-live-f3/http-real-mcp.test.cjs
+          node --check tests/gemini-live-f3/http-real-interaction.test.cjs
+          node --check tests/gemini-live-f3/browser-agent-mcp-e2e.cjs
+          node --check tests/gemini-live-f3/real-gemini-live-tool-e2e.cjs
+      - name: Run tool policy and one-time gate tests (no external browsing)
+        run: node --test tests/gemini-live-f3/mcp-playwright-gateway.test.cjs
+      - name: Check dependency advisories
+        run: npm audit --prefix apps/gemini-live-studio --omit=dev --audit-level=high
+      - name: Verify evidence and source integrity
+        working-directory: artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-03
+        run: |
+          sha256sum -c PHASE-03-SOURCE-MANIFEST.sha256
+          sha256sum -c PHASE-03-ARTIFACT-MANIFEST.sha256
+      - name: Scan F3 payload files for accidental credentials
+        run: |
+          if grep -nE 'AIza[A-Za-z0-9_-]{25,}|sk-[A-Za-z0-9_-]{25,}' \
+              apps/gemini-live-studio/mcp-playwright-gateway.cjs \
+              apps/gemini-live-studio/public/playwright-tools.js \
+              tests/gemini-live-f3/*.cjs; then
+            echo "Potential secret-like pattern in F3 source"
+            exit 1
+          fi

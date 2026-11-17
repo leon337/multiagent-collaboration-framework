@@ -1,0 +1,16 @@
+ff2a631d0a697c8c8521808a7a25b21630c2fcf89a5fbae7b22c00d01e496dbd  ../../../apps/gemini-live-studio/.gitignore
+9866e4c7cf8838de43177b53832737902350a88a571ba1f1016faf8417c9ea49  ../../../apps/gemini-live-studio/package.json
+9cd0a9779cdb0aa415e594d3e3de99e463ea73bacc25afb3d556c3bc0287ede2  ../../../apps/gemini-live-studio/package-lock.json
+5bb2afb0b6809457d18d525a3adbf063be8c1e4de021be8e21a7973afd0ceca8  ../../../apps/gemini-live-studio/mcp-playwright-gateway.cjs
+eae455edba9f0a9c98e3ca504620772a33fa5ff203a67b8448b7aa540739422f  ../../../apps/gemini-live-studio/server.js
+299936ab8a0d1834a7310195294bf2391dbef15489b2dd8b830882ee305bb456  ../../../apps/gemini-live-studio/public/app.js
+ce284348f354f82390d016b5318646964a4663aa47f59a091b115236d4ac2bee  ../../../apps/gemini-live-studio/public/index.html
+de2470aab7e35acabf5229c1cb15951b416ed0f03b1287aaf0606d1467491a14  ../../../apps/gemini-live-studio/public/style.css
+923f1280595999a9ba20b61318f6eaa7c0e6bc5e0d3d2cd2fa8195589fa6ecd7  ../../../apps/gemini-live-studio/public/playwright-tools.js
+e6065b6e707f70aa47e5bdcc510e0a379bdf4f61b5a7b60033512b69b9c9413c  ../../../tests/gemini-live-f3/mcp-playwright-gateway.test.cjs
+2602844f5380ba818eccb08f1ec73d000d96c9bee1394b842309b52822f03465  ../../../tests/gemini-live-f3/http-real-mcp.test.cjs
+b1b64fc88052505d00af88bac17b2f3db4ae2587a07905ec831c3e698ca8d392  ../../../tests/gemini-live-f3/http-real-interaction.test.cjs
+992863138156b82dbdd946450876013377cbb2148de26b613f7985879771668d  ../../../tests/gemini-live-f3/browser-agent-mcp-e2e.cjs
+bf4a1ea3f3b7884688541c2035f761435143f98ffbe55419ce6db26a870a1b97  ../../../tests/gemini-live-f3/real-gemini-live-tool-e2e.cjs
+e54d057edde0264545df5ca7173feb1ab3e46166613d4a5515ac367cdfc32d21  ../../../.github/workflows/mcf-gemini-live-f3.yml
+4d78edc98558348e8e9efe561f98e4ffa91e9894c1542d2eb56e1640bb3b7ee5  ../../../.github/workflows/mcf-gemini-live-f2.yml
