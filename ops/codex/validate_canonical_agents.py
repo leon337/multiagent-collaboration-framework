@@ -150,7 +150,7 @@ class CanonicalCodexAgentsTest(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="mcf-codex-test-") as td:
             folder=pathlib.Path(td)
             log=folder / "codex-emily.jsonl"
-            final="CODEX_EMILY_TECHNICAL_REVIEW target_sha: "+sha
+            final="CODEX_EMILY_TECHNICAL_REVIEW\ntarget_sha: "+sha+"\nveredito_tecnico: FAIL"
             lines=[
                 {"type":"thread.started","thread_id":thread},
                 {"type":"item.completed","item":{"type":"agent_message","text":final}},
@@ -211,6 +211,30 @@ class CanonicalCodexAgentsTest(unittest.TestCase):
             self.assertEqual(thread,"abcd")
             self.assertTrue(finished)
             self.assertFalse(src["eligible_deliverable"]("emily",sha,final))
+
+    def test_technical_verdict_and_complete_handoff_are_required(self):
+        src=runpy.run_path(str(ROOT / "ops/codex/run_role.py"))
+        sha="a"*40
+        base="CODEX_EMILY_TECHNICAL_REVIEW\ntarget_sha: "+sha+"\n"
+        self.assertFalse(src["eligible_deliverable"]("emily",sha,base+"nao ha parecer"))
+        self.assertFalse(src["eligible_deliverable"]("emily",sha,base+"veredito_tecnico: NAO_VERIFICADO"))
+        self.assertTrue(src["eligible_deliverable"]("emily",sha,base+"veredito_tecnico: FAIL"))
+        self.assertTrue(src["eligible_deliverable"]("emily",sha,base+"veredito_tecnico: PASS_WITH_RESERVATIONS"))
+        self.assertFalse(src["eligible_deliverable"]("leo",sha,"LEO target_sha: "+sha+" sem decisao"))
+        self.assertTrue(src["eligible_deliverable"]("leo",sha,
+            "LEO\ntarget_sha: "+sha+"\nrecomendacao: RETORNAR_PARA_CORRECAO"))
+        # The earlier handoff silently dropped the final P2/risk statement.
+        tail="RISCO_ALTO_UNICO_NO_FINAL"
+        report=base+("Evidencia verificada\n"*550)+tail+"\nveredito_tecnico: FAIL"
+        self.assertGreater(len(report),7000)
+        self.assertLess(len(report),src["MAX_DELIVERABLE_CHARS"])
+        a=SimpleNamespace(role="leo",mission_id="MCF-CANONICAL-AGENTS",
+                          phase_id="F3",target_sha=sha)
+        prior={"last_message":report,"codex_thread_id":"aaaaaaaa-1111-4111-8111-111111111111",
+               "raw_log_sha256":"b"*64}
+        prompt=src["make_prompt"](a,{"developer_instructions":"ROLE_LEO"},prior)
+        self.assertIn(tail,prompt)
+        self.assertIn("veredito_tecnico: FAIL",prompt)
 
     def test_git_archive_snapshot_matches_exact_committed_sha(self):
         src=runpy.run_path(str(ROOT / "ops/codex/run_role.py"))
