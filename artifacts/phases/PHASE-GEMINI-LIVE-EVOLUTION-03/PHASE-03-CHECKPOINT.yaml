@@ -1,0 +1,43 @@
+schema: mcf-phase-checkpoint/v1
+mission_id: MCF-GEMINI-LIVE-EVOLUTION-20261116-001
+phase: F3
+tranche: PLAYWRIGHT_MCP_GATEWAY_PILOT
+state: EM_EXECUCAO_LOCAL
+authority: LEANDRO
+orchestrator: MESTRE
+source_base: feat/gemini-live-f2-multimodal-consent-20261116
+github_pr: PENDING
+runtime_production_merge: NOT_AUTHORIZED
+browser_profile: ISOLATED_HEADLESS_CHROME
+playwright_mcp_version: 0.0.85
+mcp_sdk_version: 1.32.2
+mcp_tools_discovered: 25
+mcp_tools_exposed: 7
+write_scope: TODOMVC_DEMO_ONLY
+user_confirmation: PER_NAV_CLICK_TYPE_CLOSE
+node_policy: 13_PASS
+real_mcp_http: 2_PASS
+real_mcp_interaction_demo: 1_PASS
+browser_agent_e2e: 8_PASS
+gemini_real_tool_use: PLAYWRIGHT_NAVIGATE_PASS
+f0_f1_f2_f3_offline_units: 106_PASS
+mcf_native_hdf: NOT_CONNECTED
+f0_f1_f2_formal_gate: OPEN
+f3_formal_gate: PENDING
+next_action: INDEPENDENT_SECURITY_REVIEW_AND_GATE
+
+external_audit_original_sha: d56d701e54bd26f460b6a76117a8e3863af74ee1
+external_audit_original_decision: RETURN_FOR_CORRECTION
+remediation_status: HIGH_RACES_REPAIRED_AND_TESTED
+external_rereview_final_sha: PENDING
+production_security_gate: OPEN
+
+re_review_previous_sha: 0f93855e23190aec0c7df0eec471657691a0ea42
+re_review_previous_result: PASS_WITH_RESERVATIONS_LOCAL_MERGE_ONLY
+re_review_public_production: NOT_APPROVED
+stale_prepare_resurrection: FIXED_WITH_REVOKED_IDS_TEST
+navigation_docs_policy: PUBLIC_HTTPS_PER_REQUEST
+strict_two_tool_e2e: OPTIONAL_MODEL_CHOICE_NAV_REQUIRED_PASS_SNAPSHOT_NOT_CALLED_LATEST
+
+latest_real_model_navigation: PASS_WITH_SUCCESS_RECEIPT
+latest_real_model_snapshot: NOT_CALLED

@@ -1,0 +1,115 @@
+{
+  "schema": "mcf-f2-visual-consent-browser/v1",
+  "timestamp": "2026-11-17T03:14:09.820Z",
+  "url": "http://127.0.0.1:18374/",
+  "results": [
+    {
+      "name": "F2_MEDIA_POLICY_LOADED",
+      "pass": true,
+      "observed": {
+        "policy": true,
+        "dialog": true
+      }
+    },
+    {
+      "name": "CAMERA_REQUIRES_EXPLICIT_CONSENT",
+      "pass": true,
+      "observed": {
+        "open": true,
+        "camera": 0,
+        "label": "Ativar câmera"
+      }
+    },
+    {
+      "name": "CANCEL_NO_HARDWARE_CAPTURE",
+      "pass": true,
+      "observed": {
+        "camera": 0,
+        "sharing": "false"
+      }
+    },
+    {
+      "name": "CAMERA_APPROVED_WITH_PERSISTENT_STATUS",
+      "pass": true,
+      "observed": {
+        "camera": 1,
+        "sharing": "true",
+        "label": "● Câmera transmitida à API Gemini · 1 FPS",
+        "stopVisible": true,
+        "track": "live"
+      }
+    },
+    {
+      "name": "SCREEN_REQUIRES_SEPARATE_CONSENT",
+      "pass": true,
+      "observed": {
+        "open": true,
+        "title": "Compartilhar tela",
+        "screen": 0
+      }
+    },
+    {
+      "name": "SWITCH_RELEASES_OLD_CAMERA",
+      "pass": true,
+      "observed": {
+        "screen": 1,
+        "oldTrack": "ended",
+        "label": "● Tela transmitida à API Gemini · 1 FPS"
+      }
+    },
+    {
+      "name": "OS_STOP_RELEASES_CAPTURE_AND_FRAME_TIMER",
+      "pass": true,
+      "observed": {
+        "sharing": "false",
+        "screen": false,
+        "timer": null,
+        "stopVisible": false
+      }
+    },
+    {
+      "name": "VISIBLE_KILL_SWITCH_STOPS_TRACKS",
+      "pass": true,
+      "observed": {
+        "screen": false,
+        "sharing": "false",
+        "lastTrack": "ended",
+        "timer": null
+      }
+    },
+    {
+      "name": "DISCONNECT_DURING_BROWSER_PERMISSION_REJECTS_LATE_STREAM",
+      "pass": true,
+      "observed": {
+        "track": "ended",
+        "sharing": false,
+        "status": "false"
+      }
+    },
+    {
+      "name": "RECONNECT_NEVER_RESTARTS_VISUAL_CAPTURE",
+      "pass": true,
+      "observed": {
+        "countBefore": 4,
+        "countAfter": 4,
+        "sharing": false
+      }
+    },
+    {
+      "name": "NO_UNCAUGHT_BROWSER_ERRORS",
+      "pass": true,
+      "observed": {
+        "errors": []
+      }
+    }
+  ],
+  "noRealGoogleCalls": true,
+  "sourceSha256": {
+    "public/app.js": "a4badfa9704e3406b7e8e498b320714268b714f32031d3c90497a08f9443e7e5",
+    "public/media-policy.js": "8294dd368fafb56f648266f60054cda577629db2fdafc639a59327827ac9a851",
+    "public/index.html": "a200e89ad2823a31e5cae298174c6b81e6c9119dae00e54568c4211b66c501b6"
+  },
+  "captureBytesPersisted": false,
+  "passed": 11,
+  "failed": 0
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "mcf-f1-semantic-resume/v1",
+  "at_utc": "2026-11-16T22:53:52.828Z",
+  "model": "gemini-2.5-flash-native-audio-preview-12-2025",
+  "synthetic_keyword_only": true,
+  "handleBefore": true,
+  "reconnected": true,
+  "semantic": {
+    "containsKeyword": true,
+    "newModelFragments": 2,
+    "hasResumeHandle": true,
+    "reconnects": 1
+  },
+  "semanticResumeConfirmed": true
+}

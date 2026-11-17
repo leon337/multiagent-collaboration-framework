@@ -1,0 +1,73 @@
+{
+  "schema": "mcf-f1-adversarial-browser/v1",
+  "date": "2026-11-16T20:43:14.110Z",
+  "origin": "http://127.0.0.1:18372/",
+  "sourceAppSHA": "fcd65c46ffcd42392265151b036906cfcaf2f40a5230ffeb3379245ce9ec2b9e",
+  "testScriptSHA": "036d68ea7481bf5b9bb8a9e3fb0935b42a1877b898af8186516d24ed7096359f",
+  "cases": [
+    {
+      "id": "MIC_DOUBLE_START_CANCEL_NO_ORPHAN",
+      "pass": true,
+      "observed": {
+        "requests": 1,
+        "micStarting": true,
+        "tracksStopped": 1,
+        "micStreamNull": true,
+        "micCtxNull": true,
+        "micStartingAfter": false
+      }
+    },
+    {
+      "id": "CANCELLED_TOKEN_CANNOT_CREATE_OBSOLETE_WS",
+      "pass": true,
+      "observed": {
+        "sockets": 1,
+        "currentIsSecond": true,
+        "connected": false,
+        "socket": true,
+        "closed": true
+      }
+    },
+    {
+      "id": "VAD_FROZEN_AFTER_SETUP",
+      "pass": true,
+      "observed": {
+        "audio": 4,
+        "activityStart": 0
+      }
+    },
+    {
+      "id": "CONTROL_MESSAGES_SURVIVE_BACKPRESSURE",
+      "pass": true,
+      "observed": {
+        "control": true,
+        "media": false,
+        "sent": 1
+      }
+    },
+    {
+      "id": "VAD_START_NOT_COMMITTED_ON_SEND_ERROR",
+      "pass": true,
+      "observed": {
+        "afterFailure": false,
+        "afterRecovery": true,
+        "afterSilence": false,
+        "startSent": 1,
+        "endSent": 1
+      }
+    },
+    {
+      "id": "TOKEN_NETWORK_FAILURE_RETRIES_BOUNDED",
+      "pass": true,
+      "observed": {
+        "retryScheduled": true,
+        "attempts": 1,
+        "wantConnected": true,
+        "connected": false
+      }
+    }
+  ],
+  "errors": [],
+  "passed": 6,
+  "failed": 0
+}

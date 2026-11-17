@@ -1,0 +1,32 @@
+{
+  "schema": "mcf-f2-post-remediation-real-provider-v1",
+  "imageOrVideoPersonal": false,
+  "visionSourceSha256": "df7772d6c7f4738daab37891531abfa61a7e71aec1ae54db50fd203881acaed2",
+  "mediaSource": "synthetic-only",
+  "results": [
+    {
+      "kind": "image",
+      "httpStatus": 200,
+      "model": "gemini-3.5-flash",
+      "traceId": "cc2356bb-6b52-444a-913a-dd72cb7b570b",
+      "tokens": 1320,
+      "summaryExcerpt": "A imagem está dividida igualmente em quatro quadrantes coloridos:\n\n* **Quadrante superior esquerdo:** Vermelho\n* **Quadrante superior direito:** Azul\n* **Quadrante inferior esquerdo:** Verde\n* **Quadrante inferior direito:** Amarelo",
+      "googleFilesDeleteConfirmed": null,
+      "automaticFallback": false,
+      "rawMediaPersistedLocally": false,
+      "elapsedMs": 3687
+    },
+    {
+      "kind": "video",
+      "httpStatus": 200,
+      "model": "gemini-3.5-flash",
+      "traceId": "8faa83e6-c366-4f89-9e2b-b154720b5580",
+      "tokens": 1075,
+      "summaryExcerpt": "Este vídeo sintético de teste de 2D apresenta diversos elementos em movimento sobre um fundo de barras de cores verticais padrão (SMPTE):\n\n1. **Faixa Diagonal Gradiente:** Uma faixa translúcida com um gradiente de cores (transição entre ciano, azul, roxo e rosa) desliza",
+      "googleFilesDeleteConfirmed": true,
+      "automaticFallback": false,
+      "rawMediaPersistedLocally": false,
+      "elapsedMs": 30155
+    }
+  ]
+}

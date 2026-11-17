@@ -1,0 +1,19 @@
+{
+  "schema": "mcf-f1-physical-browser/v1",
+  "at_utc": "2026-11-16T23:55:12.166Z",
+  "mediaPersisted": false,
+  "capture": {
+    "ok": true,
+    "deviceLabel": "Padrão",
+    "trackActive": true,
+    "inputSampleRate": 48000,
+    "outputSampleRate": 16000,
+    "pcmFrames": 63,
+    "pcmSamples": 40320,
+    "meanRms": 0.004493,
+    "maxRms": 0.023451,
+    "deviceIdPersisted": false,
+    "pcmPersisted": false
+  },
+  "status": "PASS"
+}

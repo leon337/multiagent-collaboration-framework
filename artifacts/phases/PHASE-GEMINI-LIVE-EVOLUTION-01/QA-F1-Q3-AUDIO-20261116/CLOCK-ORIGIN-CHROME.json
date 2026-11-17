@@ -1,0 +1,20 @@
+{
+  "schema": "mcf-f1-clock-origin-integrated-browser/v1",
+  "atUtc": "2026-11-17T00:18:08.918Z",
+  "appSha256": "c46a42cace0683612a638258e0cecd83811e3f5d1e49aa4d4d81085cd0a85710",
+  "workletSha256": "6e5e31176beb66b3a54548e8c00f67f2d87af96dce327b60ba2ba0dffe15fe6a",
+  "mediaPersisted": false,
+  "googleApiCalled": false,
+  "observed": {
+    "startClockSeconds": 0.405,
+    "moduleCalls": 1,
+    "frames": 60,
+    "sends": 60,
+    "bytes": 76860,
+    "staleDrops": 0,
+    "workletDrops": 0,
+    "inputContextRate": 48000,
+    "trackLive": true
+  },
+  "pass": true
+}

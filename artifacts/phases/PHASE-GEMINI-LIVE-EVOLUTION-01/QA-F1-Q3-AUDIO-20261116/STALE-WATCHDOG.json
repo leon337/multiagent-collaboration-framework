@@ -1,0 +1,39 @@
+{
+  "schema": "mcf-f1-q3-stale-and-watchdog/v1",
+  "at_utc": "2026-11-17T00:09:05.239Z",
+  "sourceAppSha256": "c46a42cace0683612a638258e0cecd83811e3f5d1e49aa4d4d81085cd0a85710",
+  "sourceWorkletSha256": "d5c40e8f753eabe3e9ed26f8ccc4f106cde0ce8dfa82d8b154eeb6b0f3fcc90e",
+  "results": [
+    {
+      "id": "STALE_MIC_PACKET_REJECTED",
+      "pass": true,
+      "observed": {
+        "sends": 0,
+        "stale": 1,
+        "dropped": 1
+      }
+    },
+    {
+      "id": "FRESH_MIC_PACKET_SENT_AND_DROP_COUNT_ACCURATE",
+      "pass": true,
+      "observed": {
+        "sends": 1,
+        "stale": 1,
+        "dropped": 13
+      }
+    },
+    {
+      "id": "SILENT_TURN_WARNING_NO_REPLAY",
+      "pass": true,
+      "observed": {
+        "writes": 1,
+        "timeoutEvents": 1,
+        "stillConnected": true,
+        "noAutoRetry": true
+      }
+    }
+  ],
+  "rawMicSaved": false,
+  "pass": 3,
+  "fail": 0
+}

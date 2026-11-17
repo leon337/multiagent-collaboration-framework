@@ -1,0 +1,86 @@
+{
+  "schema": "mcf-f1-reliability/v1",
+  "utc": "2026-11-16T22:30:27.109Z",
+  "app": "http://127.0.0.1:18372/",
+  "model": "gemini-2.5-flash-native-audio-preview-12-2025",
+  "samples": [
+    {
+      "turn": 1,
+      "first_audio_ms": 2269,
+      "turn_completion_ms": 2470,
+      "response": true,
+      "completed": true,
+      "error": null
+    },
+    {
+      "turn": 2,
+      "first_audio_ms": 2668,
+      "turn_completion_ms": 5100,
+      "response": true,
+      "completed": true,
+      "error": null
+    },
+    {
+      "turn": 3,
+      "first_audio_ms": 2665,
+      "turn_completion_ms": null,
+      "response": true,
+      "completed": false,
+      "error": null
+    }
+  ],
+  "errors": [],
+  "scope": {
+    "audio": "synthetic-model-responses",
+    "microphone": "not_in_use",
+    "physical_speaker": "not_verified",
+    "sessionResumptionContext": "experimental"
+  },
+  "initial": {
+    "connected": true,
+    "handle": false
+  },
+  "metrics": {
+    "ws_disconnects": 1,
+    "reconnect_attempts": 0,
+    "reconnect_successes": 0,
+    "barge_ins": 0,
+    "underruns": 1,
+    "dropped_input_frames": 0,
+    "setup_sample_count": 0,
+    "playing_sources": 0,
+    "was_connected": false,
+    "model_audio_bytes": 516480,
+    "user_turns": 3,
+    "websocketState": null,
+    "handle_available": false,
+    "eventCounts": {
+      "go_away": 0,
+      "generation_complete": 2,
+      "first_audio": 1
+    }
+  },
+  "context_test": {
+    "synthetic_keyword_expected": true,
+    "matched": null
+  },
+  "after_cleanup": {
+    "connected": false,
+    "microphone": false,
+    "camera": false,
+    "screen": false,
+    "retry": false,
+    "sources": 0
+  },
+  "duration_seconds": 180,
+  "stats": {
+    "attempted_turns": 3,
+    "first_audio_responses": 3,
+    "completed_turns": 2,
+    "first_audio_p50_ms": 2665,
+    "first_audio_p95_ms": 2668,
+    "turn_completion_p50_ms": 2470,
+    "turn_completion_p95_ms": 5100,
+    "statistics": "Exploratory: <30 samples; not a stable SLO"
+  }
+}

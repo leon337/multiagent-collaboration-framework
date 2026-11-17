@@ -1,0 +1,92 @@
+# PHASE 01 — Expanded validation
+
+Original F1 test result at EVIDENCE-F1-BROWSER.json. Source and script hashes appear in that JSON.
+Browser: Chrome 156 / virtual mic and camera / simulated screen; Google Live API WebSocket real.
+
+## All browser cases
+- BROWSER_WORKLET_CAPABILITY: PASS — AudioWorkletNode=true
+- F1_DASHBOARD_RENDERED: PASS — F1 diagnostics in UI
+- MANUAL_VAD_START_END: PASS — {"started":1,"ended":1,"pcm":22,"after":false}
+- MANUAL_VAD_PREROLL_AND_PCM: PASS — PCM frames=22
+- INTERRUPTION_CLEARS_PLAYBACK: PASS — {"stops":1,"empty":true,"nextPlay":0}
+- BACKPRESSURE_DROPS_FRAMES: PASS — {"sent":false,"writes":0,"metrics":1}
+- PLAYBACK_QUEUE_BACKLOG_BOUNDED: PASS — {"drops":2,"queueSec":1.04,"cleared":true}
+- GENERATION_COMPLETE_SIGNAL: PASS — counted without replay
+- LIVE_SETUP_REAL: PASS — setupComplete
+- WORKLET_AUDIO_SENT_REAL: PASS — {"frames":39,"bytes":49959,"worklet":true,"sampleRate":48000,"streamLive":true}
+- WORKLET_STOP_CLEAN: PASS — no dangling input stream or context
+- WEBSOCKET_RECONNECT_REAL: PASS — reconnected to Google Live API
+- NO_DUPLICATE_USER_TURNS_AFTER_RECONNECT: PASS — user turns before/after=1/1
+- RESUMPTION_HANDLE_PRESENT: PASS — handle available; context preservation not independently attested
+- GOAWAY_SIGNAL_RECOGNIZED: PASS — event counted, no raw token logged
+- FINAL_RESOURCE_CLEANUP: PASS — no active media or retry
+- NO_JS_RUNTIME_ERRORS: PASS — pageErrors=0
+
+## Offline worklet and telemetry contract
+Command: node --test tests/gemini-live-f1/capture-worklet.test.mjs tests/gemini-live-f1/telemetry.test.mjs
+Results: 12/12 PASS, 0 FAIL, on Node.js 24.22.2.
+Worklet coverage: fixed 40ms/640 sample/1280byte frames, 48k and 44.1k resampling, phase continuity across 128-sample quantum boundaries, silence in output, RMS, stopping.
+Telemetry coverage: schema/memory, reconnect/barged-in counters, underrun/drop/bytes, secret stripping, numeric sanitization and 500-event cap.
+
+## Runtime and source hashes
+Result: browser 17/17 PASS on local 127.0.0.1:18372; F0 compatibility regression 13/13 PASS.
+5 SHA-256 source hashes in browser result match code committed to apps/gemini-live-studio (checked via local Python); 1 test script SHA matches the versioned browser test.
+The source manifest and PRF manifest can be checked independently with sha256sum -c.
+
+## Honest limitations and remaining quality checks
+- Audio signal and provider return tested with virtual input only; no real microphone, headset, echo cancellation or visible camera evidence.
+- Browser playback queue bound simulated; no measured human-perceived jitter, underruns in production, p50/p95 robust samples or A/B physical benchmark.
+- Real deliberate socket reconnect passed and received a resumable handle; equivalence of previous model context was not independently validated.
+- GoAway signal tested by injection, not observed at the provider's natural connection timeout.
+- HTTP 429/backoff, prolonged 10+min streaming and provider cost were not stress tested.
+- Client VAD uses RMS threshold rather than a speech classifier; false positives require device-specific tuning.
+- F0.8 remains pending and old previously exposed API key is intentionally unrotated by user decision. Do not publish server or gate release.
+- No external agent Emily/LÉO is claimed to have executed; this PRF is a request for their real review, not a signed acceptance.
+
+## F1 playback hotfix evidence
+EVIDENCE-F1-PLAYBACK-REGRESSION.json validates 200 consecutive chunks / 20 seconds with no overlap, gap or premature stop. EVIDENCE-F1-AUDIO-DRAIN-25.json validates 1014 sources / 41.48 seconds of live 2.5 audio. EVIDENCE-F1-AUDIO-DRAIN-38.json validates 112 sources / 37.68 seconds of 3.8 Live audio. All source node start/ended counts match and no stop calls are logged. These measurements do not establish physical speaker quality.
+
+F1.5 HARDWARE EVIDENCE: qa/EVIDENCE-PHYSICAL-IO.json: 32,000 samples in 2 seconds from a real USB camera microphone; qa/EVIDENCE-PHYSICAL-BROWSER.json: real getUserMedia source, Chrome AudioWorklet 48kHz to 16kHz, 64 PCM frames 40,960 samples, no media stored. qa/EVIDENCE-SPEAKER-MONITOR.json: output to physical default PipeWire sink accepted by paplay, but monitor provided zero samples: NOT proof of audible speaker output.
+
+F1.4 RELIABILITY: qa/EVIDENCE-180S-EXPLORATORY.json is flawed instrumentation: counts only generationComplete, not turnComplete. Its 2/3 completion count must NOT be represented as 1 failed provider turn. qa/EVIDENCE-DIAGNOSTIC-6-TURNS.json uses both signals, 6/6 completions and one successful reconnect after induced network transition. Timing p50/p95 at n<=6 exploratory only, no voice endpoint metric. Long duration >600s verification still pending.
+
+EMILY EXTERNAL: qa/EMILY-EXTERNAL-REVIEW-EA96781.md applies normative Emily profile to an independent read-only CLI session, shows 12/12 unit tests and 17/17+10/10 hashes, and RETORNAR_PARA_CORRECAO due A1-A4. A1-A3 fixes pending gate review validated by 4/4 browser adversarial tests in qa/EVIDENCE-HIGH-FIXES-4.json. Medium issues remain scoped for next cycle. No native Emily identity or receipt.
+
+## Terminal F1.4/5 QA artifacts
+
+See QA-F1-20261116/EVIDENCE-LONG-SESSION.json: 632s, 10 turns, GoAway 1, reconnection 1, audioUnderruns 9, connected 43 heartbeat intervals, no residual tracks/sockets. The long-run script embeds its app.js SHA. A subsequent one-line fix to stop-button availability during backoff changes that SHA, so long-run performance is specific to its original source, not a false same-SHA claim.
+
+See QA-F1-20261116/EVIDENCE-SEMANTIC-RESUME.json: a fictional keyword in the earlier turn was recovered by the model in new output transcripts after reconnect with a handle. Limited single-case semantic check.
+See QA-F1-20261116/EVIDENCE-HIGH-FIXES-5.json: five adversarial regression passes, with SHA-256 of current application code and test script.
+Current QA benchmark: 17/17 browser and 8/8 playback, both linked to current app.js SHA. Audio real hardware was captured without persistence but output monitoring yielded 0 samples; human-audible quality still unverified. End-of-human-speech latency, robust p95 and cost classification are not measured.
+
+## Codex CLI external LEO-profile gate decision
+On 2026-11-16 a distinct external Codex CLI process with LEO normative profile (thread 01a1e697-23c5-7af1-a68f-05d56083e38c) reviewed SHA 361a08b730b24b7fe0ba88e5917634dd3a947d64 and emitted RETORNAR_PARA_CORRECAO. It independently verified 12/12 offline tests, 24/24 source hashes, 26/26 PRF hashes. F1.1-F1.4 partial; F1.5 insufficient; F1.6 partial. This is NOT a native MCF Agent Session. F0.8 remains open and no merge/deploy is approved. Primary receipt in QA-F1-20261116/LEO-PROFILE-GATE.md.
+
+Q3 TECHNICAL EVIDENCE
+Source: QA-F1-Q3-AUDIO-20261116/README.md and F1-Q3-REPORT.md.
+Unit Node tests: 17/17 PASS (9 capture/antialias/credit + 8 private telemetry).
+Real Gemini browser E2E: 17/17 PASS on same app.js hash, virtual media.
+Physical Chrome AudioWorklet: 63 frames, 40,320 PCM samples, no persisted speech.
+Playback classifier: 3/3 PASS (between-turn silence NOT counted as within-generation underrun).
+Real prompt-to-scheduled-output benchmark: 19 attempted, 18 audio detections/completions, n=18 p50 1324ms, p95 4666ms. One nonterminal response at 16s while connected; target 30 missed. No voice mouth-to-ear latency guarantee, no robust cost classification or user acoustic barge-in evidence. Q3 candidate has new source SHA, older long test cannot be claimed as bitwise same source.
+
+## Capture prolongada do microfone real (60 segundos)
+Teste no mesmo codigo F1-Q3: 1.494 frames x 640 samples = 956.160 amostras a 16kHz (59,76s de PCM) em captura de ~60s, 0 drops no Worklet. Foi utilizado getUserMedia no Chrome com dispositivo padrao real e AudioWorklet FIR; o audio bruto e a transcricao nao foram salvos. JSON MIC-PHYSICAL-60S.json inclui SHA256 do app e do worklet, comparados com a branch. Esta evidência nao comprova eco/barge-in natural, nem qualidade de som nos alto-falantes.
+
+## F1 Q3 external audit remediation (cycle 2)
+External Codex CLI under Emily normative profile evaluated SHA 4e5f331 and returned RETORNAR; its primary findings and MESTRE fixes are recorded in QA-F1-Q3-AUDIO-20261116/Q3-REMEDIATION-CYCLE2.md. Subsequent code introduced stale microphone packet rejection, count-accurate telemetry, turn-boundary reset and a 16s nonautomatic silent-response warning. In current staging, 19/19 offline, 17/17 real Gemini browser and 3/3 adversarial passed. A new real mic 60-second capture had no lost Worklet frames, with exact source SHA in the evidence. The old 19/18 benchmark is historical and does not attest these latest fixes. No native Emily or LEO gate was simulated. Future phase F2 is blocked by normative prerequisites.
+
+## F1 Q3 cycle 3 clock origin
+The external Codex CLI Emily-profile reviewer at ae9f76a found a P1 clock-domain mismatch causing fresh mic frames to be dropped after delayed worklet startup. MESTRE fixed Worklet timestamps to use AudioContext clock and added a VM delayed init test. 20/20 Node tests, 17/17 real Gemini browser E2E, and 60 frames/zero stale drops in a browser with deliberately delayed addModule passed with source hashes. The one previous real Google nonterminal turn in 19 attempts is NOT fixed by a 16s watchdog warning, and human voice/headset gate/F0.8 remain OPEN. Reports in QA-F1-Q3-AUDIO-20261116/Q3-CLOCK-REMEDIATION.md.
+
+## Independent external LÉO-profile gate on Q3 clock-origin candidate
+At LEANDRO's request, a separate read-only Codex CLI under the normative docs/agentes/LEO.md profile reviewed SHA c6f85b083837b297bd1bf04cba0e6582c5861afe. Codex thread 01a1e6e0-7292-71b1-8ff2-738d098e268c, explicit decision **RETORNAR_PARA_CORRECAO**. This is a real external profile-based executor receipt, but NOT a native authenticated MCF Agent Session.
+Evidence and justification: QA-F1-Q3-AUDIO-20261116/LEO-PROFILE-GATE-Q3-CLOCK.md. F0.8 and public production key rotation remain open; this QA does not authorize merge/deploy. It does not claim 30 physical speech mouth-to-ear latency measurements or spontaneous barge-in evidence. F2 work remains planning-only unless all prerequisite gates formally approve.
+
+## Evidência suplementar F1 — turnos de voz
+QA-F1-RESPONSE-20261116/REPORT.md contém a correção para monitor de voz, recuperação exclusivamente manual, testes com API real/virtual e mic físico sem PCM salvo. O gate formal não foi emitido neste SHA e a latência física de 30 amostras não foi reivindicada.
+
+
+## Auditoria pós-correção de turnos
+O primeiro candidato 3aa foi devolvido por auditoria independente. Novo ciclo com correlação conservadora de turnos, reinício explícito e validação PCM está documentado em QA-F1-RESPONSE-20261116/REMEDIATION-CYCLE2.md. Gate ainda pendente.

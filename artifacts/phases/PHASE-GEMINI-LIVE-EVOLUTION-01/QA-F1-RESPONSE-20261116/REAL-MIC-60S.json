@@ -1,0 +1,22 @@
+{
+  "schema": "mcf-f1-physical-browser-60s/v1",
+  "at_utc": "2026-11-17T01:30:40.140Z",
+  "mediaPersisted": false,
+  "sourceAppSha256": "633ee87c96789168827ac3521b3a1d5ee969a8538fa0c8552347bd2457e99df7",
+  "sourceWorkletSha256": "6e5e31176beb66b3a54548e8c00f67f2d87af96dce327b60ba2ba0dffe15fe6a",
+  "capture": {
+    "ok": true,
+    "deviceLabel": "Padrão",
+    "trackActive": true,
+    "inputSampleRate": 48000,
+    "outputSampleRate": 16000,
+    "pcmFrames": 1493,
+    "pcmSamples": 955520,
+    "meanRms": 0.001797,
+    "maxRms": 0.016582,
+    "dropFrames": 0,
+    "deviceIdPersisted": false,
+    "pcmPersisted": false
+  },
+  "status": "PASS"
+}

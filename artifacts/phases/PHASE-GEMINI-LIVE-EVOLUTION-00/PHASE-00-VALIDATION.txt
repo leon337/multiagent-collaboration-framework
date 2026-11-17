@@ -1,0 +1,18 @@
+F0 VALIDATION SUMMARY | 2026-11-16
+PROJECT: MCF-GEMINI-LIVE-EVOLUTION-20261116-001
+ISSUE: https://github.com/leon337/multiagent-collaboration-framework/issues/527
+DRAFT PR: https://github.com/leon337/multiagent-collaboration-framework/pull/528
+LOCAL BASELINE: a33bdf9c4681ace0cb582621801bb6608415692a
+MODEL API metadata: 6/6 returned HTTP 200 with bidiGenerateContent
+LIVE HANDSHAKES: 2.5 Native Audio PASS; 3.8 Live PASS; 3.8 Extended PASS
+REGRESSION VIRTUAL-MEDIA + REAL API: 15 PASS; 0 FAIL
+REAL FUNCTION CALL: get_current_time executed once; response audio/transcript observed
+SYNC TESTS: 9 PASS; 0 FAIL
+SYNC LIVE DRY_RUN: PASS; did not modify checkboxes or issue
+HTTP/FS SECURITY CHECKS: 12 PASS; 3 KNOWN GAPS
+METRICS: setup 982ms and first audio 2863ms at n=1 (exploratory only)
+REAL HARDWARE MEDIA: NOT TESTED IN THIS F0
+SECURITY AUDIT BY EMILY: PENDING (not simulated)
+LEO GATE: PENDING (not simulated)
+PRODUCTION DEPLOY: NOT PERFORMED
+RESULT: ENGINEERING BASELINE VERIFIED; PHASE CLOSEOUT GATE_PENDENTE

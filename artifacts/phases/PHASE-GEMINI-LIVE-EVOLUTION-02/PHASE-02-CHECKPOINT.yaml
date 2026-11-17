@@ -1,0 +1,61 @@
+schema: mcf-phase-checkpoint/v1
+mission_id: MCF-GEMINI-LIVE-EVOLUTION-20261116-001
+phase_id: PHASE-02-MULTIMODAL-INTELLIGENCE
+subphase: F2.1
+state: EM_EXECUCAO_LOCAL
+authority: LEANDRO
+orchestrator: MESTRE
+scope: LOCAL_DEV_ONLY
+authorization: LEANDRO_directed_start_of_F2_in_current_chat
+github_pr: PENDING
+f0_f1_formal_gate: OPEN
+f2_formal_gate: PENDING
+merge_to_main: NOT_AUTHORIZED
+production_deploy: NOT_AUTHORIZED
+results:
+  node_media_policy_tests: 11_PASS
+  browser_consent_tests: 11_PASS
+  real_camera_screen_hardware: NOT_TESTED
+  real_google_visual_ingest: NOT_TESTED
+  consent_before_each_capture: PASS
+  kill_switch: PASS
+  no_auto_reacquire_after_reconnect: PASS
+  max_visual_frame_rate: 1_FPS
+  media_content_persisted: false
+remaining:
+  - F2.1 real user camera/screen acceptance
+  - F2.2 image/video analysis
+  - F2.3 capability and cost router
+  - F2.4 opt-in persistent memory
+  - F2.5 transcription/translation modes
+  - F2.6 audit and gate
+
+f2_2_status: IMPLEMENTED_LOCAL_GATES_PENDING
+f2_3_status: ROUTER_CORE_LOCAL_QUOTAS_COSTS_UNVERIFIED
+f2_2_verified_real_model: gemini-3.5-flash
+f2_2_real_synthetic_image: HTTP_200
+f2_2_real_synthetic_video: HTTP_200_FILES_DELETED
+f2_2_media_cap_bytes: IMAGE_8MiB_VIDEO_24MiB
+f2_2_3_node_unit: 18_PASS
+f2_2_3_browser_ui: 14_PASS
+f0_f1_f2_combined_node: 93_PASS
+f2_3_models_with_generateContent_listed: 37
+f2_3_quota_by_model: NOT_VERIFIED
+f2_3_price_estimate: NOT_IMPLEMENTED
+f2_4_memory: NOT_STARTED
+f2_5_translation: NOT_STARTED
+f2_6_gate: PENDING
+
+f2_2_3_external_audit_original_sha: a1a51d54e215254632dcce7538bc8a34d504a44e
+f2_2_3_external_audit_original_result: RETURN_FOR_CORRECTION
+f2_2_3_remediation: FIVE_FINDINGS_CORRECTED_IN_LOCAL_CANDIDATE
+f2_2_3_postfix_real_google: IMAGE_VIDEO_HTTP_200_DELETE_CONFIRMED
+f2_2_3_final_independent_rereview: PENDING
+
+
+f2_2_3_external_rereview_sha: 7a11ad6ede8fb2ac931839c4167c729c80f89b66
+f2_2_3_external_rereview_result: PASS_WITH_RESERVATIONS
+f2_2_3_external_rereview_high_medium_findings: 0
+f2_2_3_external_rereview_low_findings: 1
+f2_2_3_low_null_finalize_after_rereview: FIXED_AND_TESTED
+f2_2_3_final_sha_external_rereview: NOT_PERFORMED

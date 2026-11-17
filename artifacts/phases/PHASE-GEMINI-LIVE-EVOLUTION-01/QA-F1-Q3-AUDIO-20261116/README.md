@@ -1,0 +1,27 @@
+# Ciclo de QA F1-Q3
+
+Relatorio: F1-Q3-REPORT.md.
+- BROWSER-REAL-API.json: E2E real Google + midia virtual, 17/17.
+- MIC-PHYSICAL-REAL.json: microfone real via AudioWorklet, sem persistencia de voz.
+- UNDERRUN-CLASSIFIER.json: evento de gap real versus pausa entre turnos, 3/3.
+- LATENCY-TURNS.json: benchmark da API real, 19 turnos e 18 respostas com audio, p50/p95 exploratorios e um timeout.
+- Relatorio e source/test hashes versionados; revisoes externas devem ler a evidencia e o SHA exato.
+
+## Capture prolongada do microfone real (60 segundos)
+Teste no mesmo codigo F1-Q3: 1.494 frames x 640 samples = 956.160 amostras a 16kHz (59,76s de PCM) em captura de ~60s, 0 drops no Worklet. Foi utilizado getUserMedia no Chrome com dispositivo padrao real e AudioWorklet FIR; o audio bruto e a transcricao nao foram salvos. JSON MIC-PHYSICAL-60S.json inclui SHA256 do app e do worklet, comparados com a branch. Esta evidência nao comprova eco/barge-in natural, nem qualidade de som nos alto-falantes.
+
+Cycle 2 findings and validation:
+- Q3-REMEDIATION-CYCLE2.md — first external Q3 audit findings, fixes and remaining issues.
+- MIC-PHYSICAL-60S.json — latest Worklet source, ~60s real mic input, no raw audio retained.
+- STALE-WATCHDOG.json — 3/3 adversarial validation of stale mic rejection, frame count and no-auto-retry timeout.
+- BROWSER-REAL-API.json updated to final source: 17/17 PASS.
+The LATENCY-TURNS.json remains historical for previous Q3 source, not a retest on cycle2.
+
+## Q3 cycle3 clock origin
+- Q3-CLOCK-REMEDIATION.md describes clock mismatch and fix.
+- CLOCK-ORIGIN-CHROME.json tests actual getUserMedia -> Worklet -> app -> local fake WebSocket with module delay, no audio retained.
+- BROWSER-REAL-API-FINAL.json is actual Gemini API E2E on updated source.
+- AUDIO-DRAIN-PRIOR-Q3.json proves the playback drain on an earlier Q3 source, not the current capture code.
+- Two independent external Emily-profile Codex reports: EMILY-EXTERNAL-Q3-SHA4E5F331.md and EMILY-EXTERNAL-Q3-CYCLE2.md.
+
+- LEO-PROFILE-GATE-Q3-CLOCK.md — actual external Codex CLI decision RETORNAR_PARA_CORRECAO, thread 01a1e6e0-7292-71b1-8ff2-738d098e268c, reviewed SHA c6f85b083837b297bd1bf04cba0e6582c5861afe; not a native MCF Agent Session.

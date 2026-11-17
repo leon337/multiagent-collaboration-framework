@@ -1,0 +1,54 @@
+{
+  "schema": "mcf-f1-high-fixes-adversarial/v1",
+  "utc": "2026-11-16T22:41:41.065Z",
+  "tests": [
+    {
+      "id": "OUTPUT_CONTROLS_AVAILABLE_AFTER_DISCONNECT",
+      "pass": true,
+      "metrics": {
+        "before": {
+          "stopDisabled": false,
+          "muteDisabled": false,
+          "queued": 1
+        },
+        "after": {
+          "queued": 0,
+          "muteDisabled": true,
+          "stopDisabled": true
+        }
+      }
+    },
+    {
+      "id": "TOKEN_REQUEST_TIMEOUT_AND_BOUNDED_RETRY",
+      "pass": true,
+      "metrics": {
+        "retries": 1,
+        "retryScheduled": true,
+        "connecting": false,
+        "abortCleared": true
+      }
+    },
+    {
+      "id": "WEBSOCKET_SETUP_WATCHDOG_FAILS_CLOSED",
+      "pass": true,
+      "metrics": {
+        "retries": 1,
+        "retryScheduled": true,
+        "connecting": false,
+        "socketCleared": true
+      }
+    },
+    {
+      "id": "RECONNECT_CUMULATIVE_BUDGET_STOPS_FLAPPING",
+      "pass": true,
+      "metrics": {
+        "accepted": 6,
+        "reconnectHistory": 6,
+        "budgetExhausted": true
+      }
+    }
+  ],
+  "noSecretsSaved": true,
+  "pass": 4,
+  "fail": 0
+}
