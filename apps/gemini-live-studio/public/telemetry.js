@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 const items=[],LIMIT=500;
-const accepted=new Set(['connect_attempt','ws_open','setup_complete','first_audio','disconnect','text_sent','tool_call','tokens','browser_error','reconnect_attempt','reconnect_success','audio_underrun','playback_queue_ms','barge_in','input_dropped','vad_start','vad_end','go_away','generation_complete','audio_rx_bytes','reconnect_budget_exhausted','playback_idle_resume','first_playback','response_timeout','response_no_audio']);
+const accepted=new Set(['connect_attempt','ws_open','setup_complete','first_audio','disconnect','text_sent','tool_call','tokens','browser_error','reconnect_attempt','reconnect_success','audio_underrun','playback_queue_ms','barge_in','input_dropped','vad_start','vad_end','go_away','generation_complete','audio_rx_bytes','reconnect_budget_exhausted','playback_idle_resume','first_playback','response_timeout','response_no_audio','response_interrupted','voice_to_audio_proxy']);
 function record(event,fields={}){
  if(!accepted.has(event))return;
  const allowed={};
@@ -20,7 +20,10 @@ function snapshot(){
  const first=events.filter(x=>x.event==='first_audio'&&Number.isFinite(x.latency_ms)).map(x=>x.latency_ms);
  return {schema:'mcf-live-f1-telemetry/v1',scope:'browser-memory-only',events,
   metrics:{setup_latency_ms:{samples:setup.length,p50:pct(setup,.5),p95:pct(setup,.95)},first_audio_latency_ms:{samples:first.length,p50:pct(first,.5),p95:pct(first,.95)},first_playback_latency_ms:(()=>{const vals=events.filter(x=>x.event==='first_playback'&&Number.isFinite(x.latency_ms)).map(x=>x.latency_ms);return {samples:vals.length,p50:pct(vals,.5),p95:pct(vals,.95)};})(),
-   ws_disconnects:events.filter(x=>x.event==='disconnect').length,tool_calls:events.filter(x=>x.event==='tool_call').reduce((n,x)=>n+(x.count||0),0),reconnect_attempts:events.filter(x=>x.event==='reconnect_attempt').length,reconnect_successes:events.filter(x=>x.event==='reconnect_success').length,barge_in_events:events.filter(x=>x.event==='barge_in').length,audio_underruns:events.filter(x=>x.event==='audio_underrun').length,playback_idle_resumes:events.filter(x=>x.event==='playback_idle_resume').length,input_frames_dropped:events.filter(x=>x.event==='input_dropped').reduce((n,x)=>n+(x.count||0),0),go_away_events:events.filter(x=>x.event==='go_away').length,response_timeouts:events.filter(x=>x.event==='response_timeout').length,silent_turns:events.filter(x=>x.event==='response_no_audio').length,audio_bytes_received:events.filter(x=>x.event==='audio_rx_bytes').reduce((sum,x)=>sum+(x.bytes||0),0)},
+   ws_disconnects:events.filter(x=>x.event==='disconnect').length,tool_calls:events.filter(x=>x.event==='tool_call').reduce((n,x)=>n+(x.count||0),0),reconnect_attempts:events.filter(x=>x.event==='reconnect_attempt').length,reconnect_successes:events.filter(x=>x.event==='reconnect_success').length,barge_in_events:events.filter(x=>x.event==='barge_in').length,audio_underruns:events.filter(x=>x.event==='audio_underrun').length,playback_idle_resumes:events.filter(x=>x.event==='playback_idle_resume').length,input_frames_dropped:events.filter(x=>x.event==='input_dropped').reduce((n,x)=>n+(x.count||0),0),go_away_events:events.filter(x=>x.event==='go_away').length,response_timeouts:events.filter(x=>x.event==='response_timeout').length,silent_turns:events.filter(x=>x.event==='response_no_audio').length,
+   response_interrupted:events.filter(x=>x.event==='response_interrupted').length,
+   voice_to_audio_proxy_ms:(()=>{const vals=events.filter(x=>x.event==='voice_to_audio_proxy'&&Number.isFinite(x.latency_ms)).map(x=>x.latency_ms);return {samples:vals.length,p50:pct(vals,.5),p95:pct(vals,.95),scope:'local_energy_end_to_first_provider_audio_NOT_ear'};})(),
+   audio_bytes_received:events.filter(x=>x.event==='audio_rx_bytes').reduce((sum,x)=>sum+(x.bytes||0),0)},
   limitations:['No audio transcript, API key, ephemeral token, raw media, email, IP address or screen content','Cost estimation requires verified provider price and usage classification']};
 }
 window.MCFLiveTelemetry=Object.freeze({record,snapshot});

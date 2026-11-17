@@ -29,6 +29,8 @@ jobs:
           node --check apps/gemini-live-studio/public/capture-worklet.js
           node --check apps/gemini-live-studio/public/telemetry.js
           node --check tests/gemini-live-f1/browser-e2e.cjs
+          node --check tests/gemini-live-f1/response-watchdog-browser.cjs
+          node --check tests/gemini-live-f1/physical-mic-60.cjs
       - name: Enforce no legacy ScriptProcessor and no secrets
         run: |
           python3 - <<'PY'

@@ -62,3 +62,18 @@ test('silent responses and response timeouts are numeric private metadata only',
  const s=t.snapshot();assert.equal(s.metrics.silent_turns,1);assert.equal(s.metrics.response_timeouts,1);
  assert.ok(!JSON.stringify(s).includes('secret'));
 });
+
+
+test('voice response proxy is labeled separately from verified audible latency',()=>{
+ const t=make();
+ for(const ms of [410,850,1200])t.record('voice_to_audio_proxy',{latency_ms:ms,transcript:'PRIVATE'});
+ const m=t.snapshot().metrics.voice_to_audio_proxy_ms;
+ assert.equal(m.samples,3);assert.equal(m.p50,850);assert.equal(m.p95,1200);
+ assert.match(m.scope,/NOT_ear/);
+ assert.ok(!JSON.stringify(t.snapshot()).includes('PRIVATE'));
+});
+test('disconnects before a response have a separate numeric indicator',()=>{
+ const t=make();t.record('response_interrupted',{count:1,token:'SECRET'});
+ assert.equal(t.snapshot().metrics.response_interrupted,1);
+ assert.ok(!JSON.stringify(t.snapshot()).includes('SECRET'));
+});

@@ -9,3 +9,6 @@ Current safeguards:
 - Phase F2 must not be implemented or merged until required gates pass.
 
 On approval, scope F2 to opt-in camera/screen consent and capability inventory first. Keep tool execution, cross-model auto switching, and persistent memory outside MVP; require policy, privacy and cost plans. Do not call existing prototype camera functions equivalent to consent-grade F2 acceptance.
+
+## F1 response watchdog — candidate
+QA-F1-RESPONSE-20261116/REPORT.md includes 10/10 adversarial, 17/17 real API virtual-media E2E, 22/22 offline, ~60s physical mic no Worklet drop. Audible output and 30 speech-end→ear measurements remain unverified; F0.8/F1.6 gates are still pending. Only preparation of F2 is authorized under prior scoped LEO profile gate.

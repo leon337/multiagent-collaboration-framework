@@ -1,15 +1,15 @@
 'use strict';
 // Checks real microphone path via browser AudioWorklet, never sends mic to Gemini or writes PCM.
-const fs=require('node:fs'),crypto=require('node:crypto');
-const puppeteer=require('/home/leo/.npm/_npx/4b4c857f6efdfb61/node_modules/puppeteer');
-const result={schema:'mcf-f1-physical-browser-60s/v1',at_utc:new Date().toISOString(),mediaPersisted:false,sourceAppSha256:crypto.createHash('sha256').update(fs.readFileSync('/home/leo/Projetos/gemini-live-studio-f1/public/app.js')).digest('hex'),sourceWorkletSha256:crypto.createHash('sha256').update(fs.readFileSync('/home/leo/Projetos/gemini-live-studio-f1/public/capture-worklet.js')).digest('hex')};
+const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
+const puppeteer=require(process.env.PUPPETEER_MODULE||'/home/leo/.npm/_npx/4b4c857f6efdfb61/node_modules/puppeteer');
+const result={schema:'mcf-f1-physical-browser-60s/v1',at_utc:new Date().toISOString(),mediaPersisted:false,sourceAppSha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(process.env.F1_SOURCE_ROOT||'/home/leo/Projetos/gemini-live-studio-f1','public/app.js'))).digest('hex'),sourceWorkletSha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(process.env.F1_SOURCE_ROOT||'/home/leo/Projetos/gemini-live-studio-f1','public/capture-worklet.js'))).digest('hex')};
 (async()=>{
  const browser=await puppeteer.launch({headless:true,executablePath:'/usr/bin/google-chrome',
   args:['--no-sandbox','--disable-dev-shm-usage','--use-fake-ui-for-media-stream','--autoplay-policy=no-user-gesture-required']});
  let page;
  try{
   page=await browser.newPage();
-  await page.goto('http://127.0.0.1:18372/',{waitUntil:'networkidle2'});
+  await page.goto((process.env.F1_STUDIO_URL||'http://127.0.0.1:18372/'),{waitUntil:'networkidle2'});
   await page.evaluate(()=>navigator.permissions?.query?.({name:'microphone'}).catch(()=>({state:'unknown'})));
   result.capture=await page.evaluate(async()=>{
    let ctx=null,stream=null,node=null,source=null,gain=null;
@@ -55,7 +55,7 @@ const result={schema:'mcf-f1-physical-browser-60s/v1',at_utc:new Date().toISOStr
  }catch(e){result.status='ERROR';result.error=e.name+': '+e.message.slice(0,120);}
  finally{if(page)await page.close().catch(()=>{});await browser.close();
   fs.mkdirSync('/tmp/mcf-f1-qa',{recursive:true});
-  fs.writeFileSync('/tmp/mcf-f1-qa/physical-mic-60.json',JSON.stringify(result,null,2)+'\n',{mode:0o600});
+  fs.writeFileSync((process.env.F1_PHYSICAL_REPORT||'/tmp/mcf-f1-qa/physical-mic-60.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
   if(result.status!=='PASS')process.exitCode=1;
  }
 })().catch(e=>{console.error(e.name);process.exitCode=2;});

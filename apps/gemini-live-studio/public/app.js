@@ -6,7 +6,7 @@ const MODEL_25='gemini-2.5-flash-native-audio-preview-12-2025';
 const MODEL_38='gemini-3.8-live';
 const MODEL_EXT='gemini-3.8-live-extended-thinking';
 const WS='wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=';
-const state={socket:null,connected:false,connecting:false,wantConnected:false,micStream:null,micCtx:null,micNode:null,micSource:null,cameraStream:null,screenStream:null,frameTimer:null,frameSource:null,audioCtx:null,nextPlay:0,sources:new Set(),muted:false,micRms:0,started:0,timer:null,events:[],transcript:[],tools:0,tokens:0,notes:[],resumeHandle:null,retries:0,pendingMic:false,micGain:null,micActive:false,micGeneration:0,micStarting:false,connectionGeneration:0,connectAbort:null,setupWatchdog:null,reconnectHistory:[],sessionVadAuto:null,micSpeechFrames:0,micSilenceMs:0,preRoll:[],reconnectTimer:null,goAwayTimer:null,goAwayCount:0,playDropCount:0,playUnderruns:0,playbackEpoch:0,playScheduledSamples:0,playFinishedSamples:0,playWarnAt:0,lastRxAudioAt:0,lastAudioLogAt:0,playbackTurnOpen:false,playbackIdleResumes:0,workletDrops:0,staleInputDrops:0,lastMicWarningAt:0,pendingTurnTimeout:null,pendingPromptAudio:false,pendingTurnSeq:0};
+const state={socket:null,connected:false,connecting:false,wantConnected:false,micStream:null,micCtx:null,micNode:null,micSource:null,cameraStream:null,screenStream:null,frameTimer:null,frameSource:null,audioCtx:null,nextPlay:0,sources:new Set(),muted:false,micRms:0,started:0,timer:null,events:[],transcript:[],tools:0,tokens:0,notes:[],resumeHandle:null,retries:0,pendingMic:false,micGain:null,micActive:false,micGeneration:0,micStarting:false,connectionGeneration:0,connectAbort:null,setupWatchdog:null,reconnectHistory:[],sessionVadAuto:null,micSpeechFrames:0,micSilenceMs:0,preRoll:[],reconnectTimer:null,goAwayTimer:null,goAwayCount:0,playDropCount:0,playUnderruns:0,playbackEpoch:0,playScheduledSamples:0,playFinishedSamples:0,playWarnAt:0,lastRxAudioAt:0,lastAudioLogAt:0,playbackTurnOpen:false,playbackIdleResumes:0,workletDrops:0,staleInputDrops:0,lastMicWarningAt:0,pendingTurnTimeout:null,pendingPromptAudio:false,pendingTurnSeq:0,pendingTurnKind:null,pendingTurnStartedAt:null,pendingTurnTimedOut:false,voiceInSpeech:false,voiceSilenceMs:0};
 const ui={model:$('model'),btn:$('connect'),stop:$('disconnect'),mic:$('mic'),camera:$('camera'),screen:$('screen'),mute:$('mute'),msg:$('messages')};
 function toast(text){$('toast').textContent=text;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3600);}
 function log(type,detail){const e={at:new Date().toISOString(),type,detail:String(detail)};state.events.push(e);if(state.events.length>2000)state.events.shift();const div=document.createElement('div');div.className='event';const t=document.createElement('time');t.textContent=new Date(e.at).toLocaleTimeString('pt-BR');const strong=document.createElement('strong');strong.textContent=type;const s=document.createElement('span');s.textContent=e.detail;div.append(t,strong,s);$('events').prepend(div);while($('events').children.length>450)$('events').lastElementChild.remove();}
@@ -126,7 +126,7 @@ async function connect(retry=false){
    if(!current())return;
    clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
    state.socket=null;state.connecting=false;state.connected=false;state.playbackTurnOpen=false;
-   clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;
+   clearPendingTurn('socket_closed');
    clearTimeout(state.goAwayTimer);state.goAwayTimer=null;
    stopMic();stopCamera();stopScreen();setButtons(false);
    if(state.sources.size)log('ÁUDIO','WebSocket encerrado; blocos já recebidos continuarão tocando até o fim.');
@@ -147,6 +147,40 @@ async function connect(retry=false){
   log('ERRO','Falha de autenticação/rede: '+e.message);toast(e.message);
   if(/chave|Cadastre/i.test(e.message))openKey();
  }
+}
+// Turn response monitor: numeric metadata only. Voice end is a local energy proxy,
+// NOT a verified end-of-human-speech or audibly heard measurement.
+function clearPendingTurn(reason='audio'){
+ const wasPending=state.pendingPromptAudio;
+ const kind=state.pendingTurnKind;
+ clearTimeout(state.pendingTurnTimeout);
+ state.pendingTurnTimeout=null;state.pendingPromptAudio=false;
+ state.pendingTurnKind=null;state.pendingTurnStartedAt=null;
+ state.pendingTurnTimedOut=false;
+ if(reason!=='silent'&&$('recoverLastTurn'))$('recoverLastTurn').hidden=true;
+ if(reason==='socket_closed'&&wasPending){
+  f1tel('response_interrupted',{count:1});
+  log('ALERTA','A conexão caiu antes de receber áudio de resposta ('+(kind||'turno')+'). Sem replay automático.');
+ }
+}
+function watchResponse(kind,startedAt=performance.now()){
+ if(!state.connected)return false;
+ // A new voice candidate must not replace an outstanding explicit text turn.
+ if(kind==='voice'&&state.pendingPromptAudio&&state.pendingTurnKind==='text')return false;
+ clearTimeout(state.pendingTurnTimeout);
+ const seq=++state.pendingTurnSeq;
+ state.pendingPromptAudio=true;state.pendingTurnKind=kind;
+ state.pendingTurnStartedAt=startedAt;state.pendingTurnTimedOut=false;
+ if($('recoverLastTurn'))$('recoverLastTurn').hidden=true;
+ state.pendingTurnTimeout=setTimeout(()=>{
+  if(!state.connected||seq!==state.pendingTurnSeq||!state.pendingPromptAudio)return;
+  state.pendingTurnTimeout=null;state.pendingTurnTimedOut=true;
+  f1tel('response_timeout',{count:1});
+  log('ALERTA','Resposta '+(kind==='voice'?'por voz':'de texto')+' atrasada: modelo não enviou áudio após '+(kind==='voice'?20:16)+'s. Nenhuma repetição automática.');
+  if($('recoverLastTurn')){$('recoverLastTurn').hidden=false;$('recoverLastTurn').disabled=false;}
+  toast('Resposta atrasada. Você pode pedir continuação manualmente.');
+ },kind==='voice'?20000:16000);
+ return true;
 }
 function handleMessage(msg){
  if(msg.setupComplete){clearTimeout(state.setupWatchdog);state.setupWatchdog=null;f0tel('setup_complete',{latency_ms:performance.now()-state.f0ConnectAt});if(state.retries)f1tel('reconnect_success',{count:state.retries});state.connecting=false;state.connected=true;state.retries=0;setButtons(true);status('Sessão ao vivo','green');$('orbSub').textContent='Interaja por voz, texto ou imagem';if(!state.started)state.started=Date.now();log('SESSÃO','Configuração aceita · '+ui.model.value);return;}
@@ -169,17 +203,15 @@ function handleMessage(msg){
  if(msg.toolCallCancellation)log('FERRAMENTA','Chamadas canceladas pelo modelo.');
  if(msg.serverContent){
   const content=msg.serverContent;
-  if(content.interrupted){clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;clearPlay();state.playbackTurnOpen=false;f1tel('barge_in',{count:1});log('ÁUDIO','Interrupção confirmada pela API Live; apenas neste caso a fila foi cancelada.');}
+  if(content.interrupted){clearPendingTurn('interrupted');clearPlay();state.playbackTurnOpen=false;f1tel('barge_in',{count:1});log('ÁUDIO','Interrupção confirmada pela API Live; apenas neste caso a fila foi cancelada.');}
   if(content.inputTranscription?.text)bubble('user',content.inputTranscription.text);
   if(content.outputTranscription?.text)bubble('model',content.outputTranscription.text);
   if(!content.interrupted)for(const part of content.modelTurn?.parts||[]){if(part.inlineData?.data&&String(part.inlineData.mimeType||'').startsWith('audio/'))playAudio(part.inlineData.data);if(part.text)bubble('model',part.text);}
   if(content.generationComplete){
-   if(state.pendingPromptAudio){f1tel('response_no_audio',{count:1});log('ALERTA','Turno concluido sem audio detectado.');}
-   clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;
+   if(state.pendingPromptAudio){f1tel('response_no_audio',{count:1});log('ALERTA','Geração encerrada sem áudio; solicite continuação manualmente se necessário.');clearPendingTurn('silent');if($('recoverLastTurn')){$('recoverLastTurn').hidden=false;$('recoverLastTurn').disabled=false;}}
    state.playbackTurnOpen=false;f1tel('generation_complete',{count:1});log('SESSÃO','Geração de áudio concluída.');}
    if(content.turnComplete){
-    if(state.pendingPromptAudio){f1tel('response_no_audio',{count:1});log('ALERTA','Turno finalizado sem audio detectado.');}
-    clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;
+    if(state.pendingPromptAudio){f1tel('response_no_audio',{count:1});log('ALERTA','Turno finalizado sem áudio; continuação manual disponível.');clearPendingTurn('silent');if($('recoverLastTurn')){$('recoverLastTurn').hidden=false;$('recoverLastTurn').disabled=false;}}
     state.playbackTurnOpen=false;log('SESSÃO','Turno concluído.');
    }
  }
@@ -202,14 +234,20 @@ function prepareAudioOutput(){
  }catch(e){log('ERRO','Saída de som: '+e.message);return null;}
 }
 function playAudio(base64){
- if(state.pendingPromptAudio){state.pendingPromptAudio=false;clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;}
- if(state.muted)return;
- const firstPromptAt=state.f0LastPromptAt;
- if(firstPromptAt){f0tel('first_audio',{latency_ms:performance.now()-firstPromptAt});state.f0LastPromptAt=null;}
  try{
-  const ctx=prepareAudioOutput();if(!ctx)return;
   const raw=base64ToBytes(base64),frames=Math.floor(raw.byteLength/2);
   if(frames<1)return;
+  if(state.pendingPromptAudio){
+   // Speech-end proxy only, not an acoustic mouth-to-ear measurement.
+   if(state.pendingTurnKind==='voice'&&Number.isFinite(state.pendingTurnStartedAt))
+    f1tel('voice_to_audio_proxy',{latency_ms:Math.max(0,performance.now()-state.pendingTurnStartedAt)});
+   clearPendingTurn('audio');
+  }
+  // Muting does not mean the provider failed to deliver audio.
+  if(state.muted){f1tel('audio_rx_bytes',{bytes:raw.byteLength});return;}
+  const firstPromptAt=state.f0LastPromptAt;
+  if(firstPromptAt){f0tel('first_audio',{latency_ms:performance.now()-firstPromptAt});state.f0LastPromptAt=null;}
+  const ctx=prepareAudioOutput();if(!ctx)return;
   const buffer=ctx.createBuffer(1,frames,24000),dst=buffer.getChannelData(0);
   const dv=new DataView(raw.buffer,raw.byteOffset,raw.byteLength);
   for(let i=0;i<frames;i++)dst[i]=dv.getInt16(i*2,true)/32768;
@@ -280,6 +318,15 @@ function processAudioFrame(frame){
  }
  const rms=Number(frame.rms||0),duration=Number(frame.samples||640)/16000*1000;
  state.micRms=rms;
+ if(rms>=0.027&&state.sources.size===0){
+  state.voiceInSpeech=true;state.voiceSilenceMs=0;
+ }else if(rms<0.014&&state.voiceInSpeech&&state.sources.size===0){
+  state.voiceSilenceMs+=duration;
+  if(state.voiceSilenceMs>=760){
+   state.voiceInSpeech=false;state.voiceSilenceMs=0;
+   if(state.sessionVadAuto!==false)watchResponse('voice');
+  }
+ }
  // Default: wait for the provider's authoritative interrupted signal.
  // Local rapid barge-in is opt-in only (echo from laptop speakers can mimic speech).
  if(rms>=0.027){
@@ -308,7 +355,9 @@ function processAudioFrame(frame){
   state.micSilenceMs=rms<0.014?state.micSilenceMs+duration:0;
   if(state.micSilenceMs>=Number($('silence').value)){
    if(send({realtimeInput:{activityEnd:{}}})){
-    state.manualVadStarted=false;state.micSilenceMs=0;state.micSpeechFrames=0;f1tel('vad_end',{count:1});
+    state.manualVadStarted=false;state.micSilenceMs=0;state.micSpeechFrames=0;
+    state.voiceInSpeech=false;state.voiceSilenceMs=0;
+    f1tel('vad_end',{count:1});watchResponse('voice');
    }
   }
  }
@@ -337,7 +386,7 @@ async function startMic(){
   if(stale())return;
   // Commit all resources atomically only after asynchronous setup is successful.
   state.micStream=stream;state.micCtx=ctx;state.micSource=source;state.micNode=proc;state.micGain=gain;
-  state.micRms=0;state.micSpeechFrames=0;state.micActive=false;
+  state.micRms=0;state.micSpeechFrames=0;state.micActive=false;state.voiceInSpeech=false;state.voiceSilenceMs=0;
   state.manualVadStarted=false;state.micSilenceMs=0;state.preRoll=[];
   proc.port.onmessage=e=>{
    if(e.data?.type!=='pcm')return;
@@ -363,7 +412,9 @@ async function startMic(){
 function stopMic(){
  state.micGeneration++;state.micStarting=false;
  if(state.micStream&&state.connected){
-  send({realtimeInput:state.sessionVadAuto!==false?{audioStreamEnd:true}:{activityEnd:{}}});
+  const hadSpeech=state.voiceInSpeech||state.manualVadStarted||state.micSpeechFrames>=3;
+  if(send({realtimeInput:state.sessionVadAuto!==false?{audioStreamEnd:true}:{activityEnd:{}}})&&hadSpeech&&state.wantConnected)
+   watchResponse('voice');
  }
  if(state.micNode){
   state.micNode.port.onmessage=null;
@@ -376,7 +427,7 @@ function stopMic(){
  state.micCtx?.close().catch(()=>{});
  state.micStream=null;state.micNode=null;state.micSource=null;state.micGain=null;state.micCtx=null;
  state.micRms=0;state.micActive=false;state.manualVadStarted=false;state.preRoll=[];
- state.micSpeechFrames=0;state.micSilenceMs=0;updateStreamMetrics();
+ state.micSpeechFrames=0;state.micSilenceMs=0;state.voiceInSpeech=false;state.voiceSilenceMs=0;updateStreamMetrics();
 }
 const frameCanvas=document.createElement('canvas');frameCanvas.width=640;frameCanvas.height=360;const frameCtx=frameCanvas.getContext('2d');
 function videoFrame(){if(!state.connected||!state.frameSource||state.frameSource.readyState<2)return;try{frameCtx.drawImage(state.frameSource,0,0,640,360);const jpg=frameCanvas.toDataURL('image/jpeg',.62).split(',')[1];send({realtimeInput:{video:{mimeType:'image/jpeg',data:jpg}}});}catch(e){log('ERRO','Frame: '+e.message);}}
@@ -389,7 +440,7 @@ function disconnect(){
  state.wantConnected=false;state.connectionGeneration++;state.connectAbort?.abort();state.connectAbort=null;clearTimeout(state.reconnectTimer);clearTimeout(state.goAwayTimer);
  state.reconnectTimer=null;state.goAwayTimer=null;
  clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
- clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;
+ clearPendingTurn('disconnect');
  stopMic();stopCamera();stopScreen();clearPlay();
  state.connected=false;state.connecting=false;state.resumeHandle=null;state.started=0;
  state.socket?.close(1000,'Encerrado pelo usuário');state.socket=null;
@@ -405,21 +456,16 @@ function sendPrompt(text){
  // New user turn resets audio-gap classification even if prior model skipped turnComplete.
  state.playbackTurnOpen=false;
  state.f0LastPromptAt=performance.now();f0tel('text_sent',{bytes:clean.length});
- state.pendingPromptAudio=true;
- const seq=++state.pendingTurnSeq;
- clearTimeout(state.pendingTurnTimeout);
- state.pendingTurnTimeout=setTimeout(()=>{
-  if(state.connected&&state.pendingTurnSeq===seq&&state.pendingPromptAudio){
-   f1tel('response_timeout',{count:1});
-   log('ALERTA','Sem áudio de resposta em 16s; conexão ativa. Não foi enviado retry automático.');
-   toast('Resposta atrasada. Tente novamente ou altere o modelo.');
-  }
-  state.pendingTurnTimeout=null;
- },16000);
+ watchResponse('text');
  bubble('user',clean);$('prompt').value='';log('TEXTO','Mensagem enviada ('+clean.length+' caracteres)');
 }
 $('uploadImage').onclick=()=>$('imageFile').click();
 $('imageFile').onchange=async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;if(!state.connected)return toast('Inicie uma sessão primeiro.');if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>12*1024*1024)return toast('Escolha uma imagem PNG, JPEG ou WebP de até 12 MB.');try{const blobURL=URL.createObjectURL(f);const img=new Image();await new Promise((ok,fail)=>{img.onload=ok;img.onerror=fail;img.src=blobURL;});URL.revokeObjectURL(blobURL);const scale=Math.min(1,1024/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);const data=c.toDataURL('image/jpeg',.77).split(',')[1];const prompt='Analise esta imagem enviada pelo usuário.';if(send({clientContent:{turns:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data}},{text:prompt}]}],turnComplete:true}})){bubble('user','[Imagem: '+f.name+'] '+prompt);log('IMAGEM','Arquivo enviado: '+f.name+' ('+c.width+'x'+c.height+')');}else toast('Falha ao enviar imagem.');}catch(err){toast('Não foi possível ler a imagem.');log('ERRO',err.message);}};
+$('recoverLastTurn').onclick=()=>{
+ if(!state.connected)return toast('Reconecte para solicitar continuação.');
+ if(!confirm('Uma resposta antiga ainda pode chegar. Solicitar continuação como NOVO turno, sem repetir automaticamente?'))return;
+ sendPrompt('A resposta anterior não chegou por voz. Se tiver contexto, conclua a resposta; caso contrário, peça para eu repetir a pergunta.');
+};
 $('send').onclick=()=>sendPrompt($('prompt').value);$('prompt').onkeydown=e=>{if(e.key==='Enter')sendPrompt(e.target.value);};document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>{document.querySelector('[data-view="live"]').click();sendPrompt(b.dataset.prompt);});
 $('clearChat').onclick=()=>{ui.msg.replaceChildren();state.transcript=[];log('UI','Histórico visual limpo.');};
 $('clearEvents').onclick=()=>{$('events').replaceChildren();state.events=[];};

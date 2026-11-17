@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-17T01:34:18.442Z",
+  "origin": "http://127.0.0.1:18373/",
+  "virtual_media": true,
+  "real_api": true,
+  "cases": [
+    {
+      "id": "BROWSER_WORKLET_CAPABILITY",
+      "result": "PASS",
+      "detail": "AudioWorkletNode=true"
+    },
+    {
+      "id": "F1_DASHBOARD_RENDERED",
+      "result": "PASS",
+      "detail": "F1 diagnostics in UI"
+    },
+    {
+      "id": "MANUAL_VAD_START_END",
+      "result": "PASS",
+      "detail": "{\"started\":1,\"ended\":1,\"pcm\":22,\"after\":false}"
+    },
+    {
+      "id": "MANUAL_VAD_PREROLL_AND_PCM",
+      "result": "PASS",
+      "detail": "PCM frames=22"
+    },
+    {
+      "id": "INTERRUPTION_CLEARS_PLAYBACK",
+      "result": "PASS",
+      "detail": "{\"stops\":1,\"empty\":true,\"nextPlay\":0}"
+    },
+    {
+      "id": "BACKPRESSURE_DROPS_FRAMES",
+      "result": "PASS",
+      "detail": "{\"sent\":false,\"writes\":0,\"metrics\":1}"
+    },
+    {
+      "id": "PLAYBACK_BURST_SCHEDULED_WITHOUT_TRUNCATION",
+      "result": "PASS",
+      "detail": "{\"drops\":0,\"queueSec\":5.12,\"cleared\":true}"
+    },
+    {
+      "id": "GENERATION_COMPLETE_SIGNAL",
+      "result": "PASS",
+      "detail": "counted without replay"
+    },
+    {
+      "id": "LIVE_SETUP_REAL",
+      "result": "PASS",
+      "detail": "setupComplete"
+    },
+    {
+      "id": "WORKLET_AUDIO_SENT_REAL",
+      "result": "PASS",
+      "detail": "{\"frames\":38,\"bytes\":48678,\"worklet\":true,\"sampleRate\":48000,\"streamLive\":true}"
+    },
+    {
+      "id": "WORKLET_STOP_CLEAN",
+      "result": "PASS",
+      "detail": "no dangling input stream or context"
+    },
+    {
+      "id": "WEBSOCKET_RECONNECT_REAL",
+      "result": "PASS",
+      "detail": "reconnected to Google Live API"
+    },
+    {
+      "id": "NO_DUPLICATE_USER_TURNS_AFTER_RECONNECT",
+      "result": "PASS",
+      "detail": "user turns before/after=1/1"
+    },
+    {
+      "id": "RESUMPTION_HANDLE_PRESENT",
+      "result": "PASS",
+      "detail": "handle available; context preservation not independently attested"
+    },
+    {
+      "id": "GOAWAY_SIGNAL_RECOGNIZED",
+      "result": "PASS",
+      "detail": "event counted, no raw token logged"
+    },
+    {
+      "id": "FINAL_RESOURCE_CLEANUP",
+      "result": "PASS",
+      "detail": "no active media or retry"
+    },
+    {
+      "id": "NO_JS_RUNTIME_ERRORS",
+      "result": "PASS",
+      "detail": "pageErrors=0"
+    }
+  ],
+  "observed": {
+    "handle_available": true,
+    "resume_handle_at_close": true
+  },
+  "errors": [],
+  "source_sha256": {
+    "server.js": "34795d5098f7cce63779d39317455b38968f860b26057f82ae31b66872566a1b",
+    "public/app.js": "ed7f841238b4e6ebe29985cd7a871347a51d242dd5a346a70de7337ab789c493",
+    "public/index.html": "0011ac0145d361b5ad6018ffce7fb69841840e8a3d3c5c25c9c93f60be4c2b9e",
+    "public/telemetry.js": "87c5348e1fbbf1718e941f3576dbbb5a181d44a79ca8e7cfe27ef5170cf7f176",
+    "public/capture-worklet.js": "6e5e31176beb66b3a54548e8c00f67f2d87af96dce327b60ba2ba0dffe15fe6a"
+  },
+  "test_script_sha256": "66f26e3abae23282ab046b4b8a28507491b47b31c5ffc243e48295af525529be",
+  "passed": 17,
+  "failed": 0
+}

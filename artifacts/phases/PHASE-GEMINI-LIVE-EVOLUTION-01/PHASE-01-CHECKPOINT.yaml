@@ -25,6 +25,15 @@ staging:
   original_url: http://127.0.0.1:18371
   credential: EXISTING_LOCAL_FILE_REFERENCED_NOT_COPIED
 evidence:
+  voice_response_timeout_warning: PASS_NOTIFY_ONLY
+  voice_response_manual_recovery: PASS_HUMAN_CONFIRMED_NO_AUTORETRY
+  voice_response_browser_adversarial: 10_PASS
+  voice_response_real_google_e2e: 17_PASS
+  voice_response_node_offline: 22_PASS
+  voice_response_mic_60s_frames: 1493
+  voice_response_mic_60s_drops: 0
+  voice_response_physical_mouth_to_ear_p95: NOT_MEASURED
+  voice_response_f0_8_gate: PENDING
   q3_cycle3_clock_origin_fix: PASS_DELAYED_MODULE_INTEGRATION
   q3_cycle3_node_offline_pass: 20
   q3_cycle3_real_google_e2e_pass: 17

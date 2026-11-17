@@ -83,3 +83,6 @@ The external Codex CLI Emily-profile reviewer at ae9f76a found a P1 clock-domain
 ## Independent external LÉO-profile gate on Q3 clock-origin candidate
 At LEANDRO's request, a separate read-only Codex CLI under the normative docs/agentes/LEO.md profile reviewed SHA c6f85b083837b297bd1bf04cba0e6582c5861afe. Codex thread 01a1e6e0-7292-71b1-8ff2-738d098e268c, explicit decision **RETORNAR_PARA_CORRECAO**. This is a real external profile-based executor receipt, but NOT a native authenticated MCF Agent Session.
 Evidence and justification: QA-F1-Q3-AUDIO-20261116/LEO-PROFILE-GATE-Q3-CLOCK.md. F0.8 and public production key rotation remain open; this QA does not authorize merge/deploy. It does not claim 30 physical speech mouth-to-ear latency measurements or spontaneous barge-in evidence. F2 work remains planning-only unless all prerequisite gates formally approve.
+
+## Evidência suplementar F1 — turnos de voz
+QA-F1-RESPONSE-20261116/REPORT.md contém a correção para monitor de voz, recuperação exclusivamente manual, testes com API real/virtual e mic físico sem PCM salvo. O gate formal não foi emitido neste SHA e a latência física de 30 amostras não foi reivindicada.

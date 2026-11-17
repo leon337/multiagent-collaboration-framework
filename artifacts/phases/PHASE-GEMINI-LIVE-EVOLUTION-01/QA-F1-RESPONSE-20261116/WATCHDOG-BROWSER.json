@@ -1,0 +1,102 @@
+{
+  "schema": "mcf-f1-response-watchdog-browser-v1",
+  "utc": "2026-11-17T01:31:58.890Z",
+  "url": "http://127.0.0.1:18373",
+  "sourceSha256": {
+    "public/app.js": "ed7f841238b4e6ebe29985cd7a871347a51d242dd5a346a70de7337ab789c493",
+    "public/index.html": "0011ac0145d361b5ad6018ffce7fb69841840e8a3d3c5c25c9c93f60be4c2b9e",
+    "public/telemetry.js": "87c5348e1fbbf1718e941f3576dbbb5a181d44a79ca8e7cfe27ef5170cf7f176"
+  },
+  "results": [
+    {
+      "id": "MANUAL_RECOVERY_BUTTON_AVAILABLE",
+      "pass": true,
+      "observed": {}
+    },
+    {
+      "id": "VOICE_AUTO_SILENCE_ARMS_WATCHDOG",
+      "pass": true,
+      "observed": {
+        "pending": true,
+        "kind": "voice",
+        "writes": 24
+      }
+    },
+    {
+      "id": "MODEL_AUDIO_DISARMS_VOICE_AND_RECORDS_PROXY",
+      "pass": true,
+      "observed": {
+        "pending": false,
+        "voiceProxyRecorded": 1,
+        "speechEndWasFinite": true
+      }
+    },
+    {
+      "id": "INVALID_PROVIDER_AUDIO_KEEPS_WATCHDOG_ACTIVE",
+      "pass": true,
+      "observed": {
+        "pending": true
+      }
+    },
+    {
+      "id": "VOICE_TIMEOUT_WARNING_NO_AUTOMATIC_REPLAY",
+      "pass": true,
+      "observed": {
+        "timeouts": 1,
+        "writes": 0,
+        "pending": true,
+        "recoveryShown": true
+      }
+    },
+    {
+      "id": "SILENT_TERMINAL_NO_DOUBLE_COUNT_AND_MANUAL_RECOVERY",
+      "pass": true,
+      "observed": {
+        "afterPending": false,
+        "silentTurns": 1,
+        "recoveryShown": true
+      }
+    },
+    {
+      "id": "MANUAL_RECOVERY_NEEDS_EXPLICIT_CONFIRM_AND_ONE_SEND",
+      "pass": true,
+      "observed": {
+        "rejected": true,
+        "accepted": {
+          "writes": 1,
+          "kind": "text",
+          "buttonHidden": true
+        }
+      }
+    },
+    {
+      "id": "DISCONNECT_CANCELS_PENDING_WITHOUT_REPLAY",
+      "pass": true,
+      "observed": {
+        "disconnected": false,
+        "after": 1,
+        "stillPending": false
+      }
+    },
+    {
+      "id": "EXPLICIT_DISCONNECT_CANNOT_ARM_NEW_VOICE_WATCHDOG",
+      "pass": true,
+      "observed": {
+        "pending": false,
+        "micStopped": true
+      }
+    },
+    {
+      "id": "NO_UNCAUGHT_BROWSER_ERRORS",
+      "pass": true,
+      "observed": {
+        "errors": []
+      }
+    }
+  ],
+  "realProvider": false,
+  "realSpeaker": false,
+  "mediaPersisted": false,
+  "pass": 10,
+  "fail": 0
+}
