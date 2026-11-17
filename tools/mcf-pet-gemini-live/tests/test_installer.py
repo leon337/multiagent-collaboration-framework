@@ -93,6 +93,24 @@ class Fake:
         self.assertNotIn('approve_execution',patched)
         self.assertEqual(installer.patch_proposal_routes(patched),patched)
 
+    def test_mission_bridge_is_only_an_authenticated_draft_handoff(self):
+        from unittest.mock import patch
+        dummy='''import pet_proposals as pet_drafts
+class Fake:
+    def do_POST(self):
+        path = urlparse(self.path).path
+        if path in {"/api/pet-voice/proposals/list",
+                    "/api/pet-voice/proposals/review"}:
+            pass
+'''
+        patched=installer.patch_mission_bridge_routes(dummy)
+        self.assertIn("import pet_mission_bridge as pet_missions",patched)
+        self.assertIn("/api/pet-voice/mission-bridge/export",patched)
+        self.assertIn("pet_voice.authorize(self.headers)",patched)
+        self.assertIn("pet_missions.export_reviewed_proposal",patched)
+        self.assertNotIn("mission.execute",patched)
+        self.assertEqual(installer.patch_mission_bridge_routes(patched),patched)
+
     def test_three_ticket_scopes_are_not_legacy_deployment_regression(self):
         old='if scope not in ("conversation","read_only"):'
         once=installer.patch_proposal_ticket_scope(old)

@@ -34,7 +34,8 @@
   async function request(endpoint,data){
     const auth=window.McfPetAuth;
     if(typeof auth?.request!=="function")throw Error("Sessão do painel indisponível.");
-    const response=await auth.request("proposals/"+endpoint,{
+    const path=endpoint.startsWith("mission-bridge/")?endpoint:"proposals/"+endpoint;
+    const response=await auth.request(path,{
       method:"POST",cache:"no-store",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(data)
@@ -126,6 +127,33 @@
       entry.append(label("p","pet-proposal-meta",
         "Revisão registrada em "+proposal.reviewed_at+
         (proposal.review_note?" · Nota: "+proposal.review_note:"")));
+      if(proposal.status==="reviewed_for_planning"){
+        const handoffButton=label("button","pet-proposal-handoff",
+          "Preparar rascunho de missão MCF");
+        handoffButton.type="button";
+        handoffButton.addEventListener("click",async()=>{
+          if(!window.confirm("Preparar um CONTRATO LOCAL para envio futuro ao MCF? "+
+              "Não cria missão no runtime e NÃO autoriza execução."))return;
+          handoffButton.disabled=true;
+          try{
+            const result=await request("mission-bridge/export",{
+              proposal_id:proposal.id,expected_version:proposal.version
+            });
+            const handoff=result.handoff||{};
+            const receipt=label("p","pet-proposal-guard",
+              "Rascunho local "+String(handoff.handoff_id||"").slice(0,32)+
+              ". Contrato local com contexto incompleto (methodologyPin "+
+              "e alignedPipRef devem ser verificados). "+
+              "Aguardando autenticação humana e gates do MCF. "+
+              "Nenhuma missão foi criada no runtime.");
+            entry.append(receipt);
+            notice("Contrato local preparado. Não enviado ao MissionRuntime.");
+          }catch(e){
+            notice("Exportação local recusada: "+e.message,true);
+          }finally{handoffButton.disabled=false}
+        });
+        entry.append(handoffButton);
+      }
     }
     return entry;
   }
@@ -152,6 +180,25 @@
       return [];
     }finally{more.disabled=false}
   }
+  const observeButton=label("button","pet-proposal-handoff",
+    "Verificar missão canônica");
+  observeButton.type="button";
+  observeButton.addEventListener("click",async()=>{
+    try{
+      const r=await request("mission-bridge/status",{});
+      const observation=r.snapshot||{};
+      if(observation.ready===true && observation.canonical===true){
+        notice("Missão canônica: "+String(observation.mission?.title||"").slice(0,130)+
+          " · "+String(observation.mission?.state||"")+
+          ". Fonte: MCF MissionRuntime.");
+      }else{
+        notice("Leitura canônica indisponível: "+
+          String(observation.status||"UNKNOWN")+
+          ". Não significa ausência de missões.",true);
+      }
+    }catch(e){notice("Falha ao verificar runtime: "+e.message,true)}
+  });
+  root.append(observeButton);
   refreshButton.addEventListener("click",()=>refresh(false));
   window.McfPetProposals=Object.freeze({refresh});
   refresh();

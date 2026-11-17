@@ -54,3 +54,8 @@
  .pet-proposal-card{margin:0 0 12px}
  .pet-proposal-actions button{flex:1}
 }
+
+.pet-proposal-handoff{margin:9px 0 4px;padding:8px 11px;background:#303d4d;
+ color:#e7d2a4;border:1px solid #9d8657;border-radius:8px;font-size:11px;
+ cursor:pointer}
+.pet-proposal-handoff:disabled{opacity:.5;cursor:default}
