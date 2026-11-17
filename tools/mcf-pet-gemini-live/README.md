@@ -231,3 +231,32 @@ page stays muted. No additional audio PCM is transmitted without opt-in.
   Earlier pending drafts remain available via Carregar mais propostas.
 - Priority validation checks the Python type before enum membership; malformed
   arrays/maps from Gemini cannot raise an uncaught TypeError in the tool turn.
+
+## SCOPED_WRITE LAB: disabled until canonical authorization
+
+Experimental reversible adapter in backend/pet_scoped_write.py. No general
+shell or arbitrary file operations: only workspace.note.create and
+workspace.note.rollback in the private MCF Pet workspace, and a bounded
+browser.tabs.read using the existing MESTRE Playwright MCP adapter.
+
+The Pet HTTP API exposes ONLY scoped-write/preview, authenticated by the
+existing per-tab HttpOnly cookie, CSRF and Origin checks. This preview
+returns a size/digest/resource but never creates a file. The Gemini Live
+session declares no SCOPED_WRITE executor tool.
+
+Execution requires an injectable, trusted canonical MCF PermissionEngine
+verifier with matching mission, resource, operation, future expiry,
+reversible-only scope and LEO gate. It is not connected: without verifier
+the backend fails closed with PERMISSION_ENGINE_NOT_CONNECTED. Model JSON,
+voice claims and checkbox opt-in never count as permission. A proposal
+review alone cannot be a HUMAN_GATE.
+
+The lab adapter is versioned in context/capabilities as BOUNDED_WRITE,
+NOT_AUTHORIZED, DISCONNECTED, INACTIVE. This does not activate the
+canonical Capability Registry until the source is configured and verified.
+
+In isolated tests, synthetic grants produce private 0600 notes and SQLite
+receipts, idempotency and rollback with SHA256 and a temporary tombstone;
+path traversal, out-of-band edits and expired/wrong grants are rejected.
+No real host-wide write, service restart, browser click or deploy is
+authorized by this package.

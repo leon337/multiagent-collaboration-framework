@@ -1,0 +1,11 @@
+# Checklist
+- [x] Consultar DEC-052, DEC-055 e PermissionEngine.
+- [x] Implementar adapter limitado, receipts, rollback e idempotencia.
+- [x] Testar validacao de escopo, symlink, falha e expiração.
+- [x] Reusar Playwright somente para leitura com gate verificado.
+- [x] Expor API somente de simulacao, autenticada no Pet.
+- [x] Registrar capacidade como desconectada e desautorizada.
+- [ ] Conectar o PermissionEngine real de uma missao autenticada.
+- [ ] Validar gate LEO/HDF, E2E de execucao reversivel real e auditoria.
+- [ ] Revisao independente, CI e merge.
+- [x] E2E do dry-run em HTTP, CSRF, path e ausência de escrita.
