@@ -38,3 +38,17 @@ test('buffer bounded and statistics report sample sizes',()=>{
  assert.equal(s.metrics.setup_latency_ms.samples,500);
  assert.ok(Number.isInteger(s.metrics.setup_latency_ms.p50));
 });
+
+test('playback p50/p95 is scheduled playback latency, separate from receive latency',()=>{
+ const t=make();
+ for(const n of [200,300,400,500,600])t.record('first_playback',{latency_ms:n});
+ t.record('first_audio',{latency_ms:140});
+ const m=t.snapshot().metrics;
+ assert.deepEqual(JSON.parse(JSON.stringify(m.first_playback_latency_ms)),{samples:5,p50:400,p95:600});
+ assert.equal(m.first_audio_latency_ms.p50,140);
+});
+test('normal idle intervals do not inflate within-generation underrun counts',()=>{
+ const t=make();t.record('audio_underrun',{count:1,elapsed_ms:200});
+ for(let i=0;i<9;i++)t.record('playback_idle_resume',{elapsed_ms:1500});
+ const m=t.snapshot().metrics;assert.equal(m.audio_underruns,1);assert.equal(m.playback_idle_resumes,9);
+});

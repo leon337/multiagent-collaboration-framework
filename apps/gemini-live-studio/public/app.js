@@ -6,7 +6,7 @@ const MODEL_25='gemini-2.5-flash-native-audio-preview-12-2025';
 const MODEL_38='gemini-3.8-live';
 const MODEL_EXT='gemini-3.8-live-extended-thinking';
 const WS='wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=';
-const state={socket:null,connected:false,connecting:false,wantConnected:false,micStream:null,micCtx:null,micNode:null,micSource:null,cameraStream:null,screenStream:null,frameTimer:null,frameSource:null,audioCtx:null,nextPlay:0,sources:new Set(),muted:false,micRms:0,started:0,timer:null,events:[],transcript:[],tools:0,tokens:0,notes:[],resumeHandle:null,retries:0,pendingMic:false,micGain:null,micActive:false,micGeneration:0,micStarting:false,connectionGeneration:0,connectAbort:null,setupWatchdog:null,reconnectHistory:[],sessionVadAuto:null,micSpeechFrames:0,micSilenceMs:0,preRoll:[],reconnectTimer:null,goAwayTimer:null,goAwayCount:0,playDropCount:0,playUnderruns:0,playbackEpoch:0,playScheduledSamples:0,playFinishedSamples:0,playWarnAt:0,lastRxAudioAt:0,lastAudioLogAt:0};
+const state={socket:null,connected:false,connecting:false,wantConnected:false,micStream:null,micCtx:null,micNode:null,micSource:null,cameraStream:null,screenStream:null,frameTimer:null,frameSource:null,audioCtx:null,nextPlay:0,sources:new Set(),muted:false,micRms:0,started:0,timer:null,events:[],transcript:[],tools:0,tokens:0,notes:[],resumeHandle:null,retries:0,pendingMic:false,micGain:null,micActive:false,micGeneration:0,micStarting:false,connectionGeneration:0,connectAbort:null,setupWatchdog:null,reconnectHistory:[],sessionVadAuto:null,micSpeechFrames:0,micSilenceMs:0,preRoll:[],reconnectTimer:null,goAwayTimer:null,goAwayCount:0,playDropCount:0,playUnderruns:0,playbackEpoch:0,playScheduledSamples:0,playFinishedSamples:0,playWarnAt:0,lastRxAudioAt:0,lastAudioLogAt:0,playbackTurnOpen:false,playbackIdleResumes:0,workletDrops:0};
 const ui={model:$('model'),btn:$('connect'),stop:$('disconnect'),mic:$('mic'),camera:$('camera'),screen:$('screen'),mute:$('mute'),msg:$('messages')};
 function toast(text){$('toast').textContent=text;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3600);}
 function log(type,detail){const e={at:new Date().toISOString(),type,detail:String(detail)};state.events.push(e);if(state.events.length>2000)state.events.shift();const div=document.createElement('div');div.className='event';const t=document.createElement('time');t.textContent=new Date(e.at).toLocaleTimeString('pt-BR');const strong=document.createElement('strong');strong.textContent=type;const s=document.createElement('span');s.textContent=e.detail;div.append(t,strong,s);$('events').prepend(div);while($('events').children.length>450)$('events').lastElementChild.remove();}
@@ -168,12 +168,12 @@ function handleMessage(msg){
  if(msg.toolCallCancellation)log('FERRAMENTA','Chamadas canceladas pelo modelo.');
  if(msg.serverContent){
   const content=msg.serverContent;
-  if(content.interrupted){clearPlay();f1tel('barge_in',{count:1});log('ÁUDIO','Interrupção confirmada pela API Live; apenas neste caso a fila foi cancelada.');}
+  if(content.interrupted){clearPlay();state.playbackTurnOpen=false;f1tel('barge_in',{count:1});log('ÁUDIO','Interrupção confirmada pela API Live; apenas neste caso a fila foi cancelada.');}
   if(content.inputTranscription?.text)bubble('user',content.inputTranscription.text);
   if(content.outputTranscription?.text)bubble('model',content.outputTranscription.text);
   if(!content.interrupted)for(const part of content.modelTurn?.parts||[]){if(part.inlineData?.data&&String(part.inlineData.mimeType||'').startsWith('audio/'))playAudio(part.inlineData.data);if(part.text)bubble('model',part.text);}
-  if(content.generationComplete){f1tel('generation_complete',{count:1});log('SESSÃO','Geração de áudio concluída.');}
-   if(content.turnComplete)log('SESSÃO','Turno concluído.');
+  if(content.generationComplete){state.playbackTurnOpen=false;f1tel('generation_complete',{count:1});log('SESSÃO','Geração de áudio concluída.');}
+   if(content.turnComplete){state.playbackTurnOpen=false;log('SESSÃO','Turno concluído.');}
  }
  if(msg.error)log('ERRO',JSON.stringify(msg.error));
 }
@@ -194,8 +194,9 @@ function prepareAudioOutput(){
  }catch(e){log('ERRO','Saída de som: '+e.message);return null;}
 }
 function playAudio(base64){
- if(state.f0LastPromptAt){f0tel('first_audio',{latency_ms:performance.now()-state.f0LastPromptAt});state.f0LastPromptAt=null;}
  if(state.muted)return;
+ const firstPromptAt=state.f0LastPromptAt;
+ if(firstPromptAt){f0tel('first_audio',{latency_ms:performance.now()-firstPromptAt});state.f0LastPromptAt=null;}
  try{
   const ctx=prepareAudioOutput();if(!ctx)return;
   const raw=base64ToBytes(base64),frames=Math.floor(raw.byteLength/2);
@@ -210,12 +211,19 @@ function playAudio(base64){
   // Preserve exactly one monotonic timeline across all model chunks, including bursts
   // that deliver several seconds of future PCM before those seconds are played.
   if(!state.nextPlay||state.nextPlay<=now){
-   if(state.nextPlay&&state.nextPlay<now-.03){state.playUnderruns++;f1tel('audio_underrun',{count:1});}
-   state.nextPlay=now+.12; // initial anti-jitter buffer, only after idle
+   // An idle pause *between* two completed turns is not an underrun.
+   if(state.nextPlay&&state.nextPlay<now-.03){
+    const gapMs=Math.max(0,Math.round((now-state.nextPlay)*1000));
+    if(state.playbackTurnOpen){state.playUnderruns++;f1tel('audio_underrun',{count:1,elapsed_ms:gapMs});}
+    else{state.playbackIdleResumes++;f1tel('playback_idle_resume',{elapsed_ms:gapMs});}
+   }
+   state.nextPlay=now+.12;
   }
   const startAt=state.nextPlay;
   source.start(startAt);
   state.nextPlay=startAt+buffer.duration;
+  state.playbackTurnOpen=true;
+  if(firstPromptAt)f1tel('first_playback',{latency_ms:Math.max(0,Math.round(performance.now()-firstPromptAt+(startAt-now)*1000))});
   const epoch=state.playbackEpoch;
   state.sources.add(source);
   state.playScheduledSamples+=frames;
@@ -239,13 +247,15 @@ function clearPlay(){
  // Only on explicit disconnect, mute or API-confirmed interruption.
  state.playbackEpoch++;
  for(const src of state.sources){try{src.stop();}catch{}try{src.disconnect();}catch{}}
- state.sources.clear();state.nextPlay=0;
+ state.sources.clear();state.nextPlay=0;state.playbackTurnOpen=false;
 }
 function sendPcm16(bytes){
  return send({realtimeInput:{audio:{mimeType:'audio/pcm;rate=16000',data:bytesToBase64(bytes)}}});
 }
 function processAudioFrame(frame){
  if(!state.connected||!state.micStream||!frame?.buffer)return;
+ const lost=Math.max(0,Number(frame.droppedFrames||0));
+ if(lost){state.workletDrops+=lost;f1tel('input_dropped',{count:lost});}
  const rms=Number(frame.rms||0),duration=Number(frame.samples||640)/16000*1000;
  state.micRms=rms;
  // Default: wait for the provider's authoritative interrupted signal.
@@ -307,7 +317,11 @@ async function startMic(){
   state.micStream=stream;state.micCtx=ctx;state.micSource=source;state.micNode=proc;state.micGain=gain;
   state.micRms=0;state.micSpeechFrames=0;state.micActive=false;
   state.manualVadStarted=false;state.micSilenceMs=0;state.preRoll=[];
-  proc.port.onmessage=e=>{if(generation===state.micGeneration&&e.data?.type==='pcm')processAudioFrame(e.data);};
+  proc.port.onmessage=e=>{
+   if(e.data?.type!=='pcm')return;
+   try{if(generation===state.micGeneration)processAudioFrame(e.data);}
+   finally{try{proc.port.postMessage({type:'ack'});}catch{}}
+  };
   stream.getTracks().forEach(t=>t.onended=()=>{if(state.micStream===stream)stopMic();});
   committed=true;
   updateStreamMetrics();log('MÍDIA','Microfone via AudioWorklet PCM16 16 kHz, 40ms/frame; sem ScriptProcessor.');
@@ -376,7 +390,7 @@ function updateF1Dashboard(){
  'Reconexões: '+(metrics.reconnect_successes||0)+'/'+(metrics.reconnect_attempts||0)+
  '  |  GoAway: '+(metrics.go_away_events||0)+
  '  |  Interrupções: '+(metrics.barge_in_events||0)+'\n'+
- 'Underruns: '+(metrics.audio_underruns||0)+'  |  Entrada descartada: '+(metrics.input_frames_dropped||0)+
+ 'Gaps dentro da fala: '+(metrics.audio_underruns||0)+'  |  Pausas normais: '+(metrics.playback_idle_resumes||0)+'  |  Entrada descartada: '+(metrics.input_frames_dropped||0)+
  '  |  Áudio recebido: '+(metrics.audio_bytes_received||0)+' bytes';
 }
 setInterval(updateF1Dashboard,1000);

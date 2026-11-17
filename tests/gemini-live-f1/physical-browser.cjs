@@ -25,10 +25,12 @@ const result={schema:'mcf-f1-physical-browser/v1',at_utc:new Date().toISOString(
     gain=ctx.createGain();gain.gain.value=0;
     source.connect(node);node.connect(gain);gain.connect(ctx.destination);
     node.port.onmessage=e=>{
-      if(e.data?.type==='pcm'){
+      if(e.data?.type==='pcm') {
        frames++;samples+=e.data.samples;
        maxRms=Math.max(maxRms,Number(e.data.rms||0));sumRms+=Number(e.data.rms||0);
        // Crucial: raw buffer discarded immediately, never copied, serialized or sent.
+       // Return bounded-credit token; do not persist or forward the PCM.
+       node.port.postMessage({type:'ack'});
       }
     };
     await ctx.resume();

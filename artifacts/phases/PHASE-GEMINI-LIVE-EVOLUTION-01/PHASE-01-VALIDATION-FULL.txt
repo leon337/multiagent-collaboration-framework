@@ -62,3 +62,11 @@ Current QA benchmark: 17/17 browser and 8/8 playback, both linked to current app
 
 ## Codex CLI external LEO-profile gate decision
 On 2026-11-16 a distinct external Codex CLI process with LEO normative profile (thread 01a1e697-23c5-7af1-a68f-05d56083e38c) reviewed SHA 361a08b730b24b7fe0ba88e5917634dd3a947d64 and emitted RETORNAR_PARA_CORRECAO. It independently verified 12/12 offline tests, 24/24 source hashes, 26/26 PRF hashes. F1.1-F1.4 partial; F1.5 insufficient; F1.6 partial. This is NOT a native MCF Agent Session. F0.8 remains open and no merge/deploy is approved. Primary receipt in QA-F1-20261116/LEO-PROFILE-GATE.md.
+
+Q3 TECHNICAL EVIDENCE
+Source: QA-F1-Q3-AUDIO-20261116/README.md and F1-Q3-REPORT.md.
+Unit Node tests: 17/17 PASS (9 capture/antialias/credit + 8 private telemetry).
+Real Gemini browser E2E: 17/17 PASS on same app.js hash, virtual media.
+Physical Chrome AudioWorklet: 63 frames, 40,320 PCM samples, no persisted speech.
+Playback classifier: 3/3 PASS (between-turn silence NOT counted as within-generation underrun).
+Real prompt-to-scheduled-output benchmark: 19 attempted, 18 audio detections/completions, n=18 p50 1324ms, p95 4666ms. One nonterminal response at 16s while connected; target 30 missed. No voice mouth-to-ear latency guarantee, no robust cost classification or user acoustic barge-in evidence. Q3 candidate has new source SHA, older long test cannot be claimed as bitwise same source.

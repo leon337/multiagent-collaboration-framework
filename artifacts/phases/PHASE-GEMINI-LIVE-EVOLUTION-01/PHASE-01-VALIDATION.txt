@@ -41,3 +41,6 @@ EXTERNAL EMILY REVIEWS: RETORNAR old/reviewed SHA; final CLI LEO gate PENDING. F
 
 ## Codex CLI external LEO-profile gate decision
 On 2026-11-16 a distinct external Codex CLI process with LEO normative profile (thread 01a1e697-23c5-7af1-a68f-05d56083e38c) reviewed SHA 361a08b730b24b7fe0ba88e5917634dd3a947d64 and emitted RETORNAR_PARA_CORRECAO. It independently verified 12/12 offline tests, 24/24 source hashes, 26/26 PRF hashes. F1.1-F1.4 partial; F1.5 insufficient; F1.6 partial. This is NOT a native MCF Agent Session. F0.8 remains open and no merge/deploy is approved. Primary receipt in QA-F1-20261116/LEO-PROFILE-GATE.md.
+
+F1-Q3 latest:
+17/17 offline unit tests PASS; 17/17 browser E2E PASS; 3/3 class gap-vs-idle PASS; physical worklet microphone 63 frames/40,320 samples PASS (raw voice discarded); benchmark 19 attempts, 18 responses with scheduled audio (p50 1324ms, p95 4666ms for text-to-playback, NOT voice-to-playback). 19th attempt timed out after 16s, provider socket remained open. Does not meet the 30+-sample physical voice SLO or eliminate source-version uncertainty of prior long run.

@@ -25,6 +25,19 @@ staging:
   original_url: http://127.0.0.1:18371
   credential: EXISTING_LOCAL_FILE_REFERENCED_NOT_COPIED
 evidence:
+  qa_q3_node_unit_pass: 17
+  qa_q3_browser_e2e_pass: 17
+  qa_q3_underrun_classifier_pass: 3
+  qa_q3_physical_mic_frames: 63
+  qa_q3_physical_mic_samples: 40320
+  qa_q3_text_latency_attempts: 19
+  qa_q3_text_latency_audio_responses: 18
+  qa_q3_text_latency_p50_ms: 1324
+  qa_q3_text_latency_p95_ms: 4666
+  qa_q3_nonterminal_response_16s: 1
+  qa_q3_human_functional_confirmation: POSITIVE
+  qa_q3_real_speech_end_latency: NOT_MEASURED
+  qa_q3_f0_gate: OPEN
   microphone_physical_frames: 64
   microphone_physical_samples: 40960
   microphone_output_test_status: PARTIAL_SPEAKER_UNVERIFIED
