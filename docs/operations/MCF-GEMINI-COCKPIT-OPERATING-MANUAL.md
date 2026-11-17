@@ -83,7 +83,7 @@ Marcador: `MCF_GEMINI_README_READ_PASS`. Confronto com o `README.md` na `main`: 
 | Caso | Observação verificável | Conclusão prudente |
 | --- | --- | --- |
 | Conector GitHub Gemini | Conta GitHub apareceu conectada na interface do Workspace | OAuth conectado; **não** prova leitura/commit/PR |
-| Repositório privado `leon337/mcf-parallel-chat` | Formulário de importação exibiu erro `(13)` | Falha inesperada; permissão privada é **hipótese**, não causa confirmada |
+| Repositório privado um repositório privado de laboratório (nome omitido) | Formulário de importação exibiu erro `(13)` | Falha inesperada; permissão privada é **hipótese**, não causa confirmada |
 | Importação de repositório público | O repositório virou anexo e Gemini identificou ZIP/commit, mas declarou não conseguir ler `README.md`/`package.json` internos | Anexação de ZIP ≠ leitura semântica dos arquivos |
 | Hydrogen com arquivos individuais | Leitura verificável do JSON e Markdown | Fallback validado no experimento |
 | Argon | Usuário relatou instabilidade; houve erro `(13)` em fluxo anterior | Não afirmar que Argon causa o erro; testar com outras variáveis controladas |
