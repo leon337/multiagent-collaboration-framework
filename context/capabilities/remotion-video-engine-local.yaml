@@ -37,21 +37,67 @@ scope:
   resources:
     - workstation/remotion-mcp
   endpoint: http://127.0.0.1:4777/mcp
+  remote_mcp_exposure: false
 
 governance:
   authority_human: LEANDRO
   orchestrator: MESTRE
-  permission_profile: SCOPED_WRITE
+  permission_profile: READ_AND_PROPOSE
   write_gate: HDF_PERMISSION_ENGINE_REQUIRED
   write_enabled_in_mcf_adapter: false
   production_deploy: false
+  runner_registration_repository: leon337/mcf-remotion-mcp
+  runner_must_not_be_registered_on_public_mcf: true
 
 lifecycle:
   implementation_state: IMPLEMENTED_LOCAL_ADAPTER
   connection_state: CONNECTED_LOCAL_READ_ONLY
-  runtime_state: INACTIVE
-  verification_state: LOCALLY_VERIFIED
-  registration_state: CANDIDATE
+  runtime_state: MCF_RUNTIME_NOT_REGISTERED
+  verification_state: PRIVATE_RUNNER_ONLINE_LOCAL_MCP_HEALTH_VERIFIED
+  registration_state: PRIVATE_REPOSITORY_RUNNER_REGISTERED
+
+execution:
+  transport: GITHUB_ACTIONS_SELF_HOSTED_RUNNER
+  repository: leon337/mcf-remotion-mcp
+  repository_visibility: PRIVATE
+  runner_id: 2
+  runner_name: leo-N43SM-remotion-gpu
+  runner_version: 2.338.2
+  runner_labels:
+    - self-hosted
+    - Linux
+    - X64
+    - mcf-remotion-gpu
+    - amd-rx580
+    - remotion
+  host: leo-N43SM
+  host_os: Linux Mint 22.1
+  architecture: x86_64
+  service_manager: systemd-user
+  service_name: mcf-remotion-gpu-runner.service
+  service_enabled: true
+  user_linger_enabled: true
+  execution_user: leo
+  dedicated_os_account: false
+  status: ONLINE
+  observed_at: 2026-11-17T05:45:46Z
+  workflow:
+    path: .github/workflows/remotion-gpu-worker-health.yml
+    repository: leon337/mcf-remotion-mcp
+    pull_request: 1
+    state: DRAFT_NOT_IN_MAIN
+    trigger: workflow_dispatch
+    writes: false
+    gemini_quota: not_consumed
+
+gpu:
+  frame_composition: SOFTWARE_RENDERING_CURRENT_PROFILE
+  webgl: DISABLED
+  webgpu: DISABLED
+  ffmpeg_h264_vaapi: AVAILABLE
+  ffmpeg_hevc_vaapi: AVAILABLE
+  hardware_encoding_observed: true
+  end_to_end_gpu_acceleration: NOT_VERIFIED
 
 evidence:
   - kind: executable
@@ -60,12 +106,23 @@ evidence:
     video_id: primeiro-video-mcf
     job_id: a4dad723-1524-4af1-93bd-63e0ac7110e7
     video_sha256: 546e053909d78106750b4acaab5b6459ce17aa325819890fad0e82b7f71790c5
+  - kind: private-runner-registration
+    repository: leon337/mcf-remotion-mcp
+    runner_id: 2
+    runner_name: leo-N43SM-remotion-gpu
+    status: online
+    observed_at: 2026-11-17T05:45:46Z
+  - kind: local-health
+    service: remotion-mcp.service
+    endpoint: http://127.0.0.1:4777/health
+    result: ready
 
 freshness: LIVE_REQUIRED
 discovery:
   skill_id: MCF-REMOTION-VIDEO-PRODUCE
-  skill_path: skills/video/mcf-remotion-produce/SKILL.md
+  skill_path: skills/video/MCF-REMOTION-VIDEO-PRODUCE.yaml
   guide_path: docs/operations/MCF-REMOTION-CAPABILITY-DISCOVERY.md
+  worker_guide_path: docs/operations/MCF-REMOTION-GPU-WORKER.md
   source_repositories:
     studio:
       url: https://github.com/leon337/mcf-remotion-studio
@@ -74,7 +131,11 @@ discovery:
     worker:
       url: https://github.com/leon337/mcf-remotion-mcp
       visibility: PRIVATE
-      observed_commit: 9b456ec95d16f42bb719734873f5f6343bb67e2
+      observed_commit: 9b456ec95d16f42bb719734873f5f6343bb67e2e
+  runner_status_api: https://api.github.com/repos/leon337/mcf-remotion-mcp/actions/runners
+  runner_workflow_pr: https://github.com/leon337/mcf-remotion-mcp/pull/1
+  runner_workflow_source_ref: feat/remotion-gpu-runner-health-20261117
+  private_runner_requires_authenticated_access: true
   read_only_probe: tools/remotion-mcf-adapter/discover.mjs
   chatgpt_native_plugin_state: NOT_CONNECTED
   central_runtime_executable_state: NOT_REGISTERED

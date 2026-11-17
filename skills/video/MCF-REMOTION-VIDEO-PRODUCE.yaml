@@ -1,24 +1,72 @@
 skill:
   skill_id: MCF-REMOTION-VIDEO-PRODUCE
-  name: "Descobrir e orientar produção de vídeos Remotion com Gemini"
-  version: 0.1.0
+  name: "Descobrir e operar a infraestrutura privada de produção de vídeos Remotion com Gemini"
+  version: 0.2.0
   status: EXPERIMENTAL
-  purpose: "Identificar código e ferramentas no GitHub, verificar o host e governança antes de produzir conteúdo."
+  purpose: "Descobrir a capability Remotion no MCF, verificar o worker GPU privado, operar somente ações autorizadas e preservar evidências e limites de segurança."
   owner_agents: [Mestre]
   supporting_agents: [Sofia, Rafael, Renato, Emily]
-  trigger_phrases: ["Remotion", "crie um vídeo", "narração Gemini", "vídeo com GPU", "estúdio de vídeos", "MCF Cinematic"]
+  trigger_phrases: ["Remotion", "crie um vídeo", "narração Gemini", "vídeo com GPU", "estúdio de vídeos", "MCF Cinematic", "Remotion GPU Worker"]
   required_inputs: [video_goal_or_capability_discovery_request]
-  optional_inputs: [format, duration, script, selected_voice, authorized_host]
-  preconditions: [read_live_github_state, verify_host_and_mcp, validate_permission_boundary]
-  allowed_tools: [GitHub, Remote_Desktop_Commander, Remotion_MCP_Local_Read]
+  optional_inputs: [format, duration, script, selected_voice, authorized_host, mission_id, phase_id]
+  preconditions:
+    - read_live_github_state
+    - verify_host_and_mcp
+    - verify_private_runner_repository_scope
+    - verify_runner_online_and_labels
+    - validate_permission_boundary
+  allowed_tools: [GitHub, Remote_Desktop_Commander, Remotion_MCP_Local_Read, GitHub_Actions_Private_Worker_Health]
   alternative_tools: [Remotion_Studio_Local]
-  forbidden_tools: [secret_export, MCF_runtime_write_without_HDF, unapproved_publish, expose_4777_to_internet]
+  forbidden_tools:
+    - secret_export
+    - MCF_runtime_write_without_HDF
+    - unapproved_publish
+    - expose_4777_to_internet
+    - register_runner_on_public_mcf
+    - dispatch_untrusted_workflow
+    - accept_arbitrary_shell_or_path_inputs
   permission_profile: READ_AND_PROPOSE
-  execution_steps: [discover_registry, inspect_private_repos, reconcile_shas, verify_online_host, inspect_mcp, check_gate, plan_or_execute_authorized_work, verify_receipt]
-  required_evidence: [repo_refs, shas, host_availability, tool_discovery, authorization_state, receipt_or_blocker]
+  execution_steps:
+    - discover_registry
+    - inspect_private_repos_and_visibility
+    - reconcile_shas
+    - verify_private_runner_repository_scope
+    - verify_runner_online_and_labels
+    - verify_authorized_host_and_systemd_services
+    - inspect_mcp_read_only_tools
+    - inspect_gpu_composition_and_encoder_separately
+    - check_hdf_and_mission_phase_authorization
+    - execute_only_allowlisted_authorized_operations
+    - reconcile_job_after_timeout_without_duplicate
+    - verify_artifact_sha256_and_receipt
+  required_evidence:
+    - repo_refs_and_shas
+    - private_runner_repository_scope
+    - runner_id_name_labels_and_status
+    - host_availability
+    - mcp_health_and_tool_discovery
+    - gpu_frame_composition_status
+    - hardware_encoder_status
+    - authorization_state
+    - workflow_run_url_or_pending_pr
+    - receipt_or_blocker
   expected_outputs: [discovery_report, authorized_video_or_plan, evidence]
-  acceptance_criteria: [source_verified, secret_safety, gate_enforced, no_unverified_claim]
-  failure_modes: [host_offline, private_repo_unavailable, quota_limited, HDF_missing]
+  acceptance_criteria:
+    - source_verified
+    - secret_safety
+    - runner_scoped_to_private_worker_repository
+    - runner_online_confirmed_live
+    - gate_enforced
+    - idempotent_reconciliation
+    - no_unverified_gpu_or_runtime_claim
+  failure_modes:
+    - host_offline
+    - private_repo_unavailable
+    - runner_offline
+    - runner_scope_mismatch
+    - os_account_not_isolated
+    - quota_limited
+    - HDF_missing
   fallback:
     without_primary_tool: "Responder com plano e fontes, sem alegar execução."
     without_any_tool: "Declarar que não foi possível verificar a capacidade."
@@ -31,12 +79,13 @@ skill:
     record_tool_use: true
     record_failure_and_recovery: true
     record_latency_when_available: true
+    record_runner_status_observation_time: true
   governance:
     data_classification: INTERNAL
     human_gate_triggers: [paid_voice_generation, external_publication, production_deploy]
-    prohibited_actions: [credential_exfiltration, HDF_bypass, ungoverned_remote_MCP]
+    prohibited_actions: [credential_exfiltration, HDF_bypass, ungoverned_remote_MCP, public_repository_runner_registration]
   tests:
-    positive_scenarios: [mcp_read_health, voice_provider_discovery, remote_sha_parity]
-    negative_scenarios: [no_host, write_without_gate, invalid_credential]
-    last_evaluated_at: null
-    verdict: CANDIDATE_LOCAL_E2E_ONLY
+    positive_scenarios: [mcp_read_health, voice_provider_discovery, remote_sha_parity, private_runner_online]
+    negative_scenarios: [no_host, write_without_gate, invalid_credential, runner_registered_on_public_repo, untrusted_workflow_dispatch]
+    last_evaluated_at: 2026-11-17T05:45:46Z
+    verdict: PRIVATE_RUNNER_REGISTERED_MCF_RUNTIME_NOT_WIRED

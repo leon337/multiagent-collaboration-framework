@@ -31,7 +31,6 @@ Padrões iniciais **condicionais à disponibilidade e ao tipo de tarefa**:
 
 Se a fonte de verdade estiver indisponível, declarar a limitação; não inventar um modelo, ID, disponibilidade ou fallback.
 
-
 ### DSH nativo — ferramentas com Extended Thinking (implementação local de 2026-11-08)
 
 Na instância MESTRE do notebook, selecionar `gemini-3.8-live` como padrão operacional para novas sessões. O modelo `gemini-3.8-live-extended-thinking` também está disponível. Para missões com ferramentas sob Extended, usar a **orquestração híbrida testada**: Gemini 3.8 Live seleciona a chamada de função, o DSH executa conforme seus controles existentes, e Extended Thinking sintetiza o resultado. Não afirmar que a chamada de ferramenta foi emitida nativamente pelo Extended. A implementação está na **PR #501**, pasta `tools/mcf-dsh-live/`, e no serviço local `mcf-dsh-live-native-adapter.service` na porta 3100. Evidência: `mcf_shared_inspect` executada no DSH e resposta final Extended em ~10 s; 22/22 testes locais. Não assumir deploy do runtime MCF central, cobertura de ações destrutivas nem quota ilimitada.
@@ -44,8 +43,10 @@ Seguir os contratos de permissão, handoff, HUMAN_GATE, memória, validação e 
 
 ## Descoberta de vídeo e voz Gemini (candidate, 2026-11-17)
 
-Ao receber pedido de criação de vídeos, narração, Remotion, Radeon RX 580 ou Gemini Native Audio, descobrir a skill EXPERIMENTAL MCF-REMOTION-VIDEO-PRODUCE no catálogo skills/registry.yaml; ler skills/video/mcf-remotion-produce/SKILL.md, context/capabilities/remotion-video-engine-local.yaml e docs/operations/MCF-REMOTION-CAPABILITY-DISCOVERY.md.
+Ao receber pedido de criação de vídeos, narração, Remotion, Radeon RX 580 ou Gemini Native Audio, descobrir a skill EXPERIMENTAL `MCF-REMOTION-VIDEO-PRODUCE` no catálogo `skills/registry.yaml`; ler `skills/video/MCF-REMOTION-VIDEO-PRODUCE.yaml`, `context/capabilities/remotion-video-engine-local.yaml`, `docs/operations/MCF-REMOTION-CAPABILITY-DISCOVERY.md` e `docs/operations/MCF-REMOTION-GPU-WORKER.md`.
 
-Código recuperável via repositórios GitHub privados leon337/mcf-remotion-studio e leon337/mcf-remotion-mcp. Verificar acesso e SHAs live, dispositivo online, MCP autenticado, GPU e quota antes de afirmar capacidade. Uma sessão ChatGPT somente descobre o contrato através destas fontes quando tem acesso ao GitHub/repositório; documentação NÃO instala automaticamente um plugin nem uma conexão MCP.
+Código recuperável via repositórios GitHub privados `leon337/mcf-remotion-studio` e `leon337/mcf-remotion-mcp`. Verificar acesso, visibilidade e SHAs live; dispositivo autorizado online; MCP autenticado; estado do runner privado; aceleração de composição versus encoder; e quota antes de afirmar capacidade. A documentação pública é conhecimento reutilizável, mas NÃO concede acesso aos repositórios privados, ao host ou ao runner.
 
-A skill é documental/experimental. O adapter central do MCF permanece read-only e bloqueia escrita sem HDF/PermissionEngine. Não tratar autorização de operação local, criação de PR ou green tests como ativação de produção. PR candidata #543; conferir estado do GitHub ao vivo.
+O runner self-hosted `leo-N43SM-remotion-gpu` pertence exclusivamente ao repositório privado `leon337/mcf-remotion-mcp`. **Nunca registrar runner no repositório público MCF.** O runner observado online em 2026-11-17 executa como usuário Linux `leo`, sem conta de sistema isolada; tratar workflows como código confiável e manter apenas `workflow_dispatch` em `main`, sem gatilhos de PR/terceiros nem inputs arbitrários. O health workflow está no PR privado #1 (DRAFT); confirmar merge e run antes de declarar E2E de Actions.
+
+A skill continua documental/experimental. O adapter central do MCF permanece read-only e bloqueia escrita sem HDF/PermissionEngine. O runner online não equivale a runtime executável, gate de produção ou deploy. O PR #543 foi MERGED em `main@97d79ee8152ead27564d2bf634ad63df5cc284e6`; consultar estado do GitHub ao vivo para atualizações.

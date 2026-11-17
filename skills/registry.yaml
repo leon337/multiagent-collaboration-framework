@@ -608,19 +608,19 @@ skills:
   - skill_id: MCF-REMOTION-VIDEO-PRODUCE
     status: EXPERIMENTAL
     name: Descobrir e orientar produção de vídeos com Remotion/Gemini
-    version: 0.1.0
-    purpose: Localizar a capability Remotion no GitHub e no host, validar autorização e orientar vídeo com evidência.
+    version: 0.2.0
+    purpose: Descobrir a capability Remotion, verificar o runner GPU privado, operar somente ações autorizadas e preservar evidências.
     owner_agents: [Mestre]
-    trigger_phrases: ["Remotion", "crie um vídeo", "narração Gemini", "vídeo na GPU", "MCF Cinematic"]
+    trigger_phrases: ["Remotion", "crie um vídeo", "narração Gemini", "vídeo na GPU", "MCF Cinematic", "Remotion GPU Worker"]
     required_inputs: [video_goal_or_discovery_request]
-    optional_inputs: [script, format, duration, voice_provider, authorized_host]
-    allowed_tools: [GitHub, Remote_Desktop_Commander, Remotion_MCP_Local_Read]
-    forbidden_tools: [credential_export, unapproved_publish, runtime_write_without_HDF, public_MCP_exposure]
+    optional_inputs: [script, format, duration, voice_provider, authorized_host, mission_id, phase_id]
+    allowed_tools: [GitHub, Remote_Desktop_Commander, Remotion_MCP_Local_Read, GitHub_Actions_Private_Worker_Health]
+    forbidden_tools: [credential_export, unapproved_publish, runtime_write_without_HDF, public_MCP_exposure, public_runner_registration, untrusted_workflow_dispatch, arbitrary_shell_input]
     permission_profile: READ_AND_PROPOSE
-    execution_steps: [read_live_github, discover_skill_and_capability, check_private_repos, reconcile_shas, inspect_host_read_only, verify_gate, return_plan_or_authorized_receipt]
-    required_evidence: [remote_shas, host_status, tool_availability, authorization_state, receipts_or_blocker]
+    execution_steps: [read_live_github, discover_skill_and_capability, verify_private_runner_scope, check_runner_online_and_labels, reconcile_shas, inspect_host_read_only, inspect_gpu_composition_and_encoder_separately, verify_gate, return_plan_or_authorized_receipt]
+    required_evidence: [remote_shas, private_runner_repository_scope, runner_id_name_labels_status, host_status, tool_availability, gpu_acceleration_status, authorization_state, workflow_run_or_pending_pr, receipts_or_blocker]
     expected_outputs: [capability_discovery, safe_execution_plan_or_evidence]
-    acceptance_criteria: [no_unverified_runtime_claims, no_secret_leaks, no_ungated_write]
-    failure_modes: [offline_host, inaccessible_private_repo, missing_HDF, model_quota]
+    acceptance_criteria: [runner_private_repo_only, runner_online_verified_live, no_unverified_runtime_claims, no_secret_leaks, no_ungated_write, idempotent_reconciliation]
+    failure_modes: [offline_host, inaccessible_private_repo, runner_offline, runner_scope_mismatch, os_account_not_isolated, missing_HDF, model_quota]
     fallback: Sem host ou ferramentas, entregar contrato e limitação verificável; não executar.
     handoff_to: Mestre

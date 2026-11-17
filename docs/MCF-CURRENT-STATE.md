@@ -726,3 +726,19 @@ Ao retomar o projeto:
 ## Extensão Mecanismo A — estado documental (2026-10-27)
 
 A [Issue #478](https://github.com/leon337/multiagent-collaboration-framework/issues/478) registra a adoção do Mecanismo A para subagentes nativos. Quando integrada à main, a norma de descoberta, convocação verificável, distinção CLI/Cockpit e cold-start estará em [docs/protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md](protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md). A presença desse protocolo não garante que ferramentas nativas estejam expostas em qualquer novo chat; o MESTRE deve verificar a disponibilidade real. Nenhum runtime/produção foi alterado por essa extensão documental.
+
+## Extensão Remotion GPU Worker — estado documental (2026-11-17)
+
+O PR #543 foi mergeado em `main@97d79ee8152ead27564d2bf634ad63df5cc284e6`, adicionando a descoberta documental, o manifesto de capability e o adapter local read-only. O runner self-hosted foi registrado **somente** no repositório privado `leon337/mcf-remotion-mcp`: ID 2, nome `leo-N43SM-remotion-gpu`, labels `mcf-remotion-gpu` / `amd-rx580` / `remotion`, estado ONLINE observado em 2026-11-17T05:45:46Z. O serviço user-systemd está enabled e o user lingering foi confirmado.
+
+A arquitetura e o cold-start reutilizável estão em [MCF-REMOTION-GPU-WORKER.md](operations/MCF-REMOTION-GPU-WORKER.md), com entrada em [AGENTS.md](../AGENTS.md), skill `MCF-REMOTION-VIDEO-PRODUCE` e [capability manifest](../context/capabilities/remotion-video-engine-local.yaml). O repositório público contém documentação e contratos; **não** hospeda runner e não recebe acesso ao computador. O runner pertence exclusivamente ao repositório privado.
+
+Limites observados:
+- runner executa como usuário Linux `leo`, sem conta de sistema isolada; não é sandbox;
+- workflow privado de health check está no PR #1 (DRAFT), ainda sem execução E2E;
+- serviço MCP local respondeu `ready`;
+- FFmpeg disponibiliza H.264/HEVC VA-API; composição Remotion/Chrome segue software com WebGL/WebGPU desativados;
+- adapter central MCF permanece read-only e escrita sem HDF/PermissionEngine continua negada;
+- não há integração executável ao MissionRuntime, autorização de produção ou deploy.
+
+Runner online, workflow health aprovado, capability executável no MissionRuntime e produção são estados distintos. Consultar GitHub, o repositório privado e o host ao vivo antes de qualquer operação. Não inferir acesso privado ou disponibilidade do host em novas sessões.
