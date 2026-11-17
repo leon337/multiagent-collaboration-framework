@@ -27,16 +27,17 @@ def readiness() -> dict:
         conn.close()
 
 def ticket_response(scope: str="conversation") -> tuple[int,dict]:
-    if scope not in ("conversation","read_only"):
+    if scope not in ("conversation","read_only","read_and_propose"):
         return 400,{"ready":False,"reason":"SCOPE_NOT_ALLOWED"}
     info=readiness()
     if not info["ready"]:
         return 503,info
-    if scope=="read_only" and info.get("read_only_tools_available") is not True:
+    if scope in ("read_only","read_and_propose") and info.get("read_only_tools_available") is not True:
         return 503,{"ready":False,"reason":"READ_ONLY_TOOLS_UNAVAILABLE"}
     try:
         ticket=issue_ticket(scope=scope)
     except (OSError,ValueError):
         return 503,{"ready":False,"reason":"TICKET_SIGNER_UNAVAILABLE"}
     return 200,{**info,"ticket":ticket,"ttl_seconds":30,
-                "tool_scope":scope,"tools_enabled":scope=="read_only"}
+                "tool_scope":scope,"tools_enabled":scope!="conversation",
+                "proposal_drafts_enabled":scope=="read_and_propose"}

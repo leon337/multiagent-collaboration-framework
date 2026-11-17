@@ -1,0 +1,44 @@
+skill_id: MCF-PET-PREPARE-PROPOSAL
+name: Pet MESTRE — preparar proposta para revisão
+version: 0.1.0
+status: EXPERIMENTAL_LOCAL
+purpose: Salvar somente rascunhos estruturados de planejamento para revisão sem executar ações.
+owner_agents: [Mestre]
+trigger_phrases:
+  - prepare uma proposta
+  - elabore um plano para revisar
+required_inputs:
+  - user_intent_to_propose
+  - explicit_read_and_propose_session_opt_in
+optional_inputs: [local_observation_receipts]
+allowed_tools:
+  - mcf_system_status
+  - mcf_service_status
+  - mcf_pet_status
+  - mcf_mission_status
+  - mcf_prepare_proposal
+forbidden_tools:
+  - shell
+  - arbitrary_browser
+  - filesystem_mutation
+  - mission_execution
+  - publish_or_deploy
+  - human_gate_grant
+permission_profile: READ_AND_PROPOSE
+execution_steps:
+  - verify_scope_from_hmac_ticket
+  - consult_allowlisted_sources_as_needed
+  - draft_2_to_6_steps_with_risks_and_rollback
+  - persist_pending_review
+  - emit_nonexecuting_receipt
+  - await_explicit_separate_review
+required_evidence: [proposal_id, status_pending_review, audit_receipt_if_any]
+expected_outputs: [structured_draft, review_queue_entry]
+acceptance_criteria:
+  - stored_only_in_local_proposal_queue
+  - no_execution_capability
+  - not_a_human_gate
+  - unauthorized_requests_denied
+failure_modes: [invalid_scope, missing_auth, validation_failure, model_timeout, storage_unavailable]
+fallback: Explicar a limitação sem inventar execução nem salvar proposta inexistente.
+handoff_to: Leo

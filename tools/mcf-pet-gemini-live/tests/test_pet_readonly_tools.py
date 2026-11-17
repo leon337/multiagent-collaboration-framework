@@ -205,6 +205,15 @@ class SignedScopeTests(unittest.TestCase):
         self.assertTrue(validate_ticket(token,self.key,now=1731700001,
                                         expected_scope="conversation"))
 
+    def test_proposal_scope_ticket_is_valid_only_for_that_scope(self):
+        token=issue_ticket(self.key,now=1731700000,scope="read_and_propose")
+        self.assertTrue(validate_ticket(token,self.key,now=1731700001,
+                                        expected_scope="read_and_propose"))
+        self.assertFalse(validate_ticket(token,self.key,now=1731700001,
+                                         expected_scope="read_only"))
+        self.assertFalse(validate_ticket(token,self.key,now=1731700001,
+                                         expected_scope="conversation"))
+
     def test_unknown_scope_rejected(self):
         with self.assertRaises(ValueError):
             issue_ticket(self.key,now=1731700000,scope="execute")

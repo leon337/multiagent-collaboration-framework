@@ -110,3 +110,46 @@ Local backup:
 No canonical MCF production deployment or merge authorization is implied.
 A separate phase is needed to design READ_AND_PROPOSE, SCOPED_WRITE and
 HUMAN_GATE through MCF PermissionEngine and HDF.
+
+## Pet READ_AND_PROPOSE — revisão de propostas (2026-11-16)
+
+Nova capacidade experimental, separada do perfil READ_ONLY do PR #533.
+
+A interface Gemini Live apresenta duas opções não persistentes por sessão:
+- Consultas de infraestrutura (permite ferramentas somente leitura).
+- Salvar propostas para revisão (disponível apenas com consultas habilitadas).
+
+A opção de propostas é desligada por padrão. Um ticket HMAC v2 com scope
+read_and_propose vincula a permissão ao WebSocket; o modo conversation não
+carrega funções e o modo read_only não declara mcf_prepare_proposal.
+
+Quando o humano pede um plano, o mesmo MESTRE Gemini Live pode chamar
+mcf_prepare_proposal para armazenar em SQLite privado um rascunho estruturado:
+título, objetivo, justificativa, 2-6 etapas, riscos, rollback, prioridade e
+IDs dos recibos de observação da sessão (se houver). Cada rascunho inicia em
+pending_review, com executable=false e human_gate=false.
+
+O painel mostra a seção Propostas do Pet MESTRE em
+http://127.0.0.1:8898/#petProposalZone. Com a sessão Pet autenticada
+(HttpOnly/CSRF/Origin), o usuário pode ler rascunhos e apenas registrá-los
+como reviewed_for_planning ou rejected. Ambos são estados de documentação,
+não constituem aprovação de execução, autorização de LÉO nem HUMAN_GATE.
+
+A persistência é local em ~/.local/state/mcf-pet-proposals/proposals.sqlite3
+(diretório 0700 e arquivo 0600). São aceitos até quatro rascunhos por sessão
+e 300 no total, com idempotência por session_id + call_id. Há validação
+de payload, limites de tamanho, atualização otimista por version e rejeição
+de valores que parecem conter credenciais. O conteúdo continua não confiável
+por ser gerado por IA. Não há ação externa, fila de execução nem sync
+automático para o MissionRuntime.
+
+Apenas a modalidade Gemini Live cria propostas nesta fase. O chat clássico
+segue funcional, mas sem criação de rascunhos. A próxima integração com
+PermissionEngine e Capability Registry exige revisão e gates separados.
+
+Testes: 82 Python, 5 JS, resposta real do Gemini com mcf_prepare_proposal,
+rascunho persistido e 23 chunks de áudio, testes HTTP de CSRF, UI Playwright
+Chrome com consentimento cancelado e UI mobile sem overflow.
+O microfone físico do usuário e a rota externa Tailnet não foram
+revalidados nesta missão. Um pedido complexo de duas ferramentas atingiu
+timeout em teste inicial; o pedido de proposta isolado foi validado.

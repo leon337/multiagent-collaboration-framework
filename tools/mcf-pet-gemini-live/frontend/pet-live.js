@@ -8,9 +8,17 @@
   if(!start||!stop||!test)return;
   let active=false,ready=false,starting=false,stream=null,ctx=null,source=null;
   let worklet=null,silent=null,socket=null,timer=null,playback=null,lastStart=0;
-  let sent=0,received=0,toolInvocations=0;
+  let sent=0,received=0,toolInvocations=0,proposalsCreated=0;
   const toolStatus=$("petLiveToolStatus");
   const toolsToggle=$("petLiveAllowTools");
+  const proposalsToggle=$("petLiveAllowProposals");
+  if(toolsToggle&&proposalsToggle){
+    proposalsToggle.disabled=!toolsToggle.checked;
+    toolsToggle.addEventListener("change",()=>{
+      if(!toolsToggle.checked)proposalsToggle.checked=false;
+      proposalsToggle.disabled=!toolsToggle.checked;
+    });
+  }
   const allowedState={idle:"● Desligado",starting:"◌ Conectando",listening:"● Ouvindo",
     thinking:"◌ Raciocinando",speaking:"● Falando",interrupted:"↪ Interrompido"};
   const $state=$("petLiveStatus");
@@ -144,9 +152,11 @@
       case "ready":
         ready=true;
         if(toolStatus){
-          const enabled=message.tool_scope==="read_only";
-          toolStatus.textContent=enabled
-            ? "🔎 Consultas operacionais habilitadas: somente leitura"
+          const proposed=message.tool_scope==="read_and_propose";
+          const enabled=proposed||message.tool_scope==="read_only";
+          toolStatus.textContent=proposed
+            ? "📝 Consultas e propostas para revisão habilitadas. Nenhuma ação será executada."
+            : enabled?"🔎 Consultas operacionais habilitadas: somente leitura"
             : "🔒 Ferramentas desligadas nesta conversa";
         }
         test.disabled=false;
@@ -161,19 +171,30 @@
       case "tool_started":
         if(toolStatus){
           const name=String(message.name||"").slice(0,55);
-          toolStatus.textContent="🔎 Consultando "+name+"…";
+          toolStatus.textContent=name==="mcf_prepare_proposal"
+            ? "📝 Salvando uma proposta para revisão…"
+            : "🔎 Consultando "+name+"…";
         }
         break;
       case "tool_result":
         toolInvocations++;
         if(toolStatus){
           const name=String(message.name||"").slice(0,55);
-          const label=message.ok===true?"verificada":"indisponível";
-          const rid=String(message.receipt_id||"").slice(0,24);
-          toolStatus.textContent="🔎 "+name+": "+label+
-            (rid?" · evidência "+rid:"");
+          const drafted=name==="mcf_prepare_proposal";
+          const label=message.ok===true
+            ? (drafted?"rascunho salvo":"verificada")
+            : "indisponível";
+          const rid=String(message.receipt_id||"").slice(0,32);
+          toolStatus.textContent=(drafted?"📝 ":"🔎 ")+name+": "+label+
+            (rid?" · recibo "+rid:"");
           toolStatus.dataset.lastOutcome=message.ok===true?"pass":"fail";
         }
+        break;
+      case "proposal_created":
+        proposalsCreated++;
+        if(toolStatus)toolStatus.textContent="📝 Proposta salva para revisão: "+
+          String(message.title||"").slice(0,100)+". Sem execução autorizada.";
+        window.McfPetProposals?.refresh?.();
         break;
       case "user_text":
         line(message.text,"user");
@@ -214,7 +235,9 @@
     start.disabled=true;stop.disabled=false;test.disabled=true;
     setOtherButtons(true);
     if(toolsToggle)toolsToggle.disabled=true;
+    if(proposalsToggle)proposalsToggle.disabled=true;
     toolInvocations=0;
+    proposalsCreated=0;
     if(toolStatus)toolStatus.textContent="Preparando conexão segura de leitura…";
     status("starting");
     try{
@@ -236,7 +259,8 @@
       const auth=window.McfPetAuth;
       if(typeof auth?.request!=="function")
         throw Error("A sessão protegida do Pet ainda não está pronta.");
-      const toolScope=toolsToggle?.checked===true?"read_only":"conversation";
+      const toolScope=toolsToggle?.checked!==true?"conversation":
+        proposalsToggle?.checked===true?"read_and_propose":"read_only";
       const response=await auth.request("live-ticket",{
         method:"POST",cache:"no-store",
         headers:{"Content-Type":"application/json"},
@@ -254,7 +278,9 @@
         throw Error("O gateway não retornou um ticket Live válido.");
       const choice=$("petLiveVoice").value;
       const voice=["Fenrir","Puck","Kore","Aoede","Zephyr"].includes(choice)?choice:"Fenrir";
-      if(body.tool_scope!==toolScope || body.tools_enabled!==(toolScope==="read_only"))
+      if(body.tool_scope!==toolScope ||
+         body.tools_enabled!==(toolScope!=="conversation") ||
+         body.proposal_drafts_enabled!==(toolScope==="read_and_propose"))
         throw Error("O ticket não confirmou a permissão solicitada.");
       socket=new WebSocket(remoteURL()+"?voice="+encodeURIComponent(voice)+
             "&scope="+encodeURIComponent(toolScope),
@@ -286,6 +312,7 @@
     if(ctx){ctx.close().catch(()=>{});ctx=null}
     start.disabled=false;stop.disabled=true;test.disabled=true;
     if(toolsToggle)toolsToggle.disabled=false;
+    if(proposalsToggle)proposalsToggle.disabled=!toolsToggle?.checked;
     setOtherButtons(false);
     stateHint("ocioso");
     playerTitle.textContent="Áudio encerrado. O microfone foi desligado.";
@@ -308,6 +335,8 @@
   });
   window.McfPetLiveStatus=()=>({
     active,ready,pcmFramesSent:sent,pcmAudioChunks:received,
-    toolInvocations,readOnlyToolsSelected:toolsToggle?.checked===true
+    toolInvocations,proposalsCreated,
+    readOnlyToolsSelected:toolsToggle?.checked===true,
+    proposalsSelected:proposalsToggle?.checked===true
   });
 })();

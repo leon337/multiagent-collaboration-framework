@@ -16,9 +16,9 @@ import time
 
 KEY_FILE = Path.home()/".config/mcf-service-hub/pet-live-signing-key"
 MAX_AGE_SECONDS = 30
-TOKEN = re.compile(r"^v2\.([0-9]{10})\.([A-Za-z0-9_-]{22,60})\.(conversation|read_only)\.([0-9a-f]{64})$")
+TOKEN = re.compile(r"^v2\.([0-9]{10})\.([A-Za-z0-9_-]{22,60})\.(conversation|read_only|read_and_propose)\.([0-9a-f]{64})$")
 LEGACY = re.compile(r"^v1\.([0-9]{10})\.([A-Za-z0-9_-]{22,60})\.([0-9a-f]{64})$")
-SCOPES=frozenset(("conversation","read_only"))
+SCOPES=frozenset(("conversation","read_only","read_and_propose"))
 _seen: dict[str,float] = {}
 _lock = threading.Lock()
 
