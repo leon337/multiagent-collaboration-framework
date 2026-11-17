@@ -1,0 +1,63 @@
+skill:
+  skill_id: MCF-PROJECT-DRIVE-BACKUP
+  name: "Enviar aplicação ao Google Drive como backup portátil restaurável"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Reconciliar o projeto local/remoto, preservar dados e dependências, montar backup privado com instalador e evidências, enviar para a conta Drive autorizada e verificar o resultado."
+  owner_agents: [Mestre]
+  supporting_agents: [Miriam, Rafael, Renato, Emily, Ricardo, Gabriel]
+  trigger_phrases:
+    - "enviar o projeto para o google drive"
+    - "enviar projeto para o Drive"
+    - "backup completo no Google Drive"
+    - "cópia portátil da aplicação"
+    - "salvar o projeto no Drive"
+  required_inputs: [project_reference_or_current_session_context]
+  optional_inputs: [local_url, repository, target_account, recovery_scope, target_os, authorized_host]
+  preconditions:
+    - consult_live_official_repository_and_governance
+    - identify_real_project_from_context_or_process
+    - verify_authorized_online_host
+    - verify_exact_drive_account_and_write_capability
+    - verify_data_classification_and_backup_permission
+  allowed_tools: [Remote_Desktop_Commander, GitHub, Google_Drive, authorized_browser, local_archive_utilities]
+  alternative_tools: [authorized_remote_terminal, authorized_drive_browser]
+  forbidden_tools: [credential_exfiltration, cross_account_upload, public_sharing, force_push, destructive_reset, unapproved_branch_delete, unapproved_deploy, HDF_bypass]
+  permission_profile: SCOPED_WRITE
+  execution_steps:
+    - identify_project_process_and_repository
+    - reconcile_git_refs_and_uncommitted_changes
+    - inventory_persistent_data_databases_models_external_dependencies
+    - exclude_or_encrypt_sensitive_data
+    - create_consistent_database_snapshots
+    - assemble_portable_archives_installer_and_manifest
+    - validate_local_sha256_and_archive_integrity
+    - upload_idempotently_to_private_verified_drive_account
+    - verify_remote_metadata_and_privacy
+    - test_isolated_restore_when_possible
+    - deliver_evidence_and_explicit_restore_status
+  required_evidence: [source_identity, remote_head, manifest, local_checksums, excluded_secrets, verified_drive_account, uploaded_file_ids_and_sizes, privacy_status, restore_status, preservation_receipt]
+  expected_outputs: [portable_backup_files, installation_instructions, drive_folder_ref, reconciliation_report, backup_receipt]
+  acceptance_criteria: [target_account_verified, source_preserved, all_essential_assets_accounted, secrets_protected, local_checksums_pass, remote_files_verified, restore_status_truthful]
+  failure_modes: [unknown_project, host_offline, ambiguous_account, credentials_missing, insufficient_storage, inconsistent_database_snapshot, secret_exposure_risk, upload_incomplete, restore_incompatible]
+  fallback:
+    without_primary_tool: "Usar ferramenta autorizada alternativa e verificar os mesmos recibos; nunca fingir sucesso."
+    without_any_tool: "Gerar runbook e classificar execução como BLOCKED, sem afirmar backup remoto."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Renato
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: CONFIDENTIAL_BY_DEFAULT
+    human_gate_triggers: [first_time_sensitive_data_transfer, unknown_drive_account, public_sharing, destructive_action, production_deploy, irreversible_change]
+    prohibited_actions: [secrets_in_public_repo, unencrypted_credential_archive, false_complete_status, automatic_cross_account_fallback]
+  tests:
+    positive_scenarios: [known_local_url, dirty_worktree_preserved, external_gpu_models_included, drive_private_verified, upload_retry_reconciled]
+    negative_scenarios: [host_offline, wrong_drive_account, secret_found, incomplete_upload, live_db_without_snapshot, restore_unverified]
+    last_evaluated_at: null
+    verdict: DOCUMENTED_WORKFLOW_NOT_RUNTIME_WIRED
