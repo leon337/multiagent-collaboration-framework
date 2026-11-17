@@ -18,6 +18,7 @@ import subprocess
 import sys
 import stat
 import tempfile
+import tarfile
 import tomllib
 import unicodedata
 
@@ -92,7 +93,7 @@ def verify_emily_receipt(receipt: dict, args: argparse.Namespace) -> None:
         "mission_id": args.mission_id, "phase_id": args.phase_id,
         "target_sha": args.target_sha, "status": "completed",
         "formal_mcf_gate": "PENDING", "mcf_authenticated_agent_session": False,
-        "turn_completed": True,
+        "turn_completed": True, "snapshot_unchanged": True,
     }
     if any(receipt.get(k) != v for k, v in expected.items()):
         raise ValueError("recibo Emily nao corresponde a missao/fase/SHA/papel")
@@ -113,6 +114,53 @@ def verify_emily_receipt(receipt: dict, args: argparse.Namespace) -> None:
             or final != receipt.get("last_message")
             or not eligible_deliverable("emily", args.target_sha, final)):
         raise ValueError("log nao comprova parecer real Emily completo")
+
+
+def build_commit_snapshot(target_sha: str, destination: Path) -> None:
+    """Materializa somente objetos do commit Git em pasta separada, sem .git."""
+    destination.mkdir(mode=0o700)
+    archive = destination.parent / "commit.tar"
+    with archive.open("wb") as out:
+        subprocess.run(["git", "-C", str(ROOT), "archive", "--format=tar", target_sha],
+                       stdout=out, check=True)
+    try:
+        with tarfile.open(archive, mode="r") as tar:
+            tar.extractall(destination, filter="data")
+    finally:
+        archive.unlink(missing_ok=True)
+    if not (destination / "AGENTS.md").is_file():
+        raise ValueError("snapshot Git sem AGENTS.md")
+    for item in sorted(destination.rglob("*"), reverse=True):
+        if item.is_symlink():
+            continue  # tarfile data filter already rejects links leaving the root.
+        item.chmod(0o555 if item.is_dir() else 0o444)
+    destination.chmod(0o555)
+
+
+def snapshot_digest(destination: Path) -> str:
+    digest = hashlib.sha256()
+    for item in sorted(destination.rglob("*")):
+        path = item.relative_to(destination).as_posix().encode("utf-8")
+        digest.update(path + b"\0")
+        if item.is_symlink():
+            digest.update(os.readlink(item).encode("utf-8"))
+        elif item.is_file():
+            digest.update(hashlib.sha256(item.read_bytes()).digest())
+    return digest.hexdigest()
+
+
+def thaw_snapshot(destination: Path) -> None:
+    """Restaura permissoes apenas para limpeza da pasta temporaria do runner."""
+    if not destination.exists():
+        return
+    for item in destination.rglob("*"):
+        if item.is_symlink():
+            continue
+        try:
+            item.chmod(0o700 if item.is_dir() else 0o600)
+        except OSError:
+            pass
+    destination.chmod(0o700)
 
 
 def parse_args() -> argparse.Namespace:
@@ -234,16 +282,26 @@ def main() -> int:
     os.chmod(logname, 0o600)
     outcome = "failed"
     returncode = 124
-    with os.fdopen(fd, "w", encoding="utf-8") as output:
-        command = ["codex", "exec", "-C", str(ROOT), "--sandbox", "read-only",
-                   "--json", prompt]
+    immutable_digest = None
+    snapshot_ok = False
+    with tempfile.TemporaryDirectory(prefix="mcf-codex-pinned-") as td:
+        snapshot = Path(td) / "checkout"
         try:
-            result = subprocess.run(command, cwd=ROOT, stdin=subprocess.DEVNULL,
-                                    stdout=output, stderr=subprocess.STDOUT,
-                                    timeout=args.timeout_sec, check=False, text=True)
-            returncode = result.returncode
-        except subprocess.TimeoutExpired:
-            outcome = "timeout"
+            build_commit_snapshot(args.target_sha, snapshot)
+            immutable_digest = snapshot_digest(snapshot)
+            with os.fdopen(fd, "w", encoding="utf-8") as output:
+                command = ["codex", "exec", "-C", str(snapshot), "--skip-git-repo-check",
+                           "--sandbox", "read-only", "--json", prompt]
+                try:
+                    result = subprocess.run(command, cwd=snapshot, stdin=subprocess.DEVNULL,
+                                            stdout=output, stderr=subprocess.STDOUT,
+                                            timeout=args.timeout_sec, check=False, text=True)
+                    returncode = result.returncode
+                except subprocess.TimeoutExpired:
+                    outcome = "timeout"
+            snapshot_ok = snapshot_digest(snapshot) == immutable_digest
+        finally:
+            thaw_snapshot(snapshot)
     thread_id, finished, final = parse_events(Path(logname))
     deliverable = bool(thread_id and finished
                        and eligible_deliverable(args.role, args.target_sha, final))
@@ -255,6 +313,8 @@ def main() -> int:
         assert_checkout(args.target_sha)
     except (ValueError, subprocess.CalledProcessError):
         outcome = "invalid_worktree"
+    if not snapshot_ok:
+        outcome = "invalid_snapshot"
 
     receipt = {
         "schema": "mcf-codex-external-role-receipt/v1",
@@ -269,6 +329,7 @@ def main() -> int:
         "mcf_authenticated_agent_session": False, "formal_mcf_gate": "PENDING",
         "last_message": final, "raw_local_log": str(logname),
         "raw_log_sha256": hashlib.sha256(Path(logname).read_bytes()).hexdigest(),
+        "pinned_snapshot_sha256": immutable_digest, "snapshot_unchanged": snapshot_ok,
     }
     receipt["local_hmac_sha256"] = receipt_mac(receipt, key)
     fd, filename = tempfile.mkstemp(prefix=f"mcf-{args.role}-receipt-", suffix=".json", dir=folder)

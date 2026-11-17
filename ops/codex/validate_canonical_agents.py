@@ -169,6 +169,7 @@ class CanonicalCodexAgentsTest(unittest.TestCase):
                 "turn_completed":True,
                 "formal_mcf_gate":"PENDING",
                 "mcf_authenticated_agent_session":False,
+                "snapshot_unchanged":True,
                 "codex_thread_id":thread,
                 "raw_local_log":str(log),
                 "raw_log_sha256":hashlib.sha256(log.read_bytes()).hexdigest(),
@@ -210,6 +211,27 @@ class CanonicalCodexAgentsTest(unittest.TestCase):
             self.assertEqual(thread,"abcd")
             self.assertTrue(finished)
             self.assertFalse(src["eligible_deliverable"]("emily",sha,final))
+
+    def test_git_archive_snapshot_matches_exact_committed_sha(self):
+        src=runpy.run_path(str(ROOT / "ops/codex/run_role.py"))
+        sha=subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+                           capture_output=True, text=True, check=True).stdout.strip()
+        with tempfile.TemporaryDirectory(prefix="mcf-immutable-source-") as td:
+            pinned=pathlib.Path(td) / "snapshot"
+            src["build_commit_snapshot"](sha,pinned)
+            try:
+                source=subprocess.run(["git","-C",str(ROOT),"show",
+                                       sha+":AGENTS.md"],
+                                      capture_output=True,check=True).stdout
+                self.assertEqual((pinned/"AGENTS.md").read_bytes(),source)
+                self.assertFalse((pinned/".git").exists())
+                self.assertEqual((pinned/"AGENTS.md").stat().st_mode & 0o777,0o444)
+                digest=src["snapshot_digest"](pinned)
+                self.assertEqual(digest,src["snapshot_digest"](pinned))
+                self.assertTrue((pinned/".codex"/"agents"/"emily.toml").is_file())
+                self.assertTrue((pinned/".codex"/"agents"/"leo.toml").is_file())
+            finally:
+                src["thaw_snapshot"](pinned)
 
     def test_ci_follows_project_changes(self):
         wf = (ROOT / ".github/workflows/mcf-codex-agent-profiles.yml").read_text(encoding="utf-8")

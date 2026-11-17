@@ -101,7 +101,12 @@ python3 ops/codex/run_role.py --role leo   --mission-id MCF-GEMINI-LIVE-EVOLUTIO
 Os recibos externos têm **assinatura HMAC-SHA256 local** com chave gerada e
 mantida somente no host autorizado (`0600`), e vínculo ao resumo de
 integridade do log JSONL, missão, fase, SHA, papel e evidência de conclusão
-real. Um recibo falso, de outra fase, log alterado, worktree suja ou parecer
+real. A sessão externa examina um **snapshot isolado gerado por `git archive`
+do SHA solicitado**, em diretório temporário sem `.git` e com arquivos
+somente leitura. O runner verifica checksum antes/depois do snapshot,
+além de rejeitar a worktree fonte suja antes/depois. Não é prova contra
+um atacante com controle pleno do host, mas elimina dependência da
+worktree de trabalho mutável. Um recibo falso, de outra fase, log alterado, worktree suja ou parecer
 vazio é rejeitado. A HMAC local prova apenas integridade sob a conta do
 executor, **não autentica uma Agent Session MCF nem protege contra um
 atacante com acesso à própria conta/chave**.
