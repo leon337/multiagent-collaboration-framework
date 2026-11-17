@@ -201,16 +201,28 @@ def mission_status() -> dict:
     mission=doc.get("mission")
     # The observer can be disconnected. Do not imply canonical runtime
     # evidence if the response is merely a local snapshot.
-    details=_pick(mission,("id","mission_id","status","phase","phase_id")) if isinstance(mission,dict) else {}
+    state=str(doc.get("status") or "desconhecido")[:60]
+    if state=="READY" and (
+            doc.get("source")!="MCF_MISSION_CONTROL_READ_ONLY" or
+            doc.get("repository")!="leon337/multiagent-collaboration-framework" or
+            not isinstance(mission,dict) or not mission.get("id")):
+        raise ToolBlocked("UNTRUSTED_MISSION_OBSERVER")
+    details=_pick(mission,(
+        "id","title","state","version","currentAgentId",
+        "currentPhaseId","updatedAt",
+    )) if state=="READY" and isinstance(mission,dict) else {}
+    phase=_pick(doc.get("currentPhase"),
+                ("id","state","agentId","skillId","updatedAt")) if state=="READY" else {}
     return {
-        "status":str(doc.get("status") or "desconhecido")[:60],
+        "status":state,
         "checked_at":str(doc.get("checkedAt") or "")[:55],
         "last_success_at":str(doc.get("lastSuccessAt") or "")[:55],
         "source":str(doc.get("source") or "unknown")[:90],
         "mission":details or None,
-        "event_count":len(doc.get("events")) if isinstance(doc.get("events"),list) else None,
-        "reliability":"NOT_CONNECTED" if not details else "OBSERVATION_ONLY",
-        "note":"Ausência de dados canônicos não é prova de que nenhuma missão existe.",
+        "current_phase":phase or None,
+        "event_count":len(doc.get("events")) if state=="READY" and isinstance(doc.get("events"),list) else None,
+        "reliability":"OBSERVATION_ONLY" if details else "NOT_CONNECTED",
+        "note":"A observação não concede execução; indisponibilidade não significa ausência de missões.",
     }
 
 def tool_catalog() -> dict:

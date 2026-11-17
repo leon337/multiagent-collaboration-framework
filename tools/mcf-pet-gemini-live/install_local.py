@@ -29,6 +29,7 @@ ASSETS={
     "backend/pet_live_gateway.py":[AGENT/"pet_live_gateway.py"],
     "backend/pet_readonly_tools.py":[AGENT/"pet_readonly_tools.py"],
     "backend/pet_proposals.py":[AGENT/"pet_proposals.py",HUB/"pet_proposals.py"],
+    "backend/pet_mission_bridge.py":[HUB/"pet_mission_bridge.py"],
     "frontend/pet-proposals.js":[HUB/"pet-proposals.js"],
     "frontend/pet-proposals.css":[HUB/"pet-proposals.css"],
     "backend/pet_live_ticket.py":[HUB/"pet_live_ticket.py"],
@@ -332,6 +333,64 @@ def patch_proposal_routes(data: str) -> str:
     return replace_once(data,anchor,route+anchor,"proposals isolated POST routes")
 
 
+def patch_mission_bridge_routes(data: str) -> str:
+    if "import pet_mission_bridge as pet_missions" not in data:
+        data=replace_once(data,"import pet_proposals as pet_drafts",
+                          "import pet_proposals as pet_drafts\n"
+                          "import pet_mission_bridge as pet_missions",
+                          "mission bridge import")
+    if 'if path in {"/api/pet-voice/mission-bridge/status",' in data:
+        return data
+    anchor='''        if path in {"/api/pet-voice/proposals/list",
+'''
+    handler='''        if path in {"/api/pet-voice/mission-bridge/status",
+                    "/api/pet-voice/mission-bridge/export",
+                    "/api/pet-voice/mission-bridge/list"}:
+            try:
+                pet_voice.authorize(self.headers)
+                mime=(self.headers.get("Content-Type") or "").split(";",1)[0].strip().lower()
+                if mime!="application/json":
+                    raise pet_voice.ConversationError(415,"JSON_REQUIRED","Somente JSON.")
+                length=self.headers.get("Content-Length","")
+                if not length.isascii() or not length.isdigit():
+                    raise pet_voice.ConversationError(411,"INVALID_LENGTH","Corpo inválido.")
+                size=int(length)
+                if not 2<=size<=260:
+                    raise pet_voice.ConversationError(413,"INVALID_LENGTH","Corpo inválido.")
+                source=self.rfile.read(size)
+                if len(source)!=size:
+                    raise pet_voice.ConversationError(400,"INCOMPLETE_BODY","Corpo incompleto.")
+                try:
+                    item=json.loads(source)
+                except (UnicodeDecodeError,ValueError):
+                    raise pet_voice.ConversationError(400,"INVALID_JSON","JSON inválido.")
+                if not isinstance(item,dict):
+                    raise pet_voice.ConversationError(400,"INVALID_REQUEST","Objeto obrigatório.")
+                if path.endswith("/status"):
+                    if item!={}:
+                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Sem parâmetros.")
+                    response={"ok":True,"snapshot":pet_missions.read_canonical_snapshot()}
+                elif path.endswith("/list"):
+                    if item!={}:
+                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Sem parâmetros.")
+                    response={"ok":True,"handoffs":pet_missions.list_handoffs()}
+                else:
+                    if set(item)!={"proposal_id","expected_version"}:
+                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros inválidos.")
+                    response={"ok":True,"handoff":pet_missions.export_reviewed_proposal(
+                        item["proposal_id"],item["expected_version"])}
+                return self._send(json.dumps(response,ensure_ascii=False).encode("utf-8"),
+                                  "application/json; charset=utf-8")
+            except pet_voice.ConversationError as err:
+                return self._send(json.dumps({"ok":False,"error":err.code}).encode("utf-8"),
+                                  "application/json; charset=utf-8",err.status)
+            except pet_missions.BridgeError as err:
+                return self._send(json.dumps({"ok":False,"error":err.code}).encode("utf-8"),
+                                  "application/json; charset=utf-8",err.status)
+'''
+    return replace_once(data,anchor,handler+anchor,"mission bridge protected routes")
+
+
 def patch_tab_session_route(data: str) -> str:
     old='data, cookie = pet_voice.make_session(self.headers.get("Host",""))'
     new='data, cookie = pet_voice.make_session(self.headers.get("Host",""), self.headers.get("X-MCF-Pet-Tab"))'
@@ -355,9 +414,10 @@ def plan() -> dict[Path,bytes]:
         for dest in dests:payload[dest]=content
     for source,patch in (
         (AGENT/"app.py",patch_agent),
-        (HUB/"server.py",lambda data: patch_proposal_routes(
-            patch_proposal_ticket_scope(patch_read_only_ticket(
-                patch_tab_session_route(patch_hub(data)))))),
+        (HUB/"server.py",lambda data: patch_mission_bridge_routes(
+            patch_proposal_routes(patch_proposal_ticket_scope(
+                patch_read_only_ticket(
+                    patch_tab_session_route(patch_hub(data))))))),
         (HUB/"index.html",patch_index),
     ):
         payload[source]=patch(source.read_text(encoding="utf-8")).encode("utf-8")

@@ -107,6 +107,28 @@ class ReadOnlyRegistryTests(unittest.TestCase):
         self.assertIsNone(result["result"]["mission"])
         self.assertNotIn("secret",json.dumps(result))
 
+    def test_canonical_mission_snapshot_is_sanitised(self):
+        sample={
+           "status":"READY","source":"MCF_MISSION_CONTROL_READ_ONLY",
+           "repository":"leon337/multiagent-collaboration-framework",
+           "checkedAt":"2026-11-16T22:00:00Z",
+           "mission":{"id":"mission-1","title":"Inspecionar Ollama",
+                      "state":"WAITING","version":1,"currentAgentId":"Rafael",
+                      "password":"SECRET"},
+           "currentPhase":{"id":"phase-1","state":"PENDING",
+                           "agentId":"Rafael","secret":"SECRET"}
+        }
+        with patch.object(tools,"_get",return_value=sample):
+            result=tools.dispatch("mcf_mission_status",{})
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["result"]["mission"]["title"],"Inspecionar Ollama")
+        self.assertEqual(result["result"]["reliability"],"OBSERVATION_ONLY")
+        self.assertNotIn("SECRET",str(result))
+        sample["repository"]="other/repo"
+        with patch.object(tools,"_get",return_value=sample):
+            denied=tools.dispatch("mcf_mission_status",{})
+        self.assertFalse(denied["ok"])
+
     def test_pet_telemetry_is_read_only_and_minimal(self):
         sample={"pet":{"status":"online","state":"ocioso","state_verified":True,
                         "process_source":"desktop","pid":12345,"api_key":"private"},

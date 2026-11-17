@@ -1,0 +1,49 @@
+schema_version: 1
+
+capability:
+  id: mcf.pet.mission.bridge.draft
+  provider_project_id: multiagent-collaboration-framework
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: READ_ONLY
+
+contract:
+  protocol: MCF_PET_MISSION_BRIDGE_DRAFT_V1
+  allowed_operations:
+    - mission.observe_latest
+    - proposal.reviewed.export_local_contract
+    - mission.handoff.inspect_local_draft
+  prohibited_operations:
+    - mission.create_in_runtime
+    - mission.execute
+    - mission.dispatch
+    - permission.grant
+    - human_gate.approve
+    - production.deploy
+
+scope:
+  environments:
+    - lab
+  resources:
+    - tools/mcf-pet-gemini-live/backend/pet_mission_bridge.py
+    - /api/pet-voice/mission-bridge/status
+    - /api/pet-voice/mission-bridge/export
+
+governance:
+  authorization_state: NOT_AUTHORIZED
+  required_gate: AUTHENTICATED_MCF_HUMAN_SESSION_AND_PERMISSION_ENGINE
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: DISCONNECTED
+  runtime_state: INACTIVE
+  verification_state: HISTORICALLY_VERIFIED
+  last_verified_at: "2026-11-17T01:40:00Z"
+
+evidence:
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-runtime.controller.ts
+    source_revision: da25c97d834c3ef9d4821039bb8b779029af6d19
+    observed_at: "2026-11-17T01:40:00Z"
+
+freshness: LIVE_REQUIRED

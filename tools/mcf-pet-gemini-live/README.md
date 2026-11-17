@@ -189,3 +189,26 @@ de aba física no Brave do usuário ainda depende de validação humana.
 Backup local: /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-20261117T005804Z/
 PR dependente do PR #534, que depende do PR #533; sem merge automático
 ou deploy do MissionRuntime central.
+
+## MissionRuntime bridge — reviewed proposals to local mission drafts
+
+MCF-PET-MISSION-BRIDGE-001 adds a fixed, authenticated Pet panel endpoint to
+inspect the canonical mission observer, and to export reviewed_for_planning
+proposals into a CreateMcfMissionRequest-shaped PRIVATE draft. A draft is
+idempotently stored locally under
+~/.local/state/mcf-pet-mission-bridge/handoffs.sqlite3 (0600).
+
+The runtime itself is NOT modified. Its POST /v1/mcf/missions requires a
+SessionAuthGuard proving authenticated human identity and will not accept
+a Pet voice session as proof. The Pet must not create missions without it.
+
+The observer requires a dedicated read-only token in the existing protected
+Hub credential file. At development time the file is absent and staging
+queries timed out. The client refuses to claim canonical data in that state.
+
+Capability Registry metadata:
+context/capabilities/mcf-pet-mission-bridge-draft.yaml
+(implementation local, NOT_AUTHORIZED/DISCONNECTED/INACTIVE).
+Registry source must be included in authenticated MCF_CONTEXT_CONFIG_JSON
+by a later governed staging deployment; committing YAML alone does NOT
+enable the canonical registry endpoint.

@@ -1,0 +1,17 @@
+VALIDAÇÃO LOCAL — MCF-PET-MISSION-BRIDGE-001
+
+PASS: contratos CreateMcfMissionRequest são derivados de propostas revisadas;
+      10 testes específicos verificam campos, UUIDs, status e versão.
+PASS: SQLite privado 0600 com idempotência de exportação e hash SHA256.
+PASS: tentativa com proposta não revisada ou rejeitada retorna REVIEW_REQUIRED.
+PASS: o adaptador de observação recusa dados de outro repositório ou velhos.
+PASS: AUTH_NOT_CONFIGURED é exibido como indisponibilidade, sem inventar estado.
+PASS: rotas do Hub requerem sessão Pet, CSRF, Content-Type e Origin.
+PASS: payload de exportação não chama nenhuma rota do MissionRuntime.
+PASS: verificação local do schema do Capability Registry por PyYAML/shape.
+OBSERVADO: endpoint de staging HTTPS não respondeu dentro de timeout
+      em três leituras públicas; arquivo de token dedicado não existe no host.
+PENDENTE: missão canônica READY com token autorizado de leitura.
+PENDENTE: sessão humana autenticada no runtime para importar rascunho.
+NÃO EXECUTADO: criação/execução de missões, alteração de PostgreSQL,
+      alteração do MissionRuntime de produção.

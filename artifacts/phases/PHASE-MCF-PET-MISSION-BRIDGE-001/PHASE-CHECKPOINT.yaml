@@ -1,0 +1,17 @@
+mission_id: MCF-PET-MISSION-BRIDGE-001
+host: leo-N43SM
+state: LOCAL_ADAPTER_READY_CANONICAL_AUTH_BLOCKED
+repository: leon337/multiagent-collaboration-framework
+capability_id: mcf.pet.mission.bridge.draft
+capability_connection: DISCONNECTED
+observation_source: MCF_MISSION_CONTROL_READ_ONLY
+observation_status: AUTH_NOT_CONFIGURED
+staging_api: TIMED_OUT
+export_target: CreateMcfMissionRequest
+export_status: LOCAL_DRAFT_ONLY
+runtime_mission_id: null
+human_gate: false
+allow_execution: false
+requires_runtime_session: true
+requires_permission_engine: true
+production_runtime_changed: false
