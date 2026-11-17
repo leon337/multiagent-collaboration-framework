@@ -1,13 +1,13 @@
 'use strict';
 // F1.4 text->first scheduled audio latency sampling. Voice-end metric needs real user speaking.
 // Uses real Gemini Live with existing locally configured credentials; stores numeric metrics only.
-const puppeteer=require('/home/leo/.npm/_npx/4b4c857f6efdfb61/node_modules/puppeteer');
-const fs=require('node:fs'),crypto=require('node:crypto');
-const URL='http://127.0.0.1:18372/',TOTAL=Number(process.env.F1_BENCH_TURNS||30);
+const puppeteer=require(process.env.PUPPETEER_MODULE||'/home/leo/.npm/_npx/4b4c857f6efdfb61/node_modules/puppeteer');
+const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
+const URL=process.env.F1_STUDIO_URL||'http://127.0.0.1:18372/',TOTAL=Number(process.env.F1_BENCH_TURNS||30);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const report={schema:'mcf-f1-text-to-playback-benchmark/v1',started_at:new Date().toISOString(),
  model:'gemini-2.5-flash-native-audio-preview-12-2025',target_turns:TOTAL,metrics:'text-send to first scheduled audio (not human speech-end)',
- sourceAppSHA:crypto.createHash('sha256').update(fs.readFileSync('/home/leo/Projetos/gemini-live-studio-f1/public/app.js')).digest('hex'),
+ sourceAppSHA:crypto.createHash('sha256').update(fs.readFileSync(path.join(process.env.F1_SOURCE_ROOT||'/home/leo/Projetos/gemini-live-studio-f1','public/app.js'))).digest('hex'),
  modelInputIsSynthetic:true,mediaPersisted:false,turns:[],pageErrors:[],limitations:['Not voice-end-to-playback latency','No real microphone used','Token costs not independently metered','No guaranteed provider quota']};
 const pct=(xs,p)=>xs.length?xs.slice().sort((a,b)=>a-b)[Math.max(0,Math.ceil(p*xs.length)-1)]:null;
 (async()=>{
@@ -47,7 +47,8 @@ const pct=(xs,p)=>xs.length?xs.slice().sort((a,b)=>a-b)[Math.max(0,Math.ceil(p*x
    console.log('LATENCY_TURN',i+1,found,completion?'COMPLETE':'INCOMPLETE');
    if(!completion)break;
    // Do not overlap new model generations or backlog.
-   await page.waitForFunction(()=>state.sources.size===0,{timeout:8000}).catch(()=>{});
+   try{await page.waitForFunction(()=>state.sources.size===0,{timeout:8000});}
+   catch{report.turns.at(-1).drain_timeout=true;break;}
    await sleep(300);
   }
   report.end=await page.evaluate(()=>({underruns:state.playUnderruns,normalIdleResumes:state.playbackIdleResumes,
@@ -65,6 +66,6 @@ const pct=(xs,p)=>xs.length?xs.slice().sort((a,b)=>a-b)[Math.max(0,Math.ceil(p*x
     max_ms:vals.length?Math.max(...vals):null,quality:'Exploratory synthetic text->scheduled playback, never voice mouth-to-ear'};
   fs.writeFileSync('/tmp/mcf-f1-qa/30turn-latency-q3.json',JSON.stringify(report,null,2)+'\n',{mode:0o600});
   console.log('LATENCY_SUMMARY',JSON.stringify({summary:report.summary,end:report.end,error:report.error}));
-  if(report.turns.length<TOTAL)process.exitCode=1;
+  if(report.turns.length<TOTAL||vals.length<TOTAL||report.turns.some(t=>t.drain_timeout))process.exitCode=1;
  }
 })().catch(e=>{console.log('FATAL',e.name,e.message);process.exitCode=2;});

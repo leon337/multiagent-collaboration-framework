@@ -56,7 +56,7 @@ test('RMS is measured without raw voice or transcript metadata',()=>{
  assert.equal(p.port.posted.length,2);
  assert.ok(Math.abs(p.port.posted[0].data.rms-.2)<.001);
  const keys=Object.keys(p.port.posted[0].data).sort();
- assert.deepEqual(keys,['buffer','droppedFrames','rate','rms','samples','type']);
+ assert.deepEqual(keys,['buffer','captureTimeSec','droppedFrames','rate','rms','samples','type']);
 });
 test('stop message halts processing after cleanup',()=>{
  const p=make(48000);p.port.onmessage({data:{type:'stop'}});

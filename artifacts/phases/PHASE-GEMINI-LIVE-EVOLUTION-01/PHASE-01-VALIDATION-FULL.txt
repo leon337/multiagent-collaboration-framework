@@ -70,3 +70,9 @@ Real Gemini browser E2E: 17/17 PASS on same app.js hash, virtual media.
 Physical Chrome AudioWorklet: 63 frames, 40,320 PCM samples, no persisted speech.
 Playback classifier: 3/3 PASS (between-turn silence NOT counted as within-generation underrun).
 Real prompt-to-scheduled-output benchmark: 19 attempted, 18 audio detections/completions, n=18 p50 1324ms, p95 4666ms. One nonterminal response at 16s while connected; target 30 missed. No voice mouth-to-ear latency guarantee, no robust cost classification or user acoustic barge-in evidence. Q3 candidate has new source SHA, older long test cannot be claimed as bitwise same source.
+
+## Capture prolongada do microfone real (60 segundos)
+Teste no mesmo codigo F1-Q3: 1.494 frames x 640 samples = 956.160 amostras a 16kHz (59,76s de PCM) em captura de ~60s, 0 drops no Worklet. Foi utilizado getUserMedia no Chrome com dispositivo padrao real e AudioWorklet FIR; o audio bruto e a transcricao nao foram salvos. JSON MIC-PHYSICAL-60S.json inclui SHA256 do app e do worklet, comparados com a branch. Esta evidência nao comprova eco/barge-in natural, nem qualidade de som nos alto-falantes.
+
+## F1 Q3 external audit remediation (cycle 2)
+External Codex CLI under Emily normative profile evaluated SHA 4e5f331 and returned RETORNAR; its primary findings and MESTRE fixes are recorded in QA-F1-Q3-AUDIO-20261116/Q3-REMEDIATION-CYCLE2.md. Subsequent code introduced stale microphone packet rejection, count-accurate telemetry, turn-boundary reset and a 16s nonautomatic silent-response warning. In current staging, 19/19 offline, 17/17 real Gemini browser and 3/3 adversarial passed. A new real mic 60-second capture had no lost Worklet frames, with exact source SHA in the evidence. The old 19/18 benchmark is historical and does not attest these latest fixes. No native Emily or LEO gate was simulated. Future phase F2 is blocked by normative prerequisites.

@@ -6,7 +6,7 @@ const MODEL_25='gemini-2.5-flash-native-audio-preview-12-2025';
 const MODEL_38='gemini-3.8-live';
 const MODEL_EXT='gemini-3.8-live-extended-thinking';
 const WS='wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=';
-const state={socket:null,connected:false,connecting:false,wantConnected:false,micStream:null,micCtx:null,micNode:null,micSource:null,cameraStream:null,screenStream:null,frameTimer:null,frameSource:null,audioCtx:null,nextPlay:0,sources:new Set(),muted:false,micRms:0,started:0,timer:null,events:[],transcript:[],tools:0,tokens:0,notes:[],resumeHandle:null,retries:0,pendingMic:false,micGain:null,micActive:false,micGeneration:0,micStarting:false,connectionGeneration:0,connectAbort:null,setupWatchdog:null,reconnectHistory:[],sessionVadAuto:null,micSpeechFrames:0,micSilenceMs:0,preRoll:[],reconnectTimer:null,goAwayTimer:null,goAwayCount:0,playDropCount:0,playUnderruns:0,playbackEpoch:0,playScheduledSamples:0,playFinishedSamples:0,playWarnAt:0,lastRxAudioAt:0,lastAudioLogAt:0,playbackTurnOpen:false,playbackIdleResumes:0,workletDrops:0};
+const state={socket:null,connected:false,connecting:false,wantConnected:false,micStream:null,micCtx:null,micNode:null,micSource:null,cameraStream:null,screenStream:null,frameTimer:null,frameSource:null,audioCtx:null,nextPlay:0,sources:new Set(),muted:false,micRms:0,started:0,timer:null,events:[],transcript:[],tools:0,tokens:0,notes:[],resumeHandle:null,retries:0,pendingMic:false,micGain:null,micActive:false,micGeneration:0,micStarting:false,connectionGeneration:0,connectAbort:null,setupWatchdog:null,reconnectHistory:[],sessionVadAuto:null,micSpeechFrames:0,micSilenceMs:0,preRoll:[],reconnectTimer:null,goAwayTimer:null,goAwayCount:0,playDropCount:0,playUnderruns:0,playbackEpoch:0,playScheduledSamples:0,playFinishedSamples:0,playWarnAt:0,lastRxAudioAt:0,lastAudioLogAt:0,playbackTurnOpen:false,playbackIdleResumes:0,workletDrops:0,staleInputDrops:0,lastMicWarningAt:0,pendingTurnTimeout:null,pendingPromptAudio:false,pendingTurnSeq:0};
 const ui={model:$('model'),btn:$('connect'),stop:$('disconnect'),mic:$('mic'),camera:$('camera'),screen:$('screen'),mute:$('mute'),msg:$('messages')};
 function toast(text){$('toast').textContent=text;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),3600);}
 function log(type,detail){const e={at:new Date().toISOString(),type,detail:String(detail)};state.events.push(e);if(state.events.length>2000)state.events.shift();const div=document.createElement('div');div.className='event';const t=document.createElement('time');t.textContent=new Date(e.at).toLocaleTimeString('pt-BR');const strong=document.createElement('strong');strong.textContent=type;const s=document.createElement('span');s.textContent=e.detail;div.append(t,strong,s);$('events').prepend(div);while($('events').children.length>450)$('events').lastElementChild.remove();}
@@ -125,7 +125,8 @@ async function connect(retry=false){
   ws.onclose=e=>{
    if(!current())return;
    clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
-   state.socket=null;state.connecting=false;state.connected=false;
+   state.socket=null;state.connecting=false;state.connected=false;state.playbackTurnOpen=false;
+   clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;
    clearTimeout(state.goAwayTimer);state.goAwayTimer=null;
    stopMic();stopCamera();stopScreen();setButtons(false);
    if(state.sources.size)log('ÁUDIO','WebSocket encerrado; blocos já recebidos continuarão tocando até o fim.');
@@ -168,12 +169,19 @@ function handleMessage(msg){
  if(msg.toolCallCancellation)log('FERRAMENTA','Chamadas canceladas pelo modelo.');
  if(msg.serverContent){
   const content=msg.serverContent;
-  if(content.interrupted){clearPlay();state.playbackTurnOpen=false;f1tel('barge_in',{count:1});log('ÁUDIO','Interrupção confirmada pela API Live; apenas neste caso a fila foi cancelada.');}
+  if(content.interrupted){clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;clearPlay();state.playbackTurnOpen=false;f1tel('barge_in',{count:1});log('ÁUDIO','Interrupção confirmada pela API Live; apenas neste caso a fila foi cancelada.');}
   if(content.inputTranscription?.text)bubble('user',content.inputTranscription.text);
   if(content.outputTranscription?.text)bubble('model',content.outputTranscription.text);
   if(!content.interrupted)for(const part of content.modelTurn?.parts||[]){if(part.inlineData?.data&&String(part.inlineData.mimeType||'').startsWith('audio/'))playAudio(part.inlineData.data);if(part.text)bubble('model',part.text);}
-  if(content.generationComplete){state.playbackTurnOpen=false;f1tel('generation_complete',{count:1});log('SESSÃO','Geração de áudio concluída.');}
-   if(content.turnComplete){state.playbackTurnOpen=false;log('SESSÃO','Turno concluído.');}
+  if(content.generationComplete){
+   if(state.pendingPromptAudio){f1tel('response_no_audio',{count:1});log('ALERTA','Turno concluido sem audio detectado.');}
+   clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;
+   state.playbackTurnOpen=false;f1tel('generation_complete',{count:1});log('SESSÃO','Geração de áudio concluída.');}
+   if(content.turnComplete){
+    if(state.pendingPromptAudio){f1tel('response_no_audio',{count:1});log('ALERTA','Turno finalizado sem audio detectado.');}
+    clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;
+    state.playbackTurnOpen=false;log('SESSÃO','Turno concluído.');
+   }
  }
  if(msg.error)log('ERRO',JSON.stringify(msg.error));
 }
@@ -194,6 +202,7 @@ function prepareAudioOutput(){
  }catch(e){log('ERRO','Saída de som: '+e.message);return null;}
 }
 function playAudio(base64){
+ if(state.pendingPromptAudio){state.pendingPromptAudio=false;clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;}
  if(state.muted)return;
  const firstPromptAt=state.f0LastPromptAt;
  if(firstPromptAt){f0tel('first_audio',{latency_ms:performance.now()-firstPromptAt});state.f0LastPromptAt=null;}
@@ -256,6 +265,19 @@ function processAudioFrame(frame){
  if(!state.connected||!state.micStream||!frame?.buffer)return;
  const lost=Math.max(0,Number(frame.droppedFrames||0));
  if(lost){state.workletDrops+=lost;f1tel('input_dropped',{count:lost});}
+ // The Worklet can run while the browser main thread is blocked. Do not
+ // replay old microphone audio after a long pause: keep realtime semantics.
+ const captureTime=Number(frame.captureTimeSec);
+ const ageMs=Number.isFinite(captureTime)&&state.micCtx
+  ?Math.max(0,(state.micCtx.currentTime-captureTime)*1000):0;
+ if(ageMs>350){
+  state.staleInputDrops++;f1tel('input_dropped',{count:1});
+  if(Date.now()-state.lastMicWarningAt>5000){
+   state.lastMicWarningAt=Date.now();
+   log('ALERTA','Atraso no microfone. Parte da fala foi descartada; repita a frase.');
+  }
+  return;
+ }
  const rms=Number(frame.rms||0),duration=Number(frame.samples||640)/16000*1000;
  state.micRms=rms;
  // Default: wait for the provider's authoritative interrupted signal.
@@ -367,13 +389,35 @@ function disconnect(){
  state.wantConnected=false;state.connectionGeneration++;state.connectAbort?.abort();state.connectAbort=null;clearTimeout(state.reconnectTimer);clearTimeout(state.goAwayTimer);
  state.reconnectTimer=null;state.goAwayTimer=null;
  clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
+ clearTimeout(state.pendingTurnTimeout);state.pendingTurnTimeout=null;state.pendingPromptAudio=false;
  stopMic();stopCamera();stopScreen();clearPlay();
  state.connected=false;state.connecting=false;state.resumeHandle=null;state.started=0;
  state.socket?.close(1000,'Encerrado pelo usuário');state.socket=null;
  setButtons(false);status('Desconectado','gray');$('orbSub').textContent='Inicie uma nova sessão';log('SESSÃO','Sessão encerrada pelo usuário.');
 }
 ui.btn.onclick=()=>{prepareAudioOutput();connect(false);};ui.stop.onclick=disconnect;ui.mic.onclick=()=>state.micStream||state.micStarting?stopMic():startMic();ui.camera.onclick=()=>state.cameraStream?stopCamera():startCamera();ui.screen.onclick=()=>state.screenStream?stopScreen():startScreen();ui.mute.onclick=()=>{state.muted=!state.muted;if(state.muted)clearPlay();else prepareAudioOutput();setButtons(state.connected);updateStreamMetrics();};
-function sendPrompt(text){prepareAudioOutput();const clean=String(text||'').trim();if(!clean)return;if(!state.connected)return toast('Inicie uma sessão.');if(!send({clientContent:{turns:[{role:'user',parts:[{text:clean}]}],turnComplete:true}}))return toast('Não foi possível enviar.');state.f0LastPromptAt=performance.now();f0tel('text_sent',{bytes:clean.length});bubble('user',clean);$('prompt').value='';log('TEXTO','Mensagem enviada ('+clean.length+' caracteres)');}
+function sendPrompt(text){
+ prepareAudioOutput();
+ const clean=String(text||'').trim();
+ if(!clean)return;
+ if(!state.connected)return toast('Inicie uma sessão.');
+ if(!send({clientContent:{turns:[{role:'user',parts:[{text:clean}]}],turnComplete:true}}))return toast('Não foi possível enviar.');
+ // New user turn resets audio-gap classification even if prior model skipped turnComplete.
+ state.playbackTurnOpen=false;
+ state.f0LastPromptAt=performance.now();f0tel('text_sent',{bytes:clean.length});
+ state.pendingPromptAudio=true;
+ const seq=++state.pendingTurnSeq;
+ clearTimeout(state.pendingTurnTimeout);
+ state.pendingTurnTimeout=setTimeout(()=>{
+  if(state.connected&&state.pendingTurnSeq===seq&&state.pendingPromptAudio){
+   f1tel('response_timeout',{count:1});
+   log('ALERTA','Sem áudio de resposta em 16s; conexão ativa. Não foi enviado retry automático.');
+   toast('Resposta atrasada. Tente novamente ou altere o modelo.');
+  }
+  state.pendingTurnTimeout=null;
+ },16000);
+ bubble('user',clean);$('prompt').value='';log('TEXTO','Mensagem enviada ('+clean.length+' caracteres)');
+}
 $('uploadImage').onclick=()=>$('imageFile').click();
 $('imageFile').onchange=async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;if(!state.connected)return toast('Inicie uma sessão primeiro.');if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>12*1024*1024)return toast('Escolha uma imagem PNG, JPEG ou WebP de até 12 MB.');try{const blobURL=URL.createObjectURL(f);const img=new Image();await new Promise((ok,fail)=>{img.onload=ok;img.onerror=fail;img.src=blobURL;});URL.revokeObjectURL(blobURL);const scale=Math.min(1,1024/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);const data=c.toDataURL('image/jpeg',.77).split(',')[1];const prompt='Analise esta imagem enviada pelo usuário.';if(send({clientContent:{turns:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data}},{text:prompt}]}],turnComplete:true}})){bubble('user','[Imagem: '+f.name+'] '+prompt);log('IMAGEM','Arquivo enviado: '+f.name+' ('+c.width+'x'+c.height+')');}else toast('Falha ao enviar imagem.');}catch(err){toast('Não foi possível ler a imagem.');log('ERRO',err.message);}};
 $('send').onclick=()=>sendPrompt($('prompt').value);$('prompt').onkeydown=e=>{if(e.key==='Enter')sendPrompt(e.target.value);};document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>{document.querySelector('[data-view="live"]').click();sendPrompt(b.dataset.prompt);});

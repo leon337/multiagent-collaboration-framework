@@ -22,3 +22,6 @@ A correcao introduz playbackTurnOpen e um evento separado playback_idle_resume. 
 
 ## Pendencias para gate
 Testes de barge-in natural e comparacao de microfone/headset com voz longa ainda nao foram certificados. Falha/turno silencioso ou lento deve ser investigado; 30+ amostras validas de voz fim-de-fala para primeiro som ainda nao existem. O teste de 632s pertence a SHA anterior (documentado no PRF). Nao se inferiu custo real da conta de API. F0.8 e a chave compartilhada nao revogada ainda sao riscos abertos por instrucao anterior do usuario. Sem merge, deploy ou F2 implementada.
+
+## Capture prolongada do microfone real (60 segundos)
+Teste no mesmo codigo F1-Q3: 1.494 frames x 640 samples = 956.160 amostras a 16kHz (59,76s de PCM) em captura de ~60s, 0 drops no Worklet. Foi utilizado getUserMedia no Chrome com dispositivo padrao real e AudioWorklet FIR; o audio bruto e a transcricao nao foram salvos. JSON MIC-PHYSICAL-60S.json inclui SHA256 do app e do worklet, comparados com a branch. Esta evidência nao comprova eco/barge-in natural, nem qualidade de som nos alto-falantes.

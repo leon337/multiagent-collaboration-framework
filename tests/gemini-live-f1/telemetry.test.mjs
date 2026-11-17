@@ -52,3 +52,13 @@ test('normal idle intervals do not inflate within-generation underrun counts',()
  for(let i=0;i<9;i++)t.record('playback_idle_resume',{elapsed_ms:1500});
  const m=t.snapshot().metrics;assert.equal(m.audio_underruns,1);assert.equal(m.playback_idle_resumes,9);
 });
+
+test('lost frame counts aggregate actual frames rather than event count',()=>{
+ const t=make();t.record('input_dropped',{count:12});t.record('input_dropped',{count:3});
+ assert.equal(t.snapshot().metrics.input_frames_dropped,15);
+});
+test('silent responses and response timeouts are numeric private metadata only',()=>{
+ const t=make();t.record('response_no_audio',{count:1,prompt:'secret'});t.record('response_timeout',{count:1,token:'NO'});
+ const s=t.snapshot();assert.equal(s.metrics.silent_turns,1);assert.equal(s.metrics.response_timeouts,1);
+ assert.ok(!JSON.stringify(s).includes('secret'));
+});

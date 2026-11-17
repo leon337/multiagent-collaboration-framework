@@ -55,7 +55,7 @@ class PCM16CaptureProcessor extends AudioWorkletProcessor {
     this.pendingFrames++;
     this.port.postMessage({
      type:'pcm',buffer:payload,rms:Math.sqrt(this.sumsq/this.frameSamples),
-     samples:this.frameSamples,rate:this.targetRate,droppedFrames:this.droppedFrames
+     samples:this.frameSamples,rate:this.targetRate,droppedFrames:this.droppedFrames,captureTimeSec:this.inputIndex/this.inputRate
     },[payload]);
     this.droppedFrames=0;
    }else this.droppedFrames++;

@@ -25,11 +25,22 @@ staging:
   original_url: http://127.0.0.1:18371
   credential: EXISTING_LOCAL_FILE_REFERENCED_NOT_COPIED
 evidence:
+  q3_cycle2_offline_unit_pass: 19
+  q3_cycle2_browser_e2e_pass: 17
+  q3_cycle2_adversarial_pass: 3
+  q3_cycle2_real_mic_60s_frames: 1493
+  q3_cycle2_real_mic_60s_samples: 955520
+  q3_cycle2_real_mic_60s_dropped_frames: 0
+  q3_cycle2_silent_turn_warning: PASS_NO_AUTORETRY
+  q3_cycle2_previous_benchmark: FAILED_19_ATTEMPTED_18_AUDIO
   qa_q3_node_unit_pass: 17
   qa_q3_browser_e2e_pass: 17
   qa_q3_underrun_classifier_pass: 3
   qa_q3_physical_mic_frames: 63
   qa_q3_physical_mic_samples: 40320
+  qa_q3_mic_60s_frames: 1494
+  qa_q3_mic_60s_samples: 956160
+  qa_q3_mic_60s_drops: 0
   qa_q3_text_latency_attempts: 19
   qa_q3_text_latency_audio_responses: 18
   qa_q3_text_latency_p50_ms: 1324
