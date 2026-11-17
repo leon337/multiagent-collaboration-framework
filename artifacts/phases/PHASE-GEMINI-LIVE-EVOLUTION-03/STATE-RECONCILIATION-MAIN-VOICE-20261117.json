@@ -1,0 +1,79 @@
+{
+  "schema": "mcf-gemini-live-voice-main-reconciliation/v1",
+  "observed_at_utc": "2026-11-17T05:30:00Z",
+  "mission_id": "MCF-GEMINI-LIVE-EVOLUTION-20261116-001",
+  "canonical_issue": "https://github.com/leon337/multiagent-collaboration-framework/issues/527",
+  "authority": {
+    "human": "LEANDRO",
+    "orchestrator": "MESTRE",
+    "gate_agent": "LÉO"
+  },
+  "repository": "leon337/multiagent-collaboration-framework",
+  "main": {
+    "sha": "97d79ee8152ead27564d2bf634ad63df5cc284e6",
+    "merge_pr": 543,
+    "studio_base_pr": 544,
+    "studio_base_merge": "ca84c9132459e37ecd8ba79a965b33e554f6200a"
+  },
+  "source_pr_540": {
+    "state": "OPEN",
+    "draft": true,
+    "head": "76f86b09c254e5fb3adf5b127c1d1ed8e2e2b36a",
+    "voice_code_commit": "5e0118b6a4b8f6047a9b19eddc8c8236abfb9545",
+    "base": "feat/gemini-live-f2-multimodal-consent-20261116"
+  },
+  "candidate": {
+    "branch": "reconcile/gemini-live-voice-approval-main-20261117",
+    "base_sha": "97d79ee8152ead27564d2bf634ad63df5cc284e6",
+    "status": "IMPLEMENTED_CANDIDATE_CI_PENDING",
+    "merged_to_main": false,
+    "public_deploy": false
+  },
+  "wip_f1": {
+    "branch": "wip/gemini-live-f1-response-20261117",
+    "sha": "142cd99f7519512849c43ded619ee63b884ee87e",
+    "parent": "8cffb50f00175443d7954b039d908b26a6f26650",
+    "preserved": true,
+    "rewritten": false,
+    "merged_into_candidate": false,
+    "prior_evidence": {
+      "browser": {
+        "pass": 18,
+        "fail": 0
+      },
+      "source_hashes": 31,
+      "artifact_hashes": 54
+    }
+  },
+  "phase_state": {
+    "F0": "GATE_F0_8_PENDING",
+    "F1": "GATE_F1_6_PENDING",
+    "F2": "GATE_F2_6_PENDING",
+    "F3": "GATE_F3_7_PENDING",
+    "F4": "NOT_IMPLEMENTED"
+  },
+  "gates": {
+    "F0_8": "PENDING",
+    "F1_6": "PENDING",
+    "F2_6": "PENDING",
+    "F3_7": "PENDING",
+    "F4_6": "PENDING",
+    "native_HDF": false,
+    "permission_engine_identity": false
+  },
+  "security_preservation": {
+    "main_gateway_file_reused": true,
+    "revoked_session_guard_preserved": true,
+    "redirect_validation_preserved": true,
+    "voice_not_biometric": true,
+    "network_egress_sandbox": false,
+    "physical_microphone_test": false
+  },
+  "validation": {
+    "source_pr_540_actions": "4_WORKFLOWS_SUCCESS_ON_SOURCE_HEAD_ONLY",
+    "candidate_actions": "PENDING",
+    "candidate_browser_e2e": "HARNESS_PRESENT_NOT_EXECUTED",
+    "physical_voice": "NOT_TESTED"
+  },
+  "next_action": "Run candidate PR CI and manifests; inspect failures; request independent review on exact candidate SHA; perform supervised physical voice test and close security gaps before any gate or production decision."
+}
