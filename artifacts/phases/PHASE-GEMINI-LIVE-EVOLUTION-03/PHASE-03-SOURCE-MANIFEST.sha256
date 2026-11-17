@@ -21,7 +21,7 @@ b50188239f50003226f26a1584426e58c880b4e0a83c5256b60f594617b2751e  ../../../apps/
 ad168c8429d505c3141fba06da0f7357de1cb93ac5c4c8cf2f489295064de550  ../../../apps/gemini-live-studio/vision-adapter.cjs
 11941f95eedba3fb9c6da85d7dcdfde68fbfa4808d401c3fc9dc77ae050b54d0  ../../../docs/missions/gemini-live-evolution-20261116/CHECKLIST-LIVE.md
 18f4bf9214b669487bf40fbd8cf3b020613582bb3ee4ed1a8888efb8de599f72  ../../../docs/missions/gemini-live-evolution-20261116/ROADMAP.md
-16c15ddc994b56beda531d086e10bc188a6b51f5a0aa284fba19b0ffdf86f783  ../../../docs/missions/gemini-live-evolution-20261116/SESSION-CONTINUITY-CURRENT.md
+f9b9a9f8e2da18b83cb3e7ea76e992a0f120df90954c2b0c24ade55250676f5f  ../../../docs/missions/gemini-live-evolution-20261116/SESSION-CONTINUITY-CURRENT.md
 7707d1ab4040c1307824d018a8cafbcb0167510e0a46a31d4a11410523942989  ../../../docs/missions/gemini-live-evolution-20261116/STATE-RECONCILIATION-20261117.json
 73d4c4941ff8ca660af3ef85484058da23924496171a4c8686b12982840df176  ../../../ops/gemini-live/checklist-sync.mjs
 f95ed791addb566cca9bca45d0e1138dceab5aeb739f3847778f4f6c1ed04d71  ../../../ops/gemini-live/checklist-sync.test.mjs
