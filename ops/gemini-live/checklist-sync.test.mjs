@@ -32,8 +32,8 @@ function fake({checks=[one,two],comments=[],secondPr=null,thirdPr=null,
   },
   post:async(path,payload)=>{
    posts.push({path,payload});
-   if(writeError){if(writePersists)comments.push({body:payload.body,user:{login:'github-actions[bot]'}});throw Error('network-timeout');}
-   comments.push({body:payload.body,user:{login:'github-actions[bot]'}});
+   if(writeError){if(writePersists)comments.push({body:payload.body,user:{login:'github-actions[bot]',type:'Bot'}});throw Error('network-timeout');}
+   comments.push({body:payload.body,user:{login:'github-actions[bot]',type:'Bot'}});
   }
  };
  return {t,posts,calls,comments};
@@ -81,7 +81,7 @@ test('WRITE requires token independently of opt-in',async()=>{
 });
 test('duplicate comment is idempotently skipped',async()=>{
  const comment=buildObservation(pr,[one,two],issue.body).comment;
- const f=fake({comments:[{body:comment,user:{login:'github-actions[bot]'}}]});
+ const f=fake({comments:[{body:comment,user:{login:'github-actions[bot]',type:'Bot'}}]});
  const r=await reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'});
  assert.equal(r.action,'ALREADY_RECORDED');assert.equal(f.posts.length,0);
 });
@@ -108,7 +108,7 @@ test('pagination counts more than 100 checks',async()=>{
 });
 test('pagination can find duplicate on second page of comments',async()=>{
  const marker=buildObservation(pr,[one,two],issue.body).comment;
- const comments=Array.from({length:100},(_,i)=>({body:'other-'+i}));comments.push({body:marker,user:{login:'github-actions[bot]'}});
+ const comments=Array.from({length:100},(_,i)=>({body:'other-'+i}));comments.push({body:marker,user:{login:'github-actions[bot]',type:'Bot'}});
  const f=fake({comments});
  const r=await reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'});
  assert.equal(r.action,'ALREADY_RECORDED');assert.equal(f.posts.length,0);
@@ -131,13 +131,13 @@ test('invalid pagination cannot silently green',async()=>{
 
 test('a third party quoting a receipt marker does NOT suppress a trusted observer',async()=>{
  const current=buildObservation(pr,[one,two],issue.body).comment;
- const f=fake({comments:[{body:current,user:{login:'outsider-user'}}]});
+ const f=fake({comments:[{body:current,user:{login:'outsider-user',type:'User'}}]});
  const r=await reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'});
  assert.equal(r.action,'COMMENT_ONLY');assert.equal(f.posts.length,1);
 });
 test('truncated receipt or forged marker from trusted account is ignored',async()=>{
  const current=buildObservation(pr,[one,two],issue.body).comment;
- const f=fake({comments:[{body:current.slice(0,100),user:{login:'leon337'}}]});
+ const f=fake({comments:[{body:current.slice(0,100),user:{login:'leon337',type:'User'}}]});
  const r=await reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'});
  assert.equal(r.action,'COMMENT_ONLY');assert.equal(f.posts.length,1);
 });
@@ -145,7 +145,7 @@ test('identical authorized receipt with different observation time is recognized
  const a=buildObservation(pr,[one,two],issue.body,'2026-11-16T00:00:00Z');
  const b=buildObservation(pr,[one,two],issue.body,'2026-11-16T00:10:00Z');
  assert.equal(a.marker,b.marker);
- assert.equal(isTrustedReceipt({body:a.comment,user:{login:'github-actions[bot]'}},b),true);
+ assert.equal(isTrustedReceipt({body:a.comment,user:{login:'github-actions[bot]',type:'Bot'}},b),true);
 });
 test('HEAD changed during comment pagination blocks publication',async()=>{
  const f=fake({thirdPr:{...pr,head:{...pr.head,sha:ALT}}});
@@ -161,7 +161,27 @@ test('issue closed or modified before posting blocks publication',async()=>{
 });
 test('untrusted fake receipt cannot satisfy uncertain-write recovery',async()=>{
  const current=buildObservation(pr,[one,two],issue.body).comment;
- const f=fake({comments:[{body:current,user:{login:'outsider-user'}}],writeError:true});
+ const f=fake({comments:[{body:current,user:{login:'outsider-user',type:'User'}}],writeError:true});
  await assert.rejects(reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'}),/write-uncertain-not-retried/);
  assert.equal(f.posts.length,1);
+});
+
+test('rejects fraudulent timestamp content despite trusted login',()=>{
+ const o=buildObservation(pr,[one,two],issue.body);
+ for(const line of ['F0 APROVADA; gate LEO aprovado','', '2026-11-16T00:00:00Z EXTRA']){
+  const body=o.comment.replace(/^(- Consultado em: ).*$/m,(_,prefix)=>prefix+line);
+  assert.equal(isTrustedReceipt({body,user:{login:'github-actions[bot]',type:'Bot'}},o),false);
+ }
+});
+test('rejects extra whitespace, altered receipt lines and duplicate timestamps',()=>{
+ const o=buildObservation(pr,[one,two],issue.body);
+ const actor={login:'leon337',type:'User'};
+ for(const body of [o.comment.trim(),o.comment+' ',o.comment.replace('Nenhum checkbox','Checkbox aprovado'),o.comment.replace('2026-11-16T00:00:00Z','2026-11-16T00:00:00Z\n- Consultado em: 2026-11-16T00:00:00Z')]){
+  assert.equal(isTrustedReceipt({body,user:actor},o),false);
+ }
+});
+test('trusted login with impossible user type cannot prove a receipt',()=>{
+ const o=buildObservation(pr,[one,two],issue.body);
+ assert.equal(isTrustedReceipt({body:o.comment,user:{login:'github-actions[bot]',type:'User'}},o),false);
+ assert.equal(isTrustedReceipt({body:o.comment,user:{login:'leon337',type:'Bot'}},o),false);
 });

@@ -7,15 +7,26 @@ const BAD=new Set(['failure','timed_out','cancelled','action_required','startup_
 // The observer can only publish a comment. A matching marker in an UNTRUSTED
 // third-party comment is not a receipt and must never suppress the real signal.
 // This allowlist is intentionally specific to the official repository.
-const TRUSTED_RECEIPT_AUTHORS=new Set(['leon337','github-actions[bot]']);
+const TRUSTED_RECEIPT_AUTHORS=new Map([['leon337','User'],['github-actions[bot]','Bot']]);
+const UTC_TIME=/^- Consultado em: (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z)$/;
 function canonicalReceipt(body){
- return String(body||'').trim().replace(/^(- Consultado em: ).*$/m,'$1<timestamp>');
+ if(typeof body!=='string')return null;
+ const lines=body.split('\n');
+ const indices=lines.flatMap((line,index)=>line.startsWith('- Consultado em: ')?[index]:[]);
+ if(indices.length!==1)return null;
+ const index=indices[0],match=UTC_TIME.exec(lines[index]);
+ if(!match||!Number.isFinite(Date.parse(match[1])))return null;
+ lines[index]='- Consultado em: <timestamp>';
+ // No trim(): any extra text, whitespace or maliciously altered lines fail.
+ return lines.join('\n');
 }
 export function isTrustedReceipt(comment,observation){
- if(!TRUSTED_RECEIPT_AUTHORS.has(String(comment?.user?.login||'')))return false;
- const body=String(comment?.body||'').trim();
+ const login=String(comment?.user?.login||'');
+ if(TRUSTED_RECEIPT_AUTHORS.get(login)!==comment?.user?.type)return false;
+ const body=String(comment?.body||'');
  if(!body.startsWith(observation.marker+'\n'))return false;
- return canonicalReceipt(body)===canonicalReceipt(observation.comment);
+ const candidate=canonicalReceipt(body),expected=canonicalReceipt(observation.comment);
+ return candidate!==null&&expected!==null&&candidate===expected;
 }
 function digest(value){return createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0,20);}
 function assertCandidate(pr,issueBody){
