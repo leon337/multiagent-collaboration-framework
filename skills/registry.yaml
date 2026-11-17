@@ -624,3 +624,24 @@ skills:
     failure_modes: [offline_host, inaccessible_private_repo, runner_offline, runner_scope_mismatch, os_account_not_isolated, missing_HDF, model_quota]
     fallback: Sem host ou ferramentas, entregar contrato e limitação verificável; não executar.
     handoff_to: Mestre
+
+  - skill_id: MCF-PROJECT-DRIVE-BACKUP
+    status: EXPERIMENTAL
+    name: Backup portátil e envio verificado ao Google Drive
+    version: 0.1.0
+    purpose: Reconciliar projeto local/remoto e preservar dados, modelos e configuração para restauração, transferindo à conta Drive autorizada com integridade e evidências.
+    owner_agents: [Mestre]
+    supporting_agents: [Miriam, Rafael, Renato, Emily, Ricardo, Gabriel]
+    trigger_phrases: ["enviar o projeto para o google drive", "enviar projeto para o Drive", "backup completo no Google Drive", "cópia portátil da aplicação", "salvar o projeto no Drive"]
+    required_inputs: [project_reference_or_current_session_context]
+    optional_inputs: [local_url, repository, target_account, recovery_scope, target_os, authorized_host]
+    allowed_tools: [Remote_Desktop_Commander, GitHub, Google_Drive, authorized_browser, local_archive_utilities]
+    forbidden_tools: [credential_exfiltration, public_sharing, cross_account_upload, force_push, destructive_reset, unapproved_merge, unapproved_deploy, HDF_bypass]
+    permission_profile: SCOPED_WRITE
+    execution_steps: [discover_source_host_and_repo, reconcile_git, classify_data_and_secrets, snapshot_databases, package_install_manifest, verify_sha256, upload_private_idempotent, verify_drive_metadata_and_privacy, test_restore_when_possible, issue_receipt]
+    required_evidence: [source_identity, git_remote_sha, data_manifest, local_checksums, excluded_secrets, verified_drive_account, remote_file_ids_and_sizes, privacy_state, restore_status, source_preservation]
+    expected_outputs: [portable_backup, restoration_guide, drive_folder_ref, reconciliation_receipt]
+    acceptance_criteria: [authorized_account_verified, project_preserved, secrets_protected, local_integrity_pass, remote_files_verified, restore_claim_truthful]
+    failure_modes: [host_offline, destination_ambiguous, missing_auth, data_snapshot_inconsistent, secret_exposure, upload_partial, restore_unverified]
+    fallback: Preservar arquivos locais e declarar PARTIAL/BLOCKED quando conector, gate ou verificação de upload faltar; nunca inventar transferência.
+    handoff_to: Mestre
