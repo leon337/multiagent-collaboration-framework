@@ -729,13 +729,13 @@ A [Issue #478](https://github.com/leon337/multiagent-collaboration-framework/iss
 
 ## Extensão Remotion GPU Worker — estado documental (2026-11-17)
 
-O PR #543 foi mergeado em `main@97d79ee8152ead27564d2bf634ad63df5cc284e6`, adicionando a descoberta documental, o manifesto de capability e o adapter local read-only. O runner self-hosted foi registrado **somente** no repositório privado `leon337/mcf-remotion-mcp`: ID 2, nome `leo-N43SM-remotion-gpu`, labels `mcf-remotion-gpu` / `amd-rx580` / `remotion`, estado ONLINE observado em 2026-11-17T05:45:46Z. O serviço user-systemd está enabled e o user lingering foi confirmado.
+O PR #543 foi mergeado em `main@97d79ee8152ead27564d2bf634ad63df5cc284e6`, adicionando a descoberta documental, o manifesto de capability e o adapter local read-only. O runner self-hosted foi registrado **somente** no repositório privado `leon337/mcf-remotion-mcp`: ID 2, nome `leo-N43SM-remotion-gpu`, labels `mcf-remotion-gpu` / `amd-rx580` / `remotion`, estado ONLINE observado em 2026-11-17T06:01:51Z. O workflow read-only foi integrado ao worker privado em `main@4951d2e2650e75ab9825eb127f3c281b878a5e62` e passou no run #44028059898 (job #133853084207). O serviço user-systemd está enabled e o user lingering foi confirmado.
 
 A arquitetura e o cold-start reutilizável estão em [MCF-REMOTION-GPU-WORKER.md](operations/MCF-REMOTION-GPU-WORKER.md), com entrada em [AGENTS.md](../AGENTS.md), skill `MCF-REMOTION-VIDEO-PRODUCE` e [capability manifest](../context/capabilities/remotion-video-engine-local.yaml). O repositório público contém documentação e contratos; **não** hospeda runner e não recebe acesso ao computador. O runner pertence exclusivamente ao repositório privado.
 
 Limites observados:
 - runner executa como usuário Linux `leo`, sem conta de sistema isolada; não é sandbox;
-- workflow privado de health check está no PR #1 (DRAFT), ainda sem execução E2E;
+- workflow privado de health check integrado pelo PR #1; run #44028059898 SUCCESS, qualificando somente disponibilidade read-only do worker;
 - serviço MCP local respondeu `ready`;
 - FFmpeg disponibiliza H.264/HEVC VA-API; composição Remotion/Chrome segue software com WebGL/WebGPU desativados;
 - adapter central MCF permanece read-only e escrita sem HDF/PermissionEngine continua negada;
