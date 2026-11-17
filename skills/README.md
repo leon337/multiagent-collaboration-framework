@@ -104,3 +104,7 @@ RETIRED: não utilizar
 ## Vídeo Remotion e voz Gemini (discovery EXPERIMENTAL)
 
 MCF-REMOTION-VIDEO-PRODUCE existe como contrato de descoberta em video/mcf-remotion-produce/SKILL.md e video/MCF-REMOTION-VIDEO-PRODUCE.yaml, com manifesto em ../context/capabilities/remotion-video-engine-local.yaml. Os dois projetos fonte estão em repositórios PRIVADOS. Esse registro não altera a lista McfExecutableSkillId nem concede escrita no runtime MCF: consultar HDF/PermissionEngine antes de qualquer side effect. Ver guia: ../docs/operations/MCF-REMOTION-CAPABILITY-DISCOVERY.md.
+
+## Backup portátil para Drive (discovery, 2026-11-17)
+
+A frase **"enviar o projeto para o google drive"** invoca a rota documental `MCF-PROJECT-DRIVE-BACKUP`. Consultar `backup/mcf-project-drive-backup/SKILL.md`, `backup/MCF-PROJECT-DRIVE-BACKUP.yaml` e `../docs/operations/MCF-PROJECT-DRIVE-BACKUP.md`. O procedimento deve ser executado por ferramentas de desktop/Drive autenticadas no contexto da missão, com reconciliação Git, snapshots, SHA-256, validação de upload e status explícito de restauração. É **EXPERIMENTAL / documental**, não parte do conjunto `McfExecutableSkillId` e não autoriza ignorar HDF/PermissionEngine.
