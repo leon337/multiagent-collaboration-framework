@@ -45,9 +45,10 @@ jobs:
           node --check tests/gemini-live-f3/browser-agent-mcp-e2e.cjs
           node --check tests/gemini-live-f3/real-gemini-live-tool-e2e.cjs
           node --check tests/gemini-live-f3/voice-approval.test.cjs
+          node --check tests/gemini-live-f3/voice-echo-guard.test.cjs
           node --check tests/gemini-live-f3/browser-voice-approval-e2e.cjs
       - name: Run tool policy and one-time gate tests (no external browsing)
-        run: node --test tests/gemini-live-f3/mcp-playwright-gateway.test.cjs tests/gemini-live-f3/voice-approval.test.cjs
+        run: node --test tests/gemini-live-f3/mcp-playwright-gateway.test.cjs tests/gemini-live-f3/voice-approval.test.cjs tests/gemini-live-f3/voice-echo-guard.test.cjs
       - name: Check dependency advisories
         run: npm audit --prefix apps/gemini-live-studio --omit=dev --audit-level=high
       - name: Verify evidence and source integrity

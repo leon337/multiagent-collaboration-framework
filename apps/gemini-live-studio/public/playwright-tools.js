@@ -59,16 +59,16 @@
    }
    const challenge=el('playwrightVoiceChallenge');
    challenge.hidden=!voice;
-   el('playwrightVoicePhrase').textContent=voice?'autorizo '+code.split('').join(' '):'';
-   el('playwrightVoiceStatus').textContent=voice?'Preparando reconhecimento de voz em português...':'';
-   let resolved=false,recognizer=null,ttsWatch=null,expiration=null,speaking=false;
+   // O segredo visual não é uma frase executável em live region.
+   el('playwrightVoicePhrase').textContent=voice?code.split('').join(' '):'';
+   el('playwrightVoiceStatus').textContent=voice?'Confira o código. Inicie a escuta manualmente. A aprovação exige o botão Autorizar esta ação.':'';
+   let resolved=false,recognizer=null,expiration=null,speaking=false;
    const hadGeminiMic=voice&&typeof state==='object'&&
     !!(state.micStream||state.micStarting);
    const liveSessionAtGate=sessionId,liveGenerationAtGate=state.connectionGeneration,
     mcpEpochAtGate=state.mcpEpoch;
    const status=text=>{el('playwrightVoiceStatus').textContent=text;};
    const stopVoice=()=>{
-    if(ttsWatch){clearTimeout(ttsWatch);ttsWatch=null;}
     if(recognizer){
      const current=recognizer;recognizer=null;
      current.onresult=null;current.onerror=null;current.onend=null;
@@ -105,8 +105,9 @@
    const cancel=e=>{e.preventDefault();finish(false);};
    dialog.addEventListener('cancel',cancel);
    pendingApproval=finish;
-   el('playwrightApprove').onclick=()=>finish(true);
-   el('playwrightDeny').onclick=()=>finish(false);
+   // Voz pode ser eco/replay. Somente uma interação local confiável conclui a autorização.
+   el('playwrightApprove').onclick=event=>{if(event?.isTrusted)finish(true);};
+   el('playwrightDeny').onclick=event=>{if(event?.isTrusted)finish(false);};
    const startVoice=()=>{
     if(resolved||!dialog.open||!voice)return;
     stopVoice();
@@ -122,9 +123,12 @@
         recognized=e.results[n][0].transcript;
       }
       if(!recognized)return;
-      if(MCFVoiceApproval.authorize(recognized,code))finish(true);
+      if(MCFVoiceApproval.authorize(recognized,code)){
+       stopVoice();
+       status('Código conferido por voz. A ação NÃO está autorizada. Revise o destino e pressione Autorizar esta ação.');
+      }
       else if(MCFVoiceApproval.parsePhrase(recognized).decision==='DENY')finish(false);
-      else status('Frase ou código não corresponde. Clique em "Ouvir novamente" ou use os botões.');
+      else status('Frase ou código não corresponde. Selecione Iniciar escuta ou use os botões.');
      };
      next.onerror=e=>{
       if(!resolved&&recognizer===next)
@@ -134,17 +138,17 @@
       if(!resolved&&recognizer===next){
        recognizer=null;
        if(el('playwrightVoiceStatus').textContent.startsWith('Ouvindo'))
-        status('Não identifiquei uma confirmação completa. Clique em "Ouvir novamente".');
+        status('Não identifiquei uma confirmação completa. Selecione Iniciar escuta.');
       }
      };
      next.start();
-     status('Ouvindo sua confirmação: diga "autorizo" e os quatro dígitos, um por um.');
+     status('Ouvindo a frase e os quatro dígitos. Mesmo após reconhecer, a aprovação exige o botão.');
     }catch{
      recognizer=null;
-     status('O navegador não permitiu iniciar a escuta automática. Clique em "Ouvir novamente" ou aprove no botão.');
+     status('O navegador não permitiu iniciar o reconhecimento. Selecione Iniciar escuta ou aprove no botão.');
     }
    };
-   el('playwrightListen').onclick=()=>startVoice();
+   el('playwrightListen').onclick=event=>{if(event?.isTrusted)startVoice();};
    expiration=setTimeout(()=>finish(false),Math.max(1000,Math.min(42500,(Number(p.expiresInSec)||45)*1000-1200)));
    dialog.showModal();
    if(!voice)return;
@@ -155,20 +159,21 @@
     try{return new URL(p.summary.match(/https:\/\/[^\s]+/)?.[0]||'https://site-publico.example').hostname;}
     catch{return 'site solicitado';}
    })();
+   // O TTS não contém o segredo e nunca arma automaticamente o microfone.
+   // Ouvinte e confirmação final dependem de ações humanas locais distintas.
    const speak=window.speechSynthesis;
    if(speak&&typeof window.SpeechSynthesisUtterance==='function'){
     try{
      speaking=true;
      const voicePrompt=new SpeechSynthesisUtterance(
       'O agente solicita autorização para abrir '+hostname+
-      '. Confira os quatro dígitos na tela e diga autorizo, seguido dos dígitos.');
+      '. Revise o destino, inicie a escuta se desejar, e confirme no botão.');
      voicePrompt.lang='pt-BR';voicePrompt.rate=1.05;
-     const spoken=()=>{if(!speaking)return;speaking=false;if(ttsWatch)clearTimeout(ttsWatch);ttsWatch=null;startVoice();};
-     voicePrompt.onend=spoken;voicePrompt.onerror=spoken;
-     ttsWatch=setTimeout(spoken,6500);
+     voicePrompt.onend=()=>{speaking=false;};
+     voicePrompt.onerror=()=>{speaking=false;};
      speak.cancel();speak.speak(voicePrompt);
-    }catch{speaking=false;startVoice();}
-   }else startVoice();
+    }catch{speaking=false;}
+   }
   });
  }
  function beginSession(){
@@ -232,10 +237,10 @@
   voiceCheck.checked=false;voiceCheck.disabled=true;
   voiceInfo.textContent='Reconhecimento de voz não disponível neste navegador. Use aprovação pelos botões.';
  }else{
-  voiceInfo.textContent='Opt-in: reconhecimento em PT-BR, podendo usar serviço online do navegador. Não verifica identidade biométrica.';
+  voiceInfo.textContent='Opt-in: voz confere o código, mas aprovação final exige clique/teclado. Não é biometria.';
   voiceCheck.addEventListener('change',()=>{
    voiceInfo.textContent=voiceCheck.checked
-    ?'Voz ativada. Ao solicitar navegação, o agente perguntará e o navegador ouvirá "autorizo" + código. Caso falhe, toque em Ouvir novamente.'
+    ?'Voz ativada: inicie a escuta manualmente e confirme no botão. Somente voz não autoriza.'
     :'Voz desativada. Permissões continuam possíveis pelos botões.';
   });
  }
