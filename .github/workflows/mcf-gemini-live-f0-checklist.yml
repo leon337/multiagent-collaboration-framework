@@ -39,6 +39,9 @@ jobs:
       - name: Verify PRF hashes
         working-directory: artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00
         run: sha256sum -c PHASE-00-ARTIFACT-MANIFEST.sha256
+      - name: Verify F0.7 security-receipt remediation checksums
+        working-directory: artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00
+        run: sha256sum -c PHASE-00-REMEDIATION-CYCLE3-MANIFEST.sha256
       - name: Assert no credential or secret files are tracked in reproduction
         run: |
           python3 - <<'PY'
@@ -56,6 +59,9 @@ jobs:
           print('Public snapshot checked:',len(tracked),'files; no credential patterns')
           PY
   publish_signal:
+    concurrency:
+      group: mcf-f0-checklist-receipt-528
+      cancel-in-progress: false
     if: github.event_name == 'workflow_dispatch' && inputs.publish_status_comment == true
     needs: verify
     runs-on: ubuntu-latest

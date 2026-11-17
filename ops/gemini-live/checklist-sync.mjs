@@ -4,6 +4,19 @@ const REPO='leon337/multiagent-collaboration-framework',ISSUE=527,PR=528;
 const BRANCH='mission/gemini-live-evolution-20261116-001';
 const BASE='https://api.github.com/repos/'+REPO,PER_PAGE=100,MAX_PAGES=10;
 const BAD=new Set(['failure','timed_out','cancelled','action_required','startup_failure','stale']);
+// The observer can only publish a comment. A matching marker in an UNTRUSTED
+// third-party comment is not a receipt and must never suppress the real signal.
+// This allowlist is intentionally specific to the official repository.
+const TRUSTED_RECEIPT_AUTHORS=new Set(['leon337','github-actions[bot]']);
+function canonicalReceipt(body){
+ return String(body||'').trim().replace(/^(- Consultado em: ).*$/m,'$1<timestamp>');
+}
+export function isTrustedReceipt(comment,observation){
+ if(!TRUSTED_RECEIPT_AUTHORS.has(String(comment?.user?.login||'')))return false;
+ const body=String(comment?.body||'').trim();
+ if(!body.startsWith(observation.marker+'\n'))return false;
+ return canonicalReceipt(body)===canonicalReceipt(observation.comment);
+}
 function digest(value){return createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0,20);}
 function assertCandidate(pr,issueBody){
  if(!pr||pr.number!==PR||pr.state!=='open'||pr.head?.ref!==BRANCH)throw Error('unexpected-pr');
@@ -57,13 +70,20 @@ export async function reconcile({token,apply=false,applyEnv='',now=new Date().to
  const headAgain=await transport.get('/pulls/'+PR,token);
  if(!sameHead(pr,headAgain))throw Error('pr-head-changed');
  const comments=await allPages(transport.get,'/issues/'+ISSUE+'/comments',token);
- if(comments.some(c=>String(c.body||'').includes(observation.marker)))return {...observation,action:'ALREADY_RECORDED'};
+ if(comments.some(c=>isTrustedReceipt(c,observation)))return {...observation,action:'ALREADY_RECORDED'};
+ // The HEAD may have changed while paginating comments. Recheck immediately
+ // before any publication; there remains a non-atomic GitHub API race after
+ // this read, which the workflow's concurrency guard reduces.
+ const finalPr=await transport.get('/pulls/'+PR,token);
+ if(!sameHead(pr,finalPr))throw Error('pr-head-changed-during-comment-check');
+ const finalIssue=await transport.get('/issues/'+ISSUE,token);
+ if(finalIssue?.state!=='open'||finalIssue?.body!==issue.body)throw Error('issue-changed-before-publish');
  if(!transport.post)throw Error('write-transport-unavailable');
  try{await transport.post('/issues/'+ISSUE+'/comments',{body:observation.comment},token);}
  catch(e){
   // A timeout may happen AFTER the server commits a comment. Query for receipt before retry.
   const after=await allPages(transport.get,'/issues/'+ISSUE+'/comments',token);
-  if(after.some(c=>String(c.body||'').includes(observation.marker)))return {...observation,action:'RECOVERED_AFTER_UNCERTAIN_WRITE'};
+  if(after.some(c=>isTrustedReceipt(c,observation)))return {...observation,action:'RECOVERED_AFTER_UNCERTAIN_WRITE'};
   throw Error('write-uncertain-not-retried:'+String(e.message||e));
  }
  return {...observation,action:'COMMENT_ONLY'};

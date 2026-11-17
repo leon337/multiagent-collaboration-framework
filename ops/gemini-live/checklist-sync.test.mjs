@@ -1,19 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildObservation,reconcile} from './checklist-sync.mjs';
+import {buildObservation,reconcile,isTrustedReceipt} from './checklist-sync.mjs';
 const SHA='0123456789abcdef0123456789abcdef01234567';
 const ALT='fedcba9876543210fedcba9876543210fedcba98';
 const pr={number:528,state:'open',draft:true,head:{ref:'mission/gemini-live-evolution-20261116-001',sha:SHA}};
-const issue={body:'# MCF-GEMINI-LIVE-EVOLUTION-20261116-001\n- [ ] F0.8'};
+const issue={state:'open',body:'# MCF-GEMINI-LIVE-EVOLUTION-20261116-001\n- [ ] F0.8'};
 const one={id:1,name:'test',head_sha:SHA,status:'completed',conclusion:'success'};
 const two={id:2,name:'build',head_sha:SHA,status:'completed',conclusion:'failure'};
-function fake({checks=[one,two],comments=[],secondPr=null,writeError=false,writePersists=false}={}){
+function fake({checks=[one,two],comments=[],secondPr=null,thirdPr=null,
+ secondIssue=null,writeError=false,writePersists=false}={}){
  let prReads=0;const posts=[];const calls=[];
  const t={
   get:async(path)=>{
    calls.push(path);
-   if(path==='/pulls/528')return (++prReads>=2&&secondPr)||pr;
-   if(path==='/issues/527')return issue;
+   if(path==='/pulls/528'){
+    prReads++;
+    if(prReads>=3&&thirdPr)return thirdPr;
+    if(prReads>=2&&secondPr)return secondPr;
+    return pr;
+   }
+   if(path==='/issues/527')return secondIssue&&prReads>=3?secondIssue:issue;
    if(path.startsWith('/commits/')&&path.includes('/check-runs')){
     const page=Number(new URL('https://x.invalid'+path).searchParams.get('page'));const start=(page-1)*100;
     return {check_runs:checks.slice(start,start+100)};
@@ -26,8 +32,8 @@ function fake({checks=[one,two],comments=[],secondPr=null,writeError=false,write
   },
   post:async(path,payload)=>{
    posts.push({path,payload});
-   if(writeError){if(writePersists)comments.push({body:payload.body});throw Error('network-timeout');}
-   comments.push({body:payload.body});
+   if(writeError){if(writePersists)comments.push({body:payload.body,user:{login:'github-actions[bot]'}});throw Error('network-timeout');}
+   comments.push({body:payload.body,user:{login:'github-actions[bot]'}});
   }
  };
  return {t,posts,calls,comments};
@@ -75,7 +81,7 @@ test('WRITE requires token independently of opt-in',async()=>{
 });
 test('duplicate comment is idempotently skipped',async()=>{
  const comment=buildObservation(pr,[one,two],issue.body).comment;
- const f=fake({comments:[{body:comment}]});
+ const f=fake({comments:[{body:comment,user:{login:'github-actions[bot]'}}]});
  const r=await reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'});
  assert.equal(r.action,'ALREADY_RECORDED');assert.equal(f.posts.length,0);
 });
@@ -102,7 +108,7 @@ test('pagination counts more than 100 checks',async()=>{
 });
 test('pagination can find duplicate on second page of comments',async()=>{
  const marker=buildObservation(pr,[one,two],issue.body).comment;
- const comments=Array.from({length:100},(_,i)=>({body:'other-'+i}));comments.push({body:marker});
+ const comments=Array.from({length:100},(_,i)=>({body:'other-'+i}));comments.push({body:marker,user:{login:'github-actions[bot]'}});
  const f=fake({comments});
  const r=await reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'});
  assert.equal(r.action,'ALREADY_RECORDED');assert.equal(f.posts.length,0);
@@ -121,4 +127,41 @@ test('invalid pagination cannot silently green',async()=>{
  const f=fake();
  f.t.get=async(path)=>path==='/pulls/528'?pr:path==='/issues/527'?issue:({check_runs:null});
  await assert.rejects(reconcile({transport:f.t}),/invalid-pagination-response/);
+});
+
+test('a third party quoting a receipt marker does NOT suppress a trusted observer',async()=>{
+ const current=buildObservation(pr,[one,two],issue.body).comment;
+ const f=fake({comments:[{body:current,user:{login:'outsider-user'}}]});
+ const r=await reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'});
+ assert.equal(r.action,'COMMENT_ONLY');assert.equal(f.posts.length,1);
+});
+test('truncated receipt or forged marker from trusted account is ignored',async()=>{
+ const current=buildObservation(pr,[one,two],issue.body).comment;
+ const f=fake({comments:[{body:current.slice(0,100),user:{login:'leon337'}}]});
+ const r=await reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'});
+ assert.equal(r.action,'COMMENT_ONLY');assert.equal(f.posts.length,1);
+});
+test('identical authorized receipt with different observation time is recognized',()=>{
+ const a=buildObservation(pr,[one,two],issue.body,'2026-11-16T00:00:00Z');
+ const b=buildObservation(pr,[one,two],issue.body,'2026-11-16T00:10:00Z');
+ assert.equal(a.marker,b.marker);
+ assert.equal(isTrustedReceipt({body:a.comment,user:{login:'github-actions[bot]'}},b),true);
+});
+test('HEAD changed during comment pagination blocks publication',async()=>{
+ const f=fake({thirdPr:{...pr,head:{...pr.head,sha:ALT}}});
+ await assert.rejects(reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'}),/pr-head-changed-during-comment-check/);
+ assert.equal(f.posts.length,0);
+});
+test('issue closed or modified before posting blocks publication',async()=>{
+ for(const next of [{...issue,state:'closed'},{...issue,body:issue.body+'\nchanged'}]){
+  const f=fake({secondIssue:next});
+  await assert.rejects(reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'}),/issue-changed-before-publish/);
+  assert.equal(f.posts.length,0);
+ }
+});
+test('untrusted fake receipt cannot satisfy uncertain-write recovery',async()=>{
+ const current=buildObservation(pr,[one,two],issue.body).comment;
+ const f=fake({comments:[{body:current,user:{login:'outsider-user'}}],writeError:true});
+ await assert.rejects(reconcile({transport:f.t,apply:true,applyEnv:'1',token:'fake'}),/write-uncertain-not-retried/);
+ assert.equal(f.posts.length,1);
 });
