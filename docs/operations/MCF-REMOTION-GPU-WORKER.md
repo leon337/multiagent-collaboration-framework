@@ -71,7 +71,9 @@ O PR privado [#1](https://github.com/leon337/mcf-remotion-mcp/pull/1) propõe `.
 - verificação do hostname, `remotion-mcp.service`, `127.0.0.1:4777/health` e encoders VA-API;
 - nenhuma criação de projeto, renderização, síntese de voz ou operação de escrita.
 
-**Estado:** PR #1 está OPEN/DRAFT. O workflow ainda não está na `main` e não há execução E2E de GitHub Actions comprovada. Não tentar dispará-lo até o workflow aparecer no branch padrão e o PR ser integrado com revisão humana.
+**Estado:** PR privado #1 foi MERGED em `main@4951d2e2650e75ab9825eb127f3c281b878a5e62`. O workflow foi executado por `workflow_dispatch` na `main`: [run #44028059898](https://github.com/leon337/mcf-remotion-mcp/actions/runs/44028059898), job `health` #133853084207, conclusão SUCCESS em 11 segundos.
+
+O log comprova hostname, serviço `remotion-mcp.service`, endpoint local `ready`, binário Remotion no Studio e encoders `h264_vaapi` / `hevc_vaapi`. O workflow tinha `contents: read`, sem checkout, inputs, secrets ou actions externas. Não executou render, síntese de voz ou escrita MCP e não consumiu quota Gemini. Isso é um E2E de disponibilidade do worker, não um E2E de produção de vídeo ou de integração MissionRuntime.
 
 ## 5. Estado real da GPU e do worker
 
@@ -116,9 +118,9 @@ Ao retomar a capacidade em uma nova sessão:
 ## 8. Estado de referência observado
 
 - MCF public main: `97d79ee8152ead27564d2bf634ad63df5cc284e6`.
-- Worker private main: `9b456ec95d16f42bb719734873f5f6343bb67e2e`.
+- Worker private main: `4951d2e2650e75ab9825eb127f3c281b878a5e62`.
 - Studio private main: `433b9f75a0eeb70eaafa40f64310475101373e04`.
 - Runner: ID `2`, online no repositório privado.
-- Workflow de health: PR privado #1, ainda não integrado.
+- Workflow de health: integrado à main privada; run #44028059898 SUCCESS.
 - MissionRuntime write: bloqueado sem HDF.
 - Produção: não autorizada por este registro.
