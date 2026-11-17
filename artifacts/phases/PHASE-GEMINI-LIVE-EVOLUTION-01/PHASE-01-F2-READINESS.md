@@ -15,3 +15,6 @@ QA-F1-RESPONSE-20261116/REPORT.md includes 10/10 adversarial, 17/17 real API vir
 
 ## F1 response watchdog — candidate
 QA-F1-RESPONSE-20261116/REPORT.md includes 13/13 adversarial, 17/17 real API virtual-media E2E, 23/23 offline, ~60s physical mic no Worklet drop. Audible output and 30 speech-end→ear measurements remain unverified; F0.8/F1.6 gates are still pending. Only preparation of F2 is authorized under prior scoped LEO profile gate.
+
+## F1 turn reconciliation after external audit
+The earlier Codex CLI Emily-profile review returned for correction. The latest candidate serializes text/image client turns through turnComplete, fixes VAD/manual interruptions, and validates audio MIME/length. 18/18 browser adversarial and 17/17 real Gemini virtual-media E2E passed, with 23/23 offline tests. Evidence and limitations in QA-F1-RESPONSE-20261116/REMEDIATION-CYCLE3.md. F0/F1 gates and human acoustic QA remain open; F2 not started.

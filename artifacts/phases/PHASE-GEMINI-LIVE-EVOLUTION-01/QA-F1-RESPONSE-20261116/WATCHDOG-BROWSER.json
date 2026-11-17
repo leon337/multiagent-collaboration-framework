@@ -1,9 +1,9 @@
 {
   "schema": "mcf-f1-response-watchdog-browser-v1",
-  "utc": "2026-11-17T01:43:33.684Z",
+  "utc": "2026-11-17T01:52:37.115Z",
   "url": "http://127.0.0.1:18373",
   "sourceSha256": {
-    "public/app.js": "71e37658f0dab2d86b64092a288060e85eca04196c05b01f78dfa23cdd87d487",
+    "public/app.js": "fa23bc2d3b0c108dc4a7f205b5ab15848e4219409739c9c7002b10fd04abf6ff",
     "public/index.html": "1dba2ff9898a2f7db77b91aadb8ce5b91ae254161841e7528369aef0bddf0cb9",
     "public/telemetry.js": "79baef57e715a2e3c8e5c92e5ff4b00db8befa712c1e3aac916c5a56e5cf564a"
   },
@@ -107,6 +107,58 @@
       }
     },
     {
+      "id": "GENERATION_COMPLETE_BARRIER_BLOCKS_NEXT_TEXT_UNTIL_TURN_COMPLETE",
+      "pass": true,
+      "observed": {
+        "first": {
+          "writes": 1,
+          "awaiting": true
+        },
+        "second": {
+          "writes": 2,
+          "pending": true,
+          "kind": "text"
+        }
+      }
+    },
+    {
+      "id": "SHORT_MANUAL_VAD_SPEECH_RESETS_STALE_REPLY_FLAG",
+      "pass": true,
+      "observed": {
+        "begin": 1,
+        "end": 1,
+        "pending": true,
+        "kind": "voice",
+        "responseSeen": false
+      }
+    },
+    {
+      "id": "BARGE_IN_INTERRUPTION_DOES_NOT_COUNT_AS_NEW_VOICE_RESPONSE",
+      "pass": true,
+      "observed": {
+        "pending": true,
+        "kind": "voice",
+        "responseSeen": false
+      }
+    },
+    {
+      "id": "MIC_STARTING_BLOCKS_BOTH_TEXT_AND_IMAGE",
+      "pass": true,
+      "observed": {
+        "writes": 0,
+        "imageCan": false
+      }
+    },
+    {
+      "id": "IMAGE_HANDLER_BLOCKS_CONCURRENT_TURNS_AND_MIC_STARTING",
+      "pass": true,
+      "observed": {
+        "blockedTurn": true,
+        "blockedStarting": true,
+        "sends": 0
+      }
+    },
+    {
       "id": "EXPLICIT_DISCONNECT_CANNOT_ARM_NEW_VOICE_WATCHDOG",
       "pass": true,
       "observed": {
@@ -125,6 +177,6 @@
   "realProvider": false,
   "realSpeaker": false,
   "mediaPersisted": false,
-  "pass": 13,
+  "pass": 18,
   "fail": 0
 }

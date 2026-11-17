@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-17T01:43:55.824Z",
+  "date": "2026-11-17T01:51:57.344Z",
   "origin": "http://127.0.0.1:18373/",
   "virtual_media": true,
   "real_api": true,
@@ -97,7 +97,7 @@
   "errors": [],
   "source_sha256": {
     "server.js": "34795d5098f7cce63779d39317455b38968f860b26057f82ae31b66872566a1b",
-    "public/app.js": "71e37658f0dab2d86b64092a288060e85eca04196c05b01f78dfa23cdd87d487",
+    "public/app.js": "fa23bc2d3b0c108dc4a7f205b5ab15848e4219409739c9c7002b10fd04abf6ff",
     "public/index.html": "1dba2ff9898a2f7db77b91aadb8ce5b91ae254161841e7528369aef0bddf0cb9",
     "public/telemetry.js": "79baef57e715a2e3c8e5c92e5ff4b00db8befa712c1e3aac916c5a56e5cf564a",
     "public/capture-worklet.js": "6e5e31176beb66b3a54548e8c00f67f2d87af96dce327b60ba2ba0dffe15fe6a"

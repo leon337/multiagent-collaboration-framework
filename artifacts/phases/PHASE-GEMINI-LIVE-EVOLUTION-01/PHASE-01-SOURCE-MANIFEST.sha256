@@ -1,5 +1,5 @@
 34795d5098f7cce63779d39317455b38968f860b26057f82ae31b66872566a1b  ../../../apps/gemini-live-studio/server.js
-71e37658f0dab2d86b64092a288060e85eca04196c05b01f78dfa23cdd87d487  ../../../apps/gemini-live-studio/public/app.js
+fa23bc2d3b0c108dc4a7f205b5ab15848e4219409739c9c7002b10fd04abf6ff  ../../../apps/gemini-live-studio/public/app.js
 1dba2ff9898a2f7db77b91aadb8ce5b91ae254161841e7528369aef0bddf0cb9  ../../../apps/gemini-live-studio/public/index.html
 7f1e1d69087f28c3334ba39b7e8759791304cbe9863b12f64caf5c688327064e  ../../../apps/gemini-live-studio/public/style.css
 79baef57e715a2e3c8e5c92e5ff4b00db8befa712c1e3aac916c5a56e5cf564a  ../../../apps/gemini-live-studio/public/telemetry.js
@@ -27,5 +27,5 @@ fcafbceb54acec3b19ec03d2e4ca4c78d844ca9d901246535de2c860bd637c6e  ../../../tests
 bbdf92a81330a125e79577b02fc874fa2653f2dff988d156e17b189731405f45  ../../../tests/gemini-live-f1/physical-mic-60.cjs
 d812dd1ee4ce327effaff0cf6d570faa840406fa00d9089a8b921e1d4423acab  ../../../tests/gemini-live-f1/q3-stale-watchdog.cjs
 4a08fc910a13e8d8da7a13406b030df15c32f1a7fc77bb74d0956e98604f925a  ../../../tests/gemini-live-f1/clock-origin-integration.cjs
-f44d59998f73c31cd56310650c6bf1d627ad359097ffc50b8221efcfde7fdc61  ../../../tests/gemini-live-f1/response-watchdog-browser.cjs
+d5738f34fd9aee09d75e1691b524233f52ad598cf09c41477cb66e23eb1a5014  ../../../tests/gemini-live-f1/response-watchdog-browser.cjs
 2ec9db28bdb9c1105060b2f8fd871c8b8aa9e6b51fc7033168ba1578bcbc382b  ../../../.github/workflows/mcf-gemini-live-f1.yml

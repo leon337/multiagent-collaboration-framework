@@ -112,6 +112,82 @@ const report={schema:'mcf-f1-response-watchdog-browser-v1',utc:new Date().toISOS
    return out;
   });
   check('EARLY_MODEL_RESPONSE_PREVENTS_FALSE_POST_SILENCE_TIMER',!early.pending&&early.earlyReplySeen,early);
+  const barrier=await page.evaluate(()=>{
+   const old={socket:state.socket,connected:state.connected,stream:state.micStream,muted:state.muted};
+   let writes=0;
+   state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(){writes++;}};
+   state.connected=true;state.micStream=null;state.muted=true;state.awaitingTerminal=false;
+   state.lastTerminalAt=0;state.voiceResponseSeen=false;
+   sendPrompt('Turno A');
+   handleMessage({serverContent:{modelTurn:{parts:[{inlineData:{mimeType:'audio/pcm;rate=24000',data:btoa(String.fromCharCode(...new Uint8Array(640)))}}]},generationComplete:true}});
+   state.lastTerminalAt=performance.now()-1000;
+   sendPrompt('Turno B proibido até turnComplete A');
+   const first={writes,awaiting:state.awaitingTerminal};
+   handleMessage({serverContent:{turnComplete:true}});
+   state.lastTerminalAt=performance.now()-1000;
+   sendPrompt('Turno C depois do terminal');
+   const second={writes,pending:state.pendingPromptAudio,kind:state.pendingTurnKind};
+   clearPendingTurn();state.awaitingTerminal=false;state.lastTerminalAt=0;
+   state.socket=old.socket;state.connected=old.connected;state.micStream=old.stream;state.muted=old.muted;
+   return {first,second};
+  });
+  check('GENERATION_COMPLETE_BARRIER_BLOCKS_NEXT_TEXT_UNTIL_TURN_COMPLETE',
+   barrier.first.writes===1&&barrier.first.awaiting&&barrier.second.writes===2&&barrier.second.pending&&barrier.second.kind==='text',barrier);
+  const manualVad=await page.evaluate(()=>{
+   const old={socket:state.socket,connected:state.connected,stream:state.micStream,ctx:state.micCtx,auto:state.sessionVadAuto,mode:state.manualVadStarted,voice:state.voiceResponseSeen};
+   let begin=0,end=0;
+   state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(v){const m=JSON.parse(v);begin+=!!m.realtimeInput?.activityStart;end+=!!m.realtimeInput?.activityEnd;}};
+   state.connected=true;state.awaitingTerminal=false;state.micStream={getTracks:()=>[]};
+   state.micCtx={currentTime:50};state.sessionVadAuto=false;state.manualVadStarted=false;
+   state.voiceResponseSeen=true;state.voiceInSpeech=false;state.voiceCandidateFrames=0;state.micSpeechFrames=0;state.micSilenceMs=0;
+   const frame=rms=>({buffer:new Int16Array(640).buffer,rms,samples:640,rate:16000,captureTimeSec:49.98,droppedFrames:0});
+   for(let i=0;i<4;i++)processAudioFrame(frame(.09));
+   for(let i=0;i<25;i++)processAudioFrame(frame(.001));
+   const out={begin,end,pending:state.pendingPromptAudio,kind:state.pendingTurnKind,responseSeen:state.voiceResponseSeen};
+   clearPendingTurn();state.awaitingTerminal=false;state.manualVadStarted=old.mode;
+   state.socket=old.socket;state.connected=old.connected;state.micStream=old.stream;state.micCtx=old.ctx;state.sessionVadAuto=old.auto;state.voiceResponseSeen=old.voice;
+   return out;
+  });
+  check('SHORT_MANUAL_VAD_SPEECH_RESETS_STALE_REPLY_FLAG',manualVad.begin===1&&manualVad.end===1&&manualVad.pending&&manualVad.kind==='voice'&&!manualVad.responseSeen,manualVad);
+  const interrupted=await page.evaluate(()=>{
+   const old={socket:state.socket,connected:state.connected,stream:state.micStream,ctx:state.micCtx,auto:state.sessionVadAuto};
+   state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(){}};
+   state.connected=true;state.awaitingTerminal=false;state.micStream={getTracks:()=>[]};state.micCtx={currentTime:60};state.sessionVadAuto=true;state.voiceInSpeech=false;state.voiceCandidateFrames=0;state.voiceResponseSeen=false;
+   const frame=rms=>({buffer:new Int16Array(640).buffer,rms,samples:640,rate:16000,captureTimeSec:59.98,droppedFrames:0});
+   for(let i=0;i<4;i++)processAudioFrame(frame(.09));
+   handleMessage({serverContent:{interrupted:true}});
+   for(let i=0;i<20;i++)processAudioFrame(frame(.001));
+   const out={pending:state.pendingPromptAudio,kind:state.pendingTurnKind,responseSeen:state.voiceResponseSeen};
+   clearPendingTurn();state.awaitingTerminal=false;state.socket=old.socket;state.connected=old.connected;state.micStream=old.stream;state.micCtx=old.ctx;state.sessionVadAuto=old.auto;
+   return out;
+  });
+  check('BARGE_IN_INTERRUPTION_DOES_NOT_COUNT_AS_NEW_VOICE_RESPONSE',interrupted.pending&&interrupted.kind==='voice'&&!interrupted.responseSeen,interrupted);
+  const startGuard=await page.evaluate(()=>{
+   const old={socket:state.socket,connected:state.connected,stream:state.micStream,micStarting:state.micStarting};
+   let writes=0;state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(){writes++;}};
+   state.connected=true;state.micStream=null;state.micStarting=true;state.awaitingTerminal=false;
+   sendPrompt('Não permita texto durante startMic.');
+   const imageCan=canStartClientTurn();
+   const out={writes,imageCan};
+   state.micStarting=old.micStarting;state.socket=old.socket;state.connected=old.connected;state.micStream=old.stream;
+   return out;
+  });
+  check('MIC_STARTING_BLOCKS_BOTH_TEXT_AND_IMAGE',startGuard.writes===0&&!startGuard.imageCan,startGuard);
+  const imageBusy=await page.evaluate(async()=>{
+   const previous={socket:state.socket,connected:state.connected,stream:state.micStream,starting:state.micStarting,awaiting:state.awaitingTerminal};
+   let sends=0;
+   state.socket={readyState:WebSocket.OPEN,bufferedAmount:0,send(){sends++;}};
+   state.connected=true;state.micStream=null;state.micStarting=false;state.awaitingTerminal=true;
+   const file=new File([new Uint8Array([137,80,78,71])],'test.png',{type:'image/png'});
+   await document.getElementById('imageFile').onchange({target:{files:[file],value:'ignored'}});
+   const blockedTurn=sends===0;
+   state.awaitingTerminal=false;state.micStarting=true;
+   await document.getElementById('imageFile').onchange({target:{files:[file],value:'ignored'}});
+   const blockedStarting=sends===0;
+   state.socket=previous.socket;state.connected=previous.connected;state.micStream=previous.stream;state.micStarting=previous.starting;state.awaitingTerminal=previous.awaiting;
+   return {blockedTurn,blockedStarting,sends};
+  });
+  check('IMAGE_HANDLER_BLOCKS_CONCURRENT_TURNS_AND_MIC_STARTING',imageBusy.blockedTurn&&imageBusy.blockedStarting&&imageBusy.sends===0,imageBusy);
   const stopping=await page.evaluate(()=>{
    const old={connected:state.connected,wantConnected:state.wantConnected,socket:state.socket,stream:state.micStream,voice:state.voiceInSpeech};
    state.connected=true;state.wantConnected=false;state.voiceInSpeech=true;

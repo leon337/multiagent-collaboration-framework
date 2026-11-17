@@ -49,3 +49,6 @@ QA-F1-RESPONSE-20261116/REPORT.md contém a correção para monitor de voz, recu
 
 ## Auditoria pós-correção de turnos
 O primeiro candidato 3aa foi devolvido por auditoria independente. Novo ciclo com correlação conservadora de turnos, reinício explícito e validação PCM está documentado em QA-F1-RESPONSE-20261116/REMEDIATION-CYCLE2.md. Gate ainda pendente.
+
+## F1 turn reconciliation after external audit
+The earlier Codex CLI Emily-profile review returned for correction. The latest candidate serializes text/image client turns through turnComplete, fixes VAD/manual interruptions, and validates audio MIME/length. 18/18 browser adversarial and 17/17 real Gemini virtual-media E2E passed, with 23/23 offline tests. Evidence and limitations in QA-F1-RESPONSE-20261116/REMEDIATION-CYCLE3.md. F0/F1 gates and human acoustic QA remain open; F2 not started.

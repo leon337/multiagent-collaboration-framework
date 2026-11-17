@@ -207,7 +207,7 @@ function handleMessage(msg){
  if(msg.toolCallCancellation)log('FERRAMENTA','Chamadas canceladas pelo modelo.');
  if(msg.serverContent){
   const content=msg.serverContent;
-  if(content.interrupted){clearPendingTurn('interrupted');state.awaitingTerminal=false;state.voiceResponseSeen=true;clearPlay();state.playbackTurnOpen=false;f1tel('barge_in',{count:1});log('ÁUDIO','Interrupção confirmada pela API Live; apenas neste caso a fila foi cancelada.');}
+  if(content.interrupted){clearPendingTurn('interrupted');state.awaitingTerminal=false;state.voiceResponseSeen=false;clearPlay();state.playbackTurnOpen=false;f1tel('barge_in',{count:1});log('ÁUDIO','Interrupção confirmada pela API Live; apenas neste caso a fila foi cancelada.');}
   if(content.inputTranscription?.text)bubble('user',content.inputTranscription.text);
   if(content.outputTranscription?.text)bubble('model',content.outputTranscription.text);
   if(!content.interrupted)for(const part of content.modelTurn?.parts||[]){
@@ -216,7 +216,9 @@ function handleMessage(msg){
    if(part.text)bubble('model',part.text);
   }
   if(content.generationComplete){
-   state.voiceResponseSeen=true;state.awaitingTerminal=false;state.lastTerminalAt=performance.now();
+   // Generation completion is not a complete user turn; retain the barrier
+   // until authoritative turnComplete prevents a delayed terminal from resolving next turn.
+   state.voiceResponseSeen=true;
    if(state.pendingPromptAudio){f1tel('response_no_audio',{count:1});log('ALERTA','Geração encerrada sem áudio; reinicie a sessão se precisar repetir a solicitação.');clearPendingTurn('silent');if($('recoverLastTurn')){$('recoverLastTurn').hidden=false;$('recoverLastTurn').disabled=false;}}
    state.playbackTurnOpen=false;f1tel('generation_complete',{count:1});log('SESSÃO','Geração de áudio concluída.');}
    if(content.turnComplete){
@@ -372,9 +374,9 @@ function processAudioFrame(frame){
  if(!state.manualVadStarted){
   state.preRoll.push(bytes);
   if(state.preRoll.length>5)state.preRoll.shift();
-  if(state.micSpeechFrames>=2){
+  if(state.micSpeechFrames>=3){
    if(send({realtimeInput:{activityStart:{}}})){
-    state.manualVadStarted=true;state.micSilenceMs=0;f1tel('vad_start',{count:1});
+    state.manualVadStarted=true;state.micSilenceMs=0;state.voiceResponseSeen=false;f1tel('vad_start',{count:1});
     for(const buffered of state.preRoll)sendPcm16(buffered);
     state.preRoll=[];
    }
@@ -471,21 +473,26 @@ function disconnect(){
  clearTimeout(state.setupWatchdog);state.setupWatchdog=null;
  clearPendingTurn('disconnect');state.awaitingTerminal=false;state.voiceResponseSeen=false;
  stopMic();stopCamera();stopScreen();clearPlay();
- state.connected=false;state.connecting=false;state.resumeHandle=null;state.started=0;
+ state.connected=false;state.connecting=false;state.resumeHandle=null;state.started=0;state.lastTerminalAt=0;
  state.socket?.close(1000,'Encerrado pelo usuário');state.socket=null;
  setButtons(false);status('Desconectado','gray');$('orbSub').textContent='Inicie uma nova sessão';log('SESSÃO','Sessão encerrada pelo usuário.');
 }
 ui.btn.onclick=()=>{prepareAudioOutput();connect(false);};ui.stop.onclick=disconnect;ui.mic.onclick=()=>state.micStream||state.micStarting?stopMic():startMic();ui.camera.onclick=()=>state.cameraStream?stopCamera():startCamera();ui.screen.onclick=()=>state.screenStream?stopScreen():startScreen();ui.mute.onclick=()=>{state.muted=!state.muted;if(state.muted)clearPlay();else prepareAudioOutput();setButtons(state.connected);updateStreamMetrics();};
+// Refuse overlapping text/image clientContent. The provider media stream
+// lacks a per-chunk response ID, so safe isolation takes precedence over
+// concurrent turns. Live microphone audio remains uninterrupted for barge-in.
+function canStartClientTurn(){
+ return state.connected&&!state.micStarting&&!state.micStream&&
+  !state.awaitingTerminal&&!state.pendingPromptAudio&&!state.sources.size&&
+  (!state.lastTerminalAt||performance.now()-state.lastTerminalAt>=500);
+}
 function sendPrompt(text){
  prepareAudioOutput();
  const clean=String(text||'').trim();
  if(!clean)return;
  if(!state.connected)return toast('Inicie uma sessão.');
- if(state.micStream)return toast('Desative o microfone antes de enviar texto para evitar turnos sobrepostos.');
- if(state.awaitingTerminal||state.pendingPromptAudio||state.sources.size)
-  return toast('Aguarde a conclusão da resposta antes de enviar outro turno.');
- if(state.lastTerminalAt&&performance.now()-state.lastTerminalAt<500)
-  return toast('Aguarde meio segundo para estabilizar a resposta anterior.');
+ if(!canStartClientTurn())
+  return toast('Aguarde a conclusão do turno e desative o microfone antes de enviar texto.');
  if(!send({clientContent:{turns:[{role:'user',parts:[{text:clean}]}],turnComplete:true}}))return toast('Não foi possível enviar.');
  // New user turn resets audio-gap classification even if prior model skipped turnComplete.
  state.playbackTurnOpen=false;
@@ -494,7 +501,7 @@ function sendPrompt(text){
  bubble('user',clean);$('prompt').value='';log('TEXTO','Mensagem enviada ('+clean.length+' caracteres)');
 }
 $('uploadImage').onclick=()=>$('imageFile').click();
-$('imageFile').onchange=async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;if(!state.connected)return toast('Inicie uma sessão primeiro.');if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>12*1024*1024)return toast('Escolha uma imagem PNG, JPEG ou WebP de até 12 MB.');try{const blobURL=URL.createObjectURL(f);const img=new Image();await new Promise((ok,fail)=>{img.onload=ok;img.onerror=fail;img.src=blobURL;});URL.revokeObjectURL(blobURL);const scale=Math.min(1,1024/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);const data=c.toDataURL('image/jpeg',.77).split(',')[1];const prompt='Analise esta imagem enviada pelo usuário.';if(send({clientContent:{turns:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data}},{text:prompt}]}],turnComplete:true}})){bubble('user','[Imagem: '+f.name+'] '+prompt);log('IMAGEM','Arquivo enviado: '+f.name+' ('+c.width+'x'+c.height+')');}else toast('Falha ao enviar imagem.');}catch(err){toast('Não foi possível ler a imagem.');log('ERRO',err.message);}};
+$('imageFile').onchange=async e=>{const f=e.target.files?.[0];e.target.value='';if(!f)return;if(!state.connected)return toast('Inicie uma sessão primeiro.');if(!canStartClientTurn())return toast('Aguarde o fim do turno e desative o microfone antes de enviar imagem.');if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>12*1024*1024)return toast('Escolha uma imagem PNG, JPEG ou WebP de até 12 MB.');try{const blobURL=URL.createObjectURL(f);const img=new Image();await new Promise((ok,fail)=>{img.onload=ok;img.onerror=fail;img.src=blobURL;});URL.revokeObjectURL(blobURL);const scale=Math.min(1,1024/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);const data=c.toDataURL('image/jpeg',.77).split(',')[1];const prompt='Analise esta imagem enviada pelo usuário.';if(!canStartClientTurn())return toast('Novo turno iniciado enquanto a imagem era processada. Tente novamente.');if(send({clientContent:{turns:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data}},{text:prompt}]}],turnComplete:true}})){watchResponse('image');bubble('user','[Imagem: '+f.name+'] '+prompt);log('IMAGEM','Arquivo enviado: '+f.name+' ('+c.width+'x'+c.height+')');}else toast('Falha ao enviar imagem.');}catch(err){toast('Não foi possível ler a imagem.');log('ERRO',err.message);}};
 $('recoverLastTurn').onclick=()=>{
  if(!state.connected)return toast('Conecte novamente e repita a pergunta.');
  if(!confirm('A resposta anterior ainda pode chegar. Encerrar esta sessão e descartar mensagens antigas? Depois reconecte e repita a pergunta manualmente.'))return;
