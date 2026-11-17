@@ -19,7 +19,7 @@ A interface exibia `autorizo ####` em `aria-live="polite"` e armava Web Speech a
 
 ## Evidência e testes
 
-A CI F3 executa `voice-echo-guard.test.cjs` com `node:vm`: sem listener automático, evento sintético não arma a escuta, eco da frase completa não envia decisão, botão sintético não autoriza, clique confiável libera uma vez, recusa falada rejeita e fallback manual continua. O harness de browser foi atualizado para testar eco com `Web Speech` simulado, mas **sua execução no Chrome e o teste físico de alto-falante/leitor de tela permanecem pendentes**.
+A CI F3 executa `voice-echo-guard.test.cjs` com `node:vm`: sem listener automático, evento sintético não arma a escuta, eco da frase completa não envia decisão, botão sintético não autoriza, clique confiável libera uma vez, recusa falada rejeita e fallback manual continua. O harness de browser foi **executado** com Chrome 156 headless no host Linux autorizado, serviço temporário `127.0.0.1:18677`, com Web Speech **simulado**: 10/10 cenários PASS, sem erros de script. O teste físico simultâneo de alto-falante/leitor de tela/microfone humano permanece **NOT_TESTED**. A suíte Node F3 executou 28/28 PASS. Os logs sanitizados estão em `VOICE-ECHO-NODE-TESTS-20261117.txt` e o relato com SHA-256 das fontes em `VOICE-ECHO-BROWSER-E2E-20261117.json`. CI F3 #44034772454 e F2.1 #44034772392 finalizaram SUCCESS no commit `e82973e`.
 
 ## Bloqueios restantes
 
