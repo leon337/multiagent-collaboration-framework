@@ -10,3 +10,4 @@
 - PHASE-03-SOURCE-MANIFEST.sha256, PHASE-03-ARTIFACT-MANIFEST.sha256.
 - EMILY-EXTERNAL-PRE-REMEDIATION.md: auditoria original rejeitada.
 - REMEDIATION-AUDIT-CYCLE1.md: correções e limites.
+- PHASE-03-MAIN-VOICE-RECONCILIATION.md: portabilidade seletiva da autorização por voz para a main, com limites e gates.
