@@ -28,4 +28,4 @@ bbdf92a81330a125e79577b02fc874fa2653f2dff988d156e17b189731405f45  ../../../tests
 d812dd1ee4ce327effaff0cf6d570faa840406fa00d9089a8b921e1d4423acab  ../../../tests/gemini-live-f1/q3-stale-watchdog.cjs
 4a08fc910a13e8d8da7a13406b030df15c32f1a7fc77bb74d0956e98604f925a  ../../../tests/gemini-live-f1/clock-origin-integration.cjs
 f44d59998f73c31cd56310650c6bf1d627ad359097ffc50b8221efcfde7fdc61  ../../../tests/gemini-live-f1/response-watchdog-browser.cjs
-0c972322b035b1c4442e03ec4d49e945750e6372b0bc47b2ad18bacf775d55f1  ../../../.github/workflows/mcf-gemini-live-f1.yml
+2ec9db28bdb9c1105060b2f8fd871c8b8aa9e6b51fc7033168ba1578bcbc382b  ../../../.github/workflows/mcf-gemini-live-f1.yml
