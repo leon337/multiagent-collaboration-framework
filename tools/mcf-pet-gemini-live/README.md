@@ -197,3 +197,10 @@ the audio_stream_end event once before muting the microphone. Gemini Live
 receives audioStreamEnd so a partially spoken utterance can be completed
 without relying on trailing silence. The event is not repeated while the
 page stays muted. No additional audio PCM is transmitted without opt-in.
+### P2 review remediation (PR #534)
+
+- The review queue is paginated (max 40 per API page, 25 in UI) with pending
+  proposals shown first and explicit pending_count/total values.
+  Earlier pending drafts remain available via Carregar mais propostas.
+- Priority validation checks the Python type before enum membership; malformed
+  arrays/maps from Gemini cannot raise an uncaught TypeError in the tool turn.

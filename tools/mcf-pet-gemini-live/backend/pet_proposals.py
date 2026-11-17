@@ -58,7 +58,7 @@ def _proposal_data(raw: object) -> dict:
         raise ProposalError("INVALID_STEPS")
     items=[_text(step,8,240,"step") for step in steps]
     priority=raw.get("priority")
-    if priority not in VALID_PRIORITY or not isinstance(priority,str):
+    if not isinstance(priority,str) or priority not in VALID_PRIORITY:
         raise ProposalError("INVALID_PRIORITY")
     return {
         "title":_text(raw["title"],6,120,"title"),
@@ -201,15 +201,37 @@ def create_proposal(raw: object, session_id: str, call_id: str,
     finally:
         db.close()
 
-def list_proposals(limit: int = 25, path: Path = DB_PATH) -> list[dict]:
+def list_proposals(limit: int = 25, path: Path = DB_PATH,
+                   offset: int = 0) -> list[dict]:
     if type(limit) is not int or not 1 <= limit <= 40:
         raise ProposalError("INVALID_LIMIT")
+    if type(offset) is not int or not 0 <= offset <= MAX_RECORDS:
+        raise ProposalError("INVALID_OFFSET")
     db=_open(path)
     try:
-        rows=db.execute("SELECT * FROM proposals ORDER BY created_at DESC,id DESC LIMIT ?",
-                        (limit,)).fetchall()
+        # Pending drafts first; paginated so no older pending item disappears.
+        rows=db.execute("""
+            SELECT * FROM proposals
+            ORDER BY CASE status WHEN 'pending_review' THEN 0 ELSE 1 END,
+                     created_at DESC,id DESC LIMIT ? OFFSET ?
+        """,(limit,offset)).fetchall()
         return [_public(row) for row in rows]
     except (sqlite3.Error,ValueError,TypeError) as exc:
+        raise ProposalError("STORAGE_UNAVAILABLE",503) from exc
+    finally:
+        db.close()
+
+def proposal_counts(path: Path = DB_PATH) -> dict:
+    db=_open(path)
+    try:
+        row=db.execute("""
+            SELECT COUNT(*) AS total,
+                   SUM(CASE WHEN status='pending_review' THEN 1 ELSE 0 END)
+                       AS pending
+            FROM proposals
+        """).fetchone()
+        return {"total":row["total"],"pending":row["pending"] or 0}
+    except sqlite3.Error as exc:
         raise ProposalError("STORAGE_UNAVAILABLE",503) from exc
     finally:
         db.close()

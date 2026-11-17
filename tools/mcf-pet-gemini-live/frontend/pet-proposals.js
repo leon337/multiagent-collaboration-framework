@@ -15,6 +15,13 @@
     return e;
   };
   let busy=false;
+  let offset=0;
+  const PAGE_SIZE=25;
+  const more=label("button","pet-proposal-more","Carregar mais propostas");
+  more.type="button";
+  more.hidden=true;
+  more.addEventListener("click",()=>refresh(true));
+  root.append(more);
   const messages={
     pending_review:"Aguardando revisão",
     reviewed_for_planning:"Revisada para planejamento",
@@ -122,24 +129,30 @@
     }
     return entry;
   }
-  async function refresh(){
+  async function refresh(append=false){
+    if(busy&&!append)return [];
+    const pageOffset=append?offset:0;
+    more.disabled=true;
     try{
-      const result=await request("list",{});
+      const result=await request("list",{offset:pageOffset,limit:PAGE_SIZE});
       const proposals=Array.isArray(result.proposals)?result.proposals:[];
       const fragment=document.createDocumentFragment();
       for(const proposal of proposals)fragment.append(displayProposal(proposal));
-      list.replaceChildren(fragment);
-      if(!proposals.length)list.append(label("p","pet-proposal-empty",
-        "Nenhuma proposta registrada. No Gemini Live, habilite consultas e propostas, depois peça um plano ao MESTRE."));
-      count.textContent=String(proposals.filter(p=>p.status==="pending_review").length)+" aguardando revisão";
-      notice("Fila atualizada. A revisão não concede execução.");
+      if(!append)list.replaceChildren(fragment);
+      else list.append(fragment);
+      if(!append&&!proposals.length)list.append(label("p","pet-proposal-empty",
+        "Nenhuma proposta registrada. Peça ao MESTRE que prepare um plano."));
+      offset=pageOffset+proposals.length;
+      more.hidden=result.has_more!==true;
+      count.textContent=String(result.pending_count??0)+" aguardando revisão";
+      notice("Exibindo "+offset+" de "+String(result.total??offset)+" propostas. Revisão não concede execução.");
       return proposals;
     }catch(e){
       notice("Fila indisponível: "+e.message,true);
       return [];
-    }
+    }finally{more.disabled=false}
   }
-  refreshButton.addEventListener("click",()=>refresh());
+  refreshButton.addEventListener("click",()=>refresh(false));
   window.McfPetProposals=Object.freeze({refresh});
   refresh();
 })();
