@@ -604,3 +604,23 @@ skills:
     fallback: Usar provider alternativo aprovado; se nenhum existir, registrar plano não executado e dependência externa.
     handoff_to: Augusto
 
+
+  - skill_id: MCF-REMOTION-VIDEO-PRODUCE
+    status: EXPERIMENTAL
+    name: Descobrir e orientar produção de vídeos com Remotion/Gemini
+    version: 0.1.0
+    purpose: Localizar a capability Remotion no GitHub e no host, validar autorização e orientar vídeo com evidência.
+    owner_agents: [Mestre]
+    trigger_phrases: ["Remotion", "crie um vídeo", "narração Gemini", "vídeo na GPU", "MCF Cinematic"]
+    required_inputs: [video_goal_or_discovery_request]
+    optional_inputs: [script, format, duration, voice_provider, authorized_host]
+    allowed_tools: [GitHub, Remote_Desktop_Commander, Remotion_MCP_Local_Read]
+    forbidden_tools: [credential_export, unapproved_publish, runtime_write_without_HDF, public_MCP_exposure]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps: [read_live_github, discover_skill_and_capability, check_private_repos, reconcile_shas, inspect_host_read_only, verify_gate, return_plan_or_authorized_receipt]
+    required_evidence: [remote_shas, host_status, tool_availability, authorization_state, receipts_or_blocker]
+    expected_outputs: [capability_discovery, safe_execution_plan_or_evidence]
+    acceptance_criteria: [no_unverified_runtime_claims, no_secret_leaks, no_ungated_write]
+    failure_modes: [offline_host, inaccessible_private_repo, missing_HDF, model_quota]
+    fallback: Sem host ou ferramentas, entregar contrato e limitação verificável; não executar.
+    handoff_to: Mestre

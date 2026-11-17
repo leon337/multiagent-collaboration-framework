@@ -1,0 +1,81 @@
+schema_version: 1
+
+capability:
+  id: mcf.remotion.video.local.v1
+  provider_project_id: mcf-remotion-mcp
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: SCOPED_WRITE
+
+contract:
+  protocol: MCP_STREAMABLE_HTTP
+  allowed_operations:
+    - remotion_health
+    - remotion_list_compositions
+    - remotion_get_project
+    - remotion_list_jobs
+    - remotion_job_status
+    - remotion_voice_providers
+  candidate_write_operations:
+    - remotion_create_project
+    - remotion_edit_scene
+    - remotion_preview
+    - remotion_render
+    - remotion_enqueue_job
+    - remotion_cancel_job
+    - remotion_voice_synthesize
+    - remotion_voice_build_track
+  prohibited_operations:
+    - production.publish
+    - shell.execute
+    - runtime.config.mutate
+    - arbitrary_file_write
+    - ungoverned_tool_dispatch
+
+scope:
+  environments: [local-lab]
+  resources:
+    - workstation/remotion-mcp
+  endpoint: http://127.0.0.1:4777/mcp
+
+governance:
+  authority_human: LEANDRO
+  orchestrator: MESTRE
+  permission_profile: SCOPED_WRITE
+  write_gate: HDF_PERMISSION_ENGINE_REQUIRED
+  write_enabled_in_mcf_adapter: false
+  production_deploy: false
+
+lifecycle:
+  implementation_state: IMPLEMENTED_LOCAL_ADAPTER
+  connection_state: CONNECTED_LOCAL_READ_ONLY
+  runtime_state: INACTIVE
+  verification_state: LOCALLY_VERIFIED
+  registration_state: CANDIDATE
+
+evidence:
+  - kind: executable
+    source_ref: repo://leon337/multiagent-collaboration-framework/tools/remotion-mcf-adapter
+  - kind: local-e2e
+    video_id: primeiro-video-mcf
+    job_id: a4dad723-1524-4af1-93bd-63e0ac7110e7
+    video_sha256: 546e053909d78106750b4acaab5b6459ce17aa325819890fad0e82b7f71790c5
+
+freshness: LIVE_REQUIRED
+discovery:
+  skill_id: MCF-REMOTION-VIDEO-PRODUCE
+  skill_path: skills/video/mcf-remotion-produce/SKILL.md
+  guide_path: docs/operations/MCF-REMOTION-CAPABILITY-DISCOVERY.md
+  source_repositories:
+    studio:
+      url: https://github.com/leon337/mcf-remotion-studio
+      visibility: PRIVATE
+      observed_commit: 433b9f75a0eeb70eaafa40f64310475101373e04
+    worker:
+      url: https://github.com/leon337/mcf-remotion-mcp
+      visibility: PRIVATE
+      observed_commit: 9b456ec95d16f42bb719734873f5f6343bb67e2
+  read_only_probe: tools/remotion-mcf-adapter/discover.mjs
+  chatgpt_native_plugin_state: NOT_CONNECTED
+  central_runtime_executable_state: NOT_REGISTERED
+  credentials_in_git: false

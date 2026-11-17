@@ -1,0 +1,42 @@
+skill:
+  skill_id: MCF-REMOTION-VIDEO-PRODUCE
+  name: "Descobrir e orientar produção de vídeos Remotion com Gemini"
+  version: 0.1.0
+  status: EXPERIMENTAL
+  purpose: "Identificar código e ferramentas no GitHub, verificar o host e governança antes de produzir conteúdo."
+  owner_agents: [Mestre]
+  supporting_agents: [Sofia, Rafael, Renato, Emily]
+  trigger_phrases: ["Remotion", "crie um vídeo", "narração Gemini", "vídeo com GPU", "estúdio de vídeos", "MCF Cinematic"]
+  required_inputs: [video_goal_or_capability_discovery_request]
+  optional_inputs: [format, duration, script, selected_voice, authorized_host]
+  preconditions: [read_live_github_state, verify_host_and_mcp, validate_permission_boundary]
+  allowed_tools: [GitHub, Remote_Desktop_Commander, Remotion_MCP_Local_Read]
+  alternative_tools: [Remotion_Studio_Local]
+  forbidden_tools: [secret_export, MCF_runtime_write_without_HDF, unapproved_publish, expose_4777_to_internet]
+  permission_profile: READ_AND_PROPOSE
+  execution_steps: [discover_registry, inspect_private_repos, reconcile_shas, verify_online_host, inspect_mcp, check_gate, plan_or_execute_authorized_work, verify_receipt]
+  required_evidence: [repo_refs, shas, host_availability, tool_discovery, authorization_state, receipt_or_blocker]
+  expected_outputs: [discovery_report, authorized_video_or_plan, evidence]
+  acceptance_criteria: [source_verified, secret_safety, gate_enforced, no_unverified_claim]
+  failure_modes: [host_offline, private_repo_unavailable, quota_limited, HDF_missing]
+  fallback:
+    without_primary_tool: "Responder com plano e fontes, sem alegar execução."
+    without_any_tool: "Declarar que não foi possível verificar a capacidade."
+    external_dependency_state: AGUARDANDO_DEPENDENCIA_EXTERNA
+  handoff:
+    default_to: Rafael
+    return_to: Mestre
+    checkpoint_required: true
+  observability:
+    record_tool_use: true
+    record_failure_and_recovery: true
+    record_latency_when_available: true
+  governance:
+    data_classification: INTERNAL
+    human_gate_triggers: [paid_voice_generation, external_publication, production_deploy]
+    prohibited_actions: [credential_exfiltration, HDF_bypass, ungoverned_remote_MCP]
+  tests:
+    positive_scenarios: [mcp_read_health, voice_provider_discovery, remote_sha_parity]
+    negative_scenarios: [no_host, write_without_gate, invalid_credential]
+    last_evaluated_at: null
+    verdict: CANDIDATE_LOCAL_E2E_ONLY

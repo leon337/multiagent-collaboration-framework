@@ -169,3 +169,10 @@ Este inventário deve ser revisado quando:
 - ferramenta deixar de estar disponível;
 - uma skill ganhar nova ferramenta primária;
 - auditoria encontrar divergência.
+
+## 14. Adendo — Remotion e Gemini no MESTRE (2026-11-17)
+
+- Estado no host verificado: LOCAL_VERIFIED, service MCP autenticado em localhost, com 14 tools (6 leitura, 8 escrita/efeitos), renderização VA-API na Radeon RX 580 e voz pt-BR com gemini-2.5-flash-native-audio-preview-12-2025.
+- Repositórios fonte: leon337/mcf-remotion-studio e leon337/mcf-remotion-mcp, PRIVATE. O inventário não concede acesso a outros agentes ou máquinas.
+- Skill de descoberta: MCF-REMOTION-VIDEO-PRODUCE — EXPERIMENTAL/documental; o plugin direto ChatGPT NÃO está instalado por este registro e o dispatcher central ainda não autoriza escrita.
+- Ponto de descoberta: AGENTS.md, skills/video/mcf-remotion-produce/SKILL.md e docs/operations/MCF-REMOTION-CAPABILITY-DISCOVERY.md. Atualizar disponibilidade ao vivo.
