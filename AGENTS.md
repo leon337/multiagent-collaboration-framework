@@ -9,6 +9,12 @@
 - Em conflitos: instrução explícita atual de LEANDRO > estado real do GitHub > documentação vigente > conversa > lembranças antigas.
 - Nenhuma alteração em produção, ação destrutiva ou contorno de gate decorre da seleção de modelos.
 
+## Descoberta de capability: recuperar projetos em outro computador
+
+Quando LEANDRO pedir migrar, reconciliar, restaurar ou recuperar um projeto, especialmente GitHub + backup criptografado + Google Drive sem copiar a chave manualmente, o MESTRE deve descobrir MCF-RECOVER-CLOUD-PROJECT em [skills/registry.yaml](skills/registry.yaml), ler [a skill operacional](skills/cloud/mcf-project-recovery/SKILL.md), [o contrato](skills/cloud/MCF-RECOVER-CLOUD-PROJECT.yaml) e [o runbook](docs/operations/MCF-CLOUD-PROJECT-RECOVERY.md). A capability declarativa é [mcf.cloud-project-recovery.v1](context/capabilities/cloud-project-recovery.yaml).
+
+**Descobrir não significa executar:** confirmar ferramentas conectadas na sessão, projeto-alvo, identidade e conta Google, acesso GitHub, autorização da máquina, backup e gate. O cadastro é EXPERIMENTAL / DECLARED, sem adapter executável no runtime MCF central. Não afirmar restauração nem alterar lifecycle para ACTIVE sem execução verificada. Projetos diferentes precisam de adapters próprios. Aprovação de OAuth/2FA e substituição de dados seguem HUMAN_GATE.
+
 ## Identidade pública em comunicações externas
 
 Para mensagens a clientes, fornecedores e parceiros, seguir [MCF-AGENT-PUBLIC-COMMUNICATION](docs/operations/MCF-AGENT-PUBLIC-COMMUNICATION.md). O MESTRE se apresenta como **Agente Digital de Operações do Leandro**; outros agentes usam sua função canônica. A política não autoriza envio externo, não substitui HDF/gates e exige evidência antes de afirmar que um e-mail foi enviado.

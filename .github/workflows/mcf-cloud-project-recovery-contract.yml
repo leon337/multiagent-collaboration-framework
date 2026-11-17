@@ -1,0 +1,44 @@
+name: MCF Cloud Project Recovery — contract
+
+on:
+  pull_request:
+    paths:
+      - AGENTS.md
+      - README.md
+      - skills/registry.yaml
+      - skills/README.md
+      - skills/cloud/**
+      - context/capabilities/cloud-project-recovery.yaml
+      - docs/operations/MCF-CLOUD-PROJECT-RECOVERY.md
+      - docs/tools/MCF-AVAILABLE-CAPABILITIES.md
+      - tools/capability-cloud-recovery/**
+      - .github/workflows/mcf-cloud-project-recovery-contract.yml
+  push:
+    branches: [main]
+    paths:
+      - AGENTS.md
+      - skills/registry.yaml
+      - skills/cloud/**
+      - context/capabilities/cloud-project-recovery.yaml
+      - tools/capability-cloud-recovery/**
+      - .github/workflows/mcf-cloud-project-recovery-contract.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout canonical repo
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: YAML parser
+        run: python -m pip install --disable-pip-version-check pyyaml==6.0.2
+      - name: Validate capability and cross-session discovery
+        run: python tools/capability-cloud-recovery/validate.py

@@ -169,3 +169,11 @@ Este inventário deve ser revisado quando:
 - ferramenta deixar de estar disponível;
 - uma skill ganhar nova ferramenta primária;
 - auditoria encontrar divergência.
+
+
+## 14. Capability declarativa: recuperação GitHub + Google Drive
+
+- ID: mcf.cloud-project-recovery.v1; skill MCF-RECOVER-CLOUD-PROJECT.
+- Status: EXPERIMENTAL / DECLARED / DISCONNECTED / NOT_AUTHORIZED / NOT_VERIFIED.
+- Referência: context/capabilities/cloud-project-recovery.yaml, skills/cloud/mcf-project-recovery/SKILL.md e docs/operations/MCF-CLOUD-PROJECT-RECOVERY.md.
+- O procedimento tem um provider implementado no projeto privado do Estúdio Binaural, mas nenhum adapter genérico executável foi qualificado no runtime MCF. Leitura documental não comprova autenticação de Google/GitHub ou capacidade de escrita em outros chats.

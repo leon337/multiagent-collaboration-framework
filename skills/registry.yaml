@@ -604,3 +604,23 @@ skills:
     fallback: Usar provider alternativo aprovado; se nenhum existir, registrar plano não executado e dependência externa.
     handoff_to: Augusto
 
+  - skill_id: MCF-RECOVER-CLOUD-PROJECT
+    status: EXPERIMENTAL
+    name: Recuperar projeto entre computadores via GitHub e Google Drive
+    version: 0.1.0
+    purpose: Descobrir e executar sob governança o procedimento portável de recuperação de código e backup criptografado.
+    owner_agents: [Mestre]
+    supporting_agents: [Miriam, Sofia, Rafael, Renato, Emily]
+    trigger_phrases: ["recuperar projeto em outro computador", "migrar projeto entre computadores", "reconciliar backup GitHub Google Drive", "restaurar projeto sem copiar chave", "cofre de recuperação Google Drive", "reconciliar projeto com estado local e remoto", "sincronizar projeto para outro computador"]
+    required_inputs: [project_reference, recovery_goal, authorized_scope]
+    optional_inputs: [target_device, repository_ref, backup_artifact_ref]
+    allowed_tools: [GitHub, Google_Drive, Remote_Desktop_Commander, Git_CLI, GitHub_CLI]
+    forbidden_tools: [secret_in_git_or_logs, oauth_gate_bypass, unaudited_database_overwrite, auto_deploy_or_merge, assume_project_compatibility]
+    permission_profile: SCOPED_WRITE
+    execution_steps: [discover, inspect, authorize, backup_or_restore_when_authorized, verify, receipt, handoff]
+    required_evidence: [project_reference, project_sha_and_backup_ref, provider_and_tool_availability, scoped_authorization_receipt, action_receipts, integrity_and_restore_evidence, limitations_and_handoff]
+    expected_outputs: [recovery_plan, verified_restore_or_blocker, evidence_receipt, continuation_handoff]
+    acceptance_criteria: [source_of_truth_verified, no_secret_exposure, no_overwrite_without_gate, verified_or_truthfully_blocked, no_claim_of_runtime_execution_from_registry_only]
+    failure_modes: [cloud_account_unavailable, missing_oauth_permission, missing_backup_adapter, key_backup_mismatch, stale_remote_state, runtime_adapter_unavailable]
+    fallback: Sem tool/conta/adapter, produzir plano e handoff com lacunas; não afirmar restauração.
+    handoff_to: Mestre
