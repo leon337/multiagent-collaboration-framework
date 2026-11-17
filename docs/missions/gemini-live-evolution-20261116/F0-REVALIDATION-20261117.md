@@ -13,12 +13,29 @@
 | F0.2 snapshot | código main e código servido com SHA-256 idêntico; Node 24, pacote/deps; servidor respondeu HTTP 200 apenas em 127.0.0.1; Origin externo HTTP 403, path privado HTTP 404; chave arquivo real 0600, diretório 0700, sem leitura de material para logs; clone isolado do Git | VALIDADO tecnicamente no recorte |
 | F0.3 matriz | seis modelos consultados em GET v1beta/models/{id}, seis HTTP 200. Métodos declarados por modelo no JSON, demais capacidades physical_audio/video/tools/quota/cost explicitamente NOT_VERIFIED | VALIDADO como matriz de descoberta, NÃO como qualificação de cada modalidade |
 | F0.4 ameaças | F0-THREAT-MODEL.md contém riscos. Chave anteriormente exposta sem revogação comprovada e persistência em texto claro; HDF, token constraints e custos seguem abertos | PARCIAL |
-| F0.5 smoke | histórico sintético, novo teste unitário de metadados e 41/41 tests F0; áudio físico e câmera/tela reais não validados nessa revisão | PARCIAL |
+| F0.5 smoke | **13/13 Chrome + Google Live API real**, áudio/câmera/tela **virtuais**, 62 chunks PCM de resposta, function calling 1/1, turnComplete e limpeza dos 3 tracks; 44/44 Node. Hardware físico e áudio ouvido por humano ainda não validados | PARCIAL |
 | F0.6 telemetria | contrato em docs, p50/p95 em amostragem exploratória, eventos sem PII; quotas/tokens/custo e >=30 medições reais faltam | PARCIAL |
 | F0.7 sincronização | observador opt-in de comentários com proteção de timestamp e integridade; reexecutados testes locais F0. Aplicação em GitHub permanece opt-in e não marca gates | PARCIAL |
 | F0.8 gate | dependente de F0.4–F0.7, PRF e auditoria realmente independente no SHA final | ABERTO |
 
 **Risco de segurança:** o backend não possui autenticação própria para qualquer processo local, mesmo com Origin/CSP. Sem gateway de identidade HDF/PermissionEngine e mitigação de egress, não divulgar ou expor a rede. A rotação de uma chave anteriormente exposta depende de credencial nova, que não deve ser publicada no PR. A coleta não salva chave/áudio/imagem.
+
+## Reexecução E2E de mídia sintética e Google Live API
+
+Em 17/11/2026, o MESTRE reexecutou `repro/f0/baseline-strong.cjs` contra
+o Studio local original `127.0.0.1:18371`, em Chrome headless com dispositivos
+virtuais, **13/13 PASS**, 0 falhas de runtime, três setups reais (2.5, 3.8
+Live e 3.8 Extended), tool call `get_current_time` 1/1, 62 chunks
+de áudio de resposta e três media tracks encerradas corretamente.
+A execução usou prompt de teste sintético e não capturou áudio/filmagem real de
+LEANDRO. Os bytes de evidência de execução estão em
+`artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/F0-STRONG-E2E-RETEST-20261117.json`.
+Os hashes `source_sha256` nesse arquivo vinculam a reprodução histórica
+e **não** afirmam que o processo original foi implantado a partir de um git SHA.
+
+**F0.5 gate ainda ABERTO**: apenas um teste **acústico supervisionado real**
+poderá comprovar microfone/alto-falante, latência perceptível, interrupção
+por fala e câmera/tela física com consentimento do usuário.
 
 ## Classificação das seis entradas (fonte API real)
 

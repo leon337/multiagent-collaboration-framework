@@ -6,6 +6,7 @@ on:
       - 'ops/gemini-live/f0-current-revalidation*'
       - 'docs/missions/gemini-live-evolution-20261116/F0-REVALIDATION-20261117.md'
       - 'artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/F0-CURRENT-LIVE-REVALIDATION-20261117.json'
+      - 'artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/F0-STRONG-E2E-RETEST-20261117.json'
       - '.github/workflows/mcf-gemini-live-f0-current-revalidation.yml'
   workflow_dispatch:
 
@@ -36,5 +37,7 @@ jobs:
           if(!r.F0_2_technical_pass||!r.F0_3_metadata_pass)throw Error('source verification failed');
           if(r.F0_8_formal_gate_pass!==false||r.F0_4_full_security_pass!==false)throw Error('false acceptance');
           if(/AIza[A-Za-z0-9_-]{25,}|sk-[A-Za-z0-9_-]{25,}|AQ\.[A-Za-z0-9_-]{20,}/.test(f))throw Error('SECRET_IN_EVIDENCE');
+          const proof=JSON.parse(fs.readFileSync('artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/F0-STRONG-E2E-RETEST-20261117.json','utf8'));
+          if(proof.passed!==13||proof.failed!==0||proof.virtual_media!==true)throw Error('synthetic E2E evidence invalid');
           console.log('Revalidation evidence structured, sanitized; formal gate remains open');
           JS
