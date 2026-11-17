@@ -195,7 +195,10 @@ ou deploy do MissionRuntime central.
 
 MCF-PET-MISSION-BRIDGE-001 adds a fixed, authenticated Pet panel endpoint to
 inspect the canonical mission observer, and to export reviewed_for_planning
-proposals into a CreateMcfMissionRequest-shaped PRIVATE draft. A draft is
+proposals into a CreateMcfMissionRequest-shaped PRIVATE, CONTEXT_INCOMPLETE
+draft. Mission v1.1 requires methodologyPin and alignedPipRef from verified
+canonical project context; the Pet cannot infer or fabricate them. Handoff
+reports import_ready=false and ALIGNED_PIP_REQUIRED until resolved. A draft is
 idempotently stored locally under
 ~/.local/state/mcf-pet-mission-bridge/handoffs.sqlite3 (0600).
 

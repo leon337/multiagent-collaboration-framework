@@ -88,8 +88,11 @@ def _proposal(proposal_id: str, expected_version: int,
     return item
 
 def contract_for(item: dict) -> dict:
-    # Canonical CreateMcfMissionRequest shape from mission-runtime.controller.ts.
-    # Risk class is conservatively provisional C; NEVER conveys an authorization.
+    # CreateMcfMissionRequest-shaped INCOMPLETE local draft. Runtime v1.1
+    # requires methodologyPin/alignedPipRef; those cannot be guessed from a Pet
+    # proposal. The export is not import-ready without independently verified
+    # project context (see _public/runtime_import_blockers).
+    # Risk class is conservatively provisional C; NEVER an authorization.
     return {"contract":{
         "title":item["title"][:160],
         "objective":item["objective"][:4000],
@@ -162,8 +165,19 @@ def _public(row: sqlite3.Row) -> dict:
         "runtime_mission_id":None,
         "execution_authorized":False,
         "human_gate":False,
+        # The v1.1 context guard rejects missing methodologyPin/alignedPipRef.
+        # Do not imply authentication alone makes this draft importable.
+        "import_ready":False,
+        "validation_status":"CONTEXT_INCOMPLETE",
+        "required_project_context":["methodologyPin","alignedPipRef"],
+        "runtime_import_blockers":[
+            "METHODOLOGY_PIN_UNVERIFIED",
+            "ALIGNED_PIP_REQUIRED",
+            "AUTHENTICATED_HUMAN_SESSION_REQUIRED",
+            "MCF_PERMISSION_ENGINE_AUTHORIZATION_REQUIRED",
+        ],
         "mission_runtime_endpoint":"/v1/mcf/missions",
-        "next_gate":"AUTHENTICATED_HUMAN_SESSION_AND_MCF_PERMISSION_ENGINE",
+        "next_gate":"VERIFIED_PROJECT_CONTEXT_THEN_AUTHENTICATED_HUMAN_SESSION",
     }
 
 def list_handoffs(path: Path=DB_PATH, limit: int=25) -> list[dict]:

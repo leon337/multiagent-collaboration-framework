@@ -30,3 +30,10 @@ PASS: Local deployed /healthz and Pet assets all HTTP200.
 PASS: No canonical mission POST and no user proposal status modified.
 LOCAL ROLLBACK:
   /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-20261117T014617Z/
+P2 CODEX REVIEW REMEDIATION:
+PASS: v1.1 draft explicitly declares import_ready=false,
+      validation_status=CONTEXT_INCOMPLETE and ALIGNED_PIP_REQUIRED.
+PASS: no methodologyPin/alignedPipRef are fabricated from AI-generated text.
+PASS: UI describes verified project context prerequisite before import.
+BLOCKED: actual import cannot pass MissionV11ContextGuard until project
+         methodology and aligned PIP refs are supplied and independently verified.

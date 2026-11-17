@@ -58,6 +58,11 @@ class MissionBridgeTest(unittest.TestCase):
         self.assertIsNone(draft["runtime_mission_id"])
         self.assertFalse(draft["human_gate"])
         self.assertFalse(draft["execution_authorized"])
+        self.assertFalse(draft["import_ready"])
+        self.assertEqual(draft["validation_status"],"CONTEXT_INCOMPLETE")
+        self.assertIn("ALIGNED_PIP_REQUIRED",draft["runtime_import_blockers"])
+        self.assertIn("methodologyPin",draft["required_project_context"])
+        self.assertIn("alignedPipRef",draft["required_project_context"])
         self.assertEqual(draft["mission_runtime_endpoint"],"/v1/mcf/missions")
         contract=draft["request"]["contract"]
         for name in ("title","objective","expectedOutcome","scope",

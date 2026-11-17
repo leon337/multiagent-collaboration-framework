@@ -142,7 +142,9 @@
             const handoff=result.handoff||{};
             const receipt=label("p","pet-proposal-guard",
               "Rascunho local "+String(handoff.handoff_id||"").slice(0,32)+
-              ". Aguardando sessão humana autenticada e gates do MCF. "+
+              ". Contrato local com contexto incompleto (methodologyPin "+
+              "e alignedPipRef devem ser verificados). "+
+              "Aguardando autenticação humana e gates do MCF. "+
               "Nenhuma missão foi criada no runtime.");
             entry.append(receipt);
             notice("Contrato local preparado. Não enviado ao MissionRuntime.");
