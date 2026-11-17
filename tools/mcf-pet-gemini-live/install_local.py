@@ -30,6 +30,7 @@ ASSETS={
     "backend/pet_readonly_tools.py":[AGENT/"pet_readonly_tools.py"],
     "backend/pet_proposals.py":[AGENT/"pet_proposals.py",HUB/"pet_proposals.py"],
     "backend/pet_mission_bridge.py":[HUB/"pet_mission_bridge.py"],
+    "backend/pet_scoped_write.py":[HUB/"pet_scoped_write.py"],
     "frontend/pet-proposals.js":[HUB/"pet-proposals.js"],
     "frontend/pet-proposals.css":[HUB/"pet-proposals.css"],
     "backend/pet_live_ticket.py":[HUB/"pet_live_ticket.py"],
@@ -413,6 +414,56 @@ def patch_mission_bridge_routes(data: str) -> str:
     return replace_once(data,anchor,handler+anchor,"mission bridge protected routes")
 
 
+def patch_scoped_write_preview(data: str) -> str:
+    # The only exposed operation is dry-run. No create_note or rollback route.
+    if "import pet_scoped_write as pet_scope" not in data:
+        data=replace_once(data,"import pet_mission_bridge as pet_missions",
+                          "import pet_mission_bridge as pet_missions\n"
+                          "import pet_scoped_write as pet_scope",
+                          "scoped write import")
+    if 'if path == "/api/pet-voice/scoped-write/preview":' in data:
+        return data
+    anchor='''        if path in {"/api/pet-voice/mission-bridge/status",
+'''
+    handler='''        if path == "/api/pet-voice/scoped-write/preview":
+            try:
+                # A model conversation or browser checkbox is not a permission.
+                # The dry-run cannot be promoted to a real write in this API.
+                pet_voice.authorize(self.headers)
+                if (self.headers.get("Content-Type") or "").split(";",1)[0].strip().lower()!="application/json":
+                    raise pet_voice.ConversationError(415,"JSON_REQUIRED","Somente JSON.")
+                length=self.headers.get("Content-Length","")
+                if not length.isascii() or not length.isdigit():
+                    raise pet_voice.ConversationError(411,"INVALID_LENGTH","Corpo inválido.")
+                size=int(length)
+                if not 2<=size<=4500:
+                    raise pet_voice.ConversationError(413,"INVALID_LENGTH","Corpo inválido.")
+                raw=self.rfile.read(size)
+                if len(raw)!=size:
+                    raise pet_voice.ConversationError(400,"INCOMPLETE_BODY","Corpo incompleto.")
+                try:
+                    request=json.loads(raw)
+                except (ValueError,UnicodeDecodeError):
+                    raise pet_voice.ConversationError(400,"INVALID_JSON","Corpo inválido.")
+                if not isinstance(request,dict) or set(request)!={
+                        "mission_id","note_id","action_id","text"}:
+                    raise pet_voice.ConversationError(400,"INVALID_SCHEMA","Campos inválidos.")
+                preview=pet_scope.dry_run(request["mission_id"],request["note_id"],
+                                           request["action_id"],request["text"])
+                return self._send(json.dumps({"ok":True,"preview":preview,
+                    "write_enabled":False,"runtime_connected":False,
+                    "human_gate":False},ensure_ascii=False).encode("utf-8"),
+                    "application/json; charset=utf-8")
+            except pet_voice.ConversationError as error:
+                return self._send(json.dumps({"ok":False,"error":error.code}).encode("utf-8"),
+                    "application/json; charset=utf-8",error.status)
+            except pet_scope.ScopedWriteDenied as error:
+                return self._send(json.dumps({"ok":False,"error":error.code}).encode("utf-8"),
+                    "application/json; charset=utf-8",400)
+'''
+    return replace_once(data,anchor,handler+anchor,"scoped write dry-run route")
+
+
 def patch_tab_session_route(data: str) -> str:
     old='data, cookie = pet_voice.make_session(self.headers.get("Host",""))'
     new='data, cookie = pet_voice.make_session(self.headers.get("Host",""), self.headers.get("X-MCF-Pet-Tab"))'
@@ -436,10 +487,10 @@ def plan() -> dict[Path,bytes]:
         for dest in dests:payload[dest]=content
     for source,patch in (
         (AGENT/"app.py",patch_agent),
-        (HUB/"server.py",lambda data: patch_mission_bridge_routes(
-            patch_proposal_routes(patch_proposal_ticket_scope(
-                patch_read_only_ticket(
-                    patch_tab_session_route(patch_hub(data))))))),
+        (HUB/"server.py",lambda data: patch_scoped_write_preview(
+            patch_mission_bridge_routes(patch_proposal_routes(
+                patch_proposal_ticket_scope(patch_read_only_ticket(
+                    patch_tab_session_route(patch_hub(data)))))))),
         (HUB/"index.html",patch_index),
     ):
         payload[source]=patch(source.read_text(encoding="utf-8")).encode("utf-8")

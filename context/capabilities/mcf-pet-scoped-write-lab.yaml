@@ -1,0 +1,52 @@
+schema_version: 1
+
+capability:
+  id: mcf.pet.scoped.write.lab
+  provider_project_id: multiagent-collaboration-framework
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: BOUNDED_WRITE
+
+contract:
+  protocol: MCF_PET_SCOPED_WRITE_LAB_V1
+  allowed_operations:
+    - workspace.note.preview
+    - workspace.note.create
+    - workspace.note.rollback
+    - browser.tabs.read
+  prohibited_operations:
+    - shell.execute
+    - browser.click
+    - browser.submit
+    - browser.navigate
+    - mission.execute
+    - mission.create
+    - permission.grant
+    - human_gate.approve
+    - production.deploy
+
+scope:
+  environments:
+    - lab
+  resources:
+    - tools/mcf-pet-gemini-live/backend/pet_scoped_write.py
+    - /api/pet-voice/scoped-write/preview
+    - mcf-pet-workspace:*
+governance:
+  authorization_state: NOT_AUTHORIZED
+  required_gate: MCF_PERMISSION_ENGINE_AND_LEO_GATE
+  expiration: null
+
+lifecycle:
+  implementation_state: IMPLEMENTED
+  connection_state: DISCONNECTED
+  runtime_state: INACTIVE
+  verification_state: HISTORICALLY_VERIFIED
+  last_verified_at: "2026-11-17T01:45:00Z"
+
+evidence:
+  - source_ref: repo://leon337/multiagent-collaboration-framework/apps/rede-social-agentes/apps/server/src/mcf-runtime/permission-engine.ts
+    source_revision: d20c0e392f9fac76be623158a770220fec839be6
+    observed_at: "2026-11-17T01:45:00Z"
+
+freshness: LIVE_REQUIRED

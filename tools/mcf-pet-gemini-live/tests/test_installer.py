@@ -93,6 +93,23 @@ class Fake:
         self.assertNotIn('approve_execution',patched)
         self.assertEqual(installer.patch_proposal_routes(patched),patched)
 
+    def test_scoped_write_exposes_dry_run_only(self):
+        source='''import pet_mission_bridge as pet_missions
+class Fake:
+    def do_POST(self):
+        path = urlparse(self.path).path
+        if path in {"/api/pet-voice/mission-bridge/status",
+                    "/api/pet-voice/mission-bridge/export",
+                    "/api/pet-voice/mission-bridge/list"}:
+            pass
+'''
+        patched=installer.patch_scoped_write_preview(source)
+        self.assertIn('pet_scope.dry_run(',patched)
+        self.assertIn('pet_voice.authorize(self.headers)',patched)
+        self.assertNotIn('pet_scope.create_note(',patched)
+        self.assertNotIn('pet_scope.rollback_note(',patched)
+        self.assertEqual(installer.patch_scoped_write_preview(patched),patched)
+
     def test_mission_bridge_is_only_an_authenticated_draft_handoff(self):
         from unittest.mock import patch
         dummy='''import pet_proposals as pet_drafts
