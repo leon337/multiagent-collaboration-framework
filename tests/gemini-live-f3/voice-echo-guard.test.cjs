@@ -38,7 +38,7 @@ function setup(){
  };
  const context={window,document:{getElementById:el,createElement:()=>new Elem()},fetch,
   AbortSignal,Date,Promise,URL,crypto:{randomUUID:()=>'cccccccc-3333-4333-8333-333333333333'},
-  setTimeout,clearTimeout,MCFVoiceApproval,
+  setTimeout:(fn,ms)=>{const t=setTimeout(fn,ms);t.unref();return t;},clearTimeout,MCFVoiceApproval,
   state:{connectionGeneration:1,mcpEpoch:1,connected:false,wantConnected:false,
    micStream:null,micStarting:false},stopAllVisual(){},clearPlay(){},stopMic(){}};
  vm.runInNewContext(fs.readFileSync(path.join(root,'playwright-tools.js'),'utf8'),context,
@@ -49,7 +49,7 @@ async function open(ui){
  const result=ui.window.MCFPlaywrightTools.run('playwright_navigate',{url:'https://example.org'});
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(ui.el('playwrightApprovalDialog').open,true);
- return result;
+ return {pending:result};
 }
 function say(ui,transcript){
  assert.ok(ui.calls.recognizer);
@@ -58,7 +58,7 @@ function say(ui,transcript){
 test('screen reader echo and synthetic click cannot grant without trusted final button',async()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  assert.match(html,/<strong id="playwrightVoicePhrase" aria-live="off"/);
- const ui=setup(),pending=await open(ui);
+ const ui=setup(),{pending}=await open(ui);
  assert.equal(ui.calls.recognition,0);
  assert.equal(ui.el('playwrightVoicePhrase').textContent,'1 2 3 4');
  assert.ok(!ui.el('playwrightVoicePhrase').textContent.includes('autorizo'));
@@ -79,7 +79,7 @@ test('screen reader echo and synthetic click cannot grant without trusted final 
  assert.equal(ui.el('playwrightVoicePhrase').textContent,'');
 });
 test('incorrect phrase cannot grant; manual fallback uses trusted click',async()=>{
- const ui=setup(),pending=await open(ui);
+ const ui=setup(),{pending}=await open(ui);
  ui.el('playwrightListen').onclick({isTrusted:true});
  say(ui,'autorizo 9 9 9 9');
  assert.equal(ui.calls.decisions.length,0);
@@ -88,7 +88,7 @@ test('incorrect phrase cannot grant; manual fallback uses trusted click',async()
  assert.equal((await pending).status,'SUCCESS');
 });
 test('spoken denial fails closed without any confirmation click',async()=>{
- const ui=setup(),pending=await open(ui);
+ const ui=setup(),{pending}=await open(ui);
  ui.el('playwrightListen').onclick({isTrusted:true});
  say(ui,'recuso');
  assert.equal((await pending).status,'DENIED');

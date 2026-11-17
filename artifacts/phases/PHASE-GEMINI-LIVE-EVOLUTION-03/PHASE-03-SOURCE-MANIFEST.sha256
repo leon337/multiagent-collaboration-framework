@@ -51,4 +51,4 @@ a9b7db39ebae39dee669bb6faa312206ae747683202a174257d9498989f54e76  ../../../tests
 22e469fe4ec166bfa28cd14ab45537c116f937cdb66d720ed0a25dda5cdab526  ../../../tests/gemini-live-f3/mcp-playwright-gateway.test.cjs
 99d976a196e16deb225547da1e0939353bc7195476e59f912da6d707bbf2e677  ../../../tests/gemini-live-f3/real-gemini-live-tool-e2e.cjs
 79625157522d0f950579693999c27860a31a9aa0d52807bc62d3dca53bb752d9  ../../../tests/gemini-live-f3/voice-approval.test.cjs
-7f4e25b006abfdf2e49020dd0d48187b848ebf401b6490a5220cc7000e516e36  ../../../tests/gemini-live-f3/voice-echo-guard.test.cjs
+4d85d050789ec71a9f8f31205fd1d3a9e41e3d73fde9d0f482528421151ad9dc  ../../../tests/gemini-live-f3/voice-echo-guard.test.cjs
