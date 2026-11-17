@@ -190,6 +190,7 @@ Backup local: /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-202611
 PR dependente do PR #534, que depende do PR #533; sem merge automático
 ou deploy do MissionRuntime central.
 
+
 ## MissionRuntime bridge — reviewed proposals to local mission drafts
 
 MCF-PET-MISSION-BRIDGE-001 adds a fixed, authenticated Pet panel endpoint to
@@ -212,3 +213,18 @@ context/capabilities/mcf-pet-mission-bridge-draft.yaml
 Registry source must be included in authenticated MCF_CONTEXT_CONFIG_JSON
 by a later governed staging deployment; committing YAML alone does NOT
 enable the canonical registry endpoint.
+
+### Background audio flush — PR #535 review remediation
+
+When the foreground tab becomes hidden without opt-in, the browser sends
+the audio_stream_end event once before muting the microphone. Gemini Live
+receives audioStreamEnd so a partially spoken utterance can be completed
+without relying on trailing silence. The event is not repeated while the
+page stays muted. No additional audio PCM is transmitted without opt-in.
+### P2 review remediation (PR #534)
+
+- The review queue is paginated (max 40 per API page, 25 in UI) with pending
+  proposals shown first and explicit pending_count/total values.
+  Earlier pending drafts remain available via Carregar mais propostas.
+- Priority validation checks the Python type before enum membership; malformed
+  arrays/maps from Gemini cannot raise an uncaught TypeError in the tool turn.

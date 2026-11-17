@@ -25,3 +25,9 @@ PENDENTE: voz real capturada pelo usuário no Brave.
 PENDENTE: revisão humana da proposta pendente; não aprovada automaticamente.
 PENDENTE: acesso Tailnet remoto e autorização para qualquer ação com efeito.
 NÃO EXECUTADO: alterações de sistema, MissionRuntime, merge ou deploy central.
+
+REVIEW REMEDIATION (2026-11-16):
+PASS: PR #534 Codex P2: priority=[] and priority={} now yield INVALID_PRIORITY, not TypeError / Live disconnect.
+PASS: PR #534 Codex P2: paginated list (offset/limit), pending-first sorting, total and pending count;
+      >25 proposals can be reached through Carregar mais.
+PASS: 85 Python tests and 5 Node session tests after remediation.

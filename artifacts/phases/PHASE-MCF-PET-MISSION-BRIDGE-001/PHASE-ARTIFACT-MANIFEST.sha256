@@ -1,8 +1,8 @@
-a5a20619dd8f1e54cf01ec404619919601effeae60821d6b8b7c6c7dd4790d01  tools/mcf-pet-gemini-live/README.md
-10aeaaf64f0c809904dc9fba8d594fa423a357ba609c36fed11fbcd32633861a  tools/mcf-pet-gemini-live/install_local.py
+e8efdbbcd597409e417d5f9223d09c0f929f852de34d27b9def032d9be2203e2  tools/mcf-pet-gemini-live/README.md
+ab1350e6d1603b8f77d67e4ceac69d7a50e6539b7b1cc97e2fce6a57cfca6287  tools/mcf-pet-gemini-live/install_local.py
 54c49a1b4b9468584a471fde92dca4af5650995ef91187c1a802b6074b08da3b  tools/mcf-pet-gemini-live/backend/pet_mission_bridge.py
 da7091cb1297f547533eb36a59946de1c899563b12322d6f8cc029732a18c041  tools/mcf-pet-gemini-live/backend/pet_readonly_tools.py
-9a6cd6af6176d0e073560991faef3d4cbb3609b519de1d6970df6b7960388e07  tools/mcf-pet-gemini-live/frontend/pet-proposals.js
+2512a87bbd95448be672dcd85466deb7239026624e6251f9f198b44c67db0c57  tools/mcf-pet-gemini-live/frontend/pet-proposals.js
 b10389a71ab9a22eb5a64cb030b6994bbddc915ae7f8ee2dd16e0c8664f8aae0  tools/mcf-pet-gemini-live/frontend/pet-proposals.css
 4005e1f67ff34fdd96b49d8a7b24284a5ef6050039aa47587f9988102ff5a16c  tools/mcf-pet-gemini-live/tests/test_pet_mission_bridge.py
 85875fb5d1933656ee58b32c08e1b2076de74486cdfc739fe50b192e53b516df  tools/mcf-pet-gemini-live/tests/test_pet_readonly_tools.py

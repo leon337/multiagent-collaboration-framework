@@ -40,7 +40,14 @@
     const hidden=document.hidden===true;
     const backgroundConsent=backgroundToggle?.checked===true;
     const shouldCapture=!hidden||backgroundConsent;
+    // Flush pending utterance when muting the microphone. Gemini Live's
+    // automatic VAD otherwise may wait for trailing silence indefinitely.
+    // Only emit once per transition (not on repeated visibility events).
+    const enteringMuted=!shouldCapture&&!microphonePausedForBackground;
     microphonePausedForBackground=!shouldCapture;
+    if(enteringMuted&&ready&&socket?.readyState===WebSocket.OPEN){
+      socket.send(JSON.stringify({type:"audio_stream_end"}));
+    }
     for(const track of stream?.getAudioTracks?.()||[]){
       if(track.readyState==="live")track.enabled=shouldCapture;
     }

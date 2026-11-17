@@ -284,6 +284,22 @@ def patch_proposal_routes(data: str) -> str:
     "/pet-proposals.css": ("pet-proposals.css", "text/css; charset=utf-8"),'''
         data=replace_once(data,anchor,extra,"proposals static assets")
     if 'if path in {"/api/pet-voice/proposals/list",' in data:
+        # Upgrade legacy deployments that already had this handler before
+        # the Codex-review pagination fix; insertion alone is not enough.
+        old_list='''                    if item!={}:
+                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros não aceitos.")
+                    payload={"ok":True,"proposals":pet_drafts.list_proposals(25)}'''
+        new_list='''                    if set(item)-{"offset","limit"}:
+                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros inválidos.")
+                    offset=item.get("offset",0)
+                    limit=item.get("limit",25)
+                    rows=pet_drafts.list_proposals(limit,offset=offset)
+                    counts=pet_drafts.proposal_counts()
+                    payload={"ok":True,"proposals":rows,"total":counts["total"],
+                             "pending_count":counts["pending"],
+                             "offset":offset,"has_more":offset+len(rows)<counts["total"]}'''
+        if old_list in data:
+            return replace_once(data,old_list,new_list,"proposal pagination upgrade")
         return data
     anchor='''        if path not in pet_voice.POST_PATHS:
 '''
@@ -312,9 +328,15 @@ def patch_proposal_routes(data: str) -> str:
                 if not isinstance(item,dict):
                     raise pet_voice.ConversationError(400,"INVALID_JSON","Objeto obrigatório.")
                 if path.endswith("/list"):
-                    if item!={}:
-                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros não aceitos.")
-                    payload={"ok":True,"proposals":pet_drafts.list_proposals(25)}
+                    if set(item)-{"offset","limit"}:
+                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros inválidos.")
+                    offset=item.get("offset",0)
+                    limit=item.get("limit",25)
+                    rows=pet_drafts.list_proposals(limit,offset=offset)
+                    counts=pet_drafts.proposal_counts()
+                    payload={"ok":True,"proposals":rows,"total":counts["total"],
+                             "pending_count":counts["pending"],
+                             "offset":offset,"has_more":offset+len(rows)<counts["total"]}
                 else:
                     if set(item)-{"proposal_id","decision","version","note"}:
                         raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros inválidos.")

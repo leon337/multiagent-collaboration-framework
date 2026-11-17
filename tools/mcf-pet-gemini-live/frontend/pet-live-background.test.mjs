@@ -18,6 +18,12 @@ test("hidden tabs silence microphone capture by default and block PCM transmissi
   assert.match(source,/track\.enabled=shouldCapture/);
 });
 
+test("muting an active stream flushes trailing audio exactly on transition",()=>{
+  assert.match(source,/const enteringMuted=!shouldCapture&&!microphonePausedForBackground/);
+  assert.match(source,/if\(enteringMuted&&ready&&socket\?\.readyState===WebSocket\.OPEN\)/);
+  assert.match(source,/socket\.send\(JSON\.stringify\(\{type:"audio_stream_end"\}\)\)/);
+});
+
 test("background recording requires explicit per-session opt-in, reset on stop",()=>{
   assert.match(source,/backgroundToggle\.disabled=true/);
   assert.match(source,/backgroundToggle\.checked=false; \/\/ opt-in is ALWAYS per session/);

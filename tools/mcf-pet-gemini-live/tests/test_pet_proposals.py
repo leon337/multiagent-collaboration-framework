@@ -127,6 +127,38 @@ class ProposalStoreTests(unittest.TestCase):
         q=create_proposal(sample(),"b"*32,"call-2",[],self.path)
         self.assertEqual(q["evidence_refs"],[])
 
+    def test_invalid_priority_types_are_rejected_without_server_crash(self):
+        for priority in ([],{},None,42,True):
+            with self.subTest(priority=priority):
+                data=sample();data["priority"]=priority
+                with self.assertRaises(ProposalError) as err:
+                    create_proposal(data,self.sid,"invalid-priority",[],self.path)
+                self.assertEqual(err.exception.code,"INVALID_PRIORITY")
+
+    def test_all_pending_proposals_reachable_through_pagination(self):
+        from pet_proposals import proposal_counts
+        for number in range(31):
+            create_proposal(sample(),f"{number:032x}",f"call-{number}",[],self.path)
+        # Recently created entries reviewed first do not hide older pending.
+        recent=list_proposals(15,self.path,offset=0)
+        assert len(recent)==15
+        for p in recent:
+            review_proposal(p["id"],"rejected",p["version"],"",self.path)
+        first=list_proposals(15,self.path,offset=0)
+        second=list_proposals(15,self.path,offset=15)
+        third=list_proposals(15,self.path,offset=30)
+        rows=first+second+third
+        self.assertEqual(len(rows),31)
+        self.assertEqual(len({p["id"] for p in rows}),31)
+        self.assertEqual(sum(p["status"]=="pending_review" for p in rows),16)
+        self.assertEqual(proposal_counts(self.path),{"total":31,"pending":16})
+        self.assertTrue(all(p["status"]=="pending_review" for p in first))
+
+    def test_offset_validation(self):
+        for offset in (-1,301,"0",True):
+            with self.subTest(offset=offset),self.assertRaises(ProposalError):
+                list_proposals(25,self.path,offset=offset)
+
     def test_schema_validation_blocks_executable_payloads(self):
         args=sample()
         args["steps"]=["Execução"]
