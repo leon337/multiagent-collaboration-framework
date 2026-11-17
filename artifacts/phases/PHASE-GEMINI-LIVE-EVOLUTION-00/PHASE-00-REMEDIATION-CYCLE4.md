@@ -16,3 +16,7 @@ Receipts de atores autorizados na API real nao podem ser facilmente falsificados
 
 ## Limites remanescentes
 A ultima leitura HEAD->POST nao e transacao atomica. O job GitHub Actions esta serializado, mas CLIs externos ainda podem criar comentarios duplicados, sem criar gates falsos. F0.4 de seguranca, F0.5 aceite fisico, F0.6 completo e F0.8 continuam pendentes. Rotacao de chave foi adiada explicitamente por LEANDRO; sem autorizacao para producao/credenciais novas.
+
+## Ajuste adicional apos gate externo LEO do SHA 9a91dc3
+O executor Codex CLI em perfil LEO confirmou APROVAR_COM_RESSALVAS somente continuidade local F1 e preparacao documental F2, mas retornou F0/F1 integral e implementacao F2. Identificou Date.parse aceitando 30 de fevereiro e 24:00. O sincronizador agora compara componentes do calendario e hora UTC e rejeita datas impossiveis; exemplo de leap-day valido e reconhecido.
+41/41 testes Node PASS (32 sincronizador + 9 telemetria), incluindo duas novas regressoes com datas invalidas e leap-day valido. O gate externo antecede ESTA correcao, nao considerá-lo uma auditoria do SHA novo. Riscos residuais e gates documentais continuam abertos.
