@@ -133,7 +133,8 @@ discovery:
       visibility: PRIVATE
       observed_commit: 9b456ec95d16f42bb719734873f5f6343bb67e2e
   runner_status_api: https://api.github.com/repos/leon337/mcf-remotion-mcp/actions/runners
-  runner_workflow: https://github.com/leon337/mcf-remotion-mcp/blob/main/.github/workflows/remotion-gpu-worker-health.yml
+  runner_workflow_pr: https://github.com/leon337/mcf-remotion-mcp/pull/1
+  runner_workflow_source_ref: feat/remotion-gpu-runner-health-20261117
   private_runner_requires_authenticated_access: true
   read_only_probe: tools/remotion-mcf-adapter/discover.mjs
   chatgpt_native_plugin_state: NOT_CONNECTED
