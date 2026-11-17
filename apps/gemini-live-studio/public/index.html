@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b101b"><title>Gemini Live Studio • MCF</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<div id="shell">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">✦</div><div><strong>GEMINI <span>LIVE</span></strong><small>STUDIO · MCF LAB</small></div></div>
+  <div class="nav-caption">WORKSPACE</div>
+  <nav aria-label="Navegação principal">
+    <button class="nav active" data-view="live"><span>◉</span> Live Console</button>
+    <button class="nav" data-view="features"><span>▦</span> Laboratório</button>
+    <button class="nav" data-view="history"><span>▤</span> Conversa e eventos</button>
+    <button class="nav" data-view="settings"><span>⚙</span> Configurações</button>
+  </nav>
+  <div class="side-bottom">
+    <div class="side-glow">✧ <span>Native audio experience</span></div>
+    <p>Sua chave fica no computador. Áudio e vídeo são transmitidos diretamente à API Gemini via conexão segura.</p>
+    <button id="openKeySide" class="subtle full">◈ Gerenciar chave API</button>
+  </div>
+</aside>
+<main class="main">
+  <header class="topbar">
+    <div class="top-title"><span id="crumb">LIVE CONSOLE</span><span class="crumb-dot">/</span><span>EXPERIMENTAL WORKSPACE</span></div>
+    <div class="top-right"><span id="keyChip" class="chip"><i class="dot amber"></i> API não configurada</span><button id="keyButton" class="iconbtn" title="Chave API" aria-label="Configurar chave">⚙</button><div class="avatar">M</div></div>
+  </header>
+  <section id="view-live" class="view active">
+    <div class="pagehead"><div><div class="eyebrow"><i class="dot green"></i> MULTIMODAL REALTIME ENGINE</div><h1>Converse além do texto<span class="accent">.</span></h1><p>Voz nativa, visão em tempo real e ferramentas — um único ambiente de experimentação.</p></div><div class="model-box"><label for="model">MODELO EM EXECUÇÃO</label><select id="model"><option value="gemini-2.5-flash-native-audio-preview-12-2025">Gemini 2.5 Flash Live</option><option value="gemini-3.8-live">Gemini 3.8 Live</option><option value="gemini-3.8-live-extended-thinking">Gemini 3.8 Extended Thinking</option></select><small id="modelHint">Native audio · diálogo afetivo · proatividade</small></div></div>
+    <div class="workgrid">
+      <div class="live-panel panel">
+        <div class="panel-header"><span>◉ &nbsp; INTERAÇÃO EM TEMPO REAL</span><div class="status" id="connectionStatus"><i class="dot gray"></i> Desconectado</div></div>
+        <div class="stage">
+          <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+          <div class="voice-orb" id="voiceOrb"><div class="orb-inner">✦</div></div>
+          <div class="orb-status" id="orbStatus">Pronto para iniciar</div><div class="orb-sub" id="orbSub">Selecione um modelo e inicie sua sessão</div>
+          <canvas id="visualizer" width="620" height="60" aria-label="Visualizador de áudio"></canvas>
+          <div class="media-frame" id="mediaFrame" hidden><video id="preview" muted playsinline autoplay></video><div class="media-tag" id="mediaLabel">CÂMERA</div></div>
+        </div>
+        <div class="session-actions">
+          <button id="connect" class="primary"><span>▶</span> Iniciar sessão</button>
+          <button id="disconnect" class="secondary" disabled>■ Encerrar</button>
+          <span id="sessionTimer" class="time">00:00</span>
+        </div>
+        <div class="media-actions">
+          <button id="mic" class="action" disabled><span>♬</span> Microfone <small>OFF</small></button>
+          <button id="camera" class="action" disabled><span>◫</span> Câmera <small>OFF</small></button>
+          <button id="screen" class="action" disabled><span>▣</span> Tela <small>OFF</small></button>
+          <button id="mute" class="action" disabled><span>◖</span> Som <small>ON</small></button>
+        </div>
+        <div class="stage-foot"><span>◈ WebSocket</span><span>🔊 AudioWorklet · PCM16 · 40 ms</span><span id="f1AudioHealth">Fila: 0 ms</span><span>PT-BR</span></div>
+      </div>
+      <div class="conversation panel">
+        <div class="panel-header"><span>▤ &nbsp; TRANSMISSÃO &amp; TRANSCRIÇÃO</span><button class="mini" id="clearChat">Limpar</button></div>
+        <div id="messages" class="messages" aria-live="polite"><div class="welcome"><div class="welcome-icon">✺</div><h3>Sua conversa começa aqui</h3><p>Conecte-se e fale pelo microfone, envie texto ou compartilhe o que sua câmera está vendo.</p><div class="suggestions"><button data-prompt="Apresente-se em português do Brasil e explique suas capacidades.">Apresente suas capacidades</button><button data-prompt="Que tipos de ferramentas você consegue chamar nesta sessão?">Teste de ferramentas</button></div></div></div>
+        <div class="chat-bottom"><div class="message-bar"><button id="uploadImage" class="upload-btn" title="Enviar imagem" aria-label="Enviar imagem" disabled>⊞</button><input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><input id="prompt" type="text" placeholder="Digite sua mensagem para o Gemini..." autocomplete="off"><button id="send" disabled title="Enviar" aria-label="Enviar mensagem">➤</button></div><div class="chat-help">↵ Enter para enviar <span>•</span> Resposta por áudio com legendas</div><div class="chat-help"><button id="recoverLastTurn" class="mini" hidden disabled title="Novo turno explicitamente solicitado; não é retry automático">Reiniciar para repetir</button></div></div>
+      </div>
+    </div>
+    <div class="statgrid">
+      <div class="stat"><div class="stat-label">SESSÃO</div><strong id="metricSession">INATIVA</strong><small>Estado da conexão</small></div>
+      <div class="stat"><div class="stat-label">TOKENS UTILIZADOS</div><strong id="metricTokens">—</strong><small>Informação da API</small></div>
+      <div class="stat"><div class="stat-label">CHAMADAS DE FERRAMENTAS</div><strong id="metricTools">0</strong><small>Executadas localmente</small></div>
+      <div class="stat"><div class="stat-label">ENTRADA MULTIMODAL</div><strong id="metricStreams">0 / 3</strong><small>Microfone · câmera · tela</small></div>
+    </div>
+  </section>
+  <section id="view-features" class="view">
+    <div class="pagehead"><div><div class="eyebrow">CAPABILITY EXPLORER</div><h1>Laboratório de recursos<span class="accent">.</span></h1><p>Configure a experiência antes de iniciar uma nova sessão. Recursos dependem do modelo.</p></div></div>
+    <div class="feature-grid">
+      <div class="panel feature-card"><div class="feature-icon">♫</div><h3>Identidade de voz</h3><p>Escolha a voz de saída do modelo.</p><label for="voice">Voz sintetizada</label><select id="voice"><option>Aoede</option><option>Charon</option><option>Fenrir</option><option selected>Kore</option><option>Orus</option><option>Puck</option><option>Zephyr</option><option>Leda</option></select></div>
+      <div class="panel feature-card"><div class="feature-icon">♡</div><h3>Diálogo afetivo</h3><p>Ajusta respostas ao tom e expressão da fala.</p><label class="toggle"><input type="checkbox" id="affective" checked><span>Ativar affective dialog</span></label><small class="constraint" id="affectiveHint">Exclusivo do Gemini 2.5 Flash Live</small></div>
+      <div class="panel feature-card"><div class="feature-icon">◎</div><h3>Áudio proativo</h3><p>Deixa o modelo decidir quando deve responder.</p><label class="toggle"><input type="checkbox" id="proactive"><span>Ativar proactive audio</span></label><small class="constraint" id="proactiveHint">Configurável no Gemini 2.5</small></div>
+      <div class="panel feature-card"><div class="feature-icon">◷</div><h3>Transcrição</h3><p>Legendas de fala de entrada e de saída.</p><label class="toggle"><input type="checkbox" id="transIn" checked><span>Entrada de áudio</span></label><label class="toggle"><input type="checkbox" id="transOut" checked><span>Resposta do modelo</span></label></div>
+      <div class="panel feature-card"><div class="feature-icon">⟁</div><h3>Raciocínio</h3><p>Controle opcional, específico do modelo.</p><label for="thinking">Perfil de pensamento</label><select id="thinking"><option value="default">Padrão</option><option value="low">Baixo / rápido</option><option value="medium">Médio</option><option value="high">Alto</option></select><small id="thinkingHint" class="constraint">Gemini 2.5: orçamento em tokens</small></div>
+      <div class="panel feature-card"><div class="feature-icon">☷</div><h3>Detecção de voz</h3><p>Interrupções naturais e limite de silêncio.</p><label for="silence">Silêncio (ms): <b id="silenceValue">700</b></label><input id="silence" type="range" min="300" max="2000" step="100" value="700"><label class="toggle"><input type="checkbox" id="vad" checked><span>VAD automático no servidor</span></label><label class="toggle"><input type="checkbox" id="fastBargeIn"><span>Interrupção local imediata (experimental)</span></label><small>Desativada por padrão para evitar que o eco dos alto-falantes corte a resposta. Interrupção confirmada pelo servidor continua ativa.</small><small>Desativado: VAD local experimental com pré-buffer e início/fim de fala explícitos.</small></div>
+      <div class="panel feature-card"><div class="feature-icon">✺</div><h3>Ferramentas do agente</h3><p>Funções demonstrativas seguras e Pesquisa Google.</p><label class="toggle"><input type="checkbox" id="tools" checked><span>Ferramentas locais</span></label><label class="toggle"><input type="checkbox" id="grounding"><span>Pesquisa Google</span></label></div>
+      <div class="panel feature-card"><div class="feature-icon">▧</div><h3>Sessão estendida</h3><p>Compressão de contexto e retomada após desconexão.</p><label class="toggle"><input type="checkbox" id="compression" checked><span>Compressão de contexto</span></label><label class="toggle"><input type="checkbox" id="resumption" checked><span>Retomada automática</span></label></div>
+    </div>
+    <div class="info-line">◈ Alterações passam a valer na próxima conexão. O navegador solicita permissões para câmera, microfone e tela somente ao ativar cada recurso.</div>
+  </section>
+  <section id="view-history" class="view"><div class="pagehead"><div><div class="eyebrow">SESSION DIAGNOSTICS</div><h1>Eventos & observabilidade<span class="accent">.</span></h1><p>Visibilidade dos eventos, transcrições, ferramentas e consumo de tokens.</p></div><button id="export" class="secondary">↓ Exportar JSON</button></div><div class="panel f1-diagnostics"><div class="panel-header">F1 · DIAGNÓSTICO DE ÁUDIO</div><div class="f1-metrics" id="f1Metrics" aria-live="polite">Conecte uma sessão para acompanhar reconexões, interrupções e consumo.</div><div class="f1-note">Os valores são exploratórios: não constituem benchmark de hardware nem estimativa de custos.</div></div><div class="panel log-panel"><div class="panel-header">EVENT STREAM <button class="mini" id="clearEvents">Limpar eventos</button></div><div id="events" class="events"></div></div></section>
+  <section id="view-settings" class="view"><div class="pagehead"><div><div class="eyebrow">LOCAL CONTROL CENTER</div><h1>Configurações<span class="accent">.</span></h1><p>A chave de API nunca é incorporada no JavaScript público da aplicação.</p></div></div><div class="panel settings-box"><div class="setting-icon">🔐</div><h2>Cofre local de credenciais</h2><p>A chave é validada com o Google e mantida em um arquivo protegido no seu computador. O navegador recebe apenas um token temporário por sessão.</p><div class="setting-state" id="keyState">Verificando chave...</div><div class="setting-buttons"><button class="primary" id="openKeySettings">Configurar chave API</button><button class="secondary danger" id="deleteKey">Remover chave</button></div><p class="footnote">Uso local: 127.0.0.1:18371 · Não disponibilize esta aplicação diretamente na internet sem autenticação adicional e TLS.</p></div></section>
+</main></div>
+<dialog id="keyDialog"><form id="keyForm"><div class="dialog-mark">◈</div><h2>Conectar ao Google AI Studio</h2><p>Insira sua API Key. Ela será enviada somente ao servidor local para validação e armazenamento protegido.</p><label for="apiKey">CHAVE DA API GEMINI</label><div class="secret-row"><input id="apiKey" type="password" placeholder="AIza..." required minlength="30" autocomplete="off" spellcheck="false"><button id="toggleSecret" type="button" class="mini">Mostrar</button></div><div id="keyFeedback" class="feedback" aria-live="polite"></div><div class="dialog-actions"><button type="button" id="closeKey" class="secondary">Cancelar</button><button type="submit" id="saveKey" class="primary">Validar e salvar</button></div><a href="https://aistudio.google.com/api-keys" target="_blank" rel="noreferrer">Onde obter minha chave? ↗</a></form></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/telemetry.js" defer></script><script src="/app.js" defer></script>
+</body></html>

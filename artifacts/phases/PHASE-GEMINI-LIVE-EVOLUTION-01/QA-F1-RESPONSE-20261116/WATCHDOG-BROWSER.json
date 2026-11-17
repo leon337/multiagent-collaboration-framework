@@ -1,0 +1,130 @@
+{
+  "schema": "mcf-f1-response-watchdog-browser-v1",
+  "utc": "2026-11-17T01:43:33.684Z",
+  "url": "http://127.0.0.1:18373",
+  "sourceSha256": {
+    "public/app.js": "71e37658f0dab2d86b64092a288060e85eca04196c05b01f78dfa23cdd87d487",
+    "public/index.html": "1dba2ff9898a2f7db77b91aadb8ce5b91ae254161841e7528369aef0bddf0cb9",
+    "public/telemetry.js": "79baef57e715a2e3c8e5c92e5ff4b00db8befa712c1e3aac916c5a56e5cf564a"
+  },
+  "results": [
+    {
+      "id": "MANUAL_RECOVERY_BUTTON_AVAILABLE",
+      "pass": true,
+      "observed": {}
+    },
+    {
+      "id": "VOICE_AUTO_SILENCE_ARMS_WATCHDOG",
+      "pass": true,
+      "observed": {
+        "pending": true,
+        "kind": "voice",
+        "writes": 24
+      }
+    },
+    {
+      "id": "MODEL_AUDIO_DISARMS_VOICE_AND_RECORDS_PROXY",
+      "pass": true,
+      "observed": {
+        "pending": false,
+        "voiceProxyRecorded": 1,
+        "speechEndWasFinite": true
+      }
+    },
+    {
+      "id": "INVALID_PROVIDER_AUDIO_KEEPS_WATCHDOG_ACTIVE",
+      "pass": true,
+      "observed": {
+        "pending": true
+      }
+    },
+    {
+      "id": "VOICE_TIMEOUT_WARNING_NO_AUTOMATIC_REPLAY",
+      "pass": true,
+      "observed": {
+        "timeouts": 1,
+        "writes": 0,
+        "pending": true,
+        "recoveryShown": true
+      }
+    },
+    {
+      "id": "SILENT_TERMINAL_NO_DOUBLE_COUNT_AND_MANUAL_RECOVERY",
+      "pass": true,
+      "observed": {
+        "afterPending": false,
+        "silentTurns": 1,
+        "recoveryShown": true
+      }
+    },
+    {
+      "id": "MANUAL_RECOVERY_REQUIRES_CONFIRM_AND_RESTARTS_WITHOUT_REPLAY",
+      "pass": true,
+      "observed": {
+        "rejected": true,
+        "accepted": {
+          "writes": 0,
+          "disconnected": true,
+          "buttonHidden": true
+        }
+      }
+    },
+    {
+      "id": "DISCONNECT_CANCELS_PENDING_WITHOUT_REPLAY",
+      "pass": true,
+      "observed": {
+        "disconnected": false,
+        "after": 1,
+        "stillPending": false
+      }
+    },
+    {
+      "id": "INCOMPATIBLE_OR_ODD_PCM_CANNOT_ACK_RESPONSE",
+      "pass": true,
+      "observed": {
+        "wrongMime": false,
+        "odd": false,
+        "pending": true,
+        "invalid": 2
+      }
+    },
+    {
+      "id": "TEXT_BLOCKED_WHILE_VOICE_RESPONSE_PENDING",
+      "pass": true,
+      "observed": {
+        "writes": 0,
+        "kind": "voice",
+        "pending": true
+      }
+    },
+    {
+      "id": "EARLY_MODEL_RESPONSE_PREVENTS_FALSE_POST_SILENCE_TIMER",
+      "pass": true,
+      "observed": {
+        "pending": false,
+        "kind": null,
+        "earlyReplySeen": true
+      }
+    },
+    {
+      "id": "EXPLICIT_DISCONNECT_CANNOT_ARM_NEW_VOICE_WATCHDOG",
+      "pass": true,
+      "observed": {
+        "pending": false,
+        "micStopped": true
+      }
+    },
+    {
+      "id": "NO_UNCAUGHT_BROWSER_ERRORS",
+      "pass": true,
+      "observed": {
+        "errors": []
+      }
+    }
+  ],
+  "realProvider": false,
+  "realSpeaker": false,
+  "mediaPersisted": false,
+  "pass": 13,
+  "fail": 0
+}

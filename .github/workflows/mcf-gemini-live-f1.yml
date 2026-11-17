@@ -1,0 +1,56 @@
+name: Gemini Live F1 — Audio Reliability
+on:
+  pull_request:
+    branches:
+      - main
+      - mission/gemini-live-evolution-20261116-001
+    paths:
+      - "apps/gemini-live-studio/**"
+      - "tests/gemini-live-f1/**"
+      - "artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-01/**"
+      - ".github/workflows/mcf-gemini-live-f1.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  f1-audio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Validate audio worklet and telemetry
+        run: node --test tests/gemini-live-f1/capture-worklet.test.mjs tests/gemini-live-f1/telemetry.test.mjs
+      - name: Validate JavaScript syntax
+        run: |
+          node --check apps/gemini-live-studio/server.js
+          node --check apps/gemini-live-studio/public/app.js
+          node --check apps/gemini-live-studio/public/capture-worklet.js
+          node --check apps/gemini-live-studio/public/telemetry.js
+          node --check tests/gemini-live-f1/browser-e2e.cjs
+          node --check tests/gemini-live-f1/response-watchdog-browser.cjs
+          node --check tests/gemini-live-f1/physical-mic-60.cjs
+      - name: Enforce no legacy ScriptProcessor and no secrets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re,subprocess
+          root=Path('apps/gemini-live-studio')
+          tracked=subprocess.check_output(['git','ls-files',str(root)],text=True).splitlines()
+          assert tracked, 'No app code in PR'
+          assert 'createScriptProcessor' not in (root/'public/app.js').read_text()
+          assert (root/'public/capture-worklet.js').is_file()
+          assert "'/capture-worklet.js':'capture-worklet.js'" in (root/'server.js').read_text()
+          for f in tracked:
+              assert not any(q in f for q in ['.private/','.env','api-key.json','.pem','.key','node_modules']), 'Forbidden secret path'
+              s=Path(f).read_text(errors='replace')
+              for pattern in [r'AIza[A-Za-z0-9_-]{25,}',r'AQ\.[A-Za-z0-9_-]{20,}',r'sk-[A-Za-z0-9_-]{25,}']:
+                  assert not re.search(pattern,s), 'Potential credential in '+f
+          print('F1 app files scanned:',len(tracked))
+          PY
+      - name: Verify F1 source and traceability package SHA-256 manifests
+        working-directory: artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-01
+        run: |
+          sha256sum -c PHASE-01-SOURCE-MANIFEST.sha256
+          sha256sum -c PHASE-01-ARTIFACT-MANIFEST.sha256

@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-16T21:48:09.471Z",
+  "provider": "Gemini Live",
+  "real_api": true,
+  "virtual_audio_output": true,
+  "atTurnEnd": {
+    "nodes": 1014,
+    "ended": 1000,
+    "pending": 14,
+    "seconds": 41.48,
+    "contextState": "running"
+  },
+  "final": {
+    "audioNodes": 1014,
+    "startCalls": 1014,
+    "stopCalls": 0,
+    "endedCalls": 1014,
+    "scheduledSamples": 995520,
+    "playedSamples": 995520,
+    "seconds": 41.48,
+    "interrupted": 0,
+    "overlap": 0,
+    "gap": 0,
+    "queueEmpty": true,
+    "audioContextRunning": true,
+    "lastEnd": 52.92799999999914
+  },
+  "pass": true,
+  "pageErrors": 0
+}
