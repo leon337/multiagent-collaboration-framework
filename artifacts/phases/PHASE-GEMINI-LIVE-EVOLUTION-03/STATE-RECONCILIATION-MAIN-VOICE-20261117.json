@@ -1,0 +1,125 @@
+{
+  "schema": "mcf-gemini-live-voice-main-reconciliation/v1",
+  "observed_at_utc": "2026-11-17",
+  "mission_id": "MCF-GEMINI-LIVE-EVOLUTION-20261116-001",
+  "canonical_issue": "https://github.com/leon337/multiagent-collaboration-framework/issues/527",
+  "authority": {
+    "human": "LEANDRO",
+    "orchestrator": "MESTRE",
+    "gate_agent": "LÉO"
+  },
+  "repository": "leon337/multiagent-collaboration-framework",
+  "main": {
+    "sha": "97d79ee8152ead27564d2bf634ad63df5cc284e6",
+    "merge_pr": 543,
+    "studio_base_pr": 544,
+    "studio_base_merge": "ca84c9132459e37ecd8ba79a965b33e554f6200a"
+  },
+  "source_pr_540": {
+    "state": "OPEN",
+    "draft": true,
+    "head": "76f86b09c254e5fb3adf5b127c1d1ed8e2e2b36a",
+    "voice_code_commit": "5e0118b6a4b8f6047a9b19eddc8c8236abfb9545",
+    "base": "feat/gemini-live-f2-multimodal-consent-20261116"
+  },
+  "candidate": {
+    "branch": "reconcile/gemini-live-voice-approval-main-20261117",
+    "base_sha": "97d79ee8152ead27564d2bf634ad63df5cc284e6",
+    "status": "F0_F1_F2_F3_DOCS_CI_PASS_PRODUCTION_READINESS_RUNNING",
+    "merged_to_main": false,
+    "public_deploy": false,
+    "pr": 546,
+    "head_at_ci_submission": "38a1c0b250123eb24cb9cdc09b4d4e883ed4900b",
+    "latest_security_hardening_commit": "9ed406c7c2aba08593fa0cf39de892586703f0c3",
+    "latest_code_head_verified": "93cba8b2ef7ccaa5be370aacd30e1b57194f9cab"
+  },
+  "wip_f1": {
+    "branch": "wip/gemini-live-f1-response-20261117",
+    "sha": "142cd99f7519512849c43ded619ee63b884ee87e",
+    "parent": "8cffb50f00175443d7954b039d908b26a6f26650",
+    "preserved": true,
+    "rewritten": false,
+    "merged_into_candidate": false,
+    "prior_evidence": {
+      "browser": {
+        "pass": 18,
+        "fail": 0
+      },
+      "source_hashes": 31,
+      "artifact_hashes": 54
+    }
+  },
+  "phase_state": {
+    "F0": "GATE_F0_8_PENDING",
+    "F1": "GATE_F1_6_PENDING",
+    "F2": "GATE_F2_6_PENDING",
+    "F3": "GATE_F3_7_PENDING",
+    "F4": "NOT_IMPLEMENTED"
+  },
+  "gates": {
+    "F0_8": "PENDING",
+    "F1_6": "PENDING",
+    "F2_6": "PENDING",
+    "F3_7": "PENDING",
+    "F4_6": "PENDING",
+    "native_HDF": false,
+    "permission_engine_identity": false
+  },
+  "security_preservation": {
+    "main_gateway_file_reused": false,
+    "revoked_session_guard_preserved": true,
+    "redirect_validation_preserved": true,
+    "voice_not_biometric": true,
+    "network_egress_sandbox": false,
+    "physical_microphone_test": false,
+    "main_gateway_based": true,
+    "selective_trailing_dot_host_normalization": true,
+    "exact_origin_redirect_validation_preserved": true
+  },
+  "validation": {
+    "candidate_actions": {
+      "F0": "SUCCESS",
+      "F1": "SUCCESS",
+      "F2": "SUCCESS",
+      "F3": "SUCCESS",
+      "documentation": "SUCCESS",
+      "production_readiness": "IN_PROGRESS"
+    },
+    "candidate_browser_e2e": "HARNESS_PRESENT_NOT_EXECUTED",
+    "physical_voice": "NOT_TESTED",
+    "source_manifest": "PASS_53_ENTRIES",
+    "artifact_manifest": "PASS_15_ENTRIES",
+    "gateway_host_normalization_test": "PASS_LOCALHOST_DOT_DOUBLE_DOT_AND_LOOPBACK_DOT",
+    "F3_unit_tests": {
+      "passed": 25,
+      "failed": 0
+    }
+  },
+  "next_action": "Run candidate PR CI and manifests; inspect failures; request independent review on exact candidate SHA; perform supervised physical voice test and close security gaps before any gate or production decision.",
+  "source_pr_539": {
+    "number": 539,
+    "state": "OPEN",
+    "draft": true,
+    "base": "feat/gemini-live-audio-f1-20261116",
+    "base_sha": "8cffb50f00175443d7954b039d908b26a6f26650",
+    "head": "feat/gemini-live-f2-multimodal-consent-20261116",
+    "head_sha": "4579c35d8b8138e3b2c285e800539c3708539831",
+    "scope": "F2.1 consent and partial F2.2/F2.3; F2.4-F2.6 remain pending"
+  },
+  "issue_527_snapshot": {
+    "F0_1": "CHECKED",
+    "F0_8": "OPEN",
+    "F1": "IN_TECHNICAL_REVIEW",
+    "F1_6": "OPEN",
+    "F2_1": "LOCAL_IN_PROGRESS",
+    "F2_2": "PARTIAL_IN_PR_539",
+    "F2_3": "CORE_PARTIAL_IN_PR_539_COST_AND_QUOTA_PENDING",
+    "F2_4": "PENDING",
+    "F2_5": "PENDING",
+    "F2_6": "OPEN",
+    "F3_7": "OPEN",
+    "F4": "NOT_IMPLEMENTED",
+    "narrative_conflict": "Issue contains older prose snapshots; explicit checkboxes and gate statements retained as authority",
+    "phase_restart": false
+  }
+}

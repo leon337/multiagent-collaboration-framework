@@ -289,6 +289,8 @@ function prepareAudioOutput(){
  }catch(e){log('ERRO','Saída de som: '+e.message);return null;}
 }
 function playAudio(base64,mimeType='audio/pcm;rate=24000'){
+ // Never play model audio while the local voice approval listener is active.
+ if(window.MCFPlaywrightTools?.isVoiceApprovalActive())return false;
  try{
   if(!/^audio\/pcm;rate=24000$/i.test(String(mimeType||''))){
    f1tel('audio_invalid',{count:1});log('ALERTA','Formato de áudio do provedor incompatível com PCM16 24kHz.');return false;
@@ -437,13 +439,16 @@ function processAudioFrame(frame){
  }
 }
 async function startMic(){
+ if(window.MCFPlaywrightTools?.isVoiceApprovalActive())
+  return toast('A autorização por voz está ativa; o microfone do Gemini permanece bloqueado.');
  if(!state.connected)return toast('Inicie uma sessão primeiro.');
  if(state.micStarting||state.micStream)return;
  if(!window.AudioWorkletNode||!window.AudioContext)return toast('Navegador sem suporte a AudioWorklet.');
  const generation=++state.micGeneration;
  state.micStarting=true;
  let stream=null,ctx=null,source=null,proc=null,gain=null,committed=false;
- const stale=()=>generation!==state.micGeneration||!state.connected;
+ const stale=()=>generation!==state.micGeneration||!state.connected||
+  window.MCFPlaywrightTools?.isVoiceApprovalActive();
  try{
   await state.audioCtx?.resume();
   if(stale())return;
@@ -583,9 +588,15 @@ const visualPolicy=MCFMediaPolicy.createMediaController({
   toast('Não foi possível ativar '+(kind==='camera'?'câmera':'tela')+'.');
  }
 });
-function startCamera(){return visualPolicy.start('camera');}
+function startCamera(){
+ if(window.MCFPlaywrightTools?.isVoiceApprovalActive())return toast('Conclua a autorização por voz antes de abrir a câmera.');
+ return visualPolicy.start('camera');
+}
 function stopCamera(){return visualPolicy.stop('camera');}
-function startScreen(){return visualPolicy.start('screen');}
+function startScreen(){
+ if(window.MCFPlaywrightTools?.isVoiceApprovalActive())return toast('Conclua a autorização por voz antes de compartilhar tela.');
+ return visualPolicy.start('screen');
+}
 function stopScreen(){return visualPolicy.stop('screen');}
 function stopAllVisual(){
  if(state.visualConsentResolve)state.visualConsentResolve(false);

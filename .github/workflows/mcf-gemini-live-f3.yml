@@ -37,14 +37,17 @@ jobs:
           node --check apps/gemini-live-studio/server.js
           node --check apps/gemini-live-studio/mcp-playwright-gateway.cjs
           node --check apps/gemini-live-studio/public/playwright-tools.js
+          node --check apps/gemini-live-studio/public/voice-approval.js
           node --check apps/gemini-live-studio/public/app.js
           node --check tests/gemini-live-f3/mcp-playwright-gateway.test.cjs
           node --check tests/gemini-live-f3/http-real-mcp.test.cjs
           node --check tests/gemini-live-f3/http-real-interaction.test.cjs
           node --check tests/gemini-live-f3/browser-agent-mcp-e2e.cjs
           node --check tests/gemini-live-f3/real-gemini-live-tool-e2e.cjs
+          node --check tests/gemini-live-f3/voice-approval.test.cjs
+          node --check tests/gemini-live-f3/browser-voice-approval-e2e.cjs
       - name: Run tool policy and one-time gate tests (no external browsing)
-        run: node --test tests/gemini-live-f3/mcp-playwright-gateway.test.cjs
+        run: node --test tests/gemini-live-f3/mcp-playwright-gateway.test.cjs tests/gemini-live-f3/voice-approval.test.cjs
       - name: Check dependency advisories
         run: npm audit --prefix apps/gemini-live-studio --omit=dev --audit-level=high
       - name: Verify evidence and source integrity
@@ -57,6 +60,7 @@ jobs:
           if grep -nE 'AIza[A-Za-z0-9_-]{25,}|sk-[A-Za-z0-9_-]{25,}' \
               apps/gemini-live-studio/mcp-playwright-gateway.cjs \
               apps/gemini-live-studio/public/playwright-tools.js \
+              apps/gemini-live-studio/public/voice-approval.js \
               tests/gemini-live-f3/*.cjs; then
             echo "Potential secret-like pattern in F3 source"
             exit 1
