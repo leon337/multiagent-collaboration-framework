@@ -95,5 +95,31 @@
       "failed": 0
     }
   },
-  "next_action": "Run candidate PR CI and manifests; inspect failures; request independent review on exact candidate SHA; perform supervised physical voice test and close security gaps before any gate or production decision."
+  "next_action": "Run candidate PR CI and manifests; inspect failures; request independent review on exact candidate SHA; perform supervised physical voice test and close security gaps before any gate or production decision.",
+  "source_pr_539": {
+    "number": 539,
+    "state": "OPEN",
+    "draft": true,
+    "base": "feat/gemini-live-audio-f1-20261116",
+    "base_sha": "8cffb50f00175443d7954b039d908b26a6f26650",
+    "head": "feat/gemini-live-f2-multimodal-consent-20261116",
+    "head_sha": "4579c35d8b8138e3b2c285e800539c3708539831",
+    "scope": "F2.1 consent and partial F2.2/F2.3; F2.4-F2.6 remain pending"
+  },
+  "issue_527_snapshot": {
+    "F0_1": "CHECKED",
+    "F0_8": "OPEN",
+    "F1": "IN_TECHNICAL_REVIEW",
+    "F1_6": "OPEN",
+    "F2_1": "LOCAL_IN_PROGRESS",
+    "F2_2": "PARTIAL_IN_PR_539",
+    "F2_3": "CORE_PARTIAL_IN_PR_539_COST_AND_QUOTA_PENDING",
+    "F2_4": "PENDING",
+    "F2_5": "PENDING",
+    "F2_6": "OPEN",
+    "F3_7": "OPEN",
+    "F4": "NOT_IMPLEMENTED",
+    "narrative_conflict": "Issue contains older prose snapshots; explicit checkboxes and gate statements retained as authority",
+    "phase_restart": false
+  }
 }
