@@ -9,8 +9,8 @@ f571991bfdc669951ee7632bb3342a7e8841133f6ca6290af676320fad51c0a7  apps/rede-soci
 4dc8ef92603a180ccece3ad26d533ff33d62fcbd47a8f1255cec1565509b4815  apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-control-read-token.guard.test.ts
 d79bb4551bebd94e19398abc81951d79784e511677a4bfb8bf176aac70d24f39  apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-contract-preflight.controller.ts
 b17074188a57d93b46f0b67ce971a4e47b5b44e402081f19e08282de37b237a3  apps/rede-social-agentes/apps/server/src/mcf-runtime/mission-contract-preflight.controller.test.ts
-5b5c1a9fb05d765d894e140211536aadfd6baecfdca0c064f6302ce0fffd00a4  tools/mcf-pet-gemini-live/backend/pet_mission_bridge.py
-a25bdf98851508d4e2d458909fc2c342db59f79b947435db894fca80bb95deae  tools/mcf-pet-gemini-live/tests/test_pet_mission_bridge.py
+644398f9499d8c42dfe4fb8c95058c88b7434b1d70a2a7ba7067f8cdf90936e3  tools/mcf-pet-gemini-live/backend/pet_mission_bridge.py
+b230bee0752fcf8d9483634f88c046a480f7e4f5d800c2962b3ea4d020833897  tools/mcf-pet-gemini-live/tests/test_pet_mission_bridge.py
 18656046fda7e5c9eb2d734e716c96835d571e2e1e99524218ea5447aad173ac  tools/mcf-pet-gemini-live/install_local.py
 0a101c00400df4f3241f7488e1f04dde8bfcf3cd5391919732779c77a0fb9b4e  tools/mcf-pet-gemini-live/frontend/pet-proposals.js
 f1fc66d6627a88decd0f4e0ba407c0c4aaf0d963e153cdaf1b92368bf5e6d42e  tools/mcf-pet-gemini-live/scripts/verify-project-context.mjs
@@ -18,7 +18,8 @@ f1fc66d6627a88decd0f4e0ba407c0c4aaf0d963e153cdaf1b92368bf5e6d42e  tools/mcf-pet-
 a5dbc62146f990175b5f332dc2fc99750ae7c8f00af6774bfc34a8dd408b36a3  context/capabilities/mcf-pet-mission-runtime-read-isolated.yaml
 0bbac8d49405c3c7eb9ad15d1f46e8bbb533b45dc77774a93a900dcfb1711be2  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/PHASE-PLAN.md
 d395885ac822d22973bfde8dac5fcee3e60cfd46e91c96bac104d62d5f9c8279  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/PHASE-DECISIONS.md
-0f7978ac51bbe4a7244e2b37eeb84930a3330fd73531b7713867e904d1c28b50  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/PHASE-VALIDATION.txt
-def93991eb13823123b3a999a9e3b639a88f10994020587dbce349dc4f41e28b  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/PHASE-CHECKPOINT.yaml
-b9df8f519134f8aa50cb6fdc257d52864a280c193915f2c18c2ee7c544e765e1  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/PHASE-CHECKLIST.md
+ccab779c0e19435fb3069d6003a15798a34c9c582c6793a2681a6b4db773299f  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/PHASE-VALIDATION.txt
+3c91cf4c993c24bc31636adc868fe09886f1c74d200f3f53665aa350eb838ea0  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/PHASE-CHECKPOINT.yaml
+afc8018a65f5a12c0ced0c4967adc29111754c412fd321d7793f242edbb8a6bc  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/PHASE-CHECKLIST.md
 e841bd1417682de2c1438ea964abc77b718ea066b37c3fcd7b25833d4635bf13  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/README.md
+30779714e691a9e56b0aa15e8b554cc530ee2f6a77640bf3ef6d3a7fd73bf0ce  artifacts/phases/PHASE-MCF-PET-RUNTIME-AUTHORITY-001/ADR-NEON-STAGING-ISOLATION.md

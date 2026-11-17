@@ -10,8 +10,8 @@
 - [x] Consumir contexto validado em rascunhos novos do Pet.
 - [x] Testar cache adulterado, ausente, vencido, symlink e sem permissão.
 - [x] Registrar Capability Registry com estado INACTIVE/DISCONNECTED.
-- [ ] Confirmar workspace Render em HUMAN_GATE de LEANDRO.
-- [ ] Configurar credencial read-only dedicada nos dois extremos.
+- [x] Confirmar workspace Render em HUMAN_GATE de LEANDRO.
+- [x] Configurar credencial read-only dedicada nos dois extremos.
 - [ ] Implantar em staging após CI, revisão e gates de integração.
 - [ ] Validar observação canônica READY e token sem autoridade de dispatch.
 - [ ] Executar preflight v1.1 no runtime autenticado, sem criar missão.
@@ -20,3 +20,11 @@
 - [ ] Aprovar merge e promoção conforme governança do repositório.
 - [x] Migrar rota do Hub existente em vez de apenas inseri-la quando ausente.
 - [x] Validar exportação HTTP idempotente com PIP verificado em novo rascunho.
+- [x] Criar Neon branch isolada e novo database vazio para staging.
+- [x] Separar roles de migração e runtime com privilégios restritos.
+- [x] Aplicar migrações no database exclusivo e validar saúde HTTP200.
+- [x] Remediar Codex P2 do replay de handoff após expiração do contexto.
+- [x] Validar 122 testes Python e replay HTTP sem novas linhas.
+- [ ] Reexecutar CI da revisão PR #538 após o fix P2.
+- [ ] Integrar PRs #537/#538 com os gates canônicos.
+- [ ] Validar leitura autenticada em staging e negação de dispatch.

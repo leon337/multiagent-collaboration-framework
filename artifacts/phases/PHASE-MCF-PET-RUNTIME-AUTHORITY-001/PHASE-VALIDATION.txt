@@ -33,3 +33,18 @@ PASS: observed runtime still returns AUTH_NOT_CONFIGURED.
 PRESERVED: older handoffs are immutable; no silent rewrite/migration of
       historic drafts was attempted.
 NO PROOF: actual remote runtime authentication/deploy or PermissionEngine gate.
+
+STAGING_RECOVERY_20261117
+PASS: Neon branch br-snowy-haze-ay3gmnxk and separate new database mcf_runtime_staging.
+PASS: Migration role owner distinct from runtime app role.
+PASS: 32 checksum-governed migrations; 29 tables; 0 missions and accounts.
+PASS: runtime role has SELECT/INSERT on mission table, no DB CREATE,
+      no read on _rsa_migrations and no read on neondb.mcf_missions.
+PASS: Render dep-dbtsllh42hec73at7l40 live; readiness/liveness HTTP200.
+PASS: Pet bridge Codex P2 remediated; 122 tests; HTTP replay of same
+      handoff ID and SHA without changing 3 existing records.
+PASS: reversible local Pet install backup at
+      /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-20261117T033707Z/
+PENDING: PR #537/538 integration and new remote read route (currently HTTP404).
+PENDING: MissionRuntime preflight with authenticated session and HDF gates.
+NO ACTION: no merge, no production DB mutations, no real mission execution.

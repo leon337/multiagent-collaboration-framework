@@ -163,6 +163,53 @@ class MissionBridgeTest(unittest.TestCase):
         self.assertEqual(contract["alignedPipRef"]["contentDigest"],bridge.PIP_DIGEST)
         self.assertNotIn("standingAuthorizations",contract)
 
+    def test_replay_after_context_proof_expired_keeps_existing_verified_contract(self):
+        path,doc=self.context_proof()
+        p=self.review()
+        first=bridge.export_reviewed_proposal(
+            p["id"],p["version"],self.db,self.proposals,context_file=path)
+        doc["expiresAt"]=(datetime.now(timezone.utc)-timedelta(seconds=3)).isoformat()
+        path.write_text(json.dumps(doc));path.chmod(0o600)
+        with patch.object(bridge,"load_verified_project_context",
+                          side_effect=AssertionError("should not load transient cache")):
+            again=bridge.export_reviewed_proposal(
+                p["id"],p["version"],self.db,self.proposals,context_file=path)
+        self.assertEqual(again["handoff_id"],first["handoff_id"])
+        self.assertEqual(again["payload_sha256"],first["payload_sha256"])
+        self.assertTrue(again["local_context_verified"])
+        self.assertEqual(again["request"],first["request"])
+        self.assertEqual(len(bridge.list_handoffs(self.db)),1)
+
+    def test_replay_after_new_context_appears_preserves_old_incomplete_draft(self):
+        p=self.review()
+        first=bridge.export_reviewed_proposal(
+            p["id"],p["version"],self.db,self.proposals,
+            context_file=self.handoff_dir/"absent.json")
+        path,_=self.context_proof()
+        with patch.object(bridge,"load_verified_project_context",
+                          side_effect=AssertionError("must preserve immutable draft")):
+            again=bridge.export_reviewed_proposal(
+                p["id"],p["version"],self.db,self.proposals,context_file=path)
+        self.assertEqual(again["handoff_id"],first["handoff_id"])
+        self.assertEqual(again["payload_sha256"],first["payload_sha256"])
+        self.assertFalse(again["local_context_verified"])
+        self.assertEqual(again["request"],first["request"])
+        self.assertEqual(len(bridge.list_handoffs(self.db)),1)
+
+    def test_corrupt_handoff_digest_is_rejected_on_retry(self):
+        p=self.review()
+        first=bridge.export_reviewed_proposal(
+            p["id"],p["version"],self.db,self.proposals)
+        import sqlite3
+        conn=sqlite3.connect(self.db)
+        conn.execute("UPDATE handoffs SET contract_sha256=? WHERE id=?",
+                     ("0"*64,first["handoff_id"]))
+        conn.commit();conn.close()
+        with self.assertRaises(bridge.BridgeError) as err:
+            bridge.export_reviewed_proposal(
+                p["id"],p["version"],self.db,self.proposals)
+        self.assertEqual(err.exception.code,"HANDOFF_INTEGRITY_FAILED")
+
     def test_unverified_expired_or_unsafe_cache_never_grants_context(self):
         path,doc=self.context_proof()
         doc["methodologyPin"]={"version":"9.9.9","immutableRef":"git:fake"}

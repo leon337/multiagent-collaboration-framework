@@ -199,28 +199,33 @@ def export_reviewed_proposal(proposal_id: str,expected_version: int,
                              path: Path=DB_PATH,proposal_db: Path=pet_proposals.DB_PATH,
                              context_file: Path | None=None) -> dict:
     p=_proposal(proposal_id,expected_version,proposal_db)
-    verified=(load_verified_project_context(context_file)
-              if context_file is not None else None)
-    obj=contract_for(p,verified)
-    payload=json.dumps(obj,ensure_ascii=False,sort_keys=True,separators=(",",":"))
-    digest=hashlib.sha256(payload.encode()).hexdigest()
     db=_checked_database(path)
     try:
         db.execute("BEGIN IMMEDIATE")
         row=db.execute("SELECT * FROM handoffs WHERE proposal_id=?",(proposal_id,)).fetchone()
         if row:
-            if row["proposal_version"]!=expected_version or row["contract_sha256"]!=digest:
+            # The handoff is an immutable artifact. When the same reviewed
+            # version is retried, the prior result is authoritative regardless
+            # of transient local context proof availability or expiry.
+            if row["proposal_version"]!=expected_version:
                 raise BridgeError("HANDOFF_CONFLICT",409)
+            result=_public(row)
             db.execute("COMMIT")
-        else:
-            ident=uuid.uuid4().hex
-            db.execute("""INSERT INTO handoffs
-               (id,proposal_id,proposal_version,created_at,contract_json,contract_sha256,status)
-               VALUES (?,?,?,?,?,?,'LOCAL_DRAFT_ONLY')""",
-               (ident,proposal_id,expected_version,now(),payload,digest))
-            row=db.execute("SELECT * FROM handoffs WHERE id=?",(ident,)).fetchone()
-            db.execute("COMMIT")
-        return _public(row)
+            return result
+        verified=(load_verified_project_context(context_file)
+                  if context_file is not None else None)
+        obj=contract_for(p,verified)
+        payload=json.dumps(obj,ensure_ascii=False,sort_keys=True,separators=(",",":"))
+        digest=hashlib.sha256(payload.encode()).hexdigest()
+        ident=uuid.uuid4().hex
+        db.execute("""INSERT INTO handoffs
+           (id,proposal_id,proposal_version,created_at,contract_json,contract_sha256,status)
+           VALUES (?,?,?,?,?,?,'LOCAL_DRAFT_ONLY')""",
+           (ident,proposal_id,expected_version,now(),payload,digest))
+        row=db.execute("SELECT * FROM handoffs WHERE id=?",(ident,)).fetchone()
+        result=_public(row)
+        db.execute("COMMIT")
+        return result
     except BridgeError:
         db.execute("ROLLBACK")
         raise
@@ -231,6 +236,10 @@ def export_reviewed_proposal(proposal_id: str,expected_version: int,
         db.close()
 
 def _public(row: sqlite3.Row) -> dict:
+    # Reject a tampered/corrupted saved handoff instead of silently replaying
+    # an unverified payload. No recomputation from transient context occurs.
+    if hashlib.sha256(row["contract_json"].encode("utf-8")).hexdigest()!=row["contract_sha256"]:
+        raise BridgeError("HANDOFF_INTEGRITY_FAILED",503)
     request=json.loads(row["contract_json"])
     contract=request.get("contract") if isinstance(request,dict) else {}
     local_verified=bool(isinstance(contract,dict) and
