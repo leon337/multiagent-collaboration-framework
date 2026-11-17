@@ -1,7 +1,7 @@
 {
   "schema": "mcf-f0-live-revalidation/v1",
-  "observed_at_utc": "2026-11-17T17:49:22.962Z",
-  "source_commit_sha": "9196a9bbc27c34e23189f316d54109dce72e685a",
+  "observed_at_utc": "2026-11-17T17:56:53.605Z",
+  "source_commit_sha": "a163a9a1f71bfe1a176d6c556e49ab0d658b1663",
   "environment": "authorized_local_linux_host",
   "application": {
     "name": "mcf-gemini-live-studio-gateway",
@@ -12,7 +12,10 @@
     "node": "v24.22.2",
     "source_server_sha256": "eae455edba9f0a9c98e3ca504620772a33fa5ff203a67b8448b7aa540739422f",
     "runtime_server_sha256": "eae455edba9f0a9c98e3ca504620772a33fa5ff203a67b8448b7aa540739422f",
-    "runtime_source_matches_current_main": true,
+    "on_disk_source_hashes_equal": true,
+    "process_cwd_and_command_verified": true,
+    "live_code_loaded_in_memory_proven": false,
+    "listener_ipv4_loopback_verified": true,
     "service_binding": "127.0.0.1",
     "service_port": 18377,
     "service_http_status": 200,
@@ -21,7 +24,9 @@
   },
   "credential_metadata": {
     "key_file_mode": "600",
-    "key_parent_directory_mode": "700",
+    "key_target_parent_mode": "700",
+    "key_link_parent_mode": "700",
+    "link_resolves_to_separate_target": true,
     "locally_protected_permissions": true,
     "credential_material_included": false,
     "credential_rotation_status": "NOT_VERIFIED"
