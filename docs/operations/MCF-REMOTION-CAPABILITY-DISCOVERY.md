@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Governança | https://github.com/leon337/multiagent-collaboration-framework | main `97d79ee8152ead27564d2bf634ad63df5cc284e6` | PUBLIC; PR #543 merged |
 | Composições | https://github.com/leon337/mcf-remotion-studio | main `433b9f75a0eeb70eaafa40f64310475101373e04` | PRIVATE; mesmo SHA no desktop e no GitHub |
-| Worker MCP e Gemini | https://github.com/leon337/mcf-remotion-mcp | main `9b456ec95d16f42bb719734873f5f6343bb67e2e` | PRIVATE; mesmo SHA no desktop e no GitHub |
+| Worker MCP e Gemini | https://github.com/leon337/mcf-remotion-mcp | main `4951d2e2650e75ab9825eb127f3c281b878a5e62` | PRIVATE; workflow de health integrado |
 | Worker runner | https://github.com/leon337/mcf-remotion-mcp | runner ID `2`, `leo-N43SM-remotion-gpu` | PRIVATE; ONLINE observado às 05:45:46Z |
 
 As referências acima são um snapshot verificável, não um estado futuro garantido. Consultar GitHub ao vivo e confirmar permissões de acesso aos repositórios privados em cada sessão.
@@ -21,7 +21,7 @@ As referências acima são um snapshot verificável, não um estado futuro garan
 4. Consultar, com credencial GitHub autorizada, `GET /repos/leon337/mcf-remotion-mcp/actions/runners`. Confirmar repositório PRIVATE, runner ID/nome/labels/status e horário de observação. Sem acesso ao privado, estado é `PRIVATE_DEPENDENCY_UNAVAILABLE` ou `UNKNOWN`, não presumir online/offline.
 5. No computador autorizado realmente ONLINE, executar inspeção read-only: `systemctl --user is-active remotion-mcp.service`; abrir `localhost:4777/health); no checkout MCF com dependências instaladas, executar `npm run discover` em `tools/remotion-mcf-adapter`. O diagnóstico não imprime token nem chave API.
 6. Conferir separadamente composição por GPU e codificação: o estado atual desativa aceleração de hardware do Chrome/Remotion (`--hardware-acceleration=disable`) e reporta WebGL/WebGPU desativados; FFmpeg anuncia `h264_vaapi` e `hevc_vaapi`, e jobs anteriores registraram encoder `vaapi`. Isso comprova codificação VA-API, não renderização de frames por GPU.
-7. O workflow privado de health check está proposto no PR #1 do repositório worker. Só disparar depois que o workflow existir em `main`, por `workflow_dispatch` e branch `main`. Ele é read-only, sem checkout, inputs, secrets, render ou quota Gemini.
+7. O workflow privado de health check foi integrado à `main` pelo PR #1 e executado por `workflow_dispatch`: [run #44028059898](https://github.com/leon337/mcf-remotion-mcp/actions/runs/44028059898), SUCCESS. O log confirma identidade do runner, serviço MCP, health local, binário Remotion e encoders VA-API. É read-only, sem checkout, inputs, secrets, render ou quota Gemini; revalidar status live antes de cada uso.
 8. No mesmo diretório do adaptador, executar `npm run reconcile` para conferir os três origin remotos sem fetch, checkout ou alteração de arquivos. Divergências exigem comparação, nunca reset automático. Checar se o Studio localhost:3001 está ativo, ferramentas MCP anunciadas, disco e disponibilidade de voz. Só criar projeto, sintetizar voz ou renderizar quando a autorização para ações com efeito cobrir o escopo. No runtime central, escrita continua bloqueada sem HDF.
 9. Para um vídeo autorizado, usar `remotion_enqueue_job` com `idempotencyKey` e `voiceTrackId`; acompanhar `remotion_job_status`; verificar checksum, streams de vídeo/áudio, resolução e duração do arquivo.
 
@@ -33,7 +33,7 @@ As referências acima são um snapshot verificável, não um estado futuro garan
 - O processo roda como usuário Linux `leo`, não como conta de sistema isolada. Não é sandbox e herda as permissões desse usuário.
 - No registro observado, apenas `leon337` era colaborador do repositório privado. A API de branch protection respondeu HTTP 403: plano atual não habilita proteção de branch para este repositório privado.
 - Até existir isolamento por conta dedicada, workflows devem ser somente `workflow_dispatch` no branch `main`, sem gatilhos de PR/terceiros, sem inputs de shell/path/comandos, sem secrets nos logs e com permissões mínimas.
-- O workflow de health check está em PR privado #1 (DRAFT); ainda não existe execução GitHub Actions comprovada. Runner ONLINE via API não é o mesmo que workflow E2E concluído.
+- O workflow de health check está integrado à main privada e o run #44028059898 passou. Runner ONLINE e health workflow PASS continuam distintos de produção de vídeo e de integração executável ao MissionRuntime.
 
 **Nunca instalar ou registrar esse runner no repositório público MCF.** O repositório público contém somente o conhecimento, o contrato e a governança para descoberta reutilizável. Outros chats só podem operar o worker se tiverem acesso GitHub autorizado ao repositório privado e acesso real ao host autorizado.
 
@@ -71,5 +71,5 @@ Este incremento cria descoberta documental e uma skill EXPERIMENTAL. O runner pr
 - Runner privado confirmado via API, sem registro no repositório público;
 - Skill e manifesto oficiais encontrados a partir de `AGENTS.md`;
 - Discovery read-only e health local verificados;
-- Workflow de health só conta como E2E depois de execução bem-sucedida na `main`;
+- Workflow de health #44028059898 passou na `main` privada; isso qualifica somente disponibilidade do worker, não render nem escrita MCF;
 - Código, estado operacional e permissões descritos separadamente para evitar falsa conclusão de portabilidade ou runtime completo.
