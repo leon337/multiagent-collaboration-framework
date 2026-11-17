@@ -5,6 +5,7 @@ on:
     paths:
       - 'ops/gemini-live/f0-current-revalidation*'
       - 'docs/missions/gemini-live-evolution-20261116/F0-REVALIDATION-20261117.md'
+      - 'docs/missions/gemini-live-evolution-20261116/F0-GATE-READINESS-20261117.md'
       - 'artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/F0-CURRENT-LIVE-REVALIDATION-20261117.json'
       - 'artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-00/F0-STRONG-E2E-RETEST-20261117.json'
       - '.github/workflows/mcf-gemini-live-f0-current-revalidation.yml'
