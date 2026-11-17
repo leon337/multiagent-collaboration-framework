@@ -69,9 +69,46 @@ formal_mcf_gate: PENDING
 handoff_to: LEO | MESTRE
 ```
 
+## Compatibilidade observada e alternativa executável (2026-11-17)
+
+**Descoberta real:** no host autorizado `leo-N43SM`, o Codex CLI `0.163.0`
+registra `multi_agent=stable`, mas a assinatura de `spawn_agent` exposta à
+sessão não possui `agent_type`/selector de perfil; não foi possível
+invocar `emily` como subagente customizado nativo. Uma tentativa com
+`--ephemeral` também retornou `no rollout found`. **Não afirmar
+AGENTE_ATIVO, nem gate fechado em decorrência da configuração.**
+
+Até essa compatibilidade ser demonstrada no ambiente Codex Cloud, está
+disponível um **fallback operacional explícito**: `ops/codex/run_role.py`
+inicia processos `codex exec` separados, cada um com o contrato canônico
+do arquivo TOML e `--sandbox read-only`. O script registra IDs reais da
+thread, separa as sessões e só permite LÉO depois de um recibo Emily
+concluído para o **mesmo SHA**. Esses processos recebem classificação
+`CODEX_EXTERNAL_ROLE_SESSION`, não `NATIVE_SUBAGENT_A` e não são
+autenticação formal do MCF. A saída de um agente é entrada **não confiável**
+para o seguinte: LÉO deve reconferir evidências.
+
+Exemplos no checkout correto e no seu SHA atual (substituir variáveis):
+
+```bash
+SHA=$(git rev-parse HEAD)
+python3 ops/codex/run_role.py --role emily   --mission-id MCF-GEMINI-LIVE-EVOLUTION-20261116-001   --phase-id F3 --target-sha "$SHA" --execute
+# Copie o receipt_path real retornado pelo comando anterior; ele fica
+# SOMENTE no host autorizado com permissão 0600, nunca em Git.
+python3 ops/codex/run_role.py --role leo   --mission-id MCF-GEMINI-LIVE-EVOLUTION-20261116-001   --phase-id F3 --target-sha "$SHA"   --emily-receipt /CAMINHO/DO/RECIBO-EMILY.json --execute
+```
+
+Omissão de `--execute` executa somente **dry-run** sem chamar o modelo.
+Falhas, SHA divergente ou recibo ausente interrompem o processo (**fail closed**).
+A pasta padrão `~/.cache/mcf-codex/role-receipts` contém logs privados,
+recibos e texto de avaliação; não versionar esse conteúdo indiscriminadamente.
+Para Cloud, selecionar a branch que contenha esses arquivos e verificar a
+exposição real da ferramenta antes de afirmar invocação nativa.
+
 ## Validação e rollback
 
 Executar `python3 ops/codex/validate_canonical_agents.py` no checkout da branch.
+Também validar o fluxo `ops/codex/run_role.py` em dry-run; o teste real é explicitamente opt-in.
 A CI executa a mesma verificação. Opcionalmente, com Codex disponível e sessão
 read-only, executar uma delegação de **dry-run contratual** e registrar IDs
 reais; o dry-run não concede gate. Em caso de falha, reverter o PR ou remover

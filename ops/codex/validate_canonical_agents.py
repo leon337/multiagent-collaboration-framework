@@ -6,6 +6,8 @@ Nao representa invocacao real nem gate da missao.
 """
 from __future__ import annotations
 import pathlib
+import subprocess
+import sys
 import tomllib
 import unittest
 
@@ -85,6 +87,30 @@ class CanonicalCodexAgentsTest(unittest.TestCase):
                       "F0.8", "F4.6"):
             with self.subTest(token=token):
                 self.assertIn(token, doc)
+
+    def test_external_codex_runner_preserves_gate_and_role_distinction(self):
+        src=(ROOT / "ops/codex/run_role.py").read_text(encoding="utf-8")
+        for token in ("CODEX_EXTERNAL_ROLE_SESSION", "formal_mcf_gate",
+                      '"PENDING"', "mcf_authenticated_agent_session",
+                      "read-only", "target_sha", "prior_emily_thread_id"):
+            with self.subTest(token=token):
+                self.assertIn(token, src)
+
+    def test_external_role_dry_run_and_missing_emily_receipt(self):
+        sha=subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"],
+                           capture_output=True, text=True, check=True).stdout.strip()
+        cmd=[sys.executable, str(ROOT / "ops/codex/run_role.py"),
+             "--mission-id", "MCF-CANONICAL-AGENTS", "--phase-id", "F3",
+             "--target-sha", sha]
+        emily=subprocess.run(cmd+["--role", "emily"], capture_output=True, text=True)
+        self.assertEqual(emily.returncode, 0, emily.stderr)
+        import json
+        payload=json.loads(emily.stdout)
+        self.assertEqual(payload["mode"], "dry_run")
+        self.assertEqual(payload["formal_mcf_gate"], "PENDING")
+        leo=subprocess.run(cmd+["--role", "leo"], capture_output=True, text=True)
+        self.assertNotEqual(leo.returncode, 0)
+        self.assertIn("recibo real de Emily", leo.stderr)
 
     def test_ci_follows_project_changes(self):
         wf = (ROOT / ".github/workflows/mcf-codex-agent-profiles.yml").read_text(encoding="utf-8")

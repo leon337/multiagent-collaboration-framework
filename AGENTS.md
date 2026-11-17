@@ -43,7 +43,9 @@ Seguir os contratos de permissão, handoff, HUMAN_GATE, memória, validação e 
 
 ## Codex — perfis canonicos de Emily e LEO (2026-11-17)
 
-Codex com checkout confiavel do MCF descobre os subagentes de projeto `.codex/agents/emily.toml` (auditoria) e `.codex/agents/leo.toml` (continuidade/gates), sob `.codex/config.toml`. Use os dois **em threads separadas e sequenciais**, Emily primeiro, LEO depois de evidencias e parecer. Para formato de invocacao, recibos, validacao, independencia e bloqueios, leia [MCF-CODEX-CANONICAL-EMILY-LEO](docs/operations/MCF-CODEX-CANONICAL-EMILY-LEO.md).
+Codex com checkout confiavel do MCF declara os perfis de projeto `.codex/agents/emily.toml` (auditoria) e `.codex/agents/leo.toml` (continuidade/gates), sob `.codex/config.toml`. Use os dois **em threads separadas e sequenciais**, Emily primeiro, LEO depois de evidencias e parecer. Para formato de invocacao, recibos, validacao, independencia e bloqueios, leia [MCF-CODEX-CANONICAL-EMILY-LEO](docs/operations/MCF-CODEX-CANONICAL-EMILY-LEO.md).
+
+**Compatibilidade:** o Codex CLI 0.163.0 observado nao expoe seletor de perfil em spawn_agent; o fallback de sessoes separadas esta em `ops/codex/run_role.py` e no runbook acima.
 
 **Distincao obrigatoria:** perfil, prompt e subagente Codex nao sao automaticamente Agent Sessions MCF autenticadas; nao fechar gates ou simular autoridade de Emily/LEO por configuracao. Exigir verificacao de identidade, independência, HDF/PermissionEngine e recibos nos termos de `docs/protocols/MCF-MECANISMO-A-SUBAGENTES-NATIVOS.md`. LEANDRO continua autoridade humana final.
 
