@@ -28,7 +28,7 @@ class InstallerTests(unittest.TestCase):
         self.assertNotIn('"tools":[',source)
         self.assertNotIn('"tools": [',source)
         self.assertIn('if tool_request:',source)
-        self.assertIn('if scope!="read_only":',source)
+        self.assertIn('if scope not in ("read_only","read_and_propose"):',source)
         self.assertIn('name not in TOOL_NAMES:',source)
         self.assertIn('run_read_tool,name,args',source)
         self.assertIn('execution_tools":False',source.replace(" ",""))
@@ -67,7 +67,35 @@ ASSETS = {
         self.assertIn('id="petLiveStart"',once)
         self.assertIn('id="petLiveStop"',once)
         self.assertIn('id="petLiveTranscript"',once)
+        self.assertIn('id="petLiveAllowProposals"',once)
+        self.assertIn('id="petProposalZone"',once)
+        self.assertIn('/pet-proposals.js',once)
+        self.assertEqual(once.count('id="petProposalZone"'),1)
         self.assertEqual(installer.patch_index(once),once)
+
+    def test_proposal_routes_are_scope_bound_and_idempotent(self):
+        origin='''import pet_live_ticket as pet_ticket
+ASSETS = {
+    "/pet-live.js": ("pet-live.js", "text/javascript; charset=utf-8"),
+}
+class Fake:
+    def do_POST(self):
+        path = urlparse(self.path).path
+        if path not in pet_voice.POST_PATHS:
+            pass
+'''
+        patched=installer.patch_proposal_routes(origin)
+        self.assertIn('import pet_proposals as pet_drafts',patched)
+        self.assertIn('pet_voice.authorize(self.headers)',patched)
+        self.assertIn('/api/pet-voice/proposals/review',patched)
+        self.assertNotIn('approve_execution',patched)
+        self.assertEqual(installer.patch_proposal_routes(patched),patched)
+
+    def test_three_ticket_scopes_are_not_legacy_deployment_regression(self):
+        old='if scope not in ("conversation","read_only"):'
+        once=installer.patch_proposal_ticket_scope(old)
+        self.assertIn('"read_and_propose"',once)
+        self.assertEqual(installer.patch_proposal_ticket_scope(once),once)
 
 if __name__=="__main__":
     unittest.main()

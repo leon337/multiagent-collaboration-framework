@@ -1,0 +1,33 @@
+VALIDAÇÃO — MCF-PET-PROPOSALS-001
+
+PASS: 82 testes Python, 5 testes Node, compileall e node --check.
+PASS: teste de idempotência do instalador e compilação do server.py staged.
+PASS: contrato HMAC read_and_propose: escopo assinado e separado dos dois
+      modos anteriores; antigo regex corrigido, teste preventivo adicionado.
+PASS: API /api/pet-voice/proposals/list nega anonimato HTTP403.
+PASS: API nega CSRF inválido HTTP403.
+PASS: API lista proposta com sessão autorizada HTTP200.
+PASS: tentativa de decisão de execução retorna HTTP400 INVALID_REVIEW_DECISION.
+PASS: unit tests do SQLite: arquivo 0600, diretório 0700, versão,
+      idempotência, limite de propostas, rejeição de credenciais e de campos
+      desconhecidos; revisão não gera autorização de execução.
+PASS: Gemini 3.8 Live: tool mcf_prepare_proposal chamada realmente,
+      DRAFT_CREATED com proposal_id fde5e96a12a84808b8d70a16ab90d9a8,
+      título Revisão do Uso Elevado de Swap, 23 chunks de áudio e turno concluído.
+PASS: UI Playwright Chrome: proposta pendente visível, flags desligadas por
+      padrão, opt-in e travamento durante sessão, áudio, mic liberado,
+      consentimento de revisão cancelado sem mutar estado.
+PASS: layout 390px: scrollWidth=clientWidth=390; 0 erros JS.
+PASS: MESTRE Agent e Hub responderam APIs/JS/CSS com HTTP200 após deploy.
+OBSERVADO: primeiro prompt Gemini com duas ferramentas e texto longo
+      atingiu timeout; conversa simples e pedido de proposta isolado passaram.
+PENDENTE: voz real capturada pelo usuário no Brave.
+PENDENTE: revisão humana da proposta pendente; não aprovada automaticamente.
+PENDENTE: acesso Tailnet remoto e autorização para qualquer ação com efeito.
+NÃO EXECUTADO: alterações de sistema, MissionRuntime, merge ou deploy central.
+
+REVIEW REMEDIATION (2026-11-16):
+PASS: PR #534 Codex P2: priority=[] and priority={} now yield INVALID_PRIORITY, not TypeError / Live disconnect.
+PASS: PR #534 Codex P2: paginated list (offset/limit), pending-first sorting, total and pending count;
+      >25 proposals can be reached through Carregar mais.
+PASS: 85 Python tests and 5 Node session tests after remediation.

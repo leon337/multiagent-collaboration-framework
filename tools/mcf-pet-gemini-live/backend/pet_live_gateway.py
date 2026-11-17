@@ -12,6 +12,7 @@ import json
 import logging
 import socket
 import time
+import uuid
 from urllib.parse import quote
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -20,6 +21,7 @@ from websockets.asyncio.client import connect
 from gemini_tts import secret as google_secret
 from pet_live_auth import subprotocol_ticket, validate_ticket
 from pet_readonly_tools import TOOL_DECLARATIONS, TOOL_NAMES, dispatch as run_read_tool
+from pet_proposals import create_proposal, ProposalError
 
 router = APIRouter(prefix="/api/pet-live", tags=["pet-mestre-live"])
 MODEL="gemini-3.8-live"
@@ -39,6 +41,32 @@ MAX_TOOL_REQUESTS_IN_MESSAGE=4
 _busy=asyncio.Semaphore(1)
 log=logging.getLogger("mcf.pet_live")
 
+PROPOSAL_TOOL_NAME="mcf_prepare_proposal"
+PROPOSAL_DECLARATION={
+    "name":PROPOSAL_TOOL_NAME,
+    "description":(
+        "Salva SOMENTE uma proposta de planejamento estruturada no painel para "
+        "revisão futura do humano. NÃO executa comandos, tarefas, deploy, "
+        "alteração de arquivos, reinício ou missão. Use quando a pessoa pedir "
+        "uma proposta ou plano e a sessão tiver permissão read_and_propose. "
+        "Diferencie evidência verificada de hipótese. Inclua reversão."
+    ),
+    "parameters":{
+        "type":"OBJECT",
+        "properties":{
+            "title":{"type":"STRING","description":"Título objetivo de 6 a 120 caracteres"},
+            "objective":{"type":"STRING","description":"Resultado pretendido, sem declarar execução"},
+            "summary":{"type":"STRING","description":"Justificativa técnica e escopo"},
+            "steps":{"type":"ARRAY","items":{"type":"STRING"},
+                     "description":"De duas a seis etapas somente propostas; não executadas"},
+            "risks":{"type":"STRING","description":"Riscos e impactos a verificar"},
+            "rollback":{"type":"STRING","description":"Plano de reversão para futura execução autorizada"},
+            "priority":{"type":"STRING","enum":["baixa","media","alta"]}
+        },
+        "required":["title","objective","summary","steps","risks","rollback","priority"]
+    }
+}
+
 @router.get("/status")
 def status():
     # No key, account details or local paths disclosed.
@@ -47,6 +75,7 @@ def status():
             "requires_user_gesture":True,"execution_tools":False,
             "read_only_tools_available":True,
             "read_only_tool_count":len(TOOL_DECLARATIONS),
+            "proposal_drafts_available":True,
             "audio_in":"pcm16/16000","audio_out":"pcm16/24000"}
 
 def _state(name: str):
@@ -84,7 +113,10 @@ def _context():
         "executou comandos, acessou navegador, modificou missões, aprovou "
         "HUMAN_GATE ou enviou mensagens. Quando ferramentas de consulta de "
         "status estiverem habilitadas pelo humano, use somente o resultado "
-        "de leitura recebido; cite a origem e a data de coleta. Se o "
+        "de leitura recebido; cite a origem e a data de coleta. "
+        "No modo read_and_propose, crie rascunho SOMENTE se a pessoa pedir "
+        "um plano ou proposta. Propostas não são executadas, nem são "
+        "HUMAN_GATE ou aprovação de LÉO. Informe que a fila exige revisão. Se o "
         "observador não estiver conectado, deixe isso explícito. "
         "Outras ações exigem fluxo governado separado. "
         "Não invente resultados de serviços ou acesso a dados em tempo real. "
@@ -117,7 +149,7 @@ async def pet_ws(ws: WebSocket):
     proto=ws.headers.get("sec-websocket-protocol","")
     ticket=subprotocol_ticket(proto)
     scope=ws.query_params.get("scope","conversation")
-    if scope not in ("conversation","read_only"):
+    if scope not in ("conversation","read_only","read_and_propose"):
         await ws.close(code=1008)
         return
     if origin not in ALLOWED_ORIGINS or not ticket or not validate_ticket(
@@ -137,6 +169,8 @@ async def pet_ws(ws: WebSocket):
         begin=time.monotonic()
         tool_calls_used=0
         tool_speech_followups=0
+        proposal_session_id=uuid.uuid4().hex
+        successful_read_receipts=[]
         voice=ws.query_params.get("voice","Fenrir")
         if voice not in VOICE_NAMES:voice="Fenrir"
         setup={"setup":{
@@ -158,8 +192,11 @@ async def pet_ws(ws: WebSocket):
             # No browser, shell or privileged tool can be declared. A separate
             # HMAC ticket must carry the READ_ONLY scope before these are added.
         }}
-        if scope=="read_only":
-            setup["setup"]["tools"]=[{"functionDeclarations":TOOL_DECLARATIONS}]
+        if scope in ("read_only","read_and_propose"):
+            declarations=list(TOOL_DECLARATIONS)
+            if scope=="read_and_propose":
+                declarations.append(PROPOSAL_DECLARATION)
+            setup["setup"]["tools"]=[{"functionDeclarations":declarations}]
 
         async def send(kind: str, **kwargs):
             try:await ws.send_json({"type":kind,**kwargs})
@@ -211,7 +248,7 @@ async def pet_ws(ws: WebSocket):
                 if not isinstance(message,dict):continue
                 tool_request=message.get("toolCall")
                 if tool_request:
-                    if scope!="read_only":
+                    if scope not in ("read_only","read_and_propose"):
                         await send("error",message="Esta sessão não autoriza ferramentas.")
                         return
                     if not isinstance(tool_request,dict):
@@ -234,6 +271,38 @@ async def pet_ws(ws: WebSocket):
                             outcome={"ok":False,"status":"SESSION_TOOL_LIMIT",
                                      "receipt_id":None,"read_only":True,
                                      "result":{"error":"SESSION_TOOL_LIMIT","executed":False}}
+                        elif name==PROPOSAL_TOOL_NAME and scope=="read_and_propose":
+                            await send("tool_started",name=name)
+                            try:
+                                submitted=await asyncio.wait_for(asyncio.to_thread(
+                                    create_proposal,args,proposal_session_id,
+                                    call_id if isinstance(call_id,str) and call_id
+                                        else "missing-"+uuid.uuid4().hex,
+                                    list(successful_read_receipts)),timeout=8)
+                                outcome={"ok":True,"status":"DRAFT_CREATED",
+                                         "receipt_id":submitted["id"],
+                                         "read_only":False,"executable":False,
+                                         "result":{
+                                             "proposal_id":submitted["id"],
+                                             "title":submitted["title"],
+                                             "review_status":submitted["status"],
+                                             "evidence_refs":submitted["evidence_refs"],
+                                             "executable":False,
+                                             "human_gate":False,
+                                             "message":"Rascunho salvo; sem autorização de execução."
+                                         }}
+                                await send("proposal_created",
+                                           proposal_id=submitted["id"],
+                                           title=submitted["title"],
+                                           status=submitted["status"])
+                            except ProposalError as err:
+                                outcome={"ok":False,"status":err.code,
+                                         "receipt_id":None,"read_only":False,
+                                         "result":{"error":err.code,"executed":False}}
+                            except (asyncio.TimeoutError,RuntimeError):
+                                outcome={"ok":False,"status":"PROPOSAL_UNAVAILABLE",
+                                         "receipt_id":None,"read_only":False,
+                                         "result":{"error":"PROPOSAL_UNAVAILABLE","executed":False}}
                         elif not isinstance(name,str) or name not in TOOL_NAMES:
                             outcome={"ok":False,"status":"TOOL_NOT_ALLOWLISTED",
                                      "receipt_id":None,"read_only":True,
@@ -247,6 +316,11 @@ async def pet_ws(ws: WebSocket):
                                 outcome={"ok":False,"status":"TOOL_TIMEOUT",
                                          "receipt_id":None,"read_only":True,
                                          "result":{"error":"TOOL_TIMEOUT","executed":False}}
+                            if (outcome.get("ok") is True and
+                                    isinstance(outcome.get("receipt_id"),str) and
+                                    len(outcome["receipt_id"])==16):
+                                successful_read_receipts.append(outcome["receipt_id"])
+                                successful_read_receipts[:]=successful_read_receipts[-12:]
                         await send("tool_result",name=name if isinstance(name,str) else "",
                                    status=str(outcome.get("status"))[:55],
                                    ok=outcome.get("ok") is True,
@@ -260,7 +334,8 @@ async def pet_ws(ws: WebSocket):
                         response_obj={"name":name if isinstance(name,str) and name else "unknown",
                                       "response":{"result":outcome.get("result"),
                                                   "status":outcome.get("status"),
-                                                  "read_only":True}}
+                                                  "read_only":name!=PROPOSAL_TOOL_NAME,
+                                                  "executable":False}}
                         if isinstance(call_id,str) and len(call_id)<180:
                             response_obj["id"]=call_id
                         responses.append(response_obj)
@@ -347,7 +422,8 @@ async def pet_ws(ws: WebSocket):
                     return
                 await send("ready",model=MODEL,voice=voice,max_seconds=MAX_SESSION,
                            tool_scope=scope,read_only_tool_count=(
-                               len(TOOL_DECLARATIONS) if scope=="read_only" else 0))
+                               len(TOOL_DECLARATIONS) if scope!="conversation" else 0),
+                           proposals_allowed=scope=="read_and_propose")
                 _state("ouvindo")
                 input_task=asyncio.create_task(in_audio(google))
                 output_task=asyncio.create_task(from_google(google))

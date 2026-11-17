@@ -34,6 +34,7 @@ jobs:
           node --check frontend/pet-live.js
           node --check frontend/pet-live-worklet.js
           node --check frontend/pet-conversation.js
+          node --check frontend/pet-proposals.js
           node --check frontend/pet-hub.js
       - name: Exercise expired browser-session recovery
         run: node --test frontend/pet-session-recovery.test.mjs

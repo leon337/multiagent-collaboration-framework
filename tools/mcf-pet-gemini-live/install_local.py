@@ -28,6 +28,9 @@ ASSETS={
     "frontend/pet-hub.js":[HUB/"pet-hub.js"],
     "backend/pet_live_gateway.py":[AGENT/"pet_live_gateway.py"],
     "backend/pet_readonly_tools.py":[AGENT/"pet_readonly_tools.py"],
+    "backend/pet_proposals.py":[AGENT/"pet_proposals.py",HUB/"pet_proposals.py"],
+    "frontend/pet-proposals.js":[HUB/"pet-proposals.js"],
+    "frontend/pet-proposals.css":[HUB/"pet-proposals.css"],
     "backend/pet_live_ticket.py":[HUB/"pet_live_ticket.py"],
     "frontend/pet-live.js":[HUB/"pet-live.js"],
     "frontend/pet-live.css":[HUB/"pet-live.css"],
@@ -146,6 +149,50 @@ def patch_tool_controls(data: str) -> str:
     return replace_once(data,anchor,controls+anchor,"Pet tools checkbox")
 
 
+PROPOSAL_PANEL='''    <section class="pet-proposal-zone" id="petProposalZone" aria-label="Propostas do MESTRE para revisão, sem execução">
+      <div class="pet-proposal-head">
+        <div>
+          <h3>📝 Propostas do Pet MESTRE</h3>
+          <p>Rascunhos estruturados para sua revisão. Marcar como revisada NÃO autoriza comandos, deploy, merge ou HUMAN_GATE.</p>
+        </div>
+        <span class="pet-proposal-counter" id="petProposalCount">0 aguardando revisão</span>
+        <button type="button" id="petProposalRefresh">Atualizar propostas</button>
+      </div>
+      <p class="pet-proposal-status" id="petProposalStatus" role="status" aria-live="polite">
+        Carregando propostas…
+      </p>
+      <div class="pet-proposal-list" id="petProposalList"></div>
+    </section>
+'''
+
+def patch_proposal_ui(data: str) -> str:
+    if '<link rel="stylesheet" href="/pet-proposals.css">' not in data:
+        data=replace_once(
+            data,'<link rel="stylesheet" href="/pet-live.css">',
+            '<link rel="stylesheet" href="/pet-live.css">\n'
+            '<link rel="stylesheet" href="/pet-proposals.css">',
+            "proposals CSS")
+    if '<script src="/pet-proposals.js" defer></script>' not in data:
+        data=replace_once(
+            data,'<script src="/pet-live.js" defer></script>',
+            '<script src="/pet-live.js" defer></script>\n'
+            '<script src="/pet-proposals.js" defer></script>',
+            "proposals JS")
+    if 'id="petLiveAllowProposals"' not in data:
+        anchor='      <p class="pet-live-tool-status" id="petLiveToolStatus"'
+        controls='''      <label class="pet-live-proposal-permission">
+        <input type="checkbox" id="petLiveAllowProposals" disabled>
+        📝 Permitir ao Pet salvar propostas para minha revisão nesta sessão (NÃO executa ações).
+      </label>
+'''
+        data=replace_once(data,anchor,controls+anchor,"draft opt-in")
+    if 'id="petProposalZone"' not in data:
+        anchor='    <section class="pet-talk-zone" id="petTalkZone"'
+        data=replace_once(data,anchor,PROPOSAL_PANEL+"\n"+anchor,
+                          "proposal review panel")
+    return data
+
+
 def patch_index(data: str) -> str:
     if '<link rel="stylesheet" href="/pet-live.css">' not in data:
         data=replace_once(data,'<link rel="stylesheet" href="/pet-conversation.css">',
@@ -160,9 +207,14 @@ def patch_index(data: str) -> str:
             PANEL+'\n    <section class="pet-talk-zone" id="petTalkZone"',
             "live panel insertion")
     data=patch_tool_controls(data)
+    data=patch_proposal_ui(data)
     return data
 
 def patch_read_only_ticket(data: str) -> str:
+    # Already patched installs must be accepted unchanged before the
+    # proposal-scope extension applies; never fallback to legacy anchors.
+    if 'code, info = pet_ticket.ticket_response(scope)' in data:
+        return data
     old='''                if self.headers.get("Content-Length") != "2":
                     raise pet_voice.ConversationError(400,"INVALID_LENGTH","Corpo inválido.")
                 if self.rfile.read(2) != b"{}":
@@ -191,6 +243,82 @@ def patch_read_only_ticket(data: str) -> str:
     return replace_once(data,old,new,"read-only ticket scope")
 
 
+def patch_proposal_ticket_scope(data: str) -> str:
+    old='if scope not in ("conversation","read_only"):'
+    new='if scope not in ("conversation","read_only","read_and_propose"):'
+    if new in data:
+        return data
+    return replace_once(data,old,new,"proposals scoped ticket")
+
+
+def patch_proposal_routes(data: str) -> str:
+    if "import pet_proposals as pet_drafts" not in data:
+        data=replace_once(data,"import pet_live_ticket as pet_ticket",
+                          "import pet_live_ticket as pet_ticket\n"
+                          "import pet_proposals as pet_drafts",
+                          "proposals import")
+    if '"/pet-proposals.js":' not in data:
+        anchor='    "/pet-live.js": ("pet-live.js", "text/javascript; charset=utf-8"),'
+        extra=anchor+'''
+    "/pet-proposals.js": ("pet-proposals.js", "text/javascript; charset=utf-8"),
+    "/pet-proposals.css": ("pet-proposals.css", "text/css; charset=utf-8"),'''
+        data=replace_once(data,anchor,extra,"proposals static assets")
+    if 'if path in {"/api/pet-voice/proposals/list",' in data:
+        return data
+    anchor='''        if path not in pet_voice.POST_PATHS:
+'''
+    route='''        if path in {"/api/pet-voice/proposals/list",
+                    "/api/pet-voice/proposals/review"}:
+            try:
+                # Every request requires the existing per-tab HttpOnly cookie,
+                # CSRF, Host and Origin; reviewing is NOT a HUMAN_GATE.
+                pet_voice.authorize(self.headers)
+                mime=(self.headers.get("Content-Type") or "").split(";",1)[0].strip().lower()
+                if mime!="application/json":
+                    raise pet_voice.ConversationError(415,"JSON_REQUIRED","Somente JSON.")
+                length=self.headers.get("Content-Length","")
+                if not length.isascii() or not length.isdigit():
+                    raise pet_voice.ConversationError(411,"INVALID_LENGTH","Corpo inválido.")
+                size=int(length)
+                if not 2<=size<=1100:
+                    raise pet_voice.ConversationError(413,"INVALID_LENGTH","Corpo inválido.")
+                source=self.rfile.read(size)
+                if len(source)!=size:
+                    raise pet_voice.ConversationError(400,"INCOMPLETE_BODY","Corpo incompleto.")
+                try:
+                    item=json.loads(source)
+                except (UnicodeDecodeError,ValueError):
+                    raise pet_voice.ConversationError(400,"INVALID_JSON","JSON inválido.")
+                if not isinstance(item,dict):
+                    raise pet_voice.ConversationError(400,"INVALID_JSON","Objeto obrigatório.")
+                if path.endswith("/list"):
+                    if set(item)-{"offset","limit"}:
+                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros inválidos.")
+                    offset=item.get("offset",0)
+                    limit=item.get("limit",25)
+                    rows=pet_drafts.list_proposals(limit,offset=offset)
+                    counts=pet_drafts.proposal_counts()
+                    payload={"ok":True,"proposals":rows,"total":counts["total"],
+                             "pending_count":counts["pending"],
+                             "offset":offset,"has_more":offset+len(rows)<counts["total"]}
+                else:
+                    if set(item)-{"proposal_id","decision","version","note"}:
+                        raise pet_voice.ConversationError(400,"INVALID_REQUEST","Parâmetros inválidos.")
+                    payload={"ok":True,"proposal":pet_drafts.review_proposal(
+                        item.get("proposal_id"),item.get("decision"),
+                        item.get("version"),item.get("note",""))}
+                return self._send(json.dumps(payload,ensure_ascii=False).encode("utf-8"),
+                                  "application/json; charset=utf-8")
+            except pet_voice.ConversationError as err:
+                return self._send(json.dumps({"ok":False,"error":err.code}).encode("utf-8"),
+                                  "application/json; charset=utf-8",err.status)
+            except pet_drafts.ProposalError as err:
+                return self._send(json.dumps({"ok":False,"error":err.code}).encode("utf-8"),
+                                  "application/json; charset=utf-8",err.status)
+'''
+    return replace_once(data,anchor,route+anchor,"proposals isolated POST routes")
+
+
 def patch_tab_session_route(data: str) -> str:
     old='data, cookie = pet_voice.make_session(self.headers.get("Host",""))'
     new='data, cookie = pet_voice.make_session(self.headers.get("Host",""), self.headers.get("X-MCF-Pet-Tab"))'
@@ -214,8 +342,9 @@ def plan() -> dict[Path,bytes]:
         for dest in dests:payload[dest]=content
     for source,patch in (
         (AGENT/"app.py",patch_agent),
-        (HUB/"server.py",lambda data: patch_read_only_ticket(
-            patch_tab_session_route(patch_hub(data)))),
+        (HUB/"server.py",lambda data: patch_proposal_routes(
+            patch_proposal_ticket_scope(patch_read_only_ticket(
+                patch_tab_session_route(patch_hub(data)))))),
         (HUB/"index.html",patch_index),
     ):
         payload[source]=patch(source.read_text(encoding="utf-8")).encode("utf-8")
