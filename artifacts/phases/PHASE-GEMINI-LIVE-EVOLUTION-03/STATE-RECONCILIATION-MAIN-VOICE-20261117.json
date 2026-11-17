@@ -29,7 +29,8 @@
     "merged_to_main": false,
     "public_deploy": false,
     "pr": 546,
-    "head_at_ci_submission": "38a1c0b250123eb24cb9cdc09b4d4e883ed4900b"
+    "head_at_ci_submission": "38a1c0b250123eb24cb9cdc09b4d4e883ed4900b",
+    "latest_security_hardening_commit": "9ed406c7c2aba08593fa0cf39de892586703f0c3"
   },
   "wip_f1": {
     "branch": "wip/gemini-live-f1-response-20261117",
@@ -64,27 +65,30 @@
     "permission_engine_identity": false
   },
   "security_preservation": {
-    "main_gateway_file_reused": true,
+    "main_gateway_file_reused": false,
     "revoked_session_guard_preserved": true,
     "redirect_validation_preserved": true,
     "voice_not_biometric": true,
     "network_egress_sandbox": false,
-    "physical_microphone_test": false
+    "physical_microphone_test": false,
+    "main_gateway_based": true,
+    "selective_trailing_dot_host_normalization": true,
+    "exact_origin_redirect_validation_preserved": true
   },
   "validation": {
     "candidate_actions": {
-      "F0": "SUCCESS",
-      "F1": "SUCCESS",
-      "F2": "SUCCESS",
-      "F3": "SUCCESS",
-      "documentation": "SUCCESS",
-      "production_readiness": "IN_PROGRESS",
-      "unrelated_vercel_projects": "RATE_LIMITED"
+      "F0": "PENDING_RERUN_AFTER_GATEWAY_HARDENING",
+      "F1": "PENDING_RERUN_AFTER_GATEWAY_HARDENING",
+      "F2": "PENDING_RERUN_AFTER_GATEWAY_HARDENING",
+      "F3": "PENDING_RERUN_AFTER_GATEWAY_HARDENING",
+      "documentation": "PENDING_RERUN_AFTER_ARTIFACT_UPDATE",
+      "production_readiness": "PENDING_RERUN_AFTER_GATEWAY_HARDENING"
     },
     "candidate_browser_e2e": "HARNESS_PRESENT_NOT_EXECUTED",
     "physical_voice": "NOT_TESTED",
     "source_manifest": "53_ENTRIES_HASHES_VERIFIED",
-    "artifact_manifest": "15_ENTRIES_HASHES_VERIFIED"
+    "artifact_manifest": "15_ENTRIES_HASHES_VERIFIED",
+    "gateway_host_normalization_test": "ADDED_LOCALHOST_TRAILING_DOT_AND_LOOPBACK_TRAILING_DOT"
   },
   "next_action": "Run candidate PR CI and manifests; inspect failures; request independent review on exact candidate SHA; perform supervised physical voice test and close security gaps before any gate or production decision."
 }
