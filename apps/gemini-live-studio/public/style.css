@@ -5,3 +5,30 @@
 .upload-btn{background:transparent!important;box-shadow:none!important;color:#b6a8e9!important;font-size:24px!important;width:28px!important;height:33px!important;flex:none}.upload-btn:hover:enabled{color:#e3dafa!important}
 
 .f1-diagnostics{margin:0 0 18px}.f1-metrics{padding:17px 21px;font-size:12px;color:#cfd8ee;line-height:1.7;white-space:pre-line}.f1-note{color:#8e9ab0;font-size:10px;padding:0 21px 15px}.stage-foot{flex-wrap:wrap}.stage-foot #f1AudioHealth{color:#c7b7ff}
+
+/* F2.1 Visual consent and persistent capture status */
+.visual-indicator{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 20px;color:var(--muted);font-size:11px;min-height:37px;border-top:1px solid #28314b}
+.visual-indicator #visualStatus.active{color:var(--green);font-weight:750}
+.visual-indicator button{padding:5px 9px;font-size:11px;border-color:var(--danger);color:#ffd7dc}
+.visual-indicator button[hidden]{display:none}
+.visual-consent{background:#151d2b;color:#e8edf9;border:1px solid #5b517b;border-radius:14px;max-width:min(460px,92vw);padding:24px}
+.visual-consent::backdrop{background:#050913c9}
+.visual-consent h2{font-size:18px;margin:0 0 10px}
+.visual-consent p{line-height:1.7;font-size:12px;color:#b4c1d3;margin:10px 0}
+.visual-consent .visual-warning{border-left:3px solid #e8b663;padding-left:11px;color:#e5c994}
+.visual-consent .dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+
+/* F2.2 specialized media analysis — separate from audio Live */
+.vision-panel{margin-top:20px}.vision-beta{font-size:9px;color:#a3a9d0}
+.vision-content{padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.vision-content p{color:#aab6c9;font-size:12px;line-height:1.65}
+.vision-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.vision-fields label,.vision-question{font-size:11px;font-weight:700;color:#afbeda;display:flex;flex-direction:column;gap:7px}
+.vision-fields input,.vision-fields select,.vision-question textarea{background:#111a2b;color:#edf3ff;border:1px solid #344158;border-radius:9px;padding:10px;min-width:0}
+.vision-question textarea{resize:vertical;font:13px/1.6 inherit;min-height:75px}
+.vision-summary,.vision-status,.vision-trace{font-size:11px;color:#91a4c0;overflow-wrap:anywhere}
+.vision-status{border-left:3px solid #675baa;padding:7px 10px;background:#131a2c}
+.vision-actions{display:flex;gap:10px;flex-wrap:wrap}
+.vision-result{white-space:pre-wrap;overflow-wrap:anywhere;max-height:380px;overflow:auto;background:#0c1420;border:1px solid #26364e;border-radius:9px;padding:15px;color:#e9f0ff;font-size:12px;line-height:1.6}
+.vision-content .vision-disclaimer{color:#d5b782}
+@media(max-width:900px){.vision-fields{grid-template-columns:1fr}}
