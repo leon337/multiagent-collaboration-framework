@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path');
 const puppeteer=require(process.env.PUPPETEER_MODULE||'/home/leo/.npm/_npx/4b4c857f6efdfb61/node_modules/puppeteer');
-const URL='http://127.0.0.1:18375/';
+const URL=`http://127.0.0.1:${process.env.MCF_F3_TEST_PORT||'18375'}/`;
 const root=path.join(__dirname,'../../apps/gemini-live-studio');
 const report={schema:'mcf-f3-playwright-mcp-agent-e2e-v1',date:new Date().toISOString(),
  provider:'real_@playwright/mcp_0.0.85',browserProfile:'isolated',model:'simulatedGeminiToolCall',
@@ -58,6 +58,23 @@ function check(id,pass,observed){report.results.push({id,pass:!!pass,observed});
    return {id:c.id,status:c.response.status,receipts:document.getElementById('playwrightReceipts').children.length};
   });
   check('DENIED_CLOSE_RETURNS_RECEIPT_WITHOUT_EXECUTION',denied.id==='close-1'&&denied.status==='DENIED'&&denied.receipts===3,denied);
+  await page.evaluate(()=>{
+   window.__mcfPending=handleTools({functionCalls:[
+    {id:'cancel-first',name:'playwright_navigate',args:{url:'https://github.com/'}},
+    {id:'cancel-second',name:'playwright_snapshot',args:{}}
+   ]});
+  });
+  await page.waitForFunction(()=>document.getElementById('playwrightApprovalDialog').open,{timeout:9000});
+  const cancelled=await page.evaluate(async()=>{
+   const previous=state.mcpEpoch;
+   handleMessage({toolCallCancellation:{ids:['cancel-first','cancel-second']}});
+   await window.__mcfPending;
+   return {before:previous,after:state.mcpEpoch,packets:window.__mcfPackets.length,
+    open:document.getElementById('playwrightApprovalDialog').open,
+    tools:state.events.filter(x=>x.type==='FERRAMENTA').slice(-3).map(x=>x.detail)};
+  });
+  check('MODEL_CANCEL_PREVENTS_REMAINING_TOOL_BATCH_ACTIONS',
+   cancelled.after>cancelled.before&&cancelled.packets===3&&!cancelled.open, cancelled);
   await page.evaluate(()=>disconnect());
   await page.waitForFunction(()=>document.getElementById('playwrightStatus').textContent.includes('encerrada'),{timeout:13000});
   const terminated=await page.evaluate(()=>({status:document.getElementById('playwrightStatus').textContent,websocket:state.socket===null}));

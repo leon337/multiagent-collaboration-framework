@@ -4,8 +4,14 @@ on:
   pull_request:
     paths:
       - 'apps/gemini-live-studio/**'
+      - 'tests/gemini-live-f1/**'
+      - 'tests/gemini-live-f2/**'
       - 'tests/gemini-live-f3/**'
+      - 'ops/gemini-live/**'
       - 'artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-03/**'
+      - '.github/workflows/mcf-gemini-live-f0-checklist.yml'
+      - '.github/workflows/mcf-gemini-live-f1.yml'
+      - '.github/workflows/mcf-gemini-live-f2.yml'
       - '.github/workflows/mcf-gemini-live-f3.yml'
   push:
     branches:

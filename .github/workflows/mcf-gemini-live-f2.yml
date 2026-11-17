@@ -38,7 +38,7 @@ jobs:
           # changes app.js/server.js/UI. Its own complete source manifest is
           # validated by mcf-gemini-live-f3.yml, never relabel F2 E2E as F3.
           if [ -f ../PHASE-GEMINI-LIVE-EVOLUTION-03/PHASE-03-SOURCE-MANIFEST.sha256 ]; then
-            echo "F2 source manifest is historical; current source is verified by F3 source manifest"
+            (cd ../PHASE-GEMINI-LIVE-EVOLUTION-03 && sha256sum -c PHASE-03-SOURCE-MANIFEST.sha256)
           else
             sha256sum -c PHASE-02-SOURCE-MANIFEST.sha256
           fi

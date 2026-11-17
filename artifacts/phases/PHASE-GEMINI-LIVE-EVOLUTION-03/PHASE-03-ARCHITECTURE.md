@@ -19,3 +19,11 @@ A política é local com token de sessão efêmero e requestId de uso único, ex
 MCP inicia sob demanda via processo stdio do SDK oficial com Chrome headless e perfil isolado; arquivos temporários permanecem em diretório /tmp modo 0700 e são eliminados ao encerrar. Browser não compartilha Brave, cookies de outros perfis ou chave Gemini. Lista curta de sites públicos de laboratório e documentação, expansão exige gate.
 
 Instalação: executar npm ci em apps/gemini-live-studio, iniciar PORT=18375 node server.js em loopback, abrir http://127.0.0.1:18375, selecionar Laboratório e habilitar Ferramentas locais + MCP Playwright antes de conectar. O frontend exige aprovações por ação e mostra receipts.
+
+
+## Continuidade e navegabilidade
+Staging fica em 127.0.0.1:18375, diferente da F2 em 18374. A aplicação atual da
+F2 não contém MCP. O modelo deve usar a instância F3 e ter a ferramenta habilitada
+ao iniciar a sessão. Abrir página requer aprovação; somente domínios de lista curada
+são aceitos. O usuário vê a lista no painel. Navegador Chrome isolado não usa logins
+ou abas do Brave autenticado. O teste real do modelo chamou navigate e snapshot.

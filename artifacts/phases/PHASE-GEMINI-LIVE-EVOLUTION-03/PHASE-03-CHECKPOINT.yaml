@@ -25,3 +25,9 @@ mcf_native_hdf: NOT_CONNECTED
 f0_f1_f2_formal_gate: OPEN
 f3_formal_gate: PENDING
 next_action: INDEPENDENT_SECURITY_REVIEW_AND_GATE
+
+external_audit_original_sha: d56d701e54bd26f460b6a76117a8e3863af74ee1
+external_audit_original_decision: RETURN_FOR_CORRECTION
+remediation_status: HIGH_RACES_REPAIRED_AND_TESTED
+external_rereview_final_sha: PENDING
+production_security_gate: OPEN

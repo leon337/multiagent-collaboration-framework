@@ -52,5 +52,12 @@ jobs:
       - name: Verify F1 source and traceability package SHA-256 manifests
         working-directory: artifacts/phases/PHASE-GEMINI-LIVE-EVOLUTION-01
         run: |
-          sha256sum -c PHASE-01-SOURCE-MANIFEST.sha256
+          # Historical F1 hashes identify the exact F1 baseline. When F3 is
+          # present, validate the full current app/tests/workflow source set
+          # instead, without interpreting an F1 baseline hash as current code.
+          if [ -f ../PHASE-GEMINI-LIVE-EVOLUTION-03/PHASE-03-SOURCE-MANIFEST.sha256 ]; then
+            (cd ../PHASE-GEMINI-LIVE-EVOLUTION-03 && sha256sum -c PHASE-03-SOURCE-MANIFEST.sha256)
+          else
+            sha256sum -c PHASE-01-SOURCE-MANIFEST.sha256
+          fi
           sha256sum -c PHASE-01-ARTIFACT-MANIFEST.sha256

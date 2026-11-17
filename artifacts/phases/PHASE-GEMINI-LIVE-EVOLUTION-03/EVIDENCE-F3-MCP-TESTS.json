@@ -18,7 +18,7 @@
   ],
   "results": {
     "node_policy": {
-      "passed": 13,
+      "passed": 18,
       "failed": 0
     },
     "real_http_mcp": {
@@ -30,17 +30,19 @@
       "failed": 0
     },
     "browser_ui_gemini_simulation": {
-      "passed": 8,
+      "passed": 9,
       "failed": 0
     },
     "real_gemini_live_2_5_function_call": {
       "passed": true,
-      "tool": "playwright_navigate",
-      "model_selected_snapshot": false,
-      "model_answered_title_correctly": true
+      "tools": [
+        "playwright_navigate",
+        "playwright_snapshot"
+      ],
+      "receiptsValidated": 2
     },
     "offline_aggregate_f0_f1_f2_f3": {
-      "passed": 106,
+      "passed": 111,
       "failed": 0
     },
     "npm_prod_dependency_high_vulnerability_audit": {
@@ -58,7 +60,7 @@
     "no_unknown_host_navigation": true,
     "raw_page_content_persisted_in_receipts": false
   },
-  "boundary": "LOCAL_EXPERIMENTAL_NOT_NATIVE_MCF_GATE_OR_PUBLIC_PRODUCTION",
+  "boundary": "LOCAL_EXPERIMENTAL_WITH_MERGE_REQUEST; HDF_GATE_AND_PUBLIC_DEPLOY_UNVERIFIED",
   "unresolved": [
     "browser egress network isolation is not a formal SSRF boundary",
     "HTTP Origin is not proof of human identity",

@@ -8,3 +8,5 @@
 - EVIDENCE-F3-BROWSER-AGENT.json: E2E do fluxo de aprovação.
 - EVIDENCE-F3-GEMINI-REAL.json: chamada real do Gemini.
 - PHASE-03-SOURCE-MANIFEST.sha256, PHASE-03-ARTIFACT-MANIFEST.sha256.
+- EMILY-EXTERNAL-PRE-REMEDIATION.md: auditoria original rejeitada.
+- REMEDIATION-AUDIT-CYCLE1.md: correções e limites.

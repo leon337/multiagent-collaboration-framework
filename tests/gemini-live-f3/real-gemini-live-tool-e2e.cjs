@@ -14,11 +14,28 @@ const report={schema:'mcf-gemini-real-live-playwright-tool-v1',date:new Date().t
  page.on('pageerror',e=>errs.push(e.message.slice(0,140)));
  let navigated=false,modelToolCalls=0,ready=false;
  try{
-  await page.goto('http://127.0.0.1:18375/',{waitUntil:'networkidle2'});
+  await page.goto(`http://127.0.0.1:${process.env.MCF_F3_TEST_PORT||'18375'}/`,{waitUntil:'networkidle2'});
   const status=await (await page.evaluate(()=>fetch('/api/status').then(x=>x.json())));
   report.configured=!!status.configured;
   if(!status.configured)throw Error('Local key is not configured');
   report.model=await page.$eval('#model',e=>e.value);
+  await page.evaluate(()=>{
+   window.__mcfF3ToolDeliveries=[];
+   const original=window.send;
+   window.send=function(message){
+    if(message?.toolResponse){
+     for(const c of message.toolResponse.functionResponses||[]){
+      window.__mcfF3ToolDeliveries.push({
+       name:c.name,id:c.id,status:c.response?.status,
+       receiptPresent:!!c.response?.receipt_id,
+       containsPageUrl:!!c.response?.result?.includes('https://example.com/'),
+       containsPageTitle:!!c.response?.result?.includes('Example Domain')
+      });
+     }
+    }
+    return original(message);
+   };
+  });
   await page.click('#connect');
   await page.waitForFunction(()=>state.connected,{timeout:36000});
   ready=true;
@@ -44,8 +61,8 @@ const report={schema:'mcf-gemini-real-live-playwright-tool-v1',date:new Date().t
    modelToolCalls=pending.callCount;
    if(pending.events.some(x=>x.includes('playwright_snapshot'))&&navigated)break;
    if(navigated&&pending.callCount>=1){
-    const responded=await page.evaluate(()=>Array.from(document.querySelectorAll('#messages .bubble.model')).some(x=>/Example|Domain/i.test(x.textContent)));
-    if(responded)break;
+    const delivered=await page.evaluate(()=>window.__mcfF3ToolDeliveries.some(x=>x.name==='playwright_navigate'&&x.status==='SUCCESS'&&x.receiptPresent&&x.containsPageTitle));
+    if(delivered){await new Promise(resolve=>setTimeout(resolve,1400));break;}
    }
    if(!pending.connected)break;
    await new Promise(resolve=>setTimeout(resolve,700));
@@ -55,14 +72,18 @@ const report={schema:'mcf-gemini-real-live-playwright-tool-v1',date:new Date().t
    tools:state.events.filter(x=>x.type==='FERRAMENTA').map(x=>x.detail.slice(0,100)),
    recentErrors:state.events.filter(x=>x.type==='ERRO').slice(-3).map(x=>x.detail.slice(0,100)),
    receipts:document.getElementById('playwrightReceipts').children.length,
+   deliveredToolResponses:window.__mcfF3ToolDeliveries,
    lastMessages:Array.from(document.querySelectorAll('#messages .bubble.model')).slice(-2).map(x=>x.textContent.slice(0,180))
   }));
   report.results.push({phase:'live_e2e',connected:final.connected,toolCount:final.toolCalls,
    tools:final.tools,receipts:final.receipts,modelsResponseSummary:final.lastMessages,
+   toolResponseReceipts:final.deliveredToolResponses,
    errors:final.recentErrors,approvedNavigation:navigated});
   report.modelSelectedToolChain=final.tools.map(x=>x.split(' →')[0]);
   report.pass=ready&&navigated&&final.tools.some(x=>x.includes('playwright_navigate'))&&
-   final.lastMessages.some(x=>/Example|Domain/i.test(x))&&final.receipts>=1;
+   final.deliveredToolResponses.some(x=>x.name==='playwright_navigate'&&x.status==='SUCCESS'&&
+    x.receiptPresent&&x.containsPageUrl&&x.containsPageTitle)&&final.receipts>=1;
+  report.modelResponseContainsTitle=final.lastMessages.some(x=>/Example Domain/i.test(x));
   console.log('REAL_GEMINI_PLAYWRIGHT_TOOL_E2E',JSON.stringify({pass:report.pass,model:report.model,
    ready,navigated,toolCalls:final.toolCalls,toolNames:final.tools,receipts:final.receipts,errors:final.recentErrors}));
  }catch(e){report.pass=false;report.results.push({phase:'exception',type:e.name,detail:e.message.slice(0,180)});

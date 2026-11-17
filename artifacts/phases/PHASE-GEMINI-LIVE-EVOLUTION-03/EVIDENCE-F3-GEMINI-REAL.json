@@ -1,11 +1,11 @@
 {
   "schema": "mcf-gemini-real-live-playwright-tool-v1",
-  "date": "2026-11-17T04:06:49.918Z",
+  "date": "2026-11-17T04:49:26.651Z",
   "model": "gemini-2.5-flash-native-audio-preview-12-2025",
   "sourceSha256": {
-    "public/app.js": "299936ab8a0d1834a7310195294bf2391dbef15489b2dd8b830882ee305bb456",
-    "public/playwright-tools.js": "923f1280595999a9ba20b61318f6eaa7c0e6bc5e0d3d2cd2fa8195589fa6ecd7",
-    "mcp-playwright-gateway.cjs": "5bb2afb0b6809457d18d525a3adbf063be8c1e4de021be8e21a7973afd0ceca8",
+    "public/app.js": "dab672878a141d070f75df9c2f1383322b39eea8482ec1b5bb4c0dc06103d322",
+    "public/playwright-tools.js": "5a7459d509eb25216aa4c9abebddb41fe810851cdc887b844f9c4467b6c3871b",
+    "mcp-playwright-gateway.cjs": "a144dfd7a791097b8750247c587e8bd086e712e0038f16ffaaec00ad1b3deb29",
     "server.js": "eae455edba9f0a9c98e3ca504620772a33fa5ff203a67b8448b7aa540739422f"
   },
   "apiKeyPersisted": false,
@@ -15,13 +15,33 @@
     {
       "phase": "live_e2e",
       "connected": true,
-      "toolCount": 1,
+      "toolCount": 2,
       "tools": [
-        "playwright_navigate → dfc219e9-da8c-492f-9229-aaf7fd69f119"
+        "playwright_navigate → dc71aa41-8ec0-438b-b876-cedee78c60c7",
+        "playwright_snapshot → a212fab2-1a47-4d79-9aff-a56bf1f36d56"
       ],
-      "receipts": 1,
+      "receipts": 2,
       "modelsResponseSummary": [
-        "GEMINI**Initiating Automated Test**\n\nI've begun the automated test sequence, starting with navigation. I've initiated `playwright_navigate` with the URL 'https://example.com/'. I'm"
+        "GEMINI**Initiating Automated Test**\n\nI've initiated the automated test. My first step was to call `playwright_navigate` with the URL 'https://example.com/'. This requires user auth",
+        "GEMINI**Confirming Navigation and Title**\n\nI've successfully reached the specified URL and confirmed the \"Example Domain\" title from the navigation output. While technically redund"
+      ],
+      "toolResponseReceipts": [
+        {
+          "name": "playwright_navigate",
+          "id": "function-call-11571537149002221629",
+          "status": "SUCCESS",
+          "receiptPresent": true,
+          "containsPageUrl": true,
+          "containsPageTitle": true
+        },
+        {
+          "name": "playwright_snapshot",
+          "id": "function-call-3616001646154967192",
+          "status": "SUCCESS",
+          "receiptPresent": true,
+          "containsPageUrl": true,
+          "containsPageTitle": true
+        }
       ],
       "errors": [],
       "approvedNavigation": true
@@ -29,8 +49,10 @@
   ],
   "configured": true,
   "modelSelectedToolChain": [
-    "playwright_navigate"
+    "playwright_navigate",
+    "playwright_snapshot"
   ],
   "pass": true,
+  "modelResponseContainsTitle": true,
   "unhandledBrowserErrors": []
 }

@@ -12,3 +12,13 @@ Lacunas importantes:
 7. Perfil isolado não é sandbox antimalware: pacote MCP e transitive deps estão pinados e receberam audit de dependências, mas exigem revisão contínua.
 
 Status: SOMENTE PILOTO LOCAL, SEM F3 GATE APROVADO, SEM MERGE/DEPLOY.
+
+
+## Remediação do piloto
+Cada endSession invalida epoch antes de fechar o cliente MCP, inclusive durante
+connect. decide verifica epoch após waits, não devolve SUCCESS tardio e nunca repete
+operações desconhecidas. O Live invalida mcpEpoch ao cancelar lotes, desconectar ou
+fechar WS. Escrita exige path exato /todomvc/, referência eN, snapshot imediatamente
+anterior e inspeção do alvo real. Residual: Origin+header local não autenticam pessoa
+e falta isolamento de rede robusto contra SSRF. Por isso produção pública continua
+não autorizada tecnicamente, mesmo com pedido explícito de merge e deploy.

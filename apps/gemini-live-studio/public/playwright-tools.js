@@ -80,6 +80,7 @@
    if(p.approvalNeeded)allow=await requestHumanConfirmation(p);
    if(current!==sessionId)return {error:'Sessão anterior encerrada durante a aprovação.',code:'STALE_SESSION'};
    const result=await httpPost('/api/browser/decision',{sessionId:current,requestId:p.requestId,allow});
+   if(current!==sessionId)return {error:'Operação cancelada, resultado de sessão encerrada.',code:'STALE_SESSION'};
    printReceipt(result);
    syncStatus('Última ferramenta: '+result.tool+' · '+result.status);
    if(result.status==='SUCCESS')return {status:'SUCCESS',receipt_id:result.receiptId,
@@ -102,7 +103,9 @@
     syncStatus(x.ready?'MCP inicializado · '+(x.activeOrigin||'sem página'):
      'MCP instalado e disponível; Chrome será iniciado apenas após aprovação.');
     if(el('playwrightRuntime'))el('playwrightRuntime').textContent=
-     'Provider: '+x.provider+' · '+x.toolNames.length+' ferramentas permitidas · perfil isolado';
+     'Provider: '+x.provider+' · '+x.toolNames.length+' ferramentas permitidas · perfil isolado. '+
+     'Sites HTTPS permitidos: '+(x.approvedSites||[]).map(site=>new URL(site).hostname).join(', ')+
+     '. Outros domínios exigem revisão da lista.';
    }).catch(()=>syncStatus('Gateway indisponível.'));
  }
  el('playwrightStop').addEventListener('click',stopFromUI);

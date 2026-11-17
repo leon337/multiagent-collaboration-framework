@@ -2,7 +2,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {randomUUID}=require('node:crypto');
-const ROOT='http://127.0.0.1:18375';
+const ROOT=`http://127.0.0.1:${process.env.MCF_F3_TEST_PORT||'18375'}`;
 async function post(path,data){
  const r=await fetch(ROOT+path,{method:'POST',headers:{'Content-Type':'application/json',
   'X-MCF-UI-Intent':'playwright-mcp-tool',Origin:ROOT},

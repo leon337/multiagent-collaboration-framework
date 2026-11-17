@@ -1,6 +1,6 @@
 {
   "schema": "mcf-f3-playwright-mcp-agent-e2e-v1",
-  "date": "2026-11-17T04:05:26.386Z",
+  "date": "2026-11-17T04:48:59.275Z",
   "provider": "real_@playwright/mcp_0.0.85",
   "browserProfile": "isolated",
   "model": "simulatedGeminiToolCall",
@@ -75,6 +75,21 @@
       }
     },
     {
+      "id": "MODEL_CANCEL_PREVENTS_REMAINING_TOOL_BATCH_ACTIONS",
+      "pass": true,
+      "observed": {
+        "before": 0,
+        "after": 1,
+        "packets": 3,
+        "open": false,
+        "tools": [
+          "playwright_snapshot → 5c669946-a8dc-43ec-9d16-cc038dc6790f",
+          "playwright_close → b7c99f8f-52f8-4592-a09f-ebd458b5dd0d",
+          "Cancelamento de chamada pelo modelo; encerrando contexto MCP experimental."
+        ]
+      }
+    },
+    {
       "id": "DISCONNECT_CLEANS_ISOLATED_PLAYWRIGHT_SESSION",
       "pass": true,
       "observed": {
@@ -92,12 +107,12 @@
   ],
   "rawPersonalDataPersisted": false,
   "hashes": {
-    "public/app.js": "299936ab8a0d1834a7310195294bf2391dbef15489b2dd8b830882ee305bb456",
-    "public/playwright-tools.js": "923f1280595999a9ba20b61318f6eaa7c0e6bc5e0d3d2cd2fa8195589fa6ecd7",
+    "public/app.js": "dab672878a141d070f75df9c2f1383322b39eea8482ec1b5bb4c0dc06103d322",
+    "public/playwright-tools.js": "5a7459d509eb25216aa4c9abebddb41fe810851cdc887b844f9c4467b6c3871b",
     "public/index.html": "ce284348f354f82390d016b5318646964a4663aa47f59a091b115236d4ac2bee",
-    "mcp-playwright-gateway.cjs": "5bb2afb0b6809457d18d525a3adbf063be8c1e4de021be8e21a7973afd0ceca8",
+    "mcp-playwright-gateway.cjs": "a144dfd7a791097b8750247c587e8bd086e712e0038f16ffaaec00ad1b3deb29",
     "server.js": "eae455edba9f0a9c98e3ca504620772a33fa5ff203a67b8448b7aa540739422f"
   },
-  "pass": 8,
+  "pass": 9,
   "fail": 0
 }
