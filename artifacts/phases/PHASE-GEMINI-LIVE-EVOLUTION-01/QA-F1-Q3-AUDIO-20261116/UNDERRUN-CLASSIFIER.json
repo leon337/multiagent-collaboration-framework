@@ -1,0 +1,73 @@
+{
+  "schema": "mcf-f1-metric-classifier/v1",
+  "at_utc": "2026-11-16T23:55:40.653Z",
+  "cases": [
+    {
+      "id": "UNDERRUN_ONLY_WITHIN_ACTIVE_GENERATION",
+      "result": "PASS",
+      "observed": {
+        "before": {
+          "underrun": 0,
+          "idle": 0
+        },
+        "afterWithin": {
+          "underrun": 1,
+          "idle": 0
+        },
+        "afterIdle": {
+          "underrun": 1,
+          "idle": 1
+        },
+        "firstPlayback": {
+          "samples": 1,
+          "p50": 521,
+          "p95": 521
+        },
+        "scheduled": [
+          10.12,
+          11.12,
+          22.12
+        ]
+      }
+    },
+    {
+      "id": "TURN_IDLE_RESUME_EXCLUDED_FROM_UNDERRUN",
+      "result": "PASS",
+      "observed": {
+        "before": {
+          "underrun": 0,
+          "idle": 0
+        },
+        "afterWithin": {
+          "underrun": 1,
+          "idle": 0
+        },
+        "afterIdle": {
+          "underrun": 1,
+          "idle": 1
+        },
+        "firstPlayback": {
+          "samples": 1,
+          "p50": 521,
+          "p95": 521
+        },
+        "scheduled": [
+          10.12,
+          11.12,
+          22.12
+        ]
+      }
+    },
+    {
+      "id": "FIRST_SCHEDULED_AUDIO_LATENCY_INCLUDES_PREBUFFER",
+      "result": "PASS",
+      "observed": {
+        "samples": 1,
+        "p50": 521,
+        "p95": 521
+      }
+    }
+  ],
+  "passed": 3,
+  "failed": 0
+}

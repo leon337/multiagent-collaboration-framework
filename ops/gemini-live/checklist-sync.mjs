@@ -1,0 +1,115 @@
+// Gemini Live Studio F0.7: evidence-only PR/CI observer. No checkbox or gate writes.
+import {createHash} from 'node:crypto';
+const REPO='leon337/multiagent-collaboration-framework',ISSUE=527,PR=528;
+const BRANCH='mission/gemini-live-evolution-20261116-001';
+const BASE='https://api.github.com/repos/'+REPO,PER_PAGE=100,MAX_PAGES=10;
+const BAD=new Set(['failure','timed_out','cancelled','action_required','startup_failure','stale']);
+// The observer can only publish a comment. A matching marker in an UNTRUSTED
+// third-party comment is not a receipt and must never suppress the real signal.
+// This allowlist is intentionally specific to the official repository.
+const TRUSTED_RECEIPT_AUTHORS=new Map([['leon337','User'],['github-actions[bot]','Bot']]);
+const UTC_TIME=/^- Consultado em: (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z)$/;
+function validUtcStamp(value){
+ const match=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?Z$/.exec(value);
+ if(!match)return false;
+ const [year,month,day,hour,minute,second]=match.slice(1).map(Number);
+ if(year<1970||month<1||month>12||hour>23||minute>59||second>59||day<1)return false;
+ const lastDay=new Date(Date.UTC(year,month,0)).getUTCDate();
+ return day<=lastDay&&Number.isFinite(Date.parse(value));
+}
+function canonicalReceipt(body){
+ if(typeof body!=='string')return null;
+ const lines=body.split('\n');
+ const indices=lines.flatMap((line,index)=>line.startsWith('- Consultado em: ')?[index]:[]);
+ if(indices.length!==1)return null;
+ const index=indices[0],match=UTC_TIME.exec(lines[index]);
+ if(!match||!validUtcStamp(match[1]))return null;
+ lines[index]='- Consultado em: <timestamp>';
+ // No trim(): any extra text, whitespace or maliciously altered lines fail.
+ return lines.join('\n');
+}
+export function isTrustedReceipt(comment,observation){
+ const login=String(comment?.user?.login||'');
+ if(TRUSTED_RECEIPT_AUTHORS.get(login)!==comment?.user?.type)return false;
+ const body=String(comment?.body||'');
+ if(!body.startsWith(observation.marker+'\n'))return false;
+ const candidate=canonicalReceipt(body),expected=canonicalReceipt(observation.comment);
+ return candidate!==null&&expected!==null&&candidate===expected;
+}
+function digest(value){return createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0,20);}
+function assertCandidate(pr,issueBody){
+ if(!pr||pr.number!==PR||pr.state!=='open'||pr.head?.ref!==BRANCH)throw Error('unexpected-pr');
+ if(typeof issueBody!=='string'||!issueBody.includes('MCF-GEMINI-LIVE-EVOLUTION-20261116-001'))throw Error('unexpected-issue');
+ if(!/^[0-9a-f]{40}$/.test(String(pr.head?.sha||'')))throw Error('invalid-sha');
+}
+export function buildObservation(pr,checks,issueBody,now='2026-11-16T00:00:00Z'){
+ assertCandidate(pr,issueBody);
+ if(!Array.isArray(checks))throw Error('checks-not-array');
+ const sha=pr.head.sha, matched=checks.filter(x=>x.head_sha===sha);
+ const normalized=matched.map(x=>({id:String(x.id??''),name:String(x.name||''),status:String(x.status||''),conclusion:String(x.conclusion??''),head_sha:sha})).sort((a,b)=>(a.id+'|'+a.name).localeCompare(b.id+'|'+b.name));
+ const passed=normalized.filter(x=>x.status==='completed'&&x.conclusion==='success').length;
+ const failed=normalized.filter(x=>x.status==='completed'&&BAD.has(x.conclusion)).length;
+ const pending=normalized.length-passed-failed;
+ const marker='<!-- mcf-f0-sync:'+PR+':'+sha+':'+digest(normalized)+' -->';
+ const comment=marker+'\n'+
+   '### Sinal de PR/CI verificado (NÃO É ACEITE NEM GATE)\n'+
+   '- Missão: MCF-GEMINI-LIVE-EVOLUTION-20261116-001\n'+
+   '- PR: https://github.com/'+REPO+'/pull/'+PR+' (draft: '+Boolean(pr.draft)+')\n'+
+   '- SHA verificado: '+sha+'\n'+
+   '- Checks correspondentes ao SHA: '+normalized.length+'; '+passed+' sucesso, '+failed+' falha, '+pending+' pendente/não classificável.\n'+
+   '- Consultado em: '+now+'\n'+
+   '- Nenhum checkbox, gate, decisão ou estado executivo foi alterado.\n';
+ return {marker,comment,sha,passed,failed,pending,checkCount:normalized.length,ignoredOtherSha:checks.length-matched.length,changedCheckboxes:false};
+}
+function headers(token){return {Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',...(token?{Authorization:'Bearer '+token}:{})};}
+async function get(p,token){const r=await fetch(BASE+p,{headers:headers(token),signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('github-read-'+r.status);return r.json();}
+async function post(p,payload,token){const r=await fetch(BASE+p,{method:'POST',headers:{...headers(token),'Content-Type':'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('github-write-'+r.status);return r.json();}
+async function allPages(getFn,path,token,key){
+ const out=[];
+ for(let page=1;page<=MAX_PAGES;page++){
+  const sep=path.includes('?')?'&':'?';
+  const data=await getFn(path+sep+'per_page='+PER_PAGE+'&page='+page,token);
+  const arr=key?data?.[key]:data;
+  if(!Array.isArray(arr))throw Error('invalid-pagination-response');
+  out.push(...arr);
+  if(arr.length<PER_PAGE)return out;
+ }
+ throw Error('pagination-limit-exceeded');
+}
+function sameHead(a,b){return a?.state==='open'&&b?.state==='open'&&a.head?.sha===b.head?.sha&&a.head?.ref===b.head?.ref;}
+export async function reconcile({token,apply=false,applyEnv='',now=new Date().toISOString(),transport={get,post}}={}){
+ const pr=await transport.get('/pulls/'+PR,token);
+ const issue=await transport.get('/issues/'+ISSUE,token);
+ assertCandidate(pr,issue?.body);
+ const checks=await allPages(transport.get,'/commits/'+pr.head.sha+'/check-runs',token,'check_runs');
+ const observation=buildObservation(pr,checks,issue.body,now);
+ if(!apply)return {...observation,action:'DRY_RUN'};
+ if(applyEnv!=='1')throw Error('write-requires-MCF_CHECKLIST_APPLY=1');
+ if(!token)throw Error('write-requires-token');
+ const headAgain=await transport.get('/pulls/'+PR,token);
+ if(!sameHead(pr,headAgain))throw Error('pr-head-changed');
+ const comments=await allPages(transport.get,'/issues/'+ISSUE+'/comments',token);
+ if(comments.some(c=>isTrustedReceipt(c,observation)))return {...observation,action:'ALREADY_RECORDED'};
+ // The HEAD may have changed while paginating comments. Recheck immediately
+ // before any publication; there remains a non-atomic GitHub API race after
+ // this read, which the workflow's concurrency guard reduces.
+ const finalPr=await transport.get('/pulls/'+PR,token);
+ if(!sameHead(pr,finalPr))throw Error('pr-head-changed-during-comment-check');
+ const finalIssue=await transport.get('/issues/'+ISSUE,token);
+ if(finalIssue?.state!=='open'||finalIssue?.body!==issue.body)throw Error('issue-changed-before-publish');
+ if(!transport.post)throw Error('write-transport-unavailable');
+ try{await transport.post('/issues/'+ISSUE+'/comments',{body:observation.comment},token);}
+ catch(e){
+  // A timeout may happen AFTER the server commits a comment. Query for receipt before retry.
+  const after=await allPages(transport.get,'/issues/'+ISSUE+'/comments',token);
+  if(after.some(c=>isTrustedReceipt(c,observation)))return {...observation,action:'RECOVERED_AFTER_UNCERTAIN_WRITE'};
+  throw Error('write-uncertain-not-retried:'+String(e.message||e));
+ }
+ return {...observation,action:'COMMENT_ONLY'};
+}
+if(process.argv[1]&&import.meta.url.endsWith(process.argv[1].replaceAll('\\','/'))){
+ const apply=process.argv.includes('--apply');
+ reconcile({token:process.env.GITHUB_TOKEN,apply,applyEnv:process.env.MCF_CHECKLIST_APPLY}).then(r=>
+  console.log(JSON.stringify({action:r.action,sha:r.sha,checks:r.checkCount,passed:r.passed,failed:r.failed,pending:r.pending,changedCheckboxes:r.changedCheckboxes}))
+ ).catch(e=>{console.error('SYNC_FAILED',e.message);process.exitCode=1;});
+}

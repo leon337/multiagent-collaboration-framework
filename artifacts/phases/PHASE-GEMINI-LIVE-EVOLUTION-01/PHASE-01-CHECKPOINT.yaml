@@ -1,0 +1,117 @@
+schema: mcf-phase-checkpoint/v1
+mission_id: MCF-GEMINI-LIVE-EVOLUTION-20261116-001
+parent_mission_id: null
+phase_id: PHASE-01-AUDIO-RELIABILITY
+risk_class: C
+cycle: 1
+orchestrator: MESTRE
+authority_human_final: LEANDRO
+operational_gate_authority: LEO
+state: EM_CORRECAO
+phase_closed: false
+prerequisite_f0:
+  state: EM_CORRECAO
+  gate_f0_8: PENDING
+repository:
+  repo: leon337/multiagent-collaboration-framework
+  issue: 527
+  f0_draft_pr: 528
+  f1_draft_pr: 529
+  branch: feat/gemini-live-audio-f1-20261116
+staging:
+  host: leo-N43SM
+  app_dir: /home/leo/Projetos/gemini-live-studio-f1
+  url: http://127.0.0.1:18372
+  original_url: http://127.0.0.1:18371
+  credential: EXISTING_LOCAL_FILE_REFERENCED_NOT_COPIED
+evidence:
+  voice_response_timeout_warning: PASS_NOTIFY_ONLY
+  voice_response_manual_recovery: PASS_HUMAN_CONFIRMED_NO_AUTORETRY
+  voice_response_browser_adversarial: 13_PASS
+  voice_response_real_google_e2e: 17_PASS
+  voice_response_node_offline: 23_PASS
+  voice_response_mic_60s_frames: 1493
+  voice_response_mic_60s_drops: 0
+  voice_response_physical_mouth_to_ear_p95: NOT_MEASURED
+  voice_response_f0_8_gate: PENDING
+  q3_cycle3_clock_origin_fix: PASS_DELAYED_MODULE_INTEGRATION
+  q3_cycle3_node_offline_pass: 20
+  q3_cycle3_real_google_e2e_pass: 17
+  q3_cycle3_fake_websocket_live_mic_frames: 60
+  q3_cycle3_false_stale_drops: 0
+  q3_cycle3_real_voice_latency_p95: NOT_MEASURED
+  q3_cycle3_silent_turn_recovery: WARNING_ONLY
+  q3_cycle3_emily_external_reviews: RETORNAR_ON_PRIOR_SHA
+  q3_cycle3_leo_profile_gate: RETORNAR_PARA_CORRECAO
+  q3_cycle3_leo_profile_reviewed_sha: c6f85b083837b297bd1bf04cba0e6582c5861afe
+  q3_cycle3_leo_profile_codex_thread: 01a1e6e0-7292-71b1-8ff2-738d098e268c
+  q3_cycle3_leo_native_session: false
+  q3_cycle2_offline_unit_pass: 19
+  q3_cycle2_browser_e2e_pass: 17
+  q3_cycle2_adversarial_pass: 3
+  q3_cycle2_real_mic_60s_frames: 1493
+  q3_cycle2_real_mic_60s_samples: 955520
+  q3_cycle2_real_mic_60s_dropped_frames: 0
+  q3_cycle2_silent_turn_warning: PASS_NO_AUTORETRY
+  q3_cycle2_previous_benchmark: FAILED_19_ATTEMPTED_18_AUDIO
+  qa_q3_node_unit_pass: 17
+  qa_q3_browser_e2e_pass: 17
+  qa_q3_underrun_classifier_pass: 3
+  qa_q3_physical_mic_frames: 63
+  qa_q3_physical_mic_samples: 40320
+  qa_q3_mic_60s_frames: 1494
+  qa_q3_mic_60s_samples: 956160
+  qa_q3_mic_60s_drops: 0
+  qa_q3_text_latency_attempts: 19
+  qa_q3_text_latency_audio_responses: 18
+  qa_q3_text_latency_p50_ms: 1324
+  qa_q3_text_latency_p95_ms: 4666
+  qa_q3_nonterminal_response_16s: 1
+  qa_q3_human_functional_confirmation: POSITIVE
+  qa_q3_real_speech_end_latency: NOT_MEASURED
+  qa_q3_f0_gate: OPEN
+  microphone_physical_frames: 64
+  microphone_physical_samples: 40960
+  microphone_output_test_status: PARTIAL_SPEAKER_UNVERIFIED
+  reliability_180s_first_pass: HARNESS_INCOMPLETE_GENERATION_COMPLETE_ONLY
+  reliability_diagnostic_turns: 6
+  reliability_diagnostic_completions: 6
+  induced_network_reconnect: PASS
+  emily_external_review_old_sha: RETORNAR_PARA_CORRECAO
+  a1_a3_local_adversarial: 4_PASS
+  long_10min: PASS_632_SECONDS
+  real_goaway_count: 1
+  real_reconnect_success_count: 1
+  long_qa_completed_turns: 10
+  long_audio_underrun_events: 9
+  semantic_resume: PASS_SYNTHETIC_SINGLE_CASE
+  physical_speaker_audibility: UNVERIFIED
+  ui_backoff_cancel_test: PASS
+  emily_external_rereview: RETORNAR_FOR_CLOSEOUT
+  leo_external_profile_gate: RETORNAR_PARA_CORRECAO
+  leo_external_profile_reviewed_sha: 361a08b730b24b7fe0ba88e5917634dd3a947d64
+  leo_external_profile_codex_thread: 01a1e697-23c5-7af1-a68f-05d56083e38c
+  leo_native_mcf_agent_session: false
+  offline_worklet_tests: 6
+  offline_telemetry_tests: 6
+  browser_f1_pass: 17
+  audio_hotfix_playback_regression_pass: 8
+  audio_hotfix_adversarial_regression_pass: 6
+  audio_25_real_duration_seconds_drained: 41.48
+  audio_25_real_nodes_drained: 1014
+  audio_38_real_duration_seconds_drained: 37.68
+  audio_38_real_nodes_drained: 112
+  physical_speaker_audition: NOT_TESTED
+  browser_f1_fail: 0
+  f0_compatibility_pass: 13
+  source_digest_verified: true
+  physical_audio: INPUT_HARDWARE_TESTED_OUTPUT_UNVERIFIED
+  long_sessions: ONE_REAL_632_SECONDS_ON_PRE_FINAL_SHA
+  real_goaway: OBSERVED_ONCE
+  semantic_context_resume: ONE_SYNTHETIC_KEYWORD_CASE_PASSED
+  key_rotation: POSTPONED_BY_HUMAN_RISK_OPEN
+  emily_audit: PENDING
+  leo_gate: EXTERNAL_PROFILE_RETURNED_NATIVE_GATE_PENDING
+next_action: "MESTRE deve completar QA de saida audivel, benchmark de voz, governanca e reconciliar F0.8 antes de reapresentar gate no SHA final."
+prohibitions: [NO_MERGE, NO_PRODUCTION_DEPLOY, NO_PUBLIC_EXPOSURE, NO_SECRET_PUBLICATION]
+checkpoint_recipient: MESTRE

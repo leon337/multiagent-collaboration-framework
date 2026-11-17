@@ -1,0 +1,45 @@
+schema: mcf-phase-checkpoint/v1
+mission_id: MCF-GEMINI-LIVE-EVOLUTION-20261116-001
+parent_mission_id: null
+phase_id: PHASE-00-BASELINE-AND-PLANNING
+risk_class: C
+cycle: 1
+orchestrator: MESTRE
+authority_human_final: LEANDRO
+operational_gate_authority: LEO
+state: GATE_PENDENTE
+objective_met_engineering_baseline: true
+phase_closed: false
+review:
+  independent_auditor: EMILY
+  state: PENDING_REAL_EXECUTION
+  gate_leo: PENDING_REAL_EXECUTION
+repository:
+  full_name: leon337/multiagent-collaboration-framework
+  issue: 527
+  draft_pr: 528
+  branch: mission/gemini-live-evolution-20261116-001
+local_application:
+  host: leo-N43SM
+  path: /home/leo/Projetos/gemini-live-studio
+  base_url: http://127.0.0.1:18371
+  local_git_sha: a33bdf9c4681ace0cb582621801bb6608415692a
+  secrets_included: false
+verified:
+  model_metadata_http_200: 6
+  live_handshakes: [gemini-2.5-flash-native-audio-preview-12-2025, gemini-3.8-live, gemini-3.8-live-extended-thinking]
+  regression_pass: 15
+  regression_fail: 0
+  checklist_sync_tests_pass: 9
+  checklist_sync_tests_fail: 0
+  http_fs_security_pass: 12
+  security_known_gaps: 3
+risk_findings:
+  - PLAINTEXT_LOCAL_KEY
+  - LOCAL_BACKEND_WITHOUT_USER_AUTH
+  - TOKEN_WITHOUT_MODEL_CONSTRAINT
+  - PHYSICAL_MEDIA_E2E_NOT_RECORDED
+  - CREDENTIAL_ROTATION_RECOMMENDED
+next_action: "Solicitar e obter auditoria independente Emily sobre PR #528 e PRF, reconciliar achados e obter gate LÉO; depois atualizar Issue #527."
+checkpoint_recipient: MESTRE
+prohibitions: [NO_MERGE, NO_PRODUCTION_DEPLOY, NO_PUBLIC_EXPOSURE, NO_UNGOVERNED_WRITE, NO_SECRET_PUBLICATION]

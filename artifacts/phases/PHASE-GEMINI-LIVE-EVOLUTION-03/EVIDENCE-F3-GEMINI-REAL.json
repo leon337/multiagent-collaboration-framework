@@ -1,0 +1,51 @@
+{
+  "schema": "mcf-gemini-real-live-playwright-tool-v1",
+  "date": "2026-11-17T05:01:11.006Z",
+  "model": "gemini-2.5-flash-native-audio-preview-12-2025",
+  "sourceSha256": {
+    "public/app.js": "dab672878a141d070f75df9c2f1383322b39eea8482ec1b5bb4c0dc06103d322",
+    "public/playwright-tools.js": "427533f6c65d7047684ac42a1de43fa510ce4dc9ebc9dd14058124bbb2dd8d02",
+    "mcp-playwright-gateway.cjs": "e23550447369794b932b5cdff40db64560913bc705d8853a3af6e30a9ac3dddd",
+    "server.js": "eae455edba9f0a9c98e3ca504620772a33fa5ff203a67b8448b7aa540739422f"
+  },
+  "apiKeyPersisted": false,
+  "rawAudioPersisted": false,
+  "testPromptSynthetic": true,
+  "results": [
+    {
+      "phase": "live_e2e",
+      "connected": true,
+      "toolCount": 1,
+      "tools": [
+        "playwright_navigate → 73f1caa7-5c5e-4148-867c-de2666762828"
+      ],
+      "receipts": 1,
+      "modelsResponseSummary": [
+        "GEMINI**Initiating Navigation Steps**\n\nI've initiated the navigation phase. My plan is to start with `playwright_navigate` using the specified URL: `https://example.com/`. I'm adhe",
+        "GEMINI**Analyzing the Page Title**\n\nI've successfully navigated to the example URL and obtained the page title: \"Example Domain.\" While the title is already available, I'll execute"
+      ],
+      "toolResponseReceipts": [
+        {
+          "name": "playwright_navigate",
+          "id": "function-call-5734815825609651358",
+          "status": "SUCCESS",
+          "receiptPresent": true,
+          "containsPageUrl": true,
+          "containsPageTitle": true
+        }
+      ],
+      "errors": [],
+      "approvedNavigation": true
+    }
+  ],
+  "configured": true,
+  "modelSelectedToolChain": [
+    "playwright_navigate"
+  ],
+  "navigationVerified": true,
+  "snapshotVerified": false,
+  "twoToolChainVerified": false,
+  "pass": true,
+  "modelResponseContainsTitle": true,
+  "unhandledBrowserErrors": []
+}

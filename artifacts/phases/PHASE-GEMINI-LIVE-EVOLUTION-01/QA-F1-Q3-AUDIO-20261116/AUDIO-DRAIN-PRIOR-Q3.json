@@ -1,0 +1,32 @@
+{
+  "date": "2026-11-17T00:14:36.472Z",
+  "provider": "Gemini Live",
+  "real_api": true,
+  "virtual_audio_output": true,
+  "sourceAppSha256": "c46a42cace0683612a638258e0cecd83811e3f5d1e49aa4d4d81085cd0a85710",
+  "atTurnEnd": {
+    "nodes": 901,
+    "ended": 892,
+    "pending": 9,
+    "seconds": 36.96,
+    "contextState": "running"
+  },
+  "model": "gemini-2.5-flash-native-audio-preview-12-2025",
+  "final": {
+    "audioNodes": 901,
+    "startCalls": 901,
+    "stopCalls": 0,
+    "endedCalls": 901,
+    "scheduledSamples": 887040,
+    "playedSamples": 887040,
+    "seconds": 36.96,
+    "interrupted": 0,
+    "overlap": 0,
+    "gap": 0,
+    "queueEmpty": true,
+    "audioContextRunning": true,
+    "lastEnd": 46.10399999999923
+  },
+  "pass": true,
+  "pageErrors": 0
+}

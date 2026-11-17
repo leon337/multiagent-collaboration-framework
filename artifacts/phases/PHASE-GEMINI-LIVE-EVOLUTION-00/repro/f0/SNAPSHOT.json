@@ -1,0 +1,78 @@
+{
+  "captured_at_utc": "2026-11-16T19:00:55.027420+00:00",
+  "machine": {
+    "hostname": "leo-N43SM",
+    "os": "Linux 6.8.0-147-generic",
+    "node": "v24.22.2",
+    "python": "Python 3.12.3",
+    "chrome": "Google Chrome 156.0.8078.79"
+  },
+  "application": {
+    "path": "/home/leo/Projetos/gemini-live-studio",
+    "git_repository": false,
+    "port": 18371,
+    "binding": "127.0.0.1",
+    "server_process": "node/server.js",
+    "files": [
+      {
+        "path": "README.md",
+        "bytes": 2147,
+        "sha256": "44b0df3974b37fa0faeb705e857efbc463b5a51b0d6541c340bb7c8b5ac811fe",
+        "mode": "0o664"
+      },
+      {
+        "path": "live-connection-test.cjs",
+        "bytes": 1162,
+        "sha256": "2ecac5c3fa94b30df88ebef6d18af2cf480b5d5ef79548c45448b7b9910443fa",
+        "mode": "0o664"
+      },
+      {
+        "path": "public/app.js",
+        "bytes": 22829,
+        "sha256": "b77eea01de64edd8cb5a1f7f7ba0ac332cb205c03c69c3a76791c6349169b370",
+        "mode": "0o664"
+      },
+      {
+        "path": "public/index.html",
+        "bytes": 12205,
+        "sha256": "aa9801cfe9a2a5aabc5304aabca7a25257d99f51b4deff80dead276cd20ac9a9",
+        "mode": "0o664"
+      },
+      {
+        "path": "public/style.css",
+        "bytes": 13879,
+        "sha256": "d5953009b4a5cb2f6492818d042f2a56f3ef02a66aef351ebacd25a2cfa3aa24",
+        "mode": "0o664"
+      },
+      {
+        "path": "server.js",
+        "bytes": 4928,
+        "sha256": "ca6842211af2be449745cfb097cf7617f72b6ae06ba2a974be789f631e719945",
+        "mode": "0o664"
+      },
+      {
+        "path": "start.sh",
+        "bytes": 528,
+        "sha256": "2304a8f7a267f9e836fa7a3da11ef154ca65835a8c17ca5931d16ef9fe856980",
+        "mode": "0o755"
+      },
+      {
+        "path": "ui-test.cjs",
+        "bytes": 2039,
+        "sha256": "986bed2fed64b6bc12236989cc3a1324e35b96a6d88c64c601910960a10e088c",
+        "mode": "0o664"
+      }
+    ],
+    "source_key_pattern_matches": 0
+  },
+  "credential": {
+    "present": true,
+    "key_file_mode": "0o600",
+    "key_directory_mode": "0o700",
+    "key_material_included": false
+  },
+  "caveats": [
+    "Hashes cover source files only; secrets and local media excluded",
+    "Physical device, paid quota and MCF runtime integrations not proven"
+  ]
+}

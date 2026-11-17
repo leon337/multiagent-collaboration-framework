@@ -1,0 +1,49 @@
+{
+  "schema": "mcf-f2-vision-provider-qa/v1",
+  "observedAtUtcDate": "2026-11-17",
+  "method": "Google v1beta generateContent and Files API",
+  "sourceProvenance": "Local HTTP to provider using synthetic media; earlier than metadata-only polish; no claim of repeat on exact final SHA",
+  "catalog": {
+    "method": "models.list",
+    "generateContentCount": 37,
+    "supportForAllMediaKinds": "NOT_VERIFIED"
+  },
+  "image": {
+    "status": 200,
+    "synthetic": true,
+    "resolution": "64x64",
+    "mime": "image/png",
+    "model": "gemini-3.5-flash",
+    "traceId": "39542928-83b4-4419-af89-0452928b10bf",
+    "totalTokens": 1958,
+    "observedSummary": "Quatro quadrantes vermelhos, azuis, verdes e amarelos",
+    "localMediaPersisted": false,
+    "autoFallback": false
+  },
+  "video": {
+    "status": 200,
+    "synthetic": true,
+    "seconds": 2,
+    "bytes": 10808,
+    "mime": "video/mp4",
+    "model": "gemini-3.5-flash",
+    "traceId": "39c8f1d4-fcfd-43d3-9543-edea71810301",
+    "totalTokens": 1143,
+    "observedSummary": "Padrão sintético de teste e movimento",
+    "filesUpload": true,
+    "filesDeleteConfirmed": true,
+    "localMediaPersisted": false,
+    "autoFallback": false
+  },
+  "risks": {
+    "estimatedMoneyCost": "UNKNOWN",
+    "otherModelsMediaSupport": "NOT_VERIFIED",
+    "googleContentRetentionBeyondFilesApiDeletion": "NOT_VERIFIED",
+    "realHardwareScreenCamera": "NOT_TESTED"
+  },
+  "limits": {
+    "imageMaxMiB": 8,
+    "videoMaxMiB": 24
+  },
+  "noRawPersonalMediaOrKeys": true
+}

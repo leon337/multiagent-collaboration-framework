@@ -1,0 +1,123 @@
+{
+  "verified_at_utc": "2026-11-16T19:06:36.993Z",
+  "origin": "http://127.0.0.1:18371/",
+  "virtual_media": true,
+  "cases": [
+    {
+      "id": "UI_STATUS_CONFIGURED",
+      "result": "PASS",
+      "details": "API configurada"
+    },
+    {
+      "id": "ORIGIN_RESTRICTION",
+      "result": "PASS",
+      "details": "HTTP 403"
+    },
+    {
+      "id": "PRIVATE_FILES_NOT_SERVED",
+      "result": "PASS",
+      "details": "HTTP 404"
+    },
+    {
+      "id": "LIVE_2_5_SETUP",
+      "result": "PASS",
+      "details": "setupComplete received"
+    },
+    {
+      "id": "VIRTUAL_MIC_PCM",
+      "result": "PASS",
+      "details": "fake device, real Web Audio audio/pcm path"
+    },
+    {
+      "id": "VIRTUAL_CAMERA_FRAME",
+      "result": "PASS",
+      "details": "virtual camera frame pipeline (not physical webcam)"
+    },
+    {
+      "id": "VIRTUAL_SCREEN_FRAME",
+      "result": "PASS",
+      "details": "mock getDisplayMedia; no real screen captured"
+    },
+    {
+      "id": "TELEMETRY_MINIMAL",
+      "result": "PASS",
+      "details": "setup samples=1"
+    },
+    {
+      "id": "TELEMETRY_PRIVATE",
+      "result": "PASS",
+      "details": "metadata-only signals"
+    },
+    {
+      "id": "REAL_TEXT_TURN",
+      "result": "PASS",
+      "details": "Gemini session still connected after text input"
+    },
+    {
+      "id": "FUNCTION_CALL_REAL",
+      "result": "PASS",
+      "details": "tool invocation count 1"
+    },
+    {
+      "id": "AUDIO_RESPONSE_SIGNAL",
+      "result": "PASS",
+      "details": "turnComplete=1 outputTranscript=1"
+    },
+    {
+      "id": "CLEAN_SHUTDOWN",
+      "result": "PASS",
+      "details": "media tracks cleared"
+    },
+    {
+      "id": "LIVE_3_8_SETUP",
+      "result": "PASS",
+      "details": "setupComplete received"
+    },
+    {
+      "id": "NO_JS_RUNTIME_ERRORS",
+      "result": "PASS",
+      "details": "count 0"
+    }
+  ],
+  "page_errors": [],
+  "observed": {
+    "signals": {
+      "input": 0,
+      "output": 1,
+      "toolCalls": 1,
+      "turns": 1,
+      "errors": 0,
+      "sessionUpdates": 2
+    },
+    "tools": 1,
+    "tokenUsage": 797,
+    "events": [
+      "SISTEMA",
+      "CONEXÃO",
+      "SESSÃO",
+      "MÍDIA",
+      "MÍDIA",
+      "MÍDIA",
+      "TEXTO",
+      "FERRAMENTA",
+      "SESSÃO"
+    ],
+    "socket": true
+  },
+  "telemetry_summary": {
+    "setup_latency_ms": {
+      "samples": 1,
+      "p50": 982,
+      "p95": 982
+    },
+    "first_audio_latency_ms": {
+      "samples": 1,
+      "p50": 2863,
+      "p95": 2863
+    },
+    "ws_disconnects": 0,
+    "tool_calls": 1
+  },
+  "passed": 15,
+  "failed": 0
+}

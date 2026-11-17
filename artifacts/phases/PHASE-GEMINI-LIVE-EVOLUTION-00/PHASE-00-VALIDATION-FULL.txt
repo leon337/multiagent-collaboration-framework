@@ -1,0 +1,64 @@
+F0 VALIDATION — EXPANDED SANITIZED EVIDENCE
+
+1. Device and service
+  hostname leo-N43SM; Linux 6.8.0-147-generic; Node v24.22.2; Chrome 156.0.8078.79
+  service 127.0.0.1:18371, /api/status ok:true; .private file mode 0600, directory 0700.
+  No key, auth token, media or captured personal content embedded in PRF.
+
+2. Six model metadata responses from Gemini v1beta/models/{id}
+  gemini-2.5-flash-native-audio-preview-12-2025 HTTP 200 bidiGenerateContent
+  gemini-3.8-live HTTP 200 bidiGenerateContent
+  gemini-3.8-live-extended-thinking HTTP 200 bidiGenerateContent
+  gemini-3.1-flash-live-preview HTTP 200 bidiGenerateContent
+  gemini-3.5-transcribe-live HTTP 200 bidiGenerateContent
+  gemini-3.5-live-translate-preview HTTP 200 bidiGenerateContent
+  Only first three had a verified actual handshake in F0.
+
+3. Last local regression (15/15)
+  UI_STATUS_CONFIGURED PASS
+  ORIGIN_RESTRICTION PASS HTTP 403
+  PRIVATE_FILES_NOT_SERVED PASS HTTP 404
+  LIVE_2_5_SETUP PASS
+  VIRTUAL_MIC_PCM PASS (virtual)
+  VIRTUAL_CAMERA_FRAME PASS (virtual)
+  VIRTUAL_SCREEN_FRAME PASS (mock screen, no real screen data)
+  TELEMETRY_MINIMAL PASS
+  TELEMETRY_PRIVATE PASS
+  REAL_TEXT_TURN PASS
+  FUNCTION_CALL_REAL PASS, tool invocation count 1
+  AUDIO_RESPONSE_SIGNAL PASS, turnComplete=1 outputTranscript=1
+  CLEAN_SHUTDOWN PASS, media tracks cleared
+  LIVE_3_8_SETUP PASS
+  NO_JS_RUNTIME_ERRORS PASS, 0 runtime exceptions
+  Prior regression failure: false positive checking allowed field name total_tokens; corrected in test and rerun, not suppressed.
+
+4. Instrumentation signals
+  setup_latency_ms: 1 sample, p50=982, p95=982
+  first_audio_latency_ms: 1 sample, p50=2863, p95=2863
+  ws_disconnects=0, tool_calls=1
+  One sample does not establish an SLO or reliable percentile.
+
+5. Negative and security baseline
+  12 controls PASS, including private paths 404, Origin 403, CSP, Referrer-Policy and filesystem mode.
+  3 gaps intentionally unpassed: backend auth absent, token not model-bound, persistent key unencrypted.
+  No exposure of secrets or screenshots in repo.
+  Git local baseline a33bdf9c4681ace0cb582621801bb6608415692a; .private, logs and f0 ignored.
+
+6. Checklist auto-sync
+  node --test ops/gemini-live/checklist-sync.test.mjs => 9 tests PASS, 0 FAIL.
+  Real GitHub dry-run (observed SHA 0072b0211366a85b3cbb96faaa13c7bd2470fe67):
+  checks=3, passed=2, pending=1, failed=0; changedCheckboxes=false.
+  This was a point-in-time snapshot; follow-up PR commits may change checks.
+
+7. Local evidence originals (private, not copied into GitHub)
+  /home/leo/Projetos/gemini-live-studio/f0/SNAPSHOT.json
+  /home/leo/Projetos/gemini-live-studio/f0/MODEL-PROBE.json
+  /home/leo/Projetos/gemini-live-studio/f0/BASELINE-TESTS.json
+  /home/leo/Projetos/gemini-live-studio/f0/SECURITY-CHECKS.json
+  /home/leo/Projetos/gemini-live-studio/f0/baseline-smoke.cjs
+  /home/leo/Projetos/gemini-live-studio/f0/checklist-sync.test.mjs
+
+8. Remaining gates
+  No independent Emily audit or LÉO decision evidenced.
+  Real hardware mic/camera/screen test remains pending or requires controlled end-user validation.
+  No merge, deploy, external API key transfer, or approval implied.

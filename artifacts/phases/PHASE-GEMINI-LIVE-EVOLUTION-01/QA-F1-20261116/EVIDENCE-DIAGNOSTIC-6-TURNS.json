@@ -1,0 +1,127 @@
+{
+  "schema": "mcf-f1-reliability-diagnostic/v1",
+  "utc": "2026-11-16T22:35:50.536Z",
+  "turns": [
+    {
+      "index": 1,
+      "first_audio_ms": 2327,
+      "completion_ms": 2480,
+      "connected": true,
+      "generation_delta": 1,
+      "turn_done_delta": 0,
+      "close_codes": [],
+      "handle": false
+    },
+    {
+      "index": 2,
+      "first_audio_ms": null,
+      "completion_ms": 1412,
+      "connected": true,
+      "generation_delta": 0,
+      "turn_done_delta": 1,
+      "close_codes": [],
+      "handle": false
+    },
+    {
+      "index": 3,
+      "first_audio_ms": 344,
+      "completion_ms": 344,
+      "connected": true,
+      "generation_delta": 1,
+      "turn_done_delta": 0,
+      "close_codes": [],
+      "handle": true
+    },
+    {
+      "index": 4,
+      "first_audio_ms": 955,
+      "completion_ms": 955,
+      "connected": true,
+      "generation_delta": 1,
+      "turn_done_delta": 0,
+      "close_codes": [],
+      "handle": true
+    },
+    {
+      "index": 5,
+      "first_audio_ms": 946,
+      "completion_ms": 946,
+      "connected": true,
+      "generation_delta": 1,
+      "turn_done_delta": 0,
+      "close_codes": [],
+      "handle": true
+    },
+    {
+      "index": 6,
+      "first_audio_ms": 1104,
+      "completion_ms": 1104,
+      "connected": true,
+      "generation_delta": 1,
+      "turn_done_delta": 0,
+      "close_codes": [],
+      "handle": true
+    }
+  ],
+  "failureEvents": [],
+  "notStored": [
+    "access_token",
+    "prompt_text",
+    "audio",
+    "transcript",
+    "api_key"
+  ],
+  "initial": {
+    "connected": true,
+    "wantConnected": true,
+    "retries": 0,
+    "handle": false,
+    "first_audio": 0,
+    "generation": 0,
+    "turn_done": 0,
+    "disconnects": 0,
+    "close_codes": [],
+    "reconnects": 0
+  },
+  "network_before": {
+    "connected": true,
+    "wantConnected": true,
+    "retries": 0,
+    "handle": true,
+    "first_audio": 5,
+    "generation": 5,
+    "turn_done": 5,
+    "disconnects": 0,
+    "close_codes": [],
+    "reconnects": 0
+  },
+  "network_reconnected": true,
+  "network_after": {
+    "connected": true,
+    "wantConnected": true,
+    "retries": 0,
+    "handle": true,
+    "first_audio": 5,
+    "generation": 5,
+    "turn_done": 5,
+    "disconnects": 1,
+    "close_codes": [
+      1000
+    ],
+    "reconnects": 1
+  },
+  "final": {
+    "connected": true,
+    "wantConnected": true,
+    "retries": 0,
+    "handle": true,
+    "first_audio": 5,
+    "generation": 5,
+    "turn_done": 5,
+    "disconnects": 1,
+    "close_codes": [
+      1000
+    ],
+    "reconnects": 1
+  }
+}

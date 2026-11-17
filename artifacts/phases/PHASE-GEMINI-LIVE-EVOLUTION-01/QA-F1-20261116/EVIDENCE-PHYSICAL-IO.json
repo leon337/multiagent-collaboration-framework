@@ -1,0 +1,27 @@
+{
+  "schema": "mcf-f1-physical-io/v1",
+  "at_utc": "2026-11-16T22:27:27.986143+00:00",
+  "host": "leo-N43SM",
+  "default_source": "alsa_input.usb-Microsoft_Microsoft___LifeCam_HD-3000-02.mono-fallback",
+  "default_sink": "alsa_output.pci-0000_00_1b.0.analog-stereo",
+  "privacy": {
+    "recorded_media_persisted": false,
+    "speech_transcript_persisted": false,
+    "generated_tone_hz": 440,
+    "generated_volume_pct": 8
+  },
+  "input_probe": {
+    "samples": 32000,
+    "seconds": 2.0,
+    "rms": 0.004796,
+    "peak": 0.023865,
+    "zero_ratio": 0.0033
+  },
+  "sink_monitor_probe": {
+    "samples": 0,
+    "observed_rms": 0,
+    "paplay_exit": 0,
+    "monitor_available": false
+  },
+  "status": "PARTIAL_HARDWARE_PATH"
+}

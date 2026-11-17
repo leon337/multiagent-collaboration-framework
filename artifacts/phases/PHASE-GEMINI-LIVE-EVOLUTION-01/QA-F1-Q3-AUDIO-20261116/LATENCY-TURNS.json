@@ -1,0 +1,190 @@
+{
+  "schema": "mcf-f1-text-to-playback-benchmark/v1",
+  "started_at": "2026-11-16T23:58:08.052Z",
+  "model": "gemini-2.5-flash-native-audio-preview-12-2025",
+  "target_turns": 30,
+  "metrics": "text-send to first scheduled audio (not human speech-end)",
+  "sourceAppSHA": "c897492cde8317f75831ad79ab4687421934dee90102abbe623f40e71587d39a",
+  "modelInputIsSynthetic": true,
+  "mediaPersisted": false,
+  "turns": [
+    {
+      "turn": 1,
+      "first_scheduled_audio_ms": 4666,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:11.272Z"
+    },
+    {
+      "turn": 2,
+      "first_scheduled_audio_ms": 3159,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:17.206Z"
+    },
+    {
+      "turn": 3,
+      "first_scheduled_audio_ms": 3199,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:21.588Z"
+    },
+    {
+      "turn": 4,
+      "first_scheduled_audio_ms": 2413,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:25.687Z"
+    },
+    {
+      "turn": 5,
+      "first_scheduled_audio_ms": 2612,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:29.322Z"
+    },
+    {
+      "turn": 6,
+      "first_scheduled_audio_ms": 2126,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:33.271Z"
+    },
+    {
+      "turn": 7,
+      "first_scheduled_audio_ms": 1070,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:36.821Z"
+    },
+    {
+      "turn": 8,
+      "first_scheduled_audio_ms": 1876,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:38.804Z"
+    },
+    {
+      "turn": 9,
+      "first_scheduled_audio_ms": 1403,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:42.220Z"
+    },
+    {
+      "turn": 10,
+      "first_scheduled_audio_ms": 1282,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:44.987Z"
+    },
+    {
+      "turn": 11,
+      "first_scheduled_audio_ms": 1912,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:47.753Z"
+    },
+    {
+      "turn": 12,
+      "first_scheduled_audio_ms": 1307,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:51.186Z"
+    },
+    {
+      "turn": 13,
+      "first_scheduled_audio_ms": 1324,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:54.136Z"
+    },
+    {
+      "turn": 14,
+      "first_scheduled_audio_ms": 1125,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:56.786Z"
+    },
+    {
+      "turn": 15,
+      "first_scheduled_audio_ms": 1199,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:58:59.369Z"
+    },
+    {
+      "turn": 16,
+      "first_scheduled_audio_ms": 1312,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:59:01.936Z"
+    },
+    {
+      "turn": 17,
+      "first_scheduled_audio_ms": 1154,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:59:04.669Z"
+    },
+    {
+      "turn": 18,
+      "first_scheduled_audio_ms": 1130,
+      "terminal_seen": true,
+      "timeout": false,
+      "under_16s": true,
+      "clock_start_utc": "2026-11-16T23:59:07.570Z"
+    },
+    {
+      "turn": 19,
+      "first_scheduled_audio_ms": null,
+      "terminal_seen": false,
+      "timeout": true,
+      "under_16s": false,
+      "clock_start_utc": "2026-11-16T23:59:10.352Z"
+    }
+  ],
+  "pageErrors": [],
+  "limitations": [
+    "Not voice-end-to-playback latency",
+    "No real microphone used",
+    "Token costs not independently metered",
+    "No guaranteed provider quota"
+  ],
+  "end": {
+    "underruns": 0,
+    "normalIdleResumes": 17,
+    "inputWorkletDroppedFrames": 0,
+    "connected": true,
+    "goAway": 0,
+    "reconnects": 0
+  },
+  "finished_at": "2026-11-16T23:59:26.775Z",
+  "summary": {
+    "attempted": 19,
+    "completeWithAudio": 18,
+    "target": 30,
+    "p50_ms": 1324,
+    "p95_ms": 4666,
+    "min_ms": 1070,
+    "max_ms": 4666,
+    "quality": "Exploratory synthetic text->scheduled playback, never voice mouth-to-ear"
+  }
+}
