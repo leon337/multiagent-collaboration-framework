@@ -122,7 +122,7 @@ class BrowserGateway{
   // requires explicit approval; click/type remain TodoMVC-only.
   this.client=null;this.transport=null;this.starting=null;this.startingClient=null;this.outputDir=null;
   this.activeOrigin=null;this.currentUrl=null;this.pending=new Map();this.busy=false;
-  this.receipts=[];this.calls=0;this.session=null;this.epoch=0;this.currentUrl=null;
+  this.receipts=[];this.calls=0;this.session=null;this.epoch=0;this.revokedSessionIds=new Set();
  }
  status(){return {provider:'@playwright/mcp',mode:'isolated_headless_local',
   ready:!!this.client,activeOrigin:this.activeOrigin,navigationPolicy:'public_https_per_request',approvedSites:null,
@@ -176,6 +176,7 @@ class BrowserGateway{
  }
  prepare({sessionId,name,args}){
   if(typeof sessionId!=='string'||!/^[a-f0-9-]{36}$/i.test(sessionId))throw reportError('Sessão inválida.',403);
+  if(this.revokedSessionIds.has(sessionId))throw reportError('Sessão MCP revogada: inicie uma nova sessão.',410);
   if(this.session&&sessionId!==this.session)throw reportError('Outra sessão já controla o navegador isolado.',409);
   // Expire abandoned approvals when a new request arrives, independent of
   // whether the user ever returns to click the old dialog.
@@ -273,11 +274,15 @@ class BrowserGateway{
    untrustedContent:true,automaticRetry:false};
  }
  async endSession(sessionId){
-  if(!this.session||sessionId===this.session){
-   this.pending.clear();await this.close();this.session=null;
-   return true;
-  }
-  return false;
+  if(typeof sessionId!=='string'||!/^[a-f0-9-]{36}$/i.test(sessionId))
+   throw reportError('Identificador de sessão inválido no encerramento.',403);
+  if(this.session&&sessionId!==this.session)return false;
+  // Revocation precedes asynchronous client shutdown. Reject an old prepare
+  // even if it arrives after /end, which previously resurrected a dead session.
+  this.revokedSessionIds.add(sessionId);
+  if(this.revokedSessionIds.size>512)this.revokedSessionIds.delete(this.revokedSessionIds.values().next().value);
+  this.pending.clear();await this.close();this.session=null;
+  return true;
  }
  async close(){
   this.epoch++;

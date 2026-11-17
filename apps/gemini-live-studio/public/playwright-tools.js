@@ -104,8 +104,9 @@
      'MCP instalado e disponível; Chrome será iniciado apenas após aprovação.');
     if(el('playwrightRuntime'))el('playwrightRuntime').textContent=
      'Provider: '+x.provider+' · '+x.toolNames.length+' ferramentas permitidas · perfil isolado. '+
-     'Sites HTTPS permitidos: '+(x.approvedSites||[]).map(site=>new URL(site).hostname).join(', ')+
-     '. Outros domínios exigem revisão da lista.';
+     (x.navigationPolicy==='public_https_per_request'?
+      'Navegação para URLs HTTPS públicas solicitadas pelo usuário, com aprovação por endereço. Não herda login do Brave. Redirecionamentos e rede ainda têm limitações de segurança.':
+      'Domínios permitidos: '+(x.approvedSites||[]).map(site=>new URL(site).hostname).join(', '));
    }).catch(()=>syncStatus('Gateway indisponível.'));
  }
  el('playwrightStop').addEventListener('click',stopFromUI);

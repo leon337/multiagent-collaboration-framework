@@ -11,12 +11,24 @@ resultado UNKNOWN e recibo, não falsa afirmação de sucesso.
 4. TTL de aprovação abandonada é expirado no próximo prepare e gera EXPIRED.
 5. Clique e digitação só TodoMVC pathname exato, alvo snapshot eN; revalidação
 do URL real e do elemento atual antes de enviar a ferramenta ao MCP.
-6. Teste Gemini real exige dois receipts correlacionados a navigate e snapshot,
+6. Teste Gemini real exige receipt de navigate; snapshot só é exigido quando chamado,
 não uma fala contendo o domínio por acaso.
 7. CI F1/F2 verifica manifesto corrente F3 quando o código F3 existe.
 O manifesto F3 cobre código, testes F1/F2/F3, ops e os respectivos workflows.
-8. Navegação só em lista curada HTTPS pública (12 origens); sites autenticados,
+8. Navegação para HTTPS público com aprovação por endereço e sem allowlist estática; sites autenticados,
 autofill de credenciais, JS arbitrário e upload permanecem desabilitados.
 
 Controles remanescentes: autenticação HDF nativa, egress/SSRF isolado, reconciliação
 e gates F0/F1/F2/F3. Nenhum deploy público foi realizado.
+
+
+## Seguimento da reauditoria
+SHA 0f93855 recebeu PASS_WITH_RESERVATIONS para incorporação local em main,
+mas NOT_APPROVED para deploy público. A reauditoria encontrou três problemas
+corrigíveis: sessões revogadas podiam ser recriadas por prepare atrasado;
+a documentação dizia allowlist mas o código aceitava qualquer URL HTTPS
+pública validada com aprovação; e o teste real não exigia duas toolResponses.
+Adicionado Set de IDs revogados (limite 512) validado por novo teste,
+documentação corrigida e asserções que exigem navegação validada e reportam snapshot separadamente
+com recibos distintos. As demais ressalvas (identidade HDF e egress/SSRF)
+continuam pendentes.

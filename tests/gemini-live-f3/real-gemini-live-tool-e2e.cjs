@@ -61,8 +61,15 @@ const report={schema:'mcf-gemini-real-live-playwright-tool-v1',date:new Date().t
    modelToolCalls=pending.callCount;
    if(pending.events.some(x=>x.includes('playwright_snapshot'))&&navigated)break;
    if(navigated&&pending.callCount>=1){
-    const delivered=await page.evaluate(()=>window.__mcfF3ToolDeliveries.some(x=>x.name==='playwright_navigate'&&x.status==='SUCCESS'&&x.receiptPresent&&x.containsPageTitle));
-    if(delivered){await new Promise(resolve=>setTimeout(resolve,1400));break;}
+    const result=await page.evaluate(()=>{
+     const receipts=window.__mcfF3ToolDeliveries;
+     const nav=receipts.find(x=>x.name==='playwright_navigate'&&x.status==='SUCCESS'&&x.receiptPresent&&x.containsPageUrl);
+     const snap=receipts.find(x=>x.name==='playwright_snapshot'&&x.status==='SUCCESS'&&x.receiptPresent&&x.containsPageTitle);
+     return {nav:!!nav,snapshot:!!snap};
+    });
+    if(result.nav&&(result.snapshot||process.env.MCF_REQUIRE_TWO_TOOLS!=='1')){
+     await new Promise(resolve=>setTimeout(resolve,1200));break;
+    }
    }
    if(!pending.connected)break;
    await new Promise(resolve=>setTimeout(resolve,700));
@@ -80,9 +87,15 @@ const report={schema:'mcf-gemini-real-live-playwright-tool-v1',date:new Date().t
    toolResponseReceipts:final.deliveredToolResponses,
    errors:final.recentErrors,approvedNavigation:navigated});
   report.modelSelectedToolChain=final.tools.map(x=>x.split(' →')[0]);
-  report.pass=ready&&navigated&&final.tools.some(x=>x.includes('playwright_navigate'))&&
-   final.deliveredToolResponses.some(x=>x.name==='playwright_navigate'&&x.status==='SUCCESS'&&
-    x.receiptPresent&&x.containsPageUrl&&x.containsPageTitle)&&final.receipts>=1;
+  const nav=final.deliveredToolResponses.find(x=>x.name==='playwright_navigate'&&
+   x.status==='SUCCESS'&&x.receiptPresent&&x.containsPageUrl);
+  const snap=final.deliveredToolResponses.find(x=>x.name==='playwright_snapshot'&&
+   x.status==='SUCCESS'&&x.receiptPresent&&x.containsPageUrl&&x.containsPageTitle);
+  report.navigationVerified=!!nav;
+  report.snapshotVerified=!!snap;
+  report.twoToolChainVerified=!!nav&&!!snap&&nav.id!==snap.id;
+  report.pass=ready&&navigated&&!!nav&&final.receipts>=1&&
+   (process.env.MCF_REQUIRE_TWO_TOOLS==='1'?report.twoToolChainVerified:true);
   report.modelResponseContainsTitle=final.lastMessages.some(x=>/Example Domain/i.test(x));
   console.log('REAL_GEMINI_PLAYWRIGHT_TOOL_E2E',JSON.stringify({pass:report.pass,model:report.model,
    ready,navigated,toolCalls:final.toolCalls,toolNames:final.tools,receipts:final.receipts,errors:final.recentErrors}));

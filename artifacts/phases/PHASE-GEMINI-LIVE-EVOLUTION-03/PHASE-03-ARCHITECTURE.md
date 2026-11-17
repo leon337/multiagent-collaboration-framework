@@ -5,7 +5,7 @@ Missão MCF-GEMINI-LIVE-EVOLUTION-20261116-001. Desenvolvimento local do gateway
 Fluxo real: Gemini Live model toolCall -> public/app.js -> public/playwright-tools.js -> POST /api/browser/prepare -> política de ferramenta e escopo -> diálogo de aprovação se ação modificadora -> POST /api/browser/decision -> Node MCP SDK (stdio) -> servidor oficial @playwright/mcp -> Chrome headless isolado -> resposta e recibo -> toolResponse/functionResponses original para Gemini Live.
 
 Ferramentas permitidas:
-- playwright_navigate: browser_navigate, destino HTTPS público da allowlist, confirmação individual.
+- playwright_navigate: browser_navigate, destino HTTPS público validado, sem lista estática; confirmação individual por URL.
 - playwright_snapshot: browser_snapshot, leitura após navegação aprovada.
 - playwright_find: browser_find, busca de texto no snapshot.
 - playwright_tabs: browser_tabs somente action=list, sem manipulação.
@@ -24,6 +24,5 @@ Instalação: executar npm ci em apps/gemini-live-studio, iniciar PORT=18375 nod
 ## Continuidade e navegabilidade
 Staging fica em 127.0.0.1:18375, diferente da F2 em 18374. A aplicação atual da
 F2 não contém MCP. O modelo deve usar a instância F3 e ter a ferramenta habilitada
-ao iniciar a sessão. Abrir página requer aprovação; somente domínios de lista curada
-são aceitos. O usuário vê a lista no painel. Navegador Chrome isolado não usa logins
+ao iniciar a sessão. Abrir página requer aprovação; URLs HTTPS públicas passam na validação inicial, mas são abertas somente após confirmação humana. Redirecionamentos e subrecursos ainda carecem de egress isolado. O usuário vê a lista no painel. Navegador Chrome isolado não usa logins
 ou abas do Brave autenticado. O teste real do modelo chamou navigate e snapshot.

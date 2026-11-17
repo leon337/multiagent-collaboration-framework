@@ -18,7 +18,7 @@
   ],
   "results": {
     "node_policy": {
-      "passed": 18,
+      "passed": 19,
       "failed": 0
     },
     "real_http_mcp": {
@@ -42,23 +42,29 @@
       "receiptsValidated": 2
     },
     "offline_aggregate_f0_f1_f2_f3": {
-      "passed": 111,
+      "passed": 112,
       "failed": 0
     },
     "npm_prod_dependency_high_vulnerability_audit": {
       "reported": 0
+    },
+    "real_gemini_live_latest": {
+      "navigationVerified": true,
+      "snapshotVerified": false,
+      "twoToolChainVerified": false
     }
   },
   "security": {
     "action_approval_ttl_seconds": 45,
     "one_time_decision": true,
     "click_and_type_allowed_only": "https://demo.playwright.dev",
-    "read_navigate_curated_public_https_only": true,
+    "read_navigate_curated_public_https_only": false,
     "no_arbitrary_js": true,
     "no_file_upload": true,
     "no_user_cookie_reuse": true,
     "no_unknown_host_navigation": true,
-    "raw_page_content_persisted_in_receipts": false
+    "raw_page_content_persisted_in_receipts": false,
+    "navigationPolicy": "public_https_per_request; initial URL checked; per-URL human approval; no network sandbox"
   },
   "boundary": "LOCAL_EXPERIMENTAL_WITH_MERGE_REQUEST; HDF_GATE_AND_PUBLIC_DEPLOY_UNVERIFIED",
   "unresolved": [
@@ -68,5 +74,9 @@
     "no commercial or authenticated browser actions enabled",
     "previous formal F0 F1 F2 gates open",
     "independent F3 audit pending"
+  ],
+  "limitations": [
+    "NO_STATIC_ALLOWLIST; NETWORK_EGRESS_NOT_ISOLATED",
+    "PUBLIC_PRODUCTION_NOT_APPROVED"
   ]
 }

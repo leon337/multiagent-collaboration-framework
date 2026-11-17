@@ -220,3 +220,15 @@ test('page scope blocks selectors and click outside exact TodoMVC path',async()=
  assert.equal(allowed.approvalNeeded,true);
  await gateway.endSession(S1);
 });
+
+test('review MEDIUM: late prepare cannot resurrect a revoked session or block next session',async()=>{
+ let now=1000;
+ const f=fake(),g=new BrowserGateway({...f.options,clock:()=>now});
+ const first=g.prepare({sessionId:S1,name:'playwright_navigate',args:{url:'https://example.com/'}});
+ assert.equal(await g.endSession(S1),true);
+ now+=50000;
+ assert.throws(()=>g.prepare({sessionId:S1,name:'playwright_navigate',args:{url:'https://example.com/'}}),e=>e.status===410);
+ const second=g.prepare({sessionId:S2,name:'playwright_navigate',args:{url:'https://example.com/'}});
+ assert.equal(second.approvalNeeded,true);
+ await g.endSession(S2);
+});

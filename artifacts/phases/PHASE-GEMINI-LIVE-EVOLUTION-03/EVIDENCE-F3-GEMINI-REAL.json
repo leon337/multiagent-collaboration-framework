@@ -1,11 +1,11 @@
 {
   "schema": "mcf-gemini-real-live-playwright-tool-v1",
-  "date": "2026-11-17T04:49:26.651Z",
+  "date": "2026-11-17T05:01:11.006Z",
   "model": "gemini-2.5-flash-native-audio-preview-12-2025",
   "sourceSha256": {
     "public/app.js": "dab672878a141d070f75df9c2f1383322b39eea8482ec1b5bb4c0dc06103d322",
-    "public/playwright-tools.js": "5a7459d509eb25216aa4c9abebddb41fe810851cdc887b844f9c4467b6c3871b",
-    "mcp-playwright-gateway.cjs": "a144dfd7a791097b8750247c587e8bd086e712e0038f16ffaaec00ad1b3deb29",
+    "public/playwright-tools.js": "427533f6c65d7047684ac42a1de43fa510ce4dc9ebc9dd14058124bbb2dd8d02",
+    "mcp-playwright-gateway.cjs": "e23550447369794b932b5cdff40db64560913bc705d8853a3af6e30a9ac3dddd",
     "server.js": "eae455edba9f0a9c98e3ca504620772a33fa5ff203a67b8448b7aa540739422f"
   },
   "apiKeyPersisted": false,
@@ -15,28 +15,19 @@
     {
       "phase": "live_e2e",
       "connected": true,
-      "toolCount": 2,
+      "toolCount": 1,
       "tools": [
-        "playwright_navigate → dc71aa41-8ec0-438b-b876-cedee78c60c7",
-        "playwright_snapshot → a212fab2-1a47-4d79-9aff-a56bf1f36d56"
+        "playwright_navigate → 73f1caa7-5c5e-4148-867c-de2666762828"
       ],
-      "receipts": 2,
+      "receipts": 1,
       "modelsResponseSummary": [
-        "GEMINI**Initiating Automated Test**\n\nI've initiated the automated test. My first step was to call `playwright_navigate` with the URL 'https://example.com/'. This requires user auth",
-        "GEMINI**Confirming Navigation and Title**\n\nI've successfully reached the specified URL and confirmed the \"Example Domain\" title from the navigation output. While technically redund"
+        "GEMINI**Initiating Navigation Steps**\n\nI've initiated the navigation phase. My plan is to start with `playwright_navigate` using the specified URL: `https://example.com/`. I'm adhe",
+        "GEMINI**Analyzing the Page Title**\n\nI've successfully navigated to the example URL and obtained the page title: \"Example Domain.\" While the title is already available, I'll execute"
       ],
       "toolResponseReceipts": [
         {
           "name": "playwright_navigate",
-          "id": "function-call-11571537149002221629",
-          "status": "SUCCESS",
-          "receiptPresent": true,
-          "containsPageUrl": true,
-          "containsPageTitle": true
-        },
-        {
-          "name": "playwright_snapshot",
-          "id": "function-call-3616001646154967192",
+          "id": "function-call-5734815825609651358",
           "status": "SUCCESS",
           "receiptPresent": true,
           "containsPageUrl": true,
@@ -49,9 +40,11 @@
   ],
   "configured": true,
   "modelSelectedToolChain": [
-    "playwright_navigate",
-    "playwright_snapshot"
+    "playwright_navigate"
   ],
+  "navigationVerified": true,
+  "snapshotVerified": false,
+  "twoToolChainVerified": false,
   "pass": true,
   "modelResponseContainsTitle": true,
   "unhandledBrowserErrors": []

@@ -4,14 +4,14 @@ bc446d33e75d66f5b4f4accaf871c37de147933bc4739a25168bc3362467b8ba  ../../../.gith
 ff2a631d0a697c8c8521808a7a25b21630c2fcf89a5fbae7b22c00d01e496dbd  ../../../apps/gemini-live-studio/.gitignore
 101b05916c68d481d5491a58797836af49a32e6fc09799834993957b5e05fcb8  ../../../apps/gemini-live-studio/README.md
 83dd7858e17be9c08f2fa398404e2e2f593071aec007dd578029ee9c315f56d4  ../../../apps/gemini-live-studio/capability-router.cjs
-a144dfd7a791097b8750247c587e8bd086e712e0038f16ffaaec00ad1b3deb29  ../../../apps/gemini-live-studio/mcp-playwright-gateway.cjs
+e23550447369794b932b5cdff40db64560913bc705d8853a3af6e30a9ac3dddd  ../../../apps/gemini-live-studio/mcp-playwright-gateway.cjs
 9cd0a9779cdb0aa415e594d3e3de99e463ea73bacc25afb3d556c3bc0287ede2  ../../../apps/gemini-live-studio/package-lock.json
 9866e4c7cf8838de43177b53832737902350a88a571ba1f1016faf8417c9ea49  ../../../apps/gemini-live-studio/package.json
 dab672878a141d070f75df9c2f1383322b39eea8482ec1b5bb4c0dc06103d322  ../../../apps/gemini-live-studio/public/app.js
 6e5e31176beb66b3a54548e8c00f67f2d87af96dce327b60ba2ba0dffe15fe6a  ../../../apps/gemini-live-studio/public/capture-worklet.js
 ce284348f354f82390d016b5318646964a4663aa47f59a091b115236d4ac2bee  ../../../apps/gemini-live-studio/public/index.html
 8294dd368fafb56f648266f60054cda577629db2fdafc639a59327827ac9a851  ../../../apps/gemini-live-studio/public/media-policy.js
-5a7459d509eb25216aa4c9abebddb41fe810851cdc887b844f9c4467b6c3871b  ../../../apps/gemini-live-studio/public/playwright-tools.js
+427533f6c65d7047684ac42a1de43fa510ce4dc9ebc9dd14058124bbb2dd8d02  ../../../apps/gemini-live-studio/public/playwright-tools.js
 de2470aab7e35acabf5229c1cb15951b416ed0f03b1287aaf0606d1467491a14  ../../../apps/gemini-live-studio/public/style.css
 79baef57e715a2e3c8e5c92e5ff4b00db8befa712c1e3aac916c5a56e5cf564a  ../../../apps/gemini-live-studio/public/telemetry.js
 0f922fb30719136a9f5e285f3bf042560240d49e5851fe04258d16ced76b57bf  ../../../apps/gemini-live-studio/public/vision-ui.js
@@ -46,5 +46,5 @@ f1c16a76b3103b42775c3c0b95235ec264103c0406da6f8c2239649fdbd75fd3  ../../../tests
 fb28d1c77909a43d3640d18dc1d8598e12a2c79d99fd708dec34db5ffeefeb46  ../../../tests/gemini-live-f3/browser-agent-mcp-e2e.cjs
 a9b7db39ebae39dee669bb6faa312206ae747683202a174257d9498989f54e76  ../../../tests/gemini-live-f3/http-real-interaction.test.cjs
 2e4c4f6d31ea43608190341c707e70d3abc7f401c41efc09fa88f4e21ccd0712  ../../../tests/gemini-live-f3/http-real-mcp.test.cjs
-44cde60bc63b99562dd6d6b3b6d60792adafe4cabb95bdda9f9c4a37568a7286  ../../../tests/gemini-live-f3/mcp-playwright-gateway.test.cjs
-fed587ce612c913c45d935c97120990887cbab800844a6bf2bbb1d6e8b20ab13  ../../../tests/gemini-live-f3/real-gemini-live-tool-e2e.cjs
+703461bb586efd038eef50a4862dfe4a54328e2c7ef7e09b11d1c65072fc4c28  ../../../tests/gemini-live-f3/mcp-playwright-gateway.test.cjs
+99d976a196e16deb225547da1e0939353bc7195476e59f912da6d707bbf2e677  ../../../tests/gemini-live-f3/real-gemini-live-tool-e2e.cjs
