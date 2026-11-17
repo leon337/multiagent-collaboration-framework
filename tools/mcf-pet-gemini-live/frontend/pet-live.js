@@ -12,6 +12,9 @@
   const toolStatus=$("petLiveToolStatus");
   const toolsToggle=$("petLiveAllowTools");
   const proposalsToggle=$("petLiveAllowProposals");
+  const backgroundToggle=$("petLiveBackgroundAudio");
+  const backgroundStatus=$("petLiveBackgroundStatus");
+  let microphonePausedForBackground=false;
   if(toolsToggle&&proposalsToggle){
     proposalsToggle.disabled=!toolsToggle.checked;
     toolsToggle.addEventListener("change",()=>{
@@ -28,6 +31,47 @@
   function status(name,message) {
     $state.textContent=message||allowedState[name]||name;
     $state.dataset.state=name;
+  }
+  function syncBackgroundAudio(){
+    if(!active)return;
+    // A hidden tab keeps its established Gemini WebSocket. Without explicit
+    // consent, microphone tracks are muted AND outgoing PCM is blocked.
+    // Opt-in enables speaking/listening while using other tabs.
+    const hidden=document.hidden===true;
+    const backgroundConsent=backgroundToggle?.checked===true;
+    const shouldCapture=!hidden||backgroundConsent;
+    // Flush pending utterance when muting the microphone. Gemini Live's
+    // automatic VAD otherwise may wait for trailing silence indefinitely.
+    // Only emit once per transition (not on repeated visibility events).
+    const enteringMuted=!shouldCapture&&!microphonePausedForBackground;
+    microphonePausedForBackground=!shouldCapture;
+    if(enteringMuted&&ready&&socket?.readyState===WebSocket.OPEN){
+      socket.send(JSON.stringify({type:"audio_stream_end"}));
+    }
+    for(const track of stream?.getAudioTracks?.()||[]){
+      if(track.readyState==="live")track.enabled=shouldCapture;
+    }
+    if(backgroundStatus){
+      backgroundStatus.dataset.state=hidden
+        ? (shouldCapture?"background-on":"background-muted")
+        : "foreground";
+      backgroundStatus.textContent=hidden
+        ? (shouldCapture
+          ? "🎙 Live conectado em segundo plano · microfone ativo por sua escolha."
+          : "🔇 Live conectado · microfone silenciado enquanto a aba está oculta.")
+        : "● Live conectado · microfone ativo na aba visível.";
+    }
+    if(!hidden&&ctx?.state==="suspended"){
+      // Browser may suspend AudioContext while the tab is hidden.
+      ctx.resume().catch(()=>{});
+    }
+    if(hidden&&ready){
+      status("listening",shouldCapture
+        ? "● Live em segundo plano · microfone ativo"
+        : "● Live conectado · microfone silenciado");
+    }else if(!hidden&&ready){
+      status("listening","● Live conectado · microfone ativo");
+    }
   }
   function line(text,who) {
     if(!text||!text.trim())return;
@@ -126,6 +170,7 @@
   }
   function micFrame(ev){
     if(!active||!ready||!socket||socket.readyState!==WebSocket.OPEN)return;
+    if(microphonePausedForBackground)return;
     if(socket.bufferedAmount>350000)return; // bounded backpressure
     const frame=ev.data;
     const encoded=encodePCM(frame.samples,frame.rate);
@@ -161,6 +206,7 @@
         }
         test.disabled=false;
         status("listening");
+        syncBackgroundAudio();
         stateHint("ouvindo");
         $("petLiveModel").textContent=String(message.model||"Gemini Live");
         break;
@@ -236,6 +282,7 @@
     setOtherButtons(true);
     if(toolsToggle)toolsToggle.disabled=true;
     if(proposalsToggle)proposalsToggle.disabled=true;
+    if(backgroundToggle)backgroundToggle.disabled=true;
     toolInvocations=0;
     proposalsCreated=0;
     if(toolStatus)toolStatus.textContent="Preparando conexão segura de leitura…";
@@ -247,6 +294,9 @@
       playback=new PCMPlayback(ctx);
       stream=await navigator.mediaDevices.getUserMedia({
         audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
+      // A tab may become hidden during the permission prompt. Do not allow
+      // audio capture/transmission while hidden unless the user opted in.
+      syncBackgroundAudio();
       await ctx.audioWorklet.addModule("/pet-live-worklet.js");
       source=ctx.createMediaStreamSource(stream);
       worklet=new AudioWorkletNode(ctx,"mcf-pet-microphone");
@@ -297,6 +347,7 @@
   function end(announce=true){
     if(!active&&!socket&&!stream)return;
     active=false;ready=false;
+    microphonePausedForBackground=false;
     clearTimeout(timer);timer=null;
     try{if(socket?.readyState===WebSocket.OPEN)
       socket.send(JSON.stringify({type:"stop"}))}catch(_){}
@@ -313,6 +364,14 @@
     start.disabled=false;stop.disabled=true;test.disabled=true;
     if(toolsToggle)toolsToggle.disabled=false;
     if(proposalsToggle)proposalsToggle.disabled=!toolsToggle?.checked;
+    if(backgroundToggle){
+      backgroundToggle.disabled=false;
+      backgroundToggle.checked=false; // opt-in is ALWAYS per session
+    }
+    if(backgroundStatus){
+      backgroundStatus.dataset.state="offline";
+      backgroundStatus.textContent="● Sessão encerrada · sem captura de microfone.";
+    }
     setOtherButtons(false);
     stateHint("ocioso");
     playerTitle.textContent="Áudio encerrado. O microfone foi desligado.";
@@ -328,15 +387,18 @@
       status("thinking","◌ Testando resposta ao vivo...");
     }
   });
+  // Navigation/closing the page still stops capture and releases the socket.
+  // Hiding the tab never calls end() or closes the WebSocket.
   window.addEventListener("pagehide",()=>end(false));
-  document.addEventListener("visibilitychange",()=>{
-    // Never keep the mic capturing after changing tabs/screen.
-    if(document.hidden&&active)end(false);
-  });
+  document.addEventListener("visibilitychange",syncBackgroundAudio);
   window.McfPetLiveStatus=()=>({
     active,ready,pcmFramesSent:sent,pcmAudioChunks:received,
     toolInvocations,proposalsCreated,
     readOnlyToolsSelected:toolsToggle?.checked===true,
-    proposalsSelected:proposalsToggle?.checked===true
+    proposalsSelected:proposalsToggle?.checked===true,
+    backgroundAudioConsented:backgroundToggle?.checked===true,
+    microphonePausedForBackground,
+    microphoneTrackEnabled:stream?.getAudioTracks?.()[0]?.enabled??false,
+    visibilityState:document.visibilityState
   });
 })();

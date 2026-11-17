@@ -154,6 +154,49 @@ O microfone físico do usuário e a rota externa Tailnet não foram
 revalidados nesta missão. Um pedido complexo de duas ferramentas atingiu
 timeout em teste inicial; o pedido de proposta isolado foi validado.
 
+
+## Alternância de abas — Gemini Live com continuidade e privacidade
+
+Correção MCF-PET-LIVE-BACKGROUND-001 (2026-11-16).
+O frontend encerrava a sessão no evento visibilitychange. Agora mantém o
+WebSocket e controla independentemente se o microfone envia áudio.
+
+- Sem opt-in (padrão): conexão Gemini Live permanece aberta, trilha de
+  microfone com enabled=false e guarda impedindo upload de PCM.
+  Ao retornar à aba o microfone volta a enviar áudio automaticamente.
+- Com opt-in explícito antes de iniciar: o usuário autoriza manter áudio
+  e microfone ativos enquanto a aba está oculta; a opção é por sessão
+  e é apagada ao encerrar.
+- Navegação ou fechar a página (pagehide) ainda encerra sessão; o botão
+  Stop interrompe os tracks e fecha o WebSocket.
+- Um track silenciado ainda pode manter o dispositivo de microfone alocado.
+  A liberação real do dispositivo ocorre ao encerrar a sessão. O limite
+  de 5 minutos da sessão continua válido.
+- SO e navegador podem suspender contextos de áudio quando a tela
+  bloqueia ou o aplicativo dorme. Conexão não é garantida nessas condições.
+- Sem mudanças em escopos de ferramentas, missões, HDF, modelo e
+  permissões de execução.
+
+Evidências: 82 testes Python, 9 testes Node, testes browser Chrome/Brave
+com WebSocket Gemini real e evento de ocultação simulado: socket
+permaneceu aberto; 0 pacotes PCM enquanto oculto sem opt-in;
+aproximadamente 37-38 pacotes com opt-in em 1,6 segundo.
+Retorno à aba, parada, revogação do opt-in e interface móvel verificados.
+Os navegadores automatizados (headless e Xvfb) relataram ambas as páginas
+como visible, motivo da simulação do evento visibilitychange. A troca
+de aba física no Brave do usuário ainda depende de validação humana.
+
+Backup local: /home/leo/.local/share/mcf-service-hub/backups/mcf-pet-live-20261117T005804Z/
+PR dependente do PR #534, que depende do PR #533; sem merge automático
+ou deploy do MissionRuntime central.
+
+### Background audio flush — PR #535 review remediation
+
+When the foreground tab becomes hidden without opt-in, the browser sends
+the audio_stream_end event once before muting the microphone. Gemini Live
+receives audioStreamEnd so a partially spoken utterance can be completed
+without relying on trailing silence. The event is not repeated while the
+page stays muted. No additional audio PCM is transmitted without opt-in.
 ### P2 review remediation (PR #534)
 
 - The review queue is paginated (max 40 per API page, 25 in UI) with pending

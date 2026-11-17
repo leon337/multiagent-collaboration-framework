@@ -193,6 +193,24 @@ def patch_proposal_ui(data: str) -> str:
     return data
 
 
+def patch_background_controls(data: str) -> str:
+    # The user explicitly opts in to background microphone use per session.
+    # If omitted, the Live websocket survives tab changes but PCM is muted.
+    if 'id="petLiveBackgroundAudio"' in data:
+        return data
+    anchor='      <label class="pet-live-tool-permission"'
+    controls='''      <label class="pet-live-background-permission">
+        <input type="checkbox" id="petLiveBackgroundAudio">
+        🎙 Continuar ouvindo quando eu mudar de aba (microfone ativo em segundo plano).
+      </label>
+      <p class="pet-live-background-status" id="petLiveBackgroundStatus" role="status" aria-live="polite">
+        Por padrão, a conexão continua ativa, mas o microfone é silenciado em outras abas.
+      </p>
+'''
+    return replace_once(data,anchor,controls+anchor,
+                        "explicit background audio consent")
+
+
 def patch_index(data: str) -> str:
     if '<link rel="stylesheet" href="/pet-live.css">' not in data:
         data=replace_once(data,'<link rel="stylesheet" href="/pet-conversation.css">',
@@ -208,6 +226,7 @@ def patch_index(data: str) -> str:
             "live panel insertion")
     data=patch_tool_controls(data)
     data=patch_proposal_ui(data)
+    data=patch_background_controls(data)
     return data
 
 def patch_read_only_ticket(data: str) -> str:

@@ -38,6 +38,8 @@ jobs:
           node --check frontend/pet-hub.js
       - name: Exercise expired browser-session recovery
         run: node --test frontend/pet-session-recovery.test.mjs
+      - name: Validate Live background tab privacy regression
+        run: node --test frontend/pet-live-background.test.mjs
       - name: Verify no credentials committed to package
         run: |
           if grep -RInE '(^|[[:space:]])(AIza[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9_-]{20,})' backend frontend tests; then
