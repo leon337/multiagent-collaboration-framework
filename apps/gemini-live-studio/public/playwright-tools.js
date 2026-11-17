@@ -39,7 +39,7 @@
    el('playwrightApprovalSummary').textContent=p.summary;
    el('playwrightApprovalMeta').textContent=p.name+' · ID '+String(p.requestId).slice(0,8)+
     ' · autorização única, expira em '+p.expiresInSec+'s';
-   const voice=el('playwrightVoiceEnabled')?.checked===true&&
+   let voice=el('playwrightVoiceEnabled')?.checked===true&&
     p.name==='playwright_navigate'&&!!SpeechCtor;
    // CRITICAL: stop model visual/audio egress BEFORE generating/rendering the
    // local spoken code, otherwise Gemini could see it via screen-share and
@@ -49,7 +49,14 @@
     if(typeof stopAllVisual==='function')stopAllVisual();
     if(typeof clearPlay==='function')clearPlay();
    }
-   const code=voice?MCFVoiceApproval.challenge(window.crypto):null;
+   let code=null;
+   if(voice){
+    try{code=MCFVoiceApproval.challenge(window.crypto);}
+    catch{
+     voice=false;voiceGateActive=false;
+     el('playwrightVoiceAvailability').textContent='Não foi possível gerar um desafio seguro. Use aprovação manual pelos botões.';
+    }
+   }
    const challenge=el('playwrightVoiceChallenge');
    challenge.hidden=!voice;
    el('playwrightVoicePhrase').textContent=voice?'autorizo '+code.split('').join(' '):'';
