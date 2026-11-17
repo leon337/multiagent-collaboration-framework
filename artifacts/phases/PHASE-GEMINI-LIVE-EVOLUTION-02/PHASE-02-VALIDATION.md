@@ -39,3 +39,13 @@ Evidências sanitizadas em EVIDENCE-F2-1-CHROME-CONSENT.json.
 | Testes Node acumulados | 92/92 PASS |
 | Google imagem/vídeo sintéticos no adaptador corrigido | HTTP 200 x2; DELETE video confirmado |
 | Auditoria externa do SHA anterior | RETURN_FOR_CORRECTION, corrigido em novo candidato; novo gate pendente |
+
+## QA LOW pós-revisão
+| Validação | Estado |
+|---|---|
+| Node Vision | 18/18 PASS |
+| Node acumulado F0/F1/F2 | 93/93 PASS |
+| Browser F2.2 | 14/14 PASS anterior a LOW |
+| Browser F2.1 | 11/11 PASS anterior a LOW |
+| Codex externo SHA 7a11ad6 | PASS_WITH_RESERVATIONS, LOW pós-corrigido |
+| Google real pós-LOW | NÃO REEXECUTADO |

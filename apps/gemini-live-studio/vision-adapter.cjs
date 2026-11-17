@@ -66,7 +66,7 @@ async function uploadVideo({fetchFn,key,mime,bytes}){
   throw requestError('Finalização do vídeo incerta: arquivo remoto pode ter sido criado sem exclusão confirmada. '+e.message,e.status||502);
  }
  const info=await done.json().catch(()=>({}));
- const file=info.file||{};
+ const file=info&&typeof info==='object'&&info.file&&typeof info.file==='object'?info.file:{};
  if(!/^files\/[A-Za-z0-9_-]{2,200}$/.test(String(file.name||'')))
   throw requestError('Upload sem identificador remoto válido; exclusão não pode ser confirmada.',502);
  const uri=String(file.uri||'');

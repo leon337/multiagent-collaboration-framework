@@ -10,3 +10,6 @@ Análise em pipeline separado da sessão Live, com consentimento por mídia. Ape
 
 ## Security review of F2.2
 Reject redirects from Google endpoints to avoid egress escalation. Report cleanup uncertainty and proactively attempt file deletion whenever a valid uploaded file ID exists. Require explicit model selection. Revoke results and sharing on Live session change. Preserve prior external reviewer as RETURN, no silent gate promotion.
+
+## Reauditoria de engenharia
+Zero HIGH/MEDIUM no SHA 7a11ad6, parecer externo PASS_WITH_RESERVATIONS, um LOW subsequente corrigido e testado. Preservar evidência original; nenhum gate formal F2.6 ou merge autorizado.

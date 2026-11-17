@@ -31,3 +31,6 @@ O pacote F2-2-F2-3-QA.md cobre Gemini generateContent para imagem e vídeo (File
 
 ## F2 audit remediation
 External Code CLI review on a1a51d5 returned RETURN_FOR_CORRECTION for 5 issues. Local fixes include reject HTTP redirects, remote deletion uncertainty warnings, explicit model selection, single-flight catalog and session-local analysis results. Post-fix QA: 17/17 vision Node, 14/14 vision Chrome, 92/92 combined Node; provider synthetic image/video retested. Details in REMEDIATION-AUDIT-CYCLE1.md. Formal F2.6 gate remains pending.
+
+## Reauditoria externa F2
+Codex CLI externo perfil Emily no SHA 7a11ad6 emitiu PASS_WITH_RESERVATIONS (zero HIGH/MEDIUM). Um LOW de resposta JSON nula ao finalizar vídeo corrigido posteriormente; 18/18 Node vision, 93/93 Node acumulado. Sem gate F2.6 formal nem autorização de produção.

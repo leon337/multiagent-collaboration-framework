@@ -9,7 +9,7 @@ const makePayload=(kind='image')=>({consent:true,kind,model:'gemini-3.5-flash',
  mimeType:kind==='image'?'image/png':'video/mp4',
  prompt:'Descreva o arquivo em português do Brasil.',base64:(kind==='image'?PNG:MP4).toString('base64')});
 const successful=(data,headers={})=>({ok:true,status:200,headers:{get:k=>headers[k.toLowerCase()]||null},json:async()=>data});
-function mockGoogle({badGenerationStatus=0,badUploadUrl=false,deleteFails=false,processing=false,invalidFileUri=false,finalizeFails=false}={}){
+function mockGoogle({badGenerationStatus=0,badUploadUrl=false,deleteFails=false,processing=false,invalidFileUri=false,finalizeFails=false,finalizeNull=false}={}){
  const calls=[];
  async function fetchFn(url,options={}){
   const u=String(url),method=options.method||'GET';
@@ -22,7 +22,7 @@ function mockGoogle({badGenerationStatus=0,badUploadUrl=false,deleteFails=false,
   if(u.endsWith('/upload/v1beta/files')&&method==='POST')
    return successful({}, {'x-goog-upload-url':badUploadUrl?'https://example.org/evil':'https://generativelanguage.googleapis.com/upload/finalize?id=1'});
   if(u.includes('/upload/finalize')&&method==='POST')
-   return finalizeFails?{ok:false,status:503}:successful({file:{name:'files/abc123',uri:invalidFileUri?'https://attacker.invalid/media':'https://generativelanguage.googleapis.com/v1beta/files/abc123',state:processing?'PROCESSING':'ACTIVE'}});
+   return finalizeFails?{ok:false,status:503}:finalizeNull?successful(null):successful({file:{name:'files/abc123',uri:invalidFileUri?'https://attacker.invalid/media':'https://generativelanguage.googleapis.com/v1beta/files/abc123',state:processing?'PROCESSING':'ACTIVE'}});
   if(u.includes('/v1beta/files/abc123')&&method==='GET')return successful({name:'files/abc123',state:'ACTIVE'});
   if(u.includes('/v1beta/files/abc123')&&method==='DELETE')
    return deleteFails?{ok:false,status:500}:successful({});
@@ -142,4 +142,10 @@ test('ambiguous finalize error warns remote retention is unknown',async()=>{
  const m=mockGoogle({finalizeFails:true});
  await assert.rejects(()=>vision.makeVisionAdapter({fetchFn:m.fetchFn}).analyze(makePayload('video'),'secret'),
   /sem exclusão confirmada/);
+});
+
+test('HTTP 200 with null finalize JSON warns remote deletion is unconfirmed',async()=>{
+ const m=mockGoogle({finalizeNull:true});
+ await assert.rejects(()=>vision.makeVisionAdapter({fetchFn:m.fetchFn}).analyze(makePayload('video'),'secret'),
+  /exclusão não pode ser confirmada/);
 });

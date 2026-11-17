@@ -15,3 +15,10 @@ A auditoria read-only de Codex CLI no SHA a1a51d5 devolveu RETURN_FOR_CORRECTION
 
 ## Limites
 A auditoria preservada acima é do SHA anterior. A mudança não equivale a gate normativo completo F2.6. Quotas monetárias, preços, modelos adicionais e vídeos >24 MiB continuam pendentes. F0/F1 gates formais anteriores permanecem abertos; nenhuma implantação em produção.
+
+
+## Seguimento LOW da reauditoria
+
+A segunda auditoria Codex CLI externa no SHA 7a11ad6 obteve PASS_WITH_RESERVATIONS: zero HIGH/MEDIUM e um LOW na resposta JSON nula do finalize HTTP 200. O adaptador foi corrigido para validar o objeto antes de acessar file; metadados nulos agora resultam no aviso sobre exclusão remota não confirmada, não TypeError. Nova regressão HTTP 200 null adicionada.
+
+**Atualização local pós-parecer:** 18/18 unitários de visão, 11/11 MediaPolicy, 93/93 F0+F1+F2 unitários acumulados, 14/14 browser de análise e 11/11 browser F2.1. Testes Google sintéticos HTTP 200 imagem/vídeo, delete vídeo confirmado, realizados no adaptador SHA anterior à correção LOW; não declarar que a rede foi testada novamente nesta revisão.

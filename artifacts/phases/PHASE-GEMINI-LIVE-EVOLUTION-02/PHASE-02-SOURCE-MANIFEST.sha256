@@ -7,7 +7,7 @@ a200e89ad2823a31e5cae298174c6b81e6c9119dae00e54568c4211b66c501b6  ../../../apps/
 0757596ed5b0029e9fb2d02f4d3b7263a3e7d740290e6d4e5293b6c3bae89ee4  ../../../tests/gemini-live-f2/browser-visual-consent.cjs
 0659b987222598752f3a8bfe390ad8709f96eabb49f48e8e41e6243c53933bd4  ../../../.github/workflows/mcf-gemini-live-f2.yml
 83dd7858e17be9c08f2fa398404e2e2f593071aec007dd578029ee9c315f56d4  ../../../apps/gemini-live-studio/capability-router.cjs
-df7772d6c7f4738daab37891531abfa61a7e71aec1ae54db50fd203881acaed2  ../../../apps/gemini-live-studio/vision-adapter.cjs
+ad168c8429d505c3141fba06da0f7357de1cb93ac5c4c8cf2f489295064de550  ../../../apps/gemini-live-studio/vision-adapter.cjs
 0f922fb30719136a9f5e285f3bf042560240d49e5851fe04258d16ced76b57bf  ../../../apps/gemini-live-studio/public/vision-ui.js
-13246a38b2333aa3d690722e42e2734cd8931875cb02ffd6210092da3ec6134e  ../../../tests/gemini-live-f2/vision-adapter.test.cjs
+f1c16a76b3103b42775c3c0b95235ec264103c0406da6f8c2239649fdbd75fd3  ../../../tests/gemini-live-f2/vision-adapter.test.cjs
 f4f30a7a0dbfee27717ffd76bf3863be591b693d3d3105a0773174f09a077c14  ../../../tests/gemini-live-f2/browser-vision-e2e.cjs
