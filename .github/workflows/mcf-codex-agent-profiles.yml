@@ -1,0 +1,26 @@
+name: MCF Codex Canonical Agent Profiles
+
+on:
+  pull_request:
+    paths:
+      - '.codex/**'
+      - 'ops/codex/**'
+      - 'docs/operations/MCF-CODEX-CANONICAL-EMILY-LEO.md'
+      - 'AGENTS.md'
+      - '.github/workflows/mcf-codex-agent-profiles.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-emily-leo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate project Codex agent TOML and MCF authority boundaries
+        run: python3 ops/codex/validate_canonical_agents.py
