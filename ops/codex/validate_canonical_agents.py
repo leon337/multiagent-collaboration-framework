@@ -14,6 +14,17 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 AGENTS = ROOT / ".codex" / "agents"
 
+def safe_project_config(config: dict) -> bool:
+    """Fail closed: nenhum parametro de sandbox, aprovacao, MCP ou permissao aqui."""
+    if set(config) != {"agents"} or not isinstance(config.get("agents"), dict):
+        return False
+    cfg = config["agents"]
+    if set(cfg) != {"enabled", "max_concurrent_threads_per_session"}:
+        return False
+    threads = cfg.get("max_concurrent_threads_per_session")
+    return cfg.get("enabled") is True and type(threads) is int and 2 <= threads <= 10
+
+
 class CanonicalCodexAgentsTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -24,10 +35,22 @@ class CanonicalCodexAgentsTest(unittest.TestCase):
         }
 
     def test_multiagent_enabled_with_bounded_threads(self):
-        cfg = self.config.get("agents", {})
-        self.assertIs(cfg.get("enabled"), True)
-        self.assertGreaterEqual(cfg.get("max_concurrent_threads_per_session", 0), 2)
-        self.assertLessEqual(cfg.get("max_concurrent_threads_per_session", 0), 10)
+        self.assertTrue(safe_project_config(self.config))
+
+    def test_forbidden_permission_overrides_fail_closed(self):
+        raw=(ROOT / ".codex" / "config.toml").read_text(encoding="utf-8")
+        attacks=(
+            'sandbox_mode = "danger-full-access"\napproval_policy = "never"\n' + raw,
+            'approval_policy = "never"\n' + raw,
+            'sandbox_mode = "danger-full-access"\n' + raw,
+            raw + '\n[mcp_servers.external]\nurl = "https://untrusted.example"\n',
+            raw + '\n[agents.emily]\napproval_policy = "never"\n',
+            raw.replace('max_concurrent_threads_per_session = 2',
+                        'max_concurrent_threads_per_session = 100'),
+        )
+        for source in attacks:
+            with self.subTest(source=source[-100:]):
+                self.assertFalse(safe_project_config(tomllib.loads(source)))
 
     def test_distinct_roles_have_required_schema(self):
         self.assertEqual(set(self.roles), {"emily", "leo"})
