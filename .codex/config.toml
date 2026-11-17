@@ -1,0 +1,5 @@
+# Configuracao de escopo de projeto. Aplicada por Codex apenas quando o repo e confiavel.
+# Nao altera autenticacao, MCPs, sandbox ou aprovacoes do host.
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 2
