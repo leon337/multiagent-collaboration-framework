@@ -23,3 +23,5 @@ The LATENCY-TURNS.json remains historical for previous Q3 source, not a retest o
 - BROWSER-REAL-API-FINAL.json is actual Gemini API E2E on updated source.
 - AUDIO-DRAIN-PRIOR-Q3.json proves the playback drain on an earlier Q3 source, not the current capture code.
 - Two independent external Emily-profile Codex reports: EMILY-EXTERNAL-Q3-SHA4E5F331.md and EMILY-EXTERNAL-Q3-CYCLE2.md.
+
+- LEO-PROFILE-GATE-Q3-CLOCK.md — actual external Codex CLI decision RETORNAR_PARA_CORRECAO, thread 01a1e6e0-7292-71b1-8ff2-738d098e268c, reviewed SHA c6f85b083837b297bd1bf04cba0e6582c5861afe; not a native MCF Agent Session.

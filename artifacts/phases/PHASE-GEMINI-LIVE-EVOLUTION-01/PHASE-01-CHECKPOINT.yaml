@@ -33,7 +33,10 @@ evidence:
   q3_cycle3_real_voice_latency_p95: NOT_MEASURED
   q3_cycle3_silent_turn_recovery: WARNING_ONLY
   q3_cycle3_emily_external_reviews: RETORNAR_ON_PRIOR_SHA
-  q3_cycle3_leo_profile_gate: PENDING
+  q3_cycle3_leo_profile_gate: RETORNAR_PARA_CORRECAO
+  q3_cycle3_leo_profile_reviewed_sha: c6f85b083837b297bd1bf04cba0e6582c5861afe
+  q3_cycle3_leo_profile_codex_thread: 01a1e6e0-7292-71b1-8ff2-738d098e268c
+  q3_cycle3_leo_native_session: false
   q3_cycle2_offline_unit_pass: 19
   q3_cycle2_browser_e2e_pass: 17
   q3_cycle2_adversarial_pass: 3

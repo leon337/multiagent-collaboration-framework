@@ -30,3 +30,6 @@ On 2026-11-16 a distinct external Codex CLI process with LEO normative profile (
 
 ## Audio Q3 requalification
 Read QA-F1-Q3-AUDIO-20261116/F1-Q3-REPORT.md and JSON files. F1 is not closed, and prior LEO-profile return decision remains historical until a new gate on the updated SHA.
+
+## Gate Q3 external LÉO profile
+Decision: RETORNAR_PARA_CORRECAO. Reviewed SHA c6f85b083837b297bd1bf04cba0e6582c5861afe. Codex thread 01a1e6e0-7292-71b1-8ff2-738d098e268c. Primary report in QA-F1-Q3-AUDIO-20261116/LEO-PROFILE-GATE-Q3-CLOCK.md. Native Agent Session FALSE. F0.8 still open; no merge/deploy.

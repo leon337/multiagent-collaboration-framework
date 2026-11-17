@@ -19,3 +19,7 @@ Outstanding: native agent Emily invocation not established; F0.8 still open, phy
 
 ## Codex CLI external LEO-profile gate decision
 On 2026-11-16 a distinct external Codex CLI process with LEO normative profile (thread 01a1e697-23c5-7af1-a68f-05d56083e38c) reviewed SHA 361a08b730b24b7fe0ba88e5917634dd3a947d64 and emitted RETORNAR_PARA_CORRECAO. It independently verified 12/12 offline tests, 24/24 source hashes, 26/26 PRF hashes. F1.1-F1.4 partial; F1.5 insufficient; F1.6 partial. This is NOT a native MCF Agent Session. F0.8 remains open and no merge/deploy is approved. Primary receipt in QA-F1-20261116/LEO-PROFILE-GATE.md.
+
+## Independent external LÉO-profile gate on Q3 clock-origin candidate
+At LEANDRO's request, a separate read-only Codex CLI under the normative docs/agentes/LEO.md profile reviewed SHA c6f85b083837b297bd1bf04cba0e6582c5861afe. Codex thread 01a1e6e0-7292-71b1-8ff2-738d098e268c, explicit decision **RETORNAR_PARA_CORRECAO**. This is a real external profile-based executor receipt, but NOT a native authenticated MCF Agent Session.
+Evidence and justification: QA-F1-Q3-AUDIO-20261116/LEO-PROFILE-GATE-Q3-CLOCK.md. F0.8 and public production key rotation remain open; this QA does not authorize merge/deploy. It does not claim 30 physical speech mouth-to-ear latency measurements or spontaneous barge-in evidence. F2 work remains planning-only unless all prerequisite gates formally approve.

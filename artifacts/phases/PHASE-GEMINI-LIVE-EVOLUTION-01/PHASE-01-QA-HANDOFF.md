@@ -33,3 +33,7 @@ next_action: external Emily-profile reviewer on new exact commit, then external 
 
 ## F1 Q3 cycle 3 clock origin
 The external Codex CLI Emily-profile reviewer at ae9f76a found a P1 clock-domain mismatch causing fresh mic frames to be dropped after delayed worklet startup. MESTRE fixed Worklet timestamps to use AudioContext clock and added a VM delayed init test. 20/20 Node tests, 17/17 real Gemini browser E2E, and 60 frames/zero stale drops in a browser with deliberately delayed addModule passed with source hashes. The one previous real Google nonterminal turn in 19 attempts is NOT fixed by a 16s watchdog warning, and human voice/headset gate/F0.8 remain OPEN. Reports in QA-F1-Q3-AUDIO-20261116/Q3-CLOCK-REMEDIATION.md.
+
+## Independent external LÉO-profile gate on Q3 clock-origin candidate
+At LEANDRO's request, a separate read-only Codex CLI under the normative docs/agentes/LEO.md profile reviewed SHA c6f85b083837b297bd1bf04cba0e6582c5861afe. Codex thread 01a1e6e0-7292-71b1-8ff2-738d098e268c, explicit decision **RETORNAR_PARA_CORRECAO**. This is a real external profile-based executor receipt, but NOT a native authenticated MCF Agent Session.
+Evidence and justification: QA-F1-Q3-AUDIO-20261116/LEO-PROFILE-GATE-Q3-CLOCK.md. F0.8 and public production key rotation remain open; this QA does not authorize merge/deploy. It does not claim 30 physical speech mouth-to-ear latency measurements or spontaneous barge-in evidence. F2 work remains planning-only unless all prerequisite gates formally approve.
