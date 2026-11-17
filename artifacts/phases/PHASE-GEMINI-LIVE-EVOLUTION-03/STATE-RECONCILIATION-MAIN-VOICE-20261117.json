@@ -1,6 +1,6 @@
 {
   "schema": "mcf-gemini-live-voice-main-reconciliation/v1",
-  "observed_at_utc": "2026-11-17T05:30:00Z",
+  "observed_at_utc": "2026-11-17T05:42:00Z",
   "mission_id": "MCF-GEMINI-LIVE-EVOLUTION-20261116-001",
   "canonical_issue": "https://github.com/leon337/multiagent-collaboration-framework/issues/527",
   "authority": {
@@ -25,9 +25,11 @@
   "candidate": {
     "branch": "reconcile/gemini-live-voice-approval-main-20261117",
     "base_sha": "97d79ee8152ead27564d2bf634ad63df5cc284e6",
-    "status": "IMPLEMENTED_CANDIDATE_CI_PENDING",
+    "status": "F0_F1_F2_F3_DOCS_CI_PASS_PRODUCTION_READINESS_RUNNING",
     "merged_to_main": false,
-    "public_deploy": false
+    "public_deploy": false,
+    "pr": 546,
+    "head_at_ci_submission": "38a1c0b250123eb24cb9cdc09b4d4e883ed4900b"
   },
   "wip_f1": {
     "branch": "wip/gemini-live-f1-response-20261117",
@@ -70,10 +72,19 @@
     "physical_microphone_test": false
   },
   "validation": {
-    "source_pr_540_actions": "4_WORKFLOWS_SUCCESS_ON_SOURCE_HEAD_ONLY",
-    "candidate_actions": "PENDING",
+    "candidate_actions": {
+      "F0": "SUCCESS",
+      "F1": "SUCCESS",
+      "F2": "SUCCESS",
+      "F3": "SUCCESS",
+      "documentation": "SUCCESS",
+      "production_readiness": "IN_PROGRESS",
+      "unrelated_vercel_projects": "RATE_LIMITED"
+    },
     "candidate_browser_e2e": "HARNESS_PRESENT_NOT_EXECUTED",
-    "physical_voice": "NOT_TESTED"
+    "physical_voice": "NOT_TESTED",
+    "source_manifest": "53_ENTRIES_HASHES_VERIFIED",
+    "artifact_manifest": "15_ENTRIES_HASHES_VERIFIED"
   },
   "next_action": "Run candidate PR CI and manifests; inspect failures; request independent review on exact candidate SHA; perform supervised physical voice test and close security gaps before any gate or production decision."
 }
