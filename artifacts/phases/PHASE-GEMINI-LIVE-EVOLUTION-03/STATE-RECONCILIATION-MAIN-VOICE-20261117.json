@@ -1,6 +1,6 @@
 {
   "schema": "mcf-gemini-live-voice-main-reconciliation/v1",
-  "observed_at_utc": "2026-11-17T05:42:00Z",
+  "observed_at_utc": "2026-11-17",
   "mission_id": "MCF-GEMINI-LIVE-EVOLUTION-20261116-001",
   "canonical_issue": "https://github.com/leon337/multiagent-collaboration-framework/issues/527",
   "authority": {
@@ -30,7 +30,8 @@
     "public_deploy": false,
     "pr": 546,
     "head_at_ci_submission": "38a1c0b250123eb24cb9cdc09b4d4e883ed4900b",
-    "latest_security_hardening_commit": "9ed406c7c2aba08593fa0cf39de892586703f0c3"
+    "latest_security_hardening_commit": "9ed406c7c2aba08593fa0cf39de892586703f0c3",
+    "latest_code_head_verified": "93cba8b2ef7ccaa5be370aacd30e1b57194f9cab"
   },
   "wip_f1": {
     "branch": "wip/gemini-live-f1-response-20261117",
@@ -77,18 +78,22 @@
   },
   "validation": {
     "candidate_actions": {
-      "F0": "PENDING_RERUN_AFTER_GATEWAY_HARDENING",
-      "F1": "PENDING_RERUN_AFTER_GATEWAY_HARDENING",
-      "F2": "PENDING_RERUN_AFTER_GATEWAY_HARDENING",
-      "F3": "PENDING_RERUN_AFTER_GATEWAY_HARDENING",
-      "documentation": "PENDING_RERUN_AFTER_ARTIFACT_UPDATE",
-      "production_readiness": "PENDING_RERUN_AFTER_GATEWAY_HARDENING"
+      "F0": "SUCCESS",
+      "F1": "SUCCESS",
+      "F2": "SUCCESS",
+      "F3": "SUCCESS",
+      "documentation": "SUCCESS",
+      "production_readiness": "IN_PROGRESS"
     },
     "candidate_browser_e2e": "HARNESS_PRESENT_NOT_EXECUTED",
     "physical_voice": "NOT_TESTED",
-    "source_manifest": "53_ENTRIES_HASHES_VERIFIED",
-    "artifact_manifest": "15_ENTRIES_HASHES_VERIFIED",
-    "gateway_host_normalization_test": "ADDED_LOCALHOST_TRAILING_DOT_AND_LOOPBACK_TRAILING_DOT"
+    "source_manifest": "PASS_53_ENTRIES",
+    "artifact_manifest": "PASS_15_ENTRIES",
+    "gateway_host_normalization_test": "PASS_LOCALHOST_DOT_DOUBLE_DOT_AND_LOOPBACK_DOT",
+    "F3_unit_tests": {
+      "passed": 25,
+      "failed": 0
+    }
   },
   "next_action": "Run candidate PR CI and manifests; inspect failures; request independent review on exact candidate SHA; perform supervised physical voice test and close security gaps before any gate or production decision."
 }
