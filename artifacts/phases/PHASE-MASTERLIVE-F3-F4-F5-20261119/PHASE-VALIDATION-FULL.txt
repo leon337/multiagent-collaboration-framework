@@ -1,0 +1,5 @@
+Evidências completas ficam fora do Git público, no cofre operacional local da missão, incluindo logs brutos de testes, screenshots de E2E, baseline, patch e configuração de serviço.
+
+Verificações executadas no host autorizado em 2026-11-19: suíte node:test; navegador Playwright; WebSocket Google Live; curl HTTP/TLS; Tailscale Serve status; systemd restart/is-active/is-enabled; SHA-256 baseline.
+
+Limitação de privacidade: nenhuma chave, áudio bruto, prompt privado ou URL específica da tailnet incluída neste repositório.

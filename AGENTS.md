@@ -76,3 +76,7 @@ Quando surgirem `build-rate-limit` da Vercel, pedido de "outra forma" ou dúvida
 **Rota de cada superfície:** o GitHub público em `main` já publica documentação e skills para outros chats sem build; o `render.yaml` declara a API `rsa-api-free` e o frontend estático `rsa-web-free` como alvos Render; Neon é **banco PostgreSQL**, não substituto de hospedagem Node/SPA (confirmar vínculo `DATABASE_URL` sem divulgar credenciais). Vercel é opcional; limite de build não autoriza alterar banco, contornar gates ou inventar deploy de produção.
 
 **Separação:** conhecimento público atualizado no GitHub ≠ runtime/SPA em produção. O deploy do runtime depende do SHA exato, autorização persistida de LEANDRO, gate de LÉO, health e workflow canônico. Scripts de roteamento são **assistência decisória pura**, não acionam provider, não concedem permissão e não substituem o PermissionEngine. Sem gate ou prova de infraestrutura, informar `PRODUCTION_BLOCKED_GATE` e manter o último ambiente íntegro.
+
+## MasterLive: navegação, voz e acesso privado — F3/F4/F5 (2026-11-19)
+
+Para MasterLive, falha de navegador, CDP/Playwright, aprovação de clique, Tailscale Serve ou sessão Gemini Live, consulte primeiro [MCF-MASTERLIVE-F3-F4-F5](docs/operations/MCF-MASTERLIVE-F3-F4-F5.md) e o `ops/masterlive/check-readiness.sh`. O laboratório passou testes E2E, mas isso não autoriza promover a aplicação: é preciso revisar áudio em dispositivo físico, identidade do HUMAN_GATE, quotas e evidência pós-reinício completo. Não tratar transcrição vocal como assinatura de autorização.
