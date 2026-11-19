@@ -1,0 +1,12 @@
+mission_id: MCF-MASTERLIVE-F3F4F5-20261119-001
+phase: F3_F4_F5
+state: AGUARDANDO_DEPENDENCIA_EXTERNA
+lab_e2e_verified: true
+original_application_preserved: true
+production_deploy: NOT_PERFORMED
+main_merge: NOT_PERFORMED
+pr_state: DRAFT_CANDIDATE
+next_actions:
+  - validar headset real e Android sobre Tailscale
+  - comprovar recuperação em reboot completo quando autorizado
+  - realizar revisão independente e gates antes de qualquer promoção
