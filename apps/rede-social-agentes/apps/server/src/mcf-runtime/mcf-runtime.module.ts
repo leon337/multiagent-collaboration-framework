@@ -23,6 +23,7 @@ import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import { ExternalActionLedger } from './external-action-ledger.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
+import { GoogleBridgeReadAdapter } from './google-bridge-read.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js';
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
@@ -130,6 +131,15 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [EvidenceValidator],
     },
     {
+      provide: GoogleBridgeReadAdapter,
+      useFactory: (evidence: EvidenceValidator) =>
+        new GoogleBridgeReadAdapter(
+          evidence,
+          process.env.MCF_GOOGLE_BRIDGE_RUNTIME_ENABLED === 'true',
+        ),
+      inject: [EvidenceValidator],
+    },
+    {
       provide: GitHubBranchPullRequestAdapter,
       useFactory: (evidence: EvidenceValidator, identities: GitHubExecutionIdentityRegistry) =>
         new GitHubBranchPullRequestAdapter(evidence, undefined, identities),
@@ -179,6 +189,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         githubPrCollaboration: GitHubPullCollaborationAdapter,
         codeBuddy: CodeBuddyExecutorAdapter,
         localAgentTeam: LocalAgentTeamAdapter,
+        googleBridgeRead: GoogleBridgeReadAdapter,
       ) =>
         new AdapterRegistry([
           githubReview,
@@ -187,6 +198,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           githubPrCollaboration,
           codeBuddy,
           localAgentTeam,
+          googleBridgeRead,
         ]),
       inject: [
         GitHubCodeReviewAdapter,
@@ -195,6 +207,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         GitHubPullCollaborationAdapter,
         CodeBuddyExecutorAdapter,
         LocalAgentTeamAdapter,
+        GoogleBridgeReadAdapter,
       ],
     },
     {

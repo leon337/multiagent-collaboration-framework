@@ -391,6 +391,25 @@ function assertCodeBuddyBoundary(
   }
 }
 
+function assertGoogleBridgeReadBoundary(
+  skillId: string,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  if (skillId !== 'MCF-GOOGLE-CLOUD-READ' && provider !== 'mcf-google-bridge') return;
+  if (
+    skillId !== 'MCF-GOOGLE-CLOUD-READ' ||
+    provider !== 'mcf-google-bridge' ||
+    resource !== 'google-cloud' ||
+    !['status', 'list-projects'].includes(operation)
+  ) {
+    throw new McfPermissionDeniedError(
+      'Google Bridge is restricted to read-only Google Cloud discovery',
+    );
+  }
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [
   ...readOperations,
@@ -457,6 +476,7 @@ export class PermissionEngine {
     assertCodeBuddyBoundary(skill.skillId, provider, operation, tool.resource);
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);
     assertLocalAgentTeamBoundary(skill.skillId, provider, operation, resource);
+    assertGoogleBridgeReadBoundary(skill.skillId, provider, operation, resource);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');
