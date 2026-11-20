@@ -1,6 +1,6 @@
 # MCF — GitHub MCP de leitura para DSH
 
-Servidor MCP (stdio, Python 3, sem dependências externas) com cinco ferramentas de leitura do GitHub público e uma ferramenta para registrar propostas locais (nenhum write remoto). O executor GitHub App é um módulo separado e NÃO é registrado como ferramenta do DSH.
+Servidor MCP (stdio, Python 3, sem dependências externas) com seis ferramentas de leitura do GitHub público e uma ferramenta para registrar propostas locais (nenhum write remoto). O executor GitHub App é um módulo separado e NÃO é registrado como ferramenta do DSH.
 
 ## Segurança e governança
 
@@ -54,3 +54,9 @@ MESTRE usa o GitHub conectado com sua autoridade para escritas governadas; DSH e
 - Integração GitHub App / PermissionEngine e produção **NÃO CONCLUÍDAS**.
 - Para leitura a API pública dispensa autenticação; para escrita não usar token pessoal de LEANDRO.
 - Avaliação de segurança independente e E2E autenticado de escrita ainda necessários.
+
+## Revisão de branches e PRs
+
+- github_read_file aceita ref opcional (main por padrão), com validação da referência e URL codificada, e devolve ref explícita + SHA do blob.
+- github_branch_head consulta o SHA vigente de qualquer branch pública válida do repositório fixo.
+- Subagentes podem inspecionar a branch do PR #563 e confrontar arquivos com o SHA autorizado, sem tokens de escrita.
