@@ -41,3 +41,7 @@ Ao habilitar em um runtime local com ledger, solicitar a skill com provider e re
 - Leitura governada de Workspace (Drive/Gmail/Calendar), incluindo política de dados pessoais e retenção do ledger.
 - Descoberta de modelos Gemini; geração paga opt-in explícito e controle de quota.
 - UI do Painel Central e observabilidade de saúde, sem expor credenciais.
+
+## Evidência de formatação
+
+Os quatro arquivos TypeScript alterados foram formatados por Prettier 3.9.6 em uma execução isolada do GitHub Actions, e o workflow temporário de formatação foi removido pelo mesmo commit. A suíte final deve ser aferida novamente no SHA posterior a essa execução; nenhum CI histórico de SHA anterior substitui essa verificação.
