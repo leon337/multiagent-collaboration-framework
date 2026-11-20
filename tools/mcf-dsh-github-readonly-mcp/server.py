@@ -9,6 +9,8 @@ import sys
 import urllib.parse
 import urllib.request
 import urllib.error
+from pathlib import Path
+import proposal
 
 REPO = "leon337/multiagent-collaboration-framework"
 API = "https://api.github.com"
@@ -24,6 +26,12 @@ TOOLS = [
      "inputSchema":{"type":"object","properties":{"path":{"type":"string","minLength":1,"maxLength":250}},"required":["path"],"additionalProperties":False}},
     {"name":"github_open_issues","description":"Read latest open issues on public MCF repo (excluding pull requests).",
      "inputSchema":{"type":"object","properties":{"limit":{"type":"integer","minimum":1,"maximum":20}},"additionalProperties":False}},
+    {"name":"github_submit_proposal","description":"Prepare and store a GitHub branch+draft PR change proposal for MCF review. PROPOSAL ONLY, NO GITHUB WRITE; NOT AN AUTHORIZATION.",
+     "inputSchema":{"type":"object","properties":{
+        "mission_id":{"type":"string"},"phase_id":{"type":"string"},"agent_id":{"type":"string"},
+        "branch":{"type":"string"},"base_sha":{"type":"string"},"title":{"type":"string"},"body":{"type":"string"},
+        "files":{"type":"array","items":{"type":"object","properties":{"path":{"type":"string"},"content":{"type":"string"}},"required":["path","content"],"additionalProperties":False}}
+     },"required":["mission_id","phase_id","agent_id","branch","base_sha","title","body","files"],"additionalProperties":False}},
     {"name":"github_open_prs","description":"Read latest open PR metadata on public MCF repo.",
      "inputSchema":{"type":"object","properties":{"limit":{"type":"integer","minimum":1,"maximum":20}},"additionalProperties":False}}
 ]
@@ -38,6 +46,8 @@ def api_get(path):
         return json.loads(data)
 def operate(name,args):
     if not isinstance(args,dict):raise ValueError("Invalid arguments")
+    if name=="github_submit_proposal":
+        return proposal.submit(args,Path(__file__).parent/"proposals")
     if name=="github_repo_info":
         x=api_get("/repos/"+REPO)
         return {"repository":x.get("full_name"),"private":x.get("private"),"default_branch":x.get("default_branch"),"url":x.get("html_url"),"updated_at":x.get("updated_at")}
