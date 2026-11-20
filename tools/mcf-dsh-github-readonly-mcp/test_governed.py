@@ -136,6 +136,21 @@ class ExecutorTests(unittest.TestCase):
                     "repositories":[{"full_name":proposal.REPO}]}
         x._call=call
         self.assertEqual(x.installation_token(),"installation-token-for-test-only")
+    def test_real_local_openssl_jwt_signing(self):
+        import shutil,subprocess,base64
+        if not shutil.which("openssl"):
+            self.skipTest("openssl not installed")
+        with tempfile.TemporaryDirectory() as folder:
+            key=Path(folder)/"app-test.key"
+            subprocess.run(["openssl","genpkey","-algorithm","RSA","-pkeyopt","rsa_keygen_bits:2048",
+                            "-out",str(key)],check=True,capture_output=True,timeout=20)
+            key.chmod(0o600)
+            signer=a.GitHubApp("12345","777",str(key),clock=lambda:1700000000)
+            token=signer._jwt()
+            self.assertEqual(len(token.split(".")),3)
+            payload=json.loads(base64.urlsafe_b64decode(token.split(".")[1]+"==="))
+            self.assertEqual(payload["iss"],"12345")
+            self.assertGreater(payload["exp"],payload["iat"])
     def test_scope_rejection(self):
         x=a.GitHubApp("123","456","/nonexistent")
         with self.assertRaises(a.GateError):x.call("POST","/repos/example/other/pulls",{},token="fake")
