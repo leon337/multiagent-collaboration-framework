@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import time
@@ -41,13 +42,13 @@ class GitHubApp:
         return cls(e[names[0]],e[names[1]],e[names[2]])
     def _jwt(self):
         st=self.key_path.stat()
-        if (st.st_mode & 0o077)!=0 or not self.key_path.is_file():
-            raise GateError("GitHub App private key must be regular and mode 0600")
+        if (st.st_mode & 0o077)!=0 or st.st_uid!=os.geteuid() or self.key_path.is_symlink() or not self.key_path.is_file():
+            raise GateError("GitHub App private key must be owned by executor, regular, not symlink, mode 0600")
         header=_b64(b'{"alg":"RS256","typ":"JWT"}')
         now=int(self.clock())
         payload=_b64(json.dumps({"iat":now-60,"exp":now+480,"iss":self.app_id},separators=(",",":")).encode())
         message=(header+"."+payload).encode("ascii")
-        proc=subprocess.run(["openssl","dgst","-sha256","-sign",str(self.key_path)],
+        proc=subprocess.run(["/usr/bin/openssl","dgst","-sha256","-sign",str(self.key_path)],
                             input=message,capture_output=True,timeout=8,check=True)
         return header+"."+payload+"."+_b64(proc.stdout)
     def _call(self,method,path,body,token):
@@ -79,9 +80,32 @@ class GitHubApp:
         return token
     def call(self,method,path,body=None,token=None):
         if not token:raise GateError("installation token missing")
-        if not path.startswith("/repos/"+proposal.REPO+"/") or ".." in path or "://" in path:
+        root="/repos/"+proposal.REPO+"/"
+        if not path.startswith(root) or ".." in path or "://" in path:
             raise GateError("GitHub API path out of repository allowlist")
-        if method not in ("GET","POST","PUT"):raise GateError("unsupported GitHub method")
+        rel=path[len(root):]
+        allowed=False
+        if method=="GET" and body is None:
+            allowed=(rel=="git/ref/heads/main" or
+                     bool(re.fullmatch(r"git/ref/heads/agent/dsh3085/[a-z0-9][a-z0-9-]{3,55}",rel)) or
+                     bool(re.fullmatch(r"pulls/[1-9][0-9]*",rel)) or
+                     (rel.startswith("contents/tools/") or rel.startswith("contents/docs/")) and "?ref=" in rel)
+        elif method=="POST" and isinstance(body,dict):
+            if rel=="git/refs":
+                allowed=(set(body)=={"ref","sha"} and isinstance(body["ref"],str)
+                         and proposal.BRANCH.fullmatch(body["ref"].removeprefix("refs/heads/")) is not None
+                         and body["ref"].startswith("refs/heads/") and
+                         isinstance(body["sha"],str) and proposal.SHA.fullmatch(body["sha"]) is not None)
+            elif rel=="pulls":
+                allowed=(set(body)=={"title","body","head","base","draft","maintainer_can_modify"}
+                         and body.get("draft") is True and body.get("base")=="main"
+                         and body.get("maintainer_can_modify") is False
+                         and isinstance(body.get("head"),str) and proposal.BRANCH.fullmatch(body["head"]) is not None)
+        elif method=="PUT" and isinstance(body,dict):
+            allowed=((rel.startswith("contents/tools/") or rel.startswith("contents/docs/"))
+                     and set(body)=={"message","content","branch"} and
+                     isinstance(body.get("branch"),str) and proposal.BRANCH.fullmatch(body["branch"]) is not None)
+        if not allowed:raise GateError("GitHub method or endpoint forbidden by write allowlist")
         return self._call(method,path,body,token)
 
 class Ledger:
@@ -98,12 +122,18 @@ class Ledger:
             raise GateError("DUPLICATE_OR_UNKNOWN_WRITE: manual reconciliation required")
         with os.fdopen(fd,"w") as f:
             json.dump(record,f,sort_keys=True);f.flush();os.fsync(f.fileno())
+        dirfd=os.open(self.root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+        try:os.fsync(dirfd)
+        finally:os.close(dirfd)
         return p
     def update(self,path,record):
         temp=path.with_name(path.name+"."+uuid.uuid4().hex+".tmp")
         with os.fdopen(os.open(temp,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600),"w") as f:
             json.dump(record,f,sort_keys=True);f.flush();os.fsync(f.fileno())
         os.replace(temp,path)
+        dirfd=os.open(self.root,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+        try:os.fsync(dirfd)
+        finally:os.close(dirfd)
 
 def run_authorized(envelope,authorize,app:GitHubApp,ledger:Ledger):
     """authorize MUST be a trusted runtime callback, not a field provided by a model."""
@@ -138,7 +168,10 @@ def run_authorized(envelope,authorize,app:GitHubApp,ledger:Ledger):
         path_ref="/repos/"+proposal.REPO+"/git/refs"
         record["status"]="EFFECT_UNKNOWN";record["events"].append("branch_create_started");ledger.update(path,record)
         app.call("POST",path_ref,{"ref":"refs/heads/"+branch,"sha":expected["base_sha"]},token=token)
-        record["events"].append("branch_created");ledger.update(path,record)
+        observed_ref=app.call("GET","/repos/"+proposal.REPO+"/git/ref/heads/"+branch,token=token)
+        if observed_ref.get("object",{}).get("sha")!=expected["base_sha"]:
+            raise EffectUnknown("branch read-back does not match authorized SHA")
+        record["events"].append("branch_created_sha_verified");ledger.update(path,record)
         for entry in expected["files"]:
             path_item="/repos/"+proposal.REPO+"/contents/"+urllib.parse.quote(entry["path"],safe="/")
             # New files only. Existing file updates need explicit expected SHA in a future contract.
