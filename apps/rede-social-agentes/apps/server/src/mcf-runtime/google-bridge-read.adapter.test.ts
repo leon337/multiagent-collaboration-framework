@@ -58,9 +58,10 @@ function adapter(
     ],
   },
 ) {
-  const transport = vi.fn(async (_input: string, _init?: RequestInit) =>
-    bridgeResponse(operation, result),
-  );
+  const transport = vi.fn(async (...args: [string, RequestInit?]) => {
+    expect(args).toHaveLength(2);
+    return bridgeResponse(operation, result);
+  });
   const evidenceValidator = evidence();
   return {
     transport,
