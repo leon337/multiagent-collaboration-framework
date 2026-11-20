@@ -42,7 +42,7 @@ Somente após esse gate e a integração ao dispatcher canônico, executar E2E a
 
 ## Evidência desta fase
 
-- Testes locais de validação/propostas/bloqueios/execução simulada: **27 PASS**.
+- Testes locais de validação/propostas/bloqueios/execução simulada: **29 PASS**.
 - Subagente na instância 3085 invocou a ferramenta MCP nativa e criou um envelope de proposta local real:
   - `proposal_id = 015a2a9b-465a-4434-b2f8-cae4a927824a`
   - `digest_sha256 = e47784848d490029896bd1fb35f6a41857bb1f88a207b6b8dd2de8ab108e22f0`
@@ -63,3 +63,7 @@ Somente após esse gate e a integração ao dispatcher canônico, executar E2E a
 - [ ] CI qualificado no SHA do PR; revisão/merge somente por gate apropriado.
 
 Este artefato é **candidato**, não uma liberação de escrita autônoma no GitHub.
+
+## Revisão paralela do código em branches (F2)
+
+O MCP agora admite `github_read_file(path,ref)` com ref de branch pública explícita e `github_branch_head(branch)`, sem credenciais. A resposta inclui branch e blob SHA para comparação. A validação recusa path traversal e referências Git inválidas. Subagentes podem inspecionar as fontes da PR #563 na sua branch real. Essa extensão permanece exclusivamente read-only.
