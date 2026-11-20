@@ -79,21 +79,27 @@ def submit(raw,spool):
     plan=normalize(raw)
     root=Path(spool)
     root.mkdir(mode=0o700,parents=True,exist_ok=True)
-    if root.is_symlink() or not root.is_dir() or root.stat().st_mode & 0o077:
-        raise Rejected("unsafe proposal dir or permissions")
-    proposal_id=str(uuid.uuid4())
-    envelope={"proposal_id":proposal_id,"digest_sha256":digest(plan),"created_unix":int(time.time()),"proposal":plan}
-    target=root/(proposal_id+".json")
-    flags=os.O_WRONLY|os.O_CREAT|os.O_EXCL
-    fd=os.open(target,flags,0o600)
+    dirfd=os.open(root,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW)
     try:
-        with os.fdopen(fd,"w",encoding="utf8") as f:
-            json.dump(envelope,f,sort_keys=True,ensure_ascii=False)
-            f.flush();os.fsync(f.fileno())
-    except:
-        try:target.unlink()
-        except OSError:pass
-        raise
+        st=os.fstat(dirfd)
+        if st.st_uid!=os.geteuid() or st.st_mode & 0o077:
+            raise Rejected("unsafe proposal dir owner or permissions")
+        proposal_id=str(uuid.uuid4())
+        envelope={"proposal_id":proposal_id,"digest_sha256":digest(plan),"created_unix":int(time.time()),"proposal":plan}
+        filename=proposal_id+".json"
+        flags=os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW
+        fd=os.open(filename,flags,0o600,dir_fd=dirfd)
+        try:
+            with os.fdopen(fd,"w",encoding="utf8") as f:
+                json.dump(envelope,f,sort_keys=True,ensure_ascii=False)
+                f.flush();os.fsync(f.fileno())
+            os.fsync(dirfd)
+        except:
+            try:os.unlink(filename,dir_fd=dirfd)
+            except OSError:pass
+            raise
+    finally:
+        os.close(dirfd)
     return {"proposal_id":proposal_id,"digest_sha256":envelope["digest_sha256"],
             "state":"PROPOSED_UNAUTHORIZED","mission_id":plan["mission_id"],
             "branch":plan["branch"],"file_count":len(plan["files"]),
