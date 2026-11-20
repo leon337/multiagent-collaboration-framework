@@ -9,7 +9,7 @@ sys.path.insert(0,str(pathlib.Path(__file__).parent))
 import server
 class TestMCFGitHubMCP(unittest.TestCase):
     def test_tool_list_has_only_reads(self):
-        expected={"github_repo_info","github_main_head","github_read_file","github_open_issues","github_open_prs"}
+        expected={"github_repo_info","github_main_head","github_read_file","github_open_issues","github_open_prs","github_submit_proposal"}
         self.assertEqual({x["name"] for x in server.TOOLS},expected)
         self.assertTrue(all("write" not in x["name"] for x in server.TOOLS))
     def test_repo_scope(self):
@@ -41,6 +41,6 @@ class TestMCFGitHubMCP(unittest.TestCase):
         rows=[json.loads(x) for x in proc.stdout.splitlines()]
         self.assertEqual(len(rows),3)
         self.assertEqual(rows[0]["result"]["serverInfo"]["name"],"mcf-github-readonly-3085")
-        self.assertEqual(len(rows[1]["result"]["tools"]),5)
+        self.assertEqual(len(rows[1]["result"]["tools"]),6)
         self.assertTrue(rows[2]["result"]["isError"])
 if __name__=="__main__":unittest.main()
