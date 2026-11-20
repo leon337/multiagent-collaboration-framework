@@ -42,7 +42,7 @@ Somente após esse gate e a integração ao dispatcher canônico, executar E2E a
 
 ## Evidência desta fase
 
-- Testes locais de validação/propostas/bloqueios/execução simulada: **29 PASS**.
+- Testes locais de validação/propostas/bloqueios/execução simulada: **30 PASS**.
 - Subagente na instância 3085 invocou a ferramenta MCP nativa e criou um envelope de proposta local real:
   - `proposal_id = 015a2a9b-465a-4434-b2f8-cae4a927824a`
   - `digest_sha256 = e47784848d490029896bd1fb35f6a41857bb1f88a207b6b8dd2de8ab108e22f0`
@@ -67,3 +67,18 @@ Este artefato é **candidato**, não uma liberação de escrita autônoma no Git
 ## Revisão paralela do código em branches (F2)
 
 O MCP agora admite `github_read_file(path,ref)` com ref de branch pública explícita e `github_branch_head(branch)`, sem credenciais. A resposta inclui branch e blob SHA para comparação. A validação recusa path traversal e referências Git inválidas. Subagentes podem inspecionar as fontes da PR #563 na sua branch real. Essa extensão permanece exclusivamente read-only.
+
+## Revisão paralela de código (após F2) e triagem
+
+Subagentes independentes de Engenharia e Segurança fizeram chamadas GitHub MCP nativas na branch do PR #563, ancoradas em branch SHA `5f4ee86136b3571d2cd452faeaad222afa5e8d66` naquele momento. Eles não modificaram GitHub.
+
+- Engenharia: alerta de `..` em referência foi **falso positivo**: `safe_branch()` já rejeita a substring `..` e os segmentos proibidos antes da requisição. Mesmo assim, foram adicionados testes de regressão. O alerta de escape via `ref` foi também falso positivo pela mesma validação + percent-encoding.
+- Engenharia: race de diretório na gravação foi **corrigido** com `dirfd` + `O_NOFOLLOW` + escrita relativa à descrição estável do diretório, verificando UID e modo; `fsync` do diretório foi adicionado para melhorar durabilidade.
+- Segurança: evolução da `main` entre leitura e criação de ref não altera o commit aprovado porque o POST utiliza **SHA exato**. Ainda assim, foi adicionado read-back da branch recém-criada, interrompendo em discrepância.
+- Segurança: retry cego após efeito desconhecido já era **proibido** pelo ledger exclusivo; efeito fica `EFFECT_UNKNOWN` e exige reconciliação. Não se supõe idempotency-key de endpoints que não a anunciam.
+- Segurança: chave privada passou a exigir UID do executor, 0600, arquivo regular sem symlink; OpenSSL é chamado por caminho absoluto e sem shell.
+- Defesa adicional: o método HTTP do executor foi reduzido a allowlist explícita de endpoints GET/POST/PUT necessários à criação do draft. Qualquer rota de merge, workflow ou write em main é rejeitada antes de fazer HTTP.
+- Ledger candidato agora faz fsync da entrada de diretório nas transições duráveis.
+- Testes pós-correção: **30 PASS**. A integração real ao MissionRuntime e credencial App ainda precisam revisão independente e E2E próprio.
+
+**Critério de fechamento:** estes achados estão resolvidos no candidato local/teste unitário; NÃO qualificam por si só segurança de produção sem inspeção e prova do runtime autenticado.
