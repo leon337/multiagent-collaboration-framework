@@ -8,6 +8,7 @@ import type { ExternalActionAdapter } from './external-action.contracts.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
+import { GoogleBridgeReadAdapter } from './google-bridge-read.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js';
 import { GitHubPullCollaborationAdapter } from './github-pr-collaboration.adapter.js';
@@ -49,6 +50,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       GitHubPullCollaborationAdapter,
       CodeBuddyExecutorAdapter,
       LocalAgentTeamAdapter,
+      GoogleBridgeReadAdapter,
     ]);
 
     const registry = registryProvider?.useFactory?.(
@@ -58,12 +60,14 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       stub('github-pr-collaboration-write-v1'),
       stub('codebuddy-implement-change-local-v1'),
       stub('local-agent-team-process-v1'),
+      stub('mcf-google-bridge-readonly-local-v1'),
     ) as AdapterRegistry;
 
     expect(registry.listAdapterIds()).toContain('github-branch-pr-write-v1');
     expect(registry.listAdapterIds()).toContain('github-pr-collaboration-write-v1');
     expect(registry.listAdapterIds()).toContain('codebuddy-implement-change-local-v1');
     expect(registry.listAdapterIds()).toContain('local-agent-team-process-v1');
+    expect(registry.listAdapterIds()).toContain('mcf-google-bridge-readonly-local-v1');
   });
 });
 
