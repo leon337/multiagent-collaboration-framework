@@ -57,12 +57,12 @@ def operate(name,args):
     if name=="github_open_issues":
         n=args.get("limit",8)
         if type(n) is not int or not 1<=n<=20:raise ValueError("limit 1..20 required")
-        items=api_get("/repos/"+REPO+"/issues?state=open&sort=updated&per_page="+str(n*2))
+        items=api_get("/repos/"+REPO+"/issues?state=open&sort=updated&direction=desc&per_page="+str(n*2))
         return {"repository":REPO,"issues":[{"number":x.get("number"),"title":x.get("title"),"state":x.get("state"),"url":x.get("html_url")} for x in items if "pull_request" not in x][:n]}
     if name=="github_open_prs":
         n=args.get("limit",8)
         if type(n) is not int or not 1<=n<=20:raise ValueError("limit 1..20 required")
-        items=api_get("/repos/"+REPO+"/pulls?state=open&sort=updated&per_page="+str(n))
+        items=api_get("/repos/"+REPO+"/pulls?state=open&sort=updated&direction=desc&per_page="+str(n))
         return {"repository":REPO,"prs":[{"number":x.get("number"),"title":x.get("title"),"draft":x.get("draft"),"head_sha":x.get("head",{}).get("sha"),"url":x.get("html_url")} for x in items]}
     raise ValueError("Tool not supported")
 def answer(rid,result=None,error=None):
