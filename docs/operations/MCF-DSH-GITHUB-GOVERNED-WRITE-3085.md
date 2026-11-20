@@ -42,7 +42,7 @@ Somente após esse gate e a integração ao dispatcher canônico, executar E2E a
 
 ## Evidência desta fase
 
-- Testes locais de validação/propostas/bloqueios/execução simulada: **26 PASS**.
+- Testes locais de validação/propostas/bloqueios/execução simulada: **27 PASS**.
 - Subagente na instância 3085 invocou a ferramenta MCP nativa e criou um envelope de proposta local real:
   - `proposal_id = 015a2a9b-465a-4434-b2f8-cae4a927824a`
   - `digest_sha256 = e47784848d490029896bd1fb35f6a41857bb1f88a207b6b8dd2de8ab108e22f0`
