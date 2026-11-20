@@ -88,7 +88,8 @@ class Ledger:
     def __init__(self,root):
         self.root=Path(root)
         self.root.mkdir(mode=0o700,parents=True,exist_ok=True)
-        if self.root.is_symlink():raise GateError("ledger symlink denied")
+        if self.root.is_symlink() or self.root.stat().st_mode & 0o077:
+            raise GateError("ledger directory not private")
     def reserve(self,key,record):
         p=self.root/(key+".json")
         try:
