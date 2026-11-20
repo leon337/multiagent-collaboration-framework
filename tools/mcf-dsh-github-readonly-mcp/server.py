@@ -9,6 +9,8 @@ import sys
 import urllib.parse
 import urllib.request
 import urllib.error
+from pathlib import Path
+import proposal
 
 REPO = "leon337/multiagent-collaboration-framework"
 API = "https://api.github.com"
@@ -20,10 +22,21 @@ TOOLS = [
      "inputSchema":{"type":"object","properties":{},"additionalProperties":False}},
     {"name":"github_main_head","description":"Read live main branch commit SHA of public MCF repository.",
      "inputSchema":{"type":"object","properties":{},"additionalProperties":False}},
-    {"name":"github_read_file","description":"Read bounded UTF-8 text file on public MCF main and return path, SHA and content. No local files.",
-     "inputSchema":{"type":"object","properties":{"path":{"type":"string","minLength":1,"maxLength":250}},"required":["path"],"additionalProperties":False}},
+    {"name":"github_read_file","description":"Read bounded UTF-8 text file from a specified public MCF branch (default main), returning ref, path and Git blob SHA.",
+     "inputSchema":{"type":"object","properties":{"path":{"type":"string","minLength":1,"maxLength":250},
+                                                   "ref":{"type":"string","minLength":1,"maxLength":120}},
+                    "required":["path"],"additionalProperties":False}},
+    {"name":"github_branch_head","description":"Read live commit SHA of a named branch from the public MCF repository, with branch-ref validation.",
+     "inputSchema":{"type":"object","properties":{"branch":{"type":"string","minLength":1,"maxLength":120}},
+                    "required":["branch"],"additionalProperties":False}},
     {"name":"github_open_issues","description":"Read latest open issues on public MCF repo (excluding pull requests).",
      "inputSchema":{"type":"object","properties":{"limit":{"type":"integer","minimum":1,"maximum":20}},"additionalProperties":False}},
+    {"name":"github_submit_proposal","description":"Prepare and store a GitHub branch+draft PR change proposal for MCF review. PROPOSAL ONLY, NO GITHUB WRITE; NOT AN AUTHORIZATION.",
+     "inputSchema":{"type":"object","properties":{
+        "mission_id":{"type":"string"},"phase_id":{"type":"string"},"agent_id":{"type":"string"},
+        "branch":{"type":"string"},"base_sha":{"type":"string"},"title":{"type":"string"},"body":{"type":"string"},
+        "files":{"type":"array","items":{"type":"object","properties":{"path":{"type":"string"},"content":{"type":"string"}},"required":["path","content"],"additionalProperties":False}}
+     },"required":["mission_id","phase_id","agent_id","branch","base_sha","title","body","files"],"additionalProperties":False}},
     {"name":"github_open_prs","description":"Read latest open PR metadata on public MCF repo.",
      "inputSchema":{"type":"object","properties":{"limit":{"type":"integer","minimum":1,"maximum":20}},"additionalProperties":False}}
 ]
@@ -36,24 +49,41 @@ def api_get(path):
         data=response.read(MAX_BODY+1)
         if len(data)>MAX_BODY: raise ValueError("github response too large")
         return json.loads(data)
+def safe_branch(value):
+    if not isinstance(value,str) or not 1<=len(value)<=120:
+        raise ValueError("Invalid branch")
+    parts=value.split("/")
+    if (not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]*",value) or
+        any(p in ("",".","..") or p.startswith(".") or p.endswith(".") for p in parts) or
+        value.endswith("/") or value.endswith(".lock") or ".." in value):
+        raise ValueError("Unsafe branch ref")
+    return value
+
 def operate(name,args):
     if not isinstance(args,dict):raise ValueError("Invalid arguments")
+    if name=="github_submit_proposal":
+        return proposal.submit(args,Path(__file__).parent/"proposals")
     if name=="github_repo_info":
         x=api_get("/repos/"+REPO)
         return {"repository":x.get("full_name"),"private":x.get("private"),"default_branch":x.get("default_branch"),"url":x.get("html_url"),"updated_at":x.get("updated_at")}
     if name=="github_main_head":
         x=api_get("/repos/"+REPO+"/git/ref/heads/main")
         return {"repository":REPO,"branch":"main","sha":x.get("object",{}).get("sha"),"url":"https://github.com/"+REPO+"/tree/main"}
+    if name=="github_branch_head":
+        branch=safe_branch(args.get("branch"))
+        x=api_get("/repos/"+REPO+"/git/ref/heads/"+urllib.parse.quote(branch,safe="/"))
+        return {"repository":REPO,"branch":branch,"sha":x.get("object",{}).get("sha"),"url":"https://github.com/"+REPO+"/tree/"+urllib.parse.quote(branch,safe="/")}
     if name=="github_read_file":
+        ref=safe_branch(args.get("ref","main"))
         p=args.get("path")
         if not isinstance(p,str) or len(p)>250 or p.startswith("/") or "\\" in p or any(z in ("",".","..") for z in p.split("/")) or not re.fullmatch(r"[a-zA-Z0-9_./@-]+",p):
             raise ValueError("Invalid repository path")
         encoded=urllib.parse.quote(p,safe="/")
-        x=api_get("/repos/"+REPO+"/contents/"+encoded+"?ref=main")
+        x=api_get("/repos/"+REPO+"/contents/"+encoded+"?ref="+urllib.parse.quote(ref,safe=""))
         if not isinstance(x,dict) or x.get("type")!="file" or x.get("encoding")!="base64":raise ValueError("Not a regular UTF-8 file")
         raw=base64.b64decode(x.get("content",""))
         if len(raw)>32768:raise ValueError("File exceeds 32 KiB read limit; request a smaller file")
-        return {"repository":REPO,"path":p,"sha":x.get("sha"),"html_url":x.get("html_url"),"text":raw.decode("utf-8","replace")}
+        return {"repository":REPO,"ref":ref,"path":p,"sha":x.get("sha"),"html_url":x.get("html_url"),"text":raw.decode("utf-8","replace")}
     if name=="github_open_issues":
         n=args.get("limit",8)
         if type(n) is not int or not 1<=n<=20:raise ValueError("limit 1..20 required")

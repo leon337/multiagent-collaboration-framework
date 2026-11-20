@@ -9,7 +9,7 @@ sys.path.insert(0,str(pathlib.Path(__file__).parent))
 import server
 class TestMCFGitHubMCP(unittest.TestCase):
     def test_tool_list_has_only_reads(self):
-        expected={"github_repo_info","github_main_head","github_read_file","github_open_issues","github_open_prs"}
+        expected={"github_repo_info","github_main_head","github_read_file","github_open_issues","github_open_prs","github_submit_proposal","github_branch_head"}
         self.assertEqual({x["name"] for x in server.TOOLS},expected)
         self.assertTrue(all("write" not in x["name"] for x in server.TOOLS))
     def test_repo_scope(self):
@@ -33,6 +33,23 @@ class TestMCFGitHubMCP(unittest.TestCase):
             self.assertIn("direction=desc",api.call_args.args[0])
             server.operate("github_open_prs",{"limit":3})
             self.assertIn("direction=desc",api.call_args.args[0])
+    def test_branch_ref_validation(self):
+        from server import safe_branch
+        self.assertEqual(safe_branch("feat/mcf-dsh-github-governed-proposals-3085"),
+                         "feat/mcf-dsh-github-governed-proposals-3085")
+        for ref in ("../main","refs/../main","", "/main","branch//x","branch/.git","main.lock",
+                    "main%2Fother","b@{test}","a..b"):
+            with self.subTest(ref=ref),self.assertRaises(ValueError):
+                safe_branch(ref)
+    def test_read_file_uses_bounded_explicit_ref(self):
+        import base64
+        from unittest.mock import patch
+        import server
+        data={"type":"file","encoding":"base64","content":base64.b64encode(b"hello").decode(),"sha":"blobsha"}
+        with patch.object(server,"api_get",return_value=data) as api:
+            out=server.operate("github_read_file",{"path":"AGENTS.md","ref":"feat/mcf-dsh-github-governed-proposals-3085"})
+            self.assertEqual(out["ref"],"feat/mcf-dsh-github-governed-proposals-3085")
+            self.assertIn("ref=feat%2Fmcf-dsh-github-governed-proposals-3085",api.call_args.args[0])
     def test_unknown_tools_denied(self):
         with self.assertRaises(ValueError):server.operate("github_write_file",{"path":"foo"})
     def test_stdio_handshake(self):
@@ -41,6 +58,6 @@ class TestMCFGitHubMCP(unittest.TestCase):
         rows=[json.loads(x) for x in proc.stdout.splitlines()]
         self.assertEqual(len(rows),3)
         self.assertEqual(rows[0]["result"]["serverInfo"]["name"],"mcf-github-readonly-3085")
-        self.assertEqual(len(rows[1]["result"]["tools"]),5)
+        self.assertEqual(len(rows[1]["result"]["tools"]),7)
         self.assertTrue(rows[2]["result"]["isError"])
 if __name__=="__main__":unittest.main()
