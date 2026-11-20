@@ -645,3 +645,22 @@ skills:
     failure_modes: [host_offline, destination_ambiguous, missing_auth, data_snapshot_inconsistent, secret_exposure, upload_partial, restore_unverified]
     fallback: Preservar arquivos locais e declarar PARTIAL/BLOCKED quando conector, gate ou verificação de upload faltar; nunca inventar transferência.
     handoff_to: Mestre
+
+  - skill_id: MCF-GOOGLE-CLOUD-READ
+    name: Consultar Google Cloud pela Bridge local governada
+    version: 0.1.0
+    purpose: Consultar estado da Bridge e projetos Cloud por um adaptador somente leitura, sem transferir credenciais.
+    owner_agents: [Mestre]
+    trigger_phrases: ["consultar Google Cloud", "listar projetos Google Cloud"]
+    required_inputs: []
+    optional_inputs: []
+    allowed_tools: [mcf-google-bridge]
+    forbidden_tools: [generate, create, delete, update, write, deploy, billing, iam, public_deployment]
+    permission_profile: READ_ONLY
+    execution_steps: [validar_permissao, consultar_bridge_local, registrar_recibo_assinado]
+    required_evidence: [bridge_trace_id, local_read_only_receipt]
+    expected_outputs: [cloud_status_or_projects]
+    acceptance_criteria: [no_remote_bridge_exposure, valid_receipt, no_write]
+    failure_modes: [bridge_disabled, missing_adc, network_failure]
+    fallback: Reportar bloqueio sem tentar qualquer operacao de escrita.
+    handoff_to: Mestre
