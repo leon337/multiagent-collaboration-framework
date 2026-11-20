@@ -28,7 +28,11 @@ type BridgeOperation = keyof typeof GOOGLE_BRIDGE_OPERATIONS;
 type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
 function invalidResponse(): never {
-  throw new ExternalActionAdapterError('INVALID_RESPONSE', 'Google Bridge returned invalid read-only data', false);
+  throw new ExternalActionAdapterError(
+    'INVALID_RESPONSE',
+    'Google Bridge returned invalid read-only data',
+    false,
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -39,8 +43,11 @@ async function localBearer(): Promise<string> {
   const file = join(homedir(), '.config', 'mcf-google-bridge', 'http-token');
   try {
     const metadata = await lstat(file);
-    if (!metadata.isFile() || (metadata.mode & 0o077) !== 0 ||
-        (typeof process.getuid === 'function' && metadata.uid !== process.getuid())) {
+    if (
+      !metadata.isFile() ||
+      (metadata.mode & 0o077) !== 0 ||
+      (typeof process.getuid === 'function' && metadata.uid !== process.getuid())
+    ) {
       throw new Error('insecure token file');
     }
     const token = (await readFile(file, 'utf8')).trim();
@@ -48,7 +55,10 @@ async function localBearer(): Promise<string> {
     return token;
   } catch {
     throw new ExternalActionAdapterError(
-      'AUTHENTICATION_REQUIRED', 'Local Google Bridge authentication is unavailable', false, 401,
+      'AUTHENTICATION_REQUIRED',
+      'Local Google Bridge authentication is unavailable',
+      false,
+      401,
     );
   }
 }
@@ -69,7 +79,12 @@ async function readLimitedResponse(response: Response): Promise<unknown> {
       }
       parts.push(value);
     }
-    return JSON.parse(Buffer.concat(parts.map((part) => Buffer.from(part)), total).toString('utf8')) as unknown;
+    return JSON.parse(
+      Buffer.concat(
+        parts.map((part) => Buffer.from(part)),
+        total,
+      ).toString('utf8'),
+    ) as unknown;
   } catch (error) {
     if (error instanceof ExternalActionAdapterError) throw error;
     return invalidResponse();
@@ -89,18 +104,28 @@ export class GoogleBridgeReadAdapter implements ExternalActionAdapter {
   ) {}
 
   supports(request: ExternalActionRequest): boolean {
-    return request.skill.skillId === GOOGLE_BRIDGE_SKILL &&
+    return (
+      request.skill.skillId === GOOGLE_BRIDGE_SKILL &&
       canonicalizeProvider(request.tool.provider) === GOOGLE_BRIDGE_PROVIDER &&
       canonicalizeToolValue(request.tool.resource) === GOOGLE_BRIDGE_RESOURCE &&
-      Object.hasOwn(GOOGLE_BRIDGE_OPERATIONS, canonicalizeToolValue(request.tool.operation));
+      Object.hasOwn(GOOGLE_BRIDGE_OPERATIONS, canonicalizeToolValue(request.tool.operation))
+    );
   }
 
   async execute(request: ExternalActionRequest): Promise<McfToolReceipt> {
     if (!this.supports(request)) {
-      throw new ExternalActionAdapterError('UNSUPPORTED_TARGET', 'Google Bridge tool is not allowlisted', false);
+      throw new ExternalActionAdapterError(
+        'UNSUPPORTED_TARGET',
+        'Google Bridge tool is not allowlisted',
+        false,
+      );
     }
     if (!this.enabled) {
-      throw new ExternalActionAdapterError('UNSUPPORTED_TARGET', 'Google Bridge runtime adapter is disabled', false);
+      throw new ExternalActionAdapterError(
+        'UNSUPPORTED_TARGET',
+        'Google Bridge runtime adapter is disabled',
+        false,
+      );
     }
 
     const operation = canonicalizeToolValue(request.tool.operation) as BridgeOperation;
@@ -116,7 +141,8 @@ export class GoogleBridgeReadAdapter implements ExternalActionAdapter {
         redirect: 'error',
       });
     } catch (error) {
-      const timedOut = error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
+      const timedOut =
+        error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
       throw new ExternalActionAdapterError(
         timedOut ? 'ADAPTER_TIMEOUT' : 'NETWORK_FAILURE',
         timedOut ? 'Google Bridge request timed out' : 'Local Google Bridge transport failed',
@@ -125,39 +151,72 @@ export class GoogleBridgeReadAdapter implements ExternalActionAdapter {
     }
 
     if (!response.ok) {
-      const code = response.status === 401 ? 'AUTHENTICATION_REQUIRED'
-        : response.status === 429 ? 'RATE_LIMITED'
-        : response.status === 403 ? 'UNSUPPORTED_TARGET'
-        : response.status >= 500 ? 'NETWORK_FAILURE' : 'ADAPTER_FAILURE';
-      throw new ExternalActionAdapterError(code, 'Google Bridge request failed', response.status === 429 || response.status >= 500, response.status);
+      const code =
+        response.status === 401
+          ? 'AUTHENTICATION_REQUIRED'
+          : response.status === 429
+            ? 'RATE_LIMITED'
+            : response.status === 403
+              ? 'UNSUPPORTED_TARGET'
+              : response.status >= 500
+                ? 'NETWORK_FAILURE'
+                : 'ADAPTER_FAILURE';
+      throw new ExternalActionAdapterError(
+        code,
+        'Google Bridge request failed',
+        response.status === 429 || response.status >= 500,
+        response.status,
+      );
     }
 
     const payload = await readLimitedResponse(response);
-    if (!isRecord(payload) || typeof payload.trace_id !== 'string' ||
-        !/^[0-9a-f-]{36}$/iu.test(payload.trace_id) || payload.operation !== bridgeOperation ||
-        !isRecord(payload.result)) return invalidResponse();
+    if (
+      !isRecord(payload) ||
+      typeof payload.trace_id !== 'string' ||
+      !/^[0-9a-f-]{36}$/iu.test(payload.trace_id) ||
+      payload.operation !== bridgeOperation ||
+      !isRecord(payload.result)
+    )
+      return invalidResponse();
 
     let metadata: Record<string, unknown>;
     if (operation === 'list-projects') {
       const projects = payload.result.projects;
       if (!Array.isArray(projects) || projects.length > 20) return invalidResponse();
       const safeProjects = projects.map((project) => {
-        if (!isRecord(project) || typeof project.projectId !== 'string' ||
-            !/^[a-z][a-z0-9-]{4,62}$/u.test(project.projectId) ||
-            typeof project.displayName !== 'string' || project.displayName.length > 150 ||
-            typeof project.state !== 'string' || project.state.length > 40) return invalidResponse();
-        return { projectId: project.projectId, displayName: project.displayName, state: project.state };
+        if (
+          !isRecord(project) ||
+          typeof project.projectId !== 'string' ||
+          !/^[a-z][a-z0-9-]{4,62}$/u.test(project.projectId) ||
+          typeof project.displayName !== 'string' ||
+          project.displayName.length > 150 ||
+          typeof project.state !== 'string' ||
+          project.state.length > 40
+        )
+          return invalidResponse();
+        return {
+          projectId: project.projectId,
+          displayName: project.displayName,
+          state: project.state,
+        };
       });
       metadata = { projects: safeProjects, projectCount: safeProjects.length };
     } else {
       const result = payload.result;
-      if (typeof result.service !== 'string' || result.service !== 'mcf-google-bridge' ||
-          typeof result.version !== 'string' || result.version.length > 32 ||
-          typeof result.oauthConnected !== 'boolean' ||
-          typeof result.adcConfigured !== 'boolean') return invalidResponse();
+      if (
+        typeof result.service !== 'string' ||
+        result.service !== 'mcf-google-bridge' ||
+        typeof result.version !== 'string' ||
+        result.version.length > 32 ||
+        typeof result.oauthConnected !== 'boolean' ||
+        typeof result.adcConfigured !== 'boolean'
+      )
+        return invalidResponse();
       metadata = {
-        service: result.service, bridgeVersion: result.version,
-        oauthConnected: result.oauthConnected, adcConfigured: result.adcConfigured,
+        service: result.service,
+        bridgeVersion: result.version,
+        oauthConnected: result.oauthConnected,
+        adcConfigured: result.adcConfigured,
       };
     }
     return this.evidence.createTrustedReceipt({
@@ -168,7 +227,13 @@ export class GoogleBridgeReadAdapter implements ExternalActionAdapter {
       commitSha: null,
       status: 'SUCCEEDED',
       observedAt: new Date().toISOString(),
-      metadata: { ...metadata, bridgeTraceId: payload.trace_id, adapterId: this.adapterId, readOnly: true, binding: 'loopback' },
+      metadata: {
+        ...metadata,
+        bridgeTraceId: payload.trace_id,
+        adapterId: this.adapterId,
+        readOnly: true,
+        binding: 'loopback',
+      },
     });
   }
 }

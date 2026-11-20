@@ -404,7 +404,9 @@ function assertGoogleBridgeReadBoundary(
     resource !== 'google-cloud' ||
     !['status', 'list-projects'].includes(operation)
   ) {
-    throw new McfPermissionDeniedError('Google Bridge is restricted to read-only Google Cloud discovery');
+    throw new McfPermissionDeniedError(
+      'Google Bridge is restricted to read-only Google Cloud discovery',
+    );
   }
 }
 

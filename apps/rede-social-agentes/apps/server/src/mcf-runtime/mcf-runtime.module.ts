@@ -133,7 +133,10 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     {
       provide: GoogleBridgeReadAdapter,
       useFactory: (evidence: EvidenceValidator) =>
-        new GoogleBridgeReadAdapter(evidence, process.env.MCF_GOOGLE_BRIDGE_RUNTIME_ENABLED === 'true'),
+        new GoogleBridgeReadAdapter(
+          evidence,
+          process.env.MCF_GOOGLE_BRIDGE_RUNTIME_ENABLED === 'true',
+        ),
       inject: [EvidenceValidator],
     },
     {
