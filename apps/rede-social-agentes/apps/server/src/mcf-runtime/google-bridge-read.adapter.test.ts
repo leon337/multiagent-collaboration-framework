@@ -86,7 +86,7 @@ describe('Google Bridge MCF read-only integration', () => {
     expect(transport).toHaveBeenCalledTimes(1);
     const [endpoint, options] = transport.mock.calls[0]!;
     expect(endpoint).toBe('http://127.0.0.1:8755/v1/execute');
-    expect(JSON.parse(String(options.body))).toEqual({ operation: 'google.cloud.projects', args: {} });
+    expect(JSON.parse(String(options?.body))).toEqual({ operation: 'google.cloud.projects', args: {} });
     expect(JSON.stringify(options)).not.toContain('NEVER FORWARD');
     expect(evidenceValidator.createTrustedReceipt).toHaveBeenCalledTimes(1);
   });
