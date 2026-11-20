@@ -27,6 +27,12 @@ class TestMCFGitHubMCP(unittest.TestCase):
         import base64
         with patch.object(server,"api_get",return_value={"type":"file","encoding":"base64","content":base64.b64encode(b"# MCF\n").decode(),"sha":"abc"}):
             self.assertEqual(server.operate("github_read_file",{"path":"AGENTS.md"})["text"],"# MCF\n")
+    def test_latest_lists_use_descending_order(self):
+        with patch.object(server,"api_get",return_value=[]) as api:
+            server.operate("github_open_issues",{"limit":3})
+            self.assertIn("direction=desc",api.call_args.args[0])
+            server.operate("github_open_prs",{"limit":3})
+            self.assertIn("direction=desc",api.call_args.args[0])
     def test_unknown_tools_denied(self):
         with self.assertRaises(ValueError):server.operate("github_write_file",{"path":"foo"})
     def test_stdio_handshake(self):
