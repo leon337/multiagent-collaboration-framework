@@ -28,7 +28,8 @@ class FakeApp:
     def call(self,method,path,body=None,token=None):
         self.calls.append((method,path))
         if self.fail_at and self.fail_at in path:raise a.GateError("NETWORK FAILURE")
-        if path.endswith("/git/ref/heads/main"):return {"object":{"sha":BASE_SHA}}
+        if path.endswith("/git/ref/heads/main") or path.endswith("/git/ref/heads/agent/dsh3085/test-phase-one"):
+            return {"object":{"sha":BASE_SHA}}
         if method=="GET" and "/contents/" in path:raise a.GateError("GitHub HTTP 404 on GET contents")
         if method=="POST" and path.endswith("/pulls"):return {"draft":True,"number":3,"html_url":"https://github.com/leon337/multiagent-collaboration-framework/pull/3"}
         if method=="GET" and path.endswith("/pulls/3"):
@@ -151,6 +152,18 @@ class ExecutorTests(unittest.TestCase):
             payload=json.loads(base64.urlsafe_b64decode(token.split(".")[1]+"==="))
             self.assertEqual(payload["iss"],"12345")
             self.assertGreater(payload["exp"],payload["iat"])
+    def test_git_api_allowlist_blocks_merge_and_main_write(self):
+        app=a.GitHubApp("123","456","/nonexistent")
+        token="fake-test-token"
+        for method,path,body in [
+          ("POST","/repos/"+proposal.REPO+"/merges",{"base":"main","head":"test"}),
+          ("DELETE","/repos/"+proposal.REPO+"/git/refs/heads/main",None),
+          ("POST","/repos/"+proposal.REPO+"/pulls",{"base":"main","head":"main","draft":False}),
+          ("PUT","/repos/"+proposal.REPO+"/contents/.github/workflows/production.yml",
+           {"message":"bad","content":"c2VjcmV0","branch":"main"})
+        ]:
+            with self.subTest(path=path),self.assertRaises(a.GateError):
+                app.call(method,path,body,token)
     def test_scope_rejection(self):
         x=a.GitHubApp("123","456","/nonexistent")
         with self.assertRaises(a.GateError):x.call("POST","/repos/example/other/pulls",{},token="fake")
