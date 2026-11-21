@@ -56,7 +56,9 @@ describe('MissionChatService MVP', () => {
     const messages = await service.messages('geral', '0');
     expect(messages).toHaveLength(1);
     expect(messages[0]).toMatchObject({
-      sequence: '11', actorKind: 'HUMAN', trustLabel: 'AUTHENTICATED_HUMAN',
+      sequence: '11',
+      actorKind: 'HUMAN',
+      trustLabel: 'AUTHENTICATED_HUMAN',
     });
     expect(query).toHaveBeenCalledTimes(1);
   });
@@ -64,14 +66,20 @@ describe('MissionChatService MVP', () => {
   it('marks runtime messages as reported, not as verified execution', async () => {
     const { service, query } = setup();
     query.mockResolvedValue({
-      rows: [{
-        ...makeRow(), actor_kind: 'AGENT_REPORTED', actor_id: 'SOFIA',
-        trust_label: 'RUNTIME_REPORTED',
-      }],
+      rows: [
+        {
+          ...makeRow(),
+          actor_kind: 'AGENT_REPORTED',
+          actor_id: 'SOFIA',
+          trust_label: 'RUNTIME_REPORTED',
+        },
+      ],
     });
     const result = await service.send(
-      'geral', { kind: 'AGENT_REPORTED', id: 'SOFIA', label: 'Sofia' },
-      'RESULT', 'Relato sem recibo de execução',
+      'geral',
+      { kind: 'AGENT_REPORTED', id: 'SOFIA', label: 'Sofia' },
+      'RESULT',
+      'Relato sem recibo de execução',
       'c6b911fd-a0ab-4f75-bbca-c0652b88a887',
     );
     expect(result.trustLabel).toBe('RUNTIME_REPORTED');
@@ -84,9 +92,14 @@ describe('MissionChatService MVP', () => {
     query.mockResolvedValueOnce({ rows: [] }).mockResolvedValueOnce({
       rows: [{ ...makeRow(), request_fingerprint: 'different-request' }],
     });
-    await expect(service.send(
-      'geral', { kind: 'AGENT_REPORTED', id: 'SOFIA', label: 'Sofia' },
-      'RESULT', 'Novo texto', 'e13df98d-5165-4f9f-b774-1b8486f95404',
-    )).rejects.toThrow();
+    await expect(
+      service.send(
+        'geral',
+        { kind: 'AGENT_REPORTED', id: 'SOFIA', label: 'Sofia' },
+        'RESULT',
+        'Novo texto',
+        'e13df98d-5165-4f9f-b774-1b8486f95404',
+      ),
+    ).rejects.toThrow();
   });
 });

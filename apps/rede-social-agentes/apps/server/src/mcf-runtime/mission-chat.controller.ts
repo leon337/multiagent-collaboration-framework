@@ -1,6 +1,17 @@
 import {
-  Body, Controller, Get, HttpCode, Inject, Param, Post, Query, Req, Sse, UseGuards,
-  BadRequestException, type MessageEvent,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  Post,
+  Query,
+  Req,
+  Sse,
+  UseGuards,
+  BadRequestException,
+  type MessageEvent,
 } from '@nestjs/common';
 import type { Observable } from 'rxjs';
 import { concatMap, interval, map, startWith, take } from 'rxjs';
@@ -13,15 +24,18 @@ import { MissionChatService } from './mission-chat.service.js';
 import { McfRuntimeTokenGuard } from './runtime-token.guard.js';
 
 const roomSchema = z.union([z.literal('geral'), z.string().uuid()]);
-const messageKind = z.enum([
-  'MESSAGE', 'TASK', 'RESULT', 'BLOCKER', 'HANDOFF', 'APPROVAL_REQUEST',
-]);
+const messageKind = z.enum(['MESSAGE', 'TASK', 'RESULT', 'BLOCKER', 'HANDOFF', 'APPROVAL_REQUEST']);
 const humanMessage = z.object({
   kind: messageKind.default('MESSAGE'),
   content: z.string().trim().min(1).max(4_000),
 });
 const runtimeMessage = humanMessage.extend({
-  agentId: z.string().trim().min(2).max(100).regex(/^[a-zA-Z0-9_.-]+$/u),
+  agentId: z
+    .string()
+    .trim()
+    .min(2)
+    .max(100)
+    .regex(/^[a-zA-Z0-9_.-]+$/u),
   agentLabel: z.string().trim().min(2).max(100),
   idempotencyKey: z.string().uuid(),
 });
@@ -71,9 +85,7 @@ export class MissionChatController {
     @Req() request: AuthenticatedHumanRequest,
   ) {
     this.chat.assertHumanAuthority(request.authenticatedHuman.accountId);
-    const input = parseBody<z.infer<typeof humanMessage>>(
-      humanMessage, body, request.id,
-    );
+    const input = parseBody<z.infer<typeof humanMessage>>(humanMessage, body, request.id);
     return this.chat.send(
       roomId(rawRoom),
       {
@@ -128,9 +140,7 @@ export class MissionChatRuntimeController {
     @Body() body: unknown,
     @Req() request: { id: string },
   ) {
-    const input = parseBody<z.infer<typeof runtimeMessage>>(
-      runtimeMessage, body, request.id,
-    );
+    const input = parseBody<z.infer<typeof runtimeMessage>>(runtimeMessage, body, request.id);
     return this.chat.send(
       roomId(rawRoom),
       { kind: 'AGENT_REPORTED', id: input.agentId, label: input.agentLabel },

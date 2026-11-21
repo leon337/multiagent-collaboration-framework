@@ -46,7 +46,10 @@ function mergeMessages(previous: ChatMessage[], received: ChatMessage[]): ChatMe
 
 function formatTime(timestamp: string): string {
   return new Intl.DateTimeFormat('pt-BR', {
-    hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
   }).format(new Date(timestamp));
 }
 
@@ -65,20 +68,21 @@ export function MissionChat() {
   const [syncStatus, setSyncStatus] = useState<'connecting' | 'live' | 'polling'>('connecting');
   const lastMessageRef = useRef<HTMLDivElement>(null);
 
-  const getJson = useCallback(async <T,>(
-    path: string, token: string, options?: RequestInit,
-  ): Promise<T> => {
-    if (!apiBase) throw new Error('API não configurada.');
-    const response = await fetch(apiBase + path, {
-      ...options,
-      headers: {
-        authorization: `Bearer ${token}`,
-        ...(options?.body ? { 'content-type': 'application/json' } : {}),
-      },
-    });
-    if (!response.ok) throw new Error(`A API retornou HTTP ${response.status}.`);
-    return (await response.json()) as T;
-  }, []);
+  const getJson = useCallback(
+    async <T,>(path: string, token: string, options?: RequestInit): Promise<T> => {
+      if (!apiBase) throw new Error('API não configurada.');
+      const response = await fetch(apiBase + path, {
+        ...options,
+        headers: {
+          authorization: `Bearer ${token}`,
+          ...(options?.body ? { 'content-type': 'application/json' } : {}),
+        },
+      });
+      if (!response.ok) throw new Error(`A API retornou HTTP ${response.status}.`);
+      return (await response.json()) as T;
+    },
+    [],
+  );
 
   async function signIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -115,7 +119,8 @@ export function MissionChat() {
     if (token && apiBase) {
       try {
         await fetch(apiBase + '/v1/sessions/current', {
-          method: 'DELETE', headers: { authorization: `Bearer ${token}` },
+          method: 'DELETE',
+          headers: { authorization: `Bearer ${token}` },
         });
       } catch {
         // The local token has already been discarded.
@@ -158,7 +163,8 @@ export function MissionChat() {
         await poll();
         if (controller.signal.aborted) return;
         const response = await fetch(
-          apiBase + `/v1/mcf/mission-chat/rooms/${encodeURIComponent(roomId)}/stream?after=${cursor}`,
+          apiBase +
+            `/v1/mcf/mission-chat/rooms/${encodeURIComponent(roomId)}/stream?after=${cursor}`,
           { headers: { authorization: `Bearer ${token}` }, signal: controller.signal },
         );
         if (!response.ok || !response.body) throw new Error('Stream indisponível');
@@ -184,7 +190,9 @@ export function MissionChat() {
       }
       if (!controller.signal.aborted) {
         setSyncStatus('polling');
-        fallbackTimer = setInterval(() => { void poll(); }, 2_500);
+        fallbackTimer = setInterval(() => {
+          void poll();
+        }, 2_500);
       }
     }
 
@@ -225,70 +233,176 @@ export function MissionChat() {
     <main className="chat-layout">
       <header className="chat-topbar">
         <div>
-          <a className="chat-back" href="/">← Voltar ao piloto</a>
-          <h1>Sala de Missão <span>MCF</span></h1>
+          <a className="chat-back" href="/">
+            ← Voltar ao piloto
+          </a>
+          <h1>
+            Sala de Missão <span>MCF</span>
+          </h1>
           <p>Conversa operacional com histórico persistente e identidade explícita.</p>
         </div>
-        {sessionToken ? <button className="chat-signout" onClick={() => { void signOut(); }}>Sair</button> : null}
+        {sessionToken ? (
+          <button
+            className="chat-signout"
+            onClick={() => {
+              void signOut();
+            }}
+          >
+            Sair
+          </button>
+        ) : null}
       </header>
 
       {!apiBase ? (
-        <section className="chat-signin"><p>Defina <code>VITE_API_BASE_URL</code> para habilitar esta interface.</p></section>
+        <section className="chat-signin">
+          <p>
+            Defina <code>VITE_API_BASE_URL</code> para habilitar esta interface.
+          </p>
+        </section>
       ) : !sessionToken ? (
         <section className="chat-signin">
           <h2>Entrar na sala</h2>
-          <p>Use uma conta humana autorizada do MCF. O token da sessão permanece apenas na memória desta aba.</p>
-          <form onSubmit={(event) => { void signIn(event); }}>
-            <label>E-mail<input required type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-            <label>Senha<input required type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
-            <button disabled={connecting} type="submit">{connecting ? 'Autenticando…' : 'Entrar'}</button>
+          <p>
+            Use uma conta humana autorizada do MCF. O token da sessão permanece apenas na memória
+            desta aba.
+          </p>
+          <form
+            onSubmit={(event) => {
+              void signIn(event);
+            }}
+          >
+            <label>
+              E-mail
+              <input
+                required
+                type="email"
+                autoComplete="username"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </label>
+            <label>
+              Senha
+              <input
+                required
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            </label>
+            <button disabled={connecting} type="submit">
+              {connecting ? 'Autenticando…' : 'Entrar'}
+            </button>
           </form>
-          {notice ? <p role="alert" className="chat-error">{notice}</p> : null}
+          {notice ? (
+            <p role="alert" className="chat-error">
+              {notice}
+            </p>
+          ) : null}
         </section>
       ) : (
         <div className="chat-workspace">
           <aside className="chat-rooms" aria-label="Salas">
             <h2>Salas</h2>
             {rooms.map((room) => (
-              <button key={room.id} className={room.id === roomId ? 'chat-room chat-room--active' : 'chat-room'} onClick={() => setRoomId(room.id)}>
+              <button
+                key={room.id}
+                className={room.id === roomId ? 'chat-room chat-room--active' : 'chat-room'}
+                onClick={() => setRoomId(room.id)}
+              >
                 <strong>{room.title}</strong>
-                <small>{room.type === 'MISSION' ? `Missão · ${room.state}` : 'Conversa geral'}</small>
+                <small>
+                  {room.type === 'MISSION' ? `Missão · ${room.state}` : 'Conversa geral'}
+                </small>
               </button>
             ))}
           </aside>
           <section className="chat-panel" aria-label="Conversa">
             <div className="chat-room-heading">
-              <div><h2>{selectedRoom?.title ?? 'Carregando sala…'}</h2><p>Mensagens informativas não alteram gates, handoffs nem estado do runtime.</p></div>
-              <span className="chat-live-state">{syncStatus === 'live' ? '● Tempo real' : syncStatus === 'polling' ? '◌ Sincronizando' : '◌ Conectando'}</span>
+              <div>
+                <h2>{selectedRoom?.title ?? 'Carregando sala…'}</h2>
+                <p>Mensagens informativas não alteram gates, handoffs nem estado do runtime.</p>
+              </div>
+              <span className="chat-live-state">
+                {syncStatus === 'live'
+                  ? '● Tempo real'
+                  : syncStatus === 'polling'
+                    ? '◌ Sincronizando'
+                    : '◌ Conectando'}
+              </span>
             </div>
             <div className="chat-messages" aria-live="polite" aria-relevant="additions">
-              {messages.length === 0 ? <p className="chat-empty">Nenhuma mensagem nesta sala. Inicie a conversa.</p> : null}
+              {messages.length === 0 ? (
+                <p className="chat-empty">Nenhuma mensagem nesta sala. Inicie a conversa.</p>
+              ) : null}
               {messages.map((message) => (
-                <article className={message.actorKind === 'HUMAN' ? 'chat-message chat-message--human' : 'chat-message'} key={message.id}>
+                <article
+                  className={
+                    message.actorKind === 'HUMAN'
+                      ? 'chat-message chat-message--human'
+                      : 'chat-message'
+                  }
+                  key={message.id}
+                >
                   <div className="chat-message-meta">
                     <strong>{message.actorLabel}</strong>
-                    <span>{message.actorKind === 'HUMAN' ? 'Humano autenticado' : 'Agente reportado pelo runtime · identidade não comprovada'}</span>
+                    <span>
+                      {message.actorKind === 'HUMAN'
+                        ? 'Humano autenticado'
+                        : 'Agente reportado pelo runtime · identidade não comprovada'}
+                    </span>
                     <time dateTime={message.createdAt}>{formatTime(message.createdAt)}</time>
                   </div>
-                  <span className="chat-kind">{kinds.find((item) => item.value === message.kind)?.label ?? message.kind}</span>
+                  <span className="chat-kind">
+                    {kinds.find((item) => item.value === message.kind)?.label ?? message.kind}
+                  </span>
                   <p>{message.content}</p>
                 </article>
               ))}
               <div ref={lastMessageRef} />
             </div>
-            <form className="chat-composer" onSubmit={(event) => { void send(event); }}>
-              {notice ? <p role="alert" className="chat-error">{notice}</p> : null}
+            <form
+              className="chat-composer"
+              onSubmit={(event) => {
+                void send(event);
+              }}
+            >
+              {notice ? (
+                <p role="alert" className="chat-error">
+                  {notice}
+                </p>
+              ) : null}
               <div className="chat-compose-controls">
                 <label htmlFor="chat-kind">Tipo</label>
-                <select id="chat-kind" value={kind} onChange={(event) => setKind(event.target.value as ChatKind)}>
-                  {kinds.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                <select
+                  id="chat-kind"
+                  value={kind}
+                  onChange={(event) => setKind(event.target.value as ChatKind)}
+                >
+                  {kinds.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
                 </select>
               </div>
-              <label htmlFor="chat-draft" className="chat-sr-only">Mensagem</label>
-              <textarea id="chat-draft" maxLength={4000} rows={3} placeholder="Escreva uma mensagem ou mencione @agente (menções ainda não despacham tarefas)." value={draft} onChange={(event) => setDraft(event.target.value)} />
+              <label htmlFor="chat-draft" className="chat-sr-only">
+                Mensagem
+              </label>
+              <textarea
+                id="chat-draft"
+                maxLength={4000}
+                rows={3}
+                placeholder="Escreva uma mensagem ou mencione @agente (menções ainda não despacham tarefas)."
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+              />
               <div className="chat-composer-footer">
                 <small>{draft.length}/4000 · Sem execução automática de ações</small>
-                <button type="submit" disabled={sending || !draft.trim()}>{sending ? 'Enviando…' : 'Enviar mensagem'}</button>
+                <button type="submit" disabled={sending || !draft.trim()}>
+                  {sending ? 'Enviando…' : 'Enviar mensagem'}
+                </button>
               </div>
             </form>
           </section>

@@ -1,6 +1,12 @@
 import { createHash, randomUUID } from 'node:crypto';
 
-import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { DatabaseRow } from '@rsa/database';
 
 import { DatabaseService } from '../database.service.js';
@@ -69,7 +75,10 @@ export class MissionChatService {
    */
   assertHumanAuthority(accountId: string): void {
     const reserved = process.env.RESERVED_HUMAN_AUTHORITY_ACCOUNT_ID;
-    if ((process.env.NODE_ENV === 'production' && !reserved) || (reserved && accountId !== reserved)) {
+    if (
+      (process.env.NODE_ENV === 'production' && !reserved) ||
+      (reserved && accountId !== reserved)
+    ) {
       throw new ForbiddenException({
         code: 'MCF_CHAT_HUMAN_AUTHORITY_REQUIRED',
         message: 'The mission chat is reserved for the authenticated human authority.',
@@ -111,15 +120,16 @@ export class MissionChatService {
   async messages(roomId: string, after: string): Promise<MissionChatMessage[]> {
     await this.ensureRoom(roomId);
     // Initial view shows the most recent 100 messages; subsequent reads are cursor-based.
-    const query = after === '0'
-      ? `select * from (
+    const query =
+      after === '0'
+        ? `select * from (
           select "sequence"::text as "sequence", "id", "room_id", "actor_kind",
                  "actor_id", "actor_label", "kind", "content", "trust_label",
                  "created_at", "request_fingerprint"
           from "mcf_chat_messages" where "room_id" = $1
           order by "sequence" desc limit 100
         ) recent order by "sequence"::bigint asc`
-      : `select "sequence"::text as "sequence", "id", "room_id", "actor_kind",
+        : `select "sequence"::text as "sequence", "id", "room_id", "actor_kind",
                 "actor_id", "actor_label", "kind", "content", "trust_label",
                 "created_at", "request_fingerprint"
          from "mcf_chat_messages"
@@ -154,9 +164,17 @@ export class MissionChatService {
                  "actor_id", "actor_label", "kind", "content", "trust_label",
                  "created_at", "request_fingerprint"`,
       [
-        randomUUID(), roomId, roomId === 'geral' ? null : roomId,
-        actor.kind, actor.id, actor.label, kind, content, trust,
-        idempotencyKey ?? null, fingerprint,
+        randomUUID(),
+        roomId,
+        roomId === 'geral' ? null : roomId,
+        actor.kind,
+        actor.id,
+        actor.label,
+        kind,
+        content,
+        trust,
+        idempotencyKey ?? null,
+        fingerprint,
       ],
     );
     if (result.rows[0]) return mapMessage(result.rows[0]);

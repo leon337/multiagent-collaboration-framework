@@ -33,7 +33,11 @@ export function App() {
           Ambiente gratuito em preparação
         </div>
         <ApiHealthStatus />
-        <p><a href="/?mission-chat" className="chat-back">Abrir Sala de Missão MCF →</a></p>
+        <p>
+          <a href="/?mission-chat" className="chat-back">
+            Abrir Sala de Missão MCF →
+          </a>
+        </p>
       </section>
 
       <section className="foundation" aria-labelledby="foundation-title">
