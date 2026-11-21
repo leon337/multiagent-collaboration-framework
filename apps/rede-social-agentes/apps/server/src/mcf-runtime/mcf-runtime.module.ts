@@ -12,6 +12,8 @@ import { CanonicalExternalActionLedger } from './canonical-external-action-ledge
 import { ChatMissionPlanner } from './chat-mission-planner.js';
 import { ChatRuntimeBridgeController } from './chat-runtime-bridge.controller.js';
 import { ChatRuntimeBridgeService } from './chat-runtime-bridge.service.js';
+import { MissionChatController, MissionChatRuntimeController } from './mission-chat.controller.js';
+import { MissionChatService } from './mission-chat.service.js';
 import {
   CodeBuddyExecutorAdapter,
   probeCodeBuddyExecutorCapability,
@@ -80,6 +82,8 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     SocialTimelineController,
     ProductionAuthorizationController,
     MissionControlController,
+    MissionChatController,
+    MissionChatRuntimeController,
   ],
   providers: [
     AgentExecutionService,
@@ -94,6 +98,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
     McfRuntimeTokenGuard,
     McfMissionControlTokenGuard,
     MissionControlRepository,
+    MissionChatService,
     MissionV11ContextGuard,
     ContinuityRecoveryService,
     {
