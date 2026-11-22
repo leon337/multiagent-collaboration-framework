@@ -8,6 +8,7 @@ import type { ExternalActionAdapter } from './external-action.contracts.js';
 import { EvidenceValidator } from './evidence-validator.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
+import { GeminiConversationReadAdapter } from './gemini-conversation-read.adapter.js';
 import { GoogleBridgeReadAdapter } from './google-bridge-read.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js';
@@ -51,6 +52,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       CodeBuddyExecutorAdapter,
       LocalAgentTeamAdapter,
       GoogleBridgeReadAdapter,
+      GeminiConversationReadAdapter,
     ]);
 
     const registry = registryProvider?.useFactory?.(
@@ -61,6 +63,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       stub('codebuddy-implement-change-local-v1'),
       stub('local-agent-team-process-v1'),
       stub('mcf-google-bridge-readonly-local-v1'),
+      stub('mcf-gemini-conversation-read-v1'),
     ) as AdapterRegistry;
 
     expect(registry.listAdapterIds()).toContain('github-branch-pr-write-v1');
@@ -68,6 +71,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
     expect(registry.listAdapterIds()).toContain('codebuddy-implement-change-local-v1');
     expect(registry.listAdapterIds()).toContain('local-agent-team-process-v1');
     expect(registry.listAdapterIds()).toContain('mcf-google-bridge-readonly-local-v1');
+    expect(registry.listAdapterIds()).toContain('mcf-gemini-conversation-read-v1');
   });
 });
 

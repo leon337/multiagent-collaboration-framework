@@ -664,3 +664,22 @@ skills:
     failure_modes: [bridge_disabled, missing_adc, network_failure]
     fallback: Reportar bloqueio sem tentar qualquer operacao de escrita.
     handoff_to: Mestre
+
+  - skill_id: MCF-GEMINI-CONVERSATION-READ
+    name: Consultar conversa Gemini aprovada
+    version: 0.1.0
+    purpose: Consultar apenas estado ou resposta completa de conversa previamente vinculada.
+    owner_agents: [Mestre]
+    trigger_phrases: ["consultar resposta Gemini aprovada"]
+    required_inputs: [mission_id, request_id, correlation_id, idempotency_key, policy_scope, evidence_ref]
+    optional_inputs: []
+    allowed_tools: [mcf-gemini-conversation]
+    forbidden_tools: [send, write, generate, navigate, execute]
+    permission_profile: READ_ONLY
+    execution_steps: [validar_permissao, consultar_transporte_vinculado, registrar_hash]
+    required_evidence: [correlation_id, evidence_ref]
+    expected_outputs: [status_or_reply_hash]
+    acceptance_criteria: [identity_verified, conversation_verified, complete_response, no_write]
+    failure_modes: [disabled, transport_unavailable, timeout, invalid_response]
+    fallback: Encerrar sem enviar mensagens ou repetir automaticamente.
+    handoff_to: Mestre
