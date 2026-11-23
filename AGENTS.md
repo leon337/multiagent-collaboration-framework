@@ -76,3 +76,10 @@ Quando surgirem `build-rate-limit` da Vercel, pedido de "outra forma" ou dúvida
 **Rota de cada superfície:** o GitHub público em `main` já publica documentação e skills para outros chats sem build; o `render.yaml` declara a API `rsa-api-free` e o frontend estático `rsa-web-free` como alvos Render; Neon é **banco PostgreSQL**, não substituto de hospedagem Node/SPA (confirmar vínculo `DATABASE_URL` sem divulgar credenciais). Vercel é opcional; limite de build não autoriza alterar banco, contornar gates ou inventar deploy de produção.
 
 **Separação:** conhecimento público atualizado no GitHub ≠ runtime/SPA em produção. O deploy do runtime depende do SHA exato, autorização persistida de LEANDRO, gate de LÉO, health e workflow canônico. Scripts de roteamento são **assistência decisória pura**, não acionam provider, não concedem permissão e não substituem o PermissionEngine. Sem gate ou prova de infraestrutura, informar `PRODUCTION_BLOCKED_GATE` e manter o último ambiente íntegro.
+
+## Google Drive Bridge e agente MCF (runbook, 2026-11-23)
+
+Quando a missão envolver autenticação Google Drive, MCF Google Bridge, preset `mcf-google-drive-agent`, DSH ou callback OAuth remoto, **ler antes** [MCF-GOOGLE-DRIVE-BRIDGE-OPERATIONS](docs/integrations/MCF-GOOGLE-DRIVE-BRIDGE-OPERATIONS.md). O runbook registra arquitetura, separação dos armazenamentos OAuth, diagnóstico Tailscale/callback, teste CRUD seguro e evidências locais.
+
+Não solicitar novo consentimento se `google.status` já indicar OAuth conectado; primeiro validar leitura real. Não assumir que o token legado do agente (escopo observado `drive.file`) equivale ao token do Bridge (escopo observado `drive`). Comparar identidade e escopos em cada boundary. Nunca registrar credenciais, tokens, e-mails ou hostnames privados no Git. Operações de escrita devem usar arquivo temporário criado pela própria missão, seguido de leitura, atualização, exclusão e confirmação de ausência. A documentação não amplia permissões do runtime nem substitui HDF/PermissionEngine.
+
