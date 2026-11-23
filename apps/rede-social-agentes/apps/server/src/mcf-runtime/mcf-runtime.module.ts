@@ -23,6 +23,8 @@ import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import { ExternalActionLedger } from './external-action-ledger.js';
 import { GitHubBranchPullRequestAdapter } from './github-branch-pr.adapter.js';
 import { GitHubCiQueryAdapter } from './github-ci-query.adapter.js';
+import { GeminiConversationReadAdapter } from './gemini-conversation-read.adapter.js';
+import { LocalGeminiConversationTransport } from './gemini-conversation-local-transport.js';
 import { GoogleBridgeReadAdapter } from './google-bridge-read.adapter.js';
 import { GitHubCodeReviewAdapter } from './github-code-review.adapter.js';
 import { GitHubExecutionIdentityRegistry } from './github-execution-identity.js';
@@ -131,6 +133,25 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
       inject: [EvidenceValidator],
     },
     {
+      provide: GeminiConversationReadAdapter,
+      useFactory: (evidence: EvidenceValidator) => {
+        const enabled = process.env.MCF_GEMINI_CONVERSATION_READ_ENABLED === 'true';
+        const modulePath = process.env.MCF_GEMINI_BROKER_MODULE_PATH;
+        const ledgerDirectory = process.env.MCF_GEMINI_BROKER_LEDGER_DIR;
+        const approvedMissionId = process.env.MCF_GEMINI_BROKER_APPROVED_MISSION_ID;
+        const approvedRequestId = process.env.MCF_GEMINI_BROKER_APPROVED_REQUEST_ID;
+        const transport =
+          enabled && modulePath && ledgerDirectory && approvedMissionId && approvedRequestId
+            ? new LocalGeminiConversationTransport(modulePath, ledgerDirectory, {
+                missionId: approvedMissionId,
+                requestId: approvedRequestId,
+              })
+            : undefined;
+        return new GeminiConversationReadAdapter(evidence, enabled, transport);
+      },
+      inject: [EvidenceValidator],
+    },
+    {
       provide: GoogleBridgeReadAdapter,
       useFactory: (evidence: EvidenceValidator) =>
         new GoogleBridgeReadAdapter(
@@ -190,6 +211,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         codeBuddy: CodeBuddyExecutorAdapter,
         localAgentTeam: LocalAgentTeamAdapter,
         googleBridgeRead: GoogleBridgeReadAdapter,
+        geminiRead: GeminiConversationReadAdapter,
       ) =>
         new AdapterRegistry([
           githubReview,
@@ -199,6 +221,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           codeBuddy,
           localAgentTeam,
           googleBridgeRead,
+          geminiRead,
         ]),
       inject: [
         GitHubCodeReviewAdapter,
@@ -208,6 +231,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
         CodeBuddyExecutorAdapter,
         LocalAgentTeamAdapter,
         GoogleBridgeReadAdapter,
+        GeminiConversationReadAdapter,
       ],
     },
     {

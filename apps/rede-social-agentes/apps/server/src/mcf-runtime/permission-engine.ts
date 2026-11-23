@@ -410,6 +410,27 @@ function assertGoogleBridgeReadBoundary(
   }
 }
 
+function assertGeminiConversationReadBoundary(
+  skill: McfSkillDefinition,
+  provider: string,
+  operation: string,
+  resource: string,
+): void {
+  if (skill.skillId !== 'MCF-GEMINI-CONVERSATION-READ' && provider !== 'mcf-gemini-conversation')
+    return;
+  if (
+    skill.skillId !== 'MCF-GEMINI-CONVERSATION-READ' ||
+    skill.permissionProfile !== 'READ_ONLY' ||
+    provider !== 'mcf-gemini-conversation' ||
+    resource !== 'approved-conversation' ||
+    !['read-status', 'read-reply'].includes(operation)
+  ) {
+    throw new McfPermissionDeniedError(
+      'Gemini conversation is restricted to approved read-only operations',
+    );
+  }
+}
+
 const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'fetch'];
 const proposalOperations = [
   ...readOperations,
@@ -477,6 +498,7 @@ export class PermissionEngine {
     assertCodeBuddyImplementationBoundary(skill.skillId, provider, operation, tool.resource);
     assertLocalAgentTeamBoundary(skill.skillId, provider, operation, resource);
     assertGoogleBridgeReadBoundary(skill.skillId, provider, operation, resource);
+    assertGeminiConversationReadBoundary(skill, provider, operation, resource);
 
     if (operation === 'query-ci' && skill.skillId !== 'MCF-RUN-TESTS') {
       throw new McfPermissionDeniedError('query-ci is restricted to MCF-RUN-TESTS');
