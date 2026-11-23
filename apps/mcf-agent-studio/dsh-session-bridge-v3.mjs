@@ -4,8 +4,8 @@
  * Does not read, copy, or reimplement any LLM credential.
  */
 import { createServer } from 'node:http';
-import { randomBytes, randomUUID } from 'node:crypto';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { readFile, writeFile, mkdir, unlink, rename } from 'node:fs/promises';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 
@@ -17,6 +17,10 @@ const DATA=join(HOME,'.data');
 const TOKEN_FILE=join(DATA,'dsh-bridge-token');
 const SESSION_FILE=join(DATA,'dsh-planner-session.json');
 const LAB_FILE=join(DATA,'dsh-trainee-session.json');
+const DRIVE_SESSION_FILE=join(DATA,'dsh-google-drive-session.json');
+const DRIVE_JOBS_FILE=join(DATA,'dsh-google-drive-jobs.json');
+const DRIVE_JOB_TIMEOUT_MS=15*60*1000;
+const DRIVE_JOB_RETENTION_MS=24*60*60*1000;
 const PORT=4319;
 const HOST='127.0.0.1';
 const PRESET='mcf-studio-brain';
@@ -24,7 +28,8 @@ const WS_ROOT=join(DATA,'dsh-preset-workspaces');
 const WORKSPACES=Object.freeze({
  'hello-world-agent':{name:'MCF • Hello World Agent',folder:'hello-world-agent'},
  'mcf-studio-brain':{name:'MCF • Agent Studio Brain',folder:'mcf-studio-brain'},
- 'mcf-studio-preview':{name:'MCF • Agent Studio Preview',folder:'mcf-studio-preview'}
+ 'mcf-studio-preview':{name:'MCF • Agent Studio Preview',folder:'mcf-studio-preview'},
+ 'mcf-google-drive-agent':{name:'MCF • Google Drive Agent',folder:'mcf-google-drive-agent'}
 });
 const LEGACY_NAME='MCF Agent Studio — Legado (sessões anteriores)';
 const LEGACY_STATE=join(DATA,'dsh-workspace-legacy-ids.json');
@@ -69,6 +74,11 @@ export function apply(ctx){
   let running=false;
   let connected=false;
   let lab={sessionId:null,messages:[],startedAt:null,updatedAt:null};
+  let driveSessionId=null;
+  try {
+    const existing=JSON.parse(readFileSync(DRIVE_SESSION_FILE,'utf8'));
+    if(typeof existing.sessionId==='string'&&/^session-[a-f0-9-]{36}$/.test(existing.sessionId))driveSessionId=existing.sessionId;
+  } catch {}
   try {
     const existing=JSON.parse(readFileSync(LAB_FILE,'utf8'));
     if(existing && typeof existing==='object'
@@ -81,6 +91,64 @@ export function apply(ctx){
     }
   } catch {}
   const persistLab=()=>writeFile(LAB_FILE,JSON.stringify(lab,null,2)+'\n',{mode:0o600});
+  const driveJobs=new Map();
+  let driveJobAdmission=false;
+  try {
+    const saved=JSON.parse(readFileSync(DRIVE_JOBS_FILE,'utf8'));
+    if(Array.isArray(saved)) for(const row of saved.slice(-100)) {
+      if(row&&typeof row.id==='string'&&/^[a-f0-9-]{36}$/.test(row.id)) {
+        if(row.status==='running'||row.status==='queued') {
+          row.status='interrupted';
+          row.error='O runtime DSH reiniciou antes de confirmar a resposta. Consulte o histórico da sessão antes de reenviar.';
+          row.updatedAt=new Date().toISOString();
+        }
+        driveJobs.set(row.id,row);
+      }
+    }
+  } catch {}
+  async function persistDriveJobs(){
+    const now=Date.now();
+    for(const [id,row] of driveJobs) {
+      if(now-Date.parse(row.updatedAt||row.createdAt)>DRIVE_JOB_RETENTION_MS)driveJobs.delete(id);
+    }
+    while(driveJobs.size>100)driveJobs.delete(driveJobs.keys().next().value);
+    const tmp=DRIVE_JOBS_FILE+'.tmp';
+    await writeFile(tmp,JSON.stringify([...driveJobs.values()],null,2)+'\n',{mode:0o600});
+    await rename(tmp,DRIVE_JOBS_FILE);
+  }
+  async function startDriveJob(prompt,requestedId){
+    const id=requestedId||randomUUID();
+    if(!/^[a-f0-9-]{36}$/.test(id))throw Object.assign(Error('Identificador de trabalho inválido'),{status:400});
+    const promptHash=createHash('sha256').update(prompt).digest('hex');
+    const existing=driveJobs.get(id);
+    if(existing){
+      if(existing.promptHash!==promptHash)throw Object.assign(Error('O identificador já pertence a outra mensagem'),{status:409});
+      return {jobId:id,status:existing.status,sessionId:existing.sessionId,preset:existing.preset};
+    }
+    if(running||driveJobAdmission)throw Object.assign(Error('A sessão do Studio já processa outra mensagem'),{status:409});
+    driveJobAdmission=true;
+    try{
+      const now=new Date().toISOString();
+      const job={id,promptHash,status:'queued',preset:'mcf-google-drive-agent',sessionId:null,
+        createdAt:now,updatedAt:now,answer:null,error:null};
+      driveJobs.set(id,job);
+      await persistDriveJobs();
+      // complete() sets the shared running guard synchronously before its first await.
+      const task=complete(prompt,'mcf-google-drive-agent');
+      job.status='running';job.sessionId=driveSessionId;job.updatedAt=new Date().toISOString();
+      try{await persistDriveJobs();}catch(error){ctx.logger.warn('drive job running-state persist: '+String(error?.message||error));}
+      task.then(async result=>{
+        job.status='completed';job.sessionId=result.sessionId;job.answer=result.answer;
+        job.updatedAt=new Date().toISOString();
+        try{await persistDriveJobs();}catch(error){ctx.logger.error('drive job result persist: '+String(error?.message||error));}
+      }).catch(async error=>{
+        job.status='failed';job.error=String(error?.message||'Falha na execução DSH').slice(0,500);
+        job.updatedAt=new Date().toISOString();
+        try{await persistDriveJobs();}catch(persistError){ctx.logger.error('drive job failure persist: '+String(persistError?.message||persistError));}
+      });
+      return {jobId:id,status:job.status,sessionId:job.sessionId,preset:job.preset};
+    }finally{driveJobAdmission=false;}
+  }
 
 
   function presetPath(preset){
@@ -122,8 +190,9 @@ export function apply(ctx){
     const old=sessions.filter(row=>row.cwd===HOME&&row.origin!=='subagent');
     const oldMembers=new Set(legacy?.sessionIds??[]);
     const ids=Object.values(presets).map(x=>x.id),paths=Object.values(presets).map(x=>x.path);
-    const isolationValid=ids.every(Boolean)&&new Set(ids).size===3
-      &&new Set(paths).size===3&&Object.values(presets).every(x=>x.ready);
+    const workspaceCount=Object.keys(WORKSPACES).length;
+    const isolationValid=ids.every(Boolean)&&new Set(ids).size===workspaceCount
+      &&new Set(paths).size===workspaceCount&&Object.values(presets).every(x=>x.ready);
     return {isolationValid,presets,
       legacy:legacy?{id:legacy.id,title:legacy.title,path:legacy.path,
         sessionIds:[...legacy.sessionIds],
@@ -131,7 +200,8 @@ export function apply(ctx){
       current:{plannerSessionId:sessionId,labSessionId:lab.sessionId,
         plannerInCorrectWorkspace:presets[PRESET].sessionIds.includes(sessionId),
         labInCorrectWorkspace:presets['hello-world-agent'].sessionIds.includes(lab.sessionId),
-        preservedLabMessages:lab.messages.length},
+        preservedLabMessages:lab.messages.length,driveSessionId,
+        googleDriveInCorrectWorkspace:Boolean(driveSessionId)&&presets['mcf-google-drive-agent'].sessionIds.includes(driveSessionId)},
       totalSessions:sessions.length,nativeRegistry:true
     };
   }
@@ -162,9 +232,10 @@ export function apply(ctx){
     // legacy DSH session headers. Old Lab history stays readable.
     await ensureSession();
     await ensureLab();
+    await ensureGoogleDriveSession();
     const state=await workspaceInspection();
     if(!state.isolationValid||!state.current.plannerInCorrectWorkspace||
-       !state.current.labInCorrectWorkspace)
+       !state.current.labInCorrectWorkspace||!state.current.googleDriveInCorrectWorkspace)
       throw Error('DSH não confirmou cada sessão no respectivo workspace');
     return {...state,created};
   }
@@ -199,6 +270,14 @@ export function apply(ctx){
     await persistLab();
     return id;
   }
+  async function ensureGoogleDriveSession(){
+    driveSessionId=await ensureScoped('mcf-google-drive-agent',driveSessionId);
+    await writeFile(DRIVE_SESSION_FILE,JSON.stringify({
+      sessionId:driveSessionId,preset:'mcf-google-drive-agent',
+      workspaceId:(await location('mcf-google-drive-agent')).workspaceId
+    },null,2)+'\n',{mode:0o600});
+    return driveSessionId;
+  }
   async function ensureSession(){
     sessionId=await ensureScoped(PRESET,sessionId);
     await writeFile(SESSION_FILE,JSON.stringify({
@@ -218,6 +297,8 @@ export function apply(ctx){
         id = await ensureSession();
       } else if (preset === 'mcf-studio-lab') {
         id=await ensureLab();
+      } else if (preset === 'mcf-google-drive-agent') {
+        id = await ensureGoogleDriveSession();
       } else if (preset === 'hello-world-agent' || preset === 'mcf-studio-preview') {
         // A fresh session is mandatory to validate the mounted preset revision.
         const created = await ctx.sessionController.create({
@@ -233,7 +314,7 @@ export function apply(ctx){
       let ready;
       let aborted=false;
       const result=new Promise((resolve,reject)=>{ready={resolve,reject}});
-      const timer=setTimeout(()=>{aborted=true; ready.reject(Object.assign(Error('Sessão DSH excedeu o tempo de resposta'),{status:504}));},85000);
+      const timer=setTimeout(()=>{aborted=true; ready.reject(Object.assign(Error('Sessão DSH excedeu o tempo de resposta'),{status:504}));},DRIVE_JOB_TIMEOUT_MS);
       // Listen BEFORE prompt admission: never miss a fast answer or turn/end.
       dispose=ctx.on('session/event',(session,event)=>{
         if(session.id!==id || aborted)return;
@@ -279,6 +360,34 @@ export function apply(ctx){
           throw Error('Probe nativo não confirmou sessão no workspace');
         return response(res,200,{preset:body.preset,sessionId:result.sessionId,
           workspaceId:row.id,accounted:true});
+      }
+      if(req.method==='GET'&&req.url==='/google-drive/status'){
+        await ensureGoogleDriveSession();
+        const state=await workspaceInspection();
+        return response(res,200,{ready:state.current.googleDriveInCorrectWorkspace,
+          preset:'mcf-google-drive-agent',sessionId:driveSessionId,
+          workspace:state.presets['mcf-google-drive-agent']});
+      }
+      if(req.method==='POST'&&req.url==='/google-drive/reset'){
+        if(running)return reject(res,409,'Aguarde o término da resposta atual');
+        driveSessionId=null;
+        await unlink(DRIVE_SESSION_FILE).catch(e=>{if(e.code!=='ENOENT')throw e;});
+        const id=await ensureGoogleDriveSession();
+        return response(res,200,{reset:true,preset:'mcf-google-drive-agent',sessionId:id});
+      }
+      if(req.method==='POST'&&req.url==='/google-drive/message'){
+        const body=await json(req);
+        if(typeof body.prompt!=='string'||!body.prompt.trim()||body.prompt.length>4000)
+          return reject(res,400,'Mensagem inválida (máximo 4000 caracteres)');
+        return response(res,202,await startDriveJob(body.prompt.trim(),body.jobId));
+      }
+      const driveJobMatch=req.method==='GET'&&req.url.match(/^\/google-drive\/jobs\/([a-f0-9-]{36})$/);
+      if(driveJobMatch){
+        const job=driveJobs.get(driveJobMatch[1]);
+        if(!job)return reject(res,404,'Trabalho não encontrado ou expirado');
+        return response(res,200,{jobId:job.id,status:job.status,sessionId:job.sessionId,
+          preset:job.preset,answer:job.status==='completed'?job.answer:null,
+          error:job.error,createdAt:job.createdAt,updatedAt:job.updatedAt});
       }
       if(req.method==='GET'&&req.url==='/lab/status'){
         return response(res,200,{ready:true,preset:'hello-world-agent',

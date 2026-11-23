@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
 const endpoint=process.env.MCF_STUDIO_URL||'http://127.0.0.1:4317';
 if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(endpoint))throw Error('Somente loopback local');
-const exact=['hello-world-agent','mcf-studio-brain','mcf-studio-preview'];
+const exact=['hello-world-agent','mcf-studio-brain','mcf-studio-preview','mcf-google-drive-agent'];
 const request=async(path,method='GET',body)=>{
  const res=await fetch(endpoint+path,{
   method,headers:{...(body===undefined?{}:{origin:endpoint,'content-type':'application/json'})},
@@ -29,10 +29,11 @@ for(const preset of exact){
  assert.ok(w.sessions.every(s=>s.accounted),'every DSH session attached: '+preset);
  ids.push(w.id);paths.push(w.path);
 }
-assert.equal(new Set(ids).size,3,'distinct workspace IDs');
-assert.equal(new Set(paths).size,3,'distinct canonical directories');
+assert.equal(new Set(ids).size,exact.length,'distinct workspace IDs');
+assert.equal(new Set(paths).size,exact.length,'distinct canonical directories');
 assert.equal(inspected.current.plannerInCorrectWorkspace,true);
 assert.equal(inspected.current.labInCorrectWorkspace,true);
+assert.equal(inspected.current.googleDriveInCorrectWorkspace,true);
 assert.equal(inspected.legacy?.unaccounted,0,'legacy sessions preserved');
 const probes=[];
 if(process.argv.includes('--probe')){

@@ -121,7 +121,7 @@ async function dshSessionCall(path, payload) {
       method: payload === undefined ? 'GET' : 'POST',
       headers: { 'X-Agent-Studio-Bridge': token, ...(payload === undefined ? {} : { 'Content-Type': 'application/json' }) },
       ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
-      signal: AbortSignal.timeout(path === '/chat' ? 90000 : 4000)
+      signal: AbortSignal.timeout(['/chat','/lab/message','/validate-hello-world','/preview-chat'].includes(path) ? 90000 : 7000)
     });
   } catch (e) {
     fail('Sessão DSH desconectada: ' + (e.name === 'TimeoutError' ? 'tempo excedido' : 'ponte local não responde'), 503);
@@ -261,10 +261,10 @@ async function route(req, res) {
     assertLocal(req);
     const url = new URL(req.url, 'http://' + req.headers.host);
     const path = url.pathname;
-    if (req.method === 'GET' && ['/', '/style.css', '/app.js', '/lab', '/lab.css', '/lab.js', '/builder', '/builder.css', '/builder.js'].includes(path)) {
-      const asset = path === '/' ? 'index.html' : path === '/lab' ? 'lab.html' : path === '/builder' ? 'builder.html' : path.slice(1);
+    if (req.method === 'GET' && ['/', '/style.css', '/app.js', '/lab', '/lab.css', '/lab.js', '/google-drive', '/google-drive.js', '/builder', '/builder.css', '/builder.js'].includes(path)) {
+      const asset = path === '/' ? 'index.html' : path === '/lab' ? 'lab.html' : path === '/google-drive' ? 'google-drive.html' : path === '/builder' ? 'builder.html' : path.slice(1);
       const raw = await readFile(join(APP_DIR, 'public', asset));
-      const contentType = path === '/' || path === '/lab' || path === '/builder' ? 'text/html' : path.endsWith('.css') ? 'text/css' : 'text/javascript';
+      const contentType = path === '/' || path === '/lab' || path === '/google-drive' || path === '/builder' ? 'text/html' : path.endsWith('.css') ? 'text/css' : 'text/javascript';
       res.writeHead(200, { 'content-type': contentType + '; charset=utf-8', 'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'", 'x-content-type-options': 'nosniff', 'cache-control': 'no-store' }); res.end(raw); return;
     }
     if (req.method === 'GET' && path === '/health') return json(res, 200, { ok: true, service: 'agent-studio', revision: state.revision });
@@ -333,6 +333,26 @@ async function route(req, res) {
         return json(res,200,{advice,origin:'dsh-session',sessionId:(await dshSessionCall('/status')).sessionId});
       }
     }
+    if (req.method === 'GET' && path === '/api/google-drive/status') {
+      const status = await dshSessionCall('/google-drive/status');
+      return json(res,200,{...status,agentName:'MCF Google Drive Agent'});
+    }
+    if (req.method === 'POST' && path === '/api/google-drive/message') {
+      const body=await inputJson(req);
+      if(typeof body.text!=='string'||!body.text.trim()||body.text.length>4000)
+        fail('Digite uma mensagem de até 4000 caracteres',422);
+      if(body.jobId!==undefined&&(typeof body.jobId!=='string'||!/^[a-f0-9-]{36}$/.test(body.jobId)))
+        fail('Identificador de trabalho inválido',422);
+      return json(res,202,await dshSessionCall('/google-drive/message',{prompt:body.text.trim(),...(body.jobId?{jobId:body.jobId}:{})}));
+    }
+    const driveJob=path.match(/^\/api\/google-drive\/jobs\/([a-f0-9-]{36})$/);
+    if(req.method==='GET'&&driveJob)
+      return json(res,200,await dshSessionCall('/google-drive/jobs/'+driveJob[1]));
+    if (req.method === 'POST' && path === '/api/google-drive/reset') {
+      const body=await inputJson(req);
+      if(body.confirmation!=='NOVA CONVERSA') fail('Confirmação de nova conversa inválida',403);
+      return json(res,200,await dshSessionCall('/google-drive/reset',{}));
+    }
     if (req.method === 'GET' && path === '/api/lab/status') {
       const [lab,publication]=await Promise.all([dshSessionCall('/lab/status'),publisher.status()]);
       return json(res,200,{...lab,agentName:'Hello World Agent',draftRevision:state.revision,
@@ -357,7 +377,7 @@ async function route(req, res) {
     }
     if (req.method === 'POST' && path === '/api/dsh/workspaces/probe') {
       const body=await inputJson(req);
-      if(!['hello-world-agent','mcf-studio-brain','mcf-studio-preview'].includes(body.preset))
+      if(!['hello-world-agent','mcf-studio-brain','mcf-studio-preview','mcf-google-drive-agent'].includes(body.preset))
         fail('Preset não permitido',422);
       return json(res,200,await dshSessionCall('/workspace/probe',{preset:body.preset}));
     }

@@ -1,0 +1,14 @@
+{
+  "name": "@mcf/google-drive-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Google Drive connector for the MCF DSH agent with full Drive scope and guarded file operations",
+  "scripts": {
+    "check": "node --check drive-api.mjs && node --check oauth.mjs && node --check install-oauth-client.mjs && node --check plugin.mjs && node --check scripts/ensure-drive-agent.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

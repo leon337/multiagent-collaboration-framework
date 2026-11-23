@@ -212,7 +212,8 @@ function renderList(){
 const presetNames={
  'hello-world-agent':'Hello World Agent',
  'mcf-studio-brain':'Agent Studio Brain',
- 'mcf-studio-preview':'Agent Studio Preview'
+ 'mcf-studio-preview':'Agent Studio Preview',
+ 'mcf-google-drive-agent':'Google Drive Agent'
 };
 async function renderNativeWorkspaces(){
  const root=$('nativeWorkspaceGrid'),summary=$('nativeSummary');
@@ -220,7 +221,7 @@ async function renderNativeWorkspaces(){
  try{
   const data=await api('/api/dsh/workspaces');
   summary.textContent=data.isolationValid
-   ?'✓ Três presets isolados, cada um com workspaceId e diretório próprios.'
+   ?'✓ '+Object.keys(data.presets||{}).length+' presets isolados, cada um com workspaceId e diretório próprios.'
    :'⚠ O DSH ainda não confirmou o isolamento completo.';
   summary.dataset.valid=String(data.isolationValid);
   for(const [preset,info] of Object.entries(data.presets||{})){

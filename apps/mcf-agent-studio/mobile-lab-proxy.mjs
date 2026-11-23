@@ -12,9 +12,9 @@ if(u.protocol!=='http:' || !['127.0.0.1','localhost'].includes(u.hostname)) thro
 const ALLOWED_ORIGIN=process.env.MCF_AGENT_LAB_PUBLIC_ORIGIN||'https://mcf-leo-n43sm.tail582305.ts.net:8492';
 const publicUri=new URL(ALLOWED_ORIGIN);
 if(publicUri.protocol!=='https:'||!publicUri.hostname.endsWith('.ts.net')) throw Error('Origem Tailscale HTTPS necessária');
-const READ_PATHS=new Set(['/lab','/lab.css','/lab.js','/api/lab/status','/health']);
-const WRITE_PATHS=new Set(['/api/lab/message','/api/lab/reset']);
-const MAX_BODY=4096;
+const READ_PATHS=new Set(['/lab','/lab.css','/lab.js','/google-drive','/google-drive.js','/api/google-drive/status','/api/lab/status','/health']);
+const WRITE_PATHS=new Set(['/api/google-drive/message','/api/google-drive/reset','/api/lab/message','/api/lab/reset']);
+const MAX_BODY=12000;
 function respond(res,code,body,contentType='text/plain; charset=utf-8'){
   res.writeHead(code,{
     'content-type':contentType,
@@ -49,7 +49,8 @@ const server=createServer(async(req,res)=>{
   if(req.method!=='GET' && (url.search||url.hash))
     return respond(res,400,'Parâmetros não aceitos em operações de escrita');
   const path=url.pathname==='/'?'/lab':url.pathname;
-  const allowed=req.method==='GET'?READ_PATHS.has(path):req.method==='POST'&&WRITE_PATHS.has(path);
+  const driveJobPath=/^\/api\/google-drive\/jobs\/[a-f0-9-]{36}$/.test(path);
+  const allowed=req.method==='GET'?(READ_PATHS.has(path)||driveJobPath):req.method==='POST'&&WRITE_PATHS.has(path);
   if(!allowed)return respond(res,404,'Recurso não disponível neste acesso remoto');
   if(req.method==='POST'){
     if(req.headers.origin!==ALLOWED_ORIGIN){
@@ -64,7 +65,7 @@ const server=createServer(async(req,res)=>{
     try{
       for await(const chunk of req){
         body+=chunk;
-        if(body.length>4096)return respond(res,413,'Mensagem excessiva');
+        if(body.length>MAX_BODY)return respond(res,413,'Mensagem excessiva');
       }
     }catch{return respond(res,400,'Falha na leitura da mensagem');}
   }
@@ -75,11 +76,12 @@ const server=createServer(async(req,res)=>{
         ?{'content-type':'application/json','origin':UPSTREAM,'accept':'application/json'}
         :{'accept':'text/html,application/json,text/css,*/*'},
       body:req.method==='POST'?body:undefined,
-      signal:AbortSignal.timeout(req.method==='POST'?95000:7000)
+      signal:AbortSignal.timeout(req.method==='POST'?15000:7000)
     });
     let content=await upstream.text();
     const types={'/lab':'text/html; charset=utf-8','/lab.css':'text/css; charset=utf-8',
-      '/lab.js':'text/javascript; charset=utf-8'};
+      '/lab.js':'text/javascript; charset=utf-8','/google-drive':'text/html; charset=utf-8',
+      '/google-drive.js':'text/javascript; charset=utf-8'};
     if(path==='/lab'&&upstream.ok)content=htmlForMobile(content);
     return respond(res,upstream.status,content,types[path]||'application/json; charset=utf-8');
   }catch{
