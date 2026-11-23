@@ -210,3 +210,46 @@ O escopo OAuth `drive` cobre arquivos e pastas que a conta pode acessar, mas a s
 
 As rotas Tailscale estão configuradas como tailnet-only. O teste do gateway e do proxy foi realizado no host; a abertura final no telefone de LEANDRO deve ocorrer com o cliente Tailscale conectado, pois o host local não consegue testar o próprio FQDN por hairpin.
 
+## 12. Recuperação de resposta longa no chat gráfico — jobs assíncronos (2026-11-23)
+
+### Causa raiz confirmada
+A auditoria somente leitura de dez documentos MCF foi executada no preset DSH e sua resposta final foi persistida no histórico da sessão. O turno levou **92,4 segundos** entre a admissão da mensagem e o evento `turn/end`. A ponte síncrona anterior encerrava a espera em **85 segundos**; o transporte HTTP do Agent Studio tinha limite de 90 segundos e o proxy móvel, 95 segundos. O timeout mais curto encerrava a chamada antes do fim normal do turno. A resposta não foi perdida no DSH: foi perdida apenas no caminho de retorno à interface.
+
+A resposta original foi recuperada do arquivo de sessão `session.v4.jsonl.zstd`. Ela confirmou que os dez documentos foram lidos, sem alterações, e identificou:
+- cinco versões do código Python; a mais recente era a única com `hashlib/file_sha256` e delimitadores de exportação ``/``;
+- cinco versões da especificação; conteúdo idêntico entre elas;
+- candidatos mais recentes: código ID `1_l12Enrd7TApc-eb9qKUIIrquIJdwHZXqmrcZfjvAiw` e especificação ID `1udt0O0VV_0xjFHnz0nN3Otuk09wkvGQk5U8n6woZ3so`.
+Nenhum arquivo do Drive foi alterado.
+
+### Arquitetura corretiva
+O endpoint de chat não deve mais manter uma requisição HTTP aberta durante toda a execução do agente.
+
+1. `POST /google-drive/message` admite o pedido e retorna `202 Accepted` com `jobId` UUID.
+2. A execução continua no processo DSH, observando a sessão nativa até `turn/end`.
+3. `GET /google-drive/jobs/{jobId}` retorna `queued`, `running`, `completed`, `failed` ou `interrupted`.
+4. A resposta completa fica persistida em `.data/dsh-google-drive-jobs.json`, fora do Git, com permissões locais restritas e gravação atômica (arquivo temporário + rename).
+5. A retenção é de 24 horas, com no máximo 100 jobs.
+6. O limite operacional de uma execução é 15 minutos. A UI consulta por até 16 minutos, guarda o job ID em `localStorage` e retoma o polling depois de recarregar a página.
+7. O proxy móvel só libera GET de job com UUID válido; as requisições POST/GET individuais são curtas e não dependem da duração do turno do agente.
+8. Se o runtime DSH reiniciar com job ainda pendente, o estado vira `interrupted`; nunca reenviar automaticamente o prompt, pois ferramentas externas podem já ter sido executadas.
+
+### Recuperação e diagnóstico
+- Se a interface fechar ou perder rede após receber o `jobId`, abrir novamente a mesma interface deve retomar o polling pelo ID salvo.
+- Se o DSH reiniciar, consultar o estado `interrupted` e inspecionar a sessão/histórico antes de reenviar.
+- Não interpretar timeout de cliente como falha de execução do agente.
+- Antes de repetir operações que escrevem no Drive, reconciliar o job e os eventos de ferramenta para evitar duplicação.
+- Não apagar `.data/dsh-google-drive-jobs.json` durante diagnóstico; contém resultados necessários para recuperar respostas.
+- O arquivo de jobs pode conter texto retornado pelo Drive. Mantê-lo local, com permissões restritas, fora do Git e com retenção curta.
+
+### Evidência pós-correção
+- `npm run check`: PASS.
+- Agent Studio `npm test`: 9/9 PASS.
+- Google Drive Agent `npm run check`: PASS; `npm test`: 14/14 PASS.
+- POST real pela rota móvel: HTTP 202 com job UUID.
+- Polling real: HTTP 200 até `completed`; resposta OAuth retornada ao cliente.
+- Reexecução somente leitura de dez documentos: `MCF-LONG-PIPELINE-PASS`, 10 arquivos lidos, nenhum arquivo alterado.
+- DSH runtime, Agent Studio e proxy móvel reiniciados e ativos após instalação.
+
+### Regra permanente
+**Toda conversa com agentes que possam executar ferramentas externas e demorar mais que poucos segundos deve usar job assíncrono persistente (admitir → acompanhar → recuperar resultado), nunca uma única requisição HTTP síncrona com timeout acoplado ao tempo de raciocínio do agente.** Aplicar a mesma regra a futuras interfaces de agentes e ferramentas MCF.
+
