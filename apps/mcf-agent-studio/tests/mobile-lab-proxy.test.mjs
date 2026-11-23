@@ -11,6 +11,7 @@ test('mobile Lab proxy: tailnet-origin-only writes, whitelist and no editor expo
  const app=dirname(dirname(fileURLToPath(import.meta.url)));
  const root=await mkdtemp(join(tmpdir(),'mcf-mobile-lab-'));
  const publicOrigin='https://mcf-leo-n43sm.tail582305.ts.net:8492';
+ let driveJobPolls=0;
  const mock=createServer(async(req,res)=>{
    res.setHeader('content-type',req.url==='/lab'?'text/html':'application/json');
    if(req.url==='/lab'){
@@ -18,6 +19,12 @@ test('mobile Lab proxy: tailnet-origin-only writes, whitelist and no editor expo
      return;
    }
    if(req.url==='/api/lab/status'){res.end(JSON.stringify({ready:true,messages:[]}));return;}
+   if(req.url==='/api/google-drive/jobs/123e4567-e89b-12d3-a456-426614174000'){
+     driveJobPolls++;
+     res.end(JSON.stringify({jobId:'123e4567-e89b-12d3-a456-426614174000',
+       status:driveJobPolls===1?'running':'completed',
+       answer:driveJobPolls===1?null:'resposta recuperada'}));return;
+   }
    if(req.url==='/api/lab/message'){
      let raw='';for await(const chunk of req)raw+=chunk;
      if(req.headers.origin!=='http://127.0.0.1:43580'){res.writeHead(403);res.end(JSON.stringify({error:'Bad upstream Origin'}));return;}
@@ -44,6 +51,13 @@ test('mobile Lab proxy: tailnet-origin-only writes, whitelist and no editor expo
  assert.match(await tracked.text(),/somente no notebook/);
  assert.equal((await fetch(base+'/lab.js?cache=123')).status,200);
  assert.equal((await fetch(base+'/api/lab/status?u=abc')).status,200);
+ const job1=await fetch(base+'/api/google-drive/jobs/123e4567-e89b-12d3-a456-426614174000');
+ assert.equal(job1.status,200,'mobile proxy exposes only UUID-scoped Google Drive job polling');
+ assert.equal((await job1.json()).status,'running');
+ const job2=await fetch(base+'/api/google-drive/jobs/123e4567-e89b-12d3-a456-426614174000');
+ assert.equal((await job2.json()).answer,'resposta recuperada','polling retrieves the completed response');
+ assert.equal(driveJobPolls,2);
+ assert.equal((await fetch(base+'/api/google-drive/jobs/not-a-uuid')).status,404);
  assert.equal((await fetch(base+'/api/state?u=abc')).status,404);
  assert.equal((await fetch(base+'/api/publish/status?u=abc')).status,404);
  assert.equal((await fetch(base+'/api/lab/message?u=abc',{method:'POST',headers:{origin:publicOrigin,'content-type':'application/json'},body:JSON.stringify({text:'oi'})})).status,400);

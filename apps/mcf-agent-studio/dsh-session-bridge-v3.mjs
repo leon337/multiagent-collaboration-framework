@@ -5,7 +5,7 @@
  */
 import { createServer } from 'node:http';
 import { randomBytes, randomUUID } from 'node:crypto';
-import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, unlink, rename } from 'node:fs/promises';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 
@@ -18,6 +18,9 @@ const TOKEN_FILE=join(DATA,'dsh-bridge-token');
 const SESSION_FILE=join(DATA,'dsh-planner-session.json');
 const LAB_FILE=join(DATA,'dsh-trainee-session.json');
 const DRIVE_SESSION_FILE=join(DATA,'dsh-google-drive-session.json');
+const DRIVE_JOBS_FILE=join(DATA,'dsh-google-drive-jobs.json');
+const DRIVE_JOB_TIMEOUT_MS=15*60*1000;
+const DRIVE_JOB_RETENTION_MS=24*60*60*1000;
 const PORT=4319;
 const HOST='127.0.0.1';
 const PRESET='mcf-studio-brain';
@@ -88,6 +91,56 @@ export function apply(ctx){
     }
   } catch {}
   const persistLab=()=>writeFile(LAB_FILE,JSON.stringify(lab,null,2)+'\n',{mode:0o600});
+  const driveJobs=new Map();
+  let driveJobAdmission=false;
+  try {
+    const saved=JSON.parse(readFileSync(DRIVE_JOBS_FILE,'utf8'));
+    if(Array.isArray(saved)) for(const row of saved.slice(-100)) {
+      if(row&&typeof row.id==='string'&&/^[a-f0-9-]{36}$/.test(row.id)) {
+        if(row.status==='running'||row.status==='queued') {
+          row.status='interrupted';
+          row.error='O runtime DSH reiniciou antes de confirmar a resposta. Consulte o histórico da sessão antes de reenviar.';
+          row.updatedAt=new Date().toISOString();
+        }
+        driveJobs.set(row.id,row);
+      }
+    }
+  } catch {}
+  async function persistDriveJobs(){
+    const now=Date.now();
+    for(const [id,row] of driveJobs) {
+      if(now-Date.parse(row.updatedAt||row.createdAt)>DRIVE_JOB_RETENTION_MS)driveJobs.delete(id);
+    }
+    while(driveJobs.size>100)driveJobs.delete(driveJobs.keys().next().value);
+    const tmp=DRIVE_JOBS_FILE+'.tmp';
+    await writeFile(tmp,JSON.stringify([...driveJobs.values()],null,2)+'\n',{mode:0o600});
+    await rename(tmp,DRIVE_JOBS_FILE);
+  }
+  async function startDriveJob(prompt){
+    if(running||driveJobAdmission)throw Object.assign(Error('A sessão do Studio já processa outra mensagem'),{status:409});
+    driveJobAdmission=true;
+    try{
+      const now=new Date().toISOString(),id=randomUUID();
+      const job={id,status:'queued',preset:'mcf-google-drive-agent',sessionId:null,
+        createdAt:now,updatedAt:now,answer:null,error:null};
+      driveJobs.set(id,job);
+      await persistDriveJobs();
+      // complete() sets the shared running guard synchronously before its first await.
+      const task=complete(prompt,'mcf-google-drive-agent');
+      job.status='running';job.sessionId=driveSessionId;job.updatedAt=new Date().toISOString();
+      try{await persistDriveJobs();}catch(error){ctx.logger.warn('drive job running-state persist: '+String(error?.message||error));}
+      task.then(async result=>{
+        job.status='completed';job.sessionId=result.sessionId;job.answer=result.answer;
+        job.updatedAt=new Date().toISOString();
+        try{await persistDriveJobs();}catch(error){ctx.logger.error('drive job result persist: '+String(error?.message||error));}
+      }).catch(async error=>{
+        job.status='failed';job.error=String(error?.message||'Falha na execução DSH').slice(0,500);
+        job.updatedAt=new Date().toISOString();
+        try{await persistDriveJobs();}catch(persistError){ctx.logger.error('drive job failure persist: '+String(persistError?.message||persistError));}
+      });
+      return {jobId:id,status:job.status,sessionId:job.sessionId,preset:job.preset};
+    }finally{driveJobAdmission=false;}
+  }
 
 
   function presetPath(preset){
@@ -253,7 +306,7 @@ export function apply(ctx){
       let ready;
       let aborted=false;
       const result=new Promise((resolve,reject)=>{ready={resolve,reject}});
-      const timer=setTimeout(()=>{aborted=true; ready.reject(Object.assign(Error('Sessão DSH excedeu o tempo de resposta'),{status:504}));},85000);
+      const timer=setTimeout(()=>{aborted=true; ready.reject(Object.assign(Error('Sessão DSH excedeu o tempo de resposta'),{status:504}));},DRIVE_JOB_TIMEOUT_MS);
       // Listen BEFORE prompt admission: never miss a fast answer or turn/end.
       dispose=ctx.on('session/event',(session,event)=>{
         if(session.id!==id || aborted)return;
@@ -318,8 +371,15 @@ export function apply(ctx){
         const body=await json(req);
         if(typeof body.prompt!=='string'||!body.prompt.trim()||body.prompt.length>4000)
           return reject(res,400,'Mensagem inválida (máximo 4000 caracteres)');
-        const answer=await complete(body.prompt.trim(),'mcf-google-drive-agent');
-        return response(res,200,answer);
+        return response(res,202,await startDriveJob(body.prompt.trim()));
+      }
+      const driveJobMatch=req.method==='GET'&&req.url.match(/^\/google-drive\/jobs\/([a-f0-9-]{36})$/);
+      if(driveJobMatch){
+        const job=driveJobs.get(driveJobMatch[1]);
+        if(!job)return reject(res,404,'Trabalho não encontrado ou expirado');
+        return response(res,200,{jobId:job.id,status:job.status,sessionId:job.sessionId,
+          preset:job.preset,answer:job.status==='completed'?job.answer:null,
+          error:job.error,createdAt:job.createdAt,updatedAt:job.updatedAt});
       }
       if(req.method==='GET'&&req.url==='/lab/status'){
         return response(res,200,{ready:true,preset:'hello-world-agent',

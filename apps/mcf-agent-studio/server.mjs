@@ -121,7 +121,7 @@ async function dshSessionCall(path, payload) {
       method: payload === undefined ? 'GET' : 'POST',
       headers: { 'X-Agent-Studio-Bridge': token, ...(payload === undefined ? {} : { 'Content-Type': 'application/json' }) },
       ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
-      signal: AbortSignal.timeout(['/chat','/google-drive/message','/lab/message','/validate-hello-world','/preview-chat'].includes(path) ? 90000 : 4000)
+      signal: AbortSignal.timeout(['/chat','/lab/message','/validate-hello-world','/preview-chat'].includes(path) ? 90000 : 7000)
     });
   } catch (e) {
     fail('Sessão DSH desconectada: ' + (e.name === 'TimeoutError' ? 'tempo excedido' : 'ponte local não responde'), 503);
@@ -341,8 +341,11 @@ async function route(req, res) {
       const body=await inputJson(req);
       if(typeof body.text!=='string'||!body.text.trim()||body.text.length>4000)
         fail('Digite uma mensagem de até 4000 caracteres',422);
-      return json(res,200,await dshSessionCall('/google-drive/message',{prompt:body.text.trim()}));
+      return json(res,202,await dshSessionCall('/google-drive/message',{prompt:body.text.trim()}));
     }
+    const driveJob=path.match(/^\/api\/google-drive\/jobs\/([a-f0-9-]{36})$/);
+    if(req.method==='GET'&&driveJob)
+      return json(res,200,await dshSessionCall('/google-drive/jobs/'+driveJob[1]));
     if (req.method === 'POST' && path === '/api/google-drive/reset') {
       const body=await inputJson(req);
       if(body.confirmation!=='NOVA CONVERSA') fail('Confirmação de nova conversa inválida',403);

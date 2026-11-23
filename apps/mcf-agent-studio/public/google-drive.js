@@ -2,6 +2,8 @@
 const $=id=>document.getElementById(id);
 const form=$('chatForm'),input=$('messageInput'),submit=$('sendButton');
 const KEY='mcf-google-drive-agent-chat-v1';
+const ACTIVE_JOB_KEY='mcf-google-drive-agent-active-job-v1';
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const state={online:false,busy:false,sessionId:null,messages:[]};
 try{const saved=JSON.parse(localStorage.getItem(KEY)||'[]');if(Array.isArray(saved))state.messages=saved.slice(-80).filter(x=>x&&['user','agent'].includes(x.role)&&typeof x.text==='string');}catch{}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state.messages.slice(-80)));}catch{}}
@@ -46,20 +48,58 @@ async function refresh(){
   online(Boolean(x.ready),'Conectado · MCF Google Drive Agent');renderAll();showError('');
  }catch(e){online(false,'Falha de conexão com DSH');showError(e.message);}
 }
+async function waitForJob(jobId){
+ const started=Date.now();let delayMs=900,lastError='';
+ while(Date.now()-started<16*60*1000){
+  try{
+   const job=await request('/api/google-drive/jobs/'+jobId);
+   if(job.status==='completed')return job;
+   if(['failed','interrupted'].includes(job.status)){localStorage.removeItem(ACTIVE_JOB_KEY);throw Error(job.error||'A execução terminou sem resposta.');}
+   if(!['queued','running'].includes(job.status))throw Error('Estado de execução desconhecido.');
+   lastError='';
+  }catch(e){
+   if(/trabalho não encontrado|expirado|Estado de execução/.test(e.message)){localStorage.removeItem(ACTIVE_JOB_KEY);throw e;}
+   lastError=e.message;
+  }
+  if(lastError)showError('Aguardando reconexão com a execução DSH…');
+  await sleep(delayMs);delayMs=Math.min(2500,Math.round(delayMs*1.25));
+ }
+ throw Error('A execução continua sem confirmação após 16 minutos. O trabalho permanece registrado no DSH; consulte a sessão antes de reenviar.');
+}
+async function receiveJob(jobId,pending){
+ const result=await waitForJob(jobId);
+ localStorage.removeItem(ACTIVE_JOB_KEY);
+ pending?.remove();
+ state.sessionId=result.sessionId||state.sessionId;
+ $('sessionId').textContent=state.sessionId||'Sessão ativa';
+ state.messages.push({role:'agent',text:String(result.answer||'O agente não retornou texto.'),at:new Date().toISOString()});
+ state.messages=state.messages.slice(-80);save();renderAll();showError('');
+}
 async function sendMessage(text){
  if(state.busy||!state.online||!text||text.length>4000)return;
  state.busy=true;showError('');submit.disabled=true;input.disabled=true;
  input.value='';$('chars').textContent='0 / 4000';
  const user={role:'user',text,at:new Date().toISOString()};state.messages.push(user);save();renderAll();
- const pending=renderMessage({role:'agent',text:'O agente está respondendo…',at:new Date().toISOString()},true);
+ const pending=renderMessage({role:'agent',text:'Mensagem recebida pelo DSH. Aguardando a conclusão do agente…',at:new Date().toISOString()},true);
  try{
-  const result=await request('/api/google-drive/message','POST',{text});
-  state.sessionId=result.sessionId||state.sessionId;$('sessionId').textContent=state.sessionId||'Sessão ativa';
-  pending.remove();
-  state.messages.push({role:'agent',text:String(result.answer||'O agente não retornou texto.'),at:new Date().toISOString()});
-  state.messages=state.messages.slice(-80);save();renderAll();
- }catch(e){pending.remove();showError(e.message);}
- finally{state.busy=false;submit.disabled=!state.online;input.disabled=!state.online;input.focus();}
+  const accepted=await request('/api/google-drive/message','POST',{text});
+  if(!accepted.jobId)throw Error('O DSH não confirmou o identificador do trabalho.');
+  localStorage.setItem(ACTIVE_JOB_KEY,accepted.jobId);
+  await receiveJob(accepted.jobId,pending);
+ }catch(e){
+  pending.remove();showError(e.message);
+ }finally{
+  state.busy=false;submit.disabled=!state.online;input.disabled=!state.online;input.focus();
+ }
+}
+async function resumePendingJob(){
+ const jobId=localStorage.getItem(ACTIVE_JOB_KEY);
+ if(!jobId||state.busy)return;
+ state.busy=true;online(state.online,'Recuperando resposta DSH…');
+ const pending=renderMessage({role:'agent',text:'Recuperando a resposta da sessão DSH…',at:new Date().toISOString()},true);
+ try{await receiveJob(jobId,pending);}
+ catch(e){pending.remove();showError(e.message);}
+ finally{state.busy=false;online(state.online,state.online?'DSH conectado':'DSH desconectado');}
 }
 form.addEventListener('submit',e=>{e.preventDefault();const text=input.value.trim();if(text)sendMessage(text);});
 input.addEventListener('input',()=>$('chars').textContent=input.value.length+' / 4000');
@@ -74,4 +114,4 @@ $('newConversation').addEventListener('click',async()=>{
  finally{state.busy=false;online(state.online,state.online?'DSH conectado':'DSH desconectado');}
 });
 document.querySelectorAll('[data-example]').forEach(b=>b.addEventListener('click',()=>sendMessage(b.dataset.example)));
-renderAll();refresh();
+renderAll();refresh().then(resumePendingJob);

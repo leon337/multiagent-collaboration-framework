@@ -49,7 +49,8 @@ const server=createServer(async(req,res)=>{
   if(req.method!=='GET' && (url.search||url.hash))
     return respond(res,400,'Parâmetros não aceitos em operações de escrita');
   const path=url.pathname==='/'?'/lab':url.pathname;
-  const allowed=req.method==='GET'?READ_PATHS.has(path):req.method==='POST'&&WRITE_PATHS.has(path);
+  const driveJobPath=/^\/api\/google-drive\/jobs\/[a-f0-9-]{36}$/.test(path);
+  const allowed=req.method==='GET'?(READ_PATHS.has(path)||driveJobPath):req.method==='POST'&&WRITE_PATHS.has(path);
   if(!allowed)return respond(res,404,'Recurso não disponível neste acesso remoto');
   if(req.method==='POST'){
     if(req.headers.origin!==ALLOWED_ORIGIN){
@@ -75,7 +76,7 @@ const server=createServer(async(req,res)=>{
         ?{'content-type':'application/json','origin':UPSTREAM,'accept':'application/json'}
         :{'accept':'text/html,application/json,text/css,*/*'},
       body:req.method==='POST'?body:undefined,
-      signal:AbortSignal.timeout(req.method==='POST'?95000:7000)
+      signal:AbortSignal.timeout(req.method==='POST'?15000:7000)
     });
     let content=await upstream.text();
     const types={'/lab':'text/html; charset=utf-8','/lab.css':'text/css; charset=utf-8',
