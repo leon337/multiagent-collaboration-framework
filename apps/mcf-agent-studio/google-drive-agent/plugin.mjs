@@ -9,7 +9,10 @@ const toolNames = [
   'mcf_google_drive_search',
   'mcf_google_drive_create_folder',
   'mcf_google_drive_create_text_file',
-  'mcf_google_drive_read_text_file'
+  'mcf_google_drive_read_text_file',
+  'mcf_google_drive_update_text_file',
+  'mcf_google_drive_rename_file',
+  'mcf_google_drive_delete_file'
 ];
 const output = {
   schema: { type: 'string' },
@@ -23,10 +26,10 @@ export function apply(ctx, cfg = {}) {
     'Você é o MCF Google Drive Agent, um agente operacional dedicado ao Google Drive.',
     'Antes de qualquer operação de leitura ou escrita, confirme a conta com mcf_google_drive_status.',
     expectedEmail ? 'A única conta autorizada é ' + expectedEmail + '. Se a conta não corresponder ou não estiver conectada, pare e informe o bloqueio.' : 'Se a conta esperada não estiver configurada, não execute operações.',
-    'O OAuth usa exclusivamente o escopo drive.file: você só pode acessar arquivos criados por este aplicativo ou explicitamente abertos/selecionados pelo usuário.',
+    'O OAuth usa o escopo drive, permitindo operar sobre arquivos e pastas que a conta autorizada pode acessar. Respeite permissões do Google e nunca ultrapasse o pedido explícito de LEANDRO.',
     'Nunca crie pastas ou arquivos sem pedido explícito de LEANDRO e sem nome/local definidos. Pesquise antes para evitar duplicatas.',
     'Ao criar na raiz, informe parentId como root; para itens dentro de uma pasta, use o ID retornado pela ferramenta de criação da pasta.',
-    'Nunca exclua, sobrescreva, renomeie, mova, compartilhe ou altere permissões. Se um arquivo já existir, não o substitua.',
+    'Nunca exclua nem sobrescreva sem pedido explícito e confirmação do alvo. Não altere compartilhamento ou permissões sem autorização específica.',
     'Para projetos Git, mantenha GitHub ou um repositório local como fonte de verdade. Não crie um diretório .git ativo dentro da pasta sincronizada do Drive; use o Drive para documentos, exportações e cópias.',
     'Não solicite, imprima, copie ou registre tokens, client secrets ou códigos OAuth. Não use cookies do navegador.',
     'Responda em português do Brasil e informe IDs/links retornados pelo Google somente quando forem úteis.'
@@ -95,13 +98,52 @@ export function apply(ctx, cfg = {}) {
   }));
   ctx.tools.register(defineTool({
     name: 'mcf_google_drive_read_text_file',
-    description: 'Lê um arquivo de texto acessível ao aplicativo; não lê binários nem Google Docs.',
+    description: 'Lê arquivos de texto UTF-8, exporta Google Docs como texto e Google Sheets como CSV; não lê binários.',
     parameters: {
       fileId: { type: 'string', required: true, description: 'ID do arquivo retornado por uma ferramenta do Drive.' }
     },
     output,
     async execute(args) {
       const response = await invoke('google_drive.read_text_file', args, expectedEmail);
+      return result(response.result);
+    }
+  }));
+
+  ctx.tools.register(defineTool({
+    name: 'mcf_google_drive_update_text_file',
+    description: 'Atualiza o conteúdo de arquivos de texto UTF-8 ou Google Docs existentes no Google Drive.',
+    parameters: {
+      fileId: { type: 'string', required: true, description: 'ID do arquivo existente.' },
+      content: { type: 'string', required: true, description: 'Novo conteúdo UTF-8, até 200 KB.' }
+    },
+    output,
+    async execute(args) {
+      const response = await invoke('google_drive.update_text_file', args, expectedEmail);
+      return result(response.result);
+    }
+  }));
+  ctx.tools.register(defineTool({
+    name: 'mcf_google_drive_rename_file',
+    description: 'Renomeia um arquivo existente no Google Drive sem alterar seu conteúdo.',
+    parameters: {
+      fileId: { type: 'string', required: true, description: 'ID do arquivo existente.' },
+      name: { type: 'string', required: true, description: 'Novo nome do arquivo.' }
+    },
+    output,
+    async execute(args) {
+      const response = await invoke('google_drive.update_text_file', args, expectedEmail);
+      return result(response.result);
+    }
+  }));
+  ctx.tools.register(defineTool({
+    name: 'mcf_google_drive_delete_file',
+    description: 'Exclui permanentemente um arquivo do Google Drive. Exija confirmação explícita de LEANDRO para o arquivo-alvo antes de executar.',
+    parameters: {
+      fileId: { type: 'string', required: true, description: 'ID exato do arquivo cuja exclusão foi autorizada.' }
+    },
+    output,
+    async execute(args) {
+      const response = await invoke('google_drive.delete_file', args, expectedEmail);
       return result(response.result);
     }
   }));

@@ -5,7 +5,7 @@
  */
 import { createServer } from 'node:http';
 import { randomBytes, randomUUID } from 'node:crypto';
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 
@@ -301,10 +301,18 @@ export function apply(ctx){
           workspaceId:row.id,accounted:true});
       }
       if(req.method==='GET'&&req.url==='/google-drive/status'){
+        await ensureGoogleDriveSession();
         const state=await workspaceInspection();
         return response(res,200,{ready:state.current.googleDriveInCorrectWorkspace,
           preset:'mcf-google-drive-agent',sessionId:driveSessionId,
           workspace:state.presets['mcf-google-drive-agent']});
+      }
+      if(req.method==='POST'&&req.url==='/google-drive/reset'){
+        if(running)return reject(res,409,'Aguarde o término da resposta atual');
+        driveSessionId=null;
+        await unlink(DRIVE_SESSION_FILE).catch(e=>{if(e.code!=='ENOENT')throw e;});
+        const id=await ensureGoogleDriveSession();
+        return response(res,200,{reset:true,preset:'mcf-google-drive-agent',sessionId:id});
       }
       if(req.method==='POST'&&req.url==='/google-drive/message'){
         const body=await json(req);

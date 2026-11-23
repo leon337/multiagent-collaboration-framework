@@ -12,7 +12,7 @@ const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const USERINFO_URL = 'https://openidconnect.googleapis.com/v1/userinfo';
 const DRIVE_BASE = 'https://www.googleapis.com/drive/v3/files';
 const UPLOAD_BASE = 'https://www.googleapis.com/upload/drive/v3/files';
-const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const SCOPE = 'https://www.googleapis.com/auth/drive';
 const TIMEOUT_MS = 12000;
 const MAX_TEXT_BYTES = 200000;
 
@@ -93,9 +93,8 @@ async function loadTokens() {
 function validateDriveScope(tokens) {
   const scopes = new Set(String(tokens?.scope || '').split(' ').filter(Boolean));
   if (!scopes.has(SCOPE)) throw new DriveError('GOOGLE_DRIVE_SCOPE_MISSING', 403);
-  if (scopes.has('https://www.googleapis.com/auth/drive') ||
-      scopes.has('https://www.googleapis.com/auth/drive.readonly'))
-    throw new DriveError('GOOGLE_DRIVE_SCOPE_TOO_BROAD', 403);
+  if (scopes.has('https://www.googleapis.com/auth/drive.readonly'))
+    throw new DriveError('GOOGLE_DRIVE_SCOPE_INSUFFICIENT', 403);
 }
 async function accessToken() {
   const client = await loadClient();
@@ -147,7 +146,7 @@ async function assertIdentity(expectedEmail) {
 }
 async function googleFetch(url, init = {}) {
   const parsed = new URL(url);
-  if (parsed.hostname !== 'www.googleapis.com' || parsed.protocol !== 'https:')
+  if (!['www.googleapis.com', 'docs.googleapis.com'].includes(parsed.hostname) || parsed.protocol !== 'https:')
     throw new DriveError('GOOGLE_HOST_NOT_ALLOWED', 403);
   const token = await accessToken();
   try {
@@ -211,7 +210,7 @@ async function searchFiles(query, limit = 10, parentId) {
   url.searchParams.set('orderBy', 'modifiedTime desc');
   url.searchParams.set('fields', 'nextPageToken,files(' + fields + ')');
   const data = await googleJson(url.toString());
-  return { files: data.files || [], hasMore: Boolean(data.nextPageToken), accessScope: 'drive.file' };
+  return { files: data.files || [], hasMore: Boolean(data.nextPageToken), accessScope: 'drive' };
 }
 async function createFolder(name, parentId) {
   const parent = await ensureParent(parentId);
@@ -262,35 +261,122 @@ async function createTextFile(name, content, parentId) {
 }
 async function readTextFile(fileId) {
   const file = await metadata(fileId);
-  if (!(file.mimeType?.startsWith('text/') || file.mimeType === 'application/json'))
+  const exportMime = file.mimeType === 'application/vnd.google-apps.document'
+    ? 'text/plain'
+    : file.mimeType === 'application/vnd.google-apps.spreadsheet'
+      ? 'text/csv'
+      : null;
+  if (!exportMime && !(file.mimeType?.startsWith('text/') || file.mimeType === 'application/json'))
     throw new DriveError('UNSUPPORTED_FILE_TYPE', 415);
-  const url = new URL(DRIVE_BASE + '/' + encodeURIComponent(fileId));
-  url.searchParams.set('alt', 'media');
-  const response = await googleFetch(url.toString(), { headers: { accept: 'text/plain, application/json' } });
+  const url = new URL(DRIVE_BASE + '/' + encodeURIComponent(fileId) + (exportMime ? '/export' : ''));
+  if (exportMime) url.searchParams.set('mimeType', exportMime);
+  else url.searchParams.set('alt', 'media');
+  const response = await googleFetch(url.toString(), {
+    headers: { accept: exportMime || 'text/plain, application/json' }
+  });
   const content = await response.text();
   if (Buffer.byteLength(content, 'utf8') > MAX_TEXT_BYTES) throw new DriveError('FILE_TOO_LARGE_TO_READ', 413);
-  return { file, content };
+  return { file, content, exported: Boolean(exportMime), exportMime };
+}
+async function replaceGoogleDocContent(fileId, content) {
+  const docUrl = 'https://docs.googleapis.com/v1/documents/' + encodeURIComponent(fileId);
+  const document = await googleJson(docUrl);
+  const endIndex = Math.max(1, ...(document.body?.content || []).map(item => Number(item.endIndex || 1)));
+  const requests = [];
+  if (endIndex > 2) requests.push({ deleteContentRange: { range: { startIndex: 1, endIndex: endIndex - 1 } } });
+  if (content.length) requests.push({ insertText: { location: { index: 1 }, text: content } });
+  if (!requests.length) throw new DriveError('EMPTY_UPDATE');
+  const result = await googleJson(docUrl + ':batchUpdate', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ requests })
+  });
+  return { updated: true, file: await metadata(fileId), documentUpdated: true, replies: result.replies || [] };
+}
+
+
+async function updateTextFile(fileId, name, content) {
+  if (!validId(fileId)) throw new DriveError('INVALID_FILE_ID');
+  const current = await metadata(fileId);
+  if (current.mimeType === 'application/vnd.google-apps.document') {
+    if (content !== undefined && (typeof content !== 'string' || Buffer.byteLength(content, 'utf8') > MAX_TEXT_BYTES))
+      throw new DriveError('INVALID_OR_TOO_LARGE_CONTENT', 413);
+    if (content !== undefined) return replaceGoogleDocContent(fileId, content);
+    if (name !== undefined) {
+      if (!validName(name)) throw new DriveError('INVALID_NAME');
+      const url = new URL(DRIVE_BASE + '/' + encodeURIComponent(fileId));
+      url.searchParams.set('fields', fields);
+      const renamed = await googleJson(url.toString(), {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: name.trim() })
+      });
+      if (!renamed.id) throw new DriveError('GOOGLE_FILE_RENAME_UNCONFIRMED', 502);
+      return { updated: true, file: renamed, renamed: true };
+    }
+    throw new DriveError('EMPTY_UPDATE');
+  }
+  if (!(current.mimeType?.startsWith('text/') || current.mimeType === 'application/json'))
+    throw new DriveError('UNSUPPORTED_FILE_TYPE', 415);
+  const meta = {};
+  if (name !== undefined) {
+    if (!validName(name)) throw new DriveError('INVALID_NAME');
+    meta.name = name.trim();
+  }
+  if (content !== undefined && (typeof content !== 'string' || Buffer.byteLength(content, 'utf8') > MAX_TEXT_BYTES))
+    throw new DriveError('INVALID_OR_TOO_LARGE_CONTENT', 413);
+  if (!Object.keys(meta).length && content === undefined) throw new DriveError('EMPTY_UPDATE');
+  let updated;
+  if (content === undefined) {
+    const url = new URL(DRIVE_BASE + '/' + encodeURIComponent(fileId));
+    url.searchParams.set('fields', fields);
+    updated = await googleJson(url.toString(), {
+      method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(meta)
+    });
+  } else {
+    const boundary = 'mcf-drive-' + randomBytes(16).toString('hex');
+    const body = Buffer.from(
+      '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(meta) + '\r\n--' + boundary +
+      '\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n' + content +
+      '\r\n--' + boundary + '--\r\n', 'utf8'
+    );
+    const url = new URL(UPLOAD_BASE + '/' + encodeURIComponent(fileId));
+    url.searchParams.set('uploadType', 'multipart');
+    url.searchParams.set('fields', fields);
+    updated = await googleJson(url.toString(), {
+      method: 'PATCH', headers: { 'content-type': 'multipart/related; boundary=' + boundary }, body
+    });
+  }
+  if (!updated.id) throw new DriveError('GOOGLE_FILE_UPDATE_UNCONFIRMED', 502);
+  return { updated: true, file: updated };
+}
+async function deleteFile(fileId) {
+  if (!validId(fileId)) throw new DriveError('INVALID_FILE_ID');
+  await metadata(fileId);
+  const url = new URL(DRIVE_BASE + '/' + encodeURIComponent(fileId));
+  await googleFetch(url.toString(), { method: 'DELETE' });
+  return { deleted: true, fileId };
 }
 
 const OPERATIONS = Object.freeze([
   'google_drive.status', 'google_drive.search', 'google_drive.create_folder',
-  'google_drive.create_text_file', 'google_drive.read_text_file'
+  'google_drive.create_text_file', 'google_drive.read_text_file',
+  'google_drive.update_text_file', 'google_drive.delete_file'
 ]);
 export function isAllowedOperation(operation) { return OPERATIONS.includes(operation); }
 async function getStatus(expectedEmail) {
   let configured = false, connected = false, account = null, accountMatches = false, error = null;
   try { await loadClient(); configured = true; } catch (e) { error = e.code || 'OAUTH_CLIENT_NOT_CONFIGURED'; }
-  if (!configured) return { configured, connected, account, accountMatches, scope: 'drive.file', error };
+  if (!configured) return { configured, connected, account, accountMatches, scope: 'drive', error };
   try {
     const tokens = await loadTokens();
-    if (!tokens?.refresh_token) return { configured, connected, account, accountMatches, scope: 'drive.file', error: 'OAUTH_REQUIRED' };
+    if (!tokens?.refresh_token) return { configured, connected, account, accountMatches, scope: 'drive', error: 'OAUTH_REQUIRED' };
     const user = await identity();
     account = user.email;
     accountMatches = !expectedEmail || account === expectedEmail.toLowerCase();
     connected = accountMatches;
     if (!accountMatches) error = 'GOOGLE_ACCOUNT_MISMATCH';
   } catch (e) { error = e.code || 'GOOGLE_STATUS_FAILED'; }
-  return { configured, connected, account, accountMatches, scope: 'drive.file', error };
+  return { configured, connected, account, accountMatches, scope: 'drive', error };
 }
 export async function invoke(operation, args = {}, expectedEmail = '') {
   if (!isAllowedOperation(operation)) throw new DriveError('OPERATION_NOT_ALLOWED', 403);
@@ -316,6 +402,12 @@ export async function invoke(operation, args = {}, expectedEmail = '') {
           break;
         case 'google_drive.read_text_file':
           result = await readTextFile(args.fileId);
+          break;
+        case 'google_drive.update_text_file':
+          result = await updateTextFile(args.fileId, args.name, args.content);
+          break;
+        case 'google_drive.delete_file':
+          result = await deleteFile(args.fileId);
           break;
         default:
           throw new DriveError('OPERATION_NOT_ALLOWED', 403);

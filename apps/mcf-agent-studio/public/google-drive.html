@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0d1420">
+  <meta name="description" content="Conversa direta com o agente MCF Google Drive no DSH.">
+  <title>MCF Google Drive Agent · Chat</title>
+  <link rel="stylesheet" href="/lab.css">
+  <script defer src="/google-drive.js"></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar" aria-label="Painel do agente">
+    <a class="brand" href="/"><span class="brand-symbol">✳</span><span><strong>MCF Agent Studio</strong><small>Conector Google Drive</small></span></a>
+    <div class="side-section">
+      <p class="eyebrow">AGENTE ATIVO</p>
+      <div class="agent-profile">
+        <span class="agent-avatar">G</span>
+        <div><strong>MCF Google Drive Agent</strong><small>Preset real · DeepSeek Harness</small></div>
+      </div>
+      <div class="connection" id="connection" role="status" aria-live="polite"><span class="pulse"></span><span id="connectionLabel">Conectando ao DSH…</span></div>
+    </div>
+    <div class="side-section">
+      <p class="eyebrow">SESSÃO</p>
+      <dl class="session-data">
+        <div><dt>Preset</dt><dd>mcf-google-drive-agent</dd></div>
+        <div><dt>Identificação</dt><dd id="sessionId">Verificando…</dd></div>
+        <div><dt>Mensagens nesta tela</dt><dd id="messageCount">0</dd></div>
+      </dl>
+      <button id="newConversation" class="button-outline" type="button">＋ Nova conversa</button>
+    </div>
+    <div class="side-section note">
+      <p class="eyebrow">CAPACIDADES</p>
+      <p>Pesquisa, leitura de arquivos de texto e Google Docs exportados, criação de pastas e arquivos, atualização, renomeação e exclusão com confirmação do alvo.</p>
+      <p>O agente confirma a identidade Google e o escopo antes de operar.</p>
+    </div>
+    <nav class="side-links" aria-label="Navegação">
+      <a href="https://mcf-leo-n43sm.tail582305.ts.net:8473/entrar" target="_blank" rel="noopener noreferrer">↗ Abrir interface DSH</a>
+      <a href="/">↗ Voltar ao MCF Agent Studio</a>
+    </nav>
+  </aside>
+  <main class="workspace">
+    <header class="topbar">
+      <div class="headline">
+        <div class="eyebrow">CONVERSA DIRETA • PRESET DSH</div>
+        <h1>Google Drive <span>Agent.</span></h1>
+        <p>Converse com o agente operacional conectado à conta Google autorizada.</p>
+      </div>
+      <div class="top-actions">
+        <span class="online" id="liveBadge"><span class="pulse"></span> Conectando</span>
+        <button id="verifyButton" type="button" class="button-outline">Verificar OAuth</button>
+      </div>
+    </header>
+    <div class="notice" id="publicationNotice" role="status" aria-live="polite">
+      <span class="notice-icon">ⓘ</span><span id="noticeText">Verificando a sessão DSH…</span>
+    </div>
+    <section class="chat" aria-label="Conversa com MCF Google Drive Agent">
+      <div class="chat-scroll" id="chatScroll">
+        <div class="empty" id="emptyState">
+          <div class="empty-symbol">✳</div>
+          <p class="eyebrow">AGENTE GOOGLE DRIVE</p>
+          <h2>Conexão pronta para conversar.</h2>
+          <p>Envie uma solicitação. O agente usará as ferramentas do Google Drive disponíveis no preset DSH.</p>
+          <div class="examples">
+            <button type="button" data-example="Verifique sua autenticação OAuth, a conta conectada e o escopo efetivo.">🔐 Verificar OAuth</button>
+            <button type="button" data-example="Pesquise no meu Google Drive arquivos relacionados ao MCF v3.0.0.">🔎 Pesquisar arquivos</button>
+            <button type="button" data-example="Quais operações do Google Drive estão disponíveis para você?">⚙ Ver ferramentas</button>
+          </div>
+        </div>
+        <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Histórico da conversa"></div>
+      </div>
+      <div class="composer-wrap">
+        <form id="chatForm" class="composer">
+          <label for="messageInput" class="sr-only">Sua mensagem para o MCF Google Drive Agent</label>
+          <textarea id="messageInput" rows="2" maxlength="4000" placeholder="Peça ao agente para pesquisar, ler ou organizar arquivos…" required></textarea>
+          <button class="send-button" id="sendButton" type="submit" aria-label="Enviar mensagem"><span aria-hidden="true">➤</span><span>Enviar</span></button>
+        </form>
+        <div class="composer-footer"><span>Enter envia · Shift+Enter quebra linha</span><span id="chars">0 / 4000</span></div>
+        <div class="error-message hidden" id="errorMessage" role="alert"></div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
