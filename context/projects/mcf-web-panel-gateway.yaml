@@ -1,0 +1,31 @@
+schema_version: 1
+
+project:
+  id: mcf-web-panel-gateway
+  lifecycle: REGISTERED
+
+identity:
+  canonical_repository: leon337/mcf-web-panel-gateway
+  aliases:
+    - MCF Web Panel Gateway
+    - MCF Browser Agent
+    - MCF Parallel Chat
+    - MCF Multiagent Web Panels
+    - MCF Dual Browser + Parallel Chat
+
+ownership:
+  project_owner: LEANDRO
+
+context:
+  capsule_path: .mcf/project-capsule.yaml
+  canonical_entrypoints:
+    - README.md
+    - .mcf/project-capsule.yaml
+    - docs/SUCCESSOR-CHAT-BOOTSTRAP.md
+    - docs/ARCHITECTURE.md
+    - docs/OPERATIONS.md
+    - integrations/providers.json
+
+freshness:
+  operational_state: LIVE_REQUIRED
+  project_identity: DURABLE

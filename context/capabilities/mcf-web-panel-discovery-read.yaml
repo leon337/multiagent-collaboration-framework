@@ -1,0 +1,51 @@
+schema_version: 1
+
+capability:
+  id: mcf.web.panel.discovery.read
+  provider_project_id: mcf-web-panel-gateway
+  consumer_project_ids:
+    - multiagent-collaboration-framework
+  mode: READ_ONLY
+
+contract:
+  protocol: MCF_WEB_PANEL_GATEWAY_DISCOVERY_V1
+  allowed_operations:
+    - provider.catalog.read
+    - web.panel.discover
+    - web.panel.inspect
+  prohibited_operations:
+    - web.panel.message.send
+    - web.panel.click
+    - web.panel.account.authenticate
+    - browser.token.read
+    - credential.export
+    - deepseek.harness.execute
+    - production.deploy
+
+scope:
+  environments:
+    - dev
+    - lab
+  resources:
+    - localhost:9334
+    - localhost:48721
+    - provider-host-allowlist
+
+governance:
+  authorization_state: NOT_AUTHORIZED
+  required_gate: MCF_EXECUTOR_INTEGRATION_AND_PERMISSION_REVIEW
+  expiration: null
+
+lifecycle:
+  implementation_state: DECLARED
+  connection_state: DISCONNECTED
+  runtime_state: UNKNOWN
+  verification_state: NOT_VERIFIED
+  last_verified_at: null
+
+evidence:
+  - source_ref: repo://leon337/mcf-web-panel-gateway/bin/mcf-web-panel.mjs
+    source_revision: c5e2c165da61783f9c59ec2ebc935d4df57b03fd
+    observed_at: "2026-10-24T20:05:31-03:00"
+
+freshness: LIVE_REQUIRED
