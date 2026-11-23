@@ -151,3 +151,62 @@ Resultado: **6/6 etapas operacionais PASS**. As operações disponíveis no mód
 
 **Limite remanescente:** esta evidência comprova o token amplo e o CRUD no conector local. Não comprova, por si só, que o runtime/preset DSH já recarregou a nova versão do plugin nem que as sete ferramentas estão visíveis na sessão ativa. Verificar o registro/montagem do plugin no DSH antes de declarar o agente DSH plenamente atualizado.
 
+## 11. DSH preset, Google Docs e interfaces — ativação final verificada (2026-11-23)
+
+Esta seção é o estado operacional mais recente e **supersede os snapshots históricos das seções 9 e 10** quando houver divergência.
+
+### Autorização efetiva no próprio DSH
+O preset novo `mcf-google-drive-agent`, em uma sessão DSH criada após o reload do runtime, confirmou:
+- conta `potiguaradm23@gmail.com`;
+- `accountMatches=true`;
+- escopo OAuth `drive`;
+- `connected=true` e `error=null`.
+
+O preset expôs oito ferramentas:
+1. `mcf_google_drive_status`;
+2. `mcf_google_drive_search`;
+3. `mcf_google_drive_create_folder`;
+4. `mcf_google_drive_create_text_file`;
+5. `mcf_google_drive_read_text_file`;
+6. `mcf_google_drive_update_text_file`;
+7. `mcf_google_drive_rename_file`;
+8. `mcf_google_drive_delete_file`.
+
+A exclusão exige confirmação explícita de LEANDRO para o alvo exato. A criação não sobrescreve itens existentes.
+
+### Leitura e edição de Google Docs
+O leitor agora exporta Google Docs via Drive API como `text/plain` e Google Sheets como `text/csv`. A atualização de Google Docs usa a Google Docs API (`documents.get` + `documents.batchUpdate`); renomeação usa metadados do Drive.
+
+Teste real pelo próprio agente DSH:
+- pesquisa encontrou documentos MCF preexistentes no Drive;
+- leitura de `mcf-v3.0.0-live-agent-resilient-spec.md`, MIME `application/vnd.google-apps.document`, exportada para texto;
+- conteúdo inicial conferido;
+- documento original não foi modificado.
+
+### Correção de montagem do preset e ponte
+- O schema do DSH exige que todo parâmetro declarado seja obrigatório. Os parâmetros opcionais anteriores impediam a montagem atualizada; atualização de conteúdo e renomeação foram separadas em ferramentas com argumentos obrigatórios.
+- O HMR do perfil `web` observa o diretório local do Agent Studio. Sessões DSH antigas preservam a composição anterior; sempre criar sessão nova após mudança de ferramentas.
+- A ponte do Agent Studio escuta em `127.0.0.1:4319`. Para evitar disputa de token quando duas instâncias DSH compartilham o perfil `web`, o plugin de ponte é habilitado somente no serviço proprietário por `MCF_AGENT_STUDIO_BRIDGE=1` (drop-in de `mcf-dsh-runtime.service`). A outra instância mantém a interface DSH sem tentar montar a ponte.
+- O DSH runtime foi reiniciado após a correção; a ponte e o preset foram verificados novamente.
+
+### Interfaces
+Com Tailscale ativo no dispositivo cliente, as rotas publicadas são tailnet-only:
+- DSH com gateway de autenticação nativa: `https://<tailnet-host>:8472/`;
+- conversa gráfica direta com o agente: `https://<tailnet-host>:8492/google-drive`.
+
+O gateway DSH não expõe o token nativo na URL. O proxy móvel limita métodos e caminhos permitidos e encaminha o chat ao mesmo preset DSH. A interface oferece nova sessão, histórico local e verificação OAuth.
+
+### Evidências de execução
+- Agent Studio: `npm run check` aprovado; 9/9 testes.
+- Google Drive Agent: `npm run check` aprovado; 14/14 testes.
+- Interface local e proxy móvel: GET `/google-drive` HTTP 200.
+- API do chat pelo proxy móvel: HTTP 200; o agente confirmou conta e escopo.
+- Reset de conversa pelo proxy: HTTP 200 e nova sessão DSH.
+- Gateway DSH: fluxo de autenticação nativa testado localmente; resposta autenticada HTTP 200.
+- Busca e leitura Google Docs foram executadas pelo preset DSH, não apenas pelo módulo local.
+
+### Limites funcionais remanescentes
+O escopo OAuth `drive` cobre arquivos e pastas que a conta pode acessar, mas a superfície de ferramentas ainda não implementa todos os endpoints do Drive. Permanecem fora do escopo: leitura binária/PDF e OCR, apresentações, escrita em planilhas, cópia/movimentação, compartilhamento e gestão de permissões. Não declarar cobertura integral da API até implementar e testar essas operações.
+
+As rotas Tailscale estão configuradas como tailnet-only. O teste do gateway e do proxy foi realizado no host; a abertura final no telefone de LEANDRO deve ocorrer com o cliente Tailscale conectado, pois o host local não consegue testar o próprio FQDN por hairpin.
+
