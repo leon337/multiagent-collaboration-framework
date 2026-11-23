@@ -48,6 +48,17 @@ async function refresh(){
   online(Boolean(x.ready),'Conectado · MCF Google Drive Agent');renderAll();showError('');
  }catch(e){online(false,'Falha de conexão com DSH');showError(e.message);}
 }
+function readActiveJob(){
+ try{
+  const x=JSON.parse(localStorage.getItem(ACTIVE_JOB_KEY)||'null');
+  return x&&/^[a-f0-9-]{36}$/.test(x.jobId)&&typeof x.prompt==='string'?x:null;
+ }catch{return null;}
+}
+async function admitJob(job){
+ const accepted=await request('/api/google-drive/message','POST',{text:job.prompt,jobId:job.jobId});
+ if(accepted.jobId!==job.jobId)throw Error('O DSH retornou um identificador de trabalho diferente.');
+ return accepted;
+}
 async function waitForJob(jobId){
  const started=Date.now();let delayMs=900,lastError='';
  while(Date.now()-started<16*60*1000){
@@ -82,23 +93,30 @@ async function sendMessage(text){
  const user={role:'user',text,at:new Date().toISOString()};state.messages.push(user);save();renderAll();
  const pending=renderMessage({role:'agent',text:'Mensagem recebida pelo DSH. Aguardando a conclusão do agente…',at:new Date().toISOString()},true);
  try{
-  const accepted=await request('/api/google-drive/message','POST',{text});
-  if(!accepted.jobId)throw Error('O DSH não confirmou o identificador do trabalho.');
-  localStorage.setItem(ACTIVE_JOB_KEY,accepted.jobId);
-  await receiveJob(accepted.jobId,pending);
+  const job={jobId:crypto.randomUUID(),prompt:text};
+  localStorage.setItem(ACTIVE_JOB_KEY,JSON.stringify(job));
+  try{await admitJob(job);}
+  catch(firstError){
+   // The POST may have reached DSH even if the response was lost. Retry with
+   // the same idempotency key; DSH returns the existing job instead of re-running it.
+   await sleep(700);
+   await admitJob(job);
+  }
+  await receiveJob(job.jobId,pending);
  }catch(e){
-  pending.remove();showError(e.message);
+  pending.remove();
+  showError('A mensagem pode já ter sido recebida pelo DSH. O identificador foi preservado; recarregue a página para recuperar a resposta sem duplicar a execução. '+e.message);
  }finally{
   state.busy=false;submit.disabled=!state.online;input.disabled=!state.online;input.focus();
  }
 }
 async function resumePendingJob(){
- const jobId=localStorage.getItem(ACTIVE_JOB_KEY);
- if(!jobId||state.busy)return;
+ const job=readActiveJob();
+ if(!job||state.busy)return;
  state.busy=true;online(state.online,'Recuperando resposta DSH…');
  const pending=renderMessage({role:'agent',text:'Recuperando a resposta da sessão DSH…',at:new Date().toISOString()},true);
- try{await receiveJob(jobId,pending);}
- catch(e){pending.remove();showError(e.message);}
+ try{await admitJob(job);await receiveJob(job.jobId,pending);}
+ catch(e){pending.remove();showError('A mensagem permanece identificada para recuperação. '+e.message);}
  finally{state.busy=false;online(state.online,state.online?'DSH conectado':'DSH desconectado');}
 }
 form.addEventListener('submit',e=>{e.preventDefault();const text=input.value.trim();if(text)sendMessage(text);});

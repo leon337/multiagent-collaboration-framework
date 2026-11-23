@@ -341,7 +341,9 @@ async function route(req, res) {
       const body=await inputJson(req);
       if(typeof body.text!=='string'||!body.text.trim()||body.text.length>4000)
         fail('Digite uma mensagem de até 4000 caracteres',422);
-      return json(res,202,await dshSessionCall('/google-drive/message',{prompt:body.text.trim()}));
+      if(body.jobId!==undefined&&(typeof body.jobId!=='string'||!/^[a-f0-9-]{36}$/.test(body.jobId)))
+        fail('Identificador de trabalho inválido',422);
+      return json(res,202,await dshSessionCall('/google-drive/message',{prompt:body.text.trim(),...(body.jobId?{jobId:body.jobId}:{})}));
     }
     const driveJob=path.match(/^\/api\/google-drive\/jobs\/([a-f0-9-]{36})$/);
     if(req.method==='GET'&&driveJob)

@@ -4,7 +4,7 @@
  * Does not read, copy, or reimplement any LLM credential.
  */
 import { createServer } from 'node:http';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { readFile, writeFile, mkdir, unlink, rename } from 'node:fs/promises';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -116,12 +116,20 @@ export function apply(ctx){
     await writeFile(tmp,JSON.stringify([...driveJobs.values()],null,2)+'\n',{mode:0o600});
     await rename(tmp,DRIVE_JOBS_FILE);
   }
-  async function startDriveJob(prompt){
+  async function startDriveJob(prompt,requestedId){
+    const id=requestedId||randomUUID();
+    if(!/^[a-f0-9-]{36}$/.test(id))throw Object.assign(Error('Identificador de trabalho inválido'),{status:400});
+    const promptHash=createHash('sha256').update(prompt).digest('hex');
+    const existing=driveJobs.get(id);
+    if(existing){
+      if(existing.promptHash!==promptHash)throw Object.assign(Error('O identificador já pertence a outra mensagem'),{status:409});
+      return {jobId:id,status:existing.status,sessionId:existing.sessionId,preset:existing.preset};
+    }
     if(running||driveJobAdmission)throw Object.assign(Error('A sessão do Studio já processa outra mensagem'),{status:409});
     driveJobAdmission=true;
     try{
-      const now=new Date().toISOString(),id=randomUUID();
-      const job={id,status:'queued',preset:'mcf-google-drive-agent',sessionId:null,
+      const now=new Date().toISOString();
+      const job={id,promptHash,status:'queued',preset:'mcf-google-drive-agent',sessionId:null,
         createdAt:now,updatedAt:now,answer:null,error:null};
       driveJobs.set(id,job);
       await persistDriveJobs();
@@ -371,7 +379,7 @@ export function apply(ctx){
         const body=await json(req);
         if(typeof body.prompt!=='string'||!body.prompt.trim()||body.prompt.length>4000)
           return reject(res,400,'Mensagem inválida (máximo 4000 caracteres)');
-        return response(res,202,await startDriveJob(body.prompt.trim()));
+        return response(res,202,await startDriveJob(body.prompt.trim(),body.jobId));
       }
       const driveJobMatch=req.method==='GET'&&req.url.match(/^\/google-drive\/jobs\/([a-f0-9-]{36})$/);
       if(driveJobMatch){
