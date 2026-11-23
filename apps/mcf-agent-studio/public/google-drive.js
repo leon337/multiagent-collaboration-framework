@@ -51,7 +51,7 @@ async function refresh(){
 function readActiveJob(){
  try{
   const x=JSON.parse(localStorage.getItem(ACTIVE_JOB_KEY)||'null');
-  return x&&/^[a-f0-9-]{36}$/.test(x.jobId)&&typeof x.prompt==='string'?x:null;
+  return x&&/^[a-f0-9-]{36}$/.test(x.jobId)?x:null;
  }catch{return null;}
 }
 async function admitJob(job){
@@ -94,7 +94,7 @@ async function sendMessage(text){
  const pending=renderMessage({role:'agent',text:'Mensagem recebida pelo DSH. Aguardando a conclusão do agente…',at:new Date().toISOString()},true);
  try{
   const job={jobId:crypto.randomUUID(),prompt:text};
-  localStorage.setItem(ACTIVE_JOB_KEY,JSON.stringify(job));
+  localStorage.setItem(ACTIVE_JOB_KEY,JSON.stringify({jobId:job.jobId}));
   try{await admitJob(job);}
   catch(firstError){
    // The POST may have reached DSH even if the response was lost. Retry with
@@ -115,8 +115,8 @@ async function resumePendingJob(){
  if(!job||state.busy)return;
  state.busy=true;online(state.online,'Recuperando resposta DSH…');
  const pending=renderMessage({role:'agent',text:'Recuperando a resposta da sessão DSH…',at:new Date().toISOString()},true);
- try{await admitJob(job);await receiveJob(job.jobId,pending);}
- catch(e){pending.remove();showError('A mensagem permanece identificada para recuperação. '+e.message);}
+ try{await receiveJob(job.jobId,pending);}
+ catch(e){pending.remove();showError('Não foi possível recuperar o trabalho pelo identificador salvo. A mensagem não será reenviada automaticamente para evitar duplicação. '+e.message);}
  finally{state.busy=false;online(state.online,state.online?'DSH conectado':'DSH desconectado');}
 }
 form.addEventListener('submit',e=>{e.preventDefault();const text=input.value.trim();if(text)sendMessage(text);});
