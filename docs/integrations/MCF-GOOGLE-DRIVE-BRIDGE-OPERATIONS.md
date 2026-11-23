@@ -253,3 +253,12 @@ O endpoint de chat não deve mais manter uma requisição HTTP aberta durante to
 ### Regra permanente
 **Toda conversa com agentes que possam executar ferramentas externas e demorar mais que poucos segundos deve usar job assíncrono persistente (admitir → acompanhar → recuperar resultado), nunca uma única requisição HTTP síncrona com timeout acoplado ao tempo de raciocínio do agente.** Aplicar a mesma regra a futuras interfaces de agentes e ferramentas MCF.
 
+### Idempotência de admissão e recuperação de POST ambíguo
+- A interface gera o UUID do job **antes** do POST e salva {jobId, prompt} no localStorage antes de enviar.
+- O DSH valida o UUID e calcula SHA-256 do prompt; armazena somente o hash, não o prompt bruto, no registro do job.
+- Repetir o mesmo POST com o mesmo UUID e o mesmo prompt retorna o job existente, sem iniciar outro turno.
+- Reutilizar o mesmo UUID com prompt diferente retorna HTTP 409.
+- Se a resposta do POST se perder depois de o DSH admitir o trabalho, a UI reenvia com a mesma chave idempotente ou retoma após reload; não duplica as operações do agente.
+- O resultado concluído continua recuperável pelo UUID após reinício do runtime, pois o arquivo de jobs é persistido localmente.
+- Teste real: dois POSTs idênticos retornaram o mesmo job UUID; POST com mesmo UUID e prompt diferente retornou 409; um único resultado MCF-IDEMPOTENCY-PASS foi recuperado após reinício do DSH.
+
