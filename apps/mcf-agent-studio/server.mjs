@@ -357,7 +357,7 @@ async function route(req, res) {
     }
     if (req.method === 'POST' && path === '/api/dsh/workspaces/probe') {
       const body=await inputJson(req);
-      if(!['hello-world-agent','mcf-studio-brain','mcf-studio-preview'].includes(body.preset))
+      if(!['hello-world-agent','mcf-studio-brain','mcf-studio-preview','mcf-google-drive-agent'].includes(body.preset))
         fail('Preset não permitido',422);
       return json(res,200,await dshSessionCall('/workspace/probe',{preset:body.preset}));
     }
