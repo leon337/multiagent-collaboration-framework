@@ -104,3 +104,26 @@ O primeiro script de CRUD interpretou incorretamente o envelope `{trace_id, oper
 - Mobile/DSH readiness: PASS.
 - Pendência: provar que o agente DSH usa a mesma identidade/escopo amplo do Bridge; o log histórico do agente aponta `drive.file`, enquanto o Bridge usa `drive`.
 
+## 9. Reconciliação DSH Agent x Bridge — verificação ao vivo (2026-11-23)
+
+A consulta ao próprio preset DSH `mcf-google-drive-agent` confirmou:
+- Conta Google reportada: `potiguaradm23@gmail.com`; identidade corresponde à conta esperada.
+- Mecanismo: conector DSH gerenciado; o agente não manipula diretamente o token OAuth.
+- Escopo efetivo do agente: `https://www.googleapis.com/auth/drive.file`.
+- Bridge independente: escopo `https://www.googleapis.com/auth/drive`.
+- Portanto, **mesma conta, mas tokens/escopos e limites diferentes**. Não afirmar que o agente herda a autorização ampla do Bridge.
+
+Ferramentas efetivamente expostas pelo preset na auditoria:
+`mcf_google_drive_status`, `mcf_google_drive_search`, `mcf_google_drive_read_text_file`, `mcf_google_drive_create_folder`, `mcf_google_drive_create_text_file`.
+
+Limites confirmados do preset:
+- Pesquisa e leitura limitadas ao universo visível por `drive.file`.
+- Leitura apenas de texto UTF-8 suportado; não lê binários nem Google Docs pelo leitor atual.
+- Não possui ferramentas de atualizar/sobrescrever, excluir, renomear, mover, compartilhar ou alterar permissões.
+
+O código do conector local confirma que `drive.file` é intencional: `oauth.mjs` solicita esse escopo e rejeita `drive`/`drive.readonly`; `drive-api.mjs` exige o escopo mínimo; `plugin.mjs` registra somente cinco ferramentas. Isso não é uma falha de refresh token: é uma política explícita de least privilege.
+
+**Ação pendente para satisfazer o requisito de LEANDRO:** alterar o conector para solicitar `drive`, implementar e testar operações de update/delete (além de leitura dos tipos de arquivo necessários), publicar/recarregar o plugin DSH e concluir novo consentimento OAuth para a conta verificada. O token atual `drive.file` não pode ser promovido por refresh; requer novo fluxo de consentimento. Não copiar o refresh token do Bridge para o DSH nem desativar a validação de conta. Após a mudança, repetir status, identidade, busca em arquivos preexistentes fora do conjunto criado pelo app e CRUD em arquivo temporário próprio.
+
+Até a execução dessa ação, classificar o DSH Agent como **PARTIAL / LIMITED**, e o Bridge como **PASS / FULL DRIVE SCOPE**. A sessão DSH estar `ready: true` prova disponibilidade do preset, não amplitude de autorização.
+
