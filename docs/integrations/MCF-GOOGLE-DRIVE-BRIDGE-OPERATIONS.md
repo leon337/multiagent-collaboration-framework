@@ -127,3 +127,27 @@ O código do conector local confirma que `drive.file` é intencional: `oauth.mjs
 
 Até a execução dessa ação, classificar o DSH Agent como **PARTIAL / LIMITED**, e o Bridge como **PASS / FULL DRIVE SCOPE**. A sessão DSH estar `ready: true` prova disponibilidade do preset, não amplitude de autorização.
 
+## 10. Consentimento amplo concluído e CRUD verificado (2026-11-23)
+
+Após LEANDRO concluir o consentimento Google para o escopo amplo, a verificação local do conector retornou:
+- `configured: true`
+- `connected: true`
+- `account: potiguaradm23@gmail.com`
+- `accountMatches: true`
+- `scope: drive`
+- `error: null`
+
+O arquivo cifrado `~/.config/mcf-google-drive-agent/tokens.enc` foi atualizado durante o fluxo OAuth. O token permanece local e cifrado; nenhum segredo foi registrado neste documento.
+
+Teste operacional contra a API real do Google Drive:
+1. Busca de arquivos preexistentes retornou documentos MCF que não foram criados pelo teste.
+2. Criação de arquivo temporário de verificação: PASS.
+3. Leitura do conteúdo inicial: PASS.
+4. Atualização de nome e conteúdo: PASS.
+5. Leitura do conteúdo atualizado: PASS.
+6. Exclusão do arquivo temporário de teste: PASS.
+
+Resultado: **6/6 etapas operacionais PASS**. As operações disponíveis no módulo local incluem status, search, create_folder, create_text_file, read_text_file, update_text_file e delete_file.
+
+**Limite remanescente:** esta evidência comprova o token amplo e o CRUD no conector local. Não comprova, por si só, que o runtime/preset DSH já recarregou a nova versão do plugin nem que as sete ferramentas estão visíveis na sessão ativa. Verificar o registro/montagem do plugin no DSH antes de declarar o agente DSH plenamente atualizado.
+
