@@ -262,3 +262,9 @@ O endpoint de chat não deve mais manter uma requisição HTTP aberta durante to
 - O resultado concluído continua recuperável pelo UUID após reinício do runtime, pois o arquivo de jobs é persistido localmente.
 - Teste real: dois POSTs idênticos retornaram o mesmo job UUID; POST com mesmo UUID e prompt diferente retornou 409; um único resultado MCF-IDEMPOTENCY-PASS foi recuperado após reinício do DSH.
 
+### Proteção contra reenvio automático após perda longa de estado
+- O localStorage guarda somente o UUID do job, não duplica o texto da mensagem.
+- Ao recarregar, a UI apenas consulta o UUID salvo; não reenvia o prompt automaticamente.
+- Se o job não existir mais (por exemplo, após expirar a retenção), a UI avisa que não encontrou o resultado e não dispara outra execução.
+- O reenvio automático com a mesma chave idempotente ocorre apenas dentro da tentativa inicial, enquanto a UI ainda tem o prompt em memória e a resposta do POST pode ter se perdido.
+
