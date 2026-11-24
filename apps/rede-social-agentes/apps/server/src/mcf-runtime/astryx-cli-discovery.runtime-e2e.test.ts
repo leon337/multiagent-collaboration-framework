@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -114,6 +114,36 @@ class InMemoryExternalLedger {
   async recordReconciliationPrepared() {}
 }
 
+async function createWorkspace(): Promise<string> {
+  const workspace = await createWorkspace();
+  const packageRoot = join(workspace, 'node_modules', '@astryxdesign', 'cli');
+  const binaryDirectory = join(packageRoot, 'clients', 'cli', 'bin');
+  await mkdir(binaryDirectory, { recursive: true });
+  await writeFile(
+    join(packageRoot, 'package.json'),
+    JSON.stringify({
+      name: '@astryxdesign/cli',
+      version: '0.7.2',
+      bin: { astryx: './clients/cli/bin/astryx.mjs' },
+    }),
+  );
+  await writeFile(join(binaryDirectory, 'astryx.mjs'), '#!/usr/bin/env node\n');
+  return workspace;
+}
+
+function localCliBinary(workspace: string): string {
+  return join(
+    workspace,
+    'node_modules',
+    '@astryxdesign',
+    'cli',
+    'clients',
+    'cli',
+    'bin',
+    'astryx.mjs',
+  );
+}
+
 function cliResponse(type: string, data: Record<string, unknown>): string {
   return JSON.stringify({
     apiVersion: 1,
@@ -189,9 +219,10 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
   });
 
   it('executes MissionRuntime → SkillExecutor → Dispatcher → Adapter → EvidenceValidator', async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'astryx-runtime-e2e-'));
-    const runner = vi.fn(async (_binary: string, args: string[]) => {
-      expect(args).toEqual(['exec', 'astryx', '--json', 'component', '--list']);
+    workspace = await createWorkspace();
+    const runner = vi.fn(async (binary: string, args: string[]) => {
+      expect(binary).toBe(process.execPath);
+      expect(args).toEqual([localCliBinary(workspace!), '--json', 'component', '--list']);
       return {
         stdout: cliResponse('component.list', { components: { actions: [] } }),
         stderr: '',
@@ -244,7 +275,7 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
   });
 
   it('fails closed through MissionRuntime when the adapter is disabled', async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'astryx-runtime-e2e-'));
+    workspace = await createWorkspace();
     const runner = vi.fn(async () => ({
       stdout: cliResponse('component.list', { components: { actions: [] } }),
       stderr: '',
