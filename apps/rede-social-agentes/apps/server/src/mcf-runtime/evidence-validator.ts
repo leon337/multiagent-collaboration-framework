@@ -1005,7 +1005,7 @@ function validateAstryxDiscoveryReceipt(
     isPathWithin(corePackageRoot, packageRoot)
   )
     reject(
-      'Astryx evidence must bind workspace-local CLI/Core packages outside the runtime checkout',
+      'Astryx evidence must bind workspace-local CLI and Core packages outside the runtime checkout',
     );
 
   const command = requireNonEmptyArray(
@@ -1139,8 +1139,8 @@ function validateAstryxDiscoveryReceipt(
         ) !== diffBytes.byteLength ||
         requireString(receipt.metadata, 'diffDigest', 'Scaffold evidence requires diffDigest') !==
           createHash('sha256').update(diffBytes).digest('hex') ||
-        !diffBytes.toString('utf8').startsWith(`diff --git a/${targetPath} b/${targetPath}\\n`) ||
-        !diffBytes.toString('utf8').includes(`+++ b/${targetPath}\\n`)
+        !diffBytes.toString('utf8').startsWith(`diff --git a/${targetPath} b/${targetPath}\n`) ||
+        !diffBytes.toString('utf8').includes(`+++ b/${targetPath}\n`)
       )
         reject('Astryx scaffold source/diff artifacts have invalid encoding, path or digest');
       if (
@@ -1244,7 +1244,7 @@ function validateAstryxDiscoveryReceipt(
   if (operation === 'list-components') {
     const data = requireRecord(parsedEnvelope.data, 'Astryx component list requires data');
     requireRecord(data.components, 'Astryx component list is missing its catalog');
-    if (data.detail !== 'names') reject('Astryx component list must use names detail');
+    if (data.detail !== 'names') reject('Astryx component list must use the fixed names detail level');
   } else if (operation === 'read-component-docs') {
     const data = requireRecord(parsedEnvelope.data, 'Astryx component docs require data');
     if (data.name !== inputs.componentName)
