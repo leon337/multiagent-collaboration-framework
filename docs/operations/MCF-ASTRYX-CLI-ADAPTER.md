@@ -22,7 +22,7 @@ Execution uses `execFile` (no shell), a bounded timeout, a 32 KiB output limit a
 All settings are opt-in and disabled by default:
 
 - `MCF_ASTRYX_CLI_ENABLED=true` — enable discovery.
-- `MCF_ASTRYX_WORKSPACE_ROOT=/absolute/path/to/isolated/workspace` — existing workspace directory with the pinned CLI dependency installed.
+- `MCF_ASTRYX_WORKSPACE_ROOT=/absolute/path/to/isolated/workspace` — required when enabled; existing workspace directory with the pinned CLI dependency installed. Missing or relative paths fail closed.
 - `MCF_ASTRYX_CLI_BINARY=/absolute/path/to/pnpm` — optional executable override; default is `pnpm`.
 
 Install the scoped package in the isolated workspace and commit its lockfile before enabling:
