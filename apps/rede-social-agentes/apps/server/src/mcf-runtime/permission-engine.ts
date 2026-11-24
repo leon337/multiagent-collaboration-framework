@@ -160,7 +160,7 @@ function assertStagingDeployInputs(
 function assertAstryxDiscoveryBoundary(skillId: string, provider: string, operation: string, resource: string): void {
   if (provider !== 'mcf-astryx-cli') return;
   if (skillId !== 'MCF-FULLSTACK-VISUAL-DEVELOPMENT' || resource !== 'astryx-design-system' ||
-      !['list-components', 'component-docs'].includes(operation)) {
+      !['list-components', 'read-component-docs'].includes(operation)) {
     throw new McfPermissionDeniedError('Astryx CLI is restricted to readonly component discovery for MCF-FULLSTACK-VISUAL-DEVELOPMENT');
   }
 }
