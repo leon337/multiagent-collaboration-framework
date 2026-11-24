@@ -135,7 +135,7 @@ Aplicação hospedeira:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - External Action Dispatcher e adapters com evidência;
-- 18 skills registradas e executáveis no `main` consultado; PR #579 propõe MCF-ASTRYX-COMPONENT-DISCOVERY em modo read-only, ainda pendente de merge e validação;
+- 19 skills registradas e executáveis no `main` após merge da PR #579 (`80ca638`); MCF-ASTRYX-COMPONENT-DISCOVERY é read-only e disabled-by-default;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA/readiness/version e recovery por redeploy de SHA saudável;
@@ -744,13 +744,15 @@ Limites observados:
 Runner online, workflow health aprovado, capability executável no MissionRuntime e produção são estados distintos. Consultar GitHub, o repositório privado e o host ao vivo antes de qualquer operação. Não inferir acesso privado ou disponibilidade do host em novas sessões.
 
 
-## MCF Astryx Component Discovery — PR #579 / PENDING MERGE
+## MCF Astryx Component Discovery — CURRENT_IMPLEMENTED / READ_ONLY
 
-- Skill `MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0` proposta em PR #579; ainda não disponível no `main` consultado.
-- O PR implementa uma capability candidata de descoberta read-only, disabled-by-default, sem escrita, scaffolding ou deploy.
-- A proposta resolve o CLI local `@astryxdesign/cli` em workspace isolado, executa sem shell/PATH fallback e valida receipts assinados e semanticamente.
-- A promoção para executável depende de corrigir os testes E2E, obter CI verde, revisão concluída e merge governado de PR #579.
-- A capability não equivale a scaffolding ou desenvolvimento full-stack completo.
+- Skill `MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0` integrada ao `main` pela PR #579, merge squash `80ca638`.
+- Executável pelo SkillExecutor, mas disabled-by-default; exige `MCF_ASTRYX_CLI_ENABLED=true` e `MCF_ASTRYX_WORKSPACE_ROOT` absoluto e isolado.
+- Allowlist fechada: `component --list` e `component <Name> --detail compact`; não permite escrita, scaffolding, shell ou deploy.
+- Resolve e verifica os pacotes locais `@astryxdesign/cli` e `@astryxdesign/core`, raízes, nomes e versões; o CLI reportado deve corresponder ao Core instalado.
+- Execução via `process.execPath` + `execFile`, sem shell/PATH fallback e com ambiente filho allowlisted; receipts assinados validam provenance, workspace, saída, digest e operação.
+- Foundation: 1.160 testes aprovados, 5 skipped; integração com CLI/Core 0.7.17 aprovada; MCF Qualification, Container Smoke, Production Readiness e Documentation validation aprovados.
+- A capability é somente descoberta visual read-only; não equivale a scaffolding ou desenvolvimento full-stack completo.
 
 ## MCF Full-Stack Visual Development — EXPERIMENTAL
 
@@ -758,8 +760,8 @@ Runner online, workflow health aprovado, capability executável no MissionRuntim
 - Astryx (Meta) é provider visual opcional; não é backend, framework full-stack nem agente orquestrador.
 - A arquitetura preserva contratos independentes de API/domínio/dados, autorização server-side e validação MCF.
 - A Skill é contrato de orquestração experimental, **não executável pelo runtime atual**.
-- A descoberta visual read-only é proposta separadamente em PR #579; não deve ser contabilizada como executável no `main` até merge e CI/review aprovados.
+- A descoberta visual read-only está integrada e é contabilizada entre as 19 Skills executáveis; continua limitada às duas operações allowlisted e disabled-by-default.
 - Scaffolding em diff-proposal, escrita governada por HDF/SCOPED_WRITE, geração backend/full-stack, benchmark visual e piloto não produtivo permanecem PENDING.
-- Não contar a Skill full-stack nem a proposta de descoberta enquanto PR #579 não estiver integrada e validada.
+- Não contar a Skill full-stack entre as executáveis; a descoberta Astryx é executável apenas em modo read-only.
 - Produção não é afetada; merge em main não autoriza deploy.
 - Fonte técnica do provider: https://github.com/meta/astryx e https://github.com/meta/astryx/wiki/System-Architecture.
