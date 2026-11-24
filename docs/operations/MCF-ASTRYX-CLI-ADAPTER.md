@@ -10,12 +10,12 @@ The adapter connects Astryx component discovery to the existing MCF ExternalActi
 
 Allowlisted operations:
 
-- `list-components` → fixed argv: `exec astryx component --list`
-- `read-component-docs` → fixed argv: `exec astryx component <ComponentName> --detail compact`
+- `list-components` → fixed argv: `exec astryx --json component --list`
+- `read-component-docs` → fixed argv: `exec astryx --json component <ComponentName> --detail compact`
 
 The runtime invokes `pnpm` with fixed arguments and resolves the project-local `astryx` executable through `pnpm exec`. The workspace must install and pin `@astryxdesign/cli` as a project dependency. Do not use `npx astryx`: that unscoped npm package name resolves to an unrelated package. The component identifier must match `^[A-Z][A-Za-z0-9]{0,63}$`.
 
-Execution uses `execFile` (no shell), a bounded timeout, a 32 KiB output limit and a realpath-verified working directory. The receipt preserves the exact requested resource value so EvidenceValidator can verify it without alias mismatch.
+Execution uses `execFile` (no shell), a bounded timeout, a 32 KiB output limit and a realpath-verified working directory. The CLI must return the documented JSON envelope with `meta.answeredBy` reporting project-local CLI and Core versions. The receipt binds those versions, the exact argv, workspace, exit code, bounded stdout/stderr, byte count and SHA-256 digest. EvidenceValidator checks the envelope type, component identity, package provenance, fixed command, output digest and read-only status. The receipt also preserves the exact requested resource value so EvidenceValidator can verify it without alias mismatch.
 
 ## Runtime configuration
 
@@ -46,7 +46,7 @@ Do not point the workspace at a production checkout. Do not set the enable flag 
 
 ## Validation
 
-The adapter test suite covers exact support boundaries, disabled-by-default behavior, fixed argv, receipt metadata and resource preservation, component-name validation and PermissionEngine rejection. Run from the server workspace:
+The test suite covers exact support boundaries, disabled-by-default behavior, fixed JSON argv, package provenance, receipt semantics, output bounds, component-name validation, PermissionEngine rejection, runtime registry wiring and the MissionRuntime → SkillExecutor → Dispatcher → Adapter → EvidenceValidator E2E path. Run from the server workspace:
 
 ```sh
 pnpm vitest run src/mcf-runtime/astryx-cli-discovery.adapter.test.ts
