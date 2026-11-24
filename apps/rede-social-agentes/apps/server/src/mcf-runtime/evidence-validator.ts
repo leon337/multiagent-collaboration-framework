@@ -1106,6 +1106,9 @@ function validateAstryxDiscoveryReceipt(
       data.components,
       'Astryx discovery evidence component list is missing its catalog',
     );
+    if (data.detail !== 'names') {
+      reject('Astryx discovery evidence component list must use the fixed names detail level');
+    }
   } else if (data.name !== inputs.componentName) {
     reject('Astryx discovery evidence component does not match the current request');
   }
