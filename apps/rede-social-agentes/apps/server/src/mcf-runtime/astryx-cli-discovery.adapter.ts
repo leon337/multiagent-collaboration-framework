@@ -295,18 +295,29 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     const cwd = await this.resolveWorkspace();
     const packages = await this.resolveCliPackages(cwd);
     const command = [process.execPath, packages.cliBinary, ...args];
+    const configDir = resolve(cwd, '.config');
+    const cacheDir = resolve(cwd, '.cache');
+    const tempDir = resolve(cwd, '.tmp');
+    await Promise.all(
+      [configDir, cacheDir, tempDir].map((directory) =>
+        mkdir(directory, { recursive: true }),
+      ),
+    );
     const childEnv = {
       CI: 'true',
       NO_COLOR: '1',
       NODE_ENV: 'production',
       HOME: cwd,
       USERPROFILE: cwd,
-      XDG_CONFIG_HOME: resolve(cwd, '.config'),
-      XDG_CACHE_HOME: resolve(cwd, '.cache'),
-      TMPDIR: resolve(cwd, '.tmp'),
-      TEMP: resolve(cwd, '.tmp'),
-      TMP: resolve(cwd, '.tmp'),
+      APPDATA: resolve(cwd, '.appdata'),
+      LOCALAPPDATA: resolve(cwd, '.localappdata'),
+      XDG_CONFIG_HOME: configDir,
+      XDG_CACHE_HOME: cacheDir,
+      TMPDIR: tempDir,
+      TEMP: tempDir,
+      TMP: tempDir,
       ...(process.env.SystemRoot ? { SystemRoot: process.env.SystemRoot } : {}),
+      ...(process.env.WINDIR ? { WINDIR: process.env.WINDIR } : {}),
     };
     let result: { stdout: string; stderr: string };
 
