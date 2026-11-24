@@ -19,8 +19,8 @@ import { PermissionEngine } from './permission-engine.js';
 const skill: McfSkillDefinition = {
   skillId: ASTRYX_SKILL,
   name: 'Astryx component discovery',
-  version: '0.1.0',
-  purpose: 'Discover Astryx visual components',
+  version: '0.2.0',
+  purpose: 'Discover Astryx components and templates and propose disposable scaffolds',
   ownerAgents: ['Mestre'],
   requiredInputs: [],
   allowedTools: [ASTRYX_PROVIDER],
