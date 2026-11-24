@@ -13,13 +13,13 @@ beforeEach(() => {
 const astryxSkill: McfSkillDefinition = {
   skillId: 'MCF-ASTRYX-COMPONENT-DISCOVERY',
   name: 'Astryx component discovery',
-  version: '0.1.0',
-  purpose: 'Read the official Astryx component catalog and documentation.',
+  version: '0.2.0',
+  purpose: 'Discover Astryx components and templates and validate disposable scaffold proposals.',
   ownerAgents: ['Mestre'],
   requiredInputs: [],
   allowedTools: ['mcf-astryx-cli'],
   forbiddenTools: ['write', 'delete', 'publish', 'deploy'],
-  permissionProfile: 'READ_ONLY',
+  permissionProfile: 'READ_AND_PROPOSE',
   executionSteps: ['list_or_read_components'],
   requiredEvidence: ['signed_json_output', 'package_versions', 'read_only_provenance'],
   acceptanceCriteria: ['receipt_semantically_valid'],
@@ -40,7 +40,7 @@ function astryxReceiptMetadata(cliCopy = 'project', detail = 'names') {
   const corePackageRoot = `${workspace}/node_modules/@astryxdesign/core`;
   const cliBinary = `${cliPackageRoot}/clients/cli/bin/astryx.mjs`;
   return {
-    adapterId: 'mcf-astryx-cli-readonly-v1',
+    adapterId: 'mcf-astryx-cli-governed-v2',
     cliPackage: '@astryxdesign/cli',
     corePackage: '@astryxdesign/core',
     cliVersion: '0.7.2',
