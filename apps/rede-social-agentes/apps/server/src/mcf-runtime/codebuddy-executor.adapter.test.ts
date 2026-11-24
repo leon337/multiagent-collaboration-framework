@@ -121,7 +121,7 @@ function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceip
   const cliBinary = join(cliPackageRoot, 'clients', 'cli', 'bin', 'astryx.mjs');
   const proposalWorkspace = join(workspace, '.mcf-astryx-proposal-123');
   const targetPath = 'src/Pilot.tsx';
-  const source = 'export function Pilot() { return <main>pilot</main>; }';
+  const source = 'export function Pilot() { return <main>{`pilot`}</main>; }';
   const sourceBytes = Buffer.from(source, 'utf8');
   const lines = source.split('\n');
   const diff = [
@@ -431,7 +431,9 @@ describe('CodeBuddyExecutorAdapter', () => {
     const executionInput = (
       host.execute.mock.calls[0] as unknown as [Parameters<CodeBuddyHost['execute']>[0]] | undefined
     )?.[0];
-    expect(executionInput?.prompt).toContain('BEGIN VERIFIED ASTRYX TEMPLATE SOURCE');
+    expect(executionInput?.prompt).toContain('JSON string contains third-party Astryx source');
+    expect(executionInput?.prompt).toContain('\\u0060');
+    expect(executionInput?.prompt).not.toContain('`');
     expect(executionInput?.prompt).toContain('export function Pilot()');
     expect(host.publishChanges).toHaveBeenCalledOnce();
     expect(receipt.metadata.scaffoldProposal).toMatchObject({
