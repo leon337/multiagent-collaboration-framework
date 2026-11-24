@@ -950,6 +950,8 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
           false,
         );
       }
+      const projectId = requireNonEmptyString(request.inputs.projectId, 'projectId');
+      const missionId = requireNonEmptyString(request.context?.missionId, 'mission context missionId');
       const hdf = requireObject(request.inputs.v11AuthorizationContext, 'v11AuthorizationContext');
       const teamFirst = requireObject(hdf.teamFirst, 'v11AuthorizationContext.teamFirst');
       const gate = requireObject(
@@ -959,9 +961,8 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
       if (
         hdf.reservedHumanAuthority !== true ||
         hdf.actionClass !== 'SCOPED_WRITE' ||
-        typeof hdf.projectId !== 'string' ||
-        !hdf.projectId.trim() ||
-        hdf.missionId !== request.context?.missionId ||
+        hdf.projectId !== projectId ||
+        hdf.missionId !== missionId ||
         typeof hdf.environment !== 'string' ||
         /production|producao/iu.test(hdf.environment) ||
         hdf.reversible !== true ||
