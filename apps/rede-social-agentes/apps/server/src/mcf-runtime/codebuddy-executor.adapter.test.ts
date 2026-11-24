@@ -466,9 +466,9 @@ describe('CodeBuddyExecutorAdapter', () => {
 
     const receipt = await subject.execute(requestWithMission);
 
-    expect(host.execute).toHaveBeenCalledOnce();
+    expect(host.execute).toHaveBeenCalledTimes(2);
     const executionInput = (
-      host.execute.mock.calls[0] as unknown as [Parameters<CodeBuddyHost['execute']>[0]] | undefined
+      host.execute.mock.calls[1] as unknown as [Parameters<CodeBuddyHost['execute']>[0]] | undefined
     )?.[0];
     expect(executionInput?.prompt).toContain('JSON string contains third-party Astryx source');
     expect(executionInput?.prompt).toContain('\\u0060');
