@@ -191,9 +191,10 @@ function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceip
   });
 }
 
-function approvedHdf(proposal: McfToolReceipt) {
+function approvedHdf(proposal: McfToolReceipt, missionId: string) {
   return {
     projectId: 'mcf-astryx-pilot',
+    missionId,
     actionClass: 'SCOPED_WRITE',
     environment: 'staging',
     reversible: true,
@@ -209,8 +210,8 @@ function approvedHdf(proposal: McfToolReceipt) {
     humanGateDecision: {
       status: 'APPROVED' as const,
       decidedBy: 'LEANDRO',
-      accountId: 'leandro-authority',
-      sourceRef: 'https://github.com/leon337/multiagent-collaboration-framework/issues/578',
+      accountId: '44444444-4444-4444-8444-444444444444',
+      sourceRef: 'human-authority:55555555-5555-4555-8555-555555555555',
     },
   };
 }
@@ -409,15 +410,22 @@ describe('CodeBuddyExecutorAdapter', () => {
       host,
     );
     const proposal = createAstryxProposalReceipt(evidence);
+    const missionId = '66666666-6666-4666-8666-666666666666';
     const inputs = {
       ...request.inputs,
+      projectId: 'mcf-astryx-pilot',
       approved_scope: 'Apply the approved Astryx template proposal at src/Pilot.tsx.',
       allowed_paths: ['src'],
       scaffoldProposalReceipt: proposal,
       authorizedScope: true,
-      v11AuthorizationContext: approvedHdf(proposal),
+      v11AuthorizationContext: approvedHdf(proposal, missionId),
     };
-    const receipt = await subject.execute({ ...request, inputs });
+    const requestWithMission = {
+      ...request,
+      context: { missionId, phaseId: 'phase-astryx-001', expectedMissionVersion: 1 },
+      inputs,
+    };
+    const receipt = await subject.execute(requestWithMission);
 
     expect(host.execute).toHaveBeenCalledOnce();
     const executionInput = (
@@ -433,7 +441,7 @@ describe('CodeBuddyExecutorAdapter', () => {
       authorizedScope: true,
       approvedBy: 'LEANDRO',
     });
-    evidence.verifyForSkill(receipt, request.tool, skill, inputs);
+    evidence.verifyForSkill(receipt, requestWithMission.tool, skill, inputs);
   });
 
   it('rolls back an already-published patch if disposable worktree cleanup fails', async () => {
