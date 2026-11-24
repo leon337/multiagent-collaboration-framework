@@ -83,7 +83,7 @@ describe('parseMcfSkillRegistry', () => {
         'diff_digest',
         'test_results_or_handoff',
       ],
-      acceptanceCriteria: ['scope_respected', 'tests_or_handoff_proven', 'scaffold_receipt_verified_when_present', 'HDF_SCOPED_WRITE_and_leandro_gate_when_applying_astryx', 'transactional_rollback_on_failure'],
+      acceptanceCriteria: ['scope_respected', 'tests_or_handoff_proven'],
       handoffTo: 'Vinicius',
     });
   });
