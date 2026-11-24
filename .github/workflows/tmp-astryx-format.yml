@@ -30,6 +30,10 @@ jobs:
           pnpm --dir apps/rede-social-agentes exec prettier --write \
             apps/server/src/mcf-runtime/codebuddy-executor.adapter.ts \
             apps/server/src/mcf-runtime/codebuddy-executor.adapter.test.ts \
+            apps/server/src/mcf-runtime/evidence-validator.test.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts \
+            ../../.github/workflows/tmp-astryx-artifact-commit.yml \
             ../../skills/registry.yaml \
             ../../README.md \
             ../../docs/MCF-CURRENT-STATE.md \
