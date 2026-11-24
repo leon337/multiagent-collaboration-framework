@@ -31,3 +31,7 @@ To intentionally regenerate visual baselines after a reviewed design change:
     UPDATE_VISUAL_BASELINES=1 npm run test:e2e
 
 The baseline update is not an ordinary test mode; review and commit the generated visual-baselines.json explicitly.
+
+## CI qualification
+
+The MCF workflow installs only from the committed `package-lock.json` with `npm ci`, then compares desktop and mobile screenshots against the committed `visual-baselines.json`. CI never regenerates baselines automatically. It also verifies the PostgreSQL transaction rollback and per-run schema cleanup; the workflow has no deploy step and uses only an ephemeral test database.
