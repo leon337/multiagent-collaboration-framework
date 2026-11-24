@@ -15,7 +15,7 @@ Allowlisted operations:
 
 The runtime invokes `pnpm` with fixed arguments and resolves the project-local `astryx` executable through `pnpm exec`. The workspace must install and pin `@astryxdesign/cli` as a project dependency. Do not use `npx astryx`: that unscoped npm package name resolves to an unrelated package. The component identifier must match `^[A-Z][A-Za-z0-9]{0,63}$`.
 
-Execution uses `execFile` (no shell), a bounded timeout, a 32 KiB output limit and a realpath-verified working directory. The CLI must return the documented JSON envelope with `meta.answeredBy` reporting project-local CLI and Core versions. The receipt binds those versions, the exact argv, workspace, exit code, bounded stdout/stderr, byte count and SHA-256 digest. EvidenceValidator checks the envelope type, component identity, package provenance, fixed command, output digest and read-only status. The receipt also preserves the exact requested resource value so EvidenceValidator can verify it without alias mismatch.
+Execution uses `execFile` (no shell), a bounded timeout, a 32 KiB output limit and a realpath-verified working directory. The CLI must return the documented JSON envelope with `meta.answeredBy` reporting project-local CLI and Core versions. JSON mode is a fixed allowlisted argument, not model-controlled input. The receipt binds those versions, the exact argv, workspace, exit code, bounded stdout/stderr, byte count and SHA-256 digest. EvidenceValidator checks the envelope type, component identity, package provenance, fixed command, output digest and read-only status. The receipt also preserves the exact requested resource value so EvidenceValidator can verify it without alias mismatch.
 
 ## Runtime configuration
 
