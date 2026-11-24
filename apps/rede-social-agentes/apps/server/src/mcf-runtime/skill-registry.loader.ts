@@ -46,6 +46,7 @@ function parseInlineList(value: string): string[] {
 
 interface MutableSkill {
   skillId?: string;
+  status?: string;
   name?: string;
   version?: string;
   purpose?: string;
@@ -110,7 +111,9 @@ export function parseMcfSkillRegistry(content: string): McfSkillDefinition[] {
     if (!current) {
       return;
     }
-    skills.push(finalizeSkill(current));
+    if (current.status?.toUpperCase() !== 'EXPERIMENTAL') {
+      skills.push(finalizeSkill(current));
+    }
     current = null;
   };
 
@@ -142,6 +145,9 @@ export function parseMcfSkillRegistry(content: string): McfSkillDefinition[] {
     const key = field[1];
     const value = field[2] ?? '';
     switch (key) {
+      case 'status':
+        current.status = unquote(value);
+        break;
       case 'name':
         current.name = unquote(value);
         break;
