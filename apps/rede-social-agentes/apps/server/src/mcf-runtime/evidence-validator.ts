@@ -1281,6 +1281,37 @@ function validateCodeBuddyImplementReceipt(
     reject('CodeBuddy implementation approvedPaths must match allowed_paths');
   if (normalizedChangedFiles.some((path) => !pathWithinApprovedScope(path, approvedPaths)))
     reject('CodeBuddy implementation changed files must remain inside approvedPaths');
+  const proposalMetadata = receipt.metadata.scaffoldProposal;
+  const proposalInput = inputs.scaffoldProposalReceipt;
+  if (proposalMetadata !== undefined || proposalInput !== undefined) {
+    const proposal = requireRecord(proposalMetadata, 'CodeBuddy scaffold application requires scaffoldProposal evidence');
+    const proposalReceipt = requireRecord(proposalInput, 'CodeBuddy scaffold application requires the signed proposal receipt');
+    const proposalReceiptMetadata = requireRecord(proposalReceipt.metadata, 'CodeBuddy scaffold proposal requires metadata');
+    const proposalTarget = repositoryRelativeEvidencePath(
+      requireString(proposal, 'targetPath', 'CodeBuddy scaffold evidence requires targetPath'),
+      'CodeBuddy scaffold targetPath',
+    );
+    const proposalScope = requireString(proposal, 'hdfApprovalSourceRef', 'CodeBuddy scaffold evidence requires HDF approval sourceRef');
+    const hdf = requireRecord(inputs.v11AuthorizationContext, 'CodeBuddy scaffold application requires v11AuthorizationContext');
+    const gate = requireRecord(hdf.humanGateDecision, 'CodeBuddy scaffold application requires humanGateDecision');
+    if (
+      proposalReceipt.receiptId !== proposal.receiptId ||
+      proposalReceiptMetadata.templateId !== proposal.templateId ||
+      proposalReceiptMetadata.targetPath !== proposalTarget ||
+      proposalReceiptMetadata.diffDigest !== proposal.diffDigest ||
+      proposalReceiptMetadata.sourceArtifact === undefined ||
+      requireString(proposal, 'sourceDigest', 'CodeBuddy scaffold evidence requires sourceDigest') !==
+        requireString(requireRecord(proposalReceiptMetadata.sourceArtifact, 'Astryx proposal sourceArtifact'), 'digest', 'Astryx proposal sourceArtifact requires digest') ||
+      !normalizedChangedFiles.includes(proposalTarget) ||
+      !pathWithinApprovedScope(proposalTarget, approvedPaths) ||
+      inputs.authorizedScope !== true ||
+      proposal.authorizedScope !== true ||
+      proposal.approvedBy !== 'LEANDRO' ||
+      gate.status !== 'APPROVED' ||
+      gate.decidedBy !== 'LEANDRO' ||
+      gate.sourceRef !== proposalScope
+    ) reject('CodeBuddy scaffold application must bind the signed proposal, exact changed target, approved paths and LEANDRO HDF decision');
+  }
   for (const key of ['diffDigest', 'stdoutDigest'] as const) {
     const value = requireString(
       receipt.metadata,
