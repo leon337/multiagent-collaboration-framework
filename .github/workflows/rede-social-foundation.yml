@@ -69,10 +69,10 @@ jobs:
           printf '%s\n' '{"name":"mcf-astryx-cli-workspace","version":"1.0.0","private":true}' > "$workspace/package.json"
           cat > "$workspace/pnpm-workspace.yaml" <<'YAML'
           packages: []
-          onlyBuiltDependencies:
-            - '@astryxdesign/cli'
-            - '@astryxdesign/core'
-            - esbuild
+          allowBuilds:
+            '@astryxdesign/cli': true
+            '@astryxdesign/core': true
+            esbuild: true
           YAML
           pnpm --dir "$workspace" add --save-exact @astryxdesign/cli@0.7.17 @astryxdesign/core@0.7.17 react@19.2.0 react-dom@19.2.0
           pnpm --dir "$workspace" exec astryx --json component --list > "$RUNNER_TEMP/astryx-component-list.json"
