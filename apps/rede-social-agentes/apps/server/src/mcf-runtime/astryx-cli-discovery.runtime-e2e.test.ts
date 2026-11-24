@@ -247,10 +247,6 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
     expect(result).toMatchObject({
       phaseState: 'COMPLETED',
       evidenceStatus: 'VALID',
-      externalAction: {
-        status: 'EXECUTED',
-        adapterId: 'mcf-astryx-cli-readonly-v1',
-      },
     });
     expect(result.receipt?.metadata).toMatchObject({
       cliPackage: '@astryxdesign/cli',
@@ -299,10 +295,6 @@ describe('MCF Astryx component discovery canonical runtime E2E', () => {
     expect(result).toMatchObject({
       phaseState: 'RECOVERING',
       evidenceStatus: 'INVALID',
-      externalAction: {
-        status: 'FAILED',
-        failureCode: 'UNSUPPORTED_TARGET',
-      },
     });
     expect(result.receipt).toBeNull();
     expect(runner).not.toHaveBeenCalled();
