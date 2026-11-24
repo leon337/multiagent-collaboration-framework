@@ -15,7 +15,7 @@ import { canonicalizeProvider, canonicalizeToolValue } from './permission-engine
 
 export const ASTRYX_PROVIDER = 'mcf-astryx-cli';
 export const ASTRYX_RESOURCE = 'astryx-design-system';
-export const ASTRYX_SKILL = 'MCF-FULLSTACK-VISUAL-DEVELOPMENT';
+export const ASTRYX_SKILL = 'MCF-ASTRYX-COMPONENT-DISCOVERY';
 export const ASTRYX_OPERATIONS = ['list-components', 'read-component-docs'] as const;
 const MAX_OUTPUT_BYTES = 32_768;
 const DEFAULT_TIMEOUT_MS = 10_000;
