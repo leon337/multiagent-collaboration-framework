@@ -392,7 +392,8 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
             value !== value.trim() ||
             value.startsWith('/') ||
             value.includes('\\') ||
-            ! /^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u.test(value) || value.split('/').some((segment) => segment === '.' || segment === '..')
+            !/^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u.test(value) ||
+            value.split('/').some((segment) => segment === '.' || segment === '..')
           ) {
             return invalidContext('allowed_paths contains an unsafe repository-relative path');
           }

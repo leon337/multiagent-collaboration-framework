@@ -1087,7 +1087,8 @@ function validateAstryxDiscoveryReceipt(
             typeof entry !== 'string' ||
             entry.startsWith('/') ||
             entry.includes('\\') ||
-            ! /^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u.test(entry) || entry.split('/').some((part) => part === '.' || part === '..'),
+            !/^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u.test(entry) ||
+            entry.split('/').some((part) => part === '.' || part === '..'),
         ) ||
         !approvedPaths.some(
           (scope) => targetPath === scope || targetPath.startsWith(`${String(scope)}/`),
