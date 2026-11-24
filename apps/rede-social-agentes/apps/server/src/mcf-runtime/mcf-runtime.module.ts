@@ -138,7 +138,7 @@ function codeBuddyExecutorConfig(): CodeBuddyExecutorConfig {
           evidence,
           process.env.MCF_ASTRYX_CLI_ENABLED === 'true',
           process.env.MCF_ASTRYX_WORKSPACE_ROOT ?? process.cwd(),
-          process.env.MCF_ASTRYX_CLI_BINARY ?? 'astryx',
+          process.env.MCF_ASTRYX_CLI_BINARY ?? 'pnpm',
         ),
       inject: [EvidenceValidator],
     },
