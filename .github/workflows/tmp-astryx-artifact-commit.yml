@@ -1,0 +1,68 @@
+name: Temporary Astryx Pilot Artifact Commit
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  commit-pilot-artifacts:
+    if: github.head_ref == 'feat/mcf-astryx-governed-scaffolding'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: \${{ github.head_ref }}
+          persist-credentials: true
+      - name: Download successful pilot run artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mcf-astryx-fullstack-pilot-baselines
+          run-id: 45500534771
+          github-token: \${{ secrets.GITHUB_TOKEN }}
+          repository: \${{ github.repository }}
+          path: /tmp/astryx-pilot-artifacts
+      - name: Commit lockfile and reviewed visual baselines
+        run: |
+          cp /tmp/astryx-pilot-artifacts/package-lock.json examples/astryx-fullstack-pilot/package-lock.json
+          cp /tmp/astryx-pilot-artifacts/visual-baselines.json examples/astryx-fullstack-pilot/visual-baselines.json
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path(".github/workflows/mcf-astryx-fullstack-pilot.yml")
+          content = path.read_text()
+          old_install = """      - name: Install pinned pilot dependencies and create lockfile if absent
+                run: |
+                  if [ -f package-lock.json ]; then
+                    npm ci --no-audit --no-fund
+                  else
+                    npm install --no-audit --no-fund
+                  fi
+          """
+          new_install = """      - name: Install pinned pilot dependencies from committed lockfile
+                run: npm ci --no-audit --no-fund
+          """
+          if old_install not in content:
+              raise SystemExit("Expected first-run npm install block was not found.")
+          content = content.replace(old_install, new_install)
+          old_baseline = """      - name: Run API, database, browser, accessibility and visual checks
+                env:
+                  UPDATE_VISUAL_BASELINES: "1"
+                run: npm run test:e2e
+          """
+          new_baseline = """      - name: Run API, database, browser, accessibility and visual checks
+                run: npm run test:e2e
+          """
+          if old_baseline not in content:
+              raise SystemExit("Expected visual-baseline update mode was not found.")
+          path.write_text(content.replace(old_baseline, new_baseline))
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add examples/astryx-fullstack-pilot/package-lock.json examples/astryx-fullstack-pilot/visual-baselines.json .github/workflows/mcf-astryx-fullstack-pilot.yml
+          git commit -m "test(astryx): pin pilot lockfile and visual baselines"
+          git push origin "HEAD:\${GITHUB_HEAD_REF}"
