@@ -1076,7 +1076,10 @@ function validateAstryxDiscoveryReceipt(
     if (Object.keys(data).length === 0) reject('Astryx template skeleton is empty');
   } else if (operation === 'list-templates') {
     const data = parsedEnvelope.data;
-    if (!Array.isArray(data) && (!isRecord(data) || !Array.isArray(data.templates))) reject('Astryx template list is malformed');
+    if (!Array.isArray(data)) {
+      const catalog = requireRecord(data, 'Astryx template list requires a catalog object');
+      if (!Array.isArray(catalog.templates)) reject('Astryx template list is malformed');
+    }
   } else {
     const data = requireRecord(parsedEnvelope.data, 'Astryx template copy requires data');
     if (data.filesCopied !== 1) reject('Astryx template copy must produce exactly one file');
