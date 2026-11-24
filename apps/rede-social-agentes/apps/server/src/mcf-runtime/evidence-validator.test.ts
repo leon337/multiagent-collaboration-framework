@@ -125,7 +125,7 @@ describe('EvidenceValidator', () => {
     });
 
     expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).toThrow(
-      /workspace-local CLI outside the runtime checkout/u,
+      /workspace-local CLI and Core packages outside the runtime checkout/u,
     );
   });
 
