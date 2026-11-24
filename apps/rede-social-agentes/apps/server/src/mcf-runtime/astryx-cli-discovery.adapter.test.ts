@@ -223,9 +223,26 @@ describe('Astryx CLI discovery adapter', () => {
       expect(args).toEqual([localCliBinary(workspace!), '--json', 'component', '--list']);
       expect(options).toMatchObject({
         cwd: workspace,
+        env: {
+          CI: 'true',
+          NO_COLOR: '1',
+          NODE_ENV: 'production',
+          HOME: workspace,
+          USERPROFILE: workspace,
+          XDG_CONFIG_HOME: join(workspace, '.config'),
+          XDG_CACHE_HOME: join(workspace, '.cache'),
+          TMPDIR: join(workspace, '.tmp'),
+          TEMP: join(workspace, '.tmp'),
+          TMP: join(workspace, '.tmp'),
+        },
         maxBuffer: 32_768,
         windowsHide: true,
       });
+      const childEnv = (options as { env: Record<string, string> }).env;
+      expect(childEnv).not.toHaveProperty('PATH');
+      expect(childEnv).not.toHaveProperty('DATABASE_URL');
+      expect(childEnv).not.toHaveProperty('MCF_RECEIPT_SECRET');
+      expect(childEnv).not.toHaveProperty('NODE_OPTIONS');
       return {
         stdout: jsonResponse('component.list', { components: { actions: [] } }),
         stderr: '',
