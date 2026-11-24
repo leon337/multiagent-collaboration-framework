@@ -56,6 +56,40 @@ describe('parseMcfSkillRegistry', () => {
     expect(skills[1]?.requiredInputs).toEqual(['acceptance_criteria', 'test_target']);
   });
 
+  it('excludes explicitly experimental contracts from executable skills', async () => {
+    const experimental = `
+  - skill_id: MCF-EXPERIMENTAL-PILOT
+    status: EXPERIMENTAL
+    name: Experimental pilot
+    version: 0.1.0
+    purpose: Qualification only.
+    owner_agents: [Mestre]
+    required_inputs: []
+    allowed_tools: [GitHub]
+    forbidden_tools: [production]
+    permission_profile: READ_AND_PROPOSE
+    execution_steps: [qualify]
+    required_evidence: [qualification]
+    acceptance_criteria: [qualification_passed]
+    failure_modes: [qualification_failed]
+    fallback: Keep experimental.
+    handoff_to: Mestre
+`;
+    const skills = parseMcfSkillRegistry(`${registry}${experimental}`);
+
+    expect(skills.some((skill) => skill.skillId === 'MCF-EXPERIMENTAL-PILOT')).toBe(false);
+  });
+
+  it('does not expose the full-stack orchestration contract as an executable skill', async () => {
+    const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
+    const content = await readFile(registryPath, 'utf8');
+    const skills = parseMcfSkillRegistry(content);
+
+    expect(content).toContain('skill_id: MCF-FULLSTACK-VISUAL-DEVELOPMENT');
+    expect(content).toContain('status: EXPERIMENTAL');
+    expect(skills.some((skill) => skill.skillId === 'MCF-FULLSTACK-VISUAL-DEVELOPMENT')).toBe(false);
+  });
+
   it('loads the reusable visual desktop audit skill from the canonical registry', async () => {
     const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
     const content = await readFile(registryPath, 'utf8');
