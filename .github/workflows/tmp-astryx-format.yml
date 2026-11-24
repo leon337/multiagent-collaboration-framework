@@ -29,13 +29,13 @@ jobs:
         run: |
           pnpm --dir apps/rede-social-agentes exec prettier --write \
             apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts \
-            apps/rede-social-agentes/apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts \
-            apps/rede-social-agentes/apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts \
-            apps/rede-social-agentes/apps/server/src/mcf-runtime/astryx-cli-discovery.runtime-e2e.test.ts \
-            apps/rede-social-agentes/apps/server/src/mcf-runtime/codebuddy-executor.adapter.ts \
-            apps/rede-social-agentes/apps/server/src/mcf-runtime/codebuddy-executor.adapter.test.ts \
-            apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts \
-            apps/rede-social-agentes/apps/server/src/mcf-runtime/permission-engine.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.runtime-e2e.test.ts \
+            apps/server/src/mcf-runtime/codebuddy-executor.adapter.ts \
+            apps/server/src/mcf-runtime/codebuddy-executor.adapter.test.ts \
+            apps/server/src/mcf-runtime/evidence-validator.ts \
+            apps/server/src/mcf-runtime/permission-engine.ts \
             ../../skills/registry.yaml \
             ../../skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml \
             ../../README.md \
