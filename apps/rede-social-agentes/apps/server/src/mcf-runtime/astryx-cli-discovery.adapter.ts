@@ -151,13 +151,26 @@ function parseCliEnvelope(
     }
   } else if (operation === 'read-template-source') {
     const identity = isRecord(data) ? (data.id ?? data.name ?? data.templateId) : undefined;
-    if (!isRecord(data) || typeof data.source !== 'string' || data.source.length === 0 || (typeof identity === 'string' && identity !== templateId)) {
-      return invalid('Astryx CLI template source is missing or does not match the requested template');
+    if (
+      !isRecord(data) ||
+      typeof data.source !== 'string' ||
+      data.source.length === 0 ||
+      (typeof identity === 'string' && identity !== templateId)
+    ) {
+      return invalid(
+        'Astryx CLI template source is missing or does not match the requested template',
+      );
     }
   } else if (operation === 'read-template-skeleton') {
     const identity = isRecord(data) ? (data.id ?? data.name ?? data.templateId) : undefined;
-    if (!isRecord(data) || Object.keys(data).length === 0 || (typeof identity === 'string' && identity !== templateId)) {
-      return invalid('Astryx CLI template skeleton is empty or does not match the requested template');
+    if (
+      !isRecord(data) ||
+      Object.keys(data).length === 0 ||
+      (typeof identity === 'string' && identity !== templateId)
+    ) {
+      return invalid(
+        'Astryx CLI template skeleton is empty or does not match the requested template',
+      );
     }
   } else if (!isRecord(data) || data.filesCopied !== 1) {
     return invalid('Astryx CLI scaffold must copy exactly one template file into scratch space');
