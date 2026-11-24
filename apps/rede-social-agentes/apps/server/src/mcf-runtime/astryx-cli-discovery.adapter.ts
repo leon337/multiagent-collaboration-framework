@@ -361,7 +361,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         const segments = rawPath.split('/');
         if (
           segments.some((segment) => !segment || segment === '.' || segment === '..') ||
-          !/\.(?:tsx|jsx|ts|js)$/u.test(rawPath)
+          !/^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*\.(?:tsx|jsx|ts|js)$/u.test(rawPath)
         ) {
           return invalidContext('targetPath must be a safe TypeScript or JavaScript source file');
         }
@@ -392,7 +392,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
             value !== value.trim() ||
             value.startsWith('/') ||
             value.includes('\\') ||
-            ! /^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u.test(value)
+            ! /^[A-Za-z0-9._-]+(?:\/[A-Za-z0-9._-]+)*$/u.test(value) || value.split('/').some((segment) => segment === '.' || segment === '..')
           ) {
             return invalidContext('allowed_paths contains an unsafe repository-relative path');
           }
