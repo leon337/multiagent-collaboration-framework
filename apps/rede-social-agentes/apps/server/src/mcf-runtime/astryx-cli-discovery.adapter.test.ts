@@ -198,6 +198,29 @@ describe('Astryx CLI discovery adapter', () => {
     );
   });
 
+  it('classifies the Node execFile SIGTERM timeout as retryable', async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
+    const timeout = Object.assign(new Error('command timed out'), {
+      killed: true,
+      signal: 'SIGTERM',
+    });
+    const runner = vi.fn(async () => {
+      throw timeout;
+    });
+    const subject = new AstryxCliDiscoveryAdapter(
+      evidence(),
+      true,
+      workspace,
+      'pnpm',
+      runner,
+    );
+
+    await expect(subject.execute(request())).rejects.toMatchObject({
+      code: 'ADAPTER_TIMEOUT',
+      retryable: true,
+    });
+  });
+
   it('rejects global or fallback CLI provenance', async () => {
     workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
     const untrusted = JSON.stringify({
