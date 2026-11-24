@@ -439,7 +439,6 @@ const readOperations = ['read', 'get', 'list', 'search', 'inspect', 'status', 'f
 const proposalOperations = [
   ...readOperations,
   'draft',
-  'draft',
   'plan',
   'design',
   'create-contract',
