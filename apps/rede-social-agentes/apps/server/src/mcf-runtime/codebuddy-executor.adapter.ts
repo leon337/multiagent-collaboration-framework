@@ -951,7 +951,10 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
         );
       }
       const projectId = requireNonEmptyString(request.inputs.projectId, 'projectId');
-      const missionId = requireNonEmptyString(request.context?.missionId, 'mission context missionId');
+      const missionId = requireNonEmptyString(
+        request.context?.missionId,
+        'mission context missionId',
+      );
       const hdf = requireObject(request.inputs.v11AuthorizationContext, 'v11AuthorizationContext');
       const teamFirst = requireObject(hdf.teamFirst, 'v11AuthorizationContext.teamFirst');
       const gate = requireObject(
@@ -975,9 +978,7 @@ export class CodeBuddyExecutorAdapter implements ExternalActionAdapter {
           .trim()
           .toLowerCase() !== 'leandro' ||
         typeof gate.accountId !== 'string' ||
-        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(
-          gate.accountId,
-        ) ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(gate.accountId) ||
         typeof gate.sourceRef !== 'string' ||
         !/^human-authority:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
           gate.sourceRef,
