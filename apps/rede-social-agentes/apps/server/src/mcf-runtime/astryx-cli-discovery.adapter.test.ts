@@ -57,7 +57,7 @@ function jsonResponse(
   return JSON.stringify({
     apiVersion: 1,
     type,
-    data,
+    data: type === 'component.list' ? { detail: 'names', ...data } : data,
     meta: {
       answeredBy: {
         cli: '0.7.2',
