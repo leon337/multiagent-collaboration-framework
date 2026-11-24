@@ -87,7 +87,7 @@ function parseCliEnvelope(
   const cliVersion = answeredBy.cli;
   const coreVersion = answeredBy.core;
   const cliCopy = answeredBy.copy;
-  const semver = /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$/u;
+  const semver = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
 
   if (
     typeof cliVersion !== 'string' ||
