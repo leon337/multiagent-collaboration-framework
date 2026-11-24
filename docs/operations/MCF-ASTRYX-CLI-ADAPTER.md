@@ -45,7 +45,7 @@ Application is delegated to `MCF-IMPLEMENT-CHANGE` using the existing CodeBuddy 
 1. verifies the signed Astryx proposal and its source/diff digests;
 2. binds repository, exact base SHA and target path to the current clean workspace;
 3. requires `authorizedScope=true` and the `SCOPED_WRITE` permission profile;
-4. requires a v1.1 HDF context with `actionClass=SCOPED_WRITE`, non-production environment, TEAM_FIRST evidence, the exact proposal receipt in evidenceRefs, and a human-gate decision approved by LEANDRO;
+4. requires a v1.1 HDF context bound to the exact `projectId` and mission execution context, with `actionClass=SCOPED_WRITE`, non-production environment, TEAM_FIRST evidence, the exact proposal receipt in evidenceRefs, and a human-gate decision approved by LEANDRO; the decision must carry a canonical account UUID and server-issued `human-authority:<uuid>` sourceRef, not caller-authored provenance;
 5. restricts changes to `allowed_paths` and requires CodeBuddy to materialize the proposed target file;
 6. executes in a disposable Git worktree and Bubblewrap filesystem/process sandbox;
 7. publishes only the validated Git-derived diff into the authorized workspace, without committing or deploying.
@@ -76,7 +76,7 @@ Do not point the workspace at a production checkout. Do not enable the adapter i
 - Astryx scaffold writes only to a unique disposable workspace, never to the target checkout.
 - Explicit `allowed_paths`, canonical repository, exact base SHA and bounded source/diff artifacts.
 - `READ_AND_PROPOSE` permits the proposal but not application.
-- Application requires `SCOPED_WRITE`, explicit scope and a LEANDRO HDF approval after TEAM_FIRST.
+- Application requires `SCOPED_WRITE`, explicit scope and a LEANDRO HDF approval after TEAM_FIRST; MissionRuntime canonicalizes terminal human decisions from the authenticated reserved account, and the adapter binds the proof to project, mission and exact proposal receipt.
 - The application path is a separate CodeBuddy adapter with disposable Git worktree, Bubblewrap, signed diff evidence and rollback.
 - Child CLI environment is allowlisted; database credentials and MCF receipt secrets are not inherited.
 - CLI/Core package roots and versions must match the installed local packages.
