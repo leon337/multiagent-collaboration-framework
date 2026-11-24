@@ -79,6 +79,11 @@ jobs:
           test -s "$RUNNER_TEMP/astryx-component-list.json"
           echo "MCF_ASTRYX_REAL_CLI_WORKSPACE=$workspace" >> "$GITHUB_ENV"
 
+      - name: Temporary Prettier inspection for Astryx real CLI test
+        run: |
+          pnpm exec prettier --write apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts
+          cat apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts
+
       - name: Verify formatting
         run: pnpm format:check
 
