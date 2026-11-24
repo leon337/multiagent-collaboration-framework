@@ -154,11 +154,16 @@ A aplicação ocorre separadamente por `MCF-IMPLEMENT-CHANGE` / CodeBuddy. Quand
 
 `examples/astryx-fullstack-pilot/` demonstra React 19 + Astryx, Vite, API autenticada server-side, PostgreSQL com schema isolado por execução, migration SQL, rollback transacional e limpeza do schema, Playwright desktop/mobile, axe accessibility e pixel baselines. O workflow separado não acessa banco Potiguar nem executa deploy.
 
-### Critérios restantes antes de promover a Skill
+### Estado de qualificação e limite de promoção
 
-1. Gerar e revisar lockfile do piloto e baselines visuais do primeiro run.
-2. Obter aprovação do workflow full-stack pilot e dos workflows MCF no head final.
-3. Confirmar review técnico e ausência de threads abertas.
-4. Promover a Skill de EXPERIMENTAL somente depois de todos os critérios anteriores.
+O piloto não produtivo, lockfile, baselines visuais, rollback transacional, limpeza do schema, workflows MCF e revisão de segurança desta integração são qualificados nesta PR.
+
+A Skill permanece `EXPERIMENTAL` e não executável até existir uma missão autônoma MCF ponta a ponta que:
+1. descubra e proponha um scaffold Astryx com receipt assinado;
+2. atravesse MissionRuntime, SkillExecutor, Dispatcher, EvidenceValidator e CodeBuddy real;
+3. aplique somente após HDF canonicalizado pelo MissionRuntime, TEAM_FIRST e aprovação explícita de LEANDRO;
+4. demonstre diff limitado, testes, rollback e handoff de revisão com evidências vinculadas ao SHA.
+
+A fixture de piloto comprova a stack React/API/PostgreSQL e a qualidade visual; não é evidência de que um agente já concluiu autonomamente uma aplicação completa.
 
 Não habilitar shell arbitrário nem expor o CLI a produção. Astryx não faz backend, domínio, autenticação, deploy ou governança. Nenhuma escrita ou deploy em produção é autorizado por esta integração.
