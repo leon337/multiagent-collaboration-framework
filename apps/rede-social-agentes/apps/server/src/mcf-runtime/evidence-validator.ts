@@ -902,7 +902,6 @@ function validateAstryxDiscoveryReceipt(
   };
   const operation = canonicalizeToolValue(expected.operation);
   const proposal = operation === 'draft-template-scaffold';
-  const newline = String.fromCharCode(10);
   const allowedOperations = [
     'list-components',
     'read-component-docs',
