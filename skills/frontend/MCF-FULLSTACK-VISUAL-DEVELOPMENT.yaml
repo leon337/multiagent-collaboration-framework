@@ -19,15 +19,17 @@ provider:
       - "StyleX is an internal authoring implementation; consumers use precompiled CSS and may customize with CSS or className."
     safety:
       - "Do not run arbitrary shell commands from model-generated strings."
-      - "Install the scoped @astryxdesign/cli package as a pinned project dependency and commit the lockfile."
+      - "Install both @astryxdesign/cli and @astryxdesign/core as pinned project dependencies and commit the lockfile; the CI smoke currently pins published 0.7.17 packages."
       - "Run CLI only in an isolated authorized workspace."
       - "Capture stdout, stderr, exit code, package versions and working directory."
-      - "The MCF Astryx adapter currently exposes only read-only component discovery; it is disabled by default and does not scaffold or write project files."
+      - "The MCF Astryx adapter resolves the exact package-local CLI binary from the workspace and invokes it with process.execPath; no shell, PATH lookup, or global CLI fallback is allowed."
+      - "The adapter currently exposes only read-only component discovery; it is disabled by default and does not scaffold or write project files."
+      - "Receipts bind the workspace, CLI package root, CLI binary, CLI/Core versions, fixed argv, output digest, and signed semantic validation."
       - "Use MCF-IMPLEMENT-CHANGE and its scoped-write/HDF gates for proposed code changes; never treat CLI output as authorization."
 scope:
   includes:
     - product_to_fullstack_plan
-    - visual_component_and_template_discovery
+    - visual_component_discovery
     - frontend_implementation
     - backend_api_contracts
     - database_and_migrations
@@ -54,6 +56,8 @@ evidence:
   required:
     - base_commit_sha
     - provider_version
+    - local_cli_binary_provenance
+    - receipt_signature_and_semantic_validation
     - lockfile
     - architecture_decisions
     - api_contracts
