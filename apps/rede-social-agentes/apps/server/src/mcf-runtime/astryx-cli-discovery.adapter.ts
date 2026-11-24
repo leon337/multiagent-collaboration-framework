@@ -37,10 +37,12 @@ type ExecFile = (
   },
 ) => Promise<{ stdout: string; stderr: string }>;
 
-type AstryxCliPackage = {
-  packageRoot: string;
+type AstryxCliPackages = {
+  cliPackageRoot: string;
   cliBinary: string;
   cliVersion: string;
+  corePackageRoot: string;
+  coreVersion: string;
 };
 
 const execFile: ExecFile = (file, args, options) =>
@@ -96,6 +98,7 @@ function parseCliEnvelope(
   operation: AstryxOperation,
   componentName: string | undefined,
   installedCliVersion: string,
+  installedCoreVersion: string,
 ): { cliVersion: string; coreVersion: string; cliCopy: string } {
   let envelope: unknown;
 
@@ -137,6 +140,7 @@ function parseCliEnvelope(
     cliVersion !== installedCliVersion ||
     typeof coreVersion !== 'string' ||
     !SEMVER_PATTERN.test(coreVersion) ||
+    coreVersion !== installedCoreVersion ||
     cliCopy !== 'project'
   ) {
     return invalid('Astryx CLI must report matching project-local CLI and Core versions');
@@ -188,17 +192,17 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     }
   }
 
-  private async resolveCliPackage(workspace: string): Promise<AstryxCliPackage> {
+  private async resolveCliPackages(workspace: string): Promise<AstryxCliPackages> {
     try {
-      const packageRoot = await realpath(
+      const cliPackageRoot = await realpath(
         resolve(workspace, 'node_modules', '@astryxdesign', 'cli'),
       );
-      if (!isWithin(workspace, packageRoot)) {
+      if (!isWithin(workspace, cliPackageRoot)) {
         return invalidContext('Astryx CLI package resolves outside the isolated workspace');
       }
 
       const packageJson = JSON.parse(
-        await readFile(resolve(packageRoot, 'package.json'), 'utf8'),
+        await readFile(resolve(cliPackageRoot, 'package.json'), 'utf8'),
       ) as unknown;
       if (
         !isRecord(packageJson) ||
@@ -216,15 +220,38 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         return invalidContext('Astryx CLI package does not declare its local astryx binary');
       }
 
-      const cliBinary = await realpath(resolve(packageRoot, bin));
-      if (!isWithin(packageRoot, cliBinary)) {
+      const cliBinary = await realpath(resolve(cliPackageRoot, bin));
+      if (!isWithin(cliPackageRoot, cliBinary)) {
         return invalidContext('Astryx CLI binary resolves outside its package');
       }
 
+      const corePackageRoot = await realpath(
+        resolve(workspace, 'node_modules', '@astryxdesign', 'core'),
+      );
+      if (!isWithin(workspace, corePackageRoot)) {
+        return invalidContext('Astryx Core package resolves outside the isolated workspace');
+      }
+
+      const corePackageJson = JSON.parse(
+        await readFile(resolve(corePackageRoot, 'package.json'), 'utf8'),
+      ) as unknown;
+      if (
+        !isRecord(corePackageJson) ||
+        corePackageJson.name !== ASTRYX_CORE_PACKAGE ||
+        typeof corePackageJson.version !== 'string' ||
+        !SEMVER_PATTERN.test(corePackageJson.version)
+      ) {
+        return invalidContext(
+          'Astryx workspace does not contain a valid project-local Core package',
+        );
+      }
+
       return {
-        packageRoot,
+        cliPackageRoot,
         cliBinary,
         cliVersion: packageJson.version,
+        corePackageRoot,
+        coreVersion: corePackageJson.version,
       };
     } catch {
       return invalidContext('Astryx project-local CLI package or binary is unavailable');
@@ -266,12 +293,12 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     }
 
     const cwd = await this.resolveWorkspace();
-    const cli = await this.resolveCliPackage(cwd);
-    const command = [process.execPath, cli.cliBinary, ...args];
+    const packages = await this.resolveCliPackages(cwd);
+    const command = [process.execPath, packages.cliBinary, ...args];
     let result: { stdout: string; stderr: string };
 
     try {
-      result = await this.runner(process.execPath, [cli.cliBinary, ...args], {
+      result = await this.runner(process.execPath, [packages.cliBinary, ...args], {
         cwd,
         timeout: Math.min(Math.max(this.timeoutMs, 1_000), 30_000),
         maxBuffer: MAX_OUTPUT_BYTES,
@@ -294,7 +321,13 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       return invalid('Astryx CLI returned empty or oversized discovery output');
     }
 
-    const provenance = parseCliEnvelope(stdout, operation, componentName, cli.cliVersion);
+    const provenance = parseCliEnvelope(
+      stdout,
+      operation,
+      componentName,
+      packages.cliVersion,
+      packages.coreVersion,
+    );
     const outputDigest = createHash('sha256').update(stdout).digest('hex');
 
     return this.evidence.createTrustedReceipt({
@@ -312,8 +345,9 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         cliVersion: provenance.cliVersion,
         coreVersion: provenance.coreVersion,
         cliCopy: provenance.cliCopy,
-        cliPackageRoot: cli.packageRoot,
-        cliBinary: cli.cliBinary,
+        cliPackageRoot: packages.cliPackageRoot,
+        cliBinary: packages.cliBinary,
+        corePackageRoot: packages.corePackageRoot,
         readOnly: true,
         command,
         workspace: cwd,
