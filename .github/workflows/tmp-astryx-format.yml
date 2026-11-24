@@ -1,0 +1,32 @@
+name: Temporary Astryx Formatting
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts
+          if git diff --cached --quiet; then
+            echo "Already formatted"
+            exit 0
+          fi
+          git commit -m "style(astryx): format scaffold evidence validator"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
