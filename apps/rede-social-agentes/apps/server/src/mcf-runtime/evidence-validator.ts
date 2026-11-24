@@ -1522,6 +1522,19 @@ export class EvidenceValidator {
     }
   }
 
+  verifyAstryxScaffoldProposal(
+    receipt: McfToolReceipt,
+    inputs: Readonly<Record<string, unknown>>,
+  ): void {
+    const expected = {
+      provider: 'mcf-astryx-cli',
+      operation: 'draft-template-scaffold',
+      resource: 'astryx-design-system',
+    };
+    this.verify(receipt, expected);
+    validateAstryxDiscoveryReceipt(receipt, expected, inputs);
+  }
+
   verifyForSkill(
     receipt: McfToolReceipt,
     expected: McfToolRequest,
