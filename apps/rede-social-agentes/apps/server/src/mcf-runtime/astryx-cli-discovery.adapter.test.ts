@@ -147,7 +147,10 @@ describe('Astryx CLI discovery adapter', () => {
         maxBuffer: 32_768,
         windowsHide: true,
       });
-      return { stdout: 'Button\nCard\nDialog', stderr: '' };
+      return {
+        stdout: jsonResponse('component.list', { components: { actions: [] } }),
+        stderr: '',
+      };
     });
     const validator = evidence();
     const subject = new AstryxCliDiscoveryAdapter(validator, true, workspace, 'pnpm', runner);
@@ -159,7 +162,12 @@ describe('Astryx CLI discovery adapter', () => {
       status: 'SUCCEEDED',
       metadata: {
         readOnly: true,
-        stdout: 'Button\nCard\nDialog',
+        cliPackage: '@astryxdesign/cli',
+        corePackage: '@astryxdesign/core',
+        cliVersion: '0.7.2',
+        coreVersion: '0.7.2',
+        cliCopy: 'project',
+        stdout: jsonResponse('component.list', { components: { actions: [] } }),
       },
     });
     expect(validator.createTrustedReceipt).toHaveBeenCalledTimes(1);
