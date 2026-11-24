@@ -48,7 +48,12 @@ const request = (
   },
 });
 
-function jsonResponse(type: string, data: Record<string, unknown>, copy = 'project'): string {
+function jsonResponse(
+  type: string,
+  data: Record<string, unknown>,
+  copy = 'project',
+  coreVersion = '0.7.2',
+): string {
   return JSON.stringify({
     apiVersion: 1,
     type,
@@ -56,7 +61,7 @@ function jsonResponse(type: string, data: Record<string, unknown>, copy = 'proje
     meta: {
       answeredBy: {
         cli: '0.7.2',
-        core: '0.7.2',
+        core: coreVersion,
         copy,
       },
     },
@@ -177,6 +182,34 @@ describe('Astryx CLI discovery adapter', () => {
     expect(runner).not.toHaveBeenCalled();
   });
 
+  it('fails closed when the project-local Core package is missing', async () => {
+    workspace = await createWorkspace();
+    await rm(join(workspace, 'node_modules', '@astryxdesign', 'core'), {
+      recursive: true,
+      force: true,
+    });
+    const runner = vi.fn();
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner as never);
+
+    await expect(subject.execute(request())).rejects.toMatchObject({
+      code: 'INVALID_CONTEXT',
+    });
+    expect(runner).not.toHaveBeenCalled();
+  });
+
+  it('rejects a CLI-reported Core version that differs from the installed package', async () => {
+    workspace = await createWorkspace();
+    const runner = vi.fn(async () => ({
+      stdout: jsonResponse('component.list', { components: { actions: [] } }, 'project', '0.7.3'),
+      stderr: '',
+    }));
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, runner);
+
+    await expect(subject.execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
   it('executes only the verified workspace-local binary and emits a trusted receipt', async () => {
     workspace = await createWorkspace();
     const runner = vi.fn(async (binary: string, args: string[], options: unknown) => {
@@ -208,6 +241,7 @@ describe('Astryx CLI discovery adapter', () => {
         coreVersion: '0.7.2',
         cliCopy: 'project',
         cliPackageRoot: join(workspace, 'node_modules', '@astryxdesign', 'cli'),
+        corePackageRoot: join(workspace, 'node_modules', '@astryxdesign', 'core'),
         cliBinary: localCliBinary(workspace),
         stdout: jsonResponse('component.list', { components: { actions: [] } }),
       },
