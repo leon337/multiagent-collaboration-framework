@@ -48,6 +48,21 @@ const request = (
   },
 });
 
+function jsonResponse(type: string, data: Record<string, unknown>): string {
+  return JSON.stringify({
+    apiVersion: 1,
+    type,
+    data,
+    meta: {
+      answeredBy: {
+        cli: '0.7.2',
+        core: '0.7.2',
+        copy: 'project',
+      },
+    },
+  });
+}
+
 const evidence = (): EvidenceValidator =>
   ({
     createTrustedReceipt: vi.fn((input) => ({
@@ -126,7 +141,7 @@ describe('Astryx CLI discovery adapter', () => {
   it('executes the fixed list command and emits a trusted readonly receipt', async () => {
     workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
     const runner = vi.fn(async (_binary: string, args: string[], options: unknown) => {
-      expect(args).toEqual(['exec', 'astryx', 'component', '--list']);
+      expect(args).toEqual(['exec', 'astryx', '--json', 'component', '--list']);
       expect(options).toMatchObject({
         cwd: workspace,
         maxBuffer: 32_768,
@@ -153,8 +168,8 @@ describe('Astryx CLI discovery adapter', () => {
   it('uses documented detail options and preserves the requested resource in receipts', async () => {
     workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
     const runner = vi.fn(async (_binary: string, args: string[]) => {
-      expect(args).toEqual(['exec', 'astryx', 'component', 'Button', '--detail', 'compact']);
-      return { stdout: 'Button component documentation', stderr: '' };
+      expect(args).toEqual(['exec', 'astryx', '--json', 'component', 'Button', '--detail', 'compact']);
+      return { stdout: jsonResponse('component.detail', { name: 'Button' }), stderr: '' };
     });
     const validator = evidence();
     const subject = new AstryxCliDiscoveryAdapter(validator, true, workspace, 'pnpm', runner);
@@ -170,6 +185,44 @@ describe('Astryx CLI discovery adapter', () => {
     expect(validator.createTrustedReceipt).toHaveBeenCalledWith(
       expect.objectContaining({ resource: 'Astryx Design System' }),
     );
+  });
+
+  it('rejects global or fallback CLI provenance', async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
+    const untrusted = JSON.stringify({
+      apiVersion: 1,
+      type: 'component.list',
+      data: { components: {} },
+      meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: 'global' } },
+    });
+    const runner = vi.fn(async () => ({ stdout: untrusted, stderr: '' }));
+    const subject = new AstryxCliDiscoveryAdapter(
+      evidence(),
+      true,
+      workspace,
+      'pnpm',
+      runner,
+    );
+
+    await expect(subject.execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('rejects CLI output above the configured byte limit', async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
+    const runner = vi.fn(async () => ({ stdout: 'x'.repeat(32_769), stderr: '' }));
+    const subject = new AstryxCliDiscoveryAdapter(
+      evidence(),
+      true,
+      workspace,
+      'pnpm',
+      runner,
+    );
+
+    await expect(subject.execute(request())).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
   });
 
   it('validates component names before passing them as CLI arguments', async () => {
