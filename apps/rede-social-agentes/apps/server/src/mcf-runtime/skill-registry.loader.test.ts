@@ -124,46 +124,17 @@ describe('parseMcfSkillRegistry', () => {
     });
   });
 
-  it('loads governed web research skills from the canonical registry', async () => {
+  it('keeps experimental web orchestration contracts out of the executable registry', async () => {
     const registryPath = resolve(process.cwd(), '../../../../skills/registry.yaml');
     const content = await readFile(registryPath, 'utf8');
     const skills = parseMcfSkillRegistry(content);
-    const webSkills = skills.filter((skill) => skill.skillId.startsWith('MCF-WEB-'));
-    const byId = new Map(webSkills.map((skill) => [skill.skillId, skill]));
+    const webBlocks = content.split(/(?=^  - skill_id: MCF-WEB-)/mu).filter((block) =>
+      /^  - skill_id: MCF-WEB-/u.test(block),
+    );
 
-    expect(webSkills).toHaveLength(9);
-    expect(webSkills.map((skill) => skill.skillId).sort()).toEqual([
-      'MCF-WEB-COLLECT',
-      'MCF-WEB-EVENTS',
-      'MCF-WEB-FAST-NAV',
-      'MCF-WEB-FETCH',
-      'MCF-WEB-INTERACT',
-      'MCF-WEB-MAP',
-      'MCF-WEB-MONITOR',
-      'MCF-WEB-RESEARCH',
-      'MCF-WEB-SEARCH',
-    ]);
-    // These experimental skills are part of the actual registry, not a separate permission expansion.
-    expect(byId.get('MCF-WEB-EVENTS')).toMatchObject({
-      permissionProfile: 'READ_ONLY',
-      handoffTo: 'Mestre',
-    });
-    expect(byId.get('MCF-WEB-FAST-NAV')).toMatchObject({
-      permissionProfile: 'READ_ONLY',
-      handoffTo: 'Mestre',
-    });
-    expect(byId.get('MCF-WEB-SEARCH')).toMatchObject({
-      permissionProfile: 'READ_ONLY',
-      handoffTo: 'Miriam',
-    });
-    expect(byId.get('MCF-WEB-INTERACT')).toMatchObject({
-      permissionProfile: 'SCOPED_WRITE',
-      handoffTo: 'Beatriz',
-    });
-    expect(byId.get('MCF-WEB-MONITOR')).toMatchObject({
-      permissionProfile: 'SCOPED_WRITE',
-      handoffTo: 'Augusto',
-    });
+    expect(webBlocks).toHaveLength(9);
+    expect(webBlocks.every((block) => /^    status: EXPERIMENTAL$/mu.test(block))).toBe(true);
+    expect(skills.some((skill) => skill.skillId.startsWith('MCF-WEB-'))).toBe(false);
   });
 
   it('rejects duplicate skill identifiers', () => {
