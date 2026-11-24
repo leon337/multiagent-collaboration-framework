@@ -90,6 +90,22 @@ describe('Astryx CLI discovery adapter', () => {
     ).toBe(false);
   });
 
+  it('requires an explicit absolute workspace when enabled', async () => {
+    const runner = vi.fn();
+    const subject = new AstryxCliDiscoveryAdapter(
+      evidence(),
+      true,
+      '',
+      'pnpm',
+      runner as never,
+    );
+
+    await expect(subject.execute(request())).rejects.toMatchObject({
+      code: 'INVALID_CONTEXT',
+    });
+    expect(runner).not.toHaveBeenCalled();
+  });
+
   it('fails closed while disabled without executing a command', async () => {
     workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
     const runner = vi.fn();
