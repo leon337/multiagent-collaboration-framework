@@ -178,6 +178,7 @@ function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceip
         encoding: 'base64',
         data: diffBytes.toString('base64'),
         byteLength: diffBytes.byteLength,
+        digest: createHash('sha256').update(diffBytes).digest('hex'),
       },
       diffDigest: createHash('sha256').update(diffBytes).digest('hex'),
       command: [process.execPath, cliBinary, '--json', 'template', 'Dashboard', targetPath],
