@@ -422,7 +422,12 @@ describe('CodeBuddyExecutorAdapter', () => {
     };
     const requestWithMission = {
       ...request,
-      context: { missionId, phaseId: 'phase-astryx-001', expectedMissionVersion: 1, projectId: 'mcf-astryx-pilot' },
+      context: {
+        missionId,
+        phaseId: 'phase-astryx-001',
+        expectedMissionVersion: 1,
+        projectId: 'mcf-astryx-pilot',
+      },
       inputs,
     };
     await expect(
