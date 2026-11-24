@@ -196,6 +196,7 @@ export class MissionRuntimeService {
         missionId,
         phaseId,
         expectedMissionVersion: request.expectedMissionVersion,
+        projectId: mission.contract.projectId ?? null,
       },
     });
 
