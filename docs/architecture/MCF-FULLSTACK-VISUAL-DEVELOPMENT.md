@@ -150,14 +150,6 @@ Esta PR registra a Skill experimental e a arquitetura. **A Skill full-stack cont
 4. Benchmark visual e projeto-piloto full-stack não produtivo cobrindo frontend, API, banco isolado, autorização server-side, acessibilidade, visual regression e rollback.
 5. Evidências E2E de uma aplicação completa antes de promover a Skill de EXPERIMENTAL para CURRENT_IMPLEMENTED.
 
-### Pendências para desenvolvimento visual/full-stack completo
-
-1. Adapter para template source/skeleton e scaffolding em diff-proposal, sujeito a HDF, paths permitidos e diff review.
-2. Receipts e Evidence Validator para propostas de escrita, com proveniência e diff digest.
-3. Aplicação de diffs somente por SCOPED_WRITE, com aprovação explícita e rollback.
-4. Benchmark visual e projeto-piloto full-stack não produtivo cobrindo frontend, API, banco isolado, autorização server-side, acessibilidade, visual regression e rollback.
-5. Evidências E2E de uma aplicação completa antes de promover a Skill de EXPERIMENTAL para CURRENT_IMPLEMENTED.
-
 Não habilitar execução arbitrária de shell nem expor o CLI a produção. A descoberta integrada pela PR #579 permanece read-only e disabled-by-default. Nenhuma escrita ou deploy é permitido nesta capability.
 
 ## 9. Projeto-piloto recomendado
