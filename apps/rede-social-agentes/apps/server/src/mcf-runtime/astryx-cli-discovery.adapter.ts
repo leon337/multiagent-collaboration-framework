@@ -206,7 +206,9 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
         typeof packageJson.version !== 'string' ||
         !SEMVER_PATTERN.test(packageJson.version)
       ) {
-        return invalidContext('Astryx workspace does not contain a valid project-local CLI package');
+        return invalidContext(
+          'Astryx workspace does not contain a valid project-local CLI package',
+        );
       }
 
       const bin = isRecord(packageJson.bin) ? packageJson.bin.astryx : packageJson.bin;
@@ -277,7 +279,8 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
       });
     } catch (error) {
       const isTimeout =
-        isRecord(error) && (error.code === 'ETIMEDOUT' || (error.killed === true && error.signal === 'SIGTERM'));
+        isRecord(error) &&
+        (error.code === 'ETIMEDOUT' || (error.killed === true && error.signal === 'SIGTERM'));
       const code = isTimeout ? 'ADAPTER_TIMEOUT' : 'ADAPTER_FAILURE';
       throw new ExternalActionAdapterError(
         code,
