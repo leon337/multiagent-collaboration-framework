@@ -947,7 +947,7 @@ function validateAstryxDiscoveryReceipt(
     'coreVersion',
     'Astryx discovery evidence requires coreVersion',
   );
-  const semver = /^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$/u;
+  const semver = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
   if (
     !semver.test(cliVersion) ||
     !semver.test(coreVersion) ||
