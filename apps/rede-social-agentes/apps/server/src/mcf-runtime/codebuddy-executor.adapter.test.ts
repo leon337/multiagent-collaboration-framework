@@ -137,7 +137,11 @@ function createAstryxProposalReceipt(evidence: EvidenceValidator): McfToolReceip
   const stdout = JSON.stringify({
     apiVersion: 1,
     type: 'template.copy',
-    data: { filesCopied: 1, fileName: 'Pilot.tsx', outputDir: join(proposalWorkspace, 'src/components') },
+    data: {
+      filesCopied: 1,
+      fileName: 'Pilot.tsx',
+      outputDir: join(proposalWorkspace, 'src/components'),
+    },
     meta: { answeredBy: { cli: '0.7.2', core: '0.7.2', copy: 'project' } },
   });
   return evidence.createTrustedReceipt({
