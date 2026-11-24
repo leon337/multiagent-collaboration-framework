@@ -81,11 +81,23 @@ jobs:
 
       - name: Temporary Prettier inspection for Astryx runtime files
         run: |
-          pnpm exec prettier --write apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts
-          echo '--- ADAPTER ---'
-          cat apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts
-          echo '--- REAL CLI TEST ---'
-          cat apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts
+          pnpm exec prettier --write \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.runtime-e2e.test.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts \
+            apps/server/src/mcf-runtime/evidence-validator.ts \
+            apps/server/src/mcf-runtime/evidence-validator.test.ts
+          for file in \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.runtime-e2e.test.ts \
+            apps/server/src/mcf-runtime/astryx-cli-discovery.real-cli.integration.test.ts \
+            apps/server/src/mcf-runtime/evidence-validator.ts \
+            apps/server/src/mcf-runtime/evidence-validator.test.ts; do
+            echo "--- FILE:$file ---"
+            cat "$file"
+          done
 
       - name: Verify formatting
         run: pnpm format:check
