@@ -756,12 +756,12 @@ Runner online, workflow health aprovado, capability executável no MissionRuntim
 
 ## MCF Full-Stack Visual Development — EXPERIMENTAL
 
-- Contrato de orquestração documentado em `skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml@0.2.0` e registrado em `skills/registry.yaml` com `status: EXPERIMENTAL`; `SkillRegistryLoader` exclui explicitamente contratos experimentais do mapa executável.
+- Contrato de orquestração documentado em `skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml@0.2.0`, deliberadamente fora de `skills/registry.yaml`: `SkillRegistryLoader` carrega todas as entradas desse registro e não filtra por status experimental.
 - Astryx (Meta) é provider visual opcional; não é backend, framework full-stack nem agente orquestrador.
 - A arquitetura preserva contratos independentes de API/domínio/dados, autorização server-side e validação MCF.
 - A Skill continua contrato de orquestração experimental, **não executável pelo runtime atual**.
-- A capacidade de template/scaffold e aplicação governada está implementada nesta branch; o piloto full-stack, visual regression, acessibilidade, rollback, lockfile e gates MCF qualificam a fronteira técnica.
-- A Skill permanece EXPERIMENTAL até uma missão autônoma MCF provar o fluxo ponta a ponta com CodeBuddy real, HDF canonicalizado, TEAM_FIRST, SCOPED_WRITE, rollback e evidências vinculadas ao SHA.
+- A capacidade de template/scaffold e aplicação governada está implementada nesta branch; o piloto full-stack, visual regression, acessibilidade, rollback, lockfile e gates MCF qualificam a fronteira técnica. O receipt valida SHA-256 do source e do diff (incluindo o digest dentro do artefato), encoding base64 canônico e delimitadores LF reais.
+- A Skill permanece EXPERIMENTAL até uma missão autônoma MCF provar o fluxo ponta a ponta com CodeBuddy real, HDF canonicalizado, TEAM_FIRST, SCOPED_WRITE, rollback e evidências vinculadas ao SHA. Para aplicação, MissionRuntime fornece o `projectId` persistido em `mission.contract`; CodeBuddy rejeita HDF/input de outro projeto antes de executar.
 - O piloto `examples/astryx-fullstack-pilot/` usa React 19 + Astryx, API autenticada server-side, PostgreSQL com schema isolado, migration, rollback transacional, limpeza do schema, Playwright desktop/mobile, axe e pixel baselines.
 - Não contar a Skill full-stack entre as 20 Skills executáveis; produção não é afetada e merge em main não autoriza deploy.
 - Fonte técnica do provider: https://github.com/meta/astryx e https://github.com/meta/astryx/wiki/System-Architecture.
