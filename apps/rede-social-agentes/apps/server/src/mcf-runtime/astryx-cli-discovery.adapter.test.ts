@@ -135,6 +135,12 @@ describe('Astryx CLI discovery adapter', () => {
     expect(
       subject.supports({
         ...request(),
+        tool: { ...request().tool, resource: 'Astryx Design System' },
+      }),
+    ).toBe(false);
+    expect(
+      subject.supports({
+        ...request(),
         skill: { ...skill, skillId: 'MCF-START-MISSION' },
       }),
     ).toBe(false);
@@ -274,7 +280,7 @@ describe('Astryx CLI discovery adapter', () => {
     expect(validator.createTrustedReceipt).toHaveBeenCalledTimes(1);
   });
 
-  it('uses documented detail options and preserves the requested resource in receipts', async () => {
+  it('uses documented detail options and emits the canonical resource in receipts', async () => {
     workspace = await createWorkspace();
     const runner = vi.fn(async (_binary: string, args: string[]) => {
       expect(args).toEqual([
@@ -289,17 +295,10 @@ describe('Astryx CLI discovery adapter', () => {
     });
     const validator = evidence();
     const subject = new AstryxCliDiscoveryAdapter(validator, true, workspace, runner);
-    const aliasRequest = {
-      ...request('read-component-docs', { componentName: 'Button' }),
-      tool: {
-        ...request('read-component-docs').tool,
-        resource: 'Astryx Design System',
-      },
-    };
 
-    await subject.execute(aliasRequest);
+    await subject.execute(request('read-component-docs', { componentName: 'Button' }));
     expect(validator.createTrustedReceipt).toHaveBeenCalledWith(
-      expect.objectContaining({ resource: 'Astryx Design System' }),
+      expect.objectContaining({ resource: ASTRYX_RESOURCE }),
     );
   });
 
