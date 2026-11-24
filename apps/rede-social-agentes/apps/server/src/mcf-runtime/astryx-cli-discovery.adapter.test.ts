@@ -1,4 +1,3 @@
-
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -207,13 +206,7 @@ describe('Astryx CLI discovery adapter', () => {
     const runner = vi.fn(async () => {
       throw timeout;
     });
-    const subject = new AstryxCliDiscoveryAdapter(
-      evidence(),
-      true,
-      workspace,
-      'pnpm',
-      runner,
-    );
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, workspace, 'pnpm', runner);
 
     await expect(subject.execute(request())).rejects.toMatchObject({
       code: 'ADAPTER_TIMEOUT',
