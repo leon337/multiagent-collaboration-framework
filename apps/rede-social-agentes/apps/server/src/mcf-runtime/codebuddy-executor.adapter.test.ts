@@ -422,9 +422,17 @@ describe('CodeBuddyExecutorAdapter', () => {
     };
     const requestWithMission = {
       ...request,
-      context: { missionId, phaseId: 'phase-astryx-001', expectedMissionVersion: 1 },
+      context: { missionId, phaseId: 'phase-astryx-001', expectedMissionVersion: 1, projectId: 'mcf-astryx-pilot' },
       inputs,
     };
+    await expect(
+      subject.execute({
+        ...requestWithMission,
+        context: { ...requestWithMission.context, projectId: 'different-project' },
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_CONTEXT' });
+    expect(host.execute).not.toHaveBeenCalled();
+
     const receipt = await subject.execute(requestWithMission);
 
     expect(host.execute).toHaveBeenCalledOnce();
