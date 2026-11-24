@@ -1033,7 +1033,7 @@ function validateAstryxDiscoveryReceipt(
   const stdout = requireString(receipt.metadata, 'stdout', 'Astryx evidence requires stdout');
   const outputBytes = requireNonNegativeInteger(receipt.metadata, 'outputBytes', 'Astryx evidence requires outputBytes');
   const outputDigest = requireString(receipt.metadata, 'outputDigest', 'Astryx evidence requires outputDigest');
-  const outputLimit = operation.startsWith('read-template') || proposal ? 262_144 : 32_768;
+  const outputLimit = operation.includes('template') ? 262_144 : 32_768;
   if (
     outputBytes !== Buffer.byteLength(stdout, 'utf8') || outputBytes > outputLimit ||
     !/^[a-f0-9]{64}$/u.test(outputDigest) ||
