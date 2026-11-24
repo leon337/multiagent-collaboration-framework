@@ -82,7 +82,7 @@ Do not point the workspace at a production checkout. Do not enable the adapter i
 - CLI/Core package roots and versions must match the installed local packages.
 - Receipts are signed by the existing EvidenceValidator and recorded by the external action ledger.
 - Scaffold source and diff artifacts carry canonical base64 encoding, byte length and SHA-256; the validator checks the embedded diff digest, metadata digest, target path and real LF delimiters before acceptance.
-- For CodeBuddy application, MissionRuntime passes `mission.contract.projectId` from the persisted mission record into the execution context; caller-provided `inputs.projectId` and HDF `projectId` must both match it. A mismatch is rejected before CodeBuddy execution.
+- For CodeBuddy application, MissionRuntime passes `mission.contract.projectId` from the persisted mission record into the execution context; caller-provided `inputs.projectId` and HDF `projectId` must both match it. A mismatch is rejected before CodeBuddy execution. The requested `allowed_paths` must be a subset of the proposal receipt's signed `approvedPaths`, and every published changed file is checked against both scopes.
 - No commit, merge, publish, production write or deploy.
 
 ## Validation
