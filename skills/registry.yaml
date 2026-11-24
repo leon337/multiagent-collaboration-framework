@@ -182,7 +182,7 @@ skills:
       ["implementar", "corrigir", "integrar", "criar funcionalidade"]
     required_inputs:
       [approved_scope, acceptance_criteria, repository, allowed_paths]
-    optional_inputs: [branch, issue, design_reference]
+    optional_inputs: [branch, issue, design_reference, scaffoldProposalReceipt, v11AuthorizationContext, authorizedScope]
     allowed_tools:
       [
         GitHub,
@@ -209,7 +209,7 @@ skills:
     required_evidence:
       [changed_files, base_commit_sha, diff_digest, test_results_or_handoff]
     expected_outputs: [implementation, technical_notes]
-    acceptance_criteria: [scope_respected, tests_or_handoff_proven]
+    acceptance_criteria: [scope_respected, tests_or_handoff_proven, scaffold_receipt_verified_when_present, HDF_SCOPED_WRITE_and_leandro_gate_when_applying_astryx, transactional_rollback_on_failure]
     failure_modes: [scope_creep, unsafe_write, missing_tests]
     fallback: Produzir patch ou plano executável sem alegar aplicação.
     handoff_to: Vinicius
