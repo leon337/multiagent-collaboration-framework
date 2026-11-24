@@ -69,6 +69,7 @@ describe('Astryx pinned CLI real integration', () => {
     expect(receipt.metadata.outputDigest).toMatch(/^[a-f0-9]{64}$/u);
     expect(Number(receipt.metadata.outputBytes)).toBeGreaterThan(0);
     expect(receipt.metadata.workspace).toBe(workspace);
+    expect(receipt.metadata.workspace).not.toBe(process.cwd());
     expect(receipt.metadata.command).toEqual([
       'pnpm',
       'exec',
