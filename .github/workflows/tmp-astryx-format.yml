@@ -28,6 +28,8 @@ jobs:
       - name: Format final Astryx delta
         run: |
           pnpm --dir apps/rede-social-agentes exec prettier --write \
+            apps/server/src/mcf-runtime/codebuddy-executor.adapter.ts \
+            apps/server/src/mcf-runtime/codebuddy-executor.adapter.test.ts \
             ../../skills/registry.yaml \
             ../../examples/astryx-fullstack-pilot/src/styles.css \
             ../../examples/astryx-fullstack-pilot/tests/e2e.mjs \
