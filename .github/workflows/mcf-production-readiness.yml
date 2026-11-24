@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   production-candidate-readiness:
@@ -71,22 +71,6 @@ jobs:
       - name: Dependency vulnerability gate
         working-directory: apps/rede-social-agentes
         run: pnpm audit --prod --audit-level high
-
-      - name: Format and commit Astryx adapter sources (temporary repair)
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'feat/mcf-astryx-cli-adapter'
-        working-directory: apps/rede-social-agentes
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          pnpm exec prettier --write apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts
-          cd ../..
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add apps/rede-social-agentes/apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.ts apps/rede-social-agentes/apps/server/src/mcf-runtime/astryx-cli-discovery.adapter.test.ts
-          if ! git diff --cached --quiet; then
-            git commit -m "style(astryx): apply repository Prettier formatting"
-            git push origin "HEAD:${GITHUB_HEAD_REF}"
-          fi
 
       - name: Verify formatting
         working-directory: apps/rede-social-agentes
