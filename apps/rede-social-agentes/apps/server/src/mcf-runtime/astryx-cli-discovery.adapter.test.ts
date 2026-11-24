@@ -229,6 +229,8 @@ describe('Astryx CLI discovery adapter', () => {
           NODE_ENV: 'production',
           HOME: workspace,
           USERPROFILE: workspace,
+          APPDATA: join(workspace, '.appdata'),
+          LOCALAPPDATA: join(workspace, '.localappdata'),
           XDG_CONFIG_HOME: join(workspace, '.config'),
           XDG_CACHE_HOME: join(workspace, '.cache'),
           TMPDIR: join(workspace, '.tmp'),
