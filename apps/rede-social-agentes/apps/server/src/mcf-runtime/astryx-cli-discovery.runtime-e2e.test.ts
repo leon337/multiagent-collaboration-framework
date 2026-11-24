@@ -114,7 +114,7 @@ class InMemoryExternalLedger {
 }
 
 async function createWorkspace(): Promise<string> {
-  const workspace = await createWorkspace();
+  const workspace = await mkdtemp(join(tmpdir(), 'astryx-runtime-e2e-'));
   const packageRoot = join(workspace, 'node_modules', '@astryxdesign', 'cli');
   const binaryDirectory = join(packageRoot, 'clients', 'cli', 'bin');
   await mkdir(binaryDirectory, { recursive: true });
