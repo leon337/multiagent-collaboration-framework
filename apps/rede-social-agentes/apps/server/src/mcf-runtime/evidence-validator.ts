@@ -1244,7 +1244,9 @@ function validateAstryxDiscoveryReceipt(
   if (operation === 'list-components') {
     const data = requireRecord(parsedEnvelope.data, 'Astryx component list requires data');
     requireRecord(data.components, 'Astryx component list is missing its catalog');
-    if (data.detail !== 'names') reject('Astryx component list must use the fixed names detail level');
+    if (data.detail !== 'names') {
+      reject('Astryx component list must use the fixed names detail level');
+    }
   } else if (operation === 'read-component-docs') {
     const data = requireRecord(parsedEnvelope.data, 'Astryx component docs require data');
     if (data.name !== inputs.componentName)
