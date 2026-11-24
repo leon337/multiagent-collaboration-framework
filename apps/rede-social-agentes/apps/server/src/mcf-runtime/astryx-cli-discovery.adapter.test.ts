@@ -374,8 +374,9 @@ describe('Astryx CLI discovery adapter', () => {
 
   it('reads template catalog, source and skeleton with fixed argv and bounded receipts', async () => {
     workspace = await createWorkspace();
-    const runner = vi.fn(async (_binary: string, args: string[]) => {
+    const runner = vi.fn(async (_binary: string, args: string[], options: unknown) => {
       if (args.includes('--list')) {
+        expect((options as { maxBuffer: number }).maxBuffer).toBe(2_097_152);
         expect(args).toEqual([localCliBinary(workspace!), '--json', 'template', '--list']);
         return {
           stdout: jsonResponse('template.list', { templates: [{ id: 'Dashboard' }] }),
