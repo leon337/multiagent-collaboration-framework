@@ -63,6 +63,12 @@ label {
   align-items: center;
   gap: 12px;
 }
+.form-row input {
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 13px !important;
+  line-height: 1.4;
+}
 input {
   min-width: 0;
   flex: 1;
