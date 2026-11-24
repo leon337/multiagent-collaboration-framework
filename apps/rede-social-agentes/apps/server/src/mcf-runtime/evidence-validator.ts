@@ -895,222 +895,191 @@ function validateAstryxDiscoveryReceipt(
 ): void {
   const isPathWithin = (parent: string, child: string): boolean => {
     const candidate = relative(parent, child);
-    return (
-      candidate === '' ||
-      (candidate !== '..' && !candidate.startsWith(`..${sep}`) && !isAbsolute(candidate))
-    );
+    return candidate === '' || (candidate !== '..' && !candidate.startsWith(`..${sep}`) && !isAbsolute(candidate));
   };
-
+  const operation = canonicalizeToolValue(expected.operation);
+  const proposal = operation === 'draft-template-scaffold';
+  const allowedOperations = [
+    'list-components', 'read-component-docs', 'list-templates',
+    'read-template-source', 'read-template-skeleton', 'draft-template-scaffold',
+  ];
   if (
     canonicalizeProvider(receipt.provider) !== 'mcf-astryx-cli' ||
-    canonicalizeToolValue(expected.resource) !== 'astryx-design-system' ||
-    receipt.status !== 'SUCCEEDED'
-  ) {
-    reject('Astryx discovery evidence requires the governed read-only provider and resource');
-  }
+    expected.resource !== 'astryx-design-system' ||
+    receipt.resource !== 'astryx-design-system' ||
+    receipt.status !== 'SUCCEEDED' ||
+    !allowedOperations.includes(operation)
+  ) reject('Astryx evidence requires the governed provider, canonical resource and allowlisted operation');
 
-  const operation = canonicalizeToolValue(expected.operation);
-  if (!['list-components', 'read-component-docs'].includes(operation)) {
-    reject('Astryx discovery evidence contains an unsupported operation');
+  if (requireString(receipt.metadata, 'adapterId', 'Astryx evidence requires adapterId') !== 'mcf-astryx-cli-governed-v2') {
+    reject('Astryx evidence was not produced by the approved governed adapter');
   }
-
-  if (
-    requireString(receipt.metadata, 'adapterId', 'Astryx discovery evidence requires adapterId') !==
-    'mcf-astryx-cli-readonly-v1'
-  ) {
-    reject('Astryx discovery evidence was not produced by the approved adapter');
+  if (requireBoolean(receipt.metadata, 'readOnly', 'Astryx evidence requires readOnly') !== !proposal) {
+    reject('Astryx readOnly flag does not match the operation effect');
   }
-
-  if (
-    !requireBoolean(receipt.metadata, 'readOnly', 'Astryx discovery evidence requires readOnly')
-  ) {
-    reject('Astryx discovery evidence must be read-only');
-  }
+  if (proposal && (
+    !requireBoolean(receipt.metadata, 'proposalOnly', 'Scaffold evidence requires proposalOnly') ||
+    requireString(receipt.metadata, 'writeMode', 'Scaffold evidence requires writeMode') !== 'DISPOSABLE_PROPOSAL_ONLY' ||
+    !requireBoolean(receipt.metadata, 'proposalWorkspaceCleaned', 'Scaffold evidence requires cleanup proof')
+  )) reject('Astryx scaffold must be a disposable proposal with its scratch workspace cleaned');
 
   if (
-    requireString(receipt.metadata, 'cliPackage', 'Astryx evidence requires cliPackage') !==
-      '@astryxdesign/cli' ||
-    requireString(receipt.metadata, 'corePackage', 'Astryx evidence requires corePackage') !==
-      '@astryxdesign/core'
-  ) {
-    reject('Astryx discovery evidence must identify the official scoped packages');
-  }
+    requireString(receipt.metadata, 'cliPackage', 'Astryx evidence requires cliPackage') !== '@astryxdesign/cli' ||
+    requireString(receipt.metadata, 'corePackage', 'Astryx evidence requires corePackage') !== '@astryxdesign/core'
+  ) reject('Astryx evidence must identify the official scoped packages');
 
-  const cliVersion = requireString(
-    receipt.metadata,
-    'cliVersion',
-    'Astryx discovery evidence requires cliVersion',
-  );
-  const coreVersion = requireString(
-    receipt.metadata,
-    'coreVersion',
-    'Astryx discovery evidence requires coreVersion',
-  );
+  const cliVersion = requireString(receipt.metadata, 'cliVersion', 'Astryx evidence requires cliVersion');
+  const coreVersion = requireString(receipt.metadata, 'coreVersion', 'Astryx evidence requires coreVersion');
   const semver = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
   if (
-    !semver.test(cliVersion) ||
-    !semver.test(coreVersion) ||
+    !semver.test(cliVersion) || !semver.test(coreVersion) ||
     requireString(receipt.metadata, 'cliCopy', 'Astryx evidence requires cliCopy') !== 'project'
-  ) {
-    reject('Astryx discovery evidence must bind project-local CLI and Core versions');
-  }
+  ) reject('Astryx evidence must bind project-local CLI and Core versions');
 
-  const workspace = requireString(
-    receipt.metadata,
-    'workspace',
-    'Astryx discovery evidence requires workspace',
-  );
-  const packageRoot = requireString(
-    receipt.metadata,
-    'cliPackageRoot',
-    'Astryx discovery evidence requires cliPackageRoot',
-  );
-  const cliBinary = requireString(
-    receipt.metadata,
-    'cliBinary',
-    'Astryx discovery evidence requires cliBinary',
-  );
-  const corePackageRoot = requireString(
-    receipt.metadata,
-    'corePackageRoot',
-    'Astryx discovery evidence requires corePackageRoot',
-  );
+  const workspace = requireString(receipt.metadata, 'workspace', 'Astryx evidence requires workspace');
+  const packageRoot = requireString(receipt.metadata, 'cliPackageRoot', 'Astryx evidence requires cliPackageRoot');
+  const cliBinary = requireString(receipt.metadata, 'cliBinary', 'Astryx evidence requires cliBinary');
+  const corePackageRoot = requireString(receipt.metadata, 'corePackageRoot', 'Astryx evidence requires corePackageRoot');
   if (
-    !isAbsolute(workspace) ||
-    !isAbsolute(packageRoot) ||
-    !isAbsolute(cliBinary) ||
-    !isAbsolute(corePackageRoot) ||
-    isPathWithin(process.cwd(), workspace) ||
-    isPathWithin(workspace, process.cwd()) ||
-    !isPathWithin(workspace, packageRoot) ||
-    !isPathWithin(packageRoot, cliBinary) ||
-    !isPathWithin(workspace, corePackageRoot) ||
-    isPathWithin(packageRoot, corePackageRoot) ||
+    !isAbsolute(workspace) || !isAbsolute(packageRoot) || !isAbsolute(cliBinary) || !isAbsolute(corePackageRoot) ||
+    isPathWithin(process.cwd(), workspace) || isPathWithin(workspace, process.cwd()) ||
+    !isPathWithin(workspace, packageRoot) || !isPathWithin(packageRoot, cliBinary) ||
+    !isPathWithin(workspace, corePackageRoot) || isPathWithin(packageRoot, corePackageRoot) ||
     isPathWithin(corePackageRoot, packageRoot)
-  ) {
-    reject(
-      'Astryx discovery evidence must bind workspace-local CLI and Core packages outside the runtime checkout',
-    );
-  }
+  ) reject('Astryx evidence must bind workspace-local CLI/Core packages outside the runtime checkout');
 
-  const command = requireNonEmptyArray(
-    receipt.metadata,
-    'command',
-    'Astryx discovery evidence requires command',
-  );
+  const command = requireNonEmptyArray(receipt.metadata, 'command', 'Astryx evidence requires command');
   if (command[0] !== process.execPath || command[1] !== cliBinary) {
-    reject('Astryx discovery evidence must execute the verified workspace-local CLI with Node');
+    reject('Astryx evidence must execute the verified workspace-local CLI with Node');
   }
 
-  const expectedArgs =
-    operation === 'list-components'
-      ? ['--json', 'component', '--list']
-      : (() => {
-          const componentName = inputs.componentName;
-          if (
-            typeof componentName !== 'string' ||
-            !/^[A-Z][A-Za-z0-9]{0,63}$/u.test(componentName)
-          ) {
-            return reject('Astryx component documentation evidence requires a valid componentName');
-          }
-          return ['--json', 'component', componentName, '--detail', 'compact'];
-        })();
-
-  if (
-    command.length !== expectedArgs.length + 2 ||
-    expectedArgs.some((argument, index) => command[index + 2] !== argument)
-  ) {
-    reject('Astryx discovery evidence command does not match the fixed allowlist');
+  const templateId = operation.startsWith('read-template') || proposal
+    ? requireString(receipt.metadata, 'templateId', 'Astryx template operation requires templateId')
+    : undefined;
+  if (templateId !== undefined && !/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/u.test(templateId)) {
+    reject('Astryx templateId is invalid');
   }
 
-  const stdout = requireString(
-    receipt.metadata,
-    'stdout',
-    'Astryx discovery evidence requires stdout',
-  );
-  const outputBytes = requireNonNegativeInteger(
-    receipt.metadata,
-    'outputBytes',
-    'Astryx discovery evidence requires outputBytes',
-  );
-  const outputDigest = requireString(
-    receipt.metadata,
-    'outputDigest',
-    'Astryx discovery evidence requires outputDigest',
-  );
+  let expectedArgs: string[];
+  switch (operation) {
+    case 'list-components': expectedArgs = ['--json', 'component', '--list']; break;
+    case 'read-component-docs': {
+      const name = inputs.componentName;
+      if (typeof name !== 'string' || !/^[A-Z][A-Za-z0-9]{0,63}$/u.test(name)) reject('Astryx component documentation requires a valid componentName');
+      expectedArgs = ['--json', 'component', String(name), '--detail', 'compact'];
+      break;
+    }
+    case 'list-templates': expectedArgs = ['--json', 'template', '--list']; break;
+    case 'read-template-source': expectedArgs = ['--json', 'template', String(templateId)]; break;
+    case 'read-template-skeleton': expectedArgs = ['--json', 'template', String(templateId), '--skeleton']; break;
+    default: {
+      const targetPath = requireString(receipt.metadata, 'targetPath', 'Scaffold evidence requires targetPath');
+      const baseCommitSha = requireString(receipt.metadata, 'baseCommitSha', 'Scaffold evidence requires baseCommitSha');
+      const repository = requireString(receipt.metadata, 'repository', 'Scaffold evidence requires repository');
+      if (
+        !/^[a-f0-9]{40}$/u.test(baseCommitSha) || receipt.commitSha !== baseCommitSha ||
+        !/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/[A-Za-z0-9._-]{1,100}$/u.test(repository) ||
+        targetPath.startsWith('/') || targetPath.includes('\\') ||
+        !/\.(?:tsx|jsx|ts|js)$/u.test(targetPath) ||
+        targetPath.split('/').some((part) => !part || part === '.' || part === '..')
+      ) reject('Astryx scaffold target, repository or base SHA is invalid');
+      const approvedPaths = receipt.metadata.approvedPaths;
+      if (
+        !Array.isArray(approvedPaths) || approvedPaths.length === 0 ||
+        approvedPaths.some((entry) => typeof entry !== 'string' || entry.startsWith('/') || entry.includes('\\') || entry.split('/').some((part) => !part || part === '.' || part === '..')) ||
+        !approvedPaths.some((scope) => targetPath === scope || targetPath.startsWith(`${String(scope)}/`)) ||
+        JSON.stringify(approvedPaths) !== JSON.stringify(inputs.allowed_paths)
+      ) reject('Astryx scaffold target is outside the exact approved paths');
+      const proposalWorkspace = requireString(receipt.metadata, 'proposalWorkspace', 'Scaffold evidence requires proposalWorkspace');
+      if (!isAbsolute(proposalWorkspace) || !isPathWithin(workspace, proposalWorkspace) || proposalWorkspace === workspace) {
+        reject('Astryx scaffold workspace must be nested under the isolated CLI workspace');
+      }
+      const source = requireRecord(receipt.metadata.sourceArtifact, 'Scaffold evidence requires sourceArtifact');
+      const diff = requireRecord(receipt.metadata.diffArtifact, 'Scaffold evidence requires diffArtifact');
+      const sourceData = requireString(source, 'data', 'Scaffold source artifact requires data');
+      const diffData = requireString(diff, 'data', 'Scaffold diff artifact requires data');
+      const sourceBytes = Buffer.from(sourceData, 'base64');
+      const diffBytes = Buffer.from(diffData, 'base64');
+      if (
+        source.encoding !== 'base64' || sourceBytes.toString('base64') !== sourceData ||
+        requireNonNegativeInteger(source, 'byteLength', 'Scaffold source artifact requires byteLength') !== sourceBytes.byteLength ||
+        requireString(source, 'digest', 'Scaffold source artifact requires digest') !== createHash('sha256').update(sourceBytes).digest('hex') ||
+        diff.encoding !== 'base64' || diffBytes.toString('base64') !== diffData ||
+        requireNonNegativeInteger(diff, 'byteLength', 'Scaffold diff artifact requires byteLength') !== diffBytes.byteLength ||
+        requireString(receipt.metadata, 'diffDigest', 'Scaffold evidence requires diffDigest') !== createHash('sha256').update(diffBytes).digest('hex') ||
+        !diffBytes.toString('utf8').startsWith(`diff --git a/${targetPath} b/${targetPath}\\n`) ||
+        !diffBytes.toString('utf8').includes(`+++ b/${targetPath}\\n`)
+      ) reject('Astryx scaffold source/diff artifacts have invalid encoding, path or digest');
+      if (sourceBytes.byteLength < 1 || sourceBytes.byteLength > 262_144 || diffBytes.byteLength > 524_288) {
+        reject('Astryx scaffold proposal exceeds the bounded artifact size');
+      }
+      const sourceText = sourceBytes.toString('utf8').replace(/\r\n/gu, '\n');
+      const sourceLines = sourceText.endsWith('\n') ? sourceText.slice(0, -1).split('\n') : sourceText.split('\n');
+      const expectedDiff = [
+        `diff --git a/${targetPath} b/${targetPath}`, 'new file mode 100644',
+        '--- /dev/null', `+++ b/${targetPath}`, `@@ -0,0 +1,${sourceLines.length} @@`,
+        ...sourceLines.map((line) => `+${line}`), '',
+      ].join('\n');
+      if (diffBytes.toString('utf8') !== expectedDiff) reject('Astryx scaffold diff does not represent the signed source artifact');
+      expectedArgs = ['--json', 'template', String(templateId), targetPath];
+      break;
+    }
+  }
+
+  if (command.length !== expectedArgs.length + 2 || expectedArgs.some((arg, index) => command[index + 2] !== arg)) {
+    reject('Astryx evidence command does not match the fixed operation allowlist');
+  }
+
+  const stdout = requireString(receipt.metadata, 'stdout', 'Astryx evidence requires stdout');
+  const outputBytes = requireNonNegativeInteger(receipt.metadata, 'outputBytes', 'Astryx evidence requires outputBytes');
+  const outputDigest = requireString(receipt.metadata, 'outputDigest', 'Astryx evidence requires outputDigest');
+  const outputLimit = operation.startsWith('read-template') || proposal ? 262_144 : 32_768;
   if (
-    outputBytes !== Buffer.byteLength(stdout, 'utf8') ||
-    outputBytes > 32_768 ||
+    outputBytes !== Buffer.byteLength(stdout, 'utf8') || outputBytes > outputLimit ||
     !/^[a-f0-9]{64}$/u.test(outputDigest) ||
     outputDigest !== createHash('sha256').update(stdout).digest('hex')
-  ) {
-    reject('Astryx discovery evidence output size or digest is invalid');
-  }
+  ) reject('Astryx evidence output size or digest is invalid');
 
-  if (
-    requireNonNegativeInteger(
-      receipt.metadata,
-      'exitCode',
-      'Astryx discovery evidence requires exitCode',
-    ) !== 0
-  ) {
-    reject('Astryx discovery evidence requires a successful CLI exit code');
+  if (requireNonNegativeInteger(receipt.metadata, 'exitCode', 'Astryx evidence requires exitCode') !== 0) {
+    reject('Astryx evidence requires a successful CLI exit code');
   }
-
   const stderr = receipt.metadata.stderr;
-  if (typeof stderr !== 'string' || Buffer.byteLength(stderr, 'utf8') > 2_048) {
-    reject('Astryx discovery evidence stderr exceeds its bounded capture');
-  }
+  if (typeof stderr !== 'string' || Buffer.byteLength(stderr, 'utf8') > 2_048) reject('Astryx evidence stderr exceeds its bounded capture');
 
   let envelope: unknown;
-  try {
-    envelope = JSON.parse(stdout);
-  } catch {
-    return reject('Astryx discovery evidence stdout is not valid JSON');
+  try { envelope = JSON.parse(stdout); } catch { return reject('Astryx evidence stdout is not valid JSON'); }
+  const parsedEnvelope = requireRecord(envelope, 'Astryx evidence has an unsupported CLI JSON envelope');
+  if (parsedEnvelope.apiVersion !== 1) reject('Astryx evidence has an unsupported CLI JSON envelope');
+  const expectedType: Record<string, string> = {
+    'list-components': 'component.list', 'read-component-docs': 'component.detail',
+    'list-templates': 'template.list', 'read-template-source': 'template.show',
+    'read-template-skeleton': 'template.skeleton', 'draft-template-scaffold': 'template.copy',
+  };
+  if (parsedEnvelope.type !== expectedType[operation]) reject('Astryx evidence response type is invalid');
+  const meta = requireRecord(parsedEnvelope.meta, 'Astryx evidence requires response metadata');
+  const answeredBy = requireRecord(meta.answeredBy, 'Astryx evidence requires answeredBy provenance');
+  if (answeredBy.cli !== cliVersion || answeredBy.core !== coreVersion || answeredBy.copy !== 'project') {
+    reject('Astryx evidence package provenance does not match the receipt');
   }
-
-  const parsedEnvelope = requireRecord(
-    envelope,
-    'Astryx discovery evidence has an unsupported CLI JSON envelope',
-  );
-  if (parsedEnvelope.apiVersion !== 1) {
-    reject('Astryx discovery evidence has an unsupported CLI JSON envelope');
-  }
-
-  const expectedType = operation === 'list-components' ? 'component.list' : 'component.detail';
-  if (parsedEnvelope.type !== expectedType) {
-    reject('Astryx discovery evidence response type is invalid');
-  }
-  const meta = requireRecord(
-    parsedEnvelope.meta,
-    'Astryx discovery evidence requires response metadata',
-  );
-  const answeredBy = requireRecord(
-    meta.answeredBy,
-    'Astryx discovery evidence requires answeredBy provenance',
-  );
-  if (
-    answeredBy.cli !== cliVersion ||
-    answeredBy.core !== coreVersion ||
-    answeredBy.copy !== 'project'
-  ) {
-    reject('Astryx discovery evidence package provenance does not match the receipt');
-  }
-
-  const data = requireRecord(
-    parsedEnvelope.data,
-    'Astryx discovery evidence requires a component data object',
-  );
   if (operation === 'list-components') {
-    requireRecord(
-      data.components,
-      'Astryx discovery evidence component list is missing its catalog',
-    );
-    if (data.detail !== 'names') {
-      reject('Astryx discovery evidence component list must use the fixed names detail level');
-    }
-  } else if (data.name !== inputs.componentName) {
-    reject('Astryx discovery evidence component does not match the current request');
+    const data = requireRecord(parsedEnvelope.data, 'Astryx component list requires data');
+    requireRecord(data.components, 'Astryx component list is missing its catalog');
+    if (data.detail !== 'names') reject('Astryx component list must use names detail');
+  } else if (operation === 'read-component-docs') {
+    const data = requireRecord(parsedEnvelope.data, 'Astryx component docs require data');
+    if (data.name !== inputs.componentName) reject('Astryx component docs do not match the request');
+  } else if (operation === 'read-template-source') {
+    const data = requireRecord(parsedEnvelope.data, 'Astryx template source requires data');
+    if (typeof data.source !== 'string' || !data.source.length) reject('Astryx template source is missing source text');
+  } else if (operation === 'read-template-skeleton') {
+    const data = requireRecord(parsedEnvelope.data, 'Astryx template skeleton requires data');
+    if (Object.keys(data).length === 0) reject('Astryx template skeleton is empty');
+  } else if (operation === 'list-templates') {
+    const data = parsedEnvelope.data;
+    if (!Array.isArray(data) && (!isRecord(data) || !Array.isArray(data.templates))) reject('Astryx template list is malformed');
+  } else {
+    const data = requireRecord(parsedEnvelope.data, 'Astryx template copy requires data');
+    if (data.filesCopied !== 1) reject('Astryx template copy must produce exactly one file');
   }
 }
 
