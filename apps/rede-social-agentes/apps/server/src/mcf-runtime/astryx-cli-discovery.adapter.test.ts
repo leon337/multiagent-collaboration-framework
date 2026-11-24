@@ -10,7 +10,7 @@ import { AstryxCliDiscoveryAdapter, ASTRYX_PROVIDER, ASTRYX_RESOURCE, ASTRYX_SKI
 import { PermissionEngine } from './permission-engine.js';
 
 const skill: McfSkillDefinition = {
-  skillId: ASTRYX_SKILL, name: 'Full-stack visual development', version: '0.1.0',
+  skillId: ASTRYX_SKILL, name: 'Astryx component discovery', version: '0.1.0',
   purpose: 'Discover Astryx visual components', ownerAgents: ['Mestre'], requiredInputs: [],
   allowedTools: [ASTRYX_PROVIDER], forbiddenTools: ['write', 'delete', 'publish', 'deploy'],
   permissionProfile: 'READ_ONLY', executionSteps: [], requiredEvidence: [],
