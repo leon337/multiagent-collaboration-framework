@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { AdapterRegistry } from './adapter-registry.js';
+import { AstryxCliDiscoveryAdapter } from './astryx-cli-discovery.adapter.js';
 import { CodeBuddyExecutorAdapter } from './codebuddy-executor.adapter.js';
 import { ExternalActionDispatcher } from './external-action-dispatcher.js';
 import { ExternalActionLedger } from './external-action-ledger.js';
@@ -51,6 +52,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       CodeBuddyExecutorAdapter,
       LocalAgentTeamAdapter,
       GoogleBridgeReadAdapter,
+      AstryxCliDiscoveryAdapter,
     ]);
 
     const registry = registryProvider?.useFactory?.(
@@ -61,6 +63,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
       stub('codebuddy-implement-change-local-v1'),
       stub('local-agent-team-process-v1'),
       stub('mcf-google-bridge-readonly-local-v1'),
+      stub('mcf-astryx-cli-readonly-v1'),
     ) as AdapterRegistry;
 
     expect(registry.listAdapterIds()).toContain('github-branch-pr-write-v1');
@@ -68,6 +71,7 @@ describe('McfRuntimeModule AdapterRegistry composition', () => {
     expect(registry.listAdapterIds()).toContain('codebuddy-implement-change-local-v1');
     expect(registry.listAdapterIds()).toContain('local-agent-team-process-v1');
     expect(registry.listAdapterIds()).toContain('mcf-google-bridge-readonly-local-v1');
+    expect(registry.listAdapterIds()).toContain('mcf-astryx-cli-readonly-v1');
   });
 });
 
