@@ -682,3 +682,25 @@ skills:
     failure_modes: [adapter_disabled, workspace_unavailable, cli_missing, core_missing, package_version_mismatch, timeout, invalid_component_name, invalid_output]
     fallback: Se o adapter estiver desabilitado ou o CLI indisponível, parar e registrar a dependência; nunca executar comandos alternativos ou shell arbitrário.
     handoff_to: Mestre
+
+  # Full-stack orchestration contract only; not executable by the runtime.
+  - skill_id: MCF-FULLSTACK-VISUAL-DEVELOPMENT
+    status: EXPERIMENTAL
+    name: Desenvolver aplicações full-stack com desenvolvimento visual assistido
+    version: 0.1.0
+    purpose: Orquestrar a construção de aplicações completas, usando Astryx como provider visual opcional e as capacidades MCF existentes para arquitetura, frontend, backend, dados, integrações, testes e governança.
+    owner_agents: [Mestre, Sofia, Rafael]
+    supporting_agents: [Evelyn, Laura, Isabela, Marina, Eduardo, Helena, Andre, Tiago, Daniela, Vinicius, Lucas, Ricardo, Beatriz, Augusto, Julia]
+    trigger_phrases: ["desenvolver aplicação completa", "full-stack", "criar interface com Astryx", "desenvolvimento visual", "construir dashboard"]
+    required_inputs: [product_requirements, approved_scope, repository, acceptance_criteria]
+    optional_inputs: [design_system, astryx_version, frontend_stack, backend_stack, database, deployment_target, accessibility_target]
+    allowed_tools: [GitHub, Figma, Playwright, Supabase, Neon_Postgres, Vercel, Render, OpenAI_Developers]
+    forbidden_tools: [direct_main_write, production_deploy_without_gate, secret_exposure, unapproved_schema_destructive_change, business_logic_in_ui_only]
+    permission_profile: SCOPED_WRITE
+    execution_steps: [recover_repository_context, define_product_and_acceptance, design_user_flows, define_fullstack_boundaries, select_visual_provider, verify_astryx_compatibility, scaffold_or_extend_frontend, implement_backend_contracts, implement_data_model_and_migrations, integrate_auth_and_external_services, validate_visual_and_functional_flows, review_security_accessibility_and_performance, produce_phase_evidence, request_review_and_governed_merge]
+    required_evidence: [base_commit_sha, architecture_decisions, visual_reference, provider_and_version, dependency_lockfile, api_contracts, data_model, migration_plan, test_results, visual_test_results, accessibility_findings, security_findings, diff_digest, ci_status]
+    expected_outputs: [fullstack_architecture, visual_implementation, backend_and_data_contracts, validation_report, governed_pull_request]
+    acceptance_criteria: [frontend_backend_contracts_consistent, visual_system_used_or_exception_documented, responsive_critical_flows_pass, api_and_data_tests_pass, authorization_enforced_server_side, migrations_reversible_or_recovery_documented, accessibility_reviewed, secrets_absent, ci_green, no_unapproved_production_effect]
+    failure_modes: [astryx_incompatible_or_unavailable, unsupported_component, backend_contract_drift, schema_risk, auth_gap, visual_regression, accessibility_failure, ci_failure]
+    fallback: Se Astryx não for compatível, selecionar outro design system ou componentes existentes sem bloquear backend; registrar a exceção e manter contratos de API/dados independentes da camada visual. Se faltar adapter de runtime, executar somente por ferramentas autorizadas e não declarar a Skill como runtime-executável.
+    handoff_to: Beatriz

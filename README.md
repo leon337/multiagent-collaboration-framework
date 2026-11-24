@@ -51,7 +51,7 @@ Capacidades comprovadas incluem:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - dispatcher de ações externas e adapters com evidência verificável;
-- **18 skills executáveis no servidor atual**; esta branch candidata adiciona **7 Skills web EXPERIMENTAL/orchestration-ready** (25 registradas no total), sem alegar adapter web no runtime;
+- **19 skills executáveis no servidor atual** após a integração da descoberta Astryx read-only pela PR #579 (`80ca638`); esta branch adiciona uma Skill full-stack experimental de orquestração, não executável;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA, readiness/version e recovery por redeploy;
@@ -159,6 +159,10 @@ Princípios centrais:
 - gates/reviews vinculados ao estado e SHA aplicável;
 - LEANDRO não é operador técnico rotineiro;
 - ação externa irreversível ou publicação relevante exige autoridade compatível com o boundary.
+
+## Desenvolvimento visual e full-stack (experimental)
+
+A Skill `MCF-FULLSTACK-VISUAL-DEVELOPMENT` permanece `EXPERIMENTAL` e é um contrato de orquestração, não uma Skill executável. A Skill `MCF-ASTRYX-COMPONENT-DISCOVERY` foi integrada ao `main` pela PR #579 (`80ca638`): descoberta read-only com CLI/Core locais verificados, workspace e ambiente de subprocesso isolados, receipt semântico assinado e duas operações allowlisted (`component --list` e documentação compacta). O adapter continua disabled-by-default e não grava arquivos. A validação Foundation executou 1.160 testes aprovados e a integração com CLI/Core 0.7.17 passou; Qualification, Container Smoke, Production Readiness e Documentation validation também passaram. Astryx é o provider visual opcional (React 19+, componentes, temas, templates e CLI; StyleX é detalhe interno de autoria, não requisito de consumo); backend, APIs, banco, autenticação, integrações e governança continuam sob competências MCF independentes. Scaffolding, aplicação de diffs e piloto full-stack ainda não estão implementados. Consulte [arquitetura MCF Full-Stack Visual Development](docs/architecture/MCF-FULLSTACK-VISUAL-DEVELOPMENT.md) e [contrato da Skill](skills/frontend/MCF-FULLSTACK-VISUAL-DEVELOPMENT.yaml).
 
 ## Skills
 
