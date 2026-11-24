@@ -17,10 +17,18 @@ jobs:
           version: 10
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec prettier --write apps/rede-social-agentes/apps/server/src/mcf-runtime/evidence-validator.ts
+          node-version: 24.18.0
+      - name: Enable pnpm
+        working-directory: apps/rede-social-agentes
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.17.0 --activate
+      - name: Install dependencies
+        working-directory: apps/rede-social-agentes
+        run: pnpm install --frozen-lockfile
+      - name: Format validator
+        working-directory: apps/rede-social-agentes
+        run: pnpm exec prettier --write apps/server/src/mcf-runtime/evidence-validator.ts
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
