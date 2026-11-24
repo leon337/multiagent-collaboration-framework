@@ -1,8 +1,8 @@
 id: MCF-FULLSTACK-VISUAL-DEVELOPMENT
-version: 0.1.0
+version: 0.2.0
 status: EXPERIMENTAL
 classification: orchestration_contract_only
-runtime_adapter: PARTIAL_READ_ONLY_COMPONENT_DISCOVERY
+runtime_adapter: PARTIAL_COMPONENT_TEMPLATE_DISCOVERY_AND_GOVERNED_CODEBUDDY_APPLICATION
 receipt_validator: MCF_RUNTIME_EVIDENCE_VALIDATOR
 provider:
   name: Astryx
@@ -15,21 +15,30 @@ provider:
     discovery:
       - "pnpm exec astryx --json component --list"
       - "pnpm exec astryx --json component <ComponentName> --detail compact"
+      - "pnpm exec astryx --json template --list"
+      - "pnpm exec astryx --json template <templateId>"
+      - "pnpm exec astryx --json template <templateId> --skeleton"
+    proposal:
+      - "pnpm exec astryx --json template <templateId> <approved-repository-relative-file>"
+      - "The command runs only in a unique disposable workspace; one source file and its diff are returned as a signed proposal."
     styling:
       - "StyleX is an internal authoring implementation; consumers use precompiled CSS and may customize with CSS or className."
     safety:
       - "Do not run arbitrary shell commands from model-generated strings."
-      - "Install both @astryxdesign/cli and @astryxdesign/core as pinned project dependencies and commit the lockfile; the CI smoke currently pins published 0.7.17 packages."
-      - "Run CLI only in an isolated authorized workspace."
-      - "Capture stdout, stderr, exit code, package versions and working directory."
+      - "Install both @astryxdesign/cli and @astryxdesign/core as pinned project dependencies and commit the lockfile."
+      - "Run CLI only in an isolated authorized workspace; proposal copies are limited to a disposable child workspace."
+      - "Capture stdout, stderr, exit code, package versions, workspace, source/diff bytes and SHA-256 digests."
       - "The MCF Astryx adapter resolves the exact package-local CLI binary from the workspace and invokes it with process.execPath; no shell, PATH lookup, or global CLI fallback is allowed."
-      - "The adapter currently exposes only read-only component discovery; it is disabled by default and does not scaffold or write project files."
-      - "Receipts bind the workspace, CLI package root, CLI binary, CLI/Core versions, fixed argv, output digest, and signed semantic validation."
-      - "Use MCF-IMPLEMENT-CHANGE and its scoped-write/HDF gates for proposed code changes; never treat CLI output as authorization."
+      - "The adapter is disabled by default; scaffold proposal never writes to the target checkout."
+      - "Apply a signed proposal only through MCF-IMPLEMENT-CHANGE with SCOPED_WRITE, authorizedScope, explicit HDF v1.1 approval by LEANDRO, TEAM_FIRST evidence, exact base SHA and allowed_paths."
+      - "CodeBuddy application runs in a disposable Git worktree and Bubblewrap sandbox; no commit or deploy; transactional rollback is verified."
 scope:
   includes:
     - product_to_fullstack_plan
     - visual_component_discovery
+    - visual_template_discovery
+    - disposable_scaffold_proposal
+    - governed_scaffold_application
     - frontend_implementation
     - backend_api_contracts
     - database_and_migrations
@@ -58,6 +67,11 @@ evidence:
     - provider_version
     - local_cli_binary_provenance
     - receipt_signature_and_semantic_validation
+    - scaffold_proposal_receipt
+    - source_and_diff_sha256
+    - approved_paths
+    - hdf_approval_by_leandro
+    - rollback_validation
     - lockfile
     - architecture_decisions
     - api_contracts
@@ -66,7 +80,6 @@ evidence:
     - visual_regression_results
     - accessibility_findings
     - security_findings
-    - diff_digest
     - ci_status
 acceptance:
   - frontend_backend_contracts_consistent
@@ -74,6 +87,9 @@ acceptance:
   - responsive_review_complete
   - server_side_authorization_verified
   - migrations_recovery_documented
+  - hdf_scoped_write_and_rollback_proven
+  - pilot_fullstack_e2e_pass
+  - visual_baselines_committed_and_verified
   - no_secrets
   - ci_green
   - no_unapproved_production_effect
