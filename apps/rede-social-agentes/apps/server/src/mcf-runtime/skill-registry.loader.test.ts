@@ -87,7 +87,9 @@ describe('parseMcfSkillRegistry', () => {
 
     expect(content).toContain('skill_id: MCF-FULLSTACK-VISUAL-DEVELOPMENT');
     expect(content).toContain('status: EXPERIMENTAL');
-    expect(skills.some((skill) => skill.skillId === 'MCF-FULLSTACK-VISUAL-DEVELOPMENT')).toBe(false);
+    expect(skills.some((skill) => skill.skillId === 'MCF-FULLSTACK-VISUAL-DEVELOPMENT')).toBe(
+      false,
+    );
   });
 
   it('loads the reusable visual desktop audit skill from the canonical registry', async () => {
