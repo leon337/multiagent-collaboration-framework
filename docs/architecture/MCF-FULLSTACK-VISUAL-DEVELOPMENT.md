@@ -152,7 +152,7 @@ A aplicação ocorre separadamente por `MCF-IMPLEMENT-CHANGE` / CodeBuddy. Quand
 
 ### Projeto-piloto não produtivo
 
-`examples/astryx-fullstack-pilot/` demonstra React 19 + Astryx, Vite, API autenticada server-side, PostgreSQL com schema isolado por execução, migration SQL, Playwright desktop/mobile, axe accessibility e pixel baselines. O workflow separado não acessa banco Potiguar nem executa deploy.
+`examples/astryx-fullstack-pilot/` demonstra React 19 + Astryx, Vite, API autenticada server-side, PostgreSQL com schema isolado por execução, migration SQL, rollback transacional e limpeza do schema, Playwright desktop/mobile, axe accessibility e pixel baselines. O workflow separado não acessa banco Potiguar nem executa deploy.
 
 ### Critérios restantes antes de promover a Skill
 
