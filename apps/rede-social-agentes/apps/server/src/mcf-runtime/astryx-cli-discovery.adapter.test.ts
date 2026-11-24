@@ -147,12 +147,7 @@ describe('Astryx CLI discovery adapter', () => {
 
   it('rejects a workspace inside the runtime checkout', async () => {
     const runner = vi.fn();
-    const subject = new AstryxCliDiscoveryAdapter(
-      evidence(),
-      true,
-      process.cwd(),
-      runner as never,
-    );
+    const subject = new AstryxCliDiscoveryAdapter(evidence(), true, process.cwd(), runner as never);
 
     await expect(subject.execute(request())).rejects.toMatchObject({
       code: 'INVALID_CONTEXT',
@@ -212,7 +207,6 @@ describe('Astryx CLI discovery adapter', () => {
         cliVersion: '0.7.2',
         coreVersion: '0.7.2',
         cliCopy: 'project',
-        cliPackageRoot: join(workspace, 'node_modules', '@astryxdesign', 'cli'),
         cliBinary: localCliBinary(workspace),
         stdout: jsonResponse('component.list', { components: { actions: [] } }),
       },
