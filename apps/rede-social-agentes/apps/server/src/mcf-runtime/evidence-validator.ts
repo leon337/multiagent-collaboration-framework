@@ -1147,8 +1147,8 @@ function validateAstryxDiscoveryReceipt(
         reject('Astryx scaffold source/diff artifacts have invalid encoding, path or digest');
       if (
         sourceBytes.byteLength < 1 ||
-        sourceBytes.byteLength > 262_144 ||
-        diffBytes.byteLength > 524_288
+        sourceBytes.byteLength > 49_152 ||
+        diffBytes.byteLength > 65_536
       ) {
         reject('Astryx scaffold proposal exceeds the bounded artifact size');
       }
