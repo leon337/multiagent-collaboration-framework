@@ -21,6 +21,7 @@ export interface ExternalActionExecutionContext {
   missionId: string;
   phaseId: string;
   expectedMissionVersion: number;
+  projectId?: string | null;
 }
 
 export type ExternalAttributionMode = 'DIRECT' | 'BOOTSTRAP_DELEGATED';
