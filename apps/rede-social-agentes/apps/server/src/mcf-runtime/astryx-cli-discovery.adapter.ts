@@ -601,6 +601,9 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
                 encoding: 'base64',
                 data: diffBytes?.toString('base64'),
                 byteLength: diffBytes?.byteLength,
+                digest: createHash('sha256')
+                  .update(diffBytes ?? Buffer.alloc(0))
+                  .digest('hex'),
               },
               diffDigest,
             }
