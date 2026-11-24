@@ -1,3 +1,4 @@
+
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isAbsolute } from 'node:path';
 
@@ -915,7 +916,9 @@ function validateAstryxDiscoveryReceipt(
     reject('Astryx discovery evidence was not produced by the approved adapter');
   }
 
-  if (!requireBoolean(receipt.metadata, 'readOnly', 'Astryx discovery evidence requires readOnly')) {
+  if (
+    !requireBoolean(receipt.metadata, 'readOnly', 'Astryx discovery evidence requires readOnly')
+  ) {
     reject('Astryx discovery evidence must be read-only');
   }
 
@@ -1037,8 +1040,7 @@ function validateAstryxDiscoveryReceipt(
     reject('Astryx discovery evidence has an unsupported CLI JSON envelope');
   }
 
-  const expectedType =
-    operation === 'list-components' ? 'component.list' : 'component.detail';
+  const expectedType = operation === 'list-components' ? 'component.list' : 'component.detail';
   if (envelope.type !== expectedType || !isRecord(envelope.meta)) {
     reject('Astryx discovery evidence response type is invalid');
   }
