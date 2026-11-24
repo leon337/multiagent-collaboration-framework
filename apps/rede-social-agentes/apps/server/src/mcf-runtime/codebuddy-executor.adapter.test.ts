@@ -441,6 +441,18 @@ describe('CodeBuddyExecutorAdapter', () => {
     );
   });
 
+  it('rolls back an already-published patch if disposable worktree cleanup fails', async () => {
+    const { adapter: subject, host } = adapter();
+    host.removeExecutionWorkspace = vi.fn(async () => {
+      throw new Error('simulated cleanup failure');
+    });
+
+    await expect(subject.execute(request)).rejects.toMatchObject({ code: 'ADAPTER_FAILURE' });
+
+    expect(host.publishChanges).toHaveBeenCalledOnce();
+    expect(host.restoreWorkspace).toHaveBeenCalledOnce();
+  });
+
   it('maps process timeout to ADAPTER_TIMEOUT', async () => {
     const { adapter: subject, host } = adapter();
     host.result.timedOut = true;
