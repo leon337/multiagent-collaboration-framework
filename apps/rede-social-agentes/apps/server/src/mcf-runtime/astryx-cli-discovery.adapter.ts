@@ -167,7 +167,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     return (
       request.skill.skillId === ASTRYX_SKILL &&
       canonicalizeProvider(request.tool.provider) === ASTRYX_PROVIDER &&
-      canonicalizeToolValue(request.tool.resource) === ASTRYX_RESOURCE &&
+      request.tool.resource === ASTRYX_RESOURCE &&
       ASTRYX_OPERATIONS.includes(canonicalizeToolValue(request.tool.operation) as AstryxOperation)
     );
   }
@@ -363,7 +363,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
     return this.evidence.createTrustedReceipt({
       provider: ASTRYX_PROVIDER,
       operation,
-      resource: request.tool.resource,
+      resource: ASTRYX_RESOURCE,
       externalId: null,
       commitSha: null,
       status: 'SUCCEEDED',
