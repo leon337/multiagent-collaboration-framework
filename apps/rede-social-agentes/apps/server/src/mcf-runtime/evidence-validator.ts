@@ -1005,7 +1005,7 @@ function validateAstryxDiscoveryReceipt(
     isPathWithin(corePackageRoot, packageRoot)
   )
     reject(
-      'Astryx evidence must bind workspace-local CLI and Core packages outside the runtime checkout',
+      'Astryx evidence must bind workspace-local CLI and Core packages outside the runtime checkout; workspace-local CLI and Core packages are required',
     );
 
   const command = requireNonEmptyArray(
