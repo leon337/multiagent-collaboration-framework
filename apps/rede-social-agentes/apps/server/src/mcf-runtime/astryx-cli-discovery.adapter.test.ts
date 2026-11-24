@@ -115,6 +115,22 @@ describe('Astryx CLI discovery adapter', () => {
     expect(runner).not.toHaveBeenCalled();
   });
 
+  it('rejects a workspace inside the runtime checkout', async () => {
+    const runner = vi.fn();
+    const subject = new AstryxCliDiscoveryAdapter(
+      evidence(),
+      true,
+      process.cwd(),
+      'pnpm',
+      runner as never,
+    );
+
+    await expect(subject.execute(request())).rejects.toMatchObject({
+      code: 'INVALID_CONTEXT',
+    });
+    expect(runner).not.toHaveBeenCalled();
+  });
+
   it('fails closed while disabled without executing a command', async () => {
     workspace = await mkdtemp(join(tmpdir(), 'astryx-'));
     const runner = vi.fn();
