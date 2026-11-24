@@ -87,7 +87,7 @@ Do not point the workspace at a production checkout. Do not enable the adapter i
 
 The branch adds unit coverage for component/template discovery, bounded output, scratch proposal generation, path traversal rejection, proposal cleanup, semantic receipt validation, permission boundaries and CodeBuddy HDF enforcement. MissionRuntime E2E covers both read-only discovery and the signed disposable proposal. The real CLI integration test uses pinned CLI/Core 0.7.17 packages in an isolated CI workspace.
 
-The non-production full-stack qualification fixture is in `examples/astryx-fullstack-pilot/`. Its separate workflow builds React 19 + Astryx, runs an authenticated API against a per-run PostgreSQL schema and migration, checks desktop/mobile browser flows, axe accessibility and pixel baselines. It never uses the Potiguar production database or deploys.
+The non-production full-stack qualification fixture is in `examples/astryx-fullstack-pilot/`. Its separate workflow builds React 19 + Astryx, runs an authenticated API against a per-run PostgreSQL schema and migration, checks database transaction rollback and schema cleanup, desktop/mobile browser flows, axe accessibility and pixel baselines. It never uses the Potiguar production database or deploys.
 
 Run server checks from the server workspace:
 
