@@ -73,8 +73,8 @@ describe('Astryx pinned CLI real integration', () => {
       metadata: {
         cliPackage: '@astryxdesign/cli',
         corePackage: '@astryxdesign/core',
-        cliVersion: '0.7.18',
-        coreVersion: '0.7.18',
+        cliVersion: '0.7.17',
+        coreVersion: '0.7.17',
         cliCopy: 'project',
         readOnly: true,
         exitCode: 0,
