@@ -42,6 +42,7 @@ Do not point the workspace at a production checkout. Do not enable the adapter i
 - Only the two fixed discovery operations are supported.
 - The adapter is disabled unless the explicit enable flag is true.
 - No shell, arbitrary command, arbitrary arguments, PATH lookup, global CLI fallback, file writes, scaffolding or deployment.
+- The child process receives an allowlisted environment with HOME/config/cache/temp rooted in the isolated workspace; PATH, NODE_OPTIONS, database credentials and MCF receipt secrets are not inherited.
 - Both scoped package manifests and the resolved CLI binary must remain inside the isolated workspace; CLI-reported versions must match the installed packages.
 - CLI output and stderr are bounded before receipt creation.
 - Receipts are created by the existing `EvidenceValidator`; the action is recorded by the existing external action ledger.
