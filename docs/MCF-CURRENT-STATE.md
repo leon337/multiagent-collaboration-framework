@@ -135,7 +135,7 @@ Aplicação hospedeira:
 - hierarquia missão-pai/submissão;
 - Human Delegation Firewall e perfis de permissão;
 - External Action Dispatcher e adapters com evidência;
-- 19 skills registradas, 19 executáveis, 0 somente documentais no lineage qualificado (inclui MCF-ASTRYX-COMPONENT-DISCOVERY, read-only e disabled-by-default, após PR #579);
+- 18 skills registradas e executáveis no `main` consultado; PR #579 propõe MCF-ASTRYX-COMPONENT-DISCOVERY em modo read-only, ainda pendente de merge e validação;
 - leitura de revisão de código e CI;
 - escrita GitHub reversível e gates operacionais governados;
 - staging com verificação de SHA/readiness/version e recovery por redeploy de SHA saudável;
@@ -744,15 +744,13 @@ Limites observados:
 Runner online, workflow health aprovado, capability executável no MissionRuntime e produção são estados distintos. Consultar GitHub, o repositório privado e o host ao vivo antes de qualquer operação. Não inferir acesso privado ou disponibilidade do host em novas sessões.
 
 
-## MCF Astryx Component Discovery — EXPERIMENTAL / EXECUTABLE
+## MCF Astryx Component Discovery — PR #579 / PENDING MERGE
 
-- Skill registrada: `MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0`.
-- Executável pelo SkillExecutor, mas disabled-by-default até `MCF_ASTRYX_CLI_ENABLED=true`.
-- Escopo estrito: catálogo de componentes e documentação compacta; nenhuma escrita, scaffolding ou deploy.
-- O CLI é resolvido do pacote `@astryxdesign/cli` dentro de workspace isolado, com Core local verificado; execução usa Node/execFile sem shell ou PATH fallback.
-- Receipts são assinados e semanticamente validados; incluem versões CLI/Core, binário local, argv, workspace, exit code, limites de bytes e SHA-256.
-- Foundation CI instala CLI/Core 0.7.17 em workspace temporário e executa teste de integração real; E2E cobre MissionRuntime → SkillExecutor → Dispatcher → Adapter → EvidenceValidator.
-- A capability é a primeira camada visual do MCF; não equivale a scaffolding ou desenvolvimento full-stack completo.
+- Skill `MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0` proposta em PR #579; ainda não disponível no `main` consultado.
+- O PR implementa uma capability candidata de descoberta read-only, disabled-by-default, sem escrita, scaffolding ou deploy.
+- A proposta resolve o CLI local `@astryxdesign/cli` em workspace isolado, executa sem shell/PATH fallback e valida receipts assinados e semanticamente.
+- A promoção para executável depende de corrigir os testes E2E, obter CI verde, revisão concluída e merge governado de PR #579.
+- A capability não equivale a scaffolding ou desenvolvimento full-stack completo.
 
 ## MCF Full-Stack Visual Development — EXPERIMENTAL
 
@@ -760,11 +758,8 @@ Runner online, workflow health aprovado, capability executável no MissionRuntim
 - Astryx (Meta) é provider visual opcional; não é backend, framework full-stack nem agente orquestrador.
 - A arquitetura preserva contratos independentes de API/domínio/dados, autorização server-side e validação MCF.
 - A Skill é contrato de orquestração experimental, **não executável pelo runtime atual**.
-- A Skill é contrato de orquestração experimental, **não executável pelo runtime atual**.
-- A descoberta visual read-only é entregue separadamente por `MCF-ASTRYX-COMPONENT-DISCOVERY@0.1.0`, executável pelo SkillExecutor e disabled-by-default.
-- O adapter resolve o pacote CLI local a partir de workspace absoluto e isolado, executa o binário verificado com Node/execFile (sem shell ou PATH fallback) e aceita somente `list-components` e `read-component-docs`.
-- EvidenceValidator verifica assinatura, workspace, binário local, CLI/Core versions, argv fixo, JSON semântico, limites de saída e digest; testes incluem E2E MissionRuntime e CLI real pinned 0.7.17.
+- A descoberta visual read-only é proposta separadamente em PR #579; não deve ser contabilizada como executável no `main` até merge e CI/review aprovados.
 - Scaffolding em diff-proposal, escrita governada por HDF/SCOPED_WRITE, geração backend/full-stack, benchmark visual e piloto não produtivo permanecem PENDING.
-- Não contar a Skill full-stack entre as executáveis; a Skill de descoberta é a capability executável adicional.
+- Não contar a Skill full-stack nem a proposta de descoberta enquanto PR #579 não estiver integrada e validada.
 - Produção não é afetada; merge em main não autoriza deploy.
 - Fonte técnica do provider: https://github.com/meta/astryx e https://github.com/meta/astryx/wiki/System-Architecture.
