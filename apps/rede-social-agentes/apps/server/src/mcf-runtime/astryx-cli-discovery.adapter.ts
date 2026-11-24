@@ -132,6 +132,7 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
   }
 
   private async resolveWorkspace(): Promise<string> {
+    // Keep discovery isolated from the checkout; never fall back to process.cwd().
     if (!isAbsolute(this.workspaceRoot)) {
       throw new ExternalActionAdapterError(
         'INVALID_CONTEXT',
