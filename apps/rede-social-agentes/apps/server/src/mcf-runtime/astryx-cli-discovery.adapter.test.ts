@@ -207,6 +207,7 @@ describe('Astryx CLI discovery adapter', () => {
         cliVersion: '0.7.2',
         coreVersion: '0.7.2',
         cliCopy: 'project',
+        cliPackageRoot: join(workspace, 'node_modules', '@astryxdesign', 'cli'),
         cliBinary: localCliBinary(workspace),
         stdout: jsonResponse('component.list', { components: { actions: [] } }),
       },
