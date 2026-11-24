@@ -666,6 +666,24 @@ skills:
     handoff_to: Mestre
 
   # EXPERIMENTAL: orchestration contract only; server runtime adapter and receipt validator pending.
+  - skill_id: MCF-ASTRYX-COMPONENT-DISCOVERY
+    name: Descoberta de componentes e documentação Astryx
+    version: 0.1.0
+    purpose: Coordenar desenvolvimento full-stack com Astryx como provider visual opcional; esta execução inicial permite apenas descobrir componentes e documentação em modo leitura.
+    owner_agents: [Mestre]
+    trigger_phrases: ["descobrir componentes Astryx", "consultar documentação Astryx", "desenvolvimento visual full-stack"]
+    required_inputs: []
+    optional_inputs: [componentName]
+    allowed_tools: [mcf-astryx-cli]
+    forbidden_tools: [write, delete, publish, deploy, shell, arbitrary_command, production]
+    permission_profile: READ_ONLY
+    execution_steps: [validar_skill_e_provider, consultar_cli_allowlisted, validar_output_limitado, emitir_receipt_assinado]
+    required_evidence: [provider, operation, adapterId, readOnly, outputDigest, cliVersion, coreVersion, cliCopy, workspace]
+    acceptance_criteria: [provider_and_resource_allowlisted, command_fixed_and_no_shell, project_package_provenance_verified, output_bounded_and_digest_valid, receipt_signed_and_semantically_valid, disabled_by_default]
+    failure_modes: [adapter_disabled, workspace_unavailable, cli_missing, timeout, invalid_component_name, invalid_output]
+    fallback: Se o adapter estiver desabilitado ou o CLI indisponível, parar e registrar a dependência; nunca executar comandos alternativos ou shell arbitrário.
+    handoff_to: Mestre
+
   - skill_id: MCF-FULLSTACK-VISUAL-DEVELOPMENT
     status: EXPERIMENTAL
     name: Desenvolver aplicações full-stack com desenvolvimento visual assistido
