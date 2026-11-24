@@ -37,6 +37,7 @@ function astryxReceiptMetadata(cliCopy = 'project') {
   });
   const workspace = '/tmp/astryx-workspace';
   const cliPackageRoot = `${workspace}/node_modules/@astryxdesign/cli`;
+  const corePackageRoot = `${workspace}/node_modules/@astryxdesign/core`;
   const cliBinary = `${cliPackageRoot}/clients/cli/bin/astryx.mjs`;
   return {
     adapterId: 'mcf-astryx-cli-readonly-v1',
@@ -46,6 +47,7 @@ function astryxReceiptMetadata(cliCopy = 'project') {
     coreVersion: '0.7.2',
     cliCopy,
     cliPackageRoot,
+    corePackageRoot,
     cliBinary,
     readOnly: true,
     command: [process.execPath, cliBinary, '--json', 'component', '--list'],
@@ -124,6 +126,29 @@ describe('EvidenceValidator', () => {
 
     expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).toThrow(
       /workspace-local CLI outside the runtime checkout/u,
+    );
+  });
+
+  it('rejects a Core package outside the isolated project workspace', () => {
+    const validator = new EvidenceValidator();
+    const expected = {
+      provider: 'mcf-astryx-cli',
+      operation: 'list-components',
+      resource: 'astryx-design-system',
+    };
+    const metadata = astryxReceiptMetadata();
+    metadata.corePackageRoot = '/opt/astryx-core';
+    const receipt = validator.createTrustedReceipt({
+      ...expected,
+      externalId: null,
+      commitSha: null,
+      status: 'SUCCEEDED',
+      observedAt: new Date().toISOString(),
+      metadata,
+    });
+
+    expect(() => validator.verifyForSkill(receipt, expected, astryxSkill, {})).toThrow(
+      /workspace-local CLI and Core packages/u,
     );
   });
 
