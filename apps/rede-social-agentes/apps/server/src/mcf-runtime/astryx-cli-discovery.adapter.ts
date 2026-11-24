@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { execFile as nodeExecFile } from 'node:child_process';
 import { realpath, stat } from 'node:fs/promises';
-import { isAbsolute, resolve } from 'node:path';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 import type { McfToolReceipt } from '@rsa/contracts';
 
@@ -142,6 +142,17 @@ export class AstryxCliDiscoveryAdapter implements ExternalActionAdapter {
 
     try {
       const root = await realpath(resolve(this.workspaceRoot));
+      const runtimeRoot = await realpath(process.cwd());
+      const workspaceRelative = relative(runtimeRoot, root);
+      const runtimeRelative = relative(root, runtimeRoot);
+      const isWithin = (candidate: string) =>
+        candidate === '' ||
+        (candidate !== '..' &&
+          !candidate.startsWith(`..${sep}`) &&
+          !isAbsolute(candidate));
+      if (isWithin(workspaceRelative) || isWithin(runtimeRelative)) {
+        throw new Error('workspace overlaps the runtime checkout');
+      }
       const metadata = await stat(root);
       if (!metadata.isDirectory()) {
         throw new Error('not a directory');
